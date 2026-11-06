@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Metaplectic.Intertwining.Tame.LowShellCubicUn
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.KPTameTransposeKernelUnfoldingRaw.HigherShellCubicUnitConjugation
 
 open scoped NumberField Classical
@@ -31,8 +30,8 @@ theorem eventually_split_subset_open (U : Set (ActualCover F ζ hζ q))
       (KPAdelicCoverRestrictedProduct.depth_admissible F ζ hζ q) ⟨hd, (hcharts d le_rfl).2.2⟩
   have hUc : @IsOpen _ (KPPGLLocalCover.finiteTopology F ζ hζ q d) U := by rwa [← htop]
   letI : TopologicalSpace (ActualCover F ζ hζ q) := KPPGLLocalCover.finiteTopology F ζ hζ q d
-  have hq : Continuous (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q)) := by
-    exact continuous_quotient_mk'
+  have hq : Continuous (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q)) := 
+    continuous_quotient_mk'
   have hc := (KPLocalChartTopology.translatedChart_isOpenEmbedding F ζ hζ q d
     ⟨hd, (hcharts d le_rfl).2.2⟩ 1).continuous
   have ho : IsOpen ((KPLocalChartTopology.translatedChart F ζ hζ q d 1) ⁻¹'
@@ -135,7 +134,7 @@ private theorem support_norm_left
     localAbs (LocalField F q) (S.borel.coordinate (S.borel.retract d))) hprod
   simpa only [map_mul, localAbs_mul, hn, mul_one] using ha
 
-private theorem support_vector_value
+theorem support_vector_value
     (f : scalarSections F ζ hζ q S P hP .minus) (s : ℂ)
     (g : ActualCover F ζ hζ q) :
     (deformedTest F ζ hζ q S P hP coordinates f s).val g =
@@ -162,7 +161,7 @@ private theorem support_vector_value
 
 include hcoordinates in
 
-private theorem support_scalar_value
+theorem support_scalar_value
     (f : scalarSections F ζ hζ q S P hP .minus) (s : ℂ)
     (g : ActualCover F ζ hζ q) :
     ((deformedTest F ζ hζ q S P hP coordinates f s).val g).val 1 =
@@ -172,8 +171,7 @@ private theorem support_scalar_value
   rw [support_vector_value]
   change _ * (((coordinates .minus).symm f).val g).val 1 = _
   have hc := hcoordinates .minus ((coordinates .minus).symm f) g
-  rw [LinearEquiv.apply_symm_apply] at hc
-  rw [← hc]
+  simp_all
 
 theorem bruhat_support_norm_right_unit
     (a t : ActualCover F ζ hζ q) (m : ℕ)
@@ -270,11 +268,11 @@ namespace CubicUnitConjugationAtoms
 theorem cubeLift_mem_HL (c : (LocalField F q)ˣ) :
     (S.borel.cubeLift c : actualTorus F ζ hζ q) ∈ HL F ζ hζ q S P := by
   change S.heisenberg.π (S.borel.cubeLift c) ∈ P.L
-  have hc : S.heisenberg.π (S.borel.cubeLift c) = 1 := by
-    exact (show (S.borel.cubeLift c : actualTorus F ζ hζ q) ∈
+  have hc : S.heisenberg.π (S.borel.cubeLift c) = 1 := 
+    (show (S.borel.cubeLift c : actualTorus F ζ hζ q) ∈
       S.heisenberg.π.ker by
       rw [S.heisenberg.quotient_kernel]
-      exact (S.borel.cubeLift c).property)
+      simp)
   rw [hc]
   exact P.L.one_mem
 
@@ -317,7 +315,7 @@ theorem cubeLift_minus_chiH (c : (LocalField F q)ˣ)
     change localAbs (LocalField F q) c⁻¹ ^ 3 = 1
     rw [← hmul, one_pow]
   have hinv' : localAbs (LocalField F q) (c ^ 3)⁻¹ = 1 := by
-    simpa only [inv_pow] using hinv
+    omega
   simp [normPower, hpow, hinv']
 
 theorem cubic_diagonal_mem_BL (c : (LocalField F q)ˣ) :
@@ -369,7 +367,7 @@ theorem valuation_eq_one_of_localAbs_one (c : (LocalField F q)ˣ) (hc : localAbs
   apply e.injective
   rw [map_one]
   have hn : e (valuation (LocalField F q) (c : LocalField F q)) ≠ 0 := by
-    simp [e, c.ne_zero]
+    simp
   change e (valuation (LocalField F q) (c : LocalField F q)) = 1
   rw [← WithZero.exp_log hn, he, WithZero.exp_zero]
 
@@ -403,9 +401,7 @@ theorem compact_cubic_unit_lift (c : (LocalField F q)ˣ) (hc : localAbs (LocalFi
   obtain ⟨g, hg⟩ := compact_diagonal_lift F ζ hζ q (u ^ 3) ht
   refine ⟨g, hg.trans ?_⟩
   congr 1
-  change (KPHilbert.integerUnitInclusion F q) (u ^ 3) = c ^ 3
-  rw [map_pow]
-  exact congrArg (fun z => z ^ 3) he
+  simp_all
 
 theorem compact_weyl_lift (ht : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3) :
     ∃ g : KPTameCompact.K0 F q,
@@ -419,14 +415,14 @@ theorem compact_weyl_lift (ht : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.
   congr 1
   apply congrArg (KPLocalCover.sectionMap F ζ hζ (Sum.inr q))
   ext i j
-  fin_cases i <;> fin_cases j <;> simp [KPTameCompact.inclusion, KPLocalCube.integerInclusion, Matrix.GeneralLinearGroup.map_apply, hg, KPStandardLocalRootLifts.W, KPStandardLocalRootLifts.weylSwap, KubotaRankTwo.w]
+  fin_cases i <;> fin_cases j <;> simp [KPTameCompact.inclusion, KPLocalCube.integerInclusion, Matrix.GeneralLinearGroup.map_apply, hg, KPStandardLocalRootLifts.weylSwap]
 
 include S in
 theorem actual_cube_inverse (c : (LocalField F q)ˣ) :
     (KPPGLLocalCover.A F ζ hζ (Sum.inr q) (c ^ 3))⁻¹ =
       KPPGLLocalCover.A F ζ hζ (Sum.inr q) (c⁻¹ ^ 3) := by
   rw [← S.cube_actual, ← S.cube_actual]
-  exact ((actualTorus F ζ hζ q).subtype.comp (S.heisenberg.C.subtype.comp S.borel.cubeLift)).map_inv c |>.symm
+  simp
 
 include S in
 theorem diagonal_test_base_cube_relation (π : (LocalField F q)ˣ) (f' : KPTameValuationCoordinates.DiagonalValuations)
@@ -468,8 +464,8 @@ theorem deep_diagonal_test_cubic_unit_conjugation
     S.iwasawa.compact.toOpenSubgroup.isOpen S.iwasawa.compact.toOpenSubgroup.one_mem
   refine ⟨max D R, ?_⟩
   intro m hm f hf c hc s g
-  have hmd : D ≤ m := (le_max_left _ _).trans hm
-  have hmr : R ≤ m := (le_max_right _ _).trans hm
+  have hmd : D ≤ m := by omega
+  have hmr : R ≤ m := by omega
   have hdepth : KPLocalChartTopology.MatrixChartDepth F q m := ⟨hD.trans hmd, (hcharts m hmd).2.2⟩
   obtain ⟨gw, hgw⟩ := CubicUnitConjugationAtoms.compact_weyl_lift F ζ hζ q htame
   have hnormalW : ∀ k ∈ splitCongruenceSet F ζ hζ q m,
@@ -498,12 +494,8 @@ theorem deep_diagonal_test_cubic_unit_conjugation
     change localAbs (LocalField F q) (S.borel.coordinate (retractL F ζ hζ q S P b)) = 1
     rw [CubicUnitConjugationAtoms.cubic_diagonal_retractL, S.borel.cube_coordinate]
     have h := localAbs_mul (LocalField F q)
-    simp only [pow_succ, pow_zero, h, hc, localAbs_one, one_mul]
+    simp only [pow_succ, pow_zero, h, hc, one_mul]
   exact deformedTest_unit_chart_conjugation F ζ hζ q S P hP coordinates hcoordinates
     (diagonalLift F ζ hζ q π f') t m hnormalW hnormalT (hR m hmr) b
     (CubicUnitConjugationAtoms.diagonal_test_base_cube_relation F ζ hζ q S π f' c)
     hbunit hbchi f hf s g
-
-end DedekindZetaZeroFree.KPTameTransposeKernelUnfoldingRaw.HigherShellCubicUnitConjugation
-
-end

@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Coordinate equations for basic-factor choices
 
@@ -30,7 +27,7 @@ namespace MultiplicativeIntegerValuation
 
 /-- Basic-factor sequences with the three label counts forced by `q` and the
 target exponent vector `e`. -/
-noncomputable def formalLogOnePlusProductArgumentBasicFactorLabelCountChoices
+def formalLogOnePlusProductArgumentBasicFactorLabelCountChoices
     (q : ℕ) (e : Fin 2 →₀ ℕ) :
     Finset (ℕ →₀ (Fin 2 →₀ ℕ)) :=
   (formalLogOnePlusProductArgumentBasicFactorProductChoices q).filter
@@ -82,12 +79,7 @@ theorem formalLogOnePlusProductArgumentBasicFactor_left_coord
           Finsupp.single (0 : Fin 2) 1 :=
       finsupp_fin_two_single_left_ne_single_right.symm
     simp [hright, hrightLeft]
-  · have hmixedLeft :
-        Finsupp.single (0 : Fin 2) 1 +
-            Finsupp.single (1 : Fin 2) 1 ≠
-          Finsupp.single (0 : Fin 2) 1 :=
-      finsupp_fin_two_single_left_ne_mixed.symm
-    simp [hmixed, hmixedLeft]
+  simp_all
 
 /--
 Establishes the identity `m (1 : Fin 2) = (if m = Finsupp.single (1 : Fin 2) 1 then 1 else 0) +
@@ -105,12 +97,7 @@ theorem formalLogOnePlusProductArgumentBasicFactor_right_coord
   rcases hm with hleft | hright | hmixed
   · simp [hleft, finsupp_fin_two_single_left_ne_single_right]
   · simp [hright]
-  · have hmixedRight :
-        Finsupp.single (0 : Fin 2) 1 +
-            Finsupp.single (1 : Fin 2) 1 ≠
-          Finsupp.single (1 : Fin 2) 1 :=
-      finsupp_fin_two_single_right_ne_mixed.symm
-    simp [hmixed, hmixedRight]
+  simp_all
 
 /--
 Establishes the identity `(if m = Finsupp.single (0 : Fin 2) 1 then 1 else 0) + (if m =
@@ -134,17 +121,7 @@ theorem formalLogOnePlusProductArgumentBasicFactor_total_indicator
           Finsupp.single (0 : Fin 2) 1 :=
       finsupp_fin_two_single_left_ne_single_right.symm
     simp [hright, hrightLeft]
-  · have hmixedLeft :
-        Finsupp.single (0 : Fin 2) 1 +
-            Finsupp.single (1 : Fin 2) 1 ≠
-          Finsupp.single (0 : Fin 2) 1 :=
-      finsupp_fin_two_single_left_ne_mixed.symm
-    have hmixedRight :
-        Finsupp.single (0 : Fin 2) 1 +
-            Finsupp.single (1 : Fin 2) 1 ≠
-          Finsupp.single (1 : Fin 2) 1 :=
-      finsupp_fin_two_single_right_ne_mixed.symm
-    simp [hmixed, hmixedLeft, hmixedRight]
+  simp_all
 
 /--
 Establishes the identity `(∑ i ∈ Finset.range q, l i (0 : Fin 2)) =
@@ -278,9 +255,3 @@ theorem formalLogOnePlusProductArgument_choiceCounts_system
       formalLogOnePlusProductArgument_choiceCounts_right_add_mixed_eq
         hl hbasic,
       formalLogOnePlusProductArgument_totalChoiceCount_eq hbasic⟩
-
-
-end MultiplicativeIntegerValuation
-end LocalFieldTheory.DiscreteValuationField
-
-end

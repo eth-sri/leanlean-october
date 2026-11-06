@@ -12,7 +12,6 @@ open NumberField IsDedekindDomain Topology Filter
 namespace DedekindZetaZeroFree.KPRankOneJacquetZeroCompactCoefficients
 
 noncomputable section
-set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
@@ -32,7 +31,7 @@ def coefficient (ℓ : Module.Dual ℂ V) (v : V) :
     KPPGLLocalCover.CubicPGL2 F ζ hζ (Sum.inr w) → ℂ :=
   fun g => ℓ (ρ g v)
 
-private theorem mat_eq (t : KPHilbert.Completion F (Sum.inr w)) :
+theorem mat_eq (t : KPHilbert.Completion F (Sum.inr w)) :
     KPStandardLocalRootLifts.weylSwap _ * KubotaRankTwo.n _ t =
     KPStandardLocalRootLifts.lowerN _ t * KPStandardLocalRootLifts.weylSwap _ := by
   apply Matrix.GeneralLinearGroup.ext
@@ -40,7 +39,7 @@ private theorem mat_eq (t : KPHilbert.Completion F (Sum.inr w)) :
   fin_cases i <;> fin_cases j <;>
     simp [KPStandardLocalRootLifts.weylSwap, KPStandardLocalRootLifts.lowerN,
       KubotaRankTwo.n, Matrix.mul_apply, Fin.sum_univ_two]
-private theorem sig_right (t : KPHilbert.Completion F (Sum.inr w)) :
+theorem sig_right (t : KPHilbert.Completion F (Sum.inr w)) :
     KPLocalCover.sigmaTwo F ζ hζ (Sum.inr w)
       (KPStandardLocalRootLifts.lowerN _ t) (KPStandardLocalRootLifts.weylSwap _) = 1 := by
   let K := KPHilbert.Completion F (Sum.inr w)
@@ -61,7 +60,7 @@ private theorem sig_right (t : KPHilbert.Completion F (Sum.inr w)) :
     KubotaDefectSymbolAlgebra.one_left _ _ _ (KPHilbert.B3_laws F ζ hζ (Sum.inr w)).1]
   simp
 set_option maxRecDepth 2048 in
-private theorem sig_left (t : KPHilbert.Completion F (Sum.inr w)) :
+theorem sig_left (t : KPHilbert.Completion F (Sum.inr w)) :
     KPLocalCover.sigmaTwo F ζ hζ (Sum.inr w)
       (KPStandardLocalRootLifts.weylSwap _) (KubotaRankTwo.n _ t) = 1 := by
   have h := KubotaCocycleAlgebra.sigmaTwo_n_mul_mul_n
@@ -69,12 +68,11 @@ private theorem sig_left (t : KPHilbert.Completion F (Sum.inr w)) :
     (KPStandardLocalRootLifts.weylSwap _) 1 0 t
   have hn : KubotaRankTwo.n (KPHilbert.Completion F (Sum.inr w)) 0 = 1 := by
     apply Matrix.GeneralLinearGroup.ext
-    intro i j
-    fin_cases i <;> fin_cases j <;> simp [KubotaRankTwo.n]
+    simp
   rw [hn, one_mul, one_mul] at h
   exact h.trans (KPLocalCover.sigmaTwo_one_right F ζ hζ (Sum.inr w) _)
 set_option maxRecDepth 2048 in
-private theorem raw_eq (t : KPHilbert.Completion F (Sum.inr w)) :
+theorem raw_eq (t : KPHilbert.Completion F (Sum.inr w)) :
     KPStandardLocalRootLifts.W F ζ hζ (Sum.inr w) * KPStandardLocalRootLifts.N F ζ hζ (Sum.inr w) t =
     KPStandardLocalRootLifts.LowerN F ζ hζ (Sum.inr w) t * KPStandardLocalRootLifts.W F ζ hζ (Sum.inr w) := by
   change KPLocalCover.CubicGL2Raw.mk
@@ -93,7 +91,7 @@ theorem weyl_conjugates_upper (t : KPHilbert.Completion F (Sum.inr w)) :
         (KPPGLLocalCover.W F ζ hζ (Sum.inr w))⁻¹ =
       KPPGLLocalCover.LowerN F ζ hζ (Sum.inr w) t := by
   apply (mul_inv_eq_iff_eq_mul).mpr
-  exact congrArg (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr w)) (raw_eq F ζ hζ w t) |>.trans (by rw [map_mul]; rfl)
+  exact congrArg (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr w)) (raw_eq F ζ hζ w t) |>.trans (by rfl)
 
 variable (m : ℕ)
 
@@ -113,13 +111,13 @@ theorem coefficient_locally_constant
   intro g
   refine ⟨(fun x => g⁻¹ * x) ⁻¹' (J : Set _),
     J.isOpen.preimage (continuous_const.mul continuous_id), ?_, ?_⟩
-  · simpa using J.one_mem
+  · simp
   · intro x hx
     have heq : x = g * (g⁻¹ * x) := by simp
     rw [coefficient, heq, map_mul, Module.End.mul_apply, hJ _ hx]
     rfl
 
-private theorem single_tail
+theorem single_tail
     (m : ℕ) (hm : KPLocalChartTopology.MatrixChartDepth F w m)
     (π : (w.adicCompletion F)ˣ)
     (hπ : Valued.v (π : w.adicCompletion F) = WithZero.exp (-1 : ℤ))
@@ -165,12 +163,12 @@ private theorem single_tail
     change ℓ (ρ (KPRankOneCartanGeometry.diagonalLift F ζ hζ w π n) (x + y)) = 0
     change ℓ (ρ (KPRankOneCartanGeometry.diagonalLift F ζ hζ w π n) x) = 0 at hn
     change ℓ (ρ (KPRankOneCartanGeometry.diagonalLift F ζ hζ w π n) y) = 0 at hn'
-    rw [map_add, map_add, hn, hn', add_zero]
+    simp_all
   | smul c x hx ih =>
     filter_upwards [ih] with n hn
     change ℓ (ρ (KPRankOneCartanGeometry.diagonalLift F ζ hζ w π n) (c • x)) = 0
     change ℓ (ρ (KPRankOneCartanGeometry.diagonalLift F ζ hζ w π n) x) = 0 at hn
-    rw [map_smul, map_smul, hn, smul_zero]
+    simp_all
 private theorem orbit_lc {G X : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
     [AddCommGroup X] [Module ℂ X] (σ : Representation ℂ G X) (x : X)
     (hx : SmoothVector σ x) : IsLocallyConstant (fun g => σ g x) := by
@@ -179,7 +177,7 @@ private theorem orbit_lc {G X : Type*} [Group G] [TopologicalSpace G] [IsTopolog
   intro g
   refine ⟨(fun y => g⁻¹ * y) ⁻¹' (J : Set _),
     J.isOpen.preimage (continuous_const.mul continuous_id), ?_, ?_⟩
-  · simpa using J.one_mem
+  · simp
   · intro y hy
     have heq : y = g * (g⁻¹ * y) := by simp
     rw [heq, map_mul, Module.End.mul_apply, hJ _ hy]
@@ -278,6 +276,3 @@ theorem coefficient_compact_support
   have hcompact := (KPRankOneCartanGeometry.cartanTruncation_compact F ζ hζ w m hm π M).of_isClosed_subset hs hM
   refine ⟨hcompact, ?_⟩
   simpa [HasCompactSupport, tsupport, hs.closure_eq] using hcompact
-
-end
-end DedekindZetaZeroFree.KPRankOneJacquetZeroCompactCoefficients

@@ -48,9 +48,7 @@ theorem Gamma_ne_zero_of_im_ne_zero (z : ℂ) (hz : z.im ≠ 0) :
     Complex.Gamma z ≠ 0 := by
   apply Complex.Gamma_ne_zero
   intro n he
-  apply hz
-  have h:=congrArg Complex.im he
-  simpa using h
+  simp_all
 
 theorem inverse_Gamma_reflection (z : ℂ) (hz : z.im ≠ 0) :
     (Complex.Gamma z)⁻¹ =
@@ -61,8 +59,7 @@ theorem inverse_Gamma_reflection (z : ℂ) (hz : z.im ≠ 0) :
   have hs : Complex.sin (Real.pi*z)≠0 := by
     intro hs
     have he:=Complex.Gamma_mul_Gamma_one_sub z
-    rw [hs,div_zero] at he
-    exact (mul_ne_zero hg hh) he
+    simp_all
   apply mul_left_cancel₀ hg
   rw [mul_inv_cancel₀ hg]
   symm
@@ -80,7 +77,7 @@ theorem inverse_Gamma_norm_of_left (z : ℂ) (hz : z.re < 1) (hi : z.im ≠ 0) :
   have hsin:=norm_sin_le_exp_abs_im (Real.pi*z)
   simp only [Complex.sub_re,Complex.one_re] at hgamma
   have him : |((Real.pi:ℂ)*z).im|=Real.pi*|z.im| := by
-    simp [abs_mul]
+    simp
   rw [him] at hsin
   calc
     _ ≤ (Real.Gamma (1-z.re)*Real.exp (Real.pi*|z.im|))/Real.pi :=
@@ -183,5 +180,3 @@ theorem inverse_Gamma_strip_exp_bound_complex (a b : ℝ) :
   refine ⟨C,hC,?_⟩
   intro z hz
   simpa only [Complex.re_add_im] using hb z.re hz z.im
-
-end DedekindZetaZeroFree.GammaBounds

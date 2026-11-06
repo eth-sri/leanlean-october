@@ -20,7 +20,7 @@ variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 private theorem root_zero : KPGlobalTorusFunctionData.N F ζ hζ 0 = 1 :=
   (KPGlobalTorusFunctionData.Nhom F ζ hζ).map_one
 
-private theorem rational_borel_mul (y z : Fˣ) (x v : KPGlobalTorusFunctionData.Adeles F) :
+theorem rational_borel_mul (y z : Fˣ) (x v : KPGlobalTorusFunctionData.Adeles F) :
     ((KPGlobalTorusFunctionData.s F ζ hζ z).val * KPGlobalTorusFunctionData.N F ζ hζ v) *
       ((KPGlobalTorusFunctionData.s F ζ hζ y).val * KPGlobalTorusFunctionData.N F ζ hζ x) =
       (KPGlobalTorusFunctionData.s F ζ hζ (z*y)).val *
@@ -33,7 +33,7 @@ private theorem rational_borel_mul (y z : Fˣ) (x v : KPGlobalTorusFunctionData.
   simp only [Subgroup.coe_mul, Subgroup.coe_inv, inv_inv]
   group
 
-private theorem angular_relation_trans (D : KPMsActualAngularSource.Iwasawa F ζ hζ) (U : KPMsActualAngularSource.Level F ζ hζ)
+theorem angular_relation_trans (D : KPMsActualAngularSource.Iwasawa F ζ hζ) (U : KPMsActualAngularSource.Level F ζ hζ)
     (a b c : KPMsActualAngularSource.NormOne F ζ hζ D)
     (hab : KPMsActualAngularSource.angularRelation F ζ hζ D U a b)
     (hbc : KPMsActualAngularSource.angularRelation F ζ hζ D U b c) :

@@ -15,13 +15,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Finite localizations inside metric completions
 
@@ -42,7 +35,7 @@ open scoped TensorProduct
 
 /-- The nontriviality convention supplies the corresponding
 nontrivially normed field structure on `K_v`. -/
-@[reducible] noncomputable def absoluteValueExtension_completionNontriviallyNormedField
+@[reducible] def absoluteValueExtension_completionNontriviallyNormedField
     {K : Type u} [Field K] (vK : AbsoluteValue K ℝ)
     (hvK : vK.IsNontrivial) :
     NontriviallyNormedField vK.Completion :=
@@ -53,7 +46,7 @@ nontrivially normed field structure on `K_v`. -/
 
 /-- The completion `L_w` is a normed algebra over `K_v`: its scalar map is
 the isometric completion map supplied by the valuation-extension theorem. -/
-@[reducible] noncomputable def absoluteValueExtension_completionNormedAlgebra
+@[reducible] def absoluteValueExtension_completionNormedAlgebra
     {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
     (vK : AbsoluteValue K ℝ) (w : AbsoluteValueExtension vK L) :
     letI := AbsoluteValue.completionAlgebra vK w.1 w.2
@@ -68,7 +61,7 @@ the isometric completion map supplied by the valuation-extension theorem. -/
     (map_zero (AbsoluteValue.completionMap vK w.1 w.2))]
 
 /-- Multiplication gives the canonical map `K_v ⊗_K L → L_w`. -/
-noncomputable def absoluteValueExtension_localizationTensorHom
+def absoluteValueExtension_localizationTensorHom
     {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
     (vK : AbsoluteValue K ℝ) (w : AbsoluteValueExtension vK L) :
     letI := AbsoluteValue.completionAlgebra vK w.1 w.2
@@ -92,7 +85,6 @@ theorem absoluteValueExtension_localizationTensorHom_tmul
     absoluteValueExtension_localizationTensorHom vK w (b ⊗ₜ[K] a) =
       algebraMap vK.Completion w.1.Completion b *
         AbsoluteValue.toCompletionAlgHom (K := K) w.1 a := by
-  let := AbsoluteValue.completionAlgebra vK w.1 w.2
   rfl
 
 /-- For a finite extension, the canonical map `K_v ⊗_K L → L_w` is
@@ -222,7 +214,7 @@ theorem localizedCompletionModuleFinite
 
 /-- In finite degree the algebraic localization is canonically the whole
 metric completion. -/
-noncomputable def localizedCompletionEquivCompletion
+def localizedCompletionEquivCompletion
     (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
     (w : AbsoluteValueExtension vK L) :
     letI hK := AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
@@ -249,8 +241,3 @@ theorem localizedCompletionEquivCompletion_coe
     localizedCompletionEquivCompletion vK hvK w x =
       (x : w.1.Completion) :=
   rfl
-
-end Valuations
-end AlgebraicNumberTheory
-
-end

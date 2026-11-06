@@ -33,20 +33,20 @@ def idealIdele (I : Ideal (𝓞 F)) (_hI : I ≠ ⊥) : IdeleGroup F :=
   ∏ v ∈ (integralIdealOrders F I).support,
     IdeleGroup.finitePrimeIdele v ^ (integralIdealOrders F I v)
 
-private theorem order_eq_count (I : Ideal (𝓞 F)) (hI : I ≠ ⊥)
+theorem order_eq_count (I : Ideal (𝓞 F)) (hI : I ≠ ⊥)
     (v : HeightOneSpectrum (𝓞 F)) :
     integralIdealOrders F I v =
-      ((Associates.mk v.asIdeal).count (Associates.mk I).factors : ℤ) := by
-  exact FractionalIdeal.count_coe F v hI
+      ((Associates.mk v.asIdeal).count (Associates.mk I).factors : ℤ) := 
+  FractionalIdeal.count_coe F v hI
 
-private theorem support_le_ideal (I : Ideal (𝓞 F)) (hI : I ≠ ⊥)
+theorem support_le_ideal (I : Ideal (𝓞 F)) (hI : I ≠ ⊥)
     (v : HeightOneSpectrum (𝓞 F)) (hv : v ∈ (integralIdealOrders F I).support) :
     I ≤ v.asIdeal := by
   have hn := Finsupp.mem_support_iff.mp hv
   rw [order_eq_count F I hI v, Int.natCast_ne_zero] at hn
   exact Ideal.dvd_iff_le.mp ((Associates.count_ne_zero_iff_dvd hI v.irreducible).mp hn)
 
-private theorem support_not_dvd_modulus (𝔪 I : Ideal (𝓞 F)) (hI : I ≠ ⊥)
+theorem support_not_dvd_modulus (𝔪 I : Ideal (𝓞 F)) (hI : I ≠ ⊥)
     (hcop : I ⊔ 𝔪 = ⊤) (v : HeightOneSpectrum (𝓞 F))
     (hv : v ∈ (integralIdealOrders F I).support) : ¬ 𝔪 ≤ v.asIdeal := by
   intro hm
@@ -74,8 +74,7 @@ private theorem ideal_factorization (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) :
     apply Finsupp.mem_support_iff.mpr
     intro hz
     have : v.maxPowDividing I = 1 := by
-      simp [HeightOneSpectrum.maxPowDividing, order_eq_count F I hI v,
-        Int.natCast_eq_zero.mp (by simpa [order_eq_count F I hI v] using hz)]
+      simp [HeightOneSpectrum.maxPowDividing, Int.natCast_eq_zero.mp (by simpa [order_eq_count F I hI v] using hz)]
     exact hv this
 
 theorem ideleClassCharacter_idealIdele
@@ -119,8 +118,7 @@ theorem ideleClassCharacter_idealIdele
     _ = ∏ v ∈ (integralIdealOrders F I).support,
         η v.asIdeal ^ (integralIdealOrders F I v).toNat := by
       apply Finset.prod_congr rfl
-      intro v hv
-      rw [heq v hv]
+      simp_all
     _ = η I := by
       conv_rhs => rw [← ideal_factorization F I hI]
       change (∏ v ∈ (integralIdealOrders F I).support,
@@ -128,7 +126,3 @@ theorem ideleClassCharacter_idealIdele
         (coefficientHom F 𝔪 η) (∏ v ∈ (integralIdealOrders F I).support,
           v.asIdeal ^ (integralIdealOrders F I v).toNat)
       simp
-
-end DedekindZetaZeroFree.RayClassBridge
-
-end

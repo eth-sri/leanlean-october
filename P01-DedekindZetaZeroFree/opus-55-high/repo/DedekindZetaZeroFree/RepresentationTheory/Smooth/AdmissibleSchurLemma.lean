@@ -8,7 +8,7 @@ namespace DedekindZetaZeroFree
 
 open scoped Topology
 
-private theorem average_action_invariant
+theorem average_action_invariant
     {G V : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
     [T2Space G] [AddCommGroup V] [Module ℂ V]
     (ρ : Representation ℂ G V) (hρ : SmoothRepresentation ρ)
@@ -48,7 +48,7 @@ private theorem average_action_invariant
   let a : U.toOpenSubgroup := Quotient.out (q * QuotientGroup.mk u)
   let b : U.toOpenSubgroup := Quotient.out q * u
   have hab : (a : U.toOpenSubgroup ⧸ K.subgroup) = (b : U.toOpenSubgroup ⧸ K.subgroup) := by
-    simp [a, b, QuotientGroup.mk_mul, QuotientGroup.out_eq']
+    simp [a, b, QuotientGroup.mk_mul]
   have hk : a⁻¹ * b ∈ K.subgroup := QuotientGroup.eq.mp hab
   have hfix := K.fixes ⟨a⁻¹ * b, hk⟩
   change ρ ((Quotient.out q : U.toOpenSubgroup) : G) (ρ (u : G) v) = ρ (a : G) v
@@ -78,7 +78,7 @@ theorem exists_smooth_dual_separating
     intro x
     change compactOpenAverage ρ hρ U x ∈ fixedSubmodule ρ U.toOpenSubgroup.toSubgroup
     rw [← compactOpenAverage_range ρ hρ U]
-    exact ⟨x, rfl⟩)
+    simp)
   let ℓ : Module.Dual ℂ V := f.comp Av
   refine ⟨ℓ, ?_, ?_⟩
   · refine ⟨U.toOpenSubgroup, ?_⟩
@@ -127,9 +127,7 @@ theorem admissible_irreducible_endomorphism_scalar
   have hzero : S = 0 := by
     rcases Representation.IsIrreducible.injective_or_eq_zero S with hi | hz
     · exact False.elim (hwV (hi (hS.trans (map_zero S).symm)))
-    · exact hz
+    omega
   refine ⟨c, ?_⟩
   have hT := sub_eq_zero.mp hzero
   exact congrArg Representation.IntertwiningMap.toLinearMap hT
-
-end DedekindZetaZeroFree

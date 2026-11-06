@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Reassociation of supported relative-idele factors
 
@@ -33,7 +27,6 @@ open scoped NumberField
 open NumberField IsDedekindDomain
 
 noncomputable section
-
 
 open CyclicCohomology.ProfiniteCohomology.Herbrand
 open CyclicCohomology
@@ -55,7 +48,7 @@ abbrev RelativeOutsideSPlaceFactors
 /-- The componentwise Galois action on the integral factors outside
 `S`. -/
 @[reducible]
-noncomputable def relativeOutsideSPlaceFactorsAction
+def relativeOutsideSPlaceFactorsAction
     (S : Finset (HeightOneSpectrum (𝓞 K))) :
     MulDistribMulAction (L ≃ₐ[K] L)
       (RelativeOutsideSPlaceFactors
@@ -79,7 +72,7 @@ noncomputable def relativeOutsideSPlaceFactorsAction
 /-- The componentwise Galois action on the product of unrestricted and
 outside-integral local factors. -/
 @[reducible]
-noncomputable def relativeUnrestrictedProdOutsideAction
+def relativeUnrestrictedProdOutsideAction
     (S : Finset (HeightOneSpectrum (𝓞 K))) :
     MulDistribMulAction (L ≃ₐ[K] L)
       (RelativeUnrestrictedSPlaceFactors
@@ -96,7 +89,7 @@ noncomputable def relativeUnrestrictedProdOutsideAction
 
 /-- Reassociate all supported local factors as
 `(unrestricted factors) × (outside integral factors)`. -/
-noncomputable def
+def
     relativeIdeleSPlaceFactorsEquivUnrestrictedProdOutside
     (S : Finset (HeightOneSpectrum (𝓞 K))) :
     RelativeIdeleSPlaceFactors (K := K) (L := L) S ≃*
@@ -125,32 +118,10 @@ noncomputable def
       cases i <;> rfl
     · rfl
 
-omit [NumberField L] [IsGalois K L] in
-/-- The reassociation of supported local factors is Galois
-equivariant. -/
-theorem
-    relativeIdeleSPlaceFactorsEquivUnrestrictedProdOutside_smul
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
-    (σ : L ≃ₐ[K] L)
-    (z : RelativeIdeleSPlaceFactors
-      (K := K) (L := L) S) :
-    relativeIdeleSPlaceFactorsEquivUnrestrictedProdOutside
-        (K := K) (L := L) S
-        ((relativeIdeleSPlaceFactorsAction
-          (K := K) (L := L) S).smul σ z) =
-      (relativeUnrestrictedProdOutsideAction
-        (K := K) (L := L) S).smul σ
-        (relativeIdeleSPlaceFactorsEquivUnrestrictedProdOutside
-          (K := K) (L := L) S z) := by
-  apply Prod.ext
-  · funext i
-    cases i <;> rfl
-  · rfl
-
 /-- The complete supported relative-idele group, with its restricted-product
 condition already built into the subtype, is the product of the unrestricted
 local factors in `S` and the integral local factors outside `S`. -/
-noncomputable def
+def
     relativeIdeleSupportedEquivUnrestrictedProdOutside
     (S : Finset (HeightOneSpectrum (𝓞 K))) :
     relativeIdeleLocalTensorDecompositionSupportedSubgroup
@@ -212,7 +183,7 @@ theorem
 /-- Transport of degree-zero Tate cohomology from the actual
 supported relative ideles to the unrestricted and outside-integral
 factorization. -/
-noncomputable def
+def
     relativeIdeleSupportedHerbrandH0EquivUnrestrictedProdOutside
     (S : Finset (HeightOneSpectrum (𝓞 K))) :
     letI :=
@@ -245,7 +216,7 @@ noncomputable def
 /-- Transport of degree-minus-one Tate cohomology from the
 actual supported relative ideles to the unrestricted and outside-integral
 factorization. -/
-noncomputable def
+def
     relativeIdeleSupportedHerbrandHMinusOneEquivUnrestrictedProdOutside
     (S : Finset (HeightOneSpectrum (𝓞 K)))
     (σ : L ≃ₐ[K] L) :
@@ -275,5 +246,3 @@ noncomputable def
         (K := K) (L := L) S)
       (relativeIdeleSupportedEquivUnrestrictedProdOutside_smul
         (K := K) (L := L) S) σ
-
-end

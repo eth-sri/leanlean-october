@@ -124,15 +124,3 @@ theorem framedNormalization_normOne_continuous (D : Iwasawa F ζ hζ)
       ((KPMsResidualTailRestoration.OutgoingTailL2.CoordinateDescent.fullCusp_iwasawaNorm_continuous
         F ζ hζ D).comp hframe).subtype_mk _
     exact ((B.continuous_section.comp hr).inv).mul hframe
-
-section CuspCoordinates
-variable {F ζ hζ}
-variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
-variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
-variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
-variable (S : SourceRecipe F ζ hζ R P H) (U : Level F ζ hζ)
-
-end CuspCoordinates
-end DedekindZetaZeroFree.KPMsActualAngularSource
-
-end

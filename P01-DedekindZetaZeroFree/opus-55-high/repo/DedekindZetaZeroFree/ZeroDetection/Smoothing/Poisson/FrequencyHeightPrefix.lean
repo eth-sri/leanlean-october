@@ -65,7 +65,7 @@ private theorem smoothedSum_eq_shift (U β γ : ℝ)
     simp [h0]
   · simp [hn]
 
-private theorem pow_mono' (t A B : ℝ) (h : A ≤ B) : (2 + |t|) ^ A ≤ (2 + |t|) ^ B :=
+theorem pow_mono' (t A B : ℝ) (h : A ≤ B) : (2 + |t|) ^ A ≤ (2 + |t|) ^ B :=
   Real.rpow_le_rpow_of_exponent_le (by linarith [abs_nonneg t]) h
 
 theorem height_of_bound (A A' : ℝ) (hA : 0 ≤ A) (hA' : 0 ≤ A')

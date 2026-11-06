@@ -1,6 +1,7 @@
 module
 
-public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Extension.NormProperties
+public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Extension.BaseChange
+public import Mathlib.RingTheory.Norm.Transitivity
 public import Mathlib.LinearAlgebra.Basis.VectorSpace
 
 @[expose] public section
@@ -11,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-set_option autoImplicit false
 
 /-!
 # Idele classes in finite extensions
@@ -33,7 +30,6 @@ open scoped NumberField TensorProduct
 open NumberField
 
 noncomputable section
-
 
 variable
     (K L : Type*) [Field K] [NumberField K]
@@ -114,16 +110,14 @@ theorem comap_principalSubgroup :
             ((IdeleGroup.equivAdeleRingUnits (K := K) a :
               (NumberField.AdeleRing (𝓞 K) K)ˣ) :
               NumberField.AdeleRing (𝓞 K) K) =
-          fieldInclusion K L (x : L) := by
-      exact congrArg Units.val hx.symm
+          fieldInclusion K L (x : L) := 
+      congrArg Units.val hx.symm
     obtain ⟨k, hkA, hkL⟩ :=
       exists_scalar_of_adeleInclusion_eq_fieldInclusion
         K L _ _ htensor
     have hk : k ≠ 0 := by
       intro hk0
-      have : (x : L) = 0 := by
-        rw [hkL, hk0, map_zero]
-      exact x.ne_zero this
+      simp_all
     let y : Kˣ := Units.mk0 k hk
     refine ⟨y, ?_⟩
     apply (IdeleGroup.equivAdeleRingUnits (K := K)).injective
@@ -137,7 +131,7 @@ theorem comap_principalSubgroup :
     exact hkA.symm
   · rintro ⟨y, rfl⟩
     refine ⟨Units.map (algebraMap K L) y, ?_⟩
-    exact (inclusion_principalIdele K L y).symm
+    simp
 
 /-- Inclusion of ideles descends to inclusion of idele classes. -/
 def classInclusion :
@@ -160,7 +154,7 @@ theorem classInclusion_mk (a : IdeleGroup K) :
 
 /-- The determinant norm on relative ideles, descended to their
 relative idele-class presentation. -/
-noncomputable def classNorm :
+def classNorm :
     ClassGroup K L →* IdeleClassGroup K :=
   QuotientGroup.map
     (principalSubgroup K L)
@@ -170,9 +164,7 @@ noncomputable def classNorm :
       rintro _ ⟨x, rfl⟩
       refine
         ⟨Units.map (Algebra.norm K) x, ?_⟩
-      exact
-        (RelativeIdeleGroup.norm_principalIdele
-          K L x).symm)
+      simp)
 
 omit [NumberField L] in
 @[simp]
@@ -198,15 +190,4 @@ theorem classInclusion_injective :
   rw [QuotientGroup.ker_map,
     comap_principalSubgroup K L]
   ext z
-  constructor
-  · rintro ⟨a, ha, rfl⟩
-    exact (QuotientGroup.eq_one_iff a).2 ha
-  · intro hz
-    have hz1 : z = 1 := Subgroup.mem_bot.mp hz
-    obtain ⟨a, rfl⟩ :=
-      QuotientGroup.mk_surjective z
-    exact ⟨a, (QuotientGroup.eq_one_iff a).1 hz1, rfl⟩
-
-end RelativeIdeleGroup
-
-end
+  simp

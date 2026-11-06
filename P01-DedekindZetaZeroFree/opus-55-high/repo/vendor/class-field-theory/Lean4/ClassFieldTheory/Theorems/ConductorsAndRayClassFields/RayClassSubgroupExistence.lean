@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Existence of the class field of a ray-class subgroup
 
@@ -29,7 +24,6 @@ construction to that interface.
 
 open scoped Classical NumberField
 
-noncomputable section
 
 namespace ClassFieldTheory
 
@@ -37,9 +31,5 @@ namespace ClassFieldTheory
 theorem rayClassSubgroup_existence
     (K : Type) [Field K] [NumberField K]
     (m : RayClassModulus K) (H : Subgroup (RayClassGroup m)) :
-    Nonempty (RayClassSubgroupRealization K m H) := by
-  exact GlobalClassFieldComparison.rayClassSubgroup_existence K m H
-
-end ClassFieldTheory
-
-end
+    Nonempty (RayClassSubgroupRealization K m H) := 
+  GlobalClassFieldComparison.rayClassSubgroup_existence K m H

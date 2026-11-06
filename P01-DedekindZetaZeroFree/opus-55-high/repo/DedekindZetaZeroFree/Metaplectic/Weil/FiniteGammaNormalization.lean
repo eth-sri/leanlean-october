@@ -7,8 +7,6 @@ public import DedekindZetaZeroFree.Metaplectic.Weil.GlobalPhaseExtension
 open scoped NumberField Classical
 open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.SArithmeticData.GaussCorrection
-noncomputable section
-set_option autoImplicit false
 variable {F : Type} [Field F] [NumberField F]
 
 theorem finiteQuadraticStabilizes_free (A : SArithmeticData F) :
@@ -22,6 +20,3 @@ theorem finiteGamma_one_ne_zero_free (A : SArithmeticData F) :
   have hv := A.norm_finiteGamma v.val 1
   rw [h, norm_zero] at hv
   norm_num at hv
-
-end
-end DedekindZetaZeroFree.SArithmeticData.GaussCorrection

@@ -1,6 +1,7 @@
 module
 
-public import ClassFieldTheory.Definitions.ConductorsAndRayClassFields.NarrowRayClassModulus
+public import ClassFieldTheory.Definitions.ConductorsAndRayClassFields.RayClassModulus
+public import Mathlib.NumberTheory.NumberField.InfinitePlace.Ramification
 public import ClassFieldTheory.Definitions.ConductorsAndRayClassFields.OrdinaryRayClassModulus
 public import ClassFieldTheory.Definitions.ConductorsAndRayClassFields.RayClassGroup
 public import ClassFieldTheory.Definitions.FrobeniusAndHilbertClassFields.FinitePrimeFractionalIdeal
@@ -13,12 +14,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-set_option autoImplicit false
 
 /-!
 # Prime classes in ray class groups
@@ -51,23 +46,3 @@ def rayClassOfFinitePrime
     (hv : v ∉ m.finitePart.support) : RayClassGroup m :=
   QuotientGroup.mk' (rayPrincipalIdealSubgroupInPrimeTo m)
     ⟨finitePrimeFractionalIdeal v, finitePrimeFractionalIdeal_mem_primeTo m v hv⟩
-
-/-- The ordinary ideal class represented by a finite prime. -/
-def ordinaryRayClassOfFinitePrime
-    {K : Type u} [Field K] [NumberField K]
-    (v : HeightOneSpectrum (𝓞 K)) :
-    RayClassGroup (ordinaryRayClassModulus K) :=
-  rayClassOfFinitePrime (ordinaryRayClassModulus K) v (by
-    simp [ordinaryRayClassModulus])
-
-/-- The narrow ideal class represented by a finite prime. -/
-def narrowRayClassOfFinitePrime
-    {K : Type u} [Field K] [NumberField K]
-    (v : HeightOneSpectrum (𝓞 K)) :
-    RayClassGroup (narrowRayClassModulus K) :=
-  rayClassOfFinitePrime (narrowRayClassModulus K) v (by
-    simp [narrowRayClassModulus])
-
-end ClassFieldTheory
-
-end

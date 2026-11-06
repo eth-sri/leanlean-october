@@ -56,10 +56,10 @@ theorem joint_spatial_jets {E V : Type*} [NormedAddCommGroup E] [NormedSpace ℝ
   | succ n ih =>
     simp only [iteratedFDeriv_succ_eq_comp_left, Function.comp_apply]
     have hd : ContDiff ℝ (⊤ : ℕ∞) (fun p : ℝ × E =>
-        fderiv ℝ (iteratedFDeriv ℝ n (fun x => F (p.1, x))) p.2) := by
-      exact (ih.comp (contDiff_fst.fst.prodMk contDiff_snd)).fderiv
+        fderiv ℝ (iteratedFDeriv ℝ n (fun x => F (p.1, x))) p.2) := 
+      (ih.comp (contDiff_fst.fst.prodMk contDiff_snd)).fderiv
         contDiff_snd (by simp)
-    exact (continuousMultilinearCurryLeftEquiv ℝ (fun _ : Fin (n+1) => E) V).symm.toContinuousLinearEquiv.toContinuousLinearMap.contDiff.comp hd
+    fun_prop
 
 namespace SmoothQuotient
 variable {E V : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
@@ -70,11 +70,11 @@ lemma partialT_smooth (F : ℝ × E → V) (hF : ContDiff ℝ (⊤ : ℕ∞) F) 
     ContDiff ℝ (⊤ : ℕ∞) (partialT F) := by
   have h : ContDiff ℝ (⊤ : ℕ∞) (fun p : ℝ × E =>
       fderiv ℝ (fun t => F (t,p.2)) p.1) :=
-    (hF.comp (contDiff_snd.prodMk contDiff_fst.snd)).fderiv contDiff_fst (by simp)
+    by fun_prop
   exact h.clm_apply contDiff_const
 lemma partialT_deriv (F : ℝ × E → V) (hF : ContDiff ℝ (⊤ : ℕ∞) F) (t : ℝ) (x : E) :
-    HasDerivAt (fun s => F (s,x)) (partialT F (t,x)) t := by
-  exact ((hF.comp (contDiff_id.prodMk contDiff_const)).differentiable (by simp) t).hasDerivAt
+    HasDerivAt (fun s => F (s,x)) (partialT F (t,x)) t := 
+  ((hF.comp (contDiff_id.prodMk contDiff_const)).differentiable (by simp) t).hasDerivAt
 noncomputable def extSlope (F : ℝ × E → V) (p : ℝ × E) : V :=
   ∫ s : ℝ in 0..1, partialT F (s * p.1, p.2)
 lemma extSlope_continuous (F : ℝ × E → V) (hF : ContDiff ℝ (⊤ : ℕ∞) F) :
@@ -95,7 +95,7 @@ lemma extSlope_ne (F : ℝ × E → V) (hF : ContDiff ℝ (⊤ : ℕ∞) F)
       (partialT_deriv F hF (s*t) x).scomp s ((hasDerivAt_id s).mul_const t))
     (((partialT_smooth F hF).continuous.comp
       ((continuous_id.mul continuous_const).prodMk continuous_const)).const_smul t |>.intervalIntegrable 0 1)
-  simp only [one_mul, zero_mul, intervalIntegral.integral_smul_const] at h
+  simp only [one_mul, zero_mul] at h
   change extSlope F (t,x) = _
   rw [← h, intervalIntegral.integral_smul, smul_smul, inv_mul_cancel₀ ht, one_smul]
   rfl
@@ -119,7 +119,7 @@ lemma slope_locally_uniform (F : ℝ × E → V) (hF : ContDiff ℝ (⊤ : ℕ�
   simpa only [G, ContinuousMap.coe_mk, extSlope_zero] using h'
 lemma slice_smooth (F : ℝ × E → V) (hF : ContDiff ℝ (⊤ : ℕ∞) F) (t : ℝ) :
     ContDiff ℝ (⊤ : ℕ∞) (fun x => F (t,x)) :=
-  hF.comp (contDiff_const.prodMk contDiff_id)
+  by fun_prop
 
 lemma jets_partialT (F : ℝ × E → V) (hF : ContDiff ℝ (⊤ : ℕ∞) F)
     [WeaklyLocallyCompactSpace E] (n : ℕ) :
@@ -182,7 +182,7 @@ lemma sup_jet_error_tendsto (F : ℝ × E → V) (hF : ContDiff ℝ (⊤ : ℕ�
   let P := fun x => partialT F (0,x)
   have hP : ContDiff ℝ (⊤ : ℕ∞) P := slice_smooth (partialT F) (partialT_smooth F hF) 0
   have hQ (t : ℝ) : ContDiff ℝ (⊤ : ℕ∞) (Q t) :=
-    ((slice_smooth F hF t).sub (slice_smooth F hF 0)).const_smul _
+    by fun_prop
   have hj := quotient_jets_uniform F hF n S hS
   have heq (t : ℝ) (x : E) : iteratedFDeriv ℝ n (fun x => Q t x - P x) x =
       iteratedFDeriv ℝ n (Q t) x - iteratedFDeriv ℝ n P x :=
@@ -216,7 +216,7 @@ private lemma matrixFunction_gl (f : ComplexGL2 → ℂ) (g : ComplexGL2) :
   congr 1
   apply Units.ext
   rfl
-private lemma upper_zero : upperUnipotent 0 = 1 := by
+lemma upper_zero : upperUnipotent 0 = 1 := by
   apply Units.ext
   ext i j
   fin_cases i <;> fin_cases j <;> simp [upperUnipotent]
@@ -294,5 +294,3 @@ theorem upperRoot_differenceQuotient_chartSeminorm_of_pointwise
     change (t⁻¹:ℂ) * ((e : PrincipalSeries negativeParameter)
       (lowerUnipotent y * upperUnipotent ((t:ℂ)*v)) - (e : PrincipalSeries negativeParameter) (lowerUnipotent y)) - D (lowerUnipotent y) = _
     simp [infinityCoordinate, H, orbit_infinity_eq, upper_zero, Complex.real_smul]
-
-end DedekindZetaZeroFree.KPCplxUpperRootSeminormDifferentiation

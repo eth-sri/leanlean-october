@@ -20,7 +20,7 @@ instance traceMeasure_isAddHaarMeasure : (traceMeasure F).IsAddHaarMeasure := by
     apply ENNReal.ofReal_pos.mpr
     unfold haarScalar
     positivity
-  · exact ENNReal.ofReal_ne_top
+  simp
 
 def covolume (I : NonzeroFractionalIdeal F) : ℝ :=
   ZLattice.covolume (idealLattice F I) (traceMeasure F)
@@ -32,7 +32,7 @@ theorem traceMeasure_map_toMixed :
   rw [traceMeasure, Measure.map_smul]
   · rw [(NumberField.mixedEmbedding.euclidean.volumePreserving_toMixed F).map_eq]
     rfl
-  · exact (NumberField.mixedEmbedding.euclidean.toMixed F).continuous.measurable.aemeasurable
+  fun_prop
 
 theorem euclidean_covolume_eq (I : NonzeroFractionalIdeal F) :
     ZLattice.covolume (idealLattice F I) =
@@ -59,16 +59,10 @@ theorem covolume_eq_sqrt_discr_mul_absNorm (I : NonzeroFractionalIdeal F) :
   rw [covolume_eq_haarScalar_mul_euclidean, euclidean_covolume_eq, haarScalar]
   have h : (2 : ℝ) ^ InfinitePlace.nrComplexPlaces F *
       (2 : ℝ)⁻¹ ^ InfinitePlace.nrComplexPlaces F = 1 := by
-    rw [← mul_pow]
-    norm_num
+    simp
   calc
     _ = ((2 : ℝ) ^ InfinitePlace.nrComplexPlaces F *
         (2 : ℝ)⁻¹ ^ InfinitePlace.nrComplexPlaces F) *
         Real.sqrt |(NumberField.discr F : ℝ)| *
         (FractionalIdeal.absNorm (I : FractionalIdeal (RingOfIntegers F)⁰ F) : ℝ) := by ring
     _ = _ := by rw [h, one_mul]
-
-end PoissonArch
-end DedekindZetaZeroFree
-
-end

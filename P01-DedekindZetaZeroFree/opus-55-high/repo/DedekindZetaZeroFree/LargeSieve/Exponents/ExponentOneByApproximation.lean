@@ -55,5 +55,3 @@ theorem hasExponent_one_of_approximation (B : ℝ → ℝ → ℝ)
           conv_lhs => rw [show ε = ε / 2 + ε / 2 by ring]
           rw [Real.rpow_add hMNpos]
         rw [hrw]; ring
-
-end DedekindZetaZeroFree.LargeSieve

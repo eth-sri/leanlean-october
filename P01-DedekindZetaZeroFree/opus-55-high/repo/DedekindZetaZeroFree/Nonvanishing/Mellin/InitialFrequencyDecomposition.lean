@@ -25,8 +25,3 @@ def separatedSeries (R : PrincipalMellin.ActualRecipe S η)
     (u : Frequency R) (ξ w z : ℂ) : ℂ :=
   NormalizedProbe.principalSeparatedMellinSeries R.A R.σ R.target R.traceBad
     R.probe u ξ w z
-
-open MeasureTheory
-
-end
-end DedekindZetaZeroFree.PrincipalMellinComparison

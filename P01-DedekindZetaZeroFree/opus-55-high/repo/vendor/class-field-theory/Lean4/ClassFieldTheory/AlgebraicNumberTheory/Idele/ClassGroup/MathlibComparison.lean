@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Comparison with Mathlib's idèle class group
 
@@ -39,10 +35,7 @@ diagonal idèle. -/
 theorem equivAdeleRingUnits_principalIdele (x : Kˣ) :
     equivAdeleRingUnits (principalIdele K x) =
       NumberField.IdeleGroup.unitEmbedding (𝓞 K) K x := by
-  change equivAdeleRingUnits
-    ((equivAdeleRingUnits (K := K)).symm
-      (NumberField.IdeleGroup.unitEmbedding (𝓞 K) K x)) = _
-  exact (equivAdeleRingUnits (K := K)).apply_symm_apply _
+  rfl
 
 /-- The induced multiplicative equivalence of idèle class groups. -/
 def ideleClassGroupEquivMathlib :
@@ -56,9 +49,7 @@ def ideleClassGroupEquivMathlib :
   have hbackward : M ≤ N.comap e.symm.toMonoidHom := by
     rintro a ⟨x, rfl⟩
     refine ⟨x, ?_⟩
-    apply e.injective
-    rw [equivAdeleRingUnits_principalIdele K x]
-    exact (e.apply_symm_apply _).symm
+    rfl
   let f : IdeleClassGroup K →* NumberField.IdeleClassGroup (𝓞 K) K :=
     QuotientGroup.map N M e.toMonoidHom hforward
   let g : NumberField.IdeleClassGroup (𝓞 K) K →* IdeleClassGroup K :=
@@ -69,13 +60,11 @@ def ideleClassGroupEquivMathlib :
       left_inv := by
         intro a
         refine QuotientGroup.induction_on a (fun x => ?_)
-        change QuotientGroup.mk' N (e.symm (e x)) = QuotientGroup.mk' N x
-        rw [e.symm_apply_apply]
+        rfl
       right_inv := by
         intro a
         refine QuotientGroup.induction_on a (fun x => ?_)
-        change QuotientGroup.mk' M (e (e.symm x)) = QuotientGroup.mk' M x
-        rw [e.apply_symm_apply]
+        rfl
       map_mul' := f.map_mul }
 
 /-- The algebraic idèle comparison carries a one-place idèle to Mathlib's
@@ -104,8 +93,7 @@ theorem equivAdeleRingUnits_finitePlaceIdele
         (fun w : HeightOneSpectrum (𝓞 K) => w.adicCompletionIntegers K)
         (x : v.adicCompletion K) hw]
       have h := finitePlaceIdele_finiteComponent_of_ne v w x hw
-      exact congrArg (fun u : (w.adicCompletion K)ˣ =>
-        (u : w.adicCompletion K)) h
+      simp_all
 
 /-- The class-group comparison respects the one-place idèle-class maps. -/
 theorem ideleClassGroupEquivMathlib_finitePlaceIdeleClass
@@ -119,7 +107,3 @@ theorem ideleClassGroupEquivMathlib_finitePlaceIdeleClass
       (NumberField.IdeleGroup.principalSubgroup (𝓞 K) K)
       (NumberField.IdeleGroup.ofAdicCompletion (𝓞 K) K v x)
   rw [equivAdeleRingUnits_finitePlaceIdele K v x]
-
-end IdeleGroup
-
-end

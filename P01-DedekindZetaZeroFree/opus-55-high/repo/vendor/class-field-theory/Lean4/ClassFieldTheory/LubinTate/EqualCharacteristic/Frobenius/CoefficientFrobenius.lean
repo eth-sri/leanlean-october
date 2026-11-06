@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # The equal-characteristic completed-unramified construction: equal-characteristic Frobenius on the completed unramified ring
 
@@ -43,44 +38,7 @@ variable (k : Type u) [Field k] [Finite k]
 
 /-- Arithmetic Frobenius on the algebraic closure of the finite coefficient
 field. -/
-noncomputable def equalCharacteristicCoefficientFrobenius :
+def equalCharacteristicCoefficientFrobenius :
     AlgebraicClosure k ≃ₐ[k] AlgebraicClosure k := by
   letI : Fintype k := Fintype.ofFinite k
   exact FiniteField.frobeniusAlgEquivOfAlgebraic k (AlgebraicClosure k)
-
-/-- States the theorem `equalCharacteristicCoefficientFrobenius_apply`. -/
-@[simp]
-theorem equalCharacteristicCoefficientFrobenius_apply
-    (x : AlgebraicClosure k) :
-    equalCharacteristicCoefficientFrobenius k x = x ^ Nat.card k := by
-  let : Fintype k := Fintype.ofFinite k
-  simp [equalCharacteristicCoefficientFrobenius,
-    Nat.card_eq_fintype_card]
-
-/-- Arithmetic Frobenius on the completed maximal-unramified coefficient
-ring, acting coefficientwise and fixing `T`. -/
-noncomputable def equalCharacteristicPowerSeriesFrobenius :
-    (AlgebraicClosure k)⟦X⟧ →+* (AlgebraicClosure k)⟦X⟧ :=
-  PowerSeries.map (equalCharacteristicCoefficientFrobenius k).toRingHom
-
-/-- States the theorem `equalCharacteristicPowerSeriesFrobenius_coeff`. -/
-@[simp]
-theorem equalCharacteristicPowerSeriesFrobenius_coeff
-    (f : (AlgebraicClosure k)⟦X⟧) (n : ℕ) :
-    PowerSeries.coeff n (equalCharacteristicPowerSeriesFrobenius k f) =
-      (PowerSeries.coeff n f) ^ Nat.card k := by
-  simp [equalCharacteristicPowerSeriesFrobenius,
-    equalCharacteristicCoefficientFrobenius_apply]
-
-/-- States the theorem `equalCharacteristicPowerSeriesFrobenius_X`. -/
-@[simp]
-theorem equalCharacteristicPowerSeriesFrobenius_X :
-    equalCharacteristicPowerSeriesFrobenius k
-        (PowerSeries.X : (AlgebraicClosure k)⟦X⟧) =
-      PowerSeries.X := by
-  simp [equalCharacteristicPowerSeriesFrobenius]
-
-end EqualCharacteristic
-end LubinTate
-
-end

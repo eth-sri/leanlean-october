@@ -7,7 +7,6 @@ public import DedekindZetaZeroFree.Arithmetic.RayClasses.Conductors.PrimitiveTri
 @[expose] public section
 
 namespace DedekindZetaZeroFree.PrincipalMellinComparison.NonprincipalContinuation.DetectorDyads.MinusArithmetic
-noncomputable section
 open scoped Classical NumberField
 variable {F : Type} [Field F] [NumberField F]
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
@@ -43,6 +42,3 @@ theorem target_primitive_inducer
   · intro I hI hsup
     have hsup' : I ⊔ R.A.modulus = ⊤ := by simpa using hsup
     rw [hχprinc I hI (by simp), R.probe.principal I hI hsup']
-
-end
-end DedekindZetaZeroFree.PrincipalMellinComparison.NonprincipalContinuation.DetectorDyads.MinusArithmetic

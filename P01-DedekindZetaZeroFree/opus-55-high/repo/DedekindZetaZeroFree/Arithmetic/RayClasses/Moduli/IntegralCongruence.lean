@@ -4,13 +4,12 @@ public import DedekindZetaZeroFree.Arithmetic.RayClasses.Moduli.IntegralIdealMod
 
 @[expose] public section
 
-noncomputable section
 open scoped NumberField Classical
 open IsDedekindDomain
 
 namespace DedekindZetaZeroFree.RayClassBridge
 
-private theorem local_maximal_pow_mem_iff
+theorem local_maximal_pow_mem_iff
     (F : Type) [Field F] [NumberField F]
     (v : HeightOneSpectrum (𝓞 F)) (n : ℕ)
     (t : v.adicCompletionIntegers F) :
@@ -29,8 +28,7 @@ private theorem local_maximal_pow_mem_iff
   change t ∈ ((IsLocalRing.maximalIdeal (v.adicCompletionIntegers F)) ^ n : Set _) ↔ _
   erw [heq]
   change Valued.v (t : v.adicCompletion F) ≤ Valued.v (π : v.adicCompletion F) ^ n ↔ _
-  rw [hval, ← WithZero.exp_nsmul]
-  simp
+  simp_all
 
 theorem integral_mem_rayLocalHigherUnitGroup_iff
     (F : Type) [Field F] [NumberField F]
@@ -61,17 +59,14 @@ theorem integral_mem_rayLocalHigherUnitGroup_iff
       change (s : v.adicCompletion F) = algebraMap (𝓞 F) (v.adicCompletion F) (α - 1)
       rw [map_sub, map_one]
       rw [hxlocal] at he
-      change algebraMap (𝓞 F) (v.adicCompletion F) α = 1 + (s : v.adicCompletion F) at he
-      rw [he]
-      ring
+      simp_all
     exact hcong.mp (hst ▸ hs)
   · intro h
     refine ⟨t, hcong.mpr h, ?_⟩
     rw [hxlocal]
     change algebraMap (𝓞 F) (v.adicCompletion F) α =
       1 + algebraMap (𝓞 F) (v.adicCompletion F) (α - 1)
-    simp only [map_sub, map_one]
-    ring
+    simp
 
 theorem integral_finite_ray_congruent_iff
     (F : Type) [Field F] [NumberField F]
@@ -100,8 +95,7 @@ theorem integral_finite_ray_congruent_iff
     by_cases hv : v ∈ (narrowIdealModulus F 𝔪 h𝔪).finitePart.support
     · exact (integral_mem_rayLocalHigherUnitGroup_iff F v _
         (Nat.pos_of_ne_zero (Finsupp.mem_support_iff.mp hv)) α hα x hx).mp (h v hv)
-    · have hz := Finsupp.notMem_support_iff.mp hv
-      simp only [hz, pow_zero, Ideal.one_eq_top, Submodule.mem_top]
+    simp_all
   · intro h v hv
     exact (integral_mem_rayLocalHigherUnitGroup_iff F v _
       (Nat.pos_of_ne_zero (Finsupp.mem_support_iff.mp hv)) α hα x hx).mpr (h v)
@@ -129,16 +123,15 @@ theorem integral_infinite_ray_positive_iff
       exact congrArg (fun f : F →+* ℂ => f a)
         (NumberField.InfinitePlace.embedding_mk_eq_of_isReal hψ)
     simpa [narrowIdealModulus_infinitePart, he, hx] using h v (by simp)
-  · intro h v hv
-    simpa only [hx] using h (v.1.embedding_of_isReal v.2)
+  simp_all
 
 theorem isRayCongruent_iff_integral
     (F : Type) [Field F] [NumberField F]
     (𝔪 : Ideal (𝓞 F)) (h𝔪 : 𝔪 ≠ ⊥)
     (α : 𝓞 F) (hα : α ≠ 0) (x : Fˣ) (hx : (x : F) = (α : F)) :
     ClassFieldTheory.IsRayCongruent (narrowIdealModulus F 𝔪 h𝔪) x ↔
-      α - 1 ∈ 𝔪 ∧ (∀ φ : F →+* ℝ, 0 < φ (α : F)) := by
-  exact and_congr (integral_finite_ray_congruent_iff F 𝔪 h𝔪 α hα x hx)
+      α - 1 ∈ 𝔪 ∧ (∀ φ : F →+* ℝ, 0 < φ (α : F)) := 
+  and_congr (integral_finite_ray_congruent_iff F 𝔪 h𝔪 α hα x hx)
     (integral_infinite_ray_positive_iff F 𝔪 h𝔪 α x hx)
 
 theorem span_add_modulus_eq_top_of_sub_one_mem
@@ -150,7 +143,3 @@ theorem span_add_modulus_eq_top_of_sub_one_mem
     Ideal.mem_sup_left (Ideal.subset_span (Set.mem_singleton α))
   have hb : α - 1 ∈ Ideal.span {α} ⊔ 𝔪 := Ideal.mem_sup_right hα
   simpa only [sub_sub_cancel] using (Ideal.span {α} ⊔ 𝔪).sub_mem ha hb
-
-end DedekindZetaZeroFree.RayClassBridge
-
-end

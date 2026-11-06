@@ -1,7 +1,9 @@
 module
 
 public import ClassFieldTheory.AbstractClassFieldTheory.Reciprocity.Construction.MainMultiplicativity.FrobeniusActionRemainder
-public import ClassFieldTheory.AbstractClassFieldTheory.Reciprocity.Construction.RelativeNormDoubleCoset
+public import ClassFieldTheory.AbstractClassFieldTheory.Degree.Norm
+public import GaloisCohomology.Cyclic.IntegralRepUniverse
+public import Mathlib.GroupTheory.GroupAction.Quotient
 
 @[expose] public section
 
@@ -11,10 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-set_option autoImplicit false
 
 /-!
 # Norms of primes in conjugate Frobenius fixed fields
@@ -30,7 +28,6 @@ namespace ClassFormation
 open KummerTheory
 open CyclicCohomology
 
-noncomputable section
 
 open CategoryTheory
 
@@ -195,15 +192,13 @@ theorem exists_primeElement_frobeniusActionConjugate_norm_eq
         ambientFixedAddSubgroup A K₁) : A.V) := by
     subst K₁
     subst L₁
-    have ha' : a₀ = a₁ := Subtype.ext ha
-    subst a₁
-    rfl
+    simp_all
   have hleft :
       ((relativeNorm A K.field S' hS'K π' :
         ambientFixedAddSubgroup A K.field) : A.V) =
       ((relativeNorm A Kc C hCS πC :
-        ambientFixedAddSubgroup A Kc) : A.V) := by
-    exact (relativeNorm_transport Kc K.field C S' hCS hS'K
+        ambientFixedAddSubgroup A Kc) : A.V) := 
+    (relativeNorm_transport Kc K.field C S' hCS hS'K
       hKc hC πC π' rfl).symm
   calc
     ((relativeNorm A K.field S' hS'K π' :
@@ -222,11 +217,3 @@ theorem exists_primeElement_frobeniusActionConjugate_norm_eq
       change A.ρ k.1 (relativeNorm A K.field S hSK π).1 =
         (relativeNorm A K.field S hSK π).1
       exact (relativeNorm A K.field S hSK π).2 k
-
-end DegreeData
-
-end conjugatePrimeNorms
-
-end
-
-end ClassFormation

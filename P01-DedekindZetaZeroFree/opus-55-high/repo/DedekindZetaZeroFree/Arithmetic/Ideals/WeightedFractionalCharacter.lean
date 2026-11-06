@@ -46,5 +46,3 @@ theorem weightedFractionalCharacter
     (fun v n => primeWeightHom v (Multiplicative.ofAdd n)) = w v
   rw [Finsupp.prod_single_index (by simp [primeWeightHom])]
   simp [primeWeightHom]
-
-end DedekindZetaZeroFree.AbelianQuotient

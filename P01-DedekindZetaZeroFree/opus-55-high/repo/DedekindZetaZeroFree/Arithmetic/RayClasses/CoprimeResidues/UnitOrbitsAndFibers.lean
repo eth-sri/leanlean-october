@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.Arithmetic.RayClasses.Representatives.CosetId
 
 @[expose] public section
 
-noncomputable section
 
 open scoped NumberField nonZeroDivisors
 open DedekindZetaZeroFree.AbelianQuotient
@@ -107,7 +106,7 @@ theorem coprimeIdealResidueRayClass_eq_iff_unit_orbit
     rw [← hx, ← hy, coprimeIdealResidueReduction_mk, coprimeIdealResidueReduction_mk]
     · exact hres
     · exact x.property
-    · exact y.property
+    simp
   · rintro ⟨ε, rfl⟩
     let η := rayCharacterOfGroupCharacter F m hm 1
     exact (coprimeIdealResidueRayClass_unit_invariant hF m a hm ha hcop hmt
@@ -140,7 +139,3 @@ theorem coprimeIdealResidueRayClass_fiber_card
         fun h => let ⟨ε, hε⟩ := MulAction.mem_orbit_iff.mp h; ⟨ε, hε.symm⟩⟩)
   exact (Nat.card_congr e).trans
     (coprimeIdealResidueUnitAction_orbit_card m a hm ha hcop hmt q).1
-
-end DedekindZetaZeroFree.Hecke.Theta
-
-end

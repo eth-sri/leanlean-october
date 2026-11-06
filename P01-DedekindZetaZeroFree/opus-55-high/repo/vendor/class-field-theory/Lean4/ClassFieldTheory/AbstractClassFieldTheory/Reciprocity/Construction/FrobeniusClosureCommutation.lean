@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 universe u
 
 namespace ClassFormation
@@ -29,7 +26,6 @@ procyclic subgroup and derives the conjugation identities for the associated
 fixed field.
 -/
 
-noncomputable section
 
 open CategoryTheory
 open scoped BigOperators
@@ -118,10 +114,7 @@ theorem conjugate_frobeniusFixedField_eq_of_commutes (D : DegreeData G)
     have hxClosure : QuotientGroup.mk xK ∈
         (D.frobeniusClosure K L hLK σ).toSubgroup := by
       have hqconj : q * QuotientGroup.mk t * q⁻¹ = QuotientGroup.mk t := by
-        calc
-          q * QuotientGroup.mk t * q⁻¹ =
-              (QuotientGroup.mk t * q) * q⁻¹ := by rw [hcomm']
-          _ = QuotientGroup.mk t := by simp
+        simp_all
       change QuotientGroup.mk xK ∈
         (D.frobeniusClosure K L hLK σ).toSubgroup
       have hxval : xK = k * t * k⁻¹ := by
@@ -171,11 +164,3 @@ theorem conjugate_frobeniusFixedField_eq_of_commutes (D : DegreeData G)
       exact htClosure
     refine ⟨yK, hyClosure, ?_⟩
     simp [yK]
-
-end DegreeData
-
-end frobeniusClosureCommutation
-
-end
-
-end ClassFormation

@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.CompactP
 
 @[expose] public section
 
-noncomputable section
 open MeasureTheory
 open scoped Classical NumberField ENNReal NNReal Topology BigOperators
 set_option backward.isDefEq.respectTransparency false
@@ -12,7 +11,7 @@ namespace DedekindZetaZeroFree.KPGlobalResidualKernel.ScatteringResidue.SourceCo
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
 variable {D : KPMsRationalCompactCrossPairing.Iwasawa F ζ hζ}
 
-private theorem source_raw_compact_orbit_finiteDimensional
+theorem source_raw_compact_orbit_finiteDimensional
     (f : KPMsRationalCompactCrossPairing.Vplus F ζ hζ D) :
     FiniteDimensional ℂ (Submodule.span ℂ (Set.range
       (fun k : D.K => fun g => f.val.val (g * k.val)))) := by
@@ -34,7 +33,7 @@ private theorem source_raw_compact_orbit_finiteDimensional
     · have hle : orbit 0 ≤ (⊥ : Submodule ℂ (KPMsRationalCompactCrossPairing.G F ζ hζ → ℂ)) := by
         apply Submodule.span_le.mpr
         rintro _ ⟨k, rfl⟩
-        exact Submodule.zero_mem _
+        rfl
       exact Submodule.finiteDimensional_of_le hle
     · intro v w hv hw
       letI := hv
@@ -49,7 +48,7 @@ private theorem source_raw_compact_orbit_finiteDimensional
   · have hle : orbit 0 ≤ (⊥ : Submodule ℂ (KPMsRationalCompactCrossPairing.G F ζ hζ → ℂ)) := by
       apply Submodule.span_le.mpr
       rintro _ ⟨k, rfl⟩
-      exact Submodule.zero_mem _
+      rfl
     exact Submodule.finiteDimensional_of_le hle
   · intro v w hv hw
     letI := hv
@@ -67,7 +66,3 @@ theorem source_finiteDimensional
     FiniteDimensional ℂ (Submodule.span ℂ (Set.range
       (fun k : D.K => fun g => f.val.val (g * k.val)))) :=
   source_raw_compact_orbit_finiteDimensional f
-
-end DedekindZetaZeroFree.KPGlobalResidualKernel.ScatteringResidue.SourceCoreCompactOrbit
-
-end

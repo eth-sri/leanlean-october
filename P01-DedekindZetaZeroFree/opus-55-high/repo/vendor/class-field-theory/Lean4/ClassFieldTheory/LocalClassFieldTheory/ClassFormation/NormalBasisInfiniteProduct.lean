@@ -13,18 +13,12 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-set_option autoImplicit false
 /-! Provides the public declarations in the `LocalClassFieldTheory.ClassFormation.NormalBasisInfiniteProduct` Lean module. -/
 
 namespace LocalClassFieldTheory
 open CyclicCohomology
 
-open CyclicCohomology LocalFieldTheory
+open LocalFieldTheory
 
 noncomputable section
 
@@ -57,8 +51,8 @@ theorem chosenBaseUniformizerPow_integerRingFieldSubmodule_exists_mem_maximalIde
     (mem_integerRingFieldSubmodule_iff (K := K) (L := L) y).1 hy⟩
   let πL : 𝒪[L] :=
     integerRingMapOfValuationExtension K L (chosenIntegerRingUniformizer K)
-  have hπL : πL ∈ (𝓂[L] : Ideal 𝒪[L]) := by
-    exact integerRingMap_uniformizer_mem_maximalIdeal_of_valuationExtension
+  have hπL : πL ∈ (𝓂[L] : Ideal 𝒪[L]) := 
+    integerRingMap_uniformizer_mem_maximalIdeal_of_valuationExtension
       (K := K) (L := L)
   refine ⟨πL ^ m * yInt, ?_, ?_⟩
   · exact Ideal.mul_mem_right yInt _ (Ideal.pow_mem_pow hπL m)
@@ -90,12 +84,12 @@ theorem chosenNormalBasisPrincipalUnitSet_mem_principalUnits_succ_of_lattice_bou
   have hpow : (𝓂[L] ^ ((1 + r) + i) : Ideal 𝒪[L]) ≤
       (𝓂[L] ^ (1 + i) : Ideal 𝒪[L]) := by
     apply Ideal.pow_le_pow_right
-    exact Nat.add_le_add_right (Nat.le_add_right 1 r) i
+    simp
   have ha' : a ∈ (𝓂[L] ^ (1 + i) : Ideal 𝒪[L]) := hpow ha
   rw [mem_principalUnits_iff]
   have haeq : a = ((z : 𝒪[L]ˣ) : 𝒪[L]) - 1 := by
     apply Subtype.ext
-    simpa [x] using hax
+    omega
   simpa [haeq] using ha'
 
 /-- Once the normal-basis lattice has entered `𝒪_L`, a sequence whose
@@ -168,7 +162,6 @@ theorem tendsto_galoisGroupIntegerUnits_tateNorm_of_tendsto
         (fun d : Nat =>
           (galoisGroupIntegerRingEquivOfIsIntegralClosure K L sigma)
             ((f d : 𝒪[L]ˣ) : 𝒪[L])) by
-      funext d
       rfl] at he
     simpa [
       galoisGroupIntegerUnitsMulDistribMulActionOfIsIntegralClosure_smul] using he
@@ -208,7 +201,6 @@ theorem tendsto_galoisGroupIntegerUnits_sigmaMinusOne_of_tendsto
         (fun d : Nat =>
           (galoisGroupIntegerRingEquivOfIsIntegralClosure K L g)
             ((f d : 𝒪[L]ˣ) : 𝒪[L])) by
-      funext d
       rfl] at he
     simpa [
       galoisGroupIntegerUnitsMulDistribMulActionOfIsIntegralClosure_smul] using he
@@ -296,9 +288,7 @@ theorem chosenNormalBasisPrincipalUnitCorrectionProduct_eq_principalUnitsCorrect
   induction d with
   | zero => rfl
   | succ d ih =>
-      rw [chosenNormalBasisPrincipalUnitCorrectionProduct_succ,
-        principalUnitsCorrectionProduct_succ, ih]
-      rfl
+      simp_all
 
 omit [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)] in
 
@@ -323,48 +313,6 @@ theorem chosenNormalBasisPrincipalUnitCorrectionProduct_mem
       exact chosenBaseUniformizerPowSubmodule_antitone
         (K := K) (L := L) (chosenNormalBasisIntegerLattice K L)
         (Nat.le_add_right n d) (hz d)
-
-omit [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)] in
-
-/-- The quotient of two partial products is controlled by the filtration
-level at the earlier index.  This is the exact tail recurrence used in both
-`H⁰` and `H⁻¹` correction arguments. -/
-theorem chosenNormalBasisPrincipalUnitCorrectionProduct_div_mem
-    {n : Nat}
-    (hmul : ∀ k : Nat, n ≤ k →
-      ∀ u : 𝒪[L]ˣ, u ∈ chosenNormalBasisPrincipalUnitSet K L k →
-        ∀ v : 𝒪[L]ˣ, v ∈ chosenNormalBasisPrincipalUnitSet K L k →
-          u * v ∈ chosenNormalBasisPrincipalUnitSet K L k)
-    (z : Nat → 𝒪[L]ˣ)
-    (hz : ∀ i : Nat, z i ∈ chosenNormalBasisPrincipalUnitSet K L (n + i))
-    (m d : Nat) :
-    chosenNormalBasisPrincipalUnitCorrectionProduct (L := L) z (m + d) /
-        chosenNormalBasisPrincipalUnitCorrectionProduct (L := L) z m ∈
-      chosenNormalBasisPrincipalUnitSet K L (n + m) := by
-  induction d with
-  | zero => simp
-  | succ d ih =>
-      have hprod :
-          chosenNormalBasisPrincipalUnitCorrectionProduct (L := L) z (m + (d + 1)) =
-            chosenNormalBasisPrincipalUnitCorrectionProduct (L := L) z (m + d) *
-              z (m + d) := by
-        rw [Nat.add_succ]
-        rfl
-      rw [hprod]
-      have hzlevel : z (m + d) ∈ chosenNormalBasisPrincipalUnitSet K L (n + m) :=
-        chosenBaseUniformizerPowSubmodule_antitone
-          (K := K) (L := L) (chosenNormalBasisIntegerLattice K L)
-          (Nat.add_le_add_left (Nat.le_add_right m d) n) (hz (m + d))
-      have hEq :
-          chosenNormalBasisPrincipalUnitCorrectionProduct (L := L) z (m + d) *
-                z (m + d) /
-              chosenNormalBasisPrincipalUnitCorrectionProduct (L := L) z m =
-            (chosenNormalBasisPrincipalUnitCorrectionProduct (L := L) z (m + d) /
-                chosenNormalBasisPrincipalUnitCorrectionProduct (L := L) z m) *
-              z (m + d) := by
-        simp [div_eq_mul_inv, mul_assoc, mul_comm]
-      rw [hEq]
-      exact hmul (n + m) (Nat.le_add_right n m) _ ih _ hzlevel
 
 /-- Completeness of `𝒪_L` gives a unit-valued limit for the normal-basis
 partial products once the lattice sequence has been embedded in
@@ -458,13 +406,13 @@ theorem exists_tendsto_chosenNormalBasisPrincipalUnitCorrectionProduct
   refine ⟨max (b + 1) (max cMul cClosed), ?_⟩
   intro n hn z hz
   have hbn : b + 1 ≤ n :=
-    le_trans (le_max_left (b + 1) (max cMul cClosed)) hn
+    by omega
   have hrest : max cMul cClosed ≤ max (b + 1) (max cMul cClosed) :=
-    le_max_right (b + 1) (max cMul cClosed)
+    by simp
   have hcMuln : cMul ≤ n :=
-    le_trans (le_trans (le_max_left cMul cClosed) hrest) hn
+    by omega
   have hcClosedn : cClosed ≤ n :=
-    le_trans (le_trans (le_max_right cMul cClosed) hrest) hn
+    by omega
   let hmulLattice := hcMul n hcMuln
   have hmul : ∀ u : 𝒪[L]ˣ, u ∈ chosenNormalBasisPrincipalUnitSet K L n →
       ∀ v : 𝒪[L]ˣ, v ∈ chosenNormalBasisPrincipalUnitSet K L n →
@@ -479,6 +427,3 @@ theorem exists_tendsto_chosenNormalBasisPrincipalUnitCorrectionProduct
   · exact hx
   · exact chosenNormalBasisPrincipalUnitCorrectionProduct_limit_mem
       (K := K) (L := L) (hcClosed n hcClosedn) hmul z hz xu hx
-
-end
-end LocalClassFieldTheory

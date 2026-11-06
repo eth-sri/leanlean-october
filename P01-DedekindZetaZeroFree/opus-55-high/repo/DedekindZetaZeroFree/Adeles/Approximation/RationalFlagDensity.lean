@@ -96,9 +96,7 @@ private theorem abv_inequivalent (F : Type) [Field F] [NumberField F] :
         simpa only [abv, Sum.elim_inr, NumberField.HeightOneSpectrum.adicAbv, map_ofNat] using w.adicAbv_coe_le_one (NumberField.HeightOneSpectrum.one_lt_absNorm_nnreal w) (2 : 𝓞 F)
       have hv : abv F (Sum.inl v) (2 : F) = 2 := by
         simpa [abv, NumberField.InfinitePlace.coe_apply] using v.map_natCast 2
-      have := h.mpr hw
-      rw [hv] at this
-      norm_num at this
+      simp_all
   | inr v =>
     cases j with
     | inl w =>
@@ -204,17 +202,17 @@ open scoped NumberField
 
 namespace PrimitiveColumn
 
-private lemma affine_val {K : Type*} [Field K] (x : K) :
+lemma affine_val {K : Type*} [Field K] (x : K) :
     (affineRepresentative x).val = !![1, 0; x, 1] := rfl
 
-private lemma affine_mul_neg {K : Type*} [Field K] (x : K) :
+lemma affine_mul_neg {K : Type*} [Field K] (x : K) :
     affineRepresentative x * affineRepresentative (-x) = 1 := by
   apply Units.ext
   ext i j
   fin_cases i <;> fin_cases j <;>
     simp [affine_val, Matrix.mul_apply, Fin.sum_univ_two]
 
-private lemma affine_inv {K : Type*} [Field K] (x : K) :
+lemma affine_inv {K : Type*} [Field K] (x : K) :
     (affineRepresentative x)⁻¹ = affineRepresentative (-x) := by
   apply inv_eq_of_mul_eq_one_left
   simpa using affine_mul_neg (-x)
@@ -284,12 +282,11 @@ theorem local_affine_chart_hits_open {K : Type*} [Field K]
       simp [Matrix.det_fin_two, ha', hc]
     let f : K → GL (Fin 2) K := fun t => Matrix.GeneralLinearGroup.upperRightHom t * g
     have hf : Continuous f := by
-      exact Matrix.GeneralLinearGroup.continuous_upperRightHom.mul continuous_const
+      fun_prop
     have hV : IsOpen (f ⁻¹' U) := hU.preimage hf
     have hnV : (f ⁻¹' U).Nonempty := ⟨0, by
       change Matrix.GeneralLinearGroup.upperRightHom 0 * g ∈ U
-      rw [Matrix.GeneralLinearGroup.upperRightHom.map_zero_eq_one, one_mul]
-      exact hg⟩
+      simp_all⟩
     obtain ⟨t, ht, ht0⟩ := (dense_compl_singleton (0 : K)).inter_open_nonempty _ hV hnV
     have ht0' : t ≠ 0 := by simpa using ht0
     have hft : f t 0 0 ≠ 0 := by
@@ -406,11 +403,7 @@ lemma localize_good (g : GL (Fin 2) (AdeleRing (𝓞 F) F)) :
 set_option backward.isDefEq.respectTransparency false in
 lemma assemble_localize (g : GL (Fin 2) (AdeleRing (𝓞 F) F))
     (S : Finset (V F)) (h : Good F S (localize g)) : assemble ⟨localize g, h⟩ = g := by
-  apply Units.ext
-  ext i j
-  apply Prod.ext
-  · rfl
-  · rfl
+  rfl
 
 set_option backward.isDefEq.respectTransparency false in
 lemma integral_open (v : V F) : IsOpen {g : GL (Fin 2) (KF F v) |
@@ -439,12 +432,10 @@ lemma continuous_affine {K : Type*} [Field K] [TopologicalSpace K] [IsTopologica
 set_option backward.isDefEq.respectTransparency false in
 lemma assemble_arch {S : Finset (V F)} (r : Domain F S) (v : InfinitePlace F) :
     GeneralLinearGroup.map (arch v) (assemble r) = r.val.1 v := by
-  apply Units.ext
   rfl
 set_option backward.isDefEq.respectTransparency false in
 lemma assemble_fin {S : Finset (V F)} (r : Domain F S) (v : V F) :
     GeneralLinearGroup.map (fin v) (assemble r) = r.val.2 v := by
-  apply Units.ext
   rfl
 end CylinderAssembly
 
@@ -617,7 +608,7 @@ open scoped NumberField Pointwise
 abbrev AdelicGL (F : Type) [Field F] [NumberField F] :=
   Matrix.GeneralLinearGroup (Fin 2) (NumberField.AdeleRing (𝓞 F) F)
 
-noncomputable def rationalMap (F : Type) [Field F] [NumberField F] :
+def rationalMap (F : Type) [Field F] [NumberField F] :
     Matrix.GeneralLinearGroup (Fin 2) F →* AdelicGL F :=
   Matrix.GeneralLinearGroup.map (algebraMap F (NumberField.AdeleRing (𝓞 F) F))
 
@@ -650,7 +641,7 @@ end KPRationalFlag
 open KPRationalFlag
 open scoped NumberField Pointwise
 
-private theorem borel_eq_mirabolic_mul_scalar (R : Type*) [CommRing R] :
+theorem borel_eq_mirabolic_mul_scalar (R : Type*) [CommRing R] :
     (KPRationalFlag.borel R : Set (GL (Fin 2) R)) =
       (KPRationalFlag.mirabolic R : Set (GL (Fin 2) R)) *
         Set.range (Matrix.GeneralLinearGroup.scalar (Fin 2) : Rˣ →* GL (Fin 2) R) := by
@@ -662,9 +653,8 @@ private theorem borel_eq_mirabolic_mul_scalar (R : Type*) [CommRing R] :
       rw [Matrix.det_fin_two]; simp [hg]
     have hunit : IsUnit (g 1 1) := by
       have h1 : IsUnit ((g : Matrix (Fin 2) (Fin 2) R).det) :=
-        (Matrix.GeneralLinearGroup.det g).isUnit
-      rw [hdet] at h1
-      exact isUnit_of_mul_isUnit_right h1
+        by simp
+      simp_all
     obtain ⟨u, hu⟩ : ∃ u : Rˣ, (↑u : R) = g 1 1 := hunit
     refine Set.mem_mul.mpr
       ⟨g * Matrix.GeneralLinearGroup.scalar (Fin 2) u⁻¹,
@@ -673,34 +663,29 @@ private theorem borel_eq_mirabolic_mul_scalar (R : Type*) [CommRing R] :
         (↑(Matrix.GeneralLinearGroup.scalar (Fin 2) u⁻¹) :
           Matrix (Fin 2) (Fin 2) R))) 1 0 = 0
       rw [Matrix.GeneralLinearGroup.coe_scalar]
-      simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.scalar_apply, hg]
+      simp_all
     · show (((↑g : Matrix (Fin 2) (Fin 2) R) *
         (↑(Matrix.GeneralLinearGroup.scalar (Fin 2) u⁻¹) :
           Matrix (Fin 2) (Fin 2) R))) 1 1 = 1
       rw [Matrix.GeneralLinearGroup.coe_scalar]
-      simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.scalar_apply, hg, ← hu,
-        Units.val_inv u]
-    · show (g * Matrix.GeneralLinearGroup.scalar (Fin 2) u⁻¹) *
-        Matrix.GeneralLinearGroup.scalar (Fin 2) u = g
-      rw [map_inv (Matrix.GeneralLinearGroup.scalar (Fin 2)) u, mul_assoc,
-        inv_mul_cancel, mul_one]
+      simp_all
+    simp
   · intro hg
     obtain ⟨p, hp, z, ⟨u, rfl⟩, rfl⟩ := Set.mem_mul.mp hg
     have hp10 : (p : Matrix (Fin 2) (Fin 2) R) 1 0 = 0 := hp.1
     have hp11 : (p : Matrix (Fin 2) (Fin 2) R) 1 1 = 1 := hp.2
     show (((↑p : Matrix (Fin 2) (Fin 2) R) *
       (↑(Matrix.GeneralLinearGroup.scalar (Fin 2) u) : Matrix (Fin 2) (Fin 2) R))) 1 0 = 0
-    rw [Matrix.GeneralLinearGroup.coe_scalar]
-    simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.scalar_apply, hp10, hp11]
+    simp_all
 
 theorem kp_adelic_borel_eq_mirabolic_scalars
     (F : Type) [Field F] [NumberField F] :
     (borel (NumberField.AdeleRing (𝓞 F) F) : Set (AdelicGL F)) =
       (mirabolic (NumberField.AdeleRing (𝓞 F) F) : Set (AdelicGL F)) *
-        Set.range (scalars F) := by
-  exact borel_eq_mirabolic_mul_scalar (NumberField.AdeleRing (𝓞 F) F)
+        Set.range (scalars F) := 
+  borel_eq_mirabolic_mul_scalar (NumberField.AdeleRing (𝓞 F) F)
 
-private lemma dense_preimage_of_dense_image {G H : Type*} [TopologicalSpace G]
+lemma dense_preimage_of_dense_image {G H : Type*} [TopologicalSpace G]
     [TopologicalSpace H] {π : G → H} (hπopen : IsOpenMap π) {T : Set H} (hT : Dense T) :
     Dense (π ⁻¹' T) := by
   rw [dense_iff_inter_open] at hT ⊢
@@ -708,8 +693,7 @@ private lemma dense_preimage_of_dense_image {G H : Type*} [TopologicalSpace G]
   obtain ⟨z, hzU, hzT⟩ := hT (π '' U) (hπopen U hU) (hUne.image π)
   obtain ⟨y, hyU, hyz⟩ := hzU
   refine ⟨y, hyU, ?_⟩
-  show π y ∈ T
-  rwa [hyz]
+  simp_all
 
 theorem kp_rational_adelic_flag_density
     (F : Type) [Field F] [NumberField F] :
@@ -781,9 +765,4 @@ theorem kp_rational_adelic_cover_borel_vanishing
   refine Continuous.ext_on (kp_rational_adelic_cover_flag_density F π hπcont hπopen hπsurj sF hsF)
     hf continuous_const ?_
   rintro x ⟨a, ⟨γ, rfl⟩, b, hb, rfl⟩
-  rw [hleft γ b, hB b hb]
-  rfl
-
-end DedekindZetaZeroFree
-
-end
+  simp_all

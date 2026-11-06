@@ -23,10 +23,7 @@ def finiteCompletionBall (v : HeightOneSpectrum (𝓞 F)) (n : ℤ) :
     intro x y hx hy
     exact (Valued.v : Valuation (v.adicCompletion F) ℤᵐ⁰).map_add_le hx hy
   neg_mem' := by
-    intro x hx
-    change Valued.v (-x) ≤ WithZero.exp (-n)
-    change Valued.v x ≤ WithZero.exp (-n) at hx
-    simpa only [Valuation.map_neg] using hx
+    simp
 
 @[simp] theorem mem_finiteCompletionBall (v : HeightOneSpectrum (𝓞 F))
     (n : ℤ) (x : v.adicCompletion F) :
@@ -76,7 +73,3 @@ def localCosetIndicator (v : HeightOneSpectrum (𝓞 F))
     (x : v.adicCompletion F) :
     localCosetIndicator F v b U x = if x - b ∈ U then 1 else 0 := by
   simp [localCosetIndicator, Set.indicator]
-
-end DedekindZetaZeroFree
-
-end

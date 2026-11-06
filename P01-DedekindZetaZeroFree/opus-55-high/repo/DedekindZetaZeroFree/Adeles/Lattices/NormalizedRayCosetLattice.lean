@@ -21,7 +21,7 @@ theorem normalizationScale_pos (D : Data K) : 0 < normalizationScale D := by
   apply Real.rpow_pos_of_pos
   exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr D.ideal_ne_bot)
 
-private theorem normalizationScale_pow (D : Data K) :
+theorem normalizationScale_pow (D : Data K) :
     normalizationScale D ^ Module.finrank ℚ K = (Ideal.absNorm D.a : ℝ)⁻¹ := by
   have hn : (Module.finrank ℚ K : ℝ) ≠ 0 := by
     exact_mod_cast (Module.finrank_pos (R := ℚ) (M := K)).ne'
@@ -93,11 +93,11 @@ theorem normalizedEmbedding_bijOn (D : Data K) :
   constructor
   · rintro ⟨α, hα, rfl⟩
     have he : (scaleEquiv D).symm (normalizedEmbedding D α) =
-        Theta.traceEmbedding K (α : K) := by
-      exact (scaleEquiv D).symm_apply_apply _
+        Theta.traceEmbedding K (α : K) := 
+      (scaleEquiv D).symm_apply_apply _
     rw [he, Theta.traceEmbedding_mem_traceIdealLattice, productIdealUnit,
       FractionalIdeal.coe_mk0, FractionalIdeal.mem_coeIdeal]
-    exact ⟨α, hα, rfl⟩
+    simp_all
   · intro hx
     obtain ⟨α, hα, he⟩ := Theta.exists_traceEmbedding_eq_of_mem_traceIdealLattice K _ hx
     rw [productIdealUnit, FractionalIdeal.coe_mk0, FractionalIdeal.mem_coeIdeal] at hα
@@ -129,7 +129,6 @@ theorem modulusCovolume_pos (m : Ideal (𝓞 K)) (hm : m ≠ ⊥) :
 theorem covolume_normalizedLattice (D : Data K) :
     ZLattice.covolume (normalizedLattice D) volume = modulusCovolume K D.m := by
   have hd : (scaleEquiv D).toLinearMap = normalizationScale D • LinearMap.id := by
-    ext x
     rfl
   have hs : LinearMap.det (scaleEquiv D).symm.toLinearMap =
       (LinearMap.det (scaleEquiv D).toLinearMap)⁻¹ :=
@@ -141,8 +140,7 @@ theorem covolume_normalizedLattice (D : Data K) :
     Theta.covolume_traceIdealLattice]
   unfold modulusCovolume
   rw [Theta.covolume_traceIdealLattice]
-  simp only [productIdealUnit, FractionalIdeal.coe_mk0, FractionalIdeal.coeIdeal_absNorm,
-    map_mul, Nat.cast_mul, Rat.cast_natCast, Units.val_one, map_one, Rat.cast_one, one_mul]
+  simp only [productIdealUnit, FractionalIdeal.coe_mk0, FractionalIdeal.coeIdeal_absNorm, map_mul, Nat.cast_mul, Units.val_one, map_one, Rat.cast_one, one_mul]
   have ha : (Ideal.absNorm D.a : ℝ) ≠ 0 := by
     exact_mod_cast Ideal.absNorm_eq_zero_iff.not.mpr D.ideal_ne_bot
   simp only [Rat.cast_mul, Rat.cast_natCast]
@@ -168,7 +166,3 @@ theorem normWeight_eq_archimedeanNorm (D : Data K) (α : Cx D) :
       archimedeanNorm K (normalizedEmbedding D α.val) := by
   rw [normWeight_orbitMk, archimedeanNorm_normalizedEmbedding]
   rfl
-
-end DedekindZetaZeroFree.AbelianQuotient.RayCoset
-
-end

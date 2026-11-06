@@ -21,5 +21,3 @@ theorem localField_secondCountable
     haveI : ProperSpace K :=
       .of_nontriviallyNormedField_of_weaklyLocallyCompactSpace K
     infer_instance
-
-end DedekindZetaZeroFree.KPJointRegulator.MellinBetaIntegrability

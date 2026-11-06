@@ -12,7 +12,6 @@ open NumberField IsDedekindDomain MeasureTheory ValuativeRel
 namespace DedekindZetaZeroFree.KPExceptionalRaw.FiniteSource.ImagesIrreducibilitySteps.PlusLengthSteps
 open KPLocalPrincipalSeries KPLocalStoneVonNeumann KPLocalJacquetImage
 noncomputable section
-set_option autoImplicit false
 set_option maxHeartbeats 4000000
 set_option backward.isDefEq.respectTransparency false
 set_option synthInstance.maxHeartbeats 100000
@@ -55,8 +54,8 @@ variable (S : RawFiniteInducingData F ζ hζ q)
         rw [SmoothInd, mem_smoothSubmodule]
         obtain ⟨J, hJ⟩ := f.property.2
         exact ⟨J, fun j hj => Subtype.ext (hJ j hj)⟩⟩
-      map_add' := by intros; rfl
-      map_smul' := by intros; rfl }
+      map_add' := by simp
+      map_smul' := by simp }
   let rev : SmoothInd S.borel.B (inducingAction S.borel P .plus 0) 1 →ₗ[ℂ]
       sectionSpace S.borel P .plus 0 :=
     { toFun := fun f => ⟨f.val.val, by
@@ -65,14 +64,14 @@ variable (S : RawFiniteInducingData F ζ hζ q)
           simpa [normalizedSectionRepresentation_apply] using f.val.property b g
         · obtain ⟨J, hJ⟩ := (mem_smoothSubmodule _ _).mp f.property
           exact ⟨J, fun j hj => congrArg Subtype.val (hJ j hj)⟩⟩
-      map_add' := by intros; rfl
-      map_smul' := by intros; rfl }
+      map_add' := by simp
+      map_smul' := by simp }
   exact Representation.Equiv.mk
     { toLinearMap := fwd
       invFun := rev
       left_inv := by intro f; rfl
       right_inv := by intro f; rfl }
-    (by intro g; ext f x; rfl)
+    (by intro g; rfl)
 private theorem rawAdmissible (P : Polarization S.heisenberg) : by
     letI : AddCommGroup (sectionSpace S.borel P .plus 0) := inferInstance
     exact Admissible (IPlus S.borel P) := by
@@ -115,8 +114,8 @@ private theorem rawAdmissible (P : Polarization S.heisenberg) : by
       fixedSubmodule (smoothIndRepresentation S.borel.B (inducingAction S.borel P .plus 0) 1)
         J.toOpenSubgroup.toSubgroup :=
     (e.toLinearMap.comp (fixedSubmodule (IPlus S.borel P) J.toOpenSubgroup.toSubgroup).subtype).codRestrict _
-      (fun x => fun g => by
-        exact (Representation.IntertwiningMap.isIntertwining _ _ e.toIntertwiningMap g.val x.val).symm.trans
+      (fun x => fun g => 
+        (Representation.IntertwiningMap.isIntertwining _ _ e.toIntertwiningMap g.val x.val).symm.trans
           (congrArg e (x.property g)))
   letI := ha J
   apply Module.Finite.of_injective f
@@ -135,8 +134,8 @@ private theorem rawMap_zero {V : Type} [AddCommGroup V] [Module ℂ V]
     (f : σ.IntertwiningMap (IPlus S.borel P)) : f = 0 := by
   let ev : V →ₗ[ℂ] InducedModule P :=
     { toFun := fun v => (f v).val 1
-      map_add' := by intros; simp only [map_add]; rfl
-      map_smul' := by intros; simp only [map_smul]; rfl }
+      map_add' := by simp
+      map_smul' := by simp }
   have hk : jacquetRelations S.borel σ ≤ LinearMap.ker ev := by
     apply Submodule.span_le.mpr
     rintro _ ⟨⟨x, v⟩, rfl⟩
@@ -170,8 +169,7 @@ private theorem rawMap_zero {V : Type} [AddCommGroup V] [Module ℂ V]
   change (f (σ g v)).val 1 = 0 at h
   rw [f.isIntertwining] at h
   change (f v).val (1 * g) = 0 at h
-  change (f v).val g = 0
-  simpa only [one_mul] using h
+  simp_all
 
 private theorem rawDetection (P : Polarization S.heisenberg) : by
     letI : AddCommGroup (sectionSpace S.borel P .plus 0) := inferInstance
@@ -211,7 +209,7 @@ private theorem rawDetection (P : Polarization S.heisenberg) : by
     apply (KPRankOneJacquetZeroCompactCoefficients.coefficient_compact_support
       F ζ hζ q σ m hm hsS _ L hL v).2
     have hn : KPRankOneJacquetZeroCompactCoefficients.upperRoot F ζ hζ q =
-        KPLocalSmoothRepresentation.upperRoot F ζ hζ q := by ext t; rfl
+        KPLocalSmoothRepresentation.upperRoot F ζ hζ q := by rfl
     simpa only [KPRankOneJacquetZeroCompactCoefficients.UpperJacquet, hn,
       KPLocalSmoothRepresentation.OrdinaryCoinvariants] using hj
   obtain ⟨s, hsplit⟩ := CuspidalProjectiveRetract.lift_equivariant_surjection
@@ -219,7 +217,7 @@ private theorem rawDetection (P : Polarization S.heisenberg) : by
       δ σ hsD hsS qmap hsurj (Representation.IntertwiningMap.id σ)
   let j : δ.IntertwiningMap (IPlus S.borel P) :=
     { toLinearMap := A.subtype.comp (KPCyclicQuotient.preimage A B C).subtype
-      isIntertwining' := fun g => by ext x; rfl }
+      isIntertwining' := fun g => by rfl }
   letI := hj
   have hz := rawMap_zero F ζ hζ q S P σ (j.comp s)
   have hs0 : ∀ x, s x = 0 := by
@@ -255,7 +253,7 @@ private theorem rootSmooth {K G V : Type*} [Field K] [TopologicalSpace K]
     apply (IsLocallyConstant.iff_exists_open _).mpr
     intro g
     refine ⟨{h : G | g⁻¹ * h ∈ J}, J.isOpen.preimage (continuous_const.mul continuous_id), ?_, ?_⟩
-    · simpa using J.one_mem
+    · simp
     · intro h hh
       have he := hJ (g⁻¹ * h) hh
       have := congrArg (ρ g) he
@@ -281,7 +279,7 @@ private theorem raw_jacquet_inclusion_injective (A : LocalBorelData (K := K) (G 
     simpa only [oneTwist] using hv
   obtain ⟨J, L, R, hJo, hJc, hLo, hLc, hJL, hR, hRne, hψJ, hfix, hkill⟩ :=
     KPCoinvariants.killsRelation (ρ.comp n) (rootSmooth ρ hρ n hn) 1
-      (by fun_prop) (IsLocallyConstant.of_constant _ (by intros; rfl)) v hv'
+      (by fun_prop) (IsLocallyConstant.of_constant _ (by simp)) v hv'
   refine ⟨R, hRne, ?_⟩
   simpa only [KPCoinvariants.psiAverage, MonoidHom.one_apply, Units.val_one, inv_one, one_smul] using hkill
 
@@ -349,8 +347,8 @@ theorem independent_plus_jacquet_strictMono (P : Polarization S.heisenberg) : by
       have hp := congrArg (jacquetLinearMap S.borel p) he
       change Representation.Coinvariants.mk (Q.comp (root S.borel)) (p ba) =
         Representation.Coinvariants.mk (Q.comp (root S.borel)) (p v) at hp
-      have hb : p ba = 0 := by
-        exact (Submodule.Quotient.mk_eq_zero (KPCyclicQuotient.inside A.toSubmodule B.toSubmodule)).mpr b.property
+      have hb : p ba = 0 := 
+        (Submodule.Quotient.mk_eq_zero (KPCyclicQuotient.inside A.toSubmodule B.toSubmodule)).mpr b.property
       exact hp.symm.trans ((congrArg (Representation.Coinvariants.mk (Q.comp (root S.borel))) hb).trans (map_zero _))
     have hzero : Subsingleton (Jacquet S.borel Q) := by
       apply subsingleton_of_forall_eq 0
@@ -377,6 +375,3 @@ theorem independent_plus_jacquet_strictMono (P : Polarization S.heisenberg) : by
   have hAB := comparable B A hBA him
   apply hMN.ne
   exact Subrepresentation.subrepresentationSubmoduleOrderIso.symm.injective hAB
-
-end
-end DedekindZetaZeroFree.KPExceptionalRaw.FiniteSource.ImagesIrreducibilitySteps.PlusLengthSteps

@@ -38,8 +38,3 @@ theorem source_multiplier (r : ℝ) (hr : 0 < r) (s : ℂ) :
   rw [← Complex.exp_add, ← Complex.exp_add]
   congr 1
   ring
-
-end DedekindZetaZeroFree.KPGlobalExceptionalParameter
-
-end
-end

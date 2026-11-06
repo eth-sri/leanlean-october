@@ -33,13 +33,7 @@ theorem initialBound (F : Type) [Field F] [NumberField F]
       simp [energy, hshellN]
     have hset : ({0} ∪ {x : ℝ | ∃ lam : Ideal (𝓞 F) → ℂ,
         energy F ⊥ N lam ≤ 1 ∧ x = Q1 F ⊥ Q M N lam}) = {0} := by
-      ext x
-      simp only [Set.mem_union, Set.mem_singleton_iff, Set.mem_setOf_eq]
-      constructor
-      · rintro (h | ⟨lam, -, rfl⟩)
-        · exact h
-        · rw [hQ1 lam]
-      · exact Or.inl
+      simp_all
     rw [B1, hset, csSup_singleton]
     simp
   ·
@@ -48,8 +42,6 @@ theorem initialBound (F : Type) [Field F] [NumberField F]
     refine initial_gram_to_exponent F c Q ⟨D, hD, ?_⟩ ?_
     · intro M N hM hN b hb
       rw [mem_paperShell] at hb
-      exact hdiag c Q M hM b hb.1 hb.2.1
+      simp_all
     · intro ε hε
       exact initial_same_class_gram F hF c hc Q ε hε
-
-end DedekindZetaZeroFree.LargeSieve.Sieve

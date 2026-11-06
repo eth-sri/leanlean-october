@@ -30,7 +30,3 @@ def tangentialDivergence (F : Type) [Field F] [NumberField F]
         coordinateDerivative d i 0 (fun q => W q i 1) x).re +
       ((Real.exp (x (i, 2)) : ℂ) *
         coordinateDerivative d i 1 (fun q => W q i 2) x).re)
-
-end DedekindZetaZeroFree.KPCompactGreen.ScalarFluxDisintegration.Slice
-
-end

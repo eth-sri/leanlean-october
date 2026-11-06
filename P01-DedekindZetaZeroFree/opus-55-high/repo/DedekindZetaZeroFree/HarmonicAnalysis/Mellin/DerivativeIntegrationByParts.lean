@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.HarmonicAnalysis.Mellin.SourceDerivativePosit
 
 @[expose] public section
 
-noncomputable section
 open MeasureTheory Filter Set
 open scoped NumberField Classical ContDiff Topology
 
@@ -69,7 +68,3 @@ theorem integral_Ioi_deriv_eq_neg_at_zero (h : ℝ → ℂ)
     (∫ x : ℝ in Set.Ioi 0, deriv h x) = -h 0 := by
   have hh1 : ContDiff ℝ 1 h := hh.of_le (by norm_num : (1 : ℕ∞ω) ≤ ∞)
   exact hc.integral_Ioi_deriv_eq hh1 0
-
-end DedekindZetaZeroFree.LargeSieve.Vendor
-
-end

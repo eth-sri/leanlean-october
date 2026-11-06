@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Analysis.Sobolev.WeakDerivatives.CompactInter
 
 @[expose] public section
 
-noncomputable section
 
 namespace DedekindZetaZeroFree.KPCompactInteriorH1
 
@@ -68,7 +67,7 @@ theorem allTests_weak_derivative_mollification
         ((fun t => fderiv ℝ (φ.normed volume) t (coordinateDirection j))
           ⋆[ContinuousLinearMap.lsmul ℝ ℝ, volume] F) x := by
       rw [convolution_def, convolution_def, ContinuousLinearMap.integral_apply hi]
-      simp only [ContinuousLinearMap.precompL_apply]
+      rfl
     rw [key, convolution_lsmul_swap, convolution_lsmul_swap]
     have hψ_cd : ContDiff ℝ ∞ (fun y : E n => (φ.normed volume (x - y) : ℂ)) :=
       Complex.ofRealCLM.contDiff.comp (hρ_cd.comp (by fun_prop))
@@ -85,7 +84,7 @@ theorem allTests_weak_derivative_mollification
             (-ContinuousLinearMap.id ℝ (E n)))) y :=
         Complex.ofRealCLM.hasFDerivAt.comp y h1
       rw [coordinatePartial, h2.fderiv]
-      simp [ContinuousLinearMap.comp_apply]
+      simp
     apply WithLp.ofLp_injective
     funext a
     show EuclideanSpace.proj a (∫ t,
@@ -127,7 +126,3 @@ theorem allTests_weak_derivative_mollification
           (((fderiv ℝ (φ.normed volume) (x - y) (coordinateDirection j)) : ℝ) : ℂ)) by
       simp_rw [mul_neg, integral_neg]] at hw
     exact neg_injective hw
-
-end DedekindZetaZeroFree.KPCompactInteriorH1
-
-end

@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Explicit counts for basic-factor choices
 
@@ -41,23 +38,7 @@ theorem formalLogOnePlusProductArgument_choiceCounts_total_add_mixed_eq_coord_su
       e (0 : Fin 2) + e (1 : Fin 2) := by
   rcases formalLogOnePlusProductArgument_choiceCounts_system
       hl hbasic with ⟨hleft, hright, htotal⟩
-  calc
-    q + formalLogOnePlusProductArgumentMixedChoiceCount q l =
-        (formalLogOnePlusProductArgumentLeftChoiceCount q l +
-            formalLogOnePlusProductArgumentRightChoiceCount q l +
-          formalLogOnePlusProductArgumentMixedChoiceCount q l) +
-            formalLogOnePlusProductArgumentMixedChoiceCount q l := by
-      exact (congrArg
-        (fun t : ℕ => t + formalLogOnePlusProductArgumentMixedChoiceCount q l)
-        htotal).symm
-    _ =
-        (formalLogOnePlusProductArgumentLeftChoiceCount q l +
-          formalLogOnePlusProductArgumentMixedChoiceCount q l) +
-        (formalLogOnePlusProductArgumentRightChoiceCount q l +
-          formalLogOnePlusProductArgumentMixedChoiceCount q l) := by
-      simp only [Nat.add_assoc, Nat.add_left_comm, Nat.add_comm]
-    _ = e (0 : Fin 2) + e (1 : Fin 2) := by
-      rw [hleft, hright]
+  omega
 
 /-- Proves the bound `q ≤ e (0 : Fin 2) + e (1 : Fin 2)`. -/
 theorem formalLogOnePlusProductArgument_choiceCounts_q_le_coord_sum
@@ -69,7 +50,7 @@ theorem formalLogOnePlusProductArgument_choiceCounts_q_le_coord_sum
   have hsum :=
     formalLogOnePlusProductArgument_choiceCounts_total_add_mixed_eq_coord_sum
       hl hbasic
-  exact Nat.le.intro hsum
+  omega
 
 /--
 Establishes the identity `formalLogOnePlusProductArgumentMixedChoiceCount q l = e (0 : Fin 2) + e
@@ -85,12 +66,7 @@ theorem formalLogOnePlusProductArgument_mixedChoiceCount_eq_coord_sum_sub_q
   have hsum :=
     formalLogOnePlusProductArgument_choiceCounts_total_add_mixed_eq_coord_sum
       hl hbasic
-  calc
-    formalLogOnePlusProductArgumentMixedChoiceCount q l =
-        q + formalLogOnePlusProductArgumentMixedChoiceCount q l - q := by
-      rw [Nat.add_sub_cancel_left]
-    _ = e (0 : Fin 2) + e (1 : Fin 2) - q := by
-      rw [hsum]
+  omega
 
 /--
 Establishes the identity `formalLogOnePlusProductArgumentLeftChoiceCount q l = q - e (1 : Fin 2)`.
@@ -104,31 +80,7 @@ theorem formalLogOnePlusProductArgument_leftChoiceCount_eq_q_sub_right_coord
       q - e (1 : Fin 2) := by
   rcases formalLogOnePlusProductArgument_choiceCounts_system
       hl hbasic with ⟨_hleft, hright, htotal⟩
-  have hq :
-      e (1 : Fin 2) +
-          formalLogOnePlusProductArgumentLeftChoiceCount q l =
-        q := by
-    calc
-      e (1 : Fin 2) +
-          formalLogOnePlusProductArgumentLeftChoiceCount q l =
-        (formalLogOnePlusProductArgumentRightChoiceCount q l +
-          formalLogOnePlusProductArgumentMixedChoiceCount q l) +
-            formalLogOnePlusProductArgumentLeftChoiceCount q l := by
-        rw [hright]
-      _ =
-        formalLogOnePlusProductArgumentLeftChoiceCount q l +
-            formalLogOnePlusProductArgumentRightChoiceCount q l +
-          formalLogOnePlusProductArgumentMixedChoiceCount q l := by
-        simp only [Nat.add_left_comm, Nat.add_comm]
-      _ = q := htotal
-  calc
-    formalLogOnePlusProductArgumentLeftChoiceCount q l =
-        e (1 : Fin 2) +
-            formalLogOnePlusProductArgumentLeftChoiceCount q l -
-          e (1 : Fin 2) := by
-      rw [Nat.add_sub_cancel_left]
-    _ = q - e (1 : Fin 2) := by
-      rw [hq]
+  omega
 
 /--
 Establishes the identity `formalLogOnePlusProductArgumentRightChoiceCount q l = q - e (0 : Fin
@@ -143,31 +95,7 @@ theorem formalLogOnePlusProductArgument_rightChoiceCount_eq_q_sub_left_coord
       q - e (0 : Fin 2) := by
   rcases formalLogOnePlusProductArgument_choiceCounts_system
       hl hbasic with ⟨hleft, _hright, htotal⟩
-  have hq :
-      e (0 : Fin 2) +
-          formalLogOnePlusProductArgumentRightChoiceCount q l =
-        q := by
-    calc
-      e (0 : Fin 2) +
-          formalLogOnePlusProductArgumentRightChoiceCount q l =
-        (formalLogOnePlusProductArgumentLeftChoiceCount q l +
-          formalLogOnePlusProductArgumentMixedChoiceCount q l) +
-            formalLogOnePlusProductArgumentRightChoiceCount q l := by
-        rw [hleft]
-      _ =
-        formalLogOnePlusProductArgumentLeftChoiceCount q l +
-            formalLogOnePlusProductArgumentRightChoiceCount q l +
-          formalLogOnePlusProductArgumentMixedChoiceCount q l := by
-        simp only [Nat.add_assoc, Nat.add_left_comm, Nat.add_comm]
-      _ = q := htotal
-  calc
-    formalLogOnePlusProductArgumentRightChoiceCount q l =
-        e (0 : Fin 2) +
-            formalLogOnePlusProductArgumentRightChoiceCount q l -
-          e (0 : Fin 2) := by
-      rw [Nat.add_sub_cancel_left]
-    _ = q - e (0 : Fin 2) := by
-      rw [hq]
+  omega
 
 /--
 Establishes the identity `formalLogOnePlusProductArgumentLeftChoiceCount q l = q - e (1 : Fin 2) ∧
@@ -224,23 +152,6 @@ theorem formalLogOnePlusProductArgument_labelCounts_explicit
           hbasic]
       exact hmixed⟩
 
-/--
-Establishes the identity `formalLogOnePlusProductArgumentBasicFactorLabelCount q l 0 = q - e (1 :
-Fin 2) ∧ formalLogOnePlusProductArgumentBasicFactorLabelCount q l 1 = q - e (0 : Fin 2) ∧
-formalLogOnePlusProductArgumentBasicFactorLabelCount q l 2 = e (0 : Fin 2) + e (1 : Fin 2) - q`.
--/
-theorem formalLogOnePlusProductArgumentBasicFactorChoices_labelCounts_explicit
-    {q : ℕ} {e : Fin 2 →₀ ℕ} {l : ℕ →₀ (Fin 2 →₀ ℕ)}
-    (hl : l ∈ formalLogOnePlusProductArgumentBasicFactorChoices q e) :
-    formalLogOnePlusProductArgumentBasicFactorLabelCount q l 0 =
-          q - e (1 : Fin 2) ∧
-      formalLogOnePlusProductArgumentBasicFactorLabelCount q l 1 =
-          q - e (0 : Fin 2) ∧
-        formalLogOnePlusProductArgumentBasicFactorLabelCount q l 2 =
-          e (0 : Fin 2) + e (1 : Fin 2) - q := by
-  rw [mem_formalLogOnePlusProductArgumentBasicFactorChoices] at hl
-  exact formalLogOnePlusProductArgument_labelCounts_explicit hl.1 hl.2
-
 /-- Every basic-factor choice satisfies the corresponding three label-count constraints. -/
 theorem formalLogOnePlusProductArgumentBasicFactorChoices_subset_labelCountChoices
     (q : ℕ) (e : Fin 2 →₀ ℕ) :
@@ -252,25 +163,7 @@ theorem formalLogOnePlusProductArgumentBasicFactorChoices_subset_labelCountChoic
   have hprod :
       l ∈ formalLogOnePlusProductArgumentBasicFactorProductChoices q := by
     rw [mem_formalLogOnePlusProductArgumentBasicFactorProductChoices]
-    exact ⟨(Finset.mem_finsuppAntidiag.mp hl.1).2, hl.2⟩
+    simp_all
   exact
     ⟨hprod,
       formalLogOnePlusProductArgument_labelCounts_explicit hl.1 hl.2⟩
-
-/--
-Proves the bound `(formalLogOnePlusProductArgumentBasicFactorChoices q e).card ≤
-(formalLogOnePlusProductArgumentBasicFactorLabelCountChoices q e).card`.
--/
-theorem formalLogOnePlusProductArgumentBasicFactorChoices_card_le_labelCountChoices
-    (q : ℕ) (e : Fin 2 →₀ ℕ) :
-    (formalLogOnePlusProductArgumentBasicFactorChoices q e).card ≤
-      (formalLogOnePlusProductArgumentBasicFactorLabelCountChoices q e).card :=
-  Finset.card_le_card
-    (formalLogOnePlusProductArgumentBasicFactorChoices_subset_labelCountChoices
-      q e)
-
-
-end MultiplicativeIntegerValuation
-end LocalFieldTheory.DiscreteValuationField
-
-end

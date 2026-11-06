@@ -167,7 +167,7 @@ theorem zetaSCont_analytic :
     fun_prop
   exact hL.mul hE.differentiableOn
 
-private theorem eqOn_punctured {f g : ℂ → ℂ}
+theorem eqOn_punctured {f g : ℂ → ℂ}
     (hf : AnalyticOnNhd ℂ f ({s : ℂ | 0 < s.re} \ {1}))
     (hg : AnalyticOnNhd ℂ g ({s : ℂ | 0 < s.re} \ {1}))
     (h : ∀ s : ℂ, 1 < s.re → f s = g s) (s : ℂ) (hs : 0 < s.re) (hs1 : s ≠ 1) :
@@ -240,7 +240,7 @@ private theorem exterior_coprime (I : D.recipe.A.Exterior) :
   rw [ht] at this
   exact hp.ne_top (top_unique this)
 
-private theorem LpsiRaw_principal (u : D.Row) (hu : u.u = 1) (s : ℂ) :
+theorem LpsiRaw_principal (u : D.Row) (hu : u.u = 1) (s : ℂ) :
     D.LpsiRaw u s = InitialSeparatedEuler.zetaS D.recipe.A s := by
   unfold FixedData.LpsiRaw MaskedHeckeMeromorphic.incompleteL
   have hu' : u.toFrequency.u = 1 := hu

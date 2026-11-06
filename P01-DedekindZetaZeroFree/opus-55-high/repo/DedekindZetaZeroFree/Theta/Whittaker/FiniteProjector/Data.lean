@@ -7,7 +7,7 @@ public import DedekindZetaZeroFree.Theta.Whittaker.FirstRootSphericalSeedData
 noncomputable section
 namespace DedekindZetaZeroFree.ThetaExpansion
 open MomentSources NumberField MeasureTheory
-open scoped NumberField Classical
+open scoped Classical
 variable {F : Type} [Field F] [NumberField F]
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
@@ -43,7 +43,3 @@ structure FirstRootProjected (R : PrincipalMellin.ActualRecipe S η)
   base : JointExteriorCoefficientSources R N
   radial : ∀ v y, fourier R base.sources.dq (base.realization.theta v) (diagonal R y) =
     firstRootRadialProfile R cutoffs y
-
-end DedekindZetaZeroFree.ThetaExpansion
-
-end

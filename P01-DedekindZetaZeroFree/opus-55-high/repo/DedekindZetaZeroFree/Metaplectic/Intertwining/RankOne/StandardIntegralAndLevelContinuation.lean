@@ -8,7 +8,7 @@ namespace DedekindZetaZeroFree.KPRankOneShellContinuation
 
 open scoped Valued
 open MeasureTheory ValuativeRel KPLocalPrincipalSeries KPRankOneRootParameter
-open KPLocalPrincipalSeries KPRankOneRootParameter KPLocalStoneVonNeumann
+open KPLocalStoneVonNeumann
 
 noncomputable section
 
@@ -133,8 +133,7 @@ theorem convergence_iff_geometric
     ring
   cases ε with
   | plus =>
-    simp only [convergenceHalfPlane, if_pos rfl, if_true, ht, Real.exp_lt_one_iff,
-      mul_neg_iff, not_lt_of_ge hl.le, and_false, false_or, hl, and_true]
+    simp only [convergenceHalfPlane, if_true, ht, Real.exp_lt_one_iff, mul_neg_iff, not_lt_of_ge hl.le, and_false, false_or, hl, and_true]
     constructor <;> intro hs <;> linarith
   | minus =>
     simp only [convergenceHalfPlane, reduceCtorEq, if_false, norm_inv, ht,
@@ -145,9 +144,9 @@ theorem denominator_ne_zero_at_zero (ε : Sign) :
     denominator K ε 0 ≠ 0 := by
   have hq : (residueCardinality K : ℂ) ≠ 1 := by
     exact_mod_cast (ne_of_gt (Finite.one_lt_card (α := 𝓀[K])))
-  cases ε <;> simp [denominator, t, r, sub_ne_zero, hq, Ne.symm hq, inv_eq_one]
+  cases ε <;> simp [denominator, t, r, sub_ne_zero, hq, Ne.symm hq]
 
-private theorem laurent_zero (p : LaurentPolynomial ℂ)
+theorem laurent_zero (p : LaurentPolynomial ℂ)
     (U : Set ℂˣ) (hU : U.Infinite)
     (hp : ∀ u ∈ U, LaurentPolynomial.eval₂ (RingHom.id ℂ) u p = 0) : p = 0 := by
   obtain ⟨n, f, hf⟩ := LaurentPolynomial.exists_T_pow p
@@ -175,10 +174,8 @@ private theorem scalarLaurent_coeff {V : Type*} [AddCommMonoid V] [Module ℂ V]
     AddMonoidAlgebra.coeff_single]
   rw [Finset.sum_eq_single n]
   · simp
-  · intro b hb hbn
-    simp [hbn]
-  · intro hn
-    simp [Finsupp.notMem_support_iff.mp hn]
+  · simp_all
+  simp_all
 
 private theorem scalarLaurent_eval {V : Type*} [AddCommMonoid V] [Module ℂ V]
     (p : ℤ →₀ V) (l : V →ₗ[ℂ] ℂ) (u : ℂˣ) :
@@ -191,22 +188,18 @@ private theorem scalarLaurent_eval {V : Type*} [AddCommMonoid V] [Module ℂ V]
   apply Finset.sum_congr rfl
   intro n hn
   exact mul_comm _ _
-private theorem evaluation_norm (ε : Sign) (x : ℝ) :
+theorem evaluation_norm (ε : Sign) (x : ℝ) :
     ‖(evaluationUnit K ε (x : ℂ) : ℂ)‖ =
       Real.exp ((if ε = .plus then -x else x) * Real.log (residueCardinality K : ℝ)) := by
   cases ε with
   | plus =>
     change ‖r K (x : ℂ)‖ = _
-    simp only [r, Complex.norm_exp, Complex.mul_re, Complex.neg_re,
-      Complex.ofReal_re, Complex.neg_im, Complex.ofReal_im, mul_zero, sub_zero,
-      evaluationUnit, if_true]
+    simp only [r, Complex.norm_exp, Complex.mul_re, Complex.neg_re, Complex.ofReal_re, Complex.neg_im, Complex.ofReal_im, mul_zero, sub_zero, if_true]
   | minus =>
     change ‖(r K (x : ℂ))⁻¹‖ = _
-    simp only [r, norm_inv, Complex.norm_exp, Complex.mul_re, Complex.neg_re,
-      Complex.ofReal_re, Complex.neg_im, Complex.ofReal_im, mul_zero, sub_zero,
-      ← Real.exp_neg, neg_mul, neg_neg, reduceCtorEq, if_false]
+    simp only [r, norm_inv, Complex.norm_exp, Complex.mul_re, Complex.neg_re, Complex.ofReal_re, Complex.ofReal_im, mul_zero, sub_zero, ← Real.exp_neg, neg_mul, neg_neg, reduceCtorEq, if_false]
 
-private theorem evaluation_infinite (ε : Sign) :
+theorem evaluation_infinite (ε : Sign) :
     {u : ℂˣ | ∃ s : ℂ, convergenceHalfPlane ε s ∧ evaluationUnit K ε s = u}.Infinite := by
   let a : ℕ → ℝ := fun n => if ε = .plus then (n : ℝ) else -(n : ℝ) - 1
   have ha : Function.Injective a := by
@@ -214,8 +207,7 @@ private theorem evaluation_infinite (ε : Sign) :
     dsimp [a] at h
     cases ε <;> simp only [if_true, if_false, reduceCtorEq] at h
     · exact_mod_cast h
-    · have : (m : ℝ) = (n : ℝ) := by linarith
-      exact_mod_cast this
+    simp_all
   have hl : Real.log (residueCardinality K : ℝ) ≠ 0 := by
     apply ne_of_gt
     apply Real.log_pos
@@ -243,8 +235,8 @@ private theorem evaluation_infinite (ε : Sign) :
     (compactLevel A P I (sourceSign ε) J →ₗ[ℂ]
       compactLevel A P I (targetSign ε) J) →ₗ[ℂ] ℂ where
   toFun M := ((M φ : compactPicture A P I (targetSign ε)).val k).val h
-  map_add' := by intros; rfl
-  map_smul' := by intros; rfl
+  map_add' := by simp
+  map_smul' := by simp
 
 theorem level_numerator_compatible
     (A : LocalBorelData (K := K) (G := G) T) (P : Polarization T)
@@ -326,8 +318,8 @@ theorem lowerRootCoordinate_uniform_cutoff
     unfold lowerRootCoordinate
     exact ((continuous_const.mul (continuous_subtype_val.comp
       (A.upperRoot_continuous.comp continuous_ofAdd))).mul continuous_const)
-  have hK : IsCompact (Set.univ : Set I.compact.toOpenSubgroup) := by
-    exact isCompact_iff_isCompact_univ.mp I.compact.isCompact
+  have hK : IsCompact (Set.univ : Set I.compact.toOpenSubgroup) := 
+    isCompact_iff_isCompact_univ.mp I.compact.isCompact
   suffices he : ∀ᶠ x : K in nhds 0, ∀ k ∈ (Set.univ : Set I.compact.toOpenSubgroup),
       (k : G)⁻¹ * lowerRootCoordinate K A x * (k : G) ∈ J.toOpenSubgroup by
     simpa only [Set.mem_univ, forall_const] using he
@@ -350,7 +342,7 @@ theorem denominator_ne_zero_of_convergence (ε : Sign) (s : ℂ)
   cases ε with
   | plus =>
     change 1 - t K s ≠ 0
-    simp only [if_pos rfl] at ht
+    simp only at ht
     intro he
     have he : t K s = 1 := (sub_eq_zero.mp he).symm
     simpa [he] using ht
@@ -454,8 +446,8 @@ theorem standardIntegral_integrableOn_compact
     (g : G) (h : H) (C : Set K) (hC : IsCompact C) (hmC : MeasurableSet C) :
     IntegrableOn (fun x : K =>
       ((compactTrivialization A P I (sourceSign ε) (sourceParameter ε s) φ).val
-        (kernelW K A ε * (A.upperRoot (Multiplicative.ofAdd x) : G) * g)).val h) C μ := by
-  exact (standardIntegral_integrand_locallyConstant K A P I ε s φ g h).continuous.continuousOn.integrableOn_compact' hC hmC
+        (kernelW K A ε * (A.upperRoot (Multiplicative.ofAdd x) : G) * g)).val h) C μ := 
+  (standardIntegral_integrand_locallyConstant K A P I ε s φ g h).continuous.continuousOn.integrableOn_compact' hC hmC
 
 end
 end DedekindZetaZeroFree.KPRankOneShellContinuation
@@ -466,7 +458,7 @@ namespace DedekindZetaZeroFree.KPRankOneShellContinuation
 
 open scoped Valued
 open MeasureTheory ValuativeRel KPLocalPrincipalSeries KPRankOneRootParameter
-open KPLocalPrincipalSeries KPRankOneRootParameter KPLocalStoneVonNeumann
+open KPLocalStoneVonNeumann
 
 noncomputable section
 
@@ -477,7 +469,7 @@ variable {G H D : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
     [Group H] [TopologicalSpace H] [IsTopologicalGroup H] [CommGroup D] [Finite D]
 variable {T : LocalHeisenbergData H D}
 
-private theorem r_diff : Differentiable ℂ (r K) := by
+theorem r_diff : Differentiable ℂ (r K) := by
   unfold r
   fun_prop
 
@@ -496,7 +488,7 @@ private theorem r_diff : Differentiable ℂ (r K) := by
   cases ε with
   | plus =>
     unfold denominator t r
-    simp only [if_pos rfl, if_true]
+    simp only [if_true]
     fun_prop
   | minus =>
     unfold denominator
@@ -505,8 +497,3 @@ private theorem r_diff : Differentiable ℂ (r K) := by
     apply Differentiable.mul (differentiable_const _)
     apply Differentiable.pow
     exact (r_diff K).inv (fun s => Complex.exp_ne_zero _)
-
-end
-end DedekindZetaZeroFree.KPRankOneShellContinuation
-
-end

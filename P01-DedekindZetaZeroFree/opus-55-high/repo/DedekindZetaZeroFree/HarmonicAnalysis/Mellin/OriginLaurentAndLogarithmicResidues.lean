@@ -18,7 +18,7 @@ def originLogResiduePolynomial (A : ℂ → ℂ) (r : ℕ) : Polynomial ℂ :=
     Polynomial.C (((-1 : ℂ) ^ n * originLaurentCoeff A r (n + 1)) /
       (n.factorial : ℂ)) * Polynomial.X ^ n
 
-private lemma originLogResiduePolynomial_coeff_eq (A : ℂ → ℂ) (r n : ℕ) (hn : n < r) :
+lemma originLogResiduePolynomial_coeff_eq (A : ℂ → ℂ) (r n : ℕ) (hn : n < r) :
     (originLogResiduePolynomial A r).coeff n =
       (-1 : ℂ) ^ n * originLaurentCoeff A r (n + 1) / (n.factorial : ℂ) := by
   rw [originLogResiduePolynomial, Polynomial.finsetSum_coeff]
@@ -26,8 +26,7 @@ private lemma originLogResiduePolynomial_coeff_eq (A : ℂ → ℂ) (r n : ℕ) 
   · rw [Polynomial.coeff_C_mul_X_pow, if_pos rfl]
   · intro b hb hbn
     rw [Polynomial.coeff_C_mul_X_pow, if_neg (Ne.symm hbn)]
-  · intro h
-    exact absurd (Finset.mem_range.mpr hn) h
+  simp_all
 
 theorem originLogResiduePolynomial_natDegree_le (A : ℂ → ℂ) (r : ℕ)
     (hr : 1 ≤ r) : (originLogResiduePolynomial A r).natDegree ≤ r - 1 := by
@@ -49,9 +48,7 @@ theorem origin_exists_analytic_laurent (U : Set ℂ) (hU : IsOpen U) (h0 : (0 : 
   set Pfun : ℂ → ℂ := fun t =>
     ∑ i ∈ Finset.range r, (t ^ i / (i.factorial : ℂ)) * iteratedDeriv i A 0 with hPfun
   have hPana : AnalyticOnNhd ℂ Pfun U := by
-    intro t ht
-    rw [hPfun]
-    exact Finset.analyticAt_fun_sum _ (fun i hi => by fun_prop)
+    fun_prop
   refine ⟨fun s => if s = 0 then F 0 else (A s - Pfun s) / s ^ r, ?_, ?_⟩
   · intro s hs
     by_cases hs0 : s = 0
@@ -59,22 +56,13 @@ theorem origin_exists_analytic_laurent (U : Set ℂ) (hU : IsOpen U) (h0 : (0 : 
       refine hFa.congr ?_
       filter_upwards [hF] with z hz
       show F z = (if z = 0 then F 0 else (A z - Pfun z) / z ^ r)
-      by_cases hz0 : z = 0
-      · rw [if_pos hz0, hz0]
-      · rw [if_neg hz0]
-        have hz' : A z - Pfun z = z ^ r * F z := by
-          rw [hz, hPfun]
-          simp only [smul_eq_mul]
-          ring
-        rw [hz']
-        field_simp
+      simp_all
     · have hquot : AnalyticAt ℂ (fun t => (A t - Pfun t) / t ^ r) s :=
         AnalyticAt.div ((hA s hs).sub (hPana s hs)) (by fun_prop)
           (pow_ne_zero r hs0)
       refine hquot.congr ?_
       filter_upwards [compl_singleton_mem_nhds hs0] with t ht
-      show (A t - Pfun t) / t ^ r = (if t = 0 then F 0 else (A t - Pfun t) / t ^ r)
-      rw [if_neg (by simpa using ht)]
+      simp_all
   · intro s hs hs0
     show A s / s ^ r = (if s = 0 then F 0 else (A s - Pfun s) / s ^ r) +
       ∑ m ∈ Finset.Icc 1 r, originLaurentCoeff A r m / s ^ m
@@ -88,7 +76,6 @@ theorem origin_exists_analytic_laurent (U : Set ℂ) (hU : IsOpen U) (h0 : (0 : 
         exact Finset.mem_Icc.mpr ⟨by omega, by omega⟩
       · intro i₁ h₁ i₂ h₂ h
         have h₁' := Finset.mem_range.mp h₁
-        have h₂' := Finset.mem_range.mp h₂
         omega
       · intro m hm
         obtain ⟨hm1, hm2⟩ := Finset.mem_Icc.mp hm
@@ -98,28 +85,17 @@ theorem origin_exists_analytic_laurent (U : Set ℂ) (hU : IsOpen U) (h0 : (0 : 
         simp only [originLaurentCoeff, show r - (r - i) = i by omega]
         rw [show r = i + (r - i) by omega, pow_add]
         field_simp
-        rw [show i + (r - i) - i = r - i by omega]
+        simp
     rw [← hreindex, ← add_div, sub_add_cancel]
 
-private lemma pow_mul_zero (n j : ℕ) (f : ℂ → ℂ) (hf : AnalyticAt ℂ f 0) :
+lemma pow_mul_zero (n j : ℕ) (f : ℂ → ℂ) (hf : AnalyticAt ℂ f 0) :
     iteratedDeriv n (fun s => s^j * f s) 0 =
     if j ≤ n then (n.choose j : ℂ) * (j.factorial : ℂ) * iteratedDeriv (n-j) f 0 else 0 := by
   rw [iteratedDeriv_fun_mul (by fun_prop) hf.contDiffAt]
   simp_rw [iteratedDeriv_fun_pow_zero]
-  by_cases h : j ≤ n
-  · rw [if_pos h, Finset.sum_eq_single j]
-    · simp
-    · intro b hb hbj
-      simp [hbj]
-    · intro hj
-      exact (hj (Finset.mem_range.mpr (by omega))).elim
-  · rw [if_neg h]
-    apply Finset.sum_eq_zero
-    intro b hb
-    have hbj : b ≠ j := by have := Finset.mem_range.mp hb; omega
-    simp [hbj]
+  simp
 
-private lemma fac_ratio (n k : ℕ) (h : k ≤ n) :
+lemma fac_ratio (n k : ℕ) (h : k ≤ n) :
     (n.choose k : ℂ) * (k.factorial : ℂ) / (n.factorial : ℂ) =
       1 / ((n-k).factorial : ℂ) := by
   have hh : (n.choose k : ℂ) * (k.factorial : ℂ) * ((n-k).factorial : ℂ) =
@@ -129,13 +105,13 @@ private lemma fac_ratio (n k : ℕ) (h : k ≤ n) :
   field_simp
   exact hh
 
-private lemma twist_coeff (n j : ℕ) (c : ℂ) (A : ℂ → ℂ) (hA : AnalyticAt ℂ A 0) :
+lemma twist_coeff (n j : ℕ) (c : ℂ) (A : ℂ → ℂ) (hA : AnalyticAt ℂ A 0) :
     iteratedDeriv n (fun s => (-s)^j * Complex.exp (c*s) * A s) 0 / (n.factorial : ℂ) =
     if j ≤ n then (-1:ℂ)^j *
       ∑ i ∈ Finset.range (n-j+1), c^i * iteratedDeriv (n-j-i) A 0 /
         ((i.factorial : ℂ) * ((n-j-i).factorial : ℂ)) else 0 := by
   have he : AnalyticAt ℂ (fun s => Complex.exp (c*s) * A s) 0 := by
-    exact (by fun_prop : AnalyticAt ℂ (fun s => Complex.exp (c*s)) 0).fun_mul hA
+    fun_prop
   have hfun : (fun s : ℂ => (-s)^j * Complex.exp (c*s) * A s) =
       fun s => (-1:ℂ)^j * (s^j * (Complex.exp (c*s) * A s)) := by
     ext s; rw [neg_eq_neg_one_mul, mul_pow]; ring
@@ -160,7 +136,7 @@ private lemma twist_coeff (n j : ℕ) (c : ℂ) (A : ℂ → ℂ) (hA : Analytic
     linear_combination c^i * iteratedDeriv (n-j-i) A 0 * h
   · simp [hj]
 
-private lemma df_ratio (n j : ℕ) (h : j ≤ n) :
+lemma df_ratio (n j : ℕ) (h : j ≤ n) :
     (n.descFactorial j : ℂ) / (n.factorial : ℂ) =
       1 / ((n-j).factorial : ℂ) := by
   have hh : ((n-j).factorial : ℂ) * (n.descFactorial j : ℂ) =
@@ -170,7 +146,7 @@ private lemma df_ratio (n j : ℕ) (h : j ≤ n) :
   field_simp
   linear_combination hh
 
-private lemma poly_eval (A : ℂ → ℂ) (r j : ℕ) (L : ℂ) :
+lemma poly_eval (A : ℂ → ℂ) (r j : ℕ) (L : ℂ) :
     Polynomial.eval L ((Polynomial.derivative^[j]) (originLogResiduePolynomial A r)) =
     ∑ n ∈ Finset.range r, if j ≤ n then
       (-1:ℂ)^n * originLaurentCoeff A r (n+1) * L^(n-j) / ((n-j).factorial : ℂ)
@@ -189,7 +165,7 @@ private lemma poly_eval (A : ℂ → ℂ) (r j : ℕ) (L : ℂ) :
   · rw [if_neg hj, Nat.descFactorial_eq_zero_iff_lt.mpr (by omega)]
     simp
 
-private lemma coeff_identity (A : ℂ → ℂ) (hA : AnalyticAt ℂ A 0)
+lemma coeff_identity (A : ℂ → ℂ) (hA : AnalyticAt ℂ A 0)
     (r j : ℕ) (hr : 1 ≤ r) (L : ℂ) :
     originLaurentCoeff (fun s => (-s)^j * Complex.exp (-s*L) * A s) r 1 =
       Polynomial.eval L ((Polynomial.derivative^[j]) (originLogResiduePolynomial A r)) := by
@@ -210,8 +186,7 @@ private lemma coeff_identity (A : ℂ → ℂ) (hA : AnalyticAt ℂ A 0)
         if j ≤ n then (-1:ℂ)^n * originLaurentCoeff A r (n+1) *
           L^(n-j) / ((n-j).factorial : ℂ) else 0) = 0 := by
       apply Finset.sum_eq_zero
-      intro n hn
-      rw [if_neg (by have := Finset.mem_range.mp hn; omega)]
+      simp_all
     rw [hz, zero_add, show r-1-j+1 = r-j by omega, Finset.mul_sum]
     apply Finset.sum_congr rfl
     intro i hi
@@ -246,7 +221,7 @@ theorem origin_exists_analytic_twisted_laurent (U : Set ℂ) (hU : IsOpen U)
   refine ⟨originLaurentCoeff B r, G, hG, hGeq, ?_⟩
   exact coeff_identity A (hA 0 h0) r j hr (L:ℂ)
 
-private lemma hasDerivAt_poly_log (Q : Polynomial ℂ) {x : ℝ} (hx : x ≠ 0) :
+lemma hasDerivAt_poly_log (Q : Polynomial ℂ) {x : ℝ} (hx : x ≠ 0) :
     HasDerivAt (fun y : ℝ => Q.eval (Real.log y : ℂ))
       (Q.derivative.eval (Real.log x : ℂ) * ((x : ℂ))⁻¹) x := by
   have h1 : HasDerivAt (⇑Complex.ofRealCLM) (1 : ℂ) (Real.log x) :=
@@ -257,12 +232,12 @@ private lemma hasDerivAt_poly_log (Q : Polynomial ℂ) {x : ℝ} (hx : x ≠ 0) 
   have h3 : HasDerivAt (fun y : ℝ => Q.eval (y : ℂ))
       (Q.derivative.eval (Real.log x : ℂ)) (Real.log x) := by
     convert h2.scomp (Real.log x) h1 using 1
-    · ext y; rfl
+    · rfl
     · simp
   have h4 : HasDerivAt Real.log (x⁻¹) x := Real.hasDerivAt_log hx
   have h5 := h3.scomp x h4
   convert h5 using 1
-  · ext y; rfl
+  · rfl
   · simp [Complex.ofReal_inv, mul_comm]
 
 theorem EulerIter_eval_log_polynomial (P : Polynomial ℂ) (j : ℕ)
@@ -275,7 +250,7 @@ theorem EulerIter_eval_log_polynomial (P : Polynomial ℂ) (j : ℕ)
       (Set.Ioi 0) := by
     intro j
     induction j with
-    | zero => intro y _; simp [EulerIter_zero]
+    | zero => intro y _; rfl
     | succ j ih =>
       intro y hy
       rw [EulerIter_succ_of_pos j _ y hy]
@@ -304,8 +279,7 @@ theorem originLaurentCoeff_norm_le (U : Set ℂ) (hU : IsOpen U)
     Metric.closure_ball_subset_closedBall.trans hdisk
   have hf : DiffContOnCl ℂ A (Metric.ball (0 : ℂ) (1 / 2 : ℝ)) :=
     ⟨(hA.mono hball).differentiableOn, (hA.mono hcl).continuousOn⟩
-  have hC : ∀ z ∈ Metric.sphere (0 : ℂ) (1 / 2 : ℝ), ‖A z‖ ≤ M := fun z hz =>
-    hbound z (Metric.sphere_subset_closedBall hz)
+  have hC : ∀ z ∈ Metric.sphere (0 : ℂ) (1 / 2 : ℝ), ‖A z‖ ≤ M := by simp_all
   have hCauchy := Complex.norm_iteratedDeriv_le_of_forall_mem_sphere_norm_le
     (c := (0 : ℂ)) (R := (1 / 2 : ℝ)) (C := M) (r - m) (by norm_num) hf hC
   have hfac : (0 : ℝ) < ((r - m).factorial : ℝ) := by positivity
@@ -327,7 +301,7 @@ theorem originLogResiduePolynomial_coeff_norm_le (U : Set ℂ) (hU : IsOpen U)
     ‖(originLogResiduePolynomial A r).coeff n‖ ≤
       2 ^ (r - n - 1) * M / (n.factorial : ℝ) := by
   rw [originLogResiduePolynomial_coeff_eq A r n hn, norm_div, norm_mul]
-  have hneg : ‖(-1 : ℂ) ^ n‖ = 1 := by rw [norm_pow]; norm_num
+  have hneg : ‖(-1 : ℂ) ^ n‖ = 1 := by simp
   rw [hneg, one_mul, Complex.norm_natCast]
   have ha := originLaurentCoeff_norm_le U hU h0 A hA r (n + 1) hr (by omega) (by omega)
     M hM hdisk hbound
@@ -344,7 +318,3 @@ theorem originLogResiduePolynomial_coeff_top (A : ℂ → ℂ) (r : ℕ) (hr : 1
       (-1 : ℂ) ^ (r - 1) * A 0 / ((r - 1).factorial : ℂ) := by
   rw [originLogResiduePolynomial_coeff_eq A r (r - 1) (by omega),
     show r - 1 + 1 = r by omega, originLaurentCoeff_top]
-
-end DedekindZetaZeroFree.LargeSieve.Vendor
-
-end

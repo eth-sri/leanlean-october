@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Degree-minus-one localized Herbrand cardinality
 -/
@@ -26,7 +23,6 @@ open CyclicCohomology
 open CyclicCohomology.ProfiniteCohomology.Herbrand
 open scoped TensorProduct
 
-noncomputable section
 
 namespace LocalClassFieldTheory
 
@@ -125,10 +121,3 @@ theorem localHerbrandHMinusOne_card_eq_one
         (localHerbrandHMinusOneEquivUnitsTateHminusOne
           vK hvK w σ hgen)
     _ = 1 := hcard.cardHminusOne
-
-
-end LocalTateComparison
-
-end LocalClassFieldTheory
-
-end

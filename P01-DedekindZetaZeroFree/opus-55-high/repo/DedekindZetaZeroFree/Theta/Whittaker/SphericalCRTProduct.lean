@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.CharacterSums.Gauss.SquarefreeCRT
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.ExteriorWhittakerValues.NumericalSpherical
 open scoped NumberField Classical BigOperators
 open NumberField IsDedekindDomain
@@ -12,15 +11,15 @@ set_option backward.isDefEq.respectTransparency false
 variable {F : Type} [Field F] [NumberField F]
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
-private theorem norm_prod_eq (A : SArithmeticData F) (I : A.Exterior)
+theorem norm_prod_eq (A : SArithmeticData F) (I : A.Exterior)
     (P : Finset (ThetaBranch.ExteriorPrime A))
     (hI : I.val = ∏ p ∈ P, p.val.asIdeal ^ idealPrimeExponent p.val.asIdeal I.val) :
     A.exteriorNorm I = ∏ p ∈ P, idealNorm p.val.asIdeal ^ idealPrimeExponent p.val.asIdeal I.val := by
   unfold SArithmeticData.exteriorNorm idealNorm
   conv_lhs => rw [hI, map_prod]
-  simp only [map_pow, Nat.cast_prod, Nat.cast_pow]
+  simp
 
-private theorem norm_inverse_prod (A : SArithmeticData F) (I : A.Exterior)
+theorem norm_inverse_prod (A : SArithmeticData F) (I : A.Exterior)
     (P : Finset (ThetaBranch.ExteriorPrime A))
     (hI : I.val = ∏ p ∈ P, p.val.asIdeal ^ idealPrimeExponent p.val.asIdeal I.val) :
     (∏ p ∈ P, (idealNorm p.val.asIdeal : ℂ) ^ (-(idealPrimeExponent p.val.asIdeal I.val : ℤ))) =
@@ -31,7 +30,7 @@ private theorem norm_inverse_prod (A : SArithmeticData F) (I : A.Exterior)
   push_cast at h
   exact congrArg Inv.inv h.symm
 
-private theorem sqrt_inverse_prod (A : SArithmeticData F) (I : A.Exterior)
+theorem sqrt_inverse_prod (A : SArithmeticData F) (I : A.Exterior)
     (P : Finset (ThetaBranch.ExteriorPrime A))
     (hI : I.val = ∏ p ∈ P, p.val.asIdeal ^ idealPrimeExponent p.val.asIdeal I.val) :
     (∏ p ∈ P, (Real.sqrt (idealNorm p.val.asIdeal) : ℂ)⁻¹ ^ idealPrimeExponent p.val.asIdeal I.val) =
@@ -82,8 +81,7 @@ theorem sphericalProduct (R : PrincipalMellin.ActualRecipe S η)
         ThetaBranch.gaussTwo R.A R.σ (MomentSources.Characters.psi R) p ^ e p *
         (∏ q ∈ P.erase p, R.σ (R.A.sexticResidue (ThetaBranch.primeIdeal R.A p) (r q)) ^ (2 * e p * e q)) := by
       apply Finset.prod_congr rfl
-      intro p hp
-      exact hl p hp
+      omega
     _ = _ := by
       simp only [Finset.prod_mul_distrib]
       rw [norm_inverse_prod R.A n P hn, sqrt_inverse_prod R.A c.val P hc]
@@ -92,7 +90,3 @@ theorem sphericalProduct (R : PrincipalMellin.ActualRecipe S η)
       rw [hg]
       simp only [div_eq_mul_inv, mul_inv_rev]
       ring
-
-end DedekindZetaZeroFree.ExteriorWhittakerValues.NumericalSpherical
-
-end

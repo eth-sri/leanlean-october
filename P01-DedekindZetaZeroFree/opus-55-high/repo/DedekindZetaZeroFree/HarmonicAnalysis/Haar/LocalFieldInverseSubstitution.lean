@@ -9,12 +9,11 @@ open scoped Valued Topology ENNReal WithZeroTopology
 open MeasureTheory
 namespace DedekindZetaZeroFree.KPRankOneBruhatKernelTransport
 open KPLocalPrincipalSeries
-noncomputable section
 
 variable (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
     [TopologicalSpace K] [IsNonarchimedeanLocalField K]
     [MeasurableSpace K] [BorelSpace K]
-private lemma no_atoms (μ : Measure K) [μ.IsAddHaarMeasure] : NullSingletonClass μ := by
+lemma no_atoms (μ : Measure K) [μ.IsAddHaarMeasure] : NullSingletonClass μ := by
   letI := IsTopologicalAddGroup.rightUniformSpace K
   haveI := isUniformAddGroup_of_addCommGroup (G := K)
   letI : (Valued.v (R := K)).RankOne :=
@@ -39,7 +38,7 @@ private lemma haar (μ : Measure K) [μ.IsAddHaarMeasure] : (KPCubicHaar.multipl
   exact (kp_rankone_cubic_haar_power_measure K μ _
     (ENNReal.toReal_pos hp.ne' hc.measure_lt_top.ne)
     (ENNReal.ofReal_toReal hc.measure_lt_top.ne).symm).1
-private lemma abs_measurable : Measurable (KPCubicHaar.abs K) := by
+lemma abs_measurable : Measurable (KPCubicHaar.abs K) := by
   letI := IsTopologicalAddGroup.rightUniformSpace K
   haveI := isUniformAddGroup_of_addCommGroup (G := K)
   apply ContinuousOn.measurable_of_countable_compl (s := ({0} : Set K)ᶜ)
@@ -77,8 +76,7 @@ theorem inverse_substitution
   have hc : (fun x => (D x).toReal • f x) =ᵐ[μ] g := by
     filter_upwards [μ.ae_ne 0] with x hx
     have hp := KPCubicHaar.abs_pos K hx
-    simp [D, f, ENNReal.toReal_ofReal (inv_nonneg.mpr hp.le),
-      Complex.real_smul, ← mul_assoc, hp.ne']
+    simp [D, f, ENNReal.toReal_ofReal (inv_nonneg.mpr hp.le), Complex.real_smul, hp.ne']
   have hf : Integrable f (μ.withDensity D) := by
     apply (integrable_withDensity_iff_integrable_smul' hD (by simp [D])).mpr
     exact hg.congr hc.symm
@@ -94,8 +92,8 @@ theorem inverse_substitution
       μ.withDensity D := by
     change Measure.map Units.val ((μ.withDensity D).comap Units.val) = _
     rw [ev.map_comap, restrict_withDensity ev.measurableSet_range, hr]
-  have hF : Integrable (fun v : Kˣ => f (v : K)) (KPCubicHaar.multiplicativeHaar K μ) := by
-    exact (ev.integrable_map_iff (g := f)).mp (hmap.symm ▸ hf)
+  have hF : Integrable (fun v : Kˣ => f (v : K)) (KPCubicHaar.multiplicativeHaar K μ) := 
+    (ev.integrable_map_iff (g := f)).mp (hmap.symm ▸ hf)
   have hI : (∫ v : Kˣ, f (v : K) ∂KPCubicHaar.multiplicativeHaar K μ) = ∫ x, g x ∂μ := by
     rw [← ev.integral_map, hmap, hi]
   have hneg : KPCubicHaar.abs K (-1 : K) = 1 := by
@@ -131,7 +129,4 @@ theorem inverse_substitution
   rw [htransI]
   have hn := integral_mul_left_eq_self (μ := KPCubicHaar.multiplicativeHaar K μ)
     (fun v : Kˣ => f (v : K)) (-1 : Kˣ)
-  simpa only [neg_one_mul] using hI.symm.trans hn.symm
-
-end
-end DedekindZetaZeroFree.KPRankOneBruhatKernelTransport
+  simp_all

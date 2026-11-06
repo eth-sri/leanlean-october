@@ -53,7 +53,7 @@ theorem reflectedSquareSpectrum_eq_of_im_ne_zero
     HasCompactSupport.of_support_subset_isCompact isCompact_Icc hsupp
   have harg : 1 - (1 - s) / 2 = (1 + s) / 2 := by ring
   have hq := Vendor.originMellinQ_eq_mellin_div_Gammaℂ W hW hc ((1 + s) / 2)
-    (by simp [Complex.div_re, Complex.add_re]; linarith)
+    (by simp [Complex.add_re]; linarith)
   have hdup := Vendor.reflected_square_gamma_duplication s hsi
   have hDne : (D : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (ne_of_gt hD)
   have hcp : (D : ℂ) ^ (s - 1 / 2) * (D : ℂ) ^ ((1 - s) / 2 - 1 / 2) =
@@ -89,18 +89,17 @@ theorem reflectedSquareSpectrum_eq_of_im_ne_zero
         Complex.Gammaℂ ((1 - s) / 2) ^ r *
         ((Complex.Gammaℂ ((1 + s) / 2))⁻¹ ^ (r - 1) *
         (Complex.Gammaℂ ((1 + s) / 2))⁻¹)) * mellin W ((1 + s) / 2) := by
-      rw [hcp, hgam]
-      simp only [div_eq_mul_inv]
+      simp_all
     _ = _ := by simp only [div_eq_mul_inv]; ring
 
-private lemma square_S_mono (b : ℝ) (m n : ℕ) (W : ℝ → ℂ)
+lemma square_S_mono (b : ℝ) (m n : ℕ) (W : ℝ → ℂ)
     (hmn : m ≤ n) : Vendor.S b m W ≤ Vendor.S b n W := by
   unfold Vendor.S
   exact Finset.sum_le_sum_of_subset_of_nonneg
     (Finset.range_mono (Nat.add_le_add_right hmn 1))
     (fun i _ _ => Real.sSup_nonneg fun y ⟨x, _, hy⟩ => hy ▸ norm_nonneg _)
 
-private lemma square_cpow_strip_bound (D u v : ℝ) (hD : 0 < D) :
+lemma square_cpow_strip_bound (D u v : ℝ) (hD : 0 < D) :
     ∃ C : ℝ, 0 < C ∧ ∀ s : ℂ, s.re ∈ Set.Icc u v → ‖(D : ℂ) ^ s‖ ≤ C := by
   refine ⟨max (D ^ u) (D ^ v),
     lt_of_lt_of_le (Real.rpow_pos_of_pos hD _) (le_max_left _ _), ?_⟩
@@ -110,7 +109,7 @@ private lemma square_cpow_strip_bound (D u v : ℝ) (hD : 0 < D) :
   · exact (Real.rpow_le_rpow_of_exponent_le h1 hs.2).trans (le_max_right _ _)
   · exact (Real.rpow_le_rpow_of_exponent_ge hD h1 hs.1).trans (le_max_left _ _)
 
-private lemma square_gamma_diff_pos (s : ℂ) (hs : 0 < s.re) :
+lemma square_gamma_diff_pos (s : ℂ) (hs : 0 < s.re) :
     DifferentiableAt ℂ Complex.Gammaℂ s := by
   have hGam : DifferentiableAt ℂ Complex.Gamma s := by
     refine Complex.differentiableAt_Gamma s fun m h => ?_
@@ -121,7 +120,7 @@ private lemma square_gamma_diff_pos (s : ℂ) (hs : 0 < s.re) :
   exact ((differentiableAt_const (2 : ℂ)).mul (differentiableAt_id.neg.const_cpow
     (Or.inl (by norm_num : (2 * (Real.pi : ℂ)) ≠ 0)))).mul hGam
 
-private lemma square_small_factor_bound (D : ℝ) (r : ℕ) (u v : ℝ)
+lemma square_small_factor_bound (D : ℝ) (r : ℕ) (u v : ℝ)
     (hD : 0 < D) (hu : 0 < u) :
     ∃ C : ℝ, 0 < C ∧ ∀ σ ∈ Set.Icc u v, ∀ t : ℝ, |t| ≤ 2 →
       ‖(1 / 2 : ℂ) * (D : ℂ) ^ ((((σ : ℂ) + (t : ℂ) * Complex.I) - 1) / 2) *
@@ -146,10 +145,7 @@ private lemma square_small_factor_bound (D : ℝ) (r : ℕ) (u v : ℝ)
         (((differentiableAt_const (1 : ℂ)).add differentiableAt_id).div_const (2 : ℂ))
     have hf : ContinuousAt f s :=
       ((((differentiableAt_const (1 / 2 : ℂ)).mul (hp s)).mul (hg.pow r)).mul hG).continuousAt
-    have hz : ContinuousAt (fun q : ℝ × ℝ =>
-        (q.1 : ℂ) + (q.2 : ℂ) * Complex.I) p := by fun_prop
-    exact (ContinuousAt.comp (f := fun q : ℝ × ℝ =>
-      (q.1 : ℂ) + (q.2 : ℂ) * Complex.I) (x := p) hf hz).continuousWithinAt
+    fun_prop
   obtain ⟨C, hC⟩ := (isCompact_Icc.prod isCompact_Icc).exists_bound_of_continuousOn hc
   refine ⟨max C 0 + 1, by positivity, fun σ hσ t ht => ?_⟩
   exact (hC (σ, t) ⟨hσ, by simpa [Set.mem_Icc, abs_le] using ht⟩).trans
@@ -178,8 +174,8 @@ theorem reflectedSquareSpectrum_uniform_rapid_bound
   obtain ⟨CF, hCF, hfactor⟩ := square_small_factor_bound D r u v hD hu
   let Cbig := (2 : ℝ) ^ n * (1 / 2 : ℝ) * CD * C2 ^ r * CG * CH
   let Csmall := (3 : ℝ) ^ n * CF * CQ
-  have hbig : 0 < Cbig := by dsimp [Cbig]; positivity
-  have hsm : 0 < Csmall := by dsimp [Csmall]; positivity
+  have hbig : 0 < Cbig := by positivity
+  have hsm : 0 < Csmall := by positivity
   refine ⟨max NH NQ, Cbig + Csmall, by positivity, ?_⟩
   intro W hW hsupp σ hσ t
   have hc : HasCompactSupport W :=
@@ -281,7 +277,3 @@ theorem reflectedSquareSpectrum_rapid_bound
   refine ⟨C₀ * Vendor.S b N W + 1, by positivity, ?_⟩
   intro σ hσ t
   exact (hbound W hW hsupp σ hσ t).trans (by linarith)
-
-end DedekindZetaZeroFree.LargeSieve
-
-end

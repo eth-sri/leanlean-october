@@ -49,5 +49,3 @@ theorem mixedThetaPair_selfdual (F : Type) [Field F] [NumberField F] :
 @[simp] theorem mixedThetaPair_f₀_eq_g₀ (F : Type) [Field F] [NumberField F] :
     (DedekindZetaZeroFree.AbelianQuotient.Theta.mixedThetaPair F).f₀ =
       (DedekindZetaZeroFree.AbelianQuotient.Theta.mixedThetaPair F).g₀ := rfl
-
-end DedekindZetaZeroFree.Hecke

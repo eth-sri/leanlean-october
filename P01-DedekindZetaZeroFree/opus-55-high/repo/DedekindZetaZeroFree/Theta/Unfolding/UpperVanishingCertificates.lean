@@ -18,6 +18,3 @@ def JointReverseAbsoluteSources.withUpperZero (C : JointReverseAbsoluteSources R
 theorem jointUpperVanishingSources_of_jointReverseAbsoluteSources (prior : Nonempty (JointReverseAbsoluteSources R N)) : Nonempty (JointUpperVanishingSources R N) := by
   rcases prior with ⟨C⟩
   exact ⟨JointReverseAbsoluteSources.withUpperZero R N C⟩
-end DedekindZetaZeroFree.IdeleInsertion
-
-end

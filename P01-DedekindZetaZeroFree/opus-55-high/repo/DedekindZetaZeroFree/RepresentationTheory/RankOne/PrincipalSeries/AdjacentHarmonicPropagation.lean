@@ -13,7 +13,6 @@ open _root_.DedekindZetaZeroFree.KPCplxLoweringCoordinateBoost.Geometry renaming
 
 open _root_.DedekindZetaZeroFree.KPCplxHarmonicPropagation renaming compact_polynomial_ne_zero_lowering → compact_polynomial_ne_zero_lowering
 
-noncomputable section
 open scoped Classical Topology Matrix.Norms.Elementwise
 set_option backward.isDefEq.respectTransparency false
 namespace DedekindZetaZeroFree.KPGlobalResidualConstruction.NativeComplexHCPropagation
@@ -43,11 +42,11 @@ theorem adjacent_lowering (s : ℝ) (n : ℕ)
     have hji : noncompactAxis j = i := by fin_cases i <;> rfl
     let c : ℂ := noncompactCoefficient j
     have hc : c ≠ 0 := by
-      have hsqrt : (Real.sqrt 2 : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (Real.sqrt_ne_zero'.mpr (by norm_num))
+      have hsqrt : (Real.sqrt 2 : ℂ) ≠ 0 := by simp
       fin_cases i <;> simp [c,j,noncompactCoefficient, hsqrt]
     let D := c⁻¹ • derivative s (KPSmoothCoreCasimirEnergy.cartanMatrix (false,j)) f
-    have hDU : D ∈ U := U.smul_mem _ (hLie _ (by
-      exact (KPSmoothCoreCasimirEnergy.cartan_basis_normalization.1 j).2) f hf)
+    have hDU : D ∈ U := U.smul_mem _ (hLie _ (
+      (KPSmoothCoreCasimirEnergy.cartan_basis_normalization.1 j).2) f hf)
     have hprofile : compactRestriction s D = polynomialCompactRestriction
         (MvPolynomial.pderiv i p - (((n+1 : ℕ) : ℂ)+1+2*(s : ℂ)) • (MvPolynomial.X i * p)) := by
       rw [map_smul, conformal_gradient_derivative s j (n+1) p f hp.1 he,
@@ -77,8 +76,7 @@ theorem adjacent_raising (s : ℝ) (n : ℕ) (hcoeff : (n : ℂ)+1+2*(s : ℂ) �
     rw [conformal_gradient_derivative s 0 n p u hp.1
       (KPCplxHarmonicPropagation.RaisingCalculation.harmonicSection_compact s n)]
     have hpartial : MvPolynomial.pderiv 2 p = 0 := by
-      simp [p, KPCplxHarmonicPropagation.RaisingCalculation.transverse,
-        MvPolynomial.pderiv_pow, MvPolynomial.pderiv_C_mul, Pi.single_apply]
+      simp [p, KPCplxHarmonicPropagation.RaisingCalculation.transverse]
     simp only [noncompactAxis, Matrix.cons_val_zero, hpartial, zero_sub,
       map_neg, map_smul, smul_neg, smul_smul]
     simp only [noncompactCoefficient, Matrix.cons_val_zero, c, neg_mul, neg_smul]
@@ -152,7 +150,3 @@ theorem negative_coefficients_nonzero :
       have he := congrArg Complex.re h
       norm_num at he
       linarith
-
-end DedekindZetaZeroFree.KPGlobalResidualConstruction.NativeComplexHCPropagation
-
-end

@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.ComplexC
 
 @[expose] public section
 
-noncomputable section
 
 namespace DedekindZetaZeroFree.ThetaArchAngularChartSeminorms
 
@@ -24,7 +23,3 @@ theorem tendsto_submodule_of_chartSeminorm
   have := h n
   rw [tendsto_order] at this
   exact this.2 ε hε
-
-end DedekindZetaZeroFree.ThetaArchAngularChartSeminorms
-
-end

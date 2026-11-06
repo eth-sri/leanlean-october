@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Integral local induction equivalence
 
@@ -45,7 +42,7 @@ variable (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
 
 /-- The product of all local integer-unit groups from the canonical local tensor decomposition, rewritten
 as the induced integer-unit module at a chosen extension. -/
-noncomputable def completionProductIntegerUnitsEquivInducedModule :
+def completionProductIntegerUnitsEquivInducedModule :
     letI := LocalInductionInternal.extensionCompletionAlgebra vK w
     letI : SMul K w.1.Completion :=
       LocalInductionInternal.extensionCompletionSMul vK w
@@ -109,7 +106,6 @@ noncomputable def completionProductIntegerUnitsEquivInducedModule :
     { reindex with
       map_mul' := by
         intro x y
-        funext q
         rfl }
   exact
     reindexMul.trans
@@ -120,7 +116,3 @@ noncomputable def completionProductIntegerUnitsEquivInducedModule :
             vK hvK w hvKna q).toMulEquiv).trans
         (inducedRightCosetCoordinates
           (absoluteValueDecompositionGroup K w.1)).symm)
-
-end IntegralInduction
-
-end

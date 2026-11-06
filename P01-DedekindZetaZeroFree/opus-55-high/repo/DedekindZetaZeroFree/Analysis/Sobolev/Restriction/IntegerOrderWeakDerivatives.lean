@@ -65,8 +65,7 @@ private theorem integral_mul_test_restrict {n : ℕ} {inner outer : LocalBall n}
     ← coordinateDerivative] at heq
   have hzero := integral_mul_test_restrict hsub g φ []
   simp only [coordinateDerivativeList] at hzero
-  rw [hzero] at heq
-  exact heq
+  simp_all
 
  def restrictSobolev {n k : ℕ} {inner outer : LocalBall n}
     (hsub : inner.carrier ⊆ outer.carrier) (u : IntegerSobolev outer k) :
@@ -92,7 +91,3 @@ theorem restrict_integerSobolev {n k : ℕ} (inner outer : LocalBall n)
   apply integral_congr_ae
   filter_upwards [hae α] with x hx
   rw [hx]
-
-end DedekindZetaZeroFree.KPContLocalEnergy.SobolevEnergyEstimates
-
-end

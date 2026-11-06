@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Abstract reciprocity: the maximal-unramified symbol
 
@@ -127,11 +124,7 @@ theorem finiteUnramifiedRestriction_mk
     (hUnramified : L.IsUnramified D) (k : K.field.toSubgroup) :
     finiteUnramifiedRestriction D K L hUnramified (QuotientGroup.mk k) =
       L.extensionQuotientMk k := by
-  apply L.extensionQuotientMulEquiv.injective
-  simp [finiteUnramifiedRestriction,
-    maximalUnramifiedExtensionRestriction_mk,
-    FiniteGaloisSubextension.toGaloisExtensionQuotientMulEquiv]
-  exact L.toGaloisSubextension.extensionQuotientMk_apply k
+  rfl
 
 /--
 Establishes the identity `finiteUnramifiedRestriction D K L hUnramified (D.frobenius K) =
@@ -186,15 +179,7 @@ theorem finiteUnramifiedRestriction_frobenius
       FiniteGaloisSubextension.toFiniteAbstractExtension] using hUnramified
   have hdegree :
       (ER.toFiniteAbstractExtension.degree : ℕ) = n := by
-    change Nat.card ER.toFiniteAbstractExtension.quotient =
-      Nat.card E.quotient
-    apply Nat.card_congr
-    change
-      (K.field.toSubgroup ⧸
-          extensionSubgroup K.field L.field L.below) ≃
-        (K.field.toSubgroup ⧸
-          extensionSubgroup K.field L.field L.below)
-    exact Equiv.refl _
+    rfl
   have hresidueDegree : (ER.residueDegree : ℕ) = n := by
     exact
       (ER.toFiniteAbstractExtension.residueDegree_eq_degree_of_isUnramified
@@ -212,7 +197,7 @@ theorem finiteUnramifiedRestriction_frobenius
   apply Multiplicative.ext
   change zHatReduction n hn (D.normalizedDegree K k).toAdd = 0
   rw [← hkl, hd', map_nsmul]
-  exact ZModModule.char_nsmul_eq_zero n _
+  simp
 
 /-- Normalized degree modulo `[L : K]` on a finite unramified Galois
 quotient. -/
@@ -247,8 +232,8 @@ theorem finiteUnramifiedDegreeHom_mk
       zHatReductionMul
         (L.toFiniteAbstractExtension.degree : ℕ)
         L.toFiniteAbstractExtension.degree.property
-        (D.normalizedDegree K k) := by
-  exact QuotientGroup.lift_mk' (extensionSubgroup K.field L.field L.below)
+        (D.normalizedDegree K k) := 
+  QuotientGroup.lift_mk' (extensionSubgroup K.field L.field L.below)
     (finiteUnramifiedDegreeHom_killsExtension D K L hUnramified) k
 
 /--
@@ -306,10 +291,7 @@ def finiteUnramifiedDegreeEquiv
         (extensionSubgroup K.field L.field L.below).index :=
       (Subgroup.index_eq_card _).symm
     _ = n := by
-      change
-        (extensionSubgroup E.base E.field E.below).index =
-          (E.degree : ℕ)
-      exact E.extensionSubgroup_index_eq_degree
+      rfl
     _ = Nat.card (ZMod n) := (Nat.card_zmod n).symm
     _ = Nat.card (Multiplicative (ZMod n)) :=
       (Nat.card_congr Multiplicative.toAdd).symm
@@ -329,10 +311,7 @@ theorem finiteUnramifiedDegreeEquiv_restriction
         (D.maximalUnramifiedDegreeEquiv K x) := by
   refine Quotient.inductionOn' x ?_
   intro k
-  change finiteUnramifiedDegreeHom D K L hUnramified
-      (L.extensionQuotientMk k) = _
-  rw [finiteUnramifiedDegreeHom_mk D,
-    D.maximalUnramifiedDegreeEquiv_mk]
+  rfl
 
 /-- The arithmetic Frobenius has finite normalized degree one. -/
 @[simp]
@@ -348,24 +327,6 @@ theorem finiteUnramifiedDegreeEquiv_unramifiedFrobenius
   rw [← finiteUnramifiedRestriction_frobenius D K L hUnramified,
     finiteUnramifiedDegreeEquiv_restriction D]
   rw [D.maximalUnramifiedDegreeEquiv_frobenius]
-  apply Multiplicative.ext
-  rfl
-
-/-- Profinite exponentiation of the maximal-unramified Frobenius, expressed
-through the canonical degree isomorphism with `ℤ̂`. -/
-def maximalUnramifiedFrobeniusPower
-    (D : DegreeData G) (K : FiniteResidueAbstractField D) (z : ZHat) :
-    Additive (K.field.toSubgroup ⧸ D.fieldInertiaWithin K.field) :=
-  (D.maximalUnramifiedDegreeEquiv K).toAdditive.symm z
-
-/--
-Establishes the identity `maximalUnramifiedFrobeniusPower D K 1 = Additive.ofMul (D.frobenius K)`.
--/
-@[simp]
-theorem maximalUnramifiedFrobeniusPower_one
-    (D : DegreeData G) (K : FiniteResidueAbstractField D) :
-    maximalUnramifiedFrobeniusPower D K 1 =
-      Additive.ofMul (D.frobenius K) := by
   rfl
 
 end DegreeData
@@ -483,17 +444,6 @@ theorem maximalUnramifiedNormResidue_degree
     (K.toFiniteResidueAbstractField D)).toAdditive.apply_symm_apply
       ((v.valueGroup).subtype (v.valuationAt K a))
 
-/-- The maximal-unramified symbol is literally the profinite power
-`φ_K ^ v_K(a)`. -/
-theorem maximalUnramifiedNormResidue_eq_frobeniusPower
-    (v : ValuationData D A)
-    (K : FiniteAbstractField G)
-    (a : ambientFixedAddSubgroup A K.field) :
-    maximalUnramifiedNormResidueSymbol v K a =
-      maximalUnramifiedFrobeniusPower D (K.toFiniteResidueAbstractField D)
-        (v.valuationAt K a : ZHat) := by
-  rfl
-
 /-- At every finite unramified quotient, normalized degree of the
 maximal-unramified symbol is valuation reduced modulo the extension degree. -/
 theorem maximalUnramifiedNormResidueSymbol_finiteDegree
@@ -595,11 +545,3 @@ theorem maximalUnramifiedNormResidueSymbol_finiteRestriction_of_generator
   rw [AddEquiv.apply_symm_apply]
   exact (maximalUnramifiedNormResidueSymbol_finiteReciprocity_of_generator v hAxiom
     K L hUnramified r hr a).symm
-
-end ValuationData
-
-end Representation
-
-end ClassFormation
-
-end

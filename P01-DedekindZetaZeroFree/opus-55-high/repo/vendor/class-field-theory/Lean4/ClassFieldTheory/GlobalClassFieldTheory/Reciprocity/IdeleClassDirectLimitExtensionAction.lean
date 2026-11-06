@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Galois actions on rational fixed-field idele classes
 
@@ -21,7 +18,6 @@ Naturality of the fixed-field comparison for automorphisms and the
 finite-extension Galois action.
 -/
 
-noncomputable section
 
 namespace GlobalClassFieldTheory
 namespace Reciprocity
@@ -29,40 +25,6 @@ namespace Reciprocity
 open ClassFormation
 open LocalClassFieldTheory
 open CyclicCohomology
-
-/-- The fixed-part comparison intertwines an automorphism of a finite
-rational intermediate field with any lift to the rational absolute
-Galois group. -/
-theorem rationalIdeleClassEquivFixed_action_coe
-    (E : IntermediateField ℚ (SeparableClosure ℚ))
-    [FiniteDimensional ℚ E]
-    (σ : SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)
-    (τ : E ≃ₐ[ℚ] E)
-    (hστ : ∀ x : E,
-      ((τ x : E) : SeparableClosure ℚ) =
-        σ (x : SeparableClosure ℚ))
-    (c : RelativeIdeleGroup.ClassGroup ℚ E) :
-    rationalIdeleClassRepresentation.ρ σ
-        (rationalIdeleClassEquivFixed E
-          (Additive.ofMul
-            (_root_.relativeIdeleClassBaseChangeMulEquiv
-              (K := ℚ) (L := E) c))).1 =
-      (rationalIdeleClassEquivFixed E
-        (Additive.ofMul
-          (_root_.relativeIdeleClassBaseChangeMulEquiv
-            (K := ℚ) (L := E) (τ • c)))).1 := by
-  change
-    Additive.ofMul
-        (σ • rationalIntermediateIdeleClassToDirectLimit E
-          (_root_.relativeIdeleClassBaseChangeMulEquiv
-            (K := ℚ) (L := E) c)) =
-      Additive.ofMul
-        (rationalIntermediateIdeleClassToDirectLimit E
-          (_root_.relativeIdeleClassBaseChangeMulEquiv
-            (K := ℚ) (L := E) (τ • c)))
-  exact congrArg Additive.ofMul
-    (rationalIntermediateIdeleClassToDirectLimit_conjugation
-      E σ τ hστ c)
 
 /-- The fixed-part idèle-class realization is natural under an
 equivalence between two finite rational intermediate fields induced by
@@ -91,7 +53,7 @@ theorem rationalIdeleClassEquivFixed_ambientAlgEquiv
     (rationalIntermediateIdeleClassToDirectLimit_ambientAlgEquiv
       σ e hσe c)
 
-private theorem relativeIdeleClassBaseChangeAddEquiv_apply
+theorem relativeIdeleClassBaseChangeAddEquiv_apply
     (E : Type) [Field E] [NumberField E]
     (c : Additive (RelativeIdeleGroup.ClassGroup ℚ E)) :
     (MulEquiv.toAdditive
@@ -104,7 +66,7 @@ private theorem relativeIdeleClassBaseChangeAddEquiv_apply
 
 /-- The relative fixed-field comparison has the same underlying direct-limit
 class as the intermediate-field comparison from which it is transported. -/
-private theorem
+theorem
     rationalAbstractRelativeFixedFieldIdeleClassEquivFixed_coe
     (K L : ClosedSubgroup
       (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
@@ -126,7 +88,7 @@ private theorem
           ℚ (SeparableClosure ℚ) hLK).restrictScalars ℚ) c).1 := by
   rfl
 
-private theorem
+theorem
     rationalAbstractRelativeFixedFieldIdeleClassEquivFixed_baseChange_coe
     (K L : ClosedSubgroup
       (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
@@ -157,32 +119,9 @@ private theorem
             (L := abstractRelativeFixedField
               ℚ (SeparableClosure ℚ) hLK)
             (Additive.toMul c)))).1 := by
-  let E := abstractRelativeFixedField ℚ (SeparableClosure ℚ) hLK
-  let eFixed :=
-    rationalAbstractRelativeFixedFieldIdeleClassEquivFixedOfFiniteDimensional
-      K L hLK
-  let eRelative :=
-    MulEquiv.toAdditive
-      (_root_.relativeIdeleClassBaseChangeMulEquiv
-        (K := ℚ) (L := E))
-  calc
-    (eFixed (eRelative c)).1 =
-        (rationalIdeleClassEquivFixed
-          (E.restrictScalars ℚ) (eRelative c)).1 :=
-      rationalAbstractRelativeFixedFieldIdeleClassEquivFixed_coe
-        K L hLK (eRelative c)
-    _ = (rationalIdeleClassEquivFixed
-          (E.restrictScalars ℚ)
-          (Additive.ofMul
-            (_root_.relativeIdeleClassBaseChangeMulEquiv
-              (K := ℚ) (L := E) (Additive.toMul c)))).1 :=
-      congrArg
-        (fun d =>
-          (rationalIdeleClassEquivFixed
-            (E.restrictScalars ℚ) d).1)
-        (relativeIdeleClassBaseChangeAddEquiv_apply E c)
+  rfl
 
-private theorem
+theorem
     rationalAbstractRelativeFixedFieldIdeleClassEquivFixed_action_baseChange_coe
     (K L : ClosedSubgroup
       (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
@@ -242,8 +181,8 @@ private theorem
       (K := ℚ) (L := E₀) cτRelQ
   have hστQ : ∀ y : E₀,
       ((τQ y : E₀) : SeparableClosure ℚ) =
-        σ (y : SeparableClosure ℚ) := by
-    exact hστ
+        σ (y : SeparableClosure ℚ) := 
+    hστ
   have hAction :=
     rationalIdeleClassEquivFixed_ambientAlgEquiv
       (E := E₀) (F := E₀)
@@ -252,9 +191,7 @@ private theorem
       (eFixed (eRelative c)).1 =
         (rationalIdeleClassEquivFixed
           E₀ (Additive.ofMul cQ)).1 := by
-    exact
-      rationalAbstractRelativeFixedFieldIdeleClassEquivFixed_baseChange_coe
-        K L hLK c
+    rfl
   have hCongr :
       ideleClassCongr τQ cQ = cτQ := by
     exact
@@ -311,7 +248,7 @@ private theorem
       hAction
     _ = _ := hRight
 
-private theorem
+theorem
     rationalAbstractExtensionIdeleClassEquiv_action_fixed_mk
     (K L : ClosedSubgroup
       (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
@@ -446,15 +383,7 @@ private theorem
     _ =
         rationalIdeleClassRepresentation.ρ σ.1
           (eAmbient x).1 := by
-      change
-        relativeCosetAction rationalIdeleClassRepresentation
-            K L hLK (eAmbient x) (QuotientGroup.mk σ) =
-          rationalIdeleClassRepresentation.ρ σ.1
-            (eAmbient x).1
-      exact
-        relativeCosetAction_mk
-          rationalIdeleClassRepresentation K L hLK
-          (eAmbient x) σ
+      rfl
     _ =
         rationalIdeleClassRepresentation.ρ σ.1
           (eFixed (eRelative c)).1 := by
@@ -468,7 +397,7 @@ private theorem
         rationalAbstractRelativeFixedFieldIdeleClassEquivFixed_action_baseChange_coe
           K L hLK σ.1 τ₀ hστ c
 
-private theorem rationalTowerRelativeIdeleClassBaseChangeAddEquiv_smul
+theorem rationalTowerRelativeIdeleClassBaseChangeAddEquiv_smul
     (F E : Type)
     [Field F] [NumberField F]
     [Field E] [NumberField E]
@@ -522,9 +451,7 @@ private theorem addEquiv_trans_symm_trans_symm_trans_apply_eq
     (h : eV y = eB (eA z))
     (ht : eC z = w) :
     (((eV.trans eB.symm).trans eA.symm).trans eC) y = w := by
-  change eC (eA.symm (eB.symm (eV y))) = w
-  rw [h, eB.symm_apply_apply, eA.symm_apply_apply]
-  exact ht
+  simp_all
 
 private theorem rationalAbstractExtensionIdeleClassEquiv_action_mk
     (K L : ClosedSubgroup
@@ -738,8 +665,3 @@ theorem rationalAbstractExtensionIdeleClassEquiv_action
   exact
     rationalAbstractExtensionIdeleClassEquiv_action_mk
       K L hLK hnormal σ x
-
-end Reciprocity
-end GlobalClassFieldTheory
-
-end

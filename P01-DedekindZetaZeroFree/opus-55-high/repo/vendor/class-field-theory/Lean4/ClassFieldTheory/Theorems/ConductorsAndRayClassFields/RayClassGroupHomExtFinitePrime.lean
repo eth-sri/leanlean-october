@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Prime classes determine maps out of a ray class group
 
@@ -28,7 +23,6 @@ ray class group to determine any homomorphism into a commutative group.
 open scoped NumberField
 open NumberField IsDedekindDomain
 
-noncomputable section
 
 namespace ClassFieldTheory
 
@@ -66,7 +60,3 @@ theorem rayClassGroup_hom_ext_finitePrime
   have hx := DFunLike.congr_fun hcomp (e x)
   change f (e.symm (e x)) = g (e.symm (e x)) at hx
   simpa only [MulEquiv.symm_apply_apply] using hx
-
-end ClassFieldTheory
-
-end

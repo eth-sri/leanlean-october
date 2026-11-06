@@ -12,7 +12,7 @@ variable {F : Type} [Field F] [NumberField F]
 variable {c : Ideal (𝓞 F)} (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
 variable {a : Ideal (𝓞 F)}
 
-private lemma mem_zero_one_neg_one_of_cube_eq_self {z : ℂ} (h : z ^ 3 = z) :
+lemma mem_zero_one_neg_one_of_cube_eq_self {z : ℂ} (h : z ^ 3 = z) :
     z ∈ ({0, 1, -1} : Set ℂ) := by
   have hfac : z * (z - 1) * (z + 1) = z ^ 3 - z := by ring
   have hzero : z * (z - 1) * (z + 1) = 0 := by rw [hfac, sub_eq_zero.mpr h]
@@ -69,5 +69,3 @@ theorem quadraticFamily_norm_le_one
   have hmem := quadraticFamily_mem_zero_one_neg_one Q ha hac n
   simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at hmem
   rcases hmem with h | h | h <;> rw [h] <;> norm_num
-
-end DedekindZetaZeroFree.LargeSieve

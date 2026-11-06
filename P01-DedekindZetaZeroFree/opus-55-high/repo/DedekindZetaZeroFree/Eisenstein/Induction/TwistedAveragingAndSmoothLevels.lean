@@ -13,7 +13,6 @@ open NumberField IsDedekindDomain MeasureTheory
 namespace DedekindZetaZeroFree.KPGlobalTorusBorelTwistCompatibilityBorelInduction
 open KPGlobalTorusBorelNormTwistTransport
 noncomputable section
-set_option autoImplicit false
 set_option maxHeartbeats 800000
 set_option maxRecDepth 2000
 set_option backward.isDefEq.respectTransparency false
@@ -95,7 +94,7 @@ theorem functionsQ_chart_integral_jets (C : ModelData F ζ hζ) (s : ℂ)
     filter_upwards [hU.mem_nhds hzU] with y hy
     change (twistedQ F ζ hζ C s (f.val.val (groupArchChart F ζ hζ y * g))).val.val 1 = _
     rw [← TorusChartTransport.weightedChart_integral_eq F ζ hζ C s r f.val g y]
-    exact integral_congr_ae (Filter.Eventually.of_forall (fun x => (hEq y hy x).symm))
+    simp_all
   have hset : groupArchDomain F =ᶠ[nhds z] (Set.univ : Set (GroupArch F)) :=
     Filter.eventually_of_mem ((groupArchDomain_open F).mem_nhds hz)
       (fun y hy => by simp [hy])
@@ -193,7 +192,6 @@ open NumberField IsDedekindDomain MeasureTheory
 namespace DedekindZetaZeroFree.KPGlobalTorusBorelNormTwistTransport
 noncomputable section
 open KPGlobalTorusBorelTwistCompatibilityBorelInduction
-set_option autoImplicit false
 set_option maxRecDepth 2000
 set_option maxHeartbeats 800000
 set_option synthInstance.maxHeartbeats 100000
@@ -244,8 +242,3 @@ def borelQ (C : ModelData F ζ hζ) (s : ℂ) :
  theorem borelQ_fiberwise (C : ModelData F ζ hζ) (s : ℂ)
     (f : Induced F ζ hζ (twist F ζ hζ (rationalModel F ζ hζ) s)) (g : G F ζ hζ) :
     (borelQ F ζ hζ C s f).val.val g = twistedQ F ζ hζ C s (f.val.val g) := by rfl
-
-end
-end DedekindZetaZeroFree.KPGlobalTorusBorelNormTwistTransport
-
-end

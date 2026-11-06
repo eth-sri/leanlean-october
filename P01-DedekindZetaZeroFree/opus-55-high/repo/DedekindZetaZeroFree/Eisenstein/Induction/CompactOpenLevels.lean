@@ -36,9 +36,7 @@ def refined : ActualFiniteFactor.ProductLevelData F ζ hζ where
           (ActualFiniteFactor.pgl_standard_compact_open F ζ hζ q).2)⟩
   cofinally_standard := by
     filter_upwards [FiniteLevels.localLevel_standard F ζ hζ P C] with q hq
-    change (FiniteLevels.localLevel F ζ hζ P C q).toOpenSubgroup.toSubgroup ⊓
-      pglCompact F ζ hζ (Sum.inr q) = _
-    rw [hq, inf_idem]
+    simp_all
 
 theorem refined_le : ActualFiniteFactor.productSubgroup F ζ hζ (refined F ζ hζ P C) ≤
     ActualFiniteFactor.productSubgroup F ζ hζ (FiniteLevels.productLevel F ζ hζ P C) := by
@@ -113,7 +111,3 @@ theorem scalar_fixed (g u : KPGlobalTorusFunctionData.G F ζ hζ)
     RawSource.scalarValue F ζ hζ P C (g * u) = RawSource.scalarValue F ζ hζ P C g := by
   rw [globalLevel_eq] at hu
   exact RawSource.scalarValue_right_product F ζ hζ P C g u (refined_le F ζ hζ P C hu)
-
-end DedekindZetaZeroFree.EisensteinReferenceSections.SourceLevels
-
-end

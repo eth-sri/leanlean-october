@@ -9,7 +9,6 @@ open NumberField IsDedekindDomain MeasureTheory
 
 namespace DedekindZetaZeroFree.KPGlobalTorusBorelNormTwistTransport
 noncomputable section
-set_option autoImplicit false
 set_option maxRecDepth 2000
 set_option maxHeartbeats 800000
 set_option synthInstance.maxHeartbeats 100000
@@ -66,7 +65,6 @@ def InducedFunctions (P : Polarization F ζ hζ) :
       KPGlobalTorusFunctionData.deltaHalf F ζ hζ t •
         KPGlobalTorusPeriodizationInverse.rightAction F ζ hζ P t (f g)}
   zero_mem' := by
-    intro t x g
     simp
   add_mem' := by
     intro f k hf hk t x g
@@ -86,7 +84,7 @@ def InducedLevel (P : Polarization F ζ hζ)
   zero_mem' := by
     constructor
     · intro g; exact contDiffOn_const
-    · intro g j; rfl
+    simp
   add_mem' := by
     intro f k hf hk
     constructor
@@ -231,6 +229,3 @@ def inducedFinalSeminorms (P : Polarization F ζ hζ) :=
 def inducedTopology (P : Polarization F ζ hζ) : TopologicalSpace (Induced F ζ hζ P) :=
   (SeminormFamily.moduleFilterBasis
     (fun q : inducedFinalSeminorms F ζ hζ P => q.val)).topology
-
-end
-end DedekindZetaZeroFree.KPGlobalTorusBorelNormTwistTransport

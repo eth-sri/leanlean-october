@@ -41,7 +41,7 @@ private theorem residue_card : residueCardinality (LocalField F v) = v.asIdeal.a
   rw [← Nat.card_congr er.toEquiv, Ideal.absNorm_apply]
   rfl
 
-private theorem normalized_valuation (x : LocalField F v) :
+theorem normalized_valuation (x : LocalField F v) :
     IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F v)
       (valuation (LocalField F v) x) = Valued.v x := by
   let ν : Valuation (LocalField F v) (WithZero (Multiplicative ℤ)) := Valued.v
@@ -99,7 +99,7 @@ private theorem actual_relation (π : (LocalField F v)ˣ)
     simp only [map_sub, map_smul, hq, sub_self]
   exact hz
 
-private theorem actual_differences_eq :
+theorem actual_differences_eq :
     KPFiniteLocal.ordinaryDifferences (actualCanonicalImageRepresentation F ζ hζ v S P μ hμ)
       (show AddChar (LocalField F v) (ActualCover F ζ hζ v) from
         { toFun := KPPGLLocalCover.N F ζ hζ (Sum.inr v)
@@ -115,8 +115,7 @@ private theorem actual_differences_eq :
   constructor
   · rintro ⟨x, φ, rfl⟩
     refine ⟨(Multiplicative.ofAdd x, φ), ?_⟩
-    simp only [MonoidHom.comp_apply, hroot]
-    rfl
+    simp_all
   · rintro ⟨⟨x, φ⟩, rfl⟩
     refine ⟨x.toAdd, φ, ?_⟩
     simp only [MonoidHom.comp_apply, hroot]
@@ -172,12 +171,12 @@ theorem actual_small_norm_decay_canonical
     { toFun x := ⟨ψ.toAddChar x, mem_sphere_zero_iff_norm.mpr (ψ.unitary x)⟩
       map_zero_eq_one' := by apply Subtype.ext; exact ψ.toAddChar.map_zero_eq_one
       map_add_eq_mul' := by intro x y; apply Subtype.ext; exact ψ.toAddChar.map_add_eq_mul x y }
-  have hn : Continuous n := by
-    exact (KPPGLLocalCover.finite_lifts_continuous F ζ hζ v
+  have hn : Continuous n := 
+    (KPPGLLocalCover.finite_lifts_continuous F ζ hζ v
       (KPAdelicCoverRestrictedProduct.depth F ζ hζ v)
       (KPAdelicCoverRestrictedProduct.depth_admissible F ζ hζ v)).1
-  have ha : Continuous a := by
-    exact (KPPGLLocalCover.finite_lifts_continuous F ζ hζ v
+  have ha : Continuous a := 
+    (KPPGLLocalCover.finite_lifts_continuous F ζ hζ v
       (KPAdelicCoverRestrictedProduct.depth F ζ hζ v)
       (KPAdelicCoverRestrictedProduct.depth_admissible F ζ hζ v)).2.2
   have hconj : ∀ (y : (LocalField F v)ˣ) (x : LocalField F v),
@@ -188,8 +187,8 @@ theorem actual_small_norm_decay_canonical
     exact hh
   have hcube : ∀ y : (LocalField F v)ˣ, a (y * π ^ 3) = a y * a (π ^ 3) := by
     intro y
-    have hs : KPHilbert.B3 F ζ hζ (Sum.inr v) y (π ^ 3) = 1 := by
-      exact ((KPHilbert.B3_laws F ζ hζ (Sum.inr v)).2.2.2.2.1 y π).2
+    have hs : KPHilbert.B3 F ζ hζ (Sum.inr v) y (π ^ 3) = 1 := 
+      ((KPHilbert.B3_laws F ζ hζ (Sum.inr v)).2.2.2.2.1 y π).2
     have hh := KPPGLLocalCover.A_mul F ζ hζ (Sum.inr v) y (π ^ 3)
     simp only [hs, one_pow, map_one, one_mul] at hh
     exact hh.symm
@@ -203,11 +202,3 @@ theorem actual_small_norm_decay_canonical
       change ell (ρ (S.borel.upperRoot (Multiplicative.ofAdd x)) η) = _ at h
       rw [hr] at h
       exact h) φ δ hδ hδthird
-
-end ActualFiniteOutputSteps
-end KPInterface
-end DedekindZetaZeroFree
-end
-end
-
-end

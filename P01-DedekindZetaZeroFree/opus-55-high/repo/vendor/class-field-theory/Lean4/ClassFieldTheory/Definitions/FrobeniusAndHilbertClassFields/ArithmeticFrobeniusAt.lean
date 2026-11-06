@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Arithmetic Frobenius at a finite prime
 -/
@@ -42,7 +36,3 @@ def arithmeticFrobeniusAt
     [IsAbelianGalois K L]
     (w : HeightOneSpectrum (𝓞 L)) : L ≃ₐ[K] L :=
   arithFrobAt (𝓞 K) (L ≃ₐ[K] L) w.asIdeal
-
-end ClassFieldTheory
-
-end

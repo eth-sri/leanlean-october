@@ -151,7 +151,7 @@ private theorem base_relation (U : CompactOpenLevel (FiniteCover F ζ hζ))
     intro ε
     apply MonoidHom.mem_ker.mp
     rw [← (finite_cover_exact F ζ hζ).2.1]
-    exact ⟨ε, rfl⟩
+    simp
   constructor
   · rintro ⟨u, hu⟩
     let t := finiteRationalLift F ζ hζ γ * c * u
@@ -185,7 +185,7 @@ private theorem component_iff (U : CompactOpenLevel (FiniteCover F ζ hζ))
     refine ⟨⟨u⁻¹, U.toOpenSubgroup.inv_mem hu⟩, ?_⟩
     simp only [MulAut.conj_apply, MulEquiv.toMonoidHom_eq_coe, MonoidHom.coe_coe] at hb
     rw [← hb]
-    simp [mul_assoc]
+    simp
   · rintro ⟨u, hu⟩
     refine ⟨finiteBase F ζ hζ (u : FiniteCover F ζ hζ)⁻¹,
       ⟨(u : FiniteCover F ζ hζ)⁻¹, U.toOpenSubgroup.inv_mem u.property, rfl⟩, ?_⟩
@@ -193,7 +193,7 @@ private theorem component_iff (U : CompactOpenLevel (FiniteCover F ζ hζ))
       (finiteBase F ζ hζ g)⁻¹) hu
     simpa [MulAut.conj_apply, mul_assoc] using hh
 
-private theorem slice_open
+theorem slice_open
     (U : CompactOpenLevel (FiniteCover F ζ hζ))
     (s : Setoid (SymmetricSpace F × FiniteCover F ζ hζ))
     (hs : ∀ p p', s.r p p' ↔ ∃ (γ : KPCuspArithmetic.PGL2 F)
@@ -361,7 +361,7 @@ private theorem central_comm' (F : Type) [Field F] [NumberField F]
     (KPAdelicCoverRestrictedProduct.pglCentralInjection_central F ζ hζ
       ⟨ε, rfl⟩) c).symm
 
-private theorem component_of_compare (F : Type) [Field F] [NumberField F]
+theorem component_of_compare (F : Type) [Field F] [NumberField F]
     (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (U : CompactOpenLevel (FiniteCover F ζ hζ)) (g : FiniteCover F ζ hζ)
     (γ : KPCuspArithmetic.PGL2 F) (ε η : rootsOfUnity 3 F) (u v : U.toOpenSubgroup)
@@ -371,7 +371,7 @@ private theorem component_of_compare (F : Type) [Field F] [NumberField F]
     intro δ
     have : central F ζ hζ δ ∈ (finiteBase F ζ hζ).ker := by
       rw [← (finite_cover_exact F ζ hζ).2.1]
-      exact ⟨δ, rfl⟩
+      simp
     exact this
   have hp := congrArg (finiteBase F ζ hζ) h
   simp only [map_mul, hc, one_mul] at hp
@@ -499,7 +499,7 @@ theorem finite_component_scalar_descent
       rw [hE f (x,c) i y δ ε u hp]
       apply hE f _ i y (γ * δ) ε u
       exact ⟨by change γ • x = (γ * δ) • y; rw [hp.1, mul_smul],
-        by simp only [Prod.snd]; rw [hp.2, map_mul]; simp only [mul_assoc]⟩
+        by simp only; rw [hp.2, map_mul]; simp only [mul_assoc]⟩
     · intro x c ε
       obtain ⟨i, y, δ, η, u, hp⟩ := hex (x,c)
       dsimp only [R, Prod.fst, Prod.snd] at hp
@@ -591,8 +591,8 @@ def genuineScalars (U : CompactOpenLevel (FiniteCover F ζ hζ)) :
       H (x, KPCuspGenuineMonodromy.central F ζ hζ ε * c) =
         (KPCuspGenuineMonodromy.chi F ζ hζ ε : ℂ) * H (x,c)) ∧
     (∀ x c (u : U.toOpenSubgroup), H (x,c * u) = H (x,c))}
-  zero_mem' := ⟨by intro x c γ; simp, by intro x c ε; simp,
-    by intro x c u; simp⟩
+  zero_mem' := ⟨by simp, by simp,
+    by simp⟩
   add_mem' := by
     rintro f g ⟨hf1, hf2, hf3⟩ ⟨hg1, hg2, hg3⟩
     refine ⟨?_, ?_, ?_⟩
@@ -897,8 +897,3 @@ theorem kp_cont_finite_cusp_atlas
       exact (A i).compact_core
     · intro i b hb γ x a
       rw [norm_mul, (L i).unitary, one_mul]
-
-end DedekindZetaZeroFree
-
-end
-end

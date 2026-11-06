@@ -62,10 +62,8 @@ theorem eq_zero_iff {m : Ideal (𝓞 F)} (η : RayClassCharacter F m)
     (I : Ideal (𝓞 F)) : η I = 0 ↔ I = ⊥ ∨ I ⊔ m ≠ ⊤ := η.eq_zero_iff' I
 
 theorem map_bot {m : Ideal (𝓞 F)} (η : RayClassCharacter F m) : η ⊥ = 0 := by
-  rw [eq_zero_iff]; exact Or.inl rfl
+  rw [eq_zero_iff]; simp
 
 theorem ne_zero_iff {m : Ideal (𝓞 F)} (η : RayClassCharacter F m)
     (I : Ideal (𝓞 F)) : η I ≠ 0 ↔ I ≠ ⊥ ∧ I ⊔ m = ⊤ := by
   rw [ne_eq, eq_zero_iff]; tauto
-
-end DedekindZetaZeroFree.LargeSieve.RayOperations

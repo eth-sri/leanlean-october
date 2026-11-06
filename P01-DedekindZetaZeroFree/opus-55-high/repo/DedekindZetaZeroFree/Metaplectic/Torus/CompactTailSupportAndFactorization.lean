@@ -21,7 +21,7 @@ variable (T : KPGlobalProductPolarizationCharacter.FiniteAdjustment F ζ hζ P)
 
 open KPGlobalTorusTensorFibers
 
-private theorem raw_polarized_mem
+theorem raw_polarized_mem
     (C : RawLocalScalarData F ζ hζ P T)
     (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ)
     (hQ : IsUnitProductModel F ζ hζ P T Q)
@@ -60,7 +60,7 @@ private theorem raw_polarized_mem
     · exact (KPGlobalProductPolarizationCharacter.B_maximal_abelian F ζ hζ P).1 x hx y hy
     · rcases hy with rfl; exact (hc x hx).symm
     · rcases hx with rfl; exact hc y hy
-    · rcases hx with rfl; rcases hy with rfl; exact Commute.refl _)
+    simp_all)
   letI := hi
   have hd : D = B := (KPGlobalProductPolarizationCharacter.B_maximal_abelian F ζ hζ P).2 D hBD
     (fun x hx y hy => setLike_mul_comm hx hy)
@@ -69,7 +69,7 @@ private theorem raw_polarized_mem
   rw [← hd]
   exact Subgroup.subset_closure (Or.inr rfl)
 
-private theorem raw_character
+theorem raw_character
     (C : RawLocalScalarData F ζ hζ P T)
     (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ)
     (hQ : IsUnitProductModel F ζ hζ P T Q)
@@ -138,7 +138,7 @@ theorem raw_scalar_support_zero_of_compact_tail_invariance
     intro r
     by_cases hr : r = q
     · subst r; rw [hbq]; exact hjL
-    · rw [hbr r hr, map_one]; exact Subgroup.one_mem _
+    · rw [hbr r hr, map_one]; simp
   have hjcompact : j.val.val ∈ KPAdelicCoverRestrictedProduct.pglCompact F ζ hζ (Sum.inr q) := by
     obtain ⟨ht, hcompact⟩ := C.actual_compact q hqe
     have hm := j.property
@@ -151,14 +151,14 @@ theorem raw_scalar_support_zero_of_compact_tail_invariance
     refine ⟨KPGoodCompactSplitting.kStar F ζ hζ q ht k, ?_, ?_⟩
     · change KPGoodCompactSplitting.kStar F ζ hζ q ht k ∈ KPAdelicCoverRestrictedProduct.finiteCompact F ζ hζ q
       simp only [KPAdelicCoverRestrictedProduct.finiteCompact, dif_neg hgood]
-      exact ⟨k, rfl⟩
+      simp
     · exact hk
   have hright := hinv b (fun r hr => by
       have hn : r ≠ q := fun he => hq (he ▸ hr)
       rw [hbr r hn]; rfl) (fun r hr => by
       by_cases he : r = q
       · subst r; rw [hbq]; exact hjcompact
-      · rw [hbr r he]; exact Subgroup.one_mem _)
+      · rw [hbr r he]; simp)
   have hbeval : ∀ r, C.evaluation r (C.reference r) (b.t r) = 1 := by
     intro r
     by_cases hr : r = q
@@ -201,7 +201,7 @@ theorem raw_scalar_support_zero_of_compact_tail_invariance
       change c.t r ∈ (C.canonical r).heisenberg.π.ker
       rw [(C.canonical r).heisenberg.quotient_kernel]
       exact hc
-    rw [he]; exact Subgroup.one_mem _
+    rw [he]; simp
   have hcr (r) (hr : r ≠ q) : c.t r = 1 := by
     change a.t r * b.t r * (a.t r)⁻¹ * (b.t r)⁻¹ = 1
     rw [hbr r hr]; group
@@ -210,8 +210,7 @@ theorem raw_scalar_support_zero_of_compact_tail_invariance
     rw [C.evaluation_formula, C.reference_formula, dif_pos (hcL r)]
     have hn : (C.canonical r).borel.coordinate (c.t r) = 1 := by
       change (C.canonical r).borel.coordinate (a.t r * b.t r * (a.t r)⁻¹ * (b.t r)⁻¹) = 1
-      simp only [map_mul, map_inv]
-      simp [mul_assoc, mul_comm, mul_left_comm]
+      simp
     rw [hn]
     simp [KPGlobalCenterRationalCharacter.localAbs]
   have hcchar : (Q.character ⟨c.g, raw_polarized_mem F ζ hζ P T C Q hQ c hcL⟩ : ℂ) ≠ 1 := by
@@ -283,9 +282,7 @@ private theorem diagonal_formula (t : KPGlobalTorusFunctionData.ordinaryTorus F)
     apply Units.ext
     ext i j
     fin_cases i <;> fin_cases j <;>
-      simp [KPGlobalCubicIdelePairing.diagonalHom, KPGlobalCubicIdelePairing.diagonalMatrix,
-        Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
-        Matrix.mul_apply, Fin.sum_univ_two, Matrix.scalar, hu, hA.2.1, hA.2.2]
+      simp [KPGlobalCubicIdelePairing.diagonalHom, KPGlobalCubicIdelePairing.diagonalMatrix, Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_apply, Fin.sum_univ_two, Matrix.scalar, hu, hA.2.1, hA.2.2]
     exact hw.symm
   change QuotientGroup.mk' _ (KPGlobalCubicIdelePairing.diagonalHom F (u * w⁻¹)) = t.val
   rw [← hA.1, heq]
@@ -400,25 +397,25 @@ theorem raw_quotient_mem_of_omitted_polarization
       rw [a.infinite_one, r.infinite_one]
       simp
     rw [← raw_local_projection_eq F ζ hζ raw e he (Sum.inl w) 1 hb, map_one]
-    exact (P.localData (Sum.inl w)).L.one_mem
+    simp
   | inr q =>
     let t := a.t q * (r.t q)⁻¹
     have ht : (C.canonical q).heisenberg.π t ∈ (C.polarization q).L := by
       by_cases hq : q ∈ S
       · have hr : r.t q = a.t q := (hR (fun q : S => a.t q.val)).1 ⟨q, hq⟩
         simp only [t, hr, mul_inv_cancel, map_one]
-        exact (C.polarization q).L.one_mem
+        simp
       · have hr : r.t q = 1 := by
           apply Subtype.ext
           rw [r.local_lift, (hR (fun q : S => a.t q.val)).2 q hq]
-          exact map_one _
+          rfl
         simpa only [t, hr, inv_one, mul_one] using hpol q hq
     have hm : t.val ∈
         ((KPGlobalProductPolarizationCharacter.localPreimage F ζ hζ (Sum.inr q)
           (P.localData (Sum.inr q)).L).map
             (KPGlobalProductPolarizationCharacter.localTorus F ζ hζ (Sum.inr q)).subtype) := by
       rw [← C.subgroup_matches q]
-      exact Subgroup.mem_map.mpr ⟨t, ht, rfl⟩
+      simp_all
     obtain ⟨b, hb, hbt⟩ := Subgroup.mem_map.mp hm
     change b.val = t.val at hbt
     have hl : b.val =
@@ -464,9 +461,7 @@ theorem raw_reference_tail_zero_of_omitted_nonpolarization
       (fun q => C.reference q.val) a.raw a.t a.local_lift
     apply hf.subset
     intro r hr
-    by_cases h : r ∈ S
-    · exact False.elim (hr (if_pos h))
-    · simpa only [Function.mem_mulSupport, dif_neg h, if_neg h] using hr
+    simp_all
   apply finprod_eq_zero _ q _ hsupp
   rw [if_neg hq, C.evaluation_formula, C.reference_formula, dif_neg hpol, zero_div]
 
@@ -526,8 +521,7 @@ theorem finite_level_contains_standard_compact_tail
     change KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q)
       (raw (Sum.inr q)) ∈ (L.localLevel q).toOpenSubgroup
     by_cases hq : q ∈ hfin.toFinset
-    · rw [hin q hq]
-      exact (L.localLevel q).toOpenSubgroup.one_mem
+    · simp_all
     · have he : (L.localLevel q).toOpenSubgroup.toSubgroup =
           KPAdelicCoverRestrictedProduct.pglCompact F ζ hζ (Sum.inr q) := by
         by_contra he
@@ -571,8 +565,7 @@ theorem smooth_level_standard_compact_tail_invariance
     · intro q hq
       rw [← a.local_lift]
       by_cases he : q ∈ C.exceptional
-      · rw [hin q (Finset.mem_union_left _ he)]
-        exact Subgroup.one_mem _
+      · simp_all
       · exact hout q (by simpa using And.intro he hq)
   have hf := hv.2 ⟨a.g, hj⟩
   exact congrArg (fun f : KPGlobalTorusFunctionData.TorusFunctions F ζ hζ Q =>
@@ -642,7 +635,7 @@ theorem reference_tail_factorization_of_quotient_mem
   have hvh := v.property h b.g
   have he : h.val * b.g = a.g := by
     change (a.g * b.g⁻¹) * b.g = a.g
-    simp [mul_assoc]
+    simp
   rw [he] at hvh
   change v.val a.g = (Q.character h : ℂ) * v.val b.g at hvh
   rw [← hchar, mul_comm] at hvh
@@ -681,7 +674,7 @@ theorem smooth_level_reference_tail_factorization
     · intro r _
       by_cases hr : r ∈ S
       · rw [hin r hr]
-        exact Subgroup.one_mem _
+        simp
       · exact hout r hr
   refine ⟨S, hS, ?_⟩
   intro R hR a
@@ -700,8 +693,3 @@ theorem smooth_level_reference_tail_factorization
     have ht := raw_reference_tail_zero_of_omitted_nonpolarization
       F ζ hζ P T C S hS a q hq hpol
     rw [hz, ht, mul_zero]
-
-end
-end DedekindZetaZeroFree.KPGlobalTorusFiniteStagesIdentification
-
-end

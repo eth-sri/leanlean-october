@@ -20,8 +20,8 @@ theorem nonzero_survives_finiteLevel
   haveI := (additiveAdeleQuotient_compactHausdorff F).2
   let f := (QuotientAddGroup.mk' (AdeleRing.principalSubgroup (𝓞 F) F)).comp
     (finiteLevelFiniteInclusion F)
-  have hf : Continuous f := by
-    exact (QuotientAddGroup.continuous_mk (N := AdeleRing.principalSubgroup (𝓞 F) F)).comp
+  have hf : Continuous f := 
+    (QuotientAddGroup.continuous_mk (N := AdeleRing.principalSubgroup (𝓞 F) F)).comp
       (by
         show Continuous (fun x : FiniteAdeleRing (𝓞 F) F => ((0, x) : AdeleRing (𝓞 F) F))
         fun_prop)
@@ -29,7 +29,7 @@ theorem nonzero_survives_finiteLevel
   have hU : U ∈ nhds (0 : FiniteAdeleRing (𝓞 F) F) := by
     apply (isClosed_singleton.isOpen_compl.preimage hf).mem_nhds
     change f 0 ≠ q
-    simpa using hq.symm
+    positivity
   obtain ⟨K, hKc, hKo, hKU⟩ := finiteAdeles_compactOpen_basis_zero F U hU
   refine ⟨K, hKc, hKo, ?_⟩
   intro hzero
@@ -38,5 +38,3 @@ theorem nonzero_survives_finiteLevel
   have hne := hKU ha
   change f a ≠ q at hne
   exact hne heq
-
-end DedekindZetaZeroFree.AdelicSeparation

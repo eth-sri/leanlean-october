@@ -25,7 +25,7 @@ set_option maxHeartbeats 1600000
   have hp0 := Ideal.span_singleton_eq_bot.mp he
   exact (by exact_mod_cast p.property.ne_zero : (p.val : ℤ) ≠ 0) hp0
 
-private theorem primeAbove_under {F : Type} [Field F] [NumberField F] (p : Nat.Primes) :
+theorem primeAbove_under {F : Type} [Field F] [NumberField F] (p : Nat.Primes) :
     Ideal.under ℤ (primeAbove (F := F) p).asIdeal = Ideal.span {(p.val : ℤ)} := by
   letI : Fact p.val.Prime := ⟨p.property⟩
   exact (Classical.choice (Ideal.nonempty_primesOver (S := 𝓞 F)

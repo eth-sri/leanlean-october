@@ -32,7 +32,7 @@ theorem exists_open_diag_preimage_zero :
   have hW0 : (0 : mixedEmbedding.mixedSpace F) ∈ W := by
     have h : (0 : L) ∈ Subtype.val ⁻¹' W := by
       rw [hWL]
-      exact Set.mem_singleton 0
+      rfl
     exact h
   have hc : Continuous (InfiniteAdeleRing.ringEquiv_mixedSpace F) := by
     apply Continuous.prodMk
@@ -64,17 +64,15 @@ theorem exists_open_diag_preimage_zero :
           IsDedekindDomain.HeightOneSpectrum.adicCompletion.valued_coe] using hv
       obtain ⟨r, hr⟩ :=
         IsDedekindDomain.HeightOneSpectrum.mem_integers_of_valuation_le_one F x hfinite
-      have hL : mixedEmbedding F x ∈ L := by
-        exact ⟨r, congrArg (mixedEmbedding F) hr⟩
+      have hL : mixedEmbedding F x ∈ L := 
+        ⟨r, congrArg (mixedEmbedding F) hr⟩
       have hsmall : mixedEmbedding F x ∈ W := by
         rw [InfiniteAdeleRing.mixedEmbedding_eq_algebraMap_comp]
         exact hx.1
       have hz : (⟨mixedEmbedding F x, hL⟩ : L) = 0 := by
         have hm : (⟨mixedEmbedding F x, hL⟩ : L) ∈ Subtype.val ⁻¹' W := hsmall
-        rwa [hWL, Set.mem_singleton_iff] at hm
-      apply Set.mem_singleton_iff.mpr
-      apply NumberField.mixedEmbedding_injective
-      simpa using congrArg Subtype.val hz
+        simp_all
+      simp_all
     · intro hx
       rcases Set.mem_singleton_iff.mp hx with rfl
       simp only [Set.mem_preimage, map_zero]
@@ -95,14 +93,11 @@ theorem principalSubgroup_discrete : DiscreteTopology (principalSubgroup F) := b
         have hm : x ∈ (algebraMap F (Adeles F)) ⁻¹' U := by
           change algebraMap F (Adeles F) x ∈ U
           rwa [hx]
-        rwa [hdiag, Set.mem_singleton_iff] at hm
+        simp_all
       apply Set.mem_singleton_iff.mpr
       apply Subtype.ext
-      change (a : Adeles F) = 0
-      simpa only [hx0, map_zero] using hx.symm
-    · intro ha
-      rcases Set.mem_singleton_iff.mp ha with rfl
-      exact hU0
+      simp_all
+    simp_all
   rw [← heq]
   exact hU.preimage continuous_subtype_val
 
@@ -110,7 +105,3 @@ theorem principalSubgroup_isClosed :
     IsClosed (principalSubgroup F : Set (Adeles F)) := by
   letI := principalSubgroup_discrete F
   exact AddSubgroup.isClosed_of_discreteTopology
-
-end DedekindZetaZeroFree.KPAdelicDiagonal
-
-end

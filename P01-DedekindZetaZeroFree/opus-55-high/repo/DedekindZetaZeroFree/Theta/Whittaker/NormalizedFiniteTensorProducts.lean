@@ -22,5 +22,3 @@ def localWhittakerSpace (N : Type r) [Group N]
     intro c ℓ hℓ n x
     simp only [ContinuousLinearMap.smul_apply, smul_eq_mul, hℓ n x]
     ring
-
-end DedekindZetaZeroFree

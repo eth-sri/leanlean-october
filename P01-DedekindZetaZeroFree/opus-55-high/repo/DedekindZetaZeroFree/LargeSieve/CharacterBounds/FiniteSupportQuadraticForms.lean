@@ -8,7 +8,7 @@ namespace DedekindZetaZeroFree.LargeSieve.Sieve
 
 open scoped NumberField Classical
 
-private lemma support_guarded_subset (F : Type) [Field F] [NumberField F]
+lemma support_guarded_subset (F : Type) [Field F] [NumberField F]
     (c : Ideal (𝓞 F)) (N : ℝ) {M : Type*} [Zero M] (g : Ideal (𝓞 F) → M) :
     Function.support (fun b : Ideal (𝓞 F) =>
       if Squarefree b ∧ b ⊔ c = ⊤ ∧ (Ideal.absNorm b : ℝ) ≤ N then g b else 0) ⊆
@@ -17,8 +17,7 @@ private lemma support_guarded_subset (F : Type) [Field F] [NumberField F]
   rw [Function.mem_support] at hb
   by_cases hcond : Squarefree b ∧ b ⊔ c = ⊤ ∧ (Ideal.absNorm b : ℝ) ≤ N
   · exact (mem_idealAdmissibleFinset F c N b).mpr hcond
-  · rw [if_neg hcond] at hb
-    exact absurd rfl hb
+  simp_all
 
 theorem finsum_character_eq_sum (F : Type) [Field F] [NumberField F]
     (c : Ideal (𝓞 F)) (𝓕 : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
@@ -67,5 +66,3 @@ theorem finsum_coeff_norm_sq_eq_sum (F : Type) [Field F] [NumberField F]
     (support_guarded_subset F c N (fun b => ‖lam b‖ ^ 2))]
   refine Finset.sum_congr rfl fun b hb => ?_
   rw [if_pos ((mem_idealAdmissibleFinset F c N b).mp hb)]
-
-end DedekindZetaZeroFree.LargeSieve.Sieve

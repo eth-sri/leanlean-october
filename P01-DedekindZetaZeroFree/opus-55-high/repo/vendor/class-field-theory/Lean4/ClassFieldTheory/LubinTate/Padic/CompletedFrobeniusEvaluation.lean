@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Semilinear evaluation for completed p-adic Frobenius lifts
 
@@ -71,7 +67,7 @@ open ValuationTheory.DiscreteValuationField
 
 /-- Arithmetic Frobenius restricted to the valuation ring of the completed
 maximal-unramified p-adic field. -/
-noncomputable def padicCompletedUnramifiedFrobeniusIntegerEquiv
+def padicCompletedUnramifiedFrobeniusIntegerEquiv
     (p : ℕ) [Fact p.Prime] :
     (padicCompletedUnramifiedCompleteDVF p).valuationSubring ≃+*
       (padicCompletedUnramifiedCompleteDVF p).valuationSubring where
@@ -97,21 +93,13 @@ noncomputable def padicCompletedUnramifiedFrobeniusIntegerEquiv
         (padicCompletedUnramifiedFrobenius p).apply_symm_apply]
       exact x.property⟩
   left_inv x := by
-    apply Subtype.ext
-    exact (padicCompletedUnramifiedFrobenius p).symm_apply_apply x
+    simp
   right_inv x := by
-    apply Subtype.ext
-    exact (padicCompletedUnramifiedFrobenius p).apply_symm_apply x
+    simp
   map_mul' x y := by
-    apply Subtype.ext
-    exact map_mul (padicCompletedUnramifiedFrobenius p)
-      (x : padicCompletedUnramifiedField p)
-      (y : padicCompletedUnramifiedField p)
+    simp
   map_add' x y := by
-    apply Subtype.ext
-    exact map_add (padicCompletedUnramifiedFrobenius p)
-      (x : padicCompletedUnramifiedField p)
-      (y : padicCompletedUnramifiedField p)
+    simp
 
 /-- Coercion of the integral Frobenius restriction agrees with arithmetic
 Frobenius on the completed-unramified fraction field. -/
@@ -281,7 +269,7 @@ theorem padicCompletedUnitFrobeniusLiftEquiv_mem_valuationSubring_iff
 
 /-- The actual valuation-ring automorphism induced by a unit-indexed
 completed Frobenius lift. -/
-noncomputable def padicCompletedUnitFrobeniusIntegerEquiv
+def padicCompletedUnitFrobeniusIntegerEquiv
     (p : ℕ) [Fact p.Prime] (n : ℕ)
     (u : (padicLocalField p).valuationSubringˣ) :
     (padicCompletedLevelCompleteDVF p n).valuationSubring ≃+*
@@ -305,25 +293,6 @@ theorem padicCompletedUnitFrobeniusIntegerEquiv_coe
       padicCompletedUnitFrobeniusLiftEquiv p n u
         (x : padicCompletedLevelField p n) :=
   rfl
-
-/-- Coercion of the inverse integral completed Frobenius restriction agrees
-with the inverse ambient field automorphism. -/
-@[simp]
-theorem padicCompletedUnitFrobeniusIntegerEquiv_symm_coe
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (u : (padicLocalField p).valuationSubringˣ)
-    (x : (padicCompletedLevelCompleteDVF p n).valuationSubring) :
-    (((padicCompletedUnitFrobeniusIntegerEquiv p n u).symm x :
-        (padicCompletedLevelCompleteDVF p n).valuationSubring) :
-      padicCompletedLevelField p n) =
-      (padicCompletedUnitFrobeniusLiftEquiv p n u).symm
-        (x : padicCompletedLevelField p n) := by
-  apply (padicCompletedUnitFrobeniusLiftEquiv p n u).injective
-  rw [(padicCompletedUnitFrobeniusLiftEquiv p n u).apply_symm_apply]
-  simpa using
-    (padicCompletedUnitFrobeniusIntegerEquiv_coe
-      p n u
-      ((padicCompletedUnitFrobeniusIntegerEquiv p n u).symm x)).symm
 
 /-- The integral completed Frobenius restriction is continuous for the
 maximal-ideal adic topology. -/
@@ -365,21 +334,9 @@ theorem padicCompletedUnitFrobeniusIntegerEquiv_wittCoefficientHom
       padicCompletedLevelWittCoefficientHom p n
         (WittVector.frobenius a) := by
   apply Subtype.ext
-  change
-    padicCompletedUnitFrobeniusLiftEquiv p n u
-        (((padicCompletedLevelWittCoefficientHom p n a :
-            (padicCompletedLevelCompleteDVF p n).valuationSubring) :
-          padicCompletedLevelField p n)) =
-      (((padicCompletedLevelWittCoefficientHom p n
-            (WittVector.frobenius a) :
-          (padicCompletedLevelCompleteDVF p n).valuationSubring) :
-        padicCompletedLevelField p n))
-  rw [padicCompletedLevelWittCoefficientHom_apply,
-    padicCompletedUnitFrobeniusLiftEquiv_algebraMap,
-    padicCompletedUnramifiedFrobenius_algebraMap_witt,
-    padicCompletedLevelWittCoefficientHom_apply]
+  simp
 
-private theorem padicCompletedHasEval_map_continuous
+theorem padicCompletedHasEval_map_continuous
     (p : ℕ) [Fact p.Prime] (n : ℕ)
     (r :
       (padicCompletedLevelCompleteDVF p n).valuationSubring →+*
@@ -524,7 +481,3 @@ theorem
         (padicCompletedStandardToMultiplicativeIntertwiner_eval_endomorphism
           p n lambda hlambda
             (u : (padicLocalField p).valuationSubring))
-
-end LubinTate
-
-end

@@ -39,6 +39,3 @@ def finiteLevelProductDomain {F : Type} [Field F] [NumberField F]
     (K : AddSubgroup (FiniteAdeleRing (𝓞 F) F))
     (D : Set (mixedEmbedding.mixedSpace F)) : Set (AdeleRing (𝓞 F) F) :=
   {a | InfiniteAdeleRing.ringEquiv_mixedSpace F a.1 ∈ D ∧ a.2 ∈ K}
-
-end
-end DedekindZetaZeroFree.QuotientProbability

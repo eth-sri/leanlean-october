@@ -8,21 +8,21 @@ namespace DedekindZetaZeroFree.LargeSieve.Sieve
 
 open scoped NumberField Classical
 
-private lemma absNorm_pos_of_ne_bot {F : Type*} [Field F] [NumberField F]
+lemma absNorm_pos_of_ne_bot {F : Type*} [Field F] [NumberField F]
     {I : Ideal (𝓞 F)} (h : I ≠ ⊥) : (0 : ℝ) < (Ideal.absNorm I : ℝ) := by
   have h0 : Ideal.absNorm I ≠ 0 := fun hh => h (Ideal.absNorm_eq_zero_iff.mp hh)
-  exact_mod_cast Nat.pos_of_ne_zero h0
+  positivity
 
-private lemma one_le_absNorm_of_ne_bot {F : Type*} [Field F] [NumberField F]
+lemma one_le_absNorm_of_ne_bot {F : Type*} [Field F] [NumberField F]
     {I : Ideal (𝓞 F)} (h : I ≠ ⊥) : (1 : ℝ) ≤ (Ideal.absNorm I : ℝ) := by
   have h0 : Ideal.absNorm I ≠ 0 := fun hh => h (Ideal.absNorm_eq_zero_iff.mp hh)
   exact_mod_cast Nat.one_le_iff_ne_zero.mpr h0
 
-private lemma div_rpow_neg_half {x Y : ℝ} (hx : 0 < x) (hY : 0 < Y) :
+lemma div_rpow_neg_half {x Y : ℝ} (hx : 0 < x) (hY : 0 < Y) :
     (x / Y) ^ (-(1 / 2 : ℝ)) = Y ^ (1 / 2 : ℝ) * x ^ (-(1 / 2 : ℝ)) := by
   rw [Real.div_rpow hx.le hY.le, Real.rpow_neg hY.le, div_inv_eq_mul, mul_comm]
 
-private lemma div_rpow_neg_two {x Y : ℝ} (hx : 0 < x) (hY : 0 < Y) :
+lemma div_rpow_neg_two {x Y : ℝ} (hx : 0 < x) (hY : 0 < Y) :
     (x / Y) ^ (-(2 : ℝ)) = Y ^ 2 * x ^ (-(2 : ℝ)) := by
   rw [Real.div_rpow hx.le hY.le, Real.rpow_neg hY.le, div_inv_eq_mul, Real.rpow_two, mul_comm]
 
@@ -42,7 +42,7 @@ noncomputable def farPart (F : Type*) [Field F] [NumberField F] (Y : ℝ)
     (I : Ideal (𝓞 F)) : ℝ :=
   if I ≠ ⊥ ∧ Y < (Ideal.absNorm I : ℝ) then ((Ideal.absNorm I : ℝ) / Y) ^ (-(2 : ℝ)) else 0
 
-private lemma nearPart_eq_mul (F : Type*) [Field F] [NumberField F] {Y : ℝ} (hY : 0 < Y)
+lemma nearPart_eq_mul (F : Type*) [Field F] [NumberField F] {Y : ℝ} (hY : 0 < Y)
     (I : Ideal (𝓞 F)) : nearPart F Y I = Y ^ (1 / 2 : ℝ) * nearScaled F Y I := by
   unfold nearPart nearScaled
   by_cases hc : I ≠ ⊥ ∧ (Ideal.absNorm I : ℝ) ≤ Y
@@ -50,7 +50,7 @@ private lemma nearPart_eq_mul (F : Type*) [Field F] [NumberField F] {Y : ℝ} (h
     exact div_rpow_neg_half (absNorm_pos_of_ne_bot hc.1) hY
   · rw [if_neg hc, if_neg hc, mul_zero]
 
-private lemma farPart_eq_mul (F : Type*) [Field F] [NumberField F] {Y : ℝ} (hY : 0 < Y)
+lemma farPart_eq_mul (F : Type*) [Field F] [NumberField F] {Y : ℝ} (hY : 0 < Y)
     (I : Ideal (𝓞 F)) : farPart F Y I = Y ^ 2 * farScaled F Y I := by
   unfold farPart farScaled
   by_cases hc : I ≠ ⊥ ∧ Y < (Ideal.absNorm I : ℝ)
@@ -77,12 +77,7 @@ theorem initial_two_ended_ideal_sum (F : Type*) [Field F] [NumberField F] :
   set Z2 : ℝ := ∑' I : Ideal (𝓞 F),
       (if I = ⊥ then (0 : ℝ) else (Ideal.absNorm I : ℝ) ^ (-(2 : ℝ))) with hZ2def
   have hZ2nn : 0 ≤ Z2 := by
-    rw [hZ2def]
-    exact tsum_nonneg fun I => by
-      by_cases h : I = ⊥
-      · simp [h]
-      · simp only [h, if_false]
-        exact Real.rpow_nonneg (Nat.cast_nonneg _) _
+    positivity
   refine ⟨Bhalf + Btail + Z2, by linarith, ?_⟩
   intro Y hY g hg0 hg
 
@@ -103,14 +98,14 @@ theorem initial_two_ended_ideal_sum (F : Type*) [Field F] [NumberField F] :
       · rw [farScaled, if_neg (fun hc => hc.1 h)]
       · by_cases hlt : Y < (Ideal.absNorm I : ℝ)
         · rw [farScaled, if_pos ⟨h, hlt⟩]
-          exact Real.rpow_nonneg (Nat.cast_nonneg _) _
+          simp
         · rw [farScaled, if_neg (fun hc => hlt hc.2)]
     · by_cases h : I = ⊥
       · rw [farScaled, if_neg (fun hc => hc.1 h), if_pos h]
       · by_cases hlt : Y < (Ideal.absNorm I : ℝ)
         · rw [farScaled, if_pos ⟨h, hlt⟩, if_neg h]
         · rw [farScaled, if_neg (fun hc => hlt hc.2), if_neg h]
-          exact Real.rpow_nonneg (Nat.cast_nonneg _) _
+          simp
   have hnearSummable' : Summable (nearPart F Y) := by
     have h := hnearSummable.mul_left (Y ^ (1 / 2 : ℝ))
     exact h.congr (fun I => (nearPart_eq_mul F hY I).symm)
@@ -194,20 +189,20 @@ theorem initial_two_ended_ideal_sum (F : Type*) [Field F] [NumberField F] :
           _ = Z2 * Y := by ring
       have hN' : Y ^ (1 / 2 : ℝ) * (∑' I : Ideal (𝓞 F), nearScaled F Y I) = 0 := by
         rw [hN, mul_zero]
-      have hrest : 0 ≤ (Bhalf + Btail) * Y := mul_nonneg (by linarith) hY.le
+      have hrest : 0 ≤ (Bhalf + Btail) * Y := by positivity
       linarith [hN', hF', hrest]
 
   have hnearnn : ∀ I : Ideal (𝓞 F), 0 ≤ nearPart F Y I := by
     intro I
     by_cases hc : I ≠ ⊥ ∧ (Ideal.absNorm I : ℝ) ≤ Y
     · rw [nearPart, if_pos hc]
-      exact Real.rpow_nonneg (div_nonneg (le_of_lt (absNorm_pos_of_ne_bot hc.1)) hY.le) _
+      positivity
     · rw [nearPart, if_neg hc]
   have hfarnn : ∀ I : Ideal (𝓞 F), 0 ≤ farPart F Y I := by
     intro I
     by_cases hc : I ≠ ⊥ ∧ Y < (Ideal.absNorm I : ℝ)
     · rw [farPart, if_pos hc]
-      exact Real.rpow_nonneg (div_nonneg (le_of_lt (absNorm_pos_of_ne_bot hc.1)) hY.le) _
+      positivity
     · rw [farPart, if_neg hc]
   have henv : ∀ I : Ideal (𝓞 F), ‖g I‖ ≤ nearPart F Y I + farPart F Y I := by
     intro I
@@ -237,5 +232,3 @@ theorem initial_two_ended_ideal_sum (F : Type*) [Field F] [NumberField F] :
   have hnorm : Summable (fun I : Ideal (𝓞 F) => ‖g I‖) :=
     summable_of_sum_le (fun I => norm_nonneg _) key
   exact ⟨hnorm, Summable.of_norm hnorm, Real.tsum_le_of_sum_le (fun I => norm_nonneg _) key⟩
-
-end DedekindZetaZeroFree.LargeSieve.Sieve

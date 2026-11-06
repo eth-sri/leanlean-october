@@ -40,7 +40,7 @@ set_option maxHeartbeats 800000
 
 variable {F : Type} [Field F] [NumberField F]
 
-private lemma unit_iff_span_sup {R : Type*} [CommRing R] (I : Ideal R) (x : R) :
+lemma unit_iff_span_sup {R : Type*} [CommRing R] (I : Ideal R) (x : R) :
     IsUnit (Ideal.Quotient.mk I x) ↔ Ideal.span {x} ⊔ I = ⊤ := by
   rw [isUnit_iff_exists_inv, Ideal.eq_top_iff_one]
   constructor
@@ -58,14 +58,14 @@ private lemma unit_iff_span_sup {R : Type*} [CommRing R] (I : Ideal R) (x : R) :
     have hh := congrArg (Ideal.Quotient.mk I) hab
     simpa [Ideal.Quotient.eq_zero_iff_mem.mpr hb] using hh
 
-private lemma exists_ne_zero_sub_mem {R : Type*} [CommRing R] [Nontrivial R]
+lemma exists_ne_zero_sub_mem {R : Type*} [CommRing R] [Nontrivial R]
     (I : Ideal R) (hI : I ≠ ⊥) (a : R) : ∃ b : R, b ≠ 0 ∧ b - a ∈ I := by
   by_cases ha : a = 0
   · obtain ⟨x, hxI, hx0⟩ := Submodule.exists_mem_ne_zero_of_ne_bot hI
-    exact ⟨x, hx0, by rw [ha, sub_zero]; exact hxI⟩
+    exact ⟨x, hx0, by simp_all⟩
   · exact ⟨a, ha, by simp⟩
 
-private lemma coprime_of_support (A : SArithmeticData F) (fS qO : Ideal (𝓞 F))
+lemma coprime_of_support (A : SArithmeticData F) (fS qO : Ideal (𝓞 F))
     (hfS : fS ≠ ⊥)
     (hsupp : ∀ v : HeightOneSpectrum (𝓞 F), fS ≤ v.asIdeal → v ∈ A.Sf)
     (hcop : qO ⊔ A.cS = ⊤) : IsCoprime qO fS := by
@@ -75,7 +75,7 @@ private lemma coprime_of_support (A : SArithmeticData F) (fS qO : Ideal (𝓞 F)
   have hfM : fS ≤ M := le_trans le_sup_right hle
   have hMb : M ≠ ⊥ := by
     intro h0
-    exact hfS (le_bot_iff.mp (h0 ▸ hfM))
+    simp_all
   let v : HeightOneSpectrum (𝓞 F) := ⟨M, hMmax.isPrime, hMb⟩
   have hvSf : v ∈ A.Sf := hsupp v (by simpa [v] using hfM)
   have hcSM : A.cS ≤ M := by
@@ -122,15 +122,13 @@ theorem exists_exterior_crt_representative
     have hb0 : b ≠ 0 := by
       intro hb0
       have h1 : (1 : 𝓞 F) ∈ fS * A.cS := by
-        have : -(1 : 𝓞 F) ∈ fS * A.cS := by simpa [hb0] using hbm
-        simpa using neg_mem this
+        simp_all
       exact hm ((fS * A.cS).eq_top_iff_one.mpr h1)
     have hspan : Ideal.span {b} ⊔ A.cS = ⊤ := by
       rw [← unit_iff_span_sup A.cS b]
       have h1 : Ideal.Quotient.mk A.cS b = Ideal.Quotient.mk A.cS 1 :=
         Ideal.Quotient.eq.mpr (by simpa using hbcS)
-      rw [h1, map_one]
-      exact isUnit_one
+      simp_all
     exact ⟨b, hb0, hba, hbS, hspan⟩
 
 end
@@ -171,7 +169,7 @@ theorem localInverseProduct_ne_zero (A : SArithmeticData F)
     (sigma : FixedSResidue.FullLocalCharacters A) (n : FixedSResidue.NonzeroSInteger A) :
     FixedSResidue.localInverseProduct A sigma n ≠ 0 := by
   rw [localInverseProduct_eq]
-  exact Units.ne_zero _
+  simp
 
 theorem localInverseProduct_mul (A : SArithmeticData F)
     (sigma : FixedSResidue.FullLocalCharacters A)
@@ -190,8 +188,8 @@ def numeratorExterior (A : SArithmeticData F) (n : FixedSResidue.NonzeroSInteger
 
 theorem numeratorExterior_generates (A : SArithmeticData F)
     (n : FixedSResidue.NonzeroSInteger A) :
-    A.extendIdeal (numeratorExterior A n) = Ideal.span {n.val} := by
-  exact congrArg Subtype.val (A.exteriorIdealEquiv.apply_symm_apply _)
+    A.extendIdeal (numeratorExterior A n) = Ideal.span {n.val} := 
+  congrArg Subtype.val (A.exteriorIdealEquiv.apply_symm_apply _)
 
 theorem numeratorExterior_unique (A : SArithmeticData F)
     (n : FixedSResidue.NonzeroSInteger A) (a : A.Exterior)
@@ -314,8 +312,8 @@ theorem exists_residue_character_of_coefficient (A : SArithmeticData F) (q : Ide
     (Ideal.Quotient.mk_surjective x).choose_spec
   let chi : MulChar (A.R ⧸ q) ℂ :=
     { toFun := fun x => c (rep x)
-      map_one' := by
-        exact (hfiber _ 1 (by simpa using hrep 1)).trans hone
+      map_one' := 
+        (hfiber _ 1 (by simpa using hrep 1)).trans hone
       map_mul' := by
         intro x y
         calc
@@ -545,7 +543,3 @@ theorem exists_exterior_residue_character
       exact hn
     rw [exteriorCoefficient_nonunit A omega.conductor fS qO omega.character hsplit sigma n hn,
       exteriorCoefficient_nonunit A omega.conductor fS qO omega.character hsplit sigma m hm]
-
-end DedekindZetaZeroFree.Detector.ExteriorDyadic.ResidueFiberAdapter
-
-end

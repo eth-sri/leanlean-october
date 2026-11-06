@@ -16,14 +16,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Cyclic value groups and normalized uniformizers
 
@@ -37,7 +29,7 @@ noncomputable section
 universe u x
 
 open WithZero
-open scoped NNReal Valued WithZero
+open scoped NNReal Valued
 
 namespace LocalFieldTheory.DiscreteValuationField
 open ValuationTheory.DiscreteValuationField
@@ -46,24 +38,6 @@ namespace WithZeroValuation
 
 variable {R : Type u}
 variable {Gamma : Type x} [LinearOrderedCommGroupWithZero Gamma]
-
-/-- A nontrivial `ℤᵐ⁰`-valued valuation is rank one via the standard strictly
-monotone embedding `ℤᵐ⁰ -> ℝ≥0`.  This is kept as an explicit definition, not
-a global instance, so later finite-dimensional closedness arguments can opt in
-without changing typeclass search everywhere. -/
-@[implicit_reducible]
-noncomputable def rankOne
-    [Ring R]
-    (v : _root_.Valuation R ℤᵐ⁰) [v.IsNontrivial] : v.RankOne where
-  hom' :=
-    (WithZeroMulInt.toNNReal (by norm_num : (2 : ℝ≥0) ≠ 0)).comp
-      MonoidWithZeroHom.ValueGroup₀.embedding
-  strictMono' :=
-    (WithZeroMulInt.toNNReal_strictMono
-      (by norm_num : (1 : ℝ≥0) < 2)).comp
-        MonoidWithZeroHom.ValueGroup₀.embedding_strictMono
-  exists_val_nontrivial :=
-    _root_.Valuation.IsNontrivial.exists_val_nontrivial (v := v)
 
 /-- A cyclic linearly ordered commutative group is multiplicatively
 Archimedean.  Mathlib supplies the valuation-theoretic equivalence
@@ -77,7 +51,7 @@ theorem isCyclic_mulArchimedean
   classical
   by_cases hsub : Subsingleton G
   · refine ⟨fun _ y hy => ?_⟩
-    exact (hy.ne' (Subsingleton.elim y 1)).elim
+    simp
   have : Nontrivial G := not_subsingleton_iff_nontrivial.mp hsub
   let a : G := LinearOrderedCommGroup.Subgroup.genLTOne (⊤ : Subgroup G)
   let b : G := a⁻¹
@@ -128,7 +102,7 @@ theorem units_isCyclic_mulArchimedean
 rank one.  This is used only after restricting an abstract complete-DVF
 valuation to its actual range. -/
 @[implicit_reducible]
-noncomputable def rankOneOfUnitsIsCyclic
+def rankOneOfUnitsIsCyclic
     [Ring R]
     (v : _root_.Valuation R Gamma) [v.IsNontrivial] [IsCyclic Gammaˣ] :
     v.RankOne := by
@@ -173,15 +147,5 @@ theorem exists_valuationSubring_valuation_eq_exp_neg_one_of_surjective
       v (π : K) = WithZero.exp (-1 : ℤ) := by
   rcases hv (WithZero.exp (-1 : ℤ)) with ⟨π, hπ⟩
   have hπmem : π ∈ v.valuationSubring := by
-    change v π ≤ 1
-    rw [hπ]
-    change WithZero.exp (-1 : ℤ) ≤ WithZero.exp (0 : ℤ)
-    rw [WithZero.exp_le_exp]
-    norm_num
+    simp_all
   exact ⟨⟨π, hπmem⟩, hπ⟩
-
-
-end WithZeroValuation
-end LocalFieldTheory.DiscreteValuationField
-
-end

@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Local compactness of the idele group
 
@@ -31,7 +26,6 @@ open scoped NumberField RestrictedProduct Valued
 open NumberField IsDedekindDomain
 
 noncomputable section
-
 
 variable (K : Type*) [Field K] [NumberField K]
 
@@ -56,18 +50,15 @@ theorem exists_ringOfIntegers_approximation
   refine ⟨r, ?_⟩
   have hard : a - r * d.1 ∈ v.asIdeal := by
     rw [← Ideal.Quotient.eq_zero_iff_mem]
-    rw [map_sub, map_mul, hr]
-    field_simp
-    simp
+    simp_all
   have hvalard :
       v.valuation K (algebraMap (𝓞 K) K (a - r * d.1)) < 1 :=
     (v.valuation_lt_one_iff_mem (K := K) (a - r * d.1)).2 hard
   have hdval : v.valuation K (algebraMap (𝓞 K) K d.1) = 1 := by
-    exact le_antisymm (v.valuation_le_one d.1)
-      (not_lt.mp ((v.valuation_lt_one_iff_mem (K := K) d.1).not.mpr hd))
+    simp_all
   have hadK :
-      y * algebraMap (𝓞 K) K d.1 = algebraMap (𝓞 K) K a := by
-    exact congrArg Subtype.val had
+      y * algebraMap (𝓞 K) K d.1 = algebraMap (𝓞 K) K a := 
+    congrArg Subtype.val had
   rw [← mul_lt_mul_iff_right₀ (show
     0 < v.valuation K (algebraMap (𝓞 K) K d.1) by simp [hdval])]
   rw [← map_mul, mul_sub, mul_comm _ y, hadK, mul_comm _ (algebraMap (𝓞 K) K r),
@@ -82,7 +73,7 @@ variable {K : Type u} [Field K] [NumberField K]
 
 /-- The residue field of the adic completion at `v` is the global
 ring-of-integers quotient by `v`. -/
-noncomputable def ringOfIntegersQuotientEquivAdicResidueField
+def ringOfIntegersQuotientEquivAdicResidueField
     (v : HeightOneSpectrum (𝓞 K)) :
     (𝓞 K ⧸ v.asIdeal) ≃+*
       Valued.ResidueField (v.adicCompletion K) := by
@@ -165,7 +156,7 @@ noncomputable def ringOfIntegersQuotientEquivAdicResidueField
               algebraMap K
                 (v.adicCompletion K) y) < 1 := by
       rw [← Valued.toNormedField.norm_lt_one_iff]
-      simpa only [dist_eq_norm] using hy
+      omega
     have hy_integral : v.valuation K y ≤ 1 := by
       rw [show
         v.valuation K y =
@@ -301,5 +292,3 @@ locally compact. -/
 instance ideleGroupLocallyCompactSpace :
     LocallyCompactSpace (IdeleGroup K) :=
   inferInstance
-
-end

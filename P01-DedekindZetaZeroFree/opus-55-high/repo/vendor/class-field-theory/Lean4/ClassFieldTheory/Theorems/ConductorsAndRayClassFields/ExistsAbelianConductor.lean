@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Existence of the abelian conductor
 
@@ -34,5 +30,3 @@ theorem exists_abelianConductor
     [Algebra K L] [IsAbelianGalois K L] :
     ∃ c : RayClassModulus K, IsAbelianConductor K L c :=
   embedsInRayClassField_iff_conductor_le K L
-
-end ClassFieldTheory

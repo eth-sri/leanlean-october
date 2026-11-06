@@ -8,10 +8,9 @@ open scoped NumberField Classical WithZero
 open NumberField IsDedekindDomain
 
 namespace DedekindZetaZeroFree.SIntegerLocalization
-noncomputable section
 variable {F : Type} [Field F] [NumberField F]
 
-private theorem exponent_eq_zero (S : Finset (HeightOneSpectrum (𝓞 F)))
+theorem exponent_eq_zero (S : Finset (HeightOneSpectrum (𝓞 F)))
     (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) (hext : I ⊔ (∏ v ∈ S, v.asIdeal) = ⊤)
     (v : HeightOneSpectrum (𝓞 F)) (hv : v ∈ S) : idealPrimeExponent v.asIdeal I = 0 := by
   apply Multiset.count_eq_zero.mpr
@@ -46,7 +45,6 @@ theorem finite_norm_compensation (S : Finset (HeightOneSpectrum (𝓞 F)))
       apply Multiset.count_eq_zero.mpr
       exact fun h => hn (Ideal.mem_normalizedFactors_iff hI |>.mp h |>.2 |> Ideal.dvd_iff_le.mpr)
     apply hv
-    change g v = 1
     simp only [g, HeightOneSpectrum.maxPowDividing_eq_pow_multiset_count _ hI]
     change (Ideal.absNorm (v.asIdeal ^ idealPrimeExponent v.asIdeal I) : ℝ) = 1
     rw [hzero, pow_zero]
@@ -95,6 +93,3 @@ theorem generator_norm (S : Finset (HeightOneSpectrum (𝓞 F)))
   have hprod := NumberField.prod_abs_eq_one (fun h => hr (Subtype.ext h))
   rw [← finite_norm_compensation S I hI hext r hr hspan,
     ← mul_assoc, hprod, one_mul]
-
-end
-end DedekindZetaZeroFree.SIntegerLocalization

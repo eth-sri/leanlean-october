@@ -7,7 +7,7 @@ public import DedekindZetaZeroFree.Theta.Unfolding.TraceNormalizedSourceData
 noncomputable section
 set_option backward.isDefEq.respectTransparency false
 open NumberField MeasureTheory
-open scoped Classical NumberField
+open scoped Classical
 namespace DedekindZetaZeroFree.FiniteWhittakerProjectors
 open MomentSources
 variable {F : Type} [Field F] [NumberField F]
@@ -50,7 +50,3 @@ theorem fourier_rightTranslateSum (dq : Measure (KPAdditiveQuotient F))
   apply Finset.sum_congr rfl
   intro i hi
   exact integral_const_mul _ _
-
-end DedekindZetaZeroFree.FiniteWhittakerProjectors
-
-end

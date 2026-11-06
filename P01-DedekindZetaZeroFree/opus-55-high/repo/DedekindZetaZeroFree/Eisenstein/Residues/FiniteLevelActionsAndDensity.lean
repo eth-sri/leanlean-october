@@ -6,7 +6,6 @@ public import DedekindZetaZeroFree.Theta.Profiles.ResidualCoreAndUnitRotations
 
 section
 
-noncomputable section
 open NumberField
 open scoped Classical BigOperators
 set_option backward.isDefEq.respectTransparency false
@@ -42,8 +41,7 @@ theorem archChart_commutes_finite (x : ArchCoordinates F)
     intro v
     cases v with
     | inl w =>
-      have hw : b (Sum.inl w) = 1 := (Subgroup.mem_iInf.mp hb) w
-      simp [hw]
+      simp_all
     | inr q =>
       change 1 * b (Sum.inr q) = b (Sum.inr q) * 1
       simp
@@ -51,9 +49,3 @@ theorem archChart_commutes_finite (x : ArchCoordinates F)
     (KPAdelicCoverRestrictedProduct.amalgamation F ζ hζ))
   convert hm using 1 <;> simp only [MonoidHom.comp_apply, he, archChart, t]
   congr 2
-
-end DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualFiniteTranslationEstimates
-
-end
-
-end

@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Surjectivity of the ideal-theoretic modulus projection
 
@@ -61,18 +55,7 @@ private theorem rayClassGroup_hom_ext_of_prime
       (hv : v ∉ n.finitePart.support) :
       ι (RayClass.primeToModulusIdeal n' v hv) =
         rayClassOfFinitePrime n v hv := by
-    apply e.injective
-    calc
-      e (ι (RayClass.primeToModulusIdeal n' v hv)) =
-          QuotientGroup.mk' (RayClass.principalRayIdealSubgroup n')
-            (RayClass.primeToModulusIdeal n' v hv) := by
-        change e (e.symm
-          (QuotientGroup.mk' (RayClass.principalRayIdealSubgroup n')
-            (RayClass.primeToModulusIdeal n' v hv))) = _
-        exact e.apply_symm_apply _
-      _ = e (rayClassOfFinitePrime n v hv) :=
-        (GlobalClassFieldComparison.rayClassGroupEquivOriginal_prime
-          K n v hv).symm
+    rfl
   have hι : Function.Surjective ι := by
     intro q
     obtain ⟨I, hI⟩ :=
@@ -137,7 +120,7 @@ theorem rayClassIdealModulusProjection_surjective
     obtain ⟨x, hx⟩ := eN.surjective w
     refine ⟨x, ?_⟩
     change eM.symm (projection (eN x)) = y
-    rw [hx, hw, hz]
+    simp_all
   have hmap : rayClassIdealModulusProjection K hmn = transported := by
     apply rayClassGroup_hom_ext_of_prime K n m
     intro v hvn
@@ -152,7 +135,3 @@ theorem rayClassIdealModulusProjection_surjective
     rfl
   rw [hmap]
   exact htransported
-
-end ClassFieldTheory
-
-end

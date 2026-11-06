@@ -30,35 +30,35 @@ open Vendor.KernelSeparation
 
  def weightedCutoff (χ : ℝ → ℝ) (x : ℝ) : ℂ :=
   (χ x : ℂ) * (Real.exp (x / 2) : ℂ)
-private lemma weightedCutoff_smooth (χ : ℝ → ℝ) (hχ : ContDiff ℝ ∞ χ) :
+lemma weightedCutoff_smooth (χ : ℝ → ℝ) (hχ : ContDiff ℝ ∞ χ) :
     ContDiff ℝ ∞ (weightedCutoff χ) := by
   unfold weightedCutoff
   have he : ContDiff ℝ ∞ (fun x : ℝ => Real.exp (x / 2)) :=
-    Real.contDiff_exp.comp (contDiff_id.div_const 2)
+    by fun_prop
   exact (Complex.ofRealCLM.contDiff.comp hχ).mul (Complex.ofRealCLM.contDiff.comp he)
-private lemma weightedCutoff_support (χ : ℝ → ℝ) (R : ℝ)
+lemma weightedCutoff_support (χ : ℝ → ℝ) (R : ℝ)
     (hs : Function.support χ ⊆ Set.Icc (-R) R) :
     Function.support (weightedCutoff χ) ⊆ Set.Icc (-R) R := by
   intro x hx
   apply hs
   contrapose! hx
-  have hx0 : χ x = 0 := by simpa only [Function.mem_support, not_not] using hx
+  have hx0 : χ x = 0 := by simp_all
   simp [weightedCutoff, Function.mem_support, hx0]
-private lemma normalized_eq (K : ℝ → ℂ) (χ : ℝ → ℝ) (h b x y : ℝ) :
+lemma normalized_eq (K : ℝ → ℂ) (χ : ℝ → ℝ) (h b x y : ℝ) :
     MiddleLogKernel.normalizedKernel K χ h b x y =
       (h : ℂ) * logLocalized (weightedCutoff χ) (weightedCutoff χ) K (b*h) (x,y) := by
   simp only [MiddleLogKernel.normalizedKernel, logLocalized, weightedCutoff]
   rw [show (x+y)/2 = x/2 + y/2 by ring, Real.exp_add]
   push_cast
   ring
-private lemma phase_pair (t s x y : ℝ) :
+lemma phase_pair (t s x y : ℝ) :
     phase (-t) x * phase (-s) y =
       Complex.exp (-((2 * Real.pi * (t*x+s*y) : ℝ) : ℂ) * Complex.I) := by
   rw [phase, phase, ← Complex.exp_add]
   congr 1
   push_cast
   ring
-private lemma normalized_coefficient (K : ℝ → ℂ) (χ : ℝ → ℝ) (h b t s : ℝ)
+lemma normalized_coefficient (K : ℝ → ℂ) (χ : ℝ → ℝ) (h b t s : ℝ)
     (hInt : Integrable (logLocalized (weightedCutoff χ) (weightedCutoff χ) K (b*h))) :
     MiddleLogKernel.fourierCoefficient K χ h b t s =
       (h : ℂ) * coefficient (logLocalized (weightedCutoff χ) (weightedCutoff χ) K (b*h)) t s := by
@@ -71,7 +71,7 @@ private lemma normalized_coefficient (K : ℝ → ℂ) (χ : ℝ → ℝ) (h b t
     · exact (hInt.aestronglyMeasurable.mul hp.aestronglyMeasurable).congr
         (Filter.Eventually.of_forall (fun p => by dsimp [H]; ring))
     · filter_upwards with p
-      simp [norm_mul, phase, Complex.norm_exp, H]
+      simp [phase, Complex.norm_exp, H]
   simp only [MiddleLogKernel.fourierCoefficient, normalized_eq, ← phase_pair]
   rw [show (fun p : ℝ × ℝ => (h : ℂ) * H p * (phase (-t) p.1 * phase (-s) p.2)) =
       (fun p : ℝ × ℝ => (h : ℂ) * (H p * phase (-t) p.1 * phase (-s) p.2)) by ext; ring,
@@ -80,7 +80,7 @@ private lemma normalized_coefficient (K : ℝ → ℂ) (χ : ℝ → ℝ) (h b t
   rw [Measure.volume_eq_prod]
   exact integral_prod _ (by simpa only [Measure.volume_eq_prod] using hInt')
 
-private lemma phase_positive_pair (t s x y : ℝ) :
+lemma phase_positive_pair (t s x y : ℝ) :
     phase t x * phase s y =
       Complex.exp (((2 * Real.pi * (t*x+s*y) : ℝ) : ℂ) * Complex.I) := by
   rw [phase, phase, ← Complex.exp_add]
@@ -92,7 +92,7 @@ end MiddleLogKernel
 
 open MiddleLogKernel Vendor.KernelSeparation
 
-private lemma fixed_box_fourier :
+lemma fixed_box_fourier :
     ∀ R : ℝ, 0 < R → ∃ A : ℝ, 0 < A ∧ ∀ H : ℝ × ℝ → ℂ,
       ContDiff ℝ ∞ H → Function.support H ⊆ Set.Icc (-R) R ×ˢ Set.Icc (-R) R →
       (∀ t s : ℝ, ‖coefficient H t s‖ ≤ A * boxJet R H / ((1+t^2)*(1+s^2))) ∧
@@ -122,7 +122,7 @@ private lemma fixed_box_fourier :
       (mul_le_mul_of_nonneg_right (le_max_left _ _) h0) (by positivity))
   · have hpi : 1 ≤ Real.pi ^ 2 := by nlinarith [Real.pi_gt_three]
     have hm : A₂ ≤ max A₁ A₂ * Real.pi ^ 2 := by
-      have hmax : 0 ≤ max A₁ A₂ := (lt_of_lt_of_le hA₁ (le_max_left _ _)).le
+      have hmax : 0 ≤ max A₁ A₂ := by positivity
       nlinarith [le_max_right A₁ A₂]
     exact (hL H hH hs).trans (mul_le_mul_of_nonneg_right hm h0)
 
@@ -247,7 +247,3 @@ theorem bilinear_middle_log_kernel_envelope
     have hs := mul_le_mul_of_nonneg_left hfourH.2 hh.le
     have hs' := mul_le_mul_of_nonneg_right hjet_scaled (sq_nonneg Real.pi)
     nlinarith
-
-end DedekindZetaZeroFree.LargeSieve
-
-end

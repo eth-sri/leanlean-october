@@ -28,7 +28,3 @@ theorem complexLocalPsi_trace (x : KPHilbert.Completion F (Sum.inl w)) :
   exact congrArg (fun t : Circle => (t : ℂ))
     ((adelicTraceQuotientCharacter_mk F (Pi.single w x, 0)).trans
       (adelicTraceCharacter_arch_single F w x))
-
-end DedekindZetaZeroFree.KPActualReflectionData.StandardLocalSource
-
-end

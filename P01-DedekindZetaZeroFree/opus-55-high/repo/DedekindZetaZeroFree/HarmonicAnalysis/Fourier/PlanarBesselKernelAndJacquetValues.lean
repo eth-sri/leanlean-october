@@ -33,7 +33,7 @@ theorem besselCoefficient_pos (c : ℝ) (hc : 0 < c) :
   exact mul_pos (div_pos hc (Real.Gamma_pos_of_pos (by norm_num)))
     (Real.rpow_pos_of_pos (by linarith) _)
 
-private theorem laplace_rpow (a : ℝ) (ha : 0 < a) :
+theorem laplace_rpow (a : ℝ) (ha : 0 < a) :
     Real.rpow a (-(4 / 3 : ℝ)) =
       (Real.Gamma (4 / 3 : ℝ))⁻¹ *
         ∫ t in Set.Ioi (0 : ℝ), Real.rpow t (1 / 3 : ℝ) * Real.exp (-(a * t)) := by
@@ -47,17 +47,16 @@ private theorem laplace_rpow (a : ℝ) (ha : 0 < a) :
   simp only [Real.rpow_eq_pow] at h
   rw [h, one_div, Real.inv_rpow ha.le, ← Real.rpow_neg ha.le]
   have hg : Real.Gamma (4 / 3 : ℝ) ≠ 0 :=
-    (Real.Gamma_pos_of_pos (by norm_num : (0 : ℝ) < 4 / 3)).ne'
+    by positivity
   field_simp
 
-private theorem oscillatory_gaussian (c t : ℝ) (ht : 0 < t) :
+theorem oscillatory_gaussian (c t : ℝ) (ht : 0 < t) :
     (∫ x : ℂ, (Real.exp (-t * ‖x‖ ^ 2) : ℂ) *
       Complex.exp (-Complex.I * (c : ℂ) * (x.re : ℂ))) =
     (Real.pi / t : ℂ) * Complex.exp (-(c : ℂ) ^ 2 / (4 * (t : ℂ))) := by
   have h := GaussianFourier.integral_cexp_neg_mul_sq_norm_add
     (V := ℂ) (b := (t : ℂ)) (by simpa using ht) (-Complex.I * (c : ℂ)) (1 : ℂ)
-  simp only [Complex.finrank_real_complex, Nat.cast_ofNat, norm_one, one_pow,
-    mul_one, show (2 : ℂ) / 2 = 1 by norm_num, Complex.cpow_one] at h
+  simp only [Complex.finrank_real_complex, Nat.cast_ofNat, norm_one, show (2 : ℂ) / 2 = 1 by norm_num, Complex.cpow_one] at h
   calc
     _ = ∫ x : ℂ, Complex.exp (-(t : ℂ) * (‖x‖ : ℂ) ^ 2 +
         (-Complex.I * (c : ℂ)) * (inner ℝ (1 : ℂ) x : ℂ)) := by
@@ -65,8 +64,7 @@ private theorem oscillatory_gaussian (c t : ℝ) (ht : 0 < t) :
       filter_upwards [] with x
       rw [Complex.ofReal_exp, Complex.ofReal_mul, Complex.ofReal_neg,
         Complex.ofReal_pow, Complex.exp_add]
-      congr 2
-      simp [Complex.inner]
+      simp
     _ = _ := by
       rw [h]
       congr 2
@@ -77,7 +75,7 @@ private theorem phase_norm (c : ℝ) (x : ℂ) :
   rw [Complex.norm_exp]
   simp
 
-private theorem gaussian_integrable (t : ℝ) (ht : 0 < t) :
+theorem gaussian_integrable (t : ℝ) (ht : 0 < t) :
     Integrable (fun x : ℂ => Real.exp (-t * ‖x‖ ^ 2)) := by
   have h := GaussianFourier.integrable_cexp_neg_mul_sq_norm_add
     (V := ℂ) (b := (t : ℂ)) (by simpa using ht) 0 (0 : ℂ)
@@ -87,7 +85,7 @@ private theorem gaussian_integrable (t : ℝ) (ht : 0 < t) :
   simp [← Complex.ofReal_pow, ← Complex.ofReal_mul, ← Complex.ofReal_neg,
     ← Complex.ofReal_exp]
 
-private theorem gaussian_integral (t : ℝ) (ht : 0 < t) :
+theorem gaussian_integral (t : ℝ) (ht : 0 < t) :
     (∫ x : ℂ, Real.exp (-t * ‖x‖ ^ 2)) = Real.pi / t := by
   have h := GaussianFourier.integral_cexp_neg_mul_sq_norm
     (V := ℂ) (b := (t : ℂ)) (by simpa using ht)
@@ -95,10 +93,7 @@ private theorem gaussian_integral (t : ℝ) (ht : 0 < t) :
     show (2 : ℂ) / 2 = 1 by norm_num, Complex.cpow_one] at h
   have h' : (Complex.ofReal (∫ x : ℂ, Real.exp (-t * ‖x‖ ^ 2))) = (Real.pi / t : ℝ) := by
     rw [← integral_complex_ofReal]
-    convert h using 1
-    · congr 1; ext x
-      rw [Complex.ofReal_exp, Complex.ofReal_mul, Complex.ofReal_neg, Complex.ofReal_pow]
-    · simp
+    simp_all
   exact Complex.ofReal_injective h'
 
 noncomputable def laplaceGaussian (c ρ t : ℝ) (x : ℂ) : ℂ :=
@@ -113,7 +108,7 @@ private theorem laplaceGaussian_integrable (c ρ : ℝ) (hρ : 0 < ρ) :
       ((volume.restrict (Set.Ioi (0 : ℝ))).prod (volume : Measure ℂ)) := by
     apply Continuous.aestronglyMeasurable
     unfold laplaceGaussian Function.uncurry
-    fun_prop (disch := norm_num)
+    fun_prop
   apply (integrable_prod_iff hm).2
   constructor
   · filter_upwards [self_mem_ae_restrict measurableSet_Ioi] with t ht
@@ -132,10 +127,7 @@ private theorem laplaceGaussian_integrable (c ρ : ℝ) (hρ : 0 < ρ) :
       simpa only [Real.rpow_one, neg_mul] using h.const_mul Real.pi
     refine hi.congr ?_
     filter_upwards [self_mem_ae_restrict measurableSet_Ioi] with t ht
-    simp only [Function.uncurry, laplaceGaussian, norm_mul, phase_norm, mul_one,
-      Complex.norm_real, Real.norm_eq_abs,
-      abs_of_pos (mul_pos (Real.rpow_pos_of_pos ht _) (Real.exp_pos _)),
-      abs_of_pos (Real.exp_pos _)]
+    simp only [Function.uncurry, laplaceGaussian, norm_mul, phase_norm, mul_one, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
     rw [abs_of_pos (Real.rpow_pos_of_pos ht (1 / 3 : ℝ))]
     rw [integral_const_mul, gaussian_integral t ht]
     have hpow : t ^ (1 / 3 : ℝ) / t = t ^ (-(2 / 3 : ℝ)) := by
@@ -145,14 +137,14 @@ private theorem laplaceGaussian_integrable (c ρ : ℝ) (hρ : 0 < ρ) :
     rw [← hpow]
     ring
 
-private theorem laplaceGaussian_integral_t (c ρ : ℝ) (hρ : 0 < ρ) (x : ℂ) :
+theorem laplaceGaussian_integral_t (c ρ : ℝ) (hρ : 0 < ρ) (x : ℂ) :
     (∫ t in Set.Ioi (0 : ℝ), laplaceGaussian c ρ t x) =
       (Real.Gamma (4 / 3 : ℝ) : ℂ) *
         (Real.rpow (ρ ^ 2 + ‖x‖ ^ 2) (-(4 / 3 : ℝ)) : ℂ) *
           Complex.exp (-Complex.I * (c : ℂ) * (x.re : ℂ)) := by
   have ha : 0 < ρ ^ 2 + ‖x‖ ^ 2 := by positivity
   have hg : Real.Gamma (4 / 3 : ℝ) ≠ 0 :=
-    (Real.Gamma_pos_of_pos (by norm_num : (0 : ℝ) < 4 / 3)).ne'
+    by positivity
   have hl := laplace_rpow (ρ ^ 2 + ‖x‖ ^ 2) ha
   simp only [Real.rpow_eq_pow] at hl ⊢
   have he : (∫ t in Set.Ioi (0 : ℝ),
@@ -174,7 +166,7 @@ private theorem laplaceGaussian_integral_t (c ρ : ℝ) (hρ : 0 < ρ) (x : ℂ)
       ring
     _ = _ := by rw [integral_complex_ofReal, he, Complex.ofReal_mul]
 
-private theorem laplaceGaussian_integral_x (c ρ t : ℝ) (ht : 0 < t) :
+theorem laplaceGaussian_integral_x (c ρ t : ℝ) (ht : 0 < t) :
     (∫ x : ℂ, laplaceGaussian c ρ t x) =
       ((Real.pi * (t ^ (-(2 / 3 : ℝ)) *
         Real.exp (-(ρ ^ 2 * t) - c ^ 2 / (4 * t))) : ℝ) : ℂ) := by
@@ -191,7 +183,7 @@ private theorem laplaceGaussian_integral_x (c ρ t : ℝ) (ht : 0 < t) :
   rw [sub_eq_add_neg, Real.exp_add, ← hpow]
   ring
 
-private theorem schlafli_scaled_integral (c ρ : ℝ) (hρ : 0 < ρ) :
+theorem schlafli_scaled_integral (c ρ : ℝ) (hρ : 0 < ρ) :
     (∫ t in Set.Ioi (0 : ℝ),
       t ^ (-(2 / 3 : ℝ)) * Real.exp (-(ρ ^ 2 * t) - c ^ 2 / (4 * t))) =
       ρ ^ (-(2 / 3 : ℝ)) *
@@ -222,7 +214,7 @@ private theorem schlafli_scaled_integral (c ρ : ℝ) (hρ : 0 < ρ) :
   have hpow : ρ ^ (-(4 / 3 : ℝ)) * ρ ^ (-(2 / 3 : ℝ)) = (ρ ^ 2)⁻¹ := by
     rw [← Real.rpow_add hρ]
     norm_num
-  have hn : ρ ^ (-(4 / 3 : ℝ)) ≠ 0 := (Real.rpow_pos_of_pos hρ _).ne'
+  have hn : ρ ^ (-(4 / 3 : ℝ)) ≠ 0 := by positivity
   apply mul_left_cancel₀ hn
   rw [h, ← mul_assoc, hpow]
 
@@ -232,7 +224,7 @@ private theorem planar_laplace_transform (c ρ : ℝ) (hρ : 0 < ρ) :
         ρ ^ (-(2 / 3 : ℝ)) *
           ∫ u in Set.Ioi (0 : ℝ), schlafliKernel (-(2 / 3 : ℝ)) (c * ρ) u : ℝ) : ℂ) := by
   have hg : Real.Gamma (4 / 3 : ℝ) ≠ 0 :=
-    (Real.Gamma_pos_of_pos (by norm_num : (0 : ℝ) < 4 / 3)).ne'
+    by positivity
   have hswap := integral_integral_swap (laplaceGaussian_integrable c ρ hρ)
   calc
     _ = (ρ ^ (4 / 3 : ℝ) * (Real.Gamma (4 / 3 : ℝ))⁻¹ : ℝ) *
@@ -335,5 +327,3 @@ theorem jacquet_spherical_diagonal_positive (c : ℝ) (hc : 0 < c)
   have hy : 0 < ‖(y : ℂ)‖ := norm_pos_iff.mpr y.ne_zero
   exact ⟨True.intro, mul_pos (mul_pos (besselCoefficient_pos c hc) hy)
     (besselKThird_pos (c * ‖(y : ℂ)‖) (mul_pos hc hy))⟩
-
-end DedekindZetaZeroFree.KPCplxPlanarKernel

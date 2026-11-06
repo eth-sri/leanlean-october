@@ -21,9 +21,7 @@ theorem raw_originalTerm_support_finite
   have hmul : NormalizedProbe.asLocalPoint A d⁻¹ * NormalizedProbe.asLocalPoint A d = 1 := by
     apply Prod.ext
     · funext v
-      simp only [NormalizedProbe.asLocalPoint, SArithmeticData.localToAdditive,
-        Prod.fst_mul, Prod.fst_inv, Pi.inv_apply, Units.val_inv_eq_inv_val,
-        NumberField.InfiniteAdeleRing, Pi.mul_apply, Pi.one_apply]
+      simp only [NormalizedProbe.asLocalPoint, SArithmeticData.localToAdditive, Prod.fst_inv, Pi.inv_apply, Units.val_inv_eq_inv_val, NumberField.InfiniteAdeleRing]
       exact inv_mul_cancel₀ (Units.ne_zero _)
     · funext v
       simp [NormalizedProbe.asLocalPoint, SArithmeticData.localToAdditive]
@@ -229,8 +227,8 @@ theorem raw_exact_coset_poisson_of_residue_poisson
     intro h
     simp only [norm_mul, phase, hnorm, one_mul]
     rfl
-  have horig : Summable (fun m => rowCoefficient A D s a hs m * w m) := by
-    exact (raw_originalTerm_summable A D W hW s a hs X t).of_norm
+  have horig : Summable (fun m => rowCoefficient A D s a hs m * w m) := 
+    (raw_originalTerm_summable A D W hW s a hs X t).of_norm
   change (∑' m : A.R, rowCoefficient A D s a hs m * w m) = _
   rw [row_sum_eq_sum_residue A D he s a hs ha w horig]
   change (∑ r, c r * ∑' m : {m : A.R //
@@ -287,14 +285,11 @@ theorem raw_exact_coset_poisson
       ((X * Real.sqrt (modulus A s) / modulus A a : ℝ) : ℂ) *
         ∑' h : A.R,
           frequencyTerm A P.coefficients P.finiteTrace
-            P.additiveMeasure P.W0 s a hs ha X t h := by
-  exact raw_exact_coset_poisson_of_residue_poisson A P.coefficients P.finiteTrace
+            P.additiveMeasure P.W0 s a hs ha X t h := 
+  raw_exact_coset_poisson_of_residue_poisson A P.coefficients P.finiteTrace
     P.additiveMeasure P.W0 P.compactSupport
     (principal_additiveCharacter_trivial A σ η hS P)
     (principal_additiveCharacter_norm A σ η hS P) s a hs ha X t
     (raw_principal_additiveCharacter_primitive A σ η hS P N s hs)
     (raw_fourier_norm_summable A σ η hS P N s a hs ha X hX t)
     (raw_residue_poisson A σ η hS P N s a hs ha X hX t)
-
-end
-end DedekindZetaZeroFree.ProbeCoset

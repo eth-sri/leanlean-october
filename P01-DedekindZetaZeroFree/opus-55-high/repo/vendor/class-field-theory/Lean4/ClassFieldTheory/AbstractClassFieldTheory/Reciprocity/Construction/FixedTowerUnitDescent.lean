@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 universe u v
 
 namespace ClassFormation
@@ -45,7 +41,7 @@ variable {D : DegreeData G} {A : Rep ℤ G}
 /-- The stabilizing action on the upper unit group, expressed directly on a
 fixed-field tower.  This is the bundle-native boundary used by the descent
 construction. -/
-noncomputable def fixedTowerUnitAction
+def fixedTowerUnitAction
     (v : ValuationData D A)
     [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
     [TotallyDisconnectedSpace G]
@@ -62,7 +58,6 @@ noncomputable def fixedTowerUnitAction
     D.frobeniusFixedAbstractField T.ambientBase T.ambient.field
       T.ambient.below T.fieldFrobenius
   have hTF : TF = T.field := by
-    apply FiniteAbstractField.eq_of_field_eq
     rfl
   exact hTF ▸
     v.frobeniusFixedFieldUnitAction T.ambientBase T.ambient.field
@@ -71,7 +66,7 @@ noncomputable def fixedTowerUnitAction
 /-- The corrected upper unit associated with a power-fixed-field tower.
 All fixed fields and finiteness witnesses are obtained from `P`; callers no
 longer have to align independently constructed unit-group types. -/
-noncomputable def powerTowerCorrection
+def powerTowerCorrection
     (v : ValuationData D A)
     [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
     [TotallyDisconnectedSpace G]
@@ -123,8 +118,8 @@ theorem unitRepresentation_generator_action_eq
       (QuotientGroup.mk gK :
         T.ambientBase.field.toSubgroup ⧸
           D.extensionInertiaWithin T.ambientBase.field T.ambient.field
-            T.ambient.below) = T.baseFrobenius.1 := by
-    exact congrArg Subtype.val g.mapsToFrobenius
+            T.ambient.below) = T.baseFrobenius.1 := 
+    congrArg Subtype.val g.mapsToFrobenius
   apply Subtype.ext
   apply Subtype.ext
   change A.ρ (Quotient.out T.baseFrobenius.1).1 y.1.1 =
@@ -136,12 +131,12 @@ theorem unitRepresentation_generator_action_eq
         A.ρ (Quotient.out T.baseFrobenius.1).1 y.1.1 =
             (D.frobeniusFixedFieldAction A T.ambientBase T.ambient.field
               T.ambient.below T.fieldFrobenius T.baseFrobenius.1
-                T.commute y.1).1 := by
-                exact (D.frobeniusFixedFieldAction_coe A T.ambientBase
+                T.commute y.1).1 := 
+                (D.frobeniusFixedFieldAction_coe A T.ambientBase
                   T.ambient.field T.ambient.below T.fieldFrobenius
                   T.baseFrobenius.1 T.commute y.1).symm
-        _ = A.ρ gK.1 y.1.1 := by
-          exact D.frobeniusFixedFieldAction_coe_of_mk
+        _ = A.ρ gK.1 y.1.1 := 
+          D.frobeniusFixedFieldAction_coe_of_mk
             A T.ambientBase T.ambient.field T.ambient.below
               T.fieldFrobenius T.baseFrobenius.1 T.commute gK hgKσ y.1
     _ = A.ρ g.element.1 y.1.1 := rfl
@@ -244,8 +239,8 @@ theorem universalNormDescent_fixedTower_solution
       (E.base.field.toSubgroup ⧸
         extensionSubgroup E.base.field E.field.field E.below) :=
     Fintype.ofFinite _
-  have hEunramified : E.IsUnramified D := by
-    exact Euc.toFiniteAbstractFieldExtension_isUnramified
+  have hEunramified : E.IsUnramified D := 
+    Euc.toFiniteAbstractFieldExtension_isUnramified
   have hA :
       CategoryTheory.Limits.IsZero
           (tateCohomology (v.unitRepresentation E hEnormal) 0) ∧
@@ -270,25 +265,13 @@ theorem universalNormDescent_fixedTower_solution
       (z : v.unitAddSubgroup TF) :
       v.fixedTowerUnitAction tower q hq z =
         v.frobeniusFixedFieldUnitAction K L hLK σn q hq z := by
-    apply Subtype.ext
-    apply Subtype.ext
-    change A.ρ (Quotient.out q).1 z.1.1 =
-      A.ρ (Quotient.out q).1 z.1.1
     rfl
   have hdeltaRelativeNorm : relativeNorm A S T hTS delta.1 = 0 := by
     have hdeltaAmbient :
         delta.1 =
           (v.fixedTowerCorrection K L hLK σn s φ.1 hφσn
             (fun i => (τ i).1) hτσn uBar uBarᵢ).1 := by
-      have hdeltaUnit :
-          delta =
-            v.fixedTowerCorrection K L hLK σn s φ.1 hφσn
-              (fun i => (τ i).1) hτσn uBar uBarᵢ := by
-        simp [delta, powerTowerCorrection,
-          fixedTowerCorrection, tower, K, L, σn,
-          hfixedAction]
-        rfl
-      exact congrArg Subtype.val hdeltaUnit
+      rfl
     rw [hdeltaAmbient]
     let : Finite ((baseField G).toSubgroup ⧸
         extensionSubgroup (baseField G) (D.frobeniusFixedField K L hLK σ)
@@ -496,7 +479,7 @@ theorem maximalNorm_relativeNorm_fixedTower
           ((D.frobeniusQuotientAction A K.field L hLK σ.1)^[i.1]) (F a) =
             D.frobeniusQuotientAction A K.field L hLK
               (σ.1 ^ i.1) (F a) at hpow
-        simpa only [act] using hpow
+        omega
   have hLeft : F (U.norm.hom a) =
       J (N (fixedFieldInclusion A S E hSE
         (relativeNorm A S T hTS a.1))) := by

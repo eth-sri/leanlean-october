@@ -8,7 +8,7 @@ public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.Iwasawa.
 noncomputable section
 namespace DedekindZetaZeroFree.ThetaExpansion
 open MomentSources NumberField
-open scoped Classical NumberField Topology
+open scoped Classical Topology
 set_option backward.isDefEq.respectTransparency false
 variable {F : Type} [Field F] [NumberField F]
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
@@ -138,9 +138,7 @@ theorem full_product_compact_preimage_is_compact (R : PrincipalMellin.ActualReci
       exact hx v
     · intro hy
       refine ⟨⟨fun v => y v, Filter.Eventually.of_forall hy⟩, hy, ?_⟩
-      apply RestrictedProduct.ext
-      intro v
-      simp only [inc, RestrictedProduct.mapAlong_apply, id_eq, RestrictedProduct.mk_apply]
+      rfl
   rw [← himg]
   exact hstr.image hcont
 
@@ -149,7 +147,3 @@ theorem full_product_compact_is_compact (R : PrincipalMellin.ActualRecipe S η) 
   rw [fullProductCompact, Subgroup.coe_map]
   exact (full_product_compact_preimage_is_compact R).image
     ((QuotientGroup.continuous_mk).comp QuotientGroup.continuous_mk)
-
-end DedekindZetaZeroFree.ThetaExpansion
-
-end

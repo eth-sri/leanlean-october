@@ -15,7 +15,7 @@ set_option maxHeartbeats 1200000
 def pairing (β : ℂˣ) (s : ℝ) (f : PrincipalSeries s) (g : PrincipalSeries (-s)) : ℂ :=
   ∫ z, star (openCoordinate f z) * openCoordinate g z ∂characterHaar β
 
-private theorem integral_dilation (β c : ℂˣ) (f : ℂ → ℂ) :
+theorem integral_dilation (β c : ℂˣ) (f : ℂ → ℂ) :
     (∫ x : ℂ, f ((c : ℂ) * x) ∂characterHaar β) =
       ((‖(c : ℂ)‖ ^ 2)⁻¹ : ℝ) • ∫ x : ℂ, f x ∂characterHaar β := by
   letI := characterHaar_isAddHaarMeasure β
@@ -104,10 +104,7 @@ theorem pairing_upper_invariant (β : ℂˣ) (s : ℝ)
   rw [integral_const_mul, integral_affine β (d/a) (b/(a:ℂ))
     (fun z => star (openCoordinate f z) * openCoordinate g z)]
   have hn : ‖(d : ℂ) / (a : ℂ)‖ ^ 2 ≠ 0 :=
-    pow_ne_zero _ (norm_ne_zero_iff.mpr (div_ne_zero d.ne_zero a.ne_zero))
+    by simp
   simp only [Complex.real_smul, Complex.ofReal_inv, Units.val_div_eq_div_val]
   rw [← mul_assoc, mul_inv_cancel₀ (Complex.ofReal_ne_zero.mpr hn), one_mul]
   rfl
-end DedekindZetaZeroFree.CurrentComplexBoundary
-
-end

@@ -113,8 +113,8 @@ private lemma inverse_smooth (c : ℝ) (b : ℂ → ℂ)
 theorem contDiffOn_weighted (c : ℝ) (b : ℂ → ℂ)
     (hb : ∀ j : ℕ, Integrable (fun t : ℝ =>
       (-((c : ℂ) + (t : ℂ) * Complex.I)) ^ j * b ((c : ℂ) + (t : ℂ) * Complex.I)))
-    (j : ℕ) : ContDiffOn ℝ ∞ (mellinInv c (fun s => (-s) ^ j * b s)) (Set.Ioi 0) := by
-  exact contDiffOn_infty.mpr fun k => inverse_smooth c b hb k j
+    (j : ℕ) : ContDiffOn ℝ ∞ (mellinInv c (fun s => (-s) ^ j * b s)) (Set.Ioi 0) := 
+  contDiffOn_infty.mpr fun k => inverse_smooth c b hb k j
 
 theorem EulerIter_eq_mellinInv (c : ℝ) (b : ℂ → ℂ)
     (hb : ∀ j : ℕ, Integrable (fun t : ℝ =>
@@ -131,7 +131,3 @@ theorem EulerIter_eq_mellinInv (c : ℝ) (b : ℂ → ℂ)
       eventually_of_mem (Ioi_mem_nhds hx) (fun y hy => ih y hy)
     rw [heq.deriv_eq, (hasDerivAt_weighted c b hb j x hx).deriv]
     rw [← mul_assoc, mul_inv_cancel₀ (Complex.ofReal_ne_zero.mpr hx.ne'), one_mul]
-
-end DedekindZetaZeroFree.LargeSieve.Vendor.InverseSpectrumEuler
-
-end

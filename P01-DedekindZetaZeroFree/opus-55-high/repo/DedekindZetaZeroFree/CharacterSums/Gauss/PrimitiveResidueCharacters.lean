@@ -17,7 +17,7 @@ def IsOrthogonalResidueAddChar {A : Type*} [CommRing A] [Fintype A]
     (ψ : AddChar A ℂ) : Prop :=
   ∀ n : A, n ≠ 0 → ∑ d : A, ψ (n * d) = 0
 
-private lemma residue_shifted {A : Type*} [CommRing A] [Fintype A]
+lemma residue_shifted {A : Type*} [CommRing A] [Fintype A]
     (χ : MulChar A ℂ) (ψ : AddChar A ℂ)
     (hp : IsPrimitiveResidueCharacter χ) (n : A) :
     gaussSum χ⁻¹ (ψ.mulShift n) = χ n * gaussSum χ⁻¹ ψ := by
@@ -34,7 +34,7 @@ private lemma residue_shifted {A : Type*} [CommRing A] [Fintype A]
     rw [MulChar.map_nonunit χ hn, zero_mul]
     exact eq_zero_of_mul_eq_self_left hi he
 
-private lemma residue_inversion {A : Type*} [CommRing A] [Fintype A]
+lemma residue_inversion {A : Type*} [CommRing A] [Fintype A]
     (χ : MulChar A ℂ) (ψ : AddChar A ℂ)
     (ho : IsOrthogonalResidueAddChar ψ) :
     (∑ n : A, gaussSum χ⁻¹ (ψ.mulShift n) * ψ (-n)) = (Fintype.card A : ℂ) := by
@@ -50,7 +50,7 @@ private lemma residue_inversion {A : Type*} [CommRing A] [Fintype A]
   simp_rw [← Finset.mul_sum, hor]
   simp
 
-private lemma residue_unit_sum {A : Type*} [CommRing A] [Fintype A]
+lemma residue_unit_sum {A : Type*} [CommRing A] [Fintype A]
     (χ : MulChar A ℂ) (ψ : AddChar A ℂ) (n : A) :
     (∑ d : Aˣ, χ⁻¹ (d : A) * ψ (n * (d : A))) =
       gaussSum χ⁻¹ (ψ.mulShift n) := by
@@ -60,8 +60,7 @@ private lemma residue_unit_sum {A : Type*} [CommRing A] [Fintype A]
       rintro ⟨u, rfl⟩
       exact hd ⟨u, rfl⟩
     simp [MulChar.map_nonunit _ hnu]
-  · intro d
-    rfl
+  simp
 
 theorem detector_gauss_residue
     (A : Type*) [CommRing A] [Fintype A]
@@ -95,5 +94,3 @@ theorem detector_gauss_residue
     rw [residue_unit_sum, residue_shifted χ ψ hprimitive, mul_left_comm, inv_mul_cancel₀ hnz, mul_one]
   · intro n hn
     rw [residue_unit_sum, residue_shifted χ ψ hprimitive, MulChar.map_nonunit χ hn, zero_mul, mul_zero]
-
-end DedekindZetaZeroFree

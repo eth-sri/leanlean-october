@@ -56,19 +56,19 @@ structure Data (n r : ℕ) (Γ : Type*) [Group Γ] where
     (fun p : EuclideanSpace ℝ (Fin n) × EuclideanSpace ℂ (Fin r) =>
       cocycle γ p.1 p.2) (chart ×ˢ Set.univ)
 
-private theorem inverse_action (n r : ℕ) (Γ : Type*) [Group Γ]
+theorem inverse_action (n r : ℕ) (Γ : Type*) [Group Γ]
     (D : Data n r Γ) (γ : Γ) (x : EuclideanSpace ℝ (Fin n))
     (hx : x ∈ D.chart) : D.act γ⁻¹ (D.act γ x) = x := by
   rw [← D.act_mul γ⁻¹ γ x hx, inv_mul_cancel, D.act_one x hx]
 
-private theorem inverse_cocycle (n r : ℕ) (Γ : Type*) [Group Γ]
+theorem inverse_cocycle (n r : ℕ) (Γ : Type*) [Group Γ]
     (D : Data n r Γ) (γ : Γ) (x : EuclideanSpace ℝ (Fin n))
     (hx : x ∈ D.chart) (v : EuclideanSpace ℂ (Fin r)) :
     (D.cocycle γ x).symm v = D.cocycle γ⁻¹ (D.act γ x) v := by
   have hc := D.cocycle_mul γ⁻¹ γ x hx ((D.cocycle γ x).symm v)
   simpa [D.cocycle_one x hx] using hc
 
-private theorem shifted_inverse_cocycle (n r : ℕ) (Γ : Type*) [Group Γ]
+theorem shifted_inverse_cocycle (n r : ℕ) (Γ : Type*) [Group Γ]
     (D : Data n r Γ) (γ δ : Γ) (x : EuclideanSpace ℝ (Fin n))
     (hx : x ∈ D.chart) (v : EuclideanSpace ℂ (Fin r)) :
     (D.cocycle γ (D.act δ x)).symm v =
@@ -174,8 +174,7 @@ private theorem average_equivariant (n r : ℕ) (Γ : Type*) [Group Γ] [Fintype
           ae_chart n r Γ D] with x ha hb hc hd he hx
         rw [ha, hb, Pi.add_apply, hc, hd]
         simp only [term, Set.indicator_of_mem hx]
-        simp only [Function.comp_apply, Pi.add_apply] at he
-        rw [he, map_add]
+        simp_all
       map_smul' := by
         intro c f
         apply Lp.ext
@@ -186,8 +185,7 @@ private theorem average_equivariant (n r : ℕ) (Γ : Type*) [Group Γ] [Fintype
         simp only [RingHom.id_apply]
         rw [ha, hb, Pi.smul_apply, hc]
         simp only [term, Set.indicator_of_mem hx]
-        simp only [Function.comp_apply, Pi.smul_apply] at hd
-        rw [hd, LinearIsometryEquiv.map_smul] }
+        simp_all }
     1 (fun f => by simp [termLp_norm])
 
  noncomputable def averageCLM (n r : ℕ) (Γ : Type*) [Group Γ] [Fintype Γ]
@@ -196,7 +194,7 @@ private theorem average_equivariant (n r : ℕ) (Γ : Type*) [Group Γ] [Fintype
       Lp (EuclideanSpace ℂ (Fin r)) 2 (weightedMeasure n D.chart D.weight) :=
   (Fintype.card Γ : ℂ)⁻¹ • ∑ γ : Γ, termCLM n r Γ D γ
 
-private theorem averageCLM_coe (n r : ℕ) (Γ : Type*) [Group Γ] [Fintype Γ]
+theorem averageCLM_coe (n r : ℕ) (Γ : Type*) [Group Γ] [Fintype Γ]
     (D : Data n r Γ)
     (f : Lp (EuclideanSpace ℂ (Fin r)) 2 (weightedMeasure n D.chart D.weight)) :
     averageCLM n r Γ D f =ᵐ[weightedMeasure n D.chart D.weight]
@@ -213,7 +211,7 @@ private theorem averageCLM_coe (n r : ℕ) (Γ : Type*) [Group Γ] [Fintype Γ]
   simp only [ha, Pi.smul_apply, hb, Finset.sum_apply, hc, term, average,
     Set.indicator_of_mem hx]
 
-private theorem averageCLM_norm (n r : ℕ) (Γ : Type*) [Group Γ] [Fintype Γ]
+theorem averageCLM_norm (n r : ℕ) (Γ : Type*) [Group Γ] [Fintype Γ]
     (D : Data n r Γ)
     (f : Lp (EuclideanSpace ℂ (Fin r)) 2 (weightedMeasure n D.chart D.weight)) :
     ‖averageCLM n r Γ D f‖ ≤ ‖f‖ := by
@@ -227,7 +225,7 @@ private theorem averageCLM_norm (n r : ℕ) (Γ : Type*) [Group Γ] [Fintype Γ]
     _ = ‖f‖ := by
       change (↑(Fintype.card Γ) : ℝ)⁻¹ * ∑ γ : Γ, ‖termLp n r Γ D γ f‖ = ‖f‖
       simp only [termLp_norm, Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
-      rw [← mul_assoc, inv_mul_cancel₀ (Nat.cast_ne_zero.mpr Fintype.card_ne_zero), one_mul]
+      simp
 
 private theorem averageCLM_mem (n r : ℕ) (Γ : Type*) [Group Γ] [Fintype Γ]
     (D : Data n r Γ)
@@ -242,7 +240,7 @@ private theorem averageCLM_mem (n r : ℕ) (Γ : Type*) [Group Γ] [Fintype Γ]
   rw [ha, hb]
   exact average_equivariant n r Γ D f γ x hx
 
-private theorem averageCLM_fixed (n r : ℕ) (Γ : Type*) [Group Γ] [Fintype Γ]
+theorem averageCLM_fixed (n r : ℕ) (Γ : Type*) [Group Γ] [Fintype Γ]
     (D : Data n r Γ)
     (f : Lp (EuclideanSpace ℂ (Fin r)) 2 (weightedMeasure n D.chart D.weight))
     (hf : f ∈ equivariantL2 n r Γ (weightedMeasure n D.chart D.weight) D.act D.cocycle) :
@@ -258,9 +256,9 @@ private theorem averageCLM_fixed (n r : ℕ) (Γ : Type*) [Group Γ] [Fintype Γ
   simp only [average, Set.indicator_of_mem hx, hb,
     LinearIsometryEquiv.symm_apply_apply, Finset.sum_const, Finset.card_univ]
   rw [← Nat.cast_smul_eq_nsmul ℂ, smul_smul]
-  simp [Fintype.card_ne_zero]
+  simp
 
-private theorem interior_finite (n r : ℕ) (Γ : Type*) [Group Γ] (D : Data n r Γ)
+theorem interior_finite (n r : ℕ) (Γ : Type*) [Group Γ] (D : Data n r Γ)
     {K : Set (EuclideanSpace ℝ (Fin n))} (hK : IsCompact K) (hKD : K ⊆ D.chart) :
     weightedMeasure n D.chart D.weight K < ⊤ := by
   rw [weightedMeasure, withDensity_apply _ hK.measurableSet,
@@ -273,7 +271,7 @@ private theorem interior_finite (n r : ℕ) (Γ : Type*) [Group Γ] (D : Data n 
   rw [Real.enorm_eq_ofReal_abs]
   exact ENNReal.ofReal_le_ofReal (le_abs_self _)
 
-private theorem continuous_interior_approx (n r : ℕ) (Γ : Type*) [Group Γ]
+theorem continuous_interior_approx (n r : ℕ) (Γ : Type*) [Group Γ]
     (D : Data n r Γ)
     (f : Lp (EuclideanSpace ℂ (Fin r)) 2 (weightedMeasure n D.chart D.weight))
     (ε : ℝ) (hε : 0 < ε) :
@@ -318,15 +316,15 @@ private theorem continuous_interior_approx (n r : ℕ) (Γ : Type*) [Group Γ]
   refine ⟨h, hcont, hsupp, hts, hmem, ?_⟩
   change eLpNorm (fun x => f x - h x) 2 μ ≤ ENNReal.ofReal ε
   have hm : AEStronglyMeasurable (fun x => f x - h x) μ :=
-    ((Lp.memLp f).sub hmem).aestronglyMeasurable
+    by fun_prop
   rw [← hmap] at hm ⊢
   rw [eLpNorm_map_measure hm hme.measurable.aemeasurable]
   convert hcerror using 1
   congr 1
   funext x
-  exact congrArg (fun v => f x.1 - v) (hext x)
+  simp_all
 
-private theorem smooth_interior_approx (n r : ℕ) (Γ : Type*) [Group Γ]
+theorem smooth_interior_approx (n r : ℕ) (Γ : Type*) [Group Γ]
     (D : Data n r Γ)
     (f : Lp (EuclideanSpace ℂ (Fin r)) 2 (weightedMeasure n D.chart D.weight))
     (ε : ℝ) (hε : 0 < ε) :
@@ -525,5 +523,3 @@ theorem kp_cont_chart_equivariant_l2_density
   rw [heq, ← KPChartL2.averageCLM_fixed n r Γ D f hf,
     ← map_sub]
   exact lt_of_le_of_lt (KPChartL2.averageCLM_norm n r Γ D _) herr
-
-end DedekindZetaZeroFree

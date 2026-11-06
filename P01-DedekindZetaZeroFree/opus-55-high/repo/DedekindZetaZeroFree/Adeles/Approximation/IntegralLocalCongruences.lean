@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.Arithmetic.LocalFields.ValuationBallsAndInteg
 
 @[expose] public section
 
-noncomputable section
 
 namespace DedekindZetaZeroFree
 
@@ -40,9 +39,7 @@ theorem sIntegral_crt
         rw [hU]
         exact hopen
       , by
-        rw [hU]
-        simp only [Set.mem_setOf_eq, sub_self]
-        exact (PoissonSLocalBalls.ball F w (m w)).zero_mem⟩)
+        simp_all⟩)
   refine ⟨a, fun v => ?_⟩
   have hv := ha (v : HeightOneSpectrum (𝓞 F)) v.property
   rw [hU] at hv
@@ -51,20 +48,15 @@ theorem sIntegral_crt
 
   have hxv : x (v : HeightOneSpectrum (𝓞 F)) = y v := by
     rw [hx]
-    simp only [dif_pos v.property]
+    simp
   have hmv : m (v : HeightOneSpectrum (𝓞 F)) = n v := by
     rw [hm]
-    simp only [dif_pos v.property]
+    simp
 
   have hB : (algebraMap (𝓞 F) (v.val.adicCompletionIntegers F) a :
         v.val.adicCompletion F) =
       algebraMap F (v.val.adicCompletion F) (a : F) := by
-    rw [HeightOneSpectrum.algebraMap_adicCompletionIntegers_apply]
-    exact congrFun (HeightOneSpectrum.algebraMap_adicCompletion (𝓞 F) F (S := 𝓞 F) v.val) a
+    rfl
   rw [hB, hxv, hmv] at hv
   rw [Valuation.map_sub_swap]
   exact hv
-
-end DedekindZetaZeroFree
-
-end

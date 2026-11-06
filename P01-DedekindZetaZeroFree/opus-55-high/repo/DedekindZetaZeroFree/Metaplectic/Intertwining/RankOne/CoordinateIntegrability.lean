@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Metaplectic.Intertwining.RankOne.TailAbsolute
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.KPRankOneShellRepair
 open scoped NumberField Valued
 open NumberField IsDedekindDomain MeasureTheory ValuativeRel
@@ -34,7 +33,3 @@ theorem actual_standard_integral_coordinate_integrable
   have hall := hc.union (hM s hs φ k h)
   rw [hcover, integrableOn_univ] at hall
   exact hall
-
-end DedekindZetaZeroFree.KPRankOneShellRepair
-
-end

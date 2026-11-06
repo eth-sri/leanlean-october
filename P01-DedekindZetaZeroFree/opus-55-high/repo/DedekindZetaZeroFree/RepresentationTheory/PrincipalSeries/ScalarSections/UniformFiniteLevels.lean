@@ -17,7 +17,7 @@ set_option maxHeartbeats 1600000
 attribute [local instance] KPAdelicCoverRestrictedProduct.pglLocalTopology
 attribute [local instance] KPAdelicCoverRestrictedProduct.localTopology
 
-private theorem local_compact_level (q : KPFinitePlace F) (f : Plus A P C (Sum.inr q)) :
+theorem local_compact_level (q : KPFinitePlace F) (f : Plus A P C (Sum.inr q)) :
     ∃ L : CompactOpenLevel (KPLocalExceptionalConstruction.ActualCover F A.zeta12 A.primitive_zeta12 q),
       ∀ (k : L.toOpenSubgroup) g, f.val (g * k.val) = f.val g := by
   obtain ⟨U, hU⟩ := f.property.2
@@ -199,6 +199,3 @@ theorem quotientCoreValue_uniform_level
   | ih s x =>
     obtain ⟨J, hJ⟩ := stage_quotientCoreValue_uniform_level A P C s x
     exact ⟨J, fun g u hu => hJ g ⟨u, hu⟩⟩
-end DedekindZetaZeroFree.FourierContinuation.LiteralSource
-
-end

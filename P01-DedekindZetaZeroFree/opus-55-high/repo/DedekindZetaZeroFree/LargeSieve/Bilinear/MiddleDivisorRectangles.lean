@@ -16,7 +16,7 @@ variable {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
 
  def WC (C : Context Q) : Context Q :=
   { C with lam := fun b => weightedColumn C (Function.invFun (fun u => C.d * u) b) }
-private lemma wc_lam (C : Context Q) (u : Ideal (𝓞 F)) :
+lemma wc_lam (C : Context Q) (u : Ideal (𝓞 F)) :
     (WC C).lam (C.d*u) = weightedColumn C u := by
   dsimp [WC]
   rw [Function.leftInverse_invFun (fun a b h => mul_left_cancel₀ C.hd0 h)]
@@ -26,8 +26,7 @@ private lemma phase_norm (C : Context Q) (t : ℝ) (u : Ideal (𝓞 F)) : ‖pha
   simp [phase, Complex.norm_exp]
 private lemma phase_split (C : Context Q) (p : Ideal (𝓞 F) × Ideal (𝓞 F)) (t s : ℝ) :
     frequencyPhase C p t s = phase C t p.1 * star (phase C (-s) p.2) := by
-  simp only [frequencyPhase, phase, Complex.star_def, ← Complex.exp_conj,
-    map_mul, Complex.conj_ofReal, Complex.conj_I, neg_mul, mul_neg, neg_neg]
+  simp only [frequencyPhase, phase, Complex.star_def, ← Complex.exp_conj, map_mul, Complex.conj_ofReal, Complex.conj_I, neg_mul, mul_neg]
   rw [← Complex.exp_add]
   congr 1
   push_cast
@@ -35,10 +34,10 @@ private lemma phase_split (C : Context Q) (p : Ideal (𝓞 F) × Ideal (𝓞 F))
  def E (C : Context Q) (f : Ideal (𝓞 F)) : ℝ :=
   ∑ u ∈ C.columns, if f ∣ u then
     (2:ℝ)^(UniqueFactorizationMonoid.normalizedFactors u).toFinset.card * ‖weightedColumn C u‖^2 else 0
-private lemma wc_energy (C : Context Q) (f : Ideal (𝓞 F)) : SupportedRows.energy (WC C) f = E C f := by
+lemma wc_energy (C : Context Q) (f : Ideal (𝓞 F)) : SupportedRows.energy (WC C) f = E C f := by
   unfold SupportedRows.energy E
   simp only [show (WC C).columns = C.columns from rfl, show (WC C).d = C.d from rfl, wc_lam]
-private lemma wc_pairs (C : Context Q) : (WC C).pairs = C.pairs := by
+lemma wc_pairs (C : Context Q) : (WC C).pairs = C.pairs := by
   ext p
   simp only [Context.pairs, Finset.mem_filter]
   constructor <;> rintro ⟨hp, hv⟩ <;> exact ⟨hp, ⟨hv.hu0, hv.hv0, hv.hu, hv.hv, hv.huc, hv.hvc, hv.hdu, hv.hdv, hv.hduc, hv.hdvc, hv.huv, hv.hduv, hv.hclass, hv.hquotientClass, hv.offDiagonal⟩⟩
@@ -100,10 +99,10 @@ private lemma cell_bound (D : Sieve.AllIndexNormalizedFamilyData Q) :
   calc
     _ ≤ ∑ tr ∈ C.reflectedRowIndices B unit, ‖frequencyCell C e (tr.1*tr.2) f g t s‖ :=
       Finset.sum_image_le_of_nonneg (f := fun a => ‖frequencyCell C e a f g t s‖)
-        (g := fun tr : Ideal (𝓞 F) × Ideal (𝓞 F) => tr.1*tr.2) (by intros; positivity)
+        (g := fun tr : Ideal (𝓞 F) × Ideal (𝓞 F) => tr.1*tr.2) (by simp)
     _ ≤ ∑ tr ∈ (squarefreeBadPool c) ×ˢ C.reflectedCoreRows B unit,
         ‖frequencyCell C e (tr.1*tr.2) f g t s‖ :=
-      Finset.sum_le_sum_of_subset_of_nonneg (Finset.filter_subset _ _) (by intros; positivity)
+      Finset.sum_le_sum_of_subset_of_nonneg (Finset.filter_subset _ _) (by simp)
     _ ≤ ∑ b ∈ squarefreeBadPool c,
         A * Real.sqrt (U Q B (C.N/(norm C.d*P₁)) * U Q B (C.N/(norm C.d*P₂))) * Real.sqrt (E C f * E C g) := by
       rw [Finset.sum_product]
@@ -114,7 +113,7 @@ private lemma cell_bound (D : Sieve.AllIndexNormalizedFamilyData Q) :
       have hz : 0 ≤ A * Real.sqrt (U Q B (C.N/(norm C.d*P₁)) * U Q B (C.N/(norm C.d*P₂))) * Real.sqrt (E C f * E C g) := by positivity
       nlinarith
 
-private lemma incidence_le (C : Context Q) (S : Finset (Ideal (𝓞 F))) :
+lemma incidence_le (C : Context Q) (S : Finset (Ideal (𝓞 F))) :
     (∑ f ∈ S, E C f) ≤ Origin.incidenceEnergy C := by
   unfold E Origin.incidenceEnergy
   rw [Finset.sum_comm]
@@ -129,7 +128,7 @@ private lemma incidence_le (C : Context Q) (S : Finset (Ideal (𝓞 F))) :
       mul_le_mul_of_nonneg_right hc (by positivity)
     _ = _ := by unfold weightedColumn; ring
 
-private lemma cost_one (C : Context Q) : 1 ≤ Origin.assemblyCost C := by
+lemma cost_one (C : Context Q) : 1 ≤ Origin.assemblyCost C := by
   have hm : 1 ≤ C.mobiusDivisors.card := by
     apply Finset.one_le_card.mpr
     refine ⟨⊤, ?_⟩
@@ -138,7 +137,7 @@ private lemma cost_one (C : Context Q) : 1 ≤ Origin.assemblyCost C := by
       have hc : c ≠ ⊥ := by simpa only [C.core] using C.D.bad_ne_bot
       have hcd : c * C.d ≠ ⊥ := mul_ne_zero hc C.hd0
       exact hcd (bot_unique (hh ▸ Ideal.le_radical))
-    · simpa only [← Ideal.one_eq_top] using one_dvd ((c * C.d).radical)
+    simp
   have hs : 1 ≤ (ErrorRectangles.scales (C.N / norm C.d)).card :=
     Finset.one_le_card.mpr ⟨1, Finset.mem_insert_self _ _⟩
   unfold Origin.assemblyCost
@@ -149,7 +148,7 @@ private lemma cost_one (C : Context Q) : 1 ≤ Origin.assemblyCost C := by
 private lemma bin_cauchy (C : Context Q) (S T : Finset (Ideal (𝓞 F))) :
     (∑ f ∈ S, ∑ g ∈ T, Real.sqrt (E C f * E C g)) ≤
       Real.sqrt ((S.card:ℝ)*(T.card:ℝ)) * Origin.incidenceEnergy C := by
-  have he : ∀ f, 0 ≤ E C f := by intro f; unfold E; apply Finset.sum_nonneg; intro u hu; split_ifs <;> positivity
+  have he : ∀ f, 0 ≤ E C f := by intro f; unfold E; positivity
   have hh := Real.sum_sqrt_mul_sqrt_le (f := fun _ : Ideal (𝓞 F) × Ideal (𝓞 F) => (1:ℝ))
     (g := fun fg => E C fg.1 * E C fg.2) (S ×ˢ T) (fun _ => zero_le_one)
     (fun fg => mul_nonneg (he _) (he _))
@@ -260,8 +259,7 @@ private lemma fixed_mass_le (C : Context Q) :
   have hr : (c * C.d).radical ≠ ⊥ := by
     intro h
     have hh := Ideal.le_radical (I := c * C.d)
-    rw [h] at hh
-    exact hcd (le_bot_iff.mp hh)
+    simp_all
   have hsub : C.mobiusDivisors ⊆ idealDivisors (c * C.d) := by
     intro e he
     exact (mem_idealDivisors hcd).mpr (((mem_idealDivisors hr).mp he).trans
@@ -298,7 +296,7 @@ private lemma common_threshold (C : Context Q) (B : ℝ) (hM : 1 ≤ C.M)
       heN.trans (mul_le_mul_of_nonneg_right hc' (by linarith))
     nlinarith
   have hn0 : 0 < norm C.d := by linarith
-  have hs0 : 0 < Real.sqrt (B * C.M) := Real.sqrt_pos.mpr (by positivity)
+  have hs0 : 0 < Real.sqrt (B * C.M) := by positivity
   have hθ0 : 0 ≤ Real.rpow (C.M * C.N) C.δ := Real.rpow_nonneg (by positivity) _
   unfold Context.Z1
   have hh := mul_le_mul_of_nonneg_right
@@ -317,13 +315,13 @@ private lemma finite_R_set (B M N n θ Cq : ℝ) :
   simp only [Set.mem_setOf_eq, Set.mem_image, Finset.mem_coe]
   constructor <;> rintro ⟨ij, hij, rfl⟩ <;> exact ⟨ij, hij, rfl⟩
 
-private lemma R_nonneg' (B M N n θ Cq : ℝ) : 0 ≤ R Q B M N n θ Cq := by
-  exact le_csSup (finite_R_set (Q := Q) B M N n θ Cq).bddAbove (Or.inl rfl)
+private lemma R_nonneg' (B M N n θ Cq : ℝ) : 0 ≤ R Q B M N n θ Cq := 
+  le_csSup (finite_R_set (Q := Q) B M N n θ Cq).bddAbove (Or.inl rfl)
 
 private lemma value_le_R (B M N n θ Cq : ℝ) (ij : ℕ × ℕ)
     (hij : ij ∈ rectangles F B M N n θ Cq) :
-    rectangleValue Q B N n ij ≤ R Q B M N n θ Cq := by
-  exact le_csSup (finite_R_set (Q := Q) B M N n θ Cq).bddAbove (Or.inr ⟨ij, hij, rfl⟩)
+    rectangleValue Q B N n ij ≤ R Q B M N n θ Cq := 
+  le_csSup (finite_R_set (Q := Q) B M N n θ Cq).bddAbove (Or.inr ⟨ij, hij, rfl⟩)
 
 private lemma frequencyWeight_integrable : Integrable frequencyWeight := by
   unfold frequencyWeight
@@ -331,7 +329,7 @@ private lemma frequencyWeight_integrable : Integrable frequencyWeight := by
   rw [Measure.volume_eq_prod]
   exact integrable_inv_one_add_sq.mul_prod integrable_inv_one_add_sq
 
-private lemma frequencyWeight_integral : (∫ p : ℝ × ℝ, frequencyWeight p) = Real.pi ^ 2 := by
+lemma frequencyWeight_integral : (∫ p : ℝ × ℝ, frequencyWeight p) = Real.pi ^ 2 := by
   simp only [frequencyWeight, mul_inv]
   rw [Measure.volume_eq_prod]
   rw [integral_prod_mul (fun x : ℝ => (1 + x ^ 2)⁻¹) (fun x : ℝ => (1 + x ^ 2)⁻¹)]
@@ -345,14 +343,14 @@ private lemma finite_cost_epsilon (η : ℝ) (hη : 0 < η) :
           ((rectangles F B C.M C.N (norm C.d) (Real.rpow (C.M * C.N) C.δ) Cq).card : ℝ) ≤
             J * Real.rpow (C.M * C.N * norm C.d) η := by
   let e := η / 3
-  have he : 0 < e := by dsimp [e]; linarith
+  have he : 0 < e := by positivity
   obtain ⟨A, hA, hdiv⟩ := ideal_divisor_count_le_rpow F e he
   let T := max 1 (norm c)
   let L := 2 + 1 / (e * Real.log 2)
   let H := L * (2 : ℝ) ^ e
-  have hT : 0 < T := lt_of_lt_of_le zero_lt_one (le_max_left _ _)
+  have hT : 0 < T := by positivity
   have hL : 0 < L := Vendor.dyadicLength_small_power_constant_pos he
-  have hH : 0 < H := mul_pos hL (Real.rpow_pos_of_pos (by norm_num) _)
+  have hH : 0 < H := by positivity
   refine ⟨(A * T ^ e) * H ^ 2, by positivity, ?_⟩
   intro C hM hN hnN B Cq
   have hn := norm_one_le C.hd0
@@ -368,7 +366,7 @@ private lemma finite_cost_epsilon (η : ℝ) (hη : 0 < η) :
     have hb : norm (c * C.d) ≤ T * Z := by
       simp only [ExplicitTerms.norm, map_mul, Nat.cast_mul]
       change norm c * norm C.d ≤ T * Z
-      exact mul_le_mul (le_max_right _ _) hnZ (by unfold ExplicitTerms.norm; positivity) hT.le
+      exact mul_le_mul (le_max_right _ _) hnZ (by positivity) hT.le
     calc
       _ ≤ (idealDivisorCount (c * C.d) : ℝ) := fixed_mass_le C
       _ ≤ A * (norm (c * C.d)) ^ e := hdiv _
@@ -377,8 +375,8 @@ private lemma finite_cost_epsilon (η : ℝ) (hη : 0 < η) :
       _ = (A * T ^ e) * Z ^ e := by rw [Real.mul_rpow hT.le (by linarith)]; ring
   have hX : 1 ≤ 2 * C.N / norm C.d :=
     (le_div_iff₀ (by linarith : 0 < norm C.d)).mpr (by simpa using hnN)
-  have hx : 2 * C.N / norm C.d ≤ 2 * Z := by
-    exact (div_le_self (by linarith : 0 ≤ 2 * C.N) hn).trans (by linarith)
+  have hx : 2 * C.N / norm C.d ≤ 2 * Z := 
+    (div_le_self (by linarith : 0 ≤ 2 * C.N) hn).trans (by linarith)
   have hl : (Vendor.dyadicLength (2 * C.N / norm C.d) + 1 : ℝ) ≤ H * Z ^ e := by
     calc
       _ ≤ L * (2 * C.N / norm C.d) ^ e := Vendor.dyadicLength_small_power he hX
@@ -467,7 +465,7 @@ private lemma integrated_cost_bound (C : Context Q) (B Cq : ℝ) (unit : Bool)
   have hR0 : 0 ≤ R₀ := R_nonneg' _ _ _ _ _ _
   have hZ0 : 0 ≤ Z := by dsimp [Z]; unfold ExplicitTerms.norm; positivity
   have hpow0 : 0 ≤ Z.rpow (ε / 2) := Real.rpow_nonneg hZ0 _
-  have hV0 : 0 ≤ V := by dsimp [V]; positivity
+  have hV0 : 0 ≤ V := by positivity
   have hfreq0 : ∀ t s : ℝ, 0 ≤ frequencyCost C B Cq unit t s := by
     intro t s
     unfold frequencyCost
@@ -670,7 +668,7 @@ private lemma finite_R_set (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
 lemma R_nonneg (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
     (B M N n θ Cq : ℝ) : 0 ≤ R Q B M N n θ Cq := by
   apply le_csSup (finite_R_set Q B M N n θ Cq).bddAbove
-  exact Or.inl rfl
+  simp
 
 lemma R_empty (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
     (B M N n θ Cq : ℝ) (h : rectangles F B M N n θ Cq = ∅) :
@@ -707,9 +705,7 @@ lemma conclusions_of_masked_bound (C : Context Q) (B M N n θ Cq rhs : ℝ)
   refine ⟨hone, hmasked, ?_, ?_⟩
   · intro h
     have hrhs := hempty h
-    refine ⟨norm_le_zero_iff.mp (by simpa only [hrhs] using hone), ?_⟩
-    intro ρ hρ
-    exact norm_le_zero_iff.mp (by simpa only [hrhs] using hmasked ρ hρ)
+    simp_all
   · intro hu
     have hB := hunit hu
     have htop : ‖topE3 C‖ ≤ rhs := by
@@ -717,7 +713,7 @@ lemma conclusions_of_masked_bound (C : Context Q) (B M N n θ Cq rhs : ℝ)
       rw [← hB, ← hu]
       exact hmasked _ (fun a _ => top_mask_bound a)
     refine ⟨htop, fun h => norm_le_zero_iff.mp ?_⟩
-    simpa only [hempty h] using htop
+    simp_all
 
 end DedekindZetaZeroFree.LargeSieve.Bilinear.MiddleFinite
 
@@ -831,9 +827,3 @@ theorem bilinear_middle_finite_application
     dsimp [rhs]
     rw [MiddleFinite.R_empty Q B M N n θ Cq hempty]
     ring
-
-end DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms
-
-end
-
-end

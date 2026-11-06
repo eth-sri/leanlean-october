@@ -33,8 +33,5 @@ theorem sectionTuple_continuous : Continuous (sectionTuple F ζ hζ) := by
           (KPHilbert.infinite_isComplex F ζ hζ w)).symm.toRingHom :=
         (InfinitePlace.Completion.isometryEquivComplexOfIsComplex
           (KPHilbert.infinite_isComplex F ζ hζ w)).symm.continuous
-      exact hc.generalLinearGroup_map.comp (continuous_apply w)
+      fun_prop
   exact (RestrictedProduct.isEmbedding_structureMap.continuous.comp hf)
-end DedekindZetaZeroFree.FourierContinuation.ResidualPrincipalSlices
-
-end

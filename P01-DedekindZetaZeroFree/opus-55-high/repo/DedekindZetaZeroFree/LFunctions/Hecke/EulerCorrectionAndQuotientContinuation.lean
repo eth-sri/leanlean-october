@@ -1,7 +1,10 @@
 module
 
 public import DedekindZetaZeroFree.LFunctions.Hecke.NonprincipalMaskedRowInducers
-public import DedekindZetaZeroFree.Nonvanishing.Mellin.PrincipalInitialEulerSeparation
+public import DedekindZetaZeroFree.Nonvanishing.Mellin.InitialFrequencyDecomposition
+public import DedekindZetaZeroFree.Moments.Principal.EulerCorrectionsAndDoubleResidue
+public import DedekindZetaZeroFree.Moments.Comparison.PoissonMellinKernelData
+public import DedekindZetaZeroFree.Moments.Comparison.TripleMellinKernel
 
 @[expose] public section
 
@@ -35,7 +38,7 @@ private theorem finite_prime_delete_hasSum
           rcases hprime.dvd_or_dvd hd with hd | hd
           · exact ⟨v, hv, Ideal.dvd_iff_le.mp hd⟩
           · have heq : v = p := HeightOneSpectrum.ext ((Ideal.IsMaximal.eq_of_le p.isMaximal (Ideal.IsMaximal.ne_top v.isMaximal) (Ideal.dvd_iff_le.mp hd)).symm)
-            exact (hp (heq ▸ hv)).elim
+            simp_all
         · rintro ⟨v, hv, h⟩
           exact ⟨v, hv, (Ideal.mul_le_left).trans h⟩
       simp only [G, he]
@@ -46,7 +49,7 @@ private theorem finite_prime_delete_hasSum
       apply (hi.hasSum_iff ?_).mp
       · have heq : H ∘ (fun I : Ideal (𝓞 F) => I * p.asIdeal) = fun I => G I * W p.asIdeal := by
           funext I
-          simp [H, Function.comp_def, Ideal.mul_le_right, Gmul]
+          simp [H, Ideal.mul_le_right, Gmul]
         rw [heq]
         exact ih.mul_right _
       · intro I hI
@@ -60,7 +63,7 @@ private theorem finite_prime_delete_hasSum
         (fun I => if ∃ v ∈ insert p V, I ≤ v.asIdeal then 0 else W I) := by
       funext I
       by_cases hI : I ≤ p.asIdeal <;> by_cases hV : ∃ v ∈ V, I ≤ v.asIdeal <;>
-        simp [H, G, hI, hV, Finset.exists_mem_insert]
+        simp [H, G, hI, hV]
     rw [heq] at hh
     convert hh using 1
     rw [Finset.prod_insert hp]
@@ -135,7 +138,7 @@ private theorem L_eq_zeta (R : PrincipalMellin.ActualRecipe S η)
     dsimp [W, idealNorm]
     rw [← norm_power (Ideal.absNorm v.asIdeal : ℝ) (by
       exact_mod_cast (lt_trans Nat.zero_lt_one (NumberField.HeightOneSpectrum.one_lt_absNorm v)))]
-    simp only [Complex.ofReal_natCast]
+    rfl
   · rfl
 
 private theorem principal_coefficient_field_trace
@@ -164,8 +167,8 @@ private theorem principal_arithmetic_compatibility (R : PrincipalMellin.ActualRe
     (C : R.A.GeneralArithmeticContext R.σ R.target R.traceBad)
     (hC : R.probe.correction = C.correction) :
     WeightedFiniteCoefficient.ArithmeticCompatibility R.A R.probe.coefficients
-      R.σ R.target R.traceBad C.correction := by
-  exact PrincipalCorrection.probe_arithmetic_compatibility C R.probe hC
+      R.σ R.target R.traceBad C.correction := 
+  PrincipalCorrection.probe_arithmetic_compatibility C R.probe hC
     (principal_arithmetic_binding R C hC)
 
 theorem initial_continuation_agreement
@@ -243,21 +246,3 @@ end
 section
 
 namespace DedekindZetaZeroFree.PrincipalMellinComparison.NonprincipalContinuation
-noncomputable section
-open scoped Classical
-open Filter Set Metric
-
-set_option maxHeartbeats 1500000
-
-variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-
-variable (R : PrincipalMellin.ActualRecipe S η)
-  (C : R.A.GeneralArithmeticContext R.σ R.target R.traceBad)
-  (U : Frequency R → AllRowEuler.InitialSeparation.RawFrequency R.A)
-  (plus minus : Frequency R → ℂ → ℂ)
-
-end
-end DedekindZetaZeroFree.PrincipalMellinComparison.NonprincipalContinuation
-
-end

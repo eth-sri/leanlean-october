@@ -81,7 +81,7 @@ theorem modulus_pos (A : SArithmeticData F) (D : ComparisonPoissonCoefficientDat
     {a : A.R} (ha : a ≠ 0) : 0 < modulus A a := by
   letI := D.finiteResidue a ha
   rw [modulus, FiniteTransform.exteriorNorm, Nat.card_eq_fintype_card]
-  exact_mod_cast Fintype.card_pos_iff.mpr inferInstance
+  positivity
 
 theorem exact_normalized_poisson_row_of_coset_dilation
     (A : SArithmeticData F) (σ : F →+* ℂ)
@@ -150,7 +150,7 @@ theorem normalized_dilation_scalar {qs qa X : ℝ}
     (Real.sqrt (qs * X) : ℂ)⁻¹ * ((X * Real.sqrt qs / qa : ℝ) : ℂ) =
       ((Real.sqrt X / qa : ℝ) : ℂ) := by
   have hs : Real.sqrt (qs * X) ≠ 0 :=
-    ne_of_gt (Real.sqrt_pos.mpr (mul_pos hqs hX))
+    by positivity
   have hc : (Real.sqrt (qs * X) : ℂ) ≠ 0 := by exact_mod_cast hs
   apply mul_left_cancel₀ hc
   rw [← mul_assoc, mul_inv_cancel₀ hc, one_mul, ← Complex.ofReal_mul]
@@ -222,6 +222,3 @@ theorem exact_normalized_poisson_row (A : SArithmeticData F) (σ : F →+* ℂ)
   apply exact_normalized_poisson_row_of_unnormalized_coset
     A σ η hS P N s a hs ha X hX t
   exact ProbeCoset.raw_exact_coset_poisson A σ η hS P Nraw s a hs ha X hX t
-
-end
-end DedekindZetaZeroFree.PoissonNormalizedRow

@@ -113,8 +113,8 @@ private lemma partial_smooth (H : ℝ × ℝ → ℂ) (hH : ContDiff ℝ ∞ H) 
   | zero => simpa using hH
   | succ n ih =>
     have hh : ContDiff ℝ ∞ (Function.uncurry (fun (p : ℝ × ℝ) (t : ℝ) =>
-        iteratedDeriv n (fun u => H (p.1,u)) t)) := by
-      exact ih.comp (contDiff_fst.fst.prodMk contDiff_snd)
+        iteratedDeriv n (fun u => H (p.1,u)) t)) := 
+      ih.comp (contDiff_fst.fst.prodMk contDiff_snd)
     have hd := hh.fderiv_apply (g := fun p : ℝ × ℝ => p.2)
       (k := fun _ => (1 : ℝ)) contDiff_snd contDiff_const (by simp : (∞ : ℕ∞ω) + 1 ≤ ∞)
     simpa only [iteratedDeriv_succ, deriv] using hd
@@ -170,7 +170,7 @@ theorem logLocalized_mixed_derivative_bound
     intro a b
     apply Real.sSup_nonneg
     rintro z ⟨u,hu,v,hv,rfl⟩
-    exact norm_nonneg _
+    simp
   have hp : ‖DedekindZetaZeroFree.LargeSieve.Vendor.LogLocalizedJets.mixed i j H x y‖ ≤
       DedekindZetaZeroFree.LargeSieve.Vendor.LogLocalizedJets.jet R H := by
     calc
@@ -224,9 +224,9 @@ def boxJet (R : ℝ) (H : ℝ × ℝ → ℂ) : ℝ :=
     (hc : HasCompactSupport H) : 𝓢(P, ℂ) :=
   (hc.comp_homeomorph (WithLp.prodContinuousLinearEquiv 2 ℝ ℝ ℝ).toHomeomorph).toSchwartzMap
     (hH.comp (WithLp.prodContinuousLinearEquiv 2 ℝ ℝ ℝ).contDiff)
-private lemma ff (H : ℝ × ℝ → ℂ) (hH : ContDiff ℝ ∞ H)
-    (hc : HasCompactSupport H) : Integrable (𝓕 (f H)) := by
-  exact ((𝓕 (sm H hH hc) : 𝓢(P,ℂ))).integrable
+lemma ff (H : ℝ × ℝ → ℂ) (hH : ContDiff ℝ ∞ H)
+    (hc : HasCompactSupport H) : Integrable (𝓕 (f H)) := 
+  ((𝓕 (sm H hH hc) : 𝓢(P,ℂ))).integrable
 private lemma np (t x : ℝ) : ‖phase t x‖ = 1 := by
   rw [phase, Complex.norm_exp]
   simp
@@ -265,7 +265,7 @@ private lemma coef (H : ℝ × ℝ → ℂ) (hH : ContDiff ℝ ∞ H)
     ring]
   rw [he.integral_comp e.toHomeomorph.measurableEmbedding (fun q => H q * phase (-t) q.1 * phase (-s) q.2), integral_prod _ hi]
   rfl
-private lemma ikernel (p q : P) :
+lemma ikernel (p q : P) :
     Complex.exp (↑(2 * Real.pi * inner ℝ p q) * Complex.I) =
       phase q.ofLp.1 p.ofLp.1 * phase q.ofLp.2 p.ofLp.2 := by
   simp only [phase, ← Complex.exp_add]
@@ -400,7 +400,7 @@ theorem logLocalized_uniform_fourier_bound
     R c hR hc χ ψ hχ hψ
   obtain ⟨F, hF, hfourier⟩ := fourierL1_le_boxJet R hR
   let C := max (9 * A) (F * (9 * A))
-  have hC : 0 < C := lt_of_lt_of_le (by positivity) (le_max_left _ _)
+  have hC : 0 < C := by positivity
   refine ⟨C, hC, ?_⟩
   intro K B hK hB hEuler scale hscale
   obtain ⟨hsmooth, hsupp⟩ := DedekindZetaZeroFree.LargeSieve.KernelSeparation.logLocalized_smooth_support
@@ -432,9 +432,3 @@ theorem logLocalized_uniform_fourier_bound
       _ ≤ C * B * Real.rpow scale (-c) := by
         simpa only [mul_assoc] using
           mul_le_mul_of_nonneg_right (le_max_right (9 * A) (F * (9 * A))) hnonneg
-
-end DedekindZetaZeroFree.LargeSieve.Vendor.KernelSeparation
-
-end
-
-end

@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Polynomial Chinese remainder equivalence
 
@@ -36,20 +32,19 @@ open Function
 
 /-- The Chinese remainder ring equivalence is an algebra equivalence over
 any coefficient ring acting on the ambient commutative ring. -/
-noncomputable def quotientInfAlgEquivPiQuotient
+def quotientInfAlgEquivPiQuotient
     {R A : Type*} [CommRing R] [CommRing A] [Algebra R A]
     {ι : Type*} [Finite ι]
     (I : ι → Ideal A) (hI : Pairwise (IsCoprime on I)) :
     (A ⧸ ⨅ i, I i) ≃ₐ[R] ∀ i, A ⧸ I i where
   __ := Ideal.quotientInfRingEquivPiQuotient I hI
   commutes' r := by
-    ext i
     rfl
 
 /-- Chinese remainder equivalence for a finite family of pairwise coprime
 polynomials.  It is canonical: every polynomial class is sent to the family
 of the same class modulo each factor. -/
-noncomputable def adjoinRootProdEquivPi
+def adjoinRootProdEquivPi
     {F : Type u} [Field F] {ι : Type v} [Fintype ι]
     (f : ι → F[X])
     (hf : ∀ i j, i ≠ j → IsCoprime (f i) (f j)) :
@@ -76,11 +71,4 @@ theorem adjoinRootProdEquivPi_mk
     (g : F[X]) (i : ι) :
     adjoinRootProdEquivPi f hf (AdjoinRoot.mk (∏ i, f i) g) i =
       AdjoinRoot.mk (f i) g := by
-  change Ideal.Quotient.mk (Ideal.span ({f i} : Set F[X])) g =
-    Ideal.Quotient.mk (Ideal.span ({f i} : Set F[X])) g
   rfl
-
-end Completion
-end ValuationTheory
-
-end

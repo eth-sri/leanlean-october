@@ -99,13 +99,11 @@ theorem arch_central (w : InfinitePlace F) (e : rootsOfUnity 3 F)
     arch F ζ hζ w (KPLocalCover.centralInjection F ζ hζ (Sum.inl w) e * g) =
       (KPSourceConvention.ordinaryGenuineCharacter F ζ hζ e : ℂ) * arch F ζ hζ w g := by
   have he : (KPLocalCover.centralInjection F ζ hζ (Sum.inl w) e * g).epsilon = e * g.epsilon := by
-    change e * g.epsilon * KPLocalCover.sigmaTwo F ζ hζ (Sum.inl w) 1 g.g = _
-    rw [KPLocalChartTopology.complex_sigmaTwo_eq_one, mul_one]
+    simp
   have hm : complexMatrix F ζ hζ w (KPLocalCover.centralInjection F ζ hζ (Sum.inl w) e * g) =
       complexMatrix F ζ hζ w g := by
     unfold complexMatrix
-    congr 1
-    exact one_mul g.g
+    simp
   simp only [arch, he, hm, map_mul, Units.val_mul]
   ring
 
@@ -190,7 +188,7 @@ theorem arch_right_su2 (w : InfinitePlace F)
     congr 1
     apply Units.ext
     ext i j
-    simp [Matrix.GeneralLinearGroup.map, KPLocalCover.sectionMap]
+    simp
   have hs := congrArg (fun f : KPCplxPrincipalSeriesCharts.PrincipalSeries
       KPCplxPrincipalSeriesCharts.positiveParameter => f (complexMatrix F ζ hζ w g))
     (KPCplxPrincipalSeriesCharts.sphericalSection_fixed
@@ -199,7 +197,3 @@ theorem arch_right_su2 (w : InfinitePlace F)
   change KPCplxPrincipalSeriesCharts.sphericalSection _
     (complexMatrix F ζ hζ w g * KPCplxCharacterHaar.complexSU2Embedding k) = _ at hs
   rw [arch, arch, he, hm, hs]
-
-end DedekindZetaZeroFree.EisensteinReferenceSections.LocalCovariance
-
-end

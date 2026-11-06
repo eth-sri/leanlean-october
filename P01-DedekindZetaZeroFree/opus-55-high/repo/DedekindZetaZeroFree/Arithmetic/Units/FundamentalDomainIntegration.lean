@@ -260,7 +260,3 @@ theorem integrableOn_expMapBasis_image_iff
   intro x _
   dsimp only
   rw [abs_det_fderiv_expMapBasis]
-
-end DedekindZetaZeroFree.Theta
-
-end

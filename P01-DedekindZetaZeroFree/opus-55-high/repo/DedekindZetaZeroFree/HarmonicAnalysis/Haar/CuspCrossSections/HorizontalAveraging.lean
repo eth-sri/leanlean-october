@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Metaplectic.Kubota.GenuineCuspLinesAndUnitary
 
 @[expose] public section
 
-noncomputable section
 open MeasureTheory
 open scoped Classical ENNReal
 
@@ -77,9 +76,9 @@ theorem horizontal_average_continuous_invariant
   constructor
   · apply continuous_of_dominated (bound := fun _ => C)
     · intro x
-      exact (hmeas x.2).aestronglyMeasurable
+      fun_prop
     · intro x
-      exact Filter.Eventually.of_forall fun z => hbound z x.2
+      simp_all
     · exact integrable_const C
     · apply Filter.Eventually.of_forall
       intro z
@@ -155,7 +154,3 @@ theorem horizontal_average_continuous_invariant
           ∫ z, f (e z) (G.crossAction s x).2 ∂μ :=
         (hep.integral_comp e.toMeasurableEquiv.measurableEmbedding _).symm
       _ = ∫ z, f z x.2 ∂μ := integral_congr_ae (Filter.Eventually.of_forall heq)
-
-end DedekindZetaZeroFree.KPMeanZeroWeightedEnergy.GapCoercivity.CrossSection
-
-end

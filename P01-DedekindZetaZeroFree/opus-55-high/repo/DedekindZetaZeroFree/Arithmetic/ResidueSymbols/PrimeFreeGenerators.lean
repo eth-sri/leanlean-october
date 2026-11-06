@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.CharacterSums.Gauss.Sextic.LocalTable
 
 @[expose] public section
 
-noncomputable section
 open scoped NumberField Classical
 namespace DedekindZetaZeroFree.CorrectionFactors.LocalAlgebra
 open LocalFiniteSums
@@ -34,7 +33,3 @@ theorem generator_residue_unit (J : A.Exterior) (v : A.R)
       SIntegerLocalization.under_map_exterior A.Sf (primeIdeal p).val (primeIdeal p).property.2]
       using hh
   exact hnot (Ideal.dvd_iff_le.mpr hle')
-
-end DedekindZetaZeroFree.CorrectionFactors.LocalAlgebra
-
-end

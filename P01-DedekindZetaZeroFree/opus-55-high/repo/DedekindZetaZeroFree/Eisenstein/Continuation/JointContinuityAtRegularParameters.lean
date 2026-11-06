@@ -1,6 +1,9 @@
 module
 
-public import DedekindZetaZeroFree.Eisenstein.Continuation.RegularLocusJointContinuity
+public import DedekindZetaZeroFree.Eisenstein.Continuation.FixedLevelPoleSets
+public import DedekindZetaZeroFree.Analysis.HolomorphicKernels.RectangularCauchyOperators
+public import Mathlib.Analysis.Complex.Basic
+public import Mathlib.Analysis.Calculus.FDeriv.Defs
 public import DedekindZetaZeroFree.Eisenstein.Continuation.JointContinuityFromNumerators
 
 @[expose] public section
@@ -15,8 +18,7 @@ theorem selected_scalar_branch_joint_continuous_on
     (R : PrincipalMellin.ActualRecipe S η) {N : TraceHaarTransport R} (B : JointRootAlignedSources R N)
     (v : R.A.UnitQuotient) (D : SelectedScalarBranch R B v) (P : SelectedPoleSet D) :
     ContinuousOn (fun p : ℂ × Group R => D.E p.1 p.2)
-      ((KPContinuation.spectralDomain \ P.poles) ×ˢ Set.univ) := by
-  exact ResidueContinuity.ScalarSourceJointContinuity.selected_regular_joint R B v D P
+      ((KPContinuation.spectralDomain \ P.poles) ×ˢ Set.univ) := by apply DedekindZetaZeroFree.ResidueContinuity.ScalarSourceJointContinuity.selected_regular_joint <;> assumption
 
 theorem selected_regular_continuous
     {R : PrincipalMellin.ActualRecipe S η} {N : TraceHaarTransport R} {B : JointRootAlignedSources R N}

@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # The p-adic module on adic principal units
 
@@ -47,7 +42,7 @@ open Internal
 
 /-- Transport the coordinatewise p-adic scalar multiplication from the
 inverse limit to `U^1`. -/
-noncomputable instance principalUnitPadicSMul
+instance principalUnitPadicSMul
     (F : LocalField.{u, v} K) :
     SMul ℤ_[F.residueCharacteristic]
       (Additive ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF) 1)) where
@@ -70,7 +65,7 @@ Establishes the identity `a • x = (principalUnitAddEquivInverseLimitCarrier F.
 
 /-- The standard `Z_p`-module structure on the first principal units of a
 local field. -/
-noncomputable instance principalUnitPadicModule
+instance principalUnitPadicModule
     (F : LocalField.{u, v} K) :
     Module ℤ_[F.residueCharacteristic]
       (Additive ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF) 1)) :=
@@ -101,16 +96,13 @@ noncomputable instance principalUnitPadicModule
         (principalUnitAddEquivInverseLimitCarrier F.toCompleteDVF x))
     (fun (x : Additive
         ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF) 1)) => by
-      apply (principalUnitAddEquivInverseLimitCarrier F.toCompleteDVF).injective
-      simp only [principalUnitPadic_smul_def, AddEquiv.apply_symm_apply]
-      exact (principalUnitInverseLimitCarrierPadicModule F).one_smul
-        (principalUnitAddEquivInverseLimitCarrier F.toCompleteDVF x))
+      simp)
 
 /--
 Equips the target in `Module ℤ_[F.residueCharacteristic] (AdicPrincipalUnits F.toCompleteDVF)`
 with the indicated module structure.
 -/
-noncomputable instance adicPrincipalUnitsPadicModule
+instance adicPrincipalUnitsPadicModule
     (F : LocalField.{u, v} K) :
     Module ℤ_[F.residueCharacteristic]
       (AdicPrincipalUnits F.toCompleteDVF) :=
@@ -135,7 +127,7 @@ theorem AdicPrincipalUnits.addEquiv_map_smul
 
 /-- The adic wrapper and its underlying principal-unit module are canonically
 `Z_p`-linearly equivalent. -/
-noncomputable def AdicPrincipalUnits.linearEquivUnderlying
+def AdicPrincipalUnits.linearEquivUnderlying
     (F : LocalField.{u, v} K) :
     AdicPrincipalUnits F.toCompleteDVF ≃ₗ[ℤ_[F.residueCharacteristic]]
       Additive
@@ -154,51 +146,7 @@ principalUnitAddEquivInverseLimitCarrier F.toCompleteDVF x`.
     (x : Additive ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF) 1)) :
     principalUnitAddEquivInverseLimitCarrier F.toCompleteDVF (a • x) =
       a • principalUnitAddEquivInverseLimitCarrier F.toCompleteDVF x := by
-  change
-    principalUnitAddEquivInverseLimitCarrier F.toCompleteDVF
-        ((principalUnitAddEquivInverseLimitCarrier F.toCompleteDVF).symm
-          (a • principalUnitAddEquivInverseLimitCarrier
-            F.toCompleteDVF x)) =
-      a • principalUnitAddEquivInverseLimitCarrier F.toCompleteDVF x
-  exact (principalUnitAddEquivInverseLimitCarrier
-    F.toCompleteDVF).apply_symm_apply _
-
-/-- Coordinate formula for the canonical action: the class of `a • x` at
-level `n` is obtained by reducing `a` modulo `p^(f*n)` and acting on the class
-of `x`. -/
-@[simp] theorem Internal.principalUnitPadic_smul_carrier_coordinate
-    (F : LocalField.{u, v} K)
-    (a : ℤ_[F.residueCharacteristic])
-    (x : (LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF) 1) (n : ℕ) :
-    Additive.ofMul
-        ((principalUnitMulEquivInverseLimitCarrier F.toCompleteDVF
-          (Additive.toMul (a • Additive.ofMul x))).1 n) =
-      principalUnitQuotientCarrierPadicScalar F n a
-        (Additive.ofMul
-          ((principalUnitMulEquivInverseLimitCarrier F.toCompleteDVF x).1 n)) := by
-  rw [principalUnitQuotientCarrierPadicScalar_eq_smul]
-  have h := congrArg
-    (fun z : Additive
-        (Internal.principalUnitInverseLimitCarrier F.toCompleteDVF) =>
-      Additive.ofMul ((Additive.toMul z).1 n))
-      (principalUnitAddEquivInverseLimitCarrier_map_smul
-      F a (Additive.ofMul x))
-  exact h
-
-/-- The canonical identification of adic principal units with the
-prodiscrete limit respects the p-adic action. -/
-theorem adicPrincipalUnitsHomeomorphProdiscreteLimit_map_smul
-    (F : LocalField.{u, v} K)
-    (a : ℤ_[F.residueCharacteristic])
-    (x : AdicPrincipalUnits F.toCompleteDVF) :
-    adicPrincipalUnitsHomeomorphProdiscreteLimit F.toCompleteDVF (a • x) =
-      a • adicPrincipalUnitsHomeomorphProdiscreteLimit F.toCompleteDVF x := by
-  apply (PrincipalUnitProdiscreteLimit.addEquiv F.toCompleteDVF).injective
-  rw [adicPrincipalUnitsHomeomorphProdiscreteLimit_to_addEquiv,
-    PrincipalUnitProdiscreteLimit.addEquiv_map_smul,
-    adicPrincipalUnitsHomeomorphProdiscreteLimit_to_addEquiv,
-    AdicPrincipalUnits.addEquiv_map_smul,
-    Internal.principalUnitAddEquivInverseLimitCarrier_map_smul]
+  simp
 
 /--
 Establishes the identity `adicPrincipalUnitsAddEquivProdiscreteLimit F.toCompleteDVF (a • x) = a •
@@ -229,7 +177,7 @@ theorem adicPrincipalUnitsAddEquivProdiscreteLimit_map_smul
     Internal.principalUnitAddEquivInverseLimitCarrier_map_smul]
 
 /-- `Z_p`-linear form of the canonical adic/prodiscrete comparison. -/
-noncomputable def adicPrincipalUnitsLinearEquivProdiscreteLimit
+def adicPrincipalUnitsLinearEquivProdiscreteLimit
     (F : LocalField.{u, v} K) :
     AdicPrincipalUnits F.toCompleteDVF ≃ₗ[ℤ_[F.residueCharacteristic]]
       PrincipalUnitProdiscreteLimit F.toCompleteDVF :=
@@ -238,7 +186,7 @@ noncomputable def adicPrincipalUnitsLinearEquivProdiscreteLimit
 
 /-- Projection from adic first principal units to one wrapped quotient
 coordinate. -/
-noncomputable def adicPrincipalUnitsCoordinateLinear
+def adicPrincipalUnitsCoordinateLinear
     (F : LocalField.{u, v} K) (n : ℕ) :
     AdicPrincipalUnits F.toCompleteDVF →ₗ[ℤ_[F.residueCharacteristic]]
       DiscretePrincipalUnitQuotient F.toCompleteDVF n :=
@@ -266,7 +214,7 @@ theorem continuous_adicPrincipalUnitsPadic_smul
 The scalar action in `ContinuousSMul ℤ_[F.residueCharacteristic] (AdicPrincipalUnits
 F.toCompleteDVF)` is continuous.
 -/
-noncomputable instance adicPrincipalUnitsContinuousSMul
+instance adicPrincipalUnitsContinuousSMul
     (F : LocalField.{u, v} K) :
     ContinuousSMul ℤ_[F.residueCharacteristic]
       (AdicPrincipalUnits F.toCompleteDVF) :=

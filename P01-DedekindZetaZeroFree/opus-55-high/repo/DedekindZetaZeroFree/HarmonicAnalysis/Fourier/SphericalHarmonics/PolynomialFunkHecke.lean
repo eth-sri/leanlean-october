@@ -14,7 +14,7 @@ theorem polynomial_latitude_integrable (p : MvPolynomial (Fin 3) ℂ) (k : ℝ �
       (k ((1 - inner ℝ (x : Ambient) (y : Ambient)) / 2) : ℂ) *
         polynomialSphere p y) sphereArea := by
   let φ : Sphere → ℝ := fun y => (1 - inner ℝ (x : Ambient) (y : Ambient)) / 2
-  have hφ : Measurable φ := by dsimp [φ]; fun_prop
+  have hφ : Measurable φ := by fun_prop
   have hkm : Integrable k (Measure.map φ sphereArea) := by
     rw [sphereArea_uniform_projection x]
     exact hk
@@ -57,7 +57,7 @@ theorem polynomial_funkHecke_zero (p : MvPolynomial (Fin 3) ℂ)
   congr 1
   congr 1
   let φ : Sphere → ℝ := fun y => (1 - inner ℝ (x : Ambient) (y : Ambient)) / 2
-  have hφ : Measurable φ := by dsimp [φ]; fun_prop
+  have hφ : Measurable φ := by fun_prop
   have hkm : Integrable k (Measure.map φ sphereArea) := by
     rw [sphereArea_uniform_projection x]
     exact hk
@@ -124,5 +124,3 @@ theorem polynomial_funkHecke (ℓ : ℕ) (p : MvPolynomial (Fin 3) ℂ)
       congr 1
       simp_rw [← Complex.ofReal_mul]
       exact integral_complex_ofReal
-
-end DedekindZetaZeroFree.ComplexFractionalInverse.HarmonicIdentity

@@ -7,7 +7,6 @@ public import DedekindZetaZeroFree.Geometry.TranslatedLatticeGap
 
 @[expose] public section
 
-noncomputable section
 
 open Classical NumberField NumberField.InfinitePlace
 open NumberField.mixedEmbedding.fundamentalCone
@@ -17,13 +16,13 @@ namespace DedekindZetaZeroFree.AbelianQuotient.Theta
 
 variable (K : Type*) [Field K] [NumberField K]
 
-private theorem continuous_angularLift : Continuous (angularLift K) := by
+theorem continuous_angularLift : Continuous (angularLift K) := by
   apply continuous_pi
   intro v
   by_cases h : v = NumberField.Units.dirichletUnitTheorem.w₀
   · simpa [angularLift, h] using (continuous_const : Continuous (fun _ : Angular K => (0 : ℝ)))
   · simpa [angularLift, h] using (continuous_apply (⟨v,h⟩ : {v : InfinitePlace K // v ≠ NumberField.Units.dirichletUnitTheorem.w₀}))
-private theorem continuous_radialLift : Continuous (radialLift K) := by
+theorem continuous_radialLift : Continuous (radialLift K) := by
   apply continuous_pi
   intro v
   by_cases h : v = NumberField.Units.dirichletUnitTheorem.w₀
@@ -31,7 +30,7 @@ private theorem continuous_radialLift : Continuous (radialLift K) := by
     simp only [if_pos h]
     fun_prop
   · simpa [radialLift, h] using (continuous_const : Continuous (fun _ : ℝ => (0 : ℝ)))
-private theorem continuousOn_shape (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ) :
+theorem continuousOn_shape (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ) :
   ContinuousOn (fun p : ℝ × Angular K => mixedThetaShape K I p.1 p.2)
     (Set.Ioi (0 : ℝ) ×ˢ Set.univ) := by
   apply (continuous_expMapBasis K).comp_continuousOn
@@ -42,13 +41,11 @@ private theorem continuousOn_shape (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ) :
   apply Real.continuousOn_log.comp continuous_fst.continuousOn
   intro p hp
   exact ne_of_gt hp.1
-private theorem continuous_scale_family :
+theorem continuous_scale_family :
   Continuous (fun p : (InfinitePlace K → ℝ) × NumberField.mixedEmbedding.euclidean.mixedSpace K =>
     (traceToMixed K).symm (NumberField.mixedEmbedding.mixedSpaceOfRealSpace p.1 * traceToMixed K p.2)) := by
-  apply (traceToMixed K).symm.continuous.comp
-  apply Continuous.mul _ ((traceToMixed K).continuous.comp continuous_snd)
-  exact (NumberField.mixedEmbedding.mixedSpaceOfRealSpace (K := K)).continuous.comp continuous_fst
-private theorem uniform_lower_scale
+  fun_prop
+theorem uniform_lower_scale
     (T : Set (InfinitePlace K → ℝ)) (hT : IsCompact T)
     (hpos : ∀ q ∈ T, ∀ v, q v ≠ 0) :
     ∃ d : ℝ, 0 < d ∧ ∀ q, ∀ hq : q ∈ T, ∀ x : NumberField.mixedEmbedding.euclidean.mixedSpace K,
@@ -60,8 +57,7 @@ private theorem uniform_lower_scale
   obtain ⟨d, hd, hbound⟩ := hc.exists_forall_le' (continuous_scale_family K).norm.continuousOn (a := 0) (by
     intro p hp
     have heq : F p = traceRadialScale K p.1 (hpos _ hp.1) p.2 := by
-      apply (traceToMixed K).injective
-      simp [F, traceToMixed_traceRadialScale]
+      rfl
     change 0 < ‖F p‖
     rw [heq, norm_pos_iff]
     intro hz
@@ -78,27 +74,26 @@ private theorem uniform_lower_scale
     rw [norm_smul, Real.norm_of_nonneg (inv_nonneg.mpr (norm_nonneg _)), inv_mul_cancel₀ hnorm.ne']
   have hb := hbound (q, (‖x‖⁻¹ : ℝ) • x) ⟨hq, by simpa [Metric.mem_sphere, dist_eq_norm] using hy⟩
   have heq : F (q, (‖x‖⁻¹ : ℝ) • x) = traceRadialScale K q (hpos q hq) ((‖x‖⁻¹ : ℝ) • x) := by
-    apply (traceToMixed K).injective
-    simp [F, traceToMixed_traceRadialScale]
+    rfl
   change d ≤ ‖F (q, (‖x‖⁻¹ : ℝ) • x)‖ at hb
   rw [heq, map_smul, norm_smul, Real.norm_of_nonneg (inv_nonneg.mpr (norm_nonneg _))] at hb
   calc
     d * ‖x‖ ≤ (‖x‖⁻¹ * ‖traceRadialScale K q (hpos q hq) x‖) * ‖x‖ := mul_le_mul_of_nonneg_right hb (norm_nonneg _)
     _ = _ := by field_simp
-private theorem theta_tsum_fixed (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ)
+theorem theta_tsum_fixed (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ)
     (q : InfinitePlace K → ℝ) (hq : ∀ v, q v ≠ 0) :
     fractionalShapeIdealTheta K I q hq =
       ∑' x : traceIdealLattice K I, latticeGaussian Real.pi (traceRadialScale K q hq x) := by
   let e : traceIdealLattice K I ≃ shapeIdealLattice K I q hq := {
     toFun := fun x => ⟨traceRadialScale K q hq x, by
       change (traceRadialScale K q hq).symm (traceRadialScale K q hq x) ∈ traceIdealLattice K I
-      simpa using x.prop⟩
+      simp⟩
     invFun := fun x => ⟨(traceRadialScale K q hq).symm x, x.prop⟩
-    left_inv := fun x => by ext; simp
-    right_inv := fun x => by ext; simp }
+    left_inv := fun x => by simp
+    right_inv := fun x => by simp }
   exact (e.tsum_eq (fun x => latticeGaussian Real.pi (x : NumberField.mixedEmbedding.euclidean.mixedSpace K))).symm
 
-private theorem shape_radial (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ)
+theorem shape_radial (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ)
     (t : ℝ) (ht : 0 < t) (u : Angular K) :
     mixedThetaShape K I t u = t ^ (1 / (Module.finrank ℚ K : ℝ)) • mixedThetaShape K I 1 u := by
   let n : ℝ := Module.finrank ℚ K
@@ -110,14 +105,14 @@ private theorem shape_radial (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ)
     · congr 1
       funext v
       by_cases hv : v = NumberField.Units.dirichletUnitTheorem.w₀
-      · simp [angularLift, radialLift, hv]
+      · simp [angularLift, hv]
       · simp [angularLift, radialLift, hv]
   rw [hshape t, hshape 1, smul_smul, Real.rpow_def_of_pos ht, ← Real.exp_add]
   congr 2
   simp only [Real.log_one]
   ring
 set_option maxHeartbeats 800000 in
-private theorem scale_shape_radial (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ)
+theorem scale_shape_radial (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ)
     (t : ℝ) (ht : 0 < t) (u : Angular K)
     (x : NumberField.mixedEmbedding.euclidean.mixedSpace K) :
     traceRadialScale K (mixedThetaShape K I t u) (fun v => ne_of_gt (expMapBasis_pos _ v)) x =
@@ -152,7 +147,7 @@ theorem mixedRadialTheta_uniform_exponential_tail
   obtain ⟨η, hη, hgap⟩ := DedekindZetaZeroFree.thetaTranslateGap L (0 : E)
   let c := Real.pi * d ^ 2
   let p := 2 / (Module.finrank ℚ K : ℝ)
-  have hc : 0 < c := mul_pos Real.pi_pos (sq_pos_of_pos hd)
+  have hc : 0 < c := by positivity
   have hp : 0 < p := div_pos (by norm_num) (Nat.cast_pos.mpr (Module.finrank_pos (R := ℚ) (M := K)))
   let F : ℝ → Angular K → X → ℂ := fun t u x => latticeGaussian Real.pi
     (traceRadialScale K (mixedThetaShape K I t u) (fun v => ne_of_gt (expMapBasis_pos _ v)) (x.val : E))
@@ -196,17 +191,16 @@ theorem mixedRadialTheta_uniform_exponential_tail
     let e : L ≃ shapeIdealLattice K I (mixedThetaShape K I t u) (fun v => ne_of_gt (expMapBasis_pos _ v)) := {
       toFun := fun x => ⟨traceRadialScale K (mixedThetaShape K I t u) (fun v => ne_of_gt (expMapBasis_pos _ v)) x, by
         change (traceRadialScale K (mixedThetaShape K I t u) (fun v => ne_of_gt (expMapBasis_pos _ v))).symm (traceRadialScale K (mixedThetaShape K I t u) (fun v => ne_of_gt (expMapBasis_pos _ v)) x) ∈ traceIdealLattice K I
-        rw [ContinuousLinearEquiv.symm_apply_apply]
-        exact x.prop⟩
+        simp⟩
       invFun := fun x => ⟨(traceRadialScale K (mixedThetaShape K I t u) (fun v => ne_of_gt (expMapBasis_pos _ v))).symm x, x.prop⟩
-      left_inv := fun x => by ext; simp
-      right_inv := fun x => by ext; simp }
+      left_inv := fun x => by simp
+      right_inv := fun x => by simp }
     exact e.summable_iff.mpr (summable_latticeGaussian _ Real.pi_pos)
   have heq : mixedRadialTheta K I t u - 1 = ∑' x : X, F t u x := by
     rw [mixedRadialTheta, theta_tsum_fixed]
     have hh := hfull.tsum_subtype_add_tsum_subtype_compl ({0} : Set L)
     have hsingle : (∑' x : ↥({0} : Set L), latticeGaussian Real.pi (traceRadialScale K (mixedThetaShape K I t u) (fun v => ne_of_gt (expMapBasis_pos _ v)) (x.val : E))) = latticeGaussian Real.pi (traceRadialScale K (mixedThetaShape K I t u) (fun v => ne_of_gt (expMapBasis_pos _ v)) (0 : L)) :=
-      tsum_singleton (0 : L) (fun x : L => latticeGaussian Real.pi (traceRadialScale K (mixedThetaShape K I t u) (fun v => ne_of_gt (expMapBasis_pos _ v)) (x : E)))
+      by simp
     rw [hsingle] at hh
     have hz : latticeGaussian Real.pi (traceRadialScale K (mixedThetaShape K I t u) (fun v => ne_of_gt (expMapBasis_pos _ v)) (0 : L)) = 1 := by
       simp [latticeGaussian]
@@ -259,16 +253,14 @@ theorem mixedRadialTheta_hasSumUniformlyOn
     simpa only [mul_pow] using hh.mpr hb'
   nlinarith [Real.pi_pos]
 
-private theorem continuousOn_summand (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ)
+theorem continuousOn_summand (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ)
     (x : traceIdealLattice K I) : ContinuousOn
       (fun p : ℝ × Angular K => latticeGaussian Real.pi
         (traceRadialScale K (mixedThetaShape K I p.1 p.2) (fun v => ne_of_gt (expMapBasis_pos _ v)) x))
       (Set.Ioi (0 : ℝ) ×ˢ Set.univ) := by
   have heq : (fun p : ℝ × Angular K => traceRadialScale K (mixedThetaShape K I p.1 p.2) (fun v => ne_of_gt (expMapBasis_pos _ v)) x) =
     (fun p => (traceToMixed K).symm (NumberField.mixedEmbedding.mixedSpaceOfRealSpace (mixedThetaShape K I p.1 p.2) * traceToMixed K x)) := by
-    funext p
-    apply (traceToMixed K).injective
-    simp [traceToMixed_traceRadialScale]
+    rfl
   have hgauss : Continuous (latticeGaussian Real.pi (E := NumberField.mixedEmbedding.euclidean.mixedSpace K)) := by
     unfold latticeGaussian
     fun_prop
@@ -302,7 +294,3 @@ theorem continuousOn_mixedRadialTheta
   apply (hc.continuousAt ?_).continuousWithinAt
   rw [show p = (p.1, p.2) from rfl, nhds_prod_eq]
   exact Filter.Eventually.prod_mk (Icc_mem_nhds (by dsimp [a]; linarith [hpp]) (by dsimp [b]; linarith)) (Metric.closedBall_mem_nhds _ (by norm_num : (0 : ℝ) < 1))
-
-end DedekindZetaZeroFree.AbelianQuotient.Theta
-
-end

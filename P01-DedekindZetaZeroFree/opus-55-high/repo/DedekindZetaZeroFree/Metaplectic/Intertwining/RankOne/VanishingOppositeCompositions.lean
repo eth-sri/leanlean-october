@@ -19,7 +19,7 @@ variable (F : Type) [Field F] [NumberField F]
   (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
   (hμ : μ ((valuation (LocalField F q)).integer : Set (LocalField F q)) = 1)
 
-private theorem exists_cube_root (F : Type) [Field F] [NumberField F]
+theorem exists_cube_root (F : Type) [Field F] [NumberField F]
     (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F)) :
     ∃ η : (valuation (LocalField F q)).integer, IsPrimitiveRoot η 3 := by
   have hinj : Function.Injective (algebraMap F (LocalField F q)) :=
@@ -30,7 +30,7 @@ private theorem exists_cube_root (F : Type) [Field F] [NumberField F]
   have hv : valuation (LocalField F q) η = 1 := by
     have hp : (valuation (LocalField F q) η) ^ 3 = 1 := by
       rw [← map_pow, hη.pow_eq_one, map_one]
-    exact (pow_eq_one_iff_of_nonneg zero_le (by decide)).mp hp
+    simp_all
   exact ⟨⟨η, hv.le⟩, hη.of_map_of_injective
     (f := (valuation (LocalField F q)).integer.subtype) Subtype.val_injective⟩
 
@@ -59,7 +59,7 @@ private theorem exists_cube_root (F : Type) [Field F] [NumberField F]
   openCell_ordinary := S.openCell_ordinary
 
 set_option backward.isDefEq.respectTransparency false in
-private theorem actual_compact_reverse_forward_zero
+theorem actual_compact_reverse_forward_zero
     (φ : compactPicture S.borel P S.iwasawa .plus) :
     actualCanonicalContinued F q ζ hζ S P μ hμ .minus 0
       (actualCanonicalContinued F q ζ hζ S P μ hμ .plus 0 φ) = 0 := by
@@ -85,7 +85,7 @@ private theorem actual_compact_reverse_forward_zero
   rfl
 
 set_option backward.isDefEq.respectTransparency false in
-private theorem actual_compact_forward_reverse_zero
+theorem actual_compact_forward_reverse_zero
     (φ : compactPicture S.borel P S.iwasawa .minus) :
     actualCanonicalContinued F q ζ hζ S P μ hμ .plus 0
       (actualCanonicalContinued F q ζ hζ S P μ hμ .minus 0 φ) = 0 := by
@@ -151,7 +151,3 @@ theorem actual_zero_opposite_compositions :
     rw [LinearEquiv.symm_apply_apply,
       actual_compact_reverse_forward_zero F ζ hζ q S P μ hμ]
     exact (compactTrivialization S.borel P S.iwasawa .plus 0).map_zero
-
-end DedekindZetaZeroFree.KPRankOneShellRepair
-
-end

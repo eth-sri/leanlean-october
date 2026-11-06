@@ -41,7 +41,7 @@ theorem actualTorusProjection_surjective :
   rw [h11, inv_one, Units.val_one, mul_one, IsUnit.unit_spec]
   rfl
 
-private theorem ratio_val_formula (A : KPGlobalTorusFunctionData.AdelicMatrixGroup F) (h10 : A 1 0 = 0) (h01 : A 0 1 = 0) :
+theorem ratio_val_formula (A : KPGlobalTorusFunctionData.AdelicMatrixGroup F) (h10 : A 1 0 = 0) (h01 : A 0 1 = 0) :
     ((diagonal_entries_units F A h10 h01).1.unit : Adeles F) *
       ↑((diagonal_entries_units F A h10 h01).2.unit)⁻¹ = A 0 0 * A⁻¹ 1 1 := by
   have hi : (A⁻¹ : KPGlobalTorusFunctionData.AdelicMatrixGroup F) 1 1 =
@@ -58,7 +58,7 @@ private theorem ratio_val_formula (A : KPGlobalTorusFunctionData.AdelicMatrixGro
           ((diagonal_entries_units F A h10 h01).2.unit.mul_inv).symm
   rw [hi, IsUnit.unit_spec]
 
-private theorem ratio_inverse_formula (A : KPGlobalTorusFunctionData.AdelicMatrixGroup F) (h10 : A 1 0 = 0) (h01 : A 0 1 = 0) :
+theorem ratio_inverse_formula (A : KPGlobalTorusFunctionData.AdelicMatrixGroup F) (h10 : A 1 0 = 0) (h01 : A 0 1 = 0) :
     (↑(((diagonal_entries_units F A h10 h01).1.unit *
       ((diagonal_entries_units F A h10 h01).2.unit)⁻¹)⁻¹) : Adeles F) = A 1 1 * A⁻¹ 0 0 := by
   have hi : (A⁻¹ : KPGlobalTorusFunctionData.AdelicMatrixGroup F) 0 0 =

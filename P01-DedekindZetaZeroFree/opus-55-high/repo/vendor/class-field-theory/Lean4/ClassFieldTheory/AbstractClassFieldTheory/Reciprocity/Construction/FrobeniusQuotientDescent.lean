@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 universe u v
 
 namespace ClassFormation
@@ -67,7 +64,7 @@ theorem frobeniusQuotientAction_coe_out (D : DegreeData G) (A : Rep ℤ G)
 /-- The linear action of `G(\widetilde L/K)` on
 `A_{\widetilde L}`.  This packages the concrete quotient action from
 the Frobenius norm-identity lemma in the form needed by the Tate-cohomology calculation. -/
-noncomputable def frobeniusQuotientActionLinearMap (D : DegreeData G)
+def frobeniusQuotientActionLinearMap (D : DegreeData G)
     (A : Rep ℤ G) (K L : ClosedSubgroup G)
     (hLK : L.toSubgroup ≤ K.toSubgroup)
     [hLnormal : (extensionSubgroup K L hLK).Normal]
@@ -79,18 +76,16 @@ noncomputable def frobeniusQuotientActionLinearMap (D : DegreeData G)
     refine Quotient.inductionOn' q ?_
     intro k
     apply Subtype.ext
-    change A.ρ k.1 (a.1 + b.1) = A.ρ k.1 a.1 + A.ρ k.1 b.1
-    exact map_add (A.ρ k.1) _ _
+    simp
   map_smul' n a := by
     refine Quotient.inductionOn' q ?_
     intro k
     apply Subtype.ext
-    change A.ρ k.1 (n • a.1) = n • A.ρ k.1 a.1
-    exact map_zsmul (A.ρ k.1) n a.1
+    simp
 
 /-- The actual `G(\widetilde L/K)`-representation on
 `A_{\widetilde L}` used in the universal norm-descent lemma. -/
-noncomputable def frobeniusQuotientRepresentation (D : DegreeData G)
+def frobeniusQuotientRepresentation (D : DegreeData G)
     (A : Rep ℤ G) (K L : ClosedSubgroup G)
     (hLK : L.toSubgroup ≤ K.toSubgroup)
     [hLnormal : (extensionSubgroup K L hLK).Normal] :
@@ -107,8 +102,7 @@ noncomputable def frobeniusQuotientRepresentation (D : DegreeData G)
         intro k l
         ext a
         change A.ρ (k.1 * l.1) a.1 = A.ρ k.1 (A.ρ l.1 a.1)
-        rw [map_mul]
-        rfl }
+        simp }
 
 /-- The Frobenius quotient representation evaluates by the chosen quotient action. -/
 @[simp]
@@ -224,7 +218,7 @@ theorem frobeniusPowerSum_sub_universalNormDescent (D : DegreeData G) (A : Rep �
         D.frobeniusQuotientActionLinearMap A K L hLK (φ ^ i.1) x) -
       ∑ i : Fin n,
         D.frobeniusQuotientActionLinearMap A K L hLK (φ ^ i.1) y
-  simp only [map_sub, Finset.sum_sub_distrib]
+  simp
 
 /-- An orbit sum of an element fixed by its first translate is scalar
 multiplication by the orbit length. -/
@@ -386,7 +380,7 @@ theorem maximalUnramifiedNorm_fixed_of_hstar (D : DegreeData G)
   simp_rw [hzero] at hnorm
   have hnormzero :
       D.frobeniusQuotientAction A K.field L hLK φ (J (N u)) - J (N u) = 0 := by
-    simpa only [sub_self, Finset.sum_const_zero] using hnorm
+    simp_all
   simpa [J, N] using sub_eq_zero.mp hnormzero
 
 /-- A `\widetilde K`-fixed element with finite Galois support descends to
@@ -443,8 +437,7 @@ theorem descend_maximalUnramified_fixed_of_finiteSupport (D : DegreeData G)
     | zero => simp
     | succ n ih =>
         rw [pow_succ, map_mul]
-        change A.ρ (f.1 ^ n) (A.ρ f.1 aI.1) = aI.1
-        rw [hfFixed, ih]
+        simp_all
   have hsval : aP.1 = aI.1 := congrArg Subtype.val hsupport
   have hKfixed (k : K.field.toSubgroup) : A.ρ k.1 aI.1 = aI.1 := by
     obtain ⟨q, hqk⟩ := D.frobeniusRestriction_surjective K P.field P.below
@@ -477,7 +470,7 @@ theorem descend_maximalUnramified_fixed_of_finiteSupport (D : DegreeData G)
       calc
         A.ρ t.1 aI.1 = A.ρ t.1 (A.ρ z.1 aI.1) :=
           congrArg (A.ρ t.1) hzFixed.symm
-        _ = A.ρ (t.1 * z.1) aI.1 := by rw [map_mul]; rfl
+        _ = A.ρ (t.1 * z.1) aI.1 := by simp
         _ = A.ρ (f.1 ^ n) aI.1 := by simp [z]
         _ = aI.1 := hfPowFixed n
     have htk :
@@ -500,18 +493,9 @@ theorem descend_maximalUnramified_fixed_of_finiteSupport (D : DegreeData G)
       exact aP.2 rP
     calc
       A.ρ k.1 aI.1 = A.ρ (t.1 * (t.1⁻¹ * k.1)) aI.1 := by simp
-      _ = A.ρ t.1 (A.ρ (t.1⁻¹ * k.1) aI.1) := by rw [map_mul]; rfl
+      _ = A.ρ t.1 (A.ρ (t.1⁻¹ * k.1) aI.1) := by simp
       _ = A.ρ t.1 aI.1 := by rw [hrFixed]
       _ = aI.1 := htFixed
   let aK : ambientFixedAddSubgroup A K.field := ⟨aI.1, hKfixed⟩
   refine ⟨aK, ?_⟩
-  apply Subtype.ext
   rfl
-
-end DegreeData
-
-end representationDescent
-
-end
-
-end ClassFormation

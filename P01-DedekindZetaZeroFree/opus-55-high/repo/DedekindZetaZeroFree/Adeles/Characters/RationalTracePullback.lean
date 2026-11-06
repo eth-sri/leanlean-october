@@ -16,7 +16,3 @@ namespace DedekindZetaZeroFree
 variable (F : Type) [Field F] [NumberField F]
 
 instance instFactPrimeTracePullbackNatPrimes (p : Nat.Primes) : Fact p.1.Prime := ⟨p.2⟩
-
-end DedekindZetaZeroFree
-
-end

@@ -7,9 +7,8 @@ public import DedekindZetaZeroFree.Metaplectic.Intertwining.TorusCovariance.Adel
 
 @[expose] public section
 
-noncomputable section
 open MeasureTheory NumberField IsDedekindDomain
-open scoped Classical NumberField ENNReal NNReal Topology
+open scoped Classical ENNReal NNReal Topology
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 namespace DedekindZetaZeroFree.KPGlobalResidualKernel.ScatteringResidue
@@ -41,7 +40,7 @@ private theorem integral_preimage (a : FiniteIdeleGroup F)
     · have hu := (Submonoid.mem_units_iff _ _).mp (ha v hv)
       exact (v.adicCompletionIntegers F).mul_mem _ _ hu.1 (ht v hv)
 
-private theorem local_preimage_mass (v : HeightOneSpectrum (𝓞 F))
+theorem local_preimage_mass (v : HeightOneSpectrum (𝓞 F))
     (a : (v.adicCompletion F)ˣ) :
     (localNormalizedHaar F v ((fun x => a.val * x) ⁻¹' v.adicCompletionIntegers F)).toReal =
       ‖a.val‖⁻¹ * FiniteHaarCharts.localMass F v := by
@@ -98,7 +97,7 @@ private theorem finite_intrinsic_char (a : FiniteIdeleGroup F)
   rw [mul_assoc, inv_mul_cancel₀ hn, mul_one, one_mul] at hh'
   exact hh'
 
-private theorem finite_arithmetic_norm (S : Finset (HeightOneSpectrum (𝓞 F)))
+theorem finite_arithmetic_norm (S : Finset (HeightOneSpectrum (𝓞 F)))
     (a : FiniteIdeleGroup F) (ha : a ∈ FiniteIdeleGroup.supportedAt (S : Set _)) :
     (∏ v : S, ‖(a v.val).val‖) = (((FiniteIdeleGroup.absoluteNorm a : ℝ≥0) : ℝ))⁻¹ := by
   have hlocal (v : HeightOneSpectrum (𝓞 F)) (x : (v.adicCompletion F)ˣ) :
@@ -121,8 +120,7 @@ private theorem finite_arithmetic_norm (S : Finset (HeightOneSpectrum (𝓞 F)))
   congr 1
   symm
   apply Finset.prod_subset hs
-  intro v hv hvs
-  simp [Finsupp.notMem_support_iff.mp hvs]
+  simp_all
 
 theorem finite_idele_intrinsicHaarChar (a : FiniteIdeleGroup F) :
     (addEquivAddHaarChar (ContinuousAddEquiv.mulLeft
@@ -163,24 +161,17 @@ private theorem global_map_arithmetic (a : (KPGlobalTorusFunctionData.Adeles F)�
   let d : (InfiniteAdeleRing F)ˣ := Units.map (RingHom.fst _ _).toMonoidHom a
   let b := ((IdeleGroup.equivAdeleRingUnitsContinuousMulEquiv F).symm a).2
   have hb : (IdeleGroup.finiteEquivFiniteAdeleUnits b).val = a.val.2 := by
-    exact congrArg (fun u : KPAdelicCoverRestrictedProduct.Ideles F => u.val.2)
-      ((IdeleGroup.equivAdeleRingUnitsContinuousMulEquiv F).apply_symm_apply a)
+    rfl
   let cast : InfiniteAdeleRing F × IsDedekindDomain.FiniteAdeleRing (𝓞 F) F →
     KPGlobalTorusFunctionData.Adeles F := fun x => x
   have hc : Measurable cast := by
-    have heq : (MeasurableSpace.prod inferInstance inferInstance :
-      MeasurableSpace (InfiniteAdeleRing F × IsDedekindDomain.FiniteAdeleRing (𝓞 F) F)) =
-      borel (KPGlobalTorusFunctionData.Adeles F) := BorelSpace.measurable_eq
-    change @Measurable _ _ (MeasurableSpace.prod inferInstance inferInstance) (borel _) _
-    rw [heq]
-    exact measurable_id
+    fun_prop
   let : SigmaCompactSpace (InfiniteAdeleRing F) :=
     (PoissonArch.infiniteAdeleToSpace F).toHomeomorph.isClosedEmbedding.sigmaCompactSpace
   have hm : Measurable (fun x : KPGlobalTorusFunctionData.Adeles F => a.val * x) := by fun_prop
   have hp : Measurable (Prod.map (fun x : InfiniteAdeleRing F => d.val * x)
       (fun x : IsDedekindDomain.FiniteAdeleRing (𝓞 F) F => a.val.2 * x)) :=
-    (continuous_const.mul continuous_id).measurable.prodMap
-      (continuous_const.mul continuous_id).measurable
+    by fun_prop
   have harch : Measure.map (fun x : InfiniteAdeleRing F => d.val * x) μa =
       (ENNReal.ofReal ‖d.val‖)⁻¹ • μa := TateSLocalMeasurability.archimedean_map_mul F d
   have hfinite : Measure.map (fun x => a.val.2 * x) μf =
@@ -201,7 +192,7 @@ private theorem global_map_arithmetic (a : (KPGlobalTorusFunctionData.Adeles F)�
   rw [he, ← Measure.map_map hc hp, hprod, Measure.map_smul _ hc.aemeasurable]
   rfl
 
-private theorem global_ideleAbs (a : (KPGlobalTorusFunctionData.Adeles F)ˣ) :
+theorem global_ideleAbs (a : (KPGlobalTorusFunctionData.Adeles F)ˣ) :
     (((KPGlobalTorusFunctionData.ideleAbs F a : ℝ≥0) : ℝ)) =
       ‖a.val.1‖ / (((FiniteIdeleGroup.absoluteNorm
         ((IdeleGroup.equivAdeleRingUnitsContinuousMulEquiv F).symm a).2 : ℝ≥0) : ℝ)) := by
@@ -209,20 +200,18 @@ private theorem global_ideleAbs (a : (KPGlobalTorusFunctionData.Adeles F)ˣ) :
       ((InfiniteIdeleGroup.component w
         ((IdeleGroup.equivAdeleRingUnitsContinuousMulEquiv F).symm a).1 : w.Completionˣ) : w.Completion) =
         a.val.1 w := by
-    exact congrArg (fun u : KPAdelicCoverRestrictedProduct.Ideles F => u.val.1 w)
-      ((IdeleGroup.equivAdeleRingUnitsContinuousMulEquiv F).apply_symm_apply a)
+    rfl
   have harch : (((InfiniteIdeleGroup.archimedeanNorm
       ((IdeleGroup.equivAdeleRingUnitsContinuousMulEquiv F).symm a).1 : ℝ≥0) : ℝ)) =
       ‖a.val.1‖ := by
     rw [InfiniteIdeleGroup.archimedeanNorm_apply, InfiniteAdeleRing.norm_def]
-    simp only [Units.coe_prod, Units.val_pow_eq_pow_val, nnnormUnitHom_val,
-      NNReal.coe_prod, NNReal.coe_pow, coe_nnnorm, hw]
+    simp_all
   change (((IdeleGroup.absoluteNorm
     ((IdeleGroup.equivAdeleRingUnitsContinuousMulEquiv F).symm a))⁻¹ : ℝ≥0ˣ) : ℝ) = _
   rw [IdeleGroup.absoluteNorm_apply]
   simp only [Units.val_inv_eq_inv_val, Units.val_mul, NNReal.coe_inv, NNReal.coe_mul]
   rw [mul_inv_rev, inv_inv, harch]
-  simp only [div_eq_mul_inv]
+  rfl
 
 theorem idele_intrinsicHaarChar_eq_ideleAbs (a : (KPGlobalTorusFunctionData.Adeles F)ˣ) :
     (addEquivAddHaarChar (ContinuousAddEquiv.mulLeft a) : ℝ) =
@@ -276,7 +265,3 @@ theorem idele_integral_mul_inv
     (∫ x, k (x * (↑a⁻¹ : KPGlobalTorusFunctionData.Adeles F)) ∂μ) =
       (((KPGlobalTorusFunctionData.ideleAbs F a : ℝ≥0) : ℝ) : ℂ) * ∫ x, k x ∂μ := by
   rw [adelic_integral_mul_idele_inv μ a k, idele_intrinsicHaarChar_eq_ideleAbs a]
-
-end DedekindZetaZeroFree.KPGlobalResidualKernel.ScatteringResidue
-
-end

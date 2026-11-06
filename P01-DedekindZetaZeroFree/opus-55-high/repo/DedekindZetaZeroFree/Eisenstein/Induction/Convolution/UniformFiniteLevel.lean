@@ -173,7 +173,7 @@ lemma kernelFinite_matrixCoeff (K : Subgroup (G F ζ hζ))
   congr 1
   rw [← mul_apply_eq_comp, ← map_mul]
 
-private lemma kernelFinite_add (K : Subgroup (G F ζ hζ)) (h l : C(K, ℂ))
+lemma kernelFinite_add (K : Subgroup (G F ζ hζ)) (h l : C(K, ℂ))
     (hh : KernelFinite F ζ hζ K h) (hl : KernelFinite F ζ hζ K l) :
     KernelFinite F ζ hζ K (h + l) := by
   obtain ⟨W, hW, hhW, hWi⟩ := hh
@@ -186,7 +186,7 @@ private lemma kernelFinite_add (K : Subgroup (G F ζ hζ)) (h l : C(K, ℂ))
   rw [map_add]
   exact Submodule.add_mem_sup (hWi b x hx) (hVi b y hy)
 
-private lemma kernelFinite_smul (K : Subgroup (G F ζ hζ)) (h : C(K, ℂ))
+lemma kernelFinite_smul (K : Subgroup (G F ζ hζ)) (h : C(K, ℂ))
     (hh : KernelFinite F ζ hζ K h) (c : ℂ) :
     KernelFinite F ζ hζ K (c • h) := by
   obtain ⟨W, hW, hhW, hWi⟩ := hh
@@ -303,7 +303,7 @@ local instance levelBorelSpace (K : Subgroup (G F ζ hζ)) : BorelSpace K := ⟨
  def meetLevel (U V : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ) : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ :=
   ⟨U.toOpenSubgroup ⊓ V.toOpenSubgroup, U.isCompact.inter_right V.toOpenSubgroup.isClosed⟩
 
-private lemma meetLevel_le (U V : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ) :
+lemma meetLevel_le (U V : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ) :
     KPGlobalTorusFunctionData.globalLevel F ζ hζ (meetLevel F ζ hζ U V) ≤
       KPGlobalTorusFunctionData.globalLevel F ζ hζ U ∧
     KPGlobalTorusFunctionData.globalLevel F ζ hζ (meetLevel F ζ hζ U V) ≤
@@ -312,7 +312,7 @@ private lemma meetLevel_le (U V : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ
   · exact Subgroup.map_mono (by dsimp only [meetLevel]; rw [OpenSubgroup.toSubgroup_inf]; exact inf_le_left)
   · exact Subgroup.map_mono (by dsimp only [meetLevel]; rw [OpenSubgroup.toSubgroup_inf]; exact inf_le_right)
 
-private lemma flat_uniform_level_of_norm (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
+lemma flat_uniform_level_of_norm (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
     (f : Flat F ζ hζ K)
     (hlevel : ∃ U : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ,
       ∀ g (u : KPGlobalTorusFunctionData.globalLevel F ζ hζ U),
@@ -332,7 +332,7 @@ private lemma flat_uniform_level_of_norm (K : Subgroup (G F ζ hζ)) (hK : Iwasa
     KPLiteralChamber.JointProfile.literal_flat_multiplier_formula F ζ hζ K hK f s g,
     hV g ⟨u, hleV hu⟩, hU g u (hleU hu)]
 
-private lemma source_uniform_level_of_sources (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
+lemma source_uniform_level_of_sources (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
     (f : Flat F ζ hζ K) (a : G F ζ hζ)
     (hlevel : ∃ U : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ,
       ∀ g (u : KPGlobalTorusFunctionData.globalLevel F ζ hζ U),

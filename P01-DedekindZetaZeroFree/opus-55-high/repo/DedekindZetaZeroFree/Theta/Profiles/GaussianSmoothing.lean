@@ -45,7 +45,7 @@ private lemma axis_cpow (x : PositiveAxis) (s : ℂ) :
   rw [Complex.cpow_def_of_ne_zero (Complex.ofReal_ne_zero.mpr x.property.ne'),
     ← Complex.ofReal_log x.property.le]
 
-private lemma gaussian_contour (u : ℝ) :
+lemma gaussian_contour (u : ℝ) :
     (1/(2*Real.pi) : ℝ) •
       (∫ t : ℝ, Complex.exp (-(t : ℂ)^2) * Complex.exp (-(t : ℂ)*Complex.I*u)) =
         (Real.exp (-u^2/4)/(2*Real.sqrt Real.pi) : ℝ) := by
@@ -118,7 +118,7 @@ theorem gaussian_smoothing (N : TraceHaarTransport R) (P : Packet R Q) (x : Posi
     obtain ⟨B, hB, hb⟩ := thetaProfileGaussianKernel_rpow_bound P.C₀ P.A₀
       (Fintype.card (InfinitePlace F)) hC hA hr 0
     have hc : Continuous (fun t : PositiveAxis => ‖P.kernel t.val‖ * P.positiveSheet (x*t)) :=
-      hkernel.norm.mul (hVcont.comp (continuous_const.mul continuous_id))
+      by fun_prop
     exact ((hVint.comp_mul_left x).const_mul B).mono' hc.aestronglyMeasurable
       (Filter.Eventually.of_forall (fun t => by
         rw [Real.norm_eq_abs, abs_of_nonneg (mul_nonneg (norm_nonneg _) (hVpos _))]
@@ -129,9 +129,8 @@ theorem gaussian_smoothing (N : TraceHaarTransport R) (P : Packet R Q) (x : Posi
     · convert habs using 1
       funext t
       change ‖P.kernel t.val * (P.positiveSheet (x*t) : ℂ)‖ = _
-      rw [norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (hVpos _)]
-    · exact (hkernel.mul (Complex.continuous_ofReal.comp
-        (hVcont.comp (continuous_const.mul continuous_id)))).aestronglyMeasurable
+      simp_all
+    fun_prop
   · let V := P.positiveSheet
     let C := P.C₀
     let A := P.A₀
@@ -144,8 +143,8 @@ theorem gaussian_smoothing (N : TraceHaarTransport R) (P : Packet R Q) (x : Posi
         thetaProfileReciprocalMellinFactor C A r ((0 : ℂ)+t*Complex.I) *
           (1 : ℂ)^((0 : ℂ)+t*Complex.I)) at hi
       simpa [g] using hi
-    have hgc : Continuous g := by
-      exact (Complex.continuous_exp.comp (by fun_prop)).mul
+    have hgc : Continuous g := 
+      (Complex.continuous_exp.comp (by fun_prop)).mul
         ((thetaProfileReciprocalMellinFactor_differentiable C A r hC hA hr).continuous.comp (by fun_prop))
     let f : PositiveAxis → ℝ → ℂ := fun t u => g u * (t.val : ℂ)^((u : ℂ)*Complex.I) * (V (x*t) : ℂ)
     have hfcont : Continuous (Function.uncurry f) := by
@@ -156,8 +155,8 @@ theorem gaussian_smoothing (N : TraceHaarTransport R) (P : Packet R Q) (x : Posi
         · apply Continuous.cpow
           · exact Complex.continuous_ofReal.comp (continuous_subtype_val.comp continuous_fst)
           · fun_prop
-          · intro p; exact Or.inl p.1.property
-      · exact Complex.continuous_ofReal.comp (hVcont.comp (continuous_const.mul continuous_fst))
+          simp
+      fun_prop
     have hprod : Integrable (Function.uncurry f) (positiveHaar.prod volume) := by
       apply ((hVint.comp_mul_left x).mul_prod hg.norm).mono' hfcont.aestronglyMeasurable
       apply Filter.Eventually.of_forall
@@ -220,6 +219,3 @@ theorem mellinGaussian (N : TraceHaarTransport R) (P : Packet R Q) : MellinGauss
   intro s hs
   rw [C0_exact N P]
   exact (sheet_mellin N P s hs).2
-end DedekindZetaZeroFree.GaussianSmoothing
-
-end

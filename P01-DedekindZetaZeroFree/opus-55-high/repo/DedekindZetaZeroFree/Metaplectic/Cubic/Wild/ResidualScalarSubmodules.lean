@@ -14,7 +14,3 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
 
 instance kernelImageAdd (U : Submodule ℂ (KPGlobalTorusFunctionData.G F ζ hζ → ℂ)) :
     AddCommGroup U := Submodule.addCommGroup U
-
-end DedekindZetaZeroFree.KPWildActualResidual
-
-end

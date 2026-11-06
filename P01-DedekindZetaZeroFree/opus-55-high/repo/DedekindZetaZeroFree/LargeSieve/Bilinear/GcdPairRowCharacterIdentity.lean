@@ -16,7 +16,7 @@ private theorem sup_mul_eq_top {I X Y : Ideal (𝓞 F)}
   ((Ideal.isCoprime_iff_sup_eq.mpr hX).mul_right
     (Ideal.isCoprime_iff_sup_eq.mpr hY)).sup_eq
 
-private theorem le_of_dvd_ideal {X Y : Ideal (𝓞 F)} (h : X ∣ Y) : Y ≤ X := by
+theorem le_of_dvd_ideal {X Y : Ideal (𝓞 F)} (h : X ∣ Y) : Y ≤ X := by
   obtain ⟨k, hk⟩ := h
   rw [hk]
   exact Ideal.mul_le_left
@@ -172,5 +172,3 @@ theorem pairRowTransport
         have hzv : (Q.χ v) I = 0 := ((Q.χ v).eq_zero_iff' I).mpr (Or.inr hcv)
         have hzdv : (Q.χ (d * v)) I = 0 := ((Q.χ (d * v)).eq_zero_iff' I).mpr (Or.inr hcdv)
         exact ⟨by simp [hzdv, hzpsi], by simp [hzpsi, hzv]⟩
-
-end DedekindZetaZeroFree.LargeSieve.Bilinear

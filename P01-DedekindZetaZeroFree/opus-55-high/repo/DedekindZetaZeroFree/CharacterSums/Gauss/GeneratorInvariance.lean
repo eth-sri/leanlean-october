@@ -19,7 +19,7 @@ def transportCharacter {T : Type*} [CommRing T] (I J : Ideal T)
  def quotientEq {T : Type*} [CommRing T] (I J : Ideal T)
     (h : I = J) : T ⧸ I ≃+* T ⧸ J := h ▸ RingEquiv.refl _
 
-private theorem quotientEq_mk {T : Type*} [CommRing T] (I J : Ideal T)
+theorem quotientEq_mk {T : Type*} [CommRing T] (I J : Ideal T)
     (h : I = J) (x : T) :
     quotientEq I J h (Ideal.Quotient.mk I x) = Ideal.Quotient.mk J x := by
   subst J
@@ -31,7 +31,7 @@ private theorem transport_apply {T : Type*} [CommRing T] (I J : Ideal T)
   subst J
   rfl
 
-private theorem sixth_character {T : Type*} [CommRing T]
+theorem sixth_character {T : Type*} [CommRing T]
     (χ : MulChar T ℂ) (hχ : χ ^ 6 = 1) (u : Tˣ) :
     χ ((u ^ 6 : Tˣ) : T) = 1 := by
   rw [Units.val_pow_eq_pow_val, map_pow, ← χ.pow_apply_coe 6 u, hχ,
@@ -108,7 +108,7 @@ theorem finiteCoefficient_first_sixth_unit (R : Subring K) (s a h : R)
     have hc0 : ((c : R) : K) ≠ 0 := by exact_mod_cast c.ne_zero
     field_simp
     <;> ring
-  · rw [if_neg hd, if_neg (fun hn => hd (hc.mp hn))]
+  simp_all
 
 theorem finiteCoefficient_second_sixth_unit (R : Subring K) (s a h : R)
     (hs : s ≠ 0) (ha : a ≠ 0) (ε : Rˣ)
@@ -144,7 +144,7 @@ theorem finiteCoefficient_second_sixth_unit (R : Subring K) (s a h : R)
       change E (FiniteTransform.residueMap R a ((c : R) * _)) = v
       rw [map_mul, (FiniteTransform.canonicalLifts R a).property]
       change E (ca.mulLeft (ca.mulLeft.symm (E.symm v))) = v
-      rw [ca.mulLeft.apply_symm_apply, E.apply_symm_apply]⟩
+      simp⟩
   rw [← FiniteTransform.finiteCoefficient_lifts_independent R s _ h hs
     (mul_ne_zero c.ne_zero ha) χs _ e he ds va]
   unfold FiniteTransform.finiteCoefficient FiniteTransform.finiteCoefficientWithLifts
@@ -198,7 +198,7 @@ theorem finiteCoefficient_second_sixth_unit (R : Subring K) (s a h : R)
     linear_combination ((a : K) *
       ((FiniteTransform.canonicalLifts R s).val d : K) *
       ((FiniteTransform.canonicalLifts R a).val v : K)) * hi
-  · rw [if_neg hd, if_neg (fun hn => hd (hc.mp hn))]
+  simp_all
 
 variable {F : Type} [Field F] [NumberField F]
 
@@ -260,7 +260,7 @@ theorem coefficient_eq_comparison (A : SArithmeticData F)
       comparisonPoissonFiniteCoefficient F A D c n s h := by
   rfl
 
-private theorem allowed_translate (A : SArithmeticData F)
+theorem allowed_translate (A : SArithmeticData F)
     (hCl : Subsingleton (ClassGroup A.R)) (H : A.V → A.V → Fˣ)
     (B : Subgroup A.V) (hB : A.IsSUnitIsotropicComplement H B)
     (I : A.Exterior) (r r' : A.R) (hr : A.Generates I r) (hr' : A.Generates I r')
@@ -284,7 +284,6 @@ private theorem allowed_translate (A : SArithmeticData F)
       Units.val_div_eq_div_val] at hh
     exact (eq_div_iff a.ne_zero).mp hh
   apply Subtype.ext
-  change (r' : F) = _
   rw [← ha']
   exact hv.symm.trans (by rw [ha]; rfl)
 
@@ -350,7 +349,3 @@ theorem coefficient_allowed_generator_replacement (A : SArithmeticData F)
       coefficient A D s (c * n ^ 3) (u * r ^ 6) hs.1 hanon := by
     simpa only [← eh] using e3
   exact e1'.trans (e2'.trans e3')
-
-end GeneratorInvariance
-end
-end DedekindZetaZeroFree

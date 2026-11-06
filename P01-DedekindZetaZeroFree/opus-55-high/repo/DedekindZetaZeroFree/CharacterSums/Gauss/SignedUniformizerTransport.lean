@@ -24,7 +24,3 @@ structure SignedUniformizerTransport (R : PrincipalMellin.ActualRecipe S η) whe
         algebraMap F (p.val.adicCompletion F)
           (R.probe.allowed.generator (ThetaBranch.primeIdeal R.A p) : F)‖ < 1
   signed_shift : ∀ p, Characters.psi R p = (witnessPsi p).mulShift (delta p)
-
-end DedekindZetaZeroFree.MomentSources
-
-end

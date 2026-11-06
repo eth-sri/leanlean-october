@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 namespace ValuationTheory
 
 /-!
@@ -123,7 +117,7 @@ theorem valuationSubring_isNoetherianRing (F : DVF.{u, v} K) :
 /-- Membership in the valuation subring is `v x <= 1`. -/
 theorem mem_valuationSubring_iff (F : DVF.{u, v} K) (x : K) :
     x ∈ F.valuation.valuationSubring ↔ F.valuation x <= 1 :=
-  Valuation.mem_valuationSubring_iff (v := F.valuation) x
+  by rfl
 
 /-- Maximal-ideal membership is `v x < 1`. -/
 theorem mem_maximalIdeal_iff (F : DVF.{u, v} K)
@@ -134,22 +128,12 @@ theorem mem_maximalIdeal_iff (F : DVF.{u, v} K)
     (F.valuation (x : K) < 1)
   exact Valuation.mem_maximalIdeal_iff (v := F.valuation)
 
-/-- Zero residue is equivalent to membership in the maximal ideal. -/
-theorem residue_eq_zero_iff (F : DVF.{u, v} K)
-    (x : F.valuationSubring) :
-    F.residueMap x = 0 ↔ x ∈ F.maximalIdeal := by
-  change
-    IsLocalRing.residue F.valuation.valuationSubring x = 0 ↔
-    x ∈ IsLocalRing.maximalIdeal F.valuation.valuationSubring
-  exact IsLocalRing.residue_eq_zero_iff x
-
 /-- A residue class in a DVF valuation ring is nonzero exactly when its
 representative is a unit of the valuation ring. -/
 theorem residue_ne_zero_iff_isUnit (F : DVF.{u, v} K)
     (x : F.valuationSubring) :
     F.residueMap x ≠ 0 ↔ IsUnit x := by
-  change IsLocalRing.residue F.valuation.valuationSubring x ≠ 0 ↔ IsUnit x
-  exact IsLocalRing.residue_ne_zero_iff_isUnit x
+  simp
 
 /-- The residue map is surjective. -/
 theorem residue_surjective (F : DVF.{u, v} K) :
@@ -248,32 +232,20 @@ theorem isUniformizer_of_mem_maximalIdeal_of_not_mem_maximalIdeal_sq
     F.valuation.IsUniformizer (x : K) := by
   have hx_ne : x ≠ 0 := by
     intro hzero
-    exact hx_sq (by simp [hzero])
+    simp_all
   have hspan_ne : Ideal.span ({x} : Set F.valuationSubring) ≠ ⊥ := by
     intro hspan
-    have hx_bot : x ∈ (⊥ : Ideal F.valuationSubring) := by
-      rw [← hspan]
-      exact Ideal.mem_span_singleton_self x
-    exact hx_ne (by simpa using hx_bot)
+    simp_all
   rcases F.nonzero_ideal_eq_maximalIdeal_pow
       (Ideal.span ({x} : Set F.valuationSubring)) hspan_ne with
     ⟨n, hn⟩
   have hspan_le_max :
       Ideal.span ({x} : Set F.valuationSubring) ≤ F.maximalIdeal := by
     rw [Ideal.span_le]
-    intro y hy
-    have hyx : y = x := by simpa using hy
-    simpa [hyx] using hx
+    simp_all
   have hn_ne_zero : n ≠ 0 := by
     intro hn_zero
-    have hone : (1 : F.valuationSubring) ∈ F.maximalIdeal := by
-      have htop_le :
-          (⊤ : Ideal F.valuationSubring) ≤ F.maximalIdeal := by
-        simpa [hn, hn_zero] using hspan_le_max
-      exact htop_le trivial
-    exact
-      (IsLocalRing.maximalIdeal.isMaximal F.valuationSubring).isPrime.one_notMem
-        hone
+    simp_all
   have hn_lt_two : n < 2 := by
     by_contra hnot
     have htwo_le : 2 ≤ n := Nat.le_of_not_lt hnot
@@ -283,33 +255,11 @@ theorem isUniformizer_of_mem_maximalIdeal_of_not_mem_maximalIdeal_sq
       simpa [hn] using hx_span
     exact hx_sq (Ideal.pow_le_pow_right htwo_le hx_pow)
   have hn_eq_one : n = 1 := by
-    cases n with
-    | zero => exact (hn_ne_zero rfl).elim
-    | succ n =>
-        cases n with
-        | zero => rfl
-        | succ n =>
-            exact
-              ((not_lt_of_ge
-                (Nat.succ_le_succ (Nat.succ_le_succ (Nat.zero_le n))))
-                hn_lt_two).elim
+    omega
   have hmax :
       F.maximalIdeal = Ideal.span ({x} : Set F.valuationSubring) := by
     simpa [hn_eq_one] using hn.symm
   exact Valuation.isUniformizer_of_maximalIdeal_eq_span (v := F.valuation) hmax
-
-/-- Multiplying a uniformizer by a valuation-ring unit does not move it into
-the square of the maximal ideal. -/
-theorem uniformizer_mul_unit_not_mem_maximalIdeal_sq
-    (F : DVF.{u, v} K) {pi u : F.valuationSubring}
-    (hpi : F.valuation.IsUniformizer (pi : K)) (hu : IsUnit u) :
-    pi * u ∉ F.maximalIdeal ^ 2 := by
-  intro hmem
-  have hmem' : u * pi ∈ F.maximalIdeal ^ 2 := by
-    rw [mul_comm u pi]
-    exact hmem
-  exact F.uniformizer_not_mem_maximalIdeal_sq hpi
-    (((F.maximalIdeal ^ 2).unit_mul_mem_iff_mem hu).1 hmem')
 
 /-- The maximal ideal of a DVF valuation ring is nonzero. -/
 theorem maximalIdeal_ne_bot (F : DVF.{u, v} K) :
@@ -390,12 +340,6 @@ theorem maximalIdealPowSuccQuotConcreteLinearEquiv_mk
       Submodule.Quotient.mk a :=
   rfl
 
-/-- The canonical map onto a successive maximal-ideal quotient is surjective. -/
-theorem maximalIdealPowSuccQuotMk_surjective
-    (F : DVF.{u, v} K) (n : ℕ) :
-    Function.Surjective (F.maximalIdealPowSuccQuotMk n) :=
-  Submodule.mkQ_surjective (F.maximalIdealPowSuccSubmodule n)
-
 /-- Eliminate an ideal-power quotient class through its canonical map. -/
 protected theorem MaximalIdealPowSuccQuot.inductionOn
     (F : DVF.{u, v} K) (n : ℕ)
@@ -463,32 +407,6 @@ theorem maximalIdealPowSuccQuotLift_mk
         (F.maximalIdealPowSuccQuotMk n a) = f a :=
   rfl
 
-/-- Descend a linear map vanishing on `m^(n+1)` inside `m^n`. -/
-def maximalIdealPowSuccQuotLinearLift
-    (F : DVF.{u, v} K) {M : Type*} [AddCommGroup M]
-    [Module F.valuationSubring M] (n : ℕ)
-    (f : ((F.maximalIdeal ^ n : Ideal F.valuationSubring) : Type u)
-      →ₗ[F.valuationSubring] M)
-    (h : F.maximalIdealPowSuccSubmodule n ≤ f.ker) :
-    F.MaximalIdealPowSuccQuot n →ₗ[F.valuationSubring] M := by
-  change
-    (((F.maximalIdeal ^ n : Ideal F.valuationSubring) : Type u) ⧸
-      F.maximalIdealPowSuccSubmodule n) →ₗ[F.valuationSubring] M
-  exact (F.maximalIdealPowSuccSubmodule n).liftQ f h
-
-/-- The linear lift from a successive ideal quotient has the prescribed value on representatives. -/
-@[simp]
-theorem maximalIdealPowSuccQuotLinearLift_mk
-    (F : DVF.{u, v} K) {M : Type*} [AddCommGroup M]
-    [Module F.valuationSubring M] (n : ℕ)
-    (f : ((F.maximalIdeal ^ n : Ideal F.valuationSubring) : Type u)
-      →ₗ[F.valuationSubring] M)
-    (h : F.maximalIdealPowSuccSubmodule n ≤ f.ker)
-    (a : ((F.maximalIdeal ^ n : Ideal F.valuationSubring) : Type u)) :
-    F.maximalIdealPowSuccQuotLinearLift n f h
-        (F.maximalIdealPowSuccQuotMk n a) = f a :=
-  rfl
-
 /-- A successive ideal-quotient class is zero exactly when its representative
 lies in the next power. -/
 theorem maximalIdealPowSuccQuotMk_eq_zero_iff (F : DVF.{u, v} K) (n : ℕ)
@@ -498,23 +416,7 @@ theorem maximalIdealPowSuccQuotMk_eq_zero_iff (F : DVF.{u, v} K) (n : ℕ)
   change (Submodule.Quotient.mk a :
     ((F.maximalIdeal ^ n : Ideal F.valuationSubring) : Type u) ⧸
       F.maximalIdealPowSuccSubmodule n) = 0 ↔ _
-  rw [Submodule.Quotient.mk_eq_zero]
-  rfl
-
-/-- Two successive ideal-quotient classes agree exactly when their difference
-lies in the next power. -/
-@[simp]
-theorem maximalIdealPowSuccQuotMk_eq_iff
-    (F : DVF.{u, v} K) (n : ℕ)
-    (a b : ((F.maximalIdeal ^ n : Ideal F.valuationSubring) : Type u)) :
-    F.maximalIdealPowSuccQuotMk n a =
-        F.maximalIdealPowSuccQuotMk n b ↔
-      a - b ∈ F.maximalIdealPowSuccSubmodule n := by
-  change (Submodule.Quotient.mk a :
-    ((F.maximalIdeal ^ n : Ideal F.valuationSubring) : Type u) ⧸
-      F.maximalIdealPowSuccSubmodule n) =
-    Submodule.Quotient.mk b ↔ _
-  exact Submodule.Quotient.eq (F.maximalIdealPowSuccSubmodule n)
+  simp
 
 /-- Multiplication by the corresponding uniformizer power lands in the required
 maximal-ideal power. -/
@@ -524,7 +426,7 @@ theorem mul_uniformizer_pow_mem_maximalIdeal_pow (F : DVF.{u, v} K)
     r * pi ^ n ∈ F.maximalIdeal ^ n := by
   rw [F.maximalIdeal_pow_eq_span_uniformizer_pow hpi n]
   rw [Ideal.mem_span_singleton]
-  exact ⟨r, mul_comm _ _⟩
+  simp
 
 /-- Multiplication by `pi^n`, landing in `m^n`. -/
 def maximalIdealPowMulUniformizerPowMap (F : DVF.{u, v} K)
@@ -614,7 +516,7 @@ theorem maximalIdealPowSuccQuotMulUniformizerPowMap_surjective (F : DVF.{u, v} K
 
 /-- Principal-ideal scaling: multiplication by `pi^n` identifies
 `O/m` linearly with `m^n/m^(n+1)`. -/
-noncomputable def residueLinearEquivMaximalIdealPowSuccQuotOfUniformizer
+def residueLinearEquivMaximalIdealPowSuccQuotOfUniformizer
     (F : DVF.{u, v} K) {pi : F.valuationSubring}
     (hpi : F.valuation.IsUniformizer (pi : K)) (n : ℕ) :
     F.residueField ≃ₗ[F.valuationSubring] F.MaximalIdealPowSuccQuot n :=
@@ -625,7 +527,7 @@ noncomputable def residueLinearEquivMaximalIdealPowSuccQuotOfUniformizer
       (F.maximalIdealPowSuccQuotMulUniformizerPowMap_surjective hpi n))
 
 /-- Additive form of `O/m ≃ m^n/m^(n+1)`. -/
-noncomputable def residueAddEquivMaximalIdealPowSuccQuotOfUniformizer
+def residueAddEquivMaximalIdealPowSuccQuotOfUniformizer
     (F : DVF.{u, v} K) {pi : F.valuationSubring}
     (hpi : F.valuation.IsUniformizer (pi : K)) (n : ℕ) :
     F.residueField ≃+ F.MaximalIdealPowSuccQuot n :=
@@ -640,33 +542,4 @@ uniformizer-scaled quotient class. -/
     F.residueAddEquivMaximalIdealPowSuccQuotOfUniformizer hpi n
         (F.residueMap r) =
       F.maximalIdealPowSuccQuotMulUniformizerPowMap hpi n r := by
-  let f := F.maximalIdealPowSuccQuotMulUniformizerPowMap hpi n
-  let hker :
-      (F.maximalIdeal : Submodule F.valuationSubring F.valuationSubring) =
-        LinearMap.ker f :=
-    (F.maximalIdealPowSuccQuotMulUniformizerPowMap_ker hpi n).symm
-  change (Submodule.quotEquivOfEq
-        (F.maximalIdeal : Submodule F.valuationSubring F.valuationSubring)
-        (LinearMap.ker f) hker).trans
-      (f.quotKerEquivOfSurjective
-        (F.maximalIdealPowSuccQuotMulUniformizerPowMap_surjective hpi n))
-      (Submodule.Quotient.mk r) = f r
-  rw [LinearEquiv.trans_apply]
-  have hquot :
-      Submodule.quotEquivOfEq
-          (F.maximalIdeal : Submodule F.valuationSubring F.valuationSubring)
-          (LinearMap.ker f) hker (Submodule.Quotient.mk r) =
-        (Submodule.Quotient.mk r :
-          F.valuationSubring ⧸ LinearMap.ker f) := by
-    exact Submodule.quotEquivOfEq_mk
-      (p := (F.maximalIdeal : Submodule F.valuationSubring F.valuationSubring))
-      (p' := LinearMap.ker f) hker r
-  rw [hquot]
-  rw [LinearMap.quotKerEquivOfSurjective_apply_mk]
-
-end DVF
-end DiscreteValuationField
-
-end
-
-end ValuationTheory
+  rfl

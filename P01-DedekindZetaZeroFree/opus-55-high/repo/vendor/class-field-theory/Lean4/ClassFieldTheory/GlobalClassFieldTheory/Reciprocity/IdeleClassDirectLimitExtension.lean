@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Finite extensions in the rational idele-class representation
 
@@ -30,7 +27,7 @@ open ClassFormation
 open LocalClassFieldTheory
 open CyclicCohomology
 
- noncomputable instance
+ instance
     rationalAbstractTowerClassGroupCommGroup
     (F E : Type)
     [Field F] [NumberField F]
@@ -45,7 +42,7 @@ open CyclicCohomology
     QuotientGroup.Quotient.commGroup
       (TowerRelativeIdeleGroup.principalSubgroup ℚ F E)
 
- noncomputable instance
+ instance
     rationalAbstractTowerClassGroupMul
     (F E : Type)
     [Field F] [NumberField F]
@@ -56,7 +53,7 @@ open CyclicCohomology
     Mul (TowerRelativeIdeleGroup.ClassGroup ℚ F E) :=
   (rationalAbstractTowerClassGroupCommGroup F E).toMul
 
- noncomputable instance
+ instance
     rationalAbstractTowerClassGroupMulOneClass
     (F E : Type)
     [Field F] [NumberField F]
@@ -67,7 +64,7 @@ open CyclicCohomology
     MulOneClass (TowerRelativeIdeleGroup.ClassGroup ℚ F E) :=
   (rationalAbstractTowerClassGroupCommGroup F E).toMulOneClass
 
- noncomputable instance
+ instance
     rationalAbstractRelativeClassGroupCommGroup
     (F E : Type)
     [Field F] [NumberField F]
@@ -80,7 +77,7 @@ open CyclicCohomology
     QuotientGroup.Quotient.commGroup
       (RelativeIdeleGroup.principalSubgroup F E)
 
- noncomputable instance
+ instance
     rationalAbstractRelativeClassGroupMul
     (F E : Type)
     [Field F] [NumberField F]
@@ -89,7 +86,7 @@ open CyclicCohomology
     Mul (RelativeIdeleGroup.ClassGroup F E) :=
   (rationalAbstractRelativeClassGroupCommGroup F E).toMul
 
- noncomputable instance
+ instance
     rationalAbstractRelativeClassGroupMulOneClass
     (F E : Type)
     [Field F] [NumberField F]
@@ -102,7 +99,7 @@ open CyclicCohomology
 extension is the existing relative idele class group of its two actual
 fixed fields.  This packages the fixed-part and tower base-change
 comparisons into the endpoint used by finite reciprocity. -/
-noncomputable def rationalAbstractExtensionIdeleClassEquiv
+def rationalAbstractExtensionIdeleClassEquiv
     (K L : ClosedSubgroup
       (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
     (hLK : L.toSubgroup ≤ K.toSubgroup)
@@ -390,34 +387,14 @@ theorem rationalIdeleClassEquivFixed_relativeNorm_coe
             (rationalNormalClosure K)
             (RelativeIdeleGroup.classEmbedding
               (rationalBaseFixingCosetEquivNormalClosure K q) c) := by
-      apply Finset.prod_congr rfl
-      intro q _
-      exact hterm q
+      simp_all
     _ =
         rationalRelativeIdeleClassToDirectLimit
           (rationalNormalClosure K)
           (∏ q : Q,
             RelativeIdeleGroup.classEmbedding
               (rationalBaseFixingCosetEquivNormalClosure K q) c) := by
-      let g :=
-        rationalRelativeIdeleClassToDirectLimit
-          (rationalNormalClosure K)
-      let f := fun q : Q =>
-        RelativeIdeleGroup.classEmbedding
-          (rationalBaseFixingCosetEquivNormalClosure K q) c
-      have hmap (s : Finset Q) :
-          g (s.prod f) =
-            s.prod (fun q => g (f q)) := by
-        induction s using Finset.induction_on with
-        | empty =>
-            exact g.map_one
-        | @insert q s hqs ih =>
-            rw [Finset.prod_insert hqs, Finset.prod_insert hqs,
-              g.map_mul, ih]
-      change
-        (∏ q : Q, g (f q)) =
-          g (∏ q : Q, f q)
-      exact (hmap Finset.univ).symm
+      simp
     _ =
         rationalRelativeIdeleClassToDirectLimit
           (rationalNormalClosure K)
@@ -447,8 +424,6 @@ theorem rationalIdeleClassEquivFixed_relativeNorm_coe
       have hnorm :
           RelativeIdeleGroup.Cohomology.ideleClassNorm ℚ K c =
             RelativeIdeleGroup.classNorm ℚ K c := by
-        refine QuotientGroup.induction_on c ?_
-        intro a
         rfl
       calc
         (∏ f : K →ₐ[ℚ] rationalNormalClosure K,
@@ -529,11 +504,7 @@ theorem
         (_root_.relativeIdeleClassBaseChangeMulEquiv
           (K := ℚ) (L := F) c))
   have hx : x.1 = x'.1 := by
-    simpa only [x, x', F] using
-      (rationalAbstractFixedFieldIdeleClassEquivFixed_coe H
-        (Additive.ofMul
-          (_root_.relativeIdeleClassBaseChangeMulEquiv
-            (K := ℚ) (L := F) c))).symm
+    rfl
   have htransport :=
     LocalClassFieldTheory.relativeNorm_coe_eq_of_closedSubgroup_eq
       rationalIdeleClassRepresentation
@@ -627,7 +598,7 @@ theorem
             (_root_.relativeIdeleClassBaseChangeMulEquiv
               (K := ℚ) (L := F) d) =
           c := by
-      simpa only [ofMul_toMul] using congrArg Additive.ofMul hc
+      simp_all
     rw [hcAdd] at h
     exact h
   have hordinary :
@@ -663,10 +634,3 @@ theorem
           (_root_.ideleClassNorm ℚ F (Additive.toMul c))) := by
       apply Subtype.ext
       exact hcoe'.trans hbase.symm
-
-end AbstractFixedFieldOrdinaryNorm
-
-end Reciprocity
-end GlobalClassFieldTheory
-
-end

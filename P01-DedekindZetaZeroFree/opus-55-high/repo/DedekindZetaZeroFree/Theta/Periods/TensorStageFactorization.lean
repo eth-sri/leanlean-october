@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Theta.Periods.RestrictedTensorProductFunction
 
 @[expose] public section
 
-noncomputable section
 open scoped Classical TensorProduct
 namespace DedekindZetaZeroFree.FourierContinuation
 universe u v
@@ -37,8 +36,7 @@ theorem multilinear_factorization_of_normalized
     | empty =>
       intro x hx
       have he : x = x₀ := funext (fun j => by
-        by_contra hn
-        exact Finset.notMem_empty j (hx j hn))
+        simp_all)
       simp [he]
     | @insert i s hi ih =>
       intro x hx
@@ -60,9 +58,3 @@ theorem multilinear_factorization_of_normalized
       ring
   intro x
   exact finite_product Finset.univ x (fun j _ => Finset.mem_univ j)
-
-variable {i : J}
-
-end DedekindZetaZeroFree.FourierContinuation
-
-end

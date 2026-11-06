@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Local components of relative adeles and ideles
 
@@ -31,7 +28,6 @@ open scoped NumberField TensorProduct
 open NumberField IsDedekindDomain
 
 noncomputable section
-
 
 universe u v
 
@@ -193,8 +189,7 @@ theorem map_norm_tensorProduct_baseChange
               (AlgHom.id K L) z))
           (RelativeIdeleGroup.normPolynomial b) := by
       congr 1
-      · ext x
-        exact f.commutes x
+      · simp
       · funext i
         exact (hrepr i).symm
     _ =
@@ -345,7 +340,6 @@ theorem RelativeIdeleGroup.infiniteComponent_inclusion
       infiniteLocalIdeleInclusion
         (K := K) (L := L) v
         (IdeleGroup.infiniteComponent v a) := by
-  apply Units.ext
   rfl
 
 omit [NumberField L] [FiniteDimensional K L] in
@@ -359,7 +353,6 @@ theorem RelativeIdeleGroup.infiniteComponent_principalIdele
         (RelativeIdeleGroup.principalIdele K L x) =
       infiniteLocalFieldIdeleInclusion
         (K := K) (L := L) v x := by
-  apply Units.ext
   rfl
 
 /-- Scalar extension of a local base-field unit into the local tensor
@@ -385,7 +378,6 @@ theorem RelativeIdeleGroup.finiteComponent_inclusion
         (RelativeIdeleGroup.inclusion K L a) =
       localIdeleInclusion (K := K) (L := L) v
         (IdeleGroup.finiteComponent v a) := by
-  apply Units.ext
   rfl
 
 /-- Scalar extension of an extension-field unit into the local tensor
@@ -408,7 +400,4 @@ theorem RelativeIdeleGroup.finiteComponent_principalIdele
         (K := K) (L := L) v
         (RelativeIdeleGroup.principalIdele K L x) =
       localFieldIdeleInclusion (K := K) (L := L) v x := by
-  apply Units.ext
   rfl
-
-end

@@ -11,7 +11,6 @@ namespace DedekindZetaZeroFree.TorusChartTransport
 open KPGlobalTorusBorelNormTwistTransport
 open KPGlobalTorusFiniteStagesCofinality
 noncomputable section
-set_option autoImplicit false
 set_option maxRecDepth 2000
 set_option maxHeartbeats 800000
 
@@ -60,14 +59,14 @@ theorem weightedChart_integral_eq (C : ModelData F ζ hζ) (s : ℂ)
  def finBClass (C : ModelData F ζ hζ) (b : FinB F ζ hζ C) :
     KPGlobalTorusPeriodizationInverse.CompactIndex F ζ hζ C :=
   KPGlobalTorusPeriodizationInverse.averagingClass F ζ hζ C (finBRep F ζ hζ C b)
-private theorem finBClass_openQuotient (C : ModelData F ζ hζ) :
+theorem finBClass_openQuotient (C : ModelData F ζ hζ) :
     IsOpenQuotientMap (finBClass F ζ hζ C) := by
   have hs := finiteTorusClassProjection_surjective F ζ hζ
   have hq : IsOpenQuotientMap (finiteTorusClassProjection F ζ hζ) :=
     ⟨hs, finiteTorusClassProjection_continuous F ζ hζ,
       finiteTorusClassProjection_open_of_surjective F ζ hζ hs⟩
   exact QuotientGroup.isOpenQuotientMap_mk.comp (hq.restrictPreimage _)
-private theorem finite_commutes (a : G F ζ hζ)
+theorem finite_commutes (a : G F ζ hζ)
     (ha : a ∈ KPGlobalTorusFunctionData.finitePart F ζ hζ) (z : GroupArch F) :
     Commute (groupArchChart F ζ hζ z) a := by
   obtain ⟨b, hb, rfl⟩ := ha
@@ -77,8 +76,7 @@ private theorem finite_commutes (a : G F ζ hζ)
     intro v
     cases v with
     | inl w =>
-      have hw : b (Sum.inl w) = 1 := (Subgroup.mem_iInf.mp hb) w
-      simp [hw]
+      simp_all
     | inr q =>
       change 1 * b (Sum.inr q) = b (Sum.inr q) * 1
       simp
@@ -124,12 +122,11 @@ private theorem rep_formula (C : ModelData F ζ hζ) (s : ℂ)
   dsimp only [finBRep]
   rw [hm]
   ring
-private theorem deltaHalf_continuous : Continuous (KPGlobalTorusFunctionData.deltaHalf F ζ hζ) := by
+theorem deltaHalf_continuous : Continuous (KPGlobalTorusFunctionData.deltaHalf F ζ hζ) := by
   have he (t : E F ζ hζ) :
       (((KPGlobalTorusFunctionData.delta F ζ hζ t : ℝ≥0) : ℝ)) =
         (((KPGlobalCenterRationalCharacter.nu F ζ hζ t : ℝ≥0) : ℝ)) ^ (6 : ℕ) := by
     rw [KPGlobalCenterRationalCharacter.nu_formula]
-    change _ = (_ ^ (1 / 6 : ℝ)) ^ (6 : ℕ)
     rw [← Real.rpow_natCast, ← Real.rpow_mul (by positivity)]
     norm_num
     rfl
@@ -138,7 +135,7 @@ private theorem deltaHalf_continuous : Continuous (KPGlobalTorusFunctionData.del
   exact Complex.continuous_ofReal.comp (Real.continuous_sqrt.comp
     ((NNReal.continuous_coe.comp (Units.continuous_val.comp
       (KPGlobalCenterRationalCharacter.nu_continuous F ζ hζ))).pow 6))
-private theorem bump_extension {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
+theorem bump_extension {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
     {U : Set V} (hU : IsOpen U) (η : V → ℝ) (hη : ContDiff ℝ (⊤ : ℕ∞) η)
     (hs : tsupport η ⊆ U) (φ : V → ℂ) (hφ : ContDiffOn ℝ (⊤ : ℕ∞) φ U) :
     ContDiff ℝ (⊤ : ℕ∞) (fun y => η y • φ y) := by
@@ -157,7 +154,7 @@ private theorem bump_extension {V : Type*} [NormedAddCommGroup V] [NormedSpace �
  def coef (C : ModelData F ζ hζ) (s : ℂ) (b : FinB F ζ hζ C) : ℂ :=
   ((((twist F ζ hζ (productModel F ζ hζ C) s).character (finBRep F ζ hζ C b))⁻¹ : ℂˣ) : ℂ) *
     (KPGlobalTorusFunctionData.deltaHalf F ζ hζ b.val.val)⁻¹
-private theorem coef_continuous (C : ModelData F ζ hζ) (s : ℂ) :
+theorem coef_continuous (C : ModelData F ζ hζ) (s : ℂ) :
     Continuous (coef F ζ hζ C s) := by
   have hb : Continuous (finBRep F ζ hζ C) :=
     (continuous_subtype_val.comp continuous_subtype_val).subtype_mk _
@@ -172,10 +169,8 @@ private theorem coef_continuous (C : ModelData F ζ hζ) (s : ℂ) :
       (continuous_subtype_val.comp continuous_subtype_val)
   · intro b
     unfold KPGlobalTorusFunctionData.deltaHalf
-    exact_mod_cast (ne_of_gt (Real.sqrt_pos.2
-      (NNReal.coe_pos.2 (pos_iff_ne_zero.2
-        (Units.ne_zero (KPGlobalTorusFunctionData.delta F ζ hζ b.val.val))))))
-private theorem source_locally_constant (C : ModelData F ζ hζ) (s : ℂ)
+    simp
+theorem source_locally_constant (C : ModelData F ζ hζ) (s : ℂ)
     (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
     (f : InducedFunctions F ζ hζ (twist F ζ hζ (rationalModel F ζ hζ) s))
     (hf : f ∈ InducedLevel F ζ hζ (twist F ζ hζ (rationalModel F ζ hζ) s) J)
@@ -190,7 +185,7 @@ private theorem source_locally_constant (C : ModelData F ζ hζ) (s : ℂ)
       KPGlobalTorusFunctionData.finitePart F ζ hζ :=
     { toFun := fun u => ⟨g⁻¹ * u.val * g, by
         have h := hn.conj_mem u.val u.property g⁻¹
-        simpa only [inv_inv, mul_assoc] using h⟩
+        simp_all⟩
       invFun := fun u => ⟨g * u.val * g⁻¹, hn.conj_mem u.val u.property g⟩
       left_inv := by intro u; apply Subtype.ext; dsimp; group
       right_inv := by intro u; apply Subtype.ext; dsimp; group
@@ -200,10 +195,10 @@ private theorem source_locally_constant (C : ModelData F ζ hζ) (s : ℂ)
   let q : FinB F ζ hζ C → KPGlobalTorusFunctionData.finitePart F ζ hζ :=
     fun b => ⟨b.val.val.val, b.val.property⟩
   have hq : Continuous q :=
-    (continuous_subtype_val.comp (continuous_subtype_val.comp continuous_subtype_val)).subtype_mk _
+    by fun_prop
   have hu : ∀ᶠ b' in 𝓝 b, e ((q b)⁻¹ * q b') ∈ J.toOpenSubgroup := by
     have hc : Continuous (fun b' => e ((q b)⁻¹ * q b')) :=
-      e.continuous.comp (continuous_const.mul hq)
+      by fun_prop
     have h1 : e ((q b)⁻¹ * q b) ∈ J.toOpenSubgroup := by simp
     exact hc.continuousAt.preimage_mem_nhds (J.toOpenSubgroup.isOpen.mem_nhds h1)
   filter_upwards [hu] with b' hb'
@@ -259,7 +254,7 @@ theorem weightedChart_local_extension (C : ModelData F ζ hζ) (s : ℂ)
   · intro x
     obtain ⟨b, rfl⟩ := (finBClass_openQuotient F ζ hζ C).surjective x
     rw [hA]
-    exact (hφ b).const_smul (R := ℂ) _
+    fun_prop
   · intro n
     apply ((IsOpenQuotientMap.id (X := GroupArch F)).prodMap
       (finBClass_openQuotient F ζ hζ C)).isQuotientMap.continuous_iff.mpr
@@ -278,6 +273,3 @@ theorem weightedChart_local_extension (C : ModelData F ζ hζ) (s : ℂ)
   · intro y hy x
     have he := η.one_of_mem_closedBall (Metric.ball_subset_closedBall hy)
     simp only [A, he, one_smul]
-
-end
-end DedekindZetaZeroFree.TorusChartTransport

@@ -4,7 +4,6 @@ public import Mathlib.LinearAlgebra.Isomorphisms
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.KPLiteralResidueDescent
 
 theorem factor_through_surjection
@@ -20,7 +19,3 @@ theorem factor_through_surjection
     (q.quotKerEquivOfSurjective hq).symm.toLinearMap, ?_⟩
   intro x
   simp [LinearMap.comp_apply, LinearMap.quotKerEquivOfSurjective_symm_apply q hq x]
-
-end DedekindZetaZeroFree.KPLiteralResidueDescent
-
-end

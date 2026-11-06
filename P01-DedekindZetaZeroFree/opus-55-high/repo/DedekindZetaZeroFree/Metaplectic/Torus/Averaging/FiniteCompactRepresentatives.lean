@@ -8,8 +8,6 @@ open scoped NumberField Classical NNReal BigOperators Topology
 open NumberField IsDedekindDomain MeasureTheory
 namespace DedekindZetaZeroFree.TorusChartTransport
 open KPGlobalTorusBorelNormTwistTransport KPGlobalTorusFiniteStagesCofinality
-noncomputable section
-set_option autoImplicit false
 set_option maxHeartbeats 800000
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
@@ -69,8 +67,7 @@ theorem actual_finite_compact_averaging_representatives (C : ModelData F ζ hζ)
     exact Set.mem_image_of_mem _ t.property
   let f : T → KPGlobalTorusPeriodizationInverse.B F ζ hζ C := fun t => ⟨t.val.val, hb t⟩
   have hfc : Continuous f := by
-    apply Continuous.subtype_mk
-    exact continuous_subtype_val.comp continuous_subtype_val
+    fun_prop
   refine ⟨Set.range f, isCompact_range hfc, ?_, ?_⟩
   · rintro b ⟨t, rfl⟩
     exact t.val.property
@@ -86,6 +83,3 @@ theorem actual_finite_compact_averaging_representatives (C : ModelData F ζ hζ)
     apply congrArg QuotientGroup.mk
     apply Subtype.ext
     exact he
-
-end
-end DedekindZetaZeroFree.TorusChartTransport

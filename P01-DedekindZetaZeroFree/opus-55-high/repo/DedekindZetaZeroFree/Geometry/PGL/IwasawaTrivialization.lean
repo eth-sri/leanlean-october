@@ -19,8 +19,7 @@ theorem product_iwasawa_homeomorph (d : ℕ) :
     rw [mul_smul]
     exact inv_smul_eq_iff.mpr (hso (g • o d)).symm⟩
   have ht : Continuous t := by
-    apply Continuous.subtype_mk
-    exact (hs.comp (continuous_id.smul continuous_const)).inv.mul continuous_id
+    fun_prop
   let e : G d ≃ₜ (X d × K d) :=
     { toFun := fun g => (g • o d, t g)
       invFun := fun p => s p.1 * (p.2 : G d)
@@ -44,5 +43,3 @@ theorem product_iwasawa_homeomorph (d : ℕ) :
       continuous_invFun := (hs.comp continuous_fst).mul
         (continuous_subtype_val.comp continuous_snd) }
   exact ⟨e, fun _ => rfl, fun _ _ => rfl⟩
-
-end DedekindZetaZeroFree.KPCompactStabilizerHaarSources

@@ -109,7 +109,7 @@ theorem meanHeight_conjugated_parabolic
     kp_cusp_arithmetic_parabolic_stabilizers F M hM Γ hΓ hcomm q σ hσ
   let S := KPCuspArithmetic.conjugatedStabilizer F Γ q σ
   let u : S := ⟨σ⁻¹ * (g : KPCuspArithmetic.PGL2 F) * σ,
-    Subgroup.mem_map.mpr ⟨g, g.property, by simp [MulAut.conj_apply]⟩⟩
+    Subgroup.mem_map.mpr ⟨g, g.property, by simp⟩⟩
   obtain ⟨A, hA, hzero⟩ := hupper u u.property
   have hr := hratio u A hA hzero
   change KPCuspLogShape.meanHeight _ (action F (u : KPCuspArithmetic.PGL2 F) z) = _
@@ -166,9 +166,7 @@ theorem prod_height_eq_exp_meanHeight
       Real.exp ((KPCuspLogShape.dimension F : ℝ) *
         KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F) z) := by
   by_cases hd : KPCuspLogShape.dimension F = 0
-  · haveI : IsEmpty (Fin (KPCuspLogShape.dimension F)) :=
-      ⟨fun i => by have := i.isLt; omega⟩
-    simp [KPCuspLogShape.meanHeight, hd]
+  · simp_all
   · simp only [KPArch.height, ← Real.exp_sum, KPCuspLogShape.meanHeight]
     rw [mul_div_cancel₀ _ (Nat.cast_ne_zero.mpr hd)]
 
@@ -229,7 +227,7 @@ theorem highCusp_eq_normalized_horoball
         KPCusp.normalizedHeight F J (frameLowerRow F A) z := by
     rw [normalizedHeight_frame_lower_row F]
     change _ ↔ frameHeightConstant F J A * _ < frameHeightConstant F J A * _
-    rw [mul_lt_mul_iff_right₀ hc, Real.exp_lt_exp, mul_lt_mul_iff_right₀ hdR]
+    simp_all
   ext z
   constructor
   · rintro ⟨w, hw, rfl⟩
@@ -237,16 +235,14 @@ theorem highCusp_eq_normalized_horoball
     have he : glAction F A (action F (Matrix.ProjGenLinGroup.mk A⁻¹) w) = w := by
       rw [← action_mk]
       change Matrix.ProjGenLinGroup.mk A • (Matrix.ProjGenLinGroup.mk A⁻¹ • w) = w
-      rw [map_inv]
-      exact smul_inv_smul _ _
+      simp
     rw [he]
     exact hw
   · intro hz
     refine ⟨glAction F A z, (hh z).mpr hz, ?_⟩
     rw [← action_mk]
     change Matrix.ProjGenLinGroup.mk A⁻¹ • (Matrix.ProjGenLinGroup.mk A • z) = z
-    rw [map_inv]
-    exact inv_smul_smul _ _
+    simp
 
 theorem normalized_horoballs_disjoint_of_threshold_product
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
@@ -298,16 +294,15 @@ theorem rowCusp_eq_of_flag_eq (r s : KPCusp.Row F)
   · have hd : r.val.2 ≠ 0 := by
       intro hd
       exact r.property (Prod.ext hc hd)
-    have hs : s.val.1 = 0 := by simpa [hc, hd] using hv
+    have hs : s.val.1 = 0 := by simp_all
     have hd' : s.val.2 ≠ 0 := by
       intro hd'
       exact s.property (Prod.ext hs hd')
     refine ⟨Units.mk0 (r.val.2 / s.val.2) (div_ne_zero hd hd'), ?_⟩
-    ext i
-    fin_cases i <;> simp [hc, hs, div_mul_cancel₀ _ hd', mul_neg]
+    simp_all
   · have hc' : s.val.1 ≠ 0 := by
       intro hs
-      have hd' : s.val.2 = 0 := by simpa [hs, hc] using hv
+      have hd' : s.val.2 = 0 := by simp_all
       exact s.property (Prod.ext hs hd')
     refine ⟨Units.mk0 (r.val.1 / s.val.1) (div_ne_zero hc hc'), ?_⟩
     ext i
@@ -325,12 +320,11 @@ theorem flag_eq_of_rowCusp_eq (r s : KPCusp.Row F)
     exact (congrFun ha 1).symm
   have hd : r.val.2 = (a : F) * s.val.2 := by
     change r.val.2 = a • s.val.2
-    have := congrFun ha 0
-    simpa using congrArg Neg.neg this.symm
+    simp_all
   ext v
   change r.val.1 * v.1 + r.val.2 * v.2 = 0 ↔ s.val.1 * v.1 + s.val.2 * v.2 = 0
   rw [hc, hd, mul_assoc, mul_assoc, ← mul_add]
-  exact mul_eq_zero.trans (or_iff_right a.ne_zero)
+  simp
 
 theorem rowCusp_frameLowerRow (A : Matrix.GeneralLinearGroup (Fin 2) F) :
     rowCusp F (frameLowerRow F A) =
@@ -342,7 +336,7 @@ theorem rowCusp_frameLowerRow (A : Matrix.GeneralLinearGroup (Fin 2) F) :
     refine ⟨Units.mk0 (-(A : Matrix (Fin 2) (Fin 2) F).det) (neg_ne_zero.mpr A.det_ne_zero), ?_⟩
     ext i
     fin_cases i <;>
-      simp [Matrix.mulVec, dotProduct, Fin.sum_univ_two, frameLowerRow, Matrix.det_fin_two] <;>
+      simp [frameLowerRow, Matrix.det_fin_two] <;>
       ring
   rw [map_inv]
   rw [← he, inv_smul_smul]
@@ -491,8 +485,8 @@ theorem uniform_high_cusp_intersection_of_frame_bound {n : ℕ}
   intro T hT a b γ z hz hγz
   have hRT : R ≤ T := (le_max_right _ _).trans hT
   have hexp : 1 ≤ c * Real.exp ((KPCuspLogShape.dimension F : ℝ) * T) := by
-    have hl : Real.log (1 / c) ≤ (KPCuspLogShape.dimension F : ℝ) * T := by
-      exact (div_le_iff₀ hd).mp hRT |>.trans_eq (mul_comm _ _)
+    have hl : Real.log (1 / c) ≤ (KPCuspLogShape.dimension F : ℝ) * T := 
+      (div_le_iff₀ hd).mp hRT |>.trans_eq (mul_comm _ _)
     have he := Real.exp_le_exp.mpr hl
     rw [Real.exp_log (div_pos zero_lt_one hc)] at he
     calc
@@ -651,9 +645,3 @@ theorem siegel_cover_of_uniform_frame_bounds {n : ℕ}
     · intro a
       exact exists_embedding_highCusp F Γ (q a) _ T
         (fun γ z hz hγz => (hi a a γ z hz hγz).2)
-
-end DedekindZetaZeroFree.KPCuspSiegel
-
-end
-
-end

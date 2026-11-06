@@ -10,7 +10,6 @@ open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.SArithmeticData
 
 noncomputable section
-set_option autoImplicit false
 variable {F : Type} [Field F] [NumberField F]
 
 open MeasureTheory Filter
@@ -18,7 +17,7 @@ open scoped ENNReal
 
 local instance (v : HeightOneSpectrum (𝓞 F)) : MeasurableSpace (v.adicCompletion F) := borel _
 local instance (v : HeightOneSpectrum (𝓞 F)) : BorelSpace (v.adicCompletion F) := ⟨rfl⟩
-private lemma normalizedHaar (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F)) :
+lemma normalizedHaar (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F)) :
     ∃ μ : Measure (v.adicCompletion F), μ.IsAddHaarMeasure ∧
       μ (v.adicCompletionIntegers F : Set (v.adicCompletion F)) = 1 ∧
       A.finiteTraceHaar v = ENNReal.ofReal (PoissonS.integerVolume F v) • μ := by
@@ -47,14 +46,14 @@ private lemma normalizedHaar (A : SArithmeticData F) (v : HeightOneSpectrum (�
   · simp [Measure.smul_apply, ENNReal.inv_mul_cancel hp.ne' hf]
   · simp only [finiteTraceHaar, div_eq_mul_inv, hO, smul_smul]
     rfl
-private lemma cutoff_scale (v : HeightOneSpectrum (𝓞 F))
+lemma cutoff_scale (v : HeightOneSpectrum (𝓞 F))
     (μ : Measure (v.adicCompletion F)) (c : ℝ≥0∞)
     (a : (v.adicCompletion F)ˣ) (n : ℕ) :
     exteriorRawQuadraticCutoff v (c • μ) a n =
       (c.toReal : ℂ) * exteriorRawQuadraticCutoff v μ a n := by
   unfold exteriorRawQuadraticCutoff
   rw [Measure.restrict_smul, integral_smul_measure]
-  simp [smul_eq_mul]
+  simp
   ring
 
 theorem finiteWeilCutoff_stabilizes (A : SArithmeticData F)
@@ -62,7 +61,7 @@ theorem finiteWeilCutoff_stabilizes (A : SArithmeticData F)
     A.FiniteQuadraticStabilizes v a :=
   A.finiteQuadratic_stabilizes v a
 
-private lemma normalizedRatio_eventually (A : SArithmeticData F)
+lemma normalizedRatio_eventually (A : SArithmeticData F)
     (v : HeightOneSpectrum (𝓞 F)) (a : (v.adicCompletion F)ˣ)
     (μ : Measure (v.adicCompletion F))
     (hμ : A.finiteTraceHaar v = ENNReal.ofReal (PoissonS.integerVolume F v) • μ) :
@@ -89,14 +88,14 @@ def infiniteWeilIndex (A : SArithmeticData F)
     (v : InfinitePlace F) (a : v.Completionˣ) : Circle :=
   ⟨A.complexWeilPhase v a, by simp [complexWeilPhase, complexGamma]⟩
 
-private lemma quadCoeff (A : SArithmeticData F) (σ : F →+* ℂ)
+lemma quadCoeff (A : SArithmeticData F) (σ : F →+* ℂ)
     (v : HeightOneSpectrum (𝓞 F)) (a b : (v.adicCompletion F)ˣ) :
     A.finiteQuadraticHilbertCoefficient v a b =
       σ (((A.actualLocalSymbol v 2 (Or.inl rfl) a b : rootsOfUnity 2 F) : Fˣ) : F) := by
   let r := A.actualLocalSymbol v 2 (Or.inl rfl) a b
   have hr : (r : Fˣ) ∈ rootsOfUnity 2 F := r.property
-  have hs : ((r : Fˣ) : F)^2 = 1 := by
-    exact congrArg Units.val ((mem_rootsOfUnity 2 _).mp hr)
+  have hs : ((r : Fˣ) : F)^2 = 1 := 
+    congrArg Units.val ((mem_rootsOfUnity 2 _).mp hr)
   change (if r = 1 then (1 : ℂ) else -1) = σ ((r : Fˣ) : F)
   rcases (sq_eq_one_iff).mp hs with h | h
   · have he : r = 1 := rootsOfUnity.coe_injective h
@@ -105,8 +104,8 @@ private lemma quadCoeff (A : SArithmeticData F) (σ : F →+* ℂ)
       intro he
       have : (1 : F) = -1 := by simpa [he] using h
       exact (neg_ne_self.mpr (one_ne_zero : (1 : F) ≠ 0)) this.symm
-    rw [if_neg he, h, map_neg, map_one]
-private lemma oddOfNonDyadic (v : HeightOneSpectrum (𝓞 F))
+    simp_all
+lemma oddOfNonDyadic (v : HeightOneSpectrum (𝓞 F))
     (hv : (2 : 𝓞 F) ∉ v.asIdeal) : ringChar (OddLocalResidue v) ≠ 2 := by
   let e : (𝓞 F ⧸ v.asIdeal) ≃+* OddLocalResidue v :=
     (finitePlaceIdealResidueEquivCompletion v).trans
@@ -200,6 +199,3 @@ theorem finiteWeilIndex_exterior_inv_generator
       (A.exterior_raw_quadratic_ratio_eq_gamma_three σ hS B I v hIv hgood hzero p hp a hap ha μ hvol)
   obtain ⟨n, hn, h1⟩ := h.exists
   exact (hn.symm.trans h1).trans he.symm
-
-end
-end DedekindZetaZeroFree.SArithmeticData

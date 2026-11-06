@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Abstract fixed fields in the rational idele-class representation
 
@@ -36,7 +32,7 @@ distinguished base subgroup.  This is `rationalIdeleClassEquivFixed` at
 the bottom intermediate field, transported along mathlib's canonical
 `ℚ ≃ₐ[ℚ] ⊥` equivalence and the identity
 `Gal(ℚ̄/⊥) = baseField`. -/
-noncomputable def rationalIdeleClassEquivBaseFixed :
+def rationalIdeleClassEquivBaseFixed :
     Additive (IdeleClassGroup ℚ) ≃+
       KummerTheory.ambientFixedAddSubgroup
         rationalIdeleClassRepresentation
@@ -159,10 +155,7 @@ theorem rationalIdeleClassEquivBaseFixed_coe
           (Additive.ofMul
             (_root_.relativeIdeleClassBaseChangeMulEquiv
               (K := ℚ) (L := B) cB))).1 :=
-    congrArg
-      (fun x : IdeleClassGroup B =>
-        (rationalIdeleClassEquivFixed B (Additive.ofMul x)).1)
-      hbaseChange.symm
+    by simp_all
   have h2 :
       (rationalIdeleClassEquivFixed B
           (Additive.ofMul
@@ -209,7 +202,7 @@ theorem rationalIdeleClassEquivBaseFixed_coe
         E (RelativeIdeleGroup.classInclusion ℚ E c))
   exact Eq.trans h0 (Eq.trans h1 (Eq.trans h2 (Eq.trans h3 h4)))
 
- noncomputable instance
+ instance
     (K : ClosedSubgroup
       (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
     [hfinite : Finite
@@ -236,7 +229,7 @@ theorem rationalIdeleClassEquivBaseFixed_coe
 finite-index closed subgroup is the corresponding fixed part of the
 rational absolute idele-class representation.  This is the closed-subgroup
 endpoint of `rationalIdeleClassEquivFixed`. -/
-noncomputable def rationalAbstractFixedFieldIdeleClassEquivFixed
+def rationalAbstractFixedFieldIdeleClassEquivFixed
     (K : ClosedSubgroup
       (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
     [hfinite : Finite
@@ -297,17 +290,12 @@ theorem rationalAbstractFixedFieldIdeleClassEquivFixed_coe
       (rationalIdeleClassEquivFixed
         (LocalClassFieldTheory.abstractFixedField
           ℚ (SeparableClosure ℚ) K) c).1 := by
-  let : FiniteDimensional ℚ
-      (LocalClassFieldTheory.abstractFixedField
-        ℚ (SeparableClosure ℚ) K) :=
-    LocalClassFieldTheory.abstractFixedField_finiteDimensional
-      ℚ (SeparableClosure ℚ) K hfinite
   rfl
 
 /-- The relative abstract fixed-field idele class group, identified with
 the fixed part at the upper closed subgroup when finite dimensionality is
 already available. -/
-noncomputable def
+def
     rationalAbstractRelativeFixedFieldIdeleClassEquivFixedOfFiniteDimensional
     (K L : ClosedSubgroup
       (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
@@ -354,8 +342,3 @@ noncomputable def
           (KummerTheory.ambientFixedAddSubgroup
             rationalIdeleClassRepresentation)
           hclosed))
-
-end Reciprocity
-end GlobalClassFieldTheory
-
-end

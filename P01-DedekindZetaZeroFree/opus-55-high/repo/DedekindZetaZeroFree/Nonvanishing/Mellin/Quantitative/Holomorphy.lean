@@ -17,7 +17,7 @@ variable {F : Type} [Field F] [NumberField F]
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 variable (D : FixedData S η)
 
-private lemma g_eq_flat_on :
+lemma g_eq_flat_on :
     EqOn (MellinTransform.g D) (TransformFlat.g D) (Ioi (0 : ℝ)) := by
   intro Z hZ
   have hZ' : (0 : ℝ) < Z := hZ
@@ -25,7 +25,7 @@ private lemma g_eq_flat_on :
   rw [Complex.ofReal_cpow hZ'.le]
   norm_num
 
-private lemma g_top (ε : ℝ) (hε : 0 < ε) :
+lemma g_top (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, ∀ᶠ Z in atTop, ‖MellinTransform.g D Z‖ ≤ C * Z ^ (31 / 32 + ε) := by
   obtain ⟨C, _, h⟩ := Spectral.g_growth D ε hε
   refine ⟨C, eventually_atTop.2 ⟨2, fun Z hZ => ?_⟩⟩
@@ -36,7 +36,7 @@ private lemma g_top (ε : ℝ) (hε : 0 < ε) :
   rw [e]
   exact h Z hZ
 
-private lemma mellin_props (z : ℂ) (hz : z.re < -(31 / 32)) :
+lemma mellin_props (z : ℂ) (hz : z.re < -(31 / 32)) :
     MellinConvergent (MellinTransform.g D) z ∧
       DifferentiableAt ℂ (mellin (MellinTransform.g D)) z := by
   set ε : ℝ := (-(31 / 32) - z.re) / 4 with hεdef

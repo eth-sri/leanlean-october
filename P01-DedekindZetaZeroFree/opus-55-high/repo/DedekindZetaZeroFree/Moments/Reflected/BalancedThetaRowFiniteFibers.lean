@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.Arithmetic.RayClasses.Character
 @[expose] public section
 
 namespace DedekindZetaZeroFree
-noncomputable section
 open scoped Classical
 
 theorem balancedRow_finiteFiber_mass_le
@@ -29,7 +28,7 @@ theorem balancedRow_finiteFiber_mass_le
     simpa [mapped, Multiset.count_map, eq_comm] using hfiber i hi
   calc
     (rows.map (fun x => mass (index x))).sum = (mapped.map mass).sum := by
-      simp [mapped, Multiset.map_map, Function.comp_def]
+      simp [mapped, Multiset.map_map]
     _ = ∑ i ∈ mapped.toFinset, mapped.count i • mass i :=
       Finset.sum_multiset_map_count mapped mass
     _ ≤ ∑ i ∈ mapped.toFinset, (k₀ : ℝ) * mass i := by
@@ -54,12 +53,7 @@ theorem balancedRow_finiteFiber_norm_sq_le
       (k₀ : ℝ) * ∑ i ∈ indices, ‖canonicalB i‖ ^ 2 := by
   have heq : rows.map (fun x => ‖B x‖ ^ 2) =
       rows.map (fun x => ‖canonicalB (index x)‖ ^ 2) := by
-    apply Multiset.map_congr rfl
-    intro x hx
-    rw [hdescend x hx]
+    simp_all
   rw [heq]
   exact balancedRow_finiteFiber_mass_le rows indices index
     (fun i => ‖canonicalB i‖ ^ 2) k₀ hindex hfiber (fun i _ => sq_nonneg _)
-
-end
-end DedekindZetaZeroFree

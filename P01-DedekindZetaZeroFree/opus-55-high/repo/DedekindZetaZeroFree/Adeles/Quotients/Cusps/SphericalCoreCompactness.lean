@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.AngularHaarDisinteg
 
 @[expose] public section
 
-noncomputable section
 open scoped Classical NumberField Topology
 
 namespace DedekindZetaZeroFree.KPGlobalResidualKernel.RawStageL2.TruncatedEstimate.CompactCore.ArchimedeanGeometry
@@ -64,7 +63,3 @@ theorem spherical_core_isCompact
     rw [Set.iUnion_sigma]
   rw [hset]
   exact hglue
-
-end DedekindZetaZeroFree.KPGlobalResidualKernel.RawStageL2.TruncatedEstimate.CompactCore.ArchimedeanGeometry
-
-end

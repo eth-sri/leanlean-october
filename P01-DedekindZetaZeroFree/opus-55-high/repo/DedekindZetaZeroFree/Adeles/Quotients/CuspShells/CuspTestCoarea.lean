@@ -41,7 +41,7 @@ private theorem point_continuous
             continuous_fst)).prodMk continuous_snd.fst))).mul
     (continuous_subtype_val.comp continuous_snd.snd)
 
-private theorem end_on_point
+theorem end_on_point
     (e : KPSmoothActualFlowData.GInfinity F ≃ₜ
       (KPArch.Space (KPCuspLogShape.dimension F) × K (KPCuspLogShape.dimension F)))
     (heBase : ∀ a, (e a).1 = KPMsFixedHaarDisintegration.archBasepoint F a)

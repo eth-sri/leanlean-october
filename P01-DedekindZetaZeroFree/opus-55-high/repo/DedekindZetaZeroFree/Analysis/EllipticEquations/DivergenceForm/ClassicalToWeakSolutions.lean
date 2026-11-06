@@ -91,8 +91,7 @@ def derivativeTest {n : ℕ} {B : LocalBall n}
 @[simp] theorem derivativeTest_apply {n : ℕ} {B : LocalBall n}
     (φ : TestFunction B.toOpens ℂ ⊤) (i : Fin n) (x : Space n) :
     derivativeTest φ i x = coordinateDerivativeList [i] (fun y => φ y) x := by
-  rw [derivativeTest, TestFunction.lineDerivCLM_apply_of_le (by simp)]
-  exact (φ.contDiff.differentiable (by simp) x).lineDeriv_eq_fderiv
+  rfl
 
 theorem integral_mul_coordinateDerivative_test {n : ℕ} (B : LocalBall n)
     {f : Space n → ℂ} (hf : ContDiffOn ℝ (⊤ : ℕ∞) f B.carrier)
@@ -217,7 +216,7 @@ theorem classical_weighted_weak {n : ℕ} (B : LocalBall n)
         Finset.mul_sum, Finset.sum_mul, mul_assoc]
     rw [hp, integral_finset_sum _ (fun i _ => hfi i)]
     simp_rw [integral_mul_coordinateDerivative_test B (hf _) ψ]
-    rw [Finset.sum_neg_distrib]
+    simp
   rw [hflux]
   exact hh.symm
 
@@ -268,7 +267,3 @@ theorem smooth_solution_to_weak {n : ℕ} (outer : LocalBall n)
     exact classical_weighted_weak outer hcρ D z (hu.mono hsub) h heq φ
   · apply l2_norm_eq_functionL2Norm_of_ae
     simpa only [value, coordinateDerivative_zeroIndex] using hrep (zeroIndex n 1)
-
-end DedekindZetaZeroFree.KPContLocalEnergy.SobolevEnergyEstimates
-
-end

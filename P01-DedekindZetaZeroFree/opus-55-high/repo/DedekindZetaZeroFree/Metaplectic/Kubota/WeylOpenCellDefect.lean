@@ -64,9 +64,7 @@ theorem defect_w_open
     linear_combination -rel
   have hs : (s : K) ≠ 1 := by
     intro hs
-    have := a.ne_zero
-    rw [ha, hs, sub_self] at this
-    exact this rfl
+    simp_all
   have st : B s a = 1 := by
     have ae : a = Units.mk0 (1 - (s : K)) (sub_ne_zero.mpr (Ne.symm hs)) :=
       Units.ext ha
@@ -84,6 +82,3 @@ theorem defect_w_open
   simp only [one_mul] at hf ⊢
   rw [hf]
   simpa [a, s, q] using cancel
-
-end KubotaWeylOpenCell
-end DedekindZetaZeroFree

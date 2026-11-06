@@ -45,7 +45,7 @@ theorem parameterScalar_zero_coordinates (s:ℂ) (p:KPCuspCharts.Coordinates F) 
  rw [Homeomorph.symm_apply_apply]
 
 open KPContFlatCuspIncomingEvaluation
-private theorem inv_fix {a c:ℂ} (ha:a≠0) (h:a*c=c) : a⁻¹*c=c := by
+theorem inv_fix {a c:ℂ} (ha:a≠0) (h:a*c=c) : a⁻¹*c=c := by
  calc a⁻¹*c = a⁻¹*(a*c) := congrArg (a⁻¹ * ·) h.symm
       _ = c := by rw [← mul_assoc,inv_mul_cancel₀ ha,one_mul]
 private theorem average_fix {I:Type*} [Fintype I] [Nonempty I] (w:I→ℂ) (c:ℂ)

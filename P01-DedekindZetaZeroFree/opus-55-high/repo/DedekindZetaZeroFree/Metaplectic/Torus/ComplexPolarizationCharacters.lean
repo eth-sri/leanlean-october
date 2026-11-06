@@ -12,20 +12,17 @@ open NumberField IsDedekindDomain
 
 namespace DedekindZetaZeroFree.ProductPolarizationCharacterDescent
 noncomputable section
-set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-private theorem scalar_d (v : KPHilbert.Place F) (z y : (KPHilbert.Completion F v)ˣ) :
+theorem scalar_d (v : KPHilbert.Place F) (z y : (KPHilbert.Completion F v)ˣ) :
     KPScalarSplitCentral.scalarMatrix F v z * KubotaRankTwo.d _ y 1 =
       KubotaRankTwo.d _ (z * y) z := by
   apply Matrix.GeneralLinearGroup.ext
-  intro i j
-  fin_cases i <;> fin_cases j <;>
-    simp [KPScalarSplitCentral.scalarMatrix, Matrix.mul_apply, Matrix.scalar]
+  simp
 
-private theorem scalar_diag_sigma (v : KPHilbert.Place F)
+theorem scalar_diag_sigma (v : KPHilbert.Place F)
     (z y : (KPHilbert.Completion F v)ˣ)
     (hy : KPGlobalCubicIdelePairing.localClass F v y = 1) :
     KPLocalCover.sigmaTwo F ζ hζ v (KPScalarSplitCentral.scalarMatrix F v z)
@@ -42,7 +39,7 @@ private theorem scalar_diag_sigma (v : KPHilbert.Place F)
   simp [KPLocalCover.sigmaTwo, KubotaElementaryLastArgument.tau, scalar_d,
     hx, KubotaRankTwo.det, hB, hOne, KPScalarSplitCentral.scalarMatrix]
 
-private theorem localValue_scalar_diag (v : KPHilbert.Place F)
+theorem localValue_scalar_diag (v : KPHilbert.Place F)
     (e : rootsOfUnity 3 F) (z y : (KPHilbert.Completion F v)ˣ)
     (hy : KPGlobalCubicIdelePairing.localClass F v y = 1) :
     KPGlobalCenterRationalCharacter.localValue F ζ hζ v
@@ -64,10 +61,10 @@ private theorem localValue_scalar_diag (v : KPHilbert.Place F)
       KPStandardLocalRootLifts.A, scalar_diag_sigma F ζ hζ v z y hy]
   have h1 : IsUnit ((KubotaRankTwo.d (KPHilbert.Completion F v) (z * y) z :
       Matrix (Fin 2) (Fin 2) (KPHilbert.Completion F v)) 0 0) := by
-    rw [KubotaRankTwo.coe_d]; exact Units.isUnit (z * y)
+    simp
   have h2 : IsUnit ((KubotaRankTwo.d (KPHilbert.Completion F v) (z * y) z :
       Matrix (Fin 2) (Fin 2) (KPHilbert.Completion F v)) 1 1) := by
-    rw [KubotaRankTwo.coe_d]; exact Units.isUnit z
+    simp
   unfold KPGlobalCenterRationalCharacter.localValue
   simp only [hg, he]
   rw [dif_pos ⟨h1, h2⟩]
@@ -82,10 +79,7 @@ private theorem localValue_scalar_diag (v : KPHilbert.Place F)
   congr 1
   congr 1
   congr 1
-  apply Units.ext
-  show KPGlobalCenterRationalCharacter.localAbs F v (h1.unit * h2.unit⁻¹) =
-    KPGlobalCenterRationalCharacter.localAbs F v y
-  rw [hunit]
+  simp_all
 
 theorem raw_value_on_cube_normal_word (v : KPHilbert.Place F)
     (e : rootsOfUnity 3 F) (y : (KPHilbert.Completion F v)ˣ)
@@ -109,8 +103,7 @@ theorem raw_value_on_cube_normal_word (v : KPHilbert.Place F)
   obtain ⟨z, hz⟩ := hm
   have hrep : g = KPScalarSplitCentral.scalarHom F ζ hζ v z *
       (KPLocalCover.centralInjection F ζ hζ v e * KPStandardLocalRootLifts.A F ζ hζ v y) := by
-    rw [hz]
-    simp only [div_mul_cancel]
+    simp_all
   rw [hrep]
   exact localValue_scalar_diag F ζ hζ v e z y hy
 
@@ -125,7 +118,6 @@ open scoped NumberField Classical NNReal
 open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.ProductPolarizationCharacterDescent
 noncomputable section
-set_option autoImplicit false
 set_option maxHeartbeats 800000
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 variable (w : InfinitePlace F)
@@ -141,13 +133,11 @@ include hS in
   obtain ⟨z, ⟨b, rfl⟩, hz⟩ := hy
   refine ⟨y * b, b, hz.symm.trans ?_⟩
   apply Matrix.GeneralLinearGroup.ext
-  intro i j
-  fin_cases i <;> fin_cases j <;> simp [KPScalarSplitCentral.scalarMatrix, Matrix.mul_apply, Matrix.scalar]
+  simp
 include hS in
  theorem raw_nonzero (g : (S.comap (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inl w)))) : g.val.g 0 0 ≠ 0 ∧ g.val.g 1 1 ≠ 0 := by
   obtain ⟨a,b,h⟩ := raw_diag F ζ hζ w S hS g
-  rw [h, KubotaRankTwo.coe_d]
-  exact ⟨a.ne_zero, b.ne_zero⟩
+  simp_all
  def ratio (g : (S.comap (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inl w)))) : (KPHilbert.Completion F (Sum.inl w))ˣ :=
   Units.mk0 (g.val.g 0 0 / g.val.g 1 1) (div_ne_zero (raw_nonzero F ζ hζ w S hS g).1 (raw_nonzero F ζ hζ w S hS g).2)
  theorem ratio_diag (g : (S.comap (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inl w)))) (a b : (KPHilbert.Completion F (Sum.inl w))ˣ) (h : g.val.g = KubotaRankTwo.d (KPHilbert.Completion F (Sum.inl w)) a b) : ratio F ζ hζ w S hS g = a / b := by
@@ -163,11 +153,10 @@ include hS in
       change x.val.g * y.val.g = _
       rw [hx,hy]
       apply Matrix.GeneralLinearGroup.ext
-      intro i j
-      fin_cases i <;> fin_cases j <;> simp [Matrix.mul_apply]
+      simp
     rw [ratio_diag F ζ hζ w S hS x a b hx, ratio_diag F ζ hζ w S hS y c d hy, ratio_diag F ζ hζ w S hS (x*y) (a*c) (b*d) hxy]
     exact mul_div_mul_comm a c b d
-private theorem ratio_cont : Continuous (ratioHom F ζ hζ w S hS) := by
+theorem ratio_cont : Continuous (ratioHom F ζ hζ w S hS) := by
   letI : TopologicalSpace (rootsOfUnity 3 F) := ⊥
   have hc : Continuous (fun g : (S.comap (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inl w))) => g.val.g) := by
     have ht : Continuous (KPLocalChartTopology.complexCoordinates F ζ hζ w) := continuous_induced_dom
@@ -182,7 +171,7 @@ private theorem ratio_cont : Continuous (ratioHom F ζ hζ w S hS) := by
     exact (h00.div h11 (fun g => (raw_nonzero F ζ hζ w S hS g).2)).inv₀ (fun g => div_ne_zero (raw_nonzero F ζ hζ w S hS g).1 (raw_nonzero F ζ hζ w S hS g).2)
  def normHom : (KPHilbert.Completion F (Sum.inl w))ˣ →* (ℝ≥0)ˣ :=
   (powMonoidHom 2).comp (Units.map nnnormHom.toMonoidHom)
-private theorem normHom_formula (y : (KPHilbert.Completion F (Sum.inl w))ˣ) :
+theorem normHom_formula (y : (KPHilbert.Completion F (Sum.inl w))ˣ) :
     normHom F w y = Units.mk0 (KPGlobalCenterRationalCharacter.localAbs F (Sum.inl w) y) (ne_of_gt (KPGlobalCenterRationalCharacter.localAbs_pos F (Sum.inl w) y)) := by
   apply Units.ext
   rfl
@@ -195,14 +184,14 @@ private theorem normHom_formula (y : (KPHilbert.Completion F (Sum.inl w))ˣ) :
  def rawChar : (S.comap (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inl w))) →* ℂˣ :=
   ((KPGlobalTorusFunctionData.iota F ζ hζ).comp ((sheetHom F ζ hζ w).comp (S.comap (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inl w))).subtype)) *
   (KPGlobalCenterRationalCharacter.positiveComplex.comp (KPGlobalCenterRationalCharacter.sixthPower.comp ((normHom F w).comp (ratioHom F ζ hζ w S hS))))
-private theorem rawChar_cont : Continuous (rawChar F ζ hζ w S hS) := by
+theorem rawChar_cont : Continuous (rawChar F ζ hζ w S hS) := by
   letI : TopologicalSpace (rootsOfUnity 3 F) := ⊥
   letI : DiscreteTopology (rootsOfUnity 3 F) := ⟨rfl⟩
   have hc : Continuous (KPLocalChartTopology.complexCoordinates F ζ hζ w) := continuous_induced_dom
   have hs : Continuous (sheetHom F ζ hζ w) := continuous_snd.comp hc
   have hi : Continuous (KPGlobalTorusFunctionData.iota F ζ hζ) := continuous_of_discreteTopology
-  have hn : Continuous (normHom F w) := by
-    exact (continuous_pow 2).comp (Continuous.units_map _ continuous_nnnorm)
+  have hn : Continuous (normHom F w) := 
+    (continuous_pow 2).comp (Continuous.units_map _ continuous_nnnorm)
   have h6 : Continuous KPGlobalCenterRationalCharacter.sixthPower :=
     Continuous.units_map _ (NNReal.continuous_rpow_const (by positivity))
   have hp : Continuous KPGlobalCenterRationalCharacter.positiveComplex :=
@@ -210,21 +199,21 @@ private theorem rawChar_cont : Continuous (rawChar F ζ hζ w S hS) := by
   exact (hi.comp (hs.comp continuous_subtype_val)).mul (hp.comp (h6.comp (hn.comp (ratio_cont F ζ hζ w S hS))))
  def toS : (S.comap (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inl w))) →* S :=
   (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inl w)).subgroupComap S
-private theorem toS_surj : Function.Surjective (toS F ζ hζ w S) := by
+theorem toS_surj : Function.Surjective (toS F ζ hζ w S) := by
   intro z
   obtain ⟨g,hg⟩ := QuotientGroup.mk'_surjective (KPPGLLocalCover.splitScalarSubgroup F ζ hζ (Sum.inl w)) z.val
   refine ⟨⟨g, ?_⟩, Subtype.ext hg⟩
   change KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inl w) g ∈ S
   rw [show KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inl w) g = z.val from hg]
   exact z.property
-private theorem toS_open : IsOpenQuotientMap (toS F ζ hζ w S) := by
+theorem toS_open : IsOpenQuotientMap (toS F ζ hζ w S) := by
   letI : IsTopologicalGroup (KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inl w)) := (KPLocalChartTopology.complex_topological_cover F ζ hζ w).2.2.1
   have hc : Continuous (toS F ζ hζ w S) :=
     (QuotientGroup.continuous_mk.comp continuous_subtype_val).subtype_mk _
   have ho : IsOpenMap (toS F ζ hζ w S) :=
     (@QuotientGroup.isOpenMap_coe _ _ _ _ (KPPGLLocalCover.splitScalarSubgroup F ζ hζ (Sum.inl w))).restrictPreimage (S : Set (KPPGLLocalCover.CubicPGL2 F ζ hζ (Sum.inl w)))
   exact ⟨toS_surj F ζ hζ w S, hc, ho⟩
-private theorem toS_ker : (toS F ζ hζ w S).ker ≤ (rawChar F ζ hζ w S hS).ker := by
+theorem toS_ker : (toS F ζ hζ w S).ker ≤ (rawChar F ζ hζ w S hS).ker := by
   intro g hg
   have hg1 : KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inl w) g.val = 1 := congrArg Subtype.val hg
   obtain ⟨a,ha⟩ := (QuotientGroup.eq_one_iff g.val).mp hg1
@@ -262,8 +251,8 @@ theorem complex_diagonal_subgroup_character (w : InfinitePlace F)
   let c := rawChar F ζ hζ w S hS
   have hk : f.ker ≤ c.ker := toS_ker F ζ hζ w S hS
   let ω : S →* ℂˣ := f.liftOfSurjective hf ⟨c, hk⟩
-  have hw (g : (S.comap (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inl w)))) : ω (f g) = c g := by
-    exact MonoidHom.liftOfRightInverse_comp_apply f (Function.surjInv hf) (Function.rightInverse_surjInv hf) ⟨c, hk⟩ g
+  have hw (g : (S.comap (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inl w)))) : ω (f g) = c g := 
+    MonoidHom.liftOfRightInverse_comp_apply f (Function.surjInv hf) (Function.rightInverse_surjInv hf) ⟨c, hk⟩ g
   have hc : Continuous ω := by
     apply (toS_open F ζ hζ w S).continuous_comp_iff.mp
     have heq : ω ∘ f = c := funext hw
@@ -308,7 +297,6 @@ open scoped NumberField Classical BigOperators NNReal
 open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.ProductPolarization
 noncomputable section
-set_option autoImplicit false
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 abbrev D := KPGlobalCubicIdelePairing.D F
@@ -327,12 +315,10 @@ def diagonalHom (v : KPHilbert.Place F) :
   toFun y := KubotaRankTwo.d (KPHilbert.Completion F v) y 1
   map_one' := by
     apply Matrix.GeneralLinearGroup.ext
-    intro i j
-    fin_cases i <;> fin_cases j <;> simp
+    simp
   map_mul' x y := by
     apply Matrix.GeneralLinearGroup.ext
-    intro i j
-    fin_cases i <;> fin_cases j <;> simp [Matrix.mul_apply]
+    simp
 
 def localOrdinaryTorus (v : KPHilbert.Place F) :
     Subgroup (KPPGLLocalCover.LocalPGL2 F v) :=
@@ -398,9 +384,9 @@ theorem localRatioValue_mul (v : KPHilbert.Place F) (g h : LocalE F ζ hζ v) :
   apply localRatioValue_eq F ζ hζ v (g := g * h)
   have hgh : KPPGLLocalCover.projection F ζ hζ v (↑(g * h) : KPPGLLocalCover.CubicPGL2 F ζ hζ v) =
       KPPGLLocalCover.projection F ζ hζ v ↑g * KPPGLLocalCover.projection F ζ hζ v ↑h := by
-    rw [show (↑(g * h) : KPPGLLocalCover.CubicPGL2 F ζ hζ v) = ↑g * ↑h from rfl, map_mul]
+    simp
   rw [hgh, ← localRatioValue_spec F ζ hζ v g, ← localRatioValue_spec F ζ hζ v h]
-  rw [map_mul, map_mul]
+  simp
 
 def localRatio (v : KPHilbert.Place F) :
     LocalE F ζ hζ v →* (KPHilbert.Completion F v)ˣ where
@@ -462,9 +448,7 @@ theorem fullnorm_bridgefinite (q : HeightOneSpectrum (𝓞 F))
   rw [show (1 / 6 : ℂ) = ((1 / 6 : ℝ) : ℂ) by norm_num,
     KPLocalPrincipalSeriesNormWeights.exp_mul_log_real
       (KPLocalPrincipalSeries.localAbs_pos _ _) _, normalizedLocalAbs_norm F q y]
-  simp [KPGlobalCenterRationalCharacter.positiveComplex,
-    KPGlobalCenterRationalCharacter.sixthPower, KPGlobalCenterRationalCharacter.localAbs,
-    NNReal.coe_rpow]
+  rfl
  lemma finiteH_eq (q : HeightOneSpectrum (𝓞 F)) :
     localTorus F ζ hζ (Sum.inr q) = ActualFiniteTorus.H F ζ hζ q := by
   letI : (KPPGLLocalCover.scalarSubgroup F (Sum.inr q)).Normal :=
@@ -476,7 +460,7 @@ theorem fullnorm_bridgefinite (q : HeightOneSpectrum (𝓞 F))
     refine ⟨diagonalHom F (Sum.inr q) y, ?_, ?_, ?_⟩
     · exact congrArg (KPLocalSmoothRepresentation.ordinaryPGLMap F q) hy
     · simp [diagonalHom, KubotaRankTwo.d]
-    · simp [diagonalHom, KubotaRankTwo.d]
+    rfl
   · intro g hg
     let h : ActualFiniteTorus.H F ζ hζ q := ⟨g,hg⟩
     have hn := (ActualFiniteTorus.actual_torus_normal_form F ζ hζ q).2.2.1 h
@@ -486,9 +470,7 @@ theorem fullnorm_bridgefinite (q : HeightOneSpectrum (𝓞 F))
     simp only [ActualFiniteTorus.normalWord, map_mul]
     have hp : KPPGLLocalCover.projection F ζ hζ (Sum.inr q)
       (KPPGLLocalCover.centralInjection F ζ hζ (Sum.inr q) (ActualFiniteTorus.sheet F ζ hζ q h)) = 1 := by
-      apply MonoidHom.mem_ker.mp
-      rw [← KPPGLLocalCover.range_centralInjection_eq_ker_projection]
-      exact ⟨_, rfl⟩
+      rfl
     rw [hp, one_mul]
     rfl
 
@@ -502,7 +484,7 @@ private lemma finite_coordinate (q : HeightOneSpectrum (𝓞 F)) (g : LocalE F �
   rw [KPRankOneInduction.borelRatio_eq _ _ _ (diagonalHom F (Sum.inr q) (localRatio F ζ hζ (Sum.inr q) g))]
   · simp [diagonalHom, KubotaRankTwo.d]
   · exact congrArg (KPLocalSmoothRepresentation.ordinaryPGLMap F q) (localRatioValue_spec F ζ hζ (Sum.inr q) g)
-  · simp [diagonalHom, KubotaRankTwo.d]
+  rfl
  lemma finite_center_eq (q : HeightOneSpectrum (𝓞 F)) :
     localCenter F ζ hζ (Sum.inr q) = Subgroup.center (LocalE F ζ hζ (Sum.inr q)) := by
   ext x
@@ -529,8 +511,8 @@ private lemma finite_coordinate (q : HeightOneSpectrum (𝓞 F)) (g : LocalE F �
     intro y
     obtain ⟨y,rfl⟩ := (finiteEquiv F ζ hζ q).surjective y
     simpa using congrArg (finiteEquiv F ζ hζ q) (hh y)⟩
-  map_one' := by ext; rfl
-  map_mul' x y := by ext; rfl
+  map_one' := by rfl
+  map_mul' x y := by rfl
   continuous_toFun := by
     apply Continuous.subtype_mk
     apply Continuous.subtype_mk
@@ -540,7 +522,7 @@ private lemma finite_coordinate (q : HeightOneSpectrum (𝓞 F)) (g : LocalE F �
     localCenter F ζ hζ (Sum.inr q) →ₜ* ℂˣ :=
   (ActualFiniteTorus.prescribedCenterCharacter F ζ hζ q).comp (finiteCenterMap F ζ hζ q)
 
-private lemma finiteOmega_normal_formula (q : HeightOneSpectrum (𝓞 F))
+lemma finiteOmega_normal_formula (q : HeightOneSpectrum (𝓞 F))
     (z : localCenter F ζ hζ (Sum.inr q)) (e : rootsOfUnity 3 F)
     (y : (q.adicCompletion F)ˣ)
     (hz : z.val.val = ActualFiniteTorus.normalWord F ζ hζ q e y) :
@@ -558,20 +540,19 @@ private lemma finiteOmega_normal_formula (q : HeightOneSpectrum (𝓞 F))
   rw [hs.1, hs.2, ← fullnorm_bridgefinite]
   rfl
 
-private lemma local_normal_exists (v : KPHilbert.Place F) (g : LocalE F ζ hζ v) :
+lemma local_normal_exists (v : KPHilbert.Place F) (g : LocalE F ζ hζ v) :
     ∃ e, g.val = KPPGLLocalCover.centralInjection F ζ hζ v e *
       KPPGLLocalCover.A F ζ hζ v (localRatio F ζ hζ v g) := by
   letI : (KPPGLLocalCover.scalarSubgroup F v).Normal := KPPGLLocalCover.scalarSubgroup_normal F v
   let p := KPPGLLocalCover.projection F ζ hζ v
   have hp : p (KPPGLLocalCover.A F ζ hζ v (localRatio F ζ hζ v g)) = p g.val := localRatioValue_spec F ζ hζ v g
   have hk : g.val * (KPPGLLocalCover.A F ζ hζ v (localRatio F ζ hζ v g))⁻¹ ∈ p.ker := by
-    change p (_ * _) = 1
-    rw [map_mul, map_inv, hp, mul_inv_cancel]
+    simp_all
   rw [show p.ker = (KPPGLLocalCover.centralInjection F ζ hζ v).range from
     (KPPGLLocalCover.range_centralInjection_eq_ker_projection F ζ hζ v).symm] at hk
   obtain ⟨e,he⟩ := hk
   exact ⟨e, by rw [he]; simp⟩
-private lemma complex_center_eq (w : InfinitePlace F) :
+lemma complex_center_eq (w : InfinitePlace F) :
     localCenter F ζ hζ (Sum.inl w) = Subgroup.center (LocalE F ζ hζ (Sum.inl w)) := by
   have htop : localCenter F ζ hζ (Sum.inl w) = ⊤ := by
     ext x
@@ -601,7 +582,7 @@ private lemma complex_center_eq (w : InfinitePlace F) :
     have h3 := (zcomm e (KPPGLLocalCover.A F ζ hζ (Sum.inl w) (localRatio F ζ hζ (Sum.inl w) y))).symm
     have h4 := ac (localRatio F ζ hζ (Sum.inl w) y) (localRatio F ζ hζ (Sum.inl w) x)
     exact ((h1.mul_right h2).mul_left (h3.mul_right h4)).eq
-  · exact le_top
+  simp
 
 theorem local_center_character (v : KPHilbert.Place F) :
     localCenter F ζ hζ v = Subgroup.center (LocalE F ζ hζ v) ∧
@@ -631,11 +612,10 @@ theorem local_center_character (v : KPHilbert.Place F) :
           F ζ hζ w S hS
       let j : localCenter F ζ hζ (Sum.inl w) →ₜ* S := {
         toFun := fun z => ⟨z.val.val, ⟨z.val, z.property, rfl⟩⟩
-        map_one' := by ext; rfl
-        map_mul' := by intros; ext; rfl
+        map_one' := by rfl
+        map_mul' := by intros; rfl
         continuous_toFun := by
-          apply Continuous.subtype_mk
-          exact continuous_subtype_val.comp continuous_subtype_val }
+          fun_prop }
       refine ⟨ω.comp j, ?_⟩
       intro z g hg
       obtain ⟨e, he⟩ := local_normal_exists F ζ hζ (Sum.inl w) z.val
@@ -679,8 +659,3 @@ def IsMaximalIsotropic {G : Type*} [CommGroup G]
 
 def localPreimage (v : KPHilbert.Place F) (L : Subgroup (LocalD F v)) :
     Subgroup (LocalE F ζ hζ v) := L.comap (localProjection F ζ hζ v)
-
-end
-end DedekindZetaZeroFree.ProductPolarization
-
-end

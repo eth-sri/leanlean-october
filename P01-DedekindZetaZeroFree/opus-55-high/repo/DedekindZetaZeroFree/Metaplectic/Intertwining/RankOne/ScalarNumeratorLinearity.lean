@@ -36,7 +36,7 @@ def actualScalarNumerator
   Classical.choose
     (actual_scalar_numerator_coordinate F ζ hζ q S P J hJ μ hμ π hπ ε φ k h)
 
-private lemma standardIntegralCoordinate_eq_integral
+lemma standardIntegralCoordinate_eq_integral
     (s : ℂ) (φ : compactPicture S.borel P S.iwasawa (sourceSign ε))
     (k : S.iwasawa.compact.toOpenSubgroup) (h : actualTorus F ζ hζ q) :
     standardIntegralCoordinate (LocalField F q) S.borel P S.iwasawa μ ε s φ
@@ -44,7 +44,7 @@ private lemma standardIntegralCoordinate_eq_integral
       ∫ x, actualStandardIntegrand F ζ hζ q S P ε s φ k h x ∂μ :=
   rfl
 
-private lemma actualStandardIntegrand_add_smul
+lemma actualStandardIntegrand_add_smul
     (s : ℂ) (k : S.iwasawa.compact.toOpenSubgroup) (h : actualTorus F ζ hζ q)
     (a b : ℂ)
     (φ ψ : compactLevel S.borel P S.iwasawa (sourceSign ε) J) :
@@ -63,7 +63,7 @@ private lemma actualStandardIntegrand_add_smul
   simp only [actualStandardIntegrand, hcoe, map_add, map_smul, Pi.add_apply, Pi.smul_apply]
   try simp
 
-private lemma standardIntegralCoordinate_add_smul
+lemma standardIntegralCoordinate_add_smul
     (hJ' : (J.toOpenSubgroup : Subgroup (ActualCover F ζ hζ q)) ≤
       S.iwasawa.compact.toOpenSubgroup)
     (hμ' : μ ((valuation (LocalField F q)).integer : Set (LocalField F q)) = 1)
@@ -96,25 +96,23 @@ private lemma standardIntegralCoordinate_add_smul
           (φ : compactPicture S.borel P S.iwasawa (sourceSign ε)) k h x +
         b * actualStandardIntegrand F ζ hζ q S P ε s
           (ψ : compactPicture S.borel P S.iwasawa (sourceSign ε)) k h x := by
-    funext x
-    simpa only [Pi.add_apply, Pi.smul_apply, smul_eq_mul] using congrFun hlin x
+    simp_all
   rw [standardIntegralCoordinate_eq_integral, standardIntegralCoordinate_eq_integral,
     standardIntegralCoordinate_eq_integral, hcongr,
     integral_add (h1.const_mul a) (h2.const_mul b), integral_const_mul, integral_const_mul]
 
-private lemma finsupp_eval_add_smul (u : ℂ) (a b : ℂ) (p1 p2 : ℤ →₀ ℂ) :
+lemma finsupp_eval_add_smul (u : ℂ) (a b : ℂ) (p1 p2 : ℤ →₀ ℂ) :
     (a • p1 + b • p2).sum (fun n c => u ^ n * c) =
       a * p1.sum (fun n c => u ^ n * c) + b * p2.sum (fun n c => u ^ n * c) := by
   let ev : (ℤ →₀ ℂ) →ₗ[ℂ] ℂ :=
     Finsupp.lsum ℂ fun n : ℤ => LinearMap.mulLeft ℂ (u ^ n)
   have hev : ∀ p : ℤ →₀ ℂ, ev p = p.sum (fun n c => u ^ n * c) := by
     intro p
-    rw [Finsupp.lsum_apply]
     rfl
   rw [← hev (a • p1 + b • p2), ← hev p1, ← hev p2, map_add, map_smul, map_smul,
     smul_eq_mul, smul_eq_mul]
 
-private theorem actualScalarNumerator_add_smul
+theorem actualScalarNumerator_add_smul
     (k : S.iwasawa.compact.toOpenSubgroup) (h : actualTorus F ζ hζ q)
     (a b : ℂ)
     (φ ψ : compactLevel S.borel P S.iwasawa (sourceSign ε) J) :
@@ -146,7 +144,3 @@ theorem actual_scalar_numerator_linear
     simpa using actualScalarNumerator_add_smul F ζ hζ q S P J hJ μ hμ π hπ ε k h 1 1 φ ψ
   · intro c φ
     simpa using actualScalarNumerator_add_smul F ζ hζ q S P J hJ μ hμ π hπ ε k h c 0 φ φ
-
-end DedekindZetaZeroFree.KPRankOneShellRepair
-
-end

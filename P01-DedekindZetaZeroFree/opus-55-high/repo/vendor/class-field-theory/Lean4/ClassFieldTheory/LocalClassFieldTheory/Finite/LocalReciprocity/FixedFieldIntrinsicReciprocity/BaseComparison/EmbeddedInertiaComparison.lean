@@ -12,17 +12,12 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Embedded inertia comparison
 
 This module transports extension inertia between an intrinsic finite extension and its realization inside an ambient separable closure.
 -/
 
-noncomputable section
 
 namespace LocalClassFieldTheory
 
@@ -113,8 +108,8 @@ theorem
         Gal(SeparableClosure K / K)).toSubgroup ⧸
         extensionSubgroup
           (baseField Gal(SeparableClosure K / K))
-          H₀ (le_baseField H₀)) := by
-    exact ambientEmbeddedAbsoluteQuotientFinite K F i
+          H₀ (le_baseField H₀)) := 
+    ambientEmbeddedAbsoluteQuotientFinite K F i
   let H : FiniteAbstractField
       Gal(SeparableClosure K / K) :=
     ⟨H₀, ambientEmbeddedAbsoluteQuotientFinite K F i⟩
@@ -149,8 +144,8 @@ theorem
         K F E j e tau).1 htauExtension, ?_⟩
     have htauRF :
         tauRF ∈
-          (localResidueDatum F).fieldInertiaWithin RF.field := by
-      exact htauInertia
+          (localResidueDatum F).fieldInertiaWithin RF.field := 
+      htauInertia
     have hnormalizedRF :
         (localResidueDatum F).normalizedDegree RF tauRF = 1 := by
       change
@@ -172,8 +167,8 @@ theorem
         K F E j e tau).2 hpsiExtension, ?_⟩
     have hpsiTauRH :
         psiTauRH ∈
-          (localResidueDatum K).fieldInertiaWithin RH.field := by
-      exact hpsiInertia
+          (localResidueDatum K).fieldInertiaWithin RH.field := 
+      hpsiInertia
     have hnormalizedRH :
         (localResidueDatum K).normalizedDegree RH psiTauRH = 1 := by
       change
@@ -286,7 +281,3 @@ theorem
       psi.apply_symm_apply sigma
     rw [htauImage]
     exact hsigma
-
-end LocalClassFieldTheory
-
-end

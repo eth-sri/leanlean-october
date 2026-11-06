@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # The completed theta-intertwining theorem: primitive division points in the completed level
 
@@ -31,7 +26,6 @@ algebraic input for extending arithmetic Frobenius to the completed level.
 noncomputable section
 
 open scoped LaurentSeries Polynomial PowerSeries
-
 
 universe u v
 
@@ -52,7 +46,7 @@ noncomputable local instance equalCharacteristicCompletedPrimitiveActionBaseAlge
   laurentSeriesCoefficientAlgebra
 
 /-- The coefficientwise Laurent base map into the completed level field. -/
-noncomputable def equalCharacteristicCompletedLevelBaseHom
+def equalCharacteristicCompletedLevelBaseHom
     (F : LocalField.{u, v} K) (n : ℕ) :
     F.residueField⸨X⸩ →+*
       equalCharacteristicCompletedLevelField F n :=
@@ -63,7 +57,7 @@ noncomputable def equalCharacteristicCompletedLevelBaseHom
       (equalCharacteristicCompletedUnramifiedField F.residueField))
 
 /-- The residue-field coefficient map into the completed level. -/
-noncomputable def equalCharacteristicCompletedLevelResidueHom
+def equalCharacteristicCompletedLevelResidueHom
     (F : LocalField.{u, v} K) (n : ℕ) :
     F.residueField →+* equalCharacteristicCompletedLevelField F n :=
   (equalCharacteristicCompletedLevelBaseHom F n).comp
@@ -125,26 +119,13 @@ theorem equalCharacteristicCompletedPrimitiveRoot_not_torsion_pred
             equalCharacteristicCompletedLevelBaseHom F n 0 :=
       (equalCharacteristicCompletedLevelBaseHom F n).injective.ne
         (equalCharacteristicLaurentUniformizer_ne_zero F)
-    exact hne (by simpa using heq)
+    simp_all
   · exact Nat.sub_ne_zero_of_lt
       (Finite.one_lt_card : 1 < Nat.card F.residueField)
 
-/-- In particular, the chosen completed primitive point is nonzero. -/
-theorem equalCharacteristicCompletedPrimitiveRoot_ne_zero
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (n : ℕ) :
-    equalCharacteristicCompletedPrimitiveRoot F n ≠ 0 := by
-  intro hzero
-  apply equalCharacteristicCompletedPrimitiveRoot_not_torsion_pred F n
-  change equalCharacteristicLubinTateAmbientPiIterate F
-      (equalCharacteristicCompletedLevelUniformizer F n) n
-      (equalCharacteristicCompletedPrimitiveRoot F n) = 0
-  rw [hzero, map_zero]
-
 /-- The bracket image of the completed primitive point attached to a
 power-series unit. -/
-noncomputable def equalCharacteristicCompletedUnitRoot
+def equalCharacteristicCompletedUnitRoot
     (F : LocalField.{u, v} K)
     [CharP K F.residueCharacteristic]
     (n : ℕ) (a : F.residueField⟦X⟧ˣ) :
@@ -231,18 +212,17 @@ theorem equalCharacteristicCompletedAmbientBracket_mem_adjoin
   have hz : z ∈ S := Algebra.subset_adjoin (Set.mem_singleton z)
   have ht : t ∈ S := by
     change algebraMap A E (equalCharacteristicCompletedBaseUniformizer F) ∈ S
-    exact S.algebraMap_mem _
+    simp
   have hcoeff (c : F.residueField) :
       equalCharacteristicCompletedLevelResidueHom F n c ∈ S := by
     rw [equalCharacteristicCompletedLevelResidueHom, RingHom.comp_apply,
       equalCharacteristicCompletedLevelBaseHom, RingHom.comp_apply]
-    exact S.algebraMap_mem _
+    simp
   have hiterate (i : ℕ) :
       equalCharacteristicLubinTateAmbientPiIterate F t i z ∈ S := by
     induction i with
     | zero =>
-        rw [equalCharacteristicLubinTateAmbientPiIterate, pow_zero]
-        exact hz
+        simp_all
     | succ i ih =>
         rw [equalCharacteristicLubinTateAmbientPiIterate_succ,
           ← equalCharacteristicLubinTateAmbientPiEnd_iterate,
@@ -253,7 +233,7 @@ theorem equalCharacteristicCompletedAmbientBracket_mem_adjoin
 
 /-- The image of the completed primitive point attached to a visible unit
 parameter. -/
-noncomputable def equalCharacteristicCompletedUnitParameterRoot
+def equalCharacteristicCompletedUnitParameterRoot
     (F : LocalField.{u, v} K)
     [CharP K F.residueCharacteristic]
     (n : ℕ) (a : equalCharacteristicLubinTateUnitParameter F n) :
@@ -303,7 +283,7 @@ theorem equalCharacteristicCompletedPrimitivePolynomial_separable
 
 /-- A visible unit parameter, regarded as an element of the full root set
 in the completed splitting field. -/
-noncomputable def equalCharacteristicCompletedUnitParameterRootSet
+def equalCharacteristicCompletedUnitParameterRootSet
     (F : LocalField.{u, v} K)
     [CharP K F.residueCharacteristic]
     (n : ℕ) (a : equalCharacteristicLubinTateUnitParameter F n) :
@@ -373,18 +353,17 @@ theorem equalCharacteristicCompletedUnitParameterRoot_mem_adjoin
   have hx : x ∈ S := Algebra.subset_adjoin (Set.mem_singleton x)
   have ht : t ∈ S := by
     change algebraMap A E (equalCharacteristicCompletedBaseUniformizer F) ∈ S
-    exact S.algebraMap_mem _
+    simp
   have hcoeff (c : F.residueField) :
       equalCharacteristicCompletedLevelResidueHom F n c ∈ S := by
     rw [equalCharacteristicCompletedLevelResidueHom, RingHom.comp_apply,
       equalCharacteristicCompletedLevelBaseHom, RingHom.comp_apply]
-    exact S.algebraMap_mem _
+    simp
   have hiterate (i : ℕ) :
       equalCharacteristicLubinTateAmbientPiIterate F t i x ∈ S := by
     induction i with
     | zero =>
-        rw [equalCharacteristicLubinTateAmbientPiIterate, pow_zero]
-        exact hx
+        simp_all
     | succ i ih =>
         rw [equalCharacteristicLubinTateAmbientPiIterate_succ,
           ← equalCharacteristicLubinTateAmbientPiEnd_iterate,
@@ -476,17 +455,14 @@ theorem equalCharacteristicCompletedUnitRoot_adjoin_eq_top
     have hmul :
         ((a⁻¹ : F.residueField⟦X⟧ˣ) : F.residueField⟦X⟧) *
             (↑a : F.residueField⟦X⟧) = 1 := by
-      exact Units.inv_mul a
+      simp
     rw [hmul]
     have hC := congrArg
       (fun f : AddMonoid.End (equalCharacteristicCompletedLevelField F n) ↦
         f x)
       (equalCharacteristicLubinTateAmbientBracket_C F ι t n
         (1 : F.residueField))
-    change equalCharacteristicLubinTateAmbientBracket F ι t (n + 1)
-        (PowerSeries.C 1) x =
-      equalCharacteristicLubinTateAmbientCoefficientEnd F ι 1 x at hC
-    simpa using hC
+    simp_all
   have hxmem :
       x ∈ Algebra.adjoin
         (equalCharacteristicCompletedUnramifiedField F.residueField)
@@ -502,8 +478,7 @@ theorem equalCharacteristicCompletedUnitRoot_adjoin_eq_top
           (equalCharacteristicCompletedUnramifiedField F.residueField)
           ({y} : Set (equalCharacteristicCompletedLevelField F n)) := by
     apply Algebra.adjoin_le
-    intro z hz
-    simpa only [Set.mem_singleton_iff] using hz ▸ hxmem
+    simp_all
   rw [show Algebra.adjoin
       (equalCharacteristicCompletedUnramifiedField F.residueField)
       ({x} : Set (equalCharacteristicCompletedLevelField F n)) = ⊤ by
@@ -542,7 +517,7 @@ theorem equalCharacteristicCompletedPrimitiveRoot_minpoly
   exact hmin.symm
 
 /-- The power basis generated by the completed primitive division point. -/
-noncomputable def equalCharacteristicCompletedPrimitivePowerBasis
+def equalCharacteristicCompletedPrimitivePowerBasis
     (F : LocalField.{u, v} K)
     [CharP K F.residueCharacteristic]
     (n : ℕ) :
@@ -562,8 +537,3 @@ theorem equalCharacteristicCompletedPrimitivePowerBasis_gen
     (equalCharacteristicCompletedPrimitivePowerBasis F n).gen =
       equalCharacteristicCompletedPrimitiveRoot F n :=
   PowerBasis.ofAdjoinEqTop_gen _ _
-
-end EqualCharacteristic
-end LubinTate
-
-end

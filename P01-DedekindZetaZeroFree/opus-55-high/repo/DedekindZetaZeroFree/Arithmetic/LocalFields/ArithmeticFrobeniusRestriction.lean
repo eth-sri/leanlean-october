@@ -56,5 +56,3 @@ theorem arithmeticFrobeniusRestrictUnramifiedBottom
   have hratio := hrestrict.mul_inv_mem_inertia hchosen
   rw [(unramifiedIffInertiaBot p wE hwE).mp hE, Subgroup.mem_bot] at hratio
   exact mul_inv_eq_one.mp hratio
-
-end DedekindZetaZeroFree.AbelianQuotient

@@ -4,20 +4,19 @@ public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.Complex.
 
 @[expose] public section
 
-noncomputable section
 open MeasureTheory
 open scoped Topology
 namespace DedekindZetaZeroFree.CurrentComplexBoundary
 open KPCplxCharacterHaar KPCplxPrincipalSeriesCharts KPCplxPrincipalSeriesJets
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
-private theorem open_le (s : ℝ) (f : PrincipalSeries s) (z : ℂ) (hz : ‖z‖ ≤ 1) :
+theorem open_le (s : ℝ) (f : PrincipalSeries s) (z : ℂ) (hz : ‖z‖ ≤ 1) :
     ‖openCoordinate f z‖ ≤ chartSeminorm s 0 f := by
   have h := (jetLe 0 _ f.property.2.1 z (by simpa using hz)).trans
     (le_max_left (jetSup 0 (openCoordinate f)) (jetSup 0 (infinityCoordinate f)))
   change ‖iteratedFDeriv ℝ 0 (openCoordinate f) z‖ ≤ chartSeminorm s 0 f at h
   simpa only [norm_iteratedFDeriv_zero] using h
-private theorem infinity_le (s : ℝ) (f : PrincipalSeries s) (z : ℂ) (hz : ‖z‖ ≤ 1) :
+theorem infinity_le (s : ℝ) (f : PrincipalSeries s) (z : ℂ) (hz : ‖z‖ ≤ 1) :
     ‖infinityCoordinate f z‖ ≤ chartSeminorm s 0 f := by
   have h := (jetLe 0 _ f.property.2.2 z (by simpa using hz)).trans
     (le_max_right (jetSup 0 (openCoordinate f)) (jetSup 0 (infinityCoordinate f)))
@@ -49,8 +48,8 @@ theorem boundary_product_bound (s : ℝ) (f : PrincipalSeries s) (g : PrincipalS
         (1 + ‖z‖ ^ 2) ^ (-2 : ℝ) := by
   let p := chartSeminorm s 0 f
   let q := chartSeminorm (-s) 0 g
-  have hp : 0 ≤ p := (norm_nonneg _).trans (open_le s f 0 (by simp))
-  have hq : 0 ≤ q := (norm_nonneg _).trans (open_le (-s) g 0 (by simp))
+  have hp : 0 ≤ p := by positivity
+  have hq : 0 ≤ q := by positivity
   have hd : 0 < (1 + ‖z‖ ^ 2)^2 := by positivity
   have hbd : ‖star (openCoordinate f z) * openCoordinate g z‖ * (1 + ‖z‖^2)^2 ≤ 4*p*q := by
     by_cases hz : ‖z‖ ≤ 1
@@ -70,10 +69,7 @@ theorem boundary_product_bound (s : ℝ) (f : PrincipalSeries s) (g : PrincipalS
         rw [norm_mul, norm_star]
         exact mul_le_mul (infinity_le s f _ hz') (infinity_le (-s) g _ hz') (norm_nonneg _) hp
       have he := congrArg norm (product_transition s f g z⁻¹ (inv_ne_zero hz0))
-      simp only [inv_inv, norm_mul, Complex.norm_real, Real.norm_eq_abs,
-        abs_of_nonneg (Real.rpow_nonneg (norm_nonneg _) _), norm_inv,
-        Real.inv_rpow (norm_nonneg z), Real.rpow_neg (norm_nonneg z),
-        inv_inv, Real.rpow_natCast] at he
+      simp only [inv_inv, norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (Real.rpow_nonneg (norm_nonneg _) _), norm_inv, Real.inv_rpow (norm_nonneg z), Real.rpow_neg (norm_nonneg z), inv_inv] at he
       have hfour : ‖star (openCoordinate f z) * openCoordinate g z‖ * ‖z‖^4 ≤ p*q := by
         simp only [norm_mul] at hi ⊢
         rw [he] at hi
@@ -100,6 +96,3 @@ theorem pairing_integrable (β : ℂˣ) (s : ℝ)
   exact (hi.const_mul (4 * chartSeminorm s 0 f * chartSeminorm (-s) 0 g)).mono'
     ((f.property.2.1.continuous.star.mul g.property.2.1.continuous).aestronglyMeasurable)
     (Filter.Eventually.of_forall (boundary_product_bound s f g))
-end DedekindZetaZeroFree.CurrentComplexBoundary
-
-end

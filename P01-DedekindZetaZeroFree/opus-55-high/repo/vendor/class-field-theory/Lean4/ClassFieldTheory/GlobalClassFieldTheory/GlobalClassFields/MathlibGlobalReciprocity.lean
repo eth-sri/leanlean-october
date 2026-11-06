@@ -1,19 +1,45 @@
 module
 
-public import ClassFieldTheory.Definitions.GlobalClassFieldTheory.All
+public import ClassFieldTheory.Definitions.GlobalClassFieldTheory.FiniteAbelianExtension
 public import ClassFieldTheory.Definitions.ConductorsAndRayClassFields.IsUnramifiedOutsideModulus
 public import ClassFieldTheory.Definitions.ConductorsAndRayClassFields.RayClassOfFinitePrime
+public import ClassFieldTheory.Definitions.FrobeniusAndHilbertClassFields.ArithmeticFrobeniusAt
+public import Mathlib.GroupTheory.QuotientGroup.Basic
+public import ClassFieldTheory.Definitions.GlobalClassFieldTheory.FinitePlaceTensorNormSubgroup
+public import Mathlib.NumberTheory.NumberField.AdeleRing
+public import Mathlib.Topology.Algebra.Group.Quotient
+public import Mathlib.Topology.Algebra.Group.Subgroup
+public import Mathlib.Topology.Algebra.Group.Units
+public import Mathlib.FieldTheory.AbsoluteGaloisGroup
 public import ClassFieldTheory.AlgebraicNumberTheory.Ramification.FiniteRamifiedPrimes
 public import ClassFieldTheory.GlobalClassFieldTheory.GlobalClassFields.AbelianConductorExactness
 public import ClassFieldTheory.GlobalClassFieldTheory.GlobalClassFields.NormConductor
-public import ClassFieldTheory.GlobalClassFieldTheory.GlobalClassFields.ArithmeticClassFieldCorrespondence
+public import ClassFieldTheory.GlobalClassFieldTheory.GlobalClassFields.ClosedFiniteIndexClassFieldReciprocity.Degree
+public import ClassFieldTheory.GlobalClassFieldTheory.GlobalClassFields.ClosedFiniteIndexClassFieldReciprocity.Topological.QuotientTransport
+public import ClassFieldTheory.GlobalClassFieldTheory.GlobalClassFields.ClosedFiniteIndexClassFieldReciprocity.Topological.Construction
+public import ClassFieldTheory.GlobalClassFieldTheory.GlobalClassFields.ClosedFiniteIndexClassFieldReciprocity.Topological.EvaluationValue
+public import ClassFieldTheory.GlobalClassFieldTheory.GlobalClassFields.ClosedFiniteIndexClassFieldReciprocity.Topological.EvaluationCore
+public import ClassFieldTheory.GlobalClassFieldTheory.GlobalClassFields.ClosedFiniteIndexClassFieldReciprocity.Topological.Evaluation
+public import ClassFieldTheory.GlobalClassFieldTheory.GlobalClassFields.ClosedFiniteIndexClassFieldReciprocity.Algebraic.Construction
+public import ClassFieldTheory.GlobalClassFieldTheory.GlobalClassFields.ClosedFiniteIndexClassFieldReciprocity.Algebraic.Evaluation
+public import ClassFieldTheory.GlobalClassFieldTheory.GlobalClassFields.ClosedFiniteIndexClassFieldReciprocity.GlobalNormResidue
+public import ClassFieldTheory.GlobalClassFieldTheory.Reciprocity.ArithmeticNormalization
 public import ClassFieldTheory.GlobalClassFieldTheory.GlobalClassFields.ClassFieldRealization
-public import ClassFieldTheory.GlobalClassFieldTheory.GlobalClassFields.InfiniteAbelianClassFieldCorrespondence
+public import ClassFieldTheory.AlgebraicNumberTheory.Idele.ClassGroup.TowerAlgEquivNaturality
+public import ClassFieldTheory.AlgebraicNumberTheory.Idele.IdentityComponent
+public import ClassFieldTheory.GlobalClassFieldTheory.GlobalClassFields.ClosedFiniteIndexClassFieldOriginalField
+public import Mathlib.FieldTheory.Galois.Abelian
+public import Mathlib.FieldTheory.Galois.Profinite
+public import Mathlib.FieldTheory.IsSepClosed
+public import Mathlib.Topology.Algebra.Group.TopologicalAbelianization
+public import ClassFieldTheory.GlobalClassFieldTheory.Reciprocity.InfiniteGlobalArtin
+public import ClassFieldTheory.GlobalClassFieldTheory.Reciprocity.GlobalArtinCompatibility
+public import ClassFieldTheory.AlgebraicNumberTheory.Idele.NormOneCompact
+public import ClassFieldTheory.AlgebraicNumberTheory.Idele.PositiveArchimedeanSection
 public import ClassFieldTheory.GlobalClassFieldTheory.GlobalClassFields.ArithmeticUnramifiedPrimeArtin
 public import ClassFieldTheory.GlobalClassFieldTheory.IdealClassFieldTheory.ArithmeticIdealArtin
-public import ClassFieldTheory.GlobalClassFieldTheory.Reciprocity.ArithmeticNormalization
-public import ClassFieldTheory.GlobalClassFieldTheory.Reciprocity.MaximalAbelianKernel
-public import ClassFieldTheory.GlobalClassFieldTheory.Reciprocity.TopologicalGlobalNormResidueAbelianization
+public import ClassFieldTheory.GlobalClassFieldTheory.Reciprocity.GlobalNormResidueAbelianization
+public import Mathlib.FieldTheory.KrullTopology
 public import ClassFieldTheory.GlobalClassFieldTheory.GlobalClassFields.PublicRayClassComparison
 
 @[expose] public section
@@ -24,23 +50,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-set_option autoImplicit false
 
 open scoped NumberField
 open NumberField IsDedekindDomain
@@ -62,60 +71,12 @@ namespace ClassFieldTheory.GlobalClassFieldComparison
 stabilizes normal-subgroup arguments in exported quotient statements. -/
 theorem ideleClassGroupIsMulCommutative
     (K : Type) [Field K] [NumberField K] :
-    IsMulCommutative (IdeleClassGroup K) :=
-  ⟨⟨fun a b => mul_comm a b⟩⟩
+    IsMulCommutative (IdeleClassGroup K) := by apply GlobalClassFieldTheory.GlobalClassFields.rayRigidity_ideleClassGroupIsMulCommutative <;> assumption
 
 attribute [local instance 2000] ideleClassGroupIsMulCommutative
 
-/-- The ramified finite primes form a finite set.  Adding every real place
-produces a public modulus outside which a number-field extension is
-unramified, independently of any Artin-map construction. -/
-theorem exists_unramifiedOutsideModulus
-    (K L : Type)
-    [Field K] [NumberField K]
-    [Field L] [NumberField L] [Algebra K L] :
-    ∃ m : RayClassModulus K, IsUnramifiedOutsideModulus K L m := by
-  classical
-  let T : Set (IsDedekindDomain.HeightOneSpectrum (𝓞 K)) :=
-    {v | ∃ w : IsDedekindDomain.HeightOneSpectrum (𝓞 L),
-      w.asIdeal.LiesOver v.asIdeal ∧
-        ¬ Algebra.IsUnramifiedAt (𝓞 K) w.asIdeal}
-  have hT : T.Finite :=
-    AlgebraicNumberTheory.Ramification.finite_ramified_base_heightOne_primes
-      (𝓞 K) (𝓞 L)
-  let S := hT.toFinset
-  let f : IsDedekindDomain.HeightOneSpectrum (𝓞 K) → ℕ :=
-    fun v => if v ∈ S then 1 else 0
-  have hf : ∀ v, f v ≠ 0 → v ∈ S := by
-    intro v hv
-    by_contra hnot
-    exact hv (by simp [f, hnot])
-  let m : RayClassModulus K :=
-    { finitePart := Finsupp.onFinset S f hf
-      infinitePart := Finset.univ }
-  refine ⟨m, ?_⟩
-  constructor
-  · intro v hv Q hQ hlie
-    by_contra hram
-    have hQne : Q ≠ ⊥ := by
-      intro hbot
-      have hunder := hlie.over
-      rw [hbot, Ideal.under_bot] at hunder
-      exact v.ne_bot hunder
-    let w : IsDedekindDomain.HeightOneSpectrum (𝓞 L) :=
-      ⟨Q, hQ, hQne⟩
-    have hvT : v ∈ T := ⟨w, hlie, hram⟩
-    have hvS : v ∈ S := hT.mem_toFinset.mpr hvT
-    apply hv
-    apply Finsupp.mem_support_iff.mpr
-    change (Finsupp.onFinset S f hf) v ≠ 0
-    rw [Finsupp.onFinset_apply]
-    simpa only [f, hvS, ite_true] using (one_ne_zero : (1 : ℕ) ≠ 0)
-  · intro v hv hnot
-    exact (hnot (Finset.mem_univ _)).elim
-
 /-- The public narrow modulus whose finite part is the actual norm conductor. -/
-noncomputable def normConductorRayClassModulus
+def normConductorRayClassModulus
     (K L : Type)
     [Field K] [NumberField K]
     [Field L] [NumberField L] [Algebra K L]
@@ -138,9 +99,7 @@ theorem normConductorRayClassModulus_original
         (GlobalClassFieldTheory.GlobalClassFields.ideleClassNormNarrowFiniteConductor
           (K := K) (L := L)) := by
   classical
-  apply RayClass.Modulus.ext
-  · rfl
-  · rfl
+  rfl
 
 /-- The actual narrow finite norm conductor, together with every real place,
 is a public modulus outside which a finite abelian extension is unramified. -/
@@ -175,23 +134,7 @@ theorem normConductorRayClassModulus_unramifiedOutside
     exact hvram
   · intro v hv hnot
     change (⟨v, hv⟩ : RayClassRealPlace K) ∉ Finset.univ at hnot
-    exact (hnot (Finset.mem_univ _)).elim
-
-/-- The norm conductor yields a public modulus outside which the extension
-is unramified. -/
-theorem unramifiedOutside_normConductorModulus
-    (K L : Type)
-    [Field K] [NumberField K]
-    [Field L] [NumberField L] [Algebra K L]
-    [IsAbelianGalois K L] :
-    ∃ m : RayClassModulus K,
-      m.finitePart =
-        GlobalClassFieldTheory.GlobalClassFields.ideleClassNormNarrowFiniteConductor
-          (K := K) (L := L) ∧
-        IsUnramifiedOutsideModulus K L m := by
-  refine ⟨normConductorRayClassModulus K L, ?_,
-    normConductorRayClassModulus_unramifiedOutside K L⟩
-  rfl
+    simp_all
 
 /-- The public norm-conductor modulus is a defining modulus for the actual
 idèle-class norm subgroup. -/
@@ -209,7 +152,7 @@ idèle-class norm subgroup. -/
 
 /-- Arithmetic global reciprocity, descended to the public ray class group
 at the actual narrow norm conductor. -/
-noncomputable def normConductorArtin
+def normConductorArtin
     (K L : Type)
     [Field K] [NumberField K]
     [Field L] [NumberField L] [Algebra K L]
@@ -218,8 +161,8 @@ noncomputable def normConductorArtin
   let m := normConductorRayClassModulus K L
   let m' := rayClassModulusToOriginal K m
   have hm : RayClass.Modulus.congruenceSubgroup m' ≤
-      (_root_.ideleClassNorm K L).range := by
-    exact normConductorRayClassModulus_isDefining K L
+      (_root_.ideleClassNorm K L).range := 
+    normConductorRayClassModulus_isDefining K L
   exact (GlobalClassFieldTheory.Reciprocity.arithmeticGlobalNormResidueContinuousMulEquiv
       K L).toMulEquiv.toMonoidHom.comp
     ((GlobalClassFieldTheory.IdealClassFieldTheory.idealRayClassArtinMap
@@ -258,8 +201,8 @@ theorem normConductorArtin_prime
   let m := normConductorRayClassModulus K L
   let m' := rayClassModulusToOriginal K m
   have hm : RayClass.Modulus.congruenceSubgroup m' ≤
-      (_root_.ideleClassNorm K L).range := by
-    exact normConductorRayClassModulus_isDefining K L
+      (_root_.ideleClassNorm K L).range := 
+    normConductorRayClassModulus_isDefining K L
   have hv' : v ∉ m'.finitePart.support := hv
   change
     (GlobalClassFieldTheory.Reciprocity.arithmeticGlobalNormResidueContinuousMulEquiv K L)
@@ -272,56 +215,3 @@ theorem normConductorArtin_prime
       (RayClass.primeToModulusIdeal m' v hv') = _
   exact GlobalClassFieldTheory.IdealClassFieldTheory.arithmeticIdealArtinGaloisMap_primeIdeal_eq_arithmeticFinitePlacePrimeArtin
     (K := K) (L := L) m' hm v hv'
-
-/-- The class field selected from a closed finite-index idèle-class subgroup
-has exactly that subgroup as its norm group. -/
-theorem classFieldExistence_normSubgroup
-    (K : Type) [Field K] [NumberField K]
-    (H : Subgroup (IdeleClassGroup K))
-    (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
-    [H.FiniteIndex] :
-    (_root_.ideleClassNorm K
-        (GlobalClassFieldTheory.GlobalClassFields.closedFiniteIndexClassField
-          (K := K) H hclosed)).range = H :=
-  GlobalClassFieldTheory.GlobalClassFields.closedFiniteIndexClassField_ideleClassNorm_range
-    H hclosed
-
-/-- The degree of the selected class field is the index of its defining
-idèle-class subgroup. -/
-theorem classFieldExistence_degree
-    (K : Type) [Field K] [NumberField K]
-    (H : Subgroup (IdeleClassGroup K))
-    (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
-    [H.FiniteIndex] :
-    Module.finrank K
-        (GlobalClassFieldTheory.GlobalClassFields.closedFiniteIndexClassField
-          (K := K) H hclosed) = H.index :=
-  GlobalClassFieldTheory.GlobalClassFields.closedFiniteIndexClassField_finrank_eq_index
-    H hclosed
-
-/-- The implemented arithmetic norm-residue isomorphism proves finite
-abelian global reciprocity in quotient form. -/
-theorem finiteAbelianGlobalReciprocity
-    (K L : Type)
-    [Field K] [NumberField K]
-    [Field L] [NumberField L] [Algebra K L]
-    [FiniteDimensional K L] [IsAbelianGalois K L] :
-    Nonempty
-      ((IdeleClassGroup K ⧸ (_root_.ideleClassNorm K L).range) ≃ₜ*
-        (L ≃ₐ[K] L)) := by
-  exact
-    ⟨GlobalClassFieldTheory.Reciprocity.arithmeticGlobalNormResidueContinuousMulEquiv K L⟩
-
-/-- Maximal abelian reciprocity after quotienting by the identity
-component. -/
-theorem maximalAbelianGlobalReciprocity
-    (K : Type) [Field K] [NumberField K] :
-    Nonempty
-      (ideleClassComponentQuotient K ≃ₜ*
-        (maximalAbelianExtension K ≃ₐ[K] maximalAbelianExtension K)) := by
-  exact
-    ⟨GlobalClassFieldTheory.Reciprocity.ideleClassComponentQuotientEquivMaximalAbelianGalois K⟩
-
-end ClassFieldTheory.GlobalClassFieldComparison
-
-end

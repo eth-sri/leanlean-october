@@ -26,18 +26,18 @@ namespace DedekindZetaZeroFree.Odlyzko
 
 variable {α β E : Type*}
 
-noncomputable def extendByZero [AddCommMonoid E] (e : α → β) (f : α → E) (b : β) : E :=
+def extendByZero [AddCommMonoid E] (e : α → β) (f : α → E) (b : β) : E :=
   Function.extend e f 0 b
 
 lemma extendByZero_apply [AddCommMonoid E] (e : α → β) (he : Function.Injective e)
     (f : α → E) (a : α) :
-    extendByZero e f (e a) = f a := by
-  exact he.extend_apply f 0 a
+    extendByZero e f (e a) = f a := 
+  he.extend_apply f 0 a
 
 lemma extendByZero_eq_zero_of_not_mem_range [AddCommMonoid E] (e : α → β) (f : α → E)
     {b : β} (hb : b ∉ Set.range e) :
-    extendByZero e f b = 0 := by
-  exact Function.extend_apply' (f := e) f 0 b hb
+    extendByZero e f b = 0 := 
+  Function.extend_apply' (f := e) f 0 b hb
 
 theorem hasSum_extendByZero [AddCommMonoid E] [TopologicalSpace E]
     (e : α → β) (he : Function.Injective e)
@@ -59,7 +59,6 @@ section
 
 open Complex Ideal IsDedekindDomain
 
-open NumberField
 
 namespace DedekindZetaZeroFree.Odlyzko
 
@@ -109,13 +108,12 @@ end DedekindZetaZeroFree.Odlyzko
 
 end
 
-open NumberField
 
 namespace DedekindZetaZeroFree.Odlyzko
 
 variable {M : Type*} [CommMonoidWithZero M]
 
-noncomputable def primeValueHom (a : ℕ → M) : ℕ →*₀ M where
+def primeValueHom (a : ℕ → M) : ℕ →*₀ M where
   toFun n :=
     if n = 0 then 0 else
       n.factorization.prod fun p e ↦ a p ^ e
@@ -163,13 +161,12 @@ section
 
 open Ideal IsDedekindDomain
 
-open NumberField
 
 namespace DedekindZetaZeroFree.Odlyzko
 
 variable (K : Type*) [Field K] [NumberField K]
 
-noncomputable instance countableIdealRingOfIntegers :
+instance countableIdealRingOfIntegers :
     Countable (Ideal (𝓞 K)) := by
   let (n : ℕ) : Fintype {I : Ideal (𝓞 K) // absNorm I = n} :=
     (Ideal.finite_setOfPred_absNorm_eq n).fintype
@@ -177,15 +174,15 @@ noncomputable instance countableIdealRingOfIntegers :
     ((n : ℕ) × {I : Ideal (𝓞 K) // absNorm I = n})
     (Equiv.sigmaFiberEquiv (absNorm : Ideal (𝓞 K) → ℕ))
 
-noncomputable instance countableHeightOneSpectrum :
+instance countableHeightOneSpectrum :
     Countable (HeightOneSpectrum (𝓞 K)) :=
   HeightOneSpectrum.asIdeal_injective.countable
 
-noncomputable instance encodableHeightOneSpectrum :
+instance encodableHeightOneSpectrum :
     Encodable (HeightOneSpectrum (𝓞 K)) :=
   Encodable.ofCountable _
 
-noncomputable def primeIdealCode (P : HeightOneSpectrum (𝓞 K)) : ℕ :=
+def primeIdealCode (P : HeightOneSpectrum (𝓞 K)) : ℕ :=
   Nat.nth Nat.Prime (Encodable.encode P)
 
 lemma prime_primeIdealCode (P : HeightOneSpectrum (𝓞 K)) :
@@ -197,7 +194,7 @@ lemma primeIdealCode_injective :
   (Nat.nth_strictMono Nat.infinite_setOfPred_prime).injective.comp
     Encodable.encode_injective
 
-noncomputable def primeIdealCodeEmbedding :
+def primeIdealCodeEmbedding :
     HeightOneSpectrum (𝓞 K) ↪ Nat.Primes where
   toFun P := ⟨primeIdealCode K P, prime_primeIdealCode K P⟩
   inj' := fun _ _ h ↦ primeIdealCode_injective K (Subtype.ext_iff.mp h)
@@ -210,13 +207,12 @@ section
 
 open Ideal IsDedekindDomain UniqueFactorizationMonoid
 
-open NumberField
 
 namespace DedekindZetaZeroFree.Odlyzko
 
 variable (K : Type*) [Field K] [NumberField K]
 
-noncomputable def idealPrimeCode (I : NonzeroIdeal K) : ℕ :=
+def idealPrimeCode (I : NonzeroIdeal K) : ℕ :=
   ((idealPrimeFactors K I).map (primeIdealCode K)).prod
 
 lemma prime_mem_idealPrimeCode_factors (I : NonzeroIdeal K) :
@@ -249,13 +245,12 @@ section
 
 open Ideal IsDedekindDomain
 
-open NumberField
 
 namespace DedekindZetaZeroFree.Odlyzko
 
 variable (K : Type*) [Field K] [NumberField K]
 
-noncomputable def primeIdealAtCode (p : ℕ) :
+def primeIdealAtCode (p : ℕ) :
     Option (HeightOneSpectrum (𝓞 K)) := by
   classical
   exact if h : ∃ P, primeIdealCode K P = p then some (Classical.choose h) else none
@@ -281,7 +276,7 @@ lemma primeIdealAtCode_eq_some_iff {p : ℕ} {P : HeightOneSpectrum (𝓞 K)} :
     primeIdealAtCode K (primeIdealCode K P) = some P :=
   primeIdealAtCode_eq_some_iff K |>.2 rfl
 
-noncomputable def encodedPrimeIdealWeight (s : ℂ) (p : ℕ) : ℂ :=
+def encodedPrimeIdealWeight (s : ℂ) (p : ℕ) : ℂ :=
   (primeIdealAtCode K p).elim 0 fun P ↦
     inverseNormPower (primeIdealNorm K P) s
 
@@ -291,7 +286,7 @@ noncomputable def encodedPrimeIdealWeight (s : ℂ) (p : ℕ) : ℂ :=
       inverseNormPower (primeIdealNorm K P) s := by
   simp [encodedPrimeIdealWeight]
 
-private lemma inverseNormPower_primeIdeal_ne_zero
+lemma inverseNormPower_primeIdeal_ne_zero
     (s : ℂ) (P : HeightOneSpectrum (𝓞 K)) :
     inverseNormPower (primeIdealNorm K P) s ≠ 0 := by
   rw [inverseNormPower, Complex.cpow_ne_zero_iff]
@@ -311,7 +306,7 @@ lemma encodedPrimeIdealWeight_ne_zero_iff (s : ℂ) (p : ℕ) :
       (primeIdealAtCode_eq_some_iff K).2 hP]
     exact inverseNormPower_primeIdeal_ne_zero K s P
 
-noncomputable def encodedIdealSummand (s : ℂ) : ℕ →*₀ ℂ :=
+def encodedIdealSummand (s : ℂ) : ℕ →*₀ ℂ :=
   primeValueHom (encodedPrimeIdealWeight K s)
 
 lemma encodedIdealSummand_idealPrimeCode
@@ -394,7 +389,6 @@ section
 
 open Ideal IsDedekindDomain
 
-open NumberField
 
 namespace DedekindZetaZeroFree.Odlyzko
 
@@ -456,7 +450,6 @@ section
 
 open Ideal IsDedekindDomain
 
-open NumberField
 
 namespace DedekindZetaZeroFree.Odlyzko
 
@@ -490,7 +483,7 @@ theorem hasSum_encodedIdealSummand {s : ℂ} (hs : 1 < s.re) :
     (idealPrimeCode K) (idealPrimeCode_injective K)
     (hasSum_nonzeroIdeal_inverseNormPower K hs)
 
-noncomputable def encodedIdealFactor (s : ℂ) (p : Nat.Primes) : ℂ :=
+def encodedIdealFactor (s : ℂ) (p : Nat.Primes) : ℂ :=
   (1 - encodedIdealSummand K s p)⁻¹
 
 lemma encodedIdealFactor_primeIdealCode (s : ℂ)
@@ -527,8 +520,8 @@ theorem dedekindZeta_primeIdeal_eulerProduct_hasProd {s : ℂ} (hs : 1 < s.re) :
       (NumberField.dedekindZeta K s) := by
   have hEuler :
       HasProd (encodedIdealFactor K s)
-        (∑' n, encodedIdealSummand K s n) := by
-    exact EulerProduct.eulerProduct_completely_multiplicative_hasProd
+        (∑' n, encodedIdealSummand K s n) := 
+    EulerProduct.eulerProduct_completely_multiplicative_hasProd
       (summable_norm_encodedIdealSummand K hs)
   rw [(hasSum_encodedIdealSummand K hs).tsum_eq] at hEuler
   have hcodes :
@@ -539,9 +532,3 @@ theorem dedekindZeta_primeIdeal_eulerProduct_hasProd {s : ℂ} (hs : 1 < s.re) :
       (encodedIdealFactor_eq_one_of_not_mem_range K s)).2 hEuler
   exact hcodes.congr_fun fun P ↦
     (encodedIdealFactor_primeIdealCode K s P).symm
-
-end DedekindZetaZeroFree.Odlyzko
-
-end
-
-end

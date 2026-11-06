@@ -29,7 +29,7 @@ def actualShellRatio (ε : Sign) (s : ℂ) : ℂ :=
   if ε = .plus then t (LocalField F q) s else
     (residueCardinality (LocalField F q) : ℂ) * (r (LocalField F q) s)⁻¹ ^ 6
 
-private theorem uniformizer_multiplier (ε : Sign) (s : ℂ)
+theorem uniformizer_multiplier (ε : Sign) (s : ℂ)
     (π : (LocalField F q)ˣ)
     (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
       (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ)) :
@@ -65,7 +65,7 @@ private theorem uniformizer_multiplier (ε : Sign) (s : ℂ)
     rw [rootCharacter_weyl_inversion, rootCharacter_uniformizer S.borel s π hπ]
     simp [actualShellRatio, t, mul_inv_rev, inv_pow, mul_comm]
 
-private theorem tail_pointwise_rescale (P : Polarization S.heisenberg)
+theorem tail_pointwise_rescale (P : Polarization S.heisenberg)
     (J : CompactOpenLevel (ActualCover F ζ hζ q))
     (hJ : (J.toOpenSubgroup : Subgroup (ActualCover F ζ hζ q)) ≤ S.iwasawa.compact.toOpenSubgroup)
     (ε : Sign) (π : (LocalField F q)ˣ) :
@@ -120,7 +120,7 @@ theorem shell_inverse_cutoff (U : Set (LocalField F q)) (hU : U ∈ nhds 0) :
     simp only [KPCubicHaar.abs_zero] at this
     exact (not_lt_of_ge (zpow_pos (lt_trans zero_lt_one hQ) _).le) this
   have hex : e (valuation (LocalField F q) x) ≠ 0 := by simpa [e] using hx0
-  have heγ : e (γ : ValueGroupWithZero (LocalField F q)) ≠ 0 := by simpa [e] using γ.ne_zero
+  have heγ : e (γ : ValueGroupWithZero (LocalField F q)) ≠ 0 := by simp
   have hlog : (m : ℤ) - 1 < WithZero.log (e (valuation (LocalField F q) x)) := by
     have hh := hx.1
     simp only [actualShell, Set.mem_setOf_eq] at hx
@@ -132,8 +132,6 @@ theorem shell_inverse_cutoff (U : Set (LocalField F q)) (hU : U ∈ nhds 0) :
   change e (valuation (LocalField F q) (-(x⁻¹))) < e (γ : ValueGroupWithZero (LocalField F q))
   rw [Valuation.map_neg, map_inv₀, map_inv₀, ← WithZero.exp_log hex, ← WithZero.exp_log heγ,
     ← WithZero.exp_neg, WithZero.exp_lt_exp]
-  dsimp only [b] at hm
-  have hb : -((WithZero.log (e (↑γ : ValueGroupWithZero (LocalField F q)))).natAbs : ℤ) ≤ WithZero.log (e (↑γ : ValueGroupWithZero (LocalField F q))) := by rw [← Int.abs_eq_natAbs]; exact neg_abs_le _
   omega
 
 theorem actual_shell_dilation {L : Type*} [RCLike L]
@@ -156,8 +154,7 @@ theorem actual_shell_dilation {L : Type*} [RCLike L]
       rw [Units.val_pow_eq_pow_val, KPCubicHaar.abs_pow]
       simp only [KPCubicHaar.abs, if_neg π.ne_zero, hπ, WithZero.log_exp]
       change (Q ^ (-1 : ℤ)) ^ 3 = Q ^ (-3 : ℤ)
-      rw [← zpow_natCast, ← zpow_mul]
-      norm_num
+      simp
     have hs : (fun x : LocalField F q => c * x) ⁻¹' actualShell F q m =
         actualShell F q (m + 3) := by
       ext x
@@ -165,7 +162,7 @@ theorem actual_shell_dilation {L : Type*} [RCLike L]
       have h1 : Q ^ (m - 1) = Q ^ (-3 : ℤ) * Q ^ (m + 3 - 1) := by
         rw [← zpow_add₀ hQ.ne']; congr 1; omega
       have h2 : Q ^ m = Q ^ (-3 : ℤ) * Q ^ (m + 3) := by
-        rw [← zpow_add₀ hQ.ne']; congr 1; omega
+        rw [← zpow_add₀ hQ.ne']; simp
       change Q ^ (m - 1) < Q ^ (-3 : ℤ) * _ ∧ Q ^ (-3 : ℤ) * _ ≤ Q ^ m ↔ _
       rw [h1, h2, mul_lt_mul_iff_right₀ (zpow_pos hQ _), mul_le_mul_iff_right₀ (zpow_pos hQ _)]
     have H := (Homeomorph.mulLeft₀ c hc0).isClosedEmbedding.setIntegral_map
@@ -261,7 +258,3 @@ theorem actual_uniformizer_multiplier (ε : Sign) (s : ℂ)
         rootCharacter S.borel (sourceSign ε) (sourceParameter ε s) π) =
       actualShellRatio F q ε s :=
   uniformizer_multiplier F ζ hζ q S ε s π hπ
-
-end DedekindZetaZeroFree.KPRankOneShellRepair
-
-end

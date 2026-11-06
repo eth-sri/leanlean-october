@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # extension-side round trip
 
@@ -24,7 +20,6 @@ For an abelian Galois intermediate extension `E/K` of exponent dividing
 to the actual radical subgroup of `E` recovers `E` itself.
 -/
 
-noncomputable section
 
 namespace KummerTheory
 
@@ -56,15 +51,14 @@ theorem kummerRootSet_finiteKummerRadicalSubgroup_le
     exact congrArg E.val (congrArg Units.val hgamma_pow)
   have hratio_pow : (betaUnit / gammaOmega) ^ (n : ℕ) = 1 := by
     rw [div_pow, hbetaUnit_pow, hgammaOmega_pow]
-    exact div_self' _
+    simp
   let hbase : NthRootsOfUnityInBase (K := K) (L := Omega) n :=
     nthRootsOfUnityInBase_of_primitiveRoots
       (K := K) (L := Omega) n hmu
   obtain ⟨zeta, hzeta⟩ := hbase (betaUnit / gammaOmega) hratio_pow
   have hbeta_eq : betaUnit =
       Units.map (algebraMap K Omega).toMonoidHom zeta * gammaOmega := by
-    rw [hzeta]
-    exact (div_mul_cancel betaUnit gammaOmega).symm
+    simp_all
   have hbeta_val := congrArg Units.val hbeta_eq
   change (betaUnit : Omega) ∈ E
   rw [hbeta_val]
@@ -76,8 +70,8 @@ theorem kummerRadicalExtension_finiteKummerRadicalSubgroup_le
     (E : IntermediateField K Omega) (n : ℕ+)
     (hmu : (primitiveRoots (n : ℕ) K).Nonempty) :
     kummerRadicalExtension (K := K) (Omega := Omega) n
-        (finiteKummerRadicalSubgroup (K := K) (L := E) n) ≤ E := by
-  exact IntermediateField.adjoin_le_iff.mpr
+        (finiteKummerRadicalSubgroup (K := K) (L := E) n) ≤ E := 
+  IntermediateField.adjoin_le_iff.mpr
     (kummerRootSet_finiteKummerRadicalSubgroup_le E n hmu)
 
 /-- The internal generation theorem for `E/K`, transported through
@@ -134,7 +128,3 @@ theorem kummerRadicalExtension_finiteKummerRadicalSubgroup_eq
   · exact kummerRadicalExtension_finiteKummerRadicalSubgroup_le E n hmu
   · exact le_kummerRadicalExtension_finiteKummerRadicalSubgroup
       E n hmu hexponent
-
-end KummerTheory
-
-end

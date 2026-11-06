@@ -127,7 +127,7 @@ private theorem component_open (i : Fin (H.atlas U).componentCount) :
   rw [he]
   exact (H.atlas U).components.isOpenEmbedding.comp IsOpenEmbedding.sigmaMk
 
-private theorem projection_open (i : Fin (H.atlas U).componentCount) :
+theorem projection_open (i : Fin (H.atlas U).componentCount) :
     IsOpenMap (KPCuspSiegel.projection F (Component F ζ hζ U R P H i)) := by
   letI : ContinuousConstSMul (Component F ζ hζ U R P H i) (SymmetricSpace F) :=
     ⟨fun g => KPCuspSiegel.continuous_action F g.val⟩

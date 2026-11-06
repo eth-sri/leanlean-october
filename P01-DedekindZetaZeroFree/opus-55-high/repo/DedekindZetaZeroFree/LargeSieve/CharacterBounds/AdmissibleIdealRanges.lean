@@ -30,5 +30,3 @@ theorem mem_paperShell (F : Type) [Field F] [NumberField F]
         (Ideal.absNorm I : ℝ) ≤ 2 * T := by
   rw [paperShell, Finset.mem_filter, mem_idealAdmissibleFinset]
   tauto
-
-end DedekindZetaZeroFree.LargeSieve.Sieve

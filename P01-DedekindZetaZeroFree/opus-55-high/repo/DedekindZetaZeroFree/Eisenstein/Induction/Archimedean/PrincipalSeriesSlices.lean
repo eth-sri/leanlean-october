@@ -18,7 +18,7 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
 
 end InsertionCharts
 
-private theorem source_chart_smooth
+theorem source_chart_smooth
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (t : KPMsRationalCompactCrossPairing.Vplus F ζ hζ (KPContFlatSourceRecipe.D F ζ hζ))
     (g : KPGlobalTorusFunctionData.G F ζ hζ) :
@@ -45,7 +45,7 @@ private theorem source_chart_smooth
       (fun _ _ hx => hx.1 g) contDiffOn_const (fun _ _ hx hy => hx.add hy)
   simpa only [← hv, KPGlobalTorusBorelTwistCompatibility.scalarSection_formula] using hd
 
-private theorem slice_lower_smooth
+theorem slice_lower_smooth
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (t : KPMsRationalCompactCrossPairing.Vplus F ζ hζ (KPContFlatSourceRecipe.D F ζ hζ))
     (w : InfinitePlace F) (a : KPSmoothActualFlowData.GInfinity F)
@@ -67,7 +67,7 @@ private theorem slice_lower_smooth
     ← (KPSmoothActualFlowData.archimedean_insertion_properties F ζ hζ).2.1,
     update_left_mul, map_mul]
 
-private theorem slice_charts_smooth
+theorem slice_charts_smooth
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (t : KPMsRationalCompactCrossPairing.Vplus F ζ hζ (KPContFlatSourceRecipe.D F ζ hζ))
     (w : InfinitePlace F) (a : KPSmoothActualFlowData.GInfinity F)
@@ -160,7 +160,7 @@ private theorem slice_covariance
   map_smul' _ _ := rfl
 
 set_option backward.isDefEq.respectTransparency false in
-private theorem slice_kfinite
+theorem slice_kfinite
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (t : KPMsRationalCompactCrossPairing.Vplus F ζ hζ (KPContFlatSourceRecipe.D F ζ hζ))
     (w : InfinitePlace F) (a : KPSmoothActualFlowData.GInfinity F)

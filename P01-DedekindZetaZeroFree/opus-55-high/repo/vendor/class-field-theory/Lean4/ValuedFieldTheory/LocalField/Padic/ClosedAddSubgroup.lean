@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Closed additive subgroups of the p-adic integers
 
@@ -37,7 +33,7 @@ theorem addSubgroup_isOpen_of_isClosed_of_ne_bot
     IsOpen (H : Set ℤ_[p]) := by
   obtain ⟨⟨x, hxH⟩, hx⟩ :=
     AddSubgroup.ne_bot_iff_exists_ne_zero.mp hne
-  have hx0 : x ≠ 0 := fun h ↦ hx (Subtype.ext h)
+  have hx0 : x ≠ 0 := by simp_all
   have hmul (a : ℤ_[p]) : x * a ∈ H := by
     refine PadicInt.denseRange_intCast.induction_on a ?_ ?_
     · change IsClosed ((fun y : ℤ_[p] ↦ x * y) ⁻¹' (H : Set ℤ_[p]))
@@ -54,11 +50,7 @@ theorem addSubgroup_isOpen_of_isClosed_of_ne_bot
   have hspan_ne :
       (Ideal.span ({x} : Set ℤ_[p]) : Ideal ℤ_[p]) ≠ ⊥ := by
     intro hzero
-    have hxmem :
-        x ∈ (Ideal.span ({x} : Set ℤ_[p]) : Ideal ℤ_[p]) :=
-      Ideal.subset_span (by simp)
-    rw [hzero] at hxmem
-    exact hx0 (by simpa using hxmem)
+    simp_all
   obtain ⟨n, hn⟩ := PadicInt.ideal_eq_span_pow_p hspan_ne
   have hpow_open :
       IsOpen
@@ -112,12 +104,12 @@ theorem exists_positive_natCast_sub_mem_of_isOpen_addSubgroup
         PadicInt.denseRange_natCast
         (continuous_id.add continuous_const)
   let U : Set ℤ_[p] := {y | z - y ∈ H}
-  have hUopen : IsOpen U := by
-    exact hopen.preimage (continuous_const.sub continuous_id)
+  have hUopen : IsOpen U := 
+    hopen.preimage (continuous_const.sub continuous_id)
   have hUne : U.Nonempty := by
     refine ⟨z, ?_⟩
     change z - z ∈ H
-    simpa only [sub_self] using H.zero_mem
+    simp
   obtain ⟨n, hn⟩ := hdense.exists_mem_open hUopen hUne
   refine ⟨n + 1, Nat.zero_lt_succ n, ?_⟩
   simpa only [U, Set.mem_ofPred_eq, Nat.cast_add, Nat.cast_one] using hn
@@ -131,10 +123,4 @@ theorem multiplicative_positiveNatDegree_ne_one
   intro h
   have h' := congrArg Multiplicative.toAdd h
   change n • (1 : ℤ_[p]) = 0 at h'
-  have hn0 : (n : ℤ_[p]) = 0 := by
-    simpa only [nsmul_one] using h'
-  have : n = 0 := by
-    exact_mod_cast hn0
-  exact (Nat.ne_of_gt hn) this
-
-end PadicInt
+  simp_all

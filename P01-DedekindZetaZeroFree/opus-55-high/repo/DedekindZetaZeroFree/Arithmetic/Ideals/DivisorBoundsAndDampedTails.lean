@@ -6,7 +6,6 @@ public import DedekindZetaZeroFree.Arithmetic.Ideals.Counting.NormSeries
 
 open scoped NumberField Topology
 open Filter
-open scoped Topology
 
 namespace DedekindZetaZeroFree.Detector
 
@@ -33,7 +32,7 @@ theorem ideals_bounded_norm_finite (F : Type) [Field F] [NumberField F] (X : ℝ
   intro n hn
   exact Nat.le_floor hn.2
 
-private theorem divisor_card (F : Type) [Field F] [NumberField F] (n : Ideal (𝓞 F)) (hn : n ≠ ⊥) :
+theorem divisor_card (F : Type) [Field F] [NumberField F] (n : Ideal (𝓞 F)) (hn : n ≠ ⊥) :
     idealDivisorCount F n ≤ ∏ p ∈ (normalizedFactors n).toFinset, ((normalizedFactors n).count p + 1) := by
   classical
   let s := (normalizedFactors n).toFinset
@@ -57,13 +56,13 @@ private theorem divisor_card (F : Type) [Field F] [NumberField F] (n : Ideal (�
           intro H
           exact hp (Multiset.mem_toFinset.mpr (Multiset.mem_of_le
             ((dvd_iff_normalizedFactors_le_normalizedFactors b.property.1 hn).mp b.property.2) H))
-        rw [Multiset.count_eq_zero.mpr hpa, Multiset.count_eq_zero.mpr hpb]
+        simp_all
     apply Subtype.ext
     rw [← Ideal.prod_normalizedFactors_eq_self a.property.1,
       ← Ideal.prod_normalizedFactors_eq_self b.property.1, he]
   have hc := Fintype.card_le_of_injective f hf
   rw [Fintype.card_pi] at hc
-  simp only [Fintype.card_fin, Finset.prod_coe_sort] at hc
+  simp only [Fintype.card_fin] at hc
   change Fintype.card D ≤ ∏ p : s, ((normalizedFactors n).count p.val + 1) at hc
   rw [Finset.prod_coe_sort s (fun p => (normalizedFactors n).count p + 1)] at hc
   simpa only [idealDivisorCount, D, ← Nat.card_eq_fintype_card, Nat.card_coe_set_eq, s] using hc
@@ -73,7 +72,7 @@ private theorem local_bound (a : ℝ) (ha : 1 < a) (k : ℕ) :
   have hp : 1 ≤ a^k := one_le_pow₀ ha.le
   rw [div_eq_mul_inv] at h
   nlinarith
-private theorem local_large (a : ℝ) (ha : 2 ≤ a) (k : ℕ) :
+theorem local_large (a : ℝ) (ha : 2 ≤ a) (k : ℕ) :
     (k+1:ℝ) ≤ a^k := by
   have h : (k+1:ℝ) ≤ (2:ℝ)^k := by
     induction k with
@@ -154,16 +153,15 @@ theorem ideal_divisor_bound (F : Type) [Field F] [NumberField F]
       rw [Finset.prod_mul_distrib, heq]
     _ ≤ _ := mul_le_mul_of_nonneg_right hconst (by positivity)
 
-private theorem sqrt_sum (N : ℕ) : (∑ i ∈ Finset.range N, ((i+1:ℕ):ℝ)^(-(1/2:ℝ))) ≤ 2 * Real.sqrt N := by
+theorem sqrt_sum (N : ℕ) : (∑ i ∈ Finset.range N, ((i+1:ℕ):ℝ)^(-(1/2:ℝ))) ≤ 2 * Real.sqrt N := by
   have step (i : ℕ) : ((i+1:ℕ):ℝ)^(-(1/2:ℝ)) ≤ 2 * (Real.sqrt (i+1) - Real.sqrt i) := by
     rw [Real.rpow_neg (by positivity), ← Real.sqrt_eq_rpow]
     norm_num only [Nat.cast_add, Nat.cast_one]
-    have hp : 0 < Real.sqrt (i+1) := Real.sqrt_pos.2 (by positivity)
+    have hp : 0 < Real.sqrt (i+1) := by positivity
     rw [inv_eq_one_div, div_le_iff₀ hp]
     have h1 := Real.sq_sqrt (show 0 ≤ (i:ℝ)+1 by positivity)
     have h0 := Real.sq_sqrt (show 0 ≤ (i:ℝ) by positivity)
     have hd := sq_nonneg (Real.sqrt (i+1) - Real.sqrt i)
-    norm_num only [Nat.cast_add, Nat.cast_one]
     nlinarith
   induction N with
   | zero => simp
@@ -184,8 +182,6 @@ private theorem weighted {F : Type} [Field F] [NumberField F] (K : ℝ)
       ((u.filter (fun I => Ideal.absNorm I.val - 1 < k)).card : ℝ) := by
     simp only [f, ← Finset.sum_boole]
     rw [Finset.sum_comm]
-    apply Finset.sum_congr rfl
-    intro I hI
     simp
   have hfc (k : ℕ) (hk : k ≤ N) : ∑ i ∈ Finset.range k, f i ≤
       ∑ i ∈ Finset.range k, K := by
@@ -211,8 +207,7 @@ private theorem weighted {F : Type} [Field F] [NumberField F] (K : ℝ)
     calc ∑ I ∈ u with Ideal.absNorm I.val - 1 = i, g (Ideal.absNorm I.val - 1)
         = ∑ I ∈ u with Ideal.absNorm I.val - 1 = i, g i := by
             apply Finset.sum_congr rfl
-            intro I hI
-            rw [(Finset.mem_filter.mp hI).2]
+            simp_all
          _ = f i * g i := by simp [f, nsmul_eq_mul]
   rw [he, Finset.mul_sum]
   exact Finset.sum_mul_le_sum_mul_of_sum_range_le hfc hg0 (hg.antitoneOn _)
@@ -272,7 +267,7 @@ theorem ideal_norm_summation_bounds (F : Type) [Field F] [NumberField F] :
     have hw := weighted K hK u ⌊X⌋₊ (fun I hI => by
       have hmem : I ∈ normBoundedIdeals F X := (normBoundedIdeals_finite F X).mem_toFinset.mp hI
       exact Nat.le_floor (show (Ideal.absNorm I.val : ℝ) ≤ X from hmem))
-      g (fun i => by dsimp [g]; positivity) hg
+      g (fun i => by positivity) hg
     have he2 : (fun I : NonzeroIdeal F => g (Ideal.absNorm I.val - 1)) =
         (fun I => (Ideal.absNorm I.val : ℝ)^(-(1/2:ℝ))) := by
       funext I
@@ -283,5 +278,3 @@ theorem ideal_norm_summation_bounds (F : Type) [Field F] [NumberField F] :
       _ ≤ K * (2 * Real.sqrt ⌊X⌋₊) := mul_le_mul_of_nonneg_left (sqrt_sum _) hK0.le
       _ ≤ K * (2 * Real.sqrt X) := by gcongr; exact Nat.floor_le (by linarith)
       _ = _ := by rw [← Real.sqrt_eq_rpow]; ring
-
-end DedekindZetaZeroFree.Detector

@@ -45,7 +45,7 @@ def rawArchProjection : RawCover F ζ hζ →* RawArchGroup F :=
   (MulAction.toPermHom (ConjAct (Matrix.GeneralLinearGroup (Fin 2) R)) _).comp
     ConjAct.toConjAct.toMonoidHom
 
-private theorem adjHom_apply {R : Type*} [CommRing R]
+theorem adjHom_apply {R : Type*} [CommRing R]
     (g : Matrix.GeneralLinearGroup (Fin 2) R) (m : Matrix (Fin 2) (Fin 2) R) :
     adjHom g m = g.val * m * g.inv := rfl
 
@@ -56,8 +56,7 @@ private theorem adjHom_apply {R : Type*} [CommRing R]
   change (Matrix.scalar (Fin 2) u.val * m) *
     (Matrix.GeneralLinearGroup.scalar (Fin 2) u).inv = m
   rw [Matrix.scalar_comm _ (fun _ => Commute.all _ _), mul_assoc]
-  simpa using congrArg (fun n : Matrix (Fin 2) (Fin 2) R => m * n)
-    (Matrix.GeneralLinearGroup.scalar (Fin 2) u).val_inv
+  simp
 
  def adelicAdj : KPAdelicCoverRestrictedProduct.AdelicPGL2 F →*
     Equiv.Perm (Matrix (Fin 2) (Fin 2) (KPAdelicCoverRestrictedProduct.Adeles F)) :=
@@ -65,7 +64,7 @@ private theorem adjHom_apply {R : Type*} [CommRing R]
     rintro g ⟨u, rfl⟩
     exact adjHom_scalar u)
 
-private theorem scalar_of_adj_singles {R : Type*} [CommRing R]
+theorem scalar_of_adj_singles {R : Type*} [CommRing R]
     (g : Matrix.GeneralLinearGroup (Fin 2) R)
     (hg : ∀ i j, adjHom g (Matrix.single i j 1) = Matrix.single i j 1) :
     g ∈ (Matrix.GeneralLinearGroup.scalar (Fin 2)).range := by
@@ -77,7 +76,7 @@ private theorem scalar_of_adj_singles {R : Type*} [CommRing R]
   rw [adjHom_apply, mul_assoc, g.inv_val, mul_one] at h
   exact h.symm
 
-private theorem adelicAdj_continuous (i j k l : Fin 2) :
+theorem adelicAdj_continuous (i j k l : Fin 2) :
     Continuous (fun x : KPAdelicCoverRestrictedProduct.AdelicPGL2 F =>
       adelicAdj F x (Matrix.single i j 1) k l) := by
   apply (QuotientGroup.isQuotientMap_mk
@@ -88,7 +87,7 @@ private theorem adelicAdj_continuous (i j k l : Fin 2) :
   exact (continuous_apply l).comp ((continuous_apply k).comp
     ((Units.continuous_val.matrix_mul continuous_const).matrix_mul Units.continuous_coe_inv))
 
-private theorem map_scalar_detect {R S : Type*} [Field R] [CommRing S] [Nontrivial S]
+theorem map_scalar_detect {R S : Type*} [Field R] [CommRing S] [Nontrivial S]
     (f : R →+* S) (g : Matrix.GeneralLinearGroup (Fin 2) R)
     (hg : Matrix.GeneralLinearGroup.map f g ∈
       (Matrix.GeneralLinearGroup.scalar (Fin 2)).range) :
@@ -96,7 +95,7 @@ private theorem map_scalar_detect {R S : Type*} [Field R] [CommRing S] [Nontrivi
   obtain ⟨u, hu⟩ := hg
   have he (i j : Fin 2) : f (g i j) =
       (Matrix.GeneralLinearGroup.scalar (Fin 2) u) i j :=
-    congrArg (fun m : Matrix.GeneralLinearGroup (Fin 2) S => m i j) hu.symm
+    by simp_all
   have h00 : f (g 0 0) = (u : S) := by simpa using he 0 0
   have hn : g 0 0 ≠ 0 := by
     intro h
@@ -112,7 +111,7 @@ private theorem map_scalar_detect {R S : Type*} [Field R] [CommRing S] [Nontrivi
   · simpa [Matrix.GeneralLinearGroup.coe_scalar, Matrix.scalar,
       Matrix.diagonal, hij] using (he i j).symm
 
-private theorem rational_adj_formula (g : KubotaRankTwo.GL2 F) (i j k l : Fin 2) :
+theorem rational_adj_formula (g : KubotaRankTwo.GL2 F) (i j k l : Fin 2) :
     adelicAdj F (KPRationalAdelicSplitting.rationalPGLBase F
       (KPRationalAdelicSplitting.rationalPGLQuotient F g)) (Matrix.single i j 1) k l =
     algebraMap F (KPAdelicCoverRestrictedProduct.Adeles F)
@@ -127,7 +126,7 @@ private theorem rational_adj_formula (g : KubotaRankTwo.GL2 F) (i j k l : Fin 2)
     ← Matrix.map_single, ← Matrix.map_mul, ← Matrix.map_mul]
   rfl
 
-private theorem rational_arch_injective :
+theorem rational_arch_injective :
     Function.Injective ((rawArchProjection F ζ hζ).comp
       (KPRationalAdelicSplitting.rationalPGLHom F ζ hζ)) := by
   apply (((rawArchProjection F ζ hζ).comp
@@ -156,7 +155,7 @@ private theorem rational_arch_injective :
     rwa [Matrix.ProjGenLinGroup.mk_eq_one,
       Matrix.GeneralLinearGroup.center_eq_range_scalar] at hf
 
-private theorem rational_discrete :
+theorem rational_discrete :
     DiscreteTopology (rawRationalSubgroup F ζ hζ) := by
   letI := (KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover F ζ hζ).2.2.1
   have hc := (KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover F ζ hζ).2.2.2.continuous
@@ -241,14 +240,5 @@ theorem rawRational_arithmetic_certificate :
   obtain ⟨b, hb⟩ := y.property
   apply Subtype.ext
   have hab : a = b := rational_arch_injective F ζ hζ (by
-    change rawArchProjection F ζ hζ
-      (KPRationalAdelicSplitting.rationalPGLHom F ζ hζ a) =
-      rawArchProjection F ζ hζ
-        (KPRationalAdelicSplitting.rationalPGLHom F ζ hζ b)
-    rw [ha, hb]
-    exact hxy)
-  rw [← ha, ← hb, hab]
-
-end DedekindZetaZeroFree.ActualQuotientTopology.Arithmetic
-
-end
+    simp_all)
+  simp_all

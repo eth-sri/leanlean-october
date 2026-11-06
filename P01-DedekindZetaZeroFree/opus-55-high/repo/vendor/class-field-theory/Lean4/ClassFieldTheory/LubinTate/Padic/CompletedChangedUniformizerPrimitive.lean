@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Primitive changed-uniformizer points in the completed p-adic level
 
@@ -39,7 +35,7 @@ open ValuationTheory.DiscreteValuationField
 
 /-- The integral primitive polynomial for the changed uniformizer `u * p`
 over the completed-unramified Witt valuation ring. -/
-noncomputable def padicChangedCompletedPrimitivePolynomialInteger
+def padicChangedCompletedPrimitivePolynomialInteger
     (p : ℕ) [Fact p.Prime]
     (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
     Polynomial
@@ -53,7 +49,7 @@ noncomputable def padicChangedCompletedPrimitivePolynomialInteger
 
 /-- The field-valued changed primitive polynomial after extension from
 `ℚ_[p]` to the completed-unramified fraction field. -/
-noncomputable def padicChangedCompletedPrimitivePolynomial
+def padicChangedCompletedPrimitivePolynomial
     (p : ℕ) [Fact p.Prime]
     (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
     Polynomial (padicCompletedUnramifiedField p) :=
@@ -384,7 +380,7 @@ theorem padicChangedUniformizerThetaValue_adjoin_completedBase_eq_top
 
 /-- The theta value supplies a power basis of the completed standard level
 over the completed-unramified field. -/
-noncomputable def padicChangedUniformizerThetaPowerBasis
+def padicChangedUniformizerThetaPowerBasis
     (p : ℕ) [Fact p.Prime]
     (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
     PowerBasis (padicCompletedUnramifiedField p)
@@ -408,7 +404,3 @@ theorem padicChangedUniformizerThetaPowerBasis_gen
         (padicCompletedLevelCompleteDVF p n).valuationSubring) :
           padicCompletedLevelField p n) :=
   PowerBasis.ofAdjoinEqTop_gen _ _
-
-end LubinTate
-
-end

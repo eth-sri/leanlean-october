@@ -116,7 +116,7 @@ theorem summable_norm_term
   simpa only [orbitIntegral_eq_term A σ η hS P hne hnormalized ρ X Y Z hX] using ht
 end Assembly
 
-private theorem modulus_generator (A : SArithmeticData F)
+theorem modulus_generator (A : SArithmeticData F)
     (D : ComparisonPoissonCoefficientData F A) (s : A.Exterior) :
     PoissonNormalizedRow.modulus A (D.generator s) = A.exteriorNorm s :=
   ProbePoissonDualAbsolute.principalNorm_generator A D s
@@ -284,5 +284,3 @@ theorem exact_orbit_formula (A : SArithmeticData F) (σ : F →+* ℂ)
     (hn.of_norm.prod_factor s).comp_injective e.injective
   rw [← e.tsum_eq (fun i => term A σ η hS P ρ X Y Z (s,i)), hs.tsum_prod]
   simp only [term, e, Equiv.prodAssoc_apply, mul_assoc, tsum_mul_left]
-end
-end DedekindZetaZeroFree.ProbePoissonOrbitFormula

@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Metaplectic.Torus.NormalizedResidueCharacterE
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.KPTameTransposeLiteralMass
 
 open scoped NumberField Classical
@@ -36,14 +35,10 @@ theorem eventual_base_minus_test_exists
       F ζ hζ q S P hP .minus π m K hK hweyl hdescent
   have heta : KPTameJacquetBruhatTests.Raw.eta F ζ hζ q π (0 : Fin 3) =
       diagonalLift F ζ hζ q π (0, 0) := by
-    simp [KPTameJacquetBruhatTests.Raw.eta, eta, diagonalLift,
-      KPPGLLocalCover.A, KPStandardLocalRootLifts.A]
+    rfl
   have h1 : (1 : ActualCover F ζ hζ q) ∈ splitCongruenceSet F ζ hζ q m := by
     refine ⟨1, ?_⟩
-    show KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q)
-      (KPLocalCover.sectionMap F ζ hζ (Sum.inr q) (1 : KPLocalCube.LocalGL2 F q)) = 1
-    rw [show KPLocalCover.sectionMap F ζ hζ (Sum.inr q)
-      (1 : KPLocalCube.LocalGL2 F q) = 1 from rfl, map_one]
+    rfl
   refine ⟨test 0, (htest.1 0).1, ?_, ?_⟩
   · intro g hg
     obtain ⟨b, k, hk, rfl⟩ := (htest.1 0).2 hg
@@ -51,7 +46,3 @@ theorem eventual_base_minus_test_exists
   · have h := htest.2.2 0 (1 : ActualCover F ζ hζ q) h1
     rw [← heta]
     simpa using h
-
-end DedekindZetaZeroFree.KPTameTransposeLiteralMass
-
-end

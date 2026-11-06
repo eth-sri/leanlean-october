@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 namespace ClassFormation
 
 /-!
@@ -154,21 +151,6 @@ theorem relativeIndexCardinal_eq_index_of_finite {L K : Subgroup G} (hLK : L ≤
   rw [relativeIndexCardinal, intersectionIndexCardinal, Subgroup.relIndex, Subgroup.index]
   exact Nat.cast_card.symm
 
-/-- Establishes the identity `relativeIndexCardinal (le_refl K) = 1`. -/
-@[simp] theorem relativeIndexCardinal_self (K : Subgroup G) :
-    relativeIndexCardinal (le_refl K) = 1 := by
-  let α := K ⧸ K.subgroupOf K
-  let : Subsingleton α := by
-    constructor
-    intro q r
-    refine Quotient.inductionOn₂ q r ?_
-    intro x y
-    apply Quotient.eq''.mpr
-    rw [QuotientGroup.leftRel_apply, Subgroup.mem_subgroupOf]
-    exact (x⁻¹ * y).2
-  change Cardinal.mk α = 1
-  exact Cardinal.mk_eq_one α
-
 /-- Relative cardinal indices multiply in every subgroup tower. -/
 theorem relativeIndexCardinal_mul {M L K : Subgroup G}
     (hML : M ≤ L) (hLK : L ≤ K) :
@@ -185,7 +167,7 @@ theorem relativeIndexCardinal_mul {M L K : Subgroup G}
   map_one' := Subtype.ext (map_one d)
   map_mul' x y := Subtype.ext (map_mul d x.1 y.1)
 
-private theorem subgroupMapRestriction_surjective (d : G →* D) (K : Subgroup G) :
+theorem subgroupMapRestriction_surjective (d : G →* D) (K : Subgroup G) :
     Function.Surjective (subgroupMapRestriction d K) := by
   rintro ⟨_, x, hx, rfl⟩
   exact ⟨⟨x, hx⟩, rfl⟩
@@ -198,7 +180,7 @@ private theorem subgroupMapRestriction_surjective (d : G →* D) (K : Subgroup G
   simp only [QuotientGroup.leftRel_apply, Subgroup.mem_subgroupOf,
     Subgroup.mem_comap]
   change d (x.1⁻¹ * y.1) ∈ H ↔ (d x.1)⁻¹ * d y.1 ∈ H
-  rw [map_mul, map_inv]
+  simp
 
  noncomputable def relativeCosetComapMap (d : G →* D)
     (H : Subgroup D) (K : Subgroup G) :
@@ -246,7 +228,7 @@ private theorem subgroupMapRestriction_surjective (d : G →* D) (K : Subgroup G
     ext x
     simp only [Subgroup.mem_subgroupOf, Subgroup.mem_inf]
     rw [Subgroup.comap_map_eq]
-    exact (and_iff_right x.2).symm
+    simp
   exact (Subgroup.quotientEquivOfEq hsub.symm).trans
     (relativeCosetComapEquiv d (L.map d) K)
 
@@ -256,8 +238,8 @@ theorem intersectionIndexCardinal_image_eq_saturation (d : G →* D)
     (L K : Subgroup G) :
     Cardinal.lift.{u} (intersectionIndexCardinal (L.map d) (K.map d)) =
       Cardinal.lift.{v}
-        (intersectionIndexCardinal (K ⊓ (L ⊔ d.ker)) K) := by
-  exact (imageCosetEquivSaturation d L K).lift_cardinal_eq.symm
+        (intersectionIndexCardinal (K ⊓ (L ⊔ d.ker)) K) := 
+  (imageCosetEquivSaturation d L K).lift_cardinal_eq.symm
 
 /-- Cardinal form of the kernel contribution: intersecting both subgroups
 with the kernel gives the saturated inner index. -/
@@ -281,8 +263,7 @@ theorem relativeIndexCardinal_eq_map_mul_inf_ker (d : G →* D)
         Cardinal.lift.{v}
           (relativeIndexCardinal
             (show L ⊓ d.ker ≤ K ⊓ d.ker from inf_le_inf hLK le_rfl)) := by
-  have hLS : L ≤ K ⊓ (L ⊔ d.ker) := fun _ hx ↦
-    ⟨hLK hx, (show L ≤ L ⊔ d.ker from le_sup_left) hx⟩
+  have hLS : L ≤ K ⊓ (L ⊔ d.ker) := by simp_all
   have hSK : K ⊓ (L ⊔ d.ker) ≤ K := inf_le_left
   calc
     Cardinal.lift.{v} (relativeIndexCardinal hLK) =
@@ -316,5 +297,3 @@ theorem relativeIndexCardinal_eq_map_mul_inf_ker (d : G →* D)
           Cardinal.lift.{v}
             (relativeIndexCardinal
               (show L ⊓ d.ker ≤ K ⊓ d.ker from inf_le_inf hLK le_rfl)) := mul_comm _ _
-
-end ClassFormation

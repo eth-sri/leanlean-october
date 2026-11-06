@@ -40,10 +40,10 @@ private theorem finiteProjection_continuous : Continuous (finiteProjection F ζ 
     (Filter.Eventually.of_forall (by intro v a ha; cases v <;> simpa using ha))
     (fun v => by cases v <;> first | exact continuous_const | exact continuous_id)
 
-private theorem finiteProjection_infinite (x : RestrictedCover F ζ hζ) (w : InfinitePlace F) :
+theorem finiteProjection_infinite (x : RestrictedCover F ζ hζ) (w : InfinitePlace F) :
     finiteProjection F ζ hζ x (Sum.inl w) = 1 := rfl
 
-private theorem finiteProjection_finite (x : RestrictedCover F ζ hζ)
+theorem finiteProjection_finite (x : RestrictedCover F ζ hζ)
     (q : IsDedekindDomain.HeightOneSpectrum (𝓞 F)) :
     finiteProjection F ζ hζ x (Sum.inr q) = x (Sum.inr q) := rfl
 
@@ -89,7 +89,7 @@ private theorem finiteProjection_finite (x : RestrictedCover F ζ hζ)
   | inl w => simp [RestrictedProduct.mul_apply, archProjection_infinite, finiteProjection_infinite]
   | inr q => simp [RestrictedProduct.mul_apply, archProjection_finite, finiteProjection_finite]
 
-private theorem archProjection_mem (K : Subgroup (G F ζ hζ))
+theorem archProjection_mem (K : Subgroup (G F ζ hζ))
     (hK : IwasawaCompact F ζ hζ K)
     (x : PrincipalOfKP.fullCompactPreimageMax F ζ hζ) :
     quotientHom F ζ hζ (archProjection F ζ hζ x.val) ∈ K := by
@@ -132,7 +132,7 @@ private theorem finiteCompactSet_compact : IsCompact (finiteCompactSet F ζ hζ)
   rw [← he]
   exact hc.map (quotientHom F ζ hζ)
 
-private theorem fullCompact_factorization_commuting (K : Subgroup (G F ζ hζ))
+theorem fullCompact_factorization_commuting (K : Subgroup (G F ζ hζ))
     (hK : IwasawaCompact F ζ hζ K)
     (k : PrincipalOfKP.iwasawaCompactSubgroupMax F ζ hζ) :
     ∃ (a : K) (b : KPGlobalTorusFunctionData.finitePart F ζ hζ),

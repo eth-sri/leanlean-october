@@ -21,10 +21,10 @@ local instance smallRegionBorelSpaceUnits : BorelSpace Kˣ := ⟨by
   rw [BorelSpace.measurable_eq (α := K),
     (Units.isEmbedding_val₀ (G₀ := K)).isInducing.eq_induced, borel_comap]⟩
 
-private lemma q_gt_one : (1 : ℝ) < KPCubicUnitIndices.residueCard K := by
+lemma q_gt_one : (1 : ℝ) < KPCubicUnitIndices.residueCard K := by
   exact_mod_cast (lt_of_lt_of_le (by decide : 1 < 2) (KPCubicUnitIndices.two_le_residueCard K))
 
-private lemma abs_formula (y : Kˣ) : KPCubicHaar.abs K (y : K) =
+lemma abs_formula (y : Kˣ) : KPCubicHaar.abs K (y : K) =
     (KPCubicUnitIndices.residueCard K : ℝ) ^ (-KPCubicExpansion.valuationExponent K y) := by
   simp [KPCubicHaar.abs, y.ne_zero, KPCubicExpansion.valuationExponent]
 
@@ -33,7 +33,7 @@ private lemma small_iff (y : Kˣ) : y ∈ small K ↔ 0 < KPCubicExpansion.valua
   rw [abs_formula, zpow_lt_one_iff_right₀ (q_gt_one K)]
   omega
 
-private lemma exponent_locally_constant (y : Kˣ) :
+lemma exponent_locally_constant (y : Kˣ) :
     ∀ᶠ x : Kˣ in nhds y, KPCubicExpansion.valuationExponent K x =
       KPCubicExpansion.valuationExponent K y := by
   letI : TopologicalSpace (ValueGroupWithZero K) := WithZeroTopology.topologicalSpace
@@ -46,7 +46,7 @@ private lemma exponent_locally_constant (y : Kˣ) :
   filter_upwards [Filter.tendsto_pure.mp h] with x hx
   simp [KPCubicExpansion.valuationExponent, hx]
 
-private lemma shell_measurable (n : ℤ) :
+lemma shell_measurable (n : ℤ) :
     MeasurableSet {y : Kˣ | KPCubicExpansion.valuationExponent K y = n} := by
   apply IsOpen.measurableSet
   rw [isOpen_iff_mem_nhds]
@@ -54,7 +54,7 @@ private lemma shell_measurable (n : ℤ) :
   filter_upwards [exponent_locally_constant K y] with x hx
   exact hx.trans hy
 
-private lemma zero_shell : {y : Kˣ | KPCubicExpansion.valuationExponent K y = 0} =
+lemma zero_shell : {y : Kˣ | KPCubicExpansion.valuationExponent K y = 0} =
     {y : Kˣ | (y : K) ∈ 𝒪[K] ∧ ((y⁻¹ : Kˣ) : K) ∈ 𝒪[K]} := by
   ext y
   have hne : (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K)
@@ -77,7 +77,7 @@ private lemma zero_shell : {y : Kˣ | KPCubicExpansion.valuationExponent K y = 0
   · rintro ⟨h1, h2⟩
     exact le_antisymm h1 ((inv_le_one₀ ((Valuation.ne_zero_iff (valuation K)).mpr y.ne_zero).bot_lt).mp h2)
 
-private lemma rawIntegrand_eq_b_zpow_on_small_region (b u : ℂˣ) (y : Kˣ) (hy : y ∈ small K) :
+lemma rawIntegrand_eq_b_zpow_on_small_region (b u : ℂˣ) (y : Kˣ) (hy : y ∈ small K) :
     rawIntegrand K b u y = (b ^ KPCubicExpansion.valuationExponent K y : ℂˣ) := by
   have hv : valuation K (y : K) < 1 := by
     simpa using (KPCubicHaar.abs_lt_iff K (one_ne_zero : (1 : K) ≠ 0)).mp (by simpa [small] using hy)
@@ -113,7 +113,7 @@ theorem small_region (dx : Measure K) [dx.IsAddHaarMeasure]
     intro y hi hj
     change KPCubicExpansion.valuationExponent K y = (i + 1 : ℕ) at hi
     change KPCubicExpansion.valuationExponent K y = (j + 1 : ℕ) at hj
-    exact hij (by omega)
+    omega
   have hcover : (⋃ j, shell j) = small K := by
     ext y
     simp only [Set.mem_iUnion, small_iff]
@@ -128,7 +128,7 @@ theorem small_region (dx : Measure K) [dx.IsAddHaarMeasure]
   have hval (j : ℕ) (y : Kˣ) (hy : y ∈ shell j) : rawIntegrand K b u y = (b : ℂ) ^ (j + 1) := by
     have hys : y ∈ small K := by rw [← hcover]; exact Set.mem_iUnion.mpr ⟨j, hy⟩
     rw [rawIntegrand_eq_b_zpow_on_small_region K b u y hys, hy]
-    rw [zpow_natCast, Units.val_pow_eq_pow_val]
+    rfl
   haveI : ν.IsHaarMeasure := (kp_rankone_cubic_haar_power_measure K dx m hm hvol).1
   obtain ⟨p, hp⟩ := ValuativeRel.valuation_surjective (K := K) (uniformizer K)
   have hp0 : p ≠ 0 := by
@@ -193,7 +193,7 @@ variable (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
   measurable_mul_const a := by
     apply measurable_comap_iff.mpr
     exact (measurable_mul_const (a : K)).comp MeasurableSpace.le_map_comap
-private lemma abs_v (y : Kˣ) :
+lemma abs_v (y : Kˣ) :
     KPCubicHaar.abs K (y : K) = (KPCubicUnitIndices.residueCard K : ℝ) ^ (-KPCubicExpansion.valuationExponent K y) := by
   simp [KPCubicHaar.abs, y.ne_zero, KPCubicExpansion.valuationExponent]
 private lemma abs_le (y : Kˣ) :
@@ -207,7 +207,7 @@ private lemma unitSet :
   rw [Valuation.mem_integer_iff, Valuation.mem_integer_iff, ← abs_le K y, ← abs_le K y⁻¹]
   simp only [Units.val_inv_eq_inv_val, KPCubicHaar.abs_inv]
   constructor
-  · intro h; change KPCubicHaar.abs K (y : K) = 1 at h; simp [h]
+  · intro h; simp_all
   · rintro ⟨h, hi⟩
     have hp := KPCubicHaar.abs_pos K y.ne_zero
     have h' : 1 ≤ KPCubicHaar.abs K (y : K) := (inv_le_one₀ hp).mp hi
@@ -239,25 +239,25 @@ private lemma shell_mass (dx : Measure K) [dx.IsAddHaarMeasure]
     exact (inv_mul_eq_one₀ (pow_ne_zero _ hq.ne')).trans eq_comm
   rw [← hs, measure_preimage_mul, unitSet K]
   exact hH.2
-private lemma large_value (b u : ℂˣ) (y : Kˣ)
+lemma large_value (b u : ℂˣ) (y : Kˣ)
     (hy : 1 < KPCubicHaar.abs K (y : K)) :
     rawIntegrand K b u y = ((b * u) ^ KPCubicExpansion.valuationExponent K y : ℂˣ) /
       (KPCubicHaar.abs K (y : K) : ℂ) := by
   have hv : 1 < valuation K (y : K) := by
     simpa only [map_one] using (KPCubicHaar.abs_lt_iff K (x := (1 : K)) y.ne_zero).mp (by simpa using hy)
-  have hs : valuation K (1 - (y : K)) = valuation K (y : K) := by
-    exact (valuation K).map_sub_eq_of_lt_right (by simpa using hv)
+  have hs : valuation K (1 - (y : K)) = valuation K (y : K) := 
+    (valuation K).map_sub_eq_of_lt_right (by simpa using hv)
   have hne : 1 - (y : K) ≠ 0 := by
     intro h
     have hv0 := (Valuation.ne_zero_iff (valuation K)).mpr y.ne_zero
-    exact hv0 (by simpa [h] using hs.symm)
+    simp_all
   have he : KPCubicExpansion.valuationExponent K (Units.mk0 (1 - (y : K)) hne) =
       KPCubicExpansion.valuationExponent K y := by
     simp [KPCubicExpansion.valuationExponent, hs]
   have ha : KPCubicHaar.abs K (1 - (y : K)) = KPCubicHaar.abs K (y : K) := by
     simp [KPCubicHaar.abs, hne, y.ne_zero, hs]
   simp [rawIntegrand, hne, he, ha, KPRankOneCubicProjection.eta, mul_zpow, Units.val_mul]
-private lemma shell_value (b u : ℂˣ) (y : Kˣ) (j : ℕ)
+lemma shell_value (b u : ℂˣ) (y : Kˣ) (j : ℕ)
     (hy : KPCubicHaar.abs K (y : K) = (KPCubicUnitIndices.residueCard K : ℝ) ^ (j + 1)) :
     rawIntegrand K b u y = (rawA K / ((b : ℂ) * (u : ℂ))) ^ (j + 1) := by
   have hq : (1 : ℝ) < KPCubicUnitIndices.residueCard K := by
@@ -272,7 +272,7 @@ private lemma shell_value (b u : ℂˣ) (y : Kˣ) (j : ℕ)
   simp only [zpow_neg, zpow_natCast, Units.val_inv_eq_inv_val, Units.val_pow_eq_pow_val,
     Units.val_mul, Complex.ofReal_pow, Complex.ofReal_natCast, div_pow, rawA, inv_pow]
   ring
-private lemma large_cover : large K = ⋃ j : ℕ,
+lemma large_cover : large K = ⋃ j : ℕ,
     {y : Kˣ | KPCubicHaar.abs K (y : K) = (KPCubicUnitIndices.residueCard K : ℝ) ^ (j + 1)} := by
   have hq : (1 : ℝ) < KPCubicUnitIndices.residueCard K := by
     exact_mod_cast (lt_of_lt_of_le (by decide : 1 < 2) (KPCubicUnitIndices.two_le_residueCard K))
@@ -328,13 +328,13 @@ theorem large_region (dx : Measure K) [dx.IsAddHaarMeasure]
     apply Set.disjoint_left.mpr
     intro y hi hj
     have he := (pow_right_inj₀ hqp hq.ne').mp (hi.symm.trans hj)
-    exact hij (by omega)
+    omega
   have hmsh (j : ℕ) : ν (shell j) = ENNReal.ofReal
       (m * (1 - (KPCubicUnitIndices.residueCard K : ℝ)⁻¹)) :=
     shell_mass K dx m hm hvol j
   have hfinite (j : ℕ) : ν (shell j) ≠ ⊤ := by rw [hmsh]; exact ENNReal.ofReal_ne_top
-  have hmpos : 0 ≤ m * (1 - (KPCubicUnitIndices.residueCard K : ℝ)⁻¹) := by
-    exact mul_nonneg hm.le (sub_nonneg.mpr ((inv_le_one₀ hqp).mpr hq.le))
+  have hmpos : 0 ≤ m * (1 - (KPCubicUnitIndices.residueCard K : ℝ)⁻¹) := 
+    mul_nonneg hm.le (sub_nonneg.mpr ((inv_le_one₀ hqp).mpr hq.le))
   have hmass (j : ℕ) : ν.real (shell j) = m * (1 - (KPCubicUnitIndices.residueCard K : ℝ)⁻¹) := by
     rw [Measure.real, hmsh, ENNReal.toReal_ofReal hmpos]
   have hsum := KPRankOneBetaUnramified.ShellIntegrals.geometric_shell_integral ν shell hmeas hdisj
@@ -393,7 +393,7 @@ private theorem coords (dx : Measure K) (g : K → ℂ) (hg : g 0 = 0) :
     ext x
     exact Units.exists_iff_ne_zero (p := (· = x)) |>.trans (by simp)
   have hi : (Set.range (fun y : Kˣ => (y : K))).indicator g = g := by
-    funext x; rw [hrange]; by_cases h : x = 0 <;> simp [h, hg]
+    simp_all
   have hmeas : Measurable (fun x => ENNReal.ofReal ((KPCubicHaar.abs K x)⁻¹)) :=
     (KPRamifiedBetaConductorSeries.normalizedAbs_measurable K).inv.ennreal_ofReal
   have hsmul : (fun x => (ENNReal.ofReal ((KPCubicHaar.abs K x)⁻¹)).toReal • g x) =
@@ -416,7 +416,7 @@ private theorem coords (dx : Measure K) (g : K → ℂ) (hg : g 0 = 0) :
     rw [integral_withDensity_eq_integral_toReal_smul hmeas (by simp), hsmul]
  def weight (u : ℂˣ) (x : K) : ℂ :=
   if hx : x = 0 then 0 else (u ^ KPCubicExpansion.valuationExponent K (Units.mk0 x hx) : ℂ)
-private theorem rawIntegrand_eq_valuationWeight_of_abs_lt_one (b u : ℂˣ) (y : Kˣ)
+theorem rawIntegrand_eq_valuationWeight_of_abs_lt_one (b u : ℂˣ) (y : Kˣ)
     (hy : KPCubicHaar.abs K (y : K) < 1) : rawIntegrand K b u y = weight K b y := by
   have hv : valuation K (y : K) < 1 := by
     simpa using (KPCubicHaar.abs_lt_iff K (one_ne_zero : (1 : K) ≠ 0)).mp (by simpa using hy)
@@ -427,9 +427,9 @@ private theorem rawIntegrand_eq_valuationWeight_of_abs_lt_one (b u : ℂˣ) (y :
   have he : KPCubicExpansion.valuationExponent K (Units.mk0 (1 - (y : K)) hne) = 0 := by
     simp [KPCubicExpansion.valuationExponent, hs]
   have ha : KPCubicHaar.abs K (1 - (y : K)) = 1 := by simp [KPCubicHaar.abs, hne, hs]
-  have hmk : Units.mk0 (y : K) y.ne_zero = y := by ext; rfl
+  have hmk : Units.mk0 (y : K) y.ne_zero = y := by simp
   simp [rawIntegrand, hne, he, ha, KPRankOneCubicProjection.eta, weight, y.ne_zero, hmk]
-private theorem near_abs (x : K) (hx : KPCubicHaar.abs K (1 - x) < 1) :
+theorem near_abs (x : K) (hx : KPCubicHaar.abs K (1 - x) < 1) :
     KPCubicHaar.abs K x = 1 := by
   have hv : valuation K (1 - x) < 1 := by
     simpa using (KPCubicHaar.abs_lt_iff K (one_ne_zero : (1 : K) ≠ 0)).mp (by simpa using hx)
@@ -438,7 +438,7 @@ private theorem near_abs (x : K) (hx : KPCubicHaar.abs K (1 - x) < 1) :
       (x := (1 : K)) (y := 1 - x) (by simpa only [map_one] using hv)
   have hn : x ≠ 0 := by intro h; simp [h] at hs
   simp [KPCubicHaar.abs, hn, hs]
-private theorem near_value (b u : ℂˣ) (y : Kˣ)
+theorem near_value (b u : ℂˣ) (y : Kˣ)
     (hy : KPCubicHaar.abs K (1 - (y : K)) < 1) :
     rawIntegrand K b u y = weight K u (1 - (y : K)) / (KPCubicHaar.abs K (1 - (y : K)) : ℂ) := by
   have ha := near_abs K (y : K) hy
@@ -487,7 +487,7 @@ theorem near_one_region (dx : Measure K) [dx.IsAddHaarMeasure] (m : ℝ) (hm : 0
     funext x
     by_cases hx : KPCubicHaar.abs K x < 1
     · simp only [h, sub_sub_cancel, if_pos hx, g]
-      simp [hx, Complex.real_smul, div_eq_mul_inv, mul_comm]
+      simp [Complex.real_smul, div_eq_mul_inv, mul_comm]
     · simp [h, g, hx]
   have hs := small_region K dx m hm hvol u b hu
   have hc := coords K dx g hg
@@ -551,7 +551,7 @@ def formula (m : ℝ) (b u : ℂ) : ℂ :=
 def ConvergenceRegion (b u : ℂ) : Prop :=
   aReal K < ‖b‖ ∧ ‖b‖ < 1 ∧ aReal K / ‖b‖ < ‖u‖ ∧ ‖u‖ < 1
 
-private lemma aReal_bounds : 0 < aReal K ∧ aReal K < 1 := by
+lemma aReal_bounds : 0 < aReal K ∧ aReal K < 1 := by
   have hq : (1 : ℝ) < KPCubicUnitIndices.residueCard K := by
     exact_mod_cast (lt_of_lt_of_le (by decide : 1 < 2) (KPCubicUnitIndices.two_le_residueCard K))
   constructor
@@ -571,7 +571,7 @@ theorem integral_three_region (dx : Measure K) [dx.IsAddHaarMeasure]
       betaIntegral K dx b u = formula K m b u := by
   have hprod : (KPCubicUnitIndices.residueCard K : ℝ)⁻¹ <
       ‖(b : ℂ)‖ * ‖(u : ℂ)‖ := by
-    have hbpos : 0 < ‖(b : ℂ)‖ := lt_trans (aReal_bounds K).1 hbu.1
+    have hbpos : 0 < ‖(b : ℂ)‖ := by simp
     simpa only [aReal, mul_comm] using (div_lt_iff₀ hbpos).mp hbu.2.2.1
   obtain ⟨hs, hsi⟩ := RegionDecomposition.small_region K dx m hm hvol b u hbu.2.1
   obtain ⟨hn, hni⟩ := RegionDecomposition.near_one_region K dx m hm hvol b u hbu.2.2.2
@@ -589,8 +589,3 @@ theorem integral_three_region (dx : Measure K) [dx.IsAddHaarMeasure]
     (m : ℂ) * (1 - 2 * a K) = formula K m b u
   unfold formula
   ring
-
-end
-end DedekindZetaZeroFree.KPRankOneUnramifiedBetaShells
-
-end

@@ -31,7 +31,7 @@ def weightedEnergy (d : ℝ) (a e : ℝ → ℝ) (v : ℝ → ℂ) : ℝ :=
 def conjugatedEnergy (d : ℝ) (a e : ℝ → ℝ) (w : ℝ → ℂ) : ℝ :=
   ∫ t : ℝ, d⁻¹ * ‖deriv w t‖ ^ 2 + (d + a t - e t) * ‖w t‖ ^ 2
 
-private lemma density_mul_exp_sq (d t : ℝ) :
+lemma density_mul_exp_sq (d t : ℝ) :
     density d t * (Real.exp (d * t)) ^ 2 = 1 := by
   have hc2 : (Real.exp (d * t)) ^ 2 = Real.exp (2 * (d * t)) := by
     rw [sq, ← Real.exp_add]
@@ -39,7 +39,7 @@ private lemma density_mul_exp_sq (d t : ℝ) :
   rw [density, hc2, ← Real.exp_add]
   rw [show -2 * d * t + 2 * (d * t) = 0 by ring, Real.exp_zero]
 
-private lemma deriv_undoConjugation (d : ℝ) (w : ℝ → ℂ) (hw : ContDiff ℝ ∞ w) (t : ℝ) :
+lemma deriv_undoConjugation (d : ℝ) (w : ℝ → ℂ) (hw : ContDiff ℝ ∞ w) (t : ℝ) :
     deriv (undoConjugation d w) t = Real.exp (d * t) • (d • w t + deriv w t) := by
   have hlin : HasDerivAt (fun s : ℝ => Real.exp (d * s)) (Real.exp (d * t) * d) t :=
     (Real.hasDerivAt_exp (d * t)).comp t (hasDerivAt_const_mul (x := t) d)
@@ -49,7 +49,7 @@ private lemma deriv_undoConjugation (d : ℝ) (w : ℝ → ℂ) (hw : ContDiff �
     Real.exp (d * t) • (d • w t + deriv w t)
   rw [hsmul.deriv, smul_add, smul_smul, add_comm]
 
-private lemma integrand_identity (d : ℝ) (hd : d ≠ 0) (a e : ℝ → ℝ)
+lemma integrand_identity (d : ℝ) (hd : d ≠ 0) (a e : ℝ → ℝ)
     (w : ℝ → ℂ) (hw : ContDiff ℝ ∞ w) (t : ℝ) :
     density d t *
         (d⁻¹ * ‖deriv (undoConjugation d w) t‖ ^ 2 +
@@ -84,13 +84,13 @@ private lemma integrand_identity (d : ℝ) (hd : d ≠ 0) (a e : ℝ → ℝ)
         field_simp
         try ring
 
-private lemma hasCompactSupport_mul_norm_sq (c : ℝ) (w : ℝ → ℂ)
+lemma hasCompactSupport_mul_norm_sq (c : ℝ) (w : ℝ → ℂ)
     (hc : HasCompactSupport w) : HasCompactSupport (fun t => c * ‖w t‖ ^ 2) := by
   refine hc.mono' (fun x hx => ?_)
   rw [Function.mem_support] at hx
   exact subset_tsupport w (Function.mem_support.mpr (fun hv0 => hx (by simp [hv0])))
 
-private lemma integral_inner_deriv_eq_zero (w : ℝ → ℂ) (hw : ContDiff ℝ ∞ w)
+lemma integral_inner_deriv_eq_zero (w : ℝ → ℂ) (hw : ContDiff ℝ ∞ w)
     (hc : HasCompactSupport w) :
     ∫ t, 2 * inner ℝ (w t) (deriv w t) = 0 := by
   have hderiv : ∀ t, HasDerivAt (fun s => ‖w s‖ ^ 2)
@@ -99,7 +99,7 @@ private lemma integral_inner_deriv_eq_zero (w : ℝ → ℂ) (hw : ContDiff ℝ 
     have h1 : HasDerivAt w (deriv w t) t := (hw.differentiable (by simp) t).hasDerivAt
     simpa using h1.norm_sq
   have hcont' : Continuous (fun t => 2 * inner ℝ (w t) (deriv w t)) :=
-    continuous_const.mul (hw.continuous.inner (hw.continuous_deriv (by simp)))
+    by fun_prop
   have hc' : HasCompactSupport (fun t => 2 * inner ℝ (w t) (deriv w t)) := by
     refine hc.mono' (fun x hx => ?_)
     rw [Function.mem_support] at hx
@@ -111,7 +111,7 @@ private lemma integral_inner_deriv_eq_zero (w : ℝ → ℂ) (hw : ContDiff ℝ 
     (hcont'.integrable_of_hasCompactSupport hc')
     (hcont_mass.integrable_of_hasCompactSupport hc_mass)
 
-private lemma integrable_conj_integrand (d : ℝ) (a e : ℝ → ℝ) (ha : Continuous a)
+lemma integrable_conj_integrand (d : ℝ) (a e : ℝ → ℝ) (ha : Continuous a)
     (he : Continuous e) (w : ℝ → ℂ) (hw : ContDiff ℝ ∞ w) (hc : HasCompactSupport w) :
     Integrable (fun t => d⁻¹ * ‖deriv w t‖ ^ 2 + (d + a t - e t) * ‖w t‖ ^ 2) := by
   have hcont : Continuous
@@ -124,11 +124,11 @@ private lemma integrable_conj_integrand (d : ℝ) (a e : ℝ → ℝ) (ha : Cont
   rw [Function.mem_support] at hx
   exact hx (by simp [deriv_of_notMem_tsupport hx', image_eq_zero_of_notMem_tsupport hx'])
 
-private lemma integrable_inner_deriv (w : ℝ → ℂ) (hw : ContDiff ℝ ∞ w)
+lemma integrable_inner_deriv (w : ℝ → ℂ) (hw : ContDiff ℝ ∞ w)
     (hc : HasCompactSupport w) :
     Integrable (fun t => 2 * inner ℝ (w t) (deriv w t)) := by
   have hcont : Continuous (fun t => 2 * inner ℝ (w t) (deriv w t)) :=
-    continuous_const.mul (hw.continuous.inner (hw.continuous_deriv (by simp)))
+    by fun_prop
   refine hcont.integrable_of_hasCompactSupport ?_
   refine hc.mono' (fun x hx => ?_)
   rw [Function.mem_support] at hx
@@ -160,7 +160,7 @@ theorem scalar_conjugation_identity (d : ℝ) (hd : 0 < d)
     rw [integral_add (integrable_conj_integrand d a e ha he w hw hc)
       (integrable_inner_deriv w hw hc), integral_inner_deriv_eq_zero w hw hc, add_zero]
 
-private lemma conj_energy_lower_bound (d : ℝ) (hd : 0 < d) (a : ℝ → ℝ)
+lemma conj_energy_lower_bound (d : ℝ) (hd : 0 < d) (a : ℝ → ℝ)
     (ha : Continuous a) (hapos : ∀ t : ℝ, 0 ≤ a t)
     (w : ℝ → ℂ) (hw : ContDiff ℝ ∞ w) (hc : HasCompactSupport w) :
     d * mass w ≤ conjugatedEnergy d a (fun _ => 0) w := by
@@ -170,7 +170,7 @@ private lemma conj_energy_lower_bound (d : ℝ) (hd : 0 < d) (a : ℝ → ℝ)
       (hasCompactSupport_mul_norm_sq d w hc))
     (integrable_conj_integrand d a (fun _ => 0) ha continuous_const w hw hc)
     (fun t => ?_)
-  simp only [Pi.zero_apply, sub_zero]
+  simp only [sub_zero]
   nlinarith [hapos t, sq_nonneg (‖w t‖), norm_nonneg (deriv w t), inv_pos.mpr hd]
 
 theorem scalar_zero_mode_lower_bound (d : ℝ) (hd : 0 < d)
@@ -180,7 +180,7 @@ theorem scalar_zero_mode_lower_bound (d : ℝ) (hd : 0 < d)
   have hfun : conjugate d v = fun t : ℝ => Real.exp (-d * t) • v t := rfl
   have hw_smooth : ContDiff ℝ ∞ (conjugate d v) := by
     rw [hfun]
-    exact (Real.contDiff_exp.comp (contDiff_const.mul contDiff_id)).smul hv
+    fun_prop
   have hw_compact : HasCompactSupport (conjugate d v) := by
     rw [hfun]
     refine hc.mono' (fun x hx => ?_)
@@ -191,25 +191,14 @@ theorem scalar_zero_mode_lower_bound (d : ℝ) (hd : 0 < d)
     have hthis : undoConjugation d (conjugate d v) t =
         Real.exp (d * t) • (Real.exp (-d * t) • v t) := rfl
     rw [hthis, smul_smul, ← Real.exp_add]
-    rw [show d * t + -d * t = 0 by ring, Real.exp_zero, one_smul]
+    simp
   obtain ⟨h1, h2⟩ := scalar_conjugation_identity d hd a (fun _ => 0) ha
     continuous_const (conjugate d v) hw_smooth hw_compact
   have hveq_fun : undoConjugation d (conjugate d v) = v := funext hveq
   have hmass : weightedMass d v = mass (conjugate d v) := by
-    rw [← h1]
-    refine integral_congr_ae (Eventually.of_forall fun t => ?_)
-    show density d t * ‖v t‖ ^ 2 = density d t * ‖undoConjugation d (conjugate d v) t‖ ^ 2
-    rw [hveq_fun]
+    simp_all
   have henergy : weightedEnergy d a (fun _ => 0) v =
       conjugatedEnergy d a (fun _ => 0) (conjugate d v) := by
-    rw [← h2]
-    refine integral_congr_ae (Eventually.of_forall fun t => ?_)
-    show density d t * (d⁻¹ * ‖deriv v t‖ ^ 2 + (a t - (fun _ => 0) t) * ‖v t‖ ^ 2) =
-      density d t * (d⁻¹ * ‖deriv (undoConjugation d (conjugate d v)) t‖ ^ 2 +
-        (a t - (fun _ => 0) t) * ‖undoConjugation d (conjugate d v) t‖ ^ 2)
-    rw [hveq_fun]
+    simp_all
   rw [hmass, henergy]
   exact conj_energy_lower_bound d hd a ha hapos (conjugate d v) hw_smooth hw_compact
-
-end
-end DedekindZetaZeroFree.KPRadialCoercivity

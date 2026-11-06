@@ -37,7 +37,7 @@ theorem complexWordSpan_generator (v : complexCore) (a : ComplexGenerator)
   | smul c x hx ih =>
     simpa using (complexWordSpan v).smul_mem c ih
 
-private theorem complexWordSpan_algebra (v : complexCore)
+theorem complexWordSpan_algebra (v : complexCore)
     (a : NativeComplexHCSource.algebra NativeComplexHCOperators.operators)
     (x : complexCore) (hx : x ∈ complexWordSpan v) :
     a.val x ∈ complexWordSpan v := by

@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.LargeSieve.Exponents.RecursionParameterEstima
 
 @[expose] public section
 
-noncomputable section
 
 open scoped NumberField Classical
 
@@ -28,22 +27,18 @@ theorem recursion_near_region (F : Type) [Field F] [NumberField F]
   intro M N hM hN hnear
   have hM0 : 0 ≤ M := by linarith
   have hN0 : 0 ≤ N := by linarith
-  have hTpos : 0 < M * N := mul_pos (by linarith) (by linarith)
+  have hTpos : 0 < M * N := by positivity
   have hr : 1 ≤ max 1 ⌈20 / η⌉₊ := le_max_left _ _
   have hrη : 20 / η ≤ ((max 1 ⌈20 / η⌉₊ : ℕ) : ℝ) := by
     refine le_trans (Nat.le_ceil (20 / η)) ?_
-    exact_mod_cast le_max_right 1 ⌈20 / η⌉₊
+    simp
   obtain ⟨h1, h2⟩ :=
     recursion_parameter_near α M N η (max 1 ⌈20 / η⌉₊) hα hM hN hη hr hrη hnear
   set d : ℝ := η / (8 * ((max 1 ⌈20 / η⌉₊ : ℕ) : ℝ) * (α + 1)) with hd
   set X : ℝ := Real.rpow N (2 * α - 1) * Real.rpow M (1 - α) with hX
   set cc : ℝ := Real.rpow 2 (α - 1) * Real.rpow (M * N) (d * (α - 1)) with hcc
   have hd0 : 0 < d := by
-    rw [hd]
-    apply div_pos hη
-    have : (1 : ℝ) ≤ ((max 1 ⌈20 / η⌉₊ : ℕ) : ℝ) := by
-      exact_mod_cast le_max_left 1 ⌈20 / η⌉₊
-    nlinarith [hα, this]
+    positivity
   have hXnn : 0 ≤ X := by
     rw [hX]; exact mul_nonneg (Real.rpow_nonneg hN0 _) (Real.rpow_nonneg hM0 _)
   have hcc1 : 1 ≤ cc := by
@@ -86,7 +81,3 @@ theorem recursion_near_region (F : Type) [Field F] [NumberField F]
           (M + N + X) := by
           rw [hcc, hsplit]; ring
     _ ≤ C0 * Real.rpow 2 (α - 1) * Real.rpow (M * N) η * (M + N + X) := hstep1
-
-end DedekindZetaZeroFree.LargeSieve.Sieve
-
-end

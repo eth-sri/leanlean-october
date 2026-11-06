@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Eisenstein.Sections.LiteralSeries
 
 @[expose] public section
 
-noncomputable section
 open scoped NumberField Classical Topology
 open NumberField MeasureTheory ValuativeRel
 namespace DedekindZetaZeroFree.KPLiteralExceptionalResidue.ResidueAutomorphy
@@ -30,7 +29,7 @@ theorem eisenstein_genuine (K : Subgroup (G F ζ hζ))
     have hker : KPAdelicCoverRestrictedProduct.pglCentralInjection F ζ hζ ε ∈
         (KPAdelicCoverRestrictedProduct.pglProjection F ζ hζ).ker := by
       rw [← KPAdelicCoverRestrictedProduct.pglCentralInjection_kernel F ζ hζ]
-      exact ⟨ε, rfl⟩
+      simp
     have hproj : KPAdelicCoverRestrictedProduct.pglProjection F ζ hζ r.val.val = 1 := by
       rw [hr]
       exact MonoidHom.mem_ker.mp hker
@@ -38,8 +37,7 @@ theorem eisenstein_genuine (K : Subgroup (G F ζ hζ))
     have ht : ((KPAdelicCoverRestrictedProduct.pglProjection F ζ hζ).restrict
         (fun t ht => ht)) r.val =
           (1 : KPGlobalTorusFunctionData.ordinaryTorus F) := Subtype.ext hproj
-    change KPGlobalTorusFunctionData.torusRatio F _ = 1
-    rw [ht, map_one]
+    simp_all
   have hd : KPGlobalTorusFunctionData.delta F ζ hζ r.val = 1 := by
     change KPGlobalTorusFunctionData.ideleAbs F (KPGlobalTorusFunctionData.p F ζ hζ r.val) = 1
     rw [hp, map_one]
@@ -58,7 +56,3 @@ theorem eisenstein_genuine (K : Subgroup (G F ζ hζ))
     (KPAdelicCoverRestrictedProduct.pglCentralInjection_central F ζ hζ ⟨ε, rfl⟩)
     (rationalLift F ζ hζ (Quotient.out c))
   rw [← mul_assoc, hcentral, mul_assoc, hv]
-
-end DedekindZetaZeroFree.KPLiteralExceptionalResidue.ResidueAutomorphy
-
-end

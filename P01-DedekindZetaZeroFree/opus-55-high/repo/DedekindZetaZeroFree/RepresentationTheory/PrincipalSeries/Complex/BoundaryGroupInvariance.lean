@@ -7,7 +7,6 @@ public import Mathlib.Analysis.Complex.UpperHalfPlane.Manifold
 
 @[expose] public section
 
-noncomputable section
 open MeasureTheory
 open scoped Topology
 namespace DedekindZetaZeroFree.CurrentComplexBoundary
@@ -31,15 +30,8 @@ theorem integral_inversion (β : ℂˣ) (f : ℂ → ℂ) :
     (fun z hz => (hd z (by simpa using hz)).hasFDerivWithinAt)
     (inv_injective.injOn) f
   have him : (fun z : ℂ => z⁻¹) '' ({0}ᶜ : Set ℂ) = {0}ᶜ := by
-    ext z
-    constructor
-    · rintro ⟨x,hx,rfl⟩
-      simpa using inv_ne_zero (show x ≠ 0 by simpa using hx)
-    · intro hz
-      exact ⟨z⁻¹,by simpa using inv_ne_zero (show z ≠ 0 by simpa using hz),inv_inv z⟩
-  rw [him] at he
-  simp only [hdet,Complex.real_smul] at he
-  simpa only [restrict_compl_singleton] using he.symm
+    simp
+  simp_all
 
 theorem pairing_weyl_invariant (β : ℂˣ) (s : ℝ)
     (f : PrincipalSeries s) (g : PrincipalSeries (-s)) :
@@ -62,7 +54,7 @@ open _root_.DedekindZetaZeroFree.KPCplxPrincipalSeriesCharts renaming open_bruha
 open _root_.DedekindZetaZeroFree.KPCplxPrincipalSeriesCharts renaming infinity_bruhat → infinity_bruhat
 open _root_.DedekindZetaZeroFree.KPCplxPrincipalSeriesCharts renaming row_nonzero → row_nonzero
 
-private theorem translated_mul (s : ℝ) (a b : ComplexGL2) (f : PrincipalSeries s) :
+theorem translated_mul (s : ℝ) (a b : ComplexGL2) (f : PrincipalSeries s) :
     rightTranslate s (a*b) f = rightTranslate s a (rightTranslate s b f) := by
   apply Subtype.ext
   funext x
@@ -95,6 +87,3 @@ theorem pairing_group_invariant (β : ℂˣ) (s : ℝ) (h : ComplexGL2)
     · obtain ⟨a,d,b,x,rfl⟩ := infinity_bruhat h h1
       exact hmul _ _ (hu a d b) (hl x)
   exact hh f g
-end DedekindZetaZeroFree.CurrentComplexBoundary
-
-end

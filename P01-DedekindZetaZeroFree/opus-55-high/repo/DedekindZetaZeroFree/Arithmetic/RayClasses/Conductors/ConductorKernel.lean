@@ -8,7 +8,6 @@ open scoped NumberField Classical
 open NumberField IsDedekindDomain
 open GlobalClassFieldTheory.GlobalClassFields
 
-noncomputable section
 namespace DedekindZetaZeroFree.PrimitiveRay
 
 variable {F : Type} [Field F] [NumberField F]
@@ -36,8 +35,8 @@ theorem conductorKernel (hc : NumberField.IsTotallyComplex F)
   obtain ⟨n, hn, hpow⟩ := ho
   letI : NeZero n := ⟨Nat.ne_of_gt hn⟩
   have hclosed : IsClosed ((Φ.toMonoidHom.ker : Subgroup (IdeleClassGroup F)) :
-      Set (IdeleClassGroup F)) := by
-    exact isClosed_singleton.preimage Φ.continuous
+      Set (IdeleClassGroup F)) := 
+    isClosed_singleton.preimage Φ.continuous
   have hrange : Φ.toMonoidHom.range ≤ rootsOfUnity n ℂ := by
     rintro _ ⟨c, rfl⟩
     exact (mem_rootsOfUnity n (Φ c)).mpr (hpow c)
@@ -80,7 +79,3 @@ theorem conductorKernel (hc : NumberField.IsTotallyComplex F)
       change Φ (IdeleGroup.finitePlaceIdeleClass v t) = 1
       apply hk t
       rwa [ClassFieldTheory.rayLocalHigherUnitGroup_eq_rayClass]
-
-end DedekindZetaZeroFree.PrimitiveRay
-
-end

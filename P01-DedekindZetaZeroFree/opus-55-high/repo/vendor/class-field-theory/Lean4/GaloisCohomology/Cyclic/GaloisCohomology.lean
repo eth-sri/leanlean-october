@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 namespace CyclicCohomology
 
 /-!
@@ -37,15 +32,11 @@ noncomputable section
 
 open CategoryTheory
 
-private theorem zpowers_eq_top_of_forall_mem_zpowers {G : Type} [Group G] (g : G)
+theorem zpowers_eq_top_of_forall_mem_zpowers {G : Type} [Group G] (g : G)
     (hg : ∀ x : G, x ∈ Subgroup.zpowers g) :
     Subgroup.zpowers g = ⊤ := by
   ext x
-  constructor
-  · intro _
-    exact Subgroup.mem_top x
-  · intro _
-    exact hg x
+  simp_all
 
  theorem isCyclic_of_forall_mem_zpowers {G : Type} [Group G] (g : G)
     (hg : ∀ x : G, x ∈ Subgroup.zpowers g) :
@@ -56,7 +47,7 @@ private theorem zpowers_eq_top_of_forall_mem_zpowers {G : Type} [Group G] (g : G
 /-- Low-degree Tate periodicity in degree one:
 for a finite cyclic group, `H¹(G,A)` is canonically isomorphic to mathlib's
 degree-minus-one Tate cohomology. -/
-noncomputable def cyclic_H1_iso_HminusOne {k G : Type} [CommRing k] [Group G]
+def cyclic_H1_iso_HminusOne {k G : Type} [CommRing k] [Group G]
     [Fintype G] (A : Rep k G) (g : G)
     (hg : ∀ x : G, x ∈ Subgroup.zpowers g) :
     groupCohomology A 1 ≅ tateCohomology A (-1) := by
@@ -66,7 +57,7 @@ noncomputable def cyclic_H1_iso_HminusOne {k G : Type} [CommRing k] [Group G]
     (TateCohomology.isoFiniteCyclicNegOne A g hg).symm
 
 /-- The cyclic low-degree comparison for the unit representation. -/
-noncomputable def unitsH1IsoTateHminusOne (K L : Type) [Field K] [Field L]
+def unitsH1IsoTateHminusOne (K L : Type) [Field K] [Field L]
     [Algebra K L] [FiniteDimensional K L] (g : Gal(L / K))
     (hg : ∀ x : Gal(L / K), x ∈ Subgroup.zpowers g) :
     groupCohomology.H1 (Rep.ofAlgebraAutOnUnits K L) ≅
@@ -88,6 +79,3 @@ theorem hilbert90_unitsTateHminusOne_isZero (K L : Type) [Field K]
     exact ModuleCat.isZero_of_subsingleton _
   exact hzero.of_iso
     (unitsH1IsoTateHminusOne K L g hg).symm
-
-end
-end CyclicCohomology

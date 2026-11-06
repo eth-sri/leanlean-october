@@ -116,13 +116,11 @@ theorem tsum_tail_dyadic_neg (a : ℝ) (ha : a < 0) :
   set f : ℕ → ℝ := fun k => if X ≤ (2 : ℝ) ^ k then ((2 : ℝ) ^ k) ^ a else 0 with hf
   have hsum : Summable f := summable_tail_dyadic_neg a ha X
   have hzero : ∀ k ∈ Finset.range m, f k = 0 := by
-    intro k hk
-    have := Nat.find_min hex (Finset.mem_range.1 hk)
-    simp [hf, this]
+    simp_all
   have hshift : ∀ k, f (k + m) = ((2 : ℝ) ^ a) ^ (k + m) := by
     intro k
     have : X ≤ (2 : ℝ) ^ (k + m) := hmX.trans (pow_le_pow_right₀ (by norm_num) (by omega))
-    simp only [hf, if_pos this, hterm]
+    simp_all
   have h := hsum.sum_add_tsum_nat_add m
   rw [Finset.sum_eq_zero hzero, zero_add] at h
   rw [← h]
@@ -131,9 +129,7 @@ theorem tsum_tail_dyadic_neg (a : ℝ) (ha : a < 0) :
   have h1 : ((2 : ℝ) ^ a) ^ m ≤ X ^ a := by
     rw [← hterm]
     exact Real.rpow_le_rpow_of_nonpos (by linarith) hmX ha.le
-  calc (1 - (2 : ℝ) ^ a)⁻¹ * ((2 : ℝ) ^ a) ^ m ≤ (1 - (2 : ℝ) ^ a)⁻¹ * X ^ a := by
-        gcongr
-    _ = _ := by ring
+  simp_all
 
 theorem sum_dyadic_neg_interval (a : ℝ) (ha : a < 0) :
     ∃ C : ℝ, 0 < C ∧ ∀ X Y : ℝ, 1 ≤ X →
@@ -146,6 +142,3 @@ theorem sum_dyadic_neg_interval (a : ℝ) (ha : a < 0) :
         (if X ≤ (2 : ℝ) ^ k then ((2 : ℝ) ^ k) ^ a else 0) := by
         rw [Finset.sum_filter]
     _ ≤ _ := hs.sum_le_tsum _ (fun k _ => by split_ifs <;> positivity)
-
-end DyadicPowerSums
-end DedekindZetaZeroFree.Quantitative

@@ -22,7 +22,7 @@ noncomputable def betaFactor
 
 noncomputable local instance : Fintype CubicCharacters.Mu3 := Fintype.ofFinite _
 
-private lemma moments {F : Type*} [Field F] (c : ℂ →+* F) (n : ℕ) :
+lemma moments {F : Type*} [Field F] (c : ℂ →+* F) (n : ℕ) :
     (∑ ζ : CubicCharacters.Mu3, c (((ζ : ℂˣ) : ℂ)) ^ n) =
       if 3 ∣ n then (3 : F) else 0 := by
   have h := KPCubicExpansion.sum_mu3_zpow (n : ℤ)
@@ -31,7 +31,7 @@ private lemma moments {F : Type*} [Field F] (c : ℂ →+* F) (n : ℕ) :
   simp only [zpow_natCast, hn] at h
   simpa only [Units.val_pow_eq_pow_val, map_sum, map_pow, map_ofNat, map_zero, apply_ite] using congrArg c h
 
-private lemma root_sum {F : Type*} [Field F] (c : ℂ →+* F) (u : F)
+lemma root_sum {F : Type*} [Field F] (c : ℂ →+* F) (u : F)
     (hu : 1-u^3 ≠ 0) :
     (∑ ζ : CubicCharacters.Mu3, c (((ζ : ℂˣ) : ℂ)) * u / (1-c (((ζ : ℂˣ) : ℂ))*u)^2) =
       9*u^3/(1-u^3)^2 := by
@@ -46,7 +46,7 @@ private lemma root_sum {F : Type*} [Field F] (c : ℂ →+* F) (u : F)
        (c (((ζ : ℂˣ) : ℂ))*u)^5)/(1-u^3)^2 := by
     set v := c (((ζ : ℂˣ) : ℂ))*u
     have hf : 1-u^3 = (1-v)*(1+v+v^2) := by rw [← h3 ζ]; dsimp [v]; ring
-    have hv : 1-v ≠ 0 := by intro hz; rw [hf, hz, zero_mul] at hu; exact hu rfl
+    have hv : 1-v ≠ 0 := by intro hz; simp_all
     apply (div_eq_div_iff (pow_ne_zero 2 hv) (pow_ne_zero 2 hu)).mpr
     rw [hf]; ring
   simp_rw [he]
@@ -59,19 +59,18 @@ private lemma root_sum {F : Type*} [Field F] (c : ℂ →+* F) (u : F)
   norm_num
   ring
 
-private lemma unr {F : Type*} [Field F] (a b : F) (hb : b ≠ 0) (hb1 : 1-b ≠ 0) :
+lemma unr {F : Type*} [Field F] (a b : F) (hb : b ≠ 0) (hb1 : 1-b ≠ 0) :
     unramifiedFactor a b = a - (1-a)^2*b/(1-b)^2 := by
   have hi : 1-b⁻¹ ≠ 0 := by
     intro h
     have : b⁻¹ = 1 := by linear_combination -h
-    have : b = 1 := inv_eq_one.mp this
-    exact hb1 (by rw [this]; ring)
+    simp_all
   unfold unramifiedFactor
   have hm : b - 1 ≠ 0 := sub_ne_zero.mpr (fun h => hb1 (by rw [h]; ring))
   field_simp [hb, hb1, hi, hm]
   <;> ring
 
-private lemma char_sum (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
+lemma char_sum (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
     [TopologicalSpace K] [IsNonarchimedeanLocalField K]
     (ω : K) (hω : IsPrimitiveRoot ω 3)
     {F : Type*} [Field F] [CharZero F] (c : ℂ →+* F) (u : F)
@@ -91,7 +90,7 @@ private lemma char_sum (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
       map_one, map_ofNat] using hh
   have hcond : CubicUnitCharacters.conductor K 1 = 0 := (hc 1).mpr rfl
   have hz0 (ζ : CubicCharacters.Mu3) : c (((ζ : ℂˣ) : ℂ)) ≠ 0 := by
-    simpa only [map_zero] using c.injective.ne (Units.ne_zero (ζ : ℂˣ))
+    simp
   have hz1 (ζ : CubicCharacters.Mu3) : 1-c (((ζ : ℂˣ) : ℂ))*u ≠ 0 := by
     intro he
     have he1 : c (((ζ : ℂˣ) : ℂ))*u = 1 := by linear_combination -he
@@ -99,8 +98,7 @@ private lemma char_sum (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
       have hz : (((ζ : ℂˣ) : ℂ))^3 = 1 := by
         rw [← Units.val_pow_eq_pow_val, (mem_rootsOfUnity 3 (ζ : ℂˣ)).mp ζ.2, Units.val_one]
       rw [mul_pow, ← map_pow, hz, map_one, one_mul]
-    rw [he1, one_pow] at hh
-    exact hu3 (by rw [← hh]; ring)
+    simp_all
   have hb (ξ : CubicUnitCharacters.Character K) (ζ : CubicCharacters.Mu3) :
       betaFactor K ξ (c (((ζ : ℂˣ) : ℂ))*u) =
         (CubicUnitCharacters.residueCard K : F)⁻¹ ^ CubicUnitCharacters.conductor K ξ -
@@ -109,7 +107,7 @@ private lemma char_sum (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
             (c (((ζ : ℂˣ) : ℂ))*u / (1-c (((ζ : ℂˣ) : ℂ))*u)^2) else 0 := by
     by_cases he : ξ = 1
     · subst ξ
-      simp only [betaFactor, if_pos rfl, hcond, pow_zero, ↓reduceIte]
+      simp only [betaFactor, hcond, pow_zero, ↓reduceIte]
       rw [unr _ _ (mul_ne_zero (hz0 ζ) hu) (hz1 ζ)]
       ring
     · simp [betaFactor, he]
@@ -165,5 +163,3 @@ theorem finiteScalar_cube_root_independent
     finiteScalar K m j z = finiteScalar K m j z' := by
   rw [finiteScalar_eq K ω hω m j z t hz hzt ht,
     finiteScalar_eq K ω hω m j z' t hz' hz't ht]
-
-end DedekindZetaZeroFree.KPRankoneCubicScalarSum

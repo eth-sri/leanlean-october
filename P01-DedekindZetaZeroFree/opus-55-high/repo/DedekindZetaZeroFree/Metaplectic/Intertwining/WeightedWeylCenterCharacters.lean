@@ -27,11 +27,11 @@ private theorem np_mul (x y : Kˣ) (z : ℂ) :
     Complex.ofReal_add, mul_add, Complex.exp_add]
   rfl
 
-private theorem np_add (x : Kˣ) (z w : ℂ) :
+theorem np_add (x : Kˣ) (z w : ℂ) :
     normPower K x (z+w) = normPower K x z * normPower K x w := by
   simp only [normPower, add_mul, Complex.exp_add]
 
-private theorem np_inv (x : Kˣ) (z : ℂ) : normPower K x⁻¹ z = normPower K x (-z) := by
+theorem np_inv (x : Kˣ) (z : ℂ) : normPower K x⁻¹ z = normPower K x (-z) := by
   have h : localAbs K x⁻¹ = (localAbs K x)⁻¹ := by
     have hh := localAbs_mul K x x⁻¹
     simp only [mul_inv_cancel, localAbs_one] at hh
@@ -44,12 +44,9 @@ private theorem pgl_diagonal_injective (L : Type*) [Field L] (u v : Lˣ)
   obtain ⟨c, hc⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp huv
   have h11 := congrArg (fun g : GL (Fin 2) L => (g : Matrix (Fin 2) (Fin 2) L) 1 1) hc
   have h00 := congrArg (fun g : GL (Fin 2) L => (g : Matrix (Fin 2) (Fin 2) L) 0 0) hc
-  simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.GeneralLinearGroup.coe_scalar,
-    Matrix.scalar, Matrix.diagonal_apply] at h11 h00
+  simp [Matrix.mul_apply, Matrix.GeneralLinearGroup.coe_scalar, Matrix.scalar, Matrix.diagonal_apply] at h11 h00
   apply Units.ext
-  calc
-    (u : L) = (u : L) * (c : L) := by simp [h11]
-    _ = (v : L) := h00
+  simp_all
 
 private theorem pgl_weyl_diagonal (L : Type*) [Field L] (u : Lˣ) :
     Matrix.ProjGenLinGroup.mk (KubotaRankTwo.w L) *
@@ -60,10 +57,7 @@ private theorem pgl_weyl_diagonal (L : Type*) [Field L] (u : Lˣ) :
   apply Matrix.ProjGenLinGroup.mk_eq_mk_iff.mpr
   refine ⟨u, ?_⟩
   apply Units.ext
-  ext i j
-  fin_cases i <;> fin_cases j <;>
-    simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.GeneralLinearGroup.coe_scalar,
-      Matrix.scalar, Matrix.diagonal_apply]
+  simp
 
 private theorem coord_weyl (S : ActualKPBinding F ζ hζ q) (h : H₀) :
     S.borel.coordinate (S.borel.weyl h) = (S.borel.coordinate h)⁻¹ := by
@@ -74,7 +68,7 @@ private theorem coord_weyl (S : ActualKPBinding F ζ hζ q) (h : H₀) :
   simp only [← mul_assoc, mul_inv_cancel, one_mul]
   exact (pgl_weyl_diagonal K (S.borel.coordinate h)).symm
 
-private theorem weyl_twice (S : ActualKPBinding F ζ hζ q) (h : H₀) :
+theorem weyl_twice (S : ActualKPBinding F ζ hζ q) (h : H₀) :
     S.borel.weyl (S.borel.weyl h) = h := by
   have hw : S.borel.liftedW ^ 2 = 1 := by
     rw [(S.openCell S.polarization).weyl_eq]
@@ -84,7 +78,6 @@ private theorem weyl_twice (S : ActualKPBinding F ζ hζ q) (h : H₀) :
   have hwi : S.borel.liftedW⁻¹ = S.borel.liftedW :=
     inv_eq_of_mul_eq_one_right (by simpa only [pow_two] using hw)
   apply Subtype.val_injective
-  change (S.borel.weyl (S.borel.weyl h) : KPExceptionalRaw.ActualCover F ζ hζ q) = h
   rw [← S.torus_full, S.borel.weyl_from_lift, S.borel.weyl_from_lift, S.torus_full, hwi]
   simp only [← mul_assoc, ← pow_two, hw, one_mul]
   rw [mul_assoc, ← pow_two, hw, mul_one]
@@ -100,7 +93,7 @@ private theorem weyl_sheet (S : ActualKPBinding F ζ hζ q) (e : rootsOfUnity 3 
     S.borel.liftedW
   rw [mul_assoc, ← hc, ← mul_assoc, inv_mul_cancel, one_mul]
 
-private theorem coord_sheet (S : ActualKPBinding F ζ hζ q) (e : rootsOfUnity 3 F) :
+theorem coord_sheet (S : ActualKPBinding F ζ hζ q) (e : rootsOfUnity 3 F) :
     S.borel.coordinate (S.central e : H₀) = 1 := by
   have he : (S.central e : H₀) = (S.openCell S.polarization).centralTorus e := by
     apply Subtype.ext
@@ -201,6 +194,3 @@ theorem actual_center_weighted_weyl (S : KPActualScalarBinding.ActualKPBinding F
     _ = (normPower K (S.borel.coordinate a) (-1/3) * normPower K (S.borel.coordinate a) (1/3)) *
       (normPower K (S.borel.coordinate h) (1/3) * f.val (S.borel.weyl h * S.borel.weyl a)) := by rw [ha, one_mul]
     _ = _ := by ring
-
-end
-end DedekindZetaZeroFree.KPActualResidueSources

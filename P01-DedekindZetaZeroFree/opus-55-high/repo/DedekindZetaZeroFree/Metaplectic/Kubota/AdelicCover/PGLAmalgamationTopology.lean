@@ -9,7 +9,6 @@ open NumberField IsDedekindDomain
 
 namespace DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw
 noncomputable section
-set_option autoImplicit false
 set_option maxHeartbeats 800000
 set_option maxRecDepth 4000
 variable (F : Type) [Field F] [NumberField F]
@@ -79,8 +78,8 @@ namespace ScalarAmalgamationHelpers
   exact hg v
 
  theorem restrictedPGLQuotient_continuous :
-    Continuous (restrictedPGLQuotient F ζ hζ) := by
-  exact RestrictedProduct.mapAlong_continuous _ _ id Filter.tendsto_id
+    Continuous (restrictedPGLQuotient F ζ hζ) := 
+  RestrictedProduct.mapAlong_continuous _ _ id Filter.tendsto_id
     (fun v => KPPGLLocalCover.coverQuotient F ζ hζ v)
     (Filter.Eventually.of_forall fun v g hg => show
       KPPGLLocalCover.coverQuotient F ζ hζ v g ∈ pglCompact F ζ hζ v from ⟨g, hg, rfl⟩)
@@ -121,12 +120,12 @@ private theorem adele_ext {a b : Adeles F}
           apply adele_ext F
           intro v
           rw [map_mul, hzval, hzinv, map_one]
-          exact (z v).val_inv
+          simp
         inv_val := by
           apply adele_ext F
           intro v
           rw [map_mul, hzval, hzinv, map_one]
-          exact (z v).inv_val }
+          simp }
     refine ⟨u, ?_⟩
     apply RestrictedProduct.ext
     intro v
@@ -146,7 +145,7 @@ private theorem adele_ext {a b : Adeles F}
       RestrictedProduct R A (Filter.principal S) where
   toFun x := ⟨fun i => (x i).val, Filter.eventually_principal.mpr fun i hi => (x i).property hi⟩
   invFun x i := ⟨x i, fun hi => (Filter.eventually_principal.mp x.property) i hi⟩
-  left_inv x := by funext i; rfl
+  left_inv x := by rfl
   right_inv x := rfl
   continuous_toFun := RestrictedProduct.continuous_rng_of_principal.mpr
     (continuous_pi fun i => continuous_subtype_val.comp (continuous_apply i))
@@ -169,7 +168,7 @@ private theorem adele_ext {a b : Adeles F}
     (fun v => KPPGLLocalCover.coverQuotient F ζ hζ v)
     (Filter.Eventually.of_forall fun v g hg => ⟨g, hg, rfl⟩)
 
-private theorem principalQuotient_quotientMap (S : Set (KPHilbert.Place F)) :
+theorem principalQuotient_quotientMap (S : Set (KPHilbert.Place F)) :
     Topology.IsQuotientMap (principalQuotient F ζ hζ S) := by
   let Q := fun v => KPPGLLocalCover.coverQuotient F ζ hζ v
   let f := fun v => fun x : {g : KPLocalCover.CubicGL2Raw F ζ hζ v //
@@ -181,13 +180,10 @@ private theorem principalQuotient_quotientMap (S : Set (KPHilbert.Place F)) :
     · change IsOpen {g : KPLocalCover.CubicGL2Raw F ζ hζ v | v ∈ S → g ∈ compact F ζ hζ v}
       by_cases hv : v ∈ S
       · have he : {g : KPLocalCover.CubicGL2Raw F ζ hζ v | v ∈ S → g ∈ compact F ζ hζ v} =
-            (compact F ζ hζ v : Set _) := by ext g; simp only [Set.mem_setOf_eq, hv, true_implies, SetLike.mem_coe]
+            (compact F ζ hζ v : Set _) := by simp_all
         rw [he]
         exact compact_open F ζ hζ v
-      · have he : {g : KPLocalCover.CubicGL2Raw F ζ hζ v | v ∈ S → g ∈ compact F ζ hζ v} =
-            Set.univ := by ext g; simp only [Set.mem_setOf_eq, hv, false_implies, Set.mem_univ]
-        rw [he]
-        exact isOpen_univ
+      simp_all
     · intro x hx hv
       exact ⟨x, hx hv, rfl⟩
   have hc (v : KPHilbert.Place F) : Continuous (f v) :=
@@ -222,8 +218,8 @@ private theorem principalQuotient_quotientMap (S : Set (KPHilbert.Place F)) :
   exact (RestrictedProduct.continuous_dom.mp h) S hS
 
  theorem pglM_eq_map : pglM F ζ hζ =
-    (M F ζ hζ).map (restrictedPGLQuotient F ζ hζ) := by
-  exact (Subgroup.map_map _ _ _).symm
+    (M F ζ hζ).map (restrictedPGLQuotient F ζ hζ) := 
+  (Subgroup.map_map _ _ _).symm
 
  def amalgamatedPGLMap : CubicGL2Adelic F ζ hζ →*
     AmalgamatedRestrictedPGLCover F ζ hζ :=
@@ -244,22 +240,21 @@ private theorem principalQuotient_quotientMap (S : Set (KPHilbert.Place F)) :
     rw [pglM_eq_map] at hp
     obtain ⟨m, hm, he⟩ := hp
     have hs : x * m⁻¹ ∈ (restrictedPGLQuotient F ζ hζ).ker := by
-      change restrictedPGLQuotient F ζ hζ (x * m⁻¹) = 1
-      rw [map_mul, map_inv, he, mul_inv_cancel]
+      simp_all
     rw [restrictedPGLQuotient_kernel] at hs
     obtain ⟨z, hz⟩ := hs
     refine ⟨z, ?_⟩
     change amalgamation F ζ hζ (scalarTuple F ζ hζ z) = amalgamation F ζ hζ x
     rw [hz, map_mul, map_inv]
     have hm1 : amalgamation F ζ hζ m = 1 := (QuotientGroup.eq_one_iff _).mpr hm
-    rw [hm1, inv_one, mul_one]
+    simp_all
   · rintro y ⟨z, rfl⟩
     change QuotientGroup.mk' (pglM F ζ hζ)
       (restrictedPGLQuotient F ζ hζ (scalarTuple F ζ hζ z)) = 1
     have hs : scalarTuple F ζ hζ z ∈ (restrictedPGLQuotient F ζ hζ).ker := by
       rw [restrictedPGLQuotient_kernel]
-      exact ⟨z, rfl⟩
-    rw [show restrictedPGLQuotient F ζ hζ (scalarTuple F ζ hζ z) = 1 from hs, map_one]
+      simp
+    simp_all
 
  def scalarAmalgamationEquiv : CubicPGL2Adelic F ζ hζ ≃*
     AmalgamatedRestrictedPGLCover F ζ hζ :=
@@ -302,8 +297,8 @@ theorem scalar_quotient_commutes_with_amalgamation :
       Continuous e ∧ Continuous e.symm ∧
       ∀ x : RestrictedCover F ζ hζ,
         e (scalarQuotient F ζ hζ (amalgamation F ζ hζ x)) =
-          QuotientGroup.mk' (pglM F ζ hζ) (restrictedPGLQuotient F ζ hζ x) := by
-  exact ⟨ScalarAmalgamationHelpers.scalarAmalgamationEquiv F ζ hζ,
+          QuotientGroup.mk' (pglM F ζ hζ) (restrictedPGLQuotient F ζ hζ x) := 
+  ⟨ScalarAmalgamationHelpers.scalarAmalgamationEquiv F ζ hζ,
     ScalarAmalgamationHelpers.scalarAmalgamationEquiv_continuous F ζ hζ,
     ScalarAmalgamationHelpers.scalarAmalgamationEquiv_symm_continuous F ζ hζ,
     ScalarAmalgamationHelpers.scalarAmalgamationEquiv_mk F ζ hζ⟩
@@ -313,25 +308,25 @@ theorem scalar_quotient_commutes_with_amalgamation :
   match v with
   | Sum.inl w => NumberField.IdeleGroup.ofCompletion (𝓞 F) F w
   | Sum.inr q => NumberField.IdeleGroup.ofAdicCompletion (𝓞 F) F q
-private theorem eval_single_same (v : KPHilbert.Place F) (z : (KPHilbert.Completion F v)ˣ) :
+theorem eval_single_same (v : KPHilbert.Place F) (z : (KPHilbert.Completion F v)ˣ) :
     Units.map (adeleEval F v).toMonoidHom (singleIdele F v z) = z := by
   apply Units.ext
   cases v with
-  | inl v => change Pi.mulSingle v z.val v = z.val; exact Pi.mulSingle_eq_same v _
+  | inl v => change Pi.mulSingle v z.val v = z.val; simp
   | inr v => change RestrictedProduct.mulSingle (fun q => q.adicCompletionIntegers F) v z.val v = z.val
-             exact RestrictedProduct.mulSingle_eq_same _ _ _
-private theorem eval_single_ne (v w : KPHilbert.Place F) (z : (KPHilbert.Completion F v)ˣ)
+             simp
+theorem eval_single_ne (v w : KPHilbert.Place F) (z : (KPHilbert.Completion F v)ˣ)
     (hw : w ≠ v) : Units.map (adeleEval F w).toMonoidHom (singleIdele F v z) = 1 := by
   apply Units.ext
   cases v with
   | inl v => cases w with
-    | inl w => change Pi.mulSingle v z.val w = 1; exact Pi.mulSingle_eq_of_ne (fun h => hw (congrArg Sum.inl h)) _
+    | inl w => change Pi.mulSingle v z.val w = 1; simp_all
     | inr w => rfl
   | inr v => cases w with
     | inl w => rfl
     | inr w => change RestrictedProduct.mulSingle (fun q => q.adicCompletionIntegers F) v z.val w = 1
-               exact RestrictedProduct.mulSingle_eq_of_ne _ _ (fun h => hw (congrArg Sum.inr h))
-private theorem scalarHom_single (v : KPHilbert.Place F) (z : (KPHilbert.Completion F v)ˣ) :
+               simp_all
+theorem scalarHom_single (v : KPHilbert.Place F) (z : (KPHilbert.Completion F v)ˣ) :
     scalarHom F ζ hζ (singleIdele F v z) =
       localInjection F ζ hζ v (KPScalarSplitCentral.scalarHom F ζ hζ v z) := by
   apply congrArg (amalgamation F ζ hζ)
@@ -391,6 +386,3 @@ theorem local_pgl_injection (v : KPHilbert.Place F) :
       simpa [hε1] using he
   · apply (QuotientGroup.isQuotientMap_mk (KPPGLLocalCover.splitScalarSubgroup F ζ hζ v)).continuous_iff.mpr
     exact QuotientGroup.continuous_mk.comp (localInjection_continuous F ζ hζ v)
-
-end
-end DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw

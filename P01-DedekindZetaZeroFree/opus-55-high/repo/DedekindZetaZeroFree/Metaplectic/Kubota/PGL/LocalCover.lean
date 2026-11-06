@@ -12,7 +12,6 @@ open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.KPPGLLocalCover
 
 noncomputable section
-set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
@@ -78,9 +77,8 @@ theorem splitScalar_inf_kernel :
       exact hx.2
     have hz1 : z = 1 := by
       apply_fun (fun g : KPLocalCover.LocalGL2 F v => (g : Matrix (Fin 2) (Fin 2) (KPHilbert.Completion F v)) 0 0) at he
-      simpa [KPScalarSplitCentral.scalarMatrix, Matrix.GeneralLinearGroup.coe_scalar] using he
-    rw [← hz, hz1, map_one]
-    exact Subgroup.one_mem _
+      simp_all
+    simp_all
 
 theorem centralInjection_injective : Function.Injective (centralInjection F ζ hζ v) := by
   apply (injective_iff_map_eq_one (centralInjection F ζ hζ v)).mpr
@@ -109,9 +107,7 @@ theorem range_centralInjection_eq_ker_projection :
     constructor
     · rintro ⟨e, he⟩
       rw [← he]
-      change baseQuotient F v (KPLocalCover.projection F ζ hζ v
-        (KPLocalCover.centralInjection F ζ hζ v e)) = 1
-      exact map_one _
+      rfl
     · intro hx
       change baseQuotient F v (KPLocalCover.projection F ζ hζ v g) = 1 at hx
       obtain ⟨z, hz⟩ := (QuotientGroup.eq_one_iff _).mp hx
@@ -151,11 +147,6 @@ def finiteTopology (w : HeightOneSpectrum (𝓞 F)) (m : ℕ) :
   letI := KPLocalChartTopology.translatedTopology F ζ hζ w m
   inferInstance
 
-def complexTopology (w : InfinitePlace F) :
-    TopologicalSpace (CubicPGL2 F ζ hζ (Sum.inl w)) :=
-  letI := KPLocalChartTopology.complexTopology F ζ hζ w
-  inferInstance
-
 theorem finiteTopology_independent (w : HeightOneSpectrum (𝓞 F)) (m n : ℕ)
     (hm : KPLocalChartTopology.MatrixChartDepth F w m)
     (hn : KPLocalChartTopology.MatrixChartDepth F w n) :
@@ -166,8 +157,7 @@ theorem finiteTopology_independent (w : HeightOneSpectrum (𝓞 F)) (m n : ℕ)
  def kernelEquiv : rootsOfUnity 3 F ≃ (projection F ζ hζ v).ker :=
   Equiv.ofBijective
     (fun ε => ⟨centralInjection F ζ hζ v ε, by
-      rw [← range_centralInjection_eq_ker_projection]
-      exact ⟨ε, rfl⟩⟩)
+      rfl⟩)
     ⟨fun _ _ h => centralInjection_injective F ζ hζ v (congrArg Subtype.val h), by
       intro x
       have hx := x.property
@@ -176,7 +166,7 @@ theorem finiteTopology_independent (w : HeightOneSpectrum (𝓞 F)) (m n : ℕ)
       obtain ⟨ε, hε⟩ := hx
       exact ⟨ε, Subtype.ext hε⟩⟩
 
-private theorem kernel_finite : Finite (projection F ζ hζ v).ker :=
+theorem kernel_finite : Finite (projection F ζ hζ v).ker :=
   Finite.of_equiv (rootsOfUnity 3 F) (kernelEquiv F ζ hζ v)
 
 private theorem fiber_card (g : LocalPGL2 F v) :
@@ -246,22 +236,6 @@ theorem finite_topological_cover (w : HeightOneSpectrum (𝓞 F)) (m : ℕ)
   exact quotient_cover F ζ hζ (Sum.inr w)
     (KPScalarSplitCentral.finite_continuous_closed F ζ hζ w m hm).2
     (KPLocalChartTopology.finite_projection F ζ hζ w m hm).1
-
-theorem complex_topological_cover (w : InfinitePlace F) :
-    letI := complexTopology F ζ hζ w
-    T2Space (CubicPGL2 F ζ hζ (Sum.inl w)) ∧
-      LocallyCompactSpace (CubicPGL2 F ζ hζ (Sum.inl w)) ∧
-      IsTopologicalGroup (CubicPGL2 F ζ hζ (Sum.inl w)) ∧
-      IsLocalHomeomorph (projection F ζ hζ (Sum.inl w)) ∧
-      ∀ g : LocalPGL2 F (Sum.inl w),
-        Nat.card {x : CubicPGL2 F ζ hζ (Sum.inl w) | projection F ζ hζ (Sum.inl w) x = g} = 3 := by
-  letI := KPLocalChartTopology.complexTopology F ζ hζ w
-  obtain ⟨ht, hl, hg, hp, _⟩ := KPLocalChartTopology.complex_topological_cover F ζ hζ w
-  letI := ht
-  letI := hl
-  letI := hg
-  exact quotient_cover F ζ hζ (Sum.inl w)
-    (KPScalarSplitCentral.complex_continuous_closed F ζ hζ w).2 hp
 
 theorem finite_discrete_kernel (w : HeightOneSpectrum (𝓞 F)) (m : ℕ)
     (hm : KPLocalChartTopology.MatrixChartDepth F w m) :
@@ -386,13 +360,6 @@ def compactSplitting (w : HeightOneSpectrum (𝓞 F))
     ((coverQuotient F ζ hζ (Sum.inr w)).comp (KPGoodCompactSplitting.kStar F ζ hζ w hw))
     (compactScalarSubgroup_le_ker F ζ hζ w hw)
 
-@[simp] theorem compactSplitting_mk (w : HeightOneSpectrum (𝓞 F))
-    (hw : ringChar (KPTameCompact.O F w ⧸ KPTameCompact.p F w) ≠ 3)
-    (g : KPTameCompact.K0 F w) :
-    compactSplitting F ζ hζ w hw (QuotientGroup.mk g) =
-      coverQuotient F ζ hζ (Sum.inr w) (KPGoodCompactSplitting.kStar F ζ hζ w hw g) := by
-  rfl
-
 theorem compactSplitting_topology (w : HeightOneSpectrum (𝓞 F))
     (hw : ringChar (KPTameCompact.O F w ⧸ KPTameCompact.p F w) ≠ 3)
     (m : ℕ) (hm : KPLocalChartTopology.MatrixChartDepth F w m) :
@@ -420,6 +387,3 @@ theorem compactSplitting_topology (w : HeightOneSpectrum (𝓞 F))
   · rw [hr]
     exact QuotientGroup.isOpenMap_coe _
       (KPGoodCompactSplitting.kStar_open_image F ζ hζ w hw m hm)
-
-end
-end DedekindZetaZeroFree.KPPGLLocalCover

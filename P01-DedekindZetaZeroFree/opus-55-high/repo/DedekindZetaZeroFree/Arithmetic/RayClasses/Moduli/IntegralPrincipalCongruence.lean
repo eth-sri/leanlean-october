@@ -7,7 +7,6 @@ public import ClassFieldTheory.Theorems.ConductorsAndRayClassFields.RayLocalHigh
 
 @[expose] public section
 
-noncomputable section
 
 namespace DedekindZetaZeroFree.LargeSieve.RayBridge
 
@@ -18,7 +17,7 @@ variable {F : Type*} [Field F] [NumberField F]
 open scoped WithZero
 open WithZeroMulInt
 
-private lemma loc_maximalIdeal_pow_mem_iff_exp (v : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
+lemma loc_maximalIdeal_pow_mem_iff_exp (v : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
     (n : ℕ) (y : v.adicCompletionIntegers F) :
     y ∈ IsLocalRing.maximalIdeal (v.adicCompletionIntegers F) ^ n ↔
       Valued.v (y : v.adicCompletion F) ≤ WithZero.exp (-(n : ℤ)) := by
@@ -47,24 +46,20 @@ private lemma loc_maximalIdeal_pow_mem_iff_exp (v : IsDedekindDomain.HeightOneSp
       (algebraMap O (v.adicCompletion F) ϖ) = WithZero.exp (-1 : ℤ) := by
     simpa using hval
   rw [hval']
-  have hpow : (WithZero.exp (-1 : ℤ) : ℤᵐ⁰) ^ n = WithZero.exp (-(n : ℤ)) := by
-    rw [← WithZero.exp_nsmul, nsmul_eq_mul]
-    norm_num
-  rw [hpow]
   simp
 
-private lemma loc_valued_algebraMap_eq_intValuation (v : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
+lemma loc_valued_algebraMap_eq_intValuation (v : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
     (a : 𝓞 F) :
     Valued.v (algebraMap (𝓞 F) (v.adicCompletionIntegers F) a : v.adicCompletion F) =
       v.intValuation a := by
   have h1 : (algebraMap (𝓞 F) (v.adicCompletionIntegers F) a : v.adicCompletion F) =
       (algebraMap (𝓞 F) F a : v.adicCompletion F) :=
-    IsDedekindDomain.HeightOneSpectrum.algebraMap_adicCompletionIntegers_apply (𝓞 F) F v a
+    by rfl
   rw [h1, IsDedekindDomain.HeightOneSpectrum.valuedAdicCompletion_eq_valuation' v
       (algebraMap (𝓞 F) F a),
     IsDedekindDomain.HeightOneSpectrum.valuation_of_algebraMap v a]
 
-private lemma loc_local_power_mem_iff
+lemma loc_local_power_mem_iff
     (v : IsDedekindDomain.HeightOneSpectrum (𝓞 F)) (n : ℕ) (a : 𝓞 F) :
     algebraMap (𝓞 F) (v.adicCompletionIntegers F) a ∈
         (IsLocalRing.maximalIdeal (v.adicCompletionIntegers F)) ^ n ↔
@@ -81,7 +76,7 @@ theorem integral_isRayCongruent (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
   · intro v hv
     set n : ℕ := (fullModulus m hm).finitePart v with hn
     have hn_eq : n = (Associates.mk v.asIdeal).count (Associates.mk m).factors :=
-      hn.trans (fullModulus_finitePart m hm v)
+      by rfl
     have hn_pos : n ≠ 0 := by
       rw [hn]
       exact Finsupp.mem_support_iff.mp hv
@@ -104,18 +99,14 @@ theorem integral_isRayCongruent (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
           IsLocalRing.maximalIdeal (v.adicCompletionIntegers F) := by
         have h := sub_mem hb hb1'
         rwa [sub_sub_cancel] at h
-      exact absurd isUnit_one (mem_nonunits_iff.mp ((IsLocalRing.mem_maximalIdeal 1).mp h1mem))
+      simp_all
     refine (ClassFieldTheory.mem_rayLocalHigherUnitGroup_iff v n _).mpr
       ⟨hunit.unit, ?_, ?_⟩
     · apply Units.ext
-      rw [Submonoid.val_unitsEquivUnitsType_symm_apply_coe, ClassFieldTheory.finitePlaceUnitEmbedding,
-        Units.coe_map, Units.val_mk0, IsUnit.unit_spec,
-        IsDedekindDomain.HeightOneSpectrum.algebraMap_adicCompletionIntegers_apply]
-      exact (IsScalarTower.algebraMap_apply (𝓞 F) F (v.adicCompletion F) a).symm
+      rfl
     · rw [IsUnit.unit_spec]
       exact hb1
-  · intro v _
-    simpa using hpos (v.1.embedding_of_isReal v.2)
+  simp_all
 
 theorem principal_integral_span (a : 𝓞 F) (ha : a ≠ 0) :
     toPrincipalIdeal (𝓞 F) F (Units.mk0 (a : F) (by exact_mod_cast ha)) =
@@ -123,7 +114,3 @@ theorem principal_integral_span (a : 𝓞 F) (ha : a ≠ 0) :
   apply Units.ext
   rw [coe_toPrincipalIdeal]
   simp only [integralIdealUnit, Units.val_mk0, FractionalIdeal.coeIdeal_span_singleton]
-
-end DedekindZetaZeroFree.LargeSieve.RayBridge
-
-end

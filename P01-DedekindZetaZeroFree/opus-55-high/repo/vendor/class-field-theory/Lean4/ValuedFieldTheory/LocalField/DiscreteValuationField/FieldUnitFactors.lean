@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Finite and uniformizer factors of the field-unit group
 
@@ -40,7 +34,7 @@ variable {K : Type u} [Field K]
 
 /-- A continuous algebraic equivalence from a compact group to a Hausdorff
 group is automatically a topological group equivalence. -/
-noncomputable def continuousMulEquivOfCompactToT2
+def continuousMulEquivOfCompactToT2
     {A B : Type*} [TopologicalSpace A] [TopologicalSpace B]
     [Mul A] [Mul B] [CompactSpace A] [T2Space B]
     (e : A ≃* B) (he : Continuous e) : A ≃ₜ* B :=
@@ -48,7 +42,7 @@ noncomputable def continuousMulEquivOfCompactToT2
     (he.homeoOfEquivCompactToT2 (f := e.toEquiv)) e.map_mul
 
 /-- Additive version of `continuousMulEquivOfCompactToT2`. -/
-noncomputable def continuousAddEquivOfCompactToT2
+def continuousAddEquivOfCompactToT2
     {A B : Type*} [TopologicalSpace A] [TopologicalSpace B]
     [Add A] [Add B] [CompactSpace A] [T2Space B]
     (e : A ≃+ B) (he : Continuous e) : A ≃ₜ+ B :=
@@ -56,7 +50,7 @@ noncomputable def continuousAddEquivOfCompactToT2
     (he.homeoOfEquivCompactToT2 (f := e.toEquiv)) e.map_add
 
 /-- Product of two topological multiplicative equivalences. -/
-noncomputable def continuousMulEquivProdCongr
+def continuousMulEquivProdCongr
     {A B C D : Type*}
     [TopologicalSpace A] [TopologicalSpace B]
     [TopologicalSpace C] [TopologicalSpace D]
@@ -71,7 +65,7 @@ noncomputable def continuousMulEquivProdCongr
       fun_prop }
 
 /-- Swapping two factors is a topological multiplicative equivalence. -/
-noncomputable def continuousMulEquivProdComm
+def continuousMulEquivProdComm
     (A B : Type*) [TopologicalSpace A] [TopologicalSpace B]
     [MulOneClass A] [MulOneClass B] : A × B ≃ₜ* B × A :=
   { (MulEquiv.prodComm : A × B ≃* B × A) with
@@ -84,7 +78,7 @@ noncomputable def continuousMulEquivProdComm
 
 /-- The Teichmuller roots form, algebraically and topologically, the cyclic
 group of order `q - 1`, where `q` is the residue-field cardinality. -/
-noncomputable def residueRootsOfUnityContinuousMulEquivZMod
+def residueRootsOfUnityContinuousMulEquivZMod
     (F : ValuationTheory.DiscreteValuationField.CompleteDVF.{u, v} K) [Finite F.residueField] :
     letI : Valued K (MonoidHom.mrange F.valuation.toMonoidWithZeroHom) :=
       _root_.LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrictValued F
@@ -106,31 +100,10 @@ noncomputable def residueRootsOfUnityContinuousMulEquivZMod
       continuous_toFun := continuous_of_discreteTopology
       continuous_invFun := continuous_of_discreteTopology }
 
-/-- The field-unit structure theorem with the still-to-be-classified first-principal-unit
-factor left visible: the other two factors are already the standard cyclic
-factors appearing in the decomposition. -/
-noncomputable def fieldUnitsContinuousMulEquivCyclicRootsPrincipalUnitsUniformizer
-    (F : ValuationTheory.DiscreteValuationField.CompleteDVF.{u, v} K) [Finite F.residueField]
-    {π : F.valuationSubring} (hπ : F.valuation.IsUniformizer (π : K)) :
-    letI : Valued K (MonoidHom.mrange F.valuation.toMonoidWithZeroHom) :=
-      _root_.LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrictValued F
-    ((Multiplicative (ZMod (Nat.card F.residueField - 1)) ×
-        LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F 1) × Multiplicative ℤ) ≃ₜ* Kˣ := by
-  letI : Valued K (MonoidHom.mrange F.valuation.toMonoidWithZeroHom) :=
-    _root_.LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrictValued F
-  exact
-    (continuousMulEquivProdCongr
-      (continuousMulEquivProdCongr
-        (residueRootsOfUnityContinuousMulEquivZMod F)
-        (ContinuousMulEquiv.refl (LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F 1)))
-      (ContinuousMulEquiv.refl (Multiplicative ℤ))).trans
-      (fieldUnitsContinuousMulEquivRootsPrincipalUnitsUniformizer_of_completeDVF_mrangeRestrict
-        F hπ)
-
 /-- The uniformizer–residue–principal-unit decomposition in the topology carried directly by a standard
 `ℤᵐ⁰`-valued valuation.  This is the decomposition used to assemble the two
 cases of the field-unit structure theorem. -/
-noncomputable def fieldUnitsContinuousMulEquivRootsPrincipalUnitsUniformizerOfWithZeroValuation
+def fieldUnitsContinuousMulEquivRootsPrincipalUnitsUniformizerOfWithZeroValuation
     (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
     [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
     [Finite (IsLocalRing.ResidueField v.valuationSubring)]
@@ -165,8 +138,8 @@ noncomputable def fieldUnitsContinuousMulEquivRootsPrincipalUnitsUniformizerOfWi
         (MonoidHom.mrange v.toMonoidWithZeroHom) := restricted
     fieldUnitsContinuousMulEquivRootsPrincipalUnitsUniformizer_of_completeDVF_mrangeRestrict
       F hπ
-  have htop : direct.toTopologicalSpace = restricted.toTopologicalSpace := by
-    exact congrArg (fun U : UniformSpace K => U.toTopologicalSpace) huniform
+  have htop : direct.toTopologicalSpace = restricted.toTopologicalSpace := 
+    congrArg (fun U : UniformSpace K => U.toTopologicalSpace) huniform
   let unitsTopology (t : TopologicalSpace K) : TopologicalSpace Kˣ :=
     letI : TopologicalSpace K := t
     inferInstance
@@ -191,16 +164,16 @@ noncomputable def fieldUnitsContinuousMulEquivRootsPrincipalUnitsUniformizerOfWi
           F)
         Kˣ
         (factorsTopology restricted.toTopologicalSpace)
-        (unitsTopology restricted.toTopologicalSpace) e := by
-    exact E.continuous
+        (unitsTopology restricted.toTopologicalSpace) e := 
+    E.continuous
   have heSymmContinuous :
       @Continuous
         Kˣ
         (LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup.fieldUnitDecompositionFactors
           F)
         (unitsTopology restricted.toTopologicalSpace)
-        (factorsTopology restricted.toTopologicalSpace) e.symm := by
-    exact E.symm.continuous
+        (factorsTopology restricted.toTopologicalSpace) e.symm := 
+    E.symm.continuous
   letI : Valued K (WithZero (Multiplicative ℤ)) := direct
   exact
     { e with
@@ -225,7 +198,7 @@ noncomputable def fieldUnitsContinuousMulEquivRootsPrincipalUnitsUniformizerOfWi
 
 /-- The Teichmuller root factor in the direct topology of a standard
 `ℤᵐ⁰`-valued valuation. -/
-noncomputable def residueRootsOfUnityContinuousMulEquivZModOfWithZeroValuation
+def residueRootsOfUnityContinuousMulEquivZModOfWithZeroValuation
     (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
     [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
     [Finite (IsLocalRing.ResidueField v.valuationSubring)] :
@@ -261,7 +234,7 @@ noncomputable def residueRootsOfUnityContinuousMulEquivZModOfWithZeroValuation
 
 /-- The field-unit structure theorem with the principal-unit factor left visible, now in the
 direct standard valuation topology. -/
-noncomputable def fieldUnitsContinuousMulEquivCyclicRootsPrincipalUnitsUniformizerOfWithZeroValuation
+def fieldUnitsContinuousMulEquivCyclicRootsPrincipalUnitsUniformizerOfWithZeroValuation
     (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
     [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
     [Finite (IsLocalRing.ResidueField v.valuationSubring)]
@@ -293,7 +266,7 @@ noncomputable def fieldUnitsContinuousMulEquivCyclicRootsPrincipalUnitsUniformiz
 /-- Assemble the field-unit structure theorem from a topological classification of `U^1`,
 with the factors ordered canonically as: uniformizer, Teichmuller
 roots, then principal units. -/
-noncomputable def fieldUnitsContinuousMulEquivUniformizerRootsPrincipalUnitsOfWithZeroValuation
+def fieldUnitsContinuousMulEquivUniformizerRootsPrincipalUnitsOfWithZeroValuation
     (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
     [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
     [Finite (IsLocalRing.ResidueField v.valuationSubring)]
@@ -329,9 +302,3 @@ noncomputable def fieldUnitsContinuousMulEquivUniformizerRootsPrincipalUnitsOfWi
         (ContinuousMulEquiv.refl (Multiplicative ℤ))).trans
         (fieldUnitsContinuousMulEquivCyclicRootsPrincipalUnitsUniformizerOfWithZeroValuation
           v hπ))
-
-end higherPrincipalUnitGroup
-end CompleteDVF
-end LocalFieldTheory.DiscreteValuationField
-
-end

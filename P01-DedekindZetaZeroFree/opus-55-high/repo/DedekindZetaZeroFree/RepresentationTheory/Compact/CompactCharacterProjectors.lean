@@ -20,5 +20,3 @@ variable {K H E F : Type*}
 def IsStable [Monoid K] [AddCommGroup H] [Module ℂ H]
     (ρ : Representation ℂ K H) (C : Submodule ℂ H) : Prop :=
   ∀ (k : K) (x : H), x ∈ C → ρ k x ∈ C
-
-end DedekindZetaZeroFree.CompactProjectors

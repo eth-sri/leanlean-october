@@ -32,16 +32,13 @@ theorem hyperbolic_volume_properties (d : ℕ) :
   · refine ⟨fun g s hs => ?_⟩
     choose h hh using fun i => Matrix.ProjGenLinGroup.mk_surjective (g i)
     have hg : g = fun i => Matrix.ProjGenLinGroup.mk (h i) := by
-      funext i
-      exact (hh i).symm
+      simp_all
     have he : (fun z : X d => g • z) = KPArch.productAction d h := by
       funext z
       rw [hg]
-      exact KPArithmeticAction.productProjectiveAction_mk d h z
+      rfl
     rw [he]
     have hm := congrArg (fun μ : Measure (X d) => μ s)
       (KPArch.hyperbolicVolume_invariant d h)
     rw [Measure.map_apply (KPArch.productAction_contDiff d h).continuous.measurable hs] at hm
     exact hm
-
-end DedekindZetaZeroFree.KPCompactStabilizerHaarSources

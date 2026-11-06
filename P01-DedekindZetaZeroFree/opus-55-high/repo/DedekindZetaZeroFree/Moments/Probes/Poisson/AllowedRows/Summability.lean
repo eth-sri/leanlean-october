@@ -43,7 +43,7 @@ theorem dyadIntegral_summable (Z : ℝ) (hZ : 0 < Z) :
   simp only [key]
   exact InitialDyadDomination.Jnp_norm_summable D Z hZ
 
-private theorem dyadIntegral_eq (k : ℕ) (Z : ℝ) :
+theorem dyadIntegral_eq (k : ℕ) (Z : ℝ) :
     dyadIntegral D k Z =
       PoissonKernel.J D (PoissonKernel.dyadRows D ((2 : ℝ) ^ k) \ PoissonKernel.principalRows D)
         4 4 2 Z := by

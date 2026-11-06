@@ -12,8 +12,8 @@ noncomputable section
 
 def spectralDomain : Set ℂ := {s | -(1 : ℝ) / 6 < s.re}
 
-theorem spectralDomain_isOpen : IsOpen spectralDomain := by
-  exact isOpen_lt continuous_const Complex.continuous_re
+theorem spectralDomain_isOpen : IsOpen spectralDomain := 
+  isOpen_lt continuous_const Complex.continuous_re
 
 theorem spectralDomain_isConnected : IsConnected spectralDomain := by
   apply (convex_halfSpace_gt (f := Complex.re)
@@ -63,9 +63,7 @@ theorem spectralCoordinate_avoids_thresholdRay (d : ℤ) (hd : 0 < d) :
     (d : ℝ) ≤ ((d : ℂ) * (1 - u ^ 2)).re at hμ
   have hi : (d : ℝ) * (-(2 * u.re * u.im)) = 0 := by
     have h := hμ.1
-    simp only [pow_two, Complex.mul_im, Complex.mul_re, Complex.sub_im,
-      Complex.sub_re, Complex.one_im, Complex.one_re, Complex.intCast_re,
-      Complex.intCast_im, zero_mul, zero_add, mul_zero, add_zero] at h
+    simp only [pow_two, Complex.mul_im, Complex.mul_re, Complex.sub_im, Complex.sub_re, Complex.one_im, Complex.one_re, Complex.intCast_re, Complex.intCast_im, zero_mul, add_zero] at h
     nlinarith [h]
   have hui : u.im = 0 := by
     have hz := (mul_eq_zero.mp hi).resolve_left (ne_of_gt hdR)
@@ -76,7 +74,7 @@ theorem spectralCoordinate_avoids_thresholdRay (d : ℤ) (hd : 0 < d) :
     simpa only [pow_two, Complex.mul_re, Complex.mul_im, Complex.sub_re,
       Complex.one_re, Complex.intCast_re, Complex.intCast_im, hui,
       zero_mul, mul_zero, sub_zero] using h
-  nlinarith [mul_pos hdR (sq_pos_of_pos hu)]
+  simp_all
 
 theorem spectralCoordinate_zero (d : ℤ) :
     spectralCoordinate d 0 = 8 * (d : ℂ) / 9 := by
@@ -88,9 +86,8 @@ theorem spectralCoordinate_hasDerivAt (d : ℤ) (s : ℂ) :
   unfold spectralCoordinate
   have h := ((hasDerivAt_id s).const_mul (2 : ℂ)).const_add ((1 : ℂ) / 3)
   convert ((h.pow 2).const_sub (1 : ℂ)).const_mul (d : ℂ) using 1
-  · ext z
-    simp
-  · simp only [id_eq, Nat.cast_ofNat, pow_one, mul_one]
+  · rfl
+  · simp only [id_eq, Nat.cast_ofNat, mul_one]
     ring
 
 theorem spectralCoordinate_deriv_zero (d : ℤ) (hd : 0 < d) :
@@ -113,8 +110,3 @@ theorem spectralCoordinate_deriv_ne_zero (d : ℤ) (hd : 0 < d)
   norm_num at hr
   have hs' : -(1 : ℝ) / 6 < s.re := hs
   linarith
-
-end
-end DedekindZetaZeroFree.KPContinuation
-
-end

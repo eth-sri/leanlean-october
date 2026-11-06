@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Eisenstein.Induction.ScalarCompactPicturesAnd
 
 @[expose] public section
 
-noncomputable section
 
 namespace DedekindZetaZeroFree.KPLiteralScalarArchHarmonicCore
 open KPCplxPrincipalSeriesCharts KPCplxIntertwinerEigenvalues
@@ -47,7 +46,3 @@ theorem finite_invariant_subspace (s : ℝ) (f : PrincipalSeries s)
     rw [pi_add]
     exact Submodule.add_mem _ (Submodule.mem_sup_left (hinvU k u hu))
       (Submodule.mem_sup_right (hinvV k v hv))
-
-end DedekindZetaZeroFree.KPLiteralScalarArchHarmonicCore
-
-end

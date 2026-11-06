@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 namespace ClassFormation
 
 open KummerTheory
@@ -75,12 +71,10 @@ def conjugateFixedElement [ContinuousMul G]
     (conjugateClosedSubgroup_mem K σ x.1).mp x.2⟩
   calc
     A.ρ x.1 (A.ρ σ⁻¹ a.1) = A.ρ (x.1 * σ⁻¹) a.1 := by
-      rw [map_mul]
-      rfl
+      simp
     _ = A.ρ (σ⁻¹ * k.1) a.1 := by simp [k, mul_assoc]
     _ = A.ρ σ⁻¹ (A.ρ k.1 a.1) := by
-      rw [map_mul]
-      rfl
+      simp
     _ = A.ρ σ⁻¹ a.1 := by rw [a.2 k]
 
 /--
@@ -117,7 +111,7 @@ theorem conjugateFixedElement_coe [ContinuousMul G]
   Iff.rfl
 
 /-- Conjugation identifies the absolute coset spaces for `K^σ` and `K`. -/
-noncomputable def absoluteConjugateCosetEquiv
+def absoluteConjugateCosetEquiv
     {G : Type*} [Group G] [TopologicalSpace G] [ContinuousMul G]
     (K : ClosedSubgroup G) (σ : G) :
     ((baseField G).toSubgroup ⧸
@@ -149,7 +143,7 @@ theorem absoluteConjugateCosetEquiv_mk
       QuotientGroup.mk (absoluteConjugationEquiv σ x) :=
   rfl
 
-private theorem relativeCosetAction_absoluteConjugate [ContinuousMul G]
+theorem relativeCosetAction_absoluteConjugate [ContinuousMul G]
     (A : Rep ℤ G) (K : ClosedSubgroup G) (σ : G)
     (a : ambientFixedAddSubgroup A K)
     (q : (baseField G).toSubgroup ⧸
@@ -170,12 +164,10 @@ private theorem relativeCosetAction_absoluteConjugate [ContinuousMul G]
     relativeCosetAction_mk, conjugateFixedElement_coe]
   calc
     A.ρ x.1 (A.ρ σ⁻¹ a.1) = A.ρ (x.1 * σ⁻¹) a.1 := by
-      rw [map_mul]
-      rfl
+      simp
     _ = A.ρ (σ⁻¹ * (σ * x.1 * σ⁻¹)) a.1 := by simp [mul_assoc]
     _ = A.ρ σ⁻¹ (A.ρ (σ * x.1 * σ⁻¹) a.1) := by
-      rw [map_mul]
-      rfl
+      simp
 
 /-- conjugation compatibility of normalized valuations: the absolute norm commutes with conjugation.
 
@@ -269,9 +261,9 @@ def normalExtensionAction
   have hl'val : (l' : G) = (k⁻¹ * lK * k : K.toSubgroup) :=
     rfl
   calc
-    A.ρ l.1 (A.ρ k.1 a.1) = A.ρ (l.1 * k.1) a.1 := by rw [map_mul]; rfl
+    A.ρ l.1 (A.ρ k.1 a.1) = A.ρ (l.1 * k.1) a.1 := by simp
     _ = A.ρ (k.1 * l'.1) a.1 := by rw [hl'val]; simp [lK, mul_assoc]
-    _ = A.ρ k.1 (A.ρ l'.1 a.1) := by rw [map_mul]; rfl
+    _ = A.ρ k.1 (A.ρ l'.1 a.1) := by simp
     _ = A.ρ k.1 a.1 := by rw [a.2 l']
 
 /--
@@ -312,9 +304,7 @@ theorem relativeNorm_normalExtensionAction
     simp only [relativeCosetAction_mk, normalExtensionAction_coe]
     have he : e (QuotientGroup.mk x) = QuotientGroup.mk (x * k) := rfl
     rw [he, relativeCosetAction_mk]
-    change A.ρ x.1 (A.ρ k.1 a.1) = A.ρ (x.1 * k.1) a.1
-    rw [map_mul]
-    rfl
+    simp
   simp only [relativeNorm_apply_coe, relativeNormValue]
   simp_rw [hterm]
   exact e.sum_comp (relativeCosetAction A K L hLK a)
@@ -339,7 +329,7 @@ namespace DegreeData.FiniteTower
 variable (T : DegreeData.FiniteTower G)
 
 /-- The finite composite extension represented by a finite tower. -/
-noncomputable def totalExtension : DegreeData.FiniteAbstractExtension G where
+def totalExtension : DegreeData.FiniteAbstractExtension G where
   toAbstractExtension := T.toTower.totalExtension
   finiteQuotient := relativeTowerQuotientFinite
     T.base T.middle T.top T.top_le_middle T.middle_le_base
@@ -353,7 +343,7 @@ instance totalQuotientFinite :
 
 end DegreeData.FiniteTower
 
-private theorem relativeCosetAction_towerProductEquiv
+theorem relativeCosetAction_towerProductEquiv
     (A : Rep ℤ G) (K L M : ClosedSubgroup G)
     (hML : M.toSubgroup ≤ L.toSubgroup)
     (hLK : L.toSubgroup ≤ K.toSubgroup)
@@ -369,12 +359,9 @@ private theorem relativeCosetAction_towerProductEquiv
       (q, QuotientGroup.mk x) =
       QuotientGroup.mk (Quotient.out q * Subgroup.inclusion hLK x) := rfl
   rw [he, relativeCosetAction_mk, relativeCosetAction_mk]
-  change A.ρ ((Quotient.out q).1 * x.1) a.1 =
-    A.ρ (Quotient.out q).1 (A.ρ x.1 a.1)
-  rw [map_mul]
-  rfl
+  simp
 
-private theorem finiteTowerNormTransApplyAux
+theorem finiteTowerNormTransApplyAux
     (A : Rep ℤ G) (K L M : ClosedSubgroup G)
     (hML : M.toSubgroup ≤ L.toSubgroup)
     (hLK : L.toSubgroup ≤ K.toSubgroup)
@@ -404,8 +391,8 @@ private theorem finiteTowerNormTransApplyAux
     calc
       relativeCosetAction A K L hLK (relativeNorm A L M hML a) q =
           relativeCosetAction A K L hLK (relativeNorm A L M hML a)
-            (QuotientGroup.mk (Quotient.out q)) := by
-              exact congrArg
+            (QuotientGroup.mk (Quotient.out q)) := 
+              congrArg
                 (relativeCosetAction A K L hLK (relativeNorm A L M hML a))
                 (Quotient.out_eq' q).symm
       _ = A.ρ (Quotient.out q).1
@@ -448,21 +435,6 @@ theorem norm_trans_apply (A : Rep ℤ G)
     relativeNorm A T.base T.middle T.middle_le_base
         (relativeNorm A T.middle T.top T.top_le_middle a) =
       relativeNorm A T.base T.top
-        (T.top_le_middle.trans T.middle_le_base) a := by
-  exact finiteTowerNormTransApplyAux A T.base T.middle T.top
+        (T.top_le_middle.trans T.middle_le_base) a := 
+  finiteTowerNormTransApplyAux A T.base T.middle T.top
     T.top_le_middle T.middle_le_base a
-
-/-- Homomorphism form of norm transitivity along a finite tower. -/
-theorem norm_trans (A : Rep ℤ G) :
-    (relativeNorm A T.base T.middle T.middle_le_base).comp
-        (relativeNorm A T.middle T.top T.top_le_middle) =
-      relativeNorm A T.base T.top
-        (T.top_le_middle.trans T.middle_le_base) := by
-  apply AddMonoidHom.ext
-  intro a
-  exact T.norm_trans_apply A a
-
-end DegreeData.FiniteTower
-
-end
-end ClassFormation

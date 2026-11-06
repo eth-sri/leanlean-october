@@ -116,6 +116,3 @@ def FiniteProfileFamily (A : SArithmeticData F)
       ∀ (i : I) (j : ℕ), j ≤ 2 → ∀ x : ℝ, 0 < x →
         ‖iteratedDeriv j (logProfile (P i)) (Real.log x)‖ ≤
           K * min (Real.rpow x (1 / 8)) (Real.rpow x (-B))
-
-end
-end DedekindZetaZeroFree.RMSeparatedExpansion

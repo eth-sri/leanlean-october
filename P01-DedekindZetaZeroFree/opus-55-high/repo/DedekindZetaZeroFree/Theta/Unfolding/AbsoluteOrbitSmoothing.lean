@@ -15,13 +15,7 @@ variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 variable (R : PrincipalMellin.ActualRecipe S η)
 
 lemma branch_norm {Q : AdmissibleFlatSources R} (P : Packet R Q)
-    (v : R.A.UnitQuotient) (y : R.A.G) : ‖P.branch v y‖ = 1 := by
-  rw [P.branch_global, norm_mul, Circle.norm_coe, one_mul]
-  apply Complex.norm_eq_one_of_pow_eq_one (n := 6) _ (by decide)
-  rw [← map_pow]
-  have h := congrArg (fun u : Fˣ => (u : F))
-    (R.A.H_S (R.A.diagonal (R.probe.unitReps.representative v).val) y).property
-  simpa only [Units.val_pow_eq_pow_val, Units.val_one, map_one] using congrArg R.σ h
+    (v : R.A.UnitQuotient) (y : R.A.G) : ‖P.branch v y‖ = 1 := by apply DedekindZetaZeroFree.OrbitExpansion.branch_norm_one <;> assumption
 
 lemma smoothing_orbitSheet_norm_le {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
     (v : R.A.UnitQuotient) (m : ThetaReflectionData.Row R.A) (b : Bool)

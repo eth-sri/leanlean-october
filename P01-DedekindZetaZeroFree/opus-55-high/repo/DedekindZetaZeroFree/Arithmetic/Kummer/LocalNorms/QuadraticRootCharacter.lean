@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.Arithmetic.Kummer.ConductorArtinCharacter
 @[expose] public section
 
 namespace DedekindZetaZeroFree.RMKummerLocalNormRoot
-noncomputable section
 open scoped NumberField Classical
 
 theorem kappa_injective (F : Type) [Field F] [NumberField F]
@@ -26,6 +25,3 @@ theorem kappa_pow_two (F : Type) [Field F] [NumberField F]
     (σ : RMKummerConductor.E F h12 x ≃ₐ[F] RMKummerConductor.E F h12 x) :
     RMKummerConductor.kappa F h12 x σ ^ 2 = 1 :=
   rmKummerQuadraticRootsComplexMap_pow_two F h12 (RMKummerConductor.E F h12 x) _
-
-end
-end DedekindZetaZeroFree.RMKummerLocalNormRoot

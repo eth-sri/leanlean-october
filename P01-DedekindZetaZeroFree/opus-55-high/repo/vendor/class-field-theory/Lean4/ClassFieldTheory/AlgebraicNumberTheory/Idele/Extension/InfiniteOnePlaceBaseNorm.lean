@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Norms of base units supported at one infinite place
 
@@ -44,7 +39,7 @@ variable
 
 /-- Extend a unit of the completion below `W` to the completion at
 `W`. -/
-noncomputable def infinitePlaceBaseUnitExtension
+def infinitePlaceBaseUnitExtension
     (W : InfinitePlace L) :
     ((_root_.infinitePlaceBelow (K := K) W).Completion)ˣ →*
       W.Completionˣ := by
@@ -74,7 +69,7 @@ theorem infinitePlaceBaseUnitExtension_neg_one
 
 /-- The degree of the completed extension at `W` over the completion
 at the place below it. -/
-noncomputable def infinitePlaceCompletionDegree
+def infinitePlaceCompletionDegree
     (W : InfinitePlace L) : ℕ := by
   let v := _root_.infinitePlaceBelow (K := K) W
   letI : W.1.LiesOver v.1 := ⟨rfl⟩
@@ -224,25 +219,6 @@ theorem norm_infinitePlaceIdele_infinitePlaceBaseUnitExtension_of_isUnramified
       simpa only [infinitePlaceCompletionDegree, v] using hDegree,
     pow_one]
 
-/-- A real infinite place upstairs is unramified over every lower
-number field, so the one-place norm of an extended base unit is
-unchanged. -/
-theorem norm_infinitePlaceIdele_infinitePlaceBaseUnitExtension_of_isReal
-    (W : InfinitePlace L)
-    (hWReal : W.IsReal)
-    (x :
-      ((_root_.infinitePlaceBelow (K := K) W).Completion)ˣ) :
-    norm K L
-        (infinitePlaceIdele W
-          (infinitePlaceBaseUnitExtension
-            (K := K) (L := L) W x)) =
-      infinitePlaceIdele
-        (_root_.infinitePlaceBelow (K := K) W) x := by
-  apply
-    norm_infinitePlaceIdele_infinitePlaceBaseUnitExtension_of_isUnramified
-      (K := K) (L := L) W
-  exact InfinitePlace.isUnramified_iff.mpr (Or.inl hWReal)
-
 /-- The degree-one one-place norm equality descends verbatim to the
 actual idele class groups. -/
 theorem ideleClassNorm_infinitePlaceIdeleClass_infinitePlaceBaseUnitExtension_of_isUnramified
@@ -308,7 +284,3 @@ theorem ideleClassNorm_infinitePlaceIdeleClass_neg_one_of_isReal
       (K := K) (L := L) W hWReal
       (-1 :
         ((_root_.infinitePlaceBelow (K := K) W).Completion)ˣ)
-
-end IdeleGroup
-
-end

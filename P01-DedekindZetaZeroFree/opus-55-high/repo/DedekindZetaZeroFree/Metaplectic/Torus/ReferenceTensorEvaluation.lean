@@ -20,7 +20,7 @@ theorem localReference_one (q : KPFinitePlace F) :
   simp only [localReference, map_one]
   simp only [Subgroup.one_mem, dite_true]
   change (((C.polarization q).ωL 1 : ℂˣ) : ℂ) = 1
-  rw [map_one, Units.val_one]
+  simp
 
 theorem localUntwistedEvaluation_reference_one (q : KPFinitePlace F) :
     localUntwistedEvaluation F ζ hζ P C q (localReference F ζ hζ P C q) 1 = 1 := by

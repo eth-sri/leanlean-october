@@ -46,20 +46,20 @@ theorem cartan_basis_normalization :
       fin_cases j <;> constructor
       all_goals first
       | (ext i k; fin_cases i <;> fin_cases k <;>
-          simp [noncompactMatrix, Matrix.star_apply, Matrix.conjTranspose_apply])
+          simp [noncompactMatrix, Matrix.star_apply])
       | simp [noncompactMatrix, Matrix.trace, Fin.sum_univ_two]
     · intro j
       fin_cases j <;> constructor
       all_goals try (simp [compactMatrix, noncompactMatrix, Matrix.trace, Fin.sum_univ_two])
       all_goals ext i k; fin_cases i <;> fin_cases k
-      all_goals simp [Matrix.star_apply, Matrix.conjTranspose_apply]
+      all_goals simp [Matrix.star_apply]
   have h2 : (∀ i j, (Matrix.trace (noncompactMatrix i * noncompactMatrix j)).re =
       if i = j then 1 else 0) ∧
     (∀ i j, -(Matrix.trace (compactMatrix i * compactMatrix j)).re =
       if i = j then 1 else 0) ∧
     (∀ i j, (Matrix.trace (noncompactMatrix i * compactMatrix j)).re = 0) := by
     have hs : Real.sqrt 2 ≠ 0 := by positivity
-    have hs2 : Real.sqrt 2 * Real.sqrt 2 = 2 := Real.mul_self_sqrt (by norm_num)
+    have hs2 : Real.sqrt 2 * Real.sqrt 2 = 2 := by simp
     refine ⟨?_, ?_, ?_⟩
     all_goals intro i j; fin_cases i <;> fin_cases j
     all_goals norm_num [noncompactMatrix, compactMatrix, Matrix.trace, Matrix.mul_apply,
@@ -70,7 +70,7 @@ theorem cartan_basis_normalization :
   refine ⟨h1.1, h1.2, h2.1, h2.2.1, h2.2.2, ?_⟩
   intro M hM
   have hs : Real.sqrt 2 ≠ 0 := by positivity
-  have hs2 : Real.sqrt 2 * Real.sqrt 2 = 2 := Real.mul_self_sqrt (by norm_num)
+  have hs2 : Real.sqrt 2 * Real.sqrt 2 = 2 := by simp
   have htr : M 0 0 + M 1 1 = 0 := by simpa [Matrix.trace, Fin.sum_univ_two] using hM
   refine ⟨fun b => if b.1 then
     ![Real.sqrt 2 * (M 0 0).im,
@@ -82,9 +82,7 @@ theorem cartan_basis_normalization :
   ext i j
   fin_cases i <;> fin_cases j
   all_goals apply Complex.ext
-  all_goals simp [Fintype.sum_prod_type, Fintype.sum_bool, Fin.sum_univ_three,
-    cartanMatrix, compactMatrix, noncompactMatrix, Complex.mul_re, Complex.mul_im,
-    Complex.inv_re, Complex.inv_im, Complex.normSq, hs]
+  all_goals simp [Fintype.sum_prod_type, Fin.sum_univ_three, cartanMatrix, compactMatrix, noncompactMatrix, Complex.mul_re, Complex.mul_im, Complex.inv_re, Complex.inv_im, Complex.normSq]
   all_goals field_simp
   all_goals ring_nf
   all_goals simp only [Real.sq_sqrt (show (0 : ℝ) ≤ 2 by norm_num)]
@@ -97,11 +95,7 @@ open scoped Matrix.Norms.Operator in
 private theorem matrix_path_diff (g : KPCplxCharacterHaar.ComplexGL2)
     (M : Matrix (Fin 2) (Fin 2) ℂ) :
     ∀ i j, DifferentiableAt ℝ (fun t : ℝ => ((g : Matrix (Fin 2) (Fin 2) ℂ) * NormedSpace.exp ((t : ℂ) • M)) i j) 0 := by
-  have hmat : DifferentiableAt ℝ (fun t : ℝ => (g : Matrix (Fin 2) (Fin 2) ℂ) * NormedSpace.exp ((t : ℂ) • M)) 0 := by
-    exact (differentiableAt_const _).mul ((differentiable_exp_smul_const ℂ M).differentiableAt.restrictScalars ℝ |>.comp 0 Complex.ofRealCLM.differentiableAt)
-  intro i j
-  exact (ContinuousLinearMap.proj j).differentiableAt.comp 0
-    ((ContinuousLinearMap.proj i).differentiableAt.comp 0 hmat)
+  fun_prop
 open scoped Matrix.Norms.Elementwise in
 private theorem local_path_differentiable (s : ℝ) (f : KPCplxPrincipalSeriesCharts.PrincipalSeries s) (g : KPCplxCharacterHaar.ComplexGL2)
     (M : Matrix (Fin 2) (Fin 2) ℂ) :
@@ -137,7 +131,7 @@ open scoped Matrix.Norms.Operator in
     ∀ i j, HasDerivAt (fun t : ℝ => ((g : Matrix (Fin 2) (Fin 2) ℂ) * NormedSpace.exp ((t : ℂ) • M)) i j) (((g : Matrix (Fin 2) (Fin 2) ℂ) * M) i j) 0 := by
   have h := ((hasDerivAt_exp_smul_const (𝕂 := ℂ) M ((0 : ℝ) : ℂ)).hasFDerivAt.restrictScalars ℝ).comp_hasDerivAt (f := fun t : ℝ => (t : ℂ)) 0 Complex.ofRealCLM.hasDerivAt
   have hmat := h.const_mul (g : Matrix (Fin 2) (Fin 2) ℂ)
-  simp only [Complex.ofRealCLM_apply, Complex.ofReal_one, ContinuousLinearMap.coe_restrictScalars, ContinuousLinearMap.toSpanSingleton_apply, one_smul, zero_smul, NormedSpace.exp_zero, mul_one, one_mul] at hmat
+  simp only [Complex.ofRealCLM_apply, Complex.ofReal_one] at hmat
   intro i j
   have hi := (ContinuousLinearMap.proj i : Matrix (Fin 2) (Fin 2) ℂ →L[ℝ] Fin 2 → ℂ).hasFDerivAt.comp_hasDerivAt 0 hmat
   have hj := (ContinuousLinearMap.proj j : (Fin 2 → ℂ) →L[ℝ] ℂ).hasFDerivAt.comp_hasDerivAt 0 hi
@@ -180,31 +174,7 @@ private theorem raw_derivative_eq (s : ℝ) (f : KPCplxPrincipalSeriesCharts.Pri
 
 open scoped Matrix.Norms.Elementwise in
  theorem local_derivative_mem (s : ℝ) (M : Matrix (Fin 2) (Fin 2) ℂ) (f : KPCplxPrincipalSeriesCharts.PrincipalSeries s) :
-    (fun g => deriv (fun t : ℝ => f (g * KPSmoothActualFlowData.matrixExponential ((t : ℂ) • M))) 0) ∈ KPCplxPrincipalSeriesCharts.principalSeriesSubmodule s := by
-  apply (KPCplxPrincipalSeriesCharts.principalSeries_mem_iff s _).mpr
-  constructor
-  · intro a d b g
-    have he : (fun t : ℝ => f (KPCplxPrincipalSeriesCharts.upperTriangular a d b * g * KPSmoothActualFlowData.matrixExponential ((t : ℂ) • M))) =
-        (fun t : ℝ => (KPCplxPrincipalSeriesCharts.inductionWeight s a d : ℂ) • f (g * KPSmoothActualFlowData.matrixExponential ((t : ℂ) • M))) := by
-      funext t
-      rw [mul_assoc]
-      exact f.property.1 a d b _
-    dsimp only
-    rw [he]
-    exact deriv_const_smul (KPCplxPrincipalSeriesCharts.inductionWeight s a d : ℂ)
-      (f := fun t : ℝ => f (g * KPSmoothActualFlowData.matrixExponential ((t : ℂ) • M))) (local_path_differentiable s f g M)
-  · have hf := ((KPCplxPrincipalSeriesCharts.principalSeries_mem_iff s f.val).mp f.property).2
-    have hcont : Continuous (fun m : Matrix (Fin 2) (Fin 2) ℂ => m.det) := by fun_prop
-    have hs : IsOpen {m : Matrix (Fin 2) (Fin 2) ℂ | m.det ≠ 0} := isOpen_ne.preimage hcont
-    have hd := hf.fderiv_of_isOpen hs (m := (⊤ : ℕ∞)) (by simp)
-    have hm : ContDiff ℝ (⊤ : ℕ∞) (fun m : Matrix (Fin 2) (Fin 2) ℂ => m * M) := by
-      change ContDiff ℝ (⊤ : ℕ∞) (fun m : Matrix (Fin 2) (Fin 2) ℂ => fun i j => ∑ k, m i k * M k j)
-      fun_prop
-    apply (hd.clm_apply hm.contDiffOn).congr
-    intro m hm
-    unfold KPCplxPrincipalSeriesCharts.matrixFunction
-    rw [dif_pos (show m.det ≠ 0 from hm)]
-    exact raw_derivative_eq s f (Matrix.GeneralLinearGroup.mkOfDetNeZero m hm) M
+    (fun g => deriv (fun t : ℝ => f (g * KPSmoothActualFlowData.matrixExponential ((t : ℂ) • M))) 0) ∈ KPCplxPrincipalSeriesCharts.principalSeriesSubmodule s := by apply DedekindZetaZeroFree.RepresentationTheory.KPSmoothCoreCasimirEnergy.InfinitesimalAction.right_derivative_mem <;> assumption
 
 def localDerivative (s : ℝ) (b : LocalBasis)
     (f : KPCplxPrincipalSeriesCharts.PrincipalSeries s) :
@@ -213,7 +183,7 @@ def localDerivative (s : ℝ) (b : LocalBasis)
     f (g * KPSmoothActualFlowData.matrixExponential
       ((t : ℂ) • cartanMatrix b))) 0, local_derivative_mem s (cartanMatrix b) f⟩
 
-private theorem localDerivative_raw (s : ℝ) (b : LocalBasis)
+theorem localDerivative_raw (s : ℝ) (b : LocalBasis)
     (f : KPCplxPrincipalSeriesCharts.PrincipalSeries s) :
     localDerivative s b f = RepresentationTheory.KPSmoothCoreCasimirEnergy.InfinitesimalAction.localDerivative s b f := by
   rfl
@@ -250,13 +220,10 @@ theorem local_derivative_preserves_HC (s : ℝ) (b : LocalBasis)
       funext g
       exact deriv_const _ _
     rw [hz]
-    exact Submodule.zero_mem _
+    simp
   · intro x y hx hy
     rw [localDerivative_add]
     exact Submodule.add_mem _ hx hy
-
-def localHCGenerator (s : ℝ) (b : LocalBasis) (f : localHC s) : localHC s :=
-  ⟨localDerivative s b f.val, local_derivative_preserves_HC s b f⟩
 
 section ActualQuotient
 
@@ -265,38 +232,3 @@ variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 variable (μ : KPSmoothActualFlowData.QuotientMeasureData F ζ hζ)
 
 abbrev B := InfinitePlace F × LocalBasis
-
-def cartanFlow (b : B F) (t : ℝ) : KPSmoothActualFlowData.GInfinity F :=
-  fun v => if v = b.1 then Matrix.ProjGenLinGroup.mk
-    (KPSmoothActualFlowData.matrixExponential ((t : ℂ) • cartanMatrix b.2)) else 1
-
-def generator (b : B F) (c : KPSmoothActualFlowData.H F ζ hζ μ.measure) :
-    KPSmoothActualFlowData.H F ζ hζ μ.measure :=
-  deriv (fun t : ℝ => (KPSmoothActualFlowData.pi F ζ hζ μ).operator
-    (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ (cartanFlow F b t)) c) 0
-
-def CoreFlowDomains (C : Submodule ℂ (KPSmoothActualFlowData.H F ζ hζ μ.measure)) : Prop :=
-  ∀ b c, c ∈ C →
-    HasDerivAt (fun t : ℝ => (KPSmoothActualFlowData.pi F ζ hζ μ).operator
-      (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ (cartanFlow F b t)) c)
-      (generator F ζ hζ μ b c) 0 ∧ generator F ζ hζ μ b c ∈ C
-
-structure ActualResiduePresentation
-    (C : Submodule ℂ (KPSmoothActualFlowData.H F ζ hζ μ.measure)) where
-  flowDomains : CoreFlowDomains F ζ hζ μ C
-  parameter : InfinitePlace F → ℝ
-  exceptional : ∀ v, parameter v = KPCplxPrincipalSeriesCharts.positiveParameter ∨
-    parameter v = KPCplxPrincipalSeriesCharts.negativeParameter
-  index : InfinitePlace F → Type
-  realize : ∀ v, index v → localHC (parameter v) →ₗ[ℂ] C
-  span : ∀ v, (⨆ i, (realize v i).range) = ⊤
-  intertwines : ∀ v i b f,
-    ((realize v i (localHCGenerator (parameter v) b f) : C) :
-      KPSmoothActualFlowData.H F ζ hζ μ.measure) =
-      generator F ζ hζ μ (v, b) (realize v i f)
-
-end ActualQuotient
-
-end DedekindZetaZeroFree.KPSmoothCoreCasimirEnergy
-
-end

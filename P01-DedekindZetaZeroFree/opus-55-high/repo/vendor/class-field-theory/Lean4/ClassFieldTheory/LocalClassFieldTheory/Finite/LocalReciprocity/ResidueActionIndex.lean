@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 namespace LocalClassFieldTheory
 
 open RamificationTheory
@@ -48,13 +44,13 @@ when the chosen extension valuation has full decomposition group.  This is
 kept generic in the Galois ambient field: the ambient field is the
 separable closure, not the algebraic closure (the latter need not be Galois
 over an imperfect local field). -/
-noncomputable def toDecompositionGroupOfEqTop
+def toDecompositionGroupOfEqTop
     (A : _root_.ValuationSubring L)
     (hA : decompositionGroup K A = ⊤) :
     (L ≃ₐ[K] L) →* decompositionGroup K A where
-  toFun sigma := ⟨sigma, by rw [hA]; exact Subgroup.mem_top sigma⟩
-  map_one' := by ext; rfl
-  map_mul' _ _ := by ext; rfl
+  toFun sigma := ⟨sigma, by simp_all⟩
+  map_one' := by rfl
+  map_mul' _ _ := by rfl
 
 omit [IsGalois K L] in
 /-- States the theorem `toDecompositionGroupOfEqTop_coe`. -/
@@ -67,7 +63,7 @@ omit [IsGalois K L] in
 
 /-- The residue action from the exact sequence, viewed on the whole Galois group
 when the chosen extension valuation has full decomposition group. -/
-noncomputable def residueAlgActionOfEqTop
+def residueAlgActionOfEqTop
     (A : _root_.ValuationSubring L)
     (hA : decompositionGroup K A = ⊤) :
     (L ≃ₐ[K] L) →*
@@ -113,8 +109,3 @@ theorem residueDegreeImage_index_eq_finrank_of_map_eq_fixingSubgroup
     Internal.residueDatumIn_fieldImage_index_closedFixingSubgroup k Omega E
   rw [(residueDatumIn k Omega).fieldImage_eq_map] at h
   simpa [residueDatumIn, closedFixingSubgroup] using h
-
-end FiniteImageIndex
-
-end
-end LocalClassFieldTheory

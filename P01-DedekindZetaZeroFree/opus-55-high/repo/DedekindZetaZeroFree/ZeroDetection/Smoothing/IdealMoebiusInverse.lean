@@ -44,7 +44,7 @@ theorem truncatedIdealMoebius_top (F : Type) [Field F] [NumberField F]
 
 open UniqueFactorizationMonoid
 
-private theorem squarefree_prod_subset (F : Type) [Field F] [NumberField F]
+theorem squarefree_prod_subset (F : Type) [Field F] [NumberField F]
     (n : Ideal (𝓞 F)) (hn : n ≠ ⊥) (t : Finset (Ideal (𝓞 F)))
     (ht : t ⊆ (normalizedFactors n).toFinset) :
     (∏ p ∈ t, p) ≠ ⊥ ∧ (∏ p ∈ t, p) ∣ n ∧ Squarefree (∏ p ∈ t, p) ∧
@@ -66,7 +66,7 @@ private theorem squarefree_prod_subset (F : Type) [Field F] [NumberField F]
     exact Multiset.mem_toFinset.mp (ht hp)
   · rw [idealMoebius, hsq.moebius_eq, factors_eq_normalizedFactors, hfactor]
     rfl
-private theorem mobius_sum_zero (F : Type) [Field F] [NumberField F]
+theorem mobius_sum_zero (F : Type) [Field F] [NumberField F]
     (n : Ideal (𝓞 F)) (hn : n ≠ ⊥) (hnt : n ≠ ⊤) :
     (∑ d ∈ (ideal_divisors_finite F n hn).toFinset, (idealMoebius F d : ℝ)) = 0 := by
   classical
@@ -87,7 +87,7 @@ private theorem mobius_sum_zero (F : Type) [Field F] [NumberField F]
     apply Finset.sum_bij (fun t _ => ∏ p ∈ t, p)
     · intro t ht
       have h := squarefree_prod_subset F n hn t (Finset.mem_powerset.mp ht)
-      exact Finset.mem_filter.mpr ⟨(hD _).mpr ⟨h.1, h.2.1⟩, h.2.2.1⟩
+      simp_all
     · intro t ht u hu heq
       have htf : normalizedFactors (∏ p ∈ t, p) = t.val := by
         simpa only [Finset.prod_eq_multiset_prod, Multiset.map_id'] using
@@ -97,7 +97,7 @@ private theorem mobius_sum_zero (F : Type) [Field F] [NumberField F]
         simpa only [Finset.prod_eq_multiset_prod, Multiset.map_id'] using
           normalizedFactors_prod_of_prime (fun p hp => prime_of_normalized_factor p
             (Multiset.mem_toFinset.mp (Finset.mem_powerset.mp hu hp)))
-      exact Finset.val_injective (htf.symm.trans ((congrArg normalizedFactors heq).trans huf))
+      simp_all
     · intro d hd
       obtain ⟨hdD, hsq⟩ := Finset.mem_filter.mp hd
       obtain ⟨hd0, hdn⟩ := (hD d).mp hdD
@@ -145,15 +145,14 @@ theorem truncatedIdealMoebius_eq_zero (F : Type) [Field F] [NumberField F]
   · have heq : (∑ d ∈ D, if d ≠ ⊥ ∧ d ∣ n ∧ (Ideal.absNorm d : ℝ) ≤ U ^ 2 then
       (idealMoebius F d : ℝ) else 0) = ∑ d ∈ D, (idealMoebius F d : ℝ) := by
       apply Finset.sum_congr rfl
-      intro d hd
-      exact if_pos ⟨((hD d).mp hd).1, ((hD d).mp hd).2, hcut d hd⟩
+      simp_all
     rw [heq]
     exact mobius_sum_zero F n hn hnt
   · intro d hd
     apply (hD d).mpr
     by_contra hd'
     simp only [Function.mem_support] at hd
-    exact hd (if_neg (fun h => hd' ⟨h.1, h.2.1⟩))
+    simp_all
 
 theorem idealLSeries_summable (F : Type) [Field F] [NumberField F]
     (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) (ω : RayClassCharacter F m)
@@ -167,5 +166,3 @@ theorem idealLSeries_summable (F : Type) [Field F] [NumberField F]
     · simp [hn]
     · have hz : ω n = 0 := (ω.eq_zero_iff' n).mpr (Or.inl (not_ne_iff.mp hn))
       simp [hn, hz]
-
-end DedekindZetaZeroFree.Detector

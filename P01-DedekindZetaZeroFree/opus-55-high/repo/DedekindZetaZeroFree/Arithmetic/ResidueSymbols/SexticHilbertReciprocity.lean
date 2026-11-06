@@ -8,18 +8,16 @@ open scoped NumberField Classical
 open NumberField IsDedekindDomain
 
 namespace DedekindZetaZeroFree.ArithmeticContext
-noncomputable section
-set_option autoImplicit false
 variable {F : Type} [Field F] [NumberField F]
 
-private theorem coprime_of_residue_unit {R : Type*} [CommRing R]
+theorem coprime_of_residue_unit {R : Type*} [CommRing R]
     (M : Ideal R) (x : R) (hx : IsUnit (Ideal.Quotient.mk M x)) :
     Ideal.span {x} ⊔ M = ⊤ := by
   obtain ⟨u, hu⟩ := hx
   obtain ⟨y, hy⟩ := Ideal.Quotient.mk_surjective (↑u⁻¹ : R ⧸ M)
   have hxy : Ideal.Quotient.mk M (x * y - 1) = 0 := by
     simp only [map_sub, map_mul, map_one, hy, ← hu, Units.mul_inv]
-    exact sub_self _
+    simp
   have hmem : x * y - 1 ∈ M := Ideal.Quotient.eq_zero_iff_mem.mp hxy
   apply (Ideal.eq_top_iff_one _).mpr
   have hxmem : x * y ∈ Ideal.span {x} :=
@@ -31,7 +29,7 @@ private theorem coprime_of_residue_unit {R : Type*} [CommRing R]
   have := (Ideal.span {x} ⊔ M).sub_mem hm1 hm2
   simpa only [sub_sub_cancel] using this
 
-private theorem extended_sup_ne_top (A : SArithmeticData F) (I J : A.Exterior)
+theorem extended_sup_ne_top (A : SArithmeticData F) (I J : A.Exterior)
     (h : I.val ⊔ J.val ≠ ⊤) : A.extendIdeal I ⊔ A.extendIdeal J ≠ ⊤ := by
   let K : A.Exterior := ⟨I.val ⊔ J.val, by
     constructor
@@ -110,12 +108,9 @@ theorem actual_hilbert_sextic_reciprocity (A : SArithmeticData F)
       rw [← hActual]
       exact hB.2.1 (A.sClass ua) hBa (A.sClass ub) hBb
     have hr := actual_sextic_coprime_reciprocity A I J a b ua ub ha hb hua hub hc
-    simpa only [Subgroup.coe_inv, hH, inv_one, Units.val_one, one_mul] using hr
+    simp_all
   refine ⟨hrec, ?_, ?_, actual_sextic_noncoprime_vanishing A⟩
   · intro I a ua ε ha hua _
     rw [actual_sextic_sunit_symbol A I a ua ε ha hua]
     exact congrArg (fun u : Fˣ => (u : F)) (hActual (A.diagonal ε.val) (A.diagonal ua)).symm
   · exact actual_sextic_unit_twisted_of_coprime_law A B hrec
-
-end
-end DedekindZetaZeroFree.ArithmeticContext

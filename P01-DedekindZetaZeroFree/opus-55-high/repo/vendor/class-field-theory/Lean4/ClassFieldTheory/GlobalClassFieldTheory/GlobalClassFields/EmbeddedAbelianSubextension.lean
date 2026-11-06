@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Embedded finite abelian subextensions
 
@@ -41,7 +36,7 @@ open Reciprocity
 /-- An actual finite abelian extension embedded in the rational separable
 closure, represented as a finite abelian subextension of a selected base
 subgroup equal to the fixing subgroup of the embedded base field. -/
-noncomputable def numberFieldEmbeddedAbelianSubextension
+def numberFieldEmbeddedAbelianSubextension
     (K E : Type)
     [Field K] [NumberField K]
     [Field E] [NumberField E]
@@ -89,8 +84,3 @@ theorem numberFieldEmbeddedAbelianSubextension_field
       numberFieldEmbeddedTopSubgroup K E j := by
   subst B
   rfl
-
-end GlobalClassFields
-end GlobalClassFieldTheory
-
-end

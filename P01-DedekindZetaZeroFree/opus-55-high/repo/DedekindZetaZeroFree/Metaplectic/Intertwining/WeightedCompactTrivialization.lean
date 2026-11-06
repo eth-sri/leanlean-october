@@ -11,8 +11,6 @@ namespace DedekindZetaZeroFree.KPActualResidueSources
 
 open KPLocalPrincipalSeries KPRankOneCenterInducedDiagonalComparison
 
-noncomputable section
-set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
@@ -126,13 +124,13 @@ theorem actual_weighted_compact_trivialization
       apply Subtype.ext
       apply Subtype.ext
       funext k
-      exact E.map_add _ _
+      simp
     map_smul' := by
       intro c φ
       apply Subtype.ext
       apply Subtype.ext
       funext k
-      exact E.map_smul c _ }
+      simp }
   let EM : centerCompactLevel F ζ hζ q S.heisenberg S.borel I .minus J ≃ₗ[ℂ]
       centerCompactLevel F ζ hζ q S.heisenberg S.borel I .plus J := {
     __ := M .minus
@@ -196,6 +194,3 @@ theorem actual_weighted_compact_trivialization
       congr 1
       ring
     rw [he]
-
-end
-end DedekindZetaZeroFree.KPActualResidueSources

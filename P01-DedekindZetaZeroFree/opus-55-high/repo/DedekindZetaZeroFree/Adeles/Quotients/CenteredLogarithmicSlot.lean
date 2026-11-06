@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Adeles.Quotients.FiniteCuspAtlas
 
 @[expose] public section
 
-noncomputable section
 open scoped Classical NumberField
 namespace DedekindZetaZeroFree.KPMsFixedHaar
 
@@ -23,9 +22,7 @@ theorem single_slot_mean_zero
     (fun h => isEmptyElim (⟨w, h⟩ : {v : NumberField.InfinitePlace F // v.IsReal}))
   have hdim : KPCuspLogShape.dimension F ≠ 0 := by
     haveI : Nonempty {v : NumberField.InfinitePlace F // v.IsComplex} := ⟨⟨w, hw⟩⟩
-    have hc : Fintype.card {v : NumberField.InfinitePlace F // v.IsComplex} ≠ 0 :=
-      Fintype.card_ne_zero
-    simpa [KPCuspLogShape.dimension, NumberField.InfinitePlace.nrComplexPlaces] using hc
+    simp
   have hd : (KPCuspLogShape.dimension F : ℝ) ≠ 0 := Nat.cast_ne_zero.mpr hdim
 
   let e : {v : NumberField.InfinitePlace F // v.IsComplex} ≃ Fin (KPCuspLogShape.dimension F) :=
@@ -59,7 +56,3 @@ theorem single_slot_mean_zero
   show (∑ i, ((if KPCusp.complexPlace F i = w then t else 0) -
       t / (KPCuspLogShape.dimension F : ℝ))) = 0
   rw [Finset.sum_sub_distrib, hsum1, hsum2, sub_self]
-
-end DedekindZetaZeroFree.KPMsFixedHaar
-
-end

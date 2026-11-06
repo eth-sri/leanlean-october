@@ -54,8 +54,8 @@ theorem mk_traceDual_mul_modulus_of_inverse_class
 
 namespace Theta
 
-theorem rayToOrdinary_surjective : Function.Surjective (rayToOrdinary F m hm) := by
-  exact ClassFieldTheory.ordinaryRayClassGroupEquivClassGroup.surjective.comp
+theorem rayToOrdinary_surjective : Function.Surjective (rayToOrdinary F m hm) := 
+  ClassFieldTheory.ordinaryRayClassGroupEquivClassGroup.surjective.comp
       (ClassFieldTheory.rayClassIdealModulusProjection_surjective F
         (ClassFieldTheory.ordinaryRayClassModulus_le F (narrowIdealModulus F m hm)))
 
@@ -75,15 +75,15 @@ def inverseOrdinaryClassCoprimeRepresentative (C : ClassGroup (𝓞 F)) :
         (exists_integral_inverse_ordinaryClass_coprime F m hm C)))⟩
 
 theorem inverseOrdinaryClassCoprimeRepresentative_coprime (C : ClassGroup (𝓞 F)) :
-    (inverseOrdinaryClassCoprimeRepresentative F m hm C : Ideal (𝓞 F)) ⊔ m = ⊤ := by
-  exact (Classical.choose_spec (Classical.choose_spec
+    (inverseOrdinaryClassCoprimeRepresentative F m hm C : Ideal (𝓞 F)) ⊔ m = ⊤ := 
+  (Classical.choose_spec (Classical.choose_spec
       (exists_integral_inverse_ordinaryClass_coprime F m hm C))).1
 
 theorem mk_inverseOrdinaryClassCoprimeRepresentative (C : ClassGroup (𝓞 F)) :
     ClassGroup.mk F
       (FractionalIdeal.mk0 F (inverseOrdinaryClassCoprimeRepresentative F m hm C)) =
-      C⁻¹ := by
-  exact (Classical.choose_spec (Classical.choose_spec
+      C⁻¹ := 
+  (Classical.choose_spec (Classical.choose_spec
       (exists_integral_inverse_ordinaryClass_coprime F m hm C))).2
 
 theorem mk_traceDual_mul_modulus_inverseOrdinaryClassCoprimeRepresentative
@@ -97,8 +97,3 @@ theorem mk_traceDual_mul_modulus_inverseOrdinaryClassCoprimeRepresentative
   rw [mk_inverseOrdinaryClassCoprimeRepresentative]
   exact mk_traceDual_mul_modulus_of_inverse_class F m hm C _
       (mk_inverseOrdinaryClassCoprimeRepresentative F m hm C)
-
-end Theta
-end DedekindZetaZeroFree.Hecke
-
-end

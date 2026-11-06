@@ -80,9 +80,7 @@ theorem trace_pi_apply {R : Type*} [CommRing R] {ι : Type*} [Fintype ι]
   intro a _
   simp only [Matrix.diag_apply]
   rw [Algebra.leftMulMatrix_eq_repr_mul, Algebra.leftMulMatrix_eq_repr_mul]
-  simp only [Pi.basis_repr]
-  congr 2
-  simp [Pi.basis_apply]
+  simp
 
 theorem fieldTensorEquiv_tmul (p : Nat.Primes) (a : ℚ_[p]) (x : F)
     (v : PlacesAbove F p) :
@@ -167,9 +165,7 @@ theorem productTraceDual_eq_factors (p : Nat.Primes) :
         localTraceAt F p v (x v * y) := by
       rw [Finset.sum_eq_single v]
       · simp
-      · intro w _ hw
-        rw [Pi.single_eq_of_ne hw]
-        simp
+      · simp_all
       · simp
     rw [hs] at hv
     exact hv
@@ -182,27 +178,26 @@ theorem productTraceDual_eq_factors (p : Nat.Primes) :
  def productCodifferentFieldBasis (p : Nat.Primes) : Module.Basis (TraceBasisIndex F) ℚ_[p] (FieldProduct F p) :=
   (Algebra.TensorProduct.basis ℚ_[p] (integralBasis F).traceDual).map (fieldTensorAlgEquiv F p).toLinearEquiv
 
-private theorem productIntegralFieldBasis_apply (p : Nat.Primes) (i : TraceBasisIndex F) (v : PlacesAbove F p) :
+theorem productIntegralFieldBasis_apply (p : Nat.Primes) (i : TraceBasisIndex F) (v : PlacesAbove F p) :
     productIntegralFieldBasis F p i v = algebraMap F (v.val.adicCompletion F) (integralBasis F i) := by
   simp [productIntegralFieldBasis, Algebra.TensorProduct.basis_apply, fieldTensorAlgEquiv, fieldTensorEquiv_tmul]
 
-private theorem productCodifferentFieldBasis_apply (p : Nat.Primes) (i : TraceBasisIndex F) (v : PlacesAbove F p) :
+theorem productCodifferentFieldBasis_apply (p : Nat.Primes) (i : TraceBasisIndex F) (v : PlacesAbove F p) :
     productCodifferentFieldBasis F p i v = algebraMap F (v.val.adicCompletion F) ((integralBasis F).traceDual i) := by
   simp [productCodifferentFieldBasis, Algebra.TensorProduct.basis_apply, fieldTensorAlgEquiv, fieldTensorEquiv_tmul]
 
-private theorem productTrace_basis_pair (p : Nat.Primes) (i j : TraceBasisIndex F) :
+theorem productTrace_basis_pair (p : Nat.Primes) (i j : TraceBasisIndex F) :
     productTrace F p (productCodifferentFieldBasis F p i * productIntegralFieldBasis F p j) = if j = i then 1 else 0 := by
   classical
-  simp only [productCodifferentFieldBasis, productIntegralFieldBasis, Module.Basis.map_apply,
-    Algebra.TensorProduct.basis_apply, LinearEquiv.coe_coe]
+  simp only [productCodifferentFieldBasis, productIntegralFieldBasis, Module.Basis.map_apply, Algebra.TensorProduct.basis_apply]
   change productTrace F p ((fieldTensorEquiv F p) (1 ⊗ₜ[ℚ] ((integralBasis F).traceDual i)) *
     (fieldTensorEquiv F p) (1 ⊗ₜ[ℚ] (integralBasis F j))) = _
   rw [← map_mul]
   rw [← traceBaseChange_eq_sum, Algebra.TensorProduct.tmul_mul_tmul, one_mul,
     trace_tensor_tmul, one_mul, Module.Basis.trace_traceDual_mul]
-  split <;> simp_all
+  simp
 
-private theorem productCodifferentFieldBasis_repr (p : Nat.Primes) (x : FieldProduct F p) (i : TraceBasisIndex F) :
+theorem productCodifferentFieldBasis_repr (p : Nat.Primes) (x : FieldProduct F p) (i : TraceBasisIndex F) :
     (productCodifferentFieldBasis F p).repr x i = productTrace F p (x * productIntegralFieldBasis F p i) := by
   classical
   conv_rhs => rw [← (productCodifferentFieldBasis F p).sum_repr x]
@@ -224,11 +219,11 @@ theorem integralProductInclusion_smul (p : Nat.Primes) (a : ℤ_[p]) (y : Integr
   apply funext
   intro v
   change ((a • y v : v.val.adicCompletionIntegers F) : v.val.adicCompletion F) = a • (y v : v.val.adicCompletion F)
-  simp only [Algebra.smul_def, Subring.coe_mul]
+  simp only [Algebra.smul_def]
   change (integerScalarMap F p v a : v.val.adicCompletion F) * _ = fieldScalarMap F p v (a : ℚ_[p]) * _
   rw [integerScalarMap_completion_coe]
 
-private theorem integralProductInclusion_range (p : Nat.Primes) :
+theorem integralProductInclusion_range (p : Nat.Primes) :
     Set.range (integralProductInclusion F p) =
       (Submodule.span ℤ_[p] (Set.range (productIntegralFieldBasis F p)) : Set (FieldProduct F p)) := by
   classical
@@ -236,9 +231,7 @@ private theorem integralProductInclusion_range (p : Nat.Primes) :
   have hb (i : TraceBasisIndex F) : integralProductInclusion F p (integralTensorEquiv F p (b i)) =
       productIntegralFieldBasis F p i := by
     ext v
-    simp [b, Algebra.TensorProduct.basis_apply, integralTensorEquiv, integralTensorMap,
-      integralProductInclusion, integralDiagonalAt, productIntegralFieldBasis_apply, integralBasis_apply,
-      Pi.ringHom_apply]
+    simp [b, Algebra.TensorProduct.basis_apply, integralTensorEquiv, integralTensorMap, integralProductInclusion, integralDiagonalAt, productIntegralFieldBasis_apply, integralBasis_apply]
     rfl
   apply Set.Subset.antisymm
   · rintro _ ⟨y, rfl⟩
@@ -264,7 +257,7 @@ private theorem integralProductInclusion_range (p : Nat.Primes) :
     | smul a x hx hx' =>
         obtain ⟨y, rfl⟩ := hx'
         exact ⟨a • y, integralProductInclusion_smul F p a y⟩
-private theorem productTraceDual_eq_span (p : Nat.Primes) :
+theorem productTraceDual_eq_span (p : Nat.Primes) :
     productTraceDual F p = Submodule.span ℤ_[p] (Set.range (productCodifferentFieldBasis F p)) := by
   classical
   apply le_antisymm
@@ -304,7 +297,7 @@ private theorem productTraceDual_eq_span (p : Nat.Primes) :
         rw [productTrace_basis_pair]
         split
         · exact ⟨1, (algebraMap ℤ_[p] ℚ_[p]).map_one⟩
-        · exact Submodule.zero_mem _
+        simp
     | zero => simp
     | add a b ha hb ha' hb' => simpa [mul_add] using add_mem ha' hb'
     | smul a b hb hb' =>
@@ -324,8 +317,7 @@ theorem localTraceDual_eq_projection (p : Nat.Primes) (v : PlacesAbove F p) :
     intro w
     by_cases hw : w = v
     · subst w; simpa using hx
-    · rw [Pi.single_eq_of_ne hw]
-      exact Submodule.zero_mem _
+    simp_all
   · rintro ⟨y, hy, hxy⟩
     rw [productTraceDual_eq_factors] at hy
     change y ∈ productTraceDualFactors F p at hy
@@ -333,7 +325,7 @@ theorem localTraceDual_eq_projection (p : Nat.Primes) (v : PlacesAbove F p) :
       LinearMap.restrictScalars_apply, LinearMap.proj_apply] at hy
     simpa [← hxy] using hy v
 
-private theorem localTraceDual_eq_basis_span (p : Nat.Primes) (v : PlacesAbove F p) :
+theorem localTraceDual_eq_basis_span (p : Nat.Primes) (v : PlacesAbove F p) :
     localTraceDual F p v = Submodule.span ℤ_[p]
       (Set.range fun i : TraceBasisIndex F => algebraMap F (v.val.adicCompletion F) ((integralBasis F).traceDual i)) := by
   rw [localTraceDual_eq_projection, productTraceDual_eq_span, Submodule.map_span]
@@ -347,7 +339,7 @@ private theorem localTraceDual_eq_basis_span (p : Nat.Primes) (v : PlacesAbove F
   · rintro ⟨i, rfl⟩
     exact ⟨_, ⟨i, rfl⟩, productCodifferentFieldBasis_apply F p i v⟩
 
-private theorem globalCodifferentSpan_eq_basis_span (p : Nat.Primes) (v : PlacesAbove F p) :
+theorem globalCodifferentSpan_eq_basis_span (p : Nat.Primes) (v : PlacesAbove F p) :
     globalCodifferentSpan F p v = Submodule.span ℤ_[p]
       (Set.range fun i : TraceBasisIndex F => algebraMap F (v.val.adicCompletion F) ((integralBasis F).traceDual i)) := by
   apply le_antisymm
@@ -367,8 +359,6 @@ private theorem globalCodifferentSpan_eq_basis_span (p : Nat.Primes) (v : Places
         have hs : (a : ℤ_[p]) • (algebraMap F (v.val.adicCompletion F) x) =
             (algebraMap F (v.val.adicCompletion F)) (a • x) := by
           simp only [Algebra.smul_def, map_mul]
-          change fieldScalarMap F p v ((a : ℤ_[p]) : ℚ_[p]) * _ =
-            (algebraMap F (v.val.adicCompletion F)) (a : F) * _
           simp
         simpa [hs] using Submodule.smul_mem (Submodule.span ℤ_[p] _) (a : ℤ_[p]) hx'
   · rw [Submodule.span_le]
@@ -384,10 +374,10 @@ theorem localTraceDual_eq_globalCodifferentSpan (p : Nat.Primes) (v : PlacesAbov
 
 theorem traceDual_baseChange (p : Nat.Primes) :
     productTraceDual F p = productTraceDualFactors F p ∧
-    ∀ v : PlacesAbove F p, localTraceDual F p v = globalCodifferentSpan F p v := by
-  exact ⟨productTraceDual_eq_factors F p, localTraceDual_eq_globalCodifferentSpan F p⟩
+    ∀ v : PlacesAbove F p, localTraceDual F p v = globalCodifferentSpan F p v := 
+  ⟨productTraceDual_eq_factors F p, localTraceDual_eq_globalCodifferentSpan F p⟩
 
-private theorem integerScalarMap_coe (p : Nat.Primes) (v : PlacesAbove F p)
+theorem integerScalarMap_coe (p : Nat.Primes) (v : PlacesAbove F p)
     (a : ℤ_[p]) :
     (integerScalarMap F p v a : v.val.adicCompletion F) =
       fieldScalarMap F p v (a : ℚ_[p]) := by
@@ -396,7 +386,7 @@ private theorem integerScalarMap_coe (p : Nat.Primes) (v : PlacesAbove F p)
     (integerScalarMap F p v a : v.val.adicCompletion F) * 1 at h
   simpa [fieldTensorEquiv_tmul] using h.symm
 
-private theorem localTraceDual_integer_smul (p : Nat.Primes) (v : PlacesAbove F p)
+theorem localTraceDual_integer_smul (p : Nat.Primes) (v : PlacesAbove F p)
     (a : v.val.adicCompletionIntegers F) (x : v.val.adicCompletion F)
     (hx : x ∈ localTraceDual F p v) :
     a • x ∈ localTraceDual F p v := by
@@ -436,7 +426,3 @@ theorem traceDual_localIntegralSpan (p : Nat.Primes) (v : PlacesAbove F p) :
       rw [hb]
       exact Submodule.subset_span hz
     exact hle hx
-
-end DedekindZetaZeroFree.TraceBaseChange
-
-end

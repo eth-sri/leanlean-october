@@ -25,7 +25,7 @@ theorem integral_div_sq_add_sq (α : ℝ) (hα : α ≠ 0) :
   rw [hpt, MeasureTheory.integral_const_mul, integral_univ_inv_one_add_mul_sq]
   simp only [one_div, abs_inv]
   field_simp
-  rw [sq_abs]
+  simp
 
 theorem re_simplePoleKernel (α β t : ℝ) :
     (((1:ℂ)/((α:ℂ) + t*Complex.I) - (1:ℂ)/((β:ℂ) + t*Complex.I))).re
@@ -41,27 +41,27 @@ theorem im_simplePoleKernel (α β t : ℝ) :
     Complex.mul_re, Complex.mul_im, Complex.I_re, Complex.I_im, Complex.ofReal_re,
     Complex.ofReal_im, Complex.sub_im] <;> ring_nf
 
-private lemma min_sq_one_mul_le (δ t : ℝ) : min (δ^2) 1 * (1 + t^2) ≤ δ^2 + t^2 := by
+lemma min_sq_one_mul_le (δ t : ℝ) : min (δ^2) 1 * (1 + t^2) ≤ δ^2 + t^2 := by
   rcases le_or_gt (δ^2) 1 with h | h
   · rw [min_eq_left h]; nlinarith
   · rw [min_eq_right h.le]; nlinarith
 
-private lemma integrable_div_sq_add_sq (α : ℝ) (hα : α ≠ 0) :
+lemma integrable_div_sq_add_sq (α : ℝ) (hα : α ≠ 0) :
     Integrable (fun t : ℝ => α / (α^2 + t^2)) := by
-  have hb : (1/α) ≠ 0 := by simp [hα]
+  have hb : (1/α) ≠ 0 := by positivity
   refine ((integrable_inv_one_add_mul_sq hb).const_mul (1/α)).congr
     (Eventually.of_forall fun t => ?_)
-  simp only [Pi.mul_apply, smul_eq_mul]
+  simp only
   field_simp
 
-private lemma poleKernel_eq (c α t : ℝ) :
+lemma poleKernel_eq (c α t : ℝ) :
     (((c:ℂ) + t*Complex.I) - (α:ℂ))⁻¹ = (1:ℂ)/(((c - α : ℝ) : ℂ) + t*Complex.I) := by
   simp only [one_div]
   congr 1
   push_cast
   ring
 
-private lemma integrable_im_poleKernel (δ1 δ2 : ℝ) (h1 : δ1 ≠ 0) (h2 : δ2 ≠ 0) :
+lemma integrable_im_poleKernel (δ1 δ2 : ℝ) (h1 : δ1 ≠ 0) (h2 : δ2 ≠ 0) :
     Integrable (fun t : ℝ => t/(δ2^2+t^2) - t/(δ1^2+t^2)) := by
   have hcont : Continuous fun t : ℝ => t/(δ2^2+t^2) - t/(δ1^2+t^2) := by
     refine Continuous.sub ?_ ?_
@@ -100,7 +100,7 @@ private lemma integrable_im_poleKernel (δ1 δ2 : ℝ) (h1 : δ1 ≠ 0) (h2 : δ
     _ ≤ (|δ1^2 - δ2^2| / (min (δ1^2) 1 * min (δ2^2) 1)) * 1 * (1 + t^2)⁻¹ := by gcongr
     _ = (|δ1^2 - δ2^2| / (min (δ1^2) 1 * min (δ2^2) 1)) * (1 + t^2)⁻¹ := by ring
 
-private lemma integrable_poleKernel (δ1 δ2 : ℝ) (h1 : δ1 ≠ 0) (h2 : δ2 ≠ 0) :
+lemma integrable_poleKernel (δ1 δ2 : ℝ) (h1 : δ1 ≠ 0) (h2 : δ2 ≠ 0) :
     Integrable (fun t : ℝ =>
         (1:ℂ)/((δ1:ℂ) + t*Complex.I) - (1:ℂ)/((δ2:ℂ) + t*Complex.I)) := by
   have hre : (fun t : ℝ => RCLike.re ((1:ℂ)/((δ1:ℂ) + t*Complex.I) - (1:ℂ)/((δ2:ℂ) + t*Complex.I)))
@@ -119,7 +119,7 @@ private lemma integrable_poleKernel (δ1 δ2 : ℝ) (h1 : δ1 ≠ 0) (h2 : δ2 �
   rw [← Integrable.re_im_iff]
   exact ⟨hreint, himint⟩
 
-private lemma integral_poleKernel (δ1 δ2 : ℝ) (h1 : δ1 ≠ 0) (h2 : δ2 ≠ 0) :
+lemma integral_poleKernel (δ1 δ2 : ℝ) (h1 : δ1 ≠ 0) (h2 : δ2 ≠ 0) :
     ∫ t : ℝ, ((1:ℂ)/((δ1:ℂ) + t*Complex.I) - (1:ℂ)/((δ2:ℂ) + t*Complex.I))
       = ((π * (δ1/|δ1| - δ2/|δ2|) : ℝ) : ℂ) := by
   set K : ℝ → ℂ := fun t =>
@@ -145,7 +145,7 @@ private lemma integral_poleKernel (δ1 δ2 : ℝ) (h1 : δ1 ≠ 0) (h2 : δ2 ≠
   simp
   ring
 
-private lemma verticalIntegral_poleKernel (c α β : ℝ) (hα : c ≠ α) (hβ : c ≠ β) :
+lemma verticalIntegral_poleKernel (c α β : ℝ) (hα : c ≠ α) (hβ : c ≠ β) :
     verticalIntegral c (fun s : ℂ => (s - (α:ℂ))⁻¹ - (s - (β:ℂ))⁻¹)
       = ((((c-α)/|c-α| - (c-β)/|c-β|)/2 : ℝ) : ℂ) := by
   rw [verticalIntegral]
@@ -158,7 +158,7 @@ private lemma verticalIntegral_poleKernel (c α β : ℝ) (hα : c ≠ α) (hβ 
   push_cast
   field_simp
 
-private theorem verticalIntegral_sum {ι : Type*} [Fintype ι] (c : ℝ) (f : ι → ℂ → ℂ)
+theorem verticalIntegral_sum {ι : Type*} [Fintype ι] (c : ℝ) (f : ι → ℂ → ℂ)
     (hf : ∀ i, Complex.VerticalIntegrable (f i) c) :
     verticalIntegral c (fun s => ∑ i, f i s) = ∑ i, verticalIntegral c (f i) := by
   simp only [verticalIntegral]
@@ -192,8 +192,7 @@ theorem verticalIntegral_sub_eq_sum_residues
   have hHdiff (s : ℂ) (hs : s.re ∈ Set.Icc a b) : DifferentiableAt ℂ H s := by
     apply DifferentiableAt.add (hg.differentiableAt (hU.mem_nhds (hstrip hs)))
     apply DifferentiableAt.fun_sum
-    intro j hj
-    exact (differentiableAt_const (R j)).div (differentiableAt_id.sub_const _) (hQne s hs)
+    simp_all
   have hHeq (s : ℂ) (hs : s.re ∈ Set.Icc a b) (hp : ∀ j, s ≠ (p j : ℂ)) :
       H s = f s - φ s := by
     dsimp [H, φ]
@@ -213,7 +212,7 @@ theorem verticalIntegral_sub_eq_sum_residues
       (sub_ne_zero.mpr (hcp j)) (sub_ne_zero.mpr hcQ)).const_mul (R j)
     convert hi using 1
     funext t
-    simp only [φ, poleKernel_eq]
+    simp only [poleKernel_eq]
   have hHline (c : ℝ) (hc : c = a ∨ c = b) :
       (fun t : ℝ => H ((c : ℂ) + t * Complex.I)) =
         fun t : ℝ => f ((c : ℂ) + t * Complex.I) - φ ((c : ℂ) + t * Complex.I) := by
@@ -222,8 +221,7 @@ theorem verticalIntegral_sub_eq_sum_residues
     · rcases hc with rfl | rfl <;> simp [hab.le]
     · intro j he
       have hh := congrArg Complex.re he
-      simp only [Complex.add_re, Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im,
-        Complex.I_re, Complex.I_im, mul_zero, sub_self, add_zero] at hh
+      simp only [Complex.add_re, Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, Complex.I_re, Complex.I_im, mul_zero] at hh
       rcases hc with rfl | rfl <;> linarith [(hp_strip j).1, (hp_strip j).2]
   have hHa : Complex.VerticalIntegrable H a := by
     change Integrable (fun t : ℝ => H ((a : ℂ) + t * Complex.I))
@@ -288,7 +286,7 @@ theorem verticalIntegral_sub_eq_sum_residues
         exact (div_le_iff₀ (by positivity : (0 : ℝ) < (k.factorial : ℝ))).mp hh |>.trans_eq (mul_comm _ _)
       have hn : ‖J ((σ : ℂ) + t * Complex.I)‖ =
           Real.exp (-|t|) * ‖H ((σ : ℂ) + t * Complex.I)‖ := by
-        simp [J, norm_mul, Complex.norm_real, Real.norm_eq_abs, Complex.norm_exp]
+        simp [J, Complex.norm_exp]
       rw [hn]
       calc Real.exp (-|t|) * ‖H ((σ : ℂ) + t * Complex.I)‖
           ≤ Real.exp (-|t|) * ((C + 2 * ∑ j, ‖R j‖) * (1 + |t|)^k) :=
@@ -303,7 +301,7 @@ theorem verticalIntegral_sub_eq_sum_residues
     have hh := hJB σ t hσ
     have hn : ‖J ((σ : ℂ) + t * Complex.I)‖ =
         Real.exp (-|t|) * ‖H ((σ : ℂ) + t * Complex.I)‖ := by
-      simp [J, norm_mul, Complex.norm_real, Real.norm_eq_abs, Complex.norm_exp]
+      simp [J, Complex.norm_exp]
     rw [hn, Real.exp_neg] at hh
     have hh' := mul_le_mul_of_nonneg_right hh (Real.exp_pos |t|).le
     have he : (Real.exp |t|)⁻¹ * ‖H ((σ : ℂ) + t * Complex.I)‖ * Real.exp |t| =
@@ -338,7 +336,7 @@ theorem verticalIntegral_sub_eq_sum_residues
     · subst c
       have haQ : a - Q < 0 := by linarith
       have hs (j : Fin n) : a - p j < 0 := by linarith [(hp_strip j).1]
-      simp only [if_pos rfl]
+      simp only
       apply Finset.sum_eq_zero
       intro j hj
       rw [abs_of_neg (hs j), abs_of_neg haQ]
@@ -365,5 +363,3 @@ theorem verticalIntegral_sub_eq_sum_residues
     hφval a (Or.inl rfl), hφval b (Or.inr rfl)] at hshift
   simp only [if_pos, if_neg (ne_of_gt hab), sub_zero] at hshift
   linear_combination -hshift
-
-end DedekindZetaZeroFree.LargeSieve.Vendor

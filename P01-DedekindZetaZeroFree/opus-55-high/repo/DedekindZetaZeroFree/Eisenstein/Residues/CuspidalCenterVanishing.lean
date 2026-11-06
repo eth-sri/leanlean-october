@@ -13,7 +13,7 @@ namespace DedekindZetaZeroFree.KPGlobalResidualConstruction.CommonSphericalDisk.
 open MeasureTheory Filter
 open _root_.DedekindZetaZeroFree.KPContActualSphericalFlatStage renaming stageConclusions → stageConclusions
 
-private theorem projection_center_zero {E : Type*} [NormedAddCommGroup E]
+theorem projection_center_zero {E : Type*} [NormedAddCommGroup E]
     [InnerProductSpace ℂ E] [CompleteSpace E]
     (Q : E →L[ℂ] E) (hQ : IsSelfAdjoint Q) (hQQ : Q * Q = Q)
     (h z : E) (a : ℂ) (hz : z = a • Q h)

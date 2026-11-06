@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 namespace LocalClassFieldTheory
 open CyclicCohomology ClassFormation
 
@@ -37,7 +31,6 @@ then transport its two cardinality statements back to the abstract
 class-field-axiom predicate.
 -/
 
-noncomputable section
 
 open CategoryTheory
 
@@ -47,7 +40,7 @@ For any Galois ambient field over a nonarchimedean local field, its ambient
 unit representation satisfies the abstract class-field-axiom predicate.
 The predicate ranges only over towers whose lower field is finite over the
 distinguished base, in the fixed-separable-closure model. -/
-private theorem galoisAmbientUnits_satisfiesClassFieldAxiom
+theorem galoisAmbientUnits_satisfiesClassFieldAxiom
     (k Ω : Type) [Field k] [Field Ω] [Algebra k Ω] [IsGalois k Ω]
     [ValuativeRel k] [TopologicalSpace k] [IsNonarchimedeanLocalField k] :
     SatisfiesClassFieldAxiom (galoisAmbientUnitsRep k Ω) := by
@@ -160,6 +153,3 @@ theorem separableClosureUnits_isClassFormation
     SatisfiesClassFieldAxiom
       (galoisAmbientUnitsRep k (SeparableClosure k)) :=
   galoisAmbientUnits_satisfiesClassFieldAxiom k (SeparableClosure k)
-
-end
-end LocalClassFieldTheory

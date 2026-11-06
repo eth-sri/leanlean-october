@@ -15,7 +15,7 @@ variable {F : Type} [Field F] [NumberField F]
 local instance (v : HeightOneSpectrum (𝓞 F)) : MeasurableSpace (v.adicCompletion F) := borel _
 local instance (v : HeightOneSpectrum (𝓞 F)) : BorelSpace (v.adicCompletion F) := ⟨rfl⟩
 
-private lemma squareScaling_cutoff_scale (v : HeightOneSpectrum (𝓞 F))
+lemma squareScaling_cutoff_scale (v : HeightOneSpectrum (𝓞 F))
     (μ : Measure (v.adicCompletion F)) [μ.IsAddHaarMeasure]
     (a t : (v.adicCompletion F)ˣ) (n m : ℕ)
     (h : (v.asIdeal.absNorm : ℝ)^m = ‖t.val‖ * (v.asIdeal.absNorm : ℝ)^n) :
@@ -32,15 +32,14 @@ private lemma squareScaling_cutoff_scale (v : HeightOneSpectrum (𝓞 F))
     have ht : 0 < ‖t.val‖ := norm_pos_iff.mpr t.ne_zero
     have hx : t.val * x ∈ exteriorQuadraticCutoff v m ↔ x ∈ exteriorQuadraticCutoff v n := by
       change ‖t.val*x‖ ≤ _ ↔ ‖x‖ ≤ _
-      rw [norm_mul, h]
-      exact mul_le_mul_iff_right₀ ht
+      simp_all
     by_cases H : x ∈ exteriorQuadraticCutoff v n
     · rw [Set.indicator_of_mem (hx.mpr H), Set.indicator_of_mem H]
       dsimp [f]
       congr 1
       congr 1
       ring
-    · rw [Set.indicator_of_notMem (mt hx.mp H), Set.indicator_of_notMem H]
+    simp_all
   have hi := PoissonS.finite_unit_integral_scale F v μ t⁻¹
     ((exteriorQuadraticCutoff v m).indicator f)
   simp only [inv_inv] at hi
@@ -54,11 +53,11 @@ private lemma squareScaling_cutoff_scale (v : HeightOneSpectrum (𝓞 F))
   rw [hn, Real.sqrt_mul (norm_nonneg _), Real.sqrt_sq (norm_nonneg _)]
   rw [Complex.ofReal_mul]
   have ht : (‖t.val‖ : ℂ) * (‖t⁻¹.val‖ : ℂ) = 1 := by
-    rw [← Complex.ofReal_mul, ← norm_mul, Units.mul_inv, norm_one, Complex.ofReal_one]
+    simp
   change ((Real.sqrt ‖(2 : v.adicCompletion F) * a.val‖ : ℂ) * (‖t.val‖ : ℂ)) *
     ((‖t⁻¹.val‖ : ℂ) * _) = _
   rw [mul_assoc, ← mul_assoc (‖t.val‖ : ℂ), ht, one_mul]
-private lemma squareScaling_traceHaar (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F)) :
+lemma squareScaling_traceHaar (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F)) :
     (A.finiteTraceHaar v).IsAddHaarMeasure := by
   let K := v.adicCompletion F
   letI : LocallyCompactSpace K :=
@@ -84,11 +83,11 @@ theorem finiteGamma_mul_sq (A : SArithmeticData F)
   have hq : 0 < (v.asIdeal.absNorm : ℝ) := by
     exact_mod_cast (Nat.zero_lt_one.trans (HeightOneSpectrum.one_lt_absNorm v))
   have ht : Valued.v t.val ≠ (0 : WithZero (Multiplicative ℤ)) :=
-    (Valued.v.map_eq_zero_iff).not.mpr t.ne_zero
+    by simp
   let k : ℤ := WithZero.log (Valued.v t.val)
   have hk : ‖t.val‖ = (v.asIdeal.absNorm : ℝ)^k := by
     rw [FinitePlace.norm_def, WithZeroMulInt.toNNReal_neg_apply _ ht]
-    simp [k]
+    rfl
   obtain ⟨N, hN⟩ := eventually_atTop.1
     (A.finiteQuadraticCutoff_eventually_eq_gamma v (a*t^2) (A.finiteQuadratic_stabilizes v _))
   obtain ⟨M, hM⟩ := eventually_atTop.1
@@ -96,17 +95,16 @@ theorem finiteGamma_mul_sq (A : SArithmeticData F)
   let n := N + M + (-k).toNat
   let m := N + M + k.toNat
   have hm : (m : ℤ) = k + (n : ℤ) := by
-    dsimp [n, m]
     omega
   have hh : (v.asIdeal.absNorm : ℝ)^m = ‖t.val‖ * (v.asIdeal.absNorm : ℝ)^n := by
     rw [hk, ← zpow_natCast, ← zpow_natCast, hm, zpow_add₀ hq.ne']
-  rw [← hN n (by dsimp [n]; omega), ← hM m (by dsimp [m]; omega)]
+  rw [← hN n (by omega), ← hM m (by omega)]
   exact squareScaling_cutoff_scale v (A.finiteTraceHaar v) a t n m hh
 
 theorem finiteGamma_norm (A : SArithmeticData F)
     (v : HeightOneSpectrum (𝓞 F)) (a : (v.adicCompletion F)ˣ) :
-    ‖A.finiteGamma v a‖ = 1 := by
-  exact A.norm_finiteGamma v a
+    ‖A.finiteGamma v a‖ = 1 := 
+  A.norm_finiteGamma v a
 
 theorem finiteWeilPhase_mul_sq (A : SArithmeticData F)
     (v : HeightOneSpectrum (𝓞 F)) (a t : (v.adicCompletion F)ˣ) :
@@ -118,8 +116,7 @@ theorem finiteWeilPhase_one (A : SArithmeticData F)
   have hne : A.finiteGamma v 1 ≠ 0 := by
     intro h0
     have h := A.finiteGamma_norm v 1
-    rw [h0, norm_zero] at h
-    exact one_ne_zero h.symm
+    simp_all
   rw [finiteWeilPhase, div_self hne]
 
 theorem finiteWeilPhase_sq (A : SArithmeticData F)
@@ -140,7 +137,3 @@ theorem complexWeilPhase_mul_sq (A : SArithmeticData F)
 theorem complexWeilPhase_one (A : SArithmeticData F)
     (w : InfinitePlace F) : A.complexWeilPhase w 1 = 1 := by
   simp [complexWeilPhase, complexGamma]
-
-end DedekindZetaZeroFree.SArithmeticData
-
-end

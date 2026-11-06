@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Cardinalities of finite unrestricted local-block families
 
@@ -23,8 +20,6 @@ finiteness results and the canonical family instance providers.
 
 open scoped NumberField BigOperators ValuativeRel Classical NNReal
 open NumberField IsDedekindDomain
-
-noncomputable section
 
 
 open AlgebraicNumberTheory.Valuations
@@ -250,4 +245,3 @@ theorem
           S i σ hgen
     _ = 1 := by simp
 
-end

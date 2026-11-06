@@ -41,41 +41,27 @@ noncomputable def weightEquiv : Sym[ℂ]^d(Fin 2 → ℂ) ≃ₗ[ℂ] EuclideanS
 noncomputable def symPowerModel : ContRepresentation ℂ SU2 (EuclideanSpace ℂ (Fin (d + 1))) :=
   .ofMonoidHom
     { toFun g := LinearMap.toContinuousLinearMap ((weightEquiv d).conj (symPower d g))
-      map_one' := by ext x; simp [LinearEquiv.conj_apply]
-      map_mul' g h := by ext x; simp [LinearEquiv.conj_apply] }
-
-@[simp]
-theorem weightEquiv_weightBasis (i : Fin (d + 1)) :
-    weightEquiv d (weightBasis d i) = EuclideanSpace.single i 1 := by
-  rw [weightEquiv, Module.Basis.equiv_apply, OrthonormalBasis.coe_toBasis,
-    Equiv.refl_apply, EuclideanSpace.basisFun_apply]
-
-@[simp]
-theorem weightEquiv_symm_single (i : Fin (d + 1)) :
-    (weightEquiv d).symm (EuclideanSpace.single i 1) = weightBasis d i :=
-  (LinearEquiv.symm_apply_eq _).2 (weightEquiv_weightBasis d i).symm
+      map_one' := by ext x; simp
+      map_mul' g h := by ext x; simp }
 
 @[simp]
 theorem symPowerModel_apply (g : SU2) (x : EuclideanSpace ℂ (Fin (d + 1))) :
     symPowerModel d g x = weightEquiv d (symPower d g ((weightEquiv d).symm x)) := (rfl)
 
-private theorem continuous_mulVec (w : Fin 2 → ℂ) :
+theorem continuous_mulVec (w : Fin 2 → ℂ) :
     Continuous fun g : SU2 ↦ (g : Matrix (Fin 2) (Fin 2) ℂ) *ᵥ w := by
-  refine continuous_pi fun i ↦ ?_
-  simp only [Matrix.mulVec, dotProduct]
-  refine continuous_finsetSum _ fun j _ ↦ Continuous.mul ?_ continuous_const
-  exact (continuous_apply j).comp ((continuous_apply i).comp continuous_subtype_val)
+  fun_prop
 
-private theorem continuous_weightEquiv_symPower_tprod (v : Fin d → (Fin 2 → ℂ)) :
+theorem continuous_weightEquiv_symPower_tprod (v : Fin d → (Fin 2 → ℂ)) :
     Continuous fun g : SU2 ↦ weightEquiv d (symPower d g (⨂ₛ[ℂ] j, v j)) := by
   have hΦ : Continuous
       ((weightEquiv d).toLinearMap.compMultilinearMap (SymmetricPower.tprod ℂ)) :=
     MultilinearMap.continuous_of_finiteDimensional _
   have hv : Continuous fun g : SU2 ↦ fun j ↦ (g : Matrix (Fin 2) (Fin 2) ℂ) *ᵥ v j :=
-    continuous_pi fun j ↦ continuous_mulVec (v j)
+    by fun_prop
   exact (hΦ.comp hv).congr fun g ↦ by simp
 
-private theorem continuous_weightEquiv_symPower (x : Sym[ℂ]^d(Fin 2 → ℂ)) :
+theorem continuous_weightEquiv_symPower (x : Sym[ℂ]^d(Fin 2 → ℂ)) :
     Continuous fun g : SU2 ↦ weightEquiv d (symPower d g x) := by
   have hb : ∀ i : Fin (d + 1),
       Continuous fun g : SU2 ↦ weightEquiv d (symPower d g (weightBasis d i)) := fun i ↦ by
@@ -92,8 +78,7 @@ private theorem continuous_weightEquiv_symPower (x : Sym[ℂ]^d(Fin 2 → ℂ)) 
       _ = ∑ i, (weightBasis d).repr x i • weightEquiv d (symPower d g (weightBasis d i)) := by
           simp only [map_sum, map_smul]
   rw [hx]
-  exact continuous_finsetSum _ fun i _ ↦
-    (continuous_const_smul ((weightBasis d).repr x i)).comp (hb i)
+  fun_prop
 
 theorem continuous_symPowerModel : Continuous (symPowerModel d) :=
   continuous_clm_apply.2 fun y ↦ by
@@ -102,16 +87,6 @@ theorem continuous_symPowerModel : Continuous (symPowerModel d) :=
 noncomputable def symPowerModelEquiv : (symPower d).Equiv (symPowerModel d).toRepresentation :=
   Representation.Equiv.mk (weightEquiv d) fun g ↦ LinearMap.ext fun v ↦ by
     simp [_root_.ContRepresentation.toMonoidHom_apply]
-
-@[simp]
-theorem symPowerModelEquiv_toLinearEquiv :
-    (symPowerModelEquiv d).toLinearEquiv = weightEquiv d := by
-  rw [symPowerModelEquiv, Representation.Equiv.toLinearEquiv_mk']
-
-@[simp]
-theorem symPowerModelEquiv_apply (x : Sym[ℂ]^d(Fin 2 → ℂ)) :
-    symPowerModelEquiv d x = weightEquiv d x := by
-  rw [symPowerModelEquiv, Representation.Equiv.mk_apply]
 
 @[simp]
 theorem character_symPowerModel :
@@ -126,7 +101,3 @@ theorem isIrreducible_symPowerModel :
   Representation.isIrreducible_of_linearEquiv (weightEquiv d)
     (fun g v ↦ by simp [_root_.ContRepresentation.toMonoidHom_apply])
     (isIrreducible_symPower d)
-
-end SU2
-
-end DedekindZetaZeroFree.TauCeti

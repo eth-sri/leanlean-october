@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.FiniteAdelicCoordinateC
 
 @[expose] public section
 
-noncomputable section
 open NumberField IsDedekindDomain
 
 namespace DedekindZetaZeroFree.FiniteOscillatoryStabilization

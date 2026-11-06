@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.Metaplectic.Intertwining.Global.FiniteSetEnla
 
 @[expose] public section
 
-noncomputable section
 open scoped NumberField Classical Topology
 open Filter
 
@@ -47,7 +46,3 @@ theorem clearing_value_from_global_cofactor
     ((hazero.tendsto.mono_left nhdsWithin_le_nhds).congr' he)
     (by simpa [KPGlobalFiniteSIntertwiner.residueNormalizer,
       KPGlobalFiniteSIntertwiner.normalizer] using ht)
-
-end DedekindZetaZeroFree.KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue
-
-end

@@ -26,7 +26,7 @@ namespace DedekindZetaZeroFree.Detector.Conductor.RadicalQuotient
     exact lt_of_le_of_lt (mul_le_mul_of_nonneg_right (x.property v hv) zero_le)
       (by simpa using hy)
 
-private lemma valuationIdeal_prime (F : Type) [Field F] [NumberField F]
+lemma valuationIdeal_prime (F : Type) [Field F] [NumberField F]
     (S : Set (HeightOneSpectrum (𝓞 F)))
     (v : HeightOneSpectrum (𝓞 F)) (hv : v ∉ S) :
     (valuationIdeal F S v hv).IsPrime := by
@@ -41,10 +41,9 @@ private lemma valuationIdeal_prime (F : Type) [Field F] [NumberField F]
     by_contra h
     have h' := not_or.mp h
     have hx : v.valuation F (x : F) = 1 := le_antisymm (x.property v hv) (le_of_not_gt h'.1)
-    have hy : v.valuation F (y : F) = 1 := le_antisymm (y.property v hv) (le_of_not_gt h'.2)
-    simpa [map_mul, hx, hy] using hxy
+    simp_all
 
-private lemma valuationIdeal_comap (F : Type) [Field F] [NumberField F]
+lemma valuationIdeal_comap (F : Type) [Field F] [NumberField F]
     (S : Set (HeightOneSpectrum (𝓞 F)))
     (v : HeightOneSpectrum (𝓞 F)) (hv : v ∉ S) :
     Ideal.comap (algebraMap (𝓞 F) (S.integer F)) (valuationIdeal F S v hv) = v.asIdeal := by
@@ -114,5 +113,3 @@ theorem exterior_prime_product_le_radical_index
   simpa only [map_prod, Finset.prod_coe_sort, Nat.cast_prod, P, R, J] using
     (show (Ideal.absNorm (∏ v : T, P v) : ℝ) ≤ (Nat.card (R ⧸ J) : ℝ) from
       Nat.cast_le.mpr hnorm)
-
-end DedekindZetaZeroFree.Detector.Conductor.RadicalQuotient

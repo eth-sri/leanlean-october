@@ -53,7 +53,7 @@ structure FiniteChartCover where
   covers : ∀ y : L.compact, ∃ (j : Fin count) (x : piece j) (ε : rootsOfUnity 3 F),
     y.val = z F ζ hζ V ε (projection j x).val
 
-private theorem continuous_labeledA_of
+theorem continuous_labeledA_of
     (places : Fin (KPContCotangentActualOverlap.d F) ≃ Fin (KPCuspLogShape.dimension F)) :
     Continuous (KPContCotangentActualOverlap.labeledA places) := by
   apply continuous_pi
@@ -61,7 +61,7 @@ private theorem continuous_labeledA_of
   exact (continuous_apply (places.symm k)).comp
     (CotangentLogCoframe.A (KPContCotangentActualOverlap.d F)).continuous
 
-private theorem continuous_labeledAInv_of
+theorem continuous_labeledAInv_of
     (places : Fin (KPContCotangentActualOverlap.d F) ≃ Fin (KPCuspLogShape.dimension F)) :
     Continuous (KPContCotangentActualOverlap.labeledAInv places) := by
   apply (CotangentLogCoframe.A (KPContCotangentActualOverlap.d F)).symm.continuous.comp
@@ -69,7 +69,7 @@ private theorem continuous_labeledAInv_of
   intro k
   exact continuous_apply (places k)
 
-private theorem labeledA_labeledAInv_of
+theorem labeledA_labeledAInv_of
     (places : Fin (KPContCotangentActualOverlap.d F) ≃ Fin (KPCuspLogShape.dimension F))
     (z : KPCuspGenuineMonodromy.SymmetricSpace F) :
     KPContCotangentActualOverlap.labeledA places
@@ -82,23 +82,23 @@ private theorem labeledA_labeledAInv_of
   WithLp.toLp 2 (fun j : Fin (KPContActualCutoffChartJetHolomorphy.dimension F) =>
     m (finProdFinEquiv.symm j))
 
-private theorem continuous_coordsInv : Continuous (coordsInv F) := by
+theorem continuous_coordsInv : Continuous (coordsInv F) := by
   unfold coordsInv
   fun_prop
 
-private theorem continuous_coordinates :
+theorem continuous_coordinates :
     Continuous (KPContActualCutoffChartJetHolomorphy.coordinates F) := by
   unfold KPContActualCutoffChartJetHolomorphy.coordinates
   fun_prop
 
-private theorem coordinates_coordsInv (m : KPContCotangentActualOverlap.M F) :
+theorem coordinates_coordsInv (m : KPContCotangentActualOverlap.M F) :
     KPContActualCutoffChartJetHolomorphy.coordinates F (coordsInv F m) = m := by
   apply PiLp.ext
   intro i
   simp only [coordsInv, KPContActualCutoffChartJetHolomorphy.coordinates,
     PiLp.toLp_apply, Equiv.symm_apply_apply]
 
-private theorem continuous_chartPoint {i}
+theorem continuous_chartPoint {i}
     (q : KPContActualCutoffChartJetHolomorphy.Chart F ζ hζ C R P H U i) :
     Continuous (chartPoint F ζ hζ C R P H U q) := by
   unfold chartPoint
@@ -108,7 +108,7 @@ private theorem continuous_chartPoint {i}
       ((continuous_labeledA_of F q.places).comp (continuous_coordinates F))
   · exact continuous_const
 
-private theorem q_representative
+theorem q_representative
     (i : Fin (H.atlas V).componentCount) (x : SymmetricSpace F) :
     q F ζ hζ V (Quotient.mk (coveredRelation F ζ hζ V)
         (x, (H.atlas V).representative i)) =

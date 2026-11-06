@@ -7,7 +7,6 @@ public import DedekindZetaZeroFree.LFunctions.Hecke.PrincipalRayContinuation
 @[expose] public section
 
 namespace DedekindZetaZeroFree.PrincipalMellinComparison.NonprincipalContinuation.RawHeckeRows
-noncomputable section
 open scoped Classical NumberField
 variable {F : Type} [Field F] [NumberField F]
 
@@ -51,11 +50,8 @@ theorem deleted_exterior_series_continuation
         by_cases hbot : I = ⊥
         · subst hbot
           simp only [Detector.deletedPrimitiveIdealCoefficient]
-          by_cases hex : ∃ v ∈ D, (⊥ : Ideal (𝓞 F)) ≤ v.asIdeal
-          · simp [hex]
-          · simp only [hex, if_false]
-            exact (ν.character.eq_zero_iff' ⊥).mpr (Or.inl rfl)
-        · have hsup : I ⊔ A.cS ≠ ⊤ := fun h => hn ⟨hbot, h⟩
+          simp
+        · have hsup : I ⊔ A.cS ≠ ⊤ := by simp_all
           have hex : ∃ v ∈ D, I ≤ v.asIdeal := by
             have hA : ¬ ∀ v : IsDedekindDomain.HeightOneSpectrum (𝓞 F),
                 v ∈ A.Sf → I ⊔ v.asIdeal = ⊤ := by
@@ -86,6 +82,3 @@ theorem deleted_exterior_series_continuation
     intro I
     simp only [ExteriorIdealEuler.summand]
     rw [ha I]
-
-end
-end DedekindZetaZeroFree.PrincipalMellinComparison.NonprincipalContinuation.RawHeckeRows

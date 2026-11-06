@@ -6,7 +6,6 @@ public import DedekindZetaZeroFree.LargeSieve.Exponents.RecursionParameterEstima
 
 @[expose] public section
 
-noncomputable section
 
 open scoped NumberField Classical
 
@@ -21,7 +20,7 @@ private lemma rpow_mul' {x : ℝ} (hx : 0 ≤ x) (y z : ℝ) :
   (Real.rpow_mul hx y z).symm
 
 private lemma rpow_natCast' (x : ℝ) (n : ℕ) : x ^ n = Real.rpow x (n : ℝ) :=
-  (Real.rpow_natCast x n).symm
+  by simp
 
 private lemma rpow_le_rpow' {x y z : ℝ} (hx : 0 ≤ x) (hxy : x ≤ y) (hz : 0 ≤ z) :
     Real.rpow x z ≤ Real.rpow y z := Real.rpow_le_rpow hx hxy hz
@@ -50,7 +49,7 @@ private lemma far_iteration_absorb (α M N η : ℝ) (r : ℕ) (δ : ℝ)
     (Real.rpow (M * N) (δ * (α + 2))) ^ r *
       Real.rpow (Real.rpow N (1 / (r : ℝ))) 5 ≤ Real.rpow (M * N) η := by
   have hr0 : (0 : ℝ) < (r : ℝ) := by
-    exact_mod_cast (lt_of_lt_of_le Nat.zero_lt_one hr)
+    positivity
   have hM0 : 0 < M := by linarith
   have hN0 : 0 < N := by linarith
   have hT1 : 1 ≤ M * N := by nlinarith
@@ -90,7 +89,7 @@ private theorem far_core_aux
           C * (M * N) ^ η * (M + N + N ^ (2 * α - 1) * M ^ (1 - α)) ∧
         B2 F c Q W M N (N ^ 2 / M * (M * N) ^ δ) ≤
           C * (M * N) ^ η * (M + N + N ^ (2 * α - 1) * M ^ (1 - α)) := by
-  have hr1 : 1 ≤ r := by rw [hr]; exact le_max_left _ _
+  have hr1 : 1 ≤ r := by simp_all
   have hrη : 20 / η ≤ (r : ℝ) := by
     rw [hr]
     exact le_trans (Nat.le_ceil _) (by exact_mod_cast le_max_right 1 (Nat.ceil (20 / η)))
@@ -99,9 +98,7 @@ private theorem far_core_aux
     oneStepWeightedDescent_core F hF c hc Q hGood W hW α hα hα₂ hExponent δ hδpos
   obtain ⟨C0, hC01, htriv⟩ := B2_trivial_bound F W hW
   refine ⟨A ^ r * (C0 + (r : ℝ) * 2), ?_, ?_⟩
-  · have hA0 : 0 ≤ A := le_trans zero_le_one hA1
-    exact mul_nonneg (pow_nonneg hA0 r)
-      (add_nonneg (le_trans zero_le_one hC01) (by positivity))
+  · positivity
   · intro M N hM hN hfar
     change B1 F c Q M N ≤
         A ^ r * (C0 + (r : ℝ) * 2) * Real.rpow (M * N) η *
@@ -128,8 +125,8 @@ private theorem far_core_aux
         mul_nonneg (rpow_nonneg' (le_of_lt hN0) _) (rpow_nonneg' (le_of_lt hM0) _)
       linarith
     obtain ⟨-, hH1raw, hH5raw⟩ := recursion_parameter_basic α M N η r hα hM hN hη hr1 hrη
-    have hH1 : 1 ≤ H := by rw [hH]; exact hH1raw
-    have hH5 : Real.rpow H 5 ≤ Real.rpow (M * N) (η / 4) := by rw [hH]; exact hH5raw
+    have hH1 : 1 ≤ H := by omega
+    have hH5 : Real.rpow H 5 ≤ Real.rpow (M * N) (η / 4) := by omega
     have hHnn : 0 ≤ H := le_trans zero_le_one hH1
     have hfar2 : 2 * N * Real.rpow (M * N) (η / (8 * (r : ℝ) * (α + 1))) ≤ M := by
       rw [hδ] at hfar
@@ -171,8 +168,7 @@ private theorem far_core_aux
         have h2 : 0 ≤ n := by linarith
         have h3 : 0 ≤ Real.sqrt M * Real.rpow K (α - 1 / 2) :=
           mul_nonneg (Real.sqrt_nonneg M) (rpow_nonneg' (le_of_lt hKpos) _)
-        have h4 : 0 ≤ Real.sqrt (M / K) * n := mul_nonneg (Real.sqrt_nonneg _) h2
-        linarith
+        positivity
       have hB2nn : 0 ≤ B2 F c Q W M n' K := B2_nonneg Q W M n' K
       have hH5nn : 0 ≤ Real.rpow H 5 := rpow_nonneg' hHnn 5
       have hrp1 : Real.rpow (M * n) δ ≤ Real.rpow (M * N) δ :=
@@ -227,7 +223,7 @@ private theorem far_core_aux
     have hfinal : B2 F c Q W M N K ≤
         A ^ r * (C0 + (r : ℝ) * 2) * Real.rpow (M * N) η * R := by
       have hcoefnn : 0 ≤ C0 + (r : ℝ) * 2 :=
-        add_nonneg (le_trans zero_le_one hC01) (by positivity)
+        by positivity
       calc B2 F c Q W M N K
           ≤ L ^ r * (C0 + (r : ℝ) * 2) * Real.rpow H 5 * R := hdesc
         _ = (L ^ r * Real.rpow H 5) * (C0 + (r : ℝ) * 2) * R := by ring
@@ -238,7 +234,7 @@ private theorem far_core_aux
     · calc B1 F c Q M N ≤ B2 F c Q W M N K :=
           B1_le_B2 Q W hW M N K hM hN hKpos (by linarith)
         _ ≤ A ^ r * (C0 + (r : ℝ) * 2) * Real.rpow (M * N) η * R := hfinal
-    · exact hfinal
+    omega
 
 theorem recursion_far_region_core
     (F : Type) [Field F] [NumberField F]
@@ -264,7 +260,3 @@ theorem recursion_far_region_core
   exact far_core_aux F hF c hc Q hGood W hW α hα hα₂ hExponent η hη
     (max 1 (Nat.ceil (20 / η))) rfl
     (η / (8 * (((max 1 (Nat.ceil (20 / η)) : ℕ)) : ℝ) * (α + 1))) rfl
-
-end DedekindZetaZeroFree.LargeSieve.Sieve
-
-end

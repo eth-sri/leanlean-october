@@ -13,7 +13,7 @@ namespace DedekindZetaZeroFree.LargeSieve.Sieve
 
 open scoped NumberField Classical
 
-private lemma transpose_partition {A : Type*} [DecidableEq A]
+lemma transpose_partition {A : Type*} [DecidableEq A]
     (R : Finset A) (blocks : ℕ → Finset A) (P : Finset ℕ) (U : Finset A)
     (hU : P.biUnion blocks = U) (hR : R ⊆ U) :
     R = P.biUnion (fun i => R ∩ blocks i) := by
@@ -23,18 +23,17 @@ private lemma transpose_partition {A : Type*} [DecidableEq A]
   · intro ha
     have := hR ha
     rw [← hU, Finset.mem_biUnion] at this
-    obtain ⟨i, hi, hai⟩ := this
-    exact ⟨i, hi, ha, hai⟩
-  · rintro ⟨i, hi, ha, _⟩; exact ha
+    simp_all
+  simp_all
 
-private lemma transpose_partition_disjoint {A : Type*} [DecidableEq A]
+lemma transpose_partition_disjoint {A : Type*} [DecidableEq A]
     (R : Finset A) (blocks : ℕ → Finset A) (P : Finset ℕ)
     (h : Set.PairwiseDisjoint (↑P : Set ℕ) blocks) :
     Set.PairwiseDisjoint (↑P : Set ℕ) (fun i => R ∩ blocks i) := by
   intro i hi j hj hij
   exact (h hi hj hij).mono Finset.inter_subset_right Finset.inter_subset_right
 
-private lemma transpose_admissible
+lemma transpose_admissible
     (F : Type) [Field F] [NumberField F] (c q : Ideal (𝓞 F))
     (hcq : c ∣ q) (B : ℝ) (hB : 1 ≤ B) (R : Finset (Ideal (𝓞 F)))
     (hR : R ⊆ paperShell F q B ∨ (B = 1 ∧ R ⊆ {⊤})) :
@@ -46,7 +45,7 @@ private lemma transpose_admissible
         (Ideal.absNorm a : ℝ) ≤ 2 * B := by
       intro a ha
       obtain ⟨hsf, hcop, _, hnorm⟩ := (mem_paperShell F q B a).mp (hR ha)
-      exact ⟨hsf, hcop, hnorm⟩
+      simp_all
     refine ⟨?_, fun a h => ⟨(ha a h).1, (ha a h).2.1⟩⟩
     intro a h
     exact (mem_idealAdmissibleFinset F c (2 * B) a).mpr
@@ -58,9 +57,9 @@ private lemma transpose_admissible
       rw [ha a h, top_mem_idealAdmissibleFinset_iff]; norm_num
     · intro a h
       rw [ha a h]
-      exact ⟨by simpa [Ideal.one_eq_top] using squarefree_one (R := Ideal (𝓞 F)), by simp⟩
+      simp
 
-private lemma transpose_form_eq {A B : Type*} [DecidableEq A] [DecidableEq B]
+lemma transpose_form_eq {A B : Type*} [DecidableEq A] [DecidableEq B]
     (R : Finset A) (S : Finset B) (K : B → A → ℂ) (lam : B → ℂ) :
     (∑ a ∈ R, ‖∑ b ∈ S, lam b * K b a‖ ^ 2) =
       ‖(Matrix.toEuclideanLin (fun (a : R) (b : S) => K b a)).toContinuousLinearMap
@@ -76,7 +75,7 @@ private lemma transpose_form_eq {A B : Type*} [DecidableEq A] [DecidableEq B]
     (f := fun b => lam b * K b a)]
   exact Finset.sum_congr rfl (fun _ _ => mul_comm _ _)
 
-private lemma transpose_energy_eq {B : Type*} [DecidableEq B]
+lemma transpose_energy_eq {B : Type*} [DecidableEq B]
     (S : Finset B) (lam : B → ℂ) :
     (∑ b ∈ S, ‖lam b‖ ^ 2) =
       ‖(WithLp.toLp 2 (fun b : S => lam b) : EuclideanSpace ℂ S)‖ ^ 2 := by
@@ -84,7 +83,7 @@ private lemma transpose_energy_eq {B : Type*} [DecidableEq B]
   rw [Finset.sum_subtype (s := S) (p := fun b => b ∈ S) (fun _ => Iff.rfl)
     (f := fun b => ‖lam b‖ ^ 2)]
 
-private lemma transpose_norm_bound {A B : Type*} [DecidableEq A] [DecidableEq B]
+lemma transpose_norm_bound {A B : Type*} [DecidableEq A] [DecidableEq B]
     (R : Finset A) (S : Finset B) (K : B → A → ℂ) (D : ℝ) (hD : 0 ≤ D)
     (h : ∀ lam : B → ℂ, ∑ a ∈ R, ‖∑ b ∈ S, lam b * K b a‖ ^ 2 ≤
       D * ∑ b ∈ S, ‖lam b‖ ^ 2) :
@@ -104,7 +103,7 @@ private lemma transpose_norm_bound {A B : Type*} [DecidableEq A] [DecidableEq B]
   have := pow_le_pow_left₀ (norm_nonneg T) hT 2
   simpa [T, Real.sq_sqrt hD] using this
 
-private lemma transpose_reverse_bound
+lemma transpose_reverse_bound
     (F : Type) [Field F] [NumberField F] (c : Ideal (𝓞 F))
     (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
     (α e C : ℝ) (he : 0 < e) (hC : 1 ≤ C)
@@ -134,7 +133,6 @@ private lemma transpose_reverse_bound
   let U := C * Real.rpow (4 * B * X) e * (2 * X + Real.rpow (2 * B) α)
   have hU : 0 ≤ U := by
     dsimp [U]
-    have : 0 ≤ C := by linarith
     positivity
   have hpart := Vendor.finite_partition_quadratic_bound S R P T row col
     (transpose_partition S _ _ _ (biUnion_clippedDyadicBlock F c (2 * X) h2X) hS)
@@ -167,7 +165,7 @@ private lemma transpose_reverse_bound
         (by simp only [Real.rpow_eq_pow]; positivity)
         (by simp only [Real.rpow_eq_pow]; positivity))
   have hk : 0 ≤ 2 + 1 / (e * Real.log 2) :=
-    (Vendor.dyadicLength_small_power_constant_pos he).le
+    by positivity
   have hp : (P.card : ℝ) * (T.card : ℝ) ≤
       (2 + 1 / (e * Real.log 2)) ^ 2 * Real.rpow (4 * B * X) e := by
     have hh := mul_le_mul (Vendor.dyadicLength_small_power he h2X)
@@ -217,7 +215,7 @@ theorem bilinear_normalized_shell_transpose
               ∑ b ∈ S, ‖lam b‖ ^ 2 := by
   intro η hη
   let e := η / 2
-  have he : 0 < e := by dsimp [e]; linarith
+  have he : 0 < e := by positivity
   obtain ⟨Cext, hCext, hexp⟩ := bilinear_endpoint_exponent_extension F c Q α hα hExponent e he
   letI : Group Q.G := Q.instGroup
   letI : Finite Q.G := Q.instFinite
@@ -343,5 +341,3 @@ theorem bilinear_normalized_shell_transpose_contractions
   exact le_trans (Finset.sum_le_sum hnorm)
     (le_trans (hmain B X hB hX R S hR hS (fun b => lam b * v b))
       (mul_le_mul_of_nonneg_left henergy_le hK0))
-
-end DedekindZetaZeroFree.LargeSieve.Sieve

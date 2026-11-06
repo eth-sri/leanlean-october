@@ -85,7 +85,3 @@ def mixedThetaPair (K : Type) [Field K] [NumberField K] : WeakFEPair ℂ where
 
 @[simp] theorem mixedThetaPair_k (K : Type) [Field K] [NumberField K] :
     (mixedThetaPair K).k = 1 := rfl
-
-end DedekindZetaZeroFree.AbelianQuotient.Theta
-
-end

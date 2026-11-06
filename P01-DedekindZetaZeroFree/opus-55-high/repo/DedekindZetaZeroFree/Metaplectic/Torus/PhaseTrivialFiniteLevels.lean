@@ -9,7 +9,6 @@ open scoped NumberField Classical BigOperators Topology
 
 open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.KPGlobalTorusFiniteStagesCofinality
-noncomputable section
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
 private lemma diag_inverse (A : KPGlobalTorusFunctionData.AdelicMatrixGroup F)
@@ -48,8 +47,7 @@ private lemma preimage_diag (A : KPGlobalTorusFunctionData.AdelicMatrixGroup F)
   obtain ⟨z, hz, he⟩ := hB
   obtain ⟨u, rfl⟩ := hz
   rw [← he]
-  simp [Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
-    Matrix.mul_apply, Matrix.scalar, Fin.sum_univ_two, h01, h10]
+  simp [Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_apply, Matrix.scalar, Fin.sum_univ_two, h01, h10]
 private lemma ratio_continuous : Continuous (KPGlobalTorusFunctionData.torusRatio F) := by
   let q := QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F)
   let S := (KPGlobalTorusFunctionData.ordinaryTorus F : Set (KPAdelicCoverRestrictedProduct.AdelicPGL2 F))
@@ -64,27 +62,27 @@ private lemma ratio_continuous : Continuous (KPGlobalTorusFunctionData.torusRati
     constructor
     · change Continuous (fun A : q ⁻¹' S => (u A).val)
       have he : (fun A : q ⁻¹' S => (u A).val) = fun A => A.val 0 0 := by
-        funext A; exact IsUnit.unit_spec _
+        rfl
       rw [he]
-      exact (show Continuous (fun A : KPGlobalTorusFunctionData.AdelicMatrixGroup F => A 0 0) from (continuous_apply 0).comp ((continuous_apply 0).comp (Units.continuous_val : Continuous (fun A : KPGlobalTorusFunctionData.AdelicMatrixGroup F => A.val)))).comp continuous_subtype_val
+      fun_prop
     · have he : (fun A : q ⁻¹' S => (u A)⁻¹.val) = fun A => A.val⁻¹ 0 0 := by
         funext A; exact diag_inverse F A.val (preimage_diag F A.val A.property).1 (preimage_diag F A.val A.property).2
       change Continuous (fun A : q ⁻¹' S => (u A)⁻¹.val)
       rw [he]
-      exact (show Continuous (fun A : KPGlobalTorusFunctionData.AdelicMatrixGroup F => A⁻¹ 0 0) from (continuous_apply 0).comp ((continuous_apply 0).comp (Units.continuous_coe_inv : Continuous (fun A : KPGlobalTorusFunctionData.AdelicMatrixGroup F => (A⁻¹ : KPGlobalTorusFunctionData.AdelicMatrixGroup F).val)))).comp continuous_subtype_val
+      fun_prop
   have hw : Continuous w := by
     apply Units.continuous_iff.mpr
     constructor
     · change Continuous (fun A : q ⁻¹' S => (w A).val)
       have he : (fun A : q ⁻¹' S => (w A).val) = fun A => A.val 1 1 := by
-        funext A; exact IsUnit.unit_spec _
+        rfl
       rw [he]
-      exact (show Continuous (fun A : KPGlobalTorusFunctionData.AdelicMatrixGroup F => A 1 1) from (continuous_apply 1).comp ((continuous_apply 1).comp (Units.continuous_val : Continuous (fun A : KPGlobalTorusFunctionData.AdelicMatrixGroup F => A.val)))).comp continuous_subtype_val
+      fun_prop
     · have he : (fun A : q ⁻¹' S => (w A)⁻¹.val) = fun A => A.val⁻¹ 1 1 := by
         funext A; exact diag_inverse11 F A.val (preimage_diag F A.val A.property).1 (preimage_diag F A.val A.property).2
       change Continuous (fun A : q ⁻¹' S => (w A)⁻¹.val)
       rw [he]
-      exact (show Continuous (fun A : KPGlobalTorusFunctionData.AdelicMatrixGroup F => A⁻¹ 1 1) from (continuous_apply 1).comp ((continuous_apply 1).comp (Units.continuous_coe_inv : Continuous (fun A : KPGlobalTorusFunctionData.AdelicMatrixGroup F => (A⁻¹ : KPGlobalTorusFunctionData.AdelicMatrixGroup F).val)))).comp continuous_subtype_val
+      fun_prop
   have he : (KPGlobalTorusFunctionData.torusRatio F) ∘ S.restrictPreimage q =
       fun A => u A * (w A)⁻¹ := by
     funext A
@@ -92,9 +90,9 @@ private lemma ratio_continuous : Continuous (KPGlobalTorusFunctionData.torusRati
     exact KPGlobalTorusFunctionData.ratio_formula F _ A.val rfl
       (preimage_diag F A.val A.property).1 (preimage_diag F A.val A.property).2
   rw [he]
-  exact hu.mul hw.inv
+  fun_prop
 
-private theorem small_powers (z : ℂ) (h : ∀ n : ℕ, ‖z ^ n - 1‖ < 1 / 2) : z = 1 := by
+theorem small_powers (z : ℂ) (h : ∀ n : ℕ, ‖z ^ n - 1‖ < 1 / 2) : z = 1 := by
   by_contra hz
   have hp : 0 < ‖z - 1‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hz)
   obtain ⟨n, hn⟩ := exists_nat_gt (1 / ‖z - 1‖)
@@ -250,5 +248,3 @@ theorem finite_level_with_trivial_phase
     exact hn
   change ‖(phase (b ^ n) : ℂ) - 1‖ < 1 / 2 at hmem
   simpa only [map_pow, Units.val_pow_eq_pow_val] using hmem
-end
-end DedekindZetaZeroFree.KPGlobalTorusFiniteStagesCofinality

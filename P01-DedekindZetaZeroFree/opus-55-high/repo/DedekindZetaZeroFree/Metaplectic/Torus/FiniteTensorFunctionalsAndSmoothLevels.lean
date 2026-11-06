@@ -119,7 +119,7 @@ theorem raw_product_polarization_finite_coset_cover
   have hd := raw_diagonal F ζ hζ g x hxg
   let xi : RestrictedCover F ζ hζ :=
     ⟨fun v => match v with | Sum.inl w => x (Sum.inl w) | Sum.inr _ => 1,
-      Filter.Eventually.of_forall (by intro v; cases v <;> simp [compact, Subgroup.one_mem])⟩
+      Filter.Eventually.of_forall (by intro v; cases v <;> simp [compact])⟩
   let xf : RestrictedCover F ζ hζ :=
     ⟨fun v => match v with | Sum.inl _ => 1 | Sum.inr q => x (Sum.inr q),
       x.property.mono (by
@@ -170,7 +170,7 @@ open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.KPGlobalTorusTensorFibers
 noncomputable section
 
-private theorem diagonal_torus_closed
+theorem diagonal_torus_closed
     (F : Type) [Field F] [NumberField F] (q : HeightOneSpectrum (𝓞 F)) :
     IsClosed (KPRankOneInduction.diagonalTorus F q : Set (KPRankOneInduction.PGL2 F q)) := by
   apply (QuotientGroup.isQuotientMap_mk
@@ -183,8 +183,7 @@ private theorem diagonal_torus_closed
     · rintro ⟨B, hB, h10, h01⟩
       obtain ⟨u, hu⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp hB
       rw [← hu]
-      simp [Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
-        Matrix.mul_apply, Matrix.scalar, Fin.sum_univ_two, h01, h10]
+      simp [Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_apply, Matrix.scalar, Fin.sum_univ_two, h01, h10]
     · intro h
       exact ⟨A, rfl, h⟩
   change IsClosed ((Matrix.ProjGenLinGroup.mk :
@@ -192,9 +191,7 @@ private theorem diagonal_torus_closed
     (KPRankOneInduction.diagonalTorus F q : Set (KPRankOneInduction.PGL2 F q)))
   rw [he]
   have hc (i j : Fin 2) : Continuous (fun A : KPRankOneInduction.GL2 F q => A i j) :=
-    (continuous_apply j).comp ((continuous_apply i).comp
-      (Units.continuous_val : Continuous (fun A : KPRankOneInduction.GL2 F q =>
-        (A : Matrix (Fin 2) (Fin 2) (q.adicCompletion F)))))
+    by fun_prop
   exact (isClosed_eq (hc 1 0) continuous_const).inter
     (isClosed_eq (hc 0 1) continuous_const)
 
@@ -274,7 +271,7 @@ noncomputable section
 attribute [local instance] KPAdelicCoverRestrictedProduct.localTopology
 attribute [local instance] KPAdelicCoverRestrictedProduct.pglLocalTopology
 
-private theorem local_subordinate (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+theorem local_subordinate (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (q : HeightOneSpectrum (𝓞 F))
     (K : OpenSubgroup (KPLocalExceptionalConstruction.actualTorus F ζ hζ q)) :
     ∃ L : CompactOpenLevel (KPLocalExceptionalConstruction.ActualCover F ζ hζ q),
@@ -293,7 +290,7 @@ private theorem local_subordinate (F : Type) [Field F] [NumberField F] (ζ : F) 
   change t ∈ (K : Set _)
   rw [← he]
   exact hL ht
-private theorem norm_one_bridge (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+theorem norm_one_bridge (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (q : HeightOneSpectrum (𝓞 F)) (y : (q.adicCompletion F)ˣ)
     (h : KPLocalPrincipalSeries.localAbs (q.adicCompletion F) y = 1) :
     KPGlobalCenterRationalCharacter.localAbs F (Sum.inr q) y = 1 := by
@@ -389,8 +386,7 @@ theorem raw_finite_level_subordinate_to_local_torus_subgroups
     have hdiag : (KPAdelicCoverRestrictedProduct.restrictedProjection F ζ hζ raw) 1 0 = 0 ∧
         (KPAdelicCoverRestrictedProduct.restrictedProjection F ζ hζ raw) 0 1 = 0 := by
       rw [hm]
-      simp [Matrix.GeneralLinearGroup.coe_mul, ← map_inv,
-        Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_apply, Matrix.scalar, h10, h01]
+      simp [← map_inv, Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_apply, Matrix.scalar, h10, h01]
     intro v
     have hv := KPAdelicCoverRestrictedProduct.restrictedProjection_eval F ζ hζ raw v
     have hv10 := congrArg (fun M : KPLocalCover.LocalGL2 F v => M 1 0) hv
@@ -505,7 +501,7 @@ theorem raw_reference_fixed_of_character_one
   · have he : (⟨t * k.val, htk⟩ :
         (C.polarization q).L.comap (C.canonical q).heisenberg.π) =
         ⟨t, ht⟩ * k := rfl
-    rw [he, map_mul, hk, mul_one]
+    simp_all
   · exact False.elim (ht (hmem.mp htk))
   · exact False.elim (htk (hmem.mpr ht))
   · rfl
@@ -632,7 +628,7 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
 variable (P : KPGlobalProductPolarizationCharacter.CompatibleLocalData F ζ hζ)
 variable (T : KPGlobalProductPolarizationCharacter.FiniteAdjustment F ζ hζ P)
 
-private theorem finprod_finite_modification {ι : Type*} (S : Finset ι)
+theorem finprod_finite_modification {ι : Type*} (S : Finset ι)
     (a : S → ℂ) (b : ι → ℂ)
     (hf : Function.HasFiniteMulSupport (fun q => if h : q ∈ S then a ⟨q,h⟩ else b q)) :
     (∏ᶠ q, if h : q ∈ S then a ⟨q,h⟩ else b q) =
@@ -780,10 +776,10 @@ def rawTensorRestriction (C : RawLocalScalarData F ζ hζ P T)
   toFun x a := rawFiniteTensorFunctional F ζ hζ P T C S a.t x
   map_add' x y := by
     funext a
-    exact (rawFiniteTensorFunctional F ζ hζ P T C S a.t).map_add x y
+    simp
   map_smul' c x := by
     funext a
-    exact (rawFiniteTensorFunctional F ζ hζ P T C S a.t).map_smul c x
+    simp
 
 theorem rawTensorFormula_iff_restriction_comp
     (C : RawLocalScalarData F ζ hζ P T)
@@ -884,7 +880,3 @@ theorem raw_finite_tensor_realization_exists
   refine ⟨⟨v, hmem⟩, ?_⟩
   intro a
   exact hv a.raw a.t a.g a.infinite_one a.local_lift a.global_lift
-end
-end DedekindZetaZeroFree.KPGlobalTorusTensorFibers
-
-end

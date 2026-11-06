@@ -6,7 +6,6 @@ public import DedekindZetaZeroFree.LargeSieve.Bilinear.OperatorBounds.Homogeneou
 
 @[expose] public section
 
-noncomputable section
 
 namespace DedekindZetaZeroFree.LargeSieve.Sieve
 
@@ -32,7 +31,7 @@ theorem bilinear_gcd_reduction_core
   refine ⟨2 * C, by linarith, ?_⟩
   intro M N K H hM hN hK hH hHN
   have hHpos : 0 < H := lt_of_lt_of_le zero_lt_one hH
-  have hMN : 0 ≤ M * N := by nlinarith [hM, hN]
+  have hMN : 0 ≤ M * N := by positivity
   have hX1 : 1 ≤ N / H := by
     rw [le_div_iff₀ hHpos]
     simpa using le_of_lt hHN
@@ -45,7 +44,7 @@ theorem bilinear_gcd_reduction_core
       have hmem0 : (0 : ℝ) ∈ ({0} ∪
           {x : ℝ | ∃ T : ℝ, 1 ≤ T ∧ T ≤ N / H ∧ x = B2 F c Q W M T K} ∪
           {x : ℝ | N / H < 1 ∧ 1 ≤ 2 * (N / H) ∧ x = B2unitColumn F c Q W M K}) :=
-        Or.inl (Or.inl rfl)
+        by simp
       have hlt : B2env F c Q W M (N / H) K - M <
           sSup ({0} ∪
             {x : ℝ | ∃ T : ℝ, 1 ≤ T ∧ T ≤ N / H ∧ x = B2 F c Q W M T K} ∪
@@ -85,7 +84,3 @@ theorem bilinear_gcd_reduction_core
     _ ≤ C * Real.rpow (M * N) δ * ((B2 F c Q W M N' K + M + Sg) * 2) :=
         mul_le_mul_of_nonneg_left (by linarith) (mul_nonneg hC0 (Real.rpow_nonneg hMN δ))
     _ = 2 * C * Real.rpow (M * N) δ * (B2 F c Q W M N' K + M + Sg) := by ring
-
-end DedekindZetaZeroFree.LargeSieve.Sieve
-
-end

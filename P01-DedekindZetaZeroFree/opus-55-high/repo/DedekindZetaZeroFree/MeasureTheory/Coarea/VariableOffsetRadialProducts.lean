@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.CuspRadialIntegrati
 
 @[expose] public section
 
-noncomputable section
 set_option maxHeartbeats 1000000
 open scoped Classical ENNReal NNReal
 open MeasureTheory
@@ -17,7 +16,7 @@ theorem offset_radial_lintegral (d : ℕ) (hd : 0 < d) (c : ℝ) (hc : 0 < c)
     ENNReal.ofReal (c / (2 * (d : ℝ))) *
       ∫⁻ r in Set.Ioi Y, f r ∂KPMsFixedHaar.radialMeasure := by
   let q : ℝ := 2 * d
-  have hq : 0 < q := mul_pos (by norm_num) (by exact_mod_cast hd)
+  have hq : 0 < q := by positivity
   let T := Set.Ioi (Real.log (Y / c) / q)
   have hi : Set.InjOn (fun t : ℝ => c * Real.exp (q*t)) T := by
     intro x hx y hy he
@@ -47,14 +46,14 @@ theorem offset_radial_lintegral (d : ℕ) (hd : 0 < d) (c : ℝ) (hc : 0 < c)
     (fun r => ENNReal.ofReal (r^2)⁻¹ * f r)
   rw [himage] at hj
   have hm : Measurable (fun x : ℝ => ENNReal.ofReal (x^2)⁻¹) :=
-    (measurable_id.pow_const 2).inv.ennreal_ofReal
+    by fun_prop
   have hm' : Measurable (fun x : ℝ => ENNReal.ofReal (Real.exp (-2*(d:ℝ)*x))) := by
     fun_prop
   have hfinite : ∀ᵐ x ∂volume.restrict (Set.Ioi Y), ENNReal.ofReal (x^2)⁻¹ < ∞ :=
-    Filter.Eventually.of_forall fun x => ENNReal.ofReal_lt_top
+    by simp
   have hfinite' : ∀ᵐ x ∂volume.restrict T,
       ENNReal.ofReal (Real.exp (-2*(d:ℝ)*x)) < ∞ :=
-    Filter.Eventually.of_forall fun x => ENNReal.ofReal_lt_top
+    by simp
   have heq : (∫⁻ r in Set.Ioi Y, f r ∂KPMsFixedHaar.radialMeasure) =
       ENNReal.ofReal (q/c) * ∫⁻ t in T, f (c * Real.exp (q*t))
         ∂KPCuspCharts.radialMeasure d := by
@@ -82,7 +81,3 @@ theorem offset_radial_lintegral (d : ℕ) (hd : 0 < d) (c : ℝ) (hc : 0 < c)
   rw [heq, ← mul_assoc, ← ENNReal.ofReal_mul (div_pos hc hq).le]
   have hcancel : c/q * (q/c) = 1 := by field_simp
   rw [hcancel, ENNReal.ofReal_one, one_mul]
-
-end DedekindZetaZeroFree.KPMsOffsetRadialCoarea
-
-end

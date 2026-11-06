@@ -5,7 +5,6 @@ public import Mathlib.Topology.Instances.Real.Lemmas
 @[expose] public section
 
 open Topology
-noncomputable section
 namespace DedekindZetaZeroFree.KPRadialTail
 
 theorem compact_embedding_height_bounds
@@ -27,7 +26,3 @@ theorem compact_embedding_height_bounds
   · refine ⟨T + 1, T + 1, by linarith, ?_⟩
     intro z hz
     exact (hn ⟨z, hz⟩).elim
-
-end DedekindZetaZeroFree.KPRadialTail
-
-end

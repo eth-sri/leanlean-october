@@ -1,6 +1,6 @@
 module
 
-public import DedekindZetaZeroFree.Geometry.SymmetricSpaces.LogCoordinates.FirstOrderGreenIdentity
+public import DedekindZetaZeroFree.Geometry.ArithmeticQuotients.DifferentialOperators.ScalarLaplacianGraph
 public import DedekindZetaZeroFree.Metaplectic.Cubic.OrbifoldCharts.FinitePartitionsOfUnity
 public import DedekindZetaZeroFree.Metaplectic.Cubic.GenuineSector.DifferentialAndCodifferential
 public import DedekindZetaZeroFree.Metaplectic.Cubic.GenuineSector.TestL2Embeddings
@@ -33,7 +33,7 @@ theorem placeReindex_eq :
   rw [placeReindex_apply]
   simp [Equiv.piCongrLeft_apply_apply]
 
-private lemma phi_measurePreserving :
+lemma phi_measurePreserving :
     MeasurePreserving (fun p : Fin 3 → ℝ =>
       (Complex.measurableEquivPi.symm (fun j : Fin 2 => p (Fin.castSucc j)), p 2))
       (volume : Measure (Fin 3 → ℝ)) (volume : Measure (ℂ × ℝ)) := by
@@ -52,7 +52,7 @@ private lemma phi_measurePreserving :
       Fin.succAbove_last, Fin.castSucc_zero, Fin.castSucc_one, Fin.last]
     congr 1 <;> rfl
 
-private lemma curry_measurePreserving (d : ℕ) :
+lemma curry_measurePreserving (d : ℕ) :
     MeasurePreserving (MeasurableEquiv.curry (Fin d) (Fin 3) ℝ)
       (volume : Measure (Fin d × Fin 3 → ℝ)) (volume : Measure (Fin d → Fin 3 → ℝ)) := by
   have key : (volume : Measure (Fin d × Fin 3 → ℝ)) =
@@ -76,7 +76,7 @@ private lemma curry_measurePreserving (d : ℕ) :
   refine ⟨(MeasurableEquiv.curry _ _ _).measurable, ?_⟩
   rw [key, MeasurableEquiv.map_map_symm]
 
-private lemma A_measurePreserving (d : ℕ) :
+lemma A_measurePreserving (d : ℕ) :
     MeasurePreserving (CotangentLogCoframe.A d)
       (volume : Measure (HyperbolicChart.Space d)) (volume : Measure (KPArch.Space d)) := by
   have h1 : MeasurePreserving
@@ -107,7 +107,7 @@ private lemma weighted_map {A B : Type*} [MeasurableSpace A] [MeasurableSpace B]
     lintegral_map (hρ.indicator hs) hf.measurable]
   congr 1
 
-private lemma volumeDensity_A (d : ℕ) (p : HyperbolicChart.Space d) :
+lemma volumeDensity_A (d : ℕ) (p : HyperbolicChart.Space d) :
     KPArch.volumeDensity d (CotangentLogCoframe.A d p) = HyperbolicChart.density d p := by
   have he (u : ℝ) : (Real.exp u)⁻¹ ^ 2 = Real.exp (-2 * u) := by
     rw [← Real.exp_neg, ← Real.exp_nat_mul]; congr 1; ring
@@ -141,7 +141,7 @@ theorem map_A_hyperbolicVolume (d : ℕ) :
   rw [HyperbolicChart.measure, KPArch.hyperbolicVolume]
   exact hkey
 
-private lemma placeReindex_measurePreserving :
+lemma placeReindex_measurePreserving :
     MeasurePreserving (placeReindex (F := F) (ζ := ζ) (hζ := hζ))
       (volume : Measure (KPArch.Space (KPCuspLogShape.dimension F)))
       (volume : Measure (KPArch.Space (d F))) := by
@@ -150,7 +150,7 @@ private lemma placeReindex_measurePreserving :
   convert h.symm using 1
   exact (placeReindex_eq (F := F) (ζ := ζ) (hζ := hζ)).symm
 
-private lemma volumeDensity_placeReindex (z : KPArch.Space (KPCuspLogShape.dimension F)) :
+lemma volumeDensity_placeReindex (z : KPArch.Space (KPCuspLogShape.dimension F)) :
     KPArch.volumeDensity (d F) (placeReindex (F := F) (ζ := ζ) (hζ := hζ) z) =
       KPArch.volumeDensity (KPCuspLogShape.dimension F) z := by
   simp only [KPArch.volumeDensity, placeReindex_apply]

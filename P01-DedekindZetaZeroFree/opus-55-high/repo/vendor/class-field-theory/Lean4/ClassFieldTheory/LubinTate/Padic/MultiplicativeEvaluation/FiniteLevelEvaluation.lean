@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Finite-level evaluation of the p-adic multiplicative comparison
 
@@ -97,7 +92,7 @@ noncomputable local instance
 
 /-- Evaluation of the standard-to-multiplicative comparison at the chosen
 standard primitive point of level `n + 1`. -/
-noncomputable def padicMultiplicativePrimitivePoint
+def padicMultiplicativePrimitivePoint
     (p : ℕ) [Fact p.Prime] (n : ℕ) :
     (standardLubinTateLevelCompleteDVF
       (padicMultiplicativeLubinTateSeries_isUniformizer p) n).valuationSubring :=
@@ -411,10 +406,4 @@ theorem padicStandardToMultiplicativeIntertwiner_eval_injective
     padicMultiplicativeToStandardIntertwiner_eval_comp p n x hx
   have hyback : evalReverse packedY = y :=
     padicMultiplicativeToStandardIntertwiner_eval_comp p n y hy
-  exact hxback.symm.trans ((congrArg evalReverse hpacked).trans hyback)
-
-end PadicLevelTopology
-
-end LubinTate
-
-end
+  simp_all

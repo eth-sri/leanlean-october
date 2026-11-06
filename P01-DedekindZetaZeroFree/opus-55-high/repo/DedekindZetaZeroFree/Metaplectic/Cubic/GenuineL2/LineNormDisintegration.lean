@@ -141,7 +141,7 @@ open KPContSectorFiniteOrbitIntegral KPContSectorFixedLineNormIntegrals
 open KPContSectorQuotientRelationsComparison
 open KPMsFixedHaarDisintegration
 
-private theorem fixedLine_sigma_integral {ι : Type*} [Fintype ι]
+theorem fixedLine_sigma_integral {ι : Type*} [Fintype ι]
     {X : ι → Type*} [∀ i, TopologicalSpace (X i)] [∀ i, MeasurableSpace (X i)]
     [∀ i, OpensMeasurableSpace (X i)]
     {Y : Type*} [TopologicalSpace Y] [MeasurableSpace Y] [BorelSpace Y]

@@ -33,16 +33,15 @@ private theorem units_borel (K : Type*) [Field K] [TopologicalSpace K]
 private theorem valuation_mul (u v : (LocalField F q)ˣ) :
     valuationIndex F q (u * v) = valuationIndex F q u + valuationIndex F q v := by
   simp only [valuationIndex, Units.val_mul, map_mul]
-  rw [WithZero.log_mul]
-  all_goals simp
+  simp
 
-private theorem exists_valuation (m : ℤ) : ∃ u : (LocalField F q)ˣ, valuationIndex F q u = m := by
+theorem exists_valuation (m : ℤ) : ∃ u : (LocalField F q)ˣ, valuationIndex F q u = m := by
   let e := IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
   obtain ⟨a, ha⟩ := valuation_surjective (e.symm (WithZero.exp m))
   have ha0 : a ≠ 0 := by
     intro hh
     simp only [hh, map_zero] at ha
-    have hne : e.symm (WithZero.exp m) ≠ 0 := (map_ne_zero e.symm).2 (by simp)
+    have hne : e.symm (WithZero.exp m) ≠ 0 := by simp
     exact hne ha.symm
   refine ⟨Units.mk0 a ha0, ?_⟩
   change WithZero.log (e (valuation (LocalField F q) a)) = m
@@ -55,7 +54,7 @@ private theorem block_measurable (N n : ℕ) : MeasurableSet (infinityBlock F q 
     apply IsLocallyConstant.continuous
     rw [IsLocallyConstant.iff_eventually_eq]
     intro v
-    have hv : valuation (LocalField F q) (v : LocalField F q) ≠ 0 := by simpa using v.ne_zero
+    have hv : valuation (LocalField F q) (v : LocalField F q) ≠ 0 := by simp
     have hh := Units.continuous_val.continuousAt.preimage_mem_nhds
       ((valuation (LocalField F q)).locally_const hv)
     filter_upwards [hh] with w hw
@@ -78,7 +77,7 @@ private theorem haar (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
     (ENNReal.toReal_pos hp.ne' hc.measure_lt_top.ne)
     (ENNReal.ofReal_toReal hc.measure_lt_top.ne).symm).1
 
-private theorem weight_formula (v : (LocalField F q)ˣ) (lam : ℂ) :
+theorem weight_formula (v : (LocalField F q)ˣ) (lam : ℂ) :
     (localAbs (LocalField F q) v : ℂ)⁻¹ * normPower (LocalField F q) v lam =
     ((residueCardinality (LocalField F q) : ℂ) * Q F q lam) ^ (-valuationIndex F q v) := by
   have hq : 0 < (residueCardinality (LocalField F q) : ℝ) := by
@@ -92,9 +91,8 @@ private theorem weight_formula (v : (LocalField F q)ˣ) (lam : ℂ) :
     ring
   rw [hn, mul_zpow]
   congr 1
-  simp only [localAbs, Real.rpow_intCast, Complex.ofReal_zpow,
-    valuationIndex, zpow_neg, zpow_natCast]
-  simp only [Complex.ofReal_natCast]
+  simp only [localAbs, Real.rpow_intCast, Complex.ofReal_zpow, valuationIndex, zpow_neg]
+  rfl
 
 private theorem coefficient_expansion
     (I : IwasawaData S.borel) (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
@@ -130,7 +128,7 @@ private theorem coefficient_expansion
     have hb : I.borelPart 1 = 1 := by simpa using I.borelPart_compact 1
     have hk : I.compactPart 1 = 1 := by simpa using I.compactPart_compact 1
     rw [hb, hk, map_one]
-    simp [Finsupp.sum, a, div_eq_mul_inv, Finset.sum_mul, mul_comm]
+    simp [Finsupp.sum, a, div_eq_mul_inv, mul_comm]
   obtain ⟨N₁, hscalar⟩ := actual_infinity_eventual_scalar F ζ hζ q S P I μ J
     rep hrep d φ hφ hcφ
   let cutoff := max N₀ N₁
@@ -155,7 +153,7 @@ private theorem coefficient_expansion
         -valuationIndex F q v + (-3) * (n : ℤ) := by ring
     have htest : - (3 * (n : ℤ) + valuationIndex F q v) + 3 * (n : ℤ) =
         -valuationIndex F q v := by ring
-    simp only [htest, Nat.cast_zero, mul_zero, add_zero]
+    simp only [htest, add_zero]
     split_ifs
     · rw [hexp, zpow_add₀ hq, zpow_mul, zpow_natCast]
       ring
@@ -172,7 +170,6 @@ private theorem coefficient_expansion
       valuationIndex F q v ≤ (↑(N + 3 * (n + 1)) : ℤ)
     change (N : ℤ) + 3 * (n : ℤ) < valuationIndex F q v ∧
       valuationIndex F q v ≤ (N : ℤ) + 3 * ((n : ℤ) + 1) at hv
-    push_cast at *
     omega
   · intro h n ij _hij
     obtain ⟨u, hu⟩ := exists_valuation F q (3 * (n : ℤ))
@@ -195,11 +192,10 @@ private theorem coefficient_expansion
       integral_indicator (block_measurable F q N n)] at hi
     exact hi.symm
   · intro r hr lam h n v hv
-    have hmin : N₁ ≤ N := le_trans (Nat.le_max_right _ _) hN
+    have hmin : N₁ ≤ N := by omega
     have htail : (N₁ : ℤ) < valuationIndex F q v := by
       have hh : (N₁ : ℤ) ≤ N := by exact_mod_cast hmin
       have hv1 := hv.1
-      change (N : ℤ) + 3 * (n : ℤ) < valuationIndex F q v at hv1
       omega
     rw [hscalar r hr lam h v htail, mul_assoc, weight_formula, hforward r hr h]
     have hk : -valuationIndex F q v + 3 * (n : ℤ) ∈ E := by
@@ -261,7 +257,7 @@ private theorem evaluate_integratedShellNumerator (ν : Measure X) (S : Finset (
   | @insert a S ha ih =>
     rw [Finset.sum_insert ha, Finset.sum_insert ha]
     rw [evaluateNumerator, Finsupp.sum_add_index]
-    · simp only [Finsupp.sum_single_index, mul_zero, zero_mul, add_zero]
+    · simp only [Finsupp.sum_single_index, zero_mul]
       exact congrArg (_ + ·) ih
     · intro ij; simp
     · intro ij hij b d; ring
@@ -273,8 +269,7 @@ private theorem integral_finite_shell_expansion (ν : Measure X) (S : Finset (�
     Integrable f ν ∧ (∫ x, f x ∂ν) =
       evaluateNumerator (integratedShellNumerator ν S c) r Q / den := by
   have hi : ∀ ij ∈ S, Integrable (fun x => c ij x * r ^ ij.1 * Q ^ ij.2) ν := by
-    intro ij hij
-    exact ((hc ij hij).mul_const _).mul_const _
+    fun_prop
   have hs := integrable_finsetSum S hi
   have hfun : f = fun x => (∑ ij ∈ S, c ij x * r ^ ij.1 * Q ^ ij.2) / den := funext hf
   rw [hfun]
@@ -385,8 +380,6 @@ private theorem norm_blocks_geometric
       reverseIntegrand F ζ hζ q S.heisenberg S.borel P I μ J (S.openCell P) rep hrep d φ hφ hcφ r lam h v = f v := by
     rw [hscalar r hr lam h v (by
       have hv1 := hv.1
-      change (N : ℤ) + 3 * (k : ℤ) < valuationIndex F q v at hv1
-      have hh : (N₀ : ℤ) ≤ N := by exact_mod_cast hN
       omega), mul_assoc, weight_formula]
   rw [setIntegral_congr_fun (block_measurable F q N n) (fun v hv => congrArg norm (he n v hv)),
     setIntegral_congr_fun (block_measurable F q N 0) (fun v hv => congrArg norm (he 0 v hv))]
@@ -408,8 +401,7 @@ private theorem norm_blocks_geometric
       (infinityBlock F q N 0).indicator (fun v => ‖f v‖) v * ‖(b ^ (-3 : ℤ)) ^ n‖ := by
     by_cases hv : v ∈ infinityBlock F q N 0
     · rw [Set.indicator_of_mem ((htrans v).mpr hv), Set.indicator_of_mem hv, hscale, norm_mul]
-    · rw [Set.indicator_of_notMem (fun hh => hv ((htrans v).mp hh)),
-        Set.indicator_of_notMem hv, zero_mul]
+    simp_all
   have hi := integral_mul_left_eq_self (μ := multiplicativeMeasure F q μ)
     ((infinityBlock F q N n).indicator (fun v => ‖f v‖)) u
   simp only [hind, integral_mul_const] at hi
@@ -420,23 +412,23 @@ private theorem norm_blocks_geometric
   dsimp [b]
   rw [mul_zpow, norm_pow]
 
-private theorem infinityTail_norm_Q (lam : ℂ) :
+theorem infinityTail_norm_Q (lam : ℂ) :
     ‖Q F q lam‖ = (residueCardinality (LocalField F q) : ℝ).rpow (-lam.re) := by
   have hq : 0 < (residueCardinality (LocalField F q) : ℝ) := by
     have h : 1 < residueCardinality (LocalField F q) := Finite.one_lt_card
-    exact_mod_cast (lt_trans Nat.zero_lt_one h)
+    positivity
   simp only [Q, Complex.norm_exp, Complex.mul_re, Complex.neg_re, Complex.ofReal_re,
     Complex.neg_im, Complex.ofReal_im, mul_zero, sub_zero, Real.rpow_eq_pow,
     Real.rpow_def_of_pos hq]
   congr 1
   ring
 
-private theorem infinityTail_ratio_norm (lam : ℂ) :
+theorem infinityTail_ratio_norm (lam : ℂ) :
     ‖(residueCardinality (LocalField F q) : ℂ) ^ (-3 : ℤ) * Q F q lam ^ (-3 : ℤ)‖ =
       (residueCardinality (LocalField F q) : ℝ).rpow (3 * lam.re - 3) := by
   have hq : 0 < (residueCardinality (LocalField F q) : ℝ) := by
     have h : 1 < residueCardinality (LocalField F q) := Finite.one_lt_card
-    exact_mod_cast (lt_trans Nat.zero_lt_one h)
+    positivity
   rw [norm_mul, norm_zpow, norm_zpow, infinityTail_norm_Q F q]
   have hn : ‖(residueCardinality (LocalField F q) : ℂ)‖ =
       (residueCardinality (LocalField F q) : ℝ) := by simp
@@ -446,7 +438,7 @@ private theorem infinityTail_ratio_norm (lam : ℂ) :
   norm_num
   ring
 
-private theorem infinityTail_ratio_norm_lt_one (lam : ℂ) (hlam : lam.re < 1) :
+theorem infinityTail_ratio_norm_lt_one (lam : ℂ) (hlam : lam.re < 1) :
     ‖(residueCardinality (LocalField F q) : ℂ) ^ (-3 : ℤ) * Q F q lam ^ (-3 : ℤ)‖ < 1 := by
   rw [infinityTail_ratio_norm F q, Real.rpow_eq_pow]
   have hq : 1 < (residueCardinality (LocalField F q) : ℝ) := by
@@ -454,37 +446,28 @@ private theorem infinityTail_ratio_norm_lt_one (lam : ℂ) (hlam : lam.re < 1) :
     exact_mod_cast h
   exact Real.rpow_lt_one_of_one_lt_of_neg hq (by linarith)
 
-private theorem infinityBlock_pairwise_disjoint (N : ℕ) :
+theorem infinityBlock_pairwise_disjoint (N : ℕ) :
     Pairwise (fun n m : ℕ => Disjoint (infinityBlock F q N n)
       (infinityBlock F q N m)) := by
   intro n m hnm
   rw [Set.disjoint_left]
   intro v hv hw
   simp only [infinityBlock, Set.mem_setOf_eq] at hv hw
-  rcases lt_or_gt_of_ne hnm with h | h
-  · have : (n : ℤ) + 1 ≤ (m : ℤ) := by exact_mod_cast h
-    omega
-  · have : (m : ℤ) + 1 ≤ (n : ℤ) := by exact_mod_cast h
-    omega
+  omega
 
-private theorem infinityBlock_iUnion (N : ℕ) :
+theorem infinityBlock_iUnion (N : ℕ) :
     (⋃ n : ℕ, infinityBlock F q N n) = infinityRegion F q N := by
   ext v
   simp only [infinityBlock, infinityRegion, Set.mem_iUnion, Set.mem_setOf_eq]
   constructor
-  · rintro ⟨n, h1, h2⟩
-    push_cast
-    omega
+  · omega
   · intro hv
     push_cast at hv
     let k : ℕ := (valuationIndex F q v - (N : ℤ) - 1).toNat
     have hk : (k : ℤ) = valuationIndex F q v - (N : ℤ) - 1 := by
-      dsimp [k]
-      exact Int.toNat_of_nonneg (by omega)
+      omega
     refine ⟨k / 3, ?_⟩
-    have hmod := Nat.mod_lt k (by decide : 0 < 3)
-    have hdiv := Nat.mod_add_div k 3
-    push_cast
+    have hmod := by omega
     omega
 
 theorem actual_infinity_tail_specialization
@@ -521,8 +504,8 @@ theorem actual_infinity_tail_specialization
   obtain ⟨N₂, h₂⟩ := norm_blocks_geometric F ζ hζ q S P I μ J rep hrep d φ hφ hcφ
   refine ⟨max N₁ N₂, ?_⟩
   intro N hN
-  have hn₁ : N₁ ≤ N := le_trans (Nat.le_max_left _ _) hN
-  have hn₂ : N₂ ≤ N := le_trans (Nat.le_max_right _ _) hN
+  have hn₁ : N₁ ≤ N := by omega
+  have hn₂ : N₂ ≤ N := by omega
   obtain ⟨p, hp⟩ := h₁ N hn₁
   refine ⟨p, ?_⟩
   intro r hr lam hlam h
@@ -555,6 +538,3 @@ theorem actual_infinity_tail_specialization
   have he := hsum.unique hg
   simpa only [infinityFactor, div_eq_mul_inv, mul_inv_rev, mul_assoc,
     mul_left_comm, mul_comm] using he
-
-end
-end DedekindZetaZeroFree.KPActualResidueSources

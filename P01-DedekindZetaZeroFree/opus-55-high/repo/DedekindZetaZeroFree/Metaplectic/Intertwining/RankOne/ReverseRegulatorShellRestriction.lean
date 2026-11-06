@@ -16,7 +16,6 @@ open KPRankOneReverseLaurentShellExpansion
 open KPRankOneReverseRegulatorShellsRaw (smallRegion annulusRegion infinityRegion valuationIndex)
 
 noncomputable section
-set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
@@ -155,11 +154,8 @@ theorem reverseIntegrand_eq_zero_of_profile_eq_zero (I : IwasawaData A) (μ : Me
     unfold forwardSection
     rw [actualSection_eq_zero_of_profile_eq_zero F ζ hζ q T A P B rep hrep d φ hφ hcφ hzero r]
     change (J.op .plus (additiveParameter F q r)) 0 = 0
-    exact (J.op .plus (additiveParameter F q r)).map_zero
+    simp
   simp only [reverseIntegrand, hf]
-  change (B.eta (kappa F ζ hζ q v 0) : ℂ) *
-    ((reverseRoot F ζ hζ q T A P B r v) 0).val h * normPower (LocalField F q) v lam = 0
-  rw [map_zero]
   simp
 
 abbrev ShellNumerator := (ℤ × ℤ) →₀ ℂ
@@ -210,7 +206,7 @@ theorem shellDenominator_ne_zero (r : ℂˣ) (hr : IsRegular F q r) (lam : ℂ)
     apply Real.exp_lt_one_iff.mpr
     norm_num
     have hlt : lam.re < 1 := hlam.1
-    nlinarith [mul_pos (sub_pos.mpr hlt) hlog]
+    simp_all
   have hn {z : ℂ} (hz : ‖z‖ < 1) : 1 - z ≠ 0 := by
     intro he
     have : z = 1 := (sub_eq_zero.mp he).symm
@@ -348,7 +344,7 @@ private lemma good_t_inner (r : ℂ) :
   unfold t
   exact good_mul (good_C _) (good_pow good_X 6)
 
-private lemma t_ne_zero (r : ℂ) (hr : r ≠ 0) : t F q r ≠ 0 := by
+lemma t_ne_zero (r : ℂ) (hr : r ≠ 0) : t F q r ≠ 0 := by
   unfold t
   apply mul_ne_zero _ (pow_ne_zero _ hr)
   apply inv_ne_zero
@@ -360,8 +356,8 @@ private lemma good_denominator_inner (r Q : ℂ) (hr : r ≠ 0) (hQ : Q ≠ 0) :
       ((1 - RatFunc.C (residueCardinality (LocalField F q) : ℂ)⁻¹ * (RatFunc.X : Rr)^6) *
         (1 - (RatFunc.C (residueCardinality (LocalField F q) : ℂ)⁻¹ * (RatFunc.X : Rr)^6)⁻¹ * (RatFunc.C Q)^3) *
         (1 - RatFunc.C ((residueCardinality (LocalField F q) : ℂ)^(-3 : ℤ)) * (RatFunc.C Q)^(-3 : ℤ)))
-      (shellDenominator F q r Q) := by
-  exact good_geometric (good_t_inner F q r) (good_C Q) (good_C _)
+      (shellDenominator F q r Q) := 
+  good_geometric (good_t_inner F q r) (good_C Q) (good_C _)
     (t_ne_zero F q r hr) hQ
 
 private lemma good_denominator_outer (Q : ℂ) (hQ : Q ≠ 0) :
@@ -412,16 +408,15 @@ private lemma denominator_one_ne_zero :
   have hq1 : (residueCardinality (LocalField F q) : ℂ) ≠ 1 := by
     exact_mod_cast hq.ne'
   have hq3 : (residueCardinality (LocalField F q) : ℂ)^3 ≠ 1 := by
-    exact_mod_cast (one_lt_pow₀ hq (by decide : (3 : ℕ) ≠ 0)).ne'
+    simp_all
   have hn : shellDenominator F q 1 1 ≠ 0 := by
-    simp only [shellDenominator, t, one_pow, one_zpow, mul_one, inv_inv, zpow_neg,
-      zpow_ofNat]
+    simp only [shellDenominator, t, one_pow, mul_one, inv_inv, zpow_neg, zpow_ofNat]
     apply mul_ne_zero
     · apply mul_ne_zero
       · apply sub_ne_zero.mpr
         intro he
         exact hq1 (inv_eq_one.mp he.symm)
-      · exact sub_ne_zero.mpr (Ne.symm hq1)
+      positivity
     · apply sub_ne_zero.mpr
       simp only [inv_one, mul_one]
       intro he
@@ -449,8 +444,5 @@ theorem restrictionAtOne_eq (p : ShellNumerator) :
             (RatFunc.X : Rr) ^ 6) *
           (1 - (RatFunc.C (residueCardinality (LocalField F q) : ℂ)⁻¹ *
             (RatFunc.X : Rr) ^ 6)⁻¹) *
-          (1 - RatFunc.C ((residueCardinality (LocalField F q) : ℂ) ^ (-3 : ℤ)))) := by
-  exact (good_H_one F q p).2
-
-end
-end DedekindZetaZeroFree.KPRankOneReverseRegulatorShells
+          (1 - RatFunc.C ((residueCardinality (LocalField F q) : ℂ) ^ (-3 : ℤ)))) := 
+  (good_H_one F q p).2

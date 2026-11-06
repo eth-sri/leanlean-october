@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Prime classes and reduction of a ray modulus
 
@@ -28,7 +23,6 @@ projection to the ray class group of the smaller modulus.
 open scoped NumberField
 open NumberField IsDedekindDomain
 
-noncomputable section
 
 namespace ClassFieldTheory
 
@@ -48,7 +42,3 @@ theorem rayClassIdealModulusProjection_prime
           intro hvm
           exact hvn (Finsupp.support_mono hmn.1 hvm)) := by
   rfl
-
-end ClassFieldTheory
-
-end

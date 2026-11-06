@@ -35,7 +35,7 @@ set_option allowUnsafeReducibility true in
 attribute [local reducible] IsDedekindDomain.FiniteAdeleRing NumberField.AdeleRing
 
 variable (F : Type) [Field F] [NumberField F]
-private lemma ball_open (v : HeightOneSpectrum (𝓞 F)) (k : ℤ) :
+lemma ball_open (v : HeightOneSpectrum (𝓞 F)) (k : ℤ) :
     IsOpen {x : v.adicCompletion F | Valued.v x ≤ WithZero.exp (-k)} := by
   obtain ⟨a, ha⟩ := HeightOneSpectrum.valuedAdicCompletion_surjective F v (WithZero.exp (-k))
   have hn : (Valued.v.restrict a) ≠ 0 := by
@@ -43,10 +43,9 @@ private lemma ball_open (v : HeightOneSpectrum (𝓞 F)) (k : ℤ) :
     have ha0 : a = 0 := (Valued.v.restrict.map_eq_zero_iff).mp h
     exact WithZero.exp_ne_zero (ha.symm.trans (by simp [ha0]))
   convert Valued.isOpen_closedBall (v.adicCompletion F) hn using 1
-  ext x
-  simp only [Set.mem_setOf_eq, Valuation.restrict_le_iff, ha]
+  simp_all
 
-private lemma exponent_nonneg (T : Finset (HeightOneSpectrum (𝓞 F))) (k : T → ℕ) (v) :
+lemma exponent_nonneg (T : Finset (HeightOneSpectrum (𝓞 F))) (k : T → ℕ) (v) :
     0 ≤ idealExponent F T (fun w => k w) v := by
   unfold idealExponent
   split <;> positivity
@@ -91,8 +90,6 @@ lemma finiteIdealNeighborhood_basis_nat {U : Set (KPAdelicTopology.FiniteAdeles 
     (fun v => (v.adicCompletionIntegers F : Set _)) cofinite
   have hm : 𝓝 (0 : KPAdelicTopology.FiniteAdeles F) = map s (𝓝 0) := by
     have hzero : s 0 = 0 := by
-      apply RestrictedProduct.ext
-      intro i
       rfl
     rw [← hzero]
     exact RestrictedProduct.nhds_zero_eq_map_structureMap _
@@ -107,7 +104,7 @@ lemma finiteIdealNeighborhood_basis_nat {U : Set (KPAdelicTopology.FiniteAdeles 
     obtain ⟨W, hW, hWt⟩ := htv
     obtain ⟨γ, hγ⟩ := Valued.mem_nhds_zero.mp hW
     have hn : MonoidWithZeroHom.ValueGroup₀.embedding γ.val ≠ 0 := by
-      simpa using γ.ne_zero
+      simp
     obtain ⟨n, hn'⟩ := WithZero.exists_exp_neg_natCast_lt hn
     refine ⟨n, fun x hx => hWt (hγ ?_)⟩
     rw [Set.mem_setOf_eq, Valuation.restrict_lt_iff_lt_embedding]
@@ -124,8 +121,6 @@ lemma finiteIdealNeighborhood_basis_nat {U : Set (KPAdelicTopology.FiniteAdeles 
     apply hk ⟨v, hv⟩
     simpa [x, idealExponent, Finset.mem_coe.mp hv] using ha v
   have hsx : s x = a := by
-    apply RestrictedProduct.ext
-    intro i
     rfl
   rw [← hsx]
   exact hts hx
@@ -135,7 +130,6 @@ lemma finiteIdealNeighborhood_basis_nat {U : Set (KPAdelicTopology.FiniteAdeles 
   carrier := diagonalIdealFiber F T (fun w => k w)
   zero_mem' := by
     intro v
-    change Valued.v (0 : v.adicCompletion F) ≤ _
     simp
   add_mem' := by
     intro a b ha hb v
@@ -165,8 +159,8 @@ lemma diagonalIdealFiber_fractional_nat (T : Finset (HeightOneSpectrum (𝓞 F))
   let I : FractionalIdeal (𝓞 F)⁰ F := ⟨M, FractionalIdeal.isFractional_of_le_one M hM⟩
   have hI : I ≠ 0 := by
     let J : Ideal (𝓞 F) := ∏ v : T, v.val.asIdeal ^ k v
-    have hJ : J ≠ ⊥ := by
-      exact Finset.prod_ne_zero_iff.mpr (fun v _ => pow_ne_zero _ v.val.ne_bot)
+    have hJ : J ≠ ⊥ := 
+      Finset.prod_ne_zero_iff.mpr (fun v _ => pow_ne_zero _ v.val.ne_bot)
     obtain ⟨a, ha, hane⟩ := (Submodule.ne_bot_iff J).mp hJ
     have hIa : algebraMap (𝓞 F) F a ∈ I := by
       intro v
@@ -180,8 +174,7 @@ lemma diagonalIdealFiber_fractional_nat (T : Finset (HeightOneSpectrum (𝓞 F))
         exact (Ideal.prod_le_inf.trans (Finset.inf_le (Finset.mem_univ ⟨v,hv⟩))) ha
       · simpa [idealExponent, hv] using v.intValuation_le_one a
     intro hz
-    have hz' : algebraMap (𝓞 F) F a = 0 := by simpa [hz] using hIa
-    exact hane ((IsFractionRing.injective (𝓞 F) F).eq_iff.mp (by simpa using hz'))
+    simp_all
   exact ⟨Units.mk0 I hI, rfl⟩
 
 end KPAdelicCharacter
@@ -227,11 +220,7 @@ theorem kp_adelic_character_open_kernel (F : Type) [Field F] [NumberField F]
       exact (Valued.v.map_add _ _).trans (max_le (hm v) (ha v))
   have he' := hk (hn n)
   have heq : ((0, n • a) : KPAdelicTopology.Adeles F) = n • ((0, a) : KPAdelicTopology.Adeles F) := by
-    apply Prod.ext <;> simp
+    simp
   change χ (0, n • a) ∈ Circle.centeredArc (Real.pi / 2) at he'
   rw [heq] at he'
   exact (χ.map_nsmul_eq_pow n ((0, a) : KPAdelicTopology.Adeles F)) ▸ he'
-
-end DedekindZetaZeroFree
-
-end

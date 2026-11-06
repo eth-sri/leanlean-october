@@ -19,10 +19,10 @@ private theorem support_prod (s : Finset (Ideal (𝓞 F)))
   simpa using congrArg Multiset.toFinset H
 
 private theorem prod_ne_bot (s : Finset (Ideal (𝓞 F)))
-    (hs : ∀ p ∈ s, Prime p) : (∏ p ∈ s, p) ≠ ⊥ := by
-  exact Finset.prod_ne_zero_iff.mpr (fun p hp => (hs p hp).ne_zero)
+    (hs : ∀ p ∈ s, Prime p) : (∏ p ∈ s, p) ≠ ⊥ := 
+  Finset.prod_ne_zero_iff.mpr (fun p hp => (hs p hp).ne_zero)
 
-private theorem prime_of_support (h : Ideal (𝓞 F)) {p : Ideal (𝓞 F)}
+theorem prime_of_support (h : Ideal (𝓞 F)) {p : Ideal (𝓞 F)}
     (hp : p ∈ idealPrimeSupport h) : Prime p :=
   prime_of_normalized_factor p (Multiset.mem_toFinset.mp hp)
 
@@ -54,8 +54,7 @@ theorem mem_activeSquarefreeDivisors_iff (h : Ideal (𝓞 F)) (hh : h ≠ ⊥)
       rw [hrad]
       have H : normalizedFactors s.val.prod = s.val :=
         normalizedFactors_prod_of_prime (by simpa using hp')
-      simpa only [Finset.prod_eq_multiset_prod, Multiset.map_id', H] using
-        (Finset.val_le_iff.mpr hs')
+      simp_all
   · rintro ⟨hf, hsf, hdiv⟩
     have hle := (dvd_iff_normalizedFactors_le_normalizedFactors hf hr).mp hdiv
     have hsub : idealPrimeSupport f ⊆ idealPrimeSupport h := by
@@ -94,7 +93,7 @@ theorem activeEulerSum_eq_prod (h : Ideal (𝓞 F)) (hh : h ≠ ⊥) (σ : ℝ) 
   · intro s hs t ht hst
     have Hs := support_prod s (fun p hp => prime_of_support h (Finset.mem_powerset.mp hs hp))
     have Ht := support_prod t (fun p hp => prime_of_support h (Finset.mem_powerset.mp ht hp))
-    exact Hs.symm.trans ((congrArg idealPrimeSupport hst).trans Ht)
+    simp_all
 
 theorem activeEulerFactor_nonneg (f : Ideal (𝓞 F)) (hf : f ≠ ⊥)
     (σ : ℝ) (hσ : 0 ≤ σ) :
@@ -197,10 +196,7 @@ theorem active_subpower (b : ℝ) (hb : 0 < b) :
             (support_norm_prod_le h hh) hb.le)
         · exact Real.rpow_nonneg (Finset.prod_nonneg
             (fun p hps => le_trans zero_le_one (hn p hps))) _
-        · exact pow_nonneg (le_trans zero_le_one hC) _
+        positivity
   refine ⟨hprod, ?_⟩
   intro t ht
   exact (activeEulerSum_subset_le h hh σ hσ t ht).trans hprod
-
-end
-end DedekindZetaZeroFree

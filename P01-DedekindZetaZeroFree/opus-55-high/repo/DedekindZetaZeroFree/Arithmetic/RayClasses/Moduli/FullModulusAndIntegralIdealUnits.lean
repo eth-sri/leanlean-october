@@ -33,12 +33,6 @@ def fullModulus (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) :
     (fullModulus m hm).infinitePart = Finset.univ := by
   rw [fullModulus]
 
-@[simp] theorem mem_fullModulus_infinitePart (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
-    (v : ClassFieldTheory.RayClassRealPlace F) :
-    v ∈ (fullModulus m hm).infinitePart := by
-  rw [fullModulus_infinitePart]
-  exact Finset.mem_univ v
-
 def integralIdealUnit (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) :
     ClassFieldTheory.NumberFieldFractionalIdealGroup F :=
   Units.mk0 (I : FractionalIdeal (nonZeroDivisors (𝓞 F)) F)
@@ -53,7 +47,3 @@ def integralIdealUnit (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) :
     integralIdealUnit (I * J) hIJ = integralIdealUnit I hI * integralIdealUnit J hJ := by
   ext
   simp only [integralIdealUnit, Units.val_mk0, Units.val_mul, FractionalIdeal.coeIdeal_mul]
-
-end DedekindZetaZeroFree.LargeSieve.RayBridge
-
-end

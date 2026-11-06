@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.Metaplectic.Intertwining.ReverseFiniteMinor.L
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.ActualReverseMinorConductorOffSupport
 open scoped NumberField Classical Topology
 open NumberField IsDedekindDomain MeasureTheory ValuativeRel Set Filter
@@ -20,7 +19,6 @@ open _root_.DedekindZetaZeroFree.ActualReverseMinorTestIntegral renaming actual_
 open _root_.DedekindZetaZeroFree.ActualReverseMinorTestIntegral renaming actual_test_family_chamber → actual_test_family_chamber
 open _root_.DedekindZetaZeroFree.KPTameConductorOneBruhat.StandardIntegral renaming offlabel_standard_zero → offlabel_standard_zero
 
-set_option autoImplicit false
 set_option maxHeartbeats 1000000
 set_option backward.isDefEq.respectTransparency false
 
@@ -31,7 +29,7 @@ variable (F : Type) [Field F] [NumberField F]
   (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
   (hμ : μ ((valuation (LocalField F q)).integer : Set (LocalField F q)) = 1)
 
-private theorem actual_conductor_coordinate_zero_of_affineLabel_ne_zero
+theorem actual_conductor_coordinate_zero_of_affineLabel_ne_zero
     (π : (LocalField F q)ˣ)
     (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
       (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ))
@@ -103,7 +101,3 @@ theorem eventual_actual_conductor_shell_off_support
   intro x hx
   rw [actual_conductor_coordinate_zero_of_affineLabel_ne_zero F ζ hζ q S P hP μ hμ
     π hπ i ((j.val : ℤ), 0) hl m (by omega) f hf x hx, zero_mul]
-
-end DedekindZetaZeroFree.ActualReverseMinorConductorOffSupport
-
-end

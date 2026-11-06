@@ -16,17 +16,17 @@ variable (K : Type*) [Field K] [NumberField K]
 def angularBox : Set (Angular K) :=
   Set.univ.pi (fun _ ↦ Set.Icc (0 : ℝ) 1)
 
-private theorem compact_angularBox : IsCompact (angularBox K) :=
+theorem compact_angularBox : IsCompact (angularBox K) :=
   isCompact_univ_pi (fun _ ↦ isCompact_Icc)
 
-private theorem cube_subset_box : angularCube K ⊆ angularBox K := by
+theorem cube_subset_box : angularCube K ⊆ angularBox K := by
   intro u hu i hi
   exact ⟨(hu i hi).1, (hu i hi).2.le⟩
 
-private theorem measurable_cube : MeasurableSet (angularCube K) :=
+theorem measurable_cube : MeasurableSet (angularCube K) :=
   MeasurableSet.univ_pi (fun _ ↦ measurableSet_Ico)
 
-private theorem volume_cube : volume (angularCube K) = 1 := by
+theorem volume_cube : volume (angularCube K) = 1 := by
   simp [angularCube, Real.volume_pi_Ico]
 
 private theorem continuous_slice (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ)
@@ -39,19 +39,19 @@ private theorem continuous_slice (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ)
 
 theorem integrableOn_mixedRadialTheta
     (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ) (t : ℝ) (ht : 0 < t) :
-    IntegrableOn (fun u ↦ mixedRadialTheta K I t u) (angularCube K) := by
-  exact ((continuous_slice K I t ht).continuousOn.integrableOn_compact
+    IntegrableOn (fun u ↦ mixedRadialTheta K I t u) (angularCube K) := 
+  ((continuous_slice K I t ht).continuousOn.integrableOn_compact
     (compact_angularBox K)).mono_set (cube_subset_box K)
 
 theorem integrableOn_mixedRadialTheta_neg
     (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ) (t : ℝ) (ht : 0 < t) :
-    IntegrableOn (fun u ↦ mixedRadialTheta K I t (-u)) (angularCube K) := by
-  exact (((continuous_slice K I t ht).comp continuous_neg).continuousOn.integrableOn_compact
+    IntegrableOn (fun u ↦ mixedRadialTheta K I t (-u)) (angularCube K) := 
+  (((continuous_slice K I t ht).comp continuous_neg).continuousOn.integrableOn_compact
     (compact_angularBox K)).mono_set (cube_subset_box K)
 
 theorem integral_one_angularCube :
     (∫ _u in angularCube K, (1 : ℂ)) = 1 := by
-  simp [setIntegral_const, volume_cube K, Measure.real]
+  simp [volume_cube K, Measure.real]
 
 theorem mixedAngularAverage_sub_one
     (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ) (t : ℝ) (ht : 0 < t) :
@@ -69,7 +69,7 @@ theorem mixedNegAngularAverage_sub_one
     (integrableOn_const (by simp [volume_cube K])), integral_one_angularCube]
   rfl
 
-private theorem continuousOn_average
+theorem continuousOn_average
     (f : ℝ × Angular K → ℂ)
     (hf : ContinuousOn f (Set.Ioi (0 : ℝ) ×ˢ Set.univ)) :
     ContinuousOn (fun t ↦ ∫ u in angularCube K, f (t, u)) (Set.Ioi (0 : ℝ)) := by
@@ -105,8 +105,8 @@ private theorem continuousOn_average
 
 theorem locallyIntegrableOn_mixedAngularAverage
     (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ) :
-    LocallyIntegrableOn (mixedAngularAverage K I) (Set.Ioi (0 : ℝ)) := by
-  exact (continuousOn_average K _ (continuousOn_mixedRadialTheta K I)).locallyIntegrableOn
+    LocallyIntegrableOn (mixedAngularAverage K I) (Set.Ioi (0 : ℝ)) := 
+  (continuousOn_average K _ (continuousOn_mixedRadialTheta K I)).locallyIntegrableOn
     measurableSet_Ioi
 
 theorem locallyIntegrableOn_mixedNegAngularAverage
@@ -120,7 +120,7 @@ theorem locallyIntegrableOn_mixedNegAngularAverage
       (continuous_fst.prodMk continuous_snd.neg).continuousOn (fun p hp ↦ ⟨hp.1, trivial⟩)
   exact (continuousOn_average K _ hf).locallyIntegrableOn measurableSet_Ioi
 
-private theorem exp_rpow_isBigO (b p r : ℝ) (hb : 0 < b) (hp : 0 < p) :
+theorem exp_rpow_isBigO (b p r : ℝ) (hb : 0 < b) (hp : 0 < p) :
     Asymptotics.IsBigO Filter.atTop (fun t : ℝ ↦ Real.exp (-b * t ^ p))
       (fun t : ℝ ↦ t ^ r) := by
   have h := ((isLittleO_exp_neg_mul_rpow_atTop hb (r / p)).comp_tendsto
@@ -130,7 +130,7 @@ private theorem exp_rpow_isBigO (b p r : ℝ) (hb : 0 < b) (hp : 0 < p) :
   change (t ^ p) ^ (r / p) = t ^ r
   rw [← Real.rpow_mul ht, mul_div_cancel₀ r hp.ne']
 
-private theorem integral_centered_isBigO
+theorem integral_centered_isBigO
     (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ) (q : Angular K → Angular K)
     (hq : Continuous q) (r : ℝ) :
     Asymptotics.IsBigO Filter.atTop
@@ -168,7 +168,3 @@ theorem mixedNegAngularAverage_isBigO_rpow
     _ (Filter.Eventually.of_forall (fun _ ↦ rfl))
   filter_upwards [Filter.eventually_gt_atTop (0 : ℝ)] with t ht
   exact (mixedNegAngularAverage_sub_one K I t ht).symm
-
-end DedekindZetaZeroFree.AbelianQuotient.Theta
-
-end

@@ -39,11 +39,9 @@ private theorem meanHeight_upper_frame
     intro i
     let ρ := (KPCusp.complexPlace F i).embedding
     apply KPCuspLogShape.upper_action_snd
-    · change ρ (A 1 0) = 0
-      simp [hA]
+    · simp_all
     · exact (map_ne_zero ρ).mpr (div_ne_zero h00 h11)
-    · change ρ (A 0 0) = ρ (A 0 0 / A 1 1) * ρ (A 1 1)
-      rw [← map_mul, div_mul_cancel₀ _ h11]
+    simp_all
   simp only [KPCuspLogShape.meanHeight, hs, Finset.sum_add_distrib, add_div]
 
 private theorem highCusp_frame_equivariant
@@ -78,8 +76,7 @@ private theorem highCusp_upper_frame
   · rintro ⟨w, hw, rfl⟩
     refine ⟨u • w, ?_, ?_⟩
     · change T + c < KPCuspLogShape.meanHeight _ (u • w)
-      rw [hh]
-      simpa only [add_comm] using add_lt_add_right hw c
+      simp_all
     · exact (mul_smul σ u w).symm
   · rintro ⟨w, hw, rfl⟩
     refine ⟨u⁻¹ • w, ?_, ?_⟩
@@ -124,7 +121,7 @@ private theorem projected_highCusp_equivalent_frame_shift
     rw [mul_smul, mul_smul, ← h]
     change σ⁻¹ • (γ.val⁻¹ • (γ.val • (σ • KPCuspArithmetic.infinity F))) =
       KPCuspArithmetic.infinity F
-    rw [inv_smul_smul, inv_smul_smul]
+    simp
   obtain ⟨A, hA⟩ := Matrix.ProjGenLinGroup.mk_surjective u
   have hupper : A 1 0 = 0 := by
     rw [← hA] at hu
@@ -199,7 +196,7 @@ namespace DedekindZetaZeroFree.KPFiniteCuspAtlasReduction
     exact MulAction.orbitRel_apply.mpr
       (MulAction.mem_orbit_iff.mpr ⟨⟨s.val, h s.property⟩, hs⟩))
 
-private theorem isOpenEmbedding_subsetOrbitMap {G X : Type*} [Group G] [TopologicalSpace X]
+theorem isOpenEmbedding_subsetOrbitMap {G X : Type*} [Group G] [TopologicalSpace X]
     [MulAction G X] [ContinuousConstSMul G X]
     (S Γ : Subgroup G) (h : S ≤ Γ) (U : Set X) (hU : IsOpen U)
     (hintersection : ∀ (γ : Γ) (x : X), x ∈ U → γ • x ∈ U → (γ : G) ∈ S) :
@@ -429,11 +426,9 @@ theorem meanHeight_upper_frame
     intro i
     let ρ := (KPCusp.complexPlace F i).embedding
     apply KPCuspLogShape.upper_action_snd
-    · change ρ (A 1 0) = 0
-      simp [hA]
+    · simp_all
     · exact (map_ne_zero ρ).mpr (div_ne_zero h00 h11)
-    · change ρ (A 0 0) = ρ (A 0 0 / A 1 1) * ρ (A 1 1)
-      rw [← map_mul, div_mul_cancel₀ _ h11]
+    simp_all
   simp only [KPCuspLogShape.meanHeight, hs, Finset.sum_add_distrib, add_div]
 
 theorem highCusp_upper_frame
@@ -457,8 +452,7 @@ theorem highCusp_upper_frame
   · rintro ⟨w, hw, rfl⟩
     refine ⟨u • w, ?_, ?_⟩
     · change T + c < KPCuspLogShape.meanHeight _ (u • w)
-      rw [hh]
-      simpa only [add_comm] using add_lt_add_right hw c
+      simp_all
     · exact (mul_smul σ u w).symm
   · rintro ⟨w, hw, rfl⟩
     refine ⟨u⁻¹ • w, ?_, ?_⟩
@@ -486,9 +480,7 @@ theorem highCusp_same_cusp_shift
     obtain ⟨a, ha⟩ := hf
     have hh := congrFun ha 1
     have he : (a • ![1, 0]) 1 = (0 : F) := by simp
-    rw [he] at hh
-    change 0 = (Matrix.mulVec (A : Matrix (Fin 2) (Fin 2) F) ![1, 0]) 1 at hh
-    simpa [Matrix.mulVec, dotProduct, Fin.sum_univ_two] using hh.symm
+    simp_all
   refine ⟨(∑ i : Fin (KPCuspLogShape.dimension F),
     Real.log ‖(KPCusp.complexPlace F i).embedding (A 0 0 / A 1 1)‖) /
       KPCuspLogShape.dimension F, fun T => ?_⟩
@@ -514,7 +506,7 @@ theorem finite_same_cusp_common_height
       KPCuspSiegel.highCusp F (σ a) (T + C) ⊆ KPCuspSiegel.highCusp F (τ a) T := by
   choose c hc using fun a => highCusp_same_cusp_shift F (σ a) (τ a) (h a)
   let C : ℝ := ∑ a, |c a|
-  have hC : 0 ≤ C := Finset.sum_nonneg (fun a _ => abs_nonneg (c a))
+  have hC : 0 ≤ C := by positivity
   have hCa (a : ι) : |c a| ≤ C :=
     Finset.single_le_sum (fun b _ => abs_nonneg (c b)) (Finset.mem_univ a)
   refine ⟨C, hC, fun a T => ?_⟩
@@ -605,7 +597,7 @@ theorem finite_adelic_inequivalent_cusp_representatives
     have hr : Quotient.mk (MulAction.orbitRel Γ (KPCuspArithmetic.Cusp F))
         (q (e c)) = Quotient.mk _ r := by
       change Quotient.mk _ (e.symm (e c)).out = c
-      rw [e.symm_apply_apply, Quotient.out_eq]
+      simp
     obtain ⟨δ, hδ⟩ := MulAction.mem_orbit_iff.mp
       (MulAction.orbitRel_apply.mp (Quotient.exact hr.symm))
     exact ⟨e c, δ, hδ⟩
@@ -711,18 +703,6 @@ open scoped Classical
 variable {G X : Type*} [Group G] [TopologicalSpace X] [MulAction G X]
   [ContinuousConstSMul G X]
 
-def orbitCoarsening (Δ Γ : Subgroup G) (h : Δ ≤ Γ) :
-    Quotient (MulAction.orbitRel Δ X) → Quotient (MulAction.orbitRel Γ X) :=
-  Quotient.lift (Quotient.mk _) (by
-    intro x y hxy
-    apply Quotient.sound
-    obtain ⟨δ, hδ⟩ := MulAction.mem_orbit_iff.mp (MulAction.orbitRel_apply.mp hxy)
-    exact MulAction.orbitRel_apply.mpr
-      (MulAction.mem_orbit_iff.mpr ⟨⟨δ.val, h δ.property⟩, hδ⟩))
-
-@[simp] theorem orbitCoarsening_mk (Δ Γ : Subgroup G) (h : Δ ≤ Γ) (x : X) :
-    orbitCoarsening (X := X) Δ Γ h (Quotient.mk _ x) = Quotient.mk _ x := rfl
-
 def subsetOrbitMap (S Γ : Subgroup G) (h : S ≤ Γ) (U : Set X) :
     Quotient (Setoid.comap (Subtype.val : U → X) (MulAction.orbitRel S X)) →
       Quotient (MulAction.orbitRel Γ X) :=
@@ -735,11 +715,3 @@ def subsetOrbitMap (S Γ : Subgroup G) (h : S ≤ Γ) (U : Set X) :
 
 @[simp] theorem subsetOrbitMap_mk (S Γ : Subgroup G) (h : S ≤ Γ) (U : Set X) (x : U) :
     subsetOrbitMap S Γ h U (Quotient.mk _ x) = Quotient.mk _ x.val := rfl
-
-end ReductionTransfer
-
-end DedekindZetaZeroFree.KPFiniteAdelicCuspEnds
-
-end
-
-end

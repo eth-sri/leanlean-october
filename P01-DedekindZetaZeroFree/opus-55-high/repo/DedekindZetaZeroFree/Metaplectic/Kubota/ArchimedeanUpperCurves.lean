@@ -36,12 +36,11 @@ theorem upperCoordinates_smooth (w : InfinitePlace F) (b : Bool) :
     ContDiff ℝ (⊤ : ℕ∞) (upperCoordinates w b) := by
   apply contDiff_pi.mpr; intro v
   apply contDiff_pi.mpr; intro i
-  fin_cases i <;> simp only [upperCoordinates, Matrix.cons_val_zero, Matrix.cons_val_one,
-    Matrix.cons_val_two]
+  fin_cases i <;> simp only [upperCoordinates]
   · change ContDiff ℝ (⊤ : ℕ∞) (fun t : ℝ => if v = w then (t : ℂ) * direction b else 0)
     split_ifs
     · exact Complex.ofRealCLM.contDiff.mul contDiff_const
-    · exact contDiff_const
+    fun_prop
   · exact contDiff_const
   · exact contDiff_const
 
@@ -123,10 +122,5 @@ theorem upperCurve_hasDerivAt (w : InfinitePlace F) (b : Bool) (f : Functions R)
   convert h using 1
   · funext s
     simp only [Function.comp_def, mul_assoc, ← upperCurve_add]
-    congr 2
-    ring
+    simp
   · simp
-
-end DedekindZetaZeroFree.RootDerivatives
-
-end

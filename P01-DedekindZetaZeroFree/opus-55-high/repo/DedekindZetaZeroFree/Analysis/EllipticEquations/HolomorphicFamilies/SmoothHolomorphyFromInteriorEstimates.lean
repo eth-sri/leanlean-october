@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.Analysis.HolomorphicFunctions.SmoothFamilies.
 
 @[expose] public section
 
-noncomputable section
 
 namespace DedekindZetaZeroFree.KPContLocalHolomorphyUpgrade.CauchyAssembly
 
@@ -48,7 +47,3 @@ theorem holomorphy_of_jet_continuity {n : ℕ} (B : LocalBall n)
   intro z₀ ρ hρ hclosed
   obtain ⟨coeff, _, hc⟩ := hseries z₀ ρ hρ hclosed
   exact ⟨coeff, hc⟩
-
-end DedekindZetaZeroFree.KPContLocalHolomorphyUpgrade.CauchyAssembly
-
-end

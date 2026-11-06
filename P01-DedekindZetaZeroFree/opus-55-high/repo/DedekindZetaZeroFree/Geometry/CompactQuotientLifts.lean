@@ -42,12 +42,10 @@ theorem exists_compact_subgroup_left_translates
   obtain ⟨K, hKc, hK⟩ := exists_compact_leftOrbit_lifts L
   refine ⟨K, hKc, fun g => ?_⟩
   have hmem : Quotient.mk (MulAction.orbitRel L G) g ∈
-      Quotient.mk (MulAction.orbitRel L G) '' K := by rw [hK]; exact Set.mem_univ _
+      Quotient.mk (MulAction.orbitRel L G) '' K := by simp_all
   obtain ⟨k, hkK, hkq⟩ := hmem
   have hrel : MulAction.orbitRel L G k g := Quotient.exact hkq
   rw [MulAction.orbitRel_apply, MulAction.mem_orbit_iff] at hrel
   obtain ⟨l, hl⟩ := hrel
-  have : (l : G) * g = k := (show (l : G) * g = l • g from rfl).trans hl
+  have : (l : G) * g = k := by omega
   exact ⟨l, this ▸ hkK⟩
-
-end DedekindZetaZeroFree

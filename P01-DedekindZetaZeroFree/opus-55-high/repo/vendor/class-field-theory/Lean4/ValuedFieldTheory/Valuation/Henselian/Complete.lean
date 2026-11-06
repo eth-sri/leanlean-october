@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Complete nonarchimedean absolute values are Henselian
 
@@ -26,7 +22,6 @@ nonarchimedean absolute value.  This file records the direct the primitive facto
 consequence used in the henselianity criterion.
 -/
 
-noncomputable section
 
 namespace AlgebraicNumberTheory
 namespace Valuations
@@ -51,14 +46,10 @@ theorem henselFactorization_of_complete
   have hhbar : hbar ≠ 0 := right_ne_zero_of_mul hproduct
   have hG : G ≠ 0 := by
     intro hzero
-    subst G
-    simp at hGresidue
-    exact hgbar hGresidue.symm
+    simp_all
   have hH : H ≠ 0 := by
     intro hzero
-    subst H
-    simp at hHresidue
-    exact hhbar hHresidue.symm
+    simp_all
   have hdegree :
       H.natDegree = f.natDegree - gbar.natDegree := by
     rw [hGH, Polynomial.natDegree_mul hG hH, hGdegree,
@@ -77,8 +68,3 @@ theorem henselianValuation_of_complete
         v hnonarch).valuation := by
   rw [henselianValuation_iff_henselFactorization v hnonarch]
   exact henselFactorization_of_complete v hcomplete hnonarch
-
-end Valuations
-end AlgebraicNumberTheory
-
-end

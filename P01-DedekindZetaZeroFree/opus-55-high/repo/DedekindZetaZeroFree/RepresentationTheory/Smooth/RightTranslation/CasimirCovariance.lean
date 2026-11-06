@@ -29,13 +29,13 @@ local notation "G" => KPGlobalTorusFunctionData.G F ζ hζ
  def rightProduct (k : NumberField.InfinitePlace F → KPCplxCharacterHaar.ComplexGL2)
     (m : MP) : MP := fun v => m v * (k v).val
 
-private theorem rightProduct_mem (k : NumberField.InfinitePlace F → KPCplxCharacterHaar.ComplexGL2)
+theorem rightProduct_mem (k : NumberField.InfinitePlace F → KPCplxCharacterHaar.ComplexGL2)
     (m : MP) (hm : m ∈ O) : rightProduct k m ∈ O := by
   intro v
   simp only [rightProduct, Matrix.det_mul]
   exact mul_ne_zero (hm v) (Matrix.GeneralLinearGroup.det_ne_zero (k v))
 
-private theorem rightProduct_smooth (k : NumberField.InfinitePlace F → KPCplxCharacterHaar.ComplexGL2) :
+theorem rightProduct_smooth (k : NumberField.InfinitePlace F → KPCplxCharacterHaar.ComplexGL2) :
     ContDiff ℝ (⊤ : ℕ∞) (rightProduct k) := by
   apply contDiff_pi.mpr; intro v
   apply contDiff_pi.mpr; intro i
@@ -43,7 +43,7 @@ private theorem rightProduct_smooth (k : NumberField.InfinitePlace F → KPCplxC
   simp only [rightProduct, Matrix.mul_apply]
   fun_prop
 
-private theorem product_translate (f : MP → ℂ) (hf : ContDiffOn ℝ (⊤ : ℕ∞) f O)
+theorem product_translate (f : MP → ℂ) (hf : ContDiffOn ℝ (⊤ : ℕ∞) f O)
     (k : NumberField.InfinitePlace F → KPCplxCharacterHaar.ComplexGL2)
     (m : MP) (hm : m ∈ O) :
     productCasimir (fun a => f (rightProduct k a)) m = productCasimir f (rightProduct k m) := by
@@ -71,7 +71,7 @@ private theorem product_translate (f : MP → ℂ) (hf : ContDiffOn ℝ (⊤ : �
     (slice_smooth v (rightProduct k m) hm' f hf)
     (Matrix.GeneralLinearGroup.mkOfDetNeZero (m v) (hm v)) (k v) (hm' v)
 
-private theorem product_congr {f h : MP → ℂ} (he : Set.EqOn f h O)
+theorem product_congr {f h : MP → ℂ} (he : Set.EqOn f h O)
     (m : MP) (hm : m ∈ O) : productCasimir f m = productCasimir h m := by
   unfold productCasimir slotCasimir
   apply Finset.sum_congr rfl

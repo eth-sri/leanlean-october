@@ -6,7 +6,6 @@ public import Mathlib.Tactic
 
 @[expose] public section
 
-noncomputable section
 open MeasureTheory
 open scoped ENNReal
 namespace DedekindZetaZeroFree.KPGroupChartFullTubeHaarL2
@@ -30,7 +29,7 @@ theorem exists_full_tube_l2_transfer_constant_ae {E V X : Type*}
   intro f hf g hinv
   have hfm := hf.of_measure_le_smul ha hdom
   have hfp := (hfm.comp_of_map htube).ae_eq hinv
-  have hν' : ν ≠ 0 := by intro h; exact hν (by simp [h])
+  have hν' : ν ≠ 0 := by intro h; simp_all
   have hga := hfp.aestronglyMeasurable.of_comp_fst hν'
   have hgm : MemLp g 2 (w • μ) := by
     rw [← Measure.map_fst_prod]
@@ -68,7 +67,3 @@ theorem exists_full_tube_l2_transfer_constant_ae {E V X : Type*}
   calc
     lpNorm g 2 μ ≤ b.toReal * lpNorm f 2 m := by simpa only [lpNorm, ENNReal.toReal_mul] using ht
     _ ≤ (b.toReal + 1) * lpNorm f 2 m := mul_le_mul_of_nonneg_right (by linarith) lpNorm_nonneg
-
-end DedekindZetaZeroFree.KPGroupChartFullTubeHaarL2
-
-end

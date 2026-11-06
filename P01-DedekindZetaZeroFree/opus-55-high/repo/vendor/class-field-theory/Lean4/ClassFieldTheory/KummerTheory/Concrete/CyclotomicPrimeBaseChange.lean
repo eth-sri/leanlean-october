@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Prime cyclotomic base change
 
@@ -105,19 +101,19 @@ degrees. -/
 abbrev PrimeCyclotomicPushout (p : ℕ) :=
   PrimeCyclotomicBase K p ⊗[K] L
 
-noncomputable instance primeCyclotomicBaseFiniteDimensional
+instance primeCyclotomicBaseFiniteDimensional
     (p : ℕ) [NeZero p] :
     FiniteDimensional K (PrimeCyclotomicBase K p) :=
   IsCyclotomicExtension.finiteDimensional
     {p} K (PrimeCyclotomicBase K p)
 
-noncomputable instance primeCyclotomicBaseIsGalois
+instance primeCyclotomicBaseIsGalois
     (p : ℕ) [NeZero p] :
     IsGalois K (PrimeCyclotomicBase K p) :=
   IsCyclotomicExtension.isGalois
     {p} K (PrimeCyclotomicBase K p)
 
-noncomputable instance primeCyclotomicBaseNumberField
+instance primeCyclotomicBaseNumberField
     (p : ℕ) [NeZero p] :
     NumberField (PrimeCyclotomicBase K p) :=
   NumberField.of_module_finite K
@@ -155,7 +151,7 @@ theorem primeCyclotomicBase_finrank_coprime
 /-- The field structure on the prime cyclotomic pushout, obtained
 from coprime degrees. -/
 @[reducible]
-noncomputable def primeCyclotomicPushoutField
+def primeCyclotomicPushoutField
     (p : ℕ) (hp : p.Prime)
     (hdegree : Module.finrank K L = p) :
     Field (PrimeCyclotomicPushout K L p) :=
@@ -167,7 +163,7 @@ noncomputable def primeCyclotomicPushoutField
 /-- The canonical left-factor algebra structure, restated after
 installing the field structure on the tensor product. -/
 @[reducible]
-noncomputable def primeCyclotomicPushoutAlgebra
+def primeCyclotomicPushoutAlgebra
     (p : ℕ) (hp : p.Prime)
     (hdegree : Module.finrank K L = p) :
     letI : NeZero p := ⟨hp.ne_zero⟩
@@ -196,14 +192,7 @@ theorem primeCyclotomicPushout_finrank
         (PrimeCyclotomicBase K p)
         (PrimeCyclotomicPushout K L p) =
       p := by
-  let : NeZero p := ⟨hp.ne_zero⟩
-  let : Field (PrimeCyclotomicPushout K L p) :=
-    primeCyclotomicPushoutField K L p hp hdegree
-  let : Algebra
-      (PrimeCyclotomicBase K p)
-      (PrimeCyclotomicPushout K L p) :=
-    primeCyclotomicPushoutAlgebra K L p hp hdegree
-  rw [Module.finrank_baseChange, hdegree]
+  simp_all
 
 /-- The prime cyclotomic pushout is Galois over `K(μ_p)`. -/
 theorem primeCyclotomicPushout_isGalois
@@ -309,7 +298,7 @@ theorem primeCyclotomicPushout_isCyclic
 
 /-- Prime-degree Kummer coordinates for the base-changed Galois group,
 in the exact one-coordinate form used by the prime-degree Kummer coordinate construction. -/
-noncomputable def primeCyclotomicPushoutGalEquivPiZMod
+def primeCyclotomicPushoutGalEquivPiZMod
     (p : ℕ) (hp : p.Prime)
     (hdegree : Module.finrank K L = p) :
     letI : NeZero p := ⟨hp.ne_zero⟩
@@ -357,7 +346,3 @@ noncomputable def primeCyclotomicPushoutGalEquivPiZMod
       (inferInstance : IsCyclic G)).symm).trans
       (MulEquiv.piUnique
         (fun _ : Fin 1 => Multiplicative (ZMod p))).symm
-
-end KummerTheory
-
-end

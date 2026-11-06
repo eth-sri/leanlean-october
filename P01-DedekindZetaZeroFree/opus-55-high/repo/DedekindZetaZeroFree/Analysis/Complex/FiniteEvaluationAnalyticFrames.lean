@@ -12,7 +12,7 @@ namespace DedekindZetaZeroFree.SheetRescaling
 open Filter
 open _root_.DedekindZetaZeroFree.KPLiteralScalarArchIndependentSlices renaming finite_interpolation → finite_interpolation
 
-private theorem frame_det_analytic {ι : Type*} [Fintype ι] [DecidableEq ι]
+theorem frame_det_analytic {ι : Type*} [Fintype ι] [DecidableEq ι]
     (A : ℂ → Matrix ι ι ℂ) {Ω : Set ℂ}
     (hA : ∀ i j, AnalyticOnNhd ℂ (fun s => A s i j) Ω) :
     AnalyticOnNhd ℂ (fun s => (A s).det) Ω := by
@@ -25,7 +25,7 @@ private theorem frame_det_analytic {ι : Type*} [Fintype ι] [DecidableEq ι]
   intro i _
   exact hA (σ i) i s hs
 
-private theorem frame_inv_analytic {ι : Type*} [Fintype ι] [DecidableEq ι]
+theorem frame_inv_analytic {ι : Type*} [Fintype ι] [DecidableEq ι]
     (A : ℂ → Matrix ι ι ℂ) (hA : ∀ i j, AnalyticAt ℂ (fun s => A s i j) 0)
     (hzero : A 0 = 1) : ∀ i j, AnalyticAt ℂ (fun s => (A s)⁻¹ i j) 0 := by
   have hd : AnalyticAt ℂ (fun s => (A s).det) 0 := by
@@ -53,7 +53,7 @@ private theorem frame_inv_analytic {ι : Type*} [Fintype ι] [DecidableEq ι]
   · simp only [Matrix.updateRow_ne hk]
     exact hA (σ k) k
 
-private theorem frame_inv_meromorphic {ι : Type*} [Fintype ι] [DecidableEq ι]
+theorem frame_inv_meromorphic {ι : Type*} [Fintype ι] [DecidableEq ι]
     (A : ℂ → Matrix ι ι ℂ) {Ω : Set ℂ}
     (hA : ∀ i j, AnalyticOnNhd ℂ (fun s => A s i j) Ω) :
     ∀ i j, MeromorphicOn (fun s => (A s)⁻¹ i j) Ω := by

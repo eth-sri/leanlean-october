@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Unramified local unit Kummer generators
 
@@ -30,7 +25,6 @@ reused by local reciprocity arguments.
 open scoped ValuativeRel
 open LocalFieldTheory
 
-noncomputable section
 
 namespace KummerTheory
 
@@ -124,8 +118,7 @@ theorem isUnramifiedValuedExtension_of_unit_kummer_generator
               ((n : ℕ) - 1))) := by
       simpa only [map_pow, Polynomial.aeval_X] using
         hzUnit.pow ((n : ℕ) - 1)
-    rw [hderivative, map_mul]
-    exact hCUnit.mul hXUnit
+    simp_all
   have hzgen :
       Algebra.adjoin C {(algebraMap target.valuationSubring F) z} = ⊤ := by
     change Algebra.adjoin C {beta} = ⊤
@@ -144,7 +137,3 @@ theorem isUnramifiedValuedExtension_of_unit_kummer_generator
   let : Algebra.IsUnramifiedAt
       base.valuationSubring target.maximalIdeal := hunramifiedAt
   exact Ideal.ramificationIdx_eq_one_of_isUnramifiedAt
-
-end KummerTheory
-
-end

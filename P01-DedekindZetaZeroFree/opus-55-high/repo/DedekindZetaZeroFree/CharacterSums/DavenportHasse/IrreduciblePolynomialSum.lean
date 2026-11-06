@@ -8,14 +8,14 @@ namespace DavenportHasse
 
 variable {k : Type*} [Field k] [Fintype k]
 
-private lemma b_one (χ : MulChar k ℂ) (ψ : AddChar k ℂ) : b χ ψ 1 = gaussSum χ ψ := by
+lemma b_one (χ : MulChar k ℂ) (ψ : AddChar k ℂ) : b χ ψ 1 = gaussSum χ ψ := by
   have h := PolyPart.convolution χ ψ 1
   rw [Finset.Icc_self, Finset.sum_singleton] at h
   rw [PolyPart.a_one, PolyPart.a_zero] at h
   simp at h
   exact h.symm
 
-private lemma b_step (χ : MulChar k ℂ) (ψ : AddChar k ℂ) (hψ : ∃ x : k, ψ x ≠ 1)
+lemma b_step (χ : MulChar k ℂ) (ψ : AddChar k ℂ) (hψ : ∃ x : k, ψ x ≠ 1)
     {n : ℕ} (hn : 2 ≤ n) : b χ ψ n = -gaussSum χ ψ * b χ ψ (n - 1) := by
   have hsum : (∑ m ∈ Finset.Icc 1 n, b χ ψ m * a χ ψ (n - m))
       = b χ ψ (n - 1) * a χ ψ 1 + b χ ψ n * a χ ψ 0 := by
@@ -54,5 +54,3 @@ theorem b_eq (χ : MulChar k ℂ) (ψ : AddChar k ℂ) (hψ : ∃ x : k, ψ x �
         rw [hstep, show k + 1 - 1 = k by omega, ih (by omega), pow_succ]
         ring
   exact hmain m hm
-
-end DavenportHasse

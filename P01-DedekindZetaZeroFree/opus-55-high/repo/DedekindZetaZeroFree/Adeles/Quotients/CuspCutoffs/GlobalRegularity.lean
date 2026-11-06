@@ -27,8 +27,8 @@ open _root_.DedekindZetaZeroFree.KPMsGreenFlux.ActualSharpStokes.CutoffApproxima
 open _root_.DedekindZetaZeroFree.KPMsGreenFlux.ActualSharpStokes.CutoffApproximation renaming cutoff_bound → cutoff_bound
 set_option synthInstance.maxHeartbeats 100000
 set_option maxHeartbeats 1000000
-open scoped Classical NumberField Topology BigOperators NNReal
 open MeasureTheory Filter
+open scoped Classical NumberField Topology BigOperators NNReal
 open _root_.DedekindZetaZeroFree.KPMsGreenFlux.NormalCoefficient renaming bottomRowJet → bottomRowJet
 open _root_.DedekindZetaZeroFree.KPMsGreenFlux.NormalCoefficient renaming normalRadialJet_eq_bottomRowJet → normalRadialJet_eq_bottomRowJet
 namespace DedekindZetaZeroFree.KPMsGreenFlux.ActualSharpStokes.WeakCutoffSources
@@ -36,7 +36,7 @@ variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ
 variable {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
 variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
 
-private theorem global_private_native_bottom_row_jet_bound (c d : ℂ) (r : ℝ) (hr : 0 ≤ r) (i : Fin 6)
+theorem global_private_native_bottom_row_jet_bound (c d : ℂ) (r : ℝ) (hr : 0 ≤ r) (i : Fin 6)
     (h : 0 < Complex.normSq c + Complex.normSq d) :
     |bottomRowJet c d r i| ≤ 4 * r := by
   have hc := Complex.normSq_nonneg c
@@ -58,7 +58,7 @@ private theorem global_private_native_bottom_row_jet_bound (c d : ℂ) (r : ℝ)
     try (apply (div_le_iff₀ h).mpr; nlinarith)
   positivity
 
-private theorem global_private_native_normalRadialJet_abs_le {F : Type} [Field F] [NumberField F]
+theorem global_private_native_normalRadialJet_abs_le {F : Type} [Field F] [NumberField F]
     {ζ : F} {hζ : IsPrimitiveRoot ζ 12} (c g : Cover F ζ hζ)
     (w : NumberField.InfinitePlace F) (i : Fin 6) :
     |NormalCoefficient.normalRadialJet c w i g| ≤
@@ -69,7 +69,7 @@ private theorem global_private_native_normalRadialJet_abs_le {F : Type} [Field F
   · have h := KPArch.actionDenominator_pos
       (KPSmoothLocalQuotientCharts.archProjection F ζ hζ (c⁻¹ * g) w).out (0,0)
     simpa [KPArch.actionDenominator, KPArch.height, Complex.sq_norm, add_comm] using h
-private theorem global_private_native_normalRadial_flow_hasDerivAt {F : Type} [Field F] [NumberField F]
+theorem global_private_native_normalRadial_flow_hasDerivAt {F : Type} [Field F] [NumberField F]
     {ζ : F} {hζ : IsPrimitiveRoot ζ 12} (c g : Cover F ζ hζ)
     (w : NumberField.InfinitePlace F) (i : Fin 6) (t : ℝ) :
     HasDerivAt (fun s => NormalCoefficient.normalRadial c
@@ -93,7 +93,7 @@ private theorem global_private_native_normalRadial_flow_hasDerivAt {F : Type} [F
     (NormalCoefficient.normalRadialJet c w i (g * a t)) (t-t) by simpa using hd).comp_sub_const t t
   simpa only [sub_self, add_sub_cancel, Function.comp_def, a] using hd'
 
-private theorem global_private_native_log_radial_flow_lipschitz {F : Type} [Field F] [NumberField F]
+theorem global_private_native_log_radial_flow_lipschitz {F : Type} [Field F] [NumberField F]
     {ζ : F} {hζ : IsPrimitiveRoot ζ 12} (c g : Cover F ζ hζ)
     (w : NumberField.InfinitePlace F) (i : Fin 6) :
     LipschitzWith 4 (fun t => Real.log (NormalCoefficient.normalRadial c
@@ -111,7 +111,7 @@ private theorem global_private_native_log_radial_flow_lipschitz {F : Type} [Fiel
   apply (div_le_iff₀ (hr t)).mpr
   exact global_private_native_normalRadialJet_abs_le c _ w i
 
-private theorem global_private_clipped_exp_lipschitz (R : ℝ) (hR : 0 < R) :
+theorem global_private_clipped_exp_lipschitz (R : ℝ) (hR : 0 < R) :
     LipschitzWith ⟨R, hR.le⟩ (fun x : ℝ => min R (Real.exp x)) := by
   have hb (x y : ℝ) (hxy : x ≤ y) :
       |min R (Real.exp y) - min R (Real.exp x)| ≤ R * |y-x| := by
@@ -151,7 +151,7 @@ private theorem global_private_clipped_exp_lipschitz (R : ℝ) (hR : 0 < R) :
   · simpa only [abs_sub_comm] using hb x y hxy
   · exact hb y x hyx
 
-private theorem global_private_clipped_taper_exp_lipschitz (Y ε : ℝ) (hε : 0 < ε) (hR : 0 < Y+ε) :
+theorem global_private_clipped_taper_exp_lipschitz (Y ε : ℝ) (hε : 0 < ε) (hR : 0 < Y+ε) :
     LipschitzWith (⟨|ε⁻¹|, abs_nonneg _⟩ * ⟨Y+ε, hR.le⟩)
       (fun t : ℝ => max 0 (min 1 ((Y+ε-Real.exp t)/ε))) := by
   have hc := global_private_clipped_exp_lipschitz (Y+ε) hR
@@ -179,7 +179,7 @@ private theorem global_private_clipped_taper_exp_lipschitz (Y ε : ℝ) (hε : 0
     · rw [min_eq_right (le_of_not_ge h)]
   rwa [heq] at hh
 
-private theorem global_private_native_taper_flow_lipschitz (c g : Cover F ζ hζ)
+theorem global_private_native_taper_flow_lipschitz (c g : Cover F ζ hζ)
     (Y ε : ℝ) (hε : 0 < ε) (hR : 0 < Y+ε)
     (w : NumberField.InfinitePlace F) (i : Fin 6) :
     LipschitzWith ((⟨|ε⁻¹|, abs_nonneg _⟩ * ⟨Y+ε, hR.le⟩) * 4)
@@ -191,7 +191,7 @@ private theorem global_private_native_taper_flow_lipschitz (c g : Cover F ζ hζ
   have hr (a : Cover F ζ hζ) : 0 < NormalCoefficient.normalRadial c a := Real.exp_pos _
   simpa only [Function.comp_def, Real.exp_log (hr _)] using h
 
-private theorem global_cutoff_upper_admissible
+theorem global_cutoff_upper_admissible
     (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U) (Y ε : ℝ)
     (hY : KPMsFixedHaarDisintegration.AdmissibleCutoff A Y) (hε : 0 < ε) :
     KPMsFixedHaarDisintegration.AdmissibleCutoff A (Y + ε) := by
@@ -199,7 +199,7 @@ private theorem global_cutoff_upper_admissible
   unfold KPMsFixedHaarDisintegration.logHeight
   exact div_le_div_of_nonneg_right (Real.log_le_log hY.1 (by linarith)) (by positivity)
 
-private theorem global_cutoff_zero_off_upper_core
+theorem global_cutoff_zero_off_upper_core
     (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
     (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
@@ -230,7 +230,7 @@ variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
 variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
 variable (D : KPMsFixedHaarDisintegration.Disintegration A R P)
 
-private theorem modulus_on_literal_lift (Y : ℝ)
+theorem modulus_on_literal_lift (Y : ℝ)
     (hY : KPMsFixedHaarDisintegration.AdmissibleCutoff A Y)
     (j : Cusps A) (p : KPCuspCharts.Cross F) (r : ℝ) (hr : Y < r) :
     D.modulus (Quotient.mk (KPFiniteCuspAtlas.sphericalRelation F ζ hζ U)
@@ -253,7 +253,7 @@ private theorem modulus_on_literal_lift (Y : ℝ)
   rw [← he]
   exact D.chart_modulus Y hY _ rr
 
-private theorem cusp_product_projection (j : Cusps A)
+theorem cusp_product_projection (j : Cusps A)
     (a : KPSmoothActualFlowData.GInfinity F) (η : rootsOfUnity 3 F)
     (u : U.toOpenSubgroup) :
     P.projection U (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ
@@ -305,7 +305,7 @@ private theorem cusp_product_projection (j : Cusps A)
   rw [← central_comm F ζ hζ η (A.representative j.1)]
   group
 
-private theorem cusp_product_radius (j : Cusps A)
+theorem cusp_product_radius (j : Cusps A)
     (a : KPSmoothActualFlowData.GInfinity F) (η : rootsOfUnity 3 F)
     (u : U.toOpenSubgroup) :
     NormalCoefficient.normalRadial (cuspRepresentative A j)
@@ -326,7 +326,7 @@ private theorem cusp_product_radius (j : Cusps A)
   rw [hi]
   rfl
 
-private theorem cusp_product_cutoff (Y : ℝ)
+theorem cusp_product_cutoff (Y : ℝ)
     (hY : KPMsFixedHaarDisintegration.AdmissibleCutoff A Y)
     (ε : ℝ) (hε : 0 < ε) (j : Cusps A)
     (a : KPSmoothActualFlowData.GInfinity F) (η : rootsOfUnity 3 F)
@@ -393,7 +393,7 @@ private theorem cusp_product_cutoff (Y : ℝ)
   rw [CutoffApproximation.coreCutoff, ite_eq_right hn, hm, he]
 end SwitchingGeometry
 
-private theorem global_cutoff_modulus_continuousOn_ends
+theorem global_cutoff_modulus_continuousOn_ends
     (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
     (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
@@ -407,7 +407,7 @@ private theorem global_cutoff_modulus_continuousOn_ends
     exact D.chart_modulus Y hY p.1 p.2
   rw [he]
   exact (continuous_subtype_val.comp continuous_snd).continuousOn
-private theorem global_cutoff_continuousAt_off_core
+theorem global_cutoff_continuousAt_off_core
     (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
     (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
@@ -432,7 +432,7 @@ private theorem global_cutoff_continuousAt_off_core
       ((continuousAt_const.sub hm).div_const ε))
   exact hχ.congr (Filter.EventuallyEq.symm he)
 
-private theorem global_end_closure_subset_lower
+theorem global_end_closure_subset_lower
     (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U) (j : Cusps A) (B Y : ℝ)
     (hB : KPMsFixedHaarDisintegration.AdmissibleCutoff A B) (hBY : B < Y) :
     closure (endSet A j Y) ⊆ endSet A j B := by
@@ -473,7 +473,7 @@ private theorem global_end_closure_subset_lower
   have hb : t j y < T := hbound y hyV (hm hyY)
   rw [htz] at hb
   exact (not_lt_of_ge hb.le) hz
-private theorem global_core_upper_mem_nhds
+theorem global_core_upper_mem_nhds
     (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
     (Y T : ℝ) (hY : KPMsFixedHaarDisintegration.AdmissibleCutoff A Y) (hYT : Y < T)
@@ -489,7 +489,7 @@ private theorem global_core_upper_mem_nhds
   intro y hy j hj
   apply hy
   exact Set.mem_iUnion.mpr ⟨j, subset_closure hj⟩
-private theorem global_cutoff_modulus_le_on_upper_core
+theorem global_cutoff_modulus_le_on_upper_core
     (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
     (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
@@ -519,7 +519,7 @@ private theorem global_cutoff_modulus_le_on_upper_core
   change KPMsFixedHaarDisintegration.logHeight (F := F) T <
     KPCuspLogShape.meanHeight _ (KPCuspCharts.toArch F _)
   rwa [KPCuspCharts.toArch_meanHeight F (KPCuspCharts.positive_dimension F hF)]
-private theorem global_cutoff_continuousAt_on_core
+theorem global_cutoff_continuousAt_on_core
     (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
     (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
@@ -556,7 +556,7 @@ variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
 variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
 variable (D : KPMsFixedHaarDisintegration.Disintegration A R P)
 
-private theorem of_upper_supporting_branches {α : Type*} [PseudoMetricSpace α]
+theorem of_upper_supporting_branches {α : Type*} [PseudoMetricSpace α]
     {κ : ℝ≥0} (f : α → ℝ) (hbound : ∀ x, f x ≤ 1)
     (hsupport : ∀ x, f x < 1 → ∃ g : α → ℝ,
       LipschitzWith κ g ∧ g x = f x ∧ ∀ y, f y ≤ g y) :
@@ -589,7 +589,7 @@ private theorem of_upper_supporting_branches {α : Type*} [PseudoMetricSpace α]
       _ ≤ |g x - g y| := le_abs_self _
       _ ≤ κ * dist x y := h
 
-private theorem native_flow_upper_branches (Y : ℝ)
+theorem native_flow_upper_branches (Y : ℝ)
     (hY : KPMsFixedHaarDisintegration.AdmissibleCutoff A Y)
     (ε : ℝ) (hε : 0 < ε)
     (w : NumberField.InfinitePlace F) (i : Fin 6) (x : X F ζ hζ) :

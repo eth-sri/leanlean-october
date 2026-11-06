@@ -6,7 +6,6 @@ public import DedekindZetaZeroFree.Metaplectic.Intertwining.RankOne.ContinuedOpe
 
 @[expose] public section
 
-noncomputable section
 open scoped Classical NumberField Topology BigOperators
 open MeasureTheory ValuativeRel
 namespace DedekindZetaZeroFree.KPGlobalResidualKernel.ActualLocalProduct
@@ -36,20 +35,3 @@ theorem finite_coordinate_analytic
       simpa [convergenceHalfPlane, KPContinuation.spectralDomain, neg_div] using hs
     exact (hc.2 s (denominator_ne_zero_of_convergence (LocalField F q) .plus s hs')).differentiableWithinAt
   exact hd.analyticOnNhd KPContinuation.spectralDomain_isOpen
-
-variable (E : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F)))
-variable (S : ∀ q : E, CanonicalFiniteInducingData F ζ hζ q.val)
-variable (P : ∀ q : E, Polarization (S q).heisenberg)
-variable (μ : ∀ q : E, Measure (LocalField F q.val))
-variable [hHaar : ∀ q : E, (μ q).IsAddHaarMeasure]
-variable (hμ : ∀ q : E, μ q ((valuation (LocalField F q.val)).integer : Set (LocalField F q.val)) = 1)
-variable (φ : ∀ q : E, compactPicture (S q).borel (P q) (S q).iwasawa .plus)
-variable (k : ∀ q : E, (S q).iwasawa.compact.toOpenSubgroup)
-variable (t : ∀ q : E, actualTorus F ζ hζ q.val)
-variable (β : NumberField.InfinitePlace F → ℂˣ)
-variable (ψ : NumberField.InfinitePlace F → KPComplexIntertwinerParameterMajorant.CompactPicture)
-variable (g : NumberField.InfinitePlace F → KPCplxCharacterHaar.ComplexGL2)
-
-end DedekindZetaZeroFree.KPGlobalResidualKernel.ActualLocalProduct
-
-end

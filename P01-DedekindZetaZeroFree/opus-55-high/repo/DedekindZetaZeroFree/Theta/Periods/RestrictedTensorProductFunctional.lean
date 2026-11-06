@@ -49,8 +49,8 @@ theorem stageFunctional_insert (hnorm : ∀ j ∉ bad, ell j (e j) = 1)
   rw [hleft]
   change (∏ j : t.val, f j) = ∏ j : s.val, ell j (x j)
   rw [Finset.prod_coe_sort]
-  have hprod : (∏ j ∈ t.val, f j) = ∏ j ∈ s.val, f j := by
-    exact (Finset.prod_subset hst (fun j _ hj => by simp [f, hj])).symm
+  have hprod : (∏ j ∈ t.val, f j) = ∏ j ∈ s.val, f j := 
+    (Finset.prod_subset hst (fun j _ hj => by simp [f, hj])).symm
   rw [hprod, ← Finset.prod_coe_sort]
   apply Finset.prod_congr rfl
   intro j _
@@ -87,7 +87,7 @@ theorem stageFunctional_absorb (slot : bad) (c : ℂ)
     · have hj' : j.val ≠ slot.val := by
         intro hh
         exact hj (Subtype.ext hh)
-      simp [Function.update_of_ne hj, Function.update_of_ne hj']
+      simp_all
   rw [hi, Finset.prod_update_of_mem (Finset.mem_univ i)]
   rw [← Finset.mul_prod_erase _ _ (Finset.mem_univ i)]
   rw [Finset.sdiff_singleton_eq_erase]
@@ -119,8 +119,7 @@ theorem absorb_reference_value (hnorm : ∀ j ∉ bad, ell j (e j) = 1)
   have hjs : j ≠ slot.val := by
     intro h
     exact hj (h ▸ slot.property)
-  rw [Function.update_of_ne hjs]
-  exact hnorm j hj
+  simp_all
 
 theorem absorb_global_coefficient (hnorm : ∀ j ∉ bad, ell j (e j) = 1)
     (slot : bad) (c : ℂ)
@@ -135,7 +134,3 @@ theorem absorb_global_coefficient (hnorm : ∀ j ∉ bad, ell j (e j) = 1)
   rw [hL]
   have h := stageFunctional_absorb V bad ell slot c s x
   simpa only [stageFunctional_pure] using h.symm
-
-end DedekindZetaZeroFree.FourierContinuation
-
-end

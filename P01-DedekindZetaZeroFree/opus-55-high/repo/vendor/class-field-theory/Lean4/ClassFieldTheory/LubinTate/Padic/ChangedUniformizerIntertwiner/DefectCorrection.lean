@@ -15,13 +15,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Changed-uniformizer defect correction
 
@@ -39,7 +32,7 @@ open SameUniformizer
 /-- The defect of a candidate changed-uniformizer intertwiner: the difference
 between its Frobenius-twisted multiplicative substitution and its
 changed-standard substitution. -/
-noncomputable def padicChangedUniformizerDefect
+def padicChangedUniformizerDefect
     (p : ℕ) [Fact p.Prime]
     (u : (padicLocalField p).valuationSubringˣ)
     (H : PowerSeries (padicCompletedUnramifiedWittRing p)) :
@@ -126,7 +119,7 @@ theorem padicChangedUniformizerDefect_map_constantCoeff
     (Fact.out : p.Prime).ne_zero]
   rw [PowerSeries.subst_pow hHbar,
     PowerSeries.subst_X hHbar]
-  exact sub_self _
+  simp
 
 /-- Every coefficient of the changed-uniformizer defect is divisible by
 `p` in the completed unramified Witt ring. -/
@@ -163,7 +156,7 @@ theorem padicChangedUniformizerDefect_coeff_mem_span_p
   rcases hmem with ⟨b, hb⟩
   exact ⟨b, hb.symm⟩
 
- noncomputable def padicChangedUniformizerNormalizedDefect
+ def padicChangedUniformizerNormalizedDefect
     (p : ℕ) [Fact p.Prime]
     (u : (padicLocalField p).valuationSubringˣ)
     (H : PowerSeries (padicCompletedUnramifiedWittRing p))
@@ -173,7 +166,7 @@ theorem padicChangedUniformizerDefect_coeff_mem_span_p
   Classical.choose
     (exists_padicChangedUniformizerNormalizedDefect p u H hH m)
 
-private theorem padicChangedUniformizerNormalizedDefect_spec
+theorem padicChangedUniformizerNormalizedDefect_spec
     (p : ℕ) [Fact p.Prime]
     (u : (padicLocalField p).valuationSubringˣ)
     (H : PowerSeries (padicCompletedUnramifiedWittRing p))
@@ -224,15 +217,15 @@ theorem padicCompletedMultiplicativeSeries_coeff_pow_self
       rw [PowerSeries.divXPowOrder_pow]
     _ =
         (PowerSeries.constantCoeff
-          (PowerSeries.divXPowOrder M)) ^ m := by
-      exact map_pow PowerSeries.constantCoeff _ _
+          (PowerSeries.divXPowOrder M)) ^ m := 
+      map_pow PowerSeries.constantCoeff _ _
     _ = (PowerSeries.coeff 1 M) ^ m := by
       rw [PowerSeries.constantCoeff_divXPowOrder, hMorder]
       rfl
     _ = (p : padicCompletedUnramifiedWittRing p) ^ m := by
       rw [padicCompletedMultiplicativeSeries_coeff_one]
 
-private theorem padicChangedUniformizer_coeff_pow_add_monomial
+theorem padicChangedUniformizer_coeff_pow_add_monomial
     (p : ℕ) [Fact p.Prime]
     (H : PowerSeries (padicCompletedUnramifiedWittRing p))
     (hH : PowerSeries.constantCoeff H = 0)
@@ -293,10 +286,10 @@ private theorem padicChangedUniformizer_coeff_pow_add_monomial
     apply PowerSeries.nat_le_order
     intro i hi
     rw [PowerSeries.coeff_monomial, ite_eq_right]
-    exact Nat.ne_of_lt hi
+    omega
   have hfactor :
-      (A - H) * Q = A ^ p - H ^ p := by
-    exact (Commute.all A H).mul_geom_sum₂ p
+      (A - H) * Q = A ^ p - H ^ p := 
+    (Commute.all A H).mul_geom_sum₂ p
   have horder :
       ((m + (p - 1) : ℕ) : ℕ∞) ≤
         (A ^ p - H ^ p).order := by
@@ -307,7 +300,7 @@ private theorem padicChangedUniformizer_coeff_pow_add_monomial
       _ ≤ (A - H).order + Q.order := by
         apply add_le_add
         · simpa [A, N] using hNorder
-        · exact hQ
+        omega
       _ ≤ ((A - H) * Q).order :=
         PowerSeries.le_order_mul _ _
       _ = (A ^ p - H ^ p).order := by
@@ -346,7 +339,7 @@ theorem padicChangedUniformizer_subst_monomial
     PowerSeries.subst_X hM]
   rfl
 
-private theorem
+theorem
     padicChangedUniformizerFrobenius_add_monomial
     (p : ℕ) [Fact p.Prime]
     (H : PowerSeries (padicCompletedUnramifiedWittRing p))
@@ -359,10 +352,10 @@ private theorem
   intro i
   by_cases hi : i = m
   · subst i
-    simp [PowerSeries.coeff_map]
+    simp
   · simp [PowerSeries.coeff_map, PowerSeries.coeff_monomial, hi]
 
-private theorem padicChangedUniformizer_coeff_subst_frobenius_add_monomial
+theorem padicChangedUniformizer_coeff_subst_frobenius_add_monomial
     (p : ℕ) [Fact p.Prime]
     (H : PowerSeries (padicCompletedUnramifiedWittRing p))
     (m : ℕ) (c : padicCompletedUnramifiedWittRing p) :
@@ -388,7 +381,7 @@ private theorem padicChangedUniformizer_coeff_subst_frobenius_add_monomial
     padicCompletedMultiplicativeSeries_coeff_pow_self]
   ring
 
-private theorem padicChangedUniformizer_coeff_subst_changed_add_monomial
+theorem padicChangedUniformizer_coeff_subst_changed_add_monomial
     (p : ℕ) [Fact p.Prime]
     (u : (padicLocalField p).valuationSubringˣ)
     (H : PowerSeries (padicCompletedUnramifiedWittRing p))
@@ -420,7 +413,7 @@ private theorem padicChangedUniformizer_coeff_subst_changed_add_monomial
     PowerSeries.HasSubst.of_constantCoeff_zero' (by
       change PowerSeries.constantCoeff H +
           PowerSeries.constantCoeff N = 0
-      rw [hH, hNconstant, zero_add])
+      simp_all)
   rw [padicCompletedChangedStandardSeries_eq,
     PowerSeries.subst_add hAsubst,
     PowerSeries.subst_mul hAsubst,
@@ -477,7 +470,7 @@ theorem padicChangedUniformizerDefect_coeff_add_monomial
 
 /-- The unique coefficient that corrects the changed-uniformizer defect in
 degree `m`. -/
-noncomputable def padicChangedUniformizerCorrectionCoefficient
+def padicChangedUniformizerCorrectionCoefficient
     (p : ℕ) [Fact p.Prime]
     (u : (padicLocalField p).valuationSubringˣ)
     (H : PowerSeries (padicCompletedUnramifiedWittRing p))
@@ -701,7 +694,3 @@ theorem padicChangedUniformizerDefect_coeff_eq_of_coeff_eq_le
         (padicChangedUniformizerDefect p u H') :=
       MvPowerSeries.coeff_truncTotal
         (padicChangedUniformizerDefect p u H') hmDegree
-
-end LubinTate
-
-end

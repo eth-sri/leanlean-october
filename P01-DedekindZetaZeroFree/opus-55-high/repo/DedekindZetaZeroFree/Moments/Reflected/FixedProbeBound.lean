@@ -23,7 +23,7 @@ private theorem normalizeShape_continuous (A : SArithmeticData F) :
   exact continuous_id.div' (A.continuous_radialSection.comp
     ((norm_continuous A).subtype_mk (norm_pos A)))
 
-private theorem localPoint_injective (A : SArithmeticData F) :
+theorem localPoint_injective (A : SArithmeticData F) :
     Function.Injective (NormalizedProbe.asLocalPoint A) := by
   intro x y h
   apply Prod.ext
@@ -34,7 +34,7 @@ private theorem localPoint_injective (A : SArithmeticData F) :
     apply Units.ext
     exact congrFun (congrArg Prod.snd h) v
 
-private theorem scaled_row_shape (A : SArithmeticData F) (T : ℝ) (hT : 0 < T)
+theorem scaled_row_shape (A : SArithmeticData F) (T : ℝ) (hT : 0 < T)
     (K : Set A.G) (m : ThetaReflectionData.Row A)
     (hm : m.val ∈ NormalizedProbe.scaledIntegralRows A T K) :
     ∃ k ∈ K, ActualRowTransfer.rowShape A m = normalizeShape A k ∧
@@ -62,7 +62,7 @@ private theorem scaled_row_shape (A : SArithmeticData F) (T : ℝ) (hT : 0 < T)
   simp only [hn, A.radialSection_mul T (A.norm k) hT (norm_pos A k)]
   simp only [mul_div_mul_left_eq_div]
 
-private theorem integrand_eq_rows (A : SArithmeticData F)
+theorem integrand_eq_rows (A : SArithmeticData F)
     (D : ComparisonPoissonCoefficientData F A) (P : NormalizedProbe.DomainData A)
     (W0 : SLocalProduct F A.Sf → ℂ) (W1 : ProbeRealAnnularWeight)
     (X Y Z : ℝ) (hY : 0 < Y) (t : A.G1) (rs : Finset A.R)

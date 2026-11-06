@@ -6,7 +6,6 @@ public import Mathlib.Analysis.Complex.Basic
 
 @[expose] public section
 
-noncomputable section
 open scoped Classical TensorProduct
 namespace DedekindZetaZeroFree.FourierContinuation.WildTensorRankPure
 variable {ι : Type} [Fintype ι] [DecidableEq ι]
@@ -35,9 +34,7 @@ theorem coordinate_injective (x : ∀i,V i) (hx : ∀i,x i≠0) (q : ι) :
   have he : L (PiTensorProduct.tprod ℂ u)=1 := by
     simp [L,PiTensorProduct.dualDistrib_apply,hφ]
   change PiTensorProduct.tprod ℂ u=0 at hv
-  have hz := congrArg L hv
-  rw [map_zero] at hz
-  exact one_ne_zero (he.symm.trans hz)
+  simp_all
 
 theorem local_rank_le_one (x : ∀i,V i) (hx : ∀i,x i≠0)
     (J : (⨂[ℂ] i,V i) →ₗ[ℂ] ℂ) (hJ : Function.Injective J) (q : ι) :
@@ -54,7 +51,3 @@ theorem local_rank_le_one_of_detected (x : ∀i,V i)
   intro i hi
   apply hx
   rw [(PiTensorProduct.tprod ℂ).map_coord_zero i hi,map_zero]
-
-end DedekindZetaZeroFree.FourierContinuation.WildTensorRankPure
-
-end

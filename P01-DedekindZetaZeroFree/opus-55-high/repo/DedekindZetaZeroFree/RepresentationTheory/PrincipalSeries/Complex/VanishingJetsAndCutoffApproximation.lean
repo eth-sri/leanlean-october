@@ -13,7 +13,7 @@ open KPCplxPrincipalSeriesCharts
 open scoped ContDiff
 open Filter Topology Asymptotics
 
-private theorem cutoff_open_zero (χ : ℂ → ℂ)
+theorem cutoff_open_zero (χ : ℂ → ℂ)
     (hχ : ∀ u : ℂ, (1/2 : ℝ) ≤ ‖u‖ → χ u = 0)
     (f : ℂ → ℂ) (x : ℂ) (hx : ‖x‖ < 2) :
     (if x = 0 then 0 else χ x⁻¹ * f x) = 0 := by
@@ -66,9 +66,7 @@ theorem cutoff_section_exists (s : ℝ) (f : PrincipalSeries s) (χ : ℂ → �
     simp only [A, inv_eq_zero, hu', ↓reduceIte, inv_inv]
     rw [coordinate_transition s f u hu']
     ring
-  · intro x hx
-    rw [hh]
-    exact hA0 x hx
+  simp_all
 
 noncomputable def infinityCutoff (r : ℝ) (hr : 0 < r) : ContDiffBump (0 : ℂ) :=
   ⟨r / 2, r, by positivity, by linarith⟩
@@ -131,7 +129,7 @@ theorem cutoff_chartSeminorm_eq (s : ℝ) (h : PrincipalSeries s)
     le_csSup_of_le hb (Set.mem_image_of_mem _ (by simp : (0 : ℂ) ∈ Metric.closedBall 0 1))
       (norm_nonneg _)
   change max _ _ = _
-  rw [hopen, csSup_singleton, max_eq_right hnn]
+  simp_all
 
 theorem jet_flat_bigO (H : ℂ → ℂ) (hH : ContDiff ℝ (⊤ : ℕ∞) H)
     (n : ℕ) (hflat : ∀ k ≤ n, iteratedFDeriv ℝ k H 0 = 0)
@@ -156,7 +154,7 @@ theorem jet_flat_bigO (H : ℂ → ℂ) (hH : ContDiff ℝ (⊤ : ℕ∞) H)
       (by simpa using hd') (hflat k hk)
     simpa only [sub_zero, ← Nat.cast_add_one, Real.rpow_natCast] using result
 
-private theorem infinityCutoff_scale (r : ℝ) (hr : 0 < r) :
+theorem infinityCutoff_scale (r : ℝ) (hr : 0 < r) :
     (infinityCutoff r hr : ℂ → ℝ) =
       (fun u => infinityCutoff 1 (by norm_num) (r⁻¹ • u)) := by
   funext u
@@ -185,7 +183,7 @@ theorem infinityCutoff_derivative_bound (j : ℕ) :
       ((hC _ (Set.mem_range_self (r⁻¹ • u))).trans (le_max_left _ _)) (by positivity)
     _ = _ := mul_comm _ _
 
-private theorem finite_uniform_bound {ι : Type*} (I : Finset ι) (a b : ι → ℂ → ℝ)
+theorem finite_uniform_bound {ι : Type*} (I : Finset ι) (a b : ι → ℂ → ℝ)
     (hb : ∀ i u, 0 ≤ b i u)
     (h : ∀ i ∈ I, ∃ C : ℝ, ∀ᶠ u in 𝓝 (0 : ℂ), a i u ≤ C * b i u) :
     ∃ C : ℝ, 0 < C ∧ ∀ᶠ u in 𝓝 (0 : ℂ), ∀ i ∈ I, a i u ≤ C * b i u := by
@@ -208,19 +206,17 @@ theorem jet_flat_uniform_bound (H : ℂ → ℂ) (hH : ContDiff ℝ (⊤ : ℕ�
       ‖u‖ < δ → ‖iteratedFDeriv ℝ k H u‖ ≤ C * ‖u‖^(n+1-k) := by
   obtain ⟨C, hC, hb⟩ := finite_uniform_bound (Finset.range (n+1))
     (fun k u => ‖iteratedFDeriv ℝ k H u‖) (fun k u => ‖u‖^(n+1-k))
-    (by intros; positivity) (by
+    (by simp) (by
       intro k hk
       have hk' : k ≤ n := by simpa using hk
       have hO := jet_flat_bigO H hH n hflat k (n+1-k) (by omega)
       rw [Asymptotics.isBigO_iff] at hO
       obtain ⟨D, hD⟩ := hO
       refine ⟨D, ?_⟩
-      filter_upwards [hD] with u hu
-      simpa only [Real.norm_of_nonneg (by positivity : 0 ≤ ‖u‖^(n+1-k))] using hu)
+      simp_all)
   obtain ⟨δ, hδ, hd⟩ := Metric.eventually_nhds_iff.mp hb
   refine ⟨C, δ, hC, hδ, ?_⟩
-  intro k hk u hu
-  exact hd (by simpa using hu) k (by simpa using hk)
+  simp_all
 
 theorem canonical_cutoff_derivative_decay (H : ℂ → ℂ)
     (hH : ContDiff ℝ (⊤ : ℕ∞) H) (j : ℕ)
@@ -244,8 +240,8 @@ theorem canonical_cutoff_derivative_decay (H : ℂ → ℂ)
   by_cases hu : ‖u‖ ≤ r
   · have hb : ∀ i : ℕ, ‖iteratedFDeriv ℝ i χ u‖ ≤ D i * r⁻¹^i := by
       intro i
-      have heq : ‖iteratedFDeriv ℝ i χ u‖ = ‖iteratedFDeriv ℝ i (b : ℂ → ℝ) u‖ := by
-        exact Complex.ofRealLI.norm_iteratedFDeriv_comp_left
+      have heq : ‖iteratedFDeriv ℝ i χ u‖ = ‖iteratedFDeriv ℝ i (b : ℂ → ℝ) u‖ := 
+        Complex.ofRealLI.norm_iteratedFDeriv_comp_left
           (b.contDiff (n := (i : ℕ∞))).contDiffAt le_rfl
       rw [heq]
       exact (hD i).2 r hr u
@@ -262,8 +258,8 @@ theorem canonical_cutoff_derivative_decay (H : ℂ → ℂ)
         have hp' : ‖iteratedFDeriv ℝ (j-i) H u‖ ≤ C * r^(i+1) :=
           hp.trans (mul_le_mul_of_nonneg_left (pow_le_pow_left₀ (norm_nonneg u) hu _) hC.le)
         calc
-          _ ≤ (j.choose i : ℝ) * (D i * r⁻¹^i) * (C * r^(i+1)) := by
-            exact mul_le_mul
+          _ ≤ (j.choose i : ℝ) * (D i * r⁻¹^i) * (C * r^(i+1)) := 
+            mul_le_mul
               (mul_le_mul_of_nonneg_left (hb i) (Nat.cast_nonneg _))
               hp' (norm_nonneg _) (mul_nonneg (Nat.cast_nonneg _)
                 (mul_nonneg (hD i).1 (by positivity)))
@@ -293,8 +289,7 @@ theorem cutoff_chartSeminorm_le (s : ℝ) (h : PrincipalSeries s)
   rw [cutoff_chartSeminorm_eq s h hop j]
   apply csSup_le
   · exact ⟨_, Set.mem_image_of_mem _ (by simp : (0 : ℂ) ∈ Metric.closedBall 0 1)⟩
-  · rintro _ ⟨u, hu, rfl⟩
-    exact hB u
+  simp_all
 
 theorem finite_seminorm_cutoff_approximation (s : ℝ) (F : Finset ℕ) :
     ∃ n : ℕ, ∀ f : PrincipalSeries s,
@@ -322,7 +317,7 @@ theorem finite_seminorm_cutoff_approximation (s : ℝ) (F : Finset ℕ) :
   have hall := F.eventually_all.mpr hj
   obtain ⟨δ, hδ, hball⟩ := Metric.eventually_nhds_iff.mp hall
   let r : ℝ := min (δ/2) (1/4)
-  have hr : 0 < r := by dsimp [r]; positivity
+  have hr : 0 < r := by positivity
   have hrsmall : r ≤ 1/2 := (min_le_right _ _).trans (by norm_num)
   have hrδ : dist r 0 < δ := by
     rw [Real.dist_eq, sub_zero, abs_of_pos hr]
@@ -333,9 +328,7 @@ theorem finite_seminorm_cutoff_approximation (s : ℝ) (F : Finset ℕ) :
     intro j hj
     apply cutoff_chartSeminorm_le s (f-g) hopen j (ε/2)
     intro u
-    change ‖iteratedFDeriv ℝ j (infinityCoordinate ((f : KPCplxCharacterHaar.ComplexGL2 → ℂ) - g)) u‖ ≤ ε/2
-    rw [hinf]
-    exact hball hrδ j hj hr u
+    simp_all
   have hsup : (F.sup (chartSeminorm s)) (f-g) ≤ ε/2 := by
     have hgen : ∀ I : Finset ℕ, (∀ j ∈ I, chartSeminorm s j (f-g) ≤ ε/2) →
         (I.sup (chartSeminorm s)) (f-g) ≤ ε/2 := by
@@ -347,5 +340,3 @@ theorem finite_seminorm_cutoff_approximation (s : ℝ) (F : Finset ℕ) :
         exact max_le (hI j (by simp)) (ih (fun k hk => hI k (by simp [hk])))
     exact hgen F hbound
   linarith
-
-end DedekindZetaZeroFree.KPCplxClosedCellCutoffApproximation

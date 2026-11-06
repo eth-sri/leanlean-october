@@ -7,8 +7,8 @@ public import DedekindZetaZeroFree.Analysis.Gamma.ElementaryNormBounds
 namespace DedekindZetaZeroFree
 
 theorem detector_sz_gamma_norm_le_real (z : ℂ) (hz : 0 < z.re) :
-    ‖Complex.Gamma z‖ ≤ Real.Gamma z.re := by
-  exact gamma_norm_le_real hz
+    ‖Complex.Gamma z‖ ≤ Real.Gamma z.re := 
+  gamma_norm_le_real hz
 
 theorem detector_sz_gamma_decay (a b : ℝ) (hab : a ≤ b) (m : ℕ) :
     ∃ C : ℝ, 0 < C ∧
@@ -51,9 +51,7 @@ theorem detector_sz_gamma_decay (a b : ℝ) (hab : a ≤ b) (m : ℕ) :
     rw [hre]
     linarith [hσ.1]
   have hb : Real.Gamma (z + ((m + n : ℕ) : ℂ)).re ≤ M := by
-    apply hbound
-    rw [hre]
-    constructor <;> linarith [hσ.1, hσ.2]
+    simp_all
   have hfinal : |t| ^ m * ‖Complex.Gamma z‖ ≤ M := by
     calc
       _ ≤ ‖Complex.Gamma (z + (m : ℂ))‖ := hshift m
@@ -61,10 +59,8 @@ theorem detector_sz_gamma_decay (a b : ℝ) (hab : a ≤ b) (m : ℕ) :
       _ = ‖Complex.Gamma (z + ((m + n : ℕ) : ℂ))‖ := by simp [Nat.cast_add, add_assoc]
       _ ≤ Real.Gamma (z + ((m + n : ℕ) : ℂ)).re := detector_sz_gamma_norm_le_real _ hreal
       _ ≤ M := hb
-  have hp : 0 < |t| ^ m := pow_pos (lt_of_lt_of_le zero_lt_one ht) _
+  have hp : 0 < |t| ^ m := by positivity
   have hdiv : ‖Complex.Gamma z‖ ≤ M / |t| ^ m := (le_div_iff₀ hp).2 (by nlinarith [hfinal])
   change ‖Complex.Gamma z‖ ≤ M * |t| ^ (-(m : ℝ))
   rw [Real.rpow_neg (abs_nonneg t), Real.rpow_natCast]
   simpa [div_eq_mul_inv] using hdiv
-
-end DedekindZetaZeroFree

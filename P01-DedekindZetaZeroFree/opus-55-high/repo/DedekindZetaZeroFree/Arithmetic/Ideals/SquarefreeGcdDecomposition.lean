@@ -11,17 +11,15 @@ open scoped NumberField Classical
 variable {F : Type} [Field F] [NumberField F]
 variable {a b c d u v : Ideal (𝓞 F)}
 
-private lemma bot_ne_top_ideal : (⊥ : Ideal (𝓞 F)) ≠ ⊤ := by
+lemma bot_ne_top_ideal : (⊥ : Ideal (𝓞 F)) ≠ ⊤ := by
   intro hh
-  have h1 : (1 : 𝓞 F) ∈ (⊥ : Ideal (𝓞 F)) := hh ▸ Submodule.mem_top
-  rw [Ideal.mem_bot] at h1
-  exact one_ne_zero h1
+  simp_all
 
-private lemma sup_eq_top_of_isRelPrime {x y : Ideal (𝓞 F)} (h : IsRelPrime x y) :
+lemma sup_eq_top_of_isRelPrime {x y : Ideal (𝓞 F)} (h : IsRelPrime x y) :
     x ⊔ y = ⊤ :=
   Ideal.isUnit_iff.mp (h (Ideal.dvd_iff_le.mpr le_sup_left) (Ideal.dvd_iff_le.mpr le_sup_right))
 
-private lemma isRelPrime_of_sup_eq_top {x y : Ideal (𝓞 F)} (h : x ⊔ y = ⊤) :
+lemma isRelPrime_of_sup_eq_top {x y : Ideal (𝓞 F)} (h : x ⊔ y = ⊤) :
     IsRelPrime x y := by
   intro z hzx hzy
   rw [Ideal.isUnit_iff]
@@ -30,10 +28,10 @@ private lemma isRelPrime_of_sup_eq_top {x y : Ideal (𝓞 F)} (h : x ⊔ y = ⊤
 
 theorem ne_bot_of_squarefree (ha : Squarefree a) : a ≠ ⊥ := by
   intro h
-  have hbot : (⊥ : Ideal (𝓞 F)) * ⊥ = ⊥ := Ideal.mul_eq_bot.mpr (Or.inl rfl)
+  have hbot : (⊥ : Ideal (𝓞 F)) * ⊥ = ⊥ := by simp
   have hdvd : (⊥ : Ideal (𝓞 F)) * ⊥ ∣ a := by rw [hbot, h]
   have hunit : IsUnit (⊥ : Ideal (𝓞 F)) := ha (⊥ : Ideal (𝓞 F)) hdvd
-  exact bot_ne_top_ideal ((Ideal.isUnit_iff (I := (⊥ : Ideal (𝓞 F)))).mp hunit)
+  simp_all
 
 theorem gcd_ne_bot (ha : Squarefree a) (hb : Squarefree b) : a ⊔ b ≠ ⊥ := by
   intro h
@@ -96,5 +94,3 @@ theorem strip_coprime_aux
       (fun e hed hec => hrel_ac (hed.trans (Ideal.dvd_iff_le.mpr le_sup_left)) hec)
   · exact sup_eq_top_of_isRelPrime (fun e heu hec => hrel_ac (heu.trans hua) hec)
   · exact sup_eq_top_of_isRelPrime (fun e hev hec => hrel_bc (hev.trans hvb) hec)
-
-end DedekindZetaZeroFree.LargeSieve.SquarefreeGcd

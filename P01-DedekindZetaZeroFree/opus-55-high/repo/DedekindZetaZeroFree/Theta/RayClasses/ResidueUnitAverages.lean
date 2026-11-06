@@ -23,16 +23,16 @@ def affineResidueUnitMul
   ⟨((γ : 𝓞 F) : F) * x.val,
     (I : FractionalIdeal (𝓞 F)⁰ F).coeToSubmodule.smul_mem (γ : 𝓞 F) x.property⟩
 
-private theorem averaging_span_unit (γ : (𝓞 F)ˣ) :
+theorem averaging_span_unit (γ : (𝓞 F)ˣ) :
     FractionalIdeal.spanSingleton (𝓞 F)⁰
       ((Units.map (algebraMap (𝓞 F) F) γ : Fˣ) : F) = 1 := by
   rw [← FractionalIdeal.spanSingleton_one]
   apply FractionalIdeal.spanSingleton_eq_spanSingleton.mpr
   refine ⟨γ⁻¹, ?_⟩
   change algebraMap (𝓞 F) F (↑γ⁻¹ : 𝓞 F) * algebraMap (𝓞 F) F (γ : 𝓞 F) = 1
-  rw [← map_mul, Units.inv_mul, map_one]
+  simp
 
-private theorem averaging_ray_shift (hF : NumberField.IsTotallyComplex F)
+theorem averaging_ray_shift (hF : NumberField.IsTotallyComplex F)
     (m : Ideal (𝓞 F)) (γ : Additive (RayCoset.U F m)) :
     principalNormalizedLogShift hF (Units.map (algebraMap (𝓞 F) F) γ.toMul.val) =
       RayCoset.rayUnitLogEmbedding F m γ := by
@@ -44,7 +44,7 @@ private theorem averaging_ray_shift (hF : NumberField.IsTotallyComplex F)
   rw [RayCoset.abs_norm_unit, Real.log_one, zero_div, sub_zero]
   rfl
 
-private theorem averaging_ray_lift (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
+theorem averaging_ray_lift (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
     (I : (FractionalIdeal (𝓞 F)⁰ F)ˣ) (γ : RayCoset.U F m)
     (x : {x : F // x ∈ (I : FractionalIdeal (𝓞 F)⁰ F)}) :
     (affineResidueUnitMul I γ.val x).val - x.val ∈
@@ -112,12 +112,12 @@ theorem affineResidueDualTheta_rayUnit_periodic
 
 end Affine
 
-private theorem averaging_quotient_lifts
+theorem averaging_quotient_lifts
     (I J : FractionalIdeal (𝓞 F)⁰ F) (x y : I.coeToSubmodule)
     (hxy : fractionalIdealQuotientMk I J x = fractionalIdealQuotientMk I J y) :
     x.val - y.val ∈ J := by
   have hz : fractionalIdealQuotientMk I J (x - y) = 0 := by
-    rw [map_sub, hxy, sub_self]
+    simp_all
   exact (fractionalIdealQuotientMk_eq_zero_iff I J (x - y)).mp hz
 
 section Coprime
@@ -185,9 +185,3 @@ theorem coprimeIdealResidueAverage_eq_lifts (lift : R → X)
   funext q
   conv_lhs => rw [← hlift q]
   exact coprimeIdealResidueAverage_mk hF m a hm ha hcop u hu (lift q)
-
-end Coprime
-
-end DedekindZetaZeroFree.Hecke.Theta
-
-end

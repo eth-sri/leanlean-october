@@ -6,8 +6,6 @@ public import DedekindZetaZeroFree.Metaplectic.Intertwining.Spherical.ScalarCham
 
 @[expose] public section
 
-set_option autoImplicit false
-noncomputable section
 namespace DedekindZetaZeroFree.KPLocalTameIntertwiningBlock
 open scoped NumberField Valued Classical
 open NumberField IsDedekindDomain KPLocalExceptionalConstruction
@@ -72,8 +70,7 @@ theorem integral_of_geometric_cubic_shells
       refine ⟨z.toNat - 1, ?_⟩
       change e (valuation K x) = WithZero.exp (((z.toNat - 1) + 1 : ℕ) : ℤ)
       have hzn : (((z.toNat - 1) + 1 : ℕ) : ℤ) = z := by
-        have := Int.toNat_of_nonneg (le_of_lt hz)
-        omega
+        simp_all
       rw [hzn]
       exact (WithZero.exp_log hne).symm
   have hr1 : 1 - r ≠ 0 := by
@@ -97,8 +94,8 @@ theorem integral_of_geometric_cubic_shells
     dsimp [j]
     omega
   have hfj (k : ℕ) : f (j k) = (1 - b) * r ^ (k + 1) * a := by
-    have h1 : j k + 1 = 3 * (k + 1) := by dsimp [j]; omega
-    have h2 : 3 ∣ j k + 1 := by rw [h1]; exact dvd_mul_right 3 (k + 1)
+    have h1 : j k + 1 = 3 * (k + 1) := by rfl
+    have h2 : 3 ∣ j k + 1 := by simp_all
     simp only [f, if_pos h2, h1, Nat.mul_div_right _ (by decide : 0 < 3)]
   have hg : HasSum (fun k : ℕ => (1 - b) * r ^ (k + 1) * a) ((1 - b) * r / (1 - r) * a) := by
     have hh := ((hasSum_geometric_of_norm_lt_one hr).mul_left ((1 - b) * r)).mul_right a
@@ -237,14 +234,10 @@ theorem spherical_shell_integral_deformation
     dsimp only
     rw [compact_coordinate_deformation K A P I .plus φ s _ 1,
       normPower_of_valuation_exponent K _ _ (hcoord n x hx) s]
-    have he : -(-2 * (n + 1 : ℕ) : ℤ) = (2 * (n + 1) : ℕ) := by
-      push_cast
-      ring
-    rw [he, zpow_natCast]
+    rfl
   rw [setIntegral_congr_fun hm hv, integral_const_mul, hzero]
   split_ifs with h
   · have hn : 2 * (n + 1) = 6 * ((n + 1) / 3) := by
-      have := Nat.div_mul_cancel h
       omega
     rw [hn, pow_mul, t, mul_pow]
     ring
@@ -279,7 +272,7 @@ theorem spherical_scalar_of_cubic_shell_integrals
     have hi := DedekindZetaZeroFree.KPRankOneActualShellCaller.integral_integrable_at_level
       F ζ hζ q S P μ hμ S.iwasawa.compact le_rfl .plus s hs
       ⟨φ, spherical_vector_mem_level (LocalField F q) S.borel P S.iwasawa .plus φ hφ⟩ (1 : ActualCover F ζ hζ q) (1 : actualTorus F ζ hζ q)
-    simp only [sourceSign, id_eq, sourceParameter, if_pos rfl, kernelW, mul_one] at hi
+    simp only [sourceSign, id_eq, sourceParameter, kernelW, mul_one] at hi
     exact hi
   have hr : ‖t (LocalField F q) s‖ < 1 := by
     simpa using (convergence_iff_geometric (LocalField F q) .plus s).mp hs
@@ -288,12 +281,8 @@ theorem spherical_scalar_of_cubic_shell_integrals
       rw [hShell s hs n]
       split_ifs <;> ring)
   change (∫ x, _ ∂μ) = _
-  simp only [sourceSign, sourceParameter, if_pos rfl, kernelW, mul_one]
+  simp only [sourceSign, sourceParameter, kernelW, mul_one]
   change (∫ x, integrand x ∂μ) = _
   rw [he]
   unfold forwardFactor forwardFactorInRoot t
   ring
-
-end DedekindZetaZeroFree.KPLocalTameIntertwiningBlock
-
-end

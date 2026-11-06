@@ -56,7 +56,7 @@ def coreHarmonic (ℓ : ℕ) : Submodule ℂ complexCore :=
     ∃ c : ℂ, ∀ f ∈ coreHarmonic 0, T f = c • f := by
   have hdim : Module.finrank ℂ (coreHarmonic 0) = 1 := by
     simpa using coreHarmonic_finrank 0
-  haveI : Nontrivial (coreHarmonic 0) := Module.nontrivial_of_finrank_pos (by rw [hdim]; exact Nat.zero_lt_one)
+  haveI : Nontrivial (coreHarmonic 0) := Module.nontrivial_of_finrank_pos (by positivity)
   letI : AddCommGroup ↥(coreHarmonic 0) := Submodule.addCommGroup (R := ℂ) (M := ↥complexCore) (coreHarmonic 0)
   obtain ⟨v, hv⟩ := exists_ne (0 : coreHarmonic 0)
   let Tv : coreHarmonic 0 := ⟨T v.val, commutant_preserves_lowest T hT v.val v.property⟩
@@ -70,16 +70,15 @@ def coreHarmonic (ℓ : ℕ) : Submodule ℂ complexCore :=
 
 end DedekindZetaZeroFree.KPGlobalResidualConstruction.NativeComplexHCAlgebraic
 noncomputable section
-open scoped Classical Topology
 namespace DedekindZetaZeroFree.KPGlobalResidualConstruction.NativeComplexHCExtraction
 open KPCplxCharacterHaar KPCplxPrincipalSeriesCharts KPCplxIntertwinerEigenvalues
 
-private theorem pi_add' (s : ℝ) (k : ComplexPGL2) (f h : PrincipalSeries s) :
+theorem pi_add' (s : ℝ) (k : ComplexPGL2) (f h : PrincipalSeries s) :
     KPCplxPrincipalSeriesCharts.pi s k (f+h) = KPCplxPrincipalSeriesCharts.pi s k f + KPCplxPrincipalSeriesCharts.pi s k h := by
   induction k using Quotient.inductionOn with
   | h k => rfl
 
-private theorem pi_smul' (s : ℝ) (k : ComplexPGL2) (c : ℂ) (f : PrincipalSeries s) :
+theorem pi_smul' (s : ℝ) (k : ComplexPGL2) (c : ℂ) (f : PrincipalSeries s) :
     KPCplxPrincipalSeriesCharts.pi s k (c • f) = c • KPCplxPrincipalSeriesCharts.pi s k f := by
   induction k using Quotient.inductionOn with
   | h k => rfl
@@ -100,7 +99,7 @@ theorem finite_band_of_mem (s : ℝ) (f : PrincipalSeries s)
     exact (I.sup (harmonicKType s) ⊔ J.sup (harmonicKType s)).add_mem
       (Submodule.mem_sup_left hI) (Submodule.mem_sup_right hJ)
 
-private theorem finite_band_invariant (s : ℝ) (I : Finset ℕ) :
+theorem finite_band_invariant (s : ℝ) (I : Finset ℕ) :
     IsKInvariant s (I.sup (harmonicKType s)) := by
   induction I using Finset.induction_on with
   | empty =>
@@ -163,8 +162,3 @@ theorem harmonic_type_of_nonzero (s : ℝ)
   obtain ⟨n, hn⟩ := hnonzero
   exact ⟨n, KPCplxHarmonicPropagation.harmonic_le_of_nonzero_vector
     s U hU n (a n) (haU n) (htype n) hn⟩
-
-end DedekindZetaZeroFree.KPGlobalResidualConstruction.NativeComplexHCExtraction
-
-end
-end

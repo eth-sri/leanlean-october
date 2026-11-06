@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Metaplectic.Intertwining.RankOne.FiniteLevelL
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.KPRankOneShellContinuation
 open scoped NumberField Valued
 open NumberField IsDedekindDomain MeasureTheory ValuativeRel
@@ -41,6 +40,3 @@ theorem actual_existsUnique_level_numerator
   intro p hp
   exact level_numerator_unique (LocalField F q) S.borel P S.iwasawa J μ ε p _ hp
     (KPRankOneShellRepair.actualLevelNumerator_spec F ζ hζ q S P J hJ μ hμ π hπ ε)
-end DedekindZetaZeroFree.KPRankOneShellContinuation
-
-end

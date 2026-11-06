@@ -32,5 +32,3 @@ theorem zetaContinuation (K : Type) [Field K] [NumberField K] :
       have h2 := (hP s hs).2
       exact h1.symm.trans h2
     rw [hPm, ← mul_assoc, zetaGammaReciprocal_mul_factor K s hs, one_mul]
-
-end DedekindZetaZeroFree.AbelianQuotient

@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Degree-zero localized Herbrand cardinality
 -/
@@ -26,7 +23,6 @@ open CyclicCohomology
 open CyclicCohomology.ProfiniteCohomology.Herbrand
 open scoped TensorProduct
 
-noncomputable section
 
 namespace LocalClassFieldTheory
 
@@ -125,10 +121,3 @@ theorem localHerbrandH0_card_eq_localDegree
     _ = Module.finrank vK.Completion
         (LocalizedCompletion vK w) :=
       hcard.cardH0
-
-
-end LocalTateComparison
-
-end LocalClassFieldTheory
-
-end

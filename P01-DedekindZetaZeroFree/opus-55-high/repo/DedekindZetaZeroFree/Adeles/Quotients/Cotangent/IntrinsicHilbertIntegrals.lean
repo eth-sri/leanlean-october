@@ -92,7 +92,7 @@ private theorem q_coordinates (a : ShrunkChart F ζ hζ U R P H) (y : a.domain) 
   simp only [KPContCotangentOverlapRationalBranches.q, ShrunkChart.toBase,
     KPContActualCotangentPieceHilbertSum.coordinates, Subtype.coe_mk, h]
 
-private theorem ofReal_norm_inner_le
+theorem ofReal_norm_inner_le
     (u v : KPContActualCotangentMeasurableFamilies.Coefficients F) :
     ENNReal.ofReal ‖inner ℂ u v‖ ≤
       ENNReal.ofReal ((‖u‖₊ ^ 2 : NNReal) : ℝ) +

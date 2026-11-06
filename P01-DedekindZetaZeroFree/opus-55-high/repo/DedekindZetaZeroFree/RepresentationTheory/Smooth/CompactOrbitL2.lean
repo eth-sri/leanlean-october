@@ -28,7 +28,3 @@ variable {X : Type*} [MeasurableSpace X]
     rintro _ ⟨i, rfl⟩
     exact ho i
   exact fun f hf => hs hf
-
-end DedekindZetaZeroFree.KPMsSameContinuationGreen.NativeBoundaryH1.CompactOrbitL2
-
-end

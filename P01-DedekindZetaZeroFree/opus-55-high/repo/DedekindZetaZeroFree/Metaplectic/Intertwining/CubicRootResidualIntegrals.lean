@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Metaplectic.Intertwining.DiagonalKernelEvalua
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.KPTameTransposeLiteralMassTransport.RootResidualGeometry
 
 open ValuativeRel MeasureTheory
@@ -22,7 +21,7 @@ theorem unit_mem_integer_iff_exponent_nonneg (u : Kˣ) :
   rw [map_one]
   have hn : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K
       (valuation K (u : K)) ≠ 0 := by
-    simpa using (Units.ne_zero u)
+    simp
   rw [← WithZero.exp_log hn, WithZero.exp_le_one_iff]
   change WithZero.log _ ≤ 0 ↔ 0 ≤ -WithZero.log _
   omega
@@ -47,13 +46,10 @@ theorem exponent_dvd_of_unitCubeClasses
   rw [← zpow_natCast r 3, KPCubicExpansion.valuationExponent_zpow,
     ← zpow_natCast t 3, KPCubicExpansion.valuationExponent_zpow,
     ← zpow_neg_one u, KPCubicExpansion.valuationExponent_zpow] at hh
-  refine ⟨KPCubicExpansion.valuationExponent K t - KPCubicExpansion.valuationExponent K r, ?_⟩
   omega
 
 theorem cubic_cutoffs_eq (n : ℤ) (hn : 3 ∣ n) (i : Fin 3) :
     n ≤ (i.val : ℤ) ↔ n ≤ 0 := by
-  obtain ⟨k, rfl⟩ := hn
-  have hi := i.isLt
   omega
 
 theorem diagonal_root_residual_mem_integer_iff
@@ -80,7 +76,6 @@ theorem diagonal_root_residual_mem_integer_iff
     ((u⁻¹ : Kˣ) : K) ∈ (valuation K).integer
   rw [unit_mem_integer_iff_exponent_nonneg, unit_mem_integer_iff_exponent_nonneg,
     hh, hz]
-  have hc := cubic_cutoffs_eq (KPCubicExpansion.valuationExponent K u) hu i
   omega
 
 section Arithmetic
@@ -114,10 +109,7 @@ theorem relative_diagonal_exponent_dvd
   rw [hb, ← zpow_natCast u⁻¹ 2,
     KPCubicExpansion.valuationExponent_zpow,
     ← zpow_neg_one u, KPCubicExpansion.valuationExponent_zpow] at hd
-  obtain ⟨n, hn⟩ := hd
-  have hv : KPCubicExpansion.valuationExponent (LocalField F q) u % 3 = 0 := by
-    omega
-  exact (Int.dvd_iff_emod_eq_zero).mpr hv
+  omega
 end Arithmetic
 
 section Haar
@@ -132,13 +124,7 @@ theorem integral_integer_translate_of_support
   have ho : MeasurableSet ((valuation K).integer : Set K) :=
     (valuation K).isClosed_integer.measurableSet
   have hind : ((valuation K).integer : Set K).indicator φ = φ := by
-    funext x
-    by_cases hx : x ∈ (valuation K).integer
-    · simp [Set.indicator_of_mem, hx]
-    · have hf : φ x = 0 := by
-        by_contra hf
-        exact hx (hφ hf)
-      simp [Set.indicator_of_notMem, hx, hf]
+    simp_all
   have htrans : ((valuation K).integer : Set K).indicator (fun x => φ (x + a)) =
       fun x => φ (x + a) := by
     funext x
@@ -148,8 +134,8 @@ theorem integral_integer_translate_of_support
         by_contra hf
         have hs := hφ hf
         have hd := (valuation K).integer.sub_mem hs ha
-        exact hx (by simpa using hd)
-      simp [Set.indicator_of_notMem, hx, hf]
+        simp_all
+      simp_all
   rw [← integral_indicator ho, ← integral_indicator ho, htrans, hind]
   exact integral_add_right_eq_self φ a
 
@@ -180,8 +166,3 @@ theorem diagonal_root_residual_integral_eq
       integral_integer_translate_of_support K μ φ hφ _ h]
   · rw [integral_integer_translate_of_not_mem K μ φ hφ _ (fun hi => h (he.mp hi)),
       integral_integer_translate_of_not_mem K μ φ hφ _ h]
-end Haar
-
-end DedekindZetaZeroFree.KPTameTransposeLiteralMassTransport.RootResidualGeometry
-
-end

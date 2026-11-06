@@ -12,7 +12,6 @@ Source: lean/OAI/NumberTheory/DirichletL/QuadraticSieve/CoprimeBilinearBound.lea
 
 namespace DedekindZetaZeroFree.LargeSieve.Vendor.CoprimeBilinear
 
-noncomputable section
 open scoped Classical BigOperators
 
 private lemma sum_powerset_neg_one_pow_card_C {P : Type*} [DecidableEq P] (A : Finset P) :
@@ -20,8 +19,7 @@ private lemma sum_powerset_neg_one_pow_card_C {P : Type*} [DecidableEq P] (A : F
   have h : ((∑ D ∈ A.powerset, (-1 : ℤ) ^ D.card : ℤ) : ℂ) =
       ((if A = ∅ then 1 else 0 : ℤ) : ℂ) := by
     rw [Finset.sum_powerset_neg_one_pow_card]
-  rw [Int.cast_sum] at h
-  simpa using h
+  simp_all
 
 private lemma disjoint_indicator_expansion {P : Type*} [DecidableEq P]
     (ambient S T : Finset P) (hS : S ⊆ ambient) (hT : T ⊆ ambient) :
@@ -41,15 +39,13 @@ private lemma disjoint_indicator_expansion {P : Type*} [DecidableEq P]
         (if D ⊆ S ∧ D ⊆ T then 1 else 0))
       = ∑ D ∈ ambient.powerset.filter (fun D => D ⊆ S ∧ D ⊆ T), (-1 : ℂ) ^ D.card := by
     rw [Finset.sum_filter]
-    apply Finset.sum_congr rfl
-    intro D _
-    split_ifs <;> simp
+    simp
   rw [hsum, hfilter, sum_powerset_neg_one_pow_card_C]
   by_cases h : S ∩ T = ∅
   · rw [if_pos h, if_pos (Finset.disjoint_iff_inter_eq_empty.mpr h)]
   · rw [if_neg h, if_neg (fun hd => h (Finset.disjoint_iff_inter_eq_empty.mp hd))]
 
-private lemma masked_coefficient_energy {P L : Type*} [DecidableEq P] [Fintype L]
+lemma masked_coefficient_energy {P L : Type*} [DecidableEq P] [Fintype L]
     (B : Finset P) (left : L → Finset P) (hl : ∀ j, left j ⊆ B) (a : L → ℂ) :
     (∑ D ∈ B.powerset, ∑ j, ‖(if D ⊆ left j then a j else 0 : ℂ)‖ ^ 2)
       = ∑ j, (2 : ℝ) ^ (left j).card * ‖a j‖ ^ 2 := by
@@ -64,17 +60,13 @@ private lemma masked_coefficient_energy {P L : Type*} [DecidableEq P] [Fintype L
   have hstep : (∑ D ∈ B.powerset, (if D ⊆ left j then ‖a j‖ ^ 2 else 0 : ℝ))
       = (∑ D ∈ B.powerset, (if D ⊆ left j then (1 : ℝ) else 0)) * ‖a j‖ ^ 2 := by
     rw [Finset.sum_mul]
-    apply Finset.sum_congr rfl
-    intro D _
-    split_ifs <;> ring
+    simp
   rw [hstep]
   have hfilt : B.powerset.filter (fun D => D ⊆ left j) = (left j).powerset := by
     ext D
     simp only [Finset.mem_filter, Finset.mem_powerset]
     exact ⟨fun h => h.2, fun h => ⟨fun x hx => hl j (h hx), h⟩⟩
-  rw [Finset.sum_boole, hfilt, Finset.card_powerset]
-  push_cast
-  ring
+  simp_all
 
 theorem disjoint_bilinear_expansion
     {P L T : Type*} [DecidableEq P] [Fintype L] [Fintype T]
@@ -99,9 +91,7 @@ theorem disjoint_bilinear_expansion
       _ = ∑ D ∈ ambient.powerset, (-1 : ℂ) ^ D.card *
             (if D ⊆ s l ∧ D ⊆ t k then z l * star (v k) else 0) := by
             rw [Finset.sum_mul]
-            apply Finset.sum_congr rfl
-            intro D _
-            split_ifs <;> simp
+            simp
   simp_rw [hp]
   calc
     _ = ∑ l, ∑ D ∈ ambient.powerset, ∑ k, (-1 : ℂ) ^ D.card *
@@ -168,9 +158,7 @@ theorem coprime_bilinear_operator_bound
     rw [heq r]
     apply (norm_sum_le _ _).trans
     apply Finset.sum_le_sum
-    intro D _
-    simp only [norm_mul, norm_pow, norm_neg, norm_one, one_pow, one_mul, norm_star]
-    exact le_rfl
+    simp
   have hCS := Finset.sum_mul_sq_le_sq_mul_sq
     (ambient.powerset ×ˢ (Finset.univ : Finset R))
     (fun di => ‖X di.1 di.2‖) (fun di => ‖Y di.1 di.2‖)
@@ -199,7 +187,4 @@ theorem coprime_bilinear_operator_bound
   refine (pow_le_pow_left₀ (Finset.sum_nonneg (fun _ _ => norm_nonneg _)) hnorm 2).trans
     (hCS.trans (mul_le_mul hX hY ?_ ?_))
   · exact Finset.sum_nonneg (fun _ _ => Finset.sum_nonneg (fun _ _ => sq_nonneg _))
-  · exact mul_nonneg hUA (Finset.sum_nonneg (fun _ _ => mul_nonneg (by norm_num) (sq_nonneg _)))
-
-end
-end DedekindZetaZeroFree.LargeSieve.Vendor.CoprimeBilinear
+  positivity

@@ -50,8 +50,7 @@ private theorem partials_commute (i j : Fin 3) (p : MvPolynomial (Fin 3) ℂ) :
   simp only [coeff_pderiv]
   by_cases hij : i = j
   · subst j; rfl
-  · simp [Finsupp.single_apply, hij, Ne.symm hij, add_comm, add_left_comm, add_assoc,
-      mul_comm, mul_left_comm]
+  · simp [hij, Ne.symm hij, add_comm, add_left_comm, mul_comm, mul_left_comm]
 
 private theorem harmonic_partial_mem (n : ℕ) (p : MvPolynomial (Fin 3) ℂ)
     (hp : p ∈ harmonicPolynomials (n + 1)) (i : Fin 3) :
@@ -67,12 +66,12 @@ private theorem harmonic_partial_mem (n : ℕ) (p : MvPolynomial (Fin 3) ℂ)
     rw [partials_commute j i, partials_commute j i]
   rw [hc, show polynomialLaplacian p = 0 from hp.2, map_zero]
 
-private theorem laplacian_coordinate_mul (i : Fin 3) (p : MvPolynomial (Fin 3) ℂ) :
+theorem laplacian_coordinate_mul (i : Fin 3) (p : MvPolynomial (Fin 3) ℂ) :
     polynomialLaplacian (X i * p) = X i * polynomialLaplacian p + 2 * pderiv i p := by
   classical
   change (∑ j : Fin 3, pderiv j (pderiv j (X i * p))) = _
   have hc (j : Fin 3) : pderiv j (pderiv j (X i)) = (0 : MvPolynomial (Fin 3) ℂ) := by
-    by_cases h : i = j <;> simp [pderiv_X, Pi.single_apply, h]
+    by_cases h : i = j <;> simp [pderiv_X, h]
   simp only [pderiv_mul, map_add, hc, zero_mul, zero_add]
   change _ = X i * (∑ j : Fin 3, pderiv j (pderiv j p)) + _
   simp only [Finset.mul_sum]
@@ -82,7 +81,7 @@ private theorem laplacian_coordinate_mul (i : Fin 3) (p : MvPolynomial (Fin 3) �
       X i * pderiv j (pderiv j p) + if j = i then 2 * pderiv i p else 0 := by
     by_cases h : j = i
     · subst j; simp; ring
-    · simp [pderiv_X, Pi.single_apply, h, Ne.symm h]
+    simp_all
   simp_rw [he]
   rw [Finset.sum_add_distrib]
   simp
@@ -118,7 +117,7 @@ private theorem harmonicRaise_succ_mem (n : ℕ) (p : MvPolynomial (Fin 3) ℂ)
     dsimp only [harmonicRaise]
     rw [map_sub, map_smul, laplacian_coordinate_mul, show polynomialLaplacian p = 0 from hp.2,
       mul_zero, zero_add, hrad]
-    simp only [Nat.cast_add, Nat.cast_one, smul_smul, one_mul, mul_one]
+    simp only [Nat.cast_add, Nat.cast_one, smul_smul, mul_one]
     have he : (2 * ((n : ℂ) + 1) + 1)⁻¹ * (2 * (2 * (n : ℂ) + 2 + 1)) = 2 := by
       have hc' : 2 * ((n : ℂ) + 1) + 1 ≠ 0 := by simpa using hc
       field_simp
@@ -221,7 +220,7 @@ private lemma matrixFunction_coe (f : ComplexGL2 → ℂ) (g : ComplexGL2) :
   apply Units.ext
   rfl
 
-private lemma contDiff_upperUnipotent :
+lemma contDiff_upperUnipotent :
     ContDiff ℝ (⊤ : ℕ∞) (fun x : ℂ => (upperUnipotent x : Matrix (Fin 2) (Fin 2) ℂ)) := by
   change ContDiff ℝ (⊤ : ℕ∞) (fun x : ℂ => !![1, x; 0, 1])
   apply contDiff_pi.mpr
@@ -340,7 +339,7 @@ private lemma orbitDerivativeSection_hasDerivAt (s : ℝ) (γ : ℝ → ComplexG
   (contDiff_orbit_scalar s γ hγ f g).differentiable (by simp) 0 |>.hasDerivAt
 
 set_option maxHeartbeats 1500000 in
-private theorem orbit_quotient_tendsto (s : ℝ) (γ : ℝ → ComplexGL2)
+theorem orbit_quotient_tendsto (s : ℝ) (γ : ℝ → ComplexGL2)
     (hγ : ContDiff ℝ (⊤ : ℕ∞) (fun t => (γ t : Matrix (Fin 2) (Fin 2) ℂ)))
     (hzero : γ 0 = 1) (u D : PrincipalSeries s)
     (hd : ∀ g : ComplexGL2, HasDerivAt (fun t : ℝ => u (g * γ t)) (D g) 0) :
@@ -365,7 +364,7 @@ private theorem orbit_quotient_tendsto (s : ℝ) (γ : ℝ → ComplexGL2)
   rw [ht.tendsto_nhds]
   intro n ε hε
   have hS : IsCompact (Metric.closedBall (0 : ℂ) 1) := isCompact_closedBall _ _
-  have hne : (Metric.closedBall (0 : ℂ) 1).Nonempty := ⟨0, by simp⟩
+  have hne : (Metric.closedBall (0 : ℂ) 1).Nonempty := by simp
   have hf := SmoothQuotient.sup_jet_error_tendsto F hF n _ hS hne
   have hh := SmoothQuotient.sup_jet_error_tendsto H hH n _ hS hne
   simp only [show ∀ x, SmoothQuotient.partialT F (0, x) = openCoordinate D x
@@ -376,16 +375,14 @@ private theorem orbit_quotient_tendsto (s : ℝ) (γ : ℝ → ComplexGL2)
       openCoordinate ((t : ℂ)⁻¹ • (rightTranslate s (γ t) u - u) - D) =
       fun x => t⁻¹ • (F (t, x) - F (0, x)) - openCoordinate D x := by
     funext x
-    simp only [openCoordinate, Submodule.coe_sub, Submodule.coe_smul_of_tower, Pi.sub_apply,
-      Pi.smul_apply]
+    simp only [openCoordinate, Pi.sub_apply, Pi.smul_apply]
     rw [(hzero' x).1]
     simp [F, rightTranslate, openCoordinate, Complex.real_smul, Complex.ofReal_inv]
   have heH (t : ℝ) :
       infinityCoordinate ((t : ℂ)⁻¹ • (rightTranslate s (γ t) u - u) - D) =
       fun x => t⁻¹ • (H (t, x) - H (0, x)) - infinityCoordinate D x := by
     funext x
-    simp only [infinityCoordinate, Submodule.coe_sub, Submodule.coe_smul_of_tower, Pi.sub_apply,
-      Pi.smul_apply]
+    simp only [infinityCoordinate, Pi.sub_apply, Pi.smul_apply]
     rw [(hzero' x).2]
     simp [H, rightTranslate, infinityCoordinate, Complex.real_smul, Complex.ofReal_inv]
   have hlim : Filter.Tendsto (fun t : ℝ => chartSeminorm s n
@@ -438,20 +435,18 @@ theorem lowering_harmonic_disjoint (s : ℝ) (m n : ℕ) (hmn : m ≠ n) :
       exact inf_le_right
     rcases hn.2.2.1 _ hle hm.1 with hbot | heq'
     · have hd : Module.finrank ℂ (harmonicKType s m) = 0 := by rw [hbot]; simp
-      rw [hm.2.1] at hd
       omega
     · have hd : 2 * m + 1 = 2 * n + 1 := by
         rw [← hm.2.1, heq', hn.2.1]
       omega
 
-private theorem lowering_pi_sub (s : ℝ) (g : ComplexPGL2)
+theorem lowering_pi_sub (s : ℝ) (g : ComplexPGL2)
     (f h : PrincipalSeries s) : pi s g (f - h) = pi s g f - pi s g h := by
   induction g using Quotient.inductionOn with
   | h g =>
-    change rightTranslate s g (f - h) = rightTranslate s g f - rightTranslate s g h
     rfl
 
-private theorem lowering_sum_projection (s : ℝ) (A B W : Submodule ℂ (PrincipalSeries s))
+theorem lowering_sum_projection (s : ℝ) (A B W : Submodule ℂ (PrincipalSeries s))
     (hd : Disjoint A B) (hW : W ≤ A ⊔ B) :
     ∃ P : W →ₗ[ℂ] B, ∀ w : W, (w : PrincipalSeries s) - P w ∈ A := by
   classical
@@ -496,7 +491,7 @@ theorem lowering_two_harmonic_components_mem (s : ℝ) (m n : ℕ) (hmn : m ≠ 
   have hUA : IsKInvariant s (U ⊓ A) := fun k f hf => ⟨hU k f hf.1, hA.1 k f hf.2⟩
   rcases hA.2.2.1 (U ⊓ A) inf_le_right hUA with hzero | hfull
   · by_cases hbzero : b = 0
-    · simpa [hbzero] using U.zero_mem
+    · simp [hbzero]
     let W := U ⊓ (A ⊔ B)
     obtain ⟨P, hP⟩ := lowering_sum_projection s A B W hd inf_le_right
     have huniq (w : W) (v : B) (hv : (w : PrincipalSeries s) - v ∈ A) : P w = v := by
@@ -516,7 +511,6 @@ theorem lowering_two_harmonic_components_mem (s : ℝ) (m n : ℕ) (hmn : m ≠ 
       have hepi : pi s k (a + b) = pi s k a + pi s k b := by
         induction (k : ComplexPGL2) using Quotient.inductionOn with
         | h g =>
-          change rightTranslate s g (a + b) = rightTranslate s g a + rightTranslate s g b
           rfl
       rw [hepi]
       exact (A ⊔ B).add_mem (Submodule.mem_sup_left (hA.1 k a ha))
@@ -579,15 +573,14 @@ theorem lowering_two_harmonic_components_mem (s : ℝ) (m n : ℕ) (hmn : m ≠ 
 open MvPolynomial
 open scoped BigOperators
 
-private theorem partials_commute_lowering (i j : Fin 3) (p : MvPolynomial (Fin 3) ℂ) :
+theorem partials_commute_lowering (i j : Fin 3) (p : MvPolynomial (Fin 3) ℂ) :
     pderiv i (pderiv j p) = pderiv j (pderiv i p) := by
   classical
   ext d
   simp only [coeff_pderiv]
   by_cases hij : i = j
   · subst j; rfl
-  · simp [Finsupp.single_apply, hij, Ne.symm hij, add_comm, add_left_comm, add_assoc,
-      mul_comm, mul_left_comm]
+  · simp [hij, Ne.symm hij, add_comm, add_left_comm, mul_comm, mul_left_comm]
 
 private theorem partial_mem_lowering (n : ℕ) (p : MvPolynomial (Fin 3) ℂ)
     (hp : p ∈ harmonicPolynomials (n + 1)) (i : Fin 3) :
@@ -712,7 +705,7 @@ namespace DedekindZetaZeroFree.KPCplxActualImageProof
 open KPCplxCharacterHaar KPCplxPrincipalSeriesCharts KPCplxIntertwinerEigenvalues
 open scoped Topology
 
-open KPCplxIntertwinerEigenvalues MvPolynomial
+open MvPolynomial
 open scoped BigOperators
 
 theorem exceptional_boost_coefficients_ne_zero (s : ℝ)
@@ -801,16 +794,9 @@ theorem orbit_limit_eq_of_pointwise_derivative (s : ℝ)
       (fun t : ℝ => t⁻¹ • (pi s (γ t) f g - pi s (γ 0) f g)) := by
     funext t
     rw [hγ, pi_one]
-    simp only [Complex.real_smul, Complex.ofReal_inv]
+    simp
   change Filter.Tendsto
     (fun t : ℝ => (t : ℂ)⁻¹ * (pi s (γ t) f g - f g))
     (𝓝[≠] (0 : ℝ)) (𝓝 (D g)) at hD
   rw [heq] at hD
   exact tendsto_nhds_unique hD hscalar
-
-open MvPolynomial
-open scoped BigOperators
-
-end DedekindZetaZeroFree.KPCplxHarmonicPropagation
-
-end

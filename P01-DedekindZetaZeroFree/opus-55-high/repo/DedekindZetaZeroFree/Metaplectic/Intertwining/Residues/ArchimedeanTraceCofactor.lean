@@ -14,7 +14,7 @@ namespace DedekindZetaZeroFree.KPGlobalResidualConstruction.StandardIntertwinerP
 open _root_.DedekindZetaZeroFree.KPComplexIntertwinerParameterMajorant renaming planarEnvelope_volume_integral → planarEnvelope_volume_integral
 open _root_.DedekindZetaZeroFree.KPComplexIntertwinerParameterMajorant renaming ratio_wn → ratio_wn
 
-private theorem actual_arch_trace_spherical_real_integral (t : ℝ)
+theorem actual_arch_trace_spherical_real_integral (t : ℝ)
     (ht : -(1 / 6 : ℝ) < t) :
     (∫ x : ℂ, KPComplexIntertwinerParameterMajorant.forwardSection (t : ℂ)
       KPComplexStandardIntertwinerGerm.compactSpherical
@@ -44,7 +44,7 @@ private theorem actual_arch_trace_spherical_real_integral (t : ℝ)
   push_cast
   ring
 
-private theorem actual_arch_trace_integral_eq_character (s : ℂ) :
+theorem actual_arch_trace_integral_eq_character (s : ℂ) :
     (∫ x : ℂ, KPComplexIntertwinerParameterMajorant.forwardSection s
       KPComplexStandardIntertwinerGerm.compactSpherical
         (KPCplxCharacterHaar.weyl * KPCplxCharacterHaar.upperUnipotent x * 1)
@@ -88,7 +88,7 @@ private theorem actual_arch_trace_integral_eq_character (s : ℂ) :
       change -(1 / 6 : ℝ) < z.re at hz
       norm_num at hr
       linarith
-    exact analyticAt_const.div (by fun_prop) hn
+    fun_prop
   let u : ℕ → ℂ := fun n => 1 / ((n : ℂ) + 1)
   have hu : Tendsto u atTop (𝓝[≠] (0 : ℂ)) := by
     apply tendsto_nhdsWithin_iff.mpr
@@ -125,7 +125,3 @@ def rationalChamberIntegrand
       (C₀.canonical q.val).iwasawa .plus s (φ q)).val
       ((C₀.canonical q.val).borel.liftedW⁻¹ * (C₀.canonical q.val).borel.upperRoot
         (Multiplicative.ofAdd (x q)) * 1)))
-
-end DedekindZetaZeroFree.KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue.ActualCofactor
-
-end

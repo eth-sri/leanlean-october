@@ -159,7 +159,7 @@ private theorem labeledA_labeledAInv (p : Fin (d F) ≃ Fin (KPCuspLogShape.dime
     (KPCuspSiegel.projection F (KPContSectorPhaseComponentCharts.Component F ζ hζ U R P H i)
       (labeledA (placeEquiv F ζ hζ) x))
 
-private theorem q_eq_Qfun (a : ShrunkChart F ζ hζ U R P H) :
+theorem q_eq_Qfun (a : ShrunkChart F ζ hζ U R P H) :
     KPContCotangentOverlapRationalBranches.q a = Qfun (F := F) (ζ := ζ) (hζ := hζ) (U := U)
       (R := R) (P := P) (H := H) a.component := rfl
 
@@ -238,7 +238,7 @@ private theorem measurable_q (a : ShrunkChart F ζ hζ U R P H) :
   rw [hcomp]
   exact hcm.measurable.comp (hproj.comp continuous_labeledA_placeEquiv.measurable)
 
-private theorem T_proof_irrel {i : Fin (H.atlas U).componentCount}
+theorem T_proof_irrel {i : Fin (H.atlas U).componentCount}
     {a b : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) i}
     (ψ : Arrow a b) (x : M F) (h h' : x ∈ ψ.domain) : T ψ x h = T ψ x h' := by
   simp only [KPContCotangentActualGenuineTwistIsotropy.T]

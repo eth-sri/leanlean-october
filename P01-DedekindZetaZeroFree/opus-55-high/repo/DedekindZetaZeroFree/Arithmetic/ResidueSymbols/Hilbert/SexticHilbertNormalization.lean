@@ -14,7 +14,6 @@ namespace DedekindZetaZeroFree
 namespace KPHilbert
 
 noncomputable section
-set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
 
@@ -76,7 +75,7 @@ def squareToThree : rootsOfUnity 6 F →* rootsOfUnity 3 F where
     change ((z : Fˣ) ^ 2) ^ 3 = 1
     rw [← pow_mul]
     exact z.property⟩
-  map_one' := by apply Subtype.ext; simp
+  map_one' := by simp
   map_mul' := by intro x y; apply Subtype.ext; simp [mul_pow]
 
 def B3 (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (v : Place F) (a b : (Completion F v)ˣ) : rootsOfUnity 3 F :=
@@ -99,7 +98,7 @@ theorem B6_infinite (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (w : InfinitePlace F)
     (a b : w.Completionˣ) : B6 F ζ hζ (Sum.inl w) a b = 1 := rfl
 
 open ClassFieldTheory in
-private theorem raw_three_six (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (v : HeightOneSpectrum (𝓞 F))
+theorem raw_three_six (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (v : HeightOneSpectrum (𝓞 F))
     (a b : (v.adicCompletion F)ˣ) :
     ((finitePlaceAdicHilbertPairingFamily F 3 (rootsThree F ζ hζ) v
       (powerClass _ 3 a) (powerClass _ 3 b)) : (v.adicCompletion F)ˣ) =
@@ -142,7 +141,7 @@ theorem B3_canonical (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (congrArg Inv.inv (raw_three_six F ζ hζ v a b)).symm)
 
 open ClassFieldTheory in
-private theorem raw_neg_self (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) F).Nonempty)
+theorem raw_neg_self (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) F).Nonempty)
     (v : HeightOneSpectrum (𝓞 F)) (a : (v.adicCompletion F)ˣ) :
     finitePlaceAdicHilbertPairingFamily F n hmu v
       (powerClass _ n a) (powerClass _ n (-a)) = 1 := by
@@ -154,11 +153,10 @@ private theorem raw_neg_self (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) F).None
       apply Units.ext
       simp]
   unfold ClassFieldTheory.localHilbertSymbol
-  rw [LocalClassFieldTheory.Kummer.localHilbertSymbol_neg_self]
   simp
 
 open ClassFieldTheory in
-private theorem transported_laws {K : Type} [Field K] {M : Type} [CommGroup M] (n : ℕ+) (B : HilbertPairing K n) (e : M ≃* rootsOfUnity (n : ℕ) K)
+theorem transported_laws {K : Type} [Field K] {M : Type} [CommGroup M] (n : ℕ+) (B : HilbertPairing K n) (e : M ≃* rootsOfUnity (n : ℕ) K)
     (hB : B.IsLocalHilbertPairing)
     (hn : ∀ a : Kˣ, B (powerClass K n a) (powerClass K n (-a)) = 1)
     (hm : powerClass K n (-1) = 1) :
@@ -180,10 +178,8 @@ private theorem transported_laws {K : Type} [Field K] {M : Type} [CommGroup M] (
   have hminus (a : Kˣ) : T (powerClass K n a) (powerClass K n (-1)) = 1 := by
     rw [hm, map_one]
   refine ⟨?_, ?_, ?_, ?_, ?_, ?_⟩
-  · intro a b c
-    rw [map_mul, map_mul, MonoidHom.mul_apply]
-  · intro a b c
-    rw [map_mul, map_mul]
+  · simp
+  · simp
   · intro a b
     exact DedekindZetaZeroFree.NormalizedSymbolTransport.inverseTransport_skew e B hB.2.1 _ _
   · intro a b hab
@@ -195,10 +191,7 @@ private theorem transported_laws {K : Type} [Field K] {M : Type} [CommGroup M] (
     simp only [DedekindZetaZeroFree.NormalizedSymbolTransport.inverseTransport_apply]
     rw [show B (powerClass K n a) (powerClass K n (Units.mk0 _ _)) = 1 from hB.1 a _]
     simp
-  · intro a b
-    constructor
-    · rw [hpow, map_one, MonoidHom.one_apply]
-    · rw [hpow, map_one]
+  · simp_all
   · intro a
     refine ⟨?_, hminus a, hneg a⟩
     have hh := hneg a
@@ -266,7 +259,7 @@ theorem B3_laws (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (v : Place F) :
     norm_num [Units.val_pow_eq_pow_val]
 
 open ClassFieldTheory in
-private theorem continuous_powerClass_pair (K : Type) [Field K] [ValuativeRel K]
+theorem continuous_powerClass_pair (K : Type) [Field K] [ValuativeRel K]
     [TopologicalSpace K] [IsNonarchimedeanLocalField K] (n : ℕ+) (hn : ((n : ℕ) : K) ≠ 0)
     {M : Type} [TopologicalSpace M] (B : PowerClassGroup K n → PowerClassGroup K n → M) :
     Continuous (fun ab : Kˣ × Kˣ => B (powerClass K n ab.1) (powerClass K n ab.2)) := by
@@ -281,8 +274,7 @@ private theorem continuous_powerClass_pair (K : Type) [Field K] [ValuativeRel K]
   haveI : DiscreteTopology (PowerClassGroup K n) :=
     QuotientGroup.discreteTopology hopen
   have hc : Continuous (powerClass K n) := QuotientGroup.continuous_mk
-  exact (continuous_of_discreteTopology : Continuous (fun xy : PowerClassGroup K n × PowerClassGroup K n => B xy.1 xy.2)).comp
-    ((hc.comp continuous_fst).prodMk (hc.comp continuous_snd))
+  fun_prop
 
 theorem B6_continuous (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (v : Place F) :
     letI : TopologicalSpace (rootsOfUnity 6 F) := ⊥
@@ -333,9 +325,7 @@ theorem B6_productFormula (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (a b : Fˣ) :
     cases v with
     | inl w => exact (hv rfl).elim
     | inr w =>
-      refine ⟨w, ?_, rfl⟩
-      intro hw
-      exact hv (by rw [hfg, hw, inv_one])
+      simp_all
   have hf : Function.HasFiniteMulSupport f := (hg.image Sum.inr).subset hsub
   have hp : (∏ᶠ v, g v) = 1 := by
     have h := (ClassFieldTheory.finitePlaceAdicHilbertPairingFamily_productFormula
@@ -435,7 +425,7 @@ theorem tame_place_iff :
     (WithZero (Multiplicative ℤ))) (ValuativeRel.valuation (v.adicCompletion F))).eq_one_iff_eq_one]
   have h := v.valuedAdicCompletion_eq_valuation (K := F) (6 : 𝓞 F)
   have hp : v.valuation F (algebraMap (𝓞 F) F 6) = 1 ↔ (6 : 𝓞 F) ∉ v.asIdeal :=
-    v.valuation_eq_one_iff_notMem (K := F)
+    by simp
   rw [← h] at hp
   simpa only [map_ofNat] using hp
 
@@ -479,7 +469,3 @@ theorem B6_S_product (A : SArithmeticData F) (x y : A.G) :
       B6 F A.zeta12 A.primitive_zeta12 (Sum.inr v.val) (x.2 v) (y.2 v)) =
         A.H_S x y := by
   rfl
-
-end
-end KPHilbert
-end DedekindZetaZeroFree

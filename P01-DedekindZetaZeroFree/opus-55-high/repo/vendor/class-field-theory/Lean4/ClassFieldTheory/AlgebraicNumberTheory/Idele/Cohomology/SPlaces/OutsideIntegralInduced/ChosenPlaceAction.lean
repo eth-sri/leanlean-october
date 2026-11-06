@@ -16,14 +16,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # The action at a chosen finite place
 
@@ -76,7 +68,7 @@ abbrev ChosenFinitePlaceLocalizedFieldUnits
 The named action is the boundary at which dependent induced-module
 declarations stop expanding the chosen-localization construction. -/
 @[implicit_reducible]
-noncomputable def
+def
     chosenFinitePlaceDecompositionGroupIntegerUnitsAction
     (w₀ : HeightOneSpectrum (𝓞 K)) :
     MulDistribMulAction
@@ -93,7 +85,7 @@ noncomputable def
 
 /-- The decomposition-group action on the chosen local field units. -/
 @[implicit_reducible]
-noncomputable def chosenFinitePlaceDecompositionGroupLocalUnitsAction
+def chosenFinitePlaceDecompositionGroupLocalUnitsAction
     (w₀ : HeightOneSpectrum (𝓞 K)) :
     MulDistribMulAction
       (ChosenFinitePlaceDecompositionGroup
@@ -129,7 +121,7 @@ abbrev ChosenFinitePlaceLocalPlaceBlock
 
 /-- The global action on the chosen induced integer-unit block. -/
 @[implicit_reducible]
-noncomputable def chosenFinitePlaceInducedIntegerUnitsAction
+def chosenFinitePlaceInducedIntegerUnitsAction
     (w₀ : HeightOneSpectrum (𝓞 K)) :
     MulDistribMulAction (L ≃ₐ[K] L)
       (ChosenFinitePlaceInducedIntegerUnits
@@ -147,7 +139,7 @@ noncomputable def chosenFinitePlaceInducedIntegerUnitsAction
 
 /-- The global action on the chosen local multiplicative block. -/
 @[implicit_reducible]
-noncomputable def chosenFinitePlaceLocalPlaceBlockAction
+def chosenFinitePlaceLocalPlaceBlockAction
     (w₀ : HeightOneSpectrum (𝓞 K)) :
     MulDistribMulAction (L ≃ₐ[K] L)
       (ChosenFinitePlaceLocalPlaceBlock
@@ -241,7 +233,3 @@ theorem chosenFinitePlaceLocalizedIntegerUnits_unramifiedHerbrand_subsingleton
   exact
     unramifiedLocalIntegerUnitsHerbrand_subsingleton
       vK.Completion E g hg
-
-end ChosenFinitePlace
-
-end

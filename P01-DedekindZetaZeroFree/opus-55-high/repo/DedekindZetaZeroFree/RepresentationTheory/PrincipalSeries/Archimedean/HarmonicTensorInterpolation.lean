@@ -65,31 +65,11 @@ open _root_.DedekindZetaZeroFree.KPLiteralChamber renaming sectionTuple_insertio
 theorem archMatrixInsertion_projective_congr
     (a b : InfinitePlace F → ComplexGL2)
     (h : ∀ w, Matrix.ProjGenLinGroup.mk (a w) = Matrix.ProjGenLinGroup.mk (b w)) :
-    archMatrixInsertion F ζ hζ a = archMatrixInsertion F ζ hζ b := by
-  change scalarQuotient F ζ hζ (amalgamation F ζ hζ (sectionTuple F ζ hζ a)) =
-    scalarQuotient F ζ hζ (amalgamation F ζ hζ (sectionTuple F ζ hζ b))
-  rw [sectionTuple_insertion, sectionTuple_insertion]
-  congr 1
-  exact funext h
+    archMatrixInsertion F ζ hζ a = archMatrixInsertion F ζ hζ b := by apply DedekindZetaZeroFree.KPLiteralScalarHCLocalCovariance.archMatrixInsertion_projective_congr <;> assumption
 
 theorem archMatrixInsertion_diagonal (z : InfinitePlace F → ℂˣ) :
     archMatrixInsertion F ζ hζ (fun w => KubotaRankTwo.d ℂ (z w) 1) =
-      (KPGlobalTorusFunctionData.torusArchChart F ζ hζ (fun w => (z w : ℂ))).val := by
-  change scalarQuotient F ζ hζ (amalgamation F ζ hζ _) =
-    scalarQuotient F ζ hζ (amalgamation F ζ hζ _)
-  congr 2
-  apply RestrictedProduct.ext
-  intro v
-  cases v with
-  | inr q => rfl
-  | inl w =>
-    change complexSectionHom F ζ hζ w (KubotaRankTwo.d ℂ (z w) 1) = _
-    simp only [KPGlobalTorusFunctionData.archDiagonalTuple]
-    change KPLocalCover.CubicGL2Raw.mk _ 1 = KPLocalCover.CubicGL2Raw.mk _ 1
-    congr 1
-    apply Matrix.GeneralLinearGroup.ext
-    intro i j
-    fin_cases i <;> fin_cases j <;> simp [Matrix.GeneralLinearGroup.map]
+      (KPGlobalTorusFunctionData.torusArchChart F ζ hζ (fun w => (z w : ℂ))).val := by apply DedekindZetaZeroFree.KPLiteralScalarHCLocalCovariance.archMatrixInsertion_diagonal <;> assumption
 
 private theorem upper_projective (a d : ℂˣ) (b : ℂ) :
     Matrix.ProjGenLinGroup.mk (KPCplxPrincipalSeriesCharts.upperTriangular a d b) =

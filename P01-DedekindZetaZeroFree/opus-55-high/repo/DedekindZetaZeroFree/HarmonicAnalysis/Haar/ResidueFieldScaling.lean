@@ -56,9 +56,9 @@ theorem residue_index_measure (μ : Measure K) [μ.IsAddHaarMeasure] :
   have hmass : ρ Set.univ = μ (R : Set K) := by
     rw [Measure.map_apply hr MeasurableSet.univ, Set.preimage_univ]
     calc
-      ν Set.univ = μ (Subtype.val '' (Set.univ : Set R)) := by
-        exact comap_subtype_coe_apply hR μ Set.univ
-      _ = μ (R : Set K) := by congr 1; ext x; simp
+      ν Set.univ = μ (Subtype.val '' (Set.univ : Set R)) := 
+        comap_subtype_coe_apply hR μ Set.univ
+      _ = μ (R : Set K) := by simp
   have hsingle (x : κ) : ρ {x} = ρ {0} := by
     have he : (fun y : κ => -x + y) ⁻¹' {0} = {x} := by
       ext y
@@ -69,8 +69,7 @@ theorem residue_index_measure (μ : Measure K) [μ.IsAddHaarMeasure] :
     rw [← he, measure_preimage_add]
   have hsum : (Fintype.card κ : ℝ≥0∞) * ρ {0} = ρ Set.univ := by
     have H := sum_measure_singleton (μ := ρ) (s := Finset.univ)
-    simp only [hsingle, Finset.sum_const, Finset.card_univ, nsmul_eq_mul] at H
-    simpa using H
+    simp_all
   have hzero : ρ {0} = μ (R.subtype '' (IsLocalRing.maximalIdeal R : Set R)) := by
     rw [Measure.map_apply hr (MeasurableSet.singleton 0)]
     have hset : r ⁻¹' {0} = (IsLocalRing.maximalIdeal R : Set R) := by
@@ -95,7 +94,7 @@ theorem uniformizer_image_integerRing
     refine ⟨π * (⟨y, hy⟩ : R), ?_, rfl⟩
     rw [hπ.maximalIdeal_eq]
     rw [SetLike.mem_coe, Ideal.mem_span_singleton]
-    exact dvd_mul_right _ _
+    simp
   · rintro ⟨y, hy, rfl⟩
     rw [hπ.maximalIdeal_eq] at hy
     rw [SetLike.mem_coe, Ideal.mem_span_singleton] at hy
@@ -135,7 +134,6 @@ private lemma sigma : SigmaCompactSpace K := by
   rw [← e.toOrderIso.le_iff_le]
   change e (ValuativeRel.valuation K x) ≤ e (e.symm (WithZero.exp (l.toNat : ℤ)))
   rw [e.apply_symm_apply, ← WithZero.exp_log hv, WithZero.exp_le_exp]
-  change l ≤ (l.toNat : ℤ)
   omega
 abbrev q := Nat.card (IsLocalRing.ResidueField ↥(ValuativeRel.valuation K).integer)
 private lemma q_pos : (0 : ℝ) < q K := by exact_mod_cast (Nat.card_pos (α := IsLocalRing.ResidueField ↥(ValuativeRel.valuation K).integer))
@@ -161,7 +159,7 @@ private lemma amul (x y : K) : abs K (x*y) = abs K x * abs K y := by
 private lemma ale {x y : K} (hy : y ≠ 0) :
     abs K x ≤ abs K y ↔ ValuativeRel.valuation K x ≤ ValuativeRel.valuation K y := by
   by_cases hx : x = 0
-  · subst x; simp only [abs, if_pos rfl, map_zero]; exact iff_of_true (le_of_lt (apos K hy)) bot_le
+  · subst x; simp only [abs, map_zero]; exact iff_of_true (le_of_lt (apos K hy)) bot_le
   let e := IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K
   have hex : e (ValuativeRel.valuation K x) ≠ 0 := by simpa [e] using hx
   have hey : e (ValuativeRel.valuation K y) ≠ 0 := by simpa [e] using hy
@@ -170,9 +168,7 @@ private lemma ale {x y : K} (hy : y ≠ 0) :
   rw [zpow_le_zpow_iff_right₀ (q_gt K)]
   change WithZero.log (e (ValuativeRel.valuation K x)) ≤ WithZero.log (e (ValuativeRel.valuation K y)) ↔ _
   rw [← e.toOrderIso.le_iff_le]
-  change WithZero.log (e (ValuativeRel.valuation K x)) ≤ WithZero.log (e (ValuativeRel.valuation K y)) ↔ e (ValuativeRel.valuation K x) ≤ e (ValuativeRel.valuation K y)
-  conv_rhs => rw [← WithZero.exp_log hex, ← WithZero.exp_log hey]
-  exact WithZero.exp_le_exp.symm
+  simp_all
 private lemma ainv (x : K) : abs K x⁻¹ = (abs K x)⁻¹ := by
   by_cases hx : x = 0
   · subst x; simp [abs]
@@ -207,8 +203,7 @@ private lemma exists_pi : ∃ π : ↥(ValuativeRel.valuation K).integer, Irredu
   have hxle : ValuativeRel.valuation K x ≤ 1 := by
     apply e.toOrderIso.le_iff_le.mp
     change e (ValuativeRel.valuation K x) ≤ e 1
-    rw [he, map_one, ← WithZero.exp_zero]
-    exact WithZero.exp_le_exp.mpr (by decide)
+    simp_all
   let π : ↥(ValuativeRel.valuation K).integer := ⟨x, hxle⟩
   have hspan : IsLocalRing.maximalIdeal ↥(ValuativeRel.valuation K).integer = Ideal.span {π} := by
     ext y
@@ -295,9 +290,4 @@ theorem map_mul (μ : Measure K) [μ.IsAddHaarMeasure] (c : K) (hc : c ≠ 0) :
   rw [hmap] at h
   ext s
   rw [h]
-  simp only [Measure.smul_apply, NNReal.smul_def, ENNReal.smul_def, smul_eq_mul,
-    ENNReal.coe_inv (ne_of_gt distribHaarChar_pos), hchar]
-
-end DedekindZetaZeroFree.IntrinsicHaarScaling
-
-end
+  simp only [Measure.smul_apply, ENNReal.smul_def, smul_eq_mul, ENNReal.coe_inv (ne_of_gt distribHaarChar_pos), hchar]

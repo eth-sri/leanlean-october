@@ -20,7 +20,7 @@ variable (M : FourierContinuation.SourceReconstruction.InducingData F ζ hζ)
 variable (S : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F)))
  abbrev CompactCover := ∀ q : S, (M q.val).iwasawa.compact.toOpenSubgroup
 
-private theorem productSection_from_compact
+theorem productSection_from_compact
     (f : ProductFunctions F ζ hζ M S)
     (hf : f ∈ productCovariance F ζ hζ M S) (g : ProductCover F ζ hζ S) :
     f g = PiTensorProduct.map (fun q : S =>
@@ -46,7 +46,3 @@ private theorem productSection_from_compact
   rw [productSection_from_compact F ζ hζ M S f hf g,
     productSection_from_compact F ζ hζ M S h hh g,
     heq (fun q => (M q.val).iwasawa.compactPart (g q))]
-
-end DedekindZetaZeroFree.NativeScalarFiniteCompactRestriction
-
-end

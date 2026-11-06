@@ -25,7 +25,7 @@ private theorem smooth_arch (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (arch d) := 
   · exact Complex.equivRealProdCLM.symm.contDiff.comp
       ((EuclideanSpace.proj (𝕜 := ℝ) (i, (0 : Fin 3))).contDiff.prodMk
        (EuclideanSpace.proj (𝕜 := ℝ) (i, (1 : Fin 3))).contDiff)
-  · exact (EuclideanSpace.proj (𝕜 := ℝ) (i, (2 : Fin 3))).contDiff
+  fun_prop
 
 private theorem smooth_real (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (real d) := by
   apply (contDiff_piLp 2).mpr
@@ -39,14 +39,12 @@ private theorem smooth_real (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (real d) := 
 private theorem smooth_mean (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (KPCuspLogShape.meanHeight d) := by
   unfold KPCuspLogShape.meanHeight
   apply ContDiff.div_const
-  apply ContDiff.sum
-  intro i hi
-  exact contDiff_snd.comp (contDiff_apply ℝ KPArch.H3 i)
+  fun_prop
 
 private theorem derivative_smoothAt (d : ℕ) (g : Space d → ℂ) (x : Space d)
     (hg : ContDiffAt ℝ (⊤ : ℕ∞) g x) (i : Fin d) (k : Fin 3) :
-    ContDiffAt ℝ (⊤ : ℕ∞) (coordinateDerivative d i k g) x := by
-  exact (hg.fderiv_right (by simp)).clm_apply contDiffAt_const
+    ContDiffAt ℝ (⊤ : ℕ∞) (coordinateDerivative d i k g) x := 
+  (hg.fderiv_right (by simp)).clm_apply contDiffAt_const
 
 private theorem differential_smoothAt (d : ℕ) (g : Space d → ℂ) (x : Space d)
     (hg : ContDiffAt ℝ (⊤ : ℕ∞) g x) (i : Fin d) (k : Fin 3) :
@@ -91,8 +89,8 @@ private theorem cutoff_smoothAt (v : Representative ζ hζ S ρ V T)
     (x : Space (KPCuspLogShape.dimension F))
     (hx : T < KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F)
       (arch (KPCuspLogShape.dimension F) x)) :
-    ContDiffAt ℝ (⊤ : ℕ∞) (rawCutoffUpstairs v η) x := by
-  exact (Complex.ofRealCLM.contDiff.contDiffAt.comp x
+    ContDiffAt ℝ (⊤ : ℕ∞) (rawCutoffUpstairs v η) x := 
+  (Complex.ofRealCLM.contDiff.contDiffAt.comp x
     (hη.contDiffAt.comp x ((smooth_mean _).comp (smooth_arch _)).contDiffAt)).mul
       (representative_smoothAt v x hx)
 
@@ -162,25 +160,25 @@ namespace CutoffAffine
   WithLp.toLp 2 (fun j => ![(b j.1).re, (b j.1).im, Real.log ‖a j.1‖] j.2)
  def affine (d : ℕ) (a b : Fin d → ℂ) (x : Space d) : Space d :=
   linear d a x + translation d a b
-private theorem affine_deriv (d : ℕ) (a b : Fin d → ℂ) (x : Space d) :
+theorem affine_deriv (d : ℕ) (a b : Fin d → ℂ) (x : Space d) :
     HasFDerivAt (affine d a b) (linear d a) x := by
   change HasFDerivAt (fun x => linear d a x + translation d a b) (linear d a) x
-  exact (linear d a).hasFDerivAt.add_const (translation d a b)
-private theorem linear_basis (d : ℕ) (a : Fin d → ℂ) (i : Fin d) :
+  fun_prop
+theorem linear_basis (d : ℕ) (a : Fin d → ℂ) (i : Fin d) :
     linear d a (coordinateVector d i 0) =
       (a i).re • coordinateVector d i 0 + (a i).im • coordinateVector d i 1 := by
   ext ⟨j,k⟩
   fin_cases k <;> simp [linear, coordinateVector] <;> split_ifs <;> simp_all
-private theorem linear_basis1 (d : ℕ) (a : Fin d → ℂ) (i : Fin d) :
+theorem linear_basis1 (d : ℕ) (a : Fin d → ℂ) (i : Fin d) :
     linear d a (coordinateVector d i 1) =
       -(a i).im • coordinateVector d i 0 + (a i).re • coordinateVector d i 1 := by
   ext ⟨j,k⟩
   fin_cases k <;> simp [linear, coordinateVector] <;> split_ifs <;> simp_all
-private theorem linear_basis2 (d : ℕ) (a : Fin d → ℂ) (i : Fin d) :
+theorem linear_basis2 (d : ℕ) (a : Fin d → ℂ) (i : Fin d) :
     linear d a (coordinateVector d i 2) = coordinateVector d i 2 := by
   ext ⟨j,k⟩
   fin_cases k <;> simp [linear, coordinateVector]
-private theorem norm_rotation (r s : ℝ) (u w : ℂ) :
+theorem norm_rotation (r s : ℝ) (u w : ℂ) :
     ‖(r : ℂ) * u + (s : ℂ) * w‖ ^ 2 +
       ‖-(s : ℂ) * u + (r : ℂ) * w‖ ^ 2 =
       (r ^ 2 + s ^ 2) * (‖u‖ ^ 2 + ‖w‖ ^ 2) := by
@@ -228,7 +226,7 @@ private theorem gradient_affine (d : ℕ) (a b : Fin d → ℂ) (ha : ∀ i, a i
 variable {F : Type} [Field F] [NumberField F]
     {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
     {S : Subgroup (KPCuspArithmetic.PGL2 F)} {D : KPCuspCharts.ParabolicData F S}
-private theorem affine_chart (u : D.E) (v : F) (p : KPCuspCharts.Coordinates F) :
+theorem affine_chart (u : D.E) (v : F) (p : KPCuspCharts.Coordinates F) :
     arch (KPCuspLogShape.dimension F)
       (affine (KPCuspLogShape.dimension F) (KPCuspCharts.embedding F (u : Fˣ))
         (KPCuspCharts.embedding F v)
@@ -542,9 +540,7 @@ theorem compact_scalar_density_integrable
   apply integrable_of_continuous_high_orbit_invariant G hK hKT
   · exact (ha.comp continuous_snd).continuousOn.mul ((scalar_continuousOn G v).norm.pow 2)
   · intro p hp
-    apply hs
-    intro hzero
-    exact hp (by simp [hzero])
+    simp_all
   · intro p q hrel
     rw [highRelation_radial_eq G hrel, scalar_norm_high_orbit_invariant G v hrel]
 
@@ -561,22 +557,15 @@ theorem compact_radial_scalar_densities_integrable
     intro t ht
     apply support_deriv_subset
     intro hz
-    exact ht (by simp [hz])
+    simp_all
   · apply compact_scalar_density_integrable G v hη.2.1 hη.2.2
       (fun t => Real.exp (2 * t) * η t ^ 2)
       ((Real.continuous_exp.comp (continuous_const.mul continuous_id)).mul (hη.1.continuous.pow 2))
     intro t ht
     apply subset_tsupport η
     intro hz
-    exact ht (by simp [hz])
+    simp_all
 namespace DensityContinuity
-open HyperbolicChart
-
-variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-    {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
-    {S : Subgroup (KPCuspArithmetic.PGL2 F)} {D : KPCuspCharts.ParabolicData F S}
-    {ρ : S →* rootsOfUnity 3 F} {V : Submodule ℂ ℂ} {T : ℝ}
-
 end DensityContinuity
 
 theorem compact_radial_densities_integrable
@@ -621,9 +610,3 @@ theorem compact_radial_densities_integrable
       hcutCont hcutSupport hcutInv
   · exact integrable_of_continuous_high_orbit_invariant G hη.2.1 hη.2.2
       hgreenCont hgreenSupport hgreenInv
-
-end DedekindZetaZeroFree.KPCompactGreen
-
-end
-
-end

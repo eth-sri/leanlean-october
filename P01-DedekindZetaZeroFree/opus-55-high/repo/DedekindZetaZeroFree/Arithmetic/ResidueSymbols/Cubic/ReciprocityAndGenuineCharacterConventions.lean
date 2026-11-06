@@ -9,7 +9,6 @@ open NumberField IsDedekindDomain
 
 namespace DedekindZetaZeroFree.KPSourceConvention
 noncomputable section
-set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
@@ -83,7 +82,7 @@ theorem sourceC_valuation_units
         (KPHilbert.residueSixCharacter F v ζ hζ hgood t) : ℂ) ^ (-2 * e) := by
   rw [sourceC_eq_actualC_inv,
     KPEffectiveDiagonalMultiplier.C_valuation_units F ζ hζ v hgood π hπ]
-  simp [mul_inv, ← zpow_neg, mul_comm]
+  simp [← zpow_neg, mul_comm]
 
 end Tame
 

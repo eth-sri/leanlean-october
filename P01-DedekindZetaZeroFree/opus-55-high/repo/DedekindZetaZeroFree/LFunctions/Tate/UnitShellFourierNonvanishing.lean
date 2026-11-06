@@ -79,14 +79,14 @@ theorem finiteShell_weighted_fourier_integral_ne_zero
       apply integral_congr_ae
       filter_upwards with y
       rw [Complex.ofReal_cpow (norm_nonneg y) (s - 1)]
-      simp only [Complex.ofReal_sub, Complex.ofReal_one]
+      simp
     · have hq : 1 < (TateFiniteShell.q F v : ℝ) := by
         exact_mod_cast finiteCompletion_residueCard_gt_one F v
       exact inv_nonneg.mpr (sub_nonneg.mpr (inv_le_one_of_one_le₀ hq.le))
   have hi : (∫ y in ({0}ᶜ : Set (v.adicCompletion F)),
       g y * (‖y‖ ^ (s - 1) : ℝ) ∂μ) ≠ 0 := by
     intro hi
-    exact hn (by rw [hm, hi, mul_zero])
+    simp_all
   change (∫ y in ({0}ᶜ : Set (v.adicCompletion F)),
     g y * (‖y‖ ^ (s - 1) : ℝ) ∂localNormalizedHaar F v) ≠ 0
   unfold localNormalizedHaar
@@ -112,8 +112,3 @@ private instance completionMeasurable (v : HeightOneSpectrum (𝓞 F)) :
     MeasurableSpace (v.adicCompletion F) := borel _
 private instance completionBorel (v : HeightOneSpectrum (𝓞 F)) :
     BorelSpace (v.adicCompletion F) := ⟨rfl⟩
-
-end DedekindZetaZeroFree.TateFiniteShellFourierIntegrals
-
-end
-end

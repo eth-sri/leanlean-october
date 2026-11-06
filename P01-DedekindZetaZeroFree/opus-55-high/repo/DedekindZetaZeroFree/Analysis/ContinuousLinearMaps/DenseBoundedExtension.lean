@@ -4,7 +4,6 @@ public import Mathlib.Analysis.Normed.Operator.Extend
 
 @[expose] public section
 
-noncomputable section
 
 namespace DedekindZetaZeroFree.KPLocalizedFormGraph
 
@@ -32,7 +31,3 @@ theorem dense_bounded_extension
     ext u
     simp only [ContinuousLinearMap.comp_apply, Function.comp_apply, hL,
       LinearMap.extendOfNorm_eq he ⟨C, hbound⟩ u, hprojection u]
-
-end DedekindZetaZeroFree.KPLocalizedFormGraph
-
-end

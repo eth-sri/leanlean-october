@@ -99,7 +99,7 @@ theorem tensor_measurable (γ : Gamma a) :
   exact (((hc.comp (coordinates_continuous a)).comp continuous_fst).clm_apply
     continuous_snd).measurable
 
-private theorem same_labels {i : Fin (H.atlas U).componentCount}
+theorem same_labels {i : Fin (H.atlas U).componentCount}
     {b c : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) i}
     (e f : Arrow b c) (hγ : e.gamma = f.gamma) (hr : e.root = f.root)
     (x : M F) (he : x ∈ e.domain) (hf : x ∈ f.domain) : T e x he = T f x hf := by

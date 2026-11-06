@@ -20,13 +20,7 @@ theorem initial_ray_principal_descent_equiv {F : Type} [Field F] [NumberField F]
   have hmf : m ≤ f := Ideal.dvd_iff_le.mp hfm
 
   have hηθ : ∀ I : Ideal (𝓞 F), I ≠ ⊥ → I ⊔ m = ⊤ → η I = θ I := by
-    intro I hI hIcop
-    have hcond : ¬ (I = ⊥ ∨ I ⊔ m ≠ ⊤) := by
-      rintro (h | h)
-      · exact hI h
-      · exact h hIcop
-    rw [hind I]
-    simp only [hcond, ↓reduceIte]
+    simp_all
   constructor
   ·
     intro hη
@@ -56,5 +50,3 @@ theorem initial_ray_principal_descent_equiv {F : Type} [Field F] [NumberField F]
       top_unique (le_trans (le_of_eq hIm.symm) (sup_le_sup_left hmf I))
     rw [hηθ I hI hIm]
     exact hθ I hI hIf
-
-end DedekindZetaZeroFree.LargeSieve

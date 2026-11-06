@@ -145,7 +145,7 @@ theorem rowFactor_right_fixed :
   calc _ ≤ C1 * (C2 * (2 + |w.im|) ^ A) * C4 * (C3 * D.q u ^ (1 : ℝ)) := by gcongr
     _ = _ := by ring
 
-private theorem weight_dom' (D : FixedData S η) (ξ : ℂ) (v y : ℝ) (Cc A : ℝ) (hCc : 0 ≤ Cc)
+theorem weight_dom' (D : FixedData S η) (ξ : ℂ) (v y : ℝ) (Cc A : ℝ) (hCc : 0 ≤ Cc)
     (hA' : 0 ≤ A) (p : ℝ × ℝ) (x : ℝ)
     (hx : x ≤ Cc * (WeightConvolution.weightModulus D ξ v y p * (2 + |p.2|) ^ A)) :
     x ≤ Cc * WeightConvolution.weightModulus D ξ v y p * (2 + |p.1| + |p.2| + |ξ.im|) ^ A := by

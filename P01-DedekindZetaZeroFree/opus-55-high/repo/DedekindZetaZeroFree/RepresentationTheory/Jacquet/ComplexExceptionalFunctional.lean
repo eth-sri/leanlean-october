@@ -9,12 +9,12 @@ namespace DedekindZetaZeroFree.KPCplxJacquetFunctional
 open KPCplxCharacterHaar KPCplxPrincipalSeriesCharts KPCplxActualImage MeasureTheory
 open scoped Topology
 
-private theorem upperUnipotent_mul (x t : ℂ) :
+theorem upperUnipotent_mul (x t : ℂ) :
     upperUnipotent x * upperUnipotent t = upperUnipotent (x + t) := by
   ext i j
   fin_cases i <;> fin_cases j <;> simp [upperUnipotent] <;> ring
 
-private theorem weyl_upperUnipotent_mul (x t : ℂ) :
+theorem weyl_upperUnipotent_mul (x t : ℂ) :
     weyl * upperUnipotent x * upperUnipotent t = weyl * upperUnipotent (x + t) := by
   rw [mul_assoc, upperUnipotent_mul]
 
@@ -29,13 +29,8 @@ theorem jacquetIntegral_integrable (β : ℂˣ) (f : PrincipalSeries positivePar
   have h := (KPCplxIntertwinerEigenvalues.intertwinerIntegral_exists β f).1 1
   simp only [mul_one] at h
   refine h.mul_bdd (c := 1) ?_ ?_
-  · have hcont : Continuous (fun x : ℂ => (character (β : ℂ) (-x) : ℂ)) := by
-      refine continuous_subtype_val.comp ?_
-      show Continuous (fun x : ℂ => Circle.exp (((β : ℂ) * (-x)).re))
-      exact Circle.exp.continuous.comp (by fun_prop)
-    exact hcont.aestronglyMeasurable
-  · filter_upwards with x
-    rw [Circle.norm_coe]
+  · fun_prop
+  simp
 
 noncomputable def jacquetLinearMap (β : ℂˣ) :
     PrincipalSeries positiveParameter →ₗ[ℂ] ℂ where
@@ -52,7 +47,7 @@ noncomputable def jacquetLinearMap (β : ℂˣ) :
     exact integral_smul c (fun x : ℂ =>
       f (weyl * upperUnipotent x) * (character (β : ℂ) (-x) : ℂ))
 
-private theorem chart_zero_bound (s : ℝ) (f : PrincipalSeries s) (x : ℂ)
+theorem chart_zero_bound (s : ℝ) (f : PrincipalSeries s) (x : ℂ)
     (hx : ‖x‖ ≤ 1) :
     ‖openCoordinate f x‖ ≤ chartSeminorm s 0 f ∧
       ‖infinityCoordinate f x‖ ≤ chartSeminorm s 0 f := by
@@ -66,15 +61,15 @@ private theorem chart_zero_bound (s : ℝ) (f : PrincipalSeries s) (x : ℂ)
   exact ⟨(le_csSup h1 ⟨x, hmem, rfl⟩).trans (le_max_left _ _),
     (le_csSup h2 ⟨x, hmem, rfl⟩).trans (le_max_right _ _)⟩
 
-private theorem decay_bound (f : PrincipalSeries positiveParameter) (x : ℂ) :
+theorem decay_bound (f : PrincipalSeries positiveParameter) (x : ℂ) :
     ‖openCoordinate f x‖ ≤ chartSeminorm positiveParameter 0 f *
       Real.rpow 2 (4 / 3 : ℝ) * Real.rpow (1 + ‖x‖ ^ (2 : ℕ)) (-(4 / 3 : ℝ)) := by
   let M := chartSeminorm positiveParameter 0 f
   have hM : 0 ≤ M := by positivity
   have hbase : 0 < 1 + ‖x‖ ^ (2 : ℕ) := by positivity
   have hpow : 0 < Real.rpow (1 + ‖x‖ ^ (2 : ℕ)) (4 / 3 : ℝ) := Real.rpow_pos_of_pos hbase _
-  have hr : Real.rpow (1 + ‖x‖ ^ (2 : ℕ)) (-(4 / 3 : ℝ)) = (Real.rpow (1 + ‖x‖ ^ (2 : ℕ)) (4 / 3 : ℝ))⁻¹ := by
-    exact Real.rpow_neg hbase.le (4 / 3 : ℝ)
+  have hr : Real.rpow (1 + ‖x‖ ^ (2 : ℕ)) (-(4 / 3 : ℝ)) = (Real.rpow (1 + ‖x‖ ^ (2 : ℕ)) (4 / 3 : ℝ))⁻¹ := 
+    Real.rpow_neg hbase.le (4 / 3 : ℝ)
   rw [hr]
   apply (le_mul_inv_iff₀ hpow).2
   by_cases hx : ‖x‖ ≤ 1
@@ -189,7 +184,7 @@ theorem jacquetFunctional_covariance (β : ℂˣ) (t : ℂ)
         (weyl * upperUnipotent x) * (character (β : ℂ) (-x) : ℂ) ∂characterHaar β)
       = ∫ x : ℂ, f (weyl * upperUnipotent (x + t)) *
           (character (β : ℂ) (-x) : ℂ) ∂characterHaar β := by
-    apply integral_congr_ae; filter_upwards with x; rw [hpt]
+    simp_all
   rw [hA]
   have hB : (∫ x : ℂ, f (weyl * upperUnipotent (x + t)) *
         (character (β : ℂ) (-x) : ℂ) ∂characterHaar β)
@@ -215,7 +210,7 @@ theorem jacquetFunctional_covariance (β : ℂˣ) (t : ℂ)
     (character (β : ℂ) (-u) : ℂ)) t
 
 noncomputable def testBump : ContDiffBump (0 : ℂ) := ⟨1/2, 1, by norm_num, by norm_num⟩
-private theorem character_smooth (β : ℂˣ) :
+theorem character_smooth (β : ℂˣ) :
     ContDiff ℝ (⊤ : ℕ∞) (fun x : ℂ => (character (β : ℂ) x : ℂ)) := by
   change ContDiff ℝ _ (fun x : ℂ => (Circle.exp (((β : ℂ) * x).re) : ℂ))
   simp only [Circle.coe_exp]
@@ -225,15 +220,15 @@ private theorem character_smooth (β : ℂˣ) :
   exact Complex.reCLM.contDiff.comp (contDiff_const.mul contDiff_id)
 noncomputable def testFunction (β : ℂˣ) (x : ℂ) : ℂ :=
   (testBump x : ℂ) * (character (β : ℂ) x : ℂ)
-private theorem testFunction_smooth (β : ℂˣ) :
-    ContDiff ℝ (⊤ : ℕ∞) (testFunction β) := by
-  exact (Complex.ofRealCLM.contDiff.comp testBump.contDiff).mul (character_smooth β)
-private theorem testFunction_vanish (β : ℂˣ) (x : ℂ) (hx : 1 ≤ ‖x‖) : testFunction β x = 0 := by
+theorem testFunction_smooth (β : ℂˣ) :
+    ContDiff ℝ (⊤ : ℕ∞) (testFunction β) := 
+  (Complex.ofRealCLM.contDiff.comp testBump.contDiff).mul (character_smooth β)
+theorem testFunction_vanish (β : ℂˣ) (x : ℂ) (hx : 1 ≤ ‖x‖) : testFunction β x = 0 := by
   have hzero : testBump x = 0 := by
     apply testBump.zero_of_le_dist
     simpa [testBump] using hx
   simp [testFunction, hzero]
-private theorem testFunction_extends (β : ℂˣ) : ExtendsSmoothly positiveParameter (testFunction β) := by
+theorem testFunction_extends (β : ℂˣ) : ExtendsSmoothly positiveParameter (testFunction β) := by
   refine ⟨testFunction_smooth β, fun u => (transitionWeight positiveParameter u : ℂ) * testFunction β u⁻¹, ?_, ?_⟩
   · apply contDiff_iff_contDiffAt.mpr
     intro u
@@ -247,17 +242,16 @@ private theorem testFunction_extends (β : ℂˣ) : ExtendsSmoothly positivePara
             simp only [transitionWeight, norm_zero]
             change Real.rpow 0 (-2 * (1 + 2 * positiveParameter)) = 0
             exact Real.zero_rpow (by norm_num [positiveParameter])
-          rw [hz, Complex.ofReal_zero, zero_mul]
+          simp_all
         · have hn : ‖u‖ < 1 := by simpa using hu
           have hnpos : 0 < ‖u‖ := norm_pos_iff.mpr h0
           rw [testFunction_vanish β u⁻¹ (by rw [norm_inv]; exact (one_le_inv₀ hnpos).2 hn.le), mul_zero]
       exact contDiffAt_const.congr_of_eventuallyEq hz
-    · have hw : ContDiffAt ℝ (⊤ : ℕ∞) (transitionWeight positiveParameter) u := by
-        exact (contDiffAt_norm ℂ hu).rpow_const_of_ne (norm_ne_zero_iff.mpr hu)
+    · have hw : ContDiffAt ℝ (⊤ : ℕ∞) (transitionWeight positiveParameter) u := 
+        (contDiffAt_norm ℂ hu).rpow_const_of_ne (norm_ne_zero_iff.mpr hu)
       exact (Complex.ofRealCLM.contDiff.contDiffAt.comp u hw).mul
         ((testFunction_smooth β).contDiffAt.comp u (contDiffAt_inv ℝ hu))
-  · intro u hu
-    rfl
+  simp
 
 theorem jacquetFunctional_ne_zero (β : ℂˣ) : jacquetFunctional β ≠ 0 := by
   letI : (characterHaar β).IsAddHaarMeasure := characterHaar_isAddHaarMeasure β
@@ -285,7 +279,7 @@ noncomputable def sourceImageEquiv (β : ℂˣ) :
     PrincipalSeries positiveParameter ≃L[ℂ] Theta β :=
   Classical.choose (standardIntertwiner_topological_image_isomorphism β)
 
-private theorem sourceImageEquiv_apply (β : ℂˣ) (f : PrincipalSeries positiveParameter) :
+theorem sourceImageEquiv_apply (β : ℂˣ) (f : PrincipalSeries positiveParameter) :
     sourceImageEquiv β f = intertwinerToImage β f :=
   (Classical.choose_spec (standardIntertwiner_topological_image_isomorphism β)).1 f
 
@@ -353,5 +347,3 @@ theorem jacquetFunctional_spherical_diagonal_positive (c : ℝ) (hc : 0 < c)
   rw [Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, Complex.neg_re, Complex.neg_im]
   push_cast
   ring
-
-end DedekindZetaZeroFree.KPCplxJacquetFunctional

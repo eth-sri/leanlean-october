@@ -155,14 +155,14 @@ theorem canonical_operator_of_large_cutoff_energy
   by_cases hd : d = ⊥
   · subst d
     rw [smallCutoff_B3_bottom]
-    exact hnonneg (max A C) M N K (le_trans hA (le_max_left _ _)) hM hN hK ⊥
+    simp
   · by_cases hK1 : 1 ≤ K
     · exact (hbig M N K hM hN hK1 hl hu d).trans (by
         gcongr
-        exact le_max_left A C)
+        simp)
     · exact (hsmall M N K hM hN hK (lt_of_not_ge hK1) hl hu d hd).trans (by
         gcongr
-        exact le_max_right A C)
+        simp)
 
 end DedekindZetaZeroFree.LargeSieve.Sieve.CoreNormalizedEstimate
 
@@ -195,9 +195,7 @@ theorem assembly_tail_uniform_small_delta
         max 1 (C.N ^ 2 / C.M * Real.rpow (C.M * C.N) ε) ≤ C.K →
         C.K ≤ C.M * Real.rpow (C.M * C.N) (-ε) →
         1 ≤ norm C.d → norm C.d ≤ 2 * C.N →
-        ‖totalRemainder C‖ ≤ A * energy F c C.N C.lam := by
-  exact DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitAssembly.uniform_remainder_small_delta
-    D W ε hε δ hδ hδε
+        ‖totalRemainder C‖ ≤ A * energy F c C.N C.lam := by apply DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitAssembly.uniform_remainder_small_delta <;> assumption
 
 end DedekindZetaZeroFree.LargeSieve.Sieve.CoreNormalizedEstimate
 
@@ -224,7 +222,7 @@ namespace DedekindZetaZeroFree.LargeSieve.Sieve.CoreNormalizedEstimate
     ∑ B ∈ dyadicScales C,
       (E1 C B + E2 C B - E3 C B - E4 C B + E5 C B)
 
-private theorem norm_five_le (a b c d e : ℂ) :
+theorem norm_five_le (a b c d e : ℂ) :
     ‖a + b - c - d + e‖ ≤ ‖a‖ + ‖b‖ + ‖c‖ + ‖d‖ + ‖e‖ := by
   have hA := norm_add_le (a + b - c - d) e
   have hB := norm_sub_le (a + b - c) d
@@ -232,7 +230,7 @@ private theorem norm_five_le (a b c d e : ℂ) :
   have hD := norm_add_le a b
   linarith
 
-private theorem sevenTermSum_eq_mainDifference_sub_errComb
+theorem sevenTermSum_eq_mainDifference_sub_errComb
     {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
     {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c} (C : Context Q) :
     sevenTermSum C = MainBoundary.mainDifference C - errComb C := by
@@ -244,13 +242,12 @@ private theorem sevenTermSum_eq_mainDifference_sub_errComb
       (∑ B ∈ dyadicScales C, (T C B - Tprime C B)) -
         (∑ B ∈ dyadicScales C,
           (E1 C B + E2 C B - E3 C B - E4 C B + E5 C B)) := by
-    simp only [hblock]
-    rw [Finset.sum_sub_distrib]
+    simp_all
   simp only [sevenTermSum, unitBlock, MainBoundary.mainDifference, errComb]
   rw [hblock 1 true, hsum]
   ring
 
-private theorem norm_errComb_le {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
+theorem norm_errComb_le {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
     {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c} (C : Context Q) :
     ‖errComb C‖ ≤
       (‖E1 C 1 true‖ + ‖E2 C 1 true‖ + ‖E3 C 1 true‖ + ‖E4 C 1 true‖ +
@@ -266,7 +263,7 @@ private theorem norm_errComb_le {F : Type} [Field F] [NumberField F] {c : Ideal 
           (‖E1 C B‖ + ‖E2 C B‖ + ‖E3 C B‖ + ‖E4 C B‖ + ‖E5 C B‖) :=
         Finset.sum_le_sum (fun B _ => norm_five_le _ _ _ _ _)
 
-private theorem norm_sevenTermSum_le {F : Type} [Field F] [NumberField F]
+theorem norm_sevenTermSum_le {F : Type} [Field F] [NumberField F]
     {c : Ideal (𝓞 F)} {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
     (C : Context Q) :
     ‖sevenTermSum C‖ ≤
@@ -308,7 +305,7 @@ theorem large_cutoff_energy_bound
       rw [div_le_iff₀ (by positivity)]
       nlinarith [hε'.le]
     have h2 : δ ≤ ε' := le_trans hδlt.le h1
-    simpa only [hε'def] using h2
+    omega
   obtain ⟨A₂, hA₂, hassem⟩ :=
     assembly_tail_uniform_small_delta D W ε hε δ hδpos hδle
   obtain ⟨A₃, hA₃, hdiag⟩ := bilinear_explicit_assembly_diagonal (F := F) (c := c) (Q := Q) W hW
@@ -347,20 +344,20 @@ theorem large_cutoff_energy_bound
     have hdiagC : ‖T3 F c Q W M N K d g lam -
         offDiagonalT3 Q W M N K d g lam‖ ≤ A₃ * M * energy F c N lam := by
       have h := hdiag C rfl hM hN hKpos
-      simpa only [C] using h
+      omega
 
     have hassemC : ‖totalRemainder C‖ ≤ A₂ * energy F c N lam := by
       have hmax : max 1 (C.N ^ 2 / C.M * Real.rpow (C.M * C.N) ε) ≤ C.K := by
         have h : max 1 (N ^ 2 / M * Real.rpow (M * N) ε) ≤ K := max_le hK hlower
-        simpa only [C] using h
+        omega
       have hupperC : C.K ≤ C.M * Real.rpow (C.M * C.N) (-ε) := by
-        simpa only [C] using hupper
+        omega
       have hnd1C : 1 ≤ DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms.norm C.d := by
         simpa only [C, DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms.norm] using hnd1
       have hnd2C : DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms.norm C.d ≤ 2 * C.N := by
         simpa only [C, DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms.norm] using hdn
       have h := hassem C rfl rfl rfl hM hN hmax hupperC hnd1C hnd2C
-      simpa only [C] using h
+      omega
 
     have herrC :
         (‖E1 C 1 true‖ + ‖E2 C 1 true‖ + ‖E3 C 1 true‖ + ‖E4 C 1 true‖ +
@@ -376,7 +373,7 @@ theorem large_cutoff_energy_bound
       have hupE : K ≤ M * Real.rpow (M * N) (-ε') :=
         le_trans hupper (mul_le_mul_of_nonneg_left hrpow_neg_le (by linarith))
       have h := herr M N K hM hN hmaxE hupE d hd0 hd hdc hdn g lam
-      simpa only [C] using h
+      omega
 
     have hdc' : d ⊔ D.bad = ⊤ := by rw [hcore]; exact hdc
     have hmainC : ‖Sieve.MainBoundary.cancelledMainTerms Q D.bad W κ M N K d g lam‖ ≤
@@ -397,13 +394,12 @@ theorem large_cutoff_energy_bound
     have hrpowεnn : 0 ≤ Real.rpow (M * N) ε := Real.rpow_nonneg hMNpos.le ε
     have henn : 0 ≤ energy F c N lam := by
       unfold energy
-      exact Finset.sum_nonneg (fun b _ => by positivity)
+      positivity
     have henvnn : 0 ≤ M + N + Real.sqrt M * Real.rpow K (α - 1 / 2) +
         Real.sqrt (M / K) * N := by
       have h1 : 0 ≤ Real.sqrt M * Real.rpow K (α - 1 / 2) :=
         mul_nonneg (Real.sqrt_nonneg M) (Real.rpow_nonneg hKpos.le _)
-      have h2 : 0 ≤ Real.sqrt (M / K) * N := mul_nonneg (Real.sqrt_nonneg _) hN0.le
-      linarith [hM, hN, h1, h2]
+      positivity
     have hsqrt_le : Real.sqrt M * Real.rpow K (α - 1 / 2) + Real.sqrt (M / K) * N ≤
         M + N + Real.sqrt M * Real.rpow K (α - 1 / 2) + Real.sqrt (M / K) * N := by
       nlinarith [hM, hN]
@@ -449,8 +445,8 @@ theorem large_cutoff_energy_bound
               (M + N + Real.sqrt M * Real.rpow K (α - 1 / 2) +
                 Real.sqrt (M / K) * N) * energy F c N lam := by ring
 
-    have hKM' : C.K ≤ C.M := by simpa only [C] using hKM
-    have hδ' : 0 < C.δ := by simpa only [C] using hδpos
+    have hKM' : C.K ≤ C.M := by omega
+    have hδ' : 0 < C.δ := by omega
     have hoff : ‖offDiagonalT3 Q W M N K d g lam‖ ≤
         (A₄ + A₁) * (Ideal.absNorm d : ℝ) ^ 4 * Real.rpow (M * N) ε' *
           (M + N + Real.sqrt M * Real.rpow K (α - 1 / 2) +
@@ -488,7 +484,7 @@ theorem large_cutoff_energy_bound
         Real.sqrt (M / K) * N := by
       have h1 : 0 ≤ Real.sqrt M * Real.rpow K (α - 1 / 2) :=
         mul_nonneg (Real.sqrt_nonneg M) (Real.rpow_nonneg hKpos.le _)
-      have h2 : 0 ≤ Real.sqrt (M / K) * N := mul_nonneg (Real.sqrt_nonneg _) hN0.le
+      have h2 : 0 ≤ Real.sqrt (M / K) * N := by positivity
       linarith [hM, hN, h1, h2]
     have hM_le : M ≤ (Ideal.absNorm d : ℝ) ^ 4 * Real.rpow (M * N) ε *
         (M + N + Real.sqrt M * Real.rpow K (α - 1 / 2) + Real.sqrt (M / K) * N) := by
@@ -496,7 +492,7 @@ theorem large_cutoff_energy_bound
           Real.sqrt (M / K) * N := by
         have h1 : 0 ≤ Real.sqrt M * Real.rpow K (α - 1 / 2) :=
           mul_nonneg (Real.sqrt_nonneg M) (Real.rpow_nonneg hKpos.le _)
-        have h2 : 0 ≤ Real.sqrt (M / K) * N := mul_nonneg (Real.sqrt_nonneg _) hN0.le
+        have h2 : 0 ≤ Real.sqrt (M / K) * N := by positivity
         linarith [hM, hN, h1, h2]
       calc M ≤ M + N + Real.sqrt M * Real.rpow K (α - 1 / 2) +
               Real.sqrt (M / K) * N := henvM
@@ -519,7 +515,7 @@ theorem large_cutoff_energy_bound
         (A₄ + A₁) * ((Ideal.absNorm d : ℝ) ^ 4 * Real.rpow (M * N) ε *
           (M + N + Real.sqrt M * Real.rpow K (α - 1 / 2) +
             Real.sqrt (M / K) * N)) * energy F c N lam := by
-      have hA41 : 0 ≤ A₄ + A₁ := by linarith [hA₄.le, hA₁]
+      have hA41 : 0 ≤ A₄ + A₁ := by positivity
       have hinner : (Ideal.absNorm d : ℝ) ^ 4 * Real.rpow (M * N) ε' *
             (M + N + Real.sqrt M * Real.rpow K (α - 1 / 2) + Real.sqrt (M / K) * N) ≤
           (Ideal.absNorm d : ℝ) ^ 4 * Real.rpow (M * N) ε *
@@ -674,9 +670,3 @@ theorem bilinear_prop51_core_normalized_masked
   exact (CoreNormalizedEstimate.masked_le_canonical
     c Q D.bad hcore W M N K d U τ hτ).trans
       (hcanonical M N K hM hN hK hlower hupper d)
-
-end DedekindZetaZeroFree.LargeSieve.Sieve
-
-end
-
-end

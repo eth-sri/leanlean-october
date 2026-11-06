@@ -16,14 +16,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Image and kernel of finite-place Artin homomorphisms
 
@@ -33,7 +25,6 @@ This module identifies the image with the chosen decomposition group and the ker
 open scoped Classical IsMulCommutative NNReal NumberField
 open NumberField IsDedekindDomain
 
-noncomputable section
 
 namespace GlobalClassFieldTheory
 namespace Reciprocity
@@ -242,8 +233,7 @@ theorem chosenFinitePlaceArtinMonoidHom_ker
       exact hx
     have hxLocal :
         localArtin (eK.symm x) = 1 := by
-      apply eD.symm.injective
-      simpa only [map_one] using hxSubgroup
+      simp_all
     have hxKer :
         eK.symm x ∈ MonoidHom.ker localArtin :=
       hxLocal
@@ -262,13 +252,4 @@ theorem chosenFinitePlaceArtinMonoidHom_ker
         LocalClassFieldTheory.abelianLocalArtinMonoidHom_ker
       ]
       exact hy
-    have hyArtin : localArtin y = 1 := hyKer
-    change
-      (absoluteValueDecompositionGroup K w.1).subtype
-          (eD.symm (localArtin (eK.symm (eK y)))) = 1
-    simp only [eK.symm_apply_apply, hyArtin, map_one]
-
-end Reciprocity
-end GlobalClassFieldTheory
-
-end
+    simp_all

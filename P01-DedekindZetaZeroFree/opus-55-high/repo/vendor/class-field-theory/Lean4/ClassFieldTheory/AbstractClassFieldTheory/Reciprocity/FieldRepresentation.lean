@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 namespace ClassFormation
 
 open KummerTheory
@@ -54,13 +50,10 @@ def extensionFixedRepresentationEquiv
     change A.ρ s.1.1 a.1 = a.1
     exact a.2 l⟩
   left_inv x := by
-    apply Subtype.ext
     rfl
   right_inv a := by
-    apply Subtype.ext
     rfl
   map_add' _ _ := by
-    apply Subtype.ext
     rfl
 
 /--
@@ -103,7 +96,6 @@ theorem extensionFixedRepresentation_action_coe
   let := hnormal
   refine Quotient.inductionOn' q ?_
   intro k
-  rw [relativeCosetAction_mk]
   rfl
 
 /-- The norm in the descended representation is the actual relative norm
@@ -144,6 +136,3 @@ theorem extensionFixedRepresentation_norm_coe
   apply Finset.sum_congr rfl
   intro q _
   exact extensionFixedRepresentation_action_coe A K L hLK hnormal q a
-
-end
-end ClassFormation

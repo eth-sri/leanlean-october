@@ -20,13 +20,13 @@ open MeasureTheory KPContLocalNorm KPContLocalEnergy
   ellipticity x hx := D.ellipticity x (hAB hx)
   upper_bound x hx := D.upper_bound x (hAB hx)
 
-private lemma wsr_restrictCoefficients_smooth {n : ℕ} {A B : LocalBall n} {cρ Cρ κ Λ : ℝ}
+lemma wsr_restrictCoefficients_smooth {n : ℕ} {A B : LocalBall n} {cρ Cρ κ Λ : ℝ}
     (hAB : A.carrier ⊆ B.carrier) (hclosed : Metric.closedBall A.center A.radius ⊆ B.carrier)
     (D : Coefficients B cρ Cρ κ Λ) :
-    KPContLocalRegularity.SmoothNearClosedBall (wsr_restrictCoefficients hAB D) := by
-  exact ⟨B.carrier, Metric.isOpen_ball, hclosed, D.density_smooth, D.matrix_smooth⟩
+    KPContLocalRegularity.SmoothNearClosedBall (wsr_restrictCoefficients hAB D) := 
+  ⟨B.carrier, Metric.isOpen_ball, hclosed, D.density_smooth, D.matrix_smooth⟩
 
-private lemma wsr_weakEquation_restrict {n : ℕ} {A B : LocalBall n} {cρ Cρ κ Λ : ℝ}
+lemma wsr_weakEquation_restrict {n : ℕ} {A B : LocalBall n} {cρ Cρ κ Λ : ℝ}
     (hAB : A.carrier ⊆ B.carrier) (D : Coefficients B cρ Cρ κ Λ) (z : ℂ)
     (u : IntegerSobolev B 1) (h : BallL2 B) (hw : WeakEquation D z u h) :
     WeakEquation (wsr_restrictCoefficients hAB D) z (restrictSobolev hAB u)
@@ -93,9 +93,6 @@ private lemma wsr_weakEquation_restrict {n : ℕ} {A B : LocalBall n} {cρ Cρ �
 
  lemma wsr_liftIndex_zero {n k l : ℕ} (h : k ≤ l) :
     wsr_liftIndex (n := n) h (zeroIndex n k) = zeroIndex n l := by
-  apply Subtype.ext
-  funext i
-  apply Fin.ext
   rfl
 
  def wsr_lowerSobolev {n k l : ℕ} {B : LocalBall n} (h : k ≤ l)
@@ -111,13 +108,11 @@ private lemma wsr_weakEquation_restrict {n : ℕ} {A B : LocalBall n} {cρ Cρ �
     rw [wsr_liftIndex_zero]
     exact heq
 
-private lemma wsr_lowerSobolev_value {n k l : ℕ} {B : LocalBall n} (h : k ≤ l)
+lemma wsr_lowerSobolev_value {n k l : ℕ} {B : LocalBall n} (h : k ≤ l)
     (v : IntegerSobolev B l) : value (wsr_lowerSobolev h v) = value v := by
-  change v.derivatives (wsr_liftIndex h (zeroIndex n k)) = _
-  rw [wsr_liftIndex_zero]
   rfl
 
-private lemma wsr_larger_ball {n : ℕ} (A B : LocalBall n)
+lemma wsr_larger_ball {n : ℕ} (A B : LocalBall n)
     (hAB : Metric.closedBall A.center A.radius ⊆ B.carrier) :
     ∃ C : LocalBall n, C.center = A.center ∧ A.radius < C.radius ∧
       Metric.closedBall C.center C.radius ⊆ B.carrier := by
@@ -127,7 +122,7 @@ private lemma wsr_larger_ball {n : ℕ} (A B : LocalBall n)
   exact ⟨⟨A.dimension_pos, A.center, δ + A.radius, add_pos hδ A.radius_pos⟩,
     rfl, by dsimp; linarith, hsub⟩
 
-private lemma wsr_smooth_forcing_memLp {n : ℕ} (B C : LocalBall n)
+lemma wsr_smooth_forcing_memLp {n : ℕ} (B C : LocalBall n)
     (hCB : Metric.closedBall C.center C.radius ⊆ B.carrier)
     (f : Space n → ℂ) (hf : ContDiffOn ℝ (⊤ : ℕ∞) f B.carrier) :
     MemLp f 2 (volume.restrict C.carrier) := by
@@ -136,13 +131,13 @@ private lemma wsr_smooth_forcing_memLp {n : ℕ} (B C : LocalBall n)
     hf.continuousOn.mono hCB
   obtain ⟨b, hb⟩ := (isCompact_closedBall C.center C.radius).exists_bound_of_continuousOn hcont
   haveI : IsFiniteMeasure (volume.restrict C.carrier) :=
-    isFiniteMeasure_restrict.mpr (by
-      exact (lt_of_le_of_lt (measure_mono hsub)
+    isFiniteMeasure_restrict.mpr (
+      (lt_of_le_of_lt (measure_mono hsub)
         ((isCompact_closedBall C.center C.radius).measure_lt_top (μ := volume))).ne)
   exact MemLp.of_bound ((hcont.mono hsub).aestronglyMeasurable Metric.isOpen_ball.measurableSet)
     b ((ae_restrict_mem Metric.isOpen_ball.measurableSet).mono (fun x hx => hb x (hsub hx)))
 
-private lemma wsr_forcing_toLp_eq {n : ℕ} {B C : LocalBall n}
+lemma wsr_forcing_toLp_eq {n : ℕ} {B C : LocalBall n}
     (hCB : C.carrier ⊆ B.carrier) (h : BallL2 B)
     (f : Space n → ℂ) (hf : f =ᵐ[volume.restrict B.carrier] (fun x => h x))
     (hL2 : MemLp f 2 (volume.restrict C.carrier)) :
@@ -152,7 +147,7 @@ private lemma wsr_forcing_toLp_eq {n : ℕ} {B C : LocalBall n}
     restrictBallL2_ae hCB h] with x hfx hxh hr
   exact hfx.trans (hxh.trans hr.symm)
 
-private lemma wsr_local_all_sobolev {n : ℕ} (A : LocalBall n) {cρ Cρ κ Λ : ℝ}
+lemma wsr_local_all_sobolev {n : ℕ} (A : LocalBall n) {cρ Cρ κ Λ : ℝ}
     (D : Coefficients A cρ Cρ κ Λ) (hcρ : 0 < cρ) (hκ : 0 < κ) (z : ℂ)
     (u : IntegerSobolev A 1) (g : BallL2 A)
     (hw : WeakEquation D z u g)
@@ -206,7 +201,3 @@ theorem weighted_smooth_representative {n : ℕ} (A : LocalBall n)
       A.carrier Metric.isOpen_ball (fun x => value v x)
       (wsr_local_all_sobolev A D hcρ hκ z v g heq h hh hg)
   exact ⟨f, hf, hfu⟩
-
-end DedekindZetaZeroFree.KPContActualLocalSolutionFamily.CoefficientRestriction
-
-end

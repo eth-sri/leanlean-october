@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.LargeSieve.Bilinear.ConductorControlledCutoff
 
 @[expose] public section
 
-noncomputable section
 
 open scoped NumberField Classical
 
@@ -72,13 +71,12 @@ theorem oneStepWeightedDescent_core
   have hp2 : p * p = Real.rpow (M * N) δ := by
     dsimp [p]
     rw [← Real.rpow_add hMNpos]
-    congr 1
-    ring
+    simp
   have hE : M ≤ E := by
     have h1 : 0 ≤ Real.sqrt M * Real.rpow K (α - 1 / 2) :=
       mul_nonneg (Real.sqrt_nonneg M) (Real.rpow_nonneg (le_of_lt hK) _)
     have h2 : 0 ≤ Real.sqrt (M / K) * N :=
-      mul_nonneg (Real.sqrt_nonneg _) hN0
+      by positivity
     change M ≤ M + N + Real.sqrt M * Real.rpow K (α - 1 / 2) +
       Real.sqrt (M / K) * N
     linarith only [hN0, h1, h2]
@@ -102,8 +100,8 @@ theorem oneStepWeightedDescent_core
       (∑ d ∈ s, B3 F c Q W M N K d) ≤ ∑ d ∈ s, Cp * H ^ 4 * p * E :=
         Finset.sum_le_sum hd
       _ = (s.card : ℝ) * (Cp * H ^ 4 * p * E) := by simp
-      _ ≤ (Ci * H) * (Cp * H ^ 4 * p * E) := by
-        exact mul_le_mul_of_nonneg_right hcard (by positivity)
+      _ ≤ (Ci * H) * (Cp * H ^ 4 * p * E) := 
+        mul_le_mul_of_nonneg_right hcard (by positivity)
       _ = Cp * Ci * H ^ 5 * p * E := by ring
   have hres : M ≤ H ^ 5 * p * E := by
     calc
@@ -112,7 +110,7 @@ theorem oneStepWeightedDescent_core
         have hh : 1 ≤ H ^ 5 * p := by nlinarith
         nlinarith [mul_nonneg (sub_nonneg.mpr hh) hE0]
   have hB0 : 0 ≤ B2 F c Q W M n' K := B2_nonneg Q W M n' K
-  have hA0 : 0 ≤ A := le_trans zero_le_one (le_max_left _ _)
+  have hA0 : 0 ≤ A := by positivity
   change B2 F c Q W M N K ≤
     A * Real.rpow (M * N) δ * B2 F c Q W M n' K +
       A * H ^ 5 * Real.rpow (M * N) δ * E
@@ -129,7 +127,3 @@ theorem oneStepWeightedDescent_core
       rw [hp2]
       have hδ0 : 0 ≤ Real.rpow (M * N) δ := Real.rpow_nonneg (le_of_lt hMNpos) δ
       gcongr
-
-end DedekindZetaZeroFree.LargeSieve.Sieve
-
-end

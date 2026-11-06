@@ -24,7 +24,7 @@ local notation "Core" => RestrictedTensorSimple.Core (Plus R.A P C) (plusReferen
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1000000
 
-private theorem integrable_idele_mul (a : (KPGlobalTorusFunctionData.Adeles F)ˣ)
+theorem integrable_idele_mul (a : (KPGlobalTorusFunctionData.Adeles F)ˣ)
     (f : KPGlobalTorusFunctionData.Adeles F → ℂ) :
     Integrable (fun x => f (x * a.val)) (KPAdditiveHaar.adelicMeasure F) ↔
       Integrable f (KPAdditiveHaar.adelicMeasure F) := by

@@ -5,14 +5,13 @@ public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.ArchimedeanIdeleDilatio
 
 @[expose] public section
 
-noncomputable section
 open scoped Classical NumberField
 open NumberField MeasureTheory
 set_option backward.isDefEq.respectTransparency false
 namespace DedekindZetaZeroFree.CompactPeriodAnalyticity.WeylIntegral
 open KPLiteralRaw ArchValue
 
-private theorem single_arch_norm (F : Type) [Field F] [NumberField F]
+theorem single_arch_norm (F : Type) [Field F] [NumberField F]
     (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (w : InfinitePlace F) (y : ℂˣ) :
     let a := KPRationalAdelicSplitting.localIdele F (Sum.inl w)
       (Units.map (InfinitePlace.Completion.ringEquivComplexOfIsComplex
@@ -33,7 +32,7 @@ private theorem single_arch_norm (F : Type) [Field F] [NumberField F]
     have hey : e ((InfinitePlace.Completion.ringEquivComplexOfIsComplex
         (KPHilbert.infinite_isComplex F ζ hζ w)).symm (y : ℂ)) = (y : ℂ) :=
       RingEquiv.apply_symm_apply _ _
-    simpa only [he0, hey, dist_zero_right] using he.symm
+    simp_all
   · intro u _ hu
     simp [KPRationalAdelicSplitting.localIdele, hu]
   · simp
@@ -63,7 +62,7 @@ theorem literal_weyl_integral_weight
   let a := KPRationalAdelicSplitting.localIdele F (Sum.inl w)
     (Units.map (InfinitePlace.Completion.ringEquivComplexOfIsComplex
       (KPHilbert.infinite_isComplex F ζ hζ w)).symm.toMonoidHom y)
-  have ha : a.val.2 = 1 := by simp [a, KPRationalAdelicSplitting.localIdele]
+  have ha : a.val.2 = 1 := by rfl
   have hnorm := single_arch_norm F ζ hζ w y
   have h := ArchHaar.arch_idele_integral_mul_inv
     (KPAdditiveHaar.adelicMeasure F) a ha
@@ -73,7 +72,7 @@ theorem literal_weyl_integral_weight
   simp_rw [literal_single_arch_weyl_value F ζ hζ K f s w y]
   rw [integral_const_mul, h, ← mul_assoc]
   congr 1
-  have hp : 0 < ‖(y : ℂ)‖ ^ 2 := pow_pos (norm_pos_iff.mpr y.ne_zero) _
+  have hp : 0 < ‖(y : ℂ)‖ ^ 2 := by simp
   have he : ((‖(y : ℂ)‖ ^ 2 : ℝ) : ℂ) =
       KPGlobalExceptionalParameter.realLogPower (‖(y : ℂ)‖ ^ 2) 1 := by
     unfold KPGlobalExceptionalParameter.realLogPower
@@ -132,7 +131,4 @@ theorem completion_weyl_integral_weight
       (KPAdditiveHaar.adelicMeasure F) := by
     simpa only [ha] using hia
   have h := literal_weyl_integral_weight F ζ hζ K f s w g y hi hia'
-  simpa only [ha, hnorm] using h
-end DedekindZetaZeroFree.CompactPeriodAnalyticity.WeylIntegral
-
-end
+  simp_all

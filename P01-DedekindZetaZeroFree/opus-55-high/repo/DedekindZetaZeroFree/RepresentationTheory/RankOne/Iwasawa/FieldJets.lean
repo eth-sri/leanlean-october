@@ -58,7 +58,7 @@ def verticalFieldJet (g : Matrix (Fin 2) (Fin 2) ℂ) (i : Fin 6) : ℝ :=
       (bottomDenominatorJet g i) 0 :=
   matrix_bottom_basis_jet g i
 
-private theorem actual_horizontal_formula (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) :
+theorem actual_horizontal_formula (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) :
     (KPArch.action g (0,0)).1 = horizontalNumerator g / (bottomDenominator g : ℂ) := by
   simp [KPArch.action, KPArch.actionDenominator, KPArch.height,
     horizontalNumerator, bottomDenominator, Complex.sq_norm, add_comm]
@@ -79,7 +79,7 @@ theorem actual_horizontal_field_hasDerivAt
   · simp only [horizontalFieldJet, Complex.ofReal_zero, zero_smul, NormedSpace.exp_zero,
       mul_one, Complex.ofRealCLM_apply, Function.comp_def]
 
-private theorem actual_vertical_formula (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) :
+theorem actual_vertical_formula (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) :
     (KPArch.action g (0,0)).2 = Real.log (matrixHeightSquared g) / 2 := by
   rw [matrix_height_squared_action]
   rw [Real.log_exp]
@@ -109,12 +109,7 @@ theorem actual_six_field_hasDerivAt
       (horizontalFieldJet g i, verticalFieldJet g i) 0 := by
   exact (actual_horizontal_field_hasDerivAt g i).prodMk (actual_vertical_field_hasDerivAt g i)
  theorem pgl_action_out (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) (z : KPArch.H3) :
-    KPArch.action (Matrix.ProjGenLinGroup.mk g).out z = KPArch.action g z := by
-  obtain ⟨a,ha⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp
-    (show Matrix.ProjGenLinGroup.mk g = Matrix.ProjGenLinGroup.mk (Matrix.ProjGenLinGroup.mk g).out from
-      (Quotient.out_eq _).symm)
-  rw [← ha, (KPArch.action_laws g (Matrix.GeneralLinearGroup.scalar (Fin 2) a) z).2,
-    KPArch.scalar_action]
+    KPArch.action (Matrix.ProjGenLinGroup.mk g).out z = KPArch.action g z := by apply DedekindZetaZeroFree.KPMsFixedHaar.projective_action_mk <;> assumption
 
 open _root_.DedekindZetaZeroFree.KPArch renaming action_contDiff → action_contDiff
 

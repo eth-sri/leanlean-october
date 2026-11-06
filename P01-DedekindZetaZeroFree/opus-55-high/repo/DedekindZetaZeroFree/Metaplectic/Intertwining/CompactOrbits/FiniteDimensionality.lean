@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.RepresentationTheory.Smooth.HarishChandraHeck
 
 @[expose] public section
 
-noncomputable section
 open MeasureTheory
 open scoped Classical NumberField ENNReal NNReal Topology BigOperators
 set_option backward.isDefEq.respectTransparency false
@@ -24,7 +23,3 @@ theorem source_raw_compact_orbit_finiteDimensional_public
     FiniteDimensional ℂ (Submodule.span ℂ (Set.range
       (fun k : D.K => fun g => f.val.val (g * k.val)))) :=
   SourceCoreCompactOrbit.source_finiteDimensional f
-
-end DedekindZetaZeroFree.KPGlobalResidualKernel.ScatteringResidue
-
-end

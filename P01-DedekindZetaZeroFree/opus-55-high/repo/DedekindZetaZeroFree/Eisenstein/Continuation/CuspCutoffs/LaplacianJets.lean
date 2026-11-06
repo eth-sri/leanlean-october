@@ -188,7 +188,7 @@ private theorem component_holomorphy (b : Bool) (O : Set ℂ) (hO : IsOpen O)
     funext (fun x => hvalue t x)
   rw [he, iteratedFDerivWithin_of_isOpen n hD (hCD y.property), iteratedFDerivWithin_univ]
 
-private theorem labeled_smooth (p : Fin (d F) ≃ Fin (KPCuspLogShape.dimension F)) :
+theorem labeled_smooth (p : Fin (d F) ≃ Fin (KPCuspLogShape.dimension F)) :
     ContDiff ℝ (⊤ : ℕ∞) (labeledA p) := by
   apply contDiff_pi.mpr
   intro k
@@ -201,7 +201,7 @@ private theorem inverse_smooth (p : Fin (d F) ≃ Fin (KPCuspLogShape.dimension 
   intro k
   exact contDiff_apply ℝ (ℂ × ℝ) (p k)
 
-private theorem inverse_pin (p : Fin (d F) ≃ Fin (KPCuspLogShape.dimension F))
+theorem inverse_pin (p : Fin (d F) ≃ Fin (KPCuspLogShape.dimension F))
     (y : KPFiniteCuspAtlas.SymmetricSpace F) : labeledA p (labeledAInv p y) = y := by
   funext k
   simp [labeledA, labeledAInv]
@@ -305,7 +305,7 @@ private theorem action_smooth (g : KPCuspArithmetic.PGL2 F) :
   exact (KPArch.productAction_contDiff (KPCuspLogShape.dimension F)
     (fun k => Matrix.GeneralLinearGroup.map (KPCusp.complexPlace F k).embedding G)).of_le le_top
 
-private theorem action_laplacian (g : KPCuspArithmetic.PGL2 F)
+theorem action_laplacian (g : KPCuspArithmetic.PGL2 F)
     (f : KPFiniteCuspAtlas.SymmetricSpace F → ℂ) (hf : ContDiff ℝ (⊤ : ℕ∞) f)
     (y : KPFiniteCuspAtlas.SymmetricSpace F) :
     KPContActualSphericalFlatStage.localLaplacian (KPCuspLogShape.dimension F)
@@ -357,7 +357,7 @@ private theorem chart_laplacian
 
 end SourceCalculus
 
-private theorem spectral_high (D : ℤ) (O : Set ℂ) (hO : IsOpen O) (s : ℂ) (hs : s ∈ O)
+theorem spectral_high (D : ℤ) (O : Set ℂ) (hO : IsOpen O) (s : ℂ) (hs : s ∈ O)
     (j : ℕ) (hj : 2 < j) :
     iteratedDerivWithin j (KPContinuation.spectralCoordinate D) O s = 0 := by
   have hderiv1 : deriv (KPContinuation.spectralCoordinate D) = fun z => -4 * (D : ℂ) * (1 / 3 + 2 * z) := by
@@ -393,7 +393,7 @@ private theorem spectral_high (D : ℤ) (O : Set ℂ) (hO : IsOpen O) (s : ℂ) 
   rw [iteratedDerivWithin_of_isOpen hO hs, hk j (by omega)]
   rfl
 
-private theorem spectral_product (D : ℤ) (O : Set ℂ) (hO : IsOpen O)
+theorem spectral_product (D : ℤ) (O : Set ℂ) (hO : IsOpen O)
     (c : ℂ → ℂ) (hc : DifferentiableOn ℂ c O) (k : ℕ) (s : ℂ) (hs : s ∈ O) :
     iteratedDerivWithin k (fun z => KPContinuation.spectralCoordinate D z * c z) O s =
       KPContinuation.spectralCoordinate D s * iteratedDerivWithin k c O s +

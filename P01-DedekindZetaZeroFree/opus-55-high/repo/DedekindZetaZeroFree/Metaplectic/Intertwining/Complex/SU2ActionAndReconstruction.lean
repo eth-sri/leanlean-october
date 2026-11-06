@@ -44,13 +44,13 @@ lemma rowRatio_upper_mul (a d : ℂˣ) (b : ℂ) (g : ComplexGL2) :
   have hdet : ((Matrix.GeneralLinearGroup.det (upperTriangular a d b) : ℂˣ) : ℂ) =
       (a : ℂ) * (d : ℂ) := by
     change Matrix.det !![(a : ℂ), b; 0, (d : ℂ)] = _
-    simp [Matrix.det_fin_two]
+    simp
   have hrow : bottomRowNormSq (upperTriangular a d b * g) =
       ‖(d : ℂ)‖ ^ 2 * bottomRowNormSq g := by
     unfold bottomRowNormSq
     change ‖(!![(a : ℂ), b; 0, (d : ℂ)] * (g : Matrix (Fin 2) (Fin 2) ℂ)) 1 0‖ ^ 2 +
       ‖(!![(a : ℂ), b; 0, (d : ℂ)] * (g : Matrix (Fin 2) (Fin 2) ℂ)) 1 1‖ ^ 2 = _
-    simp [Matrix.mul_apply, Fin.sum_univ_two, norm_mul, mul_pow, mul_add]
+    simp [Matrix.mul_apply, Fin.sum_univ_two, mul_pow, mul_add]
   unfold rowRatio
   rw [hrow]
   simp only [map_mul, Units.val_mul, hdet, norm_mul, norm_div]
@@ -68,8 +68,7 @@ lemma rowRatio_positive (g : ComplexGL2) : 0 < rowRatio g := by
       apply norm_eq_zero.mp
       nlinarith [sq_nonneg ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 1‖]
     have h1 : (g : Matrix (Fin 2) (Fin 2) ℂ) 1 1 = 0 := by
-      apply norm_eq_zero.mp
-      nlinarith [sq_nonneg ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 0‖]
+      simp_all
     have hdet := (Matrix.GeneralLinearGroup.det g).ne_zero
     change Matrix.det (g : Matrix (Fin 2) (Fin 2) ℂ) ≠ 0 at hdet
     exact hdet (by simp [Matrix.det_fin_two, h0, h1])
@@ -137,7 +136,3 @@ lemma same_line_upper (g h : ComplexGL2) (he : bottomRowLine g = bottomRowLine h
     fin_cases i <;> fin_cases j <;> simp [upperTriangular, a, d, hm10]
   rw [← hm]
   simp [m, mul_assoc]
-
-end DedekindZetaZeroFree.RepresentationTheory.KPComplexStandardIntertwinerGermProve
-
-end

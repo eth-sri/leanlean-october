@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.Arithmetic.ResidueSymbols.PrimeFreeGenerators
 
 @[expose] public section
 
-noncomputable section
 open scoped NumberField Classical
 namespace DedekindZetaZeroFree.CorrectionFactors.ValuationGenerator
 open LocalFiniteSums
@@ -41,9 +40,5 @@ theorem chi_eq_zero_of_decomposition (C : A.GeneralArithmeticContext σ η hS)
   have hgen : Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) (generator C p) = 0 := by
     apply Ideal.Quotient.eq_zero_iff_mem.mpr
     rw [← (generator_generates C p).2]
-    exact Ideal.mem_span_singleton_self _
+    simp
   rw [hu, map_mul, map_pow, hgen, zero_pow hn, zero_mul, MulChar.map_zero]
-
-end DedekindZetaZeroFree.CorrectionFactors.ValuationGenerator
-
-end

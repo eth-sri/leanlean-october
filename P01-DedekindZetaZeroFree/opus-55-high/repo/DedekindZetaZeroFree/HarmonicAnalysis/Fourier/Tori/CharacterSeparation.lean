@@ -21,5 +21,3 @@ theorem unitAddTorus_characters_separate {d : Type*}
       map_add_eq_mul' := fun a b => AddCircle.toCircle_add (a i) (b i) }
   refine ⟨χ, AddCircle.continuous_toCircle.comp (continuous_apply i), ?_⟩
   exact fun h => hi (AddCircle.injective_toCircle one_ne_zero h)
-
-end DedekindZetaZeroFree.AdelicSeparation

@@ -12,7 +12,7 @@ noncomputable section
 namespace DedekindZetaZeroFree.KPSmoothLocalQuotientCharts
 
 open MeasureTheory Topology
-open scoped NumberField Classical Topology ENNReal Matrix.Norms.Operator
+open scoped NumberField Classical ENNReal Matrix.Norms.Operator
 
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
@@ -33,8 +33,8 @@ instance : MeasurableSpace (X F ζ hζ) := borel _
 def finiteTuples : Subgroup (KPAdelicCoverRestrictedProduct.RestrictedCover F ζ hζ) where
   carrier := {g | ∀ w : NumberField.InfinitePlace F, g (Sum.inl w) = 1}
   one_mem' := by simp
-  mul_mem' := by intro g h hg hh w; simp [hg w, hh w]
-  inv_mem' := by intro g hg w; simp [hg w]
+  mul_mem' := by simp_all
+  inv_mem' := by simp
 
 def finiteSubgroup : Subgroup (ActualCover F ζ hζ) :=
   (finiteTuples F ζ hζ).map
@@ -92,7 +92,7 @@ noncomputable section
 namespace DedekindZetaZeroFree.KPSmoothLocalQuotientCharts
 
 open MeasureTheory Topology
-open scoped NumberField Classical Topology ENNReal Matrix.Norms.Operator
+open scoped NumberField Classical ENNReal Matrix.Norms.Operator
 
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
@@ -218,7 +218,7 @@ structure LiftedChart (U : FiniteLevel F ζ hζ) (geometric : Bool)
   neighborhood_open : IsOpen neighborhood
   chartMap_range : Set.range chartMap = neighborhood
   chartMap_quotient : IsQuotientMap (fun x : openSet =>
-    (⟨chartMap x, by rw [← chartMap_range]; exact Set.mem_range_self x⟩ : neighborhood))
+    (⟨chartMap x, by rw [← chartMap_range]; simp⟩ : neighborhood))
   orbit_fibers : ∀ x y, chartMap x = chartMap y ↔
     ∃ s : stabilizer, action s x = y
   section_equivariance : ∀ f, ChartScalar F ζ hζ U geometric χ f →
@@ -253,7 +253,7 @@ theorem quotient_full_support (R : HaarRecipe F ζ hζ) :
       intro γ g
       apply Quotient.sound
       apply QuotientGroup.rightRel_apply.mpr
-      simpa using (rationalSubgroup F ζ hζ).inv_mem γ.property
+      simp
     refine ⟨fun V hVo hVn => ?_⟩
     rw [← R.quotient_normalization, Measure.map_apply hp.measurable hVo.measurableSet,
       Measure.restrict_apply (hVo.preimage hp).measurableSet]
@@ -289,8 +289,3 @@ def rightLieField {g : ArchGroup F} (C : ExponentialChart F g)
     Coordinates F :=
   deriv (fun t : ℝ => C.chart.symm
     (C.chart x * matrixExp F (t • Pi.single b 1))) 0
-
-end DedekindZetaZeroFree.KPSmoothLocalQuotientCharts
-
-end
-end

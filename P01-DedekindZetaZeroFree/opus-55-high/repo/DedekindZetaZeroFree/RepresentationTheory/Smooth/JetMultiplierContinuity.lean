@@ -6,7 +6,6 @@ public import DedekindZetaZeroFree.Metaplectic.Torus.AdelicSmoothFunctionTopolog
 
 namespace DedekindZetaZeroFree.KPGlobalTorusBorelNormTwistTransport.JetMultiplierRaw
 
-noncomputable section
 open MeasureTheory
 open scoped BigOperators NNReal
 open KPGlobalTorusFunctionData
@@ -29,8 +28,8 @@ theorem jet_image_bddAbove (g : T) (n : ℕ) (K : JetCompact U)
 theorem norm_jet_le (g : T) (n : ℕ) (K : JetCompact U)
     (f : SmoothLevel H χ chart U J) (z : V) (hz : z ∈ K.set) :
     ‖iteratedFDerivWithin ℝ n (fun y => f.val.val (chart y * g)) U z‖ ≤
-      jetBound H χ chart U J g n K f := by
-  exact le_csSup (jet_image_bddAbove H χ chart U hU J g n K f) ⟨z, hz, rfl⟩
+      jetBound H χ chart U J g n K f := 
+  le_csSup (jet_image_bddAbove H χ chart U hU J g n K f) ⟨z, hz, rfl⟩
 
 theorem multiplier_jet_bound (a : V → ℂ) (ha : ContDiffOn ℝ (⊤ : ℕ∞) a U)
     (n : ℕ) (K : JetCompact U) :
@@ -69,19 +68,17 @@ theorem linearMap_jet_bound (ψ : H →* ℂˣ)
           jetBound H χ chart U J g (n - i) K f := by
         apply Finset.sum_le_sum
         intro i hi
-        simp only [NNReal.coe_mul, NNReal.coe_natCast]
+        simp only [NNReal.coe_natCast]
         exact mul_le_mul
           (mul_le_mul_of_nonneg_left (hC i z hz) (by positivity))
           (norm_jet_le H χ chart U hU J g (n - i) K f z hz)
           (norm_nonneg _) (by positivity)
       _ = _ := by
         simp only [sum_apply, smul_apply]
-        simp [jetSeminorm, NNReal.smul_def, Seminorm.of]
         rfl
   · have he : K.set = ∅ := Set.not_nonempty_iff_eq_empty.mp hK
     simp only [jetBound, he, Set.image_empty, Real.sSup_empty]
-    exact apply_nonneg (∑ i ∈ Finset.range (n + 1),
-      ((n.choose i : ℝ≥0) * C i) • jetSeminorm H χ chart U hU J g (n - i) K) f
+    positivity
 
 theorem linearMap_continuous (ψ : H →* ℂˣ)
     (A : SmoothLevel H χ chart U J →ₗ[ℂ] SmoothLevel H ψ chart U J)
@@ -112,6 +109,3 @@ theorem linearMap_continuous (ψ : H →* ℂˣ)
     simp only [sum_apply, smul_apply, Pi.smul_apply]
     rfl
   · exact hC
-
-end
-end DedekindZetaZeroFree.KPGlobalTorusBorelNormTwistTransport.JetMultiplierRaw

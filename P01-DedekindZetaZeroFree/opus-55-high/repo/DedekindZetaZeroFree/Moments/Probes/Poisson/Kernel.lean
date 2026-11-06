@@ -27,7 +27,7 @@ open DedekindZetaZeroFree.MaskedHeckeMeromorphic LocalFiniteSums CorrectionFacto
 open IsDedekindDomain Filter
 open scoped NumberField Topology
 
-private theorem rf_finite_prime_delete_hasSum
+theorem rf_finite_prime_delete_hasSum
     (F : Type) [Field F] [NumberField F]
     (W : Ideal (𝓞 F) → ℂ) (W0 : W ⊥ = 0)
     (Wmul : ∀ a b, W (a * b) = W a * W b)
@@ -155,7 +155,7 @@ variable {A : SArithmeticData F} {σ : F →+* ℂ}
 variable {η' : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
 variable {C : A.GeneralArithmeticContext σ η' hS}
 
-private lemma rf_row_matches (U : Frequency C) (s : ℂ) :
+lemma rf_row_matches (U : Frequency C) (s : ℂ) :
     incompleteL U .principal s = InitialSeparatedEuler.zetaS A s ∧
     incompleteL U .plus s = InitialSeparatedEuler.plusL U s ∧
     incompleteL U .minus s = InitialSeparatedEuler.minusL U s := by

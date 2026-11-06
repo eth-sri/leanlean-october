@@ -92,7 +92,3 @@ theorem IsRepresentative.star {a : C(G, 𝕜)} (ha : IsRepresentative a) :
   obtain ⟨n, π, hπ, v, w, rfl⟩ := ha
   rw [star_matrixCoeff_eq_matrixCoeff_conjugate (EuclideanSpace.basisFun (Fin n) 𝕜) π hπ v w]
   exact isRepresentative_matrixCoeff _ _ _ _
-
-end Algebra
-
-end DedekindZetaZeroFree.TauCeti

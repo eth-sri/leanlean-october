@@ -8,12 +8,12 @@ namespace DedekindZetaZeroFree.LargeSieve.PoissonTruncation
 
 open scoped NumberField Classical
 
-private lemma one_le_absNorm_cast {F : Type*} [Field F] [NumberField F]
+lemma one_le_absNorm_cast {F : Type*} [Field F] [NumberField F]
     {I : Ideal (𝓞 F)} (hI : I ≠ ⊥) : 1 ≤ (Ideal.absNorm I : ℝ) := by
   have h : Ideal.absNorm I ≠ 0 := fun h0 => hI (Ideal.absNorm_eq_zero_iff.mp h0)
   exact_mod_cast Nat.one_le_iff_ne_zero.mpr h
 
-private lemma norm_le_majorant {F : Type*} [Field F] [NumberField F]
+lemma norm_le_majorant {F : Type*} [Field F] [NumberField F]
     {B K u : ℝ} (hu : 0 < u) {φ : ℝ → ℂ}
     (hφ : ∀ t : ℝ, 0 < t → ‖φ t‖ ≤ K * t ^ (-B)) (I : Ideal (𝓞 F)) :
     ‖if I = ⊥ then (0 : ℂ) else φ (u * (Ideal.absNorm I : ℝ))‖ ≤
@@ -23,13 +23,13 @@ private lemma norm_le_majorant {F : Type*} [Field F] [NumberField F]
   · rw [if_neg hI, if_neg hI]
     have hn : (1 : ℝ) ≤ (Ideal.absNorm I : ℝ) := one_le_absNorm_cast hI
     have hn0 : 0 ≤ (Ideal.absNorm I : ℝ) := le_trans zero_le_one hn
-    have hpos : 0 < u * (Ideal.absNorm I : ℝ) := mul_pos hu (lt_of_lt_of_le zero_lt_one hn)
+    have hpos : 0 < u * (Ideal.absNorm I : ℝ) := by positivity
     calc ‖φ (u * (Ideal.absNorm I : ℝ))‖
         ≤ K * (u * (Ideal.absNorm I : ℝ)) ^ (-B) := hφ _ hpos
       _ = K * (u ^ (-B) * (Ideal.absNorm I : ℝ) ^ (-B)) := by rw [Real.mul_rpow hu.le hn0]
       _ = K * u ^ (-B) * (Ideal.absNorm I : ℝ) ^ (-B) := by ring
 
-private lemma norm_le_tail_majorant {F : Type*} [Field F] [NumberField F]
+lemma norm_le_tail_majorant {F : Type*} [Field F] [NumberField F]
     {B K u R : ℝ} (hu : 0 < u) {φ : ℝ → ℂ}
     (hφ : ∀ t : ℝ, 0 < t → ‖φ t‖ ≤ K * t ^ (-B)) (I : Ideal (𝓞 F)) :
     ‖if I ≠ ⊥ ∧ R < (Ideal.absNorm I : ℝ) then φ (u * (Ideal.absNorm I : ℝ)) else 0‖ ≤
@@ -39,36 +39,30 @@ private lemma norm_le_tail_majorant {F : Type*} [Field F] [NumberField F]
   · rw [if_pos h, if_pos h]
     have hn : (1 : ℝ) ≤ (Ideal.absNorm I : ℝ) := one_le_absNorm_cast h.1
     have hn0 : 0 ≤ (Ideal.absNorm I : ℝ) := le_trans zero_le_one hn
-    have hpos : 0 < u * (Ideal.absNorm I : ℝ) := mul_pos hu (lt_of_lt_of_le zero_lt_one hn)
+    have hpos : 0 < u * (Ideal.absNorm I : ℝ) := by positivity
     calc ‖φ (u * (Ideal.absNorm I : ℝ))‖
         ≤ K * (u * (Ideal.absNorm I : ℝ)) ^ (-B) := hφ _ hpos
       _ = K * (u ^ (-B) * (Ideal.absNorm I : ℝ) ^ (-B)) := by rw [Real.mul_rpow hu.le hn0]
       _ = K * u ^ (-B) * (Ideal.absNorm I : ℝ) ^ (-B) := by ring
   · simp [h]
 
-private lemma tail_norm_eq_norm_tail {F : Type*} [Field F] [NumberField F]
+lemma tail_norm_eq_norm_tail {F : Type*} [Field F] [NumberField F]
     {u R : ℝ} (φ : ℝ → ℂ) (I : Ideal (𝓞 F)) :
     (if I ≠ ⊥ ∧ R < (Ideal.absNorm I : ℝ) then ‖φ (u * (Ideal.absNorm I : ℝ))‖ else 0) =
     ‖if I ≠ ⊥ ∧ R < (Ideal.absNorm I : ℝ) then φ (u * (Ideal.absNorm I : ℝ)) else 0‖ := by
   by_cases h : I ≠ ⊥ ∧ R < (Ideal.absNorm I : ℝ) <;> simp [h]
 
-private lemma summable_inverse_power_tail {F : Type*} [Field F] [NumberField F]
+lemma summable_inverse_power_tail {F : Type*} [Field F] [NumberField F]
     (B : ℝ) (hB : 1 < B) (R : ℝ) :
     Summable (fun I : Ideal (𝓞 F) =>
       if I ≠ ⊥ ∧ R < (Ideal.absNorm I : ℝ) then (Ideal.absNorm I : ℝ) ^ (-B) else 0) := by
   refine Summable.of_nonneg_of_le (fun I => ?_) (fun I => ?_)
     (DedekindZetaZeroFree.LargeSieve.summable_ideal_inverse_power F B hB)
+  · positivity
   · by_cases h : I ≠ ⊥ ∧ R < (Ideal.absNorm I : ℝ)
-    · rw [if_pos h]; positivity
-    · simp [h]
-  · by_cases h : I ≠ ⊥ ∧ R < (Ideal.absNorm I : ℝ)
-    · rw [if_pos h]
-      simp [h.1]
+    · simp_all
     · rw [if_neg h]
-      by_cases hbot : I = ⊥
-      · simp [hbot]
-      · rw [if_neg hbot]
-        exact Real.rpow_nonneg (Nat.cast_nonneg _) _
+      positivity
 
 theorem scaled_ideal_series_summable (F : Type*) [Field F] [NumberField F]
     (B : ℝ) (hB : 1 < B) (K : ℝ) (hK : 0 ≤ K) (φ : ℝ → ℂ)
@@ -140,29 +134,19 @@ theorem scaled_ideal_series_split (F : Type*) [Field F] [NumberField F]
   · rw [tsum_eq_sum (s := A) (fun I hI => by simp [g, hI])]
     refine Finset.sum_congr rfl (fun I hI => ?_)
     have hne : I ≠ ⊥ := by
-      have h2 := hI; rw [hA] at h2
-      exact (Finset.mem_filter.mp h2).2
+      simp_all
     simp [g, hI, f, hne]
   · refine tsum_congr (fun I => ?_)
     by_cases hI : I ∈ A
     · have hh0 : h I = 0 := by simp [h, hI]
       rw [hh0]
-      have hle : (Ideal.absNorm I : ℝ) ≤ R := by
-        have h2 := hI; rw [hA] at h2
-        exact DedekindZetaZeroFree.LargeSieve.mem_boundedNormIdeals.mp (Finset.mem_filter.mp h2).1
-      have hnot : ¬ (I ≠ ⊥ ∧ R < (Ideal.absNorm I : ℝ)) := by
-        rintro ⟨-, hlt⟩; exact absurd hlt (not_lt.mpr hle)
-      simp [hnot]
+      simp_all
     · have hh1 : h I = f I := by simp [h, hI]
       rw [hh1]
       by_cases hbot : I = ⊥
       · subst hbot; simp [f]
       · have hlt : R < (Ideal.absNorm I : ℝ) := by
-          by_contra hcon
-          exact hI (by
-            rw [hA]
-            exact Finset.mem_filter.mpr
-              ⟨DedekindZetaZeroFree.LargeSieve.mem_boundedNormIdeals.mpr (le_of_not_gt hcon), hbot⟩)
+          simp_all
         simp [f, hbot, hlt]
 
 theorem exists_scaled_ideal_series_tail_bound
@@ -204,11 +188,9 @@ theorem exists_scaled_ideal_series_tail_bound
       (if I = ⊥ then (0 : ℝ) else (Ideal.absNorm I : ℝ) ^ (-B))) B0, ?_, ?_⟩
   · exact le_max_of_le_left
       (tsum_nonneg (fun I => by
-        by_cases h : I = ⊥
-        · simp [h]
-        · rw [if_neg h]; exact Real.rpow_nonneg (Nat.cast_nonneg _) _))
+        positivity))
   · intro K hK φ hφ u hu
-    have hKup : 0 ≤ K * u ^ (-B) := mul_nonneg hK (Real.rpow_nonneg hu.le (-B))
+    have hKup : 0 ≤ K * u ^ (-B) := by positivity
     have hmaj : Summable (fun I : Ideal (𝓞 F) =>
         K * u ^ (-B) * (if I = ⊥ then (0 : ℝ) else (Ideal.absNorm I : ℝ) ^ (-B))) :=
       hfull.mul_left (K * u ^ (-B))
@@ -284,5 +266,3 @@ theorem exists_scaled_ideal_series_tail_bound
         _ = max (∑' I : Ideal (𝓞 F),
               (if I = ⊥ then (0 : ℝ) else (Ideal.absNorm I : ℝ) ^ (-B))) B0 *
               K * u ^ (-B) * R ^ (1 - B) := by ring
-
-end DedekindZetaZeroFree.LargeSieve.PoissonTruncation

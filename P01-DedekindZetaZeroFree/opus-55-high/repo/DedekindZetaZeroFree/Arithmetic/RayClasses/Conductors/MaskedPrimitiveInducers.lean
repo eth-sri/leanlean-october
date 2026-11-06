@@ -40,7 +40,7 @@ private theorem rawDeletionSet_finite
         ((Ideal.mem_normalizedFactors_iff U.ideal.property.1).mpr ⟨v.isPrime, hv⟩)
     exact (s.finite_toSet.preimage hinj.injOn).subset hsub
 
-private theorem raw_coefficients_zero_at_frequency_primes
+theorem raw_coefficients_zero_at_frequency_primes
     (C : A.GeneralArithmeticContext σ η' hS)
     (U : AllRowEuler.InitialSeparation.RawFrequency A)
     (p : ExteriorPrime A) (hp : (U.j p).val ≠ 0) :
@@ -52,7 +52,7 @@ private theorem raw_coefficients_zero_at_frequency_primes
   have hg : Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) (generator C p) = 0 := by
     apply Ideal.Quotient.eq_zero_iff_mem.mpr
     rw [← (generator_generates C p).2]
-    exact Ideal.mem_span_singleton_self _
+    simp
   have hu : Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) U.u = 0 := by
     rw [(AllRowEuler.InitialSeparation.RawFrequency.unitPart_spec C U p).1, map_mul, map_pow,
       hg, zero_pow hp, zero_mul]
@@ -65,7 +65,7 @@ private theorem raw_coefficients_zero_at_frequency_primes
       chi (σ := σ) p (Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) U.u) from rfl,
       hchi, star_zero, mul_zero]
 
-private theorem raw_exterior_prime_identification
+theorem raw_exterior_prime_identification
     (C : A.GeneralArithmeticContext σ η' hS)
     (U : AllRowEuler.InitialSeparation.RawFrequency A)
     (χ ψ : Detector.PrimitiveFrequencyCharacter F)
@@ -93,8 +93,8 @@ private theorem raw_exterior_prime_identification
     have hm := (Ideal.mem_normalizedFactors_iff U.ideal.property.1).mpr
       ⟨p.val.isPrime, hle⟩
     exact (Multiset.count_eq_zero.mp he) hm
-  have huval : p.val.valuation F (U.u : F) = 1 := by
-    exact ArithmeticContext.actual_generator_valuation_unit A U.ideal U.u
+  have huval : p.val.valuation F (U.u : F) = 1 := 
+    ArithmeticContext.actual_generator_valuation_unit A U.ideal U.u
       (Units.mk0 (U.u : F) (by exact_mod_cast U.generates.1)) U.generates rfl p.val hv hnot
   obtain ⟨hpc, j, hjval, hjchar⟩ := hχ p.val hv huval
   have hpp : p.val.asIdeal ⊔ ψ.conductor = ⊤ := by
@@ -158,7 +158,7 @@ private theorem raw_exterior_prime_identification
     rw [hchi]
     exact htw.symm
 
-private theorem raw_multiplicative_mask_identification
+theorem raw_multiplicative_mask_identification
     (U : AllRowEuler.InitialSeparation.RawFrequency A)
     (χ : Detector.PrimitiveFrequencyCharacter F)
     (f : Ideal (𝓞 F) → ℂ) (hone : f ⊤ = 1)
@@ -267,13 +267,13 @@ private theorem exterior_mul_iff (I J : Ideal (𝓞 F)) :
       rw [← h.2]; exact sup_le_sup_right Ideal.mul_le_left _)
     have hJ : J ⊔ A.cS = ⊤ := top_unique (by
       rw [← h.2]; exact sup_le_sup_right Ideal.mul_le_right _)
-    exact ⟨⟨left_ne_zero_of_mul h.1, hI⟩, right_ne_zero_of_mul h.1, hJ⟩
+    simp_all
   · rintro ⟨hI, hJ⟩
     refine ⟨mul_ne_zero hI.1 hJ.1, ?_⟩
     rw [Ideal.mul_sup_eq_of_coprime_left hI.2]
     exact hJ.2
 
-private theorem raw_plus_ext_mul (σ : F →+* ℂ)
+theorem raw_plus_ext_mul (σ : F →+* ℂ)
     (U : AllRowEuler.InitialSeparation.RawFrequency A) (I J : A.Exterior) :
     AllRowEuler.InitialSeparation.plusExteriorCoefficient σ U (ExteriorIdealEuler.mul I J) =
       AllRowEuler.InitialSeparation.plusExteriorCoefficient σ U I *
@@ -308,19 +308,19 @@ private theorem raw_minus_mul (σ : F →+* ℂ) (η : RayClassCharacter F A.mod
   rw [raw_plus_mul, RayClassCharacter.map_mul', star_mul]
   ring
 
-private theorem raw_plus_one (σ : F →+* ℂ)
+theorem raw_plus_one (σ : F →+* ℂ)
     (U : AllRowEuler.InitialSeparation.RawFrequency A) :
     rawPlusCoefficient σ U ⊤ = 1 := by
   have h := (AllRowEuler.InitialSeparation.raw_plus_isCoefficient (σ := σ) U).map_one
   simpa [rawPlusCoefficient, ExteriorIdealEuler.one] using h
 
-private theorem raw_minus_one (σ : F →+* ℂ) (η : RayClassCharacter F A.modulus)
+theorem raw_minus_one (σ : F →+* ℂ) (η : RayClassCharacter F A.modulus)
     (U : AllRowEuler.InitialSeparation.RawFrequency A) :
     rawMinusCoefficient σ η U ⊤ = 1 := by
   unfold rawMinusCoefficient
   rw [raw_plus_one, star_one, RayClassCharacter.map_top', mul_one]
 
-private theorem raw_plus_prime_value
+theorem raw_plus_prime_value
     (C : A.GeneralArithmeticContext σ η' hS)
     (U : AllRowEuler.InitialSeparation.RawFrequency A)
     (χ ψ : Detector.PrimitiveFrequencyCharacter F)
@@ -346,7 +346,7 @@ private theorem raw_plus_prime_value
     rw [dif_pos ⟨p.val.ne_bot, p.property⟩]
     exact h
 
-private theorem raw_minus_prime_value
+theorem raw_minus_prime_value
     (C : A.GeneralArithmeticContext σ η' hS)
     (U : AllRowEuler.InitialSeparation.RawFrequency A)
     (χ ψ : Detector.PrimitiveFrequencyCharacter F)
@@ -416,8 +416,7 @@ theorem actual_raw_masked_inducers
           AllRowEuler.InitialSeparation.plusExteriorCoefficient R.σ (U u) I := by
         unfold rawPlusCoefficient
         rw [dif_pos I.property]
-        exact congrArg (AllRowEuler.InitialSeparation.plusExteriorCoefficient R.σ (U u))
-          (Subtype.ext (rfl : (⟨I.val, I.property⟩ : R.A.Exterior).val = I.val))
+        rfl
       rw [← hbridge]
       simpa [rawDeletionSet] using hmask
     · intro I
@@ -428,7 +427,7 @@ theorem actual_raw_masked_inducers
           unfold rawMinusCoefficient
           rw [show rawPlusCoefficient R.σ (U u) I = 0 from by
             unfold rawPlusCoefficient; exact dif_neg hI]
-          rw [star_zero, mul_zero])
+          simp)
         (raw_minus_prime_value C (U u) χ ψ hχ hψS htwist)
         I.val
       have hbridge : rawMinusCoefficient R.σ R.target (U u) I.val =
@@ -438,13 +437,9 @@ theorem actual_raw_masked_inducers
           AllRowEuler.InitialSeparation.plusExteriorCoefficient R.σ (U u) I from by
             unfold rawPlusCoefficient
             rw [dif_pos I.property]
-            exact congrArg (AllRowEuler.InitialSeparation.plusExteriorCoefficient R.σ (U u))
-              (Subtype.ext (rfl : (⟨I.val, I.property⟩ : R.A.Exterior).val = I.val))]
+            rfl]
         rfl
       rw [← hbridge]
       simpa [rawDeletionSet] using hmask
   choose P M hP hM using key
   exact ⟨P, M, fun u => rawDeletionSet_finite (U u), hP, hM⟩
-
-end
-end DedekindZetaZeroFree.PrincipalMellinComparison.NonprincipalContinuation.RawHeckeRows

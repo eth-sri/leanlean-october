@@ -357,7 +357,3 @@ theorem component_ends_exist
     rw [hvolume, hends]
     exact embedded_cusp_end_volume F hF _ (q a) (σ a) (hσ a) T
       (P a) (G a) _ (htransport _ (q a) (σ a) T) (hemb a) A hA hFD
-
-end DedekindZetaZeroFree.KPFiniteAdelicCuspEnds
-
-end

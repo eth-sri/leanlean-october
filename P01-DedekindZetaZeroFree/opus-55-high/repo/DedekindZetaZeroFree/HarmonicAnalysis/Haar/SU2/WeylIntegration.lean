@@ -85,12 +85,12 @@ noncomputable def weylFunctional : C(SU2, ℂ) →L[ℂ] ℂ :=
           ≤ 1 / (2 * Real.pi) * (‖f‖ * (2 * Real.pi)) := by gcongr
         _ = ‖f‖ := by field_simp
 
-private theorem weylFunctional_apply (f : C(SU2, ℂ)) :
+theorem weylFunctional_apply (f : C(SU2, ℂ)) :
     weylFunctional f = (1 / (2 * Real.pi) : ℂ) *
       ∫ θ in (0 : ℝ)..Real.pi, f (torusExp θ) * ((4 * Real.sin θ ^ 2 : ℝ) : ℂ) :=
   (rfl)
 
-private theorem weylFunctional_symPowerCharacter (d : ℕ) :
+theorem weylFunctional_symPowerCharacter (d : ℕ) :
     weylFunctional (symPowerCharacter d) = if d = 0 then 1 else 0 := by
   have h := character_symPower_orthonormal_torusExp d 0
   simp only [character_symPower_zero, map_one, mul_one] at h
@@ -126,7 +126,3 @@ theorem integral_character_symPower_mul_conj (m n : ℕ) :
       (Complex.continuous_conj.comp (continuous_character_symPower n)))
     fun u g => by rw [Representation.char_conj, Representation.char_conj]]
   exact character_symPower_orthonormal_torusExp m n
-
-end SU2
-
-end DedekindZetaZeroFree.TauCeti

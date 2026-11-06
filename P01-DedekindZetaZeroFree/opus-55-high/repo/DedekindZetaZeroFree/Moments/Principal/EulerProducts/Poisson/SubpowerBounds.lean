@@ -16,7 +16,7 @@ variable {F : Type} [Field F] [NumberField F]
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 variable (D : FixedData S η)
 
-private theorem q_eq_exteriorNorm (u : D.Row) :
+theorem q_eq_exteriorNorm (u : D.Row) :
     D.q u = D.recipe.A.exteriorNorm u.toFrequency.ideal := by
   unfold FixedData.q
   change (Nat.card (D.recipe.A.R ⧸ Ideal.span {u.toFrequency.u}) : ℝ) = _

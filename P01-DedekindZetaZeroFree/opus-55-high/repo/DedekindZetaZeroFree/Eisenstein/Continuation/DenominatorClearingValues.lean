@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Eisenstein.Residues.NormalizerClearingValues
 
 @[expose] public section
 
-noncomputable section
 open scoped Classical NumberField Topology
 open NumberField MeasureTheory Filter
 namespace DedekindZetaZeroFree.FourierContinuation.CurrentRepairedLocalBinding
@@ -45,7 +44,3 @@ theorem clearing_value_on_domain
     ((hazero.tendsto.mono_left nhdsWithin_le_nhds).congr' he)
     (by simpa [KPGlobalFiniteSIntertwiner.residueNormalizer,
       KPGlobalFiniteSIntertwiner.normalizer] using ht)
-
-end DedekindZetaZeroFree.FourierContinuation.CurrentRepairedLocalBinding
-
-end

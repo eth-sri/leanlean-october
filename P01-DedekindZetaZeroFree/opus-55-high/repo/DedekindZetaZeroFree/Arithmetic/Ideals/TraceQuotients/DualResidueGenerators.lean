@@ -45,13 +45,13 @@ abbrev rayDualResidueModule (m : Ideal (𝓞 F))
   (rayDualResidueNumerator m a : Submodule (𝓞 F) F) ⧸
     rayDualResidueDenominator m a
 
-theorem rayCodifferent_ne_zero : rayCodifferent F ≠ 0 := by
-  exact FractionalIdeal.dual_ne_zero ℤ ℚ one_ne_zero
+theorem rayCodifferent_ne_zero : rayCodifferent F ≠ 0 := 
+  FractionalIdeal.dual_ne_zero ℤ ℚ one_ne_zero
 
 theorem rayDualResidueNumerator_ne_zero (m : Ideal (𝓞 F))
     (a : FractionalIdeal (𝓞 F)⁰ F) (hm : m ≠ ⊥) (ha : a ≠ 0) :
-    rayDualResidueNumerator m a ≠ 0 := by
-  exact mul_ne_zero rayCodifferent_ne_zero
+    rayDualResidueNumerator m a ≠ 0 := 
+  mul_ne_zero rayCodifferent_ne_zero
     (inv_ne_zero (mul_ne_zero ha (FractionalIdeal.coeIdeal_ne_zero.mpr hm)))
 
 theorem rayDualResidue_mul_eq (m : Ideal (𝓞 F))
@@ -97,19 +97,19 @@ theorem rayDualResidueModule_isTorsionBySet (m : Ideal (𝓞 F))
       apply Subtype.ext
       have := y.property
       simpa [hI] using this
-    rw [hy, Submodule.Quotient.mk_zero, smul_zero]
+    simp_all
   change Module.IsTorsionBySet (𝓞 F)
     ((rayDualResidueNumerator m a : Submodule (𝓞 F) F) ⧸
       rayDualResidueDenominator m a) (m : Set (𝓞 F))
   rw [rayDualResidueDenominator_eq m a hm ha]
   exact fractionalResidueModule_isTorsionBySet m (rayDualResidueNumerator m a)
 
-noncomputable instance rayDualResidueModuleModule (m : Ideal (𝓞 F))
+instance rayDualResidueModuleModule (m : Ideal (𝓞 F))
     (a : FractionalIdeal (𝓞 F)⁰ F) :
     Module ((𝓞 F) ⧸ m) (rayDualResidueModule m a) :=
   (rayDualResidueModule_isTorsionBySet m a).module
 
-noncomputable def rayDualResidueModuleEquiv (m : Ideal (𝓞 F))
+def rayDualResidueModuleEquiv (m : Ideal (𝓞 F))
     (a : FractionalIdeal (𝓞 F)⁰ F) (hm : m ≠ ⊥) (ha : a ≠ 0) :
     rayDualResidueModule m a ≃ₗ[(𝓞 F) ⧸ m]
       fractionalResidueModule m (rayDualResidueNumerator m a) := by
@@ -125,17 +125,17 @@ noncomputable def rayDualResidueModuleEquiv (m : Ideal (𝓞 F))
     rayDualResidueModuleEquiv m a hm ha
       (Submodule.Quotient.mk (p := rayDualResidueDenominator m a) x) =
         Submodule.Quotient.mk
-          (p := fractionalResidueDenominator m (rayDualResidueNumerator m a)) x := by
-  exact Submodule.quotEquivOfEq_mk _ _ (rayDualResidueDenominator_eq m a hm ha) x
+          (p := fractionalResidueDenominator m (rayDualResidueNumerator m a)) x := 
+  Submodule.quotEquivOfEq_mk _ _ (rayDualResidueDenominator_eq m a hm ha) x
 
-noncomputable def rayDualResidueEquiv (m : Ideal (𝓞 F))
+def rayDualResidueEquiv (m : Ideal (𝓞 F))
     (a : FractionalIdeal (𝓞 F)⁰ F) (hm : m ≠ ⊥) (ha : a ≠ 0) :
     ((𝓞 F) ⧸ m) ≃ₗ[(𝓞 F) ⧸ m] rayDualResidueModule m a :=
   (fractionalResidueEquiv m (rayDualResidueNumerator m a) hm
     (rayDualResidueNumerator_ne_zero m a hm ha)).trans
       (rayDualResidueModuleEquiv m a hm ha).symm
 
-noncomputable def rayDualResidueGenerator (m : Ideal (𝓞 F))
+def rayDualResidueGenerator (m : Ideal (𝓞 F))
     (a : FractionalIdeal (𝓞 F)⁰ F) (hm : m ≠ ⊥) (ha : a ≠ 0) :
     rayDualResidueModule m a := rayDualResidueEquiv m a hm ha 1
 
@@ -197,7 +197,3 @@ theorem rayDualResidueGenerator_lift_coprime (m : Ideal (𝓞 F))
 @[simp] theorem rayDualFractionalIdeal_one :
     rayDualFractionalIdeal (1 : FractionalIdeal (𝓞 F)⁰ F) = rayCodifferent F := by
   simp [rayDualFractionalIdeal]
-
-end
-
-end DedekindZetaZeroFree.Hecke

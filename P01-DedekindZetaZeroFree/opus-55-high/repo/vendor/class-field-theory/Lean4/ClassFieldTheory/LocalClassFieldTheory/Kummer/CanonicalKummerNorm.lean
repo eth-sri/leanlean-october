@@ -16,14 +16,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Norms from an irreducible Kummer algebra
 
@@ -32,12 +24,11 @@ root is isomorphic to the chosen simple Kummer field.  This file transports
 the algebra norm through that isomorphism.
 -/
 
-noncomputable section
 
 namespace LocalClassFieldTheory.Kummer
 
 /-- Algebra norms multiply across a product of finite algebras. -/
-private theorem norm_prod_apply
+theorem norm_prod_apply
     (K S T : Type) [Field K] [CommRing S] [CommRing T]
     [Algebra K S] [Algebra K T]
     [Module.Free K S] [Module.Finite K S]
@@ -46,56 +37,9 @@ private theorem norm_prod_apply
     Algebra.norm K x = Algebra.norm K x.1 * Algebra.norm K x.2 := by
   have hmul : Algebra.lmul K (S × T) x =
       (Algebra.lmul K S x.1).prodMap (Algebra.lmul K T x.2) := by
-    apply LinearMap.ext
-    intro z
-    rcases z with ⟨s, t⟩
     rfl
   rw [Algebra.norm_apply, hmul, LinearMap.det_prodMap,
     ← Algebra.norm_apply, ← Algebra.norm_apply]
-
-/-- If `X^n - a` is irreducible, being a norm from its canonical root algebra
-is equivalent to being a norm from the chosen simple Kummer field. -/
-theorem adjoinRoot_norm_iff_chosenSimpleKummerNorm_of_irreducible
-    (K : Type) [Field K] (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (a b : Kˣ)
-    (hirr : Irreducible
-      (Polynomial.X ^ (n : ℕ) - Polynomial.C (a : K))) :
-    (∃ y : (AdjoinRoot
-          (Polynomial.X ^ (n : ℕ) - Polynomial.C (a : K)))ˣ,
-        Algebra.norm K
-          (y : AdjoinRoot
-            (Polynomial.X ^ (n : ℕ) - Polynomial.C (a : K))) = (b : K)) ↔
-      ∃ y : (KummerTheory.chosenSimpleKummerExtension K n hnK a)ˣ,
-        Algebra.norm K
-          (y : KummerTheory.chosenSimpleKummerExtension K n hnK a) = (b : K) := by
-  let β : SeparableClosure K := KummerTheory.chosenSimpleKummerRoot K n hnK a
-  let p : Polynomial K := Polynomial.X ^ (n : ℕ) - Polynomial.C (a : K)
-  have hβ : Polynomial.aeval β p = 0 := by
-    simp only [p, map_sub, map_pow, Polynomial.aeval_X, Polynomial.aeval_C,
-      β, KummerTheory.chosenSimpleKummerRoot_pow, sub_self]
-  have hp : p = minpoly K β :=
-    minpoly.eq_of_irreducible_of_monic hirr hβ
-      (Polynomial.monic_X_pow_sub_C (a : K) n.pos.ne')
-  have hβint : IsIntegral K β := by
-    apply IsIntegral.of_pow n.pos
-    rw [show β ^ (n : ℕ) = algebraMap K (SeparableClosure K) (a : K) from
-      KummerTheory.chosenSimpleKummerRoot_pow K n hnK a]
-    exact isIntegral_algebraMap
-  let E := KummerTheory.chosenSimpleKummerExtension K n hnK a
-  let e : AdjoinRoot p ≃ₐ[K] E :=
-    (AdjoinRoot.algEquivOfEq K p (minpoly K β) hp).trans
-      (IntermediateField.adjoinRootEquivAdjoin K hβint)
-  change (∃ y : (AdjoinRoot p)ˣ, Algebra.norm K (y : AdjoinRoot p) = (b : K)) ↔
-    ∃ y : Eˣ, Algebra.norm K (y : E) = (b : K)
-  constructor
-  · rintro ⟨y, hy⟩
-    refine ⟨Units.map e.toMonoidHom y, ?_⟩
-    change Algebra.norm K (e (y : AdjoinRoot p)) = (b : K)
-    rw [Algebra.norm_eq_of_algEquiv e, hy]
-  · rintro ⟨y, hy⟩
-    refine ⟨Units.map e.symm.toMonoidHom y, ?_⟩
-    change Algebra.norm K (e.symm (y : E)) = (b : K)
-    rw [Algebra.norm_eq_of_algEquiv e.symm, hy]
 
 /-- The canonical Kummer algebra separates, by the Chinese remainder theorem,
 into the factor containing the chosen radical and a complementary factor.
@@ -115,8 +59,8 @@ theorem adjoinRoot_decompose_chosenMinpoly
     simp only [p, map_sub, map_pow, Polynomial.aeval_X, Polynomial.aeval_C,
       β, KummerTheory.chosenSimpleKummerRoot_pow, sub_self]
   obtain ⟨r, hr⟩ := minpoly.dvd K β hβ
-  have hsep : p.Separable := by
-    exact Polynomial.separable_X_pow_sub_C (a : K) hnK (Units.ne_zero a)
+  have hsep : p.Separable := 
+    Polynomial.separable_X_pow_sub_C (a : K) hnK (Units.ne_zero a)
   have hcoprime : IsCoprime q r := by
     apply Polynomial.Separable.isCoprime
     rw [← hr]
@@ -230,8 +174,7 @@ theorem adjoin_root_eq_top_of_pow_eq
     rw [hβζE]
     have hζmem : ((Units.map (algebraMap K E).toMonoidHom ζ : Eˣ) : E) ∈
         IntermediateField.adjoin K {γ} := by
-      rw [Units.coe_map]
-      exact IntermediateField.algebraMap_mem _ (ζ : K)
+      simp
     exact mul_mem (inv_mem hζmem)
       (IntermediateField.subset_adjoin K {γ} (Set.mem_singleton γ))
   have hle : IntermediateField.adjoin K {(β : E)} ≤
@@ -287,7 +230,7 @@ theorem adjoinRoot_factor_equiv_chosenSimpleKummer
   have hγp : Polynomial.aeval γ p = 0 := by
     obtain ⟨g, hg⟩ := hfp
     change Polynomial.aeval γ (Polynomial.X ^ (n : ℕ) - Polynomial.C (a : K)) = 0
-    rw [hg, map_mul, hγf, zero_mul]
+    simp_all
   have hγpow : γ ^ (n : ℕ) = algebraMap K E (a : K) := by
     have h := hγp
     simp only [p, map_sub, map_pow, Polynomial.aeval_X, Polynomial.aeval_C,
@@ -371,11 +314,11 @@ theorem adjoinRoot_factor_norm_is_chosenSimpleKummerNorm
       subst g
       have hsub : Subsingleton (AdjoinRoot (1 : Polynomial K)) := by
         change Subsingleton ((Polynomial K) ⧸ Ideal.span {1})
-        exact Ideal.Quotient.subsingleton_iff.mpr (by simp)
+        simp
       have hu1 : (u : AdjoinRoot (1 : Polynomial K)) = 1 :=
         Subsingleton.elim _ _
       refine ⟨1, ?_⟩
-      simp only [hu1, map_one, Units.val_one]
+      simp_all
     · have hgpos : 0 < g.natDegree := by omega
       obtain ⟨q, hqmonic, hqirr, hqg⟩ :=
         Polynomial.exists_monic_irreducible_factor g
@@ -388,8 +331,7 @@ theorem adjoinRoot_factor_norm_is_chosenSimpleKummerNorm
       have hqdiv : q ∣ p := dvd_trans ⟨r, hgr⟩ hgp
       have hrdiv : r ∣ p := by
         apply dvd_trans ?_ hgp
-        rw [hgr]
-        exact dvd_mul_left r q
+        simp_all
       have hgsep : g.Separable := hpsep.of_dvd hgp
       have hqr : IsCoprime q r := by
         apply Polynomial.Separable.isCoprime
@@ -473,12 +415,7 @@ theorem adjoinRoot_norm_iff_chosenSimpleKummerNorm
     have hzw : Algebra.norm K (y : AdjoinRoot p) =
         Algebra.norm K (z : E) * Algebra.norm K (w : AdjoinRoot r) :=
       hnorm (y : AdjoinRoot p)
-    calc
-      Algebra.norm K ((z * v : Eˣ) : E) =
-          Algebra.norm K (z : E) * Algebra.norm K (v : E) := by
-            simp only [Units.val_mul, map_mul]
-      _ = Algebra.norm K (y : AdjoinRoot p) := by rw [← hv, ← hzw]
-      _ = (b : K) := hy
+    simp_all
   · rintro ⟨z, hz⟩
     let t : (E × AdjoinRoot r)ˣ := MulEquiv.prodUnits.symm (z, 1)
     let y : (AdjoinRoot p)ˣ := Units.map e.symm.toMonoidHom t
@@ -488,9 +425,4 @@ theorem adjoinRoot_norm_iff_chosenSimpleKummerNorm
         e (y : AdjoinRoot p) = e (e.symm (t : E × AdjoinRoot r)) := rfl
         _ = (t : E × AdjoinRoot r) := e.apply_symm_apply _
         _ = ((z : E), 1) := rfl
-    rw [hnorm (y : AdjoinRoot p), het]
-    simpa only [map_one, mul_one] using hz
-
-end LocalClassFieldTheory.Kummer
-
-end
+    simp_all

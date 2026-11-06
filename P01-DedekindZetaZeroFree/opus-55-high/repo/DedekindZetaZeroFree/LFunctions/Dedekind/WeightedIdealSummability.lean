@@ -23,8 +23,7 @@ theorem weightedIdealSummability
         ‖DedekindZetaZeroFree.Odlyzko.idealInverseNormPower K s I‖ := by
     intro I
     by_cases hI : I = ⊥
-    · subst hI
-      simp [hbot, DedekindZetaZeroFree.Odlyzko.idealInverseNormPower]
+    · simp_all
     · have hI0 : I ≠ 0 := hI
       rw [DedekindZetaZeroFree.Odlyzko.idealInverseNormPower_of_ne_zero K s hI0, norm_mul]
       calc ‖w I‖ * ‖(Ideal.absNorm I : ℂ) ^ (-s)‖
@@ -53,5 +52,3 @@ theorem weightedIdealSummandHom_exists
         rw [hmul, map_mul, Nat.cast_mul, Complex.natCast_mul_natCast_cpow]
         ring }
   exact ⟨g, fun I => rfl⟩
-
-end DedekindZetaZeroFree.AbelianQuotient

@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # The fixed-bottom tower model and the actual intermediate-field model
 
@@ -68,7 +64,7 @@ section RingComparison
 
 /-- The ring-level relative-to-ordinary comparison, regarded as an
 equivalence of `M`-algebras. -/
-noncomputable def intermediateRelativeAdeleBaseChangeAlgEquiv :
+def intermediateRelativeAdeleBaseChangeAlgEquiv :
     RelativeAdeleRing K M ≃ₐ[M]
       NumberField.AdeleRing (𝓞 M) M :=
   AlgEquiv.ofRingEquiv
@@ -86,7 +82,7 @@ noncomputable def intermediateRelativeAdeleBaseChangeAlgEquiv :
         (K := K) (L := M) m)
 
 /-- Extend the intermediate adele-ring comparison along `M → L`. -/
-noncomputable def towerActualRelativeAdeleRingEquiv :
+def towerActualRelativeAdeleRingEquiv :
     TowerRelativeAdeleRing K M L ≃+*
       RelativeAdeleRing M L :=
   (Algebra.TensorProduct.congr
@@ -148,7 +144,7 @@ private theorem relativeAdeleBaseChangeRingEquiv_tower_finiteComponent
             (towerRelativeAdeleRingEquiv K M L z₁)).2 W +
           (relativeAdeleBaseChangeRingEquiv
             (towerRelativeAdeleRingEquiv K M L z₂)).2 W
-      exact congrArg₂ (· + ·) hz₁ hz₂
+      simp_all
   | tmul b x =>
       induction b using TensorProduct.inductionOn with
       | add b₁ b₂ hb₁ hb₂ =>
@@ -166,7 +162,7 @@ private theorem relativeAdeleBaseChangeRingEquiv_tower_finiteComponent
               (relativeAdeleBaseChangeRingEquiv
                 (towerRelativeAdeleRingEquiv K M L
                   (b₂ ⊗ₜ[M] x))).2 W
-          exact congrArg₂ (· + ·) hb₁ hb₂
+          simp_all
       | tmul a m =>
           have hflatten :
               towerRelativeAdeleRingEquiv K M L
@@ -176,11 +172,7 @@ private theorem relativeAdeleBaseChangeRingEquiv_tower_finiteComponent
               towerRelativeAdeleFlatten K M L
                   ((a ⊗ₜ[K] m) ⊗ₜ[M] x) =
                 a ⊗ₜ[K] (algebraMap M L m * x)
-            rw [
-              towerRelativeAdeleFlatten_tmul,
-              intermediateAdeleInclusion_tmul,
-              topFieldToOneStep_apply,
-              Algebra.TensorProduct.tmul_mul_tmul, mul_one]
+            simp
           let V := finitePlaceBelow (K := M) W
           let v := finitePlaceBelow (K := K) W
           have hv :
@@ -261,7 +253,7 @@ private theorem relativeAdeleBaseChangeRingEquiv_tower_infiniteComponent
             (towerRelativeAdeleRingEquiv K M L z₁)).1 W +
           (relativeAdeleBaseChangeRingEquiv
             (towerRelativeAdeleRingEquiv K M L z₂)).1 W
-      exact congrArg₂ (· + ·) hz₁ hz₂
+      simp_all
   | tmul b x =>
       induction b using TensorProduct.inductionOn with
       | add b₁ b₂ hb₁ hb₂ =>
@@ -279,7 +271,7 @@ private theorem relativeAdeleBaseChangeRingEquiv_tower_infiniteComponent
               (relativeAdeleBaseChangeRingEquiv
                 (towerRelativeAdeleRingEquiv K M L
                   (b₂ ⊗ₜ[M] x))).1 W
-          exact congrArg₂ (· + ·) hb₁ hb₂
+          simp_all
       | tmul a m =>
           have hflatten :
               towerRelativeAdeleRingEquiv K M L
@@ -289,11 +281,7 @@ private theorem relativeAdeleBaseChangeRingEquiv_tower_infiniteComponent
               towerRelativeAdeleFlatten K M L
                   ((a ⊗ₜ[K] m) ⊗ₜ[M] x) =
                 a ⊗ₜ[K] (algebraMap M L m * x)
-            rw [
-              towerRelativeAdeleFlatten_tmul,
-              intermediateAdeleInclusion_tmul,
-              topFieldToOneStep_apply,
-              Algebra.TensorProduct.tmul_mul_tmul, mul_one]
+            simp
           let V := infinitePlaceBelow (K := M) W
           let v := infinitePlaceBelow (K := K) W
           have hv :
@@ -331,12 +319,7 @@ private theorem relativeAdeleBaseChangeRingEquiv_tower_infiniteComponent
               rw [h,
                 NumberField.LiesOver.completionMap_coe
                   (v := V) (w := W)]
-              apply InfinitePlace.Completion.ext
-              rw [
-                InfinitePlace.Completion.algebraMap_toCompletion,
-                UniformSpace.Completion.algebraMap_def]
-              simp [WithAbs.algebraMap_left_apply,
-                WithAbs.algebraMap_right_apply]
+              rfl
             rw [map_mul,
               infinitePlaceCompletionMap_comp_apply
                 (K := K) (M := M) (L := L) W,
@@ -399,7 +382,7 @@ section ViaOrdinary
 
 /-- The comparison through ordinary ideles, recording the compatibility
 with the original fixed-bottom flattening construction. -/
-noncomputable def towerRelativeIdeleViaOrdinaryMulEquiv :
+def towerRelativeIdeleViaOrdinaryMulEquiv :
     TowerRelativeIdeleGroup K M L ≃*
       RelativeIdeleGroup M L :=
   (towerRelativeIdeleEquiv K M L).trans
@@ -425,7 +408,7 @@ end ViaOrdinary
 /-- The fixed-bottom tower presentation of the ideles of `L` is
 canonically equivalent to the actual relative idele group over `M`,
 using the underlying adele-ring scalar-extension equivalence. -/
-noncomputable def towerRelativeIdeleBaseChangeMulEquiv :
+def towerRelativeIdeleBaseChangeMulEquiv :
     TowerRelativeIdeleGroup K M L ≃*
       RelativeIdeleGroup M L :=
   Units.mapEquiv
@@ -547,13 +530,11 @@ theorem towerPrincipalSubgroup_map_baseChange :
     MonoidHom.map_range]
   congr 1
   ext x
-  exact congrArg Units.val
-    (towerRelativeIdeleBaseChangeMulEquiv_principalIdele
-      K M L x)
+  simp
 
 /-- The fixed-bottom tower class group is canonically the actual
 relative idele class group of `L/M`. -/
-noncomputable def towerRelativeIdeleClassBaseChangeMulEquiv :
+def towerRelativeIdeleClassBaseChangeMulEquiv :
     TowerRelativeIdeleGroup.ClassGroup K M L ≃*
       RelativeIdeleGroup.ClassGroup M L :=
   QuotientGroup.congr
@@ -647,167 +628,6 @@ end IdeleComparison
 
 section NormComparison
 
-/-- The actual finite component of the tower model after the
-intermediate adele-ring comparison. -/
-noncomputable def towerActualFiniteComponent
-    (W : HeightOneSpectrum (𝓞 M)) :
-    TowerRelativeIdeleGroup K M L →*
-      (W.adicCompletion M ⊗[M] L)ˣ :=
-  Units.map
-    (Algebra.TensorProduct.map
-      ((finiteAdeleComponentAlgHom W).comp
-        (intermediateRelativeAdeleBaseChangeAlgEquiv
-          K M).toAlgHom)
-      (AlgHom.id M L)).toRingHom
-
-/-- The actual archimedean component of the tower model after the
-intermediate adele-ring comparison. -/
-noncomputable def towerActualInfiniteComponent
-    (W : InfinitePlace M) :
-    TowerRelativeIdeleGroup K M L →*
-      (W.Completion ⊗[M] L)ˣ :=
-  Units.map
-    (Algebra.TensorProduct.map
-      ((infiniteAdeleComponentAlgHom W).comp
-        (intermediateRelativeAdeleBaseChangeAlgEquiv
-          K M).toAlgHom)
-      (AlgHom.id M L)).toRingHom
-
-omit [NumberField L] [Algebra K L] [IsScalarTower K M L]
-    [FiniteDimensional M L] in
-/-- Finite-component identification for the norm-compatible tower
-comparison. -/
-@[simp]
-theorem towerRelativeIdeleBaseChangeMulEquiv_finiteComponent
-    (W : HeightOneSpectrum (𝓞 M))
-    (a : TowerRelativeIdeleGroup K M L) :
-    RelativeIdeleGroup.finiteComponent
-        (K := M) (L := L) W
-        (towerRelativeIdeleBaseChangeMulEquiv K M L a) =
-      towerActualFiniteComponent K M L W a := by
-  apply Units.ext
-  change
-    relativeAdeleFiniteComponent
-        (K := M) (L := L) W
-        (towerActualRelativeAdeleRingEquiv K M L
-          (a : TowerRelativeAdeleRing K M L)) =
-      Algebra.TensorProduct.map
-        ((finiteAdeleComponentAlgHom W).comp
-          (intermediateRelativeAdeleBaseChangeAlgEquiv
-            K M).toAlgHom)
-        (AlgHom.id M L)
-        (a : TowerRelativeAdeleRing K M L)
-  induction (a : TowerRelativeAdeleRing K M L) using
-      TensorProduct.inductionOn with
-  | add x y hx hy => simp [hx, hy]
-  | tmul b x =>
-      simp [towerActualRelativeAdeleRingEquiv_tmul,
-        relativeAdeleFiniteComponent_tmul]
-
-omit [NumberField L] [Algebra K L] [IsScalarTower K M L]
-    [FiniteDimensional M L] in
-/-- Archimedean-component identification for the norm-compatible tower
-comparison. -/
-@[simp]
-theorem towerRelativeIdeleBaseChangeMulEquiv_infiniteComponent
-    (W : InfinitePlace M)
-    (a : TowerRelativeIdeleGroup K M L) :
-    RelativeIdeleGroup.infiniteComponent
-        (K := M) (L := L) W
-        (towerRelativeIdeleBaseChangeMulEquiv K M L a) =
-      towerActualInfiniteComponent K M L W a := by
-  apply Units.ext
-  change
-    relativeAdeleInfiniteComponent
-        (K := M) (L := L) W
-        (towerActualRelativeAdeleRingEquiv K M L
-          (a : TowerRelativeAdeleRing K M L)) =
-      Algebra.TensorProduct.map
-        ((infiniteAdeleComponentAlgHom W).comp
-          (intermediateRelativeAdeleBaseChangeAlgEquiv
-            K M).toAlgHom)
-        (AlgHom.id M L)
-        (a : TowerRelativeAdeleRing K M L)
-  induction (a : TowerRelativeAdeleRing K M L) using
-      TensorProduct.inductionOn with
-  | add x y hx hy => simp [hx, hy]
-  | tmul b x =>
-      simp [towerActualRelativeAdeleRingEquiv_tmul,
-        relativeAdeleInfiniteComponent_tmul]
-
-/-- Evaluation of the fixed-bottom relative adele ring at one exact
-finite extension of a place of `K`, as an `M`-algebra map. -/
-noncomputable def towerIntermediateFiniteComponentAlgHom
-    (w : HeightOneSpectrum (𝓞 K))
-    (uM : AbsoluteValueExtension
-      (HeightOneSpectrum.adicAbv K w) M) :
-    RelativeAdeleRing K M →ₐ[M] uM.1.Completion := by
-  let f : RelativeAdeleRing K M →+* uM.1.Completion :=
-    (finitePlaceLocalTensorDecompositionComponentRingHom
-      (K := K) (L := M) w uM).comp
-        (relativeAdeleFiniteComponent
-          (K := K) (L := M) w).toRingHom
-  exact
-    { f with
-      commutes' := by
-        intro m
-        change
-          finitePlaceLocalTensorDecompositionComponent
-              (K := K) (L := M) w uM
-              (relativeAdeleFiniteComponent
-                (K := K) (L := M) w
-                ((1 : NumberField.AdeleRing (𝓞 K) K) ⊗ₜ[K] m)) =
-            algebraMap M uM.1.Completion m
-        rw [relativeAdeleFiniteComponent_tmul,
-          finitePlaceLocalTensorDecompositionComponent_tmul]
-        have hOne :
-            ((1 : NumberField.AdeleRing (𝓞 K) K).2 w) = 1 :=
-          rfl
-        rw [hOne, map_one, map_one, one_mul]
-        rfl }
-
-/-- The local tensor component of a tower idele at an exact finite
-extension place of `M`. -/
-noncomputable def towerIntermediateFiniteComponent
-    (w : HeightOneSpectrum (𝓞 K))
-    (uM : AbsoluteValueExtension
-      (HeightOneSpectrum.adicAbv K w) M) :
-    TowerRelativeIdeleGroup K M L →*
-      (uM.1.Completion ⊗[M] L)ˣ :=
-  Units.map
-    (Algebra.TensorProduct.map
-      (towerIntermediateFiniteComponentAlgHom K M w uM)
-      (AlgHom.id M L)).toRingHom
-
-/-- Evaluation of a relative idele over `K` at the same exact finite
-extension place of `M`. -/
-noncomputable def intermediateFiniteComponent
-    (w : HeightOneSpectrum (𝓞 K))
-    (uM : AbsoluteValueExtension
-      (HeightOneSpectrum.adicAbv K w) M) :
-    RelativeIdeleGroup K M →* uM.1.Completionˣ :=
-  Units.map
-    (towerIntermediateFiniteComponentAlgHom K M w uM).toRingHom
-
-omit [NumberField M] [NumberField L] [Algebra K L] [IsScalarTower K M L] in
-/-- Determinant norm commutes with the exact finite-place component of
-the fixed-bottom tower model. -/
-theorem towerIntermediateFiniteComponent_norm
-    (w : HeightOneSpectrum (𝓞 K))
-    (uM : AbsoluteValueExtension
-      (HeightOneSpectrum.adicAbv K w) M)
-    (a : TowerRelativeIdeleGroup K M L) :
-    intermediateFiniteComponent K M w uM
-        (TowerRelativeIdeleGroup.norm K M L a) =
-      Units.map (Algebra.norm uM.1.Completion)
-        (towerIntermediateFiniteComponent K M L w uM a) := by
-  apply Units.ext
-  exact
-    map_norm_tensorProduct_baseChange
-      (K := M) (L := L)
-      (towerIntermediateFiniteComponentAlgHom K M w uM)
-      (a : TowerRelativeAdeleRing K M L)
-
 omit [NumberField L] [Algebra K L] [IsScalarTower K M L]
     [FiniteDimensional M L] in
 /-- The actual relative-idele norm is the tower determinant norm after
@@ -832,12 +652,6 @@ theorem towerRelativeIdeleBaseChangeMulEquiv_norm
           (algebraMap
             (RelativeAdeleRing K M)
             (TowerRelativeAdeleRing K M L)) := by
-    apply DFunLike.ext _ _
-    intro b
-    change
-      (e₁ b) ⊗ₜ[M] (1 : L) =
-        e₂ (b ⊗ₜ[M] (1 : L))
-    rw [towerActualRelativeAdeleRingEquiv_tmul]
     rfl
   have hnorm :=
     Algebra.norm_eq_of_equiv_equiv
@@ -931,7 +745,7 @@ theorem towerClassNorm_range_map_baseChange :
 
 /-- The fixed-bottom quotient `C_M / N_{L/M} C_L` is canonically the
 ordinary idele-class norm quotient for the actual extension `L/M`. -/
-noncomputable def intermediateClassNormQuotientBaseChangeMulEquiv :
+def intermediateClassNormQuotientBaseChangeMulEquiv :
     IntermediateClassNormQuotient K M L ≃*
       RelativeIdeleGroup.ClassNormQuotient M L :=
   QuotientGroup.congr
@@ -1012,8 +826,8 @@ theorem ordinaryIdeleClassNorm_tower
     _ = _root_.ideleClassNorm K M
         (RelativeIdeleGroup.classNorm M L
           (towerRelativeIdeleClassBaseChangeMulEquiv
-            K M L t)) := by
-      exact congrArg
+            K M L t)) := 
+      congrArg
         (_root_.ideleClassNorm K M)
         (ordinaryIdeleClassNorm_relativeIdeleClassBaseChange
           (K := M) (L := L)
@@ -1035,8 +849,8 @@ theorem ordinaryIdeleClassNorm_tower
     _ = RelativeIdeleGroup.classNorm K L
         (TowerRelativeIdeleGroup.classGroupEquiv K M L t) :=
       towerCompositeClassNorm_eq_ideleClassNorm K M L t
-    _ = RelativeIdeleGroup.classNorm K L d := by
-      exact congrArg
+    _ = RelativeIdeleGroup.classNorm K L d := 
+      congrArg
         (RelativeIdeleGroup.classNorm K L)
         ((TowerRelativeIdeleGroup.classGroupEquiv
           K M L).apply_symm_apply d)
@@ -1046,8 +860,8 @@ theorem ordinaryIdeleClassNorm_tower
       exact
         (ordinaryIdeleClassNorm_relativeIdeleClassBaseChange
           (K := K) (L := L) d).symm
-    _ = _root_.ideleClassNorm K L c := by
-      exact congrArg
+    _ = _root_.ideleClassNorm K L c := 
+      congrArg
         (_root_.ideleClassNorm K L)
         ((relativeIdeleClassBaseChangeMulEquiv
           (K := K) (L := L)).apply_symm_apply c)
@@ -1069,7 +883,3 @@ theorem ordinaryIdeleClassNorm_range_le_of_tower :
   rintro _ ⟨c, rfl⟩
   exact
     ⟨TowerRelativeIdeleGroup.classNorm K M L c, rfl⟩
-
-end OrdinaryNormTower
-
-end

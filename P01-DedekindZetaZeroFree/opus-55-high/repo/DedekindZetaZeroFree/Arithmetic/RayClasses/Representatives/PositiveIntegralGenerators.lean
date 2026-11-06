@@ -65,7 +65,7 @@ theorem exists_positive_integral_generator
     fun h => hbne (IsFractionRing.injective (𝓞 F) F (by simpa using h))
   have haF : (algebraMap (𝓞 F) F) a ≠ 0 := by
     rw [ha]; exact mul_ne_zero (Units.ne_zero x) hbF
-  have hane : a ≠ 0 := fun h => haF (by rw [h]; exact map_zero _)
+  have hane : a ≠ 0 := fun h => haF (by rw [h]; rfl)
   refine ⟨a, b, hane, hbne, ha, ?_, hb1, ?_, hbpos⟩
   ·
     have h1 : a - b ∈ m := ray_congruent_sub_mem m hm x hx a b ha
@@ -77,5 +77,3 @@ theorem exists_positive_integral_generator
     have hxpos : 0 < φ (x : F) := ray_congruent_pos m hm x hx φ
     rw [ha, map_mul]
     exact mul_pos hxpos (hbpos φ)
-
-end DedekindZetaZeroFree.LargeSieve.RayBridge

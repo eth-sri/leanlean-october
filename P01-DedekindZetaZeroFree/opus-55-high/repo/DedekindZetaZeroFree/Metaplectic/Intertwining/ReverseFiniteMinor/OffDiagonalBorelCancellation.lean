@@ -16,7 +16,6 @@ open KPTameTransposeLowShellSupport
 open _root_.DedekindZetaZeroFree.KPTameTransposeLowShellSupport renaming eventual_actual_compact_normalizers → eventual_actual_compact_normalizers
 open _root_.DedekindZetaZeroFree.KPTameTransposeLowShellSupport renaming unitDilation_preservesLowShellHaar → unitDilation_preservesLowShellHaar
 open _root_.DedekindZetaZeroFree.KPTameTransposeLowShellSupport renaming unitDilation → unitDilation
-set_option autoImplicit false
 set_option maxHeartbeats 1000000
 set_option backward.isDefEq.respectTransparency false
 
@@ -33,7 +32,7 @@ set_option backward.isDefEq.respectTransparency false
     ((actualCanonicalReverseMap F ζ hζ q S P μ hμ).toLinearMap.comp
       (scalarCoordinateEquiv F ζ hζ q S P hP .minus).symm.toLinearMap)
 
-private theorem offDiagonalReverseLinear_intertwines
+theorem offDiagonalReverseLinear_intertwines
     (F : Type) [Field F] [NumberField F]
     (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
     (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
@@ -59,7 +58,7 @@ private theorem offDiagonalReverseLinear_intertwines
   exact congrArg (scalarCoordinateEquiv F ζ hζ q S P hP .plus)
     (actualCanonicalReverseLinear_intertwines F ζ hζ q S P μ hμ t v)
 
-private theorem actual_lowShell_covariance
+theorem actual_lowShell_covariance
     (F : Type) [Field F] [NumberField F]
     (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
     (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
@@ -130,7 +129,7 @@ private theorem actual_lowShell_covariance
 
 set_option backward.isDefEq.respectTransparency false in
 
-private theorem actual_lowShell_zero_of_full_chi_ne
+theorem actual_lowShell_zero_of_full_chi_ne
     (F : Type) [Field F] [NumberField F]
     (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
     (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
@@ -201,8 +200,8 @@ theorem actual_lowShell_integral_zero_of_differenceLabel_ne_zero
     hnorm π f' i u
   have hchi : chi F ζ hζ q S P hP .minus bm ≠ chi F ζ hζ q S P hP .plus bp := by
     intro heq
-    have hp : chi F ζ hζ q S P hP .plus bp ≠ 0 := by
-      exact mul_ne_zero (Units.ne_zero _) (Complex.exp_ne_zero _)
+    have hp : chi F ζ hζ q S P hP .plus bp ≠ 0 := 
+      mul_ne_zero (Units.ne_zero _) (Complex.exp_ne_zero _)
     change chi F ζ hζ q S P hP .minus bm / chi F ζ hζ q S P hP .plus bp = _ at hratio
     rw [heq, div_self hp] at hratio
     exact hu hratio.symm
@@ -240,7 +239,3 @@ theorem actual_lowShell_integral_zero_of_differenceLabel_ne_zero
     _ hs hse
     (fun x hx => KPTameLowShellConcreteCharts.concrete_outer_chart F ζ hζ q S P hP e u x)
     f hf hchi
-
-end DedekindZetaZeroFree.ActualReverseMinorOffDiagonal
-
-end

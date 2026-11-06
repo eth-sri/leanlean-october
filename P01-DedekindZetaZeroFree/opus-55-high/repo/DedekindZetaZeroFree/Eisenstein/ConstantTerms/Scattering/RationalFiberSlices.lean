@@ -115,11 +115,7 @@ theorem rawCoreInsertion_scattering_stage
     rawCoreInsertion A P C (RestrictedTensorSimple.stageInclusion _ _ _ s
       (PiTensorProduct.tprod ℂ x))
       (localToRestricted F ζ hζ (Sum.inr q) (finiteScatteringRaw A q y) * g) =
-      rationalScatteringSlice A P C s x g q hq y := by
-  exact (rawCoreInsertion_stage A P C s _ _
+      rationalScatteringSlice A P C s x g q hq y := 
+  (rawCoreInsertion_stage A P C s _ _
     (finiteScatteringRaw_tail A P C s g q hq hg y)).trans
       (rawStageInsertion_scattering A P C s x g q hq y)
-
-end DedekindZetaZeroFree.FourierContinuation.LiteralSource
-
-end

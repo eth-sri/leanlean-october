@@ -105,7 +105,7 @@ structure Enumeration (a b : ShrunkChart F ζ hζ U R P H) where
 open scoped ContDiff
 
 open Branch
-private theorem component_countable (i : Fin (H.atlas U).componentCount) :
+theorem component_countable (i : Fin (H.atlas U).componentCount) :
     Countable (KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative i)) := by
   letI : Countable F := Finsupp.Countable.of_moduleFinite (R := ℚ)
   letI : Countable (Matrix (Fin 2) (Fin 2) F) := by change Countable (Fin 2 → Fin 2 → F); infer_instance
@@ -227,11 +227,11 @@ private theorem q_coord (a b : ShrunkChart F ζ hζ U R P H)
   simp only [coord, la]
   apply Quotient.sound
   exact ⟨g, rfl⟩
-private theorem make_psi (a b : ShrunkChart F ζ hζ U R P H)
+theorem make_psi (a b : ShrunkChart F ζ hζ U R P H)
     (h : a.component = b.component)
     (g : KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative a.component)) :
     (make a b h g).arrow.psi = cmap g.val := chart_coord a b h g
-private theorem make_inverse (a b : ShrunkChart F ζ hζ U R P H)
+theorem make_inverse (a b : ShrunkChart F ζ hζ U R P H)
     (h : a.component = b.component)
     (g : KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative a.component)) :
     Branch.inverse (some (make a b h g)) = cmap g.val⁻¹ := by
@@ -303,7 +303,7 @@ private theorem overlap_iff (a b : ShrunkChart F ζ hζ U R P H)
   · rintro ⟨g,hx,hg⟩
     refine ⟨hx, ⟨⟨labeledA (placeEquiv F ζ hζ) (cmap g.val x), hg⟩, ?_⟩⟩
     exact q_coord _ _ rfl g x
-private theorem none_properties (a b : ShrunkChart F ζ hζ U R P H) :
+theorem none_properties (a b : ShrunkChart F ζ hζ U R P H) :
     Branch.Properties (none : Branch a b) := by
   refine ⟨isOpen_empty, ?_, Set.empty_subset _, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
   all_goals simp [Branch.targetDomain, Branch.psi, Branch.inverse, Branch.domain, Set.MapsTo,
@@ -359,7 +359,7 @@ private theorem separated (b : ShrunkChart F ζ hζ U R P H)
     have ht := MulAction.mem_stabilizer_iff.mp hh
     change complexProjectiveEmbedding F g.val • b.center = b.center at ht
     rwa [complexProjectiveEmbedding_smul] at ht
-private theorem T_labels {i : Fin (H.atlas U).componentCount}
+theorem T_labels {i : Fin (H.atlas U).componentCount}
     {a b : LiftedChart (F:=F) (ζ:=ζ) (hζ:=hζ) (U:=U) (R:=R) (P:=P) (H:=H) i}
     (k l : Arrow a b) (hg : k.gamma = l.gamma) (hr : k.root = l.root)
     (x : M F) (hk : x ∈ k.domain) (hl : x ∈ l.domain) : T k x hk = T l x hl := by

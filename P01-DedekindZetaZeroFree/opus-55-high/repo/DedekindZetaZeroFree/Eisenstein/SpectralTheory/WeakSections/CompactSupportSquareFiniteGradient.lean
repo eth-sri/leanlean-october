@@ -23,7 +23,7 @@ variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ} {H : KPMs
     simp only [apply_ite (Fin.val)]
     simp⟩
 
-private theorem local_coordinate_integrable
+theorem local_coordinate_integrable
     (s : KPContSectorLineL2Isometry.BorelL2Sections F ζ hζ U R P H)
     (W : Family (U := U) (H := H)) (hweak : WeakChartData s W)
     (a : KPContActualSectorSmoothTestModules.ActualChart (U := U) (H := H))
@@ -45,7 +45,7 @@ attribute [local instance 2000] KPContSectorQuotientRelationsComparison.instMeas
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
 variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ} {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
 variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ} {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
-private theorem coframe_decode_bound (W : Family (U := U) (H := H))
+theorem coframe_decode_bound (W : Family (U := U) (H := H))
     (a : KPContActualSectorSmoothTestModules.ActualChart (U := U) (H := H))
     (x : Space (3*d F)) (C : ℝ) (hC : 1 ≤ C)
     (hb : ∀ i : Fin (d F), Real.exp (2 * ((baseReindex (F:=F)).symm x) (i,2)) ≤ C) :
@@ -77,7 +77,7 @@ private theorem coframe_decode_bound (W : Family (U := U) (H := H))
   nlinarith [mul_le_mul_of_nonneg_right hprod (sq_nonneg ‖v (i,1)‖),
     mul_le_mul_of_nonneg_right hprod (sq_nonneg ‖v (i,2)‖),
     mul_le_mul_of_nonneg_right hC (sq_nonneg ‖v (i,0)‖)]
-private theorem local_norm_integrable
+theorem local_norm_integrable
     (s : KPContSectorLineL2Isometry.BorelL2Sections F ζ hζ U R P H)
     (W : Family (U := U) (H := H)) (hweak : WeakChartData s W)
     (a : KPContActualSectorSmoothTestModules.ActualChart (U := U) (H := H))
@@ -111,7 +111,7 @@ private theorem local_norm_integrable
   rw [Real.norm_of_nonneg (sq_nonneg _)]
   exact coframe_decode_bound W a x D hD (hbound x hx)
 
-private theorem ball_around
+theorem ball_around
     (a : KPContActualSectorSmoothTestModules.ActualChart (U:=U) (H:=H))
     (x : Space (3*d F)) (hx : x ∈ coordinateDomain a) :
     ∃ B : LocalBall (3*d F), InteriorBall a B ∧ x ∈ B.carrier := by
@@ -132,7 +132,7 @@ private theorem ball_around
 
 open KPContActualCotangentCountableShrinking KPContSectorSmoothFramesSupport
 open KPCuspGenuineMonodromy KPContSectorPhaseComponentCharts
-private theorem chart_around (i : Fin (H.atlas U).componentCount) (p : SymmetricSpace F) :
+theorem chart_around (i : Fin (H.atlas U).componentCount) (p : SymmetricSpace F) :
     ∃ C : ShrunkChart F ζ hζ U R P H, C.component = i ∧ C.center = p ∧ p ∈ C.domain := by
   let O := Classical.choice (orbifoldChart_exists F ζ hζ U R P H i p)
   letI : Finite (MulAction.stabilizer (Component F ζ hζ U R P H i) p) :=
@@ -177,7 +177,7 @@ attribute [local instance 2000] KPContSectorQuotientRelationsComparison.instMeas
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
 variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ} {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
 variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ} {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
-private theorem subchart_ball (a : KPContActualSectorSmoothTestModules.ActualChart (U:=U) (H:=H))
+theorem subchart_ball (a : KPContActualSectorSmoothTestModules.ActualChart (U:=U) (H:=H))
     (ha : a.center ∈ a.domain) (B : LocalBall (3*d F))
     (hB : fromActual (ζ:=ζ) (hζ:=hζ) a.center ∈ B.carrier) :
     ∃ c : KPContActualSectorSmoothTestModules.ActualChart (U:=U) (H:=H),
@@ -233,7 +233,7 @@ private theorem subchart_ball (a : KPContActualSectorSmoothTestModules.ActualCha
       simp [labeledAInv,labeledA]
     rw [hi,LinearIsometryEquiv.apply_symm_apply]
   rwa [he] at hh
-private theorem weight_continuous (a : KPContActualSectorSmoothTestModules.ActualChart (U:=U) (H:=H)) :
+theorem weight_continuous (a : KPContActualSectorSmoothTestModules.ActualChart (U:=U) (H:=H)) :
     Continuous (weight a) := by
   unfold weight KPArch.volumeDensity KPArch.height toActual labeledA
   apply Continuous.const_mul
@@ -245,7 +245,7 @@ private theorem weight_continuous (a : KPContActualSectorSmoothTestModules.Actua
   · intro x
     exact Real.exp_ne_zero _
 
-private theorem subchart_integrable
+theorem subchart_integrable
     (s : KPContSectorLineL2Isometry.BorelL2Sections F ζ hζ U R P H)
     (W : Family (U:=U) (H:=H)) (hweak : WeakChartData s W)
     (a c : KPContActualSectorSmoothTestModules.ActualChart (U:=U) (H:=H))

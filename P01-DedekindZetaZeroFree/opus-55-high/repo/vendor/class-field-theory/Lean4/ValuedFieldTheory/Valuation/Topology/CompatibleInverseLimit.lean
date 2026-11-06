@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Compatible families in inverse systems
 
@@ -39,20 +35,15 @@ def compatibleRingFamilies
   carrier :=
     {x | ∀ {i j : ι} (hij : i ≤ j), transition hij (x j) = x i}
   zero_mem' := by
-    intro i j hij
-    exact map_zero (transition hij)
+    simp
   one_mem' := by
-    intro i j hij
-    exact map_one (transition hij)
+    simp
   add_mem' hx hy := by
-    intro i j hij
-    simpa using congrArg₂ (· + ·) (hx hij) (hy hij)
+    simp_all
   mul_mem' hx hy := by
-    intro i j hij
-    simpa using congrArg₂ (· * ·) (hx hij) (hy hij)
+    simp_all
   neg_mem' hx := by
-    intro i j hij
-    simpa using congrArg Neg.neg (hx hij)
+    simp_all
 
 /-- Families in a preorder-indexed system of groups that are preserved by all
 transition maps.  The resulting subtype inherits its group structure from
@@ -64,14 +55,11 @@ def compatibleGroupFamilies
   carrier :=
     {x | ∀ {i j : ι} (hij : i ≤ j), transition hij (x j) = x i}
   one_mem' := by
-    intro i j hij
-    exact map_one (transition hij)
+    simp
   mul_mem' hx hy := by
-    intro i j hij
-    simpa using congrArg₂ (· * ·) (hx hij) (hy hij)
+    simp_all
   inv_mem' hx := by
-    intro i j hij
-    simpa using congrArg Inv.inv (hx hij)
+    simp_all
 
 /-- The group structure transported from the concrete compatible-family
 subgroup.  Declaring it explicitly keeps clients independent of reducibility
@@ -110,15 +98,6 @@ theorem compatibleGroupFamiliesEval_apply
     (i : ι) (x : compatibleGroupFamilies G transition) :
     compatibleGroupFamiliesEval G transition i x = x.1 i :=
   rfl
-
-/-- The named compatibility law for an inverse-limit family. -/
-theorem compatibleGroupFamilies_transition
-    { ι : Type*} [Preorder ι] (G : ι → Type*) [∀ i, Group (G i)]
-    (transition : ∀ {i j : ι}, i ≤ j → G j →* G i)
-    (x : compatibleGroupFamilies G transition) {i j : ι} (hij : i ≤ j) :
-    transition hij (compatibleGroupFamiliesEval G transition j x) =
-      compatibleGroupFamiliesEval G transition i x :=
-  x.2 hij
 
 /-- Compatible families are equal when all named coordinate evaluations
 agree. -/
@@ -163,13 +142,9 @@ def compatibleGroupFamiliesMulEquiv
         _ = e i ((e i).symm (y.1 i)) := by rw [(e i).apply_symm_apply]
       ⟩
   left_inv x := by
-    ext i
-    exact (e i).symm_apply_apply (x.1 i)
+    simp
   right_inv y := by
-    ext i
-    exact (e i).apply_symm_apply (y.1 i)
+    simp
   map_mul' x y := by
     ext i
-    exact (e i).map_mul (x.1 i) (y.1 i)
-
-end LubinTate
+    simp

@@ -19,21 +19,12 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
 local instance (P : Polarization F ζ hζ) : TopologicalSpace (Induced F ζ hζ P) :=
   inducedTopology F ζ hζ P
 
-def scalar (P : Polarization F ζ hζ) :
-    Induced F ζ hζ P →ₗ[ℂ] (G F ζ hζ → ℂ) :=
-  (KPGlobalTorusFunctionData.BorelFunctions F ζ hζ P).subtype.comp
-    (scalarSection F ζ hζ P)
-
-@[simp] theorem scalar_apply (P : Polarization F ζ hζ)
-    (f : Induced F ζ hζ P) (g : G F ζ hζ) :
-    scalar F ζ hζ P f g = (scalarSection F ζ hζ P f).val g := rfl
-
 theorem normalized_multiplier (s : ℂ) (t : KPGlobalTorusFunctionData.E F ζ hζ) :
     KPGlobalExceptionalParameter.realLogPower
       (((KPGlobalTorusFunctionData.delta F ζ hζ t : NNReal) : ℝ)) (1 / 2 + s) =
     KPGlobalTorusFunctionData.deltaHalf F ζ hζ t * normPower F ζ hζ s t := by
   have hr : 0 < (((KPGlobalTorusFunctionData.delta F ζ hζ t : NNReal) : ℝ)) := by
-    exact_mod_cast (pos_iff_ne_zero.mpr (Units.ne_zero _))
+    simp
   have hh : (Real.sqrt (((KPGlobalTorusFunctionData.delta F ζ hζ t : NNReal) : ℝ)) : ℂ) =
       KPGlobalExceptionalParameter.realLogPower
         (((KPGlobalTorusFunctionData.delta F ζ hζ t : NNReal) : ℝ)) (1 / 2) := by
@@ -46,9 +37,3 @@ theorem normalized_multiplier (s : ℂ) (t : KPGlobalTorusFunctionData.E F ζ h�
   rw [hh]
   unfold KPGlobalExceptionalParameter.realLogPower normPower
   rw [add_mul, Complex.exp_add]
-
-variable (C : ModelData F ζ hζ) (s : ℂ)
-
-end DedekindZetaZeroFree.EisensteinReferenceSections.SeedScalarTransport
-
-end

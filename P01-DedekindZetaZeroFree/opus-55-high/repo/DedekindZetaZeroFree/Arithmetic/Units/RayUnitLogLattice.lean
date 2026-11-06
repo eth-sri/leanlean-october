@@ -54,7 +54,7 @@ open NumberField.Units.dirichletUnitTheorem NumberField.Units
   toFun h v := (InfinitePlace.mult v.val : ℝ) * h.val v.val
   map_add' h g := by ext v; simp [mul_add]
   map_smul' r h := by ext v; simp [mul_left_comm]
-private theorem sum_h (h : logHyperplane K) :
+theorem sum_h (h : logHyperplane K) :
     ∑ v, (InfinitePlace.mult v : ℝ) * h.val v = 0 := by
   simpa [logHyperplane, weightedLogSum] using h.property
  theorem coords_injective : Function.Injective (coords K) := by
@@ -94,12 +94,12 @@ private theorem sum_h (h : logHyperplane K) :
           else x ⟨v.val, hv⟩ / (InfinitePlace.mult v.val : ℝ)) = ∑ v, x v := by
       apply Finset.sum_congr rfl
       intro v _
-      simp [v.property, mul_div_cancel₀, InfinitePlace.mult_coe_ne_zero]
+      simp [v.property, mul_div_cancel₀]
     rw [hs]
-    exact neg_add_cancel _
+    simp
   refine ⟨⟨h, hh⟩, ?_⟩
   ext v
-  simp [coords, h, v.property, InfinitePlace.mult_coe_ne_zero, mul_div_cancel₀]
+  simp [coords, h, v.property, mul_div_cancel₀]
  def coordEquiv : logHyperplane K ≃ₗ[ℝ] logSpace K :=
   LinearEquiv.ofBijective (coords K) ⟨coords_injective K, coords_surjective K⟩
  theorem full_eq_comap : fullUnitLogLattice K =
@@ -113,8 +113,8 @@ private theorem sum_h (h : logHyperplane K) :
     exact hu
 
 theorem rayUnitLogLattice_le_full (m : Ideal (𝓞 K)) :
-    rayUnitLogLattice K m ≤ fullUnitLogLattice K := by
-  exact LinearMap.range_comp_le_range _ _
+    rayUnitLogLattice K m ≤ fullUnitLogLattice K := 
+  LinearMap.range_comp_le_range _ _
 
 instance discreteTopology_fullUnitLogLattice :
     DiscreteTopology (fullUnitLogLattice K) := by
@@ -128,12 +128,11 @@ instance isZLattice_fullUnitLogLattice :
   rw [full_eq_comap K]
   exact ZLattice.comap_span_top ℝ (unitLattice K)
     (IsZLattice.span_top (K := ℝ)) (by
-      intro x _
-      exact LinearMap.mem_range.mpr ((coordEquiv K).surjective x))
+      simp)
 
 instance discreteTopology_rayUnitLogLattice (m : Ideal (𝓞 K)) :
-    DiscreteTopology (rayUnitLogLattice K m) := by
-  exact DiscreteTopology.of_subset (inferInstance : DiscreteTopology (fullUnitLogLattice K))
+    DiscreteTopology (rayUnitLogLattice K m) := 
+  DiscreteTopology.of_subset (inferInstance : DiscreteTopology (fullUnitLogLattice K))
     (rayUnitLogLattice_le_full K m)
 
 theorem rayUnitLogLattice_span_eq_top (m : Ideal (𝓞 K)) (hm : m ≠ ⊥) :
@@ -155,8 +154,8 @@ theorem rayUnitLogLattice_span_eq_top (m : Ideal (𝓞 K)) (hm : m ≠ ⊥) :
   exact (Submodule.smul_mem_iff _ (show (k : ℝ) ≠ 0 by exact_mod_cast hk.ne')).mp hh
 
 theorem isZLattice_rayUnitLogLattice (m : Ideal (𝓞 K)) (hm : m ≠ ⊥) :
-    IsZLattice ℝ (rayUnitLogLattice K m) := by
-  exact ⟨rayUnitLogLattice_span_eq_top K m hm⟩
+    IsZLattice ℝ (rayUnitLogLattice K m) := 
+  ⟨rayUnitLogLattice_span_eq_top K m hm⟩
 
 theorem finrank_logHyperplane :
     Module.finrank ℝ (logHyperplane K) = NumberField.Units.rank K := by
@@ -175,7 +174,3 @@ def rayUnitLogBasis (m : Ideal (𝓞 K)) (hm : m ≠ ⊥) :
   letI := ZLattice.module_free ℝ (rayUnitLogLattice K m)
   exact (Module.finBasis ℤ (rayUnitLogLattice K m)).reindex
     (finCongr (finrank_rayUnitLogLattice K m hm))
-
-end DedekindZetaZeroFree.AbelianQuotient.RayCoset
-
-end

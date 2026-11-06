@@ -16,7 +16,7 @@ namespace DedekindZetaZeroFree.ExteriorGauss
 noncomputable section
 variable {F : Type} [Field F] [NumberField F]
 
-private theorem residue_average
+theorem residue_average
     (v : HeightOneSpectrum (𝓞 F))
     [MeasurableSpace (v.adicCompletion F)] [BorelSpace (v.adicCompletion F)]
     (μ : Measure (v.adicCompletion F)) [μ.IsAddHaarMeasure]
@@ -70,8 +70,7 @@ private theorem residue_average
         rw [map_sub, heq, hr, sub_self]
       have hn := (hmax ((⟨x, mem_adicCompletionIntegers_of_norm_le_one v hx⟩ : O) - r z)).mp hm
       refine ⟨x - b z, hn, ?_⟩
-      change b z + (x - b z) = x
-      abel
+      simp
   have hsub (z : κ) : b z +ᵥ U ⊆ {x : v.adicCompletion F | ‖x‖ ≤ 1} := by
     intro x hx
     obtain ⟨y, hy, rfl⟩ := Set.mem_vadd_set.mp hx
@@ -82,8 +81,7 @@ private theorem residue_average
     ext x
     constructor
     · intro hx
-      exact Set.mem_iUnion.mpr ⟨IsLocalRing.residue O
-        ⟨x, mem_adicCompletionIntegers_of_norm_le_one v hx⟩, (hcoset x hx _).mpr rfl⟩
+      simp_all
     · intro hx
       obtain ⟨z, hz⟩ := Set.mem_iUnion.mp hx
       exact hsub z hz
@@ -122,7 +120,7 @@ private theorem residue_average
   simp only [Measure.restrict_apply_univ, Measure.real, measure_vadd]
   change (∑ z, μ.real U • g z) = _
   rw [hmass, ← Finset.smul_sum]
-  simp [Complex.real_smul]
+  simp
 
 theorem integer_quadratic_integral_eq_residue_sum
     (v : HeightOneSpectrum (𝓞 F))
@@ -160,7 +158,7 @@ theorem integer_quadratic_integral_eq_residue_sum
     simp
   have hnormInv : ‖(2 : v.adicCompletion F) * (a⁻¹ : (v.adicCompletion F)ˣ)‖ =
       (Ideal.absNorm v.asIdeal : ℝ) := by
-    rw [norm_mul, htwo, one_mul, Units.val_inv_eq_inv_val, norm_inv, hnorm, inv_inv]
+    simp_all
   have havg := residue_average v μ hμ
     (fun x => (ResidueTrace.localTraceCharacter v
       ((a⁻¹ : (v.adicCompletion F)ˣ) * x ^ 2) : ℂ))
@@ -196,7 +194,6 @@ open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.SArithmeticData
 
 noncomputable section
-set_option autoImplicit false
 
 variable {F : Type} [Field F] [NumberField F]
 
@@ -228,17 +225,17 @@ def exteriorIntegerMap (A : SArithmeticData F)
     (hIv : I.val = v.asIdeal) : A.R →+* v.adicCompletionIntegers F where
   toFun x := ⟨algebraMap F (v.adicCompletion F) (x : F),
     A.exterior_sInteger_integral I v hIv x⟩
-  map_one' := by ext; simp
-  map_mul' := by intros; ext; simp
-  map_zero' := by ext; simp
-  map_add' := by intros; ext; simp
+  map_one' := by rfl
+  map_mul' := by simp
+  map_zero' := by rfl
+  map_add' := by simp
 
  def integralResidueEquiv (v : HeightOneSpectrum (𝓞 F)) :
     (𝓞 F ⧸ v.asIdeal) ≃+* exteriorLocalResidue v :=
   (finitePlaceIdealResidueEquivCompletion v).trans
     (IsLocalRing.ResidueField.mapEquiv (finitePlaceCompletionIntegerRingEquiv v))
 
-private theorem integralResidueEquiv_apply_mk (A : SArithmeticData F) (I : A.Exterior)
+theorem integralResidueEquiv_apply_mk (A : SArithmeticData F) (I : A.Exterior)
     (v : HeightOneSpectrum (𝓞 F)) (hIv : I.val = v.asIdeal) (x : 𝓞 F) :
     integralResidueEquiv v (Ideal.Quotient.mk v.asIdeal x) =
     IsLocalRing.residue (v.adicCompletionIntegers F)
@@ -262,7 +259,7 @@ private theorem f_surj (A : SArithmeticData F) (I : A.Exterior)
   obtain ⟨x, rfl⟩ := Ideal.Quotient.mk_surjective z'
   exact ⟨algebraMap (𝓞 F) A.R x, (integralResidueEquiv_apply_mk A I v hIv x).symm⟩
 
-private theorem f_ker (A : SArithmeticData F) (I : A.Exterior)
+theorem f_ker (A : SArithmeticData F) (I : A.Exterior)
     (v : HeightOneSpectrum (𝓞 F)) (hIv : I.val = v.asIdeal) :
     RingHom.ker (f A I v hIv) = A.extendIdeal I := by
   have hn (a : 𝓞 F) : f A I v hIv (algebraMap (𝓞 F) A.R a) = 0 ↔ a ∈ v.asIdeal := by
@@ -282,8 +279,7 @@ private theorem f_ker (A : SArithmeticData F) (I : A.Exterior)
     have hnmem : n ∈ v.asIdeal := by
       apply (hn n).mp
       rw [← hndR, map_mul]
-      change f A I v hIv x = 0 at hx
-      rw [hx, zero_mul]
+      simp_all
     obtain ⟨y, i, hi, hiy⟩ := (inferInstance : v.asIdeal.IsMaximal).exists_inv d.property
     have hsum : x = algebraMap (𝓞 F) A.R y * algebraMap (𝓞 F) A.R n +
         algebraMap (𝓞 F) A.R i * x := by
@@ -302,7 +298,7 @@ private theorem f_ker (A : SArithmeticData F) (I : A.Exterior)
   · change Ideal.map (algebraMap (𝓞 F) A.R) I.val ≤ _
     rw [Ideal.map_le_iff_le_comap]
     intro a ha
-    exact (hn a).mpr (hIv ▸ ha)
+    simp_all
 
 theorem existsUnique_exteriorLocalResidueEquiv (A : SArithmeticData F)
     (I : A.Exterior) (v : HeightOneSpectrum (𝓞 F)) (hIv : I.val = v.asIdeal) :
@@ -313,8 +309,7 @@ theorem existsUnique_exteriorLocalResidueEquiv (A : SArithmeticData F)
   let e' := (Ideal.quotEquivOfEq (f_ker A I v hIv).symm).trans
     (RingHom.quotientKerEquivOfSurjective (f_surj A I v hIv))
   have he' (x : A.R) : e' (Ideal.Quotient.mk (A.extendIdeal I) x) = f A I v hIv x := by
-    rw [RingEquiv.trans_apply, Ideal.quotEquivOfEq_mk,
-      RingHom.quotientKerEquivOfSurjective_apply_mk]
+    rfl
   refine ⟨e', he', ?_⟩
   intro e'' he''
   apply RingEquiv.ext
@@ -358,7 +353,7 @@ theorem exteriorTheta_global_inverse (A : SArithmeticData F)
       (A.exteriorTheta hS I v hIv p hp (A.exteriorLocalResidueEquiv I v hIv x))⁻¹ := by
   simp [exteriorTheta, AddChar.compAddMonoidHom_apply, AddChar.map_neg_eq_inv]
 
-private theorem local_div_integral (A : SArithmeticData F) (I : A.Exterior)
+theorem local_div_integral (A : SArithmeticData F) (I : A.Exterior)
  (v : HeightOneSpectrum (𝓞 F)) (hIv : I.val = v.asIdeal)
  (p : A.R) (hp : A.Generates I p) (a : Fˣ) (hap : (a : F) = (p : F))
  (d : v.adicCompletionIntegers F)
@@ -470,7 +465,7 @@ def exteriorQuadraticGauss (A : SArithmeticData F) (hS : A.ContainsTraceBadPlace
   (Real.sqrt (A.exteriorNorm I) : ℂ)⁻¹ *
     ∑ x : exteriorLocalResidue v, A.exteriorThetaComplex hS I v hIv p hp (x ^ 2)
 
-private theorem local_order (A : SArithmeticData F) (σ : F →+* ℂ) (I : A.Exterior)
+theorem local_order (A : SArithmeticData F) (σ : F →+* ℂ) (I : A.Exterior)
  (v : HeightOneSpectrum (𝓞 F)) (hIv : I.val = v.asIdeal) :
  orderOf (A.exteriorLocalSexticChar σ I v hIv) = 6 := by
  have hv : v ∉ A.Sf := by
@@ -485,19 +480,17 @@ private theorem local_order (A : SArithmeticData F) (σ : F →+* ℂ) (I : A.Ex
    letI : Finite (A.R ⧸ A.extendIdeal I) := A.exteriorResidue_finite I
    have hchi (u : (A.R ⧸ A.extendIdeal I)ˣ) :
        A.sexticResiduePowerChar σ I 1 u = σ (A.sexticResidueFamily I u : F) := by
-     simp [ SArithmeticData.sexticResiduePowerChar, SArithmeticData.sexticExponent,
-       MulChar.ofUnitHom_coe]
+     simp [SArithmeticData.sexticResiduePowerChar, SArithmeticData.sexticExponent]
    have h6 : A.sexticResiduePowerChar σ I 1 ^ 6 = 1 := by
      apply MulChar.ext
      intro u
      rw [MulChar.pow_apply_coe, MulChar.one_apply_coe, hchi, ← map_pow]
      have h := congrArg Units.val (A.sexticResidueFamily_normalized.1 I u)
-     exact (congrArg σ h).trans (map_one σ)
+     simp_all
    have hd : 6 ∣ Nat.card (A.R ⧸ A.extendIdeal I) - 1 := by
      rw [A.exteriorResidue_card]
      have hm := A.exterior_norm_mod_twelve v hv
      rw [hIv]
-     change 6 ∣ Ideal.absNorm v.asIdeal - 1
      omega
    obtain ⟨g, hg⟩ := IsCyclic.exists_ofOrder_eq_natCard
      (α := (A.R ⧸ A.extendIdeal I)ˣ)
@@ -509,7 +502,7 @@ private theorem local_order (A : SArithmeticData F) (σ : F →+* ℂ) (I : A.Ex
      · rw [hgc]
        have hn := Finite.one_lt_card (α := A.R ⧸ A.extendIdeal I)
        omega
-     · rwa [hgc]
+     omega
    have hdiv : 6 ∣ orderOf (A.sexticResiduePowerChar σ I 1) := by
      obtain ⟨j, hj, he, hr⟩ := A.sexticResidueFamily_normalized.2.1
        I v hIv g
@@ -517,7 +510,7 @@ private theorem local_order (A : SArithmeticData F) (σ : F →+* ℂ) (I : A.Ex
          orderOf (A.sexticResiduePowerChar σ I 1) = 1 := by
        apply σ.injective
        rw [map_pow, map_one, ← hchi, ← MulChar.pow_apply_coe]
-       rw [pow_orderOf_eq_one, MulChar.one_apply_coe]
+       simp
      rw [he] at hv
      have hz : (A.primitive_zeta12.toInteger ^ (2 * j)) ^
          orderOf (A.sexticResiduePowerChar σ I 1) = (1 : 𝓞 F) := by
@@ -575,7 +568,7 @@ private lemma square_count (χ : MulChar k ℂ) (hQ : Fintype.card k % 12 = 1) (
  have hθ : θ ^ 2 = 1 := by
   dsimp [θ]
   rw [MulChar.ringHomComp_pow, (quadraticChar_isQuadratic k).sq_eq_one, MulChar.ringHomComp_one]
- have hnθ : θ ≠ 1 := (MulChar.ringHomComp_ne_one_iff (by intro a b h; change (a : ℂ) = b at h; exact_mod_cast h)).mpr (quadraticChar_ne_one (char_ne_two hQ))
+ have hnθ : θ ≠ 1 := (MulChar.ringHomComp_ne_one_iff (by intro a b h; simp_all)).mpr (quadraticChar_ne_one (char_ne_two hQ))
  have he := quad_unique (χ ^ 3) θ hs hθ (pow_ne_one_of_lt_orderOf (by norm_num) (by omega)) hnθ
  rw [he]
  have H := quadraticChar_card_sqrts (char_ne_two hQ) t
@@ -624,8 +617,7 @@ theorem exteriorQuadraticGauss_eq_gaussSum (A : SArithmeticData F) (σ : F →+*
    calc
      _ = ∑ y ∈ Finset.univ.filter (fun y => y ^ 2 = t), ψ t := by
        apply Finset.sum_congr rfl
-       intro y hy
-       rw [(Finset.mem_filter.mp hy).2]
+       simp_all
      _ = _ := by
        rw [Finset.sum_const, nsmul_eq_mul]
        exact congrArg (fun z : ℂ => z * ψ t) (square_count χ hQ (local_order A σ I v hIv) t)
@@ -635,7 +627,7 @@ theorem exteriorQuadraticGauss_eq_gaussSum (A : SArithmeticData F) (σ : F →+*
  rw [← H]
  simp only [hf, add_mul, one_mul, Finset.sum_add_distrib, hsum, add_zero, gaussSum]
 
-private theorem exteriorLocalSexticChar_cube_neg_one (A : SArithmeticData F) (σ : F →+* ℂ) (I : A.Exterior)
+theorem exteriorLocalSexticChar_cube_neg_one (A : SArithmeticData F) (σ : F →+* ℂ) (I : A.Exterior)
     (v : HeightOneSpectrum (𝓞 F)) (hIv : I.val = v.asIdeal) :
     (A.exteriorLocalSexticChar σ I v hIv ^ 3) (-1) = 1 := by
   rw [MulChar.pow_apply' _ (by decide : (3 : ℕ) ≠ 0)]
@@ -646,7 +638,6 @@ private theorem exteriorLocalSexticChar_cube_neg_one (A : SArithmeticData F) (σ
     change ((A.sexticResiduePowerChar σ I 1).toUnitHom
       (Units.map (A.exteriorLocalResidueEquiv I v hIv).symm.toMonoidHom (-1)) : ℂ) = 1
     have hu : Units.map (A.exteriorLocalResidueEquiv I v hIv).symm.toMonoidHom (-1) = -1 := by
-      apply Units.ext
       simp
     rw [hu, MulChar.toUnitHom_eq]
     change (MulChar.ofUnitHom ((Units.map σ.toMonoidHom).comp (A.sexticResidueFamily I)) ^
@@ -660,7 +651,7 @@ private theorem exteriorLocalSexticChar_cube_neg_one (A : SArithmeticData F) (σ
     unfold sexticResidue residueValue at hn
     have hq : Ideal.Quotient.mk (A.extendIdeal I) (-1 : A.R) =
       ((-1 : (A.R ⧸ A.extendIdeal I)ˣ) : A.R ⧸ A.extendIdeal I) := by
-      simp only [map_neg, map_one, Units.val_neg, Units.val_one]
+      rfl
     rw [hq, MulChar.ofUnitHom_coe, map_one] at hn
     exact hn
   rw [hc, one_pow]
@@ -684,7 +675,7 @@ theorem exterior_gaussSum_theta_eq_inverse (A : SArithmeticData F) (σ : F →+*
   rw [exteriorLocalSexticChar_cube_neg_one A σ I v hIv, one_mul] at h
   exact h.symm
 
-private theorem transported_power (A : SArithmeticData F) (σ : F →+* ℂ)
+theorem transported_power (A : SArithmeticData F) (σ : F →+* ℂ)
  (I : A.Exterior) (v : HeightOneSpectrum (𝓞 F)) (hIv : I.val = v.asIdeal)
  (x : A.R ⧸ A.extendIdeal I) :
  (A.exteriorLocalSexticChar σ I v hIv ^ 3) (A.exteriorLocalResidueEquiv I v hIv x) =
@@ -700,26 +691,18 @@ private theorem transported_power (A : SArithmeticData F) (σ : F →+* ℂ)
      change ((A.sexticResiduePowerChar σ I 1).toUnitHom
        (Units.map (A.exteriorLocalResidueEquiv I v hIv).symm.toMonoidHom
          (Units.map (A.exteriorLocalResidueEquiv I v hIv).toMonoidHom u)) : ℂ) = _
-     have hu : Units.map (A.exteriorLocalResidueEquiv I v hIv).symm.toMonoidHom
-       (Units.map (A.exteriorLocalResidueEquiv I v hIv).toMonoidHom u) = u := by
-       apply Units.ext
-       exact (A.exteriorLocalResidueEquiv I v hIv).symm_apply_apply _
-     rw [hu, MulChar.toUnitHom_eq]
-     exact MulChar.coe_equivToUnitHom _ _
+     simp
    · have hnu : ¬ IsUnit (A.exteriorLocalResidueEquiv I v hIv x) := by
        intro hu
        apply hx
-       have h := hu.map (A.exteriorLocalResidueEquiv I v hIv).symm.toRingHom
-       change IsUnit ((A.exteriorLocalResidueEquiv I v hIv).symm
-         (A.exteriorLocalResidueEquiv I v hIv x)) at h
-       rwa [RingEquiv.symm_apply_apply] at h
+       simp_all
      rw [MulChar.map_nonunit _ hx, MulChar.map_nonunit _ hnu]
  rw [MulChar.pow_apply' _ (by decide : (3 : ℕ) ≠ 0), hc]
  have hp : (A.sexticResiduePowerChar σ I 1) ^ 3 = A.sexticResiduePowerChar σ I 3 := by
    simp only [sexticResiduePowerChar]
    have h1 : sexticExponent 1 = 1 := rfl
    have h3 : sexticExponent 3 = 3 := rfl
-   rw [h1, h3, pow_one]
+   simp_all
  rw [← hp, MulChar.pow_apply' _ (by decide : (3 : ℕ) ≠ 0)]
 
 theorem exteriorQuadraticGauss_eq_idealGauss_three (A : SArithmeticData F)
@@ -771,8 +754,8 @@ theorem exteriorRawQuadraticCutoff_unit_eventually (A : SArithmeticData F)
     (u : (v.adicCompletionIntegers F)ˣ) :
     ∀ᶠ n : ℕ in Filter.atTop,
       exteriorRawQuadraticCutoff v μ
-        (Units.map (v.adicCompletionIntegers F).subtype.toMonoidHom u) n = 1 := by
-  exact ExteriorGauss.unit_cutoff_eventually v hgood hzero μ hμ u
+        (Units.map (v.adicCompletionIntegers F).subtype.toMonoidHom u) n = 1 := 
+  ExteriorGauss.unit_cutoff_eventually v hgood hzero μ hμ u
 
 theorem exterior_raw_quadratic_ratio_unit_eventually (A : SArithmeticData F)
     (I : A.Exterior) (v : HeightOneSpectrum (𝓞 F)) (hIv : I.val = v.asIdeal)
@@ -789,11 +772,7 @@ theorem exterior_raw_quadratic_ratio_unit_eventually (A : SArithmeticData F)
   have hu := A.exteriorRawQuadraticCutoff_unit_eventually I v hIv hgood hzero μ hμ u
   have h1 := A.exteriorRawQuadraticCutoff_unit_eventually I v hIv hgood hzero μ hμ 1
   filter_upwards [hu, h1] with n hn h1n
-  simpa only [map_one] using (show exteriorRawQuadraticCutoff v μ
-    (Units.map (v.adicCompletionIntegers F).subtype.toMonoidHom u) n /
-    exteriorRawQuadraticCutoff v μ
-      (Units.map (v.adicCompletionIntegers F).subtype.toMonoidHom 1) n = 1 by
-        rw [hn, h1n, div_self one_ne_zero])
+  simp_all
 
 theorem exteriorRawQuadraticCutoff_inv_generator_eventually
     (A : SArithmeticData F) (hS : A.ContainsTraceBadPlaces) (B : Subgroup A.V)
@@ -877,10 +856,4 @@ theorem exterior_raw_quadratic_ratio_eq_gamma_three
   have h1 := A.exteriorRawQuadraticCutoff_unit_eventually I v hIv hgood hzero μ hμ 1
   filter_upwards [A.exterior_raw_quadratic_integral_eq_gamma_three
     σ hS B I v hIv hgood hzero p hp a hap ha μ hμ, h1] with n hn h1n
-  simp only [map_one] at h1n
-  rw [hn, h1n, div_one]
-
-end
-end DedekindZetaZeroFree.SArithmeticData
-
-end
+  simp_all

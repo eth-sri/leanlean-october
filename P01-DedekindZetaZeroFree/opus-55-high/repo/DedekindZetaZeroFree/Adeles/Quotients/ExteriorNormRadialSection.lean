@@ -79,7 +79,7 @@ theorem continuous_radialSection {F : Type} [Field F] [NumberField F]
     intro w
     let p : ℝ := 1 / (2 * (InfinitePlace.nrComplexPlaces F : ℝ))
     have hp : Continuous (fun T : {T : ℝ // 0 < T} => T.val ^ p) :=
-      continuous_subtype_val.rpow_const (fun T => Or.inl T.property.ne')
+      by fun_prop
     let e := InfinitePlace.Completion.ringEquivComplexOfIsComplex (A.complex_place w)
     have he : Continuous e.symm :=
       (InfinitePlace.Completion.isometryEquivComplexOfIsComplex
@@ -94,11 +94,11 @@ theorem continuous_radialSection {F : Type} [Field F] [NumberField F]
           (Complex.continuous_ofReal.comp hp).inv₀
             (fun T => Complex.ofReal_ne_zero.mpr (Real.rpow_pos_of_pos T.property p).ne')
     exact (he.units_map e.symm.toMonoidHom).comp hu
-  · exact continuous_const
+  fun_prop
 
 theorem exteriorNorm_pos {F : Type} [Field F] [NumberField F]
-    (A : SArithmeticData F) (I : A.Exterior) : 0 < A.exteriorNorm I := by
-  exact lt_of_lt_of_le zero_lt_one (idealNorm_ge_one I.val I.property.1)
+    (A : SArithmeticData F) (I : A.Exterior) : 0 < A.exteriorNorm I := 
+  lt_of_lt_of_le zero_lt_one (idealNorm_ge_one I.val I.property.1)
 
 theorem normalized_generator_mem_G1 {F : Type} [Field F] [NumberField F]
     (A : SArithmeticData F) (I : A.Exterior) (r : A.R)
@@ -109,7 +109,3 @@ theorem normalized_generator_mem_G1 {F : Type} [Field F] [NumberField F]
     simp [norm, norm_div, div_pow, Finset.prod_div_distrib, mul_div_mul_comm]
   rw [hdiv, A.generator_norm I r hr a ha, A.norm_radialSection]
   exact div_self (A.exteriorNorm_pos I).ne'
-
-end
-end SArithmeticData
-end DedekindZetaZeroFree

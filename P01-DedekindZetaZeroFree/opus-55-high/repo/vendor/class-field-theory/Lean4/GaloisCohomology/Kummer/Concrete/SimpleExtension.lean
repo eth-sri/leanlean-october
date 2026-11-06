@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Simple Kummer extensions
 
@@ -30,7 +27,7 @@ namespace KummerTheory
 variable (K : Type) [Field K]
 
 /-- A chosen `n`-th root of `b` in the separable closure. -/
-noncomputable def chosenSimpleKummerRoot
+def chosenSimpleKummerRoot
     (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0) (b : Kˣ) :
     SeparableClosure K :=
   Classical.choose
@@ -90,7 +87,7 @@ theorem chosenSimpleKummerExtension_le_maximalKummerExtension
     (chosenSimpleKummerRoot_mem K n hnK b)
 
 /-- The chosen radical as a unit of `K(ⁿ√b)`. -/
-noncomputable def chosenSimpleKummerRootUnit
+def chosenSimpleKummerRootUnit
     (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0) (b : Kˣ) :
     (chosenSimpleKummerExtension K n hnK b)ˣ :=
   Units.mk0
@@ -141,8 +138,6 @@ theorem chosenSimpleKummerExtension_adjoin_root_eq_top
           Set.mem_singleton_iff.mp hy
         subst y
         apply IntermediateField.subset_adjoin K
-        rw [Set.mem_singleton_iff]
-        apply Subtype.ext
         rfl
     | algebraMap a => exact R.algebraMap_mem a
     | add x y hx hy ihx ihy => exact R.add_mem ihx ihy
@@ -214,7 +209,7 @@ theorem chosenSimpleKummer_rootQuotient_mem
 
 /-- The root quotient of the chosen radical is a character of the
 Galois group. -/
-noncomputable def chosenSimpleKummerRootCharacter
+def chosenSimpleKummerRootCharacter
     (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
     (hmu : (primitiveRoots (n : ℕ) K).Nonempty) (b : Kˣ) :
     Gal((chosenSimpleKummerExtension K n hnK b)/K) →*
@@ -302,10 +297,7 @@ theorem chosenSimpleKummerRootQuotient_eq_one_iff
           (chosenSimpleKummerRootUnit K n hnK b :
             chosenSimpleKummerExtension K n hnK b)
     exact hval
-  · rintro rfl
-    exact rootQuotient_one
-      (K := K) (L := chosenSimpleKummerExtension K n hnK b)
-      (chosenSimpleKummerRootUnit K n hnK b)
+  simp_all
 
 /-- Evaluation on the generating radical separates all automorphisms. -/
 theorem chosenSimpleKummerRootCharacter_injective
@@ -321,9 +313,8 @@ theorem chosenSimpleKummerRootCharacter_injective
   have hchar :
       chosenSimpleKummerRootCharacter K n hnK hmu b (sigma / tau) = 1 := by
     rw [map_div, hst]
-    exact div_self' _
-  rw [chosenSimpleKummerRootCharacter_apply K n hnK hmu b] at hchar
-  exact congrArg Subtype.val hchar
+    simp
+  simp_all
 
 /-- The Galois group of a simple Kummer extension is cyclic. -/
 theorem chosenSimpleKummerExtension_isCyclic
@@ -348,7 +339,3 @@ theorem chosenSimpleKummerExtension_galois_pow_eq_one
   rw [map_pow, map_one]
   apply Subtype.ext
   exact (chosenSimpleKummerRootCharacter K n hnK hmu b sigma).property
-
-end KummerTheory
-
-end

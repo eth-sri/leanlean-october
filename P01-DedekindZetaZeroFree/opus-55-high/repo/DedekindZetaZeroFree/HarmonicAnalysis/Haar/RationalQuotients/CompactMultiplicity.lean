@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.Adeles.Quotients.LocalCharts.CompactLiftL2Bou
 
 @[expose] public section
 
-noncomputable section
 open MeasureTheory Topology
 open scoped ENNReal Classical Pointwise
 namespace DedekindZetaZeroFree.KPGroupChartFullTubeHaarL2
@@ -41,18 +40,17 @@ theorem pushforward_le_of_orbit_multiplicity {G X Q : Type*}
       · rw [Set.indicator_of_mem (show x ∈ q ⁻¹' S from hx)]
         exact (ENNReal.tsum_le_tsum (fun γ => by
           by_cases hc : γ • x ∈ C
-          · simp [f, Set.indicator_apply, hc, hqin, hx]
-          · simp [f, Set.indicator_apply, hc])).trans (hN x)
+          · simp [f, hc, hqin, hx]
+          · simp [f, hc])).trans (hN x)
       · have hz : ∀ γ : G, f (γ • x) = 0 := by
           intro γ
           exact Set.indicator_of_notMem (by
-            intro h; exact hx (hqin γ x ▸ h.1)) _
-        simp only [hz, tsum_zero]
-        exact bot_le
+            intro h; simp_all) _
+        simp_all
     _ = (N : ℝ≥0∞) * μ (q ⁻¹' S ∩ D) := by
       rw [lintegral_indicator (hq hS), lintegral_const,
         Measure.restrict_restrict (hq hS), Measure.restrict_apply MeasurableSet.univ]
-      simp only [Set.univ_inter]
+      simp
 
 theorem compact_haar_recipe_pushforward_bound (F : Type) [Field F] [NumberField F]
     (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
@@ -90,8 +88,4 @@ theorem compact_haar_recipe_pushforward_bound (F : Type) [Field F] [NumberField 
     apply Quotient.sound
     apply QuotientGroup.rightRel_apply.mpr
     change g * ((γ : KPSmoothLocalQuotientCharts.ActualCover F ζ hζ) * g)⁻¹ ∈ Γ
-    simpa only [mul_inv_rev, ← mul_assoc, mul_inv_cancel, one_mul] using Γ.inv_mem γ.property
-
-end DedekindZetaZeroFree.KPGroupChartFullTubeHaarL2
-
-end
+    simp

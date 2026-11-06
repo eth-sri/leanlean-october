@@ -18,7 +18,7 @@ open scoped TensorProduct
 
  def Regular (a : ℂ) (f : RatFunc ℂ) : Prop := Polynomial.eval a f.denom ≠ 0
  lemma regular_zero (a : ℂ) : Regular a 0 := by simp [Regular]
-private lemma regular_one (a : ℂ) : Regular a 1 := by simp [Regular]
+lemma regular_one (a : ℂ) : Regular a 1 := by simp [Regular]
  lemma regular_C (a c : ℂ) : Regular a (RatFunc.C c) := by simp [Regular]
 private lemma regular_X (a : ℂ) : Regular a RatFunc.X := by simp [Regular]
  lemma regular_add {a : ℂ} {f g : RatFunc ℂ} (hf : Regular a f) (hg : Regular a g) :
@@ -62,31 +62,31 @@ private lemma eval_inv' {a : ℂ} {f : RatFunc ℂ} (hf : Regular a f)
     exact regular_mul (regular_C a c) hf
  def regularEval (a : ℂ) : regularSpace a →ₗ[ℂ] ℂ where
   toFun f := RatFunc.eval (RingHom.id ℂ) a f
-  map_add' f g := by
-    exact RatFunc.eval_add (RingHom.id ℂ) a f.property g.property
+  map_add' f g := 
+    RatFunc.eval_add (RingHom.id ℂ) a f.property g.property
   map_smul' c f := by
     change RatFunc.eval (RingHom.id ℂ) a (c • f.val) = _
     rw [RatFunc.smul_eq_C_mul]
     rw [eval_mul' (regular_C a c) f.property, RatFunc.eval_C]
     rfl
 
-private lemma exists_eval_linear (a : ℂ) : ∃ E : RatFunc ℂ →ₗ[ℂ] ℂ,
+lemma exists_eval_linear (a : ℂ) : ∃ E : RatFunc ℂ →ₗ[ℂ] ℂ,
     ∀ f, Regular a f → E f = RatFunc.eval (RingHom.id ℂ) a f := by
   obtain ⟨E, hE⟩ := (regularEval a).exists_extend
   exact ⟨E, fun f hf => congrArg (fun L => L ⟨f, hf⟩) hE⟩
-private lemma regular_neg {a : ℂ} {f : RatFunc ℂ} (hf : Regular a f) : Regular a (-f) := by
+lemma regular_neg {a : ℂ} {f : RatFunc ℂ} (hf : Regular a f) : Regular a (-f) := by
   simpa using regular_mul (regular_C a (-1)) hf
-private lemma eval_neg' {a : ℂ} {f : RatFunc ℂ} (hf : Regular a f) :
+lemma eval_neg' {a : ℂ} {f : RatFunc ℂ} (hf : Regular a f) :
     RatFunc.eval (RingHom.id ℂ) a (-f) = -RatFunc.eval (RingHom.id ℂ) a f := by
   have H := eval_mul' (regular_C a (-1)) hf
   rw [RatFunc.eval_C] at H
   simpa using H
-private lemma regular_pow {a : ℂ} {f : RatFunc ℂ} (hf : Regular a f) (n : ℕ) :
+lemma regular_pow {a : ℂ} {f : RatFunc ℂ} (hf : Regular a f) (n : ℕ) :
     Regular a (f ^ n) := by
   induction n with
   | zero => simpa using regular_one a
   | succ n hn => simpa [pow_succ] using regular_mul hn hf
-private lemma eval_pow' {a : ℂ} {f : RatFunc ℂ} (hf : Regular a f) (n : ℕ) :
+lemma eval_pow' {a : ℂ} {f : RatFunc ℂ} (hf : Regular a f) (n : ℕ) :
     RatFunc.eval (RingHom.id ℂ) a (f ^ n) = RatFunc.eval (RingHom.id ℂ) a f ^ n := by
   induction n with
   | zero => simp
@@ -105,7 +105,7 @@ private lemma eval_zpow' {a : ℂ} {f : RatFunc ℂ} (hf : Regular a f)
       simpa [zpow_negSucc, ← inv_pow, eval_inv' hf hne] using
         (eval_pow' (regular_inv hf hne) (n + 1))
 
-private lemma specialize_scalar {V W : Type*} [AddCommMonoid V] [Module ℂ V]
+lemma specialize_scalar {V W : Type*} [AddCommMonoid V] [Module ℂ V]
     [AddCommMonoid W] [Module ℂ W]
     (p : ℤ →₀ (V →ₗ[ℂ] W)) (q : ℤ →₀ (W →ₗ[ℂ] V))
     (a b : ℤ → RatFunc ℂ) (c : RatFunc ℂ) (z : ℂ)
@@ -118,7 +118,7 @@ private lemma specialize_scalar {V W : Type*} [AddCommMonoid V] [Module ℂ V]
   obtain ⟨E, hE⟩ := exists_eval_linear z
   let L : RatFunc ℂ ⊗[ℂ] V →ₗ[ℂ] V :=
     (TensorProduct.lid ℂ V).toLinearMap.comp (TensorProduct.map E LinearMap.id)
-  have hL (f : RatFunc ℂ) (v : V) : L (f ⊗ₜ[ℂ] v) = E f • v := by simp [L]
+  have hL (f : RatFunc ℂ) (v : V) : L (f ⊗ₜ[ℂ] v) = E f • v := by rfl
   ext v
   have H := congrArg (fun M => L (M ((1 : RatFunc ℂ) ⊗ₜ[ℂ] v))) h
   simp only [LinearMap.comp_apply, LinearMap.smul_apply, LinearMap.id_apply,
@@ -213,7 +213,7 @@ private lemma coefficient_regular_eval
     cases ε <;> simp [evaluationUnit, rUnit, eval_inv' hv hx, he] <;> rfl
   have hfn : RatFunc.eval (RingHom.id ℂ) w (if ε = .plus then v else v⁻¹) ≠ 0 := by
     rw [hfe]
-    exact Units.ne_zero _
+    simp
   refine ⟨regular_mul (regular_inv hde.1 hdn) (regular_zpow hf hfn n), ?_⟩
   rw [eval_mul' (regular_inv hde.1 hdn) (regular_zpow hf hfn n),
     eval_inv' hde.1 hdn, eval_zpow' hf hfn n, hde.2, hfe]
@@ -293,7 +293,6 @@ theorem actual_level_composition_specialize_regular
         smul_smul, ite_true, ite_eq_right (show Sign.minus ≠ Sign.plus from by decide)] at h
       change _ = _ at h
       convert h using 1
-      simp only [Finsupp.sum, a, b]
       rfl
   · simp only [show Sign.minus ≠ Sign.plus from by decide, ite_false] at hcomp ⊢
     have h := hcomp
@@ -328,8 +327,4 @@ theorem actual_level_composition_specialize_regular
         smul_smul, ite_true, ite_eq_right (show Sign.minus ≠ Sign.plus from by decide)] at h
       change _ = _ at h
       convert h using 1
-      simp only [Finsupp.sum, a, b]
       rfl
-
-end
-end DedekindZetaZeroFree.KPActualResidueSources

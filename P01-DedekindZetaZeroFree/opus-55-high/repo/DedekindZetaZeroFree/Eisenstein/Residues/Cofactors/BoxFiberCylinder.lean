@@ -23,7 +23,7 @@ local notation "hζ" => R.A.primitive_zeta12
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1000000
 
-private theorem rationalStageEval_congr (Q Q' : Finset (KPFinitePlace F))
+theorem rationalStageEval_congr (Q Q' : Finset (KPFinitePlace F))
     (hQ : Q = Q') (h : C.exceptional ⊆ Q) (h' : C.exceptional ⊆ Q')
     (t : KPGlobalTorusFunctionData.E F ζ hζ)
     (u : ∀ q : Q, Fiber R.A P C (.inr q.val))
@@ -36,7 +36,7 @@ private theorem rationalStageEval_congr (Q Q' : Finset (KPFinitePlace F))
   funext q
   exact hu q.val q.property q.property
 
-private theorem chamber_finite_signed (q : KPFinitePlace F) (z : ℂ)
+theorem chamber_finite_signed (q : KPFinitePlace F) (z : ℂ)
     (f : sectionSpace (C.canonical q).borel (C.polarization q) .plus z)
     (x : KPGlobalTorusFunctionData.Adeles F) :
     f.val (KPPGLLocalCover.coverQuotient F ζ hζ (.inr q) (chamberRaw F ζ hζ x (.inr q))) =

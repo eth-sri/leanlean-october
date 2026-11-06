@@ -6,7 +6,6 @@ public import DedekindZetaZeroFree.Metaplectic.Weil.Complex.TraceFourierNormaliz
 
 namespace DedekindZetaZeroFree.ComplexWeil
 
-noncomputable section
 open MeasureTheory Filter
 open scoped Topology
 
@@ -18,7 +17,7 @@ private lemma psi_add (β u v : ℂ) : psi β (u + v) = psi β u * psi β v := b
   push_cast
   ring
 
-private lemma norm_exp_damped (ε : ℝ) (x : ℂ) :
+lemma norm_exp_damped (ε : ℝ) (x : ℂ) :
     ‖Complex.exp (((-ε * ‖x‖ ^ 2 : ℝ) : ℂ))‖ = Real.exp (-ε * ‖x‖ ^ 2) := by
   rw [Complex.norm_exp, Complex.ofReal_re]
 
@@ -44,11 +43,11 @@ theorem integrable_damped_fubini_integrand (β a : ℂ) (hβ : β ≠ 0)
     refine (hvol.norm).congr ?_
     filter_upwards with v
     rw [Complex.norm_exp]
-    have h : -(ε:ℂ) * (‖v‖:ℂ)^2 = ((-ε*‖v‖^2 : ℝ) : ℂ) := by push_cast; ring
+    have h : -(ε:ℂ) * (‖v‖:ℂ)^2 = ((-ε*‖v‖^2 : ℝ) : ℂ) := by simp
     rw [h, Complex.ofReal_re]
   have hgauss : Integrable (fun x : ℂ => Real.exp (-ε * ‖x‖^2)) (mu β) := by
     have := hgaussvol.smul_measure (ENNReal.ofReal_ne_top (r := ‖β‖))
-    simpa only [mu] using this
+    fun_prop
   have hfnorm : Integrable (fun z : ℂ => ‖f z‖) (mu β) := (integrable_schwartz_mu β f).norm
   have hprod := hgauss.mul_prod hfnorm
   have hcont : Continuous (fun p : ℂ × ℂ =>
@@ -148,20 +147,12 @@ theorem tendsto_F_damped_M_F (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0)
     have hcont : Continuous (fun x : ℂ =>
         Complex.exp (((-ε * ‖x‖ ^ 2 : ℝ) : ℂ)) * psi β (a * x ^ 2) * psi β (-x * y)) := by
       fun_prop
-    have hEq : (fun x : ℂ =>
-        (Complex.exp (((-ε * ‖x‖ ^ 2 : ℝ) : ℂ)) * psi β (a * x ^ 2) * F β (⇑f) x) *
-          psi β (-x * y)) =
-        fun x : ℂ => (Complex.exp (((-ε * ‖x‖ ^ 2 : ℝ) : ℂ)) * psi β (a * x ^ 2) *
-          psi β (-x * y)) * F β (⇑f) x := by
-      funext x; ring
-    rw [hEq]
-    exact hcont.aestronglyMeasurable.mul hFmeas
+    fun_prop
   · filter_upwards [self_mem_nhdsWithin] with ε hε
     filter_upwards with x
     have hle : Real.exp (-ε * ‖x‖ ^ 2) ≤ 1 := by
-      rw [Real.exp_le_one_iff, neg_mul]
-      exact neg_nonpos.mpr (mul_nonneg hε.le (sq_nonneg ‖x‖))
-    simp only [norm_mul, norm_exp_damped, norm_psi, mul_one, one_mul]
+      simp_all
+    simp only [norm_mul, norm_exp_damped, norm_psi, mul_one]
     exact mul_le_of_le_one_left (norm_nonneg _) hle
   · filter_upwards with x
     have hc0 : Tendsto (fun ε : ℝ => -(ε:ℂ) * (‖x‖:ℂ)^2)
@@ -172,7 +163,7 @@ theorem tendsto_F_damped_M_F (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0)
         (nhdsWithin 0 (Set.Ioi 0)) (nhds 1) := by
       have hfun : (fun ε : ℝ => Complex.exp (((-ε * ‖x‖ ^ 2 : ℝ) : ℂ)))
           = (fun ε : ℝ => Complex.exp (-(ε:ℂ) * (‖x‖:ℂ)^2)) := by
-        funext ε; congr 1; push_cast; ring
+        simp
       rw [hfun]
       have hcomp := (Complex.continuous_exp.tendsto 0).comp hc0
       rw [Complex.exp_zero] at hcomp
@@ -185,6 +176,3 @@ theorem tendsto_F_damped_M_F (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0)
       funext ε; ring
     rw [hEq]
     simpa using hc.mul_const ((psi β (a * x ^ 2) * F β (⇑f) x) * psi β (-x * y))
-
-end
-end DedekindZetaZeroFree.ComplexWeil

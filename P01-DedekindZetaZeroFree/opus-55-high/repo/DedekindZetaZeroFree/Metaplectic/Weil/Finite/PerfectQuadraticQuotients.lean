@@ -98,7 +98,7 @@ theorem localFinitePerfectQuadraticPolar_mk
   simp only [localFinitePerfectQuadraticPolar, finiteQuadraticPolarization,
     ← QuotientAddGroup.mk_add, localFinitePerfectQuadraticPhase_mk,
     AddSubgroup.coe_add, he, AddChar.map_add_eq_mul]
-  simp only [mul_div_cancel_left]
+  simp
 
 theorem weil_finite_perfect_quadratic_quotient
     (v : HeightOneSpectrum (𝓞 F)) (a : (v.adicCompletion F)ˣ)
@@ -199,7 +199,3 @@ theorem weil_finite_perfect_quadratic_quotient
   have hrpos := Real.rpow_nonneg (norm_nonneg (b : v.adicCompletion F)) (-(1 / 2 : ℝ))
   change ‖(M : ℂ) * ∑ g : G, (q g : ℂ)‖ = _
   nlinarith [norm_nonneg ((M : ℂ) * ∑ g : G, (q g : ℂ))]
-
-end DedekindZetaZeroFree
-
-end

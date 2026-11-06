@@ -27,7 +27,7 @@ local instance : IsTopologicalGroup (KPMsRationalCompactCrossPairing.G F ζ hζ)
   ⟨((KPGlobalTorusBorelTwistCompatibility.iwasawaNorm F ζ hζ D (σ⁻¹ * g) : ℝ≥0) : ℝ),
     NNReal.coe_pos.mpr (pos_iff_ne_zero.mpr (Units.ne_zero _))⟩
 
-private theorem framedRadius_continuous : Continuous (framedRadius F ζ hζ D σ) := by
+theorem framedRadius_continuous : Continuous (framedRadius F ζ hζ D σ) := by
   apply Continuous.subtype_mk
   exact (fullCusp_iwasawaNorm_continuous F ζ hζ D).comp (continuous_const.mul continuous_id)
 
@@ -44,7 +44,7 @@ private theorem framedRadius_continuous : Continuous (framedRadius F ζ hζ D σ
     change KPGlobalTorusBorelTwistCompatibility.iwasawaNorm F ζ hζ D ((t⁻¹).val * _) = 1
     rw [KPMsClearedTruncationL2.iwasawaNorm_torus_mul (D := D), map_inv, hd, inv_mul_cancel]⟩
 
-private theorem framedNormOne_continuous : Continuous (framedNormOne F ζ hζ D B σ) := by
+theorem framedNormOne_continuous : Continuous (framedNormOne F ζ hζ D B σ) := by
   apply Continuous.subtype_mk
   exact (B.continuous_section.comp (framedRadius_continuous F ζ hζ D σ)).inv.mul
     (continuous_const.mul continuous_id)
@@ -173,8 +173,8 @@ end Patch
 end DedekindZetaZeroFree.FullAngularHaar.Constructor.Step2Proof
 
 noncomputable section
-open scoped NumberField ENNReal
 open MeasureTheory
+open scoped NumberField ENNReal
 namespace DedekindZetaZeroFree.FullAngularHaar.Constructor
 
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}

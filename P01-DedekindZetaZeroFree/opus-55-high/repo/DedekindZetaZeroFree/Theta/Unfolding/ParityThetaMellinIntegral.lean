@@ -23,11 +23,11 @@ variable {K : Type} [Field K] [NumberField K]
     { toFun := fun x => ⟨x.val - RayCoset.normalizedBasepoint D, x.property⟩
       invFun := fun x => ⟨RayCoset.normalizedBasepoint D + x.val, by
         change RayCoset.normalizedBasepoint D + x.val - RayCoset.normalizedBasepoint D ∈ RayCoset.normalizedLattice D
-        simpa using x.property⟩
-      left_inv := fun x => by apply Subtype.ext; dsimp; abel
-      right_inv := fun x => by apply Subtype.ext; dsimp; abel }
+        simp⟩
+      left_inv := fun x => by simp
+      right_inv := fun x => by simp }
 
-private theorem cosetLatticeEquiv_apply (D : RayCoset.Data K) (α : RayCoset.C D) :
+theorem cosetLatticeEquiv_apply (D : RayCoset.Data K) (α : RayCoset.C D) :
     RayCoset.normalizedBasepoint D + (cosetLatticeEquiv D α).val =
       RayCoset.normalizedEmbedding D α.val := by
   change RayCoset.normalizedBasepoint D +
@@ -59,7 +59,7 @@ private theorem zero_mem_iff (D : RayCoset.Data K) :
     have : α = 0 := hi (he.trans (map_zero _).symm)
     simpa [this] using hα
 
-private theorem theta_sum_split (D : RayCoset.Data K)
+theorem theta_sum_split (D : RayCoset.Data K)
     (δ : Finset (RayCoset.RealPlaces K)) (t : ℝ) (ht : 0 < t)
     (h : RayCoset.logHyperplane K) :
     (∑' ℓ : RayCoset.normalizedLattice D,
@@ -135,7 +135,7 @@ theorem ae_weighted_tail_eq (D : RayCoset.Data K)
   have hF (h : RayCoset.logHyperplane K) :
       (∑' α : RayCoset.Cx D, OrbitSlabMellin.integrand D δ α s (t,h)) =
       (t : ℂ)^s * G h := by
-    simp only [OrbitSlabMellin.integrand, OrbitSlabMellin.q, RayTheta.q, G, one_div]
+    simp only [OrbitSlabMellin.integrand, G]
     rw [tsum_mul_left]
     congr 1
     apply tsum_congr
@@ -149,7 +149,7 @@ theorem ae_weighted_tail_eq (D : RayCoset.Data K)
       simpa only [hF] using hit
     convert hii.const_mul ((t : ℂ)^s)⁻¹ using 1
     ext h
-    simp [← mul_assoc, hp]
+    simp [hp]
   have hsum : (∫ h, (∑' ℓ : RayCoset.normalizedLattice D,
       gδ K δ (Q K (RayTheta.q K t h)
         (RayCoset.normalizedBasepoint D + ℓ.val))) ∂ν) =
@@ -175,8 +175,8 @@ theorem ae_weighted_tail_eq (D : RayCoset.Data K)
 
 theorem mellinConvergent (D : RayCoset.Data K)
     (δ : Finset (RayCoset.RealPlaces K)) (s : ℂ) (hs : 1 < s.re) :
-    MellinConvergent (fun t : ℝ => RayTheta.fδ D δ t - RayTheta.f0δ D δ) s := by
-  exact (RayTheta.Pδ D δ).hasMellin (s := s) hs |>.1
+    MellinConvergent (fun t : ℝ => RayTheta.fδ D δ t - RayTheta.f0δ D δ) s := 
+  (RayTheta.Pδ D δ).hasMellin (s := s) hs |>.1
 
 theorem mellin_eq_integral_tsum (D : RayCoset.Data K)
     (δ : Finset (RayCoset.RealPlaces K)) (s : ℂ) (hs : 1 < s.re) :
@@ -195,7 +195,7 @@ theorem mellin_eq_integral_tsum (D : RayCoset.Data K)
       mellin (fun t : ℝ => RayTheta.fδ D δ t - RayTheta.f0δ D δ) s := by
     rw [OrbitSlabMellin.μrad, Theta.positiveRadialHaar]
     rw [integral_withDensity_eq_integral_toReal_smul (by measurability)
-      (by filter_upwards with t; exact ENNReal.ofReal_lt_top)]
+      (by simp)]
     unfold mellin
     apply integral_congr_ae
     filter_upwards [ae_restrict_mem measurableSet_Ioi] with t ht
@@ -220,7 +220,3 @@ theorem hasMellin (D : RayCoset.Data K)
   have hw : (RayCoset.rayUnitTorsionCard K D.m : ℂ) ≠ 0 :=
     Nat.cast_ne_zero.mpr (ne_of_gt (RayCoset.rayUnitTorsionCard_pos K D.m))
   field_simp
-
-end DedekindZetaZeroFree.AbelianQuotient.RayParity.ThetaMellinIntegral
-
-end

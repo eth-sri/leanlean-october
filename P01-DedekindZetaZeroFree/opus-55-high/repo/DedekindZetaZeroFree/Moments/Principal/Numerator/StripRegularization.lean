@@ -45,7 +45,7 @@ private lemma principal_E_reflection (F : Type) [Field F] [NumberField F]
     filter_upwards [hn] with s hs
     have hs0 : s ≠ 0 := by intro h; subst s; simp at hs
     have hs1 : s ≠ 1 := by intro h; subst s; simp at hs
-    have ht : 0 < (1-s).re := by simp only [Complex.sub_re, Complex.one_re]; linarith [hs.2]
+    have ht : 0 < (1-s).re := by simp_all
     have ht1 : 1-s ≠ 1 := by
       intro h
       apply hs0
@@ -66,7 +66,7 @@ private lemma principal_prefactor (F : Type) [Field F] [NumberField F]
       s * (((2 * Real.pi : ℝ) : ℂ))⁻¹ * (Complex.Gammaℂ (s+1))⁻¹ := by
     simp only [Complex.Gammaℂ_def, mul_inv_rev]
     rw [Complex.one_div_Gamma_eq_self_mul_one_div_Gamma_add_one s]
-    have hp : (2 * (Real.pi : ℂ)) ≠ 0 := mul_ne_zero two_ne_zero (Complex.ofReal_ne_zero.mpr Real.pi_ne_zero)
+    have hp : (2 * (Real.pi : ℂ)) ≠ 0 := by simp
     have hc : (2 * (Real.pi : ℂ)) ^ (-(s+1)) =
         (2 * (Real.pi : ℂ)) ^ (-s) * (2 * (Real.pi : ℂ))⁻¹ := by
       rw [show -(s+1) = -s + (-1 : ℂ) by ring, Complex.cpow_add _ _ hp]
@@ -105,9 +105,7 @@ private lemma principal_left_formula (F : Type) [Field F] [NumberField F]
   have ht : 0 < (1-s).re := by simp [hs]; linarith
   have ht1 : 1-s ≠ 1 := by
     intro h
-    have hr := congrArg Complex.re h
-    simp [hs] at hr
-    linarith
+    simp_all
   rw [principalHeckeEntireRegularization, principal_E_reflection F m η D s,
     D.E_eq (1-s) ht, D.regularized (1-s) ht ht1]
   have hp := principal_prefactor F hF m s
@@ -121,7 +119,7 @@ private lemma left_ratio_bound (F : Type) [Field F] [NumberField F]
       ((|NumberField.discr F| : ℤ) : ℝ) ^ ((1:ℝ)/2+δ) * K ^ NumberField.InfinitePlace.nrComplexPlaces F *
       (Ideal.absNorm m : ℝ) ^ ((1:ℝ)/2+δ) * (2+|s.im|) ^ (2*NumberField.InfinitePlace.nrComplexPlaces F) := by
   rw [completion_ratio_norm F m hm δ s hs]
-  have hA : 0 ≤ ((|NumberField.discr F| : ℤ) : ℝ) := by exact_mod_cast abs_nonneg (NumberField.discr F)
+  have hA : 0 ≤ ((|NumberField.discr F| : ℤ) : ℝ) := by simp
   rw [heckeConductorScale, Real.mul_rpow hA (Nat.cast_nonneg _)]
   have hx := pow_le_pow_left₀ (norm_nonneg _) (hb s hs) (NumberField.InfinitePlace.nrComplexPlaces F)
   calc
@@ -186,7 +184,7 @@ private lemma regularization_bound (R : PrincipalMellin.ActualRecipe S η) :
   have hm : m ≠ ⊥ := R.A.modulus_ne_zero
   have hF := primitive12_totallyComplex F R.A.zeta12 R.A.primitive_zeta12
   let k := 2 * NumberField.InfinitePlace.nrComplexPlaces F + 1
-  have hk : 1 ≤ k := by dsimp [k]; omega
+  have hk : 1 ≤ k := by omega
   obtain ⟨K, hK, hb⟩ := gammaC_reflected_ratio_left_bound (1/10) (by norm_num) (by norm_num)
   let H := (((|NumberField.discr F| : ℤ) : ℝ) ^ ((1:ℝ)/2+1/10) *
     K ^ NumberField.InfinitePlace.nrComplexPlaces F * (Ideal.absNorm m : ℝ) ^ ((1:ℝ)/2+1/10) *
@@ -194,14 +192,12 @@ private lemma regularization_bound (R : PrincipalMellin.ActualRecipe S η) :
   let C0 := max H (4 * idealAbsoluteSum F (1+1/10)) + 1
   have hsum : 0 ≤ idealAbsoluteSum F (1+1/10) := by
     unfold idealAbsoluteSum
-    exact tsum_nonneg (fun I => by unfold idealAbsoluteWeight; split_ifs <;> positivity)
-  have hH : 0 ≤ H := by dsimp [H]; positivity
-  have hC0 : 0 < C0 := by dsimp [C0]; linarith [le_max_left H (4 * idealAbsoluteSum F (1+1/10))]
+    exact tsum_nonneg (fun I => by unfold idealAbsoluteWeight; positivity)
+  have hH : 0 ≤ H := by positivity
+  have hC0 : 0 < C0 := by positivity
   let Cp := max (6 ^ k * C0) (4 * idealAbsoluteSum F (1+1/10)) + 1
   have hCp : 0 < Cp := by
-    dsimp [Cp]
-    have : 0 < 6 ^ k * C0 := by positivity
-    linarith [le_max_left (6 ^ k * C0) (4 * idealAbsoluteSum F (1+1/10))]
+    positivity
   have hdiff := principalHeckeEntireRegularization_differentiable F hF m hm R.target D
   obtain ⟨M, B, hM, hB, hgr⟩ :=
     principalHeckeEntireRegularization_quadratic_strip_growth F hF m hm R.target D
@@ -240,7 +236,7 @@ private lemma regularization_bound (R : PrincipalMellin.ActualRecipe S η) :
       (by dsimp [Cp]; linarith [le_max_right (6 ^ k * C0) (4 * idealAbsoluteSum F (1+1/10))])
       hp (by positivity) hCp.le)
 
-private lemma finiteDeletion_mask_bound (R : PrincipalMellin.ActualRecipe S η)
+lemma finiteDeletion_mask_bound (R : PrincipalMellin.ActualRecipe S η)
     (a : ℝ) (ha : 0 < a) :
     ∃ P : ℝ, 0 < P ∧ ∀ s : ℂ, a ≤ s.re →
       ‖∏ v ∈ R.A.Sf,
@@ -323,6 +319,3 @@ theorem stripNumerator_bound_away_pole
   have hsplit : (B / ρ) * (2 + |s.im|) ^ d = (B * (2 + |s.im|) ^ d) / ρ := by ring
   rw [hsplit, le_div_iff₀ hρ]
   exact hkey
-
-end
-end DedekindZetaZeroFree.PrincipalNumerator

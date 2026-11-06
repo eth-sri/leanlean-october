@@ -5,12 +5,11 @@ public import ValuedFieldTheory.Valuation.Completion.FiniteLocalization
 public import ValuedFieldTheory.Valuation.AbsoluteValue.AlgebraicExtension.Core
 public import ValuedFieldTheory.Valuation.AbsoluteValue.AlgebraicExtension.FiniteNormExtension
 public import ValuedFieldTheory.Valuation.AbsoluteValue.AlgebraicExtension.NormFormula
-public import ValuedFieldTheory.Valuation.AbsoluteValue.AlgebraicExtension.NormFormulaAbsoluteValue
+public import ValuedFieldTheory.Valuation.AbsoluteValue.AlgebraicExtension.NormFormulaIntegralClosure
 public import ValuedFieldTheory.Valuation.AbsoluteValue.AlgebraicExtension.NormFormulaCoefficients
 public import ValuedFieldTheory.Valuation.AbsoluteValue.AlgebraicExtension.NormFormulaExtension
-public import ValuedFieldTheory.Valuation.AbsoluteValue.AlgebraicExtension.NormFormulaIntegralClosure
 public import ValuedFieldTheory.Valuation.AbsoluteValue.AlgebraicExtension.RamificationInvariants
-public import ValuedFieldTheory.Valuation.AbsoluteValue.AlgebraicExtension.UniqueExtensionCoefficients
+public import ValuedFieldTheory.Valuation.Henselian.IrreduciblePolynomialBounds
 public import ValuedFieldTheory.Valuation.AbsoluteValue.AlgebraicExtension.UniqueValuationSubring
 public import ValuedFieldTheory.Ramification.HilbertRamification.DecompositionGroup
 
@@ -22,21 +21,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-set_option autoImplicit false
 
 /-!
 # Localization and decomposition comparison for decomposition groups
@@ -139,8 +123,7 @@ theorem valuationPreservingCompletionRingEquiv_completionMap
     · intro y
       have hy : (y : vK.Completion) =
           algebraMap K vK.Completion (WithAbs.equiv vK y) := by
-        rw [← AbsoluteValue.toCompletion_eq_algebraMap]
-        simp
+        rfl
       rw [hy, AbsoluteValue.completionMap_coe]
       change
         valuationPreservingCompletionRingEquiv vK w σ hσ
@@ -177,8 +160,7 @@ theorem valuationPreservingCompletionRingEquiv_mem_localization
     exact E.algebraMap_mem x
   · intro x y hx hy hx' hy'
     simpa only [map_add] using E.add_mem hx' hy'
-  · intro x hx hx'
-    simpa only [map_inv₀] using E.inv_mem hx'
+  · simp
   · intro x y hx hy hx' hy'
     simpa only [map_mul] using E.mul_mem hx' hy'
   · exact hz
@@ -227,8 +209,7 @@ theorem valuationPreservingCompletionRingEquiv_symm_mem_localization
     exact E.algebraMap_mem x
   · intro x y hx hy hx' hy'
     simpa only [map_add] using E.add_mem hx' hy'
-  · intro x hx hx'
-    simpa only [map_inv₀] using E.inv_mem hx'
+  · simp
   · intro x y hx hy hx' hy'
     simpa only [map_mul] using E.mul_mem hx' hy'
   · exact hz
@@ -256,17 +237,13 @@ def valuationPreservingLocalizationAlgEquiv
           valuationPreservingCompletionRingEquiv_symm_mem_localization
             vK w σ hσ z.property⟩
       left_inv := fun z => by
-        apply Subtype.ext
-        exact e.symm_apply_apply z
+        simp
       right_inv := fun z => by
-        apply Subtype.ext
-        exact e.apply_symm_apply z
+        simp
       map_mul' := fun x y => by
-        apply Subtype.ext
-        exact e.map_mul x y
+        simp
       map_add' := fun x y => by
-        apply Subtype.ext
-        exact e.map_add x y
+        simp
       commutes' := fun x => by
         apply Subtype.ext
         exact valuationPreservingCompletionRingEquiv_completionMap
@@ -380,7 +357,6 @@ def localizationAlgEquivRestrict
   let iAlg : L →ₐ[K] E :=
     { __ := i
       commutes' := fun x => by
-        change i (algebraMap K L x) = (i.comp (algebraMap K L)) x
         rfl }
   letI : Algebra L E := i.toAlgebra
   letI : IsScalarTower K L E :=
@@ -417,7 +393,6 @@ theorem localizationAlgEquivRestrict_toLocalization
   let iAlg : L →ₐ[K] E :=
     { __ := i
       commutes' := fun x => by
-        change i (algebraMap K L x) = (i.comp (algebraMap K L)) x
         rfl }
   let : Algebra L E := i.toAlgebra
   let : IsScalarTower K L E :=
@@ -582,8 +557,8 @@ theorem decompositionGroupToLocalization_mul
         (decompositionGroupToLocalization_toLocalization
           vK hvK w σ ((τ : L ≃ₐ[K] L) x)).symm
       _ = decompositionGroupToLocalization vK hvK w σ
-          (decompositionGroupToLocalization vK hvK w τ (i x)) := by
-        exact congrArg (decompositionGroupToLocalization vK hvK w σ)
+          (decompositionGroupToLocalization vK hvK w τ (i x)) := 
+        congrArg (decompositionGroupToLocalization vK hvK w σ)
           (decompositionGroupToLocalization_toLocalization
             vK hvK w τ x).symm
       _ = ρR (i x) := rfl
@@ -636,12 +611,6 @@ def decompositionGroupEquivAlgebraicLocalizationAut :
     decompositionGroupEquivAlgebraicLocalizationAut vK hvK w σ
         (AbsoluteValue.toAlgebraicLocalization vK w.1 w.2 x) =
       AbsoluteValue.toAlgebraicLocalization vK w.1 w.2 ((σ : L ≃ₐ[K] L) x) :=
-  decompositionGroupToLocalization_toLocalization vK hvK w σ x
+  by simp
 
 omit hvK
-
-end DecompositionEquiv
-
-end HilbertRamification
-
-end

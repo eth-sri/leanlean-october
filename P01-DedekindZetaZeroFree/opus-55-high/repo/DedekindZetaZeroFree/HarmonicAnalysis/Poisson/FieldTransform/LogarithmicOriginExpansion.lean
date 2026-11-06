@@ -11,7 +11,6 @@ Repository: openai/math.
 Revision: adc7f1241b42e322a6451854ab7e4b4c146bf78a.
 -/
 
-noncomputable section
 open scoped NumberField Classical ContDiff
 
 namespace DedekindZetaZeroFree.LargeSieve
@@ -60,7 +59,3 @@ theorem transformed_field_origin_uniform
     obtain ⟨N, C, hC, hb'⟩ :=
       fieldTransform_uniform_euler_two_ended_bound D r b j n 1 hD hr hb (by norm_num)
     exact ⟨N, C, hC, fun h hh hhc hsupp x hx1 => (hb' h hh hhc hsupp).2 x hx1⟩
-
-end DedekindZetaZeroFree.LargeSieve
-
-end

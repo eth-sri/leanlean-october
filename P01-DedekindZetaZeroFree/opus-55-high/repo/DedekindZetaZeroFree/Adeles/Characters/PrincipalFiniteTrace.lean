@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.Moments.Probes.PrincipalProbeAndSeparatedMell
 
 @[expose] public section
 
-noncomputable section
 open scoped NumberField Classical
 open NumberField IsDedekindDomain
 
@@ -14,8 +13,8 @@ namespace DedekindZetaZeroFree.NormalizedProbe.PrincipalData
 theorem finiteSf_Sinteger_diagonal_denseRange {F : Type} [Field F] [NumberField F]
     (A : SArithmeticData F) :
     DenseRange (fun r : A.R => fun v : ↥A.Sf =>
-      algebraMap F (v.val.adicCompletion F) (r : F)) := by
-  exact PoissonSFiniteDensity.diagonal_denseRange F A.Sf
+      algebraMap F (v.val.adicCompletion F) (r : F)) := 
+  PoissonSFiniteDensity.diagonal_denseRange F A.Sf
 
 private theorem archPhase_eq_trace {F : Type} [Field F] [NumberField F]
     (A : SArithmeticData F) (x : InfiniteAdeleRing F) :
@@ -24,7 +23,7 @@ private theorem archPhase_eq_trace {F : Type} [Field F] [NumberField F]
     InfinitePlace.Completion.ringEquivComplexOfIsComplex_apply]
   rw [ProbeAdditive.archPhase, ← Complex.exp_sum]
   congr 1
-  simp only [Complex.ofReal_sum, Finset.mul_sum, Complex.ofReal_mul, Complex.ofReal_ofNat]
+  simp only [Finset.mul_sum, Complex.ofReal_mul, Complex.ofReal_ofNat]
   apply Finset.sum_congr rfl
   intro w hw
   ring
@@ -52,8 +51,7 @@ theorem finiteTrace_eq_localTraceCharacter {F : Type} [Field F] [NumberField F]
     funext r
     have hp := P.traceCompatible r
     have hc := congrArg (fun z : Circle => (z : ℂ)) (A.eS_integer hS r)
-    simp only [ProbeAdditive.TraceCompatible, ProbeAdditive.phase,
-      sIntegerDiagonal_apply] at hp
+    simp only [ProbeAdditive.phase, sIntegerDiagonal_apply] at hp
     change ProbeAdditive.archPhase F (sLocalDiagonal F A.Sf (r : F)).1 *
       f (fun w => algebraMap F (w.val.adicCompletion F) (r : F)) = 1 at hp
     change (A.eS (sLocalDiagonal F A.Sf (r : F)) : ℂ) = (1 : ℂ) at hc
@@ -85,8 +83,7 @@ theorem finiteTrace_eq_localTraceCharacter {F : Type} [Field F] [NumberField F]
     · simp
   change (∏ w : ↥A.Sf, (P.finiteTrace w (y w) : ℂ)) =
     (∏ w : ↥A.Sf, (ResidueTrace.localTraceCharacter w.val (y w) : ℂ)) at h
-  rw [prod_single, prod_single] at h
-  exact h
+  simp_all
 
 theorem finiteTrace_ne_one {F : Type} [Field F] [NumberField F]
     (A : SArithmeticData F) (ι : F →+* ℂ) (η : RayClassCharacter F A.modulus)
@@ -105,7 +102,3 @@ theorem finiteTrace_ne_one {F : Type} [Field F] [NumberField F]
       (v.val.adicCompletion F) x) ≠ 1
   rw [hx]
   exact rationalPadicCharacter_inv_prime_ne_one _
-
-end DedekindZetaZeroFree.NormalizedProbe.PrincipalData
-
-end

@@ -10,7 +10,6 @@ open scoped NumberField Classical
 
 noncomputable section
 namespace DedekindZetaZeroFree.CorrectionFactors
-set_option autoImplicit false
 
 open LocalFiniteSums
 
@@ -28,8 +27,8 @@ def omegaSecond : Set Coordinates :=
 
 def Omega : Set Coordinates := omegaFirst ∪ omegaSecond
 
-theorem isOpen_Omega : IsOpen Omega := by
-  exact (Contour.isOpen_box _ _ _).union (Contour.isOpen_box _ _ _)
+theorem isOpen_Omega : IsOpen Omega := 
+  (Contour.isOpen_box _ _ _).union (Contour.isOpen_box _ _ _)
 
 def principalRegion : Set ℂ := {s | (2 / 3 : ℝ) < s.re}
 
@@ -54,8 +53,8 @@ def j {C : A.GeneralArithmeticContext σ η hS} (U : Frequency C)
 theorem exists_unitPart {C : A.GeneralArithmeticContext σ η hS}
     (U : Frequency C) (p : ExteriorPrime A) :
     ∃ v : A.R, U.u = generator C p ^ (U.j p).val * v ∧
-      IsUnit (Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) v) := by
-  exact ValuationGenerator.exists_unitPart C U.ideal U.u U.generates p
+      IsUnit (Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) v) := 
+  ValuationGenerator.exists_unitPart C U.ideal U.u U.generates p
 
 def unitPart {C : A.GeneralArithmeticContext σ η hS} (U : Frequency C)
     (p : ExteriorPrime A) : A.R := Classical.choose (U.exists_unitPart p)
@@ -69,8 +68,8 @@ theorem unitPart_spec {C : A.GeneralArithmeticContext σ η hS}
 theorem unitPart_chi_norm {C : A.GeneralArithmeticContext σ η hS}
     (U : Frequency C) (p : ExteriorPrime A) :
     ‖chi (σ := σ) p
-      (Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) (U.unitPart p))‖ = 1 := by
-  exact LocalAlgebra.chi_norm p _ (U.unitPart_spec p).2
+      (Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) (U.unitPart p))‖ = 1 := 
+  LocalAlgebra.chi_norm p _ (U.unitPart_spec p).2
 
 def theta {C : A.GeneralArithmeticContext σ η hS} (U : Frequency C)
     (p : ExteriorPrime A) : {θ : ℂ // ‖θ‖ = 1} :=
@@ -141,7 +140,3 @@ def h_p (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
 
 def H_eta (C : A.GeneralArithmeticContext σ η hS) (s : ℂ) : ℂ :=
   ∏' p : ExteriorPrime A, h_p C p s
-
-end DedekindZetaZeroFree.CorrectionFactors
-
-end

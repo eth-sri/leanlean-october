@@ -1,7 +1,10 @@
 module
 
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.IdealMap
-public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Principal
+public import ClassFieldTheory.AlgebraicNumberTheory.Idele.PrincipalCore
+public import GaloisCohomology.Cyclic.Herbrand.HerbrandLowDegree.EquivariantEquiv
+public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Cohomology.Herbrand
+public import ClassFieldTheory.LocalClassFieldTheory.ClassFormation.Valuation
 public import Mathlib.NumberTheory.NumberField.ProductFormula
 
 @[expose] public section
@@ -12,11 +15,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-set_option autoImplicit false
 
 /-!
 # The absolute norm of an idele
@@ -30,7 +28,6 @@ open scoped NumberField RestrictedProduct NNReal
 open NumberField IsDedekindDomain
 
 noncomputable section
-
 
 variable {K : Type*} [Field K] [NumberField K]
 
@@ -126,7 +123,3 @@ theorem absoluteNorm_apply (a : IdeleGroup K) :
 /-- The norm-one ideles. -/
 def normOneSubgroup : Subgroup (IdeleGroup K) :=
   (absoluteNorm (K := K)).ker
-
-end IdeleGroup
-
-end

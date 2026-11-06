@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 namespace LocalClassFieldTheory
 
 open LocalFieldTheory
@@ -46,7 +40,7 @@ isomorphism
 
 The coefficient module used in the construction is
 `(SeparableClosure K)ˣ`, in the fixed-separable-closure model. -/
-noncomputable def abelianizationEquivNormQuotient :
+def abelianizationEquivNormQuotient :
     Abelianization (Gal(L / K)) ≃* NormQuotient K L :=
   concreteReciprocityEquiv K L
     (localResidueDatum K)
@@ -55,7 +49,7 @@ noncomputable def abelianizationEquivNormQuotient :
 
 /-- The isomorphism in the finite local reciprocity construction is independent of the embedding used to
 realize `L/K` inside the fixed separable closure. -/
-private theorem abelianizationEquivNormQuotient_eq_of_embedding
+theorem abelianizationEquivNormQuotient_eq_of_embedding
     (i : L →ₐ[K] SeparableClosure K) :
     abelianizationEquivNormQuotient K L =
       concreteReciprocityEquivOfEmbedding K L i
@@ -71,7 +65,7 @@ private theorem abelianizationEquivNormQuotient_eq_of_embedding
 
 /-- The local norm-residue symbol is the inverse of reciprocity, preceded by
 the quotient map from `Kˣ`. -/
-noncomputable def localArtinMonoidHom :
+def localArtinMonoidHom :
     Kˣ →* Abelianization (Gal(L / K)) :=
   (abelianizationEquivNormQuotient K L).symm.toMonoidHom.comp
     (normClass K L)
@@ -123,6 +117,3 @@ theorem localArtinMonoidHom_ker :
     have hq : normClass K L x = 1 :=
       (normClass_eq_one_iff_mem K L x).2 hx
     rw [hq, map_one]
-
-end
-end LocalClassFieldTheory

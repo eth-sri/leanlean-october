@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Frobenius orientation in the completed standard/changed compositum
 
@@ -29,7 +25,6 @@ coefficient Frobenius and relative residue arithmetic Frobenius are the same
 arithmetic Frobenius of the finite unramified extension.
 -/
 
-noncomputable section
 
 namespace LubinTate
 
@@ -130,13 +125,11 @@ theorem
       IsLocalRing.ResidueField
           (localCompleteDVF M).valuation.valuationSubring =
         𝓀[M] := by
-    rw [localCompleteDVF_valuation_eq M]
     rfl
   have hD :
       IsLocalRing.ResidueField
           (localCompleteDVF D).valuation.valuationSubring =
         𝓀[D] := by
-    rw [localCompleteDVF_valuation_eq D]
     rfl
   cases hM
   cases hD
@@ -194,17 +187,11 @@ theorem
             exact
               (padicCompletedStandardChangedCompositum_residueArithmeticFrobenius_apply
                 p u n x).symm
-          _ = embedding a := by
-            exact congrArg embedding
+          _ = embedding a := 
+            congrArg embedding
               ((residueExtensionArithmeticFrobeniusOfValuationExtension
                 D M).apply_symm_apply a)
     _ =
         (galoisGroupResidueAlgEquivHomOfIsIntegralClosure D M
           (arithmeticFrobeniusOfUnramifiedValuation D M))⁻¹ := by
-      apply congrArg (fun σ => σ⁻¹)
-      simpa only [galoisGroupResidueAlgEquivHomOfIsIntegralClosure_apply] using
-        (galoisGroupResidueAlgEquivOfIsIntegralClosure_arithmeticFrobenius D M).symm
-
-end LubinTate
-
-end
+      simp

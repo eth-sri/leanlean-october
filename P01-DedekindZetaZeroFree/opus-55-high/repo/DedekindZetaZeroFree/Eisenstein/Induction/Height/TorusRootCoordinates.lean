@@ -72,7 +72,7 @@ private theorem infinite_rational_mul (A : RatGL F) (B : AdelGL F)
   rw [mul_comm (Real.sqrt (v (GeneralLinearGroup.det A : F))), div_mul_eq_div_div, div_pow]
   rfl
 
-private theorem rational_det_sqrt_product (a : F) (ha : a ≠ 0) :
+theorem rational_det_sqrt_product (a : F) (ha : a ≠ 0) :
     (∏ v : InfinitePlace F, (Real.sqrt (v a)) ^ v.mult) *
       (∏ᶠ v : HeightOneSpectrum (RingOfIntegers F),
         Real.sqrt ‖algebraMap F (v.adicCompletion F) a‖) = 1 := by
@@ -149,7 +149,7 @@ theorem actualBaseRowHeight_rational_mul
   simp only [actualBaseRowLine, height_mk]
   exact rowHeight_rational_mul F A B
 
-private theorem ideleAbs_product (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (y : KPGlobalTorusFunctionData.Ideles F) :
+theorem ideleAbs_product (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (y : KPGlobalTorusFunctionData.Ideles F) :
     (((KPGlobalTorusFunctionData.ideleAbs F y : NNReal) : ℝ)) =
       (∏ w : InfinitePlace F, ‖KPChamberHeight.infiniteEval F w (y : KPAdeles F)‖ ^ 2) *
       ∏ᶠ q : HeightOneSpectrum (𝓞 F), ‖KPChamberHeight.finiteEval F q (y : KPAdeles F)‖ := by
@@ -190,7 +190,7 @@ private theorem ideleAbs_product (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (y : KPG
   rw [← he, hsplit]
   rfl
 
-private theorem eval_upper_ratio {K : Type*} [NormedField K]
+theorem eval_upper_ratio {K : Type*} [NormedField K]
     (e : KPAdeles F →+* K) (B : KPChamberHeight.AdelGL F) (hB : B 1 0 = 0) :
     ‖e (KPGlobalTorusBorelNormTwistTransport.iwasawaUpperRatio F B hB : KPAdeles F)‖ =
       ‖e (B 0 0)‖ / ‖e (B 1 1)‖ := by
@@ -201,7 +201,7 @@ private theorem eval_upper_ratio {K : Type*} [NormedField K]
     exact Units.val_inv_eq_inv_val (Units.map e.toMonoidHom _)
   rw [hi, norm_inv, IsUnit.unit_spec, IsUnit.unit_spec, div_eq_mul_inv]
 
-private theorem root_projection (x : KPAdeles F) :
+theorem root_projection (x : KPAdeles F) :
     KPAdelicCoverRestrictedProduct.pglProjection F ζ hζ (KPGlobalTorusFunctionData.N F ζ hζ x) =
       QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F)
         (Matrix.GeneralLinearGroup.transvection 0 1 (by decide) x) := by

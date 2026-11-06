@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Metaplectic.Torus.FiniteHeisenbergInducingDat
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.KPTameTransposeLowShellSupport
 
 open scoped NumberField Classical ValuativeRel
@@ -47,7 +46,7 @@ theorem exists_tame_cubic_unit_detecting_exponent
           (KPHilbert.B3 F ζ hζ (Sum.inr q) π
             (KPTameCompact.unitInclusion F q u)) ^ e) = 1 := by
       apply Units.ext
-      simpa only [map_zpow, Units.val_zpow_eq_zpow_val, Units.val_one] using hn u
+      simp_all
     have h6 := KPLocalCover.coefficientEmbedding_injective F ζ hζ
       (hc.trans (map_one _).symm)
     have h3 : (KPHilbert.B3 F ζ hζ (Sum.inr q) π
@@ -64,7 +63,7 @@ theorem exists_tame_cubic_unit_detecting_exponent
     intro x
     obtain ⟨u, hx⟩ := exists_integerUnit_mul_uniformizer_zpow K π⁻¹ hvπinv x
     rw [← hx]
-    simp only [map_mul, map_zpow, map_inv, MonoidHom.zpow_apply, MonoidHom.inv_apply]
+    simp only [map_mul, map_zpow, map_inv, MonoidHom.zpow_apply]
     have huu := hu u
     simp only [map_zpow, MonoidHom.zpow_apply] at huu
     change B (p π) (p ((integerUnitsToFieldUnits K) u)) ^ e = 1 at huu
@@ -86,9 +85,4 @@ theorem exists_tame_cubic_unit_detecting_exponent
   rw [valuationMap_ofMul_pow, valuationMap_ofMul_zpow, hvπ] at hv
   apply he
   apply (ZMod.intCast_zmod_eq_zero_iff_dvd e 3).mpr
-  refine ⟨-valuationMap K (Additive.ofMul t), ?_⟩
-  linarith
-
-end DedekindZetaZeroFree.KPTameTransposeLowShellSupport
-
-end
+  omega

@@ -30,7 +30,7 @@ theorem norm_normPhase (t r : ℝ) (hr : 0 < r) :
     ‖normPhase t r‖ = 1 := by
   simp [normPhase, Complex.norm_exp]
 
-private theorem fourier_norm_le (g : ℝ → ℂ) (t : ℝ) :
+theorem fourier_norm_le (g : ℝ → ℂ) (t : ℝ) :
     ‖FourierTransform.fourier g t‖ ≤ ∫ x : ℝ, ‖g x‖ := by
   rw [Real.fourier_eq]
   calc
@@ -38,7 +38,7 @@ private theorem fourier_norm_le (g : ℝ → ℂ) (t : ℝ) :
         ∫ x : ℝ, ‖Real.fourierChar (-inner ℝ x t) • g x‖ := norm_integral_le_integral_norm _
     _ = _ := by simp
 
-private theorem fourier_c2_majorant (g : ℝ → ℂ) (hg : ContDiff ℝ 2 g)
+theorem fourier_c2_majorant (g : ℝ → ℂ) (hg : ContDiff ℝ 2 g)
     (hgi : ∀ n : ℕ, n ≤ 2 → Integrable (iteratedDeriv n g)) (t : ℝ) :
     ‖FourierTransform.fourier g t‖ ≤
       ((∫ x : ℝ, ‖g x‖) + (∫ x : ℝ, ‖iteratedDeriv 2 g x‖)) * (1 + t ^ 2)⁻¹ := by
@@ -88,13 +88,13 @@ theorem fourier_c2_l1_bound (g : ℝ → ℂ) (hg : ContDiff ℝ 2 g)
       integral_mono hf.norm hint (fourier_c2_majorant g hg hgi)
     _ = _ := integral_const_mul _ _
 
-private theorem compact_iterated {f : ℝ → ℂ} (hf : HasCompactSupport f) (n : ℕ) :
+theorem compact_iterated {f : ℝ → ℂ} (hf : HasCompactSupport f) (n : ℕ) :
     HasCompactSupport (iteratedDeriv n f) := by
   induction n with
   | zero => simpa using hf
   | succ n hn => simpa only [iteratedDeriv_succ] using hn.deriv
 
-private theorem second_product (a f : ℝ → ℂ) (ha : ContDiff ℝ 2 a)
+theorem second_product (a f : ℝ → ℂ) (ha : ContDiff ℝ 2 a)
     (hf : ContDiff ℝ 2 f) (x : ℝ) :
     iteratedDeriv 2 (a * f) x =
       iteratedDeriv 2 a x * f x + 2 * deriv a x * deriv f x + a x * iteratedDeriv 2 f x := by
@@ -102,7 +102,7 @@ private theorem second_product (a f : ℝ → ℂ) (ha : ContDiff ℝ 2 a)
   simp [Finset.sum_range_succ, iteratedDeriv_one]
   <;> ring
 
-private theorem scaled_envelope (v x B : ℝ) (hv : 0 < v) :
+theorem scaled_envelope (v x B : ℝ) (hv : 0 < v) :
     min (Real.rpow (v * Real.exp x) (1 / 8)) (Real.rpow (v * Real.exp x) (-B)) ≤
       (Real.exp (x * (1 / 8)) + Real.exp (x * (-B))) *
         min (Real.rpow v (1 / 8)) (Real.rpow v (-B)) := by
@@ -135,8 +135,8 @@ theorem uniform_fourier_l1 {I : Type*} [Fintype I]
     Complex.ofRealCLM.contDiff.comp (hξ.1.of_le (by norm_num))
   have hac : HasCompactSupport a := hξ.2.1.comp_left (g := Complex.ofReal) (by simp)
   let E : ℝ → ℝ := fun x => Real.exp (x * (1 / 8)) + Real.exp (x * (-B))
-  have hEc : Continuous E := by dsimp [E]; fun_prop
-  have hE (x : ℝ) : 0 ≤ E x := by dsimp [E]; positivity
+  have hEc : Continuous E := by fun_prop
+  have hE (x : ℝ) : 0 ≤ E x := by positivity
   let W0 : ℝ → ℝ := fun x => ‖a x‖ * E x
   let W2 : ℝ → ℝ := fun x =>
     (‖iteratedDeriv 2 a x‖ + 2 * ‖iteratedDeriv 1 a x‖ + ‖a x‖) * E x
@@ -149,10 +149,10 @@ theorem uniform_fourier_l1 {I : Type*} [Fintype I]
         ha.continuous.norm).mul hEc
     · exact (((compact_iterated hac 2).norm.add
         ((compact_iterated hac 1).norm.mul_left)).add hac.norm).mul_right
-  have hW0pos : 0 ≤ ∫ x, W0 x := integral_nonneg (fun x => mul_nonneg (norm_nonneg _) (hE x))
-  have hW2pos : 0 ≤ ∫ x, W2 x := integral_nonneg (by intro x; dsimp [W2]; positivity)
+  have hW0pos : 0 ≤ ∫ x, W0 x := by positivity
+  have hW2pos : 0 ≤ ∫ x, W2 x := integral_nonneg (by intro x; positivity)
   let J : ℝ := ∫ t : ℝ, (1 + t ^ 2)⁻¹
-  have hJ : 0 ≤ J := integral_nonneg (by intro t; positivity)
+  have hJ : 0 ≤ J := by positivity
   refine ⟨L * ((∫ x, W0 x) + (∫ x, W2 x)) * J + 1, by positivity, ?_⟩
   intro i v hv
   let f : ℝ → ℂ := fun x => logProfile (P i) (x + Real.log v)
@@ -167,7 +167,7 @@ theorem uniform_fourier_l1 {I : Type*} [Fintype I]
     exact (hg.continuous_iteratedDeriv n (by exact_mod_cast hn)).integrable_of_hasCompactSupport
       (compact_iterated hgc n)
   let m : ℝ := min (Real.rpow v (1 / 8)) (Real.rpow v (-B))
-  have hm : 0 ≤ m := by dsimp [m]; exact le_min (Real.rpow_pos_of_pos hv _).le (Real.rpow_pos_of_pos hv _).le
+  have hm : 0 ≤ m := by dsimp [m]; positivity
   have hfb (n : ℕ) (hn : n ≤ 2) (x : ℝ) :
       ‖iteratedDeriv n f x‖ ≤ L * E x * m := by
     rw [show f = (fun x => logProfile (P i) (x + Real.log v)) from rfl,
@@ -196,10 +196,10 @@ theorem uniform_fourier_l1 {I : Type*} [Fintype I]
       _ ≤ ‖iteratedDeriv 2 a x * f x‖ + ‖2 * deriv a x * deriv f x‖ +
           ‖a x * iteratedDeriv 2 f x‖ := norm_add₃_le
       _ = ‖iteratedDeriv 2 a x‖ * ‖f x‖ + 2 * ‖deriv a x‖ * ‖deriv f x‖ +
-          ‖a x‖ * ‖iteratedDeriv 2 f x‖ := by simp [norm_mul]
+          ‖a x‖ * ‖iteratedDeriv 2 f x‖ := by simp
       _ ≤ ‖iteratedDeriv 2 a x‖ * (L * E x * m) +
-          2 * ‖deriv a x‖ * (L * E x * m) + ‖a x‖ * (L * E x * m) := by
-        exact add_le_add (add_le_add (mul_le_mul_of_nonneg_left h0 (norm_nonneg _))
+          2 * ‖deriv a x‖ * (L * E x * m) + ‖a x‖ * (L * E x * m) := 
+        add_le_add (add_le_add (mul_le_mul_of_nonneg_left h0 (norm_nonneg _))
           (mul_le_mul_of_nonneg_left h1 (by positivity)))
           (mul_le_mul_of_nonneg_left h2 (norm_nonneg _))
       _ = _ := by dsimp [W2]; simp only [iteratedDeriv_one]; ring
@@ -309,9 +309,6 @@ theorem dyadic_separation {I : Type*} [Fintype I]
   · rw [Real.fourierInv_eq']
     apply integral_congr_ae
     filter_upwards [] with t
-    simp only [real_inner_comm, RCLike.inner_apply, conj_trivial, smul_eq_mul]
+    simp only [RCLike.inner_apply, conj_trivial, smul_eq_mul]
     rw [mul_comm x t, hphase]
     ring
-
-end
-end DedekindZetaZeroFree.RMFourierProfile

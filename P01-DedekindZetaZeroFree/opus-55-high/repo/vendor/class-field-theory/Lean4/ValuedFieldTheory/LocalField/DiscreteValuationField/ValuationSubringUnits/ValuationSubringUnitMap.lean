@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Valuation-subring units inside field units
 
@@ -34,7 +31,7 @@ variable {K : Type u} [Field K]
 
 /-- The inclusion `O_K^* -> K^*` for the chosen valuation ring of a complete
 DVF. -/
-noncomputable def valuationSubringUnitsToFieldUnits
+def valuationSubringUnitsToFieldUnits
     (F : CompleteDVF.{u, v} K) : F.valuationSubringˣ →* Kˣ :=
   F.valuation.valuationSubring.unitGroup.subtype.comp
     F.valuation.valuationSubring.unitGroupMulEquiv.symm.toMonoidHom
@@ -47,11 +44,7 @@ The defining evaluation formula for `coe_valuationSubringUnitsToFieldUnits` is
     (F : CompleteDVF.{u, v} K) (a : F.valuationSubringˣ) :
     (((LocalFieldTheory.DiscreteValuationField.CompleteDVF.valuationSubringUnitsToFieldUnits F) a : Kˣ) : K) =
       (a : F.valuationSubring) := by
-  change
-    ((F.valuation.valuationSubring.unitGroupMulEquiv.symm a : Kˣ) : K) =
-      (a : K)
-  exact _root_.ValuationSubring.coe_unitGroupMulEquiv_symm_apply
-    (A := F.valuation.valuationSubring) (K := K) a
+  rfl
 
 /--
 Establishes the membership statement `(CompleteDVF.valuationSubringUnitsToFieldUnits F) a ∈
@@ -61,14 +54,4 @@ theorem valuationSubringUnitsToFieldUnits_mem_unitGroup
     (F : CompleteDVF.{u, v} K) (a : F.valuationSubringˣ) :
     (LocalFieldTheory.DiscreteValuationField.CompleteDVF.valuationSubringUnitsToFieldUnits F) a ∈
       F.valuation.valuationSubring.unitGroup := by
-  change
-    ((F.valuation.valuationSubring.unitGroupMulEquiv.symm a :
-      F.valuation.valuationSubring.unitGroup) : Kˣ) ∈
-      F.valuation.valuationSubring.unitGroup
-  exact (F.valuation.valuationSubring.unitGroupMulEquiv.symm a).2
-
-
-end CompleteDVF
-end LocalFieldTheory.DiscreteValuationField
-
-end
+  simp

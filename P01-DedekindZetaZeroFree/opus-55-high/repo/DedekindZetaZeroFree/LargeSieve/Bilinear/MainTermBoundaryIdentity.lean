@@ -17,7 +17,7 @@ namespace DedekindZetaZeroFree.LargeSieve.Bilinear.BoundaryDyadicRows
 open ExplicitTerms
 variable {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
 variable {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
-private lemma sc_top (c : Ideal (𝓞 F)) : sc c ⊤ = 1 := by
+lemma sc_top (c : Ideal (𝓞 F)) : sc c ⊤ = 1 := by
   have hf : UniqueFactorizationMonoid.normalizedFactors (⊤ : Ideal (𝓞 F)) = 0 := by
     simpa only [Ideal.one_eq_top] using (UniqueFactorizationMonoid.normalizedFactors_one (α := Ideal (𝓞 F)))
   simp [sc, primeToSquarefreeKernel, Sieve.squarefreeKernel, hf]
@@ -32,7 +32,7 @@ private lemma unit_eq (c m : Ideal (𝓞 F)) (K : ℝ) (hK : 1 ≤ K) :
     refine ⟨rfl, ?_, by simp, ?_⟩
     · simpa only [← Ideal.one_eq_top] using (squarefree_one : Squarefree (1 : Ideal (𝓞 F)))
     · simpa only [sc_top] using hK
-private lemma clipped_succ (m : Ideal (𝓞 F)) (K : ℝ) (i : ℕ) :
+lemma clipped_succ (m : Ideal (𝓞 F)) (K : ℝ) (i : ℕ) :
     Sieve.clippedDyadicBlock F m K (i+1) = sigma4DyadicRows F m K ((2:ℝ)^i) := by
   ext a
   simp only [Sieve.clippedDyadicBlock, Sieve.idealDyadicBlock, sigma4DyadicRows,
@@ -42,7 +42,7 @@ private lemma clipped_succ (m : Ideal (𝓞 F)) (K : ℝ) (i : ℕ) :
   · rintro ⟨ha, hnorm⟩
     obtain ⟨hsf, hcop, _, _⟩ := (Sieve.mem_paperShell F m _ a).mp ha
     exact ⟨ha, (Sieve.mem_idealAdmissibleFinset F m K a).mpr ⟨hsf,hcop,hnorm⟩⟩
-private lemma clipped_zero (m : Ideal (𝓞 F)) (K : ℝ) (hK : 1 ≤ K) :
+lemma clipped_zero (m : Ideal (𝓞 F)) (K : ℝ) (hK : 1 ≤ K) :
     Sieve.clippedDyadicBlock F m K 0 = {⊤} := by
   ext a
   simp only [Sieve.clippedDyadicBlock, Sieve.idealDyadicBlock, Finset.mem_inter,
@@ -66,21 +66,20 @@ private lemma row_partition (c m : Ideal (𝓞 F)) (K : ℝ) (hK : 1 ≤ K)
       (Sieve.pairwiseDisjoint_clippedDyadicBlock F m K hK) (f := f)).symm
     rw [Sieve.biUnion_clippedDyadicBlock F m K hK, Finset.sum_range_succ'] at hsum
     simpa only [clipped_succ, clipped_zero m K hK, unit_eq c m K hK, add_comm] using hsum
-  · intro i hi j hj heq
-    exact pow_right_injective₀ (by norm_num : (0:ℝ)<2) (by norm_num : (2:ℝ) ≠ 1) heq
+  simp
 
 lemma original_partition (C : Context Q) (hK : 1 ≤ C.K) (f : Ideal (𝓞 F) → ℂ) :
     (∑ a ∈ C.originalRows 1 true, f a) +
       (∑ B ∈ dyadicScales C, ∑ a ∈ C.originalRows B, f a) =
-        ∑ a ∈ Sieve.idealAdmissibleFinset F (c*C.d) C.K, f a := by
-  exact row_partition c (c*C.d) C.K hK f
+        ∑ a ∈ Sieve.idealAdmissibleFinset F (c*C.d) C.K, f a := 
+  row_partition c (c*C.d) C.K hK f
 
 lemma core_partition (C : Context Q) (hK : 1 ≤ C.K) (f : Ideal (𝓞 F) → ℂ) :
     (∑ a ∈ C.reflectedCoreRows 1 true, f a) +
       (∑ B ∈ dyadicScales C, ∑ a ∈ C.reflectedCoreRows B, f a) =
-        ∑ a ∈ Sieve.idealAdmissibleFinset F c C.K, f a := by
-  exact row_partition c c C.K hK f
-private lemma sup_top_of_rel {x y : Ideal (𝓞 F)} (h : IsRelPrime x y) : x ⊔ y = ⊤ :=
+        ∑ a ∈ Sieve.idealAdmissibleFinset F c C.K, f a := 
+  row_partition c c C.K hK f
+lemma sup_top_of_rel {x y : Ideal (𝓞 F)} (h : IsRelPrime x y) : x ⊔ y = ⊤ :=
   Ideal.isUnit_iff.mp (h (Ideal.dvd_iff_le.mpr le_sup_left) (Ideal.dvd_iff_le.mpr le_sup_right))
 private lemma rel_of_sup {x y : Ideal (𝓞 F)} (h : x ⊔ y = ⊤) : IsRelPrime x y := by
   intro z hz hz'
@@ -104,8 +103,7 @@ private lemma core_row_spec (C : Context Q) (hK : 1 ≤ C.K) (B : ℝ) (unit : B
   | true =>
     change r ∈ ReflectedSigma4.unitRows c c C.K at hr
     rw [unit_eq c c C.K hK, Finset.mem_singleton] at hr
-    subst r
-    exact ⟨by simpa only [← Ideal.one_eq_top] using (squarefree_one : Squarefree (1 : Ideal (𝓞 F))), by simp⟩
+    simp_all
 private lemma indices_eq (C : Context Q) (hK : 1 ≤ C.K) (B : ℝ) (unit : Bool) :
     C.reflectedRowIndices B unit = squarefreeBadPool c ×ˢ C.reflectedCoreRows B unit := by
   apply Finset.filter_eq_self.mpr
@@ -182,7 +180,7 @@ def pairScalar (C : Context Q) (p : Ideal (𝓞 F) × Ideal (𝓞 F))
     (hp : C.ValidPair p) : ℂ :=
   pairBlock C p hp 1 true + ∑ B ∈ dyadicScales C, pairBlock C p hp B
 
-private theorem sqrt_prefactor (M e j a : ℝ)
+theorem sqrt_prefactor (M e j a : ℝ)
     (hM : 0 < M) (he : 0 < e) (hj : 0 < j) (ha : 0 < a) :
     M / (e * Real.sqrt j) * Real.sqrt ((e*j/M)/a) =
       Real.sqrt M / Real.sqrt e / Real.sqrt a := by
@@ -227,7 +225,7 @@ private theorem prefactor_main (C : Context Q) (hM : 1 ≤ C.M)
         (Real.sqrt (C.dualScale e p / norm a) : ℂ)) := by ring
     _ = _ := by rw [hs']; ring
 
-private theorem pairScalar_partition (C : Context Q) (hK : 1 ≤ C.K)
+theorem pairScalar_partition (C : Context Q) (hK : 1 ≤ C.K)
     (p : Ideal (𝓞 F) × Ideal (𝓞 F)) (hp : C.ValidPair p) :
     pairScalar C p hp =
     (∑ e ∈ C.mobiusDivisors, C.prefactor e p hp *
@@ -324,7 +322,7 @@ private theorem pairScalar_normalized (C : Context Q) (hM : 1 ≤ C.M) (hK : 1 �
   rw [← Finset.mul_sum]
   ring
 
-private theorem supported_normalized_factor (C : Context Q)
+theorem supported_normalized_factor (C : Context Q)
     (p : Ideal (𝓞 F) × Ideal (𝓞 F)) (hp : C.ValidPair p) :
     (∑ t ∈ squarefreeBadPool c, ∑ r ∈ Sieve.idealAdmissibleFinset F c C.K,
       C.primitive p hp (t*r) / (Real.sqrt (norm (t*r)) : ℂ)) =
@@ -334,7 +332,7 @@ private theorem supported_normalized_factor (C : Context Q)
       C.primitive p hp r / (Real.sqrt (norm r) : ℂ)) := by
   have hn : ∀ a : Ideal (𝓞 F), ((Sieve.MainBoundary.idealSize F) a : ℝ) = norm a := by
     intro a
-    simp [Sieve.MainBoundary.idealSize, ExplicitTerms.norm]
+    rfl
   have hmul : ∀ a b : Ideal (𝓞 F),
       C.primitive p hp (a*b) / (Real.sqrt (norm (a*b)) : ℂ) =
       (C.primitive p hp a / (Real.sqrt (norm a) : ℂ)) *
@@ -350,7 +348,7 @@ private theorem supported_normalized_factor (C : Context Q)
   rw [Finset.sum_mul]
   exact Finset.sum_congr rfl (fun t ht => (Finset.mul_sum _ _ _).symm)
 
-private theorem idealRadical_eq_ufmRadical (q : Ideal (𝓞 F)) (hq : q ≠ ⊥) :
+theorem idealRadical_eq_ufmRadical (q : Ideal (𝓞 F)) (hq : q ≠ ⊥) :
     Ideal.radical q = UniqueFactorizationMonoid.radical q := by
   have hset : ({J : Ideal (𝓞 F) | q ≤ J ∧ J.IsPrime} : Set (Ideal (𝓞 F))) =
       ↑(UniqueFactorizationMonoid.primeFactors q) := by
@@ -380,24 +378,12 @@ private theorem idealRadical_eq_ufmRadical (q : Ideal (𝓞 F)) (hq : q ≠ ⊥)
       (s := UniqueFactorizationMonoid.primeFactors q) (J := id) hpair]
   rfl
 
-private theorem primeFactors_ufmRadical (q : Ideal (𝓞 F)) (hq : q ≠ ⊥) :
+theorem primeFactors_ufmRadical (q : Ideal (𝓞 F)) (hq : q ≠ ⊥) :
     UniqueFactorizationMonoid.primeFactors (UniqueFactorizationMonoid.radical q) =
       UniqueFactorizationMonoid.primeFactors q := by
-  have hR0 : UniqueFactorizationMonoid.radical q ≠ ⊥ :=
-    UniqueFactorizationMonoid.radical_ne_zero
-  have hEq : Ideal.radical q = UniqueFactorizationMonoid.radical q :=
-    idealRadical_eq_ufmRadical q hq
-  ext J
-  rw [UniqueFactorizationMonoid.primeFactors, Multiset.mem_toFinset,
-    Ideal.mem_normalizedFactors_iff hR0, UniqueFactorizationMonoid.primeFactors,
-    Multiset.mem_toFinset, Ideal.mem_normalizedFactors_iff hq]
-  constructor
-  · rintro ⟨hp, hle⟩
-    exact ⟨hp, (hEq ▸ Ideal.le_radical).trans hle⟩
-  · rintro ⟨hp, hle⟩
-    exact ⟨hp, hEq ▸ (Ideal.IsPrime.radical_le_iff hp).mpr hle⟩
+  simp
 
-private theorem pool_eq_divisors (c : Ideal (𝓞 F)) (hc0 : c ≠ ⊥) :
+theorem pool_eq_divisors (c : Ideal (𝓞 F)) (hc0 : c ≠ ⊥) :
     squarefreeBadPool c = idealDivisors c.radical := by
   rw [idealRadical_eq_ufmRadical c hc0]
   have hr0 : UniqueFactorizationMonoid.radical c ≠ ⊥ :=
@@ -497,14 +483,14 @@ def mainDifference (C : Context Q) : ℂ :=
   (T C 1 true - Tprime C 1 true) +
     ∑ B ∈ dyadicScales C, (T C B - Tprime C B)
 
-private theorem isRelPrime_of_sup_eq_top' {x y : Ideal (𝓞 F)} (h : x ⊔ y = ⊤) :
+theorem isRelPrime_of_sup_eq_top' {x y : Ideal (𝓞 F)} (h : x ⊔ y = ⊤) :
     IsRelPrime x y := by
   intro z hzx hzy
   rw [Ideal.isUnit_iff]
   exact le_antisymm le_top
     (h ▸ sup_le (Ideal.dvd_iff_le.mp hzx) (Ideal.dvd_iff_le.mp hzy))
 
-private theorem one_lt_idealSize_prime (p : Ideal (𝓞 F)) (hp : Prime p) :
+theorem one_lt_idealSize_prime (p : Ideal (𝓞 F)) (hp : Prime p) :
     1 < ((Sieve.MainBoundary.idealSize F) p : ℝ) := by
   have h0 : Ideal.absNorm p ≠ 0 := fun h => hp.ne_zero (Ideal.absNorm_eq_zero_iff.mp h)
   have h1 : Ideal.absNorm p ≠ 1 :=
@@ -513,7 +499,7 @@ private theorem one_lt_idealSize_prime (p : Ideal (𝓞 F)) (hp : Prime p) :
   have h2' : (1 : ℝ) < (Ideal.absNorm p : ℝ) := by exact_mod_cast h2
   simpa [Sieve.MainBoundary.idealSize] using h2'
 
-private theorem base_squarefree_isRelPrime (C : Context Q) :
+theorem base_squarefree_isRelPrime (C : Context Q) :
     ∀ h ∈ base C, Squarefree h ∧ IsRelPrime h C.d := by
   intro h hh
   have hh' := (Sieve.mem_idealAdmissibleFinset F (c * C.d) C.K h).mp hh
@@ -525,7 +511,7 @@ private theorem base_squarefree_isRelPrime (C : Context Q) :
   rw [hh'.2.1] at hz
   exact Ideal.isUnit_iff.mpr (le_antisymm le_top (Ideal.dvd_iff_le.mp hz))
 
-private theorem sup_c_eq_top_of_beta_ne_zero (C : Context Q)
+theorem sup_c_eq_top_of_beta_ne_zero (C : Context Q)
     (b : Ideal (𝓞 F)) (hb : beta C b ≠ 0) : b ⊔ c = ⊤ := by
   have hex : ∃ h ∈ base C, ∃ d ∈ Vendor.CutoffDifference.divisors C.d,
       ∃ e ∈ Vendor.CutoffDifference.divisors C.d, h * d * e = b := by
@@ -536,9 +522,7 @@ private theorem sup_c_eq_top_of_beta_ne_zero (C : Context Q)
     intro h hh
     apply Finset.sum_eq_zero
     intro d hd
-    apply Finset.sum_eq_zero
-    intro e he
-    exact if_neg (fun heq => hnone ⟨h, hh, d, hd, e, he, heq⟩)
+    simp_all
   obtain ⟨h, hh, d, hd, e, he, rfl⟩ := hex
   have hhd : h ⊔ (c * C.d) = ⊤ :=
     (Sieve.mem_idealAdmissibleFinset F (c * C.d) C.K h).mp hh |>.2.1
@@ -567,7 +551,7 @@ private lemma ideal_radical_eq (q : Ideal (𝓞 F)) (hq : q ≠ ⊥) :
   let P := (factors r).toFinset
   have heq : P.inf (fun p => p) = r := by
     have h := IsDedekindDomain.inf_prime_pow_eq_prod P (fun p => p) (fun _ => 1)
-      hp (by intro i hi j hj hij; exact hij)
+      hp (by simp)
     calc
       P.inf (fun p => p) = ∏ p ∈ P, p := by simpa only [pow_one] using h
       _ = r := hprod
@@ -581,7 +565,7 @@ private lemma ideal_radical_eq (q : Ideal (𝓞 F)) (hq : q ≠ ⊥) :
       rw [Finset.inf_insert]
       apply Ideal.IsRadical.inf
       · exact (Ideal.isPrime_of_prime (hpr p (by simp))).isRadical
-      · exact ih (by intro t ht; exact hpr t (by simp [ht]))
+      simp_all
   have hR : r.IsRadical := heq ▸ hgen P hp
   apply le_antisymm
   · exact (hR.radical_le_iff).mpr (Ideal.dvd_iff_le.mp radical_dvd_self)
@@ -634,7 +618,7 @@ theorem double_divisor_local_product (q : Ideal (𝓞 F)) (hq : q ≠ ⊥)
       ∏ p ∈ P, (1 - v p) := by
     rw [hdiv, hd, Finset.sum_image hi]
     rw [show (∏ p ∈ P, (1 - v p)) = ∏ p ∈ P, (1 + (-v p)) by
-      apply Finset.prod_congr rfl; intro p hp; ring]
+      rfl]
     rw [Finset.prod_one_add]
     apply Finset.sum_congr rfl
     intro S hS
@@ -650,8 +634,7 @@ theorem double_divisor_local_product (q : Ideal (𝓞 F)) (hq : q ≠ ⊥)
   rw [hsum1, hsum2, ← Finset.prod_mul_distrib]
   have hP : P = (normalizedFactors q).toFinset := by
     change (factors (UniqueFactorizationMonoid.radical q)).toFinset = _
-    rw [factors_eq_normalizedFactors]
-    exact primeFactors_radical
+    simp
   rw [hP]
   apply Finset.prod_congr rfl
   intro l hl
@@ -723,7 +706,6 @@ theorem pair_scalar_boundary (C : Context Q)
     (character C p hp) hχ (fixed_prime_product C p hp) C.K (by linarith)
   change DedekindZetaZeroFree.LargeSieve.Bilinear.MainBoundary.pairScalar C p hp = _
   rw [DedekindZetaZeroFree.LargeSieve.Bilinear.MainBoundary.pair_scalar_uncollected C hM hK p hp]
-  change C.kappa * (Real.sqrt C.M : ℂ) * C.mass * _ = _
   change _ = (sigma4Rho (c * (p.1 * p.2)) : ℂ) *
     ∑ b ∈ boundary C, (beta C b : ℂ) * C.primitive p hp b /
       (Real.sqrt (norm b) : ℂ) at hfinite
@@ -743,7 +725,7 @@ private theorem primitive_eq_pair_on_core (C : Context Q)
   change C.primitive p hp a = (Q.χ p.1) a * star ((Q.χ p.2) a)
   by_cases ha0 : a = ⊥
   · subst a
-    simp [RayOperations.map_bot]
+    simp
   have hupper : ∀ u, Squarefree u → u ⊔ c = ⊤ →
       a ⊔ u = ⊤ → a ⊔ Q.cond u = ⊤ := by
     intro u hu huc hau
@@ -820,12 +802,12 @@ private theorem cutoff_pair_boundary (C : Context Q) (hK : 1 ≤ C.K)
   have heq := primitive_eq_pair_on_core C p hp b hbc
   change C.primitive p hp b = χ b at heq
   have hn : ((Sieve.MainBoundary.idealSize F) b : ℝ) = norm b := by
-    simp [Sieve.MainBoundary.idealSize, norm]
+    rfl
   unfold Vendor.CutoffDifference.normalizedValue
   rw [← heq, hn]
   ring
 
-private theorem columns_eq (C : Context Q) :
+theorem columns_eq (C : Context Q) :
     C.columns = Sieve.MainBoundary.quotientColumns Q c C.d C.N C.g := by
   ext u
   simp only [Context.columns, Sieve.MainBoundary.quotientColumns, norm, Finset.mem_filter]
@@ -835,10 +817,9 @@ private theorem columns_eq (C : Context Q) :
     have hrel := (IsRelPrime.of_squarefree_mul hsdu).symm
     exact ⟨hu, Ideal.isUnit_iff.mp (hrel (Ideal.dvd_iff_le.mpr le_sup_left)
       (Ideal.dvd_iff_le.mpr le_sup_right)), hs, hg⟩
-  · rintro ⟨hu, _, hs, hg⟩
-    exact ⟨hu, hs, hg⟩
+  simp_all
 
-private theorem validPair_iff (C : Context Q) (u v : Ideal (𝓞 F))
+theorem validPair_iff (C : Context Q) (u v : Ideal (𝓞 F))
     (hu : u ∈ C.columns) (hv : v ∈ C.columns) :
     C.ValidPair (u, v) ↔ u ⊔ v = ⊤ ∧ u * v ≠ ⊤ := by
   constructor
@@ -859,11 +840,10 @@ private theorem validPair_iff (C : Context Q) (u v : Ideal (𝓞 F))
         (Ideal.dvd_iff_le.mpr le_sup_right)), hclass,
       (ClassTwists.cls_mul_eq_iff Q C.d u v C.hdc huc hvc hduc hdvc).mp hclass, hne⟩
 
-private theorem mainDifference_pairSum (C : Context Q) :
+theorem mainDifference_pairSum (C : Context Q) :
     mainDifference C = C.pairSum (fun p hp => C.coefficient p * pairScalar C p hp) := by
   unfold mainDifference T Tprime Context.pairSum pairScalar
-  simp only [← Finset.sum_sub_distrib, ← Finset.sum_add_distrib, Finset.mul_sum,
-    mul_add, mul_sub]
+  simp only [← Finset.sum_sub_distrib, Finset.mul_sum, mul_add]
   rw [Finset.sum_comm (s := dyadicScales C), ← Finset.sum_add_distrib]
   apply Finset.sum_congr rfl
   intro p hp
@@ -907,9 +887,3 @@ theorem bilinear_main_boundary_identity (C : Context Q)
   · have hcond : ¬ (u ⊔ v = ⊤ ∧ u * v ≠ ⊤) :=
       fun h => hp ((MainBoundary.validPair_iff C u v hu hv).mpr h)
     simp [hp, hcond]
-
-end DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms
-
-end
-
-end

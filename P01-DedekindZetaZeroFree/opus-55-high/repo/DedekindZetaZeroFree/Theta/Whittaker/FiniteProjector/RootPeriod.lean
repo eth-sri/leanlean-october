@@ -15,7 +15,7 @@ variable {F : Type} [Field F] [NumberField F]
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 variable (R : PrincipalMellin.ActualRecipe S η)
 
-private lemma circle_mul_star (z : Circle) : (z : ℂ) * star (z : ℂ) = 1 := by
+lemma circle_mul_star (z : Circle) : (z : ℂ) * star (z : ℂ) = 1 := by
   have hs : star (z : ℂ) = (↑(z⁻¹) : ℂ) := (Circle.coe_inv_eq_conj z).symm
   rw [hs, ← Circle.coe_mul, mul_inv_cancel, Circle.coe_one]
 

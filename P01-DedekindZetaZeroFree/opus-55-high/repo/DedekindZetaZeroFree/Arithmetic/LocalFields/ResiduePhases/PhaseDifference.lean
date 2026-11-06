@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Moments.Principal.EulerProducts.LocalSeriesDe
 
 @[expose] public section
 
-noncomputable section
 open scoped NumberField Classical
 open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.CRTRawLocalPhaseAlgebra
@@ -32,7 +31,3 @@ theorem phase_difference {K : Type*} [Field K]
   rw [hd', hv', pow_add]
   field_simp [hπ, hS, hU]
   linear_combination π ^ t * q * hc
-
-end DedekindZetaZeroFree.CRTRawLocalPhaseAlgebra
-
-end

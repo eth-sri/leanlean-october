@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # The cyclotomic character of the rational cyclotomic field
 
@@ -41,7 +35,7 @@ open ClassFormation
 
 /-- The actual rational cyclotomic field contains primitive roots of
 unity of every nonzero order. -/
-noncomputable instance rationalCyclotomicField_hasEnoughRootsOfUnity
+instance rationalCyclotomicField_hasEnoughRootsOfUnity
     (n : ℕ) [NeZero n] :
     HasEnoughRootsOfUnity rationalCyclotomicField n where
   prim :=
@@ -55,7 +49,7 @@ local instance (p : Nat.Primes) : Fact p.1.Prime :=
 
 /-- The product, over all rational primes, of mathlib's `p`-adic
 cyclotomic characters of `Gal(rationalCyclotomicField / ℚ)`. -/
-noncomputable def rationalCyclotomicCharacterPrimeProduct :
+def rationalCyclotomicCharacterPrimeProduct :
     (rationalCyclotomicField ≃ₐ[ℚ] rationalCyclotomicField) →ₜ*
       ((p : Nat.Primes) → ℤ_[p.1]ˣ) where
   toMonoidHom :=
@@ -138,10 +132,9 @@ theorem rationalCyclotomicCharacterPrimeProduct_toZModPow
       (σ.restrictNormal F) ζ =
         ζ ^ (IsCyclotomicExtension.Rat.galEquivZMod
           (p.1 ^ k) F (σ.restrictNormal F)).val.val :=
-    IsCyclotomicExtension.Rat.galEquivZMod_apply_of_pow_eq
-      (p.1 ^ k) F (σ.restrictNormal F) hζ.pow_eq_one
-  have hζmap : IsPrimitiveRoot t (p.1 ^ k) := by
-    exact hζ.map_of_injective
+    by simp
+  have hζmap : IsPrimitiveRoot t (p.1 ^ k) := 
+    hζ.map_of_injective
       (algebraMap F rationalCyclotomicField).injective
   change
     Units.map (PadicInt.toZModPow k).toMonoidHom
@@ -173,12 +166,8 @@ end PrimePowerCharacter
 
 /-- The rational cyclotomic character with its canonical profinite
 integer-unit target. -/
-noncomputable def rationalCyclotomicCharacter :
+def rationalCyclotomicCharacter :
     (rationalCyclotomicField ≃ₐ[ℚ] rationalCyclotomicField) →ₜ* ZHatˣ :=
   (ContinuousMonoidHom.toContinuousMonoidHom
     zHatUnitsContinuousMulEquivPrimeProduct.symm).comp
       rationalCyclotomicCharacterPrimeProduct
-
-end KummerTheory
-
-end

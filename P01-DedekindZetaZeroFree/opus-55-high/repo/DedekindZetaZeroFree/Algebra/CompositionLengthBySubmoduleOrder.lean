@@ -13,5 +13,3 @@ theorem length_le_of_strictMono_submodules
     Module.length R M ≤ Module.length S N := by
   rw [← WithBot.coe_le_coe, Module.coe_length, Module.coe_length]
   exact Order.krullDim_le_of_strictMono f hf
-
-end DedekindZetaZeroFree.KPExceptionalRaw.FiniteSource.ImagesIrreducibilitySteps.PlusLengthSteps

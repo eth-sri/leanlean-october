@@ -26,8 +26,6 @@ noncomputable section
 set_option maxHeartbeats 8000000
 set_option synthInstance.maxHeartbeats 200000
 set_option backward.isDefEq.respectTransparency false
-open scoped NumberField Classical TensorProduct
-open NumberField
 namespace DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 variable (M : FourierContinuation.SourceReconstruction.InducingData F ζ hζ)
@@ -48,8 +46,8 @@ variable (S : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F)))
  def tensorEvaluation : PiTensorProduct ℂ (Source F ζ hζ M S) →ₗ[ℂ]
     ProductFunctions F ζ hζ M S where
   toFun x g := PiTensorProduct.map (fun q => evaluation F ζ hζ M S q (g q)) x
-  map_add' x y := by funext g; exact map_add _ x y
-  map_smul' c x := by funext g; exact map_smul _ c x
+  map_add' x y := by funext g; simp
+  map_smul' c x := by funext g; simp
 
  def productCovariance : Submodule ℂ (ProductFunctions F ζ hζ M S) where
   carrier := { f | ∀ (b : ∀ q : S, (M q.val).borel.B) g,
@@ -57,9 +55,9 @@ variable (S : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F)))
       PiTensorProduct.map (fun q =>
         KPLocalPrincipalSeries.inducingAction (M q.val).borel
           (M q.val).polarization .plus 0 (b q)) (f g) }
-  zero_mem' := by intro b g; exact (map_zero _).symm
+  zero_mem' := by intro b g; rfl
   add_mem' := by intro f h hf hh b g; exact (congrArg₂ (· + ·) (hf b g) (hh b g)).trans (map_add _ _ _).symm
-  smul_mem' := by intro c f hf b g; exact (congrArg (c • ·) (hf b g)).trans (map_smul _ _ _).symm
+  smul_mem' := by intro c f hf b g; simp_all
 
  theorem tensorEvaluation_covariant
     (x : PiTensorProduct ℂ (Source F ζ hζ M S)) :
@@ -79,7 +77,7 @@ variable (S : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F)))
     rw [map_add]
     exact (productCovariance F ζ hζ M S).add_mem hx hy
 
-private theorem tensorEvaluation_smooth_pure
+theorem tensorEvaluation_smooth_pure
     (x : ∀ q : S, Source F ζ hζ M S q) :
     SmoothVector KPLocalPrincipalSeries.vectorRightTranslation
       (tensorEvaluation F ζ hζ M S (PiTensorProduct.tprod ℂ x)) := by
@@ -130,10 +128,4 @@ private theorem tensorEvaluation_smooth_pure
   · subst j
     simp only [Function.update_self, LinearMap.comp_apply, evaluation, Pi.mul_apply]
     rfl
-  · simp only [Function.update_of_ne hj, LinearMap.comp_apply, LinearMap.id_apply,
-      evaluation, Pi.mul_apply, mul_one]
-
-end DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation
-
-end
-end
+  simp_all

@@ -28,8 +28,7 @@ theorem sIntegerDiagonalSubgroup_exists_open_zero (F : Type*) [Field F] [NumberF
       ((continuous_apply v).comp continuous_snd))
   have hW0 : (0 : SLocalProduct F S) ∈ W := by
     refine ⟨h0, Set.mem_iInter.mpr fun v => ?_⟩
-    change (0 : v.1.adicCompletion F) ∈ v.1.adicCompletionIntegers F
-    exact zero_mem _
+    simp
   refine ⟨W, hW, hW0, Set.Subset.antisymm ?_ ?_⟩
   · rintro x ⟨hxW, hxL⟩
     obtain ⟨m, rfl⟩ := hxL
@@ -50,15 +49,8 @@ theorem sIntegerDiagonalSubgroup_exists_open_zero (F : Type*) [Field F] [NumberF
       rw [ha]
       exact hxW.1
     have ha0 := (hsep a).mp harch
-    have hm0 : (m : F) = 0 := by
-      rw [← ha, ha0]
-      exact map_zero _
-    have : m = 0 := Subtype.ext hm0
-    simp [this]
-  · intro x hx
-    have hx0 : x = 0 := Set.mem_singleton_iff.mp hx
-    subst x
-    exact ⟨hW0, (sIntegerDiagonalSubgroup F S).zero_mem⟩
+    simp_all
+  simp_all
 
 theorem sIntegerDiagonalSubgroup_discreteTopology (F : Type*) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (𝓞 F))) :
@@ -71,7 +63,7 @@ theorem sIntegerDiagonalSubgroup_discreteTopology (F : Type*) [Field F] [NumberF
     have he : (x : SLocalProduct F S) ∈ W ↔ (x : SLocalProduct F S) = 0 := by
       have := Set.ext_iff.mp hsep (x : SLocalProduct F S)
       simpa [hx] using this
-    simpa only [Set.mem_preimage, Set.mem_singleton_iff, Subtype.ext_iff, ZeroMemClass.coe_zero] using he
+    simp_all
   rw [← heq]
   exact hW.preimage continuous_subtype_val
 
@@ -80,7 +72,3 @@ theorem sIntegerDiagonalSubgroup_isClosed (F : Type*) [Field F] [NumberField F]
     IsClosed (sIntegerDiagonalSubgroup F S : Set (SLocalProduct F S)) := by
   letI := sIntegerDiagonalSubgroup_discreteTopology F S
   exact AddSubgroup.isClosed_of_discreteTopology
-
-end DedekindZetaZeroFree
-
-end

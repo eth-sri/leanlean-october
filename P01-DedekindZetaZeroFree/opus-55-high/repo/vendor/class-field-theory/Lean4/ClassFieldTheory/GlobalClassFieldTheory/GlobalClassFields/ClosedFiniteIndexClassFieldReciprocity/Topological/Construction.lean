@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Continuous closed finite-index class-field reciprocity
 
@@ -35,8 +32,7 @@ open Reciprocity
 /-- Canonical class-group commutativity supplies normality for the two quotients. -/
 theorem closedFiniteIndexTopologicalClassGroupIsMulCommutative
     (F : Type) [Field F] [NumberField F] :
-    IsMulCommutative (IdeleClassGroup F) :=
-  IsMulCommutative.of_comm (fun a b => mul_comm a b)
+    IsMulCommutative (IdeleClassGroup F) := by apply normIdeleClassGroup_isMulCommutative <;> assumption
 
 attribute [local instance] closedFiniteIndexTopologicalClassGroupIsMulCommutative
 
@@ -44,7 +40,7 @@ variable {K : Type} [Field K] [NumberField K]
 
 /-- Global reciprocity for the selected class field as a homeomorphic
 multiplicative equivalence `Gal(L / K) ≃ₜ* C_K / H`. -/
-noncomputable def
+def
     closedFiniteIndexClassFieldGaloisContinuousEquivNormQuotient
     (H : Subgroup (IdeleClassGroup K))
     (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
@@ -58,8 +54,3 @@ noncomputable def
       (QuotientGroup.quotientContinuousMulEquivOfEq
         (closedFiniteIndexClassField_ideleClassNorm_range
           (K := K) H hclosed))
-
-end GlobalClassFields
-end GlobalClassFieldTheory
-
-end

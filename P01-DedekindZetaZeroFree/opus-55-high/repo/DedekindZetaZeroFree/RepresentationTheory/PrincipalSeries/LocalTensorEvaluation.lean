@@ -99,8 +99,8 @@ def localValueMap (v : KPHilbert.Place F)
 def rationalEvaluation :
     ↥(KPGlobalResidualConstruction.smoothRationalFiber F A.zeta12 A.primitive_zeta12) →ₗ[ℂ] ℂ where
   toFun f := f.val.val 1
-  map_add' := by intros; rfl
-  map_smul' := by intros; rfl
+  map_add' := by simp
+  map_smul' := by simp
 
 abbrev Raw := KPAdelicCoverRestrictedProduct.RestrictedCover F A.zeta12 A.primitive_zeta12
 
@@ -113,8 +113,8 @@ def rawStageValue (s : RestrictedTensorSimple.Level (bad A P C)) (g : Raw A) :
 def rawStageInsertion (s : RestrictedTensorSimple.Level (bad A P C)) :
     PiTensorProduct ℂ (fun j : s.val => Plus A P C j.val) →ₗ[ℂ] (Raw A → ℂ) where
   toFun x g := rawStageValue A P C s g x
-  map_add' := by intro x y; funext g; exact map_add _ x y
-  map_smul' := by intro c x; funext g; exact map_smul _ c x
+  map_add' := by intro x y; funext g; simp
+  map_smul' := by intro c x; funext g; simp
 
 theorem rawStageInsertion_pure (s : RestrictedTensorSimple.Level (bad A P C))
     (x : ∀ j : s.val, Plus A P C j.val) (g : Raw A) :
@@ -152,10 +152,4 @@ theorem rawStageInsertion_arch_factorization (s : RestrictedTensorSimple.Level (
   rw [rawStageInsertion_pure]
   simp_rw [localValue_factor]
   rw [(PiTensorProduct.tprod ℂ).map_smul_univ]
-  simp only [map_smul, Submodule.coe_smul_of_tower, Pi.smul_apply, smul_eq_mul]
-
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-
-end DedekindZetaZeroFree.FourierContinuation.LiteralSource
-
-end
+  simp

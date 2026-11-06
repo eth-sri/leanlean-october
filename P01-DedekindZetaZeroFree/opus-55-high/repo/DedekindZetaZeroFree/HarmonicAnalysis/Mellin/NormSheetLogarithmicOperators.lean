@@ -30,6 +30,3 @@ def complexNormFlowRaw (A : SArithmeticData F) (w : InfinitePlace F)
 def logDerivativeRaw (A : SArithmeticData F) (w : InfinitePlace F) (k : ℕ)
     (f : SLocalProduct F A.Sf → ℂ) (x : SLocalProduct F A.Sf) : ℂ :=
   iteratedDeriv k (fun u : ℝ => f (complexNormFlowRaw A w u x)) 0
-
-end
-end DedekindZetaZeroFree.ProbeSheetFourierMellinBounds

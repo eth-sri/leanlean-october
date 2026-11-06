@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Abelian standard Lubin--Tate level fields
 
@@ -42,7 +38,7 @@ variable {K : Type u} [Field K]
 
 /-- The multiplicative map from finite unit parameters to automorphisms of
 the standard Lubin--Tate level field. -/
-noncomputable def standardLubinTateUnitParameterToGalHom
+def standardLubinTateUnitParameterToGalHom
     (F : LocalField.{u, v} K) {π : F.valuationSubring}
     (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
     (n : ℕ) :
@@ -65,7 +61,7 @@ theorem standardLubinTateUnitParameterToGalHom_apply
 
 /-- Finite unit parameters are multiplicatively equivalent to the full
 Galois group of the standard level field. -/
-noncomputable def standardLubinTateUnitParameterEquivGal
+def standardLubinTateUnitParameterEquivGal
     (F : LocalField.{u, v} K) {π : F.valuationSubring}
     (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
     (n : ℕ) :
@@ -114,7 +110,7 @@ theorem standardLubinTateUnitParameterEquivGal_inv_class_apply_gen
   have hclass :
       (standardLubinTateUnitParameterClass F n u)⁻¹ =
         standardLubinTateUnitParameterClass F n u⁻¹ :=
-    ((standardLubinTateUnitParameterClass F n).map_inv u).symm
+    by rfl
   rw [hclass, standardLubinTateUnitParameterEquivGal_apply]
   change
     standardLubinTateUnitParameterAlgEquiv F hπ n
@@ -162,7 +158,3 @@ instance standardLubinTateLevelField_isAbelianGalois
     standardLubinTateLevelField_isGalois (F := F) hπ n
   toIsMulCommutative :=
     standardLubinTateLevelField_isMulCommutative F hπ n
-
-end LubinTate
-
-end

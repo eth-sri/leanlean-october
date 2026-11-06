@@ -4,11 +4,10 @@ public import Mathlib
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel
 open MeasureTheory Set Filter Topology
 
-private theorem conjugation_saturation_compact
+theorem conjugation_saturation_compact
     {G K : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
     [TopologicalSpace K] [CompactSpace K] (π : K → G) (hπ : Continuous π)
     {f : G → ℝ} (hf : HasCompactSupport f) :
@@ -68,8 +67,7 @@ theorem conjugation_saturation_shrinks
         (show O ∈ 𝓝 (π k * 1 * (π k)⁻¹) by simpa using hO)
       exact ht)
   refine ⟨_, he, ?_⟩
-  intro k a ha
-  exact ha k (mem_univ k)
+  simp_all
 
 theorem averaged_integrable_parameter
     {G K : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
@@ -123,7 +121,3 @@ theorem averaged_mass
       hf.aestronglyMeasurable, hmap k]
   simp_rw [he]
   simp
-
-end DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel
-
-end

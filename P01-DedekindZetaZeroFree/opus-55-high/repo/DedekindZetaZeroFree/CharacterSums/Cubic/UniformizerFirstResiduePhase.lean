@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.ConductorShellSubstitut
 
 @[expose] public section
 
-noncomputable section
 
 namespace DedekindZetaZeroFree.KPTameTransposeLiteralShell
 open scoped NumberField Classical Topology
@@ -61,7 +60,3 @@ theorem isClosed_integerUnitShell :
 theorem measurable_integerUnitShell :
     MeasurableSet (KPTameGauss.integerUnitShell (LocalField F q)) :=
   (isClosed_integerUnitShell F q).measurableSet
-
-end DedekindZetaZeroFree.KPTameTransposeLiteralShell
-
-end

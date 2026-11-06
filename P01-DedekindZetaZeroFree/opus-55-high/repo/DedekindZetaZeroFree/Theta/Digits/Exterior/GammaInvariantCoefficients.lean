@@ -19,7 +19,7 @@ variable {F : Type} [Field F] [NumberField F]
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 variable (R : PrincipalMellin.ActualRecipe S η)
 
-private theorem value_right_fixed {G V : Type*} [Group G] [AddCommGroup V] [Module ℂ V]
+theorem value_right_fixed {G V : Type*} [Group G] [AddCommGroup V] [Module ℂ V]
     (ρ : Representation ℂ G V) (ell : V →ₗ[ℂ] ℂ) (r : V) (a b k : G)
     (h : a = b * k) (hk : ρ k r = r) : ell (ρ a r) = ell (ρ b r) := by
   rw [h, map_mul, Module.End.mul_apply, hk]

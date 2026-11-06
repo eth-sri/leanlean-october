@@ -82,8 +82,7 @@ include hρ hℓ hU hc
   intro j hj
   apply Subtype.ext
   funext g
-  change F.val (g * j) = F.val g
-  simp only [hF, map_mul, Module.End.mul_apply, hJ j hj]
+  simp_all
 
  theorem section_compact (s w : S) (W : CompactOpenLevel G) :
     HasCompactSupportModH (CompactInductionProjectivity.inducingSubgroup W)
@@ -157,8 +156,8 @@ noncomputable def coefficientEmbedding
             change ρ (u : G) v₀.val = v₀.val at hv
             simpa only [hv, beta] using
               CuspidalProjectiveRetractProof.form_invariant ρ hρ ℓ hℓ U hU hc (u : G) (ρ g s) v₀.val⟩,
-          by
-            exact CuspidalProjectiveRetractProof.section_smooth ρ hρ ℓ hℓ U hU hc W s v₀.val _
+          
+            CuspidalProjectiveRetractProof.section_smooth ρ hρ ℓ hℓ U hU hc W s v₀.val _
               (fun g => rfl)⟩,
         by exact CuspidalProjectiveRetractProof.section_compact ρ hρ ℓ hℓ U hU hc s v₀.val W⟩
       map_add' := by
@@ -182,7 +181,7 @@ noncomputable def coefficientEmbedding
     apply Subtype.ext; apply Subtype.ext; apply Subtype.ext
     funext g
     change beta ρ ℓ U (ρ g (ρ h s)) v₀.val = beta ρ ℓ U (ρ (g * h) s) v₀.val
-    rw [map_mul, Module.End.mul_apply]
+    simp
 
 @[simp] theorem coefficientEmbedding_apply (s : S) (g : G) :
     CompactInductionProjectivity.sectionValue W
@@ -242,8 +241,7 @@ theorem coefficientSquareSum_pos (hv₀ : v₀.val ≠ 0) :
   have hb : beta ρ ℓ U v₀.val v₀.val ≠ 0 := by
     intro hz
     change 0 < (beta ρ ℓ U v₀.val v₀.val).re at hp
-    rw [hz, Complex.zero_re] at hp
-    exact (lt_irrefl 0 hp)
+    simp_all
   let c₁ : CompactInductionProjectivity.Cosets W := Quotient.mk _ (1 : G)
   have he : beta ρ ℓ U (ρ c₁.out v₀.val) v₀.val = beta ρ ℓ U v₀.val v₀.val := by
     have hh := CompactInductionProjectivity.finiteSupportEquiv_apply W
@@ -251,16 +249,15 @@ theorem coefficientSquareSum_pos (hv₀ : v₀.val ≠ 0) :
     change beta ρ ℓ U (ρ c₁.out v₀.val) v₀.val =
       CompactInductionProjectivity.sectionValue W
         (coefficientEmbedding ρ hρ ℓ hℓ U hU hc W v₀ v₀.val) 1 at hh
-    simpa only [coefficientEmbedding_apply, map_one, Module.End.one_apply] using hh
+    simp_all
   unfold coefficientSquareSum
   apply Finset.sum_pos'
-  · intro c hc'; exact sq_nonneg _
+  · simp
   · refine ⟨c₁, ?_, ?_⟩
     · apply Finsupp.mem_support_iff.mpr
       change beta ρ ℓ U (ρ c₁.out v₀.val) v₀.val ≠ 0
       rwa [he]
-    · rw [he]
-      exact sq_pos_of_pos (norm_pos_iff.mpr hb)
+    simp_all
 
 theorem positive_scalar_composite
     [Nontrivial S]
@@ -344,7 +341,7 @@ theorem exists_explicit_retract [Nontrivial S]
     exists_smooth_dual_separating hcompactOpen ρ hρ hadmissible v hv
   have hℓ : ℓ ≠ 0 := by
     intro h
-    exact hℓv (by rw [h]; rfl)
+    simp_all
   have hBasis : ∀ J : OpenSubgroup G, ∃ U : CompactOpenLevel G,
       U.toOpenSubgroup ≤ J := by
     intro J
@@ -359,8 +356,7 @@ theorem exists_explicit_retract [Nontrivial S]
     coefficientEmbedding ρ hρ ℓ hℓ U hU hc W v₀,
     unnormalizedRetraction ρ W v₀, normalizedRetraction ρ W v₀ c,
     ?_, rfl, hscalar, rfl, ?_⟩
-  · intro s g
-    rfl
+  · simp
   · exact normalizedRetraction_comp ρ hρ ℓ hℓ U hU hc W v₀ c hcpos hscalar
 
 theorem lift_equivariant_surjection [Nontrivial S]
@@ -380,12 +376,8 @@ theorem lift_equivariant_surjection [Nontrivial S]
   obtain ⟨T', hT'⟩ := CompactInductionProjectivity.lift_equivariant_surjection W hcompactOpen
     σ τ hσ hτ q hq (f.comp r)
   refine ⟨T'.comp j, ?_⟩
-  calc q.comp (T'.comp j) = (q.comp T').comp j := by ext v; rfl
+  calc q.comp (T'.comp j) = (q.comp T').comp j := by rfl
     _ = (f.comp r).comp j := by rw [hT']
-    _ = f.comp (r.comp j) := by ext v; rfl
+    _ = f.comp (r.comp j) := by rfl
     _ = f.comp (Representation.IntertwiningMap.id ρ) := by rw [hrj]
-    _ = f := by ext v; rfl
-
-end DedekindZetaZeroFree.CuspidalProjectiveRetract
-
-end
+    _ = f := by rfl

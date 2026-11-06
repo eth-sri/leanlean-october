@@ -18,16 +18,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Local orders of finite-place norms
 
@@ -52,7 +42,7 @@ namespace FiniteIdeleGroup
 
 universe u v w
 
-private lemma withZeroMultiplicativeInt_le_exp_neg_one_of_lt_one
+lemma withZeroMultiplicativeInt_le_exp_neg_one_of_lt_one
     (γ : WithZero (Multiplicative ℤ)) (hγ : γ < 1) :
     γ ≤ WithZero.exp (-1 : ℤ) := by
   cases γ using WithZero.recZeroCoe with
@@ -73,7 +63,7 @@ private lemma withZeroMultiplicativeInt_le_exp_neg_one_of_lt_one
 
 /-- A surjective standard integer valuation gives the same normalized
 integer value as the intrinsic local-field valuation. -/
-private theorem normalizedValue_eq_withZeroLog_of_surjective
+theorem normalizedValue_eq_withZeroLog_of_surjective
     (F : Type w)
     [Field F] [ValuativeRel F] [TopologicalSpace F]
     [IsNonarchimedeanLocalField F]
@@ -95,8 +85,7 @@ private theorem normalizedValue_eq_withZeroLog_of_surjective
     exact WithZero.exp_ne_zero hπ.symm
   let ϖ : Fˣ := Units.mk0 π hπ0
   have hπlt : ν π < 1 := by
-    rw [hπ, ← WithZero.exp_zero, WithZero.exp_lt_exp]
-    omega
+    simp_all
   have hπIntrinsicLt : ν₀ π < 1 :=
     hEquiv.lt_one_iff_lt_one.mpr hπlt
   have hπIntrinsicMax :
@@ -132,8 +121,7 @@ private theorem normalizedValue_eq_withZeroLog_of_surjective
         have hneg :
             WithZero.exp (-1 : ℤ) <
               (1 : WithZero (Multiplicative ℤ)) := by
-          rw [← WithZero.exp_zero, WithZero.exp_lt_exp]
-          omega
+          simp
         have h := φ.symm.strictMono hneg
         simpa [γ, φ] using h
       have hγle := hπIntrinsicMax γ hγlt
@@ -180,7 +168,7 @@ private theorem normalizedValue_eq_withZeroLog_of_surjective
       _ = 1 := by
             simp
   have hyInvν : ν ((y⁻¹ : Fˣ) : F) = 1 := by
-    rw [Units.val_inv_eq_inv_val, map_inv₀, hyν, inv_one]
+    simp_all
   have hyMem : (y : F) ∈ 𝒪[F] := by
     change ν₀ (y : F) ≤ 1
     exact hEquiv.le_one_iff_le_one.mpr (by rw [hyν])
@@ -200,7 +188,6 @@ private theorem normalizedValue_eq_withZeroLog_of_surjective
       LocalFieldTheory.IsNonarchimedeanLocalField.integerUnitsToFieldUnits
           F yInteger =
         y := by
-    apply Units.ext
     rfl
   have hyValue :
       LocalFieldTheory.IsNonarchimedeanLocalField.v F
@@ -222,12 +209,11 @@ private theorem normalizedValue_eq_withZeroLog_of_surjective
     hyValue,
     LocalFieldTheory.IsNonarchimedeanLocalField.v_zpow,
     hϖValue] at hdecompValue
-  dsimp [n] at hdecompValue ⊢
-  linarith
+  omega
 
 /-- Identity on the underlying field gives the equivalence between the
 intrinsic valuation ring and the distinguished valued-field integer ring. -/
- noncomputable def intrinsicIntegerEquivValuedInteger
+ def intrinsicIntegerEquivValuedInteger
     (F : Type w)
     [Field F] [ValuativeRel F]
     [Valued F (WithZero (Multiplicative ℤ))]
@@ -246,7 +232,7 @@ intrinsic valuation ring and the distinguished valued-field integer ring. -/
 
 /-- The residue field for the intrinsic valuation is the residue field of
 the distinguished `ℤᵐ⁰`-valued completion valuation. -/
- noncomputable def intrinsicResidueFieldEquivValuedResidueField
+ def intrinsicResidueFieldEquivValuedResidueField
     (F : Type w)
     [Field F] [ValuativeRel F]
     [Valued F (WithZero (Multiplicative ℤ))]
@@ -256,8 +242,7 @@ the distinguished `ℤᵐ⁰`-valued completion valuation. -/
   IsLocalRing.ResidueField.mapEquiv
     (intrinsicIntegerEquivValuedInteger F)
 
-
-private theorem absNorm_eq_card_intrinsicAdicResidueField
+theorem absNorm_eq_card_intrinsicAdicResidueField
     (K : Type u) [Field K] [NumberField K]
     (v : HeightOneSpectrum (𝓞 K))
     [ValuativeRel (v.adicCompletion K)]
@@ -342,22 +327,14 @@ theorem localOrder_normUnits
     refine ⟨⟨π, ?_, ?_⟩⟩
     · rw [hπ]
       simp
-    · rw [hπ]
-      change
-        WithZero.exp (-1 : ℤ) ≠
-          WithZero.exp (0 : ℤ)
-      simp
+    simp_all
   let : νE.IsNontrivial := by
     obtain ⟨π, hπ⟩ :=
       hνE (WithZero.exp (-1 : ℤ))
     refine ⟨⟨π, ?_, ?_⟩⟩
     · rw [hπ]
       simp
-    · rw [hπ]
-      change
-        WithZero.exp (-1 : ℤ) ≠
-          WithZero.exp (0 : ℤ)
-      simp
+    simp_all
   let : ValuativeRel.IsNontrivial F :=
     (ValuativeRel.isNontrivial_iff_isNontrivial νF).2
       inferInstance
@@ -456,18 +433,4 @@ theorem localOrder_normUnits
           (LocalFieldTheory.normUnits F E x : F)) =
       (W.1.asIdeal.inertiaDeg (𝓞 K) : ℤ) *
         -WithZero.log (νE (x : E))
-  calc
-    -WithZero.log
-          (νF
-            (LocalFieldTheory.normUnits F E x : F)) =
-        -((W.1.asIdeal.inertiaDeg (𝓞 K) : ℤ) *
-          WithZero.log (νE (x : E))) := by
-            rw [hNormValue]
-    _ =
-        (W.1.asIdeal.inertiaDeg (𝓞 K) : ℤ) *
-          -WithZero.log (νE (x : E)) := by
-            ring
-
-end FiniteIdeleGroup
-
-end
+  simp_all

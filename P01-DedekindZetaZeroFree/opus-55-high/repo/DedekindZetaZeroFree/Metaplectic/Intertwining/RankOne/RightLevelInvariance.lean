@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Metaplectic.Intertwining.RankOne.ScalarNumera
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.KPRankOneShellRepair
 open scoped NumberField Valued
 open NumberField IsDedekindDomain MeasureTheory ValuativeRel
@@ -66,7 +65,3 @@ theorem actual_scalar_numerator_right_level
   have h2 := Classical.choose_spec (actual_scalar_numerator_coordinate F ζ hζ q S P J hJ μ hμ π hπ ε φ k h) s hs
   rw [actual_standard_integral_right_level F ζ hζ q S P J hJ ε μ s φ j k k' hk h] at h1
   exact h1.symm.trans h2
-
-end DedekindZetaZeroFree.KPRankOneShellRepair
-
-end

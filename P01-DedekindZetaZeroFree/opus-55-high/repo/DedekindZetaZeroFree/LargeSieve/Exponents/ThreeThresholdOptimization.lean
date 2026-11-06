@@ -6,13 +6,13 @@ public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 
 namespace DedekindZetaZeroFree.LargeSieve.Sieve
 
-private lemma key_sqrt_le (A b P₁ P₂ : ℝ) (hA : 0 ≤ A) (hb : 0 ≤ b)
+lemma key_sqrt_le (A b P₁ P₂ : ℝ) (hA : 0 ≤ A) (hb : 0 ≤ b)
     (hP₁ : 1 ≤ P₁) (hP₂ : 1 ≤ P₂) :
     Real.sqrt ((2*A + b*P₁) * (2*A + b*P₂)) ≤ 2*A + b*(P₁*P₂) := by
   have hP₁0 : 0 ≤ P₁ := le_trans zero_le_one hP₁
   have hP₂0 : 0 ≤ P₂ := le_trans zero_le_one hP₂
   have hZ : 0 ≤ 2*A + b*(P₁*P₂) := by
-    have := mul_nonneg hb (mul_nonneg hP₁0 hP₂0); linarith
+    positivity
   rw [Real.sqrt_le_left hZ]
   have hsum : P₁ + P₂ ≤ 2*(P₁*P₂) := by
     nlinarith [mul_nonneg (sub_nonneg.mpr hP₁) (sub_nonneg.mpr hP₂)]
@@ -55,8 +55,7 @@ private lemma envelope (A b P₁ P₂ U₁ U₂ L : ℝ)
         = L*Real.sqrt ((2*A/P₁+b)*(2*A/P₂+b)) := by
       rw [show (L*(2*A/P₁+b))*(L*(2*A/P₂+b)) = L*L*((2*A/P₁+b)*(2*A/P₂+b)) by ring,
           Real.sqrt_mul (mul_nonneg hL hL), Real.sqrt_mul_self hL]
-    rw [heq] at hs
-    exact hs
+    simp_all
   have hsplit : Real.sqrt ((2*A/P₁+b)*(2*A/P₂+b))
       = Real.sqrt ((2*A+b*P₁)*(2*A+b*P₂))/Real.sqrt (P₁*P₂) := by
     have heq : (2*A/P₁+b)*(2*A/P₂+b) = (2*A+b*P₁)*(2*A+b*P₂)/(P₁*P₂) := by
@@ -71,14 +70,14 @@ private lemma envelope (A b P₁ P₂ U₁ U₂ L : ℝ)
     _ ≤ L*((2*A + b*(P₁*P₂))/Real.sqrt (P₁*P₂)) := mul_le_mul_of_nonneg_left hfin hL
     _ = L*(2*A + b*(P₁*P₂))/Real.sqrt (P₁*P₂) := by rw [mul_div_assoc]
 
-private lemma sqrt_div_mul_sqrt (M B : ℝ) (hM : 0 < M) (hB : 0 < B) :
+lemma sqrt_div_mul_sqrt (M B : ℝ) (hM : 0 < M) (hB : 0 < B) :
     Real.sqrt (M/B) * Real.sqrt (B*M) = M := by
   have h1 : Real.sqrt (M/B) * Real.sqrt (B*M) = Real.sqrt ((M/B)*(B*M)) :=
     (Real.sqrt_mul (div_nonneg hM.le hB.le) (B*M)).symm
   have h2 : (M/B)*(B*M) = M*M := by field_simp <;> ring
   rw [h1, h2, Real.sqrt_mul_self hM.le]
 
-private lemma rpow_mul_sqrt_div (M B α : ℝ) (hM : 0 < M) (hB : 0 < B) :
+lemma rpow_mul_sqrt_div (M B α : ℝ) (hM : 0 < M) (hB : 0 < B) :
     B^α * Real.sqrt (M/B) = Real.sqrt M * B^(α - 1/2) := by
   have h1 : Real.sqrt (M/B) = Real.sqrt M / Real.sqrt B := Real.sqrt_div hM.le B
   rw [h1]
@@ -86,10 +85,10 @@ private lemma rpow_mul_sqrt_div (M B α : ℝ) (hM : 0 < M) (hB : 0 < B) :
   rw [Real.rpow_sub hB, mul_div_assoc', mul_div_assoc']
   ring
 
-private lemma mul_rpow_div_sqrt (M B α : ℝ) (hM : 0 < M) (hB : 0 < B) :
+lemma mul_rpow_div_sqrt (M B α : ℝ) (hM : 0 < M) (hB : 0 < B) :
     M * B^α / Real.sqrt (B*M) = Real.sqrt M * B^(α - 1/2) := by
   have h := sqrt_div_mul_sqrt M B hM hB
-  have hne : Real.sqrt (B*M) ≠ 0 := ne_of_gt (Real.sqrt_pos.mpr (mul_pos hB hM))
+  have hne : Real.sqrt (B*M) ≠ 0 := by positivity
   have hstep : (Real.sqrt (M/B) * Real.sqrt (B*M)) * B^α / Real.sqrt (B*M)
       = Real.sqrt (M/B) * B^α := by
     rw [mul_assoc, mul_div_assoc, mul_div_cancel_left₀ (B^α) hne]
@@ -245,5 +244,3 @@ theorem bilinear_rectangle_three_thresholds
     exact mul_le_mul_of_nonneg_left hfin hL
   · intro t k ht hk0 hk hthr
     exact le_trans (mul_le_mul_of_nonneg_right hk (Real.sqrt_nonneg _)) (hiii t ht hthr)
-
-end DedekindZetaZeroFree.LargeSieve.Sieve

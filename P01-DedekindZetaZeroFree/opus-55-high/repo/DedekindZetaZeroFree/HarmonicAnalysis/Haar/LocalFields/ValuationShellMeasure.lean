@@ -21,7 +21,3 @@ theorem actualAbs_units (v : (LocalField F q)ˣ) :
   simp only [localAbs, KPCubicHaar.abs, if_neg v.ne_zero]
   rw [Real.rpow_intCast]
   rfl
-
-end DedekindZetaZeroFree.KPRankOneShellRepair
-
-end

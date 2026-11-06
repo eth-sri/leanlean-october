@@ -15,5 +15,3 @@ theorem formalAdjoint_gradient_closable
   have hle : D ≤ δ.adjoint := hformal.symm.le_adjoint hδ
   have hcl : D.IsClosable := (LinearPMap.adjoint_isClosed hδ).isClosable.leIsClosable hle
   exact ⟨hle, hcl, hcl.closure_isClosed⟩
-
-end DedekindZetaZeroFree

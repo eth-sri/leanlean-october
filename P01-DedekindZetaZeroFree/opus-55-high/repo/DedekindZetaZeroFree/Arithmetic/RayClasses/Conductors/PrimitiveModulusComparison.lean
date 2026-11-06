@@ -20,8 +20,7 @@ theorem rayCharacter_primitive_modulus_le {m f q : Ideal (𝓞 F)}
   by_contra hfm
 
   have hlt : m < m ⊔ f := by
-    rw [lt_iff_le_not_ge]
-    exact ⟨le_sup_left, fun hge => hfm (le_trans le_sup_right hge)⟩
+    simp_all
 
   obtain ⟨α, hα0, hα1, hαpos, hαcop, hηα⟩ := hη (m ⊔ f) hlt
 
@@ -88,6 +87,4 @@ theorem rayCharacter_primitive_modulus_le {m f q : Ideal (𝓞 F)}
   have hspanb_ne : Ideal.span {b} ≠ ⊥ := fun hc => hb0 (Ideal.span_singleton_eq_bot.mp hc)
   have hηb : η (Ideal.span {b}) = θ (Ideal.span {b}) := h _ hspanb_ne hbcop
   have hθb : θ (Ideal.span {b}) = 1 := θ.map_span' b hb0 hb_1 hbpos
-  exact hηα (hres.trans (hηb.trans hθb))
-
-end DedekindZetaZeroFree.LargeSieve
+  simp_all

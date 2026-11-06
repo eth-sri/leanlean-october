@@ -82,9 +82,9 @@ private theorem phase_eq (R : Subring K) (e : AddChar K ℂ)
   have hx : x = y + (r : K) := by rw [← hr]; ring
   rw [hx, e.map_add_eq_mul, he r, mul_one]
 
-private theorem residue_difference (R : Subring K) (a x y : R)
-    (h : residueMap R a x = residueMap R a y) : ∃ r : R, x - y = a * r := by
-  exact Ideal.mem_span_singleton.mp (Ideal.Quotient.eq.mp h)
+theorem residue_difference (R : Subring K) (a x y : R)
+    (h : residueMap R a x = residueMap R a y) : ∃ r : R, x - y = a * r := 
+  Ideal.mem_span_singleton.mp (Ideal.Quotient.eq.mp h)
 
 theorem linear_phase_eq (R : Subring K) (s : R) (hs : s ≠ 0)
     (e : AddChar K ℂ) (he : IsTrivialOn R e) (x y k : R)
@@ -158,7 +158,7 @@ def residueDecomposition (R : Subring K) (s A : R)
     Residue R A × Residue R s → Residue R (s * A) :=
   fun p => residueMap R (s * A) (vA.val p.1 + A * ds.val p.2)
 
-private theorem residueDecomposition_bijective (R : Subring K) (s A : R)
+theorem residueDecomposition_bijective (R : Subring K) (s A : R)
     (hA : A ≠ 0) (ds : ResidueLifts R s) (vA : ResidueLifts R A) :
     Function.Bijective (residueDecomposition R s A ds vA) := by
   constructor
@@ -207,7 +207,7 @@ def residueAddChar (R : Subring K) (s k : R) (hs : s ≠ 0)
       (by simp [ds.property])]
     rw [Subring.coe_add, mul_add, add_div, e.map_add_eq_mul]
 
-private theorem residue_orthogonality (R : Subring K) (s k : R) (hs : s ≠ 0)
+theorem residue_orthogonality (R : Subring K) (s k : R) (hs : s ≠ 0)
     [Fintype (Residue R s)] (e : AddChar K ℂ) (he : IsTrivialOn R e)
     (hp : IsPrimitiveAt R s e) (ds : ResidueLifts R s) :
     (∑ j : Residue R s, e ((k : K) * (ds.val j : K) / (s : K))) =
@@ -375,7 +375,7 @@ theorem exact_finite_transform (R : Subring K) (s A h : R)
   field_simp
   <;> ring
 
-private theorem char_norm_le_one {T : Type*} [CommRing T] [Fintype T]
+theorem char_norm_le_one {T : Type*} [CommRing T] [Fintype T]
     (χ : MulChar T ℂ) (x : T) : ‖χ x‖ ≤ 1 := by
   by_cases hx : IsUnit x
   · obtain ⟨u, rfl⟩ := hx
@@ -441,8 +441,7 @@ private theorem finiteCoefficient_unit_invariant (R : Subring K) (s A h : R)
     change (cs : Residue R s) * residueMap R s h =
       residueMap R s A * ((cs : Residue R s) * d) ↔ _
     rw [mul_left_comm]
-    simpa only [Units.mulLeft_apply] using
-      cs.mulLeft.injective.eq_iff (a := residueMap R s h) (b := residueMap R s A * d)
+    simp
   by_cases hd : residueMap R s h = residueMap R s A * d
   · rw [if_pos hd, if_pos (hcond.mpr hd)]
     simp only [Units.mulLeft_apply]
@@ -477,9 +476,9 @@ private theorem finiteCoefficient_unit_invariant (R : Subring K) (s A h : R)
               (((h : K) - (A : K) * ((canonicalLifts R s).val d : K)) *
                 ((canonicalLifts R A).val v : K)) := by ring
           _ = _ := by rw [hu, one_mul]
-  · rw [if_neg hd, if_neg (fun hn => hd (hcond.mp hn))]
+  simp_all
 
-private theorem sixth_unit_character {T : Type*} [CommRing T]
+theorem sixth_unit_character {T : Type*} [CommRing T]
     (χ : MulChar T ℂ) (hχ : χ ^ 6 = 1) (u : Tˣ) : χ ((u ^ 6 : Tˣ) : T) = 1 := by
   rw [Units.val_pow_eq_pow_val, map_pow, ← χ.pow_apply_coe 6 u, hχ,
     MulChar.one_apply_coe]
@@ -494,15 +493,7 @@ theorem finiteCoefficient_sixth_unit_invariant (R : Subring K) (s A h : R)
       finiteCoefficient R s A h χs χA e := by
   apply finiteCoefficient_unit_invariant R s A h hs hA χs χA e he (u ^ 6)
   · have H := sixth_unit_character χs hχs (Units.map (residueMap R s).toMonoidHom u)
-    rw [Units.val_pow_eq_pow_val, map_pow] at H ⊢
-    rw [map_pow]
-    exact H
+    simp_all
   · have H := sixth_unit_character χA hχA (Units.map (residueMap R A).toMonoidHom u⁻¹)
     rw [← inv_pow, Units.val_pow_eq_pow_val, map_pow]
-    rw [Units.val_pow_eq_pow_val, map_pow] at H
-    rw [map_pow]
-    exact H
-
-end
-
-end DedekindZetaZeroFree.FiniteTransform
+    simp_all

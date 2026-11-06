@@ -4,14 +4,13 @@ public import DedekindZetaZeroFree.Eisenstein.Induction.HolomorphicSectionsAndRe
 
 @[expose] public section
 
-noncomputable section
 open scoped Classical NumberField Topology BigOperators
 namespace DedekindZetaZeroFree.KPActualReflectionData.CanonicalStageCircle
 open KPGlobalEisensteinData
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1200000
 
-private theorem seminorm_sum_bound {V K : Type*} [AddCommGroup V] [Module ℂ V]
+theorem seminorm_sum_bound {V K : Type*} [AddCommGroup V] [Module ℂ V]
     (p : Seminorm ℂ V) (I : Finset K) (u : K → V) : p (∑ k ∈ I, u k) ≤ ∑ k ∈ I, p (u k) := by
   induction I using Finset.induction_on with
   | empty => simp
@@ -27,7 +26,7 @@ private theorem seminorm_sum_bound {V K : Type*} [AddCommGroup V] [Module ℂ V]
       (fun z => ∑ k ∈ I, c k • f k z) := by
   intro i r hr hrρ ε hε
   let B : ℝ := 1 + ∑ k ∈ I, ‖c k‖
-  have hB : 0 < B := by dsimp [B]; positivity
+  have hB : 0 < B := by positivity
   have he : 0 < ε / B := div_pos hε hB
   choose N hN using (fun k : {k // k ∈ I} => h k.val k.property i r hr hrρ (ε / B) he)
   refine ⟨I.sup (fun k => if hk : k ∈ I then N ⟨k,hk⟩ else 0), ?_⟩
@@ -61,7 +60,3 @@ private theorem seminorm_sum_bound {V K : Type*} [AddCommGroup V] [Module ℂ V]
   have hmul := mul_lt_mul_of_pos_right hb he
   have hc : B * (ε / B) = ε := by field_simp
   exact hmul.trans_eq hc
-
-end DedekindZetaZeroFree.KPActualReflectionData.CanonicalStageCircle
-
-end

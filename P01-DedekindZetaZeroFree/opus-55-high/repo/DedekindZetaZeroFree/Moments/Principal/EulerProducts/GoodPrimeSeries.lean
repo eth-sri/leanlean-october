@@ -8,18 +8,16 @@ public import DedekindZetaZeroFree.CharacterSums.Gauss.Sextic.InversePowerProduc
 
 open scoped NumberField Classical
 
-noncomputable section
 namespace DedekindZetaZeroFree.LocalFiniteSums
-set_option autoImplicit false
 
 variable {F : Type} [Field F] [NumberField F]
 variable {A : SArithmeticData F} {σ : F →+* ℂ}
 variable {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
 
-private lemma good_series_Q_gt_one (p : ExteriorPrime A) : 1 < Q p := by
+lemma good_series_Q_gt_one (p : ExteriorPrime A) : 1 < Q p := by
   change 1 < (Ideal.absNorm p.val.asIdeal : ℝ)
   exact_mod_cast NumberField.HeightOneSpectrum.one_lt_absNorm p.val
-private lemma good_series_Ctk_bound (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
+lemma good_series_Ctk_bound (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
     (t k J : ℕ) : ‖Ctk C p t k J‖ ≤ Q p ^ (t+k) := by
   have hQ := good_series_Q_gt_one p
   have hQ0 : 0 < Q p := lt_trans zero_lt_one hQ
@@ -40,12 +38,12 @@ private lemma good_series_Ctk_bound (C : A.GeneralArithmeticContext σ η hS) (p
     · rw [Ctk_eq_zero_of_two_le C p (t+1) (k+2) J (by omega) (by omega)]
       simp only [norm_zero]
       positivity
-private lemma good_series_vartheta_norm (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A) : ‖vartheta C p‖ = 1 := by
-  exact Circle.norm_coe _
-private lemma good_series_qPower_norm (p : ExteriorPrime A) (s : ℂ) :
+lemma good_series_vartheta_norm (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A) : ‖vartheta C p‖ = 1 := 
+  Circle.norm_coe _
+lemma good_series_qPower_norm (p : ExteriorPrime A) (s : ℂ) :
     ‖qPower p s‖ = Real.exp (s.re * Real.log (Q p)) := by
   simp [qPower, Complex.norm_exp]
-private lemma good_series_term_bound (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
+lemma good_series_term_bound (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
     (j : Fin 6) (θ : {θ : ℂ // ‖θ‖ = 1}) (e : Fin 2) (l k m : ℕ) (ξ w z : ℂ) :
     ‖seriesTerm C p j θ e l k m ξ w z‖ ≤
       (‖gammaTwo C p‖ * Real.exp ((1/2 - ξ.re) * Real.log (Q p))) ^ e.val *
@@ -70,7 +68,6 @@ private lemma good_series_term_bound (C : A.GeneralArithmeticContext σ η hS) (
       simp only [← Real.exp_nat_mul, mul_assoc, ← Real.exp_add]
       congr 2
       simp
-      push_cast
       ring
 
 theorem good_euler_series_summable (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
@@ -82,8 +79,8 @@ theorem good_euler_series_summable (C : A.GeneralArithmeticContext σ η hS) (p 
   let b := Real.exp ((2 - 3*ξ.re) * Real.log (Q p))
   let c := Real.exp ((1-w.re) * Real.log (Q p))
   let d := Real.exp ((-6*z.re) * Real.log (Q p))
-  have ha : 0 ≤ a := by dsimp [a]; positivity
-  have hb : 0 ≤ b := (Real.exp_pos _).le
+  have ha : 0 ≤ a := by positivity
+  have hb : 0 ≤ b := by positivity
   have hc : 0 ≤ c := (Real.exp_pos _).le
   have hd : 0 ≤ d := (Real.exp_pos _).le
   have hlog : 0 < Real.log (Q p) := Real.log_pos (good_series_Q_gt_one p)
@@ -101,8 +98,8 @@ theorem good_euler_series_summable (C : A.GeneralArithmeticContext σ η hS) (p 
     exact mul_neg_of_neg_of_pos (by linarith) hlog
   have sa : Summable (fun e : Fin 2 => a^e.val) := (hasSum_fintype _).summable
   have scd := sc.mul_of_nonneg sd (fun _ => pow_nonneg hc _) (fun _ => pow_nonneg hd _)
-  have sbcd := sb.mul_of_nonneg scd (fun _ => pow_nonneg hb _) (by intro i; exact mul_nonneg (pow_nonneg hc _) (pow_nonneg hd _))
-  have sall := sa.mul_of_nonneg sbcd (fun _ => pow_nonneg ha _) (by intro i; exact mul_nonneg (pow_nonneg hb _) (mul_nonneg (pow_nonneg hc _) (pow_nonneg hd _)))
+  have sbcd := sb.mul_of_nonneg scd (fun _ => pow_nonneg hb _) (by intro i; positivity)
+  have sall := sa.mul_of_nonneg sbcd (fun _ => pow_nonneg ha _) (by intro i; positivity)
   apply Summable.of_nonneg_of_le (fun _ => norm_nonneg _) (fun i => ?_) sall
   simpa only [a, b, c, d, mul_assoc] using
     good_series_term_bound C p j θ i.1 i.2.1 i.2.2.1 i.2.2.2 ξ w z
@@ -121,36 +118,36 @@ theorem good_euler_geometric_shell_sum (V W D E q : ℂ) (hE : ‖E‖ < 1) :
     simp only [pow_succ, tsum_mul_right, tsum_geometric_of_norm_lt_one hE, div_eq_mul_inv]
     ring
   rw [hp, tsum_geometric_of_norm_lt_one hE]
-  simp only [div_eq_mul_inv]
+  rfl
 
 open CanonicalLocalGaussTable CanonicalGaussInversePower
 
-private lemma good_strict_tau_period (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
+lemma good_strict_tau_period (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
     (a b : ℤ) (h : a % 6 = b % 6) : tau C p a = tau C p b := by
   unfold tau
   rw [T_eq_finiteField, T_eq_finiteField]
   simp only [SArithmeticData.sexticExponent, h]
-private lemma good_strict_shell_six_kzero (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
+lemma good_strict_shell_six_kzero (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
     (d m : ℕ) (hd : 0 < d) :
     Ctk C p (6*d) 0 (6*m) =
       if d ≤ m then (Q p : ℂ)^(6*d-1)*((Q p : ℂ)-1) else 0 := by
   rw [Ctk_pos_zero C p _ _ (by omega), T_generator_power]
-  have hdvd : (6 : ℤ) ∣ (6*d : ℕ) := by exact ⟨(d : ℤ), by push_cast; ring⟩
+  have hdvd : (6 : ℤ) ∣ (6*d : ℕ) := by simp
   simp only [hdvd, if_true]
   have hle : 6*d-1 ≤ 6*m ↔ d ≤ m := by omega
   by_cases hdm : d ≤ m
   · have hne : 6*m-(6*d-1) ≠ 0 := by omega
-    simp [hle, hdm, hne]
+    simp_all
   · simp [hle, hdm]
-private lemma good_strict_shell_six_kone (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
+lemma good_strict_shell_six_kone (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
     (d m : ℕ) (hd : 0 < d) :
     Ctk C p (6*d) 1 (6*m) =
       if d = m then (Q p : ℂ)^(6*d) else 0 := by
   rw [Ctk_one C p _ _ (by omega), T_generator_power]
   have hndvd : ¬ (6 : ℤ) ∣ (6*d : ℕ) - 1 := by
-    rw [Int.dvd_iff_emod_eq_zero]; push_cast; omega
+    omega
   have htau : tau C p ((6*d : ℕ)-1) = tau C p 5 := by
-    apply good_strict_tau_period; push_cast; omega
+    apply good_strict_tau_period; simp
   simp only [hndvd, if_false, htau]
   by_cases hdm : d = m
   · subst m
@@ -159,51 +156,51 @@ private lemma good_strict_shell_six_kone (C : A.GeneralArithmeticContext σ η h
     congr 1; omega
   · by_cases hle : 6*d ≤ 6*m
     · have hne : 6*m-6*d ≠ 0 := by omega
-      simp [hdm, hle, hne]
+      simp_all
     · simp [hdm, hle]
-private lemma good_strict_shell_one_kzero (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
+lemma good_strict_shell_one_kzero (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
     (d m : ℕ) :
     Ctk C p (6*d+1) 0 (6*m) =
       if d = m then (Q p : ℂ)^(6*d)*tau C p 1 else 0 := by
   rw [Ctk_pos_zero C p _ _ (by omega), T_generator_power]
   have hndvd : ¬ (6 : ℤ) ∣ (6*d+1 : ℕ) := by
-    rw [Int.dvd_iff_emod_eq_zero]; push_cast; omega
+    simp
   have htau : tau C p (6*d+1 : ℕ) = tau C p 1 := by
-    apply good_strict_tau_period; push_cast; omega
+    apply good_strict_tau_period; simp
   simp only [Nat.add_sub_cancel, hndvd, if_false, htau]
   by_cases hdm : d = m
   · subst m; simp
   · by_cases hle : 6*d ≤ 6*m
     · have hne : 6*m-6*d ≠ 0 := by omega
-      simp [hdm, hle, hne]
+      simp_all
     · simp [hdm, hle]
-private lemma good_strict_shell_one_kone (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
+lemma good_strict_shell_one_kone (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
     (d m : ℕ) :
     Ctk C p (6*d+1) 1 (6*m) =
       if d < m then tau C p 1 * (Q p : ℂ)^(6*d)*((Q p : ℂ)-1) else 0 := by
   rw [Ctk_one C p _ _ (by omega), T_generator_power]
   have hdvd : (6 : ℤ) ∣ (6*d+1 : ℕ)-1 := by
-    exact ⟨(d : ℤ), by push_cast; ring⟩
+    simp
   have hle : 6*d+1 ≤ 6*m ↔ d < m := by omega
   simp only [Nat.add_sub_cancel, hdvd, if_true, hle]
   by_cases hdm : d < m
   · have hne : 6*m-(6*d+1) ≠ 0 := by omega
     simp [hdm, hne]
   · simp [hdm]
-private lemma good_strict_shell_odd_zero (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
+lemma good_strict_shell_odd_zero (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
     (e : Fin 2) (d k m : ℕ) : Ctk C p (e.val+3*(2*d+1)) k (6*m) = 0 := by
   have ht : 0 < e.val+3*(2*d+1) := by omega
   have hndvd : ¬ (6 : ℤ) ∣ (e.val+3*(2*d+1) : ℕ) := by
-    rw [Int.dvd_iff_emod_eq_zero]; push_cast; omega
+    omega
   have hndvd' : ¬ (6 : ℤ) ∣ (e.val+3*(2*d+1) : ℕ)-1 := by
-    rw [Int.dvd_iff_emod_eq_zero]; push_cast; omega
+    omega
   push_cast at hndvd hndvd'
   rcases k with _ | _ | k
   · rw [Ctk_pos_zero C p _ _ ht, T_generator_power]
     by_cases hle : e.val+3*(2*d+1)-1 ≤ 6*m
     · have he := e.isLt
       have hne : 6*m-(e.val+3*(2*d+1)-1) ≠ 0 := by omega
-      simp [hle, hne, hndvd]
+      simp_all
     · simp [hle]
   · rw [Ctk_one C p _ _ ht, T_generator_power]
     by_cases hle : e.val+3*(2*d+1) ≤ 6*m
@@ -211,17 +208,17 @@ private lemma good_strict_shell_odd_zero (C : A.GeneralArithmeticContext σ η h
       simp [hle, hne, hndvd']
     · simp [hle]
   · exact Ctk_eq_zero_of_two_le C p _ _ _ ht (by omega)
-private lemma good_strict_qp_add (p : ExteriorPrime A) (s t : ℂ) : qPower p (s+t) = qPower p s * qPower p t := by
+lemma good_strict_qp_add (p : ExteriorPrime A) (s t : ℂ) : qPower p (s+t) = qPower p s * qPower p t := by
   unfold qPower; rw [add_mul, Complex.exp_add]
-private lemma good_strict_qp_nat_mul (p : ExteriorPrime A) (s : ℂ) (n : ℕ) : qPower p (n*s) = qPower p s ^ n := by
+lemma good_strict_qp_nat_mul (p : ExteriorPrime A) (s : ℂ) (n : ℕ) : qPower p (n*s) = qPower p s ^ n := by
   unfold qPower; rw [mul_assoc, Complex.exp_nat_mul]
-private lemma good_strict_qp_nat (p : ExteriorPrime A) (n : ℕ) : qPower p n = (Q p : ℂ)^n := by
+lemma good_strict_qp_nat (p : ExteriorPrime A) (n : ℕ) : qPower p n = (Q p : ℂ)^n := by
   have hQ : 0 < Q p := by
     change 0 < (Ideal.absNorm p.val.asIdeal : ℝ)
     exact_mod_cast lt_trans (by decide : 0 < 1) (NumberField.HeightOneSpectrum.one_lt_absNorm p.val)
   rw [show (n : ℂ) = n*(1 : ℂ) by ring, good_strict_qp_nat_mul]
   simp [qPower, ← Complex.ofReal_exp, Real.exp_log hQ]
-private lemma good_strict_weight_even (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
+lemma good_strict_weight_even (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
     (θ : {θ : ℂ // ‖θ‖ = 1}) (hθ6 : θ.val^6 = 1)
     (e : Fin 2) (d k m : ℕ) (ξ w z : ℂ) :
     seriesTerm C p 0 θ e (2*d) k m ξ w z =
@@ -229,9 +226,9 @@ private lemma good_strict_weight_even (C : A.GeneralArithmeticContext σ η hS) 
       (vartheta C p^6 * qPower p (-2-6*ξ))^d *
       (θ.val*qPower p (-w))^k * qPower p (-6*z)^m *
       Ctk C p (e.val+6*d) k (6*m) := by
-  have hne : θ.val ≠ 0 := by intro h; have := θ.property; simp [h] at this
+  have hne : θ.val ≠ 0 := by intro h; simp_all
   have hpow : θ.val ^ ((k : ℤ)-(e.val : ℤ)-3*((2*d : ℕ) : ℤ)) = θ.val^k * (θ.val⁻¹)^e.val := by
-    rw [show (k : ℤ)-(e.val : ℤ)-3*((2*d : ℕ) : ℤ) = (k : ℤ)-(e.val : ℤ)-(6:ℤ)*(d:ℤ) by push_cast; ring,
+    rw [show (k : ℤ)-(e.val : ℤ)-3*((2*d : ℕ) : ℤ) = (k : ℤ)-(e.val : ℤ)-(6:ℤ)*(d:ℤ) by omega,
       zpow_sub₀ hne, zpow_sub₀ hne, zpow_natCast, zpow_natCast, zpow_mul,
       zpow_ofNat, hθ6, one_zpow, div_one, div_eq_mul_inv, inv_pow]
   have hq : qPower p (-(e.val : ℂ)*(1/2+ξ)-(2*d : ℕ)*(1+3*ξ)-(k : ℂ)*w-6*(m : ℂ)*z) =
@@ -244,22 +241,22 @@ private lemma good_strict_weight_even (C : A.GeneralArithmeticContext σ η hS) 
   rw [hpow, hq, pow_add, pow_mul]
   simp only [mul_pow]
   ring
-private lemma good_strict_geom_tail (V : ℂ) (hV : ‖V‖ < 1) (d : ℕ) :
+lemma good_strict_geom_tail (V : ℂ) (hV : ‖V‖ < 1) (d : ℕ) :
     (∑' m : ℕ, if d ≤ m then V^m else 0) = V^d/(1-V) := by
   have hi : Function.Injective (fun n : ℕ => n+d) := by intro a b h; dsimp at h; omega
   have hs : Function.support (fun m : ℕ => if d ≤ m then V^m else 0) ⊆
       Set.range (fun n : ℕ => n+d) := by
     intro m hm
-    have hdm : d ≤ m := by by_contra h; simp [h] at hm
+    have hdm : d ≤ m := by simp_all
     exact ⟨m-d, by dsimp; omega⟩
   rw [← hi.tsum_eq hs]
   simp only [Nat.le_add_left, if_true, pow_add, tsum_mul_right,
     tsum_geometric_of_norm_lt_one hV, div_eq_mul_inv]
   ring
-private lemma good_strict_geom_strict_tail (V : ℂ) (hV : ‖V‖ < 1) (d : ℕ) :
+lemma good_strict_geom_strict_tail (V : ℂ) (hV : ‖V‖ < 1) (d : ℕ) :
     (∑' m : ℕ, if d < m then V^m else 0) = V^(d+1)/(1-V) := by
   simpa only [Nat.succ_le_iff] using good_strict_geom_tail V hV (d+1)
-private lemma good_strict_even_shell_sum_zero (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
+lemma good_strict_even_shell_sum_zero (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
     (B W V : ℂ) (hV : ‖V‖ < 1) (d : ℕ) (hd : 0 < d) :
     (∑' k : ℕ, ∑' m : ℕ, B^d*W^k*V^m*Ctk C p (6*d) k (6*m)) =
       (B*(Q p : ℂ)^6*V)^d * ((1-(Q p : ℂ)⁻¹)/(1-V)+W) := by
@@ -277,8 +274,7 @@ private lemma good_strict_even_shell_sum_zero (C : A.GeneralArithmeticContext σ
   simp_rw [good_strict_shell_six_kzero C p d _ hd, good_strict_shell_six_kone C p d _ hd]
   have heq : (∑' m : ℕ, B^d*W*V^m*(if d=m then (Q p : ℂ)^(6*d) else 0)) =
       B^d*W*V^d*(Q p : ℂ)^(6*d) := by
-    simp_rw [mul_ite, mul_zero]
-    exact tsum_ite_eq' d _
+    simp
   rw [heq]
   have ht : (∑' m : ℕ, B^d*V^m*(if d ≤ m then (Q p : ℂ)^(6*d-1)*((Q p : ℂ)-1) else 0)) =
       B^d*(Q p : ℂ)^(6*d-1)*((Q p : ℂ)-1)*(V^d/(1-V)) := by
@@ -298,7 +294,7 @@ private lemma good_strict_even_shell_sum_zero (C : A.GeneralArithmeticContext σ
   simp only [mul_pow, ← pow_mul]
   field_simp
   <;> ring
-private lemma good_strict_even_shell_sum_one (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
+lemma good_strict_even_shell_sum_one (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
     (H B W V : ℂ) (hV : ‖V‖ < 1) (d : ℕ) :
     (∑' k : ℕ, ∑' m : ℕ, H*B^d*W^k*V^m*Ctk C p (6*d+1) k (6*m)) =
       H*tau C p 1*(B*(Q p : ℂ)^6*V)^d * (1+((Q p : ℂ)-1)*W*V/(1-V)) := by
@@ -324,13 +320,13 @@ private lemma good_strict_even_shell_sum_one (C : A.GeneralArithmeticContext σ 
   rw [ht]
   simp only [mul_pow, ← pow_mul, pow_succ, div_eq_mul_inv]
   ring
-private lemma good_strict_BQV (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A) (ξ z : ℂ) :
+lemma good_strict_BQV (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A) (ξ z : ℂ) :
     (vartheta C p^6*qPower p (-2-6*ξ))*(Q p : ℂ)^6*qPower p (-6*z) =
       vartheta C p^6*qPower p (4-6*ξ)*qPower p (-6*z) := by
   rw [← good_strict_qp_nat p 6]
   rw [mul_assoc (vartheta C p^6), ← good_strict_qp_add]
   congr 2; congr 1; ring
-private lemma good_strict_Htau (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
+lemma good_strict_Htau (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
     (θ : {θ : ℂ // ‖θ‖ = 1}) (ξ : ℂ) :
     (gammaTwo C p*vartheta C p*θ.val⁻¹*qPower p (-1/2-ξ))*tau C p 1 =
       -(η p.val.asIdeal*star θ.val*qPower p (-ξ)) := by
@@ -342,8 +338,8 @@ private lemma good_strict_Htau (C : A.GeneralArithmeticContext σ η hS) (p : Ex
   have hh := CanonicalGaussCorrection.gammaTwo_vartheta_tau_one C p
   calc
     _ = (gammaTwo C p*vartheta C p*tau C p 1*qPower p (-1/2))*θ.val⁻¹*qPower p (-ξ) := by ring
-    _ = _ := by rw [hh, hinv]; ring
-private lemma good_strict_even_shell_sum_origin (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
+    _ = _ := by simp_all
+lemma good_strict_even_shell_sum_origin (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
     (W V : ℂ) (hW : ‖W‖ < 1) (hV : ‖V‖ < 1) :
     (∑' k : ℕ, ∑' m : ℕ, W^k*V^m*Ctk C p 0 k (6*m)) = 1/(1-V)+W/(1-W) := by
   have hterm (k m : ℕ) : W^k*V^m*Ctk C p 0 k (6*m) =
@@ -351,7 +347,7 @@ private lemma good_strict_even_shell_sum_origin (C : A.GeneralArithmeticContext 
     by_cases hk : k=0
     · subst k; simp [Ctk_zero_zero]
     · rw [Ctk_zero_pos C p k _ (Nat.pos_of_ne_zero hk)]
-      by_cases hm : m=0 <;> simp [hk, hm]
+      simp_all
   have hinner (k : ℕ) : (∑' m : ℕ, W^k*V^m*Ctk C p 0 k (6*m)) =
       if k=0 then 1/(1-V) else W^k := by
     simp_rw [hterm]
@@ -359,15 +355,15 @@ private lemma good_strict_even_shell_sum_origin (C : A.GeneralArithmeticContext 
     · simp [hk, tsum_geometric_of_norm_lt_one hV, div_eq_mul_inv]
     · simp [hk]
   simp_rw [hinner]
-  have hs : Summable (fun k : ℕ => if k=0 then 1/(1-V) else W^k) := by
-    exact (summable_geometric_of_norm_lt_one hW).congr_cofinite (by
+  have hs : Summable (fun k : ℕ => if k=0 then 1/(1-V) else W^k) := 
+    (summable_geometric_of_norm_lt_one hW).congr_cofinite (by
       filter_upwards [Filter.eventually_cofinite_ne 0] with k hk
       simp [hk])
   rw [hs.tsum_eq_zero_add]
   simp only [if_true, Nat.succ_ne_zero, if_false, pow_succ,
     tsum_mul_right, tsum_geometric_of_norm_lt_one hW, div_eq_mul_inv]
   ring
-private lemma good_strict_boundary_norms (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
+lemma good_strict_boundary_norms (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
     (θ : {θ : ℂ // ‖θ‖ = 1}) (ξ w z : ℂ) (hξ : 4 < ξ.re) (hw : 4 < w.re) (hz : 2 < z.re) :
     ‖qPower p (-6*z)‖ < 1 ∧ ‖θ.val*qPower p (-w)‖ < 1 ∧
     ‖vartheta C p^6*qPower p (4-6*ξ)*qPower p (-6*z)‖ < 1 := by
@@ -387,7 +383,7 @@ private lemma good_strict_boundary_norms (C : A.GeneralArithmeticContext σ η h
   · simp only [norm_mul, norm_pow, hv, one_pow, one_mul, hn, ← Real.exp_add]
     apply Real.exp_lt_one_iff.mpr
     simp; nlinarith
-private lemma good_strict_ib_evaluation (C : A.GeneralArithmeticContext σ η hS)
+lemma good_strict_ib_evaluation (C : A.GeneralArithmeticContext σ η hS)
     (p : ExteriorPrime A) (u : A.R)
     (hu : IsUnit (Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) u))
     (θ : {θ : ℂ // ‖θ‖ = 1})
@@ -497,7 +493,3 @@ theorem good_euler_series (C : A.GeneralArithmeticContext σ η hS)
   dsimp only
   refine ⟨good_euler_series_summable C p 0 θ ξ w z hξ hw hz, ?_⟩
   exact good_strict_ib_evaluation C p u hu θ hθ ξ w z hξ hw hz
-
-end DedekindZetaZeroFree.LocalFiniteSums
-
-end

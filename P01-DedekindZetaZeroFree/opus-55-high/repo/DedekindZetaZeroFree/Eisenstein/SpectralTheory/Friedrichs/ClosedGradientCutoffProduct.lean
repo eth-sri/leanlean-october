@@ -61,24 +61,24 @@ def graphTestLinear : S_U F ζ hζ U R P H →ₗ[ℂ] ClosedGradientSpace D whe
     apply WithLp.ofLp_injective
     simp [graphTestLift, map_smul, WithLp.toLp_smul, WithLp.ofLp_smul, WithLp.ofLp_toLp]
 
-private theorem fst_embedding (w : ClosedGradientSpace D) :
+theorem fst_embedding (w : ClosedGradientSpace D) :
     closedGradientEmbedding D w = (WithLp.ofLp (w : WithLp 2 (𝓗 × 𝓥))).1 := by
   simp [closedGradientEmbedding, WithLp.fstL]
 
-private theorem closedGradientEmbedding_graphTestLift (f : S_U F ζ hζ U R P H) :
+theorem closedGradientEmbedding_graphTestLift (f : S_U F ζ hζ U R P H) :
     closedGradientEmbedding D (graphTestLift F ζ hζ U R P H μG hμG hR realization f)
       = iota f := by
   rw [fst_embedding F ζ hζ U R P H μG hμG hR realization]
   simp [graphTestLift, WithLp.ofLp_toLp]
 
-private theorem closedGradientEmbedding_graphTestLinear (f : S_U F ζ hζ U R P H) :
+theorem closedGradientEmbedding_graphTestLinear (f : S_U F ζ hζ U R P H) :
     closedGradientEmbedding D (graphTestLinear F ζ hζ U R P H μG hμG hR realization f)
       = iota f := by
   rw [show graphTestLinear F ζ hζ U R P H μG hμG hR realization f
     = graphTestLift F ζ hζ U R P H μG hμG hR realization f from rfl]
   exact closedGradientEmbedding_graphTestLift F ζ hζ U R P H μG hμG hR realization f
 
-private theorem graphTestLinear_dense :
+theorem graphTestLinear_dense :
     DenseRange (graphTestLinear F ζ hζ U R P H μG hμG hR realization) := by
   intro w
   rw [mem_closure_iff_seq_limit]
@@ -113,7 +113,7 @@ private theorem graphTestLinear_dense :
         (D).closure ⟨closedGradientEmbedding D w, hu⟩)) := hs1.prodMk_nhds hs2
   refine ((WithLp.prod_continuous_toLp 2 𝓗 𝓥).tendsto _).comp hpair
 
-private theorem j_norm_sq (η : RealSmoothCutoff F ζ hζ U R P H) (f : S_U F ζ hζ U R P H) :
+theorem j_norm_sq (η : RealSmoothCutoff F ζ hζ U R P H) (f : S_U F ζ hζ U R P H) :
     ‖j (cutoffGradientTimes η f)‖ ^ 2 =
       ∫ x, (normSquare (cutoffGradientTimes η f).val x : ℝ)
         ∂KPContActualSectorCotangentL2.muU F ζ hζ U R P := by
@@ -122,7 +122,7 @@ private theorem j_norm_sq (η : RealSmoothCutoff F ζ hζ U R P H) (f : S_U F ζ
     (cotangentSquareFamily (cutoffGradientTimes η f)) rfl
   simpa [cotangentSquareFamily] using h
 
-private theorem iota_norm_sq (f : S_U F ζ hζ U R P H) :
+theorem iota_norm_sq (f : S_U F ζ hζ U R P H) :
     ‖iota f‖ ^ 2 =
       ∫ x, (scalarPair f f x).re ∂KPContActualSectorCotangentL2.muU F ζ hζ U R P := by
   have hE := kp_cont_actual_sector_test_embeddings F ζ hζ μG hμG U R hR P H realization
@@ -138,7 +138,7 @@ private theorem iota_norm_sq (f : S_U F ζ hζ U R P H) :
     inner_self_eq_norm_sq_to_K (𝕜 := ℂ) (iota f)
   rw [hz, ← Complex.ofReal_pow, Complex.ofReal_re]
 
-private theorem normSquare_cutoffGradientTimes_le
+theorem normSquare_cutoffGradientTimes_le
     (η : RealSmoothCutoff F ζ hζ U R P H) (D₀ : ℝ) (hD₀ : 0 ≤ D₀)
     (hdη : ∀ (a : ActualChart (U := U) (H := H))
       (y : KPContCotangentOverlapRationalBranches.omega a),
@@ -202,7 +202,7 @@ private theorem normSquare_cutoffGradientTimes_le
       norm_nonneg (cutoffDifferential η (cov.chart n) x''), hD₀]
   nlinarith [h1, sq_nonneg ‖f.val (cov.chart n) x''‖]
 
-private theorem cutoffGradientTimes_norm_bound
+theorem cutoffGradientTimes_norm_bound
     (η : RealSmoothCutoff F ζ hζ U R P H) (D₀ : ℝ) (hD₀ : 0 ≤ D₀)
     (hdη : ∀ (a : ActualChart (U := U) (H := H))
       (y : KPContCotangentOverlapRationalBranches.omega a),
@@ -235,7 +235,7 @@ private theorem cutoffGradientTimes_norm_bound
   nlinarith [hmain, hsq, norm_nonneg (j (cutoffGradientTimes η f)),
     mul_nonneg hD₀ (norm_nonneg (iota f))]
 
-private theorem exists_scalar_to_cotangent
+theorem exists_scalar_to_cotangent
     (η : RealSmoothCutoff F ζ hζ U R P H) (D₀ : ℝ) (hD₀ : 0 ≤ D₀)
     (hdη : ∀ (a : ActualChart (U := U) (H := H))
       (y : KPContCotangentOverlapRationalBranches.omega a),
@@ -255,7 +255,7 @@ private theorem exists_scalar_to_cotangent
   · intro f
     exact LinearMap.extendOfNorm_eq hdense ⟨D₀, hbound⟩ f
 
-private theorem graphTestLinear_bound
+theorem graphTestLinear_bound
     (η : RealSmoothCutoff F ζ hζ U R P H) (M : SectorMultiplier F ζ hζ U R P H η)
     (B D₀ : ℝ) (hB : 0 ≤ B) (hD₀ : 0 ≤ D₀)
     (hη : ∀ x, |η.val x| ≤ B)

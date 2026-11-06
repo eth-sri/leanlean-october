@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Compatibility of local Hilbert symbols at divisible exponents
 
@@ -26,7 +21,6 @@ and its second as the Kummer radical. Artin restriction along the actual
 simple Kummer tower makes its values compatible as the exponent varies.
 -/
 
-noncomputable section
 
 namespace LocalClassFieldTheory.Kummer
 
@@ -48,7 +42,7 @@ theorem localHilbertSymbol_exponentCompatibility
   have hqm : q * (m : ℕ) = (n : ℕ) := by
     rw [mul_comm, ← hq]
   have hdiv : (n : ℕ) / (m : ℕ) = q := by
-    rw [hq, Nat.mul_div_cancel_left _ m.pos]
+    simp_all
   rw [hdiv]
   let Em := KummerTheory.chosenSimpleKummerExtension K m hmK b
   let En := KummerTheory.chosenSimpleKummerExtension K n hnK b
@@ -81,7 +75,6 @@ theorem localHilbertSymbol_exponentCompatibility
     change (Units.map (IntermediateField.inclusion hEF).toMonoidHom βm) ^
         (m : ℕ) = _
     rw [← map_pow, KummerTheory.chosenSimpleKummerRootUnit_pow]
-    apply Units.ext
     rfl
   have hβnq : (βn ^ q) ^ (m : ℕ) =
       Units.map (algebraMap K En).toMonoidHom b := by
@@ -133,7 +126,6 @@ theorem localHilbertSymbol_exponentCompatibility
       Units.map (IntermediateField.inclusion hEF).toMonoidHom
         (KummerTheory.rootQuotient (K := K) (L := Em) βm σm) := by
           rw [← hmval]
-          apply Units.ext
           rfl
     _ = KummerTheory.rootQuotient (K := K) (L := En) βmN σn := by
       rw [← hrestrict]
@@ -144,7 +136,3 @@ theorem localHilbertSymbol_exponentCompatibility
     _ = Units.map (algebraMap K En).toMonoidHom
           ((localHilbertSymbol K n hnK hmuN a b).1 ^ q) := by
       rw [← hnval, ← map_pow]
-
-end LocalClassFieldTheory.Kummer
-
-end

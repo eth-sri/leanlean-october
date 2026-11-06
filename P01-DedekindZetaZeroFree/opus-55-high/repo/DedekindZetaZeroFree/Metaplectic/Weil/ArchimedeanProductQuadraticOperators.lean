@@ -12,7 +12,7 @@ open scoped Classical ENNReal NNReal
 
 namespace DedekindZetaZeroFree.QuadraticRawProduct.ArchimedeanSteps
 
-private theorem productFourier_tensor {ι : Type*} [Fintype ι]
+theorem productFourier_tensor {ι : Type*} [Fintype ι]
     (g : ι → ℂ → ℂ) (y : ι → ℂ) :
     productFourier (fun z => ∏ i, g i (z i)) y = ∏ i, ComplexWeil.F 2 (g i) (y i) := by
   letI : MeasureTheory.SigmaFinite (ComplexWeil.mu 2) := by
@@ -25,7 +25,7 @@ private theorem productFourier_tensor {ι : Type*} [Fintype ι]
   exact MeasureTheory.integral_fintype_prod_eq_prod (E := fun _ : ι => ℂ)
     (fun i x => g i x * ComplexWeil.psi 2 (-x * y i))
 
-private theorem productChirp_tensor {ι : Type*} [Fintype ι]
+theorem productChirp_tensor {ι : Type*} [Fintype ι]
     (b : ι → ℂ) (g : ι → ℂ → ℂ) :
     productChirp b (fun z => ∏ i, g i (z i)) =
       (fun z => ∏ i, ComplexWeil.M 2 (b i) (g i) (z i)) := by
@@ -81,7 +81,7 @@ variable {ι : Type*} [Fintype ι]
   (ContinuousLinearEquiv.piCongrRight (fun _ : ι =>
     (ContinuousLinearEquiv.smulLeft (R₁ := ℝ) (M₁ := ℂ)
       (Units.mk0 (2 : ℂ) (by norm_num))).trans Complex.conjCLE)).trans coords.symm
-private lemma freq_apply (y : ι → ℂ) (i : ι) :
+lemma freq_apply (y : ι → ℂ) (i : ι) :
     freq y i = (starRingEnd ℂ) (2 * y i) := rfl
  instance mu_haar : (ComplexWeil.mu 2).IsAddHaarMeasure := by
   rw [ComplexWeil.mu_two]
@@ -97,7 +97,7 @@ private lemma measure_eq :
     (prodMeasure ι).map (coords (ι := ι)).symm = scalar ι • volume := by
   letI := (coords (ι := ι)).symm.isAddHaarMeasure_map (prodMeasure ι)
   exact Measure.isAddLeftInvariant_eq_smul _ _
-private lemma kernel_eq (z : PiLp 2 (fun _ : ι => ℂ)) (y : ι → ℂ) :
+lemma kernel_eq (z : PiLp 2 (fun _ : ι => ℂ)) (y : ι → ℂ) :
     (∏ i, ComplexWeil.psi 2 (-z i * y i)) =
       (Real.fourierChar (- inner ℝ z (freq y)) : ℂ) := by
   simp only [ComplexWeil.psi, Real.fourierChar_apply]
@@ -124,7 +124,7 @@ private lemma prodFourier_eq (f : (ι → ℂ) → ℂ) (y : ι → ℂ) :
     f (coords z) * ∏ i, ComplexWeil.psi 2 (-z i * y i)
       ∂(prodMeasure ι).map (coords (ι := ι)).symm) = productFourier f y at hi
   rw [measure_eq, integral_smul_nnreal_measure] at hi
-  simp only [Complex.real_smul] at hi
+  simp only at hi
   rw [← hi, Real.fourier_eq]
   congr 1
   apply integral_congr_ae
@@ -132,7 +132,7 @@ private lemma prodFourier_eq (f : (ι → ℂ) → ℂ) (y : ι → ℂ) :
   rw [kernel_eq, Circle.smul_def]
   ring
 set_option backward.isDefEq.respectTransparency false in
-private lemma chirp_growth (b : ι → ℂ) :
+lemma chirp_growth (b : ι → ℂ) :
     (fun z : ι → ℂ => ∏ i, ComplexWeil.psi 2 (b i * z i ^ 2)).HasTemperateGrowth := by
   have hp (i : ι) : (fun z : ι → ℂ => ComplexWeil.psi 2 (b i * z i ^ 2)).HasTemperateGrowth := by
     have he : (fun z : ι → ℂ => z i).HasTemperateGrowth :=
@@ -141,22 +141,22 @@ private lemma chirp_growth (b : ι → ℂ) :
       convert! ((Function.HasTemperateGrowth.const (2 : ℂ)).mul
         ((Function.HasTemperateGrowth.const (b i)).mul (he.pow 2))) using 1
     have hq : (fun z : ι → ℂ => (2 * (b i * z i ^ 2)).re).HasTemperateGrowth := by
-      exact Complex.reCLM.hasTemperateGrowth.comp hm
+      fun_prop
     have h := Complex.hasTemperateGrowth_exp_mul_I.comp
       ((Function.HasTemperateGrowth.const (2 * Real.pi)).mul hq)
     simpa [ComplexWeil.psi, Function.comp_def] using h
   have hprod (s : Finset ι) :
       (fun z : ι → ℂ => ∏ i ∈ s, ComplexWeil.psi 2 (b i * z i ^ 2)).HasTemperateGrowth := by
     induction s using Finset.induction_on with
-    | empty => simpa using (Function.HasTemperateGrowth.const (1 : ℂ))
+    | empty => simp
     | @insert i s hi hs =>
       simp only [Finset.prod_insert hi]
-      convert! (hp i).mul hs using 1
-  exact hprod Finset.univ
+      fun_prop
+  fun_prop
  def chirpCLM (b : ι → ℂ) :
     SchwartzMap (ι → ℂ) ℂ →L[ℂ] SchwartzMap (ι → ℂ) ℂ :=
   SchwartzMap.smulLeftCLM ℂ (fun z => ∏ i, ComplexWeil.psi 2 (b i * z i ^ 2))
-private lemma chirpCLM_apply (b : ι → ℂ) (f : SchwartzMap (ι → ℂ) ℂ) :
+lemma chirpCLM_apply (b : ι → ℂ) (f : SchwartzMap (ι → ℂ) ℂ) :
     ⇑(chirpCLM b f) = productChirp b (⇑f) := by
   funext z
   rw [chirpCLM, SchwartzMap.smulLeftCLM_apply_apply (chirp_growth b)]
@@ -171,8 +171,7 @@ private lemma fourierCLM_apply (f : SchwartzMap (ι → ℂ) ℂ) :
     ⇑(fourierCLM f) = productFourier (⇑f) := by
   funext y
   rw [prodFourier_eq]
-  simp [fourierCLM, SchwartzMap.compCLMOfContinuousLinearEquiv_apply,
-    SchwartzMap.fourier_coe, Function.comp_def, smul_eq_mul]
+  rfl
  def evalCLM (y : ι → ℂ) : SchwartzMap (ι → ℂ) ℂ →L[ℂ] ℂ :=
   (BoundedContinuousFunction.evalCLM ℂ y).comp
     (SchwartzMap.toBoundedContinuousFunctionCLM ℂ (ι → ℂ) ℂ)
@@ -210,7 +209,7 @@ section
 
 noncomputable section
 open NumberField
-open scoped NumberField Classical
+open scoped Classical
 
 namespace DedekindZetaZeroFree.QuadraticRawProduct.ArchimedeanSteps
 
@@ -282,8 +281,7 @@ theorem complex_coordinate_transport {F : Type} [Field F] [NumberField F]
       intro s hs
       rw [MeasureTheory.Measure.smul_apply, MeasureTheory.volume_pi,
         MeasureTheory.Measure.pi_pi]
-      simp only [ComplexWeil.mu, MeasureTheory.Measure.smul_apply,
-        Finset.prod_mul_distrib, Finset.prod_const, PoissonArch.haarScalar]
+      simp only [ComplexWeil.mu, MeasureTheory.Measure.smul_apply, PoissonArch.haarScalar]
       norm_num [ENNReal.ofReal_pow]
       rw [Finset.prod_mul_distrib, Finset.prod_const]
       rfl
@@ -300,7 +298,7 @@ theorem complex_coordinate_transport {F : Type} [Field F] [NumberField F]
     simp only [ContinuousLinearEquiv.apply_symm_apply, Pi.zero_apply, zero_mul,
       Finset.sum_const_zero, zero_add]
     unfold ComplexWeil.psi
-    simp only [map_neg, Complex.mul_re, Complex.ofReal_ofNat]
+    simp only [Complex.mul_re]
     rw [← Complex.exp_sum]
     congr 1
     push_cast
@@ -308,7 +306,6 @@ theorem complex_coordinate_transport {F : Type} [Field F] [NumberField F]
     apply Finset.sum_congr rfl
     intro w hw
     norm_num [Complex.mul_re, Complex.mul_im, Complex.neg_re, Complex.neg_im]
-    push_cast
     ring
   · intro f
     let e : ({w : InfinitePlace F // w.IsComplex} → ℂ) ≃L[ℝ] PoissonArch.Space F :=
@@ -333,7 +330,7 @@ section
 
 noncomputable section
 open NumberField
-open scoped NumberField Classical
+open scoped Classical
 
 namespace DedekindZetaZeroFree.QuadraticRawProduct.ArchimedeanSteps
 
@@ -357,7 +354,7 @@ theorem complex_coefficient {F : Type} [Field F] [NumberField F]
     norm_num
   have habs (w : {w : InfinitePlace F // w.IsComplex}) :
       |2 * ‖(mixedEmbedding F (a : F)).2 w‖| =
-        2 * ‖(mixedEmbedding F (a : F)).2 w‖ := abs_of_nonneg (by positivity)
+        2 * ‖(mixedEmbedding F (a : F)).2 w‖ := by simp
   rw [hp, Real.sqrt_prod _ (fun w _ => sq_nonneg _)]
   simp_rw [Real.sqrt_sq_eq_abs, habs, one_div]
   push_cast
@@ -400,8 +397,7 @@ theorem archChirp_complexCoordinates (b : F)
   unfold archChirp
   congr 1
   unfold archComplexLift PoissonArch.tracePairing PoissonArch.fieldMul
-  simp only [ContinuousLinearEquiv.apply_symm_apply, Prod.fst_mul, Prod.snd_mul,
-    Pi.mul_apply, Pi.zero_apply, mul_zero, zero_mul, Finset.sum_const_zero, zero_add]
+  simp only [ContinuousLinearEquiv.apply_symm_apply, Prod.fst_mul, Prod.snd_mul, Pi.mul_apply, Pi.zero_apply, mul_zero, Finset.sum_const_zero, zero_add]
   unfold ComplexWeil.psi
   rw [← Complex.exp_sum]
   congr 1
@@ -410,7 +406,6 @@ theorem archChirp_complexCoordinates (b : F)
   apply Finset.sum_congr rfl
   intro w hw
   norm_num [pow_two, Complex.mul_re, Complex.mul_im]
-  push_cast
   ring
 
 theorem archDilation_complexCoordinates (c : F)
@@ -421,7 +416,7 @@ theorem archDilation_complexCoordinates (c : F)
   simp only [ContinuousLinearEquiv.apply_symm_apply]
   apply congrArg f
   apply congrArg (mixedEmbedding.euclidean.toMixed F).symm
-  exact Prod.ext (by ext w; simp) rfl
+  exact Prod.ext (by simp) rfl
 
 theorem archimedean_quadratic_operator (A : SArithmeticData F) (a : Fˣ)
     (fArch : SchwartzMap (PoissonArch.Space F) ℂ) :
@@ -438,8 +433,7 @@ theorem archimedean_quadratic_operator (A : SArithmeticData F) (a : Fˣ)
   have hac : ∀ w, ac w ≠ 0 := by
     intro w
     dsimp [ac]
-    rw [mixedEmbedding.mixedEmbedding_apply_isComplex]
-    exact (map_ne_zero w.val.embedding).mpr (Units.ne_zero a)
+    simp
   obtain ⟨hlift, hFourier, hSchwartz⟩ := ArchimedeanSteps.complex_coordinate_transport A
   obtain ⟨g, hg⟩ := hSchwartz fArch
   have hproduct : ∀ y : ι → ℂ,
@@ -467,15 +461,15 @@ theorem archimedean_quadratic_operator (A : SArithmeticData F) (a : Fˣ)
     have hLR : (L : SchwartzMap (ι → ℂ) ℂ → ℂ) = R :=
       Continuous.ext_on (ArchimedeanSteps.tensorCore_dense ι)
         L.continuous R.continuous heq
-    rw [← hL, ← hR, hLR]
+    simp_all
   have hchirp (b : F) (f : PoissonArch.Space F → ℂ) (z : ι → ℂ) :
       archChirp F b f (ArchimedeanSteps.complexLift F z) =
         ArchimedeanSteps.productChirp (fun w => (mixedEmbedding F b).2 w)
-          (fun z => f (ArchimedeanSteps.complexLift F z)) z := by
-    exact archChirp_complexCoordinates b f z
+          (fun z => f (ArchimedeanSteps.complexLift F z)) z := 
+    archChirp_complexCoordinates b f z
   have hcoords (z : ι → ℂ) :
       ArchimedeanSteps.complexCoordinates F (ArchimedeanSteps.complexLift F z) = z := by
-    simp [ArchimedeanSteps.complexCoordinates, ArchimedeanSteps.complexLift]
+    rfl
   have hb : (fun w : ι => (mixedEmbedding F (-1 / (4 * (a : F)))).2 w) =
       (fun w => -1 / (4 * ac w)) := by
     funext w
@@ -483,7 +477,7 @@ theorem archimedean_quadratic_operator (A : SArithmeticData F) (a : Fˣ)
   have hc : (fun w : ι => (mixedEmbedding F (1 / (2 * (a : F)))).2 w) =
       (fun w => 1 / (2 * ac w)) := by
     funext w
-    simp [ac, mixedEmbedding.mixedEmbedding_apply_isComplex, map_div₀, map_ofNat]
+    simp [ac, mixedEmbedding.mixedEmbedding_apply_isComplex, map_ofNat]
   have hF (f : PoissonArch.Space F → ℂ) (z : ι → ℂ) :
       PoissonArch.traceFourier F f (ArchimedeanSteps.complexLift F z) =
         ArchimedeanSteps.productFourier (fun z => f (ArchimedeanSteps.complexLift F z)) z := by
@@ -504,8 +498,8 @@ theorem archimedean_quadratic_operator (A : SArithmeticData F) (a : Fˣ)
     exact hchirp b f z
   have hD (c : F) (f : PoissonArch.Space F → ℂ) (z : ι → ℂ) :
       archDilation F c f (ArchimedeanSteps.complexLift F z) =
-        f (ArchimedeanSteps.complexLift F (fun w => (mixedEmbedding F c).2 w * z w)) := by
-    exact archDilation_complexCoordinates c f z
+        f (ArchimedeanSteps.complexLift F (fun w => (mixedEmbedding F c).2 w * z w)) := 
+    archDilation_complexCoordinates c f z
   funext y
   have hy := hlift y
   rw [← hy]
@@ -513,12 +507,5 @@ theorem archimedean_quadratic_operator (A : SArithmeticData F) (a : Fˣ)
   rw [hchirp]
   simp only [ArchimedeanSteps.productChirp]
   rw [hD, hF, hMfun, hgfun]
-  simp only [hb, hc, ArchimedeanSteps.productChirp, ArchimedeanSteps.productDilation,
-    ac, mul_assoc]
+  simp only [hb, hc, ArchimedeanSteps.productDilation, ac]
   rfl
-
-end DedekindZetaZeroFree.QuadraticRawProduct.TensorKernelSteps
-
-end
-
-end

@@ -51,8 +51,7 @@ theorem sigma_continuous : Continuous sigma := by
   apply (PiLp.continuous_toLp 2 (fun _ : Fin 3 => ℝ)).comp
   apply continuous_pi
   intro i
-  fin_cases i <;> simp only [Matrix.cons_val_zero, Matrix.cons_val_one,
-    Matrix.cons_val_two]
+  fin_cases i <;> simp only
   all_goals dsimp [denominator]
   all_goals fun_prop (disch := intro z; positivity)
 
@@ -105,8 +104,7 @@ theorem invChart_right (y : rawSphere) (hy : (y : rawAmbient) 2 ≠ -1) : sigma 
   intro i
   fin_cases i
   all_goals change sigmaVector (invChart y) _ = _
-  all_goals simp only [sigmaVector, PiLp.toLp_apply, Fin.isValue,
-    Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_two]
+  all_goals simp only [sigmaVector, PiLp.toLp_apply]
   · rw [invChart_denominator y hy]
     change 2 * ((y : rawAmbient) 0 / (1 + (y : rawAmbient) 2)) /
       (2 / (1 + (y : rawAmbient) 2)) = _
@@ -171,7 +169,7 @@ noncomputable def jac (v : rawAmbient) : Matrix (Fin 3) (Fin 3) ℝ :=
 
 lemma jac_det (v : rawAmbient) : (jac v).det = -4*v 0^2/(D v)^2 := by
   rw [Matrix.det_fin_three]
-  simp [jac, D, Matrix.cons_val, Matrix.vecHead, Matrix.vecTail]
+  simp [jac, D, Matrix.cons_val]
   have hd := (D_pos v).ne'
   dsimp [D] at hd
   field_simp
@@ -190,30 +188,27 @@ lemma cone_deriv (v : rawAmbient) :
   fin_cases i
   · have h := (((h0.const_mul 2).mul h1).mul hI)
     rw [hasFDerivWithinAt_univ]
-    simp only [coneR, PiLp.toLp_apply, Matrix.cons_val, Matrix.vecHead, Matrix.vecTail]
+    simp only [coneR, PiLp.toLp_apply]
     simp_rw [div_eq_mul_inv]
     apply h.congr_fderiv
     ext w
-    simp [jac, Matrix.toEuclideanLin, Matrix.toLpLin_apply, PiLp.proj_apply, Matrix.mulVec, dotProduct,
-      Fin.sum_univ_three, Matrix.cons_val, Matrix.vecHead, Matrix.vecTail, D]
+    simp [jac, Matrix.toEuclideanLin, Matrix.toLpLin_apply, PiLp.proj_apply, dotProduct, Fin.sum_univ_three, Matrix.cons_val, D]
     ring
   · have h := (((h0.const_mul (-2)).mul h2).mul hI)
     rw [hasFDerivWithinAt_univ]
-    simp only [coneR, PiLp.toLp_apply, Matrix.cons_val, Matrix.vecHead, Matrix.vecTail]
+    simp only [coneR, PiLp.toLp_apply]
     simp_rw [div_eq_mul_inv]
     apply h.congr_fderiv
     ext w
-    simp [jac, Matrix.toEuclideanLin, Matrix.toLpLin_apply, PiLp.proj_apply, Matrix.mulVec, dotProduct,
-      Fin.sum_univ_three, Matrix.cons_val, Matrix.vecHead, Matrix.vecTail, D]
+    simp [jac, Matrix.toEuclideanLin, Matrix.toLpLin_apply, PiLp.proj_apply, dotProduct, Fin.sum_univ_three, Matrix.cons_val, D]
     ring
   · have h := ((h0.mul (((hasFDerivAt_const (1 : ℝ) v).sub (h1.pow 2)).sub (h2.pow 2))).mul hI)
     rw [hasFDerivWithinAt_univ]
-    simp only [coneR, PiLp.toLp_apply, Matrix.cons_val, Matrix.vecHead, Matrix.vecTail]
+    simp only [coneR, PiLp.toLp_apply]
     simp_rw [div_eq_mul_inv]
     apply h.congr_fderiv
     ext w
-    simp [jac, Matrix.toEuclideanLin, Matrix.toLpLin_apply, PiLp.proj_apply, Matrix.mulVec, dotProduct,
-      Fin.sum_univ_three, Matrix.cons_val, Matrix.vecHead, Matrix.vecTail, D]
+    simp [jac, Matrix.toEuclideanLin, Matrix.toLpLin_apply, PiLp.proj_apply, dotProduct, Fin.sum_univ_three, Matrix.cons_val, D]
     field_simp
     ring
 lemma abs_det (v : rawAmbient) : |((jac v).toEuclideanLin.toContinuousLinearMap).det| =
@@ -226,13 +221,12 @@ lemma abs_det (v : rawAmbient) : |((jac v).toEuclideanLin.toContinuousLinearMap)
 noncomputable def coords : rawAmbient ≃ᵐ ℝ × ℂ :=
   split.trans (MeasurableEquiv.prodCongr (MeasurableEquiv.refl ℝ)
     ((MeasurableEquiv.toLp 2 (Fin 2 → ℝ)).symm.trans Complex.measurableEquivPi.symm))
-lemma coords_mp : MeasurePreserving coords volume (volume.prod euclideanArea) := by
-  exact split_preserving.trans ((MeasurePreserving.id volume).prod
+lemma coords_mp : MeasurePreserving coords volume (volume.prod euclideanArea) := 
+  split_preserving.trans ((MeasurePreserving.id volume).prod
     ((PiLp.volume_preserving_ofLp (Fin 2)).trans Complex.volume_preserving_equiv_pi.symm))
 lemma coords_symm (q : ℝ × ℂ) : coords.symm q = WithLp.toLp 2 ![q.1, q.2.re, q.2.im] := by
   rw [coords, MeasurableEquiv.trans_symm, MeasurableEquiv.trans_apply, split_symm_apply]
-  ext i
-  fin_cases i <;> rfl
+  rfl
 lemma coords_D (q : ℝ × ℂ) : D (coords.symm q) = denominator q.2 := by
   rw [coords_symm]
   dsimp [D, denominator]
@@ -262,7 +256,7 @@ lemma cone_image_ae (s : Set rawSphere) :
       rw [hn1] at hn
       simp [Fin.sum_univ_three, he] at hn
       have h0 : (y : rawAmbient) 0 = 0 := by nlinarith [sq_nonneg ((y : rawAmbient) 1)]
-      have h1 : (y : rawAmbient) 1 = 0 := by nlinarith [sq_nonneg ((y : rawAmbient) 0)]
+      have h1 : (y : rawAmbient) 1 = 0 := by simp_all
       change t * (y : rawAmbient) 0 = 0 ∧ t * (y : rawAmbient) 1 = 0 ∧
         t * (y : rawAmbient) 2 ≤ 0
       simp [h0, h1, he, ht.1.le]
@@ -312,12 +306,12 @@ lemma jac_integral (s : Set rawSphere) (hs : MeasurableSet s) :
     have ht := coords_symm (coords v)
     simp only [coords.symm_apply_apply] at hd ht
     have ht0 := congrArg (fun w : rawAmbient => w 0) ht
-    simp only [PiLp.toLp_apply, Matrix.cons_val_zero] at ht0
+    simp only [Matrix.cons_val_zero] at ht0
     rw [hd, ht0]
   rw [he, hp, setLIntegral_prod _ hm.aemeasurable.restrict]
   have hg : ∀ z : ℂ, denominator z ^ (-2 : ℝ) = (denominator z ^ 2)⁻¹ := by
     intro z
-    rw [Real.rpow_neg (by dsimp [denominator]; positivity), Real.rpow_two]
+    simp
   simp_rw [hg, div_eq_mul_inv,
     ENNReal.ofReal_mul (mul_nonneg (by norm_num : (0 : ℝ) ≤ 4) (sq_nonneg _)),
     ENNReal.ofReal_mul (by norm_num : (0 : ℝ) ≤ 4)]
@@ -326,7 +320,7 @@ lemma jac_integral (s : Set rawSphere) (hs : MeasurableSet s) :
   simp_rw [lintegral_const_mul _ hf]
   rw [lintegral_mul_const _ (by fun_prop)]
   rw [lintegral_const_mul _ (by fun_prop), radial_integral]
-  congr 1 <;> norm_num
+  simp
 
 end CV
 
@@ -348,5 +342,3 @@ theorem cone_volume_stereographic (s : Set rawSphere) (hs : MeasurableSet s) :
     volume hm (fun x hx => (CV.cone_deriv x).hasFDerivWithinAt) hi]
   simp_rw [CV.abs_det]
   exact CV.jac_integral s hs
-
-end DedekindZetaZeroFree.ComplexLocal.StereographicTransport.RawCone

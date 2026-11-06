@@ -18,8 +18,8 @@ def sqrtUnit (A : SArithmeticData F) (v₀ : InfinitePlace F)
   Units.map
     (InfinitePlace.Completion.ringEquivComplexOfIsComplex
       (A.complex_place v₀)).symm.toMonoidHom
-    (Units.mk0 (Real.sqrt (x : ℝ) : ℂ) (by
-      exact Complex.ofReal_ne_zero.mpr (ne_of_gt (Real.sqrt_pos.2 x.property))))
+    (Units.mk0 (Real.sqrt (x : ℝ) : ℂ) (
+      Complex.ofReal_ne_zero.mpr (ne_of_gt (Real.sqrt_pos.2 x.property))))
 
 def normSectionRaw (A : SArithmeticData F) (v₀ : InfinitePlace F) (x : Axis) : A.G :=
   (Pi.mulSingle v₀ (sqrtUnit A v₀ x), 1)
@@ -31,7 +31,7 @@ theorem section_at_place (A : SArithmeticData F) (v₀ : InfinitePlace F) (x : A
   change (InfinitePlace.Completion.ringEquivComplexOfIsComplex (A.complex_place v₀))
     ((InfinitePlace.Completion.ringEquivComplexOfIsComplex
       (A.complex_place v₀)).symm (Real.sqrt (x : ℝ) : ℂ)) = _
-  exact RingEquiv.apply_symm_apply _ _
+  simp
 
 theorem section_at_other_place (A : SArithmeticData F)
     (v₀ v : InfinitePlace F) (hv : v ≠ v₀) (x : Axis) :
@@ -46,8 +46,7 @@ theorem norm_mul (A : SArithmeticData F) (y z : A.G) :
 
 theorem norm_inv (A : SArithmeticData F) (y : A.G) :
     A.norm y⁻¹ = (A.norm y)⁻¹ := by
-  simp [SArithmeticData.norm, _root_.norm_inv, inv_pow, Finset.prod_inv_distrib,
-    mul_inv, mul_comm]
+  simp [SArithmeticData.norm, _root_.norm_inv, inv_pow, Finset.prod_inv_distrib, mul_comm]
 
 theorem norm_positive (A : SArithmeticData F) (y : A.G) : 0 < A.norm y := by
   unfold SArithmeticData.norm
@@ -55,7 +54,7 @@ theorem norm_positive (A : SArithmeticData F) (y : A.G) : 0 < A.norm y := by
   · exact Finset.prod_pos fun v _ => pow_pos (norm_pos_iff.mpr (y.1 v).ne_zero) _
   · exact Finset.prod_pos fun v _ => norm_pos_iff.mpr (y.2 v).ne_zero
 
-private theorem continuous_norm_raw (A : SArithmeticData F) : Continuous A.norm := by
+theorem continuous_norm_raw (A : SArithmeticData F) : Continuous A.norm := by
   unfold SArithmeticData.norm
   fun_prop
 
@@ -77,15 +76,14 @@ theorem section_laws (A : SArithmeticData F) (v₀ : InfinitePlace F) :
       mul_one]
     rw [Finset.prod_eq_single v₀]
     · simpa using hs
-    · intro v _ hv
-      simp [Pi.mulSingle_eq_of_ne hv]
+    · simp_all
     · simp
   · intro x y
     apply Prod.ext
     · funext v
       by_cases hv : v = v₀
       · subst v
-        simp only [normSectionRaw, Pi.mulSingle_eq_same, Pi.mul_apply]
+        simp only [normSectionRaw, Pi.mulSingle_eq_same]
         apply Units.ext
         apply (InfinitePlace.Completion.extensionEmbedding v₀).injective
         simp only [Prod.fst_mul, Pi.mul_apply, Pi.mulSingle_eq_same, Units.val_mul, map_mul]
@@ -153,16 +151,10 @@ def split (A : SArithmeticData F) (v₀ : InfinitePlace F) : (Axis × A.G1) ≃�
     intro p
     have hn : A.norm (normSectionRaw A v₀ p.1 * p.2.val) = (p.1 : ℝ) := by
       rw [norm_mul, (section_laws A v₀).1, p.2.property, mul_one]
-    apply Prod.ext
-    · exact Subtype.ext hn
-    · apply Subtype.ext
-      simp only
-      have hx : (⟨A.norm (normSectionRaw A v₀ p.1 * p.2.val),
-        norm_positive A (normSectionRaw A v₀ p.1 * p.2.val)⟩ : Axis) = p.1 := Subtype.ext hn
-      rw [hx, inv_mul_cancel_left]
+    simp_all
   right_inv := by
     intro y
-    exact mul_inv_cancel_left _ y
+    simp
   map_mul' := by
     intro p q
     simp only [Prod.fst_mul, Prod.snd_mul, Subgroup.coe_mul]
@@ -183,14 +175,9 @@ def translation (A : SArithmeticData F) (v₀ : InfinitePlace F) (x : Axis) :
     rw [norm_mul, (section_laws A v₀).1, z.property, mul_one]⟩
   invFun y := ⟨(normSectionRaw A v₀ x)⁻¹ * y.val,
     inverse_section_mem A v₀ x y.val y.property⟩
-  left_inv := by intro z; apply Subtype.ext; exact inv_mul_cancel_left _ _
-  right_inv := by intro y; apply Subtype.ext; exact mul_inv_cancel_left _ _
+  left_inv := by intro z; simp
+  right_inv := by intro y; simp
   continuous_toFun := by
-    apply Continuous.subtype_mk
-    exact continuous_const.mul (continuous_subtype_val : Continuous (fun z : A.G1 => z.val))
+    fun_prop
   continuous_invFun := by
-    apply Continuous.subtype_mk
-    exact continuous_const.mul (continuous_subtype_val : Continuous (fun y : Fiber A x => y.val))
-
-end
-end DedekindZetaZeroFree.NormSheetsCoordinates
+    fun_prop

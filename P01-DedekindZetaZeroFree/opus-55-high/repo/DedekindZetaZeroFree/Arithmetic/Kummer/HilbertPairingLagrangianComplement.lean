@@ -12,7 +12,6 @@ open NumberField IsDedekindDomain
 
 namespace DedekindZetaZeroFree.SArithmeticData.GaussCorrection
 noncomputable section
-set_option autoImplicit false
 variable {F : Type} [Field F] [NumberField F]
 set_option maxHeartbeats 800000
 
@@ -41,16 +40,14 @@ def bihomBilinForm (H : G →* G →* C) (coeff : Additive C ≃+ ZMod n) :
 @[simp] theorem bihomBilinForm_eq_zero_iff
     (H : G →* G →* C) (coeff : Additive C ≃+ ZMod n) (x y : Additive G) :
     bihomBilinForm n G C H coeff x y = 0 ↔ H x.toMul y.toMul = 1 := by
-  change coeff (Additive.ofMul (H x.toMul y.toMul)) = 0 ↔ _
-  rw [← coeff.map_zero, coeff.injective.eq_iff]
-  rfl
+  simp
 
 theorem bihomBilinForm_alternating
     (H : G →* G →* C) (coeff : Additive C ≃+ ZMod n)
     (hAlt : ∀ x : G, H x x = 1) :
     (bihomBilinForm n G C H coeff).IsAlt := by
   intro x
-  exact (bihomBilinForm_eq_zero_iff n G C H coeff x x).2 (hAlt x.toMul)
+  simp_all
 
 theorem bihomBilinForm_nondegenerate
     (H : G →* G →* C) (coeff : Additive C ≃+ ZMod n)
@@ -80,7 +77,7 @@ theorem bihomBilinForm_isotropic_iff
   · intro h x hx y hy
     exact (bihomBilinForm_eq_zero_iff n G C H coeff x y).1 (h hy x hx)
   · intro h y hy x hx
-    exact (bihomBilinForm_eq_zero_iff n G C H coeff x y).2 (h x hx y hy)
+    simp_all
 
 end LinearAlgebra
 
@@ -106,10 +103,6 @@ variable (n : ℕ) (G : Type*) [CommGroup G] [Module (ZMod n) (Additive G)]
 
 def bilinSubgroup (E : Submodule (ZMod n) (Additive G)) : Subgroup G :=
   AddSubgroup.toSubgroup' E.toAddSubgroup
-
-@[simp] theorem mem_bilinSubgroup
-    (E : Submodule (ZMod n) (Additive G)) (x : G) :
-    x ∈ bilinSubgroup n G E ↔ Additive.ofMul x ∈ E := Iff.rfl
 
 theorem bilinSubgroup_isCompl
     (E B : Submodule (ZMod n) (Additive G)) (hc : IsCompl E B) :
@@ -263,11 +256,11 @@ theorem unitQuotientPrimeHom_injective (A : SArithmeticData F)
     have hinf (w : InfinitePlace F) : ∃ b : w.Completionˣ, b ^ n = (A.diagonal ε.val).1 w := by
       have hw := congrFun h (Sum.inl w)
       have hh : (QuotientGroup.mk' (powMonoidHom (α := w.Completionˣ) n).range) ((A.diagonal ε.val).1 w) = 1 := hw
-      exact MonoidHom.mem_range.mp ((QuotientGroup.eq_one_iff _).mp hh)
+      simp_all
     have hfin (v : {v // v ∈ A.Sf}) : ∃ b : (v.val.adicCompletion F)ˣ, b ^ n = (A.diagonal ε.val).2 v := by
       have hv := congrFun h (Sum.inr v)
       have hh : (QuotientGroup.mk' (powMonoidHom (α := (v.val.adicCompletion F)ˣ) n).range) ((A.diagonal ε.val).2 v) = 1 := hv
-      exact MonoidHom.mem_range.mp ((QuotientGroup.eq_one_iff _).mp hh)
+      simp_all
     have hmem : n ∈ ({2, 3, 6} : Finset ℕ) := by rcases hn with rfl | rfl <;> simp
     obtain ⟨b, hb⟩ := local_power_injection F A hCl n hmem ε ⟨hinf, hfin⟩
     exact (QuotientGroup.eq_one_iff ε).mpr (MonoidHom.mem_range.mpr ⟨b, hb⟩)
@@ -282,7 +275,6 @@ def primeUnitLinearMap (A : SArithmeticData F) (n : ℕ) :
 lemma primeUnitImage_submodule_eq_range (A : SArithmeticData F) (n : ℕ) :
     AddSubgroup.toZModSubmodule n (primeUnitImage A n).toAddSubgroup =
       (primeUnitLinearMap A n).range := by
-  ext x
   rfl
 
 lemma primeUnitImage_finrank (A : SArithmeticData F)
@@ -351,7 +343,7 @@ lemma actualPrime_left_nondegenerate (A : SArithmeticData F) (n : ℕ+)
   apply (A.H_Sn_perfect n hn).1
   apply MonoidHom.ext
   intro y
-  simpa only [map_one, MonoidHom.one_apply] using hx y
+  simp_all
 
 lemma actualPrime_right_nondegenerate (A : SArithmeticData F) (n : ℕ+)
     (hn : (n : ℕ) = 2 ∨ (n : ℕ) = 3) (y : Vn F A n)
@@ -455,6 +447,3 @@ theorem actualComplement (A : SArithmeticData F)
     rfl
   have hh : A.H_S6 x y = 1 := hilbertRootsSixthCRT.injective (hsym.trans (map_one _).symm)
   exact congrArg Subtype.val hh
-
-end
-end DedekindZetaZeroFree.SArithmeticData.GaussCorrection

@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Norms on rational fixed-field idele classes
 
@@ -30,7 +27,7 @@ open ClassFormation
 open LocalClassFieldTheory
 open CyclicCohomology
 
-private theorem fourStepAddEquiv_apply_eq
+theorem fourStepAddEquiv_apply_eq
     {V A B C D : Type*}
     [Add V] [Add A] [Add B] [Add C] [Add D]
     (eV : V ≃+ D) (eB : B ≃+ D)
@@ -39,11 +36,9 @@ private theorem fourStepAddEquiv_apply_eq
     (h : eV y = eB (eA z))
     (ht : eC z = w) :
     (((eV.trans eB.symm).trans eA.symm).trans eC) y = w := by
-  change eC (eA.symm (eB.symm (eV y))) = w
-  rw [h, eB.symm_apply_apply, eA.symm_apply_apply]
-  exact ht
+  simp_all
 
-private theorem repOfMulDistribMulAction_rho_toMul
+theorem repOfMulDistribMulAction_rho_toMul
     {G A : Type*} [Group G] [CommGroup A]
     [MulDistribMulAction G A]
     (g : G) (a : Additive A) :
@@ -52,7 +47,7 @@ private theorem repOfMulDistribMulAction_rho_toMul
       g • Additive.toMul a :=
   rfl
 
-private theorem fintype_prod_comp_equiv
+theorem fintype_prod_comp_equiv
     {ι κ A : Type*}
     [Fintype ι] [Fintype κ] [CommMonoid A]
     (e : ι ≃ κ) (f : κ → A) :
@@ -60,7 +55,7 @@ private theorem fintype_prod_comp_equiv
   Fintype.prod_equiv e
     (fun i => f (e i)) f (fun _ => rfl)
 
-private theorem eq_of_common_ofMul_image
+theorem eq_of_common_ofMul_image
     {A B : Type*}
     (f : A → B) (hf : Function.Injective f)
     {u : Additive B} {a b : A}
@@ -71,7 +66,7 @@ private theorem eq_of_common_ofMul_image
   change f a = f b at h
   exact hf h
 
- noncomputable def relativeIdeleClassNormAdditiveValue
+ def relativeIdeleClassNormAdditiveValue
     (F E : Type)
     [Field F] [NumberField F]
     [Field E] [NumberField E]
@@ -82,7 +77,7 @@ private theorem eq_of_common_ofMul_image
     (RelativeIdeleGroup.Cohomology.ideleClassNorm F E
       (Additive.toMul c))
 
- noncomputable def includedRelativeIdeleClassNormAdditiveValue
+ def includedRelativeIdeleClassNormAdditiveValue
     (F E : Type)
     [Field F] [NumberField F]
     [Field E] [NumberField E]
@@ -94,7 +89,7 @@ private theorem eq_of_common_ofMul_image
       (RelativeIdeleGroup.Cohomology.ideleClassNorm F E
         (Additive.toMul c)))
 
- noncomputable def rationalFixedFieldInclusionComparison
+ def rationalFixedFieldInclusionComparison
     (K L : ClosedSubgroup
       (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
     (hLK : L.toSubgroup ≤ K.toSubgroup)
@@ -139,7 +134,7 @@ private theorem eq_of_common_ofMul_image
         (_root_.relativeIdeleClassBaseChangeMulEquiv
           (K := ℚ) (L := F) c)))
 
- noncomputable def rationalExtensionNormComparison
+ def rationalExtensionNormComparison
     (K L : ClosedSubgroup
       (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
     (hLK : L.toSubgroup ≤ K.toSubgroup)
@@ -181,7 +176,7 @@ private theorem eq_of_common_ofMul_image
   (e (M.norm.hom x),
     includedRelativeIdeleClassNormAdditiveValue F E (e x))
 
- noncomputable def rationalRelativeNormComparison
+ def rationalRelativeNormComparison
     (K L : ClosedSubgroup
       (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
     (hLK : L.toSubgroup ≤ K.toSubgroup)
@@ -227,7 +222,7 @@ private theorem eq_of_common_ofMul_image
     relativeIdeleClassNormAdditiveValue F E
       (e (eAmbient.symm a)))
 
- noncomputable def rationalFixedFieldIdeleClassAdditiveType
+ def rationalFixedFieldIdeleClassAdditiveType
     (K : ClosedSubgroup
       (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
     [hKfinite : Finite
@@ -244,7 +239,7 @@ private theorem eq_of_common_ofMul_image
   letI : NumberField F := NumberField.of_module_finite ℚ F
   Additive (IdeleClassGroup F)
 
- noncomputable def rationalFixedFieldIdeleClassType
+ def rationalFixedFieldIdeleClassType
     (K : ClosedSubgroup
       (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
     [hKfinite : Finite
@@ -261,7 +256,7 @@ private theorem eq_of_common_ofMul_image
   letI : NumberField F := NumberField.of_module_finite ℚ F
   IdeleClassGroup F
 
- noncomputable def rationalRelativeNormSource
+ def rationalRelativeNormSource
     (K L : ClosedSubgroup
       (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
     (hLK : L.toSubgroup ≤ K.toSubgroup)
@@ -283,7 +278,7 @@ private theorem eq_of_common_ofMul_image
     (hKfinite := hKfinite) (hfinite := hfinite)
     K L hLK hnormal a).1
 
- noncomputable def rationalRelativeNormTarget
+ def rationalRelativeNormTarget
     (K L : ClosedSubgroup
       (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
     (hLK : L.toSubgroup ≤ K.toSubgroup)
@@ -305,7 +300,7 @@ private theorem eq_of_common_ofMul_image
     (hKfinite := hKfinite) (hfinite := hfinite)
     K L hLK hnormal a).2
 
- noncomputable def rationalRelativeNormClassNormSource
+ def rationalRelativeNormClassNormSource
     (K L : ClosedSubgroup
       (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
     (hLK : L.toSubgroup ≤ K.toSubgroup)
@@ -328,7 +323,7 @@ private theorem eq_of_common_ofMul_image
       (hKfinite := hKfinite) (hfinite := hfinite)
       K L hLK hnormal a)
 
- noncomputable def rationalRelativeNormClassNormTarget
+ def rationalRelativeNormClassNormTarget
     (K L : ClosedSubgroup
       (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
     (hLK : L.toSubgroup ≤ K.toSubgroup)
@@ -584,11 +579,11 @@ theorem rationalAbstractExtensionIdeleClassEquiv_norm
     intro q _
     rw [rationalAbstractExtensionIdeleClassEquiv_action
       K L hLK hnormal q x]
-    exact repOfMulDistribMulAction_rho_toMul (eQ q) (e x)
+    rfl
   have hReindex :
       (∏ q : Q, eQ q • c) =
-        ∏ τ : E ≃ₐ[F] E, τ • c := by
-    exact fintype_prod_comp_equiv eQ.toEquiv
+        ∏ τ : E ≃ₐ[F] E, τ • c := 
+    fintype_prod_comp_equiv eQ.toEquiv
       (fun τ : E ≃ₐ[F] E => τ • c)
   have hNormProd :
       (∏ τ : E ≃ₐ[F] E, τ • c) =
@@ -598,7 +593,7 @@ theorem rationalAbstractExtensionIdeleClassEquiv_norm
       c).symm
   exact Eq.trans hActionProd (Eq.trans hReindex hNormProd)
 
-private theorem rationalRelativeNorm_representation_norm
+theorem rationalRelativeNorm_representation_norm
     (K L : ClosedSubgroup
       (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
     (hLK : L.toSubgroup ≤ K.toSubgroup)
@@ -821,8 +816,3 @@ theorem
         (hKfinite := hKfinite) (hfinite := hfinite)
         K L hLK hnormal a at h
   exact h
-
-end Reciprocity
-end GlobalClassFieldTheory
-
-end

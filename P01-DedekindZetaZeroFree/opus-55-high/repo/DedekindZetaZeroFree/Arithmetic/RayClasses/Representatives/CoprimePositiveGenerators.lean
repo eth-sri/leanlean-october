@@ -6,7 +6,6 @@ public import DedekindZetaZeroFree.Arithmetic.RayClasses.Moduli.LocalCongruenceA
 
 @[expose] public section
 
-noncomputable section
 
 namespace DedekindZetaZeroFree.LargeSieve.RayBridge
 
@@ -14,7 +13,7 @@ open scoped NumberField Classical
 
 variable {F : Type*} [Field F] [NumberField F]
 
-private theorem sup_eq_top_of_forall_count_zero
+theorem sup_eq_top_of_forall_count_zero
     (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
     (I : Ideal (𝓞 F)) (hI : I ≠ ⊥)
     (h : ∀ v : IsDedekindDomain.HeightOneSpectrum (𝓞 F),
@@ -26,7 +25,7 @@ private theorem sup_eq_top_of_forall_count_zero
   have hPprime : P.IsPrime := hPmax.isPrime
   have hPne : P ≠ ⊥ := by
     intro hbot
-    exact hI (le_bot_iff.mp (le_trans le_sup_left (hbot ▸ hle)))
+    simp_all
   let v : IsDedekindDomain.HeightOneSpectrum (𝓞 F) := ⟨P, hPprime, hPne⟩
   have hPI : v.asIdeal ∣ I := Ideal.dvd_iff_le.mpr (le_trans le_sup_left hle)
   have hPm : v.asIdeal ∣ m := Ideal.dvd_iff_le.mpr (le_trans le_sup_right hle)
@@ -66,7 +65,7 @@ theorem exists_mixed_integral_generator
 
   have hspanb : (Ideal.span {b} : FractionalIdeal (nonZeroDivisors (𝓞 F)) F) =
       FractionalIdeal.spanSingleton (nonZeroDivisors (𝓞 F)) (b : F) := by
-    rw [FractionalIdeal.coeIdeal_span_singleton]
+    simp
   have hb_le_B : (Ideal.span {b} : FractionalIdeal (nonZeroDivisors (𝓞 F)) F) ≤
       (B : FractionalIdeal (nonZeroDivisors (𝓞 F)) F) :=
     (FractionalIdeal.coeIdeal_le_coeIdeal F).mpr ((Ideal.span_singleton_le_iff_mem (I := B)).mpr hbB)
@@ -155,7 +154,3 @@ theorem exists_mixed_integral_generator
   have hspana : Ideal.span {a} ⊔ m = ⊤ :=
     sup_eq_top_of_forall_count_zero m hm (Ideal.span {a}) hspan_a_ne hcount_a
   exact ⟨a, b, ha0, hb0, ha, ha1f, hb1f, hapos, hbpos, hspana, hspanb_cop⟩
-
-end DedekindZetaZeroFree.LargeSieve.RayBridge
-
-end

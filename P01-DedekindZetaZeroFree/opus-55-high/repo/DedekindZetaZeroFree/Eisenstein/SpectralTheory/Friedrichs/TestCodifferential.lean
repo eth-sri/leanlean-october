@@ -34,7 +34,7 @@ variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
       funext i
       apply Prod.ext <;> simp [coordinates, KPArchRealCoordinates.coordinates, Complex.real_smul]
       apply Complex.ext <;> simp }
-private theorem flat_vector (i : Fin (KPCuspLogShape.dimension F)) (k : Fin 3) :
+theorem flat_vector (i : Fin (KPCuspLogShape.dimension F)) (k : Fin 3) :
     flatCLM F (EuclideanSpace.single (finProdFinEquiv (i,k)) 1) =
       KPContFlatCuspCasimirSpecialization.coordinateDirection (KPCuspLogShape.dimension F) i k := by
   funext j
@@ -44,7 +44,7 @@ private theorem flat_vector (i : Fin (KPCuspLogShape.dimension F)) (k : Fin 3) :
       KPContFlatCuspCasimirSpecialization.coordinateDirection, Complex.ext_iff]
   · fin_cases k <;> simp [flatCLM, coordinates, KPArchRealCoordinates.coordinates,
       KPContFlatCuspCasimirSpecialization.coordinateDirection, hj, Complex.ext_iff]
-private theorem flat_first (f : KPArch.Space (KPCuspLogShape.dimension F) → ℂ)
+theorem flat_first (f : KPArch.Space (KPCuspLogShape.dimension F) → ℂ)
     (hf : Differentiable ℝ f) (i : Fin (KPCuspLogShape.dimension F)) (k : Fin 3)
     (p : Space (KPCuspLogShape.dimension F * 3)) :
     fderiv ℝ (f ∘ coordinates F) p (EuclideanSpace.single (finProdFinEquiv (i,k)) 1) =
@@ -137,12 +137,12 @@ private theorem divergence_flat {A : LocalBall (KPCuspLogShape.dimension F * 3)}
     split_ifs <;> fun_prop) i k p
 
 section ActualHelpers
-open KPContSectorCoveredQuotientVocabulary KPContSectorPhaseComponentCharts
 open KPContSectorSmoothFramesSupport KPContSectorLineL2Isometry
+open KPContSectorCoveredQuotientVocabulary KPContSectorPhaseComponentCharts
 open KPContActualCotangentCountableShrinking KPContCotangentActualOverlap
 open KPContCotangentActualGenuineTwistIsotropy KPContCotangentOverlapRationalBranches
 open KPContActualSectorSmoothTestModules KPContActualSectorTestDifferentialDescent
-private theorem restriction_iota
+theorem restriction_iota
     (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
     (O : OrbifoldChart F ζ hζ U R P H i x) (m : PhaseSheets F ζ hζ U)
     (A : LocalBall (KPCuspLogShape.dimension F * 3))
@@ -181,7 +181,7 @@ private theorem coefficient_eq (s : Sections F ζ hζ U R P H)
     sectionFields s a x = (s a.component).val (labeledA (placeEquiv F ζ hζ) x.val) := by
   simp [sectionFields, LiftedChart.coefficient,
     KPContCotangentActualGenuineTwistIsotropy.isotropyChart, ChartKind.representative]
-private theorem fields_sections (f : S_U F ζ hζ U R P H) :
+theorem fields_sections (f : S_U F ζ hζ U R P H) :
     sectionFields (scalarSections f) = f.val :=
   (Classical.choose_spec (scalar_gluing f)).1.2.2
 private theorem shrink_exists (i : Fin (H.atlas U).componentCount) (p : SymmetricSpace F) :

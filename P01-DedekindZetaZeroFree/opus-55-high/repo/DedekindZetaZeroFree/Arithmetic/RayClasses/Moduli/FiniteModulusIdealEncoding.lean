@@ -69,7 +69,7 @@ theorem finiteRayModulusIdeal_coprime
     by_contra hne
     have heq := p.isMaximal.eq_of_le hne le_sup_left
     have h := hle.mp (heq ▸ le_sup_right)
-    exact h hz
+    omega
 
 theorem narrowIdealModulus_finiteRayModulusIdeal
     (K : Type) [Field K] [NumberField K]
@@ -80,7 +80,3 @@ theorem narrowIdealModulus_finiteRayModulusIdeal
   · ext p
     simp
   · simpa using hc.symm
-
-end DedekindZetaZeroFree.AbelianQuotient
-
-end

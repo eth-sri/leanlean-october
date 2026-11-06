@@ -17,7 +17,7 @@ theorem exists_ray_inverse_coprime (F : Type) [Field F] [NumberField F]
   classical
   set r : Ideal (𝓞 F) := I * (m * q) with hrdef
   have hr : r ≠ ⊥ := by
-    rw [hrdef]; exact mul_ne_zero hI (mul_ne_zero hm hq)
+    simp_all
   have hrI : r ≤ I := by
     rw [hrdef]
     calc I * (m * q) ≤ I * ⊤ := Ideal.mul_mono_right le_top
@@ -101,9 +101,7 @@ theorem exists_ray_inverse_coprime (F : Type) [Field F] [NumberField F]
     have : b * u - 1 = (b * u - b * u0) + (b * u0 - 1) := by ring
     rw [this]; exact Ideal.add_mem m h1 hbu0
   · intro φ
-    have : ((b * u : 𝓞 F) : F) = (b : F) * (u : F) := by push_cast; ring
+    have : ((b * u : 𝓞 F) : F) = (b : F) * (u : F) := by rfl
     rw [this, map_mul]
     exact mul_pos (hbpos φ) (hupos φ)
   · rw [← mul_assoc, ← hJ0, Ideal.span_singleton_mul_span_singleton]
-
-end DedekindZetaZeroFree.LargeSieve

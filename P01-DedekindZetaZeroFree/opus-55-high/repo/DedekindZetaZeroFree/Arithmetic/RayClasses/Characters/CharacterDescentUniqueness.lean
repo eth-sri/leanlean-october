@@ -40,9 +40,7 @@ def descendedCharacter (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
   have hbI : Ideal.span {b} ≠ ⊥ := mt Ideal.span_singleton_eq_bot.mp hb
   have hxratio : x = Units.mk0 (a : F) (by exact_mod_cast ha) *
       (Units.mk0 (b : F) (by exact_mod_cast hb))⁻¹ := by
-    apply Units.ext
-    change (x : F) = (a : F) * (b : F)⁻¹
-    rw [hab, mul_assoc, mul_inv_cancel₀ (by exact_mod_cast hb), mul_one]
+    simp_all
   have hratio : (J : ClassFieldTheory.NumberFieldFractionalIdealGroup F) =
       integralIdealUnit (Ideal.span {a}) haI *
         (integralIdealUnit (Ideal.span {b}) hbI)⁻¹ := by
@@ -73,7 +71,3 @@ theorem descendedCharacter_unique (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
   apply fractionalCharacter_unique m hm η
   intro I hI hcop
   exact hψ I hI hcop
-
-end DedekindZetaZeroFree.LargeSieve.RayBridge
-
-end

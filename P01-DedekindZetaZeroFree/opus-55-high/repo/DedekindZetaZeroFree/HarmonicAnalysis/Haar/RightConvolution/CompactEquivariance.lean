@@ -9,7 +9,7 @@ namespace DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel.RightConvolution
 open MeasureTheory
 open scoped NumberField Classical Topology Matrix.Norms.Elementwise
 
-private theorem arch_conjugation_transport
+theorem arch_conjugation_transport
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (a : L F) (k : G F ζ hζ) :
     PGLComplex.AdelicSlicesRaw.archimedeanInsertion F ζ hζ a * k =

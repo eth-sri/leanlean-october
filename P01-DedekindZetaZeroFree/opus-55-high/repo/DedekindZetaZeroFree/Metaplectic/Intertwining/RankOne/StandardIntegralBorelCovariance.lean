@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.AffineInvariance
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.KPRankOneShellActualBorel
 open scoped NumberField Valued
 open NumberField IsDedekindDomain MeasureTheory ValuativeRel
@@ -130,7 +129,3 @@ theorem standardIntegral_borel_coordinate
   apply integral_congr_ae
   filter_upwards [] with x
   cases ε <;> rfl
-
-end DedekindZetaZeroFree.KPRankOneShellActualBorel
-
-end

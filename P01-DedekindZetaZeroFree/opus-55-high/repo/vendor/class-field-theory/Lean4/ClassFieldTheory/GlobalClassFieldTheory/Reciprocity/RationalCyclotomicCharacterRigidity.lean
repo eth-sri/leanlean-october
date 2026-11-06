@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Rigidity of the rational cyclotomic character
 
@@ -63,8 +60,7 @@ theorem rationalCyclotomicAutomorphism_sq_eq_one_of_character_reductions
       Units.map (PadicInt.toZModPow k).toMonoidHom
           (KummerTheory.rationalCyclotomicCharacterPrimeProduct σ p ^ 2) =
         1
-    rw [map_pow]
-    exact h p k
+    simp_all
   simp only [Pi.pow_apply, Pi.one_apply]
   calc
     (PadicInt.toZModPow k)
@@ -76,8 +72,3 @@ theorem rationalCyclotomicAutomorphism_sq_eq_one_of_character_reductions
       congrArg Units.val hk
     _ = f ↑(1 : ℤ_[p.1]ˣ) := (map_one f).symm
     _ = (PadicInt.toZModPow k) ↑(1 : ℤ_[p.1]ˣ) := rfl
-
-end Reciprocity
-end GlobalClassFieldTheory
-
-end

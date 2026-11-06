@@ -11,7 +11,6 @@ open NumberField IsDedekindDomain
 
 noncomputable section
 namespace DedekindZetaZeroFree.LocalFiniteSums
-set_option autoImplicit false
 
 variable {F : Type} [Field F] [NumberField F]
 variable {A : SArithmeticData F} {σ : F →+* ℂ}
@@ -166,7 +165,3 @@ def f (C : A.GeneralArithmeticContext σ η hS)
     (ξ w z : ℂ) : ℂ :=
   ∑' i : Fin 2 × ℕ × ℕ × ℕ,
     seriesTerm C p j θ i.1 i.2.1 i.2.2.1 i.2.2.2 ξ w z
-
-end DedekindZetaZeroFree.LocalFiniteSums
-
-end

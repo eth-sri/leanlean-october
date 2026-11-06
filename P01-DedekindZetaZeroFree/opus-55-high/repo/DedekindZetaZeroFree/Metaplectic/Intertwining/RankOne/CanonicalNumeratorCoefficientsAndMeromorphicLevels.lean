@@ -27,11 +27,10 @@ variable (F : Type) [Field F] [NumberField F]
   let e := IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
   obtain ⟨x, hx⟩ := valuation_surjective (K := LocalField F q) (e.symm (WithZero.exp (-1 : ℤ)))
   have hv : valuation (LocalField F q) x ≠ 0 := by
-    rw [hx]
-    exact (map_ne_zero e.symm).mpr (by simp)
+    simp_all
   have hxn : x ≠ 0 := by
     intro h
-    exact hv (by simp [h])
+    simp_all
   refine ⟨Units.mk0 x hxn, ?_⟩
   change e (valuation (LocalField F q) x) = _
   rw [hx, e.apply_symm_apply]
@@ -53,10 +52,4 @@ theorem actualCanonicalLevelNumerator_eq_actual
       (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ)) :
     actualCanonicalLevelNumerator F ζ hζ q S P J hJ μ hμ ε =
       actualLevelNumerator F ζ hζ q S P J hJ μ hμ π hπ ε :=
-  level_numerator_unique (LocalField F q) S.borel P S.iwasawa J μ ε _ _
-    (actualCanonicalLevelNumerator_spec F ζ hζ q S P J hJ μ hμ ε)
-    (actualLevelNumerator_spec F ζ hζ q S P J hJ μ hμ π hπ ε)
-
-end DedekindZetaZeroFree.KPRankOneShellContinuation
-
-end
+  by rfl

@@ -1,6 +1,12 @@
 module
 
-public import ClassFieldTheory.AlgebraicNumberTheory.Idele.NormTopology.FiniteNormArithmetic
+public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Norm
+public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Extension.IdeleNormComponents
+public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Extension.IdealClass
+public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Extension.NormLocalOrder
+public import Mathlib.Algebra.BigOperators.Finprod
+public import Mathlib.NumberTheory.NumberField.Completion.Ramification
+public import Mathlib.RingTheory.Ideal.Norm.RelNorm
 public import ClassFieldTheory.AlgebraicNumberTheory.Adele.InfinitePlaceTensorBlock
 
 @[expose] public section
@@ -11,9 +17,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-set_option autoImplicit false
 
 /-!
 # Scalar-extension behavior of idele norms
@@ -40,7 +43,7 @@ variable
     [Algebra K L] [FiniteDimensional K L]
 
 omit [NumberField L] in
-private theorem infinitePlaceCompletionMap_isometry
+theorem infinitePlaceCompletionMap_isometry
     (v₀ : InfinitePlace K)
     (W : InfinitePlace L)
     [W.1.LiesOver v₀.1] :
@@ -74,7 +77,7 @@ private theorem infinitePlaceCompletionMap_isometry
 omit [NumberField L] in
 /-- Mapping a unit along an infinite-place completion map preserves its
 positive norm. -/
-private theorem nnnormUnitHom_infinitePlaceCompletionMap
+theorem nnnormUnitHom_infinitePlaceCompletionMap
     (v₀ : InfinitePlace K)
     (W : InfinitePlace L)
     [W.1.LiesOver v₀.1]
@@ -100,7 +103,7 @@ private theorem nnnormUnitHom_infinitePlaceCompletionMap
 
 /-- The fiber of restriction of infinite places is the set of places
 lying over the chosen base place. -/
- noncomputable def infinitePlaceFiberEquivPlacesOver
+ def infinitePlaceFiberEquivPlacesOver
     (v₀ : InfinitePlace K) :
     {W : InfinitePlace L //
       _root_.infinitePlaceBelow (K := K) W = v₀} ≃
@@ -118,7 +121,7 @@ lying over the chosen base place. -/
 omit [NumberField K] [NumberField L] [FiniteDimensional K L] in
 /-- The archimedean multiplicity upstairs is the base multiplicity
 times the local inertia degree. -/
-private theorem infinitePlace_mult_eq_base_mult_mul_inertiaDeg
+theorem infinitePlace_mult_eq_base_mult_mul_inertiaDeg
     (v₀ : InfinitePlace K)
     (W : InfinitePlace L)
     (hW : W ∈ v₀.placesOver L) :
@@ -162,7 +165,7 @@ private theorem infinitePlace_mult_eq_base_mult_mul_inertiaDeg
 omit [FiniteDimensional K L] in
 /-- The inertia degrees in a restriction fiber sum to the global
 extension degree. -/
-private theorem infinitePlaceFiber_inertiaDeg_sum
+theorem infinitePlaceFiber_inertiaDeg_sum
     (v₀ : InfinitePlace K) :
     ∑ W : {W : InfinitePlace L //
         _root_.infinitePlaceBelow (K := K) W = v₀},
@@ -197,7 +200,7 @@ private theorem infinitePlaceFiber_inertiaDeg_sum
 omit [FiniteDimensional K L] in
 /-- The total archimedean multiplicity in a restriction fiber is the
 base multiplicity times the extension degree. -/
-private theorem infinitePlaceFiber_mult_sum
+theorem infinitePlaceFiber_mult_sum
     (v₀ : InfinitePlace K) :
     ∑ W : {W : InfinitePlace L //
         _root_.infinitePlaceBelow (K := K) W = v₀},
@@ -345,29 +348,6 @@ theorem archimedeanNorm_extension
             nnnormUnitHom v₀.Completion
               (infiniteComponent v₀ a) ^ v₀.mult)
 
-/-- Scalar extension raises the absolute idele norm to the degree of the
-number-field extension. -/
-theorem absoluteNorm_extension
-    (a : IdeleGroup K) :
-    absoluteNorm (extension K L a) =
-      absoluteNorm a ^ Module.finrank K L := by
-  rw [absoluteNorm_apply, absoluteNorm_apply,
-    finiteAbsoluteNorm_extension,
-    archimedeanNorm_extension]
-  calc
-    FiniteIdeleGroup.absoluteNorm a.2 ^ Module.finrank K L *
-          (InfiniteIdeleGroup.archimedeanNorm a.1 ^
-            Module.finrank K L)⁻¹ =
-        FiniteIdeleGroup.absoluteNorm a.2 ^ Module.finrank K L *
-          (InfiniteIdeleGroup.archimedeanNorm a.1)⁻¹ ^
-            Module.finrank K L := by
-      rw [inv_pow]
-    _ =
-        (FiniteIdeleGroup.absoluteNorm a.2 *
-          (InfiniteIdeleGroup.archimedeanNorm a.1)⁻¹) ^
-            Module.finrank K L := by
-      rw [mul_pow]
-
 /-- If the finite part of a rational idele is trivial, then its scalar
 extension has absolute norm equal to the extension degree power of the
 original absolute norm. -/
@@ -387,23 +367,8 @@ theorem absoluteNorm_relativeIdeleBaseChange_inclusion_of_finite_eq_one
     intro W
     change finiteComponent W (extension ℚ L a) = 1
     rw [extension_finiteComponent]
-    change
-      Units.map
-          (finitePlaceAdicCompletionMap ℚ L
-            (_root_.finitePlaceBelow (K := ℚ) W)
-            ⟨W, rfl⟩).toMonoidHom
-          (a.2 (_root_.finitePlaceBelow (K := ℚ) W)) =
-        1
-    rw [ha]
-    exact map_one _
+    simp_all
   rw [absoluteNorm_apply, absoluteNorm_apply, hfinite, ha,
     map_one, one_mul,
     archimedeanNorm_extension (K := ℚ) (L := L)]
-  simpa only [map_one, one_mul] using
-    (inv_pow (InfiniteIdeleGroup.archimedeanNorm a.1)
-      (Module.finrank ℚ L)).symm
-
-
-end IdeleGroup
-
-end
+  simp

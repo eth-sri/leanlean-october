@@ -29,5 +29,3 @@ theorem additiveAdeleQuotient_characters_separate
   let χ := ψ.compAddMonoidHom (e.toAddEquiv.toAddMonoidHom.comp p)
   refine ⟨χ, ?_, hψxy⟩
   exact hψ.comp (e.continuous.comp (QuotientAddGroup.continuous_mk (N := finiteLevelImage K)))
-
-end DedekindZetaZeroFree.AdelicSeparation

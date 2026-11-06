@@ -13,5 +13,3 @@ Source: lean/OAI/NumberTheory/DirichletL/QuadraticSieve/DyadicColumns.lean.
 namespace DedekindZetaZeroFree.LargeSieve.Vendor
 
 noncomputable def dyadicLength (X : ℝ) : ℕ := ⌈Real.log X / Real.log 2⌉₊
-
-end DedekindZetaZeroFree.LargeSieve.Vendor

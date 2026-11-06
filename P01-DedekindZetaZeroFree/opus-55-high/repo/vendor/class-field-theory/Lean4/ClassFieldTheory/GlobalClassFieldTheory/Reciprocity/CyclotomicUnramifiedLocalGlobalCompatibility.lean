@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Cyclotomic unramified local--global compatibility
 
@@ -94,7 +90,7 @@ noncomputable local instance
       (LocalClassFieldTheory.abstractFixedField
         ℚ (SeparableClosure ℚ) H.field))
 
-private theorem
+theorem
     restrictNormalHom_comp_infiniteGlobalArtinMonoidHom_of_tower
     (K E Ω : Type) [Field K] [NumberField K]
     [Field E] [NumberField E] [Algebra K E]
@@ -130,7 +126,7 @@ private theorem
       AlgEquiv.restrictNormalHom G
           (infiniteGlobalArtinMonoidHom K Ω a) =
         globalArtinMonoidHom (K := K) (L := G) a :=
-    restrictNormalHom_infiniteGlobalArtinMonoidHom K Ω a G
+    by simp
   calc
     AlgEquiv.restrictNormalHom E
           (infiniteGlobalArtinMonoidHom K Ω a) =
@@ -147,7 +143,7 @@ private theorem
         (globalArtinMonoidHom_restrict_tower
           (K := K) (L := G) (E := E)) a
 
-private theorem
+theorem
     abstractFixedFieldCyclotomicFiniteRestriction_comp_infiniteGlobalArtinMonoidHom
     (H : FiniteAbstractField
       (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
@@ -231,7 +227,7 @@ private theorem
       restrictNormalHom_comp_infiniteGlobalArtinMonoidHom_of_tower
         F E U
 
-private theorem
+theorem
     abstractFixedFieldGlobalNormResidueMonoidHom_eq_cyclotomicRestrictionComp
     (H : FiniteAbstractField
       (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
@@ -252,7 +248,7 @@ private theorem
     abstractFixedFieldGlobalNormResidueMonoidHom_eq_cyclotomicFiniteRestriction
       H L hUnramified c
 
-private theorem
+theorem
     abstractFixedFieldCyclotomicIdeleClassArtinMonoidHom_comp_finitePlaceIdeleClass
     (H : FiniteAbstractField
       (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
@@ -274,14 +270,9 @@ private theorem
       composeMonoidHom
         (IdeleGroup.finitePlaceIdele v)
         (infiniteGlobalArtinMonoidHom F U).toMonoidHom := by
-  dsimp only
-  apply MonoidHom.ext
-  intro x
-  exact
-    abstractFixedFieldCyclotomicIdeleClassArtinMonoidHom_mk
-      H (IdeleGroup.finitePlaceIdele v x)
+  rfl
 
-private theorem globalArtinMonoidHom_comp_finitePlaceIdele
+theorem globalArtinMonoidHom_comp_finitePlaceIdele
     (K E : Type) [Field K] [NumberField K]
     [Field E] [NumberField E] [Algebra K E]
     [IsAbelianGalois K E]
@@ -292,8 +283,7 @@ private theorem globalArtinMonoidHom_comp_finitePlaceIdele
         (K := K) (L := E) v := by
   apply MonoidHom.ext
   intro x
-  exact globalArtinMonoidHom_finitePlaceIdele
-    (K := K) (L := E) v x
+  simp
 
 /-- The cyclotomic construction of fixed-field reciprocity satisfies
 finite-place local--global compatibility on every finite unramified
@@ -399,8 +389,3 @@ theorem
   exact
     abstractFixedFieldGlobalNormResidueMonoidHom_comp_finitePlaceIdeleClass
       H L hUnramified v
-
-end Reciprocity
-end GlobalClassFieldTheory
-
-end

@@ -51,7 +51,7 @@ private theorem section_mk_eq (s : ℝ)
   rw [← Matrix.GeneralLinearGroup.scalar_commute]
   exact (KPCplxPrincipalSeriesCharts.central_invariance s f z a).symm
 
-private theorem kfinite_pi (s : ℝ)
+theorem kfinite_pi (s : ℝ)
     (f : KPCplxPrincipalSeriesCharts.PrincipalSeries s)
     (hf : KPContHolomorphicKGeneration.IsKFinite s f)
     (u : KPCplxPrincipalSeriesCharts.compactSubgroup) :
@@ -82,7 +82,7 @@ variable (t : KPMsRationalCompactCrossPairing.Vplus F ζ hζ (KPContFlatSourceRe
   map_add' _ _ := rfl
   map_smul' _ _ := rfl
 
-private theorem slot_generator_native (w : InfinitePlace F)
+theorem slot_generator_native (w : InfinitePlace F)
     (c : KPGlobalTorusFunctionData.finitePart F ζ hζ)
     (u : KPContSectorArchSphericalFibers.KInfinity F) :
     ∃ f : KPCplxPrincipalSeriesCharts.PrincipalSeries KPCplxPrincipalSeriesCharts.positiveParameter,
@@ -108,10 +108,10 @@ private theorem slot_generator_native (w : InfinitePlace F)
  abbrev nativeBand (N : ℕ) := (Finset.range (N + 1)).sup
   (KPCplxIntertwinerEigenvalues.harmonicKType KPCplxPrincipalSeriesCharts.positiveParameter)
 
-private theorem nativeBand_mono {N M : ℕ} (h : N ≤ M) : nativeBand N ≤ nativeBand M :=
+theorem nativeBand_mono {N M : ℕ} (h : N ≤ M) : nativeBand N ≤ nativeBand M :=
   Finset.sup_mono (Finset.range_mono (Nat.add_le_add_right h 1))
 
-private theorem kfinite_in_band
+theorem kfinite_in_band
     (f : KPCplxPrincipalSeriesCharts.PrincipalSeries KPCplxPrincipalSeriesCharts.positiveParameter)
     (hf : KPContHolomorphicKGeneration.IsKFinite KPCplxPrincipalSeriesCharts.positiveParameter f) :
     ∃ N, f ∈ nativeBand N := by
@@ -126,12 +126,12 @@ private theorem kfinite_in_band
  def coordinateSpace (w : InfinitePlace F) : Submodule ℂ (KPCplxCharacterHaar.ComplexSU2 → ℂ) :=
   (actualCompactTranslateSpace F ζ hζ t).map (slotRestriction F w)
 
-private theorem coordinateSpace_finite (w : InfinitePlace F) :
+theorem coordinateSpace_finite (w : InfinitePlace F) :
     FiniteDimensional ℂ (coordinateSpace F ζ hζ t w) := by
   letI := actualCompactTranslateSpace_finiteDimensional F ζ hζ t
   exact inferInstanceAs (FiniteDimensional ℂ ((actualCompactTranslateSpace F ζ hζ t).map (slotRestriction F w)))
 
-private theorem coordinateSpace_uniform_band (w : InfinitePlace F) :
+theorem coordinateSpace_uniform_band (w : InfinitePlace F) :
     ∃ N, coordinateSpace F ζ hζ t w ≤
       (nativeBand N).map (KPCplxIntertwinerEigenvalues.compactRestriction _) := by
   let R := KPCplxIntertwinerEigenvalues.compactRestriction KPCplxPrincipalSeriesCharts.positiveParameter
@@ -169,7 +169,7 @@ private theorem coordinateSpace_uniform_band (w : InfinitePlace F) :
   intro b hb
   exact Submodule.map_mono (nativeBand_mono (Finset.le_sup (Finset.mem_attach s ⟨b, hb⟩))) (hN ⟨b, hb⟩)
 
-private theorem all_slices_coordinate (h : actualCompactTranslateSpace F ζ hζ t)
+theorem all_slices_coordinate (h : actualCompactTranslateSpace F ζ hζ t)
     (w : InfinitePlace F) (a : InfinitePlace F → KPCplxCharacterHaar.ComplexSU2) :
     (fun x => h.val (compactTuple F (Function.update a w x))) ∈ coordinateSpace F ζ hζ t w := by
   let b := compactTuple F (Function.update a w 1)
@@ -181,7 +181,7 @@ private theorem all_slices_coordinate (h : actualCompactTranslateSpace F ζ hζ 
   funext v
   by_cases hv : v = w <;> simp [singleCompact, b, compactTuple, hv]
 
-private theorem coordinate_interpolation (w : InfinitePlace F) (N : ℕ)
+theorem coordinate_interpolation (w : InfinitePlace F) (N : ℕ)
     (hN : coordinateSpace F ζ hζ t w ≤ (nativeBand N).map (KPCplxIntertwinerEigenvalues.compactRestriction _)) :
     ∃ (n : ℕ) (x : Fin n → KPCplxCharacterHaar.ComplexSU2) (b : Fin n → nativeBand N),
       ∀ (h : coordinateSpace F ζ hζ t w) (y : KPCplxCharacterHaar.ComplexSU2),

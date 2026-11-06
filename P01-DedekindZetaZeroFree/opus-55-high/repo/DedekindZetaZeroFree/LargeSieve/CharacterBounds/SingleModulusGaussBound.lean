@@ -50,7 +50,7 @@ theorem detector_single_modulus_gauss_sieve
   have hcard : (Fintype.card Bˣ : ℝ) ≤ (Fintype.card B : ℝ) := by
     exact_mod_cast Fintype.card_le_of_injective Units.val Units.val_injective
   have hnonneg : 0 ≤ ∑ d : Bˣ, ‖A d‖ ^ 2 :=
-    Finset.sum_nonneg (fun _ _ => sq_nonneg _)
+    by positivity
   constructor
   · simp_rw [hnorm]
     rw [← Finset.mul_sum]
@@ -62,5 +62,3 @@ theorem detector_single_modulus_gauss_sieve
   · have hratio : (Fintype.card Bˣ : ℝ) / (Fintype.card B : ℝ) ≤ 1 :=
       (div_le_one hB).mpr hcard
     simpa [A] using mul_le_mul_of_nonneg_right hratio hnonneg
-
-end DedekindZetaZeroFree

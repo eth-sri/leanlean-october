@@ -21,8 +21,7 @@ variable (D : DedekindZetaZeroFree.Quantitative.FixedData S η)
 
 theorem raw_z_shift (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe)
     (Z : ℝ) (hZ : 2 ≤ Z) (ξ w : ℂ) (hξ : ξ.re = 4) (hw : w.re = 4) :
-    Iz D u ξ w 2 Z = Iz D u ξ w Scales.tailShift Z :=
-  DedekindZetaZeroFree.Quantitative.RawLargeZControls31.Iz_shift_two_R D u hu Z hZ ξ w hξ hw
+    Iz D u ξ w 2 Z = Iz D u ξ w Scales.tailShift Z := by apply DedekindZetaZeroFree.Quantitative.RawLargeZControls31.Iz_shift_two_R <;> assumption
 
 private lemma cvi_congr {σ : ℝ} {f g : ℂ → ℂ}
     (h : ∀ t : ℝ, f ((σ : ℂ) + (t : ℂ) * Complex.I) = g ((σ : ℂ) + (t : ℂ) * Complex.I)) :

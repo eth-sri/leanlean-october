@@ -5,7 +5,6 @@ public import Mathlib.Data.Complex.Basic
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.OrbitExpansion.ExteriorDigits
 
 theorem representation_bruhat {G V : Type*} [Group G] [AddCommGroup V] [Module â„‚ V]
@@ -20,7 +19,3 @@ theorem representation_bruhat {G V : Type*} [Group G] [AddCommGroup V] [Module â
   rw [hword, hprod]
   simp only [map_mul, Module.End.mul_apply, hl, hroot, hz, map_smul, smul_eq_mul]
   ring
-
-end DedekindZetaZeroFree.OrbitExpansion.ExteriorDigits
-
-end

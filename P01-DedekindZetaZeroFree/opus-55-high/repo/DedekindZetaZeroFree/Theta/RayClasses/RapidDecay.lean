@@ -6,7 +6,6 @@ public import DedekindZetaZeroFree.Analysis.StretchedExponentialDecay
 
 @[expose] public section
 
-noncomputable section
 
 open MeasureTheory
 
@@ -16,13 +15,13 @@ variable {K : Type} [Field K] [NumberField K]
 
 theorem locallyIntegrableOn_fδ
     (D : RayCoset.Data K) (δ : Finset (RayCoset.RealPlaces K)) :
-    LocallyIntegrableOn (fδ D δ) (Set.Ioi (0 : ℝ)) volume := by
-  exact DedekindZetaZeroFree.rayTheta_locallyIntegrableOn_fδ D δ
+    LocallyIntegrableOn (fδ D δ) (Set.Ioi (0 : ℝ)) volume := 
+  DedekindZetaZeroFree.rayTheta_locallyIntegrableOn_fδ D δ
 
 theorem locallyIntegrableOn_gδDual
     (D : RayCoset.Data K) (δ : Finset (RayCoset.RealPlaces K)) :
-    LocallyIntegrableOn (gδDual D δ) (Set.Ioi (0 : ℝ)) volume := by
-  exact DedekindZetaZeroFree.rayTheta_locallyIntegrableOn_gδDual D δ
+    LocallyIntegrableOn (gδDual D δ) (Set.Ioi (0 : ℝ)) volume := 
+  DedekindZetaZeroFree.rayTheta_locallyIntegrableOn_gδDual D δ
 
 theorem fδ_sub_f0δ_isBigO_rpow
     (D : RayCoset.Data K) (δ : Finset (RayCoset.RealPlaces K)) (r : ℝ) :
@@ -37,7 +36,7 @@ theorem fδ_sub_f0δ_isBigO_rpow
     (2 / (Module.finrank ℚ K : ℝ)) B hp hB
     (fun t : ℝ => fδ D δ t - f0δ D δ) A hA.le
     (fun t ht => (hbound t ht).1) r
-  simpa only [Real.rpow_eq_pow] using h
+  omega
 
 theorem gδDual_sub_g0δ_isBigO_rpow
     (D : RayCoset.Data K) (δ : Finset (RayCoset.RealPlaces K)) (r : ℝ) :
@@ -52,8 +51,4 @@ theorem gδDual_sub_g0δ_isBigO_rpow
     (2 / (Module.finrank ℚ K : ℝ)) B hp hB
     (fun t : ℝ => gδDual D δ t - g0δ D δ) A hA.le
     (fun t ht => (hbound t ht).2) r
-  simpa only [Real.rpow_eq_pow] using h
-
-end DedekindZetaZeroFree.AbelianQuotient.RayTheta
-
-end
+  omega

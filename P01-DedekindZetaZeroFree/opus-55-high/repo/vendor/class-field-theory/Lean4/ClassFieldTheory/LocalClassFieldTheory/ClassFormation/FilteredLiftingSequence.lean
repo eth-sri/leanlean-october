@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 namespace LocalClassFieldTheory
 
 /-!
@@ -74,7 +71,7 @@ structure FilteredLiftStep (A : Type u) [CommGroup A]
   equation : s.value = F correction * next.value
 
 /-- The recursively chosen remainder sequence. -/
-noncomputable def chosenFilteredLiftStateSequence
+def chosenFilteredLiftStateSequence
     (A : Type u) [CommGroup A] (P : Nat → A → Prop) (R : A → Prop)
     (F : A →* A) (n : Nat) (initial : FilteredLiftState A P R n 0)
     (step : ∀ i (s : FilteredLiftState A P R n i),
@@ -86,7 +83,7 @@ noncomputable def chosenFilteredLiftStateSequence
         (step i (chosenFilteredLiftStateSequence A P R F n initial step i))).next
 
 /-- The recursively chosen correction at depth `n + i`. -/
-noncomputable def chosenFilteredLiftCorrectionSequence
+def chosenFilteredLiftCorrectionSequence
     (A : Type u) [CommGroup A] (P : Nat → A → Prop) (R : A → Prop)
     (F : A →* A) (n : Nat) (initial : FilteredLiftState A P R n 0)
     (step : ∀ i (s : FilteredLiftState A P R n i),
@@ -135,8 +132,8 @@ theorem chosenFilteredLiftStateSequence_equation
       Nonempty (FilteredLiftStep A P R F n i s)) (i : Nat) :
     (chosenFilteredLiftStateSequence A P R F n initial step i).value =
       F (chosenFilteredLiftCorrectionSequence A P R F n initial step i) *
-        (chosenFilteredLiftStateSequence A P R F n initial step (i + 1)).value := by
-  exact (Classical.choice
+        (chosenFilteredLiftStateSequence A P R F n initial step (i + 1)).value := 
+  (Classical.choice
     (step i (chosenFilteredLiftStateSequence A P R F n initial step i))).equation
 
 /-- The initial remainder equals the image under `F` of the first `d`
@@ -159,6 +156,3 @@ theorem filteredLift_initial_eq_correctionProduct_mul_state
       rw [mul_assoc, ← chosenFilteredLiftStateSequence_equation
         A P R F n initial step d]
       exact ih
-
-end
-end LocalClassFieldTheory

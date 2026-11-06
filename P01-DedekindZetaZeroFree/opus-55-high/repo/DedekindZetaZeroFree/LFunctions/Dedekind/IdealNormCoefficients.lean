@@ -32,5 +32,3 @@ noncomputable def idealNormCount (n : ℕ) : ℕ :=
 lemma dedekindZeta_eq_LSeries_idealNormCount (s : ℂ) :
     NumberField.dedekindZeta K s = LSeries (fun n ↦ (idealNormCount K n : ℂ)) s :=
   rfl
-
-end DedekindZetaZeroFree.Odlyzko

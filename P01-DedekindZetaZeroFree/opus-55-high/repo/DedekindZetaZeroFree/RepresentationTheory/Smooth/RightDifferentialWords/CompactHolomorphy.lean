@@ -12,14 +12,14 @@ open Filter Set Topology
 open scoped NumberField Classical
 open _root_.DedekindZetaZeroFree.KPContRightJets renaming rightWord_smooth → rightWord_smooth
 
-private theorem rightWord_append {m b : ℕ}
+theorem rightWord_append {m b : ℕ}
     (fields : Fin b → Space m → Space m) (v w : List (Fin b)) (f : Space m → ℂ) :
     rightWord fields v (rightWord fields w f) = rightWord fields (v ++ w) f := by
   induction v with
   | nil => rfl
   | cons i v ih => simp only [rightWord, List.cons_append, ih]
 
-private theorem rightCombination_append {m b : ℕ}
+theorem rightCombination_append {m b : ℕ}
     (fields : Fin b → Space m → Space m) (terms : List (ℂ × List (Fin b)))
     (w : List (Fin b)) (f : Space m → ℂ) :
     rightCombination fields terms (rightWord fields w f) =
@@ -27,7 +27,7 @@ private theorem rightCombination_append {m b : ℕ}
   funext x
   simp only [rightCombination, List.map_map, Function.comp_def, rightWord_append]
 
-private theorem rightSmoothHolomorphicOn_word {m b : ℕ} (T : LocalBall m)
+theorem rightSmoothHolomorphicOn_word {m b : ℕ} (T : LocalBall m)
     (fields : Fin b → Space m → Space m)
     (hf : ∀ i, ContDiffOn ℝ (⊤ : ℕ∞) (fields i) T.carrier)
     (u : ℂ → Space m → ℂ) (O : Set ℂ)
@@ -41,7 +41,7 @@ private theorem rightSmoothHolomorphicOn_word {m b : ℕ} (T : LocalBall m)
   rw [rightCombination_append]
   exact he s hs x
 
-private theorem rightWord_eqOn {m b : ℕ} (T : LocalBall m)
+theorem rightWord_eqOn {m b : ℕ} (T : LocalBall m)
     (fields : Fin b → Space m → Space m) (w : List (Fin b))
     (f g : Space m → ℂ) (he : Set.EqOn f g T.carrier) :
     Set.EqOn (rightWord fields w f) (rightWord fields w g) T.carrier := by
@@ -53,7 +53,7 @@ private theorem rightWord_eqOn {m b : ℕ} (T : LocalBall m)
       Filter.Eventually.mono (Metric.isOpen_ball.mem_nhds hx) (fun y hy => ih hy)
     exact congrArg (fun D : Space m →L[ℝ] ℂ => D (fields i x)) hfg.fderiv_eq
 
-private theorem rightCombination_eqOn {m b : ℕ} (T : LocalBall m)
+theorem rightCombination_eqOn {m b : ℕ} (T : LocalBall m)
     (fields : Fin b → Space m → Space m) (terms : List (ℂ × List (Fin b)))
     (f g : Space m → ℂ) (he : Set.EqOn f g T.carrier) :
     Set.EqOn (rightCombination fields terms f) (rightCombination fields terms g) T.carrier := by
@@ -64,7 +64,7 @@ private theorem rightCombination_eqOn {m b : ℕ} (T : LocalBall m)
   intro t ht
   rw [rightWord_eqOn T fields t.2 f g he hx]
 
-private theorem rightSmoothHolomorphicOn_congr {m b : ℕ} (T : LocalBall m)
+theorem rightSmoothHolomorphicOn_congr {m b : ℕ} (T : LocalBall m)
     (fields : Fin b → Space m → Space m) (u v : ℂ → Space m → ℂ) (O : Set ℂ)
     (hu : RightSmoothHolomorphicOn T fields u O)
     (he : ∀ s ∈ O, Set.EqOn (u s) (v s) T.carrier) :

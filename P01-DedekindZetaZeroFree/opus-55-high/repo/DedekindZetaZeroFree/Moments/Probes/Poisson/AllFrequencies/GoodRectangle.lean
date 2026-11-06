@@ -1,6 +1,6 @@
 module
 
-public import DedekindZetaZeroFree.Moments.Probes.Poisson.AllFrequencies.GoodSideBounds
+public import DedekindZetaZeroFree.Moments.Probes.Poisson.AllFrequencies.GoodNestedIntegrals
 public import DedekindZetaZeroFree.Moments.Probes.Poisson.AllowedRows.RectangleDeformation
 
 @[expose] public section
@@ -78,7 +78,7 @@ theorem rawGood_rectangle_decomp (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexi
 
 private abbrev KK : ℝ := ∫ t : ℝ, (1 + |t|) ^ (-(2 : ℝ))
 
-private theorem KK_int : Integrable (fun t : ℝ => (1 + |t|) ^ (-(2 : ℝ))) := by
+theorem KK_int : Integrable (fun t : ℝ => (1 + |t|) ^ (-(2 : ℝ))) := by
   have h := integrable_one_add_norm (E := ℝ) (μ := volume) (r := 2) (by norm_num)
   simp only [Real.norm_eq_abs] at h
   exact h
@@ -86,12 +86,12 @@ private theorem KK_int : Integrable (fun t : ℝ => (1 + |t|) ^ (-(2 : ℝ))) :=
 private theorem KK_nonneg : 0 ≤ KK :=
   integral_nonneg fun t => by positivity
 
-private theorem rpow_neg_le' {T s B : ℝ} (hT : 0 < T) (hs : T ≤ s) (hB : 0 ≤ B) :
+theorem rpow_neg_le' {T s B : ℝ} (hT : 0 < T) (hs : T ≤ s) (hB : 0 ≤ B) :
     s ^ (-B) ≤ T ^ (-B) := by
   rw [Real.rpow_neg (hT.le.trans hs), Real.rpow_neg hT.le]
   exact inv_anti₀ (Real.rpow_pos_of_pos hT _) (Real.rpow_le_rpow hT.le hs hB)
 
-private theorem pw_bound {U ρ B : ℝ} (hU : 1 ≤ U) (hρ : 0 < ρ) :
+theorem pw_bound {U ρ B : ℝ} (hU : 1 ≤ U) (hρ : 0 < ρ) :
     U ^ ((1 / 25 : ℝ) + 1) * (U ^ ρ) ^ (-((B + 2) / ρ)) ≤ U ^ (-B) := by
   have hU0 : 0 ≤ U := by linarith
   rw [← Real.rpow_mul hU0, ← Real.rpow_add (by linarith)]
@@ -100,7 +100,7 @@ private theorem pw_bound {U ρ B : ℝ} (hU : 1 ≤ U) (hρ : 0 < ρ) :
   rw [this]
   linarith
 
-private theorem final_mul {c C P V R W K : ℝ} (hc : 0 < c) (hC : 0 ≤ C) (hP : 0 ≤ P)
+theorem final_mul {c C P V R W K : ℝ} (hc : 0 < c) (hC : 0 ≤ C) (hP : 0 ≤ P)
     (hK : 0 ≤ K) (hW : 0 ≤ W) (hVR : V * R ≤ W) :
     c * (C * P * V * R * K) ≤ (C * (K + 1) * c) * P * W := by
   have h1 : 0 ≤ c * C * P * K := by positivity
@@ -136,11 +136,11 @@ private theorem tail_int (f : ℝ → ℂ) {T M B2 : ℝ} (hT : 0 < T) (hM : 0 �
           (ae_of_all _ fun t => by show (0 : ℝ) ≤ _; positivity)
     _ = M * T ^ (-B2) * KK := integral_const_mul _ _
 
-private theorem norm_inv_two_pi : ‖((2 : ℂ) * (Real.pi : ℂ))⁻¹‖ = (2 * Real.pi)⁻¹ := by
+theorem norm_inv_two_pi : ‖((2 : ℂ) * (Real.pi : ℂ))⁻¹‖ = (2 * Real.pi)⁻¹ := by
   rw [norm_inv, norm_mul]
   simp [abs_of_pos Real.pi_pos]
 
-private theorem norm_inv_two_pi_I :
+theorem norm_inv_two_pi_I :
     ‖((2 : ℂ) * (Real.pi : ℂ) * Complex.I)⁻¹‖ = (2 * Real.pi)⁻¹ := by
   rw [norm_inv, norm_mul, norm_mul]
   simp [abs_of_pos Real.pi_pos]

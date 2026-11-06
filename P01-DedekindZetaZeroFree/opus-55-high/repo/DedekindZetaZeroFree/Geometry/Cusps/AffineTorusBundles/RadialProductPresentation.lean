@@ -19,7 +19,6 @@ def coordinatesAction (F : Type*) [Field F] [NumberField F]
     intro p
     change (toArchHomeomorph F hd).symm
       ((↑(1 : S) : KPCuspArithmetic.PGL2 F) • (toArchHomeomorph F hd p)) = p
-    rw [Subgroup.coe_one]
     simp
   map_mul' g k := by
     apply Homeomorph.ext
@@ -66,10 +65,7 @@ def actualCrossHomeomorph (F : Type*) [Field F] [NumberField F]
       exact (coordinatesAction_radial F hF S D g (p, 0)).symm
     change (coordinatesAction F (positive_dimension F hF) S g⁻¹
       ((coordinatesAction F (positive_dimension F hF) S g (p, 0)).1, 0)).1 = p
-    rw [he]
-    have h := congrArg (fun f : Coordinates F ≃ₜ Coordinates F => f (p, 0))
-      ((coordinatesAction F (positive_dimension F hF) S).map_mul g⁻¹ g).symm
-    simpa using congrArg Prod.fst h
+    simp_all
   right_inv p := by
     have he : ((coordinatesAction F (positive_dimension F hF) S g⁻¹ (p, 0)).1, 0) =
       coordinatesAction F (positive_dimension F hF) S g⁻¹ (p, 0) := by
@@ -77,10 +73,7 @@ def actualCrossHomeomorph (F : Type*) [Field F] [NumberField F]
       exact (coordinatesAction_radial F hF S D g⁻¹ (p, 0)).symm
     change (coordinatesAction F (positive_dimension F hF) S g
       ((coordinatesAction F (positive_dimension F hF) S g⁻¹ (p, 0)).1, 0)).1 = p
-    rw [he]
-    have h := congrArg (fun f : Coordinates F ≃ₜ Coordinates F => f (p, 0))
-      ((coordinatesAction F (positive_dimension F hF) S).map_mul g g⁻¹).symm
-    simpa using congrArg Prod.fst h
+    simp_all
   continuous_toFun := (coordinatesAction F (positive_dimension F hF) S g).continuous.fst.comp
     (continuous_id.prodMk continuous_const)
   continuous_invFun := (coordinatesAction F (positive_dimension F hF) S g⁻¹).continuous.fst.comp
@@ -95,8 +88,7 @@ def actualCrossAction (F : Type*) [Field F] [NumberField F]
     apply Homeomorph.ext
     intro p
     change (coordinatesAction F (positive_dimension F hF) S 1 (p, 0)).1 = p
-    rw [map_one]
-    rfl
+    simp
   map_mul' g k := by
     apply Homeomorph.ext
     intro p
@@ -117,8 +109,8 @@ theorem actualCrossAction_formula (F : Type*) [Field F] [NumberField F]
     (hA : Matrix.ProjGenLinGroup.mk A = (g : KPCuspArithmetic.PGL2 F))
     (hc : A 1 0 = 0) (p : Cross F) :
     actualCrossAction F hF S D g p =
-      crossAffine F hF D.E D.integralUnits (D.ratio g) (A 0 1 / A 1 1) p := by
-  exact congrArg Prod.fst (coordinatesAction_formula F hF S D g A hA hc (p, 0))
+      crossAffine F hF D.E D.integralUnits (D.ratio g) (A 0 1 / A 1 1) p := 
+  congrArg Prod.fst (coordinatesAction_formula F hF S D g A hA hc (p, 0))
 
 theorem coordinatesAction_product (F : Type*) [Field F] [NumberField F]
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
@@ -203,82 +195,9 @@ theorem totalRelation_product (F : Type*) [Field F] [NumberField F]
     rw [he]
     exact congrArg (toArch F) (Prod.ext hg ht.symm)
 
-def actualRadialPresentation (F : Type*) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-    (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ParabolicData F S) :
-    CrossQuotient F S × ℝ ≃ₜ TotalQuotient F S where
-  toFun p := Quotient.lift (fun x : Cross F => Quotient.mk (totalRelation F S) (x, p.2))
-    (fun x y h => Quotient.sound ((totalRelation_product F hF S D _ _).mpr ⟨h, rfl⟩)) p.1
-  invFun := Quotient.lift (fun p : Coordinates F => (Quotient.mk (crossRelation F S) p.1, p.2))
-    (fun p r h => by
-      obtain ⟨hc, ht⟩ := (totalRelation_product F hF S D p r).mp h
-      exact Prod.ext (Quotient.sound hc) ht)
-  left_inv := by
-    rintro ⟨p, t⟩
-    induction p using Quotient.inductionOn
-    rfl
-  right_inv := by
-    intro p
-    induction p using Quotient.inductionOn
-    rfl
-  continuous_toFun := by
-    apply isQuotientMap_quotient_mk'.continuous_lift_prod_left
-    exact continuous_quotient_mk'
-  continuous_invFun := by
-    apply continuous_quot_lift
-    exact (continuous_quotient_mk'.comp continuous_fst).prodMk continuous_snd
-
-@[simp] theorem actualRadialPresentation_formula (F : Type*) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-    (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ParabolicData F S)
-    (p : Cross F) (t : ℝ) :
-    actualRadialPresentation F hF S D (Quotient.mk _ p, t) = Quotient.mk _ (p, t) := rfl
-
 theorem highRelation_product (F : Type*) [Field F] [NumberField F]
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ParabolicData F S) (T : ℝ)
     (p r : {p : Coordinates F // T < p.2}) :
     highRelation F S T p r ↔ crossRelation F S p.val.1 r.val.1 ∧ p.val.2 = r.val.2 :=
   totalRelation_product F hF S D p.val r.val
-
-def actualHighPresentation (F : Type*) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-    (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ParabolicData F S) (T : ℝ) :
-    CrossQuotient F S × Set.Ioi T ≃ₜ HighQuotient F S T where
-  toFun p := Quotient.lift (fun x : Cross F => Quotient.mk (highRelation F S T)
-      ⟨(x, p.2.val), p.2.property⟩)
-    (fun x y h => Quotient.sound ((highRelation_product F hF S D T _ _).mpr ⟨h, rfl⟩)) p.1
-  invFun := Quotient.lift (fun p : {p : Coordinates F // T < p.2} =>
-    (Quotient.mk (crossRelation F S) p.val.1, (⟨p.val.2, p.property⟩ : Set.Ioi T)))
-    (fun p r h => by
-      obtain ⟨hc, ht⟩ := (highRelation_product F hF S D T p r).mp h
-      exact Prod.ext (Quotient.sound hc) (Subtype.ext ht))
-  left_inv := by
-    rintro ⟨p, t⟩
-    induction p using Quotient.inductionOn
-    rfl
-  right_inv := by
-    intro p
-    induction p using Quotient.inductionOn
-    rfl
-  continuous_toFun := by
-    letI : LocallyCompactSpace (Set.Ioi T) := isOpen_Ioi.locallyCompactSpace
-    apply isQuotientMap_quotient_mk'.continuous_lift_prod_left
-    apply continuous_quotient_mk'.comp
-    exact (continuous_fst.prodMk (continuous_subtype_val.comp continuous_snd)).subtype_mk _
-  continuous_invFun := by
-    apply continuous_quot_lift
-    exact (continuous_quotient_mk'.comp (continuous_fst.comp continuous_subtype_val)).prodMk
-      ((continuous_snd.comp continuous_subtype_val).subtype_mk _)
-
-@[simp] theorem actualHighPresentation_formula (F : Type*) [Field F] [NumberField F]
-    (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
-    (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ParabolicData F S)
-    (T : ℝ) (p : Cross F) (t : Set.Ioi T) :
-    actualHighPresentation F hF S D T (Quotient.mk _ p, t) =
-      Quotient.mk _ ⟨(p, t.val), t.property⟩ := rfl
-end DedekindZetaZeroFree.KPCuspCharts
-
-end
-
-end

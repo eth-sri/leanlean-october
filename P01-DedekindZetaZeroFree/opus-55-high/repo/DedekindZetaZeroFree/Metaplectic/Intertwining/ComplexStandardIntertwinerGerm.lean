@@ -15,7 +15,7 @@ open MeasureTheory Set
 open scoped ContDiff Matrix.Norms.Elementwise
 
 def suMatrix (a b : ℂ) : Matrix (Fin 2) (Fin 2) ℂ := !![star b, -star a; a, b]
-private lemma suMatrix_mem (a b : ℂ) (h : ‖a‖ ^ 2 + ‖b‖ ^ 2 = 1) :
+lemma suMatrix_mem (a b : ℂ) (h : ‖a‖ ^ 2 + ‖b‖ ^ 2 = 1) :
     suMatrix a b ∈ ComplexSU2 := by
   have h' : a * star a + b * star b = 1 := by
     change a * (starRingEnd ℂ) a + b * (starRingEnd ℂ) b = 1
@@ -27,7 +27,7 @@ private lemma suMatrix_mem (a b : ℂ) (h : ‖a‖ ^ 2 + ‖b‖ ^ 2 = 1) :
   · rw [Matrix.mem_unitaryGroup_iff]
     ext i j
     fin_cases i <;> fin_cases j <;>
-      simp [suMatrix, Matrix.mul_apply, Fin.sum_univ_two, Matrix.star_apply, star_star]
+      simp [suMatrix, Matrix.mul_apply, Fin.sum_univ_two, Matrix.star_apply]
     · change star b * b + star a * a = 1
       calc star b * b + star a * a = a * star a + b * star b := by ring
            _ = 1 := h'
@@ -38,10 +38,10 @@ private lemma suMatrix_mem (a b : ℂ) (h : ‖a‖ ^ 2 + ‖b‖ ^ 2 = 1) :
       Matrix.cons_val_one, Matrix.cons_val_fin_one]
     calc star b * b - -star a * a = a * star a + b * star b := by ring
       _ = 1 := h'
-private lemma rep_open (z : ℂ) : ∃ k : ComplexSU2,
+lemma rep_open (z : ℂ) : ∃ k : ComplexSU2,
     bottomRowLine (complexSU2Embedding k) = projectiveOpen z := by
   let r : ℝ := Real.sqrt (1 + ‖z‖ ^ 2)
-  have hr : 0 < r := Real.sqrt_pos.mpr (by positivity)
+  have hr : 0 < r := by positivity
   have hr2 : r ^ 2 = 1 + ‖z‖ ^ 2 := Real.sq_sqrt (by positivity)
   let a : ℂ := ((r : ℂ))⁻¹
   let b : ℂ := z / (r : ℂ)
@@ -146,7 +146,7 @@ private lemma vals_bdd (j : ℕ) (φ : CompactPicture) : BddAbove (vals j φ) :=
       subst q
       rcases hr with rfl | rfl
       · exact (hC z hz).1.trans (le_max_right _ _)
-      · exact (hC z hz).2.trans (le_max_right _ _)
+      simp_all
   | succ j ih =>
     rcases ih with ⟨A, hA⟩
     rcases hb (j+1) with ⟨C, hC⟩
@@ -159,7 +159,7 @@ private lemma vals_bdd (j : ℕ) (φ : CompactPicture) : BddAbove (vals j φ) :=
         subst q
         rcases hr with rfl | rfl
         · exact (hC z hz).1.trans (le_max_right _ _)
-        · exact (hC z hz).2.trans (le_max_right _ _)
+        simp_all
 private lemma p_nonneg (j : ℕ) (φ : CompactPicture) : 0 ≤ sourceSeminorm j φ :=
   le_csSup (vals_bdd j φ) (Or.inl rfl)
 private lemma p_le {j : ℕ} {φ : CompactPicture} {C : ℝ} (hC : 0 ≤ C)
@@ -171,7 +171,7 @@ private lemma p_le {j : ℕ} {φ : CompactPicture} {C : ℝ} (hC : 0 ≤ C)
   · simpa only [mem_singleton_iff.mp hr] using hC
   · rcases hr with rfl | rfl
     · exact (h q hq z hz).1
-    · exact (h q hq z hz).2
+    simp_all
 private lemma p_bounds (j : ℕ) (φ : CompactPicture) (q : ℕ) (hq : q ≤ j)
     (z : ℂ) (hz : z ∈ Metric.closedBall (0 : ℂ) 1) :
       ‖iteratedFDeriv ℝ q (φ ∘ projectiveOpen) z‖ ≤ sourceSeminorm j φ ∧
@@ -182,13 +182,13 @@ private lemma p_bounds (j : ℕ) (φ : CompactPicture) (q : ℕ) (hq : q ≤ j)
 private lemma deriv_add (q : ℕ) (φ ψ : CompactPicture) (chart : ℂ → ComplexProjectiveLine)
     (hφ : ContDiff ℝ ∞ (φ ∘ chart)) (hψ : ContDiff ℝ ∞ (ψ ∘ chart)) (z : ℂ) :
     iteratedFDeriv ℝ q ((φ + ψ) ∘ chart) z =
-      iteratedFDeriv ℝ q (φ ∘ chart) z + iteratedFDeriv ℝ q (ψ ∘ chart) z := by
-  exact iteratedFDeriv_add_apply ((hφ.of_le (by simp)).contDiffAt)
+      iteratedFDeriv ℝ q (φ ∘ chart) z + iteratedFDeriv ℝ q (ψ ∘ chart) z := 
+  iteratedFDeriv_add_apply ((hφ.of_le (by simp)).contDiffAt)
     ((hψ.of_le (by simp)).contDiffAt)
 private lemma deriv_smul (q : ℕ) (c : ℂ) (φ : CompactPicture) (chart : ℂ → ComplexProjectiveLine)
     (hφ : ContDiff ℝ ∞ (φ ∘ chart)) (z : ℂ) :
-    iteratedFDeriv ℝ q ((c • φ) ∘ chart) z = c • iteratedFDeriv ℝ q (φ ∘ chart) z := by
-  exact iteratedFDeriv_const_smul_apply ((hφ.of_le (by simp)).contDiffAt)
+    iteratedFDeriv ℝ q ((c • φ) ∘ chart) z = c • iteratedFDeriv ℝ q (φ ∘ chart) z := 
+  iteratedFDeriv_const_smul_apply ((hφ.of_le (by simp)).contDiffAt)
 private lemma p_zero (j : ℕ) : sourceSeminorm j 0 = 0 := by
   apply le_antisymm _ (p_nonneg j 0)
   apply p_le le_rfl
@@ -221,7 +221,7 @@ private lemma p_smul (j : ℕ) (c : ℂ) (φ : CompactPicture) :
     simp [p_zero]
   · apply le_antisymm (p_smul_le j c φ)
     have h := mul_le_mul_of_nonneg_left (p_smul_le j c⁻¹ (c • φ)) (norm_nonneg c)
-    simpa [smul_smul, hc, norm_inv, ← mul_assoc] using h
+    simp_all
 private lemma p_neg (j : ℕ) (φ : CompactPicture) :
     sourceSeminorm j (-φ) = sourceSeminorm j φ := by
   simpa using p_smul j (-1) φ
@@ -232,8 +232,8 @@ theorem sourceSeminorm_laws (j : ℕ) :
       sourceSeminorm j φ + sourceSeminorm j ψ) ∧
     (∀ φ : CompactPicture, sourceSeminorm j (-φ) = sourceSeminorm j φ) ∧
     (∀ (c : ℂ) (φ : CompactPicture), sourceSeminorm j (c • φ) =
-      ‖c‖ * sourceSeminorm j φ) := by
-  exact ⟨p_zero j, p_add j, p_neg j, p_smul j⟩
+      ‖c‖ * sourceSeminorm j φ) := 
+  ⟨p_zero j, p_add j, p_neg j, p_smul j⟩
 
 noncomputable def compactSeminorm (j : ℕ) : Seminorm ℂ CompactPicture where
   toFun := sourceSeminorm j
@@ -245,7 +245,7 @@ noncomputable def compactSeminorm (j : ℕ) : Seminorm ℂ CompactPicture where
 noncomputable instance compactTopology : TopologicalSpace CompactPicture :=
   (SeminormFamily.moduleFilterBasis compactSeminorm).topology
 
-private theorem compact_withSeminorms : WithSeminorms compactSeminorm := ⟨rfl⟩
+theorem compact_withSeminorms : WithSeminorms compactSeminorm := ⟨rfl⟩
 
 noncomputable instance compactTopologicalAddGroup : IsTopologicalAddGroup CompactPicture :=
   compact_withSeminorms.isTopologicalAddGroup
@@ -253,7 +253,7 @@ noncomputable instance compactTopologicalAddGroup : IsTopologicalAddGroup Compac
 noncomputable instance compactContinuousSMul : ContinuousSMul ℂ CompactPicture :=
   compact_withSeminorms.continuousSMul
 
-private theorem compact_pointwise :
+theorem compact_pointwise :
     (∀ (φ ψ : CompactPicture) z, (φ + ψ) z = φ z + ψ z) ∧
     (∀ (c : ℂ) (φ : CompactPicture) z, (c • φ) z = c * φ z) := ⟨by intros; rfl, by intros; rfl⟩
 
@@ -274,8 +274,7 @@ private lemma rowRatio_pos (g : ComplexGL2) : 0 < rowRatio g := by
       apply norm_eq_zero.mp
       nlinarith [sq_nonneg ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 1‖]
     have h1 : (g : Matrix (Fin 2) (Fin 2) ℂ) 1 1 = 0 := by
-      apply norm_eq_zero.mp
-      nlinarith [sq_nonneg ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 0‖]
+      simp_all
     apply hdet
     simp [Matrix.det_fin_two, h0, h1]
   exact div_pos (norm_pos_iff.mpr (Matrix.GeneralLinearGroup.det g).ne_zero) hr
@@ -284,10 +283,8 @@ noncomputable def haarIntegral (β : ℂˣ) (s : ℂ) (φ : CompactPicture)
     (g : ComplexGL2) : ℂ :=
   ∫ x : ℂ, forwardSection s φ (weyl * upperUnipotent x * g) ∂characterHaar β
 
-private lemma wn_matrix_continuous (g : ComplexGL2) :
+lemma wn_matrix_continuous (g : ComplexGL2) :
     Continuous (fun x : ℂ => (weyl * upperUnipotent x * g : Matrix (Fin 2) (Fin 2) ℂ)) := by
-  change Continuous (fun x : ℂ =>
-    (!![0, 1; 1, 0] * !![1, x; 0, 1]) * (g : Matrix (Fin 2) (Fin 2) ℂ))
   fun_prop
 
 private lemma wn_ratio_continuous (g : ComplexGL2) :
@@ -295,7 +292,6 @@ private lemma wn_ratio_continuous (g : ComplexGL2) :
   have hm := wn_matrix_continuous g
   have hd : Continuous (fun x : ℂ =>
       ‖Matrix.det (weyl * upperUnipotent x * g : Matrix (Fin 2) (Fin 2) ℂ)‖) := by
-    simp only [Matrix.det_fin_two]
     fun_prop
   have hb : Continuous (fun x : ℂ => bottomRowNormSq (weyl * upperUnipotent x * g)) := by
     unfold bottomRowNormSq
@@ -317,12 +313,10 @@ private lemma wn_forward_continuous (s : ℂ) (φ : CompactPicture) (g : Complex
     have hn : Matrix.det (weyl * upperUnipotent x * g : Matrix (Fin 2) (Fin 2) ℂ) ≠ 0 :=
       (Matrix.GeneralLinearGroup.det (weyl * upperUnipotent x * g)).ne_zero
     rw [dif_pos hn]
-    congr 1
-    apply Units.ext
     rfl
   have hr := wn_ratio_continuous g
-  have hl : Continuous (fun x : ℂ => (Real.log (rowRatio (weyl * upperUnipotent x * g)) : ℂ)) := by
-    exact Complex.continuous_ofReal.comp (hr.log (fun x => (rowRatio_pos _).ne'))
+  have hl : Continuous (fun x : ℂ => (Real.log (rowRatio (weyl * upperUnipotent x * g)) : ℂ)) := 
+    Complex.continuous_ofReal.comp (hr.log (fun x => (rowRatio_pos _).ne'))
   have heq : (fun x : ℂ => forwardSection s φ (weyl * upperUnipotent x * g)) =
       fun x => Complex.exp ((2 * s) * (Real.log (rowRatio (weyl * upperUnipotent x * g)) : ℂ)) *
         forwardSection 0 φ (weyl * upperUnipotent x * g) := by
@@ -332,7 +326,7 @@ private lemma wn_forward_continuous (s : ℂ) (φ : CompactPicture) (g : Complex
     congr 2
     ring
   rw [heq]
-  exact (Complex.continuous_exp.comp (continuous_const.mul hl)).mul hcont
+  fun_prop
 
 private def pointMatrixChart (g : ComplexGL2) : CompactMatrixChart 0 where
   domain := univ
@@ -384,8 +378,7 @@ theorem haarIntegral_holomorphic (β : ℂˣ) (φ : CompactPicture) (g : Complex
       (Real.log (rowRatio (weyl * upperUnipotent x * g)) : ℂ)).cexp.mul_const
         (φ (bottomRowLine (weyl * upperUnipotent x * g)))
     convert H using 1
-    · funext y
-      dsimp [forwardSection]
+    · rfl
     · dsimp [F', forwardSection]
       ring_nf
   have hformula (t x : ℂ) :
@@ -499,7 +492,7 @@ noncomputable def ownedCore (t : ℝ) : Submodule ℂ (PrincipalSeries t) :=
 noncomputable def thetaCore (β : ℂˣ) : Submodule ℂ (PrincipalSeries negativeParameter) :=
   KPCplxActualImage.imageSubmodule β ⊓ ownedCore negativeParameter
 
-private theorem harmonic_image (β : ℂˣ) (ℓ : ℕ) :
+theorem harmonic_image (β : ℂˣ) (ℓ : ℕ) :
     (harmonicKType positiveParameter ℓ).map (standardIntertwiner β).toLinearMap =
       harmonicKType negativeParameter ℓ := by
   apply le_antisymm
@@ -529,7 +522,3 @@ theorem actual_harishChandra_image (β : ℂˣ) :
   congr 1
   funext ℓ
   exact harmonic_image β ℓ
-
-end DedekindZetaZeroFree.KPComplexStandardIntertwinerGerm
-
-end

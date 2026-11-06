@@ -7,7 +7,6 @@ public import DedekindZetaZeroFree.Moments.Reflected.LocalizedFourierProfiles
 
 namespace DedekindZetaZeroFree
 
-noncomputable section
 open scoped NumberField Classical
 
 namespace RMMaskedDyadic
@@ -38,7 +37,7 @@ theorem finite_integral_l2_bound {I : Type*} [Fintype I]
       (fun t => (WithLp.toLp 2 (g t) : EuclideanSpace ℂ I))).norm.congr
       (Filter.Eventually.of_forall fun t => EuclideanSpace.norm_eq _)
   · exact hW.norm.mul_const B
-  · exact hbound
+  omega
 
 set_option maxHeartbeats 1000000 in
 theorem finite_separated_sieve {I U : Type*} [Fintype I] [Fintype U]
@@ -53,7 +52,7 @@ theorem finite_separated_sieve {I U : Type*} [Fintype I] [Fintype U]
   let g : ℝ → I → ℂ := fun t d => ∑ c, a c d * (W t * cp t c * rp t d)
   have hg : ∀ d, Integrable (fun t => g t d) := by
     intro d
-    exact integrable_finset_sum _ (fun c _ => (hpair c d).const_mul (a c d))
+    fun_prop
   have he : ∀ d, (∑ c, a c d * P c d) = ∫ t, g t d := by
     intro d
     rw [integral_finset_sum _ (fun c _ => (hpair c d).const_mul (a c d))]
@@ -66,7 +65,7 @@ theorem finite_separated_sieve {I U : Type*} [Fintype I] [Fintype U]
   have hvec : WithLp.toLp 2 (g t) = W t •
       (WithLp.toLp 2 (fun d => rp t d * ∑ c, a c d * cp t c) : EuclideanSpace ℂ I) := by
     ext d
-    simp only [g, PiLp.toLp_apply, PiLp.smul_apply, smul_eq_mul, Finset.mul_sum]
+    simp only [g, PiLp.smul_apply, smul_eq_mul, Finset.mul_sum]
     apply Finset.sum_congr rfl
     intro c _
     ring
@@ -76,7 +75,7 @@ theorem finite_separated_sieve {I U : Type*} [Fintype I] [Fintype U]
         (EuclideanSpace.norm_eq (WithLp.toLp 2 (g t) : EuclideanSpace ℂ I)).symm
     _ = ‖W t‖ * Real.sqrt (∑ d, ‖∑ c, a c d * cp t c‖ ^ 2) := by
       rw [hvec, norm_smul, EuclideanSpace.norm_eq]
-      simp only [PiLp.toLp_apply, norm_mul, hrp, one_mul]
+      simp_all
     _ ≤ ‖W t‖ * B := mul_le_mul_of_nonneg_left (hbound t) (norm_nonneg _)
 
  theorem finite_dyadic_harmonic_bound (F : Type) [Field F] [NumberField F] :
@@ -142,12 +141,12 @@ theorem finite_masked_hgl
     change z.sum (fun c w => w * (𝓕.χ c) d) = _
     rw [Finsupp.sum_of_support_subset z hz]
     · exact Finset.sum_congr rfl (fun c hc => by rw [hzc c hc])
-    · intro c; simp
+    simp
   have hm : ∑ c ∈ z.support, ‖z c‖ ^ 2 = ∑ c ∈ u, ‖a c‖ ^ 2 := by
     change z.sum (fun _ w => ‖w‖ ^ 2) = _
     rw [Finsupp.sum_of_support_subset z hz]
     · exact Finset.sum_congr rfl (fun c hc => by rw [hzc c hc])
-    · intro c; simp
+    simp
   have hb := hbound X Y z (fun d => d ∈ r) ρ hX hY
     (fun c hc => hu c (hz hc)) hρ
   rw [hm] at hb
@@ -177,9 +176,7 @@ open RMFourierProfile
   have he : (q ^ (-(1 / 2 : ℝ))) ^ 2 = q⁻¹ := by
     rw [← Real.rpow_natCast, ← Real.rpow_mul hq.le]
     norm_num [Real.rpow_neg_one]
-  rw [he]
-  have ha2 : ‖a‖ ^ 2 ≤ 1 := by nlinarith [norm_nonneg a]
-  simpa only [one_mul] using mul_le_mul_of_nonneg_right ha2 (by positivity : 0 ≤ q⁻¹)
+  simp_all
 
  theorem sqrt_hgl_dyadic (L H C D b : ℝ) (hL : 0 ≤ L) (hH : 0 ≤ H)
     (hC : 0 < C) (hD : 0 < D) :
@@ -189,8 +186,7 @@ open RMFourierProfile
   rw [hprod, Real.mul_rpow (by norm_num : (0:ℝ) ≤ 4) (by positivity : 0 ≤ D*C)]
   have hs : (D * C) ^ b = ((D * C) ^ (b / 2)) ^ 2 := by
     rw [← Real.rpow_natCast, ← Real.rpow_mul (by positivity : 0 ≤ D*C)]
-    congr 1
-    ring
+    simp
   rw [hs]
   have he : L * (4 ^ b * ((D * C) ^ (b / 2)) ^ 2) * (2 * D + 2 * C) * H =
       (L * 4 ^ b * 2 * H) * ((D * C) ^ (b / 2)) ^ 2 * (D + C) := by ring
@@ -239,7 +235,7 @@ theorem finite_row_column_phased_hgl
 
  theorem exists_cutoff : ∃ ξ : ℝ → ℝ, IsCutoff ξ := by
   let l := Real.log 2
-  have hl : 0 < l := Real.log_pos (by norm_num)
+  have hl : 0 < l := by positivity
   let f : ContDiffBump (0 : ℝ) := ⟨3 * l, 4 * l, by positivity, by dsimp [l]; linarith [hl]⟩
   refine ⟨f, f.contDiff, f.hasCompactSupport, ?_⟩
   intro x hx
@@ -343,8 +339,3 @@ theorem finite_profiled_hgl
       K * (A * (D * C) ^ (b / 2) * Real.sqrt (D + C)) :=
         mul_le_mul_of_nonneg_right hw (by positivity)
     _ = K * A * (D * C) ^ (b / 2) * Real.sqrt (D + C) := by ring
-
-end RMMaskedDyadic
-
-end
-end DedekindZetaZeroFree

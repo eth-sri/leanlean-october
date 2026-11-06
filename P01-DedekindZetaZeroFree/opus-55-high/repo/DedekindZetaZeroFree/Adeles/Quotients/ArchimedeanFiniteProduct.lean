@@ -46,11 +46,11 @@ theorem scalar_killed (v : InfinitePlace F) (u : ℂˣ) :
   ((KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ).comp
    ((KPAdelicCoverRestrictedProduct.localInjection F ζ hζ (Sum.inl v)).comp (rawSection F ζ hζ v)))
   (by ext u; exact scalar_killed F ζ hζ v u)
-private theorem localHom_out (v : InfinitePlace F) (g : Matrix.ProjGenLinGroup (Fin 2) ℂ) :
+theorem localHom_out (v : InfinitePlace F) (g : Matrix.ProjGenLinGroup (Fin 2) ℂ) :
  localHom F ζ hζ v g = KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ (KPAdelicCoverRestrictedProduct.localInjection F ζ hζ (Sum.inl v) (rawSection F ζ hζ v g.out)) := by
  conv_lhs => rw [← Quotient.out_eq g]
  rfl
-private theorem local_commute : Pairwise (fun v w : InfinitePlace F => ∀ g h, Commute (localHom F ζ hζ v g) (localHom F ζ hζ w h)) := by
+theorem local_commute : Pairwise (fun v w : InfinitePlace F => ∀ g h, Commute (localHom F ζ hζ v g) (localHom F ζ hζ w h)) := by
  intro v w hvw g h
  rw [localHom_out, localHom_out]
  apply Commute.map _ (KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ)
@@ -83,10 +83,10 @@ section
 noncomputable section
 namespace DedekindZetaZeroFree.RepresentationTheory.ArchFiniteSplitting
 open NumberField KPAdelicCoverRestrictedProduct
-open scoped Classical NumberField
+open scoped Classical
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-private theorem centre_finite : (pglCentralInjection F ζ hζ).range ≤
+theorem centre_finite : (pglCentralInjection F ζ hζ).range ≤
     ActualQuotient.finiteSubgroup F ζ hζ := by
   obtain ⟨I, hI, hIm⟩ := Ring.exists_maximal_of_not_isField (RingOfIntegers.not_isField F)
   let q : IsDedekindDomain.HeightOneSpectrum (𝓞 F) := ⟨I, hIm.isPrime, hI⟩
@@ -94,13 +94,13 @@ private theorem centre_finite : (pglCentralInjection F ζ hζ).range ≤
   refine Subgroup.mem_map.mpr ⟨localToRestricted F ζ hζ (Sum.inr q)
     (KPLocalCover.centralInjection F ζ hζ (Sum.inr q) ε), ?_, ?_⟩
   · intro w
-    exact RestrictedProduct.mulSingle_eq_of_ne (compact F ζ hζ) _ (by simp)
+    rfl
   · change scalarQuotient F ζ hζ (localInjection F ζ hζ (Sum.inr q)
       (KPLocalCover.centralInjection F ζ hζ (Sum.inr q) ε)) = _
     rw [localInjection_central]
     rfl
 
-private theorem gl_ext {a b : AdelicGL2 F}
+theorem gl_ext {a b : AdelicGL2 F}
     (h : ∀ v, matrixEval F v a = matrixEval F v b) : a = b := by
   apply Matrix.GeneralLinearGroup.ext
   intro i j
@@ -140,23 +140,20 @@ theorem arch_kernel_le_finite :
     have hi : Matrix.GeneralLinearGroup.map e.symm.toRingHom
         (Matrix.GeneralLinearGroup.map e.toRingHom (x (Sum.inl w)).g) = (x (Sum.inl w)).g := by
       apply Matrix.GeneralLinearGroup.ext
-      intro i j
-      simp [Matrix.GeneralLinearGroup.map_apply]
-    rw [hi] at he
-    exact he.symm
+      simp
+    simp_all
   choose s hs using hs
   let z : Ideles F :=
     ⟨(fun w => (s w).val, 1), (fun w => (s w).inv, 1),
       by
         apply Prod.ext
         · funext w; exact (s w).val_inv
-        · change (1 : IsDedekindDomain.FiniteAdeleRing (𝓞 F) F) * 1 = 1; exact one_mul _,
+        · change (1 : IsDedekindDomain.FiniteAdeleRing (𝓞 F) F) * 1 = 1; simp,
       by
         apply Prod.ext
         · funext w; exact (s w).inv_val
-        · change (1 : IsDedekindDomain.FiniteAdeleRing (𝓞 F) F) * 1 = 1; exact one_mul _⟩
+        · change (1 : IsDedekindDomain.FiniteAdeleRing (𝓞 F) F) * 1 = 1; simp⟩
   have hz (w : InfinitePlace F) : Units.map (adeleEval F (Sum.inl w)) z = s w := by
-    apply Units.ext
     rfl
   let y := x * (scalarTuple F ζ hζ z)⁻¹
   have hy (w : InfinitePlace F) : (y (Sum.inl w)).g = 1 := by
@@ -169,7 +166,7 @@ theorem arch_kernel_le_finite :
         (KPScalarSplitCentral.scalarHom F ζ hζ (Sum.inl w)
           (Units.map (adeleEval F (Sum.inl w)) z)))⁻¹ = 1
     rw [KPScalarSplitCentral.projection_scalarHom, hz, hs]
-    exact mul_inv_cancel _
+    simp
   let t : RestrictedCover F ζ hζ := ⟨fun v => match v with
     | Sum.inl _ => 1
     | Sum.inr q => y (Sum.inr q), by
@@ -187,20 +184,18 @@ theorem arch_kernel_le_finite :
     | inr q => rfl
   have hk : amalgamation F ζ hζ y * (amalgamation F ζ hζ t)⁻¹ ∈
       (projection F ζ hζ).ker := by
-    change projection F ζ hζ (_ * _⁻¹) = 1
-    rw [map_mul, map_inv, projection_amalgamation, projection_amalgamation, hp]
-    exact mul_inv_cancel _
+    simp_all
   rw [← range_centralInjection_eq_ker] at hk
   obtain ⟨ε, hε⟩ := hk
-  have hscalar : scalarQuotient F ζ hζ (scalarHom F ζ hζ z) = 1 := by
-    exact (QuotientGroup.eq_one_iff _).mpr ⟨z, rfl⟩
+  have hscalar : scalarQuotient F ζ hζ (scalarHom F ζ hζ z) = 1 := 
+    (QuotientGroup.eq_one_iff _).mpr ⟨z, rfl⟩
   have hxy : scalarQuotient F ζ hζ (amalgamation F ζ hζ y) =
       scalarQuotient F ζ hζ (amalgamation F ζ hζ x) := by
     change scalarQuotient F ζ hζ (amalgamation F ζ hζ (x * (scalarTuple F ζ hζ z)⁻¹)) = _
     rw [map_mul, map_inv, map_mul, map_inv]
     change scalarQuotient F ζ hζ (amalgamation F ζ hζ x) *
       (scalarQuotient F ζ hζ (scalarHom F ζ hζ z))⁻¹ = _
-    rw [hscalar, inv_one, mul_one]
+    simp_all
   have heq : scalarQuotient F ζ hζ (amalgamation F ζ hζ x) =
       pglCentralInjection F ζ hζ ε * scalarQuotient F ζ hζ (amalgamation F ζ hζ t) := by
     rw [← hxy]
@@ -242,7 +237,7 @@ theorem commuting_split_product
   let r : G → H := fun g => ⟨(s (p g))⁻¹ * g, by
     rw [← hker]
     change p ((s (p g))⁻¹ * g) = 1
-    simp only [map_mul, map_inv, hsec, inv_mul_cancel]⟩
+    simp_all⟩
   let e : (A × H) ≃ₜ* G :=
     { toFun := fun x => s x.1 * x.2
       invFun := fun g => (p g, r g)
@@ -252,11 +247,11 @@ theorem commuting_split_product
         · simp only [map_mul, hsec, hH, mul_one]
         · apply Subtype.ext
           change (s (p (s x.1 * (x.2 : G))))⁻¹ * (s x.1 * (x.2 : G)) = x.2
-          simp only [map_mul, hsec, hH, mul_one, inv_mul_cancel_left]
+          simp_all
       right_inv := by
         intro g
         change s (p g) * ((s (p g))⁻¹ * g) = g
-        simp only [mul_inv_cancel_left]
+        simp
       map_mul' := by
         intro x y
         change s (x.1 * y.1) * ((x.2 : G) * (y.2 : G)) =
@@ -323,7 +318,7 @@ open NumberField
 open scoped Classical
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-private theorem local_insertion_continuous (w : InfinitePlace F) :
+theorem local_insertion_continuous (w : InfinitePlace F) :
     Continuous (fun g : Matrix.ProjGenLinGroup (Fin 2) ℂ =>
       KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
         (KPAdelicCoverRestrictedProduct.localInjection F ζ hζ (Sum.inl w)
@@ -349,7 +344,7 @@ private theorem local_insertion_continuous (w : InfinitePlace F) :
         KPLocalCover.CubicGL2Raw.mk _
           (1 * 1 * KPLocalCover.sigmaTwo F ζ hζ (Sum.inl w) _ _)
       rw [KPLocalChartTopology.complex_sigmaTwo_eq_one]
-      simp only [one_mul, map_mul, KPLocalCover.sectionMap_g] }
+      simp }
   have hs : Continuous s := by
     apply continuous_induced_rng.mpr
     change Continuous (fun g : Matrix.GeneralLinearGroup (Fin 2) ℂ =>
@@ -452,7 +447,7 @@ theorem projective_t2 : T2Space (Matrix.ProjGenLinGroup (Fin 2) ℂ) := by
   exact inferInstanceAs (T2Space (Matrix.GeneralLinearGroup (Fin 2) ℂ ⧸
     Subgroup.center (Matrix.GeneralLinearGroup (Fin 2) ℂ)))
 
-private theorem finite_le_kernel : ActualQuotient.finiteSubgroup F ζ hζ ≤
+theorem finite_le_kernel : ActualQuotient.finiteSubgroup F ζ hζ ≤
     (ActualQuotient.archProjection F ζ hζ).ker := by
   rintro c ⟨x, hx, rfl⟩
   change ActualQuotient.archProjection F ζ hζ
@@ -488,7 +483,7 @@ section
 noncomputable section
 namespace DedekindZetaZeroFree.PGLComplex.AdelicSlicesRaw
 open MeasureTheory Topology NumberField
-open scoped Classical Pointwise NumberField ENNReal Matrix.Norms.Operator
+open scoped Classical Pointwise ENNReal Matrix.Norms.Operator
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
 abbrev ActualCover := KPCubicCoverConstruction.AdelicPGL2Cover F ζ hζ
@@ -511,36 +506,15 @@ instance : BorelSpace (X F ζ hζ) := ⟨rfl⟩
 def finiteTuples : Subgroup (KPAdelicCoverRestrictedProduct.RestrictedCover F ζ hζ) where
   carrier := {g | ∀ w : NumberField.InfinitePlace F, g (Sum.inl w) = 1}
   one_mem' := by simp
-  mul_mem' := by intro g h hg hh w; simp [hg w, hh w]
-  inv_mem' := by intro g hg w; simp [hg w]
+  mul_mem' := by simp_all
+  inv_mem' := by simp
 
 def finiteSubgroup : Subgroup (ActualCover F ζ hζ) :=
   (finiteTuples F ζ hζ).map
     ((KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ).comp
       (KPAdelicCoverRestrictedProduct.amalgamation F ζ hζ))
 
-abbrev FiniteLevel := CompactOpenLevel (finiteSubgroup F ζ hζ)
-
-def levelSubgroup (U : FiniteLevel F ζ hζ) : Subgroup (ActualCover F ζ hζ) :=
-  U.toOpenSubgroup.toSubgroup.map (finiteSubgroup F ζ hζ).subtype
-
 abbrev centreMap := KPAdelicCoverRestrictedProduct.pglCentralInjection F ζ hζ
-
-def rightSubgroup (U : FiniteLevel F ζ hζ) (geometric : Bool) :
-    Subgroup (ActualCover F ζ hζ) :=
-  if geometric then levelSubgroup F ζ hζ U ⊔ (centreMap F ζ hζ).range
-  else levelSubgroup F ζ hζ U
-
-abbrev LevelSpace (U : FiniteLevel F ζ hζ) (geometric : Bool) :=
-  DoubleCoset.Quotient (rationalSubgroup F ζ hζ : Set (ActualCover F ζ hζ))
-    (rightSubgroup F ζ hζ U geometric : Set (ActualCover F ζ hζ))
-
-instance (U : FiniteLevel F ζ hζ) (geometric : Bool) :
-    TopologicalSpace (LevelSpace F ζ hζ U geometric) :=
-  inferInstanceAs (TopologicalSpace (_root_.Quotient _))
-
-instance (U : FiniteLevel F ζ hζ) (geometric : Bool) :
-    MeasurableSpace (LevelSpace F ζ hζ U geometric) := borel _
 
 abbrev ArchGroup := NumberField.InfinitePlace F → Matrix.ProjGenLinGroup (Fin 2) ℂ
 
@@ -586,22 +560,14 @@ theorem archProjection_restricted_eval (x : RestrictedCover F ζ hζ) (w : Infin
     Matrix.ProjGenLinGroup.mk (Matrix.GeneralLinearGroup.map
       (InfinitePlace.Completion.ringEquivComplexOfIsComplex
         (KPHilbert.infinite_isComplex F ζ hζ w)).toRingHom (x (Sum.inl w)).g) := by
-  change Matrix.ProjGenLinGroup.mk (Matrix.GeneralLinearGroup.map _
-    (projection F ζ hζ (amalgamation F ζ hζ x))) = _
-  rw [projection_amalgamation]
-  rw [Matrix.GeneralLinearGroup.map_comp, MonoidHom.comp_apply]
-  rw [show Matrix.GeneralLinearGroup.map (adeleEval F (Sum.inl w))
-    (restrictedProjection F ζ hζ x) = (x (Sum.inl w)).g from
-      restrictedProjection_eval F ζ hζ x (Sum.inl w)]
-private theorem splitting_local_arch (v w : InfinitePlace F) (g : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inl v)) :
+  rfl
+theorem splitting_local_arch (v w : InfinitePlace F) (g : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inl v)) :
  archProjection F ζ hζ (scalarQuotient F ζ hζ (localInjection F ζ hζ (Sum.inl v) g)) w =
  Matrix.ProjGenLinGroup.mk (Matrix.GeneralLinearGroup.map
  (InfinitePlace.Completion.ringEquivComplexOfIsComplex (KPHilbert.infinite_isComplex F ζ hζ w)).toRingHom
  ((localToRestricted F ζ hζ (Sum.inl v) g (Sum.inl w)).g)) := by
- change Matrix.ProjGenLinGroup.mk (Matrix.GeneralLinearGroup.map _ _) = _
- rw [Matrix.GeneralLinearGroup.map_comp, MonoidHom.comp_apply]
- congr 2
-private theorem splitting_local_arch_same (v : InfinitePlace F) (a : Matrix.ProjGenLinGroup (Fin 2) ℂ) :
+ rfl
+theorem splitting_local_arch_same (v : InfinitePlace F) (a : Matrix.ProjGenLinGroup (Fin 2) ℂ) :
  archProjection F ζ hζ (scalarQuotient F ζ hζ (localInjection F ζ hζ (Sum.inl v)
  (KPLocalCover.sectionMap F ζ hζ (Sum.inl v) (Matrix.GeneralLinearGroup.map
  (InfinitePlace.Completion.ringEquivComplexOfIsComplex (KPHilbert.infinite_isComplex F ζ hζ v)).symm.toRingHom a.out)))) v = a := by
@@ -614,20 +580,16 @@ private theorem splitting_local_arch_same (v : InfinitePlace F) (a : Matrix.Proj
      (Matrix.GeneralLinearGroup.map
        (InfinitePlace.Completion.ringEquivComplexOfIsComplex (KPHilbert.infinite_isComplex F ζ hζ v)).symm.toRingHom a.out) = a.out := by
    apply Matrix.GeneralLinearGroup.ext
-   intro i j
-   simp [Matrix.GeneralLinearGroup.map_apply]
+   simp
  rw [he]
  exact Quotient.out_eq a
-private theorem splitting_local_arch_ne (v w : InfinitePlace F) (hne : v ≠ w)
+theorem splitting_local_arch_ne (v w : InfinitePlace F) (hne : v ≠ w)
  (g : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inl v)) :
  archProjection F ζ hζ (scalarQuotient F ζ hζ (localInjection F ζ hζ (Sum.inl v) g)) w = 1 := by
  rw [splitting_local_arch]
  change Matrix.ProjGenLinGroup.mk (Matrix.GeneralLinearGroup.map _
    ((RestrictedProduct.mulSingle (compact F ζ hζ) (Sum.inl v) g (Sum.inl w)).g)) = 1
- have h : (RestrictedProduct.mulSingle (compact F ζ hζ) (Sum.inl v) g (Sum.inl w)) = 1 :=
-   RestrictedProduct.mulSingle_eq_of_ne' (compact F ζ hζ) g (by simpa using hne)
- rw [h]
- simp
+ simp_all
 
 theorem archProjection_archimedeanInsertion (a : ArchGroup F) : archProjection F ζ hζ (archimedeanInsertion F ζ hζ a) = a := by
  ext w
@@ -644,8 +606,8 @@ theorem archProjection_archimedeanInsertion (a : ArchGroup F) : archProjection F
  rw [List.prod_map_eq_pow_single w (fun v => p (f v)) (by
    intro v hv _
    exact splitting_local_arch_ne F ζ hζ v w hv _)]
- have hc : (Finset.univ : Finset (InfinitePlace F)).toList.count w = 1 := by
-   exact List.count_eq_one_of_mem (Finset.nodup_toList _) (by simp)
+ have hc : (Finset.univ : Finset (InfinitePlace F)).toList.count w = 1 := 
+   List.count_eq_one_of_mem (Finset.nodup_toList _) (by simp)
  rw [hc, pow_one]
  exact splitting_local_arch_same F ζ hζ w (a w)
 
@@ -656,7 +618,7 @@ theorem centreMap_range_le_finiteSubgroup : (centreMap F ζ hζ).range ≤ finit
  refine Subgroup.mem_map.mpr ⟨localToRestricted F ζ hζ (Sum.inr q)
    (KPLocalCover.centralInjection F ζ hζ (Sum.inr q) ε), ?_, ?_⟩
  · intro w
-   exact RestrictedProduct.mulSingle_eq_of_ne (compact F ζ hζ) _ (by simp)
+   rfl
  · change scalarQuotient F ζ hζ (localInjection F ζ hζ (Sum.inr q)
      (KPLocalCover.centralInjection F ζ hζ (Sum.inr q) ε)) = _
    rw [localInjection_central]
@@ -710,12 +672,5 @@ theorem actualArchFiniteSplitting :
     hprojection hscont hsec hker hcomm
   refine ⟨e, ?_, hep, archProjection_archimedeanInsertion F ζ hζ,
     hker, centreMap_range_le_finiteSubgroup F ζ hζ, ?_⟩
-  · intro a h
-    rw [he, hsraw]
+  · simp_all
   · exact RepresentationTheory.ArchFiniteSplitting.finite_factor_locallyCompact F ζ hζ
-
-end DedekindZetaZeroFree.PGLComplex.AdelicSlicesRaw
-
-end
-
-end

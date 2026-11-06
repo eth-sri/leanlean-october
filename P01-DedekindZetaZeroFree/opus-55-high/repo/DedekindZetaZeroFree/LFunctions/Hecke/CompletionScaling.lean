@@ -28,17 +28,17 @@ theorem heckeCompletionFactor_scaling
   have hdF : NumberField.discr F ≠ 0 := NumberField.discr_ne_zero F
   have hN : Ideal.absNorm f ≠ 0 := Ideal.absNorm_eq_zero_iff.not.mpr hf
   have hxE : (0 : ℝ) < ((NumberField.discr E).natAbs : ℝ) :=
-    Nat.cast_pos.mpr (Int.natAbs_pos.mpr hdE)
+    by positivity
   have hxF : (0 : ℝ) < ((NumberField.discr F).natAbs : ℝ) :=
-    Nat.cast_pos.mpr (Int.natAbs_pos.mpr hdF)
+    by positivity
   have hxN : (0 : ℝ) < (Ideal.absNorm f : ℝ) :=
-    Nat.cast_pos.mpr (Nat.pos_of_ne_zero hN)
+    by positivity
   have hbaseE : ((|NumberField.discr E| : ℤ) : ℂ) =
       (((NumberField.discr E).natAbs : ℝ) : ℂ) := by
-    rw [Int.abs_eq_natAbs]; simp only [Int.cast_natCast, Complex.ofReal_natCast]
+    rw [Int.abs_eq_natAbs]; rfl
   have hbaseF : ((|NumberField.discr F| : ℤ) : ℂ) =
       (((NumberField.discr F).natAbs : ℝ) : ℂ) := by
-    rw [Int.abs_eq_natAbs]; simp only [Int.cast_natCast, Complex.ofReal_natCast]
+    rw [Int.abs_eq_natAbs]; rfl
   have hbaseN : (Ideal.absNorm f : ℂ) = ((Ideal.absNorm f : ℝ) : ℂ) := by
     norm_num
 
@@ -64,13 +64,9 @@ theorem heckeCompletionFactor_scaling
         Complex.Gammaℂ s ^ NumberField.InfinitePlace.nrComplexPlaces F := by
     rw [hcomplex, two_mul, pow_add]
   have htopE : (Ideal.absNorm (⊤ : Ideal (𝓞 E)) : ℂ) = 1 := by
-    rw [Ideal.absNorm_top]; norm_num
+    simp
   have htopF : (Ideal.absNorm (⊤ : Ideal (𝓞 F)) : ℂ) = 1 := by
-    rw [Ideal.absNorm_top]; norm_num
+    simp
   simp only [heckeCompletionFactor]
   rw [htopE, htopF, mul_one, mul_one, hgam, hcore]
   ring
-
-end
-
-end DedekindZetaZeroFree.LargeSieve

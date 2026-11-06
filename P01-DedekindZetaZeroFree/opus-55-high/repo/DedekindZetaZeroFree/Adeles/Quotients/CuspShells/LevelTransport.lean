@@ -27,7 +27,7 @@ open _root_.DedekindZetaZeroFree.KPMsActualAngularCrossLevelFrameSource renaming
 local instance : MulAction (KPCuspArithmetic.PGL2 F) (KPArch.Space (KPCuspLogShape.dimension F)) :=
   KPCuspSiegel.instMulActionPGL2SpaceDimension F
 variable (U V : KPMsActualAngularSource.Level F ζ hζ)
-private theorem nativeFrameTransport
+theorem nativeFrameTransport
     (j : Cusp S U) (g : KPMsActualAngularSource.G F ζ hζ) :
     ∃ (k : Cusp S V) (h : KPMsActualAngularSource.G F ζ hζ),
       KPSmoothLocalQuotientCharts.quotientMap F ζ hζ g =
@@ -85,7 +85,7 @@ private theorem nativeFrameTransport
     simpa only [framedRadius,inv_one,one_mul] using
       (congrArg (fun r : (ℝ≥0)ˣ => ((r : ℝ≥0) : ℝ)) hr).symm
 
-private theorem frameCoordinate (j : Cusp S U) (Y : ℝ)
+theorem frameCoordinate (j : Cusp S U) (Y : ℝ)
     (hY : OffsetAdmissible F ζ hζ R P S U Y)
     (g : KPMsActualAngularSource.G F ζ hζ)
     (hg : g ∈ fullCuspDomain S U j (Y / (cuspOffset F ζ hζ R P S U j).val)) :
@@ -98,7 +98,7 @@ private theorem frameCoordinate (j : Cusp S U) (Y : ℝ)
   have hq := (cuspLift_quotient S U j (Y / (cuspOffset F ζ hζ R P S U j).val) x).symm
   exact (actual_full_frame_invariant S U j _ (hY j) g _ hg hb hq).symm
 
-private theorem pointTransport (j : Cusp S U) (Y : ℝ)
+theorem pointTransport (j : Cusp S U) (Y : ℝ)
     (hU : OffsetAdmissible F ζ hζ R P S U Y)
     (hV : OffsetAdmissible F ζ hζ R P S V Y)
     (x : KPSmoothLocalQuotientCharts.X F ζ hζ)
@@ -156,7 +156,7 @@ private theorem pointTransport (j : Cusp S U) (Y : ℝ)
     rw [hqx] at hsrc
     rw [hhx] at htgt
     exact hsrc.trans (hang.trans htgt.symm)
-private theorem endSet_mono_threshold (j : Cusp S U) (Y : ℝ)
+theorem endSet_mono_threshold (j : Cusp S U) (Y : ℝ)
     (hY : KPMsFixedHaarDisintegration.AdmissibleCutoff (nativeAtlas F ζ hζ R P S U) Y) :
     KPFiniteCuspAtlas.endSet F
       (KPCuspGenuineMonodromy.Component F ζ hζ (S.atlasLevel (cofinalLevel F ζ hζ U))
@@ -178,7 +178,7 @@ private theorem endSet_mono_threshold (j : Cusp S U) (Y : ℝ)
     exact hY.2
   exact lt_of_le_of_lt hT hv
 
-private theorem shiftedEndsDisjoint (Y : ℝ)
+theorem shiftedEndsDisjoint (Y : ℝ)
     (hY : OffsetAdmissible F ζ hζ R P S U Y) :
     Pairwise (fun j l : Cusp S U => Disjoint (cuspEnd S U j (Y / (cuspOffset F ζ hζ R P S U j).val)) (cuspEnd S U l (Y / (cuspOffset F ζ hζ R P S U l).val))) := by
   intro j l hjl
@@ -207,7 +207,7 @@ private theorem shiftedEndsDisjoint (Y : ℝ)
         (endSet_mono_threshold F ζ hζ R P S U ⟨i,j⟩ _ (hY ⟨i,j⟩) ha)
         (endSet_mono_threshold F ζ hζ R P S U ⟨i,l⟩ _ (hY ⟨i,l⟩) hb)
 
-private theorem testSet_measurable (j : Cusp S U) (Y : ℝ)
+theorem testSet_measurable (j : Cusp S U) (Y : ℝ)
     (hY : OffsetAdmissible F ζ hζ R P S U Y)
     (E : Set (FullOmega F ζ hζ (nativeDatum F ζ hζ))) (hE : MeasurableSet E) :
     MeasurableSet ((fullCoordinate F ζ hζ R P S U j Y ⁻¹' E) ∩
@@ -229,7 +229,7 @@ private theorem testSet_measurable (j : Cusp S U) (Y : ℝ)
   rw [he]
   exact (hE.preimage hm).inter (cuspShell_measurable S U j Y hY)
 
-private theorem testSet_disjoint (Y : ℝ)
+theorem testSet_disjoint (Y : ℝ)
     (hY : OffsetAdmissible F ζ hζ R P S U Y)
     (E : Set (FullOmega F ζ hζ (nativeDatum F ζ hζ))) :
     Pairwise (fun j l : Cusp S U => Disjoint
@@ -239,7 +239,7 @@ private theorem testSet_disjoint (Y : ℝ)
   exact (shiftedEndsDisjoint F ζ hζ R P S U Y hY hjl).mono
     (fun _ hx => hx.2.1) (fun _ hx => hx.2.1)
 
-private theorem testUnion_eq (Y : ℝ)
+theorem testUnion_eq (Y : ℝ)
     (hU : OffsetAdmissible F ζ hζ R P S U Y)
     (hV : OffsetAdmissible F ζ hζ R P S V Y)
     (E : Set (FullOmega F ζ hζ (nativeDatum F ζ hζ))) :
@@ -257,7 +257,7 @@ private theorem testUnion_eq (Y : ℝ)
     obtain ⟨j,hj,he⟩ := pointTransport F ζ hζ R P S V U k Y hV hU x hx
     exact Set.mem_iUnion.mpr ⟨j,by simpa only [Set.mem_preimage,← he] using hE,hj⟩
 
-private theorem fullShell_apply (Y : ℝ)
+theorem fullShell_apply (Y : ℝ)
     (hY : OffsetAdmissible F ζ hζ R P S U Y)
     (E : Set (FullOmega F ζ hζ (nativeDatum F ζ hζ))) (hE : MeasurableSet E) :
     fullShell F ζ hζ R P S U Y E = ENNReal.ofReal (2 * Y) *

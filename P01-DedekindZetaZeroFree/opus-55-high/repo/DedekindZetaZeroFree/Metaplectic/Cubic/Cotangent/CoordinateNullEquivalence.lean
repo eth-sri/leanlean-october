@@ -45,26 +45,26 @@ def coordinateW (W : Family (U := U) (H := H))
   ![(Real.exp (-p (ik.1, 2)) : ℂ) * v (ik.1, 1),
     (Real.exp (-p (ik.1, 2)) : ℂ) * v (ik.1, 2), v (ik.1, 0)] ik.2
 
-private lemma measurable_fromActual :
+lemma measurable_fromActual :
     Measurable (fromActual (F := F) (ζ := ζ) (hζ := hζ)) := by
   unfold KPContActualSectorChartEquivariantInputs.fromActual
     KPContCotangentActualOverlap.labeledAInv
   fun_prop
 
-private lemma chart_eq_preimage (a : ActualChart (U := U) (H := H)) :
+lemma chart_eq_preimage (a : ActualChart (U := U) (H := H)) :
     chart a = (baseReindex (F := F)).symm ⁻¹' omega a := by
   ext x
   simp only [Set.mem_preimage, KPContActualSectorChartEquivariantInputs.chart,
     KPContCotangentOverlapRationalBranches.omega,
     KPContActualSectorChartEquivariantInputs.toActual]
 
-private lemma toBase_eq (a : ActualChart (U := U) (H := H)) (y : a.domain) :
+lemma toBase_eq (a : ActualChart (U := U) (H := H)) (y : a.domain) :
     a.toBase y = (H.atlas U).components ⟨a.component, Quotient.mk _ y.val⟩ := by
   rw [KPContActualCotangentCountableShrinking.ShrunkChart.toBase]
   simp only [KPFiniteCuspAtlas.componentMap, (H.atlas U).components_formula]
   rfl
 
-private lemma sectionNorm_toBase (a : ActualChart (U := U) (H := H))
+lemma sectionNorm_toBase (a : ActualChart (U := U) (H := H))
     (u : Sections F ζ hζ U R P H) (y : a.domain) :
     sectionNorm F ζ hζ U R P H u (a.toBase y) = ‖(u a.component).val y.val‖ := by
   rw [toBase_eq (a := a) y]
@@ -110,7 +110,7 @@ private lemma scalar_eq_on_chart (s : BorelL2Sections F ζ hζ U R P H)
   rw [dif_pos hx', sectionFields_apply_actual]
   rfl
 
-private lemma sectionNorm_eq_zero_measurableSet (u : Sections F ζ hζ U R P H)
+lemma sectionNorm_eq_zero_measurableSet (u : Sections F ζ hζ U R P H)
     (hu : ∀ i, Measurable (u i).val) :
     MeasurableSet {b | sectionNorm F ζ hζ U R P H u b = 0} := by
   have hsq : Measurable (squaredNorm F ζ hζ U R P H u) :=

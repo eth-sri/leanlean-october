@@ -16,9 +16,7 @@ variable (F : Type) [Field F] [NumberField F]
 theorem finiteCompletionBall_zero (v : HeightOneSpectrum (𝓞 F)) :
     finiteCompletionBall F v 0 =
       (v.adicCompletionIntegers F).toSubring.toAddSubgroup := by
-  ext x
-  simp [finiteCompletionBall, HeightOneSpectrum.adicCompletionIntegers,
-    Valuation.mem_valuationSubring_iff]
+  rfl
 
 theorem finiteCompletion_residueCard_gt_one (v : HeightOneSpectrum (𝓞 F)) :
     1 < Ideal.absNorm v.asIdeal := by
@@ -45,7 +43,7 @@ theorem isCompact_finiteCompletionBall (v : HeightOneSpectrum (𝓞 F)) (n : ℤ
   have heq : (finiteCompletionBall F v n : Set (v.adicCompletion F)) =
       Metric.closedBall 0 ‖x‖ := by
     ext y
-    simp [mem_finiteCompletionBall, ← hx, Valued.toNormedField.norm_le_iff]
+    simp_all
   rw [heq]
   exact isCompact_closedBall 0 ‖x‖
 
@@ -56,7 +54,7 @@ theorem isOpen_finiteCompletionBall (v : HeightOneSpectrum (𝓞 F)) (n : ℤ) :
   have heq : (finiteCompletionBall F v n : Set (v.adicCompletion F)) =
       {y | Valued.v.restrict y ≤ Valued.v.restrict x} := by
     ext y
-    simp [mem_finiteCompletionBall, Valuation.restrict_le_iff, hx]
+    simp_all
   rw [heq]
   exact Valued.isOpen_closedBall _ (by simpa using hx0)
 
@@ -74,8 +72,8 @@ theorem isCompact_finiteCompletionBall_coset (v : HeightOneSpectrum (𝓞 F))
 
 theorem isOpen_finiteCompletionBall_coset (v : HeightOneSpectrum (𝓞 F))
     (b : v.adicCompletion F) (n : ℤ) :
-    IsOpen {x : v.adicCompletion F | x - b ∈ finiteCompletionBall F v n} := by
-  exact (isOpen_finiteCompletionBall F v n).preimage (by fun_prop)
+    IsOpen {x : v.adicCompletion F | x - b ∈ finiteCompletionBall F v n} := 
+  (isOpen_finiteCompletionBall F v n).preimage (by fun_prop)
 
 theorem finiteCompletionBall_hasBasis_nhds (v : HeightOneSpectrum (𝓞 F))
     (b : v.adicCompletion F) :
@@ -109,19 +107,19 @@ theorem iUnion_finiteCompletionBall_neg_nat (v : HeightOneSpectrum (𝓞 F)) :
   refine Set.mem_iUnion.mpr ⟨(WithZero.log (Valued.v x)).toNat, ?_⟩
   change Valued.v x ≤ WithZero.exp (-(-((WithZero.log (Valued.v x)).toNat : ℤ)))
   apply WithZero.le_exp_of_log_le
-  simpa using Int.le_toNat (WithZero.log (Valued.v x))
+  simp
 
 theorem exists_finiteCompletionUniformizer (v : HeightOneSpectrum (𝓞 F)) :
-    ∃ π : v.adicCompletion F, Valued.v π = WithZero.exp (-1 : ℤ) := by
-  exact v.valuedAdicCompletion_surjective F (WithZero.exp (-1 : ℤ))
+    ∃ π : v.adicCompletion F, Valued.v π = WithZero.exp (-1 : ℤ) := 
+  v.valuedAdicCompletion_surjective F (WithZero.exp (-1 : ℤ))
 
 def finiteCompletionUniformizer (v : HeightOneSpectrum (𝓞 F)) :
     v.adicCompletion F :=
   Classical.choose (exists_finiteCompletionUniformizer F v)
 
 theorem finiteCompletionUniformizer_valuation (v : HeightOneSpectrum (𝓞 F)) :
-    Valued.v (finiteCompletionUniformizer F v) = WithZero.exp (-1 : ℤ) := by
-  exact Classical.choose_spec (exists_finiteCompletionUniformizer F v)
+    Valued.v (finiteCompletionUniformizer F v) = WithZero.exp (-1 : ℤ) := 
+  Classical.choose_spec (exists_finiteCompletionUniformizer F v)
 
 theorem finiteCompletionUniformizer_ne_zero (v : HeightOneSpectrum (𝓞 F)) :
     finiteCompletionUniformizer F v ≠ 0 := by
@@ -138,9 +136,7 @@ theorem finiteCompletionBall_eq_uniformizer_image (v : HeightOneSpectrum (𝓞 F
     intro h
     exact WithZero.exp_ne_zero (hπ.symm.trans (by simp [h]))
   have hvn : Valued.v (π ^ n) = WithZero.exp (-n) := by
-    rw [map_zpow₀, hπ, ← WithZero.exp_zsmul]
-    congr 1
-    simp
+    simp_all
   ext x
   constructor
   · intro hx
@@ -152,7 +148,7 @@ theorem finiteCompletionBall_eq_uniformizer_image (v : HeightOneSpectrum (𝓞 F
     change Valued.v (π ^ n * a) ≤ WithZero.exp (-n)
     rw [map_mul, hvn]
     change Valued.v a ≤ 1 at ha
-    simpa using mul_le_mul_right ha (WithZero.exp (-n))
+    simp_all
 
 def finiteCompletionBallSubgroup (v : HeightOneSpectrum (𝓞 F)) (m n : ℤ) :
     AddSubgroup (finiteCompletionBall F v m) :=
@@ -197,7 +193,7 @@ theorem finiteCompletionUniformizer_mul_mem_ball (v : HeightOneSpectrum (𝓞 F)
     Function.Surjective (ballResidueMap F v n) :=
   IsLocalRing.residue_surjective.comp (ballIntegerScale F v n).surjective
 
-private theorem exp_le_neg_one_iff (g : ℤᵐ⁰) :
+theorem exp_le_neg_one_iff (g : ℤᵐ⁰) :
     g ≤ WithZero.exp (-1 : ℤ) ↔ g < 1 := by
   induction g using WithZero.expRecOn with
   | zero => simp
@@ -211,8 +207,7 @@ private theorem exp_le_neg_one_iff (g : ℤᵐ⁰) :
   have hz : ∀ a : Valued.integer (v.adicCompletion F),
       IsLocalRing.residue _ a = 0 ↔ a ∈ IsLocalRing.maximalIdeal _ := by
     intro a
-    change Ideal.Quotient.mk _ a = 0 ↔ _
-    exact Ideal.Quotient.eq_zero_iff_mem
+    simp
   rw [hz]
   change (ballIntegerScale F v n x) ∈ IsLocalRing.maximalIdeal
     (Valued.v.valuationSubring) ↔ _
@@ -244,8 +239,8 @@ theorem finite_finiteCompletionBallQuotient_succ (v : HeightOneSpectrum (𝓞 F)
 theorem natCard_finiteCompletionBallQuotient_succ (v : HeightOneSpectrum (𝓞 F))
     (n : ℤ) :
     Nat.card (finiteCompletionBallQuotient F v n (n + 1)) =
-      Ideal.absNorm v.asIdeal := by
-  exact Nat.card_congr (finiteCompletionBallResidueEquiv F v n).toEquiv
+      Ideal.absNorm v.asIdeal := 
+  Nat.card_congr (finiteCompletionBallResidueEquiv F v n).toEquiv
 
 theorem finiteCompletionBall_disjoint_coset_decomposition
     (v : HeightOneSpectrum (𝓞 F)) (n : ℤ) :
@@ -273,8 +268,7 @@ theorem finiteCompletionBall_disjoint_coset_decomposition
     have heq : QuotientAddGroup.mk (a i) =
         (QuotientAddGroup.mk (a j) : finiteCompletionBallQuotient F v n (n + 1)) :=
       QuotientAddGroup.eq_iff_sub_mem.mpr hsub
-    rw [ha, ha] at heq
-    exact hij (e.symm.injective heq)
+    simp_all
   · ext x
     constructor
     · intro hx
@@ -301,7 +295,3 @@ theorem finite_finiteCompletionBallQuotient (v : HeightOneSpectrum (𝓞 F))
     isCompact_iff_compactSpace.mp (isCompact_finiteCompletionBall F v m)
   exact AddSubgroup.quotient_finite_of_isOpen _
     ((isOpen_finiteCompletionBall F v n).preimage continuous_subtype_val)
-
-end DedekindZetaZeroFree
-
-end

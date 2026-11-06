@@ -15,13 +15,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Topology of range-restricted complete discretely valued fields
 
@@ -35,7 +28,7 @@ noncomputable section
 universe u v
 
 open Filter WithZero
-open scoped NNReal Valued Filter WithZero
+open scoped NNReal Valued
 
 namespace LocalFieldTheory.DiscreteValuationField
 open ValuationTheory.DiscreteValuationField
@@ -47,13 +40,13 @@ variable {K : Type u} [Field K]
 /-- The canonical `Valued` structure attached to the range-restricted complete
 DVF valuation. -/
 @[implicit_reducible]
-noncomputable def mrangeRestrictValued
+def mrangeRestrictValued
     (F : CompleteDVF.{u, v} K) :
     Valued K (MonoidHom.mrange F.valuation.toMonoidWithZeroHom) :=
   Valued.mk' (LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrict F)
 
 @[instance_reducible]
- noncomputable def mrangeRestrictValued_rankOne
+ def mrangeRestrictValued_rankOne
     (F : CompleteDVF.{u, v} K) :
     (@Valued.v K _
       (MonoidHom.mrange F.valuation.toMonoidWithZeroHom) _
@@ -66,7 +59,7 @@ noncomputable def mrangeRestrictValued
 /-- The rank-one normalized complete-DVF valuation supplies the normed-field
 structure expected by mathlib's finite-dimensional closed-subspace theorem. -/
 @[implicit_reducible]
-noncomputable def mrangeRestrict_nontriviallyNormedField
+def mrangeRestrict_nontriviallyNormedField
     (F : CompleteDVF.{u, v} K) :
     NontriviallyNormedField K :=
   Valued.toNontriviallyNormedField
@@ -74,143 +67,6 @@ noncomputable def mrangeRestrict_nontriviallyNormedField
     (Γ₀ := MonoidHom.mrange F.valuation.toMonoidWithZeroHom)
     (val := LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrictValued F)
     (hv := mrangeRestrictValued_rankOne F)
-
-/-- Powers of a uniformizer are cofinal among neighborhoods of zero for the
-range-restricted valuation topology. -/
-theorem mrangeRestrict_exists_uniformizer_pow_lt_unit
-    (F : CompleteDVF.{u, v} K)
-    {π : F.valuationSubring} (hπ : F.valuation.IsUniformizer (π : K))
-    (gamma :
-      (MonoidHom.mrange F.valuation.toMonoidWithZeroHom)ˣ) :
-    ∃ N : ℕ,
-      (LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrict F) (((π ^ N : F.valuationSubring) : K)) < gamma := by
-  let Γ : Type v :=
-    MonoidHom.mrange F.valuation.toMonoidWithZeroHom
-  have hπ_ne :
-      (LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrict F) (π : K) ≠ (0 : Γ) := by
-    intro hzero
-    exact hπ.val_ne_zero (by
-      simpa [Γ, CompleteDVF.mrangeRestrict] using
-        congrArg (fun z : Γ => (z : F.ValueGroup)) hzero)
-  let delta : Γˣ := Units.mk0 ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrict F) (π : K)) hπ_ne
-  have hdelta_lt_one : delta < (1 : Γˣ) := by
-    rw [← Units.val_lt_val]
-    change (LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrict F) (π : K) < (1 : Γ)
-    rw [← Subtype.coe_lt_coe]
-    simpa [Γ, CompleteDVF.mrangeRestrict] using hπ.val_lt_one
-  have : IsCyclic Γˣ := by
-    simpa [Γ] using (LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrict_units_isCyclic F)
-  have : MulArchimedean Γˣ :=
-    WithZeroValuation.isCyclic_mulArchimedean Γˣ
-  have hdelta_inv : (1 : Γˣ) < delta⁻¹ :=
-    one_lt_inv'.2 hdelta_lt_one
-  obtain ⟨N, hN⟩ := exists_lt_pow hdelta_inv gamma⁻¹
-  refine ⟨N, ?_⟩
-  have hpow_lt : delta ^ N < gamma := by
-    have hN' : gamma⁻¹ < (delta ^ N)⁻¹ := by
-      simpa [inv_pow] using hN
-    exact lt_of_inv_lt_inv hN'
-  simpa [delta, Γ, _root_.Valuation.map_pow] using
-    (show (((LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrict F) (π : K)) ^ N : Γ) < gamma from
-      (Units.val_lt_val.2 hpow_lt))
-
-/-- A closed subfield for the range-restricted valuation topology contains any
-valuation-ring element that is approximated modulo all powers of the maximal
-ideal by elements of that subfield. -/
-theorem mem_subfield_of_mrangeRestrict_isClosed_of_forall_valuationSubring_smodEq
-    (F : CompleteDVF.{u, v} K) (E : Subfield K)
-    (hEclosed :
-      letI :
-          Valued K (MonoidHom.mrange F.valuation.toMonoidWithZeroHom) :=
-        (LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrictValued F)
-      IsClosed (E : Set K))
-    (b : F.valuationSubring)
-    (happrox :
-      ∀ N : ℕ,
-        ∃ z : E,
-          ∃ hz : (z : K) ∈ F.valuation.valuationSubring,
-            (⟨(z : K), hz⟩ : F.valuationSubring) ≡ b
-              [SMOD
-                ((F.maximalIdeal ^ N) •
-                  (⊤ : Submodule F.valuationSubring F.valuationSubring))]) :
-    (b : K) ∈ E := by
-  let :
-      Valued K (MonoidHom.mrange F.valuation.toMonoidWithZeroHom) :=
-    (LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrictValued F)
-  have hbClosure : (b : K) ∈ closure (E : Set K) := by
-    rw [mem_closure_iff_nhds]
-    intro U hU
-    rw [Valued.mem_nhds] at hU
-    rcases hU with ⟨gamma, hgamma⟩
-    rcases F.exists_uniformizer with ⟨π, hπ⟩
-    let gamma' :
-        (MonoidHom.mrange F.valuation.toMonoidWithZeroHom)ˣ :=
-      Units.map
-        MonoidWithZeroHom.ValueGroup₀.embedding.toMonoidHom gamma
-    obtain ⟨N, hN⟩ :=
-      (LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrict_exists_uniformizer_pow_lt_unit F)
-        hπ gamma'
-    obtain ⟨z, hz, hzcongr⟩ := happrox N
-    let zInt : F.valuationSubring := ⟨(z : K), hz⟩
-    have hdiff_mem :
-        zInt - b ∈ F.maximalIdeal ^ N := by
-      have hsub := SModEq.sub_mem.mp hzcongr
-      simpa [smul_eq_mul, Ideal.mul_top] using hsub
-    have hdiff_le :
-        F.valuation ((zInt - b : F.valuationSubring) : K) ≤
-          F.valuation (((π ^ N : F.valuationSubring) : K)) := by
-      exact
-        (ValuationTheory.DiscreteValuationField.Valuation.mem_maximalIdeal_pow_iff_valuation_le_uniformizer_pow
-          (val := F.valuation) hπ N (x := zInt - b)).1 hdiff_mem
-    refine ⟨(z : K), ?_, z.2⟩
-    apply hgamma
-    have hdiff_le' :
-        (LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrict F) ((z : K) - (b : K)) ≤
-          (LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrict F) (((π ^ N : F.valuationSubring) : K)) := by
-      rw [← Subtype.coe_le_coe]
-      simpa [zInt] using hdiff_le
-    change
-      (Valued.v :
-        _root_.Valuation K
-          (MonoidHom.mrange
-            F.valuation.toMonoidWithZeroHom)).restrict
-          ((z : K) - (b : K)) < gamma
-    rw [_root_.Valuation.restrict_lt_iff_lt_embedding]
-    rw [← Subtype.coe_lt_coe]
-    have hlt := lt_of_le_of_lt hdiff_le' hN
-    rw [← Subtype.coe_lt_coe] at hlt
-    change
-      F.valuation ((z : K) - (b : K)) <
-        ((MonoidWithZeroHom.ValueGroup₀.embedding
-            (f := ((Valued.v :
-                _root_.Valuation K
-                  (MonoidHom.mrange
-                    F.valuation.toMonoidWithZeroHom)) :
-                K →*₀ MonoidHom.mrange F.valuation.toMonoidWithZeroHom))
-            (↑gamma) :
-          MonoidHom.mrange F.valuation.toMonoidWithZeroHom) : F.ValueGroup)
-    simpa [gamma'] using hlt
-  simpa [hEclosed.closure_eq] using hbClosure
-
-/-- The complete-DVF package obtained by replacing the ambient value group by
-the actual multiplicative range of the chosen valuation. -/
-def mrangeRestrictCompleteDVF (F : CompleteDVF.{u, v} K) :
-    CompleteDVF.{u, v} K := by
-  let vK : _root_.Valuation K
-      (MonoidHom.mrange F.valuation.toMonoidWithZeroHom) :=
-    (LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrict F)
-  letI : vK.IsRankOneDiscrete := by
-    simpa [vK] using (LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrict_isRankOneDiscrete F)
-  letI :
-      IsAdicComplete (IsLocalRing.maximalIdeal vK.valuationSubring)
-        vK.valuationSubring := by
-    simpa [vK] using (LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrict_isAdicComplete F)
-  letI : ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete vK :=
-    { isRankOneDiscrete := inferInstance
-      isAdicComplete := inferInstance }
-  exact
-    { ValueGroup := MonoidHom.mrange F.valuation.toMonoidWithZeroHom
-      valuation := vK }
 
 /-- For the topology induced by the range-restricted rank-one valuation, the
 valuation ring has its maximal-ideal adic topology. -/
@@ -391,8 +247,3 @@ theorem mrangeRestrict_completeSpace_of_residueField_finite
   have : ProperSpace K :=
     (LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrict_properSpace_of_residueField_finite F)
   exact complete_of_proper
-
-end CompleteDVF
-end LocalFieldTheory.DiscreteValuationField
-
-end

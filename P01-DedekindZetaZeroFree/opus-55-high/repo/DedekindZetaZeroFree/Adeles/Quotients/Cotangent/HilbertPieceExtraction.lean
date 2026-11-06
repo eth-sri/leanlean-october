@@ -180,7 +180,7 @@ theorem pieceLp_mem_Q (v : SquareFiniteFamily (U := U) (H := H)) (n : ℕ) :
 def component (v : SquareFiniteFamily (U := U) (H := H)) (n : ℕ) : Q cover n :=
   ⟨pieceLp cover v n, pieceLp_mem_Q cover v n⟩
 
-private theorem local_lintegral_lt_top (v : Family (U := U) (H := H)) (hv : squareFinite v)
+theorem local_lintegral_lt_top (v : Family (U := U) (H := H)) (hv : squareFinite v)
     (n : ℕ) :
     (∫⁻ y in liftedPiece cover n,
       ENNReal.ofReal (‖localCoefficient cover v n y‖ ^ 2)

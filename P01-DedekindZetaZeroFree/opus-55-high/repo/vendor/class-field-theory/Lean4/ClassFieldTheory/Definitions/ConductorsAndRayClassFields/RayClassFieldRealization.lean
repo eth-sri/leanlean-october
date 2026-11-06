@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Ray class fields
 -/
@@ -51,5 +45,3 @@ structure RayClassFieldRealization
       w.asIdeal.LiesOver v.asIdeal →
         artinEquiv (rayClassOfFinitePrime m v hv) =
           arithmeticFrobeniusAt (K := K) w
-
-end ClassFieldTheory

@@ -49,9 +49,7 @@ theorem mem_finiteMaxOrbit (q : KPFinitePlace F) (f : Plus R.A P C (Sum.inr q)) 
     f ∈ finiteMaxOrbit R P C q f := by
   apply Submodule.subset_span
   refine ⟨1, ?_⟩
-  change finiteMaxAction R P C q 1 f = f
-  rw [map_one]
-  rfl
+  simp
 
 theorem finiteMaxOrbit_stable (q : KPFinitePlace F) (f : Plus R.A P C (Sum.inr q))
     (k : ThetaExpansion.iwasawaCompactFactor R (Sum.inr q)) :
@@ -72,8 +70,6 @@ theorem finiteMaxAction_value (q : KPFinitePlace F)
     (f : Plus R.A P C (Sum.inr q)) :
     localValue R.A P C (Sum.inr q) g (finiteMaxAction R P C q k f) =
       localValue R.A P C (Sum.inr q) (g * k.val) f := by
-  change f.val (_ * _) = f.val (KPPGLLocalCover.coverQuotient F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr q) (g * k.val))
-  rw [map_mul]
   rfl
 
 theorem finiteMax_reference (q : KPFinitePlace F) (hq : q ∉ C.exceptional)
@@ -121,8 +117,7 @@ theorem archMax_matrix (w : InfinitePlace F)
         (KPCplxCharacterHaar.complexSU2Embedding k)))
   congr 1
   apply Matrix.GeneralLinearGroup.ext
-  intro i j
-  exact (RingEquiv.apply_symm_apply (coordinate R.A w) _).symm
+  simp
 
 def archMaxAction (w : InfinitePlace F)
     (k : ThetaExpansion.iwasawaCompactFactor R (Sum.inl w)) :
@@ -152,7 +147,3 @@ theorem archMaxAction_value (w : InfinitePlace F)
     rw [KPLocalCover.mul_epsilon, KPLocalChartTopology.complex_sigmaTwo_eq_one, mul_one]
   have hm : complexMatrix R.A w (g * k.val) = complexMatrix R.A w g * complexMatrix R.A w k.val := map_mul _ _ _
   rw [he, hm, map_mul, Units.val_mul, mul_assoc]
-
-end DedekindZetaZeroFree.FourierContinuation.LiteralSource
-
-end

@@ -27,7 +27,7 @@ def rawLocalLog (raw : Raw R.A) : KPHilbert.Place F → ℝ
       (finiteIntegralIwasawa R P C q)
       (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q) (raw (Sum.inr q))))
 
-private theorem arch_upper_abs (raw : Raw R.A)
+theorem arch_upper_abs (raw : Raw R.A)
     (hu : (restrictedProjection F ζ hζ raw) 1 0 = 0) (w : InfinitePlace F) :
     ((KPGlobalCenterRationalCharacterModulus.localAbsUnit F (Sum.inl w)
       (KPGlobalCubicIdelePairing.ideleEval F (Sum.inl w)
@@ -58,7 +58,7 @@ private theorem arch_upper_abs (raw : Raw R.A)
   simp only [mul_zero,sub_zero,norm_zero,zero_pow (by decide : 2 ≠ 0),zero_add,norm_mul,norm_div]
   field_simp
 
-private theorem raw_borel_log_eq (raw : Raw R.A)
+theorem raw_borel_log_eq (raw : Raw R.A)
     (hb : scalarQuotient F ζ hζ (amalgamation F ζ hζ raw) ∈ KPGlobalTorusFunctionData.borel F ζ hζ) (v : KPHilbert.Place F) :
     rawLocalLog R P C raw v = Real.log
       ((KPGlobalCenterRationalCharacterModulus.localAbsUnit F v
@@ -75,7 +75,7 @@ private theorem raw_borel_log_eq (raw : Raw R.A)
       (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q) (raw (Sum.inr q)))) = _
     rw [finite_borel_forwardAbs R P C q _ raw (raw_borel_upper R raw hb)]
 
-private theorem raw_borel_log_support (raw : Raw R.A)
+theorem raw_borel_log_support (raw : Raw R.A)
     (hb : scalarQuotient F ζ hζ (amalgamation F ζ hζ raw) ∈ KPGlobalTorusFunctionData.borel F ζ hζ) :
     Function.HasFiniteSupport (rawLocalLog R P C raw) := by
   apply ((raw_borel_norm_product R raw hb).1).subset
@@ -90,7 +90,7 @@ private theorem raw_borel_log_support (raw : Raw R.A)
         simpa only [Function.mem_mulSupport, not_not] using hv
   simp [hval]
 
-private theorem rawLocalLog_mul_compact (raw k : Raw R.A)
+theorem rawLocalLog_mul_compact (raw k : Raw R.A)
     (hk : k ∈ fullProductCompactPreimage R) :
     rawLocalLog R P C (raw*k) = rawLocalLog R P C raw := by
   funext v

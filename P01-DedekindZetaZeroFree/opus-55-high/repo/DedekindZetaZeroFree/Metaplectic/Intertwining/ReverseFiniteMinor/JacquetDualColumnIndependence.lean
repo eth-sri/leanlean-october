@@ -14,7 +14,6 @@ open NumberField IsDedekindDomain MeasureTheory ValuativeRel
 open KPLocalExceptionalConstruction KPLocalStoneVonNeumann KPLocalPrincipalSeries
 open KPRankOneShellContinuation KPRankOneShellRepair
 open KPTameJacquetTestDuality KPTameTransposeKernelUnfolding KPTameTransposeLiteralCoefficients
-set_option autoImplicit false
 set_option maxHeartbeats 1000000
 set_option backward.isDefEq.respectTransparency false
 
@@ -27,8 +26,7 @@ theorem independent_of_diagonal_pairings
   rw [linearIndependent_fin2]
   constructor
   · intro h
-    have H := congrArg ell₂ h
-    exact hb (by simpa [h22] using H)
+    simp_all
   · intro c h
     have H := congrArg ell₀ h
     exact ha (by simpa [map_smul, h00, h02] using H.symm)
@@ -103,7 +101,6 @@ open _root_.DedekindZetaZeroFree.ActualReverseMinorOffDiagonal renaming actual_l
 open _root_.DedekindZetaZeroFree.ActualReverseMinorLowShellDiagonal renaming eventual_actual_lowShell_diagonal_value → eventual_actual_lowShell_diagonal_value
 open _root_.DedekindZetaZeroFree.ActualReverseMinorLiteralAlgebra renaming full_jacquet_dual → full_jacquet_dual
 open _root_.DedekindZetaZeroFree.ActualReverseMinorLiteralAlgebra renaming independent_of_diagonal_pairings → independent_of_diagonal_pairings
-set_option autoImplicit false
 set_option maxHeartbeats 2000000
 set_option backward.isDefEq.respectTransparency false
 
@@ -118,7 +115,7 @@ variable (F : Type) [Field F] [NumberField F]
 
 local instance minusAdd : AddCommGroup (sectionSpace S.borel P .minus 0) := inferInstance
 
-private theorem diagonal_eta (π : (LocalField F q)ˣ) (j : Fin 3) :
+theorem diagonal_eta (π : (LocalField F q)ˣ) (j : Fin 3) :
     diagonalLift F ζ hζ q π ((j.val : ℤ), 0) = eta F ζ hζ q π j := by
   simp [diagonalLift, eta, KPPGLLocalCover.A, KPStandardLocalRootLifts.A]
 
@@ -128,7 +125,7 @@ private theorem diagonal_eta (π : (LocalField F q)ˣ) (j : Fin 3) :
     ((actualCanonicalReverseMap F ζ hζ q S P μ hμ).toLinearMap.comp
       (scalarCoordinateEquiv F ζ hζ q S P hP .minus).symm.toLinearMap)
 
-private theorem lowShell_nonoscillatory
+theorem lowShell_nonoscillatory
     (ψ : Multiplicative (LocalField F q) →* ℂˣ)
     (hconductor : HasConductorIntegers F q ψ) (π : (LocalField F q)ˣ) (i : Fin 3)
     (f : scalarSections F ζ hζ q S P hP .minus) :
@@ -143,7 +140,7 @@ private theorem lowShell_nonoscillatory
   apply setIntegral_congr_fun (valuation (LocalField F q)).isOpen_integer.measurableSet
   intro x hx
   have hneg : -x ∈ (valuation (LocalField F q)).integer :=
-    (valuation (LocalField F q)).integer.neg_mem hx
+    by simp_all
   have hp := (hconductor 1).mpr ((valuation (LocalField F q)).integer.one_mem) ⟨-x, hneg⟩
   simp only [mul_one] at hp
   simp only [jacquetIntegrand, hp, Units.val_one, mul_one]

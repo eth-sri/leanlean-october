@@ -33,7 +33,7 @@ def translationRepresentation : Representation ℂ (Multiplicative K) (CcLC K E)
   map_mul' := by
     intro x y
     ext φ z
-    simp [translation, LocallyConstant.comap, add_assoc, add_comm, add_left_comm]
+    simp [translation, LocallyConstant.comap, add_comm, add_left_comm]
 
 def translationRelations (ψ : Multiplicative K →* ℂˣ) : Submodule ℂ (CcLC K E) :=
   rootRelationSpan translationRepresentation (MonoidHom.id (Multiplicative K)) ψ
@@ -42,14 +42,7 @@ theorem translationRelations_eq_span (ψ : Multiplicative K →* ℂˣ) :
     translationRelations (E := E) ψ = Submodule.span ℂ
       (Set.range fun p : K × CcLC K E =>
         translation p.1 p.2 - (ψ (Multiplicative.ofAdd p.1) : ℂ) • p.2) := by
-  unfold translationRelations rootRelationSpan
-  apply congrArg (Submodule.span ℂ)
-  ext f
-  constructor
-  · rintro ⟨⟨y, φ⟩, rfl⟩
-    exact ⟨(Multiplicative.toAdd y, φ), rfl⟩
-  · rintro ⟨⟨y, φ⟩, rfl⟩
-    exact ⟨(Multiplicative.ofAdd y, φ), rfl⟩
+  rfl
 
 abbrev TranslationCoinvariants (ψ : Multiplicative K →* ℂˣ) :=
   RootCoinvariants (translationRepresentation (K := K) (E := E))
@@ -105,15 +98,15 @@ def characterIntegral (ψ : Multiplicative K →* ℂˣ) (hψ : Continuous ψ)
     characterIntegral ψ hψ μ φ =
       ∫ x, ((ψ (Multiplicative.ofAdd x) : ℂ)⁻¹) • value φ x ∂μ := rfl
 
-private theorem integral_bump (μ : Measure K) [μ.IsAddHaarMeasure]
+theorem integral_bump (μ : Measure K) [μ.IsAddHaarMeasure]
     (H : AddSubgroup K) (ho : IsOpen (H : Set K)) (hc : IsCompact (H : Set K))
     (e : V) : (∫ x, value (compactOpenBump H ho hc e) x ∂μ) =
       (μ.real (H : Set K) : ℂ) • e := by
   rw [show value (compactOpenBump H ho hc e) = (H : Set K).indicator (fun _ => e) from rfl,
     integral_indicator ho.measurableSet, setIntegral_const]
-  exact RCLike.real_smul_eq_coe_smul (K := ℂ) _ _
+  rfl
 
-private theorem integral_coset (μ : Measure K) [μ.IsAddHaarMeasure]
+theorem integral_coset (μ : Measure K) [μ.IsAddHaarMeasure]
     (H : AddSubgroup K) (ho : IsOpen (H : Set K)) (hc : IsCompact (H : Set K))
     (a : K) (e : V) :
     (∫ x, (additiveCoset H a).indicator (fun _ => e) x ∂μ) =
@@ -126,7 +119,7 @@ private theorem integral_coset (μ : Measure K) [μ.IsAddHaarMeasure]
     rw [sub_eq_add_neg]
   rw [he, integral_add_right_eq_self, integral_bump]
 
-private theorem integrable_coset (μ : Measure K) [μ.IsAddHaarMeasure]
+theorem integrable_coset (μ : Measure K) [μ.IsAddHaarMeasure]
     (H : AddSubgroup K) (ho : IsOpen (H : Set K)) (hc : IsCompact (H : Set K))
     (a : K) (e : V) :
     Integrable ((additiveCoset H a).indicator (fun _ => e)) μ := by
@@ -159,13 +152,13 @@ theorem characterIntegral_finite_coset_expansion
     by_cases hx : x ∈ additiveCoset H b
     · have hp : ψ (Multiplicative.ofAdd x) = ψ (Multiplicative.ofAdd b) := by
         have hm := hHψ (x - b) hx
-        have he : x = (x - b) + b := sub_add_cancel x b |>.symm
+        have he : x = (x - b) + b := by simp
         rw [he, ofAdd_add, map_mul, hm, one_mul]
       simp [Set.indicator_of_mem hx, hp]
     · simp [Set.indicator_of_notMem hx]
   simp only [characterIntegral_apply, hφ, Finset.smul_sum, ht]
   rw [integral_finset_sum _ (fun i _ => integrable_coset μ H hHopen hHcompact _ _)]
-  simp only [integral_coset μ H hHopen hHcompact, Finset.smul_sum]
+  simp only [integral_coset μ H hHopen hHcompact]
 
 theorem characterIntegral_translation (ψ : Multiplicative K →* ℂˣ)
     (hψ : Continuous ψ) (μ : Measure K) [μ.IsAddHaarMeasure]
@@ -178,10 +171,9 @@ theorem characterIntegral_translation (ψ : Multiplicative K →* ℂˣ)
         (((ψ (Multiplicative.ofAdd (x + y)) : ℂ)⁻¹) • value φ (x + y)) := by
     have hm : (ψ (Multiplicative.ofAdd (x + y)) : ℂ) =
         (ψ (Multiplicative.ofAdd x) : ℂ) * (ψ (Multiplicative.ofAdd y) : ℂ) := by
-      rw [ofAdd_add, map_mul, Units.val_mul]
+      simp
     rw [hm, smul_smul]
-    congr 1
-    field_simp
+    simp
   simp only [characterIntegral_apply, value_translation, hp]
   rw [integral_smul]
   congr 1
@@ -193,20 +185,13 @@ def normalizedBump (μ : Measure K) [μ.IsAddHaarMeasure]
     (hHcompact : IsCompact (H : Set K)) (e : V) : CcLC K V :=
   (μ.real (H : Set K) : ℂ)⁻¹ • compactOpenBump H hHopen hHcompact e
 
-@[simp] theorem value_normalizedBump (μ : Measure K) [μ.IsAddHaarMeasure]
-    (H : AddSubgroup K) (hHopen : IsOpen (H : Set K))
-    (hHcompact : IsCompact (H : Set K)) (e : V) (x : K) :
-    value (normalizedBump μ H hHopen hHcompact e) x =
-      (μ.real (H : Set K) : ℂ)⁻¹ • (H : Set K).indicator (fun _ => e) x := by
-  rfl
-
-private theorem volume_ne_zero (μ : Measure K) [μ.IsAddHaarMeasure]
+theorem volume_ne_zero (μ : Measure K) [μ.IsAddHaarMeasure]
     (H : AddSubgroup K) (ho : IsOpen (H : Set K)) (hc : IsCompact (H : Set K)) :
     (μ.real (H : Set K) : ℂ) ≠ 0 := by
   obtain ⟨hp, hf⟩ := compactOpen_volume_pos_lt_top μ H ho hc
   exact_mod_cast (ENNReal.toReal_pos hp.ne' hf.ne).ne'
 
-private theorem default_level :
+theorem default_level :
     ∃ U : AddSubgroup K, IsOpen (U : Set K) ∧ IsCompact (U : Set K) := by
   let U := (ValuativeRel.valuation K).leAddSubgroup 1
   refine ⟨U, ?_, IsNonarchimedeanLocalField.isCompact_closedBall K 1⟩
@@ -257,7 +242,7 @@ theorem characterIntegral_surjective (ψ : Multiplicative K →* ℂˣ)
       c • (H : Set K).indicator (fun _ => e) x
     by_cases hx : x ∈ H <;> simp [Set.indicator, hx]
 
-private theorem class_expansion (ψ : Multiplicative K →* ℂˣ)
+theorem class_expansion (ψ : Multiplicative K →* ℂˣ)
     (φ : CcLC K V) (H : AddSubgroup K)
     (ho : IsOpen (H : Set K)) (hc : IsCompact (H : Set K))
     (n : ℕ) (a : Fin n → K) (e : Fin n → V)
@@ -295,8 +280,7 @@ private theorem class_expansion (ψ : Multiplicative K →* ℂˣ)
     change coinvariantsMk ψ (translation (-a i) (compactOpenBump H ho hc (e i))) =
       (ψ (Multiplicative.ofAdd (-a i)) : ℂ) •
         coinvariantsMk ψ (compactOpenBump H ho hc (e i)) at hh
-    rw [ofAdd_neg, map_inv, Units.val_inv_eq_inv_val] at hh
-    exact hh
+    simp_all
   rw [hφ, map_sum]
   simp_rw [hq]
   have hm := map_sum ((coinvariantsMk ψ).comp (bumpMap (V := V) H ho hc))
@@ -389,8 +373,8 @@ def localAbs (a : Kˣ) : ℝ :=
 
 def dilateWith (a : Kˣ) (A : V →ₗ[ℂ] V) (φ : CcLC K V) : CcLC K V :=
   ⟨LocallyConstant.map A (LocallyConstant.comap
-      ⟨fun x => (↑a : K)⁻¹ * x, continuous_const.mul continuous_id⟩ φ.val), by
-    exact (φ.property.comp_homeomorph
+      ⟨fun x => (↑a : K)⁻¹ * x, continuous_const.mul continuous_id⟩ φ.val), 
+    (φ.property.comp_homeomorph
       (Homeomorph.mulLeft₀ (↑a : K)⁻¹ (inv_ne_zero (Units.ne_zero a)))).comp_left A.map_zero⟩
 
 @[simp] theorem value_dilateWith (a : Kˣ) (A : V →ₗ[ℂ] V)
@@ -426,23 +410,17 @@ theorem ordinaryIntegral_dilateWith (μ : Measure K) [μ.IsAddHaarMeasure]
       ext x
       change (ContinuousAddEquiv.mulLeft a).symm x = (↑a : K)⁻¹ * x
       apply (ContinuousAddEquiv.mulLeft a).injective
-      simp [mul_assoc, Units.ne_zero a]
+      simp
     rw [he] at hh
     have heT : ⇑T.symm = fun x : K => (↑a : K)⁻¹ * x := he
     rw [heT] at hmap
     rw [← hh, hmap, integral_smul_nnreal_measure, ordinaryIntegral_apply]
-    exact RCLike.real_smul_eq_coe_smul (K := ℂ) _ _
+    rfl
   rw [ordinaryIntegral_apply]
   change (∫ x, A (value φ ((↑a : K)⁻¹ * x)) ∂μ) = _
-  have hiφ : Integrable (fun x => value φ ((↑a : K)⁻¹ * x)) μ := by
-    exact KPJacquetStepFunction.integrable (dilateWith a (LinearMap.id) φ) μ
+  have hiφ : Integrable (fun x => value φ ((↑a : K)⁻¹ * x)) μ := 
+    KPJacquetStepFunction.integrable (dilateWith a (LinearMap.id) φ) μ
   change (∫ x, (LinearMap.toContinuousLinearMap A)
     (value φ ((↑a : K)⁻¹ * x)) ∂μ) = _
   rw [ContinuousLinearMap.integral_comp_comm _ hiφ, hi]
-  exact (LinearMap.toContinuousLinearMap A).map_smul _ _
-
-end Integration
-
-end DedekindZetaZeroFree.KPJacquetOpenTestFunction
-
-end
+  simp

@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Class fields of closed finite-index idele-class subgroups
 
@@ -51,7 +46,7 @@ variable {K : Type} [Field K] [NumberField K]
 subgroup.  A proper subgroup uses its exact index.  The top subgroup uses
 exponent two, so the same concrete finite Galois construction also covers
 the trivial class field case. -/
-noncomputable def closedFiniteIndexNormExponent
+def closedFiniteIndexNormExponent
     (H : Subgroup (IdeleClassGroup K))
     [H.FiniteIndex] :
     ℕ+ :=
@@ -87,10 +82,7 @@ theorem one_lt_closedFiniteIndexNormExponent
           H.index.toPNat (Nat.pos_of_ne_zero Subgroup.FiniteIndex.index_ne_zero)) =
           (2 : ℕ+)
       exact ite_eq_left hH
-    have hvalue : (closedFiniteIndexNormExponent (K := K) H : ℕ) = 2 :=
-      congrArg PNat.val hexponent
-    rw [hvalue]
-    decide
+    simp_all
   · have hindex : (closedFiniteIndexNormExponent (K := K) H : ℕ) = H.index :=
       congrArg PNat.val (closedFiniteIndexNormExponent_eq_index (K := K) H hH)
     rw [hindex]
@@ -99,7 +91,7 @@ theorem one_lt_closedFiniteIndexNormExponent
 /-- The finite seed used in the norm-neighbourhood construction is the
 support of the canonical ray modulus whose congruence subgroup lies in
 `H`. -/
-noncomputable def closedFiniteIndexNormSeed
+def closedFiniteIndexNormSeed
     (H : Subgroup (IdeleClassGroup K))
     (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
     [H.FiniteIndex] :
@@ -107,7 +99,7 @@ noncomputable def closedFiniteIndexNormSeed
   (RayClass.modulusInsideClosedFiniteIndex H hclosed).finitePart.support
 
 /-- The cyclotomic layer used by the finite-index norm construction. -/
-noncomputable abbrev closedFiniteIndexNormCyclotomicField
+abbrev closedFiniteIndexNormCyclotomicField
     (H : Subgroup (IdeleClassGroup K))
     [H.FiniteIndex] : Type :=
   CyclotomicField
@@ -119,7 +111,7 @@ instance closedFiniteIndexNormExponentNeZero
     NeZero (closedFiniteIndexNormExponent (K := K) H : ℕ) :=
   ⟨(closedFiniteIndexNormExponent (K := K) H).ne_zero⟩
 
-noncomputable instance
+instance
     closedFiniteIndexNormCyclotomicFieldIsCyclotomicExtension
     (H : Subgroup (IdeleClassGroup K)) [H.FiniteIndex] :
     IsCyclotomicExtension
@@ -130,7 +122,7 @@ noncomputable instance
     CyclotomicField.isCyclotomicExtension
       (closedFiniteIndexNormExponent (K := K) H : ℕ) K
 
-noncomputable instance
+instance
     closedFiniteIndexNormCyclotomicFieldFiniteDimensional
     (H : Subgroup (IdeleClassGroup K)) [H.FiniteIndex] :
     FiniteDimensional K
@@ -139,14 +131,14 @@ noncomputable instance
     {(closedFiniteIndexNormExponent (K := K) H : ℕ)} K
     (closedFiniteIndexNormCyclotomicField (K := K) H)
 
-noncomputable instance closedFiniteIndexNormCyclotomicFieldNumberField
+instance closedFiniteIndexNormCyclotomicFieldNumberField
     (H : Subgroup (IdeleClassGroup K)) [H.FiniteIndex] :
     NumberField
       (closedFiniteIndexNormCyclotomicField (K := K) H) :=
   NumberField.of_module_finite K
     (closedFiniteIndexNormCyclotomicField (K := K) H)
 
-noncomputable instance closedFiniteIndexNormCyclotomicFieldIsGalois
+instance closedFiniteIndexNormCyclotomicFieldIsGalois
     (H : Subgroup (IdeleClassGroup K)) [H.FiniteIndex] :
     IsGalois K
       (closedFiniteIndexNormCyclotomicField (K := K) H) :=
@@ -156,7 +148,7 @@ noncomputable instance closedFiniteIndexNormCyclotomicFieldIsGalois
 
 /-- The full S-unit Kummer layer used by the finite-index norm
 construction. -/
-noncomputable abbrev closedFiniteIndexNormKummerField
+abbrev closedFiniteIndexNormKummerField
     (H : Subgroup (IdeleClassGroup K))
     (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
     [H.FiniteIndex] : Type :=
@@ -164,7 +156,7 @@ noncomputable abbrev closedFiniteIndexNormKummerField
     (K := K) (closedFiniteIndexNormExponent (K := K) H)
     (closedFiniteIndexNormSeed (K := K) H hclosed)
 
-noncomputable instance closedFiniteIndexNormKummerFieldFiniteDimensional
+instance closedFiniteIndexNormKummerFieldFiniteDimensional
     (H : Subgroup (IdeleClassGroup K))
     (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
     [H.FiniteIndex] :
@@ -178,20 +170,7 @@ noncomputable instance closedFiniteIndexNormKummerFieldFiniteDimensional
       (K := K) (closedFiniteIndexNormExponent (K := K) H)
       (closedFiniteIndexNormSeed (K := K) H hclosed)
 
-noncomputable instance closedFiniteIndexNormKummerFieldIsGalois
-    (H : Subgroup (IdeleClassGroup K))
-    (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
-    [H.FiniteIndex] :
-    IsGalois (closedFiniteIndexNormCyclotomicField (K := K) H)
-      (closedFiniteIndexNormKummerField (K := K) H hclosed) := by
-  unfold closedFiniteIndexNormCyclotomicField
-    closedFiniteIndexNormKummerField
-  exact
-    cyclotomicFullSUnitKummerExtension_isGalois
-      (K := K) (closedFiniteIndexNormExponent (K := K) H)
-      (closedFiniteIndexNormSeed (K := K) H hclosed)
-
-noncomputable instance closedFiniteIndexNormKummerFieldNumberField
+instance closedFiniteIndexNormKummerFieldNumberField
     (H : Subgroup (IdeleClassGroup K))
     (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
     [H.FiniteIndex] :
@@ -201,7 +180,7 @@ noncomputable instance closedFiniteIndexNormKummerFieldNumberField
     (closedFiniteIndexNormKummerField (K := K) H hclosed)
 
 @[reducible]
-noncomputable instance closedFiniteIndexNormKummerFieldAlgebraOverBase
+instance closedFiniteIndexNormKummerFieldAlgebraOverBase
     (H : Subgroup (IdeleClassGroup K))
     (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
     [H.FiniteIndex] :
@@ -213,7 +192,7 @@ noncomputable instance closedFiniteIndexNormKummerFieldAlgebraOverBase
       (closedFiniteIndexNormCyclotomicField (K := K) H))).toAlgebra
 
 @[reducible]
-noncomputable instance closedFiniteIndexNormKummerFieldSMulOverBase
+instance closedFiniteIndexNormKummerFieldSMulOverBase
     (H : Subgroup (IdeleClassGroup K))
     (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
     [H.FiniteIndex] :
@@ -222,23 +201,23 @@ noncomputable instance closedFiniteIndexNormKummerFieldSMulOverBase
     (self := closedFiniteIndexNormKummerFieldAlgebraOverBase H hclosed)
 
 @[reducible]
-noncomputable instance closedFiniteIndexNormKummerFieldModuleOverBase
+instance closedFiniteIndexNormKummerFieldModuleOverBase
     (H : Subgroup (IdeleClassGroup K))
     (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
     [H.FiniteIndex] :
     Module K (closedFiniteIndexNormKummerField (K := K) H hclosed) :=
   Algebra.toModule
 
-noncomputable instance closedFiniteIndexNormKummerFieldScalarTower
+instance closedFiniteIndexNormKummerFieldScalarTower
     (H : Subgroup (IdeleClassGroup K))
     (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
     [H.FiniteIndex] :
     IsScalarTower K
       (closedFiniteIndexNormCyclotomicField (K := K) H)
-      (closedFiniteIndexNormKummerField (K := K) H hclosed) := by
-  exact IsScalarTower.of_algebraMap_eq' rfl
+      (closedFiniteIndexNormKummerField (K := K) H hclosed) := 
+  IsScalarTower.of_algebraMap_eq' rfl
 
-noncomputable instance
+instance
     closedFiniteIndexNormKummerFieldFiniteDimensionalOverBase
     (H : Subgroup (IdeleClassGroup K))
     (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
@@ -251,14 +230,14 @@ noncomputable instance
 
 /-- The finite normal closure which is the actual Galois norm
 neighbourhood attached to `H`. -/
-noncomputable abbrev closedFiniteIndexNormAmbient
+abbrev closedFiniteIndexNormAmbient
     (H : Subgroup (IdeleClassGroup K))
     (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
     [H.FiniteIndex] : Type :=
   finiteNormalClosure K
     (closedFiniteIndexNormKummerField (K := K) H hclosed)
 
-noncomputable instance closedFiniteIndexNormAmbientFiniteDimensional
+instance closedFiniteIndexNormAmbientFiniteDimensional
     (H : Subgroup (IdeleClassGroup K))
     (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
     [H.FiniteIndex] :
@@ -267,7 +246,7 @@ noncomputable instance closedFiniteIndexNormAmbientFiniteDimensional
   unfold closedFiniteIndexNormAmbient
   infer_instance
 
-noncomputable instance closedFiniteIndexNormAmbientNumberField
+instance closedFiniteIndexNormAmbientNumberField
     (H : Subgroup (IdeleClassGroup K))
     (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
     [H.FiniteIndex] :
@@ -277,7 +256,7 @@ noncomputable instance closedFiniteIndexNormAmbientNumberField
     finiteNormalClosure_numberField K
       (closedFiniteIndexNormKummerField (K := K) H hclosed)
 
-noncomputable instance closedFiniteIndexNormAmbientIsGalois
+instance closedFiniteIndexNormAmbientIsGalois
     (H : Subgroup (IdeleClassGroup K))
     (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
     [H.FiniteIndex] :
@@ -337,8 +316,3 @@ theorem closedFiniteIndexSubgroup_has_finiteGaloisNormNeighborhood
         closedFiniteIndexNormExponent_eq_index (K := K) H hH
       ] using hIndexPower
   exact hNormPower.trans hPower
-
-end GlobalClassFields
-end GlobalClassFieldTheory
-
-end

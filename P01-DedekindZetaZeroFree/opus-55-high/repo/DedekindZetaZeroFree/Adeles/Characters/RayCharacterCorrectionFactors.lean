@@ -14,7 +14,6 @@ open scoped NumberField Classical nonZeroDivisors
 open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.SArithmeticData.GaussCorrection
 noncomputable section
-set_option autoImplicit false
 variable {F : Type} [Field F] [NumberField F]
 
 private lemma count_eq (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) (v : HeightOneSpectrum (𝓞 F)) :
@@ -36,9 +35,7 @@ private lemma exterior_coprime (A : SArithmeticData F) (I : A.Exterior) :
   have hp0 : p ≠ ⊥ := by
     intro he
     apply I.property.1
-    apply bot_unique
-    have hh : I.val ≤ p := le_trans le_sup_left hle
-    simpa only [he] using hh
+    simp_all
   let v : HeightOneSpectrum (𝓞 F) := ⟨p, hp.isPrime, hp0⟩
   have hv : v ∈ A.Sf := A.modulus_support v (le_trans le_sup_right hle)
   have hi := (A.exterior_iff ⟨I.val, I.property.1⟩).mp I.property.2 v hv
@@ -76,9 +73,9 @@ private lemma representative_fractional (A : SArithmeticData F) (I : A.Exterior)
     simp
   · rw [hx.2.2 v hv]
     change -WithZero.log (WithZero.exp (-(idealPrimeExponent v.asIdeal I.val : ℤ))) = _
-    rw [WithZero.log_exp, neg_neg]
+    simp
 
-private lemma representative_primeTo (A : SArithmeticData F) (I : A.Exterior)
+lemma representative_primeTo (A : SArithmeticData F) (I : A.Exterior)
     (x : NumberField.IdeleGroup (𝓞 F) F) (hx : A.RepresentsExteriorIdeal I x) :
     (_root_.IdeleGroup.equivAdeleRingUnits).symm x ∈ RayClass.idelePrimeToModulusSubgroup
       (ClassFieldTheory.GlobalClassFieldComparison.rayClassModulusToOriginal F
@@ -89,7 +86,7 @@ private lemma representative_primeTo (A : SArithmeticData F) (I : A.Exterior)
       funext w
       exact hx.1 w
     rw [h1]
-    exact one_mem _
+    simp
   · intro v hv
     have hv' : v ∈ A.Sf := by
       apply A.modulus_support
@@ -99,7 +96,7 @@ private lemma representative_primeTo (A : SArithmeticData F) (I : A.Exterior)
       apply Units.ext
       exact hx.2.1 v hv'
     rw [h1]
-    exact one_mem _
+    simp
 
 private lemma representative_evaluation (A : SArithmeticData F) (η : RayClassCharacter F A.modulus)
     (x : NumberField.IdeleGroup (𝓞 F) F) (I : A.Exterior)
@@ -137,10 +134,9 @@ private lemma representative_evaluation (A : SArithmeticData F) (η : RayClassCh
   change (RayClassBridge.rayCharacter F (primitive12_totallyComplex F A.zeta12 A.primitive_zeta12) A.modulus A.modulus_ne_zero η
     ((ClassFieldTheory.GlobalClassFieldComparison.rayClassGroupEquivOriginalIdele F m).symm
       (QuotientGroup.mk' m'.congruenceSubgroup (QuotientGroup.mk' (_root_.IdeleGroup.principalSubgroup F) a.val))) : ℂ) = _
-  rw [hh]
-  exact RayClassBridge.rayCharacter_integral F _ A.modulus A.modulus_ne_zero η I.val I.property.1 hc
+  simp_all
 
-private lemma infinite_comparison (w : InfinitePlace F) (z : w.Completionˣ) :
+lemma infinite_comparison (w : InfinitePlace F) (z : w.Completionˣ) :
     _root_.IdeleGroup.ideleClassGroupEquivMathlib F (_root_.IdeleGroup.infinitePlaceIdeleClass w z) =
       NumberField.IdeleClassGroup.ofCompletion (𝓞 F) F w z := by
   change QuotientGroup.mk (_root_.IdeleGroup.equivAdeleRingUnits (_root_.IdeleGroup.infinitePlaceIdele w z)) =
@@ -176,7 +172,7 @@ theorem rayExtension (A : SArithmeticData F)
     RayClassBridge.ideleClassCharacter_norm F hc A.modulus A.modulus_ne_zero η (e x)
   let Φ : A.ArithmeticIdeleClasses →* Circle :=
     { toFun := fun x => ⟨χ x, by change (χ x : ℂ) ∈ Metric.sphere 0 1; simpa using hn x⟩
-      map_one' := by apply Subtype.ext; exact congrArg (fun u : ℂˣ => (u : ℂ)) χ.map_one
+      map_one' := by apply Subtype.ext; simp
       map_mul' := by intro x y; apply Subtype.ext; exact congrArg (fun u : ℂˣ => (u : ℂ)) (χ.map_mul x y) }
   have hcΦ : Continuous Φ := by
     have hχ : Continuous χ := (RayClassBridge.ideleClassCharacter_continuous F hc A.modulus A.modulus_ne_zero η).comp e.continuous
@@ -228,7 +224,6 @@ open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.SArithmeticData
 
 noncomputable section
-set_option autoImplicit false
 
 variable {F : Type} [Field F] [NumberField F]
 
@@ -386,7 +381,7 @@ theorem exists_gaussCorrectionOutput
     · rcases hm with rfl | rfl <;> simp
     · intro z
       have hz : InfinitePlace.Completion.extensionEmbedding w (z : w.Completion) ≠ 0 :=
-        (map_ne_zero (InfinitePlace.Completion.extensionEmbedding w)).mpr (Units.ne_zero z)
+        by simp
       rw [hθinf]
       simp only [inv_inv, Circle.coe_inv]
       rw [hΛinf, hang _ hz, zpow_neg, neg_neg]
@@ -488,11 +483,9 @@ theorem correctionTheta_infinity_angular (A : SArithmeticData F)
   · rcases hm with rfl | rfl <;> simp
   · intro z
     have hz : InfinitePlace.Completion.extensionEmbedding w (z : w.Completion) ≠ 0 :=
-      (map_ne_zero (InfinitePlace.Completion.extensionEmbedding w)).mpr (Units.ne_zero z)
+      by simp
     rw [correctionTheta_infinity A Λ G η_id hG hη]
-    simp only [inv_inv, Circle.coe_inv]
-    rw [hΛ, hang _ hz, zpow_neg, neg_neg]
-    simp
+    simp_all
 
 theorem correctionTheta_infinity_no_radial (A : SArithmeticData F)
     (σ : F →+* ℂ) (Λ G η_id : A.ArithmeticIdeleClasses →* Circle)
@@ -518,10 +511,3 @@ theorem correctionTheta_infinity_no_radial (A : SArithmeticData F)
   rw [hΛ, hΛ]
   simp only [Units.val_mul, map_mul, hu]
   rw [mul_comm, DHCubic.infinity_no_radial _ _ _ _ _ r hr]
-
-end CorrectionAssembly
-
-end
-end DedekindZetaZeroFree.SArithmeticData
-
-end

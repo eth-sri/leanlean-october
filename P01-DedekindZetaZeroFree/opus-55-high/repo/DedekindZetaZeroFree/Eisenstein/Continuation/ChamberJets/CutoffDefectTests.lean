@@ -95,7 +95,7 @@ private theorem word_smooth (u : E → ℂ) (hu : ContDiff ℝ (⊤ : ℕ∞) u)
   | b :: w => (expand c w).flatMap (fun t =>
       [(fun x => fderiv ℝ t.1 x b, t.2), (t.1, b :: t.2)])
 
-private theorem expand_smooth (c : E → ℂ) (hc : ContDiff ℝ (⊤ : ℕ∞) c) (w : List E) :
+theorem expand_smooth (c : E → ℂ) (hc : ContDiff ℝ (⊤ : ℕ∞) c) (w : List E) :
     ∀ t ∈ expand c w, ContDiff ℝ (⊤ : ℕ∞) t.1 := by
   induction w with
   | nil => intro t ht; simp only [expand, List.mem_singleton] at ht; subst t; exact hc
@@ -185,7 +185,7 @@ private theorem jets_of_word_holomorphic (W : Set E) (hW : IsOpen W) (O : Set �
   intro s hz x
   rw [jet_constant_word _ _ W hW (hs s hz).contDiffOn _ (hKW x.property), hjval s hz x]
 
-private theorem list_holomorphic {α : Type*} {X : Type*} [TopologicalSpace X]
+theorem list_holomorphic {α : Type*} {X : Type*} [TopologicalSpace X]
     [CompactSpace X] (ts : List α) (j : α → ℂ → C(X,ℂ)) (O : Set ℂ)
     (hj : ∀ t ∈ ts, DifferentiableOn ℂ (j t) O) :
     DifferentiableOn ℂ (fun s => (ts.map (fun t => j t s)).sum) O := by
@@ -431,15 +431,15 @@ variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
 variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
 variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
-private theorem raw_test_representative (f : S_U F ζ hζ U R P H) :
+theorem raw_test_representative (f : S_U F ζ hζ U R P H) :
     sectionFields (scalarSections f) = f.val := by
   exact (Classical.choose_spec (scalar_gluing f)).1.2.2
 
-private theorem raw_test_smooth (f : S_U F ζ hζ U R P H) :
+theorem raw_test_smooth (f : S_U F ζ hζ U R P H) :
     IsSmoothSections F ζ hζ U R P H (scalarSections f) := by
   exact (Classical.choose_spec (scalar_gluing f)).1.1
 
-private theorem raw_test_laplacian_coefficient (f : S_U F ζ hζ U R P H)
+theorem raw_test_laplacian_coefficient (f : S_U F ζ hζ U R P H)
     (a : ActualChart (U := U) (H := H)) (x : omega a) :
     (isotropyChart a).coefficient
       (scalarSections (KPContActualSectorTestDifferentialDescent.δ_U
@@ -454,7 +454,7 @@ private theorem raw_test_laplacian_coefficient (f : S_U F ζ hζ U R P H)
   exact KPContActualSectorTestDifferentialDescentCalculus.coframe_calculus.2.2.2.2.1
     a (f.val a) (f.property.1 a) x
 
-private theorem raw_coefficient_formula (a : ActualChart (U := U) (H := H))
+theorem raw_coefficient_formula (a : ActualChart (U := U) (H := H))
     (s : Sections F ζ hζ U R P H) (x : KPContCotangentActualOverlap.M F) :
     (isotropyChart a).coefficient s x = (s a.component).val
       (KPContCotangentActualOverlap.labeledA
@@ -463,7 +463,7 @@ private theorem raw_coefficient_formula (a : ActualChart (U := U) (H := H))
     KPContCotangentActualOverlap.ChartKind.representative,
     KPContSectorCoveredQuotientVocabulary.chi_coe]
 
-private theorem raw_cutoffSection_support
+theorem raw_cutoffSection_support
     (r : KPContActualSectorCutoffGraphLimit.Cutoffs (U := U) (H := H)) (n : ℕ)
     (s : Sections F ζ hζ U R P H) :
     tsupport (sectionNorm F ζ hζ U R P H
@@ -486,7 +486,7 @@ private theorem raw_cutoffSection_support
   rw [hz]
   simp
 
-private theorem raw_cutoff_test_sections
+theorem raw_cutoff_test_sections
     (r : KPContActualSectorCutoffGraphLimit.Cutoffs (U := U) (H := H)) (n : ℕ)
     (w : KPContActualSectorCutoffGraphLimit.SmoothSection (U := U) (H := H)) :
     scalarSections (KPContActualSectorCutoffGraphLimit.cutoffTest r n w) =
@@ -504,7 +504,7 @@ private theorem raw_cutoff_test_sections
     simp only [sectionFields, raw_coefficient_formula]
     rfl
 
-private theorem raw_cutoff_test_common_support
+theorem raw_cutoff_test_common_support
     (r : KPContActualSectorCutoffGraphLimit.Cutoffs (U := U) (H := H)) (n : ℕ)
     (w : KPContActualSectorCutoffGraphLimit.SmoothSection (U := U) (H := H)) (b : Bool) :
     let φ := KPContActualSectorCutoffGraphLimit.cutoffTest r n w
@@ -530,11 +530,11 @@ private theorem raw_cutoff_test_common_support
     rw [raw_test_laplacian_coefficient]
     rw [raw_test_representative]
 
-private theorem raw_omega_open (a : ActualChart (U := U) (H := H)) :
+theorem raw_omega_open (a : ActualChart (U := U) (H := H)) :
     IsOpen (omega a) :=
   a.domain_open.preimage KPContActualGlobalGreen.contDiff_labeledA.continuous
 
-private theorem raw_coefficient_smooth (a : ActualChart (U := U) (H := H))
+theorem raw_coefficient_smooth (a : ActualChart (U := U) (H := H))
     (s : Sections F ζ hζ U R P H) (hs : IsSmoothSections F ζ hζ U R P H s) :
     ContDiff ℝ (⊤ : ℕ∞) ((isotropyChart a).coefficient s) := by
   have he : (isotropyChart a).coefficient s = fun x => (s a.component).val
@@ -543,7 +543,7 @@ private theorem raw_coefficient_smooth (a : ActualChart (U := U) (H := H))
   rw [he]
   exact (hs a.component).comp KPContActualGlobalGreen.contDiff_labeledA
 
-private theorem raw_chart_sub (a : ActualChart (U := U) (H := H))
+theorem raw_chart_sub (a : ActualChart (U := U) (H := H))
     (O : Set ℂ) (f g : ℂ → Sections F ζ hζ U R P H)
     (hf : ∀ s ∈ O, IsSmoothSections F ζ hζ U R P H (f s))
     (hg : ∀ s ∈ O, IsSmoothSections F ζ hζ U R P H (g s))
@@ -782,7 +782,7 @@ private theorem raw_test_laplacian_chart_holomorphic
   simpa only [iteratedFDerivWithin_univ] using
     congrArg (fun L => L v) (hgew.iteratedFDerivWithin_eq (𝕜 := ℝ) hge.self_of_nhds n)
 
-private theorem raw_coordinate_word (w : List (Fin (d F) × Fin 3)) (u : M F → ℂ) :
+theorem raw_coordinate_word (w : List (Fin (d F) × Fin 3)) (u : M F → ℂ) :
     RightFrame.PullbackWords.directionalWord
       (fun i _ => HyperbolicChart.coordinateVector (d F) i.1 i.2) w u =
     RightFrame.PullbackWords.constantDirectionWord
@@ -1116,7 +1116,7 @@ private theorem incoming_cutoff_chart_holomorphic
   rw [he, iteratedFDerivWithin_of_isOpen n hD ((hCD y.property).1),
     iteratedFDerivWithin_of_isOpen n hω ((hCD y.property).2)]
 
-private theorem raw_defect_line_parameter_jets (k : ℕ) (s : ℂ) (hs : s ∈ V) :
+theorem raw_defect_line_parameter_jets (k : ℕ) (s : ℂ) (hs : s ∈ V) :
     ∀ i x, (lineG F ζ hζ C R P H U ι f buffer χ source hι hf k s i).val x =
       iteratedDerivWithin k
         (fun t => (KPContActualChamberCasimirJets.lineJet F ζ hζ C R P H U ι f hι hf 0 t i).val x -
@@ -1153,7 +1153,7 @@ private theorem raw_defect_line_parameter_jets (k : ℕ) (s : ℂ) (hs : s ∈ V
   dsimp only
   rw [hE,hC]
 
-private theorem raw_lineG_parameter_jets (k : ℕ) (s : ℂ) (hs : s ∈ V) :
+theorem raw_lineG_parameter_jets (k : ℕ) (s : ℂ) (hs : s ∈ V) :
     ∀ i x, (lineG F ζ hζ C R P H U ι f buffer χ source hι hf k s i).val x =
       iteratedDerivWithin k
         (fun t => (lineG F ζ hζ C R P H U ι f buffer χ source hι hf 0 t i).val x) V s := by
@@ -1163,7 +1163,7 @@ private theorem raw_lineG_parameter_jets (k : ℕ) (s : ℂ) (hs : s ∈ V) :
   intro t ht
   exact (raw_defect_line_parameter_jets F ζ hζ C R P H U ι hι f hf buffer χ source 0 t ht i x).symm
 
-private theorem raw_cutoff_parameter_jets
+theorem raw_cutoff_parameter_jets
     (r : KPContActualSectorCutoffGraphLimit.Cutoffs
       (U := level F ζ hζ C R P H U) (H := H)) (n k : ℕ) (s : ℂ) (hs : s ∈ V) :
     ∀ i x,

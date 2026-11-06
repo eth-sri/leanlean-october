@@ -51,7 +51,3 @@ theorem exists_isUnitary_congr (π : ContRepresentation 𝕜 G V) (hπ : Continu
       ContinuousLinearEquiv.apply_symm_apply, π.inner_gramOperator_map_map hπ, hA']
   exact ⟨A.symm, (isUnitary_iff_norm_map _).mpr fun g ↦
     (LinearMap.norm_map_iff_inner_map_map _).mpr (hunitary g)⟩
-
-end Unitarization
-
-end ContRepresentation

@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.Eisenstein.Sections.LiteralSeries
 
 @[expose] public section
 
-noncomputable section
 open scoped Classical NumberField NNReal
 open NumberField
 set_option backward.isDefEq.respectTransparency false

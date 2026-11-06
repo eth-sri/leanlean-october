@@ -68,7 +68,7 @@ def SmoothIntegerEstimate {n : ℕ} (inner outer : LocalBall n)
         RepresentsClassicalDerivatives v u ∧
         v.sobolevNorm ≤ C * (functionL2Norm outer u + functionSobolevNorm outer r h)
 
-private theorem coordDerivList_contDiffOn {n : ℕ} {U : Set (Space n)} (hU : IsOpen U)
+theorem coordDerivList_contDiffOn {n : ℕ} {U : Set (Space n)} (hU : IsOpen U)
     (l : List (Fin n)) {f : Space n → ℂ} (hf : ContDiffOn ℝ (⊤ : ℕ∞) f U) :
     ContDiffOn ℝ (⊤ : ℕ∞) (coordinateDerivativeList l f) U := by
   induction l with
@@ -88,8 +88,7 @@ theorem boundedCoefficientDerivatives_of_smoothNearClosedBall
       ContDiffOn ℝ (⊤ : ℕ∞) (fun y => ((D.density y * D.matrix y i j : ℝ) : ℂ)) U := by
     intro i j
     convert Complex.ofRealCLM.contDiff.comp_contDiffOn (hρ.mul (hA i j)) using 1
-    ext y
-    simp
+    rfl
   have hK : IsCompact (Metric.closedBall outer.center outer.radius) :=
     isCompact_closedBall _ _
   have hbound : ∀ (f : Space n → ℂ), ContDiffOn ℝ (⊤ : ℕ∞) f U →
@@ -114,10 +113,7 @@ theorem boundedCoefficientDerivatives_of_smoothNearClosedBall
       exact hbound _ (coordDerivList_contDiffOn hU α.directions (hAprod q.1 q.2))
     choose C hC using hq
     refine ⟨max B0 0 + ∑ q : Fin n × Fin n, max (C q) 0, ?_, ?_, ?_⟩
-    · have h1 : (0 : ℝ) ≤ max B0 0 := le_max_right _ _
-      have h2 : (0 : ℝ) ≤ ∑ q : Fin n × Fin n, max (C q) 0 :=
-        Finset.sum_nonneg (fun q _ => le_max_right _ _)
-      linarith
+    · positivity
     · intro x hx
       calc ‖coordinateDerivative α (fun y => (D.density y : ℂ)) x‖ ≤ B0 := hB0 x hx
         _ ≤ max B0 0 := le_max_left _ _
@@ -203,7 +199,3 @@ theorem kp_cont_local_regularity_iterate_fixed_coefficients (n : ℕ)
   obtain ⟨C, hC, hmain⟩ := kp_cont_local_regularity_iterate n r inner.dimension_pos
     inner.radius outer.radius cρ Cρ κ Λ L M inner.radius_pos hradii hcρ hκ hL hM
   exact ⟨C, hC, hmain inner outer hcenter rfl rfl D hD hbd⟩
-
-end DedekindZetaZeroFree
-
-end

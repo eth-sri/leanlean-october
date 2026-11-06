@@ -26,23 +26,21 @@ theorem x_ne_zero (K : Type u) [Field K] (g : GL2 K) : x K g ≠ 0 := by
   split_ifs with hc
   · intro hd
     have hdet := Matrix.GeneralLinearGroup.det_ne_zero g
-    simp only [Matrix.det_fin_two, hc, hd, mul_zero, zero_mul, sub_self] at hdet
+    simp only [Matrix.det_fin_two, hc, hd, mul_zero, sub_self] at hdet
     exact hdet rfl
-  · exact hc
+  omega
 
 noncomputable def X (K : Type u) [Field K] (g : GL2 K) : Kˣ :=
   Units.mk0 (x K g) (x_ne_zero K g)
 
-private theorem x_congr (K : Type u) [Field K] {g h : GL2 K}
+theorem x_congr (K : Type u) [Field K] {g h : GL2 K}
     (h10 : (g : Matrix (Fin 2) (Fin 2) K) 1 0 = (h : Matrix (Fin 2) (Fin 2) K) 1 0)
     (h11 : (g : Matrix (Fin 2) (Fin 2) K) 1 1 = (h : Matrix (Fin 2) (Fin 2) K) 1 1) :
     x K g = x K h := by
   unfold x
   by_cases hc : (g : Matrix (Fin 2) (Fin 2) K) 1 0 = 0
-  · rw [if_pos hc, if_pos (h10 ▸ hc)]
-    exact h11
-  · rw [if_neg hc, if_neg (fun hh => hc (h10.symm ▸ hh))]
-    exact h10
+  · simp_all
+  simp_all
 
 def n (K : Type u) [Field K] (t : K) : GL2 K :=
   Matrix.GeneralLinearGroup.mkOfDetNeZero !![1, t; 0, 1] (by
@@ -123,7 +121,7 @@ def w (K : Type u) [Field K] : GL2 K :=
 theorem X_n_mul_mul_n (K : Type u) [Field K] (g h : GL2 K) (t t' : K) :
     X K (n K t * g * h * n K t') = X K (g * h) := by
   rw [show n K t * g * h * n K t' = n K t * (g * h) * n K t' from by group]
-  rw [X_mul_n, X_n_mul]
+  simp
 
 theorem topLeft_ne_zero (K : Type u) [Field K] (g : GL2 K)
     (hc : (g : Matrix (Fin 2) (Fin 2) K) 1 0 = 0) :
@@ -138,7 +136,7 @@ theorem bottomRight_ne_zero (K : Type u) [Field K] (g : GL2 K)
     (g : Matrix (Fin 2) (Fin 2) K) 1 1 ≠ 0 := by
   intro hd
   have hdet := Matrix.GeneralLinearGroup.det_ne_zero g
-  simp only [Matrix.det_fin_two, hc, hd, mul_zero, zero_mul, sub_self] at hdet
+  simp only [Matrix.det_fin_two, hc, hd, mul_zero, sub_self] at hdet
   exact hdet rfl
 
 theorem bruhat_closed (K : Type u) [Field K] (g : GL2 K)
@@ -170,6 +168,3 @@ theorem bruhat_open (K : Type u) [Field K] (g : GL2 K)
     simp [Matrix.mul_apply, coe_d, coe_n, coe_w, Matrix.GeneralLinearGroup.val_det_apply,
       Matrix.det_fin_two, Units.val_div_eq_div_val] <;>
     field_simp <;> ring
-
-end KubotaRankTwo
-end DedekindZetaZeroFree

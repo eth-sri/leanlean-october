@@ -69,15 +69,6 @@ theorem word_mem (U : Level F ζ hζ) (w : List (B F)) (f : smoothSpace F ζ hζ
       ((KPAdelicCoverRestrictedProduct.pglCentralInjection_central F ζ hζ)
         (MonoidHom.mem_range.mpr ⟨ε, rfl⟩)) _
 
-def wordAction (U : Level F ζ hζ) (w : List (B F)) :
-    smoothSpace F ζ hζ U →ₗ[ℂ] smoothSpace F ζ hζ U :=
-  (ActualWordLinearity.wordLinearMap F ζ hζ (smoothSpace F ζ hζ U)
-    (fun f => f.property.1) w).codRestrict (smoothSpace F ζ hζ U) (word_mem F ζ hζ U w)
-
-@[simp] theorem wordAction_value (U : Level F ζ hζ) (w : List (B F))
-    (f : smoothSpace F ζ hζ U) (x : X F ζ hζ) :
-    (wordAction F ζ hζ U w f).val x = wordDerivative F ζ hζ w f.val x := rfl
-
 end DedekindZetaZeroFree.KPMsClearedTruncationL2.ActualSmoothWordAction
 
 end

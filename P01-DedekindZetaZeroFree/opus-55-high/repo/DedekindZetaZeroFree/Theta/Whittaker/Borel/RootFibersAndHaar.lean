@@ -3,7 +3,8 @@ module
 public import DedekindZetaZeroFree.Adeles.Characters.CompactAbelianAndAdelicUniqueness
 public import DedekindZetaZeroFree.Adeles.Quotients.AdditiveCompactness
 public import DedekindZetaZeroFree.Metaplectic.Torus.AdelicSmoothFunctionTopology
-public import DedekindZetaZeroFree.Theta.Periods.WildPartialPeriodFactorization
+public import DedekindZetaZeroFree.RepresentationTheory.RankOne.FiniteExceptionalRepresentationData
+public import DedekindZetaZeroFree.Theta.Whittaker.NormalizedFiniteTensorProducts
 
 @[expose] public section
 
@@ -32,7 +33,3 @@ def rawBorelRootFiber (F : Type) [Field F] [NumberField F]
     (b : KPGlobalTorusFunctionData.borel F ζ hζ)
     (x : KPCompactFourier.AdditiveQuotient F) : ℂ :=
   θ (KPGlobalTorusFunctionData.N F ζ hζ (KPCompactFourier.representative F x) * b.val)
-
-end DedekindZetaZeroFree.KPWildKernelSource
-
-end

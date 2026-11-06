@@ -6,7 +6,6 @@ public import Mathlib.Basic.Complex.Basic
 
 @[expose] public section
 
-noncomputable section
 
 namespace DedekindZetaZeroFree.KPWildActualExteriorFactorization.FiniteComparison
 
@@ -19,9 +18,7 @@ theorem slot_eq_normalized
   have hne : (⟨ell, hell⟩ : P) ≠ 0 := by
     intro h
     have he : ell = 0 := congrArg Subtype.val h
-    have hx := hx₀
-    rw [he, LinearMap.zero_apply] at hx
-    exact zero_ne_one hx
+    simp_all
   obtain ⟨c, hc⟩ := exists_smul_eq_of_finrank_eq_one hP
     (x := (⟨ell, hell⟩ : P)) hne (⟨L, hL⟩ : P)
   have hc' : c • ell = L := congrArg Subtype.val hc
@@ -58,7 +55,3 @@ theorem replace_eq_product_of_slot_comparison
     rw [Finset.piecewise_insert, hslot j (Finset.mem_insert_self j S), hbase,
       ih hnormS hslotS, Finset.prod_insert hj]
     ring
-
-end DedekindZetaZeroFree.KPWildActualExteriorFactorization.FiniteComparison
-
-end

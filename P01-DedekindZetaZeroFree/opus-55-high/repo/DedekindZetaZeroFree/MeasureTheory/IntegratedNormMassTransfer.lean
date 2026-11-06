@@ -5,7 +5,6 @@ public import Mathlib.MeasureTheory.Integral.DominatedConvergence
 @[expose] public section
 
 namespace DedekindZetaZeroFree.ProbeJointNormMassTransfer
-noncomputable section
 open MeasureTheory
 open scoped ENNReal NNReal
 
@@ -38,10 +37,7 @@ theorem norm_mass_transfer {T I O : Type*} [MeasurableSpace T]
 
   have hA : (∑' i, ENNReal.ofReal (∫ t in D, ‖f i t‖ ∂μ))
       = ENNReal.ofReal (∑' o, ∫ t, ‖g o t‖ ∂μ) := by
-    have h1 : (∑' i, ∫⁻ t in D, ENNReal.ofReal ‖f i t‖ ∂μ)
-        = ∑' i, ENNReal.ofReal (∫ t in D, ‖f i t‖ ∂μ) := by
-      simp_rw [hf_int]
-    rw [← h1, he, hgsum]
+    simp_all
 
   have hA_ne : (∑' i, ENNReal.ofReal (∫ t in D, ‖f i t‖ ∂μ)) ≠ ∞ := by
     rw [hA]; exact ENNReal.ofReal_ne_top
@@ -59,6 +55,3 @@ theorem norm_mass_transfer {T I O : Type*} [MeasurableSpace T]
     rw [ENNReal.ofReal_tsum_of_nonneg ha_nonneg ha, hA]
   exact ⟨ha, (ENNReal.ofReal_eq_ofReal_iff (tsum_nonneg ha_nonneg)
     (tsum_nonneg hb_nonneg)).1 hfin⟩
-
-end
-end DedekindZetaZeroFree.ProbeJointNormMassTransfer

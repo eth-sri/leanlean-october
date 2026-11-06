@@ -45,10 +45,8 @@ private lemma chart_formula (s : ℝ) (f : ComplexGL2 → ℂ)
     apply Matrix.GeneralLinearGroup.ext
     intro i j
     cases north <;> fin_cases i <;> fin_cases j <;>
-      simp [upperTriangular_coe_matrix, weyl, upperUnipotent, lowerUnipotent,
-        Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two,
-        a, d, Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two]
-    all_goals simp only [Bool.false_eq_true, Bool.true_eq, if_false, if_true] at h
+      simp [upperTriangular_coe_matrix, weyl, upperUnipotent, lowerUnipotent, Matrix.mul_apply, Fin.sum_univ_two, a, d, Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two]
+    all_goals simp only [Bool.false_eq_true, if_false, if_true] at h
     all_goals field_simp [h]
     all_goals ring
   conv_lhs => rw [hg, hcov]
@@ -58,7 +56,7 @@ private lemma chart_formula (s : ℝ) (f : ComplexGL2 → ℂ)
     unfold inductionWeight
     have he : ‖(a : ℂ) / (d : ℂ)‖ = ‖(Matrix.GeneralLinearGroup.det g : ℂ)‖ /
         ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 (if north then 0 else 1)‖ ^ 2 := by
-      cases north <;> simp [a, d, norm_div, norm_neg, div_div, sq]
+      cases north <;> simp [a, d, norm_neg, div_div, sq]
     rw [he]
     calc
       _ = Real.rpow (‖(Matrix.GeneralLinearGroup.det g : ℂ)‖ /
@@ -90,7 +88,7 @@ private lemma matrix_chart_smooth (s : ℝ) (f : ComplexGL2 → ℂ)
       (((contDiffAt_norm ℝ hc).comp m he.contDiffAt).pow 2)
       (pow_ne_zero 2 (norm_ne_zero_iff.mpr hc))
   have hp : ‖m.det‖ / ‖m 1 c‖ ^ 2 ≠ 0 :=
-    div_ne_zero (norm_ne_zero_iff.mpr hm) (pow_ne_zero 2 (norm_ne_zero_iff.mpr hc))
+    by positivity
   have hw : ContDiffAt ℝ (⊤ : ℕ∞) (fun g : Matrix (Fin 2) (Fin 2) ℂ =>
       (Real.rpow (‖g.det‖ / ‖g 1 c‖ ^ 2) (1+2*s) : ℂ)) m :=
     by
@@ -99,15 +97,13 @@ private lemma matrix_chart_smooth (s : ℝ) (f : ComplexGL2 → ℂ)
         by
           have hr0 : ContDiffAt ℝ (⊤ : ℕ∞) (fun t : ℝ => Real.rpow t (1+2*s))
               (‖m.det‖ / ‖m 1 c‖ ^ 2) := Real.contDiffAt_rpow_const_of_ne hp
-          have hcomp := hr0.comp m hn
-          simpa only [Function.comp_def] using hcomp
+          fun_prop
       have hcomp := Complex.ofRealCLM.contDiff.contDiffAt.comp m hr
       simpa only [Function.comp_def, Complex.ofRealCLM_apply] using hcomp
   have hratio : ContDiffAt ℝ (⊤ : ℕ∞) (fun g : Matrix (Fin 2) (Fin 2) ℂ =>
       g 1 d / g 1 c) m := by
     simp only [div_eq_mul_inv]
-    exact (show ContDiffAt ℝ (⊤ : ℕ∞) (fun g : Matrix (Fin 2) (Fin 2) ℂ => g 1 d) m by
-      fun_prop).mul (he.contDiffAt.inv hc)
+    fun_prop
   have hf : ContDiff ℝ (⊤ : ℕ∞)
       (if north then openCoordinate f else infinityCoordinate f) := by
     cases north
@@ -162,8 +158,8 @@ lemma matrix_smooth_charts (f : ComplexGL2 → ℂ)
     rw [contDiff_pi]; intro i; rw [contDiff_pi]; intro j
     fin_cases i <;> fin_cases j <;> simp
     all_goals first | exact contDiff_const | exact contDiff_id
-  have ho : ContDiff ℝ (⊤ : ℕ∞) (fun z : ℂ => (weyl * upperUnipotent z : Matrix (Fin 2) (Fin 2) ℂ)) := by
-    exact (LinearMap.mulLeft ℝ (weyl : Matrix (Fin 2) (Fin 2) ℂ)).toContinuousLinearMap.contDiff.comp hu
+  have ho : ContDiff ℝ (⊤ : ℕ∞) (fun z : ℂ => (weyl * upperUnipotent z : Matrix (Fin 2) (Fin 2) ℂ)) := 
+    (LinearMap.mulLeft ℝ (weyl : Matrix (Fin 2) (Fin 2) ℂ)).toContinuousLinearMap.contDiff.comp hu
   constructor
   · have h := hf.comp ho.contDiffOn (s := Set.univ) (by intro z hz; exact Matrix.GeneralLinearGroup.det_ne_zero (weyl * upperUnipotent z))
     apply contDiffOn_univ.mp
@@ -175,4 +171,3 @@ lemma matrix_smooth_charts (f : ComplexGL2 → ℂ)
     convert h using 1
     funext z
     exact (matrixFunction_coe f _).symm
-end DedekindZetaZeroFree.KPCplxPrincipalSeriesMatrixSmooth

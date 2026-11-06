@@ -52,8 +52,7 @@ theorem traceAdapter_coordinates (y : Space F) :
       fun v => (2 : ℝ) • star ((NumberField.mixedEmbedding.euclidean.toMixed F y).2 v) := by
   simp [traceAdapter, ContinuousLinearEquiv.trans_apply,
     ContinuousLinearEquiv.prodCongr_apply]
-  ext v
-  simp [ContinuousLinearEquiv.piCongrRight_apply, ContinuousLinearEquiv.smul_apply]
+  rfl
 
 theorem tracePairing_eq_inner (x y : Space F) :
     tracePairing F x y = inner ℝ x (traceAdapter F y) := by
@@ -73,8 +72,8 @@ theorem tracePairing_eq_inner (x y : Space F) :
   intro v hv
   ring
 
-theorem haarScalar_pos : 0 < haarScalar F := by
-  exact pow_pos (by norm_num) _
+theorem haarScalar_pos : 0 < haarScalar F := 
+  pow_pos (by norm_num) _
 
 theorem traceFourier_eq_euclidean (f : 𝓢(Space F, ℂ)) (y : Space F) :
     traceFourier F f y = (haarScalar F : ℂ) * (𝓕 f) (traceAdapter F y) := by
@@ -87,8 +86,7 @@ theorem traceFourier_eq_euclidean (f : 𝓢(Space F, ℂ)) (y : Space F) :
   apply integral_congr_ae
   filter_upwards [] with x
   rw [tracePairing_eq_inner]
-  simp only [innerₗ_apply_apply, Complex.ofReal_mul, Complex.ofReal_neg,
-    Complex.ofReal_ofNat, smul_eq_mul]
+  simp only [Complex.ofReal_mul, Complex.ofReal_neg, Complex.ofReal_ofNat, smul_eq_mul]
   rw [mul_comm (f x)]
   congr 2 <;> ring
 
@@ -99,7 +97,7 @@ theorem traceFourier_schwartz (f : 𝓢(Space F, ℂ)) :
   intro y
   simpa using (traceFourier_eq_euclidean F f y).symm
 
-private theorem integral_comp_equiv (A : Space F ≃L[ℝ] Space F)
+theorem integral_comp_equiv (A : Space F ≃L[ℝ] Space F)
     (g : Space F → ℂ) :
     (∫ x, g (A x)) = |(LinearMap.det A.toLinearMap)⁻¹| • ∫ x, g x := by
   have hdet : LinearMap.det A.toLinearMap ≠ 0 :=
@@ -120,7 +118,7 @@ def fieldEquiv (a : Fˣ) : Space F ≃L[ℝ] Space F :=
         (ContinuousLinearEquiv.unitsEquivAut ℂ (a.map v.val.embedding)).restrictScalars ℝ))).trans
     (NumberField.mixedEmbedding.euclidean.toMixed F).symm
 
-private theorem fieldEquiv_apply (a : Fˣ) (x : Space F) :
+theorem fieldEquiv_apply (a : Fˣ) (x : Space F) :
     fieldEquiv F a x = fieldMul F (a : F) x := by
   apply (NumberField.mixedEmbedding.euclidean.toMixed F).injective
   simp only [fieldEquiv, fieldMul, ContinuousLinearEquiv.trans_apply,
@@ -128,17 +126,13 @@ private theorem fieldEquiv_apply (a : Fˣ) (x : Space F) :
   ext v <;> simp [ContinuousLinearEquiv.piCongrRight_apply,
     ContinuousLinearEquiv.unitsEquivAut_apply, mul_comm]
 
-private theorem complex_mul_det (z : ℂ) :
+theorem complex_mul_det (z : ℂ) :
     LinearMap.det ((LinearMap.mulLeft ℂ z).restrictScalars ℝ) = Complex.normSq z := by
   rw [← LinearMap.det_toMatrix Complex.basisOneI]
-  simp only [LinearMap.toMatrix_apply, Complex.coe_basisOneI_repr, Complex.coe_basisOneI,
-    Matrix.det_fin_two, Complex.normSq_apply, LinearMap.restrictScalars_apply,
-    LinearMap.mulLeft_apply, Matrix.cons_val_zero, Matrix.cons_val_one,
-    Matrix.head_cons, Matrix.head_fin_const, Complex.mul_re, Complex.mul_im,
-    Complex.one_re, Complex.one_im, Complex.I_re, Complex.I_im]
+  simp only [LinearMap.toMatrix_apply, Complex.coe_basisOneI_repr, Complex.coe_basisOneI, Matrix.det_fin_two, Complex.normSq_apply, LinearMap.restrictScalars_apply, LinearMap.mulLeft_apply, Matrix.cons_val_zero, Matrix.cons_val_one, Complex.mul_re, Complex.mul_im, Complex.one_re, Complex.one_im, Complex.I_re, Complex.I_im]
   ring
 
-private theorem fieldEquiv_abs_det (a : Fˣ) :
+theorem fieldEquiv_abs_det (a : Fˣ) :
     |LinearMap.det (fieldEquiv F a).toLinearMap| = fieldModule F (a : F) := by
   let R : {v : NumberField.InfinitePlace F // v.IsReal} → ℝ →ₗ[ℝ] ℝ :=
     fun v => LinearMap.mulLeft ℝ ((NumberField.mixedEmbedding F (a : F)).1 v)
@@ -153,9 +147,7 @@ private theorem fieldEquiv_abs_det (a : Fˣ) :
     apply (NumberField.mixedEmbedding.euclidean.toMixed F).injective
     change (NumberField.mixedEmbedding.euclidean.toMixed F) (fieldEquiv F a x) = _
     rw [fieldEquiv_apply]
-    simp only [fieldMul, LinearMap.prodMap_apply, ContinuousLinearEquiv.coe_coe,
-      LinearMap.comp_apply, ContinuousLinearEquiv.apply_symm_apply]
-    ext v <;> simp [R, C, mul_comm]
+    rfl
   rw [he, ContinuousLinearEquiv.toLinearEquiv_symm]
   have hd := LinearMap.det_conj
     ((LinearMap.pi fun v => (R v).comp (LinearMap.proj v)).prodMap
@@ -166,7 +158,7 @@ private theorem fieldEquiv_abs_det (a : Fˣ) :
   simp only [R, C, LinearMap.det_mulLeft, complex_mul_det, Finset.abs_prod,
     abs_of_nonneg (Finset.prod_nonneg fun v _ => Complex.normSq_nonneg _), fieldModule]
 
-private theorem fieldPairing_scale (a : Fˣ) (x y : Space F) :
+theorem fieldPairing_scale (a : Fˣ) (x y : Space F) :
     tracePairing F (fieldEquiv F a x) (fieldMul F ((a⁻¹ : Fˣ) : F) y) =
       tracePairing F x y := by
   have hh : NumberField.mixedEmbedding F (a : F) *
@@ -201,8 +193,3 @@ theorem traceFourier_field_scale (f : 𝓢(Space F, ℂ)) (a : Fˣ) (y : Space F
   rw [h]
   simp only [Complex.real_smul, Complex.ofReal_inv]
   ring
-
-end PoissonArch
-end DedekindZetaZeroFree
-
-end

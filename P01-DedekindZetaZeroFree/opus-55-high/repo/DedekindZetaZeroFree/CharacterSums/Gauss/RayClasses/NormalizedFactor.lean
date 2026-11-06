@@ -34,7 +34,7 @@ variable (hF : NumberField.IsTotallyComplex F)
 
 include nf hF hm hmt hprim
 
-private theorem normalizedGauss_residue_primitive :
+theorem normalizedGauss_residue_primitive :
     IsPrimitiveRingUnitChar
       ((Units.coeHom ℂ).comp (residueRayCharacter hF hm hmt η)) := by
   intro J hJ
@@ -66,11 +66,8 @@ private theorem normalizedGauss_residue_primitive :
         exact hv'
       simp [hx']
     change Ideal.Quotient.mk m (x - 1) ∈ J at hxf
-    simpa only [map_sub, map_one, hx] using hxf
-  · change ((residueRayCharacter hF hm hmt η u : ℂˣ) : ℂ) ≠ 1
-    intro h
-    apply hne
-    exact Units.ext h
+    simp_all
+  simp_all
 
 theorem rayNormalizedGaussFactor_norm_eq_one :
     letI : Finite (𝓞 F ⧸ m) := m.finiteQuotientOfFreeOfNeBot hm
@@ -109,7 +106,3 @@ theorem rayNormalizedGaussFactor_norm_eq_one :
   unfold rayNormalizedGaussFactor
   rw [mul_div_right_comm, norm_mul, hn,
     rayClassCharacter_norm_eq_one hm η b hb (sup_comm m b ▸ hbcop), one_mul]
-
-end DedekindZetaZeroFree.Hecke
-
-end

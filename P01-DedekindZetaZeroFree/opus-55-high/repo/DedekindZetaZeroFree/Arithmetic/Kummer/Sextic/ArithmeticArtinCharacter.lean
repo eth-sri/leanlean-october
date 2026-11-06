@@ -34,7 +34,7 @@ theorem arithmeticSexticArtinCharacter_prime
           (IdeleGroup.finitePrimeIdele v)) : ℂ) = σ ((ζ ^ 2) ^ j.val) := by
   obtain ⟨j, hj, he⟩ := sexticArtinCharacter_prime ζ hζ σ u v hSix hu
   refine ⟨j, hj, ?_⟩
-  rw [arithmeticSexticArtinCharacter_apply, Units.val_inv_eq_inv_val, he, inv_inv]
+  simp_all
 
 theorem arithmeticSexticArtinCharacter_pow_six
     (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (σ : F →+* ℂ)
@@ -64,10 +64,6 @@ theorem arithmeticSextic_primitiveRay_support
         arithmeticSexticArtinCharacter ζ hζ σ u c)
     (v : HeightOneSpectrum (𝓞 F))
     (hSix : (Ideal.absNorm v.asIdeal).Coprime 6)
-    (hu : v.valuation F (u : F) = 1) : ¬ m ≤ v.asIdeal := by
-  exact primitiveRay_support hc (arithmeticSexticArtinCharacter ζ hζ σ u) m hm χ
+    (hu : v.valuation F (u : F) = 1) : ¬ m ≤ v.asIdeal := 
+  primitiveRay_support hc (arithmeticSexticArtinCharacter ζ hζ σ u) m hm χ
     hprimitive hχ v (arithmeticSexticArtinCharacter_unramified ζ hζ σ u v hSix hu)
-
-end DedekindZetaZeroFree.PrimitiveRay
-
-end

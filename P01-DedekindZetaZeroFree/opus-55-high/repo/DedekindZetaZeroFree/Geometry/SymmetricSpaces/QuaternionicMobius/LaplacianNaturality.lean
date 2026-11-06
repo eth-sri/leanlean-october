@@ -20,12 +20,12 @@ private theorem vector_expansion (d : ℕ) (u : Space d) :
   · rw [Finset.sum_eq_single j.2]
     · simp
     · intro k _ hk
-      simp [hk, Ne.symm hk, Prod.ext_iff]
+      simp [Ne.symm hk, Prod.ext_iff]
     · simp
   · intro i _ hi
     apply Finset.sum_eq_zero
     intro k _
-    simp [hi, Ne.symm hi, Prod.ext_iff]
+    simp [Ne.symm hi, Prod.ext_iff]
   · simp
 private theorem realGrad_duality (d : ℕ) (f : Space d → ℝ) (x u : Space d) :
     metric d x (realGrad d f x) u = fderiv ℝ f x u := by
@@ -38,20 +38,19 @@ private theorem realGrad_duality (d : ℕ) (f : Space d → ℝ) (x u : Space d)
   apply Finset.sum_congr rfl
   intro i _
   rw [Fin.sum_univ_three]
-  simp only [WithLp.ofLp_toLp, if_pos (show (2 : Fin 3) = 2 from rfl), ite_true,
-    if_neg (by decide : ¬((0 : Fin 3) = 2)), if_neg (by decide : ¬((1 : Fin 3) = 2)), one_mul]
+  simp only [ite_true, if_neg (by decide : ¬((0 : Fin 3) = 2)), if_neg (by decide : ¬((1 : Fin 3) = 2)), one_mul]
   calc _ = fderiv ℝ f x (coordinateVector d i 2) * u (i,2) +
       (Real.exp (-2 * x (i,2)) * Real.exp (2 * x (i,2))) *
         (fderiv ℝ f x (coordinateVector d i 0) * u (i,0) + fderiv ℝ f x (coordinateVector d i 1) * u (i,1)) := by ring
        _ = _ := by rw [he]; ring
-private theorem realGrad_smoothAt (d : ℕ) (f : Space d → ℝ) (x : Space d)
+theorem realGrad_smoothAt (d : ℕ) (f : Space d → ℝ) (x : Space d)
     (hf : ContDiffAt ℝ 2 f x) : ContDiffAt ℝ 1 (realGrad d f) x := by
   apply (contDiffAt_piLp 2).mpr
   intro k
   dsimp only [realGrad, WithLp.ofLp_toLp]
   apply ContDiffAt.mul
   · split_ifs <;> fun_prop
-  · exact (hf.fderiv_right (m := 1) (by norm_num)).clm_apply contDiffAt_const
+  fun_prop
 private theorem metric_separates (d : ℕ) (x v w : Space d)
     (h : ∀ u, metric d x v u = metric d x w u) : v = w := by
   have he : ∀ u, inner ℝ (CotangentLogCoframe.C d x v) (CotangentLogCoframe.C d x u) =
@@ -92,8 +91,8 @@ private theorem projected_laplacian (d : ℕ) (f : Space d → ℂ) (L : ℂ →
       fderiv ℝ (L ∘ f) y (coordinateVector d i k) = L (fderiv ℝ f y (coordinateVector d i k)) := by
     rw [fderiv_comp y L.differentiableAt hy, L.fderiv]
     rfl
-  have hs (i : Fin d) (k : Fin 3) : DifferentiableAt ℝ (fun y => fderiv ℝ f y (coordinateVector d i k)) x := by
-    exact ((hf.fderiv_right (m := 1) (by simp)).clm_apply contDiffAt_const).differentiableAt (by norm_num)
+  have hs (i : Fin d) (k : Fin 3) : DifferentiableAt ℝ (fun y => fderiv ℝ f y (coordinateVector d i k)) x := 
+    ((hf.fderiv_right (m := 1) (by simp)).clm_apply contDiffAt_const).differentiableAt (by norm_num)
   have hsecond (i : Fin d) (k : Fin 3) :
       fderiv ℝ (fun y => fderiv ℝ (L ∘ f) y (coordinateVector d i k)) x (coordinateVector d i k) =
         L (fderiv ℝ (fun y => fderiv ℝ f y (coordinateVector d i k)) x (coordinateVector d i k)) := by
@@ -117,7 +116,7 @@ private theorem projected_laplacian (d : ℕ) (f : Space d → ℂ) (L : ℂ →
       have hc := ((EuclideanSpace.proj (𝕜 := ℝ) (i,2)).hasFDerivAt (x := x)).const_mul 2
       have hc' : HasFDerivAt (fun y : Space d => 2*y (i,2)) ((2 : ℝ) • EuclideanSpace.proj (𝕜 := ℝ) (i,2)) x := hc
       rw [hc'.exp.fderiv]
-      simp [coordinateVector, hk, Ne.symm hk]
+      simp [coordinateVector, Ne.symm hk]
     rw [fderiv_fun_mul hE (hLf i k)]
     simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply, smul_eq_mul,
       he, mul_zero, add_zero, hsecond]
@@ -126,16 +125,16 @@ private theorem projected_laplacian (d : ℕ) (f : Space d → ℂ) (L : ℂ →
   apply Finset.sum_congr rfl
   intro i _
   have h0 : (fun y => realGrad d (L ∘ f) y (i,0)) =
-      fun y => Real.exp (2*y (i,2)) * fderiv ℝ (L ∘ f) y (coordinateVector d i 0) := by funext y; simp [realGrad]
+      fun y => Real.exp (2*y (i,2)) * fderiv ℝ (L ∘ f) y (coordinateVector d i 0) := by rfl
   have h1 : (fun y => realGrad d (L ∘ f) y (i,1)) =
-      fun y => Real.exp (2*y (i,2)) * fderiv ℝ (L ∘ f) y (coordinateVector d i 1) := by funext y; simp [realGrad]
+      fun y => Real.exp (2*y (i,2)) * fderiv ℝ (L ∘ f) y (coordinateVector d i 1) := by rfl
   have h2 : (fun y => realGrad d (L ∘ f) y (i,2)) =
       fun y => fderiv ℝ (L ∘ f) y (coordinateVector d i 2) := by funext y; simp [realGrad]
   rw [h0, h1, h2, hprod i 0 (by decide), hprod i 1 (by decide), hsecond]
   have hm (a : ℝ) (z : ℂ) : L ((a : ℂ) * z) = a * L z := by
     rw [show (a : ℂ) * z = a • z by simp [Complex.real_smul], map_smul]; rfl
-  simp only [map_sub, map_neg, hm, realGrad, WithLp.ofLp_toLp, ite_true, one_mul, hfirst _ _ x hfd]
-  simp only [map_add, map_neg, hm]
+  simp only [map_sub, hm, realGrad, WithLp.ofLp_toLp, ite_true, one_mul, hfirst _ _ x hfd]
+  simp only [map_add, map_neg]
   have h2mul (z : ℂ) : L (2 * z) = 2 * L z := hm 2 z
   rw [h2mul]
   ring
@@ -164,8 +163,8 @@ theorem isometry_pullback_at (d : ℕ) (ψ : Space d → Space d)
 
  def act (d : ℕ) (g : Fin d → Matrix.GeneralLinearGroup (Fin 2) ℂ) : Space d → Space d :=
     fun x => (CotangentLogCoframe.A d).symm (KPArch.productAction d g (CotangentLogCoframe.A d x))
-private theorem act_smooth (d : ℕ) (g : Fin d → Matrix.GeneralLinearGroup (Fin 2) ℂ) : ContDiff ℝ ∞ (act d g) := by
-  exact (CotangentLogCoframe.A d).symm.contDiff.comp
+private theorem act_smooth (d : ℕ) (g : Fin d → Matrix.GeneralLinearGroup (Fin 2) ℂ) : ContDiff ℝ ∞ (act d g) := 
+  (CotangentLogCoframe.A d).symm.contDiff.comp
     (((KPArch.productAction_contDiff d g).of_le (show (⊤ : ℕ∞) ≤ (⊤ : ℕ∞ω) from le_top)).comp
       (CotangentLogCoframe.A d).contDiff)
 private theorem act_metric (d : ℕ) (g : Fin d → Matrix.GeneralLinearGroup (Fin 2) ℂ)
@@ -187,8 +186,7 @@ private theorem act_metric (d : ℕ) (g : Fin d → Matrix.GeneralLinearGroup (F
     intro i _
     ring
   have he := hquad (u+v)
-  rw [map_add, hpol, hpol, hquad, hquad] at he
-  linarith
+  simp_all
 
 theorem productAction_pullback_at (d : ℕ)
     (g : Fin d → Matrix.GeneralLinearGroup (Fin 2) ℂ)
@@ -200,7 +198,3 @@ theorem productAction_pullback_at (d : ℕ)
     laplacian d f
       ((CotangentLogCoframe.A d).symm (KPArch.productAction d g (CotangentLogCoframe.A d x))) :=
   isometry_pullback_at d (act d g) (act_smooth d g) (act_metric d g) f x hf
-
-end DedekindZetaZeroFree.KPShift68LaplacianInvariant
-
-end

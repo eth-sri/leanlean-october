@@ -21,7 +21,7 @@ local instance productCompletionBorel (F : Type) [Field F] [NumberField F]
     (v : HeightOneSpectrum (RingOfIntegers F)) :
     BorelSpace (v.adicCompletion F) := ⟨rfl⟩
 
-private theorem lc_of_test {G : Type*} [AddGroup G] [TopologicalSpace G]
+theorem lc_of_test {G : Type*} [AddGroup G] [TopologicalSpace G]
     [IsTopologicalAddGroup G] {φ : G → ℂ} (hl : IsLocallyConstant φ)
     (hc : HasCompactSupport φ) (hn : φ ≠ 0) : LocallyCompactSpace G := by
   obtain ⟨x, hx⟩ : ∃ x, φ x ≠ 0 := by
@@ -33,7 +33,7 @@ private theorem lc_of_test {G : Type*} [AddGroup G] [TopologicalSpace G]
   have heq := hl.eventually_eq x
   apply Filter.mem_of_superset heq
   intro y hy
-  exact subset_tsupport φ (by change φ y ≠ 0; rw [hy]; exact hx)
+  exact subset_tsupport φ (by simp_all)
 
 def tensorFunction (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
@@ -57,8 +57,7 @@ theorem tensorFunction_integrable
       funext x
       simp only [tensorFunction, Pi.zero_apply]
       rw [Finset.prod_eq_zero (Finset.mem_univ v) (by simp [hv]), mul_zero]
-    rw [hzero]
-    exact integrable_zero _ _ _
+    simp_all
   have hn : ∀ v, φ v ≠ 0 := by simpa using hz
   letI : Countable F := Finsupp.Countable.of_moduleFinite (R := ℚ)
   letI hv (v : S) : TopologicalSpace.SeparableSpace (v.val.adicCompletion F) :=
@@ -68,7 +67,7 @@ theorem tensorFunction_integrable
     lc_of_test (hlocal v) (hsupport v) (hn v)
   letI : ∀ v : S, SigmaFinite (μ v) := fun v => inferInstance
   have harch : Integrable fArch (PoissonArch.traceMeasure F) := by
-    exact fArch.integrable.smul_measure ENNReal.ofReal_ne_top
+    fun_prop
   have hfin : Integrable (fun x : PoissonFinite.Space F S => ∏ v : S, φ v (x v))
       (Measure.pi μ) :=
     Integrable.fintype_prod_dep (fun v =>
@@ -200,16 +199,10 @@ private theorem local_fourier (F : Type) [Field F] [NumberField F]
     have h : w = v := Finset.mem_singleton.mp hwm
     subst w
     exact hne
-  have hl : IsLocallyConstant φ' := by dsimp [φ']; cases hw default; exact hlocal
-  have hs : HasCompactSupport φ' := by dsimp [φ']; cases hw default; exact hsupport
+  have hl : IsLocallyConstant φ' := by omega
+  have hs : HasCompactSupport φ' := by omega
   have h := unique_fourier F S e' μ' he' hne' φ' hl hs
-  have hv : (default : S).val = v := rfl
-  change IsLocallyConstant (fun y : v.adicCompletion F =>
-    ∫ x, φ x * (e (-x*y) : ℂ) ∂μ) ∧
-    HasCompactSupport (fun y : v.adicCompletion F =>
-    ∫ x, φ x * (e (-x*y) : ℂ) ∂μ)
-  at h
-  exact h
+  omega
 
 theorem fourierIntegral_tensor_bruhatSchwartz
     (F : Type) [Field F] [NumberField F]
@@ -279,7 +272,7 @@ private theorem coset_sum (F : Type) [Field F] [NumberField F]
   refine hs'.congr ?_
   intro m
   by_cases hm : (m : F)-t ∈ I <;>
-    simp [P, Set.indicator_apply, PoissonFinite.idealCosetIndicator, hm]
+    simp [P, PoissonFinite.idealCosetIndicator, hm]
 private theorem field_sum (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
     (fArch : 𝓢(PoissonArch.Space F, ℂ))
@@ -298,8 +291,8 @@ private theorem field_sum (F : Type) [Field F] [NumberField F]
   obtain ⟨I, n, t, c, hI, hcoset⟩ := PoissonFinite.product_exists_ideal_coset_decomposition F S φa hl hs
   have hsum : Summable (fun m : (S : Set (HeightOneSpectrum (RingOfIntegers F))).integer F =>
       ∑ j, ‖c j‖ * ‖fArch (PoissonArch.minkowskiEmbedding F (a*m)) *
-        PoissonFinite.idealCosetIndicator F I (t j) m‖) := by
-    exact summable_sum (fun j _ => (coset_sum F S fArch I hI (t j) a ha).mul_left ‖c j‖)
+        PoissonFinite.idealCosetIndicator F I (t j) m‖) := 
+    summable_sum (fun j _ => (coset_sum F S fArch I hI (t j) a ha).mul_left ‖c j‖)
   apply hsum.of_nonneg_of_le (fun _ => norm_nonneg _)
   intro m
   have ht : tensorFunction F S fArch φ ((diagonalHom F S) (a*m)) =
@@ -356,7 +349,3 @@ theorem summable_norm_fourierIntegral_tensorFunction_lattice
   have hg := summable_norm_tensorFunction_lattice F S gArch ψ hψlocal hψsupport
     a⁻¹ (inv_ne_zero ha)
   simpa only [htransform] using hg
-
-end DedekindZetaZeroFree.PoissonS
-
-end

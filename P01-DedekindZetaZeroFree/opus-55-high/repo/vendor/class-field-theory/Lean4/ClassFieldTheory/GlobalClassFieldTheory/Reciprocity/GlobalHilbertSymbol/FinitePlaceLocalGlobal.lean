@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Finite-place local--global Kummer transport
 
@@ -48,7 +45,7 @@ abbrev finitePlaceKummerPolynomial
 
 /-- The simple Kummer extension chosen intrinsically over the finite-place
 completion. -/
-noncomputable abbrev finitePlaceKummerLocalExtension
+abbrev finitePlaceKummerLocalExtension
     (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
     (v : HeightOneSpectrum (𝓞 K)) (b : Kˣ) :=
   chosenSimpleKummerExtension
@@ -73,8 +70,8 @@ theorem finitePlaceLocalArtinInput_globalUnit
       finitePlaceCompletionRingEquiv v
           (finitePlaceLocalArtinInput v x :
             finitePlaceKummerBaseCompletion K v) =
-        (x : v.adicCompletion K) := by
-    exact congrArg Units.val
+        (x : v.adicCompletion K) := 
+    congrArg Units.val
       ((finitePlaceCompletionUnitsContinuousMulEquiv v).apply_symm_apply x)
   calc
     finitePlaceCompletionRingEquiv v
@@ -92,7 +89,7 @@ theorem finitePlaceLocalArtinInput_globalUnit
           finitePlaceCompletionRingEquiv v
             (algebraMap K (finitePlaceKummerBaseCompletion K v) (a : K))
       rw [finitePlaceCompletionRingEquiv_eq_relative]
-      exact (relativeFinitePlaceCompletionAlgEquiv v).commutes (a : K) |>.symm
+      simp
 
 /-- The named finite-dimensional certificate for the Kummer extension
 chosen directly over the completion. -/
@@ -137,7 +134,7 @@ theorem finitePlaceKummerLocal_isSplittingField
 extension and the localization of the chosen global Kummer extension.  It is
 constructed solely from the fact that both fields split the same polynomial;
 no compatibility between their chosen roots is assumed. -/
-noncomputable def finitePlaceKummerLocalGlobalAlgEquiv
+def finitePlaceKummerLocalGlobalAlgEquiv
     (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
     (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
     (v : HeightOneSpectrum (𝓞 K)) (b : Kˣ)
@@ -167,8 +164,3 @@ noncomputable def finitePlaceKummerLocalGlobalAlgEquiv
   exact
     (Polynomial.IsSplittingField.algEquiv S f).trans
       (Polynomial.IsSplittingField.algEquiv E f).symm
-
-end Reciprocity
-end GlobalClassFieldTheory
-
-end

@@ -179,7 +179,7 @@ private theorem matrixClass_continuousAt (M : Mat F) (hM : M ∈ matrixDomain F)
  def translatedMatrix (p : (Mat F × Mat F) × Y F) : Mat F := fun w =>
   p.1.1 w * PGLComplex.affineMatrix (p.2 w) * p.1.2 w
 
-private theorem translatedMatrix_smooth :
+theorem translatedMatrix_smooth :
     ContDiff ℝ (⊤ : ℕ∞) (translatedMatrix F) := by
   apply contDiff_pi.mpr
   intro w
@@ -194,7 +194,7 @@ private theorem translatedMatrix_smooth :
   simp only [translatedMatrix, Matrix.mul_apply, Fin.sum_univ_two]
   fun_prop (disch := exact hc _ _)
 
-private theorem translatedMatrix_class (l r : Mat F) (hl : l ∈ matrixDomain F)
+theorem translatedMatrix_class (l r : Mat F) (hl : l ∈ matrixDomain F)
     (hr : r ∈ matrixDomain F) (x : Y F) (hx : x ∈ affineDomain F) :
     matrixClass F (translatedMatrix F ((l,r),x)) =
       matrixClass F l * affineEll F x * matrixClass F r := by
@@ -215,14 +215,14 @@ private theorem translatedMatrix_class (l r : Mat F) (hl : l ∈ matrixDomain F)
 
  def matrixCoordinates (M : Mat F) : Y F := fun w => PGLComplex.matrixRatios (M w)
 
-private theorem matrixCoordinates_smoothAt (M : Mat F) (hM : ∀ w, M w 0 0 ≠ 0) :
+theorem matrixCoordinates_smoothAt (M : Mat F) (hM : ∀ w, M w 0 0 ≠ 0) :
     ContDiffAt ℝ (⊤ : ℕ∞) (matrixCoordinates F) M := by
   apply contDiffAt_pi.mpr
   intro w
   exact (PGLComplex.contDiffAt_matrixRatios (M w) (hM w)).comp M
     (contDiff_apply ℝ _ w).contDiffAt
 
-private theorem matrixCoordinates_eq (M : Mat F) (hM : M ∈ matrixDomain F) :
+theorem matrixCoordinates_eq (M : Mat F) (hM : M ∈ matrixDomain F) :
     matrixCoordinates F M = fun w => PGLComplex.affineInverse (matrixClass F M w) := by
   funext w
   simp only [matrixCoordinates, matrixClass, dif_pos (hM w)]
@@ -239,7 +239,7 @@ open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming affineTa
 open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming fromAffine_contDiff → fromAffine_contDiff
 open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming actualSmoothBridge → actualSmoothBridge
 
-private theorem matrixCoordinates_reconstruct (M : Mat F) (hM : M ∈ matrixDomain F)
+theorem matrixCoordinates_reconstruct (M : Mat F) (hM : M ∈ matrixDomain F)
     (ht : matrixClass F M ∈ gaussTarget F) :
     matrixCoordinates F M ∈ affineDomain F ∧
       affineEll F (matrixCoordinates F M) = matrixClass F M := by
@@ -329,7 +329,7 @@ theorem matrix_pullback_smooth {V : Type*} [NormedAddCommGroup V]
   rw [(matrixCoordinates_reconstruct F (T N) hTN ht).2, he N hN]
   simp
 
-private theorem translatedMatrix_mem (l r : Mat F) (hl : l ∈ matrixDomain F)
+theorem translatedMatrix_mem (l r : Mat F) (hl : l ∈ matrixDomain F)
     (hr : r ∈ matrixDomain F) (x : Y F) (hx : x ∈ affineDomain F) :
     translatedMatrix F ((l,r),x) ∈ matrixDomain F := by
   intro w
@@ -337,7 +337,7 @@ private theorem translatedMatrix_mem (l r : Mat F) (hl : l ∈ matrixDomain F)
   rw [Matrix.det_mul, Matrix.det_mul, PGLComplex.affineMatrix_det]
   exact mul_ne_zero (mul_ne_zero (hl w) (hx w)) (hr w)
 
-private theorem translated_spatial_jets_continuousAt {V : Type*} [NormedAddCommGroup V]
+theorem translated_spatial_jets_continuousAt {V : Type*} [NormedAddCommGroup V]
     [NormedSpace ℝ V] (f : L F → V) (hf : AffineSmooth F f)
     (l r : Mat F) (hl : l ∈ matrixDomain F) (hr : r ∈ matrixDomain F)
     (x : Y F) (hx : x ∈ affineDomain F) (n : ℕ) :
@@ -427,7 +427,7 @@ theorem localMatrixLift_eventually (a : L F) :
   filter_upwards [hn] with b hb
   exact localMatrixLift_reconstruct F a b hb
 
-private theorem compact_parameter_spatial_jets
+theorem compact_parameter_spatial_jets
     {K V : Type*} [TopologicalSpace K]
     [NormedAddCommGroup V] [NormedSpace ℝ V]
     (f : L F → V) (hf : AffineSmooth F f)
@@ -462,7 +462,7 @@ private theorem compact_parameter_spatial_jets
     rw [hqL.2, hqR.2]
   exact (hc.congr_of_eventuallyEq hEq).continuousWithinAt
 
-private theorem compact_parameter_slice_smooth
+theorem compact_parameter_slice_smooth
     {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
     (f : L F → V) (hf : AffineSmooth F f) (l r : L F) :
     ContDiffOn ℝ (⊤ : ℕ∞) (fun x => f (l * affineEll F x * r)) (affineDomain F) := by

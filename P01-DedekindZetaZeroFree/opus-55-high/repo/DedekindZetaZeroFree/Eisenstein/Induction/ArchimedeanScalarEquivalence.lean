@@ -25,7 +25,7 @@ instance (j : A ⊕ Q) : Module ℂ (FullV V j) := by cases j <;> dsimp [FullV] 
     (by
       apply LinearMap.ext
       intro c
-      simp [PiTensorProduct.lift.tprod])
+      simp)
     (by
       apply PiTensorProduct.ext
       apply MultilinearMap.ext
@@ -34,7 +34,7 @@ instance (j : A ⊕ Q) : Module ℂ (FullV V j) := by cases j <;> dsimp [FullV] 
         LinearMap.id_apply, PiTensorProduct.lift.tprod, MultilinearMap.mkPiRing_apply,
         smul_eq_mul, mul_one, LinearMap.toSpanSingleton_apply]
       have h := (PiTensorProduct.tprod ℂ (s := fun _ : J => ℂ)).map_smul_univ x (fun _ => 1)
-      simpa only [smul_eq_mul, mul_one] using h.symm)
+      simp_all)
 
  def split (s : Finset (A ⊕ Q)) : s ≃ s.toLeft ⊕ s.toRight where
   toFun j := match j with
@@ -90,7 +90,7 @@ def rightLevel (E : Finset Q) (s : RestrictedTensorSimple.Level (fullBad (A := A
     RestrictedTensorSimple.Level E :=
   ⟨s.val.toRight, by intro q hq; exact Finset.mem_toRight.mpr (s.property (by simp [fullBad, hq]))⟩
 
-private theorem left_eq_univ (E : Finset Q)
+theorem left_eq_univ (E : Finset Q)
     (s : RestrictedTensorSimple.Level (fullBad (A := A) E)) : s.val.toLeft = Finset.univ := by
   apply Finset.eq_univ_of_forall
   intro a
@@ -135,10 +135,7 @@ private theorem left_eq_univ (E : Finset Q)
   rw [hp]
   congr 2
   funext q
-  by_cases hq : q.val ∈ s.val.toRight
-  · simp [Finset.mem_toRight.mp hq, hq]
-  · simp [show (.inr q.val : A ⊕ Q) ∉ s.val from fun h => hq (Finset.mem_toRight.mpr h), hq,
-      fullReference]
+  simp
 
 def absorb (e : ∀ q, V q) (E : Finset Q) :
     RestrictedTensorSimple.Core (FullV V) (fullReference V e) (fullBad (A := A) E) →ₗ[ℂ]
@@ -178,7 +175,7 @@ theorem absorb_injective (e : ∀ q, V q) (E : Finset Q)
       (hz.trans (map_zero _).symm)
   have hx0 : x = 0 := (stageEquiv V s.val).injective (hx.trans (map_zero _).symm)
   rw [hx0, map_zero]
-  exact Submodule.zero_mem _
+  rfl
 
 theorem absorb_surjective (e : ∀ q, V q) (E : Finset Q) :
     Function.Surjective (absorb (A := A) V e E) := by
@@ -207,7 +204,3 @@ def equivalence (e : ∀ q, V q) (E : Finset Q)
       RestrictedTensorSimple.Core V e E :=
   LinearEquiv.ofBijective (absorb V e E)
     ⟨absorb_injective V e E he, absorb_surjective V e E⟩
-
-end DedekindZetaZeroFree.KPGlobalResidualConstruction.ScalarAbsorption
-
-end

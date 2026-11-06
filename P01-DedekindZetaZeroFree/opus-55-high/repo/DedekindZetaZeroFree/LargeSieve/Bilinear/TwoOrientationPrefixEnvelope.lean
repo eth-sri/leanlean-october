@@ -11,7 +11,7 @@ namespace DedekindZetaZeroFree.LargeSieve.Sieve.SplitPrefixEnvelope
 
 open scoped NumberField Classical
 
-private lemma prefix_numeric_bound (α η Ce : ℝ) (ha : α ∈ Set.Icc (1 : ℝ) 2)
+lemma prefix_numeric_bound (α η Ce : ℝ) (ha : α ∈ Set.Icc (1 : ℝ) 2)
     (he : 0 < η) (hCe : 1 ≤ Ce) :
     ∃ C : ℝ, 1 ≤ C ∧ ∀ B Y : ℝ, 1 ≤ B → 1 ≤ Y →
       ∀ M N : ℝ, 1 ≤ M → M ≤ 2 * B →
@@ -23,14 +23,14 @@ private lemma prefix_numeric_bound (α η Ce : ℝ) (ha : α ∈ Set.Icc (1 : �
       C * Real.rpow (B * Y) η * (B + Real.rpow Y α) := by
   let d := η / 2
   let D := 2 + 1 / (d * Real.log 2)
-  have hd : 0 < d := by dsimp [d]; positivity
+  have hd : 0 < d := by positivity
   have hD : 0 < D := DedekindZetaZeroFree.LargeSieve.Vendor.dyadicLength_small_power_constant_pos hd
   let C0 := D * D * Ce * 4 * ((4 : ℝ) ^ d * (4 : ℝ) ^ d)
   refine ⟨max 1 C0, le_max_left _ _, ?_⟩
   intro B Y hB hY M N hi hiB hj hjY
   have hB0 : 0 ≤ B := by linarith
   have hY0 : 0 ≤ Y := by linarith
-  have hP : 0 < B * Y := mul_pos (by linarith) (by linarith)
+  have hP : 0 < B * Y := by positivity
   have h2B : 1 ≤ 2 * B := by linarith
   have h2Y : 1 ≤ 2 * Y := by linarith
   have hA := DedekindZetaZeroFree.LargeSieve.Vendor.dyadicLength_small_power hd h2B
@@ -179,8 +179,8 @@ theorem direct_prefix_bound
     have hp := Real.rpow_le_rpow
       (show 0 ≤ dyadicScale i * dyadicScale j by positivity) hprod (show 0 ≤ η / 2 by positivity)
     have hs' : dyadicScale i + Real.rpow (dyadicScale j) α ≤
-        2 * B + Real.rpow (2 * Y) α := by
-      exact add_le_add hi2 (Real.rpow_le_rpow (by linarith) hj2 (by linarith [hα.1]))
+        2 * B + Real.rpow (2 * Y) α := 
+      add_le_add hi2 (Real.rpow_le_rpow (by linarith) hj2 (by linarith [hα.1]))
     simp only [Real.rpow_eq_pow] at hs' ⊢
     exact mul_le_mul (mul_le_mul_of_nonneg_left hp (by linarith)) hs'
       (by positivity) (mul_nonneg (by linarith) (by rw [Real.rpow_eq_pow]; positivity))
@@ -210,7 +210,7 @@ namespace DedekindZetaZeroFree.LargeSieve.Sieve.SplitPrefixEnvelope
 
 open scoped NumberField Classical
 
-private lemma prefix_partition {A : Type*} [DecidableEq A]
+lemma prefix_partition {A : Type*} [DecidableEq A]
     (R : Finset A) (blocks : ℕ → Finset A) (P : Finset ℕ) (U : Finset A)
     (hU : P.biUnion blocks = U) (hR : R ⊆ U) :
     R = P.biUnion (fun i => R ∩ blocks i) := by
@@ -220,18 +220,17 @@ private lemma prefix_partition {A : Type*} [DecidableEq A]
   · intro ha
     have := hR ha
     rw [← hU, Finset.mem_biUnion] at this
-    obtain ⟨i, hi, hai⟩ := this
-    exact ⟨i, hi, ha, hai⟩
-  · rintro ⟨i, hi, ha, _⟩; exact ha
+    simp_all
+  simp_all
 
-private lemma prefix_partition_disjoint {A : Type*} [DecidableEq A]
+lemma prefix_partition_disjoint {A : Type*} [DecidableEq A]
     (R : Finset A) (blocks : ℕ → Finset A) (P : Finset ℕ)
     (h : Set.PairwiseDisjoint (↑P : Set ℕ) blocks) :
     Set.PairwiseDisjoint (↑P : Set ℕ) (fun i => R ∩ blocks i) := by
   intro i hi j hj hij
   exact (h hi hj hij).mono Finset.inter_subset_right Finset.inter_subset_right
 
-private lemma prefix_block_type
+lemma prefix_block_type
     (F : Type) [Field F] [NumberField F] (q : Ideal (𝓞 F))
     (T : ℝ) (R : Finset (Ideal (𝓞 F))) (j : ℕ) :
     (R ∩ clippedDyadicBlock F q T j) ⊆ paperShell F q (dyadicScale j) ∨
@@ -264,7 +263,7 @@ theorem transposed_prefix_bound
             (max 1 X + Real.rpow B α) * ∑ b ∈ S, ‖lam b‖ ^ 2 := by
   intro η hη
   let e := η / 2
-  have he : 0 < e := by dsimp [e]; linarith
+  have he : 0 < e := by positivity
   obtain ⟨Cext, hCext, hexp⟩ := bilinear_normalized_shell_transpose_contractions
     F c Q q hq hcq hreciprocity α hα hExponent e he
   let k := 2 + 1 / (e * Real.log 2)
@@ -324,7 +323,7 @@ theorem transposed_prefix_bound
       exact mul_le_mul (mul_le_mul_of_nonneg_left hp hC0) hs
         (by simp only [Real.rpow_eq_pow]; positivity)
         (by simp only [Real.rpow_eq_pow]; positivity))
-  have hk : 0 ≤ k := (Vendor.dyadicLength_small_power_constant_pos he).le
+  have hk : 0 ≤ k := by positivity
   have hp : (P.card : ℝ) * (T.card : ℝ) ≤
       k ^ 2 * Real.rpow (4 * B * Y) e := by
     have hh := mul_le_mul (Vendor.dyadicLength_small_power he h2B)
@@ -423,8 +422,7 @@ theorem bilinear_prefix_two_orientation_envelope
     dsimp [P]
     positivity
   have hE : 0 ≤ E := by
-    dsimp [E]
-    exact Finset.sum_nonneg (fun _ _ => by positivity)
+    positivity
   have hd0 : 0 ≤ d := by
     dsimp [d]
     positivity
@@ -451,7 +449,3 @@ theorem bilinear_prefix_two_orientation_envelope
   · simpa only [d, t, P, E, min_eq_left hdt] using hdirect
   · have htd : t ≤ d := le_of_not_ge hdt
     simpa only [d, t, P, E, min_eq_right htd] using htrans
-
-end DedekindZetaZeroFree.LargeSieve.Sieve
-
-end

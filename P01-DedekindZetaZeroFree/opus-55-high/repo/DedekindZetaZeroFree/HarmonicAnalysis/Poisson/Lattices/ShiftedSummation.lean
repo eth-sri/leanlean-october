@@ -6,7 +6,6 @@ public import DedekindZetaZeroFree.HarmonicAnalysis.Fourier.Torus.PeriodisationC
 
 set_option maxHeartbeats 800000
 
-noncomputable section
 open scoped FourierTransform SchwartzMap
 open MeasureTheory
 open Module
@@ -29,7 +28,7 @@ theorem poisson_summation_lattice_shift
   set x : ι → UnitAddCircle := fun i => (((b.ofZLatticeBasis ℝ L).repr a) i : UnitAddCircle) with hx
   have hconjgen : ∀ z : ℝ, (starRingEnd ℂ) (((𝐞 z : Circle)) : ℂ) = (((𝐞 (-z) : Circle)) : ℂ) := by
     intro z
-    rw [AddChar.map_neg_eq_inv, Circle.coe_inv_eq_conj]
+    simp
   have hchar : ∀ n : ι → ℤ, UnitAddTorus.mFourier n x =
       ((𝐞 (inner ℝ a (((dualVector_b L b n : dualLattice L) : V))) : Circle) : ℂ) := by
     intro n
@@ -42,7 +41,7 @@ theorem poisson_summation_lattice_shift
       exact h2
     rw [show UnitAddTorus.mFourier n x
           = (starRingEnd ℂ) ((starRingEnd ℂ) (UnitAddTorus.mFourier n x)) from by simp, h3]
-    simpa using hconjgen (-inner ℝ a (((dualVector_b L b n : dualLattice L) : V)))
+    simp
   have hxval : (torusPeriodisation b f) x = ∑' v : L, f (a + (v : V)) := by
     rw [hx]
     rw [torusPeriodisation_coe b f ((b.ofZLatticeBasis ℝ L).repr a)]
@@ -60,8 +59,7 @@ theorem poisson_summation_lattice_shift
   have hreindex_norm : Summable (fun n : ι → ℤ =>
       ‖(𝓕 (f : V → ℂ)) (((dualVector_b L b n : dualLattice L) : V))‖) := by
     refine (Function.Injective.summable_iff (dualVector_b L b).injective ?_).mpr hnorm
-    intro x hx
-    exact absurd (Set.mem_range.mpr ((dualVector_b L b).surjective x)) hx
+    simp
   have hreindex_c : Summable (fun n : ι → ℤ =>
       (𝓕 (f : V → ℂ)) (((dualVector_b L b n : dualLattice L) : V))) :=
     Summable.of_norm hreindex_norm
@@ -87,7 +85,3 @@ theorem poisson_summation_lattice_shift
   congr 1
   exact Equiv.tsum_eq e
     (fun w : dualLattice L => 𝐞 (inner ℝ a (w : V)) • (𝓕 (f : V → ℂ)) (w : V))
-
-end DedekindZetaZeroFree.PoissonArch
-
-end

@@ -9,10 +9,9 @@ namespace DedekindZetaZeroFree.KPRankOneOppositeZero
 
 open scoped Valued
 open MeasureTheory ValuativeRel KPLocalPrincipalSeries KPRankOneRootParameter
-open KPLocalPrincipalSeries KPLocalStoneVonNeumann KPRankOneShellContinuation
+open KPLocalStoneVonNeumann KPRankOneShellContinuation
 open KPRankOneForwardTestVector
 
-noncomputable section
 
 variable (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
     [TopologicalSpace K] [IsNonarchimedeanLocalField K]
@@ -50,8 +49,7 @@ theorem both_level_compositions_zero (A : LocalBorelData (K := K) (G := G) T)
   have hr := hResidue 0 z hz0 hz
       (denominator_ne_zero_at_zero K .plus) (denominator_ne_zero_at_zero K .minus)
       J hJ p pRev hp hpRev
-  have hζK : IsPrimitiveRoot (ζ : K) 3 := hζ.map_of_injective
-    (Subring.subtype_injective (valuation K).integer)
+  have hζK : IsPrimitiveRoot (ζ : K) 3 := by simp_all
   have hc := KPRankoneCubicScalarSum.finiteScalar_eq K (ζ : K) hζK
     (KPRankOneCubicResidueReduction.integerMass K μ) (KPCubicHaar.abs K (3 : K))
     z (t K 0) hz0 hz (by simp [t_zero, inv_eq_one, hq1])
@@ -61,11 +59,4 @@ theorem both_level_compositions_zero (A : LocalBorelData (K := K) (G := G) T)
     change (_ : ℂ) * ((1 - (residueCardinality K : ℂ)⁻¹ * t K 0) *
       (1 - (residueCardinality K : ℂ)⁻¹ * (t K 0)⁻¹) / _) = 0
     simp [t_zero, hq]
-  constructor
-  · rw [hr.1, hc0]
-    exact zero_smul ℂ _
-  · rw [hr.2, hc0]
-    exact zero_smul ℂ _
-
-end
-end DedekindZetaZeroFree.KPRankOneOppositeZero
+  simp_all

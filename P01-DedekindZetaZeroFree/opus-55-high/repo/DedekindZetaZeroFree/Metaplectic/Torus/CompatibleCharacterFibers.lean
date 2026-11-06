@@ -94,7 +94,3 @@ theorem exists_model_fibers (hCl : Subsingleton (ClassGroup A.R)) :
   obtain ⟨P, hS, hP⟩ := FrozenAdjustment.exists_model A hCl
   obtain ⟨C, hC⟩ := exists_fibers A P hS hP
   exact ⟨P, C, hS, hC⟩
-
-end DedekindZetaZeroFree.EisensteinReferenceSections.FrozenFibers
-
-end

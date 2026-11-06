@@ -10,7 +10,6 @@ open NumberField IsDedekindDomain
 noncomputable section
 namespace DedekindZetaZeroFree.MaskedPrimePowerCRTFactorization
 open LocalFiniteSums
-set_option autoImplicit false
 
 variable {F : Type} [Field F] [NumberField F]
 variable {A : SArithmeticData F} {σ : F →+* ℂ}
@@ -25,7 +24,7 @@ abbrev PrimePowerProduct (C : A.GeneralArithmeticContext σ η hS)
 
 open UniqueFactorizationMonoid
 
-private theorem support_factor_aux (I : A.Exterior) (P : Finset (ExteriorPrime A))
+theorem support_factor_aux (I : A.Exterior) (P : Finset (ExteriorPrime A))
     (hP : ∀ p : ExteriorPrime A, exponent p I ≠ 0 → p ∈ P) :
     I.val = ∏ p ∈ P, p.val.asIdeal ^ exponent p I := by
   let Q := P.image (fun p => p.val.asIdeal)
@@ -105,15 +104,13 @@ private theorem support_factor_aux (I : A.Exterior) (P : Finset (ExteriorPrime A
       (Ideal.prod_eq_iInf_of_pairwise_isCoprime (hc.set_pairwise (↑(Finset.univ : Finset P))))
   exact (Ideal.quotEquivOfEq he).trans (Ideal.quotientInfRingEquivPiQuotient f hc)
 
-private theorem quotientPiEquiv_mk (C : A.GeneralArithmeticContext σ η hS)
+theorem quotientPiEquiv_mk (C : A.GeneralArithmeticContext σ η hS)
     (I : A.Exterior) (x : A.R) (hx : A.Generates I x)
     (P : Finset (ExteriorPrime A))
     (hP : ∀ p : ExteriorPrime A, exponent p I ≠ 0 → p ∈ P) (y : A.R) :
     quotientPiEquiv C I x hx P hP (FiniteTransform.residueMap A.R.toSubring x y) =
       fun p : P => Ideal.Quotient.mk
         (Ideal.span ({generator C p.val ^ exponent p.val I} : Set A.R)) y := by
-  ext p
-  change Ideal.Quotient.mk _ y = Ideal.Quotient.mk _ y
   rfl
 
 theorem quotient_crt (C : A.GeneralArithmeticContext σ η hS)
@@ -126,8 +123,4 @@ theorem quotient_crt (C : A.GeneralArithmeticContext σ η hS)
           LocalFiniteSums.residueMap C p.val (exponent p.val I) r := by
   refine ⟨quotientPiEquiv C I s hs P hSupport, ?_⟩
   intro r p
-  exact congrFun (quotientPiEquiv_mk C I s hs P hSupport r) p
-
-end DedekindZetaZeroFree.MaskedPrimePowerCRTFactorization
-
-end
+  rfl

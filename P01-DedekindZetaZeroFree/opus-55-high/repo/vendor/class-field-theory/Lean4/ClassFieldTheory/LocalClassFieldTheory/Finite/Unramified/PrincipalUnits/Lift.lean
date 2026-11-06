@@ -10,9 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-set_option autoImplicit false
 /-! Provides the public declarations in the `LocalClassFieldTheory.Finite.Unramified.PrincipalUnits.Lift` Lean module. -/
 
 noncomputable section
@@ -71,68 +68,9 @@ theorem principalUnitsNormOfUnramifiedValuationOfIsIntegralClosure_div_lift_mem_
   exact (principalUnitsSuccQuotMk_eq_iff_div_mem K n y
     (principalUnitsNormOfUnramifiedValuationOfIsIntegralClosure K L n x)).1 hx.symm
 
-/-- Actual integral-closure finite-depth iteration of the one-step
-principal-unit norm correction.  For every `d`, a target in `U_K^n` can be
-matched by the norm of an element of `U_L^n` up to an error in `U_K^(n+d)`.
-
-This is the finite approximation stage of principal-unit norm surjectivity. -/
-theorem principalUnitsNormOfUnramifiedValuationOfIsIntegralClosure_approx_mem_add
-    (K L : Type u)
-    [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    [Field L] [ValuativeRel L] [TopologicalSpace L] [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [LocalFieldTheory.ValuativeExtension K L] [IsIntegralClosure 𝒪[L] 𝒪[K] L]
-    [Module.Finite 𝒪[K] 𝒪[L]]
-    [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L]
-    (n d : Nat) (hn : 1 ≤ n) (y : principalUnits K n) :
-    ∃ x : principalUnits L n,
-      ((y : 𝒪[K]ˣ) / normIntegerUnits K L (x : 𝒪[L]ˣ)) ∈
-        principalUnits K (n + d) := by
-  induction d with
-  | zero =>
-      refine ⟨1, ?_⟩
-      change (y : 𝒪[K]ˣ) / normIntegerUnits K L (1 : 𝒪[L]ˣ) ∈
-        principalUnits K (n + 0)
-      rw [(normIntegerUnits K L).map_one, div_one, Nat.add_zero]
-      exact y.2
-  | succ d ih =>
-      obtain ⟨x, hx⟩ := ih
-      let r : principalUnits K (n + d) :=
-        ⟨(y : 𝒪[K]ˣ) / normIntegerUnits K L (x : 𝒪[L]ˣ), hx⟩
-      have hnd : 1 ≤ n + d := le_trans hn (Nat.le_add_right n d)
-      obtain ⟨z, hz⟩ :=
-        principalUnitsNormOfUnramifiedValuationOfIsIntegralClosure_div_lift_mem_succ
-          K L (n + d) hnd r
-      let x' : principalUnits L n :=
-        ⟨(x : 𝒪[L]ˣ) * (z : 𝒪[L]ˣ),
-          (principalUnits L n).mul_mem x.2
-            (principalUnits_antitone L (Nat.le_add_right n d) z.2)⟩
-      refine ⟨x', ?_⟩
-      have hzUnit :
-          (((r / principalUnitsNormOfUnramifiedValuationOfIsIntegralClosure K L
-              (n + d) z : principalUnits K (n + d)) : 𝒪[K]ˣ) ∈
-            principalUnits K ((n + d) + 1)) := hz
-      have hresEq :
-          (y : 𝒪[K]ˣ) / normIntegerUnits K L ((x' : principalUnits L n) :
-              𝒪[L]ˣ) =
-            ((r / principalUnitsNormOfUnramifiedValuationOfIsIntegralClosure K L
-                (n + d) z : principalUnits K (n + d)) : 𝒪[K]ˣ) := by
-        change
-          (y : 𝒪[K]ˣ) / normIntegerUnits K L ((x' : principalUnits L n) :
-              𝒪[L]ˣ) =
-            (r : 𝒪[K]ˣ) /
-              ((principalUnitsNormOfUnramifiedValuationOfIsIntegralClosure K L
-                  (n + d) z : principalUnits K (n + d)) : 𝒪[K]ˣ)
-        simp only [x', r, principalUnitsNormOfUnramifiedValuationOfIsIntegralClosure_apply,
-          (normIntegerUnits K L).map_mul]
-        simp [div_eq_mul_inv, mul_assoc, mul_comm]
-      rw [hresEq]
-      simpa [Nat.add_assoc] using hzUnit
-
 /-- Actual integral-closure correction term selected from the current finite
 approximation error. -/
-noncomputable def chosenPrincipalUnitsNormOfUnramifiedValuationOfIsIntegralClosureApproxCorrection
+def chosenPrincipalUnitsNormOfUnramifiedValuationOfIsIntegralClosureApproxCorrection
     (K L : Type u)
     [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
     [Field L] [ValuativeRel L] [TopologicalSpace L] [IsNonarchimedeanLocalField L]
@@ -148,14 +86,14 @@ noncomputable def chosenPrincipalUnitsNormOfUnramifiedValuationOfIsIntegralClosu
     principalUnits L (n + d) :=
   let r : principalUnits K (n + d) :=
     ⟨(y : 𝒪[K]ˣ) / normIntegerUnits K L (s.1 : 𝒪[L]ˣ), s.2⟩
-  have hnd : 1 ≤ n + d := le_trans hn (Nat.le_add_right n d)
+  have hnd : 1 ≤ n + d := by omega
   Classical.choose
     (principalUnitsNormOfUnramifiedValuationOfIsIntegralClosure_div_lift_mem_succ
       K L (n + d) hnd r)
 
 /-- Actual integral-closure coherent update step for finite principal-unit
 norm approximations. -/
-noncomputable def principalUnitsNormOfUnramifiedValuationOfIsIntegralClosureApproxStep
+def principalUnitsNormOfUnramifiedValuationOfIsIntegralClosureApproxStep
     (K L : Type u)
     [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
     [Field L] [ValuativeRel L] [TopologicalSpace L] [IsNonarchimedeanLocalField L]
@@ -185,7 +123,7 @@ noncomputable def principalUnitsNormOfUnramifiedValuationOfIsIntegralClosureAppr
           (n + d) z : principalUnits K (n + d)) : 𝒪[K]ˣ) ∈
         principalUnits K ((n + d) + 1)) :=
     by
-      have hnd : 1 ≤ n + d := le_trans hn (Nat.le_add_right n d)
+      have hnd : 1 ≤ n + d := by omega
       dsimp [z, chosenPrincipalUnitsNormOfUnramifiedValuationOfIsIntegralClosureApproxCorrection]
       exact Classical.choose_spec
         (principalUnitsNormOfUnramifiedValuationOfIsIntegralClosure_div_lift_mem_succ
@@ -204,7 +142,7 @@ noncomputable def principalUnitsNormOfUnramifiedValuationOfIsIntegralClosureAppr
       (normIntegerUnits K L).map_mul]
     exact div_mul_eq_div_div _ _ _
   rw [hresEq]
-  simpa [Nat.add_assoc] using hz
+  omega
 
 /-- The quotient between successive actual integral-closure approximation
 states lies in the expected depth. -/
@@ -229,12 +167,11 @@ theorem principalUnitsNormOfUnramifiedValuationOfIsIntegralClosureApproxStep_div
       K L n hn y d s
   change (((s.1 : 𝒪[L]ˣ) * (z : 𝒪[L]ˣ)) / (s.1 : 𝒪[L]ˣ)) ∈
     principalUnits L (n + d)
-  rw [mul_div_cancel_left]
-  exact z.2
+  simp
 
 /-- Actual integral-closure coherent finite principal-unit norm
 approximations. -/
-noncomputable def principalUnitsNormOfUnramifiedValuationOfIsIntegralClosureApproxState
+def principalUnitsNormOfUnramifiedValuationOfIsIntegralClosureApproxState
     (K L : Type u)
     [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
     [Field L] [ValuativeRel L] [TopologicalSpace L] [IsNonarchimedeanLocalField L]
@@ -250,10 +187,7 @@ noncomputable def principalUnitsNormOfUnramifiedValuationOfIsIntegralClosureAppr
           principalUnits K (n + d)}
   | 0 => by
       refine ⟨1, ?_⟩
-      change (y : 𝒪[K]ˣ) / normIntegerUnits K L (1 : 𝒪[L]ˣ) ∈
-        principalUnits K (n + 0)
-      rw [(normIntegerUnits K L).map_one, div_one, Nat.add_zero]
-      exact y.2
+      simp
   | d + 1 =>
       principalUnitsNormOfUnramifiedValuationOfIsIntegralClosureApproxStep K L n hn y d
         (principalUnitsNormOfUnramifiedValuationOfIsIntegralClosureApproxState
@@ -289,7 +223,7 @@ theorem principalUnitsNormOfUnramifiedValuationOfIsIntegralClosureApproxState_su
 
 /-- The actual integral-closure correction sequence encoded by consecutive
 coherent approximation states. -/
-noncomputable def chosenPrincipalUnitsNormOfUnramifiedValuationOfIsIntegralClosureApproxCorrectionSeq
+def chosenPrincipalUnitsNormOfUnramifiedValuationOfIsIntegralClosureApproxCorrectionSeq
     (K L : Type u)
     [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
     [Field L] [ValuativeRel L] [TopologicalSpace L] [IsNonarchimedeanLocalField L]
@@ -340,7 +274,7 @@ theorem principalUnitsCorrectionProduct_approxCorrectionSeqOfIsIntegralClosure
                 K L n hn y d).1 : principalUnits L n) : 𝒪[L]ˣ)) =
           (((principalUnitsNormOfUnramifiedValuationOfIsIntegralClosureApproxState
             K L n hn y (d + 1)).1 : principalUnits L n) : 𝒪[L]ˣ)
-      rw [mul_comm, div_mul_cancel]
+      simp
 
 /-- The actual integral-closure coherent finite approximation states have a
 principal-unit limit.  This is the unramified infinite-product step specialized
@@ -422,7 +356,7 @@ theorem eventually_normIntegerUnits_div_mem_principalUnits_of_tendsto_units_of_i
   have hnorm : normIntegerUnits K L (f d / x) ∈ principalUnits K n :=
     normIntegerUnits_mem_principalUnits_of_unramifiedValuation_of_isIntegralClosure
       K L n (f d / x) hd
-  simpa [(normIntegerUnits K L).map_div] using hnorm
+  simp_all
 
 /-- The limit of the actual integral-closure coherent approximation states
 preserves all finite-depth error bounds. -/
@@ -484,7 +418,7 @@ theorem principalUnitsNormOfUnramifiedValuationOfIsIntegralClosureApproxState_li
             ((principalUnitsNormOfUnramifiedValuationOfIsIntegralClosureApproxState
               K L n hn y i).1 : 𝒪[L]ˣ) /
           normIntegerUnits K L (x : 𝒪[L]ˣ)) := by
-    simp [div_eq_mul_inv, mul_assoc, mul_comm, mul_left_comm]
+    simp
   rw [heq]
   exact (principalUnits K (n + d)).mul_mem herr (by simpa [f] using hnorm)
 
@@ -540,7 +474,3 @@ theorem principalUnitsNormOfUnramifiedValuationOfIsIntegralClosure_surjective
       K L n y x hmem
   apply Subtype.ext
   simpa [principalUnitsNormOfUnramifiedValuationOfIsIntegralClosure_apply] using hEq.symm
-
-end LocalClassFieldTheory
-
-end

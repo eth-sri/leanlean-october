@@ -11,7 +11,7 @@ namespace DedekindZetaZeroFree.LargeSieve.Sieve
 
 open scoped NumberField Classical
 
-private lemma squarefreeKernel_ne_bot {F : Type} [Field F] [NumberField F]
+lemma squarefreeKernel_ne_bot {F : Type} [Field F] [NumberField F]
     {a : Ideal (𝓞 F)} (ha : a ≠ ⊥) : squarefreeKernel a ≠ ⊥ := by
   have h : squarefreeKernel a ≠ 0 := by
     rw [squarefreeKernel, if_neg ha, Finset.prod_ne_zero_iff]
@@ -19,9 +19,9 @@ private lemma squarefreeKernel_ne_bot {F : Type} [Field F] [NumberField F]
     have hp' : p ∈ UniqueFactorizationMonoid.normalizedFactors a :=
       UniqueFactorizationMonoid.mem_primeFactors.mp (Finset.mem_filter.mp hp).1
     exact (UniqueFactorizationMonoid.prime_of_normalized_factor p hp').ne_zero
-  rwa [Ideal.zero_eq_bot] at h
+  omega
 
-private lemma one_le_s {F : Type} [Field F] [NumberField F]
+lemma one_le_s {F : Type} [Field F] [NumberField F]
     {a : Ideal (𝓞 F)} (ha : a ≠ ⊥) : 1 ≤ s a := by
   have hz : Ideal.absNorm (squarefreeKernel a) ≠ 0 :=
     Ideal.absNorm_eq_zero_iff.not.mpr (squarefreeKernel_ne_bot ha)
@@ -29,12 +29,12 @@ private lemma one_le_s {F : Type} [Field F] [NumberField F]
   unfold s
   exact_mod_cast h1
 
-private lemma s_eq_one_iff {F : Type} [Field F] [NumberField F]
+lemma s_eq_one_iff {F : Type} [Field F] [NumberField F]
     {a : Ideal (𝓞 F)} : s a = 1 ↔ squarefreeKernel a = ⊤ := by
   unfold s
-  rw [Nat.cast_eq_one, Ideal.absNorm_eq_one_iff]
+  simp
 
-private lemma prod_primes_eq_top {F : Type} [Field F] [NumberField F]
+lemma prod_primes_eq_top {F : Type} [Field F] [NumberField F]
     {S : Finset (Ideal (𝓞 F))} (hS : ∀ p ∈ S, Prime p)
     (h : ∏ p ∈ S, p = ⊤) : S = ∅ := by
   by_contra hne
@@ -43,11 +43,11 @@ private lemma prod_primes_eq_top {F : Type} [Field F] [NumberField F]
   rw [h] at hdvd
   exact (hS p hp).not_unit (isUnit_of_dvd_one (by simpa [Ideal.one_eq_top] using hdvd))
 
-private lemma exists_sq_of_squarefreeKernel_eq_top {F : Type} [Field F] [NumberField F]
+lemma exists_sq_of_squarefreeKernel_eq_top {F : Type} [Field F] [NumberField F]
     {a : Ideal (𝓞 F)} (h : squarefreeKernel a = ⊤) : ∃ t, t ^ 2 = a := by
   by_cases ha : a = ⊥
   · exact ⟨⊥, by rw [ha]; simp⟩
-  have ha0 : a ≠ 0 := by simpa [Ideal.zero_eq_bot] using ha
+  have ha0 : a ≠ 0 := by omega
   set s := UniqueFactorizationMonoid.normalizedFactors a with hs
   have hker : (∏ p ∈ s.toFinset.filter (fun p => s.count p % 2 = 1), p) = ⊤ := by
     simpa [squarefreeKernel, if_neg ha, hs] using h
@@ -57,12 +57,7 @@ private lemma exists_sq_of_squarefreeKernel_eq_top {F : Type} [Field F] [NumberF
       (by rw [← hs]; exact UniqueFactorizationMonoid.mem_primeFactors.mp (Finset.mem_filter.mp hp).1)
   have hempty := prod_primes_eq_top hS hker
   have heven : ∀ p ∈ s.toFinset, s.count p % 2 = 0 := by
-    intro p hp
-    by_contra hc
-    have : p ∈ s.toFinset.filter (fun p => s.count p % 2 = 1) := by
-      rw [Finset.mem_filter]; exact ⟨hp, by omega⟩
-    rw [hempty] at this
-    exact absurd this (Finset.notMem_empty p)
+    simp_all
   refine ⟨∏ p ∈ s.toFinset, p ^ (s.count p / 2), ?_⟩
   have h1 : a = ∏ p ∈ s.toFinset, p ^ (s.count p) := by
     rw [← Finset.prod_multiset_count]
@@ -78,7 +73,7 @@ private lemma exists_sq_of_squarefreeKernel_eq_top {F : Type} [Field F] [NumberF
   congr 1
   omega
 
-private lemma exists_weight_bound (W : ℝ → ℝ) (hW : SieveWeight W) :
+lemma exists_weight_bound (W : ℝ → ℝ) (hW : SieveWeight W) :
     ∃ B : ℝ, 0 ≤ B ∧ ∀ t : ℝ, ‖W t‖ ≤ B := by
   obtain ⟨B, hB⟩ := (isCompact_Icc (a := (1/2:ℝ)) (b := (5/2:ℝ))).exists_bound_of_continuousOn
     hW.smooth.continuous.continuousOn
@@ -92,7 +87,7 @@ def smallCutoffSquareRows (F : Type) [Field F] [NumberField F]
   (boundedNormIdeals F ((5 / 2) * M)).filter
     (fun a => a ≠ ⊥ ∧ a ⊔ c = ⊤ ∧ squarefreeKernel a = ⊤)
 
-private lemma exists_squareRows_card_bound (F : Type) [Field F] [NumberField F] :
+lemma exists_squareRows_card_bound (F : Type) [Field F] [NumberField F] :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ (c : Ideal (𝓞 F)) (M : ℝ), 1 ≤ M →
       ((smallCutoffSquareRows F c M).card : ℝ) ≤ C * Real.sqrt M := by
   obtain ⟨C₀, hC₀, hglob, hfin⟩ := DedekindZetaZeroFree.LargeSieve.exists_ideal_count_bound_finset F
@@ -111,11 +106,11 @@ private lemma exists_squareRows_card_bound (F : Type) [Field F] [NumberField F] 
     refine ⟨t, ?_, ht⟩
     rw [DedekindZetaZeroFree.LargeSieve.mem_boundedNormIdeals]
     have hna : (Ideal.absNorm a : ℝ) ≤ (5/2)*M := by
-      rw [DedekindZetaZeroFree.LargeSieve.mem_boundedNormIdeals] at hain; exact hain
+      simp_all
     have hsqN : Ideal.absNorm (t^2) = Ideal.absNorm t * Ideal.absNorm t := by
-      rw [sq]; exact map_mul Ideal.absNorm t t
+      rw [sq]; simp
     have hsq : (Ideal.absNorm t : ℝ) * (Ideal.absNorm t : ℝ) = (Ideal.absNorm a : ℝ) := by
-      rw [← ht, hsqN]; push_cast; ring
+      simp_all
     calc (Ideal.absNorm t : ℝ)
         = Real.sqrt ((Ideal.absNorm t : ℝ)^2) := (Real.sqrt_sq (Nat.cast_nonneg _)).symm
       _ ≤ Real.sqrt ((5/2)*M) := Real.sqrt_le_sqrt (by nlinarith [hsq, hna])
@@ -215,7 +210,7 @@ theorem smallCutoff_T3_comparison
           apply Finset.sum_le_sum
           intro a _
           have hWle : ‖(W ((Ideal.absNorm a : ℝ) / M) : ℂ)‖ ≤ B := by
-            simpa [Complex.norm_real, Real.norm_eq_abs] using hB _
+            simp_all
           have hχ1 : ‖(Q.χ b1) a‖ ≤ 1 := quadraticFamily_norm_le_one Q hb1sf hb1c a
           have hχ2 : ‖(Q.χ b2) a‖ ≤ 1 := quadraticFamily_norm_le_one Q hb2sf hb2c a
           calc ‖(W ((Ideal.absNorm a : ℝ) / M) : ℂ) * (Q.χ b1) a *
@@ -235,7 +230,7 @@ theorem smallCutoff_T3_comparison
       rw [← Finset.sum_mul, ← Finset.mul_sum]
     calc ∑ b1 ∈ sh, ∑ b2 ∈ sh, ‖lam b1‖ * ‖lam b2‖ * (B * (S.card : ℝ))
         = ∑ b1 ∈ sh, ‖lam b1‖ * (∑ b2 ∈ sh, ‖lam b2‖) * (B * (S.card : ℝ)) := by
-          apply Finset.sum_congr rfl; intro b1 _; exact h1 b1
+          simp_all
       _ = (B * (S.card : ℝ)) * (∑ b ∈ sh, ‖lam b‖) * (∑ b ∈ sh, ‖lam b‖) := by
           rw [← Finset.sum_mul, ← Finset.sum_mul]
           ring
@@ -246,7 +241,7 @@ theorem smallCutoff_T3_comparison
   have hshbound : (sh.card : ℝ) ≤ C₀ * (2 * N) := by
     have := hfin (2*N) (by linarith) (paperShell F c N)
       (fun b hb => ((mem_paperShell F c N b).mp hb).2.2.2)
-    simpa [hshdef] using this
+    omega
   have hstep : ‖∑ b1 ∈ sh, ∑ b2 ∈ sh, (if b1 ⊔ b2 = d ∧ Q.cls b1 = g ∧ Q.cls b2 = g
         then lam b1 * (starRingEnd ℂ) (lam b2) *
           (∑ a ∈ S, (W ((Ideal.absNorm a : ℝ) / M) : ℂ) * (Q.χ b1) a *
@@ -282,7 +277,7 @@ theorem smallCutoff_T3_comparison
                   (starRingEnd ℂ) ((Q.χ b2) a))‖ := by
             split_ifs with h
             · rfl
-            · rw [norm_zero]; exact norm_nonneg _
+            · rw [norm_zero]; positivity
           have hF1 : ‖lam b1 * (starRingEnd ℂ) (lam b2) *
                 (∑ a ∈ S, (W ((Ideal.absNorm a : ℝ) / M) : ℂ) * (Q.χ b1) a *
                   (starRingEnd ℂ) ((Q.χ b2) a))‖
@@ -310,15 +305,15 @@ theorem smallCutoff_T3_comparison
     _ = (B * (S.card : ℝ)) * (∑ b ∈ sh, ‖lam b‖)^2 := by ring
     _ ≤ (B * (S.card : ℝ)) * ((sh.card : ℝ) * energy F c N lam) := by
         apply mul_le_mul_of_nonneg_left hCS
-        exact mul_nonneg hBnn (Nat.cast_nonneg _)
+        positivity
     _ ≤ (B * (Cs * Real.sqrt M)) * ((C₀ * (2*N)) * energy F c N lam) := by
         have hEnn : 0 ≤ energy F c N lam := by
-          unfold energy; exact Finset.sum_nonneg (fun b _ => by positivity)
+          unfold energy; positivity
         apply mul_le_mul
         · exact mul_le_mul_of_nonneg_left hSbound hBnn
         · exact mul_le_mul_of_nonneg_right hshbound hEnn
         · exact mul_nonneg (Nat.cast_nonneg _) hEnn
-        · exact mul_nonneg hBnn (mul_nonneg hCsnn (Real.sqrt_nonneg _))
+        positivity
     _ = B * Cs * (C₀ * 2) * Real.sqrt M * N * energy F c N lam := by ring
 
 theorem smallCutoff_B3_comparison
@@ -333,7 +328,7 @@ theorem smallCutoff_B3_comparison
   refine ⟨C₁, hC₁, ?_⟩
   intro c Q M N K hM hN hK hK1 d
   have hCnn : 0 ≤ C₁ * Real.sqrt M * N :=
-    mul_nonneg (mul_nonneg hC₁ (Real.sqrt_nonneg M)) (by linarith)
+    by positivity
   rw [show B3 F c Q W M N K d = sSup ({0} ∪ {x : ℝ | ∃ (g : Q.G) (lam : Ideal (𝓞 F) → ℂ),
       energy F c N lam ≤ 1 ∧ x = ‖T3 F c Q W M N K d g lam‖}) from rfl]
   apply csSup_le
@@ -383,7 +378,7 @@ theorem smallCutoff_range_bridge
   have hRpos : 0 < Real.rpow (M * N) ε := Real.rpow_pos_of_pos hMNpos ε
   have hN2pos : 0 < N ^ (2:ℕ) := by positivity
   have hApos : 0 < (N ^ (2:ℕ) / M) * Real.rpow (M*N) ε :=
-    mul_pos (div_pos hN2pos hM0) hRpos
+    by positivity
   have hAle1 : (N ^ (2:ℕ) / M) * Real.rpow (M*N) ε ≤ 1 := le_trans hlower (le_of_lt hK1)
   constructor
   · exact hAle1
@@ -434,7 +429,7 @@ theorem smallCutoff_B3_bottom
     · exact ⟨0, Or.inl rfl⟩
     · intro x hx
       rcases hx with hx0 | ⟨g, lam, _, rfl⟩
-      · rw [Set.mem_singleton_iff] at hx0; rw [hx0]
+      · simp_all
       · have hT : T3 F c Q W M N K ⊥ g lam = 0 := by
           unfold T3
           apply Finset.sum_eq_zero
@@ -480,7 +475,7 @@ theorem smallCutoff_extend_bound
     have hz : Ideal.absNorm d ≠ 0 := Ideal.absNorm_eq_zero_iff.not.mpr hd
     have h1 : 1 ≤ Ideal.absNorm d := Nat.one_le_iff_ne_zero.mpr hz
     exact_mod_cast h1
-  have hMN0 : 0 ≤ M * N := by nlinarith [hM, hN]
+  have hMN0 : 0 ≤ M * N := by positivity
   have hMN : (1:ℝ) ≤ Real.rpow (M * N) ε := Real.one_le_rpow (by nlinarith [hM, hN]) hε.le
   have hNd4 : (1:ℝ) ≤ (Ideal.absNorm d : ℝ) ^ (4:ℕ) := by
     have := pow_le_pow_left₀ (by norm_num : (0:ℝ) ≤ 1) hNd 4
@@ -495,10 +490,9 @@ theorem smallCutoff_extend_bound
     have h2 : 0 ≤ N := by linarith
     have h3 : 0 ≤ Real.sqrt M * Real.rpow K (α - 1/2) :=
       mul_nonneg (Real.sqrt_nonneg M) (Real.rpow_nonneg hK.le _)
-    have h4 : 0 ≤ Real.sqrt (M/K) * N := mul_nonneg (Real.sqrt_nonneg _) h2
-    linarith
+    positivity
   have hAenv : 0 ≤ A * (Ideal.absNorm d : ℝ) ^ (4:ℕ) * Real.rpow (M * N) ε :=
-    mul_nonneg (mul_nonneg hA (by positivity)) (Real.rpow_nonneg hMN0 _)
+    by positivity
   calc B3 F c Q W M N K d
       ≤ B3 F c Q W M N 1 d + Cb * Real.sqrt M * N := hb1
     _ ≤ A * (Ideal.absNorm d : ℝ) ^ (4:ℕ) * Real.rpow (M * N) ε *
@@ -527,7 +521,3 @@ theorem smallCutoff_extend_bound
               smallCutoffEnvelope α M N K :=
           mul_le_mul_of_nonneg_right hCb_le hEnvKnn
         nlinarith [h2, hAenv, hEnvKnn]
-
-end DedekindZetaZeroFree.LargeSieve.Sieve
-
-end

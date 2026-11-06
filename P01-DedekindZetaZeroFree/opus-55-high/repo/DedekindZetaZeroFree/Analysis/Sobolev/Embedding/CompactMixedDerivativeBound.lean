@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Analysis.SmoothFunctions.CompactOpenHolomorph
 
 @[expose] public section
 
-noncomputable section
 
 namespace DedekindZetaZeroFree.KPLocalCubeSobolevJets
 
@@ -18,14 +17,14 @@ private theorem mixed_smooth {n : ℕ} (l : List (Fin n)) {f : Space n → ℂ}
   | cons i l ih =>
     exact (ih.fderiv_right (by simp)).clm_apply contDiff_const
 
-private theorem mixed_support {n : ℕ} (l : List (Fin n)) (f : Space n → ℂ) :
+theorem mixed_support {n : ℕ} (l : List (Fin n)) (f : Space n → ℂ) :
     tsupport (coordinateDerivativeList l f) ⊆ tsupport f := by
   induction l with
   | nil => exact Set.Subset.rfl
   | cons i l ih =>
     exact (tsupport_fderiv_apply_subset ℝ (EuclideanSpace.single i 1)).trans ih
 
-private theorem mixed_append {n : ℕ} (l k : List (Fin n)) (f : Space n → ℂ) :
+theorem mixed_append {n : ℕ} (l k : List (Fin n)) (f : Space n → ℂ) :
     coordinateDerivativeList (l ++ k) f =
       coordinateDerivativeList l (coordinateDerivativeList k f) := by
   induction l with
@@ -52,7 +51,7 @@ private theorem mixed_perm {n : ℕ} {l k : List (Fin n)} (hp : l.Perm k)
 private theorem directions_count {n k : ℕ} (α : MultiIndex n k) (i : Fin n) :
     α.directions.count i = (α.val i).val := by
   rw [MultiIndex.directions, List.count_flatMap, ← List.sum_toFinset _ (List.nodup_finRange n)]
-  simp [Function.comp_def, List.count_replicate]
+  simp [List.count_replicate]
 
 private theorem full_mixed_index {n m : ℕ} (hn : 0 < n) (α : MultiIndex n m)
     {w : Space n → ℂ} (hw : ContDiff ℝ (⊤ : ℕ∞) w) :
@@ -61,11 +60,10 @@ private theorem full_mixed_index {n m : ℕ} (hn : 0 < n) (α : MultiIndex n m)
         coordinateDerivative β w := by
   classical
   let β : MultiIndex n (m + n) := ⟨fun i => ⟨(α.val i).val + 1, by
-    have hi := (α.val i).isLt
     omega⟩, by
       simp only [Finset.sum_add_distrib, Finset.sum_const, Finset.card_univ,
         Fintype.card_fin, smul_eq_mul, mul_one]
-      exact Nat.add_le_add_right α.property n⟩
+      omega⟩
   refine ⟨β, ?_⟩
   rw [coordinateDerivative, ← mixed_append]
   apply mixed_perm _ hw
@@ -75,7 +73,7 @@ private theorem full_mixed_index {n m : ℕ} (hn : 0 < n) (α : MultiIndex n m)
   change 1 + (α.val i).val = (α.val i).val + 1
   omega
 
-private theorem compact_l1_l2 {n : ℕ} {K : Set (Space n)} (hK : IsCompact K)
+theorem compact_l1_l2 {n : ℕ} {K : Set (Space n)} (hK : IsCompact K)
     {g : Space n → ℂ} (hg : Continuous g) (hsub : tsupport g ⊆ K) :
     (∫ x, ‖g x‖) ≤ Real.sqrt (volume.real K) * Real.sqrt (∫ x, ‖g x‖ ^ 2) := by
   have hs : HasCompactSupport g := hK.of_isClosed_subset (isClosed_tsupport g) hsub
@@ -94,7 +92,7 @@ private theorem compact_l1_l2 {n : ℕ} {K : Set (Space n)} (hK : IsCompact K)
     (Filter.Eventually.of_forall (fun _ => norm_nonneg _))
     (memLp_const 1) ((hg.memLp_of_hasCompactSupport hs).norm.restrict K)
   rw [Real.sqrt_eq_rpow, Real.sqrt_eq_rpow]
-  simpa [Real.rpow_two, heq, heq2, integral_const, measureReal_def] using hh
+  simp_all
 
 theorem full_mixed_integral_le_sobolev {n : ℕ} (hn : 0 < n)
     (lower upper : Fin n → ℝ) (hbox : ∀ i, lower i < upper i) (m : ℕ) :
@@ -133,7 +131,7 @@ theorem full_mixed_integral_le_sobolev {n : ℕ} (hn : 0 < n)
     apply Finset.single_le_sum (f := fun γ : MultiIndex n (m + n) =>
       ∫ y, ‖coordinateDerivative γ w y‖ ^ 2) _ (Finset.mem_univ β)
     intro γ _
-    exact integral_nonneg (fun _ => sq_nonneg _)
+    positivity
   calc
     (∫ y, ‖coordinateDerivative β w y‖) ≤
         Real.sqrt (volume.real K) * Real.sqrt (∫ y, ‖coordinateDerivative β w y‖ ^ 2) :=
@@ -142,7 +140,3 @@ theorem full_mixed_integral_le_sobolev {n : ℕ} (hn : 0 < n)
         Real.sqrt (∑ γ : MultiIndex n (m + n), ∫ y, ‖coordinateDerivative γ w y‖ ^ 2) := by
       gcongr
       linarith
-
-end DedekindZetaZeroFree.KPLocalCubeSobolevJets
-
-end

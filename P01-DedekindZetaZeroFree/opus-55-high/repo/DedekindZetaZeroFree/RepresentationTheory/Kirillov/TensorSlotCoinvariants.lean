@@ -5,7 +5,6 @@ public import Mathlib.RepresentationTheory.Coinvariants
 
 @[expose] public section
 
-noncomputable section
 open scoped TensorProduct
 namespace DedekindZetaZeroFree.KPKirillovFiniteTensorProve
 
@@ -30,8 +29,7 @@ theorem slot_relationSpan_eq_top [DecidableEq I] (i : I) (ρ : Representation R 
     have hL (x : S i) : L x =
         PiTensorProduct.tprod R (Function.update f i x) ⊗ₜ[R] e := rfl
     have hcomm (g : G) (x : S i) : σ g (L x) = L (ρ g x) := by
-      rw [hL, hσ, hL]
-      simp only [Function.update_self, Function.update_idem]
+      simp_all
     have hle : Representation.Coinvariants.ker ρ ≤ Q.comap L := by
       apply Submodule.span_le.mpr
       rintro x ⟨⟨g, y⟩, rfl⟩
@@ -41,7 +39,7 @@ theorem slot_relationSpan_eq_top [DecidableEq I] (i : I) (ρ : Representation R 
     have hx : f i ∈ Representation.Coinvariants.ker ρ := by rw [hρ]; trivial
     have hm := hle hx
     change L (f i) ∈ Q at hm
-    simpa only [hL, Function.update_eq_self] using hm
+    simp_all
   apply eq_top_iff.mpr
   suffices hall : ∀ x, x ∈ Q from fun x _ => hall x
   intro x
@@ -76,7 +74,3 @@ theorem relationSpan_eq_top_of_surjective
   apply hle
   rw [hρ]
   trivial
-
-end DedekindZetaZeroFree.KPKirillovFiniteTensorProve
-
-end

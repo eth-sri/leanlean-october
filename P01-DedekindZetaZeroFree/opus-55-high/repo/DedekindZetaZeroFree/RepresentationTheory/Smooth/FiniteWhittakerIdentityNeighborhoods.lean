@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Theta.Unfolding.TraceNormalizedSourceData
 
 @[expose] public section
 
-noncomputable section
 set_option maxHeartbeats 2000000
 set_option backward.isDefEq.respectTransparency false
 open scoped NumberField Classical
@@ -69,8 +68,7 @@ theorem factorization_functional_ne_zero
   · exact factorization_bad_functional_ne_zero R D p hp
   · intro hz
     have hv := D.reference_value p hp
-    rw [hz] at hv
-    exact zero_ne_one hv
+    simp_all
 
 theorem factorization_finite_unit_vector
     {Q : AdmissibleFlatSources R} {T : Realization R Q}
@@ -95,7 +93,3 @@ theorem factorization_finite_unit_vector
   obtain ⟨V, hVo, hV1, hconst⟩ := finite_diagonal_constant_near_one R q.val
     (D.finiteData q.val) (D.ell (Sum.inr q.val)) v
   exact ⟨v, V, hv, hVo, hV1, fun u hu => (hconst u hu).trans hv⟩
-
-end DedekindZetaZeroFree.RootDerivatives
-
-end

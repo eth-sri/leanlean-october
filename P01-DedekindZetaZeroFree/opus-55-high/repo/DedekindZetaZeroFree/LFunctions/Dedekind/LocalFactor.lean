@@ -31,5 +31,3 @@ noncomputable def localFactor (q : ℕ) (s : ℂ) : ℂ :=
 lemma norm_inverseNormPower (q : ℕ) (hq : 0 < q) (s : ℂ) :
     ‖inverseNormPower q s‖ = (q : ℝ) ^ (-s.re) := by
   simp [inverseNormPower, Complex.norm_natCast_cpow_of_pos hq]
-
-end DedekindZetaZeroFree.Odlyzko

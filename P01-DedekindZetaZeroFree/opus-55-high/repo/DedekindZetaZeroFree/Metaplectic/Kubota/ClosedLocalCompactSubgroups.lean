@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Metaplectic.Kubota.AdelicCover.AdelicRestrict
 
 @[expose] public section
 
-noncomputable section
 
 namespace DedekindZetaZeroFree.ThetaForwardQuotientMeasurability.FullSplitProduct.RestrictedDensity
 
@@ -40,8 +39,4 @@ theorem isClosed_bot_localCover {F : Type} [Field F] [NumberField F]
         (KPLocalChartTopology.finite_topological_group F ζ hζ p _
           (KPAdelicCoverRestrictedProduct.depth_admissible F ζ hζ p)).1
       exact isClosed_singleton
-  simpa [Subgroup.coe_bot] using h1
-
-end DedekindZetaZeroFree.ThetaForwardQuotientMeasurability.FullSplitProduct.RestrictedDensity
-
-end
+  omega

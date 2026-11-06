@@ -51,7 +51,7 @@ namespace FrequencyPowerTails
 
 variable {α : Type*}
 
-private lemma shell_term_le (q : α → ℝ) (p K X : ℝ) (hp : 1 < p) (hX : 1 ≤ X)
+lemma shell_term_le (q : α → ℝ) (p K X : ℝ) (hp : 1 < p) (hX : 1 ≤ X)
     (hfin : ∀ Y : ℝ, {a | q a ≤ Y}.Finite)
     (hK : ∀ Y : ℝ, 1 ≤ Y → ((({a | q a ≤ Y} : Set α).ncard : ℕ) : ℝ) ≤ K * Y) (k : ℕ) (n : α → ℕ)
     (hn : ∀ a, X < q a → (2:ℝ)^(n a) * X ≤ q a ∧ q a < (2:ℝ)^(n a + 1) * X) :
@@ -110,7 +110,7 @@ private lemma shell_term_le (q : α → ℝ) (p K X : ℝ) (hp : 1 < p) (hX : 1 
   rw [← heq]
   exact mul_le_mul_of_nonneg_right hcard (by positivity)
 
-private lemma dyadic_index (q : α → ℝ) (X : ℝ) (hX : 0 < X) (a : α) (h : X < q a) :
+lemma dyadic_index (q : α → ℝ) (X : ℝ) (hX : 0 < X) (a : α) (h : X < q a) :
     (2:ℝ)^(Nat.log 2 ⌊q a / X⌋₊) * X ≤ q a ∧ q a < (2:ℝ)^(Nat.log 2 ⌊q a / X⌋₊ + 1) * X := by
   have h1 : 1 ≤ q a / X := by rw [le_div_iff₀ hX]; linarith
   have hm : ⌊q a / X⌋₊ ≠ 0 := (Nat.floor_pos.2 h1).ne'
@@ -139,8 +139,7 @@ theorem tail_tsum_enn_le (q : α → ℝ) (p K : ℝ) (hp : 1 < p)
   have hn : ∀ a, X < q a → (2:ℝ)^(n a) * X ≤ q a ∧ q a < (2:ℝ)^(n a + 1) * X :=
     fun a h => dyadic_index q X hX0 a h
   set f : α → ℝ≥0∞ := fun a => if X < q a then ENNReal.ofReal (q a ^ (-p)) else 0 with hf
-  have h1 : ∀ a, ∑' k : ℕ, (if n a = k then f a else 0) = f a := fun a =>
-    (tsum_eq_single (n a) (fun k hk => if_neg (Ne.symm hk))).trans (if_pos rfl)
+  have h1 : ∀ a, ∑' k : ℕ, (if n a = k then f a else 0) = f a := by simp
   set r : ℝ := (2:ℝ) ^ (1 - p) with hr
   have hr0 : 0 < r := by positivity
   have hr1 : r < 1 := Real.rpow_lt_one_of_one_lt_of_neg (by norm_num) (by linarith)
@@ -182,7 +181,7 @@ theorem tail_dominated (q : α → ℝ) (p K : ℝ) (hp : 1 < p)
           by_cases ha : a ∈ S
           · rw [Set.indicator_of_mem ha, if_pos (hS a ha), ← ENNReal.ofReal_mul hB]
             exact ENNReal.ofReal_le_ofReal (hw a ha).2
-          · rw [Set.indicator_of_notMem ha]; exact bot_le
+          simp_all
       _ = ENNReal.ofReal B * ∑' a, (if X < q a then ENNReal.ofReal (q a ^ (-p)) else 0) :=
           ENNReal.tsum_mul_left
       _ ≤ ENNReal.ofReal B * ENNReal.ofReal (C * X ^ (1 - p)) := by gcongr
@@ -199,6 +198,3 @@ theorem tail_dominated (q : α → ℝ) (p K : ℝ) (hp : 1 < p)
   rw [← h2] at hbound
   have := (ENNReal.ofReal_le_ofReal_iff (by positivity)).1 hbound
   linarith [this]
-
-end FrequencyPowerTails
-end DedekindZetaZeroFree.Quantitative

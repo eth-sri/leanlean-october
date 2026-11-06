@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Metaplectic.Torus.NormalizedResidueCharacterE
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.KPTameTransposeLiteral
 open scoped NumberField Classical
 open NumberField IsDedekindDomain MeasureTheory ValuativeRel
@@ -39,8 +38,7 @@ theorem transport_test (h : HL F ζ hζ q S P)
     rw [map_smul, hf.1 k hk]
   · intro g hg
     have hg' : g ∈ Function.support f.val := by
-      simpa only [Function.mem_support, Submodule.coe_smul, Pi.smul_apply,
-        smul_eq_mul] using (show f.val g ≠ 0 from fun hz => hg (by simp [hz]))
+      simp_all
     obtain ⟨b', k, hk, he⟩ := hf.2.1 hg'
     refine ⟨b' * b⁻¹, k, hk, ?_⟩
     rw [he]
@@ -51,7 +49,3 @@ theorem transport_test (h : HL F ζ hζ q S P)
   · change c⁻¹ * f.val (((b : ActualCover F ζ hζ q) * a) * _) = 1
     rw [mul_assoc, f.property.1 b, chi, hb, hc, hf.2.2]
     simp [hc0]
-
-end DedekindZetaZeroFree.KPTameTransposeLiteral
-
-end

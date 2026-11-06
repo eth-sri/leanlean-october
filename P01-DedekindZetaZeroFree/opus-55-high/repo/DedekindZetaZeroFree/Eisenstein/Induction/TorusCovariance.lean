@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Eisenstein.Induction.TorusEvaluation
 
 @[expose] public section
 
-noncomputable section
 open scoped Classical NumberField NNReal BigOperators
 open NumberField IsDedekindDomain
 set_option backward.isDefEq.respectTransparency false
@@ -115,9 +114,7 @@ variable (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
   obtain ⟨raw, tx, ax, dx, htx, hpx, hex⟩ := TorusNorms.raw_lifts F ζ hζ x
   have hmul q : (tx q*t q).val = KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q)
       ((raw*u) (Sum.inr q)) := by
-    change (tx q).val*(t q).val = _
-    rw [htx, ht, ← map_mul]
-    rfl
+    simp_all
   have hemul : scalarQuotient F ζ hζ (amalgamation F ζ hζ (raw*u)) = (x*e).val := by
     rw [map_mul, map_mul, hex, he]
     rfl
@@ -168,7 +165,3 @@ variable (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
           scalarQuotient F ζ hζ (amalgamation F ζ hζ g)) = _
       rw [← map_mul, ← map_mul, RawSource.quotientValue_raw]
       exact raw_torus F ζ hζ P C u g t a d (fun _ => 0) e ht hp he
-
-end DedekindZetaZeroFree.EisensteinReferenceSections.SourceTorusCovariance
-
-end

@@ -44,7 +44,7 @@ set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-private theorem smooth_finset {I : Type*} (s : Finset I) (u : I → Functions F ζ hζ)
+theorem smooth_finset {I : Type*} (s : Finset I) (u : I → Functions F ζ hζ)
     (hu : ∀ i ∈ s, Smooth F ζ hζ (u i)) : Smooth F ζ hζ (∑ i ∈ s, u i) := by
   induction s using Finset.induction_on with
   | empty =>

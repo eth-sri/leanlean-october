@@ -98,5 +98,3 @@ abbrev CoreGood.allIndexData {Q : QuadraticHeckeFamily F c}
 @[simp] theorem CoreGood.allIndexNormalizedFamilyData_bad
     {Q : QuadraticHeckeFamily F c} (hQ : CoreGood Q) (hc : c ≠ ⊥) :
     (hQ.allIndexNormalizedFamilyData hc).bad = c := rfl
-
-end DedekindZetaZeroFree.LargeSieve.Sieve

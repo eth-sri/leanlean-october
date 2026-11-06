@@ -82,7 +82,7 @@ private lemma compactifiedChart_uniform_jets (f : PrincipalSeries positiveParame
   have hsub : s ⊆ {p : ℝ × ℂ | p.2 ≠ 0} := by
     rintro ⟨t, z⟩ ⟨ht, hz⟩
     have hn : ‖z‖ = 1 := by simpa using hz
-    exact norm_ne_zero_iff.mp (by rw [hn]; norm_num)
+    exact norm_ne_zero_iff.mp (by positivity)
   have hc := ContinuousOn.continuousOn_iteratedFDeriv (compactifiedChart_smooth f) ho
     (show (n : WithTop ℕ∞) ≤ (⊤ : ℕ∞) by simp)
   obtain ⟨C, hC⟩ := (hs.bddAbove_image (hc.norm.mono hsub))
@@ -113,8 +113,8 @@ private lemma compactifiedChart_slice_jet_le (f : PrincipalSeries positiveParame
     intro w
     simp [L]
   have hb := (iteratedFDeriv ℝ n H (L z)).norm_compContinuousLinearMap_le (fun _ => L)
-  have hprod : (∏ _ : Fin n, ‖L‖) ≤ 1 := by
-    exact Finset.prod_le_one₀ (fun _ _ => norm_nonneg _) (fun _ _ => hn)
+  have hprod : (∏ _ : Fin n, ‖L‖) ≤ 1 := 
+    Finset.prod_le_one₀ (fun _ _ => norm_nonneg _) (fun _ _ => hn)
   have heH : iteratedFDeriv ℝ n H (L z) = iteratedFDeriv ℝ n (compactifiedChart f) (t, z) := by
     convert iteratedFDeriv_comp_add_left n (t, 0) (L z) using 1
     simp [L]
@@ -156,12 +156,11 @@ lemma norm_iteratedFDeriv_openCoordinate_le_of_one_le
   let z : ℂ := (‖x‖ : ℂ)⁻¹ * x
   have hz : ‖z‖ = 1 := by
     dsimp [z]
-    rw [norm_mul, norm_inv, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hR,
-      inv_mul_cancel₀ hR.ne']
-  have hz0 : z ≠ 0 := norm_ne_zero_iff.mp (by rw [hz]; norm_num)
+    simp_all
+  have hz0 : z ≠ 0 := norm_ne_zero_iff.mp (by positivity)
   have hmul : (‖x‖ : ℂ) * z = x := by
     dsimp [z]
-    rw [← mul_assoc, mul_inv_cancel₀ (by exact_mod_cast hR.ne'), one_mul]
+    simp_all
   have hb := hjets ‖x‖⁻¹ z ⟨inv_nonneg.mpr hR.le, inv_le_one_of_one_le₀ hx⟩ hz
   have hb' := (compactifiedChart_slice_jet_le f n ‖x‖⁻¹ z hz0).trans hb
   have he := openChart_scaled_jet_norm f n ‖x‖ hR z hz0
@@ -186,12 +185,12 @@ lemma norm_iteratedFDeriv_openCoordinate_le (f : PrincipalSeries positiveParamet
         C * (1 + ‖x‖ ^ 2) ^ (-(4 / 3 : ℝ) - (n : ℝ) / 2) := by
   obtain ⟨C, hC, hlarge⟩ := norm_iteratedFDeriv_openCoordinate_le_of_one_le f n
   let a : ℝ := (4 / 3 : ℝ) + (n : ℝ) / 2
-  have ha : 0 ≤ a := by dsimp [a]; positivity
+  have ha : 0 ≤ a := by positivity
   have hs := (isCompact_closedBall (0 : ℂ) 1).bddAbove_image
     ((f.property.2.1.continuous_iteratedFDeriv (m := n) (by simp)).norm.continuousOn)
   obtain ⟨M, hM⟩ := hs
   let D : ℝ := max (max M 0) C
-  have hD : 0 < D := lt_of_lt_of_le hC (le_max_right _ _)
+  have hD : 0 < D := by positivity
   refine ⟨D * (2 : ℝ) ^ a, mul_pos hD (Real.rpow_pos_of_pos (by norm_num) _), ?_⟩
   intro x
   have hb : 0 < 1 + ‖x‖ ^ 2 := by positivity
@@ -231,7 +230,3 @@ lemma norm_iteratedFDeriv_openCoordinate_le (f : PrincipalSeries positiveParamet
       _ ≤ D * ((2 : ℝ) ^ a * (1 + ‖x‖ ^ 2) ^ (-a)) :=
         mul_le_mul_of_nonneg_left hp hD.le
       _ = _ := by ring
-
-end
-
-end DedekindZetaZeroFree.KPCplxPrincipalSeriesCharts

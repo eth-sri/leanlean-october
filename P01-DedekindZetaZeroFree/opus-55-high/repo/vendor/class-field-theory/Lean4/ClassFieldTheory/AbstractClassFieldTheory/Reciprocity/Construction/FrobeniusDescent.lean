@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 namespace ClassFormation
 
 open CyclicCohomology
@@ -76,68 +72,6 @@ theorem extensionImageInInertiaQuotient_isClosed
       (N := D.extensionInertiaWithin K.field L hLK)
       (E : Set K.field.toSubgroup) hEopen)
 
-/-- A finite field fixed by both the relative inertia and one representative
-of a Frobenius lift is contained in the lift's Frobenius fixed field.  This
-is the closed-subgroup minimality argument used in finiteness of the Frobenius fixed field. -/
-theorem frobeniusFixedField_le_of_inertia_le_of_lift_mem
-    (D : DegreeData G) [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    (K : FiniteResidueAbstractField D) (L M : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    (hMK : M.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    [hMfinite : Finite
-      (K.field.toSubgroup ⧸ extensionSubgroup K.field M hMK)]
-    (σ : D.FrobeniusElements K L hLK)
-    (hI : D.extensionInertiaWithin K.field L hLK ≤
-      extensionSubgroup K.field M hMK)
-    (s : K.field.toSubgroup)
-    (hsM : s ∈ extensionSubgroup K.field M hMK)
-    (hsσ : (QuotientGroup.mk s :
-      K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK) = σ.1) :
-    (D.frobeniusFixedField K L hLK σ).toSubgroup ≤
-      M.toSubgroup := by
-  let H := D.extensionInertiaWithin K.field L hLK
-  let E := extensionSubgroup K.field M hMK
-  let Q := K.field.toSubgroup ⧸ H
-  let J : Subgroup Q := E.map (QuotientGroup.mk' H)
-  let : IsClosed (H : Set K.field.toSubgroup) :=
-    D.extensionInertiaWithin_isClosed K L hLK
-  have hEclosed : IsClosed (E : Set K.field.toSubgroup) := by
-    have hcarrier : (E : Set K.field.toSubgroup) =
-        ((fun x : K.field.toSubgroup => (x : G)) ⁻¹' (M : Set G)) := by
-      rfl
-    rw [hcarrier]
-    exact M.isClosed'.preimage continuous_subtype_val
-  let : E.FiniteIndex :=
-    @Subgroup.finiteIndex_of_finite_quotient K.field.toSubgroup _ E hMfinite
-  have hEopen : IsOpen (E : Set K.field.toSubgroup) :=
-    E.isOpen_of_isClosed_of_finiteIndex hEclosed
-  have hJclosed : IsClosed (J : Set Q) := by
-    change IsClosed ((QuotientGroup.mk' H) '' (E : Set K.field.toSubgroup))
-    exact J.isClosed_of_isOpen
-      (QuotientGroup.isOpenMap_coe (N := H)
-        (E : Set K.field.toSubgroup) hEopen)
-  have hσJ : σ.1 ∈ J := ⟨s, hsM, hsσ⟩
-  have hClosureJ :
-      (D.frobeniusClosure K L hLK σ).toSubgroup ≤ J := by
-    change (Subgroup.closure
-      (Set.range (fun _ : Unit => σ.1))).topologicalClosure ≤ J
-    apply Subgroup.topologicalClosure_minimal
-    · rw [Subgroup.closure_le]
-      rintro q ⟨u, rfl⟩
-      exact hσJ
-    · exact hJclosed
-  rintro g ⟨k, hkClosure, rfl⟩
-  have hkJ : (QuotientGroup.mk k : Q) ∈ J := hClosureJ hkClosure
-  rcases hkJ with ⟨e, heE, heq⟩
-  have hdiff : e⁻¹ * k ∈ H := QuotientGroup.eq.mp heq
-  have hdiffE : e⁻¹ * k ∈ E := hI hdiff
-  have hkE : k ∈ E := by
-    have hmul := E.mul_mem heE hdiffE
-    simpa [mul_assoc] using hmul
-  change (k : G) ∈ M
-  exact hkE
-
 /-- If a Frobenius lift restricts trivially to `L`, its fixed field contains
 `L` (equivalently `G_Σ ≤ G_L`). -/
 theorem frobeniusFixedField_le_of_restriction_eq_one
@@ -171,9 +105,7 @@ theorem frobeniusFixedField_le_of_restriction_eq_one
       (D.frobeniusClosure K L hLK σ).toSubgroup ≤ J := by
     change (Subgroup.closure (Set.range (fun _ : Unit => σ.1))).topologicalClosure ≤ J
     apply Subgroup.topologicalClosure_minimal
-    · rw [Subgroup.closure_le]
-      rintro q ⟨u, rfl⟩
-      exact hσJ
+    · simp_all
     · exact D.extensionImageInInertiaQuotient_isClosed K L hLK
   rintro g ⟨k, hkClosure, rfl⟩
   have hkJ : (QuotientGroup.mk k : Q) ∈ J := hClosureJ hkClosure
@@ -203,8 +135,8 @@ theorem extensionRestriction_normalizedDegree_joint_injective
   apply QuotientGroup.eq.mpr
   have hRestriction : QuotientGroup.mk a =
       (QuotientGroup.mk b :
-        K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK) := by
-    exact congrArg Prod.fst hab
+        K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK) := 
+    congrArg Prod.fst hab
   have hExtension : a⁻¹ * b ∈ extensionSubgroup K.field L hLK :=
     QuotientGroup.eq.mp hRestriction
   have hDegree : D.normalizedDegree K a =
@@ -212,8 +144,7 @@ theorem extensionRestriction_normalizedDegree_joint_injective
     congrArg Prod.snd hab
   refine ⟨hExtension, ?_⟩
   rw [← D.normalizedDegree_ker K]
-  change D.normalizedDegree K (a⁻¹ * b) = 1
-  rw [map_mul, map_inv, hDegree, inv_mul_cancel]
+  simp_all
 
 /--
 `frobeniusRestriction` satisfies the multiplication formula `D.frobeniusRestriction K L hLK (σ *
@@ -252,8 +183,3 @@ theorem frobenius_eq_of_restriction_eq_of_degree_eq
   apply D.extensionRestriction_normalizedDegree_joint_injective
     K L hLK
   exact Prod.ext hRestriction hDegree
-
-end DegreeData
-
-end
-end ClassFormation

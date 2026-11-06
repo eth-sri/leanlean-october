@@ -19,14 +19,14 @@ theorem quadratic_exp_growth_isBigO_double_exp (a b : ℝ) (hab : a < b)
         (fun s : ℂ => Real.exp (D * Real.exp (c * |s.im|))) := by
   obtain ⟨M, B, hM, hB, hg⟩ := hgrowth
   let c : ℝ := (Real.pi / (b - a)) / 2
-  have hc : 0 < c := by dsimp [c]; positivity
+  have hc : 0 < c := by positivity
   have hclt : c < Real.pi / (b - a) := by
     dsimp [c]
     linarith [div_pos Real.pi_pos (sub_pos.mpr hab)]
   let D : ℝ := (2 * B / c ^ 2) * Real.exp c
   have hpoly (t : ℝ) (ht : 0 ≤ t) :
       B * (1 + t) ^ 2 ≤ D * Real.exp (c * t) := by
-    have hct : 0 ≤ c * (1 + t) := mul_nonneg hc.le (by linarith)
+    have hct : 0 ≤ c * (1 + t) := by positivity
     have hquad := Real.quadratic_le_exp_of_nonneg hct
     have hsq : (1 + t) ^ 2 ≤ 2 * Real.exp (c * (1 + t)) / c ^ 2 := by
       apply (le_div_iff₀ (sq_pos_of_pos hc)).mpr
@@ -58,5 +58,3 @@ theorem norm_le_on_closed_strip_of_quadratic_exp_growth (a b C : ℝ)
   exact PhragmenLindelof.vertical_strip hhol
     (quadratic_exp_growth_isBigO_double_exp a b hab f hgrowth)
     hleft hright hs.1 hs.2
-
-end DedekindZetaZeroFree

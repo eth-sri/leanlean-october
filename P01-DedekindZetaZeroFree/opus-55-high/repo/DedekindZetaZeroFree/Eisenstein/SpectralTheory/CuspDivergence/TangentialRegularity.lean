@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.CuspDivergence.Radi
 
 @[expose] public section
 
-noncomputable section
 open MeasureTheory
 open scoped Classical Topology
 namespace DedekindZetaZeroFree.KPCompactGreen.ScalarFluxDisintegration.Slice
@@ -27,13 +26,11 @@ private theorem smooth_arch (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (arch d) := 
   · exact Complex.equivRealProdCLM.symm.contDiff.comp
       ((EuclideanSpace.proj (𝕜 := ℝ) (i, (0 : Fin 3))).contDiff.prodMk
        (EuclideanSpace.proj (𝕜 := ℝ) (i, (1 : Fin 3))).contDiff)
-  · exact (EuclideanSpace.proj (𝕜 := ℝ) (i, (2 : Fin 3))).contDiff
+  fun_prop
 private theorem smooth_mean (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (KPCuspLogShape.meanHeight d) := by
   unfold KPCuspLogShape.meanHeight
   apply ContDiff.div_const
-  apply ContDiff.sum
-  intro i hi
-  exact contDiff_snd.comp (contDiff_apply ℝ KPArch.H3 i)
+  fun_prop
 private theorem differential_smoothAt (d : ℕ) (g : Space d → ℂ) (x : Space d)
     (hg : ContDiffAt ℝ (⊤ : ℕ∞) g x) (i : Fin d) (k : Fin 3) :
     ContDiffAt ℝ (⊤ : ℕ∞) (fun q => differential d g q i k) x := by
@@ -135,9 +132,7 @@ theorem cutoff_tangentialDivergence_eq_zero_of_notMem_tsupport
   have hh : Continuous (fun q : Space d => KPCuspLogShape.meanHeight d (arch d q)) := by
     unfold KPCuspLogShape.meanHeight
     apply Continuous.div_const
-    apply continuous_finset_sum
-    intro i hi
-    exact (EuclideanSpace.proj (𝕜 := ℝ) (i, (2 : Fin 3))).continuous
+    fun_prop
   have he : (fun q : Space d => a (KPCuspLogShape.meanHeight d (arch d q)))
       =ᶠ[nhds x] (fun _ => 0) := by
     have hat := notMem_tsupport_iff_eventuallyEq.mp ht
@@ -154,7 +149,3 @@ theorem cutoff_tangentialDivergence_eq_zero_of_notMem_tsupport
     rw [(hw i k).fderiv_eq]
     simp
   simp [tangentialDivergence, hder, d, x]
-
-end DedekindZetaZeroFree.KPCompactGreen.ScalarFluxDisintegration.Slice
-
-end

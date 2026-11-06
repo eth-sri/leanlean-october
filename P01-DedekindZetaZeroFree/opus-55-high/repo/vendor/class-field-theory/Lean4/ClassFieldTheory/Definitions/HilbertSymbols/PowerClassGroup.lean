@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Multiplicative power-class groups
 -/
@@ -32,5 +28,3 @@ instance instCommGroupPowerClassGroup
     (K : Type u) [Field K] (n : ℕ+) : CommGroup (PowerClassGroup K n) := by
   unfold PowerClassGroup
   infer_instance
-
-end ClassFieldTheory

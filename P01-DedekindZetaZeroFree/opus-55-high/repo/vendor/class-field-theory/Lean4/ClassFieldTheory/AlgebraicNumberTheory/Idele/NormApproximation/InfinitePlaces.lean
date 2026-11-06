@@ -18,16 +18,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Archimedean norm approximation
 
@@ -73,8 +63,8 @@ theorem exists_infinitePositiveSubgroup_nthRoot
     let yr : ℝ :=
       ((eu x : ℝˣ) : ℝ) ^ ((n : ℝ)⁻¹)
     have hyrpow :
-        yr ^ n = ((eu x : ℝˣ) : ℝ) := by
-      exact Real.rpow_inv_natCast_pow hxpos.le hn.ne'
+        yr ^ n = ((eu x : ℝˣ) : ℝ) := 
+      Real.rpow_inv_natCast_pow hxpos.le hn.ne'
     have hyrne : yr ≠ 0 := by
       intro hyr
       rw [hyr, zero_pow hn.ne'] at hyrpow
@@ -278,6 +268,4 @@ theorem exists_principal_quotient_locallyNormEverywhere_of_splitsOutside
   · rw [
       chosenFinitePlaceLocalNormSubgroup_eq_top_of_splitsCompletely
         (K := K) (L := L) v (hsplit v hv)]
-    exact Subgroup.mem_top _
-
-end
+    simp

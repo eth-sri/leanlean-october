@@ -8,7 +8,7 @@ namespace DedekindZetaZeroFree.RayUnitary
 
 open scoped NumberField
 
-private theorem ray_character_map_pow
+theorem ray_character_map_pow
     (F : Type) [Field F] [NumberField F]
     (𝔪 : Ideal (𝓞 F)) (η : RayClassCharacter F 𝔪)
     (I : Ideal (𝓞 F)) (N : ℕ) :
@@ -57,5 +57,3 @@ theorem ray_character_norm_le_one
   · push Not at hbad
     obtain ⟨hI, hcop⟩ := hbad
     rw [ray_character_norm_eq_one F 𝔪 h𝔪 η I hI hcop]
-
-end DedekindZetaZeroFree.RayUnitary

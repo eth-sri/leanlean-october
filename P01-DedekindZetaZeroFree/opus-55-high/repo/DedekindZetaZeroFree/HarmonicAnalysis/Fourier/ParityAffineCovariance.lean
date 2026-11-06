@@ -20,13 +20,13 @@ def positiveScaling (q : InfinitePlace K → ℝ) (hq : ∀ v, 0 < q v) :
 
 theorem positiveScaling_apply (q : InfinitePlace K → ℝ)
     (hq : ∀ v, 0 < q v) (x : euclidean.mixedSpace K) :
-    positiveScaling K q hq x = Q K q x := by
-  exact (Q_eq_traceRadialScale K q (fun v ↦ ne_of_gt (hq v)) x).symm
+    positiveScaling K q hq x = Q K q x := 
+  (Q_eq_traceRadialScale K q (fun v ↦ ne_of_gt (hq v)) x).symm
 
 theorem positiveScaling_symm_apply (q : InfinitePlace K → ℝ)
     (hq : ∀ v, 0 < q v) (x : euclidean.mixedSpace K) :
-    (positiveScaling K q hq).symm x = Q K (fun v ↦ (q v)⁻¹) x := by
-  exact (Theta.traceRadialScale_symm_apply K q (fun v ↦ ne_of_gt (hq v)) x).trans
+    (positiveScaling K q hq).symm x = Q K (fun v ↦ (q v)⁻¹) x := 
+  (Theta.traceRadialScale_symm_apply K q (fun v ↦ ne_of_gt (hq v)) x).trans
     (Q_eq_traceRadialScale K (fun v ↦ (q v)⁻¹)
       (fun v ↦ inv_ne_zero (ne_of_gt (hq v))) x).symm
 
@@ -44,8 +44,8 @@ theorem det_positiveScaling (q : InfinitePlace K → ℝ)
     (fun v ↦ by simp [mult, v.2])).symm
 
 theorem J_pos (q : InfinitePlace K → ℝ) (hq : ∀ v, 0 < q v) :
-    0 < J K q := by
-  exact Finset.prod_pos (fun v _ ↦ pow_pos (hq v) _)
+    0 < J K q := 
+  Finset.prod_pos (fun v _ ↦ pow_pos (hq v) _)
 
 def shiftedSchwartz (δ : Finset (RayCoset.RealPlaces K))
     (q : InfinitePlace K → ℝ) (hq : ∀ v, 0 < q v)
@@ -83,7 +83,7 @@ theorem fourier_shiftedSchwartz (δ : Finset (RayCoset.RealPlaces K))
     abs_of_pos (J_pos K q hq)]
   have hf : (rayParitySchwartz K δ : euclidean.mixedSpace K → ℂ) = gδ K δ := by
     ext x
-    exact rayParitySchwartz_apply K δ x
+    simp
   rw [SchwartzMap.fourier_coe, hf, FourierMellin.fourier]
   ring
 
@@ -95,8 +95,4 @@ theorem gδ_zero (δ : Finset (RayCoset.RealPlaces K)) :
   · obtain ⟨v, hv⟩ := Finset.nonempty_iff_ne_empty.mpr hδ
     have hp : (∏ v ∈ δ, (Theta.traceRealCoordinateCLM K v 0 : ℂ)) = 0 :=
       Finset.prod_eq_zero hv (by simp)
-    simp [gδ, hp, hδ]
-
-end DedekindZetaZeroFree.AbelianQuotient.RayParity.AffineFourier
-
-end
+    simp [gδ, hδ]

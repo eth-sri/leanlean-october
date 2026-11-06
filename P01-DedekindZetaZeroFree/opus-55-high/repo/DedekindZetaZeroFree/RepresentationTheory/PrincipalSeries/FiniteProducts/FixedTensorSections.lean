@@ -62,7 +62,7 @@ variable (S : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F)))
     (PiTensorProduct.mapIncl (fun q => localFixedLevel F ζ hζ M S U q))).codRestrict
       (productFixedLevel F ζ hζ M S U) (fixedTensorEvaluation_mem F ζ hζ M S U)
 
-private theorem fixedTensorSection_sampling
+theorem fixedTensorSection_sampling
     (U : ∀ q : S, OpenSubgroup (Cover F ζ hζ S q)) :
     (compactCosetSampling F ζ hζ M S U).comp
       (fixedTensorSection F ζ hζ M S U) = tensorCosetSampling F ζ hζ M S U := by

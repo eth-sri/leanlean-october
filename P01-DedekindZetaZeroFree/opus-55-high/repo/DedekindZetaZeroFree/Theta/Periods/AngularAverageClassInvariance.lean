@@ -21,7 +21,7 @@ private theorem continuous_slice (F : Type) [Field F] [NumberField F]
   exact (continuousOn_mixedRadialTheta F I).comp_continuous
     (continuous_const.prodMk continuous_id) (fun _ ↦ ⟨ht, Set.mem_univ _⟩)
 
-private theorem periodic_slice (F : Type) [Field F] [NumberField F]
+theorem periodic_slice (F : Type) [Field F] [NumberField F]
     (I : (FractionalIdeal (𝓞 F)⁰ F)ˣ) (t : ℝ)
     (z : {v : InfinitePlace F // v ≠ Units.dirichletUnitTheorem.w₀} → ℤ)
     (u : Angular F) :
@@ -37,14 +37,13 @@ private theorem periodic_slice (F : Type) [Field F] [NumberField F]
       (angularLift F u + radialLift F ((Real.log t - Real.log (mixedThetaCovolume F I)) /
         (Module.finrank ℚ F : ℝ))) z
 
-private theorem principal_of_class (F : Type) [Field F] [NumberField F]
+theorem principal_of_class (F : Type) [Field F] [NumberField F]
     (I J : (FractionalIdeal (𝓞 F)⁰ F)ˣ)
     (hclass : ClassGroup.mk F I = ClassGroup.mk F J) :
     ∃ a : Fˣ, (J : FractionalIdeal (𝓞 F)⁰ F) =
       FractionalIdeal.spanSingleton (𝓞 F)⁰ (a : F) * (I : FractionalIdeal (𝓞 F)⁰ F) := by
   have hq := congrArg (ClassGroup.equiv F) hclass
-  simp only [ClassGroup.equiv_mk, FractionalIdeal.canonicalEquiv_self,
-    RingEquiv.toMulEquiv_eq_coe, RingEquiv.coe_monoidHom_refl] at hq
+  simp only [ClassGroup.equiv_mk, FractionalIdeal.canonicalEquiv_self] at hq
   have hq' : QuotientGroup.mk' (toPrincipalIdeal (𝓞 F) F).range I =
       QuotientGroup.mk' (toPrincipalIdeal (𝓞 F) F).range J := hq
   rw [QuotientGroup.mk'_eq_mk'] at hq'
@@ -75,5 +74,3 @@ theorem mixedNegAngularAverage_eq_mixedAngularAverage
   classical
   exact periodicCubeIntegral_negation (mixedRadialTheta F I t)
     (continuous_slice F I t ht) (periodic_slice F I t)
-
-end DedekindZetaZeroFree.Hecke

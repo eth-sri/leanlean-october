@@ -25,7 +25,3 @@ def exteriorQuotientEquiv (A : SArithmeticData F) (I : A.Exterior) :
     (x : 𝓞 F) :
     exteriorQuotientEquiv A I (Ideal.Quotient.mk I.val x) =
       Ideal.Quotient.mk (A.extendIdeal I) (algebraMap (𝓞 F) A.R x) := rfl
-
-end
-
-end DedekindZetaZeroFree.ArithGaussCRT

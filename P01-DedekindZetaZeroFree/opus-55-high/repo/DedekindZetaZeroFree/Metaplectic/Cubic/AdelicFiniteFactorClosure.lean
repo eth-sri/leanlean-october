@@ -7,7 +7,7 @@ public import DedekindZetaZeroFree.Adeles.Quotients.ArchimedeanFiniteProduct
 noncomputable section
 namespace DedekindZetaZeroFree.ActualFiniteFactor
 open NumberField IsDedekindDomain KPAdelicCoverRestrictedProduct
-open scoped NumberField Classical Topology
+open scoped Classical Topology
 attribute [local instance] KPAdelicCoverRestrictedProduct.localTopology
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
@@ -52,7 +52,7 @@ abbrev archInsertion := PGLComplex.AdelicSlicesRaw.archimedeanInsertion F ζ hζ
     filter_upwards [s.finite_toSet.compl_mem_cofinite] with i hi
     simp_all⟩
 
-private theorem truncation_tendsto (x : RestrictedCover F ζ hζ) :
+theorem truncation_tendsto (x : RestrictedCover F ζ hζ) :
     Filter.Tendsto (truncation F ζ hζ x) Filter.atTop (𝓝 x) := by
   let R := fun v : KPHilbert.Place F => KPLocalCover.CubicGL2Raw F ζ hζ v
   let B := compact F ζ hζ
@@ -77,7 +77,7 @@ private theorem truncation_tendsto (x : RestrictedCover F ζ hζ) :
     simp [tp, hs (Finset.mem_singleton_self i)]
   have heq : RestrictedProduct.inclusion R (fun i => (B i : Set (R i))) hS ∘ tp =
       truncation F ζ hζ x := rfl
-  have hx : RestrictedProduct.inclusion R (fun i => (B i : Set (R i))) hS xp = x := by ext; rfl
+  have hx : RestrictedProduct.inclusion R (fun i => (B i : Set (R i))) hS xp = x := by rfl
   change Filter.Tendsto (truncation F ζ hζ x) Filter.atTop (𝓝 x)
   have hfinal := (RestrictedProduct.continuous_inclusion hS).tendsto xp |>.comp ht
   change Filter.Tendsto (RestrictedProduct.inclusion R (fun i => (B i : Set (R i))) hS ∘ tp) Filter.atTop
@@ -106,8 +106,7 @@ private theorem truncation_tendsto (x : RestrictedCover F ζ hζ) :
   rintro _ ⟨x, rfl⟩
   refine ⟨localToRestricted F ζ hζ (Sum.inr q) x, ?_, rfl⟩
   intro w
-  simp [localToRestricted, RestrictedProduct.mulSingleMonoidHom,
-    RestrictedProduct.mulSingle_eq_of_ne]
+  rfl
 
  theorem tupleFactor_le_finiteSubgroup : tupleFactor F ζ hζ ≤ finiteSubgroup F ζ hζ := by
   rintro _ ⟨x, hx, rfl⟩
@@ -122,9 +121,8 @@ private theorem truncation_tendsto (x : RestrictedCover F ζ hζ) :
   change f (truncation F ζ hζ x s) ∈ _
   induction s using Finset.induction_on with
   | empty =>
-    have hz : truncation F ζ hζ x ∅ = 1 := by ext v; simp [truncation]
-    rw [hz, map_one]
-    exact Subgroup.one_mem _
+    have hz : truncation F ζ hζ x ∅ = 1 := by rfl
+    simp_all
   | @insert a s ha ih =>
     have hind : truncation F ζ hζ x (insert a s) =
         localToRestricted F ζ hζ a (x a) * truncation F ζ hζ x s := by
@@ -140,7 +138,7 @@ private theorem truncation_tendsto (x : RestrictedCover F ζ hζ) :
     | inl w =>
       change f (localToRestricted F ζ hζ (Sum.inl w) (x (Sum.inl w))) ∈ _
       rw [hx w, map_one, map_one]
-      exact Subgroup.one_mem _
+      simp
     | inr q =>
       apply le_iSup (fun q : HeightOneSpectrum (𝓞 F) => (localInsertion F ζ hζ (Sum.inr q)).range) q
       rw [localInsertion_range]
@@ -159,7 +157,3 @@ theorem archInsertion_commutes (a : ArchGroup F) (u : finiteSubgroup F ζ hζ) :
     ⟨u.val, by
       change u.val ∈ tupleFactor F ζ hζ
       rw [← finiteSubgroup_eq_tupleFactor]; exact u.property⟩
-
-end DedekindZetaZeroFree.ActualFiniteFactor
-
-end

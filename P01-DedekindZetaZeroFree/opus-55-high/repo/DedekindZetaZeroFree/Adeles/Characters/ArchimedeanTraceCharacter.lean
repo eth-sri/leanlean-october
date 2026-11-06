@@ -13,7 +13,7 @@ namespace DedekindZetaZeroFree
 open NumberField
 
 @[instance_reducible]
-noncomputable def archCompletionAlgebra {F : Type*} [Field F] [NumberField F]
+def archCompletionAlgebra {F : Type*} [Field F] [NumberField F]
     (v : InfinitePlace F) : Algebra ℝ v.Completion := by
   classical
   by_cases hv : v.IsReal
@@ -22,7 +22,7 @@ noncomputable def archCompletionAlgebra {F : Type*} [Field F] [NumberField F]
     exact (((InfinitePlace.Completion.ringEquivComplexOfIsComplex hw).symm.toRingHom).comp
       Complex.ofRealHom).toAlgebra
 
-noncomputable def archTrace {F : Type*} [Field F] [NumberField F]
+def archTrace {F : Type*} [Field F] [NumberField F]
     (v : InfinitePlace F) :
     letI : Algebra ℝ v.Completion := archCompletionAlgebra v
     v.Completion →ₗ[ℝ] ℝ := by
@@ -84,7 +84,7 @@ theorem continuous_archTrace {F : Type*} [Field F] [NumberField F]
     exact continuous_const.mul (Complex.continuous_re.comp
       (InfinitePlace.Completion.isometry_extensionEmbedding v).continuous)
 
-noncomputable def archTraceCharacter {F : Type*} [Field F] [NumberField F]
+def archTraceCharacter {F : Type*} [Field F] [NumberField F]
     (v : InfinitePlace F) : AddChar v.Completion Circle where
   toFun z := Circle.exp (2 * Real.pi * archTrace v z)
   map_zero_eq_one' := by simp
@@ -93,8 +93,8 @@ noncomputable def archTraceCharacter {F : Type*} [Field F] [NumberField F]
     rw [map_add, mul_add, Circle.exp_add]
 
 theorem continuous_archTraceCharacter {F : Type*} [Field F] [NumberField F]
-    (v : InfinitePlace F) : Continuous (archTraceCharacter v : v.Completion → Circle) := by
-  exact Circle.exp.continuous.comp (continuous_const.mul (continuous_archTrace v))
+    (v : InfinitePlace F) : Continuous (archTraceCharacter v : v.Completion → Circle) := 
+  Circle.exp.continuous.comp (continuous_const.mul (continuous_archTrace v))
 
 theorem archTrace_of_isReal {F : Type*} [Field F] [NumberField F]
     (v : InfinitePlace F) (hv : v.IsReal) (z : v.Completion) :
@@ -116,7 +116,3 @@ theorem archTraceCharacter_of_isComplex {F : Type*} [Field F] [NumberField F]
       (2 * Real.pi * (2 * (InfinitePlace.Completion.ringEquivComplexOfIsComplex hv z).re)) := by
   change Circle.exp (2 * Real.pi * archTrace v z) = _
   rw [archTrace_of_isComplex v hv]
-
-end DedekindZetaZeroFree
-
-end

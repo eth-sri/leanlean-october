@@ -1,3 +1,0 @@
-module
-public import DedekindZetaZeroFree.ZeroDetection.Smoothing.GammaVerticalMoments
-public import Mathlib.Analysis.Complex.RemovableSingularity

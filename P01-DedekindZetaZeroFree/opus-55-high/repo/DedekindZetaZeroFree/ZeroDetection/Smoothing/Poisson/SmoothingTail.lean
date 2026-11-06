@@ -22,10 +22,10 @@ def smoothedTail (F : Type) [Field F] [NumberField F] (U β γ : ℝ)
         (Real.exp (-(Ideal.absNorm n : ℝ) / U ^ DetectorDef.r) : ℂ)
     else 0
 
-private lemma r'_sub_r : DetectorDef.r' - DetectorDef.r = 1 / 200 := by
+lemma r'_sub_r : DetectorDef.r' - DetectorDef.r = 1 / 200 := by
   norm_num [DetectorDef.r, DetectorDef.r']
 
-private lemma exp_neg_mul_cube_le (t : ℝ) (ht : 0 ≤ t) :
+lemma exp_neg_mul_cube_le (t : ℝ) (ht : 0 ≤ t) :
     Real.exp (-t) * t ^ 3 ≤ 6 := by
   have hfac : t ^ 3 / 6 ≤ Real.exp t := by
     have := Real.pow_div_factorial_le_exp t ht 3
@@ -40,7 +40,7 @@ private lemma exp_neg_mul_cube_le (t : ℝ) (ht : 0 ≤ t) :
     _ = 6 * (Real.exp (-t) * Real.exp t) := by ring
     _ = 6 := by rw [hexpmul]; ring
 
-private lemma exp_half_mul_cube_le (N Y : ℝ) (hN : 0 ≤ N) (hY : 0 < Y) :
+lemma exp_half_mul_cube_le (N Y : ℝ) (hN : 0 ≤ N) (hY : 0 < Y) :
     Real.exp (-(N / (2 * Y))) * N ^ 3 ≤ 48 * Y ^ 3 := by
   obtain ⟨t, ht⟩ : ∃ t : ℝ, t = N / (2 * Y) := ⟨_, rfl⟩
   have hY2 : (2 * Y) ≠ 0 := (mul_pos two_pos hY).ne'

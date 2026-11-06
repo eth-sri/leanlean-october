@@ -10,7 +10,7 @@ namespace KubotaWeylBoundaryCells
 open KubotaRankTwo KubotaDefectSymbolAlgebra
 open scoped Classical
 
-private theorem x_w (K : Type*) [Field K] (g : GL2 K) :
+theorem x_w (K : Type*) [Field K] (g : GL2 K) :
     x K (g * w K) =
       if (g : Matrix (Fin 2) (Fin 2) K) 1 1 = 0 then
         -(g : Matrix (Fin 2) (Fin 2) K) 1 0 else
@@ -66,24 +66,24 @@ theorem defect_w_boundary
     simp [D, c, d, f, Matrix.mul_apply]
   have hrel : C * f - D * e = c * q := by
     rw [hC, hD]
-    simp only [q, det, Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two]
+    simp only [q, Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two]
     ring
   have hq : q ≠ 0 := (det K h).ne_zero
   have hr : (r : K) = if c = 0 then d else c := rfl
   have hx : (x0 : K) = if e = 0 then f else e := rfl
-  have hy : (y : K) = if f = 0 then -e else f := by
-    exact x_w K h
+  have hy : (y : K) = if f = 0 then -e else f := 
+    x_w K h
   have hz : (z : K) = if C = 0 then D else C := rfl
-  have ht : (t : K) = if D = 0 then -C else D := by
-    exact x_w K (g * h)
+  have ht : (t : K) = if D = 0 then -C else D := 
+    x_w K (g * h)
   have hfac : KubotaElementaryLastArgument.defect K M B g h (w K) =
-      B (t * x0 / (z * y)) (z * y / (r * det K h)) := by
-    exact factor K M B hL hR hAlt g h
+      B (t * x0 / (z * y)) (z * y / (r * det K h)) := 
+    factor K M B hL hR hAlt g h
   rw [hfac]
   by_cases hc : c = 0
   · have hd : d ≠ 0 := bottomRight_ne_zero K g hc
-    have hC' : C = d * e := by rw [hC, hc]; ring
-    have hD' : D = d * f := by rw [hD, hc]; ring
+    have hC' : C = d * e := by simp_all
+    have hD' : D = d * f := by simp_all
     have hslot : t * x0 / (z * y) = 1 := by
       apply Units.ext
       simp only [Units.val_div_eq_div_val, Units.val_mul, Units.val_one]
@@ -102,25 +102,20 @@ theorem defect_w_boundary
     have hCne : C ≠ 0 := by
       intro hzero
       have hh := hrel
-      rw [hzero, he] at hh
-      simp only [zero_mul, mul_zero, sub_zero] at hh
-      exact mul_ne_zero hc hq hh.symm
+      simp_all
     have hslot : z * y / (r * det K h) = 1 := by
       apply Units.ext
       simp only [Units.val_div_eq_div_val, Units.val_mul, Units.val_one]
       rw [hz, hy, hr, if_neg hCne, if_neg hf, if_neg hc]
       change C * f / (c * q) = 1
-      apply (div_eq_one_iff_eq (mul_ne_zero hc hq)).2
-      simpa [he] using hrel
+      simp_all
     rw [hslot]
     exact one_right K M B hR _
   by_cases hf : f = 0
   · have hDne : D ≠ 0 := by
       intro hzero
       have hh := hrel
-      rw [hzero, hf] at hh
-      simp only [zero_mul, mul_zero, sub_zero] at hh
-      exact mul_ne_zero hc hq hh.symm
+      simp_all
     have hslot : t * x0 / (z * y) = -(z * y / (r * det K h))⁻¹ := by
       apply Units.ext
       simp only [Units.val_div_eq_div_val, Units.val_mul, Units.val_neg, Units.val_inv_eq_inv_val]
@@ -169,6 +164,3 @@ theorem defect_w_boundary
       simpa [hDzero] using hrel
     rw [hslot]
     exact one_right K M B hR _
-
-end KubotaWeylBoundaryCells
-end DedekindZetaZeroFree

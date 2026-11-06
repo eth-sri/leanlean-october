@@ -121,7 +121,7 @@ theorem normalized_chiH_word (P : KPLocalStoneVonNeumann.Polarization S.heisenbe
   have hA1 : KPPGLLocalCover.A F ζ hζ (Sum.inr q) 1 = 1 := by
     change KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q)
       (KPStandardLocalRootLifts.A F ζ hζ (Sum.inr q) 1) = 1
-    rw [KPStandardLocalRootLifts.A_one, map_one]
+    simp
   have hv : KPLocalPrincipalSeries.localAbs (LocalField F q)
       (KPTameCompact.unitInclusion F q u) = 1 := by
     have hu : valuation (LocalField F q) (KPTameCompact.unitInclusion F q u : LocalField F q) = 1 :=
@@ -218,8 +218,7 @@ theorem unit_word_mem_HL
     exact ⟨KPTameCompact.unitInclusion F q u,
       (Subgroup.mem_sup_left ⟨u, rfl⟩), rfl⟩
   rw [← hP] at hu
-  obtain ⟨d, hd, he⟩ := hu
-  exact S.cubeClassEquiv.injective he ▸ hd
+  simp_all
 
 theorem literal_chi_ratio
     (P : KPLocalStoneVonNeumann.Polarization S.heisenberg)
@@ -245,7 +244,3 @@ theorem literal_chi_ratio
   rw [chi, chi, normalized_chiH_word F ζ hζ q S P hP hnorm _ em u hm,
     normalized_chiH_word F ζ hζ q S P hP hnorm _ ep u hp, map_div,
     Units.val_div_eq_div_val]
-
-end DedekindZetaZeroFree.ActualFiniteBorel.LowShellUnitCharts
-
-end

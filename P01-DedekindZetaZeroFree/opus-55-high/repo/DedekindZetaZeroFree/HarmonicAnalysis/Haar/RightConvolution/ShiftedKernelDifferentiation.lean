@@ -36,7 +36,7 @@ variable (F : Type) [Field F] [NumberField F]
  def inverseShiftMatrix (b : L F) (p : Mat F × Y F) : Mat F := fun w =>
   (b⁻¹ w).out.val * PGLComplex.affineAdjugate (p.2 w) * p.1 w
 
-private theorem inverseShiftMatrix_smooth (b : L F) :
+theorem inverseShiftMatrix_smooth (b : L F) :
     ContDiff ℝ (⊤ : ℕ∞) (inverseShiftMatrix F b) := by
   apply contDiff_pi.mpr
   intro w
@@ -51,7 +51,7 @@ private theorem inverseShiftMatrix_smooth (b : L F) :
   simp only [inverseShiftMatrix, Matrix.mul_apply, Fin.sum_univ_two]
   fun_prop (disch := exact hc _ _)
 
-private theorem inverseShiftMatrix_mem (b : L F) (M : Mat F)
+theorem inverseShiftMatrix_mem (b : L F) (M : Mat F)
     (hM : M ∈ matrixDomain F) (x : Y F) (hx : x ∈ affineDomain F) :
     inverseShiftMatrix F b (M,x) ∈ matrixDomain F := by
   intro w
@@ -59,7 +59,7 @@ private theorem inverseShiftMatrix_mem (b : L F) (M : Mat F)
   rw [Matrix.det_mul, Matrix.det_mul, PGLComplex.affineAdjugate_det]
   exact mul_ne_zero (mul_ne_zero (Matrix.GeneralLinearGroup.det_ne_zero _) (hx w)) (hM w)
 
-private theorem inverseShiftMatrix_class (b : L F) (M : Mat F)
+theorem inverseShiftMatrix_class (b : L F) (M : Mat F)
     (hM : M ∈ matrixDomain F) (x : Y F) (hx : x ∈ affineDomain F) :
     matrixClass F (inverseShiftMatrix F b (M,x)) =
       b⁻¹ * (affineEll F x)⁻¹ * matrixClass F M := by
@@ -82,7 +82,7 @@ private theorem inverseShiftMatrix_class (b : L F) (M : Mat F)
   rw [dite_eq_left (hA w)]
   exact PGLComplex.affineAdjugate_class (x w) (hx w)
 
-private theorem inverse_shift_matrix_jets
+theorem inverse_shift_matrix_jets
     (q : L F → ℝ) (hd : AffineSmooth F q) (b : L F) (n : ℕ) :
     ContinuousOn (fun p : Mat F × Y F => iteratedFDeriv ℝ n
       (fun x => q (b⁻¹ * (affineEll F x)⁻¹ * matrixClass F p.1)) p.2)
@@ -101,7 +101,7 @@ private theorem inverse_shift_matrix_jets
     rw [inverseShiftMatrix_class F b p.1 hp.1 p.2 hp.2]
   exact (joint_spatial_jets_on _ ((matrixDomain_open F).prod (affineDomain_open F)) _ hsm' n).continuousOn
 
-private theorem inverse_shift_jets (q : L F → ℝ) (hd : AffineSmooth F q)
+theorem inverse_shift_jets (q : L F → ℝ) (hd : AffineSmooth F q)
     (b : L F) (n : ℕ) :
     ContinuousOn (fun p : Y F × L F => iteratedFDeriv ℝ n
       (fun x => q (b⁻¹ * (affineEll F x)⁻¹ * p.2)) p.1)
@@ -129,7 +129,7 @@ private theorem inverse_shift_jets (q : L F → ℝ) (hd : AffineSmooth F q)
     rw [hu.2]
   exact (hc.congr_of_eventuallyEq hEq).continuousWithinAt
 
-private theorem inverse_shift_slice (q : L F → ℝ) (hd : AffineSmooth F q)
+theorem inverse_shift_slice (q : L F → ℝ) (hd : AffineSmooth F q)
     (b y : L F) :
     ContDiffOn ℝ (⊤ : ℕ∞) (fun x => q (b⁻¹ * (affineEll F x)⁻¹ * y)) (affineDomain F) := by
   let M : Mat F := fun w => (y w).out.val
@@ -143,7 +143,7 @@ private theorem inverse_shift_slice (q : L F → ℝ) (hd : AffineSmooth F q)
   change _ = q (matrixClass F (inverseShiftMatrix F b (M,x)))
   rw [inverseShiftMatrix_class F b M hM x hx, matrixClass_out F]
 
-private theorem weighted_inverse_shift_smooth
+theorem weighted_inverse_shift_smooth
     {K : Type*} [TopologicalSpace K] [CompactSpace K]
     [MeasurableSpace K] [BorelSpace K] (μ : Measure K) [IsFiniteMeasure μ]
     (q : L F → ℝ) (hd : AffineSmooth F q) (b : L F)

@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 namespace LocalClassFieldTheory
 open CyclicCohomology
 
@@ -30,7 +26,6 @@ of the local field turns the resulting formal recursion into an actual norm
 or coboundary in the initial subgroup.
 -/
 
-noncomputable section
 
 universe u
 
@@ -47,7 +42,7 @@ variable (K L : Type u) [Field K] [Field L] [Algebra K L]
   [IsIntegralClosure 𝒪[L] 𝒪[K] L] [Module.Finite 𝒪[K] 𝒪[L]]
 
 omit [UniformSpace L] [IsUniformAddGroup L] [IsNonarchimedeanLocalField L] in
-private theorem filteredCorrectionProduct_eq_chosenNormalBasisProduct
+theorem filteredCorrectionProduct_eq_chosenNormalBasisProduct
     (z : Nat → 𝒪[L]ˣ) (d : Nat) :
     filteredCorrectionProduct z d =
       chosenNormalBasisPrincipalUnitCorrectionProduct (L := L) z d := by
@@ -77,13 +72,13 @@ theorem exists_chosenNormalBasisPrincipalUnit_fixed_is_tateNorm :
   refine ⟨max cStep (max cProd (b + 1)), ?_⟩
   intro n hn a ha hfixed
   have hcStep : cStep ≤ n :=
-    le_trans (le_max_left cStep (max cProd (b + 1))) hn
+    by omega
   have hrest : max cProd (b + 1) ≤ max cStep (max cProd (b + 1)) :=
-    le_max_right cStep (max cProd (b + 1))
+    by simp
   have hcProd : cProd ≤ n :=
-    le_trans (le_trans (le_max_left cProd (b + 1)) hrest) hn
+    by omega
   have hbn : b + 1 ≤ n :=
-    le_trans (le_trans (le_max_right cProd (b + 1)) hrest) hn
+    by omega
   let P : Nat → 𝒪[L]ˣ → Prop := fun k x =>
     x ∈ chosenNormalBasisPrincipalUnitSet K L k
   let R : 𝒪[L]ˣ → Prop := fun x =>
@@ -96,7 +91,7 @@ theorem exists_chosenNormalBasisPrincipalUnit_fixed_is_tateNorm :
       Nonempty (FilteredLiftStep 𝒪[L]ˣ P R F n i s) := by
     intro i s
     have hlevel : cStep ≤ n + i :=
-      le_trans hcStep (Nat.le_add_right n i)
+      by omega
     rcases hStep (n + i) hlevel s.value (by simpa [P] using s.mem)
         (by simpa [R] using s.stable) with
       ⟨z, a', hz, ha', hfixed', heq⟩
@@ -109,13 +104,13 @@ theorem exists_chosenNormalBasisPrincipalUnit_fixed_is_tateNorm :
     chosenFilteredLiftStateSequence 𝒪[L]ˣ P R F n initial step
   let z : Nat → 𝒪[L]ˣ :=
     chosenFilteredLiftCorrectionSequence 𝒪[L]ˣ P R F n initial step
-  have hz (i : Nat) : z i ∈ chosenNormalBasisPrincipalUnitSet K L (n + i) := by
-    exact chosenFilteredLiftCorrectionSequence_mem
+  have hz (i : Nat) : z i ∈ chosenNormalBasisPrincipalUnitSet K L (n + i) := 
+    chosenFilteredLiftCorrectionSequence_mem
       𝒪[L]ˣ P R F n initial step i
   rcases hProd n hcProd z hz with ⟨x, hx, hxmem⟩
   have hstates (i : Nat) :
-      (states i).value ∈ chosenNormalBasisPrincipalUnitSet K L (n + i) := by
-    exact (states i).mem
+      (states i).value ∈ chosenNormalBasisPrincipalUnitSet K L (n + i) := 
+    (states i).mem
   have hrem : Tendsto
       (fun i : Nat => (((states i).value : 𝒪[L]ˣ) : 𝒪[L])) atTop
       (nhds (1 : 𝒪[L])) :=
@@ -174,13 +169,13 @@ theorem exists_chosenNormalBasisPrincipalUnit_normOne_is_sigmaMinusOne
   refine ⟨max cStep (max cProd (b + 1)), ?_⟩
   intro n hn a ha hnorma
   have hcStep : cStep ≤ n :=
-    le_trans (le_max_left cStep (max cProd (b + 1))) hn
+    by omega
   have hrest : max cProd (b + 1) ≤ max cStep (max cProd (b + 1)) :=
-    le_max_right cStep (max cProd (b + 1))
+    by simp
   have hcProd : cProd ≤ n :=
-    le_trans (le_trans (le_max_left cProd (b + 1)) hrest) hn
+    by omega
   have hbn : b + 1 ≤ n :=
-    le_trans (le_trans (le_max_right cProd (b + 1)) hrest) hn
+    by omega
   let P : Nat → 𝒪[L]ˣ → Prop := fun k x =>
     x ∈ chosenNormalBasisPrincipalUnitSet K L k
   let R : 𝒪[L]ˣ → Prop := fun x =>
@@ -193,7 +188,7 @@ theorem exists_chosenNormalBasisPrincipalUnit_normOne_is_sigmaMinusOne
       Nonempty (FilteredLiftStep 𝒪[L]ˣ P R F n i s) := by
     intro i s
     have hlevel : cStep ≤ n + i :=
-      le_trans hcStep (Nat.le_add_right n i)
+      by omega
     rcases hStep (n + i) hlevel s.value (by simpa [P] using s.mem)
         (by simpa [R] using s.stable) with
       ⟨z, a', hz, ha', hnorm', heq⟩
@@ -206,8 +201,8 @@ theorem exists_chosenNormalBasisPrincipalUnit_normOne_is_sigmaMinusOne
     chosenFilteredLiftStateSequence 𝒪[L]ˣ P R F n initial step
   let z : Nat → 𝒪[L]ˣ :=
     chosenFilteredLiftCorrectionSequence 𝒪[L]ˣ P R F n initial step
-  have hz (i : Nat) : z i ∈ chosenNormalBasisPrincipalUnitSet K L (n + i) := by
-    exact chosenFilteredLiftCorrectionSequence_mem
+  have hz (i : Nat) : z i ∈ chosenNormalBasisPrincipalUnitSet K L (n + i) := 
+    chosenFilteredLiftCorrectionSequence_mem
       𝒪[L]ˣ P R F n initial step i
   rcases hProd n hcProd z hz with ⟨x, hx, hxmem⟩
   have hstates (i : Nat) :
@@ -248,6 +243,3 @@ theorem exists_chosenNormalBasisPrincipalUnit_normOne_is_sigmaMinusOne
   refine ⟨x, hxmem, ?_⟩
   apply Units.ext
   simpa using heqO
-
-end
-end LocalClassFieldTheory

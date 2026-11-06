@@ -11,7 +11,7 @@ namespace DedekindZetaZeroFree.LargeSieve.Sieve
 
 open scoped NumberField Classical
 
-private lemma gram_sum_eq (F : Type) [Field F] [NumberField F]
+lemma gram_sum_eq (F : Type) [Field F] [NumberField F]
     {c : Ideal (𝓞 F)} (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
     (M : ℝ) (b d : Ideal (𝓞 F)) :
     (∑ a ∈ (DedekindZetaZeroFree.LargeSieve.boundedNormIdeals F ((5 / 2 : ℝ) * M)).filter (fun I => I ≠ ⊥),
@@ -50,7 +50,7 @@ theorem initial_conditional_sector
   set S : Finset (Ideal (𝓞 F)) := (paperShell F c N).filter (fun b => Q.cls b = g) with hS
   have hMpos : 0 < M := by linarith
   have hNpos : 0 < N := by linarith
-  have hDM : 0 ≤ D * M := mul_nonneg hD (by linarith)
+  have hDM : 0 ≤ D * M := by positivity
   have hrpow1 : 0 ≤ Real.rpow N (1 + ε) := Real.rpow_nonneg (by linarith) _
   have hHr : 0 ≤ H * Real.rpow N (1 + ε) := mul_nonneg hH hrpow1
   have hsub : paperShell F c M ⊆ R := by
@@ -106,7 +106,7 @@ theorem initial_conditional_sector
   have hScard : (S.card : ℝ) ≤ CF * (2 * N) :=
     hCF (2 * N) (by linarith) S hSsub
   have hT : 0 ≤ ∑ b ∈ S, ‖lam b‖ ^ 2 :=
-    Finset.sum_nonneg (fun b _ => sq_nonneg _)
+    by positivity
   have hcoeff : D * M + (H * Real.rpow N (1 + ε)) * (S.card : ℝ)
       ≤ max D (2 * CF * H) * (M + Real.rpow N (2 + ε)) := by
     have step1 : (H * Real.rpow N (1 + ε)) * (S.card : ℝ)
@@ -137,5 +137,3 @@ theorem initial_conditional_sector
         key
     _ ≤ (max D (2 * CF * H) * (M + Real.rpow N (2 + ε))) * ∑ b ∈ S, ‖lam b‖ ^ 2 :=
         mul_le_mul_of_nonneg_right hcoeff hT
-
-end DedekindZetaZeroFree.LargeSieve.Sieve

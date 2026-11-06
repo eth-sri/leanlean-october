@@ -22,7 +22,7 @@ theorem rayCharacter_eq_zero_of_mem_modulus_support
     (hp : p ∈ (narrowIdealModulus K m hm).finitePart.support) :
     χ p.asIdeal = 0 := by
   have hcount : Multiset.count p.asIdeal (normalizedFactors m) ≠ 0 := by
-    simpa only [narrowIdealModulus_finitePart] using Finsupp.mem_support_iff.mp hp
+    simp_all
   have hmp : m ≤ p.asIdeal :=
     ((Ideal.mem_normalizedFactors_iff hm).mp (Multiset.count_ne_zero.mp hcount)).2
   apply (χ.eq_zero_iff' p.asIdeal).mpr
@@ -83,5 +83,3 @@ theorem exists_rayCharacter_galoisRealization
           χ p.asIdeal = primeArtinValue ρ W := by
   obtain ⟨R⟩ := ClassFieldTheory.rayClassField_reciprocity K (narrowIdealModulus K m hm)
   exact ⟨R, rayCharacter_galoisRealization K m hm χ R⟩
-
-end DedekindZetaZeroFree.HeckeCorollary

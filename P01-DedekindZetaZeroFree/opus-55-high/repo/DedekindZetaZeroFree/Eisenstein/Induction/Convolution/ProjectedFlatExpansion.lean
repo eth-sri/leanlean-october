@@ -60,7 +60,7 @@ local instance (K : Subgroup (G F ζ hζ)) : BorelSpace K := ⟨rfl⟩
   map_one' := by simp
   map_mul' := by intros; simp only [map_mul, Subgroup.coe_mul, Units.val_mul]; ring
 
-private theorem sourceH_hN (r : (KPSpatialSmoothing.P0 F ζ hζ).H)
+theorem sourceH_hN (r : (KPSpatialSmoothing.P0 F ζ hζ).H)
     (x : KPAdeles F) (c : KPSpatialSmoothing.actualC F ζ hζ)
     (he : c.val = r.val.val * KPGlobalTorusFunctionData.N F ζ hζ x) :
     sourceH F ζ hζ c = (MulEquiv.subgroupCongr (target_subgroup_eq F ζ hζ)) r := by
@@ -76,7 +76,7 @@ private theorem sourceH_hN (r : (KPSpatialSmoothing.P0 F ζ hζ).H)
     (KPSpatialSmoothing.actualHCoordinate F ζ hζ c) = _
   rw [hh]
 
-private theorem reweight_covariant
+theorem reweight_covariant
     (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
     (v : Functions F ζ hζ)
     (hv : ∀ c : KPSpatialSmoothing.actualC F ζ hζ, ∀ g,
@@ -99,7 +99,7 @@ private theorem reweight_covariant
       (Complex.exp (s * alpha F ζ hζ K hK g) * v g)
   ring
 
-private theorem reweight_continuous
+theorem reweight_continuous
     (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
     (s : ℂ) (v : Functions F ζ hζ) (hv : Continuous v) :
     Continuous (reweight F ζ hζ K hK s v) := by
@@ -108,7 +108,7 @@ private theorem reweight_continuous
       (KPLiteralChamber.JointProfile.literal_log_modulus_continuous F ζ hζ K hK)
   exact ((continuous_const.mul ha).cexp).mul hv
 
-private theorem reweight_kfinite
+theorem reweight_kfinite
     (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
     (s : ℂ) (v : Functions F ζ hζ) (hv : KFinite F ζ hζ K v) :
     KFinite F ζ hζ K (reweight F ζ hζ K hK s v) := by
@@ -124,7 +124,7 @@ private theorem reweight_kfinite
     Complex.exp (s * alpha F ζ hζ K hK (g * k.val)) * w.val (g * k.val)
   rw [alpha_right_compact]
 
-private theorem normalized_source_span_properties
+theorem normalized_source_span_properties
     (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
     (μ : Measure K) [μ.IsHaarMeasure] [IsProbabilityMeasure μ]
     (f : Flat F ζ hζ K) (a : G F ζ hζ) (h : C(K, ℂ))
@@ -167,7 +167,7 @@ private theorem normalized_source_span_properties
     · intro c g; simp only [Pi.smul_apply, smul_eq_mul, hvcov]; ring
     · intro g j hj; simp only [Pi.smul_apply, hvJ g j hj]
 
-private theorem reweight_uniform_level
+theorem reweight_uniform_level
     (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
     (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
     (v : Functions F ζ hζ)
@@ -195,7 +195,7 @@ private theorem reweight_uniform_level
   unfold alpha
   rw [hU g ⟨j.val, hU'⟩]
 
-private theorem reweight_mem_flat
+theorem reweight_mem_flat
     (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
     (v : Functions F ζ hζ) (hv : Continuous v)
     (hc : ∀ c : KPSpatialSmoothing.actualC F ζ hζ, ∀ g,

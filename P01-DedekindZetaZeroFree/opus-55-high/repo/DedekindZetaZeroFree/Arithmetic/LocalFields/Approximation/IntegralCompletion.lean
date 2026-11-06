@@ -6,15 +6,13 @@ public import DedekindZetaZeroFree.Moments.Principal.EulerProducts.LocalSeriesDe
 
 open scoped NumberField Classical Valued WithZero
 open NumberField IsDedekindDomain
-noncomputable section
 namespace DedekindZetaZeroFree.LocalFiniteSumCompatibility
 variable {F : Type} [Field F] [NumberField F]
 
-private theorem valuation_algebraMap (p : HeightOneSpectrum (𝓞 F)) (b : F) :
+theorem valuation_algebraMap (p : HeightOneSpectrum (𝓞 F)) (b : F) :
     Valued.v (algebraMap F (p.adicCompletion F) b) = p.valuation F b := by
   rw [HeightOneSpectrum.algebraMap_adicCompletion]
-  simp only [Function.comp_apply, Algebra.algebraMap_self]
-  exact p.valuedAdicCompletion_eq_valuation' b
+  simp
 
 theorem completion_integer_approximation (p : HeightOneSpectrum (𝓞 F))
     (z : p.adicCompletionIntegers F) (n : ℕ) :
@@ -25,15 +23,14 @@ theorem completion_integer_approximation (p : HeightOneSpectrum (𝓞 F))
   have hr : Valued.v r = WithZero.exp (-(n : ℤ)) := by
     change Valued.v (algebraMap F (p.adicCompletion F) π ^ n) = _
     rw [map_pow, valuation_algebraMap, hπ]
-    simp [← WithZero.exp_nsmul, nsmul_eq_mul]
+    simp
   have hrz : r ≠ 0 := by
     intro h
     have h' := hr
     rw [h, map_zero] at h'
     exact WithZero.exp_ne_zero h'.symm
   have hbound : WithZero.exp (-(n : ℤ)) ≤ (1 : WithZero (Multiplicative ℤ)) := by
-    rw [← WithZero.exp_zero, WithZero.exp_le_exp]
-    omega
+    simp
   let U : Set (p.adicCompletion F) :=
     {y | (y - (z : p.adicCompletion F)) / r ∈
       (Valued.v : Valuation (p.adicCompletion F) (WithZero (Multiplicative ℤ))).valuationSubring}
@@ -65,6 +62,3 @@ theorem completion_integer_approximation (p : HeightOneSpectrum (𝓞 F))
       (algebraMap F (p.adicCompletion F) b - z) := by ring
   rw [he]
   exact (ValuationClass.map_add_le_max _ _ _).trans (max_le ha' hbz)
-end DedekindZetaZeroFree.LocalFiniteSumCompatibility
-
-end

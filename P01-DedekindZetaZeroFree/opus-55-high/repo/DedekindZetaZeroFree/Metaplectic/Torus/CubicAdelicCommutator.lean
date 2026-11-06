@@ -8,11 +8,9 @@ open scoped NumberField Classical BigOperators
 open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.RepresentationTheory.KPGlobalCubicIdelePairingRaw
 open KubotaRankTwo
-noncomputable section
-set_option autoImplicit false
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-private theorem diag_eval (v : KPHilbert.Place F) (a : Ideles F) :
+theorem diag_eval (v : KPHilbert.Place F) (a : Ideles F) :
     KPAdelicCoverRestrictedProduct.matrixEval F v (diagonalHom F a) =
       KubotaRankTwo.d (KPHilbert.Completion F v) (ideleEval F v a) 1 := by
   apply Matrix.GeneralLinearGroup.ext
@@ -24,9 +22,7 @@ private theorem diag_eval (v : KPHilbert.Place F) (a : Ideles F) :
 private theorem d_mul (K : Type*) [Field K] (a b : Kˣ) :
     KubotaRankTwo.d K a 1 * KubotaRankTwo.d K b 1 = KubotaRankTwo.d K (a*b) 1 := by
   apply Matrix.GeneralLinearGroup.ext
-  intro i j
-  fin_cases i <;> fin_cases j <;>
-    simp [Matrix.mul_apply, Fin.sum_univ_two]
+  simp
 
 private theorem local_sigma (v : KPHilbert.Place F) (a b : (KPHilbert.Completion F v)ˣ) :
     KPLocalCover.sigmaTwo F ζ hζ v
@@ -60,7 +56,7 @@ private theorem local_twist (v : KPHilbert.Place F)
     rw [(KPHilbert.B3_laws F ζ hζ v).2.2.1 b a]
     simp [pow_succ, mul_assoc, mul_left_comm, mul_comm]
 
-private theorem amalgamate_tuple (ε : KPAdelicCoverRestrictedProduct.CentralTuples F) :
+theorem amalgamate_tuple (ε : KPAdelicCoverRestrictedProduct.CentralTuples F) :
     KPAdelicCoverRestrictedProduct.amalgamation F ζ hζ
       (KPAdelicCoverRestrictedProduct.centralTupleMap F ζ hζ ε) =
     KPAdelicCoverRestrictedProduct.centralInjection F ζ hζ
@@ -98,8 +94,7 @@ private theorem amalgamate_tuple (ε : KPAdelicCoverRestrictedProduct.CentralTup
   rw [← map_div, ← map_div]
   apply (QuotientGroup.eq_one_iff _).mpr
   refine ⟨ε / δ, ?_, rfl⟩
-  change KPAdelicCoverRestrictedProduct.centralProduct F (ε / δ) = 1
-  simp [hδ]
+  simp_all
 
 private theorem restricted_twist (a b : Ideles F)
     (r s : KPAdelicCoverRestrictedProduct.RestrictedCover F ζ hζ)
@@ -118,9 +113,7 @@ private theorem restricted_twist (a b : Ideles F)
     ⟨fun v => f v ^ 4, by
       have h := (hf.compl_mem_cofinite)
       filter_upwards [h] with v hv
-      change f v ^ 4 = 1
-      have hv' : f v = 1 := by simpa [Function.mulSupport] using hv
-      simp [hv']⟩
+      simp_all⟩
   have he : KPAdelicCoverRestrictedProduct.centralProduct F ε =
       beta3 F ζ hζ (QuotientGroup.mk' _ a) (QuotientGroup.mk' _ b) ^ 4 := by
     change (∏ᶠ v, f v ^ 4) = (∏ᶠ v, f v) ^ 4
@@ -135,7 +128,7 @@ private theorem restricted_twist (a b : Ideles F)
         ← KPAdelicCoverRestrictedProduct.restrictedProjection_eval, hs, diag_eval]
   rw [← map_mul, ht, map_mul, amalgamate_tuple, he, map_mul]
 
-private theorem central_twist {G : Type*} [Group G] (c d z u v : G)
+theorem central_twist {G : Type*} [Group G] (c d z u v : G)
     (hc : c ∈ Subgroup.center G) (hd : d ∈ Subgroup.center G)
     (hz : z ∈ Subgroup.center G) (h : u * v = z * (v * u)) :
     (c * u) * (d * v) = z * ((d * v) * (c * u)) := by
@@ -174,11 +167,9 @@ private theorem pgl_twist (a b : Ideles F)
     change QuotientGroup.mk' _ (KPAdelicCoverRestrictedProduct.restrictedProjection F ζ hζ s) = _
     rw [hs]; rfl
   have hcu : x / u ∈ (KPAdelicCoverRestrictedProduct.pglProjection F ζ hζ).ker := by
-    change KPAdelicCoverRestrictedProduct.pglProjection F ζ hζ (x/u) = 1
-    rw [map_div, hx, hu, div_self']
+    simp_all
   have hdv : y / v ∈ (KPAdelicCoverRestrictedProduct.pglProjection F ζ hζ).ker := by
-    change KPAdelicCoverRestrictedProduct.pglProjection F ζ hζ (y/v) = 1
-    rw [map_div, hy, hv, div_self']
+    simp_all
   have hc := KPAdelicCoverRestrictedProduct.pglCentralInjection_central F ζ hζ
     ((KPAdelicCoverRestrictedProduct.pglCentralInjection_kernel F ζ hζ).symm ▸ hcu)
   have hd := KPAdelicCoverRestrictedProduct.pglCentralInjection_central F ζ hζ
@@ -204,6 +195,4 @@ theorem cover_torus_commutator (x y : E F ζ hζ) :
     simp only [mul_assoc, mul_inv_cancel, mul_one]
     rfl
   · change x.val.2 * y.val.2 * x.val.2⁻¹ * y.val.2⁻¹ = 1
-    simp [mul_assoc, mul_left_comm, mul_comm]
-end
-end DedekindZetaZeroFree.RepresentationTheory.KPGlobalCubicIdelePairingRaw
+    simp

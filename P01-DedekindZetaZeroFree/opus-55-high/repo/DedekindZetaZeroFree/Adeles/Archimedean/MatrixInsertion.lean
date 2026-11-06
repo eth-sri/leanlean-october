@@ -28,7 +28,7 @@ def archMatrixInsertion : (InfinitePlace F → ComplexGL2) →* G F ζ hζ where
       cases v with
       | inl w => exact (complexSectionHom F ζ hζ w).map_one
       | inr q => rfl
-    rw [he, map_one, map_one]
+    simp_all
   map_mul' a b := by
     have he : sectionTuple F ζ hζ (a * b) = sectionTuple F ζ hζ a * sectionTuple F ζ hζ b := by
       apply RestrictedProduct.ext
@@ -67,10 +67,7 @@ theorem archMatrixInsertion_commutes_finite (a : InfinitePlace F → ComplexGL2)
     intro v
     cases v with
     | inl w =>
-      have hw : r (Sum.inl w) = 1 :=
-        (Subgroup.mem_iInf.mp hr w)
-      change _ * r (Sum.inl w) = r (Sum.inl w) * _
-      rw [hw, mul_one, one_mul]
+      simp_all
     | inr q => change 1 * r (Sum.inr q) = r (Sum.inr q) * 1; simp
   exact he ▸ hcomm.map ((scalarQuotient F ζ hζ).comp (amalgamation F ζ hζ))
 
@@ -107,7 +104,7 @@ theorem archMatrixInsertion_upper (u : InfinitePlace F → ℂ) :
       upperUnipotent]
   | inr q =>
     change 1 = KPStandardLocalRootLifts.N F ζ hζ (Sum.inr q) 0
-    exact (KPStandardLocalRootLifts.N_zero F ζ hζ (Sum.inr q)).symm
+    simp
 
 theorem archMatrixInsertion_projective_congr
     (a b : InfinitePlace F → ComplexGL2)
@@ -135,8 +132,7 @@ theorem archMatrixInsertion_diagonal (z : InfinitePlace F → ℂˣ) :
     change KPLocalCover.CubicGL2Raw.mk _ 1 = KPLocalCover.CubicGL2Raw.mk _ 1
     congr 1
     apply Matrix.GeneralLinearGroup.ext
-    intro i j
-    fin_cases i <;> fin_cases j <;> simp [Matrix.GeneralLinearGroup.map]
+    simp
 
 private theorem upper_projective (a d : ℂˣ) (b : ℂ) :
     Matrix.ProjGenLinGroup.mk (KPCplxPrincipalSeriesCharts.upperTriangular a d b) =
@@ -179,8 +175,7 @@ theorem archMatrixInsertion_compact_single (w : InfinitePlace F) (k : ComplexSU2
       rw [Function.update_of_ne hj]
       simp [localToRestricted, RestrictedProduct.coe_mulSingle_apply, hj]
   | inr q =>
-    change (1 : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr q)) = _
-    simp [localToRestricted, RestrictedProduct.coe_mulSingle_apply]
+    rfl
 
 end DedekindZetaZeroFree.KPLiteralScalarHCCompactAction
 
@@ -230,7 +225,3 @@ theorem inserted_factorization
     ← (archMatrixInsertion_commutes_finite F ζ hζ (fun w => upperUnipotent (u w / a w)) c).eq,
     mul_assoc, ← mul_assoc, archMatrixInsertion_diagonal, archMatrixInsertion_upper]
   exact (mul_assoc _ _ _).symm
-
-end DedekindZetaZeroFree.SheetRescaling.ArchMatrixGeometry
-
-end

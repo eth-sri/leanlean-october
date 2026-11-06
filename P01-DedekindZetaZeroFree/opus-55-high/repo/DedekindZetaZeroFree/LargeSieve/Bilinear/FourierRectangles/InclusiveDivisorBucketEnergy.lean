@@ -4,14 +4,13 @@ public import DedekindZetaZeroFree.LargeSieve.Bilinear.FourierRectangles.Divisor
 
 @[expose] public section
 
-noncomputable section
 open scoped NumberField Classical BigOperators
 namespace DedekindZetaZeroFree.LargeSieve.Bilinear.FiniteFourierRectangles
 open ExplicitTerms
 variable {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
 variable {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
 
-private lemma weighted_energy_bound (C : Context Q) (hN : 1 ≤ C.N) :
+lemma weighted_energy_bound (C : Context Q) (hN : 1 ≤ C.N) :
     weightedEnergy C ≤ (norm C.d / C.N) * Sieve.energy F c C.N C.lam := by
   unfold weightedEnergy weightedColumn
   classical
@@ -19,7 +18,7 @@ private lemma weighted_energy_bound (C : Context Q) (hN : 1 ≤ C.N) :
   have hdpos : 0 < norm C.d := by
     have hd : Ideal.absNorm C.d ≠ 0 := fun h => C.hd0 (Ideal.absNorm_eq_zero_iff.mp h)
     unfold ExplicitTerms.norm
-    exact_mod_cast Nat.pos_of_ne_zero hd
+    positivity
   rw [Sieve.energy, Finset.mul_sum]
   apply Finset.sum_le_sum_of_injOn (fun u => C.d * u)
   · intro u hu v hv h
@@ -47,10 +46,9 @@ private lemma weighted_energy_bound (C : Context Q) (hN : 1 ≤ C.N) :
           (1 / norm u) * ‖C.lam (C.d * u)‖ ^ 2 := by ring
       _ ≤ (norm C.d / C.N) * ‖C.lam (C.d * u)‖ ^ 2 :=
         mul_le_mul_of_nonneg_right hinv (sq_nonneg _)
-  · intro b hb hbnot
-    exact mul_nonneg (div_nonneg hdpos.le hNpos.le) (sq_nonneg _)
+  simp_all
 
-private lemma bucket_exists (T : ℝ) (f : Ideal (𝓞 F))
+lemma bucket_exists (T : ℝ) (f : Ideal (𝓞 F))
     (hf0 : f ≠ ⊥) (hf : norm f ≤ T) :
     ∃ j ∈ Finset.range (Vendor.dyadicLength T + 1),
       f ∈ divisorBucket F T j := by
@@ -72,14 +70,13 @@ private lemma bucket_exists (T : ℝ) (f : Ideal (𝓞 F))
     rcases hj0 : j with _ | k
     · simpa using hfn
     · have hh := Nat.find_min hcover (show k < j from by omega)
-      change ¬ norm f < (2 : ℝ) ^ (k + 1) at hh
-      exact le_of_not_gt hh
+      simp_all
   refine ⟨j, Finset.mem_range.mpr (by omega), ?_⟩
   apply Finset.mem_filter.mpr
   refine ⟨mem_boundedNormIdeals.mpr hf, hf0, hl, ?_⟩
   simpa [divisorScale, pow_succ, mul_comm] using hj
 
-private lemma bucket_unique (T : ℝ) (f : Ideal (𝓞 F)) (i j : ℕ)
+lemma bucket_unique (T : ℝ) (f : Ideal (𝓞 F)) (i j : ℕ)
     (hi : f ∈ divisorBucket F T i) (hj : f ∈ divisorBucket F T j) : i = j := by
   have hi := (Finset.mem_filter.mp hi).2
   have hj := (Finset.mem_filter.mp hj).2
@@ -95,7 +92,7 @@ private lemma bucket_unique (T : ℝ) (f : Ideal (𝓞 F)) (i j : ℕ)
   · have hs := step h
     linarith [hj.2.2, hi.2.1]
 
-private lemma quotient_prefix (C : Context Q) (u : Ideal (𝓞 F)) (hu : u ∈ C.columns)
+lemma quotient_prefix (C : Context Q) (u : Ideal (𝓞 F)) (hu : u ∈ C.columns)
     (j : ℕ) (f : Ideal (𝓞 F)) (hf : f ∈ idealDivisors u)
     (hb : f ∈ divisorBucket F (2 * C.N / norm C.d) j) :
     ∃ v : Ideal (𝓞 F), v ≠ ⊥ ∧ u = f * v ∧
@@ -104,7 +101,7 @@ private lemma quotient_prefix (C : Context Q) (u : Ideal (𝓞 F)) (hu : u ∈ C
   obtain ⟨hsf, hcop, hunorm⟩ := (Sieve.mem_idealAdmissibleFinset _ _ _ _).mp
     (Finset.mem_filter.mp hu).1
   obtain ⟨v, hv⟩ := (mem_idealDivisors hsf.ne_zero).mp hf
-  have hvdiv : v ∣ u := by rw [hv]; exact dvd_mul_left _ _
+  have hvdiv : v ∣ u := by simp_all
   have hv0 : v ≠ ⊥ := (hsf.squarefree_of_dvd hvdiv).ne_zero
   have hdpos : 0 < norm C.d := by
     dsimp [ExplicitTerms.norm]
@@ -130,7 +127,7 @@ private lemma quotient_prefix (C : Context Q) (u : Ideal (𝓞 F)) (hu : u ∈ C
   · change norm v ≤ _
     convert hvnorm using 1 <;> ring
 
-private lemma reflected_unit (C : Context Q) (hK : 1 ≤ C.K) :
+lemma reflected_unit (C : Context Q) (hK : 1 ≤ C.K) :
     C.reflectedRows 1 true = squarefreeBadPool c := by
   have hunit : ReflectedSigma4.unitRows c c C.K = {⊤} := by
     have hk : Sieve.squarefreeKernel (⊤ : Ideal (𝓞 F)) = ⊤ :=
@@ -139,20 +136,15 @@ private lemma reflected_unit (C : Context Q) (hK : 1 ≤ C.K) :
       unfold sc primeToSquarefreeKernel
       rw [hk, ← Ideal.one_eq_top, UniqueFactorizationMonoid.normalizedFactors_one]
       simp
-    simp [ReflectedSigma4.unitRows, hsc, hK,
-      show Squarefree (⊤ : Ideal (𝓞 F)) from by simpa only [← Ideal.one_eq_top] using squarefree_one]
+    simp [ReflectedSigma4.unitRows, hsc, hK]
   have hsf : ∀ a ∈ squarefreeBadPool c, a ≠ ⊥ ∧ Squarefree a := by
     intro a ha
     exact ((mem_squarefreeBadPool C.D.original_ne_bot).mp ha).imp_right (fun h => h.1)
   ext a
-  simp only [Context.reflectedRows, Context.reflectedRowIndices, Context.reflectedCoreRows,
-    Bool.true_eq, ↓reduceIte, hunit, Finset.mem_image, Finset.mem_filter, Finset.mem_product,
-    Finset.mem_singleton]
+  simp only [Context.reflectedRows, Context.reflectedRowIndices, Context.reflectedCoreRows, ↓reduceIte, hunit, Finset.mem_image, Finset.mem_filter, Finset.mem_product, Finset.mem_singleton]
   constructor
   · rintro ⟨⟨t,r⟩, ⟨⟨ht, hr⟩, hrest⟩, he⟩
-    dsimp at hr he
-    subst r
-    simpa only [Ideal.mul_top] using he ▸ (show t * ⊤ ∈ squarefreeBadPool c by simpa using ht)
+    simp_all
   · intro ha
     obtain ⟨ha0, hasf⟩ := hsf a ha
     refine ⟨(a, ⊤), ⟨⟨ha, rfl⟩, ?_⟩, ?_⟩ <;> simp [hasf, ha0]
@@ -192,7 +184,3 @@ theorem inclusive_divisor_endpoint_energy (C : Context Q)
       (le_div_iff₀ hdpos).mpr (by simpa using hnN)
     have hcut' : 1 ≤ 2 * C.N / (Ideal.absNorm C.d : ℝ) := hcut
     simp [divisorBucket, divisorScale, mem_boundedNormIdeals, ExplicitTerms.norm, hcut']
-
-end DedekindZetaZeroFree.LargeSieve.Bilinear.FiniteFourierRectangles
-
-end

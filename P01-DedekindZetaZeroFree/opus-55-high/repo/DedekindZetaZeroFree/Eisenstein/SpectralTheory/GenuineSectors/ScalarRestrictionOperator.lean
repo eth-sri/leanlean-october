@@ -150,7 +150,7 @@ theorem scalar_memLp (a : ActualChart (U := U) (H := H))
       (Filter.Eventually.of_forall hpt)
   rwa [hmap] at h
 
-private theorem scalarToLp_norm_sq {X : Type*} [MeasurableSpace X] (μ : Measure X)
+theorem scalarToLp_norm_sq {X : Type*} [MeasurableSpace X] (μ : Measure X)
     (f : X → ℂ) (hf : MemLp f 2 μ) :
     ‖hf.toLp f‖^2 = (∫⁻ x, ENNReal.ofReal (‖f x‖^2) ∂μ).toReal := by
   rw [Lp.norm_toLp, ← ENNReal.toReal_pow]
@@ -163,7 +163,7 @@ private theorem scalarToLp_norm_sq {X : Type*} [MeasurableSpace X] (μ : Measure
   intro x
   rw [ENNReal.ofReal_pow (norm_nonneg _), ofReal_norm, enorm_eq_nnnorm]
 
-private theorem scalarPull (a : ActualChart (U := U) (H := H))
+theorem scalarPull (a : ActualChart (U := U) (H := H))
     (s : BorelL2Sections F ζ hζ U R P H) (y : a.domain) :
     scalar s a (fromActual (ζ := ζ) (hζ := hζ) y.val) = (s.val a.component).val y.val := by
   have he : ∀ z : KPCuspGenuineMonodromy.SymmetricSpace F,
@@ -179,7 +179,7 @@ private theorem scalarPull (a : ActualChart (U := U) (H := H))
     sectionFields, KPContCotangentActualGenuineTwistIsotropy.isotropyChart,
     LiftedChart.coefficient, ChartKind.representative, hy, he]
 
-private theorem scalarPull_norm (a : ActualChart (U := U) (H := H))
+theorem scalarPull_norm (a : ActualChart (U := U) (H := H))
     (s : BorelL2Sections F ζ hζ U R P H) (y : a.domain) :
     ENNReal.ofReal (‖scalar s a (fromActual (ζ := ζ) (hζ := hζ) y.val)‖^2) =
       squaredNorm F ζ hζ U R P H s.val (a.toBase y) := by

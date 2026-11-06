@@ -30,7 +30,7 @@ def rowCharacter (A : SArithmeticData F) (σ : F →+* ℂ) (a : A.R) :
     exact {
       toFun := fun x => A.sexticResiduePowerChar σ I 1 (e x)
       map_one' := by simp
-      map_mul' := by intros; simp
+      map_mul' := by simp
       map_nonunit' := by
         intro x hx
         exact MulChar.map_nonunit _ (fun h => hx (by simpa using h.map e.symm.toMonoidHom)) }
@@ -70,9 +70,7 @@ theorem rowCharacter_sixth (A : SArithmeticData F) (σ : F →+* ℂ)
   unfold SArithmeticData.sexticResiduePowerChar
   rw [MulChar.pow_apply_coe, MulChar.ofUnitHom_coe]
   have h6 := congrArg (Units.map σ.toMonoidHom) (A.sexticResidueFamily_normalized.1 I v)
-  simp only [map_pow, map_one] at h6
-  simpa only [map_pow, MonoidHom.comp_apply, Units.val_pow_eq_pow_val, Units.val_one,
-    one_pow] using congrArg (fun z : ℂˣ => (z : ℂ) ^ SArithmeticData.sexticExponent 1) h6
+  simp_all
 
 theorem fieldTrace_phase (A : SArithmeticData F) (x : F) :
     (A.fieldTraceCharacter x : ℂ) =
@@ -84,7 +82,7 @@ theorem fieldTrace_phase (A : SArithmeticData F) (x : F) :
       InfinitePlace.Completion.ringEquivComplexOfIsComplex_apply]
     rw [ProbeAdditive.archPhase, ← Complex.exp_sum]
     congr 1
-    simp only [Complex.ofReal_sum, Finset.mul_sum, Complex.ofReal_mul, Complex.ofReal_ofNat]
+    simp only [Finset.mul_sum, Complex.ofReal_mul, Complex.ofReal_ofNat]
     apply Finset.sum_congr rfl
     intro w hw
     ring
@@ -106,7 +104,3 @@ theorem unit_kernel (A : SArithmeticData F) (hCl : Subsingleton (ClassGroup A.R)
     refine ⟨?_, ThetaReflectionData.rationalGamma_le_class_ker A hx⟩
     obtain ⟨u, hu, rfl⟩ := hx
     exact A.U.pow_mem hu 6
-
-end DedekindZetaZeroFree.PrincipalProbeConstruction.Inputs
-
-end

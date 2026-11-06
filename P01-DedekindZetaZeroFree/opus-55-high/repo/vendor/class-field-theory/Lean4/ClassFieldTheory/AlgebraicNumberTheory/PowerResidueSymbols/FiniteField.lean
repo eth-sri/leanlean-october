@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Power-residue symbols over finite fields
 
@@ -44,7 +40,6 @@ def finiteFieldPowerResidueSymbol
       exact FiniteField.pow_card_sub_one_eq_one
         (u : k) (Units.ne_zero u)⟩
   map_one' := by
-    apply Subtype.ext
     simp
   map_mul' u v := by
     apply Subtype.ext
@@ -97,7 +92,7 @@ theorem finiteFieldPowerResidueSymbol_eq_one_iff
         (fun z : rootsOfUnity (n : ℕ) k => (z : kˣ)) hsymbol
       change
         u ^ ((Fintype.card k - 1) / (n : ℕ)) = (1 : kˣ) at hval
-      simpa only [m] using hval
+      omega
     have huKer : u ∈ powerM.ker := by
       rw [MonoidHom.mem_ker]
       exact huPow
@@ -115,6 +110,3 @@ theorem finiteFieldPowerResidueSymbol_eq_one_iff
     change u ^ m = 1
     simpa only [powerM, powMonoidHom_apply] using
       (MonoidHom.mem_ker.mp huKer)
-
-end PowerResidueSymbols
-end AlgebraicNumberTheory

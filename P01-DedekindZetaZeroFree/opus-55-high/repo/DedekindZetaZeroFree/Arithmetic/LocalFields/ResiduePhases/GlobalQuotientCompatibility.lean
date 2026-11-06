@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.Arithmetic.LocalFields.TraceCharacters.Global
 
 @[expose] public section
 
-noncomputable section
 open scoped NumberField Classical
 open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.CompatiblePrimeRawLocal
@@ -33,7 +32,3 @@ theorem canonicalNumeratorCongruence_iff (C : A.GeneralArithmeticContext σ η h
   have hd : residueMap C p k ((lifts C p k).val d) = d :=
     (lifts C p k).property d
   simpa [numeratorCongruence, canonicalLocalRepresentative, uniformizer, hd] using hh
-
-end DedekindZetaZeroFree.CompatiblePrimeRawLocal
-
-end

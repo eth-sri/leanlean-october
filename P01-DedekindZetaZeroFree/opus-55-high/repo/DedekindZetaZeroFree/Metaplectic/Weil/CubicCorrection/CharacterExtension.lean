@@ -10,8 +10,6 @@ public import DedekindZetaZeroFree.Arithmetic.ResidueSymbols.HilbertFactorAndSex
 open scoped NumberField Classical
 open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.SArithmeticData.GaussCorrection
-noncomputable section
-set_option autoImplicit false
 variable {F : Type} [Field F] [NumberField F]
 
 theorem correctedPhaseGluing (A : SArithmeticData F)
@@ -67,6 +65,3 @@ theorem correctedWeilExtension (A : SArithmeticData F)
     _ = star (σ (A.sexticResidue I (4 : A.R))) * A.idealGauss σ hS I p hp 3 := by
       rw [CorrectedWeilSource.inverse_four_hilbert_eq_star_residue A σ I p hp a hap,
         CorrectedWeilSource.weilSCorrection_diagonal_prime A σ hS B I v hIv p hp a hap ha]
-
-end
-end DedekindZetaZeroFree.SArithmeticData.GaussCorrection

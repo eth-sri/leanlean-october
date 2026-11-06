@@ -9,7 +9,6 @@ open NumberField IsDedekindDomain MeasureTheory
 
 namespace DedekindZetaZeroFree.KPGlobalTorusBorelNormTwistTransport
 noncomputable section
-set_option autoImplicit false
 set_option maxRecDepth 2000
 set_option maxHeartbeats 4000000
 set_option synthInstance.maxHeartbeats 100000
@@ -66,7 +65,7 @@ private theorem projected_root (x : KPGlobalTorusFunctionData.Adeles F) :
 private theorem upper_unit {R : Type*} [CommRing R] (A : Matrix.GeneralLinearGroup (Fin 2) R) (h10 : A 1 0 = 0) :
     IsUnit (A 0 0) := by
   have h : IsUnit (Matrix.det (A : Matrix (Fin 2) (Fin 2) R)) :=
-    (Matrix.GeneralLinearGroup.det (n := Fin 2) (R := R) A).isUnit
+    by simp
   have hd : Matrix.det (A : Matrix (Fin 2) (Fin 2) R) = A 0 0 * A 1 1 := by
     simp only [Matrix.det_fin_two, h10, mul_zero, sub_zero]
   exact isUnit_of_mul_isUnit_left (hd ▸ h)
@@ -79,9 +78,9 @@ private theorem upper_diagonal {R : Type*} [CommRing R]
     simp [Units.val_mul, Matrix.mul_apply, Fin.sum_univ_two, Matrix.transvection, h10, hx]
 
 theorem iwasawaUpperUnits (A : KPAdelicCoverRestrictedProduct.AdelicGL2 F) (h10 : A 1 0 = 0) : IsUnit (A 0 0) ∧ IsUnit (A 1 1) := by
-  have h : IsUnit (Matrix.det (A : Matrix (Fin 2) (Fin 2) (KPGlobalTorusFunctionData.Adeles F))) := (Matrix.GeneralLinearGroup.det A).isUnit
+  have h : IsUnit (Matrix.det (A : Matrix (Fin 2) (Fin 2) (KPGlobalTorusFunctionData.Adeles F))) := by simp
   have hd : Matrix.det (A : Matrix (Fin 2) (Fin 2) (KPGlobalTorusFunctionData.Adeles F)) = A 0 0 * A 1 1 := by simp [Matrix.det_fin_two, h10]
-  exact ⟨isUnit_of_mul_isUnit_left (hd ▸ h), isUnit_of_mul_isUnit_right (hd ▸ h)⟩
+  simp_all
 def iwasawaUpperRatio (A : KPAdelicCoverRestrictedProduct.AdelicGL2 F) (h10 : A 1 0 = 0) : KPGlobalTorusFunctionData.Ideles F :=
   (iwasawaUpperUnits F A h10).1.unit * (iwasawaUpperUnits F A h10).2.unit⁻¹
 theorem iwasawaUpperRatio_scalar (A B : KPAdelicCoverRestrictedProduct.AdelicGL2 F)
@@ -122,10 +121,10 @@ private theorem upperRoot_ratio (x : KPGlobalTorusFunctionData.Adeles F) :
     iwasawaUpperRatio F (upperRoot F x) (upperRoot_zero F x) = 1 := by
   have h00 : (iwasawaUpperUnits F (upperRoot F x) (upperRoot_zero F x)).1.unit = 1 := by
     apply Units.ext
-    simp [IsUnit.unit_spec, upperRoot_entries]
+    simp [upperRoot_entries]
   have h11 : (iwasawaUpperUnits F (upperRoot F x) (upperRoot_zero F x)).2.unit = 1 := by
     apply Units.ext
-    simp [IsUnit.unit_spec, upperRoot_entries]
+    simp [upperRoot_entries]
   simp [iwasawaUpperRatio, h00, h11]
 
 theorem iwasawaUpperRatio_torus (t : E F ζ hζ)
@@ -164,7 +163,7 @@ theorem iwasawaUpperRatio_torus_root (t : E F ζ hζ)
   let x : KPGlobalTorusFunctionData.Adeles F := ↑u⁻¹ * A 0 1
   have hx : A 0 0 * x = A 0 1 := by
     change A 0 0 * (↑u⁻¹ * A 0 1) = _
-    have hu : (u : KPGlobalTorusFunctionData.Adeles F) = A 0 0 := (upper_unit A h10).unit_spec
+    have hu : (u : KPGlobalTorusFunctionData.Adeles F) = A 0 0 := by rfl
     rw [← hu, ← mul_assoc, Units.mul_inv, one_mul]
   have ht : b.val * KPGlobalTorusFunctionData.N F ζ hζ (-x) ∈ E F ζ hζ := by
     change ∃ D : KPAdelicCoverRestrictedProduct.AdelicGL2 F,
@@ -184,10 +183,10 @@ theorem iwasawaUpperRatio_torus_root (t : E F ζ hζ)
     (A : Matrix.GeneralLinearGroup (Fin 2) R) (h10 : A 1 0 = 0) :
     IsUnit (A 0 0) ∧ IsUnit (A 1 1) := by
   have h : IsUnit (Matrix.det (A : Matrix (Fin 2) (Fin 2) R)) :=
-    (Matrix.GeneralLinearGroup.det (n := Fin 2) (R := R) A).isUnit
+    by simp
   have hd : Matrix.det (A : Matrix (Fin 2) (Fin 2) R) = A 0 0 * A 1 1 := by
     simp only [Matrix.det_fin_two, h10, mul_zero, sub_zero]
-  exact ⟨isUnit_of_mul_isUnit_left (hd ▸ h), isUnit_of_mul_isUnit_right (hd ▸ h)⟩
+  simp_all
  def ratio {R : Type*} [CommRing R]
     (A : Matrix.GeneralLinearGroup (Fin 2) R) (h10 : A 1 0 = 0) : Rˣ :=
   (upper_units A h10).1.unit * ((upper_units A h10).2.unit)⁻¹
@@ -216,23 +215,19 @@ private theorem ratio_eq (A B : KPAdelicCoverRestrictedProduct.AdelicGL2 F)
   have hm := QuotientGroup.eq.mp h
   obtain ⟨z, hz⟩ := hm
   have he : B = A * Matrix.GeneralLinearGroup.scalar (Fin 2) z := by
-    change Matrix.GeneralLinearGroup.scalar (Fin 2) z = A⁻¹ * B at hz
-    rw [hz]
-    group
+    simp_all
   have h0 : (upper_units B hB).1.unit = (upper_units A hA).1.unit * z := by
     apply Units.ext
     simp only [IsUnit.unit_spec, Units.val_mul]
     rw [he]
-    simp [Units.val_mul, Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_apply,
-      Fin.sum_univ_two, Matrix.scalar]
+    simp
   have h1 : (upper_units B hB).2.unit = (upper_units A hA).2.unit * z := by
     apply Units.ext
     simp only [IsUnit.unit_spec, Units.val_mul]
     rw [he]
-    simp [Units.val_mul, Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_apply,
-      Fin.sum_univ_two, Matrix.scalar]
+    simp
   simp only [ratio, h0, h1]
-  simp [mul_inv_rev, mul_assoc, mul_left_comm, mul_comm]
+  simp
 
 private theorem root_upper (x : KPGlobalTorusFunctionData.Adeles F) :
     upperRoot F x 1 0 = 0 := by rw [upperRoot_entries]; rfl
@@ -416,12 +411,9 @@ end DedekindZetaZeroFree.KPGlobalTorusBorelNormTwistTransport
 
 section
 
-open scoped NumberField Classical NNReal BigOperators Pointwise
-open NumberField IsDedekindDomain MeasureTheory
 
 namespace DedekindZetaZeroFree.KPGlobalTorusBorelNormTwistTransport
 noncomputable section
-set_option autoImplicit false
 set_option maxRecDepth 2000
 set_option maxHeartbeats 4000000
 set_option synthInstance.maxHeartbeats 100000
@@ -436,19 +428,11 @@ def iwasawaWeight (D : IwasawaData F ζ hζ) (s : ℂ) (g : G F ζ hζ) : ℂ :=
     0 < (((iwasawaNorm F ζ hζ D g : ℝ≥0) : ℝ)) := by
   exact_mod_cast pos_iff_ne_zero.mpr (Units.ne_zero (iwasawaNorm F ζ hζ D g))
 
-@[simp] theorem iwasawaWeight_compact (D : IwasawaData F ζ hζ) (s : ℂ) (k : D.K) :
-    iwasawaWeight F ζ hζ D s k.val = 1 := by
-  simp [iwasawaWeight, iwasawaNorm_compact]
-
-@[simp] theorem iwasawaWeight_cancel (D : IwasawaData F ζ hζ) (s : ℂ) (g : G F ζ hζ) :
-    iwasawaWeight F ζ hζ D s g * iwasawaWeight F ζ hζ D (-s) g = 1 := by
-  simp only [iwasawaWeight, neg_mul, ← Complex.exp_add, add_neg_cancel, Complex.exp_zero]
-
 section IwasawaLowerWeightPorts
 open scoped Matrix.Norms.Elementwise ContDiff
 
- theorem iwasawa_compact_subtype (D : IwasawaData F ζ hζ) : CompactSpace D.K := by
-  exact isCompact_iff_compactSpace.mp D.compact
+ theorem iwasawa_compact_subtype (D : IwasawaData F ζ hζ) : CompactSpace D.K := 
+  isCompact_iff_compactSpace.mp D.compact
 
  theorem iwasawa_compactAverage_normalization
     (D : IwasawaData F ζ hζ) (r : ℝ)
@@ -495,9 +479,3 @@ open scoped Matrix.Norms.Elementwise ContDiff
         (fun l : D.K => v (k * l).val) := rfl
     rw [he]
     exact integral_mul_left_eq_self (fun l : D.K => v l.val) k
-
-end IwasawaLowerWeightPorts
-end
-end DedekindZetaZeroFree.KPGlobalTorusBorelNormTwistTransport
-
-end

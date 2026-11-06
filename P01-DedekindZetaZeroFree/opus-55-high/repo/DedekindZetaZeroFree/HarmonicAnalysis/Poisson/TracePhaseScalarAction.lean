@@ -34,7 +34,3 @@ def rawPhase (F : Type) [Field F] [NumberField F]
   Complex.exp (2 * (Real.pi : ℂ) * Complex.I *
     (PoissonArch.tracePairing F x.1 y.1 : ℂ)) *
       ∏ v : S, (e v (x.2 v * y.2 v) : ℂ)
-
-end DedekindZetaZeroFree.PoissonS.ScaleShift
-
-end

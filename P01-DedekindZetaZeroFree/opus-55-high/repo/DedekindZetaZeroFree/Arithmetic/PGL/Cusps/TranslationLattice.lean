@@ -22,16 +22,15 @@ namespace DedekindZetaZeroFree.KPCuspChart
         intro x
         apply Prod.ext
         · ext w; exact isEmptyElim w
-        · ext w; simp
-      right_inv := by intro x; ext i; simp
+        simp
+      right_inv := by intro x; simp
       map_add' := by intro x y; rfl
       map_smul' := by intro r x; rfl }
 
 private theorem mixedChart_embedding (F : Type*) [Field F] [NumberField F]
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0) (x : F) :
     mixedChart F hF (NumberField.mixedEmbedding F x) = embedding F x := by
-  ext i
-  simp [mixedChart, embedding, KPCusp.complexPlace]
+  rfl
 
 theorem arithmetic_extension_lattice
     (F : Type*) [Field F] [NumberField F]
@@ -90,7 +89,3 @@ theorem arithmetic_extension_lattice
     IsZLattice ℝ (translationLattice F L).toIntSubmodule
   rw [heq]
   exact ⟨inferInstance, inferInstance⟩
-
-end DedekindZetaZeroFree.KPCuspChart
-
-end

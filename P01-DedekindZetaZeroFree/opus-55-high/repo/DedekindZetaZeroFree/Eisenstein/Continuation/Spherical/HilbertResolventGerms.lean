@@ -12,14 +12,14 @@ open MeasureTheory Topology
 
 namespace DedekindZetaZeroFree
 
-private lemma analyticAt_clm_apply' {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E]
+lemma analyticAt_clm_apply' {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E]
     {A : ℂ → E →L[ℂ] E} {B : ℂ → E} {x : ℂ}
     (hA : AnalyticAt ℂ A x) (hB : AnalyticAt ℂ B x) :
     AnalyticAt ℂ (fun z => A z (B z)) x :=
   (ContinuousLinearMap.analyticAt_bilinear (ContinuousLinearMap.id ℂ (E →L[ℂ] E))
     (A x, B x)).comp₂ hA hB
 
-private lemma meromorphicAt_clm_apply' {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E]
+lemma meromorphicAt_clm_apply' {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E]
     {A : ℂ → E →L[ℂ] E} {B : ℂ → E} {x : ℂ}
     (hA : MeromorphicAt A x) (hB : AnalyticAt ℂ B x) :
     MeromorphicAt (fun z => A z (B z)) x := by
@@ -32,29 +32,29 @@ open Filter
 
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E]
 
-private lemma analyticAt_clear {A : ℂ → E} {x : ℂ} (hA : AnalyticAt ℂ A x) :
+lemma analyticAt_clear {A : ℂ → E} {x : ℂ} (hA : AnalyticAt ℂ A x) :
     AnalyticAt ℂ (fun s : ℂ => (s-x) • A s) x :=
   (show AnalyticAt ℂ (fun s : ℂ => s-x) x by fun_prop).smul hA
 
-private lemma clear_zero (A : E) (x : ℂ) : (x-x) • A = 0 := by simp
+lemma clear_zero (A : E) (x : ℂ) : (x-x) • A = 0 := by simp
 
-private lemma analytic_cleared_source {V : Type*} [NormedAddCommGroup V] [NormedSpace ℂ V]
+lemma analytic_cleared_source {V : Type*} [NormedAddCommGroup V] [NormedSpace ℂ V]
     {G : ℂ → V →L[ℂ] V} {h : ℂ → V} {x : ℂ}
     (hG : AnalyticAt ℂ G x) (hh : AnalyticAt ℂ h x) :
     AnalyticAt ℂ (fun s => -(G s (h s))) x := (analyticAt_clm_apply' hG hh).neg
 
-private lemma cleared_source_eq {V : Type*} [NormedAddCommGroup V] [NormedSpace ℂ V]
+lemma cleared_source_eq {V : Type*} [NormedAddCommGroup V] [NormedSpace ℂ V]
     (G A : V →L[ℂ] V) (u : V) (c : ℂ) (heq : c • A = G) :
     -(G u) = c • (-(A u)) := by rw [← heq]; simp
 
-private lemma cleared_source_center {V : Type*} [NormedAddCommGroup V] [NormedSpace ℂ V]
+lemma cleared_source_center {V : Type*} [NormedAddCommGroup V] [NormedSpace ℂ V]
     (G P : V →L[ℂ] V) (u : V) (c : ℂ) (heq : G = -c • P) :
     -(G u) = c • P u := by rw [heq]; simp
 
-private lemma cleared_source_zero {V : Type*} [NormedAddCommGroup V] [NormedSpace ℂ V]
+lemma cleared_source_zero {V : Type*} [NormedAddCommGroup V] [NormedSpace ℂ V]
     (G : V →L[ℂ] V) (u : V) (heq : G = 0) : -(G u) = 0 := by rw [heq]; simp
 
-private lemma clear_simple {A : ℂ → E} {x : ℂ} {L : E}
+lemma clear_simple {A : ℂ → E} {x : ℂ} {L : E}
     (hA : MeromorphicAt A x) (ho : (-1 : WithTop ℤ) ≤ meromorphicOrderAt A x)
     (hl : Tendsto (fun s => (s-x) • A s) (𝓝[≠] x) (𝓝 L)) :
     ∃ G : ℂ → E, AnalyticAt ℂ G x ∧
@@ -74,7 +74,7 @@ private lemma clear_simple {A : ℂ → E} {x : ℂ} {L : E}
   exact tendsto_nhds_unique (hG.continuousAt.tendsto.mono_left nhdsWithin_le_nhds)
     (hl.congr' heq)
 
-private lemma pull_limit {A : ℂ → E} {a : ℂ → ℂ} {x : ℂ} {L : E}
+lemma pull_limit {A : ℂ → E} {a : ℂ → ℂ} {x : ℂ} {L : E}
     (ha : HasDerivAt a (deriv a x) x) (hne : deriv a x ≠ 0)
     (hinj : ∀ᶠ s in 𝓝 x, a s = a x → s = x)
     (hl : Tendsto (fun z => (z-a x) • A z) (𝓝[≠] (a x)) (𝓝 L)) :
@@ -96,7 +96,7 @@ private lemma pull_limit {A : ℂ → E} {a : ℂ → ℂ} {x : ℂ} {L : E}
   congr 1
   field_simp
 
-private lemma exists_ball_inter_subset_singleton {α : Type*} [MetricSpace α]
+lemma exists_ball_inter_subset_singleton {α : Type*} [MetricSpace α]
     {S : Set α} {z : α} {r : ℝ} (hr : 0 < r)
     (hfin : (S ∩ Metric.closedBall z r).Finite) (hz : z ∈ S) :
     ∃ r' : ℝ, 0 < r' ∧ S ∩ Metric.ball z r' ⊆ {z} := by
@@ -131,7 +131,7 @@ private lemma exists_ball_inter_subset_singleton {α : Type*} [MetricSpace α]
     have := hmin w hwa
     linarith [hd, this, min_le_left (dist a z) r]
 
-private lemma exists_ball_disjoint_of_finite {α : Type*} [MetricSpace α]
+lemma exists_ball_disjoint_of_finite {α : Type*} [MetricSpace α]
     {S : Set α} {z : α} (hfin : S.Finite) (hz : z ∉ S) :
     ∃ r : ℝ, 0 < r ∧ S ∩ Metric.ball z r = ∅ := by
   by_cases hempty : S = ∅

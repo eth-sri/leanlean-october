@@ -29,7 +29,7 @@ local instance (d : ℕ) : SecondCountableTopology (KPCompactStabilizerHaarSourc
 local instance (d : ℕ) : ContinuousSMul (G d) (KPArch.Space d) :=
   KPArithmeticAction.productContinuousSMul d
 
-private theorem normalized_origin_unitary (a : Matrix.GeneralLinearGroup (Fin 2) ℂ)
+theorem normalized_origin_unitary (a : Matrix.GeneralLinearGroup (Fin 2) ℂ)
     (hfix : KPArch.action a (0,0) = (0,0))
     (hdet : ‖(a : Matrix (Fin 2) (Fin 2) ℂ).det‖ = 1) :
     (a : Matrix (Fin 2) (Fin 2) ℂ) ∈ Matrix.unitaryGroup (Fin 2) ℂ := by
@@ -93,39 +93,9 @@ private theorem normalized_origin_unitary (a : Matrix.GeneralLinearGroup (Fin 2)
     change (c : ℂ)⁻¹ • ((c : ℂ) • (b : Matrix (Fin 2) (Fin 2) ℂ)) = _
     rw [inv_smul_smul₀ (Circle.coe_ne_zero c)]
 
- def endpointCompactEquiv (d : ℕ) :
-    (Fin d → KPCplxPrincipalSeriesCharts.compactSubgroup) ≃ₜ*
-      KPCompactStabilizerHaarSources.K d where
-  toMulEquiv :=
-    { toFun k := ⟨fun i => (k i).val, by
-        change (fun i => (k i).val) • o d = o d
-        funext i
-        exact (show (k i).val ∈
-          MulAction.stabilizer (Matrix.ProjGenLinGroup (Fin 2) ℂ) ((0,0) : KPArch.H3) by
-            rw [← compactSubgroup_eq_origin_stabilizer]; exact (k i).property)⟩
-      invFun k := fun i => ⟨k.val i, by
-        rw [compactSubgroup_eq_origin_stabilizer]
-        have h := congrFun k.property i
-        exact h⟩
-      left_inv k := by ext i; rfl
-      right_inv k := by ext i; rfl
-      map_mul' k l := rfl }
-  continuous_toFun :=
-    (continuous_pi fun i => continuous_subtype_val.comp (continuous_apply i)).subtype_mk _
-  continuous_invFun := continuous_pi fun i =>
-    ((continuous_apply i).comp continuous_subtype_val).subtype_mk _
-
-local instance (d : ℕ) : MeasurableSpace (Fin d → KPCplxPrincipalSeriesCharts.compactSubgroup) := borel _
-local instance (d : ℕ) : BorelSpace (Fin d → KPCplxPrincipalSeriesCharts.compactSubgroup) := ⟨rfl⟩
-local instance (d : ℕ) : CompactSpace (Fin d → KPCplxPrincipalSeriesCharts.compactSubgroup) :=
-  (endpointCompactEquiv d).symm.toHomeomorph.compactSpace
-
 section NumberField
 open scoped NumberField
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-
-local instance : BorelSpace (KPSmoothActualFlowData.GInfinity F) := ⟨rfl⟩
-local instance : BorelSpace (KPMsGreenFlux.K F) := ⟨rfl⟩
 
 end NumberField
 

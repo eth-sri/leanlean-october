@@ -20,12 +20,12 @@ variable {F : Type} [Field F] [NumberField F]
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 variable (D : DedekindZetaZeroFree.Quantitative.FixedData S η)
 
-private theorem L6_line_bound :
+theorem L6_line_bound :
     ∃ C : ℝ, 0 < C ∧ ∀ z : ℂ, z.re = Scales.zLine → ‖D.recipe.L (6 * z)‖ ≤ C := by
   obtain ⟨C, hC, h⟩ := RawRightHecke31.recipe_L_right D (2 / 5) (by norm_num)
   exact ⟨C, hC, fun z hz => (h z (by rw [hz]; norm_num [Scales.zLine])).2.1⟩
 
-private theorem corr_box_bound (ε : ℝ) (hε : 0 < ε) :
+theorem corr_box_bound (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ u : Frequency D.recipe, ∀ ξ w z : ℂ, Scales.goodLine ≤ ξ.re →
       Scales.wLine ≤ w.re → Scales.zLine ≤ z.re →
       ‖AllRowEuler.InitialSeparation.correctionProduct D.context (FixedData.rawFrequency D u)
@@ -39,7 +39,7 @@ private theorem corr_box_bound (ε : ℝ) (hε : 0 < ε) :
   rw [FixedData.rawFrequency_norm D u] at this
   exact this
 
-private theorem minus_inv_rect (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexityExponent D A)
+theorem minus_inv_rect (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexityExponent D A)
     (hρ : HeightSpec D A ρ) (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∃ U₀ : ℝ, 2 ≤ U₀ ∧ ∀ U : ℝ, U₀ ≤ U →
       ∀ u : Frequency D.recipe, u ≠ principalFrequency D.recipe →
@@ -110,7 +110,7 @@ private theorem rawKernel_norm_eq (u : Frequency D.recipe) (hq : 0 < frequencyNo
   unfold Scales.kernelExponent
   try ring_nf
 
-private theorem rawFactor_combine (u : Frequency D.recipe) (U : ℝ) (hU : 0 < U)
+theorem rawFactor_combine (u : Frequency D.recipe) (U : ℝ) (hU : 0 < U)
     (hq : frequencyNorm D.recipe u < 2 * U) (hq0 : 0 < frequencyNorm D.recipe u) (ε : ℝ)
     (hε : 0 < ε) (ξ w z : ℂ) (C1 C2 C3 C4 P : ℝ)
     (hC1 : 0 ≤ C1) (hC2 : 0 ≤ C2) (hC3 : 0 ≤ C3) (hC4 : 0 ≤ C4) (hP : 0 ≤ P)

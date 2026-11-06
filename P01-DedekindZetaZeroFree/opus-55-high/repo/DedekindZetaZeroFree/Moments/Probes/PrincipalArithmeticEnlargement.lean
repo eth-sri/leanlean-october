@@ -93,7 +93,7 @@ theorem exists_enlarged_principal_context
         (η : RayClassCharacter F n), η.IsPrincipal → (h.symm ▸ η).IsPrincipal := by
       intro m n h
       subst n
-      exact fun _ hη => hη
+      simp
     exact transport _ _ hmod η hη
   refine ⟨A, ?_, hroot, hmod, hS, ?_, Inputs.principalContext A σ _ hS C hηA, rfl⟩
   · intro v hv
@@ -103,7 +103,3 @@ theorem exists_enlarged_principal_context
     rw [hbad]
     apply Finset.mem_union_right
     exact (Set.Finite.mem_toFinset _).mpr hv
-
-end DedekindZetaZeroFree.PrincipalProbeConstruction
-
-end

@@ -16,7 +16,7 @@ namespace DedekindZetaZeroFree.LargeSieve.Sieve.GcdTail
 
 open scoped NumberField Classical
 
-private theorem quotient_mem {F : Type} [Field F] [NumberField F]
+theorem quotient_mem {F : Type} [Field F] [NumberField F]
     {c d u : Ideal (𝓞 F)} {N : ℝ} (hd : d ≠ ⊥)
     (h : d * u ∈ paperShell F c N) :
     u ∈ paperShell F c (N / (Ideal.absNorm d : ℝ)) := by
@@ -25,14 +25,14 @@ private theorem quotient_mem {F : Type} [Field F] [NumberField F]
     exact_mod_cast Nat.pos_of_ne_zero (mt Ideal.absNorm_eq_zero_iff.mp hd)
   have hnorm : (Ideal.absNorm (d * u) : ℝ) =
       (Ideal.absNorm d : ℝ) * (Ideal.absNorm u : ℝ) := by
-    rw [map_mul, Nat.cast_mul]
+    simp
   refine (mem_paperShell F c _ _).mpr ⟨hs.squarefree_of_dvd (dvd_mul_left u d), ?_, ?_, ?_⟩
   · exact top_unique (hc.symm.trans_le (sup_le_sup_right Ideal.mul_le_right c))
   · exact (div_lt_iff₀' hpos).mpr (hnorm ▸ hl)
   · rw [← mul_div_assoc]
     exact (le_div_iff₀ hpos).mpr (by rw [mul_comm]; exact hnorm ▸ hr)
 
-private theorem divisor_sum {F : Type} [Field F] [NumberField F]
+theorem divisor_sum {F : Type} [Field F] [NumberField F]
     {Z : Type*} [AddCommMonoid Z] (c d : Ideal (𝓞 F)) (N : ℝ) (hd : d ≠ ⊥)
     (f : Ideal (𝓞 F) → Z) :
     (∑ b ∈ paperShell F c N, if d ∣ b then f b else 0) =
@@ -40,17 +40,14 @@ private theorem divisor_sum {F : Type} [Field F] [NumberField F]
         if d * u ∈ paperShell F c N then f (d * u) else 0 := by
   rw [← Finset.sum_filter, ← Finset.sum_filter]
   apply (Finset.sum_bij (i := fun u _ => d * u) ?_ ?_ ?_ ?_).symm
-  · intro u hu
-    obtain ⟨hu, hp⟩ := Finset.mem_filter.mp hu
-    exact Finset.mem_filter.mpr ⟨hp, dvd_mul_right d u⟩
-  · intro u hu v hv he
-    exact mul_left_cancel₀ hd he
+  · simp
+  · simp_all
   · intro b hb
     obtain ⟨hb, u, rfl⟩ := Finset.mem_filter.mp hb
     exact ⟨u, Finset.mem_filter.mpr ⟨quotient_mem hd hb, hb⟩, rfl⟩
-  · intros; rfl
+  simp
 
-private theorem divisor_sum_of_support {F : Type} [Field F] [NumberField F]
+theorem divisor_sum_of_support {F : Type} [Field F] [NumberField F]
     {Z : Type*} [AddCommMonoid Z] (c d : Ideal (𝓞 F)) (N : ℝ) (hd : d ≠ ⊥)
     (f : Ideal (𝓞 F) → Z) (hf : ∀ b, ¬ d ∣ b → f b = 0) :
     (∑ b ∈ paperShell F c N, f b) =
@@ -59,11 +56,9 @@ private theorem divisor_sum_of_support {F : Type} [Field F] [NumberField F]
   convert divisor_sum c d N hd f using 1
   apply Finset.sum_congr rfl
   intro b hb
-  by_cases h : d ∣ b
-  · simp [h]
-  · simp [h, hf b h]
+  simp_all
 
-private theorem divisor_pair_sum {F : Type} [Field F] [NumberField F]
+theorem divisor_pair_sum {F : Type} [Field F] [NumberField F]
     {Z : Type*} [AddCommMonoid Z] (c d : Ideal (𝓞 F)) (N : ℝ) (hd : d ≠ ⊥)
     (f : Ideal (𝓞 F) → Ideal (𝓞 F) → Z)
     (hf : ∀ b1 b2, ¬ d ∣ b1 ∨ ¬ d ∣ b2 → f b1 b2 = 0) :
@@ -83,15 +78,11 @@ private theorem divisor_pair_sum {F : Type} [Field F] [NumberField F]
   · simp only [h, ite_true, true_and]
   · simp [h]
 
-private theorem gcd_mul_iff {F : Type} [Field F] [NumberField F]
+theorem gcd_mul_iff {F : Type} [Field F] [NumberField F]
     {d u v : Ideal (𝓞 F)} (hd : d ≠ ⊥) :
     d * u ⊔ d * v = d ↔ u ⊔ v = ⊤ := by
   rw [← Ideal.mul_sup]
-  constructor
-  · intro h
-    exact mul_left_cancel₀ hd (h.trans (Ideal.mul_top d).symm)
-  · intro h
-    rw [h, Ideal.mul_top]
+  simp_all
 
 theorem quotient_reindex
     (F : Type) [Field F] [NumberField F]
@@ -140,11 +131,11 @@ theorem quotient_reindex
     change ‖alpha u‖ ^ 2 ≤ if d * u ∈ S then ‖lam (d * u)‖ ^ 2 else 0
     by_cases h : good u
     · simp only [alpha, if_pos h, if_pos h.1, norm_mul]
-      have hn : ‖columnMask (d * u)‖ * ‖lam (d * u)‖ ≤ ‖lam (d * u)‖ := by
-        exact mul_le_of_le_one_left (norm_nonneg _) (hcol _)
+      have hn : ‖columnMask (d * u)‖ * ‖lam (d * u)‖ ≤ ‖lam (d * u)‖ := 
+        mul_le_of_le_one_left (norm_nonneg _) (hcol _)
       exact pow_le_pow_left₀ (mul_nonneg (norm_nonneg _) (norm_nonneg _)) hn 2
     · simp only [alpha, if_neg h, norm_zero, zero_pow (by decide : 2 ≠ 0)]
-      split_ifs <;> positivity
+      positivity
   · let f := fun b1 b2 : Ideal (𝓞 F) =>
       if b1 ⊔ b2 = d ∧ Q.cls b1 = g ∧ Q.cls b2 = g then
         (columnMask b1 * lam b1) * (starRingEnd ℂ) (columnMask b2 * lam b2) *
@@ -203,10 +194,10 @@ theorem quotient_reindex
               _ = (columnMask (d * u) * lam (d * u)) *
                   (starRingEnd ℂ) (columnMask (d * v) * lam (d * v)) *
                   (W ((Ideal.absNorm a : ℝ) / M) * rowMask a : ℂ) *
-                  ((Q.χ (d * u)) a * (starRingEnd ℂ) ((Q.χ (d * v)) a)) := by simp only [map_mul, Complex.ofReal_mul]; ring
+                  ((Q.χ (d * u)) a * (starRingEnd ℂ) ((Q.χ (d * v)) a)) := by simp only [map_mul]; ring
               _ = _ := by
                 rw [htr]
-                simp only [map_mul, star_mul, Complex.ofReal_mul]
+                simp only [map_mul, star_mul]
                 change (columnMask (d * u) * lam (d * u)) *
                     (star (columnMask (d * v)) * star (lam (d * v))) *
                     (W ((Ideal.absNorm a : ℝ) / M) * rowMask a : ℂ) *
@@ -245,7 +236,7 @@ open scoped NumberField Classical
 
 variable {F : Type} [Field F] [NumberField F]
 
-private lemma exists_sieveWeight_bound (W : ℝ → ℝ) (hW : SieveWeight W) :
+lemma exists_sieveWeight_bound (W : ℝ → ℝ) (hW : SieveWeight W) :
     ∃ B : ℝ, 0 ≤ B ∧ ∀ t : ℝ, W t ≤ B := by
   obtain ⟨x, _hx, hmax⟩ :=
     isCompact_Icc.exists_isMaxOn (Set.nonempty_Icc.mpr (by norm_num : (1 / 2 : ℝ) ≤ 5 / 2))
@@ -256,16 +247,16 @@ private lemma exists_sieveWeight_bound (W : ℝ → ℝ) (hW : SieveWeight W) :
   · rw [hW.zero_outside t ht]
     exact hW.nonneg x
 
-private lemma maskedRowWeight_nonneg (W : ℝ → ℝ) (hW : SieveWeight W)
+lemma maskedRowWeight_nonneg (W : ℝ → ℝ) (hW : SieveWeight W)
     (q d : Ideal (𝓞 F)) (M : ℝ) (rowMask : Ideal (𝓞 F) → ℝ)
     (hrow : ∀ a : Ideal (𝓞 F), 0 ≤ rowMask a ∧ rowMask a ≤ 1) (a : Ideal (𝓞 F)) :
     0 ≤ maskedRowWeight W q d M rowMask a := by
   rw [maskedRowWeight]
   split
   · exact mul_nonneg (hW.nonneg _) (hrow a).1
-  · exact le_refl 0
+  rfl
 
-private lemma maskedRowWeight_le (W : ℝ → ℝ) (hW : SieveWeight W)
+lemma maskedRowWeight_le (W : ℝ → ℝ) (hW : SieveWeight W)
     (q d : Ideal (𝓞 F)) (M : ℝ) (rowMask : Ideal (𝓞 F) → ℝ)
     (hrow : ∀ a : Ideal (𝓞 F), 0 ≤ rowMask a ∧ rowMask a ≤ 1) (a : Ideal (𝓞 F)) :
     maskedRowWeight W q d M rowMask a ≤ W ((Ideal.absNorm a : ℝ) / M) := by
@@ -274,7 +265,7 @@ private lemma maskedRowWeight_le (W : ℝ → ℝ) (hW : SieveWeight W)
   · exact mul_le_of_le_one_right (hW.nonneg _) (hrow a).2
   · exact hW.nonneg _
 
-private lemma rowSum_sq_le {c : Ideal (𝓞 F)}
+lemma rowSum_sq_le {c : Ideal (𝓞 F)}
     (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c) (T : ℝ)
     (lam : Ideal (𝓞 F) → ℂ) (a : Ideal (𝓞 F)) :
     ‖rowSum Q T lam a‖ ^ 2 ≤ ((paperShell F c T).card : ℝ) * energy F c T lam := by
@@ -286,7 +277,7 @@ private lemma rowSum_sq_le {c : Ideal (𝓞 F)}
     refine Finset.sum_le_sum fun b hb => ?_
     have hb' := (mem_paperShell F c T b).mp hb
     have hchi : ‖(Q.χ b) a‖ ≤ 1 := quadraticFamily_norm_le_one Q hb'.1 hb'.2.1 a
-    have hchi2 : ‖(Q.χ b) a‖ ^ 2 ≤ 1 := by nlinarith [norm_nonneg ((Q.χ b) a), hchi]
+    have hchi2 : ‖(Q.χ b) a‖ ^ 2 ≤ 1 := by simp_all
     rw [norm_mul, mul_pow]
     exact mul_le_of_le_one_right (sq_nonneg _) hchi2
   have h1 : ‖rowSum Q T lam a‖ ^ 2 ≤
@@ -301,7 +292,7 @@ private lemma rowSum_sq_le {c : Ideal (𝓞 F)}
         mul_le_mul_of_nonneg_left h3 (Nat.cast_nonneg _)
     _ = ((paperShell F c T).card : ℝ) * energy F c T lam := by rw [h4]
 
-private lemma paperShell_eq_empty_or_singleton_of_lt_one {c : Ideal (𝓞 F)} {X : ℝ}
+lemma paperShell_eq_empty_or_singleton_of_lt_one {c : Ideal (𝓞 F)} {X : ℝ}
     (hX : X < 1) : paperShell F c X = ∅ ∨ paperShell F c X = {⊤} := by
   rcases lt_or_ge (2 * X) 1 with h | h
   · left
@@ -311,8 +302,7 @@ private lemma paperShell_eq_empty_or_singleton_of_lt_one {c : Ideal (𝓞 F)} {X
     rw [paperShell,
       idealAdmissibleFinset_eq_singleton_of_one_le_of_lt_two F c (2 * X) h (by linarith),
       Finset.filter_singleton, if_pos]
-    rw [Ideal.absNorm_top, Nat.cast_one]
-    exact hX
+    simp_all
 
 theorem masked_shell_operator_bound
     (F : Type) [Field F] [NumberField F]
@@ -343,8 +333,7 @@ theorem masked_shell_operator_bound
   set Cb : ℝ := Wb * ((boundedNormIdeals F ((5 / 2) * M)).card : ℝ) *
     ((boundedNormIdeals F (2 * X)).card : ℝ) with hCbdef
   have hCb0 : 0 ≤ Cb := by
-    rw [hCbdef]
-    exact mul_nonneg (mul_nonneg hWb0 (Nat.cast_nonneg _)) (Nat.cast_nonneg _)
+    positivity
   have hcard_kernel : (kernelRows F c M K).card ≤ (boundedNormIdeals F ((5 / 2) * M)).card := by
     unfold kernelRows
     exact Finset.card_le_card (Finset.filter_subset _ _)
@@ -352,7 +341,7 @@ theorem masked_shell_operator_bound
     have hne : (⊥ : Ideal (𝓞 F)) ∈ boundedNormIdeals F (2 * X) := by
       rw [mem_boundedNormIdeals]
       have hbot : (Ideal.absNorm (⊥ : Ideal (𝓞 F)) : ℝ) = 0 := by
-        rw [Ideal.absNorm_bot]; norm_num
+        simp
       rw [hbot]
       linarith
     have hpos := Finset.card_pos.mpr ⟨⊥, hne⟩
@@ -364,14 +353,14 @@ theorem masked_shell_operator_bound
         ∑ a ∈ kernelRows F c M K, Wb := by
       refine Finset.sum_le_sum fun a _ha => ?_
       have hchi : ‖(Q.χ ⊤) a‖ ≤ 1 :=
-        quadraticFamily_norm_le_one Q (by rw [← Ideal.one_eq_top]; exact squarefree_one)
+        quadraticFamily_norm_le_one Q (by simp)
           (by simp) a
-      have hsq : ‖(Q.χ ⊤) a‖ ^ 2 ≤ 1 := by nlinarith [norm_nonneg ((Q.χ ⊤) a), hchi]
+      have hsq : ‖(Q.χ ⊤) a‖ ^ 2 ≤ 1 := by simp_all
       calc W ((Ideal.absNorm a : ℝ) / M) * ‖(Q.χ ⊤) a‖ ^ 2
           ≤ Wb * 1 := mul_le_mul (hWb _) hsq (sq_nonneg _) hWb0
         _ = Wb := mul_one Wb
     have hnn : (0 : ℝ) ≤ ((boundedNormIdeals F ((5 / 2) * M)).card : ℝ) * Wb :=
-      mul_nonneg (Nat.cast_nonneg _) hWb0
+      by positivity
     calc ∑ a ∈ kernelRows F c M K, W ((Ideal.absNorm a : ℝ) / M) * ‖(Q.χ ⊤) a‖ ^ 2
         ≤ ∑ a ∈ kernelRows F c M K, Wb := h1
       _ = ((kernelRows F c M K).card : ℝ) * Wb := by rw [Finset.sum_const, nsmul_eq_mul]
@@ -387,9 +376,7 @@ theorem masked_shell_operator_bound
     refine csSup_le ⟨0, Or.inl rfl⟩ ?_
     intro x hx
     rcases hx with hx | hx
-    · rw [Set.mem_singleton_iff] at hx
-      rw [hx]
-      exact hCb0
+    · simp_all
     · obtain ⟨lam, hlam, rfl⟩ := hx
       have hshell_card : ((paperShell F c T).card : ℝ) ≤
           ((boundedNormIdeals F (2 * X)).card : ℝ) := by
@@ -429,17 +416,14 @@ theorem masked_shell_operator_bound
     rw [hSdef] at hx
     rcases hx with hx | hx
     · rcases hx with hx | hx
-      · rw [Set.mem_singleton_iff] at hx
-        rw [hx]
-        exact hCb0
+      · simp_all
       · obtain ⟨T, _hT1, hTX, rfl⟩ := hx
         exact hB2le T hTX
-    · obtain ⟨_hX1, _h2X, rfl⟩ := hx
-      exact hunit
+    simp_all
   refine ⟨?_, ?_, ?_⟩
   · rw [hUdef]
     refine le_csSup hBdd ?_
-    exact Or.inl (Or.inl (Set.mem_singleton_iff.mpr rfl))
+    simp_all
   · intro a _ha
     exact maskedRowWeight_nonneg W hW q d M rowMask hrow a
   · intro alpha
@@ -466,7 +450,7 @@ theorem masked_shell_operator_bound
         Q2_le_B2_mul_energy Q W M X K alpha
       have henergy_nn : 0 ≤ energy F c X alpha := by
         simp only [energy]
-        exact Finset.sum_nonneg fun b _hb => sq_nonneg _
+        positivity
       calc weightedEnergy (kernelRows F c M K) (paperShell F c X)
             (maskedRowWeight W q d M rowMask) (fun a u => (Q.χ u) a) alpha
           ≤ Q2 F c Q W M X K alpha := hwe
@@ -653,9 +637,3 @@ theorem bilinear_gcd_tail
     _ ≤ (C * Real.rpow N ε * Sieve.B2env F c Q W M X K) *
         Sieve.gcdTailEnergy F c N d lam :=
       mul_le_mul_of_nonneg_left halpha (mul_nonneg hCN hop.1)
-
-end DedekindZetaZeroFree.LargeSieve
-
-end
-
-end

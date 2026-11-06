@@ -28,7 +28,7 @@ def rowMass (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
     (A.exteriorNorm c.val * A.exteriorNorm n ^ 3) ^ σ *
     |thetaReflectionGaussian (A.exteriorNorm c.val * A.exteriorNorm n ^ 3 / Z)|
 
-private theorem mulChar_bound {R : Type*} [CommRing R] [Fintype R]
+theorem mulChar_bound {R : Type*} [CommRing R] [Fintype R]
     (χ : MulChar R ℂ) (r : R) : ‖χ r‖ ≤ 1 := by
   by_cases hr : IsUnit r
   · obtain ⟨u, rfl⟩ := hr
@@ -37,8 +37,7 @@ private theorem mulChar_bound {R : Type*} [CommRing R] [Fintype R]
 private theorem phase_norm (A : SArithmeticData F)
     (e : (v : ↥A.Sf) → AddChar (v.val.adicCompletion F) Circle)
     (x : SLocalProduct F A.Sf) : ‖ProbeAdditive.phase F A.Sf e x‖ = 1 := by
-  simp [ProbeAdditive.phase, ProbeAdditive.archPhase, norm_mul, norm_prod,
-    Complex.norm_exp]
+  simp [ProbeAdditive.phase, ProbeAdditive.archPhase, norm_prod, Complex.norm_exp]
 private theorem gamma_bound (A : SArithmeticData F) (ι : F →+* ℂ)
     (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
     (P : NormalizedProbe.PrincipalData A ι η hS)
@@ -74,7 +73,7 @@ private theorem gamma_bound (A : SArithmeticData F) (ι : F →+* ℂ)
     _ = _ := by
       apply (inv_mul_eq_iff_eq_mul₀ hsq.ne').mpr
       exact (Real.sq_sqrt hq.le).symm.trans (by ring)
-private theorem numeric_bound (σ Z qc qn : ℝ) (hZ : 0 < Z)
+theorem numeric_bound (σ Z qc qn : ℝ) (hZ : 0 < Z)
     (hc : 1 ≤ qc) (hn : 1 ≤ qn) :
     (1 / qn) * (qc * qn ^ 3) ^ σ *
       |thetaReflectionGaussian (qc * qn ^ 3 / Z)| ≤
@@ -93,7 +92,7 @@ private theorem numeric_bound (σ Z qc qn : ℝ) (hZ : 0 < Z)
     rw [div_mul_eq_mul_div, div_mul_cancel₀ _ (Real.rpow_pos_of_pos hZ (σ + 3)).ne'] at hh
     simpa [mul_comm] using hh
   let C := Real.exp ((σ + 3) ^ 2) / (2 * Real.sqrt Real.pi) * Z ^ (σ + 3)
-  have hC : 0 ≤ C := by dsimp [C]; positivity
+  have hC : 0 ≤ C := by positivity
   calc
     _ ≤ (1 / qn) * (qc * qn ^ 3) ^ σ * (C / (qc * qn ^ 3) ^ (σ + 3)) :=
       mul_le_mul_of_nonneg_left hb (by positivity)
@@ -167,7 +166,7 @@ theorem gaussian_row_domination
             (A.exteriorNorm c.val) ^ (-(5 / 2 : ℝ))) *
             (∑' n : A.Exterior, (A.exteriorNorm n) ^ (-(7 : ℝ))) := by
   let C := Real.exp ((σ + 3) ^ 2) / (2 * Real.sqrt Real.pi) * Z ^ (σ + 3)
-  have hC : 0 < C := by dsimp [C]; positivity
+  have hC : 0 < C := by positivity
   refine ⟨C, hC, ?_⟩
   intro P
   have hb := row_bound A ι η hS P σ Z hZ
@@ -200,6 +199,3 @@ theorem gaussian_row_domination
     _ = _ := by
       simp_rw [mul_assoc, tsum_mul_left]
       rw [← hf.tsum_mul_tsum hg hfg]
-
-end
-end DedekindZetaZeroFree.ProbePoissonGaussianRowBound

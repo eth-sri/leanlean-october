@@ -16,7 +16,7 @@ open KPContSectorQuotientRelationsComparison
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-private lemma measure_saturation_inter_domain_le
+lemma measure_saturation_inter_domain_le
     {G : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
     [MeasurableSpace G] [BorelSpace G] (Γ : Subgroup G) [Countable Γ]
     (μ : Measure G) [μ.IsMulLeftInvariant]
@@ -96,7 +96,7 @@ private theorem K_U_compact (U : KPMsFixedHaarDisintegration.Level F ζ hζ) :
   rw [heq]
   exact hcompact
 
-private theorem piTilde_compact_preimage (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
+theorem piTilde_compact_preimage (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
     (hKU : IsCompact (K_U F ζ hζ U : Set (ActualCover F ζ hζ)))
     (K : Set (CoveredSpherical F ζ hζ U)) (hK : IsCompact K) :
     IsCompact ((piTilde F ζ hζ U) ⁻¹' K) := by

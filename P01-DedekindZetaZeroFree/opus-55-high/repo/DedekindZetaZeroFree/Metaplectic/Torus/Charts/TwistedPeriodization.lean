@@ -11,8 +11,6 @@ open NumberField IsDedekindDomain MeasureTheory
 namespace DedekindZetaZeroFree.TorusChartTransport
 open KPGlobalTorusBorelNormTwistTransport
 open KPGlobalTorusBorelTwistCompatibilityBorelInduction
-noncomputable section
-set_option autoImplicit false
 set_option maxRecDepth 2000
 set_option maxHeartbeats 800000
 
@@ -52,6 +50,3 @@ theorem functionsP_chart_tsum (C : ModelData F ζ hζ) (s : ℂ)
   rw [twistedP_rational_formula F ζ hζ C s (rationalRep F ζ hζ C)
     (rationalRep_rational F ζ hζ C) (f.val (groupArchChart F ζ hζ z * g)) 1]
   simp [chartTerm, mul_one]
-
-end
-end DedekindZetaZeroFree.TorusChartTransport

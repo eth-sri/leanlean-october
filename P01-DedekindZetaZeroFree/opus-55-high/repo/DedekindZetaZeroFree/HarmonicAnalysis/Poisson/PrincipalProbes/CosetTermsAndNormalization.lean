@@ -65,7 +65,4 @@ theorem modulus_pos (A : SArithmeticData F) (D : ComparisonPoissonCoefficientDat
     {a : A.R} (ha : a ≠ 0) : 0 < modulus A a := by
   letI := D.finiteResidue a ha
   rw [modulus, FiniteTransform.exteriorNorm, Nat.card_eq_fintype_card]
-  exact_mod_cast Fintype.card_pos_iff.mpr inferInstance
-
-end
-end DedekindZetaZeroFree.ProbeCoset
+  positivity

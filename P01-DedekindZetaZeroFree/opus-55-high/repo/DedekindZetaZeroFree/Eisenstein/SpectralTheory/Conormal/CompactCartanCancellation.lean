@@ -31,13 +31,13 @@ open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.ConormalFirstJet rena
  def directionJet (a : LieCoordinates F) (f : Cover F ζ hζ → ℂ) (g : Cover F ζ hζ) : ℂ :=
   ∑ w : NumberField.InfinitePlace F, ∑ i : Fin 6, (a (w,i) : ℂ) * rightDerivative F ζ hζ w i f g
 
-private theorem direction_sum (a : LieCoordinates F) :
+theorem direction_sum (a : LieCoordinates F) :
     a = ∑ w : NumberField.InfinitePlace F, ∑ i : Fin 6, a (w,i) • Pi.single (w,i) 1 := by
   funext b
   rcases b with ⟨w,i⟩
   simp [Finset.sum_apply, Pi.smul_apply, smul_eq_mul, Pi.single_apply, Prod.mk.injEq, ite_and]
 
-private theorem direction_hasDerivAt_zero (f : Cover F ζ hζ → ℂ) (hf : Smooth F ζ hζ f)
+theorem direction_hasDerivAt_zero (f : Cover F ζ hζ → ℂ) (hf : Smooth F ζ hζ f)
     (g : Cover F ζ hζ) (a : LieCoordinates F) :
     HasDerivAt (fun t : ℝ => f (g * archimedeanInsertion F ζ hζ (exponential F (t • a))))
       (directionJet a f g) 0 := by
@@ -70,14 +70,14 @@ private theorem direction_hasDerivAt_zero (f : Cover F ζ hζ → ℂ) (hf : Smo
  def compactDirection (w : NumberField.InfinitePlace F) (j : Fin 3) : LieCoordinates F :=
   fun b => if b.1 = w then compactCoefficients j b.2 else 0
 
-private theorem compact_direction_matrix_skew (j : Fin 3) :
+theorem compact_direction_matrix_skew (j : Fin 3) :
     star (sl2Matrix (compactCoefficients j)) = -sl2Matrix (compactCoefficients j) := by
   fin_cases j <;> ext i k <;> fin_cases i <;> fin_cases k <;>
     simp [compactCoefficients, sl2Matrix]
 
 open _root_.DedekindZetaZeroFree.KPMsGreenFlux.NormalCoefficient renaming matrix_path_components → matrix_path_components
 
-private theorem compact_exp_components (M : Matrix (Fin 2) (Fin 2) ℂ) (t : ℝ) (i j : Fin 2) :
+theorem compact_exp_components (M : Matrix (Fin 2) (Fin 2) ℂ) (t : ℝ) (i j : Fin 2) :
     HasDerivAt (fun u : ℝ => (NormedSpace.exp ((u : ℂ) • M)) i j)
       ((NormedSpace.exp ((t : ℂ) • M) * M) i j) t := by
   letI : NormedAlgebra ℚ (Matrix (Fin 2) (Fin 2) ℂ) := NormedAlgebra.restrictScalars ℚ ℝ _
@@ -94,7 +94,7 @@ private theorem compact_exp_components (M : Matrix (Fin 2) (Fin 2) ℂ) (t : ℝ
     ring
   rw [he, NormedSpace.exp_add_of_commute ((Commute.refl M).smul_left (t : ℂ) |>.smul_right ((u-t : ℝ) : ℂ))]
 
-private theorem exp_trace_zero_det (M : Matrix (Fin 2) (Fin 2) ℂ)
+theorem exp_trace_zero_det (M : Matrix (Fin 2) (Fin 2) ℂ)
     (hM : M 0 0 + M 1 1 = 0) (t : ℝ) :
     (NormedSpace.exp ((t : ℂ) • M)).det = 1 := by
   let m := fun u : ℝ => NormedSpace.exp ((u : ℂ) • M)
@@ -131,7 +131,7 @@ private theorem exp_trace_zero_det (M : Matrix (Fin 2) (Fin 2) ℂ)
       rfl⟩
   else 1
 
-private theorem compact_direction_curve_coe (w : NumberField.InfinitePlace F) (j : Fin 3) (t : ℝ) :
+theorem compact_direction_curve_coe (w : NumberField.InfinitePlace F) (j : Fin 3) (t : ℝ) :
     (fun v => (compactDirectionCurve (F := F) w j t v).val) =
       exponential F (t • compactDirection w j) := by
   ext v

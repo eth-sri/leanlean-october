@@ -67,9 +67,3 @@ theorem finiteTensorCore_lift_exists
     rw [Module.DirectLimit.lift_of]
 
 attribute [local instance] KPGlobalTorusPeriodizationInverse.modelTopology
-
-end TorusCoreComparison
-end KPGlobalResidualConstruction
-end DedekindZetaZeroFree
-
-end

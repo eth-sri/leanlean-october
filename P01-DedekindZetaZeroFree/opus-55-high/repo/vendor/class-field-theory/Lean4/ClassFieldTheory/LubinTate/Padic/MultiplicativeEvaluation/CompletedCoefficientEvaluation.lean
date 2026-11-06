@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Coefficient maps and analytic evaluation on completed p-adic levels
 
@@ -72,7 +68,7 @@ noncomputable local instance
 
 /-- The completed Lubin--Tate level as an algebra over the original p-adic
 base field, through the completed unramified coefficient field. -/
-noncomputable instance padicCompletedLevelField_padicAlgebra
+instance padicCompletedLevelField_padicAlgebra
     (p : ℕ) [Fact p.Prime] (n : ℕ) :
     Algebra ℚ_[p] (padicCompletedLevelField p n) :=
   ((algebraMap (padicCompletedUnramifiedField p)
@@ -87,7 +83,7 @@ instance padicCompletedLevelField_padicScalarTower
 
 /-- The canonical coefficient map from the p-adic valuation ring directly
 into the field underlying a completed Lubin--Tate level. -/
-noncomputable def padicCompletedLevelPadicFieldCoefficientHom
+def padicCompletedLevelPadicFieldCoefficientHom
     (p : ℕ) [Fact p.Prime] (n : ℕ) :
     (padicLocalField p).valuationSubring →+*
       padicCompletedLevelField p n :=
@@ -98,7 +94,7 @@ noncomputable def padicCompletedLevelPadicFieldCoefficientHom
 
 /-- The same p-adic coefficient map with codomain restricted to the
 valuation ring of the completed level. -/
-noncomputable def padicCompletedLevelPadicIntegerCoefficientHom
+def padicCompletedLevelPadicIntegerCoefficientHom
     (p : ℕ) [Fact p.Prime] (n : ℕ) :
     (padicLocalField p).valuationSubring →+*
       (padicCompletedLevelCompleteDVF p n).valuationSubring :=
@@ -180,7 +176,7 @@ theorem padicCompletedLevelPadicIntegerPolynomialEval_coe
         (padicCompletedLevelPadicFieldCoefficientHom p n) (i x) P
   rw [Polynomial.hom_eval₂, hcomp]
 
-private theorem padicCompletedPrimitiveRoot_standardPrimitivePolynomial
+theorem padicCompletedPrimitiveRoot_standardPrimitivePolynomial
     (p : ℕ) [Fact p.Prime] (n : ℕ) :
     Polynomial.eval₂
         (padicCompletedLevelPadicFieldCoefficientHom p n)
@@ -217,7 +213,7 @@ theorem padicCompletedPrimitiveRoot_iterate_succ_eq_zero
   rw [Polynomial.eval₂_mul,
     padicCompletedPrimitiveRoot_standardPrimitivePolynomial p n,
     mul_zero] at hfactor
-  simpa only [F, π, φ, x] using hfactor
+  omega
 
 /-- The chosen completed primitive point is not killed one level early. -/
 theorem padicCompletedPrimitiveRoot_iterate_ne_zero
@@ -411,9 +407,4 @@ theorem
               f hconstant hlinear)]
       _ = y :=
         padicCompletedLevelPowerSeriesEval_X p n y hy
-  exact hxback.symm.trans
-    ((congrArg evalInverse hpacked).trans hyback)
-
-end LubinTate
-
-end
+  simp_all

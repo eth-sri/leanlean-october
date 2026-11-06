@@ -7,7 +7,6 @@ public import DedekindZetaZeroFree.Arithmetic.Kummer.PrincipalProductAndPrimeFro
 
 namespace DedekindZetaZeroFree.RMKummerQuotientPrime
 
-noncomputable section
 open scoped NumberField Classical
 open IsDedekindDomain
 
@@ -70,6 +69,3 @@ theorem quotient_prime (F : Type) [Field F] [NumberField F]
     prime_eq_lambda F h12 x v hx π hπ, prime_eq_lambda F h12 y v hy π hπ]
   have h := congrArg Units.val (RMKummerLocalSquareLaws.lambda_div F h12 x y v π)
   simpa only [Units.val_mul, RMKummerLocalSquareLaws.lambda_inv_eq_conj] using h
-
-end
-end DedekindZetaZeroFree.RMKummerQuotientPrime

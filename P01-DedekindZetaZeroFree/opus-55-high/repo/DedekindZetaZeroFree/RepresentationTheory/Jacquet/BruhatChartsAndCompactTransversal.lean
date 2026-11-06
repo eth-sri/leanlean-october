@@ -32,20 +32,17 @@ def omega : Set (FiniteCover F ζ hζ w) :=
 def delta : Set (FiniteCover F ζ hζ w) :=
   projection F ζ hζ w ⁻¹' ordinaryDelta F w
 
-private theorem entry_zero_iff (A B : KPRankOneInduction.GL2 F w)
+theorem entry_zero_iff (A B : KPRankOneInduction.GL2 F w)
     (h : Matrix.ProjGenLinGroup.mk A = Matrix.ProjGenLinGroup.mk B)
     (i j : Fin 2) : A i j = 0 ↔ B i j = 0 := by
   obtain ⟨u, rfl⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp h
-  simp only [Units.val_mul, Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_apply,
-    Fin.sum_univ_two, Matrix.scalar, Matrix.diagonal_apply]
-  fin_cases j <;> simp [Units.ne_zero u]
+  simp
 
-private theorem entry_ratio_eq (A B : KPRankOneInduction.GL2 F w)
+theorem entry_ratio_eq (A B : KPRankOneInduction.GL2 F w)
     (h : Matrix.ProjGenLinGroup.mk A = Matrix.ProjGenLinGroup.mk B)
     (i j k : Fin 2) : A i j / A i k = B i j / B i k := by
   obtain ⟨u, rfl⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp h
-  simp only [Units.val_mul, Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_apply,
-    Fin.sum_univ_two, Matrix.scalar, Matrix.diagonal_apply]
+  simp only [Units.val_mul, Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_apply, Fin.sum_univ_two, Matrix.scalar]
   fin_cases j <;> fin_cases k <;> simp [mul_div_mul_right _ _ (Units.ne_zero u)]
 
 theorem mem_ordinaryOmega_iff (A : KPRankOneInduction.GL2 F w) :
@@ -73,14 +70,14 @@ def deltaCoordinate (g : delta F ζ hζ w) : KPRankOneInduction.LocalField F w :
 theorem omegaCoordinate_eq (g : omega F ζ hζ w)
     (A : KPRankOneInduction.GL2 F w)
     (hA : Matrix.ProjGenLinGroup.mk A = projection F ζ hζ w g.val) :
-    omegaCoordinate F ζ hζ w g = A 1 1 / A 1 0 := by
-  exact entry_ratio_eq F w _ A ((Classical.choose_spec g.property).1.trans hA.symm) 1 1 0
+    omegaCoordinate F ζ hζ w g = A 1 1 / A 1 0 := 
+  entry_ratio_eq F w _ A ((Classical.choose_spec g.property).1.trans hA.symm) 1 1 0
 
 theorem deltaCoordinate_eq (g : delta F ζ hζ w)
     (A : KPRankOneInduction.GL2 F w)
     (hA : Matrix.ProjGenLinGroup.mk A = projection F ζ hζ w g.val) :
-    deltaCoordinate F ζ hζ w g = A 1 0 / A 1 1 := by
-  exact entry_ratio_eq F w _ A ((Classical.choose_spec g.property).1.trans hA.symm) 1 0 1
+    deltaCoordinate F ζ hζ w g = A 1 0 / A 1 1 := 
+  entry_ratio_eq F w _ A ((Classical.choose_spec g.property).1.trans hA.symm) 1 0 1
 
  theorem projection_upper (x : KPRankOneInduction.LocalField F w) :
     projection F ζ hζ w (upperRoot F ζ hζ w (Multiplicative.ofAdd x)) =
@@ -188,7 +185,7 @@ def deltaInverse (g : delta F ζ hζ w) :
           mul_div_cancel₀ _ hd]⟩,
     deltaCoordinate F ζ hζ w g)
 
-private theorem omegaCoordinate_map
+theorem omegaCoordinate_map
     (p : Borel F ζ hζ w × KPRankOneInduction.LocalField F w) :
     omegaCoordinate F ζ hζ w (omegaMap F ζ hζ w p) = p.2 := by
   obtain ⟨A, hA, hc⟩ := p.1.property
@@ -200,7 +197,7 @@ private theorem omegaCoordinate_map
     KPStandardLocalRootLifts.weylSwap, Matrix.GeneralLinearGroup.mkOfDetNeZero, hc,
     borel_bottom_right F w A hc]
 
-private theorem deltaCoordinate_map
+theorem deltaCoordinate_map
     (p : Borel F ζ hζ w × KPRankOneInduction.LocalField F w) :
     deltaCoordinate F ζ hζ w (deltaMap F ζ hζ w p) = p.2 := by
   obtain ⟨A, hA, hc⟩ := p.1.property
@@ -262,7 +259,7 @@ private theorem projection_continuous (hm : KPLocalChartTopology.MatrixChartDept
     exact QuotientGroup.continuous_mk
   exact hmap.comp (KPPGLLocalCover.finite_topological_cover F ζ hζ w m hm).2.2.2.1.continuous
 
-private theorem ordinary_domain_open (j : Fin 2) :
+theorem ordinary_domain_open (j : Fin 2) :
     IsOpen {g : KPRankOneInduction.PGL2 F w | ∃ A : KPRankOneInduction.GL2 F w,
       Matrix.ProjGenLinGroup.mk A = g ∧ A 1 j ≠ 0} := by
   have hq : Topology.IsQuotientMap
@@ -288,7 +285,7 @@ private theorem ordinary_domain_open (j : Fin 2) :
   let A := Classical.choose g.property
   A 1 j / A 1 k
 
-private theorem ordinaryCoordinate_continuous (j k : Fin 2) :
+theorem ordinaryCoordinate_continuous (j k : Fin 2) :
     Continuous (ordinaryCoordinate F w j k) := by
   have hq : IsOpenQuotientMap
       (Matrix.ProjGenLinGroup.mk : KPRankOneInduction.GL2 F w → KPRankOneInduction.PGL2 F w) :=
@@ -356,8 +353,7 @@ def omegaHomeomorph (hm : KPLocalChartTopology.MatrixChartDepth F w m) :
       change Continuous (fun p : Borel F ζ hζ w × KPRankOneInduction.LocalField F w =>
         p.1.val * KPPGLLocalCover.W F ζ hζ (Sum.inr w) *
           KPPGLLocalCover.N F ζ hζ (Sum.inr w) p.2)
-      exact ((continuous_subtype_val.comp continuous_fst).mul continuous_const).mul
-        (hN.comp continuous_snd)
+      fun_prop
     continuous_invFun := by
       letI := (KPPGLLocalCover.finite_topological_cover F ζ hζ w m hm).2.2.1
       have hx := omegaCoordinate_continuous F ζ hζ w m hm
@@ -394,7 +390,7 @@ theorem overlap_coordinates (g : FiniteCover F ζ hζ w)
   obtain ⟨A, hA, hc⟩ := hΩ
   have hd : A 1 1 ≠ 0 := (mem_ordinaryDelta_iff F w A).mp (hA.symm ▸ hΔ)
   rw [omegaCoordinate_eq F ζ hζ w _ A hA, deltaCoordinate_eq F ζ hζ w _ A hA]
-  exact ⟨(inv_div _ _).symm, div_ne_zero hd hc, div_ne_zero hc hd⟩
+  simp_all
 
 theorem omega_complement :
     (omega F ζ hζ w)ᶜ = (Borel F ζ hζ w : Set (FiniteCover F ζ hζ w)) := by
@@ -491,9 +487,7 @@ theorem borel_mul_compactTransversal :
           dsimp [x, q]
           rw [omegaCoordinate_eq F ζ hζ w _ A hA, hz, zero_div]
 
-        have hxmem : x ∈ (KPLocalCube.LocalIntegers F w :
-            Set (KPRankOneInduction.LocalField F w)) := hx0 ▸ (KPLocalCube.LocalIntegers F w).zero_mem
-        exact hx hxmem
+        simp_all
       have hxi : x⁻¹ ∈ (KPLocalCube.LocalIntegers F w : Set (KPRankOneInduction.LocalField F w)) :=
         (Valuation.val_le_one_or_val_inv_le_one
           (ClassFieldTheory.finitePlaceCompletionValuativeRel F w).valuation x).resolve_left hx
@@ -502,7 +496,7 @@ theorem borel_mul_compactTransversal :
       have hxy : y = x⁻¹ := by
         dsimp [y, x, q, q']
         rw [omegaCoordinate_eq F ζ hζ w _ A hA, deltaCoordinate_eq F ζ hζ w _ A hA]
-        exact (inv_div _ _).symm
+        simp
       refine ⟨((deltaInverse F ζ hζ w q').1,
         lowerRoot F ζ hζ w (Multiplicative.ofAdd y)), ⟨Set.mem_univ _, ?_⟩, ?_⟩
       · exact Or.inr ⟨y, hxy ▸ hxi, rfl⟩
@@ -514,8 +508,4 @@ theorem borel_mul_compactTransversal :
     refine ⟨(⟨g, hgB⟩, 1), ⟨Set.mem_univ _, ?_⟩, mul_one g⟩
     right
     refine ⟨0, (KPLocalCube.LocalIntegers F w).zero_mem, ?_⟩
-    exact (lowerRoot F ζ hζ w).map_one
-
-end DedekindZetaZeroFree.KPJacquetBruhatCharts
-
-end
+    simp

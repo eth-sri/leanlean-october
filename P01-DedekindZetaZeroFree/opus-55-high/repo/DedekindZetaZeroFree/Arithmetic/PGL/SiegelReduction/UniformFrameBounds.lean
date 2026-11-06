@@ -29,12 +29,9 @@ variable (F : Type*) [Field F] [NumberField F]
         rw [Submodule.map_coe]
         change Submodule.span F ((coordinates F).toLinearMap '' (M : Set _)) = ⊤
         rw [← Submodule.map_span, hM.2]
-        apply top_unique
-        intro v _
-        exact Submodule.mem_map.mpr ⟨(coordinates F).symm v, trivial,
-          (coordinates F).apply_symm_apply v⟩ }⟩
+        simp }⟩
 
-private theorem coordinate_orbit
+theorem coordinate_orbit
     (M : Submodule (KPCuspArithmetic.Order F) (KPCuspArithmetic.Vec F))
     (hM : KPCuspArithmetic.IsRankTwoLattice F M)
     (q r : RationalLine F)
@@ -73,11 +70,8 @@ private theorem coordinate_orbit
     refine ⟨A, rfl, fun v => ?_⟩
     rw [hAv]
     have hh : f v ∈ Submodule.map (f.restrictScalars _).toLinearMap M ↔ v ∈ M := by
-      rw [Submodule.mem_map_equiv]
-      change f.symm (f v) ∈ M ↔ v ∈ M
-      rw [LinearEquiv.symm_apply_apply]
-    rw [hf] at hh
-    exact hh.symm
+      simp
+    simp_all
   apply (MulAction.orbitRel (KPCuspArithmetic.projectiveAutomorphisms F M)
     (KPCuspArithmetic.Cusp F)).symm
   apply MulAction.orbitRel_apply.mpr
@@ -94,7 +88,7 @@ private theorem coordinate_orbit
     congr 1
     change (A : Matrix (Fin 2) (Fin 2) F) *ᵥ (coordinates F).symm v = _
     rw [hAv]
-    simp [f]
+    rfl
 
 theorem finite_integral_cusp_orbits
     (M : Submodule (KPCuspArithmetic.Order F) (KPCuspArithmetic.Vec F))
@@ -199,7 +193,7 @@ theorem exists_finite_cusp_frames
     have he : Quotient.mk (MulAction.orbitRel Γ (KPCuspArithmetic.Cusp F)) (q a) =
         Quotient.mk _ r := by
       change Quotient.mk _ (e.symm (e (Quotient.mk _ r))).out = Quotient.mk _ r
-      rw [Equiv.symm_apply_apply, Quotient.out_eq]
+      simp
     obtain ⟨γ, hγ⟩ := MulAction.mem_orbit_iff.mp
       (MulAction.orbitRel_apply.mp (Quotient.exact he.symm))
     exact ⟨a, γ, hγ⟩
@@ -212,8 +206,7 @@ theorem exists_finite_cusp_frames
       exact MulAction.orbitRel_apply.mpr (MulAction.mem_orbit_iff.mpr ⟨γ, hγ⟩)
     have hout (a) : Quotient.mk (MulAction.orbitRel Γ (KPCuspArithmetic.Cusp F)) (q a) =
         e.symm a := Quotient.out_eq _
-    rw [hout, hout] at he
-    exact e.symm.injective he
+    simp_all
 
 end DedekindZetaZeroFree.KPCuspSiegel
 
@@ -246,9 +239,7 @@ theorem integral_lattice_determinant_unit
           rw [Submodule.map_coe]
           change Submodule.span F (e.toLinearMap '' (M : Set _)) = ⊤
           rw [← Submodule.map_span, hM.2]
-          apply top_unique
-          intro v _
-          exact Submodule.mem_map.mpr ⟨e.symm v, trivial, e.apply_symm_apply v⟩ }⟩
+          simp }⟩
   let f := (Matrix.GeneralLinearGroup.toLin A).toLinearEquiv
   let g := (e.symm.trans f).trans e
   have hmap : Submodule.map (g.restrictScalars _).toLinearMap L.val = L.val := by
@@ -308,8 +299,7 @@ theorem fractional_absNorm_antitone
   obtain ⟨K, hK⟩ := FractionalIdeal.le_one_iff_exists_coeIdeal.mp hmul
   have hK0 : K ≠ ⊥ := by
     intro hzero
-    have hz : I * J⁻¹ = 0 := by rw [← hK, hzero, FractionalIdeal.coeIdeal_bot]
-    exact (mul_ne_zero hI (inv_ne_zero hJ)) hz
+    simp_all
   have hnorm : (1 : ℚ) ≤ FractionalIdeal.absNorm (I * J⁻¹) := by
     rw [← hK, FractionalIdeal.coeIdeal_absNorm]
     exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hK0)
@@ -386,7 +376,7 @@ theorem lower_row_content_mul_le
     · apply (show FractionalIdeal.spanSingleton (NumberField.RingOfIntegers F)⁰ (A 1 1) ≤
           KPCusp.content F 1 (frameLowerRow F A) from by
             simp only [KPCusp.content, frameLowerRow, mul_one]
-            exact le_add_of_nonneg_left zero_le)
+            simp)
       exact FractionalIdeal.mem_spanSingleton_self _ _
   have hcol (j : Fin 2) : c * (A * G) 1 j ∈
       KPCusp.content F 1 (frameLowerRow F A) := by
@@ -433,8 +423,7 @@ theorem frameHeightConstant_eq_of_mk_eq
   change frameHeightConstant F 1 A * _ = frameHeightConstant F 1 B * _ at hh
   have ha : glAction F A (fun _ => (0, 0)) = glAction F B (fun _ => (0, 0)) := by
     rw [← action_mk, ← action_mk, h]
-  rw [ha] at hh
-  exact mul_right_cancel₀ (ne_of_gt (Real.exp_pos _)) hh
+  simp_all
 
 theorem complex_det_norm_product_sq
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
@@ -549,8 +538,8 @@ theorem exists_projective_frame_bounds
   rw [he]
   obtain ⟨hl, hu⟩ := hb A H hh
   have hd : 0 < (∏ i, ‖(Matrix.GeneralLinearGroup.map (KPCusp.complexPlace F i).embedding A :
-      Matrix (Fin 2) (Fin 2) ℂ).det‖) := by
-    exact Finset.prod_pos fun i _ => norm_pos_iff.mpr (Matrix.GeneralLinearGroup.map _ A).det_ne_zero
+      Matrix (Fin 2) (Fin 2) ℂ).det‖) := 
+    Finset.prod_pos fun i _ => norm_pos_iff.mpr (Matrix.GeneralLinearGroup.map _ A).det_ne_zero
   unfold frameHeightConstant
   rw [integral_lattice_det_norm_mul F hF M hM A H hh]
   constructor
@@ -676,9 +665,3 @@ theorem kp_cusp_siegel_cover_and_truncation_proved
       q A hframe hcusps hirr c C hc hC hlo hhi
   exact ⟨n, q, (fun a => Matrix.ProjGenLinGroup.mk (A a)⁻¹), t₀, P, B,
     hn, hframe, hcusps, hirr, hPB, hcover, hhigh, hcompact, hends⟩
-
-end DedekindZetaZeroFree
-
-end
-
-end

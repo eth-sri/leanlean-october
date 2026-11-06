@@ -31,6 +31,3 @@ def prefixMaximum (F : Type) [Field F] [NumberField F]
 def heightMaximum (F : Type) [Field F] [NumberField F]
     (b ω : Ideal (𝓞 F) → ℂ) (N T : ℝ) : ℝ :=
   sSup {v : ℝ | ∃ t ∈ Set.Icc (-T) T, v = prefixMaximum F b ω N t}
-
-end
-end DedekindZetaZeroFree.DetectorMaximalExpressions

@@ -14,7 +14,7 @@ open KPGlobalEisensteinData
 variable {G V J : Type*} [TopologicalSpace G] [AddCommGroup V] [Module ℂ V]
 variable (D : J → V →ₗ[ℂ] C(G,ℂ))
 
-private theorem series_uniform {z₀ : ℂ} {ρ : ℝ} {a : ℕ → V} {f : ℂ → V}
+theorem series_uniform {z₀ : ℂ} {ρ : ℝ} {a : ℕ → V} {f : ℂ → V}
     (ha : SmoothPowerSeriesOn D z₀ ρ a f)
     (i : DifferentialCompact G J) {r : ℝ} (hr : 0 ≤ r) (hrρ : r < ρ) :
     TendstoUniformlyOn
@@ -30,7 +30,7 @@ private theorem series_uniform {z₀ : ℂ} {ρ : ℝ} {a : ℕ → V} {f : ℂ 
     ((∑ k ∈ Finset.range M, (z-z₀)^k • a k) - f z)‖ < ε at h
   simpa only [map_sub, map_sum, map_smul, dist_eq_norm, norm_sub_rev] using h
 
-private theorem series_terms_zero {z₀ : ℂ} {ρ : ℝ} {a : ℕ → V} {f : ℂ → V}
+theorem series_terms_zero {z₀ : ℂ} {ρ : ℝ} {a : ℕ → V} {f : ℂ → V}
     (ha : SmoothPowerSeriesOn D z₀ ρ a f)
     (i : DifferentialCompact G J) {r : ℝ} (hr : 0 ≤ r) (hrρ : r < ρ) :
     Tendsto (fun k => ‖derivativeRestriction D i (a k)‖ * r^k) atTop (𝓝 0) := by
@@ -56,7 +56,7 @@ private theorem series_terms_zero {z₀ : ℂ} {ρ : ℝ} {a : ℕ → V} {f : �
     FormalMultilinearSeries ℂ ℂ C(i.compact,ℂ) :=
   fun k => ContinuousMultilinearMap.mkPiRing ℂ (Fin k) (derivativeRestriction D i (a k))
 
-private theorem series_radius {z₀ : ℂ} {ρ : ℝ} {a : ℕ → V} {f : ℂ → V}
+theorem series_radius {z₀ : ℂ} {ρ : ℝ} {a : ℕ → V} {f : ℂ → V}
     (ha : SmoothPowerSeriesOn D z₀ ρ a f) (_hρ : 0 < ρ) (i : DifferentialCompact G J) :
     ENNReal.ofReal ρ ≤ (compactSeries D i a).radius := by
   apply ENNReal.le_of_forall_nnreal_lt
@@ -73,8 +73,7 @@ private theorem series_radius {z₀ : ℂ} {ρ : ℝ} {a : ℕ → V} {f : ℂ �
   refine ⟨series_radius D ha hρ i, by positivity, ?_⟩
   intro y hy
   have hyr : ‖y‖ < ρ := by
-    rw [Metric.eball_ofReal, Metric.mem_ball, dist_zero_right] at hy
-    exact hy
+    simp_all
   obtain ⟨r,hr,hrρ⟩ := exists_between hyr
   have hr0 : 0 ≤ r := norm_nonneg y |>.trans hr.le
   have hz : z₀+y ∈ Metric.closedBall z₀ r := by simpa only [Metric.mem_closedBall, dist_eq_norm, add_sub_cancel_left] using hr.le
@@ -85,7 +84,3 @@ private theorem series_radius {z₀ : ℂ} {ρ : ℝ} {a : ℕ → V} {f : ℂ �
   apply (hasSum_iff_tendsto_nat_of_summable_norm hs).mpr
   simpa only [compactSeries, ContinuousMultilinearMap.mkPiRing_apply, Fin.prod_const,
     add_sub_cancel_left] using ht
-
-end DedekindZetaZeroFree.KPGlobalResidualConstruction.CoherentTaylorCalculus
-
-end

@@ -16,10 +16,10 @@ noncomputable def rawRotationVector (i : Fin 3) (x : Ambient) : Ambient :=
 noncomputable def rawRotationDeriv (i : Fin 3) (F : Sphere → ℂ) (x : Sphere) : ℂ :=
   fderiv ℝ (rawRadialExtension F) (x : Ambient) (rawRotationVector i x)
 
-private theorem rawSphere_norm (x : Sphere) : ‖(x : Ambient)‖ = 1 := by
+theorem rawSphere_norm (x : Sphere) : ‖(x : Ambient)‖ = 1 := by
   simpa only [Metric.mem_sphere, dist_zero_right] using x.property
 
-private theorem rawSphere_ne_zero (x : Sphere) : (x : Ambient) ≠ 0 := by
+theorem rawSphere_ne_zero (x : Sphere) : (x : Ambient) ≠ 0 := by
   intro h
   have := rawSphere_norm x
   simp [h] at this
@@ -28,35 +28,35 @@ theorem rawRadialExtension_sphere (F : Sphere → ℂ) (x : Sphere) :
     rawRadialExtension F x = F x := by
   simp only [rawRadialExtension, dif_pos (rawSphere_ne_zero x), rawSphere_norm, inv_one, one_smul]
 
-private theorem rawPuncture_open : IsOpen {x : Ambient | x ≠ 0} := isOpen_ne
+theorem rawPuncture_open : IsOpen {x : Ambient | x ≠ 0} := isOpen_ne
 
-private theorem rawNormalize_smooth :
+theorem rawNormalize_smooth :
     ContDiffOn ℝ (⊤ : ℕ∞) (fun x : Ambient => ‖x‖⁻¹ • x) {x | x ≠ 0} := by
   intro x hx
   exact (((contDiffAt_norm ℝ hx).inv (norm_ne_zero_iff.mpr hx)).smul contDiffAt_id).contDiffWithinAt
 
-private theorem restrict_raw_smooth (G : Ambient → ℂ)
+theorem restrict_raw_smooth (G : Ambient → ℂ)
     (hG : ContDiffOn ℝ (⊤ : ℕ∞) G {x | x ≠ 0}) :
     RawSphereSmooth (fun x : Sphere => G x) := by
-  have h := hG.comp rawNormalize_smooth (fun x hx => by
-    exact smul_ne_zero (inv_ne_zero (norm_ne_zero_iff.mpr hx)) hx)
+  have h := hG.comp rawNormalize_smooth (fun x hx => 
+    smul_ne_zero (inv_ne_zero (norm_ne_zero_iff.mpr hx)) hx)
   apply h.congr
   intro x hx
   simp only [rawRadialExtension, dif_pos (show x ≠ 0 from hx), Function.comp_apply]
 
-private theorem rawRotationVector_smooth (i : Fin 3) :
+theorem rawRotationVector_smooth (i : Fin 3) :
     ContDiff ℝ (⊤ : ℕ∞) (rawRotationVector i) := by
   unfold rawRotationVector
   apply (PiLp.continuousLinearEquiv 2 ℝ (fun _ : Fin 3 => ℝ)).symm.contDiff.comp
   apply contDiff_pi.mpr
   intro j
-  simp only [rawRotationVector]
+  simp only
   split_ifs
   · exact (EuclideanSpace.proj (𝕜 := ℝ) (i + 2)).contDiff.neg
   · exact (EuclideanSpace.proj (𝕜 := ℝ) (i + 1)).contDiff
-  · exact contDiff_const
+  fun_prop
 
-private theorem rawRotationDeriv_smooth (i : Fin 3) {F : Sphere → ℂ} (hF : RawSphereSmooth F) :
+theorem rawRotationDeriv_smooth (i : Fin 3) {F : Sphere → ℂ} (hF : RawSphereSmooth F) :
     RawSphereSmooth (rawRotationDeriv i F) := by
   unfold rawRotationDeriv
   apply restrict_raw_smooth
@@ -72,8 +72,7 @@ theorem RawSphereSmooth.continuous {F : Sphere → ℂ} (hF : RawSphereSmooth F)
 
 noncomputable def rawSphereOrthogonal (e : Ambient ≃ₗᵢ[ℝ] Ambient) : Sphere ≃ₜ Sphere :=
   e.toHomeomorph.subtype (fun x => by
-    change ‖x - 0‖ = 1 ↔ ‖e x - 0‖ = 1
-    simp only [sub_zero, e.norm_map])
+    simp)
 
 @[simp] theorem rawSphereOrthogonal_coe (e : Ambient ≃ₗᵢ[ℝ] Ambient) (x : Sphere) :
     (rawSphereOrthogonal e x : Ambient) = e x := rfl
@@ -122,9 +121,9 @@ noncomputable def rawRotationFlowMap (i : Fin 3) (t : ℝ) : Ambient →ₗ[ℝ]
       Real.cos t * x (i+1) - Real.sin t * x (i+2)
     else Real.sin t * x (i+1) + Real.cos t * x (i+2))
   map_add' x y := by
-    ext j; simp only [PiLp.toLp_apply, PiLp.add_apply]; split_ifs <;> ring
+    ext j; simp only [PiLp.add_apply]; split_ifs <;> ring
   map_smul' c x := by
-    ext j; simp only [PiLp.toLp_apply, PiLp.smul_apply, smul_eq_mul, RingHom.id_apply]
+    ext j; simp only [PiLp.smul_apply, smul_eq_mul, RingHom.id_apply]
     split_ifs <;> ring
 
 theorem rawRotationFlowMap_inverse (i : Fin 3) (t : ℝ) (x : Ambient) :
@@ -142,8 +141,7 @@ theorem rawRotationFlowMap_norm (i : Fin 3) (t : ℝ) (x : Ambient) :
   apply (sq_eq_sq₀ (norm_nonneg _) (norm_nonneg _)).mp
   rw [EuclideanSpace.norm_sq_eq, EuclideanSpace.norm_sq_eq]
   have ht := Real.cos_sq_add_sin_sq t
-  fin_cases i <;> simp only [Fin.sum_univ_three, rawRotationFlowMap, LinearMap.coe_mk,
-    AddHom.coe_mk, PiLp.toLp_apply, Fin.reduceAdd, Real.norm_eq_abs, sq_abs] <;>
+  fin_cases i <;> simp only [Fin.sum_univ_three, rawRotationFlowMap, LinearMap.coe_mk, AddHom.coe_mk, PiLp.toLp_apply, Real.norm_eq_abs, sq_abs] <;>
     simp <;> nlinarith [sq_nonneg (x 0), sq_nonneg (x 1), sq_nonneg (x 2)]
 
 noncomputable def rawRotationFlow (i : Fin 3) (t : ℝ) : Ambient ≃ₗᵢ[ℝ] Ambient where
@@ -188,7 +186,7 @@ theorem rawSphereOrthogonal_rawRotationFlow_hasDerivAt (i : Fin 3) {F : Sphere �
   have hn : (rawSphereOrthogonal (rawRotationFlow i t) x : Ambient) ≠ 0 := by
     intro hz
     have hs := (rawSphereOrthogonal (rawRotationFlow i t) x).property
-    simp [Metric.mem_sphere, hz] at hs
+    simp_all
   have hd := ((hF _ hn).contDiffAt (isOpen_ne.mem_nhds hn)).differentiableAt (by simp)
   have hc := hd.hasFDerivAt.comp_hasDerivAt t (rawRotationFlow_hasDerivAt i (x : Ambient) t)
   simpa only [Function.comp_def, ← rawSphereOrthogonal_coe, rawRadialExtension_sphere,
@@ -280,5 +278,3 @@ theorem fractionalIntegral_raw_rotationDeriv (α : ℝ) (hα : 0 < α)
   have hc := fractionalIntegral_rawRotationFlow_hasDerivAt α hα i hF x 0
   rw [he] at hc
   exact hd'.unique hc
-
-end DedekindZetaZeroFree.ComplexFractionalInverse.RotationCalculus

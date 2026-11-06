@@ -7,7 +7,6 @@ public import DedekindZetaZeroFree.Adeles.Approximation.IntegralProductCRTDensit
 @[expose] public section
 
 namespace DedekindZetaZeroFree
-noncomputable section
 open NumberField IsDedekindDomain
 
 set_option backward.isDefEq.respectTransparency false in
@@ -42,8 +41,6 @@ theorem finiteAdele_dense (F : Type*) [Field F] [NumberField F] :
   obtain ⟨a, ha⟩ := (denseRange_ringOfIntegers_integralDiagonal F).exists_mem_open
     (hU.preimage hg) ⟨t, by simpa only [Set.mem_preimage, htz] using hz⟩
   have hdiag : s (ringOfIntegers_integralDiagonal F a) = algebraMap (𝓞 F) A a := by
-    apply FiniteAdeleRing.ext
-    intro v
     rfl
   refine ⟨algebraMap F A (a / algebraMap (𝓞 F) F d), ?_,
     ⟨a / algebraMap (𝓞 F) F d, rfl⟩⟩
@@ -65,6 +62,3 @@ theorem finiteAdele_strongApprox (F : Type*) [Field F] [NumberField F]
   change z = algebraMap F (FiniteAdeleRing (𝓞 F) F) lam + -k'
   change z + k' = algebraMap F (FiniteAdeleRing (𝓞 F) F) lam at heq
   rw [← heq, add_neg_cancel_right]
-
-end
-end DedekindZetaZeroFree

@@ -39,7 +39,7 @@ def realization : Core F ζ hζ P C →ₗ[ℂ]
         (localReference F ζ hζ P C) C.exceptional s x) =
       finiteTensorRealization F ζ hζ P C s.val s.property x := by
   unfold realization RestrictedTensorSimple.stageInclusion
-  rw [Module.DirectLimit.lift_of]
+  simp
 
 theorem evaluated_tail (raw : RestrictedCover F ζ hζ) :
     ∀ᶠ q in Filter.cofinite,
@@ -47,8 +47,8 @@ theorem evaluated_tail (raw : RestrictedCover F ζ hζ) :
         (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q) (raw (Sum.inr q))) =
           localReference F ζ hζ P C q := by
   have hraw : ∀ᶠ q in Filter.cofinite,
-      raw (Sum.inr q) ∈ finiteCompact F ζ hζ q := by
-    exact Sum.inr_injective.tendsto_cofinite.eventually raw.property
+      raw (Sum.inr q) ∈ finiteCompact F ζ hζ q := 
+    Sum.inr_injective.tendsto_cofinite.eventually raw.property
   filter_upwards [hraw, C.exceptional.finite_toSet.eventually_cofinite_notMem,
     (bad_finite F).eventually_cofinite_notMem] with q hr hq hb
   obtain ⟨ht, hc⟩ := C.actual_compact q hq
@@ -60,8 +60,7 @@ theorem evaluated_tail (raw : RestrictedCover F ζ hζ) :
     obtain ⟨k, hk⟩ := hr
     exact ⟨k, by rw [← hk]; rfl⟩
   have hf := LocalSeed.finite_right_fixed F ζ hζ P C q hq ⟨_, hk⟩ 1
-  rw [one_mul, LocalSeed.finite_one] at hf
-  exact hf
+  simp_all
 
 def evaluatedStage (raw : RestrictedCover F ζ hζ) :
     RestrictedTensorSimple.Level C.exceptional :=
@@ -96,7 +95,7 @@ theorem evaluatedStage_tail (raw : RestrictedCover F ζ hζ)
   by_contra h
   apply hq
   apply Finset.mem_union_right
-  exact (Filter.eventually_cofinite.mp (evaluated_tail F ζ hζ P C raw)).mem_toFinset.mpr h
+  simp_all
 
 theorem evaluatedTensor_stage (raw : RestrictedCover F ζ hζ)
     (s : RestrictedTensorSimple.Level C.exceptional)
@@ -144,7 +143,7 @@ theorem evaluatedTensor_stage (raw : RestrictedCover F ζ hζ)
     funext q
     split_ifs with h
     · rfl
-    · exact (htail q.val h).symm
+    simp_all
   exact (hins t htu (evaluatedStage_tail F ζ hζ P C raw)).trans (hins s hsu hs).symm
 
 theorem evaluatedTensor_congr (g h : RestrictedCover F ζ hζ)
@@ -192,7 +191,3 @@ theorem evaluatedTensor_right_level (raw u : RestrictedCover F ζ hζ)
     (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q) (raw (Sum.inr q) * u (Sum.inr q))) = _
   rw [map_mul]
   exact FiniteLevels.raw_local_fixed F ζ hζ P C u hu q _
-
-end DedekindZetaZeroFree.EisensteinReferenceSections.SourceTensor
-
-end

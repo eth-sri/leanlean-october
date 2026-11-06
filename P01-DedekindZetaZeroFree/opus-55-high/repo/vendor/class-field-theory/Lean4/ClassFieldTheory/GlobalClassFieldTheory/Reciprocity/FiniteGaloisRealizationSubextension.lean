@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # The finite Galois subextension attached to a number-field tower
 
@@ -101,7 +97,7 @@ theorem numberFieldTowerExtensionQuotient_finite :
 
 /-- The compatible realization of `L / K` as the finite Galois
 subextension consumed by abstract reciprocity. -/
-noncomputable def numberFieldTowerFiniteGaloisSubextension :
+def numberFieldTowerFiniteGaloisSubextension :
     FiniteGaloisSubextension
       (numberFieldTowerBaseSubgroup K L) where
   field := numberFieldTowerTopSubgroup L
@@ -115,7 +111,7 @@ noncomputable def numberFieldTowerFiniteGaloisSubextension :
 /-- The lower fixing subgroup, with its finite absolute-index witness,
 is the finite abstract field consumed by abstract reciprocity. -/
 @[reducible]
-noncomputable def numberFieldTowerFiniteAbstractField :
+def numberFieldTowerFiniteAbstractField :
     FiniteAbstractField
       (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ) where
   field := numberFieldTowerBaseSubgroup K L
@@ -141,7 +137,7 @@ theorem numberFieldTowerBaseSubgroup_isOpen :
 
 /-- The quotient represented by the compatible abstract subextension is
 the actual `Gal(L / K)`. -/
-noncomputable def
+def
     numberFieldTowerExtensionQuotientEquivGaloisGroup :
     (numberFieldTowerFiniteGaloisSubextension K L).extensionQuotient ≃*
       Gal(L / K) := by
@@ -245,7 +241,7 @@ variable
 /-- The compatible finite Galois realization of an abelian number
 field extension, bundled with commutativity of its actual abstract
 quotient. -/
-noncomputable def numberFieldTowerFiniteAbelianSubextension
+def numberFieldTowerFiniteAbelianSubextension
     [hAbelian : IsAbelianGalois K L] :
     FiniteAbelianSubextension
       (numberFieldTowerBaseSubgroup K L) := by
@@ -264,8 +260,3 @@ noncomputable def numberFieldTowerFiniteAbelianSubextension
                 exact
                   hAbelian.toIsMulCommutative.is_comm.comm
                     (e x) (e y)⟩ } }
-
-end Reciprocity
-end GlobalClassFieldTheory
-
-end

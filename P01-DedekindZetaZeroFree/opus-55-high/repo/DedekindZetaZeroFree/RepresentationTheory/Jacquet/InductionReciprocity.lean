@@ -24,8 +24,7 @@ def torusToBorel : Torus F ζ hζ w →* Borel F ζ hζ w := by
     (KPRankOneInduction.coveredTorus_le_Borel F w (projection F ζ hζ w))
 
 theorem upperRoot_mem_borel (x : Multiplicative (KPRankOneInduction.LocalField F w)) :
-    upperRoot F ζ hζ w x ∈ Borel F ζ hζ w := by
-  exact KPJacquetClosedCellBump.upperRoot_mem_borel F ζ hζ w x
+    upperRoot F ζ hζ w x ∈ Borel F ζ hζ w := by apply DedekindZetaZeroFree.KPJacquetClosedCellBump.upperRoot_mem_borel <;> assumption
 
 private theorem ordinaryPGLMap_injective : Function.Injective (ordinaryPGLMap F w) := by
   letI := KPPGLLocalCover.scalarSubgroup_normal F (Sum.inr w)
@@ -75,8 +74,6 @@ private theorem projection_surjective : Function.Surjective (projection F ζ hζ
 
 private theorem upperRoot_projection (x : Multiplicative (KPRankOneInduction.LocalField F w)) :
     projection F ζ hζ w (upperRoot F ζ hζ w x) = KPRankOneInduction.ordinaryUpperRootHom F w x := by
-  change Matrix.ProjGenLinGroup.mk (KubotaRankTwo.n _ _) =
-    Matrix.ProjGenLinGroup.mk (KPRankOneInduction.upperRootMatrix F w _)
   rfl
 
 private theorem upperRoot_injective : Function.Injective (upperRoot F ζ hζ w) := by
@@ -193,8 +190,8 @@ set_option maxHeartbeats 1000000 in
 theorem borelRetraction_decomposition (b : Borel F ζ hζ w) :
     ∃ x : Multiplicative (KPRankOneInduction.LocalField F w),
       (b : FiniteCover F ζ hζ w) =
-        (borelRetraction F ζ hζ w b : FiniteCover F ζ hζ w) * upperRoot F ζ hζ w x := by
-  exact ⟨(Classical.choose (ExistsUnique.exists (borel_factorization F ζ hζ w b))).2,
+        (borelRetraction F ζ hζ w b : FiniteCover F ζ hζ w) * upperRoot F ζ hζ w x := 
+  ⟨(Classical.choose (ExistsUnique.exists (borel_factorization F ζ hζ w b))).2,
     Classical.choose_spec (ExistsUnique.exists (borel_factorization F ζ hζ w b))⟩
 
 theorem borelRetraction_kernel (b : Borel F ζ hζ w) :
@@ -204,31 +201,29 @@ theorem borelRetraction_kernel (b : Borel F ζ hζ w) :
   constructor
   · intro hb
     obtain ⟨x, hx⟩ := borelRetraction_decomposition F ζ hζ w b
-    exact ⟨x, by simpa [hb] using hx⟩
+    simp_all
   · rintro ⟨x, hx⟩
     have hb : b = ⟨upperRoot F ζ hζ w x, upperRoot_mem_borel F ζ hζ w x⟩ :=
       Subtype.ext hx
     rw [hb, borelRetraction_upperRoot]
 
-private theorem upper_entry_ratio_eq (A B : KPRankOneInduction.GL2 F w)
+theorem upper_entry_ratio_eq (A B : KPRankOneInduction.GL2 F w)
     (h : Matrix.ProjGenLinGroup.mk A = Matrix.ProjGenLinGroup.mk B) :
     A 0 1 / A 0 0 = B 0 1 / B 0 0 := by
   obtain ⟨u, rfl⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp h
-  simp [Units.val_mul, Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_apply,
-    Fin.sum_univ_two, Matrix.scalar, Matrix.diagonal_apply,
-    mul_div_mul_right _ _ (Units.ne_zero u)]
+  simp [Units.val_mul, Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_apply, Matrix.scalar, Matrix.diagonal_apply, mul_div_mul_right _ _ (Units.ne_zero u)]
 
  def upperCoordinate (b : KPRankOneInduction.upperBorel F w) :
     KPRankOneInduction.LocalField F w :=
   let A := Classical.choose b.property
   A 0 1 / A 0 0
 
-private theorem upperCoordinate_eq (b : KPRankOneInduction.upperBorel F w)
+theorem upperCoordinate_eq (b : KPRankOneInduction.upperBorel F w)
     (A : KPRankOneInduction.GL2 F w) (hA : Matrix.ProjGenLinGroup.mk A = b.val) :
     upperCoordinate F w b = A 0 1 / A 0 0 :=
   upper_entry_ratio_eq F w _ A ((Classical.choose_spec b.property).1.trans hA.symm)
 
-private theorem upperCoordinate_continuous : Continuous (upperCoordinate F w) := by
+theorem upperCoordinate_continuous : Continuous (upperCoordinate F w) := by
   have hq : IsOpenQuotientMap
       (Matrix.ProjGenLinGroup.mk : KPRankOneInduction.GL2 F w → KPRankOneInduction.PGL2 F w) :=
     QuotientGroup.isOpenQuotientMap_mk
@@ -286,9 +281,7 @@ private theorem borelRetraction_formula (b : Borel F ζ hζ w) :
     simp [Units.val_mul, Matrix.mul_apply, Fin.sum_univ_two, KubotaRankTwo.n,
       Matrix.GeneralLinearGroup.mkOfDetNeZero, h01, ha00]
   rw [hc]
-  have he : Multiplicative.ofAdd (-Multiplicative.toAdd x) = x⁻¹ := rfl
-  rw [he, map_inv, hx]
-  group
+  simp_all
 
 private theorem borelRetraction_continuous_admissible
     (hm : KPLocalChartTopology.MatrixChartDepth F w m) :
@@ -317,8 +310,8 @@ private theorem borelRetraction_continuous_admissible
 theorem borelRetraction_continuous
     (hm : KPLocalChartTopology.MatrixChartDepth F w m) :
     letI := finiteCoverTopology F ζ hζ w m
-    Continuous (borelRetraction F ζ hζ w) := by
-  exact borelRetraction_continuous_admissible F ζ hζ w m hm
+    Continuous (borelRetraction F ζ hζ w) := 
+  borelRetraction_continuous_admissible F ζ hζ w m hm
 
 theorem dB_retraction (b : Borel F ζ hζ w) :
     dB F ζ hζ w (torusToBorel F ζ hζ w m hm (borelRetraction F ζ hζ w b)) =
@@ -391,7 +384,3 @@ def inducedAction (τ : Representation ℂ (Torus F ζ hζ w) E) :
   letI := (KPPGLLocalCover.finite_topological_cover F ζ hζ w m hm).2.2.1
   exact smoothIndRepresentation (Borel F ζ hζ w)
     (inflatedRepresentation F ζ hζ w (borelRetraction F ζ hζ w) τ) (dB F ζ hζ w)
-
-end DedekindZetaZeroFree.KPLocalInductionJacquetReciprocity
-
-end

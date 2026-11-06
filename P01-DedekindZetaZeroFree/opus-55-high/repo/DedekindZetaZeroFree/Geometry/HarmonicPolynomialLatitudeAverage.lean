@@ -26,7 +26,7 @@ private lemma moment_odd (i j : ℕ) (h : Odd (i+j)) : moment i j = 0 := by
   have hp : Function.Periodic f (2*Real.pi) := by
     intro θ
     dsimp only [f]
-    rw [Real.cos_add_two_pi, Real.sin_add_two_pi]
+    simp
   have hn (θ : ℝ) : f (Real.pi + θ) = - f θ := by
     dsimp only [f]
     rw [add_comm Real.pi, Real.cos_add_pi, Real.sin_add_pi]
@@ -68,7 +68,7 @@ private lemma poly_integrable (p : MvPolynomial (Fin 3) ℂ) (u : ℝ)
     intro i
     fin_cases i <;> change Continuous _ <;> dsimp [latitudeAmbient]
     all_goals fun_prop
-  exact (hc.integrableOn_Icc).smul_measure (by simp [ENNReal.inv_ne_top]; positivity)
+  exact (hc.integrableOn_Icc).smul_measure (by simp; positivity)
 private lemma exists_profile (p : MvPolynomial (Fin 3) ℂ) :
     ∃ Q : Polynomial ℂ, ∀ u : ℝ, u ∈ Set.Icc (0:ℝ) 1 →
       (∫ θ : ℝ, polynomialSphere p (latitudePoint (.refl ℝ Ambient) u θ) ∂angleMeasure) = Q.eval (u:ℂ) := by
@@ -103,7 +103,7 @@ private lemma exists_profile (p : MvPolynomial (Fin 3) ℂ) :
     change (∫ θ : ℝ, polynomialSphere p (latitudePoint (.refl ℝ Ambient) u θ) +
       polynomialSphere q (latitudePoint (.refl ℝ Ambient) u θ) ∂angleMeasure) = _
     rw [integral_add (poly_integrable p u hu) (poly_integrable q u hu)]
-    exact (congrArg₂ (· + ·) (hP u hu) (hQ u hu)).trans (Polynomial.eval_add).symm
+    simp_all
 
 theorem latitude_average_polynomial (p : MvPolynomial (Fin 3) ℂ) :
     ∃ Q : Polynomial ℂ,
@@ -123,10 +123,8 @@ theorem latitude_average_polynomial (p : MvPolynomial (Fin 3) ℂ) :
     apply Subtype.ext
     rw [latitudePoint_val _ _ _ (by constructor <;> norm_num)]
     ext i
-    fin_cases i <;> simp [latitudeAmbient, north, PiLp.single_apply]
+    fin_cases i <;> simp [latitudeAmbient, north]
   have he := hQ 0 (by constructor <;> norm_num)
   simp only [hz, Complex.ofReal_zero, integral_const, Measure.real, hm,
     ENNReal.toReal_one, one_smul] at he
   exact he.symm
-
-end DedekindZetaZeroFree.ComplexFractionalInverse.FunkHecke.CircleAverage

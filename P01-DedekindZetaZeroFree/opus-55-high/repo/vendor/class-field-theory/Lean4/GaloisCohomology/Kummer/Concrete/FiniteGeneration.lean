@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # finite actual-field form
 
@@ -104,16 +100,13 @@ theorem finiteKummerRootSet_adjoin_eq_top
                   Units.map (algebraMap K L).toMonoidHom ((phi tau) ^ (n : ℕ)) :=
                 (map_pow (Units.map (algebraMap K L).toMonoidHom)
                   (phi tau) (n : ℕ)).symm
-              _ = Units.map (algebraMap K L).toMonoidHom (phi (tau ^ (n : ℕ))) := by
-                exact congrArg (Units.map (algebraMap K L).toMonoidHom)
+              _ = Units.map (algebraMap K L).toMonoidHom (phi (tau ^ (n : ℕ))) := 
+                congrArg (Units.map (algebraMap K L).toMonoidHom)
                   (map_pow phi tau (n : ℕ)).symm
               _ = 1 := by rw [hexponent tau, map_one, map_one]⟩
         map_one' := by
-          apply Subtype.ext
           simp
         map_mul' := by
-          intro sigma tau
-          apply Subtype.ext
           simp }
     have hchi_sigma : chi sigma ≠ 1 := by
       intro hchi
@@ -147,14 +140,6 @@ theorem finiteKummerRootSet_adjoin_eq_top
     have hchi_eq : D.kummerCharacterWithoutSection hfixed delta = chi := by
       rw [← D.quotientKummerCharacterWithoutSection_mk delta hfixed]
       exact hq
-    apply hchi_sigma
-    rw [← hchi_eq]
-    exact hkummer_sigma
+    simp_all
   rw [hsigma_eq_one]
-  exact one_mem _
-
-end FiniteKummerGeneration
-
-end KummerTheory
-
-end
+  rfl

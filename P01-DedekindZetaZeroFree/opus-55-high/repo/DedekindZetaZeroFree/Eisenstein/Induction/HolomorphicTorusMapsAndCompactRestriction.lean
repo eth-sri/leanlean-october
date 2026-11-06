@@ -11,7 +11,6 @@ open NumberField IsDedekindDomain MeasureTheory
 
 namespace DedekindZetaZeroFree.KPGlobalTorusBorelNormTwistTransport
 noncomputable section
-set_option autoImplicit false
 set_option maxRecDepth 2000
 set_option maxHeartbeats 800000
 set_option synthInstance.maxHeartbeats 100000
@@ -91,8 +90,3 @@ def compactLevelTopology (P : Polarization F ζ hζ)
     (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ) (K : Subgroup (G F ζ hζ)) :
     TopologicalSpace (CompactLevel F ζ hζ P J K) :=
   TopologicalSpace.coinduced (restrictLevel F ζ hζ P J K) (inducedLevelTopology F ζ hζ P J)
-
-end
-end DedekindZetaZeroFree.KPGlobalTorusBorelNormTwistTransport
-
-end

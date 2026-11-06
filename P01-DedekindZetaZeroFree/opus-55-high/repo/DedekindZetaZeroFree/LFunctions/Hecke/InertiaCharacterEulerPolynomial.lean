@@ -33,8 +33,6 @@ theorem inertiaCharacterDeterminant
   have heval : ∀ (ρ : {ρ : ComplexDual G // H ≤ ρ.ker}),
       (e ρ) ((QuotientGroup.mk' H) g) = ρ.val g := by
     intro ρ
-    change (MonoidHom.domRestrictHomKerEquiv ℂˣ H (e1 ρ)) (g : G ⧸ H) = ρ.val g
-    rw [MonoidHom.domRestrictHomKerEquiv_apply_coe]
     rfl
 
   have hprod : (∏ ρ : ComplexDual G, (1 - (if H ≤ ρ.ker then (ρ g : ℂ) else 0) * x))
@@ -42,23 +40,13 @@ theorem inertiaCharacterDeterminant
     refine Finset.prod_congr_set {ρ : ComplexDual G | H ≤ ρ.ker}
       (fun ρ : ComplexDual G => (1 - (if H ≤ ρ.ker then (ρ g : ℂ) else 0) * x))
       (fun ρ : {ρ : ComplexDual G // H ≤ ρ.ker} => (1 - (ρ.val g : ℂ) * x)) ?_ ?_
-    · intro ρ hρ
-      by_cases hp : H ≤ ρ.ker
-      · rw [if_pos hp]
-      · exact absurd (show H ≤ ρ.ker from hρ) hp
-    · intro ρ hρ
-      by_cases hp : H ≤ ρ.ker
-      · exact absurd hp (show ¬ (H ≤ ρ.ker) from hρ)
-      · rw [if_neg hp]; ring
+    · simp_all
+    simp_all
   rw [hprod]
   have hstep : (∏ ρ : {ρ : ComplexDual G // H ≤ ρ.ker}, (1 - (ρ.val g : ℂ) * x))
       = ∏ τ : ComplexDual (G ⧸ H), (1 - (τ ((QuotientGroup.mk' H) g) : ℂ) * x) := by
     rw [← Equiv.prod_comp e (fun τ : ComplexDual (G ⧸ H) =>
         1 - (τ ((QuotientGroup.mk' H) g) : ℂ) * x)]
-    apply Finset.prod_congr rfl
-    intro ρ _
-    rw [heval]
+    rfl
   rw [hstep]
   exact regularCharacterDeterminant ((QuotientGroup.mk' H) g) x
-
-end DedekindZetaZeroFree.AbelianQuotient

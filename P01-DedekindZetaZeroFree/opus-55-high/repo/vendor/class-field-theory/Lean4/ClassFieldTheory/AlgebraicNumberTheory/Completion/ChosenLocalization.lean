@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # The chosen localization at a finite place
 
@@ -44,21 +40,21 @@ abbrev ChosenFinitePlaceBaseCompletion
     (w₀ : HeightOneSpectrum (𝓞 K)) :=
   (HeightOneSpectrum.adicAbv K w₀).Completion
 
-noncomputable instance chosenFinitePlaceExtensionCompletionAlgebra
+instance chosenFinitePlaceExtensionCompletionAlgebra
     (w₀ : HeightOneSpectrum (𝓞 K)) :
     Algebra K
       (chosenFinitePlaceExtension (L := L) w₀).1.Completion :=
   AbsoluteValue.extensionCompletionAlgebra
     (K := K) (chosenFinitePlaceExtension (L := L) w₀).1
 
-noncomputable instance chosenFinitePlaceExtensionCompletionSMul
+instance chosenFinitePlaceExtensionCompletionSMul
     (w₀ : HeightOneSpectrum (𝓞 K)) :
     SMul K
       (chosenFinitePlaceExtension (L := L) w₀).1.Completion :=
   (chosenFinitePlaceExtensionCompletionAlgebra
     (K := K) (L := L) w₀).toSMul
 
-noncomputable instance chosenFinitePlaceCompletionAlgebra
+instance chosenFinitePlaceCompletionAlgebra
     (w₀ : HeightOneSpectrum (𝓞 K)) :
     Algebra
       (ChosenFinitePlaceBaseCompletion (K := K) w₀)
@@ -68,7 +64,7 @@ noncomputable instance chosenFinitePlaceCompletionAlgebra
     (chosenFinitePlaceExtension (L := L) w₀).1
     (chosenFinitePlaceExtension (L := L) w₀).2
 
-noncomputable instance chosenFinitePlaceBaseValued
+instance chosenFinitePlaceBaseValued
     (w₀ : HeightOneSpectrum (𝓞 K)) :
     Valued
       (ChosenFinitePlaceBaseCompletion (K := K) w₀) ℝ≥0 :=
@@ -76,7 +72,7 @@ noncomputable instance chosenFinitePlaceBaseValued
     (HeightOneSpectrum.adicAbv K w₀)
     (HeightOneSpectrum.isNonarchimedean_adicAbv K w₀)
 
-noncomputable instance chosenFinitePlaceBaseValuativeRel
+instance chosenFinitePlaceBaseValuativeRel
     (w₀ : HeightOneSpectrum (𝓞 K)) :
     ValuativeRel
       (ChosenFinitePlaceBaseCompletion (K := K) w₀) :=
@@ -84,7 +80,7 @@ noncomputable instance chosenFinitePlaceBaseValuativeRel
     (HeightOneSpectrum.adicAbv K w₀)
     (HeightOneSpectrum.isNonarchimedean_adicAbv K w₀)
 
-noncomputable instance chosenFinitePlaceLocalizedValued
+instance chosenFinitePlaceLocalizedValued
     (w₀ : HeightOneSpectrum (𝓞 K)) :
     Valued
       (ChosenFinitePlaceLocalizedCompletion
@@ -94,7 +90,7 @@ noncomputable instance chosenFinitePlaceLocalizedValued
     (chosenFinitePlaceExtension (L := L) w₀)
     (HeightOneSpectrum.isNonarchimedean_adicAbv K w₀)
 
-noncomputable instance chosenFinitePlaceLocalizedValuativeRel
+instance chosenFinitePlaceLocalizedValuativeRel
     (w₀ : HeightOneSpectrum (𝓞 K)) :
     ValuativeRel
       (ChosenFinitePlaceLocalizedCompletion
@@ -104,7 +100,7 @@ noncomputable instance chosenFinitePlaceLocalizedValuativeRel
     (chosenFinitePlaceExtension (L := L) w₀)
     (HeightOneSpectrum.isNonarchimedean_adicAbv K w₀)
 
-noncomputable instance
+instance
     chosenFinitePlaceLocalizedValuationHasExtension
     (w₀ : HeightOneSpectrum (𝓞 K)) :
     Valuation.HasExtension
@@ -118,7 +114,7 @@ noncomputable instance
     (chosenFinitePlaceExtension (L := L) w₀)
     (HeightOneSpectrum.isNonarchimedean_adicAbv K w₀)
 
-noncomputable instance chosenFinitePlaceLocalizedIntegerAlgebra
+instance chosenFinitePlaceLocalizedIntegerAlgebra
     (w₀ : HeightOneSpectrum (𝓞 K)) :
     Algebra
       𝒪[ChosenFinitePlaceBaseCompletion (K := K) w₀]
@@ -127,7 +123,7 @@ noncomputable instance chosenFinitePlaceLocalizedIntegerAlgebra
   Algebra.ofSubsemiring
     𝒪[ChosenFinitePlaceBaseCompletion (K := K) w₀]
 
-noncomputable instance chosenFinitePlaceLocalizedIsIntegralClosure
+instance chosenFinitePlaceLocalizedIsIntegralClosure
     (w₀ : HeightOneSpectrum (𝓞 K)) :
     IsIntegralClosure
       𝒪[ChosenFinitePlaceLocalizedCompletion
@@ -141,7 +137,7 @@ noncomputable instance chosenFinitePlaceLocalizedIsIntegralClosure
     (RayClass.adicAbv_isNontrivial w₀)
     (HeightOneSpectrum.isNonarchimedean_adicAbv K w₀)
 
-noncomputable instance
+instance
     chosenFinitePlaceBaseNontriviallyNormedField
     (w₀ : HeightOneSpectrum (𝓞 K)) :
     NontriviallyNormedField
@@ -150,14 +146,14 @@ noncomputable instance
     (HeightOneSpectrum.adicAbv K w₀)
     (RayClass.adicAbv_isNontrivial w₀)
 
-noncomputable instance chosenFinitePlaceBaseLocallyCompactSpace
+instance chosenFinitePlaceBaseLocallyCompactSpace
     (w₀ : HeightOneSpectrum (𝓞 K)) :
     LocallyCompactSpace
       (ChosenFinitePlaceBaseCompletion (K := K) w₀) :=
   AbsoluteValue.Completion.locallyCompactSpace
     (finitePlaceCompletionBaseMap_isometry w₀)
 
-noncomputable instance chosenFinitePlaceBaseIsUltrametricDist
+instance chosenFinitePlaceBaseIsUltrametricDist
     (w₀ : HeightOneSpectrum (𝓞 K)) :
     IsUltrametricDist
       (ChosenFinitePlaceBaseCompletion (K := K) w₀) :=
@@ -165,7 +161,7 @@ noncomputable instance chosenFinitePlaceBaseIsUltrametricDist
     (HeightOneSpectrum.adicAbv K w₀)
     (HeightOneSpectrum.isNonarchimedean_adicAbv K w₀)
 
-noncomputable instance
+instance
     chosenFinitePlaceBaseValuationIsNontrivial
     (w₀ : HeightOneSpectrum (𝓞 K)) :
     (Valued.v :
@@ -176,7 +172,7 @@ noncomputable instance
     (NormedField.valuation
       (K := ChosenFinitePlaceBaseCompletion (K := K) w₀)).IsNontrivial)
 
-noncomputable instance chosenFinitePlaceBaseValuationCompatible
+instance chosenFinitePlaceBaseValuationCompatible
     (w₀ : HeightOneSpectrum (𝓞 K)) :
     (Valued.v :
       Valuation
@@ -184,7 +180,7 @@ noncomputable instance chosenFinitePlaceBaseValuationCompatible
         ℝ≥0).Compatible :=
   Valuation.Compatible.ofValuation _
 
-noncomputable instance
+instance
     chosenFinitePlaceBaseValuativeRelIsNontrivial
     (w₀ : HeightOneSpectrum (𝓞 K)) :
     ValuativeRel.IsNontrivial
@@ -195,14 +191,14 @@ noncomputable instance
         (ChosenFinitePlaceBaseCompletion (K := K) w₀)
         ℝ≥0)).2 inferInstance
 
-noncomputable instance chosenFinitePlaceBaseIsValuativeTopology
+instance chosenFinitePlaceBaseIsValuativeTopology
     (w₀ : HeightOneSpectrum (𝓞 K)) :
     IsValuativeTopology
       (ChosenFinitePlaceBaseCompletion (K := K) w₀) :=
   isValuativeTopology_of_valued_ofValuation
     (ChosenFinitePlaceBaseCompletion (K := K) w₀) ℝ≥0
 
-noncomputable instance
+instance
     chosenFinitePlaceBaseIsNonarchimedeanLocalField
     (w₀ : HeightOneSpectrum (𝓞 K)) :
     IsNonarchimedeanLocalField
@@ -211,7 +207,7 @@ noncomputable instance
     toLocallyCompactSpace := inferInstance
     toIsNontrivial := inferInstance }
 
-noncomputable instance chosenFinitePlaceCompletionFiniteDimensional
+instance chosenFinitePlaceCompletionFiniteDimensional
     (w₀ : HeightOneSpectrum (𝓞 K)) :
     FiniteDimensional
       (ChosenFinitePlaceBaseCompletion (K := K) w₀)
@@ -221,7 +217,7 @@ noncomputable instance chosenFinitePlaceCompletionFiniteDimensional
     (RayClass.adicAbv_isNontrivial w₀)
     (chosenFinitePlaceExtension (L := L) w₀)
 
-noncomputable instance chosenFinitePlaceCompletionContinuousSMul
+instance chosenFinitePlaceCompletionContinuousSMul
     (w₀ : HeightOneSpectrum (𝓞 K)) :
     ContinuousSMul
       (ChosenFinitePlaceBaseCompletion (K := K) w₀)
@@ -232,7 +228,7 @@ noncomputable instance chosenFinitePlaceCompletionContinuousSMul
       (chosenFinitePlaceExtension (L := L) w₀).1
       (chosenFinitePlaceExtension (L := L) w₀).2).continuous
 
-noncomputable instance chosenFinitePlaceCompletionLocallyCompactSpace
+instance chosenFinitePlaceCompletionLocallyCompactSpace
     (w₀ : HeightOneSpectrum (𝓞 K)) :
     LocallyCompactSpace
       (chosenFinitePlaceExtension (L := L) w₀).1.Completion :=
@@ -240,7 +236,7 @@ noncomputable instance chosenFinitePlaceCompletionLocallyCompactSpace
     (ChosenFinitePlaceBaseCompletion (K := K) w₀)
     (chosenFinitePlaceExtension (L := L) w₀).1.Completion
 
-noncomputable instance chosenFinitePlaceLocalizedFiniteDimensional
+instance chosenFinitePlaceLocalizedFiniteDimensional
     (w₀ : HeightOneSpectrum (𝓞 K)) :
     FiniteDimensional
       (ChosenFinitePlaceBaseCompletion (K := K) w₀)
@@ -251,7 +247,7 @@ noncomputable instance chosenFinitePlaceLocalizedFiniteDimensional
     (RayClass.adicAbv_isNontrivial w₀)
     (chosenFinitePlaceExtension (L := L) w₀)
 
-noncomputable instance chosenFinitePlaceLocalizedIsGalois
+instance chosenFinitePlaceLocalizedIsGalois
     (w₀ : HeightOneSpectrum (𝓞 K)) :
     IsGalois
       (ChosenFinitePlaceBaseCompletion (K := K) w₀)
@@ -261,7 +257,7 @@ noncomputable instance chosenFinitePlaceLocalizedIsGalois
     (HeightOneSpectrum.adicAbv K w₀)
     (chosenFinitePlaceExtension (L := L) w₀)
 
-noncomputable instance
+instance
     chosenFinitePlaceLocalizedLocallyCompactSpace
     (w₀ : HeightOneSpectrum (𝓞 K)) :
     LocallyCompactSpace
@@ -279,7 +275,7 @@ noncomputable instance
       isometry_toFun := Isometry.of_dist_eq fun _ _ => rfl }
   exact (e.toHomeomorph.locallyCompactSpace_iff).2 inferInstance
 
-noncomputable instance chosenFinitePlaceLocalizedIsUltrametricDist
+instance chosenFinitePlaceLocalizedIsUltrametricDist
     (w₀ : HeightOneSpectrum (𝓞 K)) :
     IsUltrametricDist
       (ChosenFinitePlaceLocalizedCompletion
@@ -289,7 +285,7 @@ noncomputable instance chosenFinitePlaceLocalizedIsUltrametricDist
     (chosenFinitePlaceExtension (L := L) w₀)
     (HeightOneSpectrum.isNonarchimedean_adicAbv K w₀)
 
-noncomputable instance chosenFinitePlaceLocalizedValuationCompatible
+instance chosenFinitePlaceLocalizedValuationCompatible
     (w₀ : HeightOneSpectrum (𝓞 K)) :
     (Valued.v :
       Valuation
@@ -298,7 +294,7 @@ noncomputable instance chosenFinitePlaceLocalizedValuationCompatible
         ℝ≥0).Compatible :=
   Valuation.Compatible.ofValuation _
 
-noncomputable instance
+instance
     chosenFinitePlaceLocalizedValuationIsNontrivial
     (w₀ : HeightOneSpectrum (𝓞 K)) :
     (ValuativeRel.valuation
@@ -311,7 +307,7 @@ noncomputable instance
       (ChosenFinitePlaceLocalizedCompletion
         (K := K) (L := L) w₀))
 
-noncomputable instance
+instance
     chosenFinitePlaceLocalizedValuativeRelIsNontrivial
     (w₀ : HeightOneSpectrum (𝓞 K)) :
     ValuativeRel.IsNontrivial
@@ -322,7 +318,7 @@ noncomputable instance
       (ChosenFinitePlaceLocalizedCompletion
         (K := K) (L := L) w₀))).2 inferInstance
 
-noncomputable instance chosenFinitePlaceLocalizedIsValuativeTopology
+instance chosenFinitePlaceLocalizedIsValuativeTopology
     (w₀ : HeightOneSpectrum (𝓞 K)) :
     IsValuativeTopology
       (ChosenFinitePlaceLocalizedCompletion
@@ -331,7 +327,7 @@ noncomputable instance chosenFinitePlaceLocalizedIsValuativeTopology
     (ChosenFinitePlaceLocalizedCompletion
       (K := K) (L := L) w₀) ℝ≥0
 
-noncomputable instance
+instance
     chosenFinitePlaceLocalizedIsNonarchimedeanLocalField
     (w₀ : HeightOneSpectrum (𝓞 K)) :
     IsNonarchimedeanLocalField
@@ -341,7 +337,7 @@ noncomputable instance
     toLocallyCompactSpace := inferInstance
     toIsNontrivial := inferInstance }
 
-noncomputable instance chosenFinitePlaceLocalizedIntegerModuleFinite
+instance chosenFinitePlaceLocalizedIntegerModuleFinite
     (w₀ : HeightOneSpectrum (𝓞 K)) :
     Module.Finite
       𝒪[ChosenFinitePlaceBaseCompletion (K := K) w₀]
@@ -360,11 +356,9 @@ noncomputable instance chosenFinitePlaceLocalizedIntegerModuleFinite
 using the intrinsic valuation on the algebraic localization.  The canonical local-field instances for the chosen completion are exported
 from this module, so clients only supply the mathematical unramifiedness
 hypothesis. -/
-noncomputable def ChosenFinitePlaceIsUnramified
+def ChosenFinitePlaceIsUnramified
     (w₀ : HeightOneSpectrum (𝓞 K)) : Prop :=
   IsNonarchimedeanLocalField.IsUnramifiedValuedExtension
     (ChosenFinitePlaceBaseCompletion (K := K) w₀)
     (ChosenFinitePlaceLocalizedCompletion
       (K := K) (L := L) w₀)
-
-end

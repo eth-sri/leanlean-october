@@ -11,8 +11,8 @@ open KPLocalExceptionalConstruction KPLocalStoneVonNeumann KPLocalPrincipalSerie
 open DedekindZetaZeroFree.ExteriorWhittakerValues
 open ActualSpherical ActualJacquet ActualShellOutput ActualShellNormalization
 open KPExteriorUnitShellIntegrals
-noncomputable section
 set_option autoImplicit false
+noncomputable section
 set_option synthInstance.maxHeartbeats 400000
 set_option maxHeartbeats 2000000
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)

@@ -84,7 +84,7 @@ private theorem project_squareFinite (W : T_U F ζ hζ U R P H) (i : Fin (d F)) 
   exact lt_of_le_of_lt (lintegral_mono fun x =>
     ENNReal.ofReal_le_ofReal (NNReal.coe_le_coe.mpr (hbound x))) (cotangent_squareFinite W)
 
-private theorem placePair_eq_pair (W Z : T_U F ζ hζ U R P H) (i : Fin (d F)) :
+theorem placePair_eq_pair (W Z : T_U F ζ hζ U R P H) (i : Fin (d F)) :
     placePair W Z i = pair (KPContActualCotangentPlaceProjection.project i W.val)
       (KPContActualCotangentPlaceProjection.project i Z.val) := by
   symm
@@ -280,7 +280,7 @@ end DedekindZetaZeroFree.KPContActualSectorFriedrichsSynthesis
 
 namespace DedekindZetaZeroFree
 
-private theorem genuineInverse_of_sum
+theorem genuineInverse_of_sum
     {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℂ E]
     (L : E →ₗ.[ℂ] E) (B : E →L[ℂ] E)
     (hl : ∀ f : E, ∃ hf : B f ∈ L.domain, B f + L ⟨B f, hf⟩ = f)

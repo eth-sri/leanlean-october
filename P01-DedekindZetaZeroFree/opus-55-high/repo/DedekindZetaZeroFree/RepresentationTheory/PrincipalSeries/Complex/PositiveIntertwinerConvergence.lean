@@ -70,4 +70,3 @@ theorem positive_intertwiner_integrable (β : ℂˣ)
   apply hcont.locallyIntegrable.integrable_of_isBigO_cocompact (tail_bigO F)
   apply (integrable_iff_integrableAtFilter_cocompact.mp ?_).1
   exact integrable_one_add_norm (by norm_num [Complex.finrank_real_complex])
-end DedekindZetaZeroFree.KPCplxHarmonicIntertwinerSpectrum

@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.Arithmetic.RayClasses.Representatives.CosetId
 
 @[expose] public section
 
-noncomputable section
 
 open scoped NumberField nonZeroDivisors
 open DedekindZetaZeroFree.AbelianQuotient

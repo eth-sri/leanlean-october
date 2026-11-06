@@ -44,15 +44,15 @@ private theorem sphere_ne_zero (x : Sphere) : (x : Ambient) ≠ 0 := by
   simp [h] at this
 theorem radialExtension_sphere (F : Sphere → ℂ) (x : Sphere) : radialExtension F x = F x := by
   simp only [radialExtension, dif_pos (sphere_ne_zero x), sphere_norm, inv_one, one_smul]
-private theorem puncture_open : IsOpen {x : Ambient | x ≠ 0} := isOpen_ne
+theorem puncture_open : IsOpen {x : Ambient | x ≠ 0} := isOpen_ne
 private theorem normalize_smooth : ContDiffOn ℝ (⊤ : ℕ∞) (fun x : Ambient => ‖x‖⁻¹ • x) {x | x ≠ 0} := by
   intro x hx
   exact (((contDiffAt_norm ℝ hx).inv (norm_ne_zero_iff.mpr hx)).smul contDiffAt_id).contDiffWithinAt
 private theorem restrict_smooth (G : Ambient → ℂ)
     (hG : ContDiffOn ℝ (⊤ : ℕ∞) G {x | x ≠ 0}) :
     IsSphereSmooth (fun x : Sphere => G x) := by
-  have h := hG.comp normalize_smooth (fun x hx => by
-    exact smul_ne_zero (inv_ne_zero (norm_ne_zero_iff.mpr hx)) hx)
+  have h := hG.comp normalize_smooth (fun x hx => 
+    smul_ne_zero (inv_ne_zero (norm_ne_zero_iff.mpr hx)) hx)
   apply h.congr
   intro x hx
   simp only [radialExtension, dif_pos (show x ≠ 0 from hx), Function.comp_apply]
@@ -61,11 +61,11 @@ theorem rotationVector_smooth (i : Fin 3) : ContDiff ℝ (⊤ : ℕ∞) (rotatio
   apply (PiLp.continuousLinearEquiv 2 ℝ (fun _ : Fin 3 => ℝ)).symm.contDiff.comp
   apply contDiff_pi.mpr
   intro j
-  simp only [rotationVector]
+  simp only
   split_ifs
   · exact (EuclideanSpace.proj (𝕜 := ℝ) (i + 2)).contDiff.neg
   · exact (EuclideanSpace.proj (𝕜 := ℝ) (i + 1)).contDiff
-  · exact contDiff_const
+  fun_prop
 theorem rotationDeriv_smooth (i : Fin 3) {F : Sphere → ℂ} (hF : IsSphereSmooth F) :
     IsSphereSmooth (rotationDeriv i F) := by
   unfold rotationDeriv
@@ -84,17 +84,17 @@ theorem IsSphereSmooth.add {F G : Sphere → ℂ} (hF : IsSphereSmooth F) (hG : 
     IsSphereSmooth (fun x => F x + G x) := by
   apply (ContDiffOn.add hF hG).congr
   intro x hx
-  simp only [radialExtension, dif_pos (show x ≠ 0 from hx), Function.comp_apply]
+  simp only [radialExtension, dif_pos (show x ≠ 0 from hx)]
 theorem IsSphereSmooth.neg {F : Sphere → ℂ} (hF : IsSphereSmooth F) :
     IsSphereSmooth (fun x => -F x) := by
   apply (ContDiffOn.neg hF).congr
   intro x hx
-  simp only [radialExtension, dif_pos (show x ≠ 0 from hx), Function.comp_apply]
+  simp only [radialExtension, dif_pos (show x ≠ 0 from hx)]
 theorem IsSphereSmooth.const_mul (c : ℂ) {F : Sphere → ℂ} (hF : IsSphereSmooth F) :
     IsSphereSmooth (fun x => c * F x) := by
   apply ((contDiffOn_const (c := c)).mul hF).congr
   intro x hx
-  simp only [radialExtension, dif_pos (show x ≠ 0 from hx), Function.comp_apply]
+  simp only [radialExtension, dif_pos (show x ≠ 0 from hx)]
 theorem IsSphereSmooth.sum {ι : Type*} (s : Finset ι) (F : ι → Sphere → ℂ)
     (hF : ∀ i ∈ s, IsSphereSmooth (F i)) : IsSphereSmooth (fun x => ∑ i ∈ s, F i x) := by
   classical
@@ -108,7 +108,7 @@ theorem positiveLaplacian_smooth {F : Sphere → ℂ} (hF : IsSphereSmooth F) :
 theorem rotationSup_nonneg (n : ℕ) (F : Sphere → ℂ) : 0 ≤ rotationSup n F := by
   apply Real.sSup_nonneg
   rintro r ⟨w, hw, x, rfl⟩
-  exact norm_nonneg _
+  simp
 theorem rotationSup_bddAbove (n : ℕ) {F : Sphere → ℂ} (hF : IsSphereSmooth F) :
     BddAbove {r : ℝ | ∃ w : List (Fin 3), w.length ≤ n ∧ ∃ x : Sphere, r = ‖rotationWord w F x‖} := by
   have hc : CompactSpace Sphere := isCompact_iff_compactSpace.mp (isCompact_sphere (0 : Ambient) 1)
@@ -120,8 +120,8 @@ theorem rotationSup_bddAbove (n : ℕ) {F : Sphere → ℂ} (hF : IsSphereSmooth
   rintro r ⟨w, hw, x, rfl⟩
   exact Set.mem_iUnion.mpr ⟨w, Set.mem_iUnion.mpr ⟨hw, Set.mem_range_self x⟩⟩
 theorem rotationWord_norm_le_rotationSup {F : Sphere → ℂ} (hF : IsSphereSmooth F) (w : List (Fin 3))
-    {n : ℕ} (hw : w.length ≤ n) (x : Sphere) : ‖rotationWord w F x‖ ≤ rotationSup n F := by
-  exact le_csSup (rotationSup_bddAbove n hF) ⟨w, hw, x, rfl⟩
+    {n : ℕ} (hw : w.length ≤ n) (x : Sphere) : ‖rotationWord w F x‖ ≤ rotationSup n F := 
+  le_csSup (rotationSup_bddAbove n hF) ⟨w, hw, x, rfl⟩
 theorem radialExtension_add (F G : Sphere → ℂ) :
     radialExtension (fun x => F x + G x) = fun x => radialExtension F x + radialExtension G x := by
   funext x
@@ -131,7 +131,7 @@ theorem radialExtension_const_mul (c : ℂ) (F : Sphere → ℂ) :
     radialExtension (fun x => c * F x) = fun x => c * radialExtension F x := by
   funext x
   unfold radialExtension
-  split_ifs <;> simp
+  simp
 theorem radialExtension_neg (F : Sphere → ℂ) :
     radialExtension (fun x => -F x) = fun x => -radialExtension F x := by
   funext x
@@ -179,7 +179,7 @@ theorem rotationWord_sum {ι : Type*} (s : Finset ι) (w : List (Fin 3)) (F : ι
     | nil => simp [rotationWord]
     | cons i w ih =>
       simp only [Finset.sum_empty] at ih ⊢
-      simp only [rotationWord, ih, rotationDeriv]
+      simp only [rotationWord, ih]
       have hz : radialExtension (fun _ : Sphere => (0 : ℂ)) = fun _ => 0 := by
         funext x; simp [radialExtension]
       funext x
@@ -189,7 +189,7 @@ theorem rotationWord_sum {ι : Type*} (s : Finset ι) (w : List (Fin 3)) (F : ι
   | @insert a s ha ih =>
     simp only [Finset.sum_insert ha]
     rw [rotationWord_add w (hF a (Finset.mem_insert_self a s)) (IsSphereSmooth.sum s F (fun i hi => hF i (Finset.mem_insert_of_mem hi)))]
-    rw [ih (fun i hi => hF i (Finset.mem_insert_of_mem hi))]
+    simp_all
 theorem rotationWord_append (w v : List (Fin 3)) (F : Sphere → ℂ) :
     rotationWord (w ++ v) F = rotationWord w (rotationWord v F) := by
   induction w with
@@ -301,14 +301,14 @@ theorem positiveLaplacian_rotation_bound (F : Sphere → ℂ) (hF : IsSphereSmoo
   apply Real.sSup_le _ (mul_nonneg (by norm_num) (rotationSup_nonneg (n + 2) F))
   rintro r ⟨w, hw, x, rfl⟩
   rw [rotationWord_add w hF (IsSphereSmooth.const_mul _ (positiveLaplacian_smooth hF)), rotationWord_const_mul w _ (positiveLaplacian_smooth hF)]
-  simp only [rotationWord_positiveLaplacian w hF, norm_mul, norm_neg]
+  simp only [rotationWord_positiveLaplacian w hF]
   have h1 : ‖rotationWord w F x‖ ≤ rotationSup (n + 2) F :=
     rotationWord_norm_le_rotationSup hF w (by omega) x
   have h2 : ‖∑ i : Fin 3, rotationWord (w ++ [i, i]) F x‖ ≤ 3 * rotationSup (n + 2) F := by
     calc
       _ ≤ ∑ i : Fin 3, ‖rotationWord (w ++ [i,i]) F x‖ := norm_sum_le _ _
       _ ≤ ∑ i : Fin 3, rotationSup (n + 2) F := Finset.sum_le_sum (fun i _ =>
-        rotationWord_norm_le_rotationSup hF _ (by simp only [List.length_append, List.length_cons, List.length_nil]; omega) x)
+        rotationWord_norm_le_rotationSup hF _ (by simp_all) x)
       _ = _ := by simp
   have hnorm : ‖(9 / 2 : ℂ)‖ = (9 / 2 : ℝ) := by norm_num
   calc
@@ -324,8 +324,7 @@ open scoped Pointwise
 
 noncomputable def sphereOrthogonal (e : Ambient ≃ₗᵢ[ℝ] Ambient) : Sphere ≃ₜ Sphere :=
   e.toHomeomorph.subtype (fun x => by
-    change ‖x - 0‖ = 1 ↔ ‖e x - 0‖ = 1
-    simp only [sub_zero, e.norm_map])
+    simp)
 @[simp] theorem sphereOrthogonal_coe (e : Ambient ≃ₗᵢ[ℝ] Ambient) (x : Sphere) :
     (sphereOrthogonal e x : Ambient) = e x := rfl
 
@@ -356,8 +355,8 @@ noncomputable def rotationFlowMap (i : Fin 3) (t : ℝ) : Ambient →ₗ[ℝ] Am
     if j = i then x i else if j = i + 1 then
       Real.cos t * x (i+1) - Real.sin t * x (i+2)
     else Real.sin t * x (i+1) + Real.cos t * x (i+2))
-  map_add' x y := by ext j; simp only [PiLp.toLp_apply, PiLp.add_apply]; split_ifs <;> ring
-  map_smul' c x := by ext j; simp only [PiLp.toLp_apply, PiLp.smul_apply, smul_eq_mul, RingHom.id_apply]; split_ifs <;> ring
+  map_add' x y := by ext j; simp only [PiLp.add_apply]; split_ifs <;> ring
+  map_smul' c x := by ext j; simp only [PiLp.smul_apply, smul_eq_mul, RingHom.id_apply]; split_ifs <;> ring
 
 theorem rotationFlowMap_inverse (i : Fin 3) (t : ℝ) (x : Ambient) :
     rotationFlowMap i (-t) (rotationFlowMap i t x) = x := by
@@ -374,8 +373,7 @@ theorem rotationFlowMap_norm (i : Fin 3) (t : ℝ) (x : Ambient) :
   apply (sq_eq_sq₀ (norm_nonneg _) (norm_nonneg _)).mp
   rw [EuclideanSpace.norm_sq_eq, EuclideanSpace.norm_sq_eq]
   have ht := Real.cos_sq_add_sin_sq t
-  fin_cases i <;> simp only [Fin.sum_univ_three, rotationFlowMap, LinearMap.coe_mk,
-    AddHom.coe_mk, PiLp.toLp_apply, Fin.reduceAdd, Real.norm_eq_abs, sq_abs] <;>
+  fin_cases i <;> simp only [Fin.sum_univ_three, rotationFlowMap, LinearMap.coe_mk, AddHom.coe_mk, PiLp.toLp_apply, Real.norm_eq_abs, sq_abs] <;>
     simp <;> nlinarith [sq_nonneg (x 0), sq_nonneg (x 1), sq_nonneg (x 2)]
 
 noncomputable def rotationFlow (i : Fin 3) (t : ℝ) : Ambient ≃ₗᵢ[ℝ] Ambient where
@@ -416,9 +414,7 @@ theorem sphereOrthogonal_rotationFlow_hasDerivAt (i : Fin 3) {F : Sphere → ℂ
   have hn : (sphereOrthogonal (rotationFlow i t) x : Ambient) ≠ 0 := by
     intro hz
     have hs := (sphereOrthogonal (rotationFlow i t) x).property
-    simp [Metric.mem_sphere, hz] at hs
+    simp_all
   have hd := ((hF _ hn).contDiffAt (isOpen_ne.mem_nhds hn)).differentiableAt (by simp)
   have hc := hd.hasFDerivAt.comp_hasDerivAt t (rotationFlow_hasDerivAt i (x : Ambient) t)
   simpa only [Function.comp_def, ← sphereOrthogonal_coe, radialExtension_sphere, rotationDeriv] using hc
-
-end DedekindZetaZeroFree.ComplexFractionalInverse

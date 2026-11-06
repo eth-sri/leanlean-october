@@ -16,9 +16,7 @@ variable {F : Type} [Field F] [NumberField F] {f : Ideal (𝓞 F)}
 theorem idealHeckeL_summable
     (η : DedekindZetaZeroFree.RayClassCharacter F f) (s : ℂ)
     (hf : f ≠ ⊥) (hη : ∀ I, ‖η I‖ ≤ 1) (hs : 1 < s.re) :
-    Summable (fun I : Ideal (𝓞 F) => η I * (Ideal.absNorm I : ℂ) ^ (-s)) := by
-  simpa only [IdealEuler.idealHeckeSummandHom_apply] using
-    IdealEuler.summable_idealHeckeSummand η s hf hη hs
+    Summable (fun I : Ideal (𝓞 F) => η I * (Ideal.absNorm I : ℂ) ^ (-s)) := by apply DedekindZetaZeroFree.LargeSieve.IdealEuler.summable_idealHeckeSummand <;> assumption
 
 theorem idealHeckeL_euler_hasProd
     (η : DedekindZetaZeroFree.RayClassCharacter F f) (s : ℂ)
@@ -67,8 +65,7 @@ theorem idealHeckeL_euler_hasProd
     show (∑' I : {I : Ideal (𝓞 F) // I ∈ ({J : Ideal (𝓞 F) | J ≠ ⊥})},
       IdealEuler.idealHeckeSummandHom η s I.val) = idealHeckeL η s
     rw [tsum_subtype_eq_of_support_subset (s := {I : Ideal (𝓞 F) | I ≠ ⊥}) ?_]
-    · rw [idealHeckeL]
-      exact tsum_congr fun I => (IdealEuler.idealHeckeSummandHom_apply η s I).symm
+    · rfl
     · intro I hI
       exact fun h => hI (by rw [h]; exact IdealEuler.idealHeckeSummandHom_bot η s)
   rw [hfac, hval] at h1
@@ -94,8 +91,7 @@ theorem principal_idealHeckeL_euler_hasProd
     funext p
     rw [principalUnitRayCharacter_apply]
     simp [p.ne_bot]
-  rw [hfac] at h
-  exact h
+  simp_all
 
 theorem principal_idealHeckeL_eq_tsum_nonzero
     (F : Type) [Field F] [NumberField F] (s : ℂ) :
@@ -127,5 +123,3 @@ theorem principal_idealHeckeL_summable
     rw [principalUnitRayCharacter_apply]
     split <;> simp
   exact idealHeckeL_summable (principalUnitRayCharacter F) s hf hη hs
-
-end DedekindZetaZeroFree.LargeSieve

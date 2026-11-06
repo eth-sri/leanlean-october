@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Ideles and units with finite support
 
@@ -30,7 +25,6 @@ open scoped NumberField RestrictedProduct
 open NumberField IsDedekindDomain
 
 noncomputable section
-
 
 variable {K : Type*} [Field K] [NumberField K]
 
@@ -66,8 +60,7 @@ theorem mem_supportedAt_nonLocalUnits
     (a : FiniteIdeleGroup K) :
     a ∈ supportedAt (K := K)
       {v | a v ∉ (v.adicCompletionIntegers K).units} := by
-  intro v hv
-  simpa using hv
+  simp
 
 /-- Every finite idele is supported at some finite set of finite places. -/
 theorem exists_finset_supportedAt (a : FiniteIdeleGroup K) :
@@ -80,16 +73,6 @@ theorem exists_finset_supportedAt (a : FiniteIdeleGroup K) :
     rw [Set.Finite.coe_toFinset]
     exact mem_supportedAt_nonLocalUnits a⟩
 
-/-- The union of the finite-support subgroups is the full finite idele
-group. -/
-theorem iSup_finset_supportedAt :
-    ⨆ S : Finset (HeightOneSpectrum (𝓞 K)),
-      supportedAt (K := K) (S : Set _) = ⊤ := by
-  apply top_unique
-  intro a _
-  obtain ⟨S, ha⟩ := exists_finset_supportedAt a
-  exact Subgroup.mem_iSup_of_mem S ha
-
 /-- The everywhere-integral subgroup is the subgroup supported at the empty
 set. -/
 theorem supportedAt_empty :
@@ -98,8 +81,7 @@ theorem supportedAt_empty :
       integralSubgroup (K := K) :=
   by
     ext a
-    simp only [mem_supportedAt_iff, Set.mem_empty_iff_false,
-      not_false_eq_true, forall_const, mem_integralSubgroup_iff]
+    simp
 
 /-- For a finite set `S`, the `S`-finite-ideles form an open subgroup. -/
 theorem isOpen_supportedAt (S : Finset (HeightOneSpectrum (𝓞 K))) :
@@ -143,14 +125,6 @@ theorem exists_finset_supportedAt (a : IdeleGroup K) :
       a ∈ supportedAt (K := K) (S : Set _) :=
   FiniteIdeleGroup.exists_finset_supportedAt a.2
 
-theorem iSup_finset_supportedAt :
-    ⨆ S : Finset (HeightOneSpectrum (𝓞 K)),
-      supportedAt (K := K) (S : Set _) = ⊤ := by
-  apply top_unique
-  intro a _
-  obtain ⟨S, ha⟩ := exists_finset_supportedAt a
-  exact Subgroup.mem_iSup_of_mem S ha
-
 theorem supportedAt_empty :
     supportedAt (K := K)
       (∅ : Set (HeightOneSpectrum (𝓞 K))) =
@@ -183,5 +157,3 @@ theorem mem_SUnitGroup_iff
       ∀ v : HeightOneSpectrum (𝓞 K), v ∉ S →
         v.valuation K x = 1 :=
   Iff.rfl
-
-end

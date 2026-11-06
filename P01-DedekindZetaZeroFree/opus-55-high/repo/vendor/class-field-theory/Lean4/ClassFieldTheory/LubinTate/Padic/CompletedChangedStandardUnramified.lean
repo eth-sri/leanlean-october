@@ -4,7 +4,7 @@ public import ValuedFieldTheory.LocalField.DiscreteValuationField.PadicValuation
 public import ValuedFieldTheory.LocalField.DiscreteValuationField.RamificationAddVal
 public import ValuedFieldTheory.LocalField.NonarchimedeanLocalField.FiniteUnramified
 public import ValuedFieldTheory.LocalField.NonarchimedeanLocalField.FiniteExtensionTopology
-public import ClassFieldTheory.LubinTate.Padic.CompletedChangedStandardFixedField
+public import ClassFieldTheory.LubinTate.Padic.CompletedChangedStandardCompositum
 public import ClassFieldTheory.LubinTate.Padic.CompletedPrimitiveUniformizer
 public import ValuedFieldTheory.Valuation.DiscreteValuationField.AmbientUniformizer
 public import ValuedFieldTheory.Valuation.DiscreteValuationField.ChevalleyExtension
@@ -19,17 +19,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # The completed standard/changed compositum is unramified over the changed field
 
@@ -40,7 +29,6 @@ the finite standard/changed compositum.  Since the same element is a
 uniformizer on both sides, their relative ramification index is one.
 -/
 
-noncomputable section
 
 namespace LubinTate
 
@@ -129,8 +117,7 @@ theorem
   have inclusionD_comp :
       inclusionD.comp (algebraMap ℚ_[p] D) =
         algebraMap ℚ_[p] E := by
-    ext x
-    exact D.val.commutes x
+    rfl
   let :
       canonicalBase.valuation.HasExtension
         (ambient.valuation.comap inclusionD) :=
@@ -140,8 +127,7 @@ theorem
   have inclusionM_comp :
       inclusionM.comp (algebraMap ℚ_[p] M) =
         algebraMap ℚ_[p] E := by
-    ext x
-    exact M.val.commutes x
+    rfl
   let :
       canonicalBase.valuation.HasExtension
         (ambient.valuation.comap inclusionM) :=
@@ -360,7 +346,3 @@ theorem
         base.maximalIdeal target.maximalIdeal hbaseMaximal_ne]
       exact hramification
   }
-
-end LubinTate
-
-end

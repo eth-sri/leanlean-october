@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Ambient prime witnesses
 
@@ -53,29 +48,11 @@ theorem abelianizationCongr_symm_eq_primeTarget
           (Additive.toMul r)) =
       qE.abelianizationCongr
         (Abelianization.of qAmbient) := by
-  have hprimeMul :=
-    congrArg Additive.toMul hprime
-  change
-    Additive.toMul r =
-      q₀.abelianizationCongr
-        (Abelianization.of qAmbient) at hprimeMul
-  calc
-    qE.abelianizationCongr
-        (q₀.abelianizationCongr.symm
-          (Additive.toMul r)) =
-        qE.abelianizationCongr
-          (q₀.abelianizationCongr.symm
-            (q₀.abelianizationCongr
-              (Abelianization.of qAmbient))) :=
-      congrArg qE.abelianizationCongr
-        (congrArg q₀.abelianizationCongr.symm hprimeMul)
-    _ = qE.abelianizationCongr
-          (Abelianization.of qAmbient) := by
-      rw [q₀.abelianizationCongr.symm_apply_apply]
+  simp_all
 
 /-- A prime-norm unit in the intrinsic base field chosen from a Frobenius
 lift of an abelianized Galois element. -/
-noncomputable def ambientEmbeddedPrimeWitness
+def ambientEmbeddedPrimeWitness
     (K F E : Type)
     [Field K] [ValuativeRel K] [TopologicalSpace K]
     [IsNonarchimedeanLocalField K]
@@ -134,8 +111,8 @@ noncomputable def ambientEmbeddedPrimeWitness
         Gal(SeparableClosure K / K)).toSubgroup ⧸
         extensionSubgroup
           (baseField Gal(SeparableClosure K / K))
-          H₀ (le_baseField H₀)) := by
-    exact ambientEmbeddedAbsoluteQuotientFinite K F i
+          H₀ (le_baseField H₀)) := 
+    ambientEmbeddedAbsoluteQuotientFinite K F i
   let H : FiniteAbstractField
       Gal(SeparableClosure K / K) :=
     ⟨H₀, ambientEmbeddedAbsoluteQuotientFinite K F i⟩
@@ -201,8 +178,7 @@ noncomputable def ambientEmbeddedPrimeWitness
       change rho (i x) = i x
       change
         rho ∈ (AlgHom.fieldRange i).fixingSubgroup at hrhoH
-      rw [IntermediateField.mem_fixingSubgroup_iff] at hrhoH
-      exact hrhoH (i x) ⟨x, rfl⟩)
+      simp_all)
   let phi : LF ≃+* LH := by
     letI : Algebra F LH := iLH.toRingHom.toAlgebra
     exact
@@ -211,9 +187,7 @@ noncomputable def ambientEmbeddedPrimeWitness
   have hphi (x : LF) :
       ((phi x : LH) : SeparableClosure K) =
         e (x : SeparableClosure F) := by
-    exact
-      intrinsicFrobeniusFixedFieldEquivAmbientEmbeddedField_apply_val
-        K F E j e sigma x
+    rfl
   letI : FiniteDimensional F LF :=
     abstractFixedField_finiteDimensional
       F (SeparableClosure F) SF hSFabsolute
@@ -234,9 +208,7 @@ noncomputable def ambientEmbeddedPrimeWitness
   letI : Algebra.IsSeparable K LH := by
     let : IsScalarTower K LH (SeparableClosure K) :=
       IsScalarTower.of_algebraMap_eq' (by
-        apply RingHom.ext
-        intro x
-        exact (iH.commutes x).symm)
+        rfl)
     exact
       Algebra.isSeparable_tower_bot_of_isSeparable
         K LH (SeparableClosure K)
@@ -263,10 +235,9 @@ noncomputable def ambientEmbeddedPrimeWitness
     chosenValuationOneUnitOfRingEquiv LF LH phi hmem
   exact normUnits F LF pF
 
-
 /-- The ambient abelianized Frobenius target associated with the same
 chosen intrinsic Frobenius lift as the prime witness. -/
-noncomputable def ambientEmbeddedPrimeTarget
+def ambientEmbeddedPrimeTarget
     (K F E : Type)
     [Field K] [ValuativeRel K] [TopologicalSpace K]
     [IsNonarchimedeanLocalField K]
@@ -326,8 +297,8 @@ noncomputable def ambientEmbeddedPrimeTarget
         Gal(SeparableClosure K / K)).toSubgroup ⧸
         extensionSubgroup
           (baseField Gal(SeparableClosure K / K))
-          H₀ (le_baseField H₀)) := by
-    exact ambientEmbeddedAbsoluteQuotientFinite K F i
+          H₀ (le_baseField H₀)) := 
+    ambientEmbeddedAbsoluteQuotientFinite K F i
   let H : FiniteAbstractField
       Gal(SeparableClosure K / K) :=
     ⟨H₀, ambientEmbeddedAbsoluteQuotientFinite K F i⟩
@@ -367,7 +338,3 @@ noncomputable def ambientEmbeddedPrimeTarget
   exact
     qE.abelianizationCongr
       (Abelianization.of qAmbient)
-
-end LocalClassFieldTheory
-
-end

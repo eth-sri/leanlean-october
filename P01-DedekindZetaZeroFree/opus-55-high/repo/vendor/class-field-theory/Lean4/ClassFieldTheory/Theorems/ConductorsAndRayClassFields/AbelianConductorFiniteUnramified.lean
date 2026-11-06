@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Zero finite exponent and unramifiedness
 -/
@@ -27,7 +21,6 @@ set_option autoImplicit false
 open scoped NumberField
 open NumberField IsDedekindDomain
 
-noncomputable section
 
 namespace ClassFieldTheory
 
@@ -66,15 +59,4 @@ theorem IsAbelianConductor.finiteExponent_eq_zero_iff_unramified
         ∀ W : HeightOneSpectrum (𝓞 L),
           W.asIdeal.LiesOver v.asIdeal →
             Algebra.IsUnramifiedAt (𝓞 K) W.asIdeal := by
-      rw [_root_.mem_ramifiedBaseFinitePlaces_iff]
-      constructor
-      · intro h W hW
-        by_contra hram
-        exact h ⟨W, hW, hram⟩
-      · intro h hram
-        obtain ⟨W, hW, hnot⟩ := hram
-        exact hnot (h W hW)
-
-end ClassFieldTheory
-
-end
+      simp

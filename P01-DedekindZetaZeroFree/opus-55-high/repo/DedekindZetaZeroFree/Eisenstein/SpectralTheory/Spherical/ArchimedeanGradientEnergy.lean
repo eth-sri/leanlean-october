@@ -18,7 +18,7 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
 
 include ζ hζ
 
-private theorem arch_first (f : KPArch.Space (KPCuspLogShape.dimension F) → ℂ)
+theorem arch_first (f : KPArch.Space (KPCuspLogShape.dimension F) → ℂ)
     (a : GInfinity F) (i : Fin (KPCuspLogShape.dimension F)) (j : Fin 6) :
     archRight F (KPCusp.complexPlace F i) j (f ∘ KPMsFixedHaarDisintegration.archBasepoint F) a =
     localD j (fun b => f (fun v => KPArch.action

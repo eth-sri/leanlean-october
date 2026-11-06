@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Finite-stage correction terms for reciprocity multiplicativity
 
@@ -28,7 +25,6 @@ namespace ClassFormation
 open KummerTheory
 open CyclicCohomology
 
-noncomputable section
 
 open CategoryTheory
 
@@ -131,15 +127,15 @@ theorem frobeniusPowerSum_alternating_mem_infiniteUnitAddSubgroup
   let n₄ := D.frobeniusExponent KR L hLK σ₄
   let U := v.infiniteUnitAddSubgroup (D.maximalUnramifiedField L) K
     (D.maximalUnramifiedField_le_of_le hLK)
-  have h₄₃ : p₄ - p₃ ∈ U := by
-    exact D.frobeniusPrimeDifference_mem_infiniteUnitAddSubgroup
+  have h₄₃ : p₄ - p₃ ∈ U := 
+    D.frobeniusPrimeDifference_mem_infiniteUnitAddSubgroup
       A v K L hLK σ₄ σ₃ π₄ π₃ hπ₄ hπ₃
-  have h₁₃ : p₁ - p₃ ∈ U := by
-    exact D.frobeniusPrimeDifference_mem_infiniteUnitAddSubgroup
+  have h₁₃ : p₁ - p₃ ∈ U := 
+    D.frobeniusPrimeDifference_mem_infiniteUnitAddSubgroup
       A v K L hLK σ₁ σ₃ π₁ π₃ hπ₁ hπ₃
   have h₃action : p₃ - D.frobeniusQuotientAction A KR.field L hLK
-      (φ.1 ^ n₄) p₃ ∈ U := by
-    exact D.frobeniusPrime_actionDifference_mem_infiniteUnitAddSubgroup
+      (φ.1 ^ n₄) p₃ ∈ U := 
+    D.frobeniusPrime_actionDifference_mem_infiniteUnitAddSubgroup
       A v K L hLK σ₃ π₃ hπ₃ (φ.1 ^ n₄)
   have h₁shift : p₁ - D.frobeniusQuotientAction A KR.field L hLK
       (φ.1 ^ n₄) p₃ ∈ U := by
@@ -287,10 +283,3 @@ theorem frobeniusCorrectionTerms_mem_infiniteUnitAddSubgroup
     exact h₁₃
   · change p₃ - D.frobeniusQuotientAction A KR.field L hLK τ₁ p₃ ∈ _
     exact h₃action
-
-
-end DegreeData
-
-end
-
-end ClassFormation

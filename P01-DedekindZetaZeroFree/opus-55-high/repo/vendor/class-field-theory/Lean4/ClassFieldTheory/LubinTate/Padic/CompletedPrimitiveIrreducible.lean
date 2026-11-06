@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Irreducibility of the completed p-adic primitive polynomial
 
@@ -25,7 +21,6 @@ the completed maximal unramified field.  In particular it remains
 irreducible over the completed-unramified fraction field.
 -/
 
-noncomputable section
 
 open scoped Polynomial
 
@@ -70,8 +65,8 @@ theorem padicCompletedUnramifiedIntegerMap_isUniformizer
     _ =
         Ideal.map (padicCompletedUnramifiedIntegerMap p)
           (Ideal.span
-            ({π} : Set (padicLocalField p).valuationSubring)) := by
-      exact congrArg (Ideal.map (padicCompletedUnramifiedIntegerMap p))
+            ({π} : Set (padicLocalField p).valuationSubring)) := 
+      congrArg (Ideal.map (padicCompletedUnramifiedIntegerMap p))
         (base.maximalIdeal_eq_span_uniformizer hπ)
     _ = Ideal.span ({πE} : Set target.valuationSubring) := by
       rw [Ideal.map_span, Set.image_singleton]
@@ -81,8 +76,8 @@ as the original finite multiplicative Lubin--Tate polynomial. -/
 theorem padicCompletedPrimitivePolynomialInteger_natDegree
     (p : ℕ) [Fact p.Prime] (n : ℕ) :
     (padicCompletedPrimitivePolynomialInteger p n).natDegree =
-      (p - 1) * p ^ n := by
-  exact ((padicCompletedPrimitivePolynomialInteger_monic p n).natDegree_map
+      (p - 1) * p ^ n := 
+  ((padicCompletedPrimitivePolynomialInteger_monic p n).natDegree_map
     (algebraMap
       (padicCompletedUnramifiedCompleteDVF p).valuationSubring
       (padicCompletedUnramifiedField p))).symm.trans
@@ -154,7 +149,3 @@ theorem padicCompletedPrimitivePolynomial_irreducible
       (padicCompletedPrimitivePolynomialInteger_monic p n)).mp
       (padicCompletedPrimitivePolynomialInteger_irreducible p n)
   rwa [padicCompletedPrimitivePolynomialInteger_map] at hmap
-
-end LubinTate
-
-end

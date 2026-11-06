@@ -51,5 +51,3 @@ theorem unramifiedAtAllPrimesAboveIff
         ← Ideal.ramificationIdxIn_eq_ramificationIdx p.asIdeal w.asIdeal Gal(E/K)]
     rw [← Ideal.ramificationIdx_eq_one_iff, key, Ideal.ramificationIdx_eq_one_iff]
     exact h
-
-end DedekindZetaZeroFree.AbelianQuotient

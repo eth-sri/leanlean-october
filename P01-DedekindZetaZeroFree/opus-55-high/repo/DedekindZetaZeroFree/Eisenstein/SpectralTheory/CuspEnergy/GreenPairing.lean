@@ -34,7 +34,3 @@ def rawWeightedGreenDensity (v : Representative ζ hζ S ρ V T) (η : ℝ → �
       (rawCutoffUpstairs v (fun t => η t ^ 2)) x)
     (HyperbolicChart.differential (KPCuspLogShape.dimension F)
       (v.val ∘ arch (KPCuspLogShape.dimension F)) x)).re
-
-end DedekindZetaZeroFree.KPCompactGreenRadialIntegrability
-
-end

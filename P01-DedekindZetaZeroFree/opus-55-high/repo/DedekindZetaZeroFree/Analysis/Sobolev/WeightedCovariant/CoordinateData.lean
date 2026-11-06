@@ -109,7 +109,3 @@ def Connection.IsCompatible {n r : ℕ} {Γ : Type*} [Group Γ]
         (fun y => (D.cocycle γ y).symm (u (D.act γ y))) x v =
       (D.cocycle γ x).symm
         (smoothCovariantDerivative A u (D.act γ x) (fderiv ℝ (D.act γ) x v))
-
-end DedekindZetaZeroFree.KPCompactInteriorH1
-
-end

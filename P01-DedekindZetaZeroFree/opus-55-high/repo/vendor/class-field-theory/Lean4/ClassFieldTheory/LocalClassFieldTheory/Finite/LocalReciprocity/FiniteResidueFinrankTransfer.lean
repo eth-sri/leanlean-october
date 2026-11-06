@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 namespace LocalClassFieldTheory
 open CyclicCohomology RamificationTheory ClassFormation
 
@@ -45,7 +39,7 @@ universe u v
 /-- If the decomposition group of an ambient valuation ring is the whole
 Galois group, its decomposition-field valuation ring is canonically
 equivalent to the given valuation ring on the ground field. -/
-noncomputable def valuationSubringEquivDecompositionFieldOfEqTop
+def valuationSubringEquivDecompositionFieldOfEqTop
     {F : Type u} {Omega : Type v} [Field F] [Field Omega] [Algebra F Omega]
     [IsGalois F Omega]
     (A : ValuationSubring Omega) (C : ValuationSubring F)
@@ -76,31 +70,26 @@ noncomputable def valuationSubringEquivDecompositionFieldOfEqTop
     have hz : eFZ.symm (z : Z) ∈ A.comap (algebraMap F Omega) := by
       change algebraMap F Omega (eFZ.symm (z : Z)) ∈ A
       have he : algebraMap F Omega (eFZ.symm (z : Z)) =
-          ((z : Z) : Omega) := by
-        exact congrArg Subtype.val (eFZ.apply_symm_apply (z : Z))
+          ((z : Z) : Omega) := 
+        congrArg Subtype.val (eFZ.apply_symm_apply (z : Z))
       rw [he]
       exact z.property
-    rw [hC] at hz
-    exact hz
+    simp_all
   exact
     { toFun := fun x => ⟨eFZ (x : F), hto x⟩
       invFun := fun z => ⟨eFZ.symm (z : Z), hinv z⟩
       left_inv := fun x => by
-        apply Subtype.ext
-        exact eFZ.symm_apply_apply (x : F)
+        simp
       right_inv := fun z => by
-        apply Subtype.ext
-        exact eFZ.apply_symm_apply (z : Z)
+        simp
       map_add' := fun x y => by
-        apply Subtype.ext
-        exact map_add eFZ (x : F) (y : F)
+        simp
       map_mul' := fun x y => by
-        apply Subtype.ext
-        exact map_mul eFZ (x : F) (y : F) }
+        simp }
 
 /-- The corresponding equivalence between literal and intrinsic residue
 fields. -/
-noncomputable def residueFieldEquivDecompositionResidueOfEqTop
+def residueFieldEquivDecompositionResidueOfEqTop
     {F : Type u} {Omega : Type v} [Field F] [Field Omega] [Algebra F Omega]
     [IsGalois F Omega]
     (A : ValuationSubring Omega) (C : ValuationSubring F)
@@ -219,10 +208,7 @@ theorem localResidueDatum_residueDegree_eq_residueFinrank
             (IsLocalRing.residue V a) =
           IsLocalRing.residue C
             (i a) := by
-      change algebraMap 𝓀[K] 𝓀[E]
-          (IsLocalRing.residue 𝒪[K] a) =
-        IsLocalRing.residue 𝒪[E] (algebraMap 𝒪[K] 𝒪[E] a)
-      exact residueField_algebraMap_residue K E a
+      rfl
     rw [hres]
     change algebraMap kE' Omega
         (eE (IsLocalRing.residue C
@@ -232,10 +218,7 @@ theorem localResidueDatum_residueDegree_eq_residueFinrank
     rw [residueFieldEquivDecompositionResidueOfEqTop_algebraMap]
     have hbase :=
       localBaseResidueEquivDecompositionResidue_algebraMap K a
-    change algebraMap k₀ Omega
-      (eK (IsLocalRing.residue V a)) = _ at hbase
-    rw [hbase]
-    congr 1
+    rfl
 
   let : Algebra k₀ kE :=
     ((algebraMap kK kE).comp eK.symm.toRingHom).toAlgebra
@@ -279,6 +262,3 @@ theorem localResidueDatum_residueDegree_eq_residueFinrank
   exact
     (localResidueDatum_residueDegree_eq_selectedResidueFinrank K H).trans
       hfinrankRaw.symm
-
-end
-end LocalClassFieldTheory

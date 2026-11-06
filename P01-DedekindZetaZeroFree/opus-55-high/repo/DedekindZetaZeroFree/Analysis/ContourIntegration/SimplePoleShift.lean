@@ -6,7 +6,6 @@ public import DedekindZetaZeroFree.Analysis.VerticalContourShift
 
 namespace DedekindZetaZeroFree.Quantitative.SimplePoleVerticalShift
 
-noncomputable section
 
 open DedekindZetaZeroFree MeasureTheory Set Filter Complex
 open scoped Topology
@@ -27,7 +26,7 @@ theorem verticalIntegral_sub_eq_residue
   set q : ℝ := p.re with hq
   set g : ℂ → ℂ := fun z => f (z + (c : ℂ) * I) with hg
   have hpq : p = (q : ℂ) + (c : ℂ) * I := by
-    apply Complex.ext <;> simp [hq, hc]
+    simp_all
   have hcomp : ∀ σ : ℝ, (fun t : ℝ => g ((σ : ℂ) + (t : ℂ) * I)) =
       fun t : ℝ => f ((σ : ℂ) + ((t + c : ℝ) : ℂ) * I) := by
     intro σ; funext t; simp only [hg]; congr 1; push_cast; ring
@@ -47,7 +46,7 @@ theorem verticalIntegral_sub_eq_residue
     intro z; simp [comparisonClosedStrip]
   have hgd : DifferentiableOn ℂ g (comparisonClosedStrip a b \ {(q : ℂ)}) := by
     have hd : DifferentiableOn ℂ (fun z : ℂ => z + (c : ℂ) * I) (comparisonClosedStrip a b \ {(q : ℂ)}) :=
-      (differentiable_id.add_const _).differentiableOn
+      by fun_prop
     refine hf.comp hd ?_
     intro z hz
     refine ⟨(hstrip z).1 hz.1, ?_⟩
@@ -87,7 +86,7 @@ theorem verticalIntegral_sub_eq_residue
     rw [← differentiableOn_compl_singleton_and_continuousAt_iff hnb]
     constructor
     · have : DifferentiableOn ℂ (fun z => (z - (q : ℂ)) * g z) (comparisonClosedStrip a b \ {(q : ℂ)}) :=
-        (differentiableOn_id.sub_const _).mul hgd
+        by fun_prop
       refine this.congr ?_
       intro z hz
       simp only [hA]
@@ -106,7 +105,7 @@ theorem verticalIntegral_sub_eq_residue
     intro T
     apply intervalIntegral.integral_congr
     intro x _
-    simp only [hg, Function.comp_apply, id]
+    simp only [hg, id]
     apply congrArg f
     push_cast
     ring
@@ -117,7 +116,7 @@ theorem verticalIntegral_sub_eq_residue
     intro T
     apply intervalIntegral.integral_congr
     intro x _
-    simp only [hg, Function.comp_apply, id]
+    simp only [hg, id]
     apply congrArg f
     push_cast
     ring
@@ -199,13 +198,8 @@ theorem verticalIntegral_sub_eq_residue_of_decay
       have := congrArg Complex.re h
       simp at this
       exact hne this
-    · intro y hy
-      exact hbound σ hσ y hy
+    simp_all
   refine verticalIntegral_sub_eq_residue hap hpb hf hres
     (hline a ⟨le_rfl, hab⟩ hap.ne) (hline b ⟨hab, le_rfl⟩ hpb.ne') ?_ ?_
   · simpa using horizontal_tendsto_zero_of_decay f a b C T0 (-1) hab (by norm_num) hbound
   · simpa using horizontal_tendsto_zero_of_decay f a b C T0 1 hab (by norm_num) hbound
-
-end
-
-end DedekindZetaZeroFree.Quantitative.SimplePoleVerticalShift

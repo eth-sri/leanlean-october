@@ -20,8 +20,8 @@ def idealToPrimeTo (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
     intro v hv
     rw [Finsupp.mem_support_iff] at hv
     rw [fullModulus_finitePart] at hv
-    have hm0 : m ≠ 0 := by simpa using hm
-    have hI0 : I ≠ 0 := by simpa using hI
+    have hm0 : m ≠ 0 := by omega
+    have hI0 : I ≠ 0 := by omega
     have hle_m : m ≤ v.asIdeal :=
       Ideal.dvd_iff_le.mp ((Associates.count_ne_zero_iff_dvd hm0 v.irreducible).mp hv)
     have hcoe : ((integralIdealUnit I hI :
@@ -53,7 +53,7 @@ def idealClass (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
 theorem ideal_mul_ne_bot (I J : Ideal (𝓞 F)) (hI : I ≠ ⊥) (hJ : J ≠ ⊥) :
     I * J ≠ ⊥ := by
   intro h
-  exact (Ideal.mul_eq_bot.mp h).elim hI hJ
+  simp_all
 
 theorem ideal_mul_coprime (m I J : Ideal (𝓞 F))
     (hIm : I ⊔ m = ⊤) (hJm : J ⊔ m = ⊤) :
@@ -93,7 +93,3 @@ theorem ideal_mul_coprime (m I J : Ideal (𝓞 F))
     idealClass m hm (I * J) hIJ hIJm =
       idealClass m hm I hI hIm * idealClass m hm J hJ hJm := by
   rw [idealClass, idealClass, idealClass, idealToPrimeTo_mul, map_mul]
-
-end DedekindZetaZeroFree.LargeSieve.RayBridge
-
-end

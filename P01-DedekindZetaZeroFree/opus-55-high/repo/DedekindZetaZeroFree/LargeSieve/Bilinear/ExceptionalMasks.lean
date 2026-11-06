@@ -17,19 +17,19 @@ local instance exceptionalMasksClassGroupFinite (Q : QuadraticHeckeFamily F c) :
 noncomputable local instance exceptionalMasksClassGroupFintype (Q : QuadraticHeckeFamily F c) : Fintype Q.G :=
   Fintype.ofFinite Q.G
 
-private lemma sup_eq_top_of_le_of_sup_eq_top {a b d : Ideal (𝓞 F)}
+lemma sup_eq_top_of_le_of_sup_eq_top {a b d : Ideal (𝓞 F)}
     (h : a ⊔ b = ⊤) (hbd : b ≤ d) : a ⊔ d = ⊤ := by
   rw [eq_top_iff]
   calc ⊤ = a ⊔ b := h.symm
     _ ≤ a ⊔ d := sup_le_sup_left hbd a
 
-private lemma exists_prime_dvd_of_sup_ne_top {u v : Ideal (𝓞 F)} (h : u ⊔ v ≠ ⊤) :
+lemma exists_prime_dvd_of_sup_ne_top {u v : Ideal (𝓞 F)} (h : u ⊔ v ≠ ⊤) :
     ∃ p : Ideal (𝓞 F), p.IsPrime ∧ p ∣ u ∧ p ∣ v := by
   obtain ⟨p, hp, hle⟩ := Ideal.exists_le_maximal (u ⊔ v) h
   exact ⟨p, hp.isPrime, Ideal.dvd_iff_le.mpr (le_trans le_sup_left hle),
     Ideal.dvd_iff_le.mpr (le_trans le_sup_right hle)⟩
 
-private lemma prime_dvd_cond_of_dvd_of_not_dvd_q (Q : QuadraticHeckeFamily F c)
+lemma prime_dvd_cond_of_dvd_of_not_dvd_q (Q : QuadraticHeckeFamily F c)
     (q : Ideal (𝓞 F))
     (H : ∀ b : Ideal (𝓞 F), Squarefree b → b ⊔ c = ⊤ →
       Q.cond b ∣ b * q ∧ b ∣ Q.cond b * q)
@@ -41,7 +41,7 @@ private lemma prime_dvd_cond_of_dvd_of_not_dvd_q (Q : QuadraticHeckeFamily F c)
   · exact h
   · exact absurd (Ideal.dvd_iff_le.mpr h) hpq
 
-private lemma sup_mul_eq_top_of_sup_eq_top_of_sup_eq_top {t u v : Ideal (𝓞 F)}
+lemma sup_mul_eq_top_of_sup_eq_top_of_sup_eq_top {t u v : Ideal (𝓞 F)}
     (ht : t ⊔ v = ⊤) (hu : u ⊔ v = ⊤) : t * u ⊔ v = ⊤ := by
   by_contra h
   obtain ⟨p, hp, hptu, hpv⟩ := exists_prime_dvd_of_sup_ne_top h
@@ -180,5 +180,3 @@ theorem peeling_mask_transport_sum (Q : QuadraticHeckeFamily F c)
     _ = ∑ g : Q.G, exceptionalRowMask Q t g v *
           (∑ u ∈ U, lam (t * u) * exceptionalColumnMask Q r t g u * (Q.χ u) v) :=
         Finset.sum_congr rfl fun g _ => (Finset.mul_sum _ _ _).symm
-
-end DedekindZetaZeroFree.LargeSieve.Sieve

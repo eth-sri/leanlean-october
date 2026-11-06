@@ -8,7 +8,7 @@ namespace DedekindZetaZeroFree.LargeSieve.Vendor
 
 open scoped NumberField Classical
 
-private theorem tail_shell_sum_le
+theorem tail_shell_sum_le
     {ι : Type*} (w : ι → ℝ) (C : ℝ)
     (hcount : ∀ Y : ℝ, 1 ≤ Y → ∀ s : Finset ι,
       (∀ i ∈ s, w i ≤ Y) → (s.card : ℝ) ≤ C * Y)
@@ -30,14 +30,14 @@ private theorem tail_shell_sum_le
       rw [show 1 - p = 1 + (-p) by ring, Real.rpow_add hA0, Real.rpow_one]
       ring
 
-private theorem tail_scale_rpow (X p : ℝ) (hX : 0 < X) (n : ℕ) :
+theorem tail_scale_rpow (X p : ℝ) (hX : 0 < X) (n : ℕ) :
     ((2 : ℝ) ^ n * X) ^ (1 - p) = X ^ (1 - p) * ((2 : ℝ) ^ (1 - p)) ^ n := by
   rw [Real.mul_rpow (by positivity) hX.le]
   rw [← Real.rpow_natCast, ← Real.rpow_mul (by norm_num : (0 : ℝ) ≤ 2)]
   rw [mul_comm (n : ℝ), Real.rpow_mul (by norm_num : (0 : ℝ) ≤ 2), Real.rpow_natCast]
   ring
 
-private theorem tail_partial_sum_le
+theorem tail_partial_sum_le
     {ι : Type*} (w : ι → ℝ) (C : ℝ)
     (hcount : ∀ Y : ℝ, 1 ≤ Y → ∀ s : Finset ι,
       (∀ i ∈ s, w i ≤ Y) → (s.card : ℝ) ≤ C * Y)
@@ -103,7 +103,7 @@ theorem inversePower_tail_sum_le
       w i ≤ ∑ j ∈ s, w j :=
         Finset.single_le_sum (fun j _ => by linarith [hw j]) hi
       _ ≤ (2 : ℝ) ^ n * X := ((div_lt_iff₀ hX0).mp hn).le
-  have hr0 : 0 ≤ (2 : ℝ) ^ (1 - p) := Real.rpow_nonneg (by norm_num) _
+  have hr0 : 0 ≤ (2 : ℝ) ^ (1 - p) := by positivity
   have hr1 : (2 : ℝ) ^ (1 - p) < 1 :=
     Real.rpow_lt_one_of_one_lt_of_neg (by norm_num) (by linarith)
   have hg : ∑ k ∈ Finset.range n, ((2 : ℝ) ^ (1 - p)) ^ k ≤
@@ -120,5 +120,3 @@ theorem inversePower_tail_sum_le
       mul_le_mul_of_nonneg_left hg (by positivity)
     _ = (2 * C / (1 - (2 : ℝ) ^ (1 - p))) * X ^ (1 - p) := by
       ring
-
-end DedekindZetaZeroFree.LargeSieve.Vendor

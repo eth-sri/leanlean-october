@@ -47,10 +47,6 @@ theorem actual_tail_bruhat (P : Polarization S.heisenberg) (ε : Sign)
   have h := congrArg (fun a => a * signedWeyl F ζ hζ q) hb
   have hn : nLift F ζ hζ q 0 = 1 := by
     rw [← (S.openCell P).upper_eq]
-    exact congrArg Subtype.val S.borel.upperRoot.map_one
+    simp
   rw [hn, mul_one, inv_mul_cancel_right] at h
   simpa [actualTailPhase, actualLowerRoot, mul_assoc] using h
-
-end DedekindZetaZeroFree.KPRankOneShellRepair
-
-end

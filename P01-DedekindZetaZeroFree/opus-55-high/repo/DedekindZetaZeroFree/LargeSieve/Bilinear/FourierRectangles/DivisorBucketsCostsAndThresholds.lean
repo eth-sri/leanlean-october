@@ -94,7 +94,3 @@ def dualNormCost (C : Context Q) : ℝ :=
 def Threshold (C : Context Q) (B Cq : ℝ) : Prop :=
   ∀ e ∈ C.mobiusDivisors,
     C.Z1 B e ≤ Cq * C.N * Real.rpow (C.M * C.N) C.δ / Real.sqrt (B * C.M)
-
-end DedekindZetaZeroFree.LargeSieve.Bilinear.FiniteFourierRectangles
-
-end

@@ -6,7 +6,6 @@ public import DedekindZetaZeroFree.Metaplectic.Torus.ClosednessAndNormChartFormu
 
 @[expose] public section
 
-noncomputable section
 open scoped NumberField Classical NNReal
 open NumberField
 namespace DedekindZetaZeroFree.CompactPeriodAnalyticity.ArchValue
@@ -83,12 +82,11 @@ theorem literal_arch_borel_covariance
   rw [hr] at hc
   rw [hc, hχ]
   have hd : 0 < (((KPGlobalTorusFunctionData.delta F ζ hζ r.val : ℝ≥0) : ℝ)) := by
-    exact_mod_cast (pos_iff_ne_zero.mpr (Units.ne_zero _))
+    simp
   have hν : (KPGlobalCenterRationalCharacter.positiveComplex
       (KPGlobalCenterRationalCharacter.nu F ζ hζ r.val) : ℂ) =
       (((KPGlobalTorusFunctionData.delta F ζ hζ r.val : ℝ≥0) : ℝ) ^ (1 / 6 : ℝ) : ℝ) := by
-    simp [KPGlobalCenterRationalCharacter.positiveComplex, KPGlobalCenterRationalCharacter.nu,
-      KPGlobalCenterRationalCharacter.sixthPower]
+    rfl
   rw [hν, Real.rpow_def_of_pos hd, Complex.ofReal_exp]
   have hδ := KPGlobalTorusBorelNormTwistTransport.AnalyticInputs.delta_chart_formula F ζ hζ z hz
   rw [← hr] at hδ
@@ -111,7 +109,7 @@ theorem literal_single_arch_borel_covariance
       KPGlobalTorusFunctionData.torusArchDomain F := by
     intro u
     by_cases hu : u = w
-    · subst u; simp [y.ne_zero]
+    · subst u; simp
     · simp [Function.update_of_ne hu]
   have hc := literal_arch_borel_covariance F ζ hζ K f s _ hz 0 g
   have hn : KPGlobalTorusFunctionData.N F ζ hζ 0 = 1 :=
@@ -120,8 +118,7 @@ theorem literal_single_arch_borel_covariance
       ‖Function.update (fun _ => (1 : ℂ)) w (y : ℂ) u‖ ^ 2) = ‖(y : ℂ)‖ ^ 2 := by
     rw [Finset.prod_eq_single w]
     · simp
-    · intro u _ hu
-      simp [Function.update_of_ne hu]
+    · simp_all
     · simp
   simpa only [KPGlobalTorusFunctionData.torusArchChart, hn, mul_one, hp] using hc
 
@@ -168,13 +165,10 @@ theorem literal_single_arch_weyl_value
   rw [hai, literal_single_arch_borel_covariance]
   congr 1
   have hi : ‖((y⁻¹ : ℂˣ) : ℂ)‖ ^ 2 = (‖(y : ℂ)‖ ^ 2)⁻¹ := by
-    simp [norm_inv, inv_pow]
+    simp
   rw [hi]
   unfold KPGlobalExceptionalParameter.realLogPower
   rw [Real.log_inv]
   congr 1
   push_cast
   ring
-end DedekindZetaZeroFree.CompactPeriodAnalyticity.ArchValue
-
-end

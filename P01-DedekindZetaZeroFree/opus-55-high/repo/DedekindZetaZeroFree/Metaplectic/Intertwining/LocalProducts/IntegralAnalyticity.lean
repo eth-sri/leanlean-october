@@ -6,7 +6,6 @@ public import DedekindZetaZeroFree.Metaplectic.Intertwining.ChamberIntegrals.Fin
 
 @[expose] public section
 
-noncomputable section
 open scoped Classical NumberField Topology
 open MeasureTheory ValuativeRel
 set_option backward.isDefEq.respectTransparency false
@@ -88,7 +87,7 @@ theorem finite_full_right_coordinate_analytic
         ((compactTrivialization S.borel P S.iwasawa .plus s).symm
           (compactTrivialization S.borel P S.iwasawa .plus s φ)))).val g).val t = _
     rw [LinearEquiv.symm_apply_apply]
-    exact section_coordinate_formula F ζ hζ q S P .plus s _ g t
+    rfl
   simp_rw [he]
   have hc := ActualLocalProduct.finite_coordinate_analytic F ζ hζ q S P μ hμ φ
     (S.iwasawa.compactPart g)
@@ -96,19 +95,3 @@ theorem finite_full_right_coordinate_analytic
   have hd := target_scalar_diff F ζ hζ q S .plus (S.iwasawa.borelPart g)
   intro s hs
   exact (hd.analyticAt s).mul (hc s hs)
-
-variable (P₀ : KPGlobalTorusFiniteStages.CompatibleModelData F ζ hζ)
-variable (C₀ : KPGlobalTorusFiniteStages.LocalFiberData F ζ hζ P₀)
-variable (E : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F))) (hE : C₀.exceptional ⊆ E)
-variable (φfin : ∀ q : E, compactPicture (C₀.canonical q.val).borel (C₀.polarization q.val)
-  (C₀.canonical q.val).iwasawa .plus)
-variable (gfin : ∀ q : E, ActualCover F ζ hζ q.val)
-variable (t : KPGlobalTorusFunctionData.E F ζ hζ)
-
-variable (φarch : {w : NumberField.InfinitePlace F // w.IsComplex} →
-  KPComplexIntertwinerParameterMajorant.CompactPicture)
-variable (garch : {w : NumberField.InfinitePlace F // w.IsComplex} → KPCplxCharacterHaar.ComplexGL2)
-
-end DedekindZetaZeroFree.KPGlobalResidualKernel.IntertwinerRegularization.FactorizationSources.NormalizedCoordinateAnalyticity.ActualOutputAnalytic
-
-end

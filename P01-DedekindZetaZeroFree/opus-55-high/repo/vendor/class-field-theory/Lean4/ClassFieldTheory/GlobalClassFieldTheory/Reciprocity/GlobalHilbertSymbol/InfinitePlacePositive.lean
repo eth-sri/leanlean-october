@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # The positive-radicand real infinite-place branch
 
@@ -30,7 +25,6 @@ Artin automorphism and its Kummer root character are trivial.
 open scoped Classical NumberField
 open NumberField
 
-noncomputable section
 
 namespace GlobalClassFieldTheory
 namespace Reciprocity
@@ -84,7 +78,7 @@ theorem infinitePlaceKummerRootCharacter_eq_one_of_real_of_radical_pos
         (chosenSimpleKummerRootCharacter K n hnK hmu b
           (chosenInfinitePlaceArtinMonoidHom
             (K := K) (L := L) v a_v)) = 1
-  rw [hArtin, map_one, map_one]
+  simp_all
 
 /-- The explicit real Hilbert factor and the Kummer root character agree
 when the quadratic radicand is positive. -/
@@ -104,8 +98,3 @@ theorem infinitePlaceKummerRootCharacter_localGlobal_of_real_of_radical_pos
   symm
   apply Subtype.ext
   simp [infinitePlaceHilbertSymbol, hn, hv, hbNotNeg]
-
-end Reciprocity
-end GlobalClassFieldTheory
-
-end

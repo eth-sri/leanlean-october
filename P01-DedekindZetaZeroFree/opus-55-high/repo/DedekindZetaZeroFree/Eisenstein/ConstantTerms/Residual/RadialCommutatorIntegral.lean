@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Eisenstein.Continuation.Cusps.CutoffSourceDat
 
 @[expose] public section
 
-noncomputable section
 open MeasureTheory Filter
 open scoped Topology ContDiff
 namespace DedekindZetaZeroFree.KPCutoffSource
@@ -66,6 +65,3 @@ theorem incoming_commutator_integral_full (d : ℕ) {T : ℝ} (χ : SmoothCuspCu
   rw [← setIntegral_eq_integral_of_forall_compl_eq_zero hsupport]
   rw [← intervalIntegral.integral_of_le (show T-1 ≤ T+2 by linarith)]
   exact incoming_commutator_integral d χ s
-end DedekindZetaZeroFree.KPCutoffSource
-
-end

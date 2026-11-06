@@ -91,5 +91,3 @@ theorem restricted_local_evaluations_finite_support
     rw [show (C.canonical q).borel.coordinate (t q) = A.coordinate (t q) from rfl,
       hdenom, div_one]
   exact Filter.eventually_cofinite.mp heval
-end
-end DedekindZetaZeroFree.KPGlobalTorusTensorFibers

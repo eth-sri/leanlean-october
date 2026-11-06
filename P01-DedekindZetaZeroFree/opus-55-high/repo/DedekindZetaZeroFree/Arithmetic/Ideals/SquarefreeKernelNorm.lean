@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.LargeSieve.Bilinear.QuadraticFormsAndSieveExp
 
 @[expose] public section
 
-noncomputable section
 
 open scoped NumberField Classical
 
@@ -34,7 +33,3 @@ theorem squarefreeKernel_eq_self (ha : Squarefree a) : squarefreeKernel a = a :=
 theorem s_eq_absNorm_of_squarefree (ha : Squarefree a) :
     s a = (Ideal.absNorm a : ℝ) := by
   rw [s, squarefreeKernel_eq_self ha]
-
-end DedekindZetaZeroFree.LargeSieve.Sieve
-
-end

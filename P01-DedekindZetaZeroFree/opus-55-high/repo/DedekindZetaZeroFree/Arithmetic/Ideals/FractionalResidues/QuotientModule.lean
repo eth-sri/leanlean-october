@@ -41,7 +41,7 @@ theorem fractionalResidueModule_isTorsionBySet (m : Ideal R)
     FractionalIdeal.mul_mem_mul
       ((FractionalIdeal.mem_coeIdeal _).mpr ⟨r, hr, rfl⟩) x.property
 
-noncomputable instance fractionalResidueModuleModule (m : Ideal R)
+instance fractionalResidueModuleModule (m : Ideal R)
     (I : FractionalIdeal R⁰ K) : Module (R ⧸ m) (fractionalResidueModule m I) :=
   (fractionalResidueModule_isTorsionBySet m I).module
 
@@ -50,9 +50,4 @@ noncomputable instance fractionalResidueModuleModule (m : Ideal R)
     Ideal.Quotient.mk m r •
         Submodule.Quotient.mk (p := fractionalResidueDenominator m I) x =
       Submodule.Quotient.mk (p := fractionalResidueDenominator m I) (r • x) := by
-  rw [(fractionalResidueModule_isTorsionBySet m I).mk_smul]
   rfl
-
-end
-
-end DedekindZetaZeroFree.Hecke

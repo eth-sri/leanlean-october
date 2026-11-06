@@ -19,5 +19,3 @@ theorem davenportHasse :
   have hn : 0 < Module.finrank k E := Module.finrank_pos
   rw [← DavenportHasse.b_eq χ ψ hψ hn, ← DavenportHasse.sum_lifted_eq_b E χ ψ]
   simp only [gaussSum, hχE, hψE]
-
-end DedekindZetaZeroFree

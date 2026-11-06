@@ -11,8 +11,8 @@ import Mathlib.Analysis.Calculus.Deriv.Shift
 namespace DedekindZetaZeroFree.KPCplxRotatedRapidDecay
 
 noncomputable def logarithmicRadialFlow (t : ℝ) (y : ℂˣ) : ℂˣ :=
-  Units.mk0 ((Real.exp (t / 2) : ℂ) * (y : ℂ)) (by
-    exact mul_ne_zero (by exact_mod_cast Real.exp_ne_zero (t / 2)) y.ne_zero)
+  Units.mk0 ((Real.exp (t / 2) : ℂ) * (y : ℂ)) (
+    mul_ne_zero (by exact_mod_cast Real.exp_ne_zero (t / 2)) y.ne_zero)
 
 noncomputable def logarithmicDerivative (F : ℂˣ → ℂ) : ℂˣ → ℂ :=
   fun y => deriv (fun t : ℝ => F (logarithmicRadialFlow t y)) 0
@@ -44,8 +44,7 @@ lemma iteratedDeriv_logarithmicRadialFlow (f : ℂˣ → ℂ) (j : ℕ) (z : ℂ
     simp_rw [logarithmicRadialFlow_add]
     rw [deriv_comp_add_const
       (fun s => ((logarithmicDerivative^[j]) f) (logarithmicRadialFlow s z)) t 0]
-    simp only [zero_add]
-    rw [hfun]
+    simp_all
 
 lemma iteratedDeriv_scale (g : ℝ → ℂ) (c : ℝ) (j : ℕ) (t : ℝ) :
     iteratedDeriv j (fun s => g (c * s)) t =
@@ -72,5 +71,3 @@ lemma iteratedDeriv_logarithmicRadialFlow_div (f : ℂˣ → ℂ) (r : ℝ) (j :
   have h := iteratedDeriv_scale (fun s => f (logarithmicRadialFlow s z)) r⁻¹ j 0
   simpa only [mul_zero, iteratedDeriv_logarithmicRadialFlow, logarithmicRadialFlow_zero,
     Complex.ofReal_inv] using h
-
-end DedekindZetaZeroFree.KPCplxRotatedRapidDecay

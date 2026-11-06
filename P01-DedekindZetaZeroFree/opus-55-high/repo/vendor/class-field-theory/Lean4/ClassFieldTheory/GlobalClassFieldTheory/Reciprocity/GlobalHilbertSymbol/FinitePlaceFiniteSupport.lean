@@ -13,10 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Finite support of finite-place Hilbert symbols
 
@@ -30,7 +26,6 @@ is needed here.
 open scoped Classical NumberField
 open NumberField IsDedekindDomain
 
-noncomputable section
 
 namespace GlobalClassFieldTheory
 namespace Reciprocity
@@ -80,18 +75,7 @@ theorem finitePlaceHilbertSymbol_hasFiniteMulSupport
       (IdeleGroup.finiteComponent v (IdeleGroup.principalIdele K a) :
           (v.adicCompletion K)ˣ) =
         Units.map (algebraMap K (v.adicCompletion K)).toMonoidHom a := by
-    apply Units.ext
-    calc
-      ((IdeleGroup.finiteComponent v (IdeleGroup.principalIdele K a) :
-          (v.adicCompletion K)ˣ) : v.adicCompletion K) =
-          ((a : K) : v.adicCompletion K) :=
-        IdeleGroup.finiteComponent_principalIdele a v
-      _ = algebraMap K (v.adicCompletion K) (a : K) := by
-        symm
-        have hmap := congrFun
-          (IsDedekindDomain.HeightOneSpectrum.algebraMap_adicCompletion
-            (R := 𝓞 K) (S := K) (K := K) (v := v)) (a : K)
-        simpa using hmap
+    rfl
   rw [hcomponent]
   calc
     finitePlaceHilbertSymbol K n hnK hmu v a b =
@@ -104,11 +88,4 @@ theorem finitePlaceHilbertSymbol_hasFiniteMulSupport
       change finitePlaceKummerRootCharacter K n hnK hmu v a b =
         finitePlaceKummerRootCharacterOfExtension K n hnK hmu v a b
           (chosenFinitePlaceExtension (L := L) v)
-      exact
-        (finitePlaceKummerRootCharacterOfExtension_eq K n hnK hmu v a b
-          (chosenFinitePlaceExtension (L := L) v)).symm
-
-end Reciprocity
-end GlobalClassFieldTheory
-
-end
+      rfl

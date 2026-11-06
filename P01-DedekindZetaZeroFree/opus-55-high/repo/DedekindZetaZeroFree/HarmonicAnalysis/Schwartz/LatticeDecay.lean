@@ -27,7 +27,7 @@ theorem schwartzLatticeDecay (L : Submodule ℤ E)
   let k := Module.finrank ℤ L + 1
   obtain ⟨D, hD, hdecay⟩ := f.decay k 0
   have hdecay' (y : E) : ‖y‖ ^ k * ‖f y‖ ≤ D := by
-    simpa only [norm_iteratedFDeriv_zero] using hdecay y
+    simp_all
   let R := ‖(ContinuousMap.id E).restrict C‖
   have hR : 0 ≤ R := norm_nonneg _
   have hx (x : C) : ‖(x : E)‖ ≤ R :=
@@ -39,8 +39,8 @@ theorem schwartzLatticeDecay (L : Submodule ℤ E)
         (Function.Embedding.subtype (fun x : E => x ∈ L))
     convert hf using 1
     ext ℓ
-    simp [Metric.mem_closedBall, dist_zero_right]
-  have hbase := ZLattice.summable_norm_pow_inv L k (by dsimp [k]; omega)
+    simp
+  have hbase := ZLattice.summable_norm_pow_inv L k (by omega)
   refine (hbase.mul_left (D * 2 ^ k)).of_norm_bounded_eventually ?_
   refine hfinite.subset ?_
   intro ℓ hℓ
@@ -72,8 +72,7 @@ theorem schwartzLatticeDecay (L : Submodule ℤ E)
             rw [inv_pow]; field_simp
       _ ≤ _ := mul_le_mul_of_nonneg_right hprod (by positivity)
   apply hℓ
-  change ‖‖(schwartzLatticeTranslate L f ℓ).restrict C‖‖ ≤ D * 2 ^ k * ‖ℓ‖⁻¹ ^ k
-  simpa only [Real.norm_of_nonneg (norm_nonneg _), Submodule.norm_coe] using hbound
+  simp_all
 
 theorem schwartzLatticeDecay_pointwise (L : Submodule ℤ E)
     [DiscreteTopology L] [IsZLattice ℝ L] (f : SchwartzMap E ℂ) (z : E) :
@@ -127,7 +126,3 @@ theorem schwartzLatticeDecay_coordinates (L : Submodule ℤ E)
   change ‖f (B ((x : ι → ℝ) + fun i => (n i : ℝ)))‖ ≤ _
   rw [map_add, hcast]
   exact ht
-
-end DedekindZetaZeroFree
-
-end

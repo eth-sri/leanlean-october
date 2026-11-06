@@ -49,7 +49,7 @@ open scoped Topology
 variable {A E Y : Type*} [NormedAddCommGroup A] [NormedSpace ℝ A]
  [NormedAddCommGroup E] [NormedSpace ℝ E] [NormedAddCommGroup Y] [NormedSpace ℝ Y]
 set_option backward.isDefEq.respectTransparency.types false in
-private lemma joint_jet {h : A → E → Y} {U : Set E} (hU : IsOpen U)
+lemma joint_jet {h : A → E → Y} {U : Set E} (hU : IsOpen U)
  (hh : ContDiffOn ℝ (⊤ : ℕ∞) (Function.uncurry h) (Set.univ ×ˢ U)) (n : ℕ) :
  ContDiffOn ℝ (⊤ : ℕ∞) (fun p : A × E => iteratedFDeriv ℝ n (h p.1) p.2) (Set.univ ×ˢ U) := by
  induction n with
@@ -228,7 +228,7 @@ end CompactDifferentiation
   unfold L
   rw [KPContFlatSourceRecipe.flatR_formula]
 
-private lemma induced_chart_contDiffOn (P : KPGlobalTorusFunctionData.Polarization F ζ hζ)
+lemma induced_chart_contDiffOn (P : KPGlobalTorusFunctionData.Polarization F ζ hζ)
     (f : KPGlobalTorusBorelTwistCompatibility.Induced F ζ hζ P)
     (g : KPGlobalTorusFunctionData.G F ζ hζ) :
     ContDiffOn ℝ (⊤ : ℕ∞)
@@ -246,7 +246,7 @@ private lemma induced_chart_contDiffOn (P : KPGlobalTorusFunctionData.Polarizati
     (fun J => KPGlobalTorusBorelTwistCompatibility.InducedLevel F ζ hζ P J) hf
     (fun J x hx => hx.1 g) contDiffOn_const (fun x y hx hy => hx.add hy)
 
-private lemma scalarSection_chart_contDiffOn
+lemma scalarSection_chart_contDiffOn
     (hSmooth : ∀ v : S, (ι v).val ∈
       KPMsRationalCompactCrossPairing.scalarSmooth F ζ hζ
         (KPMsRationalCompactCrossPairing.sourcePolarization F ζ hζ 0))
@@ -266,7 +266,7 @@ private lemma scalarSection_chart_contDiffOn
   exact induced_chart_contDiffOn F ζ hζ
     (KPMsRationalCompactCrossPairing.sourcePolarization F ζ hζ 0) f g
 
-private lemma alpha_chart_contDiffOn (g : KPGlobalTorusFunctionData.G F ζ hζ) :
+lemma alpha_chart_contDiffOn (g : KPGlobalTorusFunctionData.G F ζ hζ) :
     ContDiffOn ℝ (⊤ : ℕ∞)
       (fun z => (KPContFlatSourceRecipe.alpha F ζ hζ
         (KPGlobalTorusBorelTwistCompatibility.groupArchChart F ζ hζ z * g) : ℂ))
@@ -274,14 +274,14 @@ private lemma alpha_chart_contDiffOn (g : KPGlobalTorusFunctionData.G F ζ hζ) 
   (Complex.ofRealCLM.contDiff.comp_contDiffOn
     (KPContFlatLogNormSmooth.alpha_groupArchChart_mul_contDiffOn F ζ hζ g)).of_le le_top
 
-private lemma exp_alpha_chart_contDiffOn (s : ℂ) (g : KPGlobalTorusFunctionData.G F ζ hζ) :
+lemma exp_alpha_chart_contDiffOn (s : ℂ) (g : KPGlobalTorusFunctionData.G F ζ hζ) :
     ContDiffOn ℝ (⊤ : ℕ∞)
       (fun z => Complex.exp (s * (KPContFlatSourceRecipe.alpha F ζ hζ
         (KPGlobalTorusBorelTwistCompatibility.groupArchChart F ζ hζ z * g) : ℂ)))
       (KPGlobalTorusBorelTwistCompatibility.groupArchDomain F) :=
   ((contDiffOn_const (c := s)).mul (alpha_chart_contDiffOn F ζ hζ g)).cexp
 
-private lemma L_chart_contDiffOn
+lemma L_chart_contDiffOn
     (hSmooth : ∀ v : S, (ι v).val ∈
       KPMsRationalCompactCrossPairing.scalarSmooth F ζ hζ
         (KPMsRationalCompactCrossPairing.sourcePolarization F ζ hζ 0))
@@ -302,7 +302,7 @@ private lemma L_chart_contDiffOn
   exact (exp_alpha_chart_contDiffOn F ζ hζ s g).mul
     (scalarSection_chart_contDiffOn F ζ hζ ι hSmooth v g)
 
-private lemma L_chart_varying_contDiffOn
+lemma L_chart_varying_contDiffOn
     (hSmooth : ∀ v : S, (ι v).val ∈
       KPMsRationalCompactCrossPairing.scalarSmooth F ζ hζ
         (KPMsRationalCompactCrossPairing.sourcePolarization F ζ hζ 0))
@@ -355,7 +355,7 @@ variable (hSmooth : ∀ v : S, (ι v).val ∈
 include hSmooth hfd
 
 set_option backward.isDefEq.respectTransparency.types false in
-private lemma parameterJet_joint_continuousOn
+lemma parameterJet_joint_continuousOn
     (g : KPGlobalTorusFunctionData.G F ζ hζ) (m n : ℕ) (v : S) :
     ContinuousOn (fun p : ℂ × KPGlobalTorusBorelTwistCompatibility.GroupArch F =>
       parameterJet F ζ hζ ι g m n p.1 v p.2)
@@ -425,7 +425,7 @@ set_option backward.isDefEq.respectTransparency.types false in
   ⟨U.toOpenSubgroup ⊓ V.toOpenSubgroup, U.isCompact.inter_right V.toOpenSubgroup.isClosed⟩
 
 omit hSmooth hfd in
-private lemma induced_uniform_level
+lemma induced_uniform_level
     (P : KPGlobalTorusFunctionData.Polarization F ζ hζ)
     (f : KPGlobalTorusBorelTwistCompatibility.Induced F ζ hζ P) :
     ∃ J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ,
@@ -454,7 +454,7 @@ private lemma induced_uniform_level
       rw [hJ g ⟨j.val, hleft j.property⟩, hK g ⟨j.val, hright j.property⟩]
       rfl)
 
-private lemma scalar_uniform_level (v : S) :
+lemma scalar_uniform_level (v : S) :
     ∃ J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ,
       ∀ g (j : KPGlobalTorusFunctionData.globalLevel F ζ hζ J),
         (ι v).val.val (g * j.val) = (ι v).val.val g := by
@@ -515,8 +515,7 @@ theorem parameterSection_contDiffOn
     ContDiffOn ℝ (⊤ : ℕ∞)
       (fun z => parameterSection F ζ hζ ι m s v
         (KPGlobalTorusBorelTwistCompatibility.groupArchChart F ζ hζ z * g))
-      (KPGlobalTorusBorelTwistCompatibility.groupArchDomain F) :=
-  parameterSection_chart_contDiffOn F ζ hζ ι hSmooth g m s v
+      (KPGlobalTorusBorelTwistCompatibility.groupArchDomain F) := by apply DedekindZetaZeroFree.KPContFlatStageJetHolomorphy.parameterSection_chart_contDiffOn <;> assumption
 
 theorem L_contDiffOn (f : ℂ → S) (s : ℂ)
     (g : KPGlobalTorusFunctionData.G F ζ hζ) :

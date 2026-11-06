@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 namespace ClassFormation
 
 open KummerTheory
@@ -105,8 +100,7 @@ theorem relativeCosetAction_add
         relativeCosetAction A K L hLK b q := by
   refine Quotient.inductionOn' q ?_
   intro k
-  simp only [relativeCosetAction_mk]
-  exact map_add (A.ρ k.1) a.1 b.1
+  simp
 
 /-- Every relative coset acts trivially on the zero fixed element. -/
 @[simp]
@@ -137,9 +131,7 @@ theorem relativeNormValue_fixed
     refine Quotient.inductionOn' q ?_
     intro x
     simp only [relativeCosetAction_mk, leftMulCosetEquiv_mk]
-    change A.ρ k.1 (A.ρ x.1 a.1) = A.ρ (k.1 * x.1) a.1
-    rw [map_mul]
-    rfl
+    simp
   rw [relativeNormValue]
   simp_rw [map_sum, hterm]
   exact (leftMulCosetEquiv (extensionSubgroup K L hLK) k).sum_comp
@@ -180,6 +172,3 @@ theorem relativeNorm_apply_coe
     ((relativeNorm A K L hLK a : ambientFixedAddSubgroup A K) : A.V) =
       relativeNormValue A K L hLK a :=
   rfl
-
-end
-end ClassFormation

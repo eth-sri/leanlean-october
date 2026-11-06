@@ -18,7 +18,6 @@ open NumberField IsDedekindDomain MeasureTheory ValuativeRel
 open KPLocalExceptionalConstruction KPLocalStoneVonNeumann KPLocalPrincipalSeries
 open KPRankOneShellRepair
 open KPExceptionalRaw.FiniteSource.TameWhittakerSteps
-set_option autoImplicit false
 set_option maxHeartbeats 2000000
 set_option backward.isDefEq.respectTransparency false
 
@@ -129,7 +128,3 @@ theorem coinvariant_rank_le_one
     (KPLocalJacquetImage.root S.borel) χ.toMonoidHom) ≤ 1
   rw [hn, e.rank_eq, ← hn]
   exact standard_coinvariant_rank_le_one F ζ hζ q S P μ hμ ht
-
-end DedekindZetaZeroFree.ExteriorWhittakerValues.ActualWhittaker
-
-end

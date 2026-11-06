@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Theta.Unfolding.OrbitExtractionDefinitions
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.OrbitExpansion
 open MomentSources MeasureTheory ThetaProfileHaarSheets ThetaSheetExactUnfolding
 open scoped NumberField Classical
@@ -73,7 +72,3 @@ theorem thetaAverage_sub_upperAverage_domain {N : TraceHaarTransport R} (C : Joi
   change γ.val.val * y.val = (Quotient.out (sheetProjection R.A l y)).val at hv
   rw [← hv]
   exact C.descent.weighted_upper_descent v m b ⟨γ.val.val, γ.property⟩ _
-
-end DedekindZetaZeroFree.OrbitExpansion
-
-end

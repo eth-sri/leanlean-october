@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Ordinary topology in the finite abelian class-field correspondence
 
@@ -65,14 +60,14 @@ abbrev ordinaryIdeleClassNormExtension
     (L : FiniteAbelianSubextension K.field) : Type :=
   abstractRelativeFixedField ℚ (SeparableClosure ℚ) L.below
 
-noncomputable instance ordinaryIdeleClassNormBaseFiniteDimensional
+instance ordinaryIdeleClassNormBaseFiniteDimensional
     (K : FiniteAbstractField
       (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)) :
     FiniteDimensional ℚ (ordinaryIdeleClassNormBase K) :=
   abstractFixedField_finiteDimensional
     ℚ (SeparableClosure ℚ) K.field K.finite
 
-noncomputable instance ordinaryIdeleClassNormExtensionFiniteDimensional
+instance ordinaryIdeleClassNormExtensionFiniteDimensional
     (K : FiniteAbstractField
       (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
     (L : FiniteAbelianSubextension K.field) :
@@ -83,7 +78,7 @@ noncomputable instance ordinaryIdeleClassNormExtensionFiniteDimensional
     ℚ (SeparableClosure ℚ)
     K.field L.field L.below K.finite L.finite
 
-noncomputable instance ordinaryIdeleClassNormScalarTower
+instance ordinaryIdeleClassNormScalarTower
     (K : FiniteAbstractField
       (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
     (L : FiniteAbelianSubextension K.field) :
@@ -92,7 +87,7 @@ noncomputable instance ordinaryIdeleClassNormScalarTower
       (ordinaryIdeleClassNormExtension K L) :=
   IsScalarTower.of_algebraMap_eq' rfl
 
-noncomputable instance ordinaryIdeleClassNormExtensionAbsoluteFiniteDimensional
+instance ordinaryIdeleClassNormExtensionAbsoluteFiniteDimensional
     (K : FiniteAbstractField
       (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
     (L : FiniteAbelianSubextension K.field) :
@@ -102,13 +97,13 @@ noncomputable instance ordinaryIdeleClassNormExtensionAbsoluteFiniteDimensional
     (ordinaryIdeleClassNormBase K)
     (ordinaryIdeleClassNormExtension K L)
 
-noncomputable instance ordinaryIdeleClassNormBaseNumberField
+instance ordinaryIdeleClassNormBaseNumberField
     (K : FiniteAbstractField
       (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)) :
     NumberField (ordinaryIdeleClassNormBase K) :=
   NumberField.of_module_finite ℚ (ordinaryIdeleClassNormBase K)
 
-noncomputable instance ordinaryIdeleClassNormExtensionNumberField
+instance ordinaryIdeleClassNormExtensionNumberField
     (K : FiniteAbstractField
       (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
     (L : FiniteAbelianSubextension K.field) :
@@ -116,7 +111,7 @@ noncomputable instance ordinaryIdeleClassNormExtensionNumberField
   NumberField.of_module_finite ℚ
     (ordinaryIdeleClassNormExtension K L)
 
-noncomputable instance ordinaryIdeleClassNormExtensionIsAbelianGalois
+instance ordinaryIdeleClassNormExtensionIsAbelianGalois
     (K : FiniteAbstractField
       (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
     (L : FiniteAbelianSubextension K.field) :
@@ -138,81 +133,3 @@ theorem ordinaryIdeleClassNormSubgroup_eq_namedNormRange
   simpa only [ordinaryIdeleClassNormBase,
     ordinaryIdeleClassNormExtension] using
     (ordinaryIdeleClassNormSubgroup_eq_actualNormRange K L)
-
-/-- The ordinary norm subgroup represented by a finite abelian
-subextension is open in the natural topology of the idele class group of
-the canonical actual fixed field. -/
-theorem ordinaryIdeleClassNormSubgroup_isOpen
-    (K : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (L : FiniteAbelianSubextension K.field) :
-    IsOpen
-      (ordinaryIdeleClassNormSubgroup K L :
-        Set
-          (Additive
-            (IdeleClassGroup
-              (ordinaryIdeleClassNormBase K)))) := by
-  rw [ordinaryIdeleClassNormSubgroup_eq_namedNormRange K L]
-  exact ideleClassNorm_range_isOpen
-    (K := ordinaryIdeleClassNormBase K)
-    (L := ordinaryIdeleClassNormExtension K L)
-
-/-- The ordinary norm subgroup represented by a finite abelian
-subextension is closed in the natural idele-class topology. -/
-theorem ordinaryIdeleClassNormSubgroup_isClosed
-    (K : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (L : FiniteAbelianSubextension K.field) :
-    IsClosed
-      (ordinaryIdeleClassNormSubgroup K L :
-        Set
-          (Additive
-            (IdeleClassGroup
-              (ordinaryIdeleClassNormBase K)))) := by
-  rw [ordinaryIdeleClassNormSubgroup_eq_namedNormRange K L]
-  exact ideleClassNorm_range_isClosed
-    (K := ordinaryIdeleClassNormBase K)
-    (L := ordinaryIdeleClassNormExtension K L)
-
-/-- The ordinary norm subgroup represented by a finite abelian
-subextension has finite index. -/
-theorem ordinaryIdeleClassNormSubgroup_finiteIndex
-    (K : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (L : FiniteAbelianSubextension K.field) :
-    (ordinaryIdeleClassNormSubgroup K L).FiniteIndex := by
-  rw [ordinaryIdeleClassNormSubgroup_eq_namedNormRange K L]
-  exact
-    (Subgroup.finiteIndex_toAddSubgroup_iff
-      (H := (_root_.ideleClassNorm
-        (ordinaryIdeleClassNormBase K)
-        (ordinaryIdeleClassNormExtension K L)).range)).2
-      (ideleClassNorm_rangeFiniteIndex
-        (K := ordinaryIdeleClassNormBase K)
-        (L := ordinaryIdeleClassNormExtension K L))
-
-/-- The index of the ordinary norm subgroup represented by a finite
-abelian subextension is the degree of its actual relative fixed-field
-extension. -/
-theorem ordinaryIdeleClassNormSubgroup_index_eq_finrank
-    (K : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (L : FiniteAbelianSubextension K.field) :
-    (ordinaryIdeleClassNormSubgroup K L).index =
-      Module.finrank
-        (ordinaryIdeleClassNormBase K)
-        (ordinaryIdeleClassNormExtension K L) := by
-  rw [ordinaryIdeleClassNormSubgroup_eq_namedNormRange K L]
-  exact
-    (Subgroup.index_toAddSubgroup
-      (H := (_root_.ideleClassNorm
-        (ordinaryIdeleClassNormBase K)
-        (ordinaryIdeleClassNormExtension K L)).range)).trans
-      (ideleClassNorm_index_eq_finrank_abelian
-        (ordinaryIdeleClassNormBase K)
-        (ordinaryIdeleClassNormExtension K L))
-
-end GlobalClassFields
-end GlobalClassFieldTheory
-
-end

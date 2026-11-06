@@ -27,8 +27,8 @@ def balancedSplit (A : SArithmeticData F)
     (p : ThetaProfileHaarSheets.PositiveAxis × A.G1) : A.G :=
   p.2.val * A.radialSection p.1.val p.1.property
 
-theorem continuous_balancedSplit (A : SArithmeticData F) : Continuous (balancedSplit A) := by
-  exact (continuous_subtype_val.comp continuous_snd).mul
+theorem continuous_balancedSplit (A : SArithmeticData F) : Continuous (balancedSplit A) := 
+  (continuous_subtype_val.comp continuous_snd).mul
     (A.continuous_radialSection.comp continuous_fst)
 
 def sectionRatio (A : SArithmeticData F) (v : InfinitePlace F)
@@ -42,7 +42,7 @@ theorem split_ratio (A : SArithmeticData F) (v : InfinitePlace F)
     (x : ThetaProfileHaarSheets.PositiveAxis) (z : A.G1) :
     ThetaProfileHaarSheets.normSplit A v (x,z) = balancedSplit A (x,z * sectionRatio A v x) := by
   change _ * z.val = (z.val * (_ / _)) * _
-  simp [div_eq_mul_inv, mul_comm, mul_left_comm, mul_assoc]
+  simp [div_eq_mul_inv, mul_comm, mul_assoc]
 
 theorem map_balancedSplit (A : SArithmeticData F) (v : InfinitePlace F)
     (dt : Measure A.G1) [dt.IsHaarMeasure] :
@@ -56,7 +56,7 @@ theorem map_balancedSplit (A : SArithmeticData F) (v : InfinitePlace F)
     Measure.map_apply (f := ThetaProfileHaarSheets.normSplit A v)
       (ThetaProfileHaarSheets.normSplit A v).toHomeomorph.measurable hs]
   have hn : Measurable (fun p => ThetaProfileHaarSheets.normSplit A v p) :=
-    (ThetaProfileHaarSheets.normSplit A v).toHomeomorph.measurable
+    by fun_prop
   rw [← lintegral_indicator_one (hs.preimage (continuous_balancedSplit A).measurable),
     ← lintegral_indicator_one (hs.preimage hn)]
   change (∫⁻ p, (balancedSplit A ⁻¹' s).indicator
@@ -83,7 +83,7 @@ theorem map_balancedSplit (A : SArithmeticData F) (v : InfinitePlace F)
       ThetaProfileHaarSheets.positiveHaar = ProbeSheet.radialMeasure := by
   rw [ThetaProfileHaarSheets.positiveHaar_map_val, ProbeSheet.radialMeasure,
     restrict_withDensity measurableSet_Ioi]
-  simp only [one_div]
+  simp
 
 theorem balanced_probe_map (R : PrincipalMellin.ActualRecipe S η) :
     Measure.map (ProbeSheet.localUnits R.A)
@@ -143,7 +143,3 @@ theorem probe_polar_factors (R : PrincipalMellin.ActualRecipe S η) :
   rw [← map_balancedSplit R.A v]
   apply (ProbeSheet.localUnitsContinuous R.A).toHomeomorph.toMeasurableEquiv.map_measurableEquiv_injective
   exact (balanced_probe_map R).trans he.symm
-
-end DedekindZetaZeroFree.TraceHaarTransport
-
-end

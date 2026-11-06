@@ -4,21 +4,12 @@ public import DedekindZetaZeroFree.Eisenstein.Induction.HolomorphicSectionsAndRe
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.KPCompactPeriod
 
 open MeasureTheory
 open KPGlobalEisensteinData
 open scoped Topology ContDiff
 
-section CompactOrbit
-
-variable {Q G X H J : Type*}
-  [TopologicalSpace Q] [CompactSpace Q] [MeasurableSpace Q] [BorelSpace Q]
-  [TopologicalSpace G] [TopologicalSpace X]
-  [AddCommGroup H] [Module ℂ H]
-
-end CompactOrbit
 
 section ChartSmoothness
 
@@ -26,7 +17,7 @@ variable {Q E : Type*} [TopologicalSpace Q] [CompactSpace Q]
   [MeasurableSpace Q] [BorelSpace Q]
   [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimensional ℝ E]
 
-private theorem compact_hasFDerivAt_integral {V : Type*}
+theorem compact_hasFDerivAt_integral {V : Type*}
     [NormedAddCommGroup V] [NormedSpace ℝ V] [CompleteSpace V]
     (μ : Measure Q) [IsProbabilityMeasure μ]
     (f : E → Q → V) (f' : E → Q → E →L[ℝ] V)
@@ -50,7 +41,7 @@ private theorem compact_hasFDerivAt_integral {V : Type*}
   · exact Filter.Eventually.of_forall fun x a ha => hB (a, x)
       ⟨Metric.ball_subset_closedBall ha, Set.mem_univ x⟩
   · exact integrable_const B
-  · exact Filter.Eventually.of_forall fun x a _ => hd a x
+  simp_all
 
 set_option backward.isDefEq.respectTransparency false in
 
@@ -71,8 +62,7 @@ theorem compact_integral_smooth (μ : Measure Q) [IsProbabilityMeasure μ]
         fderiv ℝ (iteratedFDeriv ℝ n (fun g => f g p.2)) p.1) := by
       rw [show (fun p : E × Q => fderiv ℝ (iteratedFDeriv ℝ n (fun g => f g p.2)) p.1) =
         (fun p : E × Q => L (iteratedFDeriv ℝ (n + 1) (fun g => f g p.2) p.1)) from rfl]
-      convert L.continuous.comp (hjets (n + 1)) using 1
-      rfl
+      fun_prop
     have H := compact_hasFDerivAt_integral μ
       (fun g x => iteratedFDeriv ℝ n (fun g => f g x) g)
       (fun g x => fderiv ℝ (iteratedFDeriv ℝ n (fun g => f g x)) g)
@@ -105,18 +95,7 @@ theorem compact_integral_smooth (μ : Measure Q) [IsProbabilityMeasure μ]
     | succ n ih =>
       funext g
       rw [iteratedFDeriv_succ_eq_comp_left, Function.comp_apply, ih, (hd n g).fderiv]
-      exact (continuousMultilinearCurryLeftEquiv ℝ (fun _ : Fin (n + 1) => E) ℂ).symm_apply_apply _
+      simp
   refine ⟨contDiff_of_differentiable_iteratedFDeriv (fun n _ => ?_), fun n g => congrFun (heq n) g⟩
   rw [heq n]
   exact fun g => (hd n g).differentiableAt
-
-end ChartSmoothness
-
-section Symmetries
-
-variable {Q G X : Type*} [MeasurableSpace Q]
-
-end Symmetries
-end DedekindZetaZeroFree.KPCompactPeriod
-
-end

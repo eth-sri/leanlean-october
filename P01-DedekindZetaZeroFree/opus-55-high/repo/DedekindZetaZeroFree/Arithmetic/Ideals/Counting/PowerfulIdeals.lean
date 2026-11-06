@@ -20,8 +20,8 @@ def exteriorPowerfulDyad (cS : Ideal (𝓞 F)) (P : ℝ) : Set (ExteriorIdeal cS
   { h | Powerful h.val ∧ P ≤ idealNorm h.val ∧ idealNorm h.val < 2 * P }
 
 theorem normPowerfulIdeals_finite (F : Type) [Field F] [NumberField F] (X : ℝ) :
-    (normPowerfulIdeals F X).Finite := by
-  exact (normBoundedIdeals_finite F X).subset (fun _ h => h.2.le)
+    (normPowerfulIdeals F X).Finite := 
+  (normBoundedIdeals_finite F X).subset (fun _ h => h.2.le)
 
 theorem exteriorPowerfulDyad_finite (cS : Ideal (𝓞 F)) (P : ℝ) :
     (exteriorPowerfulDyad cS P).Finite := by
@@ -33,19 +33,19 @@ theorem exteriorPowerfulDyad_finite (cS : Ideal (𝓞 F)) (P : ℝ) :
     exact Subtype.ext (congrArg (fun h : NonzeroIdeal F => h.val) hab)
   · exact normPowerfulIdeals_finite F (2 * P)
 
-private theorem powerful_norm_factor (r s : NonzeroIdeal F) :
+theorem powerful_norm_factor (r s : NonzeroIdeal F) :
     idealNorm (r.val ^ 2 * s.val ^ 3) = idealNorm r.val ^ 2 * idealNorm s.val ^ 3 := by
   simp [idealNorm, map_mul, map_pow]
 
-private theorem powerful_cutoff_eq (X q : ℝ) (hX : 0 ≤ X) (hq : 0 < q) :
+theorem powerful_cutoff_eq (X q : ℝ) (hX : 0 ≤ X) (hq : 0 < q) :
     Real.sqrt (X / q ^ 3) = Real.sqrt X * Real.rpow q (-(3 / 2 : ℝ)) := by
   rw [Real.sqrt_div hX, Real.sqrt_eq_rpow (q ^ 3),
     ← Real.rpow_natCast q 3, ← Real.rpow_mul hq.le]
   norm_num
   rw [Real.rpow_neg hq.le]
-  simp [div_eq_mul_inv]
+  rfl
 
-private theorem powerful_factor_norm_le (r s : NonzeroIdeal F) (X : ℝ)
+theorem powerful_factor_norm_le (r s : NonzeroIdeal F) (X : ℝ)
     (hX : 0 ≤ X) (h : idealNorm (r.val ^ 2 * s.val ^ 3) < X) :
     idealNorm r.val ≤ Real.sqrt (X / idealNorm s.val ^ 3) := by
   have hr := idealNorm_ge_one r.val r.property
@@ -59,12 +59,12 @@ def powerfulFactors (h : NonzeroIdeal F) : NonzeroIdeal F × NonzeroIdeal F :=
     (unique_powerful_square_cube_decomposition h.val h.property hp).exists.choose
   else (⟨⊤, by simp⟩, ⟨⊤, by simp⟩)
 
-private theorem powerfulFactors_spec (h : NonzeroIdeal F) (hp : Powerful h.val) :
+theorem powerfulFactors_spec (h : NonzeroIdeal F) (hp : Powerful h.val) :
     h.val = (powerfulFactors h).1.val ^ 2 * (powerfulFactors h).2.val ^ 3 := by
   simpa [powerfulFactors, hp] using
     ((unique_powerful_square_cube_decomposition h.val h.property hp).exists.choose_spec).1
 
-private theorem powerfulFactors_inj (X : ℝ) :
+theorem powerfulFactors_inj (X : ℝ) :
     Set.InjOn (powerfulFactors (F := F)) (normPowerfulIdeals F X) := by
   intro a ha b hb hab
   apply Subtype.ext
@@ -83,8 +83,7 @@ theorem powerful_ideal_count_bound (F : Type) [Field F] [NumberField F] :
         apply Set.eq_empty_iff_forall_notMem.2
         intro r hr
         exact h ((idealNorm_ge_one r.val r.property).trans hr)
-      rw [he, Set.ncard_empty, Nat.cast_zero]
-      exact mul_nonneg hC.le hY
+      simp_all
   let w : NonzeroIdeal F → ℝ := fun s => Real.rpow (idealNorm s.val) (-(3 / 2 : ℝ))
   have hw : Summable w := ideal_norm_rpow_summable F (3 / 2) (by norm_num)
   have hw0 : ∀ s, 0 ≤ w s := fun s => Real.rpow_nonneg
@@ -168,7 +167,3 @@ theorem exterior_powerful_dyad_count_bound (F : Type) [Field F] [NumberField F] 
     _ = (K * Real.sqrt 2) * Real.sqrt P := by
       rw [Real.sqrt_mul (by norm_num : (0 : ℝ) ≤ 2)]
       ring
-
-end
-
-end DedekindZetaZeroFree

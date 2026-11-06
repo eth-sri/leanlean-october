@@ -11,7 +11,6 @@ open NumberField IsDedekindDomain
 
 namespace DedekindZetaZeroFree.SArithmeticData
 
-set_option autoImplicit false
 set_option backward.isDefEq.respectTransparency false
 variable {F : Type} [Field F] [NumberField F]
 
@@ -41,16 +40,15 @@ private lemma symbol_embed (A : SArithmeticData F) (σ : F →+* ℂ)
   obtain h | h := sq_eq_one_iff.mp hz
   · have h1 : z = 1 := Subtype.ext (Units.ext h)
     change (if z = 1 then 1 else -1) = σ z.val.val
-    rw [if_pos h1]
-    simp only [h, map_one]
+    simp_all
   · have h1 : z ≠ 1 := by
       intro h1
       have : (1 : F) = -1 := by simpa [h1] using h
       have : (2 : F) = 0 := by linear_combination this
       exact (two_ne_zero : (2 : F) ≠ 0) this
     change (if z = 1 then 1 else -1) = σ z.val.val
-    rw [if_neg h1, h, map_neg, map_one]
-private lemma sum_prod {I J : Type*} (f : I ⊕ J → ℂ) (h : ∀ i : I, f (Sum.inl i) = 1) :
+    simp_all
+lemma sum_prod {I J : Type*} (f : I ⊕ J → ℂ) (h : ∀ i : I, f (Sum.inl i) = 1) :
     (∏ᶠ p : I ⊕ J, f p) = ∏ᶠ j : J, f (Sum.inr j) := by
   classical
   rw [← finprod_mem_range (f := f) (g := Sum.inr) Sum.inr_injective, finprod_mem_def]
@@ -58,8 +56,8 @@ private lemma sum_prod {I J : Type*} (f : I ⊕ J → ℂ) (h : ∀ i : I, f (Su
   intro p
   rcases p with i | j
   · simp [Set.mulIndicator, h i]
-  · simp [Set.mulIndicator]
-private lemma phase_product (A : SArithmeticData F) (x : Fˣ) :
+  simp
+lemma phase_product (A : SArithmeticData F) (x : Fˣ) :
     (∏ᶠ v : HeightOneSpectrum (𝓞 F),
       A.finiteWeilPhase v (Units.map (algebraMap F (v.adicCompletion F)).toMonoidHom x)) = 1 ∧
     Function.HasFiniteMulSupport (fun v : HeightOneSpectrum (𝓞 F) =>
@@ -74,14 +72,12 @@ private lemma phase_product (A : SArithmeticData F) (x : Fˣ) :
         A.finiteWeilPhase v (Units.map (algebraMap F (v.adicCompletion F)).toMonoidHom x) := by
     rfl
   constructor
-  · have hp2 := hprod.symm.trans hp.2
-    simpa only [heq] using hp2
+  · simp_all
   · convert hp.1.comp_of_injective Sum.inr_injective using 1
-    funext v
-    exact (heq v).symm
+    rfl
  def rootMap (σ : F →+* ℂ) : rootsOfUnity 2 F →* ℂ :=
   σ.toMonoidHom.comp ((Units.coeHom F).comp (rootsOfUnity 2 F).subtype)
-private lemma symbol_product (A : SArithmeticData F) (σ : F →+* ℂ) (x y : Fˣ) :
+lemma symbol_product (A : SArithmeticData F) (σ : F →+* ℂ) (x y : Fˣ) :
     (∏ᶠ v : HeightOneSpectrum (𝓞 F),
       σ (((A.actualLocalSymbol v 2 (Or.inl rfl)
         (Units.map (algebraMap F (v.adicCompletion F)).toMonoidHom x)
@@ -117,31 +113,31 @@ private lemma symbol_product (A : SArithmeticData F) (σ : F →+* ℂ) (x y : F
     simpa only [heq] using hmap.symm
   · have hfin := hs'.fun_comp (rootMap σ).map_one
     simpa only [heq] using hfin
-private lemma square_ratio {G : Type*} [CommGroup G] {a b : G} (h : IsSquare (a / b)) :
+lemma square_ratio {G : Type*} [CommGroup G] {a b : G} (h : IsSquare (a / b)) :
     ∃ t : G, a = b * t ^ 2 := by
   obtain ⟨t, ht⟩ := h
   refine ⟨t, ?_⟩
   have : a / b = t ^ 2 := by simpa only [pow_two] using ht
   calc
-    a = b * (a / b) := by simp [div_eq_mul_inv, mul_comm, mul_left_comm]
+    a = b * (a / b) := by simp [div_eq_mul_inv, mul_left_comm]
     _ = b * t ^ 2 := by rw [this]
-private lemma phase_class (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F))
+lemma phase_class (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F))
     {a b : (v.adicCompletion F)ˣ} (h : IsSquare (a / b)) :
     A.finiteWeilPhase v a = A.finiteWeilPhase v b := by
   obtain ⟨t, rfl⟩ := square_ratio h
   exact A.finiteWeilPhase_mul_sq v b t
-private lemma square_class_one (v : HeightOneSpectrum (𝓞 F))
+lemma square_class_one (v : HeightOneSpectrum (𝓞 F))
     {a : (v.adicCompletion F)ˣ} (h : IsSquare a) :
     QuotientGroup.mk' (powMonoidHom (α := (v.adicCompletion F)ˣ) ((2 : ℕ+) : ℕ)).range a = 1 := by
   apply (QuotientGroup.eq_one_iff a).mpr
   obtain ⟨t, ht⟩ := h
   exact ⟨t, by change t ^ 2 = a; simpa only [pow_two] using ht.symm⟩
-private lemma symbol_sq (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F))
+lemma symbol_sq (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F))
     {a : (v.adicCompletion F)ˣ} (h : IsSquare a) (b : (v.adicCompletion F)ˣ) :
     A.actualLocalSymbol v 2 (Or.inl rfl) a b = 1 := by
   unfold actualLocalSymbol
   rw [square_class_one v h, map_one, MonoidHom.one_apply]
-private lemma symbol_class (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F))
+lemma symbol_class (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F))
     {a b c d : (v.adicCompletion F)ˣ} (ha : IsSquare (a / c)) (hb : IsSquare (b / d)) :
     A.actualLocalSymbol v 2 (Or.inl rfl) a b = A.actualLocalSymbol v 2 (Or.inl rfl) c d := by
   have hq {x y : (v.adicCompletion F)ˣ} (h : IsSquare (x / y)) :
@@ -152,7 +148,7 @@ private lemma symbol_class (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 
     exact div_eq_one.mp hs
   unfold actualLocalSymbol
   rw [hq ha, hq hb]
-private lemma lift_product {I : Type*} (f : I → ℂ) (hf : ∀ i, f i ≠ 0)
+lemma lift_product {I : Type*} (f : I → ℂ) (hf : ∀ i, f i ≠ 0)
     (hp : (∏ᶠ i, f i) = 1 ∧ Function.HasFiniteMulSupport f) :
     (∏ᶠ i, Units.mk0 (f i) (hf i)) = 1 ∧
     Function.HasFiniteMulSupport (fun i => Units.mk0 (f i) (hf i)) := by
@@ -163,18 +159,17 @@ private lemma lift_product {I : Type*} (f : I → ℂ) (hf : ∀ i, f i ≠ 0)
   · apply Units.ext
     have hm := (Units.coeHom ℂ).map_finprod hs
     exact hm.trans hp.1
-  · exact hs
-private lemma phase_nonzero (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F))
+  omega
+lemma phase_nonzero (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F))
     (a : (v.adicCompletion F)ˣ) : A.finiteWeilPhase v a ≠ 0 := by
   intro h
   have hh := A.finiteWeilPhase_norm v a
-  rw [h, norm_zero] at hh
-  exact zero_ne_one hh
-private lemma symbol_nonzero (A : SArithmeticData F) (σ : F →+* ℂ)
+  simp_all
+lemma symbol_nonzero (A : SArithmeticData F) (σ : F →+* ℂ)
     (v : HeightOneSpectrum (𝓞 F)) (a b : (v.adicCompletion F)ˣ) :
     σ (((A.actualLocalSymbol v 2 (Or.inl rfl) a b : rootsOfUnity 2 F) : Fˣ) : F) ≠ 0 :=
   (map_ne_zero σ).mpr (A.actualLocalSymbol v 2 (Or.inl rfl) a b).val.ne_zero
-private lemma isolated_law (A : SArithmeticData F) (σ : F →+* ℂ)
+lemma isolated_law (A : SArithmeticData F) (σ : F →+* ℂ)
     (v₀ : HeightOneSpectrum (𝓞 F)) (x y : Fˣ)
     (hx : ∀ v : HeightOneSpectrum (𝓞 F), (2 : 𝓞 F) ∈ v.asIdeal → v ≠ v₀ →
       IsSquare (Units.map (algebraMap F (v.adicCompletion F)).toMonoidHom x))
@@ -247,7 +242,3 @@ theorem finiteWeilPhase_mul_dyadic (A : SArithmeticData F) (σ : F →+* ℂ)
   rw [phase_class A v hx, phase_class A v hy, phase_class A v hab,
     symbol_class A v hx hy] at h
   exact h
-
-end DedekindZetaZeroFree.SArithmeticData
-
-end

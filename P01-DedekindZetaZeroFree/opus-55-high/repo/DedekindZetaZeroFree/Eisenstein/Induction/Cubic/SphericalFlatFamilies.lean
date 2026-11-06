@@ -217,7 +217,7 @@ structure StageConclusions : Prop where
         (KPChamberBruhatTwoCells.rationalCoset F γ)) =
       L F ζ hζ U ι s v (KPContFlatRationalCosetCovariance.matrixRationalHom F ζ hζ γ * g)
 
-private theorem lap_eq (d : ℕ) (f : KPArch.Space d → ℂ) (z : KPArch.Space d) :
+theorem lap_eq (d : ℕ) (f : KPArch.Space d → ℂ) (z : KPArch.Space d) :
     localLaplacian d f z = KPContFlatCuspCasimirSpecialization.Δloc d f z := by
   rfl
  theorem stageConclusions (hι : Function.Injective ι) : StageConclusions F ζ hζ C R P H U ι := by

@@ -37,8 +37,7 @@ theorem periodicCubeIntegral_translation {ι : Type*} [Fintype ι]
     have hg := ((Pi.basisFun ℝ ι).mem_span_iff_repr_mem ℤ g).mp g.prop
     choose z hz using hg
     have heq : (g : ι → ℝ) = fun i => (z i : ℝ) := by
-      ext i
-      simpa using (hz i).symm
+      simp_all
     change f ((g : ι → ℝ) + u) = f u
     rw [heq, add_comm]
     exact hperiodic z u
@@ -74,8 +73,7 @@ theorem periodicCubeIntegral_negation {ι : Type*} [Fintype ι]
     have hg := ((Pi.basisFun ℝ ι).mem_span_iff_repr_mem ℤ g).mp g.prop
     choose z hz using hg
     have heq : (g : ι → ℝ) = fun i => (z i : ℝ) := by
-      ext i
-      simpa using (hz i).symm
+      simp_all
     change f ((g : ι → ℝ) + u) = f u
     rw [heq, add_comm]
     exact hperiodic z u
@@ -90,5 +88,3 @@ theorem periodicCubeIntegral_negation {ι : Type*} [Fintype ι]
   calc
     _ = ∫ u in e '' Q, f u := (he.setIntegral_image_emb e.measurableEmbedding f Q).symm
     _ = ∫ u in Q, f u := hT.setIntegral_eq hQ hf
-
-end DedekindZetaZeroFree.Hecke

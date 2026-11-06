@@ -114,5 +114,3 @@ theorem summable_inversePower_of_lSeriesSummable_fiberCard
           Complex.cpow_neg, norm_inv, div_eq_mul_inv]
     rw [houter]
     exact hsum.norm
-
-end DedekindZetaZeroFree.Odlyzko

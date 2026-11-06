@@ -10,7 +10,6 @@ open NumberField IsDedekindDomain MeasureTheory
 
 namespace DedekindZetaZeroFree.KPGlobalTorusBorelTwistCompatibility
 noncomputable section
-set_option autoImplicit false
 set_option maxRecDepth 2000
 set_option maxHeartbeats 4000000
 set_option synthInstance.maxHeartbeats 100000
@@ -34,7 +33,7 @@ theorem normPower_mul (s : ℂ) (a b : E F ζ hζ) :
   rw [map_mul, Units.val_mul, NNReal.coe_mul, Real.log_mul]
   · simp only [Complex.ofReal_add, mul_add, Complex.exp_add]
   · exact_mod_cast Units.ne_zero (KPGlobalTorusFunctionData.delta F ζ hζ a)
-  · exact_mod_cast Units.ne_zero (KPGlobalTorusFunctionData.delta F ζ hζ b)
+  simp
 
  theorem normPower_neg (s : ℂ) (a : E F ζ hζ) :
     normPower F ζ hζ (-s) a = (normPower F ζ hζ s a)⁻¹ := by
@@ -58,7 +57,7 @@ theorem normPower_mul (s : ℂ) (a b : E F ζ hζ) :
   have hn : ∀ t : E F ζ hζ,
       (((KPGlobalTorusFunctionData.delta F ζ hζ t : ℝ≥0) : ℝ)) ≠ 0 := by
     intro t
-    exact_mod_cast Units.ne_zero (KPGlobalTorusFunctionData.delta F ζ hζ t)
+    simp
   exact Complex.continuous_exp.comp
     (continuous_const.mul (Complex.continuous_ofReal.comp (hd.log hn)))
 
@@ -81,15 +80,7 @@ def normCharacter (s : ℂ) : E F ζ hζ →ₜ* ℂˣ where
       exact normPower_continuous F ζ hζ (-s)
 
  theorem delta_rational (y : Fˣ) :
-    KPGlobalTorusFunctionData.delta F ζ hζ (KPGlobalTorusFunctionData.s F ζ hζ y) = 1 := by
-  apply Units.val_injective
-  apply NNReal.rpow_left_injective (show (1 / 6 : ℝ) ≠ 0 by norm_num)
-  change (KPGlobalCenterRationalCharacter.nu F ζ hζ
-      (KPGlobalTorusFunctionData.s F ζ hζ y) : ℝ≥0) = (1 : ℝ≥0) ^ (1 / 6 : ℝ)
-  rw [show KPGlobalCenterRationalCharacter.nu F ζ hζ
-      (KPGlobalTorusFunctionData.s F ζ hζ y) = 1 from
-    KPGlobalTorusPeriodizationInverse.rational_representative_norm F ζ hζ y]
-  simp
+    KPGlobalTorusFunctionData.delta F ζ hζ (KPGlobalTorusFunctionData.s F ζ hζ y) = 1 := by apply DedekindZetaZeroFree.KPGlobalTorusBorelNormTwistTransport.delta_rational <;> assumption
 
  theorem normCharacter_rational (s : ℂ) (y : Fˣ) :
     normCharacter F ζ hζ s (KPGlobalTorusFunctionData.s F ζ hζ y) = 1 := by
@@ -177,7 +168,7 @@ def InducedLevel (P : Polarization F ζ hζ)
   zero_mem' := by
     constructor
     · intro g; exact contDiffOn_const
-    · intros; rfl
+    simp
   add_mem' := by
     intro f k hf hk
     constructor
@@ -326,12 +317,7 @@ def inducedTopology (P : Polarization F ζ hζ) : TopologicalSpace (Induced F ζ
 local instance inducedTop (P : Polarization F ζ hζ) : TopologicalSpace (Induced F ζ hζ P) :=
   inducedTopology F ζ hζ P
 
-theorem finitePart_normal : (KPGlobalTorusFunctionData.finitePart F ζ hζ).Normal := by
-  unfold KPGlobalTorusFunctionData.finitePart
-  apply Subgroup.Normal.map (Subgroup.normal_iInf_normal fun w => inferInstance)
-  change Function.Surjective (fun x => KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
-    (KPAdelicCoverRestrictedProduct.amalgamation F ζ hζ x))
-  exact (QuotientGroup.mk'_surjective _).comp (QuotientGroup.mk'_surjective _)
+theorem finitePart_normal : (KPGlobalTorusFunctionData.finitePart F ζ hζ).Normal := by apply DedekindZetaZeroFree.KPGlobalTorusPeriodizationInverse.finitePart_normal <;> assumption
 
 def scalarSection (P : Polarization F ζ hζ) :
     Induced F ζ hζ P →ₗ[ℂ] KPGlobalTorusFunctionData.BorelFunctions F ζ hζ P := by
@@ -452,7 +438,7 @@ private theorem adele_ext (a b : KPGlobalTorusFunctionData.Adeles F)
 private theorem upper_unit {R : Type*} [CommRing R] (A : Matrix.GeneralLinearGroup (Fin 2) R) (h10 : A 1 0 = 0) :
     IsUnit (A 0 0) := by
   have h : IsUnit (Matrix.det (A : Matrix (Fin 2) (Fin 2) R)) :=
-    (Matrix.GeneralLinearGroup.det (n := Fin 2) (R := R) A).isUnit
+    by simp
   have hd : Matrix.det (A : Matrix (Fin 2) (Fin 2) R) = A 0 0 * A 1 1 := by
     simp only [Matrix.det_fin_two, h10, mul_zero, sub_zero]
   exact isUnit_of_mul_isUnit_left (hd ▸ h)
@@ -472,7 +458,7 @@ private theorem upper_diagonal {R : Type*} [CommRing R]
   let x : KPGlobalTorusFunctionData.Adeles F := ↑u⁻¹ * A 0 1
   have hx : A 0 0 * x = A 0 1 := by
     change A 0 0 * (↑u⁻¹ * A 0 1) = _
-    have hu : (u : KPGlobalTorusFunctionData.Adeles F) = A 0 0 := (upper_unit A h10).unit_spec
+    have hu : (u : KPGlobalTorusFunctionData.Adeles F) = A 0 0 := by rfl
     rw [← hu, ← mul_assoc, Units.mul_inv, one_mul]
   have ht : b.val * KPGlobalTorusFunctionData.N F ζ hζ (-x) ∈ E F ζ hζ := by
     change ∃ D : KPAdelicCoverRestrictedProduct.AdelicGL2 F,
@@ -490,12 +476,7 @@ private theorem upper_diagonal {R : Type*} [CommRing R]
 
  theorem upper_units {R : Type*} [CommRing R]
     (A : Matrix.GeneralLinearGroup (Fin 2) R) (h10 : A 1 0 = 0) :
-    IsUnit (A 0 0) ∧ IsUnit (A 1 1) := by
-  have h : IsUnit (Matrix.det (A : Matrix (Fin 2) (Fin 2) R)) :=
-    (Matrix.GeneralLinearGroup.det (n := Fin 2) (R := R) A).isUnit
-  have hd : Matrix.det (A : Matrix (Fin 2) (Fin 2) R) = A 0 0 * A 1 1 := by
-    simp only [Matrix.det_fin_two, h10, mul_zero, sub_zero]
-  exact ⟨isUnit_of_mul_isUnit_left (hd ▸ h), isUnit_of_mul_isUnit_right (hd ▸ h)⟩
+    IsUnit (A 0 0) ∧ IsUnit (A 1 1) := by apply DedekindZetaZeroFree.KPGlobalTorusBorelNormTwistTransport.upper_units <;> assumption
  def ratio {R : Type*} [CommRing R]
     (A : Matrix.GeneralLinearGroup (Fin 2) R) (h10 : A 1 0 = 0) : Rˣ :=
   (upper_units A h10).1.unit * ((upper_units A h10).2.unit)⁻¹
@@ -524,23 +505,19 @@ private theorem ratio_eq (A B : KPAdelicCoverRestrictedProduct.AdelicGL2 F)
   have hm := QuotientGroup.eq.mp h
   obtain ⟨z, hz⟩ := hm
   have he : B = A * Matrix.GeneralLinearGroup.scalar (Fin 2) z := by
-    change Matrix.GeneralLinearGroup.scalar (Fin 2) z = A⁻¹ * B at hz
-    rw [hz]
-    group
+    simp_all
   have h0 : (upper_units B hB).1.unit = (upper_units A hA).1.unit * z := by
     apply Units.ext
     simp only [IsUnit.unit_spec, Units.val_mul]
     rw [he]
-    simp [Units.val_mul, Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_apply,
-      Fin.sum_univ_two, Matrix.scalar]
+    simp
   have h1 : (upper_units B hB).2.unit = (upper_units A hA).2.unit * z := by
     apply Units.ext
     simp only [IsUnit.unit_spec, Units.val_mul]
     rw [he]
-    simp [Units.val_mul, Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_apply,
-      Fin.sum_univ_two, Matrix.scalar]
+    simp
   simp only [ratio, h0, h1]
-  simp [mul_inv_rev, mul_assoc, mul_left_comm, mul_comm]
+  simp
 
 private theorem root_upper (x : KPGlobalTorusFunctionData.Adeles F) :
     upperRoot F x 1 0 = 0 := by rw [upperRoot_entries]; rfl
@@ -724,12 +701,9 @@ end DedekindZetaZeroFree.KPGlobalTorusBorelTwistCompatibility
 
 section
 
-open scoped NumberField Classical NNReal BigOperators Pointwise
-open NumberField IsDedekindDomain MeasureTheory
 
 namespace DedekindZetaZeroFree.KPGlobalTorusBorelTwistCompatibility
 noncomputable section
-set_option autoImplicit false
 set_option maxRecDepth 2000
 set_option maxHeartbeats 4000000
 set_option synthInstance.maxHeartbeats 100000
@@ -741,23 +715,19 @@ attribute [local instance] smoothTopology inducedFunctionsAddGroup inducedLevelA
   inducedAddGroup inducedTop compactTop inducedLevelTop
 
 def normTwist (P : Polarization F ζ hζ) (s : ℂ) :
-    Smooth F ζ hζ P ≃L[ℂ] Smooth F ζ hζ (twist F ζ hζ P s) := by
-  exact KPGlobalTorusBorelNormTwistTransport.normTwist F ζ hζ P s
+    Smooth F ζ hζ P ≃L[ℂ] Smooth F ζ hζ (twist F ζ hζ P s) := 
+  KPGlobalTorusBorelNormTwistTransport.normTwist F ζ hζ P s
 
  theorem normTwist_formula (P : Polarization F ζ hζ) (s : ℂ)
     (f : Smooth F ζ hζ P) (t : E F ζ hζ) :
-    (normTwist F ζ hζ P s f).val.val t = normPower F ζ hζ s t * f.val.val t := by
-  exact KPGlobalTorusBorelNormTwistTransport.normTwist_formula F ζ hζ P s f t
+    (normTwist F ζ hζ P s f).val.val t = normPower F ζ hζ s t * f.val.val t := 
+  KPGlobalTorusBorelNormTwistTransport.normTwist_formula F ζ hζ P s f t
 
  theorem normTwist_inverse_formula (P : Polarization F ζ hζ) (s : ℂ)
     (f : Smooth F ζ hζ (twist F ζ hζ P s)) (t : E F ζ hζ) :
     ((normTwist F ζ hζ P s).symm f).val.val t =
       normPower F ζ hζ (-s) t * f.val.val t := by
-  have hf := normTwist_formula F ζ hζ P s ((normTwist F ζ hζ P s).symm f) t
-  rw [ContinuousLinearEquiv.apply_symm_apply] at hf
-  rw [normPower_neg, hf]
-  have hn : normPower F ζ hζ s t ≠ 0 := Complex.exp_ne_zero _
-  rw [← mul_assoc, inv_mul_cancel₀ hn, one_mul]
+  rfl
 
 abbrev productModel (C : ModelData F ζ hζ) :=
   KPGlobalTorusPeriodizationInverse.productModel F ζ hζ C
@@ -782,34 +752,34 @@ def twistedQ (C : ModelData F ζ hζ) (s : ℂ) :
   simp only [twistedP, twistedQ, ContinuousLinearMap.comp_apply,
     ContinuousLinearEquiv.coe_coe, ContinuousLinearEquiv.symm_apply_apply]
   rw [KPGlobalTorusPeriodizationInverse.periodization_averaging F ζ hζ C]
-  exact ContinuousLinearEquiv.apply_symm_apply _ _
+  simp
 
  theorem twistedQ_twistedP (C : ModelData F ζ hζ) (s : ℂ) (f : Product F ζ hζ C s) :
     twistedQ F ζ hζ C s (twistedP F ζ hζ C s f) = f := by
   simp only [twistedP, twistedQ, ContinuousLinearMap.comp_apply,
     ContinuousLinearEquiv.coe_coe, ContinuousLinearEquiv.symm_apply_apply]
   rw [KPGlobalTorusPeriodizationInverse.averaging_periodization F ζ hζ C]
-  exact ContinuousLinearEquiv.apply_symm_apply _ _
+  simp
 
 def borelP (C : ModelData F ζ hζ) (s : ℂ) :
     Induced F ζ hζ (twist F ζ hζ (productModel F ζ hζ C) s) →L[ℂ]
-      Induced F ζ hζ (twist F ζ hζ (rationalModel F ζ hζ) s) := by
-  exact KPGlobalTorusBorelNormTwistTransport.borelP F ζ hζ C s
+      Induced F ζ hζ (twist F ζ hζ (rationalModel F ζ hζ) s) := 
+  KPGlobalTorusBorelNormTwistTransport.borelP F ζ hζ C s
 
 def borelQ (C : ModelData F ζ hζ) (s : ℂ) :
     Induced F ζ hζ (twist F ζ hζ (rationalModel F ζ hζ) s) →L[ℂ]
-      Induced F ζ hζ (twist F ζ hζ (productModel F ζ hζ C) s) := by
-  exact KPGlobalTorusBorelNormTwistTransport.borelQ F ζ hζ C s
+      Induced F ζ hζ (twist F ζ hζ (productModel F ζ hζ C) s) := 
+  KPGlobalTorusBorelNormTwistTransport.borelQ F ζ hζ C s
 
  theorem borelP_fiberwise (C : ModelData F ζ hζ) (s : ℂ)
     (f : Induced F ζ hζ (twist F ζ hζ (productModel F ζ hζ C) s)) (g : G F ζ hζ) :
-    (borelP F ζ hζ C s f).val.val g = twistedP F ζ hζ C s (f.val.val g) := by
-  exact KPGlobalTorusBorelNormTwistTransport.borelP_fiberwise F ζ hζ C s f g
+    (borelP F ζ hζ C s f).val.val g = twistedP F ζ hζ C s (f.val.val g) := 
+  KPGlobalTorusBorelNormTwistTransport.borelP_fiberwise F ζ hζ C s f g
 
  theorem borelQ_fiberwise (C : ModelData F ζ hζ) (s : ℂ)
     (f : Induced F ζ hζ (twist F ζ hζ (rationalModel F ζ hζ) s)) (g : G F ζ hζ) :
-    (borelQ F ζ hζ C s f).val.val g = twistedQ F ζ hζ C s (f.val.val g) := by
-  exact KPGlobalTorusBorelNormTwistTransport.borelQ_fiberwise F ζ hζ C s f g
+    (borelQ F ζ hζ C s f).val.val g = twistedQ F ζ hζ C s (f.val.val g) := 
+  KPGlobalTorusBorelNormTwistTransport.borelQ_fiberwise F ζ hζ C s f g
 
  theorem borelP_borelQ (C : ModelData F ζ hζ) (s : ℂ)
     (f : Induced F ζ hζ (twist F ζ hζ (rationalModel F ζ hζ) s)) :
@@ -833,23 +803,22 @@ private def finiteConj (a : G F ζ hζ) :
   letI := (KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover F ζ hζ).2.2.1
   refine ⟨(MulAut.conjNormal a).toEquiv, ?_, ?_⟩
   · apply Continuous.subtype_mk
-    change Continuous (fun x : KPGlobalTorusFunctionData.finitePart F ζ hζ => a * x.val * a⁻¹)
-    exact (continuous_const.mul continuous_subtype_val).mul continuous_const
+    fun_prop
   · apply Continuous.subtype_mk
     have he : (MulAut.conjNormal (H := KPGlobalTorusFunctionData.finitePart F ζ hζ) a).symm = MulAut.conjNormal a⁻¹ := by
       change (MulAut.conjNormal (H := KPGlobalTorusFunctionData.finitePart F ζ hζ) a)⁻¹ = _
-      rw [map_inv]
+      simp
     change Continuous (fun x : KPGlobalTorusFunctionData.finitePart F ζ hζ => ((MulAut.conjNormal a).symm x).val)
     rw [he]
     simp only [MulAut.conjNormal_apply, inv_inv]
-    exact (continuous_const.mul continuous_subtype_val).mul continuous_const
+    fun_prop
 
 private def conjLevel (a : G F ζ hζ) (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ) :
     KPGlobalTorusFunctionData.FiniteLevel F ζ hζ := by
   letI := finitePart_normal F ζ hζ
   exact ⟨J.toOpenSubgroup.comap (MulAut.conjNormal a⁻¹).toMonoidHom (by
       change Continuous (finiteConj F ζ hζ a⁻¹)
-      exact (finiteConj F ζ hζ a⁻¹).continuous),
+      fun_prop),
     (finiteConj F ζ hζ a⁻¹).isCompact_preimage.mpr J.isCompact⟩
 
  def inducedFunctionsTranslation (P : Polarization F ζ hζ) :
@@ -880,9 +849,7 @@ private theorem induced_translate_level (P : Polarization F ζ hζ)
         letI := finitePart_normal F ζ hζ
         apply Subgroup.mem_map.mpr
         exact ⟨MulAut.conjNormal a⁻¹ k, hk, by simp only [Subgroup.subtype_apply, MulAut.conjNormal_apply, inv_inv]⟩
-      change k.val = j.val at he
-      rw [← he]
-      exact hk'
+      simp_all
     have hh := hf.2 (g * a) ⟨a⁻¹ * j.val * a, hj⟩
     change f.val ((g * j.val) * a) = f.val (g * a)
     have he : (g * a) * (a⁻¹ * j.val * a) = (g * j.val) * a := by group
@@ -909,17 +876,13 @@ def inducedRightAction (P : Polarization F ζ hζ) :
     intro f
     apply Subtype.ext
     apply Subtype.ext
-    funext g
-    change f.val.val (g * 1) = f.val.val g
-    exact congrArg f.val.val (mul_one g)
+    simp
   map_mul' a b := by
     apply LinearMap.ext
     intro f
     apply Subtype.ext
     apply Subtype.ext
-    funext g
-    change f.val.val (g * (a * b)) = f.val.val ((g * a) * b)
-    exact congrArg f.val.val (mul_assoc g a b).symm
+    simp
 
  theorem inducedRightAction_formula (P : Polarization F ζ hζ)
     (a g : G F ζ hζ) (f : Induced F ζ hζ P) :
@@ -931,10 +894,7 @@ def inducedRightAction (P : Polarization F ζ hζ) :
         (inducedRightAction F ζ hζ (twist F ζ hζ (productModel F ζ hζ C) s) a f) =
       inducedRightAction F ζ hζ (twist F ζ hζ (rationalModel F ζ hζ) s) a
         (borelP F ζ hζ C s f) := by
-  apply Subtype.ext
-  apply Subtype.ext
-  funext g
-  simp only [borelP_fiberwise, inducedRightAction_formula]
+  rfl
 
  theorem induced_smooth (P : Polarization F ζ hζ)
     (f : Induced F ζ hζ P) (g : G F ζ hζ) :
@@ -949,10 +909,7 @@ def inducedRightAction (P : Polarization F ζ hζ) :
       (groupArchDomain F)) (fun J => InducedLevel F ζ hζ P J) hf
       (fun J x hx => hx.1 g) contDiffOn_const (fun x y hx hy => hx.add hy)
 
-theorem iwasawaUpperUnits (A : KPAdelicCoverRestrictedProduct.AdelicGL2 F) (h10 : A 1 0 = 0) : IsUnit (A 0 0) ∧ IsUnit (A 1 1) := by
-  have h : IsUnit (Matrix.det (A : Matrix (Fin 2) (Fin 2) (KPGlobalTorusFunctionData.Adeles F))) := (Matrix.GeneralLinearGroup.det A).isUnit
-  have hd : Matrix.det (A : Matrix (Fin 2) (Fin 2) (KPGlobalTorusFunctionData.Adeles F)) = A 0 0 * A 1 1 := by simp [Matrix.det_fin_two, h10]
-  exact ⟨isUnit_of_mul_isUnit_left (hd ▸ h), isUnit_of_mul_isUnit_right (hd ▸ h)⟩
+theorem iwasawaUpperUnits (A : KPAdelicCoverRestrictedProduct.AdelicGL2 F) (h10 : A 1 0 = 0) : IsUnit (A 0 0) ∧ IsUnit (A 1 1) := by apply DedekindZetaZeroFree.KPGlobalTorusBorelNormTwistTransport.iwasawaUpperUnits <;> assumption
 def iwasawaUpperRatio (A : KPAdelicCoverRestrictedProduct.AdelicGL2 F) (h10 : A 1 0 = 0) : KPGlobalTorusFunctionData.Ideles F :=
   (iwasawaUpperUnits F A h10).1.unit * (iwasawaUpperUnits F A h10).2.unit⁻¹
 theorem iwasawaUpperRatio_scalar (A B : KPAdelicCoverRestrictedProduct.AdelicGL2 F)
@@ -972,8 +929,7 @@ theorem iwasawaUpperRatio_scalar (A B : KPAdelicCoverRestrictedProduct.AdelicGL2
   unfold iwasawaUpperRatio
   rw [← hu00, ← hu11]
   group
-theorem iwasawaUpperMul_zero (A B : KPAdelicCoverRestrictedProduct.AdelicGL2 F) (hA : A 1 0 = 0) (hB : B 1 0 = 0) : (A * B : KPAdelicCoverRestrictedProduct.AdelicGL2 F) 1 0 = 0 := by
-  simp [Units.val_mul, Matrix.mul_apply, Fin.sum_univ_two, hA, hB]
+theorem iwasawaUpperMul_zero (A B : KPAdelicCoverRestrictedProduct.AdelicGL2 F) (hA : A 1 0 = 0) (hB : B 1 0 = 0) : (A * B : KPAdelicCoverRestrictedProduct.AdelicGL2 F) 1 0 = 0 := by apply DedekindZetaZeroFree.KPGlobalTorusBorelNormTwistTransport.iwasawaUpperMul_zero <;> assumption
 theorem iwasawaUpperRatio_mul (A B : KPAdelicCoverRestrictedProduct.AdelicGL2 F) (hA : A 1 0 = 0) (hB : B 1 0 = 0) : iwasawaUpperRatio F (A * B) (iwasawaUpperMul_zero F A B hA hB) = iwasawaUpperRatio F A hA * iwasawaUpperRatio F B hB := by
   have hu00 : (iwasawaUpperUnits F (A * B) (iwasawaUpperMul_zero F A B hA hB)).1.unit = (iwasawaUpperUnits F A hA).1.unit * (iwasawaUpperUnits F B hB).1.unit := by
     apply Units.ext
@@ -993,10 +949,10 @@ private theorem upperRoot_ratio (x : KPGlobalTorusFunctionData.Adeles F) :
     iwasawaUpperRatio F (upperRoot F x) (upperRoot_zero F x) = 1 := by
   have h00 : (iwasawaUpperUnits F (upperRoot F x) (upperRoot_zero F x)).1.unit = 1 := by
     apply Units.ext
-    simp [IsUnit.unit_spec, upperRoot_entries]
+    simp [upperRoot_entries]
   have h11 : (iwasawaUpperUnits F (upperRoot F x) (upperRoot_zero F x)).2.unit = 1 := by
     apply Units.ext
-    simp [IsUnit.unit_spec, upperRoot_entries]
+    simp [upperRoot_entries]
   simp [iwasawaUpperRatio, h00, h11]
 
 theorem iwasawaUpperRatio_torus (t : E F ζ hζ)
@@ -1026,8 +982,3 @@ theorem iwasawaUpperRatio_torus_root (t : E F ζ hζ)
     iwasawaUpperRatio_mul F A (upperRoot F x) h10 (upperRoot_zero F x),
     upperRoot_ratio, mul_one]
   exact iwasawaUpperRatio_torus F ζ hζ t A h10 h01 hA
-
-end
-end DedekindZetaZeroFree.KPGlobalTorusBorelTwistCompatibility
-
-end

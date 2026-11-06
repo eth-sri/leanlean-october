@@ -19,15 +19,10 @@ def trivialTop : RayClassCharacter F ⊤ where
   map_top' := by simp
   eq_zero_iff' I := by simp
   map_span' α hα _ _ := by
-    simp [Ideal.span_singleton_eq_bot, hα]
+    simp [hα]
 
 @[simp] theorem trivialTop_apply (I : Ideal (𝓞 F)) :
     (trivialTop (F := F)) I = if I = ⊥ then 0 else 1 := rfl
-
-@[simp] theorem trivialTop_bottom : (trivialTop (F := F)) ⊥ = 0 := by simp
-
-@[simp] theorem trivialTop_nonzero (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) :
-    (trivialTop (F := F)) I = 1 := by simp [hI]
 
 def Constrained (A : SArithmeticData F) (c : Ideal (𝓞 F)) : Prop :=
   Squarefree c ∧ c ⊔ uniformSquareUnitModulus A.Sf = ⊤
@@ -84,7 +79,3 @@ def totalCharacter (A : SArithmeticData F) (σ : F →+* ℂ)
     (c : Ideal (𝓞 F)) (h : ¬ Constrained A c) (I : Ideal (𝓞 F)) :
     totalCharacter A σ η hS C m Xi c I = if I = ⊥ then 0 else 1 := by
   simp [totalCharacter, h]
-
-end KummerFamilyAssembly
-end
-end DedekindZetaZeroFree

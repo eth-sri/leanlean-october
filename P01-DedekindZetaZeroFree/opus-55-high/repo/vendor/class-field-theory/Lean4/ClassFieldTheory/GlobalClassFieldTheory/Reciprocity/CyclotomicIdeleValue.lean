@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # The normalized cyclotomic idele value
 
@@ -51,7 +47,7 @@ open ClassFormation
 
 /-- The rational infinite Artin homomorphism in the canonical
 `Multiplicative ZHat` coordinate supplied by the cyclotomic Galois equivalence. -/
-noncomputable def rationalCyclotomicZHatIdeleValue :
+def rationalCyclotomicZHatIdeleValue :
     IdeleGroup ℚ →ₜ* Multiplicative ZHat :=
   (ContinuousMonoidHom.toContinuousMonoidHom
     rationalCyclotomicZHatFieldGalEquivZHat).comp
@@ -66,19 +62,6 @@ theorem rationalCyclotomicZHatIdeleValue_apply
       rationalCyclotomicZHatFieldGalEquivZHat
         (rationalCyclotomicZHatGlobalArtin a) :=
   rfl
-
-/-- The rational cyclotomic value has dense image in `ZHat`. -/
-theorem rationalCyclotomicZHatIdeleValue_denseRange :
-    DenseRange rationalCyclotomicZHatIdeleValue := by
-  change
-    DenseRange
-      (fun a =>
-        rationalCyclotomicZHatFieldGalEquivZHat
-          (rationalCyclotomicZHatGlobalArtin a))
-  exact
-    rationalCyclotomicZHatFieldGalEquivZHat.surjective.denseRange.comp
-      rationalCyclotomicZHatGlobalArtin_denseRange
-      rationalCyclotomicZHatFieldGalEquivZHat.continuous
 
 /-- The norm-one rational ideles already have dense image in the actual
 cyclotomic `ZHat` coordinate.  This is the compact source used for
@@ -212,18 +195,9 @@ theorem
             (IdeleGroup.norm ℚ K a)) := by
       exact hQProjection.symm
 
-/-- The rational normalization factor is one:
-`[ℚ ∩ ℚ̃ : ℚ] = 1`. -/
-@[simp]
-theorem cyclotomicZHatIntersectionDegree_rat :
-    cyclotomicZHatIntersectionDegree ℚ = 1 :=
-  Nat.dvd_one.mp (by
-    simpa using
-      (cyclotomicZHatIntersectionDegree_dvd_finrank ℚ))
-
 /-- The unnormalized composite
 `v_ℚ ∘ N_{K/ℚ}`, in additive notation. -/
-noncomputable def cyclotomicZHatNormComposite :
+def cyclotomicZHatNormComposite :
     Additive (IdeleGroup K) →+ ZHat :=
   MonoidHom.toAdditive
     (rationalCyclotomicZHatIdeleValue.toMonoidHom.comp
@@ -254,44 +228,7 @@ theorem cyclotomicZHatNormComposite_baseIdeleInclusion
       Module.finrank ℚ K •
         Multiplicative.toAdd
           (rationalCyclotomicZHatIdeleValue a) := by
-  change
-    Multiplicative.toAdd
-        (rationalCyclotomicZHatIdeleValue
-          (IdeleGroup.norm ℚ K
-            (relativeIdeleBaseChangeMulEquiv
-              (K := ℚ) (L := K)
-              (RelativeIdeleGroup.inclusion ℚ K a)))) =
-      Module.finrank ℚ K •
-        Multiplicative.toAdd
-          (rationalCyclotomicZHatIdeleValue a)
-  rw [IdeleGroup.norm_relativeIdeleBaseChangeMulEquiv,
-    RelativeIdeleGroup.norm_inclusion, map_pow,
-    toAdd_pow]
-
-/-- The image of the unnormalized value contains the absolute-degree
-multiple of the rational cyclotomic value group. -/
-theorem
-    nsmulImage_rationalCyclotomicZHatIdeleValue_range_le_normComposite_range :
-    nsmulImage
-        ((AddEquiv.additiveMultiplicative ZHat).toAddMonoidHom.comp
-          (MonoidHom.toAdditive
-            rationalCyclotomicZHatIdeleValue.toMonoidHom)).range
-        (Module.finrank ℚ K) ≤
-      (cyclotomicZHatNormComposite K).range := by
-  intro z hz
-  rw [mem_nsmulImage_iff] at hz
-  obtain ⟨x, hx, rfl⟩ := hz
-  obtain ⟨a, rfl⟩ := hx
-  refine
-    ⟨Additive.ofMul
-        (relativeIdeleBaseChangeMulEquiv
-          (K := ℚ) (L := K)
-          (RelativeIdeleGroup.inclusion ℚ K
-            (Additive.toMul a))),
-      ?_⟩
-  exact
-    cyclotomicZHatNormComposite_baseIdeleInclusion
-      K (Additive.toMul a)
+  simp
 
 /-- At every finite cyclotomic layer, the Artin image of norms from
 `K` is exactly the image of restriction from the actual finite
@@ -329,8 +266,7 @@ theorem finiteCyclotomicLayer_normArtin_range
           r =
             (AlgEquiv.restrictNormalHom E).comp
               (AlgEquiv.restrictScalarsHom ℚ) := by
-        ext σ x
-        exact rfl
+        rfl
       rw [hr]
       exact
         globalArtinMonoidHom_norm_restriction
@@ -504,24 +440,14 @@ theorem
           (IdeleGroup.norm ℚ K a) =
         1 := by
     rw [← hz]
-    exact
-      globalArtinMonoidHom_relativeIdeleNorm_eq_one
-        (K := ℚ) (L := E) z
+    simp
   change
     rationalCyclotomicZHatGlobalArtin
           (IdeleGroup.norm ℚ K a) ∈
       E.fixingSubgroup
   rw [
     FiniteGaloisIntermediateField.mem_fixingSubgroup_iff]
-  calc
-    AlgEquiv.restrictNormalHom E
-          (rationalCyclotomicZHatGlobalArtin
-            (IdeleGroup.norm ℚ K a)) =
-        globalArtinMonoidHom
-          (K := ℚ) (L := E) (IdeleGroup.norm ℚ K a) :=
-      restrictNormalHom_rationalCyclotomicZHatGlobalArtin
-        (IdeleGroup.norm ℚ K a) E
-    _ = 1 := hfinite
+  simp_all
 
 /-- The rational Artin symbols of norms from `K` are dense in the
 subgroup fixing the actual intersection `K ∩ ℚ̃`.  At each finite
@@ -784,18 +710,9 @@ theorem cyclotomicZHatNormComposite_mem_mulNat_range
         (cyclotomicZHatIntersectionDegree K)).toAddMonoidHom.range
   exact hadd
 
-/-- Subgroup form of the upper image bound:
-`v_ℚ(N_{K/ℚ}(I_K)) ⊆ f_K ZHat`. -/
-theorem cyclotomicZHatNormComposite_range_le_mulNat_range :
-    (cyclotomicZHatNormComposite K).range ≤
-      (zHatMulNat
-        (cyclotomicZHatIntersectionDegree K)).toAddMonoidHom.range := by
-  rintro _ ⟨a, rfl⟩
-  exact cyclotomicZHatNormComposite_mem_mulNat_range K a
-
 /-- The unnormalized composite, with codomain restricted to the actual
 multiple subgroup `f_K ZHat`. -/
-noncomputable def cyclotomicZHatNormCompositeInMulNatRange :
+def cyclotomicZHatNormCompositeInMulNatRange :
     Additive (IdeleGroup K) →+
       (zHatMulNat
         (cyclotomicZHatIntersectionDegree K)).toAddMonoidHom.range :=
@@ -835,15 +752,14 @@ theorem cyclotomicZHatNormCompositeInMulNatRange_denseRange :
               (H.map e.toMonoidHom).toAddSubgroup' := by
           rw [Subgroup.mem_toAddSubgroup']
           exact ⟨σ.1, σ.2, rfl⟩
-        rw [himage] at hσ
-        exact hσ⟩
+        simp_all⟩
   have hgContinuous : Continuous g := by
     apply Continuous.subtype_mk
     change
       Continuous
         (fun σ : H =>
           e σ.1)
-    exact e.continuous.comp continuous_subtype_val
+    fun_prop
   have hgSurjective : Function.Surjective g := by
     intro z
     have hz :
@@ -881,12 +797,11 @@ theorem cyclotomicZHatNormCompositeInMulNatRange_denseRange :
   apply hcompDense.mono
   rintro z ⟨a, rfl⟩
   refine ⟨Additive.ofMul a, ?_⟩
-  apply Subtype.ext
   rfl
 
 /-- The normalized cyclotomic value on ideles:
 `(1 / f_K) v_ℚ ∘ N_{K/ℚ}`. -/
-noncomputable def normalizedCyclotomicZHatIdeleValue :
+def normalizedCyclotomicZHatIdeleValue :
     Additive (IdeleGroup K) →+ ZHat :=
   (zHatDivide
     (cyclotomicZHatIntersectionDegree K)
@@ -947,8 +862,3 @@ theorem normalizedCyclotomicZHatIdeleValue_baseIdeleInclusion
     ← mul_nsmul,
     Nat.div_mul_cancel
       (cyclotomicZHatIntersectionDegree_dvd_finrank K)]
-
-end Reciprocity
-end GlobalClassFieldTheory
-
-end

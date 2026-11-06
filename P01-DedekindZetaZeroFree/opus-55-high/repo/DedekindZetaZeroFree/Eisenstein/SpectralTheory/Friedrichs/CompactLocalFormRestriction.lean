@@ -69,7 +69,7 @@ theorem actual_coreTest_dense :
   rw [hw]
   exact ((WithLp.prod_continuous_toLp 2 HU ActualV).tendsto _).comp (hs1.prodMk_nhds hs2)
 
-private theorem gradient_adjoint_lift
+theorem gradient_adjoint_lift
     {H V : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
     [NormedAddCommGroup V] [InnerProductSpace ℂ V] [CompleteSpace V]
     (D : H →ₗ.[ℂ] V) (hdense : Dense (D.domain : Set H)) (hclosable : D.IsClosable) :
@@ -81,9 +81,6 @@ private theorem gradient_adjoint_lift
   apply ContinuousLinearMap.opNorm_le_bound _ zero_le_one
   intro f
   simpa only [one_mul] using closedGradientFriedrichsOperator_riesz_estimate D hdense hclosable f
-
-instance form_complete : CompleteSpace Q :=
-  (kp_cont_actual_sector_test_friedrichs F ζ hζ μG hμG U R hR P H realization).friedrichs.form_hilbert
 
 theorem formLift_exists : ∃ b : HU →L[ℂ] Q, (jU).comp b = BU ∧ ‖b‖ ≤ 1 := by
   have hdense :
@@ -220,7 +217,7 @@ def actualCoreJet (A : Localizers F ζ hζ U R P H K hK) (i : Fin A.count) :
         (actual_jet_smul _ _ _ hf c)
 
 include μG hμG hR realization in
-private theorem actual_test_representative (f : KPContActualSectorSmoothTestModules.S_U F ζ hζ U R P H) :
+theorem actual_test_representative (f : KPContActualSectorSmoothTestModules.S_U F ζ hζ U R P H) :
     ∃ s : BorelL2Sections F ζ hζ U R P H,
       sectorLineIsometry F ζ hζ U R P H (KPContActualSectorTestEmbeddings.iota f) = mk F ζ hζ U R P H s ∧
       s.val = KPContActualSectorSmoothTestModules.scalarSections f := by
@@ -237,7 +234,7 @@ private theorem actual_test_representative (f : KPContActualSectorSmoothTestModu
     exact sectorLineIsometry_toSector F ζ hζ U R P H fB
   · exact hprops.covered_realization f
 
-private theorem actualCoreJet_projection_test (A : Localizers F ζ hζ U R P H K hK) (i : Fin A.count)
+theorem actualCoreJet_projection_test (A : Localizers F ζ hζ U R P H K hK) (i : Fin A.count)
     (f : KPContActualSectorSmoothTestModules.S_U F ζ hζ U R P H) :
     (KPCubeAverage.smooth_memLp (A.chart i).n (A.chart i).a
       (actualLocalCoefficient F ζ hζ U R P H K hK A i f)
@@ -381,7 +378,7 @@ include hρ B hB hbρ in
   (((mulCLM F ζ hζ U R ρ hρ B hB hbρ).comp (KPContSectorClosedLpSubspace.H F ζ hζ R U).subtypeL).codRestrict
     (KPContSectorClosedLpSubspace.H F ζ hζ R U) (mulCLM_mem F ζ hζ U R ρ hρ B hB hbρ))
 
-private theorem scalar_mask_formula (K : Set (X_U F ζ hζ U)) (hK : MeasurableSet K)
+theorem scalar_mask_formula (K : Set (X_U F ζ hζ U)) (hK : MeasurableSet K)
     (s : BorelL2Sections F ζ hζ U R P H) :
     (scalarRepresentative F ζ hζ U R P H (mask F ζ hζ U R P H K hK s).val).val =
       (fun x => K.indicator (fun _ => (scalarRepresentative F ζ hζ U R P H s.val).val x)

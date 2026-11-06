@@ -8,7 +8,7 @@ noncomputable section
 open scoped Classical Matrix
 open MeasureTheory
 namespace DedekindZetaZeroFree.KPCuspChart
-private theorem split_upper_action (g : Matrix.GeneralLinearGroup (Fin 2) ℂ)
+theorem split_upper_action (g : Matrix.GeneralLinearGroup (Fin 2) ℂ)
     (hc : g 1 0 = 0) (u : ℂ) (hu : u ≠ 0) (ha : g 0 0 = u * g 1 1)
     (z : KPArch.H3) :
     KPArch.action g z = (u * z.1 + g 0 1 / g 1 1, z.2 + Real.log ‖u‖) := by
@@ -28,7 +28,7 @@ private theorem split_upper_action (g : Matrix.GeneralLinearGroup (Fin 2) ℂ)
     field_simp
   · exact KPCuspLogShape.upper_action_snd g hc u hu ha z
 
-private theorem split_actual_affine_action (F : Type*) [Field F] [NumberField F]
+theorem split_actual_affine_action (F : Type*) [Field F] [NumberField F]
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ExtensionData F S)
     (g : S) (A : Matrix.GeneralLinearGroup (Fin 2) F)
@@ -40,8 +40,7 @@ private theorem split_actual_affine_action (F : Type*) [Field F] [NumberField F]
   funext i
   let σ := (KPCusp.complexPlace F i).embedding
   have hi : (Matrix.GeneralLinearGroup.map σ A) 1 0 = 0 := by
-    change σ (A 1 0) = 0
-    simp [hc]
+    simp_all
   have hu : σ ((D.ratio g : Fˣ) : F) ≠ 0 :=
     (map_ne_zero σ).mpr (Units.ne_zero _)
   have ha : (Matrix.GeneralLinearGroup.map σ A) 0 0 =
@@ -54,14 +53,14 @@ private theorem split_actual_affine_action (F : Type*) [Field F] [NumberField F]
   apply Prod.ext
   · change σ ((D.ratio g : Fˣ) : F) * p.1.1 i + σ (A 0 1) / σ (A 1 1) =
       σ ((D.ratio g : Fˣ) : F) * p.1.1 i + σ (A 0 1 / A 1 1)
-    rw [map_div₀]
+    simp
   · change p.2 + (p.1.2 : Fin (KPCuspLogShape.dimension F) → ℝ) i + Real.log ‖σ _‖ =
       p.2 + ((p.1.2 : Fin (KPCuspLogShape.dimension F) → ℝ) i +
         Real.log ((KPCusp.complexPlace F i) ((D.ratio g : Fˣ) : F)))
     rw [NumberField.InfinitePlace.norm_embedding_eq]
     ring
 
-private theorem split_meanHeight (F : Type*) [Field F] [NumberField F]
+theorem split_meanHeight (F : Type*) [Field F] [NumberField F]
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0) (p : Coordinates F) :
     KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F) (toArch F p) = p.2 := by
   have hb : ∑ i, (p.1.2 : Fin (KPCuspLogShape.dimension F) → ℝ) i = 0 := p.1.2.property
@@ -71,7 +70,7 @@ private theorem split_meanHeight (F : Type*) [Field F] [NumberField F]
     add_zero, Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
   exact mul_div_cancel_left₀ p.2 hn
 
-private theorem split_toArch_injective (F : Type*) [Field F] [NumberField F]
+theorem split_toArch_injective (F : Type*) [Field F] [NumberField F]
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0) : Function.Injective (toArch F) := by
   intro p q h
   have ht : p.2 = q.2 := by
@@ -84,10 +83,9 @@ private theorem split_toArch_injective (F : Type*) [Field F] [NumberField F]
     funext i
     have he := congrArg Prod.snd (congrFun h i)
     change p.2 + _ = q.2 + _ at he
-    rw [ht] at he
-    exact add_left_cancel he
+    simp_all
 
-private theorem split_cross_action (F : Type*) [Field F] [NumberField F]
+theorem split_cross_action (F : Type*) [Field F] [NumberField F]
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ExtensionData F S)
     (G : GeometryData F hF S D) (g : S) (p : Coordinates F) :
@@ -120,8 +118,6 @@ theorem radial_orbit_relation_iff (F : Type*) [Field F] [NumberField F]
       (congrArg (toArch F) (Prod.ext hx ht.symm))
 end DedekindZetaZeroFree.KPCuspChart
 noncomputable section
-open scoped Classical
-open MeasureTheory
 namespace DedekindZetaZeroFree.KPCuspChart
  def quotientRadialEquiv {X Y : Type*} (s : Setoid X) (r : Setoid (X × Y))
     (hr : ∀ p q, r p q ↔ s p.1 q.1 ∧ p.2 = q.2) :
@@ -193,7 +189,7 @@ namespace DedekindZetaZeroFree.KPCuspChart
 end DedekindZetaZeroFree.KPCuspChart
 
 namespace DedekindZetaZeroFree.KPCuspChart
-private theorem radial_sigmaFinite_comap {X Y : Type*} [MeasurableSpace X] [MeasurableSpace Y]
+theorem radial_sigmaFinite_comap {X Y : Type*} [MeasurableSpace X] [MeasurableSpace Y]
     (f : X → Y) (hf : MeasurableEmbedding f) (ν : Measure Y) [SigmaFinite ν] :
     SigmaFinite (ν.comap f) := by
   apply Measure.sigmaFinite_of_countable (Set.countable_range (fun n : ℕ => f ⁻¹' spanningSets ν n))
@@ -235,7 +231,7 @@ end DedekindZetaZeroFree.KPCuspChart
 namespace DedekindZetaZeroFree.KPCuspChart
 open scoped Pointwise
 open Function
-private theorem orbit_section_embedding {X H : Type*} [Group H] [Countable H]
+theorem orbit_section_embedding {X H : Type*} [Group H] [Countable H]
     [MeasurableSpace X] [MulAction H X] [MeasurableConstSMul H X]
     (s : Set X) (hs : MeasurableSet s)
     (hd : Pairwise (Disjoint on fun g : H => g • s)) :
@@ -246,7 +242,7 @@ private theorem orbit_section_embedding {X H : Type*} [Group H] [Countable H]
     have hg1 : g = 1 := by
       by_contra hn
       have hx : x.val ∈ g • s := ⟨y.val, y.property, hg⟩
-      have hy : x.val ∈ (1 : H) • s := by simpa using x.property
+      have hy : x.val ∈ (1 : H) • s := by simp
       exact Set.disjoint_left.mp (hd hn) hx hy
     apply Subtype.ext
     simpa [hg1] using hg.symm
@@ -266,7 +262,7 @@ private theorem orbit_section_embedding {X H : Type*} [Group H] [Countable H]
     rw [he]
     exact MeasurableSet.iUnion fun g =>
       ((MeasurableEmbedding.subtype_coe hs).measurableSet_image.mpr ht).const_smul g
-private theorem orbit_ae_section {X H : Type*} [Group H] [Countable H]
+theorem orbit_ae_section {X H : Type*} [Group H] [Countable H]
     [MeasurableSpace X] [Nonempty X] [MulAction H X] [MeasurableConstSMul H X]
     (μ : Measure X) (s : Set X) (hs : MeasurableSet s)
     (hfd : IsFundamentalDomain H s μ) :
@@ -298,7 +294,7 @@ private theorem orbit_ae_section {X H : Type*} [Group H] [Countable H]
   have he := congrFun hke x
   change k (q0 x) = x.val at he
   rw [he]
-private theorem split_crossRelation_eq (F : Type*) [Field F] [NumberField F]
+theorem split_crossRelation_eq (F : Type*) [Field F] [NumberField F]
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ExtensionData F S)
     (G : GeometryData F hF S D) :
@@ -317,7 +313,7 @@ private theorem split_crossRelation_eq (F : Type*) [Field F] [NumberField F]
     exact ⟨g, (split_cross_action F hF S D G g (q,0)).trans
       (congrArg (toArch F) (Prod.ext hg rfl))⟩
 
-private theorem split_cross_ae_section (F : Type*) [Field F] [NumberField F]
+theorem split_cross_ae_section (F : Type*) [Field F] [NumberField F]
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ExtensionData F S)
     (G : GeometryData F hF S D) (V : SectionData F hF S D G) :
@@ -342,7 +338,7 @@ private theorem split_cross_ae_section (F : Type*) [Field F] [NumberField F]
   exact orbit_ae_section (volume.prod V.shapeMeasure) V.fundamentalDomain
     V.measurable_fundamentalDomain V.isFundamentalDomain
 
-private theorem split_radial_aemeasurable (F : Type*) [Field F] [NumberField F]
+theorem split_radial_aemeasurable (F : Type*) [Field F] [NumberField F]
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ExtensionData F S)
     (G : GeometryData F hF S D) (V : SectionData F hF S D G) :
@@ -353,14 +349,13 @@ private theorem split_radial_aemeasurable (F : Type*) [Field F] [NumberField F]
   letI : SigmaFinite ν := by unfold ν radialMeasure; infer_instance
   have hm : Measurable (fun p : CrossQuotient F S × ℝ =>
       Quotient.mk (totalRelation F S) (k p.1, p.2)) :=
-    measurable_quotient_mk''.comp ((hk.comp measurable_fst).prodMk measurable_snd)
+    by fun_prop
   apply hm.aemeasurable.congr
   have hep := (Measure.quasiMeasurePreserving_fst (μ := V.sectionMeasure) (ν := ν)).ae he
   filter_upwards [hep] with p hp
-  change Quotient.mk (totalRelation F S) (k p.1, p.2) = _
   rw [← radialOrbitHomeomorph_mk F hF S D G, hp]
 
-private theorem split_high_aemeasurable (F : Type*) [Field F] [NumberField F]
+theorem split_high_aemeasurable (F : Type*) [Field F] [NumberField F]
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ExtensionData F S)
     (G : GeometryData F hF S D) (V : SectionData F hF S D G) (T : ℝ) :
@@ -375,8 +370,7 @@ private theorem split_high_aemeasurable (F : Type*) [Field F] [NumberField F]
   have hm : Measurable (fun p : CrossQuotient F S × Set.Ioi T =>
       Quotient.mk (highRelation F S T)
         ((radialHighProductHomeomorph F T) (k p.1, p.2))) :=
-    measurable_quotient_mk''.comp ((radialHighProductHomeomorph F T).continuous.measurable.comp
-      ((hk.comp measurable_fst).prodMk measurable_snd))
+    by fun_prop
   apply hm.aemeasurable.congr
   have hep := (Measure.quasiMeasurePreserving_fst (μ := V.sectionMeasure)
     (ν := ν.comap (Subtype.val : Set.Ioi T → ℝ))).ae he
@@ -384,7 +378,7 @@ private theorem split_high_aemeasurable (F : Type*) [Field F] [NumberField F]
   change Quotient.mk (highRelation F S T) ⟨(k p.1, p.2.val), p.2.property⟩ = _
   rw [← highRadialOrbitHomeomorph_mk F hF S D G, hp]
 
-private theorem split_radial_volume (F : Type*) [Field F] [NumberField F]
+theorem split_radial_volume (F : Type*) [Field F] [NumberField F]
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ExtensionData F S)
     (G : GeometryData F hF S D) (V : SectionData F hF S D G) :
@@ -409,8 +403,7 @@ private theorem split_radial_volume (F : Type*) [Field F] [NumberField F]
   have hf : (radialOrbitHomeomorph F hF S D G) ∘
       Prod.map (Quotient.mk (crossRelation F S)) (id : ℝ → ℝ) =
       Quotient.mk (totalRelation F S) := by
-    funext p
-    exact radialOrbitHomeomorph_mk F hF S D G p.1 p.2
+    rfl
   rw [hf]
   change Measure.map _ (((volume.prod V.shapeMeasure).restrict V.fundamentalDomain).prod ν) = _
   rw [Measure.restrict_prod_eq_prod_univ]
@@ -418,7 +411,7 @@ private theorem split_radial_volume (F : Type*) [Field F] [NumberField F]
   ext p
   simp
 
-private theorem split_high_volume (F : Type*) [Field F] [NumberField F]
+theorem split_high_volume (F : Type*) [Field F] [NumberField F]
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ExtensionData F S)
     (G : GeometryData F hF S D) (V : SectionData F hF S D G) (T : ℝ) :
@@ -449,8 +442,7 @@ private theorem split_high_volume (F : Type*) [Field F] [NumberField F]
   have hf : (highRadialOrbitHomeomorph F hF S D G T) ∘
       Prod.map (Quotient.mk (crossRelation F S)) (id : Set.Ioi T → Set.Ioi T) =
       (Quotient.mk (highRelation F S T)) ∘ (radialHighProductHomeomorph F T) := by
-    funext p
-    exact highRadialOrbitHomeomorph_mk F hF S D G T p.1 p.2
+    rfl
   rw [hf, ← Measure.map_map measurable_quotient_mk'' (radialHighProductHomeomorph F T).continuous.measurable,
     radial_high_coordinate_measure]
   change Measure.map _ (Measure.comap _ (μ.prod ν)) = _
@@ -478,8 +470,3 @@ theorem radial_quotient_disintegration
     highPresentation_formula := highRadialOrbitHomeomorph_mk F hF S D G
     highVolume_formula := split_high_volume F hF S D G V
   }⟩
-
-end DedekindZetaZeroFree.KPCuspChart
-
-end
-end

@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 namespace LocalClassFieldTheory
 open RamificationTheory
 
@@ -42,12 +37,12 @@ variable (k Omega : Type)
 
 /-- The abstract class-formation datum supplied by arithmetic Frobenius on the actual
 residue algebraic closure. -/
-noncomputable def residueDatumIn : DegreeData (Omega ≃ₐ[k] Omega) where
+def residueDatumIn : DegreeData (Omega ≃ₐ[k] Omega) where
   degree := residueAbsoluteDegreeIn k Omega
   degree_surjective := (residueAbsoluteFrobeniusEquivIn k Omega).symm.surjective
 
 omit [Fintype k] [Algebra.IsAlgebraic k Omega] [IsAlgClosed Omega] in
-private theorem mem_fixingSubgroup_iff_restrictNormalHom_eq_one
+theorem mem_fixingSubgroup_iff_restrictNormalHom_eq_one
     (E : FiniteGaloisIntermediateField k Omega)
     (sigma : Omega ≃ₐ[k] Omega) :
     sigma ∈ E.toIntermediateField.fixingSubgroup ↔
@@ -106,12 +101,7 @@ theorem residueDatumIn_fieldImage_closedFixingSubgroup
       rw [restrictNormalHom_residueAbsoluteFrobenius]
       change finiteResidueFrobeniusFromZHat k E z = 1
       rw [finiteResidueFrobeniusFromZHat_apply]
-      change finiteResidueFrobeniusExponentHom k E
-        (Multiplicative.ofAdd
-          (zHatReduction (Module.finrank k E) Module.finrank_pos z.toAdd)) = 1
-      rw [show zHatReduction (Module.finrank k E) Module.finrank_pos z.toAdd = 0
-        from hz]
-      simp
+      simp_all
     · exact (residueAbsoluteFrobeniusEquivIn k Omega).symm_apply_apply z
 
 /-- Internal finite-coordinate calculation: the degree image of the fixing
@@ -124,6 +114,3 @@ theorem Internal.residueDatumIn_fieldImage_index_closedFixingSubgroup
   rw [residueDatumIn_fieldImage_closedFixingSubgroup k Omega E,
     AddSubgroup.index_toSubgroup]
   exact zHatMulNat_range_index (Module.finrank k E) Module.finrank_pos
-
-end
-end LocalClassFieldTheory

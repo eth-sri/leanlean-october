@@ -30,7 +30,6 @@ theorem rawSmoothCarrier_closed :
   have hfinite : ActualFiniteFactor.finiteSubgroup F ζ hζ =
       KPGlobalTorusFunctionData.finitePart F ζ hζ := by
     rw [ActualFiniteFactor.finiteSubgroup_eq_tupleFactor]
-    congr 1
     ext x
     simp [PGLComplex.AdelicSlicesRaw.finiteSubgroup,
       PGLComplex.AdelicSlicesRaw.finiteTuples,
@@ -47,10 +46,8 @@ theorem rawSmoothCarrier_closed :
     (KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover F ζ hζ).2.2.1
   refine ⟨?_, ?_, ?_⟩
   · refine ⟨⟨continuous_const, fun _ => contDiff_const⟩, ?_, ?_⟩
-    · intro ε x
-      simp
-    · obtain ⟨U⟩ := hlevel
-      exact ⟨U, fun _ _ => rfl⟩
+    · simp
+    simp
   · intro f g hf hg
     rcases hf with ⟨hf, hfg, U, hU⟩
     rcases hg with ⟨hg, hgg, V, hV⟩
@@ -79,9 +76,4 @@ theorem rawSmoothCarrier_closed :
       change z * f _ = _ * (z * f x)
       rw [hfg ε x]
       ring
-    · intro u x
-      change z * f _ = z * f x
-      rw [hU u x]
-end DedekindZetaZeroFree.KPGlobalResidualKernel
-
-end
+    simp_all

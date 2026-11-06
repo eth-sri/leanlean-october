@@ -21,7 +21,7 @@ def elementaryTensorFunction (F : Type) [Field F] [NumberField F]
     {z : PoissonFinite.Space F S | z - PoissonFinite.diagonal F S (t : F) ∈
       finiteBall F S k}.indicator (fun _ => (1 : ℂ)) x.2
 
-private theorem elementary_eq_tensor (F : Type) [Field F] [NumberField F]
+theorem elementary_eq_tensor (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
     (g : 𝓢(PoissonArch.Space F, ℂ)) (k : S → ℤ) (t : sIntegerRing F S) :
     elementaryTensorFunction F S g k t = tensorFunction F S g (fun v z =>
@@ -35,7 +35,7 @@ private theorem elementary_eq_tensor (F : Type) [Field F] [NumberField F]
   simp only [Finset.prod_const_one, Finset.mem_univ, forall_const, finiteBall,
     Set.mem_setOf_eq, Pi.sub_apply]
 
-private theorem canonical_conductor (F : Type) [Field F] [NumberField F]
+theorem canonical_conductor (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (RingOfIntegers F))) :
     TraceConductor F S (fun v => localFiniteCharacter F v.val) := by
   intro v y
@@ -51,8 +51,6 @@ private theorem canonical_conductor (F : Type) [Field F] [NumberField F]
     simp only [finiteBall, Set.mem_setOf_eq]
     rw [Unique.forall_iff]
     simp only [sub_zero, neg_neg]
-    change ‖(Finset.mem_singleton.mp (default : T).property).symm ▸ y‖ ≤
-      ((default : T).val.asIdeal.absNorm : ℝ) ^ differentExponent F (default : T).val ↔ _
     rfl
   rw [← hy]
   unfold finiteBallAnnihilator
@@ -99,7 +97,7 @@ theorem summable_norm_fourierIntegral_elementaryTensorFunction
   exact (ScaleShift.diagonalLatticeEquiv F S).summable_iff.mpr hs
 
 set_option backward.isDefEq.respectTransparency false in
-private theorem canonical_diagonal_phase (F : Type) [Field F] [NumberField F]
+theorem canonical_diagonal_phase (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (RingOfIntegers F))) (hS : ContainsDifferent F S)
     (r : sIntegerRing F S) :
     ScaleShift.rawPhase F S (fun v => localFiniteCharacter F v.val)
@@ -144,14 +142,14 @@ private theorem canonical_diagonal_phase (F : Type) [Field F] [NumberField F]
     congr 1
     simp [PoissonArch.tracePairing, PoissonArch.minkowskiEmbedding, mixedEmbedding,
       Finset.mul_sum, Complex.ofReal_sum, Complex.ofReal_mul]
-    simp only [← Finset.sum_mul, ← Finset.mul_sum]
+    simp only [← Finset.mul_sum]
     ring
   simp only [sLocalTraceCharacter_apply, sIntegerDiagonal_apply,
     sLocalDiagonal_infinite, sLocalDiagonal_finite] at h
   change Circle.coeHom ((∏ v : InfinitePlace F, archTraceCharacter v
       (algebraMap F v.Completion (r : F))) *
     ∏ v : S, localFiniteCharacter F v.val (algebraMap F (v.val.adicCompletion F) (r : F))) = 1 at h
-  simp only [map_mul, map_prod, map_one, Circle.coeHom_apply] at h
+  simp only [map_mul, map_prod, Circle.coeHom_apply] at h
   rw [ha] at h
   have hf (v : S) : FinitePlace.embedding v.val (r : F) =
       algebraMap F (v.val.adicCompletion F) (r : F) := rfl
@@ -175,7 +173,3 @@ theorem poisson_elementaryTensorFunction
   rw [← (ScaleShift.diagonalLatticeEquiv F S).tsum_eq,
     ← (ScaleShift.diagonalLatticeEquiv F S).tsum_eq] at hp
   exact hp
-
-end DedekindZetaZeroFree.PoissonS
-
-end

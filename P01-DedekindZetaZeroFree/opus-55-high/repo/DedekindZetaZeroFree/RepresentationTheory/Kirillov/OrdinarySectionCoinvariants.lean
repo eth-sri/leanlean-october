@@ -26,7 +26,7 @@ variable (F : Type) [Field F] [NumberField F]
   (m : ℕ) (hm : KPLocalChartTopology.MatrixChartDepth F w m)
   (ψ : Multiplicative (K F w) →* ℂˣ)
 
-noncomputable instance sectionAddCommGroup
+instance sectionAddCommGroup
     (E : Type*) [AddCommGroup E] [Module ℂ E] :
     AddCommGroup (Sections F ζ hζ w m ψ E) := by
   letI := KPLocalSmoothRepresentation.finiteCoverTopology F ζ hζ w m
@@ -69,8 +69,7 @@ def ordinaryRootAction (E : Type*) [AddCommGroup E] [Module ℂ E] :
     have hn : n F ζ hζ w 0 = 1 := by
       apply Subtype.ext
       exact (KPLocalSmoothRepresentation.upperRoot F ζ hζ w).map_one
-    simpa only [toAdd_one, hn] using
-      (rightAction F ζ hζ w m hm ψ E).map_one
+    simp_all
   map_mul' := by
     intro a b
     have hn : n F ζ hζ w (a.toAdd + b.toAdd) =
@@ -92,7 +91,7 @@ def ordinaryRelationSpan (E : Type*) [AddCommGroup E] [Module ℂ E] :
   Submodule.span ℂ (Set.range fun bf : K F w × Sections F ζ hζ w m ψ E =>
     rightAction F ζ hζ w m hm ψ E (n F ζ hζ w bf.1) bf.2 - bf.2)
 
-private theorem root_preserves_patch {E : Type*} [AddCommGroup E] [Module ℂ E]
+theorem root_preserves_patch {E : Type*} [AddCommGroup E] [Module ℂ E]
  (c : LocalChart F ζ hζ w m) (b : K F w)
  (f : PatchSections F ζ hζ w m ψ c E) :
  rightAction F ζ hζ w m hm ψ E (n F ζ hζ w b) f.val ∈
@@ -102,13 +101,13 @@ private theorem root_preserves_patch {E : Type*} [AddCommGroup E] [Module ℂ E]
  apply f.property
  simpa only [map_mul, show slope F ζ hζ w (n F ζ hζ w b) = 1 from
    MonoidHom.mem_ker.mp (n_mem_H F ζ hζ w b), mul_one] using hp
-private theorem chart_sub {E : Type*} [AddCommGroup E] [Module ℂ E]
+theorem chart_sub {E : Type*} [AddCommGroup E] [Module ℂ E]
  (c : LocalChart F ζ hζ w m) (f g : Sections F ζ hζ w m ψ E)
  (t : c.ball.domain) :
  chartValue F ζ hζ w m ψ c (f-g) t =
  chartValue F ζ hζ w m ψ c f t - chartValue F ζ hζ w m ψ c g t := rfl
 include hm in
-private theorem patch_sub_eq (hψ : IsLocallyConstant ψ)
+theorem patch_sub_eq (hψ : IsLocallyConstant ψ)
  {E : Type*} [AddCommGroup E] [Module ℂ E]
  (c : LocalChart F ζ hζ w m) (f g : PatchSections F ζ hζ w m ψ c E)
  (h : ∀ t, chartValue F ζ hζ w m ψ c f.val t = chartValue F ζ hζ w m ψ c g.val t) : f=g := by
@@ -116,20 +115,20 @@ private theorem patch_sub_eq (hψ : IsLocallyConstant ψ)
  apply Subtype.ext
  funext t
  simpa only [patchEquiv_value] using h t
-private theorem lc_factor (hψ : IsLocallyConstant ψ)
+theorem lc_factor (hψ : IsLocallyConstant ψ)
  (c : LocalChart F ζ hζ w m) (b : K F w) :
  IsLocallyConstant (fun t : c.ball.domain =>
  ((ψ (Multiplicative.ofAdd ((t.val : K F w) * b)) : ℂ) - 1)⁻¹) := by
  have hc : Continuous (fun t : c.ball.domain =>
    Multiplicative.ofAdd ((t.val : K F w) * b)) := by fun_prop
  exact (hψ.comp_continuous hc).comp (fun x : ℂˣ => ((x : ℂ)-1)⁻¹)
-private theorem residual_zero {E : Type*} [AddCommGroup E] [Module ℂ E]
+theorem residual_zero {E : Type*} [AddCommGroup E] [Module ℂ E]
  (a : ℂ) (v : E) (h : a = 1 → v = 0) : v - (a-1) • ((a-1)⁻¹ • v) = 0 := by
  by_cases ha : a = 1
  · simp [ha, h ha]
  · rw [smul_smul, mul_inv_cancel₀ (sub_ne_zero.mpr ha), one_smul, sub_self]
 include hm in
-private theorem patch_mem_aux (hψ : IsLocallyConstant ψ)
+theorem patch_mem_aux (hψ : IsLocallyConstant ψ)
  {E : Type*} [AddCommGroup E] [Module ℂ E]
  (c : LocalChart F ζ hζ w m) (s : Finset (K F w))
  (f : PatchSections F ζ hζ w m ψ c E)
@@ -166,8 +165,7 @@ private theorem patch_mem_aux (hψ : IsLocallyConstant ψ)
      change (patchEquiv F ζ hζ w m hm ψ hψ c E
        ((patchEquiv F ζ hζ w m hm ψ hψ c E).symm gv)).val t = _
      rw [LinearEquiv.apply_symm_apply]
-     exact congrArg (fun x => ((ψ (Multiplicative.ofAdd ((t.val : K F w) * b)) : ℂ)-1)⁻¹ • x)
-       (patchEquiv_value F ζ hζ w m hm ψ hψ c f t)
+     rfl
    have hdt (t : c.ball.domain) : chartValue F ζ hζ w m ψ c d.val t =
      ((ψ (Multiplicative.ofAdd ((t.val : K F w) * b)) : ℂ)-1) •
        (((ψ (Multiplicative.ofAdd ((t.val : K F w) * b)) : ℂ)-1)⁻¹ •
@@ -194,7 +192,7 @@ private theorem patch_mem_aux (hψ : IsLocallyConstant ψ)
    simpa only [Submodule.coe_sub, sub_add_cancel] using
      (ordinaryRelationSpan F ζ hζ w m hm ψ E).add_mem hr hd
 include hm in
-private theorem patch_mem (hψ : IsLocallyConstant ψ) (hψne : ψ ≠ 1)
+theorem patch_mem (hψ : IsLocallyConstant ψ) (hψne : ψ ≠ 1)
  {E : Type*} [AddCommGroup E] [Module ℂ E]
  (c : LocalChart F ζ hζ w m) (f : PatchSections F ζ hζ w m ψ c E) :
  f.val ∈ ordinaryRelationSpan F ζ hζ w m hm ψ E := by
@@ -254,10 +252,4 @@ theorem ordinary_section_coinvariants_vanish
   apply Submodule.Quotient.subsingleton_iff.mpr
   change Representation.Coinvariants.ker (ordinaryRootAction F ζ hζ w m hm ψ E) = ⊤
   rw [← ordinaryRelationSpan_eq_top F ζ hζ w m hm ψ hψ hψne E]
-  unfold Representation.Coinvariants.ker ordinaryRelationSpan
-  congr 1
-
-end DedekindZetaZeroFree.KPKirillovSectionOrdinaryVanishing
-
-end
-end
+  rfl

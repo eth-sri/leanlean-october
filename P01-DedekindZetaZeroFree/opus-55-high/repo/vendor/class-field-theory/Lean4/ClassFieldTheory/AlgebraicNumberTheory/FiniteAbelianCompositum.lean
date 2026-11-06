@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Finite abelian composita
 
@@ -26,43 +21,12 @@ compositum of two finite abelian Galois extensions.  It also records the
 canonical factor embeddings and their elementary degree bounds.
 -/
 
-noncomputable section
 
 namespace AlgebraicNumberTheory
 
 open scoped IsMulCommutative
 
 universe u v
-
-/-- The chosen copy of a finite Galois extension in the separable closure. -/
-def finiteGaloisFieldRange
-    (K L : Type) [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L] :
-    IntermediateField K (SeparableClosure K) :=
-  AlgHom.fieldRange
-    (AlgebraicNumberTheory.separableEmbeddingIntoSeparableClosure K L)
-
-/-- The chosen embedding identifies the extension with its field range. -/
-def finiteGaloisFieldRangeEquiv
-    (K L : Type) [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L] :
-    L ≃ₐ[K] finiteGaloisFieldRange K L :=
-  AlgEquiv.ofInjectiveField
-    (AlgebraicNumberTheory.separableEmbeddingIntoSeparableClosure K L)
-
-/-- The chosen field-range model is finite-dimensional over the base. -/
-instance finiteGaloisFieldRange_finiteDimensional
-    (K L : Type) [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L] :
-    FiniteDimensional K (finiteGaloisFieldRange K L) :=
-  (finiteGaloisFieldRangeEquiv K L).toLinearEquiv.finiteDimensional
-
-/-- The chosen field-range model is Galois over the base. -/
-instance finiteGaloisFieldRange_isGalois
-    (K L : Type) [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L] :
-    IsGalois K (finiteGaloisFieldRange K L) :=
-  IsGalois.of_algEquiv (finiteGaloisFieldRangeEquiv K L)
 
 section AbelianCompositum
 
@@ -135,150 +99,3 @@ theorem isAbelianGalois_sup
           exact mul_comm (rA sigma) (rA tau)
         · change rB sigma * rB tau = rB tau * rB sigma
           exact mul_comm (rB sigma) (rB tau) }
-
-end AbelianCompositum
-
-section ConcreteAbelianCompositum
-
-variable (K L E : Type)
-variable [Field K]
-variable [Field L] [Field E] [Algebra K L] [Algebra K E]
-variable [FiniteDimensional K L] [FiniteDimensional K E]
-variable [IsAbelianGalois K L] [IsAbelianGalois K E]
-
-/-- A concrete common realization of the compositum of two finite abelian
-extensions in the chosen separable closure of the base. -/
-def finiteAbelianCompositumField :
-    IntermediateField K (SeparableClosure K) :=
-  finiteGaloisFieldRange K L ⊔ finiteGaloisFieldRange K E
-
-/-- The concrete compositum is finite-dimensional over the base. -/
-instance finiteAbelianCompositumField_finiteDimensional :
-    FiniteDimensional K (finiteAbelianCompositumField K L E) :=
-  IntermediateField.finiteDimensional_sup
-    (finiteGaloisFieldRange K L) (finiteGaloisFieldRange K E)
-
-/-- The concrete compositum is abelian Galois over the base. -/
-instance finiteAbelianCompositumField_isAbelianGalois :
-    IsAbelianGalois K (finiteAbelianCompositumField K L E) := by
-  let : IsAbelianGalois K (finiteGaloisFieldRange K L) :=
-    IsAbelianGalois.of_algHom
-      (finiteGaloisFieldRangeEquiv K L).symm.toAlgHom
-  let : IsAbelianGalois K (finiteGaloisFieldRange K E) :=
-    IsAbelianGalois.of_algHom
-      (finiteGaloisFieldRangeEquiv K E).symm.toAlgHom
-  exact isAbelianGalois_sup K
-    (finiteGaloisFieldRange K L) (finiteGaloisFieldRange K E)
-
-/-- The given left extension embeds into its concrete compositum. -/
-def finiteAbelianCompositumEmbeddingLeft :
-    L →ₐ[K] finiteAbelianCompositumField K L E :=
-  (IntermediateField.inclusion le_sup_left).comp
-    (finiteGaloisFieldRangeEquiv K L).toAlgHom
-
-/-- The given right extension embeds into its concrete compositum. -/
-def finiteAbelianCompositumEmbeddingRight :
-    E →ₐ[K] finiteAbelianCompositumField K L E :=
-  (IntermediateField.inclusion le_sup_right).comp
-    (finiteGaloisFieldRangeEquiv K E).toAlgHom
-
-/-- The images of the two canonical embeddings generate their concrete
-compositum. -/
-theorem finiteAbelianCompositum_embeddingRanges_sup_eq_top :
-    (finiteAbelianCompositumEmbeddingLeft K L E).fieldRange ⊔
-        (finiteAbelianCompositumEmbeddingRight K L E).fieldRange = ⊤ := by
-  let A₀ : IntermediateField K (SeparableClosure K) :=
-    finiteGaloisFieldRange K L
-  let B₀ : IntermediateField K (SeparableClosure K) :=
-    finiteGaloisFieldRange K E
-  let M : IntermediateField K (SeparableClosure K) :=
-    finiteAbelianCompositumField K L E
-  let j : M →ₐ[K] SeparableClosure K := M.val
-  have hjrange : j.fieldRange = M :=
-    IntermediateField.fieldRange_val M
-  have hjleft :
-      j.comp (finiteAbelianCompositumEmbeddingLeft K L E) =
-        A₀.val.comp (finiteGaloisFieldRangeEquiv K L).toAlgHom := by
-    ext x
-    rfl
-  have hjright :
-      j.comp (finiteAbelianCompositumEmbeddingRight K L E) =
-        B₀.val.comp (finiteGaloisFieldRangeEquiv K E).toAlgHom := by
-    ext x
-    rfl
-  have heqLeft :
-      (finiteGaloisFieldRangeEquiv K L).toAlgHom.fieldRange =
-        (⊤ : IntermediateField K A₀) :=
-    AlgHom.fieldRange_eq_top.mpr
-      (finiteGaloisFieldRangeEquiv K L).surjective
-  have heqRight :
-      (finiteGaloisFieldRangeEquiv K E).toAlgHom.fieldRange =
-        (⊤ : IntermediateField K B₀) :=
-    AlgHom.fieldRange_eq_top.mpr
-      (finiteGaloisFieldRangeEquiv K E).surjective
-  have hleft :
-      (finiteAbelianCompositumEmbeddingLeft K L E).fieldRange.map j = A₀ := by
-    calc
-      (finiteAbelianCompositumEmbeddingLeft K L E).fieldRange.map j =
-          (j.comp (finiteAbelianCompositumEmbeddingLeft K L E)).fieldRange :=
-        AlgHom.map_fieldRange _ _
-      _ = (A₀.val.comp
-          (finiteGaloisFieldRangeEquiv K L).toAlgHom).fieldRange :=
-        congrArg AlgHom.fieldRange hjleft
-      _ = (finiteGaloisFieldRangeEquiv K L).toAlgHom.fieldRange.map A₀.val :=
-        (AlgHom.map_fieldRange _ _).symm
-      _ = (⊤ : IntermediateField K A₀).map A₀.val := by
-        rw [heqLeft]
-      _ = A₀.val.fieldRange :=
-        (AlgHom.fieldRange_eq_map A₀.val).symm
-      _ = A₀ := IntermediateField.fieldRange_val A₀
-  have hright :
-      (finiteAbelianCompositumEmbeddingRight K L E).fieldRange.map j = B₀ := by
-    calc
-      (finiteAbelianCompositumEmbeddingRight K L E).fieldRange.map j =
-          (j.comp (finiteAbelianCompositumEmbeddingRight K L E)).fieldRange :=
-        AlgHom.map_fieldRange _ _
-      _ = (B₀.val.comp
-          (finiteGaloisFieldRangeEquiv K E).toAlgHom).fieldRange :=
-        congrArg AlgHom.fieldRange hjright
-      _ = (finiteGaloisFieldRangeEquiv K E).toAlgHom.fieldRange.map B₀.val :=
-        (AlgHom.map_fieldRange _ _).symm
-      _ = (⊤ : IntermediateField K B₀).map B₀.val := by
-        rw [heqRight]
-      _ = B₀.val.fieldRange :=
-        (AlgHom.fieldRange_eq_map B₀.val).symm
-      _ = B₀ := IntermediateField.fieldRange_val B₀
-  apply IntermediateField.map_injective j
-  calc
-    ((finiteAbelianCompositumEmbeddingLeft K L E).fieldRange ⊔
-        (finiteAbelianCompositumEmbeddingRight K L E).fieldRange).map j =
-        A₀ ⊔ B₀ := by
-      rw [IntermediateField.map_sup, hleft, hright]
-    _ = M := rfl
-    _ = j.fieldRange := hjrange.symm
-    _ = (⊤ : IntermediateField K M).map j :=
-      AlgHom.fieldRange_eq_map j
-
-/-- The degree of the left factor is bounded by the degree of the
-compositum. -/
-theorem finiteAbelianCompositum_finrank_left_le :
-    Module.finrank K L ≤
-      Module.finrank K (finiteAbelianCompositumField K L E) :=
-  (finiteAbelianCompositumEmbeddingLeft K L E).toLinearMap
-    |>.finrank_le_finrank_of_injective
-      (finiteAbelianCompositumEmbeddingLeft K L E).injective
-
-/-- The degree of the right factor is bounded by the degree of the
-compositum. -/
-theorem finiteAbelianCompositum_finrank_right_le :
-    Module.finrank K E ≤
-      Module.finrank K (finiteAbelianCompositumField K L E) :=
-  (finiteAbelianCompositumEmbeddingRight K L E).toLinearMap
-    |>.finrank_le_finrank_of_injective
-      (finiteAbelianCompositumEmbeddingRight K L E).injective
-
-end ConcreteAbelianCompositum
-
-end AlgebraicNumberTheory
-
-end

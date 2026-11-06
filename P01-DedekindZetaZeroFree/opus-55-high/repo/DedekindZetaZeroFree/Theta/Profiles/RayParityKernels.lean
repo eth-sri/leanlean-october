@@ -27,9 +27,7 @@ theorem traceRealCoordinateCLM_eq_traceToMixed
     (v : RayCoset.RealPlaces K) (α : K) :
     Theta.traceRealCoordinateCLM K v (Theta.traceEmbedding K α) =
       RayCoset.realEmbedding K v α := by
-  change (Theta.traceToMixed K (Theta.traceEmbedding K α)).1 v = _
-  simp only [Theta.traceEmbedding, ContinuousLinearEquiv.apply_symm_apply]
-  exact mixedEmbedding.mixedEmbedding_apply_isReal K α v
+  rfl
 
 def Q (q : InfinitePlace K → ℝ) (x : euclidean.mixedSpace K) :
     euclidean.mixedSpace K :=
@@ -39,9 +37,7 @@ def Q (q : InfinitePlace K → ℝ) (x : euclidean.mixedSpace K) :
 theorem Q_eq_traceRadialScale (q : InfinitePlace K → ℝ)
     (hq : ∀ v, q v ≠ 0) (x : euclidean.mixedSpace K) :
     Q K q x = Theta.traceRadialScale K q hq x := by
-  apply (Theta.traceToMixed K).injective
-  simp only [Q, ContinuousLinearEquiv.apply_symm_apply,
-    Theta.traceToMixed_traceRadialScale]
+  rfl
 
 def εδ (δ : Finset (RayCoset.RealPlaces K)) : ℂ :=
   (-Complex.I) ^ δ.card
@@ -57,7 +53,3 @@ def hδ (δ : Finset (RayCoset.RealPlaces K)) (s : ℂ) : ℂ :=
     (∏ v : RayCoset.RealPlaces K,
       (Complex.Gammaℝ (s + if v ∈ δ then (1 : ℂ) else 0))⁻¹) *
     ((Complex.Gammaℂ s)⁻¹) ^ nrComplexPlaces K
-
-end DedekindZetaZeroFree.AbelianQuotient.RayParity
-
-end

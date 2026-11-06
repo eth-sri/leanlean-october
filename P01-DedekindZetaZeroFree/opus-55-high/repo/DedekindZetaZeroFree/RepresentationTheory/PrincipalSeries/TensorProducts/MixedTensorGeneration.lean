@@ -37,14 +37,14 @@ open _root_.DedekindZetaZeroFree.KPLiteralScalarArchUniformBands renaming multiT
 open _root_.DedekindZetaZeroFree.KPLiteralScalarArchUniformBands renaming harmonicBand_mono → harmonicBand_mono
 
 omit [Fintype ι] in
-private theorem familyTranslate_mul (k l : ι → ComplexSU2)
+theorem familyTranslate_mul (k l : ι → ComplexSU2)
     (h : Y → multiPrincipalSeries positiveParameter ι) :
     familyTranslate k (familyTranslate l h) = familyTranslate (k * l) h := by
   funext y
   exact multiTranslate_mul positiveParameter k l (h y)
 
 omit [Fintype ι] in
-private theorem familyOrbit_stable (h : Y → multiPrincipalSeries positiveParameter ι)
+theorem familyOrbit_stable (h : Y → multiPrincipalSeries positiveParameter ι)
     (k : ι → ComplexSU2) (v : Y → multiPrincipalSeries positiveParameter ι)
     (hv : v ∈ familyOrbit h) : familyTranslate k v ∈ familyOrbit h := by
   induction hv using Submodule.span_induction with
@@ -100,7 +100,7 @@ def bandTensorEvaluation (N : ℕ) :
   plusTensorEvaluation.comp (PiTensorProduct.map (fun _ => bandInclusion N))
 
 omit [DecidableEq ι] in
-private theorem bandTensorEvaluation_finite (N : ℕ) :
+theorem bandTensorEvaluation_finite (N : ℕ) :
     Module.Finite ℂ (bandTensorEvaluation (ι := ι) N).range := by
   let : ∀ _ : ι, Module.Finite ℂ (harmonicBand positiveParameter N) :=
     fun _ => harmonicBand_finite _ _

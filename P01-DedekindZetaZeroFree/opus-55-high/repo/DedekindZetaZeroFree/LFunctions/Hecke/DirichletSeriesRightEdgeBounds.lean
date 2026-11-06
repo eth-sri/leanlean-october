@@ -7,10 +7,9 @@ public import DedekindZetaZeroFree.Arithmetic.RayClasses.Characters.CharacterUni
 
 namespace DedekindZetaZeroFree
 
-noncomputable section
 open scoped NumberField Classical
 
-private theorem right_edge_term_bound (F : Type) [Field F] [NumberField F]
+theorem right_edge_term_bound (F : Type) [Field F] [NumberField F]
     (σ : ℝ) (s : ℂ) (hs : σ ≤ s.re) (a : Ideal (𝓞 F) → ℂ)
     (ha0 : a ⊥ = 0) (ha : ∀ I, ‖a I‖ ≤ 1) (I : Ideal (𝓞 F)) :
     ‖a I * (Ideal.absNorm I : ℂ) ^ (-s)‖ ≤ idealAbsoluteWeight F σ I := by
@@ -33,7 +32,7 @@ private theorem right_edge_term_bound (F : Type) [Field F] [NumberField F]
       _ ≤ (Ideal.absNorm I : ℝ) ^ (-σ) := by
         simpa using Real.rpow_le_rpow_of_exponent_le hn1 (neg_le_neg hs)
 
-private theorem right_edge_of_bound (F : Type) [Field F] [NumberField F]
+theorem right_edge_of_bound (F : Type) [Field F] [NumberField F]
     (σ : ℝ) (hσ : 1 < σ) (s : ℂ) (hs : σ ≤ s.re)
     (a : Ideal (𝓞 F) → ℂ) (ha0 : a ⊥ = 0) (ha : ∀ I, ‖a I‖ ≤ 1) :
     Summable (fun I : Ideal (𝓞 F) => a I * (Ideal.absNorm I : ℂ) ^ (-s)) ∧
@@ -75,7 +74,3 @@ theorem heckeDirichlet_hasSum_norm_le (F : Type) [Field F] [NumberField F]
     ‖v‖ ≤ idealAbsoluteSum F σ := by
   rw [← hv.tsum_eq]
   exact (heckeDirichlet_right_edge F σ hσ 𝔪 h𝔪 η s hs).2
-
-end
-
-end DedekindZetaZeroFree

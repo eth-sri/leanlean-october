@@ -107,8 +107,7 @@ theorem four_regions (μ : Measure Kˣ) (f : Kˣ → ℂ)
       · exact Or.inl (Or.inl (Or.inr hn))
       · exact Or.inr ⟨he, hz⟩
       · have h := hlarge (1 - (y : K)) hl
-        simp only [sub_sub_cancel, he] at h
-        linarith
+        simp_all
     · exact Or.inl (Or.inr hl)
   have mn : MeasurableSet (nearOne K) := by
     have he : nearOne K = (fun y : Kˣ => 1 - (y : K)) ⁻¹'
@@ -116,7 +115,7 @@ theorem four_regions (μ : Measure Kˣ) (f : Kˣ → ℂ)
       ext y
       change KPCubicHaar.abs K (1 - (y : K)) < 1 ↔ _
       rw [← KPCubicHaar.abs_one K, KPCubicHaar.abs_lt_iff K one_ne_zero]
-      exact (valuation K).restrict_lt_iff.symm
+      simp
     rw [he]
     exact (((valuation K).isOpen_ball _).preimage
       (continuous_const.sub Units.continuous_val)).measurableSet
@@ -133,13 +132,12 @@ theorem four_regions (μ : Measure Kˣ) (f : Kˣ → ℂ)
       · intro hy
         have hc : y ∈ small K ∪ nearOne K ∪ large K ∪ residue K := by rw [cover]; trivial
         exact hc.resolve_left hy
-    rw [he]
-    exact ((ms.union mn).union ml).compl
+    simp_all
   have hsn := hs.union hn
   have hsnl := hsn.union hl
   have hall := hsnl.union hr
   have hi : Integrable f μ := by
-    simpa only [cover, integrableOn_univ] using hall
+    simp_all
   refine ⟨hi, ?_⟩
   have dsnl : Disjoint (small K ∪ nearOne K) (large K) := dsl.union_left dnl
   calc
@@ -151,6 +149,3 @@ theorem four_regions (μ : Measure Kˣ) (f : Kˣ → ℂ)
         (∫ y in large K, f y ∂μ)) + (∫ y in residue K, f y ∂μ) := by
       rw [setIntegral_union dsnl ml hsn hl]
     _ = _ := by rw [setIntegral_union dsn mn hs hn]
-
-end
-end DedekindZetaZeroFree.KPRankOneUnramifiedBetaShells.RegionDecomposition

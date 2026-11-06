@@ -15,13 +15,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Reduction of a Lubin--Tate intertwining defect
 
@@ -30,7 +23,6 @@ power series. The two sides of the intertwining equation then agree, so every
 coefficient of the defect is divisible by the chosen uniformizer.
 -/
 
-noncomputable section
 
 universe u v w
 
@@ -125,7 +117,7 @@ theorem map_defect_eq_zero
   rw [defect, map_sub, map_subst_lubinTateSeries e hH,
     map_subst_inVariables ebar H,
     mvPowerSeries_expand_natCard]
-  exact sub_self _
+  simp
 
 /-- Every coefficient of the defect is divisible by the chosen
 uniformizer. -/
@@ -140,8 +132,3 @@ theorem uniformizer_dvd_coeff_defect
   have hcoeff := congrArg (MvPowerSeries.coeff d)
     (map_defect_eq_zero e ebar hH)
   simpa using hcoeff
-
-end SameUniformizer
-end LubinTate
-
-end

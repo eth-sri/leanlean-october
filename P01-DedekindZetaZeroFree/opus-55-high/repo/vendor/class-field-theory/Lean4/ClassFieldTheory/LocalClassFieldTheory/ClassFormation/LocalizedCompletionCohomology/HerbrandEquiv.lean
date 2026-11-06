@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Low-degree Herbrand equivalences for a localized completion
 -/
@@ -38,7 +35,7 @@ variable {k ell : Type}
 
 /-- Degree-zero multiplicative Herbrand cohomology for a decomposition group
 identified with degree-zero Tate cohomology of the localized field units. -/
-noncomputable def localHerbrandH0EquivUnitsTateH0
+def localHerbrandH0EquivUnitsTateH0
     (vK : AbsoluteValue k ℝ) (hvK : vK.IsNontrivial)
     (w : AbsoluteValueExtension vK ell) :
     letI hK :=
@@ -105,7 +102,7 @@ noncomputable def localHerbrandH0EquivUnitsTateH0
 
 /-- Degree-minus-one multiplicative Herbrand cohomology for a decomposition
 group identified with degree-minus-one Tate cohomology of localized units. -/
-noncomputable def localHerbrandHMinusOneEquivUnitsTateHminusOne
+def localHerbrandHMinusOneEquivUnitsTateHminusOne
     (vK : AbsoluteValue k ℝ) (hvK : vK.IsNontrivial)
     (w : AbsoluteValueExtension vK ell)
     (σ : ell ≃ₐ[k] ell)
@@ -176,7 +173,7 @@ noncomputable def localHerbrandHMinusOneEquivUnitsTateHminusOne
 
 /-- Degree-zero Herbrand cohomology for a decomposition group identified with
 the norm quotient of the localized field extension. -/
-noncomputable def localHerbrandH0EquivNormQuotient
+def localHerbrandH0EquivNormQuotient
     (vK : AbsoluteValue k ℝ) (hvK : vK.IsNontrivial)
     (w : AbsoluteValueExtension vK ell) :
     letI hK :=
@@ -228,10 +225,3 @@ noncomputable def localHerbrandH0EquivNormQuotient
       MulEquiv.multiplicativeAdditive
         (NormQuotient vK.Completion
           (LocalizedCompletion vK w))
-
-
-end LocalTateComparison
-
-end LocalClassFieldTheory
-
-end

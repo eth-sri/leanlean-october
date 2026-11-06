@@ -2,7 +2,9 @@ module
 
 public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.Complex.SixRealLieWordExpansion
 public import DedekindZetaZeroFree.Eisenstein.Induction.TensorProducts.FinitePureCoreExpansion
-public import DedekindZetaZeroFree.RepresentationTheory.Smooth.RightWords.SupportLocality
+public import DedekindZetaZeroFree.RepresentationTheory.Smooth.RightInvariantDifferentialWords
+public import DedekindZetaZeroFree.RepresentationTheory.Smooth.NativeLieWordReindexing
+public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.GreenIdentity.PairingsAndFluxDefinitions
 public import DedekindZetaZeroFree.Metaplectic.Cubic.OrbifoldCharts.RightInvariantFieldCoordinates
 
 @[expose] public section
@@ -59,11 +61,7 @@ theorem actualRight_single_slot
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (a : KPSmoothActualFlowData.GInfinity F)
     (c : KPGlobalTorusFunctionData.finitePart F ζ hζ) :
-    Commute (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a) c.val := by
-  apply DedekindZetaZeroFree.RepresentationTheory.ArchFiniteSplitting.insertion_commutes_finite
-    F ζ hζ a ⟨c.val, ?_⟩
-  obtain ⟨x, hx, he⟩ := c.property
-  exact Subgroup.mem_map.mpr ⟨x, fun w => Subgroup.mem_iInf.mp hx w, he⟩
+    Commute (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a) c.val := by apply DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualRaisingLocal.insertion_commutes_finite <;> assumption
 
  theorem update_mul_single
     (F : Type) [Field F] [NumberField F] (w : NumberField.InfinitePlace F)
@@ -174,7 +172,7 @@ theorem actualRightWord_pure_tensor
       simp [wordAtSlot, nativeSlotWord]
     · simp [wordAtSlot, nativeSlotWord, he, Ne.symm he]
 
-private theorem finite_arch_projection_eq_one
+theorem finite_arch_projection_eq_one
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (c : KPGlobalTorusFunctionData.finitePart F ζ hζ) :
     PGLComplex.AdelicSlicesRaw.archProjection F ζ hζ c.val = 1 := by
@@ -182,7 +180,7 @@ private theorem finite_arch_projection_eq_one
   obtain ⟨x, hx, he⟩ := c.property
   exact Subgroup.mem_map.mpr ⟨x, fun w => Subgroup.mem_iInf.mp hx w, he⟩
 
-private theorem alpha_arch_finite_formula
+theorem alpha_arch_finite_formula
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (a : NumberField.InfinitePlace F → KPCplxCharacterHaar.ComplexGL2)
     (c : KPGlobalTorusFunctionData.finitePart F ζ hζ) :
@@ -231,7 +229,7 @@ private theorem alpha_arch_finite_formula
   congr 1
   exact Finset.sum_congr rfl (fun w _ => KPContFlatLogNormSmooth.complexProjectiveLogNorm_mk (a w))
 
-private theorem flatR_pure_tensor_formula
+theorem flatR_pure_tensor_formula
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (t : KPMsRationalCompactCrossPairing.Vplus F ζ hζ (KPContFlatSourceRecipe.D F ζ hζ))
     (c : KPGlobalTorusFunctionData.finitePart F ζ hζ) (C : ℂ)
@@ -303,7 +301,7 @@ private theorem spherical_word_matrix_smooth (w : KPContHolomorphicKGeneration.R
 
 set_option backward.isDefEq.respectTransparency false in
 open scoped Matrix.Norms.Operator in
-private theorem parameter_path_hasDeriv_components (g : KPCplxCharacterHaar.ComplexGL2)
+theorem parameter_path_hasDeriv_components (g : KPCplxCharacterHaar.ComplexGL2)
     (M : Matrix (Fin 2) (Fin 2) ℂ) :
     ∀ i j, HasDerivAt (fun t : ℝ => ((g : Matrix (Fin 2) (Fin 2) ℂ) * NormedSpace.exp ((t : ℂ) • M)) i j) (((g : Matrix (Fin 2) (Fin 2) ℂ) * M) i j) 0 := by
   have h := hasDerivAt_exp_smul_const (𝕂 := ℝ) M (0 : ℝ)
@@ -322,7 +320,7 @@ private theorem parameter_path_hasDeriv_components (g : KPCplxCharacterHaar.Comp
   · rfl
 
 open scoped Matrix.Norms.Elementwise in
-private theorem rightDerivative_smooth_fderiv (f : KPCplxCharacterHaar.ComplexGL2 → ℂ)
+theorem rightDerivative_smooth_fderiv (f : KPCplxCharacterHaar.ComplexGL2 → ℂ)
     (hf : ContDiffOn ℝ (⊤ : ℕ∞) (KPCplxPrincipalSeriesCharts.matrixFunction f) {g | g.det ≠ 0})
     (g : KPCplxCharacterHaar.ComplexGL2) (M : Matrix (Fin 2) (Fin 2) ℂ) :
     deriv (fun t : ℝ => f (g * KPSmoothActualFlowData.matrixExponential ((t : ℂ) • M))) 0 =
@@ -471,7 +469,7 @@ theorem actual_source_flat_finite_pure_core
 
 open ActualRaisingLocal.SphericalReseeding in
 
-private theorem source_finite_pure_with_spherical_formula
+theorem source_finite_pure_with_spherical_formula
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (t : KPMsRationalCompactCrossPairing.Vplus F ζ hζ (KPContFlatSourceRecipe.D F ζ hζ)) :
     ∃ (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
@@ -534,7 +532,7 @@ private theorem source_finite_pure_with_spherical_formula
       ∑ j, b j s * KPContHolomorphicKGeneration.complexSphericalWord
         ((r j).map (fun ij => slotLieMatrix ij.1 ij.2)) s g
 
-private theorem harmonic_local_clears (ℓ : ℕ)
+theorem harmonic_local_clears (ℓ : ℕ)
     (f : KPCplxPrincipalSeriesCharts.PrincipalSeries KPCplxPrincipalSeriesCharts.positiveParameter)
     (hf : f ∈ KPCplxIntertwinerEigenvalues.harmonicKType KPCplxPrincipalSeriesCharts.positiveParameter ℓ) :
     LocalClears f := by
@@ -561,13 +559,13 @@ private theorem harmonic_local_clears (ℓ : ℕ)
   rw [← hsum]
   exact (Equiv.sum_comp e.symm _).symm
 
-private theorem clears_zero : LocalClears (0 : KPCplxPrincipalSeriesCharts.PrincipalSeries KPCplxPrincipalSeriesCharts.positiveParameter) := by
+theorem clears_zero : LocalClears (0 : KPCplxPrincipalSeriesCharts.PrincipalSeries KPCplxPrincipalSeriesCharts.positiveParameter) := by
   refine ⟨0, fun k => Fin.elim0 k, fun _ => 1, fun k => Fin.elim0 k,
     analyticOnNhd_const, rfl, fun k => Fin.elim0 k, ?_⟩
   intro s g
   simp
 
-private theorem clears_add
+theorem clears_add
     (f h : KPCplxPrincipalSeriesCharts.PrincipalSeries KPCplxPrincipalSeriesCharts.positiveParameter)
     (hf : LocalClears f) (hh : LocalClears h) : LocalClears (f+h) := by
   obtain ⟨n,r,q,b,hq,hq0,hb,he⟩ := hf
@@ -598,7 +596,7 @@ private theorem clears_add
     · apply Finset.sum_congr rfl; intro j hj; dsimp [rr,bb]; ring
     · apply Finset.sum_congr rfl; intro j hj; dsimp [rr,bb]; ring
 
-private theorem kfinite_local_clears
+theorem kfinite_local_clears
     (f : KPCplxPrincipalSeriesCharts.PrincipalSeries KPCplxPrincipalSeriesCharts.positiveParameter)
     (hf : KPContHolomorphicKGeneration.IsKFinite KPCplxPrincipalSeriesCharts.positiveParameter f) :
     LocalClears f := by
@@ -617,7 +615,7 @@ private theorem kfinite_local_clears
     List (KPContActualSphericalRightFieldIdentification.LieIndex F) :=
   l.flatMap (fun v => (r v).map (fun ij => (v,ij)))
 
-private theorem assembledWord_slot {F : Type} [Field F] [NumberField F]
+theorem assembledWord_slot {F : Type} [Field F] [NumberField F]
     (l : List (NumberField.InfinitePlace F)) (hl : l.Nodup)
     (r : NumberField.InfinitePlace F → List (Fin 3 × Fin 2)) (v : NumberField.InfinitePlace F) :
     wordAtSlot v (assembledWord l r) = if v ∈ l then r v else [] := by
@@ -645,13 +643,13 @@ private theorem assembledWord_slot {F : Type} [Field F] [NumberField F]
     · subst a; simp [hal]
     · simp [hav, Ne.symm hav]
 
-private theorem assembled_all_slots {F : Type} [Field F] [NumberField F]
+theorem assembled_all_slots {F : Type} [Field F] [NumberField F]
     (r : NumberField.InfinitePlace F → List (Fin 3 × Fin 2)) (v : NumberField.InfinitePlace F) :
     wordAtSlot v (assembledWord Finset.univ.toList r) = r v := by
   rw [assembledWord_slot _ (Finset.nodup_toList _) r v]
   simp
 
-private theorem analytic_finite_prod {I : Type*} (l : Finset I) (f : I → ℂ → ℂ)
+theorem analytic_finite_prod {I : Type*} (l : Finset I) (f : I → ℂ → ℂ)
     (hf : ∀ i ∈ l, AnalyticOnNhd ℂ (f i) Set.univ) :
     AnalyticOnNhd ℂ (fun s => ∏ i ∈ l, f i s) Set.univ := by
   classical

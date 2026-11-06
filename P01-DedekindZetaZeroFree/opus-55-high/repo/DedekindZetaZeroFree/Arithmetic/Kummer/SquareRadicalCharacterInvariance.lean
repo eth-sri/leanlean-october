@@ -7,7 +7,6 @@ public import DedekindZetaZeroFree.Arithmetic.Kummer.SquareConductorInvariance
 
 namespace DedekindZetaZeroFree.RMKummerSquareCharacter
 
-noncomputable section
 open scoped NumberField Classical
 open IsDedekindDomain
 
@@ -61,9 +60,7 @@ theorem Xi_mul_sq (F : Type) [Field F] [NumberField F]
   have hm := RMKummerSquareConductor.m_mul_sq F h12 x y
   induction I using UniqueFactorizationMonoid.induction_on_prime with
   | h₁ =>
-      change RMKummerConductor.Xi F h12 (x * y ^ 2) ⊥ = RMKummerConductor.Xi F h12 x ⊥
-      rw [(RMKummerConductor.Xi F h12 (x * y ^ 2)).eq_zero_iff' _ |>.mpr (Or.inl rfl),
-        (RMKummerConductor.Xi F h12 x).eq_zero_iff' _ |>.mpr (Or.inl rfl)]
+      simp
   | h₂ J hJ =>
       rw [Ideal.isUnit_iff.mp hJ]
       exact (RMKummerConductor.Xi F h12 (x * y ^ 2)).map_top'.trans
@@ -111,8 +108,7 @@ theorem Xi_one (F : Type) [Field F] [NumberField F]
       if I = ⊥ then (0 : ℂ) else 1 := by
   have hm := RMKummerSquareConductor.m_one F h12
   by_cases hb : I = ⊥
-  · rw [if_pos hb]
-    exact (RMKummerConductor.Xi F h12 1).eq_zero_iff' I |>.mpr (Or.inl hb)
+  · simp_all
   · rw [if_neg hb]
     induction I using UniqueFactorizationMonoid.induction_on_prime with
     | h₁ => exact (hb rfl).elim
@@ -127,6 +123,3 @@ theorem Xi_one (F : Type) [Field F] [NumberField F]
           rw [hm, sup_top_eq]
         rw [prime_eq_lambda F h12 1 v hc π hπ,
           RMKummerLocalSquareLaws.lambda_one, Units.val_one]
-
-end
-end DedekindZetaZeroFree.RMKummerSquareCharacter

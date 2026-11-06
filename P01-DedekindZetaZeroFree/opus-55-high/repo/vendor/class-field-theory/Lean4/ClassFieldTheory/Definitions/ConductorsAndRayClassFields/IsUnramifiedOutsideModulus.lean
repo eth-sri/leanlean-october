@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Unramifiedness outside the support of a ray modulus
 -/
@@ -42,5 +37,3 @@ def IsUnramifiedOutsideModulus
     ∀ (v : InfinitePlace K) (hv : v.IsReal),
       (⟨v, hv⟩ : RayClassRealPlace K) ∉ m.infinitePart →
         v.IsUnramifiedIn L
-
-end ClassFieldTheory

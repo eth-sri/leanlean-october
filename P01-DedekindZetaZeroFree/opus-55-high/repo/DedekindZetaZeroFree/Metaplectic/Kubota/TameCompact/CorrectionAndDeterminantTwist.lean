@@ -12,7 +12,6 @@ open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.KPTameCompact
 
 noncomputable section
-set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
 variable (v : HeightOneSpectrum (𝓞 F))
@@ -75,7 +74,7 @@ section TameSymbolCalculus
  local instance tamePreludeKLocalField : IsNonarchimedeanLocalField (K F v) := ClassFieldTheory.finitePlaceCompletionIsNonarchimedeanLocalField F v
  local instance tamePreludeSourceValuativeRel : ValuativeRel (KPHilbert.CFTSource F v) := GlobalClassFieldTheory.Reciprocity.finitePlaceLocalArtinCompletionValuativeRel v
  local instance tamePreludeSourceLocalField : IsNonarchimedeanLocalField (KPHilbert.CFTSource F v) := GlobalClassFieldTheory.Reciprocity.finitePlaceLocalArtinCompletionIsNonarchimedeanLocalField v
-private lemma three_unit (hv : ringChar (O F v ⧸ p F v) ≠ 3) : IsUnit (3 : O F v) := by
+lemma three_unit (hv : ringChar (O F v ⧸ p F v) ≠ 3) : IsUnit (3 : O F v) := by
   letI : Nontrivial (O F v ⧸ p F v) := Ideal.Quotient.nontrivial_iff.mpr (IsLocalRing.maximalIdeal.isMaximal (O F v)).ne_top
   letI : (p F v).IsMaximal := IsLocalRing.maximalIdeal.isMaximal (O F v)
   let q := Ideal.Quotient.mk (p F v)
@@ -90,8 +89,7 @@ private lemma three_unit (hv : ringChar (O F v ⧸ p F v) ≠ 3) : IsUnit (3 : O
   change ValuativeRel.ValueGroupWithZero.mk x 1 ≤ ValuativeRel.ValueGroupWithZero.mk y 1 ↔ _
   rw [ValuativeRel.ValueGroupWithZero.mk_le_mk]
   simp only [Submonoid.coe_one, mul_one]
-  change NormedField.valuation x ≤ NormedField.valuation y ↔ _
-  simp only [NormedField.valuation_apply, ← NNReal.coe_le_coe, coe_nnnorm]
+  rfl
 
  def sourceIntegerMap : O F v →+* (ValuativeRel.valuation (KPHilbert.CFTSource F v)).integer :=
   ((relativeFinitePlaceCompletionAlgEquiv v).symm.toRingHom.comp (O F v).subtype).codRestrict _ (by
@@ -106,7 +104,7 @@ private lemma three_unit (hv : ringChar (O F v ⧸ p F v) ≠ 3) : IsUnit (3 : O
       simpa only [map_one, Valuation.mem_integer_iff] using x.property
     simpa only [norm_one] using hn)
 
-private lemma source_three (hv : ringChar (O F v ⧸ p F v) ≠ 3) :
+lemma source_three (hv : ringChar (O F v ⧸ p F v) ≠ 3) :
     ValuativeRel.valuation (KPHilbert.CFTSource F v) (3 : KPHilbert.CFTSource F v) = 1 := by
   have hu := (three_unit F v hv).map (sourceIntegerMap F v)
   have h := (Valuation.integer.integers (ValuativeRel.valuation (KPHilbert.CFTSource F v))).isUnit_iff_valuation_eq_one.mp hu
@@ -114,10 +112,9 @@ private lemma source_three (hv : ringChar (O F v ⧸ p F v) ≠ 3) :
   norm_num only [map_ofNat, Nat.cast_ofNat, Subring.coe_natCast] at h
   exact h
 
-private lemma source_unit (u : (O F v)ˣ) :
+lemma source_unit (u : (O F v)ˣ) :
   KPHilbert.cftSourceUnit F v (unitInclusion F v u) =
     LocalFieldTheory.IsNonarchimedeanLocalField.integerUnitsToFieldUnits (KPHilbert.CFTSource F v) (Units.map (sourceIntegerMap F v).toMonoidHom u) := by
-  apply Units.ext
   rfl
 
 open Polynomial in
@@ -174,7 +171,7 @@ theorem B3_units (u u' : (O F v)ˣ) :
     (KPHilbert.CFTSource F v) 3 (source_three F v hv) (KPHilbert.cftSourceRoots F v 3 (KPHilbert.rootsThree F ζ hζ))
     (Units.map (sourceIntegerMap F v).toMonoidHom u') (Units.map (sourceIntegerMap F v).toMonoidHom u)
   erw [h]
-  exact map_one _
+  rfl
 
 theorem B3_congruent_right (x : (K F v)ˣ) (u u' : (O F v)ˣ)
     (heq : (Ideal.Quotient.mk (p F v)) (u : O F v) =
@@ -188,18 +185,18 @@ theorem B3_congruent_right (x : (K F v)ˣ) (u u' : (O F v)ˣ)
 
 end TameSymbolCalculus
 
-private lemma val_norm_le (x y : K F v) :
+lemma val_norm_le (x y : K F v) :
     ValuativeRel.valuation (K F v) x ≤ ValuativeRel.valuation (K F v) y ↔ ‖x‖ ≤ ‖y‖ := by
   rw [← Valuation.Compatible.vle_iff_le]
   change Valued.v x ≤ Valued.v y ↔ _
-  exact (Valued.toNormedField.norm_le_iff).symm
+  simp
 private lemma unit_norm (u : (O F v)ˣ) : ‖((u : O F v) : K F v)‖ = 1 := by
   have h := (Valuation.integer.integers (ValuativeRel.valuation (K F v))).valuation_unit u
   change ValuativeRel.valuation (K F v) ((u : O F v) : K F v) = 1 at h
   apply le_antisymm
   · simpa only [norm_one] using (val_norm_le F v _ 1).mp (by simpa only [map_one] using h.le)
   · simpa only [norm_one] using (val_norm_le F v 1 _).mp (by simpa only [map_one] using h.ge)
-private lemma unit_iff_norm (x : O F v) : IsUnit x ↔ ‖(x : K F v)‖ = 1 := by
+lemma unit_iff_norm (x : O F v) : IsUnit x ↔ ‖(x : K F v)‖ = 1 := by
   have heq := (Valuation.integer.integers (ValuativeRel.valuation (K F v))).isUnit_iff_valuation_eq_one (x := x)
   change IsUnit x ↔ ValuativeRel.valuation (K F v) (x : K F v) = 1 at heq
   rw [heq, le_antisymm_iff]
@@ -237,8 +234,7 @@ theorem diagonal_units (g : K0 F v) (hc : ‖c F v g‖ < 1) :
   have hdet : q (g 0 0) * q (g 1 1) = q (Matrix.GeneralLinearGroup.det g : O F v) := by
     simp [Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two, hcz]
   have hu : IsUnit (q (g 0 0) * q (g 1 1)) := by
-    rw [hdet]
-    exact (Matrix.GeneralLinearGroup.det g).isUnit.map q
+    simp_all
   have hau := isUnit_of_map_unit q (g 0 0) (IsUnit.mul_iff.mp hu).1
   have hdu := isUnit_of_map_unit q (g 1 1) (IsUnit.mul_iff.mp hu).2
   refine ⟨hau, hdu, ?_, ?_⟩
@@ -257,14 +253,9 @@ theorem diagonal_reduction (g : K0 F v) (hc : ‖c F v g‖ < 1) :
   refine ⟨du / D, au⁻¹, ?_, ?_, ?_⟩
   · rw [map_div, Units.val_div_eq_div_val]
     change ((du : O F v) : K F v) / ((D : O F v) : K F v) = _
-    have hd : ((du : O F v) : K F v) = d F v g := congrArg Subtype.val (IsUnit.unit_spec _)
-    have hD : ((D : O F v) : K F v) = Δ F v g := by
-      change _ = (Matrix.GeneralLinearGroup.det (Matrix.GeneralLinearGroup.map (O F v).subtype g) : K F v)
-      rw [Matrix.GeneralLinearGroup.map_det]
-      rfl
-    rw [hd, hD]
+    rfl
   · change (((Units.map (O F v).subtype.toMonoidHom au)⁻¹ : (K F v)ˣ) : K F v) = _
-    simp only [Units.val_inv_eq_inv_val, Units.coe_map, MonoidHom.coe_coe]
+    simp only [Units.val_inv_eq_inv_val, Units.coe_map]
     congr 1
   · let q := Ideal.Quotient.mk (p F v)
     have hcz : q (g 1 0) = 0 := by
@@ -277,7 +268,7 @@ theorem diagonal_reduction (g : K0 F v) (hc : ‖c F v g‖ < 1) :
       exact hdet
     have hu : Units.map q.toMonoidHom (du / D) = Units.map q.toMonoidHom (au⁻¹) := by
       rw [map_div, map_inv, he]
-      simp [div_eq_mul_inv, mul_comm]
+      simp
     exact congrArg Units.val hu
 
 include hv
@@ -318,16 +309,9 @@ theorem det_twist_trivial (g h : K0 F v) :
       (Matrix.GeneralLinearGroup.det (inclusion F v h)) ^ 2 = 1 := by
   have hg : Matrix.GeneralLinearGroup.det (inclusion F v g) =
       unitInclusion F v (Matrix.GeneralLinearGroup.det g) := by
-    change Matrix.GeneralLinearGroup.det (Matrix.GeneralLinearGroup.map (O F v).subtype g) = _
-    rw [Matrix.GeneralLinearGroup.map_det]
     rfl
   have hh : Matrix.GeneralLinearGroup.det (inclusion F v h) =
       unitInclusion F v (Matrix.GeneralLinearGroup.det h) := by
-    change Matrix.GeneralLinearGroup.det (Matrix.GeneralLinearGroup.map (O F v).subtype h) = _
-    rw [Matrix.GeneralLinearGroup.map_det]
     rfl
   rw [hg, hh, B3_units F v ζ hζ hv]
   simp
-
-end
-end DedekindZetaZeroFree.KPTameCompact

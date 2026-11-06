@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Concrete realization of finite abelian subextensions
 
@@ -40,7 +35,7 @@ open scoped IsMulCommutative
 
 universe u v w
 
-private theorem algEquiv_commutes_algebraMap_of_base_equiv
+theorem algEquiv_commutes_algebraMap_of_base_equiv
     {K : Type u} {K' : Type v} {L : Type w}
     [Field K] [Field K'] [Field L]
     [Algebra K L] [Algebra K' L]
@@ -55,12 +50,7 @@ private theorem algEquiv_commutes_algebraMap_of_base_equiv
   have hbase :
       algebraMap K L (e.symm x) =
         algebraMap K' L x := by
-    calc
-      algebraMap K L (e.symm x) =
-          algebraMap K' L (e (e.symm x)) :=
-        h (e.symm x)
-      _ = algebraMap K' L x :=
-        congrArg (algebraMap K' L) (e.apply_symm_apply x)
+    simp_all
   calc
     f (algebraMap K' L x) =
         f (algebraMap K L (e.symm x)) :=
@@ -103,7 +93,7 @@ variable
 
 /-- The relative fixed field represented by a finite abelian subextension is
 finite-dimensional over the fixed field represented by its base subgroup. -/
-noncomputable instance
+instance
     finiteAbelianSubextensionAbstractRelativeFixedFieldFiniteDimensional
     [hKfinite : Finite
       ((baseField Gal(Ω / k)).toSubgroup ⧸
@@ -118,7 +108,7 @@ noncomputable instance
 
 /-- The actual relative fixed field represented by a finite abelian
 subextension is an abelian Galois extension of the actual base fixed field. -/
-noncomputable instance
+instance
     finiteAbelianSubextensionAbstractRelativeFixedFieldIsAbelianGalois
     (L : FiniteAbelianSubextension K) :
     IsAbelianGalois
@@ -137,8 +127,3 @@ noncomputable instance
   exact e.symm.injective (by
     simpa only [map_mul] using
       mul_comm (e.symm σ) (e.symm τ))
-
-end GlobalClassFields
-end GlobalClassFieldTheory
-
-end

@@ -24,11 +24,11 @@ def localAbs (y : Kˣ) : ℝ :=
     ((WithZero.log (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K
       (valuation K (y : K))) : ℤ) : ℝ)
 
-private theorem residueCardinality_pos : 0 < (residueCardinality K : ℝ) := by
+theorem residueCardinality_pos : 0 < (residueCardinality K : ℝ) := by
   exact_mod_cast Nat.card_pos
 
-theorem localAbs_pos (y : Kˣ) : 0 < localAbs K y := by
-  exact Real.rpow_pos_of_pos (residueCardinality_pos K) _
+theorem localAbs_pos (y : Kˣ) : 0 < localAbs K y := 
+  Real.rpow_pos_of_pos (residueCardinality_pos K) _
 
 theorem localAbs_mul (x y : Kˣ) : localAbs K (x * y) = localAbs K x * localAbs K y := by
   unfold localAbs
@@ -42,8 +42,8 @@ theorem localAbs_one : localAbs K 1 = 1 := by
 def normPower (y : Kˣ) (s : ℂ) : ℂ :=
   Complex.exp (s * (Real.log (localAbs K y) : ℂ))
 
-theorem normPower_entire (y : Kˣ) : Differentiable ℂ (normPower K y) := by
-  exact (differentiable_id.mul_const _).cexp
+theorem normPower_entire (y : Kˣ) : Differentiable ℂ (normPower K y) := 
+  (differentiable_id.mul_const _).cexp
 
  theorem normPower_one (s : ℂ) : normPower K 1 s = 1 := by
   simp [normPower, localAbs_one]
@@ -147,20 +147,18 @@ def sectionSpace (A : LocalBorelData (K := K) (G := G) T)
   carrier := {f | (∀ (b : A.B) (g : G),
     f ((b : G) * g) = inducingAction A P ε s b (f g)) ∧
     SmoothVector vectorRightTranslation f}
-  zero_mem' := by
-    exact ⟨by intro b g; simp, ⟨⊤, by simp⟩⟩
+  zero_mem' := 
+    ⟨by simp, ⟨⊤, by simp⟩⟩
   add_mem' := by
     intro f g hf hg
     refine ⟨?_, ?_⟩
-    · intro b x
-      simpa using congrArg₂ (· + ·) (hf.1 b x) (hg.1 b x)
+    · simp_all
     · exact (mem_smoothSubmodule _ _).mp ((smoothSubmodule _).add_mem
         ((mem_smoothSubmodule _ _).mpr hf.2) ((mem_smoothSubmodule _ _).mpr hg.2))
   smul_mem' := by
     intro c f hf
     refine ⟨?_, ?_⟩
-    · intro b x
-      simpa using congrArg (c • ·) (hf.1 b x)
+    · simp_all
     · exact (mem_smoothSubmodule _ _).mp ((smoothSubmodule _).smul_mem c
         ((mem_smoothSubmodule _ _).mpr hf.2))
 
@@ -255,8 +253,8 @@ def compactPicture (A : LocalBorelData (K := K) (G := G) T)
     (k' : G) = (b : G) * (k : G) →
     φ k' = inducingAction A P ε 0 b (φ k)) ∧
     SmoothVector (vectorRightTranslation (G := I.compact.toOpenSubgroup)) φ}
-  zero_mem' := by
-    exact ⟨by intro b k k' h; simp, ⟨⊤, by simp⟩⟩
+  zero_mem' := 
+    ⟨by simp, ⟨⊤, by simp⟩⟩
   add_mem' := by
     intro f g hf hg
     refine ⟨?_, ?_⟩
@@ -307,7 +305,7 @@ def compactLevel (A : LocalBorelData (K := K) (G := G) T)
     (J : CompactOpenLevel G) : Submodule ℂ (compactPicture A P I ε) where
   carrier := {φ | ∀ (j : J.toOpenSubgroup) (k k' : I.compact.toOpenSubgroup),
     (k' : G) = (k : G) * (j : G) → φ.val k' = φ.val k}
-  zero_mem' := by intro j k k' h; rfl
+  zero_mem' := by simp
   add_mem' := by
     intro f g hf hg j k k' h
     exact congrArg₂ (· + ·) (hf j k k' h) (hg j k k' h)
@@ -335,8 +333,8 @@ theorem compact_level_identification (A : LocalBorelData (K := K) (G := G) T)
  def coordinateEvaluation (P : Polarization T) (h : H) :
     InducedModule P →ₗ[ℂ] ℂ where
   toFun v := v.val h
-  map_add' := by intros; rfl
-  map_smul' := by intros; rfl
+  map_add' := by simp
+  map_smul' := by simp
 
  theorem inducing_coordinate_entire
     (A : LocalBorelData (K := K) (G := G) T) (P : Polarization T)
@@ -388,10 +386,6 @@ theorem compact_level_holomorphic (A : LocalBorelData (K := K) (G := G) T)
     (φ : compactLevel A P I ε J) (g x : G) (h : H) :
     Differentiable ℂ (fun s : ℂ =>
       (principalSeries A P ε s g
-        (compactTrivialization A P I ε s (φ : compactPicture A P I ε))).val x |>.val h) := by
-  exact (compactFiniteLaws A P I ε J hJ h).2
+        (compactTrivialization A P I ε s (φ : compactPicture A P I ε))).val x |>.val h) := 
+  (compactFiniteLaws A P I ε J hJ h).2
     ⟨φ.val.val, φ.val.property, φ.property⟩ g x
-
-end
-
-end DedekindZetaZeroFree.KPLocalPrincipalSeries

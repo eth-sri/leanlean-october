@@ -12,7 +12,7 @@ namespace DedekindZetaZeroFree.LocalQuotientCharts.ExponentialHaarFrame
 open MeasureTheory Raw
 open scoped NumberField Classical ENNReal NNReal Manifold ContDiff Matrix.Norms.Operator
 
-private theorem map_density_equiv {X Y : Type*} [MeasurableSpace X] [MeasurableSpace Y]
+theorem map_density_equiv {X Y : Type*} [MeasurableSpace X] [MeasurableSpace Y]
     (e : X ≃ᵐ Y) (ν : Measure X) (w : X → ℝ≥0∞) :
     Measure.map e (ν.withDensity w) =
       (Measure.map e ν).withDensity (fun y => w (e.symm y)) := by
@@ -21,9 +21,9 @@ private theorem map_density_equiv {X Y : Type*} [MeasurableSpace X] [MeasurableS
   rw [e.measurableEmbedding.map_apply, withDensity_apply _ (e.measurable hs),
     withDensity_apply _ hs, Measure.restrict_map e.measurable hs,
     e.measurableEmbedding.lintegral_map]
-  simp only [e.symm_apply_apply]
+  simp
 
-private theorem product_chart_density {ι : Type*} [Fintype ι]
+theorem product_chart_density {ι : Type*} [Fintype ι]
     (ν : Measure PGLComplex.Group) [ν.IsHaarMeasure] [SigmaFinite ν]
     (g : ι → PGLComplex.Group) (c : ℝ)
     (hc : Measure.map PGLComplex.affineChart.symm (ν.restrict PGLComplex.affineTarget) =
@@ -103,9 +103,7 @@ theorem raw_affine_haar_density (F : Type) [Field F] [NumberField F]
   let E := OpenPartialHomeomorph.pi (fun w => PGLComplex.translatedAffineChart (g w))
   have hchart : rawAffineChart F g =
       R.toHomeomorph.toOpenPartialHomeomorph.trans E.symm := by
-    simp [rawAffineChart, R, E, PGLComplex.productAffineChart, PGLComplex.translatedAffineChart,
-      OpenPartialHomeomorph.trans_symm_eq_symm_trans_symm, OpenPartialHomeomorph.trans_assoc,
-      ContinuousLinearEquiv.toHomeomorph_symm]
+    simp [rawAffineChart, R, E, PGLComplex.productAffineChart, PGLComplex.translatedAffineChart, OpenPartialHomeomorph.trans_symm_eq_symm_trans_symm]
     have hr : ((coordinateReindex F).trans
         (PGLComplex.productCoordinatesFlatten (NumberField.InfinitePlace F)).symm).toHomeomorph =
         (coordinateReindex F).toHomeomorph.trans
@@ -117,8 +115,7 @@ theorem raw_affine_haar_density (F : Type) [Field F] [NumberField F]
   have htarget : E.target = S := by
     simp [E, S, PGLComplex.translatedAffineChart_target]
   have hsource : (rawAffineChart F g).source = R ⁻¹' S := by
-    rw [hchart]
-    simp [OpenPartialHomeomorph.trans_source, htarget]
+    simp_all
   let w : (NumberField.InfinitePlace F → PGLComplex.Coordinates) → ℝ :=
     fun x => ∏ i, c / ‖PGLComplex.delta (x i)‖ ^ 4
   have hprod : Measure.map E (ν.restrict E.source) =
@@ -129,7 +126,7 @@ theorem raw_affine_haar_density (F : Type) [Field F] [NumberField F]
     dsimp [w]
     rw [ENNReal.ofReal_prod_of_nonneg]
     intro i _
-    exact div_nonneg hcpos.le (pow_nonneg (norm_nonneg _) _)
+    positivity
   let κ : Measure (Coordinates F) := Measure.map R.symm (volume : Measure (NumberField.InfinitePlace F → PGLComplex.Coordinates))
   haveI : κ.IsAddHaarMeasure := R.symm.isAddHaarMeasure_map _
   let b : ℝ≥0 := Measure.addHaarScalarFactor κ volume
@@ -168,8 +165,7 @@ theorem raw_affine_haar_density (F : Type) [Field F] [NumberField F]
         ((volume.withDensity (fun x => ENNReal.ofReal (w x))).restrict S) = _
       have hs : R.symm ⁻¹' (rawAffineChart F g).source = S := by
         rw [hsource]
-        ext y
-        simp
+        rfl
       rw [← hs, ← Measure.restrict_map R.symm.continuous.measurable
         (rawAffineChart F g).open_source.measurableSet]
       have hd := map_density_equiv R.symm.toHomeomorph.toMeasurableEquiv volume
@@ -190,7 +186,7 @@ theorem raw_affine_haar_density (F : Type) [Field F] [NumberField F]
       rw [← withDensity_smul' (r := ((a * b : ℝ≥0) : ℝ≥0∞)) _ ENNReal.coe_ne_top]
       congr 1
       funext x
-      simp [ENNReal.ofReal_mul ha.le, ENNReal.ofReal_mul hb.le, mul_assoc]
+      simp_all
     · exact (rawAffineChart F g).continuousOn_symm.aemeasurable
         (rawAffineChart F g).open_target.measurableSet
 
@@ -207,7 +203,7 @@ namespace DedekindZetaZeroFree.LocalQuotientCharts.ExponentialHaarFrame
 open MeasureTheory Topology Raw
 open scoped NumberField Classical ENNReal Manifold ContDiff Matrix.Norms.Operator
 
-private theorem smooth_det_pi {ι : Type*} [Fintype ι] [DecidableEq ι]
+theorem smooth_det_pi {ι : Type*} [Fintype ι] [DecidableEq ι]
     {U : Set (ι → ℝ)}
     {F : (ι → ℝ) → ((ι → ℝ) →L[ℝ] (ι → ℝ))}
     (hF : ContDiffOn ℝ (⊤ : ℕ∞) F U) :
@@ -225,9 +221,7 @@ private theorem smooth_det_pi {ι : Type*} [Fintype ι] [DecidableEq ι]
     rw [ContinuousLinearMap.det, ← LinearMap.det_toMatrix (Pi.basisFun ℝ ι), Matrix.det_apply]
   simp_rw [hd]
   apply ContDiffOn.sum
-  intro σ _
-  apply ContDiffOn.const_smul
-  exact contDiffOn_prod (fun i _ => hm (σ i) i)
+  fun_prop
 
 private theorem diffeo_det_ne_zero_pi {ι : Type*} [Fintype ι] [DecidableEq ι]
     (e : OpenPartialHomeomorph (ι → ℝ) (ι → ℝ))
@@ -272,14 +266,11 @@ private theorem smooth_positive_coordinate_change_density_pi {ι : Type*}
   refine ⟨?_, ?_, ?_⟩
   · exact ((smooth_det_pi (he.fderiv_of_isOpen e.open_source (by simp))).abs
       (fun x hx => hdet x hx)).mul (hw.comp he e.mapsTo)
-  · intro x hx
-    exact mul_pos (abs_pos.mpr (hdet x hx)) (hwpos (e x) (e.map_source hx))
+  · simp_all
   · rw [PGLExponential.coordinate_change_density ν e hd]
-    congr 2
-    funext x
-    exact (ENNReal.ofReal_mul (abs_nonneg _)).symm
+    simp
 
-private theorem glue_smooth_positive_density_pi {X : Type*}
+theorem glue_smooth_positive_density_pi {X : Type*}
     [NormedAddCommGroup X] [NormedSpace ℝ X] [MeasureSpace X] [BorelSpace X]
     [HereditarilyLindelofSpace X] [SigmaFinite (volume : Measure X)]
     [Measure.IsOpenPosMeasure (volume : Measure X)]
@@ -425,9 +416,3 @@ theorem raw_smooth_chart_haar_density (F : Type) [Field F] [NumberField F]
     (fun x => Set.inter_subset_left) ρ
     (fun x => (hsmooth x).1) (fun x => (hsmooth x).2.1) hloc
   exact ⟨r, hr, hp, (PGLExponential.coordinate_pullback_support E μ).symm.trans hm⟩
-
-end DedekindZetaZeroFree.LocalQuotientCharts.ExponentialHaarFrame
-
-end
-
-end

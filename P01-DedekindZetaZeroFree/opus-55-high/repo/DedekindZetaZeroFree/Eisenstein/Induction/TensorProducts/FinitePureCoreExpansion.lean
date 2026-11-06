@@ -10,14 +10,14 @@ noncomputable section
 open scoped Classical NumberField NNReal
 open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualRaisingGeometry
-private theorem sourceCore_le_scalarSmooth_port
+theorem sourceCore_le_scalarSmooth_port
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12) :
     KPMsRationalCompactCrossPairing.sourceCore F ζ hζ (KPContFlatSourceRecipe.D F ζ hζ) ≤
       KPMsRationalCompactCrossPairing.scalarSmooth F ζ hζ
         (KPMsRationalCompactCrossPairing.sourcePolarization F ζ hζ 0) := by
   unfold KPMsRationalCompactCrossPairing.sourceCore KPGlobalEisensteinData.hcHeckeCore
   exact iSup_le fun _ => iSup_le fun _ => inf_le_left.trans inf_le_left
-private theorem source_common_level_port
+theorem source_common_level_port
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (t : KPMsRationalCompactCrossPairing.Vplus F ζ hζ (KPContFlatSourceRecipe.D F ζ hζ)) :
     ∃ U : KPMsRationalCompactCrossPairing.Level F ζ hζ,

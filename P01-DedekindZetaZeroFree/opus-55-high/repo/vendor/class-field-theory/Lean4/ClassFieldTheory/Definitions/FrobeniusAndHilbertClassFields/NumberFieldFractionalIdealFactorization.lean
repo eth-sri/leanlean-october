@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Prime factorization of nonzero fractional ideals
 
@@ -57,8 +51,8 @@ def factorization :
   MonoidHom.mk'
     (fun exps =>
       exps.toAdd.prod fun v n => primePowerHom v (Multiplicative.ofAdd n))
-    (fun a b => by
-      exact Finsupp.prod_hom_add_index (fun v => primePowerHom v))
+    (fun a b => 
+      Finsupp.prod_hom_add_index (fun v => primePowerHom v))
 
 @[simp]
 theorem factorization_val
@@ -122,9 +116,7 @@ theorem ext_count {I J : NumberFieldFractionalIdealGroup K}
       K (Units.ne_zero I),
     ← FractionalIdeal.finprod_heightOneSpectrum_factorization'
       K (Units.ne_zero J)]
-  exact finprod_congr fun v => congrArg
-    (fun n : ℤ =>
-      (v.asIdeal : FractionalIdeal (nonZeroDivisors (𝓞 K)) K) ^ n) (h v)
+  simp_all
 
 theorem factorization_injective :
     Function.Injective (factorization (K := K)) := by
@@ -140,10 +132,7 @@ theorem factorization_surjective :
   apply ext_count
   intro v
   rw [count_factorization]
-  change countVector I v =
-    FractionalIdeal.count K v
-      (I : FractionalIdeal (nonZeroDivisors (𝓞 K)) K)
-  exact countVector_apply I v
+  rfl
 
 /-- Multiplicative prime factorization of nonzero fractional ideals. -/
 def factorizationEquiv :
@@ -151,9 +140,3 @@ def factorizationEquiv :
       NumberFieldFractionalIdealGroup K :=
   MulEquiv.ofBijective (factorization (K := K))
     ⟨factorization_injective, factorization_surjective⟩
-
-end NumberFieldFractionalIdealGroup
-
-end ClassFieldTheory
-
-end

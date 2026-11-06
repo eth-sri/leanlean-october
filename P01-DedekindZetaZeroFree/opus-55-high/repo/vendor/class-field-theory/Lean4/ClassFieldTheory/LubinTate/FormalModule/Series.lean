@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Lubin--Tate power series
 
@@ -62,21 +57,3 @@ attribute [simp] LubinTateSeries.constantCoeff_eq_zero
   LubinTateSeries.map_residue_eq_frobenius
 
 namespace LubinTateSeries
-
-variable {F : LocalField.{u, v} K} {π : F.valuationSubring}
-
-/-- Two Lubin--Tate series are equal when their underlying power series
-are equal. -/
-@[ext]
-theorem ext {e e' : LubinTateSeries F π}
-    (h : e.toPowerSeries = e'.toPowerSeries) : e = e' := by
-  cases e
-  cases e'
-  cases h
-  rfl
-
-end LubinTateSeries
-
-end LubinTate
-
-end

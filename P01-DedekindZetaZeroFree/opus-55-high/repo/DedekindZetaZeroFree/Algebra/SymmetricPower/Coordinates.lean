@@ -49,7 +49,7 @@ private theorem repr_basis_symmetricPower_tprod_smul_basis [DecidableEq κ] (c :
     (b.symmetricPower n).repr (⨂ₛ[R] i, c i • b (p i)) s =
       if DedekindZetaZeroFree.TauCeti.Sym.ofFn p = s then ∏ i, c i else 0 := by
   have hbasis : (tprod R fun i => b (p i)) = b.symmetricPower n (DedekindZetaZeroFree.TauCeti.Sym.ofFn p) := by
-    rw [Basis.symmetricPower_apply, tprodOfSym_ofFn]
+    simp
   rw [(tprod R).map_smul_univ c fun i => b (p i), hbasis, map_smul, Basis.repr_self,
     Finsupp.smul_single, smul_eq_mul, mul_one, Finsupp.single_apply]
 
@@ -57,7 +57,7 @@ theorem repr_basis_symmetricPower_tprod [Fintype κ] [DecidableEq κ] (v : Fin n
     (b.symmetricPower n).repr (⨂ₛ[R] i, v i) s =
       ∑ p ∈ {p : Fin n → κ | DedekindZetaZeroFree.TauCeti.Sym.ofFn p = s}, ∏ i, b.repr (v i) (p i) := by
   have hv : (⨂ₛ[R] i, v i) = ⨂ₛ[R] i, ∑ k, b.repr (v i) k • b k :=
-    congrArg _ (funext fun i => (b.sum_repr (v i)).symm)
+    by simp
   rw [hv, (tprod R).map_sum fun (i : Fin n) (k : κ) => b.repr (v i) k • b k, map_sum,
     Finsupp.finsetSum_apply, Finset.sum_filter]
   exact Finset.sum_congr rfl fun p _ =>
@@ -70,11 +70,10 @@ theorem repr_basis_symmetricPower_tprod_ofFn_const (v : Fin n → M) (k : κ) :
   classical
   have hvi : ∀ i, ∑ j ∈ insert k (b.repr (v i)).support, b.repr (v i) j • b j = v i := fun i => by
     conv_rhs => rw [← b.linearCombination_repr (v i), Finsupp.linearCombination_apply, Finsupp.sum]
-    exact (Finset.sum_subset (Finset.subset_insert k _)
-      fun j _ hj => by rw [Finsupp.notMem_support_iff.1 hj, zero_smul]).symm
+    simp_all
   have hv : (⨂ₛ[R] i, v i) =
       ⨂ₛ[R] i, ∑ j ∈ insert k (b.repr (v i)).support, b.repr (v i) j • b j :=
-    congrArg _ (funext fun i => (hvi i).symm)
+    by simp_all
   rw [hv, (tprod R).map_sum_finset (fun (i : Fin n) (j : κ) => b.repr (v i) j • b j)
       fun i => insert k (b.repr (v i)).support, map_sum, Finsupp.finsetSum_apply,
     Finset.sum_congr rfl fun p _ =>
@@ -109,7 +108,3 @@ theorem repr_basis_symmetricPower_tprod_const_ne_zero {u : M}
     Finset.sum_const, nsmul_eq_mul]
   exact mul_ne_zero (Nat.cast_ne_zero.2 (Finset.card_pos.2 hne).ne')
     (Finset.prod_ne_zero_iff.2 fun i _ => hu _)
-
-end Domain
-
-end SymmetricPower

@@ -32,7 +32,3 @@ def coprimeForm {F : Type} [Field F] [NumberField F]
   ∑ r ∈ rows, (w r : ℂ) *
     ∑ u ∈ cols, ∑ v ∈ cols,
       if u ⊔ v = ⊤ then (A r u * alpha u) * star (A r v * alpha v) else 0
-
-end DedekindZetaZeroFree.LargeSieve.Sieve.GcdTail
-
-end

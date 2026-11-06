@@ -7,12 +7,10 @@ public import DedekindZetaZeroFree.Metaplectic.Torus.RestrictedProductCubicCente
 open scoped NumberField Classical BigOperators NNReal
 open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.KPGlobalCenterRationalCharacterExtension
-noncomputable section
-set_option autoImplicit false
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-private theorem localValue_diagUnit (v : KPHilbert.Place F) (ε : rootsOfUnity 3 F)
+theorem localValue_diagUnit (v : KPHilbert.Place F) (ε : rootsOfUnity 3 F)
     (y : (KPHilbert.Completion F v)ˣ) :
     localValue F ζ hζ v
       (⟨KubotaRankTwo.d (KPHilbert.Completion F v) y 1, ε⟩ :
@@ -22,22 +20,17 @@ private theorem localValue_diagUnit (v : KPHilbert.Place F) (ε : rootsOfUnity 3
           (ne_of_gt (localAbs_pos F v y)))) := by
   have h1 : IsUnit ((KubotaRankTwo.d (KPHilbert.Completion F v) y 1 :
       Matrix (Fin 2) (Fin 2) (KPHilbert.Completion F v)) 0 0) := by
-    rw [KubotaRankTwo.coe_d]; exact Units.isUnit y
+    simp
   have h2 : IsUnit ((KubotaRankTwo.d (KPHilbert.Completion F v) y 1 :
       Matrix (Fin 2) (Fin 2) (KPHilbert.Completion F v)) 1 1) := by
-    rw [KubotaRankTwo.coe_d]; exact isUnit_one
+    simp
   rw [localValue, dif_pos ⟨h1, h2⟩]
   have hunit : h1.unit * h2.unit⁻¹ = y := by
-    ext
-    rw [Units.val_mul, Units.val_inv_eq_inv_val, IsUnit.unit_spec, IsUnit.unit_spec,
-      KubotaRankTwo.coe_d]
     simp
   congr 1
   congr 1
   congr 1
-  apply Units.ext
-  show localAbs F v (h1.unit * h2.unit⁻¹) = localAbs F v y
-  rw [hunit]
+  simp
 
 private theorem localAbs_one (v : KPHilbert.Place F) :
     localAbs F v (1 : (KPHilbert.Completion F v)ˣ) = 1 := by
@@ -51,8 +44,7 @@ private theorem localValue_central (v : KPHilbert.Place F) (ε : rootsOfUnity 3 
   have h := localValue_diagUnit F ζ hζ v ε 1
   have hd : KubotaRankTwo.d (KPHilbert.Completion F v) (1 : (KPHilbert.Completion F v)ˣ) 1 = 1 := by
     apply Matrix.GeneralLinearGroup.ext
-    intro i j
-    fin_cases i <;> fin_cases j <;> simp
+    simp
   change localValue F ζ hζ v ⟨1, ε⟩ = _
   simpa [hd, localAbs_one F v] using h
 
@@ -74,18 +66,15 @@ private theorem localValue_scalar (v : KPHilbert.Place F)
     (u : (KPHilbert.Completion F v)ˣ) :
     localValue F ζ hζ v (KPScalarSplitCentral.scalarHom F ζ hζ v u) = 1 := by
   have hu : (KPScalarSplitCentral.scalarHom F ζ hζ v u).g 0 0 = u := by
-    simp [KPScalarSplitCentral.scalarHom, KPScalarSplitCentral.scalarLift,
-      KPScalarSplitCentral.scalarMatrix, KPLocalCover.sectionMap, Matrix.scalar]
+    rfl
   have hu' : (KPScalarSplitCentral.scalarHom F ζ hζ v u).g 1 1 = u := by
-    simp [KPScalarSplitCentral.scalarHom, KPScalarSplitCentral.scalarLift,
-      KPScalarSplitCentral.scalarMatrix, KPLocalCover.sectionMap, Matrix.scalar]
+    rfl
   have h1 : IsUnit ((KPScalarSplitCentral.scalarHom F ζ hζ v u).g 0 0) := hu ▸ u.isUnit
   have h2 : IsUnit ((KPScalarSplitCentral.scalarHom F ζ hζ v u).g 1 1) := hu' ▸ u.isUnit
   have he1 : h1.unit = u := Units.ext (h1.unit_spec.trans hu)
   have he2 : h2.unit = u := Units.ext (h2.unit_spec.trans hu')
   rw [localValue, dif_pos ⟨h1, h2⟩]
-  simp [he1, he2, localAbs_one F v, KPScalarSplitCentral.scalarHom,
-    KPScalarSplitCentral.scalarLift, KPLocalCover.sectionMap]
+  simp [localAbs_one F v, KPScalarSplitCentral.scalarHom, KPScalarSplitCentral.scalarLift, KPLocalCover.sectionMap]
 
 private theorem rawProduct_splitScalar (u : Ideles F) (x : rawCenter F ζ hζ)
     (hx : x.val = KPAdelicCoverRestrictedProduct.scalarTuple F ζ hζ u) :
@@ -118,7 +107,7 @@ private theorem rawProduct_independent (x y : rawCenter F ζ hζ)
       apply (QuotientGroup.eq_one_iff _).mpr
       exact ⟨u, rfl⟩
     rw [he]
-    exact Subgroup.one_mem _
+    simp
   let s : rawCenter F ζ hζ := ⟨t u, ht⟩
   have hm : ((x * y⁻¹) * s⁻¹).val ∈ KPAdelicCoverRestrictedProduct.M F ζ hζ := by
     apply (QuotientGroup.eq_one_iff _).mp
@@ -134,7 +123,7 @@ private theorem rawProduct_independent (x y : rawCenter F ζ hζ)
   have he : x = (x * y⁻¹) * y := by group
   rw [he, hmul, hunit, one_mul]
 
-private theorem localAbs_inl_coe (w : InfinitePlace F) (a : Fˣ) :
+theorem localAbs_inl_coe (w : InfinitePlace F) (a : Fˣ) :
     ((localAbs F (Sum.inl w) (Units.map (algebraMap F w.Completion) a) : ℝ≥0) : ℝ) =
       (w (a:F)) ^ 2 := by
   have h : ((localAbs F (Sum.inl w) (Units.map (algebraMap F w.Completion) a) : ℝ≥0) : ℝ)
@@ -145,17 +134,10 @@ private theorem localAbs_inl_coe (w : InfinitePlace F) (a : Fˣ) :
     rfl
   rw [h2]
 
-private theorem localAbs_inr_coe (q : HeightOneSpectrum (𝓞 F)) (a : Fˣ) :
+theorem localAbs_inr_coe (q : HeightOneSpectrum (𝓞 F)) (a : Fˣ) :
     ((localAbs F (Sum.inr q) (Units.map (algebraMap F (q.adicCompletion F)) a) : ℝ≥0) : ℝ) =
       (NumberField.FinitePlace.equivHeightOneSpectrum.symm q) (a:F) := by
-  have h : ((localAbs F (Sum.inr q) (Units.map (algebraMap F (q.adicCompletion F)) a) : ℝ≥0) : ℝ)
-      = ‖(algebraMap F (q.adicCompletion F) (a:F))‖ := rfl
-  rw [h]
-  have h2 : ‖(algebraMap F (q.adicCompletion F) (a:F))‖ =
-      (NumberField.FinitePlace.equivHeightOneSpectrum.symm q) (a:F) := by
-    rw [NumberField.FinitePlace.equivHeightOneSpectrum_symm_apply]
-    rfl
-  rw [h2]
+  rfl
 
 theorem rational_raw_product (a : Fˣ) (x : rawCenter F ζ hζ)
     (hx : KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
@@ -255,9 +237,7 @@ theorem rational_raw_product (a : Fˣ) (x : rawCenter F ζ hζ)
   have hL1 : ∏ᶠ v : KPHilbert.Place F, L v = 1 := by
     have hcoe : (Units.coeHom ℝ≥0) (∏ᶠ v, L v) = ∏ᶠ v, A v := by
       rw [MonoidHom.map_finprod (Units.coeHom ℝ≥0) hLfin]
-      apply finprod_congr
-      intro v
-      exact Units.val_mk0 (ne_of_gt (hApos v))
+      rfl
     apply Units.ext
     change (Units.coeHom ℝ≥0) (∏ᶠ v, L v) = (Units.coeHom ℝ≥0) 1
     rw [hcoe, map_one]
@@ -269,8 +249,7 @@ theorem rational_raw_product (a : Fˣ) (x : rawCenter F ζ hζ)
     have hdisj : Disjoint (Set.range (Sum.inl : InfinitePlace F → KPHilbert.Place F))
         (Set.range (Sum.inr : HeightOneSpectrum (𝓞 F) → KPHilbert.Place F)) := by
       rw [Set.disjoint_left]
-      rintro _ ⟨w, rfl⟩ ⟨q, hq⟩
-      exact Sum.inl_ne_inr hq.symm
+      simp
     have hf1 : (Set.range (Sum.inl : InfinitePlace F → KPHilbert.Place F) ∩
         Function.mulSupport (fun v : KPHilbert.Place F => ((A v : ℝ≥0) : ℝ))).Finite :=
       (Set.finite_range _).subset Set.inter_subset_left
@@ -279,9 +258,7 @@ theorem rational_raw_product (a : Fˣ) (x : rawCenter F ζ hζ)
       refine (hqfin.image Sum.inr).subset ?_
       rintro v ⟨⟨q, rfl⟩, hv2⟩
       refine ⟨q, ?_, rfl⟩
-      simp only [Function.mem_mulSupport] at hv2 ⊢
-      intro h
-      exact hv2 (by simp [h])
+      simp_all
     have hsplit : ∏ᶠ v : KPHilbert.Place F, ((A v : ℝ≥0) : ℝ) =
         (∏ᶠ w : InfinitePlace F, ((A (Sum.inl w) : ℝ≥0) : ℝ)) *
         (∏ᶠ q : HeightOneSpectrum (𝓞 F), ((A (Sum.inr q) : ℝ≥0) : ℝ)) := by
@@ -304,9 +281,7 @@ theorem rational_raw_product (a : Fˣ) (x : rawCenter F ζ hζ)
         (f := fun w : NumberField.FinitePlace F => w (a:F))]
       apply finprod_congr
       intro q
-      have hAq : A (Sum.inr q) =
-          localAbs F (Sum.inr q) (Units.map (algebraMap F (q.adicCompletion F)) a) := rfl
-      rw [hAq, localAbs_inr_coe F q a]
+      rfl
     rw [hInf, hFin]
     simpa using NumberField.prod_abs_eq_one (Units.ne_zero a)
   unfold rawProduct
@@ -314,6 +289,3 @@ theorem rational_raw_product (a : Fˣ) (x : rawCenter F ζ hζ)
       fun v => (positiveComplex.comp sixthPower) (L v) from funext hval]
   rw [← MonoidHom.map_finprod (positiveComplex.comp sixthPower) hLfin, hL1]
   simp
-
-end
-end DedekindZetaZeroFree.KPGlobalCenterRationalCharacterExtension

@@ -32,9 +32,9 @@ theorem norm_psi (β z : ℂ) : ‖psi β z‖ = 1 := by
 def freqMap (β : ℂ) : ℂ →L[ℝ] ℂ :=
   (Complex.conjCLE : ℂ →L[ℝ] ℂ).comp (ContinuousLinearMap.mul ℝ ℂ β)
 
-private lemma freqMap_apply (β y : ℂ) : freqMap β y = (starRingEnd ℂ) (β * y) := rfl
+lemma freqMap_apply (β y : ℂ) : freqMap β y = (starRingEnd ℂ) (β * y) := rfl
 
-private lemma re_neg_mul_eq_inner (β x y : ℂ) :
+lemma re_neg_mul_eq_inner (β x y : ℂ) :
     (β * (-x * y)).re = -⟪x, (starRingEnd ℂ) (β * y)⟫_ℝ := by
   rw [Complex.inner]
   have hA : β * (-x * y) = -(β * x * y) := by ring
@@ -44,7 +44,7 @@ private lemma re_neg_mul_eq_inner (β x y : ℂ) :
     ring
   rw [hA, hB, Complex.neg_re, Complex.conj_re]
 
-private lemma psi_neg_mul_eq_fourierChar (β y x : ℂ) :
+lemma psi_neg_mul_eq_fourierChar (β y x : ℂ) :
     psi β (-x * y) = (Real.fourierChar (-⟪x, (starRingEnd ℂ) (β * y)⟫_ℝ) : ℂ) := by
   rw [psi, Real.fourierChar_apply, re_neg_mul_eq_inner]
 
@@ -64,14 +64,13 @@ theorem integrable_schwartz_mu (β : ℂ) (f : SchwartzMap ℂ ℂ) :
   rw [mu]
   exact f.integrable.smul_measure ENNReal.ofReal_ne_top
 
-private lemma antilipschitzWith_freqMap {β : ℂ} (hβ : β ≠ 0) :
+lemma antilipschitzWith_freqMap {β : ℂ} (hβ : β ≠ 0) :
     AntilipschitzWith (‖β‖₊)⁻¹ (freqMap β) := by
   refine AntilipschitzWith.of_le_mul_nndist fun x y => ?_
   have h : nndist (freqMap β x) (freqMap β y) = ‖β‖₊ * nndist x y := by
     rw [freqMap_apply, freqMap_apply, nndist_eq_nnnorm, nndist_eq_nnnorm]
     rw [← map_sub, ← mul_sub, RCLike.nnnorm_conj, nnnorm_mul]
-  rw [h, inv_mul_cancel_left₀]
-  exact nnnorm_ne_zero_iff.mpr hβ
+  simp_all
 
 theorem integrable_F_schwartz_mu (β : ℂ) (f : SchwartzMap ℂ ℂ) :
     Integrable (F β (⇑f)) (mu β) := by
@@ -88,7 +87,7 @@ theorem integrable_F_schwartz_mu (β : ℂ) (f : SchwartzMap ℂ ℂ) :
     have h2 : Integrable
         (fun y : ℂ => (‖β‖ : ℂ) * FourierTransform.fourier (⇑f)
           ((starRingEnd ℂ) (β * y))) (volume : Measure ℂ) :=
-      hsch.const_mul (‖β‖ : ℂ)
+      by fun_prop
     have h3 : Integrable
         (fun y : ℂ => (‖β‖ : ℂ) * FourierTransform.fourier (⇑f)
           ((starRingEnd ℂ) (β * y))) (mu β) :=
@@ -100,6 +99,3 @@ theorem integrable_F_schwartz_mu (β : ℂ) (f : SchwartzMap ℂ ℂ) :
 theorem mu_two : mu (2 : ℂ) = (2 : ℝ≥0∞) • (volume : Measure ℂ) := by
   rw [mu]
   norm_num
-
-end
-end DedekindZetaZeroFree.ComplexWeil

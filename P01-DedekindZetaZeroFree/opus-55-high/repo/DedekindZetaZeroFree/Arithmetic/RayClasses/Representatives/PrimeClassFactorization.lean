@@ -40,7 +40,7 @@ theorem rayClassFinitePrimeFactorization
       (I := ClassFieldTheory.NumberFieldFractionalIdealGroup.factorization
         (Multiplicative.ofAdd f)) (J := J.val) (fun v => by
           rw [ClassFieldTheory.NumberFieldFractionalIdealGroup.count_factorization]
-          exact ClassFieldTheory.NumberFieldFractionalIdealGroup.countVector_apply J.val v)
+          rfl)
     exact h.symm
   have hJ : J = ∏ v ∈ s, P v ^ f v.val := by
     apply Subtype.ext
@@ -52,7 +52,4 @@ theorem rayClassFinitePrimeFactorization
       (fun v => ClassFieldTheory.finitePrimeFractionalIdeal v ^ f v) hf).symm
   refine ⟨s, (fun v => f v.val), ?_⟩
   rw [hJ, map_prod]
-  simp only [map_zpow]
   rfl
-
-end DedekindZetaZeroFree.AbelianQuotient

@@ -89,7 +89,3 @@ theorem pregroupingSheet_integral (A : SArithmeticData F) (v₀ : InfinitePlace 
   change AEStronglyMeasurable f (Measure.map (sheetProjection A l) (pregroupingSheetHaar A v₀ μG l))
   rw [hm]
   exact hf.aestronglyMeasurable
-
-end DedekindZetaZeroFree.MomentSources
-
-end

@@ -14,7 +14,7 @@ set_option maxHeartbeats 1600000
 namespace DedekindZetaZeroFree.KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue.ActualCofactor
 open KPLocalPrincipalSeries KPLocalExceptionalConstruction KPLocalStoneVonNeumann KPRankOneShellRepair
 
-private theorem finite_image_at_one_nonzero
+theorem finite_image_at_one_nonzero
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (q : IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers F))
     (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
@@ -29,7 +29,7 @@ private theorem finite_image_at_one_nonzero
     push Not at he
     apply hn
     ext f g h
-    exact congrArg (fun v => v.val h) (he f g)
+    simp_all
   obtain ⟨f,g,hg⟩ := hex
   refine ⟨IPlus S.borel P g f, ?_⟩
   have he := actualCanonicalForwardLinear_intertwines F ζ hζ q S P μ hμ g f
@@ -38,7 +38,7 @@ private theorem finite_image_at_one_nonzero
   change (actualCanonicalForwardMap F ζ hζ q S P μ hμ f).val (1 * g) ≠ 0
   simpa only [one_mul] using hg
 
-private theorem finite_tensor_nonzero
+theorem finite_tensor_nonzero
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (P₀ : KPGlobalTorusFiniteStages.CompatibleModelData F ζ hζ)
     (C₀ : KPGlobalTorusFiniteStages.LocalFiberData F ζ hζ P₀)
@@ -64,7 +64,7 @@ private theorem finite_tensor_nonzero
     MultilinearMap.mkPiAlgebra_apply, map_zero] at he
   exact (Finset.prod_ne_zero_iff.mpr (fun q _ => ht q)) he
 
-private theorem actual_rational_image_nonzero
+theorem actual_rational_image_nonzero
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (P₀ : KPGlobalTorusFiniteStages.CompatibleModelData F ζ hζ)
     (C₀ : KPGlobalTorusFiniteStages.LocalFiberData F ζ hζ P₀)
@@ -111,7 +111,7 @@ theorem unit_mass (F : Type) [Field F] [NumberField F]
   rw [he]
   exact Measure.addHaarMeasure_self (K₀ := finiteCompletionIntegersPositiveCompacts F q)
 
-private theorem actual_finite_output_rational_nonzero
+theorem actual_finite_output_rational_nonzero
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (P₀ : KPGlobalTorusFiniteStages.CompatibleModelData F ζ hζ)
     (C₀ : KPGlobalTorusFiniteStages.LocalFiberData F ζ hζ P₀)
@@ -140,7 +140,7 @@ private theorem actual_finite_output_rational_nonzero
     (fun q => smul_ne_zero (Complex.ofReal_ne_zero.mpr (localHalfDifferentFactor_pos F q.val).ne') (hf q))
   exact ⟨f,t,ht⟩
 
-private theorem finite_laurent_multilinear_regular
+theorem finite_laurent_multilinear_regular
     {ι : Type*} [Fintype ι] [DecidableEq ι]
     {V : ι → Type*} [∀ i, AddCommGroup (V i)] [∀ i, Module ℂ (V i)]
     (L : MultilinearMap ℂ V ℂ)
@@ -178,7 +178,7 @@ open KPRankOneShellContinuation
 open _root_.DedekindZetaZeroFree.KPRankOneShellContinuation renaming eval_diff → eval_diff
 open _root_.DedekindZetaZeroFree.KPRankOneShellContinuation renaming denom_diff → denom_diff
 
-private theorem actual_local_vector_expansion
+theorem actual_local_vector_expansion
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (q : IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers F))
     (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
@@ -306,23 +306,18 @@ theorem actual_rational_nonzero_cofactor
     simp_rw [compact_zero_at_one]
     exact ht
   let a : ℂ → ℂ := fun s => 2 * (Real.pi : ℂ) / ((1/3 : ℂ) + 2*s)
-  have ha : MeromorphicOn a Set.univ := fun s _ =>
-    analyticAt_const.meromorphicAt.div (by fun_prop)
+  have ha : MeromorphicOn a Set.univ := by fun_prop
   have ha0 : AnalyticAt ℂ a 0 := analyticAt_const.div (by fun_prop) (by norm_num)
   have han : a 0 ≠ 0 := by
     dsimp [a]
-    exact div_ne_zero (mul_ne_zero (by norm_num) (Complex.ofReal_ne_zero.mpr Real.pi_pos.ne')) (by norm_num)
+    simp
   let b : ℂ → ℂ := fun s => c s * ∏ _w : NumberField.InfinitePlace F, a s
   refine ⟨φ,t,b,?_,?_,?_,fun _ => rfl⟩
   · intro s _
     have hp : MeromorphicAt (∏ _w : NumberField.InfinitePlace F, a) s :=
-      MeromorphicAt.prod (fun _ _ => ha s (Set.mem_univ s))
+      by fun_prop
     convert (hc.1 s (Set.mem_univ s)).mul hp using 1
     funext z
     simp [b,c]
   · exact hc.2.mul (Finset.analyticAt_fun_prod Finset.univ (fun _ _ => ha0))
   · exact mul_ne_zero hcn (Finset.prod_ne_zero_iff.mpr (fun _ _ => han))
-
-end DedekindZetaZeroFree.KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue.ActualCofactor
-
-end

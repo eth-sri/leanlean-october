@@ -10,7 +10,6 @@ open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.ActualFiniteBorel
 open KPLocalPrincipalSeries KPLocalStoneVonNeumann
 noncomputable section
-set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
@@ -87,6 +86,3 @@ theorem actual_compact_iwasawa (m : ℕ)
         KPLocalSmoothRepresentation.Borel F ζ hζ q := hB ▸ b.property
     rw [hratio b hbb]
     exact IwasawaProof.covered_intersection F ζ hζ q ⟨b.val, hbb⟩ hb
-
-end
-end DedekindZetaZeroFree.ActualFiniteBorel

@@ -26,7 +26,7 @@ theorem rawSphereArea_isProbabilityMeasure : IsProbabilityMeasure rawSphereArea 
 lemma raw_mass :
     (volume : Measure rawAmbient).toSphere univ = ENNReal.ofReal (4 * Real.pi) := by
   rw [Measure.toSphere_apply_univ, EuclideanSpace.volume_ball_fin_three]
-  have hd : Module.finrank ℝ rawAmbient = 3 := by simp [rawAmbient]
+  have hd : Module.finrank ℝ rawAmbient = 3 := by simp
   simp only [hd, Nat.cast_ofNat, ENNReal.ofReal_one, one_pow, one_mul]
   rw [show (3 : ℝ≥0∞) = ENNReal.ofReal (3 : ℝ) by norm_num,
     ← ENNReal.ofReal_mul (by norm_num)]
@@ -45,8 +45,8 @@ noncomputable def split : rawAmbient ≃ᵐ ℝ × EuclideanSpace ℝ (Fin 2) :=
     ((MeasurableEquiv.piFinSuccAbove (fun _ : Fin 3 => ℝ) 0).trans
       (MeasurableEquiv.prodCongr (MeasurableEquiv.refl ℝ)
         (MeasurableEquiv.toLp 2 (Fin 2 → ℝ))))
-lemma split_preserving : MeasurePreserving split := by
-  exact (PiLp.volume_preserving_ofLp (Fin 3)).trans
+lemma split_preserving : MeasurePreserving split := 
+  (PiLp.volume_preserving_ofLp (Fin 3)).trans
     ((volume_preserving_piFinSuccAbove (fun _ : Fin 3 => ℝ) 0).trans
       ((MeasurePreserving.id volume).prod (PiLp.volume_preserving_toLp (Fin 2))))
 lemma split_symm_apply (z : ℝ) (w : EuclideanSpace ℝ (Fin 2)) :
@@ -216,11 +216,9 @@ lemma north_cone_integrals {t : ℝ} (ht : 0 < t) (ht1 : t ≤ 1) :
           indicator_of_notMem (show z ∉ Ico t 1 from fun h => (not_le.mpr hzt) h.1), add_zero]
       · by_cases hz1 : z < 1
         · rw [north_slice_volume_upper ht (le_of_not_gt hzt) hz1]
-          simp [indicator_of_notMem (show z ∉ Ioo 0 t from fun h => hzt h.2),
-            indicator_of_mem (show z ∈ Ico t 1 from ⟨le_of_not_gt hzt,hz1⟩)]
+          simp_all
         · rw [north_slice_empty ht (Or.inr (le_of_not_gt hz1))]
-          simp [indicator_of_notMem (show z ∉ Ioo 0 t from fun h => hzt h.2),
-            indicator_of_notMem (show z ∉ Ico t 1 from fun h => hz1 h.2)]
+          simp_all
     · rw [north_slice_empty ht (Or.inl (le_of_not_gt hz))]
       simp [indicator_of_notMem (show z ∉ Ioo 0 t from fun h => hz h.1),
         indicator_of_notMem (show z ∉ Ico t 1 from fun h => hz (lt_of_lt_of_le ht h.1))]
@@ -262,15 +260,15 @@ lemma north_cone_volume {t : ℝ} (ht : 0 < t) (ht1 : t ≤ 1) :
     intervalIntegral.integral_const_mul, intervalIntegral.integral_sub
       intervalIntegrable_const (intervalIntegral.intervalIntegrable_pow 2),
     intervalIntegral.integral_const, integral_pow]
-  simp only [Nat.reduceAdd, Nat.cast_ofNat, zero_pow, sub_zero, one_pow, one_mul]
+  simp only [Nat.reduceAdd, Nat.cast_ofNat, one_pow]
   field_simp
   <;> ring
 
 noncomputable def rotation (g : rawAmbient ≃ₗᵢ[ℝ] rawAmbient) (x : rawSphere) : rawSphere :=
   ⟨g x, by simpa only [mem_sphere_zero_iff_norm, g.norm_map] using x.property⟩
 lemma rotation_continuous (g : rawAmbient ≃ₗᵢ[ℝ] rawAmbient) :
-    Continuous (rotation g) := by
-  exact (g.continuous.comp continuous_subtype_val).subtype_mk _
+    Continuous (rotation g) := 
+  (g.continuous.comp continuous_subtype_val).subtype_mk _
 lemma rotation_cone_preimage (g : rawAmbient ≃ₗᵢ[ℝ] rawAmbient) (s : Set rawSphere) :
     g ⁻¹' (Ioo (0 : ℝ) 1 • (Subtype.val '' s)) =
     Ioo (0 : ℝ) 1 • (Subtype.val '' (rotation g ⁻¹' s)) := by
@@ -293,5 +291,3 @@ lemma rotation_preserving (g : rawAmbient ≃ₗᵢ[ℝ] rawAmbient) :
     Measure.toSphere_apply' _ ((rotation_continuous g).measurable hs),
     Measure.toSphere_apply' _ hs, ← rotation_cone_preimage]
   rw [g.measurePreserving.measure_preimage_emb g.toHomeomorph.measurableEmbedding]
-
-end DedekindZetaZeroFree.ComplexFractionalInverse.RawSphereProjection

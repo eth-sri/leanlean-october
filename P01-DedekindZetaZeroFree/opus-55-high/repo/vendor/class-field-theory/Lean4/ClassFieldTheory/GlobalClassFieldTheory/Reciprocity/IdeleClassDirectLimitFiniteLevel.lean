@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Tensor comparison and injectivity at finite rational levels
 
@@ -224,8 +221,3 @@ theorem rationalRelativeIdeleClassToDirectLimit_injective
       (fun _ _ h =>
         rationalRelativeIdeleClassEmbedding_injective h)
       E
-
-end Reciprocity
-end GlobalClassFieldTheory
-
-end

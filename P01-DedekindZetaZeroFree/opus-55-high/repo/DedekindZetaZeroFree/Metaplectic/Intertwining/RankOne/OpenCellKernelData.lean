@@ -11,7 +11,6 @@ open NumberField IsDedekindDomain MeasureTheory
 namespace DedekindZetaZeroFree.KPRankOneBruhatKernelTransport
 open KPLocalPrincipalSeries KPLocalStoneVonNeumann KPRankOneShellContinuation
 noncomputable section
-set_option autoImplicit false
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 variable (q : HeightOneSpectrum (𝓞 F))
@@ -77,6 +76,3 @@ def IsOpenCellSection (ε : Sign) (z : ℂ) (f : sectionSpace A P ε z) : Prop :
     ∀ g : Cover F ζ hζ q,
       (¬ ∃ (b : A.B) (s : LocalField F q), g = (b : Cover F ζ hζ q) * openCoordinate F ζ hζ q s) →
       f.val g = 0
-
-end
-end DedekindZetaZeroFree.KPRankOneBruhatKernelTransport

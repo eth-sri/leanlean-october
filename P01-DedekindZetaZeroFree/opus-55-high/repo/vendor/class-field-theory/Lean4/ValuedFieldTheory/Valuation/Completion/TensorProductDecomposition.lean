@@ -17,15 +17,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Tensor-product decomposition over a completion
 
@@ -49,14 +40,14 @@ universe u v
 
 /-- The primitive power basis used in the separable proof of the completion
 tensor-product decomposition. -/
-noncomputable def completionTensorDecomposition_powerBasis
+def completionTensorDecomposition_powerBasis
     (K : Type u) (L : Type v) [Field K] [Field L] [Algebra K L]
     [FiniteDimensional K L] [Algebra.IsSeparable K L] : PowerBasis K L :=
   Field.powerBasisOfFiniteOfSeparable K L
 
 /-- the extension-factor correspondence makes the extensions `w | v` into a finite type. -/
 @[reducible]
-noncomputable def completionTensorDecomposition_extensionFintype
+def completionTensorDecomposition_extensionFintype
     {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
     [FiniteDimensional K L] [Algebra.IsSeparable K L]
     (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial) :
@@ -122,14 +113,14 @@ theorem completionTensorDecomposition_extensionFactors_pairwise_coprime
   let e := completionExtensionFactor_extensionEquivFactors vK hvK hf
     (minpoly.aeval K pb.gen) pb.adjoin_gen_eq_top
   intro w w' hww'
-  have he : e w ≠ e w' := fun h ↦ hww' (e.injective h)
+  have he : e w ≠ e w' := by simp_all
   exact distinctNormalizedFactors_pairwise_coprime
     ((minpoly K pb.gen).map (algebraMap K vK.Completion))
     (e w) (e w') he
 
 /-- The factorization/CRT equivalence in the left tensor order
 `K_v ⊗_K L`. -/
-noncomputable def completionTensorDecomposition_factorEquiv
+def completionTensorDecomposition_factorEquiv
     {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
     [FiniteDimensional K L] [Algebra.IsSeparable K L]
     (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial) :
@@ -244,9 +235,6 @@ theorem completionTensorDecomposition_factorEquiv_toAlgHom
         (1 ⊗ₜ[K] (completionTensorDecomposition_powerBasis K L).gen) w =
       completionTensorMap_leftCanonicalHom (K := K) (L := L) vK
         (1 ⊗ₜ[K] (completionTensorDecomposition_powerBasis K L).gen) w
-  rw [completionTensorDecomposition_factorEquiv_one_tmul_gen
-      (K := K) (L := L) vK hvK w,
-    completionTensorMap_leftCanonicalHom_tmul_apply]
   simp
 
 /-- The canonical product map in the left tensor order is bijective. -/
@@ -270,7 +258,7 @@ theorem completionTensorDecomposition_leftCanonicalHom_bijective
 
 /-- the completion tensor-product decomposition in the left tensor order, retained for the scalar
 extension calculations in the local degree, norm, and trace formulas.  Its underlying map is canonical. -/
-noncomputable def completionTensorDecomposition_left
+def completionTensorDecomposition_left
     {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
     [FiniteDimensional K L] [Algebra.IsSeparable K L]
     (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial) :
@@ -300,107 +288,11 @@ theorem completionTensorDecomposition_left_tmul_apply
     completionTensorDecomposition_left (K := K) (L := L) vK hvK (b ⊗ₜ[K] a) w =
       algebraMap vK.Completion w.1.Completion b *
         AbsoluteValue.toCompletionAlgHom (K := K) w.1 a := by
-  let : ∀ w : AbsoluteValueExtension vK L,
-      Algebra vK.Completion w.1.Completion :=
-    fun w ↦ AbsoluteValue.completionAlgebra vK w.1 w.2
-  change completionTensorMap_leftCanonicalHom (K := K) (L := L) vK
-    (b ⊗ₜ[K] a) w = _
-  exact completionTensorMap_leftCanonicalHom_tmul_apply vK b a w
-
-/-- The canonical map in the chosen tensor-factor order is bijective. -/
-theorem completionTensorDecomposition_canonicalHom_bijective
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L] [Algebra.IsSeparable K L]
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial) :
-    letI := Algebra.TensorProduct.rightAlgebra
-      (R := K) (A := L) (B := vK.Completion)
-    letI : ∀ w : AbsoluteValueExtension vK L,
-        Algebra vK.Completion w.1.Completion :=
-      fun w ↦ AbsoluteValue.completionAlgebra vK w.1 w.2
-    Function.Bijective
-      (completionTensorMap_canonicalHom (K := K) (L := L) vK) := by
-  let := Algebra.TensorProduct.rightAlgebra
-    (R := K) (A := L) (B := vK.Completion)
-  let : ∀ w : AbsoluteValueExtension vK L,
-      Algebra vK.Completion w.1.Completion :=
-    fun w ↦ AbsoluteValue.completionAlgebra vK w.1 w.2
-  let c := Algebra.TensorProduct.comm K L vK.Completion
-  let h := completionTensorMap_leftCanonicalHom (K := K) (L := L) vK
-  change Function.Bijective (fun x ↦ h (c x))
-  exact (completionTensorDecomposition_leftCanonicalHom_bijective
-    (K := K) (L := L) vK hvK).comp c.bijective
-
-/-- **The completion tensor-product decomposition.**  The canonical map
-`L ⊗_K K_v → ∏_{w|v} L_w` is an isomorphism for a finite separable
-extension. -/
-noncomputable def completionTensorDecomposition
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L] [Algebra.IsSeparable K L]
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial) :
-    letI := Algebra.TensorProduct.rightAlgebra
-      (R := K) (A := L) (B := vK.Completion)
-    letI : ∀ w : AbsoluteValueExtension vK L,
-        Algebra vK.Completion w.1.Completion :=
-      fun w ↦ AbsoluteValue.completionAlgebra vK w.1 w.2
-    L ⊗[K] vK.Completion ≃ₐ[vK.Completion]
-      ∀ w : AbsoluteValueExtension vK L, w.1.Completion := by
-  letI := Algebra.TensorProduct.rightAlgebra
-    (R := K) (A := L) (B := vK.Completion)
-  letI : ∀ w : AbsoluteValueExtension vK L,
-      Algebra vK.Completion w.1.Completion :=
-    fun w ↦ AbsoluteValue.completionAlgebra vK w.1 w.2
-  exact AlgEquiv.ofBijective
-    (completionTensorMap_canonicalHom (K := K) (L := L) vK)
-    (completionTensorDecomposition_canonicalHom_bijective
-      (K := K) (L := L) vK hvK)
-
-/-- The endpoint is exactly the canonical homomorphism, not merely an
-abstract algebra equivalence. -/
-theorem completionTensorDecomposition_toAlgHom
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L] [Algebra.IsSeparable K L]
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial) :
-    letI := Algebra.TensorProduct.rightAlgebra
-      (R := K) (A := L) (B := vK.Completion)
-    letI : ∀ w : AbsoluteValueExtension vK L,
-        Algebra vK.Completion w.1.Completion :=
-      fun w ↦ AbsoluteValue.completionAlgebra vK w.1 w.2
-    (completionTensorDecomposition (K := K) (L := L) vK hvK).toAlgHom =
-      completionTensorMap_canonicalHom vK := by
-  let := Algebra.TensorProduct.rightAlgebra
-    (R := K) (A := L) (B := vK.Completion)
-  let : ∀ w : AbsoluteValueExtension vK L,
-      Algebra vK.Completion w.1.Completion :=
-    fun w ↦ AbsoluteValue.completionAlgebra vK w.1 w.2
   rfl
-
-@[simp]
-theorem completionTensorDecomposition_tmul_apply
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L] [Algebra.IsSeparable K L]
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
-    (a : L) (b : vK.Completion)
-    (w : AbsoluteValueExtension vK L) :
-    letI := Algebra.TensorProduct.rightAlgebra
-      (R := K) (A := L) (B := vK.Completion)
-    letI : ∀ w : AbsoluteValueExtension vK L,
-        Algebra vK.Completion w.1.Completion :=
-      fun w ↦ AbsoluteValue.completionAlgebra vK w.1 w.2
-    completionTensorDecomposition (K := K) (L := L) vK hvK (a ⊗ₜ[K] b) w =
-      AbsoluteValue.toCompletionAlgHom (K := K) w.1 a *
-        algebraMap vK.Completion w.1.Completion b := by
-  let := Algebra.TensorProduct.rightAlgebra
-    (R := K) (A := L) (B := vK.Completion)
-  let : ∀ w : AbsoluteValueExtension vK L,
-      Algebra vK.Completion w.1.Completion :=
-    fun w ↦ AbsoluteValue.completionAlgebra vK w.1 w.2
-  change completionTensorMap_canonicalHom (K := K) (L := L) vK
-    (a ⊗ₜ[K] b) w = _
-  exact completionTensorMap_canonicalHom_tmul_apply vK a b w
 
 /-- the completion tensor-product decomposition on unit groups, in the tensor-factor order used by
 local scalar extension. -/
-noncomputable def localTensorUnitsEquivCompletionProduct
+def localTensorUnitsEquivCompletionProduct
     {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
     [FiniteDimensional K L] [Algebra.IsSeparable K L]
     (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial) :
@@ -436,8 +328,3 @@ theorem localTensorUnitsEquivCompletionProduct_apply_coe
       completionTensorDecomposition_left (K := K) (L := L) vK hvK
         (z : vK.Completion ⊗[K] L) w' :=
   rfl
-
-end Valuations
-end AlgebraicNumberTheory
-
-end

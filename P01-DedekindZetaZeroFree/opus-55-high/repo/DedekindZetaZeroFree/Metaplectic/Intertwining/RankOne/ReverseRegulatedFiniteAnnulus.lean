@@ -15,7 +15,6 @@ open KPRankOneOpenCellKernel KPRankOneCenterInducedDiagonalComparison
 open KPRankOneReverseRegulatorShellsRaw
 
 noncomputable section
-set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
@@ -43,7 +42,7 @@ theorem evaluate_integratedShellNumerator (ν : Measure X) (S : Finset (ℤ × �
   | @insert a S ha ih =>
     rw [Finset.sum_insert ha, Finset.sum_insert ha]
     rw [evaluateNumerator, Finsupp.sum_add_index]
-    · simp only [Finsupp.sum_single_index, mul_zero, zero_mul, add_zero]
+    · simp only [Finsupp.sum_single_index, zero_mul]
       exact congrArg (_ + ·) ih
     · intro ij; simp
     · intro ij hij b d; ring
@@ -55,8 +54,7 @@ theorem integral_finite_shell_expansion (ν : Measure X) (S : Finset (ℤ × ℤ
     Integrable f ν ∧ (∫ x, f x ∂ν) =
       evaluateNumerator (integratedShellNumerator ν S c) r Q / den := by
   have hi : ∀ ij ∈ S, Integrable (fun x => c ij x * r ^ ij.1 * Q ^ ij.2) ν := by
-    intro ij hij
-    exact ((hc ij hij).mul_const _).mul_const _
+    fun_prop
   have hs := integrable_finsetSum S hi
   have hfun : f = fun x => (∑ ij ∈ S, c ij x * r ^ ij.1 * Q ^ ij.2) / den := funext hf
   rw [hfun]
@@ -80,6 +78,3 @@ theorem setIntegral_finite_shell_expansion (ν : Measure X) (E : Set X)
     (fun _ => rfl)
   exact ⟨IntegrableOn.congr_fun hi (fun x hx => (hf x hx).symm) hE,
     (setIntegral_congr_fun hE hf).trans he⟩
-
-end
-end DedekindZetaZeroFree.KPRankOneReverseLaurentShellExpansion

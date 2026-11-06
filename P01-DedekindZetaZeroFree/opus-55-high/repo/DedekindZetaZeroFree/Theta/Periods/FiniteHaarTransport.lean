@@ -19,7 +19,7 @@ theorem integer_eq_normBall (q : KPFinitePlace F) :
   change valuation (q.adicCompletion F) x ≤ 1 ↔ ‖x‖ ≤ 1
   rw [← map_one (valuation (q.adicCompletion F)), ← Valuation.Compatible.vle_iff_le]
   change Valued.v x ≤ Valued.v 1 ↔ ‖x‖ ≤ 1
-  simpa only [norm_one] using (Valued.toNormedField.norm_le_iff (x := x) (x' := 1)).symm
+  simp
 
 theorem finiteHaar_transport (N : MomentSources.TraceHaarTransport R)
     (q : KPFinitePlace F) (M : MomentSources.LocalImageData R q) :
@@ -30,7 +30,7 @@ theorem finiteHaar_transport (N : MomentSources.TraceHaarTransport R)
   rw [M.haar_integer, integer_eq_normBall q, N.finite_mass q] at h
   have hc : (N.finiteHaar q).addHaarScalarFactor M.haar =
       ENNReal.ofReal (PoissonS.integerVolume F q) := by
-    simpa only [ENNReal.smul_def, smul_eq_mul, mul_one] using h.symm
+    simp_all
   rw [Measure.isAddLeftInvariant_eq_smul (N.finiteHaar q) M.haar,
     ← Measure.coe_nnreal_smul, hc]
 
@@ -39,7 +39,3 @@ def jointHaarFactorizedSources_of_factorization {N : MomentSources.TraceHaarTran
   toJointRealizedFlatSources := C
   factorization := D
   localHaarTransport := fun q => finiteHaar_transport C.transport q (D.finiteData q)
-
-end DedekindZetaZeroFree.FourierContinuation
-
-end

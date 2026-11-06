@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.Nonvanishing.Mellin.ArchimedeanGaussianFactor
 
 @[expose] public section
 
-noncomputable section
 
 open Classical NumberField NumberField.InfinitePlace MeasureTheory
 
@@ -13,7 +12,7 @@ namespace DedekindZetaZeroFree.AbelianQuotient.Theta
 
 variable (K : Type*) [Field K] [NumberField K]
 
-private theorem positive_prod_cpow {ι : Type*} (t : Finset ι) (a : ι → ℝ)
+theorem positive_prod_cpow {ι : Type*} (t : Finset ι) (a : ι → ℝ)
     (ha : ∀ i ∈ t, 0 ≤ a i) (s : ℂ) :
     (∏ i ∈ t, (a i : ℂ) ^ s) = ((∏ i ∈ t, a i : ℝ) : ℂ) ^ s := by
   classical
@@ -25,7 +24,7 @@ private theorem positive_prod_cpow {ι : Type*} (t : Finset ι) (a : ι → ℝ)
         (Finset.prod_nonneg (fun j hj ↦ ha j (Finset.mem_insert_of_mem hj))),
       ih (fun j hj ↦ ha j (Finset.mem_insert_of_mem hj))]
 
-private theorem place_integral (x : K) (hx : x ≠ 0) (s : ℂ) (hs : 0 < s.re)
+theorem place_integral (x : K) (hx : x ≠ 0) (s : ℂ) (hs : 0 < s.re)
     (v : InfinitePlace K) :
     (∫ q : ℝ in Set.Ioi 0,
       (q : ℂ) ^ ((v.mult : ℂ) * s - 1) *
@@ -73,7 +72,6 @@ theorem integrable_mixedMellinGaussian (x : K) (hx : x ≠ 0)
     simp only [hv.mult_eq_one, Nat.cast_one, one_mul, Complex.ofReal_mul,
       Complex.ofReal_pow, IntegrableOn]
     congr! 2
-    push_cast
     ring_nf
   · convert integrableOn_gaussian_complex_place_mellin s (v x) hs ha using 1
     simp only [hv.mult_eq_two, Nat.cast_ofNat, Complex.ofReal_mul,
@@ -114,8 +112,7 @@ theorem integral_mixedMellinGaussian (x : K) (hx : x ≠ 0)
     rw [hc, Rat.cast_abs]
     norm_cast
     ring
-  · intro v hv
-    exact pow_nonneg (AbsoluteValue.nonneg _ _) _
+  simp
 
 theorem norm_mixedMellinGaussian_eq_realPart (x : K) (s : ℂ)
     (q : InfinitePlace K → ℝ) (hq : ∀ v, 0 < q v) :
@@ -125,22 +122,20 @@ theorem norm_mixedMellinGaussian_eq_realPart (x : K) (s : ℂ)
     norm_mixedMellinGaussian K x (s.re : ℂ) q hq]
   simp
 
-private theorem kernel_real_norm (x : K) (σ : ℝ) (q : InfinitePlace K → ℝ)
+theorem kernel_real_norm (x : K) (σ : ℝ) (q : InfinitePlace K → ℝ)
     (hq : ∀ v, 0 < q v) :
     mixedMellinGaussian K x (σ : ℂ) q =
       (‖mixedMellinGaussian K x (σ : ℂ) q‖ : ℂ) := by
   rw [norm_mixedMellinGaussian K x (σ : ℂ) q hq]
   unfold mixedMellinGaussian
-  simp only [Complex.ofReal_re, Complex.ofReal_prod, Complex.ofReal_mul,
-    Complex.ofReal_exp, Complex.ofReal_neg, Complex.ofReal_pow,
-    Complex.ofReal_natCast, Complex.ofReal_sub, Complex.ofReal_one]
+  simp only [Complex.ofReal_re, Complex.ofReal_prod, Complex.ofReal_mul, Complex.ofReal_exp, Complex.ofReal_neg, Complex.ofReal_pow, Complex.ofReal_natCast]
   apply Finset.prod_congr rfl
   intro v hv
   rw [Complex.ofReal_cpow (hq v).le]
   push_cast
   ring_nf
 
-private theorem positive_coordinates_ae :
+theorem positive_coordinates_ae :
     ∀ᵐ q : InfinitePlace K → ℝ ∂Measure.pi (fun _v : InfinitePlace K ↦
       (volume : Measure ℝ).restrict (Set.Ioi 0)), ∀ v, 0 < q v := by
   apply Filter.eventually_all.mpr
@@ -181,13 +176,7 @@ theorem integral_norm_mixedMellinGaussian (x : K) (hx : x ≠ 0)
   rw [integral_mixedMellinGaussian K x hx (s.re : ℂ) (by simpa using hs)]
   simp only [norm_mul, norm_pow]
   have hnorm : 0 < ((|Algebra.norm ℚ x| : ℚ) : ℝ) := by
-    have hprod : 0 < ∏ v : InfinitePlace K, v x ^ v.mult :=
-      Finset.prod_pos fun v hv ↦ pow_pos (pos_iff.mpr hx) _
-    rwa [prod_eq_abs_norm] at hprod
+    simp_all
   rw [show (-(s.re : ℂ)) = ((-s.re : ℝ) : ℂ) by simp,
     ← Complex.ofReal_ratCast, Complex.norm_cpow_eq_rpow_re_of_pos hnorm]
   norm_num
-
-end DedekindZetaZeroFree.AbelianQuotient.Theta
-
-end

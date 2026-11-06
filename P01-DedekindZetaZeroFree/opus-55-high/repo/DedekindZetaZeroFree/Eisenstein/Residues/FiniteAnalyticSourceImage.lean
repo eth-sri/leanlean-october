@@ -11,7 +11,7 @@ open Filter
 set_option maxHeartbeats 1600000
 set_option backward.isDefEq.respectTransparency false
 
-private theorem frame_observation_analytic
+theorem frame_observation_analytic
     {V Y : Type*} [AddCommGroup V] [Module ℂ V] [FiniteDimensional ℂ V]
     (J : ℂ → V →ₗ[ℂ] (Y → ℂ)) (b : ℂ → V) {z : ℂ}
     (hJ : ∀ v y, AnalyticAt ℂ (fun s => J s v y) z)
@@ -28,7 +28,7 @@ private theorem frame_observation_analytic
   intro k _
   exact (hb ((Finsupp.lapply k).comp B.repr.toLinearMap)).mul (hJ (B k) y)
 
-private theorem frame_observation_meromorphic
+theorem frame_observation_meromorphic
     {V Y : Type*} [AddCommGroup V] [Module ℂ V] [FiniteDimensional ℂ V]
     (J : ℂ → V →ₗ[ℂ] (Y → ℂ)) (b : ℂ → V) {Ω : Set ℂ}
     (hJ : ∀ v y, AnalyticOnNhd ℂ (fun s => J s v y) Ω)

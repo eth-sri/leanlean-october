@@ -55,15 +55,15 @@ def m (F : Type) [Field F] [NumberField F]
   c.finitePart.support.prod (fun v => v.asIdeal ^ c.finitePart v)
 
 theorem m_ne_bot (F : Type) [Field F] [NumberField F]
-    (h12 : (primitiveRoots 12 F).Nonempty) (x : Fˣ) : m F h12 x ≠ ⊥ := by
-  exact PrimitiveRay.modulusIdeal_ne_bot _
+    (h12 : (primitiveRoots 12 F).Nonempty) (x : Fˣ) : m F h12 x ≠ ⊥ := 
+  PrimitiveRay.modulusIdeal_ne_bot _
 
 theorem modulus_eq_normConductor (F : Type) [Field F] [NumberField F]
     (h12 : (primitiveRoots 12 F).Nonempty) (x : Fˣ) :
     M F (m F h12 x) (m_ne_bot F h12 x) =
       ClassFieldTheory.GlobalClassFieldComparison.normConductorRayClassModulus
-        F (E F h12 x) := by
-  exact KummerConductorProduct.modulus_eq F (totallyComplex F h12) _
+        F (E F h12 x) := 
+  KummerConductorProduct.modulus_eq F (totallyComplex F h12) _
 
 theorem isAbelianConductor (F : Type) [Field F] [NumberField F]
     (h12 : (primitiveRoots 12 F).Nonempty) (x : Fˣ) :
@@ -110,6 +110,3 @@ theorem rho_prime (F : Type) [Field F] [NumberField F]
   unfold arithmeticArtin
   rw [KummerConductorFrobenius.transport_prime (modulus_eq_normConductor F h12 x)]
   rw [KummerConductorFrobenius.normConductorArtin_prime F (E F h12 x) v _ w hw]
-
-end
-end DedekindZetaZeroFree.RMKummerConductor

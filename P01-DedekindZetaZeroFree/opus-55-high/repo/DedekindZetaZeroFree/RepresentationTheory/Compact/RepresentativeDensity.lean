@@ -45,7 +45,3 @@ theorem dense_representativeSubmodule : Dense (representativeSubmodule 𝕜 G : 
     convolutionCLM_mem_closure_representativeSubmodule k hk.inv_apply_eq_conj _, ?_⟩
   rw [dist_comm, dist_eq_norm]
   exact hle.trans_lt (half_lt_self hε)
-
-end CompactGroup
-
-end DedekindZetaZeroFree.TauCeti

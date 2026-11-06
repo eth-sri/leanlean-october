@@ -42,5 +42,3 @@ theorem kp_real_continuous_character
     dsimp [F] at h1
     field_simp
     nlinarith [Real.pi_pos]
-
-end DedekindZetaZeroFree

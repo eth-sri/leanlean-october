@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.Metaplectic.Torus.WeylCoordinateInversion
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.KPRankOneShellRepair.CompactBorel
 open scoped NumberField Valued
 open NumberField IsDedekindDomain ValuativeRel
@@ -54,7 +53,7 @@ theorem weyl_involutive (t : actualTorus F ζ hζ q) : S.borel.weyl (S.borel.wey
   nth_rw 2 [← actualSignedWeyl_inv F ζ hζ q]
   simp [mul_assoc]
   nth_rw 1 [← actualSignedWeyl_inv F ζ hζ q]
-  exact inv_mul_cancel _
+  simp
 
 include P in
 
@@ -62,7 +61,7 @@ theorem kernel_torus (ε : Sign) (t : actualTorus F ζ hζ q) :
     kernelW (LocalField F q) S.borel ε * (S.borel.torus t : ActualCover F ζ hζ q) =
       (S.borel.torus (S.borel.weyl t) : ActualCover F ζ hζ q) * kernelW (LocalField F q) S.borel ε := by
   rw [S.borel.weyl_from_lift, actualKernelW_eq F ζ hζ q S P ε, (S.openCell P).weyl_eq]
-  simp [mul_assoc]
+  simp
 
 include P in
 
@@ -90,8 +89,7 @@ theorem kernel_borel (ε : Sign) (b : S.borel.B) (t : Multiplicative (LocalField
   rw [← mul_assoc, mul_assoc (kernelW (LocalField F q) S.borel ε),
     root_torus F ζ hζ q S P, ← mul_assoc, kernel_torus F ζ hζ q S P]
   simp only [mul_assoc]
-  rw [← Subgroup.coe_mul, ← map_mul]
-  rfl
+  simp
 
 theorem source_weyl_action (ε : Sign) (s : ℂ) (b : S.borel.B)
     (hb : (b : ActualCover F ζ hζ q) ∈ S.iwasawa.compact.toOpenSubgroup)
@@ -106,14 +104,7 @@ theorem source_weyl_action (ε : Sign) (s : ℂ) (b : S.borel.B)
       (S.borel.coordinate (S.borel.retract b)) (S.borel.coordinate (S.borel.retract b))⁻¹
     simpa [hn, localAbs_one] using HH.symm
   cases ε <;>
-    simp [inducingAction, inducingScalar, deltaHalf, normPower, S.borel.retract_torus,
-      KPRankOneReversePairGeneric.GraphTwist.coordinate_weyl_inverse,
-      hn, hi, borelAction, weylConjugate, sourceSign, targetSign,
-      weyl_involutive F ζ hζ q S P]
+    simp [inducingAction, inducingScalar, deltaHalf, normPower, S.borel.retract_torus, KPRankOneReversePairGeneric.GraphTwist.coordinate_weyl_inverse, hn, hi, borelAction, weylConjugate, sourceSign, targetSign]
   · rfl
   · change (tau P) (S.borel.weyl (S.borel.weyl (S.borel.retract b))) v = _
     rw [weyl_involutive F ζ hζ q S P]
-
-end DedekindZetaZeroFree.KPRankOneShellRepair.CompactBorel
-
-end

@@ -15,13 +15,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Underlying algebraic closed finite-index reciprocity
 
@@ -40,8 +33,7 @@ namespace GlobalClassFields
 /-- Canonical class-group commutativity supplies normality of the defining subgroup. -/
 theorem closedFiniteIndexAlgebraicClassGroupIsMulCommutative
     (F : Type) [Field F] [NumberField F] :
-    IsMulCommutative (IdeleClassGroup F) :=
-  IsMulCommutative.of_comm (fun a b => mul_comm a b)
+    IsMulCommutative (IdeleClassGroup F) := by apply normIdeleClassGroup_isMulCommutative <;> assumption
 
 attribute [local instance] closedFiniteIndexAlgebraicClassGroupIsMulCommutative
 
@@ -49,7 +41,7 @@ variable {K : Type} [Field K] [NumberField K]
 
 /-- Global reciprocity for the selected class field, stated over the original
 number field and directly modulo its defining subgroup. -/
-noncomputable abbrev closedFiniteIndexClassFieldGaloisEquivNormQuotient
+abbrev closedFiniteIndexClassFieldGaloisEquivNormQuotient
     (H : Subgroup (IdeleClassGroup K))
     (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
     [H.FiniteIndex] :
@@ -58,8 +50,3 @@ noncomputable abbrev closedFiniteIndexClassFieldGaloisEquivNormQuotient
       IdeleClassGroup K ⧸ H :=
   (closedFiniteIndexClassFieldGaloisContinuousEquivNormQuotient
     (K := K) H hclosed).toMulEquiv
-
-end GlobalClassFields
-end GlobalClassFieldTheory
-
-end

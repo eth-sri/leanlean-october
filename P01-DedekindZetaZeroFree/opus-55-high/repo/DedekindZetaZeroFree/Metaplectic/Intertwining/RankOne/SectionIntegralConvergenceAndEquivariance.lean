@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.Metaplectic.Intertwining.RankOne.StandardInte
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.KPRankOneShellRepair
 open scoped NumberField Valued
 open NumberField IsDedekindDomain MeasureTheory ValuativeRel
@@ -106,10 +105,5 @@ theorem actual_section_integrable (s : ℂ) (hs : convergenceHalfPlane ε s)
     simp only [φ, LinearEquiv.apply_symm_apply]
     change (f.val ((kernelW (LocalField F q) S.borel ε *
       S.borel.upperRoot (Multiplicative.ofAdd x) * 1) * g)).val h = _
-    rw [mul_one]
-  rw [he] at hi
-  exact hi
-
-end DedekindZetaZeroFree.KPRankOneShellRepair
-
-end
+    simp
+  simp_all

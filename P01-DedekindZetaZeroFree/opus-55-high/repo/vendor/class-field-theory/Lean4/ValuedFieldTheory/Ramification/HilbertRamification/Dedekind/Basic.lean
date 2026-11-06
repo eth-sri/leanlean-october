@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Hilbert ramification theory: Dedekind-domain layer
 
@@ -51,14 +45,6 @@ abbrev decompositionGroup
     Subgroup G :=
   MulAction.stabilizer G P
 
-/-- Membership in the decomposition group is exactly stabilization of the prime
-ideal. -/
-@[simp]
-theorem mem_decompositionGroup_iff
-    {P : Ideal B} {G : Type*} [Group G] [MulSemiringAction G B] {σ : G} :
-    σ ∈ decompositionGroup P G ↔ σ • P = P :=
-  Iff.rfl
-
 /-- The inertia-field definition:
 the inertia group of a prime ideal. -/
 abbrev inertiaGroup
@@ -81,15 +67,6 @@ abbrev residueStabilizerHom
     decompositionGroup P G →* (B ⧸ P) ≃ₐ[A ⧸ p] B ⧸ P :=
   Ideal.Quotient.stabilizerHom P p G
 
-/-- prime-decomposition theory:
-the residue action is concretely `a mod P ↦ σ a mod P`. -/
-@[simp] theorem residueStabilizerHom_apply
-    (p : Ideal A) (P : Ideal B) [P.LiesOver p]
-    (G : Type*) [Group G] [MulSemiringAction G B] [SMulCommClass G A B]
-    (σ : decompositionGroup P G) (b : B) :
-    residueStabilizerHom p P G σ b = ↑(σ • b) :=
-  Ideal.Quotient.stabilizerHom_apply P p G σ b
-
 /-- Inertia is normal inside the decomposition group.  The proof is the
 intrinsic conjugation argument: if `σ` is trivial mod `P`, then
 `τ σ τ⁻¹` is also trivial mod `P` because `τ` stabilizes `P`. -/
@@ -104,7 +81,7 @@ instance inertiaSubgroupOfDecomposition_normal
   let y : B := (σ : G) • ((τ : G)⁻¹ • x) - ((τ : G)⁻¹ • x)
   have hy : y ∈ P := hσ ((τ : G)⁻¹ • x)
   have hτy : (τ : G) • y ∈ (τ : G) • P :=
-    Ideal.smul_mem_pointwise_smul (τ : G) y P hy
+    by simp_all
   rw [τ.property] at hτy
   simpa [y, smul_sub, mul_smul, inv_smul_smul] using hτy
 
@@ -115,8 +92,8 @@ theorem exists_smul_eq_of_isGaloisGroup
     [P.IsPrime] [P.LiesOver p] [Q.IsPrime] [Q.LiesOver p]
     (G : Type*) [Group G] [Finite G] [MulSemiringAction G B]
     [IsGaloisGroup G A B] :
-    ∃ σ : G, σ • P = Q := by
-  exact Ideal.exists_smul_eq_of_isGaloisGroup p P Q G
+    ∃ σ : G, σ • P = Q := 
+  Ideal.exists_smul_eq_of_isGaloisGroup p P Q G
 
 /-- prime-decomposition theory: in the Galois case the ramification index is
 independent of the prime above `p`. -/
@@ -125,73 +102,8 @@ theorem dedekindRamification_ramificationIdx_eq
     [P.IsPrime] [P.LiesOver p] [Q.IsPrime] [Q.LiesOver p]
     (G : Type*) [Group G] [Finite G] [MulSemiringAction G B]
     [IsGaloisGroup G A B] :
-    P.ramificationIdx A = Q.ramificationIdx A := by
-  exact Ideal.ramificationIdx_eq_of_isGaloisGroup p P Q G
-
-/-- prime-decomposition theory: in the Galois case the inertia degree is
-independent of the prime above `p`. -/
-theorem dedekindRamification_inertiaDeg_eq
-    (p : Ideal A) [p.IsMaximal] (P Q : Ideal B)
-    [P.IsPrime] [P.LiesOver p] [Q.IsPrime] [Q.LiesOver p]
-    (G : Type*) [Group G] [Finite G] [MulSemiringAction G B]
-    [IsGaloisGroup G A B] :
-    P.inertiaDeg A = Q.inertiaDeg A := by
-  exact Ideal.inertiaDeg_eq_of_isGaloisGroup p P Q G
-
-
-/-- Decomposition and inertia groups satisfy:
-the primes above `p` are identified with the cosets `G/G_P`. -/
-noncomputable def dedekindDecomposition_primesOverEquivQuotientDecompositionGroup
-    (p : Ideal A) (P : Ideal B) [P.IsPrime] [P.LiesOver p]
-    (G : Type*) [Group G] [Finite G] [MulSemiringAction G B]
-    [IsGaloisGroup G A B] :
-    p.primesOver B ≃ G ⧸ decompositionGroup P G :=
-  (Set.equivOfEq
-      (IsInvariant.orbit_eq_primesOver A B G p P).symm).trans
-    (MulAction.orbitEquivQuotientStabilizer G P)
-
-/-- Decomposition and inertia groups satisfy:
-the number of primes above `p` is the index `(G : G_P)`. -/
-theorem dedekindDecomposition_ncard_primesOver_eq_decomposition_index
-    (p : Ideal A) (P : Ideal B) [P.IsPrime] [P.LiesOver p]
-    (G : Type*) [Group G] [Finite G] [MulSemiringAction G B]
-    [IsGaloisGroup G A B] :
-    (p.primesOver B).ncard = (decompositionGroup P G).index := by
-  rw [← IsInvariant.orbit_eq_primesOver A B G p P]
-  exact (MulAction.index_stabilizer G P).symm
-
-/-- Decomposition and inertia groups satisfy:
-the group-action form of nonsplitting, `G_P = G` iff there is one prime above
-`p`. -/
-theorem dedekindDecomposition_decompositionGroup_eq_top_iff_primesOver_ncard_eq_one
-    (p : Ideal A) (P : Ideal B) [P.IsPrime] [P.LiesOver p]
-    (G : Type*) [Group G] [Finite G] [MulSemiringAction G B]
-    [IsGaloisGroup G A B] :
-    decompositionGroup P G = ⊤ ↔ (p.primesOver B).ncard = 1 := by
-  rw [dedekindDecomposition_ncard_primesOver_eq_decomposition_index (A := A) (B := B) p P G]
-  exact Iff.symm Subgroup.index_eq_one
-
-/-- Decomposition and inertia groups satisfy:
-the group-action form of total splitting, `G_P = 1` iff the number of primes
-above `p` is `#G`. -/
-theorem dedekindDecomposition_decompositionGroup_eq_bot_iff_primesOver_ncard_eq_card
-    (p : Ideal A) (P : Ideal B) [P.IsPrime] [P.LiesOver p]
-    {G : Type*} [Group G] [Finite G] [MulSemiringAction G B]
-    [IsGaloisGroup G A B] :
-    decompositionGroup P G = ⊥ ↔ (p.primesOver B).ncard = Nat.card G := by
-  constructor
-  · intro hG
-    rw [dedekindDecomposition_ncard_primesOver_eq_decomposition_index
-      (A := A) (B := B) p P G, hG, Subgroup.index_bot]
-  · intro hp
-    have hindex : (decompositionGroup P G).index = Nat.card G := by
-      rw [← dedekindDecomposition_ncard_primesOver_eq_decomposition_index
-        (A := A) (B := B) p P G, hp]
-    apply Subgroup.eq_bot_of_card_eq
-    exact Nat.eq_of_mul_eq_mul_left (Nat.card_pos (α := G))
-      (by simpa [hindex] using (decompositionGroup P G).index_mul_card)
-
-
+    P.ramificationIdx A = Q.ramificationIdx A := 
+  Ideal.ramificationIdx_eq_of_isGaloisGroup p P Q G
 
 /-- prime-decomposition theory:
 the kernel of the residue action is the inertia group. -/
@@ -199,19 +111,8 @@ theorem dedekindRamification_residueAction_ker
     (p : Ideal A) (P : Ideal B) [P.LiesOver p]
     (G : Type*) [Group G] [MulSemiringAction G B] [SMulCommClass G A B] :
     MonoidHom.ker (residueStabilizerHom p P G) =
-      (inertiaGroup P G).subgroupOf (decompositionGroup P G) := by
-  exact Ideal.Quotient.ker_stabilizerHom P p G
-
-/-- prime-decomposition theory:
-`I_P -> G_P -> Aut(kappa(P)/kappa(p))` is exact at `G_P`. -/
-theorem dedekindRamification_residueAction_mulExact
-    (p : Ideal A) (P : Ideal B) [P.LiesOver p]
-    (G : Type*) [Group G] [MulSemiringAction G B] [SMulCommClass G A B] :
-    Function.MulExact
-      ((inertiaGroup P G).subgroupOf (decompositionGroup P G)).subtype
-      (residueStabilizerHom p P G) := by
-  rw [MonoidHom.mulExact_iff, dedekindRamification_residueAction_ker]
-  exact (Subgroup.range_subtype _).symm
+      (inertiaGroup P G).subgroupOf (decompositionGroup P G) := 
+  Ideal.Quotient.ker_stabilizerHom P p G
 
 /-- prime-decomposition theory:
 for a finite invariant Galois action, the residue action is surjective. -/
@@ -219,60 +120,8 @@ theorem dedekindRamification_residueAction_surjective
     (p : Ideal A) (P : Ideal B) [P.IsPrime] [P.LiesOver p]
     (G : Type*) [Group G] [Finite G] [MulSemiringAction G B] [SMulCommClass G A B]
     [Algebra.IsInvariant A B G] :
-    Function.Surjective (residueStabilizerHom p P G) := by
-  exact Ideal.Quotient.stabilizerHom_surjective G p P
-
-/-- prime-decomposition theory:
-the residue class field extension is normal. -/
-theorem dedekindRamification_residueExtension_normal
-    (p : Ideal A) [p.IsMaximal] (P : Ideal B)
-    [P.IsMaximal] [P.LiesOver p]
-    (G : Type*) [Group G] [Finite G] [MulSemiringAction G B]
-    [Algebra.IsInvariant A B G] :
-    Normal (A ⧸ p) (B ⧸ P) := by
-  exact Ideal.Quotient.normal (A := A) G p P
-
-/-- prime-decomposition theory:
-if the residue class field extension is separable, then it is Galois. -/
-theorem dedekindRamification_residueExtension_isGalois
-    (p : Ideal A) [p.IsMaximal] (P : Ideal B)
-    [P.IsMaximal] [P.LiesOver p]
-    (G : Type*) [Group G] [Finite G] [MulSemiringAction G B]
-    [Algebra.IsInvariant A B G] [Algebra.IsSeparable (A ⧸ p) (B ⧸ P)] :
-    IsGalois (A ⧸ p) (B ⧸ P) := by
-  exact isGalois_iff.mpr
-    ⟨inferInstance, dedekindRamification_residueExtension_normal (A := A) (B := B) p P G⟩
-
-/-- The conjugation and base-change law:
-the residue extension is normal and the decomposition group maps onto its
-residue Galois group. -/
-theorem dedekindResidue_residueExtension_normal_and_residueAction_surjective
-    (p : Ideal A) [p.IsMaximal] (P : Ideal B)
-    [P.IsMaximal] [P.LiesOver p]
-    (G : Type*) [Group G] [Finite G] [MulSemiringAction G B] [SMulCommClass G A B]
-    [Algebra.IsInvariant A B G] :
-    Normal (A ⧸ p) (B ⧸ P) ∧
-      Function.Surjective (residueStabilizerHom p P G) := by
-  exact
-    ⟨dedekindRamification_residueExtension_normal (A := A) (B := B) p P G,
-      dedekindRamification_residueAction_surjective (A := A) (B := B) p P G⟩
-
-/-- The localization and decomposition comparison gives:
-`1 -> I_P -> G_P -> Gal(kappa(P)/kappa(p)) -> 1`, in the finite invariant
-Galois-action form. -/
-theorem dedekindRamification_residueAction_shortExact
-    (p : Ideal A) (P : Ideal B) [P.IsPrime] [P.LiesOver p]
-    (G : Type*) [Group G] [Finite G] [MulSemiringAction G B] [SMulCommClass G A B]
-    [Algebra.IsInvariant A B G] :
-    Function.Injective
-        ((inertiaGroup P G).subgroupOf (decompositionGroup P G)).subtype ∧
-      Function.MulExact
-        ((inertiaGroup P G).subgroupOf (decompositionGroup P G)).subtype
-        (residueStabilizerHom p P G) ∧
-      Function.Surjective (residueStabilizerHom p P G) := by
-  exact
-    ⟨Subtype.coe_injective, dedekindRamification_residueAction_mulExact p P G,
-      dedekindRamification_residueAction_surjective p P G⟩
+    Function.Surjective (residueStabilizerHom p P G) := 
+  Ideal.Quotient.stabilizerHom_surjective G p P
 
 /-- The localization and decomposition comparison gives:
 the quotient of the decomposition group by inertia is the residue Galois group.
@@ -290,87 +139,6 @@ def dedekindRamification_decompositionQuotientInertiaEquivResidueGalois
       (residueStabilizerHom p P G)
       (dedekindRamification_residueAction_surjective p P G))
 
-/-- A trivial-inertia special case:
-if the inertia group is trivial, then the residue action is injective. -/
-theorem dedekindRamification_residueAction_injective_of_inertiaGroup_eq_bot
-    (p : Ideal A) (P : Ideal B) [P.LiesOver p]
-    (G : Type*) [Group G] [MulSemiringAction G B] [SMulCommClass G A B]
-    (hI : inertiaGroup P G = ⊥) :
-    Function.Injective (residueStabilizerHom p P G) :=
-  (MonoidHom.ker_eq_bot_iff (residueStabilizerHom p P G)).mp <| by
-    rw [dedekindRamification_residueAction_ker, hI, Subgroup.bot_subgroupOf]
-
-/-- A trivial-inertia special case:
-if the inertia group is trivial, then the residue action identifies `G_P` with
-the residue Galois group. -/
-theorem dedekindRamification_residueAction_bijective_of_inertiaGroup_eq_bot
-    (p : Ideal A) (P : Ideal B) [P.IsPrime] [P.LiesOver p]
-    (G : Type*) [Group G] [Finite G] [MulSemiringAction G B] [SMulCommClass G A B]
-    [Algebra.IsInvariant A B G] (hI : inertiaGroup P G = ⊥) :
-    Function.Bijective (residueStabilizerHom p P G) :=
-  ⟨dedekindRamification_residueAction_injective_of_inertiaGroup_eq_bot p P G hI,
-    dedekindRamification_residueAction_surjective p P G⟩
-
-/-- A trivial-inertia special case:
-when `I_P = 1`, the residue Galois group is isomorphic to `G_P`. -/
-noncomputable def dedekindRamification_decompositionGroupEquivResidueGalois_of_inertiaGroup_eq_bot
-    (p : Ideal A) (P : Ideal B) [P.IsPrime] [P.LiesOver p]
-    (G : Type*) [Group G] [Finite G] [MulSemiringAction G B] [SMulCommClass G A B]
-    [Algebra.IsInvariant A B G] (hI : inertiaGroup P G = ⊥) :
-    decompositionGroup P G ≃*
-      (B ⧸ P) ≃ₐ[A ⧸ p] B ⧸ P :=
-  MulEquiv.ofBijective (residueStabilizerHom p P G)
-    (dedekindRamification_residueAction_bijective_of_inertiaGroup_eq_bot p P G hI)
-
-/-- A trivial-inertia special case:
-when `I_P = 1`, the residue Galois group embeds into `G` through the
-decomposition group. -/
-noncomputable def dedekindRamification_residueGaloisEmbeddingIntoG_of_inertiaGroup_eq_bot
-    (p : Ideal A) (P : Ideal B) [P.IsPrime] [P.LiesOver p]
-    (G : Type*) [Group G] [Finite G] [MulSemiringAction G B] [SMulCommClass G A B]
-    [Algebra.IsInvariant A B G] (hI : inertiaGroup P G = ⊥) :
-    ((B ⧸ P) ≃ₐ[A ⧸ p] B ⧸ P) →* G :=
-  (decompositionGroup P G).subtype.comp
-    (dedekindRamification_decompositionGroupEquivResidueGalois_of_inertiaGroup_eq_bot
-      p P G hI).symm.toMonoidHom
-
-/-- The residue-Galois embedding into `G` from the preceding declaration is
-injective. -/
-theorem dedekindRamification_residueGaloisEmbeddingIntoG_of_inertiaGroup_eq_bot_injective
-    (p : Ideal A) (P : Ideal B) [P.IsPrime] [P.LiesOver p]
-    (G : Type*) [Group G] [Finite G] [MulSemiringAction G B] [SMulCommClass G A B]
-    [Algebra.IsInvariant A B G] (hI : inertiaGroup P G = ⊥) :
-    Function.Injective
-      (dedekindRamification_residueGaloisEmbeddingIntoG_of_inertiaGroup_eq_bot p P G hI) := by
-  intro σ τ hστ
-  apply (dedekindRamification_decompositionGroupEquivResidueGalois_of_inertiaGroup_eq_bot
-    p P G hI).symm.injective
-  exact Subtype.ext <| by
-    simpa [dedekindRamification_residueGaloisEmbeddingIntoG_of_inertiaGroup_eq_bot] using hστ
-
-
-
-/-- prime-decomposition theory:
-in the Galois case the prime decomposition has a common ramification index,
-`p B = ∏ P|p P^e`. -/
-theorem dedekindRamification_galois_prime_decomposition
-    [IsDedekindDomain A] [IsDedekindDomain B] [Module.Finite A B]
-    [IsTorsionFree A B]
-    (p : Ideal A) [p.IsMaximal] (hp : p ≠ ⊥)
-    (G : Type*) [Group G] [Finite G] [MulSemiringAction G B]
-    [IsGaloisGroup G A B] :
-    Ideal.map (algebraMap A B) p =
-      ∏ P ∈ p.primesOver B, P ^ Ideal.ramificationIdxIn p B := by
-  have : Algebra.IsIntegral A B := Algebra.IsIntegral.of_finite A B
-  rw [Ideal.map_algebraMap_eq_finsetProd_pow (R := B) (S := A) (p := p) hp]
-  apply Finset.prod_congr rfl
-  intro P hP
-  have hP' : P ∈ p.primesOver B := by
-    simpa [Set.mem_toFinset] using hP
-  have : P.IsPrime := hP'.1
-  have : P.LiesOver p := hP'.2
-  rw [Ideal.ramificationIdxIn_eq_ramificationIdx p P G]
-
 /-- prime-decomposition theory, Galois fundamental identity:
 `r * e * f = |G|`, with `e` and `f` independent of the chosen prime above `p`.
 -/
@@ -382,49 +150,8 @@ theorem dedekindRamification_galois_fundamental_identity
     [IsGaloisGroup G A B] :
     (p.primesOver B).ncard *
         (Ideal.ramificationIdxIn p B * Ideal.inertiaDegIn p B) =
-      Nat.card G := by
-  exact Ideal.ncard_primesOver_mul_ramificationIdxIn_mul_inertiaDegIn p B G
-
-/-- At an unramified prime, the Galois fundamental identity reduces to
-`r * f = |G|`. -/
-theorem dedekindRamification_unramified_decomposition_law
-    [IsDedekindDomain A]
-    (p : Ideal A) [p.IsMaximal] (hp : p ≠ ⊥)
-    (B : Type*) [CommRing B] [IsDedekindDomain B] [Algebra A B]
-    [Module.Finite A B] [IsTorsionFree A B]
-    (G : Type*) [Group G] [Finite G] [MulSemiringAction G B]
-    [IsGaloisGroup G A B]
-    (hunramified : Ideal.ramificationIdxIn p B = 1) :
-    (p.primesOver B).ncard * Ideal.inertiaDegIn p B =
-      Nat.card G := by
-  have hfund :=
-    dedekindRamification_galois_fundamental_identity
-      (A := A) p hp B G
-  simpa [hunramified] using hfund
-
-/-- Division form of the unramified Galois decomposition law. -/
-theorem
-    dedekindRamification_unramified_numberOfPrimes_eq_degree_div_inertiaDegree
-    [IsDedekindDomain A]
-    (p : Ideal A) [p.IsMaximal] (hp : p ≠ ⊥)
-    (B : Type*) [CommRing B] [IsDedekindDomain B] [Algebra A B]
-    [Module.Finite A B] [IsTorsionFree A B]
-    (G : Type*) [Group G] [Finite G] [MulSemiringAction G B]
-    [IsGaloisGroup G A B]
-    (hunramified : Ideal.ramificationIdxIn p B = 1) :
-    (p.primesOver B).ncard =
-      Nat.card G / Ideal.inertiaDegIn p B := by
-  have h :=
-    dedekindRamification_unramified_decomposition_law
-      (A := A) p hp B G hunramified
-  rw [← h]
-  symm
-  simpa [Nat.mul_comm] using
-    (Nat.mul_div_cancel_left
-      (p.primesOver B).ncard
-      (Nat.pos_of_ne_zero
-        (Ideal.inertiaDegIn_ne_zero
-          (A := A) (B := B) (p := p) G)))
+      Nat.card G := 
+  Ideal.ncard_primesOver_mul_ramificationIdxIn_mul_inertiaDegIn p B G
 
 /-- The prime-decomposition tower identity:
 orbit-stabilizer for the action on primes above `p`,
@@ -461,8 +188,6 @@ theorem dedekindRamification_decomposition_card_eq_ramificationIdxIn_mul_inertia
       (Nat.pos_of_ne_zero (IsDedekindDomain.primesOver_ncard_ne_zero p B))
       (hdec.trans hfund.symm)
 
-
-
 /-- Prime-decomposition statement:
 the quotient of the decomposition group by inertia has cardinality equal to
 the inertia degree. -/
@@ -479,8 +204,7 @@ theorem dedekindRamification_decompositionQuotientInertia_card_eq_inertiaDeg
   have h : IsGalois (A ⧸ p) (B ⧸ P) :=
     isGalois_iff.mpr ⟨inferInstance, Ideal.Quotient.normal (A := A) G p P⟩
   let : Module.Finite (A ⧸ p) (B ⧸ P) := Ideal.Quotient.finite_of_isInvariant G p P
-  let : FiniteDimensional (A ⧸ p) (B ⧸ P) := IsGalois.finiteDimensional_of_finite
-    (F := A ⧸ p) (E := B ⧸ P)
+  let : FiniteDimensional (A ⧸ p) (B ⧸ P) := by simp_all
   calc
     Nat.card
         (decompositionGroup P G ⧸
@@ -544,7 +268,6 @@ theorem dedekindRamification_decomposition_card_eq_inertia_card_mul_inertiaDegIn
       (A := A) (B := B) p P G,
     mul_comm]
 
-
 /-- prime-decomposition theory: the inertia subgroup has cardinality equal to the
 Galois ramification index. -/
 theorem dedekindRamification_inertia_card_eq_ramificationIdxIn
@@ -576,8 +299,3 @@ theorem dedekindRamification_inertia_card_eq_ramificationIdxIn
       hdecomp_ramification
     _ = Ideal.inertiaDegIn p B * Ideal.ramificationIdxIn p B := by
       rw [mul_comm]
-
-end Dedekind
-end HilbertRamification
-
-end

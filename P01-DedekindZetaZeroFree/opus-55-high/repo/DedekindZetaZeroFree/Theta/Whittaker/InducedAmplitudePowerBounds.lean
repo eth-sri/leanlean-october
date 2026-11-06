@@ -5,21 +5,20 @@ public import DedekindZetaZeroFree.Analysis.Complex.LogarithmicRadialDerivatives
 
 @[expose] public section
 
-noncomputable section
 
 namespace DedekindZetaZeroFree.ThetaArchInducedMajorant
 
 open KPCplxCharacterHaar KPCplxPrincipalSeriesCharts
 open KPCplxRotatedRapidDecay KPCplxRotatedKernelEstimates MeasureTheory
 
-private lemma flow_radialUnit (t ρ : ℝ) (u : ℂˣ) (hρ : 0 < ρ) :
+lemma flow_radialUnit (t ρ : ℝ) (u : ℂˣ) (hρ : 0 < ρ) :
     logarithmicRadialFlow t (radialUnit ρ u) = radialUnit (Real.exp (t / 2) * ρ) u := by
   apply Units.ext
   simp only [logarithmicRadialFlow, radialUnit, dite_eq_left hρ,
     dite_eq_left (mul_pos (Real.exp_pos _) hρ), Units.val_mk0, Complex.ofReal_mul]
   ring
 
-private lemma induced_amplitude_logarithmic_transport (β κ : ℂˣ)
+lemma induced_amplitude_logarithmic_transport (β κ : ℂˣ)
     (f : PrincipalSeries positiveParameter)
     (hf : HasInducedAmplitudeEstimates β κ f) (F : ℂˣ → ℂ)
     (hF : ∀ (u : ℂˣ) (ρ : ℝ), ‖(u : ℂ)‖ = 1 → 0 < ρ →
@@ -83,7 +82,3 @@ lemma exists_norm_iterate_logarithmicDerivative_le (β κ : ℂˣ)
   rw [he, norm_mul]
   simpa only [mul_assoc] using
     mul_le_mul_of_nonneg_left (hb u ‖(y : ℂ)‖ hu hρ) (norm_nonneg (((2 : ℂ)⁻¹) ^ j))
-
-end DedekindZetaZeroFree.ThetaArchInducedMajorant
-
-end

@@ -31,7 +31,7 @@ theorem dyadic_square_mass_of_pointwise (A : SArithmeticData F)
   intro P D W hP hD hW f hf
   have hP0 : 0 < P := lt_of_lt_of_le zero_lt_one hP
   let M : ℝ := (2 * P) ^ (2 * b) * W ^ 2
-  have hM : 0 ≤ M := by dsimp [M]; positivity
+  have hM : 0 ≤ M := by positivity
   have hpoint (h : exteriorPowerfulDyad A.cS P)
       (d : RMRetainedAggregation.rowDyad A h.val D) :
       ‖f h.val d.val‖ ^ 2 ≤ M := by
@@ -190,7 +190,7 @@ theorem expansion_square_le (A : SArithmeticData F) (G : AllowedRecipe A)
       by_cases hi : RMTailCutoff.frozenNorm A i.1.val i.2 ≤
           RMTailCutoff.threshold Z P D θ
       · simp [hi, not_lt.mpr hi]
-      · simp [hi, lt_of_not_ge hi]
+      simp_all
     rw [he, retained_eq]
     have hn := norm_add_le (RMTailCutoff.retained A G U σ ψ L H h d Z P D θ)
       (RMTailCutoff.tail A G U σ ψ L H h d Z P D θ)
@@ -424,8 +424,3 @@ theorem separated_mean_square_bound
         ← Real.rpow_mul hg.le (-(B - 1)) 2]
       rw [show -(B - 1) * (2 : ℝ) = -2 * (B - 1) by ring]
       ring
-
-end
-end DedekindZetaZeroFree.ReflectedMoment
-
-end

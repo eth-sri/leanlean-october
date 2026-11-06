@@ -34,7 +34,7 @@ private theorem integers (v : Places F) :
   hom_inj := Subtype.val_injective
   map_le_one x := (ringEquiv F v x).property
   exists_of_le_one {x} hx := ⟨(ringEquiv F v).symm ⟨x,hx⟩,rfl⟩
-private theorem val_integerMap (v : Places F) (x : 𝓞 F) :
+theorem val_integerMap (v : Places F) (x : 𝓞 F) :
     Valued.v (TraceBaseChange.integerMap F v x : v.adicCompletion F) = v.intValuation x := by
   change Valued.v (algebraMap (𝓞 F) (v.adicCompletion F) x) = _
   exact (v.valuedAdicCompletion_eq_valuation (K := F) x).trans (v.valuation_of_algebraMap (K := F) x)
@@ -77,7 +77,7 @@ private theorem map_prime (v : Places F) :
       (integers F v).isUnit_iff_valuation_eq_one]
     change Valued.v (TraceBaseChange.integerMap F v x : v.adicCompletion F) ≠ 1
     rw [val_integerMap]
-    exact ne_of_lt ((v.intValuation_lt_one_iff_mem x).mpr hx)
+    simp_all
   · obtain ⟨x, hx⟩ := v.intValuation_exists_uniformizer
     rw [(integerMap_irreducible F v x hx).maximalIdeal_eq]
     apply Ideal.span_le.mpr
@@ -85,8 +85,7 @@ private theorem map_prime (v : Places F) :
     rcases Set.mem_singleton_iff.mp hy with rfl
     apply Ideal.mem_map_of_mem
     apply (v.intValuation_lt_one_iff_mem x).mp
-    rw [hx]
-    simpa using (show (-1 : ℤ) < 0 by omega)
+    simp_all
 private theorem map_other_prime (v w : Places F) (hvw : w ≠ v) :
     Ideal.map (TraceBaseChange.integerMap F v) w.asIdeal = ⊤ := by
   have hnot : ¬ w.asIdeal ≤ v.asIdeal := by
@@ -114,7 +113,7 @@ private theorem map_different_pow (v : Places F) :
     intro w hw
     apply hs
     intro h
-    exact hw (by simp [DifferentMass.exponent] at h ⊢; simp [h])
+    exact hw (by simp [DifferentMass.exponent] at h ⊢; omega)
   rw [← hfactor]
   change (Ideal.mapHom (TraceBaseChange.integerMap F v)) _ = _
   rw [map_prod]
@@ -126,7 +125,7 @@ private theorem map_different_pow (v : Places F) :
     · intro w hw hwv
       rw [map_other_prime F v w hwv]
       simp
-    · exact fun h => False.elim (h hv)
+    simp_all
   · have he : DifferentMass.exponent F v = 0 := by
       by_contra h
       exact hv (hs v h)
@@ -155,8 +154,8 @@ theorem localMass_eq_halfNormMass (v : Places F) :
 
 theorem localMass_eq_inv_sqrt (v : Places F) :
     localMass F v =
-      1 / Real.sqrt ((Ideal.absNorm v.asIdeal : ℝ) ^ DifferentMass.exponent F v) := by
-  exact localMass_eq_halfNormMass F v
+      1 / Real.sqrt ((Ideal.absNorm v.asIdeal : ℝ) ^ DifferentMass.exponent F v) := 
+  localMass_eq_halfNormMass F v
 
 abbrev ExceptionalProduct (S : Finset (Places F)) :=
   (v : S) → v.1.adicCompletion F
@@ -173,8 +172,7 @@ instance tail_compactSpace (S : Finset (Places F)) : CompactSpace (Tail F S) := 
 
 def tailPositiveCompact (S : Finset (Places F)) : PositiveCompacts (Tail F S) :=
   ⟨⟨Set.univ, isCompact_univ⟩, by
-    rw [interior_univ]
-    exact Set.univ_nonempty⟩
+    simp⟩
 
 def tailProbability (S : Finset (Places F)) : Measure (Tail F S) :=
   Measure.addHaarMeasure (tailPositiveCompact F S)
@@ -195,28 +193,6 @@ def tailMass (S : Finset (Places F)) : ℝ :=
 def coordinateMeasure (S : Finset (Places F)) : Measure (ChartCoordinates F S) :=
   (Measure.pi (fun v : S => localNormalizedHaar F v.1)).prod
     (ENNReal.ofReal (tailMass F S) • tailProbability F S)
-
-def integerProbability (v : Places F) : Measure (v.adicCompletionIntegers F) :=
-  ENNReal.ofReal (1 / localMass F v) •
-    ((localNormalizedHaar F v).restrict (v.adicCompletionIntegers F)).comap Subtype.val
-
-instance integerProbability_isProbabilityMeasure (v : Places F) :
-    IsProbabilityMeasure (integerProbability F v) := by
-  have hv : MeasurableEmbedding
-      (Subtype.val : v.adicCompletionIntegers F → v.adicCompletion F) :=
-    MeasurableEmbedding.subtype_coe (KPAdelicTopology.completionIntegers_isOpen F v).measurableSet
-  constructor
-  rw [integerProbability, Measure.smul_apply, smul_eq_mul,
-    Measure.comap_apply _ hv.injective (fun _ hs => hv.measurableSet_image.mpr hs) _ MeasurableSet.univ,
-    Set.image_univ, Subtype.range_coe_subtype]
-  change ENNReal.ofReal (1 / localMass F v) *
-    ((localNormalizedHaar F v).restrict (v.adicCompletionIntegers F))
-      (v.adicCompletionIntegers F) = 1
-  rw [Measure.restrict_apply (KPAdelicTopology.completionIntegers_isOpen F v).measurableSet,
-    Set.inter_self, localNormalizedHaar_integerRing]
-  rw [localMass, localNormalizedHaar_integerRing_toReal]
-  rw [← ENNReal.ofReal_mul (one_div_pos.mpr (localHalfDifferentFactor_pos F v)).le,
-    one_div_mul_cancel (localHalfDifferentFactor_pos F v).ne', ENNReal.ofReal_one]
 
 end DedekindZetaZeroFree.FiniteHaarCharts
 
@@ -247,8 +223,8 @@ theorem localMass_finite_mulSupport : (Function.mulSupport (localMass F)).Finite
   have hS : localDifferentSupport F ⊆ (S : Set (Places F)) := by
     intro w hw
     exact (finite_localDifferentSupport F).mem_toFinset.mpr hw
-  have hvS : v ∉ S := by
-    exact fun h => hnot ((finite_localDifferentSupport F).mem_toFinset.mp h)
+  have hvS : v ∉ S := 
+    fun h => hnot ((finite_localDifferentSupport F).mem_toFinset.mp h)
   apply hv
   rw [localMass, localNormalizedHaar_integerRing_of_not_mem F S hS v hvS,
     ENNReal.toReal_one]
@@ -275,14 +251,12 @@ def join (S : Finset (Places F)) (x : ChartCoordinates F S) : Chart F S := by
     filter_upwards [show ∀ᶠ v in Filter.cofinite, v ∉ S from
       Filter.eventually_cofinite.mpr (by simpa using S.finite_toSet)] with v hv
     dsimp only [a]
-    rw [dif_neg hv]
-    exact (x.2 ⟨v, hv⟩).2
+    simp_all
   exact ⟨RestrictedProduct.mk a ha, by
     intro v hv
     change a v ∈ v.adicCompletionIntegers F
     dsimp only [a]
-    rw [dif_neg hv]
-    exact (x.2 ⟨v, hv⟩).2⟩
+    simp_all⟩
 
 def chart (S : Finset (Places F)) : Chart F S ≃ₜ+ ChartCoordinates F S where
   toFun := split F S
@@ -357,19 +331,19 @@ def chart (S : Finset (Places F)) : Chart F S ≃ₜ+ ChartCoordinates F S where
     (chart F S).symm x = join F S x := rfl
 
 theorem chartSubgroup_isOpen (S : Finset (Places F)) :
-    IsOpen (chartSubgroup F S : Set (Adeles F)) := by
-  exact RestrictedProduct.isOpen_forall_imp_mem (KPAdelicTopology.completionIntegers_isOpen F)
+    IsOpen (chartSubgroup F S : Set (Adeles F)) := 
+  RestrictedProduct.isOpen_forall_imp_mem (KPAdelicTopology.completionIntegers_isOpen F)
 
 theorem chartSubgroup_measurableSet (S : Finset (Places F)) :
-    MeasurableSet (chartSubgroup F S : Set (Adeles F)) := by
-  exact (chartSubgroup_isOpen F S).measurableSet
+    MeasurableSet (chartSubgroup F S : Set (Adeles F)) := 
+  (chartSubgroup_isOpen F S).measurableSet
 
 theorem chart_inclusion_measurableEmbedding (S : Finset (Places F)) :
-    MeasurableEmbedding (Subtype.val : Chart F S → Adeles F) := by
-  exact MeasurableEmbedding.subtype_coe (chartSubgroup_measurableSet F S)
+    MeasurableEmbedding (Subtype.val : Chart F S → Adeles F) := 
+  MeasurableEmbedding.subtype_coe (chartSubgroup_measurableSet F S)
 
-theorem chart_measurable (S : Finset (Places F)) : Measurable (chart F S) := by
-  exact (chart F S).continuous.measurable
+theorem chart_measurable (S : Finset (Places F)) : Measurable (chart F S) := 
+  (chart F S).continuous.measurable
 
 theorem tailMass_pos (S : Finset (Places F)) : 0 < tailMass F S := by
   rw [tailMass, finprod_subtype_eq_finprod_cond]
@@ -487,8 +461,3 @@ theorem measure_cylinder (S : Finset (Places F))
   rw [← Measure.map_apply (chart_measurable F S) hD, map_chartMeasure,
     coordinateMeasure, Measure.prod_prod, Measure.pi_pi, Measure.smul_apply,
     measure_univ, smul_eq_mul, mul_one, mul_comm]
-
-end DedekindZetaZeroFree.FiniteHaarCharts
-
-end
-end

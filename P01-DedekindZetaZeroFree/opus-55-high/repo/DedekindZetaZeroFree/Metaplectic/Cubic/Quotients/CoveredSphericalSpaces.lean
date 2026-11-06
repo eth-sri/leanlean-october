@@ -85,16 +85,12 @@ def z (U : CompactOpenLevel (FiniteCover F ζ hζ)) (ε : rootsOfUnity 3 F) :
     intro a
     induction a using Quotient.inductionOn with
     | h p =>
-      change Quotient.mk _ (p.1, KPCuspGenuineMonodromy.central F ζ hζ ε⁻¹ *
-        (KPCuspGenuineMonodromy.central F ζ hζ ε * p.2)) = Quotient.mk _ p
-      simp [map_inv]
+      simp
   right_inv := by
     intro a
     induction a using Quotient.inductionOn with
     | h p =>
-      change Quotient.mk _ (p.1, KPCuspGenuineMonodromy.central F ζ hζ ε *
-        (KPCuspGenuineMonodromy.central F ζ hζ ε⁻¹ * p.2)) = Quotient.mk _ p
-      simp [map_inv]
+      simp
   continuous_toFun := by
     letI := (KPCubicCoverConstruction.adelic_topological_covers F ζ hζ).2.2.2.1
     apply continuous_quot_lift
@@ -204,15 +200,14 @@ theorem coveredActualMap_mk (U : CompactOpenLevel (FiniteCover F ζ hζ))
       DoubleCoset.mk (Gamma F ζ hζ) (K_U F ζ hζ U) g := rfl
 
 theorem chi_norm (ε : rootsOfUnity 3 F) :
-    ‖(KPCuspGenuineMonodromy.chi F ζ hζ ε : ℂ)‖ = 1 := by
-  exact KPSmoothLocalQuotientCharts.ordinary_genuine_norm F ζ hζ ε
+    ‖(KPCuspGenuineMonodromy.chi F ζ hζ ε : ℂ)‖ = 1 := 
+  KPSmoothLocalQuotientCharts.ordinary_genuine_norm F ζ hζ ε
 
 def chi : rootsOfUnity 3 F →* Circle where
   toFun ε := ⟨(KPCuspGenuineMonodromy.chi F ζ hζ ε : ℂ), by
     simpa [Submonoid.unitSphere] using chi_norm F ζ hζ ε⟩
   map_one' := by
     apply Subtype.ext
-    change (KPCuspGenuineMonodromy.chi F ζ hζ 1 : ℂ) = 1
     simp
   map_mul' := by
     intro ε δ
@@ -224,7 +219,3 @@ def chi : rootsOfUnity 3 F →* Circle where
 
 theorem chi_coe (ε : rootsOfUnity 3 F) :
     (chi F ζ hζ ε : ℂ) = (KPCuspGenuineMonodromy.chi F ζ hζ ε : ℂ) := rfl
-
-end DedekindZetaZeroFree.KPContSectorCoveredQuotientVocabulary
-
-end

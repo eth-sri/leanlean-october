@@ -8,7 +8,6 @@ public import DedekindZetaZeroFree.LFunctions.Hecke.PrincipalIncompleteEulerNonv
 @[expose] public section
 
 namespace DedekindZetaZeroFree.PrincipalNumerator
-noncomputable section
 open scoped NumberField Classical
 variable {F : Type} [Field F] [NumberField F]
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
@@ -19,7 +18,7 @@ theorem rightHalfPlane_bound (R : PrincipalMellin.ActualRecipe S η)
   let C := idealAbsoluteSum F a
   have hC : 0 ≤ C := by
     unfold C idealAbsoluteSum
-    exact tsum_nonneg (fun I => by unfold idealAbsoluteWeight; split_ifs <;> positivity)
+    exact tsum_nonneg (fun I => by unfold idealAbsoluteWeight; positivity)
   refine ⟨(C + 1) * 2 ^ R.A.Sf.card, by positivity, ?_⟩
   intro s hs
   have hfull : ‖R.continuation.L s‖ ≤ C :=
@@ -49,7 +48,7 @@ theorem rightHalfPlane_bound (R : PrincipalMellin.ActualRecipe S η)
       ‖1 - R.target v.asIdeal * comparisonRealPower (idealNorm v.asIdeal) (-s)‖) ≤
       2 ^ R.A.Sf.card := by
     simpa using Finset.prod_le_prod₀ (fun v hv => norm_nonneg _) hlocal
-  exact mul_le_mul (hfull.trans (by dsimp [C]; linarith)) hmask
+  exact mul_le_mul (hfull.trans (by simp)) hmask
     (Finset.prod_nonneg (fun v hv => norm_nonneg _)) (by positivity)
 
 theorem rightHalfPlane_reciprocal_bound
@@ -73,8 +72,7 @@ theorem rightHalfPlane_reciprocal_bound
         simp only [Function.mem_support] at hI
         refine ⟨?_, by simp⟩
         intro hzero
-        have hη : R.target I = 0 := (R.target.eq_zero_iff' I).mpr (Or.inl hzero)
-        exact hI (by simpa only [hη, zero_mul])
+        simp_all
       exact ((hasSum_subtype_iff_of_support_subset hsupport).mpr
         (R.continuation.series s (ha.trans_le hs))).tsum_eq
     rw [← hexp, ← Complex.exp_neg, Complex.norm_exp]
@@ -137,6 +135,3 @@ theorem rightHalfPlane_reciprocal_bound
       · exact norm_nonneg _
       · exact (Finset.prod_pos (fun v hv => hupos v)).le
     _ = _ := mul_comm _ _
-
-end
-end DedekindZetaZeroFree.PrincipalNumerator

@@ -68,7 +68,7 @@ theorem chamberCoset_compact_covered_height_lower_bound
   exact (mul_le_mul_of_nonneg_left (hcompare _).2.1 hm.le).trans
     (hb _ _ ⟨g, hg, rfl⟩).1
 
-private theorem norm_flat_between_parameters (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
+theorem norm_flat_between_parameters (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
     (f : Flat F ζ hζ K) (s s₀ s₁ : ℂ) (hlo : s₀.re ≤ s.re) (hhi : s.re ≤ s₁.re)
     (g : G F ζ hζ) :
     ‖f.val s g‖ ≤ ‖f.val s₀ g‖ + ‖f.val s₁ g‖ := by
@@ -157,7 +157,7 @@ private theorem jet_succ (f : E → ℂ) (x : E) (hf : ContDiffAt ℝ (⊤ : ℕ
   have hh := L.iteratedFDeriv_comp_left (hf.fderiv_right (m := (⊤ : ℕ∞)) (by simp)) (i := n) (by simp)
   exact (congrArg (fun T => T (Fin.init v)) hh).symm
 
-private theorem derivative_exp_mul (A B : E → ℂ) (x : E)
+theorem derivative_exp_mul (A B : E → ℂ) (x : E)
     (hA : DifferentiableAt ℝ A x) (hB : DifferentiableAt ℝ B x) (s : ℂ) (w : E) :
     fderiv ℝ (fun y => Complex.exp (s * A y) * B y) x w =
       s * (Complex.exp (s * A x) * (fderiv ℝ A x w * B x)) +
@@ -398,11 +398,11 @@ private theorem jet_poly_at_nonzero
     funext x; exact (KPLiteralChamber.JointProfile.literal_flat_multiplier_formula F ζ hζ K hK f s _).symm
   simpa only [hfun, KPInterface.ResidueConstruction.Raw.archChart_base, mul_one, jet] using he s
 
-private theorem units_cont {R X : Type*} [NormedRing R] [HasSummableGeomSeries R]
+theorem units_cont {R X : Type*} [NormedRing R] [HasSummableGeomSeries R]
     [TopologicalSpace X] (f : X → Rˣ) (x : X) (hf : ContinuousAt (fun y => (f y : R)) x) :
     ContinuousAt f x := by
   exact (Units.isOpenEmbedding_val.isEmbedding.isInducing.continuousAt_iff).mpr hf
-private theorem matrix_cont (w : NumberField.InfinitePlace F) (x : ArchCoordinates F) (hx : x w 1 ≠ 0) :
+theorem matrix_cont (w : NumberField.InfinitePlace F) (x : ArchCoordinates F) (hx : x w 1 ≠ 0) :
     ContinuousAt (fun y : ArchCoordinates F => KPLiteralChamber.rightMatrix (y w)) x := by
   have he : (fun y : ArchCoordinates F => (KPLiteralChamber.rightMatrix (y w)).val) =ᶠ[nhds x]
       (fun y => !![y w 1 + y w 0 * y w 2, y w 0; y w 2, 1]) := by
@@ -643,7 +643,7 @@ def rightJet (j : KPGlobalResidualConstruction.Jet F)
     (fun x => v (g * KPGlobalResidualConstruction.archChart F ζ hζ x))
     (KPGlobalResidualConstruction.archBase F) j.2
 
-private theorem jet_chart_smooth (K : Subgroup (G F ζ hζ))
+theorem jet_chart_smooth (K : Subgroup (G F ζ hζ))
     (f : Flat F ζ hζ K) (s : ℂ) (g : G F ζ hζ) (n : ℕ) :
     ContDiffAt ℝ n
       (fun x => f.val s (g * KPGlobalResidualConstruction.archChart F ζ hζ x))
@@ -763,7 +763,7 @@ theorem rightJet_zero (v : Functions F ζ hζ) (g : G F ζ hζ)
   simp [rightJet, iteratedFDeriv_zero_apply,
     KPInterface.ResidueConstruction.Raw.archChart_base]
 
-private theorem jet_upper_projection (t : KPGlobalTorusFunctionData.E F ζ hζ)
+theorem jet_upper_projection (t : KPGlobalTorusFunctionData.E F ζ hζ)
     (x : KPAdeles F) :
     ∃ B : KPChamberHeight.AdelGL F, B 1 0 = 0 ∧
       Matrix.ProjGenLinGroup.mk B = KPLiteralExceptionalResidue.coveredHeightProjection F ζ hζ

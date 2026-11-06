@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Adeles.Lattices.SIntegerDiagonalClosedDiscret
 
 @[expose] public section
 
-noncomputable section
 
 open scoped NumberField
 open NumberField IsDedekindDomain
@@ -23,11 +22,7 @@ theorem sIntegerDiagonal_injective (F : Type*) [Field F] [NumberField F]
   have hv : algebraMap F v.Completion (m : F) = algebraMap F v.Completion (n : F) := by
     have := congrFun h2 v
     simpa only [sLocalDiagonal_infinite] using this
-  refine Subtype.ext ?_
-  exact (RingHom.injective_iff_ker_eq_bot (algebraMap F v.Completion)).mpr (by
-    rcases (Ideal.eq_bot_or_top (RingHom.ker (algebraMap F v.Completion))) with hh | hh
-    · exact hh
-    · exact absurd hh (RingHom.ker_ne_top _)) hv
+  simp_all
 
 theorem sIntegerDiagonal_finite_preimage_of_isCompact
     (F : Type*) [Field F] [NumberField F]
@@ -49,10 +44,4 @@ theorem sIntegerDiagonal_finite_preimage_of_isCompact
     intro x y h
     exact (sIntegerDiagonal_injective F S) (Subtype.ext_iff.mp h)
   convert hfin.preimage hinj.injOn using 1
-  ext m
-  simp only [Set.mem_preimage, Set.mem_setOf_eq]
   rfl
-
-end DedekindZetaZeroFree
-
-end

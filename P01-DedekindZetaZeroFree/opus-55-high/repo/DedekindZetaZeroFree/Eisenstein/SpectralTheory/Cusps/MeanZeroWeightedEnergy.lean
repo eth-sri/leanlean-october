@@ -419,7 +419,7 @@ theorem mass_le_of_compact_cutoffs (D : AnalyticAdapter E) {T : ℝ}
       exact (Filter.Eventually.of_forall fun n =>
         (lintegral_mono' Measure.restrict_le_self le_rfl).trans (hfinite n)).frequently
 
-private lemma compact_integral_le_mass {T : ℝ} (v : Section E T)
+lemma compact_integral_le_mass {T : ℝ} (v : Section E T)
     (b S B K : ℝ) (hB : 0 ≤ B) (hK : 0 ≤ K)
     (w : KPCuspCharts.Coordinates F → ℝ)
     (hw : Integrable w E.measure) (hw0 : ∀ p, 0 ≤ w p)
@@ -452,7 +452,7 @@ private lemma compact_integral_le_mass {T : ℝ} (v : Section E T)
     _ ≤ ENNReal.ofReal K * ENNReal.ofReal B := mul_le_mul_right hbound _
     _ = ENNReal.ofReal (K * B) := (ENNReal.ofReal_mul hK).symm
 
-private theorem transition_deriv_bound : ∃ D : ℝ, 0 ≤ D ∧ ∀ t, ‖deriv Real.smoothTransition t‖ ≤ D := by
+theorem transition_deriv_bound : ∃ D : ℝ, 0 ≤ D ∧ ∀ t, ‖deriv Real.smoothTransition t‖ ≤ D := by
   have hc := Real.smoothTransition.contDiff.continuous_deriv (n := (⊤ : ℕ∞)) (by simp)
   obtain ⟨D, hD⟩ := isCompact_Icc.exists_bound_of_continuousOn hc.continuousOn
   refine ⟨max D 0, le_max_right _ _, fun t => ?_⟩

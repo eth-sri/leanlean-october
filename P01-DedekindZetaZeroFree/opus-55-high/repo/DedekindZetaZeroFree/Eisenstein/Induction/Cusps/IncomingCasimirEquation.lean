@@ -23,7 +23,7 @@ def Δloc {V : Type*} [NormedAddCommGroup V] [NormedSpace ℂ V]
         ((KPArch.volumeDensity d y * inverseMetricWeight d y i j : ℝ) : ℂ) •
           fderiv ℝ f y (coordinateDirection d i j)) z (coordinateDirection d i j))
 
-private theorem volumeDensity_eq (d : ℕ) (y : KPArch.Space d) :
+theorem volumeDensity_eq (d : ℕ) (y : KPArch.Space d) :
     KPArch.volumeDensity d y = Real.exp (-2 * ∑ k, (y k).2) := by
   unfold KPArch.volumeDensity KPArch.height
   have hfac : ∀ k : Fin d, (Real.exp (y k).2)⁻¹ ^ 2 = Real.exp (-2 * (y k).2) := by
@@ -36,19 +36,19 @@ private theorem volumeDensity_eq (d : ℕ) (y : KPArch.Space d) :
   congr 1
   rw [← Finset.mul_sum]
 
-private theorem differentiableAt_volumeDensity (d : ℕ) (z : KPArch.Space d) :
+theorem differentiableAt_volumeDensity (d : ℕ) (z : KPArch.Space d) :
     DifferentiableAt ℝ (KPArch.volumeDensity d) z := by
   rw [funext (volumeDensity_eq d)]
   fun_prop
 
-private theorem differentiableAt_height_sq (d : ℕ) (i : Fin d) (z : KPArch.Space d) :
+theorem differentiableAt_height_sq (d : ℕ) (i : Fin d) (z : KPArch.Space d) :
     DifferentiableAt ℝ (fun y : KPArch.Space d => KPArch.height (y i) ^ 2) z := by
   rw [show (fun y : KPArch.Space d => KPArch.height (y i) ^ 2) =
       fun y : KPArch.Space d => Real.exp (2 * (y i).2) from by
     funext y; simp only [KPArch.height]; rw [← Real.exp_nat_mul]; norm_num]
   fun_prop
 
-private theorem fderiv_ofReal_apply {d : ℕ} {f : KPArch.Space d → ℝ} {z : KPArch.Space d}
+theorem fderiv_ofReal_apply {d : ℕ} {f : KPArch.Space d → ℝ} {z : KPArch.Space d}
     (hf : DifferentiableAt ℝ f z) (v : KPArch.Space d) :
     fderiv ℝ (fun y : KPArch.Space d => ((f y : ℝ) : ℂ)) z v = ((fderiv ℝ f z v : ℝ) : ℂ) := by
   rw [show (fun y : KPArch.Space d => ((f y : ℝ) : ℂ)) =
@@ -58,7 +58,7 @@ private theorem fderiv_ofReal_apply {d : ℕ} {f : KPArch.Space d → ℝ} {z : 
   rw [ContinuousLinearMap.fderiv]
   simp [ContinuousLinearMap.comp_apply, Complex.ofRealCLM_apply]
 
-private theorem fderiv_volumeDensity_real (d : ℕ) (z v : KPArch.Space d) :
+theorem fderiv_volumeDensity_real (d : ℕ) (z v : KPArch.Space d) :
     fderiv ℝ (KPArch.volumeDensity d) z v = -2 * KPArch.volumeDensity d z * (∑ k, (v k).2) := by
   have hV : KPArch.volumeDensity d = fun y : KPArch.Space d => Real.exp (-2 * ∑ k, (y k).2) :=
     funext (volumeDensity_eq d)
@@ -72,14 +72,14 @@ private theorem fderiv_volumeDensity_real (d : ℕ) (z v : KPArch.Space d) :
   simp
   ring
 
-private theorem fderiv_volumeDensity_apply (d : ℕ) (z v : KPArch.Space d) :
+theorem fderiv_volumeDensity_apply (d : ℕ) (z v : KPArch.Space d) :
     fderiv ℝ (fun y : KPArch.Space d => ((KPArch.volumeDensity d y : ℝ) : ℂ)) z v =
       -2 * (KPArch.volumeDensity d z : ℂ) * (((∑ k, (v k).2) : ℝ) : ℂ) := by
   rw [fderiv_ofReal_apply (differentiableAt_volumeDensity d z) v, fderiv_volumeDensity_real]
   push_cast
   ring
 
-private theorem fderiv_height_sq_real (d : ℕ) (i : Fin d) (z v : KPArch.Space d) :
+theorem fderiv_height_sq_real (d : ℕ) (i : Fin d) (z v : KPArch.Space d) :
     fderiv ℝ (fun y : KPArch.Space d => KPArch.height (y i) ^ 2) z v
       = Real.exp (2 * (z i).2) * (2 * (v i).2) := by
   have hK : (fun y : KPArch.Space d => KPArch.height (y i) ^ 2) =
@@ -93,7 +93,7 @@ private theorem fderiv_height_sq_real (d : ℕ) (i : Fin d) (z v : KPArch.Space 
   simp only [ContinuousLinearMap.smul_apply, ContinuousLinearMap.comp_apply]
   simp
 
-private theorem sum_coordinateDirection (d : ℕ) (i : Fin d) (j : Fin 3) :
+theorem sum_coordinateDirection (d : ℕ) (i : Fin d) (j : Fin 3) :
     (∑ k : Fin d, (coordinateDirection d i j k).2) = if j = 2 then 1 else 0 := by
   rw [Finset.sum_eq_single i]
   · rw [coordinateDirection, Pi.single_eq_same]
@@ -104,23 +104,23 @@ private theorem sum_coordinateDirection (d : ℕ) (i : Fin d) (j : Fin 3) :
   · intro hi
     exact absurd (Finset.mem_univ i) hi
 
-private theorem coordinateDirection_apply_self (d : ℕ) (i : Fin d) (j : Fin 3) :
+theorem coordinateDirection_apply_self (d : ℕ) (i : Fin d) (j : Fin 3) :
     (coordinateDirection d i j i).2 = if j = 2 then 1 else 0 := by
   rw [coordinateDirection, Pi.single_eq_same]
   fin_cases j <;> norm_num
 
-private theorem differentiableAt_VK_real (d : ℕ) (i : Fin d) (z : KPArch.Space d) :
+theorem differentiableAt_VK_real (d : ℕ) (i : Fin d) (z : KPArch.Space d) :
     DifferentiableAt ℝ (fun y : KPArch.Space d =>
       KPArch.volumeDensity d y * KPArch.height (y i) ^ 2) z :=
   (differentiableAt_volumeDensity d z).mul (differentiableAt_height_sq d i z)
 
-private theorem differentiableAt_VK (d : ℕ) (i : Fin d) (z : KPArch.Space d) :
+theorem differentiableAt_VK (d : ℕ) (i : Fin d) (z : KPArch.Space d) :
     DifferentiableAt ℝ (fun y : KPArch.Space d =>
       ((KPArch.volumeDensity d y * KPArch.height (y i) ^ 2 : ℝ) : ℂ)) z :=
   Complex.ofRealCLM.differentiableAt.comp z
     ((differentiableAt_volumeDensity d z).mul (differentiableAt_height_sq d i z))
 
-private theorem differentiableAt_V_one (d : ℕ) (z : KPArch.Space d) :
+theorem differentiableAt_V_one (d : ℕ) (z : KPArch.Space d) :
     DifferentiableAt ℝ (fun y : KPArch.Space d => ((KPArch.volumeDensity d y * 1 : ℝ) : ℂ)) z := by
   have h : (fun y : KPArch.Space d => ((KPArch.volumeDensity d y * 1 : ℝ) : ℂ)) =
       fun y : KPArch.Space d => ((KPArch.volumeDensity d y : ℝ) : ℂ) := by
@@ -128,7 +128,7 @@ private theorem differentiableAt_V_one (d : ℕ) (z : KPArch.Space d) :
   rw [h]
   exact Complex.ofRealCLM.differentiableAt.comp z (differentiableAt_volumeDensity d z)
 
-private theorem fderiv_VK_coordinateDirection (d : ℕ) (i : Fin d) (j : Fin 3)
+theorem fderiv_VK_coordinateDirection (d : ℕ) (i : Fin d) (j : Fin 3)
     (z : KPArch.Space d) :
     fderiv ℝ (fun y : KPArch.Space d =>
       ((KPArch.volumeDensity d y * KPArch.height (y i) ^ 2 : ℝ) : ℂ)) z
@@ -145,7 +145,7 @@ private theorem fderiv_VK_coordinateDirection (d : ℕ) (i : Fin d) (j : Fin 3)
   rw [Complex.ofReal_eq_zero]
   ring
 
-private theorem fderiv_V_one_coordinateDirection (d : ℕ) (i : Fin d) (z : KPArch.Space d) :
+theorem fderiv_V_one_coordinateDirection (d : ℕ) (i : Fin d) (z : KPArch.Space d) :
     fderiv ℝ (fun y : KPArch.Space d => ((KPArch.volumeDensity d y * 1 : ℝ) : ℂ)) z
       (coordinateDirection d i 2) = -2 * (KPArch.volumeDensity d z : ℂ) := by
   have h : (fun y : KPArch.Space d => ((KPArch.volumeDensity d y * 1 : ℝ) : ℂ)) =
@@ -154,7 +154,7 @@ private theorem fderiv_V_one_coordinateDirection (d : ℕ) (i : Fin d) (z : KPAr
   rw [h, fderiv_volumeDensity_apply, sum_coordinateDirection]
   norm_num
 
-private theorem fderiv_smul_apply' {V : Type*} [NormedAddCommGroup V] [NormedSpace ℂ V]
+theorem fderiv_smul_apply' {V : Type*} [NormedAddCommGroup V] [NormedSpace ℂ V]
     {d : ℕ} {c : KPArch.Space d → ℂ} {g : KPArch.Space d → V} {z : KPArch.Space d}
     (hc : DifferentiableAt ℝ c z) (hg : DifferentiableAt ℝ g z) (v : KPArch.Space d) :
     fderiv ℝ (fun y => c y • g y) z v = c z • (fderiv ℝ g z v) + (fderiv ℝ c z v) • g z := by
@@ -368,7 +368,7 @@ private theorem incoming_scalar_eigen (s : ℂ) (hs : s ∈ KPContinuation.spect
   rw [← (dimension F ζ hζ).1]
   exact exp_mean_laplacian _ (KPCuspLogShape.dimension_pos F H.totallyComplex) _ _ _
 
-private theorem wave_scalar_formula (s : ℂ) (hs : s ∈ KPContinuation.spectralDomain)
+theorem wave_scalar_formula (s : ℂ) (hs : s ∈ KPContinuation.spectralDomain)
     (v : S) (shape : KPCuspCharts.Shape F) (q : KernelTorus F ζ hζ C R P H U a) :
     (fun t => (W F ζ hζ C R P H U a ι s v t shape).val q) =
       fun t => KPIncomingCasimir.heightFactor (Module.finrank ℚ F / 2) s t *

@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.LargeSieve.Bilinear.FiniteDisjointSupportIneq
 
 @[expose] public section
 
-noncomputable section
 
 namespace DedekindZetaZeroFree.LargeSieve.Sieve.GcdTail
 
@@ -16,8 +15,7 @@ private lemma sum_powerset_neg_one_pow_card_C {P : Type*} [DecidableEq P] (A : F
   have h : ((∑ D ∈ A.powerset, (-1 : ℤ) ^ D.card : ℤ) : ℂ) =
       ((if A = ∅ then 1 else 0 : ℤ) : ℂ) := by
     rw [Finset.sum_powerset_neg_one_pow_card]
-  rw [Int.cast_sum] at h
-  simpa using h
+  simp_all
 
 private lemma disjoint_indicator_expansion {P : Type*} [DecidableEq P]
     (ambient S T : Finset P) (hS : S ⊆ ambient) (hT : T ⊆ ambient) :
@@ -37,15 +35,13 @@ private lemma disjoint_indicator_expansion {P : Type*} [DecidableEq P]
         (if D ⊆ S ∧ D ⊆ T then 1 else 0))
       = ∑ D ∈ ambient.powerset.filter (fun D => D ⊆ S ∧ D ⊆ T), (-1 : ℂ) ^ D.card := by
     rw [Finset.sum_filter]
-    apply Finset.sum_congr rfl
-    intro D _
-    split_ifs <;> simp
+    simp
   rw [hsum, hfilter, sum_powerset_neg_one_pow_card_C]
   by_cases h : S ∩ T = ∅
   · rw [if_pos h, if_pos (Finset.disjoint_iff_inter_eq_empty.mpr h)]
   · rw [if_neg h, if_neg (fun hd => h (Finset.disjoint_iff_inter_eq_empty.mp hd))]
 
-private lemma sum_comm_three {α β γ M : Type*} [AddCommMonoid M]
+lemma sum_comm_three {α β γ M : Type*} [AddCommMonoid M]
     (A : Finset α) (B : Finset β) (C : Finset γ) (f : α → β → γ → M) :
     (∑ i ∈ A, ∑ j ∈ B, ∑ k ∈ C, f i j k) = ∑ k ∈ C, ∑ i ∈ A, ∑ j ∈ B, f i j k := by
   calc (∑ i ∈ A, ∑ j ∈ B, ∑ k ∈ C, f i j k)
@@ -82,9 +78,7 @@ private lemma disjoint_expansion_finset {P ι κ : Type*} [DecidableEq P]
       _ = ∑ D ∈ ambient.powerset, (-1 : ℂ) ^ D.card *
             (if D ⊆ S i ∧ D ⊆ T j then z i * star (v j) else 0) := by
           rw [Finset.sum_mul]
-          apply Finset.sum_congr rfl
-          intro D _
-          split_ifs <;> ring
+          simp
   have hcongr : (∑ i ∈ U, ∑ j ∈ V, if Disjoint (S i) (T j) then z i * star (v j) else 0)
       = ∑ i ∈ U, ∑ j ∈ V, ∑ D ∈ ambient.powerset, (-1 : ℂ) ^ D.card *
           (if D ⊆ S i ∧ D ⊆ T j then z i * star (v j) else 0) := by
@@ -110,7 +104,7 @@ private lemma disjoint_expansion_finset {P ι κ : Type*} [DecidableEq P]
   intro j _
   by_cases h1 : D ⊆ S i <;> by_cases h2 : D ⊆ T j <;> simp [h1, h2]
 
-private lemma sup_eq_top_iff_disjoint_normalizedFactors
+lemma sup_eq_top_iff_disjoint_normalizedFactors
     {F : Type} [Field F] [NumberField F] {u v : Ideal (𝓞 F)} (hu : u ≠ ⊥) (hv : v ≠ ⊥) :
     u ⊔ v = ⊤ ↔ Disjoint (UniqueFactorizationMonoid.normalizedFactors u).toFinset
       (UniqueFactorizationMonoid.normalizedFactors v).toFinset := by
@@ -119,8 +113,7 @@ private lemma sup_eq_top_iff_disjoint_normalizedFactors
     have hprod : (UniqueFactorizationMonoid.normalizedFactors u ∩
         UniqueFactorizationMonoid.normalizedFactors v).prod = 1 := by
       have h1 := Ideal.sup_eq_prod_inf_factors hu hv
-      rw [h, ← Ideal.one_eq_top] at h1
-      exact h1.symm
+      simp_all
     rw [Finset.disjoint_left]
     intro x hxu hxv
     rw [Multiset.mem_toFinset] at hxu hxv
@@ -139,7 +132,7 @@ private lemma sup_eq_top_iff_disjoint_normalizedFactors
       intro x hx
       exact (Finset.disjoint_left.mp hd (Multiset.mem_toFinset.mpr (Multiset.mem_inter.mp hx).1))
         (Multiset.mem_toFinset.mpr (Multiset.mem_inter.mp hx).2)
-    rw [hinter, Multiset.prod_zero, Ideal.one_eq_top]
+    simp_all
 
 theorem coprime_form_bound
     {F : Type} [Field F] [NumberField F] {R : Type*}
@@ -189,15 +182,7 @@ theorem coprime_form_bound
         = ∑ D ∈ ambient.powerset, (-1 : ℂ) ^ D.card *
           ((∑ u ∈ cols, A r u * (if D ⊆ s u then alpha u else 0)) *
            star (∑ v ∈ cols, A r v * (if D ⊆ s v then alpha v else 0))) := by
-      apply Finset.sum_congr rfl
-      intro D _
-      have h1 : (∑ u ∈ cols, if D ⊆ s u then A r u * alpha u else 0)
-          = ∑ u ∈ cols, A r u * (if D ⊆ s u then alpha u else 0) := by
-        apply Finset.sum_congr rfl
-        intro u _
-        rw [mul_ite]
-        simp
-      rw [h1]
+      simp
     rw [hL] at hb
     rw [hR] at hb
     exact hb
@@ -279,7 +264,3 @@ theorem coprime_form_bound
     _ = U * ∑ u ∈ cols, (2 : ℝ) ^ (s u).card * ‖alpha u‖ ^ 2 := hD
     _ = U * ∑ u ∈ cols, primeSupportCost u * ‖alpha u‖ ^ 2 := by
         simp only [primeSupportCost, hs]
-
-end DedekindZetaZeroFree.LargeSieve.Sieve.GcdTail
-
-end

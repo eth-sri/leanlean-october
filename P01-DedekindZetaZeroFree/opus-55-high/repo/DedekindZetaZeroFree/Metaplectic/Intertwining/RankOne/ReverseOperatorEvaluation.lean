@@ -84,7 +84,3 @@ theorem actualCanonicalReverseMap_level
         (compactTrivialization S.borel P S.iwasawa .minus 0 φ.val))) = _
   rw [LinearEquiv.symm_apply_apply,
     actualCanonicalContinued_eq_level F q ζ hζ S P μ hμ .minus 0 J hJ φ]
-
-end DedekindZetaZeroFree.KPRankOneShellRepair
-
-end

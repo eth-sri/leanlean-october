@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Ray congruences
 -/
@@ -53,10 +49,8 @@ namespace IsRayCongruent
 theorem one {K : Type u} [Field K] [NumberField K]
     (m : RayClassModulus K) : IsRayCongruent m 1 := by
   constructor
-  · intro v _
-    simpa only [map_one] using (rayLocalHigherUnitGroup v (m.finitePart v)).one_mem
-  · intro v _
-    simp
+  · simp
+  simp
 
 /-- Ray-congruent nonzero elements are closed under multiplication. -/
 theorem mul {K : Type u} [Field K] [NumberField K]
@@ -80,9 +74,3 @@ theorem inv {K : Type u} [Field K] [NumberField K]
       (rayLocalHigherUnitGroup v (m.finitePart v)).inv_mem (hx.1 v hv)
   · intro v hv
     simpa only [Units.val_inv_eq_inv_val, map_inv₀] using inv_pos.mpr (hx.2 v hv)
-
-end IsRayCongruent
-
-end ClassFieldTheory
-
-end

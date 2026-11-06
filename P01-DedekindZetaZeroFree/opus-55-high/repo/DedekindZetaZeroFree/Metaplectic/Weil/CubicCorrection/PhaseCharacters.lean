@@ -10,7 +10,6 @@ open scoped NumberField Classical
 open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.SArithmeticData.CubicWeilCorrection
 noncomputable section
-set_option autoImplicit false
 set_option backward.isDefEq.respectTransparency false
 variable {F : Type} [Field F] [NumberField F]
 
@@ -18,7 +17,7 @@ def fourS : Fˣ := Units.mk0 4 (by norm_num)
 
  def twoS : Fˣ := Units.mk0 2 (by norm_num)
 
-private lemma fourS_eq_square : fourS (F := F) = twoS ^ 2 := by
+lemma fourS_eq_square : fourS (F := F) = twoS ^ 2 := by
   apply Units.ext
   norm_num [fourS, twoS]
 
@@ -54,8 +53,8 @@ lemma cubicUnits_cube (A : SArithmeticData F) (σ : F →+* ℂ) (x : A.V) :
 
 def cubicClass (A : SArithmeticData F) (σ : F →+* ℂ) : A.V →* Circle where
   toFun x := ⟨cubicUnits A σ x, mem_sphere_zero_iff_norm.mpr (cubicUnits_norm A σ x)⟩
-  map_one' := by apply Circle.ext; exact congrArg Units.val (map_one (cubicUnits A σ))
-  map_mul' x y := by apply Circle.ext; exact congrArg Units.val (map_mul (cubicUnits A σ) x y)
+  map_one' := by apply Circle.ext; simp
+  map_mul' x y := by apply Circle.ext; simp
 
 def cubicS (A : SArithmeticData F) (σ : F →+* ℂ) : A.G →* Circle :=
   (cubicClass A σ).comp (QuotientGroup.mk' A.sixthPowers)
@@ -66,8 +65,7 @@ lemma cubicS_coe (A : SArithmeticData F) (σ : F →+* ℂ) (y : A.G) :
   change (cubicUnits A σ (QuotientGroup.mk' A.sixthPowers y) : ℂ) = _
   simp only [cubicUnits, MonoidHom.inv_apply, MonoidHom.comp_apply,
     Units.val_inv_eq_inv_val, Units.coe_map]
-  change (σ (((rawFourS A (QuotientGroup.mk' A.sixthPowers y) : Fˣ) : F)))⁻¹ = _
-  rw [rawFourS, A.H_S6_on_representatives]
+  rfl
 
 theorem phaseClassExtension (A : SArithmeticData F)
     (hCl : Subsingleton (ClassGroup A.R)) (σ : F →+* ℂ)

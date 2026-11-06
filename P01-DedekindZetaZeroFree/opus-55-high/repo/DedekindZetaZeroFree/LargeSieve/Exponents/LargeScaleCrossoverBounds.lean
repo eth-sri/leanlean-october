@@ -39,5 +39,3 @@ theorem crossover_large_scale_bound (α M N : ℝ) (hα : 1 ≤ α) (hα₂ : α
     calc N ^ (2 - 1 / α) * N ≤ N ^ (2 : ℝ) * N := h4
       _ = N ^ (3 : ℝ) := h5
       _ ≤ (M * N) ^ (3 : ℝ) := h6
-
-end DedekindZetaZeroFree.LargeSieve

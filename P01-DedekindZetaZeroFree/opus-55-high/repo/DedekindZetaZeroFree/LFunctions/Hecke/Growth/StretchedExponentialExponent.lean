@@ -11,24 +11,22 @@ theorem stretchedExp_envelope_exponent_le (a p : ℝ) (ha : 0 < a) (hp : 0 < p) 
       (R / p) * Real.log (2 + 2 * R / (a * p)) ≤
         K * (1 + R) * Real.log (2 + R) := by
   have hap : 0 < a * p := mul_pos ha hp
-  have h2ap : 0 ≤ 2 / (a * p) := div_nonneg (by norm_num) hap.le
+  have h2ap : 0 ≤ 2 / (a * p) := by positivity
   set c : ℝ := 2 + 2 / (a * p) with hc_def
   have hc1 : 1 < c := by
     have : 0 < 2 / (a * p) := by positivity
     simp only [hc_def]; linarith
   have hc_pos : 0 < c := lt_trans zero_lt_one hc1
-  have hlog2 : 0 < Real.log 2 := Real.log_pos (by norm_num)
+  have hlog2 : 0 < Real.log 2 := by positivity
   have hlogc : 0 < Real.log c := Real.log_pos hc1
   have hB : 0 ≤ 1 + Real.log c / Real.log 2 := by
-    have : 0 ≤ Real.log c / Real.log 2 := div_nonneg hlogc.le hlog2.le
-    linarith
+    positivity
   refine ⟨(1 / p) * (1 + Real.log c / Real.log 2), ?_, ?_⟩
   · exact mul_nonneg (by positivity) hB
   · intro R hR
     have hR2 : 0 < 2 + R := by linarith
     have hbase_pos : 0 < 2 + 2 * R / (a * p) := by
-      have : 0 ≤ 2 * R / (a * p) := div_nonneg (by nlinarith) hap.le
-      linarith
+      positivity
 
     have hle : 2 + 2 * R / (a * p) ≤ c * (2 + R) := by
       have h1 : 2 * R / (a * p) = (2 / (a * p)) * R := by ring
@@ -56,7 +54,7 @@ theorem stretchedExp_envelope_exponent_le (a p : ℝ) (ha : 0 < a) (hp : 0 < p) 
     have hF : (R / p) * ((1 + Real.log c / Real.log 2) * Real.log (2 + R)) ≤
         ((1 / p) * (1 + Real.log c / Real.log 2)) * (1 + R) * Real.log (2 + R) := by
       have hnonneg : 0 ≤ (1 / p) * (1 + Real.log c / Real.log 2) * Real.log (2 + R) :=
-        mul_nonneg (mul_nonneg (by positivity) hB) hlog2R
+        by positivity
       have hkey : R * ((1 / p) * (1 + Real.log c / Real.log 2) * Real.log (2 + R)) ≤
           (1 + R) * ((1 / p) * (1 + Real.log c / Real.log 2) * Real.log (2 + R)) :=
         mul_le_mul_of_nonneg_right (by linarith) hnonneg
@@ -68,5 +66,3 @@ theorem stretchedExp_envelope_exponent_le (a p : ℝ) (ha : 0 < a) (hp : 0 < p) 
       rw [hEq1, hEq2]
       exact hkey
     exact hstep.trans hF
-
-end DedekindZetaZeroFree.Hecke

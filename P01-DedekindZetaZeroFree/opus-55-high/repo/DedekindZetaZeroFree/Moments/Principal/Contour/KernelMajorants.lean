@@ -2,7 +2,8 @@ module
 
 public import DedekindZetaZeroFree.Analysis.GaussianWeightConvolution
 public import DedekindZetaZeroFree.Moments.Principal.Contour.SecondBoxMajorant
-public import DedekindZetaZeroFree.Moments.Principal.Contour.ThirdBoxMajorant
+public import DedekindZetaZeroFree.Moments.Principal.EulerProducts.Poisson.SubpowerBounds
+public import DedekindZetaZeroFree.Moments.Principal.Contour.ZetaStripGrowth
 
 @[expose] public section
 
@@ -57,13 +58,13 @@ def zPrincipal : Set Coordinates := {p | 1 / 6 + Scales.contourOffset / 2 < p.2.
 
 def singW : Set Coordinates := {p | p.2.1 = 1}
 
-private lemma six_re (z : ℂ) : (6 * z).re = 6 * z.re := by simp [Complex.mul_re]
+lemma six_re (z : ℂ) : (6 * z).re = 6 * z.re := by simp [Complex.mul_re]
 
 theorem Hu_differentiableOn (u : D.Row) :
     DifferentiableOn ℂ (fun p : Coordinates => Hu D u p.1 p.2.1 p.2.2) OmegaStar :=
   (EulerDomain.Hu_normal_convergence D u).2.2.1
 
-private lemma kernel_differentiableAt (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 0 < Z)
+lemma kernel_differentiableAt (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 0 < Z)
     (p : Coordinates) (hξ : 1 < p.1.re) (hw : 0 < p.2.1.re) (hw1 : p.2.1 ≠ 1)
     (hz : 0 < p.2.2.re) (hz6 : 6 * p.2.2 ≠ 1) (hΩ : p ∈ OmegaStar) :
     DifferentiableAt ℂ
@@ -112,7 +113,7 @@ private lemma kernel_differentiableAt (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ :
     (((hζ.fun_mul hLp).fun_mul hHu).fun_mul
       (hLl.inv (RightHeckeBounds.Llam_ne_zero_of_one_lt D u _ hξ)))
 
-private lemma kernel_differentiableOn_of (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 0 < Z)
+lemma kernel_differentiableOn_of (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 0 < Z)
     (U : Set Coordinates)
     (h : ∀ p ∈ U, 1 < p.1.re ∧ 0 < p.2.1.re ∧ p.2.1 ≠ 1 ∧ 0 < p.2.2.re ∧ 6 * p.2.2 ≠ 1 ∧
       p ∈ OmegaStar) :
@@ -155,8 +156,7 @@ theorem kernel_majorant_paddedBox₂ (u : D.Row) (hu : u.u = 1)
         ∀ t : ℝ × ℝ × ℝ,
           ‖kernelWith D (rowContLocal D) u ((x : ℂ) + (t.1 : ℂ) * Complex.I)
               ((y : ℂ) + (t.2.1 : ℂ) * Complex.I) ((v : ℂ) + (t.2.2 : ℂ) * Complex.I) Z‖ ≤
-            Z ^ (Scales.kernelExponent x y v) * g t :=
-  PrincipalBox2Majorant.kernel_majorant_paddedBox2 D u hu x₀ x₁ y₀ y₁ v₀ v₁ hx hy hv
+            Z ^ (Scales.kernelExponent x y v) * g t := by apply DedekindZetaZeroFree.Quantitative.PrincipalBox2Majorant.kernel_majorant_paddedBox2 <;> assumption
 
 private lemma wResidue_majorant_aux (u : D.Row) (hu : u.u = 1) (v₀ : ℝ)
     (hv0 : 1 / 20 ≤ v₀) (hv1 : v₀ ≤ 1) (hv6 : 6 * v₀ ≠ 1) :

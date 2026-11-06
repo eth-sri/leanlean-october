@@ -7,7 +7,6 @@ import all Mathlib.Geometry.Manifold.LocalDiffeomorph
 
 @[expose] public section
 
-noncomputable section
 open MeasureTheory Topology
 open scoped Manifold ContDiff
 
@@ -107,7 +106,3 @@ theorem translated_exponential_frame
       rfl
     rw [hA]
     exact (hd''.comp_hasDerivAt 0 hr).deriv.symm
-
-end DedekindZetaZeroFree.PGLExponential
-
-end

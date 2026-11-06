@@ -9,7 +9,6 @@ open scoped NumberField Classical BigOperators
 open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.RepresentationTheory.KPGlobalCubicIdelePairingRaw
 noncomputable section
-set_option autoImplicit false
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
@@ -64,8 +63,7 @@ theorem ideleClass_restricted (x : Ideles F) :
   | inr q =>
     have hq : ∃ u : KPHilbert.LocalIntegerUnits F q,
         KPHilbert.integerUnitInclusion F q u = ideleEval F (Sum.inr q) x := by
-      by_contra h
-      exact hv ⟨q, h, rfl⟩
+      simp_all
     obtain ⟨u, hu⟩ := hq
     exact ⟨_, ⟨u, rfl⟩, congrArg (localClass F (Sum.inr q)) hu⟩
 
@@ -99,11 +97,9 @@ theorem localSymbol_congr (v : KPHilbert.Place F)
   obtain ⟨t, ht⟩ := QuotientGroup.leftRel_apply.mp ha
   obtain ⟨u, hu⟩ := QuotientGroup.leftRel_apply.mp hb
   have ht' : a' = a * t ^ 3 := by
-    change t ^ 3 = a⁻¹ * a' at ht
-    rw [ht, mul_inv_cancel_left]
+    simp_all
   have hu' : b' = b * u ^ 3 := by
-    change u ^ 3 = b⁻¹ * b' at hu
-    rw [hu, mul_inv_cancel_left]
+    simp_all
   rw [ht', hu', (KPHilbert.B3_laws F ζ hζ v).1,
     (KPHilbert.B3_laws F ζ hζ v).2.1]
   rw [(KPHilbert.B3_laws F ζ hζ v).2.2.2.2.1 t (b * u ^ 3) |>.1,
@@ -136,7 +132,7 @@ theorem pairing_finiteSupport (x y : RestrictedClasses F) :
       (Sum.inr : HeightOneSpectrum (𝓞 F) → KPHilbert.Place F)
     filter_upwards [hf.compl_mem_cofinite] with v hv q hq
     intro hbad
-    exact hv ⟨q, hbad, hq.symm⟩
+    simp_all
   have heq : ∀ᶠ v in Filter.cofinite, localPairing F ζ hζ v (x v) (y v) = 1 := by
     filter_upwards [x.property, y.property, hgood] with v hx hy hv
     cases v with
@@ -212,13 +208,13 @@ theorem torusCentral_mem (z : rootsOfUnity 3 F) :
   change KPAdelicCoverRestrictedProduct.pglCentralInjection F ζ hζ z ∈
     (KPAdelicCoverRestrictedProduct.pglProjection F ζ hζ).ker
   rw [← hz]
-  exact ⟨z, rfl⟩
+  simp
 
 def torusCentralInjection : rootsOfUnity 3 F →* E F ζ hζ where
   toFun z := ⟨(KPAdelicCoverRestrictedProduct.pglCentralInjection F ζ hζ z, 1),
     torusCentral_mem F ζ hζ z⟩
-  map_one' := by apply Subtype.ext; simp
-  map_mul' x y := by apply Subtype.ext; simp
+  map_one' := by simp
+  map_mul' x y := by simp
 
 abbrev ExteriorValuations (S : Finset (KPHilbert.Place F)) :=
   Multiplicative ({v : KPHilbert.Place F // v ∉ S} →₀ ZMod 3)
@@ -245,6 +241,3 @@ def unitValuationPairing (q : HeightOneSpectrum (𝓞 F))
     (u : U F (Sum.inr q)) (a : LocalValuationClasses F (Sum.inr q)) : rootsOfUnity 3 F :=
   Quotient.liftOn a (fun b => localPairing F ζ hζ (Sum.inr q) u.val b)
     (unitValuation_congr F ζ hζ q hgood u)
-
-end
-end DedekindZetaZeroFree.RepresentationTheory.KPGlobalCubicIdelePairingRaw

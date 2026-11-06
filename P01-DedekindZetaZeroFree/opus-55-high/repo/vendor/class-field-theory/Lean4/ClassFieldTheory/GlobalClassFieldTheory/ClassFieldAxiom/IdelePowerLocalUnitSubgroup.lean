@@ -1,6 +1,9 @@
 module
 
-public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Principal
+public import ClassFieldTheory.AlgebraicNumberTheory.Idele.PrincipalCore
+public import GaloisCohomology.Cyclic.Herbrand.HerbrandLowDegree.EquivariantEquiv
+public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Cohomology.Herbrand
+public import ClassFieldTheory.LocalClassFieldTheory.ClassFormation.Valuation
 public import ClassFieldTheory.KummerTheory.Concrete.SUnitPreparation.SUnitPowerQuotient
 
 @[expose] public section
@@ -11,10 +14,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-set_option autoImplicit false
 
 /-!
 # Power-local-unit subgroups of the idele group
@@ -113,11 +112,7 @@ theorem mem_sUnitNthPowersInField_iff
         (G := SUnitGroup (K := K) U)).mp hy
     rw [powMonoidHom_apply] at hz
     subst y
-    exact
-      (MonoidHom.mem_range
-        (G := Kˣ)).mpr ⟨(z : Kˣ), by
-          rw [powMonoidHom_apply]
-          rfl⟩
+    simp
   · rintro ⟨hxU, hxPow⟩
     obtain ⟨z, hz⟩ :=
       (MonoidHom.mem_range
@@ -125,14 +120,14 @@ theorem mem_sUnitNthPowersInField_iff
     rw [powMonoidHom_apply] at hz
     subst x
     have hzU : z ∈ SUnitGroup (K := K) U :=
-      mem_sUnitGroup_of_pow_mem (K := K) U n z hxU
+      by simp_all
     let zU : SUnitGroup (K := K) U := ⟨z, hzU⟩
     refine ⟨zU ^ (n : ℕ), ?_, ?_⟩
     · exact
         (MonoidHom.mem_range
           (G := SUnitGroup (K := K) U)).mpr
           ⟨zU, by rw [powMonoidHom_apply]⟩
-    · simp [zU]
+    rfl
 
 /-- An `n`-th power of an `(S ∪ T)`-unit satisfies all local
 power-unit conditions. -/
@@ -160,10 +155,7 @@ theorem sUnitNthPowersInField_le_principalIdelePowerLocalUnitSubgroup
       ⟨IdeleGroup.infiniteComponent w
         (IdeleGroup.principalIdele K (x : Kˣ)), ?_⟩
     simp only [powMonoidHom_apply, map_pow]
-    have hxcoe :
-        (SUnitGroup (K := K) (S ∪ T)).subtype x = (x : Kˣ) :=
-      rfl
-    rw [hxcoe]
+    rfl
   · intro v _
     apply
       (MonoidHom.mem_range
@@ -172,10 +164,7 @@ theorem sUnitNthPowersInField_le_principalIdelePowerLocalUnitSubgroup
       ⟨IdeleGroup.finiteComponent v
         (IdeleGroup.principalIdele K (x : Kˣ)), ?_⟩
     simp only [powMonoidHom_apply, map_pow]
-    have hxcoe :
-        (SUnitGroup (K := K) (S ∪ T)).subtype x = (x : Kˣ) :=
-      rfl
-    rw [hxcoe]
+    rfl
   · intro v hv
     have hxUnit :
         v.valuation K ((x : Kˣ) : K) = 1 :=
@@ -186,10 +175,7 @@ theorem sUnitNthPowersInField_le_principalIdelePowerLocalUnitSubgroup
     have hxcoe :
         (SUnitGroup (K := K) (S ∪ T)).subtype x = (x : Kˣ) :=
       rfl
-    rw [map_pow, hxcoe]
-    change
-      v.valuation K (((x : Kˣ) : K) ^ (n : ℕ)) = 1
-    rw [map_pow, hxUnit, one_pow]
+    simp_all
 
 /-- A principal idele satisfying the local power-unit conditions comes
 from an `(S ∪ T)`-unit. -/
@@ -210,7 +196,3 @@ theorem principalIdelePowerLocalUnitSubgroup_le_sUnitGroup
   rw [IdeleGroup.finiteComponent_principalIdele,
     HeightOneSpectrum.valuedAdicCompletion_eq_valuation'] at hAway
   exact hAway
-
-end GlobalClassFieldTheory.ClassFieldAxiom
-
-end

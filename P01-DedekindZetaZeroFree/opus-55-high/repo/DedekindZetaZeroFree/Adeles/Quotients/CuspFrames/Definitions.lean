@@ -32,7 +32,3 @@ def AdmissibleFrame (j : Cusps A) (Y : ℝ) (x : X F ζ hζ) (g : Cover F ζ hζ
           (KPCuspCharts.toArch F (p,t)) ∧
       g = KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a *
         (A.representative j.1).val * KPSmoothLocalQuotientCharts.centreMap F ζ hζ ε * u.val.val
-
-end DedekindZetaZeroFree.KPMsGreenFlux.ActualFrames
-
-end

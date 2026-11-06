@@ -9,7 +9,6 @@ open NumberField IsDedekindDomain MeasureTheory
 
 namespace DedekindZetaZeroFree.KPGlobalTorusBorelNormTwistTransport
 noncomputable section
-set_option autoImplicit false
 set_option maxRecDepth 2000
 set_option maxHeartbeats 800000
 set_option synthInstance.maxHeartbeats 100000
@@ -30,20 +29,17 @@ local instance smoothTopology (P : Polarization F ζ hζ) :
   KPGlobalTorusFunctionData.torusSmoothTopology F ζ hζ P
 
 theorem globalLevel_isCompact (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ) :
-    IsCompact ((KPGlobalTorusFunctionData.globalLevel F ζ hζ J) : Set (G F ζ hζ)) := by
-  exact J.isCompact.image continuous_subtype_val
+    IsCompact ((KPGlobalTorusFunctionData.globalLevel F ζ hζ J) : Set (G F ζ hζ)) := 
+  J.isCompact.image continuous_subtype_val
 
 end
 end DedekindZetaZeroFree.KPGlobalTorusBorelNormTwistTransport
 
 section
 
-open scoped NumberField Classical NNReal BigOperators
-open NumberField IsDedekindDomain MeasureTheory
 
 namespace DedekindZetaZeroFree.KPGlobalTorusBorelNormTwistTransport
 noncomputable section
-set_option autoImplicit false
 set_option maxRecDepth 2000
 set_option maxHeartbeats 800000
 set_option synthInstance.maxHeartbeats 100000
@@ -70,7 +66,7 @@ private theorem normPower_mul (s : ℂ) (t u : E F ζ hζ) :
     Real.log_mul (ne_of_gt (delta_pos F ζ hζ t)) (ne_of_gt (delta_pos F ζ hζ u)),
     Complex.ofReal_add, mul_add, Complex.exp_add]
 
-private theorem normPower_cancel (s : ℂ) (t : E F ζ hζ) :
+theorem normPower_cancel (s : ℂ) (t : E F ζ hζ) :
     normPower F ζ hζ s t * normPower F ζ hζ (-s) t = 1 := by
   simp only [normPower, neg_mul, ← Complex.exp_add, add_neg_cancel, Complex.exp_zero]
 
@@ -90,8 +86,7 @@ private theorem normPower_continuous (s : ℂ) : Continuous (normPower F ζ hζ 
   change Continuous (fun t : E F ζ hζ => Complex.exp
     (s * (Real.log (((KPGlobalTorusFunctionData.delta F ζ hζ t : ℝ≥0) : ℝ)) : ℂ)))
   simp only [hlog]
-  exact (continuous_const.mul (Complex.continuous_ofReal.comp
-    (continuous_const.mul hl))).cexp
+  fun_prop
 
 def normCharacter (s : ℂ) : E F ζ hζ →ₜ* ℂˣ where
   toFun t := Units.mk0 (normPower F ζ hζ s t) (Complex.exp_ne_zero _)
@@ -237,8 +232,8 @@ theorem normPowerArchSmooth_of_chart_formula
     NormPowerArchSmooth F ζ hζ s := by
   apply normPowerArchSmooth_of_delta_smooth F ζ hζ _ s
   have hp : ContDiff ℝ (⊤ : ℕ∞)
-      (fun z : KPGlobalTorusFunctionData.TorusArch F => ∏ w : InfinitePlace F, ‖z w‖ ^ 2) := by
-    exact contDiff_prod (fun w _ => (contDiff_apply ℝ ℂ w).norm_sq ℝ)
+      (fun z : KPGlobalTorusFunctionData.TorusArch F => ∏ w : InfinitePlace F, ‖z w‖ ^ 2) := 
+    contDiff_prod (fun w _ => (contDiff_apply ℝ ℂ w).norm_sq ℝ)
   exact hp.contDiffOn.congr (fun z hz => hδ z hz)
 
 theorem normPowerArchSmooth_neg (s : ℂ) (ha : NormPowerArchSmooth F ζ hζ s) :
@@ -295,7 +290,7 @@ theorem scalarNormTwist_mem_smoothUnion (P : Polarization F ζ hζ) (s : ℂ)
   · intro J f hf
     exact (le_iSup (fun J => KPGlobalTorusFunctionData.TorusSmoothLevel F ζ hζ
       (twist F ζ hζ P s) J) J) (scalarNormTwist_mem_smoothLevel F ζ hζ P s ha hl J f hf)
-  · rw [map_zero]; exact Submodule.zero_mem _
+  · simp
   · intro f g hf hg
     rw [map_add]; exact Submodule.add_mem _ hf hg
 
@@ -328,7 +323,7 @@ theorem scalarNormTwist_mem_smoothUnion (P : Polarization F ζ hζ) (s : ℂ)
     · intro J f hf
       exact (le_iSup (fun J => KPGlobalTorusFunctionData.TorusSmoothLevel F ζ hζ P J) J)
         (scalarNormUntwist_mem_smoothLevel F ζ hζ P s ha hl J f hf)
-    · rw [map_zero]; exact Submodule.zero_mem _
+    · simp
     · intro f g hf hg
       rw [map_add]; exact Submodule.add_mem _ hf hg
 
@@ -347,11 +342,9 @@ theorem scalarNormTwist_mem_smoothUnion (P : Polarization F ζ hζ) (s : ℂ)
       apply Subtype.ext
       exact (scalarNormTwistEquiv F ζ hζ P s).right_inv f.val
     map_add' f g := by
-      apply Subtype.ext
-      exact (scalarNormTwist F ζ hζ P s).map_add f.val g.val
+      simp
     map_smul' c f := by
-      apply Subtype.ext
-      exact (scalarNormTwist F ζ hζ P s).map_smul c f.val
+      simp
 
 theorem smoothUnion_linearMap_continuous_of_stages (P Q : Polarization F ζ hζ)
     (A : Smooth F ζ hζ P →ₗ[ℂ] Smooth F ζ hζ Q)
@@ -585,9 +578,7 @@ def normTwist (P : Polarization F ζ hζ) (s : ℂ) :
     (f : Smooth F ζ hζ (twist F ζ hζ P s)) (t : E F ζ hζ) :
     ((normTwist F ζ hζ P s).symm f).val.val t =
       normPower F ζ hζ (-s) t * f.val.val t := by
-  have h := normTwist_formula F ζ hζ P s ((normTwist F ζ hζ P s).symm f) t
-  rw [ContinuousLinearEquiv.apply_symm_apply] at h
-  rw [h, ← mul_assoc, mul_comm (normPower F ζ hζ (-s) t), normPower_cancel, one_mul]
+  rfl
 
 abbrev rationalModel := KPGlobalTorusPeriodizationInverse.rationalModel F ζ hζ
 abbrev productModel (C : ModelData F ζ hζ) :=
@@ -695,8 +686,7 @@ private theorem twistedIntegrand_eq (C : ModelData F ζ hζ) (s : ℂ)
   funext x
   simp only [twistedIntegrand, KPGlobalTorusPeriodizationInverse.averagingIntegrand,
     normTwist_inverse_formula, normPower_mul]
-  simp only [twist, ContinuousMonoidHom.mul_apply, ContinuousMonoidHom.coe_comp, Function.comp_apply,
-    Units.val_inv_eq_inv_val, Units.val_mul]
+  simp only [twist, Units.val_inv_eq_inv_val]
   change (((productModel F ζ hζ C).character (r.lift x) : ℂ) *
     normPower F ζ hζ s (r.lift x).val)⁻¹ * f.val.val ((r.lift x).val * t) = _
   have hi : (normPower F ζ hζ s (r.lift x).val)⁻¹ =
@@ -730,8 +720,3 @@ private theorem twistedIntegrand_eq (C : ModelData F ζ hζ) (s : ℂ)
       ((normTwist F ζ hζ (rationalModel F ζ hζ) s).symm f))).val.val t = _
   rw [normTwist_formula, KPGlobalTorusPeriodizationInverse.averaging_formula F ζ hζ C r,
     twistedIntegrand_eq, integral_const_mul]
-
-end
-end DedekindZetaZeroFree.KPGlobalTorusBorelNormTwistTransport
-
-end

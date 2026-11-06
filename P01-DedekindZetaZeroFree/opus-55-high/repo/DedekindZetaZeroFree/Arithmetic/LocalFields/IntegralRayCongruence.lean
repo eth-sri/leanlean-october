@@ -29,8 +29,7 @@ theorem localIntegralRayCongruence
       apply Subtype.ext
       exact himage.symm.trans heq
     have hsub : algebraMap (𝓞 K) (v.adicCompletionIntegers K) (a - 1) = t := by
-      rw [map_sub, map_one, heq']
-      ring
+      simp_all
     apply (completionIdealPowerPullback K v (a - 1) n).mp
     rw [hsub]
     exact ht
@@ -38,9 +37,7 @@ theorem localIntegralRayCongruence
     refine ⟨algebraMap (𝓞 K) (v.adicCompletionIntegers K) (a - 1),
       (completionIdealPowerPullback K v (a - 1) n).mpr ha', ?_⟩
     rw [himage]
-    congr 1
-    rw [map_sub, map_one]
-    ring
+    simp
 
 theorem valuation_le_one_of_localRayCongruence
     (K : Type) [Field K] [NumberField K]
@@ -57,10 +54,8 @@ theorem valuation_le_one_of_localRayCongruence
   have hmem : algebraMap K (v.adicCompletion K) (x : K) ∈
       v.adicCompletionIntegers K := by
     rw [← hval]
-    exact (y : v.adicCompletionIntegers K).property
+    simp
   have hle := (IsDedekindDomain.HeightOneSpectrum.mem_adicCompletionIntegers
     (𝓞 K) K v).mp hmem
   change Valued.v ((x : K) : v.adicCompletion K) ≤ 1 at hle
   rwa [IsDedekindDomain.HeightOneSpectrum.valuedAdicCompletion_eq_valuation'] at hle
-
-end DedekindZetaZeroFree.AbelianQuotient

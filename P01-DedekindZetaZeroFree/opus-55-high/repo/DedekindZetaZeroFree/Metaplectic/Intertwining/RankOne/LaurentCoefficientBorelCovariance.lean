@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.Metaplectic.Intertwining.RankOne.RightLevelIn
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.KPRankOneShellRepair
 open scoped NumberField Valued
 open NumberField IsDedekindDomain MeasureTheory ValuativeRel
@@ -95,7 +94,3 @@ theorem actual_scalar_coefficient_borel
     actual_standard_integral_compact_borel_covariance F ζ hζ q S P J hJ μ hμ ε s hs φ b hb k h]
   simp_rw [actual_compact_action_eval F ζ hζ q S P (targetSign ε) b hb]
   rfl
-
-end DedekindZetaZeroFree.KPRankOneShellRepair
-
-end

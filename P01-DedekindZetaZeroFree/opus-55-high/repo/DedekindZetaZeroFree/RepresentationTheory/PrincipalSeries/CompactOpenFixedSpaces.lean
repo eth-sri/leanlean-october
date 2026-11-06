@@ -4,10 +4,8 @@ public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.LocalCom
 
 @[expose] public section
 
-noncomputable section
 open scoped Classical Valued
 set_option backward.isDefEq.respectTransparency false
-set_option autoImplicit false
 set_option maxHeartbeats 1000000
 set_option synthInstance.maxHeartbeats 200000
 namespace DedekindZetaZeroFree.KPGlobalResidualConstruction.NativeLocalFixedFinite
@@ -34,16 +32,11 @@ theorem principal_series_fixed_finite
     { toFun := fun x => ⟨e.symm x.val, by
         apply (compact_level_identification A P I ε J hJ s (e.symm x.val)).mpr
         change e (e.symm x.val) ∈ _
-        rw [LinearEquiv.apply_symm_apply]
-        exact x.property⟩
-      map_add' := by intros; apply Subtype.ext; exact map_add e.symm _ _
-      map_smul' := by intros; apply Subtype.ext; exact map_smul e.symm _ _ }
+        simp⟩
+      map_add' := by simp
+      map_smul' := by simp }
   apply Module.Finite.of_injective f
   intro x y h
   apply Subtype.ext
   apply e.symm.injective
   exact congrArg Subtype.val h
-
-end DedekindZetaZeroFree.KPGlobalResidualConstruction.NativeLocalFixedFinite
-
-end

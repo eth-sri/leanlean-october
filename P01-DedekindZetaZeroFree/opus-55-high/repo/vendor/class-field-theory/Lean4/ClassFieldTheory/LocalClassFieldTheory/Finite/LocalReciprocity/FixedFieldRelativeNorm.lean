@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Relative norms on actual fixed fields
 
@@ -74,15 +68,7 @@ def abstractFixedFieldCosetToAlgHom
       have hηfix : η.1 (x : Ω) = (x : Ω) :=
         (IntermediateField.mem_fixedField_iff L.toSubgroup
           (x : Ω)).1 x.property η.1 η.2
-      change σ.1 (x : Ω) = τ.1 (x : Ω)
-      calc
-        σ.1 (x : Ω) = σ.1 (η.1 (x : Ω)) :=
-          congrArg σ.1 hηfix.symm
-        _ = (σ.1 * η.1) (x : Ω) := rfl
-        _ = τ.1 (x : Ω) := by
-          have hτ' := congrArg Subtype.val hτ
-          change τ.1 = σ.1 * η.1 at hτ'
-          rw [hτ'])
+      simp_all)
 
 omit [IsSepClosed Ω] in
 /-- States the theorem `abstractFixedFieldCosetToAlgHom_mk`. -/
@@ -160,8 +146,7 @@ omit [IsSepClosed Ω] in
     rw [← hy]
     simp [y]
   rw [InfiniteGalois.fixingSubgroup_fixedField L] at hfix
-  change (Quotient.out q).1⁻¹ * (Quotient.out r).1 ∈ L.toSubgroup
-  exact hfix
+  omega
 
 /-- Abstract relative left cosets are precisely the embeddings of the upper
 concrete fixed field into the ambient separably closed field. -/
@@ -260,8 +245,8 @@ theorem relativeNorm_abstractFixedFieldUnit_eq_normUnits
   calc
     _ = ∏ σ : abstractRelativeFixedField k Ω hLK →ₐ[
         abstractFixedField k Ω K] Ω,
-        σ (x : abstractRelativeFixedField k Ω hLK) := by
-      exact Fintype.prod_equiv
+        σ (x : abstractRelativeFixedField k Ω hLK) := 
+      Fintype.prod_equiv
         (abstractFixedFieldCosetEquivAlgHom k Ω K L hLK)
         (fun q : Q =>
           ((Additive.toMul
@@ -281,7 +266,3 @@ theorem relativeNorm_abstractFixedFieldUnit_eq_normUnits
         (abstractFixedField k Ω K) Ω
         (abstractRelativeFixedField k Ω hLK)
         (x : abstractRelativeFixedField k Ω hLK)).symm
-
-end LocalClassFieldTheory
-
-end

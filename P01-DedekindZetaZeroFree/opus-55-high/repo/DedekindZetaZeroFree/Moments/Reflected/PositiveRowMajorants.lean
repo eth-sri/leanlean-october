@@ -25,7 +25,7 @@ def positiveRowWeight {cS : Ideal (𝓞 F)} (f : ExteriorSquarefreeIdeal cS)
   betaIdeal f x.1.val.val * (rowNorm x.1.val x.2.1.val x.2.2).rpow (-σ) /
     (Real.sqrt (idealNorm x.2.1.val.val) * idealNorm x.2.2.val)
 
-private theorem exterior_norm_summable (cS : Ideal (𝓞 F)) (t : ℝ) (ht : 1 < t) :
+theorem exterior_norm_summable (cS : Ideal (𝓞 F)) (t : ℝ) (ht : 1 < t) :
     Summable (fun I : ExteriorIdeal cS => (idealNorm I.val).rpow (-t)) := by
   let e : ExteriorIdeal cS → NonzeroIdeal F := fun I => ⟨I.val, I.property.1⟩
   have he : Function.Injective e := by
@@ -35,7 +35,7 @@ private theorem exterior_norm_summable (cS : Ideal (𝓞 F)) (t : ℝ) (ht : 1 <
   have H := (ideal_norm_rpow_summable F t ht).comp_injective he
   exact H
 
-private theorem real_weight_factor (a c n b σ : ℝ)
+theorem real_weight_factor (a c n b σ : ℝ)
     (ha : 0 < a) (hc : 0 < c) (hn : 0 < n) :
     b * (a * c * n ^ 3).rpow (-σ) / (Real.sqrt c * n) =
       (b * a.rpow (-σ)) * (c.rpow (-(σ + 1 / 2)) * n.rpow (-(3 * σ + 1))) := by
@@ -50,7 +50,7 @@ private theorem real_weight_factor (a c n b σ : ℝ)
   norm_num
   ring
 
-private theorem positiveRowWeight_factor {cS : Ideal (𝓞 F)}
+theorem positiveRowWeight_factor {cS : Ideal (𝓞 F)}
     (f : ExteriorSquarefreeIdeal cS) (σ : ℝ) (x : PositiveRowIndex f) :
     positiveRowWeight f σ x = betaIdealTerm f σ x.1 *
       ((idealNorm x.2.1.val.val).rpow (-(σ + 1 / 2)) *
@@ -85,8 +85,8 @@ theorem positiveRowWeight_summable_le {cS : Ideal (𝓞 F)}
   have hW : Summable (positiveRowWeight f σ) :=
     hprod.congr (fun x => (positiveRowWeight_factor f σ x).symm)
   refine ⟨hW, ?_⟩
-  have hcol : (∑' c : ExteriorSquarefreeIdeal cS, C c.val) ≤ exteriorNormZeta cS (σ + 1 / 2) := by
-    exact Summable.tsum_subtype_le C {c | Squarefree c.val}
+  have hcol : (∑' c : ExteriorSquarefreeIdeal cS, C c.val) ≤ exteriorNormZeta cS (σ + 1 / 2) := 
+    Summable.tsum_subtype_le C {c | Squarefree c.val}
       (fun c => Real.rpow_nonneg (le_trans zero_le_one (idealNorm_ge_one _ c.property.1)) _)
       hC
   have heuler : 0 ≤ eulerIdeal f σ := by
@@ -110,6 +110,3 @@ theorem positiveRowWeight_summable_le {cS : Ideal (𝓞 F)}
       _ = _ := (mul_assoc _ _ _).symm
   rw [heq]
   exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hcol heuler) hn
-
-end
-end DedekindZetaZeroFree

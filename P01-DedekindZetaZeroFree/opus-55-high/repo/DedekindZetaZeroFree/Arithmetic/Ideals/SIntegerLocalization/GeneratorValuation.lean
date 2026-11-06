@@ -50,7 +50,7 @@ theorem generator_valuation (S : Finset (HeightOneSpectrum (𝓞 F)))
   have hrv : v.valuation F (r : F) ≤ WithZero.exp (-(n : ℤ)) := by
     apply hmap
     rw [← hspan]
-    exact Ideal.subset_span (Set.mem_singleton r)
+    simp
   obtain ⟨a, ha, han⟩ : ∃ a : 𝓞 F, a ∈ I ∧ a ∉ v.asIdeal ^ (n + 1) := by
     contrapose! hnot
     exact hnot
@@ -73,7 +73,6 @@ theorem generator_valuation (S : Finset (HeightOneSpectrum (𝓞 F)))
     (fun h => hr (Subtype.ext h))
   rw [← WithZero.exp_log hnz, WithZero.exp_le_exp] at hrv hrv'
   have he : WithZero.log (v.valuation F (r : F)) = -(n : ℤ) := by
-    push_cast at hrv'
     omega
   rw [← WithZero.exp_log hnz, he]
 
@@ -88,6 +87,3 @@ theorem generator_completion_valuation (S : Finset (HeightOneSpectrum (𝓞 F)))
   change Valued.v ((a : F) : v.adicCompletion F) = _
   rw [HeightOneSpectrum.adicCompletion.valued_coe, ha]
   exact generator_valuation S I hI r hr hspan v hv
-
-end
-end DedekindZetaZeroFree.SIntegerLocalization

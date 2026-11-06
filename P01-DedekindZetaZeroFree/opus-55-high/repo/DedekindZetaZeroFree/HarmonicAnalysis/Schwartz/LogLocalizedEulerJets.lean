@@ -19,7 +19,7 @@ def jet (R : ℝ) (H : ℝ × ℝ → ℂ) : ℝ :=
   ∑ i ∈ Finset.range 3, ∑ j ∈ Finset.range 3,
     sSup {v : ℝ | ∃ x ∈ Set.Icc (-R) R, ∃ y ∈ Set.Icc (-R) R,
       v = ‖mixed i j H x y‖}
-private lemma euler_smooth (K : ℝ → ℂ) (hK : ContDiffOn ℝ ∞ K (Set.Ioi 0)) (n : ℕ) :
+lemma euler_smooth (K : ℝ → ℂ) (hK : ContDiffOn ℝ ∞ K (Set.Ioi 0)) (n : ℕ) :
     ContDiffOn ℝ ∞ (EulerIter n K) (Set.Ioi 0) := by
   induction n with
   | zero => exact hK
@@ -31,16 +31,16 @@ private lemma euler_smooth (K : ℝ → ℂ) (hK : ContDiffOn ℝ ∞ K (Set.Ioi
     apply hh.congr
     intro x hx
     exact EulerIter_succ_of_pos n K x hx
-private lemma log_smooth (K : ℝ → ℂ) (hK : ContDiffOn ℝ ∞ K (Set.Ioi 0))
+lemma log_smooth (K : ℝ → ℂ) (hK : ContDiffOn ℝ ∞ K (Set.Ioi 0))
     (scale : ℝ) (hs : 0 < scale) : ContDiff ℝ ∞ (fun u : ℝ => K (scale * Real.exp (u / 2))) := by
   apply hK.comp_contDiff
   · fun_prop
   · intro u; exact mul_pos hs (Real.exp_pos _)
-private lemma log_deriv (K : ℝ → ℂ) (hK : ContDiffOn ℝ ∞ K (Set.Ioi 0))
+lemma log_deriv (K : ℝ → ℂ) (hK : ContDiffOn ℝ ∞ K (Set.Ioi 0))
     (scale : ℝ) (hs : 0 < scale) (u : ℝ) :
     deriv (fun v : ℝ => K (scale * Real.exp (v / 2))) u =
       (2 : ℂ)⁻¹ * EulerIter 1 K (scale * Real.exp (u / 2)) := by
-  have hp : 0 < scale * Real.exp (u / 2) := mul_pos hs (Real.exp_pos _)
+  have hp : 0 < scale * Real.exp (u / 2) := by positivity
   have hkd := (hK.contDiffAt (isOpen_Ioi.mem_nhds hp)).differentiableAt (by simp)
   have he : HasDerivAt (fun v : ℝ => scale * Real.exp (v / 2))
       (scale * Real.exp (u / 2) / 2) u := by
@@ -53,7 +53,7 @@ private lemma log_deriv (K : ℝ → ℂ) (hK : ContDiffOn ℝ ∞ K (Set.Ioi 0)
   rw [hchain, EulerIter_succ_of_pos 0 K _ hp]
   simp only [EulerIter_zero, Complex.real_smul, Complex.ofReal_div, Complex.ofReal_ofNat]
   ring
-private lemma log_iterated (K : ℝ → ℂ) (hK : ContDiffOn ℝ ∞ K (Set.Ioi 0))
+lemma log_iterated (K : ℝ → ℂ) (hK : ContDiffOn ℝ ∞ K (Set.Ioi 0))
     (scale : ℝ) (hs : 0 < scale) (n : ℕ) :
     iteratedDeriv n (fun u : ℝ => K (scale * Real.exp (u / 2))) =
       fun u => (2 : ℂ)⁻¹ ^ n * EulerIter n K (scale * Real.exp (u / 2)) := by
@@ -64,19 +64,17 @@ private lemma log_iterated (K : ℝ → ℂ) (hK : ContDiffOn ℝ ∞ K (Set.Ioi
     funext u
     rw [deriv_const_mul_field, log_deriv _ (euler_smooth K hK n) scale hs]
     have he : EulerIter 1 (EulerIter n K) = EulerIter (n + 1) K := by
-      funext x
-      simp [EulerIter]
+      rfl
     rw [he]
     ring
-private lemma smooth_iter (L : ℝ → ℂ) (hL : ContDiff ℝ ∞ L) (n : ℕ) :
+lemma smooth_iter (L : ℝ → ℂ) (hL : ContDiff ℝ ∞ L) (n : ℕ) :
     ContDiff ℝ ∞ (iteratedDeriv n L) := by
   induction n with
   | zero => exact hL
   | succ n ih =>
     rw [iteratedDeriv_succ]
-    rw [← contDiffOn_univ]
-    exact ih.contDiffOn.deriv_of_isOpen isOpen_univ (by simp)
-private lemma mixed_formula (χ ψ L : ℝ → ℂ)
+    fun_prop
+lemma mixed_formula (χ ψ L : ℝ → ℂ)
     (hχ : ContDiff ℝ ∞ χ) (hψ : ContDiff ℝ ∞ ψ) (hL : ContDiff ℝ ∞ L)
     (i j : ℕ) (x y : ℝ) :
     mixed i j (fun p => χ p.1 * ψ p.2 * L (p.1 + p.2)) x y =
@@ -92,7 +90,7 @@ private lemma mixed_formula (χ ψ L : ℝ → ℂ)
         fun v => χ u * (ψ v * L (u+v)) by funext v; ring]
     rw [iteratedDeriv_const_mul_field]
     have hh : ContDiff ℝ ∞ (fun v : ℝ => L (u+v)) := by
-      exact hL.comp (contDiff_const.add contDiff_id)
+      fun_prop
     rw [iteratedDeriv_fun_mul (hψ.of_le (by simp)).contDiffAt
       (hh.of_le (by simp)).contDiffAt]
     simp only [iteratedDeriv_comp_const_add]
@@ -108,7 +106,7 @@ private lemma mixed_formula (χ ψ L : ℝ → ℂ)
     rw [iteratedDeriv_const_mul_field]
     have hLj : ContDiff ℝ ∞ (iteratedDeriv (j-l) L) := smooth_iter L hL (j-l)
     have hh : ContDiff ℝ ∞ (fun u : ℝ => iteratedDeriv (j-l) L (u+y)) :=
-      hLj.comp (contDiff_id.add contDiff_const)
+      by fun_prop
     rw [iteratedDeriv_fun_mul (hχ.of_le (by simp)).contDiffAt
       (hh.of_le (by simp)).contDiffAt]
     rw [Finset.mul_sum]
@@ -122,7 +120,7 @@ private lemma mixed_formula (χ ψ L : ℝ → ℂ)
   · intro l hl
     have hLj : ContDiff ℝ ∞ (iteratedDeriv (j-l) L) := smooth_iter L hL (j-l)
     exact ((contDiff_const.mul (hχ.mul (hLj.comp (contDiff_id.add contDiff_const)))).of_le (by simp)).contDiffAt
-private lemma log_iter_bound (K : ℝ → ℂ) (hK : ContDiffOn ℝ ∞ K (Set.Ioi 0))
+lemma log_iter_bound (K : ℝ → ℂ) (hK : ContDiffOn ℝ ∞ K (Set.Ioi 0))
     (R c scale B : ℝ) (hc : 0 < c) (hs : 0 < scale) (hB : 0 ≤ B)
     (hbound : ∀ j ≤ 4, ∀ x : ℝ, 0 < x → ‖DedekindZetaZeroFree.LargeSieve.Vendor.EulerIter j K x‖ ≤ B * Real.rpow x (-c))
     (n : ℕ) (hn : n ≤ 4) (u : ℝ) (hu : -2*R ≤ u) :
@@ -133,13 +131,13 @@ private lemma log_iter_bound (K : ℝ → ℂ) (hK : ContDiffOn ℝ ∞ K (Set.I
     rw [norm_pow, norm_inv]
     norm_num
     exact pow_le_one₀ (by norm_num) (by norm_num)
-  have hp : 0 < scale * Real.exp (u/2) := mul_pos hs (Real.exp_pos _)
+  have hp : 0 < scale * Real.exp (u/2) := by positivity
   have he : Real.exp ((u/2)*(-c)) ≤ Real.exp (c*R) := by
     apply Real.exp_le_exp.mpr
     nlinarith
   calc
-    _ ≤ B * Real.rpow (scale * Real.exp (u/2)) (-c) := by
-      exact mul_le_of_le_one_left (norm_nonneg _) hnorm |>.trans (hbound n hn _ hp)
+    _ ≤ B * Real.rpow (scale * Real.exp (u/2)) (-c) := 
+      mul_le_of_le_one_left (norm_nonneg _) hnorm |>.trans (hbound n hn _ hp)
     _ = B * Real.rpow scale (-c) * Real.exp ((u/2)*(-c)) := by
       have hp : Real.rpow (scale * Real.exp (u/2)) (-c) =
           Real.rpow scale (-c) * Real.exp ((u/2)*(-c)) := by
@@ -151,7 +149,7 @@ private lemma log_iter_bound (K : ℝ → ℂ) (hK : ContDiffOn ℝ ∞ K (Set.I
       ring
     _ ≤ B * Real.rpow scale (-c) * Real.exp (c*R) :=
       mul_le_mul_of_nonneg_left he (mul_nonneg hB (Real.rpow_nonneg hs.le _))
-private lemma mixed_bound (χ ψ L : ℝ → ℂ)
+lemma mixed_bound (χ ψ L : ℝ → ℂ)
     (hχ : ContDiff ℝ ∞ χ) (hψ : ContDiff ℝ ∞ ψ) (hL : ContDiff ℝ ∞ L)
     (R T : ℝ) (hT : 0 ≤ T) (Aχ Aψ : ℕ → ℝ)
     (haχ : ∀ n, 0 ≤ Aχ n) (haψ : ∀ n, 0 ≤ Aψ n)
@@ -202,8 +200,8 @@ theorem uniform_jet_bound
   choose Aψ haψ using hbψ
   let Pχ := fun n => |Aχ n| + 1
   let Pψ := fun n => |Aψ n| + 1
-  have hPχ : ∀ n, 0 ≤ Pχ n := by intro n; dsimp [Pχ]; positivity
-  have hPψ : ∀ n, 0 ≤ Pψ n := by intro n; dsimp [Pψ]; positivity
+  have hPχ : ∀ n, 0 ≤ Pχ n := by intro n; positivity
+  have hPψ : ∀ n, 0 ≤ Pψ n := by intro n; positivity
   have hbPχ : ∀ n, ∀ x ∈ Set.Icc (-R) R, ‖iteratedDeriv n χ x‖ ≤ Pχ n := by
     intro n x hx; exact (haχ n x hx).trans (by dsimp [Pχ]; have := le_abs_self (Aχ n); linarith)
   have hbPψ : ∀ n, ∀ x ∈ Set.Icc (-R) R, ‖iteratedDeriv n ψ x‖ ≤ Pψ n := by
@@ -212,10 +210,9 @@ theorem uniform_jet_bound
         ‖(j.choose l : ℂ)‖ * ‖(i.choose k : ℂ)‖ * Pχ k * Pψ l
   let C := (∑ i ∈ Finset.range 3, ∑ j ∈ Finset.range 3, A i j) * Real.exp (c*R) + 1
   have hA : ∀ i j, 0 ≤ A i j := by
-    intro i j; exact Finset.sum_nonneg fun l _ => Finset.sum_nonneg fun k _ =>
-      mul_nonneg (mul_nonneg (mul_nonneg (norm_nonneg _) (norm_nonneg _)) (hPχ k)) (hPψ l)
+    intro i j; positivity
   have hsum : 0 ≤ ∑ i ∈ Finset.range 3, ∑ j ∈ Finset.range 3, A i j :=
-    Finset.sum_nonneg fun i _ => Finset.sum_nonneg fun j _ => hA i j
+    by positivity
   refine ⟨C, by dsimp [C]; positivity, ?_⟩
   intro K B hK hB hbound scale hs
   let L := fun u : ℝ => K (scale * Real.exp (u/2))
@@ -257,6 +254,3 @@ theorem uniform_jet_bound
   convert he using 1
   simp only [← Real.rpow_eq_pow]
   ring
-end DedekindZetaZeroFree.LargeSieve.Vendor.LogLocalizedJets
-
-end

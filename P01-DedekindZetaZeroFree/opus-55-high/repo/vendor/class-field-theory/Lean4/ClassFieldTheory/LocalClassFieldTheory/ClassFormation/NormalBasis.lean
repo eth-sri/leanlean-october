@@ -13,12 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-set_option autoImplicit false
 /-! Provides the public declarations in the `LocalClassFieldTheory.ClassFormation.NormalBasis` Lean module. -/
 
 namespace LocalClassFieldTheory
@@ -52,7 +46,7 @@ theorem span_normalBasis_eq_chosenNormalBasisIntegerLattice :
 /-- The normal-basis orbit is an `𝒪_K`-basis of the standard lattice `M`.
 This is the coordinate source for the induced-module calculation in the local
 class-field-axiom proof. -/
-noncomputable def chosenNormalBasisIntegerLatticeBasis :
+def chosenNormalBasisIntegerLatticeBasis :
     Module.Basis Gal(L / K) 𝒪[K] (chosenNormalBasisIntegerLattice K L) :=
   ((IsGalois.normalBasis K L).restrictScalars 𝒪[K]).map
     (LinearEquiv.ofEq _ _
@@ -84,9 +78,7 @@ def chosenNormalBasisIntegerLatticeMulPowLinearMap (n : Nat) :
     ext
     exact mul_add _ _ _
   map_smul' := by
-    intro a x
-    ext
-    simp [Algebra.smul_def, mul_assoc, mul_comm, mul_left_comm]
+    simp
 
 /-- Uniformizer-power scaling bijects the integral lattice with its scaled copy. -/
 theorem chosenNormalBasisIntegerLatticeMulPowLinearMap_bijective (n : Nat) :
@@ -116,7 +108,7 @@ theorem chosenNormalBasisIntegerLatticeMulPowLinearMap_bijective (n : Nat) :
 
 /-- Multiplication by `π_K^n` as an `𝒪_K`-linear equivalence of the
 normal-basis lattice with its `n`-th dilate. -/
-noncomputable def chosenNormalBasisIntegerLatticeMulPowLinearEquiv (n : Nat) :
+def chosenNormalBasisIntegerLatticeMulPowLinearEquiv (n : Nat) :
     chosenNormalBasisIntegerLattice K L ≃ₗ[𝒪[K]]
       chosenBaseUniformizerPowSubmodule K L n (chosenNormalBasisIntegerLattice K L) :=
   LinearEquiv.ofBijective (chosenNormalBasisIntegerLatticeMulPowLinearMap K L n)
@@ -138,15 +130,6 @@ def chosenNormalBasisIntegerLatticeUniformizerSubmodule :
   (chosenBaseUniformizerPowSubmodule K L 1
       (chosenNormalBasisIntegerLattice K L)).comap
     (chosenNormalBasisIntegerLattice K L).subtype
-
-/-- Membership in the lattice uniformizer submodule is detected after coercion to the field. -/
-@[simp]
-theorem mem_chosenNormalBasisIntegerLatticeUniformizerSubmodule_iff
-    (x : chosenNormalBasisIntegerLattice K L) :
-    x ∈ chosenNormalBasisIntegerLatticeUniformizerSubmodule K L ↔
-      (x : L) ∈ chosenBaseUniformizerPowSubmodule K L 1
-        (chosenNormalBasisIntegerLattice K L) :=
-  Iff.rfl
 
 /-- Scaling maps the uniformizer submodule onto the next normal-basis lattice. -/
 theorem chosenNormalBasisIntegerLatticeUniformizerSubmodule_map_mulPow
@@ -198,7 +181,7 @@ theorem chosenNormalBasisIntegerLatticeUniformizerSubmodule_map_mulPow
 
 /-- Removing the common factor `π_K^n` identifies the `n`-th lattice graded
 piece with the fixed quotient `M / π_K M`. -/
-noncomputable def chosenNormalBasisLatticeSuccQuotToIntegerLatticeQuotLinearEquiv
+def chosenNormalBasisLatticeSuccQuotToIntegerLatticeQuotLinearEquiv
     (n : Nat) :
     chosenNormalBasisLatticeSuccQuot K L n ≃ₗ[𝒪[K]]
       (chosenNormalBasisIntegerLattice K L ⧸
@@ -239,15 +222,6 @@ theorem chosenNormalBasisLatticeSuccQuotToIntegerLatticeQuotLinearEquiv_mk_mulPo
 def chosenNormalBasisCoordinateMaximalSubmodule :
     Submodule 𝒪[K] (Gal(L / K) → 𝒪[K]) :=
   Submodule.pi Set.univ (fun _ => (𝓂[K] : Ideal 𝒪[K]))
-
-omit [FiniteDimensional K L] [IsGalois K L] in
-/-- A coordinate function lies in the maximal submodule exactly when every value is nonunit. -/
-@[simp]
-theorem mem_chosenNormalBasisCoordinateMaximalSubmodule_iff
-    (f : Gal(L / K) → 𝒪[K]) :
-    f ∈ chosenNormalBasisCoordinateMaximalSubmodule K L ↔
-      ∀ σ : Gal(L / K), f σ ∈ (𝓂[K] : Ideal 𝒪[K]) := by
-  simp [chosenNormalBasisCoordinateMaximalSubmodule]
 
 /-- Normal-basis coordinates identify the uniformizer submodule with pointwise maximal-ideal values. -/
 theorem chosenNormalBasisIntegerLatticeUniformizerSubmodule_map_equivFun :
@@ -308,7 +282,7 @@ theorem chosenNormalBasisIntegerLatticeUniformizerSubmodule_map_equivFun :
 
 /-- Normal-basis coordinates identify `M / π_K M` with the coordinatewise
 maximal-ideal quotient. -/
-noncomputable def chosenNormalBasisIntegerLatticeQuotCoordinateQuotLinearEquiv :
+def chosenNormalBasisIntegerLatticeQuotCoordinateQuotLinearEquiv :
     (chosenNormalBasisIntegerLattice K L ⧸
         chosenNormalBasisIntegerLatticeUniformizerSubmodule K L) ≃ₗ[𝒪[K]]
       ((Gal(L / K) → 𝒪[K]) ⧸ chosenNormalBasisCoordinateMaximalSubmodule K L) :=
@@ -320,7 +294,7 @@ noncomputable def chosenNormalBasisIntegerLatticeQuotCoordinateQuotLinearEquiv :
 
 /-- Quotienting coordinate functions by the pointwise maximal ideal is the
 function space with values in `𝒪_K / 𝓂_K`. -/
-noncomputable def chosenNormalBasisCoordinateQuotPiLinearEquiv :
+def chosenNormalBasisCoordinateQuotPiLinearEquiv :
     ((Gal(L / K) → 𝒪[K]) ⧸ chosenNormalBasisCoordinateMaximalSubmodule K L) ≃ₗ[𝒪[K]]
       (Gal(L / K) → (𝒪[K] ⧸ (𝓂[K] : Ideal 𝒪[K]))) := by
   classical
@@ -346,16 +320,13 @@ def chosenNormalBasisPiResidueInverseIndexAddEquiv :
   invFun f σ := (integerRingModMaximalIdealAddEquivResidue K).symm (f σ⁻¹)
   left_inv := by
     intro f
-    funext σ
-    simp
+    rfl
   right_inv := by
     intro f
-    funext σ
-    simp
+    rfl
   map_add' := by
     intro f g
-    funext σ
-    simp
+    rfl
 
 omit [FiniteDimensional K L] [IsGalois K L] in
 /-- The inverse-index equivalence evaluates a residue function at the inverse Galois element. -/
@@ -370,7 +341,7 @@ theorem chosenNormalBasisPiResidueInverseIndexAddEquiv_apply
 /-- The honest additive normal-basis model of the lattice graded piece
 `π_K^n M / π_K^(n+1) M` as the right-regular function module over the residue
 field. -/
-noncomputable def chosenNormalBasisLatticeSuccQuotRightRegularAddEquiv (n : Nat) :
+def chosenNormalBasisLatticeSuccQuotRightRegularAddEquiv (n : Nat) :
     chosenNormalBasisLatticeSuccQuot K L n ≃+ (Gal(L / K) → 𝓀[K]) :=
   (chosenNormalBasisLatticeSuccQuotToIntegerLatticeQuotLinearEquiv K L n).toAddEquiv.trans
     ((chosenNormalBasisIntegerLatticeQuotCoordinateQuotLinearEquiv K L).toAddEquiv.trans
@@ -406,19 +377,16 @@ def galoisGroupChosenNormalBasisIntegerLatticeLinearEquiv (τ : Gal(L / K)) :
   invFun x := ⟨τ⁻¹ (x : L),
     galoisGroup_apply_mem_chosenNormalBasisIntegerLattice (K := K) (L := L) τ⁻¹ x.2⟩
   left_inv x := by
-    apply Subtype.ext
-    exact τ.symm_apply_apply (x : L)
+    simp
   right_inv x := by
-    apply Subtype.ext
-    exact τ.apply_symm_apply (x : L)
+    simp
   map_add' x y := by
-    apply Subtype.ext
-    exact map_add τ (x : L) (y : L)
+    simp
   map_smul' a x := by
     apply Subtype.ext
     have ha : τ (algebraMap 𝒪[K] L a) = algebraMap 𝒪[K] L a := by
       change τ (algebraMap K L (a : K)) = algebraMap K L (a : K)
-      exact τ.commutes (a : K)
+      simp
     change τ (((a • x : chosenNormalBasisIntegerLattice K L) : L)) =
       ((a • (⟨τ (x : L), galoisGroup_apply_mem_chosenNormalBasisIntegerLattice
         (K := K) (L := L) τ x.2⟩ : chosenNormalBasisIntegerLattice K L) :
@@ -442,7 +410,6 @@ omit [TopologicalSpace K] [IsNonarchimedeanLocalField K] in
 theorem galoisGroupChosenNormalBasisIntegerLatticeLinearEquiv_one_apply
     (x : chosenNormalBasisIntegerLattice K L) :
     galoisGroupChosenNormalBasisIntegerLatticeLinearEquiv K L 1 x = x := by
-  apply Subtype.ext
   rfl
 
 omit [TopologicalSpace K] [IsNonarchimedeanLocalField K] in
@@ -453,7 +420,6 @@ theorem galoisGroupChosenNormalBasisIntegerLatticeLinearEquiv_mul_apply
     galoisGroupChosenNormalBasisIntegerLatticeLinearEquiv K L (τ * υ) x =
       galoisGroupChosenNormalBasisIntegerLatticeLinearEquiv K L τ
         (galoisGroupChosenNormalBasisIntegerLatticeLinearEquiv K L υ x) := by
-  apply Subtype.ext
   rfl
 
 omit [TopologicalSpace K] [IsNonarchimedeanLocalField K] in
@@ -472,7 +438,7 @@ theorem chosenNormalBasisIntegerLatticeBasis_equivFun_galoisGroup
     ext ρ
     rw [Module.Basis.map_apply, Module.Basis.reindex_apply]
     have he : e.symm ρ = τ * ρ := by
-      simp [e]
+      rfl
     rw [he]
     simp only [f, b, galoisGroupChosenNormalBasisIntegerLatticeLinearEquiv_apply_coe,
       chosenNormalBasisIntegerLatticeBasis_apply]
@@ -484,13 +450,10 @@ theorem chosenNormalBasisIntegerLatticeBasis_equivFun_galoisGroup
     calc
       b.equivFun (f x) (τ * ρ) =
           (b.reindex e).equivFun (f x) ρ := by
-            rw [Module.Basis.equivFun_apply, Module.Basis.equivFun_apply,
-              Module.Basis.repr_reindex_apply]
-            simp [e]
+            rfl
       _ = (b.map f).equivFun (f x) ρ := by rw [hbmap]
       _ = b.equivFun x ρ := by
-        rw [Module.Basis.map_equivFun]
-        simp [f]
+        simp
   simpa using hcoord (τ⁻¹ * σ)
 
 /-- The lattice uniformizer submodule is stable under every Galois automorphism. -/
@@ -518,7 +481,7 @@ theorem chosenNormalBasisIntegerLatticeUniformizerSubmodule_map_galoisGroup
         ((chosenIntegerRingUniformizer K ^ 1 : 𝒪[K]) : K) =
       τ (algebraMap K L
         ((chosenIntegerRingUniformizer K ^ 1 : 𝒪[K]) : K))
-    exact (τ.commutes _).symm
+    simp
   · intro hx
     let y := galoisGroupChosenNormalBasisIntegerLatticeLinearEquiv K L τ⁻¹ x
     have hy : y ∈ chosenNormalBasisIntegerLatticeUniformizerSubmodule K L := by
@@ -537,13 +500,13 @@ theorem chosenNormalBasisIntegerLatticeUniformizerSubmodule_map_galoisGroup
           ((chosenIntegerRingUniformizer K ^ 1 : 𝒪[K]) : K) =
         τ⁻¹ (algebraMap K L
           ((chosenIntegerRingUniformizer K ^ 1 : 𝒪[K]) : K))
-      exact ((τ⁻¹).commutes _).symm
+      simp
     refine ⟨y, hy, ?_⟩
     apply Subtype.ext
     exact τ.apply_symm_apply (x : L)
 
 /-- The actual Galois action on the fixed quotient `M / π_K M`. -/
-noncomputable def galoisGroupChosenNormalBasisIntegerLatticeQuotLinearEquiv
+def galoisGroupChosenNormalBasisIntegerLatticeQuotLinearEquiv
     (τ : Gal(L / K)) :
     (chosenNormalBasisIntegerLattice K L ⧸
         chosenNormalBasisIntegerLatticeUniformizerSubmodule K L) ≃ₗ[𝒪[K]]
@@ -567,7 +530,7 @@ theorem galoisGroupChosenNormalBasisIntegerLatticeQuotLinearEquiv_mk
 
 /-- The actual Galois action on `π_K^n M / π_K^(n+1) M`, transported through
 removal of the common factor `π_K^n`. -/
-noncomputable def galoisGroupChosenNormalBasisLatticeSuccQuotAddEquiv
+def galoisGroupChosenNormalBasisLatticeSuccQuotAddEquiv
     (n : Nat) (τ : Gal(L / K)) :
     chosenNormalBasisLatticeSuccQuot K L n ≃+
       chosenNormalBasisLatticeSuccQuot K L n :=
@@ -627,12 +590,12 @@ theorem chosenNormalBasisIntegerLatticeMulPowLinearEquiv_galoisGroup_apply_coe
   congr 1
   change algebraMap K L ((chosenIntegerRingUniformizer K ^ n : 𝒪[K]) : K) =
     τ (algebraMap K L ((chosenIntegerRingUniformizer K ^ n : 𝒪[K]) : K))
-  exact (τ.commutes _).symm
+  simp
 
 /-- The additive `Gal(L / K)`-action on the lattice graded piece induced by
 the actual action on the extension field. -/
 @[implicit_reducible]
-noncomputable def galoisGroupChosenNormalBasisLatticeSuccQuotDistribMulAction
+def galoisGroupChosenNormalBasisLatticeSuccQuotDistribMulAction
     (n : Nat) :
     DistribMulAction Gal(L / K) (chosenNormalBasisLatticeSuccQuot K L n) where
   smul τ q := galoisGroupChosenNormalBasisLatticeSuccQuotAddEquiv K L n τ q
@@ -645,8 +608,7 @@ noncomputable def galoisGroupChosenNormalBasisLatticeSuccQuotDistribMulAction
     refine Submodule.Quotient.induction_on
       (chosenNormalBasisIntegerLatticeUniformizerSubmodule K L) (e q) ?_
     intro x
-    rw [galoisGroupChosenNormalBasisIntegerLatticeQuotLinearEquiv_mk,
-      galoisGroupChosenNormalBasisIntegerLatticeLinearEquiv_one_apply]
+    rfl
   mul_smul := by
     intro τ υ q
     change galoisGroupChosenNormalBasisLatticeSuccQuotAddEquiv K L n (τ * υ) q =
@@ -660,10 +622,7 @@ noncomputable def galoisGroupChosenNormalBasisLatticeSuccQuotDistribMulAction
     refine Submodule.Quotient.induction_on
       (chosenNormalBasisIntegerLatticeUniformizerSubmodule K L) (e q) ?_
     intro x
-    rw [galoisGroupChosenNormalBasisIntegerLatticeQuotLinearEquiv_mk,
-      galoisGroupChosenNormalBasisIntegerLatticeQuotLinearEquiv_mk,
-      galoisGroupChosenNormalBasisIntegerLatticeQuotLinearEquiv_mk,
-      galoisGroupChosenNormalBasisIntegerLatticeLinearEquiv_mul_apply]
+    rfl
   smul_zero := by
     intro τ
     exact (galoisGroupChosenNormalBasisLatticeSuccQuotAddEquiv K L n τ).map_zero
@@ -742,8 +701,3 @@ theorem chosenNormalBasisLatticeSuccQuot_herbrandHMinusOne_subsingleton
       (G := Gal(L / K)) (M := chosenNormalBasisLatticeSuccQuot K L n) (D := 𝓀[K])
       τ hgen (chosenNormalBasisLatticeSuccQuotRightRegularAddEquiv K L n)
       (chosenNormalBasisLatticeSuccQuotRightRegularAddEquiv_commutes K L n)
-
-end GradedCoordinates
-
-end
-end LocalClassFieldTheory

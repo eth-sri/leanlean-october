@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.Metaplectic.Intertwining.RankOne.ConvergenceC
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.KPRankOneShellRepair
 open scoped NumberField Valued
 open NumberField IsDedekindDomain MeasureTheory ValuativeRel
@@ -51,7 +50,3 @@ theorem actualContinued_section_intertwines (s : ℂ)
     ((transportToSections (LocalField F q) S.borel P S.iwasawa ε s
       (actualContinued F ζ hζ q S P μ hμ π hπ ε s) f).val (x * g)).val h
   simpa only [φ, LinearEquiv.apply_symm_apply] using he
-
-end DedekindZetaZeroFree.KPRankOneShellRepair
-
-end

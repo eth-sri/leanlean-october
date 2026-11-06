@@ -34,7 +34,7 @@ theorem squareUnitModulus_ne_bot (Sf : Finset (HeightOneSpectrum (𝓞 F)))
   rw [show (⊥ : Ideal (𝓞 F)) = 0 from rfl]
   exact Finset.prod_ne_zero_iff.mpr (fun v _ => pow_ne_zero _ v.prime.ne_zero)
 
-private theorem prime_dvd_prime_pow_iff {p q : Ideal (𝓞 F)} (hp : Prime p) (hq : Prime q)
+theorem prime_dvd_prime_pow_iff {p q : Ideal (𝓞 F)} (hp : Prime p) (hq : Prime q)
     (n : ℕ) : p ∣ q ^ n ↔ p = q ∧ 1 ≤ n := by
   have hp' : p.IsPrime := Ideal.isPrime_of_prime hp
   have hq' : q.IsPrime := Ideal.isPrime_of_prime hq
@@ -89,12 +89,9 @@ theorem uniformSquareUnitModulus_spec (Sf : Finset (HeightOneSpectrum (𝓞 F)))
     uniformSquareUnitModulus Sf ≠ ⊥ ∧
       (∀ v : HeightOneSpectrum (𝓞 F),
         uniformSquareUnitModulus Sf ≤ v.asIdeal ↔ v ∈ Sf) ∧
-      idealPrimeSupport (uniformSquareUnitModulus Sf) = Sf.image HeightOneSpectrum.asIdeal := by
-  exact ⟨squareUnitModulus_ne_bot Sf squareUnitDepth,
+      idealPrimeSupport (uniformSquareUnitModulus Sf) = Sf.image HeightOneSpectrum.asIdeal := 
+  ⟨squareUnitModulus_ne_bot Sf squareUnitDepth,
     fun v => squareUnitModulus_support Sf squareUnitDepth
       (fun w _ => (squareUnitDepth_bounds w).1) v,
     squareUnitModulus_primeSupport Sf squareUnitDepth
       (fun w _ => (squareUnitDepth_bounds w).1)⟩
-
-end
-end DedekindZetaZeroFree

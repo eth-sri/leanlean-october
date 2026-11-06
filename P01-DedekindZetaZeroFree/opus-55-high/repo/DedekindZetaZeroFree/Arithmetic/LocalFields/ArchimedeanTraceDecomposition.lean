@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Adeles.Characters.ArchimedeanTraceCharacter
 
 @[expose] public section
 
-noncomputable section
 
 namespace DedekindZetaZeroFree
 
@@ -21,7 +20,7 @@ theorem archTrace_algebraMap {F : Type*} [Field F] [NumberField F]
     rw [show ((t : v.Completion)) =
         ((WithAbs.toAbs v.1 t : WithAbs v.1) : v.Completion) from rfl]
     rw [InfinitePlace.Completion.extensionEmbeddingOfIsReal_coe]
-    simp only [WithAbs.equiv_apply, WithAbs.ofAbs_toAbs]
+    simp only [WithAbs.equiv_apply]
     rw [hv.mult_eq_one]
     rw [← InfinitePlace.embedding_of_isReal_apply hv t]
     simp only [Complex.ofReal_re]
@@ -32,7 +31,7 @@ theorem archTrace_algebraMap {F : Type*} [Field F] [NumberField F]
     rw [show ((t : v.Completion)) =
         ((WithAbs.toAbs v.1 t : WithAbs v.1) : v.Completion) from rfl]
     rw [InfinitePlace.Completion.extensionEmbedding_coe]
-    simp only [WithAbs.equiv_apply, WithAbs.ofAbs_toAbs]
+    simp only [WithAbs.equiv_apply]
     rw [hv.mult_eq_two]
     ring
 
@@ -67,12 +66,8 @@ theorem trace_eq_sum_archTrace {F : Type*} [Field F] [NumberField F] (t : F) :
     rcases (InfinitePlace.mk_eq_iff (K := F)).mp hmk with h | h
     · rw [h]
     · rw [← h, ComplexEmbedding.conjugate_coe_eq]
-      simp [Complex.conj_re]
+      rfl
   have hcard : (Finset.univ.filter (fun φ : F →+* ℂ => InfinitePlace.mk φ = v)).card = v.mult :=
     InfinitePlace.card_filter_mk_eq v
   rw [Finset.sum_congr rfl hfiber, Finset.sum_const, hcard, nsmul_eq_mul]
   exact (archTrace_algebraMap v t).symm
-
-end DedekindZetaZeroFree
-
-end

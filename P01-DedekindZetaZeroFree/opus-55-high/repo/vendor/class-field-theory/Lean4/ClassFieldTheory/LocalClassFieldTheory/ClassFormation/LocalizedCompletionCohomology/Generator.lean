@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # A generator of a localized finite Galois group
 -/
@@ -39,7 +36,7 @@ variable {K : Type u} {L : Type v}
 /-- The canonical finite structure on the decomposition group used by the
 localized low-degree cohomology calculations. -/
 @[reducible]
-noncomputable def localizedCompletionDecompositionGroupFintype
+def localizedCompletionDecompositionGroupFintype
     (vK : AbsoluteValue K ℝ)
     (w : AbsoluteValueExtension vK L) :
     Fintype (absoluteValueDecompositionGroup K w.1) :=
@@ -47,7 +44,7 @@ noncomputable def localizedCompletionDecompositionGroupFintype
 
 /-- A generator of the localized Galois group induced by a chosen generator
 of the global cyclic Galois group. -/
-noncomputable def localizedCompletionGaloisGenerator
+def localizedCompletionGaloisGenerator
     (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
     (w : AbsoluteValueExtension vK L)
     (σ : L ≃ₐ[K] L)
@@ -94,7 +91,3 @@ theorem localizedCompletionGaloisGenerator_generates
   refine ⟨e.symm τ, ?_, e.apply_symm_apply τ⟩
   exact subgroupGeneratorOfGenerator_generates
     H σ hgen (e.symm τ)
-
-end LocalClassFieldTheory
-
-end

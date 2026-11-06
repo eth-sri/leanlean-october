@@ -4,20 +4,19 @@ public import DedekindZetaZeroFree.Arithmetic.RayClasses.Representatives.Integra
 
 @[expose] public section
 
-noncomputable section
 
 open scoped NumberField Classical
 open IsDedekindDomain UniqueFactorizationMonoid
 
 namespace DedekindZetaZeroFree.AbelianQuotient
 
-private lemma ideal_pow_ne_bot {R : Type*} [CommRing R] [NoZeroDivisors R] [Nontrivial R]
+lemma ideal_pow_ne_bot {R : Type*} [CommRing R] [NoZeroDivisors R] [Nontrivial R]
     {P : Ideal R} (hP : P ≠ ⊥) (n : ℕ) : P ^ n ≠ ⊥ := by
   induction n with
-  | zero => rw [pow_zero, Ideal.one_eq_top]; exact fun h => bot_ne_top h.symm
-  | succ n ih => rw [pow_succ]; exact fun h => (Ideal.mul_eq_bot.mp h).elim ih hP
+  | zero => simp
+  | succ n ih => rw [pow_succ]; simp_all
 
-private lemma prime_coprime_modulus
+lemma prime_coprime_modulus
     (K : Type) [Field K] [NumberField K]
     (m : Ideal (𝓞 K)) (hm : m ≠ ⊥) (v : HeightOneSpectrum (𝓞 K))
     (hv : v ∉ (narrowIdealModulus K m hm).finitePart.support) :
@@ -33,19 +32,19 @@ private lemma prime_coprime_modulus
   have heq := v.isMaximal.eq_of_le hne le_sup_left
   exact hnot (heq ▸ le_sup_right)
 
-private lemma rayIdealClass_pow
+lemma rayIdealClass_pow
     (K : Type) [Field K] [NumberField K]
     (m : Ideal (𝓞 K)) (hm : m ≠ ⊥)
     (P : Ideal (𝓞 K)) (c : RayIdealClass K m hm)
     (hc : rayIdealClass K m hm P = some c) (n : ℕ) :
     rayIdealClass K m hm (P ^ n) = some (c ^ n) := by
   induction n with
-  | zero => rw [pow_zero, pow_zero, Ideal.one_eq_top]; exact rayIdealClass_top K m hm
+  | zero => simp
   | succ n ih =>
       rw [pow_succ, pow_succ, rayIdealClass_mul K m hm (P ^ n) P, ih, hc]
       simp
 
-private lemma rayIdealClass_prod
+lemma rayIdealClass_prod
     (K : Type) [Field K] [NumberField K]
     (m : Ideal (𝓞 K)) (hm : m ≠ ⊥)
     {ι : Type*} (s : Finset ι) (P : ι → Ideal (𝓞 K))
@@ -63,8 +62,7 @@ private lemma rayIdealClass_prod
     intro s
     induction s using Finset.induction_on with
     | empty =>
-        intro _ _ _
-        simp [Finset.prod_empty, Ideal.one_eq_top, rayIdealClass_top K m hm]
+        simp
     | insert v s hv ih =>
         intro hne hcop hcl
         rw [Finset.prod_insert hv, Finset.prod_insert hv]
@@ -110,7 +108,3 @@ theorem rayPositivePrimeProduct
     (fun v _ => rayIdealClass_pow K m hm v.val
       (ClassFieldTheory.rayClassOfFinitePrime (narrowIdealModulus K m hm) v.val v.property)
       (rayIdealClass_of_finitePrime K m hm v.val v.property) (e v))
-
-end DedekindZetaZeroFree.AbelianQuotient
-
-end

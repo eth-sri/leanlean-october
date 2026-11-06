@@ -15,13 +15,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Continuous additive maps of p-adic modules are p-adic linear
 
@@ -37,7 +30,7 @@ namespace LocalFieldTheory.DiscreteValuationField
 
 /-- Turn a topological group equivalence whose source is an additive group
 written multiplicatively into the inverse topological additive equivalence. -/
-noncomputable def continuousAddEquivOfMultiplicativeSource
+def continuousAddEquivOfMultiplicativeSource
     {C G : Type*} [AddZeroClass C] [MulOneClass G]
     [TopologicalSpace C] [TopologicalSpace G]
     (e : Multiplicative C ≃ₜ* G) : Additive G ≃ₜ+ C :=
@@ -48,7 +41,7 @@ noncomputable def continuousAddEquivOfMultiplicativeSource
 /-- Turn a topological additive equivalence into the corresponding
 topological multiplicative equivalence after tagging the source
 multiplicatively. -/
-noncomputable def continuousMulEquivOfAdditiveTarget
+def continuousMulEquivOfAdditiveTarget
     {C G : Type*} [AddZeroClass C] [MulOneClass G]
     [TopologicalSpace C] [TopologicalSpace G]
     (e : C ≃ₜ+ Additive G) : Multiplicative C ≃ₜ* G :=
@@ -81,7 +74,7 @@ theorem map_padicInt_smul_of_continuous
   simp only [Nat.cast_smul_eq_nsmul, map_nsmul]
 
 /-- Package the preceding density argument as a linear equivalence. -/
-noncomputable def padicLinearEquivOfContinuousAddEquiv
+def padicLinearEquivOfContinuousAddEquiv
     (e : A ≃+ B) (he : Continuous e) : A ≃ₗ[ℤ_[p]] B :=
   { e with
     map_smul' := fun a x =>
@@ -114,22 +107,3 @@ theorem continuous_padicInt_finPi_linearMap
   change Continuous (fun x : Fin d → ℤ_[p] => f x)
   rw [hfun]
   fun_prop
-
-/-- Finite generation across a short exact sequence, phrased for a
-surjective linear map.  This avoids unfolding a large ambient module when a
-finite kernel and finite quotient are already available. -/
-theorem moduleFinite_of_surjective_of_ker
-    {R M N : Type*} [Ring R]
-    [AddCommGroup M] [AddCommGroup N] [Module R M] [Module R N]
-    (f : M →ₗ[R] N) (hf : Function.Surjective f)
-    [Module.Finite R N] [Module.Finite R (LinearMap.ker f)] :
-    Module.Finite R M := by
-  let e : (M ⧸ LinearMap.ker f) ≃ₗ[R] N :=
-    f.quotKerEquivOfSurjective hf
-  let : Module.Finite R (M ⧸ LinearMap.ker f) :=
-    Module.Finite.equiv e.symm
-  exact Module.Finite.of_submodule_quotient (LinearMap.ker f)
-
-end LocalFieldTheory.DiscreteValuationField
-
-end

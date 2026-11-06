@@ -13,7 +13,6 @@ open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree
 
 noncomputable section
-set_option autoImplicit false
 
 namespace SArithmeticData
 
@@ -24,7 +23,7 @@ def unitQuotientClass (A : SArithmeticData F) : A.UnitQuotient →* A.V :=
     intro u hu
     obtain ⟨t, rfl⟩ := hu
     apply (QuotientGroup.eq_one_iff _).mpr
-    exact ⟨A.diagonal t.val, by simp [sClass]⟩)
+    exact ⟨A.diagonal t.val, by simp⟩)
 
 structure GeneralArithmeticContext (A : SArithmeticData F) (σ : F →+* ℂ)
     (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces) where
@@ -189,6 +188,3 @@ theorem exists_generalArithmeticContext
     normOne_compact := ArithmeticContext.normOne_sixth_unit_quotient_compact A
     prime_target := fun I v hIv p hp a ha hap x hx =>
       D.prime_theta I v hIv p hp a ha hap x hx }⟩⟩
-
-end
-end DedekindZetaZeroFree

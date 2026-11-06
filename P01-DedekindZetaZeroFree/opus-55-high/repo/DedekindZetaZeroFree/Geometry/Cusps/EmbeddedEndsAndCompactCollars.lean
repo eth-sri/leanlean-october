@@ -6,7 +6,6 @@ public import DedekindZetaZeroFree.Eisenstein.Continuation.Cusps.CutoffSourceDat
 
 @[expose] public section
 
-noncomputable section
 open scoped Classical NumberField ENNReal ContDiff
 open MeasureTheory Topology
 
@@ -78,9 +77,9 @@ theorem actual_end_charts_compact_collars
           (KPCuspGenuineMonodromy.Component F ζ hζ U (A.representative a.1))
           ((A.cuspAtlas a.1).cusp a.2) ((A.cuspAtlas a.1).representative a.2) τ
   have hLrange' : ∀ a, L a '' {z : KPCuspCharts.Coordinates F | τ < z.2} = E a :=
-    fun a => hLrange a
+    by omega
   have hLval' : ∀ a (z : KPCuspCharts.Coordinates F), τ < z.2 → t a (L a z) = z.2 :=
-    fun a z hz => hLval a z hz
+    by omega
   have hopen : ∀ a, IsOpen (E a) := by
     intro a
     have hop : IsOpenMap
@@ -153,15 +152,10 @@ theorem actual_end_charts_compact_collars
       have hfinal := hcomp.comp (G.highPresentation τ).symm.isEmbedding
       have heq' : (eT ∘ G.highPresentation τ) ∘ (G.highPresentation τ).symm = eT := by
         funext x
-        simp only [Function.comp_apply, Homeomorph.apply_symm_apply]
+        simp
       rw [heq'] at hfinal
       exact hfinal
-    have hCe : C a = KPFiniteCuspAtlas.componentMap F ζ hζ U (A.representative a.1) ∘
-        KPFiniteCuspAtlas.endMap F
-          (KPCuspGenuineMonodromy.Component F ζ hζ U (A.representative a.1))
-          ((A.cuspAtlas a.1).cusp a.2) ((A.cuspAtlas a.1).representative a.2) τ := rfl
-    rw [hCe]
-    exact hcm.comp hend
+    fun_prop
   have hrange : ∀ a, Set.range (C a) = E a := by
     intro a
     have hCe : C a = KPFiniteCuspAtlas.componentMap F ζ hζ U (A.representative a.1) ∘
@@ -248,7 +242,3 @@ theorem actual_end_charts_compact_collars
     rw [KPCutoffSource.closedCollars]
     exact isCompact_iUnion fun a => h5 a
   exact ⟨hopen, hdisj, hemb, hrange, h5, h6, h7⟩
-
-end DedekindZetaZeroFree.KPActualCollarBuffer
-
-end

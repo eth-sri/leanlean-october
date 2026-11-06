@@ -10,7 +10,6 @@ open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.ActualFiniteBorel
 open KPLocalPrincipalSeries KPLocalStoneVonNeumann
 noncomputable section
-set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)

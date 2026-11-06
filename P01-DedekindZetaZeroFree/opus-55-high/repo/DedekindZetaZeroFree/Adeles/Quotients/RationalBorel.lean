@@ -14,7 +14,3 @@ def rationalBorel : Subgroup (KPRationalAdelicSplitting.RationalPGL2 F) :=
     (KPRationalAdelicSplitting.rationalPGLHom F ζ hζ)
 
 abbrev RationalQuotient := Quotient (QuotientGroup.rightRel (rationalBorel F ζ hζ))
-
-end DedekindZetaZeroFree.KPGlobalResidualKernel
-
-end

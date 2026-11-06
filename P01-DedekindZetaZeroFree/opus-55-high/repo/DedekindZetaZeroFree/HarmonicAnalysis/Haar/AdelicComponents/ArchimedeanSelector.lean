@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.Adeles.Quotients.SphericalProjection
 
 @[expose] public section
 
-noncomputable section
 open scoped Classical NumberField Pointwise
 open MeasureTheory Topology Set
 
@@ -21,7 +20,7 @@ open _root_.DedekindZetaZeroFree.KPMsFixedHaar renaming actual_split → actual_
 open _root_.DedekindZetaZeroFree.KPMsFixedHaar renaming archProjection_compare → archProjection_compare
 set_option backward.isDefEq.respectTransparency false
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-private theorem restricted_discrete
+theorem restricted_discrete
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (U : Level F ζ hζ) (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     (j : Fin A.componentCount) :
@@ -124,18 +123,13 @@ theorem actual_component_arch_group_selector
   letI : BorelSpace (KPSmoothActualFlowData.GInfinity F) := ⟨rfl⟩
   haveI : ProperlyDiscontinuousSMul Γ (KPSmoothActualFlowData.GInfinity F) := by
     have hstab : MulAction.stabilizer (KPSmoothActualFlowData.GInfinity F) (1 : KPSmoothActualFlowData.GInfinity F) = ⊥ := by
-      ext g; simp [MulAction.mem_stabilizer_iff]
+      simp
     apply KPArithmeticAction.properlyDiscontinuous_of_section (1 : KPSmoothActualFlowData.GInfinity F) id
       continuous_id (fun x => by simp)
-    rw [hstab]
-    exact isCompact_singleton
+    simp
   have hfree : ∀ᵐ x ∂(Measure.count : Measure (KPSmoothActualFlowData.GInfinity F)),
       ∀ g : Γ, g • x = x → g = 1 := by
-    apply Filter.Eventually.of_forall
-    intro x g hg
-    change g.val * x = x at hg
-    apply Subtype.ext
-    exact mul_right_cancel (hg.trans (one_mul x).symm)
+    simp
   obtain ⟨D, hD, hfund⟩ :=
     KPCuspChart.SectionConstruction.measurable_fundamental_domain_of_properly_discontinuous_ae_free
       (H := Γ) Measure.count hfree
@@ -153,7 +147,3 @@ theorem actual_component_arch_group_selector
     · exact ⟨g • x, hg, by simp⟩
   rw [hempty] at hx
   exact hx
-
-end DedekindZetaZeroFree.KPActualComponentHaarSources
-
-end

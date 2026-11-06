@@ -75,7 +75,7 @@ theorem logRatio_mem_hyperplane
   have hxu : ((x : NumberField.RingOfIntegers F) : F) = ((u.toMul : Fˣ) : F) := by
     have h := congrArg (fun w : Fˣ => (w : F)) hx
     rw [Units.coe_map] at h
-    simpa using h
+    omega
   have hprod := NumberField.Units.sum_mult_mul_log x
   rw [NumberField.InfinitePlace.sum_eq_sum_add_sum] at hprod
   haveI : IsEmpty {w : NumberField.InfinitePlace F // NumberField.InfinitePlace.IsReal w} :=
@@ -84,7 +84,7 @@ theorem logRatio_mem_hyperplane
         NumberField.InfinitePlace.IsReal w},
       w.1.mult * Real.log (w.1 (algebraMap (NumberField.RingOfIntegers F) F
         (x : NumberField.RingOfIntegers F)))) = 0 := by
-    rw [Finset.univ_eq_empty, Finset.sum_empty]
+    simp
   rw [hreal, zero_add] at hprod
   have h1 : 2 * (∑ w : {w : NumberField.InfinitePlace F //
         NumberField.InfinitePlace.IsComplex w},
@@ -95,9 +95,7 @@ theorem logRatio_mem_hyperplane
           w.1.mult * Real.log (w.1 (algebraMap (NumberField.RingOfIntegers F) F
             (x : NumberField.RingOfIntegers F))) := by
     rw [Finset.mul_sum]
-    refine Finset.sum_congr rfl (fun w _ => ?_)
-    rw [NumberField.InfinitePlace.IsComplex.mult_eq_two w.property]
-    norm_num
+    simp
   have h2 : (∑ w : {w : NumberField.InfinitePlace F //
         NumberField.InfinitePlace.IsComplex w},
         Real.log (w.1 (algebraMap (NumberField.RingOfIntegers F) F
@@ -117,7 +115,7 @@ theorem logRatio_mem_hyperplane
     exact hprod
   rcases mul_eq_zero.mp h2' with h | h
   · exact absurd h (by norm_num)
-  · exact h
+  omega
 
 def logarithm (F : Type*) [Field F] [NumberField F]
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
@@ -184,26 +182,23 @@ theorem finite_logarithm_ker (F : Type*) [Field F] [NumberField F]
     have hw : w.IsComplex := NumberField.InfinitePlace.not_isReal_iff_isComplex.mp
       (fun h => isEmptyElim (⟨w, h⟩ : {v : NumberField.InfinitePlace F // v.IsReal}))
     let i := Fintype.equivFin {v : NumberField.InfinitePlace F // v.IsComplex} ⟨w, hw⟩
-    have hplace : KPCusp.complexPlace F i = w := by
-      exact congrArg Subtype.val ((Fintype.equivFin
+    have hplace : KPCusp.complexPlace F i = w := 
+      congrArg Subtype.val ((Fintype.equivFin
         {v : NumberField.InfinitePlace F // v.IsComplex}).symm_apply_apply ⟨w, hw⟩)
     have hlog : Real.log (w (((u.val.toMul : E) : Fˣ) : F)) = 0 := by
       have h := congrArg (fun b : hyperplane (dimension F) => (b : Fin (dimension F) → ℝ) i)
         u.property
       simpa [logarithm, logRatio, hplace] using h
     have hx' : algebraMap (NumberField.RingOfIntegers F) F
-        (x : NumberField.RingOfIntegers F) = (((u.val.toMul : E) : Fˣ) : F) := by
-      exact congrArg (fun v : Fˣ => (v : F)) hx
+        (x : NumberField.RingOfIntegers F) = (((u.val.toMul : E) : Fˣ) : F) := 
+      congrArg (fun v : Fˣ => (v : F)) hx
     rw [hx']
     exact Real.eq_one_of_pos_of_log_eq_zero
       (NumberField.InfinitePlace.pos_iff.mpr (Units.ne_zero _)) hlog
   exact Finite.of_injective (fun u : (logarithm F hF E hE).ker =>
     (⟨((u.val.toMul : E) : Fˣ), hmem u⟩ : T)) (by
       intro u v huv
-      have hb : ((u.val.toMul : E) : Fˣ) = ((v.val.toMul : E) : Fˣ) :=
-        congrArg (fun t : T => (t : Fˣ)) huv
-      have he : u.val.toMul = v.val.toMul := Subtype.ext hb
-      exact Subtype.ext (congrArg Additive.ofMul he))
+      simp_all)
 
 theorem finrank_hyperplane (d : ℕ) (hd : 0 < d) :
     finrank ℝ (hyperplane d) = d - 1 := by
@@ -221,8 +216,7 @@ theorem dimension_pos (F : Type*) [Field F] [NumberField F]
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0) : 0 < dimension F := by
   have hc := NumberField.InfinitePlace.card_eq_nrRealPlaces_add_nrComplexPlaces (K := F)
   have hp := Fintype.card_pos (α := NumberField.InfinitePlace F)
-  rw [hc, hF, zero_add] at hp
-  exact hp
+  simp_all
 
 theorem shapeCoordinates_mem_hyperplane (d : ℕ) (hd : d ≠ 0)
     (z : KPArch.Space d) : shapeCoordinates d z ∈ hyperplane d := by
@@ -250,8 +244,7 @@ theorem compact_quotient_of_isZLattice {V : Type*} [NormedAddCommGroup V]
   have h := IsZLattice.isCompact_range_of_periodic L
     (QuotientAddGroup.mk : V → V ⧸ L.toAddSubgroup) QuotientAddGroup.continuous_mk ?_
   · simpa only [Set.range_eq_univ.mpr QuotientAddGroup.mk_surjective] using h
-  · intro z w hw
-    rw [QuotientAddGroup.mk_add, (QuotientAddGroup.eq_zero_iff w).mpr hw, add_zero]
+  simp
 
 theorem parallelotope_cover_of_isZLattice (F : Type*) [Field F] [NumberField F]
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
@@ -277,13 +270,13 @@ theorem parallelotope_cover_of_isZLattice (F : Type*) [Field F] [NumberField F]
   let b := Module.finBasisOfFinrankEq ℤ L hr
   let B := b.ofZLatticeBasis ℝ L
   have hspan : Submodule.span ℤ (Set.range B) = L := b.ofZLatticeBasis_span ℝ
-  have hcompact : IsCompact (parallelepiped B) := by
-    exact B.coe_parallelepiped ▸ B.parallelepiped.isCompact
+  have hcompact : IsCompact (parallelepiped B) := 
+    B.coe_parallelepiped ▸ B.parallelepiped.isCompact
   have hcover (v : hyperplane (dimension F)) :
       ∃ u : E, v - logarithm F hF E hE (Additive.ofMul u) ∈ parallelepiped B := by
     have hm : (ZSpan.floor B v : hyperplane (dimension F)) ∈ L := by
       rw [← hspan]
-      exact (ZSpan.floor B v).property
+      simp
     obtain ⟨u, hu⟩ := hm
     refine ⟨u.toMul, ?_⟩
     change v - logarithm F hF E hE u ∈ parallelepiped B
@@ -350,7 +343,7 @@ private lemma toDirichlet_injective : Function.Injective (toDirichlet F hF) := b
         intro he
         have he' : j = i := by
           simpa only [placeIndex_complexPlace] using congrArg (placeIndex F hF) (he.trans hw.symm)
-        exact hj he'
+        omega
       have h := congrFun hb ⟨KPCusp.complexPlace F j, hwj⟩
       change 2 * (b : Fin (dimension F) → ℝ) (placeIndex F hF (KPCusp.complexPlace F j)) = 0 at h
       rw [placeIndex_complexPlace] at h
@@ -431,12 +424,11 @@ theorem logarithm_span_top (E : Subgroup Fˣ)
         (H := E.subgroupOf (KPCuspArithmetic.rationalUnits F))
         Subgroup.FiniteIndex.index_ne_zero xu
     let u : E := ⟨(xu : Fˣ) ^ n, hpow⟩
-    have hu : f (x.toMul ^ n) = (u : Fˣ) := by simp [u, xu, map_pow]
+    have hu : f (x.toMul ^ n) = (u : Fˣ) := by rfl
     have hlog : toDirichlet F hF (logarithm F hF E hE (Additive.ofMul u)) =
         n • NumberField.Units.logEmbedding F x := by
       rw [toDirichlet_logarithm F hF E hE (Additive.ofMul u) (x.toMul ^ n) hu]
-      change NumberField.Units.logEmbedding F (n • x) = _
-      exact map_nsmul _ _ _
+      simp
     have hm : n • NumberField.Units.logEmbedding F x ∈ P := by
       rw [← hlog]
       apply Submodule.subset_span
@@ -465,8 +457,7 @@ theorem logarithm_span_top (E : Subgroup Fˣ)
     exact A.det_ne_zero (by simp [Matrix.det_fin_two, hA, hz])
   have he : ‖(A : Matrix (Fin 2) (Fin 2) ℂ).det‖ * KPArch.height z /
       KPArch.actionDenominator A z = ‖u‖ * KPArch.height z := by
-    simp only [Matrix.det_fin_two, hA, zero_mul, sub_zero, hr, norm_mul,
-      KPArch.actionDenominator, norm_zero, mul_zero, zero_add, zero_pow, add_zero]
+    simp only [Matrix.det_fin_two, hA, zero_mul, sub_zero, hr, norm_mul, KPArch.actionDenominator, norm_zero, mul_zero, zero_add]
     field_simp
     <;> ring
   change Real.log _ = _
@@ -492,13 +483,10 @@ theorem actual_upper_height_shape (F : Type*) [Field F] [NumberField F]
       (z i).2 + logRatio F E (Additive.ofMul u) i := by
     let v := KPCusp.complexPlace F i
     have hzero : (Matrix.GeneralLinearGroup.map v.embedding A) 1 0 = 0 := by
-      change v.embedding ((A : Matrix (Fin 2) (Fin 2) F) 1 0) = 0
-      rw [hA, map_zero]
+      simp_all
     have hratio : (Matrix.GeneralLinearGroup.map v.embedding A) 0 0 =
         v.embedding ((u : Fˣ) : F) * (Matrix.GeneralLinearGroup.map v.embedding A) 1 1 := by
-      change v.embedding ((A : Matrix (Fin 2) (Fin 2) F) 0 0) = _
-      rw [hr, map_mul]
-      rfl
+      simp_all
     have hh := upper_action_snd (Matrix.GeneralLinearGroup.map v.embedding A) hzero
       (v.embedding ((u : Fˣ) : F)) ((map_ne_zero _).mpr (Units.ne_zero _)) hratio (z i)
     change (KPArch.action (Matrix.GeneralLinearGroup.map v.embedding A) (z i)).2 =
@@ -515,23 +503,18 @@ theorem actual_upper_height_shape (F : Type*) [Field F] [NumberField F]
   simp only [shapeCoordinates, hm, Pi.add_apply, hs]
   ring
 
-section TorusAction
-variable (F : Type*) [Field F] [NumberField F] (L : AddSubgroup F) (E : Subgroup Fˣ)
-variable (hinv : ∀ (u : E) (x : F), x ∈ L → ((u : Fˣ) : F) * x ∈ L)
-end TorusAction
 
 section AffineAction
 variable (F : Type*) [Field F]
-private lemma upper_right_ne_zero (A : Matrix.GeneralLinearGroup (Fin 2) F)
+lemma upper_right_ne_zero (A : Matrix.GeneralLinearGroup (Fin 2) F)
     (hA : A 1 0 = 0) : A 1 1 ≠ 0 := by
   intro hz
   exact A.det_ne_zero (by simp [Matrix.det_fin_two, hA, hz])
-private lemma upper_translation_eq (A B : Matrix.GeneralLinearGroup (Fin 2) F)
+lemma upper_translation_eq (A B : Matrix.GeneralLinearGroup (Fin 2) F)
     (hAB : Matrix.ProjGenLinGroup.mk A = Matrix.ProjGenLinGroup.mk B)
     (hA : A 1 0 = 0) : A 0 1 / A 1 1 = B 0 1 / B 1 1 := by
   obtain ⟨u, rfl⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp hAB
-  simp only [Units.val_mul, Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_apply,
-    Fin.sum_univ_two, Matrix.scalar, Matrix.diagonal_apply]
+  simp only [Units.val_mul, Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_apply, Fin.sum_univ_two, Matrix.scalar]
   simp
   rw [mul_div_mul_right _ _ (Units.ne_zero u)]
 private def upperRepresentative (S : Subgroup (KPCuspArithmetic.PGL2 F))
@@ -552,8 +535,8 @@ private theorem upperTranslation_formula (S : Subgroup (KPCuspArithmetic.PGL2 F)
     (hS : ∀ g ∈ S, KPCuspArithmetic.IsUpperTriangular F g) (g : S)
     (A : Matrix.GeneralLinearGroup (Fin 2) F)
     (hA : Matrix.ProjGenLinGroup.mk A = g) :
-    upperTranslation F S hS g = A 0 1 / A 1 1 := by
-  exact upper_translation_eq F _ _ ((upperRepresentative_mk F S hS g).trans hA.symm)
+    upperTranslation F S hS g = A 0 1 / A 1 1 := 
+  upper_translation_eq F _ _ ((upperRepresentative_mk F S hS g).trans hA.symm)
     (upperRepresentative_upper F S hS g)
  theorem upper_translation_cocycle (S : Subgroup (KPCuspArithmetic.PGL2 F))
     (hS : ∀ g ∈ S, KPCuspArithmetic.IsUpperTriangular F g)
@@ -612,7 +595,7 @@ end AffineAction
   have hρi (x : L) : ρ (ι (Multiplicative.ofAdd x)) = 1 := by
     apply MonoidHom.mem_ker.mp
     rw [← hexact]
-    exact ⟨Multiplicative.ofAdd x, rfl⟩
+    simp
   intro u x hx
   obtain ⟨g, rfl⟩ := hsurj u
   let xi : L := ⟨x, hx⟩
@@ -721,10 +704,3 @@ variable (hr : ∀ (g : S) (A : Matrix.GeneralLinearGroup (Fin 2) F),
   Matrix.ProjGenLinGroup.mk A = (g : KPCuspArithmetic.PGL2 F) → A 1 0 = 0 →
   A 0 0 = ((ρ g : Fˣ) : F) * A 1 1)
 include hS hsurj hexact hi hr
-
-end KPCuspLogShape.ExactSequence
-
-end DedekindZetaZeroFree
-
-end
-end

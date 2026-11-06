@@ -150,7 +150,7 @@ private theorem ambient_quasi (e : Branch a b) (he : e.Properties) :
   have hg := (branch_quasi e).2.restrict he.inverse_target
   exact ⟨(hf.mono_left har).mono_right hb'r, (hg.mono_left hbr).mono_right ha'r⟩
 
-private theorem subtype_quasi (s t : Set (M F)) (hs : MeasurableSet s)
+theorem subtype_quasi (s t : Set (M F)) (hs : MeasurableSet s)
     (ht : MeasurableSet t) (μ ν : Measure (M F)) (f : M F → M F)
     (hq : Measure.QuasiMeasurePreserving f μ ν) (hf : Set.MapsTo f s t) :
     Measure.QuasiMeasurePreserving (fun x : s => (⟨f x.val, hf x.property⟩ : t))

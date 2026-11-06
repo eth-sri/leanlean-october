@@ -23,21 +23,3 @@ theorem compMeasurePreservingₗᵢ_apply {α β E : Type*} [MeasurableSpace α]
     (hf : MeasurePreserving f μ μb) (x : Lp E p μb) :
     compMeasurePreservingₗᵢ 𝕜 f hf x = compMeasurePreserving f hf x :=
   rfl
-
-@[simp]
-theorem compMeasurePreserving_toLp {α β E : Type*} [TopologicalSpace α] [CompactSpace α]
-    [MeasurableSpace α] [BorelSpace α] [TopologicalSpace β] [CompactSpace β] [MeasurableSpace β]
-    [BorelSpace β] [NormedAddCommGroup E] [SecondCountableTopologyEither α E]
-    [SecondCountableTopologyEither β E] {μ : Measure α} {μb : Measure β} [IsFiniteMeasure μ]
-    [IsFiniteMeasure μb] {p : ℝ≥0∞} [Fact (1 ≤ p)] (𝕜 : Type*) [NormedRing 𝕜] [Module 𝕜 E]
-    [IsBoundedSMul 𝕜 E] (F : C(β, E)) (φ : C(α, β)) (hφ : MeasurePreserving φ μ μb) :
-    compMeasurePreserving φ hφ (ContinuousMap.toLp p μb 𝕜 F) =
-      ContinuousMap.toLp p μ 𝕜 (F.comp φ) := by
-  refine Lp.ext ((coeFn_compMeasurePreserving _ hφ).trans ?_)
-  exact (hφ.quasiMeasurePreserving.ae_eq_comp
-    (ContinuousMap.coeFn_toLp (𝕜 := 𝕜) (p := p) μb F)).trans
-      (ContinuousMap.coeFn_toLp (𝕜 := 𝕜) (p := p) μ (F.comp φ)).symm
-
-end Lp
-
-end MeasureTheory

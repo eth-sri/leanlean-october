@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Classification of extensions of a completed absolute value
 
@@ -84,14 +78,14 @@ theorem completionExtensionFactor_completionFactors_eq_minpolyFactors
     polynomialDistinctNormalizedFactors
         (completionExtensionFactor_completionPolynomial vK f) =
       polynomialDistinctNormalizedFactors
-        ((minpoly K α).map (algebraMap K vK.Completion)) := by
-  exact polynomialDistinctNormalizedFactors_eq_of_associated
+        ((minpoly K α).map (algebraMap K vK.Completion)) := 
+  polynomialDistinctNormalizedFactors_eq_of_associated
     (Polynomial.associated_map_map (algebraMap K vK.Completion)
       (completionExtensionFactor_definingPolynomial_associated_minpoly hf hroot))
 
 /-- Transport the factor set of the mapped minimal polynomial to the factor
 set of the particular chosen irreducible polynomial. -/
-noncomputable def completionExtensionFactor_minpolyFactorsEquivCompletionFactors
+def completionExtensionFactor_minpolyFactorsEquivCompletionFactors
     {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
     (vK : AbsoluteValue K ℝ) {α : L} {f : K[X]}
     (hf : Irreducible f) (hroot : Polynomial.aeval α f = 0) :
@@ -121,7 +115,7 @@ abbrev CompletionExtensionFactorEmbeddingSetoid
 
 /-- Conjugacy classes of simple embeddings are the distinct irreducible
 factors of the mapped minimal polynomial. -/
-noncomputable def completionExtensionFactor_embeddingClassesEquivMinpolyFactors
+def completionExtensionFactor_embeddingClassesEquivMinpolyFactors
     {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
     (vK : AbsoluteValue K ℝ) (α : L) (hα : IsIntegral K α)
     (hgen : Algebra.adjoin K ({α} : Set L) = ⊤) :
@@ -148,7 +142,7 @@ theorem completionExtensionFactor_embeddingSetoid_rel_iff_conjugate
     (CompletionExtensionFactorEmbeddingSetoid vK α hα hgen).r τ τ' ↔
       AbsoluteValueExtensionConjugateOverCompletion vK τ τ' := by
   let pb : PowerBasis K L := PowerBasis.ofAdjoinEqTop hα hgen
-  have hpbgen : pb.gen = α := by simp [pb]
+  have hpbgen : pb.gen = α := by rfl
   change IsConjRoot vK.Completion (τ α) (τ' α) ↔ _
   constructor
   · intro hconj
@@ -163,14 +157,12 @@ theorem completionExtensionFactor_embeddingSetoid_rel_iff_conjugate
     intro x
     exact DFunLike.congr_fun heq x
   · rintro ⟨σ, hσ⟩
-    change minpoly vK.Completion (τ α) = minpoly vK.Completion (τ' α)
-    rw [hσ α]
-    exact (minpoly.algEquiv_eq σ (τ α)).symm
+    simp_all
 
 /-- Regard the pullback attached to an embedding as an exact extension.
 The extension property is the one proved in the valuation-extension theorem, rather than an
 extra field in the data of the extension-factor correspondence. -/
-noncomputable def pullbackAbsoluteValueExtension
+def pullbackAbsoluteValueExtension
     {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
     (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
     (τ : L →ₐ[K] absoluteValueExtension_algebraicCompletionClosure vK) :
@@ -206,12 +198,12 @@ theorem completionExtensionFactor_extension_eq_pullback_embeddingOfExtension
     (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
     (w : AbsoluteValueExtension vK L) :
     w.1 = absoluteValueExtension_pullback vK hvK
-      (absoluteValueExtension_embeddingOfExtension vK w) := by
-  exact absoluteValueExtension_extension_eq_pullback_embeddingOfExtension vK hvK w
+      (absoluteValueExtension_embeddingOfExtension vK w) := 
+  absoluteValueExtension_extension_eq_pullback_embeddingOfExtension vK hvK w
 
 /-- Exact extensions are the same as the conjugacy classes of embeddings
 used in the factor calculation. -/
-noncomputable def completionExtensionFactor_extensionsEquivEmbeddingClasses
+def completionExtensionFactor_extensionsEquivEmbeddingClasses
     {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
     (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
     (α : L) (hα : IsIntegral K α)
@@ -256,7 +248,7 @@ noncomputable def completionExtensionFactor_extensionsEquivEmbeddingClasses
 
 /-- Auxiliary form of the correspondence, first stated for the mapped
 minimal polynomial. -/
-noncomputable def completionExtensionFactor_extensionsEquivMinpolyFactors
+def completionExtensionFactor_extensionsEquivMinpolyFactors
     {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
     (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
     (α : L) (hα : IsIntegral K α)
@@ -271,7 +263,7 @@ noncomputable def completionExtensionFactor_extensionsEquivMinpolyFactors
 
 /-- Auxiliary form with the particular chosen irreducible polynomial `f` as
 target. -/
-noncomputable def completionExtensionFactor_extensionsEquivCompletionFactorsAux
+def completionExtensionFactor_extensionsEquivCompletionFactorsAux
     {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
     (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
     {α : L} {f : K[X]} (hf : Irreducible f)
@@ -287,7 +279,7 @@ noncomputable def completionExtensionFactor_extensionsEquivCompletionFactorsAux
 
 /-- The irreducible factor attached directly to an exact extension `w`: it
 is the minimal polynomial over `K_v` of the image of `α` in `L_w`. -/
-noncomputable def completionExtensionFactor_extensionFactor
+def completionExtensionFactor_extensionFactor
     {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
     (vK : AbsoluteValue K ℝ) (α : L)
     (w : AbsoluteValueExtension vK L) : vK.Completion[X] := by
@@ -318,9 +310,9 @@ theorem completionExtensionFactor_extensionFactor_mem
   let a : w.1.Completion := ι α
   have hαalg : IsAlgebraic K α := ⟨f, hf.ne_zero, hroot⟩
   have hα : IsIntegral K α := hαalg.isIntegral
-  have haK : IsIntegral K a := by
-      exact IsIntegral.map_of_comp_eq (RingHom.id K) ι.toRingHom
-        (by ext x; simp) hα
+  have haK : IsIntegral K a := 
+      IsIntegral.map_of_comp_eq (RingHom.id K) ι.toRingHom
+        (by rfl) hα
   have haKv : IsIntegral vK.Completion a :=
     IsIntegral.tower_top haK
   have hp0 : completionExtensionFactor_completionPolynomial vK f ≠ 0 :=
@@ -339,7 +331,7 @@ theorem completionExtensionFactor_extensionFactor_mem
     minpoly.dvd vK.Completion a haf⟩
 
 /-- The canonical map from exact extensions to completion factors. -/
-noncomputable def completionExtensionFactor_extensionToFactor
+def completionExtensionFactor_extensionToFactor
     {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
     (vK : AbsoluteValue K ℝ) {α : L} {f : K[X]}
     (hf : Irreducible f) (hroot : Polynomial.aeval α f = 0) :
@@ -404,9 +396,9 @@ theorem completionExtensionFactor_completion_adjoin_eq_top
   let ι : L →ₐ[K] w.1.Completion :=
     AbsoluteValue.toCompletionAlgHom (K := K) w.1
   let a : w.1.Completion := ι α
-  have haK : IsIntegral K a := by
-      exact IsIntegral.map_of_comp_eq (RingHom.id K) ι.toRingHom
-        (by ext x; simp) hα
+  have haK : IsIntegral K a := 
+      IsIntegral.map_of_comp_eq (RingHom.id K) ι.toRingHom
+        (by rfl) hα
   have haKv : IsIntegral vK.Completion a :=
     IsIntegral.tower_top haK
   have hrange : Set.range
@@ -433,8 +425,8 @@ theorem completionExtensionFactor_completion_adjoin_eq_top
         simpa only [map_mul] using
           (IntermediateField.adjoin vK.Completion ({a} : Set _)).mul_mem hx hy
   have hloc_le : AbsoluteValue.algebraicLocalization vK w.1 w.2 ≤
-      IntermediateField.adjoin vK.Completion ({a} : Set _) := by
-    exact IntermediateField.adjoin_le_iff.mpr hrange
+      IntermediateField.adjoin vK.Completion ({a} : Set _) := 
+    IntermediateField.adjoin_le_iff.mpr hrange
   have hsimple : IntermediateField.adjoin vK.Completion ({a} : Set _) = ⊤ := by
     apply top_unique
     rw [← absoluteValueExtension_finiteLocalization_eq_top vK hvK w]
@@ -445,7 +437,7 @@ theorem completionExtensionFactor_completion_adjoin_eq_top
 
 /-- The finite simple field cut out by the factor attached to `w` is the
 metric completion `L_w`. -/
-noncomputable def completionExtensionFactor_adjoinRootEquivCompletion
+def completionExtensionFactor_adjoinRootEquivCompletion
     {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
     (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
     (α : L) (hα : IsIntegral K α)
@@ -464,9 +456,9 @@ noncomputable def completionExtensionFactor_adjoinRootEquivCompletion
   let ι : L →ₐ[K] w.1.Completion :=
     AbsoluteValue.toCompletionAlgHom (K := K) w.1
   let a : w.1.Completion := ι α
-  have haK : IsIntegral K a := by
-      exact IsIntegral.map_of_comp_eq (RingHom.id K) ι.toRingHom
-        (by ext x; simp) hα
+  have haK : IsIntegral K a := 
+      IsIntegral.map_of_comp_eq (RingHom.id K) ι.toRingHom
+        (by rfl) hα
   have haKv : IsIntegral vK.Completion a :=
     IsIntegral.tower_top haK
   have htop : Algebra.adjoin vK.Completion ({a} : Set w.1.Completion) = ⊤ :=
@@ -507,166 +499,6 @@ theorem completionExtensionFactor_adjoinRootEquivCompletion_root
   exact AdjoinRoot.Minpoly.coe_toAdjoin_mk_X
     (R := vK.Completion) (x := a)
 
-/-- If `w` is presented as the pullback along an embedding `τ`, then the
-factor attached to `w` is the minimal polynomial of `τ(α)`. -/
-theorem completionExtensionFactor_extensionFactor_eq_minpoly_of_pullback
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
-    (α : L) (hα : IsIntegral K α)
-    (hgen : Algebra.adjoin K ({α} : Set L) = ⊤)
-    (w : AbsoluteValueExtension vK L)
-    (τ : L →ₐ[K] absoluteValueExtension_algebraicCompletionClosure vK)
-    (hτ : w.1 = absoluteValueExtension_pullback vK hvK τ) :
-    completionExtensionFactor_extensionFactor vK α w =
-      minpoly vK.Completion (τ α) := by
-  let pb : PowerBasis K L := PowerBasis.ofAdjoinEqTop hα hgen
-  let : FiniteDimensional K L := pb.finite
-  let : Algebra.IsAlgebraic K L := inferInstance
-  let τw := absoluteValueExtension_embeddingOfExtension vK w
-  have hpull : absoluteValueExtension_pullback vK hvK τw =
-      absoluteValueExtension_pullback vK hvK τ :=
-    (absoluteValueExtension_extension_eq_pullback_embeddingOfExtension
-      vK hvK w).symm.trans hτ
-  have hrel : (CompletionExtensionFactorEmbeddingSetoid vK α hα hgen).r τw τ :=
-    (completionExtensionFactor_pullback_eq_iff_embeddingSetoid_rel
-      vK hvK α hα hgen τw τ).1 hpull
-  let hK := AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
-  let : SMul K w.1.Completion := hK.toSMul
-  let := AbsoluteValue.completionAlgebra vK w.1 w.2
-  change minpoly vK.Completion
-      (AbsoluteValue.toCompletionAlgHom (K := K) w.1 α) = _
-  calc
-    minpoly vK.Completion
-        (AbsoluteValue.toCompletionAlgHom (K := K) w.1 α) =
-        minpoly vK.Completion (τw α) :=
-      (completionExtensionFactor_embeddingOfExtension_minpoly vK α w).symm
-    _ = minpoly vK.Completion (τ α) := hrel
-
-/-- The embedding `τ` extends from `L` to an algebraic equivalence from
-`L_w` onto the simple field `K_v(τ(α))`.  The compatibility with every
-element of `L` is proved below. -/
-noncomputable def completionExtensionFactor_completionEquivSimpleRoot
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
-    (α : L) (hα : IsIntegral K α)
-    (hgen : Algebra.adjoin K ({α} : Set L) = ⊤)
-    (w : AbsoluteValueExtension vK L)
-    (τ : L →ₐ[K] absoluteValueExtension_algebraicCompletionClosure vK)
-    (hτ : w.1 = absoluteValueExtension_pullback vK hvK τ) :
-    letI hK := AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
-    letI : SMul K w.1.Completion := hK.toSMul
-    letI := AbsoluteValue.completionAlgebra vK w.1 w.2
-    w.1.Completion ≃ₐ[vK.Completion]
-      IntermediateField.adjoin vK.Completion
-        ({τ α} : Set (absoluteValueExtension_algebraicCompletionClosure vK)) := by
-  letI hK := AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
-  letI : SMul K w.1.Completion := hK.toSMul
-  letI := AbsoluteValue.completionAlgebra vK w.1 w.2
-  letI : IsScalarTower K vK.Completion w.1.Completion :=
-    AbsoluteValue.completion_isScalarTower vK w.1 w.2
-  have hfactor : completionExtensionFactor_extensionFactor vK α w =
-      minpoly vK.Completion (τ α) :=
-    completionExtensionFactor_extensionFactor_eq_minpoly_of_pullback
-      vK hvK α hα hgen w τ hτ
-  have hτα : IsIntegral vK.Completion (τ α) :=
-    (Algebra.IsAlgebraic.isAlgebraic (τ α)).isIntegral
-  exact (completionExtensionFactor_adjoinRootEquivCompletion
-      vK hvK α hα hgen w).symm |>.trans
-    ((AdjoinRoot.algEquivOfEq vK.Completion _ _ hfactor).trans
-      (IntermediateField.adjoinRootEquivAdjoin vK.Completion hτα))
-
-/-- On the primitive generator, the completed embedding has the prescribed
-value `τ(α)`. -/
-@[simp]
-theorem completionExtensionFactor_completionEquivSimpleRoot_gen
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
-    (α : L) (hα : IsIntegral K α)
-    (hgen : Algebra.adjoin K ({α} : Set L) = ⊤)
-    (w : AbsoluteValueExtension vK L)
-    (τ : L →ₐ[K] absoluteValueExtension_algebraicCompletionClosure vK)
-    (hτ : w.1 = absoluteValueExtension_pullback vK hvK τ) :
-    letI hK := AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
-    letI : SMul K w.1.Completion := hK.toSMul
-    letI := AbsoluteValue.completionAlgebra vK w.1 w.2
-    completionExtensionFactor_completionEquivSimpleRoot
-        vK hvK α hα hgen w τ hτ
-        (AbsoluteValue.toCompletionAlgHom (K := K) w.1 α) =
-      IntermediateField.AdjoinSimple.gen vK.Completion (τ α) := by
-  let hK := AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
-  let : SMul K w.1.Completion := hK.toSMul
-  let := AbsoluteValue.completionAlgebra vK w.1 w.2
-  let : IsScalarTower K vK.Completion w.1.Completion :=
-    AbsoluteValue.completion_isScalarTower vK w.1 w.2
-  let e0 := completionExtensionFactor_adjoinRootEquivCompletion
-    vK hvK α hα hgen w
-  let hfactor : completionExtensionFactor_extensionFactor vK α w =
-      minpoly vK.Completion (τ α) :=
-    completionExtensionFactor_extensionFactor_eq_minpoly_of_pullback
-      vK hvK α hα hgen w τ hτ
-  let e1 := AdjoinRoot.algEquivOfEq vK.Completion _ _ hfactor
-  have hτα : IsIntegral vK.Completion (τ α) :=
-    (Algebra.IsAlgebraic.isAlgebraic (τ α)).isIntegral
-  let e2 := IntermediateField.adjoinRootEquivAdjoin vK.Completion hτα
-  have hinv : e0.symm
-      (AbsoluteValue.toCompletionAlgHom (K := K) w.1 α) =
-      AdjoinRoot.root (completionExtensionFactor_extensionFactor vK α w) := by
-    apply e0.injective
-    rw [e0.apply_symm_apply,
-      completionExtensionFactor_adjoinRootEquivCompletion_root]
-  change (e0.symm.trans (e1.trans e2))
-      (AbsoluteValue.toCompletionAlgHom (K := K) w.1 α) = _
-  rw [AlgEquiv.trans_apply, hinv, AlgEquiv.trans_apply,
-    AdjoinRoot.algEquivOfEq_root,
-    IntermediateField.adjoinRootEquivAdjoin_apply_root]
-
-/-- The equivalence to `K_v(τ(α))` really extends `τ` on every element of
-`L`, not merely on the chosen primitive generator. -/
-theorem completionExtensionFactor_completionEquivSimpleRoot_coe
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
-    (α : L) (hα : IsIntegral K α)
-    (hgen : Algebra.adjoin K ({α} : Set L) = ⊤)
-    (w : AbsoluteValueExtension vK L)
-    (τ : L →ₐ[K] absoluteValueExtension_algebraicCompletionClosure vK)
-    (hτ : w.1 = absoluteValueExtension_pullback vK hvK τ)
-    (x : L) :
-    letI hK := AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
-    letI : SMul K w.1.Completion := hK.toSMul
-    letI := AbsoluteValue.completionAlgebra vK w.1 w.2
-    ((completionExtensionFactor_completionEquivSimpleRoot
-        vK hvK α hα hgen w τ hτ
-        (AbsoluteValue.toCompletionAlgHom (K := K) w.1 x) :
-      IntermediateField.adjoin vK.Completion
-        ({τ α} : Set (absoluteValueExtension_algebraicCompletionClosure vK))) :
-      absoluteValueExtension_algebraicCompletionClosure vK) = τ x := by
-  let pb : PowerBasis K L := PowerBasis.ofAdjoinEqTop hα hgen
-  let : FiniteDimensional K L := pb.finite
-  let : Algebra.IsAlgebraic K L := inferInstance
-  let hK := AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
-  let : SMul K w.1.Completion := hK.toSMul
-  let := AbsoluteValue.completionAlgebra vK w.1 w.2
-  let : IsScalarTower K vK.Completion w.1.Completion :=
-    AbsoluteValue.completion_isScalarTower vK w.1 w.2
-  let E := IntermediateField.adjoin vK.Completion
-    ({τ α} : Set (absoluteValueExtension_algebraicCompletionClosure vK))
-  let e : w.1.Completion ≃ₐ[vK.Completion] E :=
-    completionExtensionFactor_completionEquivSimpleRoot
-      vK hvK α hα hgen w τ hτ
-  let ι : L →ₐ[K] w.1.Completion :=
-    AbsoluteValue.toCompletionAlgHom (K := K) w.1
-  let φ : L →ₐ[K] absoluteValueExtension_algebraicCompletionClosure vK :=
-    ((E.val.comp e.toAlgHom).restrictScalars K).comp ι
-  have hpbgen : pb.gen = α := by simp [pb]
-  have hφ : φ = τ := by
-    apply pb.algHom_ext
-    rw [hpbgen]
-    change ((e (ι α) : E) :
-      absoluteValueExtension_algebraicCompletionClosure vK) = τ α
-    rw [completionExtensionFactor_completionEquivSimpleRoot_gen]
-    rfl
-  exact DFunLike.congr_fun hφ x
-
 /-- On an extension `w`, the auxiliary correspondence is the directly
 defined polynomial `minpoly_{K_v}(α in L_w)`. -/
 theorem completionExtensionFactor_extensionsEquivCompletionFactorsAux_apply
@@ -692,7 +524,7 @@ theorem completionExtensionFactor_extensionsEquivCompletionFactorsAux_apply
 simple extension are in canonical bijection with the distinct normalized
 irreducible factors of `f` over `K_v`.  Its forward map is definitionally the
 factor obtained from `α` in `L_w`. -/
-noncomputable def completionExtensionFactor_extensionEquivFactors
+def completionExtensionFactor_extensionEquivFactors
     {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
     (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
     {α : L} {f : K[X]} (hf : Irreducible f)
@@ -711,411 +543,3 @@ noncomputable def completionExtensionFactor_extensionEquivFactors
       vK hvK hf hroot hgen w).symm
   rw [heq]
   exact e.bijective
-
-/-- A factor in the correspondence is monic and irreducible and divides the
-mapped minimal polynomial of the primitive generator. -/
-theorem completionExtensionFactor_factor_irreducible_monic_dvd_minpoly
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
-    (vK : AbsoluteValue K ℝ) {α : L} {f : K[X]}
-    (hf : Irreducible f) (hroot : Polynomial.aeval α f = 0)
-    (g : CompletionExtensionFactorCompletionFactors vK f) :
-    Irreducible g.1 ∧ g.1.Monic ∧
-      g.1 ∣ (minpoly K α).map (algebraMap K vK.Completion) := by
-  classical
-  let p := (minpoly K α).map (algebraMap K vK.Completion)
-  have hp0 : p ≠ 0 :=
-    (Polynomial.map_ne_zero_iff
-      (algebraMap K vK.Completion).injective).2
-      (minpoly.ne_zero (completionExtensionFactor_root_isIntegral hf hroot))
-  have hg : g.1 ∈ polynomialDistinctNormalizedFactors p := by
-    rw [← completionExtensionFactor_completionFactors_eq_minpolyFactors
-      vK hf hroot]
-    exact g.2
-  dsimp [polynomialDistinctNormalizedFactors,
-    polynomialNormalizedFactors] at hg
-  rw [Multiset.mem_toFinset,
-    Polynomial.mem_normalizedFactors_iff hp0] at hg
-  exact hg
-
-/-- A chosen root of a factor is also a root of the mapped minimal
-polynomial and hence determines a `K`-embedding of `L`. -/
-theorem completionExtensionFactor_factorRoot_mem_mappedMinpoly
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
-    (vK : AbsoluteValue K ℝ) {α : L} {f : K[X]}
-    (hf : Irreducible f) (hroot : Polynomial.aeval α f = 0)
-    (g : CompletionExtensionFactorCompletionFactors vK f)
-    (β : absoluteValueExtension_algebraicCompletionClosure vK)
-    (hβ : β ∈ g.1.rootSet
-      (absoluteValueExtension_algebraicCompletionClosure vK)) :
-    β ∈ ((minpoly K α).map (algebraMap K vK.Completion)).rootSet
-      (absoluteValueExtension_algebraicCompletionClosure vK) := by
-  rcases completionExtensionFactor_factor_irreducible_monic_dvd_minpoly
-    vK hf hroot g with ⟨_, _, hgdvd⟩
-  have hp0 : (minpoly K α).map (algebraMap K vK.Completion) ≠ 0 :=
-    (Polynomial.map_ne_zero_iff
-      (algebraMap K vK.Completion).injective).2
-      (minpoly.ne_zero (completionExtensionFactor_root_isIntegral hf hroot))
-  rw [Polynomial.mem_rootSet] at hβ ⊢
-  exact ⟨hp0, aeval_eq_zero_of_dvd_aeval_eq_zero hgdvd hβ.2⟩
-
-/-- The embedding associated with a factor and a specifically chosen root
-of that factor. -/
-noncomputable def completionExtensionFactor_embeddingOfFactorRoot
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
-    (vK : AbsoluteValue K ℝ) {α : L} {f : K[X]}
-    (hf : Irreducible f) (hroot : Polynomial.aeval α f = 0)
-    (hgen : Algebra.adjoin K ({α} : Set L) = ⊤)
-    (g : CompletionExtensionFactorCompletionFactors vK f)
-    (β : absoluteValueExtension_algebraicCompletionClosure vK)
-    (hβ : β ∈ g.1.rootSet
-      (absoluteValueExtension_algebraicCompletionClosure vK)) :
-    L →ₐ[K] absoluteValueExtension_algebraicCompletionClosure vK :=
-  let hα := completionExtensionFactor_root_isIntegral hf hroot
-  (simpleEmbeddingsEquivMappedMinpolyRoots
-    (K' := vK.Completion)
-    (E := absoluteValueExtension_algebraicCompletionClosure vK)
-    α hα hgen).symm
-      ⟨β, completionExtensionFactor_factorRoot_mem_mappedMinpoly
-        vK hf hroot g β hβ⟩
-
-/-- The embedding chosen from the root `β` sends `α` to exactly `β`. -/
-theorem completionExtensionFactor_embeddingOfFactorRoot_apply
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
-    (vK : AbsoluteValue K ℝ) {α : L} {f : K[X]}
-    (hf : Irreducible f) (hroot : Polynomial.aeval α f = 0)
-    (hgen : Algebra.adjoin K ({α} : Set L) = ⊤)
-    (g : CompletionExtensionFactorCompletionFactors vK f)
-    (β : absoluteValueExtension_algebraicCompletionClosure vK)
-    (hβ : β ∈ g.1.rootSet
-      (absoluteValueExtension_algebraicCompletionClosure vK)) :
-    completionExtensionFactor_embeddingOfFactorRoot
-      vK hf hroot hgen g β hβ α = β := by
-  let hα := completionExtensionFactor_root_isIntegral hf hroot
-  let e := simpleEmbeddingsEquivMappedMinpolyRoots
-    (K' := vK.Completion)
-    (E := absoluteValueExtension_algebraicCompletionClosure vK)
-    α hα hgen
-  let z : PolynomialRootsIn
-      (absoluteValueExtension_algebraicCompletionClosure vK)
-      ((minpoly K α).map (algebraMap K vK.Completion)) :=
-    ⟨β, completionExtensionFactor_factorRoot_mem_mappedMinpoly
-      vK hf hroot g β hβ⟩
-  change (e.symm z) α = β
-  exact congrArg Subtype.val (e.apply_symm_apply z)
-
-/-- The valuation extension attached to the chosen root is the explicit
-pullback `bar v ∘ τ`. -/
-noncomputable def completionExtensionFactor_extensionOfFactorRoot
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
-    {α : L} {f : K[X]} (hf : Irreducible f)
-    (hroot : Polynomial.aeval α f = 0)
-    (hgen : Algebra.adjoin K ({α} : Set L) = ⊤)
-    (g : CompletionExtensionFactorCompletionFactors vK f)
-    (β : absoluteValueExtension_algebraicCompletionClosure vK)
-    (hβ : β ∈ g.1.rootSet
-      (absoluteValueExtension_algebraicCompletionClosure vK)) :
-    AbsoluteValueExtension vK L :=
-  pullbackAbsoluteValueExtension vK hvK
-    (completionExtensionFactor_embeddingOfFactorRoot
-      vK hf hroot hgen g β hβ)
-
-theorem completionExtensionFactor_extensionOfFactorRoot_eq_pullback
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
-    {α : L} {f : K[X]} (hf : Irreducible f)
-    (hroot : Polynomial.aeval α f = 0)
-    (hgen : Algebra.adjoin K ({α} : Set L) = ⊤)
-    (g : CompletionExtensionFactorCompletionFactors vK f)
-    (β : absoluteValueExtension_algebraicCompletionClosure vK)
-    (hβ : β ∈ g.1.rootSet
-      (absoluteValueExtension_algebraicCompletionClosure vK)) :
-    (completionExtensionFactor_extensionOfFactorRoot
-        vK hvK hf hroot hgen g β hβ).1 =
-      absoluteValueExtension_pullback vK hvK
-        (completionExtensionFactor_embeddingOfFactorRoot
-          vK hf hroot hgen g β hβ) :=
-  rfl
-
-/-- The extension built from a root of `g` is sent back to exactly `g` by
-the factor correspondence. -/
-theorem completionExtensionFactor_extensionOfFactorRoot_factor
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
-    {α : L} {f : K[X]} (hf : Irreducible f)
-    (hroot : Polynomial.aeval α f = 0)
-    (hgen : Algebra.adjoin K ({α} : Set L) = ⊤)
-    (g : CompletionExtensionFactorCompletionFactors vK f)
-    (β : absoluteValueExtension_algebraicCompletionClosure vK)
-    (hβ : β ∈ g.1.rootSet
-      (absoluteValueExtension_algebraicCompletionClosure vK)) :
-    completionExtensionFactor_extensionFactor vK α
-        (completionExtensionFactor_extensionOfFactorRoot
-          vK hvK hf hroot hgen g β hβ) = g.1 := by
-  let hα := completionExtensionFactor_root_isIntegral hf hroot
-  let τ := completionExtensionFactor_embeddingOfFactorRoot
-    vK hf hroot hgen g β hβ
-  let w := completionExtensionFactor_extensionOfFactorRoot
-    vK hvK hf hroot hgen g β hβ
-  rcases completionExtensionFactor_factor_irreducible_monic_dvd_minpoly
-    vK hf hroot g with ⟨hgirr, hgmonic, _⟩
-  have hβeval : Polynomial.aeval β g.1 = 0 :=
-    (Polynomial.mem_rootSet.mp hβ).2
-  have hmp : g.1 = minpoly vK.Completion β :=
-    minpoly.eq_of_irreducible_of_monic hgirr hβeval hgmonic
-  calc
-    completionExtensionFactor_extensionFactor vK α w =
-        minpoly vK.Completion (τ α) :=
-      completionExtensionFactor_extensionFactor_eq_minpoly_of_pullback
-        vK hvK α hα hgen w τ rfl
-    _ = minpoly vK.Completion β := by
-      rw [completionExtensionFactor_embeddingOfFactorRoot_apply]
-    _ = g.1 := hmp.symm
-
-/-- Thus the explicitly constructed pullback is the inverse image of `g`
-under the canonical correspondence. -/
-theorem completionExtensionFactor_extensionOfFactorRoot_eq_equiv_symm
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
-    {α : L} {f : K[X]} (hf : Irreducible f)
-    (hroot : Polynomial.aeval α f = 0)
-    (hgen : Algebra.adjoin K ({α} : Set L) = ⊤)
-    (g : CompletionExtensionFactorCompletionFactors vK f)
-    (β : absoluteValueExtension_algebraicCompletionClosure vK)
-    (hβ : β ∈ g.1.rootSet
-      (absoluteValueExtension_algebraicCompletionClosure vK)) :
-    completionExtensionFactor_extensionOfFactorRoot
-        vK hvK hf hroot hgen g β hβ =
-      (completionExtensionFactor_extensionEquivFactors
-        vK hvK hf hroot hgen).symm g := by
-  let e := completionExtensionFactor_extensionEquivFactors
-    vK hvK hf hroot hgen
-  apply e.injective
-  rw [e.apply_symm_apply]
-  apply Subtype.ext
-  exact completionExtensionFactor_extensionOfFactorRoot_factor
-    vK hvK hf hroot hgen g β hβ
-
-/-- A normalized irreducible factor is the minimal polynomial of each of
-its roots in the algebraic closure. -/
-theorem completionExtensionFactor_factor_eq_minpoly_root
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
-    (vK : AbsoluteValue K ℝ) {α : L} {f : K[X]}
-    (hf : Irreducible f) (hroot : Polynomial.aeval α f = 0)
-    (g : CompletionExtensionFactorCompletionFactors vK f)
-    (β : absoluteValueExtension_algebraicCompletionClosure vK)
-    (hβ : β ∈ g.1.rootSet
-      (absoluteValueExtension_algebraicCompletionClosure vK)) :
-    g.1 = minpoly vK.Completion β := by
-  rcases completionExtensionFactor_factor_irreducible_monic_dvd_minpoly
-    vK hf hroot g with ⟨hgirr, hgmonic, _⟩
-  exact minpoly.eq_of_irreducible_of_monic hgirr
-    (Polynomial.mem_rootSet.mp hβ).2 hgmonic
-
-/-- The completed field belonging to a factor and a chosen root `β` is
-canonically `K_v(β)`. -/
-noncomputable def completionExtensionFactor_factorRootCompletionEquiv
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
-    {α : L} {f : K[X]} (hf : Irreducible f)
-    (hroot : Polynomial.aeval α f = 0)
-    (hgen : Algebra.adjoin K ({α} : Set L) = ⊤)
-    (g : CompletionExtensionFactorCompletionFactors vK f)
-    (β : absoluteValueExtension_algebraicCompletionClosure vK)
-    (hβ : β ∈ g.1.rootSet
-      (absoluteValueExtension_algebraicCompletionClosure vK)) :
-    let w := completionExtensionFactor_extensionOfFactorRoot
-      vK hvK hf hroot hgen g β hβ
-    letI hK := AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
-    letI : SMul K w.1.Completion := hK.toSMul
-    letI := AbsoluteValue.completionAlgebra vK w.1 w.2
-    w.1.Completion ≃ₐ[vK.Completion]
-      IntermediateField.adjoin vK.Completion
-        ({β} : Set (absoluteValueExtension_algebraicCompletionClosure vK)) := by
-  let hα := completionExtensionFactor_root_isIntegral hf hroot
-  let w := completionExtensionFactor_extensionOfFactorRoot
-    vK hvK hf hroot hgen g β hβ
-  letI hK := AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
-  letI : SMul K w.1.Completion := hK.toSMul
-  letI := AbsoluteValue.completionAlgebra vK w.1 w.2
-  have hfactor : completionExtensionFactor_extensionFactor vK α w = g.1 :=
-    completionExtensionFactor_extensionOfFactorRoot_factor
-      vK hvK hf hroot hgen g β hβ
-  have hmp : g.1 = minpoly vK.Completion β :=
-    completionExtensionFactor_factor_eq_minpoly_root vK hf hroot g β hβ
-  have hβint : IsIntegral vK.Completion β :=
-    (Algebra.IsAlgebraic.isAlgebraic β).isIntegral
-  exact (completionExtensionFactor_adjoinRootEquivCompletion
-      vK hvK α hα hgen w).symm |>.trans
-    ((AdjoinRoot.algEquivOfEq vK.Completion _ _ (hfactor.trans hmp)).trans
-      (IntermediateField.adjoinRootEquivAdjoin vK.Completion hβint))
-
-/-- On `α`, the chosen-root completion equivalence has value exactly `β`. -/
-@[simp]
-theorem completionExtensionFactor_factorRootCompletionEquiv_gen
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
-    {α : L} {f : K[X]} (hf : Irreducible f)
-    (hroot : Polynomial.aeval α f = 0)
-    (hgen : Algebra.adjoin K ({α} : Set L) = ⊤)
-    (g : CompletionExtensionFactorCompletionFactors vK f)
-    (β : absoluteValueExtension_algebraicCompletionClosure vK)
-    (hβ : β ∈ g.1.rootSet
-      (absoluteValueExtension_algebraicCompletionClosure vK)) :
-    let w := completionExtensionFactor_extensionOfFactorRoot
-      vK hvK hf hroot hgen g β hβ
-    letI hK := AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
-    letI : SMul K w.1.Completion := hK.toSMul
-    letI := AbsoluteValue.completionAlgebra vK w.1 w.2
-    completionExtensionFactor_factorRootCompletionEquiv
-        vK hvK hf hroot hgen g β hβ
-        (AbsoluteValue.toCompletionAlgHom (K := K) w.1 α) =
-      IntermediateField.AdjoinSimple.gen vK.Completion β := by
-  let hα := completionExtensionFactor_root_isIntegral hf hroot
-  let w := completionExtensionFactor_extensionOfFactorRoot
-    vK hvK hf hroot hgen g β hβ
-  let hK := AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
-  let : SMul K w.1.Completion := hK.toSMul
-  let := AbsoluteValue.completionAlgebra vK w.1 w.2
-  let e0 := completionExtensionFactor_adjoinRootEquivCompletion
-    vK hvK α hα hgen w
-  let hpoly : completionExtensionFactor_extensionFactor vK α w =
-      minpoly vK.Completion β :=
-    (completionExtensionFactor_extensionOfFactorRoot_factor
-      vK hvK hf hroot hgen g β hβ).trans
-      (completionExtensionFactor_factor_eq_minpoly_root vK hf hroot g β hβ)
-  let e1 := AdjoinRoot.algEquivOfEq vK.Completion _ _ hpoly
-  have hβint : IsIntegral vK.Completion β :=
-    (Algebra.IsAlgebraic.isAlgebraic β).isIntegral
-  let e2 := IntermediateField.adjoinRootEquivAdjoin vK.Completion hβint
-  have hinv : e0.symm
-      (AbsoluteValue.toCompletionAlgHom (K := K) w.1 α) =
-      AdjoinRoot.root (completionExtensionFactor_extensionFactor vK α w) := by
-    apply e0.injective
-    rw [e0.apply_symm_apply,
-      completionExtensionFactor_adjoinRootEquivCompletion_root]
-  change (e0.symm.trans (e1.trans e2))
-      (AbsoluteValue.toCompletionAlgHom (K := K) w.1 α) = _
-  rw [AlgEquiv.trans_apply, hinv, AlgEquiv.trans_apply,
-    AdjoinRoot.algEquivOfEq_root,
-    IntermediateField.adjoinRootEquivAdjoin_apply_root]
-
-/-- The chosen-root equivalence extends the chosen embedding on every
-element of `L`. -/
-theorem completionExtensionFactor_factorRootCompletionEquiv_coe
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
-    {α : L} {f : K[X]} (hf : Irreducible f)
-    (hroot : Polynomial.aeval α f = 0)
-    (hgen : Algebra.adjoin K ({α} : Set L) = ⊤)
-    (g : CompletionExtensionFactorCompletionFactors vK f)
-    (β : absoluteValueExtension_algebraicCompletionClosure vK)
-    (hβ : β ∈ g.1.rootSet
-      (absoluteValueExtension_algebraicCompletionClosure vK))
-    (x : L) :
-    let τ := completionExtensionFactor_embeddingOfFactorRoot
-      vK hf hroot hgen g β hβ
-    let w := completionExtensionFactor_extensionOfFactorRoot
-      vK hvK hf hroot hgen g β hβ
-    letI hK := AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
-    letI : SMul K w.1.Completion := hK.toSMul
-    letI := AbsoluteValue.completionAlgebra vK w.1 w.2
-    ((completionExtensionFactor_factorRootCompletionEquiv
-        vK hvK hf hroot hgen g β hβ
-        (AbsoluteValue.toCompletionAlgHom (K := K) w.1 x) :
-      IntermediateField.adjoin vK.Completion
-        ({β} : Set (absoluteValueExtension_algebraicCompletionClosure vK))) :
-      absoluteValueExtension_algebraicCompletionClosure vK) = τ x := by
-  let hα := completionExtensionFactor_root_isIntegral hf hroot
-  let pb : PowerBasis K L := PowerBasis.ofAdjoinEqTop hα hgen
-  let : FiniteDimensional K L := pb.finite
-  let : Algebra.IsAlgebraic K L := inferInstance
-  let τ := completionExtensionFactor_embeddingOfFactorRoot
-    vK hf hroot hgen g β hβ
-  let w := completionExtensionFactor_extensionOfFactorRoot
-    vK hvK hf hroot hgen g β hβ
-  let hK := AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
-  let : SMul K w.1.Completion := hK.toSMul
-  let := AbsoluteValue.completionAlgebra vK w.1 w.2
-  let : IsScalarTower K vK.Completion w.1.Completion :=
-    AbsoluteValue.completion_isScalarTower vK w.1 w.2
-  let E := IntermediateField.adjoin vK.Completion
-    ({β} : Set (absoluteValueExtension_algebraicCompletionClosure vK))
-  let e : w.1.Completion ≃ₐ[vK.Completion] E :=
-    completionExtensionFactor_factorRootCompletionEquiv
-      vK hvK hf hroot hgen g β hβ
-  let ι : L →ₐ[K] w.1.Completion :=
-    AbsoluteValue.toCompletionAlgHom (K := K) w.1
-  let φ : L →ₐ[K] absoluteValueExtension_algebraicCompletionClosure vK :=
-    ((E.val.comp e.toAlgHom).restrictScalars K).comp ι
-  have hpbgen : pb.gen = α := by simp [pb]
-  have hφ : φ = τ := by
-    apply pb.algHom_ext
-    rw [hpbgen]
-    change ((e (ι α) : E) :
-      absoluteValueExtension_algebraicCompletionClosure vK) = τ α
-    rw [completionExtensionFactor_factorRootCompletionEquiv_gen,
-      completionExtensionFactor_embeddingOfFactorRoot_apply]
-    rfl
-  exact DFunLike.congr_fun hφ x
-
-/-- **Classification of extensions of a completed absolute value.**
-
-For `L = K(α)` and an irreducible polynomial `f` with root `α`, exact
-extensions of the nontrivial absolute value `v` are in bijection with the
-distinct normalized irreducible factors of `f` over `K_v`.  For every factor
-and every chosen root `β` in `bar K_v`, the theorem records the embedding
-`τ(α) = β`, the formula `w = bar v ∘ τ`, and an equivalence
-`L_w ≃ K_v(β)` which extends `τ` on every element of `L`. -/
-theorem completionExtensionFactor_classification
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
-    {α : L} {f : K[X]} (hf : Irreducible f)
-    (hroot : Polynomial.aeval α f = 0)
-    (hgen : Algebra.adjoin K ({α} : Set L) = ⊤) :
-    Function.Bijective (completionExtensionFactor_extensionToFactor vK hf hroot) ∧
-      ∀ (g : CompletionExtensionFactorCompletionFactors vK f)
-        (β : absoluteValueExtension_algebraicCompletionClosure vK)
-        (hβ : β ∈ g.1.rootSet
-          (absoluteValueExtension_algebraicCompletionClosure vK)),
-        let τ := completionExtensionFactor_embeddingOfFactorRoot
-          vK hf hroot hgen g β hβ
-        let w := completionExtensionFactor_extensionOfFactorRoot
-          vK hvK hf hroot hgen g β hβ
-        letI hK := AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
-        letI : SMul K w.1.Completion := hK.toSMul
-        letI := AbsoluteValue.completionAlgebra vK w.1 w.2
-        let e := completionExtensionFactor_factorRootCompletionEquiv
-          vK hvK hf hroot hgen g β hβ
-        τ α = β ∧
-          w.1 = absoluteValueExtension_pullback vK hvK τ ∧
-          w = (completionExtensionFactor_extensionEquivFactors
-            vK hvK hf hroot hgen).symm g ∧
-          completionExtensionFactor_extensionFactor vK α w = g.1 ∧
-          ∀ x : L,
-            ((e (AbsoluteValue.toCompletionAlgHom (K := K) w.1 x) :
-              IntermediateField.adjoin vK.Completion
-                ({β} : Set
-                  (absoluteValueExtension_algebraicCompletionClosure vK))) :
-              absoluteValueExtension_algebraicCompletionClosure vK) = τ x := by
-  constructor
-  · exact (completionExtensionFactor_extensionEquivFactors
-      vK hvK hf hroot hgen).bijective
-  · intro g β hβ
-    dsimp only
-    refine ⟨completionExtensionFactor_embeddingOfFactorRoot_apply
-        vK hf hroot hgen g β hβ,
-      completionExtensionFactor_extensionOfFactorRoot_eq_pullback
-        vK hvK hf hroot hgen g β hβ,
-      completionExtensionFactor_extensionOfFactorRoot_eq_equiv_symm
-        vK hvK hf hroot hgen g β hβ,
-      completionExtensionFactor_extensionOfFactorRoot_factor
-        vK hvK hf hroot hgen g β hβ, ?_⟩
-    intro x
-    exact completionExtensionFactor_factorRootCompletionEquiv_coe
-      vK hvK hf hroot hgen g β hβ x
-
-end Valuations
-end AlgebraicNumberTheory
-
-end

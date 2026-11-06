@@ -29,15 +29,14 @@ private theorem active_finite (A : SArithmeticData F) (h : A.Exterior) :
   apply Finite.of_injective (fun f : Active A h =>
     (⟨f.val.val.val, f.property⟩ : {f // f ∈ activeSquarefreeDivisors h.val}))
   intro i j hij
-  have he : i.val.val.val = j.val.val.val := congrArg
-    (fun f : {f // f ∈ activeSquarefreeDivisors h.val} => f.val) hij
+  have he : i.val.val.val = j.val.val.val := by simp_all
   exact Subtype.ext (Subtype.ext (Subtype.ext he))
 
-private theorem beta_zero {A : SArithmeticData F} (f : ExteriorSquarefreeIdeal A.cS)
+theorem beta_zero {A : SArithmeticData F} (f : ExteriorSquarefreeIdeal A.cS)
     (a : supportedExteriorIdeals f) : betaIdealTerm f 0 a = betaIdeal f a.val.val := by
   simp [betaIdealTerm]
 
-private theorem norm_bounds {A : SArithmeticData F} (a c n : A.Exterior)
+theorem norm_bounds {A : SArithmeticData F} (a c n : A.Exterior)
     {R : ℝ} (hr : rowNorm a c n ≤ R) :
     idealNorm c.val ≤ R ∧ idealNorm n.val ≤ R := by
   have ha := idealNorm_ge_one a.val a.property.1
@@ -58,13 +57,12 @@ private theorem norm_bounds {A : SArithmeticData F} (a c n : A.Exterior)
     calc idealNorm n.val ^ 3 = 1 * 1 * idealNorm n.val ^ 3 := by ring
          _ ≤ idealNorm a.val * idealNorm c.val * idealNorm n.val ^ 3 := by gcongr
 
-private theorem dyad_count (R : ℝ) (hR : 1 ≤ R) :
+theorem dyad_count (R : ℝ) (hR : 1 ≤ R) :
     (Nat.log 2 ⌊R⌋₊ + 1 : ℝ) ≤ Real.log (2 * R) / Real.log 2 := by
   have hRp : 0 < R := lt_of_lt_of_le zero_lt_one hR
-  have hlog2 : 0 < Real.log 2 := Real.log_pos (by norm_num)
+  have hlog2 : 0 < Real.log 2 := by positivity
   have hfloor : ⌊R⌋₊ ≠ 0 := by
-    have : 1 ≤ ⌊R⌋₊ := Nat.le_floor (by simpa only [Nat.cast_one] using hR)
-    omega
+    simp_all
   have hp : (2 : ℝ) ^ Nat.log 2 ⌊R⌋₊ ≤ R := by
     calc
       (2 : ℝ) ^ Nat.log 2 ⌊R⌋₊ ≤ (⌊R⌋₊ : ℝ) := by
@@ -89,7 +87,7 @@ private theorem active_sum_le (A : SArithmeticData F) (h : A.Exterior)
     obtain ⟨i, hi, rfl⟩ := Finset.mem_image.mp hf
     exact i.property
   · intro f _
-    exact le_of_eq (activeEulerFactor_eq_eulerIdeal f.val 0).symm
+    rfl
   · intro f hf _
     exact activeEulerFactor_nonneg f
       ((mem_activeSquarefreeDivisors_iff h.val h.property.1 f).mp hf).1 0 (le_refl 0)
@@ -107,9 +105,9 @@ theorem frozen_dyadic_weight_bound (A : SArithmeticData F)
   letI := Fintype.ofFinite A.UnitQuotient
   obtain ⟨Ka, hKa, ha⟩ := active_subpower (F := F) b hb
   obtain ⟨K, Kn, hK, hKn, hn⟩ := ideal_counting_harmonic_bounds F
-  have hl2 : 0 < Real.log 2 := Real.log_pos (by norm_num)
+  have hl2 : 0 < Real.log 2 := by positivity
   let Cu : ℝ := Nat.card A.UnitQuotient + 1
-  have hCu : 0 < Cu := by dsimp [Cu]; positivity
+  have hCu : 0 < Cu := by positivity
   refine ⟨Ka * Kn * Cu / Real.log 2, by positivity, ?_⟩
   intro h R s hR hs
   letI := active_finite A h
@@ -150,8 +148,7 @@ theorem frozen_dyadic_weight_bound (A : SArithmeticData F)
     rw [(Summable.of_finite (f := g)).tsum_prod]
     have he (n : N) : (∑' z : A.UnitQuotient × Fin L, g (n,z)) =
         (Nat.card A.UnitQuotient : ℝ) * L * (idealNorm n.val.val)⁻¹ := by
-      simp [g, tsum_fintype, Fintype.sum_prod_type, ← Nat.card_eq_fintype_card,
-        Nat.card_fin, nsmul_eq_mul, mul_comm, mul_left_comm, mul_assoc]
+      simp [g, tsum_fintype, ← Nat.card_eq_fintype_card, Nat.card_fin, nsmul_eq_mul, mul_comm]
     simp only [he, tsum_mul_left]
     rfl
   let t := s.image (fun i => (i.1, Nat.log 2 (Ideal.absNorm i.2.val.val)))
@@ -363,8 +360,8 @@ theorem retained_eq_tsum (A : SArithmeticData F) (G : AllowedRecipe A)
     (h d : A.Exterior) (Z R₀ : ℝ) :
     retained A G U σ ψ L H h d Z R₀ =
       ∑' i : RMSeparatedExpansion.Index A h,
-        retainedSummand A G U σ ψ L H h d Z R₀ i := by
-  exact (tsum_eq_finsum (retainedSummand_finite_support A G U σ ψ L H h d Z R₀)).symm
+        retainedSummand A G U σ ψ L H h d Z R₀ i := 
+  (tsum_eq_finsum (retainedSummand_finite_support A G U σ ψ L H h d Z R₀)).symm
 
 theorem retained_eq_zero_of_cutoff_lt_one (A : SArithmeticData F)
     (G : AllowedRecipe A) (U : UnitRepresentatives A) (σ : F →+* ℂ)
@@ -413,7 +410,7 @@ theorem finiteMinkowski {I J : Type*} [Fintype I]
           EuclideanSpace ℂ I)).symm
     _ = ‖∑ j ∈ s, v j‖ := congrArg norm he
     _ ≤ ∑ j ∈ s, ‖v j‖ := norm_sum_le _ _
-    _ = _ := by simp only [v, EuclideanSpace.norm_eq, PiLp.toLp_apply]
+    _ = _ := by simp only [v, EuclideanSpace.norm_eq]
 
 theorem retained_eq_finite_sum (A : SArithmeticData F) (G : AllowedRecipe A)
     (U : UnitRepresentatives A) (σ : F →+* ℂ)
@@ -515,12 +512,7 @@ theorem frozen_scalar_norm_bound (A : SArithmeticData F) (G : AllowedRecipe A)
     (L : Fˣ →* ℂ) (hL : ∀ x : Fˣ, ‖L x‖ = 1) (T : Frozen A) :
     ‖omega A G U σ ψ L T / (A.exteriorNorm T.n : ℂ)‖ ≤
       betaIdeal (RMSeparatedExpansion.activeSupport A T) T.a.val /
-        A.exteriorNorm T.n := by
-  have hn := idealNorm_ge_one T.n.val T.n.property.1
-  have hb := (RMSeparatedExpansion.factors_norm_le_betaIdeal
-    A G U σ ψ hψ L hL T T.n T.n).1
-  rw [norm_div, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (by linarith)]
-  exact div_le_div_of_nonneg_right hb (by linarith)
+        A.exteriorNorm T.n := by apply DedekindZetaZeroFree.RMDyadicSieveAggregation.frozen_scalar_norm_le <;> assumption
 
 theorem sieve_majorant_mono (D C R b : ℝ) (hD : 0 ≤ D)
     (hC : 0 ≤ C) (hCR : C ≤ R) (hb : 0 ≤ b) :
@@ -532,7 +524,7 @@ theorem sieve_majorant_mono (D C R b : ℝ) (hD : 0 ≤ D)
       (mul_le_mul_of_nonneg_left hCR hD) (by positivity)
   · exact Real.sqrt_le_sqrt (by linarith)
   · exact Real.sqrt_nonneg _
-  · exact Real.rpow_nonneg (mul_nonneg hD hR) _
+  positivity
 
 theorem retained_l2_bound
     (A : SArithmeticData F) (G : AllowedRecipe A) (U : UnitRepresentatives A)
@@ -580,8 +572,7 @@ theorem retained_l2_bound
     apply Finset.sum_congr
     · ext j
       simp only [Finset.mem_image, g, frozenDyadKey]
-    · intro j hj
-      rfl
+    simp
   calc
     Real.sqrt (rowSquareMass A G U σ ψ (L u) (H u) h Z D R) ≤
         ∑ j ∈ s.image g,
@@ -642,7 +633,7 @@ theorem retained_l2_bound
     _ = (K * M) * (A.exteriorNorm h) ^ b₁ * Real.log (2 * R) ^ 2 *
         Real.sqrt (D + R) * (D * R) ^ (b₂ / 2) := by ring
 
-private theorem bound_square (K P D R b₁ b₂ : ℝ)
+theorem bound_square (K P D R b₁ b₂ : ℝ)
     (hP : 0 < P) (hD : 0 < D) (hR : 0 < R) :
     (K * (2 * P) ^ b₁ * Real.log (2 * R) ^ 2 * Real.sqrt (D + R) *
       (D * R) ^ (b₂ / 2)) ^ 2 =
@@ -685,7 +676,7 @@ theorem retained_total_square_bound
   have hDp : 0 < D := lt_of_lt_of_le zero_lt_one hD
   let M := K ^ 2 * (2 * P) ^ (2 * b₁) * Real.log (2 * R) ^ 4 *
     (D + R) * (D * R) ^ b₂
-  have hM : 0 ≤ M := by dsimp [M]; positivity
+  have hM : 0 ≤ M := by positivity
   have hrow (h : exteriorPowerfulDyad A.cS P) :
       rowSquareMass A G U σ ψ (L u) (H u) h.val Z D R ≤ M := by
     have hbound := hb u Z P D θ hZ hP hD hθ hR h.val h.property
@@ -725,8 +716,3 @@ theorem retained_total_square_bound
       rw [Real.mul_rpow (by norm_num : (0 : ℝ) ≤ 2) hPp.le,
         Real.sqrt_eq_rpow, Real.rpow_add hPp]
       ring
-
-end
-end DedekindZetaZeroFree.RMRetainedAggregation
-
-end

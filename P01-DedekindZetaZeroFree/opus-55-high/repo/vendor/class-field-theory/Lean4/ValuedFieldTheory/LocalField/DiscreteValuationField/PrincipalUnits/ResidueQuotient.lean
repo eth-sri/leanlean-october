@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 namespace LocalFieldTheory
 
 open ValuationTheory
@@ -51,7 +48,7 @@ theorem residueUnitHom_ker_eq :
 
 /-- The first-isomorphism form of the residue map on valuation-ring units:
 `O_K^* / U_K^1` is the unit group of the residue field. -/
-noncomputable def unitsModOneEquivResidueFieldUnits :
+def unitsModOneEquivResidueFieldUnits :
     F.valuationSubringˣ ⧸ higherPrincipalUnitGroup F 1 ≃* F.residueFieldˣ :=
   QuotientGroup.liftEquiv
     (higherPrincipalUnitGroup F 1)
@@ -61,45 +58,3 @@ noncomputable def unitsModOneEquivResidueFieldUnits :
           F.residueMap F.residue_surjective
           (inferInstanceAs (IsLocalHom F.residueMap))))
     (higherPrincipalUnitGroup.residueUnitHom_ker_eq F).symm
-
-/--
-Establishes the identity `higherPrincipalUnitGroup.unitsModOneEquivResidueFieldUnits F
-(QuotientGroup.mk' (higherPrincipalUnitGroup F 1) u) = higherPrincipalUnitGroup.residueUnitHom F
-u`.
--/
-@[simp] theorem unitsModOneEquivResidueFieldUnits_mk
-    (u : F.valuationSubringˣ) :
-    higherPrincipalUnitGroup.unitsModOneEquivResidueFieldUnits F
-        (QuotientGroup.mk' (higherPrincipalUnitGroup F 1) u) =
-      higherPrincipalUnitGroup.residueUnitHom F u := by
-  rfl
-
-/-- Compatibility of the induced action on `O^*/U^1` with the induced action
-on residue-field units. -/
-theorem unitsModOneEquivResidueFieldUnits_unitsModPrincipalUnitEquivOfPreserves_one
-    (e : K ≃+* K)
-    (hmem :
-      ∀ x : K,
-        x ∈ F.valuation.valuationSubring ↔
-          e x ∈ F.valuation.valuationSubring)
-    (q : F.valuationSubringˣ ⧸ higherPrincipalUnitGroup F 1) :
-    higherPrincipalUnitGroup.unitsModOneEquivResidueFieldUnits F
-        (higherPrincipalUnitGroup.unitsModPrincipalUnitEquivOfPreserves
-          F e hmem 1 q) =
-      Units.map
-        (valuationSubringResidueFieldEquivOfPreserves F e hmem).toMonoidHom
-        (higherPrincipalUnitGroup.unitsModOneEquivResidueFieldUnits F q) := by
-  obtain ⟨u, rfl⟩ := QuotientGroup.mk'_surjective
-    (higherPrincipalUnitGroup F 1) q
-  rw [higherPrincipalUnitGroup.unitsModPrincipalUnitEquivOfPreserves_mk,
-    higherPrincipalUnitGroup.unitsModOneEquivResidueFieldUnits_mk,
-    higherPrincipalUnitGroup.unitsModOneEquivResidueFieldUnits_mk,
-    residueUnitHom_valuationSubringUnitEquivOfPreserves]
-end higherPrincipalUnitGroup
-
-end CompleteDVF
-end DiscreteValuationField
-
-end
-
-end LocalFieldTheory

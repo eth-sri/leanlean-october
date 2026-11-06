@@ -73,24 +73,7 @@ lemma forwardGenerator_order (c : ExteriorSquarefreeIdeal R.A.cS) (n : R.A.Exter
 
 lemma row_primes_eq_support (m : ThetaReflectionData.Row R.A)
     (D : ThetaBranch.RowFactorization R.A R.probe.allowed m) :
-    ThetaDigitAverage.rowPrimes R.A m.val m.property = ThetaBranch.support D.rowIdeal.val := by
-  ext p
-  have hs : p ∈ ThetaBranch.support D.rowIdeal.val ↔ idealPrimeExponent p.asIdeal D.rowIdeal.val ≠ 0 := by
-    simp only [ThetaBranch.support, Finset.mem_preimage, idealPrimeSupport,
-      idealPrimeExponent, Multiset.mem_toFinset, Multiset.count_ne_zero]
-  rw [hs]
-  by_cases hp : p ∈ R.A.Sf
-  · have hz : idealPrimeExponent p.asIdeal D.rowIdeal.val = 0 := by
-      by_contra hn
-      exact ThetaBranch.support_outside R.A D.rowIdeal p (hs.mpr hn) hp
-    simp [ThetaDigitAverage.rowPrimes, ThetaDigitAverage.RowPrimes, hp, hz]
-  · have hv : p.valuation F (m.val : F) = WithZero.exp (-(idealPrimeExponent p.asIdeal D.rowIdeal.val : ℤ)) :=
-      SIntegerLocalization.generator_valuation R.A.Sf D.rowIdeal.val D.rowIdeal.property.1
-        m.val D.row_generates.1 D.row_generates.2 p hp
-    simp only [ThetaDigitAverage.rowPrimes, Set.Finite.mem_toFinset,
-      ThetaDigitAverage.RowPrimes, Set.mem_setOf_eq, hp, not_false_eq_true, true_and, hv]
-    rw [← WithZero.exp_zero, WithZero.exp_lt_exp]
-    omega
+    ThetaDigitAverage.rowPrimes R.A m.val m.property = ThetaBranch.support D.rowIdeal.val := by apply DedekindZetaZeroFree.OrbitExpansion.ExteriorDigits.row_support <;> assumption
 
 lemma forwardMask_eq_rowIdeal_character (m : ThetaReflectionData.Row R.A)
     (D : ThetaBranch.RowFactorization R.A R.probe.allowed m) (a : Fˣ) (r : R.A.R)

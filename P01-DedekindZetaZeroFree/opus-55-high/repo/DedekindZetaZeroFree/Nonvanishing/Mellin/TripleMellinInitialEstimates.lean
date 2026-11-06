@@ -49,9 +49,3 @@ theorem mellinWeight_ne_zero (R : ActualRecipe S η) : R.W.M (1 / 6) ≠ 0 :=
 
 theorem realMellinWeight_ne_zero (R : ActualRecipe S η) : R.W.W1Hat 1 ≠ 0 :=
   probeRealWeightMellin_one_ne_zero R.probe.W1
-
-end ActualRecipe
-
-end DedekindZetaZeroFree.PrincipalMellin
-
-end

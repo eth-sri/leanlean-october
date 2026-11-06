@@ -31,8 +31,7 @@ theorem convolution (χ : MulChar k ℂ) (ψ : AddChar k ℂ) (n : ℕ) :
         have hr := mul_reindex χ ψ hPm j n (by simpa [hPd, Nat.mul_comm] using h)
         rw [hPd, Nat.mul_comm j d] at hr
         rw [hr, Finset.mul_sum]
-        refine Finset.sum_congr rfl fun f hf => ?_
-        by_cases hv : P ^ j ∣ f <;> simp [hirr, hv]
+        simp_all
       · simp [hirr]
     · rw [if_neg h]
       symm
@@ -67,9 +66,6 @@ theorem convolution (χ : MulChar k ℂ) (ψ : AddChar k ℂ) (n : ℕ) :
         rw [Finset.sum_mul]
         refine Finset.sum_congr rfl fun j hj => ?_
         rw [Finset.sum_mul]
-        refine Finset.sum_congr rfl fun P hP => ?_
-        split_ifs <;> simp
+        simp
       _ = (n : ℂ) * a χ ψ n := by
         simp only [a, sum_Mon, Finset.mul_sum]
-
-end DavenportHasse.PolyPart

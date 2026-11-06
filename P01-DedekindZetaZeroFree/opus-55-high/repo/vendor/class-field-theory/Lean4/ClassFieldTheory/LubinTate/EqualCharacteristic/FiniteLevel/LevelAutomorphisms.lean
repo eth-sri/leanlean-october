@@ -15,13 +15,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # The uniformizer norm identity: automorphisms of equal-characteristic Lubin--Tate level fields
 
@@ -38,7 +31,6 @@ root-counting argument below.
 -/
 
 noncomputable section
-
 
 open scoped PowerSeries LaurentSeries Polynomial
 
@@ -61,7 +53,7 @@ theorem equalCharacteristicSeparableUniformizer_mem_lubinTateLevelField
       equalCharacteristicLubinTateLevelField F n := by
   rw [equalCharacteristicSeparableUniformizer,
     equalCharacteristicSeparableBaseHom_eq_algebraMap]
-  exact (equalCharacteristicLubinTateLevelField F n).algebraMap_mem _
+  simp
 
 /-- Embedded residue-field coefficients belong to every level field. -/
 theorem equalCharacteristicSeparableCoefficient_mem_lubinTateLevelField
@@ -72,7 +64,7 @@ theorem equalCharacteristicSeparableCoefficient_mem_lubinTateLevelField
       equalCharacteristicLubinTateLevelField F n := by
   rw [equalCharacteristicSeparableCoefficientHom,
     RingHom.comp_apply, equalCharacteristicSeparableBaseHom_eq_algebraMap]
-  exact (equalCharacteristicLubinTateLevelField F n).algebraMap_mem _
+  simp
 
 /-- The chosen primitive point belongs to its simple level field. -/
 theorem chosenEqualCharacteristicLubinTatePrimitiveRoot_mem_levelField
@@ -104,19 +96,6 @@ theorem equalCharacteristicLubinTateAmbientPiIterate_mem_levelField_of_mem
         ((equalCharacteristicLubinTateLevelField F n).toSubalgebra.pow_mem hx _)
         ((equalCharacteristicLubinTateLevelField F n).mul_mem
           (equalCharacteristicSeparableUniformizer_mem_lubinTateLevelField F n) hx)
-
-/-- In particular, every distinguished iterate of the chosen primitive point
-lies in its level field. -/
-theorem chosenEqualCharacteristicLubinTatePrimitiveRoot_piIterate_mem_levelField
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (n i : ℕ) :
-    equalCharacteristicLubinTateAmbientPiIterate F
-        (equalCharacteristicSeparableUniformizer F) i
-        (chosenEqualCharacteristicLubinTatePrimitiveRoot F n) ∈
-      equalCharacteristicLubinTateLevelField F n :=
-  equalCharacteristicLubinTateAmbientPiIterate_mem_levelField_of_mem F n i
-    (chosenEqualCharacteristicLubinTatePrimitiveRoot_mem_levelField F n)
 
 /-- Every truncated Lubin--Tate bracket preserves the level field. -/
 theorem equalCharacteristicLubinTateAmbientBracket_mem_levelField_of_mem
@@ -150,7 +129,7 @@ theorem equalCharacteristicLubinTateUnitParameterRoot_mem_levelField
     (chosenEqualCharacteristicLubinTatePrimitiveRoot_mem_levelField F n)
 
 /-- The parameter root, regarded as an element of the level field. -/
-noncomputable def equalCharacteristicLubinTateUnitParameterLevelRoot
+def equalCharacteristicLubinTateUnitParameterLevelRoot
     (F : LocalField.{u, v} K)
     [CharP K F.residueCharacteristic]
     (n : ℕ) (a : equalCharacteristicLubinTateUnitParameter F n) :
@@ -182,7 +161,7 @@ theorem equalCharacteristicLubinTateUnitParameterLevelRoot_injective
   exact congrArg Subtype.val hab
 
 /-- The canonical power basis of the simple level extension. -/
-noncomputable def equalCharacteristicLubinTateLevelPowerBasis
+def equalCharacteristicLubinTateLevelPowerBasis
     (F : LocalField.{u, v} K)
     [CharP K F.residueCharacteristic]
     (n : ℕ) :
@@ -238,7 +217,7 @@ theorem equalCharacteristicLubinTateUnitParameterLevelRoot_aeval_minpoly
 
 /-- The algebra endomorphism sending the chosen primitive generator to the
 explicit root attached to a finite unit parameter. -/
-noncomputable def equalCharacteristicLubinTateUnitParameterAlgHom
+def equalCharacteristicLubinTateUnitParameterAlgHom
     (F : LocalField.{u, v} K)
     [CharP K F.residueCharacteristic]
     (n : ℕ) (a : equalCharacteristicLubinTateUnitParameter F n) :
@@ -256,12 +235,12 @@ theorem equalCharacteristicLubinTateUnitParameterAlgHom_apply_gen
     (n : ℕ) (a : equalCharacteristicLubinTateUnitParameter F n) :
     equalCharacteristicLubinTateUnitParameterAlgHom F n a
         (equalCharacteristicLubinTateLevelPowerBasis F n).gen =
-      equalCharacteristicLubinTateUnitParameterLevelRoot F n a := by
-  exact (equalCharacteristicLubinTateLevelPowerBasis F n).lift_gen _ _
+      equalCharacteristicLubinTateUnitParameterLevelRoot F n a := 
+  (equalCharacteristicLubinTateLevelPowerBasis F n).lift_gen _ _
 
 /-- The finite-dimensional algebra endomorphism is automatically an
 automorphism. -/
-noncomputable def equalCharacteristicLubinTateUnitParameterAlgEquiv
+def equalCharacteristicLubinTateUnitParameterAlgEquiv
     (F : LocalField.{u, v} K)
     [CharP K F.residueCharacteristic]
     (n : ℕ) (a : equalCharacteristicLubinTateUnitParameter F n) :
@@ -289,7 +268,7 @@ theorem equalCharacteristicLubinTateUnitParameterAlgEquiv_apply_gen
 
 /-- The explicit map from finite unit parameters to the finite-level Galois
 group. -/
-noncomputable def equalCharacteristicLubinTateUnitParameterToGal
+def equalCharacteristicLubinTateUnitParameterToGal
     (F : LocalField.{u, v} K)
     [CharP K F.residueCharacteristic]
     (n : ℕ) :
@@ -315,7 +294,7 @@ theorem equalCharacteristicLubinTateUnitParameterToGal_injective
   simpa [equalCharacteristicLubinTateUnitParameterToGal] using hgen
 
 /-- Provides the instance `equalCharacteristicLubinTateLevelField_galFinite`. -/
-noncomputable instance equalCharacteristicLubinTateLevelField_galFinite
+instance equalCharacteristicLubinTateLevelField_galFinite
     (F : LocalField.{u, v} K)
     [CharP K F.residueCharacteristic]
     (n : ℕ) :
@@ -376,8 +355,3 @@ theorem equalCharacteristicLubinTateLevelField_isGalois
   exact IsGalois.of_card_aut_eq_finrank F.residueField⸨X⸩
     (equalCharacteristicLubinTateLevelField F n)
     (equalCharacteristicLubinTateLevelField_natCard_gal F n)
-
-end EqualCharacteristic
-end LubinTate
-
-end

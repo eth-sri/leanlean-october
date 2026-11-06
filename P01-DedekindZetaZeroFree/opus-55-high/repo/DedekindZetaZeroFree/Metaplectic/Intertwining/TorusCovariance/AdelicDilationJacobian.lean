@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Metaplectic.Torus.AdelicSmoothFunctionTopolog
 
 @[expose] public section
 
-noncomputable section
 open MeasureTheory
 open scoped Classical NumberField ENNReal NNReal Topology
 set_option backward.isDefEq.respectTransparency false
@@ -34,7 +33,3 @@ theorem adelic_integral_mul_idele_inv (μ : Measure (KPGlobalTorusFunctionData.A
   rw [heT] at hmap
   rw [← hh, hmap, integral_smul_nnreal_measure]
   rfl
-
-end DedekindZetaZeroFree.KPGlobalResidualKernel.ScatteringResidue
-
-end

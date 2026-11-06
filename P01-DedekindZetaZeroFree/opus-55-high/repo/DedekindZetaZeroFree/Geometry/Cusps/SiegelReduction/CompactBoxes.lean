@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Adeles.Quotients.Cusps.PGLOrbitNeighborhoods
 
 @[expose] public section
 
-noncomputable section
 
 namespace DedekindZetaZeroFree.KPCuspSiegel
 
@@ -83,7 +82,3 @@ theorem isCompact_projected_truncated_boxes
   intro a
   exact (isCompact_box F (P a) (B a) _ (hP a) (hB a) isCompact_Icc).image
     (continuous_action F (σ a))
-
-end DedekindZetaZeroFree.KPCuspSiegel
-
-end

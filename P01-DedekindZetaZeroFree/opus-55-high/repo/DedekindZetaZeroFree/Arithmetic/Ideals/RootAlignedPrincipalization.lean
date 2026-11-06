@@ -13,4 +13,3 @@ theorem root_aligned_recipe_exists {F : Type} [Field F] [NumberField F]
     (P : PrincipalRayHeckeData F S.modulus η) :
     ∃ R : PrincipalMellin.ActualRecipe S η, RootAligned R :=
   aligned_recipe_exists S η hη P
-end DedekindZetaZeroFree.ThetaExpansion

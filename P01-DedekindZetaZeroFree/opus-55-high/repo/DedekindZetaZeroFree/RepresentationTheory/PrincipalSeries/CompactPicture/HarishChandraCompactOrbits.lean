@@ -67,7 +67,7 @@ def forgetFamily : (Y → multiPrincipalSeries KPCplxPrincipalSeriesCharts.posit
   LinearMap.pi (fun y => (multiPrincipalSeries
     KPCplxPrincipalSeriesCharts.positiveParameter (InfinitePlace F)).subtype.comp (LinearMap.proj y))
 
-private theorem forgetFamily_injective : Function.Injective (forgetFamily (Y := Y) F) := by
+theorem forgetFamily_injective : Function.Injective (forgetFamily (Y := Y) F) := by
   intro h l he
   funext y
   apply Subtype.ext

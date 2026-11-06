@@ -7,7 +7,6 @@ public import Mathlib.MeasureTheory.Measure.Haar.Unique
 open MeasureTheory
 open scoped ENNReal NNReal
 namespace DedekindZetaZeroFree.NormSheetsProductHaar
-noncomputable section
 
 theorem exists_unique_product_haar
     {X Y G : Type*} [Group X] [Group Y] [Group G]
@@ -76,6 +75,3 @@ theorem integral_fibers
     exact hg'.integral_prod_left
   · rw [← hρ, integral_map_equiv, integral_prod _ hg']
     simp_rw [hfiber]
-
-end
-end DedekindZetaZeroFree.NormSheetsProductHaar

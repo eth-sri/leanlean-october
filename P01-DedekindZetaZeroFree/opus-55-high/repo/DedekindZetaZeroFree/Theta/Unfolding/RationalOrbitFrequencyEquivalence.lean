@@ -20,7 +20,7 @@ theorem orbitFrequency_class (i : OrbitIndex R) :
   change QuotientGroup.mk' (ThetaReflectionData.rationalGamma R.A) _ = _
   rw [orbitFrequency, map_mul]
   have h : QuotientGroup.mk' (ThetaReflectionData.rationalGamma R.A) i.2.val = 1 :=
-    (QuotientGroup.eq_one_iff _).mpr i.2.property
+    by simp
   rw [h]
   exact (mul_one ((QuotientGroup.mk' (ThetaReflectionData.rationalGamma R.A))
     (Quotient.out i.1))).trans (Quotient.out_eq i.1)
@@ -44,7 +44,7 @@ theorem orbitFrequency_surjective : Function.Surjective (orbitFrequency R) := by
     QuotientGroup.eq_iff_div_mem.mp hr.symm
   refine ⟨(ξ, ⟨a / r, hm⟩), ?_⟩
   change r * (a / r) = a
-  simp [div_eq_mul_inv, mul_comm]
+  simp
 
 def orbitFrequencyEquiv : OrbitIndex R ≃ Fˣ :=
   Equiv.ofBijective (orbitFrequency R)
@@ -53,7 +53,3 @@ def orbitFrequencyEquiv : OrbitIndex R ≃ Fˣ :=
 theorem hasSum_orbitFrequency_iff (f : Fˣ → ℂ) (s : ℂ) :
     HasSum (fun i : OrbitIndex R => f (orbitFrequency R i)) s ↔ HasSum f s :=
   (orbitFrequencyEquiv R).hasSum_iff
-
-end DedekindZetaZeroFree.OrbitExpansion
-
-end

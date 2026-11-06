@@ -14,7 +14,6 @@ namespace DedekindZetaZeroFree.KPRankOneOpenCellKernel
 open KPLocalPrincipalSeries KPLocalStoneVonNeumann KPRankOneShellContinuation
 open KPLocalExceptionalConstruction
 noncomputable section
-set_option autoImplicit false
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 variable (q : HeightOneSpectrum (𝓞 F))
@@ -30,9 +29,3 @@ variable [MeasurableSpace (LocalField F q)] [BorelSpace (LocalField F q)]
 
 abbrev multiplicativeMeasure (μ : Measure (LocalField F q)) :=
   KPCubicHaar.multiplicativeHaar (LocalField F q) μ
-
-end
-
-end DedekindZetaZeroFree.KPRankOneOpenCellKernel
-
-end

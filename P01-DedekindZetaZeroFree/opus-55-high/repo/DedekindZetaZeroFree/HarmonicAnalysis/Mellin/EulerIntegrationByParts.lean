@@ -9,7 +9,6 @@ Repository: openai/math.
 Revision: adc7f1241b42e322a6451854ab7e4b4c146bf78a.
 -/
 
-noncomputable section
 open MeasureTheory Filter Set
 open scoped Classical ContDiff Topology
 
@@ -31,7 +30,7 @@ private theorem contDiffOn_eulerIter {f : ℝ → ℂ} (hf : ContDiffOn ℝ ∞ 
       (Complex.ofRealCLM.contDiff (𝕜 := ℝ)).contDiffOn.mul hderiv
     exact hmul.congr (fun x hx => EulerIter_succ_of_pos j f x hx)
 
-private theorem cpow_sub_one_mul (s : ℂ) {x : ℝ} (hx : 0 < x) :
+theorem cpow_sub_one_mul (s : ℂ) {x : ℝ} (hx : 0 < x) :
     (x : ℂ) ^ (s - 1) * (x : ℂ) = (x : ℂ) ^ s := by
   have hx0 : (x : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (ne_of_gt hx)
   have h1 : (x : ℂ) ^ s = (x : ℂ) ^ (s - 1) * (x : ℂ) ^ (1 : ℂ) := by
@@ -60,8 +59,7 @@ theorem euler_succ_mellin_eq (h : LogMellinPhysical f δ P) (j : ℕ)
       (Set.Ioi 0) := by
     rw [MellinConvergent] at hconv
     refine hconv.congr_fun (fun x hx => ?_) measurableSet_Ioi
-    show (x : ℂ) ^ (s - 1) * EulerIter (j + 1) f x = _
-    exact hpt x hx
+    simp_all
   have hu'v : IntegrableOn (fun x : ℝ => (s * (x : ℂ) ^ (s - 1)) * EulerIter j f x)
       (Set.Ioi 0) := by
     have h0 : IntegrableOn (fun x : ℝ => (x : ℂ) ^ (s - 1) * EulerIter j f x)
@@ -84,8 +82,7 @@ theorem euler_succ_mellin_eq (h : LogMellinPhysical f δ P) (j : ℕ)
     simp only [mul_assoc]
     rw [integral_const_mul]
   simp only [mellin, smul_eq_mul]
-  rw [hcongr, key, hkey2]
-  ring
+  simp_all
 
 theorem euler_mellin_eq (h : LogMellinPhysical f δ P) (n : ℕ)
     (s : ℂ) (hs : 0 < s.re) :
@@ -95,8 +92,3 @@ theorem euler_mellin_eq (h : LogMellinPhysical f δ P) (n : ℕ)
   | succ n ih =>
     rw [euler_succ_mellin_eq h n s hs, ih, pow_succ]
     ring
-
-end LogMellinPhysical
-end DedekindZetaZeroFree.LargeSieve.Vendor
-
-end

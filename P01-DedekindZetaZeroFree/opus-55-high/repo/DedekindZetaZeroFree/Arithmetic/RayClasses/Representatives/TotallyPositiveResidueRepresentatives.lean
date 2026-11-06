@@ -22,22 +22,22 @@ theorem exists_totallyPositive_residue (F : Type) [Field F] [NumberField F]
   have hd_ne_ring : (d : 𝓞 F) ≠ 0 := Nat.cast_ne_zero.mpr hd_ne
 
   have hcoe_add : ∀ x y : 𝓞 F, ((x + y : 𝓞 F) : F) = (x:F) + (y:F) :=
-    fun x y => map_add (algebraMap (𝓞 F) F) x y
+    by simp
   have hcoe_mul : ∀ x y : 𝓞 F, ((x * y : 𝓞 F) : F) = (x:F) * (y:F) :=
-    fun x y => map_mul (algebraMap (𝓞 F) F) x y
+    by simp
   have hcoe_nat : ∀ n : ℕ, ((n : 𝓞 F) : F) = (n:F) :=
-    fun n => map_natCast (algebraMap (𝓞 F) F) n
+    by simp
 
   set C : ℝ := ∑ φ : F →+* ℝ, |φ (a : F)| with hC
   obtain ⟨N, hN⟩ := exists_nat_gt (C / (d:ℝ))
   have hN' : C < (N:ℝ) * (d:ℝ) := by
     have := (div_lt_iff₀ hdR).mp hN
-    simpa [mul_comm] using this
+    omega
   set b1 : 𝓞 F := a + (N : 𝓞 F) * (d : 𝓞 F) with hb1
   have hb1val : ∀ φ : F →+* ℝ, φ (b1 : F) = φ (a : F) + (N:ℝ) * (d:ℝ) := by
     intro φ
     have h1 : (b1 : F) = (a : F) + (N : F) * (d : F) := by
-      rw [hb1, hcoe_add, hcoe_mul, hcoe_nat, hcoe_nat]
+      rfl
     rw [h1, map_add, map_mul, map_natCast, map_natCast]
   have hb1_pos : ∀ φ : F →+* ℝ, 0 < φ (b1 : F) := by
     intro φ
@@ -59,7 +59,7 @@ theorem exists_totallyPositive_residue (F : Type) [Field F] [NumberField F]
       exact Ideal.mul_mem_left r _ hd_mem
     · intro φ
       have h2 : ((b1 + (d : 𝓞 F) : 𝓞 F) : F) = (b1 : F) + (d : F) := by
-        rw [hcoe_add, hcoe_nat]
+        rfl
       have hz : φ (b1 : F) = 0 := by
         rw [hb1z, show ((0:𝓞 F) : F) = (0:F) from map_zero (algebraMap (𝓞 F) F),
           map_zero]
@@ -69,5 +69,3 @@ theorem exists_totallyPositive_residue (F : Type) [Field F] [NumberField F]
     have : b1 - a = (N : 𝓞 F) * (d : 𝓞 F) := by rw [hb1]; ring
     rw [this]
     exact Ideal.mul_mem_left r _ hd_mem
-
-end DedekindZetaZeroFree.LargeSieve

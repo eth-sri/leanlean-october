@@ -8,7 +8,6 @@ open scoped NumberField Valued
 open NumberField IsDedekindDomain MeasureTheory ValuativeRel
 namespace DedekindZetaZeroFree.KPActualScalarBinding
 open KPLocalStoneVonNeumann KPRankOneCubicResidueReduction
-noncomputable section
 
 theorem actual_regular_point_output
     (F : Type) [Field F] [NumberField F]
@@ -22,6 +21,3 @@ theorem actual_regular_point_output
   have hm : 0 < integerMass (KPExceptionalRaw.LocalField F q) dx := by
     simp [integerMass, hμ]
   exact ResidueSteps.regular_point_residue F ζ hζ q S P dx hm ω hω
-
-end
-end DedekindZetaZeroFree.KPActualScalarBinding

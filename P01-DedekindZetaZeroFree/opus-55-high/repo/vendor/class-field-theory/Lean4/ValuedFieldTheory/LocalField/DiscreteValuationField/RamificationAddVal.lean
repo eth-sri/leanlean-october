@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Additive valuations in finite complete-DVF extensions
 
@@ -26,7 +22,6 @@ ideal identity
 `m_K · O_L = m_L ^ e`.
 -/
 
-noncomputable section
 
 universe u v w x
 
@@ -171,8 +166,3 @@ theorem ramificationIndex_eq_one_of_integerMap_uniformizer
       (ramificationIndex base.toDVF target.toDVF : ℕ∞) = 1 :=
     hadd.symm
   exact_mod_cast hcoe
-
-end ValuedExtension
-end LocalFieldTheory.DiscreteValuationField
-
-end

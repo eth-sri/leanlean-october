@@ -43,8 +43,7 @@ theorem annular_diagonal_restricted_bound (F : Type) [Field F] [NumberField F]
     by_cases ht : t ∈ Set.Icc (1 / 2 : ℝ) (5 / 2)
     · exact hx₀max ht
     · rw [Set.mem_Icc, not_and_or, not_le, not_le] at ht
-      rw [hWsupp t ht]
-      exact hB0
+      simp_all
   obtain ⟨A, hA1, hA⟩ := DedekindZetaZeroFree.LargeSieve.exists_ideal_count_bound F
   refine ⟨B * A * (5 / 2), by nlinarith [hB0, hA1], ?_⟩
   intro c Q M d z P hM hdsq hdc
@@ -64,7 +63,7 @@ theorem annular_diagonal_restricted_bound (F : Type) [Field F] [NumberField F]
         nlinarith [norm_nonneg (z * (Q.χ d) a), norm_nonneg z]
       exact mul_le_mul (hBW _) hz (by positivity) hB0
     · rw [if_neg h]
-      exact mul_nonneg hB0 hz0
+      positivity
   have hsupp : Function.support (fun a : Ideal (𝓞 F) =>
       if a ≠ ⊥ ∧ a ⊔ c = ⊤ ∧ P a then
         W ((Ideal.absNorm a : ℝ) / M) * ‖z * (Q.χ d) a‖ ^ 2 else 0)
@@ -129,7 +128,7 @@ theorem diagonalContribution_bound (F : Type) [Field F] [NumberField F]
   obtain ⟨C, hC0, hC⟩ := annular_diagonal_restricted_bound F W hW.smooth.continuous hW.nonneg hsupp
   refine ⟨C, hC0, ?_⟩
   intro c Q M N d g lam P hM hN
-  have hCM : 0 ≤ C * M := mul_nonneg hC0 (by linarith)
+  have hCM : 0 ≤ C * M := by positivity
   by_cases hd : d ∈ Sieve.paperShell F c N ∧ Q.cls d = g
   · obtain ⟨hdmem, hdcls⟩ := hd
     obtain ⟨hdsq, hdc, -, -⟩ := (Sieve.mem_paperShell F c N d).mp hdmem
@@ -151,11 +150,10 @@ theorem diagonalContribution_bound (F : Type) [Field F] [NumberField F]
   · have h0 : diagonalContribution Q W M N d g lam P = 0 := by
       unfold diagonalContribution
       rw [if_neg]
-      rintro ⟨h1, h2⟩
-      exact hd ⟨h1, h2⟩
+      omega
     have hrhs : 0 ≤ C * M * ∑ b ∈ Sieve.paperShell F c N, ‖lam b‖ ^ 2 :=
-      mul_nonneg hCM (Finset.sum_nonneg (fun b _ => by positivity))
-    exact ⟨by rw [h0]; exact mul_nonneg hCM (by positivity), by rw [h0]; exact hrhs⟩
+      by positivity
+    exact ⟨by rw [h0]; positivity, by rw [h0]; exact hrhs⟩
 
 noncomputable def offDiagonalT3
     {c : Ideal (𝓞 F)} (Q : QuadraticHeckeFamily F c)
@@ -187,7 +185,7 @@ noncomputable def t3Diag {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F
       (W ((Ideal.absNorm a : ℝ) / M) : ℂ) *
         (Q.χ b) a * (starRingEnd ℂ) ((Q.χ b) a))
 
-private theorem sum_diagonal_split {α : Type*} [DecidableEq α] (s : Finset α)
+theorem sum_diagonal_split {α : Type*} [DecidableEq α] (s : Finset α)
     (f : α → α → ℂ) :
     (∑ x ∈ s, ∑ y ∈ s, f x y) =
       (∑ x ∈ s, ∑ y ∈ s, if x = y then f x y else 0) +
@@ -217,26 +215,25 @@ theorem T3_eq_diagonal_add_offDiagonal
         (∑ b2 ∈ Sieve.paperShell F c N,
             if b1 = b2 then t3Term Q W M K d g lam b1 b2 else 0) =
           if b1 ∈ Sieve.paperShell F c N then t3Term Q W M K d g lam b1 b1 else 0 :=
-      fun b1 => Finset.sum_ite_eq _ b1 (fun b2 => t3Term Q W M K d g lam b1 b2)
+      by simp
     have h1 : (∑ b1 ∈ Sieve.paperShell F c N, ∑ b2 ∈ Sieve.paperShell F c N,
           if b1 = b2 then t3Term Q W M K d g lam b1 b2 else 0) =
         ∑ b1 ∈ Sieve.paperShell F c N,
           (if b1 ∈ Sieve.paperShell F c N then t3Term Q W M K d g lam b1 b1 else 0) :=
-      Finset.sum_congr rfl (fun b1 _ => hcollapse b1)
+      by simp
     have h2 : (∑ b1 ∈ Sieve.paperShell F c N,
           (if b1 ∈ Sieve.paperShell F c N then t3Term Q W M K d g lam b1 b1 else 0)) =
         ∑ b1 ∈ Sieve.paperShell F c N, t3Term Q W M K d g lam b1 b1 :=
-      Finset.sum_congr rfl (fun b1 hb1 => by rw [if_pos hb1])
+      by simp
     have h3 : ∀ b : Ideal (𝓞 F), t3Term Q W M K d g lam b b =
         (if b = d ∧ Q.cls b = g then t3Diag Q W M K lam b else 0) := by
       intro b
       unfold t3Term t3Diag
-      rw [sup_idem]
-      by_cases h : b = d ∧ Q.cls b = g <;> simp [h]
+      simp
     have h4 : (∑ b1 ∈ Sieve.paperShell F c N, t3Term Q W M K d g lam b1 b1) =
         ∑ b ∈ Sieve.paperShell F c N,
           (if b = d ∧ Q.cls b = g then t3Diag Q W M K lam b else 0) :=
-      Finset.sum_congr rfl (fun b _ => h3 b)
+      by simp_all
     have hcongr : (∑ b ∈ Sieve.paperShell F c N,
           (if b = d ∧ Q.cls b = g then t3Diag Q W M K lam b else 0)) =
         ∑ b ∈ Sieve.paperShell F c N,
@@ -264,8 +261,7 @@ theorem T3_eq_diagonal_add_offDiagonal
         · rw [if_pos h] at ha
           have hWne : W ((Ideal.absNorm a : ℝ) / M) ≠ 0 := by
             intro h0
-            rw [h0, zero_mul] at ha
-            exact ha rfl
+            simp_all
           have hle : (Ideal.absNorm a : ℝ) ≤ (5 / 2) * M := by
             have hMpos : 0 < M := lt_of_lt_of_le one_pos hM
             have hlt : (Ideal.absNorm a : ℝ) / M ≤ 5 / 2 := by
@@ -276,8 +272,7 @@ theorem T3_eq_diagonal_add_offDiagonal
             linarith
           unfold Sieve.kernelRows
           exact Finset.mem_filter.mpr ⟨DedekindZetaZeroFree.LargeSieve.mem_boundedNormIdeals.mpr hle, h⟩
-        · rw [if_neg h] at ha
-          exact absurd rfl ha
+        simp_all
       rw [finsum_eq_finsetSum_of_support_subset _ hsupp]
       push_cast
       rw [Finset.mul_sum]
@@ -313,5 +308,3 @@ theorem T3_eq_diagonal_add_offDiagonal
     · unfold t3Term
       simp [h]
   rw [hdiag, hoff]
-
-end DedekindZetaZeroFree.LargeSieve

@@ -12,7 +12,7 @@ open KPGlobalTorusFunctionData
 set_option maxHeartbeats 1600000
 set_option backward.isDefEq.respectTransparency false
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-private theorem conjugate_integral (X : Type*) [MeasurableSpace X] (μ : Measure X)
+theorem conjugate_integral (X : Type*) [MeasurableSpace X] (μ : Measure X)
     [AddGroup X] (f : X → ℂ) (χ : AddChar X Circle) :
     (∫ x, starRingEnd ℂ (f x) * (χ x : ℂ) ∂μ) =
       starRingEnd ℂ (∫ x, f x * ((χ x : ℂ)⁻¹) ∂μ) := by

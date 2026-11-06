@@ -87,8 +87,3 @@ def iteratedTripleMellinIntegral (f : (Fin 3 → ℝ) → ℂ)
   tripleMellinNormalization *
     ∫ t0 : ℝ, ∫ t1 : ℝ, ∫ t2 : ℝ,
       f (fun i => (![t0, t1, t2] : Fin 3 → ℝ) (order.symm i))
-
-end
-end TripleMellinRaw
-end NormalizedProbe
-end DedekindZetaZeroFree

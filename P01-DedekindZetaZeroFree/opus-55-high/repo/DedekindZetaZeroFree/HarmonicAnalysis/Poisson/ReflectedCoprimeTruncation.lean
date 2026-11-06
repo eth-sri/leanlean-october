@@ -78,9 +78,7 @@ theorem mass_eq_half_mellin (W : ℝ → ℂ) (a b : ℝ)
   refine ⟨compact_comp_sq_integrableOn W hW hc, ?_⟩
   have hm : mass W = mellin (fun t : ℝ => W (t ^ (2 : ℝ))) (1 : ℂ) := by
     simp only [mass, mellin]
-    refine setIntegral_congr_fun measurableSet_Ioi (fun t ht => ?_)
-    have ht0 : (t : ℂ) ≠ 0 := by exact_mod_cast ne_of_gt ht
-    rw [sub_self, Complex.cpow_zero, one_smul, Real.rpow_ofNat]
+    simp
   rw [hm, mellin_comp_rpow W (1 : ℂ) (2 : ℝ)]
   norm_num
 
@@ -122,11 +120,7 @@ theorem kernel_eq_mellinInv (D : ℝ) (r : ℕ) (W : ℝ → ℂ) (a b : ℝ)
   · have := EulerIter_reflectedSquareTransform_eq_mellinInv D r W a b hD hr hW hsupp ha hab
       0 c x hc hx
     simp only [Vendor.EulerIter_zero] at this
-    rw [this]
-    have hfun : (fun s : ℂ => (-s) ^ (0 : ℕ) * reflectedSquareSpectrum D r W s) =
-        reflectedSquareSpectrum D r W := by
-      funext s; simp
-    rw [hfun]
+    simp_all
 
 theorem absolutely_summable (F : Type) [Field F] [NumberField F]
     (hF : NumberField.IsTotallyComplex F) (W : ℝ → ℂ) (a b : ℝ)
@@ -157,7 +151,7 @@ theorem absolutely_summable (F : Type) [Field F] [NumberField F]
     · simp [hI]
     · simp only [if_neg hI]
       split_ifs <;> try simp
-      exact le_refl _
+      rfl
   · intro d hd
     have hd0 : 0 < (Ideal.absNorm d : ℝ) := by
       exact_mod_cast Nat.pos_of_ne_zero (fun h =>
@@ -224,7 +218,7 @@ private lemma sum_band {α : Type*} (s : Finset α) (n : α → ℝ) (Y Z : ℝ)
   have h₂ : (s.filter (fun d => n d ≤ Z)).filter (fun d => Y < n d) =
       s.filter (fun d => Y < n d ∧ n d ≤ Z) := by
     ext d; simp only [Finset.mem_filter]; tauto
-  rwa [h₁, h₂] at h
+  simp_all
 
 lemma originalSum_eq_truncatedMainTerm_add_remainder
     (F : Type) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F)
@@ -310,11 +304,7 @@ lemma originalSum_eq_truncatedMainTerm_add_remainder
   change _ = A * (∑ d ∈ idealDivisors m, q d) - A * _ + R * _ + _ +
     (ReflectedTails.primalTail F g T _ mu + ReflectedTails.smallDualTail F k T _ mu + _)
   rw [hlarge]
-  simp only [ReflectedTails.smallDualTail, Complex.ofReal_div, Complex.ofReal_natCast]
+  simp only [ReflectedTails.smallDualTail, Complex.ofReal_natCast]
   dsimp only [ReflectedTails.dualCutoffTail, ReflectedTails.dualCutoffSummand, du, q, mu, k]
   simp only [Complex.ofReal_natCast]
   ring
-
-end DedekindZetaZeroFree.LargeSieve.ReflectedCoprimeTruncation
-
-end

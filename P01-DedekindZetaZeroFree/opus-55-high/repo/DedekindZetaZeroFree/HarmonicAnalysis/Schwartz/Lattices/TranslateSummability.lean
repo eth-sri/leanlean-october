@@ -6,7 +6,6 @@ public import Mathlib.Algebra.Module.ZLattice.Summable
 
 @[expose] public section
 
-noncomputable section
 open scoped FourierTransform SchwartzMap
 open Filter
 
@@ -59,7 +58,3 @@ theorem summable_norm_fourier_schwartz_translate
     Summable (fun w : dualLattice L => ‖(𝓕 (f : V → ℂ)) (b + (w : V))‖) := by
   have h := summable_norm_schwartz_translate (dualLattice L) (𝓕 f) b
   simpa only [SchwartzMap.fourier_coe] using h
-
-end DedekindZetaZeroFree.PoissonArch
-
-end

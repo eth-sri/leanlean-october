@@ -48,8 +48,7 @@ theorem compactly_supported_directional_quotient_tendstoUniformly
   calc
     ‖t⁻¹‖ * ‖f (x + t • v) - f x - fderiv ℝ f x (t • v)‖
         ≤ ‖t⁻¹‖ * (C * ‖t • v‖) := by
-          apply mul_le_mul_of_nonneg_left _ (norm_nonneg _)
-          simpa using hm
+          simp_all
     _ = C * ‖v‖ := by
       rw [norm_smul, norm_inv]
       have hn : ‖t‖ ≠ 0 := norm_ne_zero_iff.mpr ht0
@@ -80,11 +79,11 @@ theorem iteratedFDeriv_directional_derivative
     rw [← fderiv_continuousMultilinear_apply_const_apply
       ((hf.iteratedFDeriv_right (m := (⊤ : ℕ∞)) (i := 0) (by simp)).differentiable
         (by simp) x)]
-    simp only [iteratedFDeriv_zero_apply]
+    rfl
   | succ i ih =>
     let J := iteratedFDeriv ℝ i f
     have hJ : ContDiff ℝ (⊤ : ℕ∞) J :=
-      hf.iteratedFDeriv_right (by simp)
+      by fun_prop
     have hdJ := (hJ.fderiv_right (m := (⊤ : ℕ∞)) (by simp)).differentiable
       (by simp) x
     have heq : iteratedFDeriv ℝ i (fun y => fderiv ℝ f y v) =
@@ -102,7 +101,7 @@ theorem iteratedFDeriv_directional_derivative
     rw [fderiv_clm_apply hdJ (differentiableAt_const v),
       fderiv_clm_apply hdJ (differentiableAt_const (m 0))]
     simpa using congrArg (fun c => c (Fin.tail m))
-      (hJ.contDiffAt.isSymmSndFDerivAt (by simp [minSmoothness]) (m 0) v)
+      (hJ.contDiffAt.isSymmSndFDerivAt (by simp) (m 0) v)
 
 end DedekindZetaZeroFree.KPCplxOpenCellDistributionsInfinitesimal
 
@@ -130,7 +129,7 @@ theorem invariant_annihilates_translation_difference
     (t : ℂ) (φ : 𝓓((⊤ : TopologicalSpace.Opens ℂ), ℂ)) :
     D (translationForDifferenceQuotient t φ - φ) = 0 := by
   have ht : D (translationForDifferenceQuotient t φ) = D φ := hD t φ (translationForDifferenceQuotient t φ) (fun _ => rfl)
-  rw [map_sub, ht, sub_self]
+  simp_all
 
 noncomputable def translationDifferenceQuotient (t : ℝ) (v : ℂ)
     (φ : 𝓓((⊤ : TopologicalSpace.Opens ℂ), ℂ)) :
@@ -175,7 +174,7 @@ lemma quotient_support_subset_differenceQuotientCompact (t : ℝ) (v : ℂ)
   by_cases hφ : φ x = 0
   · apply translation_support_subset_differenceQuotientCompact t v φ ht
     apply subset_tsupport
-    simpa [Function.mem_support, hφ] using hdiff
+    simp_all
   · exact Metric.self_subset_cthickening (δ := ‖v‖) (tsupport φ) (subset_tsupport φ hφ)
 
 lemma derivative_support_subset_differenceQuotientCompact (v : ℂ)
@@ -268,8 +267,7 @@ lemma invariant_annihilates_directional_derivatives_of_all_jets
   have hz : (fun t : ℝ => D (translationDifferenceQuotient t v φ)) = fun _ => 0 :=
     funext fun t => invariant_annihilates_translation_difference_quotient D hD t v φ
   simp only [Function.comp_def] at hl
-  rw [hz] at hl
-  exact tendsto_nhds_unique hl tendsto_const_nhds
+  simp_all
 
 lemma translationDifferenceQuotient_iteratedFDeriv (t : ℝ) (v : ℂ)
     (φ : 𝓓((⊤ : TopologicalSpace.Opens ℂ), ℂ)) (i : ℕ) (x : ℂ) :
@@ -277,12 +275,10 @@ lemma translationDifferenceQuotient_iteratedFDeriv (t : ℝ) (v : ℂ)
       t⁻¹ • (iteratedFDeriv ℝ i φ (x + t • v) - iteratedFDeriv ℝ i φ x) := by
   have he : (translationDifferenceQuotient t v φ : ℂ → ℂ) =
       t⁻¹ • (fun y : ℂ => φ (y + t • v) - φ y) := by
-    funext y
-    simp [translationDifferenceQuotient, translationForDifferenceQuotient,
-      Complex.real_smul]
+    rfl
   have hf : ContDiff ℝ (i : ℕ) (φ : ℂ → ℂ) := φ.contDiff.of_le (by simp)
   have htr : ContDiff ℝ (i : ℕ) (fun y : ℂ => φ (y + t • v)) :=
-    hf.comp (contDiff_id.add contDiff_const)
+    by fun_prop
   have hsub : ContDiff ℝ (i : ℕ) (fun y : ℂ => φ (y + t • v) - φ y) := htr.sub hf
   rw [he, iteratedFDeriv_const_smul_apply hsub.contDiffAt,
     fun_iteratedFDeriv_sub_apply htr.contDiffAt hf.contDiffAt,
@@ -303,11 +299,7 @@ theorem invariant_annihilates_directional_derivatives
       (iteratedFDeriv ℝ i φ) hjet (φ.hasCompactSupport.iteratedFDeriv i) v
   have hder : (supportedDirectionalDerivative v φ : ℂ → ℂ) =
       fun x => fderiv ℝ φ x v := by
-    funext x
-    change (TestFunction.lineDerivCLM ℂ v φ :
-      𝓓((⊤ : TopologicalSpace.Opens ℂ), ℂ)) x = _
-    rw [TestFunction.lineDerivCLM_apply_of_le (by simp),
-      (φ.contDiff.differentiable (by simp)).differentiableAt.lineDeriv_eq_fderiv]
+    rfl
   have hderjet : iteratedFDeriv ℝ i (supportedDirectionalDerivative v φ) =
       fun x => fderiv ℝ (iteratedFDeriv ℝ i φ) x v := by
     rw [hder]
@@ -333,7 +325,3 @@ theorem invariant_annihilates_directional_derivatives
   rw [hquot]
   funext x
   exact translationDifferenceQuotient_iteratedFDeriv t v φ i x
-
-end DedekindZetaZeroFree.KPCplxOpenCellTranslationInvariance
-
-end

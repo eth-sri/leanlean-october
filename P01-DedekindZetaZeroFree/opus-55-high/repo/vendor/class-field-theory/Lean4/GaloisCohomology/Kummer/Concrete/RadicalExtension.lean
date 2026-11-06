@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # the radical-extension construction
 
@@ -88,7 +83,7 @@ theorem exists_kummerRootSet
     (separable_X_pow_sub_C aOmega hnOmega haOmega)
   have hpow : beta ^ (n : ℕ) = aOmega := by
     apply sub_eq_zero.mp
-    simpa [IsRoot.def, aOmega] using hbeta
+    simp_all
   exact ⟨beta, ⟨a, hpow⟩, hpow⟩
 
 /-- Every element of `Delta` acquires an `n`-th root in the constructed
@@ -118,17 +113,6 @@ theorem le_finiteKummerRadicalSubgroup_kummerRadicalExtension
   apply Subtype.ext
   exact hpow
 
-/-- In particular, for an admissible subgroup-side object, the radical
-subgroup recovered from its field still contains `Kˣ^n`. -/
-theorem unitNthPowersSubgroup_le_constructedRadical
-    [IsSepClosure K Omega]
-    (n : ℕ+) (hn : ((n : ℕ) : K) ≠ 0) (Delta : KummerSubgroup K n) :
-    unitNthPowersSubgroup K n ≤ finiteKummerRadicalSubgroup
-      (K := K)
-      (L := kummerRadicalExtension (K := K) (Omega := Omega) n Delta.1) n :=
-  Delta.2.trans
-    (le_finiteKummerRadicalSubgroup_kummerRadicalExtension n hn Delta.1)
-
 /-- A Kummer root is nonzero because its prescribed power is a unit. -/
 theorem kummerRootSet_ne_zero
     (n : ℕ+) (Delta : Subgroup Kˣ) {beta : Omega}
@@ -137,8 +121,8 @@ theorem kummerRootSet_ne_zero
   obtain ⟨a, ha⟩ := hbeta
   intro hzero
   have : algebraMap K Omega (a.1 : K) = 0 := by
-    rw [← ha, hzero, zero_pow n.ne_zero]
-  exact ((_root_.map_ne_zero (algebraMap K Omega)).2 a.1.ne_zero) this
+    simp_all
+  simp_all
 
 /-- Every `K`-automorphism of the separable closure preserves the full root
 set. -/
@@ -166,7 +150,7 @@ theorem kummerRootSet_image
     exact kummerRootSet_mapsTo n Delta sigma hbeta
   · intro beta hbeta
     refine ⟨sigma.symm beta, kummerRootSet_mapsTo n Delta sigma.symm hbeta, ?_⟩
-    exact sigma.apply_symm_apply beta
+    simp
 
 /-- The actual radical field is stable under every automorphism of the
 separable closure. -/
@@ -342,9 +326,3 @@ theorem kummerRadicalExtension_isAbelianGalois
       (kummerRadicalExtension (K := K) (Omega := Omega) n Delta) where
   toIsGalois := kummerRadicalExtension_isGalois n Delta
   toIsMulCommutative := kummerRadicalExtension_isMulCommutative n hmu Delta
-
-end RadicalExtension
-
-end KummerTheory
-
-end

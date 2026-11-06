@@ -44,7 +44,3 @@ theorem actualLevelNumerator_unique
     p = actualLevelNumerator F ζ hζ q S P J hJ μ hμ π hπ ε :=
   level_numerator_unique (LocalField F q) S.borel P S.iwasawa J μ ε p _ hp
     (actualLevelNumerator_spec F ζ hζ q S P J hJ μ hμ π hπ ε)
-
-end DedekindZetaZeroFree.KPRankOneShellRepair
-
-end

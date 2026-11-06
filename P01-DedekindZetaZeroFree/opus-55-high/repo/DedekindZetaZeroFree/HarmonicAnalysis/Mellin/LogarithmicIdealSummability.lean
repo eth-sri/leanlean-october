@@ -40,7 +40,7 @@ theorem logIdealTerm_summable_of_envelope {F : Type*} [Field F] [NumberField F]
     refine ((summable_subtype_iff_indicator (s := S)
       (f := fun I : Ideal (𝓞 F) => ‖logIdealTerm a f X I‖)).mp (hSfin.summable _)).congr ?_
     intro I
-    rw [Set.indicator_apply]
+    rfl
 
   have henv : Summable (fun I : Ideal (𝓞 F) =>
       if I = ⊥ then (0 : ℝ) else (Ideal.absNorm I : ℝ) ^ (-A)) :=
@@ -57,10 +57,7 @@ theorem logIdealTerm_summable_of_envelope {F : Type*} [Field F] [NumberField F]
     by_cases hI : I ∈ S
     · have hnn : (0 : ℝ) ≤
           (C * X ^ A) * (if I = ⊥ then (0 : ℝ) else (Ideal.absNorm I : ℝ) ^ (-A)) := by
-        refine mul_nonneg (mul_nonneg hC0 (Real.rpow_nonneg (le_of_lt hX) A)) ?_
-        split_ifs with h
-        · exact le_rfl
-        · exact Real.rpow_nonneg (Nat.cast_nonneg _) _
+        positivity
       rw [if_pos hI]
       linarith [norm_nonneg (logIdealTerm a f X I)]
     ·
@@ -100,9 +97,4 @@ theorem logIdealTerm_summable {F : Type*} [Field F] [NumberField F]
   obtain ⟨C, hC0, hC⟩ := hf.rapid_decay 0 2
   refine logIdealTerm_summable_of_envelope a ha f hf.contDiffOn.continuousOn
     ⟨2, C, by norm_num, hC0, fun x hx => ?_⟩ X hX
-  have h := hC x hx
-  simpa using h
-
-end DedekindZetaZeroFree.LargeSieve.Vendor
-
-end
+  simp_all

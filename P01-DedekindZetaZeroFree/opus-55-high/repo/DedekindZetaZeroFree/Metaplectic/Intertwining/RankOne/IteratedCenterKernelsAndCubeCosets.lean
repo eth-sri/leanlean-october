@@ -13,8 +13,6 @@ open NumberField IsDedekindDomain MeasureTheory
 open KPLocalStoneVonNeumann KPLocalPrincipalSeries KPRankOneShellContinuation
 open KPRankOneOpenCellKernel KPRankOneCenterInducedDiagonalComparison
 
-noncomputable section
-set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
@@ -26,7 +24,7 @@ variable (A : LocalBorelData (K := LocalField F q) (G := Cover F ζ hζ q) T)
 variable (P : Polarization T)
 variable [MeasurableSpace (LocalField F q)] [BorelSpace (LocalField F q)]
 
-private theorem central_inducing_plus (B : Binding F ζ hζ q A P)
+theorem central_inducing_plus (B : Binding F ζ hζ q A P)
     (hcentral : ∀ e : rootsOfUnity 3 F, B.centralTorus e ∈ T.C)
     (hcharacter : ∀ e : rootsOfUnity 3 F, T.ω ⟨B.centralTorus e, hcentral e⟩ = B.eta e)
     (z : ℂ) (e : rootsOfUnity 3 F) (V : CenterModule T) :
@@ -42,7 +40,7 @@ private theorem central_inducing_plus (B : Binding F ζ hζ q A P)
   rw [he, V.property ⟨B.centralTorus e, hcentral e⟩ h]
   simp [inducingScalar, deltaHalf, A.retract_torus, B.central_coordinate, normPower,
     localAbs_one, hcharacter]
-private theorem modulus_root (v : (LocalField F q)ˣ) :
+theorem modulus_root (v : (LocalField F q)ˣ) :
     normPower (LocalField F q) (v ^ 2) (1 / 2) =
       (KPCubicHaar.abs (LocalField F q) (v : LocalField F q) : ℂ) := by
   have hp := localAbs_pos (LocalField F q) v
@@ -53,10 +51,10 @@ private theorem modulus_root (v : (LocalField F q)ˣ) :
     simp [pow_two, localAbs_mul]
   rw [normPower, hpow, Real.log_pow]
   have hx : (1 / 2 : ℂ) * ((2 : ℝ) * Real.log (localAbs (LocalField F q) v) : ℝ) =
-      (Real.log (localAbs (LocalField F q) v) : ℂ) := by push_cast; ring
+      (Real.log (localAbs (LocalField F q) v) : ℂ) := by simp
   norm_num only [Nat.cast_ofNat] at ⊢
   rw [hx, ← Complex.ofReal_exp, Real.exp_log hp, he]
-private theorem root_inducing_plus (B : Binding F ζ hζ q A P)
+theorem root_inducing_plus (B : Binding F ζ hζ q A P)
     (z : ℂ) (v : (LocalField F q)ˣ) (V : CenterModule T) :
     centerInducingAction F ζ hζ q T A .plus z (A.torus (B.rootTorus v)) V =
       (KPCubicHaar.abs (LocalField F q) (v : LocalField F q) : ℂ) •
@@ -66,7 +64,7 @@ private theorem root_inducing_plus (B : Binding F ζ hζ q A P)
     centerTorus F ζ hζ q T A .plus (A.retract (A.torus (B.rootTorus v))) V = _
   simp only [inducingScalar, deltaHalf, A.retract_torus, B.coordinate_eq, smul_smul]
   rw [modulus_root F q v]
-private theorem upper_inducing_plus (z : ℂ) (x : LocalField F q) (V : CenterModule T) :
+theorem upper_inducing_plus (z : ℂ) (x : LocalField F q) (V : CenterModule T) :
     centerInducingAction F ζ hζ q T A .plus z
       (A.upperRoot (Multiplicative.ofAdd x)) V = V := by
   simp [centerInducingAction, inducingScalar, deltaHalf, A.retract_upperRoot,
@@ -179,8 +177,8 @@ theorem center_iterated_kernel (I : IwasawaData A)
   have hv (x : LocalField F q) :
       (KPRankOneReverseRegulatorShells.actualSection F ζ hζ q T A P B
         rep hrep d φ hφ hcφ r).val (openCoordinate F ζ hζ q x) =
-        (centerCoordinates T rep hrep).symm (φ x • Pi.single d (1 : ℂ)) := by
-    exact (centerCoordinates T rep hrep).injective
+        (centerCoordinates T rep hrep).symm (φ x • Pi.single d (1 : ℂ)) := 
+    (centerCoordinates T rep hrep).injective
       ((KPRankOneReverseRegulatorShells.actualSection_spec F ζ hζ q T A P B
         rep hrep d φ hφ hcφ r).1 x |>.trans
         ((centerCoordinates T rep hrep).apply_symm_apply _).symm)
@@ -200,6 +198,3 @@ theorem center_iterated_kernel (I : IwasawaData A)
         V.val (h * A.weyl (B.rootTorus b)) := rfl
   rw [he]
   ring
-
-end
-end DedekindZetaZeroFree.KPRankOneLiftedDiagonal

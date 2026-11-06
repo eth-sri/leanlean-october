@@ -72,7 +72,7 @@ def scalarSeed
   rw [← archFiniteEquiv_apply]
   simp only [scalarSeed, (archFiniteEquiv F ζ hζ).symm_apply_apply, sphericalPGL_mk]
 
-private theorem diagonal_projective (B : KPCplxCharacterHaar.ComplexGL2)
+theorem diagonal_projective (B : KPCplxCharacterHaar.ComplexGL2)
     (h10 : B 1 0 = 0) (h01 : B 0 1 = 0) :
     ∃ z : ℂˣ, Matrix.ProjGenLinGroup.mk B = Matrix.ProjGenLinGroup.mk (KubotaRankTwo.d ℂ z 1) := by
   let u := (KPGlobalTorusMatrixCertificates.diagonal_units B h10).1.unit
@@ -87,7 +87,7 @@ private theorem diagonal_projective (B : KPCplxCharacterHaar.ComplexGL2)
     field_simp
   rw [hB, map_mul, Matrix.ProjGenLinGroup.mk_scalar, one_mul]
 
-private theorem archProjection_torus_diagonal (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+theorem archProjection_torus_diagonal (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (e : KPGlobalTorusFunctionData.E F ζ hζ) :
     ∃ z : InfinitePlace F → ℂˣ,
       PGLComplex.AdelicSlicesRaw.archProjection F ζ hζ e.val =
@@ -148,7 +148,7 @@ private theorem archProjection_torus_diagonal (F : Type) [Field F] [NumberField 
   · change e = d * (d⁻¹ * e)
     simp
 
-private theorem sphericalProduct_diagonal_covariance (F : Type) [Field F] [NumberField F]
+theorem sphericalProduct_diagonal_covariance (F : Type) [Field F] [NumberField F]
     (z : InfinitePlace F → ℂˣ) (a : InfinitePlace F → KPCplxCharacterHaar.ComplexGL2) :
     sphericalProduct F (fun w => KubotaRankTwo.d ℂ (z w) 1 * a w) =
       (((∏ w : InfinitePlace F, ‖(z w : ℂ)‖ ^ 2) ^ (2 / 3 : ℝ) : ℝ) : ℂ) * sphericalProduct F a := by
@@ -552,7 +552,7 @@ def seededInducedFunctions
     smoothSeedFibre_borel_covariance F ζ hζ t k A T hT⟩
 
 open scoped Matrix.Norms.Elementwise in
-private theorem sphericalProduct_left_chart_smooth
+theorem sphericalProduct_left_chart_smooth
     (a : InfinitePlace F → KPCplxCharacterHaar.ComplexGL2) :
     ContDiffOn ℝ (⊤ : ℕ∞)
       (fun z : KPGlobalTorusBorelTwistCompatibility.GroupArch F =>
@@ -747,7 +747,7 @@ theorem scalarReset_finite_equivariant
   rw [← hb]
   simp only [Subgroup.coe_mul, mul_assoc]
 
-private theorem archProjection_compact
+theorem archProjection_compact
     (q : (KPContFlatSourceRecipe.D F ζ hζ).K) (w : InfinitePlace F) :
     PGLComplex.AdelicSlicesRaw.archProjection F ζ hζ q.val w ∈
       KPCplxPrincipalSeriesCharts.compactSubgroup := by
@@ -882,7 +882,7 @@ theorem scalarSeed_raw_compact_orbit_finiteDimensional
     KPCplxPrincipalSeriesCharts.sphericalSection_fixed _ ⟨a w, ha w⟩]
 
 set_option backward.isDefEq.respectTransparency false in
-private theorem seed_sourceCore_mem_of_raw_compact_orbit
+theorem seed_sourceCore_mem_of_raw_compact_orbit
     (D : KPMsRationalCompactCrossPairing.Iwasawa F ζ hζ)
     (v : KPMsRationalCompactCrossPairing.Source F ζ hζ 0)
     (hv : v ∈ KPMsRationalCompactCrossPairing.scalarSmooth F ζ hζ

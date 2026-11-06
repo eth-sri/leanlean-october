@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 universe u v
 
 namespace ValuationTheory
@@ -36,20 +31,6 @@ noncomputable section
 namespace Valuations
 
 open DiscreteValuationField
-
-/-- The valuation ring of a rank-one discrete valued field is a discrete
-valuation ring. -/
-theorem rankOneDiscreteValuationSubring_isDiscreteValuationRing
-    {K : Type u} [Field K] {Gamma : Type v}
-    [LinearOrderedCommGroupWithZero Gamma]
-    [Valued K Gamma]
-    [(Valued.v : Valuation K Gamma).IsRankOneDiscrete] :
-    IsDiscreteValuationRing
-      (Valued.v : Valuation K Gamma).valuationSubring := by
-  let F : DVF.{u, v} K :=
-    { ValueGroup := Gamma
-      valuation := Valued.v }
-  exact F.valuationSubring_isDiscreteValuationRing
 
 /-- The native subtype topology on the valuation ring of a rank-one discrete
 valued field is its maximal-ideal adic topology. -/
@@ -71,9 +52,7 @@ theorem rankOneDiscreteValuationSubring_isAdic
   · intro n
     have h_radius_ne :
         val (((pi ^ n : val.valuationSubring) : K)) ≠ 0 := by
-      change val ((pi : K) ^ n) ≠ 0
-      rw [map_pow]
-      exact pow_ne_zero n hpi.val_ne_zero
+      simp_all
     have h_restrict_radius_ne :
         val.restrict (((pi ^ n : val.valuationSubring) : K)) ≠ 0 := by
       simpa using h_radius_ne
@@ -156,7 +135,7 @@ theorem rankOneDiscreteValuationSubring_isAdicComplete
 
 /-- A complete rank-one discrete valued field, equipped with its distinguished
 valuation, gives a `CompleteDVF` by construction. -/
-noncomputable def completeDVFOfCompleteValuedField
+def completeDVFOfCompleteValuedField
     {K : Type u} [Field K] {Gamma : Type v}
     [LinearOrderedCommGroupWithZero Gamma] [MulArchimedean Gamma]
     [Valued K Gamma]
@@ -168,8 +147,3 @@ noncomputable def completeDVFOfCompleteValuedField
   instCompleteDiscrete :=
     { isRankOneDiscrete := inferInstance
       isAdicComplete := rankOneDiscreteValuationSubring_isAdicComplete }
-
-end Valuations
-end
-
-end ValuationTheory

@@ -4,7 +4,6 @@ public import Mathlib
 
 @[expose] public section
 
-noncomputable section
 open MeasureTheory
 namespace DedekindZetaZeroFree.KPLiteralPeriod
 
@@ -23,8 +22,7 @@ theorem nonzero_integral_detected_by_uniform_approximation
   have hIpos : 0 < ‖I‖ := norm_pos_iff.mpr hne
   set ε : ℝ := ‖I‖ / (2 * μ.real Set.univ) with hεdef
   have hεpos : 0 < ε := by
-    rw [hεdef]
-    exact div_pos hIpos (by positivity)
+    simp_all
   obtain ⟨i, hi⟩ := happrox ε hεpos
   refine ⟨i, ?_⟩
   set J : ℂ := ∫ x, v i x * χ x ∂μ with hJ
@@ -48,7 +46,3 @@ theorem nonzero_integral_detected_by_uniform_approximation
   have hEq : ‖J - I‖ = ‖I‖ := by rw [hzero, zero_sub, norm_neg]
   rw [hEq] at hbound
   linarith
-
-end DedekindZetaZeroFree.KPLiteralPeriod
-
-end

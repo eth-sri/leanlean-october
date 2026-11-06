@@ -21,7 +21,7 @@ theorem principalMul_mem_ideal
     (x : {x : F // x ∈ (I : FractionalIdeal (𝓞 F)⁰ F)}) :
     (γ : F) * x.val ∈ (J : FractionalIdeal (𝓞 F)⁰ F) := by
   rw [hJ, FractionalIdeal.mem_singleton_mul]
-  exact ⟨x.val, x.property, rfl⟩
+  simp
 
  theorem principalMul_modulus_eq
     (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
@@ -32,7 +32,7 @@ theorem principalMul_mem_ideal
     ((J * rayIdealFractionalIdeal F m hm) : FractionalIdeal (𝓞 F)⁰ F) =
       FractionalIdeal.spanSingleton (𝓞 F)⁰ (γ : F) *
         ((I * rayIdealFractionalIdeal F m hm) : FractionalIdeal (𝓞 F)⁰ F) := by
-  simp only [Units.val_mul, hJ, mul_assoc]
+  simp only [hJ, mul_assoc]
 
  theorem inverseMul_mem
     (I J : (FractionalIdeal (𝓞 F)⁰ F)ˣ) (γ : Fˣ)
@@ -44,7 +44,7 @@ theorem principalMul_mem_ideal
   have hx := x.property
   simp only [hJ, FractionalIdeal.mem_singleton_mul] at hx
   rcases hx with ⟨y, hy, he⟩
-  simpa [he, ← mul_assoc] using hy
+  simp_all
 
 def affineResiduePrimalIndexMulEquiv
     (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
@@ -60,8 +60,8 @@ def affineResiduePrimalIndexMulEquiv
     principalMul_mem_ideal (I * rayIdealFractionalIdeal F m hm) (J * rayIdealFractionalIdeal F m hm) γ (principalMul_modulus_eq m hm I J γ hJ) l⟩
   invFun l := ⟨((γ⁻¹ : Fˣ) : F) * l.val,
     inverseMul_mem (I * rayIdealFractionalIdeal F m hm) (J * rayIdealFractionalIdeal F m hm) γ (principalMul_modulus_eq m hm I J γ hJ) l⟩
-  left_inv l := by apply Subtype.ext; simp [← mul_assoc]
-  right_inv l := by apply Subtype.ext; simp [← mul_assoc]
+  left_inv l := by simp
+  right_inv l := by simp
 
 @[simp] theorem affineResiduePrimalIndexMulEquiv_apply_val
     (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
@@ -73,18 +73,6 @@ def affineResiduePrimalIndexMulEquiv
       FractionalIdeal (𝓞 F)⁰ F)}) :
     (affineResiduePrimalIndexMulEquiv m hm I J γ hJ l).val =
       (γ : F) * l.val := by
-  rfl
-
-@[simp] theorem affineResiduePrimalIndexMulEquiv_symm_apply_val
-    (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
-    (I J : (FractionalIdeal (𝓞 F)⁰ F)ˣ) (γ : Fˣ)
-    (hJ : (J : FractionalIdeal (𝓞 F)⁰ F) =
-      FractionalIdeal.spanSingleton (𝓞 F)⁰ (γ : F) *
-        (I : FractionalIdeal (𝓞 F)⁰ F))
-    (l : {l : F // l ∈ ((J * rayIdealFractionalIdeal F m hm) :
-      FractionalIdeal (𝓞 F)⁰ F)}) :
-    ((affineResiduePrimalIndexMulEquiv m hm I J γ hJ).symm l).val =
-      ((γ⁻¹ : Fˣ) : F) * l.val := by
   rfl
 
 theorem inverseMul_mem_dual
@@ -106,7 +94,7 @@ theorem inverseMul_mem_dual
     calc
       _ = (((γ⁻¹ : Fˣ) : F) * (γ : F)) * (β.val * b) := by ring
       _ = β.val * b := by simp
-  simpa only [Algebra.traceForm_apply, he] using hb b hbI
+  simp_all
 
  theorem principalMul_mem_dual
     (I J : (FractionalIdeal (𝓞 F)⁰ F)ˣ) (γ : Fˣ)
@@ -138,8 +126,8 @@ def affineResidueDualIndexMulEquiv
     inverseMul_mem_dual _ _ γ (principalMul_modulus_eq m hm I J γ hJ) β⟩
   invFun β := ⟨(γ : F) * β.val,
     principalMul_mem_dual _ _ γ (principalMul_modulus_eq m hm I J γ hJ) β⟩
-  left_inv β := by apply Subtype.ext; simp [← mul_assoc]
-  right_inv β := by apply Subtype.ext; simp [← mul_assoc]
+  left_inv β := by apply Subtype.ext; simp
+  right_inv β := by apply Subtype.ext; simp
 
 @[simp] theorem affineResidueDualIndexMulEquiv_apply_val
     (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
@@ -151,18 +139,6 @@ def affineResidueDualIndexMulEquiv
       (I * rayIdealFractionalIdeal F m hm) : FractionalIdeal (𝓞 F)⁰ F)}) :
     (affineResidueDualIndexMulEquiv m hm I J γ hJ β).val =
       ((γ⁻¹ : Fˣ) : F) * β.val := by
-  rfl
-
-@[simp] theorem affineResidueDualIndexMulEquiv_symm_apply_val
-    (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
-    (I J : (FractionalIdeal (𝓞 F)⁰ F)ˣ) (γ : Fˣ)
-    (hJ : (J : FractionalIdeal (𝓞 F)⁰ F) =
-      FractionalIdeal.spanSingleton (𝓞 F)⁰ (γ : F) *
-        (I : FractionalIdeal (𝓞 F)⁰ F))
-    (β : {β : F // β ∈ (Theta.traceDualIdealUnit F
-      (J * rayIdealFractionalIdeal F m hm) : FractionalIdeal (𝓞 F)⁰ F)}) :
-    ((affineResidueDualIndexMulEquiv m hm I J γ hJ).symm β).val =
-      (γ : F) * β.val := by
   rfl
 
 theorem trace_principalMul_inverseMul (γ : Fˣ) (x β : F) :
@@ -211,7 +187,3 @@ theorem affineResidueDualTheta_principal_mul
   intro β
   simp only [affineResidueDualIndexMulEquiv_apply_val, trace_principalMul_inverseMul]
   rw [affineResidueDualKernel_principal_mul hF I J γ hJ u hu h β.val]
-
-end DedekindZetaZeroFree.Hecke.Theta
-
-end

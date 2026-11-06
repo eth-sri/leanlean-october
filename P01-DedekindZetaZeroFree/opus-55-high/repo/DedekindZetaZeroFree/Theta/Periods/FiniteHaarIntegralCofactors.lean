@@ -20,7 +20,7 @@ variable (J : ∀ q : E, IwasawaData (C.canonical q.val).borel)
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 
-private theorem transported_family_regular
+theorem transported_family_regular
     (φ : ∀ q : E, compactPicture (C.canonical q.val).borel (C.polarization q.val)
       (C.canonical q.val).iwasawa .plus)
     (t : KPGlobalTorusFunctionData.E F ζ hζ) :

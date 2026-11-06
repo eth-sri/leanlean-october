@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Prime-power detection for the rational cyclotomic `ZHat`-Artin map
 
@@ -79,17 +75,4 @@ theorem
       rationalCyclotomicZHatGlobalArtin a ^ 2 = 1 :=
     rationalCyclotomicZHatGlobalArtin_sq_eq_one_of_character_reductions
       a h
-  have hValue :
-      rationalCyclotomicZHatIdeleValue a ^ 2 = 1 := by
-    rw [rationalCyclotomicZHatIdeleValue_apply,
-      ← map_pow, hArtin, map_one]
-  exact
-    (pow_left_injective
-      (M := Multiplicative ZHat)
-      (n := 2) (by norm_num))
-        (by simpa using hValue)
-
-end Reciprocity
-end GlobalClassFieldTheory
-
-end
+  simp_all

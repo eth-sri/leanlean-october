@@ -29,7 +29,7 @@ def fiberEvaluation (f : ∀ v, Plus A P C v) (g : Raw A) (q : KPFinitePlace F)
   localUntwistedEvaluation F ζ hζ P C q (localValue A P C (Sum.inr q) (g (Sum.inr q))
     (f (Sum.inr q))) t
 
-private theorem all_arch_mem (s : RestrictedTensorSimple.Level (bad A P C)) (w : InfinitePlace F) :
+theorem all_arch_mem (s : RestrictedTensorSimple.Level (bad A P C)) (w : InfinitePlace F) :
     Sum.inl w ∈ s.val := s.property (by simp [bad, ScalarAbsorption.fullBad])
 
 theorem rawCoreFiber_pure_formula (s : RestrictedTensorSimple.Level (bad A P C))

@@ -37,5 +37,3 @@ theorem heckeFunctionalEquation :
       heckeNonprincipalFunctionalEquation F hF m hm η hprim hnonprincipal,
     fun hprincipal =>
       heckeFunctionalEquation_principal F hF m hm η hprim hprincipal⟩
-
-end DedekindZetaZeroFree.Hecke

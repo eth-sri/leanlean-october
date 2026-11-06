@@ -1,6 +1,6 @@
 module
 
-public import DedekindZetaZeroFree.Moments.Probes.Poisson.FrequencySupport
+public import DedekindZetaZeroFree.Moments.Probes.Poisson.FrequencyDecomposition
 
 @[expose] public section
 
@@ -37,7 +37,7 @@ def repEquiv : repRows D ≃ D.Row where
   left_inv _ := rfl
   right_inv _ := rfl
 
-private theorem countable_row : Countable D.Row := by
+theorem countable_row : Countable D.Row := by
   letI : Countable F := Finsupp.Countable.of_moduleFinite (R := ℚ)
   haveI : Countable D.recipe.A.R := by infer_instance
   exact (ActualRowCount.row_u_injective D).countable
@@ -143,7 +143,7 @@ theorem Iscale_eq_principal_add_nonprincipal (Z : ℝ) (hZ : 0 < Z) :
 private def Tset (k : ℕ) : Set D.Row :=
   (dyadRows D ((2 : ℝ) ^ k) ∩ repRows D) \ principalRows D
 
-private theorem dyad_unique {q : ℝ} {j k : ℕ} (hj1 : (2 : ℝ) ^ j ≤ q) (hj2 : q < 2 * 2 ^ j)
+theorem dyad_unique {q : ℝ} {j k : ℕ} (hj1 : (2 : ℝ) ^ j ≤ q) (hj2 : q < 2 * 2 ^ j)
     (hk1 : (2 : ℝ) ^ k ≤ q) (hk2 : q < 2 * 2 ^ k) : j = k := by
   by_contra hne
   rcases lt_or_gt_of_ne hne with h | h

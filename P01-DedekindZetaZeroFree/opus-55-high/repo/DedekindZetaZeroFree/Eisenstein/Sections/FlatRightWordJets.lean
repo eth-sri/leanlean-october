@@ -295,7 +295,7 @@ private theorem transport_hasDeriv (b : KPSmoothActualFlowData.B F)
 
 section Generic
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
-private theorem variable_jet_derivative {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] (u : E → ℂ) (n : ℕ) (d : Fin n → E → E)
+theorem variable_jet_derivative {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] (u : E → ℂ) (n : ℕ) (d : Fin n → E → E)
     (x v : E) (hu : ContDiffAt ℝ (⊤ : ℕ∞) u x)
     (hd : ∀ i, DifferentiableAt ℝ (d i) x) :
     fderiv ℝ (fun y => iteratedFDeriv ℝ n u y (fun i => d i y)) x v =
@@ -322,7 +322,7 @@ private theorem coordWord_smooth {ι : Type*} (fields : ι → E → E) (U : Set
   | cons b w ih => exact (ih.fderiv_of_isOpen hU (by simp)).clm_apply (hf b)
 private def directionJet (t : Σ n : ℕ, Fin n → E → E) (u : E → ℂ) (x : E) : ℂ :=
   iteratedFDeriv ℝ t.1 u x (fun i => t.2 i x)
-private theorem list_fderiv {α : Type*} (ts : List α) (f : α → E → ℂ) (x : E)
+theorem list_fderiv {α : Type*} (ts : List α) (f : α → E → ℂ) (x : E)
     (hf : ∀ t ∈ ts, DifferentiableAt ℝ (f t) x) :
     HasFDerivAt (fun y => (ts.map (fun t => f t y)).sum)
       (ts.map (fun t => fderiv ℝ (f t) x)).sum x := by

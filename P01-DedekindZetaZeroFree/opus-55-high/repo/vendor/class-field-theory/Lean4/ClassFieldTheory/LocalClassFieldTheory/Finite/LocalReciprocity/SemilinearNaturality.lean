@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Semilinear naturality of finite local reciprocity
 
@@ -43,23 +40,10 @@ def SemilinearValuationCompatible
   (ValuativeRel.valuation K).HasExtension
     (ValuativeRel.valuation K')
 
-/-- A certificate that an extension-field equivalence restricts to the
-specified base-field equivalence.  Its generic head is cheap to expose in
-public APIs even when the concrete algebra towers are large. -/
-structure SemilinearBaseCompatible
-    (K K' L L' : Type)
-    [Field K] [Field K'] [Field L] [Field L']
-    [Algebra K L] [Algebra K' L']
-    (eK : K ≃+* K') (eL : L ≃+* L') : Prop where
-  /-- The extension equivalence agrees with the base equivalence. -/
-  commutes : ∀ x : K,
-    eL (algebraMap K L x) =
-      algebraMap K' L' (eK x)
-
 /-- Conjugation of relative Galois groups by compatible equivalences of the
 base and extension fields.  Compatibility is semilinear: `eL` restricts to
 `eK` on the base field. -/
-noncomputable def semilinearGaloisGroupCongr
+def semilinearGaloisGroupCongr
     (K K' L L' : Type)
     [Field K] [Field K'] [Field L] [Field L']
     [Algebra K L] [Algebra K' L']
@@ -80,8 +64,8 @@ noncomputable def semilinearGaloisGroupCongr
             eL.symm (algebraMap K' L' x) =
               algebraMap K L (eK.symm x) := by
           apply eL.injective
-          rw [eL.apply_symm_apply, hcomm, eK.apply_symm_apply]
-        rw [hpre, σ.commutes, hcomm, eK.apply_symm_apply])
+          simp_all
+        simp_all)
   let unconjugate (τ : Gal(L' / K')) :
       Gal(L / K) :=
     AlgEquiv.ofRingEquiv
@@ -127,21 +111,6 @@ theorem semilinearGaloisGroupCongr_apply_equiv
       eL (σ x) := by
   change eL (σ (eL.symm (eL x))) = eL (σ x)
   rw [eL.symm_apply_apply]
-
-/-- Evaluate certified semilinear conjugation on an element of the extension
-field. -/
-theorem SemilinearBaseCompatible.conjugation_apply
-    {K K' L L' : Type}
-    [Field K] [Field K'] [Field L] [Field L']
-    [Algebra K L] [Algebra K' L']
-    {eK : K ≃+* K'} {eL : L ≃+* L'}
-    (h : SemilinearBaseCompatible K K' L L' eK eL)
-    (sigma : Gal(L / K)) (x : L) :
-    semilinearGaloisGroupCongr
-        K K' L L' eK eL h.commutes sigma (eL x) =
-      eL (sigma x) :=
-  semilinearGaloisGroupCongr_apply_equiv
-    K K' L L' eK eL h.commutes sigma x
 
 /-- The actual finite abelian local Artin map commutes with simultaneous
 semilinear equivalences of the base local field and the target extension.
@@ -223,8 +192,6 @@ theorem abelianLocalArtinMonoidHom_semilinear_conjugation
         K K K K'
         (RingEquiv.refl K) eK
         (by
-          apply RingHom.ext
-          intro x
           rfl)
         a
     simpa [normUnits_apply_coe, Units.coe_mapEquiv, Algebra.norm_self] using
@@ -258,67 +225,6 @@ theorem abelianLocalArtinMonoidHom_semilinear_conjugation
         abelianLocalArtinMonoidHom K' L'
           (Units.map eK.toMonoidHom a) :=
       conjugation.apply_symm_apply _
-
-/-- Pointwise Galois-automorphism form of semilinear naturality for the
-abelian local Artin map.  Concrete consumers should use this opaque generic
-boundary instead of specializing `DFunLike.congr_fun` to a large dependent
-local-field instance tower. -/
-theorem abelianLocalArtinMonoidHom_semilinear_conjugation_apply
-    (K K' L L' : Type)
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field K'] [ValuativeRel K'] [TopologicalSpace K']
-    [IsNonarchimedeanLocalField K']
-    [Field L] [Field L']
-    [Algebra K L] [Algebra K' L']
-    [FiniteDimensional K L] [IsAbelianGalois K L]
-    [FiniteDimensional K' L'] [IsAbelianGalois K' L']
-    (eK : K ≃+* K') (eL : L ≃+* L')
-    (hcomm : ∀ x : K,
-      eL (algebraMap K L x) = algebraMap K' L' (eK x))
-    (hExt : SemilinearValuationCompatible K K' eK)
-    (u : Kˣ) :
-    semilinearGaloisGroupCongr K K' L L' eK eL hcomm
-        (abelianLocalArtinMonoidHom K L u) =
-      abelianLocalArtinMonoidHom K' L'
-        (Units.map eK.toMonoidHom u) :=
-  DFunLike.congr_fun
-    (abelianLocalArtinMonoidHom_semilinear_conjugation
-      K K' L L' eK eL hcomm hExt) u
-
-/-- Triviality transports backwards through a semilinear equivalence of local
-Artin data.  Keeping the injectivity calculation generic prevents concrete
-finite-place instance towers from entering consumer proof terms. -/
-theorem abelianLocalArtinMonoidHom_eq_one_of_semilinear
-    (K K' L L' : Type)
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field K'] [ValuativeRel K'] [TopologicalSpace K']
-    [IsNonarchimedeanLocalField K']
-    [Field L] [Field L']
-    [Algebra K L] [Algebra K' L']
-    [FiniteDimensional K L] [IsAbelianGalois K L]
-    [FiniteDimensional K' L'] [IsAbelianGalois K' L']
-    (eK : K ≃+* K') (eL : L ≃+* L')
-    (hcomm : ∀ x : K,
-      eL (algebraMap K L x) = algebraMap K' L' (eK x))
-    (hExt : SemilinearValuationCompatible K K' eK)
-    (u : Kˣ)
-    (htrivial :
-      abelianLocalArtinMonoidHom K' L'
-          (Units.map eK.toMonoidHom u) = 1) :
-    abelianLocalArtinMonoidHom K L u = 1 := by
-  let conjugation :=
-    semilinearGaloisGroupCongr K K' L L' eK eL hcomm
-  apply conjugation.injective
-  calc
-    conjugation (abelianLocalArtinMonoidHom K L u) =
-        abelianLocalArtinMonoidHom K' L'
-          (Units.map eK.toMonoidHom u) :=
-      abelianLocalArtinMonoidHom_semilinear_conjugation_apply
-        K K' L L' eK eL hcomm hExt u
-    _ = 1 := htrivial
-    _ = conjugation 1 := (map_one conjugation).symm
 
 /-- Pointwise form of semilinear naturality for the abelian local Artin map.
 
@@ -360,7 +266,3 @@ theorem abelianLocalArtinMonoidHom_semilinear_action
     _ = abelianLocalArtinMonoidHom K' L'
           (Units.map eK.toMonoidHom u) (eL z) :=
       congrArg (fun sigma : Gal(L' / K') => sigma (eL z)) hArtin
-
-end LocalClassFieldTheory
-
-end

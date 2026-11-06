@@ -32,8 +32,7 @@ theorem exists_sixth_unit_representatives (A : SArithmeticData F) :
     rw [QuotientGroup.leftRel_apply] at hrel
     obtain ⟨w, hw⟩ := hrel
     refine ⟨w, ?_⟩
-    rw [powMonoidHom_apply] at hw
-    rw [hw]; group
+    simp_all
   ·
     rintro ⟨u, hu⟩ ⟨w, hw⟩
     simp only [Finset.mem_image, Finset.mem_univ, true_and] at hu
@@ -46,5 +45,3 @@ theorem exists_sixth_unit_representatives (A : SArithmeticData F) :
       exact ⟨w, by rw [powMonoidHom_apply]; exact hw6.symm⟩
     have h1 : q = Quotient.mk'' v := (Quotient.out_eq q).symm.trans (Quotient.sound hrel)
     exact congrArg Quotient.out h1
-
-end DedekindZetaZeroFree.PrincipalMellinGrowth

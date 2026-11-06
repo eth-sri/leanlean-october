@@ -33,15 +33,15 @@ def frozenPrincipalLocalUnit (F : Type) [Field F] [NumberField F]
   Units.map (algebraMap F (v.adicCompletion F)).toMonoidHom
     (Units.mk0 (α : F) (by exact_mod_cast hα))
 
-private theorem principalRay_count_idele (F : Type) [Field F] [NumberField F]
+theorem principalRay_count_idele (F : Type) [Field F] [NumberField F]
     (v : HeightOneSpectrum (𝓞 F)) (a : IdeleGroup F) :
     FractionalIdeal.count F v (IdeleGroup.fractionalIdeal a :
       FractionalIdeal (nonZeroDivisors (𝓞 F)) F) =
-      (FiniteIdeleGroup.localOrder v (a.2 v)).toAdd := by
-  exact (FractionalIdealGroup.count_factorization _ v).trans
+      (FiniteIdeleGroup.localOrder v (a.2 v)).toAdd := 
+  (FractionalIdealGroup.count_factorization _ v).trans
     (FiniteIdeleGroup.valuationVector_apply _ _)
 
-private theorem principalRay_single_ideal (F : Type) [Field F] [NumberField F]
+theorem principalRay_single_ideal (F : Type) [Field F] [NumberField F]
     (v : HeightOneSpectrum (𝓞 F)) (x : (v.adicCompletion F)ˣ)
     (hx : (FiniteIdeleGroup.localOrder v x).toAdd = 0) :
     IdeleGroup.fractionalIdeal (IdeleGroup.finitePlaceIdele v x) = 1 := by
@@ -56,7 +56,7 @@ private theorem principalRay_single_ideal (F : Type) [Field F] [NumberField F]
   · rw [IdeleGroup.finitePlaceIdele_finiteComponent_of_ne v w x hw]
     simp
 
-private theorem principalRay_product_component (F : Type) [Field F] [NumberField F]
+theorem principalRay_product_component (F : Type) [Field F] [NumberField F]
     (s : Finset (HeightOneSpectrum (𝓞 F)))
     (f : ∀ v : HeightOneSpectrum (𝓞 F), (v.adicCompletion F)ˣ)
     (w : HeightOneSpectrum (𝓞 F)) :
@@ -101,7 +101,6 @@ theorem rm_kummer_ray_principal_relation (F : Type) [Field F] [NumberField F]
     rfl
   have hpv (v : HeightOneSpectrum (𝓞 F)) :
       IdeleGroup.finiteComponent v p = frozenPrincipalLocalUnit F α hα v := by
-    apply Units.ext
     rfl
   have hv (v : HeightOneSpectrum (𝓞 F)) (hvs : v ∈ s) :
       (FiniteIdeleGroup.localOrder v (frozenPrincipalLocalUnit F α hα v)).toAdd = 0 := by
@@ -130,11 +129,10 @@ theorem rm_kummer_ray_principal_relation (F : Type) [Field F] [NumberField F]
       rw [if_pos hvs] at hc
       change IdeleGroup.finiteComponent v b = _ at hc
       change IdeleGroup.finiteComponent v (p * b⁻¹) ∈ _
-      rw [map_mul, map_inv, hpv, hc, mul_inv_cancel]
-      exact (RayClass.localHigherUnitGroup v (m'.finitePart v)).one_mem
+      simp_all
   have hai : IdeleGroup.fractionalIdeal a = IdeleGroup.fractionalIdeal p := by
     dsimp [a]
-    rw [map_mul, map_inv, hb, inv_one, mul_one]
+    simp_all
   let Q : IdeleGroup F →* RayClass.RayClassGroup m' :=
     (QuotientGroup.mk' m'.congruenceSubgroup).comp
       (QuotientGroup.mk' (IdeleGroup.principalSubgroup F))
@@ -167,7 +165,7 @@ theorem rm_kummer_ray_principal_relation (F : Type) [Field F] [NumberField F]
     have hp' : p ∈ IdeleGroup.principalSubgroup F := ⟨x, rfl⟩
     dsimp [Q]
     rw [(QuotientGroup.eq_one_iff p).mpr hp']
-    exact map_one (QuotientGroup.mk' m'.congruenceSubgroup)
+    rfl
   apply E.injective
   rw [hEa]
   dsimp [a]
@@ -180,7 +178,4 @@ theorem rm_kummer_ray_principal_relation (F : Type) [Field F] [NumberField F]
   congr 1
   change _ = E (E.symm (Q (IdeleGroup.finitePlaceIdele v
     (frozenPrincipalLocalUnit F α hα v))))
-  exact (E.apply_symm_apply _).symm
-
-end
-end DedekindZetaZeroFree
+  simp

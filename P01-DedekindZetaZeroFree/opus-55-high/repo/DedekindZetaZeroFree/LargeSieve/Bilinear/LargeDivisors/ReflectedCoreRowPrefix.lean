@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.LargeSieve.Bilinear.DivisorRectangleEnvelopes
 
 @[expose] public section
 
-noncomputable section
 open scoped NumberField Classical BigOperators
 namespace DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms.SupportedRows
 
@@ -24,7 +23,3 @@ theorem reflected_core_rows_subset (C : Context Q) (B : ℝ) (unit : Bool)
     have hr' : r = ⊤ := Finset.mem_singleton.mp (Finset.mem_filter.mp hr).1
     subst r
     exact (Sieve.top_mem_idealAdmissibleFinset_iff F c (2 * B)).mpr (by linarith)
-
-end DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms.SupportedRows
-
-end

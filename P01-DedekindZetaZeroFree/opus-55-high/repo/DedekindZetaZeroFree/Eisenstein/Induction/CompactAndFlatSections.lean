@@ -6,7 +6,6 @@ public import DedekindZetaZeroFree.Metaplectic.Torus.UpperRootNormalization
 
 @[expose] public section
 
-noncomputable section
 open scoped NumberField Classical Topology
 open NumberField MeasureTheory ValuativeRel
 namespace DedekindZetaZeroFree.KPLiteralChamber
@@ -31,7 +30,3 @@ theorem compactExtension_eq_flat
       f.val 0 (t.val * k.val) = _
   rw [hv]
   exact (f.property.2.1 s t k).symm
-
-end DedekindZetaZeroFree.KPLiteralChamber
-
-end

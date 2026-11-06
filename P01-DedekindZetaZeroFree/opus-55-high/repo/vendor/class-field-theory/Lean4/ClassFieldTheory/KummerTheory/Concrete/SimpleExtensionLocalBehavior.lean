@@ -11,8 +11,6 @@ public import ClassFieldTheory.LocalClassFieldTheory.ClassFormation.LocalizedCom
 public import ClassFieldTheory.LocalClassFieldTheory.ClassFormation.LocalizedCompletionCohomology.Finite
 public import ClassFieldTheory.LocalClassFieldTheory.ClassFormation.LocalizedCompletionCohomology.Cardinality.H0
 public import ClassFieldTheory.LocalClassFieldTheory.ClassFormation.LocalizedCompletionCohomology.Cardinality.HMinusOne
-public import ClassFieldTheory.LocalClassFieldTheory.ClassFormation.LocalizedCompletionCohomology.Cardinality.Trivial
-public import ClassFieldTheory.LocalClassFieldTheory.ClassFormation.LocalizedCompletionCohomology.Cardinality.Quotient
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Cohomology.SPlaces.OutsideIntegralInduced.ChosenPlace
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Cohomology.SPlaces.OutsideIntegralInduced.ChosenPlaceAction
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Cohomology.SPlaces.OutsideIntegralInduced.ChosenPlaceIntegralBlock
@@ -40,38 +38,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Unramified finite places in simple Kummer extensions
 
@@ -91,13 +57,12 @@ open HilbertRamification
 open LocalFieldTheory
 open LocalClassFieldTheory
 
-noncomputable section
 
 namespace KummerTheory
 
 variable {K : Type} [Field K] [NumberField K]
 
-private theorem valuativeRelExtension_isNontrivial
+theorem valuativeRelExtension_isNontrivial
     {C F : Type}
     [Field C] [Field F] [Algebra C F]
     [ValuativeRel C] [ValuativeRel F]
@@ -112,13 +77,7 @@ private theorem valuativeRelExtension_isNontrivial
         (v := vC) with ⟨x, hx0, hx1⟩
     refine ⟨algebraMap C F x, ?_, ?_⟩
     · intro h
-      have hm :
-          vF (algebraMap C F x) =
-            vF (algebraMap C F 0) := by
-        simpa only [map_zero] using h
-      exact hx0 (by
-        simpa only [map_zero] using
-          ((Valuation.HasExtension.val_map_eq_iff vC vF x 0).1 hm))
+      simp_all
     · intro h
       have hm :
           vF (algebraMap C F x) =
@@ -321,7 +280,7 @@ theorem
   have hbetaFVal : vF betaF = 1 :=
     (ValuativeRel.isEquiv vFNorm vF).eq_one_iff_eq_one.mp hbetaFNorm
   have hglobal : IntermediateField.adjoin K {betaL} = ⊤ := by
-    simpa only [betaL] using hgen
+    omega
   have hR : IntermediateField.adjoin C {betaF} = ⊤ := by
     simpa only [C, F, betaF] using
       localizedCompletion_adjoin_image_eq_top_of_adjoin_eq_top
@@ -370,11 +329,11 @@ theorem
     kummerGeneratedExtension_chosenFinitePlaceIsUnramified_of_valuation_eq_one
       (K := K) (L := L) n b beta
   · dsimp only [L, beta]
-    exact chosenSimpleKummerRootUnit_pow K n hnK b
+    simp
   · simpa [L, beta] using
       chosenSimpleKummerExtension_adjoin_root_eq_top K n hnK b
   · exact hb
-  · exact hn
+  omega
 
 /-- At every finite place above a base place where the radicand and exponent
 are units, the chosen simple Kummer extension is globally unramified in the
@@ -454,7 +413,7 @@ theorem
       beta ^ (n : ℕ) =
         Units.map (algebraMap K E).toMonoidHom b := by
     dsimp only [E, beta]
-    exact chosenSimpleKummerRootUnit_pow K n hnK b
+    simp
   let D : Subgroup (E ≃ₐ[K] E) :=
     absoluteValueDecompositionGroup K
       (chosenFinitePlaceExtension (L := E) v).1
@@ -471,12 +430,7 @@ theorem
   have hle :
       IntermediateField.adjoin K ({(beta : E)} : Set E) ≤
         IntermediateField.fixedField D := by
-    apply IntermediateField.adjoin_le_iff.mpr
-    intro x hx
-    have hx' : x = (beta : E) :=
-      Set.mem_singleton_iff.mp hx
-    subst x
-    exact hfixed
+    simp_all
   have htop :
       IntermediateField.fixedField D = ⊤ := by
     apply top_unique
@@ -546,7 +500,7 @@ theorem
       beta ^ (n : ℕ) =
         Units.map (algebraMap K E).toMonoidHom b := by
     dsimp only [E, beta]
-    exact chosenSimpleKummerRootUnit_pow K n hnK b
+    simp
   have hbC :
       Units.map
             (algebraMap K C).toMonoidHom b ∈
@@ -570,10 +524,7 @@ theorem
       _ =
           Units.map
             (algebraMap K C).toMonoidHom b := by
-        apply Units.ext
-        simpa [eC, eK, C, vK] using
-          (infinitePlaceCompletionAlgEquiv
-            (K := K) w).commutes (b : K)
+        rfl
   have hfixed :
       (beta : E) ∈
         IntermediateField.fixedField
@@ -596,11 +547,7 @@ theorem
     have hx' : x = (beta : E) :=
       Set.mem_singleton_iff.mp hx
     subst x
-    change
-      (beta : E) ∈
-        IntermediateField.fixedField
-          (absoluteValueDecompositionGroup K u.1)
-    exact hfixed
+    omega
   have htop :
       IntermediateField.fixedField D = ⊤ := by
     apply top_unique
@@ -687,7 +634,3 @@ theorem
   exact (hnorm (eU.symm z)).trans
     ((congrArg (localTensorDetNorm (K := K) (L := E) vK)
       (eU.apply_symm_apply z)).trans hz)
-
-end KummerTheory
-
-end

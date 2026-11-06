@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Local Hilbert pairings
 -/
@@ -32,5 +28,3 @@ def IsLocalHilbertPairing
     (B : HilbertPairing K n) : Prop :=
   B.IsSteinberg ∧ B.IsSkewSymmetric ∧ B.IsNondegenerate ∧
     B.SatisfiesNormResidueCriterion
-
-end ClassFieldTheory.HilbertPairing

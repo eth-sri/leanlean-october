@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Eisenstein.ConstantTerms.Residual.RadialInteg
 
 @[expose] public section
 
-noncomputable section
 open MeasureTheory
 open scoped BigOperators
 namespace DedekindZetaZeroFree.KPCutoffSource
@@ -36,7 +35,3 @@ theorem angular_radial_cancellation {Ω J : Type*}
   rw [finite_angular_integral ν p hp c]
   simp only [Complex.real_smul, ← mul_assoc]
   simpa only [← mul_assoc] using finite_cusp_radial_cancellation d hd χ τ hτ (fun j => ((Measure.map p ν).real {j}:ℂ)*c j)
-
-end DedekindZetaZeroFree.KPCutoffSource
-
-end

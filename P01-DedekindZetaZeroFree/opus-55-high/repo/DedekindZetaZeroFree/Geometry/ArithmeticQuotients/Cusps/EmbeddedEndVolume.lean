@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Geometry.Cusps.SiegelReduction.CoverFromFrame
 
 @[expose] public section
 
-noncomputable section
 open scoped Classical NumberField Pointwise
 open MeasureTheory
 
@@ -24,8 +23,8 @@ theorem fd_ae_unique {G X : Type*} [Group G] [Countable G]
     · exact Filter.Eventually.of_forall (by simp [hab])
     · have h := hs.aedisjoint (i := a⁻¹) (j := b⁻¹) (by simpa only [ne_eq, inv_inj] using hab)
       have he : μ ((a⁻¹ • s) ∩ (b⁻¹ • s)) = 0 := h
-      have hz : ∀ᵐ x ∂μ, x ∉ ((a⁻¹ • s) ∩ (b⁻¹ • s)) := by
-        exact ae_iff.mpr (by simpa using he)
+      have hz : ∀ᵐ x ∂μ, x ∉ ((a⁻¹ • s) ∩ (b⁻¹ • s)) := 
+        ae_iff.mpr (by simpa using he)
       filter_upwards [hz] with x hx
       intro _
       simpa only [Set.mem_inter_iff, Set.mem_smul_set_iff_inv_smul_mem, inv_inv,
@@ -46,7 +45,7 @@ theorem fd_ae_free {G X : Type*} [Group G] [Countable G]
   intro g hg
   obtain ⟨a, ha, hu⟩ := hx
   have h := hu (a * g) (by simpa only [mul_smul, hg] using ha)
-  exact mul_left_cancel (h.trans (mul_one a).symm)
+  simp_all
 
 theorem glue_partial_fd {G X : Type*} [Group G] [Countable G]
     [MeasurableSpace X] [MulAction G X] [MeasurableConstSMul G X]
@@ -62,12 +61,11 @@ theorem glue_partial_fd {G X : Type*} [Group G] [Countable G]
     rw [hinv]
   refine IsFundamentalDomain.mk'' (hB.union (hA.diff hE)).nullMeasurableSet ?_ ?_
     (fun g => (measurePreserving_smul g μ).quasiMeasurePreserving)
-  · have hc : ∀ᵐ x ∂μ, x ∈ E → ∃ g : G, g • x ∈ B := by
-      exact (ae_restrict_iff' hE).mp hlocal.ae_covers
+  · have hc : ∀ᵐ x ∂μ, x ∈ E → ∃ g : G, g • x ∈ B := 
+      (ae_restrict_iff' hE).mp hlocal.ae_covers
     filter_upwards [hFD.ae_covers, hc] with x hx hc
     by_cases hxE : x ∈ E
-    · obtain ⟨g, hg⟩ := hc hxE
-      exact ⟨g, Or.inl hg⟩
+    · simp_all
     · obtain ⟨g, hg⟩ := hx
       exact ⟨g, Or.inr ⟨hg, (hmem g x).not.mpr hxE⟩⟩
   · intro g hg
@@ -90,7 +88,7 @@ theorem glue_partial_fd {G X : Type*} [Group G] [Countable G]
     · exact Or.inl ⟨Set.smul_mem_smul_set hy, hx⟩
     · exact False.elim (hx.2 ((hmem g y).mpr (hBE hy)))
     · exact False.elim (hy.2 ((hmem g y).mp (hBE hx)))
-    · exact Or.inr ⟨Set.smul_mem_smul_set hy.1, hx.1⟩
+    simp_all
 
 theorem partial_fd_quotient_measure {G X : Type*} [Group G] [Countable G]
     [MeasurableSpace X] [MulAction G X] [MeasurableConstSMul G X]
@@ -110,9 +108,7 @@ theorem partial_fd_quotient_measure {G X : Type*} [Group G] [Countable G]
       have hrel := Quotient.exact he
       obtain ⟨g, hg⟩ := hrel
       have hm : g • x ∈ E := by
-        change g • x = y at hg
-        rw [hg]
-        exact hy
+        simp_all
       change x ∈ (fun x => g • x) ⁻¹' E at hm
       rwa [hinv] at hm
     · exact Set.subset_preimage_image _ _
@@ -133,9 +129,7 @@ theorem partial_fd_quotient_measure {G X : Type*} [Group G] [Countable G]
   simp only [Set.mem_inter_iff, Set.mem_union, Set.mem_diff]
   constructor
   · rintro ⟨hx, hb⟩; exact ⟨⟨hx, hBE hb⟩, Or.inl hb⟩
-  · rintro ⟨⟨hx, he⟩, hb | ha⟩
-    · exact ⟨hx, hb⟩
-    · exact False.elim (ha.2 he)
+  simp_all
 
 theorem partial_fd_of_local_unique {G X : Type*} [Group G] [Countable G]
     [MeasurableSpace X] [MulAction G X] [MeasurableConstSMul G X]
@@ -317,13 +311,6 @@ theorem cusp_end_arch_volume
   rw [hi, ← he, e.measurableEmbedding.restrict_map,
     Set.preimage_image_eq _ e.injective]
 
-section PartialDomain
-open scoped Pointwise
-variable {H X : Type*} [Group H] [MulAction H X] [MeasurableSpace X]
- [Countable H] [MeasurableConstSMul H X]
- {μ : Measure X} [SMulInvariantMeasure H X μ]
-
-end PartialDomain
 
 theorem embedded_cusp_end_volume
     (F : Type) [Field F] [NumberField F]
@@ -404,8 +391,7 @@ theorem embedded_cusp_end_volume
   let j : S → Γ := fun s => ⟨σ * (s : KPCuspArithmetic.PGL2 F) * σ⁻¹, by
     obtain ⟨a, ha, has⟩ := s.property
     have hs : σ⁻¹ * a * σ = (s : KPCuspArithmetic.PGL2 F) := by
-      change σ⁻¹ * a * (σ⁻¹)⁻¹ = (s : KPCuspArithmetic.PGL2 F) at has
-      simpa only [inv_inv] using has
+      simp_all
     rw [← hs]
     have haΓ : a ∈ Γ := ha.1
     simpa only [mul_assoc, mul_inv_cancel_left, mul_inv_cancel, mul_one] using haΓ⟩
@@ -420,8 +406,8 @@ theorem embedded_cusp_end_volume
     rw [KPCuspSiegel.highCusp]
     constructor
     · rintro ⟨z, hz, hez⟩
-      have hz' : z = KPCuspCharts.toArch F p := by
-        exact (MulAction.injective σ) hez
+      have hz' : z = KPCuspCharts.toArch F p := 
+        (MulAction.injective σ) hez
       rw [hz'] at hz
       change T < KPCuspLogShape.meanHeight _ (KPCuspCharts.toArch F p) at hz
       rwa [KPCuspCharts.toArch_meanHeight F G.positive_dimension] at hz
@@ -508,7 +494,3 @@ theorem embedded_cusp_end_volume
         (KPCuspSiegel.projection F Γ '' E) at hvol
   rw [himage] at hvol
   exact hvol
-
-end DedekindZetaZeroFree.KPFiniteAdelicCuspEnds
-
-end

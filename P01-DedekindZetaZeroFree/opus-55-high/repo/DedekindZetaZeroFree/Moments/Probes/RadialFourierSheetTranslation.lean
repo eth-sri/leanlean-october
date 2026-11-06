@@ -50,19 +50,16 @@ private theorem norm_mul (A : SArithmeticData F) (x y : A.G) :
 
 private theorem norm_div (A : SArithmeticData F) (x y : A.G) :
     A.norm (x / y) = A.norm x / A.norm y := by
-  simp [SArithmeticData.norm, norm_div, div_pow, Finset.prod_div_distrib,
-    mul_div_mul_comm]
+  simp [SArithmeticData.norm, div_pow, Finset.prod_div_distrib, mul_div_mul_comm]
 
 private theorem norm_pos (A : SArithmeticData F) (x : A.G) : 0 < A.norm x := by
   apply mul_pos
   · apply Finset.prod_pos
-    intro w hw
-    exact pow_pos (norm_pos_iff.mpr (x.1 w).ne_zero) _
+    simp
   · apply Finset.prod_pos
-    intro v hv
-    exact norm_pos_iff.mpr (x.2 v).ne_zero
+    simp
 
-private theorem norm_ell (A : SArithmeticData F) (T : ℝ) (hT : 0 < T) :
+theorem norm_ell (A : SArithmeticData F) (T : ℝ) (hT : 0 < T) :
     A.norm ((ProbeSheet.localUnits A).symm (ProbeSheet.ell A T)) = T := by
   simp only [ProbeSheet.ell, dif_pos hT, MulEquiv.symm_apply_apply]
   exact A.norm_radialSection T hT
@@ -121,7 +118,7 @@ theorem probe_sheet_shape_translation (F : Type) [Field F] [NumberField F]
       ProbeSheetTranslation.translatedFourier A e μ W0 x t =
       ProbeSheetTranslation.translatedFourier A e μ W0 (ProbeSheet.ell A T) (k * t) := by
     have hu : ProbeSheet.localUnits A k.val = x / ProbeSheet.ell A T := by
-      simp [k]
+      rfl
     have hg : ProbeSheet.localUnits A t.val * x =
         ProbeSheet.localUnits A (k.val * t.val) * ProbeSheet.ell A T := by
       rw [map_mul, hu]
@@ -133,14 +130,7 @@ theorem probe_sheet_shape_translation (F : Type) [Field F] [NumberField F]
     exact congrArg (ProbeWeight.fourier F A.Sf e μ W0 ∘ Units.val) hg
   have hflow (y : SLocalProduct F A.Sf) : ProbeSheet.complexNormFlow A w 0 y = y := by
     dsimp [ProbeSheet.complexNormFlow, SLocalProduct, InfiniteAdeleRing] at y ⊢
-    apply Prod.ext
-    · apply funext
-      intro v
-      by_cases hv : v = w
-      · subst v
-        simp [ProbeSheet.complexNormFlow, Function.update_self]
-      · simp [ProbeSheet.complexNormFlow, hv, Function.update_self]
-    · rfl
+    simp
   have hb := hbound T hT
   simp only [ProbeSheet.logDerivative, iteratedDeriv_zero, hflow] at hb
   have hi : Integrable
@@ -212,7 +202,7 @@ theorem probe_sheet_shape_translation_fraction (F : Type) [Field F] [NumberField
     ProbeSheetTranslation.norm_pos A (A.diagonal (ProbeSheetTranslation.fieldUnit A a ha))
   have hhpos : 0 < ProbeSheetTranslation.q A h hh :=
     ProbeSheetTranslation.norm_pos A (A.diagonal (ProbeSheetTranslation.fieldUnit A h hh))
-  have hT : 0 < T := div_pos (mul_pos hX hhpos) hapos
+  have hT : 0 < T := by positivity
   have hx : A.norm ((ProbeSheet.localUnits A).symm x) = T := by
     dsimp [x, ProbeSheetTranslation.fractionPoint]
     rw [map_div, map_mul, map_mul, ProbeSheetTranslation.norm_div,
@@ -224,6 +214,3 @@ theorem probe_sheet_shape_translation_fraction (F : Type) [Field F] [NumberField
     dsimp [T]
     field_simp
   exact ⟨hT, hx, hbound x T hT hx⟩
-
-end
-end DedekindZetaZeroFree

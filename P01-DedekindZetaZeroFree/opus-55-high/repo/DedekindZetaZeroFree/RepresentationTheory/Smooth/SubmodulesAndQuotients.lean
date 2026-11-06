@@ -44,7 +44,7 @@ theorem smoothSubmodule_stable {G V : Type*} [Group G] [TopologicalSpace G]
   have heq : j * g = g * (g⁻¹ * j * g) := by group
   calc
     ρ j (ρ g v) = ρ (j * g) v := by simp [map_mul, Module.End.mul_apply]
-    _ = ρ g (ρ (g⁻¹ * j * g) v) := by rw [heq]; simp [map_mul, Module.End.mul_apply]
+    _ = ρ g (ρ (g⁻¹ * j * g) v) := by simp
     _ = ρ g v := by rw [hfix]
 
 def smoothPart {G V : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
@@ -91,8 +91,7 @@ theorem smoothRepresentation_quotient {G V : Type*} [Group G]
   obtain ⟨w, rfl⟩ := W.mkQ_surjective v
   rcases hρ w with ⟨J, hJ⟩
   refine ⟨J, fun j hj => ?_⟩
-  change W.mapQ W (ρ j) (hW j) (Submodule.Quotient.mk w) = Submodule.Quotient.mk w
-  rw [Submodule.mapQ_apply, hJ j hj]
+  simp_all
 
 theorem intertwiningMap_fixedSubmodule {G V W : Type*} [Group G]
     [AddCommGroup V] [Module ℂ V] [AddCommGroup W] [Module ℂ W]
@@ -103,5 +102,3 @@ theorem intertwiningMap_fixedSubmodule {G V W : Type*} [Group G]
   intro j
   change σ j (f w) = f w
   rw [← f.isIntertwining, hw j]
-
-end DedekindZetaZeroFree

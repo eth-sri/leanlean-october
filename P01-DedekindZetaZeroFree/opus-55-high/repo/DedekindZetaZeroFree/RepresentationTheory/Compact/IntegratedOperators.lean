@@ -43,7 +43,7 @@ private theorem conjMap_apply (h g : G) : conjMap h g = h⁻¹ * (g * h) :=
 
 variable [CompactSpace G] [MeasurableSpace G] [BorelSpace G]
 
-private theorem haarAverage_comp_conjMap {W : Type*} [NormedAddCommGroup W] [NormedSpace 𝕜 W]
+theorem haarAverage_comp_conjMap {W : Type*} [NormedAddCommGroup W] [NormedSpace 𝕜 W]
     [NormedSpace ℝ W] [SMulCommClass ℝ 𝕜 W] (F : C(G, W)) (h : G) :
     haarAverage G (𝕜 := 𝕜) (F.comp (conjMap h)) = haarAverage G (𝕜 := 𝕜) F := by
   rw [conjMap, ← ContinuousMap.comp_assoc, haarAverage_comp_mulRight, haarAverage_comp_mulLeft]
@@ -86,16 +86,7 @@ theorem integratedOperator_apply (f : C(G, 𝕜)) (v : V) :
     (weightFamily π hπ f)
   simp only [ContinuousLinearMap.apply_apply] at h
   rw [integratedOperator, ← h, haarAverage_apply]
-  simp only [ContinuousMap.comp_apply, ContinuousMap.coe_coe, ContinuousLinearMap.apply_apply,
-    weightFamily_apply, smul_apply]
-
-omit [CompleteSpace V] in
-@[simp]
-theorem integratedOperator_zero : integratedOperator π hπ (0 : C(G, 𝕜)) = 0 := by
-  have hzero : weightFamily π hπ (0 : C(G, 𝕜)) = 0 := by
-    ext g v
-    simp
-  rw [integratedOperator, hzero, map_zero]
+  rfl
 
 omit [CompleteSpace V] in
 @[simp]
@@ -123,12 +114,6 @@ noncomputable def integratedOperatorₗ : C(G, 𝕜) →ₗ[𝕜] V →L[𝕜] V
   map_add' := integratedOperator_add π hπ
   map_smul' := integratedOperator_smul π hπ
 
-omit [CompleteSpace V] in
-@[simp]
-theorem integratedOperatorₗ_apply (f : C(G, 𝕜)) :
-    integratedOperatorₗ π hπ f = integratedOperator π hπ f :=
-  (rfl)
-
 noncomputable def conjOp (h : G) : (V →L[𝕜] V) →L[𝕜] V →L[𝕜] V :=
   (ContinuousLinearMap.compL 𝕜 V V V (π h⁻¹)).comp
     ((ContinuousLinearMap.compL 𝕜 V V V).flip (π h))
@@ -136,7 +121,7 @@ noncomputable def conjOp (h : G) : (V →L[𝕜] V) →L[𝕜] V →L[𝕜] V :=
 omit hπ [TopologicalSpace G] [IsTopologicalGroup G] [CompactSpace G] [MeasurableSpace G]
   [BorelSpace G] [NormedSpace ℝ V] [SMulCommClass ℝ 𝕜 V] [CompleteSpace V] in
 
-private theorem conjOp_apply (h : G) (S : V →L[𝕜] V) :
+theorem conjOp_apply (h : G) (S : V →L[𝕜] V) :
     conjOp π h S = (π h⁻¹).comp (S.comp (π h)) := by
   simp [conjOp, ContinuousLinearMap.compL_apply]
 
@@ -208,8 +193,7 @@ theorem trace_integratedOperator (f : C(G, 𝕜)) :
       = ∫ g, f g * character π hπ g ∂haarProb G := by
   have h := (traceCLM 𝕜 V).haarAverage_comp_comm (G := G) (weightFamily π hπ f)
   rw [← traceCLM_apply, integratedOperator, ← h, haarAverage_apply]
-  simp only [ContinuousMap.comp_apply, ContinuousMap.coe_coe, weightFamily_apply, map_smul,
-    traceCLM_apply, smul_eq_mul, character_apply]
+  simp
 
 variable [IsAlgClosed 𝕜] {f : C(G, 𝕜)} (hf : ∀ g h : G, f (h * g * h⁻¹) = f g)
 
@@ -231,9 +215,3 @@ theorem integratedOperator_eq_zero
     (hzero : ∫ g, f g * character π hπ g ∂haarProb G = 0) :
     integratedOperator π hπ f = 0 := by
   rw [integratedOperator_eq_smul_id π hπ hf hirr, hzero, mul_zero, zero_smul]
-
-end Trace
-
-end ContRepresentation
-
-end DedekindZetaZeroFree.TauCeti

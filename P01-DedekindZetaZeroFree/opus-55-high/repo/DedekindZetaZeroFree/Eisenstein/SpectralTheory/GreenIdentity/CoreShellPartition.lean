@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.GreenIdentity.Pairi
 
 @[expose] public section
 
-noncomputable section
 open scoped Classical NumberField ENNReal NNReal Topology BigOperators
 open MeasureTheory
 namespace DedekindZetaZeroFree.KPMsGreenFlux.FiniteSlabCoreShell
@@ -48,7 +47,3 @@ theorem quotientCore_mono
     quotientCore A P Y ⊆ quotientCore A P T := by
   intro x hx j hj
   exact hx j (endSet_antitone A j hY hYT hj)
-
-end DedekindZetaZeroFree.KPMsGreenFlux.FiniteSlabCoreShell
-
-end

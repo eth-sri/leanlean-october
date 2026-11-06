@@ -4,12 +4,11 @@ public import DedekindZetaZeroFree.Theta.Digits.AdelicPhases
 
 @[expose] public section
 
-noncomputable section
 set_option maxHeartbeats 2000000
 set_option backward.isDefEq.respectTransparency false
 namespace DedekindZetaZeroFree.DigitMasks
 open MomentSources NumberField IsDedekindDomain
-open scoped Classical BigOperators NumberField
+open scoped Classical BigOperators
 variable {F : Type} [Field F] [NumberField F]
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 variable (R : PrincipalMellin.ActualRecipe S η)
@@ -128,7 +127,3 @@ theorem digitParameter_rational_phase (m : ThetaReflectionData.Row R.A) (a : Fˣ
     ((ThetaDigitAverage.residueLifts (ThetaDigitAverage.rowPrimes R.A m.val m.property)).lift p (d p))
   rw [ThetaDigitAverage.ResidueLifts.residue_lift] at h
   convert h using 2 <;> ring
-
-end DedekindZetaZeroFree.DigitMasks
-
-end

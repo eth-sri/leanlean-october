@@ -9,9 +9,9 @@ section
 noncomputable section
 namespace DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel.CompactModular
 open MeasureTheory MeasureTheory.Measure Set Filter Topology
-open scoped NNReal Topology
+open scoped NNReal
 
-private theorem continuous_modular_character
+theorem continuous_modular_character
     {G : Type*} [TopologicalSpace G] [Group G] [IsTopologicalGroup G]
     [LocallyCompactSpace G] [T2Space G] :
     Continuous (Measure.modularCharacter (G := G)) := by
@@ -40,7 +40,7 @@ private theorem continuous_modular_character
   apply NNReal.isEmbedding_coe.continuous_iff.2
   change Continuous (fun g : G => (Measure.modularCharacter g : ℝ))
   rw [he]
-  exact hc.div_const _
+  fun_prop
 
 private theorem compact_character_eq_one
     {K : Type*} [TopologicalSpace K] [Group K] [CompactSpace K]
@@ -50,8 +50,8 @@ private theorem compact_character_eq_one
   have hle (j : K) : χ j ≤ 1 := by
     have hh : χ x * χ j ≤ χ x * 1 := by
       have hm : χ (x * j) ≤ χ x := hx (Set.mem_univ (x * j))
-      simpa only [map_mul, mul_one] using hm
-    exact (mul_le_mul_iff_right₀ (hp x)).mp hh
+      simp_all
+    simp_all
   apply le_antisymm (hle k)
   have hh := mul_le_mul_left (hle k⁻¹) (χ k)
   simpa only [← map_mul, inv_mul_cancel, map_one, one_mul] using hh
@@ -61,8 +61,8 @@ theorem modular_character_compact_image
     [LocallyCompactSpace G] [T2Space G]
     [TopologicalSpace K] [Group K] [CompactSpace K]
     (π : K →* G) (hπ : Continuous π) (k : K) :
-    Measure.modularCharacter (π k) = 1 := by
-  exact compact_character_eq_one ((Measure.modularCharacter).comp π)
+    Measure.modularCharacter (π k) = 1 := 
+  compact_character_eq_one ((Measure.modularCharacter).comp π)
     (continuous_modular_character.comp hπ) (fun j => Measure.modularCharacterFun_pos (π j)) k
 
 theorem map_compact_conjugation
@@ -90,7 +90,7 @@ section
 noncomputable section
 namespace DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel.AverageBasic
 open MeasureTheory MeasureTheory.Measure Set Filter Topology
-open scoped Topology Pointwise
+open scoped Pointwise
 
 variable {G K : Type*} [TopologicalSpace G] [Group G] [IsTopologicalGroup G]
   [T2Space G] [MeasurableSpace G] [BorelSpace G]
@@ -112,8 +112,7 @@ theorem continuous_average (π : K →* G) (hπ : Continuous π)
   rw [← continuousOn_univ]
   apply continuousOn_integral_of_compact_support (k := univ) isCompact_univ
   · exact (continuous_integrand π hπ f hf).continuousOn
-  · intro p x _ hx
-    exact False.elim (hx (mem_univ x))
+  simp
 
 theorem average_nonneg (π : K →* G) (ν : Measure K)
     (f : G → ℝ) (hf : ∀ x, 0 ≤ f x) (a : G) : 0 ≤ average π ν f a :=
@@ -193,8 +192,7 @@ theorem uniform_conjugation_neighborhood (π : K →* G) (hπ : Continuous π)
     have ho : O ∈ 𝓝 (π k * (1 : G) * (π k)⁻¹) := by simpa using hO
     exact hc.continuousAt.eventually_mem ho
   refine ⟨{a | ∀ k ∈ (univ : Set K), π k * a * (π k)⁻¹ ∈ O}, hu, ?_⟩
-  intro k a ha
-  exact ha k (mem_univ k)
+  simp_all
 
 theorem average_support_shrinks (π : K →* G) (hπ : Continuous π)
     (ν : Measure K) (f : ℕ → G → ℝ) (hf : ∀ m, HasCompactSupport (f m))
@@ -206,9 +204,3 @@ theorem average_support_shrinks (π : K →* G) (hπ : Continuous π)
   intro a ha
   obtain ⟨⟨k, x⟩, ⟨_, hx⟩, rfl⟩ := tsupport_average_subset π hπ ν (f m) (hf m) ha
   exact hu k x (hm hx)
-
-end DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel.AverageBasic
-
-end
-
-end

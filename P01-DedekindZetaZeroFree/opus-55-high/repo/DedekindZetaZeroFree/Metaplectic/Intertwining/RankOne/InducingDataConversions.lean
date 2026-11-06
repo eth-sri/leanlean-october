@@ -10,7 +10,6 @@ open NumberField IsDedekindDomain MeasureTheory ValuativeRel
 namespace DedekindZetaZeroFree.KPLocalExceptionalConstruction
 open KPLocalPrincipalSeries KPLocalStoneVonNeumann
 noncomputable section
-set_option autoImplicit false
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 variable (q : HeightOneSpectrum (𝓞 F))
@@ -64,6 +63,3 @@ def actualCanonicalInducing (S : KPExceptionalRaw.RawFiniteInducingData F ζ hζ
   iwasawa := S.iwasawa
   openCell := S.openCell
   openCell_ordinary := S.openCell_ordinary
-
-end
-end DedekindZetaZeroFree.KPLocalExceptionalConstruction

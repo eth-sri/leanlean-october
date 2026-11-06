@@ -28,7 +28,7 @@ private lemma central_comm (e : rootsOfUnity 3 F) (c : FiniteCover F ζ hζ) :
   exact (Subgroup.mem_center_iff.mp
     (KPAdelicCoverRestrictedProduct.pglCentralInjection_central F ζ hζ ⟨e,rfl⟩) c).symm
 
-private lemma comparison_member (a : ActualChart (U := U) (H := H))
+lemma comparison_member (a : ActualChart (U := U) (H := H))
     (g : KPCuspArithmetic.PGL2 F) (e : rootsOfUnity 3 F) (u : U.toOpenSubgroup)
     (he : KPCuspGenuineMonodromy.finiteRationalLift F ζ hζ g * (H.atlas U).representative a.component =
       KPCuspGenuineMonodromy.central F ζ hζ e * (H.atlas U).representative a.component * u.val) :
@@ -51,7 +51,7 @@ private lemma comparison_member (a : ActualChart (U := U) (H := H))
     (KPCuspGenuineMonodromy.finiteBase F ζ hζ ((H.atlas U).representative a.component))⁻¹) hp.symm
   simpa only [mul_assoc, mul_inv_cancel, mul_one] using ht
 
-private lemma separated_member (a : ActualChart (U := U) (H := H))
+lemma separated_member (a : ActualChart (U := U) (H := H))
     (g : KPContSectorPhaseComponentCharts.Component F ζ hζ U R P H a.component)
     (x : KPCuspGenuineMonodromy.SymmetricSpace F) (hx : x ∈ a.domain)
     (hg : (g.val : KPCuspArithmetic.PGL2 F) • x ∈ a.domain) : g ∈ a.Isotropy := by
@@ -66,10 +66,10 @@ private lemma separated_member (a : ActualChart (U := U) (H := H))
   change g.val • a.center = a.center
   exact (KPContSectorPhaseComponentCharts.complexProjectiveEmbedding_smul F g.val a.center).symm.trans hh
 
-private lemma la_al (x : KPCuspGenuineMonodromy.SymmetricSpace F) :
+lemma la_al (x : KPCuspGenuineMonodromy.SymmetricSpace F) :
     labeledA (placeEquiv F ζ hζ) (labeledAInv (placeEquiv F ζ hζ) x) = x := by
   funext k; simp [labeledA, labeledAInv]
-private lemma al_la (x : M F) :
+lemma al_la (x : M F) :
     labeledAInv (placeEquiv F ζ hζ) (labeledA (placeEquiv F ζ hζ) x) = x := by
   simp [labeledA, labeledAInv]
 
@@ -124,7 +124,7 @@ private lemma root_fibers (a : ActualChart (U := U) (H := H))
       rw [hc]
       simp [mul_assoc]
 
-private lemma base_raw_root (a : ActualChart (U := U) (H := H))
+lemma base_raw_root (a : ActualChart (U := U) (H := H))
     (e : rootsOfUnity 3 F) (x : M F) :
     KPContSectorCoveredQuotientVocabulary.q F ζ hζ U
       (Quotient.mk (coveredRelation F ζ hζ U)

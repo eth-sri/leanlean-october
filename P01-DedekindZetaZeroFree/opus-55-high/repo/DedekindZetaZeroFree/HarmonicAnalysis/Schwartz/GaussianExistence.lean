@@ -5,13 +5,12 @@ public import DedekindZetaZeroFree.HarmonicAnalysis.Schwartz.PolynomialGaussianA
 
 @[expose] public section
 
-noncomputable section
 
 open scoped ContDiff
 
 namespace DedekindZetaZeroFree.AbelianQuotient.Theta.GaussianSchwartz
 
-private theorem real_gaussian_decay
+theorem real_gaussian_decay
     {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E] (a : ℝ) (ha : 0 < a) (k n : ℕ) :
     ∃ C : ℝ, ∀ x : E,
       ‖x‖ ^ k * ‖iteratedFDeriv ℝ n (fun x : E ↦ Real.exp (-a * ‖x‖ ^ 2)) x‖ ≤ C := by
@@ -22,7 +21,7 @@ private theorem real_gaussian_decay
     (k + m * n) a ha
   refine ⟨(n.factorial : ℝ) * (max C 1) ^ n * P, ?_⟩
   intro x
-  have hu : 1 ≤ 1 + ‖x‖ := by linarith [norm_nonneg x]
+  have hu : 1 ≤ 1 + ‖x‖ := by simp
   have hD1 : 1 ≤ max C 1 * (1 + ‖x‖) ^ m := one_le_mul_of_one_le_of_one_le hc1 (one_le_pow₀ hu)
   have hderiv : ‖iteratedFDeriv ℝ n (fun x : E ↦ Real.exp (-a * ‖x‖ ^ 2)) x‖ ≤
       (n.factorial : ℝ) * Real.exp (-a * ‖x‖ ^ 2) *
@@ -34,7 +33,7 @@ private theorem real_gaussian_decay
     · intro i hi hin
       calc ‖iteratedFDeriv ℝ i (fun x : E ↦ -a * ‖x‖ ^ 2) x‖
         ≤ C * (1 + ‖x‖) ^ m := hb i hin x
-        _ ≤ max C 1 * (1 + ‖x‖) ^ m := by gcongr; exact le_max_left _ _
+        _ ≤ max C 1 * (1 + ‖x‖) ^ m := by gcongr; simp
         _ ≤ (max C 1 * (1 + ‖x‖) ^ m) ^ i := by
           simpa using pow_le_pow_right₀ hD1 hi
   calc ‖x‖ ^ k * ‖iteratedFDeriv ℝ n (fun x : E ↦ Real.exp (-a * ‖x‖ ^ 2)) x‖
@@ -46,12 +45,11 @@ private theorem real_gaussian_decay
         ((1 + ‖x‖) ^ (k + m * n) * Real.exp (-a * ‖x‖ ^ 2)) := by
       rw [mul_pow, ← pow_mul, pow_add]; ring
     _ ≤ (n.factorial : ℝ) * (max C 1) ^ n *
-        (P * Real.exp (-(a / 2) * ‖x‖ ^ 2)) := by
-      exact mul_le_mul_of_nonneg_left (hbound ‖x‖ (norm_nonneg _)) (by positivity)
+        (P * Real.exp (-(a / 2) * ‖x‖ ^ 2)) := 
+      mul_le_mul_of_nonneg_left (hbound ‖x‖ (norm_nonneg _)) (by positivity)
     _ ≤ (n.factorial : ℝ) * (max C 1) ^ n * P := by
       have he : Real.exp (-(a / 2) * ‖x‖ ^ 2) ≤ 1 := by
-        rw [Real.exp_le_one_iff]
-        exact mul_nonpos_of_nonpos_of_nonneg (by linarith) (sq_nonneg _)
+        simp_all
       calc _ ≤ (n.factorial : ℝ) * (max C 1) ^ n * (P * 1) := by gcongr
            _ = _ := by ring
 
@@ -68,7 +66,3 @@ theorem exists_gaussian
   intro x
   change (Real.exp (-a * ‖x‖ ^ 2) : ℂ) = latticeGaussian a x
   simp [latticeGaussian]
-
-end DedekindZetaZeroFree.AbelianQuotient.Theta.GaussianSchwartz
-
-end

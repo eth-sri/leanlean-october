@@ -9,7 +9,6 @@ Repository: openai/math.
 Revision: adc7f1241b42e322a6451854ab7e4b4c146bf78a.
 -/
 
-noncomputable section
 open MeasureTheory
 
 namespace DedekindZetaZeroFree.LargeSieve.Vendor.LogReflection
@@ -29,7 +28,7 @@ theorem strip_integrability (K : ℂ → ℂ) (a b : ℝ)
   have hcont : Continuous (fun t : ℝ => K ((c : ℂ) + (t : ℂ) * Complex.I)) := by
     refine continuous_iff_continuousAt.mpr fun t => ?_
     have hlin : ContinuousAt (fun t : ℝ => (c : ℂ) + (t : ℂ) * Complex.I) t :=
-      continuousAt_const.add (Complex.continuous_ofReal.continuousAt.mul continuousAt_const)
+      by fun_prop
     exact ContinuousAt.comp (g := K)
       (f := fun t : ℝ => (c : ℂ) + (t : ℂ) * Complex.I) (x := t)
       ((hhol _ (by rw [hline]; exact hac) (by rw [hline]; exact hcb)).continuousAt) hlin
@@ -37,7 +36,7 @@ theorem strip_integrability (K : ℂ → ℂ) (a b : ℝ)
   obtain ⟨C1, hC1⟩ :=
     isCompact_Icc.exists_bound_of_continuousOn (hcont.continuousOn (s := Set.Icc (-1) 1))
   set K0 : ℝ := 4 * (C + max C1 0) with hK
-  have hK0 : 0 ≤ K0 := by rw [hK]; positivity
+  have hK0 : 0 ≤ K0 := by positivity
   have hstep : ∀ t : ℝ, ((1 + |t|) ^ 2)⁻¹ ≤ (1 + t ^ 2)⁻¹ := by
     intro t
     have hle : 1 + t ^ 2 ≤ (1 + |t|) ^ 2 := by
@@ -88,7 +87,3 @@ theorem strip_integrability (K : ℂ → ℂ) (a b : ℝ)
   refine Filter.Eventually.of_forall fun t => ?_
   have hre : (-((c : ℂ) + (t : ℂ) * Complex.I)).re = -c := by simp
   rw [Complex.norm_cpow_eq_rpow_re_of_pos hx, hre]
-
-end DedekindZetaZeroFree.LargeSieve.Vendor.LogReflection
-
-end

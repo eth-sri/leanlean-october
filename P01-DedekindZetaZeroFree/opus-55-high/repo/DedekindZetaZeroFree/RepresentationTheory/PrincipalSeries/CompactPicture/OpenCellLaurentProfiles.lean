@@ -12,8 +12,6 @@ open KPLocalStoneVonNeumann KPLocalPrincipalSeries KPRankOneShellContinuation
 open KPRankOneOpenCellKernel KPRankOneCenterInducedDiagonalComparison
 open KPRankOneReverseRegulatorShellsRaw
 
-noncomputable section
-set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
@@ -25,7 +23,7 @@ variable (A : LocalBorelData (K := LocalField F q) (G := Cover F ζ hζ q) T)
 variable (P : Polarization T)
 variable [MeasurableSpace (LocalField F q)] [BorelSpace (LocalField F q)]
 
-private theorem norm_root (y : (LocalField F q)ˣ) (r : ℂˣ) :
+theorem norm_root (y : (LocalField F q)ˣ) (r : ℂˣ) :
     normPower (LocalField F q) y (additiveParameter F q r) =
     (r : ℂ) ^ (-(WithZero.log (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt
       (LocalField F q) (valuation (LocalField F q) (y : LocalField F q))) : ℤ)) := by
@@ -42,14 +40,14 @@ private theorem norm_root (y : (LocalField F q)ˣ) (r : ℂˣ) :
        (Real.log (residueCardinality (LocalField F q) : ℝ) : ℂ)) =
       (-(WithZero.log (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
         (valuation (LocalField F q) (y : LocalField F q))) : ℤ) : ℂ) * Complex.log (r : ℂ) := by
-    simp only [Complex.ofReal_intCast, Int.cast_neg]
+    simp only [Complex.ofReal_intCast]
     field_simp [hlog]
   rw [he]
   simpa only [Int.cast_neg] using (Complex.exp_int_mul (Complex.log (r : ℂ))
     (-(WithZero.log (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
       (valuation (LocalField F q) (y : LocalField F q))) : ℤ))).trans (by rw [Complex.exp_log r.ne_zero])
 
-private theorem pointwise_monomial
+theorem pointwise_monomial
     (B : Binding F ζ hζ q A P) (rep : D → H₀) (hrep : ∀ d, T.π (rep d) = d) (d : D)
     (φ : LocalField F q → ℂ) (hφ : IsLocallyConstant φ) (hcφ : HasCompactSupport φ)
     (g : Cover F ζ hζ q) :
@@ -84,15 +82,15 @@ private theorem pointwise_monomial
     have h1 : (f 1).val g = 0 := (hf 1).2 g hg
     rw [hr,h1]; simp
 
-private theorem two_smul_injective {V : Type*} [AddCommGroup V] [Module ℂ V]
+theorem two_smul_injective {V : Type*} [AddCommGroup V] [Module ℂ V]
     {v : V} (hv : v ≠ 0) {m n : ℤ} (h : (2 : ℂ)^m • v = (2 : ℂ)^n • v) : m = n := by
   have hs := smul_left_injective ℂ hv h
   have hr : (2 : ℝ)^m = (2 : ℝ)^n := by
     apply Complex.ofReal_injective
     simpa only [Complex.ofReal_zpow, Complex.ofReal_ofNat] using hs
-  exact zpow_right_injective₀ (by norm_num : (0 : ℝ) < 2) (by norm_num : (2 : ℝ) ≠ 1) hr
+  simp_all
 
-private theorem lc_of_fixed {G V : Type*} [Group G] [TopologicalSpace G]
+theorem lc_of_fixed {G V : Type*} [Group G] [TopologicalSpace G]
     [IsTopologicalGroup G] [AddCommGroup V] [Module ℂ V]
     (f : G → V) (hf : SmoothVector vectorRightTranslation f) : IsLocallyConstant f := by
   obtain ⟨J,hJ⟩ := hf
@@ -257,11 +255,7 @@ theorem compact_profile_uniform_laurent
   change family r k = ((ψ.sum (fun i v => (r : ℂ)^i • v)).val).val k
   rw [hm r k]
   rw [show ψ.sum (fun i v => (r : ℂ)^i • v) = ∑ i ∈ hn.toFinset, (r : ℂ)^i • c i from
-    Finsupp.sum_onFinset _ _ _ _ (by intros; simp)]
+    Finsupp.sum_onFinset _ _ _ _ (by simp)]
   simp only [Submodule.coe_sum, Submodule.coe_smul, Finset.sum_apply, Pi.smul_apply]
   change (r : ℂ)^n k • family 1 k = ∑ i ∈ hn.toFinset, (r : ℂ)^i • (if n k = i then family 1 k else 0)
-  simp only [smul_ite, smul_zero]
-  rw [Finset.sum_ite_eq, if_pos (hn.mem_toFinset.mpr ⟨k,rfl⟩)]
-
-end
-end DedekindZetaZeroFree.KPRankOneReverseLaurentShellExpansion.FiniteAnnulusSteps
+  simp

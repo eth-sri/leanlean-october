@@ -11,7 +11,7 @@ open Filter Topology
 namespace DedekindZetaZeroFree.KPMsSameContinuationGreen.CanonicalSmoothBridge
 open KPMsGreenFlux
 
-private theorem smooth_arch_orbit
+theorem smooth_arch_orbit
     {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
     [C : ChartedSpace (KPSmoothActualFlowData.LieCoordinates F) (KPSmoothActualFlowData.GInfinity F)]
     [L : LieGroup (𝓘(ℝ, KPSmoothActualFlowData.LieCoordinates F)) (⊤ : ℕ∞) (KPSmoothActualFlowData.GInfinity F)]
@@ -39,8 +39,8 @@ private theorem smooth_arch_orbit
     (hD 0 h0).trans hz
   have hi : ContMDiffAt 𝓘(ℝ, KPSmoothActualFlowData.LieCoordinates F)
       𝓘(ℝ, KPSmoothActualFlowData.LieCoordinates F) (⊤ : ℕ∞) E.symm
-      (1 : KPSmoothActualFlowData.GInfinity F) := by
-    exact h1 ▸ D.symm.contMDiffOn.contMDiffAt
+      (1 : KPSmoothActualFlowData.GInfinity F) := 
+    h1 ▸ D.symm.contMDiffOn.contMDiffAt
       (E.open_target.mem_nhds (E.map_source h0))
   have hψ : ContMDiffAt 𝓘(ℝ, KPSmoothActualFlowData.LieCoordinates F)
       𝓘(ℝ, KPSmoothActualFlowData.LieCoordinates F) (⊤ : ℕ∞)
@@ -58,7 +58,7 @@ private theorem smooth_arch_orbit
   dsimp [φ]
   rw [← hD _ (E.map_target hb)]
   change q b = q (a * E (E.symm (a⁻¹ * b)))
-  rw [E.right_inv hb, ← mul_assoc, mul_inv_cancel, one_mul]
+  simp_all
 
  def matrixClass (M : Matrix (Fin 2) (Fin 2) ℂ) : PGLComplex.Group :=
   Matrix.ProjGenLinGroup.mk (if h : M.det ≠ 0 then Matrix.GeneralLinearGroup.mkOfDetNeZero M h else 1)
@@ -71,9 +71,7 @@ private theorem matrixClass_continuousAt (M : Matrix (Fin 2) (Fin 2) ℂ) (hM : 
   apply ContinuousAt.congr_of_eventuallyEq continuousAt_id
   filter_upwards [(isOpen_ne_fun continuous_id.matrix_det continuous_const).mem_nhds hM] with N hN
   change (if h : N.det ≠ 0 then Matrix.GeneralLinearGroup.mkOfDetNeZero N h else 1).val = N
-  change N.det ≠ 0 at hN
-  rw [dite_eq_left hN]
-  rfl
+  simp_all
 
 private theorem matrixClass_contMDiffAt
     {C : ChartedSpace PGLComplex.Coordinates PGLComplex.Group}
@@ -87,8 +85,7 @@ private theorem matrixClass_contMDiffAt
   have hc := (matrixClass_continuousAt (M x) hx).comp hM.continuousAt
   apply contMDiffAt_iff.mpr
   refine ⟨hc, ?_⟩
-  simp only [extChartAt_model_space_eq_id, PartialEquiv.refl_coe, Function.comp_id,
-    extChartAt_coe, modelWithCornersSelf_coe, Function.id_comp]
+  simp only [extChartAt_model_space_eq_id, PartialEquiv.refl_coe, extChartAt_coe, modelWithCornersSelf_coe, Function.id_comp]
   rw [hC]
   let g := matrixClass (M x)
   let m := g.out⁻¹
@@ -119,7 +116,7 @@ private theorem matrixClass_contMDiffAt
       rw [map_mul, hmg]
       change g⁻¹ * Matrix.ProjGenLinGroup.mk _ = 1
       rw [show Matrix.ProjGenLinGroup.mk (Matrix.GeneralLinearGroup.mkOfDetNeZero (M x) hx) = g by simp [g, matrixClass, hx]]
-      exact inv_mul_cancel g
+      simp
     have hh := PGLComplex.mk_mem_affineTarget_iff (m * Matrix.GeneralLinearGroup.mkOfDetNeZero (M x) hx)
     exact hh.mp (hmk ▸ PGLComplex.one_mem_affineTarget)
   apply ContDiffAt.contDiffWithinAt
@@ -130,8 +127,7 @@ private theorem matrixClass_contMDiffAt
     apply contDiffAt_pi.mpr
     intro j
     simp only [Matrix.mul_apply, Fin.sum_univ_two]
-    exact (contDiffAt_const.mul (contDiffAt_pi.mp (contDiffAt_pi.mp hM 0) j)).add
-      (contDiffAt_const.mul (contDiffAt_pi.mp (contDiffAt_pi.mp hM 1) j))
+    fun_prop
   exact (PGLComplex.contDiffAt_matrixRatios _ hd).comp x hmul
 
  theorem smooth_matrix_parametrization
@@ -208,7 +204,3 @@ private theorem matrixClass_contMDiffAt
  theorem rightPolynomial_det {ι : Type*} (x : ι → Fin 3 → ℂ) (w : ι) :
     (rightPolynomial x w).det = x w 1 := by
   simp [rightPolynomial, Matrix.det_fin_two]
-
-end DedekindZetaZeroFree.KPMsSameContinuationGreen.CanonicalSmoothBridge
-
-end

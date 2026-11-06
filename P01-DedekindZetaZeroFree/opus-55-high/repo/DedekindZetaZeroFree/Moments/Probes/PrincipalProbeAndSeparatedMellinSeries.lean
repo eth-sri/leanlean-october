@@ -153,7 +153,3 @@ theorem rowB_nonzero (A : SArithmeticData F)
     (D : ComparisonPoissonCoefficientData F A) (m : ThetaReflectionData.Row A)
     (Z : ℝ) : rowB A D m.val Z = ThetaReflectionData.forwardB A D m Z := by
   simp only [rowB, dif_neg m.property]
-
-end
-end NormalizedProbe
-end DedekindZetaZeroFree

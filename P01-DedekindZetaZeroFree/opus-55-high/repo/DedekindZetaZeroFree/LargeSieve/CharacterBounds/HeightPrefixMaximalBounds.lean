@@ -49,13 +49,10 @@ theorem detectorDyadicCoefficientMass_nonneg (F : Type) [Field F] [NumberField F
     (b : Ideal (𝓞 F) → ℂ) (N : ℝ) : 0 ≤ detectorDyadicCoefficientMass F b N := by
   apply finsum_nonneg
   intro J
-  split_ifs <;> positivity
+  positivity
 
 theorem ball_finite (F : Type) [Field F] [NumberField F] (X : ℝ) :
-    {J : Ideal (𝓞 F) | J ≠ ⊥ ∧ (Ideal.absNorm J : ℝ) ≤ X}.Finite := by
-  apply (Ideal.finite_setOfPred_absNorm_le ⌈X⌉₊).subset
-  intro J hJ
-  exact Nat.cast_le.mp (hJ.2.trans (Nat.le_ceil X))
+    {J : Ideal (𝓞 F) | J ≠ ⊥ ∧ (Ideal.absNorm J : ℝ) ≤ X}.Finite := by apply DedekindZetaZeroFree.Detector.ideals_bounded_norm_finite <;> assumption
 def ball (F : Type) [Field F] [NumberField F] (N : ℝ) : Finset (Ideal (𝓞 F)) :=
   (ball_finite F (2 * N)).toFinset
 def active (F : Type) [Field F] [NumberField F] (N y : ℝ) :=
@@ -63,7 +60,7 @@ def active (F : Type) [Field F] [NumberField F] (N y : ℝ) :=
 def poly (F : Type) [Field F] [NumberField F]
     (b ω : Ideal (𝓞 F) → ℂ) (B : Finset (Ideal (𝓞 F))) (t : ℝ) : ℂ :=
   ∑ J ∈ B, b J * ω J * (Ideal.absNorm J : ℂ) ^ (-Complex.I * (t : ℂ))
-private theorem prefix_eq (F : Type) [Field F] [NumberField F]
+theorem prefix_eq (F : Type) [Field F] [NumberField F]
     (b ω : Ideal (𝓞 F) → ℂ) (N y t : ℝ) (hy : y ≤ 2 * N) :
     detectorDyadicPrefix F b ω N y t = poly F b ω (active F N y) t := by
   unfold detectorDyadicPrefix poly active
@@ -77,10 +74,9 @@ private theorem prefix_eq (F : Type) [Field F] [NumberField F]
   · intro J hJ
     simp only [Function.mem_support, ne_eq] at hJ
     have h : J ≠ ⊥ ∧ N < (Ideal.absNorm J : ℝ) ∧ (Ideal.absNorm J : ℝ) ≤ y := by
-      by_contra hc
-      simp [hc] at hJ
+      simp_all
     simpa [ball] using And.intro h.1 (h.2.2.trans hy)
-private theorem poly_cont (F : Type) [Field F] [NumberField F]
+theorem poly_cont (F : Type) [Field F] [NumberField F]
     (b ω : Ideal (𝓞 F) → ℂ) (B : Finset (Ideal (𝓞 F)))
     (hB : ∀ J ∈ B, J ≠ ⊥) : Continuous (poly F b ω B) := by
   unfold poly
@@ -93,14 +89,14 @@ private theorem poly_cont (F : Type) [Field F] [NumberField F]
     exact_mod_cast (Ideal.absNorm_eq_zero_iff.not.mpr (hB J hJ))
 def prefixSets (F : Type) [Field F] [NumberField F] (N : ℝ) : Set (Finset (Ideal (𝓞 F))) :=
   active F N '' Set.Icc N (2 * N)
-private theorem sets_finite (F : Type) [Field F] [NumberField F] (N : ℝ) :
+theorem sets_finite (F : Type) [Field F] [NumberField F] (N : ℝ) :
     (prefixSets F N).Finite := by
   apply (ball F N).powerset.finite_toSet.subset
   rintro B ⟨y, hy, rfl⟩
   exact Finset.mem_powerset.mpr (Finset.filter_subset _ _)
-private theorem sets_nonempty (F : Type) [Field F] [NumberField F] (N : ℝ) (hN : 2 ≤ N) :
-    (prefixSets F N).Nonempty := by
-  exact ⟨active F N N, N, ⟨le_rfl, by linarith⟩, rfl⟩
+theorem sets_nonempty (F : Type) [Field F] [NumberField F] (N : ℝ) (hN : 2 ≤ N) :
+    (prefixSets F N).Nonempty := 
+  ⟨active F N N, N, ⟨le_rfl, by linarith⟩, rfl⟩
 private theorem values_eq (F : Type) [Field F] [NumberField F]
     (b ω : Ideal (𝓞 F) → ℂ) (N t : ℝ) :
     {v : ℝ | ∃ y ∈ Set.Icc N (2 * N), v = ‖detectorDyadicPrefix F b ω N y t‖ ^ 2} =
@@ -232,6 +228,3 @@ theorem detector_maximal_sieve (F : Type) [Field F] [NumberField F]
     mul_nonneg (by positivity) (detectorDyadicCoefficientMass_nonneg F b N)
   exact hstep.trans (by
     convert mul_le_mul_of_nonneg_left hc hnonneg using 1 <;> ring)
-
-end
-end DedekindZetaZeroFree

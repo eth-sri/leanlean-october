@@ -63,20 +63,6 @@ theorem inner_map_map (hπ : IsUnitary π) (g : G) (v w : V) :
     ⟪π g v, π g w⟫_𝕜 = ⟪v, w⟫_𝕜 :=
   hπ g v w
 
-@[simp]
-theorem norm_map (hπ : IsUnitary π) (g : G) (v : V) :
-    ‖π g v‖ = ‖v‖ :=
-  (isUnitary_iff_norm_map π).mp hπ g v
-
-section
-
-variable [CompleteSpace V]
-
-theorem adjoint_comp_self (hπ : IsUnitary π) (g : G) :
-    (ContinuousLinearMap.adjoint (π g)).comp (π g) = 1 :=
-  (π g).inner_map_map_iff_adjoint_comp_self.mp (hπ g)
-
-end
 
 end IsUnitary
 
@@ -92,27 +78,6 @@ namespace IsUnitary
 
 omit [CompleteSpace V] in
 
-theorem inner_map_left (hπ : IsUnitary π) (g : G) (v w : V) :
-    ⟪π g v, w⟫_𝕜 = ⟪v, π g⁻¹ w⟫_𝕜 := by
-  simpa only [ContRepresentation.self_inv_apply] using hπ.inner_map_map g v (π g⁻¹ w)
-
-omit [CompleteSpace V] in
-
 theorem inner_map_right (hπ : IsUnitary π) (g : G) (v w : V) :
     ⟪v, π g w⟫_𝕜 = ⟪π g⁻¹ v, w⟫_𝕜 := by
   simpa only [ContRepresentation.self_inv_apply] using hπ.inner_map_map g (π g⁻¹ v) w
-
-@[simp]
-theorem adjoint_eq_inv (hπ : IsUnitary π) (g : G) :
-    ContinuousLinearMap.adjoint (π g) = π g⁻¹ := by
-  rw [eq_comm, ContinuousLinearMap.eq_adjoint_iff]
-  intro v w
-  simpa using hπ.inner_map_left g⁻¹ v w
-
-end IsUnitary
-
-end Group
-
-end ContRepresentation
-
-end DedekindZetaZeroFree.TauCeti

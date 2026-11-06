@@ -21,7 +21,7 @@ theorem pullback_rational (f : X F ζ hζ → ℂ)
   apply congrArg f
   apply Quotient.sound
   apply QuotientGroup.rightRel_apply.mpr
-  simpa using γ.property
+  simp
 
 theorem pullback_word (f : X F ζ hζ → ℂ) (word : List (B F)) :
     word.foldr (fun b v => rightDerivative F ζ hζ b.1 b.2 v) (pullback f) =
@@ -55,7 +55,3 @@ theorem word_flow_hasDerivAt (f : X F ζ hζ → ℂ)
   dsimp [y]
   rw [mul_assoc, ← (archimedean_insertion_properties F ζ hζ).2.1,
     ← (flow_properties F b).2.1, add_sub_cancel]
-
-end DedekindZetaZeroFree.KPMsGreenFlux.IntrinsicAveraging
-
-end

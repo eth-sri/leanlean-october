@@ -16,14 +16,14 @@ theorem ideal_divisor_count_le_rpow
   obtain ⟨B, hB1, hB⟩ := DedekindZetaZeroFree.LargeSieve.Vendor.exists_local_exponential_bound ε hε
   have hB0 : (0 : ℝ) ≤ B := le_trans zero_le_one hB1
   set T : ℝ := (2 : ℝ) ^ (1 / ε) with hT
-  have hTpos : 0 < T := by rw [hT]; exact Real.rpow_pos_of_pos (by norm_num) _
+  have hTpos : 0 < T := by positivity
   set L : ℕ := (boundedNormIdeals F T).card with hL
   have hBL1 : 1 ≤ B ^ L := one_le_pow₀ hB1
   refine ⟨B ^ L, hBL1, fun A => ?_⟩
   by_cases hA : A = ⊥
   · rw [hA]
     simp only [idealDivisorCount, idealDivisors_bot, Finset.card_empty, Nat.cast_zero]
-    exact mul_nonneg (le_trans zero_le_one hBL1) (Real.rpow_nonneg (Nat.cast_nonneg _) _)
+    positivity
   let m := UniqueFactorizationMonoid.normalizedFactors A
   let S := m.toFinset
   have hbox : (idealDivisorCount A : ℝ) ≤ ∏ P ∈ S, ((m.count P : ℝ) + 1) :=
@@ -125,12 +125,9 @@ theorem ideal_divisor_count_le_rpow
             (fun P => ((Ideal.absNorm P : ℝ) ^ (m.count P : ℝ)) ^ ε)]
   have hnormprod : (∏ P ∈ S, ((Ideal.absNorm P : ℝ) ^ (m.count P : ℝ))) = (Ideal.absNorm A : ℝ) := by
     rw [hnorm, Nat.cast_prod]
-    refine Finset.prod_congr rfl (fun P _ => ?_)
-    rw [Nat.cast_pow, Real.rpow_natCast]
+    simp
   calc (idealDivisorCount A : ℝ) ≤ ∏ P ∈ S, ((m.count P : ℝ) + 1) := hbox
     _ ≤ B ^ L * (∏ P ∈ S, ((Ideal.absNorm P : ℝ) ^ (m.count P : ℝ)) ^ ε) := hprod
     _ = B ^ L * (Ideal.absNorm A : ℝ) ^ ε := by
         rw [Real.finsetProd_rpow S (fun P => (Ideal.absNorm P : ℝ) ^ (m.count P : ℝ))
           (fun P _ => Real.rpow_nonneg (Nat.cast_nonneg _) _) ε, hnormprod]
-
-end DedekindZetaZeroFree.LargeSieve

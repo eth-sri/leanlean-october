@@ -37,7 +37,7 @@ variable (K : Type*) [Field K] [NumberField K]
 def idealSetIntNorm (J : (Ideal (𝓞 K))⁰) (a : idealSet K J) : ℕ :=
   intNorm (idealSetEquiv K J a).val
 
-noncomputable def idealSetElement
+def idealSetElement
     (J : (Ideal (𝓞 K))⁰) (a : idealSet K J) : K :=
   (preimageOfMemIntegerSet (idealSetEquiv K J a).val : 𝓞 K)
 
@@ -86,21 +86,21 @@ abbrev nonzeroIdealElement (J : (Ideal (𝓞 K))⁰) :=
 
 open Classical in
 
-noncomputable def idealSetInteger
+def idealSetInteger
     (J : (Ideal (𝓞 K))⁰) (a : idealSet K J) : 𝓞 K :=
   preimageOfMemIntegerSet (idealSetEquiv K J a).val
 
 open Classical in
 theorem idealSetInteger_mem
     (J : (Ideal (𝓞 K))⁰) (a : idealSet K J) :
-    idealSetInteger K J a ∈ (J : Ideal (𝓞 K)) := by
-  exact (idealSetEquiv K J a).prop
+    idealSetInteger K J a ∈ (J : Ideal (𝓞 K)) := 
+  (idealSetEquiv K J a).prop
 
 open Classical in
 theorem idealSetInteger_ne_zero
     (J : (Ideal (𝓞 K))⁰) (a : idealSet K J) :
-    idealSetInteger K J a ≠ 0 := by
-  exact mem_nonZeroDivisors_iff_ne_zero.mp
+    idealSetInteger K J a ≠ 0 := 
+  mem_nonZeroDivisors_iff_ne_zero.mp
     (preimageOfMemIntegerSet (idealSetEquiv K J a).val).2
 
 open Classical in
@@ -112,7 +112,7 @@ theorem idealSetInteger_injective (J : (Ideal (𝓞 K))⁰) :
 
 open Classical in
 
-noncomputable def idealElementDecompositionMap
+def idealElementDecompositionMap
     (J : (Ideal (𝓞 K))⁰) :
     idealSet K J × unitShiftIndex K → nonzeroIdealElement K J :=
   fun p ↦
@@ -199,8 +199,8 @@ theorem surjective_idealElementDecompositionMap
     Function.Surjective (idealElementDecompositionMap K J) := by
   intro x
   have hxemb :
-      mixedEmbedding K ((x : 𝓞 K) : K) ≠ 0 := by
-    exact (map_ne_zero_iff (mixedEmbedding K)
+      mixedEmbedding K ((x : 𝓞 K) : K) ≠ 0 := 
+    (map_ne_zero_iff (mixedEmbedding K)
       (mixedEmbedding_injective K)).mpr
         (RingOfIntegers.coe_ne_zero_iff.mpr x.prop.2)
   have hxnorm :
@@ -235,7 +235,7 @@ theorem surjective_idealElementDecompositionMap
     change unitDecompositionEquiv K (ζ, z) = u at hp
     simp_all
   have hζinv : ((ζ : (𝓞 K)ˣ)⁻¹) ∈ torsion K :=
-    (torsion K).inv_mem ζ.prop
+    by simp
   let b : idealSet K J :=
     ⟨((ζ : (𝓞 K)ˣ)⁻¹) • (a : mixedSpace K),
       mem_idealSet.mpr
@@ -288,7 +288,7 @@ theorem surjective_idealElementDecompositionMap
 
 open Classical in
 
-noncomputable def idealElementDecompositionEquiv
+def idealElementDecompositionEquiv
     (J : (Ideal (𝓞 K))⁰) :
     idealSet K J × unitShiftIndex K ≃ nonzeroIdealElement K J :=
   Equiv.ofBijective (idealElementDecompositionMap K J)
@@ -314,7 +314,7 @@ def unitShiftNegEquiv : unitShiftIndex K ≃ unitShiftIndex K where
 
 open Classical in
 
-noncomputable def idealElementMulDecompositionEquiv
+def idealElementMulDecompositionEquiv
     (J : (Ideal (𝓞 K))⁰) :
     idealSet K J × unitShiftIndex K ≃ nonzeroIdealElement K J :=
   (Equiv.prodCongr (Equiv.refl _) (unitShiftNegEquiv K)).trans
@@ -344,7 +344,3 @@ theorem countable_nonzeroIdealElement (J : (Ideal (𝓞 K))⁰) :
   haveI : Countable K := Finsupp.Countable.of_moduleFinite (R := ℚ)
   haveI : Countable (𝓞 K) := RingOfIntegers.coe_injective.countable
   infer_instance
-
-end DedekindZetaZeroFree.Theta
-
-end

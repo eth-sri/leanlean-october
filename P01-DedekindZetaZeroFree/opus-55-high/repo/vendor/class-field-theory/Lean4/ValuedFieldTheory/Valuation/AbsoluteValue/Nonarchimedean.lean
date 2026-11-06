@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Nonarchimedean absolute values
 
@@ -25,7 +20,6 @@ The strong triangle inequality is equivalent to boundedness on natural numbers
 for real-valued absolute values.
 -/
 
-noncomputable section
 
 open Filter
 open scoped Topology
@@ -66,7 +60,7 @@ private theorem add_pow_le_of_bounded_nat
     (zero_le_one : (0 : ℝ) ≤ 1).trans
       (nat_bound_ge_one v hC)
   have hM_nonneg : 0 ≤ M :=
-    (v.nonneg x).trans (le_max_left (v x) (v y))
+    by positivity
   have hsum_le :
       v ((Finset.range (n + 1)).sum
           (fun m => x ^ m * y ^ (n - m) * (n.choose m : K))) ≤
@@ -93,8 +87,8 @@ private theorem add_pow_le_of_bounded_nat
       v (x ^ m * y ^ (n - m) * (n.choose m : K))
           = v (x ^ m) * v (y ^ (n - m)) * v ((n.choose m : ℕ) : K) := by
               rw [map_mul, map_mul]
-      _ ≤ (M ^ m * M ^ (n - m)) * C := by
-              exact mul_le_mul hxy hchoose
+      _ ≤ (M ^ m * M ^ (n - m)) * C := 
+              mul_le_mul hxy hchoose
                 (v.nonneg ((n.choose m : ℕ) : K))
                 (mul_nonneg (pow_nonneg hM_nonneg m)
                   (pow_nonneg hM_nonneg (n - m)))
@@ -149,7 +143,7 @@ private theorem tendsto_linear_bound_rpow_inv
       have hn_nonneg : 0 ≤ ((n + 1 : ℕ) : ℝ) := by positivity
       have hmul :=
         (Real.mul_rpow (z := ((n : ℝ)⁻¹)) hn_nonneg (le_of_lt hC)).symm
-      simpa [mul_comm, mul_left_comm, mul_assoc] using hmul
+      simp_all
   simpa using htarget
 
 /-- The root form of the binomial estimate in the nonarchimedean criterion. -/
@@ -165,25 +159,21 @@ private theorem add_le_root_bound_of_bounded_nat
   have hC_pos : 0 < C :=
     zero_lt_one.trans_le (nat_bound_ge_one v hC)
   have hM_nonneg : 0 ≤ M :=
-    (v.nonneg x).trans (le_max_left (v x) (v y))
+    by positivity
   by_cases hMzero : M = 0
   · have hx_le_zero : v x ≤ 0 := by
       simpa [M, hMzero] using (le_max_left (v x) (v y))
     have hy_le_zero : v y ≤ 0 := by
       simpa [M, hMzero] using (le_max_right (v x) (v y))
-    have hxzero : x = 0 := (v.eq_zero).mp (le_antisymm hx_le_zero (v.nonneg x))
-    have hyzero : y = 0 := (v.eq_zero).mp (le_antisymm hy_le_zero (v.nonneg y))
-    simp [hxzero, hyzero]
+    simp_all
   · have hpow :
         (v (x + y)) ^ n ≤ ((n + 1 : ℕ) : ℝ) * C * M ^ n := by
       simpa [map_pow, M] using
         add_pow_le_of_bounded_nat v hC x y n
     have hright_nonneg :
         0 ≤ ((n + 1 : ℕ) : ℝ) * C * M ^ n := by
-      exact mul_nonneg
-        (mul_nonneg (by positivity) (le_of_lt hC_pos))
-        (pow_nonneg hM_nonneg n)
-    have hn_pos : 0 < (n : ℝ) := Nat.cast_pos.mpr (Nat.pos_of_ne_zero hn)
+      positivity
+    have hn_pos : 0 < (n : ℝ) := by positivity
     have hroot :
         v (x + y) ≤
           (((n + 1 : ℕ) : ℝ) * C * M ^ n) ^ ((n : ℝ)⁻¹) := by
@@ -194,7 +184,7 @@ private theorem add_le_root_bound_of_bounded_nat
           ≤ (((n + 1 : ℕ) : ℝ) * C * M ^ n) ^ ((n : ℝ)⁻¹) := hroot
       _ = ((((n + 1 : ℕ) : ℝ) * C) ^ ((n : ℝ)⁻¹)) * M := by
             have hcoef_nonneg : 0 ≤ ((n + 1 : ℕ) : ℝ) * C :=
-              mul_nonneg (by positivity) (le_of_lt hC_pos)
+              by positivity
             rw [Real.mul_rpow hcoef_nonneg (pow_nonneg hM_nonneg n)]
             rw [Real.pow_rpow_inv_natCast hM_nonneg hn]
       _ = ((((n + 1 : ℕ) : ℝ) * C) ^ ((n : ℝ)⁻¹)) *
@@ -230,7 +220,7 @@ private theorem isNonarchimedean_of_bounded_nat
   have hle :
       v (x + y) ≤ M :=
     le_of_tendsto_of_tendsto tendsto_const_nhds hlim heventually
-  simpa [M] using hle
+  omega
 
 /-- A real-valued absolute value is nonarchimedean exactly when its values on
 the natural numbers are bounded. -/
@@ -242,8 +232,3 @@ theorem isNonarchimedean_iff_bounded_nat
   · intro h
     exact ⟨1, fun n => h.apply_natCast_le_one (by simp) (by simp)⟩
   · exact isNonarchimedean_of_bounded_nat v
-
-
-end AbsoluteValue
-
-end

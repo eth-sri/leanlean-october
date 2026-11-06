@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 namespace LocalClassFieldTheory
 open RamificationTheory KummerTheory CyclicCohomology
 
@@ -144,13 +138,12 @@ theorem map_extensionSubgroup_abstractSubgroupEquiv
     rw [IntermediateField.mem_fixingSubgroup_iff]
     intro x hx
     have hσL : (σ.1 : Gal(Ω / k)) ∈ L :=
-      (mem_extensionSubgroup_iff K L hLK σ).1 hσ
+      by simp_all
     have hfix : ∀ y ∈ abstractFixedField k Ω L, σ.1 y = y := by
       have hσfix : σ.1 ∈ (abstractFixedField k Ω L).fixingSubgroup := by
         rw [InfiniteGalois.fixingSubgroup_fixedField L]
         exact hσL
-      exact (IntermediateField.mem_fixingSubgroup_iff
-        (abstractFixedField k Ω L) σ.1).1 hσfix
+      simp_all
     exact hfix x hx
   · intro hτ
     let σ : K.toSubgroup :=
@@ -233,13 +226,7 @@ theorem abstractRelativeToAmbientQuotient_ker
       σ ∈ extensionSubgroup K L hLK
   rw [QuotientGroup.mk'_apply, QuotientGroup.eq_one_iff]
   rw [← map_extensionSubgroup_abstractSubgroupEquiv k Ω K L hLK]
-  constructor
-  · rintro ⟨τ, hτ, hτσ⟩
-    have : τ = σ :=
-      (abstractSubgroupEquivGaloisGroup k Ω K).injective hτσ
-    simpa [this] using hτ
-  · intro hσ
-    exact ⟨σ, hσ, rfl⟩
+  simp
 
 /-- The quotient map from the abstract lower subgroup is surjective. -/
 theorem abstractRelativeToAmbientQuotient_surjective
@@ -255,11 +242,7 @@ theorem abstractRelativeToAmbientQuotient_surjective
   refine Quotient.inductionOn' q ?_
   intro τ
   refine ⟨(abstractSubgroupEquivGaloisGroup k Ω K).symm τ, ?_⟩
-  change QuotientGroup.mk
-    (abstractSubgroupEquivGaloisGroup k Ω K
-      ((abstractSubgroupEquivGaloisGroup k Ω K).symm τ)) =
-      QuotientGroup.mk τ
-  rw [(abstractSubgroupEquivGaloisGroup k Ω K).apply_symm_apply]
+  rfl
 
 /-- The exact abstract class-formation quotient of a relative normal extension is the
 ordinary quotient of the lower absolute Galois group by the upper fixing
@@ -299,8 +282,8 @@ def abstractExtensionQuotientEquivGaloisGroup
   let H : ClosedSubgroup (Gal(Ω / abstractFixedField k Ω K)) :=
     closedFixingSubgroup (abstractFixedField k Ω K) Ω
       (abstractRelativeFixedField k Ω hLK)
-  letI : H.toSubgroup.Normal := by
-    exact abstractRelativeFixingSubgroup_normal k Ω K L hLK hnormal
+  letI : H.toSubgroup.Normal := 
+    abstractRelativeFixingSubgroup_normal k Ω K L hLK hnormal
   exact (abstractExtensionQuotientEquivAmbient
       k Ω K L hLK hnormal).trans
     ((InfiniteGalois.normalAutEquivQuotient H).trans
@@ -409,6 +392,3 @@ theorem finiteAbstractExtension_degree_eq_finrank
       IsGalois.card_aut_eq_finrank
         (abstractFixedField k Ω K)
         (abstractRelativeFixedField k Ω hLK)
-
-end
-end LocalClassFieldTheory

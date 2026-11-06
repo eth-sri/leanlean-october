@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Valuation rings of algebraic localizations
 
@@ -61,7 +55,7 @@ theorem completionIsUltrametricDist
 
 /-- The norm-induced valued-field structure on a nonarchimedean completion. -/
 @[reducible]
-noncomputable def finitePlaceCompletionValued
+def finitePlaceCompletionValued
     (hvKna : IsNonarchimedean (vK : K → ℝ)) :
     Valued vK.Completion ℝ≥0 :=
   letI : IsUltrametricDist vK.Completion :=
@@ -71,7 +65,7 @@ noncomputable def finitePlaceCompletionValued
 /-- The valuation relation induced by the norm valuation on a
 nonarchimedean completion. -/
 @[reducible]
-noncomputable def finitePlaceCompletionValuativeRel
+def finitePlaceCompletionValuativeRel
     (hvKna : IsNonarchimedean (vK : K → ℝ)) :
     ValuativeRel vK.Completion := by
   letI : Valued vK.Completion ℝ≥0 :=
@@ -102,8 +96,7 @@ theorem finitePlaceCompletion_mem_integers_iff_norm_le_one
       (v := ValuativeRel.valuation vK.Completion)]
   change ν x ≤ ν 1 ↔ _
   simp only [map_one]
-  change ‖x‖₊ ≤ 1 ↔ ‖x‖ ≤ 1
-  exact NNReal.coe_le_coe
+  rfl
 
 omit [NumberField K] [NumberField L] [FiniteDimensional K L]
     [IsGalois K L] in
@@ -124,7 +117,7 @@ theorem localizedCompletionIsUltrametricDist
 /-- The norm-induced valued-field structure on the chosen algebraic
 localization. -/
 @[reducible]
-noncomputable def localizedCompletionFinitePlaceValued
+def localizedCompletionFinitePlaceValued
     (hvKna : IsNonarchimedean (vK : K → ℝ)) :
     Valued (LocalizedCompletion vK w) ℝ≥0 :=
   letI : IsUltrametricDist (LocalizedCompletion vK w) :=
@@ -134,7 +127,7 @@ noncomputable def localizedCompletionFinitePlaceValued
 /-- The valuation relation induced by the norm valuation on the chosen
 algebraic localization. -/
 @[reducible]
-noncomputable def localizedCompletionFinitePlaceValuativeRel
+def localizedCompletionFinitePlaceValuativeRel
     (hvKna : IsNonarchimedean (vK : K → ℝ)) :
     ValuativeRel (LocalizedCompletion vK w) := by
   letI : Valued (LocalizedCompletion vK w) ℝ≥0 :=
@@ -166,8 +159,7 @@ theorem localizedCompletion_mem_integers_iff_norm_le_one
       (v := ValuativeRel.valuation (LocalizedCompletion vK w))]
   change ν x ≤ ν 1 ↔ _
   simp only [map_one]
-  change ‖x‖₊ ≤ 1 ↔ ‖x‖ ≤ 1
-  exact NNReal.coe_le_coe
+  rfl
 
 omit [NumberField K] [NumberField L] [IsGalois K L] in
 /-- The norm-defined integer ring of the chosen localization is the
@@ -297,7 +289,7 @@ theorem localizedCompletion_integerRing_eq_integralClosure
       va vb hExt hhens
   let O := (ValuativeRel.valuation vK.Completion).integer
   have hWO : W.toSubring = O := by
-    simpa only [W, O] using hVa
+    omega
   let eWO : W ≃+* O :=
     { toFun := fun x =>
         ⟨x, by
@@ -309,25 +301,17 @@ theorem localizedCompletion_integerRing_eq_integralClosure
           rw [hWO]
           exact x.property⟩
       left_inv := fun x ↦ by
-        apply Subtype.ext
         rfl
       right_inv := fun x ↦ by
-        apply Subtype.ext
         rfl
       map_mul' := fun x y ↦ by
-        apply Subtype.ext
         rfl
       map_add' := fun x y ↦ by
-        apply Subtype.ext
         rfl }
   have heWO :
       (algebraMap O (LocalizedCompletion vK w)).comp
           eWO.toRingHom =
         algebraMap W (LocalizedCompletion vK w) := by
-    ext x
-    rw [RingHom.comp_apply,
-      IsScalarTower.algebraMap_apply O vK.Completion,
-      IsScalarTower.algebraMap_apply W vK.Completion]
     rfl
   ext x
   change
@@ -356,60 +340,6 @@ theorem localizedCompletion_integerRing_eq_integralClosure
       exact hxW
     rw [← hVb]
     exact hxv
-
-omit [NumberField K] [NumberField L] [IsGalois K L] in
-/-- The norm-defined integer ring of the chosen localization is the
-actual integral closure of the norm-defined completed-base integer ring. -/
-theorem localizedCompletionIsIntegralClosure
-    (hvK : vK.IsNontrivial)
-    (hvKna : IsNonarchimedean (vK : K → ℝ)) :
-    letI hK := AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
-    letI : SMul K w.1.Completion := hK.toSMul
-    letI := AbsoluteValue.completionAlgebra vK w.1 w.2
-    letI : Valued vK.Completion ℝ≥0 :=
-      finitePlaceCompletionValued vK hvKna
-    letI : ValuativeRel vK.Completion :=
-      finitePlaceCompletionValuativeRel vK hvKna
-    letI : Valued (LocalizedCompletion vK w) ℝ≥0 :=
-      localizedCompletionFinitePlaceValued vK w hvKna
-    letI : ValuativeRel (LocalizedCompletion vK w) :=
-      localizedCompletionFinitePlaceValuativeRel vK w hvKna
-    IsIntegralClosure
-      𝒪[LocalizedCompletion vK w]
-      𝒪[vK.Completion]
-      (LocalizedCompletion vK w) := by
-  let hK := AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
-  let : SMul K w.1.Completion := hK.toSMul
-  let := AbsoluteValue.completionAlgebra vK w.1 w.2
-  let : Valued vK.Completion ℝ≥0 :=
-    finitePlaceCompletionValued vK hvKna
-  let : ValuativeRel vK.Completion :=
-    finitePlaceCompletionValuativeRel vK hvKna
-  let : Valued (LocalizedCompletion vK w) ℝ≥0 :=
-    localizedCompletionFinitePlaceValued vK w hvKna
-  let : ValuativeRel (LocalizedCompletion vK w) :=
-    localizedCompletionFinitePlaceValuativeRel vK w hvKna
-  let h :=
-    localizedCompletion_integerRing_eq_integralClosure
-      vK w hvK hvKna
-  refine
-    { algebraMap_injective :=
-        (ValuativeRel.valuation
-          (LocalizedCompletion vK w)).integer.subtype_injective
-      isIntegral_iff := ?_ }
-  intro x
-  constructor
-  · intro hx
-    have hxO : x ∈ 𝒪[LocalizedCompletion vK w] := by
-      rw [h]
-      exact hx
-    exact ⟨⟨x, hxO⟩, rfl⟩
-  · rintro ⟨y, rfl⟩
-    change (y : LocalizedCompletion vK w) ∈
-      (integralClosure 𝒪[vK.Completion]
-        (LocalizedCompletion vK w)).toSubring
-    rw [← h]
-    exact y.property
 
 omit [NumberField K] [NumberField L] [FiniteDimensional K L]
     [IsGalois K L] in
@@ -520,8 +450,3 @@ theorem localizedCompletionIsIntegralClosureWithExtension
         𝒪[LocalizedCompletion vK w]
       exact y.property
     exact (SetLike.ext_iff.mp h _).1 hyO
-
-
-end LocalValuation
-
-end

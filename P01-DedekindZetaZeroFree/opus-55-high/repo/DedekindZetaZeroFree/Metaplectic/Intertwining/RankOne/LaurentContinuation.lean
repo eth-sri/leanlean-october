@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.Metaplectic.Intertwining.RankOne.GlobalContin
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.KPRankOneShellContinuation
 open scoped NumberField Valued
 open NumberField IsDedekindDomain MeasureTheory ValuativeRel
@@ -30,10 +29,6 @@ theorem actual_integral_integrable_at_level_without_uniformizer
       ((compactTrivialization S.borel P S.iwasawa (sourceSign ε) (sourceParameter ε s)
         (φ : compactPicture S.borel P S.iwasawa (sourceSign ε))).val
         (kernelW (LocalField F q) S.borel ε *
-          (S.borel.upperRoot (Multiplicative.ofAdd x) : ActualCover F ζ hζ q) * g)).val h) μ := by
-  exact actual_level_integrable_full_cover F ζ hζ q S P μ hμ
+          (S.borel.upperRoot (Multiplicative.ofAdd x) : ActualCover F ζ hζ q) * g)).val h) μ := 
+  actual_level_integrable_full_cover F ζ hζ q S P μ hμ
     (actualFamilyUniformizer F q) (actualFamilyUniformizer_spec F q) J hJ ε s hs φ g h
-
-end DedekindZetaZeroFree.KPRankOneShellContinuation
-
-end

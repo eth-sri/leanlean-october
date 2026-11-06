@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # The rational idele-class formation
 
@@ -35,7 +29,6 @@ open NumberField
 open CyclicCohomology ClassFormation
 open LocalClassFieldTheory
 
-noncomputable section
 
 open CategoryTheory
 
@@ -158,8 +151,3 @@ theorem rationalIdeleClassRepresentation_satisfiesClassFieldAxiom :
           Nat.card (tateCohomology U (-1)) :=
         Nat.card_congr eTateHm1.toLinearEquiv.toEquiv
       _ = 1 := hIdeleClassTateCard.2.2.2
-
-end Reciprocity
-
-end
-end GlobalClassFieldTheory

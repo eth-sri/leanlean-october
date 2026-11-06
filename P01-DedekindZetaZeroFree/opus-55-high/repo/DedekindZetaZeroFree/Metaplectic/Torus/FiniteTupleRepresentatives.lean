@@ -35,9 +35,7 @@ private theorem localRaw_spec (q : HeightOneSpectrum (𝓞 F))
 private theorem localRaw_diagonal (q : HeightOneSpectrum (𝓞 F))
     (t : KPLocalExceptionalConstruction.actualTorus F ζ hζ q) :
     (localRaw F ζ hζ q t).g 1 0 = 0 ∧ (localRaw F ζ hζ q t).g 0 1 = 0 := by
-  simp [localRaw, KPLocalCover.centralInjection, KPStandardLocalRootLifts.A,
-    KPLocalCover.projection, KubotaRankTwo.d, Matrix.mul_apply,
-    MonoidHom.coe_mk, OneHom.coe_mk]
+  simp [localRaw, KPLocalCover.centralInjection, KPStandardLocalRootLifts.A, KubotaRankTwo.d, Matrix.mul_apply, MonoidHom.coe_mk]
   exact ⟨rfl, rfl⟩
  def finiteRawTuple (S : Finset (HeightOneSpectrum (𝓞 F)))
     (t : ∀ q, KPLocalExceptionalConstruction.actualTorus F ζ hζ q) : RestrictedCover F ζ hζ :=
@@ -53,11 +51,7 @@ private theorem localRaw_diagonal (q : HeightOneSpectrum (𝓞 F))
       | inr q =>
         by_cases hq : q ∈ S
         · exact ⟨q, hq, rfl⟩
-        · apply False.elim
-          apply hv
-          change (if q ∈ S then localRaw F ζ hζ q (t q) else 1) ∈ compact F ζ hζ (Sum.inr q)
-          rw [if_neg hq]
-          exact (compact F ζ hζ (Sum.inr q)).one_mem⟩
+        simp_all⟩
 private theorem finiteRawTuple_diagonal (S : Finset (HeightOneSpectrum (𝓞 F)))
     (t : ∀ q, KPLocalExceptionalConstruction.actualTorus F ζ hζ q) :
     restrictedProjection F ζ hζ (finiteRawTuple F ζ hζ S t) 1 0 = 0 ∧
@@ -66,8 +60,7 @@ private theorem finiteRawTuple_diagonal (S : Finset (HeightOneSpectrum (𝓞 F))
       restrictedProjection F ζ hζ (finiteRawTuple F ζ hζ S t) i j = 0 := by
     apply Prod.ext
     · funext w
-      simp [restrictedProjection, matrixValue, KPAdelicCoverCertificatesRaw.matrixValue,
-        KPAdelicCoverCertificatesRaw.matrixEntry, matrixEntry, finiteRawTuple, hij]
+      simp [restrictedProjection, matrixValue, matrixEntry, finiteRawTuple, hij]
       rfl
     · apply RestrictedProduct.ext
       intro q
@@ -76,7 +69,7 @@ private theorem finiteRawTuple_diagonal (S : Finset (HeightOneSpectrum (𝓞 F))
       · rw [if_pos hq]
         fin_cases i <;> fin_cases j <;> simp_all [localRaw_diagonal F ζ hζ q (t q)]
       · simp [hq, hij]
-  exact ⟨hd 1 0 (by decide), hd 0 1 (by decide)⟩
+  simp_all
 
 theorem finite_raw_representatives_exist
     (S : Finset (HeightOneSpectrum (𝓞 F))) :
@@ -113,6 +106,3 @@ theorem finite_raw_representatives_exist
       exact if_neg hq
   choose R hR using hpoint
   exact ⟨R, hR⟩
-
-end
-end DedekindZetaZeroFree.KPGlobalTorusFiniteStagesIdentification

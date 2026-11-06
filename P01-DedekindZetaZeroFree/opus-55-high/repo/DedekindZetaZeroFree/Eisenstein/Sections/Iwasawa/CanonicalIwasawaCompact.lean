@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.Eisenstein.Sections.Iwasawa.MaximalCompactnes
 
 @[expose] public section
 
-noncomputable section
 open scoped NumberField Classical
 
 namespace DedekindZetaZeroFree.PrincipalOfKP
@@ -17,7 +16,3 @@ theorem iwasawaCompactSubgroupMax_isIwasawa :
   ⟨iwasawaCompactSubgroupMax_compact F ζ hζ,
     iwasawaCompactSubgroupMax_decomposition F ζ hζ,
     complexCompactLift_mem_iwasawaCompactSubgroupMax F ζ hζ⟩
-
-end DedekindZetaZeroFree.PrincipalOfKP
-
-end

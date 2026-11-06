@@ -171,7 +171,7 @@ variable (S : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F)))
   funext a
   exact hφ j hj a
 
-private theorem covariantSlice_formula
+theorem covariantSlice_formula
     (U : ∀ q : S, OpenSubgroup (Cover F ζ hζ S q))
     (q : S) (l : ∀ i : S, Fiber F ζ hζ M S i →ₗ[ℂ] ℂ)
     (g : ProductCover F ζ hζ S) (f : productFixedLevel F ζ hζ M S U)

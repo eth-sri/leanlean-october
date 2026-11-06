@@ -50,7 +50,7 @@ def LocallyAllIntegerSobolev {n : ℕ} (U : Set (Space n)) (u : Space n → ℂ)
       u =ᵐ[volume.restrict B.carrier]
         (fun x => v.derivatives (⟨fun _ => 0, by simp⟩ : MultiIndex n k) x)
 
-private theorem smooth_on_local_ball {n : ℕ} (B : LocalBall n)
+theorem smooth_on_local_ball {n : ℕ} (B : LocalBall n)
     (u : Space n → ℂ)
     (hu : ∀ k : ℕ, ∃ v : IntegerSobolev B k,
       u =ᵐ[volume.restrict B.carrier]
@@ -143,7 +143,3 @@ theorem locally_all_orders_smooth_representative {n : ℕ} (hn : 0 < n)
   intro g hg hgu
   exact Measure.eqOn_open_of_ae_eq (hgu.trans hfae.symm) hU hg.continuousOn
     hfsmooth.continuousOn
-
-end DedekindZetaZeroFree.KPContLocalCubeEmbedding
-
-end

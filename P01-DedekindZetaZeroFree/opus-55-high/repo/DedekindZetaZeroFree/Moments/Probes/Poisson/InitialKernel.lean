@@ -67,7 +67,7 @@ private theorem aIndex_countable' : Countable (AIdx D) := by
     infer_instance
   infer_instance
 
-private theorem integral_three' {f : (ℝ × ℝ × ℝ) → ℂ} (hf : Integrable f) :
+theorem integral_three' {f : (ℝ × ℝ × ℝ) → ℂ} (hf : Integrable f) :
     (∫ t : ℝ × ℝ × ℝ, f t) =
       ∫ x : ℝ, ∫ y : ℝ, ∫ z : ℝ, f (x, y, z) := by
   rw [MeasureTheory.Measure.volume_eq_prod] at hf
@@ -109,7 +109,7 @@ theorem rawInitialIntegrand_eq_twisted (u : Frequency D.recipe) (Z : ℝ) (hZ : 
     simp [NormalizedProbe.initialMellinPoint]
   exact rawKernel_eq_tsum D u Z hZ _ _ _ h1 h2 h3
 
-private theorem rawInit_eq_tsum (u : Frequency D.recipe) (Z : ℝ) (hZ : 0 < Z)
+theorem rawInit_eq_tsum (u : Frequency D.recipe) (Z : ℝ) (hZ : 0 < Z)
     (t : ℝ × ℝ × ℝ) :
     rawInitialIntegrand D u Z t = ∑' a : AIdx D,
       NormalizedProbe.initialTripleMellinSummand D.recipe.probe
@@ -207,7 +207,7 @@ def omitEquiv : TwistedProbeRowDefinitions.TwistedRow D × AIdx D ≃
   left_inv _ := rfl
   right_inv _ := rfl
 
-private theorem tsum_omit (g : ↥(PoissonFrequencyDecomposition.allowedIndices D)ᶜ → ℂ)
+theorem tsum_omit (g : ↥(PoissonFrequencyDecomposition.allowedIndices D)ᶜ → ℂ)
     (hg : Summable g) :
     ∑' i, g i = ∑' f : TwistedProbeRowDefinitions.TwistedRow D, ∑' a : AIdx D,
       g (omitEquiv D (f, a)) := by

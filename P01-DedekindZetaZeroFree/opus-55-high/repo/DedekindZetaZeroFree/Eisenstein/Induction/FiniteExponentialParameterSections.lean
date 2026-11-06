@@ -20,7 +20,7 @@ set_option maxHeartbeats 800000
 def localLogNorm (g : G) : ℝ :=
   Real.log (localAbs K (A.coordinate (A.retract (J.borelPart g))))
 
-private theorem decomposition_norm_unique
+theorem decomposition_norm_unique
     (b c : A.B) (k l : J.compact.toOpenSubgroup)
     (h : (b : G) * (k : G) = (c : G) * (l : G)) :
     localAbs K (A.coordinate (A.retract b)) =
@@ -79,11 +79,10 @@ def normValues : Finset ℝ := by
     (localLogNorm_locallyConstant A J).comp_continuous continuous_subtype_val
   exact h.range_finite.toFinset
 
-private theorem mem_normValues (k : I.compact.toOpenSubgroup) :
+theorem mem_normValues (k : I.compact.toOpenSubgroup) :
     localLogNorm A J (k : G) ∈ normValues A I J := by
   unfold normValues
-  simp only [Set.Finite.mem_toFinset]
-  exact ⟨k,rfl⟩
+  simp
 
  theorem norm_fiber_compact_covariance (b : A.B)
     (k k' : I.compact.toOpenSubgroup) (h : (k' : G) = (b : G) * (k : G)) :
@@ -103,7 +102,7 @@ def normPiece (P : Polarization T) (ε : Sign)
     rw [norm_fiber_compact_covariance A I J b k k' h]
     split_ifs
     · exact φ.property.1 b k k' h
-    · exact (map_zero _).symm
+    simp
   · obtain ⟨L,hL⟩ := φ.property.2
     let U : OpenSubgroup I.compact.toOpenSubgroup :=
       J.compact.toOpenSubgroup.comap I.compact.toOpenSubgroup.subtype continuous_subtype_val
@@ -115,8 +114,7 @@ def normPiece (P : Polarization T) (ε : Sign)
     have hn := localLogNorm_mul_compact A J (k : G) ⟨(j : G),hj.2⟩
     have hp := congrFun (hL j hj.1) k
     change φ.val (k*j) = φ.val k at hp
-    rw [show (((k*j : I.compact.toOpenSubgroup) : G)) = (k:G)*(j:G) from rfl,
-      hn,hp]
+    simp_all
 
 def parameterSource (P : Polarization T) (ε : Sign)
     (φ : compactPicture A P I ε) (s : ℂ) : compactPicture A P I ε :=
@@ -128,7 +126,7 @@ def parameterSource (P : Polarization T) (ε : Sign)
 theorem parameterSource_zero (P : Polarization T) (ε : Sign)
     (φ : compactPicture A P I ε) : parameterSource A I J P ε φ 0 = φ := by
   unfold parameterSource
-  rw [LinearEquiv.apply_symm_apply,LinearEquiv.symm_apply_apply]
+  simp
 
 theorem parameterSource_extension (P : Polarization T) (ε : Sign)
     (φ : compactPicture A P I ε) (s : ℂ) (g : G) :
@@ -173,7 +171,3 @@ theorem parameterSource_finite_expansion (P : Polarization T) (ε : Sign)
   · intro r hr hne
     simp [Ne.symm hne]
   · exact fun h => (h (mem_normValues A I J k)).elim
-
-end DedekindZetaZeroFree.KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue.FiniteSourceTransport
-
-end

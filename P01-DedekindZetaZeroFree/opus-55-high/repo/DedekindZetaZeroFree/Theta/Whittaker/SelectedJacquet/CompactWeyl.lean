@@ -15,7 +15,3 @@ def compactWeyl : ComplexSU2 :=
     · ext i j
       fin_cases i <;> fin_cases j <;> simp [Matrix.mul_apply, Matrix.star_apply]
     · simp [Matrix.det_fin_two]⟩
-
-end DedekindZetaZeroFree.SheetRescaling
-
-end

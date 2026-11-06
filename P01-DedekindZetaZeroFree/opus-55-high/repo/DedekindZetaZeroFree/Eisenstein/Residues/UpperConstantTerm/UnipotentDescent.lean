@@ -125,9 +125,7 @@ theorem source_central (s : ℂ) (f : KPMsRationalCompactCrossPairing.Source F �
 
 theorem source_unipotent (s : ℂ) (f : KPMsRationalCompactCrossPairing.Source F ζ hζ s)
     (a : KPGlobalTorusFunctionData.Adeles F) (g : G) :
-    f.val (KPGlobalTorusFunctionData.N F ζ hζ a*g)=f.val g := by
-  have h := f.property 1 a g
-  simpa [KPGlobalTorusFunctionData.deltaHalf] using h
+    f.val (KPGlobalTorusFunctionData.N F ζ hζ a*g)=f.val g := by apply DedekindZetaZeroFree.KPGlobalResidualKernel.RawStageL2.Outgoing.ActualBruhat.section_unipotent_invariant <;> assumption
 end DedekindZetaZeroFree.FourierContinuation.ResidualBoundaryInvariance
 
 end

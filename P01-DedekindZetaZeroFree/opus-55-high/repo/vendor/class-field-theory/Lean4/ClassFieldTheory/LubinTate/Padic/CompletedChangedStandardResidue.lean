@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Residue embedding for the completed standard/changed compositum
 
@@ -87,8 +81,8 @@ theorem padicChangedUniformizerLevelResidueField_card
   let : FiniteDimensional base.residueField target.residueField :=
     residueField_finiteDimensional_of_moduleFinite base target
   have hfinrank :
-      f = Module.finrank base.residueField target.residueField := by
-    exact residueDegree_eq_finrank_quotient base target
+      f = Module.finrank base.residueField target.residueField := 
+    residueDegree_eq_finrank_quotient base target
   calc
     Nat.card target.residueField =
         Nat.card base.residueField ^
@@ -263,13 +257,11 @@ theorem
       IsLocalRing.ResidueField
           (localCompleteDVF M).valuation.valuationSubring =
         𝓀[M] := by
-    rw [localCompleteDVF_valuation_eq M]
     rfl
   have hD :
       IsLocalRing.ResidueField
           (localCompleteDVF D).valuation.valuationSubring =
         𝓀[D] := by
-    rw [localCompleteDVF_valuation_eq D]
     rfl
   have hcard :=
     padicCompletedChangedUniformizerFixedField_residueField_card p u n
@@ -287,7 +279,7 @@ theorem
 
 /-- The residue field of the completed changed-uniformizer fixed field embeds
 into the residue field of the ambient completed Lubin--Tate level. -/
-noncomputable def padicCompletedChangedFieldResidueEmbedding
+def padicCompletedChangedFieldResidueEmbedding
     (p : ℕ) [Fact p.Prime]
     (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
     let D := padicCompletedChangedUniformizerFixedField p u n
@@ -337,8 +329,7 @@ noncomputable def padicCompletedChangedFieldResidueEmbedding
   have inclusion_comp :
       inclusion.comp (algebraMap ℚ_[p] D) =
         algebraMap ℚ_[p] E := by
-    ext x
-    exact D.val.commutes x
+    rfl
   let :
       canonicalBase.valuation.HasExtension
         (ambient.valuation.comap inclusion) :=
@@ -357,7 +348,7 @@ noncomputable def padicCompletedChangedFieldResidueEmbedding
 
 /-- The residue field of the finite standard/changed compositum embeds into
 the residue field of the ambient completed Lubin--Tate level. -/
-noncomputable def
+def
     padicCompletedStandardChangedCompositumResidueEmbedding
     (p : ℕ) [Fact p.Prime]
     (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
@@ -408,8 +399,7 @@ noncomputable def
   have inclusion_comp :
       inclusion.comp (algebraMap ℚ_[p] M) =
         algebraMap ℚ_[p] E := by
-    ext x
-    exact M.val.commutes x
+    rfl
   let :
       canonicalBase.valuation.HasExtension
         (ambient.valuation.comap inclusion) :=
@@ -426,21 +416,9 @@ noncomputable def
       (localCompleteDVF M).valuation ambient.valuation
       inclusion hEquiv
 
-/-- The ambient residue comparison for the finite standard/changed
-compositum is injective. -/
-theorem
-    padicCompletedStandardChangedCompositumResidueEmbedding_injective
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
-    Function.Injective
-      (padicCompletedStandardChangedCompositumResidueEmbedding
-        p u n) :=
-  (padicCompletedStandardChangedCompositumResidueEmbedding
-    p u n).injective
-
 /-- The finite standard/changed compositum is finite-dimensional over its
 changed-uniformizer fixed subfield. -/
-noncomputable instance
+instance
     padicCompletedStandardChangedCompositum_finiteDimensional_over_changedField
     (p : ℕ) [Fact p.Prime]
     (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
@@ -453,7 +431,7 @@ noncomputable instance
 
 /-- The finite standard/changed compositum is Galois over its changed fixed
 subfield. -/
-noncomputable instance
+instance
     padicCompletedStandardChangedCompositum_isGalois_over_changedField
     (p : ℕ) [Fact p.Prime]
     (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
@@ -466,7 +444,7 @@ noncomputable instance
 
 /-- The changed fixed field carries its canonical finite-extension spectral
 norm. -/
-noncomputable instance
+instance
     padicCompletedChangedUniformizerFixedField_nontriviallyNormedField
     (p : ℕ) [Fact p.Prime]
     (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
@@ -477,7 +455,7 @@ noncomputable instance
 
 /-- The standard/changed compositum carries its canonical finite-extension
 spectral norm. -/
-noncomputable instance
+instance
     padicCompletedStandardChangedCompositum_nontriviallyNormedField
     (p : ℕ) [Fact p.Prime]
     (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
@@ -488,7 +466,7 @@ noncomputable instance
 
 /-- The changed fixed field has the canonical valuative relation induced by
 its finite p-adic spectral norm. -/
-noncomputable instance
+instance
     padicCompletedChangedUniformizerFixedField_valuativeRel
     (p : ℕ) [Fact p.Prime]
     (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
@@ -499,7 +477,7 @@ noncomputable instance
 
 /-- The standard/changed compositum has the canonical valuative relation
 induced by its finite p-adic spectral norm. -/
-noncomputable instance
+instance
     padicCompletedStandardChangedCompositum_valuativeRel
     (p : ℕ) [Fact p.Prime]
     (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
@@ -510,7 +488,7 @@ noncomputable instance
 
 /-- The changed fixed field is a nonarchimedean local field for its canonical
 finite p-adic spectral topology. -/
-noncomputable instance
+instance
     padicCompletedChangedUniformizerFixedField_isNonarchimedeanLocalField
     (p : ℕ) [Fact p.Prime]
     (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
@@ -521,7 +499,7 @@ noncomputable instance
 
 /-- The standard/changed compositum is a nonarchimedean local field for its
 canonical finite p-adic spectral topology. -/
-noncomputable instance
+instance
     padicCompletedStandardChangedCompositum_isNonarchimedeanLocalField
     (p : ℕ) [Fact p.Prime]
     (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
@@ -532,7 +510,7 @@ noncomputable instance
 
 /-- The canonical spectral valuation of the standard/changed compositum
 extends that of the changed fixed field. -/
-noncomputable instance
+instance
     padicCompletedStandardChangedCompositum_valuation_hasExtension
     (p : ℕ) [Fact p.Prime]
     (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
@@ -547,7 +525,7 @@ noncomputable instance
 
 /-- The canonical complete-DVF valuation of the standard/changed compositum
 extends the one on the changed fixed field. -/
-noncomputable instance
+instance
     padicCompletedStandardChangedCompositum_localCompleteDVFValuation_hasExtension
     (p : ℕ) [Fact p.Prime]
     (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
@@ -561,7 +539,7 @@ noncomputable instance
 
 /-- The canonical valuation ring of the standard/changed compositum is the
 integral closure of that of the changed fixed field. -/
-noncomputable instance
+instance
     padicCompletedStandardChangedCompositum_valuationSubring_isIntegralClosure
     (p : ℕ) [Fact p.Prime]
     (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
@@ -580,7 +558,7 @@ noncomputable instance
 /-- The actual valuative integer ring of the standard/changed compositum is
 the integral closure of the actual valuative integer ring of the changed
 fixed field. -/
-noncomputable instance
+instance
     padicCompletedStandardChangedCompositum_integerRing_isIntegralClosure
     (p : ℕ) [Fact p.Prime]
     (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
@@ -652,8 +630,7 @@ theorem
   have inclusion_comp :
       inclusion.comp (algebraMap ℚ_[p] M) =
         algebraMap ℚ_[p] E := by
-    ext x
-    exact M.val.commutes x
+    rfl
   let :
       canonicalBase.valuation.HasExtension
         (ambient.valuation.comap inclusion) :=
@@ -684,11 +661,6 @@ theorem
               (localCompleteDVF M).valuation ambient.valuation
               inclusion hEquiv b) := by
     intro b
-    apply Subtype.ext
-    change
-      M.val (τ (b : M)) =
-        (padicCompletedUnitFrobeniusLiftEquiv p n u⁻¹).symm
-          (M.val (b : M))
     rfl
   change
     residueFieldMapOfIsEquivComap
@@ -703,7 +675,3 @@ theorem
     residueFieldMapOfIsEquivComap_mapEquiv
       (localCompleteDVF M).valuation ambient.valuation
       inclusion hEquiv σM σE hcompat a
-
-end LubinTate
-
-end

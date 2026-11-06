@@ -311,7 +311,3 @@ def totalRemainder (C : Context Q) : ℂ :=
 
 def sevenTermSum (C : Context Q) : ℂ :=
   unitBlock C + ∑ B ∈ dyadicScales C, sevenTermBlock C B
-
-end DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms
-
-end

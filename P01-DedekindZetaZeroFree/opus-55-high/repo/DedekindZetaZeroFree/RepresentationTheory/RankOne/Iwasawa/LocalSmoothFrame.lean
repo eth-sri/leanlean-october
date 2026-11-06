@@ -114,7 +114,7 @@ private theorem section_smooth (F : Type) [Field F] [NumberField F] (ζ : F) (h�
       (S y)) _ x
   simpa only [hraw, Function.comp_def] using hfinal.contDiffWithinAt
 
-private theorem frame_words
+theorem frame_words
     (c : KPContSectorCoveredQuotientVocabulary.FiniteCover F ζ hζ)
     (g : KPSmoothLocalQuotientCharts.ArchGroup F)
     (E : OpenPartialHomeomorph (KPSmoothLocalQuotientCharts.Coordinates F)

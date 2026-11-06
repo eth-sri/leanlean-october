@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Range restriction for complete discretely valued fields
 
@@ -32,7 +26,7 @@ noncomputable section
 universe u v
 
 open WithZero
-open scoped NNReal Valued WithZero
+open scoped NNReal Valued
 
 namespace LocalFieldTheory.DiscreteValuationField
 open ValuationTheory.DiscreteValuationField
@@ -90,10 +84,7 @@ theorem mrangeRestrict_isAdicComplete
       map_add' := e.map_add
       map_smul' := by
         intro a x
-        change e (a * x) =
-          (algebraMap F.valuationSubring
-            (LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrict F).valuationSubring a) * e x
-        simp [RingHom.algebraMap_toAlgebra] }
+        rfl }
   have hcompleteBase : IsAdicComplete F.maximalIdeal F.valuationSubring :=
     F.isAdicComplete
   let : IsAdicComplete F.maximalIdeal F.valuationSubring := hcompleteBase
@@ -185,8 +176,7 @@ theorem mrangeRestrict_units_isCyclic
     have hsub_inj :
         Function.Injective
           ((MonoidHom.mrange F.valuation.toMonoidWithZeroHom).subtype) := by
-      intro a b h
-      exact Subtype.ext h
+      simp
     have hφinj : Function.Injective φ :=
       Units.map_injective hsub_inj
     have hφδ : φ δ = γ := by
@@ -251,7 +241,7 @@ theorem mrangeRestrict_isRankOneDiscrete
 /-- The range-restricted valuation is rank one as a valuation into its actual
 value group. -/
 @[implicit_reducible]
-noncomputable def mrangeRestrict_rankOne
+def mrangeRestrict_rankOne
     (F : CompleteDVF.{u, v} K) :
     (LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrict F).RankOne := by
   haveI : (LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrict F).IsNontrivial :=
@@ -261,8 +251,3 @@ noncomputable def mrangeRestrict_rankOne
         (MonoidHom.mrange F.valuation.toMonoidWithZeroHom)ˣ :=
     (LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrict_units_isCyclic F)
   exact WithZeroValuation.rankOneOfUnitsIsCyclic (LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrict F)
-
-end CompleteDVF
-end LocalFieldTheory.DiscreteValuationField
-
-end

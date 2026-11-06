@@ -44,7 +44,7 @@ private theorem hasDerivAt_logFlow (g : SchwartzMap ℝ ℂ) (t : ℝ) :
   convert g.differentiableAt.hasFDerivAt.comp_hasDerivAt t he using 1
   · rfl
   · rw [euler_apply, fderiv_eq_smul_deriv]
-    simp [smul_eq_mul]
+    simp
     ring
 
 private theorem iteratedDeriv_logFlow (g : SchwartzMap ℝ ℂ) (n : ℕ) :
@@ -58,7 +58,7 @@ private theorem iteratedDeriv_logFlow (g : SchwartzMap ℝ ℂ) (n : ℕ) :
     rw [(hasDerivAt_logFlow (euler^[n] g) t).deriv]
     simp only [Function.iterate_succ_apply']
 
-private theorem iteratedDeriv_expWeight (σ : ℝ) (n : ℕ) :
+theorem iteratedDeriv_expWeight (σ : ℝ) (n : ℕ) :
     iteratedDeriv n (fun t : ℝ => (Real.exp (σ * t) : ℂ)) =
       fun t => (σ : ℂ) ^ n * (Real.exp (σ * t) : ℂ) := by
   induction n with
@@ -76,7 +76,7 @@ private theorem iteratedDeriv_logKernel (g : SchwartzMap ℝ ℂ) (σ : ℝ) (n 
       ∑ i ∈ Finset.range (n + 1),
         (n.choose i : ℂ) * (σ : ℂ) ^ (n - i) * logKernel (euler^[i] g) σ t := by
   have hf : ContDiff ℝ (⊤ : ℕ∞) (fun t : ℝ => g (Real.exp (t / 2))) :=
-    g.smooth'.comp (by fun_prop)
+    by fun_prop
   have hw : ContDiff ℝ (⊤ : ℕ∞) (fun t : ℝ => (Real.exp (σ * t) : ℂ)) := by
     have he : ContDiff ℝ (⊤ : ℕ∞) (fun t : ℝ => Real.exp (σ * t)) := by fun_prop
     exact Complex.ofRealCLM.contDiff.comp he
@@ -90,13 +90,12 @@ private theorem iteratedDeriv_logKernel (g : SchwartzMap ℝ ℂ) (σ : ℝ) (n 
   dsimp [logKernel]
   ring
 
-private lemma pow_mul_exp_neg_le_const {c : ℝ} (hc : 0 < c) (k : ℕ) :
+lemma pow_mul_exp_neg_le_const {c : ℝ} (hc : 0 < c) (k : ℕ) :
     ∃ B : ℝ, 0 ≤ B ∧ ∀ s : ℝ, 0 ≤ s → s ^ k * Real.exp (-(c * s)) ≤ B := by
   rcases Nat.eq_zero_or_pos k with hk | hk
   · subst hk
     refine ⟨1, zero_le_one, fun s hs => ?_⟩
-    rw [pow_zero, one_mul]
-    exact Real.exp_le_one_iff.mpr (neg_nonpos.mpr (mul_nonneg hc.le hs))
+    simp_all
   · refine ⟨(k / (c * Real.exp 1)) ^ k, by positivity, fun s hs => ?_⟩
     have hy : (c * s / k) * Real.exp (-(c * s / k)) ≤ Real.exp (-1) :=
       Real.mul_exp_neg_le_exp_neg_one _
@@ -111,7 +110,7 @@ private lemma pow_mul_exp_neg_le_const {c : ℝ} (hc : 0 < c) (k : ℕ) :
       have h3 : (k / c) * Real.exp (-1) = k / (c * Real.exp 1) := by
         rw [Real.exp_neg]
         ring_nf
-      rwa [h2, h3] at h1
+      simp_all
     calc s ^ k * Real.exp (-(c * s))
         = (s * Real.exp (-(c * s / k))) ^ k := by
           rw [mul_pow, ← Real.exp_nat_mul]
@@ -120,7 +119,7 @@ private lemma pow_mul_exp_neg_le_const {c : ℝ} (hc : 0 < c) (k : ℕ) :
           field_simp
       _ ≤ (k / (c * Real.exp 1)) ^ k := pow_le_pow_left₀ (by positivity) hbase k
 
-private theorem logKernel_pow_bound (g : SchwartzMap ℝ ℂ) (σ : ℝ) (hσ : 0 < σ) (k : ℕ) :
+theorem logKernel_pow_bound (g : SchwartzMap ℝ ℂ) (σ : ℝ) (hσ : 0 < σ) (k : ℕ) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ t : ℝ, |t| ^ k * ‖logKernel g σ t‖ ≤ C := by
   obtain ⟨Bpos, hBposnn, hBpos⟩ := pow_mul_exp_neg_le_const (c := 1) one_pos k
   obtain ⟨Bneg, hBnegnn, hBneg⟩ := pow_mul_exp_neg_le_const (c := σ) hσ k
@@ -215,8 +214,7 @@ private theorem logKernel_decay (g : SchwartzMap ℝ ℂ) (σ : ℝ) (hσ : 0 < 
           apply Finset.sum_le_sum
           intro i _
           apply mul_le_mul_of_nonneg_left _ (norm_nonneg _)
-          rw [Real.norm_eq_abs]
-          exact hC i x
+          simp_all
 
 private theorem logKernel_isSchwartz (g : SchwartzMap ℝ ℂ) (σ : ℝ) (hσ : 0 < σ) :
     ∃ k : SchwartzMap ℝ ℂ, ∀ t, k t = logKernel g σ t :=
@@ -241,6 +239,3 @@ theorem real_signed_log_kernel_isSchwartz (g : SchwartzMap ℝ ℂ)
   rw [Algebra.smul_def, Complex.coe_algebraMap]
   push_cast
   ring
-
-end
-end DedekindZetaZeroFree.ProbeSheetLogDensityRegularity

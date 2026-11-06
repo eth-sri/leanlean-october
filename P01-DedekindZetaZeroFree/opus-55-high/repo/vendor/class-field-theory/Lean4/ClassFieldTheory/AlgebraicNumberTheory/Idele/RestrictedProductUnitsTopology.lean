@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Topology on units of a restricted product
 
@@ -50,7 +45,7 @@ variable {B : ∀ i, S i}
 
 /-- At a principal filter, the algebraic equivalence of units is already a
 topological group equivalence; no openness assumption is needed. -/
- noncomputable def unitsEquivPrincipal (T : Set ι) :
+ def unitsEquivPrincipal (T : Set ι) :
     (Πʳ i, [R i, B i]_[𝓟 T])ˣ ≃ₜ*
       (Πʳ i, [(R i)ˣ, (Submonoid.ofClass (B i)).units]_[𝓟 T]) := by
   let e := unitsEquiv (B := B) (𝓕 := 𝓟 T) R
@@ -67,7 +62,6 @@ topological group equivalence; no openness assumption is needed. -/
       ContinuousMulEquiv.piUnits.continuous.comp hmap
     refine h.congr ?_
     intro x
-    funext i
     rfl
   · have hCoe : Topology.IsEmbedding
         (coeMonoidHom (B := B) (𝓕 := 𝓟 T) :
@@ -83,8 +77,6 @@ topological group equivalence; no openness assumption is needed. -/
       ContinuousMulEquiv.piUnits.symm.continuous.comp continuous_coe
     refine h.congr ?_
     intro y
-    apply Units.ext
-    funext i
     rfl
 
 /-- The principal-stage inclusion of ring restricted products induces an
@@ -103,7 +95,7 @@ open embedding of their unit groups when the distinguished submonoids are open. 
 
 /-- For open distinguished local submonoids, Mathlib's restricted-product
 unit equivalence is an equivalence of topological groups. -/
-noncomputable def unitsContinuousMulEquiv
+def unitsContinuousMulEquiv
     (hBopen : ∀ i, IsOpen (B i : Set (R i))) :
     (Πʳ i, [R i, B i])ˣ ≃ₜ*
       (Πʳ i, [(R i)ˣ, (Submonoid.ofClass (B i)).units]) := by
@@ -118,9 +110,6 @@ noncomputable def unitsContinuousMulEquiv
     let x' : (Πʳ i, [R i, B i]_[𝓟 T])ˣ :=
       (unitsEquivPrincipal (B := B) T).symm y
     have hx : Units.map (inclusionMonoidHom (B := B) hT) x' = x := by
-      apply Units.ext
-      apply RestrictedProduct.ext
-      intro i
       rfl
     have hLocal : Continuous (fun z : (Πʳ i, [R i, B i]_[𝓟 T])ˣ =>
         e (Units.map (inclusionMonoidHom (B := B) hT) z)) := by
@@ -129,8 +118,6 @@ noncomputable def unitsContinuousMulEquiv
           (unitsEquivPrincipal (B := B) T).continuous
       refine h.congr ?_
       intro z
-      apply RestrictedProduct.ext
-      intro i
       rfl
     rw [← hx]
     exact (isOpenEmbedding_units_inclusion (B := B) hBopen hT).continuousAt_iff.mp
@@ -148,10 +135,4 @@ noncomputable def unitsContinuousMulEquiv
     refine h.congr ?_
     intro y
     apply Units.ext
-    apply RestrictedProduct.ext
-    intro i
     rfl
-
-end RestrictedProduct
-
-end

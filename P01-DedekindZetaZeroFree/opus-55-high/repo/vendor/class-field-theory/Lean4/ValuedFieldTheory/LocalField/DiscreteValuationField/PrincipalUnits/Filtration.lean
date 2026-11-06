@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 namespace LocalFieldTheory
 
 open ValuationTheory
@@ -81,11 +75,7 @@ def higherPrincipalUnitGroup
         _ = -(((x⁻¹ : F.valuationSubringˣ) : F.valuationSubring) *
               ((x : F.valuationSubring) - 1)) := by
           ring
-    change ((x⁻¹ : F.valuationSubringˣ) : F.valuationSubring) - 1 ∈ F.maximalIdeal ^ n
-    rw [hxinv]
-    exact (F.maximalIdeal ^ n).neg_mem
-      (Ideal.mul_mem_left (F.maximalIdeal ^ n)
-        ((x⁻¹ : F.valuationSubringˣ) : F.valuationSubring) hx)
+    simp_all
 
 namespace higherPrincipalUnitGroup
 
@@ -114,8 +104,8 @@ theorem one_add_pow_prime_sub_one_mem_pow_succ
     (hp_mem : (p : R) ∈ I) {a : R} (ha : a ∈ I ^ n) :
     (1 + a) ^ p - 1 ∈ I ^ (n + 1) := by
   rcases exists_add_pow_prime_eq hp (1 : R) a with ⟨r, hr⟩
-  have hnp : n + 1 ≤ n * p := by
-    exact (Nat.add_le_add_left hn n).trans
+  have hnp : n + 1 ≤ n * p := 
+    (Nat.add_le_add_left hn n).trans
       (by simpa [Nat.mul_two] using Nat.mul_le_mul_left n hp.two_le)
   have ha_pow_np : a ^ p ∈ I ^ (n * p) := by
     simpa [pow_mul] using (Ideal.pow_mem_pow ha p)
@@ -140,8 +130,7 @@ theorem natCast_mem_maximalIdeal_of_residue_ringChar_eq
     (p : F.valuationSubring) ∈ F.maximalIdeal := by
   have : CharP F.residueField p := (ringChar.eq_iff (R := F.residueField)).1 hchar
   rw [← F.residue_eq_zero_iff]
-  rw [map_natCast]
-  exact CharP.cast_eq_zero F.residueField p
+  simp
 
 /-- Concrete principal-unit form of the prime-binomial containment:
 if `p ∈ m`, then the `p`th power carries `U^n` into `U^(n+1)` for `n ≥ 1`. -/
@@ -178,12 +167,6 @@ theorem pow_mem_succ_of_residue_ringChar_eq
     (higherPrincipalUnitGroup.natCast_mem_maximalIdeal_of_residue_ringChar_eq
       F hchar)
     hu
-
-/-- Establishes the identity `higherPrincipalUnitGroup F 0 = ⊤`. -/
-@[simp] theorem zero_eq_top :
-    higherPrincipalUnitGroup F 0 = ⊤ := by
-  ext u
-  simp [higherPrincipalUnitGroup]
 
 /-- The residue of a valuation-ring unit, viewed as a unit of the residue
 field. -/
@@ -255,11 +238,3 @@ theorem residueUnitHom_eq_iff_residue_eq
   · intro h
     apply Units.ext
     simpa using h
-end higherPrincipalUnitGroup
-
-end CompleteDVF
-end DiscreteValuationField
-
-end
-
-end LocalFieldTheory

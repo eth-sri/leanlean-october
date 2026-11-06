@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # The norm on ordinary ideles
 
@@ -41,7 +37,7 @@ variable
 
 /-- The ordinary idele norm `N_{L/K} : I_L → I_K`, transported from
 the determinant norm on the relative idele group. -/
-noncomputable def norm :
+def norm :
     IdeleGroup L →* IdeleGroup K :=
   (RelativeIdeleGroup.norm K L).comp
     (relativeIdeleBaseChangeMulEquiv
@@ -78,7 +74,7 @@ variable
     [Field L] [NumberField L] [Algebra K L]
 
 /-- The ordinary idele-class norm `N_{L/K} : C_L → C_K`. -/
-noncomputable def ideleClassNorm :
+def ideleClassNorm :
     IdeleClassGroup L →* IdeleClassGroup K :=
   QuotientGroup.map
     (IdeleGroup.principalSubgroup L)
@@ -100,5 +96,3 @@ theorem ideleClassNorm_mk
         (IdeleGroup.principalSubgroup K)
         (IdeleGroup.norm K L a) :=
   rfl
-
-end

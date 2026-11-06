@@ -10,7 +10,6 @@ open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.KPTameCompact
 
 noncomputable section
-set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
 variable (v : HeightOneSpectrum (𝓞 F))
@@ -26,7 +25,7 @@ private lemma small_mem (x : O F v) (hx : ‖(x : K F v)‖ < 1) : x ∈ p F v :
   rw [IsLocalRing.mem_maximalIdeal, mem_nonunits_iff, Valuation.Integer.not_isUnit_iff_valuation_lt_one]
   rw [← Valuation.vlt_one_iff, Valuation.vlt_one_iff (Valued.v : Valuation (K F v) (WithZero (Multiplicative ℤ)))]
   exact Valued.toNormedField.norm_lt_one_iff.mp hx
-private lemma product_small (g h : K0 F v) (hc : ‖c F v g‖ < 1) (he : ‖c F v h‖ < 1) : ‖c F v (g*h)‖ < 1 := by
+lemma product_small (g h : K0 F v) (hc : ‖c F v g‖ < 1) (he : ‖c F v h‖ < 1) : ‖c F v (g*h)‖ < 1 := by
   have hz : c F v (g*h) = c F v g * a F v h + d F v g * c F v h := by
     simp [c, a, d, Matrix.mul_apply, Fin.sum_univ_two]
   rw [hz]
@@ -36,7 +35,7 @@ private lemma product_small (g h : K0 F v) (hc : ‖c F v g‖ < 1) (he : ‖c F
   · exact (mul_le_of_le_one_right (norm_nonneg _) ((det_norm_and_entries F v h).2 0 0)).trans_lt hc
   · exact (mul_le_of_le_one_left (norm_nonneg _) ((det_norm_and_entries F v g).2 1 1)).trans_lt he
 include hv
-private lemma unit_symbol (x y : O F v) (hx : IsUnit x) (hy : IsUnit y)
+lemma unit_symbol (x y : O F v) (hx : IsUnit x) (hy : IsUnit y)
     (X Y : (K F v)ˣ) (hX : (X : K F v) = x) (hY : (Y : K F v) = y) :
     KPHilbert.B3 F ζ hζ (Sum.inr v) X Y = 1 := by
   obtain ⟨u, hu⟩ := hx
@@ -45,7 +44,7 @@ private lemma unit_symbol (x y : O F v) (hx : IsUnit x) (hy : IsUnit y)
   have hYw : Y = unitInclusion F v w := Units.ext (by simpa [unitInclusion, KPHilbert.integerUnitInclusion, Units.map, hw] using hY)
   rw [hXu, hYw]
   exact B3_units F v ζ hζ hv u w
-private lemma reduction_symbol (x y : O F v) (hx : IsUnit x) (hy : IsUnit y)
+lemma reduction_symbol (x y : O F v) (hx : IsUnit x) (hy : IsUnit y)
     (X Y T : (K F v)ˣ) (hX : (X : K F v) = x) (hY : (Y : K F v) = y)
     (hred : Ideal.Quotient.mk (p F v) x = Ideal.Quotient.mk (p F v) y) :
     KPHilbert.B3 F ζ hζ (Sum.inr v) T X = KPHilbert.B3 F ζ hζ (Sum.inr v) T Y := by
@@ -55,7 +54,7 @@ private lemma reduction_symbol (x y : O F v) (hx : IsUnit x) (hy : IsUnit y)
   have hYw : Y = unitInclusion F v w := Units.ext (by simpa [unitInclusion, KPHilbert.integerUnitInclusion, Units.map, hw] using hY)
   rw [hXu, hYw]
   exact B3_congruent_right F v ζ hζ hv T u w (by simpa [hu, hw] using hred)
-private lemma det_symbol (g : K0 F v) (hc : ‖c F v g‖ < 1) (T A D : (K F v)ˣ)
+lemma det_symbol (g : K0 F v) (hc : ‖c F v g‖ < 1) (T A D : (K F v)ˣ)
     (hA : (A : K F v) = a F v g) (hD : (D : K F v) = d F v g) :
     KPHilbert.B3 F ζ hζ (Sum.inr v) T (Matrix.GeneralLinearGroup.det (inclusion F v g)) =
       KPHilbert.B3 F ζ hζ (Sum.inr v) T (A*D) := by
@@ -89,7 +88,7 @@ private lemma product_a_reduction (g h : K0 F v) (he : ‖c F v h‖ < 1) :
   simp only [Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two, map_add, hz, add_zero]
 
 omit hv in
-private lemma factor_nonzero {L M : Type*} [Field L] [CommGroup M]
+lemma factor_nonzero {L M : Type*} [Field L] [CommGroup M]
     (B : Lˣ → Lˣ → M)
     (hL : ∀ a b c, B (a*b) c = B a c * B b c)
     (hR : ∀ a b c, B a (b*c) = B a b * B a c)
@@ -98,21 +97,14 @@ private lemma factor_nonzero {L M : Type*} [Field L] [CommGroup M]
     B C A⁻¹ * B E H⁻¹ * B (Z/C) (Z/(E*(A*D))) =
       B Z (A*H)⁻¹ * B (Z/(C*H)) (Z/(D*E)) := by
   have sk := KubotaDefectSymbolAlgebra.skew_symmetry L M B hL hR hAlt
-  simp only [div_eq_mul_inv, mul_inv_rev, hL, hR,
-    KubotaDefectSymbolAlgebra.inv_left L M B hL,
-    KubotaDefectSymbolAlgebra.inv_right L M B hR, hAlt,
-    sk E C, sk Z C, sk A C, sk D C, sk H C,
-    sk Z E, sk A E, sk D E, sk H E,
-    sk A Z, sk D Z, sk H Z, sk D A, sk H A, sk H D,
-    hAD, hAH, hDH, inv_one, one_mul, mul_one, inv_inv]
+  simp only [div_eq_mul_inv, mul_inv_rev, hL, hR, KubotaDefectSymbolAlgebra.inv_left L M B hL, KubotaDefectSymbolAlgebra.inv_right L M B hR, hAlt, sk Z E, sk H E, sk H Z, sk H D, hDH, inv_one, one_mul, mul_one, inv_inv]
   apply Additive.ofMul.injective
-  change _ = _
-  have omul : ∀ p q : M, Additive.ofMul (p*q) = Additive.ofMul p + Additive.ofMul q := fun _ _ => rfl
-  have oinv : ∀ p : M, Additive.ofMul p⁻¹ = -Additive.ofMul p := fun _ => rfl
+  have omul : ∀ p q : M, Additive.ofMul (p*q) = Additive.ofMul p + Additive.ofMul q := by simp
+  have oinv : ∀ p : M, Additive.ofMul p⁻¹ = -Additive.ofMul p := by simp
   simp only [omul, oinv]
   abel
 omit hv in
-private lemma factor_zero {L M : Type*} [Field L] [CommGroup M]
+lemma factor_zero {L M : Type*} [Field L] [CommGroup M]
     (B : Lˣ → Lˣ → M)
     (hL : ∀ a b c, B (a*b) c = B a c * B b c)
     (hR : ∀ a b c, B a (b*c) = B a b * B a c)
@@ -122,15 +114,10 @@ private lemma factor_zero {L M : Type*} [Field L] [CommGroup M]
     (hCW : B C W = (B W E)⁻¹) :
     B C A⁻¹ * B E H⁻¹ * B (W/C) (W/(E*(A*D))) = B (C*H) (D*E) := by
   have sk := KubotaDefectSymbolAlgebra.skew_symmetry L M B hL hR hAlt
-  simp only [div_eq_mul_inv, mul_inv_rev, hL, hR,
-    KubotaDefectSymbolAlgebra.inv_left L M B hL,
-    KubotaDefectSymbolAlgebra.inv_right L M B hR, hAlt,
-    sk E C, sk W C, sk A C, sk D C, sk H C,
-    sk A E, sk D E, sk H E, sk D A, sk H A, sk H D,
-    hCW, hWA, hWD, hAD, hAH, hDH, inv_one, one_mul, mul_one, inv_inv]
+  simp only [div_eq_mul_inv, mul_inv_rev, hL, hR, KubotaDefectSymbolAlgebra.inv_left L M B hL, KubotaDefectSymbolAlgebra.inv_right L M B hR, hAlt, sk H E, sk H D, hCW, hWA, hWD, hDH, inv_one, one_mul, mul_one, inv_inv]
   apply Additive.ofMul.injective
-  have omul : ∀ p q : M, Additive.ofMul (p*q) = Additive.ofMul p + Additive.ofMul q := fun _ _ => rfl
-  have oinv : ∀ p : M, Additive.ofMul p⁻¹ = -Additive.ofMul p := fun _ => rfl
+  have omul : ∀ p q : M, Additive.ofMul (p*q) = Additive.ofMul p + Additive.ofMul q := by simp
+  have oinv : ∀ p : M, Additive.ofMul p⁻¹ = -Additive.ofMul p := by simp
   simp only [omul, oinv]
   abel
 
@@ -150,7 +137,7 @@ private lemma sum_symbol {L M : Type*} [Field L] [CommGroup M]
   have hh := hSt (U/Z) (V/Z) hs'
   simpa only [inv_div] using (KubotaDefectSymbolAlgebra.inv_inv L M B hL hR (U/Z) (V/Z)).trans hh
 omit hv in
-private lemma sigma_formula (g h : K0 F v) (C E W : (K F v)ˣ)
+lemma sigma_formula (g h : K0 F v) (C E W : (K F v)ˣ)
     (hC : KubotaRankTwo.X (K F v) (inclusion F v g) = C)
     (hE : KubotaRankTwo.X (K F v) (inclusion F v h) = E)
     (hW : KubotaRankTwo.X (K F v) (inclusion F v (g*h)) = W)
@@ -163,9 +150,9 @@ private lemma sigma_formula (g h : K0 F v) (C E W : (K F v)ˣ)
   unfold KPLocalCover.sigmaTwo
   rw [ht, mul_one]
   unfold KubotaElementaryLastArgument.tau
-  rw [← map_mul, hC, hE, hW]
+  simp_all
 omit hv in
-private lemma X_small (g : K0 F v) (hc : c F v g ≠ 0) :
+lemma X_small (g : K0 F v) (hc : c F v g ≠ 0) :
     KubotaRankTwo.X (K F v) (inclusion F v g) = Units.mk0 (c F v g) hc := by
   apply Units.ext
   simp [KubotaRankTwo.X, KubotaRankTwo.x, inclusion, KPLocalCube.integerInclusion,
@@ -226,7 +213,7 @@ theorem kappa_mul_small_nonzero_of_product_entry_ne_zero
     simp only [KubotaDefectSymbolAlgebra.div_right _ _ _ hR, hR]
   have hsum : B (Z/(C*H)) (Z/(D*E)) = 1 := sum_symbol B hL hR
     (KPHilbert.B3_laws F ζ hζ (Sum.inr v)).2.2.2.1 (C*H) (D*E) Z (by
-      simp only [Units.val_mul, Units.val_mk0]
+      simp only [Units.val_mul]
       simp [Z, C, E, D, H, c, a, d, Matrix.mul_apply, Fin.sum_univ_two])
   rw [hk, kappa_active F v ζ hζ hv g hc hcg, kappa_active F v ζ hζ hv h he hch, hs']
   rw [mk_inv, mk_inv]
@@ -275,14 +262,13 @@ theorem kappa_mul_small_nonzero_of_product_entry_zero
     rw [sk]
     rw [((KPHilbert.B3_laws F ζ hζ (Sum.inr v)).2.2.2.2.2 W).2.1, inv_one]
   have hCW : B C W = (B W E)⁻¹ := by
-    have hdw : B D W = 1 := by
-      exact (sk D W).trans (by simpa only [B, hWD, inv_one])
-    have hhw : B H W = 1 := by
-      exact (sk H W).trans (by simpa only [B, hWH, inv_one])
+    have hdw : B D W = 1 := 
+      (sk D W).trans (by simpa only [B, hWD, inv_one])
+    have hhw : B H W = 1 := 
+      (sk H W).trans (by simpa only [B, hWH, inv_one])
     rw [hC]
     dsimp only [B] at hm hdw hhw ⊢
-    simp only [div_eq_mul_inv, hL, KubotaDefectSymbolAlgebra.inv_left _ _ _ hL,
-      hm, hdw, hhw, inv_one, one_mul, mul_one]
+    simp only [div_eq_mul_inv, hL, KubotaDefectSymbolAlgebra.inv_left _ _ _ hL, hm, hdw, hhw, inv_one, mul_one]
     exact sk E W
   have hs := sigma_formula F v ζ hζ g h C E W
     (X_small F v g hc) (X_small F v h he) (X_zero F v (g*h) hz dz.2.2.2)
@@ -316,6 +302,3 @@ theorem kappa_mul_small_nonzero
   by_cases hz : c F v (g * h) = 0
   · exact kappa_mul_small_nonzero_of_product_entry_zero F v ζ hζ hv g h hc he hcg hch hz
   · exact kappa_mul_small_nonzero_of_product_entry_ne_zero F v ζ hζ hv g h hc he hcg hch hz
-
-end
-end DedekindZetaZeroFree.KPTameCompact

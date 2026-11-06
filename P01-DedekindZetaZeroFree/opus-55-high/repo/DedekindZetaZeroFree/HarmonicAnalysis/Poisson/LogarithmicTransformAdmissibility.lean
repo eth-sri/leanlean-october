@@ -10,13 +10,12 @@ Repository: openai/math.
 Revision: adc7f1241b42e322a6451854ab7e4b4c146bf78a.
 -/
 
-noncomputable section
 open scoped Classical ContDiff Topology
 open Filter MeasureTheory
 
 namespace DedekindZetaZeroFree.LargeSieve.Vendor
 
-private theorem exists_posSideSupport (h : ℝ → ℂ) (hhc : HasCompactSupport h) :
+theorem exists_posSideSupport (h : ℝ → ℂ) (hhc : HasCompactSupport h) :
     ∃ b : ℝ, 0 < b ∧ PositiveSideSupport b h := by
   obtain ⟨K, hK, hK0⟩ := exists_compact_iff_hasCompactSupport.mpr hhc
   obtain ⟨b, hb⟩ := hK.bddAbove
@@ -24,7 +23,7 @@ private theorem exists_posSideSupport (h : ℝ → ℂ) (hhc : HasCompactSupport
   intro hxK
   exact absurd (hb hxK) (not_le.mpr (lt_of_le_of_lt (le_max_left _ _) hx))
 
-private theorem fieldTransform_logMellinPhysical
+theorem fieldTransform_logMellinPhysical
     (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
     (hD : 0 < D) (hr : 1 ≤ r) (hh : ContDiff ℝ ∞ h)
     (hhc : HasCompactSupport h) (δ : ℝ) (hδ : 0 < δ) (hδ1 : δ < 1) :
@@ -40,9 +39,9 @@ private theorem fieldTransform_logMellinPhysical
       (transformed_field_origin_uniform D r b hD hr hb).2.1 j δ hδ hδ1
     have hS := S_nonneg b hb N h hh
     refine ⟨C * S b N h, mul_nonneg hC.le hS, fun x hx hx1 => ?_⟩
-    exact hbound h hh hhc hb0 x hx hx1
+    simp_all
 
-private theorem B_differentiableAt_of_lt_one (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
+theorem B_differentiableAt_of_lt_one (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
     (hD : 0 < D) (hr : 1 ≤ r) (hh : ContDiff ℝ ∞ h)
     (hhc : HasCompactSupport h) {δ : ℝ} (hδ1 : δ < 1)
     (s : ℂ) (hs : -δ < s.re) (hs0 : s ≠ 0) :
@@ -56,7 +55,7 @@ private theorem B_differentiableAt_of_lt_one (D : ℝ) (r : ℕ) (h : ℝ → �
   filter_upwards [hU] with s' hs'
   exact B_eq_A_div D r h hD hr hh hhc s' hs'.1 hs'.2
 
-private theorem smooth_euler {f : ℝ → ℂ} (hf : ContDiffOn ℝ ∞ f (Set.Ioi 0))
+theorem smooth_euler {f : ℝ → ℂ} (hf : ContDiffOn ℝ ∞ f (Set.Ioi 0))
     (j : ℕ) : ContDiffOn ℝ ∞ (EulerIter j f) (Set.Ioi 0) := by
   induction j with
   | zero => exact hf
@@ -67,11 +66,11 @@ private theorem smooth_euler {f : ℝ → ℂ} (hf : ContDiffOn ℝ ∞ f (Set.I
         (Set.Ioi 0) := Complex.ofRealCLM.contDiff.contDiffOn.mul hd
     exact hm.congr (fun x hx => EulerIter_succ_of_pos j f x hx)
 
-private theorem euler_sq {f : ℝ → ℂ} (hf : ContDiffOn ℝ ∞ f (Set.Ioi 0))
+theorem euler_sq {f : ℝ → ℂ} (hf : ContDiffOn ℝ ∞ f (Set.Ioi 0))
     (j : ℕ) : ∀ x : ℝ, 0 < x →
       EulerIter j (fun y => f (y ^ 2)) x = (2 : ℂ) ^ j * EulerIter j f (x ^ 2) := by
   induction j with
-  | zero => intro x hx; simp
+  | zero => simp
   | succ j ih =>
     intro x hx
     have hx2 : 0 < x ^ 2 := pow_pos hx 2
@@ -95,7 +94,7 @@ private theorem euler_sq {f : ℝ → ℂ} (hf : ContDiffOn ℝ ∞ f (Set.Ioi 0
       Complex.ofReal_pow]
     ring
 
-private theorem euler_congr_pos {f g : ℝ → ℂ} (hfg : ∀ x, 0 < x → f x = g x)
+theorem euler_congr_pos {f g : ℝ → ℂ} (hfg : ∀ x, 0 < x → f x = g x)
     (j : ℕ) : ∀ x, 0 < x → EulerIter j f x = EulerIter j g x := by
   induction j with
   | zero => exact hfg
@@ -106,7 +105,7 @@ private theorem euler_congr_pos {f g : ℝ → ℂ} (hfg : ∀ x, 0 < x → f x 
       exact ih y hy
     rw [EulerIter_succ_of_pos _ _ _ hx, EulerIter_succ_of_pos _ _ _ hx, heq.deriv_eq]
 
-private theorem smooth_log_poly (P : Polynomial ℂ) :
+theorem smooth_log_poly (P : Polynomial ℂ) :
     ContDiffOn ℝ ∞ (fun x : ℝ => P.eval (Real.log x : ℂ)) (Set.Ioi 0) := by
   have hp : ContDiff ℝ ∞ (fun z : ℂ => P.eval z) := by
     have h : ContDiff ℂ ∞ (fun z : ℂ => P.aeval z) := Polynomial.contDiff_aeval P ∞
@@ -115,7 +114,7 @@ private theorem smooth_log_poly (P : Polynomial ℂ) :
     Real.contDiffOn_log.mono (fun x hx => by simpa using ne_of_gt hx)
   exact hp.comp_contDiffOn (Complex.ofRealCLM.contDiff.comp_contDiffOn hl)
 
-private theorem physical_sq {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ}
+theorem physical_sq {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ}
     (hf : LogMellinPhysical f δ P) :
     LogMellinPhysical (fun x : ℝ => f (x ^ 2)) (2 * δ)
       (P.comp (Polynomial.C (2 : ℂ) * Polynomial.X)) := by
@@ -145,16 +144,13 @@ private theorem physical_sq {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ}
     have heq : ∀ y : ℝ, 0 < y →
         f (y ^ 2) - (P.comp (Polynomial.C (2 : ℂ) * Polynomial.X)).eval (Real.log y : ℂ) =
           (fun z => f z - P.eval (Real.log z : ℂ)) (y ^ 2) := by
-      intro y hy
-      simp only [Polynomial.eval_comp, Polynomial.eval_mul, Polynomial.eval_C,
-        Polynomial.eval_X, Real.log_pow, Complex.ofReal_mul, Complex.ofReal_natCast]
-      norm_num
+      simp
     rw [euler_congr_pos heq j x hx,
       euler_sq (hf.contDiffOn.sub (smooth_log_poly P)) j x hx, norm_mul, norm_pow]
     norm_num only [Complex.norm_ofNat]
     have hx2 : x ^ 2 ≤ 1 := by nlinarith
-    have hp : Real.rpow (x ^ 2) δ = Real.rpow x (2 * δ) := by
-      exact (congrArg (fun z => Real.rpow z δ) (Real.rpow_two x).symm).trans
+    have hp : Real.rpow (x ^ 2) δ = Real.rpow x (2 * δ) := 
+      (congrArg (fun z => Real.rpow z δ) (Real.rpow_two x).symm).trans
         (Real.rpow_mul hx.le 2 δ).symm
     calc (2 : ℝ) ^ j * ‖EulerIter j (fun z => f z - P.eval (Real.log z : ℂ)) (x ^ 2)‖
         ≤ (2 : ℝ) ^ j * (C * Real.rpow (x ^ 2) δ) :=
@@ -174,18 +170,14 @@ theorem comp_sq {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ} {H : ℂ → �
   have ha := logMellinContinuation_admissible hp
   have hre : ∀ s : ℂ, (s / 2).re = s.re / 2 := by
     intro s
-    rw [Complex.div_re]
-    norm_num [Complex.normSq]
-    ring
+    simp
   have hm : ∀ s : ℂ, 0 < s.re →
       (1 / 2 : ℂ) * H (s / 2) = mellin (fun x : ℝ => f (x ^ 2)) s := by
     intro s hs
     have hs2 : 0 < (s / 2).re := by rw [hre]; linarith
     rw [hf.eq_mellin _ hs2]
     have he := mellin_comp_rpow f s 2
-    simp only [Real.rpow_two] at he
-    simpa only [abs_of_pos (by norm_num : (0 : ℝ) < 2), Complex.real_smul,
-      Complex.ofReal_inv, Complex.ofReal_ofNat, one_div] using he.symm
+    simp_all
   have hd : ∀ s : ℂ, -(2 * δ) < s.re → s ≠ 0 →
       DifferentiableAt ℂ (fun z : ℂ => (1 / 2 : ℂ) * H (z / 2)) s := by
     intro s hs hs0
@@ -213,8 +205,7 @@ theorem comp_sq {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ} {H : ℂ → �
       have ht0 : t = 0 := by simpa using hti.symm
       rw [ht0, abs_zero] at ht
       linarith
-    rw [heq _ hs hs0]
-    exact hb σ t hσ hσv ht
+    simp_all
 
 end DedekindZetaZeroFree.LargeSieve.Vendor.LogMellinAdmissible
 
@@ -247,12 +238,11 @@ theorem fieldTransform_logMellinAdmissible
     have him : ((σ : ℂ) + (t : ℂ) * Complex.I).im = t := by simp
     have hs0 : ((σ : ℂ) + (t : ℂ) * Complex.I) ≠ 0 := by
       intro hcon
-      have ht0 : t = 0 := by rw [hcon] at him; simpa using him.symm
+      have ht0 : t = 0 := by simp_all
       rw [ht0] at ht
       simp only [abs_zero] at ht
       exact absurd ht (by norm_num)
-    rw [hEq _ hσre hs0]
-    exact hbound σ t hσ hσv ht
+    simp_all
 
 theorem fieldTransform_comp_sq_logMellinAdmissible
     (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
@@ -260,10 +250,6 @@ theorem fieldTransform_comp_sq_logMellinAdmissible
     (hhc : HasCompactSupport h) (δ : ℝ) (hδ : 0 < δ) (hδ1 : δ < 1) :
     Vendor.LogMellinAdmissible (fun x : ℝ => fieldTransform D r h (x ^ 2)) (2 * δ)
       ((originPolynomial D r h).comp (Polynomial.C (2 : ℂ) * Polynomial.X))
-      (fun s : ℂ => (1 / 2 : ℂ) * B D r h (s / 2)) := by
-  exact Vendor.LogMellinAdmissible.comp_sq
+      (fun s : ℂ => (1 / 2 : ℂ) * B D r h (s / 2)) := 
+  Vendor.LogMellinAdmissible.comp_sq
     (fieldTransform_logMellinAdmissible D r h hD hr hh hhc δ hδ hδ1)
-
-end DedekindZetaZeroFree.LargeSieve
-
-end

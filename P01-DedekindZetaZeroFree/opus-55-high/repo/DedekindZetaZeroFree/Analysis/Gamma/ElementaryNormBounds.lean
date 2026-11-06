@@ -222,7 +222,6 @@ the complete upstream LICENSE is reproduced below.
 
 namespace DedekindZetaZeroFree
 
-noncomputable section
 open MeasureTheory Set
 
 lemma gamma_norm_le_real {s : ℂ} (hs : 0 < s.re) :
@@ -283,7 +282,3 @@ lemma gamma_real_interval_bound {a b : ℝ} (ha : 0 < a) :
   refine ⟨max M 1,lt_of_lt_of_le zero_lt_one (le_max_right _ _),?_⟩
   intro x hx
   exact (Complex.re_le_norm (Complex.Gamma (x:ℂ))).trans ((hM x hx).trans (le_max_left _ _))
-
-end
-
-end DedekindZetaZeroFree

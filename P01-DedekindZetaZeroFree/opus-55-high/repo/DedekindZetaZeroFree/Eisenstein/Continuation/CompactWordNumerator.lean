@@ -82,7 +82,7 @@ local notation "Smooth" => KPContActualAllCuspSource.SmoothSections F ζ hζ C R
 
 include C R P H in
 
-private theorem spherical_word_compact_producer
+theorem spherical_word_compact_producer
     (D : Set (G F ζ hζ)) (hD : IsCompact D)
     (v : KPContActualSphericalFlatStage.Stage F ζ hζ U)
     (w : List (Fin (groupDimension F))) :

@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Prime generation of ray ideal classes
 
@@ -25,7 +22,6 @@ Frobenius-normalized ray reciprocity maps.
 open scoped Classical NumberField
 open NumberField IsDedekindDomain
 
-noncomputable section
 
 namespace RayClass
 
@@ -60,7 +56,7 @@ theorem primeToModulusIdeals_hom_ext
     apply FractionalIdealGroup.ext_count
     intro v
     rw [FractionalIdealGroup.count_factorization]
-    exact FractionalIdealGroup.countVector_apply (I : FractionalIdealGroup K) v
+    rfl
   have hI : I = c.prod (fun v e => p v ^ e) := by
     apply Subtype.ext
     change (I : FractionalIdealGroup K) =
@@ -88,10 +84,4 @@ theorem primeToModulusIdeals_hom_ext
   change f (c.support.prod (fun v => p v ^ c v)) =
     g (c.support.prod (fun v => p v ^ c v))
   rw [map_prod, map_prod]
-  apply Finset.prod_congr rfl
-  intro v _
-  rw [map_zpow, map_zpow, hp]
-
-end RayClass
-
-end
+  simp_all

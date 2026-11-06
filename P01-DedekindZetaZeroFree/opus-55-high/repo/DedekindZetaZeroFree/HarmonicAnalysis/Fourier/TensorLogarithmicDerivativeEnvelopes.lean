@@ -33,7 +33,7 @@ theorem hasDerivAt_complexNormFlow (g : SchwartzMap ℂ ℂ) (z : ℂ) (u : ℝ)
   · rfl
   · rw [complexEuler_apply, ← map_smul]
     congr 1
-    simp [smul_eq_mul]
+    simp
     ring
 
 theorem iteratedDeriv_complexNormFlow (g : SchwartzMap ℂ ℂ) (k : ℕ) (z : ℂ) (u : ℝ) :
@@ -67,8 +67,7 @@ private theorem mixed_flow_complex (A : SArithmeticData F) (w : InfinitePlace F)
         (Real.exp (u / 2) : ℂ) * x.1 v.val) = _
     rw [map_mul, RingEquiv.apply_symm_apply]
     rfl
-  · rw [Function.update_of_ne hv, if_neg hv]
-    rfl
+  simp_all
 
 private theorem real_places_empty (A : SArithmeticData F) :
     IsEmpty {v : InfinitePlace F // v.IsReal} :=
@@ -128,12 +127,12 @@ private theorem tensor_flow_factor (A : SArithmeticData F) (w : InfinitePlace F)
   rw [hp]
   ring
 
-private theorem schwartz_envelope (g : SchwartzMap ℂ ℂ) (N : ℕ) :
+theorem schwartz_envelope (g : SchwartzMap ℂ ℂ) (N : ℕ) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ z : ℂ,
       ‖g z‖ ≤ C * (1 + ‖z‖ ^ 2) ^ (-(N : ℝ)) := by
   let C := (2 : ℝ) ^ N *
     (SchwartzMap.seminorm ℂ 0 0 g + SchwartzMap.seminorm ℂ (2*N) 0 g)
-  have hC : 0 ≤ C := by dsimp [C]; positivity
+  have hC : 0 ≤ C := by positivity
   refine ⟨C, hC, ?_⟩
   intro z
   have hpos : 0 < (1 + ‖z‖ ^ 2) ^ N := by positivity
@@ -161,8 +160,7 @@ private theorem schwartz_envelope (g : SchwartzMap ℂ ℂ) (N : ℕ) :
       _ = (2 : ℝ) ^ N * (‖z‖ ^ (2*N) * ‖g z‖) := by rw [mul_pow, ← pow_mul]; ring
       _ ≤ (2 : ℝ) ^ N * SchwartzMap.seminorm ℂ (2*N) 0 g :=
         mul_le_mul_of_nonneg_left hb (by positivity)
-      _ ≤ C := by dsimp [C]; nlinarith [apply_nonneg (SchwartzMap.seminorm ℂ 0 0) g,
-        (show (0 : ℝ) ≤ 2 ^ N by positivity)]
+      _ ≤ C := by dsimp [C]; simp
 
 private theorem finite_bound {E : Type} [NormedAddCommGroup E]
     (g : E → ℂ) (hg : IsLocallyConstant g) (hc : HasCompactSupport g) :
@@ -173,7 +171,7 @@ private theorem finite_bound {E : Type} [NormedAddCommGroup E]
   obtain ⟨r, hr⟩ := hc.isCompact.isBounded.subset_closedBall (0 : E)
   refine ⟨max b 0, max r 0, le_max_right _ _, le_max_right _ _, ?_, ?_⟩
   · intro z
-    exact (hb (g z) (Set.mem_range_self z)).trans (le_max_left _ _)
+    simp_all
   · intro z hz
     apply image_eq_zero_of_notMem_tsupport
     intro hs
@@ -215,7 +213,7 @@ theorem raw_fourier_log_derivative_envelope
     FourierEnvelopePrivate.finite_bound (gf v) (hgf v).1 (hgf v).2
   let R₀ : ℝ := 1 + ∑ v, R v
   have hsR : 0 ≤ ∑ v : ↥A.Sf, R v := Finset.sum_nonneg (fun i _ => hR i)
-  have hR₀ : 0 < R₀ := by dsimp only [R₀]; linarith
+  have hR₀ : 0 < R₀ := by positivity
   have hRR (v : ↥A.Sf) : R v ≤ R₀ := by
     have hh := Finset.single_le_sum (s := Finset.univ) (f := R)
       (fun i _ => hR i) (Finset.mem_univ v)
@@ -224,7 +222,7 @@ theorem raw_fourier_log_derivative_envelope
   let M : ℝ := ‖c‖ * (∏ v, C v) * ∏ v, B v
   have hpc : 0 ≤ ∏ v, C v := Finset.prod_nonneg (fun v _ => hC v)
   have hpb : 0 ≤ ∏ v, B v := Finset.prod_nonneg (fun v _ => hB v)
-  have hM : 0 ≤ M := mul_nonneg (mul_nonneg (norm_nonneg c) hpc) hpb
+  have hM : 0 ≤ M := by positivity
   refine ⟨M, R₀, hM, hR₀, ?_⟩
   intro x
   have hnorm (v : {v : InfinitePlace F // v.IsComplex}) :
@@ -263,6 +261,3 @@ theorem raw_fourier_log_derivative_envelope
     have hprod : (∏ v : ↥A.Sf, ‖gf v (x.2 v)‖) = 0 :=
       Finset.prod_eq_zero (Finset.mem_univ v) (by simp [hvz])
     simp only [hprod, radialFiniteEnvelopeRaw, if_neg hx, mul_zero, le_refl]
-
-end
-end DedekindZetaZeroFree.ProbeSheetFourierMellinBounds

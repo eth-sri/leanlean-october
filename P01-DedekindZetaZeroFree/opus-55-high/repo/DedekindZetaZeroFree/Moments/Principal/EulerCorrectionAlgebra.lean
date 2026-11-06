@@ -34,7 +34,7 @@ theorem principalCorrection_ne_zero (r : ℝ) (D E : ℂ)
       ‖(1 - (r : ℂ)) * D + (r : ℂ) * E‖ ≤
           ‖(1 - (r : ℂ)) * D‖ + ‖(r : ℂ) * E‖ := norm_add_le _ _
       _ = (1 - r) * ‖D‖ + r * ‖E‖ := by
-        have hcast : (1 : ℂ) - (r : ℂ) = ((1 - r : ℝ) : ℂ) := by push_cast; ring
+        have hcast : (1 : ℂ) - (r : ℂ) = ((1 - r : ℝ) : ℂ) := by simp
         rw [norm_mul, norm_mul, hcast]
         simp only [Complex.norm_real, Real.norm_eq_abs,
           abs_of_nonneg (sub_nonneg.mpr hr1.le), abs_of_nonneg hr0.le]
@@ -46,8 +46,7 @@ theorem principalCorrection_ne_zero (r : ℝ) (D E : ℂ)
     intro hz
     have heq : (1 - (r : ℂ)) * D + (r : ℂ) * E = 1 := by
       linear_combination -hz
-    rw [heq, norm_one] at hweight
-    exact (lt_irrefl 1) hweight
+    simp_all
   have hDne : 1 - D ≠ 0 := by
     intro hz
     have : D = 1 := (sub_eq_zero.mp hz).symm
@@ -59,6 +58,3 @@ theorem principalCorrection_ne_zero (r : ℝ) (D E : ℂ)
   have hn : 1 - r ^ 2 ≠ 0 := by nlinarith [sq_nonneg r]
   unfold principalCorrection
   exact div_ne_zero (mul_ne_zero (by exact_mod_cast hn) hnum) (mul_ne_zero hEne hDne)
-
-end
-end DedekindZetaZeroFree.Audit.Euler

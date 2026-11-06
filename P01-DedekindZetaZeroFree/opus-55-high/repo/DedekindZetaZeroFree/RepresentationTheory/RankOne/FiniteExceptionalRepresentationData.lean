@@ -24,7 +24,6 @@ open KPLocalPrincipalSeries KPLocalStoneVonNeumann
 open KPRankOneShellContinuation KPRankOneForwardTestVector
 
 noncomputable section
-set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
@@ -37,6 +36,3 @@ def actualGoodCompactSplit
     KPTameCompact.K0 F q →* ActualCover F ζ hζ q :=
   (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q)).comp
     (KPGoodCompactSplitting.kStar F ζ hζ q ht)
-
-end
-end DedekindZetaZeroFree.KPLocalExceptionalConstruction

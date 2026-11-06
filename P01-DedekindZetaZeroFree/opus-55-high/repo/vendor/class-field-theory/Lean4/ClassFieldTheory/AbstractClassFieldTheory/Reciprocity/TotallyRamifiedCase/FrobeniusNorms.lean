@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Frobenius actions and relative norms in a totally ramified tower
 
@@ -35,7 +32,7 @@ namespace DegreeData
 
 /-- The restriction `\tilde\sigma|_M`, an element of the actual upper
 quotient `G(M/K)`. -/
-noncomputable def abstractReciprocityTotallyRamifiedFrobeniusInM
+def abstractReciprocityTotallyRamifiedFrobeniusInM
     (D : DegreeData G)
     [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
     (K : FiniteResidueAbstractField D)
@@ -467,9 +464,3 @@ theorem abstractReciprocity_totallyRamified_relativeNorm_sigma
     exact hiSigmaInertia
   exact M.abstractReciprocity_relativeNorm_fixedFieldInclusion
     A D ESigma hMSigma hSigmaTot hInertia a
-
-end DegreeData
-
-end ClassFormation
-
-end

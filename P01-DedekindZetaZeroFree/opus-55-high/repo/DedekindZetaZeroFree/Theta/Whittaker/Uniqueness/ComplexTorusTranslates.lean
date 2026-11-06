@@ -64,7 +64,7 @@ attribute [local instance] ContinuousLinearMap.addCommGroup
   obtain ⟨L, hL, hmem, -, hspan⟩ := transported_jacquet_generator β ψ hψ hne
   refine ⟨L, hL, hmem, ?_⟩
   rw [restrictedWhittakerSpace, hspan, Submodule.map_span]
-  simp only [Set.image_singleton]
+  simp
 
  theorem continuousWhittaker_comparison (β : ℂˣ) (ψ : AddChar ℂ Circle)
     (hψ : Continuous ψ) (hne : ψ ≠ 1)
@@ -85,12 +85,4 @@ attribute [local instance] ContinuousLinearMap.addCommGroup
   obtain ⟨c, hc⟩ := exists_smul_eq_of_finrank_eq_one hd hMn
     (⟨L, hL⟩ : whittakerSpace β ψ)
   have he : L = c • M := (congrArg Subtype.val hc).symm
-  have hcoef : coreRestriction β L h / coreRestriction β M h = c := by
-    rw [he, map_smul, LinearMap.smul_apply, smul_eq_mul]
-    exact mul_div_cancel_right₀ c hh
-  rw [hcoef]
-  exact he
-
-end DedekindZetaZeroFree.KPWildComplexWhittakerDictionary
-
-end
+  simp_all

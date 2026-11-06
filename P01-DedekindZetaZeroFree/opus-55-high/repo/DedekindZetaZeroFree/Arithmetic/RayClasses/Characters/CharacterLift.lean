@@ -27,19 +27,15 @@ noncomputable def liftCharacter {f m : Ideal (𝓞 F)} (hfm : f ∣ m)
     by_cases hI : I ⊔ m = ⊤
     · by_cases hJ : J ⊔ m = ⊤
       · simp only [hcop, hI, hJ, and_self, ↓reduceIte, ψ.map_mul' I J]
-      · have hIJ : I * J ⊔ m ≠ ⊤ := by simpa [hcop, hI] using hJ
-        simp [hIJ, hI, hJ]
-    · have hIJ : I * J ⊔ m ≠ ⊤ := by
-        intro h
-        exact hI (hcop.mp h).1
-      simp [hIJ, hI]
+      simp_all
+    simp_all
   map_top' := by simp [ψ.map_top']
   eq_zero_iff' := fun I => by
     by_cases hIm : I ⊔ m = ⊤
     · have hIf : I ⊔ f = ⊤ := by
         have hmf : m ≤ f := Ideal.dvd_iff_le.mp hfm
         exact top_unique (le_trans (le_of_eq hIm.symm) (sup_le_sup_left hmf I))
-      simp only [hIm, if_pos, not_true_eq_false, or_false]
+      simp only [hIm, if_pos]
       simpa [ψ.eq_zero_iff' I, hIf]
     · simp [hIm]
   map_span' := fun α hα hmem hpos => by
@@ -58,13 +54,3 @@ theorem liftCharacter_apply_of_coprime {f m : Ideal (𝓞 F)} (hfm : f ∣ m)
     (ψ : RayClassCharacter F f) (I : Ideal (𝓞 F)) (hIm : I ⊔ m = ⊤) :
     liftCharacter hfm ψ I = ψ I := by
   rw [liftCharacter_apply, if_pos hIm]
-
-@[simp] theorem liftCharacter_apply_bot {f m : Ideal (𝓞 F)} (hfm : f ∣ m)
-    (ψ : RayClassCharacter F f) : liftCharacter hfm ψ ⊥ = 0 := by
-  rw [liftCharacter_apply, bot_sup_eq]
-  by_cases hm : m = ⊤
-  · rw [if_pos hm]
-    exact (ψ.eq_zero_iff' ⊥).mpr (Or.inl rfl)
-  · rw [if_neg hm]
-
-end DedekindZetaZeroFree.LargeSieve.Sieve.Initial

@@ -11,10 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-set_option autoImplicit false
 /-!
 Bundles finite towers of Frobenius fixed fields together with the normality and finiteness data
 needed for norm and unit calculations.
@@ -36,7 +32,7 @@ namespace DegreeData
 
 /-- The Frobenius fixed field bundled with its proved absolute finiteness.
 This is the field object used by valuation and unit APIs. -/
-noncomputable def frobeniusFixedAbstractField
+def frobeniusFixedAbstractField
     (D : DegreeData G) [IsTopologicalGroup G]
     (K : DegreeData.FiniteResidueAbstractField D) (L : ClosedSubgroup G)
     (hLK : L.toSubgroup ≤ K.field.toSubgroup)
@@ -124,7 +120,7 @@ namespace FrobeniusFixedFieldTower
 variable {D : DegreeData G} [IsTopologicalGroup G]
 
 /-- The lower fixed field, finite over the distinguished base. -/
-noncomputable def base (T : FrobeniusFixedFieldTower D) :
+def base (T : FrobeniusFixedFieldTower D) :
     FiniteAbstractField G := by
   letI : Finite
       ((baseField G).toSubgroup ⧸
@@ -139,7 +135,7 @@ noncomputable def base (T : FrobeniusFixedFieldTower D) :
     T.ambient.below T.baseFrobenius
 
 /-- The upper fixed field, finite over the distinguished base. -/
-noncomputable def field (T : FrobeniusFixedFieldTower D) :
+def field (T : FrobeniusFixedFieldTower D) :
     FiniteAbstractField G := by
   letI : Finite
       ((baseField G).toSubgroup ⧸
@@ -153,15 +149,8 @@ noncomputable def field (T : FrobeniusFixedFieldTower D) :
   exact D.frobeniusFixedAbstractField T.ambientBase T.ambient.field
     T.ambient.below T.fieldFrobenius
 
-/-- The fixed-field inclusion as a bundled Galois subextension. -/
-noncomputable def toGaloisSubextension (T : FrobeniusFixedFieldTower D) :
-    GaloisSubextension T.base.field where
-  field := T.field.field
-  below := T.field_le_base
-  normal := T.normal
-
 /-- The finite extension between the two bundled fixed fields. -/
-noncomputable def extension (T : FrobeniusFixedFieldTower D) :
+def extension (T : FrobeniusFixedFieldTower D) :
     FiniteAbstractFieldExtension G where
   field := T.field
   base := T.base
@@ -253,7 +242,7 @@ instance ambientQuotientFinite
 
 /-- Finiteness transported to the quotient presentation required by the
 underlying Frobenius calculations. -/
-noncomputable instance ambientRepresentedQuotientFinite
+instance ambientRepresentedQuotientFinite
     (T : FiniteAmbientFrobeniusFixedFieldTower D) :
     Finite
       (T.ambientBase.field.toSubgroup ⧸
@@ -327,7 +316,7 @@ namespace FrobeniusPowerFixedFieldTower
 variable {D : DegreeData G} [IsTopologicalGroup G]
 
 /-- Forget ambient finiteness while retaining its Galois structure. -/
-noncomputable def ambientGalois (P : FrobeniusPowerFixedFieldTower D) :
+def ambientGalois (P : FrobeniusPowerFixedFieldTower D) :
     GaloisSubextension P.ambientBase.field :=
   P.ambient.toGaloisSubextension
 
@@ -412,7 +401,7 @@ instance fieldRepresentedAbsoluteFinite
   P.fieldAbsoluteFinite
 
 /-- The power construction as the canonical fixed-field tower bundle. -/
-noncomputable def toFrobeniusFixedFieldTower
+def toFrobeniusFixedFieldTower
     (P : FrobeniusPowerFixedFieldTower D) [T2Space G] :
     FrobeniusFixedFieldTower D where
   ambientBase := P.ambientBase
@@ -434,7 +423,7 @@ noncomputable def toFrobeniusFixedFieldTower
 
 /-- The power tower together with the already assumed finiteness of its
 ambient extension. -/
-noncomputable def toFiniteAmbientFrobeniusFixedFieldTower
+def toFiniteAmbientFrobeniusFixedFieldTower
     (P : FrobeniusPowerFixedFieldTower D) [T2Space G] :
     FiniteAmbientFrobeniusFixedFieldTower D where
   toFrobeniusFixedFieldTower := P.toFrobeniusFixedFieldTower
@@ -442,11 +431,3 @@ noncomputable def toFiniteAmbientFrobeniusFixedFieldTower
     change Finite P.ambient.toGaloisSubextension.extensionQuotient
     exact Finite.of_equiv P.ambient.extensionQuotient
       P.ambient.toGaloisExtensionQuotientMulEquiv
-
-end FrobeniusPowerFixedFieldTower
-
-end DegreeData
-
-end
-
-end ClassFormation

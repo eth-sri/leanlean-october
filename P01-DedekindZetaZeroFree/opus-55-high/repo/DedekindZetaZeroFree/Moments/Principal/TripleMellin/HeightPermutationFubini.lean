@@ -21,8 +21,8 @@ theorem heightEquiv_symm_apply (t : ℝ × ℝ × ℝ) :
   ext i
   fin_cases i <;> rfl
 
-theorem heightEquiv_preserving : MeasurePreserving heightEquiv volume volume := by
-  exact ((MeasurePreserving.id volume).prod
+theorem heightEquiv_preserving : MeasurePreserving heightEquiv volume volume := 
+  ((MeasurePreserving.id volume).prod
     (volume_preserving_piFinTwo (fun _ : Fin 2 => ℝ))).comp
       (volume_preserving_piFinSuccAbove (fun _ : Fin 3 => ℝ) 0)
 
@@ -59,6 +59,3 @@ theorem integral_eq_order (f : (Fin 3 → ℝ) → ℂ) (hf : Integrable f)
   congr 1
   ext i
   simp [e, MeasurableEquiv.coe_piCongrLeft, Equiv.piCongrLeft_apply]
-
-end
-end DedekindZetaZeroFree.NormalizedProbe.TripleMellin

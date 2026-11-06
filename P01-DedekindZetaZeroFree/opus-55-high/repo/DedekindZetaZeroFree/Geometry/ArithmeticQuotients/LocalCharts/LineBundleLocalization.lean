@@ -284,7 +284,3 @@ structure LocalOperators (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
       ContDiff ℝ (⊤ : ℕ∞) f ∧ HasCompactSupport f ∧
       tsupport f ⊆ interior (cube (C.chart i).n (C.chart i).a) ∧
       T i v =ᵐ[volume.restrict (cube (C.chart i).n (C.chart i).a)] f
-
-end DedekindZetaZeroFree.CoreChartLocalizers
-
-end

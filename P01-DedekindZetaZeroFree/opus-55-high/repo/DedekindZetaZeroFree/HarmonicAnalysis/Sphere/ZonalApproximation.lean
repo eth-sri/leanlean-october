@@ -29,7 +29,7 @@ theorem positiveKernel_uniform_approximation
   intro ε hε
   obtain ⟨C₀, hC₀⟩ := isCompact_univ.exists_bound_of_continuousOn hF.continuousOn
   let C : ℝ := max C₀ 1
-  have hC : 0 < C := lt_of_lt_of_le zero_lt_one (le_max_right _ _)
+  have hC : 0 < C := by positivity
   have hbound : ∀ x, ‖F x‖ ≤ C := fun x =>
     (hC₀ x (Set.mem_univ x)).trans (le_max_left _ _)
   obtain ⟨δ₀, hδ₀, hclose⟩ := Metric.uniformContinuous_iff.mp
@@ -97,5 +97,3 @@ theorem positiveKernel_uniform_approximation
         <;> ring
       rw [hcancel] at ht
       linarith
-
-end DedekindZetaZeroFree.ComplexFractionalInverse

@@ -160,7 +160,3 @@ theorem kp_cont_local_energy_h1 (n : ℕ) (hn : 0 < n)
       exact hxv.trans hxw
     · change ‖value w‖ = functionL2Norm outer u at hwnorm
       simpa only [hwnorm] using hnorm
-
-end DedekindZetaZeroFree
-
-end

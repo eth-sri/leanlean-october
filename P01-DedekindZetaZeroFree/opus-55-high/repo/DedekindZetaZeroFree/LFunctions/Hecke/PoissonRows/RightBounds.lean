@@ -19,7 +19,7 @@ section Helpers
 open scoped Classical NumberField Topology
 open IsDedekindDomain Filter
 
-private theorem fpd_hasSum
+theorem fpd_hasSum
     (F : Type) [Field F] [NumberField F]
     (W : Ideal (𝓞 F) → ℂ) (W0 : W ⊥ = 0)
     (Wmul : ∀ a b, W (a * b) = W a * W b)
@@ -273,25 +273,7 @@ theorem zetaSCont_inv_norm_le_right (a : ℝ) (ha : 1 < a) :
   exact ⟨B, hB, fun s hs => h s hs⟩
 
 theorem zetaSCont_analyticOnNhd :
-    AnalyticOnNhd ℂ D.zetaSCont ({s : ℂ | 0 < s.re} \ {1}) := by
-  have hopen : IsOpen ({s : ℂ | 0 < s.re} \ {1}) :=
-    (isOpen_lt continuous_const Complex.continuous_re).sdiff isClosed_singleton
-  have hL : DifferentiableOn ℂ D.recipe.continuation.L ({s : ℂ | 0 < s.re} \ {1}) := by
-    refine D.recipe.continuation.L_holo.mono ?_
-    intro s hs
-    exact ⟨hs.1, hs.2⟩
-  have hLa := hL.analyticOnNhd hopen
-  intro s hs
-  have h1 : AnalyticAt ℂ D.recipe.continuation.L s := hLa s hs
-  have h2 : AnalyticAt ℂ (fun z : ℂ => ∏ v ∈ D.recipe.A.Sf,
-      (1 - D.recipe.target v.asIdeal *
-        comparisonRealPower (idealNorm v.asIdeal) (-z))) s := by
-    apply Finset.analyticAt_fun_prod
-    intro v _
-    refine analyticAt_const.sub (analyticAt_const.mul ?_)
-    unfold comparisonRealPower
-    exact ((analyticAt_id.neg).mul analyticAt_const).cexp
-  exact h1.mul h2
+    AnalyticOnNhd ℂ D.zetaSCont ({s : ℂ | 0 < s.re} \ {1}) := by apply DedekindZetaZeroFree.Quantitative.PrincipalResidueFormulas.zetaSCont_analytic <;> assumption
 
 theorem Lpsi_polynomial_growth_principal (u : D.Row) (hu : u.u = 1) (σ0 σ1 : ℝ)
     (h0 : 0 < σ0) (h01 : σ0 ≤ σ1) (h1 : 1 ∉ Set.Icc σ0 σ1) :

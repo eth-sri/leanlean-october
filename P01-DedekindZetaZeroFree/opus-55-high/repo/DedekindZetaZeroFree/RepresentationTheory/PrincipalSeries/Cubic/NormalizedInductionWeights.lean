@@ -38,5 +38,3 @@ theorem cube_weights {q : ℝ} (hq : 0 < q) :
       ← Real.rpow_mul hq.le, ← Real.rpow_natCast,
       ← Real.rpow_mul hq.le, ← Real.rpow_mul hq.le]
     norm_num
-
-end DedekindZetaZeroFree.KPLocalPrincipalSeriesNormWeights

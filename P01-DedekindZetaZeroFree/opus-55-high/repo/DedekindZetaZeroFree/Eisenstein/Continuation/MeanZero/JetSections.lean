@@ -24,7 +24,7 @@ set_option maxHeartbeats 1600000
 section CompactIntegration
 variable {E X : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
  [NormedAddCommGroup X] [NormedSpace ℝ X]
-private theorem partialJets_smooth (f : E → X → ℂ)
+theorem partialJets_smooth (f : E → X → ℂ)
  (hf : ContDiff ℝ (⊤ : ℕ∞) (Function.uncurry f)) (n : ℕ) :
  ContDiff ℝ (⊤ : ℕ∞) (fun p : E × X => iteratedFDeriv ℝ n (fun g => f g p.2) p.1) := by
  induction n with
@@ -48,7 +48,7 @@ private theorem partialJets_smooth (f : E → X → ℂ)
    · exact contDiff_fst
    · simp
 
-private theorem periodic_integral_smooth [FiniteDimensional ℝ E]
+theorem periodic_integral_smooth [FiniteDimensional ℝ E]
     (L : AddSubgroup X) [CompactSpace (X ⧸ L)] [MeasurableSpace (X ⧸ L)] [BorelSpace (X ⧸ L)]
     (μ : Measure (X ⧸ L)) [IsProbabilityMeasure μ]
     (f : E → X → ℂ) (hf : ContDiff ℝ (⊤ : ℕ∞) (Function.uncurry f))
@@ -72,7 +72,7 @@ private theorem periodic_integral_smooth [FiniteDimensional ℝ E]
     simp_rw [he]
     exact (partialJets_smooth f hf n).continuous
 
-private theorem periodic_jet_integrable [FiniteDimensional ℝ E]
+theorem periodic_jet_integrable [FiniteDimensional ℝ E]
     (L : AddSubgroup X) [CompactSpace (X ⧸ L)] [MeasurableSpace (X ⧸ L)] [BorelSpace (X ⧸ L)]
     (μ : Measure (X ⧸ L)) [IsProbabilityMeasure μ]
     (f : E → X → ℂ) (hf : ContDiff ℝ (⊤ : ℕ∞) (Function.uncurry f))
@@ -98,14 +98,14 @@ private theorem periodic_jet_integrable [FiniteDimensional ℝ E]
 end CompactIntegration
 
 open KPContFlatCuspCasimirSpecialization
-private theorem second_eq_jet {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+theorem second_eq_jet {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
  (f : E → ℂ) (hf : ContDiff ℝ (⊤ : ℕ∞) f) (z v : E) :
  fderiv ℝ (fun y => fderiv ℝ f y v) z v = iteratedFDeriv ℝ 2 f z (fun _ => v) := by
  rw [iteratedFDeriv_two_apply]
  have hd := (hf.fderiv_right (m := 1) (by simp)).differentiable (by norm_num) z
  rw [fderiv_clm_apply hd (differentiableAt_const v)]
  simp
-private theorem laplacian_jets (d : ℕ) (f : KPArch.Space d → ℂ)
+theorem laplacian_jets (d : ℕ) (f : KPArch.Space d → ℂ)
  (hf : ContDiff ℝ (⊤ : ℕ∞) f) (z : KPArch.Space d) :
  KPContActualSphericalFlatStage.localLaplacian d f z =
  ∑ i : Fin d,
@@ -119,7 +119,7 @@ private theorem laplacian_jets (d : ℕ) (f : KPArch.Space d → ℂ)
  simp_rw [second_eq_jet f hf, iteratedFDeriv_one_apply]
  simp only [smul_eq_mul, Complex.ofReal_pow]
 
-private theorem localLaplacian_sub (d : ℕ) (f g : KPArch.Space d → ℂ)
+theorem localLaplacian_sub (d : ℕ) (f g : KPArch.Space d → ℂ)
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) (hg : ContDiff ℝ (⊤ : ℕ∞) g) (z : KPArch.Space d) :
     KPContActualSphericalFlatStage.localLaplacian d (fun y => f y - g y) z =
       KPContActualSphericalFlatStage.localLaplacian d f z -
@@ -165,7 +165,7 @@ variable (hι : Function.Injective ι) (hf : DifferentiableOn ℂ f KPContinuati
     (KPContActualChamberCasimirJets.coveredJet F ζ hζ C R P H U ι f hι hf k s)).val
       (z, KPContFlatCuspIncomingEvaluation.finiteRepresentative F ζ hζ C R P H U a 1)
 
-private theorem wholeJet_coordinates (k : ℕ) (s : ℂ) (hs : s ∈ V) (p : KPCuspCharts.Coordinates F) :
+theorem wholeJet_coordinates (k : ℕ) (s : ℂ) (hs : s ∈ V) (p : KPCuspCharts.Coordinates F) :
     wholeJet F ζ hζ C R P H U ι f a hι hf k s (KPCuspCharts.toArch F p) =
       KPContActualChamberCasimirJets.cuspSheet F ζ hζ C R P H U ι f a k s p.2 p.1.1 p.1.2 1 := by
   unfold wholeJet
@@ -182,7 +182,7 @@ private theorem wholeJet_coordinates (k : ℕ) (s : ℂ) (hs : s ∈ V) (p : KPC
   exact ((KPContActualChamberNormalSeries.covariance F ζ hζ U ι f hι hf z hz).1
     (KPContFlatCuspIncomingEvaluation.sigma F ζ hζ C R P H U a) _).symm
 
-private theorem wholeJet_smooth (k : ℕ) (s : ℂ) (hs : s ∈ V) :
+theorem wholeJet_smooth (k : ℕ) (s : ℂ) (hs : s ∈ V) :
     ContDiff ℝ (⊤ : ℕ∞) (wholeJet F ζ hζ C R P H U ι f a hι hf k s) := by
   exact ((KPContSectorSmoothFramesSupport.smooth_iff F ζ hζ (level F ζ hζ C R P H U)
     R P H (KPContActualChamberCasimirJets.coveredJet F ζ hζ C R P H U ι f hι hf k s)).mpr
@@ -346,7 +346,7 @@ private theorem parameterScalar_coordinates (k : ℕ) (s : ℂ) (hs : s ∈ V)
   exact complement_jet F ζ hζ C R P H U ι f a hι hf k s hs p.2 p.1.1 p.1.2 1
 
 include hι hf in
-private theorem projection_rawMean (k : ℕ) (s : ℂ) (hs : s ∈ V) (t : ℝ) (b : KPCuspCharts.Shape F) :
+theorem projection_rawMean (k : ℕ) (s : ℂ) (hs : s ∈ V) (t : ℝ) (b : KPCuspCharts.Shape F) :
     (KPContActualChamberCasimirJets.cuspProjection F ζ hζ C R P H U ι f a
       (fiberMeasure F ζ hζ C R P H U a) k s t b).val 0 =
     ∫ q : KernelTorus F ζ hζ C R P H U a,
@@ -362,7 +362,7 @@ private theorem projection_rawMean (k : ℕ) (s : ℂ) (hs : s ∈ V) (t : ℝ) 
     KPGlobalResidualConstruction.ActualMeanZeroSection.actualCuspSheet_projection_eq_rawMean
       F ζ hζ C R P H U a ι hι f hf z hz t b) hs
 
-private theorem wholeJet_horizontal_representative (k : ℕ) (s : ℂ) (hs : s ∈ V)
+theorem wholeJet_horizontal_representative (k : ℕ) (s : ℂ) (hs : s ∈ V)
     (z : KPArch.Space (d F)) (x y : KPCuspCharts.Horizontal F)
     (hxy : (QuotientAddGroup.mk x : KernelTorus F ζ hζ C R P H U a) = QuotientAddGroup.mk y) :
     wholeJet F ζ hζ C R P H U ι f a hι hf k s (fun i => (x i, (z i).2)) =
@@ -418,7 +418,7 @@ private theorem parameterScalar_eq_whole_sub_rawMean (k : ℕ) (s : ℂ) (hs : s
 section JetSpatial
 variable (k : ℕ) (s : ℂ) (hs : s ∈ V)
 include hι hf hs
-private theorem componentJet_casimir
+theorem componentJet_casimir
  (i : Fin (H.atlas (KPContFlatCuspIncomingEvaluation.atlasLevel F ζ hζ C R P H U)).componentCount)
  (z : KPArch.Space (KPCuspLogShape.dimension F)) :
  KPContActualSphericalFlatStage.localLaplacian (KPCuspLogShape.dimension F)
@@ -463,7 +463,7 @@ private theorem componentJet_casimir
    (KPContCotangentActualOverlap.labeledA p x) = _ at hh
  simpa only [hxz] using hh
 
-private theorem wholeJet_component (z : KPArch.Space (KPCuspLogShape.dimension F)) :
+theorem wholeJet_component (z : KPArch.Space (KPCuspLogShape.dimension F)) :
     wholeJet F ζ hζ C R P H U ι f a hι hf k s z =
       (KPContActualChamberCasimirJets.lineJet F ζ hζ C R P H U ι f hι hf k s a.1).val
         (KPCuspSiegel.action F (KPContFlatCuspIncomingEvaluation.sigma F ζ hζ C R P H U a) z) := by
@@ -482,7 +482,7 @@ private theorem wholeJet_component (z : KPArch.Space (KPCuspLogShape.dimension F
 
 include hs in
 
-private theorem wholeJet_casimir (z : KPArch.Space (KPCuspLogShape.dimension F)) :
+theorem wholeJet_casimir (z : KPArch.Space (KPCuspLogShape.dimension F)) :
     KPContActualSphericalFlatStage.localLaplacian (KPCuspLogShape.dimension F)
       (wholeJet F ζ hζ C R P H U ι f a hι hf k s) z =
     KPContActualChamberCasimirJets.lambda F s *
@@ -515,7 +515,7 @@ private theorem wholeJet_casimir (z : KPArch.Space (KPCuspLogShape.dimension F))
       ∂KPContActualChamberOutgoingAdapter.fiberMeasure F ζ hζ C R P H U a
 
 include hs in
-private theorem shiftedMean_eq_rawMean (z : KPArch.Space (KPCuspLogShape.dimension F)) :
+theorem shiftedMean_eq_rawMean (z : KPArch.Space (KPCuspLogShape.dimension F)) :
     shiftedMean F ζ hζ C R P H U ι f a hι hf k s z =
       ∫ q : KernelTorus F ζ hζ C R P H U a,
         wholeJet F ζ hζ C R P H U ι f a hι hf k s
@@ -548,7 +548,7 @@ private theorem shiftedMean_eq_rawMean (z : KPArch.Space (KPCuspLogShape.dimensi
   exact integral_add_right_eq_self φ (QuotientAddGroup.mk x)
 
 include hs in
-private theorem shiftedMean_spatial_jets :
+theorem shiftedMean_spatial_jets :
     ContDiff ℝ (⊤ : ℕ∞) (shiftedMean F ζ hζ C R P H U ι f a hι hf k s) ∧
       ∀ n : ℕ, ∀ z : KPArch.Space (KPCuspLogShape.dimension F),
         iteratedFDeriv ℝ n (shiftedMean F ζ hζ C R P H U ι f a hι hf k s) z =
@@ -584,7 +584,7 @@ private theorem shiftedMean_spatial_jets :
     exact hh
 
 include hs in
-private theorem shiftedMean_jet_integrable (n : ℕ) (z : KPArch.Space (KPCuspLogShape.dimension F)) :
+theorem shiftedMean_jet_integrable (n : ℕ) (z : KPArch.Space (KPCuspLogShape.dimension F)) :
     Integrable (fun q : KernelTorus F ζ hζ C R P H U a =>
       iteratedFDeriv ℝ n
         (fun w => wholeJet F ζ hζ C R P H U ι f a hι hf k s
@@ -618,7 +618,7 @@ private theorem shiftedMean_jet_integrable (n : ℕ) (z : KPArch.Space (KPCuspLo
     exact hh
 
 include hs in
-private theorem shiftedMean_evaluated_jet (n : ℕ)
+theorem shiftedMean_evaluated_jet (n : ℕ)
     (z : KPArch.Space (KPCuspLogShape.dimension F))
     (m : Fin n → KPArch.Space (KPCuspLogShape.dimension F)) :
     iteratedFDeriv ℝ n (shiftedMean F ζ hζ C R P H U ι f a hι hf k s) z m =
@@ -632,7 +632,7 @@ private theorem shiftedMean_evaluated_jet (n : ℕ)
   simp only [iteratedFDeriv_comp_add_right]
 
 include hs in
-private theorem shiftedMean_laplacian_commute (z : KPArch.Space (KPCuspLogShape.dimension F)) :
+theorem shiftedMean_laplacian_commute (z : KPArch.Space (KPCuspLogShape.dimension F)) :
     KPContActualSphericalFlatStage.localLaplacian (KPCuspLogShape.dimension F)
       (shiftedMean F ζ hζ C R P H U ι f a hι hf k s) z =
       ∫ q : KernelTorus F ζ hζ C R P H U a,
@@ -678,7 +678,7 @@ private theorem shiftedMean_laplacian_commute (z : KPArch.Space (KPCuspLogShape.
   rw [integral_add hn hc, integral_neg, integral_const_mul, integral_const_mul,
     integral_add (hAi 2 i 0) (hAi 2 i 1)]
 
-private theorem shiftedMean_integrable (z : KPArch.Space (d F)) :
+theorem shiftedMean_integrable (z : KPArch.Space (d F)) :
     Integrable (fun q : KernelTorus F ζ hζ C R P H U a =>
       wholeJet F ζ hζ C R P H U ι f a hι hf k s (z + horizontalInsertion F (Quotient.out q)))
       (fiberMeasure F ζ hζ C R P H U a) := by
@@ -687,7 +687,7 @@ private theorem shiftedMean_integrable (z : KPArch.Space (d F)) :
     (shiftedMean_jet_integrable F ζ hζ C R P H U ι f a hι hf k s hs 0 z)
   simpa only [ContinuousMultilinearMap.apply_apply, iteratedFDeriv_zero_apply] using hi
 
-private theorem shiftedMean_casimir (z : KPArch.Space (d F)) :
+theorem shiftedMean_casimir (z : KPArch.Space (d F)) :
     KPContActualSphericalFlatStage.localLaplacian (d F)
       (shiftedMean F ζ hζ C R P H U ι f a hι hf k s) z =
       KPContActualChamberCasimirJets.lambda F s * shiftedMean F ζ hζ C R P H U ι f a hι hf k s z +
@@ -733,12 +733,12 @@ private theorem parameterScalar_casimir (z : KPArch.Space (d F)) :
   rw [Finset.sum_sub_distrib]
   ring
 
-private theorem parameterScalar_jet (z : KPArch.Space (d F)) :
+theorem parameterScalar_jet (z : KPArch.Space (d F)) :
     iteratedDerivWithin k (fun w => parameterScalar F ζ hζ C R P H U a ι f 0 w z) V s =
       parameterScalar F ζ hζ C R P H U a ι f k s z := by
   simp only [parameterScalar, iteratedDerivWithin_zero]
 
-private theorem parameterScalar_fiber (z : KPArch.Space (d F)) :
+theorem parameterScalar_fiber (z : KPArch.Space (d F)) :
     parameterScalar F ζ hζ C R P H U a ι f k s z ∈
       KPCuspGenuineMonodromy.scalarFiber F ζ hζ (level F ζ hζ C R P H U) := by
   intro ε hε
@@ -749,7 +749,7 @@ private theorem parameterScalar_fiber (z : KPArch.Space (d F)) :
       F ζ hζ C R P H U a ι hι f hf w hw z ε hε) hs
 
 set_option backward.isDefEq.respectTransparency true in
-private theorem parameterScalar_equivariant
+theorem parameterScalar_equivariant
     (h : (KPGlobalResidualConstruction.ActualMeanZeroSection.actualEnd F ζ hζ C R P H U a).parabolicGroup)
     (z : KPArch.Space (d F)) :
     parameterScalar F ζ hζ C R P H U a ι f k s
@@ -772,7 +772,7 @@ private theorem parameterScalar_equivariant
     parameterScalar_jet F ζ hζ C R P H U ι f a hι hf k s hs] at hd
   exact hd
 
-private theorem wholeJet_raw_integrable (z : KPArch.Space (d F)) :
+theorem wholeJet_raw_integrable (z : KPArch.Space (d F)) :
     Integrable (fun q : KernelTorus F ζ hζ C R P H U a =>
       wholeJet F ζ hζ C R P H U ι f a hι hf k s (fun i => (Quotient.out q i, (z i).2)))
       (fiberMeasure F ζ hζ C R P H U a) := by
@@ -785,7 +785,7 @@ private theorem wholeJet_raw_integrable (z : KPArch.Space (d F)) :
   simp_rw [he] at hi
   exact hi
 
-private theorem sheet_raw_integrable (t : ℝ) (b : KPCuspCharts.Shape F) :
+theorem sheet_raw_integrable (t : ℝ) (b : KPCuspCharts.Shape F) :
     Integrable (fun q : KernelTorus F ζ hζ C R P H U a =>
       KPContActualChamberCasimirJets.cuspSheet F ζ hζ C R P H U ι f a k s t (Quotient.out q) b 1)
       (fiberMeasure F ζ hζ C R P H U a) := by
@@ -799,7 +799,7 @@ private theorem sheet_raw_integrable (t : ℝ) (b : KPCuspCharts.Shape F) :
   simp_rw [he] at hi
   exact hi
 
-private theorem meanZeroJet_rawMean_zero (t : ℝ) (b : KPCuspCharts.Shape F) :
+theorem meanZeroJet_rawMean_zero (t : ℝ) (b : KPCuspCharts.Shape F) :
     (∫ q : KernelTorus F ζ hζ C R P H U a,
       meanZeroJetSheet F ζ hζ C R P H U a ι f k s t (Quotient.out q) b 1
       ∂fiberMeasure F ζ hζ C R P H U a) = 0 := by

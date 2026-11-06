@@ -1,7 +1,9 @@
 module
 
 public import DedekindZetaZeroFree.Metaplectic.Cubic.Wild.ResidualScalarSubmodules
-public import DedekindZetaZeroFree.Theta.Periods.PartialPeriodSourcesAndRootCoinvariants
+public import DedekindZetaZeroFree.Theta.Periods.ScalarQuotientsAndFourierDescent
+public import DedekindZetaZeroFree.Theta.Periods.CompactKernelOrbitData
+public import DedekindZetaZeroFree.RepresentationTheory.RankOne.Borel.TorusRetraction
 public import DedekindZetaZeroFree.Theta.Whittaker.Borel.RootFiberContinuity
 
 @[expose] public section
@@ -16,7 +18,7 @@ open NumberField IsDedekindDomain MeasureTheory
 
 namespace DedekindZetaZeroFree.KPWildKernelUpperBound
 
-open KPLocalExceptionalConstruction KPWildPartialPeriodFactorization
+open KPLocalExceptionalConstruction
 
 def quotientHaar (F : Type) [Field F] [NumberField F] :
     Measure (KPCompactFourier.AdditiveQuotient F) :=
@@ -48,7 +50,7 @@ open NumberField IsDedekindDomain MeasureTheory
 
 namespace DedekindZetaZeroFree.KPWildKernelUpperBound
 
-open KPLocalExceptionalConstruction KPWildPartialPeriodFactorization
+open KPLocalExceptionalConstruction
 
 def borelRootFiber (F : Type) [Field F] [NumberField F]
     (ζ : F) (hζ : IsPrimitiveRoot ζ 12)

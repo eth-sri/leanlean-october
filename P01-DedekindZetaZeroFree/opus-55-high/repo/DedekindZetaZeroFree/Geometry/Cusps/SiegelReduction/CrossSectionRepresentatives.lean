@@ -5,12 +5,11 @@ public import DedekindZetaZeroFree.Geometry.ArithmeticQuotients.Cusps.Equivarian
 
 @[expose] public section
 
-noncomputable section
 open scoped Classical
 
 namespace DedekindZetaZeroFree.KPCuspSiegel
 
-private theorem compact_orbit_lifts {H X : Type*} [Group H] [TopologicalSpace X]
+theorem compact_orbit_lifts {H X : Type*} [Group H] [TopologicalSpace X]
     [LocallyCompactSpace X] [T2Space X] [MulAction H X] [ContinuousConstSMul H X]
     [CompactSpace (Quotient (MulAction.orbitRel H X))] :
     ∃ K : Set X, IsCompact K ∧ ∀ x : X, ∃ g : H, g • x ∈ K := by
@@ -40,14 +39,14 @@ variable (F : Type*) [Field F] [NumberField F]
     (D : KPCuspCharts.ParabolicData F S)
     (O : KPCuspCharts.ChartOutput F hF S D)
 
-private theorem chart_action_radial (g : S) (p : KPCuspCharts.Cross F) (t : ℝ) :
+theorem chart_action_radial (g : S) (p : KPCuspCharts.Cross F) (t : ℝ) :
     action F (g : KPCuspArithmetic.PGL2 F) (KPCuspCharts.toArch F (p, t)) =
       KPCuspCharts.toArch F (O.crossAction g p, t) := by
   obtain ⟨A, hA, hc⟩ := D.upper g g.property
   rw [O.actual_action g A hA hc, O.crossAction_formula g A hA hc p]
   rfl
 
-private theorem chart_cross_orbit_relation :
+theorem chart_cross_orbit_relation :
     letI := KPCuspCharts.homeomorphAction O.crossAction
     KPCuspCharts.crossRelation F S = MulAction.orbitRel S (KPCuspCharts.Cross F) := by
   letI := KPCuspCharts.homeomorphAction O.crossAction
@@ -98,7 +97,7 @@ theorem exists_compact_cross_section_representatives :
   have hp : KPCuspCharts.toArch F p = z :=
     (KPCuspCharts.toArchHomeomorph F O.positive_dimension).apply_symm_apply z
   have ht : p.2 = KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F) z := by
-    rw [← hp, KPCuspCharts.toArch_meanHeight F O.positive_dimension]
+    rfl
   rw [← hp, chart_action_radial F hF S D O g p.1 p.2]
   change KPCuspCharts.toArch F (O.crossAction g p.1, p.2) = _
   rw [← hp] at ht
@@ -181,7 +180,3 @@ theorem exists_arithmetic_high_box_representatives
     change T < KPCuspLogShape.meanHeight _ _
     rw [meanHeight_box_coordinate F (KPCuspLogShape.dimension_pos F hF)]
     exact ht
-
-end DedekindZetaZeroFree.KPCuspSiegel
-
-end

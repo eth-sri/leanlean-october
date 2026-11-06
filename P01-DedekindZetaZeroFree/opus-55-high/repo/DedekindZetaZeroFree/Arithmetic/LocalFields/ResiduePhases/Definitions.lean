@@ -11,7 +11,6 @@ open NumberField IsDedekindDomain
 noncomputable section
 namespace DedekindZetaZeroFree.CRTRawLocalModel
 open LocalFiniteSums
-set_option autoImplicit false
 
 variable {F : Type} [Field F] [NumberField F]
 variable {A : SArithmeticData F} {σ : F →+* ℂ}
@@ -39,7 +38,3 @@ def rawPhase (C : A.GeneralArithmeticContext σ η hS)
       (a.val : LocalField p) * uniformizer C p ^ t * d) * v) /
       ((s.val : LocalField p) * (a.val : LocalField p) *
         uniformizer C p ^ (k + t))) : ℂ)
-
-end DedekindZetaZeroFree.CRTRawLocalModel
-
-end

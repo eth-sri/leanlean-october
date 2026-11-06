@@ -240,7 +240,7 @@ theorem actual_local_formula {i} {a b : LiftedChart (F := F) (ζ := ζ) (hζ := 
     KPArch.Space n →L[ℝ] KPArch.Space n :=
   ContinuousLinearMap.pi (fun k => ContinuousLinearMap.proj (σ k))
 
-private theorem metric_perm (n : ℕ) (σ : Equiv.Perm (Fin n)) (x v : KPArch.Space n) :
+theorem metric_perm (n : ℕ) (σ : Equiv.Perm (Fin n)) (x v : KPArch.Space n) :
     KPArch.metric n (Pσ n σ x) (Pσ n σ v) = KPArch.metric n x v := by
   exact Equiv.sum_comp σ (fun k =>
     (KPArch.height (x k))⁻¹ ^ 2 * ‖(v k).1‖ ^ 2 + (v k).2 ^ 2)
@@ -249,14 +249,14 @@ private theorem metric_perm (n : ℕ) (σ : Equiv.Perm (Fin n)) (x v : KPArch.Sp
     (σ : Equiv.Perm (Fin n)) (x : HyperbolicChart.Space n) :=
   (CotangentLogCoframe.A n).symm (permCLM n σ (KPArch.productAction n g (CotangentLogCoframe.A n x)))
 
-private theorem formula_smooth (n : ℕ) (g : Fin n → Matrix.GeneralLinearGroup (Fin 2) ℂ)
+theorem formula_smooth (n : ℕ) (g : Fin n → Matrix.GeneralLinearGroup (Fin 2) ℂ)
     (σ : Equiv.Perm (Fin n)) : ContDiff ℝ (⊤ : ℕ∞) (formula n g σ) := by
   exact (CotangentLogCoframe.A n).symm.contDiff.comp
     ((permCLM n σ).contDiff.comp (((KPArch.productAction_contDiff n g).of_le
       (show (⊤ : ℕ∞) ≤ (⊤ : ℕ∞ω) from le_top)).comp
       (CotangentLogCoframe.A n).contDiff))
 
-private theorem formula_quadratic (n : ℕ)
+theorem formula_quadratic (n : ℕ)
     (g : Fin n → Matrix.GeneralLinearGroup (Fin 2) ℂ) (σ : Equiv.Perm (Fin n))
     (x v : HyperbolicChart.Space n) :
     HyperbolicChart.metric n (formula n g σ x)
@@ -304,7 +304,7 @@ theorem smooth_metric {i} {a b : LiftedChart (F := F) (ζ := ζ) (hζ := hζ)
   rw [map_add, metric_polarization, metric_polarization, hq u, hq w] at hp
   linarith
 
-private theorem phase_locallyConstant {i} {a b : LiftedChart (F := F) (ζ := ζ) (hζ := hζ)
+theorem phase_locallyConstant {i} {a b : LiftedChart (F := F) (ζ := ζ) (hζ := hζ)
     (U := U) (R := R) (P := P) (H := H) i} (e : Arrow a b) :
     IsLocallyConstant (fun x : e.domain => e.phase x.val) := by
   have ha := a.splitting_locallyConstant.comp_continuous

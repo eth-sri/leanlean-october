@@ -42,9 +42,9 @@ def ClosedGradientVariationalAssociation
     (D : H →ₗ.[ℂ] V) (u : D.closure.domain) : ClosedGradientSpace D :=
   ⟨WithLp.toLp 2 ((u : H), D.closure u), by
     rw [closedGradientGraph, Submodule.mem_comap]
-    simpa using LinearPMap.mem_graph D.closure u⟩
+    simp⟩
 
-private lemma fromBoundedInverse_eq_of_eq
+lemma fromBoundedInverse_eq_of_eq
     {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
     (B : H →L[ℂ] H) (hB : Function.Injective B) {u : H}
     (hu : u ∈ (ResolventOperator.fromBoundedInverse B hB).domain) {f : H} (hf : B f = u) :
@@ -53,7 +53,7 @@ private lemma fromBoundedInverse_eq_of_eq
       ⟨B f, ⟨f, rfl⟩⟩ := Subtype.ext hf.symm
   rw [heq, ResolventOperator.fromBoundedInverse_apply, hf]
 
-private lemma graphElem_embedding
+lemma graphElem_embedding
     {H V : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
     [NormedAddCommGroup V] [InnerProductSpace ℂ V]
     (D : H →ₗ.[ℂ] V) (u : D.closure.domain) :
@@ -61,7 +61,7 @@ private lemma graphElem_embedding
   simp only [closedGradientEmbedding, graphElem, ContinuousLinearMap.comp_apply,
     Submodule.subtypeL_apply, WithLp.fstL_apply, WithLp.toLp_fst]
 
-private lemma graphElem_coordinate
+lemma graphElem_coordinate
     {H V : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
     [NormedAddCommGroup V] [InnerProductSpace ℂ V]
     (D : H →ₗ.[ℂ] V) (u : D.closure.domain) :
@@ -69,7 +69,7 @@ private lemma graphElem_coordinate
   simp only [closedGradientCoordinate, graphElem, ContinuousLinearMap.comp_apply,
     Submodule.subtypeL_apply, WithLp.sndL_apply, WithLp.toLp_snd]
 
-private lemma graphElem_inner
+lemma graphElem_inner
     {H V : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
     [NormedAddCommGroup V] [InnerProductSpace ℂ V]
     (D : H →ₗ.[ℂ] V) (u : D.closure.domain) (z : ClosedGradientSpace D) :
@@ -78,7 +78,7 @@ private lemma graphElem_inner
         inner ℂ (D.closure u) (closedGradientCoordinate D z) := by
   rw [closedGradientSpace_inner, graphElem_embedding, graphElem_coordinate]
 
-private lemma exists_domain_of_graph
+lemma exists_domain_of_graph
     {H V : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
     [NormedAddCommGroup V] [InnerProductSpace ℂ V]
     (D : H →ₗ.[ℂ] V) (z : ClosedGradientSpace D) :
@@ -87,13 +87,10 @@ private lemma exists_domain_of_graph
   have hmem : ((WithLp.linearEquiv 2 ℂ (H × V)) z.1) ∈ D.closure.graph := z.2
   have hval : ((WithLp.linearEquiv 2 ℂ (H × V)) z.1) =
       (closedGradientEmbedding D z, closedGradientCoordinate D z) := by
-    simp only [closedGradientEmbedding, closedGradientCoordinate, ContinuousLinearMap.comp_apply,
-      Submodule.subtypeL_apply, WithLp.coe_linearEquiv, WithLp.fstL_apply, WithLp.sndL_apply]
     rfl
-  rw [hval, LinearPMap.mem_graph_iff] at hmem
-  exact hmem
+  simp_all
 
-private lemma closure_eq_coordinate
+lemma closure_eq_coordinate
     {H V : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
     [NormedAddCommGroup V] [InnerProductSpace ℂ V]
     (D : H →ₗ.[ℂ] V) {z : ClosedGradientSpace D} {v : D.closure.domain}
@@ -113,8 +110,7 @@ theorem closedGradientFriedrichsOperator_domain_subset
   have hj := closedGradientEmbedding_properties D hdense hclosable
   have hBd : (closedGradientFriedrichsOperator D hdense hclosable).domain
       = LinearMap.range (closedGradientResolvent D hclosable).toLinearMap := by
-    unfold closedGradientFriedrichsOperator
-    exact ResolventOperator.fromBoundedInverse_domain _ _
+    rfl
   intro u hu
   rw [hBd, LinearMap.mem_range] at hu
   change u ∈ (D.closure.domain : Set H)
@@ -122,7 +118,6 @@ theorem closedGradientFriedrichsOperator_domain_subset
   obtain ⟨f, hf⟩ := hu
   exact ⟨(closedGradientEmbedding D).adjoint f, by
     rw [← hf]
-    simp only [closedGradientResolvent, energyRieszResolvent]
     rfl⟩
 
 theorem closedGradientFriedrichsOperator_variational
@@ -153,14 +148,7 @@ theorem closedGradientFriedrichsOperator_variational
       have hfeq : (ResolventOperator.fromBoundedInverse B hB) ⟨(u : H), hu⟩ = f - u :=
         fromBoundedInverse_eq_of_eq B hB hu hf
       have hval' : (ResolventOperator.fromBoundedInverse B hB) ⟨(u : H), hu⟩ = h := hval
-      have hfu : f = (u : H) + h := by
-        have h1 : f - u = h := by rw [← hfeq]; exact hval'
-        have h2 : f = h + u := sub_eq_iff_eq_add.mp h1
-        rw [h2, add_comm]
-      have h1 : B ((u : H) + h) = ↑u := by
-        rw [hfu] at hf
-        exact hf
-      exact h1
+      simp_all
     · intro hBuh
       have huB : (u : H) ∈ (ResolventOperator.fromBoundedInverse B hB).domain := by
         rw [ResolventOperator.fromBoundedInverse_domain, LinearMap.mem_range]
@@ -206,10 +194,7 @@ theorem closedGradientFriedrichsOperator_variational
       have hRiesz := (energyRieszResolvent_variational (closedGradientEmbedding D) ((u : H) + h)).1 z
       rw [hjstar] at hRiesz
       rw [graphElem_inner D u z, inner_add_left] at hRiesz
-      have hcancel : inner ℂ (D.closure u) (closedGradientCoordinate D z) = inner ℂ h (closedGradientEmbedding D z) :=
-        (add_left_cancel_iff).mp hRiesz
-      rw [hkz, ← hz]
-      exact hcancel
+      simp_all
   rw [hL, hR]
 
 theorem closedGradientFriedrichsOperator_riesz_estimate
@@ -229,7 +214,3 @@ theorem closedGradientFriedrichsOperator_riesz_estimate
     _ = ‖closedGradientEmbedding D‖ * ‖f‖ := by rw [hnorm]
     _ ≤ 1 * ‖f‖ := by gcongr; exact hj.1
     _ = ‖f‖ := one_mul _
-
-end DedekindZetaZeroFree
-
-end

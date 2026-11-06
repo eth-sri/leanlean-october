@@ -18,9 +18,9 @@ variable {F : Type} [Field F] [NumberField F]
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 variable (D : FixedData S η)
 
-private lemma re_line (v s : ℝ) : ((v : ℂ) + (s : ℂ) * Complex.I).re = v := by simp
+lemma re_line (v s : ℝ) : ((v : ℂ) + (s : ℂ) * Complex.I).re = v := by simp
 
-private lemma kern_norm (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 0 < Z) (ξ w z : ℂ) :
+lemma kern_norm (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 0 < Z) (ξ w z : ℂ) :
     ‖kern D u Z ξ w z‖ =
       Z ^ (Scales.xExponent / 2 + ξ.re - 1 + Scales.smoothingExponent * z.re + Scales.yExponent * (w.re - 1)) *
         ‖Complex.exp ((ξ + z - 1) ^ 2) * D.M z * D.W1Hat w‖ *
@@ -45,7 +45,7 @@ private lemma kern_norm (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 0 < Z) (ξ w 
   rw [e]
   simp only [norm_mul, norm_inv, hZn, hre] <;> ring
 
-private lemma kern_bound (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) :
+lemma kern_bound (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) :
     ∃ Cc : ℝ, 0 ≤ Cc ∧ ∀ ξ w z : ℂ, Scales.rightLine - Scales.contourOffset / 2 ≤ ξ.re → ξ.re ≤ 5 →
       Scales.rightLine - Scales.contourOffset / 2 ≤ w.re → w.re ≤ 5 → z.re = 1 / 6 + Scales.contourOffset →
         ‖kern D u Z ξ w z‖ ≤ Cc * ‖Complex.exp ((ξ + z - 1) ^ 2) * D.M z * D.W1Hat w‖ := by

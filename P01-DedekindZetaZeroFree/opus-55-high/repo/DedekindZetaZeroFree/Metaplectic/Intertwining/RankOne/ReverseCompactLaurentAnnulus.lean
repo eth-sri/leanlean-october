@@ -13,7 +13,6 @@ open KPRankOneOpenCellKernel KPRankOneCenterInducedDiagonalComparison
 open KPRankOneReverseRegulatorShellsRaw
 
 noncomputable section
-set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
@@ -52,7 +51,7 @@ theorem reverse_compact_normPower_root (v : (LocalField F q)ˣ) (r : ℂˣ) :
     normPower (LocalField F q) v (-additiveParameter F q r) =
       (r : ℂ) ^ valuationIndex F q v := by
   have hq1 : 1 < residueCardinality (LocalField F q) := Finite.one_lt_card
-  have hq : 0 < (residueCardinality (LocalField F q) : ℝ) := by exact_mod_cast lt_trans Nat.zero_lt_one hq1
+  have hq : 0 < (residueCardinality (LocalField F q) : ℝ) := by positivity
   have hlog : (Real.log (residueCardinality (LocalField F q) : ℝ) : ℂ) ≠ 0 := by
     exact_mod_cast (Real.log_pos (by exact_mod_cast hq1)).ne'
   rw [normPower, localAbs, Real.log_rpow hq, ← Complex.exp_log (Units.ne_zero r),
@@ -100,8 +99,8 @@ theorem reverse_compact_pointwise_laurent
   let b := I.borelPart x
   let y := A.coordinate (A.retract b)
   have hs : inducingScalar A (-additiveParameter F q r) b =
-      deltaHalf A b * (r : ℂ) ^ valuationIndex F q y := by
-    exact congrArg (deltaHalf A b * ·) (reverse_compact_normPower_root F q y r)
+      deltaHalf A b * (r : ℂ) ^ valuationIndex F q y := 
+    congrArg (deltaHalf A b * ·) (reverse_compact_normPower_root F q y r)
   have hs0 : inducingScalar A 0 b = deltaHalf A b := by simp [inducingScalar, normPower]
   change (B.eta (kappa F ζ hζ q v 0) : ℂ) *
     (normPower (LocalField F q) (v ^ 2) (-additiveParameter F q r) •
@@ -187,7 +186,7 @@ theorem reverse_compact_laurent_annulus_of_finite_integrable_coefficients
     rw [Finset.sum_ite_eq' S _ _]
     simp [hin]
 
-private theorem iwasawa_abs_right_invariant
+theorem iwasawa_abs_right_invariant
     (I : IwasawaData A) (g j : Cover F ζ hζ q) (hj : j ∈ I.compact.toOpenSubgroup) :
     localAbs (LocalField F q) (A.coordinate (A.retract (I.borelPart (g * j)))) =
       localAbs (LocalField F q) (A.coordinate (A.retract (I.borelPart g))) := by
@@ -195,7 +194,7 @@ private theorem iwasawa_abs_right_invariant
       (I.compactPart g : Cover F ζ hζ q) * j * (I.compactPart (g * j) : Cover F ζ hζ q)⁻¹ := by
     have h1 := I.decomposition g
     have h2 := I.decomposition (g * j)
-    simp only [Subgroup.coe_mul, Subgroup.coe_inv]
+    simp only [Subgroup.coe_inv]
     apply eq_mul_inv_iff_mul_eq.mpr
     rw [mul_assoc, ← h2]
     calc
@@ -318,7 +317,7 @@ private lemma kappa_lc : IsLocallyConstant (fun v : (LocalField F q)ˣ => kappa 
  have hc : Continuous (fun v : (LocalField F q)ˣ =>
      KPPGLLocalCover.centralInjection F ζ hζ (Sum.inr q) (kappa F ζ hζ q v 0)) := by
    simp_rw [← he]
-   exact hq.comp (hl.mul hr.inv)
+   fun_prop
  letI : Group (KPPGLLocalCover.LocalPGL2 F (Sum.inr q)) :=
    @QuotientGroup.Quotient.group _ _ (KPPGLLocalCover.scalarSubgroup F (Sum.inr q))
     (KPPGLLocalCover.scalarSubgroup_normal F (Sum.inr q))
@@ -326,7 +325,7 @@ private lemma kappa_lc : IsLocallyConstant (fun v : (LocalField F q)ˣ => kappa 
  letI := (KPPGLLocalCover.finite_discrete_kernel F ζ hζ q m hm).1
  have hsub : Continuous (fun v : (LocalField F q)ˣ =>
    (⟨KPPGLLocalCover.centralInjection F ζ hζ (Sum.inr q) (kappa F ζ hζ q v 0),
-     by rw [← KPPGLLocalCover.range_centralInjection_eq_ker_projection]; exact ⟨_, rfl⟩⟩ :
+     by rfl⟩ :
      (KPPGLLocalCover.projection F ζ hζ (Sum.inr q)).ker)) := hc.subtype_mk _
  have hh := (IsLocallyConstant.iff_continuous _).mpr hsub
  rw [IsLocallyConstant.iff_eventually_eq] at hh ⊢
@@ -336,8 +335,8 @@ private lemma kappa_lc : IsLocallyConstant (fun v : (LocalField F q)ˣ => kappa 
 
 private lemma center_lc (f : CenterModule T) : IsLocallyConstant f.val := by
  let J : Subgroup H₀ := T.ω.toMonoidHom.ker.map T.C.subtype
- have hJ : IsOpen (J : Set H₀) := by
-   exact T.center_open.isOpenMap_subtype_val _ T.character_kernel_open
+ have hJ : IsOpen (J : Set H₀) := 
+   T.center_open.isOpenMap_subtype_val _ T.character_kernel_open
  rw [IsLocallyConstant.iff_eventually_eq]
  intro h
  have hc : Continuous (fun y : H₀ => y * h⁻¹) := continuous_id.mul continuous_const
@@ -347,9 +346,7 @@ private lemma center_lc (f : CenterModule T) : IsLocallyConstant f.val := by
  obtain ⟨c, hc, he⟩ := hy
  have hw : T.ω c = 1 := hc
  have hf := f.property c h
- change (c : H₀) = y * h⁻¹ at he
- have hey : (c : H₀) * h = y := by rw [he]; group
- simpa [hey, hw] using hf
+ simp_all
 private lemma coeff_lc (I : IwasawaData A) (B : Binding F ζ hζ q A P)
  (L : CompactOpenLevel (Cover F ζ hζ q))
  (f : centerCompactLevel F ζ hζ q T A I .minus L) (h : H₀) :
@@ -384,8 +381,7 @@ private lemma coeff_lc (I : IwasawaData A) (B : Binding F ζ hζ q A P)
    (fs.val (openCoordinate F ζ hζ q (w : LocalField F q))).val (h * A.weyl (B.rootTorus w)) =
    (B.eta (kappa F ζ hζ q v 0) : ℂ) *
    (fs.val (openCoordinate F ζ hζ q (v : LocalField F q))).val (h * A.weyl (B.rootTorus v))
- dsimp only [Function.comp_def] at hw hh
- rw [hw, hk', hh]
+ simp_all
 
 private lemma ann_compact (N : ℕ) : IsCompact (annulusRegion F q N) := by
  let γ := (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)).symm (WithZero.exp (N : ℤ))
@@ -406,12 +402,11 @@ private lemma ann_compact (N : ℕ) : IsCompact (annulusRegion F q N) := by
  simp only [annulusRegion, Set.mem_setOf_eq, C, γ]
  have hi (x : ValueGroupWithZero (LocalField F q)) :
    x ≤ (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)).symm (WithZero.exp (N : ℤ)) ↔
-   IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q) x ≤ WithZero.exp (N : ℤ) := by
-   exact (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)).toOrderIso.le_symm_apply
+   IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q) x ≤ WithZero.exp (N : ℤ) := 
+   (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)).toOrderIso.le_symm_apply
  rw [hi, hi]
  rw [← WithZero.log_le_iff_le_exp hz, ← WithZero.log_le_iff_le_exp hzi]
  change _ ↔ valuationIndex F q v ≤ (N : ℤ) ∧ valuationIndex F q v⁻¹ ≤ (N : ℤ)
- rw [he]
  omega
 
 theorem reverse_compact_annulus_isCompact (N : ℕ) : IsCompact (annulusRegion F q N) := by
@@ -446,9 +441,7 @@ theorem reverse_compact_annulus_isCompact (N : ℕ) : IsCompact (annulusRegion F
       have hlo : lo ≠ 0 := by simp [lo]
       have hx : x ≠ 0 := by
         intro hx
-        subst x
-        simp only [map_zero, nonpos_iff_eq_zero] at hxlo'
-        exact hlo hxlo'
+        simp_all
       let v := Units.mk0 x hx
       have hv0 : e (valuation (LocalField F q) x) ≠ 0 := by simp [hx]
       refine ⟨v, ?_, rfl⟩
@@ -459,7 +452,7 @@ theorem reverse_compact_annulus_isCompact (N : ℕ) : IsCompact (annulusRegion F
       change e (e.symm (WithZero.exp (-(N : ℤ)))) ≤ e (valuation (LocalField F q) x) at ha
       change e (valuation (LocalField F q) x) ≤ e (e.symm (WithZero.exp (N : ℤ))) at hb
       rw [e.apply_symm_apply, ← WithZero.exp_log hv0, WithZero.exp_le_exp] at ha hb
-      exact ⟨ha, hb⟩
+      omega
   rw [he]
   have hc := IsNonarchimedeanLocalField.isCompact_closedBall (LocalField F q) hi
   have ho : IsOpen {x : LocalField F q | valuation (LocalField F q) x < lo} := by
@@ -509,6 +502,3 @@ theorem reverse_compact_laurent_annulus
     exact measurableSet_eq_fun measurable_const hl.continuous.measurable
   · intro h n hn
     exact (coeff_lc F ζ hζ q T A P I B L (χ n) h).continuous.continuousOn.integrableOn_compact hC
-
-end
-end DedekindZetaZeroFree.KPRankOneReverseLaurentShellExpansion.FiniteAnnulusSteps

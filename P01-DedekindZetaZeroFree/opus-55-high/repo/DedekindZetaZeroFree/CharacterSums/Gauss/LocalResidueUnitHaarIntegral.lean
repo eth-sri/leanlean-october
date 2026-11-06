@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Metaplectic.Torus.NormalizedResidueCharacterE
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.KPTameTransposeLiteral
 open scoped NumberField Classical
 open NumberField IsDedekindDomain MeasureTheory ValuativeRel
@@ -27,7 +26,7 @@ theorem uniformizer_integer_irreducible (π : (LocalField F q)ˣ)
     apply e.toOrderIso.le_iff_le.mp
     change e (valuation K (π : K)) ≤ e 1
     rw [hπ, map_one, ← WithZero.exp_zero]
-    exact WithZero.exp_le_exp.mpr (by decide)
+    simp
   let p : KPTameCompact.O F q := ⟨(π : K), hxle⟩
   have hspan : IsLocalRing.maximalIdeal (KPTameCompact.O F q) = Ideal.span {p} := by
     ext y
@@ -68,11 +67,7 @@ theorem actual_residue_unit_haar_integral
   have hcont : Continuous
       (AddChar.toMonoidHomEquiv.symm ((Units.coeHom ℂ).comp ψ)) := by
     change Continuous (fun x : LocalField F q => (ψ (Multiplicative.ofAdd x) : ℂ))
-    exact Units.continuous_val.comp hψ
+    fun_prop
   simpa only [residueCardinality, Nat.card_eq_fintype_card] using
     KPTameGauss.additive_haar_shell_integral μ hμ π hπ κ
       (AddChar.toMonoidHomEquiv.symm ((Units.coeHom ℂ).comp ψ)) hcont ψbar hbar j
-
-end DedekindZetaZeroFree.KPTameTransposeLiteral
-
-end

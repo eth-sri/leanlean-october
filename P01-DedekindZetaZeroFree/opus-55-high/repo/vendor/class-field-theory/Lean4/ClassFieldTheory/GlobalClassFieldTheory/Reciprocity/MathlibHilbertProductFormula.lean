@@ -1,6 +1,20 @@
 module
 
-public import ClassFieldTheory.Definitions.HilbertSymbols.All
+public import ClassFieldTheory.Definitions.HilbertSymbols.GlobalHilbertPairingFamily
+public import ClassFieldTheory.Definitions.HilbertSymbols.GlobalHilbertPairingFiniteFactor
+public import ClassFieldTheory.Definitions.HilbertSymbols.GlobalHilbertPairingProperties
+public import ClassFieldTheory.Definitions.HilbertSymbols.GlobalInfinitePlaceHilbertSymbol
+public import Mathlib.NumberTheory.NumberField.Completion.FinitePlace
+public import ClassFieldTheory.Definitions.HilbertSymbols.HilbertPairing
+public import ClassFieldTheory.Definitions.HilbertSymbols.HilbertPairingLaws
+public import ClassFieldTheory.Definitions.HilbertSymbols.HilbertPairingNormResidueCriterion
+public import ClassFieldTheory.Definitions.HilbertSymbols.HilbertPairingSymbol
+public import ClassFieldTheory.Definitions.HilbertSymbols.IsKummerNorm
+public import ClassFieldTheory.Definitions.HilbertSymbols.IsLocalHilbertPairing
+public import ClassFieldTheory.Definitions.HilbertSymbols.KummerAlgebra
+public import Mathlib.RingTheory.Norm.Basic
+public import ClassFieldTheory.Definitions.HilbertSymbols.PowerClass
+public import ClassFieldTheory.Definitions.HilbertSymbols.PowerClassGroup
 public import ClassFieldTheory.GlobalClassFieldTheory.Reciprocity.HilbertProductFormula
 public import Mathlib.Algebra.BigOperators.Finprod
 
@@ -12,11 +26,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-set_option autoImplicit false
 
 /-!
 # Mathlib-facing Hilbert product formula
@@ -34,7 +43,7 @@ open NumberField IsDedekindDomain
 
 /-- The finite-place Hilbert factor, transported from the internal
 unit-root subgroup to Mathlib's `rootsOfUnity`. -/
-noncomputable def globalFinitePlaceHilbertSymbol
+def globalFinitePlaceHilbertSymbol
     (F : Type) [Field F] [NumberField F]
     (n : ℕ+) (hnF : ((n : ℕ) : F) ≠ 0)
     (hmu : (primitiveRoots (n : ℕ) F).Nonempty)
@@ -79,7 +88,3 @@ theorem hilbertProductFormula
       (GlobalClassFieldTheory.Reciprocity.hilbertSymbol_allPlaces_product_eq_one
         F n hnF hmu a b)
     _ = 1 := map_one e
-
-end ClassFieldTheory
-
-end

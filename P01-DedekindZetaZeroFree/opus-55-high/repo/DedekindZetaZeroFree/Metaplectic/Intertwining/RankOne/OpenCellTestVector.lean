@@ -10,10 +10,9 @@ namespace DedekindZetaZeroFree.KPRankOneForwardTestVector
 
 open scoped Valued NumberField
 open Classical MeasureTheory ValuativeRel KPLocalPrincipalSeries KPRankOneRootParameter
-open KPLocalPrincipalSeries KPLocalStoneVonNeumann KPRankOneShellContinuation
+open KPLocalStoneVonNeumann KPRankOneShellContinuation
 open NumberField IsDedekindDomain KPLocalExceptionalConstruction
 
-noncomputable section
 
 variable (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
     [TopologicalSpace K] [IsNonarchimedeanLocalField K]
@@ -26,6 +25,3 @@ theorem r_zero : r K 0 = 1 := by simp [r]
 
 theorem t_zero : t K 0 = (residueCardinality K : ℂ)⁻¹ := by
   simp [t, r_zero]
-
-end
-end DedekindZetaZeroFree.KPRankOneForwardTestVector

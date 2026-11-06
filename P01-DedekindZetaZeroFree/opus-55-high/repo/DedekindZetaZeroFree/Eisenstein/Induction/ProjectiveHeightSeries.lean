@@ -19,7 +19,7 @@ def term {F : Type} [Field F] (H : P1 F → ℝ) (a : ℝ) (ℓ : P1 F) : ℝ :=
 def tail {F : Type} [Field F] (H : P1 F → ℝ) (a B : ℝ) : ℝ :=
   ∑' ℓ : {ℓ : P1 F // B < H ℓ}, term H a ℓ.1
 
-private lemma shell_identity (C B a : ℝ) (hB : 0 < B) (n : ℕ) :
+lemma shell_identity (C B a : ℝ) (hB : 0 < B) (n : ℕ) :
     C * ((2 : ℝ) ^ (n + 1) * B) ^ 2 * ((2 : ℝ) ^ n * B) ^ (-2 * a) =
       (4 * C * B ^ (2 - 2 * a)) * ((2 : ℝ) ^ (2 - 2 * a)) ^ n := by
   have hb : B ^ (2 - 2 * a) = B ^ 2 * B ^ (-2 * a) := by
@@ -32,7 +32,7 @@ private lemma shell_identity (C B a : ℝ) (hB : 0 < B) (n : ℕ) :
   norm_num
   ring
 
-private lemma finite_sum_bound {α : Type*} (H : α → ℝ) (C a B : ℝ)
+lemma finite_sum_bound {α : Type*} (H : α → ℝ) (C a B : ℝ)
     (hC : 0 < C) (ha : 1 < a) (hB : 1 ≤ B)
     (hcount : ∀ R : ℝ, 1 ≤ R → {x : α | H x ≤ R}.Finite ∧
       ({x : α | H x ≤ R}.ncard : ℝ) ≤ C * R ^ 2)
@@ -48,10 +48,10 @@ private lemma finite_sum_bound {α : Type*} (H : α → ℝ) (C a B : ℝ)
     · obtain ⟨n, hn, hn'⟩ := exists_nat_pow_near
         ((le_div_iff₀ hBp).2 (by simpa using hx)) (by norm_num : (1 : ℝ) < 2)
       exact ⟨n, fun _ => ⟨(le_div_iff₀ hBp).1 hn, (div_lt_iff₀ hBp).1 hn'⟩⟩
-    · exact ⟨0, fun h => (hx h).elim⟩
+    simp_all
   choose k hk using hex
   let r : ℝ := (2 : ℝ) ^ (2 - 2 * a)
-  have hr0 : 0 ≤ r := by dsimp [r]; positivity
+  have hr0 : 0 ≤ r := by positivity
   have hr1 : r < 1 := Real.rpow_lt_one_of_one_lt_of_neg (by norm_num) (by linarith)
   have hsum : Summable (fun n : ℕ => r ^ n) := summable_geometric_of_lt_one hr0 hr1
   have hshell : ∀ n ∈ u.image k,
@@ -97,7 +97,7 @@ private lemma finite_sum_bound {α : Type*} (H : α → ℝ) (C a B : ℝ)
       mul_le_mul_of_nonneg_left (hsum.sum_le_tsum _ (fun _ _ => pow_nonneg hr0 _)) (by positivity)
     _ = _ := by rw [tsum_geometric_of_lt_one hr0 hr1]; dsimp [r]; ring
 
-private lemma series_of_count {α : Type*} (H : α → ℝ) (a : ℝ) (ha : 1 < a)
+lemma series_of_count {α : Type*} (H : α → ℝ) (a : ℝ) (ha : 1 < a)
     (hH : ∀ x, 1 ≤ H x)
     (hcount : ∃ C : ℝ, 0 < C ∧ ∀ R : ℝ, 1 ≤ R → {x : α | H x ≤ R}.Finite ∧
       ({x : α | H x ≤ R}.ncard : ℝ) ≤ C * R ^ 2) :
@@ -127,9 +127,6 @@ theorem relativeHeight_summable_tail (F : Type) [Field F] [NumberField F]
     (a : ℝ) (ha : 1 < a) :
     Summable (term (Projectivization.mulHeight (K := F)) a) ∧
       ∃ C : ℝ, 0 < C ∧ ∀ B : ℝ, 1 ≤ B →
-        tail (Projectivization.mulHeight (K := F)) a B ≤ C * B ^ (2 - 2 * a) := by
-  exact series_of_count _ a ha Projectivization.one_le_mulHeight
+        tail (Projectivization.mulHeight (K := F)) a B ≤ C * B ^ (2 - 2 * a) := 
+  series_of_count _ a ha Projectivization.one_le_mulHeight
     (KPChamberProjectiveCount.relativeHeight_count F)
-
-end
-end DedekindZetaZeroFree.KPHeightSeries

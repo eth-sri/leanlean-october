@@ -29,8 +29,7 @@ theorem average_local_lift (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
   have hball_mem : ∀ (g : (C.chart i).G F ζ hζ hF U) (x : E (C.chart i).n),
       (C.chart i).orthogonal g x ∈ Metric.ball 0 (C.chart i).radius ↔
         x ∈ Metric.ball 0 (C.chart i).radius := by
-    intro g x
-    simp only [Metric.mem_ball, dist_zero_right, LinearIsometryEquiv.norm_map]
+    simp
 
   have hbase : ∀ (g : (C.chart i).G F ζ hζ hF U) (x : E (C.chart i).n),
       x ∈ (C.chart i).extendedDomain →
@@ -51,8 +50,7 @@ theorem average_local_lift (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     intro g
     have he : ((C.chart i).orthogonal g) ⁻¹' Metric.ball 0 (C.chart i).radius =
         Metric.ball 0 (C.chart i).radius := by
-      ext x
-      exact hball_mem g x
+      simp
     have hm : MeasurePreserving ((C.chart i).orthogonal g)
         (volume : Measure (E (C.chart i).n)) volume :=
       LinearIsometryEquiv.measurePreserving ((C.chart i).orthogonal g)
@@ -180,8 +178,7 @@ theorem extend_local_lift (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
   · have hphi : C.phi i x = 0 := by
       by_contra h
       exact hxO (C.support_phi i (subset_tsupport (C.phi i) h))
-    rw [hz hxO, hphi]
-    simp
+    simp_all
 
 end DedekindZetaZeroFree.CoreChartLocalizers.Reconstruction
 
@@ -234,14 +231,13 @@ theorem descend_local_lift (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
       rw [Units.val_inv_eq_inv_val]
       rw [show (C.phi i (base x) : ℂ) * ↑(P.phase i x) * ↑(v (base x))
           = ↑(P.phase i x) * ((C.phi i (base x) : ℂ) * ↑(v (base x))) by ring]
-      rw [inv_mul_cancel_left₀ (Units.ne_zero (P.phase i x))]
+      simp
     have hmem : (C.phi i (base x) : ℂ) * (v (base x) : ℂ) ∈ V F ζ hζ U := by
       have h := (V F ζ hζ U).smul_mem (C.phi i (base x) : ℂ) (v (base x)).2
-      simpa using h
+      omega
     rw [hz, Submodule.orthogonalProjectionOnto_mem_subspace_eq_self (K := V F ζ hζ U)
       (v := ⟨(C.phi i (base x) : ℂ) * (v (base x) : ℂ), hmem⟩)]
-    apply Subtype.ext
-    simp
+    rfl
 
   have hνac : ν ≪ volume.restrict ball :=
     (Measure.smul_absolutelyContinuous (μ := (volume.restrict ball).withDensity
@@ -304,7 +300,7 @@ theorem descend_local_lift (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
   have hset : {x : X F ζ hζ U |
         ¬ (x ∈ K → x ∈ O → B.R i (B.T i v) x = (C.phi i x : ℂ) • v x)}
       = {x | x ∈ K ∧ x ∈ O ∧ ¬ (B.R i (B.T i v) x = (C.phi i x : ℂ) • v x)} := by
-    ext x; simp only [Set.mem_setOf_eq, not_imp]
+    simp
   rw [hset]
   have h0 : ((quotientMeasure F ζ hζ hF U A).restrict O)
       {x | ¬ (x ∈ K → B.R i (B.T i v) x = (C.phi i x : ℂ) • v x)} = 0 := ae_iff.mp hO_ae
@@ -352,7 +348,7 @@ theorem finite_partition_restriction {Y : Type*} [MeasurableSpace Y]
   have hsum : ⇑(∑ i, w i) =ᵐ[μ.restrict K] fun x => ∑ i, phi i x • v x := by
     refine (Lp.coeFn_finsetSum (Finset.univ : Finset ι) w).trans ?_
     refine (eventuallyEq_sum fun i _ => hw i).trans ?_
-    exact Filter.EventuallyEq.of_eq (by funext x; rw [Finset.sum_apply])
+    exact Filter.EventuallyEq.of_eq (by funext x; simp)
 
   have hone : (fun x => ∑ i, phi i x • v x) =ᵐ[μ.restrict K] ⇑v := by
     filter_upwards [ae_restrict_mem hK] with x hx
@@ -394,9 +390,3 @@ theorem local_reconstruction (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     apply Reconstruction.extend_local_lift F ζ hζ hF U A M C P B v i
     apply Reconstruction.descend_local_lift F ζ hζ hF U A M hK C P B v i
     exact Reconstruction.average_local_lift F ζ hζ hF U A M C P B v i
-
-end DedekindZetaZeroFree.CoreChartLocalizers
-
-end
-
-end

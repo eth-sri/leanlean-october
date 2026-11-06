@@ -15,7 +15,7 @@ namespace DedekindZetaZeroFree.AbelianQuotient
 
 open MeasureTheory
 
-private theorem integrable_square_gaussian {s : ℂ} (hs : 0 < s.re)
+theorem integrable_square_gaussian {s : ℂ} (hs : 0 < s.re)
     {r : ℝ} (hr : 0 < r) :
     IntegrableOn (fun x : ℝ =>
       (x : ℂ) ^ (2 * s - 1) * Complex.exp (-((r * x ^ 2 : ℝ) : ℂ)))
@@ -38,7 +38,7 @@ private theorem integrable_square_gaussian {s : ℂ} (hs : 0 < s.re)
     simp_all
   simpa only [MellinConvergent, smul_eq_mul] using hsquare
 
-private theorem integral_square_gaussian {s : ℂ} (hs : 0 < s.re)
+theorem integral_square_gaussian {s : ℂ} (hs : 0 < s.re)
     {r : ℝ} (hr : 0 < r) :
     (∫ x : ℝ in Set.Ioi 0,
       (x : ℂ) ^ (2 * s - 1) * Complex.exp (-((r * x ^ 2 : ℝ) : ℂ))) =
@@ -51,11 +51,11 @@ private theorem integral_square_gaussian {s : ℂ} (hs : 0 < s.re)
   rw [mellin] at hsq
   simp only [smul_eq_mul, Complex.real_smul] at hsq
   rw [hgamma] at hsq
-  have htwo : |(2 : ℝ)| = 2 := abs_of_pos (by norm_num)
+  have htwo : |(2 : ℝ)| = 2 := by simp
   simpa only [htwo, Complex.ofReal_inv, Complex.ofReal_ofNat,
     Complex.ofReal_pow, Complex.ofReal_mul, one_div, Real.rpow_two, mul_assoc] using hsq
 
-private theorem inverse_cpow {r : ℝ} (hr : 0 < r) (s : ℂ) :
+theorem inverse_cpow {r : ℝ} (hr : 0 < r) (s : ℂ) :
     (1 / r : ℂ) ^ s = (r : ℂ) ^ (-s) := by
   rw [one_div, Complex.inv_cpow _ _ (by
     rw [Complex.arg_ofReal_of_nonneg hr.le]
@@ -87,8 +87,8 @@ theorem integrableOn_gaussian_complex_place_mellin (s : ℂ) (a : ℝ)
     (hs : 0 < s.re) (ha : 0 < a) :
     IntegrableOn (fun q : ℝ =>
       (q : ℂ) ^ (2 * s - 1) * Complex.exp (-((2 * Real.pi * a * q ^ 2 : ℝ) : ℂ)))
-      (Set.Ioi 0) := by
-  exact integrable_square_gaussian hs (mul_pos (mul_pos (by norm_num) Real.pi_pos) ha)
+      (Set.Ioi 0) := 
+  integrable_square_gaussian hs (mul_pos (mul_pos (by norm_num) Real.pi_pos) ha)
 
 theorem gaussian_complex_place_mellin (s : ℂ) (a : ℝ)
     (hs : 0 < s.re) (ha : 0 < a) :
@@ -101,5 +101,3 @@ theorem gaussian_complex_place_mellin (s : ℂ) (a : ℝ)
     Complex.mul_cpow_ofReal_nonneg (mul_nonneg (by norm_num) Real.pi_pos.le) ha.le,
     Complex.Gammaℂ, Complex.ofReal_mul, Complex.ofReal_ofNat]
   ring
-
-end DedekindZetaZeroFree.AbelianQuotient

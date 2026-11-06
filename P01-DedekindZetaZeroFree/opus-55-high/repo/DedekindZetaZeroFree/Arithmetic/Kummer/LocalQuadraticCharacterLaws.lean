@@ -6,7 +6,6 @@ public import DedekindZetaZeroFree.Arithmetic.Kummer.LocalHilbertSymbolCompariso
 
 namespace DedekindZetaZeroFree.RMKummerLocalSquareLaws
 
-noncomputable section
 open scoped NumberField Classical
 open IsDedekindDomain
 
@@ -26,15 +25,14 @@ theorem lambda_mul (F : Type) [Field F] [NumberField F]
   erw [ClassFieldTheory.localHilbertSymbol_mul_right, map_mul, mul_inv_rev]
   exact mul_comm _ _
 
-private theorem lambda_at_one (F : Type) [Field F] [NumberField F]
+theorem lambda_at_one (F : Type) [Field F] [NumberField F]
     (h12 : (primitiveRoots 12 F).Nonempty)
     (v : HeightOneSpectrum (𝓞 F)) (t : (v.adicCompletion F)ˣ) :
     RMKummerLocalNormCharacter.lambda F h12 1 v t = 1 := by
   have h := lambda_mul F h12 1 1 v t
-  simp only [one_mul] at h
-  exact mul_eq_left.mp h.symm
+  simp_all
 
-private theorem lambda_square (F : Type) [Field F] [NumberField F]
+theorem lambda_square (F : Type) [Field F] [NumberField F]
     (h12 : (primitiveRoots 12 F).Nonempty) (x : Fˣ)
     (v : HeightOneSpectrum (𝓞 F)) (t : (v.adicCompletion F)ˣ) :
     RMKummerLocalNormCharacter.lambda F h12 x v t ^ 2 = 1 := by
@@ -52,9 +50,7 @@ theorem lambda_div (F : Type) [Field F] [NumberField F]
       RMKummerLocalNormCharacter.lambda F h12 x v t *
         (RMKummerLocalNormCharacter.lambda F h12 y v t)⁻¹ := by
   have h := lambda_mul F h12 (x / y) y v t
-  have h' := congrArg (fun z : Fˣ => RMKummerLocalNormCharacter.lambda F h12 z v t)
-    (div_mul_cancel x y)
-  with_reducible exact eq_mul_inv_of_mul_eq (h.symm.trans h')
+  simp_all
 
 theorem lambda_mul_sq (F : Type) [Field F] [NumberField F]
     (h12 : (primitiveRoots 12 F).Nonempty) (x y : Fˣ)
@@ -66,19 +62,17 @@ theorem lambda_mul_sq (F : Type) [Field F] [NumberField F]
 theorem lambda_one (F : Type) [Field F] [NumberField F]
     (h12 : (primitiveRoots 12 F).Nonempty)
     (v : HeightOneSpectrum (𝓞 F)) (t : (v.adicCompletion F)ˣ) :
-    RMKummerLocalNormCharacter.lambda F h12 1 v t = 1 := by
-  exact lambda_at_one F h12 v t
+    RMKummerLocalNormCharacter.lambda F h12 1 v t = 1 := 
+  lambda_at_one F h12 v t
 
 theorem lambda_eq_one_or_neg_one (F : Type) [Field F] [NumberField F]
     (h12 : (primitiveRoots 12 F).Nonempty) (x : Fˣ)
     (v : HeightOneSpectrum (𝓞 F)) (t : (v.adicCompletion F)ˣ) :
     RMKummerLocalNormCharacter.lambda F h12 x v t = 1 ∨
       RMKummerLocalNormCharacter.lambda F h12 x v t = -1 := by
-  have h : (RMKummerLocalNormCharacter.lambda F h12 x v t : ℂ) ^ 2 = 1 := by
-    exact congrArg (fun z : ℂˣ => (z : ℂ)) (lambda_square F h12 x v t)
-  rcases sq_eq_one_iff.mp h with h | h
-  · left; exact Units.ext h
-  · right; exact Units.ext h
+  have h : (RMKummerLocalNormCharacter.lambda F h12 x v t : ℂ) ^ 2 = 1 := 
+    congrArg (fun z : ℂˣ => (z : ℂ)) (lambda_square F h12 x v t)
+  simp_all
 
 theorem lambda_inv_eq_conj (F : Type) [Field F] [NumberField F]
     (h12 : (primitiveRoots 12 F).Nonempty) (x : Fˣ)
@@ -87,6 +81,3 @@ theorem lambda_inv_eq_conj (F : Type) [Field F] [NumberField F]
       star (RMKummerLocalNormCharacter.lambda F h12 x v t : ℂ) := by
   rcases lambda_eq_one_or_neg_one F h12 x v t with h | h <;>
     simp [h]
-
-end
-end DedekindZetaZeroFree.RMKummerLocalSquareLaws

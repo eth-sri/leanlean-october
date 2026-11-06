@@ -81,7 +81,3 @@ theorem actualCanonicalImage_ordinary_genuine
       (S.openCell P).central_coordinate, normPower, localAbs_one]
   rw [hs, one_smul, (S.openCell P).genuine, S.openCell_ordinary]
   rfl
-
-end DedekindZetaZeroFree.KPRankOneShellRepair
-
-end

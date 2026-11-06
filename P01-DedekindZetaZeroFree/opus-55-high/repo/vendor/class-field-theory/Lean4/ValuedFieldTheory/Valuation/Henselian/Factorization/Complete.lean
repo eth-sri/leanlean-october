@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Hensel's lemma over a complete valued field
 
@@ -24,7 +20,6 @@ nonarchimedeanness, using the principal element selected from the finitely many
 initial error coefficients in the proof core.
 -/
 
-noncomputable section
 
 open scoped Polynomial
 
@@ -80,8 +75,3 @@ theorem henselFactorization_complete_exists_factorization
         hprim hfbar hcop with
     ⟨G, H, hGdegree, _hHle, hfactor, hGmap, hHmap⟩
   exact ⟨G, H, hfactor, hGdegree, hGmap, hHmap⟩
-
-end Valuations
-end AlgebraicNumberTheory
-
-end

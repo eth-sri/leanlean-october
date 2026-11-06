@@ -1,7 +1,8 @@
 module
 
 public import ValuedFieldTheory.LocalField.Analytic.Arithmetic
-public import ValuedFieldTheory.LocalField.DiscreteValuationField.ValueGroup
+public import ValuedFieldTheory.LocalField.DiscreteValuationField.Norm.Quotients
+public import Mathlib.Data.Int.ModEq
 public import Mathlib.Data.Int.WithZero
 
 @[expose] public section
@@ -12,11 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-set_option autoImplicit false
 
 /-!
 # Integer valuations induced by `ℤᵐ⁰`-valued valuations
@@ -30,7 +26,7 @@ noncomputable section
 universe u
 
 open WithZero
-open scoped NNReal WithZero
+open scoped NNReal
 
 namespace LocalFieldTheory.DiscreteValuationField
 
@@ -41,7 +37,7 @@ variable {K : Type u} [Field K]
 /-- The integer-valued multiplicative valuation attached to a
 `ℤᵐ⁰`-valued field valuation.  The sign convention is normalized so that a
 uniformizer of value `exp (-1)` has integer value `1`. -/
-noncomputable def ofWithZeroValuation
+def ofWithZeroValuation
     (v : _root_.Valuation K (WithZero (Multiplicative ℤ))) :
     MultiplicativeIntegerValuation Kˣ where
   val x := -WithZero.log (v (x : K))
@@ -72,31 +68,7 @@ theorem ofWithZeroValuation_val_eq_of_valuation_eq_exp_neg
     (v : _root_.Valuation K (WithZero (Multiplicative ℤ))) (x : Kˣ) {n : ℤ}
     (hx : v (x : K) = WithZero.exp (-n)) :
     (ofWithZeroValuation v).val x = n := by
-  rw [ofWithZeroValuation_val, hx, WithZero.log_exp]
-  ring
-
-/-- In the normalized `ℤᵐ⁰` convention, a valuation-one unit times the `n`-th
-power of an element of value `exp (-1)` has integer value `n`. -/
-theorem ofWithZeroValuation_val_unit_mul_pow
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ))) (u π : Kˣ) (n : ℕ)
-    (hu : v (u : K) = 1)
-    (hπ : v (π : K) = WithZero.exp (-1 : ℤ)) :
-    (ofWithZeroValuation v).val (u * π ^ n) = n := by
-  refine
-    ofWithZeroValuation_val_eq_of_valuation_eq_exp_neg
-      v (u * π ^ n) ?_
-  simp [map_pow, hu, hπ, ← WithZero.exp_nsmul]
-
-/-- The special case of
-`ofWithZeroValuation_val_unit_mul_pow` with the valuation-one unit equal to
-one. -/
-theorem ofWithZeroValuation_val_pow
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ))) (π : Kˣ) (n : ℕ)
-    (hπ : v (π : K) = WithZero.exp (-1 : ℤ)) :
-    (ofWithZeroValuation v).val (π ^ n) = n := by
-  simpa using
-    ofWithZeroValuation_val_unit_mul_pow
-      v 1 π n (by simp) hπ
+  simp_all
 
 /-- Natural-number denominator form of the attached integer valuation.
 
@@ -108,8 +80,7 @@ theorem ofWithZeroValuation_val_natCast
     (hnval : v (n : K) = WithZero.exp (-(padicValNat p n : ℤ))) :
     (ofWithZeroValuation v).val (Units.mk0 (n : K) hnK) =
       (padicValNat p n : ℤ) :=
-  ofWithZeroValuation_val_eq_of_valuation_eq_exp_neg
-    v (Units.mk0 (n : K) hnK) (by simpa using hnval)
+  by simp_all
 
 /-- Natural-number denominator form with a ramification-index scale in the
 integer valuation.  This is the denominator input for finite extensions where
@@ -122,22 +93,7 @@ theorem ofWithZeroValuation_val_natCast_scaled
         WithZero.exp (-((e : ℤ) * (padicValNat p n : ℤ)))) :
     (ofWithZeroValuation v).val (Units.mk0 (n : K) hnK) =
       (e : ℤ) * (padicValNat p n : ℤ) :=
-  ofWithZeroValuation_val_eq_of_valuation_eq_exp_neg
-    v (Units.mk0 (n : K) hnK)
-    (n := (e : ℤ) * (padicValNat p n : ℤ)) (by simpa using hnval)
-
-/-- Valuation of the logarithm-series term `x^n / n`, assuming the natural
-number denominator has the expected `p`-adic value. -/
-theorem ofWithZeroValuation_val_pow_div_natCast
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    {p n : ℕ} (x : Kˣ) (hnK : (n : K) ≠ 0)
-    (hnval : v (n : K) = WithZero.exp (-(padicValNat p n : ℤ))) :
-    (ofWithZeroValuation v).val
-        (x ^ n / Units.mk0 (n : K) hnK) =
-      (n : ℤ) * (ofWithZeroValuation v).val x -
-        (padicValNat p n : ℤ) := by
-  rw [(ofWithZeroValuation v).val_div, (ofWithZeroValuation v).val_pow,
-    ofWithZeroValuation_val_natCast v hnK hnval]
+  by simp_all
 
 /-- Valuation of the logarithm-series term `x^n / n`, with a fixed
 ramification-index scale in the denominator valuation. -/
@@ -188,8 +144,3 @@ theorem ofWithZeroValuation_val_pow_div_natCast_factorial_scaled
   rw [(ofWithZeroValuation v).val_div, (ofWithZeroValuation v).val_pow,
     ofWithZeroValuation_val_natCast_scaled
       (v := v) (p := p) (n := n.factorial) e hnK hnval]
-
-end MultiplicativeIntegerValuation
-end LocalFieldTheory.DiscreteValuationField
-
-end

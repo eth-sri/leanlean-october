@@ -66,7 +66,7 @@ private lemma tripleG_integrable : Integrable tripleG := by
   have h3 := (h2.comp h1).integrable_comp_of_integrable h
   exact h3.congr (Filter.Eventually.of_forall fun p => rfl)
 
-private lemma norm_kernel_principal (u : D.Row) (hq : D.q u = 1) (x y v Z : ℝ) (hZ : 0 < Z)
+lemma norm_kernel_principal (u : D.Row) (hq : D.q u = 1) (x y v Z : ℝ) (hZ : 0 < Z)
     (t : ℝ × ℝ × ℝ) :
     ‖kernelWith D (rowContLocal D) u ((x : ℂ) + (t.1 : ℂ) * Complex.I)
         ((y : ℂ) + (t.2.1 : ℂ) * Complex.I) ((v : ℂ) + (t.2.2 : ℂ) * Complex.I) Z‖ =

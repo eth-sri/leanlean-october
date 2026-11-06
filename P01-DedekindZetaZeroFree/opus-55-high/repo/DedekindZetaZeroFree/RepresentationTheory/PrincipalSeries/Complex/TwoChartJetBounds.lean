@@ -25,7 +25,7 @@ lemma compact_jet_bound (U K : Set ℂ) (hU : IsOpen U) (hK : IsCompact K)
     exact ⟨max 1 D, le_max_left _ _, fun k hk x hx => by
       have : k = 0 := Nat.eq_zero_of_le_zero hk
       subst k
-      exact (hD x hx).trans (le_max_right _ _)⟩
+      simp_all⟩
   | succ n ih =>
     obtain ⟨D, hD, hDb⟩ := ih
     obtain ⟨B, hB⟩ := hb (n+1)
@@ -34,9 +34,9 @@ lemma compact_jet_bound (U K : Set ℂ) (hU : IsOpen U) (hK : IsCompact K)
     · exact (hDb k hn x hx).trans (le_max_left _ _)
     · have : k = n+1 := by omega
       subst k
-      exact (hB x hx).trans (le_max_right _ _)
+      simp_all
 
-private lemma weight_smooth (a : ℝ) :
+lemma weight_smooth (a : ℝ) :
     ContDiffOn ℝ (⊤ : ℕ∞) (fun z : ℂ => (Real.rpow ‖z‖ a : ℂ)) ({0}ᶜ : Set ℂ) := by
   intro z hz
   have hz0 : z ≠ 0 := hz
@@ -98,7 +98,7 @@ lemma weighted_inversion_jet_bound (a : ℝ) (K : Set ℂ) (hK : IsCompact K)
         (n.choose i : ℝ) * B * ((n-i).factorial * S * D ^ (n-i)) := by
       apply Finset.sum_le_sum
       intro i hi'
-      have hin : i ≤ n := by simp only [Finset.mem_range] at hi'; omega
+      have hin : i ≤ n := by simp_all
       exact mul_le_mul
         (mul_le_mul_of_nonneg_left (hBb i hin z hz) (by positivity))
         (hc (n-i) (Nat.sub_le _ _)) (norm_nonneg _) (by positivity)
@@ -139,9 +139,7 @@ lemma compatible_twoChart_jet_bound (a R : ℝ) (n : ℕ) :
   · have hzK : z ∈ K := ⟨hz, hi⟩
     have hz0 : z ≠ 0 := by
       intro he
-      have hh := hKext z hzK
-      rw [he, norm_zero] at hh
-      linarith
+      simp_all
     have he : F =ᶠ[nhds z] (fun x => (Real.rpow ‖x‖ a : ℂ) * H x⁻¹) := by
       filter_upwards [isOpen_compl_singleton.mem_nhds (show z ∈ ({0}ᶜ : Set ℂ) from hz0)]
         with x hx
@@ -177,5 +175,3 @@ lemma uniformCauchy_on_enlargedBall (a R : ℝ) (n : ℕ) (F H : ℕ → ℂ →
     simp only [Pi.sub_apply, ht i z hz0, ht j z hz0, mul_sub]
   exact (hb _ _ ((hF i).sub (hF j)) ((hH i).sub (hH j)) ht' z hz).trans_lt
     ((mul_lt_mul_of_pos_left (hN i hi j hj) hCp).trans_eq (mul_div_cancel₀ ε hCp.ne'))
-
-end DedekindZetaZeroFree.KPCplxPrincipalSeriesTransitionBounds

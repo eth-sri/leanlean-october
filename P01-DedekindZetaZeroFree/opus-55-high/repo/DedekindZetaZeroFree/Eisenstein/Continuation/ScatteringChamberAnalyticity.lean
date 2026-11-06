@@ -11,7 +11,7 @@ open NumberField MeasureTheory Filter Complex
 namespace DedekindZetaZeroFree.KPLiteralScatteringGlobalContinuation
 open KPLiteralRaw
 
-private lemma exp_derivative_bound (x y l r : ℝ) (hr : 0 < r)
+lemma exp_derivative_bound (x y l r : ℝ) (hr : 0 < r)
     (hxy : |x - y| < r) :
     |l| * Real.exp (x * l) ≤ r⁻¹ *
       (Real.exp ((y + 2 * r) * l) + Real.exp ((y - 2 * r) * l)) := by

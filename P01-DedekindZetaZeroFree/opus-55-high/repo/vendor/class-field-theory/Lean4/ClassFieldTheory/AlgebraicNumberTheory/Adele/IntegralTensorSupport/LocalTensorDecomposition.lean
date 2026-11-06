@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Integral comparison for local tensor decompositions
 
@@ -41,7 +38,7 @@ section LocalTensorDecompositionIntegralComparison
 
 /-- The component of the concrete finite tensor factor in a completion
 above `w`, obtained from the canonical local tensor equivalence. -/
-noncomputable def finitePlaceLocalTensorDecompositionComponent
+def finitePlaceLocalTensorDecompositionComponent
     (w : HeightOneSpectrum (𝓞 K))
     (wL : AbsoluteValueExtension
       (NumberField.HeightOneSpectrum.adicAbv K w) L)
@@ -92,7 +89,7 @@ def RelativeLocalTensorDecompositionIntegralUnitAt
 
 /-- The discriminant of the globally integral scaled relative basis,
 viewed as an algebraic integer of the base field. -/
-noncomputable def scaledRelativeBasisDiscriminantInteger :
+def scaledRelativeBasisDiscriminantInteger :
     𝓞 K :=
   ⟨Algebra.discr K
       (scaledRelativeExtensionBasis (K := K) (L := L)),
@@ -120,7 +117,7 @@ theorem scaledRelativeBasisDiscriminantInteger_ne_zero :
   exact congrArg (fun x : 𝓞 K => (x : K)) h
 
 /-- The principal discriminant ideal of the scaled relative basis. -/
-noncomputable def scaledRelativeBasisDiscriminantIdeal :
+def scaledRelativeBasisDiscriminantIdeal :
     Ideal (𝓞 K) :=
   Ideal.span
     ({(scaledRelativeBasisDiscriminantInteger (K := K) (L := L))} : Set (𝓞 K))
@@ -136,7 +133,7 @@ theorem scaledRelativeBasisDiscriminantIdeal_ne_bot :
 
 /-- Finite set of places at which the scaled relative basis has
 nonunit discriminant. -/
-noncomputable def scaledRelativeBasisDiscriminantBadPlaces :
+def scaledRelativeBasisDiscriminantBadPlaces :
     Finset (HeightOneSpectrum (𝓞 K)) :=
   (Ideal.finite_factors
     (scaledRelativeBasisDiscriminantIdeal_ne_bot
@@ -194,25 +191,13 @@ theorem adicAbv_scaledRelativeBasisDiscriminant_eq_one_of_notMem
 
 /-- The finite set controlling both the integral lattice and the
 inverse discriminant needed for the Cramer-rule converse. -/
-noncomputable def integralTensorComparisonBadPlaces :
+def integralTensorComparisonBadPlaces :
     Finset (HeightOneSpectrum (𝓞 K)) := by
   classical
   exact
     integralTensorBadPlaces (K := K) (L := L) ∪
       scaledRelativeBasisDiscriminantBadPlaces
         (K := K) (L := L)
-
-/-- Membership in the combined comparison bad-place set is componentwise. -/
-
-@[simp]
-theorem mem_integralTensorComparisonBadPlaces_iff
-    (w : HeightOneSpectrum (𝓞 K)) :
-    w ∈ integralTensorComparisonBadPlaces
-        (K := K) (L := L) ↔
-      w ∈ integralTensorBadPlaces (K := K) (L := L) ∨
-        w ∈ scaledRelativeBasisDiscriminantBadPlaces
-          (K := K) (L := L) := by
-  simp [integralTensorComparisonBadPlaces]
 
 omit [NumberField L] in
 /-- The local tensor-decomposition component of a pure tensor has the expected value. -/
@@ -494,8 +479,8 @@ theorem scaledRelativeTensorCoordinates_isIntegral_of_localTensorDecompositionIn
             (Algebra.discr K
               (scaledRelativeExtensionBasis (K := K) (L := L)))‖ =
             vK (Algebra.discr K
-              (scaledRelativeExtensionBasis (K := K) (L := L))) := by
-              exact AbsoluteValue.completionAbsoluteValue_coe _ _
+              (scaledRelativeExtensionBasis (K := K) (L := L))) := 
+              AbsoluteValue.completionAbsoluteValue_coe _ _
         _ = 1 := hdabs
     change AbsoluteValue.completionAbsoluteValue vK
       ((algebraMap K vK.Completion
@@ -654,7 +639,7 @@ theorem localTensorDecompositionIntegral_imp_relativeBasisIntegralAt_of_notMem
     fun i =>
       ⟨relativeFinitePlaceCompletionAlgEquiv w (cA i),
         mem_adicCompletionIntegers_of_norm_le_one w
-          (by rw [hmapNorm]; exact hcANorm i)⟩
+          (by simp_all)⟩
   refine ⟨c, ?_⟩
   let e :=
     relativeFinitePlaceLocalTensorAlgEquiv
@@ -726,7 +711,3 @@ theorem relativeBasisIntegralUnitAt_iff_localTensorDecompositionIntegralUnit_of_
         (K := K) (L := L) w hwold,
       localTensorDecompositionIntegralUnit_imp_relativeBasisIntegralUnitAt_of_notMem
         (K := K) (L := L) w hw⟩
-
-end LocalTensorDecompositionIntegralComparison
-
-end

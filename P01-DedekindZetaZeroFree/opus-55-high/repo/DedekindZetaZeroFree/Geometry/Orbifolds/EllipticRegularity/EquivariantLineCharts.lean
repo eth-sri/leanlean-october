@@ -42,7 +42,3 @@ structure LineChart (n : ℕ) where
   cutoff_invariant : ∀ g, ∀ x, cutoff (action g x) = cutoff x
 
 attribute [instance] LineChart.group LineChart.finite
-
-end DedekindZetaZeroFree.KPContLocalOrbifold
-
-end

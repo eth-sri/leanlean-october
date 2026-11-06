@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Compiled finite/free collection stage of the profinite-unit decomposition
 -/
@@ -27,7 +24,7 @@ namespace KummerTheory.ProfiniteUnitDecomposition.Internal
 open LocalFieldTheory.Padic
 
 /-- Collect the finite and torsion-free coordinates of the local product. -/
-noncomputable def finiteFreeSplit :
+def finiteFreeSplit :
     ((p : Nat.Primes) →
       padicUnitFiniteFactor p.1 × Multiplicative ℤ_[p.1]) ≃ₜ*
     ((p : Nat.Primes) → Multiplicative ℤ_[p.1]) ×
@@ -46,7 +43,3 @@ noncomputable def finiteFreeSplit :
     continuous_pi fun p =>
       ((continuous_apply p).comp continuous_snd).prodMk
         ((continuous_apply p).comp continuous_fst)
-
-end KummerTheory.ProfiniteUnitDecomposition.Internal
-
-end

@@ -77,11 +77,8 @@ theorem deleted_exterior_continuation_eq
           by_cases hbot : I = ⊥
           · subst hbot
             simp only [Detector.deletedPrimitiveIdealCoefficient]
-            by_cases hex : ∃ v ∈ D, (⊥ : Ideal (𝓞 F)) ≤ v.asIdeal
-            · simp [hex]
-            · simp only [hex, if_false]
-              exact (ν.character.eq_zero_iff' ⊥).mpr (Or.inl rfl)
-          · have hsup : I ⊔ A.cS ≠ ⊤ := fun h => hn ⟨hbot, h⟩
+            simp
+          · have hsup : I ⊔ A.cS ≠ ⊤ := by simp_all
             have hex : ∃ v ∈ D, I ≤ v.asIdeal := by
               have hA : ¬ ∀ v : IsDedekindDomain.HeightOneSpectrum (𝓞 F),
                   v ∈ A.Sf → I ⊔ v.asIdeal = ⊤ := by
@@ -118,7 +115,7 @@ theorem deleted_exterior_continuation_eq
         exact heq s hs)
   intro w hw
   have h := hEqOn (by simpa [T] using hw)
-  simpa [g] using h
+  omega
 
 end
 end DedekindZetaZeroFree.PrincipalMellinComparison.NonprincipalContinuation.RightBound.ConductorEstimate
@@ -132,7 +129,7 @@ noncomputable section
 open scoped Classical NumberField
 open IsDedekindDomain UniqueFactorizationMonoid
 
-private theorem finite_principal_quotient
+theorem finite_principal_quotient
     (F : Type) [Field F] [NumberField F]
     (S : Set (HeightOneSpectrum (𝓞 F))) (hS : S.Finite)
     (u : S.integer F) (hu : u ≠ 0) :
@@ -281,10 +278,7 @@ theorem raw_plus_inducer_isKummer
       rw [← h1]; exact huval
     have hle : -(idealPrimeExponent v.asIdeal U.ideal.val : ℤ) ≤ 0 :=
       WithZero.exp_le_one_iff.mp h2.le
-    have hge : 0 ≤ -(idealPrimeExponent v.asIdeal U.ideal.val : ℤ) :=
-      WithZero.one_le_exp_iff.mp h2.ge
-    have hez : (idealPrimeExponent v.asIdeal U.ideal.val : ℤ) = 0 := by omega
-    exact_mod_cast hez
+    simp_all
   have hnot : ¬ U.ideal.val ≤ v.asIdeal := by
     intro hle
     have hm := (Ideal.mem_normalizedFactors_iff U.ideal.property.1).mpr
@@ -427,12 +421,3 @@ end
 section
 
 namespace DedekindZetaZeroFree.PrincipalMellinComparison.NonprincipalContinuation.RightBound
-noncomputable section
-open scoped Classical
-variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-
-end
-end DedekindZetaZeroFree.PrincipalMellinComparison.NonprincipalContinuation.RightBound
-
-end

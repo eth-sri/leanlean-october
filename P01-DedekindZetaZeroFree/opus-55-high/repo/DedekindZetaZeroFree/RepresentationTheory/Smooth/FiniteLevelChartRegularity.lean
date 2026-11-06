@@ -19,7 +19,7 @@ open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.CanonicalSmoothBridge
 
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
 
-private theorem native_chart_contDiffOn
+theorem native_chart_contDiffOn
     (u : Cover F ζ hζ → ℂ) (hu : Smooth F ζ hζ u) (g : Cover F ζ hζ) :
     ContDiffOn ℝ (⊤ : ℕ∞)
       (fun x => u (g * KPGlobalResidualConstruction.archChart F ζ hζ x))

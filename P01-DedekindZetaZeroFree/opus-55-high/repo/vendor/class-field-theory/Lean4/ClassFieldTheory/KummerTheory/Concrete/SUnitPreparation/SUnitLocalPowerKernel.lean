@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # The local-power kernel of S-units
 
@@ -35,7 +31,7 @@ variable {K : Type*} [Field K]
 
 /-- The diagonal localization map
 `Kˢ → ∏ v ∈ T, K_vˣ / K_vˣⁿ`. -/
-noncomputable def sUnitLocalPowerMap
+def sUnitLocalPowerMap
     (n : ℕ+)
     (S T : Finset (HeightOneSpectrum (𝓞 K))) :
     SUnitGroup (K := K) S →*
@@ -116,98 +112,3 @@ def sUnitLocalPowerKernelNthPowers
       SUnitGroup (K := K) S →*
         SUnitGroup (K := K) S).range).comap
     (sUnitLocalPowerKernel (K := K) n S T).subtype
-
-/-- The canonical map `Δ / Kˢⁿ → Kˢ / Kˢⁿ`. -/
-def sUnitLocalPowerKernelQuotientMap
-    (n : ℕ+)
-    (S T : Finset (HeightOneSpectrum (𝓞 K))) :
-    sUnitLocalPowerKernel (K := K) n S T ⧸
-        sUnitLocalPowerKernelNthPowers (K := K) n S T →*
-      SUnitGroup (K := K) S ⧸
-        (powMonoidHom (n : ℕ) :
-          SUnitGroup (K := K) S →*
-            SUnitGroup (K := K) S).range :=
-  QuotientGroup.map
-    (sUnitLocalPowerKernelNthPowers (K := K) n S T)
-    (powMonoidHom (n : ℕ) :
-      SUnitGroup (K := K) S →*
-        SUnitGroup (K := K) S).range
-    (sUnitLocalPowerKernel (K := K) n S T).subtype
-    (by
-      intro x hx
-      exact hx)
-
-/-- Inclusion of `Δ` induces an injection on quotients by `Kˢⁿ`. -/
-theorem sUnitLocalPowerKernelQuotientMap_injective
-    (n : ℕ+)
-    (S T : Finset (HeightOneSpectrum (𝓞 K))) :
-    Function.Injective
-      (sUnitLocalPowerKernelQuotientMap (K := K) n S T) := by
-  intro q r hqr
-  induction q using QuotientGroup.induction_on' with
-  | _ x =>
-      induction r using QuotientGroup.induction_on' with
-      | _ y =>
-          apply (QuotientGroup.eq_iff_div_mem).2
-          change
-            (x.1 / y.1) ∈
-              (powMonoidHom (n : ℕ) :
-                SUnitGroup (K := K) S →*
-                  SUnitGroup (K := K) S).range
-          apply (QuotientGroup.eq_iff_div_mem).1
-          exact hqr
-
-/-- The restricted radical quotient `Δ / Kˢⁿ` is finite. -/
-noncomputable instance finite_sUnitLocalPowerKernelQuotient
-    (n : ℕ+)
-    (S T : Finset (HeightOneSpectrum (𝓞 K))) :
-    Finite
-      (sUnitLocalPowerKernel (K := K) n S T ⧸
-        sUnitLocalPowerKernelNthPowers (K := K) n S T) :=
-  Finite.of_injective
-    (sUnitLocalPowerKernelQuotientMap (K := K) n S T)
-    (sUnitLocalPowerKernelQuotientMap_injective
-      (K := K) n S T)
-
-/-- The restricted radical quotient has cardinality at most `n ^ s`. -/
-theorem card_sUnitLocalPowerKernelQuotient_le
-    (n : ℕ+)
-    (S T : Finset (HeightOneSpectrum (𝓞 K)))
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) :
-    Nat.card
-        (sUnitLocalPowerKernel (K := K) n S T ⧸
-          sUnitLocalPowerKernelNthPowers (K := K) n S T) ≤
-      (n : ℕ) ^ totalPlaceCard (K := K) S := by
-  rw [← card_sUnit_nthPowerQuotient (K := K) S n hmu]
-  exact Nat.card_le_card_of_injective
-    (sUnitLocalPowerKernelQuotientMap (K := K) n S T)
-    (sUnitLocalPowerKernelQuotientMap_injective
-      (K := K) n S T)
-
-/-- The local-power kernel, regarded as an actual subgroup of `Kˣ`. -/
-def sUnitLocalPowerRadical
-    (n : ℕ+)
-    (S T : Finset (HeightOneSpectrum (𝓞 K))) :
-    Subgroup Kˣ :=
-  (sUnitLocalPowerKernel (K := K) n S T).map
-    (SUnitGroup (K := K) S).subtype
-
-/-- Membership in the local-power radical is membership in the kernel
-through the canonical `S`-unit inclusion. -/
-theorem mem_sUnitLocalPowerRadical_iff
-    (n : ℕ+)
-    (S T : Finset (HeightOneSpectrum (𝓞 K)))
-    (x : Kˣ) :
-    x ∈ sUnitLocalPowerRadical (K := K) n S T ↔
-      ∃ hx : x ∈ SUnitGroup (K := K) S,
-        (⟨x, hx⟩ : SUnitGroup (K := K) S) ∈
-          sUnitLocalPowerKernel (K := K) n S T := by
-  constructor
-  · rintro ⟨y, hy, rfl⟩
-    exact ⟨y.2, hy⟩
-  · rintro ⟨hx, hlocal⟩
-    exact ⟨⟨x, hx⟩, hlocal, rfl⟩
-
-end KummerTheory
-
-end

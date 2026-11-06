@@ -48,9 +48,6 @@ theorem rmKummerQuadraticRootsComplexMap_injective (F : Type) [Field F] [NumberF
 
 theorem rmKummerQuadraticRootsComplexMap_pow_two (F : Type) [Field F] [NumberField F]
     (h12 : (primitiveRoots 12 F).Nonempty) (E : Type*) [Field E] [Algebra F E]
-    (z : rootsOfUnity 2 E) : (rmKummerQuadraticRootsComplexMap F h12 E z) ^ 2 = 1 := by
-  exact (((rmKummerQuadraticRootsDescent F h12 E).trans
+    (z : rootsOfUnity 2 E) : (rmKummerQuadraticRootsComplexMap F h12 E z) ^ 2 = 1 := 
+  (((rmKummerQuadraticRootsDescent F h12 E).trans
     (rmKummerQuadraticRootsComplexEquiv F h12)) z).property
-
-end
-end DedekindZetaZeroFree

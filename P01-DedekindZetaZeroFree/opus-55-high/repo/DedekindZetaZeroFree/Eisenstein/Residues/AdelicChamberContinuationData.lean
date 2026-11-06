@@ -33,16 +33,3 @@ def rawRationalBorel : Subgroup (KPRationalAdelicSplitting.RationalPGL2 F) :=
   (KPGlobalTorusFunctionData.borel F ζ hζ).comap
     (KPRationalAdelicSplitting.rationalPGLHom F ζ hζ)
 abbrev RawRationalQuotient := Quotient (QuotientGroup.rightRel (rawRationalBorel F ζ hζ))
-
-variable {F ζ hζ}
-variable (T : KPMsRationalCompactCrossPairing.ModelData F ζ hζ)
-variable (D : KPMsRationalCompactCrossPairing.Iwasawa F ζ hζ)
-variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
-variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
-variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
-variable (A : KPMsRationalCompactCrossPairing.RawCompactComparison F ζ hζ T D R P H)
-
-end DedekindZetaZeroFree.KPGlobalResidualKernel
-
-end
-end

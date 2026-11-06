@@ -28,7 +28,7 @@ theorem summable_exterior_prime_norm_rpow
     intro I J h
     apply (Ideal.comap_injective_of_surjective eO.symm eO.symm.surjective)
     rw [← Ideal.map_comap_of_equiv eO, ← Ideal.map_comap_of_equiv eO]
-    simpa only [← RingEquiv.toRingHom_eq_coe] using h
+    simp_all
   have hf : Function.Injective f := by
     intro p q h
     apply Subtype.ext
@@ -43,5 +43,3 @@ theorem summable_exterior_prime_norm_rpow
   funext p
   simp only [Function.comp_def, idealNorm, hn]
   rfl
-
-end DedekindZetaZeroFree

@@ -26,7 +26,7 @@ open scoped Topology ContDiff BigOperators
 
 variable [FiniteDimensional ℝ E]
 
-private theorem cm_cont {X : Type*} [TopologicalSpace X] (n : ℕ)
+theorem cm_cont {X : Type*} [TopologicalSpace X] (n : ℕ)
     (F : X → E [×n]→L[ℝ] ℂ) (S : Set X)
     (h : ∀ m, ContinuousOn (fun x => F x m) S) : ContinuousOn F S := by
   induction n with
@@ -98,7 +98,7 @@ private theorem word_smooth {B : Type*} (U : Set E) (hU : IsOpen U)
 
 set_option backward.isDefEq.respectTransparency false in
 set_option maxHeartbeats 800000 in
-private theorem dominated_jets
+theorem dominated_jets
     {X E : Type*} [MeasurableSpace X] [NormedAddCommGroup E] [NormedSpace ℝ E]
     (μ : Measure X) (F : E → X → ℂ) (S : Set E) (hS : IsOpen S)
     (hsmooth : ∀ x, ContDiffOn ℝ (⊤ : ℕ∞) (fun u => F u x) S)
@@ -121,8 +121,8 @@ private theorem dominated_jets
     let L := continuousMultilinearCurryLeftEquiv ℝ (fun _ : Fin (n + 1) => E) ℂ
     obtain ⟨s, b, hs, hsS, hb, h⟩ := hbound (n + 1) u hu
     have hf'm : AEStronglyMeasurable (fun x =>
-        fderivWithin ℝ (iteratedFDerivWithin ℝ n (fun v => F v x) S) S u) μ := by
-      exact L.continuous.comp_aestronglyMeasurable (hmeas (n + 1) u hu)
+        fderivWithin ℝ (iteratedFDerivWithin ℝ n (fun v => F v x) S) S u) μ := 
+      L.continuous.comp_aestronglyMeasurable (hmeas (n + 1) u hu)
     have hh := hasFDerivAt_integral_of_dominated_of_fderiv_le (𝕜 := ℝ)
       (F := fun v x => iteratedFDerivWithin ℝ n (fun w => F w x) S v)
       (F' := fun v x => fderivWithin ℝ (iteratedFDerivWithin ℝ n (fun w => F w x) S) S v)
@@ -158,7 +158,7 @@ private theorem dominated_jets
       intro u hu
       rw [iteratedFDerivWithin_succ_eq_comp_left, Function.comp_apply,
         fderivWithin_congr ih (ih hu), (hd n u hu).hasFDerivWithinAt.fderivWithin (hS.uniqueDiffOn u hu)]
-      exact (continuousMultilinearCurryLeftEquiv ℝ (fun _ : Fin (n + 1) => E) ℂ).symm_apply_apply _
+      simp
   refine ⟨?_, fun n u hu => heq n hu⟩
   apply (contDiffOn_iff_continuousOn_differentiableOn hS.uniqueDiffOn).mpr
   constructor
@@ -276,9 +276,9 @@ private theorem coeff_core {B : Type*} [Fintype B]
   have hd : Continuous (deriv (circleMap s₀ r)) := by
     change Continuous (fun t => deriv (circleMap s₀ r) t)
     simp only [deriv_circleMap]
-    exact (continuous_circleMap 0 r).mul continuous_const
-  have hn (t : ℝ) : circleMap s₀ r t - s₀ ≠ 0 := by
-    exact sub_ne_zero.mpr (circleMap_ne_mem_ball (Metric.mem_ball_self hr) t)
+    fun_prop
+  have hn (t : ℝ) : circleMap s₀ r t - s₀ ≠ 0 := 
+    sub_ne_zero.mpr (circleMap_ne_mem_ball (Metric.mem_ball_self hr) t)
   have ha : Continuous (fun t : ℝ =>
       (2*(Real.pi:ℂ)*Complex.I)⁻¹ * deriv (circleMap s₀ r) t *
         (circleMap s₀ r t - s₀)^(-((k:ℤ)+1))) :=
@@ -340,8 +340,8 @@ theorem coefficient_smooth [FiniteDimensional ℝ E] [Fintype B]
         (Metric.closedBall s₀ r ×ˢ K))
     (hholomorphic : ∀ x ∈ U, DifferentiableOn ℂ (fun z => h z x) Ω)
     (k : ℕ) :
-    ContDiffOn ℝ (⊤ : ℕ∞) (cauchyCoefficient h s₀ r k) U := by
-  exact (coeff_core U hU fields hfields hframe s₀ r hr h
+    ContDiffOn ℝ (⊤ : ℕ∞) (cauchyCoefficient h s₀ r k) U := 
+  (coeff_core U hU fields hfields hframe s₀ r hr h
     (fun z hz => hspatial z (hdisk hz)) hjoint k).1
 
 theorem word_commute [FiniteDimensional ℝ E] [Fintype B]
@@ -361,10 +361,6 @@ theorem word_commute [FiniteDimensional ℝ E] [Fintype B]
       (2 * (Real.pi : ℂ) * Complex.I)⁻¹ *
         circleIntegral
           (fun z => (z - s₀) ^ (-((k : ℤ) + 1)) * directionalWord fields w (h z) x)
-          s₀ r := by
-  exact commute_core U hU fields hfields hframe s₀ r hr h
+          s₀ r := 
+  commute_core U hU fields hfields hframe s₀ r hr h
     (fun z hz => hspatial z (hdisk hz)) hjoint k w
-
-end DedekindZetaZeroFree.RightFrame.CauchyCoefficient
-
-end

@@ -44,7 +44,7 @@ variable {F : Type} [Field F] [NumberField F]
     {x : F // x ∈ (rayIdealFractionalIdeal F E.a E.ideal_ne_bot : FractionalIdeal (𝓞 F)⁰ F)} :=
   ⟨(E.b : F), (FractionalIdeal.mem_coeIdeal _).mpr ⟨E.b, E.basepoint_mem, rfl⟩⟩
 
-private theorem coset_primal_integrand (E : RayCoset.Data F)
+theorem coset_primal_integrand (E : RayCoset.Data F)
     (u : ℝ) (h : RayCoset.logHyperplane F) :
     (∑' l : RayCoset.normalizedLattice E,
       RayParity.gδ F ∅ (RayParity.Q F (RayTheta.q F u h)
@@ -62,7 +62,7 @@ private theorem coset_primal_integrand (E : RayCoset.Data F)
   rw [RayCoset.normalizationScale, ← affineResidueScale_rayIdealFractionalIdeal E.a E.ideal_ne_bot]
   simp only [cosetBasepointLift, Theta.traceEmbedding, map_add, smul_add]
 
-private theorem coset_dual_integrand (E : RayCoset.Data F)
+theorem coset_dual_integrand (E : RayCoset.Data F)
     (u : ℝ) (h : RayCoset.logHyperplane F) :
     (∑' l : Theta.dualLattice (RayCoset.normalizedLattice E),
       Complex.exp ((2 * Real.pi : ℝ) * Complex.I *
@@ -107,8 +107,7 @@ theorem rayTheta_fδ_eq_affineResidueAverage
       ((J * rayIdealFractionalIdeal F m hm) : FractionalIdeal (𝓞 F)⁰ F) := by
     change ((D.coset c).b : F) - (γ : F) * x.val ∈ _
     rw [← hγy, ← map_sub]
-    simp only [Units.val_mul, rayIdealFractionalIdeal_coe, ← FractionalIdeal.coeIdeal_mul,
-      FractionalIdeal.mem_coeIdeal, J]
+    simp only [rayIdealFractionalIdeal_coe, ← FractionalIdeal.coeIdeal_mul, FractionalIdeal.mem_coeIdeal, J]
     refine ⟨(D.coset c).b - y, ?_, rfl⟩
     convert ((D.coset c).a * m).neg_mem hyb using 1 <;> ring
   rw [RayTheta.fδ, if_pos hu]
@@ -160,8 +159,7 @@ theorem rayTheta_gδDual_eq_affineResidueDualAverage
       ((J * rayIdealFractionalIdeal F m hm) : FractionalIdeal (𝓞 F)⁰ F) := by
     change ((D.coset c).b : F) - (γ : F) * x.val ∈ _
     rw [← hγy, ← map_sub]
-    simp only [Units.val_mul, rayIdealFractionalIdeal_coe, ← FractionalIdeal.coeIdeal_mul,
-      FractionalIdeal.mem_coeIdeal, J]
+    simp only [rayIdealFractionalIdeal_coe, ← FractionalIdeal.coeIdeal_mul, FractionalIdeal.mem_coeIdeal, J]
     refine ⟨(D.coset c).b - y, ?_, rfl⟩
     convert ((D.coset c).a * m).neg_mem hyb using 1 <;> ring
   rw [RayTheta.gδDual, if_pos hu]
@@ -181,7 +179,3 @@ theorem rayTheta_gδDual_eq_affineResidueDualAverage
     (affineResidueDualTheta_continuous m hm I x u hu)
     (affineResidueDualTheta_rayUnit_periodic hF m hm I x u hu)
     (principalNormalizedLogShift hF γ)
-
-end DedekindZetaZeroFree.Hecke.Theta
-
-end

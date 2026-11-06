@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.Theta.Periods.TranslatedStandardPeriodNonvani
 
 @[expose] public section
 
-noncomputable section
 open scoped Classical NumberField ENNReal NNReal Topology
 open MeasureTheory
 namespace DedekindZetaZeroFree.KPMsGreenFlux.FiniteSlabActualMean
@@ -15,8 +14,8 @@ variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
 variable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
 
  theorem cuspRepresentative_mem_rational (j : Cusps A) :
-    cuspRepresentative A j ∈ KPSmoothLocalQuotientCharts.rationalSubgroup F ζ hζ := by
-  exact ⟨_, rfl⟩
+    cuspRepresentative A j ∈ KPSmoothLocalQuotientCharts.rationalSubgroup F ζ hζ := 
+  ⟨_, rfl⟩
 
  theorem root_mem_rational (t : F) :
     KPGlobalTorusFunctionData.N F ζ hζ
@@ -42,9 +41,7 @@ theorem integrand_eq_of_additive_quotient_eq
       (cuspRepresentative A j)⁻¹ * g) := by
   obtain ⟨t, ht⟩ := QuotientAddGroup.eq.mp hbc
   have hcb : c = algebraMap F (KPGlobalTorusFunctionData.Adeles F) t + b := by
-    change c = algebraMap F (NumberField.AdeleRing (𝓞 F) F) t + b
-    rw [ht]
-    abel
+    simp_all
   rw [hcb, KPGlobalTorusFunctionData.N_add]
   let γ := cuspRepresentative A j *
     KPGlobalTorusFunctionData.N F ζ hζ
@@ -92,7 +89,3 @@ theorem integrand_joint_continuous
   exact hcont.comp (((continuous_const.mul
     ((KPWildIndependentGenericity.NonzeroPeriod.actual_upper_root_continuous
       F ζ hζ).comp continuous_fst)).mul continuous_const).mul continuous_snd)
-
-end DedekindZetaZeroFree.KPMsGreenFlux.FiniteSlabActualMean
-
-end

@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # coefficient bound from primitive Hensel factorization
 
@@ -25,7 +21,6 @@ factorization form of Hensel's lemma in the primitive factorization definition, 
 separatedness hypothesis is needed.
 -/
 
-noncomputable section
 
 open scoped Polynomial
 
@@ -122,9 +117,9 @@ theorem normFormula_coeff_max_le_endpoint_max_of_irreducible_of_henselFactorizat
   have hmaxlt : max (v (f.coeff 0)) (v f.leadingCoeff) < m :=
     lt_of_not_ge hnot
   have hconst : v (f.coeff 0) < m :=
-    (le_max_left (v (f.coeff 0)) (v f.leadingCoeff)).trans_lt hmaxlt
+    by simp_all
   have hlead : v f.leadingCoeff < m :=
-    (le_max_right (v (f.coeff 0)) (v f.leadingCoeff)).trans_lt hmaxlt
+    by simp_all
   have hscaled_irreducible :
       Irreducible (Polynomial.C (f.coeff n)⁻¹ * f) :=
     irreduciblePolynomial_irreducible_normalized_scale_of_irreducible
@@ -169,14 +164,8 @@ theorem normFormula_monic_coeff_abs_le_one_of_const_abs_le_one_of_henselFactoriz
     simp
   have hendpoint :
       max (v (f.coeff 0)) (v f.leadingCoeff) ≤ 1 := by
-    rw [hlead]
-    exact max_le hconst le_rfl
+    simp_all
   intro i
   exact
     (normFormula_coeff_abs_le_endpoint_max_of_irreducible_of_henselFactorization
       v hnonarch hv hirr i).trans hendpoint
-
-end Valuations
-end AlgebraicNumberTheory
-
-end

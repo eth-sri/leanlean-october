@@ -17,7 +17,7 @@ open DedekindZetaZeroFree.Quantitative.RawDetectorHeightPrefix31
 open DedekindZetaZeroFree.Quantitative.RawRowSumDefinitions31
 open scoped Classical
 
-private theorem dyad_geom (β : ℝ) (hβ : 0 < β) :
+theorem dyad_geom (β : ℝ) (hβ : 0 < β) :
     ∃ C : ℝ, 0 < C ∧ ∀ X : ℝ, 1 ≤ X → ∀ K : Finset ℕ, (∀ k ∈ K, (2:ℝ)^k ≤ X) →
       ∑ k ∈ K, ((2:ℝ)^k)^β ≤ C * X^β := by
   have ht : (1:ℝ) < (2:ℝ)^β := Real.one_lt_rpow (by norm_num) hβ
@@ -54,7 +54,7 @@ private theorem dyad_geom (β : ℝ) (hβ : 0 < β) :
         apply mul_le_mul_of_nonneg_left _ (by apply div_nonneg <;> linarith)
         exact Real.rpow_le_rpow (by positivity) hpowN (by linarith)
 
-private theorem kappa_s_ge (U₀ Z : ℝ) (hU : 0 ≤ U₀) (hZ : (2*U₀)^5 ≤ Z) :
+theorem kappa_s_ge (U₀ Z : ℝ) (hU : 0 ≤ U₀) (hZ : (2*U₀)^5 ≤ Z) :
     2 * U₀ ≤ Z ^ DedekindZetaZeroFree.Quantitative.Scales.smallCutoffExponent := by
   have h1 : ((2*U₀)^(5:ℕ) : ℝ) ^ (DedekindZetaZeroFree.Quantitative.Scales.smallCutoffExponent) ≤ Z ^ (DedekindZetaZeroFree.Quantitative.Scales.smallCutoffExponent) :=
     Real.rpow_le_rpow (by positivity) hZ (by unfold DedekindZetaZeroFree.Quantitative.Scales.smallCutoffExponent; norm_num)
@@ -69,7 +69,7 @@ variable {F : Type} [Field F] [NumberField F]
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 variable (D : DedekindZetaZeroFree.Quantitative.FixedData S η)
 
-private theorem sum_reassoc (K : Finset ℕ) (C1 C2 Z E α c : ℝ) (hZ : 0 < Z) :
+theorem sum_reassoc (K : Finset ℕ) (C1 C2 Z E α c : ℝ) (hZ : 0 < Z) :
     ∑ k ∈ K, (C2 * ((2:ℝ)^k) ^ α) * (C1 * Z ^ E * ((2:ℝ)^k) ^ c)
       = (C1 * C2 * Z ^ E) * ∑ k ∈ K, ((2:ℝ)^k) ^ (α + c) := by
   rw [Finset.mul_sum]

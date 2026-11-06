@@ -11,12 +11,12 @@ noncomputable section
 
 variable {F : Type} [Field F] [NumberField F] (A : SArithmeticData F)
 
-private theorem principalIntersection_closed :
+theorem principalIntersection_closed :
     IsClosed (A.principalIntersection : Set A.H) :=
   (IdeleGroup.principalSubgroup_isClosed (K := F)).preimage
     (continuous_subtype_val.comp continuous_subtype_val)
 
-private theorem principalIntersection_discrete :
+theorem principalIntersection_discrete :
     IsDiscrete (A.principalIntersection : Set A.H) := by
   have hd : IsDiscrete (IdeleGroup.principalSubgroup F : Set (IdeleGroup F)) :=
     SetLike.isDiscrete_iff_discreteTopology.mpr inferInstance
@@ -24,7 +24,7 @@ private theorem principalIntersection_discrete :
     (continuous_subtype_val.comp continuous_subtype_val).continuousOn
     (Subtype.val_injective.comp Subtype.val_injective)
 
-private theorem Lambda_closed_discrete :
+theorem Lambda_closed_discrete :
     IsClosed (A.Lambda : Set (A.G1 × A.C)) ∧
       IsDiscrete (A.Lambda : Set (A.G1 × A.C)) := by
   obtain ⟨e, he⟩ := A.exists_supportedChart
@@ -65,7 +65,3 @@ instance countable_Gamma1 : Countable A.Gamma1 := by
   letI : Countable Fˣ := Units.val_injective.countable
   letI : Countable A.L := (Set.countable_range A.diagonalS).to_subtype
   exact (Set.inclusion_injective A.Gamma1_le_L).countable
-
-end
-end SArithmeticData
-end DedekindZetaZeroFree

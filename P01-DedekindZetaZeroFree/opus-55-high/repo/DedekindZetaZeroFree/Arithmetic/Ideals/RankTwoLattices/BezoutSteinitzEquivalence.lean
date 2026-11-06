@@ -32,8 +32,7 @@ theorem kp_cusp_ideal_bezout_row
         zero_add _⟩
   have hone : (1 : K) ∈ FractionalIdeal.spanSingleton R⁰ a * I +
       FractionalIdeal.spanSingleton R⁰ b * J := by
-    rw [hab]
-    exact FractionalIdeal.one_mem_one R⁰
+    simp_all
   obtain ⟨x, hx, y, hy, hxy⟩ := (FractionalIdeal.mem_add _ _ _).mp hone
   obtain ⟨u, hu, rfl⟩ := FractionalIdeal.mem_singleton_mul.mp hx
   obtain ⟨v, hv, rfl⟩ := FractionalIdeal.mem_singleton_mul.mp hy
@@ -58,7 +57,7 @@ theorem kp_cusp_ideal_steinitz_equiv_of_bezout
     simpa [mul_left_comm J⁻¹ I J, inv_mul_cancel₀ hJ] using h
   have hat (t : I * J) : a * t.1 ∈ J := by
     have h := FractionalIdeal.mul_mem_mul ha t.property
-    simpa [← mul_assoc, inv_mul_cancel₀ hI] using h
+    simp_all
   let f : (R × (I * J)) →ₗ[R] (I × J) :=
     { toFun := fun p =>
         (⟨algebraMap R K p.1 * u - b * p.2.1,
@@ -141,5 +140,3 @@ theorem kp_cusp_ideal_steinitz_nonempty
   obtain ⟨e, _⟩ := kp_cusp_ideal_steinitz_equiv_of_bezout R K I J hI hJ
     a b u v ha hb hu hv hrow
   exact ⟨e.symm⟩
-
-end DedekindZetaZeroFree

@@ -99,5 +99,3 @@ theorem closed_harmonic_exhaustion (s : ℝ)
   choose a ha using hlift
   exact hclosed.mem_of_tendsto (polynomial_lifts_tendsto s f p a ha hp)
     (Filter.Eventually.of_forall (fun N => polynomial_profile_mem s U hall (a N) (p N) (ha N)))
-
-end DedekindZetaZeroFree.KPCplxActualImageProof

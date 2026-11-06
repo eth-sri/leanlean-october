@@ -139,7 +139,7 @@ open KPContLocalNorm
 
 end CoordinateConversion
 
-private theorem graph_deriv {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E]
+theorem graph_deriv {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E]
     (p : Submodule ℂ E) (g : ℂ → p) (g' : p) (O : Set ℂ) (s : ℂ) (hs : s ∈ O)
     (hd : HasDerivWithinAt (fun z => (g z : E)) (g' : E) O s) :
     HasDerivWithinAt g g' O s := by
@@ -158,7 +158,7 @@ private theorem graph_deriv {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ 
     Topology.IsEmbedding.subtypeVal hh hcomp hs
   simpa using hf.hasDerivWithinAt
 
-private theorem jets_step {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E]
+theorem jets_step {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E]
     (u : ℕ → ℂ → E) (O : Set ℂ)
     (hd : ∀ k, DifferentiableOn ℂ (u k) O)
     (hi : ∀ k s, s ∈ O → iteratedDerivWithin k (u 0) O s = u k s)
@@ -168,7 +168,7 @@ private theorem jets_step {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E]
     exact (derivWithin_congr (hi k) (hi k s hs)).symm
   exact hD ▸ (hd k s hs).hasDerivWithinAt
 
-private theorem jets_identification {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E]
+theorem jets_identification {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E]
     (u : ℕ → ℂ → E) (O : Set ℂ) (hO : UniqueDiffOn ℂ O)
     (hd : ∀ k s, s ∈ O → HasDerivWithinAt (u k) (u (k+1) s) O s) :
     ∀ k s, s ∈ O → iteratedDerivWithin k (u 0) O s = u k s := by

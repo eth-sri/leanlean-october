@@ -73,9 +73,8 @@ theorem localQuadraticPhase_coset_integral
     funext x
     have hmem : z + x ∈ S ↔ x ∈ U := by simp [S]
     by_cases hx : x ∈ U
-    · rw [Set.indicator_of_mem (hmem.mpr hx), Set.indicator_of_mem hx]
-      exact hphase x hx
-    · rw [Set.indicator_of_notMem (mt hmem.mp hx), Set.indicator_of_notMem hx, mul_zero]
+    · simp_all
+    simp_all
   change (∫ x in S, f x ∂(localNormalizedHaar F v)) = _
   rw [← integral_indicator hS.measurableSet,
     ← integral_add_left_eq_self (μ := localNormalizedHaar F v) (S.indicator f) z,
@@ -85,7 +84,3 @@ theorem localQuadraticPhase_coset_integral
   · rw [if_pos (htrivial.mpr ht), if_pos ht]
     exact mul_comm _ _
   · rw [if_neg (mt htrivial.mp ht), if_neg ht, mul_zero]
-
-end DedekindZetaZeroFree
-
-end

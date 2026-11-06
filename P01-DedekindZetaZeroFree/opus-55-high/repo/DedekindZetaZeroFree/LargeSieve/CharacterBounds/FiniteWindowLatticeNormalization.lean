@@ -9,7 +9,6 @@ public import DedekindZetaZeroFree.Adeles.Approximation.SIntegerFiniteStrongAppr
 @[expose] public section
 
 namespace DedekindZetaZeroFree.ProbeAdditiveGramBounds.ArithmeticGramSteps
-noncomputable section
 open NumberField IsDedekindDomain Topology
 open scoped Classical FourierTransform nonZeroDivisors
 
@@ -76,8 +75,8 @@ open scoped Classical FourierTransform nonZeroDivisors
     rw [map_mul]
     simpa only [sLocalDiagonal_finite, Circle.coe_one] using congrArg
       (fun z : Circle => (z : ℂ)) (hr a _ hm v)
-  have hmr : A ((m : F) * (r a : F)) * P ((m : F) * (r a : F)) = 1 := by
-    exact (hc _).symm.trans (htrace (m * r a))
+  have hmr : A ((m : F) * (r a : F)) * P ((m : F) * (r a : F)) = 1 := 
+    (hc _).symm.trans (htrace (m * r a))
   have hAr : A ((m : F) * (a + (r a : F))) = A ((m : F) * a) * P ((m : F) * a) := by
     have h := hP ((m : F) * a) ((m : F) * (r a : F))
     rw [← mul_add, hPr] at h
@@ -243,6 +242,3 @@ theorem finite_window_lattice_normalization
   refine ⟨r, hr, ?_, finite_window_lattice_equiv F S k⟩
   intro a m hm
   exact trace_modulation_of_shifts F S e χ hχ htrace k r hr a m hm
-
-end
-end DedekindZetaZeroFree.ProbeAdditiveGramBounds.ArithmeticGramSteps

@@ -53,9 +53,7 @@ private lemma archPhase_coordinates {F : Type} [Field F] [NumberField F]
   congr 1
   · apply Finset.prod_congr rfl
     intro v _
-    simp only [InfiniteAdeleRing.ringEquiv_mixedSpace_apply,
-      ← InfinitePlace.Completion.extensionEmbeddingOfIsReal_apply v.2,
-      Complex.ofReal_re, Complex.ofReal_mul, Complex.ofReal_ofNat]
+    simp only [InfiniteAdeleRing.ringEquiv_mixedSpace_apply, ← InfinitePlace.Completion.extensionEmbeddingOfIsReal_apply v.2, Complex.ofReal_re]
   · apply Fintype.prod_equiv
       (Equiv.subtypeEquivRight (fun _ => InfinitePlace.not_isReal_iff_isComplex))
     intro v
@@ -73,9 +71,7 @@ private lemma local_schwartz_transforms
   · refine ⟨SchwartzMap.compCLMOfContinuousLinearEquiv ℂ
       ((LinearEquiv.smulOfNeZero ℝ ℝ 2 (by norm_num)).toContinuousLinearEquiv) gR, ?_⟩
     intro y
-    simp only [SchwartzMap.compCLMOfContinuousLinearEquiv_apply, Function.comp_apply,
-      LinearEquiv.coe_toContinuousLinearEquiv, LinearEquiv.smulOfNeZero_apply, smul_eq_mul,
-      hgR, ArchSelfDual.realFourier, ArchSelfDual.realMeasure]
+    simp only [SchwartzMap.compCLMOfContinuousLinearEquiv_apply, Function.comp_apply, hgR, ArchSelfDual.realFourier, ArchSelfDual.realMeasure]
     apply integral_congr_ae
     filter_upwards with x
     congr 2
@@ -157,7 +153,7 @@ private theorem fourier_tensor
         (continuous_subtype_val.comp ((he v).comp
           (continuous_neg.mul continuous_const)))).aestronglyMeasurable
     · intro y
-      exact Filter.Eventually.of_forall fun x => by simp [norm_mul]
+      simp
     · exact ((hF v).1.continuous.integrable_of_hasCompactSupport (hF v).2.1).norm
     · exact Filter.Eventually.of_forall fun x =>
         continuous_const.mul (continuous_subtype_val.comp
@@ -185,8 +181,8 @@ private theorem fourier_tensor
           (2 * (-x.1.2 v * (E y).1.2 v).re)))) *
          ∏ v : S, fF v (x.2 v) * (e v (-x.2 v * y.2 v) : ℂ) := by
       rw [hW, ProbeAdditive.phase, archPhase_coordinates]
-      have hx : InfiniteAdeleRing.ringEquiv_mixedSpace F (E.symm x).1 = x.1 := by
-        exact (InfiniteAdeleRing.ringEquiv_mixedSpace F).apply_symm_apply x.1
+      have hx : InfiniteAdeleRing.ringEquiv_mixedSpace F (E.symm x).1 = x.1 := 
+        (InfiniteAdeleRing.ringEquiv_mixedSpace F).apply_symm_apply x.1
       have hxy : InfiniteAdeleRing.ringEquiv_mixedSpace F (-E.symm x * y).1 =
           -x.1 * (E y).1 := by
         change InfiniteAdeleRing.ringEquiv_mixedSpace F (-(E.symm x).1 * y.1) = _
@@ -242,7 +238,7 @@ private theorem hasDerivAt_complexNormFlow (g : SchwartzMap ℂ ℂ) (z : ℂ) (
   · rfl
   · rw [complexEuler_apply, ← map_smul]
     congr 1
-    simp [smul_eq_mul]
+    simp
     ring
 
 private theorem iteratedDeriv_complexNormFlow (g : SchwartzMap ℂ ℂ) (k : ℕ) (z : ℂ) (u : ℝ) :
@@ -274,8 +270,7 @@ private theorem mixed_flow_complex (A : SArithmeticData F) (w : InfinitePlace F)
         (Real.exp (u / 2) : ℂ) * x.1 v.val) = _
     rw [map_mul, RingEquiv.apply_symm_apply]
     rfl
-  · rw [Function.update_of_ne hv, if_neg hv]
-    rfl
+  simp_all
 
 private theorem real_places_empty (A : SArithmeticData F) :
     IsEmpty {v : InfinitePlace F // v.IsReal} :=
@@ -335,7 +330,7 @@ private theorem tensor_flow_factor (A : SArithmeticData F) (w : InfinitePlace F)
   rw [hp]
   ring
 
-private theorem tensor_continuous (A : SArithmeticData F)
+theorem tensor_continuous (A : SArithmeticData F)
     (f : SLocalProduct F A.Sf → ℂ) (hf : ContinuousSchwartzTensor F A.Sf f) :
     Continuous f := by
   obtain ⟨c, gr, gc, gf, hgf, hf⟩ := hf
@@ -351,19 +346,7 @@ private theorem tensor_continuous (A : SArithmeticData F)
         (continuous_apply v.1)
   rw [show f = _ from funext hf]
   apply Continuous.mul continuous_const
-  apply Continuous.mul
-  · apply Continuous.mul
-    · apply continuous_finset_prod
-      intro v hv
-      exact (gr v).continuous.comp
-        ((continuous_apply v).comp (continuous_fst.comp (hm.comp continuous_fst)))
-    · apply continuous_finset_prod
-      intro v hv
-      exact (gc v).continuous.comp
-        ((continuous_apply v).comp (continuous_snd.comp (hm.comp continuous_fst)))
-  · apply continuous_finset_prod
-    intro v hv
-    exact (hgf v).comp ((continuous_apply v).comp continuous_snd)
+  fun_prop
 
 end DerivativeContinuityProof
 
@@ -377,10 +360,7 @@ theorem raw_fourier_log_derivative_continuous
     (W0 : SLocalProduct F A.Sf → ℂ)
     (hW0 : ProbeWeight.IsAnnularTensor F A.Sf W0)
     (hcompact : HasCompactSupport W0) :
-    Continuous (logDerivativeRaw A w k (ProbeWeight.fourier F A.Sf e μ W0)) := by
-  exact DerivativeContinuityProof.tensor_continuous A _
+    Continuous (logDerivativeRaw A w k (ProbeWeight.fourier F A.Sf e μ W0)) := 
+  DerivativeContinuityProof.tensor_continuous A _
     (DerivativeContinuityProof.derivative_tensor A w k _
       (DerivativeContinuityProof.fourier_tensor A.Sf e he μ hμ W0 hW0 hcompact))
-
-end
-end DedekindZetaZeroFree.ProbeSheetFourierMellinBounds

@@ -16,7 +16,7 @@ namespace DedekindZetaZeroFree.KPLiteralTensorEquivariance.FiniteClearedCovarian
 open KPLiteralRaw
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-private theorem finite_translate_orbit {G : Type*} [Group G] [TopologicalSpace G]
+theorem finite_translate_orbit {G : Type*} [Group G] [TopologicalSpace G]
     [IsTopologicalGroup G] {V : Type*} [AddCommGroup V] [Module ℂ V]
     (ρ : Representation ℂ G V) (N K : Subgroup G) [N.Normal]
     (hK : IsCompact (K : Set G)) (U : OpenSubgroup N)
@@ -84,7 +84,7 @@ private theorem finite_translate_orbit {G : Type*} [Group G] [TopologicalSpace G
   map_add' f h := by ext g; by_cases hh : m g = a <;> simp [hh]
   map_smul' c f := by ext g; by_cases hh : m g = a <;> simp [hh]
 
-private theorem masked_orbit_finite {G : Type*} [Group G]
+theorem masked_orbit_finite {G : Type*} [Group G]
     (K : Subgroup G) (f : G → ℂ) (m : G → ℝ) (a : ℝ)
     (hf : FiniteDimensional ℂ (Submodule.span ℂ (Set.range (fun k : K => fun g => f (g * k.val)))))
     (hm : (Set.range (fun k : K => fun g => m (g * k.val))).Finite) :
@@ -103,7 +103,7 @@ private theorem masked_orbit_finite {G : Type*} [Group G]
   apply Submodule.mem_iSup_of_mem (⟨_, Set.mem_range_self k⟩ : B)
   exact Submodule.mem_map.mpr ⟨_, Submodule.subset_span ⟨k, rfl⟩, rfl⟩
 
-private theorem kfinite_iff_finite_orbit {G : Type*} [Group G]
+theorem kfinite_iff_finite_orbit {G : Type*} [Group G]
     (ρ : Representation ℂ G (G → ℂ)) (K : Subgroup G) (f : G → ℂ) :
     (∃ S : Submodule ℂ (G → ℂ), Module.Finite ℂ S ∧ f ∈ S ∧
       ∀ k : K, ∀ v ∈ S, ρ k.val v ∈ S) ↔
@@ -138,7 +138,7 @@ open DedekindZetaZeroFree.KPGlobalTorusBorelTwistCompatibility (finitePart_norma
 open _root_.DedekindZetaZeroFree.KPSpatialSmoothing renaming compact_normalized_finite_core → compact_normalized_finite_core
 open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.RawFiniteCompact renaming smooth_translate → smooth_translate
 
-private theorem raw_finite_translate_kfinite
+theorem raw_finite_translate_kfinite
     (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
     (f : Functions F ζ hζ) (hf : Smooth F ζ hζ f) (hfin : KFinite F ζ hζ K f)
     (a : KPGlobalTorusFunctionData.finitePart F ζ hζ) :
@@ -170,7 +170,7 @@ private theorem raw_finite_translate_kfinite
   simp [KPAdelicCoverRestrictedProduct.localToRestricted,
     RestrictedProduct.coe_mulSingle_apply]
 
-private theorem localFiniteTranslate_val
+theorem localFiniteTranslate_val
     (q : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
     (a : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr q)) :
     (localFiniteTranslate F ζ hζ q a).val =
@@ -179,7 +179,7 @@ private theorem localFiniteTranslate_val
 
 open _root_.DedekindZetaZeroFree.KPLiteralChamber renaming diagonalUnit → diagonalUnit
 
-private theorem chart_continuousOn :
+theorem chart_continuousOn :
     ContinuousOn (KPGlobalResidualConstruction.archChart F ζ hζ)
       (KPGlobalResidualConstruction.archDomain F) := by
   rw [continuousOn_iff_continuous_domRestrict]
@@ -223,7 +223,7 @@ private theorem chart_continuousOn :
   congr 2
   simp [diagonalUnit, x, u, p.property w]
 
-private theorem smooth_clopen_mask
+theorem smooth_clopen_mask
     (h : Functions F ζ hζ) (hh : Smooth F ζ hζ h)
     (m : G F ζ hζ → ℝ) (hm : IsLocallyConstant m) (c : ℝ)
     (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
@@ -275,7 +275,7 @@ private theorem smooth_clopen_mask
       (if m g = c then h g else 0)
     rw [hJ g ⟨j, hVJ hj⟩, hU g j (hVU hj)]
 
-private theorem smooth_const_mul (c : ℂ) (h : Functions F ζ hζ)
+theorem smooth_const_mul (c : ℂ) (h : Functions F ζ hζ)
     (hh : Smooth F ζ hζ h) : Smooth F ζ hζ (fun g => c * h g) := by
   refine ⟨continuous_const.mul hh.1, ?_, ?_⟩
   · intro g
@@ -289,7 +289,7 @@ private theorem smooth_const_mul (c : ℂ) (h : Functions F ζ hζ)
   KPGlobalResidualKernelSplit.RawStageL2.OutgoingSplit.ZeroProfileSteps.FiniteNormPartition.logIncrement
     (D := D) g a.val
 
-private theorem logInc_right_level
+theorem logInc_right_level
     (D : KPMsRationalCompactCrossPairing.Iwasawa F ζ hζ)
     (a : KPGlobalTorusFunctionData.finitePart F ζ hζ) :
     ∃ J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ,
@@ -333,7 +333,7 @@ private theorem logInc_right_level
     (if logInc F ζ hζ (KPLiteralChamber.literalIwasawa F ζ hζ K hK) a g = c
       then f.val z (g * a.val) else 0)
 
-private theorem correctedValue_smooth
+theorem correctedValue_smooth
     (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
     (f : Flat F ζ hζ K) (a : KPGlobalTorusFunctionData.finitePart F ζ hζ)
     (c : ℝ) (z : ℂ) : Smooth F ζ hζ (correctedValue F ζ hζ K hK f a c z) := by
@@ -359,7 +359,7 @@ private theorem correctedValue_smooth
     ring
   · simp [hg]
 
-private theorem correctedValue_multiplier
+theorem correctedValue_multiplier
     (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
     (f : Flat F ζ hζ K) (a : KPGlobalTorusFunctionData.finitePart F ζ hζ)
     (c : ℝ) (z : ℂ) (g : G F ζ hζ) :

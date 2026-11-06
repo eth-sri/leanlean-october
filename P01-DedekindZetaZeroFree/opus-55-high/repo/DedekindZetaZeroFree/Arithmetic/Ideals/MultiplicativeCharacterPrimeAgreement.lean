@@ -18,7 +18,7 @@ theorem prime_agreement {F : Type} [Field F] [NumberField F]
     ∀ I : Ideal (𝓞 F), I ≠ ⊥ → I ⊔ r = ⊤ → η I = θ I := by
   classical
   intro I hI hrI
-  have hI0 : I ≠ 0 := by simpa using hI
+  have hI0 : I ≠ 0 := by omega
   have hfac : ∏ᶠ v : HeightOneSpectrum (𝓞 F), v.maxPowDividing I = I :=
     Ideal.finprod_heightOneSpectrum_factorization hI0
   have hfin : Function.HasFiniteMulSupport fun v : HeightOneSpectrum (𝓞 F) =>
@@ -65,7 +65,4 @@ theorem prime_agreement {F : Type} [Field F] [NumberField F]
       hpow (ψ := η) v.asIdeal _, hpow (ψ := θ) v.asIdeal _, hprime v hsup]
   rw [← hfac]
   rw [finprod_eq_prod _ hfin]
-  rw [hprod η hfin.toFinset, hprod θ hfin.toFinset]
-  exact Finset.prod_congr rfl hpt
-
-end DedekindZetaZeroFree.LargeSieve.RootNumber
+  simp_all

@@ -14,7 +14,7 @@ namespace DedekindZetaZeroFree.AbelianQuotient.RayCoset
 
 variable {K : Type} [Field K] [NumberField K]
 
-private theorem elementIdeal_mul (D : Data K) (α : Cx D) :
+theorem elementIdeal_mul (D : Data K) (α : Cx D) :
     elementIdeal D α * D.a = Ideal.span {α.val} := by
   apply FractionalIdeal.coeIdeal_injective (K := K)
   change ((elementIdeal D α * D.a : Ideal (𝓞 K)) : FractionalIdeal (nonZeroDivisors (𝓞 K)) K) = _
@@ -36,7 +36,7 @@ theorem elementIdeal_coprime (D : Data K) (α : Cx D) :
     have hle : Ideal.span {α.val} ≤ elementIdeal D α := by
       rw [← elementIdeal_mul D α]
       exact Ideal.mul_le_left
-    exact hle (Ideal.subset_span (Set.mem_singleton α.val))
+    simp_all
   have hm := ((mem_C_iff D α.val).mp ((mem_Cnonzero_iff D α.val).mp α.property).1).2
   have h := (elementIdeal D α ⊔ D.m).sub_mem
     (show α.val ∈ elementIdeal D α ⊔ D.m from Ideal.mem_sup_left hα)
@@ -51,9 +51,7 @@ theorem elementIdeal_absNorm (D : Data K) (α : Cx D) :
   apply (eq_div_iff ha).mpr
   rw [← Nat.cast_mul, ← map_mul, elementIdeal_mul, Ideal.absNorm_span_singleton]
   rw [← Algebra.coe_norm_int]
-  rw [← Int.cast_natCast, Int.natCast_natAbs]
-  push_cast
-  rfl
+  simp
 
 theorem elementIdeal_smul (D : Data K) (u : U K D.m) (α : Cx D) :
     elementIdeal D (u • α) = elementIdeal D α := by
@@ -178,12 +176,12 @@ def signVector (D : Data K) : X D → RealSignVector K :=
 @[simp] theorem signVector_orbitMk (D : Data K) (α : Cx D) :
     signVector D (orbitMk D α) = representativeSignVector α.val := rfl
 
-private theorem realEmbedding_exists (φ : K →+* ℝ) :
+theorem realEmbedding_exists (φ : K →+* ℝ) :
     ∃ v : RealPlaces K, realEmbedding K v = φ := by
   let ψ : K →+* ℂ := Complex.ofRealHom.comp φ
   have hp : NumberField.ComplexEmbedding.IsReal ψ := by
     ext x
-    simp [ψ, NumberField.ComplexEmbedding.conjugate]
+    simp [ψ]
   let v : RealPlaces K := ⟨NumberField.InfinitePlace.mk ψ, ⟨ψ, hp, rfl⟩⟩
   refine ⟨v, ?_⟩
   ext x
@@ -194,7 +192,7 @@ private theorem realEmbedding_exists (φ : K →+* ℝ) :
   rw [NumberField.InfinitePlace.embedding_mk_eq_of_isReal hp]
   rfl
 
-private theorem associated_rayUnit (D : Data K) (α β : Cx D)
+theorem associated_rayUnit (D : Data K) (α β : Cx D)
     (hi : Ideal.span {α.val} = Ideal.span {β.val})
     (hs : representativeSignVector α.val = representativeSignVector β.val) :
     ∃ u : U K D.m, u • β = α := by
@@ -220,8 +218,7 @@ private theorem associated_rayUnit (D : Data K) (α β : Cx D)
     rcases lt_or_gt_of_ne hn with hb | hb
     · have ha := not_lt.mp (mt hv.mp (not_lt.mpr hb.le))
       have hun : realEmbedding K v ((u : 𝓞 K) : K) ≠ 0 := by
-        apply (map_ne_zero (realEmbedding K v)).mpr
-        exact NumberField.RingOfIntegers.coe_ne_zero_iff.mpr u.ne_zero
+        simp
       by_contra h
       have hneg : realEmbedding K v ((u : 𝓞 K) : K) < 0 := lt_of_le_of_ne (not_lt.mp h) hun
       have hpos := mul_pos_of_neg_of_neg hb hneg
@@ -255,7 +252,7 @@ theorem signVector_injective_on_fibre (D : Data K) (I : Ideal (𝓞 K)) :
       apply Quotient.sound
       exact ⟨u, hu⟩
 
-private theorem positive_signVector (D : Data K) (x : Xpos D) :
+theorem positive_signVector (D : Data K) (x : Xpos D) :
     signVector D x.val = fun _ => true := by
   obtain ⟨x, hx⟩ := x
   induction x using Quotient.inductionOn with
@@ -288,7 +285,3 @@ def positiveIdealEquiv (D : Data K)
     (c : RayIdealClass K D.m D.modulus_ne_bot)
     (hc : rayIdealClass K D.m D.modulus_ne_bot D.a = some (c⁻¹)) (x : Xpos D) :
     (positiveIdealEquiv D c hc x).val = orbitIdeal D x.val := rfl
-
-end DedekindZetaZeroFree.AbelianQuotient.RayCoset
-
-end

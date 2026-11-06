@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # The topology of the principal ideles
 
@@ -34,7 +29,6 @@ open scoped NumberField
 open NumberField IsDedekindDomain
 
 noncomputable section
-
 
 variable {K : Type*} [Field K] [NumberField K]
 
@@ -55,8 +49,7 @@ theorem continuous_infiniteMixedEmbedding :
        fun v : {w : InfinitePlace K // w.IsComplex} =>
           NumberField.InfinitePlace.Completion.extensionEmbedding v.1
             ((a.1 : NumberField.InfiniteAdeleRing K) v)) by
-    funext a
-    exact NumberField.InfiniteAdeleRing.ringEquiv_mixedSpace_apply K _]
+    rfl]
   apply Continuous.prodMk
   · apply continuous_pi
     intro v
@@ -233,7 +226,3 @@ theorem principalSubgroup_isClosed :
       ((principalSubgroup K :
         Subgroup (IdeleGroup K)) : Set (IdeleGroup K)) :=
   Subgroup.isClosed_of_discreteTopology
-
-end IdeleGroup
-
-end

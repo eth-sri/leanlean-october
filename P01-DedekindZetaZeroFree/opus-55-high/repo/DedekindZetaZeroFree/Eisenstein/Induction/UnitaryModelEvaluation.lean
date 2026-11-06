@@ -20,7 +20,7 @@ variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
 variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 local instance : DecidableEq (KPHilbert.Place F) := Classical.decEq _
 
-private theorem absorption_cast (B : Finset (KPHilbert.Place F))
+theorem absorption_cast (B : Finset (KPHilbert.Place F))
     (hB : B = KPGlobalResidualConstruction.ScalarAbsorption.fullBad
       (A := InfinitePlace F) C.exceptional)
     (s : RestrictedTensorSimple.Level B) (y : ∀ j : s.val, Fiber R P C j)

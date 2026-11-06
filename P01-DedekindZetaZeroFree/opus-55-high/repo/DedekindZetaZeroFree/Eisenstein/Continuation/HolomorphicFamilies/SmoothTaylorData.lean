@@ -22,7 +22,7 @@ variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
 variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
 variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
-private lemma lifted_smooth (D : GroupChart F ζ hζ U R P H)
+lemma lifted_smooth (D : GroupChart F ζ hζ U R P H)
     (w : smoothSections F ζ hζ U R P H) :
     ContDiffOn ℝ (⊤ : ℕ∞) (fun x => lift F ζ hζ U R P H w.val (D.groupLift x)) D.T.carrier := by
   have he : S F ζ hζ U R P H (scalarRepresentative F ζ hζ U R P H w.val) = w.val :=
@@ -49,7 +49,7 @@ private lemma combination_smooth {m b : ℕ} (T : KPContLocalNorm.LocalBall m)
   | nil => exact contDiffOn_const
   | cons t ts ih => exact (contDiffOn_const.mul (hw t.2)).add ih
 
-private lemma combination_identification (D : GroupChart F ζ hζ U R P H)
+lemma combination_identification (D : GroupChart F ζ hζ U R P H)
     (terms : Combination F) (w : smoothSections F ζ hζ U R P H)
     (x : KPContLocalNorm.Space (groupDimension F)) (hx : x ∈ D.T.carrier) :
     rightCombination F ζ hζ terms (lift F ζ hζ U R P H w.val) (D.groupLift x) =

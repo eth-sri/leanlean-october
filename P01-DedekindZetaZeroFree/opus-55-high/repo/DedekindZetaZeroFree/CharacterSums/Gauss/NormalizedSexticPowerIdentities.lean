@@ -55,10 +55,10 @@ theorem normalizedGaussPower_two_cube
   have hpos : (0 : ℝ) < Fintype.card k := by
     exact_mod_cast Fintype.card_pos
   have hs : (Real.sqrt (Fintype.card k) : ℂ) ≠ 0 := by
-    exact_mod_cast (Real.sqrt_pos.2 hpos).ne'
+    simp
   have hs2 : (Real.sqrt (Fintype.card k) : ℂ) ^ 2 = Fintype.card k := by
     norm_cast
-    exact Real.sq_sqrt hpos.le
+    simp
   have h1 := gaussPower_two_mul_four χ ψ hQ hχ hψ
   have h2 := gaussPower_two_sq χ ψ hQ hχ hψ
   have hg : gaussPower χ ψ 2 ^ 3 =
@@ -113,7 +113,7 @@ private lemma jac_dup (χ : MulChar k ℂ) (hQ : Fintype.card k % 12 = 1) (hχ :
   exact char_ne_two hQ (CharP.ringChar_of_prime_eq_zero Nat.prime_two h)
  have h4 : (4 : k) ≠ 0 := by
   have : (4 : k) = 2 * 2 := by ring
-  rw [this]; exact mul_ne_zero h2 h2
+  simp_all
  have hχ4 : χ (4 : k) ≠ 0 := χ.apply_ne_zero_iff.mpr (isUnit_iff_ne_zero.mpr h4)
  have hs : (∑ y : k, χ (1 - y ^ 2)) = jacobiSum (χ ^ 3) χ := by
   have H := Finset.sum_fiberwise (Finset.univ : Finset k) (fun y : k => y ^ 2)
@@ -123,8 +123,7 @@ private lemma jac_dup (χ : MulChar k ℂ) (hQ : Fintype.card k % 12 = 1) (hχ :
    calc
     _ = ∑ y ∈ Finset.univ.filter (fun y : k => y ^ 2 = t), χ (1 - t) := by
       apply Finset.sum_congr rfl
-      intro y hy
-      rw [(Finset.mem_filter.mp hy).2]
+      simp_all
     _ = _ := by rw [Finset.sum_const, nsmul_eq_mul, count χ hQ hχ t]
   simp_rw [hf] at H
   rw [← H]
@@ -183,9 +182,9 @@ theorem normalizedGaussPower_sextic_duplication
       star (χ (4 : k)) * normalizedGaussPower χ ψ 3 *
         normalizedGaussPower χ ψ 2 ^ 3 := by
  have hpos : (0 : ℝ) < Fintype.card k := by exact_mod_cast Fintype.card_pos
- have hs : (Real.sqrt (Fintype.card k) : ℂ) ≠ 0 := by exact_mod_cast (Real.sqrt_pos.2 hpos).ne'
+ have hs : (Real.sqrt (Fintype.card k) : ℂ) ≠ 0 := by simp
  have hs2 : (Real.sqrt (Fintype.card k) : ℂ) ^ 2 = Fintype.card k := by
-  norm_cast; exact Real.sq_sqrt hpos.le
+  norm_cast; simp
  have H1 := gauss_dup χ ψ hQ hχ hψ
  have H2 := gaussPower_two_mul_four χ ψ hQ hχ hψ
  have H : gaussPower χ ψ 1 * gaussPower χ ψ 2 * (Fintype.card k : ℂ) =
@@ -197,5 +196,3 @@ theorem normalizedGaussPower_sextic_duplication
  field_simp
  rw [hs2]
  linear_combination H
-
-end DedekindZetaZeroFree.FiniteGauss

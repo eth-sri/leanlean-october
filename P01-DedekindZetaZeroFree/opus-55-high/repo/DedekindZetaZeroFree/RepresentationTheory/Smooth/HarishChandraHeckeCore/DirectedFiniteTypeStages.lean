@@ -49,7 +49,7 @@ theorem hcHeckeCore_mem_stage
     {x : V} (hx : x ∈ KPGlobalEisensteinData.hcHeckeCore ρ σ smooth) :
     ∃ U J, x ∈ KPGlobalEisensteinData.finiteLevelTypeStage ρ σ smooth U J := by
   letI : Nonempty (KPGlobalEisensteinData.CompactTypeStage ρ) :=
-    ⟨⟨⊥, inferInstance, fun k x hx => by have h : x = 0 := hx; subst x; simp⟩⟩
+    ⟨⟨⊥, inferInstance, fun k x hx => by simp_all⟩⟩
   let stages := fun p : CompactOpenLevel G × KPGlobalEisensteinData.CompactTypeStage ρ =>
     KPGlobalEisensteinData.finiteLevelTypeStage ρ σ smooth p.1 p.2
   have hd : Directed (· ≤ ·) stages := by
@@ -60,7 +60,3 @@ theorem hcHeckeCore_mem_stage
     simpa only [stages, iSup_prod, KPGlobalEisensteinData.hcHeckeCore] using hx
   obtain ⟨⟨U, J⟩, h⟩ := (Submodule.mem_iSup_of_directed stages hd).mp hx'
   exact ⟨U, J, h⟩
-
-end DedekindZetaZeroFree.KPGlobalResidualKernel.CommonSourceStage
-
-end

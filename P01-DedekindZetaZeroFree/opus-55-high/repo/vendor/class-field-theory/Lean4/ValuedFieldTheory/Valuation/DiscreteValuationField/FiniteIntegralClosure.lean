@@ -1,6 +1,7 @@
 module
 
-public import ValuedFieldTheory.Valuation.DiscreteValuationField.FiniteExtension.Core
+public import ValuedFieldTheory.Valuation.DiscreteValuationField.FiniteExtension.Degree
+public import ValuedFieldTheory.Valuation.DiscreteValuationField.FiniteExtension.Uniqueness
 public import Mathlib.RingTheory.Valuation.Discrete.IsDiscreteValuationRing
 
 @[expose] public section
@@ -11,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-set_option autoImplicit false
 
 namespace ValuationTheory
 
@@ -174,11 +171,10 @@ theorem integralClosure_base_maximal_fiber_subsingleton_of_finite_separable
   rcases IsIdempotentElem.iff_eq_zero_or_one.mp hbidem with rfl | rfl
   · left
     rw [← hbmap]
-    simp [φ]
+    simp
   · right
     rw [← hbmap]
-    exact (Algebra.TensorProduct.includeRight :
-      B →ₐ[base.valuationSubring] base.maximalIdeal.Fiber B).map_one
+    rfl
 
 /-- In a finite separable extension of a complete DVF, the actual integral
 closure of the base valuation ring is local.
@@ -250,16 +246,12 @@ theorem integralClosure_isLocalRing_of_finite_separable
     have hNmem :
         N.asIdeal ∈ Ideal.primesOver base.maximalIdeal B :=
       ⟨N.isMaximal.isPrime, ⟨hNcomap.symm⟩⟩
-    have hMeq : M.asIdeal = P.1 := by
-      simpa [hPrimesSingleton] using hMmem
-    have hNeq : N.asIdeal = P.1 := by
-      simpa [hPrimesSingleton] using hNmem
-    exact hMeq.trans hNeq.symm
+    simp_all
   exact IsLocalRing.of_singleton_maximalSpectrum
 
 /-- The maximal ideal of the integral closure, using the finite
 separable localness theorem above. -/
-noncomputable def CanonicalIntegralClosure.maximalIdeal
+def CanonicalIntegralClosure.maximalIdeal
     (base : CompleteDVF.{u, v} K)
     [Algebra.IsSeparable K L] :
     Ideal (integralClosure base.valuationSubring L) :=
@@ -345,10 +337,10 @@ theorem integralClosure_isDiscreteValuationRing_of_finite_separable
     base_valuationSubring_isFractionRing (K := K) base
   let : IsDomain (integralClosure base.valuationSubring L) := by
     infer_instance
-  let : IsDedekindDomain (integralClosure base.valuationSubring L) := by
-    exact integralClosure.isDedekindDomain base.valuationSubring K L
-  let : IsNoetherianRing (integralClosure base.valuationSubring L) := by
-    exact integralClosure.isNoetherianRing (A := base.valuationSubring) (K := K) L
+  let : IsDedekindDomain (integralClosure base.valuationSubring L) := 
+    integralClosure.isDedekindDomain base.valuationSubring K L
+  let : IsNoetherianRing (integralClosure base.valuationSubring L) := 
+    integralClosure.isNoetherianRing (A := base.valuationSubring) (K := K) L
   have hnot :
       ¬ IsField (integralClosure base.valuationSubring L) :=
     integralClosure_not_isField_of_finite_separable
@@ -463,58 +455,6 @@ theorem integralClosure_maximalIdeal_isAdicComplete_of_finite_separable
     isAdicComplete_of_isAdicComplete_pow
       (M := B) (IsLocalRing.maximalIdeal B) hnpos
 
-/-- A packaged rank-one discrete valuation coming from the actual integral
-closure, together with its valuation-subring comparison. -/
-theorem exists_integralClosure_standard_rankOneDiscrete_valuation
-    (base : CompleteDVF.{u, v} K)
-    [Algebra.IsSeparable K L] :
-    ∃ ΓL : Type,
-      ∃ _ : LinearOrderedCommGroupWithZero ΓL,
-        ∃ vL : _root_.Valuation L ΓL,
-          ∃ _ : vL.IsRankOneDiscrete,
-            ∃ _ : (integralClosure base.valuationSubring L) ≃+*
-              vL.valuationSubring,
-              True := by
-  let B := integralClosure base.valuationSubring L
-  let : IsLocalRing B :=
-    integralClosure_isLocalRing_of_finite_separable (K := K) (L := L) base
-  let : IsDomain B := by
-    change IsDomain (integralClosure base.valuationSubring L)
-    infer_instance
-  let : IsDiscreteValuationRing B :=
-    integralClosure_isDiscreteValuationRing_of_finite_separable
-      (K := K) (L := L) base
-  let : IsFractionRing B L := by
-    change IsFractionRing (integralClosure base.valuationSubring L) L
-    exact integralClosure.isFractionRing_of_finite_extension K L
-  let vL := (IsDiscreteValuationRing.maximalIdeal B).valuation L
-  refine ⟨_, inferInstance, vL, inferInstance, ?_, trivial⟩
-  exact IsDiscreteValuationRing.equivValuationSubring (A := B) (K := L)
-
-/-- The actual integral closure supplies a rank-one discrete standard adic
-valuation, its own maximal-ideal adic completeness, and the comparison of
-that valuation ring with the actual integral closure. -/
-theorem exists_integralClosure_standard_complete_valuation_data
-    (base : CompleteDVF.{u, v} K)
-    [Algebra.IsSeparable K L] :
-    ∃ ΓL : Type,
-      ∃ _ : LinearOrderedCommGroupWithZero ΓL,
-        ∃ vL : _root_.Valuation L ΓL,
-          ∃ _ : vL.IsRankOneDiscrete,
-            IsAdicComplete
-              (CanonicalIntegralClosure.maximalIdeal (K := K) (L := L) base)
-              (integralClosure base.valuationSubring L) ∧
-              ∃ _ : (integralClosure base.valuationSubring L) ≃+*
-                vL.valuationSubring,
-                True := by
-  obtain ⟨ΓL, hΓL, vL, hvdisc, hev, _⟩ :=
-    exists_integralClosure_standard_rankOneDiscrete_valuation
-      (K := K) (L := L) base
-  let : LinearOrderedCommGroupWithZero ΓL := hΓL
-  refine ⟨ΓL, inferInstance, vL, hvdisc, ?_, hev, trivial⟩
-  exact integralClosure_maximalIdeal_isAdicComplete_of_finite_separable
-    (K := K) (L := L) base
-
 /-- The actual integral closure supplies a complete-DVF target whose valuation
 subring is ring-equivalent to the actual integral closure. -/
 theorem exists_integralClosure_standard_completeDVF
@@ -551,8 +491,7 @@ theorem exists_integralClosure_standard_completeDVF
       map_add' := e.map_add
       map_smul' := by
         intro r x
-        change e (r * x) = (algebraMap B vL.valuationSubring r) * e x
-        simp [RingHom.algebraMap_toAlgebra] }
+        rfl }
   have :
       IsAdicComplete (IsLocalRing.maximalIdeal B) B :=
     integralClosure_maximalIdeal_isAdicComplete_of_finite_separable
@@ -676,7 +615,7 @@ theorem exists_integralClosure_standard_fundamental_identity
       · intro hz
         have hzmem :
             z ∈ (integralClosure base.valuationSubring L).toSubring := hz
-        exact ⟨⟨z, (hmem z).2 hzmem⟩, rfl⟩
+        simp_all
       · rintro ⟨y, rfl⟩
         exact (hmem (y : L)).1 y.2
   refine ⟨hIntegralClosure, ?_⟩
@@ -690,80 +629,3 @@ theorem exists_integralClosure_standard_fundamental_identity
     rfl
   exact isDefectless_of_isIntegralClosure
     (K := K) (L := L) base target
-
-/-- In a finite separable extension of a complete DVF, the actual integral
-closure of the base valuation ring is a valuation ring. -/
-theorem integralClosure_valuationRing_of_finite_separable
-    (base : CompleteDVF.{u, v} K)
-    [Algebra.IsSeparable K L] :
-    ValuationRing (integralClosure base.valuationSubring L) := by
-  let : IsLocalRing (integralClosure base.valuationSubring L) :=
-    integralClosure_isLocalRing_of_finite_separable (K := K) (L := L) base
-  let : IsFractionRing base.valuationSubring K :=
-    base_valuationSubring_isFractionRing (K := K) base
-  let : IsDomain (integralClosure base.valuationSubring L) := by
-    infer_instance
-  let : IsDedekindDomain (integralClosure base.valuationSubring L) := by
-    exact integralClosure.isDedekindDomain base.valuationSubring K L
-  let : IsNoetherianRing (integralClosure base.valuationSubring L) := by
-    exact integralClosure.isNoetherianRing (A := base.valuationSubring) (K := K) L
-  exact
-    ((tfae_of_isNoetherianRing_of_isLocalRing_of_isDomain
-      (integralClosure base.valuationSubring L)).out 3 2).mp
-      (show IsDedekindDomain (integralClosure base.valuationSubring L) from
-        inferInstance)
-
-/-- Record-free valuative dichotomy for the integral closure in a finite
-separable extension of a complete DVF. -/
-theorem CanonicalIntegralClosure.mem_or_inv_of_finite_separable
-    (base : CompleteDVF.{u, v} K)
-    [Algebra.IsSeparable K L] :
-    ∀ z : L,
-      z ∈ (integralClosure base.valuationSubring L).toSubring ∨
-        z⁻¹ ∈ (integralClosure base.valuationSubring L).toSubring := by
-  let B := integralClosure base.valuationSubring L
-  let : ValuationRing B :=
-    integralClosure_valuationRing_of_finite_separable (K := K) (L := L) base
-  let : IsFractionRing base.valuationSubring K :=
-    base_valuationSubring_isFractionRing (K := K) base
-  let : IsFractionRing B L := by
-    change IsFractionRing (integralClosure base.valuationSubring L) L
-    exact integralClosure.isFractionRing_of_finite_extension K L
-  intro z
-  rcases ValuationRing.isInteger_or_isInteger (R := B) (K := L) z with
-    hz | hz
-  · left
-    rcases hz with ⟨y, hy⟩
-    rw [← hy]
-    exact y.2
-  · right
-    rcases hz with ⟨y, hy⟩
-    rw [← hy]
-    exact y.2
-
-/-- In a finite separable extension of a complete DVF, the integral
-closure itself supplies a valuation subring whose canonical valuation extends
-the base valuation.
-
-This is the record-free source used before a `CompleteDVF` target has been
-chosen. -/
-theorem exists_integralClosure_valuationSubring_of_finite_separable
-    (base : CompleteDVF.{u, v} K)
-    [Algebra.IsSeparable K L] :
-    ∃ B : ValuationSubring L,
-      ∃ hExt : base.valuation.HasExtension B.valuation,
-        letI : base.valuation.HasExtension B.valuation := hExt
-        B.toSubring = (integralClosure base.valuationSubring L).toSubring ∧
-          IsIntegralClosure B base.valuationSubring L := by
-  exact
-    exists_integralClosure_valuationSubring_isIntegralClosure_of_forall_mem_or_inv
-      (L := L) base.valuation
-      (CanonicalIntegralClosure.mem_or_inv_of_finite_separable
-        (K := K) (L := L) base)
-
-end ValuedExtension
-end DiscreteValuationField
-
-end
-
-end ValuationTheory

@@ -23,21 +23,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # The ramified local unit of a rational principal idele
 
@@ -61,30 +46,6 @@ open LocalFieldTheory.DiscreteValuationField.Examples.Qp
 local instance (p : Nat.Primes) : Fact p.1.Prime :=
   ⟨p.2⟩
 
-/-- The rational `p`-unit has value one for the height-one valuation
-corresponding to `p`. -/
-theorem rationalPrimeUnit_heightOneValuation_eq_one
-    (x : ℚˣ) (p : Nat.Primes) :
-    (RayClass.rationalPrime p).valuation ℚ
-        (rationalPrimeUnit x p : ℚ) =
-      1 := by
-  let v : HeightOneSpectrum (𝓞 ℚ) :=
-    RayClass.rationalPrime p
-  have hequiv :=
-    Rat.HeightOneSpectrum.valuation_equiv_padicValuation v
-  apply hequiv.eq_one_iff_eq_one.mpr
-  have hv :
-      Rat.HeightOneSpectrum.primesEquiv v = p := by
-    simp only [v, RayClass.rationalPrime, Equiv.apply_symm_apply]
-  rw [hv]
-  change
-    (if (rationalPrimeUnit x p : ℚ) = 0 then 0
-      else WithZero.exp
-        (-padicValRat p.1 (rationalPrimeUnit x p : ℚ))) =
-      1
-  rw [ite_eq_right (Units.ne_zero _), padicValRat_rationalPrimeUnit]
-  rfl
-
 /-- The rational `p`-unit, expressed as a unit of the valuation subring of
 the standard local field `ℚ_[p]`. -/
 def rationalPrimeUnitValuationSubringUnit
@@ -107,18 +68,7 @@ theorem rationalPrimeUnitValuationSubringUnit_coe
         (padicLocalField p.1).valuationSubring) :
       ℚ_[p.1]) =
         ((rationalPrimeUnit x p : ℚ) : ℚ_[p.1]) := by
-  change
-    ((padicIntEquivValuationSubring p.1
-        (padicIntUnitOfRat p
-          (rationalPrimeUnit x p : ℚ)
-          (Units.ne_zero _)
-          (padicValRat_rationalPrimeUnit x p)) :
-        (padicLocalField p.1).valuationSubring) :
-      ℚ_[p.1]) =
-        ((rationalPrimeUnit x p : ℚ) : ℚ_[p.1])
-  rw [
-    padicIntEquivValuationSubring_coe,
-    padicIntUnitOfRat_coe]
+  rfl
 
 /-- The Lubin--Tate field-unit inclusion of the rational `p`-unit is the
 ordinary embedding of that rational unit into `ℚ_[p]`. -/
@@ -130,12 +80,7 @@ theorem standardLubinTateUnitFactorFieldUnit_rationalPrimeUnit
       Units.map (algebraMap ℚ ℚ_[p.1]).toMonoidHom
         (rationalPrimeUnit x p) := by
   apply Units.ext
-  change
-    ((rationalPrimeUnitValuationSubringUnit x p :
-        (padicLocalField p.1).valuationSubring) :
-      ℚ_[p.1]) =
-        algebraMap ℚ ℚ_[p.1] (rationalPrimeUnit x p : ℚ)
-  exact rationalPrimeUnitValuationSubringUnit_coe x p
+  rfl
 
 /-- The standard multiplicative Lubin--Tate base uniformizer is exactly the
 image of the positive rational prime generator in `ℚ_[p]ˣ`. -/
@@ -148,14 +93,7 @@ theorem standardLubinTateBaseUniformizerUnit_eq_rationalPrimeGenerator
         (Units.mk0 (p.1 : ℚ) (by
           exact_mod_cast p.2.ne_zero)) := by
   apply Units.ext
-  change
-    ((padicIntEquivValuationSubring
-        p.1 (p.1 : ℤ_[p.1]) :
-      (padicLocalField p.1).valuationSubring) :
-        ℚ_[p.1]) =
-      algebraMap ℚ ℚ_[p.1] (p.1 : ℚ)
-  rw [padicIntEquivValuationSubring_coe]
-  simp
+  rfl
 
 /-- Restoring the removed `p`-power recovers the original rational field
 unit.  This is the multiplicative factorization used after completion. -/
@@ -167,23 +105,7 @@ theorem rationalPrimeUnit_mul_primeGenerator_zpow
           padicValRat p.1 (x : ℚ) =
       x := by
   rw [rationalPrimeUnit]
-  calc
-    ((Units.mk0 (p.1 : ℚ) (by
-          exact_mod_cast p.2.ne_zero)) ^
-        (-padicValRat p.1 (x : ℚ)) * x) *
-          (Units.mk0 (p.1 : ℚ) (by
-            exact_mod_cast p.2.ne_zero)) ^
-            padicValRat p.1 (x : ℚ) =
-        x * ((Units.mk0 (p.1 : ℚ) (by
-              exact_mod_cast p.2.ne_zero)) ^
-            (-padicValRat p.1 (x : ℚ)) *
-          (Units.mk0 (p.1 : ℚ) (by
-              exact_mod_cast p.2.ne_zero)) ^
-            padicValRat p.1 (x : ℚ)) := by
-      ac_rfl
-    _ = x := by
-      rw [← zpow_add]
-      simp
+  simp
 
 /-- In `ℚ_[p]ˣ`, a rational field unit is its actual integral
 `rationalPrimeUnit` factor times the corresponding power of the standard
@@ -238,10 +160,7 @@ theorem rationalPadicFieldUnit_uniformizerValueExponent
   have huMem :
       LubinTate.standardLubinTateUnitFactorFieldUnit F u ∈
         F.valuation.valuationSubring.unitGroup := by
-    simpa only [
-      LubinTate.standardLubinTateUnitFactorFieldUnit] using
-      (LocalFieldTheory.DiscreteValuationField.CompleteDVF.valuationSubringUnitsToFieldUnits_mem_unitGroup
-        F.toCompleteDVF u)
+    simp
   have hzero :
       V.zeroSubgroup =
         F.valuation.valuationSubring.unitGroup := by
@@ -263,15 +182,7 @@ theorem rationalPadicFieldUnit_uniformizerValueExponent
             (padicLocalField p.1).valuationSubring) :
             ℚ_[p.1])
           hπ.ne_zero := by
-    apply Units.ext
-    change
-      (ϖ : ℚ_[p.1]) =
-        ((padicIntEquivValuationSubring
-            p.1 (p.1 : ℤ_[p.1]) :
-          (padicLocalField p.1).valuationSubring) :
-          ℚ_[p.1])
-    simpa only [ϖ] using
-      LubinTate.standardLubinTateBaseUniformizerUnit_coe hπ
+    rfl
   have hϖ : V.IsUniformizer ϖ := by
     rw [hϖeq]
     simpa only [V] using
@@ -330,139 +241,4 @@ theorem rationalPadicFieldUnit_uniformizerUnitPart
         simpa only [F, hπ, X, u, ϖ] using
           rationalPadicFieldUnit_eq_unitFactor_mul_baseUniformizer_zpow
             x p]
-  rw [mul_assoc, ← zpow_add]
   simp
-
-/-- Under the canonical equivalence between `ℚ_[p]` and the height-one
-completion at `p`, the principal finite component of the rational `p`-unit
-is its ordinary image in `ℚ_[p]`. -/
-theorem padicCompletionEquiv_principalFiniteComponent_rationalPrimeUnit
-    (x : ℚˣ) (p : Nat.Primes) :
-    Units.map
-        (Padic.adicCompletionEquiv (𝓞 ℚ) p).symm.toMonoidHom
-        (IdeleGroup.finiteComponent
-          (RayClass.rationalPrime p)
-          (IdeleGroup.principalIdele ℚ
-            (rationalPrimeUnit x p))) =
-      Units.map (algebraMap ℚ ℚ_[p.1]).toMonoidHom
-        (rationalPrimeUnit x p) := by
-  apply Units.ext
-  change
-    (Padic.adicCompletionEquiv (𝓞 ℚ) p).symm
-        (((IdeleGroup.finiteComponent
-          (RayClass.rationalPrime p)
-          (IdeleGroup.principalIdele ℚ
-            (rationalPrimeUnit x p)) :
-              ((RayClass.rationalPrime p).adicCompletion ℚ)ˣ) :
-            (RayClass.rationalPrime p).adicCompletion ℚ)) =
-      algebraMap ℚ ℚ_[p.1] (rationalPrimeUnit x p : ℚ)
-  rw [IdeleGroup.finiteComponent_principalIdele]
-  exact
-    (Padic.adicCompletionEquiv (𝓞 ℚ) p).symm.commutes
-      (rationalPrimeUnit x p : ℚ)
-
-/-- Transporting an arbitrary rational principal finite component through
-the canonical `p`-adic completion equivalence gives its ordinary image in
-`ℚ_[p]ˣ`. -/
-theorem padicCompletionEquiv_principalFiniteComponent
-    (x : ℚˣ) (p : Nat.Primes) :
-    Units.map
-        (Padic.adicCompletionEquiv (𝓞 ℚ) p).symm.toMonoidHom
-        (IdeleGroup.finiteComponent
-          (RayClass.rationalPrime p)
-          (IdeleGroup.principalIdele ℚ x)) =
-      Units.map (algebraMap ℚ ℚ_[p.1]).toMonoidHom x := by
-  apply Units.ext
-  change
-    (Padic.adicCompletionEquiv (𝓞 ℚ) p).symm
-        (((IdeleGroup.finiteComponent
-          (RayClass.rationalPrime p)
-          (IdeleGroup.principalIdele ℚ x) :
-              ((RayClass.rationalPrime p).adicCompletion ℚ)ˣ) :
-            (RayClass.rationalPrime p).adicCompletion ℚ)) =
-      algebraMap ℚ ℚ_[p.1] (x : ℚ)
-  rw [IdeleGroup.finiteComponent_principalIdele]
-  exact
-    (Padic.adicCompletionEquiv (𝓞 ℚ) p).symm.commutes
-      (x : ℚ)
-
-/-- The transported rational principal finite component has the explicit
-standard Lubin--Tate uniformizer/unit factorization. -/
-theorem padicCompletionEquiv_principalFiniteComponent_factorization
-    (x : ℚˣ) (p : Nat.Primes) :
-    Units.map
-        (Padic.adicCompletionEquiv (𝓞 ℚ) p).symm.toMonoidHom
-        (IdeleGroup.finiteComponent
-          (RayClass.rationalPrime p)
-          (IdeleGroup.principalIdele ℚ x)) =
-      LubinTate.standardLubinTateUnitFactorFieldUnit
-          (padicLocalField p.1)
-          (rationalPrimeUnitValuationSubringUnit x p) *
-        LubinTate.standardLubinTateBaseUniformizerUnit
-            (LubinTate.padicMultiplicativeLubinTateSeries_isUniformizer
-              p.1) ^
-          padicValRat p.1 (x : ℚ) := by
-  rw [
-    padicCompletionEquiv_principalFiniteComponent,
-    rationalPadicFieldUnit_eq_unitFactor_mul_baseUniformizer_zpow]
-
-/-- Applying the actual complete-DVF unit-part operation to a transported
-rational principal finite component returns the integral
-`rationalPrimeUnit` factor. -/
-theorem
-    padicCompletionEquiv_principalFiniteComponent_uniformizerUnitPart
-    (x : ℚˣ) (p : Nat.Primes) :
-    LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup.fieldUnitUniformizerUnitPart
-        (padicLocalField p.1).toCompleteDVF
-        (LubinTate.padicMultiplicativeLubinTateSeries_isUniformizer
-          p.1)
-        (Units.map
-          (Padic.adicCompletionEquiv (𝓞 ℚ) p).symm.toMonoidHom
-          (IdeleGroup.finiteComponent
-            (RayClass.rationalPrime p)
-            (IdeleGroup.principalIdele ℚ x))) =
-      rationalPrimeUnitValuationSubringUnit x p := by
-  rw [padicCompletionEquiv_principalFiniteComponent]
-  exact rationalPadicFieldUnit_uniformizerUnitPart x p
-
-/-- The rational prime generator at its own finite place transports to the
-actual standard multiplicative Lubin--Tate base uniformizer. -/
-theorem
-    padicCompletionEquiv_principalFiniteComponent_rationalPrimeGenerator
-    (p : Nat.Primes) :
-    Units.map
-        (Padic.adicCompletionEquiv (𝓞 ℚ) p).symm.toMonoidHom
-        (IdeleGroup.finiteComponent
-          (RayClass.rationalPrime p)
-          (IdeleGroup.principalIdele ℚ
-            (Units.mk0 (p.1 : ℚ) (by
-              exact_mod_cast p.2.ne_zero)))) =
-      LubinTate.standardLubinTateBaseUniformizerUnit
-        (LubinTate.padicMultiplicativeLubinTateSeries_isUniformizer
-          p.1) := by
-  rw [
-    padicCompletionEquiv_principalFiniteComponent,
-    standardLubinTateBaseUniformizerUnit_eq_rationalPrimeGenerator]
-
-/-- The principal finite component of the rational `p`-unit is transported
-to the exact field unit used by the multiplicative Lubin--Tate Artin map. -/
-theorem
-    padicCompletionEquiv_principalFiniteComponent_eq_lubinTateUnitFactor
-    (x : ℚˣ) (p : Nat.Primes) :
-    Units.map
-        (Padic.adicCompletionEquiv (𝓞 ℚ) p).symm.toMonoidHom
-        (IdeleGroup.finiteComponent
-          (RayClass.rationalPrime p)
-          (IdeleGroup.principalIdele ℚ
-            (rationalPrimeUnit x p))) =
-      LubinTate.standardLubinTateUnitFactorFieldUnit
-        (padicLocalField p.1)
-        (rationalPrimeUnitValuationSubringUnit x p) := by
-  rw [
-    padicCompletionEquiv_principalFiniteComponent_rationalPrimeUnit,
-    standardLubinTateUnitFactorFieldUnit_rationalPrimeUnit]
-
-end Reciprocity
-end GlobalClassFieldTheory
-
-end

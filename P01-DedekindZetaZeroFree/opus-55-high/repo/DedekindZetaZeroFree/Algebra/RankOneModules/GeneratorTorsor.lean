@@ -34,7 +34,3 @@ theorem smul_mem_rankOneGenerators_iff (z : M)
       obtain ⟨k, hk⟩ := hz.2 w
       refine ⟨k * (↑(u⁻¹) : R), ?_⟩
       simpa [smul_smul, mul_assoc] using hk
-
-end
-
-end DedekindZetaZeroFree.Hecke

@@ -22,7 +22,7 @@ variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
 variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
 variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
-private theorem mem_omega_iff (C : ShrunkChart F ζ hζ U R P H) (x : M F) :
+theorem mem_omega_iff (C : ShrunkChart F ζ hζ U R P H) (x : M F) :
     x ∈ omega C ↔ baseReindex (F := F) x ∈ chart C := by
   simp only [KPContActualSectorChartEquivariantInputs.chart,
     KPContCotangentOverlapRationalBranches.omega,
@@ -37,13 +37,13 @@ private theorem continuous_labeledA_self :
   exact (continuous_apply (placeEquiv F ζ hζ |>.symm k)).comp
     (CotangentLogCoframe.A (d F)).continuous
 
-private theorem continuous_proj_self (C : ShrunkChart F ζ hζ U R P H) :
+theorem continuous_proj_self (C : ShrunkChart F ζ hζ U R P H) :
     Continuous (KPCuspSiegel.projection F
       (KPContSectorPhaseComponentCharts.Component F ζ hζ U R P H C.component)) := by
   show Continuous (Quotient.mk _)
   exact continuous_quotient_mk'
 
-private theorem continuous_componentMap_self (C : ShrunkChart F ζ hζ U R P H) :
+theorem continuous_componentMap_self (C : ShrunkChart F ζ hζ U R P H) :
     Continuous (KPFiniteCuspAtlas.componentMap F ζ hζ U
       ((H.atlas U).representative C.component)) := by
   have hh := (H.atlas U).components.continuous.comp (continuous_sigmaMk (i := C.component))
@@ -53,38 +53,38 @@ private theorem continuous_q (C : ShrunkChart F ζ hζ U R P H) :
     Continuous (KPContCotangentOverlapRationalBranches.q C) :=
   (continuous_componentMap_self C).comp ((continuous_proj_self C).comp continuous_labeledA_self)
 
-private theorem isotropyArrow_phase (C : ShrunkChart F ζ hζ U R P H) (γ : Gamma C)
+theorem isotropyArrow_phase (C : ShrunkChart F ζ hζ U R P H) (γ : Gamma C)
     (x : M F) :
     (isotropyArrow C γ).phase x =
       (KPCuspGenuineMonodromy.chi F ζ hζ γ.val.2 : ℂ) := by
   simp [KPContCotangentActualOverlap.Arrow.phase, isotropyArrow, isotropyChart]
 
-private theorem scalarCocycle_apply (C : ShrunkChart F ζ hζ U R P H) (γ : Gamma C)
+theorem scalarCocycle_apply (C : ShrunkChart F ζ hζ U R P H) (γ : Gamma C)
     (x : EuclideanSpace ℝ (Fin (3 * d F))) (v : EuclideanSpace ℂ (Fin 1)) :
     (scalarCocycle C γ x) v =
       scalarReindex ((KPCuspGenuineMonodromy.chi F ζ hζ γ.val.2 : ℂ) *
         (scalarReindex.symm v)) := by
   simp [scalarCocycle, scalarPhase]
 
-private theorem action_eq (C : ShrunkChart F ζ hζ U R P H) (γ : Gamma C) (x : M F) :
+theorem action_eq (C : ShrunkChart F ζ hζ U R P H) (γ : Gamma C) (x : M F) :
     action C γ (baseReindex (F := F) x) =
       baseReindex (F := F) ((isotropyArrow C γ).psi x) := by
   simp [KPContActualSectorChartEquivariantInputs.action,
     LinearIsometryEquiv.symm_apply_apply]
 
-private theorem scalarData_act (C : ShrunkChart F ζ hζ U R P H) :
+theorem scalarData_act (C : ShrunkChart F ζ hζ U R P H) :
     (scalarData C).act = action C := rfl
 
-private theorem scalarData_cocycle (C : ShrunkChart F ζ hζ U R P H) :
+theorem scalarData_cocycle (C : ShrunkChart F ζ hζ U R P H) :
     (scalarData C).cocycle = scalarCocycle C := rfl
 
-private theorem cotangentData_act (C : ShrunkChart F ζ hζ U R P H) :
+theorem cotangentData_act (C : ShrunkChart F ζ hζ U R P H) :
     (cotangentData C).act = action C := rfl
 
-private theorem cotangentData_cocycle (C : ShrunkChart F ζ hζ U R P H) :
+theorem cotangentData_cocycle (C : ShrunkChart F ζ hζ U R P H) :
     (cotangentData C).cocycle = cotangentCocycle C := rfl
 
-private theorem T_apply' {i : Fin (H.atlas U).componentCount}
+theorem T_apply' {i : Fin (H.atlas U).componentCount}
     {a b : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) i}
     (ψ : Arrow a b) (x : M F) (hx : x ∈ ψ.domain) (v : E F) :
     T ψ x hx v = ψ.phase x •

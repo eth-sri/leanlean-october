@@ -36,7 +36,3 @@ theorem exists_multiplicative_quotient_balanced_tiling :
   intro y
   obtain ⟨γ, hγ, _⟩ := htiling y
   exact ⟨γ, subset_closure hγ⟩
-
-end
-end SArithmeticData
-end DedekindZetaZeroFree

@@ -13,7 +13,7 @@ set_option maxHeartbeats 1800000
 set_option backward.isDefEq.respectTransparency true
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-private theorem archChart_domain_injective (x y : ArchCoordinates F)
+theorem archChart_domain_injective (x y : ArchCoordinates F)
     (hx : x ∈ archDomain F) (hy : y ∈ archDomain F)
     (he : archChart F ζ hζ x = archChart F ζ hζ y) : x = y := by
   rw [right_insertion, right_insertion] at he

@@ -111,7 +111,7 @@ section Words
 variable {B : Type*}
 open RightFrame.PullbackWords
 
-private lemma joint_word (Ω : Set ℂ) (hΩ : IsOpen Ω) (O : Set E) (hO : IsOpen O)
+lemma joint_word (Ω : Set ℂ) (hΩ : IsOpen Ω) (O : Set E) (hO : IsOpen O)
     (fields : B → E → E) (hfields : ∀ b, ContDiffOn ℝ (⊤ : ℕ∞) (fields b) O)
     (h : ℂ → E → ℂ)
     (hh : ContDiffOn ℝ (⊤ : ℕ∞) (Function.uncurry h) (Ω ×ˢ O)) (w : List B) :

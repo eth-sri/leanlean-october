@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Irreducible factors as conjugacy classes of roots
 
@@ -43,7 +37,7 @@ universe u v
 The normalization instances for an arbitrary field require a decidable
 equality; this definition installs the classical one internally instead of
 exposing it as an assumption of the extension-factor correspondence. -/
-noncomputable def polynomialNormalizedFactors
+def polynomialNormalizedFactors
     {F : Type u} [Field F] (p : F[X]) : Multiset F[X] := by
   letI : DecidableEq F := Classical.decEq F
   letI : NormalizationMonoid F := inferInstance
@@ -52,7 +46,7 @@ noncomputable def polynomialNormalizedFactors
 
 /-- The finite set underlying `polynomialNormalizedFactors`, with repeated
 factors removed. -/
-noncomputable def polynomialDistinctNormalizedFactors
+def polynomialDistinctNormalizedFactors
     {F : Type u} [Field F] (p : F[X]) : Finset F[X] := by
   classical
   exact (polynomialNormalizedFactors p).toFinset
@@ -145,7 +139,7 @@ theorem range_rootMinpoly_eq_distinctNormalizedFactors
 
 /-- Conjugacy classes of roots of `p` are in canonical bijection with the
 distinct normalized irreducible factors of `p`. -/
-noncomputable def rootClassesEquivDistinctNormalizedFactors
+def rootClassesEquivDistinctNormalizedFactors
     {F : Type u} [Field F] {E : Type v} [Field E] [Algebra F E]
     [Algebra.IsAlgebraic F E] [IsAlgClosed E]
     {p : F[X]} (hp : p ≠ 0) :
@@ -154,25 +148,10 @@ noncomputable def rootClassesEquivDistinctNormalizedFactors
   (Setoid.quotientKerEquivRange (rootMinpoly p)).trans
     (Set.equivOfEq (range_rootMinpoly_eq_distinctNormalizedFactors hp))
 
-/-- Two roots are equivalent precisely when they are conjugate roots. -/
-theorem rootMinpolySetoid_rel_iff_isConjRoot
-    {F : Type u} [Field F] {E : Type v} [Field E] [Algebra F E]
-    {p : F[X]} (x y : PolynomialRootsIn E p) :
-    (rootMinpolySetoid p).r x y ↔ IsConjRoot F (x : E) (y : E) :=
-  Iff.rfl
-
-/-- Minimal-polynomial equivalence of roots agrees with the Galois orbit relation. -/
-theorem rootMinpolySetoid_rel_iff_orbitRel
-    {F : Type u} [Field F] {E : Type v} [Field E] [Algebra F E]
-    [Normal F E] {p : F[X]} (x y : PolynomialRootsIn E p) :
-    (rootMinpolySetoid p).r x y ↔
-      MulAction.orbitRel Gal(E / F) E (x : E) (y : E) := by
-  exact isConjRoot_iff_orbitRel
-
 /-- For a simple finite extension `L = K(α)`, `K`-embeddings into an
 extension of `K'` are the roots, in that extension, of the minimal polynomial
 of `α` after base change from `K` to `K'`. -/
-noncomputable def simpleEmbeddingsEquivMappedMinpolyRoots
+def simpleEmbeddingsEquivMappedMinpolyRoots
     {K : Type u} {L : Type v} {K' E : Type*}
     [Field K] [Field L] [Field K'] [Field E]
     [Algebra K L] [Algebra K K'] [Algebra K E] [Algebra K' E]
@@ -184,7 +163,7 @@ noncomputable def simpleEmbeddingsEquivMappedMinpolyRoots
         ((minpoly K α).map (algebraMap K K')) := by
   let pb : PowerBasis K L := PowerBasis.ofAdjoinEqTop hα hgen
   let p : K'[X] := (minpoly K α).map (algebraMap K K')
-  have hpbgen : pb.gen = α := by simp [pb]
+  have hpbgen : pb.gen = α := by rfl
   have hp : p ≠ 0 :=
     (Polynomial.map_ne_zero_iff (algebraMap K K').injective).2
       (minpoly.ne_zero hα)
@@ -193,8 +172,7 @@ noncomputable def simpleEmbeddingsEquivMappedMinpolyRoots
     refine ⟨hp, ?_⟩
     change Polynomial.aeval (τ α)
       ((minpoly K α).map (algebraMap K K')) = 0
-    rw [aeval_map_algebraMap]
-    rw [aeval_algHom_apply τ α (minpoly K α), minpoly.aeval, map_zero]
+    simp
   have hbaseRoot (x : PolynomialRootsIn E p) :
       Polynomial.aeval (x : E) (minpoly K pb.gen) = 0 := by
     rw [hpbgen]
@@ -220,8 +198,3 @@ noncomputable def simpleEmbeddingsEquivMappedMinpolyRoots
       pb.lift (x : E) _ α = pb.lift (x : E) _ pb.gen :=
         congrArg (pb.lift (x : E) (hbaseRoot x)) hpbgen.symm
       _ = x := pb.lift_gen (x : E) (hbaseRoot x)
-
-end Completion
-end ValuationTheory
-
-end

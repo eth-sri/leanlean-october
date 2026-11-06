@@ -1,6 +1,20 @@
 module
 
-public import ClassFieldTheory.Definitions.HilbertSymbols.All
+public import ClassFieldTheory.Definitions.HilbertSymbols.GlobalHilbertPairingFamily
+public import ClassFieldTheory.Definitions.HilbertSymbols.GlobalHilbertPairingFiniteFactor
+public import ClassFieldTheory.Definitions.HilbertSymbols.GlobalHilbertPairingProperties
+public import ClassFieldTheory.Definitions.HilbertSymbols.GlobalInfinitePlaceHilbertSymbol
+public import Mathlib.NumberTheory.NumberField.Completion.FinitePlace
+public import ClassFieldTheory.Definitions.HilbertSymbols.HilbertPairing
+public import ClassFieldTheory.Definitions.HilbertSymbols.HilbertPairingLaws
+public import ClassFieldTheory.Definitions.HilbertSymbols.HilbertPairingNormResidueCriterion
+public import ClassFieldTheory.Definitions.HilbertSymbols.HilbertPairingSymbol
+public import ClassFieldTheory.Definitions.HilbertSymbols.IsKummerNorm
+public import ClassFieldTheory.Definitions.HilbertSymbols.IsLocalHilbertPairing
+public import ClassFieldTheory.Definitions.HilbertSymbols.KummerAlgebra
+public import Mathlib.RingTheory.Norm.Basic
+public import ClassFieldTheory.Definitions.HilbertSymbols.PowerClass
+public import ClassFieldTheory.Definitions.HilbertSymbols.PowerClassGroup
 public import ClassFieldTheory.LocalClassFieldTheory.Kummer.CanonicalKummerNorm
 public import ClassFieldTheory.LocalClassFieldTheory.Kummer.LocalHilbertSymbol
 public import ClassFieldTheory.LocalClassFieldTheory.Kummer.LocalHilbertPairingNondegeneracy
@@ -16,15 +30,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
-
-set_option autoImplicit false
 
 /-!
 # Mathlib-facing local Hilbert pairing
@@ -43,7 +48,7 @@ variable [ValuativeRel K] [TopologicalSpace K]
 
 /-- The local norm-residue Hilbert symbol, expressed in Mathlib's
 `rootsOfUnity` rather than the internal subgroup of units. -/
-noncomputable def localHilbertSymbol
+def localHilbertSymbol
     (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
     (hmu : (primitiveRoots (n : ℕ) K).Nonempty) (a b : Kˣ) :
     rootsOfUnity (n : ℕ) K :=
@@ -52,7 +57,7 @@ noncomputable def localHilbertSymbol
 
 /-- The descended local pairing, transported to Mathlib's
 `PowerClassGroup` and `rootsOfUnity`. -/
-noncomputable def localHilbertPairing
+def localHilbertPairing
     (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
     (hmu : (primitiveRoots (n : ℕ) K).Nonempty) :
     HilbertPairing K n :=
@@ -91,9 +96,7 @@ theorem localHilbertSymbol_mul_left
   let e := KummerTheory.nthRootsSubgroupEquivRootsOfUnity K (n : ℕ)
   let h := LocalClassFieldTheory.Kummer.localHilbertSymbolHom K n hnK hmu c
   change e (h (a * b)) = e (h a) * e (h b)
-  calc
-    e (h (a * b)) = e (h a * h b) := congrArg e (map_mul h a b)
-    _ = e (h a) * e (h b) := map_mul e (h a) (h b)
+  simp
 
 /-- The local Hilbert symbol is multiplicative in its second variable. -/
 theorem localHilbertSymbol_mul_right
@@ -107,16 +110,7 @@ theorem localHilbertSymbol_mul_right
     e (LocalClassFieldTheory.Kummer.localHilbertSymbol K n hnK hmu a (b * c)) =
       e (LocalClassFieldTheory.Kummer.localHilbertSymbol K n hnK hmu a b) *
         e (LocalClassFieldTheory.Kummer.localHilbertSymbol K n hnK hmu a c)
-  calc
-    e (LocalClassFieldTheory.Kummer.localHilbertSymbol K n hnK hmu a (b * c)) =
-        e (LocalClassFieldTheory.Kummer.localHilbertSymbol K n hnK hmu a b *
-          LocalClassFieldTheory.Kummer.localHilbertSymbol K n hnK hmu a c) :=
-      congrArg e
-        (LocalClassFieldTheory.Kummer.localHilbertSymbol_mul_right
-          K n hnK hmu a b c)
-    _ = e (LocalClassFieldTheory.Kummer.localHilbertSymbol K n hnK hmu a b) *
-        e (LocalClassFieldTheory.Kummer.localHilbertSymbol K n hnK hmu a c) :=
-      map_mul e _ _
+  simp
 
 /-- The local Hilbert symbol satisfies the Steinberg relation
 `(a, 1 - a) = 1`. -/
@@ -130,13 +124,7 @@ theorem localHilbertSymbol_steinberg
   change
     e (LocalClassFieldTheory.Kummer.localHilbertSymbol K n hnK hmu a
       (Units.mk0 (1 - (a : K)) h_one_sub)) = 1
-  calc
-    e (LocalClassFieldTheory.Kummer.localHilbertSymbol K n hnK hmu a
-        (Units.mk0 (1 - (a : K)) h_one_sub)) = e 1 :=
-      congrArg e
-        (LocalClassFieldTheory.Kummer.localHilbertSymbol_steinberg
-          K n hnK hmu a h_one_sub)
-    _ = 1 := map_one e
+  simp
 
 /-- The local Hilbert symbol is skew-symmetric. -/
 theorem localHilbertSymbol_skew
@@ -157,66 +145,6 @@ theorem localHilbertSymbol_skew
           K n hnK hmu a b)
     _ = (e (LocalClassFieldTheory.Kummer.localHilbertSymbol
         K n hnK hmu b a))⁻¹ := map_inv e _
-
-/-- The common left kernel of the local Hilbert symbol is the subgroup of
-`n`-th powers. -/
-theorem localHilbertSymbol_left_kernel
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) (a : Kˣ) :
-    (∀ b : Kˣ, localHilbertSymbol K n hnK hmu a b = 1) ↔
-      a ∈ (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range := by
-  let e := KummerTheory.nthRootsSubgroupEquivRootsOfUnity K (n : ℕ)
-  constructor
-  · intro h
-    apply (LocalClassFieldTheory.Kummer.localHilbertSymbol_left_kernel
-      K n hnK hmu a).1
-    intro b
-    apply e.injective
-    calc
-      e (LocalClassFieldTheory.Kummer.localHilbertSymbol K n hnK hmu a b) =
-          localHilbertSymbol K n hnK hmu a b := rfl
-      _ = 1 := h b
-      _ = e 1 := (map_one e).symm
-  · intro ha b
-    have hInternal :=
-      (LocalClassFieldTheory.Kummer.localHilbertSymbol_left_kernel
-        K n hnK hmu a).2 ha b
-    calc
-      localHilbertSymbol K n hnK hmu a b =
-          e (LocalClassFieldTheory.Kummer.localHilbertSymbol
-            K n hnK hmu a b) := rfl
-      _ = e 1 := congrArg e hInternal
-      _ = 1 := map_one e
-
-/-- The common right kernel of the local Hilbert symbol is the subgroup of
-`n`-th powers. -/
-theorem localHilbertSymbol_right_kernel
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) (b : Kˣ) :
-    (∀ a : Kˣ, localHilbertSymbol K n hnK hmu a b = 1) ↔
-      b ∈ (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range := by
-  let e := KummerTheory.nthRootsSubgroupEquivRootsOfUnity K (n : ℕ)
-  constructor
-  · intro h
-    apply (LocalClassFieldTheory.Kummer.localHilbertSymbol_right_kernel
-      K n hnK hmu b).1
-    intro a
-    apply e.injective
-    calc
-      e (LocalClassFieldTheory.Kummer.localHilbertSymbol K n hnK hmu a b) =
-          localHilbertSymbol K n hnK hmu a b := rfl
-      _ = 1 := h a
-      _ = e 1 := (map_one e).symm
-  · intro hb a
-    have hInternal :=
-      (LocalClassFieldTheory.Kummer.localHilbertSymbol_right_kernel
-        K n hnK hmu b).2 hb a
-    calc
-      localHilbertSymbol K n hnK hmu a b =
-          e (LocalClassFieldTheory.Kummer.localHilbertSymbol
-            K n hnK hmu a b) := rfl
-      _ = e 1 := congrArg e hInternal
-      _ = 1 := map_one e
 
 /-- The local Hilbert pairing separates power classes in both variables. -/
 theorem localHilbertPairing_nondegenerate
@@ -260,14 +188,12 @@ theorem localHilbertSymbol_eq_one_iff_isKummerNorm
   let e := KummerTheory.nthRootsSubgroupEquivRootsOfUnity K (n : ℕ)
   have hmap : localHilbertSymbol K n hnK hmu a b = 1 ↔
       LocalClassFieldTheory.Kummer.localHilbertSymbol K n hnK hmu a b = 1 := by
-    change e (LocalClassFieldTheory.Kummer.localHilbertSymbol
-      K n hnK hmu a b) = 1 ↔ _
-    rw [← map_one e, e.injective.eq_iff]
+    rfl
   have hskew : LocalClassFieldTheory.Kummer.localHilbertSymbol
       K n hnK hmu a b = 1 ↔
       LocalClassFieldTheory.Kummer.localHilbertSymbol K n hnK hmu b a = 1 := by
     rw [LocalClassFieldTheory.Kummer.localHilbertSymbol_skew K n hnK hmu a b]
-    simp only [inv_eq_one]
+    simp
   have hnorm : b ∈ LocalFieldTheory.localNormSubgroup K E ↔
       ∃ z : Eˣ, Algebra.norm K (z : E) = (b : K) := by
     change (∃ z : Eˣ, LocalFieldTheory.normUnits K E z = b) ↔ _
@@ -415,7 +341,3 @@ theorem localHilbertPairing_artin_rootQuotient_of_same_pow
     simpa only [E, beta, sigma] using
       (localHilbertPairing_artin_rootQuotient K n hnK hmu a b)
   exact hchosen.trans hroot.symm
-
-end ClassFieldTheory
-
-end

@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Base-place selection for S-unit Kummer extensions
 
@@ -41,7 +36,7 @@ variable {K : Type} [Field K]
 
 /-- Base finite places lying below a full-decomposition place for the
 cyclic coordinate extension `N/N_i`. -/
-noncomputable def sUnitKummerCoordinateBasePlaceCandidates
+def sUnitKummerCoordinateBasePlaceCandidates
     {Omega : Type} [Field Omega] [Algebra K Omega]
     [IsSepClosure K Omega]
     (E : IntermediateField K Omega)
@@ -188,7 +183,7 @@ theorem sUnitKummerCoordinateBasePlaceCandidates_infinite
 /-- The finite set avoided in the prime choice: the enlarged support,
 all base primes ramified in the full Kummer extension, and the support of
 the exponent `n`. -/
-noncomputable def sUnitKummerAvoidedBasePlaces
+def sUnitKummerAvoidedBasePlaces
     {Omega : Type} [Field Omega] [Algebra K Omega]
     [IsSepClosure K Omega]
     (E : IntermediateField K Omega)
@@ -235,11 +230,7 @@ theorem
       sUnitKummerAvoidedBasePlaces
         (K := K) (Omega := Omega) E n hmu S := by
   unfold sUnitKummerAvoidedBasePlaces
-  dsimp only
-  intro w hw
-  exact
-    Finset.mem_union_left _
-      (Finset.mem_union_left _ hw)
+  simp
 
 /-- Simultaneously choose distinct full-decomposition candidates outside
 the enlarged support, the ramified primes of `N/K`, and the support of `n`. -/
@@ -316,7 +307,7 @@ theorem exists_sUnitKummerChosenBasePlaces
   exact hBsub i (hfB i)
 
 /-- The chosen ordered family of base primes. -/
-noncomputable def sUnitKummerChosenBasePlaces
+def sUnitKummerChosenBasePlaces
     {Omega : Type} [Field Omega] [Algebra K Omega]
     [IsSepClosure K Omega]
     (E : IntermediateField K Omega)
@@ -477,9 +468,3 @@ theorem sUnitKummerChosenBasePlaces_valuation_natCast_eq_one
         p v hp hv hn r eG S i)
       hnotSupport
   simpa [nUnit] using hunit
-
-end FinitePlaces
-
-end GlobalClassFieldTheory.ClassFieldAxiom
-
-end

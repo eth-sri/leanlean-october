@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Arithmetic.RayClasses.Moduli.IntegralIdealMod
 
 @[expose] public section
 
-noncomputable section
 open scoped NumberField Classical
 open IsDedekindDomain
 
@@ -13,7 +12,7 @@ namespace DedekindZetaZeroFree.RayClassBridge.RayFractional
 variable (F : Type) [Field F] [NumberField F]
 variable (𝔪 : Ideal (𝓞 F)) (h𝔪 : 𝔪 ≠ ⊥)
 
-private lemma count_finset_prod_prime
+lemma count_finset_prod_prime
     (s : Finset (HeightOneSpectrum (𝓞 F))) (n : HeightOneSpectrum (𝓞 F) → ℕ)
     (v : HeightOneSpectrum (𝓞 F)) :
     FractionalIdeal.count F v
@@ -41,12 +40,12 @@ private lemma count_finset_prod_prime
           (FractionalIdeal.coeIdeal_ne_zero.mpr w.ne_bot))]
   simp only [FractionalIdeal.count_pow, FractionalIdeal.count_maximal, mul_ite, mul_one,
     mul_zero]
-  rw [Finset.sum_ite_eq']
+  simp
 
-private lemma sup_mul_coprime (I J : Ideal (𝓞 F))
+lemma sup_mul_coprime (I J : Ideal (𝓞 F))
     (hI : I ⊔ 𝔪 = ⊤) (hJ : J ⊔ 𝔪 = ⊤) : (I * J) ⊔ 𝔪 = ⊤ := by
   rw [eq_top_iff]
-  calc (⊤ : Ideal (𝓞 F)) = (I ⊔ 𝔪) * (J ⊔ 𝔪) := by rw [hI, hJ]; simp
+  calc (⊤ : Ideal (𝓞 F)) = (I ⊔ 𝔪) * (J ⊔ 𝔪) := by simp_all
     _ = (I * J ⊔ I * 𝔪) ⊔ (𝔪 * J ⊔ 𝔪 * 𝔪) := by
         rw [Ideal.sup_mul, Ideal.mul_sup, Ideal.mul_sup]
     _ ≤ I * J ⊔ 𝔪 := by
@@ -55,13 +54,13 @@ private lemma sup_mul_coprime (I J : Ideal (𝓞 F))
         · exact le_trans Ideal.mul_le_left le_sup_right
         · exact le_trans Ideal.mul_le_left le_sup_right
 
-private lemma sup_pow_coprime (I : Ideal (𝓞 F)) (n : ℕ) (h : I ⊔ 𝔪 = ⊤) :
+lemma sup_pow_coprime (I : Ideal (𝓞 F)) (n : ℕ) (h : I ⊔ 𝔪 = ⊤) :
     (I ^ n) ⊔ 𝔪 = ⊤ := by
   induction n with
   | zero => simp [Ideal.one_eq_top]
   | succ n ih => rw [pow_succ]; exact sup_mul_coprime F 𝔪 _ _ ih h
 
-private lemma sup_finset_prod_coprime (s : Finset (HeightOneSpectrum (𝓞 F)))
+lemma sup_finset_prod_coprime (s : Finset (HeightOneSpectrum (𝓞 F)))
     (n : HeightOneSpectrum (𝓞 F) → ℕ)
     (h : ∀ v ∈ s, v.asIdeal ⊔ 𝔪 = ⊤) :
     (∏ v ∈ s, v.asIdeal ^ n v) ⊔ 𝔪 = ⊤ := by
@@ -74,7 +73,7 @@ private lemma sup_finset_prod_coprime (s : Finset (HeightOneSpectrum (𝓞 F)))
         (sup_pow_coprime F 𝔪 _ _ (h a (Finset.mem_insert_self a s)))
         (ih fun v hv => h v (Finset.mem_insert_of_mem hv))
 
-private lemma coprime_of_mem_subgroup
+lemma coprime_of_mem_subgroup
     (x : ClassFieldTheory.NumberFieldFractionalIdealGroup F)
     (hx : x ∈ ClassFieldTheory.rayClassPrimeToIdeals (narrowIdealModulus F 𝔪 h𝔪))
     (v : HeightOneSpectrum (𝓞 F))
@@ -82,7 +81,7 @@ private lemma coprime_of_mem_subgroup
       (x : FractionalIdeal (nonZeroDivisors (𝓞 F)) F) ≠ 0) :
     v.asIdeal ⊔ 𝔪 = ⊤ := by
   classical
-  have h𝔪0 : 𝔪 ≠ 0 := by rw [Ideal.zero_eq_bot]; exact h𝔪
+  have h𝔪0 : 𝔪 ≠ 0 := by omega
   have hnotmem : v ∉ (narrowIdealModulus F 𝔪 h𝔪).finitePart.support := fun hmem => hv (hx v hmem)
   have hzero : (narrowIdealModulus F 𝔪 h𝔪).finitePart v = 0 :=
     Finsupp.notMem_support_iff.mp hnotmem
@@ -96,7 +95,7 @@ private lemma coprime_of_mem_subgroup
     have hz : ((Associates.mk v.asIdeal).count (Associates.mk 𝔪).factors : ℤ) = 0 := by
       rw [← FractionalIdeal.count_coe F v h𝔪0]
       exact hcount
-    exact h (by exact_mod_cast hz)
+    omega
   have hnotle : ¬ 𝔪 ≤ v.asIdeal := fun h => hndvd (Ideal.dvd_iff_le.mpr h)
   by_contra hne
   have hmax : v.asIdeal.IsMaximal := v.isPrime.isMaximal v.ne_bot
@@ -118,11 +117,11 @@ theorem exists_integralUnit_ratio
   have hmemP : ∀ v, v ∈ P ↔ 0 < e v := by
     intro v
     rw [Finset.mem_filter, Finsupp.mem_support_iff]
-    exact ⟨fun h => h.2, fun h => ⟨ne_of_gt h, h⟩⟩
+    omega
   have hmemN : ∀ v, v ∈ N ↔ e v < 0 := by
     intro v
     rw [Finset.mem_filter, Finsupp.mem_support_iff]
-    exact ⟨fun h => h.2, fun h => ⟨ne_of_lt h, h⟩⟩
+    omega
   have hcountA : ∀ v, FractionalIdeal.count F v
       (A : FractionalIdeal (nonZeroDivisors (𝓞 F)) F)
       = if v ∈ P then ((e v).toNat : ℤ) else 0 := by
@@ -137,8 +136,7 @@ theorem exists_integralUnit_ratio
     by_cases hP : P = ∅
     · have hAeq : A = ⊤ := by
         change (∏ v ∈ P, v.asIdeal ^ (e v).toNat) = ⊤
-        rw [hP]
-        simp [Ideal.one_eq_top]
+        simp_all
       rw [hAeq]
       exact top_ne_bot
     · obtain ⟨v, hvP⟩ := Finset.nonempty_iff_ne_empty.mpr hP
@@ -146,14 +144,12 @@ theorem exists_integralUnit_ratio
       have hc := hcountA v
       rw [hbot, FractionalIdeal.coeIdeal_bot, FractionalIdeal.count_zero, if_pos hvP] at hc
       have hpos : 0 < e v := (hmemP v).mp hvP
-      have hcast : ((e v).toNat : ℤ) = e v := Int.toNat_of_nonneg (le_of_lt hpos)
-      exact (by rw [hcast]; omega : ((e v).toNat : ℤ) ≠ 0) hc.symm
+      omega
   have hB : B ≠ ⊥ := by
     by_cases hN : N = ∅
     · have hBeq : B = ⊤ := by
         change (∏ v ∈ N, v.asIdeal ^ (-(e v)).toNat) = ⊤
-        rw [hN]
-        simp [Ideal.one_eq_top]
+        simp_all
       rw [hBeq]
       exact top_ne_bot
     · obtain ⟨v, hvN⟩ := Finset.nonempty_iff_ne_empty.mpr hN
@@ -161,8 +157,7 @@ theorem exists_integralUnit_ratio
       have hc := hcountB v
       rw [hbot, FractionalIdeal.coeIdeal_bot, FractionalIdeal.count_zero, if_pos hvN] at hc
       have hpos : 0 < -(e v) := neg_pos.mpr ((hmemN v).mp hvN)
-      have hcast : ((-(e v)).toNat : ℤ) = -(e v) := Int.toNat_of_nonneg (le_of_lt hpos)
-      exact (by rw [hcast]; omega : ((-(e v)).toNat : ℤ) ≠ 0) hc.symm
+      omega
   have hcA : A ⊔ 𝔪 = ⊤ := by
     refine sup_finset_prod_coprime F 𝔪 P (fun v => (e v).toNat) fun v hvP => ?_
     refine coprime_of_mem_subgroup F 𝔪 h𝔪 x hx v ?_
@@ -223,7 +218,7 @@ theorem monoidHom_ext_of_integralPrimeTo {M : Type*} [Group M]
   apply MonoidHom.ext
   intro x
   obtain ⟨A, B, hA, hB, hcA, hcB, hx⟩ := exists_integralPrimeTo_ratio F 𝔪 h𝔪 x
-  rw [hx, map_mul, map_inv, map_mul, map_inv, h A hA hcA, h B hB hcB]
+  simp_all
 
 theorem eq_of_integral_values
     (χ ψ : ClassFieldTheory.rayClassPrimeToIdeals (narrowIdealModulus F 𝔪 h𝔪) →* ℂˣ)
@@ -232,7 +227,3 @@ theorem eq_of_integral_values
         (ψ (integralPrimeTo F 𝔪 h𝔪 I hI hcop) : ℂ)) :
     χ = ψ :=
   monoidHom_ext_of_integralPrimeTo F 𝔪 h𝔪 χ ψ fun I hI hcop => Units.ext (h I hI hcop)
-
-end DedekindZetaZeroFree.RayClassBridge.RayFractional
-
-end

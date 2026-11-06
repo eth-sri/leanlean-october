@@ -76,7 +76,7 @@ theorem idealNorm_prime_ge_two (p : Ideal (𝓞 F)) (hp : Prime p) :
   change (2 : ℝ) ≤ (Ideal.absNorm p : ℝ)
   exact_mod_cast hn
 
-private theorem radical_factors (h : Ideal (𝓞 F)) :
+theorem radical_factors (h : Ideal (𝓞 F)) :
     normalizedFactors (idealRadical h) = (idealPrimeSupport h).val := by
   unfold idealRadical
   simp only [Finset.prod_eq_multiset_prod, Multiset.map_id']
@@ -112,7 +112,7 @@ theorem betaLocal_one_add_three_mul (Q : ℝ) (hQ : 2 ≤ Q) (k : ℕ) :
   have h0 : 1 + 3 * k ≠ 0 := by omega
   have hm : (1 + 3 * k) % 3 = 1 := by omega
   have hd : (1 + 3 * k) / 3 = k := by omega
-  simp [betaLocal, h0, hm, hd]
+  simp [betaLocal, hm, hd]
 
 theorem betaLocal_three_mul (Q : ℝ) (hQ : 2 ≤ Q) (k : ℕ) (hk : 1 ≤ k) :
     betaLocal Q (3 * k) = Real.rpow Q ((1 / 2 : ℝ) - k) := by
@@ -125,7 +125,7 @@ theorem betaLocal_two_add_three_mul (Q : ℝ) (hQ : 2 ≤ Q) (k : ℕ) :
     betaLocal Q (2 + 3 * k) = 0 := by
   have h0 : 2 + 3 * k ≠ 0 := by omega
   have hm : (2 + 3 * k) % 3 = 2 := by omega
-  simp [betaLocal, h0, hm]
+  simp [betaLocal, hm]
 
 theorem betaLocal_nonneg (Q : ℝ) (hQ : 2 ≤ Q) (e : ℕ) :
     0 ≤ betaLocal Q e := by
@@ -134,7 +134,3 @@ theorem betaLocal_nonneg (Q : ℝ) (hQ : 2 ≤ Q) (e : ℕ) :
 
 def exteriorSquarefreeTop (cS : Ideal (𝓞 F)) : ExteriorSquarefreeIdeal cS :=
   ⟨⟨⊤, by simp⟩, by simpa using (squarefree_one : Squarefree (1 : Ideal (𝓞 F)))⟩
-
-end
-
-end DedekindZetaZeroFree

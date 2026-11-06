@@ -10,7 +10,7 @@ noncomputable def coordBasis (E : Type) [Field E] [NumberField E]
     [IsCyclotomicExtension {3} ℚ E] (ω : E) (hω : IsPrimitiveRoot ω 3) :
     Module.Basis (Fin 2) ℤ (R E) :=
   hω.integralPowerBasis.basis.reindex (finCongr (by simp; decide))
-private theorem coordBasis_apply (E : Type) [Field E] [NumberField E]
+theorem coordBasis_apply (E : Type) [Field E] [NumberField E]
     [IsCyclotomicExtension {3} ℚ E] (ω : E) (hω : IsPrimitiveRoot ω 3) (i : Fin 2) :
     coordBasis E ω hω i = η E ω hω ^ (i : ℕ) := by
   simp [coordBasis, Module.Basis.reindex_apply, PowerBasis.basis_eq_pow]
@@ -30,19 +30,14 @@ theorem existsUnique_int_coordinates (E : Type) [Field E] [NumberField E]
     simp
   refine ⟨(B.repr x 0, B.repr x 1), ?_, ?_⟩
   · have h := B.sum_repr x
-    simpa [Fin.sum_univ_two, h0, h1, zsmul_eq_mul] using h.symm
-  · rintro ⟨a,b⟩ hab
-    apply Prod.ext
-    · have h := congrArg (fun y => B.repr y 0) hab
-      simpa [rep] using h.symm
-    · have h := congrArg (fun y => B.repr y 1) hab
-      simpa [rep] using h.symm
+    simp_all
+  simp_all
 
 theorem eta_sq_add_eta_add_one (E : Type) [Field E] [NumberField E]
     [IsCyclotomicExtension {3} ℚ E] (ω : E) (hω : IsPrimitiveRoot ω 3) :
     η E ω hω ^ 2 + η E ω hω + 1 = 0 := by
   have h := IsCyclotomicExtension.Rat.Three.eta_sq hω
-  simp only [Units.val_pow_eq_pow_val, IsUnit.unit_spec] at h
+  simp only [IsUnit.unit_spec] at h
   linear_combination h
 
 theorem norm_int_coordinates (E : Type) [Field E] [NumberField E]
@@ -105,9 +100,7 @@ theorem normSq_int_coordinates (E : Type) [Field E] [NumberField E]
   simp only [map_add, map_mul, map_intCast]
   change Complex.normSq ((a : ℂ) + (b : ℂ) * z) = _
   push_cast
-  simp only [Complex.normSq_apply, Complex.add_re, Complex.add_im,
-    Complex.mul_re, Complex.mul_im, Complex.intCast_re, Complex.intCast_im,
-    zero_mul, mul_zero, sub_zero, zero_add]
+  simp only [Complex.normSq_apply, Complex.add_re, Complex.add_im, Complex.mul_re, Complex.mul_im, Complex.intCast_re, Complex.intCast_im, zero_mul, sub_zero, zero_add]
   nlinarith [sq_nonneg ((b : ℝ) * z.im)]
 
 theorem absNorm_span_eq_normSq (E : Type) [Field E] [NumberField E]
@@ -121,5 +114,3 @@ theorem absNorm_span_eq_normSq (E : Type) [Field E] [NumberField E]
     rw [← normSq_int_coordinates E ω hω ι a b]
     exact Complex.normSq_nonneg _
   rw [Nat.cast_natAbs, Int.cast_abs, abs_of_nonneg hn]
-
-end DedekindZetaZeroFree.Eisenstein

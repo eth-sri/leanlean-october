@@ -20,8 +20,3 @@ def rationalSplitting : RationalSplitting F ζ hζ where
           KPRationalAdelicSplitting.rationalScalars] using
           KPRationalAdelicSplitting.rationalScalars_le_ker F ζ hζ)
   on_matrix := by intro g; rfl
-
-end ElementaryOutputs
-end DedekindZetaZeroFree.KPGlobalResidualConstruction
-
-end

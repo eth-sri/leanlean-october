@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Geometry.Cusps.SiegelReduction.CompactBoxes
 
 @[expose] public section
 
-noncomputable section
 open scoped Classical
 
 namespace DedekindZetaZeroFree.KPCuspSiegel
@@ -15,10 +14,10 @@ theorem isOpenMap_action (g : KPCuspArithmetic.PGL2 F) : IsOpenMap (action F g) 
   apply IsOpenMap.of_inverse (continuous_action F g⁻¹)
   · intro z
     change g • (g⁻¹ • z) = z
-    exact smul_inv_smul g z
+    simp
   · intro z
     change g⁻¹ • (g • z) = z
-    exact inv_smul_smul g z
+    simp
 
 theorem isOpen_highCusp (σ : KPCuspArithmetic.PGL2 F) (T : ℝ) :
     IsOpen (highCusp F σ T) := by
@@ -76,7 +75,7 @@ theorem isCompact_complement_of_cover {n : ℕ}
         (⋃ a : Fin n, projection F Γ '' highCusp F (σ a) T) =
         (⋃ a : Fin n, projection F Γ '' highCusp F (σ a) T)ᶜ := by
       ext p
-      exact and_iff_right (Set.mem_univ p)
+      simp
     rw [he]
     exact (isOpen_projected_highCusps F Γ σ T).isClosed_compl
   · intro p hp
@@ -103,7 +102,3 @@ theorem isCompact_complement_of_cover {n : ℕ}
       exact ⟨a, _, ⟨x, hx, b, hb, t, ⟨ht, htT⟩, rfl⟩, rfl⟩
     · change projection F Γ _ = projection F Γ z
       rw [hz, projection_action]
-
-end DedekindZetaZeroFree.KPCuspSiegel
-
-end

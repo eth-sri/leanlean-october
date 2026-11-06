@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 namespace LocalClassFieldTheory
 
 open ClassFormation
@@ -177,8 +174,3 @@ def subCompNormHomHomologyIsoOfRepIso
     (Rep.FiniteCyclicGroup.subCompNormHom M g).homology ≅
       (Rep.FiniteCyclicGroup.subCompNormHom N g).homology :=
   ShortComplex.homologyMapIso (subCompNormHomIsoOfRepIso e g)
-
-end RepresentationIso
-
-end
-end LocalClassFieldTheory

@@ -20,10 +20,10 @@ def regularResidualFunctions (R : PrincipalMellin.ActualRecipe S η) :
     ∀ ε g, f (KPAdelicCoverRestrictedProduct.pglCentralInjection
       F R.A.zeta12 R.A.primitive_zeta12 ε * g) =
       (KPGlobalTorusFunctionData.iota F R.A.zeta12 R.A.primitive_zeta12 ε : ℂ) * f g}
-  zero_mem' := by exact ⟨continuous_const, by intros; rfl, by intros; simp⟩
+  zero_mem' := by exact ⟨continuous_const, by simp, by simp⟩
   add_mem' := by
     rintro f h ⟨fc, fr, fo⟩ ⟨hc, hr, ho⟩
-    exact ⟨fc.add hc, by intros; simp only [Pi.add_apply, fr, hr],
+    exact ⟨fc.add hc, by simp_all,
       by intros; simp only [Pi.add_apply, fo, ho, mul_add]⟩
   smul_mem' := by
     rintro c f ⟨fc, fr, fo⟩
@@ -40,7 +40,3 @@ def hcHeckeSpan (T : Realization R Q) : Submodule ℂ (Functions R) :=
 
 def sameResidueModule (T : Realization R Q) : Submodule ℂ (Functions R) :=
   hcHeckeSpan T ⊓ regularResidualFunctions R
-
-end DedekindZetaZeroFree.MomentSources
-
-end

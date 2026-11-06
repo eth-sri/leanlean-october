@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Supported idele power-local-unit quotient
 
@@ -34,7 +30,7 @@ namespace GlobalClassFieldTheory.ClassFieldAxiom
 
 variable {K : Type*} [Field K] [NumberField K]
 
- noncomputable def quotientEquivOfSurjectiveWithKernel
+ def quotientEquivOfSurjectiveWithKernel
     {G H : Type*} [Group G] [Group H]
     (f : G →* H)
     (N : Subgroup G) [N.Normal]
@@ -103,36 +99,9 @@ def supportedIdelePowerClassMap
             (v.1.adicCompletion K)ˣ).range
         (IdeleGroup.finiteComponent v.1 a.1))
   map_one' := by
-    apply Prod.ext
-    · funext w
-      apply (QuotientGroup.eq_one_iff _).mpr
-      apply
-        (MonoidHom.mem_range
-          (G := w.Completionˣ)).mpr
-      refine ⟨1, ?_⟩
-      rw [powMonoidHom_apply, one_pow]
-      exact (IdeleGroup.infiniteComponent w).map_one.symm
-    · funext v
-      simp
+    rfl
   map_mul' a b := by
-    apply Prod.ext
-    · funext w
-      change
-        QuotientGroup.mk'
-            (powMonoidHom (n : ℕ) :
-              w.Completionˣ →* w.Completionˣ).range
-            (IdeleGroup.infiniteComponent w (a.1 * b.1)) =
-          QuotientGroup.mk'
-              (powMonoidHom (n : ℕ) :
-                w.Completionˣ →* w.Completionˣ).range
-              (IdeleGroup.infiniteComponent w a.1) *
-            QuotientGroup.mk'
-              (powMonoidHom (n : ℕ) :
-                w.Completionˣ →* w.Completionˣ).range
-              (IdeleGroup.infiniteComponent w b.1)
-      rw [map_mul, map_mul]
-    · funext v
-      simp
+    rfl
 
 /-- The kernel of the local-power class map is precisely `h(S,T)` inside
 `I_K^{S ∪ T}`. -/
@@ -207,8 +176,7 @@ theorem supportedIdelePowerClassMap_surjective
     change
       IdeleGroup.finiteIdeleOfFinset S aS v ∈
         (v.adicCompletionIntegers K).units
-    rw [IdeleGroup.finiteIdeleOfFinset_apply_notMem S aS v hvS]
-    exact Subgroup.one_mem _
+    simp_all
   refine ⟨⟨alpha, hAlpha⟩, ?_⟩
   apply Prod.ext
   · funext w
@@ -221,13 +189,7 @@ theorem supportedIdelePowerClassMap_surjective
             (powMonoidHom (n : ℕ) :
               w.Completionˣ →* w.Completionˣ).range
             (aInf w) := by
-        apply congrArg
-        change
-          ContinuousMulEquiv.piUnits
-              (ContinuousMulEquiv.piUnits.symm aInf) w =
-            aInf w
-        exact congrFun
-          (ContinuousMulEquiv.piUnits.apply_symm_apply aInf) w
+        rfl
       _ = q.1 w := hInf w
   · funext v
     calc
@@ -249,7 +211,7 @@ theorem supportedIdelePowerClassMap_surjective
 
 `I_K^{S ∪ T} / h(S,T)` is the product of the local `n`-power class
 groups at all infinite places and at the finite places in `S`. -/
-noncomputable def supportedIdeleQuotientEquivLocalPowerClasses
+def supportedIdeleQuotientEquivLocalPowerClasses
     (n : ℕ+)
     (S T : Finset (HeightOneSpectrum (𝓞 K))) :
     IdeleGroup.supportedAt
@@ -306,8 +268,3 @@ theorem card_supportedIdeleQuotient_eq_localPowerClasses
   Nat.card_congr
     (supportedIdeleQuotientEquivLocalPowerClasses
       (K := K) n S T).toEquiv
-
-
-end GlobalClassFieldTheory.ClassFieldAxiom
-
-end

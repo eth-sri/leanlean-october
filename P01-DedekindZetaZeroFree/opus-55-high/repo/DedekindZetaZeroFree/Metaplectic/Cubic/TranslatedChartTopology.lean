@@ -47,7 +47,7 @@ theorem isOpenEmbedding (s : H →* G) (hs : Function.Injective s) (g : G) :
         constructor
         · rintro ⟨u, hu, heq⟩
           have := hs (mul_left_cancel heq)
-          simpa only [← this] using hu
+          simp_all
         · intro hk
           exact ⟨_, hk, rfl⟩
       rw [heq]
@@ -121,6 +121,4 @@ theorem conjugation_tendsto (s : H →* G) (hs : Function.Injective s) (g : G)
     funext k
     exact he k
   have hh := hj.tendsto_nhds_iff'.mp (hfun ▸ ht)
-  simpa only [Function.comp_apply, OneMemClass.coe_one, map_one] using hh
-
-end DedekindZetaZeroFree.CubicCoverTranslatedCharts
+  simp_all

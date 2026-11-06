@@ -12,7 +12,6 @@ open KPLocalStoneVonNeumann KPLocalPrincipalSeries KPRankOneShellContinuation
 open KPRankOneOpenCellKernel KPRankOneCenterInducedDiagonalComparison
 
 noncomputable section
-set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
@@ -112,6 +111,3 @@ def smallFactor (r Q : ℂ) : ℂ := 1 - (t F q r)⁻¹ * Q ^ 3
 
 def infinityFactor (Q : ℂ) : ℂ :=
   1 - (residueCardinality (LocalField F q) : ℂ) ^ (-3 : ℤ) * Q ^ (-3 : ℤ)
-
-end
-end DedekindZetaZeroFree.KPRankOneReverseRegulatorShellsRaw

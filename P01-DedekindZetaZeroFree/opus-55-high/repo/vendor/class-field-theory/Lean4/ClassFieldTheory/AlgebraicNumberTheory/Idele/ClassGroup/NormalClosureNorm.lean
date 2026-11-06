@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Idèle-class norms from a finite normal closure
 
@@ -33,7 +27,6 @@ with the norm subgroup of the original extension.
 open scoped NumberField
 open NumberField
 
-noncomputable section
 
 universe u v
 
@@ -87,4 +80,3 @@ theorem finiteNormalClosure_ideleClassNorm_range_le_source :
       (ordinaryIdeleClassNorm_range_eq_relative
         (K := K) (L := L)).symm
 
-end

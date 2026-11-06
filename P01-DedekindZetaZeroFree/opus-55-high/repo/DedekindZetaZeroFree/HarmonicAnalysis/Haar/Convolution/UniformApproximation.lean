@@ -54,8 +54,8 @@ theorem representative_convolution_uniform_approximation
   refine ⟨μ, TauCeti.isHaarMeasure_haarProb K, inferInstance, h, hh, ?_⟩
   intro y hy
   let y' : C := ⟨y, hy⟩
-  have hi (a : C(K, ℂ)) : Integrable (fun k : K => a k * u (y * k.val)) μ := by
-    exact (a.continuous.mul (hu.comp (continuous_const.mul continuous_subtype_val))).integrable_of_hasCompactSupport
+  have hi (a : C(K, ℂ)) : Integrable (fun k : K => a k * u (y * k.val)) μ := 
+    (a.continuous.mul (hu.comp (continuous_const.mul continuous_subtype_val))).integrable_of_hasCompactSupport
       (HasCompactSupport.of_compactSpace _)
   have hd (k : K) : ‖u (y * k.val)‖ ≤ ‖f‖ := by
     calc
@@ -78,8 +78,8 @@ theorem representative_convolution_uniform_approximation
         ‖h - ψ‖ * ‖f‖ := by simpa using hb
     refine hb'.trans_lt ?_
     calc
-      ‖h - ψ‖ * ‖f‖ ≤ ‖h - ψ‖ * (‖f‖ + 1) := by
-        exact mul_le_mul_of_nonneg_left (by linarith) (norm_nonneg _)
+      ‖h - ψ‖ * ‖f‖ ≤ ‖h - ψ‖ * (‖f‖ + 1) := 
+        mul_le_mul_of_nonneg_left (by linarith) (norm_nonneg _)
       _ < (ε / (2 * (‖f‖ + 1))) * (‖f‖ + 1) :=
         mul_lt_mul_of_pos_right hclose' (by positivity)
       _ = ε / 2 := by field_simp
@@ -113,7 +113,3 @@ theorem representative_convolution_uniform_approximation
           ∫ k : K, ψ k * u (y * k.val) ∂μ‖ +
         ‖(∫ k : K, ψ k * u (y * k.val) ∂μ) - u y‖ := norm_sub_le_norm_sub_add_norm_sub _ _ _
     _ < ε := by linarith
-
-end DedekindZetaZeroFree.KPLiteralPeriod.HCCoreDensity.FiniteStageApproximation
-
-end

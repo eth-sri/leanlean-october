@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Transporting a finite p-adic Lubin--Tate level to the completed level
 
@@ -123,7 +119,7 @@ open SameUniformizer
 
 /-- The standard finite-level embedding restricted to the actual valuation
 rings. -/
-noncomputable def padicStandardLevelIntegerEmbedding
+def padicStandardLevelIntegerEmbedding
     (p : ℕ) [Fact p.Prime] (n : ℕ) :
     let hπ := padicMultiplicativeLubinTateSeries_isUniformizer p
     (standardLubinTateLevelCompleteDVF hπ n).valuationSubring →+*
@@ -313,7 +309,6 @@ theorem padicCompletedLevelPowerSeriesEval_map_padicCoefficients
     PowerSeries.eval₂_eq_tsum hpadic hx]
   apply tsum_congr
   intro d
-  rw [PowerSeries.coeff_map]
   rfl
 
 /-- Analytic evaluation in the finite standard level commutes with its
@@ -581,8 +576,7 @@ theorem
           (padicLocalField p) n u⁻¹ =
         (standardLubinTateUnitParameterClass
           (padicLocalField p) n u)⁻¹ :=
-    (standardLubinTateUnitParameterClass
-      (padicLocalField p) n).map_inv u
+    by rfl
   have hparameter :
       standardLubinTateUnitParameterAlgEquiv
           (padicLocalField p)
@@ -605,13 +599,6 @@ theorem
           (padicMultiplicativeLubinTateSeries_isUniformizer p) n
           (standardLubinTateUnitParameterClass
             (padicLocalField p) n u))⁻¹
-    rw [hclass,
-      (standardLubinTateUnitParameterEquivGal
-        (padicLocalField p)
-        (padicMultiplicativeLubinTateSeries_isUniformizer p) n).map_inv]
+    simp
   rw [hparameter]
   rfl
-
-end LubinTate
-
-end

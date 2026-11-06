@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Unramified normalization of the chosen finite-place Artin map
 
@@ -41,7 +36,7 @@ variable {K L : Type}
     [hKLfinite : FiniteDimensional K L] [IsAbelianGalois K L]
 
 /-- Arithmetic Frobenius of the actual chosen unramified local extension. -/
-noncomputable def chosenFinitePlaceLocalArithmeticFrobenius
+def chosenFinitePlaceLocalArithmeticFrobenius
     (v : HeightOneSpectrum (𝓞 K))
     (hunram : ChosenFinitePlaceIsUnramified (K := K) (L := L) v) :
     ChosenFinitePlaceLocalizedCompletion (K := K) (L := L) v ≃ₐ[
@@ -100,17 +95,12 @@ theorem chosenFinitePlaceLocalArtin_eq_arithmeticFrobenius_inv_of_unramified
       LocalClassFieldTheory.abelianLocalArtinMonoidHom C E
           (finitePlaceLocalArtinInput v x) =
         (arithmeticFrobeniusOfUnramifiedValuation C E)⁻¹ := by
-    simpa only [hval, zpow_neg_one] using hfrob
+    simp_all
   calc
     finitePlaceLocalArtinMonoidHom (K := K) (L := L) v w x =
         LocalClassFieldTheory.abelianLocalArtinMonoidHom C E
           (finitePlaceLocalArtinInput v x) := by
       rfl
     _ = (chosenFinitePlaceLocalArithmeticFrobenius
-          (K := K) (L := L) v hunram)⁻¹ := by
-      exact hnorm
-
-end Reciprocity
-end GlobalClassFieldTheory
-
-end
+          (K := K) (L := L) v hunram)⁻¹ := 
+      hnorm

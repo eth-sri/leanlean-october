@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.Eisenstein.Sections.Iwasawa.BorelSplitting
 
 @[expose] public section
 
-noncomputable section
 open scoped NumberField Classical
 
 namespace DedekindZetaZeroFree.PrincipalOfKP
@@ -25,7 +24,3 @@ theorem iwasawaCompactSubgroupMax_decomposition (g : KPLiteralRaw.G F ζ hζ) :
   obtain ⟨t,x,htx⟩ := borel_lift_splitting F ζ hζ ⟨g * k.val⁻¹,hmem⟩
   refine ⟨t,x,k,?_⟩
   rw [← htx, mul_assoc, inv_mul_cancel, mul_one]
-
-end DedekindZetaZeroFree.PrincipalOfKP
-
-end

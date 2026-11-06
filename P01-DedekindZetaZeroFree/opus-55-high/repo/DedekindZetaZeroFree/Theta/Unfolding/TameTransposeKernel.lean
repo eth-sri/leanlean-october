@@ -164,12 +164,10 @@ def scalarCoordinateEquiv (ε : Sign) :
       dsimp [inducingAction, inducingScalar, deltaHalf, borelAction, tau,
         inducedRepresentation, Representation.subrepresentation,
         rightTranslationRepresentation] at hf ⊢
-      simp only [S.borel.retract_torus, normPower, zero_mul, Complex.exp_zero,
-        mul_one, one_mul, Pi.smul_apply, smul_eq_mul] at hf ⊢
+      simp only [normPower, zero_mul, Complex.exp_zero, mul_one] at hf ⊢
       rw [hf]
       dsimp [rightTranslate]
-      simp [S.borel.retract_torus, Complex.exp_ne_zero,
-        ContinuousMulEquiv.apply_symm_apply]
+      simp [S.borel.retract_torus, Complex.exp_ne_zero]
       change (f.val g).val (1 * _) = (f.val g).val t
       simp
     | minus =>
@@ -178,13 +176,10 @@ def scalarCoordinateEquiv (ε : Sign) :
       dsimp [inducingAction, inducingScalar, deltaHalf, borelAction, tau,
         weylConjugate, inducedRepresentation, Representation.subrepresentation,
         rightTranslationRepresentation] at hf ⊢
-      simp only [S.borel.retract_torus, normPower, zero_mul, Complex.exp_zero,
-        mul_one, one_mul, Pi.smul_apply, smul_eq_mul,
-        ContinuousMulEquiv.apply_symm_apply] at hf ⊢
+      simp only [normPower, zero_mul, Complex.exp_zero, mul_one] at hf ⊢
       rw [hf]
       dsimp [rightTranslate]
-      simp [S.borel.retract_torus, Complex.exp_ne_zero,
-        ContinuousMulEquiv.apply_symm_apply]
+      simp [S.borel.retract_torus, Complex.exp_ne_zero]
       change (f.val g).val (1 * _) = (f.val g).val t
       simp
       exact congrArg (f.val g).val (S.borel.weyl.apply_symm_apply t)
@@ -229,9 +224,3 @@ def lowShell : Set (LocalField F q) := (valuation (LocalField F q)).integer
 
 def conductorOneShell (π : (LocalField F q)ˣ) : Set (LocalField F q) :=
   expandingBall F q π 1 \ lowShell F q
-
-end DedekindZetaZeroFree.KPTameTransposeKernelUnfolding
-
-end
-
-end

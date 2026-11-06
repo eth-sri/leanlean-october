@@ -39,12 +39,12 @@ variable (S : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F)))
   toFun f g := Coordinates (fun q => fiberEvaluation F ζ hζ M S q 1) (f g)
   map_add' f h := by
     funext g
-    exact map_add (Coordinates (fun q => fiberEvaluation F ζ hζ M S q 1)) (f g) (h g)
+    simp
   map_smul' c f := by
     funext g
-    exact map_smul (Coordinates (fun q => fiberEvaluation F ζ hζ M S q 1)) c (f g)
+    simp
 
-private theorem fiberEvaluation_torus_action (q : S)
+theorem fiberEvaluation_torus_action (q : S)
     (t : KPLocalExceptionalConstruction.actualTorus F ζ hζ q.val)
     (v : Fiber F ζ hζ M S q) :
     fiberEvaluation F ζ hζ M S q 1
@@ -77,7 +77,7 @@ open _root_.DedekindZetaZeroFree.KPLiteralTensor.KernelAndHCRange.PointwiseKerne
     ring
   | add v w hv hw => simp only [map_add, hv, hw, mul_add]
 
-private theorem scalarization_torus
+theorem scalarization_torus
     (f : ProductFunctions F ζ hζ M S) (hf : f ∈ productCovariance F ζ hζ M S)
     (t : ∀ q : S, KPLocalExceptionalConstruction.actualTorus F ζ hζ q.val)
     (g : ProductCover F ζ hζ S) :
@@ -101,8 +101,8 @@ private theorem scalarization_torus
   rw [he, coordinates_scaled]
 
  theorem deltaHalf_ne_zero (q : S) (b : (M q.val).borel.B) :
-    KPLocalPrincipalSeries.deltaHalf (M q.val).borel b ≠ 0 := by
-  exact Complex.exp_ne_zero _
+    KPLocalPrincipalSeries.deltaHalf (M q.val).borel b ≠ 0 := 
+  Complex.exp_ne_zero _
 
  theorem scalarization_recovery
     (f : ProductFunctions F ζ hζ M S) (hf : f ∈ productCovariance F ζ hζ M S)
@@ -133,7 +133,7 @@ private theorem scalarization_torus
     rw [map_sub, scalarization_recovery F ζ hζ M S f hf,
       scalarization_recovery F ζ hζ M S h hh, he, sub_self]
 
-private theorem fiberEvaluation_borel_action (q : S)
+theorem fiberEvaluation_borel_action (q : S)
     (b : (M q.val).borel.B) (v : Fiber F ζ hζ M S q) :
     fiberEvaluation F ζ hζ M S q 1
       (KPLocalPrincipalSeries.inducingAction (M q.val).borel
@@ -145,7 +145,7 @@ private theorem fiberEvaluation_borel_action (q : S)
   simp [KPLocalPrincipalSeries.inducingScalar, KPLocalPrincipalSeries.normPower,
     fiberEvaluation]
 
-private theorem fiberEvaluation_polarized_borel_action (q : S)
+theorem fiberEvaluation_polarized_borel_action (q : S)
     (b : (M q.val).borel.B)
     (hb : (M q.val).heisenberg.π ((M q.val).borel.retract b) ∈
       (M q.val).polarization.L)
@@ -190,7 +190,7 @@ private theorem fiberEvaluation_polarized_borel_action (q : S)
   rw [he, coordinates_scaled]
   rfl
 
-private theorem scalarization_right_stabilizer
+theorem scalarization_right_stabilizer
     (f : ProductFunctions F ζ hζ M S)
     (J : OpenSubgroup (ProductCover F ζ hζ S))
     (hJ : ∀ a ∈ J, KPLocalPrincipalSeries.vectorRightTranslation a f = f) :
@@ -230,10 +230,6 @@ private theorem scalarization_right_stabilizer
           q (KPLocalPrincipalSeries.IPlus (M q.val).borel
             (M q.val).polarization a)) x)) g =
     scalarization F ζ hζ M S (tensorEvaluation F ζ hζ M S x)
-      (g * Function.update (fun j : S => (1 : Cover F ζ hζ S j)) q a) := by
-  exact congrArg (Coordinates (fun j => fiberEvaluation F ζ hζ M S j 1))
+      (g * Function.update (fun j : S => (1 : Cover F ζ hζ S j)) q a) := 
+  congrArg (Coordinates (fun j => fiberEvaluation F ζ hζ M S j 1))
     (tensorEvaluation_slot_action F ζ hζ M S q a x g)
-
-end DedekindZetaZeroFree.NativeScalarFiniteProductScalarTransitivity
-
-end

@@ -131,5 +131,3 @@ theorem initial_gram_to_exponent
     _ ≤ (Fintype.card Q.G : ℝ) * C₀ * (Real.rpow (M * N) ε * (M + Real.rpow N 2)) := hstep
     _ = (Fintype.card Q.G : ℝ) * C₀ * Real.rpow (M * N) ε * (M + Real.rpow N 2) := by
         ac_rfl
-
-end DedekindZetaZeroFree.LargeSieve.Sieve

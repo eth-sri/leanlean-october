@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # the actual integral closure is a valuation ring
 
@@ -26,7 +22,6 @@ base valuation ring.  Thus the actual integral closure, rather than an
 assumed target ring, satisfies the valuation-ring dichotomy.
 -/
 
-noncomputable section
 
 namespace AlgebraicNumberTheory
 namespace Valuations
@@ -72,8 +67,8 @@ theorem normFormula_finiteExtensionNormFormulaValue_isIntegral_of_le_one_of_hens
     have hmaproot :
         (Polynomial.aeval x) (F.map (algebraMap V K)) = 0 := by
       rw [hFmap]
-      exact minpoly.aeval K x
-    rwa [Polynomial.aeval_map_algebraMap K x F] at hmaproot
+      simp
+    simp_all
   exact IsIntegral.of_aeval_monic hFmonic hFdegree_ne (by
     rw [hroot]
     exact isIntegral_zero)
@@ -149,8 +144,3 @@ theorem normFormula_algebraic_integralClosure_mem_or_inv_of_henselFactorization
     have hxinvintV : IsIntegral V x⁻¹ := by
       simpa [E, xE] using hmap
     exact (mem_integralClosure_iff (R := V) (A := L)).2 hxinvintV
-
-end Valuations
-end AlgebraicNumberTheory
-
-end

@@ -46,6 +46,3 @@ theorem complexTraceFourier_eq_fourier (f : ℂ → ℂ) (y : ℂ) :
   congr 1
   push_cast
   ring
-
-end
-end DedekindZetaZeroFree

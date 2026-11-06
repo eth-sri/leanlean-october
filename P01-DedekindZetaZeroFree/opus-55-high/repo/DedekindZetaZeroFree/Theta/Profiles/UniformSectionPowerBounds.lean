@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.Theta.Whittaker.WeightedNormFiberEnvelope
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.SheetRescaling
 open MomentSources NumberField MeasureTheory ThetaProfileHaarSheets
 open scoped Classical Topology
@@ -47,7 +46,7 @@ theorem uniform_power_bound_aux (A : SArithmeticData F)
   have hz (y : A.G1) :
       normSection A w x * (z * y).val = y.val * A.radialSection x.val x.property := by
     dsimp [z]
-    simp [mul_assoc, mul_comm, mul_left_comm]
+    simp [mul_comm, mul_left_comm]
   have hiu : Integrable (fun y : A.G1 => f (y.val * A.radialSection x.val x.property)) dt := by
     simpa only [Function.comp_def, hz] using
       (measurePreserving_mul_left dt z).integrable_comp_of_integrable hi'
@@ -79,7 +78,3 @@ theorem uniform_power_bound (R : PrincipalMellin.ActualRecipe S η)
       (inferInstance : MeasurableSpace R.A.G)) = borel R.A.G1 := BorelSpace.measurable_eq
   rw [hmb] at h
   exact h R.probe.domain.measure R.probe.domain.haar (N.disintegration w)
-
-end DedekindZetaZeroFree.SheetRescaling
-
-end

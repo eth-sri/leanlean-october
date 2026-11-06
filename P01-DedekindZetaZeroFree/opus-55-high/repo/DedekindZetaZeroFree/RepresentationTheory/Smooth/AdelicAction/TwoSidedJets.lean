@@ -34,7 +34,7 @@ variable (F : Type) [Field F] [NumberField F]
  def twoSidedMatrix (p : (Mat F × Mat F) × ArchCoordinates F) : Mat F :=
   fun w => p.1.1 w * rightPolynomial F p.2 w * p.1.2 w
 
-private theorem twoSidedMatrix_smooth : ContDiff ℝ (⊤ : ℕ∞) (twoSidedMatrix F) := by
+theorem twoSidedMatrix_smooth : ContDiff ℝ (⊤ : ℕ∞) (twoSidedMatrix F) := by
   apply contDiff_pi.mpr
   intro w
   apply contDiff_pi.mpr
@@ -47,7 +47,7 @@ private theorem twoSidedMatrix_smooth : ContDiff ℝ (⊤ : ℕ∞) (twoSidedMat
   simp only [twoSidedMatrix, Matrix.mul_apply, Fin.sum_univ_two]
   fun_prop (disch := exact hp _ _)
 
-private theorem twoSidedMatrix_mem (l r : Mat F) (hl : l ∈ matrixDomain F)
+theorem twoSidedMatrix_mem (l r : Mat F) (hl : l ∈ matrixDomain F)
     (hr : r ∈ matrixDomain F) (x : ArchCoordinates F) (hx : x ∈ archDomain F) :
     twoSidedMatrix F ((l,r),x) ∈ matrixDomain F := by
   intro w
@@ -55,7 +55,7 @@ private theorem twoSidedMatrix_mem (l r : Mat F) (hl : l ∈ matrixDomain F)
   rw [Matrix.det_mul, Matrix.det_mul, rightPolynomial_det]
   exact mul_ne_zero (mul_ne_zero (hl w) (hx w)) (hr w)
 
-private theorem twoSidedMatrix_class (l r : Mat F) (hl : l ∈ matrixDomain F)
+theorem twoSidedMatrix_class (l r : Mat F) (hl : l ∈ matrixDomain F)
     (hr : r ∈ matrixDomain F) (x : ArchCoordinates F) (hx : x ∈ archDomain F) :
     matrixClass F (twoSidedMatrix F ((l,r),x)) = matrixClass F l *
       (fun w => Matrix.ProjGenLinGroup.mk (KPLiteralChamber.rightMatrix (x w))) * matrixClass F r := by
@@ -63,7 +63,7 @@ private theorem twoSidedMatrix_class (l r : Mat F) (hl : l ∈ matrixDomain F)
   rw [matrixClass_mul F _ _ (fun w => by rw [Matrix.det_mul, rightPolynomial_det]; exact mul_ne_zero (hl w) (hx w)) hr,
     matrixClass_mul F _ _ hl (fun w => by rw [rightPolynomial_det]; exact hx w), rightPolynomial_class F x hx]
 
-private theorem twoSidedMatrix_jets (f : L F → ℂ) (hf : AffineSmooth F f)
+theorem twoSidedMatrix_jets (f : L F → ℂ) (hf : AffineSmooth F f)
     (l r : Mat F) (hl : l ∈ matrixDomain F) (hr : r ∈ matrixDomain F)
     (x : ArchCoordinates F) (hx : x ∈ archDomain F) (n : ℕ) :
     ContinuousAt (fun p : (Mat F × Mat F) × ArchCoordinates F => iteratedFDeriv ℝ n

@@ -24,7 +24,7 @@ variable (f : ℂ → S)
 def E (s : ℂ) (g : G F ζ hζ) : ℂ := ∑' q : Q F, term F ζ hζ U ι f q s g
 
 set_option maxHeartbeats 1200000 in
-private theorem scalar_normal_majorant
+theorem scalar_normal_majorant
     (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
     (K : Set ℂ) (hK : IsCompact K) (hKV : K ⊆ V)
     (A : Set (G F ζ hζ)) (hA : IsCompact A) :
@@ -159,7 +159,7 @@ private theorem parameter_normal_majorant
     ((k.factorial : ℝ)/r^k) * (b q : ℝ)
   exact hc.trans_eq (by ring)
 
-private theorem word_left_translate (w : Word F) (u : G F ζ hζ → ℂ) (a g : G F ζ hζ) :
+theorem word_left_translate (w : Word F) (u : G F ζ hζ → ℂ) (a g : G F ζ hζ) :
     rightWord F ζ hζ w (fun x => u (a*x)) g = rightWord F ζ hζ w u (a*g) := by
   induction w generalizing u g with
   | nil => rfl
@@ -171,7 +171,7 @@ private theorem word_left_translate (w : Word F) (u : G F ζ hζ → ℂ) (a g :
     rw [ih, mul_assoc]
 
 set_option maxHeartbeats 1600000 in
-private theorem spatial_normal_majorant
+theorem spatial_normal_majorant
     (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
     (w : Word F) (K : Set ℂ) (hK : IsCompact K) (hKV : K ⊆ V)
     (A : Set (G F ζ hζ)) (hA : IsCompact A) :
@@ -354,7 +354,7 @@ private theorem parameterJet_eq_tsum
       (by simp) KPChamberL2Defect.chamber_isOpen.uniqueDiffOn).differentiableAt
         (KPChamberL2Defect.chamber_isOpen.mem_nhds hz)
 
-private theorem term_flow_deriv
+theorem term_flow_deriv
     (hι : Function.Injective ι) (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
     (q : Q F) (k : ℕ) (w : Word F) (s : ℂ) (hs : s ∈ V)
     (b : KPSmoothActualFlowData.B F) (g : G F ζ hζ) (t : ℝ) :
@@ -374,7 +374,7 @@ private theorem term_flow_deriv
   have hc := hh'.comp_sub_const t t
   simpa only [Function.comp_def, sub_self, mul_assoc, ← hadd, add_sub_cancel] using hc
 
-private theorem flow_tsum_hasDeriv
+theorem flow_tsum_hasDeriv
     (hι : Function.Injective ι) (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
     (k : ℕ) (w : Word F) (s : ℂ) (hs : s ∈ V)
     (b : KPSmoothActualFlowData.B F) (g : G F ζ hζ) :
@@ -414,7 +414,7 @@ theorem mixedJet_eq_tsum (hι : Function.Injective ι)
     simp_rw [ih]
     exact (flow_tsum_hasDeriv F ζ hζ U ι f hι hf k w s hs b g).deriv
 
-private theorem parameter_tsum_hasDeriv
+theorem parameter_tsum_hasDeriv
     (hι : Function.Injective ι) (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
     (k : ℕ) (w : Word F) (s : ℂ) (hs : s ∈ V) (g : G F ζ hζ) :
     HasDerivAt (fun z => ∑' q : Q F, mixedJet F ζ hζ (term F ζ hζ U ι f q) k w z g)
@@ -432,7 +432,7 @@ private theorem parameter_tsum_hasDeriv
     (mixed_summable F ζ hζ U ι f hι hf k w s hs g).of_norm
     (Metric.mem_ball_self (by linarith : (0 : ℝ) < r/2))
 
-private theorem mixedSeries_hasDeriv
+theorem mixedSeries_hasDeriv
     (hι : Function.Injective ι) (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
     (k : ℕ) (w : Word F) (s : ℂ) (hs : s ∈ V) (g : G F ζ hζ) :
     HasDerivAt (fun z => mixedJet F ζ hζ (E F ζ hζ U ι f) k w z g)
@@ -556,7 +556,7 @@ def compactMixedJet (hι : Function.Injective ι)
       (mixedJet_continuous F ζ hζ U ι f hι hf k w s hs).comp continuous_subtype_val⟩
   else 0
 
-private theorem mixedSeries_bound
+theorem mixedSeries_bound
     (hι : Function.Injective ι) (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
     (k : ℕ) (w : Word F) (K : Set ℂ) (hK : IsCompact K) (hKV : K ⊆ V)
     (A : Set (G F ζ hζ)) (hA : IsCompact A) :
@@ -570,7 +570,7 @@ private theorem mixedSeries_bound
     (Summable.tsum_le_tsum (fun q => hbound q z hz g hg)
       (mixed_summable F ζ hζ U ι f hι hf k w z (hKV hz) g) hb)
 
-private theorem complex_taylor_bound
+theorem complex_taylor_bound
     (H H₁ H₂ : ℂ → ℂ) (s : ℂ) (r : ℝ) (hr : 0 < r) (B : ℝ)
     (hd : ∀ z ∈ Metric.closedBall s r, HasDerivAt H (H₁ z) z)
     (hd₁ : ∀ z ∈ Metric.closedBall s r, HasDerivAt H₁ (H₂ z) z)
@@ -656,7 +656,7 @@ theorem compactMixedJet_holomorphic (hι : Function.Injective ι)
       (b * γ) * (a * γ)⁻¹ ∈ KPChamberBruhatTwoCells.rationalBorel F
     simp only [mul_inv_rev, mul_assoc, mul_inv_cancel_left])
 
-private theorem term_coset (s : ℂ) (g : G F ζ hζ)
+theorem term_coset (s : ℂ) (g : G F ζ hζ)
     (γ : Matrix.ProjGenLinGroup (Fin 2) F) :
     term F ζ hζ U ι f (KPChamberBruhatTwoCells.rationalCoset F γ) s g =
       KPContActualSphericalFlatStage.L F ζ hζ U ι s (f s)

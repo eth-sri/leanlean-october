@@ -9,7 +9,6 @@ open NumberField IsDedekindDomain
 
 namespace DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw
 noncomputable section
-set_option autoImplicit false
 set_option maxHeartbeats 800000
 set_option maxRecDepth 4000
 variable (F : Type) [Field F] [NumberField F]
@@ -28,7 +27,7 @@ def adeleEval (v : KPHilbert.Place F) : Adeles F →+* KPHilbert.Completion F v 
 def matrixEval (v : KPHilbert.Place F) : AdelicGL2 F →* KPLocalCover.LocalGL2 F v :=
   Matrix.GeneralLinearGroup.map (adeleEval F v)
 
-private theorem localIntegers_eq (q : HeightOneSpectrum (𝓞 F)) :
+theorem localIntegers_eq (q : HeightOneSpectrum (𝓞 F)) :
     KPLocalCube.LocalIntegers F q = (q.adicCompletionIntegers F).toSubring := by
   letI : ValuativeRel (q.adicCompletion F) := ClassFieldTheory.finitePlaceCompletionValuativeRel F q
   letI : (Valued.v : Valuation (q.adicCompletion F) (WithZero (Multiplicative ℤ))).Compatible :=
@@ -38,7 +37,7 @@ private theorem localIntegers_eq (q : HeightOneSpectrum (𝓞 F)) :
   rw [← Valuation.vle_one_iff]
   exact Valuation.vle_one_iff (Valued.v : Valuation (q.adicCompletion F) (WithZero (Multiplicative ℤ)))
 
-private theorem compact_entry (q : HeightOneSpectrum (𝓞 F))
+theorem compact_entry (q : HeightOneSpectrum (𝓞 F))
     (x : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr q))
     (hx : x ∈ finiteCompact F ζ hζ q) (i j : Fin 2) :
     x.g i j ∈ q.adicCompletionIntegers F := by
@@ -52,12 +51,12 @@ private theorem compact_entry (q : HeightOneSpectrum (𝓞 F))
     rw [he']
     change (k.val i j).val ∈ (q.adicCompletionIntegers F).toSubring
     rw [← localIntegers_eq F q]
-    exact (k.val i j).property
+    simp
   · obtain ⟨g, hg⟩ := hx
     rw [← hg]
     change (g.val i j).val ∈ (q.adicCompletionIntegers F).toSubring
     rw [← localIntegers_eq F q]
-    exact (g.val i j).property
+    simp
 
 theorem matrixEntry_integral (x : RestrictedCover F ζ hζ) (i j : Fin 2) :
     ∀ᶠ q in Filter.cofinite,
@@ -83,7 +82,7 @@ private theorem adele_ext {a b : Adeles F}
     intro q
     exact h (Sum.inr q)
 
-private theorem matrixValue_eval (x : RestrictedCover F ζ hζ)
+theorem matrixValue_eval (x : RestrictedCover F ζ hζ)
     (v : KPHilbert.Place F) (i j : Fin 2) :
     adeleEval F v (matrixValue F ζ hζ x i j) = (x v).g i j := by
   cases v <;> rfl
@@ -95,7 +94,7 @@ private theorem matrix_ext {a b : Matrix (Fin 2) (Fin 2) (Adeles F)}
   intro v
   exact congrFun (congrFun (h v) i) j
 
-private theorem matrixValue_map (x : RestrictedCover F ζ hζ)
+theorem matrixValue_map (x : RestrictedCover F ζ hζ)
     (v : KPHilbert.Place F) :
     (matrixValue F ζ hζ x).map (adeleEval F v) = (x v).g.val := by
   ext i j
@@ -106,7 +105,7 @@ theorem matrixValue_inv (x : RestrictedCover F ζ hζ) :
   apply matrix_ext F
   intro v
   rw [Matrix.map_mul, matrixValue_map, matrixValue_map]
-  simpa using (x v).g.val_inv
+  simp
 
 theorem matrixValue_inv_left (x : RestrictedCover F ζ hζ) :
     matrixValue F ζ hζ x⁻¹ * matrixValue F ζ hζ x = 1 := by
@@ -120,9 +119,6 @@ theorem matrixValue_one : matrixValue F ζ hζ 1 = 1 := by
 
 theorem matrixValue_mul (x y : RestrictedCover F ζ hζ) :
     matrixValue F ζ hζ (x * y) = matrixValue F ζ hζ x * matrixValue F ζ hζ y := by
-  apply matrix_ext F
-  intro v
-  rw [Matrix.map_mul, matrixValue_map, matrixValue_map, matrixValue_map]
   rfl
 
 def restrictedProjection : RestrictedCover F ζ hζ →* AdelicGL2 F where
@@ -137,7 +133,7 @@ theorem restrictedProjection_eval (x : RestrictedCover F ζ hζ) (v : KPHilbert.
   apply Units.ext
   exact matrixValue_map F ζ hζ x v
 
-private theorem integral_matrix_lift (q : HeightOneSpectrum (𝓞 F))
+theorem integral_matrix_lift (q : HeightOneSpectrum (𝓞 F))
     (g : KPLocalCover.LocalGL2 F (Sum.inr q))
     (hg : ∀ i j, g i j ∈ KPLocalCube.LocalIntegers F q)
     (hgi : ∀ i j, g.inv i j ∈ KPLocalCube.LocalIntegers F q) :
@@ -157,15 +153,15 @@ private theorem integral_matrix_lift (q : HeightOneSpectrum (𝓞 F))
     apply hinj
     dsimp only
     rw [Matrix.map_mul, ha, hb]
-    simpa using g.val_inv
+    simp
   have hba : b * a = 1 := by
     apply hinj
     dsimp only
     rw [Matrix.map_mul, hb, ha]
-    simpa using g.inv_val
+    simp
   exact ⟨⟨a, b, hab, hba⟩, Units.ext rfl⟩
 
-private theorem adelic_integral (g : AdelicGL2 F) :
+theorem adelic_integral (g : AdelicGL2 F) :
     ∀ᶠ q in Filter.cofinite, ∃ k : KPTameCompact.K0 F q,
       KPTameCompact.inclusion F q k = matrixEval F (Sum.inr q) g := by
   have hval : ∀ i j, ∀ᶠ q in Filter.cofinite,
@@ -196,7 +192,7 @@ theorem restrictedProjection_surjective : Function.Surjective (restrictedProject
       refine ⟨KPGoodCompactSplitting.kStar F ζ hζ q (fun h3 => hb (Or.inr h3)) k, ?_, hk⟩
       change _ ∈ finiteCompact F ζ hζ q
       rw [finiteCompact, dif_neg hb]
-      exact ⟨k, rfl⟩
+      simp
     rw [Filter.eventually_cofinite] at hf ⊢
     apply Set.Finite.subset (hf.image Sum.inr)
     intro v hv
@@ -231,22 +227,20 @@ private theorem projection_ext {a b : AdelicGL2 F}
   intro v
   exact congrArg Units.val (h v)
 
-private theorem kernel_local (x : (restrictedProjection F ζ hζ).ker)
+theorem kernel_local (x : (restrictedProjection F ζ hζ).ker)
     (v : KPHilbert.Place F) : (x.val v).g = 1 := by
   have h := congrArg (matrixEval F v) x.property
   rw [restrictedProjection_eval, map_one] at h
   exact h
 
-private theorem kernel_eventually_one (x : (restrictedProjection F ζ hζ).ker) :
+theorem kernel_eventually_one (x : (restrictedProjection F ζ hζ).ker) :
     ∀ᶠ v in Filter.cofinite, x.val v = 1 := by
   have hi : (Set.range (Sum.inl : InfinitePlace F → KPHilbert.Place F)).Finite :=
     Set.finite_range _
   filter_upwards [x.val.property, hi.compl_mem_cofinite] with v hv hfin
   have hlocal : x.val v ∈ (KPLocalCover.projection F ζ hζ v).ker := kernel_local F ζ hζ x v
   have hinr : v ∈ Set.range Sum.inr := by
-    cases v with
-    | inl w => exact False.elim (hfin ⟨w, rfl⟩)
-    | inr q => exact ⟨q, rfl⟩
+    simp_all
   have hbot : x.val v ∈ (⊥ : Subgroup _) := by
     rw [← compact_inf_kernel F ζ hζ v hinr]
     exact ⟨hv, hlocal⟩
@@ -258,9 +252,7 @@ theorem restrictedProjection_kernel :
   · intro x hx
     let ε : CentralTuples F := RestrictedProduct.mk (fun v => (x v).epsilon) (by
       filter_upwards [kernel_eventually_one F ζ hζ ⟨x, hx⟩] with v hv
-      change (x v).epsilon = 1
-      rw [hv]
-      rfl)
+      simp_all)
     refine ⟨ε, ?_⟩
     apply RestrictedProduct.ext
     intro v
@@ -268,8 +260,6 @@ theorem restrictedProjection_kernel :
     change KPLocalCover.CubicGL2Raw.mk 1 (x v).epsilon = x v
     cases he : x v with
     | mk g e =>
-      rw [he] at hg
-      change g = 1 at hg
       simp_all
   · rintro x ⟨ε, rfl⟩
     change restrictedProjection F ζ hζ (centralTupleMap F ζ hζ ε) = 1
@@ -278,7 +268,7 @@ theorem restrictedProjection_kernel :
     rw [restrictedProjection_eval, map_one]
     rfl
 
-private theorem local_projection_continuous (v : KPHilbert.Place F) :
+theorem local_projection_continuous (v : KPHilbert.Place F) :
     Continuous (KPLocalCover.projection F ζ hζ v) := by
   cases v with
   | inl w => exact (KPLocalChartTopology.complex_topological_cover F ζ hζ w).2.2.2.1.continuous
@@ -369,6 +359,3 @@ theorem restricted_kernel_discrete :
           exact ⟨hx _, kernel_local F ζ hζ x _⟩
         exact hbot
   · exact isClosed_singleton.preimage (restrictedProjection_continuous F ζ hζ)
-
-end
-end DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw

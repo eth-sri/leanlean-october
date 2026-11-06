@@ -6,7 +6,6 @@ public import DedekindZetaZeroFree.HarmonicAnalysis.Poisson.FieldTransform.Euler
 
 open MeasureTheory Set Filter Asymptotics
 
-noncomputable section
 open scoped Classical ContDiff
 
 namespace DedekindZetaZeroFree.LargeSieve
@@ -32,7 +31,7 @@ theorem fieldTransform_mellinConvergent
     simpa using htop x hx1
   · have h1 := Nat.le_ceil s.re
     have h2 : s.re < (Nat.ceil s.re : ℝ) + 1 := by linarith
-    simpa using h2
+    omega
   · refine IsBigO.of_bound C ?_
     filter_upwards [self_mem_nhdsWithin,
       (eventually_lt_nhds (show (0:ℝ) < 1 by norm_num)).filter_mono nhdsWithin_le_nhds]
@@ -54,7 +53,7 @@ theorem mellin_fieldTransform_eq_B
     have hb' : Integrable (fun t : ℝ => B D r h ((s.re : ℂ) + t * Complex.I)) := by
       simpa using hb
     convert hb'.comp_mul_right' (show 2 * Real.pi ≠ 0 by positivity) using 1 <;>
-      simp [f, Complex.ofReal_mul, mul_comm, mul_left_comm, mul_assoc]
+      simp [f, Complex.ofReal_mul, mul_comm]
   have hfc : Continuous f :=
     (B_differentiableOn D r h hD hr hh hhc).continuousOn.comp_continuous
       (by fun_prop) (fun y => by simpa using hs)
@@ -86,7 +85,7 @@ theorem mellin_fieldTransform_eq_B
     rw [Real.log_exp, neg_neg]
     rw [← Complex.ofReal_neg, ← Complex.ofReal_cpow hx.le]
     rw [Real.rpow_def_of_pos hx, Real.log_exp]
-    simp only [Complex.real_smul, smul_eq_mul]
+    simp only [smul_eq_mul]
     rw [← mul_assoc, ← Complex.ofReal_mul, ← Real.exp_add]
     rw [show -s.re * u + -u * -s.re = 0 by ring]
     simp [f]
@@ -99,11 +98,7 @@ theorem mellin_fieldTransform_eq_B
   rw [hgeq, hfc.fourier_fourierInv_eq hf hFf]
   dsimp [f]
   congr 1
-  rw [show (2 : ℂ) * (Real.pi : ℂ) = ((2 * Real.pi : ℝ) : ℂ) by push_cast; rfl,
+  rw [show (2 : ℂ) * (Real.pi : ℂ) = ((2 * Real.pi : ℝ) : ℂ) by simp,
     ← Complex.ofReal_mul,
     mul_div_cancel₀ _ (show 2 * Real.pi ≠ 0 by positivity)]
-  exact Complex.re_add_im s
-
-end DedekindZetaZeroFree.LargeSieve
-
-end
+  simp

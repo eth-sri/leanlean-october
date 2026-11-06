@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Transport of Hilbert pairings across field equivalences
 
@@ -31,7 +27,7 @@ namespace ClassFieldTheory
 universe u v
 
 /-- A field equivalence identifies the groups of `n`-th power classes. -/
-noncomputable def powerClassGroupEquivOfRingEquiv
+def powerClassGroupEquivOfRingEquiv
     {F : Type u} {G : Type v} [Field F] [Field G]
     (e : F ≃+* G) (n : ℕ+) :
     PowerClassGroup F n ≃* PowerClassGroup G n := by
@@ -60,7 +56,7 @@ noncomputable def powerClassGroupEquivOfRingEquiv
     simp [fwd, bwd]
 
 /-- A field equivalence identifies the `n`-th roots of unity. -/
-noncomputable def rootsOfUnityEquivOfRingEquiv
+def rootsOfUnityEquivOfRingEquiv
     {F : Type u} {G : Type v} [Field F] [Field G]
     (e : F ≃+* G) (n : ℕ+)
     (hmu : (primitiveRoots (n : ℕ) F).Nonempty) :
@@ -82,9 +78,7 @@ theorem powerClassGroupEquivOfRingEquiv_symm_powerClass
     (e : F ≃+* G) (n : ℕ+) (a : Gˣ) :
     (powerClassGroupEquivOfRingEquiv e n).symm (powerClass G n a) =
       powerClass F n ((Units.mapEquiv e.toMulEquiv).symm a) := by
-  apply (powerClassGroupEquivOfRingEquiv e n).injective
-  rw [MulEquiv.apply_symm_apply, powerClassGroupEquivOfRingEquiv_powerClass]
-  simp only [MulEquiv.apply_symm_apply]
+  rfl
 
 /-- Kummer-algebra norm membership is invariant under a field equivalence,
 even when the Kummer polynomial is reducible. -/
@@ -110,7 +104,7 @@ theorem isKummerNorm_iff_of_ringEquiv
   have hnorm (y : AdjoinRoot pF) :
       e (Algebra.norm F y) = Algebra.norm G (eqv y) := by
     have h := Algebra.norm_eq_of_equiv_equiv e eqv hcomp y
-    exact (congrArg e h).trans (e.apply_symm_apply _)
+    simp_all
   change (∃ y : (AdjoinRoot pF)ˣ, Algebra.norm F (y : AdjoinRoot pF) = (b : F)) ↔
     ∃ z : (AdjoinRoot pG)ˣ, Algebra.norm G (z : AdjoinRoot pG) = (eu b : G)
   constructor
@@ -137,7 +131,7 @@ theorem isKummerNorm_iff_of_ringEquiv
       _ = e (b : F) := by simp [eu]
 
 /-- Pull a pairing on power classes across an equivalence of base fields. -/
-noncomputable def hilbertPairingOfRingEquiv
+def hilbertPairingOfRingEquiv
     {F : Type u} {G : Type v} [Field F] [Field G]
     (e : F ≃+* G) (n : ℕ+)
     (hmu : (primitiveRoots (n : ℕ) F).Nonempty)
@@ -224,10 +218,7 @@ theorem hilbertPairingOfRingEquiv_isNondegenerate
       rw [hilbertPairingOfRingEquiv_apply, ep.symm_apply_apply] at hxy
       apply er.injective
       simpa only [map_one] using hxy
-    calc
-      x = ep (ep.symm x) := (ep.apply_symm_apply x).symm
-      _ = ep 1 := congrArg ep hx0
-      _ = 1 := map_one ep
+    simp_all
   · intro y hy
     have hy0 : ep.symm y = 1 := by
       apply hB.2
@@ -236,10 +227,7 @@ theorem hilbertPairingOfRingEquiv_isNondegenerate
       rw [hilbertPairingOfRingEquiv_apply, ep.symm_apply_apply] at hxy
       apply er.injective
       simpa only [map_one] using hxy
-    calc
-      y = ep (ep.symm y) := (ep.apply_symm_apply y).symm
-      _ = ep 1 := congrArg ep hy0
-      _ = 1 := map_one ep
+    simp_all
 
 /-- The canonical Kummer norm-residue law is preserved by field equivalence. -/
 theorem hilbertPairingOfRingEquiv_satisfiesNormResidueCriterion
@@ -261,7 +249,7 @@ theorem hilbertPairingOfRingEquiv_satisfiesNormResidueCriterion
       powerClassGroupEquivOfRingEquiv_symm_powerClass,
       powerClassGroupEquivOfRingEquiv_symm_powerClass]
     change er (B.symbol a0 b0) = 1 ↔ B.symbol a0 b0 = 1
-    rw [← map_one er, er.injective.eq_iff]
+    simp
   calc
     (hilbertPairingOfRingEquiv e n hmu B).symbol a b = 1 ↔
         B.symbol a0 b0 = 1 := htr
@@ -283,12 +271,8 @@ theorem hilbertPairingOfRingEquiv_isLocalHilbertPairing
     (B : HilbertPairing F n)
     (hB : HilbertPairing.IsLocalHilbertPairing B) :
     HilbertPairing.IsLocalHilbertPairing
-      (hilbertPairingOfRingEquiv e n hmu B) := by
-  exact ⟨hilbertPairingOfRingEquiv_isSteinberg e n hmu B hB.1,
+      (hilbertPairingOfRingEquiv e n hmu B) := 
+  ⟨hilbertPairingOfRingEquiv_isSteinberg e n hmu B hB.1,
     hilbertPairingOfRingEquiv_isSkewSymmetric e n hmu B hB.2.1,
     hilbertPairingOfRingEquiv_isNondegenerate e n hmu B hB.2.2.1,
     hilbertPairingOfRingEquiv_satisfiesNormResidueCriterion e n hmu B hB.2.2.2⟩
-
-end ClassFieldTheory
-
-end

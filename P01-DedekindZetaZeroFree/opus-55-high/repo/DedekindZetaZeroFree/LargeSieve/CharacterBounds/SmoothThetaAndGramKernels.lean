@@ -23,10 +23,7 @@ theorem initialTheta_summand_eq_zero_of_not_mem
       (fun J => J ≠ ⊥)) :
     (DedekindZetaZeroFree.LargeSieve.Vendor.annularWeight ((Ideal.absNorm I : ℝ) / X) : ℂ) * v I = 0 := by
   have hnorm : (5 / 2 : ℝ) * X < (Ideal.absNorm I : ℝ) := by
-    have : ¬ (Ideal.absNorm I : ℝ) ≤ (5 / 2 : ℝ) * X := by
-      intro h
-      exact hout (Finset.mem_filter.mpr ⟨DedekindZetaZeroFree.LargeSieve.mem_boundedNormIdeals.mpr h, hI⟩)
-    exact lt_of_not_ge this
+    simp_all
   have hw : DedekindZetaZeroFree.LargeSieve.Vendor.annularWeight ((Ideal.absNorm I : ℝ) / X) = 0 :=
     DedekindZetaZeroFree.LargeSieve.Vendor.annularWeight_eq_zero_of_ge
       ((le_div_iff₀ hX).mpr hnorm.le)
@@ -52,7 +49,3 @@ def initialGram (F : Type) [Field F] [NumberField F]
     {c : Ideal (𝓞 F)} (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
     (X : ℝ) (b1 b2 : Ideal (𝓞 F)) : ℂ :=
   initialTheta F (fun I => (Q.χ b1) I * (starRingEnd ℂ) ((Q.χ b2) I)) X
-
-end
-
-end DedekindZetaZeroFree.LargeSieve.Sieve

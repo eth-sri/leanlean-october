@@ -85,7 +85,7 @@ private theorem contDiff_laplacian {n : ℕ} (h : HyperbolicChart.Space n → �
     Complex.ofRealCLM.contDiff.comp hr.exp
   exact ((h22.neg.add (contDiff_const.mul h2)).sub (hexp.mul (h00.add h11)))
 
-private lemma fromArch_eq_symm :
+lemma fromArch_eq_symm :
     KPCuspCutoffGraph.fromArch F =
       ⇑(CotangentLogCoframe.A (KPCuspLogShape.dimension F)).symm := by
   funext z
@@ -369,7 +369,7 @@ private theorem contDiff_labeledA :
   apply Quotient.sound
   exact ⟨e.gamma, rfl⟩
 
-private lemma targetChart_coefficient {a b : ActualChart (U := U) (H := H)}
+lemma targetChart_coefficient {a b : ActualChart (U := U) (H := H)}
     (h : a.component = b.component) (s : Sections F ζ hζ U R P H) (x : M F) :
     (targetChart a b h).coefficient s x = (KPContCotangentActualGenuineTwistIsotropy.isotropyChart b).coefficient s x := by
   rcases a with ⟨i, ca, oa, da, dao, dac, das, dai⟩
@@ -559,7 +559,7 @@ private lemma differential_norm_relabel (d n : ℕ) (p : Fin d ≃ Fin n)
   exact Equiv.sum_comp p (fun i : Fin n => ∑ k : Fin 3,
     ‖HyperbolicChart.differential n (f ∘ CotangentLogCoframe.A n)
       ((CotangentLogCoframe.A n).symm (labeled d n p x)) i k‖ ^ 2)
-private theorem cutoff_lift_germ (r : Cutoffs (U := U) (H := H)) (n : ℕ)
+theorem cutoff_lift_germ (r : Cutoffs (U := U) (H := H)) (n : ℕ)
     (a : ActualChart (U := U) (H := H)) (x : omega a) :
     liftExtension a (cutoffLift (realCutoff r n) a) =ᶠ[nhds x.val]
       (fun y => (r.rho n (KPCuspCutoffGraph.basePoint F ζ hζ H.totallyComplex U
@@ -653,7 +653,7 @@ private theorem local_laplacian_chart_local (w : SmoothSection (U := U) (H := H)
       (w.property a.component) (labeledA (placeEquiv F ζ hζ) x.val)).symm]
   exact hb
 
-private theorem test_action_local
+theorem test_action_local
     (μG : Measure (KPMsFixedHaarDisintegration.Cover F ζ hζ)) (hμG : μG.IsHaarMeasure)
     (hR : R.adelicHaar = μG)
     (realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ U R P H)
@@ -662,7 +662,7 @@ private theorem test_action_local
   (kp_cont_actual_sector_test_friedrichs F ζ hζ μG hμG U R hR P H
     realization).friedrichs.test_laplacian (cutoffTest r n w)
 
-private theorem norm_j_differential (d : ℕ) (f : HyperbolicChart.Space d → ℂ)
+theorem norm_j_differential (d : ℕ) (f : HyperbolicChart.Space d → ℂ)
     (x : HyperbolicChart.Space d) :
     ‖CotangentLogCoframe.j d (HyperbolicChart.differential d f x)‖ =
       Real.sqrt (∑ i : Fin d, ∑ k : Fin 3, ‖HyperbolicChart.differential d f x i k‖ ^ 2) := by
@@ -793,7 +793,7 @@ private theorem sectionNorm_chart (s : Sections F ζ hζ U R P H)
   simp [sectionFields, KPContCotangentActualOverlap.LiftedChart.coefficient,
     KPContCotangentActualGenuineTwistIsotropy.isotropyChart, ChartKind.representative]
 
-private theorem chart_at_base (b : KPFiniteCuspAtlas.rawXU F ζ hζ U) :
+theorem chart_at_base (b : KPFiniteCuspAtlas.rawXU F ζ hζ U) :
     ∃ (a : ActualChart (U := U) (H := H)) (x : omega a), q a x.val = b := by
   obtain ⟨cover⟩ := (kp_cont_actual_cotangent_countable_shrinking F ζ hζ U R P H).2
   have hb : b ∈ ⋃ n, (cover.chart n).baseDomain := by rw [cover.covers]; trivial
@@ -810,7 +810,7 @@ private theorem chart_at_base (b : KPFiniteCuspAtlas.rawXU F ζ hζ U) :
   rw [hc]
   exact hy
 
-private theorem fields_scalarSections (f : S_U F ζ hζ U R P H) :
+theorem fields_scalarSections (f : S_U F ζ hζ U R P H) :
     sectionFields (scalarSections f) = f.val := (Classical.choose_spec (scalar_gluing f)).1.2.2
 
  def testBorel (f : S_U F ζ hζ U R P H) : BorelL2Sections F ζ hζ U R P H :=
@@ -818,7 +818,7 @@ private theorem fields_scalarSections (f : S_U F ζ hζ U R P H) :
     (finite_integral_iff F ζ hζ U R P H _ (fun i =>
       ((Classical.choose_spec (scalar_gluing f)).1.1 i).continuous.measurable)).mpr (scalar_memLp f)⟩⟩
 
-private theorem toSector_test (f : S_U F ζ hζ U R P H) :
+theorem toSector_test (f : S_U F ζ hζ U R P H) :
     toSector F ζ hζ U R P H (testBorel F ζ hζ U R P H f) = iota f := by
   apply Subtype.ext
   rfl
@@ -873,7 +873,7 @@ private theorem error_norm_at_base (r : Cutoffs (U := U) (H := H))
     BorelL2Sections F ζ hζ U R P H := testBorel F ζ hζ U R P H (δ_U (D_U (cutoffTest r n w.val))) -
       ⟨localLaplacian w.val, ⟨fun i => measurable_localLaplacianComplex w.val.val w.val.property i, w.property.2.2⟩⟩
 
-private theorem fields_sub (s t : Sections F ζ hζ U R P H) (a : ActualChart (U := U) (H := H)) (x : omega a) :
+theorem fields_sub (s t : Sections F ζ hζ U R P H) (a : ActualChart (U := U) (H := H)) (x : omega a) :
     sectionFields (s-t) a x = sectionFields s a x - sectionFields t a x := by
   simp [sectionFields, KPContCotangentActualOverlap.LiftedChart.coefficient,
     KPContCotangentActualGenuineTwistIsotropy.isotropyChart, ChartKind.representative]
@@ -898,7 +898,7 @@ private theorem lapError_zero_off (r : Cutoffs (U := U) (H := H)) (w : GraphSect
   squaredNorm F ζ hζ U R P H w.val.val b + (normSquare (gradient w.val) b : ℝ≥0∞) +
     squaredNorm F ζ hζ U R P H (localLaplacian w.val) b
 
-private theorem threeSquares_finite (w : GraphSection (U := U) (H := H)) :
+theorem threeSquares_finite (w : GraphSection (U := U) (H := H)) :
     (∫⁻ b, threeSquares F ζ hζ U R P H w b ∂(baseMeasure (U := U) (R := R) (P := P))) < ⊤ := by
   unfold threeSquares
   have hm := squaredNorm_measurable F ζ hζ U R P H w.val.val (fun i => (w.val.property i).continuous.measurable)
@@ -938,7 +938,7 @@ private theorem lapError_bound (r : Cutoffs (U := U) (H := H)) (w : GraphSection
     BorelL2Sections F ζ hζ U R P H := testBorel F ζ hζ U R P H (cutoffTest r n w.val) -
       ⟨w.val.val, ⟨fun i => (w.val.property i).continuous.measurable, w.property.1⟩⟩
 
-private theorem scalarError_formula (r : Cutoffs (U := U) (H := H)) (w : GraphSection (U := U) (H := H))
+theorem scalarError_formula (r : Cutoffs (U := U) (H := H)) (w : GraphSection (U := U) (H := H))
     (n : ℕ) (a : ActualChart (U := U) (H := H)) (x : omega a) :
     sectionFields (scalarError F ζ hζ U R P H r w n).val a x =
       ((r.rho n (q a x.val) : ℂ)-1)*sectionFields w.val.val a x := by
@@ -1030,7 +1030,7 @@ private theorem error_integral_tendsto (r : Cutoffs (U := U) (H := H)) (w : Grap
     simpa only [normIntegral, lintegral_zero] using ht
 
 include μG hμG hR realization in
-private theorem graph_error_classes (r : Cutoffs (U := U) (H := H)) (w : GraphSection (U := U) (H := H)) (n : ℕ) :
+theorem graph_error_classes (r : Cutoffs (U := U) (H := H)) (w : GraphSection (U := U) (H := H)) (n : ℕ) :
     (graphPair μG hμG hR realization r n w.val).1 - sectionClass w =
       toSector F ζ hζ U R P H (scalarError F ζ hζ U R P H r w n) ∧
     (graphPair μG hμG hR realization r n w.val).2 - laplacianClass w =

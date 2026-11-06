@@ -4,9 +4,8 @@ public import DedekindZetaZeroFree.Theta.Whittaker.FiniteProjector.Data
 
 @[expose] public section
 
-noncomputable section
 open NumberField MeasureTheory
-open scoped Classical NumberField
+open scoped Classical
 namespace DedekindZetaZeroFree.FiniteWhittakerProjectors
 open MomentSources ThetaExpansion
 variable {F : Type} [Field F] [NumberField F]
@@ -31,7 +30,3 @@ theorem prepare_cutoffs {N : TraceHaarTransport R}
   · rw [if_pos hy, A.spherical_near v y (fun p => hsub p (hy p))]
     rw [firstRootRadialProfile, if_pos hy]
   · simp only [if_neg hy, zero_mul, firstRootRadialProfile]
-
-end DedekindZetaZeroFree.FiniteWhittakerProjectors
-
-end

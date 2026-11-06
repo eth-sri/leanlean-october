@@ -63,7 +63,7 @@ theorem compact_window_balanced_dilation
       apply IsUltrametricDist.isOpen_closedBall
       have hq : (0 : ℝ) < (v.val.asIdeal.absNorm : ℝ) := by
         exact_mod_cast (Nat.zero_lt_one.trans (HeightOneSpectrum.one_lt_absNorm v.val))
-      exact (zpow_pos hq _).ne'
+      positivity
   obtain ⟨C, hC⟩ := hK.exists_bound_of_continuousOn
     (f := fun x : SLocalProduct F S => PoissonArch.infiniteAdeleToSpace F x.1)
     (by fun_prop)
@@ -88,6 +88,3 @@ theorem compact_window_balanced_dilation
         ((InfiniteAdeleRing.ringEquiv_mixedSpace F).symm
           (N ^ (1 / (Module.finrank ℚ F : ℝ)) • 1) * x.1) = _
       rw [map_mul, RingEquiv.apply_symm_apply, smul_mul_assoc, one_mul]
-
-end
-end DedekindZetaZeroFree.ProbeAdditiveGramBounds.ArithmeticGramSteps

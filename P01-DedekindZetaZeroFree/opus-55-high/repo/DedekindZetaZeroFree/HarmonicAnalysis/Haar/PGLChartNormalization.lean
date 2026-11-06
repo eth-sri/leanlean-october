@@ -4,7 +4,6 @@ public import Mathlib
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.PGLComplex.AffineLie
 open MeasureTheory Topology
 
@@ -41,7 +40,3 @@ theorem haar_chart_density_comparison
       mul_comm (ENNReal.ofReal (w x)) _,
       ← ENNReal.ofReal_mul (le_of_lt ha_pos)]
   rw [hfun]
-
-end DedekindZetaZeroFree.PGLComplex.AffineLie
-
-end

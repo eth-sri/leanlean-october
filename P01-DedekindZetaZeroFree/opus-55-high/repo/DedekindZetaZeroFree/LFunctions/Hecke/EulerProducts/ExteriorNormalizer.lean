@@ -18,9 +18,9 @@ set_option maxHeartbeats 1600000
   toFun q := ⟨⟨q.asIdeal,q.ne_bot,by simp⟩,q.prime⟩
   invFun q := HeightOneSpectrum.ofPrime q.property
   left_inv q := rfl
-  right_inv q := by apply Subtype.ext; apply Subtype.ext; rfl
+  right_inv q := by rfl
 
-private theorem global_inverse_euler (z : ℂ) (hz : 1 < z.re) :
+theorem global_inverse_euler (z : ℂ) (hz : 1 < z.re) :
     HasProd (fun q : HeightOneSpectrum (𝓞 F) => 1 - (Ideal.absNorm q.asIdeal : ℂ)^(-z))
       (GlobalZetaNormalizer.zeta  F ζ hζ z)⁻¹ ∧
     GlobalZetaNormalizer.zeta  F ζ hζ z ≠ 0 := by
@@ -39,7 +39,7 @@ private theorem global_inverse_euler (z : ℂ) (hz : 1 < z.re) :
     intro hbot
     subst I
     have hz0 : -z ≠ 0 := neg_ne_zero.mpr (Complex.ne_zero_of_re_pos (by linarith))
-    simp [Ideal.absNorm_bot, Complex.zero_cpow hz0] at hI
+    simp_all
   rw [heq] at h
   have hp := (primeEquiv F).hasProd_iff.mpr h.2.2.2
   refine ⟨?_,h.2.2.1⟩
@@ -48,7 +48,7 @@ private theorem global_inverse_euler (z : ℂ) (hz : 1 < z.re) :
   simp only [Function.comp_apply, primeEquiv, Equiv.coe_fn_mk,
     ExteriorIdealEuler.primeTerm, ExteriorIdealEuler.summand, one_mul]
 
-private theorem local_euler_nonzero (z : ℂ) (hz : 1 < z.re)
+theorem local_euler_nonzero (z : ℂ) (hz : 1 < z.re)
     (q : HeightOneSpectrum (𝓞 F)) : 1 - (Ideal.absNorm q.asIdeal : ℂ)^(-z) ≠ 0 := by
   have hq : (1 : ℝ) < Ideal.absNorm q.asIdeal := by exact_mod_cast NumberField.HeightOneSpectrum.one_lt_absNorm q
   have hn : ‖(Ideal.absNorm q.asIdeal : ℂ)^(-z)‖ < 1 := by
@@ -56,9 +56,9 @@ private theorem local_euler_nonzero (z : ℂ) (hz : 1 < z.re)
     exact Real.rpow_lt_one_of_one_lt_of_neg hq (by simp only [Complex.neg_re]; linarith)
   intro h
   have he := (sub_eq_zero.mp h).symm
-  exact (lt_irrefl (1 : ℝ)) (by simpa only [he,norm_one] using hn)
+  simp_all
 
-private theorem exterior_inverse_euler
+theorem exterior_inverse_euler
     (E : Finset (HeightOneSpectrum (𝓞 F))) (z : ℂ) (hz : 1 < z.re) :
     HasProd (fun q : HeightOneSpectrum (𝓞 F) => if q ∈ E then 1 else
       1 - (Ideal.absNorm q.asIdeal : ℂ)^(-z))
@@ -68,11 +68,11 @@ private theorem exterior_inverse_euler
   have he := h.1.congr_cofinite₀ (s := E)
     (g := fun q => if q ∈ E then 1 else 1 - (Ideal.absNorm q.asIdeal : ℂ)^(-z))
     (fun q _ => local_euler_nonzero F z hz q) (fun q hq => by simp [hq])
-  have hd : PositiveZetaResidue.exteriorEulerFactor F E z ≠ 0 := by
-    exact Finset.prod_ne_zero_iff.mpr (fun q hq => local_euler_nonzero F z hz q)
+  have hd : PositiveZetaResidue.exteriorEulerFactor F E z ≠ 0 := 
+    Finset.prod_ne_zero_iff.mpr (fun q hq => local_euler_nonzero F z hz q)
   have hone : (∏ q ∈ E, if q ∈ E then (1 : ℂ) else
       1 - (Ideal.absNorm q.asIdeal : ℂ)^(-z)) = 1 :=
-    Finset.prod_eq_one (fun q hq => by simp [hq])
+    by simp_all
   rw [hone] at he
   refine ⟨?_,mul_ne_zero h.2 hd⟩
   convert he using 1
@@ -101,10 +101,6 @@ theorem exterior_goodFactor_hasProd
         simp only [KPGlobalFiniteSIntertwiner.residueSize]
         congr 1
         ring
-      rw [he 2,he 1]
+      simp_all
   · simp only [KPGlobalFiniteSIntertwiner.normalizer,GlobalZetaNormalizer.exceptionalNormalizer]
     field_simp
-
-end DedekindZetaZeroFree.KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue.ExteriorFactorLimit
-
-end

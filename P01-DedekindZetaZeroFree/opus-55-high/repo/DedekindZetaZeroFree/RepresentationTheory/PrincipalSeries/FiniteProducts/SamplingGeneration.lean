@@ -21,7 +21,7 @@ variable {ι : Type} [Fintype ι] [DecidableEq ι] {V : ι → Type}
   [∀ i, AddCommGroup (V i)] [∀ i, Module ℂ (V i)]
 variable {κ : ι → Type} (b : ∀ i, Module.Basis (κ i) ℂ (V i))
 
-private theorem contraction_coordinate (q : ι) (p : ∀ i, κ i)
+theorem contraction_coordinate (q : ι) (p : ∀ i, κ i)
     (x : PiTensorProduct ℂ V) :
     (b q).coord (p q) (contraction q (fun i => (b i).coord (p i)) x) =
       (Basis.piTensorProduct b).repr x p := by
@@ -37,7 +37,7 @@ private theorem contraction_coordinate (q : ι) (p : ∀ i, κ i)
     simpa only [map_add, Finsupp.add_apply] using congrArg₂ (· + ·) hx hy
 
 include b in
-private theorem mapSingle_eq_of_contractions (q : ι) (A : V q →ₗ[ℂ] V q)
+theorem mapSingle_eq_of_contractions (q : ι) (A : V q →ₗ[ℂ] V q)
     (x : PiTensorProduct ℂ V)
     (hx : ∀ p : ∀ i, κ i,
       A (contraction q (fun i => (b i).coord (p i)) x) =
@@ -49,7 +49,7 @@ private theorem mapSingle_eq_of_contractions (q : ι) (A : V q →ₗ[ℂ] V q)
   rw [← contraction_coordinate b q p, ← contraction_coordinate b q p,
     contraction_mapSingle, hx]
 
-private theorem map_eq_of_mapSingle (A : ∀ i, V i →ₗ[ℂ] V i)
+theorem map_eq_of_mapSingle (A : ∀ i, V i →ₗ[ℂ] V i)
     (x : PiTensorProduct ℂ V)
     (hx : ∀ q, PiTensorProduct.map (Function.update
       (fun _i => LinearMap.id : ∀ i, V i →ₗ[ℂ] V i) q (A q)) x = x) :
@@ -98,7 +98,7 @@ variable {ι : Type} [Fintype ι] [DecidableEq ι] {C : ι → Type} [∀ i, Fin
       LinearMap.proj_apply]
   | add x y hx hy => simpa only [map_add, Pi.add_apply] using congrArg₂ (· + ·) hx hy
 
-private theorem function_contraction_formula (q : ι)
+theorem function_contraction_formula (q : ι)
     (l : ∀ i, V i →ₗ[ℂ] ℂ) (c : ∀ i, C i)
     (x : PiTensorProduct ℂ (fun i => C i → V i)) (a : C q) :
     contraction q (fun i => (l i).comp (LinearMap.proj (c i))) x a =
@@ -160,7 +160,7 @@ local instance (U : ∀ q : S, OpenSubgroup (Cover F ζ hζ S q)) (q : S) :
     Fintype (LocalCosets F ζ hζ M S U q) :=
   @Fintype.ofFinite _ (localCosets_finite F ζ hζ M S U q)
 
-private theorem tensorSampling_eq_functionTensor
+theorem tensorSampling_eq_functionTensor
     (U : ∀ q : S, OpenSubgroup (Cover F ζ hζ S q))
     (x : PiTensorProduct ℂ (fun q => localFixedLevel F ζ hζ M S U q)) :
     tensorCosetSampling F ζ hζ M S U x =
@@ -178,7 +178,7 @@ private theorem tensorSampling_eq_functionTensor
     rfl
   | add x y hx hy => simpa only [map_add, Pi.add_apply] using congrArg₂ (· + ·) hx hy
 
-private theorem compactSampling_mem_tensorSampling
+theorem compactSampling_mem_tensorSampling
     (U : ∀ q : S, OpenSubgroup (Cover F ζ hζ S q))
     (f : productFixedLevel F ζ hζ M S U) :
     compactCosetSampling F ζ hζ M S U f ∈ (tensorCosetSampling F ζ hζ M S U).range := by
@@ -232,14 +232,14 @@ private theorem compactSampling_mem_tensorSampling
   change functionTensorEquiv (((PiTensorProduct.map sample).comp (PiTensorProduct.map retract)) x) = φ
   rw [← PiTensorProduct.map_comp, hA, hx]
 
-private theorem fixedTensorSection_surjective
+theorem fixedTensorSection_surjective
     (U : ∀ q : S, OpenSubgroup (Cover F ζ hζ S q)) :
     Function.Surjective (fixedTensorSection F ζ hζ M S U) := by
   intro f
   exact (fixedTensorSection_mem_range_iff F ζ hζ M S U f).mpr
     (compactSampling_mem_tensorSampling F ζ hζ M S U f)
 
-private theorem tensorEvaluation_surjective_sections
+theorem tensorEvaluation_surjective_sections
     (f : ProductFunctions F ζ hζ M S)
     (hcov : f ∈ productCovariance F ζ hζ M S)
     (hf : SmoothVector KPLocalPrincipalSeries.vectorRightTranslation f) :

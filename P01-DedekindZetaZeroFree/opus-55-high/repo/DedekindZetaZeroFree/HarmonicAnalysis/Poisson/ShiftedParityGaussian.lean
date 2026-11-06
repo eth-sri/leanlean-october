@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.HarmonicAnalysis.Poisson.SchwartzLattice
 
 @[expose] public section
 
-noncomputable section
 
 open Classical NumberField NumberField.InfinitePlace
 open NumberField.mixedEmbedding
@@ -14,7 +13,7 @@ namespace DedekindZetaZeroFree.AbelianQuotient.RayParity.ShiftedPoisson
 
 variable (K : Type) [Field K] [NumberField K]
 
-private lemma norm_εδ (δ : Finset (RayCoset.RealPlaces K)) : ‖εδ K δ‖ = 1 := by
+lemma norm_εδ (δ : Finset (RayCoset.RealPlaces K)) : ‖εδ K δ‖ = 1 := by
   rw [εδ, norm_pow, norm_neg, Complex.norm_I, one_pow]
 
 private lemma norm_phase (a : ℝ) :
@@ -24,7 +23,7 @@ private lemma norm_phase (a : ℝ) :
     push_cast; ring
   rw [h, Complex.norm_exp_ofReal_mul_I]
 
-private lemma norm_inv_J (q : InfinitePlace K → ℝ) (hq : ∀ v, 0 < q v) :
+lemma norm_inv_J (q : InfinitePlace K → ℝ) (hq : ∀ v, 0 < q v) :
     ‖(J K q : ℂ)⁻¹‖ = |J K q|⁻¹ := by
   rw [← Complex.ofReal_inv, Complex.norm_real, Real.norm_eq_abs, abs_inv]
 
@@ -97,7 +96,3 @@ theorem poisson (L : Submodule ℤ (euclidean.mixedSpace K))
       ring
     rw [hval] at hHas'
     exact hHas'
-
-end DedekindZetaZeroFree.AbelianQuotient.RayParity.ShiftedPoisson
-
-end

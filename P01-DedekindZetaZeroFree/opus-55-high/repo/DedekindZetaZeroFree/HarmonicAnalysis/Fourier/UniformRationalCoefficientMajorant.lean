@@ -11,7 +11,7 @@ noncomputable section
 namespace DedekindZetaZeroFree.ThetaRationalFourierSummation
 
 open NumberField IsDedekindDomain MeasureTheory
-open scoped NumberField Classical
+open scoped Classical
 
 def rationalFrequency (F : Type) [Field F] [NumberField F]
     (ψ : ContinuousAddChar (KPAdditiveQuotient F)) (ν : F)
@@ -69,11 +69,7 @@ theorem compactTorus_family_derivative_bound {d P : Type*} [Fintype d]
     funext x
     apply congrArg (f p)
     funext i
-    simp only [Pi.add_apply, AddCircle.coe_add]
-    have hz : ((m i : ℝ) : UnitAddCircle) = 0 := by
-      rw [AddCircle.coe_eq_zero_iff]
-      exact ⟨m i, by simp⟩
-    simp [hz]
+    simp
   have hjettranslate (p : P) (m : d → ℤ) (k : ℕ) (x : d → ℝ) :
       iteratedFDeriv ℝ k (compactTorusLift (f p)) (x + fun i => (m i : ℝ)) =
         iteratedFDeriv ℝ k (compactTorusLift (f p)) x := by
@@ -100,7 +96,7 @@ theorem compactTorus_family_derivative_bound {d P : Type*} [Fintype d]
   exact (hB ⟨k, Nat.lt_succ_of_le hk⟩ (p, y) ⟨Set.mem_univ _, hy⟩).trans
     ((Finset.le_sup' B (Finset.mem_univ _)).trans (le_max_right _ _))
 
-private theorem majorant_lattice_coordinates {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+theorem majorant_lattice_coordinates {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     [FiniteDimensional ℝ E] (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L]
     {d : Type*} [Fintype d] (b : Module.Basis d ℤ L) :
     ∃ (c : E ≃L[ℝ] (d → ℝ)) (t : (E ⧸ L.toAddSubgroup) ≃ₜ+ UnitAddTorus d),
@@ -134,7 +130,7 @@ private theorem majorant_lattice_coordinates {E : Type*} [NormedAddCommGroup E] 
       ext i
       obtain ⟨n, hn⟩ := hx i
       apply (AddCircle.coe_eq_zero_iff (1 : ℝ)).mpr
-      exact ⟨n, by simpa [c, f, Module.Basis.equivFun_apply] using hn⟩
+      simp_all
     · intro hx i
       have hi : (c.equivFun x i : UnitAddCircle) = 0 := congrFun hx i
       obtain ⟨n, hn⟩ := (AddCircle.coe_eq_zero_iff (1 : ℝ)).mp hi
@@ -148,9 +144,8 @@ private theorem majorant_lattice_coordinates {E : Type*} [NormedAddCommGroup E] 
     have hp := IsZLattice.isCompact_range_of_periodic L
       (QuotientAddGroup.mk : E → E ⧸ L.toAddSubgroup)
       QuotientAddGroup.continuous_mk (by
-        intro z w hw
-        rw [QuotientAddGroup.mk_add, (QuotientAddGroup.eq_zero_iff w).mpr hw, add_zero])
-    simpa only [Set.range_eq_univ.mpr QuotientAddGroup.mk_surjective] using hp
+        simp)
+    simp_all
   letI := hcomp
   exact ⟨c.equivFun.toContinuousLinearEquiv,
     { e with continuous_toFun := he
@@ -277,7 +272,7 @@ theorem rationalFrequency_injective (F : Type) [Field F] [NumberField F]
   rw [he] at hz
   exact hq hz
 
-private theorem unitary_character_integral {Q : Type*} [AddCommGroup Q]
+theorem unitary_character_integral {Q : Type*} [AddCommGroup Q]
     [TopologicalSpace Q] [IsTopologicalAddGroup Q]
     [MeasurableSpace Q] [BorelSpace Q]
     (μ : Measure Q) [μ.IsAddHaarMeasure] [IsProbabilityMeasure μ]
@@ -292,17 +287,11 @@ private theorem unitary_character_integral {Q : Type*} [AddCommGroup Q]
     simp_rw [hadd] at hi
     rw [integral_mul_const] at hi
     by_contra hn
-    exact hq ((mul_eq_left₀ hn).mp hi)
+    simp_all
 
 local instance : MeasureSpace UnitAddCircle := ⟨AddCircle.haarAddCircle⟩
 
-local instance : Measure.IsAddHaarMeasure (volume : Measure UnitAddCircle) :=
-  inferInstanceAs (Measure.IsAddHaarMeasure AddCircle.haarAddCircle)
-
-local instance : IsProbabilityMeasure (volume : Measure UnitAddCircle) :=
-  inferInstanceAs (IsProbabilityMeasure AddCircle.haarAddCircle)
-
-private theorem mFourier_add_point {d : Type*} [Fintype d]
+theorem mFourier_add_point {d : Type*} [Fintype d]
     (n : d → ℤ) (q r : UnitAddTorus d) :
     UnitAddTorus.mFourier n (q + r) =
       UnitAddTorus.mFourier n q * UnitAddTorus.mFourier n r := by
@@ -310,7 +299,7 @@ private theorem mFourier_add_point {d : Type*} [Fintype d]
     fourier_apply, smul_add, AddCircle.toCircle_add, Circle.coe_mul,
     Finset.prod_mul_distrib]
 
-private theorem mFourier_norm_point {d : Type*} [Fintype d]
+theorem mFourier_norm_point {d : Type*} [Fintype d]
     (n : d → ℤ) (q : UnitAddTorus d) : ‖UnitAddTorus.mFourier n q‖ = 1 := by
   simp only [UnitAddTorus.mFourier, ContinuousMap.coe_mk, fourier_apply,
     norm_prod, Circle.norm_coe, Finset.prod_const_one]
@@ -332,12 +321,11 @@ theorem uniform_majorant_partial_matching {I J P : Type*}
         exact hh ▸ h.choose_spec
       · intro hr
         exact congrArg some (hunique i _ _ h.choose_spec hr)
-    · simp only [Option.noConfusion, false_iff]
-      exact fun hr => h ⟨j, hr⟩
+    simp_all
   have hp := (summable_partition (show 0 ≤ b from hpos)
     (s := fun j : Option J => g ⁻¹' {j}) (by
       intro i
-      exact ⟨g i, rfl, fun j hj => hj.symm⟩)).mp hb
+      simp)).mp hb
   let B : J → ℝ := fun j => ∑' i : {i // g i = some j}, b i
   refine ⟨B, hp.2.comp_injective (Option.some_injective J), ?_, ?_⟩
   · intro j
@@ -399,18 +387,18 @@ theorem rational_fourier_uniform_majorant
     intro p
     let N : ℕ := 2 * (Fintype.card d + 1)
     have hn : (N : WithTop ℕ∞) ≤ (↑(⊤ : ℕ∞) : WithTop ℕ∞) := by
-      exact_mod_cast (show (N : ℕ∞) ≤ ⊤ from le_top)
-    exact (he p).of_le hn
+      simp
+    fun_prop
   have hder : ∀ k ≤ 2 * (Fintype.card d + 1), Continuous
       (fun z : P × (d → ℝ) => iteratedFDeriv ℝ k (compactTorusLift (u z.1)) z.2) :=
-    fun k _ => hj k
+    by fun_prop
   obtain ⟨⟨b, hb, hbpos, hbnd⟩, hs, _, _, _⟩ := compactTorus_parametric_mFourier
     u huc hreg hder (compactTorus_family_derivative_bound u _ hder)
   let c : P → (d → ℤ) → ℂ := fun p n => UnitAddTorus.mFourierCoeff (u p) n
   let a : (d → ℤ) → KPAdditiveQuotient F → ℂ :=
     fun n q => UnitAddTorus.mFourier n (π q)
   have ha (n : d → ℤ) : Continuous (a n) :=
-    (UnitAddTorus.mFourier n).continuous.comp hπ
+    by fun_prop
   have han (n : d → ℤ) (q) : ‖a n q‖ = 1 := mFourier_norm_point n _
   let R : (d → ℤ) → F → Prop :=
     fun n ν => ∀ q, a n q * rationalFrequency F ψ ν q = 1
@@ -422,8 +410,7 @@ theorem rational_fourier_uniform_majorant
     exact mul_left_cancel₀ (by
       intro hz
       have hn := han n q
-      rw [hz, norm_zero] at hn
-      norm_num at hn) hh
+      simp_all) hh
   have hcoeff (p : P) (ν : F) :
       (∫ q, f (p, q) * rationalFrequency F ψ ν q ∂μ) =
         ∑' n, if R n ν then c p n else 0 := by
@@ -441,8 +428,8 @@ theorem rational_fourier_uniform_majorant
     have hti : Summable (fun n => ∫ q, ‖t n q‖ ∂μ) := by
       simpa only [htn, integral_const, probReal_univ, one_smul] using hsn
     have hsum (q : KPAdditiveQuotient F) :
-        (∑' n, t n q) = f (p, q) * rationalFrequency F ψ ν q := by
-      exact ((UnitAddTorus.hasSum_mFourier_series_apply_of_summable (hs p) (π q)).mul_right
+        (∑' n, t n q) = f (p, q) * rationalFrequency F ψ ν q := 
+      ((UnitAddTorus.hasSum_mFourier_series_apply_of_summable (hs p) (π q)).mul_right
         (rationalFrequency F ψ ν q)).tsum_eq.trans (by rw [hu])
     rw [← integral_congr_ae (Filter.Eventually.of_forall hsum),
       ← integral_tsum_of_summable_integral_norm ht hti]
@@ -457,14 +444,10 @@ theorem rational_fourier_uniform_majorant
         rw [map_add, mFourier_add_point, rationalFrequency_add]
         ring)]
     change c p n * (if R n ν then 1 else 0) = _
-    split_ifs <;> simp
+    simp
   obtain ⟨b', hb', hbpos', hbnd'⟩ := uniform_majorant_partial_matching R hR c b hb hbpos hbnd
   refine ⟨b', hb', hbpos', ?_⟩
   intro p ν
   change ‖∫ q, f (p, q) * rationalFrequency F ψ ν q ∂μ‖ ≤ b' ν
   rw [hcoeff]
   exact hbnd' p ν
-
-end DedekindZetaZeroFree.ThetaRationalFourierSummation
-
-end

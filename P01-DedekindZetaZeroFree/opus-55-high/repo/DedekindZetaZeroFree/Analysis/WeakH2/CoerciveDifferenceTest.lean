@@ -30,46 +30,15 @@ def cutoffGradient {n : ℕ} {B : LocalBall n} (η : TestFunction B.toOpens ℝ 
 namespace DifferenceTestAtoms
 
 theorem zeroExtension_memLp {n : ℕ} {B : LocalBall n} (f : BallL2 B) :
-    MemLp (zeroExtension f) 2 volume := by
-  exact (memLp_indicator_iff_restrict Metric.isOpen_ball.measurableSet.nullMeasurableSet).2 (Lp.memLp f)
+    MemLp (zeroExtension f) 2 volume := by apply DedekindZetaZeroFree.WeakH2.zeroExtension_memLp <;> assumption
 
 theorem quotient_memLp {n : ℕ} (f : Space n → ℂ) (hf : MemLp f 2 volume)
-    (k : Fin n) (t : ℝ) : MemLp (differenceQuotient k t f) 2 volume := by
-  exact ((hf.comp_measurePreserving (measurePreserving_add_right volume _)).sub hf).const_mul _
+    (k : Fin n) (t : ℝ) : MemLp (differenceQuotient k t f) 2 volume := by apply DedekindZetaZeroFree.WeakH2.FluxRaw.DifferenceTestAtoms.quotient_memLp <;> assumption
 
 theorem exactIBP {n : ℕ} (f g : Space n → ℂ) (hf : MemLp f 2 volume)
     (hg : MemLp g 2 volume) (k : Fin n) (t : ℝ) :
     (∫ x, f x * (-differenceQuotient k (-t) g x)) =
-      ∫ x, differenceQuotient k t f x * g x := by
-  have hfg := hf.integrable_mul hg
-  have hfgt := hf.integrable_mul
-    (hg.comp_measurePreserving (measurePreserving_add_right volume ((-t) • EuclideanSpace.single k 1)))
-  have hftg := (hf.comp_measurePreserving
-    (measurePreserving_add_right volume (t • EuclideanSpace.single k 1))).integrable_mul hg
-  change Integrable (fun x => f x * g x) volume at hfg
-  change Integrable (fun x => f x * g (x + (-t) • EuclideanSpace.single k 1)) volume at hfgt
-  change Integrable (fun x => f (x + t • EuclideanSpace.single k 1) * g x) volume at hftg
-  have hshift : (∫ x, f x * g (x + (-t) • EuclideanSpace.single k 1)) =
-      ∫ x, f (x + t • EuclideanSpace.single k 1) * g x := by
-    have h := integral_add_right_eq_self
-      (fun x => f x * g (x + (-t) • EuclideanSpace.single k 1))
-      (t • EuclideanSpace.single k 1) (μ := volume)
-    simpa only [neg_smul, add_neg_cancel_right] using h.symm
-  simp only [differenceQuotient, Complex.ofReal_neg, inv_neg, neg_mul, neg_neg]
-  have hleft : (∫ x, f x * ((t : ℂ)⁻¹ *
-      (g (x + (-t) • EuclideanSpace.single k 1) - g x))) =
-      (t : ℂ)⁻¹ * ((∫ x, f x * g (x + (-t) • EuclideanSpace.single k 1)) - ∫ x, f x * g x) := by
-    simp_rw [mul_left_comm (f _) (t : ℂ)⁻¹]
-    change (∫ x, (t : ℂ)⁻¹ * (f x * (g (x + (-t) • EuclideanSpace.single k 1) - g x))) = _
-    rw [integral_const_mul]
-    simp_rw [mul_sub]
-    rw [integral_sub hfgt hfg, mul_sub]
-  have hright : (∫ x, (t : ℂ)⁻¹ *
-      (f (x + t • EuclideanSpace.single k 1) - f x) * g x) =
-      (t : ℂ)⁻¹ * ((∫ x, f (x + t • EuclideanSpace.single k 1) * g x) - ∫ x, f x * g x) := by
-    simp_rw [mul_assoc, sub_mul]
-    rw [integral_const_mul, integral_sub hftg hfg]
-  rw [hleft, hright, hshift]
+      ∫ x, differenceQuotient k t f x * g x := by apply DedekindZetaZeroFree.WeakH2.FluxRaw.DifferenceTestAtoms.exactIBP <;> assumption
 
 theorem cutoffValue_memLp {n : ℕ} {B : LocalBall n}
     (η : TestFunction B.toOpens ℝ ⊤) (q : IntegerSobolev B 1) :
@@ -101,7 +70,7 @@ theorem cutoffDifference_zero_off {n : ℕ} {B : LocalBall n}
     intro h
     apply hx
     apply Metric.mem_cthickening_of_dist_le x (x + (-t) • EuclideanSpace.single k 1) |t| _ h
-    simp [dist_eq_norm, norm_smul, EuclideanSpace.norm_single]
+    simp [dist_eq_norm, norm_smul]
   unfold differenceQuotient
   rw [cutoffValue_zero_off η q x hx0, cutoffValue_zero_off η q _ hx1]
   simp
@@ -155,9 +124,7 @@ theorem derivativeDifference {n : ℕ} (α : MultiIndex n 1)
     cases h : α.directions with
     | nil => exact Or.inl rfl
     | cons i l =>
-      right
-      have : l = [] := by simpa [h] using hlen
-      exact ⟨i, by simp [this]⟩
+      simp_all
   · simp [coordinateDerivative, hnil, coordinateDerivativeList]
   · funext x
     have hd := hφ.differentiable (by simp)
@@ -165,7 +132,7 @@ theorem derivativeDifference {n : ℕ} (α : MultiIndex n 1)
     change (fderiv ℝ (fun y => (t : ℂ)⁻¹ * (φ (y + t • EuclideanSpace.single k 1) - φ y)) x) _ = _
     have hds : Differentiable ℝ (fun y => φ (y + t • EuclideanSpace.single k 1)) := by fun_prop
     have hdsub : DifferentiableAt ℝ (fun y => φ (y + t • EuclideanSpace.single k 1) - φ y) x :=
-      (hds x).sub (hd x)
+      by fun_prop
     rw [fderiv_const_mul hdsub,
       fderiv_fun_sub (hds x) (hd x),
       fderiv_comp_add_right]
@@ -176,14 +143,7 @@ theorem global_indicator_ae {n : ℕ} {B : LocalBall n}
     (hfg : ∀ᵐ x ∂volume.restrict B.carrier, f x = g x)
     (hg : ∀ x, x ∉ K → g x = 0) :
     KPContLocalEnergy.SobolevEnergyEstimates.CompactApproximation.compactZeroExtension K f =ᵐ[volume]
-      B.carrier.indicator g := by
-  filter_upwards [(ae_restrict_iff' Metric.isOpen_ball.measurableSet).1 hfg] with x hx
-  by_cases hxK : x ∈ K
-  · simp [KPContLocalEnergy.SobolevEnergyEstimates.CompactApproximation.compactZeroExtension,
-      hxK, hKB hxK, hx (hKB hxK)]
-  · by_cases hxB : x ∈ B.carrier
-    · simp [KPContLocalEnergy.SobolevEnergyEstimates.CompactApproximation.compactZeroExtension, hxK, hxB, hg x hxK]
-    · simp [KPContLocalEnergy.SobolevEnergyEstimates.CompactApproximation.compactZeroExtension, hxK, hxB]
+      B.carrier.indicator g := by apply DedekindZetaZeroFree.WeakH2.FluxRaw.DifferenceTestAtoms.global_indicator_ae <;> assumption
 
 private theorem derivative_support {n : ℕ} (l : List (Fin n)) (f : Space n → ℂ) :
     tsupport (coordinateDerivativeList l f) ⊆ tsupport f := by
@@ -201,8 +161,7 @@ private theorem test_derivative_memLp {n : ℕ} {B : LocalBall n}
     cases h : α.directions with
     | nil => exact Or.inl rfl
     | cons i l =>
-      have : l = [] := by simpa [h] using hlen
-      exact Or.inr ⟨i, by simp [this]⟩
+      simp_all
   · simpa [coordinateDerivative, hnil, coordinateDerivativeList] using
       φ.continuous.memLp_of_hasCompactSupport (p := 2) φ.hasCompactSupport
   · have hs : ContDiff ℝ (⊤ : ℕ∞) (fderiv ℝ (fun y => φ y)) :=
@@ -292,14 +251,14 @@ theorem construct_difference_test {n : ℕ} (mid outer : LocalBall n)
     rw [hx, image_eq_zero_of_notMem_tsupport hnot]
     simp
   have hvalue : KPContLocalEnergy.SobolevEnergyEstimates.CompactApproximation.compactZeroExtension S (value v)
-      =ᵐ[volume] cutoffValue η q := by
-    exact DifferenceTestAtoms.global_indicator_ae S hSB _ _ hv (fun x hx => by
+      =ᵐ[volume] cutoffValue η q := 
+    DifferenceTestAtoms.global_indicator_ae S hSB _ _ hv (fun x hx => by
       rw [image_eq_zero_of_notMem_tsupport hx]
       simp)
   have hgradient (j : Fin n) :
       KPContLocalEnergy.SobolevEnergyEstimates.CompactApproximation.compactZeroExtension S (gradient v j)
-        =ᵐ[volume] cutoffGradient η q j := by
-    exact DifferenceTestAtoms.global_indicator_ae S hSB _ _ (hgv j) (fun x hx => by
+        =ᵐ[volume] cutoffGradient η q j := 
+    DifferenceTestAtoms.global_indicator_ae S hSB _ _ (hgv j) (fun x hx => by
       rw [image_eq_zero_of_notMem_tsupport hx]
       simp)
   have hdq (f g : Space n → ℂ) (hfg : f =ᵐ[volume] g) :
@@ -430,7 +389,7 @@ theorem coercive_difference_estimate (n : ℕ) (hn : 0 < n)
       r R cρ Cρ κ Λ L M G hr hrR hcρ hκ hL hM hG
   let C : ℝ := 2 * A / (cρ * κ) + B ^ 2 / (cρ * κ) ^ 2
   have ha : 0 < cρ * κ := mul_pos hcρ hκ
-  have hC : 0 ≤ C := by dsimp [C]; positivity
+  have hC : 0 ≤ C := by positivity
   refine ⟨Real.sqrt C + 1, by positivity, ?_⟩
   intro inner mid outer hic hmc hir hmr hor
   obtain ⟨η, hηone, hηrange, hηgradient, hηmargin⟩ :=
@@ -454,14 +413,8 @@ theorem coercive_difference_estimate (n : ℕ) (hn : 0 < n)
     D hD z hz u h k t ht htsmall q w hqv hqg hwv hwg hweq
   have hEnonneg : 0 ≤ ∑ j : Fin n, ∫ x in mid.carrier,
       ‖(η x : ℂ) * differenceQuotient k t (zeroExtension (gradient u j)) x‖ ^ 2 := by
-    apply Finset.sum_nonneg
-    intro j _
-    exact integral_nonneg (fun x => sq_nonneg _)
+    positivity
   have habs := DifferenceTestAtoms.difference_energy_absorption ha hEnonneg he
   have hK : C ≤ (Real.sqrt C + 1) ^ 2 := by
     nlinarith [Real.sq_sqrt hC, Real.sqrt_nonneg C]
   exact habs.trans (mul_le_mul_of_nonneg_right hK (sq_nonneg _))
-
-end DedekindZetaZeroFree.WeakH2
-
-end

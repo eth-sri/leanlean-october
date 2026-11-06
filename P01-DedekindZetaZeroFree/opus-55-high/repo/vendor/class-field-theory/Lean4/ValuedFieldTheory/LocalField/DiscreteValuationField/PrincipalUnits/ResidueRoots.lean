@@ -15,13 +15,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-set_option autoImplicit false
-
 namespace LocalFieldTheory
 
 open ValuationTheory
@@ -127,9 +120,7 @@ theorem exists_residueRootsOfUnity_lift
   have hunit : IsUnit a :=
     (F.residue_ne_zero_iff_isUnit a).1
       (by
-        change F.toHenselianDVF.residueMap a ≠ 0
-        rw [ha_residue]
-        exact y.ne_zero)
+        simp_all)
   rcases hunit with ⟨u, hu⟩
   have ha_pow : a ^ n = 1 := by
     have ha_eval : f.eval a = 0 := Polynomial.IsRoot.def.mp ha_root
@@ -145,9 +136,7 @@ theorem exists_residueRootsOfUnity_lift
         (1 : F.valuationSubring)
     simpa [n, hu] using ha_pow
   · apply Units.ext
-    rw [higherPrincipalUnitGroup.residueUnitHom_apply]
-    rw [hu]
-    exact ha_residue
+    simp_all
 
 /-- The residue map restricted to the Hensel-lifted `(q - 1)`-roots of unity. -/
 def residueRootsOfUnityResidueHom [Finite F.residueField] :
@@ -182,9 +171,8 @@ theorem residueRootPolynomial_isRoot_of_mem
       (u : F.valuationSubring) ^ (Nat.card F.residueField - 1) = 1 := by
     have hunit :=
       congrArg (fun z : F.valuationSubringˣ => (z : F.valuationSubring)) hu
-    simpa using hunit
-  exact Polynomial.IsRoot.def.mpr (by
-    simp [Polynomial.eval_sub, hpow])
+    omega
+  simp_all
 
 /-- The derivative of `X^(q - 1) - 1` at a valuation-ring unit is a unit.
 This is the simple-root input for uniqueness of Teichmuller representatives. -/
@@ -200,15 +188,7 @@ theorem residueRootPolynomial_derivative_eval_isUnit
       F.residueMap (f.derivative.eval (u : F.valuationSubring)) =
         ((f.map F.residueMap).derivative).eval
           (F.residueMap (u : F.valuationSubring)) := by
-    calc
-      F.residueMap (f.derivative.eval (u : F.valuationSubring)) =
-          (f.derivative.map F.residueMap).eval
-            (F.residueMap (u : F.valuationSubring)) := by
-        exact (Polynomial.eval_map_apply (f := F.residueMap)
-          (p := f.derivative) (u : F.valuationSubring)).symm
-      _ = ((f.map F.residueMap).derivative).eval
-          (F.residueMap (u : F.valuationSubring)) := by
-        rw [Polynomial.derivative_map]
+    simp
   have hsimple :
       ((f.map F.residueMap).derivative).eval
           (F.residueMap (u : F.valuationSubring)) ≠ 0 := by
@@ -282,7 +262,7 @@ theorem residueRootsOfUnityResidueHom_bijective
 
 /-- Hensel's splitting of the residue-unit map on the `(q - 1)`-roots of
 unity: the Teichmuller representatives in `O^*` are exactly `κ^*`. -/
-noncomputable def residueRootsOfUnityEquivResidueFieldUnits
+def residueRootsOfUnityEquivResidueFieldUnits
     [Finite F.residueField] :
     higherPrincipalUnitGroup.residueRootsOfUnityGroup F ≃*
       F.residueFieldˣ :=
@@ -301,11 +281,3 @@ higherPrincipalUnitGroup.residueUnitHom F u`.
     higherPrincipalUnitGroup.residueRootsOfUnityEquivResidueFieldUnits F u =
       higherPrincipalUnitGroup.residueUnitHom F u :=
   rfl
-end higherPrincipalUnitGroup
-
-end CompleteDVF
-end DiscreteValuationField
-
-end
-
-end LocalFieldTheory

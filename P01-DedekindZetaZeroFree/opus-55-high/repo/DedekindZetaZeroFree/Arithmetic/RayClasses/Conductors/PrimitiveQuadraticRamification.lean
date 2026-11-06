@@ -33,5 +33,3 @@ theorem quadratic_primitive_ramification
   · rintro ⟨Q, hQ, hram⟩
     exact RootNumber.conductor_support_upper F hF f hf η hq hn d c hc p
       ((hc.mem_finiteSupport_iff_exists_ramified p).mpr ⟨Q, hQ, hram⟩)
-
-end DedekindZetaZeroFree.LargeSieve

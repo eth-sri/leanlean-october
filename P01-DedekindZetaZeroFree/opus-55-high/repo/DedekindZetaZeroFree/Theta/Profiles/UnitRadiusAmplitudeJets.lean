@@ -5,14 +5,13 @@ import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.Complex.ChartJe
 
 @[expose] public section
 
-noncomputable section
 
 namespace DedekindZetaZeroFree.ThetaArchInducedMajorant
 
 open KPCplxPrincipalSeriesCharts KPCplxCharacterHaar
 open scoped ContDiff Matrix.Norms.Elementwise
 
-private lemma unit_diagonal_chart (u : ℂˣ) (x : ℂ) :
+lemma unit_diagonal_chart (u : ℂˣ) (x : ℂ) :
     weyl * upperUnipotent x * diagonal u =
       upperTriangular 1 u 0 * (weyl * upperUnipotent (x / (u : ℂ))) := by
   apply Matrix.GeneralLinearGroup.ext
@@ -22,7 +21,7 @@ private lemma unit_diagonal_chart (u : ℂˣ) (x : ℂ) :
       Matrix.mul_apply, Fin.sum_univ_two]
   all_goals field_simp
 
-private lemma unitRadius_coordinate (β κ : ℂˣ)
+lemma unitRadius_coordinate (β κ : ℂˣ)
     (f : PrincipalSeries positiveParameter) (u : ℂˣ) (hu : ‖(u : ℂ)‖ = 1) (x : ℂ) :
     rotatedAmplitude β κ f u 1 x =
       ((κ : ℂ) * (characterScale β / (2 * Real.pi) : ℂ)) *
@@ -78,5 +77,3 @@ theorem norm_iteratedFDeriv_rotatedAmplitude_one_le (β κ : ℂˣ)
       apply mul_le_mul_of_nonneg_right (by linarith)
       exact mul_nonneg hD.le (Real.rpow_nonneg (by positivity) _)
     _ = _ := by ring
-
-end DedekindZetaZeroFree.ThetaArchInducedMajorant

@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Finite restriction of cyclotomic fixed-field reciprocity
 
@@ -73,36 +69,13 @@ theorem
           (LocalClassFieldTheory.abstractExtensionQuotientEquivGaloisGroup
             ℚ (SeparableClosure ℚ)
             H.field L.field L.below L.normal)) q) := by
-  let : IsMulCommutative L.extensionQuotient :=
-    L.commutative
-  apply Additive.toMul.injective
-  change
-    (L.extensionQuotientMulEquiv.trans
-      (LocalClassFieldTheory.abstractExtensionQuotientEquivGaloisGroup
-        ℚ (SeparableClosure ℚ)
-        H.field L.field L.below L.normal))
-      ((Abelianization.equivOfComm :
-          L.extensionQuotient ≃*
-            Abelianization L.extensionQuotient).symm
-        (Abelianization.of q)) =
-      (L.extensionQuotientMulEquiv.trans
-        (LocalClassFieldTheory.abstractExtensionQuotientEquivGaloisGroup
-          ℚ (SeparableClosure ℚ)
-          H.field L.field L.below L.normal)) q
-  exact congrArg
-    (L.extensionQuotientMulEquiv.trans
-      (LocalClassFieldTheory.abstractExtensionQuotientEquivGaloisGroup
-        ℚ (SeparableClosure ℚ)
-        H.field L.field L.below L.normal))
-    ((Abelianization.equivOfComm :
-      L.extensionQuotient ≃*
-        Abelianization L.extensionQuotient).symm_apply_apply q)
+  rfl
 
 /-- Genuine restriction from the cyclotomic maximal-unramified
 extension of an abstract fixed field to a finite unramified abelian
 subextension.  The construction uses the canonical quotient
 presentations of both actual Galois groups. -/
-noncomputable def abstractFixedFieldCyclotomicFiniteRestrictionMonoidHom
+def abstractFixedFieldCyclotomicFiniteRestrictionMonoidHom
     (H : FiniteAbstractField
       (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
     (L : FiniteAbelianSubextension H.field)
@@ -179,7 +152,7 @@ theorem abstractFixedFieldCyclotomicFiniteRestrictionMonoidHom_apply
 
 /-- In the canonical `ZHat` coordinate, the genuine cyclotomic Artin
 symbol recovers the abstract maximal-unramified quotient class. -/
-private theorem
+theorem
     abstractFixedFieldCyclotomicIdeleClassArtin_fixed_coordinate
     (H : FiniteAbstractField
       (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
@@ -347,8 +320,7 @@ theorem
           rationalIdeleClassRepresentation_satisfiesClassFieldAxiom
           H L.toFiniteGaloisExtension hUnramified a)
     _ = _ := by
-      rw [abstractFixedFieldAbelianizedExtensionQuotientEquivGaloisGroup_of]
-      exact toMul_ofMul _
+      rfl
 
 /-- Finite restriction of the genuine cyclotomic chosen-local-factor
 Artin map is exactly the actual global norm-residue map for every
@@ -380,7 +352,7 @@ theorem
       Additive.toMul (e.symm a) = c := by
     apply Additive.ofMul.injective
     change e.symm (e (Additive.ofMul c)) = Additive.ofMul c
-    exact e.symm_apply_apply _
+    simp
   calc
     abstractFixedFieldGlobalNormResidueMonoidHom H L c =
         abstractFixedFieldGlobalNormResidueMonoidHom H L
@@ -416,8 +388,3 @@ theorem
             H L hUnramified
             (abstractFixedFieldCyclotomicIdeleClassArtinMonoidHom H z))
         hc
-
-end Reciprocity
-end GlobalClassFieldTheory
-
-end

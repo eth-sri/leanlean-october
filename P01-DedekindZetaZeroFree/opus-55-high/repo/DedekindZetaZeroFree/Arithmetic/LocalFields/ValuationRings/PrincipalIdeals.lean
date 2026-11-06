@@ -6,7 +6,6 @@ public import DedekindZetaZeroFree.Moments.Principal.EulerProducts.LocalSeriesDe
 
 open scoped NumberField Classical Valued
 open NumberField IsDedekindDomain
-noncomputable section
 namespace DedekindZetaZeroFree.LocalFiniteSumCompatibility
 
 theorem valuationInteger_mem_span_iff {K Γ : Type*} [Field K]
@@ -30,6 +29,3 @@ theorem valuationInteger_mem_span_iff {K Γ : Type*} [Field K]
     apply Subtype.ext
     change (x : K) = (r : K) * ((x : K) / (r : K))
     field_simp
-end DedekindZetaZeroFree.LocalFiniteSumCompatibility
-
-end

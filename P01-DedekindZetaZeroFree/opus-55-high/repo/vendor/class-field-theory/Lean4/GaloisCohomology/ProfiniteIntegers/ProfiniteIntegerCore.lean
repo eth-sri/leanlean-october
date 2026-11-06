@@ -15,13 +15,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-set_option autoImplicit false
-
 namespace ClassFormation
 
 /-!
@@ -58,10 +51,10 @@ open scoped Topology
     exact Int.cast_one
   map_add' a b := by
     funext i
-    exact Int.cast_add a b
+    simp
   map_mul' a b := by
     funext i
-    exact Int.cast_mul a b
+    simp
 
  def zHatIntegerSubring : Subring ZHatAmbient :=
   zHatDiagonal.range
@@ -107,19 +100,10 @@ instance : CompactSpace ZHat :=
   Topology.IsClosedEmbedding.compactSpace
     (Subring.isClosed_topologicalClosure zHatIntegerSubring).isClosedEmbedding_subtypeVal
 
-/-- `ZHat` as Mathlib's bundled profinite additive group. -/
-def zHatProfiniteAddGrp : ProfiniteAddGrp :=
-  ProfiniteAddGrp.of ZHat
-
 /-- The multiplicative presentation of `ZHat` remains totally disconnected. -/
 instance : TotallyDisconnectedSpace (Multiplicative ZHat) := by
   change TotallyDisconnectedSpace ZHat
   infer_instance
-
-/-- The multiplicative presentation of `ZHat` as Mathlib's bundled profinite
-group.  Its multiplication is addition in `ZHat`. -/
-def zHatMulProfiniteGrp : ProfiniteGrp :=
-  ProfiniteGrp.of (Multiplicative ZHat)
 
 /-- The canonical continuous reduction `ℤ̂ → ℤ/nℤ`. -/
 def zHatReduction (n : ℕ) (hn : 0 < n) :
@@ -171,9 +155,9 @@ theorem zHatReduction_transition {m n : ℕ}
     rintro _ ⟨a, rfl⟩
     exact map_intCast (ZMod.castHom hmn (ZMod m)) a
   have hf : Continuous f :=
-    continuous_of_discreteTopology.comp (continuous_apply (zHatIndex n hn))
+    by fun_prop
   have hg : Continuous g :=
-    continuous_apply (zHatIndex m hm)
+    by fun_prop
   exact hfg.closure hf hg x.property
 
 /-- The ordinary integers have dense image in their profinite completion. -/
@@ -183,9 +167,7 @@ theorem denseRange_intCast_zHat :
       (Set.inclusion (Subring.le_topologicalClosure zHatIntegerSubring)) := by
     apply (denseRange_inclusion_iff
       (Subring.le_topologicalClosure zHatIntegerSubring)).2
-    change closure (zHatIntegerSubring : Set ZHatAmbient) ⊆
-      closure (zHatIntegerSubring : Set ZHatAmbient)
-    exact Set.Subset.rfl
+    rfl
   have hdiagonal : DenseRange zHatDiagonal.rangeRestrict :=
     zHatDiagonal.rangeRestrict_surjective.denseRange
   have hcomp : DenseRange
@@ -198,9 +180,6 @@ theorem denseRange_intCast_zHat :
       Set.inclusion (Subring.le_topologicalClosure zHatIntegerSubring) ∘
           zHatDiagonal.rangeRestrict =
         (fun a : ℤ => Int.castRingHom ZHat a) := by
-    funext a
-    apply Subtype.ext
-    funext i
     rfl
   rw [heq] at hcomp
   exact hcomp
@@ -232,5 +211,3 @@ theorem zHatOne_topologicallyGenerates :
       hCast.comp hToAdd continuous_of_discreteTopology
   simpa [f] using
     (topologicallyGenerates_singleton_of_denseRange_mint f hf)
-
-end ClassFormation

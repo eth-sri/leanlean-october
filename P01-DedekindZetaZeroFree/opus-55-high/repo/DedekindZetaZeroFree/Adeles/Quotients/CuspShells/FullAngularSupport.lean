@@ -504,7 +504,7 @@ theorem spherical_modulus_of_cusp_basepoint
     rfl
   rw [← hchart, (nativeDisintegration F ζ hζ R P S U).chart_modulus Y hY _ r]
 
-private lemma upper_of_infinity_fixed (b : KPCuspArithmetic.PGL2 F)
+lemma upper_of_infinity_fixed (b : KPCuspArithmetic.PGL2 F)
     (hb : b • KPCuspArithmetic.infinity F = KPCuspArithmetic.infinity F) :
     KPCuspArithmetic.IsUpperTriangular F b := by
   simpa using KPMsActualAngularTransitionSource.cusp_fixing_upper (F := F) (KPCuspArithmetic.infinity F) 1 b (by simp) hb

@@ -11,7 +11,6 @@ open scoped NumberField Valued
 open NumberField IsDedekindDomain MeasureTheory ValuativeRel
 open KPLocalExceptionalConstruction KPLocalStoneVonNeumann KPLocalPrincipalSeries
 open KPRankOneShellContinuation KPRankOneShellRepair
-set_option autoImplicit false
 set_option maxHeartbeats 1000000
 set_option backward.isDefEq.respectTransparency false
 
@@ -48,14 +47,12 @@ set_option backward.isDefEq.respectTransparency false
         intro x
         obtain ⟨v, rfl⟩ := rootCoinvariantsMk_surjective ρ n ψ x
         change rootCoinvariantsMk ρ n ψ (ρ g⁻¹ (ρ g v)) = _
-        rw [← Module.End.mul_apply, ← map_mul, inv_mul_cancel, map_one,
-          Module.End.one_apply]
+        simp
       right_inv := by
         intro x
         obtain ⟨v, rfl⟩ := rootCoinvariantsMk_surjective ρ n χ x
         change rootCoinvariantsMk ρ n χ (ρ g (ρ g⁻¹ v)) = _
-        rw [← Module.End.mul_apply, ← map_mul, mul_inv_cancel, map_one,
-          Module.End.one_apply] }
+        simp }
 
 variable (F : Type) [Field F] [NumberField F]
   (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
@@ -65,8 +62,8 @@ variable (F : Type) [Field F] [NumberField F]
     Multiplicative (LocalField F q) ≃* Multiplicative (LocalField F q) where
   toFun x := Multiplicative.ofAdd ((y : LocalField F q) * Multiplicative.toAdd x)
   invFun x := Multiplicative.ofAdd (((y⁻¹ : (LocalField F q)ˣ) : LocalField F q) * Multiplicative.toAdd x)
-  left_inv := by intro x; simp [← mul_assoc]
-  right_inv := by intro x; simp [← mul_assoc]
+  left_inv := by intro x; simp
+  right_inv := by intro x; simp
   map_mul' := by intro x z; simp [mul_add]
 
  local instance sectionAdd (ε : Sign) : AddCommGroup (sectionSpace S.borel P ε 0) :=
@@ -95,7 +92,7 @@ variable (F : Type) [Field F] [NumberField F]
       (Circle.toUnits ((localFiniteCharacter F q) (a * Multiplicative.toAdd x)) : ℂ)
     rw [← mul_assoc, hab]
 
-private theorem actual_reverse_frequency_square
+theorem actual_reverse_frequency_square
     (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
     (hμ : μ ((valuation (LocalField F q)).integer : Set (LocalField F q)) = 1)
     (t : actualTorus F ζ hζ q) (a b : LocalField F q)
@@ -143,7 +140,3 @@ theorem actual_reverse_frequency_pair_transport
   funext i
   fin_cases i <;>
     exact (actual_reverse_frequency_square F ζ hζ q S P μ hμ t a b hab _).symm
-
-end DedekindZetaZeroFree.ActualReverseMinorFrequency
-
-end

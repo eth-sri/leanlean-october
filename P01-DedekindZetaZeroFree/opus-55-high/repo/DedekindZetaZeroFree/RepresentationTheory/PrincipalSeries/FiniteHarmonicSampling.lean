@@ -263,7 +263,7 @@ def tensorEvaluation {ι X : Type*} [Fintype ι] (S : ι → Submodule ℂ (X �
     tensorEvaluation S (PiTensorProduct.tprod ℂ f) a = ∏ i, (f i).val (a i) := by
   simp [tensorEvaluation]
 
-private theorem product_span_eq_range {ι X : Type*} [Fintype ι]
+theorem product_span_eq_range {ι X : Type*} [Fintype ι]
     (S : ι → Submodule ℂ (X → ℂ)) :
     Submodule.span ℂ (Set.range (fun f : ∀ i, S i => fun a => ∏ i, (f i).val (a i))) =
       (tensorEvaluation S).range := by

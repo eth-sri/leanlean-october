@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Metaplectic.Torus.FiniteTensorRealizations
 
 @[expose] public section
 
-noncomputable section
 open scoped Classical NumberField
 open NumberField ValuativeRel
 namespace DedekindZetaZeroFree.KPLiteralScalarCanonicalReferenceComparison
@@ -41,13 +40,3 @@ theorem fixed_section_eq_identity_scalar
     have hval := congrArg (fun u : sectionSpace B P .plus 0 => (u.val 1).val 1) he
     simpa only [Submodule.coe_smul, Pi.smul_apply, smul_eq_mul, h₀, mul_one] using hval
   exact he.symm.trans (congrArg (fun c : ℂ => c • f₀) hs)
-
-end Local
-
-variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-variable (P : KPGlobalTorusFiniteStages.CompatibleModelData F ζ hζ)
-variable (C : KPGlobalTorusFiniteStages.LocalFiberData F ζ hζ P)
-
-end DedekindZetaZeroFree.KPLiteralScalarCanonicalReferenceComparison
-
-end

@@ -1,7 +1,7 @@
 module
 
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Extension.ClassGroup
-public import GaloisCohomology.Kummer.Concrete.GaloisCohomology
+public import Mathlib.RepresentationTheory.Homological.GroupCohomology.Hilbert90
 public import Mathlib.Algebra.Group.Action.Basic
 public import Mathlib.GroupTheory.GroupAction.Quotient
 
@@ -13,12 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-set_option autoImplicit false
 
 /-!
 # Galois descent for idele classes
@@ -35,7 +29,6 @@ open NumberField
 
 noncomputable section
 
-
 variable
     (K L : Type*) [Field K] [NumberField K]
     [Field L] [NumberField L] [Algebra K L]
@@ -46,8 +39,8 @@ namespace RelativeIdeleGroup
 omit [NumberField L] [FiniteDimensional K L] in
 /-- The diagonal copy of `Lˣ` in the relative ideles is injective. -/
 theorem principalIdele_injective :
-    Function.Injective (principalIdele K L) := by
-  exact Units.map_injective
+    Function.Injective (principalIdele K L) := 
+  Units.map_injective
     (Algebra.TensorProduct.includeRight_injective
       (B := L)
       (NumberField.AdeleRing.algebraMap_injective
@@ -64,7 +57,7 @@ instance principalQuotientAction :
     refine
       ⟨Units.map σ.toRingEquiv.toMonoidHom x, ?_⟩
     rw [← smul_principalIdele K L σ x, hx]
-    simp [smul_def]
+    simp
 
 omit [NumberField L] [FiniteDimensional K L] in
 @[simp]
@@ -80,7 +73,7 @@ theorem smul_class_mk
 /-- The quotient Galois action on relative idele classes, viewed as an
 action by group automorphisms. -/
 @[reducible]
-noncomputable def relativeIdeleClassMulDistribMulAction :
+def relativeIdeleClassMulDistribMulAction :
     MulDistribMulAction (L ≃ₐ[K] L) (ClassGroup K L) := by
   letI := relativeIdeleMulDistribMulAction K L
   exact Function.Surjective.mulDistribMulAction
@@ -142,8 +135,8 @@ theorem exists_fixed_representative_of_fixed_class
             (σ • a) / a := by
     intro σ
     have hmem :
-        (σ • a) / a ∈ principalSubgroup K L := by
-      exact (QuotientGroup.eq_iff_div_mem).1 (ha σ)
+        (σ • a) / a ∈ principalSubgroup K L := 
+      (QuotientGroup.eq_iff_div_mem).1 (ha σ)
     exact hmem
   let f : (L ≃ₐ[K] L) → Lˣ :=
     fun σ ↦ Classical.choose (hex σ)
@@ -159,18 +152,11 @@ theorem exists_fixed_representative_of_fixed_class
     have hsmul :
         principalIdele K L (σ • f τ) =
           σ • principalIdele K L (f τ) := by
-      calc
-        principalIdele K L (σ • f τ) =
-            principalIdele K L
-              (Units.map
-                σ.toRingEquiv.toMonoidHom (f τ)) := by
-          congr 1
-        _ = σ • principalIdele K L (f τ) :=
-          (smul_principalIdele K L σ (f τ)).symm
+      rfl
     rw [map_mul, hsmul,
       hf_spec (σ * τ), hf_spec τ, hf_spec σ,
       smul_div', ← mul_smul]
-    exact (div_mul_div_cancel _ _ _).symm
+    simp
   obtain ⟨β, hβ⟩ :=
     groupCohomology.isMulCoboundary₁_of_isMulCocycle₁_of_aut_to_units
       f hf_cocycle
@@ -202,23 +188,21 @@ theorem exists_fixed_representative_of_fixed_class
     calc
       (σ • a) / (σ • principalIdele K L β) =
           ((σ • a) / a) *
-            (a / (σ • principalIdele K L β)) := by
-        exact (div_mul_div_cancel _ _ _).symm
+            (a / (σ • principalIdele K L β)) := 
+        (div_mul_div_cancel _ _ _).symm
       _ = ((σ • principalIdele K L β) /
             principalIdele K L β) *
           (a / (σ • principalIdele K L β)) := by
         rw [← hratio σ]
-      _ = a / principalIdele K L β := by
-        exact div_mul_div_cancel' _ _ _
+      _ = a / principalIdele K L β := 
+        div_mul_div_cancel' _ _ _
   refine ⟨a', ?_, ha'fixed⟩
   apply (QuotientGroup.eq_iff_div_mem).2
   refine ⟨β⁻¹, ?_⟩
   change
     (principalIdele K L β)⁻¹ =
       (a / principalIdele K L β) / a
-  simpa only [div_mul_eq_div_div] using
-    (div_mul_cancel_right a
-      (principalIdele K L β)).symm
+  simp
 
 omit [NumberField L] in
 /-- Every Galois-fixed relative idele class comes from `C_K`. -/
@@ -262,7 +246,3 @@ theorem classInclusion_range_eq_galoisFixedClassSubgroup
   le_antisymm
     (classInclusion_range_le_galoisFixed K L)
     (galoisFixed_le_classInclusion_range K L)
-
-end RelativeIdeleGroup
-
-end

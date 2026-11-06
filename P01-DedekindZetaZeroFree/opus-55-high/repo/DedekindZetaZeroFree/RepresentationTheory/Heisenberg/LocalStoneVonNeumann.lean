@@ -149,7 +149,7 @@ namespace DedekindZetaZeroFree.KPLocalHeisenbergPolarization
 open scoped commutatorElement
 open DedekindZetaZeroFree.FinitePolarization
 
-private theorem trace_off_center {H D V : Type*}
+theorem trace_off_center {H D V : Type*}
     [Group H] [CommGroup D] [Finite D] [AddCommGroup V] [Module ℂ V]
     [Module.Finite ℂ V]
     (C : Subgroup H) (π : H →* D) (hπ : Function.Surjective π)
@@ -199,7 +199,7 @@ private theorem trace_off_center {H D V : Type*}
   exact (mul_eq_zero.mp (by linear_combination -ht :
     (z - 1) * LinearMap.trace ℂ V (ρ a) = 0)).resolve_left (sub_ne_zero.mpr hz)
 
-private theorem finite_average_functional {G V : Type*} [Group G] [Finite G]
+theorem finite_average_functional {G V : Type*} [Group G] [Finite G]
     [AddCommGroup V] [Module ℂ V] [Module.Finite ℂ V] [Nontrivial V]
     (τ : Representation ℂ G V)
     (ht : ∀ g : G, g ≠ 1 → LinearMap.trace ℂ V (τ g) = 0) :
@@ -212,8 +212,7 @@ private theorem finite_average_functional {G V : Type*} [Group G] [Finite G]
     rw [map_sum]
     rw [Finset.sum_eq_single 1]
     · rw [map_one, LinearMap.trace_one]
-    · intro g _ hg
-      exact ht g hg
+    · simp_all
     · simp
   have hP : P ≠ 0 := by
     intro hh
@@ -338,8 +337,7 @@ theorem coefficient_intertwiner {H V : Type*} [Group H]
 
   have hmem : ∀ v : V, (fun g : H => ℓ (ρ g v)) ∈ inducedSpace A χ := by
     intro v a g
-    show ℓ (ρ ((a : H) * g) v) = (χ a : ℂ) * ℓ (ρ g v)
-    rw [map_mul, Module.End.mul_apply, hcov a (ρ g v)]
+    simp_all
 
   let φ : V →ₗ[ℂ] inducedSpace A χ :=
     { toFun := fun v => ⟨fun g => ℓ (ρ g v), hmem v⟩
@@ -350,21 +348,19 @@ theorem coefficient_intertwiner {H V : Type*} [Group H]
       map_smul' := fun c v => by
         apply Subtype.ext
         funext g
-        simp [smul_eq_mul] }
+        simp }
   have hφval : ∀ (v : V) (g : H), (φ v).val g = ℓ (ρ g v) := fun v g => rfl
 
   have hφ : ∀ (g : H) (v : V), φ (ρ g v) = σ g (φ v) := by
     intro g v
     apply Subtype.ext
     funext x
-    rw [htranslate g (φ v) x, hφval, hφval]
-    show ℓ (ρ x (ρ g v)) = ℓ (ρ (x * g) v)
-    rw [show ρ (x * g) v = ρ x (ρ g v) from by rw [map_mul, Module.End.mul_apply]]
+    simp_all
   let F : Representation.IntertwiningMap ρ σ :=
     LinearMap.intertwiningMap_of_isIntertwiningMap ρ σ φ hφ
   have hFval : ∀ (v : V) (g : H), (F v).val g = ℓ (ρ g v) := by
     intro v g
-    exact hφval v g
+    rfl
   refine ⟨F, ?_, hFval⟩
 
   intro hzero
@@ -452,7 +448,7 @@ theorem tau_hasCentralCharacter {H D : Type*} [Group H] [TopologicalSpace H]
   have hc : T.π (c : H) = 1 := by
     have hker : (c : H) ∈ T.π.ker := by rw [T.quotient_kernel]; exact c.property
     exact hker
-  let a : P.L.comap T.π := ⟨c, by change T.π (c : H) ∈ P.L; rw [hc]; exact P.L.one_mem⟩
+  let a : P.L.comap T.π := ⟨c, by simp_all⟩
   apply Subtype.ext
   funext x
   change f.val (x * (c : H)) = (T.ω c : ℂ) * f.val x
@@ -473,9 +469,7 @@ theorem tau_smooth {H D : Type*} [Group H] [TopologicalSpace H]
   change tau P (c : H) v = v
   rw [tau_hasCentralCharacter T P c v]
   change T.ω.toMonoidHom c = 1 at hc
-  change (T.ω c : ℂ) • v = v
-  rw [show T.ω c = 1 from hc]
-  simp
+  simp_all
 
 theorem tau_moduleFinite {H D : Type*} [Group H] [TopologicalSpace H]
     [IsTopologicalGroup H] [CommGroup D] [Finite D]
@@ -511,7 +505,7 @@ theorem tau_moduleFinite {H D : Type*} [Group H] [TopologicalSpace H]
   let a (x : H) : A := ⟨x * (r (q x))⁻¹, by
     apply (QuotientGroup.eq_one_iff _).mp
     change q (x * (r (q x))⁻¹) = 1
-    rw [map_mul, map_inv, hr, mul_inv_cancel]⟩
+    simp_all⟩
   have ha (b : A) (x : H) : a ((b : H) * x) = b * a x := by
     apply Subtype.ext
     have hb : q (b : H) = 1 := (QuotientGroup.eq_one_iff _).mpr b.property
@@ -535,8 +529,7 @@ theorem tau_moduleFinite {H D : Type*} [Group H] [TopologicalSpace H]
     have hax : (a x : H) * r (q x) = x := by dsimp [a]; simp
     exact (f.property (a x) (r (q x))).symm.trans (by rw [hax])
   · intro f
-    funext d
-    simp [har, hr]
+    simp_all
 
 theorem tau_finrank_eq_index {H D : Type*} [Group H] [TopologicalSpace H]
     [IsTopologicalGroup H] [CommGroup D] [Finite D]
@@ -579,7 +572,7 @@ theorem diagonal_isolation {ι k : Type*} [Finite ι] [DecidableEq ι] [Field k]
     funext j
     by_cases hji : j = i
     · subst j; simpa using hgi
-    · simp [Pi.single_apply, hji, hgz j (Finset.mem_univ _) hji]
+    simp_all
   exact he ▸ hg
 
 theorem tau_diagonal_formula {H D : Type*} [Group H] [TopologicalSpace H]
@@ -592,8 +585,7 @@ theorem tau_diagonal_formula {H D : Type*} [Group H] [TopologicalSpace H]
   have hc : (c : H) ∈ P.L.comap T.π := by
     change T.π (c : H) ∈ P.L
     have hker : (c : H) ∈ T.π.ker := by rw [T.quotient_kernel]; exact c.property
-    rw [show T.π (c : H) = 1 from hker]
-    exact P.L.one_mem
+    simp_all
   let b : P.L.comap T.π := ⟨c, hc⟩
   have hmul : x * (a : H) = (b : H) * ((a : H) * x) := by
     simp [b, c, commutatorElement_def, mul_assoc]
@@ -620,16 +612,14 @@ theorem polarization_separates {H D : Type*} [Group H] [TopologicalSpace H]
     mem_orthogonal]
   intro l
   obtain ⟨a, ha⟩ := T.quotient_surjective l
-  have haL : a ∈ P.L.comap T.π := by change T.π a ∈ P.L; rw [ha]; exact l.property
+  have haL : a ∈ P.L.comap T.π := by simp_all
   have hh := h ⟨a, haL⟩
   have hh' : T.pairing (T.π x) (T.π a) = T.pairing (T.π y) (T.π a) :=
     Subtype.ext hh
   have hh'' : T.pairing (T.π a) (T.π x) = T.pairing (T.π a) (T.π y) := by
     rw [pairing_swap_inv T.pairing T.alternating (T.π x) (T.π a),
       pairing_swap_inv T.pairing T.alternating (T.π y) (T.π a), hh']
-  change T.pairing (l : D) (T.π (x / y)) = 1
-  rw [← ha, map_div, map_div, hh'']
-  simp
+  simp_all
 
 theorem tau_irreducible {H D : Type*} [Group H] [TopologicalSpace H]
     [IsTopologicalGroup H] [CommGroup D] [Finite D]
@@ -681,7 +671,7 @@ theorem tau_irreducible {H D : Type*} [Group H] [TopologicalSpace H]
     · intro h
       apply ha
       apply Units.ext
-      exact (mul_right_cancel₀ (Units.ne_zero (P.ωL a)) h)
+      simp_all
     · intro f hf
       simpa [mul_assoc] using hstable a f hf
   have hF : F ≠ ⊥ := by
@@ -716,7 +706,7 @@ theorem tau_irreducible {H D : Type*} [Group H] [TopologicalSpace H]
     ext k
     by_cases hkj : k = j
     · subst k; simp [hgj, hfi]
-    · simp [Pi.single_apply, hkj]
+    · simp [hkj]
   apply top_unique
   intro v hv
   have heF : e v ∈ F := by
@@ -728,7 +718,7 @@ theorem tau_irreducible {H D : Type*} [Group H] [TopologicalSpace H]
     ext k
     by_cases hkj : k = j
     · subst k; simp
-    · simp [Pi.single_apply, hkj]
+    · simp [hkj]
   obtain ⟨u, hu, heuv⟩ := Submodule.mem_map.mp heF
   have : u = v := e.injective heuv
   exact this ▸ hu
@@ -792,8 +782,7 @@ private theorem smooth_comp {H V : Type*} [Group H] [TopologicalSpace H]
   intro v
   obtain ⟨J, hJ⟩ := h v
   refine ⟨J.comap w.toMulEquiv.toMonoidHom w.continuous, ?_⟩
-  intro j hj
-  exact hJ (w j) hj
+  simp_all
 
  def compSubrepresentationOrderIso {H V : Type*} [Group H]
     [AddCommGroup V] [Module ℂ V] (ρ : Representation ℂ H V) (w : H ≃* H) :
@@ -801,8 +790,8 @@ private theorem smooth_comp {H V : Type*} [Group H] [TopologicalSpace H]
   toFun S := ⟨S.toSubmodule, fun g v hv => by
     simpa using S.apply_mem_toSubmodule (w.symm g) hv⟩
   invFun S := ⟨S.toSubmodule, fun g v hv => S.apply_mem_toSubmodule (w g) hv⟩
-  left_inv S := by ext; rfl
-  right_inv S := by ext; rfl
+  left_inv S := by rfl
+  right_inv S := by rfl
   map_rel_iff' := by rfl
 
 private theorem irreducible_comp {H V : Type*} [Group H]
@@ -827,7 +816,3 @@ theorem weyl_conjugate_properties {H D : Type*} [Group H] [TopologicalSpace H]
   change tau P (w (c : H)) v = _
   rw [← hwC c]
   exact hcentral (wC c) v
-
-end DedekindZetaZeroFree.KPLocalStoneVonNeumann
-
-end

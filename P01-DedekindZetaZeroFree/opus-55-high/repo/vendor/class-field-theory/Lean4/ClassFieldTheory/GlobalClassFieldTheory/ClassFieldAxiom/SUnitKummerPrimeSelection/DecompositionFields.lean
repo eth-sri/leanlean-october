@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Decomposition groups and fields for S-unit Kummer prime selection
 
@@ -30,7 +25,6 @@ open scoped NumberField Classical IsMulCommutative
 open NumberField IsDedekindDomain
 open KummerTheory
 
-noncomputable section
 
 namespace GlobalClassFieldTheory.ClassFieldAxiom
 
@@ -157,8 +151,6 @@ theorem sUnitKummerKernelGenerator_mem_decompositionGroup
       sigma =
         RamificationTheory.HilbertRamification.ValuationSubring.restrictAutomorphismScalars
           (K := K) (M := Ni) tau := by
-    apply AlgEquiv.ext
-    intro x
     rfl
   change
     sigma ∈ finitePlaceDecompositionGroup
@@ -440,9 +432,3 @@ theorem sUnitKummerChosenDecompositionField_eq_coordinateFixedField
       (K := K) (Omega := Omega) E n hmu
       p v hp hv hn r eG S i]
   rfl
-
-end FinitePlaces
-
-end GlobalClassFieldTheory.ClassFieldAxiom
-
-end

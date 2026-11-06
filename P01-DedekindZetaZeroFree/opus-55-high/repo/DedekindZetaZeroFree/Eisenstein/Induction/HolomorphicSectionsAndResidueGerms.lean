@@ -112,8 +112,8 @@ def modularTwist (B : Subgroup G) (δ : B →* (ℝ≥0)ˣ) (s : ℂ) : B →* �
   toFun b := Complex.exp (s * (Real.log ((δ b : ℝ≥0) : ℝ) : ℂ))
   map_one' := by simp
   map_mul' a b := by
-    have ha : ((δ a : ℝ≥0) : ℝ) ≠ 0 := by exact_mod_cast (δ a).ne_zero
-    have hb : ((δ b : ℝ≥0) : ℝ) ≠ 0 := by exact_mod_cast (δ b).ne_zero
+    have ha : ((δ a : ℝ≥0) : ℝ) ≠ 0 := by simp
+    have hb : ((δ b : ℝ≥0) : ℝ) ≠ 0 := by simp
     simp only [map_mul, Units.val_mul, NNReal.coe_mul, Real.log_mul ha hb,
       Complex.ofReal_add, mul_add, Complex.exp_add]
 
@@ -130,27 +130,8 @@ def induction (B : Subgroup G) (τ₀ : Representation ℂ B V)
     (δ δhalf : B →* (ℝ≥0)ˣ) (s : ℂ) : Submodule ℂ (G → V) :=
   EqSections B (tau B τ₀ δ s) δhalf
 
-def compactRestriction (B K : Subgroup G) (τ₀ : Representation ℂ B V)
-    (δ δhalf : B →* (ℝ≥0)ˣ) (s : ℂ) :
-    induction B τ₀ δ δhalf s →ₗ[ℂ] (K → V) where
-  toFun f k := f.val k
-  map_add' := by intros; rfl
-  map_smul' := by intros; rfl
-
-structure FlatSection (B K : Subgroup G) (τ₀ : Representation ℂ B V)
-    (δ δhalf : B →* (ℝ≥0)ˣ) where
-  profile : K → V
-  sectionValue : ∀ s : ℂ, induction B τ₀ δ δhalf s
-  flat : ∀ s : ℂ, compactRestriction B K τ₀ δ δhalf s (sectionValue s) = profile
-
 end Induction
 
-section Core
-
-variable {K Gfin H : Type*} [Group K] [Group Gfin] [TopologicalSpace Gfin]
-    [AddCommGroup H] [Module ℂ H]
-
-end Core
 
 section ScalarOperators
 
@@ -163,31 +144,3 @@ def IntertwinerIntegrable (μ : Measure A) (w : G) (n : A → G)
 def intertwiner (μ : Measure A) (w : G) (n : A → G)
     (fR : G → ℂ) (g : G) (_h : IntertwinerIntegrable μ w n fR g) : ℂ :=
   ∫ x, fR (w * n x * g) ∂μ
-
-def ConstantTermIntegrable (μ : Measure Y) (orbit : Y → G → ℂ) (g : G) : Prop :=
-  Integrable (fun x => orbit x g) μ
-
-def constantTerm (μ : Measure Y) (orbit : Y → G → ℂ) (g : G)
-    (_h : ConstantTermIntegrable μ orbit g) : ℂ := ∫ x, orbit x g ∂μ
-
-end ScalarOperators
-
-section SmoothTopology
-
-variable {G H : Type*} [TopologicalSpace G] [AddCommGroup H] [Module ℂ H]
-
-structure HolomorphicCompactSection {J : Type*} (D : J → H →ₗ[ℂ] C(G, ℂ))
-    (core : Submodule ℂ H) (O : Set ℂ) where
-  profile : ℂ → H
-  in_core : ∀ s ∈ O, profile s ∈ core
-  holomorphic : SmoothHolomorphicOn D profile O
-
-def residue {J : Type*} {D : J → H →ₗ[ℂ] C(G, ℂ)} {f : ℂ → H}
-    (germ : SimplePoleGerm D f) : H := germ.cleared 0
-
-end SmoothTopology
-
-end DedekindZetaZeroFree.KPGlobalEisensteinData
-
-end
-end

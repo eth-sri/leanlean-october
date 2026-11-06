@@ -22,8 +22,8 @@ namespace DedekindZetaZeroFree.LargeSieve
 private lemma sum_pair (g : ({0, 1} : Finset ℝ) → ℂ) :
     (∑ p : ({0, 1} : Finset ℝ), g p) = g ⟨0, by simp⟩ + g ⟨1, by simp⟩ := by
   rw [show (Finset.univ : Finset ↥({0, 1} : Finset ℝ)) = {⟨0, by simp⟩, ⟨1, by simp⟩} from by
-    ext p; simp [Subtype.ext_iff, Finset.mem_insert, Finset.mem_singleton, eq_comm, or_comm]]
-  rw [Finset.sum_insert (by simp), Finset.sum_singleton]
+    ext p; simp [Subtype.ext_iff, Finset.mem_insert, Finset.mem_singleton, eq_comm]]
+  simp
 
 def principalLogResidue0
     (F : Type) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F)
@@ -32,7 +32,7 @@ def principalLogResidue0
     iteratedDeriv j
       (fun s : ℂ => (X : ℂ) ^ s * principalZetaContinuation F hF s) 0
 
-private lemma reflection_power {D q X : ℝ} (hD : 0 < D) (hq : 0 < q) (hX : 0 < X) (s : ℂ) :
+lemma reflection_power {D q X : ℝ} (hD : 0 < D) (hq : 0 < q) (hX : 0 < X) (s : ℂ) :
     (X : ℂ) ^ s * (D * q : ℝ) ^ ((1 : ℂ) / 2 - s) =
       (X : ℂ) / (Real.sqrt q : ℂ) * (D : ℂ) ^ ((1 : ℂ) / 2 - s) *
         (X / q : ℝ) ^ (-(1 - s : ℂ)) := by
@@ -47,7 +47,7 @@ private lemma reflection_power {D q X : ℝ} (hD : 0 < D) (hq : 0 < q) (hX : 0 <
   have hpX : (X : ℂ) ^ s = (X : ℂ) * (X : ℂ) ^ (-(1 - s : ℂ)) := by
     conv_rhs => lhs; rw [← Complex.cpow_one (X : ℂ)]
     rw [← Complex.cpow_add _ _ hXn]
-    congr 1; ring
+    simp
   have hpq : (q : ℂ) ^ ((1 : ℂ) / 2 - s) =
       ((q : ℂ) ^ (-(1 - s : ℂ)))⁻¹ / (Real.sqrt q : ℂ) := by
     rw [← hsqrt, ← Complex.cpow_neg, ← Complex.cpow_sub _ _ hqn]
@@ -55,7 +55,7 @@ private lemma reflection_power {D q X : ℝ} (hD : 0 < D) (hq : 0 < q) (hX : 0 <
   rw [hpX, hpq]
   ring
 
-private lemma logarithmic_left_integral
+lemma logarithmic_left_integral
     {F : Type} [Field F] [NumberField F]
     {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ} {H : ℂ → ℂ}
     (hf : Vendor.LogMellinAdmissible f δ P H)
@@ -80,8 +80,8 @@ private lemma logarithmic_left_integral
   let k := Vendor.reflectedLogDual D r H δ
   have hc : 1 < c := by dsimp [c]; linarith [hf.delta_pos]
   have hcδ : c < 1 + δ := by dsimp [c]; linarith [hf.delta_pos]
-  have hKcont : Continuous (fun t : ℝ => K ((c : ℂ) + t * Complex.I)) := by
-    exact (Vendor.reflectedLogSpectrum_differentiableOn D r hD hr hf).continuousOn.comp_continuous
+  have hKcont : Continuous (fun t : ℝ => K ((c : ℂ) + t * Complex.I)) := 
+    (Vendor.reflectedLogSpectrum_differentiableOn D r hD hr hf).continuousOn.comp_continuous
       (show Continuous (fun t : ℝ => (c : ℂ) + t * Complex.I) by fun_prop)
       (fun t => by simpa using And.intro hc hcδ)
   obtain ⟨_, _, _, hdn, hds, hVI, hVeq⟩ :=
@@ -101,8 +101,7 @@ private lemma logarithmic_left_integral
     let s : ℂ := ((-δ / 2 : ℝ) : ℂ) + t * Complex.I
     have hs : s.re < 0 := by
       dsimp [s]
-      simp only [Complex.add_re, Complex.div_re, Complex.ofReal_re, Complex.ofReal_im,
-        Complex.mul_re, Complex.I_re, Complex.I_im, mul_zero, zero_mul, sub_zero, add_zero]
+      simp only [Complex.ofReal_re, Complex.ofReal_im, Complex.mul_re, Complex.I_re, Complex.I_im, mul_zero, zero_mul, sub_zero, add_zero]
       linarith [hf.delta_pos]
     have ht : 1 < (1 - s).re := by simp only [Complex.sub_re, Complex.one_re]; linarith
     change H s * (X : ℂ) ^ s * L s = _
@@ -146,7 +145,7 @@ theorem principal_logarithmic_contour
   refine ⟨hbd_a, hbd_b, ?_, ?_⟩
   · have hnorm : ∀ I : Ideal (𝓞 F), I ≠ ⊥ →
         ‖(fun I => principalCharacter F I) I‖ ≤ 1 :=
-      fun I hI => by simp [principalCharacter_apply, hI]
+      by simp_all
     obtain ⟨_, hsrc⟩ :=
       idealLogMellin_source_interchange (fun I : Ideal (𝓞 F) => principalCharacter F I)
         hnorm hf hX hb
@@ -213,14 +212,12 @@ theorem principal_logarithmic_contour
                   s ^ j)
               + principalZetaResidueCoefficient F hF * (X : ℂ) * H 1 / (s - 1) := by
           rw [sum_pair]
-          congr 1
-          · simp
-          · simp [Finset.Icc_self]
+          simp
         rw [hsum, hG.choose_spec.2 s hs (hsne ⟨0, by simp⟩) (hsne ⟨1, by simp⟩)]
         ring)
       hbd_a hbd_b ⟨Cg, Ag, hCg, hAg, hgrowth⟩
     rw [hmain, sum_pair]
-    simp only [Nat.succ_ne_zero, if_false, if_true, one_ne_zero, ↓reduceIte]
+    simp only [Nat.succ_ne_zero, one_ne_zero, ↓reduceIte]
     rw [Vendor.logProductPrincipalCoeff_one]
     rfl
 
@@ -243,7 +240,7 @@ theorem principal_logarithmic_poisson
         principalLogResidue0 F hF P X +
         (X : ℂ) * (∑' I : {I : Ideal (𝓞 F) // I ≠ ⊥},
           k (X * (Ideal.absNorm I.val : ℝ))) := by
-  have hnorm : ∀ I : Ideal (𝓞 F), I ≠ ⊥ → ‖(1 : ℂ)‖ ≤ 1 := fun _ _ => by simp
+  have hnorm : ∀ I : Ideal (𝓞 F), I ≠ ⊥ → ‖(1 : ℂ)‖ ≤ 1 := by simp
   obtain ⟨hsn, hss⟩ := Vendor.logIdealTerm_summable (fun _ : Ideal (𝓞 F) => 1)
     hnorm hf.physical X hX
   have hn : Summable (fun I : {I : Ideal (𝓞 F) // I ≠ ⊥} =>
@@ -264,9 +261,7 @@ theorem principal_logarithmic_poisson
     (fun s hs => by
       rw [principalZetaContinuation_eq_dirichlet F hF s hs,
         idealCoefficientLSeries_eq_tsum_zeroBranch]
-      apply tsum_congr
-      intro I
-      split_ifs <;> simp)
+      simp)
   simp only [div_one, Real.sqrt_one, Complex.ofReal_one, one_mul] at hdn hds hleft
   obtain ⟨_, _, hsrc, hshift⟩ := principal_logarithmic_contour
      F hF hf hX (-δ / 2) 2
@@ -277,7 +272,3 @@ theorem principal_logarithmic_poisson
   rw [sub_eq_iff_eq_add] at hshift
   rw [hshift]
   ring
-
-end DedekindZetaZeroFree.LargeSieve
-
-end

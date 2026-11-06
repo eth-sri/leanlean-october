@@ -15,13 +15,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # The finite conductor exponent is a genuine local minimum
 
@@ -33,7 +26,6 @@ the whole completion tensor algebra, with no arbitrary place above `v`.
 open scoped NumberField TensorProduct
 open NumberField IsDedekindDomain
 
-noncomputable section
 
 namespace ClassFieldTheory
 
@@ -56,7 +48,3 @@ theorem IsAbelianConductor.finiteExponent_isLeast_tensorNorm
       (c.finitePart v)).mp le_rfl
   · intro n hn
     exact (hc.finiteExponent_le_iff_higherUnit_le_tensorNorm v n).mpr hn
-
-end ClassFieldTheory
-
-end

@@ -31,9 +31,3 @@ structure SelectedMomentSource
         (ActualRowTransfer.dyadicRow R.A R.probe.coefficients u h d) Z‖ ^ 2 ≤
       ‖RMSeparatedExpansion.expansion R.A R.probe.allowed R.probe.unitReps
         R.σ psi (L v) (H v) h d Z‖ ^ 2
-
-noncomputable section
-open scoped Classical NumberField
-
-end
-end DedekindZetaZeroFree.MomentSources

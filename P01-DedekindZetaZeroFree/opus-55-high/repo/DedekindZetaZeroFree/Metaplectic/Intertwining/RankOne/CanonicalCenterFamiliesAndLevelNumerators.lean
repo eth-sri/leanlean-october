@@ -37,8 +37,7 @@ theorem exists_uniformizer :
       (WithZero.exp (-1 : ℤ)))
   have hp' : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
       (valuation (LocalField F q) p) = WithZero.exp (-1 : ℤ) := by
-    rw [hp]
-    exact (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)).apply_symm_apply _
+    simp_all
   have hpne : p ≠ 0 := by
     intro h
     have h0 : (0 : WithZero (Multiplicative ℤ)) = WithZero.exp (-1 : ℤ) := by
@@ -137,9 +136,3 @@ theorem actual_exists_tauStandardFamily
     rw [smul_smul,ENNReal.mul_inv_cancel hc0 hctop,one_smul]
   rw [← hm]
   exact ⟨tauStandardFamily_smul_measure F ζ hζ q S.heisenberg S.borel P S.iwasawa ν Jν c hctop⟩
-
-end DedekindZetaZeroFree.KPRankOneShellContinuation
-
-end
-
-end

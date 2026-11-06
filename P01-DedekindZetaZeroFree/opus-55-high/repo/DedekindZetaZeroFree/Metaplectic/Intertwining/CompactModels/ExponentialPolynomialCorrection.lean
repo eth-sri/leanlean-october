@@ -80,7 +80,7 @@ theorem forwardAbs_locallyConstant (J : IwasawaData S.borel) :
     (fun x => g⁻¹ * x) ⁻¹' (J.compact.toOpenSubgroup : Set (ActualCover F ζ hζ q))
   refine ⟨U, J.compact.toOpenSubgroup.isOpen.preimage (continuous_const.mul continuous_id), ?_, ?_⟩
   · change g⁻¹ * g ∈ J.compact.toOpenSubgroup
-    simpa using J.compact.toOpenSubgroup.one_mem
+    simp
   · intro x hx
     let k : J.compact.toOpenSubgroup := ⟨g⁻¹ * x, hx⟩
     have hxg : x = g * k.val := by simp [k]
@@ -91,8 +91,8 @@ def logCorrection (J J' : IwasawaData S.borel) (g : ActualCover F ζ hζ q) : �
   Real.log (forwardAbs F ζ hζ q S J' g) - Real.log (forwardAbs F ζ hζ q S J g)
 
 theorem logCorrection_locallyConstant (J J' : IwasawaData S.borel) :
-    IsLocallyConstant (logCorrection F ζ hζ q S J J') := by
-  exact ((forwardAbs_locallyConstant F ζ hζ q S J').comp Real.log).sub
+    IsLocallyConstant (logCorrection F ζ hζ q S J J') := 
+  ((forwardAbs_locallyConstant F ζ hζ q S J').comp Real.log).sub
     ((forwardAbs_locallyConstant F ζ hζ q S J).comp Real.log)
 
 theorem logCorrection_compact_range_finite (J J' : IwasawaData S.borel) :
@@ -154,7 +154,7 @@ def correctedCompact (J J' : IwasawaData S.borel)
   map_add' φ ψ := by
     apply Subtype.ext
     funext k
-    exact smul_add _ _ _
+    simp
   map_smul' c φ := by
     apply Subtype.ext
     funext k
@@ -234,8 +234,7 @@ def correctionComponent (J J' : IwasawaData S.borel)
   map_smul' c φ := by
     apply Subtype.ext
     funext k
-    change (if _ then c • φ.val k else 0) = _
-    split_ifs with h <;> simp [h]
+    simp
 
 def correctionSpectrum (J J' : IwasawaData S.borel) : Finset ℝ :=
   (logCorrection_compact_range_finite F ζ hζ q S J J').toFinset
@@ -256,7 +255,3 @@ theorem correctedCompact_expansion (J J' : IwasawaData S.borel)
     rw [if_neg (Ne.symm hne), smul_zero]
   · intro h
     exact False.elim (h ((Set.Finite.mem_toFinset _).mpr ⟨k,rfl⟩))
-
-end DedekindZetaZeroFree.KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue.LocalCompactChange
-
-end

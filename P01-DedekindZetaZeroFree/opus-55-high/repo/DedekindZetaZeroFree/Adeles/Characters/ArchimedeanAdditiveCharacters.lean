@@ -42,15 +42,12 @@ def infiniteAdeleToSpace : NumberField.InfiniteAdeleRing F ≃L[ℝ] Space F :=
 theorem infiniteAdeleToSpace_coordinates (x : NumberField.InfiniteAdeleRing F) :
     NumberField.mixedEmbedding.euclidean.toMixed F (infiniteAdeleToSpace F x) =
       NumberField.InfiniteAdeleRing.ringEquiv_mixedSpace F x := by
-  change (NumberField.mixedEmbedding.euclidean.toMixed F)
-    ((NumberField.mixedEmbedding.euclidean.toMixed F).symm
-      (NumberField.InfiniteAdeleRing.ringEquiv_mixedSpace F x)) = _
-  exact (NumberField.mixedEmbedding.euclidean.toMixed F).apply_symm_apply _
+  rfl
 end DedekindZetaZeroFree.PoissonArch
 
 namespace DedekindZetaZeroFree
 
-private theorem arch_character_inner
+theorem arch_character_inner
     (E : Type) [NormedAddCommGroup E] [InnerProductSpace ℝ E] [CompleteSpace E]
     (χ : AddChar E Circle) (hχ : Continuous χ) :
     ∃! z : E, ∀ x : E, χ x = Real.fourierChar (inner ℝ x z) := by
@@ -135,7 +132,3 @@ theorem kp_additive_infinite_adele_character
     apply huniq
     intro x
     simpa [ψ, e] using hy (e.symm x)
-
-end DedekindZetaZeroFree
-
-end

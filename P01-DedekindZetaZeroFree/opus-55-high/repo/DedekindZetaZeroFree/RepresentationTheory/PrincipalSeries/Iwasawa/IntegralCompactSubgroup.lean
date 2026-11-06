@@ -105,7 +105,3 @@ theorem integralRawCompact_projection (q : HeightOneSpectrum (𝓞 F)) :
       (QuotientGroup.eq_one_iff _).mpr ⟨u,rfl⟩
      rw [hs,inv_one,mul_one]
      rfl
-end DedekindZetaZeroFree.PrincipalOfKP
-
-end
-end

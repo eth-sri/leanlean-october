@@ -10,7 +10,7 @@ noncomputable section
 namespace DedekindZetaZeroFree.LocalQuotientCharts.Raw
 
 open MeasureTheory Topology
-open scoped NumberField Classical Topology ENNReal Matrix.Norms.Operator
+open scoped NumberField Classical ENNReal Matrix.Norms.Operator
 
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
@@ -31,8 +31,8 @@ instance : MeasurableSpace (X F ζ hζ) := borel _
 def finiteTuples : Subgroup (KPAdelicCoverRestrictedProduct.RestrictedCover F ζ hζ) where
   carrier := {g | ∀ w : NumberField.InfinitePlace F, g (Sum.inl w) = 1}
   one_mem' := by simp
-  mul_mem' := by intro g h hg hh w; simp [hg w, hh w]
-  inv_mem' := by intro g hg w; simp [hg w]
+  mul_mem' := by simp_all
+  inv_mem' := by simp
 
 def finiteSubgroup : Subgroup (ActualCover F ζ hζ) :=
   (finiteTuples F ζ hζ).map
@@ -80,13 +80,10 @@ noncomputable section
 namespace DedekindZetaZeroFree.LocalQuotientCharts.Raw
 
 open MeasureTheory Topology
-open scoped NumberField Classical Topology ENNReal Matrix.Norms.Operator
+open scoped NumberField Classical ENNReal Matrix.Norms.Operator
 
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-
-def quotientMap : ActualCover F ζ hζ → X F ζ hζ :=
-  _root_.Quotient.mk _
 
 def levelMap (U : FiniteLevel F ζ hζ) (geometric : Bool) :
     ActualCover F ζ hζ → LevelSpace F ζ hζ U geometric :=
@@ -133,18 +130,6 @@ def ArchSupported (g : ActualCover F ζ hζ) : Prop :=
         (Matrix.GeneralLinearGroup.map
           (KPAdelicCoverRestrictedProduct.adeleEval F (Sum.inr q)) r) = 1
 
-structure HaarRecipe where
-  adelicHaar : Measure (ActualCover F ζ hζ)
-  adelic_isHaar : adelicHaar.IsHaarMeasure
-  archHaar : Measure (ArchGroup F)
-  arch_isHaar : archHaar.IsHaarMeasure
-  quotientHaar : Measure (X F ζ hζ)
-  domain : Set (ActualCover F ζ hζ)
-  domain_measurable : MeasurableSet domain
-  domain_fundamental : IsFundamentalDomain (rationalSubgroup F ζ hζ) domain adelicHaar
-  quotient_normalization :
-    Measure.map (quotientMap F ζ hζ) (adelicHaar.restrict domain) = quotientHaar
-
 def UFixedScalar (U : FiniteLevel F ζ hζ) (f : ActualCover F ζ hζ → ℂ) : Prop :=
   (∀ γ : rationalSubgroup F ζ hζ, ∀ g, f (γ * g) = f g) ∧
   (∀ u : levelSubgroup F ζ hζ U, ∀ g, f (g * u) = f g)
@@ -183,7 +168,7 @@ structure LiftedChart (U : FiniteLevel F ζ hζ) (geometric : Bool)
   neighborhood_open : IsOpen neighborhood
   chartMap_range : Set.range chartMap = neighborhood
   chartMap_quotient : IsQuotientMap (fun x : openSet =>
-    (⟨chartMap x, by rw [← chartMap_range]; exact Set.mem_range_self x⟩ : neighborhood))
+    (⟨chartMap x, by rw [← chartMap_range]; simp⟩ : neighborhood))
   orbit_fibers : ∀ x y, chartMap x = chartMap y ↔
     ∃ s : stabilizer, action s x = y
   section_equivariance : ∀ f, ChartScalar F ζ hζ U geometric χ f →
@@ -191,20 +176,3 @@ structure LiftedChart (U : FiniteLevel F ζ hζ) (geometric : Bool)
       (if geometric then (χ (centralLabel s) : ℂ) else 1) * f (lift x)
 
 attribute [instance] LiftedChart.stabilizer_group LiftedChart.stabilizer_finite
-
-structure SmallerChart {U : FiniteLevel F ζ hζ} {geometric : Bool}
-    {χ : rootsOfUnity 3 F →* Circle} (C : LiftedChart F ζ hζ U geometric χ) where
-  carrier : Set (ArchGroup F)
-  isOpen : IsOpen carrier
-  closure_compact : IsCompact (closure carrier)
-  closure_subset : closure carrier ⊆ C.openSet
-
-structure ExponentialChart (g : ArchGroup F) where
-  chart : PartialHomeomorph (Coordinates F) (ArchGroup F)
-  zero_mem : (0 : Coordinates F) ∈ chart.source
-  exponential_formula : ∀ x ∈ chart.source, chart x = g * matrixExp F x
-
-end DedekindZetaZeroFree.LocalQuotientCharts.Raw
-
-end
-end

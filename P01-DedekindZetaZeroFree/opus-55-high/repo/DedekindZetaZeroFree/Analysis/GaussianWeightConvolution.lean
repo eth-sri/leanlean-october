@@ -38,7 +38,7 @@ private lemma gaussPoly_integrable (M : ℕ) : Integrable (gaussPoly M) := by
           mul_le_mul_of_nonneg_left hpow (Real.exp_pos _).le
       _ ≤ _ := hexp
 
-private lemma pt_bound (A k B M a b c d S : ℝ) (hk : 0 ≤ k) (ha : 1 ≤ a) (hb : 1 ≤ b)
+lemma pt_bound (A k B M a b c d S : ℝ) (hk : 0 ≤ k) (ha : 1 ≤ a) (hb : 1 ≤ b)
     (hc : 1 ≤ c) (hd : 1 ≤ d) (hcda : c ≤ d * a) (hA : k + M + 2 ≤ A) (hM : k + B ≤ M)
     (hB0 : 0 ≤ B)
     (hS0 : 0 ≤ S) (hS : S ≤ 2 * a * b * c) :
@@ -169,7 +169,7 @@ variable {F : Type} [Field F] [NumberField F]
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 variable (D : FixedData S η)
 
-private lemma rpow_form (n : ℕ) (r C x : ℝ) (h : (1 + |r|) ^ n * x ≤ C) :
+lemma rpow_form (n : ℕ) (r C x : ℝ) (h : (1 + |r|) ^ n * x ≤ C) :
     x ≤ C * (1 + |r|) ^ (-(n : ℝ)) := by
   have hpos : (0 : ℝ) < 1 + |r| := by positivity
   rw [Real.rpow_neg hpos.le, Real.rpow_natCast, ← div_eq_mul_inv, le_div_iff₀ (pow_pos hpos n),

@@ -84,21 +84,13 @@ theorem fixed_haar_recipe
       (Cover F ζ hζ) := by
     have hH : IsCompact (MulAction.stabilizer (Cover F ζ hζ)
         (1 : Cover F ζ hζ) : Set (Cover F ζ hζ)) := by
-      have h : MulAction.stabilizer (Cover F ζ hζ) (1 : Cover F ζ hζ) = ⊥ := by
-        ext g; simp [MulAction.mem_stabilizer_iff]
-      rw [h]; exact isCompact_singleton
+      simp
     exact KPArithmeticAction.properlyDiscontinuous_of_section (1 : Cover F ζ hζ) id
       continuous_id (fun x => by simp) hH (KPSmoothLocalQuotientCharts.rationalSubgroup F ζ hζ)
 
   have hfree : ∀ᵐ x ∂μ, ∀ g : KPSmoothLocalQuotientCharts.rationalSubgroup F ζ hζ,
       g • x = x → g = 1 := by
-    refine Filter.Eventually.of_forall fun x g hg => ?_
-    have h2 : (g : Cover F ζ hζ) * x = x := hg
-    have : (g : Cover F ζ hζ) = 1 := by
-      calc (g : Cover F ζ hζ) = (g : Cover F ζ hζ) * x * x⁻¹ := by simp
-        _ = x * x⁻¹ := by rw [h2]
-        _ = 1 := by simp
-    exact Subtype.ext this
+    simp
   obtain ⟨Ω, hΩmeas, hΩfund⟩ :=
     KPCuspChart.SectionConstruction.measurable_fundamental_domain_of_properly_discontinuous_ae_free
       (H := KPSmoothLocalQuotientCharts.rationalSubgroup F ζ hζ) (X := Cover F ζ hζ) μ hfree
@@ -126,7 +118,7 @@ open scoped Classical NumberField ENNReal
 open MeasureTheory
 namespace DedekindZetaZeroFree.KPMsFixedHaar
 
-private theorem affine_probability_haar
+theorem affine_probability_haar
     {T : Type*} [AddCommGroup T] [TopologicalSpace T] [IsTopologicalAddGroup T]
     [MeasurableSpace T] [BorelSpace T] [LocallyCompactSpace T]
     (e : T ≃ₜ T) (he : ∀ x y, e (x + y) = e x + e y - e 0)
@@ -183,7 +175,7 @@ theorem torusAction_probability_haar
       simp only [Pi.add_apply, Pi.sub_apply, Pi.zero_apply]
       ring
 
-private theorem measurable_of_countable_open_cover
+theorem measurable_of_countable_open_cover
     {I X Y : Type*} [Countable I] [TopologicalSpace X]
     [MeasurableSpace X] [BorelSpace X] [MeasurableSpace Y]
     (s : I → Set X) (hs : ∀ i, IsOpen (s i)) (hc : (⋃ i, s i) = Set.univ)
@@ -198,13 +190,12 @@ private theorem measurable_of_countable_open_cover
       have : x ∈ ⋃ i, s i := by rw [hc]; trivial
       obtain ⟨i, hi⟩ := Set.mem_iUnion.mp this
       exact ⟨i, hi, hx⟩
-    · rintro ⟨i, hi, hx⟩
-      exact hx
+    simp
   rw [heq]
   exact MeasurableSet.iUnion fun i =>
     (hs i).isOpenEmbedding_subtypeVal.measurableEmbedding.measurableSet_image.mpr (hf i hE)
 
-private theorem measurable_on_sigma
+theorem measurable_on_sigma
     {I Y : Type*} {X : I → Type*} [Countable I]
     [∀ i, TopologicalSpace (X i)] [∀ i, MeasurableSpace (X i)]
     [∀ i, BorelSpace (X i)] [MeasurableSpace (Sigma X)] [BorelSpace (Sigma X)]
@@ -241,7 +232,7 @@ local instance baseBorel (F : Type*) [Field F] [NumberField F]
     (E : Subgroup Fˣ) (hE : E ≤ KPCuspArithmetic.rationalUnits F) :
     BorelSpace (KPCuspCharts.Base F hF E hE) := ⟨rfl⟩
 
-private theorem probability_torus_haar
+theorem probability_torus_haar
     {F : Type*} [Field F] [NumberField F]
     {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
     {S : Subgroup (KPCuspArithmetic.PGL2 F)} (D : KPCuspCharts.ParabolicData F S)
@@ -321,7 +312,7 @@ theorem probability_fiber_kernel
         change (⟨ω.1, (G ω.1).atlas.projection
           ((G ω.1).atlas.lift (QuotientAddGroup.mk x, ω.2.out))⟩ : Omega A) = ω
         rw [(G ω.1).atlas.lift_formula, (G ω.1).atlas.projection_formula]
-        exact congrArg (Sigma.mk ω.1) (Quotient.out_eq _)
+        simp
     have heq : φ ω.1 ω.2.out ⁻¹' {x | angularProjection A x = ω} = Set.univ :=
       Set.eq_univ_of_forall hpφ
     have hm := Measure.le_map_apply (μ := ν ω.1) (hφ ω.1 ω.2.out).aemeasurable
@@ -338,7 +329,7 @@ theorem probability_fiber_kernel
     let b : (G j).atlas.baseOpen i → KPCuspCharts.Shape F :=
       fun q => ((G j).atlas.baseChart i).symm q |>.val
     have hb : Continuous b :=
-      continuous_subtype_val.comp ((G j).atlas.baseChart i).symm.continuous
+      by fun_prop
     have hbq (q : (G j).atlas.baseOpen i) :
         (QuotientAddGroup.mk (b q) : KPCuspCharts.Base F hF (D j).E
           (D j).integralUnits) = q.val := by
@@ -470,7 +461,7 @@ def sectionShape (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
   ⟨fun i => (if KPCusp.complexPlace F i = w then Real.log r.val / 2 else 0) -
     Real.log r.val / (2 * (KPCuspLogShape.dimension F : ℝ)), by
     convert KPMsFixedHaar.single_slot_mean_zero F hF w (Real.log r.val / 2) using 1 <;>
-      simp only [div_div, mul_comm]⟩
+      simp only [div_div]⟩
 
 def radialMeasure : Measure ℝ :=
   volume.withDensity (fun r => ENNReal.ofReal (r ^ 2)⁻¹)
@@ -755,8 +746,3 @@ theorem kp_ms_fixed_haar_disintegration
     KPMsFixedHaarDisintegration.actual_haar_normalization F ζ hζ μ hμ
   exact ⟨R, hR, hpos, P,
     KPMsFixedHaarDisintegration.disintegration_at_fixed_haar F ζ hζ R P⟩
-
-end DedekindZetaZeroFree
-
-end
-end

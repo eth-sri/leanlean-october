@@ -49,7 +49,3 @@ structure QuadraticHeckeFamily (F : Type) [Field F] [NumberField F] (𝔠 : Idea
     𝔞 ⊔ 𝔟 = ⊤ → cls 𝔞 = cls 𝔟 →
     ∃ ψ : RayClassCharacter F (𝔞 * 𝔟), ψ.IsPrimitive ∧
       ∀ 𝔫, 𝔫 ⊔ (cond 𝔞 * cond 𝔟) = ⊤ → ψ 𝔫 = (χ 𝔞) 𝔫 * (starRingEnd ℂ) ((χ 𝔟) 𝔫)
-
-end
-
-end DedekindZetaZeroFree

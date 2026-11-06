@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Analysis.SpectralTheory.Resolvents.BelowThres
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.FourierContinuation.ResidualHilbertCenters
 
 theorem graph_eigen_projection_fixed
@@ -47,7 +46,3 @@ theorem projected_source_orthogonal_eigentest
     inner ℂ t (KPBelowThresholdResolvent.poleProjection B μ h) at hs
   rw [hfix, hpair] at hs
   rw [hz, inner_smul_right, ← hs, mul_zero]
-
-end DedekindZetaZeroFree.FourierContinuation.ResidualHilbertCenters
-
-end

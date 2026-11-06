@@ -62,7 +62,7 @@ variable (η : DedekindZetaZeroFree.RayClassCharacter F m)
     (E : RayCharacterData F m hm η)
     (D : RayThetaRepresentatives F m hm) (u : ℝ) (hu : 0 < u)
 
-private theorem sum_residue_eq_sum_units (B : R → ℂ) [Fintype R] [Fintype U] :
+theorem sum_residue_eq_sum_units (B : R → ℂ) [Fintype R] [Fintype U] :
     (∑ q : R, coprimeIdealResidueCoefficient hF m a hm ha hcop hmt η E q * B q) =
       ∑ q : U, coprimeIdealResidueCoefficient hF m a hm ha hcop hmt η E q.val * B q.val := by
   classical
@@ -80,9 +80,7 @@ private theorem sum_residue_eq_sum_units (B : R → ℂ) [Fintype R] [Fintype U]
   convert (by simpa only [hz, add_zero] using hs.symm) using 1
   congr 1
   ext q
-  exact ⟨fun _ => @Finset.mem_univ _ (Subtype.fintype
-    (fun q : R => IsUnit (coprimeIdealResidueReduction F m a hm ha hcop q))) q,
-    fun _ => @Finset.mem_univ _ _ q⟩
+  simp
 
 theorem coprimeIdealResidueAverage_sum_fiber :
     letI := coprimeIdealResidue_finite m a hm ha hcop
@@ -152,9 +150,3 @@ theorem coprimeIdealResidueDualAverage_sum_fiber :
   rw [← mul_assoc, mul_inv_cancel₀ (mul_ne_zero
     (residueFiber_normalizers_ne_zero m hm).2.1
     (residueFiber_normalizers_ne_zero m hm).2.2), one_mul]
-
-end Coprime
-
-end DedekindZetaZeroFree.Hecke.Theta
-
-end

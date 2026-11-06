@@ -15,7 +15,7 @@ namespace DedekindZetaZeroFree.Hecke.Theta
 
 variable (F : Type) [Field F] [NumberField F]
 
-private theorem discrSqrt_pos : 0 < Real.sqrt |(NumberField.discr F : ℝ)| := by
+theorem discrSqrt_pos : 0 < Real.sqrt |(NumberField.discr F : ℝ)| := by
   apply Real.sqrt_pos.mpr
   exact abs_pos.mpr (by exact_mod_cast NumberField.discr_ne_zero F)
 
@@ -46,23 +46,18 @@ private theorem discrSqrt_pos : 0 < Real.sqrt |(NumberField.discr F : ℝ)| := b
       FractionalIdeal (𝓞 F)⁰ F) : Submodule (𝓞 F) F) :=
   Equiv.ofBijective
     (fun x => ⟨(x.val : F), by
-      change (x.val : F) ∈ (rayIdealFractionalIdeal F D.a D.ideal_ne_bot : FractionalIdeal (𝓞 F)⁰ F)
-      rw [rayIdealFractionalIdeal_coe]
-      exact (FractionalIdeal.mem_coeIdeal _).mpr ⟨x.val, x.property, rfl⟩⟩)
+      simp⟩)
     (by
       constructor
       · intro x y h
-        apply Subtype.ext
-        apply NumberField.RingOfIntegers.coe_injective
-        exact congrArg (fun z : ↥((rayIdealFractionalIdeal F D.a D.ideal_ne_bot :
-          FractionalIdeal (𝓞 F)⁰ F) : Submodule (𝓞 F) F) => z.val) h
+        simp_all
       · intro x
         have hx : x.val ∈ (rayIdealFractionalIdeal F D.a D.ideal_ne_bot : FractionalIdeal (𝓞 F)⁰ F) := x.property
         simp only [rayIdealFractionalIdeal_coe] at hx
         obtain ⟨y, hy, he⟩ := (FractionalIdeal.mem_coeIdeal _).mp hx
         exact ⟨⟨y, hy⟩, Subtype.ext he⟩)
 
-private theorem centeredLogShape_eq (D : RayCoset.Data F)
+theorem centeredLogShape_eq (D : RayCoset.Data F)
     (t : ℝ) (ht : 0 < t) (h : RayCoset.logHyperplane F) :
     centeredLogShape F (rayIdealFractionalIdeal F D.a D.ideal_ne_bot) t h =
       RayCoset.normalizationScale D •
@@ -78,12 +73,12 @@ private theorem centeredLogShape_eq (D : RayCoset.Data F)
     Real.rpow_neg ha.le, Real.div_rpow ht.le hd.le]
   ring
 
-private theorem Q_smul_shape (q : NumberField.InfinitePlace F → ℝ) (r : ℝ)
+theorem Q_smul_shape (q : NumberField.InfinitePlace F → ℝ) (r : ℝ)
     (x : euclidean.mixedSpace F) :
     RayParity.Q F q (r • x) = RayParity.Q F (r • q) x := by
   simp only [RayParity.Q, map_smul, smul_mul_assoc, mul_smul_comm]
 
-private theorem topPrimal_integrand (D : RayCoset.Data F) (hD : D.m = ⊤)
+theorem topPrimal_integrand (D : RayCoset.Data F) (hD : D.m = ⊤)
     (t : ℝ) (ht : 0 < t) (h : RayCoset.logHyperplane F) :
     (∑' ℓ : RayCoset.normalizedLattice D,
       RayParity.gδ F ∅ (RayParity.Q F
@@ -133,7 +128,3 @@ theorem topPrimal_eq_topLogIdealAverage
   cases D
   cases hD
   rfl
-
-end DedekindZetaZeroFree.Hecke.Theta
-
-end

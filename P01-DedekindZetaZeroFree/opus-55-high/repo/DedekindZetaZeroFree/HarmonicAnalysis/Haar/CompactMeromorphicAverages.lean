@@ -22,7 +22,3 @@ theorem averageCLM_apply {X : Type*} [TopologicalSpace X] [CompactSpace X]
   change L1.integralCLM' ℂ (ContinuousMap.toLp 1 μ ℂ v) = _
   rw [← L1.integral_eq', L1.integral_eq_integral]
   exact integral_congr_ae (ContinuousMap.coeFn_toLp μ v)
-
-end DedekindZetaZeroFree.CompactPeriodAnalyticity.UpperPeriodContinuation
-
-end

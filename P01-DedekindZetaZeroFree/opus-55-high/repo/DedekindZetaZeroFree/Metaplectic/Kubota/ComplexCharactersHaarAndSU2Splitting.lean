@@ -54,11 +54,10 @@ noncomputable def characterScale (β : ℂˣ) : ℝ := ‖(β : ℂ)‖
 noncomputable def characterRotation (β : ℂˣ) : Circle :=
   ⟨star (β : ℂ) / (characterScale β : ℂ), by
     apply mem_sphere_zero_iff_norm.mpr
-    simp [characterScale, norm_div, norm_star, Complex.norm_real,
-      abs_of_nonneg (norm_nonneg _), Units.ne_zero]⟩
+    simp [characterScale, Complex.norm_real, Units.ne_zero]⟩
 
-theorem characterScale_pos (β : ℂˣ) : 0 < characterScale β := by
-  exact norm_pos_iff.mpr β.ne_zero
+theorem characterScale_pos (β : ℂˣ) : 0 < characterScale β := 
+  norm_pos_iff.mpr β.ne_zero
 
 theorem character_rotated (β : ℂˣ) (x : ℂ) :
     character (β : ℂ) ((characterRotation β : ℂ) * x) =
@@ -152,7 +151,7 @@ theorem complexSU2_isCompact :
       (A i 1 * (starRingEnd ℂ) (A i 1))).re = 1 at hrow
     simp only [Complex.mul_conj', Complex.add_re, ← Complex.ofReal_pow,
       Complex.ofReal_re] at hrow
-    fin_cases j <;> simp only [Fin.isValue, Fin.reduceFinMk, id_eq] <;>
+    fin_cases j <;> simp only [Fin.isValue, Fin.reduceFinMk] <;>
       nlinarith [norm_nonneg (A i 0), norm_nonneg (A i 1),
         sq_nonneg ‖A i 0‖, sq_nonneg ‖A i 1‖]
   apply (isCompact_pi_infinite (fun _ : Fin 2 =>
@@ -165,11 +164,3 @@ end DedekindZetaZeroFree.KPCplxCharacterHaar
 section
 
 namespace DedekindZetaZeroFree.KPCplxCharacterHaar
-
-open MeasureTheory Set
-
-open scoped FourierTransform RealInnerProductSpace ComplexConjugate
-
-end DedekindZetaZeroFree.KPCplxCharacterHaar
-
-end

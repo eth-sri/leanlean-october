@@ -2,7 +2,8 @@ module
 
 public import Mathlib.LinearAlgebra.Trace
 public import Mathlib.RepresentationTheory.Irreducible
-public import DedekindZetaZeroFree.RepresentationTheory.Continuous.IntertwiningMaps
+public import Mathlib.RepresentationTheory.Continuous.Basic
+public import Mathlib.Topology.Algebra.Module.FiniteDimension
 
 @[expose] public section
 
@@ -52,7 +53,3 @@ theorem eq_finrank_inv_mul_trace_smul_id_of_isIrreducible
   obtain ⟨c, rfl⟩ := π.exists_eq_smul_one_of_isIrreducible hirr f
   ext v
   simp [mul_comm c, inv_mul_cancel_left₀ hdim]
-
-end Scalar
-
-end ContRepresentation

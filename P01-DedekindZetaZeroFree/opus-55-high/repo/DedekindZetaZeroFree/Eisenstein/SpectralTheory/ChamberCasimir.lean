@@ -14,7 +14,7 @@ open scoped Classical Matrix.Norms.Elementwise Topology ContDiff
 namespace DedekindZetaZeroFree.KPMsSameContinuationGreen.CanonicalNativeChamberCasimir
 open RepresentationTheory.KPSmoothCoreCasimirEnergy.InfinitesimalAction KPSmoothActualFlowData
 
-private theorem pauli_native_matrix (j : Fin 3) :
+theorem pauli_native_matrix (j : Fin 3) :
     noncompactMatrix j = (Real.sqrt 2)⁻¹ •
       (![basisMatrix 0, basisMatrix 2 + basisMatrix 4, basisMatrix 3 - basisMatrix 5] j) ∧
     compactMatrix j = (Real.sqrt 2)⁻¹ •
@@ -23,7 +23,7 @@ private theorem pauli_native_matrix (j : Fin 3) :
     simp [noncompactMatrix, compactMatrix, basisMatrix, sl2Matrix, Complex.real_smul] <;>
     ring_nf <;> simp [Complex.I_sq]
 
-private theorem quadratic_contraction
+theorem quadratic_contraction
     (Q : Matrix (Fin 2) (Fin 2) ℂ →L[ℝ] Matrix (Fin 2) (Fin 2) ℂ →L[ℝ] ℂ)
     (g : Matrix (Fin 2) (Fin 2) ℂ) :
     (∑ j : Fin 3, Q (g * noncompactMatrix j) (g * noncompactMatrix j)) -
@@ -51,7 +51,7 @@ private theorem quadratic_contraction
         Q (g * basisMatrix 3) (g * basisMatrix 5) - Q (g * basisMatrix 5) (g * basisMatrix 3))) * hs
 
 open scoped Matrix.Norms.Operator in
-private theorem exp_path_hasDeriv_components (g X : Matrix (Fin 2) (Fin 2) ℂ)
+theorem exp_path_hasDeriv_components (g X : Matrix (Fin 2) (Fin 2) ℂ)
     (i j : Fin 2) :
     HasDerivAt (fun t : ℝ => (g * NormedSpace.exp ((t : ℂ) • X)) i j) ((g * X) i j) 0 := by
   have he := ((hasDerivAt_exp_smul_const (𝕂 := ℂ) X ((0 : ℝ) : ℂ)).hasFDerivAt.restrictScalars ℝ).comp_hasDerivAt
@@ -78,7 +78,7 @@ private theorem exp_path_hasDeriv_components (g X : Matrix (Fin 2) (Fin 2) ℂ)
     matrixRightDerivative X φ g = fderiv ℝ φ g (g * X) := by
   exact (hφ.hasFDerivAt.comp_hasDerivAt_of_eq 0 (exp_path_hasDeriv g X) (by simp)).deriv
 
-private theorem matrixRightDerivative_twice
+theorem matrixRightDerivative_twice
     (X Y : Matrix (Fin 2) (Fin 2) ℂ) (φ : Matrix (Fin 2) (Fin 2) ℂ → ℂ)
     {O : Set (Matrix (Fin 2) (Fin 2) ℂ)} (hO : IsOpen O)
     (hφ : ContDiffOn ℝ (⊤ : ℕ∞) φ O) (g : Matrix (Fin 2) (Fin 2) ℂ) (hg : g ∈ O) :
@@ -109,7 +109,7 @@ private theorem matrixRightDerivative_twice
   rw [Matrix.mul_assoc, add_comm]
 
 open scoped Matrix.Norms.Operator in
-private theorem exp_left_path_hasDeriv_components (g X : Matrix (Fin 2) (Fin 2) ℂ)
+theorem exp_left_path_hasDeriv_components (g X : Matrix (Fin 2) (Fin 2) ℂ)
     (i j : Fin 2) :
     HasDerivAt (fun t : ℝ => (NormedSpace.exp ((t : ℂ) • X) * g) i j) ((X * g) i j) 0 := by
   have he := ((hasDerivAt_exp_smul_const (𝕂 := ℂ) X ((0 : ℝ) : ℂ)).hasFDerivAt.restrictScalars ℝ).comp_hasDerivAt
@@ -122,7 +122,7 @@ private theorem exp_left_path_hasDeriv_components (g X : Matrix (Fin 2) (Fin 2) 
       (ContinuousLinearMap.toSpanSingleton ℂ (NormedSpace.exp (((0 : ℝ) : ℂ) • X) * X))) 1 * g) i j) 0 at hj
   simpa using hj
 
-private theorem exp_left_path_hasDeriv (g X : Matrix (Fin 2) (Fin 2) ℂ) :
+theorem exp_left_path_hasDeriv (g X : Matrix (Fin 2) (Fin 2) ℂ) :
     HasDerivAt (fun t : ℝ => NormedSpace.exp ((t : ℂ) • X) * g) (X * g) 0 :=
   hasDerivAt_pi.mpr fun i => hasDerivAt_pi.mpr fun j => exp_left_path_hasDeriv_components g X i j
 
@@ -130,13 +130,13 @@ private theorem exp_left_path_hasDeriv (g X : Matrix (Fin 2) (Fin 2) ℂ) :
     (φ : Matrix (Fin 2) (Fin 2) ℂ → ℂ) (g : Matrix (Fin 2) (Fin 2) ℂ) : ℂ :=
   deriv (fun t : ℝ => φ (NormedSpace.exp ((t : ℂ) • X) * g)) 0
 
-private theorem matrixLeftDerivative_eq_fderiv
+theorem matrixLeftDerivative_eq_fderiv
     (X : Matrix (Fin 2) (Fin 2) ℂ) (φ : Matrix (Fin 2) (Fin 2) ℂ → ℂ)
     (g : Matrix (Fin 2) (Fin 2) ℂ) (hφ : DifferentiableAt ℝ φ g) :
     matrixLeftDerivative X φ g = fderiv ℝ φ g (X * g) := by
   exact (hφ.hasFDerivAt.comp_hasDerivAt_of_eq 0 (exp_left_path_hasDeriv g X) (by simp)).deriv
 
-private theorem matrixLeftDerivative_twice
+theorem matrixLeftDerivative_twice
     (X Y : Matrix (Fin 2) (Fin 2) ℂ) (φ : Matrix (Fin 2) (Fin 2) ℂ → ℂ)
     {O : Set (Matrix (Fin 2) (Fin 2) ℂ)} (hO : IsOpen O)
     (hφ : ContDiffOn ℝ (⊤ : ℕ∞) φ O) (g : Matrix (Fin 2) (Fin 2) ℂ) (hg : g ∈ O) :
@@ -179,7 +179,7 @@ private theorem matrixLeftDerivative_twice
   exact matrixRightDerivative_eq_fderiv X φ g
     ((hφ.differentiableOn (by simp)).differentiableAt (hO.mem_nhds hg))
 
-private theorem matrixLeftDerivative_smooth
+theorem matrixLeftDerivative_smooth
     (X : Matrix (Fin 2) (Fin 2) ℂ) (φ : Matrix (Fin 2) (Fin 2) ℂ → ℂ)
     {O : Set (Matrix (Fin 2) (Fin 2) ℂ)} (hO : IsOpen O)
     (hφ : ContDiffOn ℝ (⊤ : ℕ∞) φ O) :
@@ -192,7 +192,7 @@ private theorem matrixLeftDerivative_smooth
   exact matrixLeftDerivative_eq_fderiv X φ g
     ((hφ.differentiableOn (by simp)).differentiableAt (hO.mem_nhds hg))
 
-private theorem matrix_mixed_left_right
+theorem matrix_mixed_left_right
     (X Y : Matrix (Fin 2) (Fin 2) ℂ) (φ : Matrix (Fin 2) (Fin 2) ℂ → ℂ)
     {O : Set (Matrix (Fin 2) (Fin 2) ℂ)} (hO : IsOpen O)
     (hφ : ContDiffOn ℝ (⊤ : ℕ∞) φ O) (g : Matrix (Fin 2) (Fin 2) ℂ) (hg : g ∈ O) :
@@ -236,7 +236,7 @@ private theorem matrix_mixed_left_right
     fderiv ℝ φ g (X*(g*Y)) + fderiv ℝ (fderiv ℝ φ) g (g*Y) (X*g)
   rw [Matrix.mul_assoc, (hφ.contDiffAt (hO.mem_nhds hg)).isSymmSndFDerivAt (by simp)]
 
-private theorem native_acceleration :
+theorem native_acceleration :
     basisMatrix 0 * basisMatrix 0 - basisMatrix 1 * basisMatrix 1 +
       (2 : ℝ) • (basisMatrix 4 * basisMatrix 2 + basisMatrix 2 * basisMatrix 4 -
         basisMatrix 5 * basisMatrix 3 - basisMatrix 3 * basisMatrix 5) =
@@ -245,7 +245,7 @@ private theorem native_acceleration :
   fin_cases i <;> fin_cases j <;>
     simp [basisMatrix, sl2Matrix, Complex.real_smul] <;> ring
 
-private theorem acceleration_contraction
+theorem acceleration_contraction
     (L : Matrix (Fin 2) (Fin 2) ℂ →L[ℝ] ℂ) (g : Matrix (Fin 2) (Fin 2) ℂ) :
     (∑ j : Fin 3, L (g * (noncompactMatrix j * noncompactMatrix j))) -
       (∑ j : Fin 3, L (g * (compactMatrix j * compactMatrix j))) =
@@ -295,7 +295,7 @@ private theorem acceleration_contraction
   rw [quadratic_contraction, acceleration_contraction]
   ring
 
-private theorem native_normalized_induction_casimir
+theorem native_normalized_induction_casimir
     (s : ℝ) (f : KPCplxPrincipalSeriesCharts.PrincipalSeries s)
     (g : KPCplxCharacterHaar.ComplexGL2) :
     let φ := KPCplxPrincipalSeriesCharts.matrixFunction f.val;
@@ -336,7 +336,7 @@ private theorem native_normalized_induction_casimir
   push_cast
   ring
 
-private theorem native_induction_spectral_coordinate
+theorem native_induction_spectral_coordinate
     (x : ℝ) (f : KPCplxPrincipalSeriesCharts.PrincipalSeries (1/6+x))
     (g : KPCplxCharacterHaar.ComplexGL2) :
     let φ := KPCplxPrincipalSeriesCharts.matrixFunction f.val;
@@ -392,7 +392,7 @@ private theorem native_induction_spectral_coordinate
     rfl
   linear_combination hp + haccR - haccL
 
-private theorem matrixRightDerivative_leftOmega
+theorem matrixRightDerivative_leftOmega
     (X : Matrix (Fin 2) (Fin 2) ℂ) (φ : Matrix (Fin 2) (Fin 2) ℂ → ℂ)
     {O : Set (Matrix (Fin 2) (Fin 2) ℂ)} (hO : IsOpen O)
     (hφ : ContDiffOn ℝ (⊤ : ℕ∞) φ O) (g : Matrix (Fin 2) (Fin 2) ℂ) (hg : g ∈ O) :
@@ -413,7 +413,7 @@ private theorem matrixRightDerivative_leftOmega
     (HasDerivAt.fun_sum (fun j (_hj : j ∈ Finset.univ) => hd (compactMatrix j)))
   exact he.deriv
 
-private theorem matrix_leftOmega_right_commutes
+theorem matrix_leftOmega_right_commutes
     (X : Matrix (Fin 2) (Fin 2) ℂ) (φ : Matrix (Fin 2) (Fin 2) ℂ → ℂ)
     {O : Set (Matrix (Fin 2) (Fin 2) ℂ)} (hO : IsOpen O)
     (hφ : ContDiffOn ℝ (⊤ : ℕ∞) φ O) (g : Matrix (Fin 2) (Fin 2) ℂ) (hg : g ∈ O) :
@@ -437,7 +437,7 @@ private theorem matrix_leftOmega_right_commutes
       (matrixLeftDerivative_smooth Y φ hO hφ) g hg
   simp_rw [he]
 
-private theorem matrix_omega_germ_left_right
+theorem matrix_omega_germ_left_right
     (φ : Matrix (Fin 2) (Fin 2) ℂ → ℂ)
     {O : Set (Matrix (Fin 2) (Fin 2) ℂ)} (hO : IsOpen O)
     (hφ : ContDiffOn ℝ (⊤ : ℕ∞) φ O) (g : KPCplxCharacterHaar.ComplexGL2) (hg : g.val ∈ O) :
@@ -456,7 +456,7 @@ private theorem matrix_omega_germ_left_right
   · exact matrixRightDerivative_smooth _ _ hO (matrixRightDerivative_smooth _ φ hO hφ)
   · exact matrixRightDerivative_smooth _ _ hO (matrixRightDerivative_smooth _ φ hO hφ)
 
-private theorem matrix_leftOmega_smooth
+theorem matrix_leftOmega_smooth
     (φ : Matrix (Fin 2) (Fin 2) ℂ → ℂ)
     {O : Set (Matrix (Fin 2) (Fin 2) ℂ)} (hO : IsOpen O)
     (hφ : ContDiffOn ℝ (⊤ : ℕ∞) φ O) : ContDiffOn ℝ (⊤ : ℕ∞) (leftOmega φ) O := by
@@ -479,14 +479,14 @@ private theorem matrix_leftOmega_smooth
 
 open KPCplxPrincipalSeriesCharts KPCplxCharacterHaar
 open KPReferenceChange.StandardComplexImage.FamilyCorrect
-private theorem matrix_function_at_GL (f : ComplexGL2 → ℂ) (g : ComplexGL2) :
+theorem matrix_function_at_GL (f : ComplexGL2 → ℂ) (g : ComplexGL2) :
     matrixFunction f g.val = f g := by
   simp only [matrixFunction]
   rw [dite_eq_left (Matrix.GeneralLinearGroup.det_ne_zero g)]
   congr 1
   exact Units.ext rfl
 
-private theorem matrix_function_derivative (X : Matrix (Fin 2) (Fin 2) ℂ)
+theorem matrix_function_derivative (X : Matrix (Fin 2) (Fin 2) ℂ)
     (f : ComplexGL2 → ℂ) (g : ComplexGL2) :
     matrixRightDerivative X (matrixFunction f) g.val =
       deriv (fun t : ℝ => f (g * KPSmoothActualFlowData.matrixExponential ((t : ℂ) • X))) 0 := by
@@ -495,7 +495,7 @@ private theorem matrix_function_derivative (X : Matrix (Fin 2) (Fin 2) ℂ)
   funext t
   exact matrix_function_at_GL f (g * KPSmoothActualFlowData.matrixExponential ((t : ℂ) • X))
 
-private theorem matrix_function_derivative_twice (X Y : Matrix (Fin 2) (Fin 2) ℂ)
+theorem matrix_function_derivative_twice (X Y : Matrix (Fin 2) (Fin 2) ℂ)
     (f : ComplexGL2 → ℂ) (g : ComplexGL2) :
     matrixRightDerivative X (matrixRightDerivative Y (matrixFunction f)) g.val =
       deriv (fun t : ℝ => deriv (fun u : ℝ => f
@@ -522,7 +522,7 @@ private theorem matrix_function_derivative_twice (X Y : Matrix (Fin 2) (Fin 2) �
       matrixRightDerivative (KPSmoothActualFlowData.basisMatrix 5)
       (matrixRightDerivative (KPSmoothActualFlowData.basisMatrix 3) f) g))
 
-private theorem real_twisted_casimir (f : PrincipalSeries positiveParameter)
+theorem real_twisted_casimir (f : PrincipalSeries positiveParameter)
     (r : ℝ) (g : ComplexGL2) :
     nativeMatrixCasimir (matrixFunction (plusValue f r)) g.val =
       KPContinuation.spectralCoordinate 1 r * plusValue f r g := by
@@ -542,7 +542,7 @@ open _root_.DedekindZetaZeroFree.KPContHolomorphicKGeneration renaming separated
 open _root_.DedekindZetaZeroFree.KPContHolomorphicKGeneration renaming direction → direction
 open _root_.DedekindZetaZeroFree.KPContHolomorphicKGeneration renaming matrix_eventually_eq → matrix_eventually_eq
 
-private theorem plusValue_separated (f : PrincipalSeries positiveParameter) :
+theorem plusValue_separated (f : PrincipalSeries positiveParameter) :
     ∃ H : ℂ → Matrix (Fin 2) (Fin 2) ℂ → ℂ,
       Separated H ∧ ∀ s g, plusValue f s g = H s g.val := by
   let B := matrixFunction (sphericalSection positiveParameter)
@@ -584,7 +584,7 @@ private theorem plusValue_separated (f : PrincipalSeries positiveParameter) :
   rw [hlog]
   field_simp
 
-private theorem separated_matrix_derivative {φ : ℂ → Matrix (Fin 2) (Fin 2) ℂ → ℂ}
+theorem separated_matrix_derivative {φ : ℂ → Matrix (Fin 2) (Fin 2) ℂ → ℂ}
     {H : ℂ → Matrix (Fin 2) (Fin 2) ℂ → ℂ} (hH : Separated H)
     (he : ∀ s m, m ∈ invDomain → φ s m = H s m) (X : Matrix (Fin 2) (Fin 2) ℂ) :
     ∃ H', Separated H' ∧ ∀ s m, m ∈ invDomain →
@@ -599,7 +599,7 @@ private theorem separated_matrix_derivative {φ : ℂ → Matrix (Fin 2) (Fin 2)
     hgerm.fderiv_eq]
   exact (hd s m hm).symm
 
-private theorem plusValue_matrix_word_separated (f : PrincipalSeries positiveParameter)
+theorem plusValue_matrix_word_separated (f : PrincipalSeries positiveParameter)
     (w : List (Matrix (Fin 2) (Fin 2) ℂ)) :
     ∃ H : ℂ → Matrix (Fin 2) (Fin 2) ℂ → ℂ, Separated H ∧
       ∀ s m, m ∈ invDomain →
@@ -615,7 +615,7 @@ private theorem plusValue_matrix_word_separated (f : PrincipalSeries positivePar
     obtain ⟨H,hH,he⟩ := ih
     exact separated_matrix_derivative hH he X
 
-private theorem plusValue_matrix_word_analytic (f : PrincipalSeries positiveParameter)
+theorem plusValue_matrix_word_analytic (f : PrincipalSeries positiveParameter)
     (w : List (Matrix (Fin 2) (Fin 2) ℂ)) (g : ComplexGL2) :
     AnalyticOnNhd ℂ (fun s => w.foldr matrixRightDerivative
       (matrixFunction (plusValue f s)) g.val) Set.univ := by
@@ -625,7 +625,7 @@ private theorem plusValue_matrix_word_analytic (f : PrincipalSeries positivePara
 
 open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualRaisingLocal renaming entire_of_real → entire_of_real
 
-private theorem complex_twisted_casimir (f : PrincipalSeries positiveParameter)
+theorem complex_twisted_casimir (f : PrincipalSeries positiveParameter)
     (s : ℂ) (g : ComplexGL2) :
     nativeMatrixCasimir (matrixFunction (plusValue f s)) g.val =
       KPContinuation.spectralCoordinate 1 s * plusValue f s g := by
@@ -668,7 +668,7 @@ open KPSmoothActualFlowData
   · subst v; simp
   · simp [hv, matrixExponential]
 
-private theorem native_slice_derivative
+theorem native_slice_derivative
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (w : NumberField.InfinitePlace F) (j : Fin 6) (a : GInfinity F)
     (c : KPGlobalTorusFunctionData.finitePart F ζ hζ)
@@ -691,7 +691,7 @@ private theorem native_slice_derivative
   rw [mul_assoc, hc.eq.symm, ← mul_assoc, ← hm, update_mul_single, ← map_mul]
   exact hf _
 
-private theorem native_slice_twice
+theorem native_slice_twice
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (w : NumberField.InfinitePlace F) (i j : Fin 6) (a : GInfinity F)
     (c : KPGlobalTorusFunctionData.finitePart F ζ hζ)
@@ -718,7 +718,7 @@ private theorem native_slice_twice
     (g * matrixExponential ((t : ℂ) • basisMatrix i))).trans
       (matrix_function_derivative _ f _)
 
-private theorem matrix_derivative_sum {ι : Type*} [Fintype ι]
+theorem matrix_derivative_sum {ι : Type*} [Fintype ι]
     (X : Matrix (Fin 2) (Fin 2) ℂ)
     (f : ι → Matrix (Fin 2) (Fin 2) ℂ → ℂ)
     {O : Set (Matrix (Fin 2) (Fin 2) ℂ)} (hO : IsOpen O)
@@ -737,13 +737,13 @@ private theorem matrix_derivative_sum {ι : Type*} [Fintype ι]
   intro i _
   exact (matrixRightDerivative_eq_fderiv X _ g (hd i)).symm
 
-private theorem matrix_derivative_const_mul (X : Matrix (Fin 2) (Fin 2) ℂ)
+theorem matrix_derivative_const_mul (X : Matrix (Fin 2) (Fin 2) ℂ)
     (c : ℂ) (f : Matrix (Fin 2) (Fin 2) ℂ → ℂ) :
     matrixRightDerivative X (fun a => c * f a) = fun a => c * matrixRightDerivative X f a := by
   funext a
   exact deriv_const_mul_field c
 
-private theorem matrix_casimir_sum {ι : Type*} [Fintype ι]
+theorem matrix_casimir_sum {ι : Type*} [Fintype ι]
     (f : ι → Matrix (Fin 2) (Fin 2) ℂ → ℂ)
     {O : Set (Matrix (Fin 2) (Fin 2) ℂ)} (hO : IsOpen O)
     (hf : ∀ i, ContDiffOn ℝ ∞ (f i) O)
@@ -772,26 +772,26 @@ private theorem matrix_casimir_sum {ι : Type*} [Fintype ι]
   congr 1
   rw [Finset.sum_add_distrib, Finset.mul_sum]
 
-private theorem matrix_casimir_const_mul (c : ℂ) (f : Matrix (Fin 2) (Fin 2) ℂ → ℂ)
+theorem matrix_casimir_const_mul (c : ℂ) (f : Matrix (Fin 2) (Fin 2) ℂ → ℂ)
     (g : Matrix (Fin 2) (Fin 2) ℂ) :
     nativeMatrixCasimir (fun a => c * f a) g = c * nativeMatrixCasimir f g := by
   unfold nativeMatrixCasimir
   simp_rw [matrix_derivative_const_mul]
   ring
 
-private theorem matrixFunction_sum {ι : Type*} [Fintype ι] (f : ι → ComplexGL2 → ℂ) :
+theorem matrixFunction_sum {ι : Type*} [Fintype ι] (f : ι → ComplexGL2 → ℂ) :
     matrixFunction (fun g => ∑ i, f i g) = fun m => ∑ i, matrixFunction (f i) m := by
   funext m
   unfold matrixFunction
   split_ifs <;> simp
 
-private theorem matrixFunction_const_mul (c : ℂ) (f : ComplexGL2 → ℂ) :
+theorem matrixFunction_const_mul (c : ℂ) (f : ComplexGL2 → ℂ) :
     matrixFunction (fun g => c * f g) = fun m => c * matrixFunction f m := by
   funext m
   unfold matrixFunction
   split_ifs <;> simp
 
-private theorem plusValue_matrix_smooth (f : PrincipalSeries positiveParameter) (s : ℂ) :
+theorem plusValue_matrix_smooth (f : PrincipalSeries positiveParameter) (s : ℂ) :
     ContDiffOn ℝ ∞ (matrixFunction (plusValue f s)) invDomain := by
   obtain ⟨H,hH,he⟩ := plusValue_separated f
   apply (separated_smooth hH s).congr
@@ -799,7 +799,7 @@ private theorem plusValue_matrix_smooth (f : PrincipalSeries positiveParameter) 
   let g := Matrix.GeneralLinearGroup.mkOfDetNeZero m hm
   exact (matrix_function_at_GL (plusValue f s) g).trans (he s g)
 
-private theorem native_flat_slot_casimir
+theorem native_flat_slot_casimir
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (t : KPMsRationalCompactCrossPairing.Vplus F ζ hζ (KPContFlatSourceRecipe.D F ζ hζ))
     (s : ℂ) (w : NumberField.InfinitePlace F)
@@ -882,7 +882,7 @@ private theorem native_flat_slot_casimir
   intro j _
   ring
 
-private theorem actual_finite_pgl_factorization
+theorem actual_finite_pgl_factorization
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (g : KPGlobalTorusFunctionData.G F ζ hζ) :
     ∃ (a : NumberField.InfinitePlace F → ComplexGL2)

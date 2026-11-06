@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Finite ray-modulus data
 
@@ -28,7 +24,6 @@ open scoped NumberField
 open NumberField IsDedekindDomain
 
 noncomputable section
-
 
 variable {K : Type*} [Field K] [NumberField K]
 
@@ -69,11 +64,7 @@ theorem mem_localHigherUnitGroup_iff
         (y : (v.adicCompletion K)ˣ) = x ∧
         localHigherUnitMap v n y = 1 := by
   rw [localHigherUnitGroup, Subgroup.mem_map]
-  constructor
-  · rintro ⟨y, hy, rfl⟩
-    exact ⟨y, rfl, MonoidHom.mem_ker.mp hy⟩
-  · rintro ⟨y, rfl, hy⟩
-    exact ⟨y, MonoidHom.mem_ker.mpr hy, rfl⟩
+  simp
 
 /-- The zeroth higher unit group is the full group of local integral
 units. -/
@@ -84,8 +75,7 @@ theorem localHigherUnitGroup_zero
   ext x
   rw [mem_localHigherUnitGroup_iff]
   constructor
-  · rintro ⟨y, rfl, _hy⟩
-    exact y.property
+  · simp_all
   · intro hx
     let y : (v.adicCompletionIntegers K).units := ⟨x, hx⟩
     refine ⟨y, rfl, ?_⟩
@@ -99,7 +89,7 @@ theorem localHigherUnitGroup_zero
         ((v.adicCompletionIntegers K) ⧸
           (IsLocalRing.maximalIdeal
             (v.adicCompletionIntegers K)) ^ 0) :=
-      Ideal.Quotient.subsingleton_iff.mpr (by simp)
+      by simp
     apply Units.ext
     exact Subsingleton.elim _ _
 
@@ -112,14 +102,9 @@ def infinitePositiveSubgroup (v : InfinitePlace K) :
       hv (x : v.Completion)}
   one_mem' hv := by simp
   mul_mem' {x y} hx hy hv := by
-    change 0 <
-      NumberField.InfinitePlace.Completion.extensionEmbeddingOfIsReal
-        hv ((x : v.Completion) * (y : v.Completion))
-    rw [map_mul]
-    exact mul_pos (hx hv) (hy hv)
+    simp_all
   inv_mem' {x} hx hv := by
-    rw [Units.val_inv_eq_inv_val, map_inv₀]
-    exact inv_pos.mpr (hx hv)
+    simp_all
 
 omit [NumberField K] in
 @[simp]

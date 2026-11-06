@@ -7,7 +7,6 @@ public import DedekindZetaZeroFree.LargeSieve.Bilinear.DivisorIncidenceEnergy
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.LargeSieve.Sieve.GcdReduction
 open scoped NumberField Classical
 
@@ -29,13 +28,13 @@ theorem core_coefficient_estimate
   letI : Finite Q.G := Q.instFinite
   letI : Fintype Q.G := Fintype.ofFinite Q.G
   let ε := δ / 2
-  have hε : 0 < ε := by dsimp [ε]; linarith
+  have hε : 0 < ε := by positivity
   obtain ⟨A, hA, ha⟩ := DedekindZetaZeroFree.LargeSieve.bilinear_gcd_tail F c Q W hW c hc (dvd_refl c)
     (CoreCoefficient.gcdPairTransport hGood hc) ε hε
   obtain ⟨D, hD, hd⟩ := CoreCoefficient.divisor_incidence_sum F ε hε
   obtain ⟨U, hU, hu⟩ := CoreCoefficient.envelope_comparison F c Q W hW
   let J : ℝ := 1 + A * D * (1 + U)
-  have hJ : 0 ≤ J := by dsimp [J]; positivity
+  have hJ : 0 ≤ J := by positivity
   refine ⟨(Fintype.card Q.G : ℝ) ^ 2 * J, by positivity, ?_⟩
   intro M N K H hM hN hK hH hHN lam
   have hM0 : 0 ≤ M := by linarith
@@ -164,7 +163,3 @@ theorem core_coefficient_estimate
         Real.rpow_le_rpow hNpos.le (by nlinarith) hδ.le
       exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right
         (mul_le_mul_of_nonneg_left hr (by positivity)) (by positivity)) hE
-
-end DedekindZetaZeroFree.LargeSieve.Sieve.GcdReduction
-
-end

@@ -24,10 +24,7 @@ local notation "Q" => KPGlobalTorusBorelTwistCompatibility.rationalModel F ζ h�
 
  theorem half_mul (t u : E) :
     KPGlobalTorusFunctionData.deltaHalf F ζ hζ (t*u) =
-      KPGlobalTorusFunctionData.deltaHalf F ζ hζ t * KPGlobalTorusFunctionData.deltaHalf F ζ hζ u := by
-  simp [KPGlobalTorusFunctionData.deltaHalf, map_mul, Units.val_mul, NNReal.coe_mul,
-    Real.sqrt_mul (show (0 : ℝ) ≤ ((KPGlobalTorusFunctionData.delta F ζ hζ t : ℝ≥0) : ℝ) by positivity),
-    Complex.ofReal_mul]
+      KPGlobalTorusFunctionData.deltaHalf F ζ hζ t * KPGlobalTorusFunctionData.deltaHalf F ζ hζ u := by apply DedekindZetaZeroFree.KPSpatialSmoothing.half_mul <;> assumption
 
 private theorem half_one : KPGlobalTorusFunctionData.deltaHalf F ζ hζ (1 : E) = 1 := by
   simp [KPGlobalTorusFunctionData.deltaHalf]
@@ -94,7 +91,7 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
 local notation "E" => KPGlobalTorusFunctionData.E F ζ hζ
 local notation "Q" => KPGlobalTorusBorelTwistCompatibility.rationalModel F ζ hζ
 
-private theorem rational_arch_character (z : KPGlobalTorusFunctionData.TorusArch F) :
+theorem rational_arch_character (z : KPGlobalTorusFunctionData.TorusArch F) :
     ∃ r : (KPGlobalTorusBorelTwistCompatibility.rationalModel F ζ hζ).H,
       r.val = KPGlobalTorusFunctionData.torusArchChart F ζ hζ z ∧
       ((KPGlobalTorusBorelTwistCompatibility.rationalModel F ζ hζ).character r : ℂ) =

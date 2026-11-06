@@ -47,7 +47,7 @@ private lemma radialOrbit_matrix (u : ℂˣ) (ρ : ℝ) (x : ℂ) (hρ : 0 < ρ)
       weyl * upperUnipotent x * diagonal (radialUnit (ρ * Real.exp t) u) * weyl := by
   apply Units.ext
   ext i k
-  have ht : 0 < ρ * Real.exp t := mul_pos hρ (Real.exp_pos t)
+  have ht : 0 < ρ * Real.exp t := by positivity
   fin_cases i <;> fin_cases k <;>
     simp [radialOrbit, weyl, upperUnipotent, diagonal, radialUnit, hρ, ht,
       Real.exp_pos, Matrix.mul_apply, Fin.sum_univ_two, Complex.ofReal_mul]
@@ -60,9 +60,7 @@ private lemma radiusLogDerivative_section (β κ : ℂˣ) (f : PrincipalSeries p
   let A := rotatedAmplitude β κ f u
   have hs0 := rotatedAmplitude_contDiffAt β κ f u (ρ, x) hρ
   have hs : ContDiffAt ℝ (⊤ : ℕ∞) (fun r : ℝ => A r x) ρ :=
-    ContDiffAt.comp (f := fun r : ℝ => (r, x))
-      (g := fun z : ℝ × ℂ => rotatedAmplitude β κ f u z.1 z.2)
-      ρ hs0 (contDiffAt_id.prodMk (contDiffAt_const (c := x)))
+    by fun_prop
   have hd := (hs.differentiableAt (by simp)).hasDerivAt
   have he : HasDerivAt (fun t : ℝ => ρ * Real.exp t) ρ 0 := by
     simpa using (Real.hasDerivAt_exp 0).const_mul ρ
@@ -85,7 +83,7 @@ private lemma radiusLogDerivative_section (β κ : ℂˣ) (f : PrincipalSeries p
   rw [hh]
   simp
 
-private lemma amplitude_scaling (β κ : ℂˣ) (f : PrincipalSeries positiveParameter)
+lemma amplitude_scaling (β κ : ℂˣ) (f : PrincipalSeries positiveParameter)
     (u : ℂˣ) (ρ : ℝ) (x : ℂ) (hρ : 0 < ρ) :
     rotatedAmplitude β κ f u ρ x =
       (Real.rpow ρ (-(4 / 3 : ℝ)) : ℂ) *
@@ -116,23 +114,21 @@ private lemma amplitude_scaling (β κ : ℂˣ) (f : PrincipalSeries positivePar
   rw [hm, f.property.1, hw]
   ring
 
-private lemma horizontal_iterate_slice (F : ℝ → ℂ → ℂ) (h : ℕ) (ρ : ℝ) (x : ℂ) :
+lemma horizontal_iterate_slice (F : ℝ → ℂ → ℂ) (h : ℕ) (ρ : ℝ) (x : ℂ) :
     ((horizontalRealDerivative^[h]) F) ρ x =
       iteratedDeriv h (fun t : ℝ => F ρ ⟨t, x.im⟩) x.re := by
   induction h generalizing x with
   | zero => rfl
   | succ h ih =>
     rw [Function.iterate_succ_apply', horizontalRealDerivative, iteratedDeriv_succ]
-    congr 1
-    funext t
-    simpa using ih (⟨t, x.im⟩ : ℂ)
+    simp_all
 
-private lemma horizontal_iterate_fderiv (F : ℂ → ℂ) (hF : ContDiff ℝ (⊤ : ℕ∞) F)
+lemma horizontal_iterate_fderiv (F : ℂ → ℂ) (hF : ContDiff ℝ (⊤ : ℕ∞) F)
     (h : ℕ) (x : ℂ) :
     iteratedDeriv h (fun t : ℝ => F ⟨t, x.im⟩) x.re =
       iteratedFDeriv ℝ h F x (fun _ : Fin h => (1 : ℂ)) := by
   let G := fun z : ℂ => F (z + (x.im : ℂ) * Complex.I)
-  have hG : ContDiff ℝ (⊤ : ℕ∞) G := hF.comp (contDiff_id.add contDiff_const)
+  have hG : ContDiff ℝ (⊤ : ℕ∞) G := by fun_prop
   have he : (fun t : ℝ => F ⟨t, x.im⟩) = G ∘ Complex.ofRealCLM := by
     funext t
     apply congrArg F
@@ -142,8 +138,7 @@ private lemma horizontal_iterate_fderiv (F : ℂ → ℂ) (hF : ContDiff ℝ (�
     Complex.ofRealCLM_apply, Complex.ofReal_one]
   rw [show G = fun z : ℂ => F (z + (x.im : ℂ) * Complex.I) from rfl,
     iteratedFDeriv_comp_add_right]
-  congr 2
-  apply Complex.ext <;> simp
+  simp
 
 private lemma radial_iterate_section (β κ : ℂˣ) (f : PrincipalSeries positiveParameter)
     (u : ℂˣ) (j : ℕ) (ρ : ℝ) (x : ℂ) (hρ : 0 < ρ) :
@@ -159,7 +154,7 @@ private lemma radial_iterate_section (β κ : ℂˣ) (f : PrincipalSeries positi
     rw [Filter.EventuallyEq.deriv_eq he]
     exact radiusLogDerivative_section β κ _ u ρ x hρ
 
-private lemma amplitude_horizontal_jets (β κ : ℂˣ) (f : PrincipalSeries positiveParameter)
+lemma amplitude_horizontal_jets (β κ : ℂˣ) (f : PrincipalSeries positiveParameter)
     (u : ℂˣ) (h : ℕ) (ρ : ℝ) (x : ℂ) (hρ : 0 < ρ) :
     ((horizontalRealDerivative^[h]) (rotatedAmplitude β κ f u)) ρ x =
       iteratedFDeriv ℝ h (rotatedAmplitude β κ f u ρ) x
@@ -188,7 +183,7 @@ private lemma mixed_section (β κ : ℂˣ) (f : PrincipalSeries positiveParamet
     funext t
     exact ih ⟨t, x.im⟩
 
-private lemma amplitude_fderiv_scaling (β κ : ℂˣ) (f : PrincipalSeries positiveParameter)
+lemma amplitude_fderiv_scaling (β κ : ℂˣ) (f : PrincipalSeries positiveParameter)
     (u : ℂˣ) (h : ℕ) (ρ : ℝ) (x : ℂ) (hρ : 0 < ρ) :
     iteratedFDeriv ℝ h (rotatedAmplitude β κ f u ρ) x
         (fun _ : Fin h => (1 : ℂ)) =
@@ -222,11 +217,7 @@ private lemma amplitude_fderiv_scaling (β κ : ℂˣ) (f : PrincipalSeries posi
     calc
       Real.rpow ρ (-(4 / 3 : ℝ)) * ρ⁻¹ ^ h =
           Real.rpow ρ (-(4 / 3 : ℝ)) * Real.rpow ρ (-(h : ℝ)) := by
-        congr 1
-        calc
-          ρ⁻¹ ^ h = (ρ ^ h)⁻¹ := inv_pow ρ h
-          _ = (Real.rpow ρ (h : ℝ))⁻¹ := congrArg Inv.inv (Real.rpow_natCast ρ h).symm
-          _ = Real.rpow ρ (-(h : ℝ)) := (Real.rpow_neg hρ.le (h : ℝ)).symm
+        simp
       _ = _ := by
         convert (Real.rpow_add hρ (-(4 / 3 : ℝ)) (-(h : ℝ))).symm using 1
   simp only [smul_eq_mul]
@@ -245,7 +236,7 @@ private theorem amplitude_mixed_derivative_rescaling (β κ : ℂˣ)
     amplitude_horizontal_jets β κ _ u h ρ x hρ,
     amplitude_fderiv_scaling β κ _ u h ρ x hρ]
 
-private lemma rescaled_envelope (h : ℕ) (ρ : ℝ) (x : ℂ) (hρ : 0 < ρ) :
+lemma rescaled_envelope (h : ℕ) (ρ : ℝ) (x : ℂ) (hρ : 0 < ρ) :
     Real.rpow ρ (-(4 / 3 : ℝ) - (h : ℝ)) *
       Real.rpow (1 + ‖ρ⁻¹ • x‖ ^ 2) (-(4 / 3 : ℝ) - (h : ℝ) / 2) =
     Real.rpow ρ (4 / 3 : ℝ) *
@@ -276,8 +267,8 @@ theorem norm_amplitudeDerivative_le (β κ : ℂˣ)
   intro u ρ x hu hρ
   rw [amplitude_mixed_derivative_rescaling
     β κ f u j h ρ x hρ, norm_mul, Complex.norm_real, Real.norm_eq_abs]
-  have hp : 0 < Real.rpow ρ (-(4 / 3 : ℝ) - (h : ℝ)) := by
-    exact Real.rpow_pos_of_pos hρ _
+  have hp : 0 < Real.rpow ρ (-(4 / 3 : ℝ) - (h : ℝ)) := 
+    Real.rpow_pos_of_pos hρ _
   rw [abs_of_pos hp]
   have hj := (iteratedFDeriv ℝ h
     (fun z : ℂ => rotatedAmplitude β κ
@@ -292,5 +283,3 @@ theorem norm_amplitudeDerivative_le (β κ : ℂˣ)
     _ = C * (Real.rpow ρ (-(4 / 3 : ℝ) - (h : ℝ)) *
         Real.rpow (1 + ‖ρ⁻¹ • x‖ ^ 2) (-(4 / 3 : ℝ) - (h : ℝ) / 2)) := by ring
     _ = _ := by rw [rescaled_envelope h ρ x hρ]; ring
-
-end DedekindZetaZeroFree.ThetaArchInducedMajorant

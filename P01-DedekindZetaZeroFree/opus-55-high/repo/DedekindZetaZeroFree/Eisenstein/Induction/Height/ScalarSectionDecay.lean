@@ -11,7 +11,7 @@ namespace DedekindZetaZeroFree.KPLiteralExceptionalResidue
 open KPLiteralRaw KPChamberHeight
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-private theorem actual_root_projection (x : KPAdeles F) :
+theorem actual_root_projection (x : KPAdeles F) :
     KPAdelicCoverRestrictedProduct.pglProjection F ζ hζ (KPGlobalTorusFunctionData.N F ζ hζ x) =
       QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F)
         (Matrix.GeneralLinearGroup.transvection 0 1 (by decide) x) := by

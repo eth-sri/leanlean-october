@@ -6,31 +6,28 @@ public import DedekindZetaZeroFree.Arithmetic.LocalFields.RootsOfUnityAndPowerCl
 @[expose] public section
 
 namespace DedekindZetaZeroFree.TateSLocalComparison
-noncomputable section
 open scoped Classical NumberField BigOperators
 open NumberField IsDedekindDomain MeasureTheory
 
 variable (F : Type) [Field F] [NumberField F]
 
-private theorem archPhase_eq_archTraceCharacter_product (A : SArithmeticData F)
+theorem archPhase_eq_archTraceCharacter_product (A : SArithmeticData F)
     (x : InfiniteAdeleRing F) :
     ProbeAdditive.archPhase F x = ∏ w, (archTraceCharacter w (x w) : ℂ) := by
   simp only [archTraceCharacter_of_isComplex _ (A.complex_place _), Circle.coe_exp,
     InfinitePlace.Completion.ringEquivComplexOfIsComplex_apply]
   rw [ProbeAdditive.archPhase, ← Complex.exp_sum]
   congr 1
-  simp only [Complex.ofReal_sum, Finset.mul_sum, Complex.ofReal_mul, Complex.ofReal_ofNat]
+  simp only [Finset.mul_sum, Complex.ofReal_mul, Complex.ofReal_ofNat]
   apply Finset.sum_congr rfl
   intro w hw
   ring
 
-private theorem archPhase_diagonal (A : SArithmeticData F) (t : F) :
+theorem archPhase_diagonal (A : SArithmeticData F) (t : F) :
     ProbeAdditive.archPhase F (sLocalDiagonal F A.Sf t).1 =
       ∏ w : InfinitePlace F, (archTraceCharacter w (algebraMap F w.Completion t) : ℂ) := by
   rw [archPhase_eq_archTraceCharacter_product F A]
-  apply Finset.prod_congr rfl
-  intro w hw
-  rw [sLocalDiagonal_infinite]
+  rfl
 
 private theorem sLocalTraceCharacter_sIntegerDiagonal_eq_one
     (S : Finset (HeightOneSpectrum (𝓞 F))) (t : sIntegerRing F S) :
@@ -72,9 +69,7 @@ theorem compatible_phase_eq_trace (A : SArithmeticData F)
   let g (y : (w : ↥A.Sf) → w.val.adicCompletion F) : ℂ :=
     ∏ w, (localFiniteCharacter F w.val (y w) : ℂ)
   have hf : Continuous f := by
-    apply continuous_finset_prod
-    intro w hw
-    exact continuous_subtype_val.comp ((he w).comp (continuous_apply w))
+    fun_prop
   have hg : Continuous g := by
     apply continuous_finset_prod
     intro w hw
@@ -85,7 +80,7 @@ theorem compatible_phase_eq_trace (A : SArithmeticData F)
     have hp := htrace r
     have hc := congrArg (fun z : Circle => (z : ℂ))
       (sLocalTraceCharacter_sIntegerDiagonal_eq_one F A.Sf r)
-    simp only [ProbeAdditive.TraceCompatible, ProbeAdditive.phase, sIntegerDiagonal_apply] at hp
+    simp only [ProbeAdditive.phase, sIntegerDiagonal_apply] at hp
     change ProbeAdditive.archPhase F (sLocalDiagonal F A.Sf (r : F)).1 *
       f (fun w => algebraMap F (w.val.adicCompletion F) (r : F)) = 1 at hp
     rw [sLocalTraceCharacter_apply] at hc
@@ -133,6 +128,3 @@ theorem compatible_phase_eq_trace (A : SArithmeticData F)
   apply Finset.prod_congr rfl
   intro v hv
   rw [hloc]
-
-end
-end DedekindZetaZeroFree.TateSLocalComparison

@@ -66,7 +66,3 @@ theorem complex_whittakerLine : KPReflectionSpec.LocalWhittakerLine (V := Theta 
     change (complexRawPsi w).toAddChar x = 1
     rw [complexRawPsi_trace, trace_character]
     exact congrArg (fun c : AddChar ℂ Circle => (c (coordinate A w x) : ℂ)) hone
-
-end DedekindZetaZeroFree.KPActualReflectionData.StandardLocalSource
-
-end

@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Eisenstein.ConstantTerms.Residual.RadialHaarA
 
 @[expose] public section
 
-noncomputable section
 open MeasureTheory Filter
 open scoped Topology
 namespace DedekindZetaZeroFree.KPCutoffSource
@@ -67,7 +66,3 @@ theorem finite_cusp_radial_cancellation {J : Type*} [Fintype J]
     ring
   · intro j hj
     exact (incoming_commutator_radial_integrable d hd (χ j) 0 τ).const_mul (c j)
-
-end DedekindZetaZeroFree.KPCutoffSource
-
-end

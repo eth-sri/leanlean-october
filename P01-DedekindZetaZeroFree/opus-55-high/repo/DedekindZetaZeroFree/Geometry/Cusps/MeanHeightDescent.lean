@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Adeles.Quotients.FiniteCuspAtlas
 
 @[expose] public section
 
-noncomputable section
 open scoped Classical NumberField ContDiff
 open Topology
 
@@ -105,10 +104,7 @@ theorem actual_height_descent
       intro x y hxy
       have h1 : A.components ⟨a.1, x⟩ = A.components ⟨a.1, y⟩ := by
         rw [A.components_formula, A.components_formula]; exact hxy
-      have h2 : (⟨a.1, x⟩ : (i : Fin A.componentCount) ×
-          KPCuspSiegel.OrbitQuotient F (KPCuspGenuineMonodromy.Component F ζ hζ U (A.representative i)))
-          = ⟨a.1, y⟩ := A.components.injective h1
-      exact (by cases h2; rfl : x = y)
+      simp_all
     have hEmap : KPFiniteCuspAtlas.endMap F (KPCuspGenuineMonodromy.Component F ζ hζ U (A.representative a.1))
           ((A.cuspAtlas a.1).cusp a.2) ((A.cuspAtlas a.1).representative a.2) τ
           (Quotient.mk _ (⟨z, hz⟩ : {p : KPCuspCharts.Coordinates F // τ < p.2}))
@@ -138,13 +134,13 @@ theorem actual_height_descent
         = (Quotient.mk _ z.1, (⟨z.2, hzt⟩ : Set.Ioi (A.cuspAtlas a.1).threshold)) := by
       conv_lhs => rw [← KPCuspCharts.ChartOutput.highPresentation_formula G (A.cuspAtlas a.1).threshold z.1
         (⟨z.2, hzt⟩ : Set.Ioi (A.cuspAtlas a.1).threshold)]
-      exact (G.highPresentation (A.cuspAtlas a.1).threshold).symm_apply_apply _
+      simp
     have hz1' : (G.highPresentation (A.cuspAtlas a.1).threshold).symm
           (Quotient.mk _ (⟨z', hzt'⟩ : {p : KPCuspCharts.Coordinates F // (A.cuspAtlas a.1).threshold < p.2}))
         = (Quotient.mk _ z'.1, (⟨z'.2, hzt'⟩ : Set.Ioi (A.cuspAtlas a.1).threshold)) := by
       conv_lhs => rw [← KPCuspCharts.ChartOutput.highPresentation_formula G (A.cuspAtlas a.1).threshold z'.1
         (⟨z'.2, hzt'⟩ : Set.Ioi (A.cuspAtlas a.1).threshold)]
-      exact (G.highPresentation (A.cuspAtlas a.1).threshold).symm_apply_apply _
+      simp
     have h2 := (Prod.mk.injEq _ _ _ _).mp (hz1.symm.trans (hpair.trans hz1'))
     exact congrArg Subtype.val h2.2
   have h2 : ∀ (a : I) (z : KPCuspCharts.Coordinates F), τ < z.2 → t a (L a z) = z.2 := by
@@ -220,7 +216,7 @@ theorem actual_height_descent
           (Topology.IsEmbedding.id.prodMap hinc))
       have hfinal := hcomp.comp (G.highPresentation τ).symm.isEmbedding
       have heq' : (eT ∘ G.highPresentation τ) ∘ (G.highPresentation τ).symm = eT := by
-        funext x; simp only [Function.comp_apply, Homeomorph.apply_symm_apply]
+        funext x; simp
       rwa [heq'] at hfinal
     let Ψ : KPCuspCharts.CrossQuotient F (S a) × Set.Ioi τ → KPFiniteCuspAtlas.rawXU F ζ hζ U :=
       fun y => KPFiniteCuspAtlas.componentMap F ζ hζ U g
@@ -258,7 +254,7 @@ theorem actual_height_descent
       simp only [Set.domRestrict, Function.comp_apply]
       rw [← hx x, key2]
     rw [heq]
-    exact (continuous_subtype_val.comp continuous_snd).comp Ψ'.symm.continuous
+    fun_prop
   ·
     intro a
     refine (contDiff_snd (𝕜 := ℝ) (E := KPCuspCharts.Cross F) (F := ℝ)).contDiffOn.congr ?_
@@ -279,7 +275,7 @@ theorem actual_height_descent
     constructor
     · let γ := KPCuspGenuineMonodromy.cuspInclusion F Γ (C.cusp a.2) σ g
       have hγ : (↑γ : KPCuspArithmetic.PGL2 F) = σ * (g : KPCuspArithmetic.PGL2 F) * σ⁻¹ :=
-        KPCuspGenuineMonodromy.cuspInclusion_formula F Γ (C.cusp a.2) σ g
+        by rfl
       have hact := (C.geometry a.2).actual_action g B hB hB10 z
       have h1 : σ • KPCuspCharts.toArch F z' = (↑γ : KPCuspArithmetic.PGL2 F) • (σ • KPCuspCharts.toArch F z) := by
         rw [hγ]
@@ -313,8 +309,4 @@ theorem actual_height_descent
     · have hz' : τ < z'.2 := lt_of_lt_of_eq hz
           (KPCuspCharts.affine_radial F hF D.E D.integralUnits (D.ratio g) (B 0 1 / B 1 1) z).symm
       rw [h2 a z' hz', h2 a z hz]
-      exact KPCuspCharts.affine_radial F hF D.E D.integralUnits (D.ratio g) (B 0 1 / B 1 1) z
-
-end DedekindZetaZeroFree.KPActualCollarBuffer
-
-end
+      rfl

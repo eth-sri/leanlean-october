@@ -14,7 +14,6 @@ namespace DedekindZetaZeroFree.KPRankOneOpenCellKernel
 open KPLocalPrincipalSeries KPLocalStoneVonNeumann KPRankOneShellContinuation
 
 noncomputable section
-set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
@@ -77,7 +76,7 @@ theorem signedWeyl_eq_prescribed_signed :
       one_mul, one_pow]
   rw [signedWeylRaw, KPStandardLocalRootLifts.signedW, KPStandardLocalRootLifts.A,
     KPStandardLocalRootLifts.W, KPLocalCover.sectionMap_mul, hs, hm]
-  simp only [map_one, one_mul]
+  simp
 
 def signedWeyl : Cover F ζ hζ q :=
   KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q) (signedWeylRaw F ζ hζ q)
@@ -103,7 +102,7 @@ def bruhatRight (v : (LocalField F q)ˣ) (s : LocalField F q) : RawCover F ζ h�
 def kappa (v : (LocalField F q)ˣ) (s : LocalField F q) : rootsOfUnity 3 F :=
   (bruhatLeft F ζ hζ q v s).epsilon / (bruhatRight F ζ hζ q v s).epsilon
 
-private theorem signed_bruhat_matrix_aux {L : Type*} [Field L] (v : Lˣ) (z : L) :
+theorem signed_bruhat_matrix_aux {L : Type*} [Field L] (v : Lˣ) (z : L) :
     (KubotaRankTwo.w L)⁻¹ * KubotaRankTwo.n L (-((v⁻¹ : Lˣ) : L)) *
         (KubotaRankTwo.w L)⁻¹ * KubotaRankTwo.n L z =
     Matrix.GeneralLinearGroup.scalar (Fin 2) v⁻¹ *
@@ -136,7 +135,7 @@ private theorem signed_bruhat_matrix_aux {L : Type*} [Field L] (v : Lˣ) (z : L)
       field_simp <;> ring
   have h : A = Matrix.GeneralLinearGroup.scalar (Fin 2) v⁻¹ *
       (Matrix.GeneralLinearGroup.scalar (Fin 2) v * A) := by
-    rw [← mul_assoc, ← map_mul, inv_mul_cancel, map_one, one_mul]
+    simp
   rw [h, key]
 
 theorem raw_bruhat_identity (v : (LocalField F q)ˣ) (s : LocalField F q) :
@@ -144,10 +143,7 @@ theorem raw_bruhat_identity (v : (LocalField F q)ˣ) (s : LocalField F q) :
       KPLocalCover.centralInjection F ζ hζ (Sum.inr q) (kappa F ζ hζ q v s) *
         bruhatRight F ζ hζ q v s := by
   have hg : (bruhatLeft F ζ hζ q v s).g = (bruhatRight F ζ hζ q v s).g := by
-    simp only [bruhatLeft, bruhatRight, KPLocalCover.mul_g, KPLocalCover.inv_g,
-      KPStandardLocalRootLifts.N, KPStandardLocalRootLifts.A,
-      KPStandardLocalRootLifts.W, KPScalarSplitCentral.scalarHom,
-      KPScalarSplitCentral.scalarLift, KPLocalCover.sectionMap_g]
+    simp only [bruhatLeft, bruhatRight, KPLocalCover.mul_g, KPLocalCover.inv_g, KPStandardLocalRootLifts.N, KPStandardLocalRootLifts.A, KPScalarSplitCentral.scalarHom, KPLocalCover.sectionMap_g]
     rw [signedWeyl_matrix F ζ hζ q]
     exact signed_bruhat_matrix_aux v s
   have he : (bruhatLeft F ζ hζ q v s).epsilon =
@@ -156,7 +152,7 @@ theorem raw_bruhat_identity (v : (LocalField F q)ˣ) (s : LocalField F q) :
     simp only [KPLocalCover.mul_epsilon, KPLocalCover.centralInjection_epsilon,
       KPLocalCover.centralInjection_g, KPLocalCover.sigmaTwo_one_left, mul_one]
     simp only [kappa]
-    rw [div_mul_cancel]
+    simp
   show KPLocalCover.CubicGL2Raw.mk (bruhatLeft F ζ hζ q v s).g
       (bruhatLeft F ζ hζ q v s).epsilon =
     KPLocalCover.CubicGL2Raw.mk
@@ -165,9 +161,7 @@ theorem raw_bruhat_identity (v : (LocalField F q)ˣ) (s : LocalField F q) :
       (KPLocalCover.centralInjection F ζ hζ (Sum.inr q) (kappa F ζ hζ q v s) *
         bruhatRight F ζ hζ q v s).epsilon
   rw [KPLocalCover.CubicGL2Raw.mk.injEq]
-  refine ⟨?_, ?_⟩
-  · simpa only [KPLocalCover.mul_g, KPLocalCover.centralInjection_g, one_mul] using hg
-  · exact he
+  simp_all
 
 theorem lifted_bruhat_identity (v : (LocalField F q)ˣ) (s : LocalField F q) :
     (signedWeyl F ζ hζ q)⁻¹ *
@@ -279,8 +273,8 @@ theorem open_cell_correspondence (B : Binding F ζ hζ q A P) (ε : Sign) (z : �
   · intro φ hφlc hφcs
     obtain ⟨f, hf⟩ : ∃ f : sectionSpace A P ε z,
         IsOpenCellSection F ζ hζ q A P ε z f ∧
-          ∀ s, f.val (openCoordinate F ζ hζ q s) = φ s := by
-      exact KPRankOneBruhatKernelTransport.open_cell_extension F ζ hζ q A P
+          ∀ s, f.val (openCoordinate F ζ hζ q s) = φ s := 
+      KPRankOneBruhatKernelTransport.open_cell_extension F ζ hζ q A P
         (rawAliasOpenBruhatCellBinding F ζ hζ q A P B) ε z φ hφlc hφcs
     refine ⟨f, hf, ?_⟩
     intro f' hf'
@@ -291,6 +285,3 @@ theorem open_cell_correspondence (B : Binding F ζ hζ q A P) (ε : Sign) (z : �
     · obtain ⟨b, s, rfl⟩ := hg
       rw [f'.property.1, f.property.1, hf'.2, hf.2]
     · rw [hf'.1.2 g hg, hf.1.2 g hg]
-
-end
-end DedekindZetaZeroFree.KPRankOneOpenCellKernel

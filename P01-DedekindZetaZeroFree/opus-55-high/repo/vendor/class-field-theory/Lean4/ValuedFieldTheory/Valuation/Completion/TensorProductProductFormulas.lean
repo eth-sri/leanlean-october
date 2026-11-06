@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Degree, norm, and trace through a tensor-product decomposition
 
@@ -26,7 +22,6 @@ with the canonical images in `L_w`; no compatibility theorem is assumed
 here.
 -/
 
-noncomputable section
 
 namespace ValuationTheory
 namespace Completion
@@ -34,44 +29,6 @@ namespace Completion
 universe u v w
 
 open scoped TensorProduct
-
-/-- Finite rank is the sum of the ranks of the factors in a finite
-dependent-product decomposition after scalar extension. -/
-theorem baseChange_pi_finrank_eq_sum
-    {K : Type u} {A : Type v} {L : Type w}
-    [Field K] [Field A] [Field L] [Algebra K A] [Algebra K L]
-    [FiniteDimensional K L]
-    {I : Type*} [Fintype I]
-    (B : I → Type*) [∀ i, Field (B i)] [∀ i, Algebra A (B i)]
-    [∀ i, Module.Finite A (B i)]
-    (e : A ⊗[K] L ≃ₐ[A] ∀ i, B i) :
-    Module.finrank K L = ∑ i, Module.finrank A (B i) := by
-  calc
-    Module.finrank K L = Module.finrank A (A ⊗[K] L) :=
-      Module.finrank_baseChange.symm
-    _ = Module.finrank A (∀ i, B i) := e.toLinearEquiv.finrank_eq
-    _ = ∑ i, Module.finrank A (B i) := Module.finrank_pi_fintype A
-
-/-- The base-changed global norm is the product of the norms of the
-components under a finite dependent-product decomposition. -/
-theorem baseChange_pi_norm_eq_prod
-    {K : Type u} {A : Type v} {L : Type w}
-    [Field K] [Field A] [Field L] [Algebra K A] [Algebra K L]
-    [FiniteDimensional K L]
-    {I : Type*} [Fintype I]
-    (B : I → Type*) [∀ i, Field (B i)] [∀ i, Algebra A (B i)]
-    [∀ i, Module.Finite A (B i)]
-    (e : A ⊗[K] L ≃ₐ[A] ∀ i, B i) (x : L) :
-    algebraMap K A (Algebra.norm K x) =
-      ∏ i, Algebra.norm A (e (1 ⊗ₜ[K] x) i) := by
-  calc
-    algebraMap K A (Algebra.norm K x) =
-        Algebra.norm A (1 ⊗ₜ[K] x) :=
-      (algebra_norm_baseChange_tmul (A := A) x).symm
-    _ = Algebra.norm A (e (1 ⊗ₜ[K] x)) :=
-      (Algebra.norm_eq_of_algEquiv e (1 ⊗ₜ[K] x)).symm
-    _ = ∏ i, Algebra.norm A (e (1 ⊗ₜ[K] x) i) :=
-      algebra_norm_pi_apply B _
 
 /-- The base-changed global trace is the sum of the traces of the
 components under a finite dependent-product decomposition. -/
@@ -93,8 +50,3 @@ theorem baseChange_pi_trace_eq_sum
       (Algebra.trace_eq_of_algEquiv e (1 ⊗ₜ[K] x)).symm
     _ = ∑ i, Algebra.trace A (B i) (e (1 ⊗ₜ[K] x) i) :=
       algebra_trace_pi_apply B _
-
-end Completion
-end ValuationTheory
-
-end

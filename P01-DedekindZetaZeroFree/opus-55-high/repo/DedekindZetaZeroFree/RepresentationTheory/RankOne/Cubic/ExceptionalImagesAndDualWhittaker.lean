@@ -26,7 +26,7 @@ local instance reverseImageAdd :
     AddCommGroup (actualCanonicalReverseMap F ζ hζ q S P μ hμ).range.toSubmodule :=
   Submodule.addCommGroup _
 
-private theorem actual_simple_of_length_two {R M : Type*} [Ring R] [AddCommGroup M]
+theorem actual_simple_of_length_two {R M : Type*} [Ring R] [AddCommGroup M]
     [Module R M] (h : Module.length R M = 2) (N : Submodule R M)
     [Nontrivial N] (hN : N ≠ ⊤) : IsSimpleModule R N := by
   have hf : IsFiniteLength R M := Module.length_ne_top_iff.mp (by rw [h]; norm_num)
@@ -39,7 +39,7 @@ private theorem actual_simple_of_length_two {R M : Type*} [Ring R] [AddCommGroup
   have hp := Module.length_pos (R := R) (M := N)
   exact le_antisymm (by simpa using hl) (ENat.one_le_iff_ne_zero.mpr hp.ne')
 
-private theorem actual_irreducible_of_length_two {G V : Type*} [Group G] [AddCommGroup V]
+theorem actual_irreducible_of_length_two {G V : Type*} [Group G] [AddCommGroup V]
     [Module ℂ V] (ρ : Representation ℂ G V)
     (h : Module.length ℂ[G] ρ.asModule = 2) (S : Subrepresentation ρ)
     [Nontrivial S.toSubmodule] (hS : S ≠ ⊤) : S.toRepresentation.IsIrreducible := by
@@ -60,9 +60,9 @@ private theorem actual_irreducible_of_length_two {G V : Type*} [Group G] [AddCom
   apply (Representation.irreducible_iff_isSimpleModule_asModule _).mpr
   apply Module.length_eq_one_iff.mp
   rw [(LinearEquiv.ofInjective j hj).length_eq]
-  exact Module.length_eq_one_iff.mpr hs
+  simp
 
-private theorem actual_image_simple {G V W : Type*} [Group G] [AddCommGroup V]
+theorem actual_image_simple {G V W : Type*} [Group G] [AddCommGroup V]
     [Module ℂ V] [AddCommGroup W] [Module ℂ W]
     (ρ : Representation ℂ G V) (σ : Representation ℂ G W)
     (f : ρ.IntertwiningMap σ) (g : σ.IntertwiningMap ρ)
@@ -94,7 +94,3 @@ theorem actual_images_irreducible_of_length :
   have hl := actual_principal_series_length_two F ζ hζ q S P
   exact ⟨actual_image_simple (IPlus S.borel P) (IMinus S.borel P) _ _ hn.1 hn.2 hc.2 hl.2,
     actual_image_simple (IMinus S.borel P) (IPlus S.borel P) _ _ hn.2 hn.1 hc.1 hl.1⟩
-
-end DedekindZetaZeroFree.KPRankOneShellRepair.ActualSourcePredicates
-
-end

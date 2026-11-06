@@ -58,10 +58,10 @@ theorem cell_measure_ne_top (n : ℕ) (a : ℝ) (m : ℕ) (i : CellIndex n m) :
   exact ne_top_of_le_ne_top ((cube_isCompact n a).measure_ne_top (μ := volume))
     (measure_mono Set.inter_subset_right)
 
-private theorem cell_subset_cube (n : ℕ) (a : ℝ) (ha : 0 < a)
+theorem cell_subset_cube (n : ℕ) (a : ℝ) (ha : 0 < a)
     (m : ℕ) (hm : 1 ≤ m) (i : CellIndex n m) : cell n a m i ⊆ cube n a := by
   intro x hx j
-  have hmR : (0 : ℝ) < m := by exact_mod_cast (lt_of_lt_of_le Nat.zero_lt_one hm)
+  have hmR : (0 : ℝ) < m := by positivity
   have hs : 0 < side a m := div_pos (by linarith) hmR
   have hmul : (m : ℝ) * side a m = 2 * a := by
     dsimp [side]
@@ -73,11 +73,11 @@ private theorem cell_subset_cube (n : ℕ) (a : ℝ) (ha : 0 < a)
   · have hh := (hx j).2
     nlinarith [mul_le_mul_of_nonneg_right hi1 (le_of_lt hs)]
 
-private theorem cells_disjoint (n : ℕ) (a : ℝ) (ha : 0 < a) (m : ℕ) (hm : 1 ≤ m) :
+theorem cells_disjoint (n : ℕ) (a : ℝ) (ha : 0 < a) (m : ℕ) (hm : 1 ≤ m) :
     Pairwise (fun i j : CellIndex n m => Disjoint (cell n a m i) (cell n a m j)) := by
   intro i k hik
   obtain ⟨j, hj⟩ := Function.ne_iff.mp hik
-  have hmR : (0 : ℝ) < m := by exact_mod_cast (lt_of_lt_of_le Nat.zero_lt_one hm)
+  have hmR : (0 : ℝ) < m := by positivity
   have hs : 0 < side a m := div_pos (by linarith) hmR
   apply Set.disjoint_left.mpr
   intro x hxi hxk
@@ -89,10 +89,10 @@ private theorem cells_disjoint (n : ℕ) (a : ℝ) (ha : 0 < a) (m : ℕ) (hm : 
   · have h' : (k j : ℝ) + 1 ≤ (i j : ℝ) := by exact_mod_cast h
     nlinarith [mul_le_mul_of_nonneg_right h' hs.le]
 
-private theorem interval_cell (a : ℝ) (ha : 0 < a) (m : ℕ) (hm : 1 ≤ m)
+theorem interval_cell (a : ℝ) (ha : 0 < a) (m : ℕ) (hm : 1 ≤ m)
     (x : ℝ) (hx : -a ≤ x ∧ x < a) :
     ∃ i : Fin m, -a + (i : ℝ) * side a m ≤ x ∧ x < -a + ((i : ℝ) + 1) * side a m := by
-  have hmR : (0 : ℝ) < m := by exact_mod_cast (lt_of_lt_of_le Nat.zero_lt_one hm)
+  have hmR : (0 : ℝ) < m := by positivity
   have hs : 0 < side a m := div_pos (by linarith) hmR
   have hmul : (m : ℝ) * side a m = 2 * a := by dsimp [side]; field_simp
   have ht : 0 ≤ (x + a) / side a m := div_nonneg (by linarith [hx.1]) hs.le
@@ -136,7 +136,7 @@ theorem cell_partition (n : ℕ) (hn : 1 ≤ n) (a : ℝ) (ha : 0 < a)
       exact cell_subset_cube n a ha m hm i hi
   · intro i
     refine ⟨?_, ?_⟩
-    · have hmR : (0 : ℝ) < m := by exact_mod_cast (lt_of_lt_of_le Nat.zero_lt_one hm)
+    · have hmR : (0 : ℝ) < m := by positivity
       have hs : 0 ≤ side a m := (div_pos (by linarith) hmR).le
       have hset : cell n a m i = WithLp.ofLp ⁻¹' (Set.univ.pi (fun j : Fin n =>
           Set.Ico (-a + (i j : ℝ) * side a m) (-a + ((i j : ℝ) + 1) * side a m))) := by
@@ -147,8 +147,7 @@ theorem cell_partition (n : ℕ) (hn : 1 ≤ n) (a : ℝ) (ha : 0 < a)
         Real.volume_pi_Ico]
       have hd : ∀ j : Fin n, (-a + ((i j : ℝ) + 1) * side a m) -
           (-a + (i j : ℝ) * side a m) = side a m := by intro j; ring
-      simp_rw [hd]
-      simp [ENNReal.ofReal_pow hs]
+      simp_all
     · change (volume.restrict (cube n a)) (cell n a m i) = _
       rw [Measure.restrict_apply (cell_measurable n a m i),
         Set.inter_eq_left.mpr (cell_subset_cube n a ha m hm i)]
@@ -167,7 +166,7 @@ noncomputable def average (n : ℕ) (a : ℝ) (m : ℕ) :
     CubeLp n a →L[ℂ] CubeLp n a :=
   averageOfCells (cell n a m) (cell_measurable n a m) (cell_measure_ne_top n a m)
 
-private theorem average_apply (n : ℕ) (a : ℝ) (m : ℕ) (f : CubeLp n a) :
+theorem average_apply (n : ℕ) (a : ℝ) (m : ℕ) (f : CubeLp n a) :
     average n a m f = ∑ i : CellIndex n m,
       (((cubeMeasure n a (cell n a m i)).toReal : ℂ)⁻¹ *
         inner ℂ (cellIndicator n a m i) f) • cellIndicator n a m i := by
@@ -234,8 +233,8 @@ theorem average_range (n : ℕ) (a : ℝ) (m : ℕ) :
   exact Submodule.subset_span (Set.mem_range_self i)
 
 theorem cell_span_finiteDimensional (n : ℕ) (a : ℝ) (m : ℕ) :
-    FiniteDimensional ℂ (Submodule.span ℂ (Set.range (cellIndicator n a m))) := by
-  exact FiniteDimensional.span_of_finite ℂ (Set.finite_range _)
+    FiniteDimensional ℂ (Submodule.span ℂ (Set.range (cellIndicator n a m))) := 
+  FiniteDimensional.span_of_finite ℂ (Set.finite_range _)
 
 noncomputable def coordinateDerivative (n : ℕ) (f : Space n → ℂ) (j : Fin n) (x : Space n) : ℂ :=
   fderiv ℝ f x (EuclideanSpace.basisFun (Fin n) ℝ j)
@@ -250,7 +249,7 @@ theorem smooth_memLp (n : ℕ) (a : ℝ) (f : Space n → ℂ)
   obtain ⟨B, hB⟩ := ((cube_isCompact n a).image hf.continuous).isBounded.exists_norm_le
   apply (memLp_top_of_bound hf.continuous.aestronglyMeasurable B ?_).mono_exponent le_top
   filter_upwards [ae_restrict_mem (cube_isCompact n a).measurableSet] with x hx
-  exact hB (f x) ⟨x, hx, rfl⟩
+  simp_all
 
 theorem smooth_gradient_integrable (n : ℕ) (a : ℝ) (f : Space n → ℂ)
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
@@ -278,15 +277,14 @@ private theorem integral_sq_bound {α : Type*} [MeasurableSpace α] {μ : Measur
     rw [← real_inner_self_eq_norm_sq, L2.inner_def]
     have hcoe := (indicatorConstLp_coeFn (p := 2) (hs := MeasurableSet.univ)
       (hμs := measure_ne_top μ _) (c := (1 : ℂ)))
-    simp only [Set.indicator_univ, Pi.one_apply] at hcoe
+    simp only [Set.indicator_univ] at hcoe
     calc
       (∫ x, inner ℝ (e x) (e x) ∂μ) = ∫ x, (1 : ℝ) ∂μ := by
         apply integral_congr_ae
         filter_upwards [hcoe] with x hx
         change inner ℝ (indicatorConstLp 2 MeasurableSet.univ (measure_ne_top μ _) (1 : ℂ) x)
           (indicatorConstLp 2 MeasurableSet.univ (measure_ne_top μ _) (1 : ℂ) x) = 1
-        rw [hx]
-        norm_num [real_inner_self_eq_norm_sq]
+        simp_all
       _ = _ := by simp [Measure.real]
   have hi : inner ℂ e (hf.toLp f) = ∫ x, f x ∂μ := by
     rw [L2.inner_indicatorConstLp_one MeasurableSet.univ (measure_ne_top μ _),
@@ -304,7 +302,7 @@ private theorem interval_pair_bound (l r : ℝ) (hlr : l < r)
   have hd := hf.continuous_deriv (by simp)
   have hi : IntegrableOn (fun t => ‖deriv f t‖ ^ 2) (Set.Icc l r) volume :=
     (hd.norm.pow 2).continuousOn.integrableOn_Icc
-  have he : 0 ≤ ∫ t in Set.Icc l r, ‖deriv f t‖ ^ 2 := integral_nonneg (fun _ => sq_nonneg _)
+  have he : 0 ≤ ∫ t in Set.Icc l r, ‖deriv f t‖ ^ 2 := by positivity
   wlog hxy : y ≤ x generalizing x y
   · have h := this y x hy hx (le_of_not_ge hxy)
     simpa only [norm_sub_rev] using h
@@ -342,13 +340,13 @@ theorem coordinateLine_hasDerivAt {n : ℕ} (x : Space n) (j : Fin n) (t : ℝ) 
     HasDerivAt (coordinateLine x j) (EuclideanSpace.basisFun (Fin n) ℝ j) t := by
   convert (((((hasDerivAt_id t).sub_const (x j)).smul_const
       (EuclideanSpace.basisFun (Fin n) ℝ j)).const_add x)) using 1
-  · funext s; rfl
-  · simp only [one_smul]
+  · rfl
+  simp
 
 theorem deriv_coordinateLine {n : ℕ} (f : Space n → ℂ)
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) (x : Space n) (j : Fin n) (t : ℝ) :
-    deriv (f ∘ coordinateLine x j) t = coordinateDerivative n f j (coordinateLine x j t) := by
-  exact ((hf.differentiable (by simp)).differentiableAt.hasFDerivAt.comp_hasDerivAt t
+    deriv (f ∘ coordinateLine x j) t = coordinateDerivative n f j (coordinateLine x j t) := 
+  ((hf.differentiable (by simp)).differentiableAt.hasFDerivAt.comp_hasDerivAt t
     (coordinateLine_hasDerivAt x j t)).deriv
 
 theorem coordinateLine_apply {n : ℕ} (x : Space n) (j k : Fin n) (t : ℝ) :
@@ -358,7 +356,7 @@ theorem coordinateLine_apply {n : ℕ} (x : Space n) (j k : Fin n) (t : ℝ) :
     EuclideanSpace.basisFun_apply, EuclideanSpace.single_apply, smul_eq_mul]
   split_ifs with h
   · subst k; simp
-  · simp [h, Ne.symm h]
+  simp
 
 noncomputable def coordinateHybrid {n : ℕ} (x y : Space n) (k : ℕ) : Space n :=
   (EuclideanSpace.equiv (Fin n) ℝ).symm (fun j => if j.val < k then y j else x j)
@@ -367,8 +365,7 @@ theorem coordinateHybrid_apply {n : ℕ} (x y : Space n) (k : ℕ) (j : Fin n) :
     coordinateHybrid x y k j = if j.val < k then y j else x j := rfl
 
 theorem coordinateHybrid_zero {n : ℕ} (x y : Space n) : coordinateHybrid x y 0 = x := by
-  ext j
-  simp [coordinateHybrid_apply]
+  rfl
 
 theorem coordinateHybrid_last {n : ℕ} (x y : Space n) : coordinateHybrid x y n = y := by
   ext j
@@ -384,9 +381,7 @@ theorem coordinateLine_self {n : ℕ} (x : Space n) (j : Fin n) :
     coordinateLine x j (x j) = x := by
   ext k
   rw [coordinateLine_apply]
-  split_ifs with h
-  · subst k; rfl
-  · rfl
+  simp_all
 
 theorem coordinateHybrid_current {n : ℕ} (x y : Space n) (j : Fin n) :
     coordinateHybrid x y j.val j = x j := by
@@ -408,7 +403,7 @@ theorem cell_pair_bound (n : ℕ) (a : ℝ) (ha : 0 < a) (m : ℕ) (hm : 1 ≤ m
       ∑ j : Fin n, ∫ t in Set.Icc (-a + (i j : ℝ) * side a m)
         (-a + ((i j : ℝ) + 1) * side a m),
         ‖coordinateDerivative n f j (coordinateLine (coordinateHybrid x y j.val) j t)‖ ^ 2 := by
-  have hmR : (0 : ℝ) < m := by exact_mod_cast (lt_of_lt_of_le Nat.zero_lt_one hm)
+  have hmR : (0 : ℝ) < m := by positivity
   have hs : 0 < side a m := div_pos (by linarith) hmR
   have hstep (j : Fin n) :
       ‖f (coordinateHybrid x y j.val) - f (coordinateHybrid x y (j.val + 1))‖ ^ 2 ≤
@@ -449,8 +444,7 @@ theorem average_error_eq_cell_sum (n : ℕ) (hn : 1 ≤ n) (a : ℝ) (ha : 0 < a
     (Lp.memLp G).integrable_norm_pow (by norm_num)
   have hsq : ‖G‖ ^ 2 = ∫ x, ‖G x‖ ^ 2 ∂(cubeMeasure n a) := by
     rw [← real_inner_self_eq_norm_sq, L2.inner_def]
-    apply integral_congr_ae
-    exact Filter.Eventually.of_forall (fun _ => real_inner_self_eq_norm_sq _)
+    simp
   change ‖G‖ ^ 2 = _
   rw [hsq]
   obtain ⟨_, _, hdisj, hcover, _⟩ := cell_partition n hn a ha m hm
@@ -482,7 +476,7 @@ theorem smooth_error_bound (n : ℕ) (hn : 1 ≤ n) (a : ℝ) (ha : 0 < a)
       ((n : ℝ) + 1) ^ 2 * side a m ^ 2 *
         ∫ x, gradientEnergy n f x ∂(cubeMeasure n a) := by
   classical
-  have hmR : (0 : ℝ) < m := by exact_mod_cast (lt_of_lt_of_le Nat.zero_lt_one hm)
+  have hmR : (0 : ℝ) < m := by positivity
   have hs : 0 < side a m := div_pos (by linarith) hmR
   have hbox (i : CellIndex n m) :
       KPCubeAverageError.box n (fun j => -a + (i j : ℝ) * side a m) (side a m) =
@@ -528,6 +522,3 @@ theorem smooth_error_bound (n : ℕ) (hn : 1 ≤ n) (a : ℝ) (ha : 0 < a)
       apply mul_le_mul_of_nonneg_right _ (sq_nonneg _)
       have hnR : (0 : ℝ) ≤ n := Nat.cast_nonneg n
       nlinarith
-
-end KPCubeAverage
-end DedekindZetaZeroFree

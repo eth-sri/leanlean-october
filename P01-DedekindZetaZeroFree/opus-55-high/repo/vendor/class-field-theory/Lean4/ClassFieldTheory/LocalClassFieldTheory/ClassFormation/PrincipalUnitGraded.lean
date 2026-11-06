@@ -11,10 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-set_option autoImplicit false
 /-! Provides the public declarations in the `LocalClassFieldTheory.ClassFormation.PrincipalUnitGraded` Lean module. -/
 
 namespace LocalClassFieldTheory
@@ -73,8 +69,8 @@ theorem chosenNormalBasisPrincipalUnitSuccQuotToLatticeSuccQuotHom_injective
         K L n hVn hVsucc hV hmul_error
         (chosenNormalBasisPrincipalUnitSuccQuotMk (L := L) hV u) = 1 at hu
     rw [chosenNormalBasisPrincipalUnitSuccQuotToLatticeSuccQuotHom_mk] at hu
-    have hu_n : (u : 𝒪[L]ˣ) ∈ chosenNormalBasisPrincipalUnitSet K L n := by
-      exact hVn ▸ u.2
+    have hu_n : (u : 𝒪[L]ˣ) ∈ chosenNormalBasisPrincipalUnitSet K L n := 
+      hVn ▸ u.2
     have hzero :
         chosenNormalBasisPrincipalUnitLatticeClass K L n (u : 𝒪[L]ˣ) hu_n = 0 := by
       have h := congrArg
@@ -91,7 +87,7 @@ theorem chosenNormalBasisPrincipalUnitSuccQuotToLatticeSuccQuotHom_injective
     change (u : 𝒪[L]ˣ) ∈ (Vsucc : Set 𝒪[L]ˣ)
     rw [hVsucc]
     exact hu_succ
-  · exact bot_le
+  simp
 
 /-- If the high normal-basis lattice lies in the maximal ideal, every additive
 successive-quotient class is represented by a unit `1 + x`; hence the
@@ -138,7 +134,7 @@ theorem chosenNormalBasisPrincipalUnitSuccQuotToLatticeSuccQuotHom_surjective_of
     isUnit_one_add_of_mem_maximalIdeal_pow L (n := 1) (by rfl) a ha_pow
   let u : 𝒪[L]ˣ := hunit.unit
   have huval : ((u : 𝒪[L]ˣ) : 𝒪[L]) = 1 + a := by
-    exact IsUnit.unit_spec hunit
+    rfl
   have hu_sub_one :
       (((((u : 𝒪[L]ˣ) : 𝒪[L]) - 1 : 𝒪[L]) : L) = (x : L)) := by
     rw [huval]
@@ -164,7 +160,7 @@ theorem chosenNormalBasisPrincipalUnitSuccQuotToLatticeSuccQuotHom_surjective_of
 /-- The actual isomorphism
 `V^n/V^(n+1) ≃ π_K^nM/π_K^(n+1)M` once the high-lattice bound and
 multiplicative-error estimate hold. -/
-noncomputable def chosenNormalBasisPrincipalUnitSuccQuotMulEquivLatticeSuccQuot
+def chosenNormalBasisPrincipalUnitSuccQuotMulEquivLatticeSuccQuot
     {n : Nat} {Vn Vsucc : Subgroup 𝒪[L]ˣ}
     (hVn : (Vn : Set 𝒪[L]ˣ) = chosenNormalBasisPrincipalUnitSet K L n)
     (hVsucc : (Vsucc : Set 𝒪[L]ˣ) =
@@ -245,13 +241,13 @@ theorem exists_chosenNormalBasisPrincipalUnitSuccQuotMulEquivLatticeSuccQuot
   refine ⟨max c₁ (max c₂ c₃), ?_⟩
   intro n hn
   have hc₁n : c₁ ≤ n :=
-    le_trans (le_max_left c₁ (max c₂ c₃)) hn
+    by omega
   have hcrest : max c₂ c₃ ≤ max c₁ (max c₂ c₃) :=
-    le_max_right c₁ (max c₂ c₃)
+    by simp
   have hc₂n : c₂ ≤ n :=
-    le_trans (le_trans (le_max_left c₂ c₃) hcrest) hn
+    by omega
   have hc₃n : c₃ ≤ n :=
-    le_trans (le_trans (le_max_right c₂ c₃) hcrest) hn
+    by omega
   rcases hc₁ n hc₁n with ⟨Vn, Vsucc, hVn, hVsucc, hV, hVnle⟩
   let hmul_error := hc₂ n hc₂n
   let hle := (hc₃ n hc₃n).1
@@ -262,6 +258,3 @@ theorem exists_chosenNormalBasisPrincipalUnitSuccQuotMulEquivLatticeSuccQuot
   refine ⟨Vn, Vsucc, hV, hVn, hVsucc, Φ, hVnle, ?_⟩
   intro u
   rfl
-
-end
-end LocalClassFieldTheory

@@ -26,7 +26,7 @@ namespace DedekindZetaZeroFree.TauCeti
 
 namespace SU2
 
-private theorem isDiag_star_left_conjugate_of_eq_smul_one_add_smul {R n : Type*}
+theorem isDiag_star_left_conjugate_of_eq_smul_one_add_smul {R n : Type*}
     [CommSemiring R] [Star R] [Fintype n] [DecidableEq n] {G H U : Matrix n n R} {a b : R}
     (hdecomp : G = a • (1 : Matrix n n R) + b • H)
     (hUU : star U * U = 1) (hdiagH : (star U * H * U).IsDiag) :
@@ -38,7 +38,7 @@ private theorem isDiag_star_left_conjugate_of_eq_smul_one_add_smul {R n : Type*}
   rw [hexpand]
   exact (Matrix.isDiag_one.smul _).add (hdiagH.smul _)
 
-private theorem coe_eq_smul_one_add_smul_I_smul_sub_star (g : SU2) :
+theorem coe_eq_smul_one_add_smul_I_smul_sub_star (g : SU2) :
     (g : Matrix (Fin 2) (Fin 2) ℂ)
       = (Matrix.trace (g : Matrix (Fin 2) (Fin 2) ℂ) / 2) • (1 : Matrix (Fin 2) (Fin 2) ℂ)
         + (-Complex.I / 2) •
@@ -55,7 +55,7 @@ private theorem coe_eq_smul_one_add_smul_I_smul_sub_star (g : SU2) :
   rw [smul_smul, hI, hscalar]
   module
 
-private theorem exists_conj_mem_torus_of_isDiag_star_left_conjugate (g : SU2)
+theorem exists_conj_mem_torus_of_isDiag_star_left_conjugate (g : SU2)
     {U : Matrix.unitaryGroup (Fin 2) ℂ}
     (hdiagG : (star (U : Matrix (Fin 2) (Fin 2) ℂ) * (g : Matrix (Fin 2) (Fin 2) ℂ)
       * (U : Matrix (Fin 2) (Fin 2) ℂ)).IsDiag) :
@@ -88,9 +88,7 @@ theorem exists_conj_mem_torus (g : SU2) : ∃ u : SU2, u * g * u⁻¹ ∈ torus 
       (star (U : Matrix (Fin 2) (Fin 2) ℂ) * H * (U : Matrix (Fin 2) (Fin 2) ℂ)).IsDiag := by
     refine ⟨hHerm.eigenvectorUnitary, ?_⟩
     have h := hHerm.conjStarAlgAut_star_eigenvectorUnitary (𝕜 := ℂ)
-    rw [Unitary.conjStarAlgAut_star_apply] at h
-    rw [h]
-    exact Matrix.isDiag_diagonal _
+    simp_all
 
   exact exists_conj_mem_torus_of_isDiag_star_left_conjugate g
     (isDiag_star_left_conjugate_of_eq_smul_one_add_smul
@@ -127,7 +125,3 @@ theorem eq_of_conjInvariant_of_eqOn_torus {α : Type*} {f₁ f₂ : SU2 → α}
   obtain ⟨u, hu⟩ := exists_conj_mem_torus g
   rw [← h₁ u g, ← h₂ u g]
   exact h hu
-
-end SU2
-
-end DedekindZetaZeroFree.TauCeti

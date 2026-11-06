@@ -13,9 +13,7 @@ open IsDedekindDomain Topology
 theorem localTwo_ne_zero (F : Type) [Field F] [NumberField F]
     (v : HeightOneSpectrum (𝓞 F)) : (2 : v.adicCompletion F) ≠ 0 := by
   intro h
-  apply rmKummerTwo_ne_zero F
-  apply (algebraMap F (v.adicCompletion F)).injective
-  simpa only [map_ofNat, map_zero] using h
+  simp_all
 
 def localPrimitiveTwo (F : Type) [Field F] [NumberField F]
     (h12 : (primitiveRoots 12 F).Nonempty) (v : HeightOneSpectrum (𝓞 F)) :
@@ -32,14 +30,10 @@ private theorem quadratic_eq (a b : ℂˣ) (ha : a ^ 2 = 1) (hb : b ^ 2 = 1)
   have ha' : (a : ℂ) ^ 2 = 1 := by exact congrArg Units.val ha
   have hb' : (b : ℂ) ^ 2 = 1 := by exact congrArg Units.val hb
   rcases sq_eq_one_iff.mp ha' with ha' | ha'
-  · have ha1 : a = 1 := Units.ext ha'
-    simpa [ha1, h.mp ha1]
-  · rcases sq_eq_one_iff.mp hb' with hb' | hb'
-    · have hb1 : b = 1 := Units.ext hb'
-      simpa [h.mpr hb1, hb1]
-    · exact ha'.trans hb'.symm
+  · simp_all
+  simp_all
 
-private theorem continuous_of_open_ker {G H : Type*} [Group G] [Group H]
+theorem continuous_of_open_ker {G H : Type*} [Group G] [Group H]
     [TopologicalSpace G] [IsTopologicalGroup G] [TopologicalSpace H]
     (f : G →* H) (h : IsOpen (f.ker : Set G)) : Continuous f := by
   apply IsLocallyConstant.continuous
@@ -52,7 +46,7 @@ private theorem continuous_of_open_ker {G H : Type*} [Group G] [Group H]
   rw [heq]
   exact h.preimage (continuous_id.mul continuous_const)
 
-private theorem dense_units (F : Type) [Field F] [NumberField F]
+theorem dense_units (F : Type) [Field F] [NumberField F]
     (v : HeightOneSpectrum (𝓞 F)) :
     DenseRange (Units.map (algebraMap F (v.adicCompletion F)).toMonoidHom) := by
   apply dense_iff_inter_open.mpr
@@ -64,15 +58,14 @@ private theorem dense_units (F : Type) [Field F] [NumberField F]
   obtain ⟨u, hu, hau⟩ := ha
   have hane : a ≠ 0 := by
     intro h
-    have : (u : v.adicCompletion F) = 0 := by simpa [h] using hau
-    exact u.ne_zero this
+    simp_all
   refine ⟨u, hu, Units.mk0 a hane, ?_⟩
   apply Units.ext
   exact hau.symm
 set_option maxRecDepth 4000
 set_option maxHeartbeats 1000000
 open GlobalClassFieldTheory.Reciprocity KummerTheory
-private theorem global_trivial (F : Type) [Field F] [NumberField F]
+theorem global_trivial (F : Type) [Field F] [NumberField F]
     (h12 : (primitiveRoots 12 F).Nonempty) (x a : Fˣ)
     (v : HeightOneSpectrum (𝓞 F)) :
     RMKummerLocalNormCharacter.lambda F h12 x v
@@ -97,7 +90,7 @@ private theorem global_trivial (F : Type) [Field F] [NumberField F]
   erw [← map_one e, e.injective.eq_iff, ← map_one d, d.injective.eq_iff]
   rfl
 open ClassFieldTheory
-private theorem global_local_trivial (F : Type) [Field F] [NumberField F]
+theorem global_local_trivial (F : Type) [Field F] [NumberField F]
     (h12 : (primitiveRoots 12 F).Nonempty) (x a : Fˣ)
     (v : HeightOneSpectrum (𝓞 F)) :
     letI : ValuativeRel (v.adicCompletion F) := finitePlaceCompletionValuativeRel F v
@@ -130,7 +123,7 @@ private theorem global_local_trivial (F : Type) [Field F] [NumberField F]
   exact ((finitePlaceAdicHilbertPairingFamily_isLocallyHilbert F 2
     (rmKummerPrimitiveTwo F h12) v).2.2.2 _ _).trans
       (localHilbertSymbol_eq_one_iff_isKummerNorm _ 2 _ _ _ _).symm
-private theorem hilbert_complex_continuous (F : Type) [Field F] [NumberField F]
+theorem hilbert_complex_continuous (F : Type) [Field F] [NumberField F]
     (h12 : (primitiveRoots 12 F).Nonempty) (x : Fˣ)
     (v : HeightOneSpectrum (𝓞 F)) :
     letI : ValuativeRel (v.adicCompletion F) := finitePlaceCompletionValuativeRel F v
@@ -206,6 +199,3 @@ theorem lambda_eq_inverse_localHilbertSymbol
       (RMKummerLocalNormCharacter.lambda_continuous F h12 x v)
       (hilbert_complex_continuous F h12 x v).inv (funext hglobal)
   exact congrFun heq t
-
-end
-end DedekindZetaZeroFree.RMKummerLocalHilbertComparison

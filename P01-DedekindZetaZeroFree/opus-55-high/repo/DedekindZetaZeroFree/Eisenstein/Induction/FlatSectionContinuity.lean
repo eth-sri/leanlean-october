@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Eisenstein.Induction.CompactModels.SmoothAngu
 
 @[expose] public section
 
-noncomputable section
 open scoped Classical NumberField NNReal Topology
 namespace DedekindZetaZeroFree.KPGlobalResidualKernel.ChamberNorm.Actual
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
@@ -39,8 +38,7 @@ private theorem normalized_mem
     (KPGlobalTorusFunctionData.Nhom F ζ hζ).map_one
   have h := KPGlobalTorusBorelTwistCompatibility.iwasawaNorm_borel_mul
     F ζ hζ D (t⁻¹) 0 g
-  rw [hN, mul_one] at h
-  rw [h, map_inv, hd, inv_mul_cancel]
+  simp_all
 
 private theorem sourceFlat_formula
     (U : KPMsRationalCompactCrossPairing.Level F ζ hζ) (s : ℂ)
@@ -79,11 +77,7 @@ private theorem sourceFlat_formula
   rw [he]
   have hn := KPMsResidualTailRestoration.OutgoingTailL2.CoordinateDescent.fullCusp_iwasawaNorm_continuous F ζ hζ D
   have hne : ∀ g, (((KPGlobalTorusBorelTwistCompatibility.iwasawaNorm F ζ hζ D g : ℝ≥0) : ℝ)) ≠ 0 :=
-    fun g => by exact_mod_cast Units.ne_zero (KPGlobalTorusBorelTwistCompatibility.iwasawaNorm F ζ hζ D g)
+    by simp
   exact (Complex.continuous_exp.comp (continuous_const.mul
     (Complex.continuous_ofReal.comp (hn.log hne)))).mul
     (KPMsRationalCompactCrossPairingProof.sourceCore_continuous f)
-
-end DedekindZetaZeroFree.KPGlobalResidualKernel.ChamberNorm.Actual
-
-end

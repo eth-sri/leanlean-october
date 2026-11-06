@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # A finite class-field candidate from a norm-open subgroup
 
@@ -102,7 +96,7 @@ theorem finiteNormClass_mem_normQuotientSubgroup_iff
         finiteNormClass A K E.field E.below a := by
       simpa [finiteNormClass] using hba
     have hzero : finiteNormClass A K E.field E.below (b - a) = 0 := by
-      rw [finiteNormClass_sub, hba', sub_self]
+      simp_all
     have hsub : b - a ∈ ClassFormation.FiniteGaloisSubextension.normSubgroup A E :=
       (finiteNormClass_eq_zero_iff A K E.field E.below (b - a)).1 hzero
     have hsubH : b - a ∈ H := hEH hsub
@@ -130,22 +124,6 @@ def reciprocityAbelianizedSubgroup
       extensionSubgroup K E.field E.below) := E.finite
   exact AddSubgroup.toSubgroup'
     ((normQuotientSubgroup A E H).map rE.toAddMonoidHom)
-
-omit [IsTopologicalGroup G] in
-/-- Membership in the transported subgroup is literal membership of the
-corresponding reciprocity class in the image of `H / N_E`. -/
-theorem mem_reciprocityAbelianizedSubgroup_iff
-    (A : Rep ℤ G) (E : FiniteGaloisSubextension K)
-    (H : AddSubgroup (ambientFixedAddSubgroup A K))
-    (rE : FiniteNormQuotient A K E.field E.below ≃+
-      Additive (Abelianization E.extensionQuotient))
-    (q : Abelianization E.extensionQuotient) :
-    q ∈ reciprocityAbelianizedSubgroup A E H rE ↔
-      ∃ z ∈ normQuotientSubgroup A E H,
-        rE z = Additive.ofMul q := by
-  let : Finite (K.toSubgroup ⧸
-      extensionSubgroup K E.field E.below) := E.finite
-  rfl
 
 /-- The representative-level abelianized class map obtained by first
 passing to `A_K / N_E` and then applying the specified equivalence. -/
@@ -203,8 +181,7 @@ theorem commutator_le_abelianizationPreimageSubgroup
   change Abelianization.of q ∈ T
   have hk : q ∈
       MonoidHom.ker (Abelianization.of : Q →* Abelianization Q) :=
-    Abelianization.commutator_subset_ker
-      (Abelianization.of : Q →* Abelianization Q) hq
+    by simp_all
   rw [MonoidHom.mem_ker.mp hk]
   exact T.one_mem
 
@@ -308,38 +285,6 @@ theorem reciprocityClass_mem_preimageSubgroup_iff
       exact Quotient.out_eq' _]
   exact reciprocityClass_mem_abelianizedSubgroup_iff A E H hEH rE a
 
-omit [IsTopologicalGroup G] in
-/-- Equivalently, the representative of the transported reciprocity class
-restricts trivially to the quotient cut out by the candidate precisely for
-the elements of `H`. -/
-theorem candidateQuotient_eq_one_iff
-    (A : Rep ℤ G) (E : FiniteGaloisSubextension K)
-    (H : AddSubgroup (ambientFixedAddSubgroup A K))
-    (hEH : ClassFormation.FiniteGaloisSubextension.normSubgroup A E ≤ H)
-    (rE : FiniteNormQuotient A K E.field E.below ≃+
-      Additive (Abelianization E.extensionQuotient))
-    (a : ambientFixedAddSubgroup A K) :
-    let S := reciprocityPreimageSubgroup A E H rE
-    letI : S.Normal := Subgroup.Normal.of_commutator_le E.extensionQuotient
-      (commutator_le_reciprocityPreimageSubgroup A E H rE)
-    QuotientGroup.mk' S
-        (Quotient.out (Additive.toMul
-          (reciprocityAbelianizedClassHom A E rE a))) = 1 ↔
-      a ∈ H := by
-  dsimp only
-  let : (reciprocityPreimageSubgroup A E H rE).Normal :=
-    Subgroup.Normal.of_commutator_le E.extensionQuotient
-      (commutator_le_reciprocityPreimageSubgroup A E H rE)
-  constructor
-  · intro h
-    apply (reciprocityClass_mem_preimageSubgroup_iff
-      A E H hEH rE a).1
-    exact (QuotientGroup.eq_one_iff _).1 h
-  · intro ha
-    apply (QuotientGroup.eq_one_iff _).2
-    exact (reciprocityClass_mem_preimageSubgroup_iff
-      A E H hEH rE a).2 ha
-
 /-- The finite abelian intermediate extension determined by the subgroup
 transported from `H / N_E`.  This is the field candidate in the
 surjectivity proof of the finite abelian classification theorem.  No claim that its norm subgroup equals
@@ -365,13 +310,7 @@ theorem classFieldCandidate_field
     (classFieldCandidate A E H rE).field =
       E.intermediateField
         (reciprocityPreimageSubgroup A E H rE) :=
-  by
-    exact intermediateFiniteAbelianOfCommutatorLe_field E
+  
+    intermediateFiniteAbelianOfCommutatorLe_field E
       (reciprocityPreimageSubgroup A E H rE)
       (commutator_le_reciprocityPreimageSubgroup A E H rE)
-
-end FiniteGaloisSubextension
-
-end ClassFormation
-
-end

@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Degree of a closed finite-index class field
 
@@ -25,7 +21,6 @@ idèle-class norm range.
 
 open scoped Classical IsMulCommutative NumberField
 
-noncomputable section
 
 namespace GlobalClassFieldTheory
 namespace GlobalClassFields
@@ -58,8 +53,3 @@ theorem closedFiniteIndexClassField_finrank_eq_index
       congrArg Subgroup.index
         (closedFiniteIndexClassField_ideleClassNorm_range
           (K := K) H hclosed)
-
-end GlobalClassFields
-end GlobalClassFieldTheory
-
-end

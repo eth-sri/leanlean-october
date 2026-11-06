@@ -46,7 +46,7 @@ theorem quotient_weighted_energy (C : Context Q) (hN : 1 ≤ C.N) :
   have hdpos : 0 < norm C.d := by
     have hd : Ideal.absNorm C.d ≠ 0 := fun h => C.hd0 (Ideal.absNorm_eq_zero_iff.mp h)
     unfold norm
-    exact_mod_cast Nat.pos_of_ne_zero hd
+    positivity
   rw [Sieve.energy, Finset.mul_sum]
   apply Finset.sum_le_sum_of_injOn (fun u => C.d * u)
   · intro u hu v hv h
@@ -74,10 +74,9 @@ theorem quotient_weighted_energy (C : Context Q) (hN : 1 ≤ C.N) :
           (1 / norm u) * ‖C.lam (C.d * u)‖ ^ 2 := by ring
       _ ≤ (norm C.d / C.N) * ‖C.lam (C.d * u)‖ ^ 2 :=
         mul_le_mul_of_nonneg_right hinv (sq_nonneg _)
-  · intro b hb hbnot
-    exact mul_nonneg (div_nonneg hdpos.le hNpos.le) (sq_nonneg _)
+  simp_all
 
-private theorem origin_factorization (C : Context Q) (B : ℝ) (unit : Bool) :
+theorem origin_factorization (C : Context Q) (B : ℝ) (unit : Bool) :
     E2 C B unit = -((C.M : ℂ) * C.origin) * Origin.coefficientForm C B unit := by
   unfold E2 Origin.coefficientForm Context.pairSum
   rw [neg_mul, neg_inj]
@@ -109,7 +108,7 @@ theorem bilinear_error_origin
   by_cases hex : ∃ C₀ : Context Q, C₀.W = W
   · obtain ⟨C₀, hC₀⟩ := hex
     let R : ℝ := ‖C₀.origin‖ + 1
-    have hR : 0 < R := by dsimp [R]; positivity
+    have hR : 0 < R := by positivity
     refine ⟨R * H, mul_pos hR hH, ?_⟩
     intro C hCD hCW hCδ B unit hunit hM hN hB hBK hKM hn hnN
     have hM0 : 0 ≤ C.M := by linarith
@@ -145,7 +144,3 @@ theorem bilinear_error_origin
   · refine ⟨1, zero_lt_one, ?_⟩
     intro C hCD hCW
     exact False.elim (hex ⟨C, hCW⟩)
-
-end DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms
-
-end

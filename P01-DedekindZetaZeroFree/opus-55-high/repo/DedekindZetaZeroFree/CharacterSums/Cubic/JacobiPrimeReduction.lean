@@ -6,7 +6,7 @@ public import DedekindZetaZeroFree.Arithmetic.ResidueSymbols.EisensteinCubicChar
 
 namespace DedekindZetaZeroFree.Eisenstein
 
-private theorem sum_power_mul_one_sub_power (k : Type*) [Field k] [Fintype k]
+theorem sum_power_mul_one_sub_power (k : Type*) [Field k] [Fintype k]
     (a b : ℕ) (h : a + b < Fintype.card k - 1) :
     ∑ x : k, x ^ a * (1 - x) ^ b = 0 := by
   induction b generalizing a with
@@ -57,5 +57,3 @@ theorem jacobiSum_ρq_mem (E : Type) [Field E] [NumberField E]
   letI := residueFintype E q hq0
   exact Ideal.Quotient.eq_zero_iff_mem.mp
     (redq_jacobiSum_ρq E ω hω q hq0 hqp hq6)
-
-end DedekindZetaZeroFree.Eisenstein

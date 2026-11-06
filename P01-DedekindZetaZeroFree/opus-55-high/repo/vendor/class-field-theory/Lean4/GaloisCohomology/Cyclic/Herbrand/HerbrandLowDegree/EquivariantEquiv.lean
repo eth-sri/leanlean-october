@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Low-degree Tate cohomology under equivariant equivalences
 
@@ -78,7 +73,7 @@ theorem equivariantMulEquiv_map_sigmaMinusOne
 
 /-- An equivariant multiplicative equivalence restricted to fixed
 subgroups. -/
-noncomputable def fixedSubgroupEquivariantMulEquiv
+def fixedSubgroupEquivariantMulEquiv
     (e : A ≃* B)
     (he : ∀ (g : G) (a : A),
       e (g • a) = g • e a) :
@@ -90,18 +85,16 @@ noncomputable def fixedSubgroupEquivariantMulEquiv
     ⟨e.symm b.1, fun g ↦ by
       rw [← mulEquiv_symm_commutes_smul e he, b.2 g]⟩
   left_inv a := by
-    apply Subtype.ext
-    exact e.symm_apply_apply a.1
+    simp
   right_inv b := by
-    apply Subtype.ext
-    exact e.apply_symm_apply b.1
+    simp
   map_mul' _ _ := by
     apply Subtype.ext
-    exact e.map_mul _ _
+    simp
 
 /-- An equivariant multiplicative equivalence restricted to norm
 kernels. -/
-noncomputable def normKernelEquivariantMulEquiv
+def normKernelEquivariantMulEquiv
     (e : A ≃* B)
     (he : ∀ (g : G) (a : A),
       e (g • a) = g • e a) :
@@ -131,18 +124,15 @@ noncomputable def normKernelEquivariantMulEquiv
         _ = 1 := b.2
         _ = e 1 := e.map_one.symm⟩
   left_inv a := by
-    apply Subtype.ext
-    exact e.symm_apply_apply a.1
+    simp
   right_inv b := by
-    apply Subtype.ext
-    exact e.apply_symm_apply b.1
+    simp
   map_mul' _ _ := by
-    apply Subtype.ext
-    exact e.map_mul _ _
+    simp
 
 /-- An equivariant multiplicative equivalence induces an equivalence on
 degree-zero Tate cohomology. -/
-noncomputable def herbrandH0EquivariantMulEquiv
+def herbrandH0EquivariantMulEquiv
     (e : A ≃* B)
     (he : ∀ (g : G) (a : A),
       e (g • a) = g • e a) :
@@ -187,25 +177,11 @@ noncomputable def herbrandH0EquivariantMulEquiv
         _ = e (e.symm y.1) :=
           (e.apply_symm_apply y.1).symm)
     (fun x hx ↦ by
-      have hx1 : x = 1 := by
-        apply f.injective
-        simpa [f] using hx
-      rw [hx1]
-      exact N.one_mem)
-
-@[simp]
-theorem herbrandH0EquivariantMulEquiv_mk
-    (e : A ≃* B)
-    (he : ∀ (g : G) (a : A),
-      e (g • a) = g • e a)
-    (a : fixedSubgroup G A) :
-    herbrandH0EquivariantMulEquiv e he (HerbrandH0.mk a) =
-      HerbrandH0.mk (fixedSubgroupEquivariantMulEquiv e he a) := by
-  rfl
+      simp_all)
 
 /-- An equivariant multiplicative equivalence induces an equivalence on
 degree-minus-one Tate cohomology. -/
-noncomputable def herbrandHMinusOneEquivariantMulEquiv
+def herbrandHMinusOneEquivariantMulEquiv
     (e : A ≃* B)
     (he : ∀ (g : G) (a : A),
       e (g • a) = g • e a)
@@ -252,11 +228,7 @@ noncomputable def herbrandHMinusOneEquivariantMulEquiv
         _ = e (e.symm y.1) :=
           (e.apply_symm_apply y.1).symm)
     (fun x hx ↦ by
-      have hx1 : x = 1 := by
-        apply f.injective
-        simpa [f] using hx
-      rw [hx1]
-      exact N.one_mem)
+      simp_all)
 
 /-- Finiteness of `H⁰` transports through an equivariant
 multiplicative equivalence. -/
@@ -309,20 +281,16 @@ theorem herbrandQuotient_eq_of_equivariantMulEquiv
       e he σ
   have h0Card :
       Nat.card (HerbrandH0 G A) =
-        Nat.card (HerbrandH0 G B) := by
-    exact Nat.card_congr
+        Nat.card (HerbrandH0 G B) := 
+    Nat.card_congr
       (herbrandH0EquivariantMulEquiv e he).toEquiv
   have hMinusOneCard :
       Nat.card (HerbrandHMinusOne G A σ) =
         Nat.card
-          (HerbrandHMinusOne G B σ) := by
-    exact Nat.card_congr
+          (HerbrandHMinusOne G B σ) := 
+    Nat.card_congr
       (herbrandHMinusOneEquivariantMulEquiv
         e he σ).toEquiv
   rw [herbrandQuotient_eq_card_ratio,
     herbrandQuotient_eq_card_ratio,
     h0Card, hMinusOneCard]
-
-end CyclicCohomology
-
-end

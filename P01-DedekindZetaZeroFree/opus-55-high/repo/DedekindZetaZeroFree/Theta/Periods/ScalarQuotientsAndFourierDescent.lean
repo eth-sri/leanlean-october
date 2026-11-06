@@ -2,7 +2,8 @@ module
 
 public import DedekindZetaZeroFree.RepresentationTheory.RankOne.ArchimedeanBigCellBasePoint
 public import DedekindZetaZeroFree.Theta.Periods.TranslatedStandardPeriodNonvanishing
-public import DedekindZetaZeroFree.Theta.Periods.WildPartialPeriodFactorization
+public import DedekindZetaZeroFree.RepresentationTheory.RankOne.FiniteExceptionalRepresentationData
+public import DedekindZetaZeroFree.Theta.Whittaker.NormalizedFiniteTensorProducts
 public import DedekindZetaZeroFree.RepresentationTheory.Smooth.RightChartJetsAndFlowWords
 public import DedekindZetaZeroFree.RepresentationTheory.Kirillov.WildCompactProjectorsAndTrivialization
 
@@ -24,7 +25,7 @@ open NumberField IsDedekindDomain KPKirillovGenuineSectionCharts KPKirillovFinit
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-noncomputable instance scalarSectionAddCommGroup
+instance scalarSectionAddCommGroup
     (w : HeightOneSpectrum (𝓞 F)) (m : ℕ)
     (ψ : Multiplicative (K F w) →* ℂˣ) :
     AddCommGroup (Sections F ζ hζ w m ψ ℂ) := by
@@ -52,7 +53,7 @@ open NumberField IsDedekindDomain MeasureTheory
 
 namespace DedekindZetaZeroFree.KPWildActualScalarPeriodSource
 
-open KPLocalExceptionalConstruction KPWildPartialPeriodFactorization KPGlobalResidualConstruction
+open KPLocalExceptionalConstruction KPGlobalResidualConstruction
 
 set_option maxHeartbeats 16000000
 
@@ -63,27 +64,6 @@ set_option synthInstance.maxHeartbeats 8000000
 set_option backward.isDefEq.respectTransparency false
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-
-abbrev scalarSection (v : WildPlace F) :=
-  KPKirillovGenuineSectionCharts.Sections F ζ hζ v.val
-    (KPAdelicCoverCertificatesRaw.depth F ζ hζ v.val)
-    (KPWildCompactProjectorKirillov.standardCharacter F v.val) ℂ
-
-noncomputable instance scalarSectionAdd (v : WildPlace F) :
-    AddCommGroup (scalarSection F ζ hζ v) := by
-  letI := KPLocalSmoothRepresentation.finiteCoverTopology F ζ hζ v.val
-    (KPAdelicCoverCertificatesRaw.depth F ζ hζ v.val)
-  letI : AddCommGroup (EqSections (KPKirillovGenuineSectionCharts.H F ζ hζ v.val)
-      (KPKirillovGenuineSectionCharts.coefficientRepresentation F ζ hζ v.val
-        (KPWildCompactProjectorKirillov.standardCharacter F v.val) ℂ) 1) :=
-    Submodule.addCommGroup _
-  letI : AddCommGroup (SmoothInd (KPKirillovGenuineSectionCharts.H F ζ hζ v.val)
-      (KPKirillovGenuineSectionCharts.coefficientRepresentation F ζ hζ v.val
-        (KPWildCompactProjectorKirillov.standardCharacter F v.val) ℂ) 1) :=
-    Submodule.addCommGroup _
-  exact Submodule.addCommGroup _
-
-abbrev scalarTensor := PiTensorProduct ℂ (fun v : WildPlace F => ↥(scalarSection F ζ hζ v))
 
 end DedekindZetaZeroFree.KPWildActualScalarPeriodSource
 

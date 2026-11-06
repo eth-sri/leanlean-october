@@ -49,7 +49,7 @@ theorem conductor_frobenius_agreement
       intro hbot
       have h1 : Q.under (𝓞 F) = ⊥ := by
         rw [hbot]
-        exact Ideal.under_bot (𝓞 F) (𝓞 d.extension)
+        simp
       exact p.ne_bot (by rw [hQlies.over, h1])
     let Q' : HeightOneSpectrum (𝓞 d.extension) := ⟨Q, hQmax.isPrime, hQne⟩
     have hlies' : Q'.asIdeal.LiesOver p.asIdeal := hQlies
@@ -57,5 +57,3 @@ theorem conductor_frobenius_agreement
   exact prime_agreement hf hg
     (fun h => (Ideal.mul_eq_bot.mp h).elim hf hg)
     η θ hprime I hI hIcop
-
-end DedekindZetaZeroFree.LargeSieve.RootNumber

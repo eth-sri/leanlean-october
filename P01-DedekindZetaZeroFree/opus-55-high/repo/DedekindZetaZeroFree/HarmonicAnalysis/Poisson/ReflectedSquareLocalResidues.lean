@@ -38,14 +38,14 @@ def principalZetaResidueCoefficient
 variable
     (F : Type) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F)
 
-private lemma gammaℂ_ne_zero_of_re_pos (s : ℂ) (hs : 0 < s.re) :
+lemma gammaℂ_ne_zero_of_re_pos (s : ℂ) (hs : 0 < s.re) :
     Complex.Gammaℂ s ≠ 0 := by
   rw [Complex.Gammaℂ_def]
   refine mul_ne_zero (mul_ne_zero (by norm_num) ?_) ?_
   · exact Complex.cpow_ne_zero_iff.mpr (Or.inl (by simp [Real.pi_ne_zero]))
   · exact Complex.Gamma_ne_zero_of_re_pos hs
 
-private lemma zetaOrigin_key (s : ℂ) (hs : s ≠ 0) (r : ℕ) (hr : 1 ≤ r) :
+lemma zetaOrigin_key (s : ℂ) (hs : s ≠ 0) (r : ℕ) (hr : 1 ≤ r) :
     s ^ (r - 1) * ((Complex.Gammaℂ (s + 1))⁻¹ / (2 * (Real.pi : ℂ))) ^ r =
       (Complex.Gammaℂ s)⁻¹ ^ r / s := by
   have hrec := DedekindZetaZeroFree.LargeSieve.Vendor.inverse_Gammaℂ_recurrence s
@@ -89,7 +89,7 @@ theorem principalZetaContinuation_eq_dirichlet (s : ℂ) (hs : 1 < s.re) :
   have hs0 : s ≠ 0 := by
     intro h; rw [h] at hs; simp only [Complex.zero_re] at hs; linarith
   have hs1 : s ≠ 1 := by
-    intro h; rw [h] at hs; norm_num at hs
+    intro h; simp_all
   rw [principalZetaContinuation_eq_decompleted F hF s hs0 hs1,
     (principalHeckeData F hF).Lambda_dirichlet s hs]
   have hD : (principalDiscriminant F : ℂ) ≠ 0 := by
@@ -100,7 +100,7 @@ theorem principalZetaContinuation_eq_dirichlet (s : ℂ) (hs : 1 < s.re) :
     rw [← Complex.cpow_add _ _ hD, show -s / 2 + s / 2 = 0 by ring, Complex.cpow_zero]
   have hGc : (Complex.Gammaℂ s)⁻¹ ^ principalComplexPlaces F *
       Complex.Gammaℂ s ^ principalComplexPlaces F = 1 := by
-    rw [← mul_pow, inv_mul_cancel₀ hG, one_pow]
+    simp_all
   rw [show (principalDiscriminant F : ℂ) ^ (-s / 2) *
         (Complex.Gammaℂ s)⁻¹ ^ principalComplexPlaces F *
         ((principalDiscriminant F : ℂ) ^ (s / 2) * Complex.Gammaℂ s ^ principalComplexPlaces F *
@@ -110,7 +110,3 @@ theorem principalZetaContinuation_eq_dirichlet (s : ℂ) (hs : 1 < s.re) :
         (∑' I : Ideal (𝓞 F), if I = ⊥ then 0 else (Ideal.absNorm I : ℂ) ^ (-s)) by ring,
     hDc, hGc]
   ring
-
-end DedekindZetaZeroFree.LargeSieve
-
-end

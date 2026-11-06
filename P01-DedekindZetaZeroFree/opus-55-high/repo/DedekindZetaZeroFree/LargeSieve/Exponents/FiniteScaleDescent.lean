@@ -19,7 +19,7 @@ theorem finiteDescent (b : ℝ → ℝ) (N : ℝ) (r : ℕ) (L A R C0 : ℝ)
       Real.rpow (Real.rpow N (1 / (r : ℝ))) 5 * R := by
   let H : ℝ := Real.rpow N (1 / (r : ℝ))
   let D : ℝ := Real.rpow H 5 * R
-  have hN0 : 0 ≤ N := le_trans (by norm_num) hN
+  have hN0 : 0 ≤ N := by positivity
   have hr0 : r ≠ 0 := by omega
   have hH : 1 ≤ H := Real.one_le_rpow hN (by positivity)
   have hH0 : 0 < H := lt_of_lt_of_le zero_lt_one hH
@@ -30,8 +30,8 @@ theorem finiteDescent (b : ℝ → ℝ) (N : ℝ) (r : ℕ) (L A R C0 : ℝ)
     rw [Real.rpow_ofNat]
     exact le_self_pow₀ hH (by norm_num)
   have hD : 0 ≤ D := mul_nonneg (Real.rpow_nonneg (le_of_lt hH0) _) hR
-  have hL0 : 0 ≤ L := le_trans (by norm_num) hL
-  have hA0 : 0 ≤ A := le_trans (by norm_num) hA
+  have hL0 : 0 ≤ L := by positivity
+  have hA0 : 0 ≤ A := by positivity
   have hbase : ∀ n : ℝ, 1 ≤ n → n ≤ H → b n ≤ C0 * D := by
     intro n hn hnH
     exact (hsmall n hn hnH).trans (by
@@ -82,5 +82,3 @@ theorem finiteDescent (b : ℝ → ℝ) (N : ℝ) (r : ℕ) (L A R C0 : ℝ)
               rw [pow_succ, Nat.cast_add, Nat.cast_one]
               ring
   simpa [D, H, mul_assoc] using hbound r N hN le_rfl hHr.ge
-
-end DedekindZetaZeroFree.LargeSieve.Vendor

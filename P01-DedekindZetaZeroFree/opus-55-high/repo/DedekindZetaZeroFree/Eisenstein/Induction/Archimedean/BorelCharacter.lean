@@ -63,31 +63,7 @@ private theorem arch_tuple (z : KPGlobalTorusFunctionData.TorusArch F) :
       c.val = KPGlobalTorusFunctionData.torusArchChart F ζ hζ z ∧
       KPGlobalCenterRationalCharacter.omegaA F ζ hζ c =
         KPGlobalCenterRationalCharacter.positiveComplex
-          (KPGlobalCenterRationalCharacter.nu F ζ hζ c.val) := by
-  let y : CubicCharacters.cubes (KPGlobalTorusFunctionData.Ideles F) :=
-    ⟨archIdele F ζ hζ z, arch_cube F ζ hζ z⟩
-  let c := KPGlobalCenterRationalCharacter.cubeLift F ζ hζ y
-  have hc : c.val = KPGlobalTorusFunctionData.torusArchChart F ζ hζ z := by
-    apply Subtype.ext
-    rw [KPGlobalCenterRationalCharacter.cubeLift_formula]
-    change KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
-      (KPAdelicCoverRestrictedProduct.amalgamation F ζ hζ
-        (KPGlobalCenterRationalCharacter.diagonalTuple F ζ hζ (archIdele F ζ hζ z))) = _
-    rw [arch_tuple]
-    rfl
-  refine ⟨c, hc, ?_⟩
-  have ho := KPGlobalCenterRationalCharacter.omegaA_cube F ζ hζ y
-  have hn := KPGlobalCenterRationalCharacter.omegaA_norm F ζ hζ c
-  have hp (u : (ℝ≥0)ˣ) :
-      ‖((KPGlobalCenterRationalCharacter.positiveComplex u : ℂˣ) : ℂ)‖ = ((u : ℝ≥0) : ℝ) := by
-    change ‖(((u : ℝ≥0) : ℝ) : ℂ)‖ = _
-    rw [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (by positivity)]
-  rw [ho, hp] at hn
-  have hu : KPGlobalCenterRationalCharacter.sixthPower (KPGlobalTorusFunctionData.ideleAbs F y.val) =
-      KPGlobalCenterRationalCharacter.nu F ζ hζ c.val := by
-    apply Units.ext
-    exact NNReal.eq hn
-  exact ho.trans (congrArg KPGlobalCenterRationalCharacter.positiveComplex hu)
+          (KPGlobalCenterRationalCharacter.nu F ζ hζ c.val) := by apply DedekindZetaZeroFree.KPGlobalTorusFiniteStagesCofinality.arch_center <;> assumption
 
 theorem source_arch_chart_character (z : KPGlobalTorusFunctionData.TorusArch F) :
     ∃ h : (KPMsRationalCompactCrossPairing.sourcePolarization F ζ hζ 0).H,

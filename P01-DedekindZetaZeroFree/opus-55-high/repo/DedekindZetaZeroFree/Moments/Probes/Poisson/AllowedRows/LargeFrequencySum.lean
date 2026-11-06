@@ -141,7 +141,7 @@ theorem rows_large_shift :
       _ ≤ (A + 1) * C0 * Cc * Z ^ ((44675 / 10000 : ℝ) + 33 / 100 * Scales.tailShift) *
             (U ^ (-Scales.tailShift + ε) * U) := by nlinarith [hextra]
 
-private lemma tail_geom (X : ℝ) (hX : 0 < X) :
+lemma tail_geom (X : ℝ) (hX : 0 < X) :
     Summable (fun k : ℕ => if X < (2 : ℝ) ^ k then ((1 : ℝ) / 2) ^ k else 0) ∧
     ∑' k : ℕ, (if X < (2 : ℝ) ^ k then ((1 : ℝ) / 2) ^ k else 0) ≤ 2 / X := by
   classical

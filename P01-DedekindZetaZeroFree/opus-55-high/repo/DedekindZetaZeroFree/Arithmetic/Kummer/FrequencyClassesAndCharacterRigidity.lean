@@ -13,7 +13,7 @@ open IsDedekindDomain
 namespace DedekindZetaZeroFree.Detector.FrequencyCharacterRigidity
 variable {F : Type} [Field F] [NumberField F]
 
-private theorem character_one_of_factors (m : Ideal (𝓞 F)) (χ : RayClassCharacter F m)
+theorem character_one_of_factors (m : Ideal (𝓞 F)) (χ : RayClassCharacter F m)
     (I : Ideal (𝓞 F)) (hI : I ≠ ⊥)
     (h : ∀ v : HeightOneSpectrum (𝓞 F), v.asIdeal ∣ I → χ v.asIdeal = 1) : χ I = 1 := by
   induction I using UniqueFactorizationMonoid.induction_on_prime with
@@ -65,7 +65,7 @@ theorem prime_witness (m : Ideal (𝓞 F)) (p : HeightOneSpectrum (𝓞 F))
       | some w =>
         apply HeightOneSpectrum.isCoprime_pow_of_ne
         intro he
-        exact hij (congrArg some (Subtype.ext he))
+        simp_all
   obtain ⟨a, ha⟩ := Ideal.exists_forall_sub_mem_ideal hpair x
   have ham : a - 1 ∈ m := ha none
   have hap : a - b ∈ p.asIdeal ^ 2 := by
@@ -74,7 +74,7 @@ theorem prime_witness (m : Ideal (𝓞 F)) (p : HeightOneSpectrum (𝓞 F))
     intro h
     apply hb2
     simpa only [sub_sub_cancel] using (p.asIdeal ^ 2).sub_mem h hap
-  have ha0 : a ≠ 0 := by intro h; exact ha2 (h ▸ Submodule.zero_mem _)
+  have ha0 : a ≠ 0 := by intro h; simp_all
   have ha1 : a ∈ p.asIdeal := by
     have hh := p.asIdeal.add_mem (Ideal.pow_le_self (by norm_num : (2 : ℕ) ≠ 0) hap) hb
     simpa only [sub_add_cancel] using hh
@@ -102,8 +102,7 @@ theorem prime_values_one_of_cofinite [NumberField.IsTotallyComplex F]
   obtain ⟨I, hI⟩ := hpdiv
   have hI0 : I ≠ ⊥ := by
     intro hh
-    rw [hh, Ideal.mul_bot] at hI
-    exact ha (Ideal.span_singleton_eq_bot.mp hI)
+    simp_all
   have hpI : ¬ p.asIdeal ∣ I := by
     intro hh
     apply hap2
@@ -130,7 +129,7 @@ theorem prime_values_one_of_cofinite [NumberField.IsTotallyComplex F]
     apply NumberField.IsTotallyComplex.complexEmbedding_not_isReal (Complex.ofRealHom.comp φ)
     rw [NumberField.ComplexEmbedding.isReal_iff]
     ext z
-    simp [NumberField.ComplexEmbedding.conjugate]
+    simp
   have he := χ.map_span' a ha ham hpos
   rw [hI, χ.map_mul', hχI, mul_one] at he
   exact he
@@ -200,11 +199,9 @@ theorem frequency_representatives_power_injective
       WithZero.log_exp, WithZero.log_exp, WithZero.log_pow] at hlog
     have hz : WithZero.log (w.valuation F (x : F)) = 0 := by
       simp only [nsmul_eq_mul] at hlog
-      have ha' := a.isLt
-      have hb' := b.isLt
       omega
     have hn : w.valuation F (x : F) ≠ 0 := by
-      exact (map_ne_zero (w.valuation F)).mpr x.ne_zero
+      simp
     rw [← WithZero.exp_log hn, hz, WithZero.exp_zero]
   have huv : frequencyEquivalent F S u.val v.val := by
     change u.val / v.val ∈ (S.unit F).map (powMonoidHom 6)
@@ -215,41 +212,33 @@ theorem frequency_representatives_power_injective
     simp
   exact (huniq u hu).trans (huniq v huv).symm
 
-private theorem ratio_sixth (G : Type*) [CommGroup G] (u v x r s a b : G)
+theorem ratio_sixth (G : Type*) [CommGroup G] (u v x r s a b : G)
     (ha : x / (u * r ^ 6) = a ^ 6)
     (hb : x / (v * s ^ 6) = b ^ 6) :
     u / v = (b * s / (a * r)) ^ 6 := by
   have hu : u = x / (a ^ 6 * r ^ 6) := by
     have ha' := congrArg (fun z : G => z * (u * r ^ 6)) ha
     simp only [div_mul_cancel] at ha'
-    apply (eq_div_iff_mul_eq'').mpr
-    calc
-      (a ^ 6 * r ^ 6) * u = a ^ 6 * (u * r ^ 6) := by ac_rfl
-      _ = x := ha'.symm
+    simp_all
   have hv : v = x / (b ^ 6 * s ^ 6) := by
     have hb' := congrArg (fun z : G => z * (v * s ^ 6)) hb
     simp only [div_mul_cancel] at hb'
-    apply (eq_div_iff_mul_eq'').mpr
-    calc
-      (b ^ 6 * s ^ 6) * v = b ^ 6 * (v * s ^ 6) := by ac_rfl
-      _ = x := hb'.symm
+    simp_all
   rw [hu, hv]
   simp only [mul_pow, div_pow]
-  simp [div_div_div_cancel_left]
-private theorem unit_of_sixth {F : Type} [Field F] [NumberField F]
+  simp
+theorem unit_of_sixth {F : Type} [Field F] [NumberField F]
     (S : Set (HeightOneSpectrum (𝓞 F))) (y : Fˣ)
     (hy : y ^ 6 ∈ S.unit F) : y ∈ S.unit F := by
   intro w hw
   have h := hy w hw
   simp only [Units.val_pow_eq_pow_val, map_pow] at h
-  have hn : w.valuation F (y : F) ≠ 0 := (map_ne_zero (w.valuation F)).mpr y.ne_zero
+  have hn : w.valuation F (y : F) ≠ 0 := by simp_all
   have hz := congrArg WithZero.log h
   rw [WithZero.log_pow] at hz
-  simp only [WithZero.log_one, nsmul_eq_mul] at hz
-  have hh : WithZero.log (w.valuation F (y : F)) = 0 := by omega
-  rw [← WithZero.exp_log hn, hh, WithZero.exp_zero]
+  simp_all
 
-private theorem frequency_presentation_unique
+theorem frequency_presentation_unique
     (F : Type) [Field F] [NumberField F]
     (S : Set (HeightOneSpectrum (𝓞 F)))
     (U : FrequencyRepresentatives F S) (x : Fˣ)
@@ -268,8 +257,7 @@ private theorem frequency_presentation_unique
   have huv : p.1 = q.1 := frequency_representatives_power_injective F S U p.1 q.1
     ⟨b * sF / (a * rF), heq⟩
   have hy6 : (b * sF / (a * rF)) ^ 6 = 1 := by
-    rw [← heq, huv]
-    simp
+    simp_all
   have hyS := unit_of_sixth S (b * sF / (a * rF)) (hy6.symm ▸ (S.unit F).one_mem)
   have hsr : sF / rF ∈ S.unit F := by
     have hh : sF / rF = (b * sF / (a * rF)) * a / b := by
@@ -285,8 +273,7 @@ private theorem frequency_presentation_unique
   have ht : (t : S.integer F) * r = s := by
     apply Subtype.ext
     change ((sF / rF : Fˣ) : F) * (r : F) = (s : F)
-    rw [Units.val_div_eq_div_val, ← hrF, ← hsF]
-    exact div_mul_cancel₀ _ rF.ne_zero
+    simp_all
   have hJ : p.2 = q.2 := by
     apply Subtype.ext
     rw [← hrJ, ← hsJ, ← ht]
@@ -378,7 +365,7 @@ private theorem frequency_exists_exterior_generator (v : HeightOneSpectrum (𝓞
 
 set_option backward.isDefEq.respectTransparency false in
 set_option backward.isDefEq.respectTransparency.types false in
-private theorem frequency_sixth_free_decomposition (x : S.integer F) (hx : x ≠ 0) :
+theorem frequency_sixth_free_decomposition (x : S.integer F) (hx : x ≠ 0) :
     ∃ y r : S.integer F, y ≠ 0 ∧ r ≠ 0 ∧ x = y * r ^ 6 ∧
       ∀ v : HeightOneSpectrum (𝓞 F), v ∉ S →
         ∃ e : Fin 6, v.valuation F (y : F) = WithZero.exp (-(e.val : ℤ)) := by
@@ -436,15 +423,14 @@ private theorem frequency_sixth_free_decomposition (x : S.integer F) (hx : x ≠
           have heq : v.valuation F (pu : F) * v.valuation F (pu.inv : F) = 1 := by
             rw [← map_mul]
             change v.valuation F ((pu.val * pu.inv : S.integer F) : F) = 1
-            rw [pu.val_inv]
-            exact map_one _
+            simp
           exact eq_one_of_one_le_mul_left ha hb heq.ge
         rw [hpu, hpv] at hone
         simpa using hone
       obtain ⟨y, r, hy0, hr0, hqy, hy⟩ := ih q ⟨hq0, p ^ 6, hpnu, hxq⟩ hq0
       refine ⟨y, r * p, hy0, mul_ne_zero hr0 hp0, ?_, hy⟩
       rw [hxq, hqy, mul_pow, mul_assoc]
-private theorem frequency_presentation_exists
+theorem frequency_presentation_exists
     (U : FrequencyRepresentatives F S) (x : Fˣ)
     (hx : (x : F) ∈ S.integer F) :
     ∃ p : U.carrier × {J : Ideal (S.integer F) // J ≠ ⊥},
@@ -480,12 +466,7 @@ private theorem frequency_presentation_exists
   change x / (u.val * rF ^ 6) ∈ (S.unit F).map (powMonoidHom 6)
   refine ⟨a, haS, ?_⟩
   rw [ha, hxyF]
-  simp only [div_eq_mul_inv, mul_inv_rev]
-  symm
-  calc
-    yF * rF ^ 6 * ((rF ^ 6)⁻¹ * u.val⁻¹) =
-        (yF * u.val⁻¹) * (rF ^ 6 * (rF ^ 6)⁻¹) := by ac_rfl
-    _ = yF * u.val⁻¹ := by simp
+  simp
 
 end
 
@@ -502,8 +483,8 @@ theorem frequency_unique_presentation
   have hexists : ∃ p : U.carrier × {J : Ideal (S.integer F) // J ≠ ⊥},
       ∃ r : S.integer F, r ≠ 0 ∧ Ideal.span {r} = p.2.val ∧
         ∃ rF : Fˣ, (rF : F) = (r : F) ∧
-          frequencyEquivalent F S x (p.1.val * rF ^ (6 : ℕ)) := by
-    exact frequency_presentation_exists S U x hx
+          frequencyEquivalent F S x (p.1.val * rF ^ (6 : ℕ)) := 
+    frequency_presentation_exists S U x hx
   obtain ⟨p, hp⟩ := hexists
   refine ⟨p, hp, ?_⟩
   intro q hq
@@ -559,8 +540,8 @@ theorem kummer_frequency_family_exists
       exact hv (hSix v h)
     have hn := PrimitiveRay.arithmeticSextic_primitiveRay_support ζ12 hζ12 ι u.val
       hc m hm χ hp hχ v h6 hu
-    have hcop : v.asIdeal ⊔ m = ⊤ := by
-      exact v.isMaximal.out.2 _
+    have hcop : v.asIdeal ⊔ m = ⊤ := 
+      v.isMaximal.out.2 _
         (lt_of_le_of_ne le_sup_left (fun h => hn (h ▸ le_sup_right)))
     refine ⟨hcop, ?_⟩
     obtain ⟨j, hj, he⟩ := PrimitiveRay.arithmeticSexticArtinCharacter_prime
@@ -656,7 +637,7 @@ theorem twisted_frequency_family_exists
     rw [Units.val_mul, Units.val_inv_eq_inv_val, Complex.inv_eq_conj en, eη, eχ]
   exact ⟨⟨fun u => (hex u).choose, fun u => (hex u).choose_spec⟩⟩
 
-private theorem frequency_ratio_residue
+theorem frequency_ratio_residue
     {F : Type} [Field F] [NumberField F]
     (ζ12 : F) (ι : F →+* ℂ) (S : Set (HeightOneSpectrum (𝓞 F)))
     (u w : Fˣ) (χ ψ : PrimitiveFrequencyCharacter F)
@@ -675,8 +656,7 @@ private theorem frequency_ratio_residue
   have hd : v.valuation F ((u : F) ^ ((Ideal.absNorm v.asIdeal - 1) / 6) -
       (w : F) ^ ((Ideal.absNorm v.asIdeal - 1) / 6)) < 1 := by
     convert (v.valuation F).map_sub_lt hi hj using 1
-    congr 1
-    ring
+    simp
   have hn : (w : F) ^ ((Ideal.absNorm v.asIdeal - 1) / 6) ≠ 0 := pow_ne_zero _ w.ne_zero
   have he : (((u / w : Fˣ) : F) ^ ((Ideal.absNorm v.asIdeal - 1) / 6) - 1) =
       ((u : F) ^ ((Ideal.absNorm v.asIdeal - 1) / 6) -
@@ -687,7 +667,7 @@ private theorem frequency_ratio_residue
   rw [he, map_div₀, map_pow, hw, one_pow, div_one]
   exact hd
 
-private theorem frequency_injective_of_cofinite_prime_equality
+theorem frequency_injective_of_cofinite_prime_equality
     {F : Type} [Field F] [NumberField F]
     (ζ12 : F) (hζ12 : IsPrimitiveRoot ζ12 12) (ι : F →+* ℂ)
     (S : Set (HeightOneSpectrum (𝓞 F))) (hS : S.Finite)
@@ -709,7 +689,7 @@ private theorem frequency_injective_of_cofinite_prime_equality
     (u.val / w.val) hr
   exact frequency_representatives_power_injective F S U u w ⟨x, hx.symm⟩
 
-private theorem frequency_coprime_cofinite
+theorem frequency_coprime_cofinite
     {F : Type} [Field F] [NumberField F] (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) :
     ∀ᶠ v : HeightOneSpectrum (𝓞 F) in Filter.cofinite, v.asIdeal ⊔ m = ⊤ := by
   apply Filter.eventually_cofinite.mpr
@@ -758,7 +738,3 @@ theorem twisted_frequency_character_injective
     exact (T.induces u w.asIdeal w.ne_bot hm₁).symm.trans
       ((hψ w.asIdeal).trans (T.induces v w.asIdeal w.ne_bot hm₂))
   simpa using congrArg (starRingEnd ℂ) heq
-
-end DedekindZetaZeroFree.Detector
-
-end

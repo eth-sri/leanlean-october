@@ -15,7 +15,7 @@ def normalizedCoefficient (f : ℝ → ℂ) (a L : ℝ) (j : ℤ) : ℂ :=
     f u * Complex.exp (-2 * (Real.pi : ℂ) * Complex.I * (j : ℂ) *
       (u : ℂ) / (L : ℂ))
 
-private theorem local_norm_fourierCoeffOn_le {a b M : ℝ} (hab : a < b) (f : ℝ → ℂ)
+theorem local_norm_fourierCoeffOn_le {a b M : ℝ} (hab : a < b) (f : ℝ → ℂ)
     (hbound : ∀ u ∈ Set.Icc a b, ‖f u‖ ≤ M) :
     ∀ j : ℤ, ‖fourierCoeffOn hab f j‖ ≤ M := by
   intro j
@@ -32,7 +32,7 @@ private theorem local_norm_fourierCoeffOn_le {a b M : ℝ} (hab : a < b) (f : �
       ≤ (1 / (b - a)) * (M * |b - a|) := mul_le_mul_of_nonneg_left hh (by positivity)
     _ = M := by rw [abs_of_pos (sub_pos.mpr hab)]; field_simp [sub_pos.mpr hab |>.ne']
 
-private theorem local_twice_integration_by_parts {a b : ℝ} (hab : a < b)
+theorem local_twice_integration_by_parts {a b : ℝ} (hab : a < b)
     (f f₁ f₂ : ℝ → ℂ)
     (h₁ : ∀ u ∈ Set.Icc a b, HasDerivAt f (f₁ u) u)
     (h₂ : ∀ u ∈ Set.Icc a b, HasDerivAt f₁ (f₂ u) u)
@@ -67,8 +67,7 @@ theorem quadratic_coefficient_bound {Y : Type*} (f : Y → ℝ → ℂ)
     simp only [add_sub_cancel_left]
     rw [intervalIntegral.integral_of_le hab.le]
     rw [normalizedCoefficient, ← integral_Icc_eq_integral_Ioc]
-    simp only [Complex.real_smul, Complex.ofReal_div, Complex.ofReal_one, one_div,
-      Complex.ofReal_inv]
+    simp only [Complex.real_smul, one_div, Complex.ofReal_inv]
     congr 1
     apply setIntegral_congr_fun measurableSet_Icc
     intro u hu
@@ -76,7 +75,7 @@ theorem quadratic_coefficient_bound {Y : Type*} (f : Y → ℝ → ℂ)
     rw [fourier_coe_apply, smul_eq_mul]
     simp only [Int.cast_neg, mul_neg, neg_mul, mul_comm, add_sub_cancel_left]
   let D : ℝ := ‖(L : ℂ) / (2 * Real.pi * Complex.I)‖ ^ 2 * B
-  refine ⟨B + 2 * D, by dsimp [D]; positivity, ?_⟩
+  refine ⟨B + 2 * D, by positivity, ?_⟩
   intro j y
   rw [heq]
   have hf₀ (u : ℝ) : ‖f y u‖ ≤ B := (le_add_of_nonneg_right (norm_nonneg _)).trans (hbound u y)
@@ -85,15 +84,15 @@ theorem quadratic_coefficient_bound {Y : Type*} (f : Y → ℝ → ℂ)
   by_cases hj : j = 0
   · subst j
     simpa using (local_norm_fourierCoeffOn_le hab (f y) (fun u _ => hf₀ u) 0).trans
-      (show B ≤ B + 2 * D from le_add_of_nonneg_right (by dsimp [D]; positivity))
+      (show B ≤ B + 2 * D from le_add_of_nonneg_right (by positivity))
   · have hjR : (j : ℝ) ≠ 0 := by exact_mod_cast hj
     have hs : 1 ≤ (j : ℝ)^2 := by
       have h : (1 : ℝ) ≤ |(j : ℝ)| := by exact_mod_cast (Int.one_le_abs hj)
-      nlinarith [sq_nonneg (|(j : ℝ)| - 1), sq_abs (j : ℝ)]
-    have hD : 0 ≤ D := by dsimp [D]; positivity
+      simp_all
+    have hD : 0 ≤ D := by positivity
     have hd : Differentiable ℝ (f y) := (hsmooth y).differentiable (by norm_num)
     have hd₁ : Differentiable ℝ (deriv (f y)) := by
-      simpa using (contDiff_nat_iff_iteratedDeriv.mp (show ContDiff ℝ (2 : ℕ) (f y) from hsmooth y)).2 1 (by norm_num)
+      fun_prop
     have h₁ (u : ℝ) (_ : u ∈ Set.Icc a (a + L)) :
         HasDerivAt (f y) (deriv (f y) u) u := (hd u).hasDerivAt
     have h₂ (u : ℝ) (_ : u ∈ Set.Icc a (a + L)) :
@@ -152,7 +151,7 @@ theorem hasSum_normalized_coefficients (f : ℝ → ℂ) (a L b0 b1 : ℝ)
     exact absurd (hsupport (subset_tsupport f hxs)) (by
       rintro ⟨h1, h2⟩; rcases hx with h | h <;> linarith)
   have hfa : f a = 0 := hfzero a (Or.inl ha)
-  have hfb : f (a + L) = 0 := hfzero (a + L) (Or.inr (by linarith))
+  have hfb : f (a + L) = 0 := by simp_all
   haveI : Fact (0 < L) := ⟨hL⟩
 
   let g : C(AddCircle L, ℂ) :=
@@ -174,9 +173,7 @@ theorem hasSum_normalized_coefficients (f : ℝ → ℂ) (a L b0 b1 : ℝ)
         change fourier (-j) (x : AddCircle L) * AddCircle.liftIoc L a f (x : AddCircle L)
           = f x * Complex.exp (-2 * (Real.pi : ℂ) * Complex.I * (j : ℂ) * (x : ℂ) / (L : ℂ))
         rw [AddCircle.liftIoc_coe_apply hx, fourier_coe_apply, mul_comm]
-        congr 1
-        push_cast
-        ring_nf
+        simp
     have h2 : normalizedCoefficient f a L j =
         (L : ℂ)⁻¹ * ∫ x in Set.Ioc a (a + L),
           f x * Complex.exp (-2 * (Real.pi : ℂ) * Complex.I * (j : ℂ) * (x : ℂ) / (L : ℂ)) := by
@@ -189,15 +186,14 @@ theorem hasSum_normalized_coefficients (f : ℝ → ℂ) (a L b0 b1 : ℝ)
     rcases eq_or_lt_of_le hu.1 with h | h
     · rw [← h]
       have hper : (a : AddCircle L) = ((a + L : ℝ) : AddCircle L) :=
-        (AddCircle.coe_add_period L a).symm
+        by simp
       rw [hper]
       change AddCircle.liftIoc L a f ((a + L : ℝ) : AddCircle L) = f a
       rw [AddCircle.liftIoc_coe_apply
         (show (a + L) ∈ Set.Ioc a (a + L) from ⟨lt_add_of_pos_right a hL, le_rfl⟩), hfb, hfa]
     · change AddCircle.liftIoc L a f (u : AddCircle L) = f u
       rw [AddCircle.liftIoc_coe_apply (show u ∈ Set.Ioc a (a + L) from ⟨h, hu.2⟩)]
-  rw [hgu] at hpt
-  simpa only [hcoeff, smul_eq_mul, fourier_coe_apply] using hpt
+  simp_all
 
 end
 end DedekindZetaZeroFree.ProbeLogarithmicRowCoefficients
@@ -336,7 +332,7 @@ theorem continuous_ell_val_exp (A : SArithmeticData F) :
   rw [hh]
   apply Continuous.prodMk
   · exact continuous_pi (fun w => Units.continuous_val.comp ((continuous_apply w).comp (continuous_fst.comp hc)))
-  · exact continuous_pi (fun v => Units.continuous_val.comp ((continuous_apply v).comp (continuous_snd.comp hc)))
+  fun_prop
 
 theorem exists_positive_support_range (W1 : ProbeRealAnnularWeight) :
     ∃ v0 v1 : ℝ, 0 < v0 ∧ v0 < v1 ∧ tsupport W1 ⊆ Set.Ioo v0 v1 := by
@@ -398,7 +394,7 @@ theorem row_eq_zero_outside_annulus (A : SArithmeticData F) (W0 : SLocalProduct 
     have hx := hK v hvinterval _ (subset_tsupport W0 hw)
     apply hy
     convert hx using 1
-    simp [mul_left_comm, mul_assoc]
+    simp [mul_left_comm]
   simp [row, hw]
 
 theorem coefficient_tsupport_subset (A : SArithmeticData F) (W0 : SLocalProduct F A.Sf → ℂ)
@@ -505,7 +501,7 @@ theorem continuous_ell_inv_exp (A : SArithmeticData F) :
   rw [hh]
   apply Continuous.prodMk
   · exact continuous_pi (fun w => Units.continuous_coe_inv.comp ((continuous_apply w).comp (continuous_fst.comp hc)))
-  · exact continuous_pi (fun v => Units.continuous_coe_inv.comp ((continuous_apply v).comp (continuous_snd.comp hc)))
+  fun_prop
 
 local instance instMeasurableSpaceLogWeightSLocalProduct (A : SArithmeticData F) : MeasurableSpace (SLocalProduct F A.Sf) := borel _
 
@@ -532,8 +528,7 @@ theorem continuous_coefficient_of_continuous (A : SArithmeticData F) (W0 : SLoca
     (continuous_row_exp A W0 W1 hW0).comp (continuous_snd.prodMk continuous_fst)
   have hf : Continuous (Function.uncurry (fun y u => row A W0 W1 (Real.exp u) y *
       Complex.exp (-2 * (Real.pi : ℂ) * Complex.I * (j : ℂ) * (u : ℂ) / (L : ℂ)))) :=
-    hr.mul (Complex.continuous_exp.comp
-      ((continuous_const.mul (Complex.continuous_ofReal.comp continuous_snd)).div_const _))
+    by fun_prop
   by_cases hL : 0 ≤ L
   · have hi := intervalIntegral.continuous_parametric_intervalIntegral_of_continuous
       (μ := volume) (a₀ := a) hf (continuous_const : Continuous (fun _ : SLocalProduct F A.Sf => a + L))
@@ -626,8 +621,3 @@ theorem probe_logweight_separation (F : Type) [Field F] [NumberField F]
   exact ⟨v0, v1, a, L, K, c, ProbeLogWeight.separation_of_coefficients A W0 W1
     v0 v1 a L K c hv0 hv1 hL ha hb hs hKcompact hKannular hK hcoeff hc
     ⟨C, hC, hdecay⟩ hsum⟩
-
-end
-end DedekindZetaZeroFree
-
-end

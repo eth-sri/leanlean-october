@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Finite-place power indices
 
@@ -151,7 +145,7 @@ theorem card_finitePlace_nthPowerQuotient
 /-- The residue-characteristic contribution in the finite local
 power-index formula.  Keeping this contribution as a named natural
 number makes the subsequent product-formula calculation visible. -/
-noncomputable def finitePlaceNthPowerDefect
+def finitePlaceNthPowerDefect
     (n : ℕ+)
     (v₀ : HeightOneSpectrum (𝓞 K)) : ℕ :=
   let ν :
@@ -213,8 +207,8 @@ theorem finitePlaceNthPowerDefect_eq_absNorm_maxPowDividing
       F.toCompleteDVF.toDVF
   let k := padicValNat p (n : ℕ)
   let x : 𝓞 K := ((n : ℕ) : 𝓞 K)
-  have hx : x ≠ 0 := by
-    exact Nat.cast_ne_zero.mpr n.ne_zero
+  have hx : x ≠ 0 := 
+    Nat.cast_ne_zero.mpr n.ne_zero
   have hI :
       Ideal.span {x} ≠ 0 :=
     Submodule.span_singleton_eq_bot.mp.mt hx
@@ -318,8 +312,3 @@ theorem card_finitePlace_nthPowerQuotient_eq_defect
   simpa [finitePlaceNthPowerDefect] using
     card_finitePlace_nthPowerQuotient
       (K := K) n hmu v₀
-
-
-end GlobalClassFieldTheory.ClassFieldAxiom
-
-end

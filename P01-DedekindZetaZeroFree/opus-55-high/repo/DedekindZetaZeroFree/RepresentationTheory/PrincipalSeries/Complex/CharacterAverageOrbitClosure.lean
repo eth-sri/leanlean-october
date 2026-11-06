@@ -36,7 +36,7 @@ private lemma eval_cont (s : ℝ) (g : ComplexGL2) : Continuous (fun f : Princip
   convert h using 1
   ext f
   change f g = f (1 * g)
-  rw [one_mul]
+  simp
 private lemma su2_embed_cont : Continuous complexSU2Embedding := by
   apply Units.continuous_iff.mpr
   constructor
@@ -47,9 +47,9 @@ private lemma su2_embed_cont : Continuous complexSU2Embedding := by
       rfl
     simp_rw [he]
     exact continuous_subtype_val.star
-private lemma proj_cont : Continuous (Matrix.ProjGenLinGroup.mk : ComplexGL2 → ComplexPGL2) :=
+lemma proj_cont : Continuous (Matrix.ProjGenLinGroup.mk : ComplexGL2 → ComplexPGL2) :=
   continuous_coinduced_rng
-private lemma char_cont (ℓ : ℕ) : Continuous (su2HarmonicCharacter ℓ) := by
+lemma char_cont (ℓ : ℕ) : Continuous (su2HarmonicCharacter ℓ) := by
   let u : ComplexSU2 → KPCompactHarmonic.U2 := fun k => ⟨k.val, (Matrix.mem_specialUnitaryGroup_iff.mp k.property).1⟩
   have hc : Continuous u := continuous_subtype_val.subtype_mk _
   have ht (n : ℕ) : Continuous (fun k : ComplexSU2 => KPCompactHarmonic.symmetricPowerTrace n (u k)) := by
@@ -58,17 +58,15 @@ private lemma char_cont (ℓ : ℕ) : Continuous (su2HarmonicCharacter ℓ) := b
     | one => exact (by fun_prop : Continuous (fun k : ComplexSU2 => Matrix.trace k.val))
     | more n h0 h1 =>
       change Continuous (fun k => Matrix.trace k.val * KPCompactHarmonic.symmetricPowerTrace (n+1) (u k) - Matrix.det k.val * KPCompactHarmonic.symmetricPowerTrace n (u k))
-      exact ((show Continuous (fun k : ComplexSU2 => Matrix.trace k.val) by fun_prop).mul h1).sub
-        ((show Continuous (fun k : ComplexSU2 => Matrix.det k.val) by fun_prop).mul h0)
+      fun_prop
   have hd (k : ComplexSU2) : Matrix.det k.val = 1 := (Matrix.mem_specialUnitaryGroup_iff.mp k.property).2
   have he : su2HarmonicCharacter ℓ =
       fun k => KPCompactHarmonic.symmetricPowerTrace (2*ℓ) (u k) := by
     funext k
     simp [su2HarmonicCharacter, KPCompactHarmonic.rankOneCharacter, hd k, u]
   rw [he]
-  exact ht _
+  fun_prop
 
-open MeasureTheory
 private lemma compact_average_mem (s : ℝ) (μ : Measure ComplexSU2)
     [IsProbabilityMeasure μ] (F : ComplexSU2 → PrincipalSeries s)
     (hc : Continuous F) (v : PrincipalSeries s)
@@ -110,8 +108,7 @@ private lemma compact_average_mem (s : ℝ) (μ : Measure ComplexSU2)
     have hi := (ContinuousLinearMap.proj (R := ℝ) (i := (⟨g, hg⟩ : u))).integral_comp_comm hei
     change w g = (∫ k, E (F k) ∂μ) ⟨g, hg⟩ at hg'
     have hival : (∫ k, E (F k) ∂μ) ⟨g, hg⟩ = ∫ k, F k g ∂μ := hi.symm
-    rw [hival] at hg'
-    exact hg'.trans (hv g).symm
+    simp_all
   obtain ⟨w, hwC, hw⟩ := hCc.inter_iInter_nonempty
     (fun g => {w : PrincipalSeries s | w g = v g})
     (fun g => isClosed_eq (eval_cont s g) continuous_const) hfin
@@ -148,7 +145,7 @@ theorem character_average_mem_orbit_closure (s : ℝ) (μ : Measure ComplexSU2)
     exact mul_assoc _ _ _
   have hFi (g : ComplexGL2) : Integrable (fun k => F k g) μ := by
     simp_rw [hFe]
-    exact (hint g).const_mul d
+    fun_prop
   have hFv (g : ComplexGL2) : v g = ∫ k, F k g ∂μ := by
     rw [hv g, characterAverage_formula]
     simp_rw [hFe]
@@ -164,5 +161,3 @@ theorem character_average_mem_orbit_closure (s : ℝ) (μ : Measure ComplexSU2)
   have hCS : convexHull ℝ (Set.range F) ⊆ (S : Set (PrincipalSeries s)) :=
     convexHull_min hFS (S.restrictScalars ℝ).convex
   exact closure_mono hCS hm
-
-end DedekindZetaZeroFree.KPCplxHarmonicExtraction

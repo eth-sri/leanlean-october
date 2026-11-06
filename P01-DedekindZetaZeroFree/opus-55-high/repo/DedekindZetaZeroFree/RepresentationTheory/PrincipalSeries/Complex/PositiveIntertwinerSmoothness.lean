@@ -25,16 +25,15 @@ theorem compact_family_spatial_jets_bounded
     | succ n ih =>
       simp only [iteratedFDeriv_succ_eq_comp_left, Function.comp_apply]
       have hd : ContDiffAt ℝ (⊤ : ℕ∞) (fun p : ℂ × ℂ => fderiv ℝ
-          (iteratedFDeriv ℝ n (fun v : ℂ => G (p.1, v))) p.2) p := by
-        exact ((ih (p.1,p.2)).comp (p,p.2)
+          (iteratedFDeriv ℝ n (fun v : ℂ => G (p.1, v))) p.2) p := 
+        ((ih (p.1,p.2)).comp (p,p.2)
           (contDiffAt_fst.fst.prodMk contDiffAt_snd)).fderiv
           (m := (⊤ : ℕ∞)) contDiffAt_snd (by simp)
-      exact (continuousMultilinearCurryLeftEquiv ℝ (fun _ : Fin (n+1) => ℂ) ℂ).symm.toContinuousLinearEquiv.toContinuousLinearMap.contDiff.contDiffAt.comp p hd
+      fun_prop
   obtain ⟨C, hC⟩ := ((isCompact_closedBall (0 : ℂ) 1).prod
     (isCompact_closedBall z 1)).exists_bound_of_continuousOn hj.continuous.continuousOn
   refine ⟨max C 0, le_max_right _ _, ?_⟩
-  intro x hx w hw
-  exact (hC (x,w) ⟨hx,hw⟩).trans (le_max_left _ _)
+  simp_all
 
 end DedekindZetaZeroFree.KPCplxHarmonicIntertwinerSpectrum.OpenSmoothness
 
@@ -56,8 +55,8 @@ theorem weighted_inverse_translate_spatial_jets_bounded
     hj.continuousOn
   refine ⟨max C 0, le_max_right _ _, ?_⟩
   intro x hx w hw
-  have hxnorm : 1 ≤ ‖x‖ := by
-    exact le_of_lt (show 1 < ‖x‖ by simpa using hx)
+  have hxnorm : 1 ≤ ‖x‖ := 
+    le_of_lt (show 1 < ‖x‖ by simpa using hx)
   have hxinv : ‖x⁻¹‖ ≤ 1 := by
     rw [norm_inv]
     exact inv_le_one_of_one_le₀ hxnorm
@@ -99,10 +98,10 @@ theorem local_majorant_of_finite_piece_and_integrable_tail
       ∀ᵐ x ∂μ, ∀ w ∈ s, ‖J w x‖ ≤ B x := by
   classical
   let B : X → ℝ := K.indicator (fun _ => C₀) + Kᶜ.indicator (fun x => C₁ * b x)
-  have hi₀ : Integrable (K.indicator (fun _ : X => C₀)) μ := by
-    exact (integrableOn_const (ne_of_lt hfinite)).integrable_indicator hK
-  have hi₁ : Integrable (Kᶜ.indicator (fun x => C₁ * b x)) μ := by
-    exact (integrable_indicator_iff hK.compl).mpr (hb.const_mul C₁)
+  have hi₀ : Integrable (K.indicator (fun _ : X => C₀)) μ := 
+    (integrableOn_const (ne_of_lt hfinite)).integrable_indicator hK
+  have hi₁ : Integrable (Kᶜ.indicator (fun x => C₁ * b x)) μ := 
+    (integrable_indicator_iff hK.compl).mpr (hb.const_mul C₁)
   refine ⟨Metric.closedBall z 1, B, Metric.closedBall_mem_nhds z (by norm_num),
     hi₀.add hi₁, Filter.Eventually.of_forall ?_⟩
   intro x w hw
@@ -145,8 +144,8 @@ theorem integral_contDiff_of_locally_dominated_jets
     let L := continuousMultilinearCurryLeftEquiv ℝ (fun _ : Fin (n + 1) => E) ℂ
     obtain ⟨s, b, hs, hb, h⟩ := hbound (n + 1) u
     have hf'm : AEStronglyMeasurable (fun x =>
-        fderiv ℝ (iteratedFDeriv ℝ n (fun v => F v x)) u) μ := by
-      exact L.continuous.comp_aestronglyMeasurable (hmeas (n + 1) u)
+        fderiv ℝ (iteratedFDeriv ℝ n (fun v => F v x)) u) μ := 
+      L.continuous.comp_aestronglyMeasurable (hmeas (n + 1) u)
     have hh := hasFDerivAt_integral_of_dominated_of_fderiv_le (𝕜 := ℝ)
       (F := fun v x => iteratedFDeriv ℝ n (fun w => F w x) v)
       (F' := fun v x => fderiv ℝ (iteratedFDeriv ℝ n (fun w => F w x)) v)
@@ -179,7 +178,7 @@ theorem integral_contDiff_of_locally_dominated_jets
     | succ n ih =>
       funext u
       rw [iteratedFDeriv_succ_eq_comp_left, Function.comp_apply, ih, (hd n u).fderiv]
-      exact (continuousMultilinearCurryLeftEquiv ℝ (fun _ : Fin (n + 1) => E) ℂ).symm_apply_apply _
+      simp
   refine ⟨contDiff_of_differentiable_iteratedFDeriv (fun n _ => ?_), fun n u => congrFun (heq n) u⟩
   rw [heq n]
   exact fun u => (hd n u).differentiableAt
@@ -234,16 +233,16 @@ lemma positive_open_integrand_jets_contDiff (f : PrincipalSeries positiveParamet
   | succ n ih =>
     simp only [iteratedFDeriv_succ_eq_comp_left, Function.comp_apply]
     have hd : ContDiffAt ℝ (⊤ : ℕ∞) (fun p : ℂ × ℂ => fderiv ℝ
-        (iteratedFDeriv ℝ n (fun z => f (weyl * upperUnipotent p.1 * (weyl * upperUnipotent z)))) p.2) p := by
-      exact ((ih (p.1,p.2)).comp (p,p.2)
+        (iteratedFDeriv ℝ n (fun z => f (weyl * upperUnipotent p.1 * (weyl * upperUnipotent z)))) p.2) p := 
+      ((ih (p.1,p.2)).comp (p,p.2)
         (contDiffAt_fst.fst.prodMk contDiffAt_snd)).fderiv
         (m := (⊤ : ℕ∞)) contDiffAt_snd (by simp)
-    exact (continuousMultilinearCurryLeftEquiv ℝ (fun _ : Fin (n+1) => ℂ) ℂ).symm.toContinuousLinearEquiv.toContinuousLinearMap.contDiff.contDiffAt.comp p hd
+    fun_prop
 
 lemma positive_open_integrand_jets_measurable (β : ℂˣ) (f : PrincipalSeries positiveParameter)
     (n : ℕ) (z : ℂ) : AEStronglyMeasurable (fun x : ℂ => iteratedFDeriv ℝ n
-      (fun z => f (weyl * upperUnipotent x * (weyl * upperUnipotent z))) z) (characterHaar β) := by
-  exact ((positive_open_integrand_jets_contDiff f n).continuous.comp
+      (fun z => f (weyl * upperUnipotent x * (weyl * upperUnipotent z))) z) (characterHaar β) := 
+  ((positive_open_integrand_jets_contDiff f n).continuous.comp
     (continuous_id.prodMk continuous_const)).aestronglyMeasurable
 
 set_option backward.isDefEq.respectTransparency false in
@@ -267,7 +266,7 @@ lemma positive_open_contDiff_of_jet_bounds (β : ℂˣ) (f : PrincipalSeries pos
 
 open scoped Matrix.Norms.Elementwise
 
-private lemma intertwiner_open_matrix_identity (x z : ℂ) (hx : x ≠ 0) :
+lemma intertwiner_open_matrix_identity (x z : ℂ) (hx : x ≠ 0) :
   weyl * upperUnipotent x * (weyl * upperUnipotent z) =
     upperTriangular (Units.mk0 (-x⁻¹) (neg_ne_zero.mpr (inv_ne_zero hx))) (Units.mk0 x hx) 1 *
       (weyl * upperUnipotent (z+x⁻¹)) := by
@@ -284,7 +283,7 @@ lemma intertwiner_open_integrand_eq (s : ℝ) (f : PrincipalSeries s) (x z : ℂ
   congr 1
   simp only [inductionWeight, complexAbs, Units.val_mk0, norm_div, norm_neg, norm_inv]
   have hi : ‖x‖⁻¹ / ‖x‖ = (‖x‖ ^ 2)⁻¹ := by
-    simp [div_eq_mul_inv, pow_two, mul_inv]
+    simp [div_eq_mul_inv, pow_two]
   simp only [Real.rpow_eq_pow]
   rw [hi, inv_pow, Real.inv_rpow (by positivity), ← Real.rpow_neg (by positivity),
     ← Real.rpow_natCast_mul (by positivity), ← Real.rpow_natCast_mul (norm_nonneg _)]
@@ -340,8 +339,7 @@ theorem positive_intertwiner_openCoordinate_contDiff (β : ℂˣ)
         norm_num [positiveParameter]
       simpa only [ha] using
         intertwiner_open_integrand_eq positiveParameter f x v hx0
-    rw [he]
-    exact htranslate x hx w hw
+    simp_all
   letI := characterHaar_isAddHaarMeasure β
 
   exact OpenSmoothness.local_majorant_of_finite_piece_and_integrable_tail
@@ -352,7 +350,3 @@ theorem positive_intertwiner_openCoordinate_contDiff (β : ℂˣ)
       f (weyl * upperUnipotent x * (weyl * upperUnipotent v))) w)
     (fun x => ‖x‖ ^ (-(8 / 3 : ℝ))) (intertwiner_tail_weight_integrable β)
     z C₀ C₁ hcompact htail
-
-end DedekindZetaZeroFree.KPCplxHarmonicIntertwinerSpectrum
-
-end

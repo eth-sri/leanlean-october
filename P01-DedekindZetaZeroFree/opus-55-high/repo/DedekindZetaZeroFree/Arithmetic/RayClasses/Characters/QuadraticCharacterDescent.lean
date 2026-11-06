@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Arithmetic.RayClasses.Characters.CharacterDes
 
 @[expose] public section
 
-noncomputable section
 
 namespace DedekindZetaZeroFree.LargeSieve.RayBridge
 
@@ -24,12 +23,12 @@ theorem descendedCharacter_square (f : Ideal (𝓞 F)) (hf : f ≠ ⊥)
       intro I hI hcop
       have hx : ((ψ (idealClass f hf I hI hcop)) : ℂ) = η I := by
         simp [ψ]
-      rw [MonoidHom.pow_apply, Units.val_pow_eq_pow_val, hx, hq I])
-    rw [huniq]
+      simp_all)
+    omega
   intro x
   have hx : (ψ x) ^ 3 = ψ x := by
     have := DFunLike.congr_fun hpow x
-    rwa [MonoidHom.pow_apply] at this
+    omega
   have hcancel : (ψ x) ^ 2 * ψ x = 1 * ψ x := by
     rw [one_mul, ← pow_succ]
     exact hx

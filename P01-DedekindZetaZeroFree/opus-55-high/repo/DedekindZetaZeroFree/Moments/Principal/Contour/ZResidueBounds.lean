@@ -29,11 +29,7 @@ theorem cvi_sub_aux (σ : ℝ) (f g : ℂ → ℂ)
   rw [← mul_sub, ← MeasureTheory.integral_sub hf hg]
 
 theorem principalRows_eq_single :
-    principalRows D = {ActualRowCount.principalRow D} := by
-  ext r
-  simp only [principalRows, Set.mem_setOf_eq, Set.mem_singleton_iff]
-  exact ⟨fun h => ActualRowCount.eq_principalRow D h,
-    fun h => by rw [h]; exact ActualRowCount.principalRow_u D⟩
+    principalRows D = {ActualRowCount.principalRow D} := by apply DedekindZetaZeroFree.Quantitative.PrincipalWShift.principalRows_eq <;> assumption
 
 theorem Jwres_sub_Rz (Z : ℝ) (hZ : 2 ≤ Z) :
     Jwres D Z -

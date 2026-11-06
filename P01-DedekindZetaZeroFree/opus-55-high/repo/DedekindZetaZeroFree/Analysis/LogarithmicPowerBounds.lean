@@ -51,8 +51,4 @@ theorem log_square_le_rpow (η : ℝ) (hη : 0 < η) :
     nlinarith [hstep, hfac]
   have hZeta : Real.exp u = Z ^ η := by
     rw [hu, ht, Real.rpow_def_of_pos hZpos]; ring_nf
-  rw [hZeta] at hmain
-  calc (1 + Real.log Z) ^ 2 = (1 + t) ^ 2 := by rw [ht]
-    _ ≤ 7 * (1 + η⁻¹) ^ 2 * Z ^ η := hmain
-
-end DedekindZetaZeroFree.RepresentationTheory.ActualRowTransfer
+  simp_all

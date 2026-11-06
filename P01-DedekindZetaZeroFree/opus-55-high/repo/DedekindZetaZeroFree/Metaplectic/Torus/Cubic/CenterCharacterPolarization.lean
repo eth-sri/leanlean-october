@@ -10,7 +10,6 @@ open NumberField IsDedekindDomain ValuativeRel
 namespace DedekindZetaZeroFree.ActualFiniteTorus
 
 noncomputable section
-set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
   (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
@@ -28,15 +27,15 @@ def commutatorCenter (x y : H F ζ hζ q) : C F ζ hζ q :=
     rw [(actual_cube_quotient_pairing F ζ hζ q).2.2.2.2.2.1]
     exact (actual_center_cube_normal_form F ζ hζ q).2.2.1 _⟩
 
-private theorem center_word (e : rootsOfUnity 3 F) (y : (K F q)ˣ) :
+theorem center_word (e : rootsOfUnity 3 F) (y : (K F q)ˣ) :
     ((centerInjection F ζ hζ q e * cubeLift F ζ hζ q y : C F ζ hζ q) : Cover F ζ hζ q) =
       normalWord F ζ hζ q e (y ^ 3) := by
   simp [centerInjection, cubeLift, central, torusLift, normalWord]
-private theorem center_coords (e : rootsOfUnity 3 F) (y : (K F q)ˣ) :
+theorem center_coords (e : rootsOfUnity 3 F) (y : (K F q)ˣ) :
     coordinate F ζ hζ q (centerInjection F ζ hζ q e * cubeLift F ζ hζ q y) = y ^ 3 ∧
-    sheet F ζ hζ q (centerInjection F ζ hζ q e * cubeLift F ζ hζ q y) = e := by
-  exact (actual_torus_normal_form F ζ hζ q).2.2.2.2.2.2 e (y ^ 3) _ (center_word F ζ hζ q e y)
-private theorem value_word (e : rootsOfUnity 3 F) (y : (K F q)ˣ) :
+    sheet F ζ hζ q (centerInjection F ζ hζ q e * cubeLift F ζ hζ q y) = e := 
+  (actual_torus_normal_form F ζ hζ q).2.2.2.2.2.2 e (y ^ 3) _ (center_word F ζ hζ q e y)
+theorem value_word (e : rootsOfUnity 3 F) (y : (K F q)ˣ) :
     rawCenterValue F ζ hζ q (centerInjection F ζ hζ q e * cubeLift F ζ hζ q y) =
       ordinaryIota F ζ hζ e * normUnit F q (y ^ 3) := by
   rcases center_coords F ζ hζ q e y with ⟨hc, hs⟩
@@ -74,7 +73,7 @@ private theorem value_mul (c d : C F ζ hζ q) :
         simp only [map_mul]; ac_rfl]
   rw [value_word, value_word, value_word, map_mul, mul_pow, normUnit_mul]
   ac_rfl
-private theorem sheet_locallyConstant : IsLocallyConstant (sheet F ζ hζ q) := by
+theorem sheet_locallyConstant : IsLocallyConstant (sheet F ζ hζ q) := by
   letI : Group (KPPGLLocalCover.LocalPGL2 F (Sum.inr q)) :=
     @QuotientGroup.Quotient.group _ _ (KPPGLLocalCover.scalarSubgroup F (Sum.inr q))
       (KPPGLLocalCover.scalarSubgroup_normal F (Sum.inr q))
@@ -88,10 +87,7 @@ private theorem sheet_locallyConstant : IsLocallyConstant (sheet F ζ hζ q) := 
     simp [normalWord]
   have hrmem (h : H F ζ hζ q) : r h ∈ p.ker := by
     rw [hr]
-    change KPPGLLocalCover.centralInjection F ζ hζ (Sum.inr q) _ ∈
-      (KPPGLLocalCover.projection F ζ hζ (Sum.inr q)).ker
-    rw [← KPPGLLocalCover.range_centralInjection_eq_ker_projection]
-    exact ⟨_, rfl⟩
+    rfl
   let r' : H F ζ hζ q → p.ker := fun h => ⟨r h, hrmem h⟩
   have hc : Continuous r' := by
     apply Continuous.subtype_mk
@@ -105,7 +101,7 @@ private theorem sheet_locallyConstant : IsLocallyConstant (sheet F ζ hζ q) := 
   haveI : Finite p.ker := by
     apply Finite.of_surjective
       (fun e : rootsOfUnity 3 F => (⟨KPPGLLocalCover.centralInjection F ζ hζ (Sum.inr q) e,
-        by rw [← KPPGLLocalCover.range_centralInjection_eq_ker_projection]; exact ⟨e, rfl⟩⟩ : p.ker))
+        by rfl⟩ : p.ker))
     intro x
     have hx := x.property
     have hx : x.val ∈ (KPPGLLocalCover.centralInjection F ζ hζ (Sum.inr q)).range := by
@@ -119,7 +115,7 @@ private theorem sheet_locallyConstant : IsLocallyConstant (sheet F ζ hζ q) := 
   filter_upwards [hl.eventually_eq h] with x hx
   apply KPPGLLocalCover.centralInjection_injective F ζ hζ (Sum.inr q)
   simpa only [r', hr] using congrArg Subtype.val hx
-private theorem normUnit_locallyConstant : IsLocallyConstant (normUnit F q) := by
+theorem normUnit_locallyConstant : IsLocallyConstant (normUnit F q) := by
   rw [IsLocallyConstant.iff_eventually_eq]
   intro y
   have hv := (ValuativeRel.valuation (K F q)).locally_const
@@ -129,25 +125,25 @@ private theorem normUnit_locallyConstant : IsLocallyConstant (normUnit F q) := b
   change ValuativeRel.valuation (K F q) (x : K F q) =
     ValuativeRel.valuation (K F q) (y : K F q) at hx
   simp only [normUnit, KPLocalPrincipalSeries.normPower, KPLocalPrincipalSeries.localAbs, hx]
-private theorem value_locallyConstant : IsLocallyConstant (rawCenterValue F ζ hζ q) := by
-  exact ((sheet_locallyConstant F ζ hζ q).comp_continuous continuous_subtype_val).comp₂
+theorem value_locallyConstant : IsLocallyConstant (rawCenterValue F ζ hζ q) := 
+  ((sheet_locallyConstant F ζ hζ q).comp_continuous continuous_subtype_val).comp₂
     ((normUnit_locallyConstant F q).comp_continuous
       ((actual_torus_normal_form F ζ hζ q).2.2.2.1.comp continuous_subtype_val))
     (fun e n => ordinaryIota F ζ hζ e * n)
-private theorem value_cube (y : (K F q)ˣ) :
+theorem value_cube (y : (K F q)ˣ) :
     rawCenterValue F ζ hζ q (cubeLift F ζ hζ q y) = normUnit F q (y ^ 3) := by
   simpa using value_word F ζ hζ q 1 y
-private theorem nonfaithful :
+theorem nonfaithful :
     ∃ c : C F ζ hζ q, c ≠ 1 ∧ rawCenterValue F ζ hζ q c = 1 := by
   refine ⟨cubeLift F ζ hζ q (-1), ?_, ?_⟩
   · intro he
     have hc := (center_coords F ζ hζ q 1 (-1)).1
-    simp only [map_one, one_mul, he] at hc
+    simp only [map_one, he] at hc
     norm_num at hc
   · rw [value_cube]
     apply Units.ext
     simp [normUnit, KPLocalPrincipalSeries.normPower, KPLocalPrincipalSeries.localAbs]
-private theorem exists_nonunitary_cube :
+theorem exists_nonunitary_cube :
     ∃ y : (K F q)ˣ, ‖(rawCenterValue F ζ hζ q (cubeLift F ζ hζ q y) : ℂ)‖ < 1 := by
   let iso := IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (K F q)
   obtain ⟨π, hπ⟩ := ValuativeRel.valuation_surjective (iso.symm (WithZero.exp (-1 : ℤ)))
@@ -276,6 +272,3 @@ theorem actual_heisenberg_and_polarization :
       T.quotient_surjective T.C T.quotient_kernel T.center_open T.pairing
       T.detects_commutation T.ω
   exact ⟨{ L := L, maximal := hL, ωL := ωL, extends_center := hωL }⟩
-
-end
-end DedekindZetaZeroFree.ActualFiniteTorus

@@ -17,15 +17,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Embedded Frobenius transport
 
@@ -39,96 +30,6 @@ namespace LocalClassFieldTheory
 open LocalFieldTheory RamificationTheory CyclicCohomology KummerTheory
 open ClassFormation
 open scoped ValuativeRel
-
-/-- The separable-closure equivalence identifies the intrinsic extension
-inertia subgroup of a fixed field with its ambient extension inertia
-subgroup. -/
-theorem map_intrinsicExtensionInertia_eq_ambientFixedField
-    (K : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    (H : FiniteAbstractField
-      Gal(SeparableClosure K / K))
-    (J : ClosedSubgroup Gal(SeparableClosure K / K))
-    (hJH : J.toSubgroup ≤ H.field.toSubgroup)
-    [hJnormal : (extensionSubgroup H.field J hJH).Normal]
-    [hJfinite : Finite
-      (H.field.toSubgroup ⧸ extensionSubgroup H.field J hJH)] :
-    let F := abstractFixedField K (SeparableClosure K) H.field
-    letI : Algebra F (SeparableClosure F) :=
-      (separableClosure F (AlgebraicClosure F)).algebra
-    ∀ (e : SeparableClosure F ≃ₐ[F] SeparableClosure K),
-    let E := abstractRelativeFixedField K (SeparableClosure K) hJH
-    letI : FiniteDimensional K F :=
-      abstractFixedField_finiteDimensional
-        K (SeparableClosure K) H.field H.finite
-    letI : NontriviallyNormedField F :=
-      finiteExtensionSpectralNormedField K F
-    letI : ValuativeRel F :=
-      finiteExtensionSpectralValuativeRel K F
-    letI : IsNonarchimedeanLocalField F :=
-      finiteExtensionSpectralIsNonarchimedeanLocalField K F
-    letI : FiniteDimensional F E :=
-      abstractRelativeFixedField_finiteDimensional
-        K (SeparableClosure K) H.field J hJH H.finite hJfinite
-    letI : IsGalois F E :=
-      abstractRelativeFixedField_isGalois
-        K (SeparableClosure K) H.field J hJH hJnormal
-    let i : E →ₐ[F] SeparableClosure F :=
-      e.symm.toAlgHom.comp E.val
-    let EI := finiteGaloisAbstractExtensionOfEmbedding F E i
-    let ψ := intrinsicBaseEquivAmbientFixedField K H e
-    ((localResidueDatum F).extensionInertiaWithin
-        (intrinsicAbstractBase F) EI.field EI.below).map
-        ψ.toMonoidHom =
-      (localResidueDatum K).extensionInertiaWithin
-        H.field J hJH := by
-  dsimp only
-  let F := abstractFixedField K (SeparableClosure K) H.field
-  let : Algebra F (SeparableClosure F) :=
-    (separableClosure F (AlgebraicClosure F)).algebra
-  intro e
-  let E := abstractRelativeFixedField K (SeparableClosure K) hJH
-  let : FiniteDimensional K F :=
-    abstractFixedField_finiteDimensional
-      K (SeparableClosure K) H.field H.finite
-  let : NontriviallyNormedField F :=
-    finiteExtensionSpectralNormedField K F
-  let : ValuativeRel F :=
-    finiteExtensionSpectralValuativeRel K F
-  let : IsNonarchimedeanLocalField F :=
-    finiteExtensionSpectralIsNonarchimedeanLocalField K F
-  let : FiniteDimensional F E :=
-    abstractRelativeFixedField_finiteDimensional
-      K (SeparableClosure K) H.field J hJH H.finite hJfinite
-  let : IsGalois F E :=
-    abstractRelativeFixedField_isGalois
-      K (SeparableClosure K) H.field J hJH hJnormal
-  let i : E →ₐ[F] SeparableClosure F :=
-    e.symm.toAlgHom.comp E.val
-  let EI := finiteGaloisAbstractExtensionOfEmbedding F E i
-  let ψ := intrinsicBaseEquivAmbientFixedField K H e
-  ext σ
-  constructor
-  · rintro ⟨τ, hτ, rfl⟩
-    exact
-      (intrinsicExtensionInertia_iff_ambientFixedField
-        K H J hJH e τ).1 hτ
-  · intro hσ
-    let τ :
-        (intrinsicAbstractBase F).toSubgroup :=
-      ψ.symm σ
-    refine ⟨τ, ?_, ψ.apply_symm_apply σ⟩
-    apply
-      (intrinsicExtensionInertia_iff_ambientFixedField
-        K H J hJH e τ).2
-    change
-      ψ τ ∈
-        (localResidueDatum K).extensionInertiaWithin
-          H.field J hJH
-    have hτImage : ψ τ = σ :=
-      ψ.apply_symm_apply σ
-    rw [hτImage]
-    exact hσ
 
 /-- The equivalence on absolute Galois base subgroups induced by a fixed-field
 separable-closure equivalence is continuous. -/
@@ -184,8 +85,8 @@ theorem
         Gal(SeparableClosure K / K)).toSubgroup ⧸
         extensionSubgroup
           (baseField Gal(SeparableClosure K / K))
-          H₀ (le_baseField H₀)) := by
-    exact ambientEmbeddedAbsoluteQuotientFinite K F i
+          H₀ (le_baseField H₀)) := 
+    ambientEmbeddedAbsoluteQuotientFinite K F i
   let H : FiniteAbstractField
       Gal(SeparableClosure K / K) :=
     ⟨H₀, ambientEmbeddedAbsoluteQuotientFinite K F i⟩
@@ -237,8 +138,8 @@ theorem
                   (algebraMap F₀ (SeparableClosure F₀) x) =
                 algebraMap F (SeparableClosure F) (phi.symm x) := by
             apply c.injective
-            rw [c.apply_symm_apply, hc, phi.apply_symm_apply]
-          rw [hpre, sigma.commutes, hc, phi.apply_symm_apply] }
+            simp_all
+          simp_all }
     invFun := fun tau =>
       { c.trans (tau.toRingEquiv.trans c.symm) with
         commutes' := fun x => by
@@ -251,21 +152,15 @@ theorem
     left_inv := fun sigma => by
       apply AlgEquiv.ext
       intro x
-      change c.symm
-          (c (sigma (c.symm (c x)))) = sigma x
-      rw [c.symm_apply_apply, c.symm_apply_apply]
+      simp
     right_inv := fun tau => by
       apply AlgEquiv.ext
       intro x
-      change c
-          (c.symm (tau (c (c.symm x)))) = tau x
-      rw [c.apply_symm_apply, c.apply_symm_apply]
+      simp
     map_mul' := fun sigma tau => by
       apply AlgEquiv.ext
       intro x
-      change c (sigma (tau (c.symm x))) =
-        c (sigma (c.symm (c (tau (c.symm x)))))
-      rw [c.symm_apply_apply] }
+      simp }
   have htheta : Continuous theta := by
     apply
       RamificationTheory.Field.absoluteGaloisGroup.semilinear_conjugation_continuous
@@ -283,8 +178,7 @@ theorem
             closedFixingSubgroup_bot_eq_baseField]
           trivial⟩ :
           (intrinsicAbstractBase F₀).toSubgroup)) := by
-    apply continuous_induced_rng.mpr
-    exact continuous_id
+    fun_prop
   change Continuous
     (fun tau : (intrinsicAbstractBase F).toSubgroup =>
       psi₀
@@ -292,12 +186,11 @@ theorem
           rw [intrinsicAbstractBase,
             closedFixingSubgroup_bot_eq_baseField]
           trivial⟩)
-  exact hpsi₀.comp
-    (hlift.comp (htheta.comp continuous_subtype_val))
+  fun_prop
 
 /-- Bundles the intrinsic-to-ambient absolute Galois equivalence as a continuous
 multiplicative equivalence. -/
-noncomputable def
+def
     intrinsicBaseContinuousEquivAmbientEmbeddedField
     (K F : Type) [Field K] [Field F]
     [Algebra K F] [FiniteDimensional K F] [Algebra.IsSeparable K F]
@@ -329,7 +222,7 @@ noncomputable def
 
 /-- Descends the intrinsic-to-ambient Galois equivalence to a continuous
 multiplicative equivalence between the quotients by extension inertia. -/
-noncomputable def
+def
     intrinsicFrobeniusQuotientContinuousEquivAmbientEmbeddedField
     (K F E : Type)
     [Field K] [ValuativeRel K] [TopologicalSpace K]
@@ -551,8 +444,8 @@ theorem
               Gal(SeparableClosure K / K)).toSubgroup ⧸
               extensionSubgroup
                 (baseField Gal(SeparableClosure K / K))
-                H₀ (le_baseField H₀)) := by
-          exact ambientEmbeddedAbsoluteQuotientFinite K F i
+                H₀ (le_baseField H₀)) := 
+          ambientEmbeddedAbsoluteQuotientFinite K F i
         let H : FiniteAbstractField
             Gal(SeparableClosure K / K) :=
           ⟨H₀, hHabsolute⟩
@@ -616,8 +509,8 @@ theorem
         Gal(SeparableClosure K / K)).toSubgroup ⧸
         extensionSubgroup
           (baseField Gal(SeparableClosure K / K))
-          H₀ (le_baseField H₀)) := by
-    exact ambientEmbeddedAbsoluteQuotientFinite K F i
+          H₀ (le_baseField H₀)) := 
+    ambientEmbeddedAbsoluteQuotientFinite K F i
   let H : FiniteAbstractField
       Gal(SeparableClosure K / K) :=
     ⟨H₀, hHabsolute⟩
@@ -630,9 +523,7 @@ theorem
           K F E j e (QuotientGroup.mk tau) =
         QuotientGroup.mk
           (intrinsicBaseEquivAmbientEmbeddedField K F i e tau) := by
-    exact
-      LocalFieldTheory.QuotientGroup.continuousCongr_mk
-        _ _ _ _ tau
+    rfl
   rw [hquotientMk,
     (localResidueDatum K).extensionNormalizedDegree_mk,
     (localResidueDatum F).extensionNormalizedDegree_mk]
@@ -642,7 +533,7 @@ theorem
 
 /-- Transports a positive Frobenius lift for an embedded extension from the
 intrinsic separable closure of `F` to the ambient separable closure of `K`. -/
-noncomputable def
+def
     intrinsicFrobeniusElementToAmbientEmbeddedField
     (K F E : Type)
     [Field K] [ValuativeRel K] [TopologicalSpace K]
@@ -706,8 +597,8 @@ noncomputable def
             Gal(SeparableClosure K / K)).toSubgroup ⧸
             extensionSubgroup
               (baseField Gal(SeparableClosure K / K))
-              H₀ (le_baseField H₀)) := by
-        exact ambientEmbeddedAbsoluteQuotientFinite K F i
+              H₀ (le_baseField H₀)) := 
+        ambientEmbeddedAbsoluteQuotientFinite K F i
       let H : FiniteAbstractField
           Gal(SeparableClosure K / K) :=
         ⟨H₀, hHabsolute⟩
@@ -768,8 +659,8 @@ noncomputable def
         Gal(SeparableClosure K / K)).toSubgroup ⧸
         extensionSubgroup
           (baseField Gal(SeparableClosure K / K))
-          H₀ (le_baseField H₀)) := by
-    exact ambientEmbeddedAbsoluteQuotientFinite K F i
+          H₀ (le_baseField H₀)) := 
+    ambientEmbeddedAbsoluteQuotientFinite K F i
   let H : FiniteAbstractField
       Gal(SeparableClosure K / K) :=
     ⟨H₀, hHabsolute⟩
@@ -908,9 +799,7 @@ theorem
           K F E j e (QuotientGroup.mk tau) =
         QuotientGroup.mk
           (intrinsicBaseEquivAmbientEmbeddedField K F i e tau) := by
-    exact
-      LocalFieldTheory.QuotientGroup.continuousCongr_mk
-        _ _ _ _ tau
+    rfl
   have hAmbientRestriction :
       (localResidueDatum K).extensionRestriction
           H₀ J₀ hJH
@@ -918,26 +807,13 @@ theorem
             K F E j e (QuotientGroup.mk tau)) =
         QuotientGroup.mk
           (intrinsicBaseEquivAmbientEmbeddedField K F i e tau) := by
-    calc
-      _ =
-          (localResidueDatum K).extensionRestriction
-            H₀ J₀ hJH
-            (QuotientGroup.mk
-              (intrinsicBaseEquivAmbientEmbeddedField K F i e tau)) :=
-        congrArg
-          ((localResidueDatum K).extensionRestriction H₀ J₀ hJH)
-          hquotientMk
-      _ = _ :=
-        (localResidueDatum K).extensionRestriction_mk
-          H₀ J₀ hJH
-          (intrinsicBaseEquivAmbientEmbeddedField K F i e tau)
+    rfl
   have hSourceRestriction :
       (localResidueDatum F).extensionRestriction
           (intrinsicAbstractBase F) EI.field EI.below
           (QuotientGroup.mk tau) =
         QuotientGroup.mk tau :=
-    (localResidueDatum F).extensionRestriction_mk
-      (intrinsicAbstractBase F) EI.field EI.below tau
+    by rfl
   calc
     _ =
         ambientEmbeddedExtensionQuotientEquivGaloisGroup
@@ -1025,8 +901,8 @@ theorem
             Gal(SeparableClosure K / K)).toSubgroup ⧸
             extensionSubgroup
               (baseField Gal(SeparableClosure K / K))
-              H₀ (le_baseField H₀)) := by
-        exact ambientEmbeddedAbsoluteQuotientFinite K F i
+              H₀ (le_baseField H₀)) := 
+        ambientEmbeddedAbsoluteQuotientFinite K F i
       let H : FiniteAbstractField
           Gal(SeparableClosure K / K) :=
         ⟨H₀, hHabsolute⟩
@@ -1120,8 +996,8 @@ theorem
             Gal(SeparableClosure K / K)).toSubgroup ⧸
             extensionSubgroup
               (baseField Gal(SeparableClosure K / K))
-              H₀ (le_baseField H₀)) := by
-        exact ambientEmbeddedAbsoluteQuotientFinite K F i
+              H₀ (le_baseField H₀)) := 
+        ambientEmbeddedAbsoluteQuotientFinite K F i
       let H : FiniteAbstractField
           Gal(SeparableClosure K / K) :=
         ⟨H₀, hHabsolute⟩
@@ -1193,8 +1069,8 @@ theorem
         Gal(SeparableClosure K / K)).toSubgroup ⧸
         extensionSubgroup
           (baseField Gal(SeparableClosure K / K))
-          H₀ (le_baseField H₀)) := by
-    exact ambientEmbeddedAbsoluteQuotientFinite K F i
+          H₀ (le_baseField H₀)) := 
+    ambientEmbeddedAbsoluteQuotientFinite K F i
   let H : FiniteAbstractField
       Gal(SeparableClosure K / K) :=
     ⟨H₀, hHabsolute⟩
@@ -1226,12 +1102,7 @@ theorem
         xiHom ''
             Set.range (fun _ : Unit => sigma.1) =
           Set.range (fun _ : Unit => xiHom sigma.1) := by
-      ext y
-      constructor
-      · rintro ⟨x, ⟨u, rfl⟩, rfl⟩
-        exact ⟨u, rfl⟩
-      · rintro ⟨u, rfl⟩
-        exact ⟨sigma.1, ⟨u, rfl⟩, rfl⟩
+      simp
     rw [hgenerators] at hmap
     change
       xiHom q ∈
@@ -1336,8 +1207,8 @@ theorem
             Gal(SeparableClosure K / K)).toSubgroup ⧸
             extensionSubgroup
               (baseField Gal(SeparableClosure K / K))
-              H₀ (le_baseField H₀)) := by
-        exact ambientEmbeddedAbsoluteQuotientFinite K F i
+              H₀ (le_baseField H₀)) := 
+        ambientEmbeddedAbsoluteQuotientFinite K F i
       let H : FiniteAbstractField
           Gal(SeparableClosure K / K) :=
         ⟨H₀, hHabsolute⟩
@@ -1403,8 +1274,8 @@ theorem
         Gal(SeparableClosure K / K)).toSubgroup ⧸
         extensionSubgroup
           (baseField Gal(SeparableClosure K / K))
-          H₀ (le_baseField H₀)) := by
-    exact ambientEmbeddedAbsoluteQuotientFinite K F i
+          H₀ (le_baseField H₀)) := 
+    ambientEmbeddedAbsoluteQuotientFinite K F i
   let H : FiniteAbstractField
       Gal(SeparableClosure K / K) :=
     ⟨H₀, ambientEmbeddedAbsoluteQuotientFinite K F i⟩
@@ -1419,9 +1290,7 @@ theorem
           K F E j e (QuotientGroup.mk tau) =
         QuotientGroup.mk
           (intrinsicBaseEquivAmbientEmbeddedField K F i e tau) := by
-    exact
-      LocalFieldTheory.QuotientGroup.continuousCongr_mk
-        _ _ _ _ tau
+    rfl
   rw [hquotientMk] at htransport
   change
     QuotientGroup.mk tau ∈
@@ -1442,7 +1311,7 @@ theorem
 /-- Restricting the ambient separable-closure equivalence gives an
 `F`-algebra equivalence between the intrinsic and ambient Frobenius fixed
 fields. -/
-noncomputable def
+def
     intrinsicFrobeniusFixedFieldEquivAmbientEmbeddedField
     (j : E →ₐ[K] SeparableClosure K) :
     let i :=
@@ -1495,8 +1364,8 @@ noncomputable def
             Gal(SeparableClosure K / K)).toSubgroup ⧸
             extensionSubgroup
               (baseField Gal(SeparableClosure K / K))
-              H₀ (le_baseField H₀)) := by
-        exact ambientEmbeddedAbsoluteQuotientFinite K F i
+              H₀ (le_baseField H₀)) := 
+        ambientEmbeddedAbsoluteQuotientFinite K F i
       let H : FiniteAbstractField
           Gal(SeparableClosure K / K) :=
         ⟨H₀, hHabsolute⟩
@@ -1530,8 +1399,7 @@ noncomputable def
             change rho (i x) = i x
             change
               rho ∈ (AlgHom.fieldRange i).fixingSubgroup at hrhoH
-            rw [IntermediateField.mem_fixingSubgroup_iff] at hrhoH
-            exact hrhoH (i x) ⟨x, rfl⟩)
+            simp_all)
         letI : Algebra F LH :=
           iLH.toRingHom.toAlgebra
         abstractFixedField F (SeparableClosure F) SF ≃ₐ[F] LH := by
@@ -1584,8 +1452,8 @@ noncomputable def
         Gal(SeparableClosure K / K)).toSubgroup ⧸
         extensionSubgroup
           (baseField Gal(SeparableClosure K / K))
-          H₀ (le_baseField H₀)) := by
-    exact ambientEmbeddedAbsoluteQuotientFinite K F i
+          H₀ (le_baseField H₀)) := 
+    ambientEmbeddedAbsoluteQuotientFinite K F i
   let H : FiniteAbstractField
       Gal(SeparableClosure K / K) :=
     ⟨H₀, ambientEmbeddedAbsoluteQuotientFinite K F i⟩
@@ -1619,8 +1487,7 @@ noncomputable def
       change rho (i x) = i x
       change
         rho ∈ (AlgHom.fieldRange i).fixingSubgroup at hrhoH
-      rw [IntermediateField.mem_fixingSubgroup_iff] at hrhoH
-      exact hrhoH (i x) ⟨x, rfl⟩)
+      simp_all)
   letI : Algebra F LH :=
     iLH.toRingHom.toAlgebra
   let psi :=
@@ -1634,8 +1501,8 @@ noncomputable def
       intro rho hrho
       let rhoH : H₀.toSubgroup := ⟨rho, hSHH hrho⟩
       have hrhoExtension :
-          rhoH ∈ extensionSubgroup RH.field SH hSHH := by
-        exact hrho
+          rhoH ∈ extensionSubgroup RH.field SH hSHH := 
+        hrho
       have hrhoInternal :
           rhoH ∈ (localResidueDatum K).frobeniusFixedSubgroupWithin
             RH J₀ hJH sigmaH := by
@@ -1655,9 +1522,7 @@ noncomputable def
                   rhoH :=
               psi.apply_symm_apply rhoH
             rw [hpsiApply]
-            simpa only [
-              i, jF, jI, EI, H₀, J₀, hJH, RF, hHabsolute, H, RH,
-              sigmaH] using hrhoInternal)
+            omega)
       have htauExtension :
           tau ∈ extensionSubgroup
             RF.field SF hSFB := by
@@ -1672,8 +1537,8 @@ noncomputable def
       have hrhoeq : (psi tau).1 = rho :=
         congrArg Subtype.val hpsi
       calc
-        rho (e x) = (psi tau).1.1 (e x) := by
-          exact congrArg
+        rho (e x) = (psi tau).1.1 (e x) := 
+          congrArg
             (fun g : Gal(SeparableClosure K / K) => g (e x))
             hrhoeq.symm
         _ = e (tau.1 x) := by
@@ -1688,11 +1553,11 @@ noncomputable def
         ⟨tau₀, by
           rw [intrinsicAbstractBase,
             closedFixingSubgroup_bot_eq_baseField]
-          exact Subgroup.mem_top _⟩
+          simp⟩
       have htauExtension :
           tau ∈ extensionSubgroup
-            RF.field SF hSFB := by
-        exact htau₀
+            RF.field SF hSFB := 
+        htau₀
       have htauInternal :
           tau ∈ (localResidueDatum F).frobeniusFixedSubgroupWithin
             RF EI.field EI.below sigma := by
@@ -1731,10 +1596,9 @@ noncomputable def
             exact y.property)⟩
     left_inv := fun x => by
       apply Subtype.ext
-      exact e.symm_apply_apply (x : SeparableClosure F)
+      simp
     right_inv := fun y => by
-      apply Subtype.ext
-      exact e.apply_symm_apply (y : SeparableClosure K)
+      simp
     map_mul' := fun x y => by
       apply Subtype.ext
       exact e.map_mul (x : SeparableClosure F) (y : SeparableClosure F)
@@ -1827,8 +1691,8 @@ theorem
             Gal(SeparableClosure K / K)).toSubgroup ⧸
             extensionSubgroup
               (baseField Gal(SeparableClosure K / K))
-              H₀ (le_baseField H₀)) := by
-        exact ambientEmbeddedAbsoluteQuotientFinite K F i
+              H₀ (le_baseField H₀)) := 
+        ambientEmbeddedAbsoluteQuotientFinite K F i
       let H : FiniteAbstractField
           Gal(SeparableClosure K / K) :=
         ⟨H₀, hHabsolute⟩
@@ -1856,8 +1720,7 @@ theorem
           change rho (i y) = i y
           change
             rho ∈ (AlgHom.fieldRange i).fixingSubgroup at hrhoH
-          rw [IntermediateField.mem_fixingSubgroup_iff] at hrhoH
-          exact hrhoH (i y) ⟨y, rfl⟩)
+          simp_all)
       letI : Algebra F LH :=
         iLH.toRingHom.toAlgebra
       ((intrinsicFrobeniusFixedFieldEquivAmbientEmbeddedField
@@ -1866,9 +1729,3 @@ theorem
   dsimp only
   intro e sigma x
   rfl
-
-end EmbeddedFrobeniusTransport
-
-end LocalClassFieldTheory
-
-end

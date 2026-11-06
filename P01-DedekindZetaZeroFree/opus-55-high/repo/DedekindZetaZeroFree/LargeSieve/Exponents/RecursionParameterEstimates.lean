@@ -6,18 +6,18 @@ public import Mathlib
 
 namespace DedekindZetaZeroFree.LargeSieve
 
-private lemma rpow_exp_congr {a x y : ℝ} (h : x = y) : Real.rpow a x = Real.rpow a y := by
+lemma rpow_exp_congr {a x y : ℝ} (h : x = y) : Real.rpow a x = Real.rpow a y := by
   rw [h]
 
 private lemma rpow_mul' {x : ℝ} (hx : 0 ≤ x) (y z : ℝ) :
     Real.rpow (Real.rpow x y) z = Real.rpow x (y * z) :=
   (Real.rpow_mul hx y z).symm
 
-private lemma mul_rpow' {x y z : ℝ} (hx : 0 ≤ x) (hy : 0 ≤ y) :
+lemma mul_rpow' {x y z : ℝ} (hx : 0 ≤ x) (hy : 0 ≤ y) :
     Real.rpow (x * y) z = Real.rpow x z * Real.rpow y z :=
   Real.mul_rpow hx hy
 
-private lemma div_rpow' {x y z : ℝ} (hx : 0 ≤ x) (hy : 0 ≤ y) :
+lemma div_rpow' {x y z : ℝ} (hx : 0 ≤ x) (hy : 0 ≤ y) :
     Real.rpow (x / y) z = Real.rpow x z / Real.rpow y z :=
   Real.div_rpow hx hy z
 
@@ -34,24 +34,24 @@ private lemma rpow_le_rpow_exp' {x y z : ℝ} (hx : 1 ≤ x) (h : y ≤ z) :
 private lemma one_le_rpow' {x z : ℝ} (hx : 1 ≤ x) (hz : 0 ≤ z) :
     1 ≤ Real.rpow x z := Real.one_le_rpow hx hz
 
-private lemma rpow_pos' {x : ℝ} (hx : 0 < x) (y : ℝ) : 0 < Real.rpow x y :=
+lemma rpow_pos' {x : ℝ} (hx : 0 < x) (y : ℝ) : 0 < Real.rpow x y :=
   Real.rpow_pos_of_pos hx y
 
 private lemma rpow_nonneg' {x : ℝ} (hx : 0 ≤ x) (y : ℝ) : 0 ≤ Real.rpow x y :=
   Real.rpow_nonneg hx y
 
-private lemma rpow_neg' {x : ℝ} (hx : 0 ≤ x) (y : ℝ) :
+lemma rpow_neg' {x : ℝ} (hx : 0 ≤ x) (y : ℝ) :
     Real.rpow x (-y) = (Real.rpow x y)⁻¹ := Real.rpow_neg hx y
 
 private lemma rpow_natCast' (x : ℝ) (n : ℕ) : Real.rpow x n = x ^ n :=
   Real.rpow_natCast x n
 
-private lemma rpow_zero' (x : ℝ) : Real.rpow x 0 = 1 := Real.rpow_zero x
+lemma rpow_zero' (x : ℝ) : Real.rpow x 0 = 1 := Real.rpow_zero x
 
-private lemma sqrt_eq_rpow' (x : ℝ) : Real.sqrt x = Real.rpow x (1 / 2) :=
+lemma sqrt_eq_rpow' (x : ℝ) : Real.sqrt x = Real.rpow x (1 / 2) :=
   Real.sqrt_eq_rpow x
 
-private lemma nat_le_of_one_le {r : ℕ} (hr : 1 ≤ r) : (0 : ℝ) < (r : ℝ) := by
+lemma nat_le_of_one_le {r : ℕ} (hr : 1 ≤ r) : (0 : ℝ) < (r : ℝ) := by
   exact_mod_cast (lt_of_lt_of_le Nat.zero_lt_one hr)
 
 private lemma rpow_H5_le {M N η : ℝ} {r : ℕ} (hM : 1 ≤ M) (hN : 1 ≤ N) (hη : 0 < η)
@@ -92,9 +92,7 @@ theorem recursion_parameter_basic (α M N η : ℝ) (r : ℕ)
     Real.rpow (H) 5 ≤ Real.rpow (T) (η / 4) := by
   dsimp only []
   refine ⟨?_, ?_, ?_⟩
-  · rw [div_pos_iff]
-    left
-    exact ⟨hη, by positivity⟩
+  · positivity
   · exact one_le_rpow' hN (by positivity)
   · exact rpow_H5_le hM hN hη hr hrη
 
@@ -147,7 +145,7 @@ private lemma far_aux (α M N η T δ K R : ℝ) (r : ℕ)
         pow_le_pow_left₀ (by positivity) hfar 2
       have hTsq : Real.rpow T (2 * δ) = (Real.rpow T δ) ^ 2 := by
         rw [show (2 : ℝ) * δ = δ * 2 by ring, ← rpow_mul' (le_of_lt hT0)]
-        exact rpow_natCast' (Real.rpow T δ) 2
+        simp
       have hkey : N ^ 2 * Real.rpow T (2 * δ) ≤ M ^ 2 := by
         rw [hTsq]
         nlinarith [hpow2]
@@ -311,15 +309,13 @@ private lemma near_aux (α M N η δ : ℝ) (r : ℕ)
         rpow_mul' (le_of_lt hT0) δ (α - 1)]
     have hcore' : Real.rpow N (1 - α) * Real.rpow M (α - 1) ≤
         Real.rpow 2 (α - 1) * Real.rpow (M * N) (δ * (α - 1)) := by
-      rw [← h1, ← h2]
-      exact hcore
+      simp_all
     have hNa : Real.rpow N (1 - α) * Real.rpow N (2 * α - 1) = Real.rpow N α := by
       rw [rpow_add' hN0]
       rw [rpow_exp_congr (show (1 - α) + (2 * α - 1) = α by ring)]
     have hMa : Real.rpow M (α - 1) * Real.rpow M (1 - α) = 1 := by
       rw [rpow_add' hM0]
-      rw [rpow_exp_congr (show (α - 1) + (1 - α) = 0 by ring)]
-      rw [rpow_zero']
+      simp
     have hl : Real.rpow N (1 - α) * Real.rpow M (α - 1) * Real.rpow N (2 * α - 1) *
         Real.rpow M (1 - α) = Real.rpow N α := by
       rw [show Real.rpow N (1 - α) * Real.rpow M (α - 1) * Real.rpow N (2 * α - 1) *
@@ -335,7 +331,7 @@ private lemma near_aux (α M N η δ : ℝ) (r : ℕ)
             Real.rpow N (2 * α - 1) * Real.rpow M (1 - α) := by
           have := mul_le_mul_of_nonneg_right
             (mul_le_mul_of_nonneg_right hcore' (le_of_lt hN2)) (le_of_lt hM1)
-          simpa only [mul_assoc] using this
+          omega
   · have hδa : δ * (α - 1) ≤ η / 8 := by
       rw [hδ, div_mul_eq_mul_div, div_le_iff₀ (by positivity)]
       have hrr : α - 1 ≤ (r : ℝ) * (α + 1) := by
@@ -358,5 +354,3 @@ theorem recursion_parameter_near (α M N η : ℝ) (r : ℕ)
   dsimp only []
   exact near_aux α M N η (η / (8 * (r : ℝ) * (α + 1))) r
     hα hM hN hη hr hrη rfl hnear
-
-end DedekindZetaZeroFree.LargeSieve

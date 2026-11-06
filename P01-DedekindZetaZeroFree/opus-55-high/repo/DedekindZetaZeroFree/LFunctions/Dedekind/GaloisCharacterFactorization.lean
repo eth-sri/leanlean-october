@@ -119,5 +119,3 @@ theorem allCharacterFactorization
         ∑' I : Ideal (𝓞 K), χ ρ I * (Ideal.absNorm I : ℂ) ^ (-s)) :=
     hA.congr_fun fun P => (hpoint P).symm
   exact (hA'.unique (primeEulerRegroup K L s hs)).symm
-
-end DedekindZetaZeroFree.AbelianQuotient

@@ -41,9 +41,9 @@ namespace DedekindZetaZeroFree.PoissonS.ScaleShift
       (PoissonArch.idealLattice F (PoissonArch.codifferentIdeal F * I⁻¹) :
         Set (PoissonArch.Space F))
     rw [← PoissonArch.idealTraceDual_eq, ← adapter_mem_dual]
-    simpa using w.property⟩
-  left_inv y := by ext; simp
-  right_inv w := by ext; simp
+    simp⟩
+  left_inv y := by simp
+  right_inv w := by simp
 
 theorem trace_ideal_coset_poisson (F : Type) [Field F] [NumberField F]
     (I : PoissonArch.NonzeroFractionalIdeal F)
@@ -174,7 +174,7 @@ private theorem kernel_norm (F : Type) [Field F] [NumberField F]
     (x y : Space F S) : ‖kernel F S e x y‖ = 1 := by
   simp only [kernel, norm_mul, norm_prod, Circle.norm_coe, Finset.prod_const_one, mul_one]
   rw [Complex.norm_exp]
-  simp [Complex.mul_re, Complex.mul_im]
+  simp
 private theorem kernel_continuous (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
     (e : (v : S) → AddChar (v.val.adicCompletion F) Circle)
@@ -285,7 +285,7 @@ private theorem ideal_le_of_counts (F : Type) [Field F] [NumberField F]
           FractionalIdeal.count F v A) := by
     apply Set.Finite.subset (Filter.eventually_cofinite.mp (FractionalIdeal.finite_factors A))
     intro v hv hz
-    exact hv (by simp [hz])
+    simp_all
   apply finprod_le_finprod (hs I) (hs J)
   intro v
   apply zpow_le_zpow_right_of_le_one₀ _ _ (h v)
@@ -313,7 +313,7 @@ theorem fractionalIdeal_mem_iff_valuations (F : Type) [Field F] [NumberField F]
   · intro h
     apply ideal_le_of_counts F P I hP hI
     intro v
-    simpa only [hv, WithZero.exp_le_exp, neg_le_neg_iff] using h v
+    simp_all
 
 theorem count_ballFractionalIdeal (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (RingOfIntegers F))) (k : S → ℤ)
@@ -375,7 +375,7 @@ theorem dual_ballFractionalIdeal (F : Type) [Field F] [NumberField F]
     apply finprod_eq_finsetProd_of_mulSupport_subset
     intro v hv
     by_contra h
-    exact hv (by change (_ : FractionalIdeal (RingOfIntegers F)⁰ F) ^ differentExponent F v = 1; rw [hd v h, zpow_zero])
+    exact hv (by change (_ : FractionalIdeal (RingOfIntegers F)⁰ F) ^ differentExponent F v = 1; simp_all)
   rw [PoissonArch.codifferentIdeal_eq_inv_different, ← hfactor]
   simp only [ballFractionalIdeal, ← Finset.prod_inv_distrib, ← Finset.prod_mul_distrib]
   apply Finset.prod_congr rfl
@@ -406,8 +406,7 @@ theorem finiteBall_diagonal_mem (F : Type) [Field F] [NumberField F]
     PoissonFinite.diagonal F S (m : F) ∈ finiteBall F S k ↔
       (m : F) ∈ ballFractionalIdeal F S k := by
   rw [fractionalIdeal_mem_iff_valuations F _ (ballFractionalIdeal_ne_zero F S k)]
-  simp only [finiteBall, PoissonFinite.diagonal, Set.mem_setOf_eq,
-    norm_ball_iff_valuation, HeightOneSpectrum.adicCompletion.valued_coe]
+  simp only [finiteBall, PoissonFinite.diagonal, Set.mem_setOf_eq, norm_ball_iff_valuation]
   have hv (v : S) : (Valued.v (FinitePlace.embedding v.val (m : F)) :
       WithZero (Multiplicative ℤ)) = v.val.valuation F (m : F) :=
     HeightOneSpectrum.adicCompletion.valued_coe _ _ _
@@ -436,9 +435,7 @@ def diagonalLatticeEquiv (F : Type) [Field F] [NumberField F]
     · intro m
       obtain ⟨x, hx, he⟩ := m.property
       refine ⟨⟨x, hx⟩, ?_⟩
-      apply Subtype.ext
-      change diagonalHom F S (1 * x) = (m : Space F S) at he
-      simpa only [one_mul] using he)
+      simp_all)
 
 def idealEmbeddingEquiv (F : Type) [Field F] [NumberField F]
     (I : PoissonArch.NonzeroFractionalIdeal F) :
@@ -461,8 +458,8 @@ def idealCosetEquiv (F : Type) [Field F] [NumberField F]
   toFun x := ⟨⟨(t : F) + (x : F), (S : Set (HeightOneSpectrum (RingOfIntegers F))).integer F |>.add_mem
     t.property (ballFractionalIdeal_le_sIntegers F S k x.property)⟩, by simpa using x.property⟩
   invFun m := ⟨(m : F) - (t : F), m.property⟩
-  left_inv x := by ext; simp
-  right_inv m := by ext; simp
+  left_inv x := by simp
+  right_inv m := by simp
 
  abbrev R (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (RingOfIntegers F))) :=
@@ -805,7 +802,3 @@ theorem normalized_tensor_poisson
   rw [heq]
   exact poisson_finset_sum F S e μ he Finset.univ c g
     (fun j _ => hg j) (fun j _ => hs j) (fun j _ => hfs j) (fun j _ => hp j)
-
-end DedekindZetaZeroFree.PoissonS.ScaleShift
-
-end

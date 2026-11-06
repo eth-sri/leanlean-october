@@ -7,8 +7,6 @@ public import DedekindZetaZeroFree.Metaplectic.Torus.RationalCenterCharacterData
 open scoped NumberField Classical BigOperators NNReal
 open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.KPGlobalCenterRationalCharacterModulus
-noncomputable section
-set_option autoImplicit false
 
 theorem raw_torus_local_ratio (F : Type) [Field F] [NumberField F]
     (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
@@ -27,10 +25,7 @@ theorem raw_torus_local_ratio (F : Type) [Field F] [NumberField F]
   have hpgl : KPAdelicCoverRestrictedProduct.pglProjection F ζ hζ t.val =
       QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F) A := by
     rw [hA, ← hx]
-    simp only [KPAdelicCoverRestrictedProduct.pglProjection,
-      KPAdelicCoverRestrictedProduct.scalarQuotient,
-      KPAdelicCoverRestrictedProduct.projection_amalgamation,
-      QuotientGroup.mk'_apply, QuotientGroup.lift_mk', MonoidHom.comp_apply]
+    rfl
 
   obtain ⟨B, hB, hB10, hB01⟩ := t.property
   have hAB : QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F) A =
@@ -45,28 +40,23 @@ theorem raw_torus_local_ratio (F : Type) [Field F] [NumberField F]
         (s : KPAdelicCoverRestrictedProduct.Adeles F) = 0 := by
       have h := congrArg (fun M : KPAdelicCoverRestrictedProduct.AdelicGL2 F =>
         (M : Matrix (Fin 2) (Fin 2) (KPAdelicCoverRestrictedProduct.Adeles F)) 1 0) hzA
-      simp only [Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
-        Matrix.mul_apply, Fin.sum_univ_two, Matrix.scalar_apply, Matrix.diagonal_apply,
-        hB10, mul_zero, add_zero, zero_add, Fin.isValue, Fin.reduceEq, ↓reduceIte] at h
-      simpa using h
-    exact (IsUnit.mul_left_eq_zero ⟨s, rfl⟩).mp h1
+      simp only [Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_apply, Fin.sum_univ_two, Matrix.scalar_apply, Matrix.diagonal_apply, hB10, mul_zero, add_zero, Fin.isValue, Fin.reduceEq, ↓reduceIte] at h
+      omega
+    simp_all
   have hA01 : A 0 1 = 0 := by
     have h1 : (A : Matrix (Fin 2) (Fin 2) (KPAdelicCoverRestrictedProduct.Adeles F)) 0 1 *
         (s : KPAdelicCoverRestrictedProduct.Adeles F) = 0 := by
       have h := congrArg (fun M : KPAdelicCoverRestrictedProduct.AdelicGL2 F =>
         (M : Matrix (Fin 2) (Fin 2) (KPAdelicCoverRestrictedProduct.Adeles F)) 0 1) hzA
-      simp only [Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
-        Matrix.mul_apply, Fin.sum_univ_two, Matrix.scalar_apply, Matrix.diagonal_apply,
-        hB01, mul_zero, add_zero, zero_add, Fin.isValue, Fin.reduceEq, ↓reduceIte] at h
-      simpa using h
-    exact (IsUnit.mul_left_eq_zero ⟨s, rfl⟩).mp h1
+      simp only [Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_apply, Fin.sum_univ_two, Matrix.scalar_apply, Matrix.diagonal_apply, hB01, mul_zero, zero_add, Fin.isValue, Fin.reduceEq, ↓reduceIte] at h
+      omega
+    simp_all
 
   let ot : KPGlobalTorusFunctionData.ordinaryTorus F :=
     ⟨KPAdelicCoverRestrictedProduct.pglProjection F ζ hζ t.val, t.property⟩
   have hp_eq : KPGlobalTorusFunctionData.p F ζ hζ t =
       KPGlobalTorusFunctionData.torusRatio F ot := by
-    simp only [KPGlobalTorusFunctionData.p, MonoidHom.comp_apply]
-    congr 1
+    rfl
   let D : IsUnit (A 0 0) ∧ IsUnit (A 1 1) :=
     KPGlobalTorusFunctionData.diagonal_entries_units F A hA10 hA01
   have hratio : (KPGlobalTorusFunctionData.torusRatio F ot :
@@ -74,7 +64,7 @@ theorem raw_torus_local_ratio (F : Type) [Field F] [NumberField F]
     KPGlobalTorusFunctionData.ratio_formula F ot A hpgl.symm hA10 hA01
   have hratio' : KPGlobalTorusFunctionData.torusRatio F ot = D.1.unit * D.2.unit⁻¹ := by
     apply Units.ext
-    simpa only [Units.val_mul, Units.val_inv_eq_inv_val] using hratio
+    simp_all
   let u0 : (KPHilbert.Completion F v)ˣ :=
     Units.map (KPAdelicCoverRestrictedProduct.adeleEval F v :
       KPAdelicCoverRestrictedProduct.Adeles F →* KPHilbert.Completion F v) D.1.unit
@@ -96,7 +86,7 @@ theorem raw_torus_local_ratio (F : Type) [Field F] [NumberField F]
       rw [hA, KPAdelicCoverRestrictedProduct.restrictedProjection_eval]
       rfl
     rw [← h1]
-    simp only [KPAdelicCoverRestrictedProduct.matrixEval, Matrix.GeneralLinearGroup.map_apply]
+    rfl
   have hval0 : (u0 : KPHilbert.Completion F v) = (x v).g 0 0 := by
     simp only [u0, Units.coe_map, IsUnit.unit_spec]
     exact (hentry 0 0).symm
@@ -111,6 +101,3 @@ theorem raw_torus_local_ratio (F : Type) [Field F] [NumberField F]
       IsUnit ((x v).g 0 0) ∧ IsUnit ((x v).g 1 1)).2.unit = u1 :=
     Units.ext ((IsUnit.unit_spec ⟨u1, hval1⟩).trans hval1.symm)
   rw [e0, e1, hkey]
-
-end
-end DedekindZetaZeroFree.KPGlobalCenterRationalCharacterModulus

@@ -59,7 +59,7 @@ theorem normalizedAbs_continuousAt_ne_zero
     have := hy
     simp [hy0] at this
     exact hv this.symm
-  simp only [if_neg hx, if_neg hy0, hy]
+  simp_all
 
 theorem normalizedAbs_measurable
     (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K]
@@ -81,8 +81,8 @@ theorem multiplicative_density_measurable
     Measurable (fun y : K => ENNReal.ofReal ((if y = 0 then (0 : ℝ) else
       (CubicUnitCharacters.residueCard K : ℝ) ^
         WithZero.log (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K
-          (ValuativeRel.valuation K y)))⁻¹)) := by
-  exact (normalizedAbs_measurable K).inv.ennreal_ofReal
+          (ValuativeRel.valuation K y)))⁻¹)) := 
+  (normalizedAbs_measurable K).inv.ennreal_ofReal
 
 theorem character_norm_on_valuation_shell
     (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K]
@@ -110,7 +110,7 @@ theorem character_norm_on_valuation_shell
   have he : x = π ^ j * Units.map (𝒪[K]).subtype.toMonoidHom u := by
     rw [heu]
     dsimp [y]
-    rw [mul_comm, div_mul_cancel]
+    simp
   rw [he]
   exact character_norm_uniformizer_unit K ξ χ hχ π b hb j u
 
@@ -135,11 +135,11 @@ theorem integrand_continuousOn
       Set.mem_singleton_iff, not_or] using hx
   have hχc : ContinuousOn (fun x : K ↦ if hx : x = 0 then (0 : ℂ) else
       (χ (Units.mk0 x hx) : ℂ)) ({0} : Set K)ᶜ := by
-    have he : ({0} : Set K)ᶜ = {x : K | x ≠ 0} := by ext; simp
+    have he : ({0} : Set K)ᶜ = {x : K | x ≠ 0} := by rfl
     rw [he, continuousOn_iff_continuous_restrict]
     have hc : Continuous (fun x : {x : K // x ≠ 0} ↦
         (χ ((unitsHomeomorphNeZero (G₀ := K)).symm x) : ℂ)) :=
-      Units.continuous_val.comp (χ.continuous.comp (unitsHomeomorphNeZero (G₀ := K)).symm.continuous)
+      by fun_prop
     apply hc.congr
     intro a
     have ha : (a : K) ≠ 0 := a.property
@@ -161,14 +161,12 @@ theorem integrand_continuousOn
       (hAc.comp (continuousAt_const.sub continuousAt_id))).cpow continuousAt_const ?_).continuousWithinAt
     exact Complex.ofReal_mem_slitPlane.mpr hApos
   have hh := (hχc x (by simpa using hx0)).mono (show ({0, 1} : Set K)ᶜ ⊆ {0}ᶜ by
-    simp only [Set.subset_def, Set.mem_compl_iff, Set.mem_insert_iff,
-      Set.mem_singleton_iff]; tauto) |>.mul hc
+    simp) |>.mul hc
   have heq : (fun y : K => (if hy : y = 0 then (0 : ℂ) else
       (χ (Units.mk0 y hy) : ℂ)) * (A (1-y) : ℂ)^(-s)) =
       (fun y : K => if hy : y = 0 then (0 : ℂ) else
         (χ (Units.mk0 y hy) : ℂ) * (A (1-y) : ℂ)^(-s)) := by
-    funext y
-    by_cases hy : y = 0 <;> simp [hy]
+    simp
   change ContinuousWithinAt (fun y : K => if hy : y = 0 then (0 : ℂ) else
         (χ (Units.mk0 y hy) : ℂ) * (A (1-y) : ℂ)^(-s)) ({0, 1} : Set K)ᶜ x
   rw [← heq]
@@ -240,8 +238,7 @@ theorem uniformizer_value_exponent
     apply WithZero.le_exp_of_log_le
     omega
   · have hsmall : WithZero.exp (-1 : ℤ) < (1 : WithZero (Multiplicative ℤ)) := by
-      rw [← WithZero.exp_zero, WithZero.exp_lt_exp]
-      omega
+      simp
     have hlt : e.symm (WithZero.exp (-1 : ℤ)) < 1 := by
       simpa using e.symm.strictMono hsmall
     have hle := le_uniformizer_iff.mpr hlt
@@ -307,8 +304,8 @@ theorem normalized_shell_mass_bound
   let q : ℝ := CubicUnitCharacters.residueCard K
   have hmass : μ {x | A x ≤ q ^ k} = ENNReal.ofReal (q ^ k) * μ (𝒪[K] : Set K) :=
     NonarchimedeanHaarScaling.closedBall_measure K μ k
-  have hO : μ (𝒪[K] : Set K) ≠ ⊤ := by
-    exact (IsNonarchimedeanLocalField.isCompact_closedBall K 1).measure_lt_top.ne
+  have hO : μ (𝒪[K] : Set K) ≠ ⊤ := 
+    (IsNonarchimedeanLocalField.isCompact_closedBall K 1).measure_lt_top.ne
   have hfinite : μ {x | A x ≤ q ^ k} ≠ ⊤ := by
     rw [hmass]
     exact ENNReal.mul_ne_top ENNReal.ofReal_ne_top hO
@@ -320,10 +317,7 @@ theorem normalized_shell_mass_bound
     _ = q ^ k * μ.real (𝒪[K] : Set K) := by
       rw [Measure.real, hmass, ENNReal.toReal_mul, ENNReal.toReal_ofReal]
       · rfl
-      · have hq : 1 < q := by
-          dsimp [q, CubicUnitCharacters.residueCard]
-          exact_mod_cast (Finite.one_lt_card (α := 𝓀[K]))
-        exact (zpow_pos (lt_trans zero_lt_one hq) k).le
+      positivity
 
 theorem weighted_integrand_norm
     (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K]
@@ -345,10 +339,7 @@ theorem weighted_integrand_norm
   have hA : ∀ y, 0 ≤ A y := by
     intro y
     dsimp [A]
-    split_ifs
-    · exact le_rfl
-    · exact (zpow_pos (show (0 : ℝ) < CubicUnitCharacters.residueCard K by
-        exact_mod_cast (Finite.one_lt_card (α := 𝓀[K])).trans_le' (by decide)) _).le
+    positivity
   change ‖(A x)⁻¹ • (if hy : x = 0 then 0 else
     (χ (Units.mk0 x hy) : ℂ) * (A (1-x) : ℂ)^(-s))‖ = _
   rw [dif_neg hx, norm_smul, Real.norm_eq_abs, abs_of_nonneg (inv_nonneg.mpr (hA x)),
@@ -387,8 +378,7 @@ theorem multiplicative_shell_mass_le
       _ = ∫⁻ x in {x | A x = r}, ENNReal.ofReal r⁻¹ ∂μ := by
         apply setLIntegral_congr_fun hs
         intro x hx
-        dsimp only
-        rw [show A x = r from hx]
+        simp_all
       _ = _ := by simp
   rw [heq]
   have hm : μ {x | A x = r} ≤ ENNReal.ofReal r * μ ((ValuativeRel.valuation K).integer : Set K) := by
@@ -401,7 +391,7 @@ theorem multiplicative_shell_mass_le
       rw [← mul_assoc, ENNReal.ofReal_inv_of_pos hr,
         ENNReal.inv_mul_cancel (by exact (ENNReal.ofReal_pos.mpr hr).ne') ENNReal.ofReal_ne_top, one_mul]
 
-private theorem abs_lt_valuation
+theorem abs_lt_valuation
     (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K]
     [IsNonarchimedeanLocalField K] {x y : K} (hy : y ≠ 0) :
     KPCubicHaar.abs K x < KPCubicHaar.abs K y ↔ valuation K x < valuation K y := by
@@ -427,10 +417,9 @@ private theorem abs_lt_valuation
   rw [← e.toOrderIso.lt_iff_lt]
   change WithZero.log (e (valuation K x)) < WithZero.log (e (valuation K y)) ↔
     e (valuation K x) < e (valuation K y)
-  conv_rhs => rw [← WithZero.exp_log hex, ← WithZero.exp_log hey]
-  exact WithZero.exp_lt_exp.symm
+  simp_all
 
-private theorem abs_eq_of_val_eq
+theorem abs_eq_of_val_eq
     (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K]
     [IsNonarchimedeanLocalField K] {x y : K}
     (h : valuation K x = valuation K y) : KPCubicHaar.abs K x = KPCubicHaar.abs K y := by
@@ -438,7 +427,7 @@ private theorem abs_eq_of_val_eq
     rw [← (Valuation.zero_iff (valuation K)), ← (Valuation.zero_iff (valuation K)), h]
   simp only [KPCubicHaar.abs, he, h]
 
-private theorem shell_geometric_integrable
+theorem shell_geometric_integrable
     {X : Type*} [MeasurableSpace X] (μ : Measure X)
     (f : X → ℂ) (hf : AEStronglyMeasurable f μ)
     (S : ℕ → Set X) (hm : ∀ j, MeasurableSet (S j))
@@ -453,8 +442,8 @@ private theorem shell_geometric_integrable
       (div_nonneg (pow_nonneg ht _) (hr j).le))
     (fun j => ?_) ((summable_geometric_of_lt_one ht ht1).mul_left M)
   calc
-    μ.real (S j) * (t ^ j / r j) ≤ (r j * M) * (t ^ j / r j) := by
-      exact mul_le_mul_of_nonneg_right (hmass j).2
+    μ.real (S j) * (t ^ j / r j) ≤ (r j * M) * (t ^ j / r j) := 
+      mul_le_mul_of_nonneg_right (hmass j).2
         (div_nonneg (pow_nonneg ht _) (hr j).le)
     _ = M * t ^ j := by field_simp [(hr j).ne']
 
@@ -552,7 +541,7 @@ theorem integrable_in_joint_strip
     intro n x hx
     have hx0 : x ≠ 0 := by intro he; have hz := hx.1; rw [he, hA0] at hz; exact (zpow_ne_zero _ hq0.ne') hz.symm
     rw [hnorm x hx0, hchar x hx0 _ hx.1, hx.1, hx.2]
-    simp only [neg_neg, zpow_natCast, Real.one_rpow, mul_one]
+    simp only [neg_neg, zpow_natCast]
     exact le_of_eq (by simp [div_eq_mul_inv, mul_comm])
   have hiInf : IntegrableOn W (⋃ n, Sinf n) μ := by
     apply shell_geometric_integrable μ W hW Sinf hmInf
@@ -588,22 +577,20 @@ theorem integrable_in_joint_strip
       field_simp
     rw [← inv_pow q, ← div_pow, he, inv_pow]
   have hi : IntegrableOn W ((⋃ n, S₀ n) ∪ (⋃ n, Sinf n) ∪ (⋃ n, S₁ n)) μ :=
-    (integrableOn_union.mpr ⟨integrableOn_union.mpr ⟨hi₀, hiInf⟩, hi₁⟩)
+    by simp_all
   have hcover : ∀ x, x ≠ 0 → x ≠ 1 →
       x ∈ ((⋃ n, S₀ n) ∪ (⋃ n, Sinf n) ∪ (⋃ n, S₁ n)) := by
     intro x hx0 hx1
-    have hex (y : K) (hy : y ≠ 0) : ∃ k : ℤ, A y = q ^ k := by
-      exact ⟨WithZero.log (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K
+    have hex (y : K) (hy : y ≠ 0) : ∃ k : ℤ, A y = q ^ k := 
+      ⟨WithZero.log (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K
         (valuation K y)), by change (if y = 0 then (0 : ℝ) else _) = _; rw [if_neg hy]; rfl⟩
     have low (y : K) (hy : y ≠ 0) (hyl : A y ≤ 1) :
         ∃ n : ℕ, A y = q ^ (-(n : ℤ)) := by
       obtain ⟨k, hk⟩ := hex y hy
       have hk0 : k ≤ 0 := by
-        apply (zpow_right_strictMono₀ hq).le_iff_le.mp
-        simpa only [zpow_zero] using hk.symm ▸ hyl
+        simp_all
       refine ⟨(-k).toNat, ?_⟩
-      rw [Int.toNat_of_nonneg (by omega), neg_neg]
-      exact hk
+      simp_all
     rcases lt_trichotomy (A x) 1 with hlt | heq | hgt
     · have hv : valuation K x < valuation K 1 :=
         (abs_lt_valuation K one_ne_zero).mp (by change A x < A 1; rw [hA1]; exact hlt)
@@ -640,7 +627,7 @@ theorem integrable_in_joint_strip
     by_cases hx1 : x = 1
     · subst x
       have hsne : s ≠ 0 := by intro he; simp [he] at hs0
-      simp [W, I, A, KPCubicHaar.abs, Complex.zero_cpow (neg_ne_zero.mpr hsne), hsne]
+      simp [W, I, A, KPCubicHaar.abs, Complex.zero_cpow (neg_ne_zero.mpr hsne)]
     · exact False.elim (hx (hcover x hx0 hx1)))
   apply (integrable_withDensity_iff_integrable_smul' (multiplicative_density_measurable K)
     (Filter.Eventually.of_forall (fun x => ENNReal.ofReal_lt_top))).mpr
@@ -648,5 +635,3 @@ theorem integrable_in_joint_strip
   funext x
   change (ENNReal.ofReal ((A x)⁻¹)).toReal • I x = (A x)⁻¹ • I x
   rw [ENNReal.toReal_ofReal (inv_nonneg.mpr (hAp x))]
-
-end DedekindZetaZeroFree.KPRamifiedBetaConductorSeries

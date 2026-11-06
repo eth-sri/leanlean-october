@@ -23,8 +23,8 @@ theorem dilation_inverse (t : Fˣ) :
 
 theorem dilation_diagonal (t : Fˣ) (a : F) :
     dilation F t (algebraMap F (AdeleRing (𝓞 F) F) a) =
-      algebraMap F (AdeleRing (𝓞 F) F) ((t : F) * a) := by
-  exact (map_mul (algebraMap F (AdeleRing (𝓞 F) F)) _ _).symm
+      algebraMap F (AdeleRing (𝓞 F) F) ((t : F) * a) := 
+  (map_mul (algebraMap F (AdeleRing (𝓞 F) F)) _ _).symm
 
 theorem dilation_principal_image (t : Fˣ) :
     dilation F t '' (AdeleRing.principalSubgroup (𝓞 F) F : Set _) =
@@ -37,7 +37,7 @@ theorem dilation_principal_image (t : Fˣ) :
     refine ⟨algebraMap F (AdeleRing (𝓞 F) F) ((↑t⁻¹ : F) * a),
       ⟨(↑t⁻¹ : F) * a, rfl⟩, ?_⟩
     rw [dilation_diagonal]
-    simp [← mul_assoc]
+    simp
 
 def dilationHom (t : Fˣ) : AdeleRing (𝓞 F) F →+ AdeleRing (𝓞 F) F where
   toFun := dilation F t
@@ -101,7 +101,3 @@ theorem quotientDilation_measurePreserving (t : Fˣ)
     rw [← hef]
     exact e.surjective
   · rfl
-
-end DedekindZetaZeroFree.KPAdditiveRationalDilation
-
-end

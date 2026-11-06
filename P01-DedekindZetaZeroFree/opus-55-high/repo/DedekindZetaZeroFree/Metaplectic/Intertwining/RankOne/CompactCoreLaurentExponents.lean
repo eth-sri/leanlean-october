@@ -102,9 +102,5 @@ theorem initialExponent_locallyConstant : IsLocallyConstant (initialExponent F �
   exact_mod_cast hn
 
 theorem initialExponent_finite_on_compact (C : Set (ActualCover F ζ hζ q)) (hC : IsCompact C) :
-    (initialExponent F ζ hζ q S '' C).Finite := by
-  exact (hC.image (initialExponent_locallyConstant F ζ hζ q S).continuous).finite_of_discrete
-
-end DedekindZetaZeroFree.KPRankOneShellRepair
-
-end
+    (initialExponent F ζ hζ q S '' C).Finite := 
+  (hC.image (initialExponent_locallyConstant F ζ hζ q S).continuous).finite_of_discrete

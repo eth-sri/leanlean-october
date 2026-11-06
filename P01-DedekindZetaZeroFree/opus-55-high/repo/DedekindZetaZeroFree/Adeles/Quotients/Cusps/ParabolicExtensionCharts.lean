@@ -130,9 +130,3 @@ theorem finite_adelic_cusp_charts
     KPCuspFiniteArithmetic.finite_adelic_parabolic_extension_lattice
       F hF U hcompact hopen g q σ hσ
   exact KPCuspGenuineGeometry.chartOutput_of_extension F hF _ D hdisc hlattice
-
-end DedekindZetaZeroFree.KPCuspMonodromy
-
-end
-
-end

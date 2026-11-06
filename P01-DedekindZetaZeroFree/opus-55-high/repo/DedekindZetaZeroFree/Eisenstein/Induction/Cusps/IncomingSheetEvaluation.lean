@@ -84,11 +84,7 @@ def finiteRepresentative (ε : rootsOfUnity 3 F) : KPFiniteCuspAtlas.FiniteCover
  theorem central_comm (ε : rootsOfUnity 3 F)
     (c : KPFiniteCuspAtlas.FiniteCover F ζ hζ) :
     KPCuspGenuineMonodromy.central F ζ hζ ε * c =
-      c * KPCuspGenuineMonodromy.central F ζ hζ ε := by
-  apply Subtype.ext
-  exact (Subgroup.mem_center_iff.mp
-    (KPAdelicCoverRestrictedProduct.pglCentralInjection_central F ζ hζ
-      ⟨ε, rfl⟩) c).symm
+      c * KPCuspGenuineMonodromy.central F ζ hζ ε := by apply DedekindZetaZeroFree.KPMsActualCuspSource.central_comm <;> assumption
 
 theorem atlasLevel_mem_globalLevel
     (u : (atlasLevel F ζ hζ C R P H U).toOpenSubgroup) :
@@ -394,7 +390,7 @@ private theorem arch_comm_finite (r : KPSmoothActualFlowData.GInfinity F)
     KPAdelicCoverRestrictedProduct.matrixEval] using hh
 
 open KPMsResidualTailRestoration.SharpConstantTerm.FiberStability in
-private theorem stabilizer_arch_height_zero
+theorem stabilizer_arch_height_zero
     (g : stabilizer F ζ hζ C R P H U a) :
     ∃ x : KPCuspCharts.Horizontal F, ∃ b : KPCuspCharts.Shape F,
       KPMsFixedHaarDisintegration.archBasepoint F (archRational (g : KPCuspArithmetic.PGL2 F)) =
@@ -530,7 +526,7 @@ theorem deckCoefficient_mk (x : (parabolic F ζ hζ C R P H U a).L) :
     rw [hx, ofAdd_add, map_mul, map_mul, hker, mul_one]
   simp only [deckCoefficient, hkey]
 
-private lemma chi_mul_sum_inv {G : Type*} [Group G] [Fintype G]
+lemma chi_mul_sum_inv {G : Type*} [Group G] [Fintype G]
     (χ : G →* ℂˣ) (h : G) :
     (χ h : ℂ) * (∑ g : G, (χ g : ℂ)⁻¹) = ∑ g : G, (χ g : ℂ)⁻¹ := by
   rw [Finset.mul_sum]
@@ -540,7 +536,7 @@ private lemma chi_mul_sum_inv {G : Type*} [Group G] [Fintype G]
   rw [Finset.sum_congr rfl (fun g _ => hbij g)]
   exact Equiv.sum_comp (Equiv.mulRight h⁻¹) (fun g => (χ g : ℂ)⁻¹)
 
-private lemma ofAdd_inv_mul (y z : (parabolic F ζ hζ C R P H U a).L) :
+lemma ofAdd_inv_mul (y z : (parabolic F ζ hζ C R P H U a).L) :
     (KPCuspGenuineMonodromy.chi F ζ hζ
         (rho F ζ hζ C R P H U a
           ((parabolic F ζ hζ C R P H U a).inclusion
@@ -555,7 +551,7 @@ private lemma ofAdd_inv_mul (y z : (parabolic F ζ hζ C R P H U a).L) :
               (Multiplicative.ofAdd y))) : ℂ)⁻¹ := by
   rw [ofAdd_add, map_mul, map_mul, map_mul, Units.val_mul, mul_inv_rev]
 
-private lemma phiC_neg (x : (parabolic F ζ hζ C R P H U a).L) :
+lemma phiC_neg (x : (parabolic F ζ hζ C R P H U a).L) :
     (KPCuspGenuineMonodromy.chi F ζ hζ
         (rho F ζ hζ C R P H U a
           ((parabolic F ζ hζ C R P H U a).inclusion

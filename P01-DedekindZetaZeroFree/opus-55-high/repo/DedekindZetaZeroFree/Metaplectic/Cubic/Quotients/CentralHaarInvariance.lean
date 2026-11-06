@@ -139,7 +139,7 @@ theorem t_measurePreserving
   rw [Measure.map_map ht_meas hq_meas, hcomp,
     ← Measure.map_map hq_meas hmulc_meas, hmap_mulc, hdom_eq]
 
-private theorem exists_arch_mul_finite
+theorem exists_arch_mul_finite
     (g : KPSmoothLocalQuotientCharts.ActualCover F ζ hζ) :
     ∃ (a : KPSmoothActualFlowData.GInfinity F)
       (c : KPContSectorCoveredQuotientVocabulary.FiniteCover F ζ hζ),

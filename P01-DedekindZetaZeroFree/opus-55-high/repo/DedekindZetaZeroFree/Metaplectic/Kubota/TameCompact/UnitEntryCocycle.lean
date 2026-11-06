@@ -9,8 +9,6 @@ open NumberField IsDedekindDomain
 
 namespace DedekindZetaZeroFree.KPTameCompact
 
-noncomputable section
-set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
@@ -34,7 +32,7 @@ private lemma norm_unit (x : K F v) (hx : ‖x‖ = 1) :
     by apply Subtype.ext; simp [hn], by apply Subtype.ext; simp [hn]⟩
   exact ⟨u, rfl⟩
 
-private lemma norm_integer_le_one (x : O F v) : ‖(x : K F v)‖ ≤ 1 := by
+lemma norm_integer_le_one (x : O F v) : ‖(x : K F v)‖ ≤ 1 := by
   letI : ValuativeRel (K F v) := ClassFieldTheory.finitePlaceCompletionValuativeRel F v
   letI : (Valued.v : Valuation (K F v) (WithZero (Multiplicative ℤ))).Compatible :=
     Valuation.Compatible.ofValuation _
@@ -44,7 +42,7 @@ private lemma norm_integer_le_one (x : O F v) : ‖(x : K F v)‖ ≤ 1 := by
   exact (Valuation.vle_one_iff (Valued.v : Valuation (K F v) (WithZero (Multiplicative ℤ)))).mp
     ((Valuation.vle_one_iff (ValuativeRel.valuation (K F v))).mpr x.property)
 
-private lemma norm_of_integer_unit (x : (O F v)ˣ) :
+lemma norm_of_integer_unit (x : (O F v)ˣ) :
     ‖(unitInclusion F v x : K F v)‖ = 1 := by
   have h1 := norm_integer_le_one F v (x : O F v)
   have h2 := norm_integer_le_one F v (x⁻¹ : (O F v)ˣ)
@@ -54,7 +52,7 @@ private lemma norm_of_integer_unit (x : (O F v)ˣ) :
   have hpos : 0 < ‖(unitInclusion F v x : K F v)‖ := norm_pos_iff.mpr (Units.ne_zero _)
   have heq : ‖(unitInclusion F v x : K F v)‖ *
       ‖(unitInclusion F v x : K F v)⁻¹‖ = 1 := by
-    rw [← norm_mul, mul_inv_cancel₀ (Units.ne_zero _), norm_one]
+    simp
   nlinarith [norm_nonneg ((unitInclusion F v x : K F v)⁻¹)]
 
 include hv
@@ -90,11 +88,10 @@ private lemma B3_norm_congruent (x y y' : (K F v)ˣ)
     (Valued.v : Valuation (K F v) (WithZero (Multiplicative ℤ)))]
   have hd : ‖((u : O F v) : K F v) - ((w : O F v) : K F v)‖ < ‖(1 : K F v)‖ := by
     change ‖(unitInclusion F v u : K F v) - (unitInclusion F v w : K F v)‖ < _
-    simpa [hu, hw] using hdiff
-  exact (lt_iff_not_ge).mpr (fun hn => (not_le_of_gt hd)
-    ((Valued.toNormedField.norm_le_iff).mpr (by simpa using hn)))
+    simp_all
+  simp_all
 
-private lemma X_inclusion (g : K0 F v) (hc : c F v g ≠ 0) :
+lemma X_inclusion (g : K0 F v) (hc : c F v g ≠ 0) :
     KubotaRankTwo.X (K F v) (inclusion F v g) = Units.mk0 (c F v g) hc := by
   apply Units.ext
   simp [KubotaRankTwo.X, KubotaRankTwo.x, inclusion,
@@ -123,10 +120,9 @@ theorem unit_unit (g h : K0 F v)
   have hC : ‖(C : K F v)‖ = 1 := hc
   have hE : ‖(E : K F v)‖ = 1 := he
   have hED : ‖((E * D : (K F v)ˣ) : K F v)‖ = 1 := by
-    change ‖(E : K F v) * (D : K F v)‖ = 1
-    simp [norm_mul, hE, hD]
+    simp_all
   have hratio : ‖((C / (E * D) : (K F v)ˣ) : K F v)‖ = 1 := by
-    simp only [Units.val_div_eq_div_val, Units.val_mul, norm_div, norm_mul, hC, hE, hD, one_mul, div_self one_ne_zero]
+    simp_all
   obtain ⟨hL, hR, hskew, _, _, halt⟩ := KPHilbert.B3_laws F ζ hζ (Sum.inr v)
   have hsigma : KPLocalCover.sigmaTwo F ζ hζ (Sum.inr v)
       (inclusion F v g) (inclusion F v h) = B Z (C / (E * D)) := by
@@ -176,10 +172,7 @@ theorem unit_unit (g h : K0 F v)
         simpa using hratio
       have hid : c F v h * d F v (g * h) =
           d F v h * c F v (g * h) - c F v g * Δ F v h := by
-        simp only [d, c, Δ, inclusion, KPLocalCube.integerInclusion,
-          Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two,
-          map_add, map_mul, Matrix.GeneralLinearGroup.val_det_apply,
-          Matrix.det_fin_two, Matrix.GeneralLinearGroup.map_apply]
+        simp only [d, c, Δ, inclusion, KPLocalCube.integerInclusion, Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two, Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two, Matrix.GeneralLinearGroup.map_apply]
         simp only [Subring.coe_add, Subring.coe_mul, Subring.subtype_apply]
         ring
       have hdiff : (Y : K F v) - (-(C / (E * D)) : (K F v)ˣ) =
@@ -218,6 +211,3 @@ theorem unit_unit (g h : K0 F v)
     apply B3_norm_units F ζ hζ v hv Z (C / (E * D)) _ hratio
     rw [show Z = Units.mk0 (c F v (g * h)) hz from X_inclusion F v hv (g * h) hz]
     exact hn
-
-end
-end DedekindZetaZeroFree.KPTameCompact

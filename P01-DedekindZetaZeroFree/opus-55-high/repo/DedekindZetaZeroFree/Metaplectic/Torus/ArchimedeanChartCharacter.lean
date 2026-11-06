@@ -29,8 +29,8 @@ private theorem arch_eval (z : KPGlobalTorusFunctionData.TorusArch F) (v : KPHil
     KPGlobalCubicIdelePairing.ideleEval F v (archIdele F ζ hζ z) =
       (match v with | Sum.inl w => archUnit F ζ hζ z w | Sum.inr q => 1) := by
   cases v with
-  | inl w => apply Units.ext; rfl
-  | inr q => apply Units.ext; rfl
+  | inl w => rfl
+  | inr q => rfl
 private theorem arch_cube (z : KPGlobalTorusFunctionData.TorusArch F) :
     archIdele F ζ hζ z ∈ CubicCharacters.cubes (KPGlobalTorusFunctionData.Ideles F) := by
   apply (QuotientGroup.eq_one_iff _).mp
@@ -43,7 +43,7 @@ private theorem arch_cube (z : KPGlobalTorusFunctionData.TorusArch F) :
   | inl w =>
     letI := KPGlobalCubicIdelePairing.local_complex_trivial F w
     exact Subsingleton.elim _ _
-  | inr q => rw [arch_eval]; exact map_one _
+  | inr q => rfl
 private theorem arch_tuple (z : KPGlobalTorusFunctionData.TorusArch F) :
     KPGlobalCenterRationalCharacter.diagonalTuple F ζ hζ (archIdele F ζ hζ z) =
       KPGlobalTorusFunctionData.archDiagonalTuple F ζ hζ z := by
@@ -77,7 +77,7 @@ theorem arch_center (z : KPGlobalTorusFunctionData.TorusArch F) :
   have hp (u : (ℝ≥0)ˣ) :
       ‖((KPGlobalCenterRationalCharacter.positiveComplex u : ℂˣ) : ℂ)‖ = ((u : ℝ≥0) : ℝ) := by
     change ‖(((u : ℝ≥0) : ℝ) : ℂ)‖ = _
-    rw [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (by positivity)]
+    simp
   rw [ho, hp] at hn
   have hu : KPGlobalCenterRationalCharacter.sixthPower (KPGlobalTorusFunctionData.ideleAbs F y.val) =
       KPGlobalCenterRationalCharacter.nu F ζ hζ c.val := by
@@ -122,5 +122,3 @@ theorem normalized_arch_chart_character_one
     rw [hχ h b rfl]
     rw [KPGlobalProductPolarizationCharacter.lambdaB_extends_center F ζ hζ P T b c rfl, hχc]
     exact div_self' _
-end
-end DedekindZetaZeroFree.KPGlobalTorusFiniteStagesCofinality

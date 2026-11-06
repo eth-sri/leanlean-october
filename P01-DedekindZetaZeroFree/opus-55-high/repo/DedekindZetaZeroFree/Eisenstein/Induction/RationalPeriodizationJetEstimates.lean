@@ -12,14 +12,13 @@ open NumberField IsDedekindDomain MeasureTheory
 namespace DedekindZetaZeroFree.KPGlobalTorusBorelTwistCompatibilityBorelInduction
 open KPGlobalTorusBorelNormTwistTransport
 noncomputable section
-set_option autoImplicit false
 set_option maxRecDepth 2000
 set_option maxHeartbeats 800000
 
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-private theorem contDiffOn_tsum_of_chart_locally_finite
+theorem contDiffOn_tsum_of_chart_locally_finite
     (C : ModelData F ζ hζ)
     (φ : GroupArch F → ℂ)
     (T : KPGlobalTorusPeriodizationInverse.PeriodizationIndex F ζ hζ C → GroupArch F → ℂ)
@@ -39,7 +38,7 @@ private theorem contDiffOn_tsum_of_chart_locally_finite
       ((Metric.closedBall_subset_ball (by linarith)).trans hrsub)
     have hsum : ContDiffOn ℝ (⊤ : ℕ∞)
         (fun z => ∑ a ∈ S, T a z) (groupArchDomain F) :=
-      ContDiffOn.sum (fun a _ => hsmooth a)
+      by fun_prop
     refine (hsum.mono Set.inter_subset_left).congr ?_
     intro z hz
     have hzK : z ∈ Metric.closedBall x (r / 2) := interior_subset hz.2
@@ -86,7 +85,6 @@ open NumberField IsDedekindDomain MeasureTheory
 namespace DedekindZetaZeroFree.KPGlobalTorusBorelTwistCompatibilityBorelInduction.Continuity
 open KPGlobalTorusBorelNormTwistTransport
 noncomputable section
-set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
@@ -107,8 +105,8 @@ theorem inducedLevelTopology_withSeminorms (P : Polarization F ζ hζ)
     letI := inducedLevelTopology F ζ hζ P J
     WithSeminorms (fun i : G F ζ hζ × ℕ ×
       KPGlobalTorusFunctionData.JetCompact (groupArchDomain F) =>
-      inducedJet F ζ hζ P J i.1 i.2.1 i.2.2) := by
-  exact WithSeminorms.mk (topology := inducedLevelTopology F ζ hζ P J) rfl
+      inducedJet F ζ hζ P J i.1 i.2.1 i.2.2) := 
+  WithSeminorms.mk (topology := inducedLevelTopology F ζ hζ P J) rfl
 
 end
 end DedekindZetaZeroFree.KPGlobalTorusBorelTwistCompatibilityBorelInduction.Continuity
@@ -123,7 +121,6 @@ open NumberField IsDedekindDomain MeasureTheory
 namespace DedekindZetaZeroFree.KPGlobalTorusBorelTwistCompatibilityBorelInduction.Continuity
 open KPGlobalTorusBorelNormTwistTransport
 noncomputable section
-set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
@@ -176,7 +173,6 @@ open NumberField IsDedekindDomain MeasureTheory
 namespace DedekindZetaZeroFree.KPGlobalTorusBorelTwistCompatibilityBorelInduction.UniformFiberLevel
 open KPGlobalTorusBorelNormTwistTransport
 noncomputable section
-set_option autoImplicit false
 set_option maxHeartbeats 4000000
 set_option maxRecDepth 2000
 variable (F : Type) [Field F] [NumberField F]
@@ -219,8 +215,7 @@ theorem rationalLift_split (y : Fˣ) :
             (KPHilbert.infinite_isComplex F ζ hζ w))
               (algebraMap F (KPHilbert.Completion F (Sum.inl w)) y.val)) = _
       exact RingEquiv.symm_apply_apply _ _
-    change (a (Sum.inl w))⁻¹ * r (Sum.inl w) = 1
-    rw [he, inv_mul_cancel]
+    simp_all
   · change q r = q a * q (a⁻¹ * r)
     simp
 
@@ -301,7 +296,6 @@ open NumberField IsDedekindDomain MeasureTheory
 namespace DedekindZetaZeroFree.KPGlobalTorusBorelTwistCompatibilityBorelInduction
 open KPGlobalTorusBorelNormTwistTransport
 noncomputable section
-set_option autoImplicit false
 set_option maxHeartbeats 6000000
 set_option maxRecDepth 2000
 
@@ -411,13 +405,8 @@ theorem functionsP_level_continuous (C : ModelData F ζ hζ) (s : ℂ)
       (inducedLevelTopology F ζ hζ (twist F ζ hζ (productModel F ζ hζ C) s) J)
       (inducedLevelTopology F ζ hζ (twist F ζ hζ (rationalModel F ζ hζ) s) J)
       (levelMap F ζ hζ _ _ (functionsP F ζ hζ C s)
-        (functionsP_preserves_level F ζ hζ C s) J) := by
-  exact Continuity.continuous_of_inducedJet_isBounded F ζ hζ _ _ J J _
+        (functionsP_preserves_level F ζ hζ C s) J) := 
+  Continuity.continuous_of_inducedJet_isBounded F ζ hζ _ _ J J _
     (Continuity.inducedLevelTopology_withSeminorms F ζ hζ _ J)
     (Continuity.inducedLevelTopology_withSeminorms F ζ hζ _ J)
     (functionsP_level_isBounded F ζ hζ C s J)
-
-end
-end DedekindZetaZeroFree.KPGlobalTorusBorelTwistCompatibilityBorelInduction
-
-end

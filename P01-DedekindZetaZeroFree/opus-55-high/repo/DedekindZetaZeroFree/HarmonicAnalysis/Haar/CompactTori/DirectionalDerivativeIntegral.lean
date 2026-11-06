@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.CuspEnergy.RadialTe
 
 @[expose] public section
 
-noncomputable section
 open MeasureTheory Topology Filter
 open scoped Classical ENNReal
 
@@ -30,11 +29,10 @@ theorem integral_fderiv_eq_zero
     apply QuotientAddGroup.measurable_from_quotient.mpr
     have he : (fun x : H => a + QuotientAddGroup.mk x) =
         fun x => QuotientAddGroup.mk (Quotient.out a + x) := by
-      funext x
-      simp [QuotientAddGroup.mk_add, Quotient.out_eq]
+      simp
     change Measurable (fun x : H => a + QuotientAddGroup.mk x)
     rw [he]
-    exact QuotientAddGroup.measurable_coe.comp (continuous_const.add continuous_id).measurable
+    fun_prop
   have hc : CompactSpace (H ⧸ K) := by
     by_contra hn
     letI : NoncompactSpace (H ⧸ K) := not_compactSpace_iff.mp hn
@@ -60,9 +58,8 @@ theorem integral_fderiv_eq_zero
           (hμ.map_add_left_eq_self a)
         rw [Measure.map_apply (htrans a) (hm s hs)] at hmap
         exact hmap
-      exact measure_univ_of_isAddLeftInvariant ν
-    rw [trim_measurableSet_eq _ MeasurableSet.univ] at hh
-    simpa using hh
+      simp
+    simp_all
   letI := hc
   let g : H → ℂ := fun y => f (QuotientAddGroup.mk y)
   let d : H ⧸ K → ℂ := fun z => fderiv ℝ g (Quotient.out z) w
@@ -74,10 +71,9 @@ theorem integral_fderiv_eq_zero
       funext x
       simp [g, QuotientAddGroup.mk_add, hh]
     have hd := fderiv_comp_add_right (𝕜 := ℝ) (f := g) (x := a) (b - a)
-    rw [he] at hd
-    simpa only [← add_sub_assoc, add_sub_cancel_left] using hd
-  have hd (y : H) : d (QuotientAddGroup.mk y) = fderiv ℝ g y w := by
-    exact congrArg (fun L : H →L[ℝ] ℂ => L w) (hinv _ _ (Quotient.out_eq _))
+    simp_all
+  have hd (y : H) : d (QuotientAddGroup.mk y) = fderiv ℝ g y w := 
+    congrArg (fun L : H →L[ℝ] ℂ => L w) (hinv _ _ (Quotient.out_eq _))
   have hdc : Continuous d := by
     apply (QuotientAddGroup.isQuotientMap_mk K).continuous_iff.mpr
     have he : d ∘ QuotientAddGroup.mk = fun y => fderiv ℝ g y w := funext hd
@@ -88,15 +84,9 @@ theorem integral_fderiv_eq_zero
   let A : ℝ → H ⧸ K → ℂ := fun t z => f (QuotientAddGroup.mk (t • w) + z)
   let A' : ℝ → H ⧸ K → ℂ := fun t z => d (QuotientAddGroup.mk (t • w) + z)
   have htc (a : H ⧸ K) : Continuous (fun z : H ⧸ K => a + z) := by
-    apply (QuotientAddGroup.isQuotientMap_mk K).continuous_iff.mpr
-    have he : (fun z : H ⧸ K => a + z) ∘ QuotientAddGroup.mk =
-        fun x : H => QuotientAddGroup.mk (Quotient.out a + x) := by
-      funext x
-      simp [Function.comp_def, QuotientAddGroup.mk_add, Quotient.out_eq]
-    rw [he]
-    exact QuotientAddGroup.continuous_mk.comp (continuous_const.add continuous_id)
-  have hAc (t : ℝ) : Continuous (A t) := hfc.comp (htc _)
-  have hA'c (t : ℝ) : Continuous (A' t) := hdc.comp (htc _)
+    fun_prop
+  have hAc (t : ℝ) : Continuous (A t) := by fun_prop
+  have hA'c (t : ℝ) : Continuous (A' t) := by fun_prop
   have hder (t : ℝ) (z : H ⧸ K) : HasDerivAt (fun t => A t z) (A' t z) t := by
     have hg := (hf.differentiable (by simp)).differentiableAt.hasFDerivAt (x := t • w + Quotient.out z)
     have hline : HasDerivAt (fun t : ℝ => t • w + Quotient.out z) w t := by
@@ -104,7 +94,7 @@ theorem integral_fderiv_eq_zero
     have hh := hg.comp_hasDerivAt t hline
     have he : (fun t => A t z) = g ∘ (fun t : ℝ => t • w + Quotient.out z) := by
       funext t
-      simp [A, g, Function.comp_def, QuotientAddGroup.mk_add, Quotient.out_eq]
+      simp [A, g, QuotientAddGroup.mk_add, Quotient.out_eq]
     rw [he]
     have hde : A' t z = fderiv ℝ g (t • w + Quotient.out z) w := by
       simpa [A', QuotientAddGroup.mk_add, Quotient.out_eq] using hd (t • w + Quotient.out z)
@@ -127,7 +117,3 @@ theorem integral_fderiv_eq_zero
   rw [he] at hz
   have hh := hz.unique (hasDerivAt_const (0 : ℝ) (∫ z, f z ∂μ))
   simpa [A', d, g] using hh
-
-end DedekindZetaZeroFree.PeriodicLiftHaar
-
-end

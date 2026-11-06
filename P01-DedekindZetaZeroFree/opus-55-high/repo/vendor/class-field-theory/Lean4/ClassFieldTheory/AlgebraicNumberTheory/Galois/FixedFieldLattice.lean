@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Fixed fields and subgroup lattice operations
 
@@ -43,12 +40,10 @@ theorem fixedField_sup_eq_inf
     have hS : S ≤ stabilizer := by
       intro τ hτ
       change τ x = x
-      exact (IntermediateField.mem_fixedField_iff S x).1 hx.1 τ hτ
+      simp_all
     have hT : T ≤ stabilizer := by
       intro τ hτ
       change τ x = x
-      exact (IntermediateField.mem_fixedField_iff T x).1 hx.2 τ hτ
+      simp_all
     have hfix : σ ∈ stabilizer := (sup_le hS hT) hσ
     exact hfix
-
-end IntermediateField

@@ -29,6 +29,3 @@ set_option backward.isDefEq.respectTransparency false
       (C.canonical q).iwasawa .plus 0 (profile A P C q hq) =
         LiteralSource.plusReference A P C (Sum.inr q) := by
   rw [profile, LinearEquiv.apply_symm_apply, plusReference_eq_normalized A P C q hq]
-end DedekindZetaZeroFree.FourierContinuation.CurrentExteriorReference
-
-end

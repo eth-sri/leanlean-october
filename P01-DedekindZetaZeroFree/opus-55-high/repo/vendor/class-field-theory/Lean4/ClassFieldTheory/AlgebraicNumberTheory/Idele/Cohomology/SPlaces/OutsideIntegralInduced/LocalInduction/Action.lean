@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Integral local induced modules
 
@@ -46,7 +43,7 @@ variable (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
 /-- The decomposition-group action on the units of the intrinsic integer
 ring of the chosen localization. -/
 @[reducible]
-noncomputable def decompositionGroupLocalizedIntegerUnitsAction :
+def decompositionGroupLocalizedIntegerUnitsAction :
     letI := LocalInductionInternal.extensionCompletionAlgebra vK w
     letI : SMul K w.1.Completion :=
       LocalInductionInternal.extensionCompletionSMul vK w
@@ -94,8 +91,3 @@ noncomputable def decompositionGroupLocalizedIntegerUnitsAction :
       𝒪[LocalizedCompletion vK w]ˣ
       (decompositionGroupEquivAlgebraicLocalizationAut
         vK hvK w).toMonoidHom
-
-
-end IntegralInduction
-
-end

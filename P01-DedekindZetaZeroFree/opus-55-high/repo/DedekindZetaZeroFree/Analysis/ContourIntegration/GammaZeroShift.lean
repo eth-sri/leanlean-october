@@ -14,7 +14,7 @@ open scoped Topology
 
 section Helpers
 
-private lemma regularized_holomorphic (X : ℝ) (f : ℂ → ℂ) (hX : 0 < X)
+lemma regularized_holomorphic (X : ℝ) (f : ℂ → ℂ) (hX : 0 < X)
     (hf : DifferentiableOn ℂ f {v : ℂ | (-1 : ℝ) < v.re}) :
     DifferentiableOn ℂ (fun z => Gamma (z + 1) * dslope f 0 z * (X : ℂ) ^ z)
       {v : ℂ | (-1 : ℝ) < v.re} := by
@@ -35,13 +35,13 @@ private lemma regularized_holomorphic (X : ℝ) (f : ℂ → ℂ) (hX : 0 < X)
   dsimp at hz
   linarith
 
-private lemma regularized_eq (X : ℝ) (f : ℂ → ℂ) (hf0 : f 0 = 0) (z : ℂ) (hz : z ≠ 0) :
+lemma regularized_eq (X : ℝ) (f : ℂ → ℂ) (hf0 : f 0 = 0) (z : ℂ) (hz : z ≠ 0) :
     Gamma (z + 1) * dslope f 0 z * (X : ℂ) ^ z = Gamma z * f z * (X : ℂ) ^ z := by
   rw [Gamma_add_one z hz, dslope_of_ne f hz, slope]
   simp only [sub_zero, hf0, smul_eq_mul, vsub_eq_sub]
   field_simp
 
-private lemma polynomial_tail (B : ℝ) (hB : 0 ≤ B) (m : ℕ) (hm : B + 2 ≤ m)
+lemma polynomial_tail (B : ℝ) (hB : 0 ≤ B) (m : ℕ) (hm : B + 2 ≤ m)
     (t : ℝ) (ht : 1 ≤ |t|) :
     |t| ^ (-(m : ℝ)) * (2 + |t|) ^ B ≤ (3 ^ B * 4) * (1 + |t|) ^ (-2 : ℝ) := by
   have hp : 0 < |t| := by linarith

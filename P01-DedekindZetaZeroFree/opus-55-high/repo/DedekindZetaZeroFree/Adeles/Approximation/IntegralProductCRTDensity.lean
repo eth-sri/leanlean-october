@@ -13,7 +13,7 @@ noncomputable def ringOfIntegers_integralDiagonal
       ((v : HeightOneSpectrum (NumberField.RingOfIntegers F)) → v.adicCompletionIntegers F) :=
   fun a v => algebraMap (NumberField.RingOfIntegers F) (v.adicCompletionIntegers F) a
 
-private theorem integral_congruence_neighborhood
+theorem integral_congruence_neighborhood
     (F : Type*) [Field F] [NumberField F]
     (v : HeightOneSpectrum (NumberField.RingOfIntegers F))
     (U : Set (v.adicCompletionIntegers F)) (hU : IsOpen U)
@@ -75,5 +75,3 @@ theorem denseRange_ringOfIntegers_integralDiagonal
   obtain ⟨T, u, hu, huU⟩ := isOpen_pi_iff.mp hU x hx
   obtain ⟨a, ha⟩ := exists_ringOfIntegers_integralDiagonal_mem_finite_open F T x u hu
   exact ⟨ringOfIntegers_integralDiagonal F a, huU (fun v hv => ha v hv), ⟨a, rfl⟩⟩
-
-end DedekindZetaZeroFree

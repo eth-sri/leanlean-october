@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.Metaplectic.Intertwining.CompactModels.Expone
 
 @[expose] public section
 
-noncomputable section
 open scoped Classical NumberField Topology
 open MeasureTheory ValuativeRel
 set_option backward.isDefEq.respectTransparency false
@@ -41,8 +40,8 @@ theorem finite_corrected_full_right_coordinate_analytic
         ((transportToSections (LocalField F q) S.borel P S.iwasawa .plus s
           (actualCanonicalContinued F q ζ hζ S P μ hμ .plus s)
           (compactTrivialization S.borel P S.iwasawa .plus s ψ)).val g).val t
-      map_add' := by intro ψ χ; simp only [map_add]; rfl
-      map_smul' := by intro c ψ; simp only [map_smul]; rfl }
+      map_add' := by simp
+      map_smul' := by simp }
   let N := correctionSpectrum F ζ hζ q S S.iwasawa J
   let v (r : ℝ) := correctionComponent F ζ hζ q S S.iwasawa J P r φ
   have he (s : ℂ) : M s (correctedCompact F ζ hζ q S S.iwasawa J P s φ) =
@@ -59,20 +58,3 @@ theorem finite_corrected_full_right_coordinate_analytic
   intro r _
   exact (show AnalyticAt ℂ (fun s => Complex.exp (s * (r : ℂ))) s by fun_prop).mul
     (finite_full_right_coordinate_analytic F ζ hζ q S P μ hμ (v r) g t s hs)
-
-variable (P₀ : KPGlobalTorusFiniteStages.CompatibleModelData F ζ hζ)
-variable (C₀ : KPGlobalTorusFiniteStages.LocalFiberData F ζ hζ P₀)
-variable (E : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F))) (hE : C₀.exceptional ⊆ E)
-variable (J : ∀ q : E, IwasawaData (C₀.canonical q.val).borel)
-variable (φfin : ∀ q : E, compactPicture (C₀.canonical q.val).borel (C₀.polarization q.val)
-  (C₀.canonical q.val).iwasawa .plus)
-variable (gfin : ∀ q : E, ActualCover F ζ hζ q.val)
-variable (t : KPGlobalTorusFunctionData.E F ζ hζ)
-
-variable (φarch : {w : NumberField.InfinitePlace F // w.IsComplex} →
-  KPComplexIntertwinerParameterMajorant.CompactPicture)
-variable (garch : {w : NumberField.InfinitePlace F // w.IsComplex} → KPCplxCharacterHaar.ComplexGL2)
-
-end DedekindZetaZeroFree.KPGlobalResidualKernel.IntertwinerRegularization.FactorizationSources.NormalizedCoordinateAnalyticity.CorrectedOutputAnalytic
-
-end

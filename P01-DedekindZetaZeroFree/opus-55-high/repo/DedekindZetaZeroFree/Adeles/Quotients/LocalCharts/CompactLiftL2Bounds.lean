@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.RepresentationTheory.Smooth.AutomorphicHilber
 
 @[expose] public section
 
-noncomputable section
 open MeasureTheory
 open scoped ENNReal Pointwise
 namespace DedekindZetaZeroFree.KPSmoothAutomorphicEvaluation.OrbitTubeComparison
@@ -61,9 +60,3 @@ theorem compact_orbit_indicator_bound {G : Type*} [Group G] [TopologicalSpace G]
         (S'.card : ℝ≥0∞) := by
       simp [S', Set.indicator, Finset.sum_boole]
     _ ≤ N := by exact_mod_cast hc
-
-variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-
-end DedekindZetaZeroFree.KPSmoothAutomorphicEvaluation.OrbitTubeComparison
-
-end

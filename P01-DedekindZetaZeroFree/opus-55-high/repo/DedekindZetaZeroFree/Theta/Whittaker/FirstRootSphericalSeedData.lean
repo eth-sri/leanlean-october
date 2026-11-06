@@ -7,7 +7,7 @@ public import DedekindZetaZeroFree.Theta.Profiles.FirstRootSphericalRadialModel
 noncomputable section
 namespace DedekindZetaZeroFree.ThetaExpansion
 open MomentSources NumberField MeasureTheory
-open scoped NumberField Classical
+open scoped Classical
 
 set_option synthInstance.maxHeartbeats 400000
 set_option maxHeartbeats 4000000
@@ -25,7 +25,3 @@ structure FirstRootSphericalSeed (R : PrincipalMellin.ActualRecipe S η)
   spherical_near : ∀ v y, (∀ p, y.2 p ∈ neighborhood p) →
     fourier R base.sources.dq (base.realization.theta v) (diagonal R y) =
       firstRootSphericalProduct R y
-
-end DedekindZetaZeroFree.ThetaExpansion
-
-end

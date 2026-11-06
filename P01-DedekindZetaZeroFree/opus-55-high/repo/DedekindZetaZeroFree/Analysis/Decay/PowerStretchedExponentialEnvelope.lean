@@ -19,7 +19,6 @@ theorem power_mul_stretchedExp_le (a p : ℝ) (ha : 0 < a) (hp : 0 < p)
   have hy : 0 < y := Real.rpow_pos_of_pos htpos p
   have hq : 0 ≤ q := div_nonneg hR hp.le
   have hL : 0 < L := by
-    dsimp [L]
     positivity
   have hidentity : (a / 2) * L = a + q := by
     dsimp [L, q]
@@ -50,5 +49,3 @@ theorem power_mul_stretchedExp_le (a p : ℝ) (ha : 0 < a) (hp : 0 < p)
   apply Real.exp_le_exp.mpr
   rw [hqlog] at hexponent
   linarith
-
-end DedekindZetaZeroFree.Hecke

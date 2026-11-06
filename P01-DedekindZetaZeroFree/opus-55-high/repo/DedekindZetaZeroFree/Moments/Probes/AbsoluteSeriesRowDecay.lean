@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.Arithmetic.ResidueSymbols.SixthRootAlignment
 @[expose] public section
 
 namespace DedekindZetaZeroFree.MomentSources
-noncomputable section
 open scoped NumberField Classical
 variable {F : Type} [Field F] [NumberField F]
 
@@ -37,6 +36,3 @@ theorem separated_summand_norm_summable
   convert hi using 1 <;>
     dsimp [c, W, e, RMParameterAbsorption.compactMajorantIndexMap,
       RMSeparatedExpansion.activeSupport] <;> ring
-
-end
-end DedekindZetaZeroFree.MomentSources

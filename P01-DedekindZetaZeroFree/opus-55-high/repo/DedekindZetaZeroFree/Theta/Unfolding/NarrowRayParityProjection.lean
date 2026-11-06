@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Theta.Unfolding.ParitySeriesMellin
 
 @[expose] public section
 
-noncomputable section
 
 open scoped NumberField Classical
 
@@ -33,15 +32,14 @@ theorem sign_projection (D : RayCoset.Data K) (x : RayCoset.X D) :
         intro v
         rw [Real.sign_of_pos (hp (RayCoset.realEmbedding K v))]
         norm_num
-      simp only [he, Finset.prod_const, Finset.card_univ]
-      exact inv_mul_cancel₀ (pow_ne_zero _ (by norm_num))
+      simp_all
     · rw [if_neg hp]
       obtain ⟨φ, hφ⟩ : ∃ φ : K →+* ℝ, ¬ 0 < φ (α.val : K) := by
         simpa only [RayCoset.TotallyPositive, not_forall] using hp
       let ψ : K →+* ℂ := Complex.ofRealHom.comp φ
       have hψ : NumberField.ComplexEmbedding.IsReal ψ := by
         ext y
-        simp [ψ, NumberField.ComplexEmbedding.conjugate]
+        simp [ψ]
       let v : RayCoset.RealPlaces K :=
         ⟨NumberField.InfinitePlace.mk ψ, ⟨ψ, hψ, rfl⟩⟩
       have hv : RayCoset.realEmbedding K v = φ := by
@@ -97,7 +95,7 @@ theorem rayParityProjection {K : Type} [Field K] [NumberField K]
     rw [← Finset.sum_mul, ← mul_assoc]
     rw [RayParity.Projection.sign_projection D x]
     by_cases hx : x ∈ RayCoset.positiveOrbits D <;>
-      simp [Set.indicator_apply, hx]
+      simp [hx]
   have hpos : HasSum (fun x : RayCoset.Xpos D => W x.val)
       (A * ∑ δ ∈ S, RayCoset.Zδ D δ s) :=
     hasSum_subtype_iff_indicator.mpr hind
@@ -118,7 +116,3 @@ theorem rayParityProjection {K : Type} [Field K] [NumberField K]
   apply hall.congr_fun
   intro I
   simp only [Set.indicator_apply, Set.mem_setOf_eq]
-
-end DedekindZetaZeroFree
-
-end

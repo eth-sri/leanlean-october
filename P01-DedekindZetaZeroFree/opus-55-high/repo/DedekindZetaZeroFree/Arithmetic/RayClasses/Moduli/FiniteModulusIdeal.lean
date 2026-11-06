@@ -16,7 +16,7 @@ variable {F : Type*} [Field F] [NumberField F]
 def finiteModulusIdeal (c : ClassFieldTheory.RayClassModulus F) : Ideal (𝓞 F) :=
   c.finitePart.prod (fun p n => p.asIdeal ^ n)
 
-private lemma coe_finiteModulusIdeal (c : ClassFieldTheory.RayClassModulus F) :
+lemma coe_finiteModulusIdeal (c : ClassFieldTheory.RayClassModulus F) :
     (finiteModulusIdeal c : FractionalIdeal (nonZeroDivisors (𝓞 F)) F) =
       ∏ p ∈ c.finitePart.support,
         ((p.asIdeal : FractionalIdeal (nonZeroDivisors (𝓞 F)) F) ^ c.finitePart p) := by
@@ -29,7 +29,7 @@ private lemma coe_finiteModulusIdeal (c : ClassFieldTheory.RayClassModulus F) :
   exact Finset.prod_congr rfl fun p _ =>
     FractionalIdeal.coeIdeal_pow (nonZeroDivisors (𝓞 F)) F p.asIdeal _
 
-private lemma count_coe_finiteModulusIdeal (c : ClassFieldTheory.RayClassModulus F)
+lemma count_coe_finiteModulusIdeal (c : ClassFieldTheory.RayClassModulus F)
     (v : IsDedekindDomain.HeightOneSpectrum (𝓞 F)) :
     FractionalIdeal.count F v
         (finiteModulusIdeal c : FractionalIdeal (nonZeroDivisors (𝓞 F)) F) =
@@ -38,16 +38,11 @@ private lemma count_coe_finiteModulusIdeal (c : ClassFieldTheory.RayClassModulus
   · rw [Finset.sum_congr rfl fun p _ => by
       rw [FractionalIdeal.count_pow, FractionalIdeal.count_maximal, mul_ite, mul_one, mul_zero]]
     rw [Finset.sum_ite_eq' c.finitePart.support v (fun p => (c.finitePart p : ℤ))]
-    split_ifs with hv
-    · rfl
-    · have hv' : c.finitePart v = 0 := by
-        by_contra h
-        exact hv (Finsupp.mem_support_iff.mpr h)
-      simp [hv']
+    simp_all
   · intro p _
     exact pow_ne_zero _ (FractionalIdeal.coeIdeal_ne_zero.mpr p.ne_bot)
 
-private lemma sup_eq_top_iff_of_isMaximal {I J : Ideal (𝓞 F)} (hI : I.IsMaximal) :
+lemma sup_eq_top_iff_of_isMaximal {I J : Ideal (𝓞 F)} (hI : I.IsMaximal) :
     I ⊔ J = ⊤ ↔ ¬ J ≤ I := by
   constructor
   · intro h hle
@@ -82,7 +77,7 @@ theorem mem_finitePart_support_iff
       (Associates.mk (finiteModulusIdeal c)).factors = c.finitePart p := by
     have h := FractionalIdeal.count_coe (K := F) (v := p) hg
     rw [count_coe_finiteModulusIdeal c p] at h
-    exact (Nat.cast_injective h).symm
+    omega
   rw [Finsupp.mem_support_iff, ← hcount, Associates.count_ne_zero_iff_dvd hg p.irreducible,
     Ideal.dvd_iff_le]
   constructor
@@ -103,7 +98,3 @@ theorem mem_finitePart_support_iff
   refine ClassFieldTheory.RayClassModulus.ext (fullModulus_finiteModulusIdeal_finitePart c) ?_
   rw [DedekindZetaZeroFree.LargeSieve.RayBridge.fullModulus_infinitePart]
   exact Subsingleton.elim _ _
-
-end DedekindZetaZeroFree.LargeSieve.RootNumber
-
-end

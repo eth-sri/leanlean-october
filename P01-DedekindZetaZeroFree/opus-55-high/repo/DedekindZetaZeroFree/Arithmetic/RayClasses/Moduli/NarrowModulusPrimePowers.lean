@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Arithmetic.RayClasses.Representatives.Integra
 
 @[expose] public section
 
-noncomputable section
 
 open scoped NumberField Classical
 open IsDedekindDomain UniqueFactorizationMonoid
@@ -36,7 +35,7 @@ theorem mem_ideal_iff_narrow_primePowers
       exact hm (le_bot_iff.mp hmle)
     exact Ideal.prime_of_isPrime hPne ((Ideal.mem_normalizedFactors_iff hm).mp hmem).1
   have hcop : ∀ᵉ (i ∈ (normalizedFactors m).toFinset) (j ∈ (normalizedFactors m).toFinset),
-      i ≠ j → (fun P => P) i ≠ (fun P => P) j := fun _ _ _ _ hij => hij
+      i ≠ j → (fun P => P) i ≠ (fun P => P) j := by simp
   have hcount : (normalizedFactors m).prod =
       ∏ P ∈ (normalizedFactors m).toFinset,
         P ^ Multiset.count P (normalizedFactors m) :=
@@ -56,8 +55,7 @@ theorem mem_ideal_iff_narrow_primePowers
       r ∈ P ^ Multiset.count P (normalizedFactors m) := by
     intro r
     conv_lhs => rw [hprod]
-    rw [← Ideal.span_singleton_le_iff_mem (x := r), Finset.le_inf_iff]
-    simp only [Ideal.span_singleton_le_iff_mem]
+    simp
   constructor
   · intro hr v hv
     have hvmem : v.asIdeal ∈ (normalizedFactors m).toFinset :=
@@ -72,7 +70,3 @@ theorem mem_ideal_iff_narrow_primePowers
       rw [Finsupp.mem_support_iff, narrowIdealModulus_finitePart, Multiset.count_ne_zero]
       exact hPmem
     simpa [narrowIdealModulus_finitePart] using hr (HeightOneSpectrum.ofPrime (hprime P hP)) hv
-
-end DedekindZetaZeroFree.AbelianQuotient
-
-end

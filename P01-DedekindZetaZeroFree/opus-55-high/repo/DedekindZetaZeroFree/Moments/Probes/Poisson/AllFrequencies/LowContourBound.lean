@@ -37,7 +37,7 @@ private theorem vertical_norm_le' (G : ℂ → ℂ) (x A B : ℝ) (hB : 1 < B)
           (Filter.Eventually.of_forall fun t => h t)
     _ = A * ∫ t : ℝ, (1 + |t|) ^ (-B) := integral_const_mul _ _
 
-private theorem minus_ne_x1 (u : Frequency D.recipe)
+theorem minus_ne_x1 (u : Frequency D.recipe)
     (hu : u ≠ principalFrequency D.recipe) (ξ : ℂ) (hξ : ξ.re = Scales.rightLine) :
     (pkg D).minus u ξ ≠ 0 := by
   have hx1 : (1 : ℝ) < Scales.rightLine := by rw [Scales.rightLine_eq]; norm_num
@@ -47,13 +47,13 @@ private theorem minus_ne_x1 (u : Frequency D.recipe)
   rw [hξ] at this
   linarith
 
-private theorem hmem_omega : (((Scales.rightLine : ℝ) : ℂ), ((Scales.wLine : ℝ) : ℂ),
+theorem hmem_omega : (((Scales.rightLine : ℝ) : ℂ), ((Scales.wLine : ℝ) : ℂ),
     ((Scales.zLine : ℝ) : ℂ)) ∈ EulerDomain.OmegaStar := by
   norm_num [EulerDomain.OmegaStar, Scales.rightLine_eq, Scales.wLine, Scales.zLine]
 
 set_option maxHeartbeats 1000000 in
 
-private theorem rawKernel_cont_heights (u : Frequency D.recipe)
+theorem rawKernel_cont_heights (u : Frequency D.recipe)
     (hu : u ≠ principalFrequency D.recipe) (Z : ℝ) (hZ : 0 < Z) (ξ : ℂ)
     (hξ : ξ.re = Scales.rightLine) :
     Continuous (fun p : ℝ × ℝ => rawKernel D u ξ

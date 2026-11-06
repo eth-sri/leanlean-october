@@ -54,5 +54,3 @@ theorem norm_tau_of_not_six_dvd (χ : MulChar κ ℂ) (ψ : AddChar κ ℂ)
     exact_mod_cast (show ‖tau χ ψ a‖ ^ 2 = (Fintype.card κ : ℂ) by
       simpa [tau, T, gaussSum] using h)
   exact ((Real.sqrt_eq_iff_eq_sq (by positivity) (norm_nonneg _)).mpr hs.symm).symm
-
-end DedekindZetaZeroFree.FiniteGaussTable

@@ -21,7 +21,3 @@ theorem completed_pole_decomposition (h E : ℂ → ℂ) (h0 : h 0 = 0)
     entireDividedDifference_of_zero h 0 s h0 hs0]
   field_simp
   ring
-
-end DedekindZetaZeroFree.AbelianQuotient.RayGammaPoleRemoval
-
-end

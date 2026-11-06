@@ -49,9 +49,9 @@ private theorem z₀_pos : (0 : ℝ) < Scales.zLine := by unfold Scales.zLine; n
 private theorem x_g_le_x₁ : Scales.goodLine ≤ Scales.rightLine := by
   rw [Scales.rightLine_eq]; unfold Scales.goodLine; norm_num
 
-private theorem pad_nn : (0 : ℝ) ≤ EulerDomain.pad := by unfold EulerDomain.pad; norm_num
+theorem pad_nn : (0 : ℝ) ≤ EulerDomain.pad := by unfold EulerDomain.pad; norm_num
 
-private theorem freqNorm_pos (u : Frequency D.recipe) : 0 < frequencyNorm D.recipe u := by
+theorem freqNorm_pos (u : Frequency D.recipe) : 0 < frequencyNorm D.recipe u := by
   rw [← FixedData.rawFrequency_norm D u]
   exact_mod_cast D.recipe.A.exteriorNorm_pos _
 
@@ -67,7 +67,7 @@ private theorem zpow_bound (Z : ℝ) (hZ : 0 < Z) (c x x₀ : ℝ) (hx : |x - x�
         have h2 := abs_sub_abs_le_abs_sub x x₀
         linarith
 
-private theorem final_ineq (c C Cw P Q T x : ℝ) (hc : 0 ≤ c) (hP : 0 ≤ P) (hQ : 0 ≤ Q)
+theorem final_ineq (c C Cw P Q T x : ℝ) (hc : 0 ≤ c) (hP : 0 ≤ P) (hQ : 0 ≤ Q)
     (hT : 0 ≤ T) (hx : x ≤ c * (C * P * Q * Cw * T)) : x ≤ (C * Cw * c + 1) * P * Q * T := by
   have h0 : 0 ≤ P * Q * T := by positivity
   nlinarith
@@ -118,7 +118,7 @@ private theorem rawKernel_norm_eq (u : Frequency D.recipe) (hq : 0 < frequencyNo
   unfold Scales.kernelExponent
   try ring_nf
 
-private theorem rawKernel_cont (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe)
+theorem rawKernel_cont (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe)
     (Z : ℝ) (hZ : 0 < Z) (ξ : ℂ) (hx : Scales.goodLine - EulerDomain.pad ≤ ξ.re)
     (hξ : (pkg D).minus u ξ ≠ 0) :
     Continuous (fun p : ℝ × ℝ => rawKernel D u ξ ((Scales.wLine : ℂ) + (p.2 : ℂ) * I)
@@ -161,7 +161,7 @@ private theorem exists_Cw (A B : ℝ) (hA : 0 ≤ A) (hB : 0 < B) :
   exact (hCw ξ hxg hx1 Scales.zLine Scales.wLine le_rfl le_rfl le_rfl le_rfl Cf hCf
     (fun w z => rawKernel D u ξ w z Z) hcont.aestronglyMeasurable hbd').2.2.2
 
-private theorem plus_line_bound (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe) :
+theorem plus_line_bound (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe) :
     ∃ C A : ℝ, 0 < C ∧ 0 ≤ A ∧ ∀ w : ℂ, w.re = Scales.wLine →
       ‖(pkg D).plus u w‖ ≤ C * (2 + |w.im|) ^ A := by
   have hq0 := freqNorm_pos D u

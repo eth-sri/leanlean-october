@@ -14,23 +14,20 @@ open UniqueFactorizationMonoid
 noncomputable section
 namespace DedekindZetaZeroFree.MaskedPrimePowerCRTFactorization
 open LocalFiniteSums LocalFiniteSumCompatibility
-set_option autoImplicit false
 
 variable {F : Type} [Field F] [NumberField F]
 variable {A : SArithmeticData F} {σ : F →+* ℂ}
 variable {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
 
-private theorem transport_apply_mk (J K : Ideal A.R) (h : J = K)
+theorem transport_apply_mk (J K : Ideal A.R) (h : J = K)
     (χ : MulChar (A.R ⧸ J) ℂ) (x : A.R) :
     GeneratorInvariance.transportCharacter J K h χ (Ideal.Quotient.mk K x) =
       χ (Ideal.Quotient.mk J x) := by
   subst h; rfl
 
-private theorem sexticExponent_intNat (n : ℕ) :
+theorem sexticExponent_intNat (n : ℕ) :
     SArithmeticData.sexticExponent (n : ℤ) = n % 6 := by
-  simp only [SArithmeticData.sexticExponent]
-  have h : ((n : ℤ) % 6) = ((n % 6 : ℕ) : ℤ) := by norm_num
-  rw [h, Int.toNat_natCast]
+  rfl
 
 private theorem gaussCRT_char_base (A : SArithmeticData F) (σ : F →+* ℂ)
     (I : A.Exterior) (x : A.R) :
@@ -60,7 +57,7 @@ private theorem gaussCRT_char_unit (A : SArithmeticData F) (σ : F →+* ℂ)
   rw [← hx.unit_spec, MulChar.pow_apply_coe]
   rw [hx.unit_spec, gaussCRT_char_base]
 
-private theorem sexticResidue_unit_six (A : SArithmeticData F) (σ : F →+* ℂ)
+theorem sexticResidue_unit_six (A : SArithmeticData F) (σ : F →+* ℂ)
     (I : A.Exterior) (x : A.R) (hx : IsUnit (Ideal.Quotient.mk (A.extendIdeal I) x)) :
     (σ (A.sexticResidue I x)) ^ 6 = 1 := by
   have hv : A.sexticResidue I x = (A.sexticResidueFamily I hx.unit : F) :=
@@ -75,13 +72,12 @@ private theorem maskedPower_apply (C : A.GeneralArithmeticContext σ η hS)
       = (σ (A.sexticResidue (primeIdeal p) r)) ^ n := by
   by_cases hn : n = 0
   · subst hn
-    rw [maskedPower_zero_depth]
-    simp
+    rfl
   · rw [maskedPower_eq_reduction C p n hn (n : ℤ) (residueMap C p n r),
       ← sexticPower_eq_chi_pow]
     rw [show reduction C p n hn (residueMap C p n r) =
         Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) r from by
-      rw [residueMap, reduction]; exact Ideal.Quotient.factor_mk _ _]
+      rfl]
     by_cases hx : IsUnit (Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) r)
     · rw [gaussCRT_char_unit A σ (primeIdeal p) r hx (n : ℤ), sexticExponent_intNat]
       exact (pow_eq_pow_mod n (sexticResidue_unit_six A σ (primeIdeal p) r hx)).symm
@@ -89,7 +85,7 @@ private theorem maskedPower_apply (C : A.GeneralArithmeticContext σ η hS)
         ArithmeticContext.actual_sextic_nonunit A (primeIdeal p) r hx]
       simp [hn]
 
-private theorem sexticResidue_finset_prod (A : SArithmeticData F) (σ : F →+* ℂ)
+theorem sexticResidue_finset_prod (A : SArithmeticData F) (σ : F →+* ℂ)
     (I : A.Exterior) (P : Finset (ExteriorPrime A))
     (hSupport : ∀ p : ExteriorPrime A, exponent p I ≠ 0 → p ∈ P) (r : A.R) :
     A.sexticResidue I r =
@@ -120,8 +116,7 @@ private theorem sexticResidue_finset_prod (A : SArithmeticData F) (σ : F →+* 
     let q : ExteriorPrime A := ⟨v, htop⟩
     have hqP : q ∈ P := by
       apply hSupport q
-      change idealPrimeExponent q.val.asIdeal I.val ≠ 0
-      exact he
+      omega
     exact Finset.mem_image.mpr ⟨q, hqP, rfl⟩
   have h1 : A.sexticResidue I r = ∏ v ∈ (P.image (fun p : ExteriorPrime A => p.val)), f v :=
     hfac.trans (finprod_eq_prod_of_mulSupport_subset f hsub)
@@ -178,7 +173,6 @@ open NumberField IsDedekindDomain
 noncomputable section
 namespace DedekindZetaZeroFree.MaskedPrimePowerCRTFactorization
 open LocalFiniteSums
-set_option autoImplicit false
 
 variable {F : Type} [Field F] [NumberField F]
 variable {A : SArithmeticData F} {σ : F →+* ℂ}
@@ -196,7 +190,7 @@ private lemma quo_integer (C : A.GeneralArithmeticContext σ η hS) (p : Exterio
     ((LocalFiniteSumCompatibility.residueEquiv C p n).symm
       (Ideal.Quotient.mk _ (LocalFiniteSumCompatibility.integerMap p x))) = _
   rw [RingEquiv.apply_symm_apply]
-  exact (LocalFiniteSumCompatibility.residueEquiv_mk C p n x).symm
+  rfl
 
 private lemma quo_eq_iff (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A)
     (n : ℕ) (x y : LocalIntegers p) :
@@ -264,7 +258,7 @@ private lemma numerator_crt_point
         algebraMap F (LocalField p) (a : F) / uniformizer C p ^ t from haU]
     rw [show ((LocalFiniteSumCompatibility.localUniformizer C p : LocalIntegers p) : LocalField p)
         = uniformizer C p from rfl]
-    rw [div_mul_cancel₀ _ (pow_ne_zero _ hπ), map_mul]
+    simp_all
   have hdrep : CompatiblePrimeRawLocal.canonicalLocalRepresentative C p k d =
       ((LocalFiniteSumCompatibility.integerMap p ((lifts C p k).val d) : LocalIntegers p)
         : LocalField p) := rfl
@@ -381,8 +375,8 @@ theorem constrained_sum_crt
         rw [hχv, hφ d v hd]
       · rw [if_neg hd, if_neg (fun h => hd ((hc d).mpr h))]
     _ = ∑ d : (i : ι) → Dp i, ∏ i, if cs i (d i) then
-          χdp i (d i) * ∑ v : Vp i, χvp i v * φp i (d i) v else 0 := by
-      exact Finset.sum_congr rfl (fun d _ => hprod d)
+          χdp i (d i) * ∑ v : Vp i, χvp i v * φp i (d i) v else 0 := 
+      Finset.sum_congr rfl (fun d _ => hprod d)
     _ = _ := (Fintype.prod_sum (fun i (d : Dp i) => if cs i d then
       χdp i d * ∑ v : Vp i, χvp i v * φp i d v else 0)).symm
 
@@ -400,7 +394,6 @@ open NumberField IsDedekindDomain
 noncomputable section
 namespace DedekindZetaZeroFree.MaskedQuotientCRT
 open LocalFiniteSums
-set_option autoImplicit false
 
 variable {F : Type} [Field F] [NumberField F]
 variable {A : SArithmeticData F} {σ : F →+* ℂ}
@@ -409,14 +402,7 @@ variable {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
 def primeExponent (p : ExteriorPrime A) (I : A.Exterior) : ℕ :=
   idealPrimeExponent p.val.asIdeal I.val
 
- theorem prime_outside (p : ExteriorPrime A) : p.val ∉ A.Sf := by
-  intro hp
-  have hc : A.cS ≤ p.val.asIdeal := Ideal.IsPrime.prod_le p.val.isPrime |>.mpr ⟨p.val, hp, le_rfl⟩
-  apply p.val.isPrime.ne_top
-  apply top_le_iff.mp
-  calc
-    ⊤ = p.val.asIdeal ⊔ A.cS := p.property.symm
-    _ ≤ p.val.asIdeal := sup_le le_rfl hc
+ theorem prime_outside (p : ExteriorPrime A) : p.val ∉ A.Sf := by apply DedekindZetaZeroFree.LocalFiniteSumCompatibility.exterior_notMem <;> assumption
 
  def boundIdeal (p : ExteriorPrime A) (n : ℕ) : Ideal A.R where
   carrier := {a | p.val.valuation F (a : F) ≤ WithZero.exp (-(n : ℤ))}
@@ -451,7 +437,7 @@ private theorem generates_valuation (p : ExteriorPrime A)
   have hrv : p.val.valuation F (r : F) ≤ WithZero.exp (-(n : ℤ)) := by
     apply hmap
     rw [← hr.2]
-    exact Ideal.subset_span (Set.mem_singleton r)
+    simp
   obtain ⟨a, ha, han⟩ : ∃ a : 𝓞 F, a ∈ I.val ∧ a ∉ p.val.asIdeal ^ (n + 1) := by
     contrapose! hnot
     exact hnot
@@ -474,7 +460,6 @@ private theorem generates_valuation (p : ExteriorPrime A)
     (Valuation.ne_zero_iff _).mpr (by exact_mod_cast hr.1)
   rw [← WithZero.exp_log hnz, WithZero.exp_le_exp] at hrv hrv'
   have hv : WithZero.log (p.val.valuation F (r : F)) = -(n : ℤ) := by
-    push_cast at hrv'
     omega
   rw [← WithZero.exp_log hnz, hv]
 
@@ -498,13 +483,12 @@ theorem localUnitPart_exists (C : A.GeneralArithmeticContext σ η hS)
         Valued.v (((generator C p : A.R) : F) : LocalField p) ^ primeExponent p I = 1
     rw [p.val.valuedAdicCompletion_eq_valuation',
       p.val.valuedAdicCompletion_eq_valuation', hvx, hvπ]
-    rw [← WithZero.exp_nsmul]
     simp
   let r : LocalIntegers p := ⟨z, by
     rw [HeightOneSpectrum.mem_adicCompletionIntegers, hz]⟩
   have hu : IsUnit r := HeightOneSpectrum.adicCompletionIntegers.isUnit_iff_valued_eq_one.mpr hz
   refine ⟨hu.unit, ?_⟩
-  rw [hu.unit_spec]
+  rfl
 
 def localUnitPart (C : A.GeneralArithmeticContext σ η hS)
     (p : ExteriorPrime A) (I : A.Exterior) (x : A.R) (hx : A.Generates I x) :
@@ -620,9 +604,3 @@ theorem full_prime_power_crt (C : A.GeneralArithmeticContext σ η hS)
       sU, aU, hU]
   all_goals
     congr 1
-
-end DedekindZetaZeroFree.MaskedQuotientCRT
-
-end
-
-end

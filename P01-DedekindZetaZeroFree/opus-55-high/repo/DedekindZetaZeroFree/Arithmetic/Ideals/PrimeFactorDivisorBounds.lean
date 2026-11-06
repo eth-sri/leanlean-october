@@ -24,9 +24,7 @@ theorem idealDivisorCount_le_normalizedFactors_box
     intro P
     rw [hS, Multiset.mem_toFinset, Multiset.count_pos]
   have hmemA : ∀ D : Ideal (𝓞 F), D ∈ idealDivisors A → D ∣ A := by
-    intro D hD
-    rw [idealDivisors, if_neg hA] at hD
-    exact (Finset.mem_filter.mp hD).2
+    simp_all
   have hne : ∀ D : Ideal (𝓞 F), D ∈ idealDivisors A → D ≠ ⊥ := by
     intro D hD hDb
     have hdvd : Ideal.absNorm D ∣ Ideal.absNorm A := map_dvd Ideal.absNorm (hmemA D hD)
@@ -57,7 +55,7 @@ theorem idealDivisorCount_le_normalizedFactors_box
       intro P
       have h2 := congrArg (fun (g : {x : box // x ∈ (Finset.univ : Finset box)}) =>
         (g.val P).val) heq
-      simpa [f] using h2
+      omega
     have hext : UniqueFactorizationMonoid.normalizedFactors D₁ =
         UniqueFactorizationMonoid.normalizedFactors D₂ := by
       rw [Multiset.ext]
@@ -69,8 +67,7 @@ theorem idealDivisorCount_le_normalizedFactors_box
           exact hP ((hSmem P).mpr (Nat.pos_of_ne_zero h))
         have hc₁ := Multiset.le_iff_count.mp (hle D₁ hD₁) P
         have hc₂ := Multiset.le_iff_count.mp (hle D₂ hD₂) P
-        rw [h1] at hc₁ hc₂
-        rw [Nat.eq_zero_of_le_zero hc₁, Nat.eq_zero_of_le_zero hc₂]
+        omega
     rw [← Ideal.prod_normalizedFactors_eq_self (hne D₁ hD₁),
       ← Ideal.prod_normalizedFactors_eq_self (hne D₂ hD₂), hext]
   have hcard : idealDivisorCount A ≤ ∏ P ∈ S, (m.count P + 1) := by
@@ -117,5 +114,3 @@ theorem two_le_absNorm_of_mem_normalizedFactors
   rw [Nat.two_le_iff]
   exact ⟨fun h => hPrime.ne_zero (Ideal.absNorm_eq_zero_iff.mp h),
     fun h => hPrime.not_unit (Ideal.isUnit_iff.mpr (Ideal.absNorm_eq_one_iff.mp h))⟩
-
-end DedekindZetaZeroFree.LargeSieve

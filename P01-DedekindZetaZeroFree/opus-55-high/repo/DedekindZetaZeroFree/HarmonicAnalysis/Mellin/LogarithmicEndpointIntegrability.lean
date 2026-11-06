@@ -10,7 +10,6 @@ Repository: openai/math.
 Revision: adc7f1241b42e322a6451854ab7e4b4c146bf78a.
 -/
 
-noncomputable section
 open MeasureTheory Filter Asymptotics
 open scoped Classical Topology ContDiff
 
@@ -38,7 +37,7 @@ private lemma eulerIter_add_of_pos {a b : ℝ → ℂ}
     ∀ x : ℝ, 0 < x →
       EulerIter j (fun y => a y + b y) x = EulerIter j a x + EulerIter j b x := by
   induction j with
-  | zero => intro x hx; simp
+  | zero => simp
   | succ j ih =>
     intro x hx
     have hda : DifferentiableAt ℝ (EulerIter j a) x :=
@@ -57,7 +56,7 @@ private lemma eulerIter_add_of_pos {a b : ℝ → ℂ}
           deriv (EulerIter j a) x + deriv (EulerIter j b) x from deriv_add hda hdb]
     ring
 
-private lemma log_pow_le_rpow (k : ℕ) (ε : ℝ) (hε : 0 < ε)
+lemma log_pow_le_rpow (k : ℕ) (ε : ℝ) (hε : 0 < ε)
     (x : ℝ) (hx0 : 0 < x) (hx1 : x ≤ 1) :
     |Real.log x| ^ k ≤ ((k.factorial : ℝ) / ε ^ k) * x ^ (-ε) := by
   have hlog : Real.log x ≤ 0 := Real.log_nonpos hx0.le hx1
@@ -75,16 +74,13 @@ private lemma log_pow_le_rpow (k : ℕ) (ε : ℝ) (hε : 0 < ε)
         rw [le_div_iff₀ hεk]; linarith [hbound]
     _ = ((k.factorial : ℝ) / ε ^ k) * x ^ (-ε) := by ring
 
-private lemma polynomial_eval_log_bound (Q : Polynomial ℂ) (ε : ℝ) (hε : 0 < ε) :
+lemma polynomial_eval_log_bound (Q : Polynomial ℂ) (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ x : ℝ, 0 < x → x ≤ 1 →
       ‖Q.eval (Real.log x : ℂ)‖ ≤ C * x ^ (-ε) := by
   refine ⟨∑ k ∈ Q.support, ‖Q.coeff k‖ * ((k.factorial : ℝ) / ε ^ k), by positivity, ?_⟩
   intro x hx0 hx1
   have hz : ‖(Real.log x : ℂ)‖ = |Real.log x| := by
-    have h2 : ‖(Real.log x : ℂ)‖ ^ 2 = |Real.log x| ^ 2 := by
-      rw [← Complex.normSq_eq_norm_sq, Complex.normSq_ofReal, sq_abs]
-      ring
-    nlinarith [norm_nonneg (Real.log x : ℂ), abs_nonneg (Real.log x)]
+    simp
   rw [Polynomial.eval_eq_sum, Polynomial.sum_def]
   calc ‖∑ e ∈ Q.support, Q.coeff e * (Real.log x : ℂ) ^ e‖
       ≤ ∑ e ∈ Q.support, ‖Q.coeff e * (Real.log x : ℂ) ^ e‖ := norm_sum_le _ _
@@ -109,7 +105,7 @@ private lemma contDiffOn_eval_log (P : Polynomial ℂ) :
         simp only [Set.mem_compl_iff, Set.mem_singleton_iff]
         exact ne_of_gt hx)
     exact Complex.ofRealCLM.contDiff.comp_contDiffOn hlog
-  exact h1.comp_contDiffOn h2
+  fun_prop
 
 private lemma eulerIter_sub_originPolynomial_eq (h : LogMellinPhysical f δ P) (j : ℕ) :
     ∀ x : ℝ, 0 < x →
@@ -123,7 +119,7 @@ private lemma eulerIter_sub_originPolynomial_eq (h : LogMellinPhysical f δ P) (
     contDiffOn_eval_log P
   have hsplit := eulerIter_add_of_pos hf' hp' j x hx
   have hfun : (fun y : ℝ => (f y - P.eval (Real.log y : ℂ)) + P.eval (Real.log y : ℂ)) = f := by
-    funext y; ring
+    simp
   rw [hfun] at hsplit
   rw [hsplit, EulerIter_eval_log_polynomial P j x hx]
 
@@ -200,8 +196,7 @@ theorem euler_cpow_tendsto_atTop (h : LogMellinPhysical f δ P) (j : ℕ)
     _ = C * Real.rpow x (-((N : ℝ) - s.re)) := by
         have hprod : x ^ s.re * Real.rpow x (-(N : ℝ)) = Real.rpow x (-((N : ℝ) - s.re)) := by
           have := Real.rpow_add hx0 s.re (-(N : ℝ))
-          rw [hexp] at this
-          exact this.symm
+          simp_all
         rw [mul_left_comm (x ^ s.re) C, hprod]
 
 theorem euler_cpow_tendsto_origin (h : LogMellinPhysical f δ P) (j : ℕ)
@@ -226,8 +221,7 @@ theorem euler_cpow_tendsto_origin (h : LogMellinPhysical f δ P) (j : ℕ)
     _ = C * Real.rpow x (s.re / 2) := by
         have hprod : x ^ s.re * Real.rpow x (-(s.re / 2)) = Real.rpow x (s.re / 2) := by
           have := Real.rpow_add hx.1 s.re (-(s.re / 2))
-          rw [hexp] at this
-          exact this.symm
+          simp_all
         rw [mul_left_comm (x ^ s.re) C, hprod]
 
 theorem high_euler_mellinConvergent (h : LogMellinPhysical f δ P) (j : ℕ)
@@ -281,10 +275,10 @@ theorem high_euler_uniform_mellin_norm (h : LogMellinPhysical f δ P) (j : ℕ)
     exact (integrableOn_Ioi_rpow_of_lt (by linarith : v - 1 - (n : ℝ) < -1) one_pos).const_mul C₂
   have hintG₁ : IntegrableOn ((Set.Ioc (0 : ℝ) 1).indicator h₁) (Set.Ioi 0) volume := by
     rw [integrableOn_indicator_iff measurableSet_Ioc.nullMeasurableSet]
-    exact hint₁.mono_set (fun x hx => hx.1)
+    simp_all
   have hintG₂ : IntegrableOn ((Set.Ioi (1 : ℝ)).indicator h₂) (Set.Ioi 0) volume := by
     rw [integrableOn_indicator_iff measurableSet_Ioi.nullMeasurableSet]
-    exact hint₂.mono_set (fun x hx => hx.1)
+    simp_all
   set G : ℝ → ℝ := fun x =>
     (Set.Ioc (0 : ℝ) 1).indicator h₁ x + (Set.Ioi (1 : ℝ)).indicator h₂ x with hG
   have hGint : IntegrableOn G (Set.Ioi (0 : ℝ)) volume := by
@@ -297,7 +291,7 @@ theorem high_euler_uniform_mellin_norm (h : LogMellinPhysical f δ P) (j : ℕ)
       ‖(x : ℂ) ^ (s - 1) * EulerIter j f x‖ ≤ G x := by
     intro x hx
     have hx0 : 0 < x := hx
-    rw [hG]; simp only [Pi.add_apply]
+    rw [hG]; simp only
     rw [norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos hx0, Complex.sub_re, Complex.one_re]
     rcases le_or_gt x 1 with hle | hgt
     · rw [Set.indicator_of_mem (show x ∈ Set.Ioc (0 : ℝ) 1 from ⟨hx0, hle⟩),
@@ -314,7 +308,7 @@ theorem high_euler_uniform_mellin_norm (h : LogMellinPhysical f δ P) (j : ℕ)
             have hle' : x ^ (s.re - 1 + δ) ≤ x ^ (u - 1 + δ) :=
               Real.rpow_le_rpow_of_exponent_ge hx0 hle (by linarith)
             exact mul_le_mul_of_nonneg_left hle' hC₁
-    · rw [Set.indicator_of_notMem (by simp only [Set.mem_Ioc]; intro hcon; linarith [hcon.2]),
+    · rw [Set.indicator_of_notMem (by simp_all),
         Set.indicator_of_mem (show x ∈ Set.Ioi (1 : ℝ) from hgt), zero_add]
       have hfx : ‖EulerIter j f x‖ ≤ C₂ * x ^ (-(n : ℝ)) := hbound₂ x hgt.le
       calc x ^ (s.re - 1) * ‖EulerIter j f x‖
@@ -333,7 +327,7 @@ theorem high_euler_uniform_mellin_norm (h : LogMellinPhysical f δ P) (j : ℕ)
       ≤ ∫ x in Set.Ioi (0 : ℝ), G x :=
         setIntegral_mono_on hfin hGint measurableSet_Ioi hpt
     _ = C₁ / (u + δ) + C₂ / ((n : ℝ) - v) := by
-        rw [hG]; simp only [Pi.add_apply]
+        rw [hG]; simp only
         rw [integral_add hintG₁ hintG₂]
         congr 1
         · rw [integral_indicator measurableSet_Ioc, hh₁,
@@ -350,8 +344,3 @@ theorem high_euler_uniform_mellin_norm (h : LogMellinPhysical f δ P) (j : ℕ)
               Real.one_rpow]
           rw [show v - 1 - ↑n + 1 = -(↑n - v) by ring, neg_div_neg_eq]
           ring
-
-end LogMellinPhysical
-end DedekindZetaZeroFree.LargeSieve.Vendor
-
-end

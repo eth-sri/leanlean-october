@@ -18,7 +18,7 @@ namespace DedekindZetaZeroFree.QuadraticRawProduct
 
 variable {F : Type} [Field F] [NumberField F]
 
-private theorem localProductToSpace_sLocalDiagonal
+theorem localProductToSpace_sLocalDiagonal
     (T : Finset (HeightOneSpectrum (𝓞 F))) (r : F) :
     PoissonS.localProductToSpace F T (sLocalDiagonal F T r) =
       PoissonS.diagonalHom F T r := by
@@ -28,20 +28,15 @@ private theorem localProductToSpace_sLocalDiagonal
         (NumberField.mixedEmbedding F r)
     have h1 : (sLocalDiagonal F T r).1 =
         algebraMap F (NumberField.InfiniteAdeleRing F) r := by
-      funext v
-      simp only [sLocalDiagonal_infinite]
-      exact (NumberField.InfiniteAdeleRing.algebraMap_apply F r v).symm
+      rfl
     rw [h1]
     apply (NumberField.mixedEmbedding.euclidean.toMixed F).injective
     rw [PoissonArch.infiniteAdeleToSpace_coordinates,
       ContinuousLinearEquiv.apply_symm_apply,
       NumberField.InfiniteAdeleRing.mixedEmbedding_eq_algebraMap_comp]
-  · show (sLocalDiagonal F T r).2 = PoissonFinite.diagonal F T r
-    funext v
-    rw [sLocalDiagonal_finite]
-    rfl
+  rfl
 
-private theorem symm_localProductToSpace_diagonal
+theorem symm_localProductToSpace_diagonal
     (T : Finset (HeightOneSpectrum (𝓞 F))) (r : F) :
     (PoissonS.localProductToSpace F T).symm (PoissonS.diagonalHom F T r) =
       sLocalDiagonal F T r := by
@@ -55,7 +50,7 @@ private theorem valued_algebraMap_adicCompletion
     (v : HeightOneSpectrum (𝓞 F)) (t : F) :
     Valued.v (algebraMap F (v.adicCompletion F) t) = v.valuation F t := by
   rw [show algebraMap F (v.adicCompletion F) t = (t : v.adicCompletion F) from rfl]
-  exact IsDedekindDomain.HeightOneSpectrum.adicCompletion.valued_coe F v t
+  simp
 
 private theorem mem_sIntegerRing_of_val (T : Finset (HeightOneSpectrum (𝓞 F))) {t : F}
     (h : ∀ v : HeightOneSpectrum (𝓞 F), v ∉ T → v.valuation F t ≤ 1) :
@@ -66,7 +61,7 @@ private theorem mem_sIntegerRing_of_val (T : Finset (HeightOneSpectrum (𝓞 F))
     valued_algebraMap_adicCompletion]
   exact h v hv
 
-private theorem chirp_diagonal_eq_one
+theorem chirp_diagonal_eq_one
     (T : Finset (HeightOneSpectrum (𝓞 F))) (hT : PoissonS.ContainsDifferent F T)
     (b : F) (hb : b ∈ sIntegerRing F T) (m : sIntegerRing F T) :
     sLocalTraceCharacter F T
@@ -75,7 +70,7 @@ private theorem chirp_diagonal_eq_one
   exact sLocalTraceCharacter_sIntegerDiagonal_eq_one F T hT
     ⟨b * (m : F) ^ 2, mul_mem hb (pow_mem m.2 2)⟩
 
-private theorem chirp_theta_eq
+theorem chirp_theta_eq
     (T : Finset (HeightOneSpectrum (𝓞 F))) (hT : PoissonS.ContainsDifferent F T)
     (b : F) (hb : b ∈ sIntegerRing F T) (f : PoissonS.Space F T → ℂ) :
     theta F T (chirp F T b f) = theta F T f := by
@@ -112,7 +107,7 @@ theorem theta_auxiliary_symmetries
     mem_sIntegerRing_of_val T (fun v hv => (h2a v hv).le)
   have h2a_inv_mem : (2 * (a : F))⁻¹ ∈ sIntegerRing F T := by
     refine mem_sIntegerRing_of_val T (fun v hv => ?_)
-    rw [map_inv₀, h2a v hv, inv_one]
+    simp_all
 
   let u : (sIntegerRing F T)ˣ :=
     ⟨⟨2 * (a : F), h2a_mem⟩, ⟨(2 * (a : F))⁻¹, h2a_inv_mem⟩,
@@ -120,9 +115,7 @@ theorem theta_auxiliary_symmetries
       Subtype.ext (inv_mul_cancel₀ h2a_ne)⟩
   have hu : ((u : sIntegerRing F T) : F) = 2 * (a : F) := rfl
   have hu_inv_val : ((↑u⁻¹ : sIntegerRing F T) : F) = (2 * (a : F))⁻¹ := by
-    have h := congrArg (fun z : sIntegerRing F T => (z : F)) u.val_inv
-    simp only [Subring.coe_mul, Subring.coe_one, hu] at h
-    exact eq_inv_of_mul_eq_one_right h
+    rfl
   have hb2 : (-1 / (4 * (a : F))) ∈ sIntegerRing F T := by
     have hb_eq : -1 / (4 * (a : F)) =
         -((a : F) * ((↑u⁻¹ : sIntegerRing F T) : F) ^ 2) := by
@@ -145,7 +138,7 @@ theorem theta_auxiliary_symmetries
       (PoissonS.localProductToSpace F T).symm (PoissonS.diagonalHom F T (m : F)))) = _
     rw [symm_localProductToSpace_diagonal, hc, ← map_mul,
       localProductToSpace_sLocalDiagonal]
-    simp only [Subring.coe_mul]
+    rfl
   show (∑' m : sIntegerRing F T,
       dilation F T (1 / (2 * (a : F))) f (PoissonS.diagonalHom F T (m : F))) =
     ∑' m : sIntegerRing F T, f (PoissonS.diagonalHom F T (m : F))
@@ -190,7 +183,7 @@ theorem exists_nonzero_theta (T : Finset (HeightOneSpectrum (𝓞 F))) :
   have hn (x : PoissonS.Space F T) : 0 ≤ (f x).re := by
     rw [hreal, Complex.ofReal_re]
     apply mul_nonneg (hgn (Set.mem_range_self _)).1
-    exact Finset.prod_nonneg (fun v _ => by split_ifs <;> norm_num)
+    positivity
   have hzero : f 0 = 1 := by
     rw [hreal]
     simp [hg0]
@@ -206,7 +199,7 @@ theorem exists_nonzero_theta (T : Finset (HeightOneSpectrum (𝓞 F))) :
     rw [theta, Complex.re_tsum hs]
     apply (Complex.reCLM.summable hs).tsum_pos
       (fun m => hn _) (0 : sIntegerRing F T)
-    simpa [hzero] using (show (0 : ℝ) < 1 by norm_num)
+    simp [hzero]
   intro h
   simpa [h] using hpos
 
@@ -243,10 +236,10 @@ private theorem fourier_add (T : Finset (HeightOneSpectrum (𝓞 F)))
     (fun v => continuous_localFiniteCharacter F v.val)
     (Finset.univ : Finset Bool) (fun _ => (1 : ℂ))
     (fun b => if b then g else f)
-    (by intro b hb; cases b <;> simp only [Bool.false_eq_true, ↓reduceIte] <;> assumption) y
+    (by simp_all) y
   simpa [fourier, Pi.add_def, add_comm] using h
 
-private theorem theta_symmetry_fourier_smul (T : Finset (HeightOneSpectrum (𝓞 F)))
+theorem theta_symmetry_fourier_smul (T : Finset (HeightOneSpectrum (𝓞 F)))
     (c : ℂ) (f : PoissonS.Space F T → ℂ) :
     fourier F T (c • f) = c • fourier F T f := by
   funext y
@@ -286,8 +279,7 @@ theorem theta_fourier (T : Finset (HeightOneSpectrum (𝓞 F)))
       have hz : fourier F T 0 = 0 := by
         funext y
         simp [fourier, PoissonS.fourierIntegral]
-      simp only [hz]
-      exact ⟨integrable_zero _ _ _, summable_zero, summable_zero, trivial⟩
+      simp_all
     | add f g hf hg ihf ihg =>
       rcases ihf with ⟨hfi, hfs, hfh, hfp⟩
       rcases ihg with ⟨hgi, hgs, hgh, hgp⟩
@@ -364,7 +356,7 @@ theorem globalQuadraticGamma_finprod_eq_finite (A : SArithmeticData F) (a : Fˣ)
         rw [finprod_mem_range Sum.inr_injective]
         rfl
 
-private theorem globalGamma_conductorZero (v : HeightOneSpectrum (𝓞 F)) (hself : ResidueTrace.IsSelfDual v)
+theorem globalGamma_conductorZero (v : HeightOneSpectrum (𝓞 F)) (hself : ResidueTrace.IsSelfDual v)
     (π : v.adicCompletionIntegers F) (hπ : Irreducible π) :
     OddTraceConductor v π hπ 0 := by
   constructor
@@ -382,7 +374,7 @@ private theorem globalGamma_conductorZero (v : HeightOneSpectrum (𝓞 F)) (hsel
     push Not at ht
     simpa using ht
 
-private theorem globalGamma_localUnit (v : HeightOneSpectrum (𝓞 F)) (a : Fˣ) (hval : v.valuation F (a : F) = 1) :
+theorem globalGamma_localUnit (v : HeightOneSpectrum (𝓞 F)) (a : Fˣ) (hval : v.valuation F (a : F) = 1) :
     ∃ u : (v.adicCompletionIntegers F)ˣ,
       oddLocalUnit v u = Units.map (algebraMap F (v.adicCompletion F)).toMonoidHom a := by
   let b := Units.map (algebraMap F (v.adicCompletion F)).toMonoidHom a
@@ -393,13 +385,13 @@ private theorem globalGamma_localUnit (v : HeightOneSpectrum (𝓞 F)) (a : Fˣ)
   have hm : (b : v.adicCompletion F) ∈ v.adicCompletionIntegers F := hv.le
   have hi : (↑b⁻¹ : v.adicCompletion F) ∈ v.adicCompletionIntegers F := by
     change (Valued.v : Valuation (v.adicCompletion F) ℤᵐ⁰) (↑b⁻¹ : v.adicCompletion F) ≤ 1
-    rw [Units.val_inv_eq_inv_val, map_inv₀, hv, inv_one]
+    simp_all
   refine ⟨⟨⟨_, hm⟩, ⟨_, hi⟩, ?_, ?_⟩, ?_⟩
   · exact Subtype.ext b.val_inv
   · exact Subtype.ext b.inv_val
-  · exact Units.ext rfl
+  rfl
 
-private theorem globalGamma_odd (v : HeightOneSpectrum (𝓞 F))
+theorem globalGamma_odd (v : HeightOneSpectrum (𝓞 F))
     (hv : (2 : 𝓞 F) ∉ v.asIdeal) : ringChar (OddLocalResidue v) ≠ 2 := by
   let e : (𝓞 F ⧸ v.asIdeal) ≃+* OddLocalResidue v :=
     (finitePlaceIdealResidueEquivCompletion v).trans
@@ -427,23 +419,22 @@ theorem finiteGamma_diagonal_cofinite (A : SArithmeticData F) (a : Fˣ) :
   obtain ⟨T, hT⟩ := ArithmeticContext.exists_trace_exclusion_set F
   have hself : ∀ᶠ v : HeightOneSpectrum (𝓞 F) in Filter.cofinite, ResidueTrace.IsSelfDual v := by
     have ht : ∀ᶠ v : HeightOneSpectrum (𝓞 F) in Filter.cofinite, v ∉ T := by
-      simpa using Filter.eventually_cofinite.mpr T.finite_toSet
+      simp
     filter_upwards [ht] with v hv
     exact hT v hv
   have hodd : ∀ᶠ v : HeightOneSpectrum (𝓞 F) in Filter.cofinite, (2 : 𝓞 F) ∉ v.asIdeal := by
     apply Filter.eventually_cofinite.mpr
     convert Ideal.finite_factors (show Ideal.span {(2 : 𝓞 F)} ≠ (0 : Ideal (𝓞 F)) by
       simp) using 1
-    ext v
-    simp only [Set.mem_setOf_eq, not_not, Ideal.dvd_span_singleton]
+    simp
   filter_upwards [hself, hodd, Detector.FrequencyDetection.valuation_unit_cofinite a] with v hs ho hv
   exact finiteGamma_diagonal_eq_one_of_good A v ho hs a hv
 
 theorem globalQuadraticGamma_hasFiniteMulSupport (A : SArithmeticData F) (a : Fˣ) :
     Function.HasFiniteMulSupport (A.globalQuadraticGamma a) := by
   have hf : Function.HasFiniteMulSupport (fun v : HeightOneSpectrum (𝓞 F) =>
-      A.finiteGamma v (Units.map (algebraMap F (v.adicCompletion F)).toMonoidHom a)) := by
-    exact Filter.eventually_cofinite.mp (finiteGamma_diagonal_cofinite A a)
+      A.finiteGamma v (Units.map (algebraMap F (v.adicCompletion F)).toMonoidHom a)) := 
+    Filter.eventually_cofinite.mp (finiteGamma_diagonal_cofinite A a)
   change (Function.mulSupport (A.globalQuadraticGamma a)).Finite
   apply (hf.image (Sum.inr : HeightOneSpectrum (𝓞 F) → QuadraticGlobalPlace F)).subset
   intro v hv
@@ -463,7 +454,7 @@ theorem exists_quadratic_auxiliary_set (A : SArithmeticData F) (a : Fˣ) :
       ResidueTrace.IsSelfDual v ∧ v.valuation F (a : F) = 1 ∧
         v.valuation F (2 * (a : F)) = 1 := by
     have ht : ∀ᶠ v : HeightOneSpectrum (𝓞 F) in Filter.cofinite, v ∉ T₀ := by
-      simpa using Filter.eventually_cofinite.mpr T₀.finite_toSet
+      simp
     filter_upwards [ht, Detector.FrequencyDetection.valuation_unit_cofinite a,
       Detector.FrequencyDetection.valuation_unit_cofinite (two * a)] with v hv ha h2a
     exact ⟨hT₀ v hv, ha, h2a⟩
@@ -475,8 +466,8 @@ theorem exists_quadratic_auxiliary_set (A : SArithmeticData F) (a : Fˣ) :
   · intro v hv
     exact Finset.mem_union_left _ (Finset.mem_union_right _ (by simpa [D] using hv))
   · intro v hv
-    have hs : v ∉ A.Sf := fun hs => hv (Finset.mem_union_left _ (Finset.mem_union_left _ hs))
-    have hb : v ∉ B := fun hb => hv (Finset.mem_union_right _ hb)
+    have hs : v ∉ A.Sf := by simp_all
+    have hb : v ∉ B := by simp_all
     have hgood : ResidueTrace.IsSelfDual v ∧ v.valuation F (a : F) = 1 ∧
         v.valuation F (2 * (a : F)) = 1 := by
       simpa [B] using hb
@@ -559,13 +550,7 @@ theorem globalQuadraticWeilPhase_product (A : SArithmeticData F) (a : Fˣ) :
       A.globalQuadraticGamma a / A.globalQuadraticGamma 1 := rfl
   constructor
   · rw [hdiv]
-    exact hfa.div hf1
+    fun_prop
   · rw [hdiv]
     simp only [Pi.div_apply]
     rw [finprod_div_distrib hfa hf1, hpa, hp1, div_one]
-
-end DedekindZetaZeroFree.SArithmeticData
-
-end
-
-end

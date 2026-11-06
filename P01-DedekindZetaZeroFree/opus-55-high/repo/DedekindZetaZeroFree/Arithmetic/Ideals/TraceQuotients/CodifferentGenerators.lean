@@ -29,7 +29,7 @@ def quotientPresentationEquiv
   subst I' J'
   exact LinearEquiv.refl _ _
 
-private theorem quotientPresentationEquiv_mk
+theorem quotientPresentationEquiv_mk
     (I J I' J' : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F)
     (hI : I = I') (hJ : J = J') (β : I.coeToSubmodule) :
     quotientPresentationEquiv I J I' J' hI hJ (fractionalIdealQuotientMk I J β) =
@@ -77,8 +77,8 @@ def rayTraceQuotientDualResidueEquiv
       Submodule.Quotient.mk (p := rayDualResidueDenominator m 1)
         ⟨(β : F), by
           rw [rayDualResidueNumerator_one]
-          exact β.property⟩ := by
-  exact quotientPresentationEquiv_mk _ _ _ _ (traceNumerator_eq m) traceDenominator_eq β
+          exact β.property⟩ := 
+  quotientPresentationEquiv_mk _ _ _ _ (traceNumerator_eq m) traceDenominator_eq β
 
 def rayTraceQuotientGenerator
     (m : Ideal (NumberField.RingOfIntegers F)) (hm : m ≠ ⊥) : rayTraceQuotient m :=
@@ -110,8 +110,8 @@ def rayTraceGeneratorChar
 @[simp] theorem rayTraceGeneratorChar_apply
     (m : Ideal (NumberField.RingOfIntegers F)) (hm : m ≠ ⊥)
     (z : rayTraceQuotient m) (k : NumberField.RingOfIntegers F ⧸ m) :
-    rayTraceGeneratorChar m hm z k = rayTraceQuotientPairing m hm k z := by
-  exact rayTraceQuotientPairingTransposeEquiv_apply m hm z k
+    rayTraceGeneratorChar m hm z k = rayTraceQuotientPairing m hm k z := 
+  rayTraceQuotientPairingTransposeEquiv_apply m hm z k
 
 theorem rayTraceGeneratorChar_primitive
     (m : Ideal (NumberField.RingOfIntegers F)) (hm : m ≠ ⊥) :
@@ -127,8 +127,7 @@ theorem rayTraceGeneratorChar_primitive
     (rayTraceQuotientPairing_add_left m hm)
     (rayTraceQuotientPairing_balance m hm)
     (fun k h => (rayTraceQuotientPairing_left_radical m hm k).mp h) z hz.2 J
-  intro k hk
-  simpa only [balancedPairingGeneratorChar_apply, rayTraceGeneratorChar_apply] using hJ k hk
+  simp_all
 
 theorem rayTraceQuotientGenerator_lift_coprime
     (m : Ideal (NumberField.RingOfIntegers F)) (hm : m ≠ ⊥) (hm1 : m ≠ ⊤) :
@@ -189,7 +188,3 @@ theorem rayTraceQuotientGenerator_exists_coprime_lift
     m hm hm1 (rayTraceQuotientGenerator m hm)
       (rayTraceQuotientGenerator_bijective m hm) β hlift
   exact ⟨β, b, hlift, hn, hb0, hcop, hb, hp⟩
-
-end DedekindZetaZeroFree.Hecke
-
-end

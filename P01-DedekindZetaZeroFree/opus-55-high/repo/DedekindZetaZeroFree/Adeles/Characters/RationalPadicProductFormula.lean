@@ -37,7 +37,7 @@ theorem rationalPadicCharacter_finprod_eq_denominator_prod (q : ℚ) :
     (Nat.mem_primeFactors.mpr ⟨p.2,
       (rationalPadicCharacter_rational_ne_one_iff p q).mp hp, q.den_ne_zero⟩)
 
-private theorem rationalPInverted_integral_at_other (p l : Nat.Primes)
+theorem rationalPInverted_integral_at_other (p l : Nat.Primes)
     (h : l ≠ p) (q : ℚ) (hq : q ∈ rationalPInverted p) :
     (q : ℚ_[l]) ∈ PadicInt.subring l := by
   have hc : rationalPInverted p ≤
@@ -57,7 +57,7 @@ private theorem rationalPInverted_integral_at_other (p l : Nat.Primes)
     simpa [norm_inv, hn]
   exact hc hq
 
-private theorem rational_character_prod_exp (q : ℚ) (s : Finset Nat.Primes) :
+theorem rational_character_prod_exp (q : ℚ) (s : Finset Nat.Primes) :
     s.prod (fun p => rationalPadicCharacter p (q : ℚ_[p])) =
       Circle.exp (-(2 * Real.pi * ((∑ p ∈ s, padicFractionalPart p (q : ℚ_[p]) : ℚ) : ℝ))) := by
   classical
@@ -72,7 +72,7 @@ private theorem rational_character_prod_exp (q : ℚ) (s : Finset Nat.Primes) :
     push_cast
     ring
 
-private theorem rational_fractional_parts_difference_integral (q : ℚ) :
+theorem rational_fractional_parts_difference_integral (q : ℚ) :
     (q - (q.den.primeFactors.subtype Nat.Prime : Finset Nat.Primes).sum
       (fun p : Nat.Primes =>
       padicFractionalPart p (q : ℚ_[p]))).den = 1 := by
@@ -146,8 +146,4 @@ theorem rational_diagonal_additive_product (q : ℚ) :
     push_cast
     ring
   erw [he]
-  exact Circle.exp_int_mul_two_pi r.num
-
-end DedekindZetaZeroFree
-
-end
+  simp

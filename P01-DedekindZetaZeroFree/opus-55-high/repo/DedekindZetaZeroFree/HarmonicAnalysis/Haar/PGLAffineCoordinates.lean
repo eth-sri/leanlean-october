@@ -17,9 +17,6 @@ abbrev RawCoordinates := Fin 6 → ℝ
 local instance : TopologicalSpace RawGroup := inferInstanceAs
   (TopologicalSpace (Matrix.GeneralLinearGroup (Fin 2) ℂ ⧸
     Subgroup.center (Matrix.GeneralLinearGroup (Fin 2) ℂ)))
-local instance : IsTopologicalGroup RawGroup := inferInstanceAs
-  (IsTopologicalGroup (Matrix.GeneralLinearGroup (Fin 2) ℂ ⧸
-    Subgroup.center (Matrix.GeneralLinearGroup (Fin 2) ℂ)))
 
 def rawComplexCoordinates (x : RawCoordinates) : Fin 3 → ℂ :=
   ![⟨x 0, x 1⟩, ⟨x 2, x 3⟩, ⟨x 4, x 5⟩]
@@ -68,24 +65,24 @@ local instance translationJacobianTopologicalGroup : IsTopologicalGroup RawGroup
   (IsTopologicalGroup (Matrix.GeneralLinearGroup (Fin 2) ℂ ⧸
     Subgroup.center (Matrix.GeneralLinearGroup (Fin 2) ℂ)))
 
-private theorem tj_rawMatrix_rawRatios (a : Matrix (Fin 2) (Fin 2) ℂ) (ha : a 0 0 ≠ 0) :
+theorem tj_rawMatrix_rawRatios (a : Matrix (Fin 2) (Fin 2) ℂ) (ha : a 0 0 ≠ 0) :
     rawMatrix (rawRatios a) = (a 0 0)⁻¹ • a := by
   have h0 : rawComplexCoordinates (rawRatios a) 0 = a 1 1 / a 0 0 - 1 := by
-    apply Complex.ext <;> simp [rawComplexCoordinates, rawRatios]
+    rfl
   have h1 : rawComplexCoordinates (rawRatios a) 1 = a 0 1 / a 0 0 := by
-    apply Complex.ext <;> simp [rawComplexCoordinates, rawRatios]
+    rfl
   have h2 : rawComplexCoordinates (rawRatios a) 2 = a 1 0 / a 0 0 := by
-    apply Complex.ext <;> simp [rawComplexCoordinates, rawRatios]
+    rfl
   ext i j
   fin_cases i <;> fin_cases j <;>
     simp [rawMatrix, h0, h1, h2, Matrix.smul_apply, ha, div_eq_mul_inv, mul_comm]
 
-private theorem tj_rawDelta_rawRatios (a : Matrix (Fin 2) (Fin 2) ℂ) (ha : a 0 0 ≠ 0) :
+theorem tj_rawDelta_rawRatios (a : Matrix (Fin 2) (Fin 2) ℂ) (ha : a 0 0 ≠ 0) :
     rawDelta (rawRatios a) = a.det / (a 0 0) ^ 2 := by
   rw [← rawMatrix_det, tj_rawMatrix_rawRatios a ha, Matrix.det_smul]
   simp [Fintype.card_fin, div_eq_mul_inv, mul_comm]
 
-private theorem tj_rawDelta_multiply (x y : RawCoordinates)
+theorem tj_rawDelta_multiply (x y : RawCoordinates)
     (hxy : 1 + rawComplexCoordinates x 1 * rawComplexCoordinates y 2 ≠ 0) :
     rawDelta (rawMultiply (x, y)) = rawDelta x * rawDelta y /
       (1 + rawComplexCoordinates x 1 * rawComplexCoordinates y 2) ^ 2 := by
@@ -95,7 +92,7 @@ private theorem tj_rawDelta_multiply (x y : RawCoordinates)
   rw [rawMultiply, tj_rawDelta_rawRatios _ (h00 ▸ hxy), Matrix.det_mul,
     rawMatrix_det, rawMatrix_det, h00]
 
-private theorem tj_rawMultiply_mem_source
+theorem tj_rawMultiply_mem_source
     (h : OpenPartialHomeomorph RawCoordinates RawGroup) (hn : NormalizedChart h)
     (x y : RawCoordinates) (hx : x ∈ h.source) (hy : y ∈ h.source)
     (hxy : 1 + rawComplexCoordinates x 1 * rawComplexCoordinates y 2 ≠ 0) :
@@ -103,9 +100,9 @@ private theorem tj_rawMultiply_mem_source
   rw [hn.source] at hx hy ⊢
   change rawDelta (rawMultiply (x,y)) ≠ 0
   rw [tj_rawDelta_multiply x y hxy]
-  exact div_ne_zero (mul_ne_zero hx hy) (pow_ne_zero 2 hxy)
+  simp_all
 
-private theorem tj_rawMultiply_chart
+theorem tj_rawMultiply_chart
     (h : OpenPartialHomeomorph RawCoordinates RawGroup) (hn : NormalizedChart h)
     (x y : RawCoordinates) (hx : x ∈ h.source) (hy : y ∈ h.source)
     (hxy : 1 + rawComplexCoordinates x 1 * rawComplexCoordinates y 2 ≠ 0) :
@@ -127,10 +124,10 @@ private theorem tj_rawMultiply_chart
     Matrix.scalar (Fin 2) ((rawMatrix x * rawMatrix y) 0 0) = rawMatrix x * rawMatrix y
   rw [rawMultiply, tj_rawMatrix_rawRatios _ hnz]
   ext i j
-  simp [Matrix.mul_diagonal, smul_eq_mul, hnz]
+  simp [Matrix.mul_diagonal, smul_eq_mul]
   field_simp
 
-private theorem tj_rawMultiply_inverse_chart
+theorem tj_rawMultiply_inverse_chart
     (h : OpenPartialHomeomorph RawCoordinates RawGroup) (hn : NormalizedChart h)
     (x y : RawCoordinates) (hx : x ∈ h.source) (hy : y ∈ h.source)
     (hxy : 1 + rawComplexCoordinates x 1 * rawComplexCoordinates y 2 ≠ 0) :
@@ -138,16 +135,16 @@ private theorem tj_rawMultiply_inverse_chart
   rw [← tj_rawMultiply_chart h hn x y hx hy hxy]
   exact h.left_inv (tj_rawMultiply_mem_source h hn x y hx hy hxy)
 
-private theorem tj_zero_mem (h : OpenPartialHomeomorph RawCoordinates RawGroup)
+theorem tj_zero_mem (h : OpenPartialHomeomorph RawCoordinates RawGroup)
     (hn : NormalizedChart h) : (0 : RawCoordinates) ∈ h.source := by
   simp [hn.source, rawDelta, rawComplexCoordinates, Complex.mk_eq_add_mul_I]
 
-private theorem tj_multiply_zero (x : RawCoordinates) : rawMultiply (x, 0) = x := by
+theorem tj_multiply_zero (x : RawCoordinates) : rawMultiply (x, 0) = x := by
   ext i
   fin_cases i <;> simp [rawMultiply, rawRatios, rawMatrix, rawComplexCoordinates,
     Matrix.mul_apply, Fin.sum_univ_two, Complex.mk_eq_add_mul_I]
 
-private theorem tj_eventually_comp (h : OpenPartialHomeomorph RawCoordinates RawGroup)
+theorem tj_eventually_comp (h : OpenPartialHomeomorph RawCoordinates RawGroup)
     (hn : NormalizedChart h) (g : RawGroup) (x z : RawCoordinates)
     (hx : x ∈ h.source) (hz : z ∈ h.source) (hgz : h z = g * h x) :
     (fun y => h.symm (g * h (rawMultiply (x, y)))) =ᶠ[𝓝 (0 : RawCoordinates)]
@@ -164,7 +161,7 @@ private theorem tj_eventually_comp (h : OpenPartialHomeomorph RawCoordinates Raw
   rw [tj_rawMultiply_chart h hn x y hx hy hyx, ← mul_assoc, ← hgz]
   exact tj_rawMultiply_inverse_chart h hn z y hz hy hyz
 
-private theorem tj_translation_diff
+theorem tj_translation_diff
     (h : OpenPartialHomeomorph RawCoordinates RawGroup)
     [C : ChartedSpace RawCoordinates RawGroup]
     [LieGroup (𝓘(ℝ, RawCoordinates)) (↑(⊤ : ℕ∞) : ℕ∞ω) RawGroup]
@@ -273,7 +270,7 @@ noncomputable section
 namespace DedekindZetaZeroFree.PGLComplex.AffineLie
 open MeasureTheory Topology Set
 
-private lemma preimage_inter_source {X Y : Type*} [TopologicalSpace X] [MeasurableSpace X]
+lemma preimage_inter_source {X Y : Type*} [TopologicalSpace X] [MeasurableSpace X]
     [OpensMeasurableSpace X] [TopologicalSpace Y] [MeasurableSpace Y] [BorelSpace Y]
     [Nonempty Y] (f : X → Y) (U : Set X) (hf : ContinuousOn f U)
     (hU : MeasurableSet U) (s : Set Y) (hs : MeasurableSet s) :
@@ -283,7 +280,7 @@ private lemma preimage_inter_source {X Y : Type*} [TopologicalSpace X] [Measurab
   have hm := hf.measurable_piecewise (g := fun _ => c) continuousOn_const hU
   have he : f ⁻¹' s ∩ U = (U.piecewise f (fun _ => c)) ⁻¹' s ∩ U := by
     ext x
-    by_cases hx : x ∈ U <;> simp [hx]
+    simp_all
   rw [he]
   exact (hm hs).inter hU
 
@@ -464,7 +461,7 @@ theorem rawDensity_positive (h : OpenPartialHomeomorph RawCoordinates RawGroup)
     (hn : NormalizedChart h) (x : RawCoordinates) (hx : x ∈ h.source) :
     0 < 1 / ‖rawDelta x‖ ^ 4 := by
   have hd : rawDelta x ≠ 0 := by simpa only [hn.source, Set.mem_setOf_eq] using hx
-  exact one_div_pos.mpr (pow_pos (norm_pos_iff.mpr hd) 4)
+  simp_all
 theorem rawDensity_continuousOn (h : OpenPartialHomeomorph RawCoordinates RawGroup)
     (hn : NormalizedChart h) : ContinuousOn (fun x : RawCoordinates =>
     1 / ‖rawDelta x‖ ^ 4) h.source := by
@@ -536,8 +533,7 @@ theorem translated_local_measure_extension
     Measure.map_map hk (show Measurable (fun x : G => (k⁻¹ * g) * x) from
       (continuous_const.mul continuous_id).measurable)]
   have hfun : (fun x : G => k * x) ∘ (fun x => (k⁻¹ * g) * x) = (fun x => g * x) := by
-    funext x
-    simp [Function.comp_def, mul_assoc]
+    simp
   rw [hfun, hν]
 
 theorem chart_measure_image {X Y : Type*}
@@ -605,8 +601,7 @@ theorem invariant_measure_isHaar_of_chart_density
       Metric.isOpen_ball.measure_pos volume (Metric.nonempty_ball.mpr (by linarith)))
     have hsupport : MeasurableSet (Function.support (fun y => ENNReal.ofReal (w y))) := by
       convert (hm.ennreal_ofReal (measurableSet_singleton 0)).compl using 1
-      ext y
-      simp [Function.support]
+      rfl
     rw [Measure.restrict_apply hsupport]
     apply measure_mono
     intro y hy
@@ -653,10 +648,6 @@ theorem normalized_chart_haar_of_compatible_translates
     exact partial_homeomorph_local_map h _
   exact ⟨ν, invariant_measure_isHaar_of_chart_density ν h hne w hw hp hm hd, hd⟩
 
-section RawSmooth
-open scoped Matrix.Norms.Elementwise
-
-end RawSmooth
 
 theorem normalized_frame_haar
     [MeasurableSpace RawGroup] [BorelSpace RawGroup]
@@ -678,7 +669,7 @@ theorem normalized_frame_haar
     rw [hn.source]
     have hz : rawDelta 0 = 1 := by
       apply Complex.ext <;> simp [rawDelta, rawComplexCoordinates]
-    simpa only [Set.mem_setOf_eq, hz] using (one_ne_zero : (1 : ℂ) ≠ 0)
+    simp_all
   have hm : Measurable (fun x : RawCoordinates => 1 / ‖rawDelta x‖ ^ 4) :=
     measurable_const.div (rawDelta_continuous.measurable.norm.pow_const 4)
   apply normalized_chart_haar_of_compatible_translates h hne
@@ -689,9 +680,3 @@ theorem normalized_frame_haar
     (rawDensity_positive h hn) hm
   set_option backward.isDefEq.respectTransparency false in
     exact normalized_chart_translation_jacobian h hn (C := C) hchart F hderiv hdet
-
-end DedekindZetaZeroFree.PGLComplex.AffineLie
-
-end
-
-end

@@ -17,7 +17,7 @@ private lemma norm_exp_sq_le (w : ℂ) (K : ℝ) (hK : w.re ^ 2 ≤ K) :
   rw [h2, sub_eq_add_neg, Real.exp_add]
   exact mul_le_mul_of_nonneg_right (Real.exp_le_exp.mpr hK) (Real.exp_nonneg _)
 
-private lemma rpow_two_add_le (x B : ℝ) (hx : 0 ≤ x) (hB : 0 ≤ B) :
+lemma rpow_two_add_le (x B : ℝ) (hx : 0 ≤ x) (hB : 0 ≤ B) :
     (2 + x) ^ B ≤ 2 ^ B * (1 + x) ^ B := by
   have h : (2 + x) ^ B ≤ (2 * (1 + x)) ^ B :=
     Real.rpow_le_rpow (by linarith) (by linarith) hB
@@ -56,7 +56,7 @@ theorem comparisonGaussianMellinWeight_polynomial_bound
   obtain ⟨hze, hzf⟩ := hz
   have hK : (ξ + z - 1).re ^ 2 ≤ (|a| + |e| + |b| + |f| + 1) ^ 2 := by
     have hre : (ξ + z - 1).re = ξ.re + z.re - 1 := by
-      simp only [Complex.add_re, Complex.sub_re, Complex.one_re, sub_zero]
+      rfl
     rw [hre]
     have habs : |ξ.re + z.re - 1| ≤ |a| + |e| + |b| + |f| + 1 := by
       refine abs_le.mpr ⟨?_, ?_⟩
@@ -69,7 +69,7 @@ theorem comparisonGaussianMellinWeight_polynomial_bound
   have hexp : ‖Complex.exp ((ξ + z - 1) ^ 2)‖ ≤
       Real.exp ((|a| + |e| + |b| + |f| + 1) ^ 2) * Real.exp (-(ξ.im + z.im) ^ 2) := by
     have h := norm_exp_sq_le (ξ + z - 1) ((|a| + |e| + |b| + |f| + 1) ^ 2) hK
-    simpa only [Complex.add_im, Complex.sub_im, Complex.one_im, sub_zero] using h
+    simp_all
   have hMz : ‖M z‖ ≤ CM * (1 + |z.im|) ^ (-(A + D)) :=
     hCM z (by simp only [comparisonClosedStrip, Set.mem_setOf_eq]; exact ⟨hze, hzf⟩)
   have hWw : ‖W w‖ ≤ CW * (1 + |w.im|) ^ (-(A + B)) :=
@@ -80,12 +80,10 @@ theorem comparisonGaussianMellinWeight_polynomial_bound
     rpow_two_add_le _ _ (abs_nonneg _) hD
   have e1 : (1 + |z.im|) ^ (-(A + D)) * (1 + |z.im|) ^ D = (1 + |z.im|) ^ (-A) := by
     rw [← Real.rpow_add (by positivity : (0 : ℝ) < 1 + |z.im|)]
-    congr 1
-    ring
+    simp
   have e2 : (1 + |w.im|) ^ (-(A + B)) * (1 + |w.im|) ^ B = (1 + |w.im|) ^ (-A) := by
     rw [← Real.rpow_add (by positivity : (0 : ℝ) < 1 + |w.im|)]
-    congr 1
-    ring
+    simp
   have e3 : (2 : ℝ) ^ B * 2 ^ D = (2 : ℝ) ^ (B + D) := by
     rw [← Real.rpow_add (by norm_num : (0 : ℝ) < 2)]
   have s1 : ‖Complex.exp ((ξ + z - 1) ^ 2)‖ * ‖M z‖ ≤
@@ -164,7 +162,7 @@ theorem comparisonHeightEnvelope_convolution (A : ℝ) (hA : 0 ≤ A) :
       (∫ p : ℝ × ℝ, comparisonHeightEnvelope (A + 2) t p.1 p.2) ≤
         C * (1 + |t|) ^ (-(A + 2)) := by
   let k := A+2
-  have hk : 0 ≤ k := by dsimp [k]; linarith
+  have hk : 0 ≤ k := by positivity
   have hw : Integrable (fun x : ℝ => (1+|x|)^(-k)) := by
     simpa only [Real.norm_eq_abs] using
       (integrable_one_add_norm (E := ℝ) (μ := volume) (r := k) (by simp [k]; linarith))
@@ -172,8 +170,8 @@ theorem comparisonHeightEnvelope_convolution (A : ℝ) (hA : 0 ≤ A) :
     integrable_exp_neg_mul_sq (by norm_num)
   let G := ∫ x : ℝ, Real.exp (-(1/2:ℝ)*x^2)
   let W := ∫ x : ℝ, (1+|x|)^(-k)
-  have hG : 0 ≤ G := integral_nonneg (fun _ => Real.exp_nonneg _)
-  have hW : 0 ≤ W := integral_nonneg (fun _ => by positivity)
+  have hG : 0 ≤ G := by positivity
+  have hW : 0 ≤ W := by positivity
   refine ⟨Real.exp (k^2/2) * G * W + 1, by positivity, ?_⟩
   intro t
   have hmajor : Integrable (fun p : ℝ × ℝ =>
@@ -235,7 +233,7 @@ theorem comparisonHeightEnvelope_integrable (A : ℝ) (hA : 0 ≤ A) :
     have hτ : Continuous (fun p : ℝ × ℝ × ℝ => (1 + |p.2.1|) ^ (-(A+2))) :=
       (by fun_prop : Continuous (fun p : ℝ × ℝ × ℝ => 1 + |p.2.1|)).rpow_const
         (fun p => Or.inl (by positivity))
-    exact ((by fun_prop : Continuous (fun p : ℝ × ℝ × ℝ => Real.exp (-(p.1 + p.2.2)^2))).mul hν).mul hτ
+    fun_prop
   have hn : ∀ p : ℝ × ℝ × ℝ, 0 ≤ comparisonHeightEnvelope (A+2) p.1 p.2.1 p.2.2 := by
     intro p; unfold comparisonHeightEnvelope; positivity
   apply (integrable_prod_iff hm).mpr
@@ -246,9 +244,6 @@ theorem comparisonHeightEnvelope_integrable (A : ℝ) (hA : 0 ≤ A) :
     · filter_upwards [] with t
       have heq : (fun p : ℝ × ℝ => ‖comparisonHeightEnvelope (A+2) t p.1 p.2‖) =
           (fun p : ℝ × ℝ => comparisonHeightEnvelope (A+2) t p.1 p.2) := by
-        funext p; exact Real.norm_of_nonneg (hn (t,p))
+        funext p; simp_all
       rw [heq, Real.norm_of_nonneg (integral_nonneg (fun p => hn (t,p)))]
       exact (h t).2
-
-end
-end DedekindZetaZeroFree

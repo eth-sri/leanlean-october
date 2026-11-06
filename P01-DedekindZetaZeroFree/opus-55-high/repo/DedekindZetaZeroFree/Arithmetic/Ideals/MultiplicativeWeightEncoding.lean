@@ -45,11 +45,11 @@ theorem multiplicativeIdealEncoding
       ∃ I : Odlyzko.NonzeroIdeal K, Odlyzko.idealPrimeCode K I = n := by
     intro b hb n hn
     have hn0 : n ≠ 0 := by
-      intro h; exact hn (by rw [h, map_zero])
+      intro h; simp_all
     refine Odlyzko.exists_idealPrimeCode_eq_of_primeFactors K hn0 ?_
     intro p hp
     have hpsupp : p ∈ n.factorization.support := by
-      simp_all [Multiset.mem_coe, Nat.mem_primeFactorsList', Nat.mem_primeFactors]
+      simp_all
     have hprod : n.factorization.prod (fun q e => b q ^ e) ≠ 0 := by
       simpa [Odlyzko.primeValueHom, hn0] using hn
     have hne := (Finsupp.prod_ne_zero_iff.mp hprod) p hpsupp
@@ -92,5 +92,3 @@ theorem multiplicativeIdealEncoding
       exact hmem ⟨I, hI⟩
   · intro p
     exact Odlyzko.primeValueHom_apply_prime_subtype a p
-
-end DedekindZetaZeroFree.AbelianQuotient

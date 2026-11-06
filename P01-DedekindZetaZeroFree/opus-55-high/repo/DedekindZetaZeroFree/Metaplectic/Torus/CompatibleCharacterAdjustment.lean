@@ -24,7 +24,7 @@ open _root_.DedekindZetaZeroFree.ProductPolarization.FiniteAdjustmentSupport ren
 open _root_.DedekindZetaZeroFree.KPGlobalProductPolarizationCharacter renaming toRawData → toRawData
 open _root_.DedekindZetaZeroFree.KPGlobalProductPolarizationCharacter renaming fromRawAdjustment → fromRawAdjustment
 
-private theorem adjustment_product_frozen (P : CompatibleLocalData F ζ hζ)
+theorem adjustment_product_frozen (P : CompatibleLocalData F ζ hζ)
     (ψ : ((q : A.Sf) → (P.localData (Sum.inr q.val)).L) →* ℂˣ) :
     ∃ T : FiniteAdjustment F ζ hζ P, T.S = A.Sf ∧
       ∀ x : rawB F ζ hζ P,
@@ -64,14 +64,14 @@ private theorem adjustment_product_frozen (P : CompatibleLocalData F ζ hζ)
       have hq : q ∈ S := by
         by_contra hq
         exact hv (by change chi (Sum.inr q) _ = 1; simp [chi, hq])
-      exact Finset.mem_image.mpr ⟨q, hq, rfl⟩
+      simp_all
   have hcf : Function.HasFiniteMulSupport c := (S.image Sum.inr).finite_toSet.subset hc
   have hprod : (∏ᶠ v, c v) = ψ (fun q =>
       ⟨localProjection F ζ hζ (Sum.inr q.val)
         (rawCoordinate F ζ hζ P x (Sum.inr q.val)).val,
           (rawCoordinate F ζ hζ P x (Sum.inr q.val)).property⟩) := by
     rw [finprod_eq_prod_of_mulSupport_subset c hc,
-      Finset.prod_image (by intro a ha b hb h; exact Sum.inr_injective h)]
+      Finset.prod_image (by simp)]
     rw [← Finset.prod_coe_sort]
     simp only [c, T, chi, dif_pos (Subtype.property _)]
     change (∏ q : S, ψ (Pi.mulSingle q
@@ -111,8 +111,8 @@ theorem exists_adjustment
   let f : H →* V := MonoidHom.pi (fun q =>
     { toFun := fun h => ⟨KPGlobalCubicIdelePairing.classComparison F
         (pD F ζ hζ h.val) (Sum.inr q.val), h.property.2 (Sum.inr q.val)⟩
-      map_one' := by apply Subtype.ext; simp
-      map_mul' := by intro x y; apply Subtype.ext; simp })
+      map_one' := by simp
+      map_mul' := by simp })
   have hk : f.ker ≤ δ.ker := by
     intro h hh
     have hd : pD F ζ hζ h.val = 1 := by
@@ -134,7 +134,7 @@ theorem exists_adjustment
         KPGlobalCenterRationalCharacter.omegaA F ζ hζ z :=
       KPGlobalCenterRationalCharacter.lambdaR_formula F ζ hζ (r h) 1 z (by simp [z, r])
     change KPGlobalCenterRationalCharacter.lambdaR F ζ hζ (r h) / lambdaB F ζ hζ P T₀ (b h) = 1
-    rw [hr, hb, div_self']
+    simp_all
   let d : f.range →* ℂˣ := f.rangeRestrict.liftOfSurjective
     f.rangeRestrict_surjective ⟨δ, by simpa using hk⟩
   letI : ∀ v, Finite (LocalD F v) := local_finite F
@@ -193,7 +193,3 @@ theorem exists_model (hCl : Subsingleton (ClassGroup A.R)) :
   obtain ⟨T, hT, hcompat⟩ := exists_adjustment A hCl P
     (fun q hq => (hP q hq).2.1)
   exact ⟨⟨P, T, hcompat⟩, hT, hP⟩
-
-end DedekindZetaZeroFree.EisensteinReferenceSections.FrozenAdjustment
-
-end

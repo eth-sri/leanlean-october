@@ -24,7 +24,7 @@ theorem rayCharacter_span_eq_of_residue {m : Ideal (𝓞 F)} (hm : m ≠ ⊥)
   obtain ⟨c, d, hd, hcd⟩ := Ideal.mem_span_singleton_sup.mp hmem
   have hc : a * c - 1 ∈ m := by
     have h1 : a * c - 1 = -d := by linear_combination hcd
-    rw [h1]; exact neg_mem hd
+    simp_all
 
   obtain ⟨u, hu_ne, hu_mem, hu_pos⟩ := exists_totallyPositive_residue F m hm c
 
@@ -40,15 +40,11 @@ theorem rayCharacter_span_eq_of_residue {m : Ideal (𝓞 F)} (hm : m ≠ ⊥)
   have hAu : η (Ideal.span {a * u}) = 1 := by
     refine η.map_span' (a * u) (mul_ne_zero ha hu_ne) hau ?_
     intro φ
-    have hcoe : ((a * u : 𝓞 F) : F) = (a : F) * (u : F) :=
-      map_mul (algebraMap (𝓞 F) F) a u
-    rw [hcoe, map_mul]; exact mul_pos (ha_pos φ) (hu_pos φ)
+    simp_all
   have hBu : η (Ideal.span {b * u}) = 1 := by
     refine η.map_span' (b * u) (mul_ne_zero hb hu_ne) hbu ?_
     intro φ
-    have hcoe : ((b * u : 𝓞 F) : F) = (b : F) * (u : F) :=
-      map_mul (algebraMap (𝓞 F) F) b u
-    rw [hcoe, map_mul]; exact mul_pos (hb_pos φ) (hu_pos φ)
+    simp_all
 
   have hA : η (Ideal.span {a}) * η (Ideal.span {u}) = 1 := by
     rw [← RayOperations.map_mul, Ideal.span_singleton_mul_span_singleton]
@@ -57,5 +53,3 @@ theorem rayCharacter_span_eq_of_residue {m : Ideal (𝓞 F)} (hm : m ≠ ⊥)
     rw [← RayOperations.map_mul, Ideal.span_singleton_mul_span_singleton]
     exact hBu
   rw [eq_inv_of_mul_eq_one_left hA, eq_inv_of_mul_eq_one_left hB]
-
-end DedekindZetaZeroFree.LargeSieve

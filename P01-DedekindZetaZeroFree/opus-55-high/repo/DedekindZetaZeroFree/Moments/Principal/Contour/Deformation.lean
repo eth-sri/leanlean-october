@@ -37,15 +37,15 @@ theorem verticalIntegral_eq_of_decay {a b : ℝ} {f : ℂ → ℂ} (hab : a < b)
     (hf.mono diff_subset) hres C T0 hbound
   linear_combination this
 
-private theorem decay_two {f : ℂ → ℂ} {a b : ℝ}
+theorem decay_two {f : ℂ → ℂ} {a b : ℝ}
     (h : PrincipalStripControls.DecayOn f a b) :
     ∃ C T0 : ℝ, ∀ x ∈ Icc a b, ∀ y : ℝ, T0 ≤ |y| →
       ‖f ((x : ℂ) + (y : ℂ) * I)‖ ≤ C * (1 + |y|) ^ (-2 : ℝ) :=
   h 2 (by norm_num)
 
-private theorem re_eq (x s : ℝ) : ((x : ℂ) + (s : ℂ) * I).re = x := by simp
+theorem re_eq (x s : ℝ) : ((x : ℂ) + (s : ℂ) * I).re = x := by simp
 
-private theorem gauss_le (y : ℝ) : Real.exp (-(y ^ 2) / 2) ≤ 4 * (1 + |y|) ^ (-2 : ℝ) := by
+theorem gauss_le (y : ℝ) : Real.exp (-(y ^ 2) / 2) ≤ 4 * (1 + |y|) ^ (-2 : ℝ) := by
   have h1 : (1 : ℝ) + y ^ 2 / 2 ≤ Real.exp (y ^ 2 / 2) := by
     have := Real.add_one_le_exp (y ^ 2 / 2); linarith
   have hpos : 0 < 1 + y ^ 2 / 2 := by positivity

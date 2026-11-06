@@ -152,7 +152,7 @@ theorem integral_lift_eq_zero
       rw [hA.covolume_eq_volume ν]
       simp [μ'])
   have hmp := measurePreserving_quotientAddGroup_mk_of_AddQuotientMeasureEqMeasurePreimage ν hA μ'
-  have hm : AEStronglyMeasurable f μ' := hf.smul_measure (ν A)
+  have hm : AEStronglyMeasurable f μ' := by fun_prop
   rw [← hmp.map_eq] at hm
   rw [← integral_map hmp.measurable.aemeasurable hm, hmp.map_eq]
   simp [μ', integral_smul_measure, hzero]
@@ -260,7 +260,7 @@ theorem full_torus_zero_mean_descent
   · exact hf
   · intro b
     rw [integral_map hqc.measurable.aemeasurable (hgm b).aestronglyMeasurable]
-    simpa only [hgq] using hzero b
+    simp_all
 
 theorem horizontal_exact_domain_integral_zero
     {F : Type} [Field F] [NumberField F]
@@ -393,9 +393,3 @@ theorem invariant_zero_mean_fiber_integral
   have hcard : (Nat.card (KPCuspCharts.kernelUnits F hF D.E D.integralUnits) : ℝ) ≠ 0 := by
     exact_mod_cast (Nat.card_pos.ne' : Nat.card (KPCuspCharts.kernelUnits F hF D.E D.integralUnits) ≠ 0)
   exact (mul_eq_zero.mp (heq.symm.trans hrect)).resolve_left hcard
-
-end DedekindZetaZeroFree.KPMeanZeroWeightedEnergy.GapCoercivity.CrossSection
-
-end
-
-end

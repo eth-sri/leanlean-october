@@ -12,7 +12,6 @@ open ValuativeRel
 noncomputable section
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 2000000
-set_option autoImplicit false
 variable {K : Type*} [Field K] [ValuativeRel K] [TopologicalSpace K]
   [IsNonarchimedeanLocalField K]
 variable {G H D : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
@@ -86,6 +85,3 @@ theorem jacquetRangeEvaluation_surjective (ρ : Representation ℂ G V)
   apply LinearMap.ext
   intro v
   exact congrArg (fun l => l ⟨jacquetMap (V := V) (W := sectionSpace A P ε 0) A f v, v, rfl⟩) hz
-
-end
-end DedekindZetaZeroFree.KPExceptionalRaw.FiniteSource.RankoneSteps.JacquetWeightSteps

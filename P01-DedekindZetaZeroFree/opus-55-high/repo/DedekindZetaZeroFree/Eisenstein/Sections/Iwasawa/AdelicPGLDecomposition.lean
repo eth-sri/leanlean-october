@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.Eisenstein.Sections.Iwasawa.ComplexDecomposit
 
 @[expose] public section
 
-noncomputable section
 set_option backward.isDefEq.respectTransparency false
 open scoped NumberField Classical
 open NumberField IsDedekindDomain
@@ -14,7 +13,7 @@ namespace DedekindZetaZeroFree.PrincipalOfKP
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-private theorem local_factor (v : KPHilbert.Place F)
+theorem local_factor (v : KPHilbert.Place F)
     (g : KPLocalCover.CubicGL2Raw F ζ hζ v) :
     ∃ k : KPLocalCover.CubicGL2Raw F ζ hζ v,
       k ∈ localCompactFactorMax F ζ hζ v ∧ (g.g * k.g⁻¹) 1 0 = 0 := by
@@ -33,7 +32,7 @@ private theorem local_factor (v : KPHilbert.Place F)
     · refine ⟨KPLocalCover.sectionMap F ζ hζ (Sum.inr q) (KPTameCompact.inclusion F q r⁻¹), ?_, ?_⟩
       · simp only [localCompactFactorMax, if_pos hb]
         exact ⟨r⁻¹,rfl⟩
-      · simpa only [KPLocalCover.sectionMap_g, map_inv, inv_inv] using hr
+      simp_all
     · let k := KPGoodCompactSplitting.kStar F ζ hζ q (fun h3 => hb (Or.inr h3)) r⁻¹
       refine ⟨k,?_,?_⟩
       · simp only [localCompactFactorMax, if_neg hb, KPAdelicCoverRestrictedProduct.finiteCompact]
@@ -86,7 +85,3 @@ theorem base_pgl_iwasawa_max (g : KPAdelicCoverRestrictedProduct.AdelicPGL2 F) :
   rw [← map_mul]
   congr 1
   simp only [B, mul_assoc, inv_mul_cancel, mul_one]
-
-end DedekindZetaZeroFree.PrincipalOfKP
-
-end

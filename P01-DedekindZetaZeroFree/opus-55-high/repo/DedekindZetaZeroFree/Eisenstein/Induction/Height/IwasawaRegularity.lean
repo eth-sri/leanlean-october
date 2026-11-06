@@ -19,7 +19,7 @@ def finiteFactor (g : G) : G :=
   (PGLComplex.AdelicSlicesRaw.archimedeanInsertion F ζ hζ
     (PGLComplex.AdelicSlicesRaw.archProjection F ζ hζ g))⁻¹ * g
 
-private theorem finiteFactor_mem (g : G) :
+theorem finiteFactor_mem (g : G) :
     finiteFactor F ζ hζ g ∈ PGLComplex.AdelicSlicesRaw.finiteSubgroup F ζ hζ := by
   apply RepresentationTheory.ArchFiniteSplitting.arch_kernel_le_finite F ζ hζ
   change PGLComplex.AdelicSlicesRaw.archProjection F ζ hζ (finiteFactor F ζ hζ g) = 1
@@ -27,7 +27,7 @@ private theorem finiteFactor_mem (g : G) :
   rw [map_mul, map_inv, PGLComplex.AdelicSlicesRaw.archProjection_archimedeanInsertion]
   simp
 
-private theorem logModulus_borel_mul
+theorem logModulus_borel_mul
     (t : KPGlobalTorusFunctionData.E F ζ hζ) (x : KPAdeles F) (g : G) :
     logModulus F ζ hζ D ((t.val * KPGlobalTorusFunctionData.N F ζ hζ x) * g) =
       Real.log ((KPGlobalTorusFunctionData.delta F ζ hζ t : NNReal) : ℝ) + logModulus F ζ hζ D g := by
@@ -45,7 +45,7 @@ variable (hSU : ∀ (w : InfinitePlace F) (k : KPCplxCharacterHaar.ComplexSU2),
   KPGlobalResidualConstruction.complexCompactLift F ζ hζ w k ∈ D.K)
 
 include hSU in
-private theorem compact_insertion_mem (u : InfinitePlace F → KPCplxCharacterHaar.ComplexSU2) :
+theorem compact_insertion_mem (u : InfinitePlace F → KPCplxCharacterHaar.ComplexSU2) :
     PGLComplex.AdelicSlicesRaw.archimedeanInsertion F ζ hζ
       (fun w => Matrix.ProjGenLinGroup.mk (KPCplxCharacterHaar.complexSU2Embedding (u w))) ∈ D.K := by
   rw [show PGLComplex.AdelicSlicesRaw.archimedeanInsertion F ζ hζ =

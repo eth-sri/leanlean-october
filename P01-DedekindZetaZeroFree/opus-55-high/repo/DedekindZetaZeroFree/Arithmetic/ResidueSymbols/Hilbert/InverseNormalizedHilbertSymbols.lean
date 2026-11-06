@@ -7,16 +7,13 @@ public import DedekindZetaZeroFree.Arithmetic.LocalFields.RootsOfUnityAndPowerCl
 namespace DedekindZetaZeroFree
 namespace NormalizedSymbolTransport
 
-set_option autoImplicit false
 
 variable {C M N : Type*} [CommGroup C] [CommGroup M] [CommGroup N]
 
 def inverseTransport (e : M ≃* N) (B : C →* C →* N) : C →* C →* M where
   toFun a := e.symm.toMonoidHom.comp (invMonoidHom.comp (B a))
   map_one' := by
-    ext b
-    change e.symm (((B 1) b)⁻¹) = 1
-    rw [map_one, MonoidHom.one_apply, inv_one, map_one]
+    simp
   map_mul' := by
     intro a c
     ext b
@@ -71,8 +68,8 @@ theorem finiteSymbolInverseTransport_local_value (A : SArithmeticData F)
     (a b : PowerQuotient (v.adicCompletion F)ˣ n) :
     ((A.finiteRootsEquiv v n hn (A.finiteSymbolInverseTransport v n hn B a b) :
       rootsOfUnity n (v.adicCompletion F)) : (v.adicCompletion F)ˣ) =
-        ((B a b : rootsOfUnity n (v.adicCompletion F)) : (v.adicCompletion F)ˣ)⁻¹ := by
-  exact congrArg Subtype.val
+        ((B a b : rootsOfUnity n (v.adicCompletion F)) : (v.adicCompletion F)ˣ)⁻¹ := 
+  congrArg Subtype.val
     (NormalizedSymbolTransport.map_inverseTransport (A.finiteRootsEquiv v n hn) B a b)
 
 theorem finiteSymbolInverseTransport_exponentCompatibility (A : SArithmeticData F)
@@ -102,7 +99,3 @@ theorem finiteSymbolInverseTransport_exponentCompatibility (A : SArithmeticData 
       (v.adicCompletion F)ˣ) ^ k := by
   rw [A.finiteSymbolInverseTransport_local_value,
     A.finiteSymbolInverseTransport_local_value, hcompat, inv_pow]
-
-end
-end SArithmeticData
-end DedekindZetaZeroFree

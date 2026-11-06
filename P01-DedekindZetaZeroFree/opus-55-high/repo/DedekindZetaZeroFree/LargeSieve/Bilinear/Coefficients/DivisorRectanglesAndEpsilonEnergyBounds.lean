@@ -76,7 +76,7 @@ private lemma product_unique {u v a b x y : Ideal (𝓞 F)}
     (heq.symm ▸ dvd_mul_left y x)
   exact ⟨dvd_antisymm hax hxa, dvd_antisymm hby hyb⟩
 
-private lemma bin_filter_eq (C : Context Q) {B : ℝ} {p : Ideal (𝓞 F) × Ideal (𝓞 F)}
+lemma bin_filter_eq (C : Context Q) {B : ℝ} {p : Ideal (𝓞 F) × Ideal (𝓞 F)}
     (hp : p ∈ C.pairs) {P : ℝ × ℝ} (hP : P ∈ Origin.rectangles C B)
     (i : Fin 2) :
     (divisorBin (F := F) (if i = 0 then P.1 else P.2)).filter
@@ -122,13 +122,13 @@ private lemma density_rectangles (C : Context Q) (B : ℝ)
       _ = ∑ f ∈ (divisorBin (F := F) P.1).filter (fun f => f ∣ p.1),
           ∑ g ∈ (divisorBin (F := F) P.2).filter (fun g => g ∣ p.2),
             if norm (f*g) ≤ C.Z1 B e then (UniqueFactorizationMonoid.moebius (f*g) : ℂ) else 0 := by
-        simp only [Finset.sum_filter, ← sum_if_out]
+        simp only [Finset.sum_filter]
         apply Finset.sum_congr rfl
         intro f hf
         by_cases h : f ∣ p.1 <;> simp [h, ite_and]
       _ = _ := by
         rw [h1, h2]
-        simp only [Finset.sum_filter, ← sum_if_out]
+        simp only [Finset.sum_filter]
         apply Finset.sum_congr rfl
         intro f hf
         by_cases h : ErrorRectangles.InBin P.1 f <;> simp [h, ite_and]
@@ -163,22 +163,19 @@ private lemma density_rectangles (C : Context Q) (B : ℝ)
       exact (hnmem hP).elim
   · simp [hshort]
 
-private lemma coefficient_quotient (C : Context Q) (p : Ideal (𝓞 F) × Ideal (𝓞 F)) :
+lemma coefficient_quotient (C : Context Q) (p : Ideal (𝓞 F) × Ideal (𝓞 F)) :
     C.coefficient p / (Real.sqrt (norm (p.1*p.2)) : ℂ) =
       quotientCoefficient C p.1 * star (quotientCoefficient C p.2) := by
   have hnorm : norm (p.1*p.2) = norm p.1 * norm p.2 := by simp [norm, map_mul]
   rw [hnorm, Real.sqrt_mul (by unfold norm; positivity)]
-  simp only [quotientCoefficient, Context.coefficient, star_div₀,
-    Complex.star_def, map_mul, Complex.conj_ofReal, div_mul_div_comm, Complex.ofReal_mul]
+  simp only [quotientCoefficient, Context.coefficient, star_div₀, Complex.star_def, Complex.conj_ofReal, div_mul_div_comm, Complex.ofReal_mul]
 
 private lemma pairSum_mul (C : Context Q) (z : ℂ)
     (f : (p : Ideal (𝓞 F) × Ideal (𝓞 F)) → C.ValidPair p → ℂ) :
     C.pairSum (fun p hp => z * f p hp) = z * C.pairSum f := by
   unfold Context.pairSum
   rw [Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro p hp
-  split_ifs <;> simp
+  simp
 
 private lemma pairSum_sum {α : Type*} (C : Context Q) (s : Finset α)
     (f : α → (p : Ideal (𝓞 F) × Ideal (𝓞 F)) → C.ValidPair p → ℂ) :
@@ -186,9 +183,7 @@ private lemma pairSum_sum {α : Type*} (C : Context Q) (s : Finset α)
       ∑ i ∈ s, C.pairSum (f i) := by
   unfold Context.pairSum
   conv_rhs => rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro p hp
-  split_ifs <;> simp
+  simp
 
 private lemma moebius_norm_le (d : Ideal (𝓞 F)) :
     ‖(UniqueFactorizationMonoid.moebius d : ℂ)‖ ≤ 1 := by
@@ -358,10 +353,9 @@ private lemma valid_iff (C : Context Q) {u v : Ideal (𝓞 F)}
       huv, hduv, hclass, hquot, ?_⟩
     intro htop
     have hut : u = ⊤ := top_unique (htop.symm.trans_le Ideal.mul_le_left)
-    have hvt : v = ⊤ := top_unique (htop.symm.trans_le Ideal.mul_le_right)
-    rcases hoff with h | h <;> contradiction
+    simp_all
 
-private lemma core_rows (C : Context Q) (B : ℝ) (unit : Bool)
+lemma core_rows (C : Context Q) (B : ℝ) (unit : Bool)
     (hunit : unit = true → B = 1) (hB : 1 ≤ B) :
     C.reflectedCoreRows B unit ⊆ Sieve.idealAdmissibleFinset F c (2 * B) := by
   intro r hr
@@ -373,8 +367,7 @@ private lemma core_rows (C : Context Q) (B : ℝ) (unit : Bool)
     have hrt : r = ⊤ := Finset.mem_singleton.mp (Finset.mem_filter.mp hr).1
     subst r
     apply (Sieve.mem_idealAdmissibleFinset F c _ _).mpr
-    refine ⟨by simpa only [← Ideal.one_eq_top] using squarefree_one, by simp, ?_⟩
-    simp [hBeq]
+    simp_all
 
  def block (C : Context Q) (U V : Finset (Ideal (𝓞 F)))
     (x y : Ideal (𝓞 F) → ℂ) (r : Ideal (𝓞 F)) : ℂ :=
@@ -396,7 +389,7 @@ private lemma block_split (C : Context Q) (f g : Ideal (𝓞 F))
   have hi (v) (hv : v ∈ C.columns) := valid_iff C hu hv
   have hout (P : Prop) [Decidable P] (z : Ideal (𝓞 F) → ℂ) :
       (if P then ∑ v ∈ C.columns, z v else 0) =
-        ∑ v ∈ C.columns, if P then z v else 0 := by split_ifs <;> simp
+        ∑ v ∈ C.columns, if P then z v else 0 := by simp
   rw [hout, hout, ← Finset.sum_add_distrib]
   apply Finset.sum_congr rfl
   intro v hv
@@ -405,7 +398,7 @@ private lemma block_split (C : Context Q) (f g : Ideal (𝓞 F))
     by_cases hut : u = ⊤ <;> by_cases hvt : v = ⊤ <;>
     by_cases hc : u ⊔ v = ⊤ <;> simp [hf, hg, hut, hvt, hc]
 
-private lemma weighted_phase (C : Context Q)
+lemma weighted_phase (C : Context Q)
     (phase : Ideal (𝓞 F) → Ideal (𝓞 F) → ℂ)
     (hsplit : ∀ e ∈ C.mobiusDivisors, ∀ t ∈ squarefreeBadPool c,
       ∀ p ∈ C.pairs, ∀ hp : Context.ValidPair C p, ∀ r, r ⊔ c = ⊤ →
@@ -431,7 +424,7 @@ private lemma weighted_phase (C : Context Q)
     ring
   · rfl
 
-private lemma column_operator (D : Sieve.AllIndexNormalizedFamilyData Q)
+lemma column_operator (D : Sieve.AllIndexNormalizedFamilyData Q)
     (C : Context Q) (hCD : C.D = D) (hN : 1 ≤ C.N)
     (K : ℝ) (hop : ∀ C : Context Q, C.D = D → 1 ≤ C.N →
       ∀ B P : ℝ, 1 ≤ B → 1 ≤ P → ∀ f : Ideal (𝓞 F),
@@ -507,7 +500,7 @@ private lemma block_bound (C : Context Q) (R U V : Finset (Ideal (𝓞 F)))
         apply mul_le_of_le_one_right (sq_nonneg _)
         have hh := hw u (Finset.mem_filter.mp (hU hu)).1
         nlinarith [norm_nonneg (w u)]
-      _ ≤ _ := Finset.sum_le_sum_of_subset_of_nonneg hU (by intros; positivity)
+      _ ≤ _ := Finset.sum_le_sum_of_subset_of_nonneg hU (by simp)
   exact mul_le_mul (he U f hU) (he V g hV) (by positivity) (by unfold divisorIncidence; positivity)
 
 theorem supported_rectangle_bound
@@ -644,8 +637,8 @@ lemma divisorIncidence_nonneg (C : Context Q) (f : Ideal (𝓞 F)) :
   positivity
 
 lemma binIncidence_nonneg (C : Context Q) (P : ℝ) :
-    0 ≤ binIncidence C P := by
-  exact Finset.sum_nonneg fun f _ => divisorIncidence_nonneg C f
+    0 ≤ binIncidence C P := 
+  Finset.sum_nonneg fun f _ => divisorIncidence_nonneg C f
 
 lemma binIncidence_le (C : Context Q) (P : ℝ) :
     binIncidence C P ≤ incidenceEnergy C := by
@@ -660,7 +653,7 @@ lemma binIncidence_le (C : Context Q) (P : ℝ) :
     exact hm.1.ne_zero
   have hsub : (divisorBin (F := F) P).filter (fun f => f ∣ u) ⊆ idealDivisors u := by
     intro f hf
-    exact (mem_idealDivisors hu0).mpr (Finset.mem_filter.mp hf).2
+    simp_all
   have hc : (((divisorBin (F := F) P).filter (fun f => f ∣ u)).card : ℝ) ≤
       ((idealDivisors u).card : ℝ) := by
     exact_mod_cast Finset.card_le_card hsub
@@ -721,8 +714,8 @@ lemma rectangles_count (C : Context Q) (B : ℝ) :
       ((ErrorRectangles.scales (C.N / norm C.d)).card : ℝ) ^ 2 := by
   have hc : (rectangles C B).card ≤
       ((ErrorRectangles.scales (C.N / norm C.d)) ×ˢ
-        (ErrorRectangles.scales (C.N / norm C.d))).card := by
-    exact Finset.card_le_card (fun _ h =>
+        (ErrorRectangles.scales (C.N / norm C.d))).card := 
+    Finset.card_le_card (fun _ h =>
       (Finset.mem_filter.mp (Finset.mem_filter.mp h).1).1)
   rw [Finset.card_product, ← pow_two] at hc
   exact_mod_cast hc
@@ -792,7 +785,7 @@ lemma assembly_of_rectangle_sum (H : ℝ) (hH : 0 ≤ H)
       exact Finset.sum_le_sum fun _ _ => rectangle_incidence_aggregation C B
     _ = _ := by simp only [Finset.sum_const, nsmul_eq_mul, assemblyCost]; ring
 
-private lemma assembly_of_divisor_sum (H L : ℝ) (hH : 0 ≤ H) (hL : 0 ≤ L)
+lemma assembly_of_divisor_sum (H L : ℝ) (hH : 0 ≤ H) (hL : 0 ≤ L)
     (hcount : ∀ P : ℝ, 1 ≤ P → ((divisorBin (F := F) P).card : ℝ) ≤ H * P)
     (C : Context Q) (B : ℝ) (unit : Bool)
     (hfinite : ‖coefficientForm C B unit‖ ≤
@@ -866,7 +859,7 @@ namespace DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms.Origin
 variable {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
 variable {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
 
-private lemma support_le_divisors {F : Type} [Field F] [NumberField F]
+lemma support_le_divisors {F : Type} [Field F] [NumberField F]
     (u : Ideal (𝓞 F)) (hu : u ≠ ⊥) :
     (2 : ℝ) ^ (UniqueFactorizationMonoid.normalizedFactors u).toFinset.card ≤ (DedekindZetaZeroFree.LargeSieve.idealDivisorCount u : ℝ) := by
   classical
@@ -875,8 +868,7 @@ private lemma support_le_divisors {F : Type} [Field F] [NumberField F]
   have hmem : ∀ p : Ideal (𝓞 F), p ∈ S ↔ p ∈ m := fun p => Multiset.mem_toFinset
   have hprime : ∀ p ∈ S, Irreducible p := fun p hp =>
     UniqueFactorizationMonoid.irreducible_of_normalized_factor p ((hmem p).mp hp)
-  have hnorm : ∀ p ∈ S, normalize p = p := fun p hp =>
-    UniqueFactorizationMonoid.normalize_normalized_factor p ((hmem p).mp hp)
+  have hnorm : ∀ p ∈ S, normalize p = p := by simp
   have key : ∀ s : Finset (Ideal (𝓞 F)), s ⊆ S →
       UniqueFactorizationMonoid.normalizedFactors (∏ p ∈ s, p) = s.val := by
     intro s hs
@@ -884,11 +876,7 @@ private lemma support_le_divisors {F : Type} [Field F] [NumberField F]
       intro p hp
       exact hprime p (hs (by simpa using hp))
     have h1 := UniqueFactorizationMonoid.normalizedFactors_prod_eq s.val hirr
-    have hprod : (∏ p ∈ s, p) = s.val.prod := by
-      rw [Finset.prod_eq_multiset_prod, Multiset.map_id']
-    rw [hprod, h1]
-    rw [Multiset.map_congr rfl (fun p hp => hnorm p (hs (by simpa using hp))),
-      Multiset.map_id']
+    simp_all
   have hinj : Set.InjOn (fun s : Finset (Ideal (𝓞 F)) => ∏ p ∈ s, p)
       (↑S.powerset : Set (Finset (Ideal (𝓞 F)))) := by
     intro s hs t ht hst
@@ -898,9 +886,7 @@ private lemma support_le_divisors {F : Type} [Field F] [NumberField F]
       key s hssub
     have htval : UniqueFactorizationMonoid.normalizedFactors (∏ p ∈ t, p) = t.val :=
       key t htsub
-    have hst' : (∏ p ∈ s, p) = (∏ p ∈ t, p) := hst
-    rw [hst'] at hsval
-    exact Finset.val_inj.mp (hsval.symm.trans htval)
+    simp_all
   have hmaps : Set.MapsTo (fun s : Finset (Ideal (𝓞 F)) => ∏ p ∈ s, p)
       (↑S.powerset : Set (Finset (Ideal (𝓞 F))))
       (↑(DedekindZetaZeroFree.LargeSieve.idealDivisors u) : Set (Ideal (𝓞 F))) := by
@@ -913,22 +899,20 @@ private lemma support_le_divisors {F : Type} [Field F] [NumberField F]
       intro p hp
       exact (hmem p).mp (hssub (by simpa using hp))
     have hprod : (∏ p ∈ s, p) = s.val.prod := by
-      rw [Finset.prod_eq_multiset_prod, Multiset.map_id']
+      simp
     rw [hprod, ← Ideal.prod_normalizedFactors_eq_self hu]
     exact Multiset.prod_dvd_prod_of_le hle
   have hcard : S.powerset.card ≤ (DedekindZetaZeroFree.LargeSieve.idealDivisors u).card :=
     Finset.card_le_card_of_injOn _ hmaps hinj
   have hcost : (2 : ℝ) ^ (UniqueFactorizationMonoid.normalizedFactors u).toFinset.card = (2 : ℝ) ^ S.card := by
-    rw [hS, ← hm]
+    rfl
   rw [hcost]
   have hpc : ((S.powerset.card : ℕ) : ℝ) = (2 : ℝ) ^ S.card := by
-    rw [Finset.card_powerset]
-    push_cast
-    ring
+    simp
   rw [← hpc]
   exact_mod_cast hcard
 
-private lemma scales_card_bound (X : ℝ) :
+lemma scales_card_bound (X : ℝ) :
     ((ErrorRectangles.scales X).card : ℝ) ≤
       (Vendor.dyadicLength (2 * max 1 X) + 1 : ℝ) := by
   have h : (ErrorRectangles.scales X).card ≤
@@ -948,7 +932,7 @@ theorem energy_epsilon (D : Sieve.AllIndexNormalizedFamilyData Q) :
           H * Real.rpow (C.M * C.N * norm C.d) ε * weightedEnergy C := by
   intro ε hε
   let t := ε / 5
-  have ht : 0 < t := by dsimp [t]; positivity
+  have ht : 0 < t := by positivity
   obtain ⟨A, hA, hdiv⟩ := DedekindZetaZeroFree.LargeSieve.ideal_divisor_count_le_rpow F t ht
   let L := 2 + 1 / (t * Real.log 2)
   let q := max 1 (norm c)
@@ -1084,9 +1068,3 @@ theorem coefficient_estimate
         (E * Real.rpow (C.M * C.N * norm C.d) ε * weightedEnergy C) :=
       mul_le_mul_of_nonneg_left he (mul_nonneg hA.le (envelope_nonneg C B))
     _ = _ := by ring
-
-end DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms.Origin
-
-end
-
-end

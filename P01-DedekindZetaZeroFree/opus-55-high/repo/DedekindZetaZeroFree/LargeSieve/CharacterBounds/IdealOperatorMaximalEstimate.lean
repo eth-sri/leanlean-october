@@ -45,8 +45,8 @@ lemma enumeration_monotone (F : Type) [Field F] [NumberField F] (N : ℝ) :
 lemma sum_enumeration (F : Type) [Field F] [NumberField F] (N : ℝ)
     {M : Type*} [AddCommMonoid M] (f : Ideal (𝓞 F) → M) :
     (∑ k : Fin (dyad F N).card, f (enumeration F N k).val) =
-      ∑ J ∈ dyad F N, f J := by
-  exact ((enumeration F N).sum_comp (fun J : dyad F N => f J.val)).trans
+      ∑ J ∈ dyad F N, f J := 
+  ((enumeration F N).sum_comp (fun J : dyad F N => f J.val)).trans
     (Finset.sum_coe_sort _ _)
 
 lemma coefficientMass_eq (F : Type) [Field F] [NumberField F]
@@ -58,12 +58,8 @@ lemma coefficientMass_eq (F : Type) [Field F] [NumberField F]
   rw [sum_enumeration F N (fun J => ‖b J‖ ^ 2)]
   rw [finsum_eq_sum_of_support_subset _ (s := dyad F N)]
   · apply Finset.sum_congr rfl
-    intro J hJ
-    simp [(mem_dyad F N J).mp hJ]
-  · intro J hJ
-    by_contra h
-    simp only [Function.mem_support] at hJ
-    simp [(mem_dyad F N J).not.mp h] at hJ
+    simp_all
+  simp_all
 
 lemma norm_pos (F : Type) [Field F] [NumberField F] (N : ℝ)
     (k : Fin (dyad F N).card) :
@@ -76,8 +72,7 @@ lemma cpow_eq_phase (n : ℕ) (hn : 0 < n) (t : ℝ) :
       DetectorMaximalFiniteHeight.phase (n : ℝ) t := by
   rw [Complex.cpow_def_of_ne_zero (by exact_mod_cast Nat.ne_of_gt hn)]
   have hlog : Complex.log (n : ℂ) = (Real.log (n : ℝ) : ℂ) := by
-    simpa only [Complex.ofReal_natCast] using
-      (Complex.ofReal_log (Nat.cast_nonneg n : (0 : ℝ) ≤ n)).symm
+    simp
   rw [hlog]
   unfold DetectorMaximalFiniteHeight.phase
   congr 1
@@ -120,7 +115,7 @@ lemma cutoff_eq_prefix (F : Type) [Field F] [NumberField F] (N : ℝ)
     have hbad : ¬ (J ≠ ⊥ ∧ N < (Ideal.absNorm J : ℝ) ∧ (Ideal.absNorm J : ℝ) ≤ y) := by
       intro hgood
       exact h ((mem_dyad F N J).mpr ⟨hgood.1, hgood.2.1, hgood.2.2.trans hy⟩)
-    simp [Function.mem_support, hbad] at hJ
+    simp_all
 
 def extend (F : Type) [Field F] [NumberField F] (N : ℝ)
     (c : Fin (dyad F N).card → ℂ) (J : Ideal (𝓞 F)) : ℂ :=
@@ -143,9 +138,7 @@ lemma ball_sum_eq (F : Type) [Field F] [NumberField F] (N : ℝ)
   rw [sum_enumeration F N f]
   rw [finsum_eq_sum_of_support_subset _ (s := dyad F N)]
   · apply Finset.sum_congr rfl
-    intro J hJ
-    have h := (mem_dyad F N J).mp hJ
-    simp [h.1, h.2.2]
+    simp_all
   · intro J hJ
     by_contra h
     simp [Function.mem_support, hf J h] at hJ
@@ -258,6 +251,3 @@ lemma card_bound (F : Type) [Field F] [NumberField F] :
   have hcast : ((dyad F N).card : ℝ) ≤ Detector.idealNormCount F (2 * N) :=
     Nat.cast_le.mpr hcard
   nlinarith
-
-end
-end DedekindZetaZeroFree.DetectorMaximalIdealAdapter

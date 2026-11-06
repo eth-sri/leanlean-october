@@ -17,7 +17,7 @@ variable {F : Type} [Field F] [NumberField F]
 local instance (A : SArithmeticData F) : MeasurableSpace (SLocalProduct F A.Sf) := borel _
 local instance (A : SArithmeticData F) : BorelSpace (SLocalProduct F A.Sf) := ⟨rfl⟩
 
-private theorem compact_phase_integral_contDiff
+theorem compact_phase_integral_contDiff
     {X : Type*} [TopologicalSpace X] [MeasurableSpace X] [OpensMeasurableSpace X]
     (μ : Measure X) [IsFiniteMeasureOnCompacts μ]
     (W d : X → ℂ) (c : X → ℝ) (hW : Continuous W) (hd : Continuous d)
@@ -28,9 +28,9 @@ private theorem compact_phase_integral_contDiff
     Complex.exp ((c x * r : ℝ) * Complex.I)
   let f' : ℝ → X → ℂ := fun r x => f r x * ((c x : ℂ) * Complex.I)
   have hf : Continuous (Function.uncurry f) := by
-    dsimp [f]; fun_prop
+    fun_prop
   have hf' : Continuous (Function.uncurry f') := by
-    dsimp [f', f]; fun_prop
+    fun_prop
   have hfs (r : ℝ) (x : X) (hx : x ∉ tsupport W) : f r x = 0 := by
     simp [f, image_eq_zero_of_notMem_tsupport hx]
   have hfs' (r : ℝ) (x : X) (hx : x ∉ tsupport W) : f' r x = 0 := by
@@ -98,9 +98,7 @@ theorem fourier_log_radial_contDiff
     intro v _
     exact continuous_subtype_val.comp ((he v).comp (by fun_prop))
   have hr : ContDiff ℝ 1 r := by
-    dsimp [r]
-    apply Real.contDiff_exp.comp
-    exact (contDiff_const.add contDiff_id).mul contDiff_const
+    fun_prop
   have hscale (u : ℝ) : (T₀ * Real.exp u) ^ p = r u := by
     rw [Real.rpow_def_of_pos (mul_pos hT₀ (Real.exp_pos u)),
       Real.log_mul hT₀.ne' (Real.exp_pos u).ne', Real.log_exp]
@@ -188,15 +186,13 @@ private theorem compact_integral_deriv {X : Type*} [TopologicalSpace X]
     Integrable (d v) μ ∧ HasDerivAt (fun v => ∫ x, f v x ∂μ) (∫ x, d v x ∂μ) v := by
   have hcf (v) : HasCompactSupport (f v) := by
     apply HasCompactSupport.intro hK
-    intro x hx
-    exact (hs v x hx).1
+    simp_all
   have hcd (v) : HasCompactSupport (d v) := by
     apply HasCompactSupport.intro hK
-    intro x hx
-    exact (hs v x hx).2
+    simp_all
   obtain ⟨B, hB⟩ := ((isCompact_closedBall v 1).prod hK).exists_bound_of_continuousOn hd.continuousOn
-  have hm (v : ℝ) : Continuous (f v) := hf.comp (continuous_const.prodMk continuous_id)
-  have hdm (v : ℝ) : Continuous (d v) := hd.comp (continuous_const.prodMk continuous_id)
+  have hm (v : ℝ) : Continuous (f v) := by fun_prop
+  have hdm (v : ℝ) : Continuous (d v) := by fun_prop
   apply (hasDerivAt_integral_of_dominated_loc_of_deriv_le
     (s := Metric.ball v 1) (bound := K.indicator (fun _ => max B 0))
     (Metric.ball_mem_nhds v zero_lt_one)
@@ -207,16 +203,16 @@ private theorem compact_integral_deriv {X : Type*} [TopologicalSpace X]
       by_cases hx : x ∈ K
       · simpa [Set.indicator_of_mem hx] using
           (hB (a, x) ⟨Metric.ball_subset_closedBall ha, hx⟩).trans (le_max_left B 0)
-      · simp [Set.indicator_of_notMem hx, (hs a x hx).2]
+      simp_all
   · exact (integrable_indicator_iff hK.measurableSet).2
       (integrableOn_const (C := max B 0) (μ := μ) (s := K) hK.measure_lt_top.ne)
-  · exact Eventually.of_forall fun x a _ => hder a x
+  simp_all
 
  def prof (A : SArithmeticData F) (a : InfinitePlace F → ℝ)
     (y : SLocalProduct F A.Sf) : SLocalProduct F A.Sf :=
   (fun w => (InfinitePlace.Completion.ringEquivComplexOfIsComplex (A.complex_place w)).symm (a w : ℂ) * y.1 w, y.2)
 
-private theorem prof_phase (A : SArithmeticData F)
+theorem prof_phase (A : SArithmeticData F)
     (e : (v : ↥A.Sf) → AddChar (v.val.adicCompletion F) Circle)
     (a : InfinitePlace F → ℝ) (x y : SLocalProduct F A.Sf) :
     ProbeAdditive.phase F A.Sf e (-x * prof A a y) =
@@ -243,7 +239,7 @@ private theorem prof_phase (A : SArithmeticData F)
   rw [ht']
   rfl
 
-private theorem prof_kernel_deriv (A : SArithmeticData F)
+theorem prof_kernel_deriv (A : SArithmeticData F)
     (e : (v : ↥A.Sf) → AddChar (v.val.adicCompletion F) Circle)
     (a da : ℝ → InfinitePlace F → ℝ) (ha : ∀ v w, HasDerivAt (fun v => a v w) (da v w) v)
     (W : SLocalProduct F A.Sf → ℂ) (x y : SLocalProduct F A.Sf) (v : ℝ) :
@@ -288,8 +284,8 @@ private theorem prof_fourier_deriv (A : SArithmeticData F)
     (SecondCountableTopology ((v : InfinitePlace F) → v.Completion))
   letI : SecondCountableTopology (SLocalProduct F A.Sf) := inferInstance
   have hcont (w : InfinitePlace F) : Continuous (fun p : ℝ × SLocalProduct F A.Sf =>
-      (InfinitePlace.Completion.extensionEmbedding w (-p.2.1 w * y.1 w)).re) := by
-    exact Complex.continuous_re.comp ((InfinitePlace.Completion.isometry_extensionEmbedding w).continuous.comp
+      (InfinitePlace.Completion.extensionEmbedding w (-p.2.1 w * y.1 w)).re) := 
+    Complex.continuous_re.comp ((InfinitePlace.Completion.isometry_extensionEmbedding w).continuous.comp
       ((((continuous_apply w).comp (continuous_fst.comp continuous_snd)).neg).mul continuous_const))
   have hcoord := hca
   have hdcoord := hcda
@@ -297,12 +293,7 @@ private theorem prof_fourier_deriv (A : SArithmeticData F)
       ProbeAdditive.phase F A.Sf e (-p.2 * prof A (a p.1) y)) := by
     simp_rw [prof_phase]
     apply Continuous.mul
-    · apply Continuous.cexp
-      apply Continuous.const_mul
-      apply continuous_finset_sum
-      intro w _
-      exact ((Complex.continuous_ofReal.comp ((hcoord w).comp continuous_fst)).const_mul 2).mul
-        (Complex.continuous_ofReal.comp (hcont w))
+    · fun_prop
     · apply continuous_finset_prod
       intro v _
       exact continuous_subtype_val.comp ((he v).comp
@@ -311,10 +302,7 @@ private theorem prof_fourier_deriv (A : SArithmeticData F)
     unfold coeff
     push_cast
     apply Continuous.const_mul
-    apply continuous_finset_sum
-    intro w _
-    exact ((Complex.continuous_ofReal.comp ((hdcoord w).comp continuous_fst)).const_mul 2).mul
-      (Complex.continuous_ofReal.comp (hcont w))
+    fun_prop
   exact compact_integral_deriv μ
     (fun v x => W x * ProbeAdditive.phase F A.Sf e (-x * prof A (a v) y))
     (fun v x => W x * ProbeAdditive.phase F A.Sf e (-x * prof A (a v) y) * coeff (da v) x y)
@@ -325,23 +313,23 @@ private theorem prof_fourier_deriv (A : SArithmeticData F)
       Complex.ofReal_ofNat] using prof_kernel_deriv A e a da ha W x y v) v
 
 set_option backward.isDefEq.respectTransparency false in
-private theorem prof_single (A : SArithmeticData F) (w : InfinitePlace F)
+theorem prof_single (A : SArithmeticData F) (w : InfinitePlace F)
     (v : ℝ) (y : SLocalProduct F A.Sf) :
     prof A (fun j => if j = w then Real.exp (v / 2) else 1) y = complexNormFlowRaw A w v y := by
   apply Prod.ext
   · funext j
     by_cases hj : j = w
     · subst j; simp [prof, complexNormFlowRaw, Function.update_self]
-    · simp [prof, complexNormFlowRaw, hj, Ne.symm hj, Function.update_of_ne]
+    · simp [prof, complexNormFlowRaw, hj, Function.update_of_ne]
   · rfl
 
-private theorem sheet_prof (A : SArithmeticData F) (T : ℝ) (hT : 0 < T)
+theorem sheet_prof (A : SArithmeticData F) (T : ℝ) (hT : 0 < T)
     (t : A.G1) (u v : ℝ) :
     (sheetPointRaw A (T * Real.exp v) t).val =
       prof A (fun _ => Real.exp ((v-u) / (2 * (InfinitePlace.nrComplexPlaces F : ℝ))))
         (sheetPointRaw A (T * Real.exp u) t).val := by
-  have hv : 0 < T * Real.exp v := mul_pos hT (Real.exp_pos _)
-  have hu : 0 < T * Real.exp u := mul_pos hT (Real.exp_pos _)
+  have hv : 0 < T * Real.exp v := by positivity
+  have hu : 0 < T * Real.exp u := by positivity
   have hr : (T * Real.exp v) ^ (1 / (2 * (InfinitePlace.nrComplexPlaces F : ℝ))) =
       Real.exp ((v-u) / (2 * (InfinitePlace.nrComplexPlaces F : ℝ))) *
         (T * Real.exp u) ^ (1 / (2 * (InfinitePlace.nrComplexPlaces F : ℝ))) := by
@@ -395,8 +383,8 @@ theorem fourier_log_radial_deriv
     intro v w
     simpa [a, da, div_eq_mul_inv, mul_comm] using
       (((hasDerivAt_id v).sub_const u).div_const (2*r)).exp
-  have hca (w) : Continuous (fun v => a v w) := by unfold a; fun_prop
-  have hcda (w) : Continuous (fun v => da v w) := by unfold da; fun_prop
+  have hca (w) : Continuous (fun v => a v w) := by fun_prop
+  have hcda (w) : Continuous (fun v => da v w) := by fun_prop
   have H := prof_fourier_deriv A e he μ hμ W0 hW0 hcompact a da hda hca hcda y u
   have hprof : ∀ v, prof A (a v) y = (sheetPointRaw A (T₀ * Real.exp v) t).val :=
     fun v => (sheet_prof A T₀ hT₀ t u v).symm
@@ -480,7 +468,7 @@ local instance (A : SArithmeticData F) : BorelSpace (SLocalProduct F A.Sf) := �
 local instance (A : SArithmeticData F) : MeasurableSpace A.G1 := borel _
 local instance (A : SArithmeticData F) : BorelSpace A.G1 := ⟨rfl⟩
 
-private theorem sheet_continuous (A : SArithmeticData F) :
+theorem sheet_continuous (A : SArithmeticData F) :
     Continuous (fun p : {T : ℝ // 0 < T} × A.G1 => (sheetPointRaw A p.1 p.2).val) := by
   have hc : Continuous (localUnitsRaw A) := by
     change Continuous (Homeomorph.prodUnits.symm ∘
@@ -498,7 +486,7 @@ private theorem sheet_continuous (A : SArithmeticData F) :
     (Units.continuous_val.comp (hc.comp
       (A.continuous_radialSection.comp continuous_fst)))
 
-private theorem sheet_bounds
+theorem sheet_bounds
     (A : SArithmeticData F)
     (e : (v : ↥A.Sf) → AddChar (v.val.adicCompletion F) Circle)
     (he : ∀ v, Continuous (e v)) (hne : ∀ v, e v ≠ 1)
@@ -631,10 +619,7 @@ theorem fourier_log_radial_integrability
           (sheetPointRaw A (T₀ * Real.exp p.1) p.2).val)
         ((volume.restrict (Set.Ioc a b)).prod dt) := by
       apply Continuous.aestronglyMeasurable
-      exact Continuous.comp
-        (g := logDerivativeRaw A w 1 (ProbeWeight.fourier F A.Sf e μ W0))
-        (f := fun p : ℝ × A.G1 => (sheetPointRaw A (T₀ * Real.exp p.1) p.2).val)
-        hc hs
+      fun_prop
     apply (integrable_prod_iff hm).mpr
     constructor
     · exact Filter.Eventually.of_forall fun u => (hb _ (mul_pos hT₀ (Real.exp_pos u))).1
@@ -668,7 +653,7 @@ local instance (A : SArithmeticData F) : MeasurableSpace (SLocalProduct F A.Sf) 
 local instance (A : SArithmeticData F) : BorelSpace (SLocalProduct F A.Sf) := ⟨rfl⟩
 local instance (A : SArithmeticData F) : MeasurableSpace A.G1 := borel _
 local instance (A : SArithmeticData F) : BorelSpace A.G1 := ⟨rfl⟩
-private theorem raw_continuous_localUnits (A : SArithmeticData F) : Continuous (localUnitsRaw A) := by
+theorem raw_continuous_localUnits (A : SArithmeticData F) : Continuous (localUnitsRaw A) := by
   change Continuous (Homeomorph.prodUnits.symm ∘
     (ContinuousMulEquiv.piUnits.symm.toHomeomorph.prodCongr
       ContinuousMulEquiv.piUnits.symm.toHomeomorph))
@@ -684,7 +669,7 @@ theorem raw_sheet_continuous (A : SArithmeticData F) :
     (continuous_subtype_val.comp continuous_snd))).mul
     (Units.continuous_val.comp ((raw_continuous_localUnits A).comp
       (A.continuous_radialSection.comp continuous_fst)))
-private theorem raw_annular_continuous (A : SArithmeticData F)
+theorem raw_annular_continuous (A : SArithmeticData F)
     (W0 : SLocalProduct F A.Sf → ℂ)
     (hW0 : ProbeWeight.IsAnnularTensor F A.Sf W0) : Continuous W0 := by
   obtain ⟨fr, fc, ff, hr, hc, hf, heq⟩ := hW0
@@ -740,7 +725,7 @@ theorem raw_fourier_continuous (A : SArithmeticData F)
     ProbeAdditiveGramBounds.trace_phase_norm F A.Sf e _ (fun _ => rfl)
   exact continuous_of_dominated
     (fun y => (hc.mul (hp.comp (continuous_neg.mul continuous_const))).aestronglyMeasurable)
-    (fun y => Filter.Eventually.of_forall fun x => by simp [norm_mul, hn])
+    (fun y => Filter.Eventually.of_forall fun x => by simp [hn])
     (hc.integrable_of_hasCompactSupport hcompact).norm
     (Filter.Eventually.of_forall fun x =>
       (continuous_const.mul (hp.comp (continuous_const.mul continuous_id))))
@@ -767,12 +752,12 @@ section RadialFTC
 open Set
 variable {X : Type*} [MeasurableSpace X] {μ : Measure X}
 
-private theorem anchored_bound (f : ℝ → ℂ) (hf : ContDiff ℝ 1 f)
+theorem anchored_bound (f : ℝ → ℂ) (hf : ContDiff ℝ 1 f)
     (hi : IntervalIntegrable (fun u => ‖deriv f u‖) volume (-1) 1)
     {u : ℝ} (hu : u ∈ Icc (-1) 1) :
     ‖f u‖ ≤ ‖f 0‖ + ∫ v in (-1 : ℝ)..1, ‖deriv f v‖ := by
   have hc : Continuous f := hf.continuous
-  have hd : Differentiable ℝ f := hf.differentiable (by simp)
+  have hd : Differentiable ℝ f := by fun_prop
   have hbi : IntegrableOn (fun u => ‖deriv f u‖) (Ioc (-1) 1) :=
     (intervalIntegrable_iff_integrableOn_Ioc_of_le (by norm_num)).mp hi
   have hstep (a b : ℝ) (hab : a ≤ b) (ha : -1 ≤ a) (hb : b ≤ 1) :
@@ -812,7 +797,7 @@ theorem radial_derivative_integrable_majorant [SFinite μ] (f : ℝ → X → �
 
 end RadialFTC
 
-private theorem raw_secondCountable_G1 (A : SArithmeticData F) :
+theorem raw_secondCountable_G1 (A : SArithmeticData F) :
     SecondCountableTopology A.G1 := by
   letI : Countable F := Finsupp.Countable.of_moduleFinite (R := ℚ)
   letI (v : A.Sf) : TopologicalSpace.SeparableSpace (v.val.adicCompletion F) :=
@@ -878,13 +863,13 @@ theorem positive_sheet_continuous
       exact SheetContinuityAtoms.Derivative.fourier_log_radial_deriv A e he μ hμ W0
         (raw_annular_continuous A W0 hW0) hcompact T₀.val T₀.property p.2 p.1
     rw [heq]
-    exact (integrable_finset_sum Finset.univ (fun w _ => h1 w)).const_mul _
+    fun_prop
   obtain ⟨B, hB, hb⟩ := radial_derivative_integrable_majorant f hf hf0 hderiv
   refine ⟨B, hB, ?_⟩
   have hg : Continuous (fun T : {T : ℝ // 0 < T} => Real.log (T.val / T₀.val)) :=
     (continuous_subtype_val.div_const T₀.val).log
       (fun T => (div_pos T.property T₀.property).ne')
-  have hg0 : Real.log (T₀.val / T₀.val) = 0 := by simp [T₀.property.ne']
+  have hg0 : Real.log (T₀.val / T₀.val) = 0 := by simp
   have hnear : ∀ᶠ T : {T : ℝ // 0 < T} in 𝓝 T₀,
       Real.log (T.val / T₀.val) ∈ Set.Icc (-1 : ℝ) 1 := by
     apply hg.continuousAt.eventually
@@ -896,8 +881,3 @@ theorem positive_sheet_continuous
     rw [Real.exp_log (div_pos T.property T₀.property)]
     exact mul_div_cancel₀ T.val T₀.property.ne'
   simpa only [f, heq] using hb (Real.log (T.val / T₀.val)) hT
-
-end
-end DedekindZetaZeroFree.ProbeSheetFourierMellinBounds
-
-end

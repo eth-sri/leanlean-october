@@ -15,16 +15,7 @@ variable (F : Type) [Field F] [NumberField F] (q : HeightOneSpectrum (𝓞 F))
 
  theorem uniformizer_exists : ∃ π : (LocalField F q)ˣ,
     IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
-      (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ) := by
-  let e := IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
-  obtain ⟨x, hx⟩ := valuation_surjective (K := LocalField F q) (e.symm (WithZero.exp (-1 : ℤ)))
-  have hv : valuation (LocalField F q) x ≠ 0 := by
-    rw [hx]
-    exact (map_ne_zero e.symm).mpr (by simp)
-  have hn : x ≠ 0 := fun h => hv (by simp [h])
-  refine ⟨Units.mk0 x hn, ?_⟩
-  change e (valuation (LocalField F q) x) = _
-  rw [hx, e.apply_symm_apply]
+      (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ) := by apply DedekindZetaZeroFree.KPRankOneShellContinuation.exists_uniformizer <;> assumption
 
 def actualFamilyUniformizer : (LocalField F q)ˣ := (uniformizer_exists F q).choose
 
@@ -92,7 +83,3 @@ theorem actualCanonicalContinued_integrable (s : ℂ) (hs : convergenceHalfPlane
         S.borel.upperRoot (Multiplicative.ofAdd x) * g)).val h) μ :=
   actual_section_integrable F ζ hζ q S P μ hμ (actualFamilyUniformizer F q)
     (actualFamilyUniformizer_spec F q) ε s hs f g h
-
-end DedekindZetaZeroFree.KPRankOneShellRepair
-
-end

@@ -72,11 +72,10 @@ variable (G : Type*) [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
 noncomputable def haarFinite : FiniteMeasure G :=
   ⟨Measure.haar, inferInstance⟩
 
-private theorem haarFinite_toMeasure : (haarFinite G : Measure G) = Measure.haar := by
-  ext s hs
+theorem haarFinite_toMeasure : (haarFinite G : Measure G) = Measure.haar := by
   rfl
 
-private theorem haarFinite_ne_zero : haarFinite G ≠ 0 := by
+theorem haarFinite_ne_zero : haarFinite G ≠ 0 := by
   rw [← FiniteMeasure.mass_nonzero_iff]
   apply ENNReal.coe_ne_zero.mp
   rw [FiniteMeasure.ennreal_mass, haarFinite_toMeasure]
@@ -94,8 +93,8 @@ theorem haarProb_def :
     · rfl
     · exact (FiniteMeasure.mass_nonzero_iff (haarFinite G)).mpr (haarFinite_ne_zero G)
 
-instance isProbabilityMeasure_haarProb : IsProbabilityMeasure (haarProb G) := by
-  exact (haarFinite G).normalize.property
+instance isProbabilityMeasure_haarProb : IsProbabilityMeasure (haarProb G) := 
+  (haarFinite G).normalize.property
 
 instance isMulLeftInvariant_haarProb : (haarProb G).IsMulLeftInvariant := by
   rw [haarProb_def]
@@ -116,7 +115,3 @@ instance isInvInvariant_haarProb : (haarProb G).IsInvInvariant :=
 theorem eq_haarProb_of_isHaarMeasure_of_isProbabilityMeasure (μ : Measure G)
     [μ.IsHaarMeasure] [IsProbabilityMeasure μ] : μ = haarProb G :=
   Measure.isHaarMeasure_eq_of_isProbabilityMeasure _ _
-
-end CompactGroup
-
-end DedekindZetaZeroFree.TauCeti

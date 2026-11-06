@@ -42,5 +42,3 @@ theorem finite_prime_under_fiber (p : HeightOneSpectrum (𝓞 F)) :
     Finite {Q : HeightOneSpectrum (𝓞 E) // Q.under (𝓞 F) = p} := by
   haveI := finite_prime_liesOver (F := F) (E := E) p
   exact Finite.of_equiv _ (Equiv.subtypeEquivRight fun Q => (under_eq_iff_liesOver Q p)).symm
-
-end DedekindZetaZeroFree.LargeSieve.IdealEuler

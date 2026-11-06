@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # The multiplicative Lubin--Tate series over `ℚ_p`
 
@@ -40,7 +35,7 @@ open LocalFieldTheory.DiscreteValuationField.Examples.Qp
 
 /-- The multiplicative Lubin--Tate series `(1 + X) ^ p - 1` over `ℚ_p`,
 represented by mathlib's binomial series. -/
-noncomputable def padicMultiplicativeLubinTateSeries
+def padicMultiplicativeLubinTateSeries
     (p : ℕ) [Fact p.Prime] :
     LubinTateSeries (padicLocalField p)
       (padicIntEquivValuationSubring p (p : ℤ_[p])) where
@@ -114,7 +109,3 @@ theorem padicMultiplicativeLubinTateSeries_isUniformizer
       ((padicIntEquivValuationSubring p (p : ℤ_[p]) :
           (padicDVRValuation p).valuationSubring) : ℚ_[p])
   simpa using padicDVRValuation_isUniformizer_p p
-
-end LubinTate
-
-end

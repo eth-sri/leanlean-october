@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.MeasureTheory.FiniteProductDensity.Fubini
 
 @[expose] public section
 
-noncomputable section
 
 open MeasureTheory
 open scoped ENNReal
@@ -22,7 +21,7 @@ theorem Measure.pi_withDensity {ι : Type*} [Fintype ι] {α : ι → Type*}
     Measure.restrict_pi_pi,
     lintegral_fintype_prod_eq_prod'
       (fun i => (hf i).mono_measure (Measure.restrict_le_self (μ := μ i) (s := s i)))]
-  exact Finset.prod_congr rfl fun i _ => (withDensity_apply (f i) (hs i)).symm
+  simp_all
 
 theorem Measure.pi_withDensity_ofReal {ι : Type*} [Fintype ι] {α : ι → Type*}
     [∀ i, MeasurableSpace (α i)] (μ : ∀ i, Measure (α i)) [∀ i, SigmaFinite (μ i)]
@@ -32,7 +31,3 @@ theorem Measure.pi_withDensity_ofReal {ι : Type*} [Fintype ι] {α : ι → Typ
   haveI : ∀ i, SigmaFinite ((μ i).withDensity fun x => ENNReal.ofReal (g i x)) := fun i =>
     SigmaFinite.withDensity_ofReal (g i)
   exact Measure.pi_withDensity μ fun i => (hg i).ennreal_ofReal
-
-end DedekindZetaZeroFree.FiniteProductDensity
-
-end

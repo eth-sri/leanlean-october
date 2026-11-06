@@ -38,7 +38,7 @@ theorem finite_preimage_card_bound {ι κ : Type*} (f : ι → κ) (M : ℕ)
   have h3 : ∑ _b ∈ hB.toFinset, M = M * Nat.card B := by
     rw [Finset.sum_const_nat (fun _ _ => rfl), Nat.card_coe_set_eq,
       Set.ncard_eq_toFinset_card B hB, Nat.mul_comm]
-  exact h1.trans (h2.trans h3.le)
+  omega
 
 end DedekindZetaZeroFree.ProbeExteriorPrincipalIdealFibers
 
@@ -140,9 +140,3 @@ theorem ideal_count_annulus (cS : Ideal (𝓞 F))
   change (Nat.card ↥{a : ExteriorIdeal cS | idealNorm a.val ≤ max c₁ 1 * Y} : ℝ) ≤ _ at hb
   rw [Nat.card_coe_set_eq] at hb ⊢
   exact (Nat.cast_le.mpr (Set.ncard_le_ncard hsub hf)).trans (by simpa [mul_assoc] using hb)
-
-end DedekindZetaZeroFree.ProbeExteriorIdealCount
-
-end
-
-end

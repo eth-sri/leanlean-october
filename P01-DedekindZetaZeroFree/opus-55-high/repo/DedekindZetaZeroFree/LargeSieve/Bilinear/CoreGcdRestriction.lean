@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.LargeSieve.Bilinear.GcdTailAndMaskedShellBoun
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.LargeSieve.Sieve.CoreCoefficient
 open scoped NumberField Classical
 
@@ -18,13 +17,11 @@ theorem gcdPairTransport
   have hu_c : u ⊔ c = ⊤ := by
     have h : d * u ⊔ c ≤ u ⊔ c :=
       sup_le_sup_right (Ideal.dvd_iff_le.mp (dvd_mul_left u d)) c
-    rw [hduc] at h
-    exact top_le_iff.mp h
+    simp_all
   have hv_c : v ⊔ c = ⊤ := by
     have h : d * v ⊔ c ≤ v ⊔ c :=
       sup_le_sup_right (Ideal.dvd_iff_le.mp (dvd_mul_left v d)) c
-    rw [hdvc] at h
-    exact top_le_iff.mp h
+    simp_all
   rw [quadraticFamily_conj Q hdvsf hdvc a, quadraticFamily_conj Q hvsf hv_c a]
 
   have hzw : ∀ w : Ideal (𝓞 F), Squarefree w → w ⊔ c = ⊤ → a ⊔ w ≠ ⊤ → (Q.χ w) a = 0 := by
@@ -33,8 +30,7 @@ theorem gcdPairTransport
     refine Or.inr fun hcond => haw ?_
     have hle : Q.cond w ≤ w := Ideal.dvd_iff_le.mp (hGood w hwsf hwc).1
     have h : a ⊔ Q.cond w ≤ a ⊔ w := sup_le_sup_left hle a
-    rw [hcond] at h
-    exact top_le_iff.mp h
+    simp_all
   by_cases huv_a : a ⊔ (u * v) = ⊤
   ·
     have hsup : d * u ⊔ d * v = d := by
@@ -177,7 +173,7 @@ theorem T3_eq_maskedGcdBlock_core
         have hab1 : a ⊔ b1 ≠ ⊤ := by
           intro h_
           have hle : a ⊔ b1 ≤ a ⊔ d := sup_le_sup_left hb1d a
-          exact had (top_le_iff.mp (h_ ▸ hle))
+          simp_all
         have hcondb1 : a ⊔ Q.cond b1 ≠ ⊤ := by
           intro hc_
           have hle : Q.cond b1 ≤ b1 := Ideal.dvd_iff_le.mp (hGood b1 hb1sf hb1c).1
@@ -185,9 +181,5 @@ theorem T3_eq_maskedGcdBlock_core
         have hz : (Q.χ b1) a = 0 := ((Q.χ b1).eq_zero_iff' a).mpr (Or.inr hcondb1)
         rw [hz]; ring
     rw [hsum]
-    simp only [one_mul, map_mul, map_one, Complex.ofReal_one]
+    simp
   · rw [if_neg h, if_neg h]
-
-end DedekindZetaZeroFree.LargeSieve.Sieve.CoreCoefficient
-
-end

@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Distinct factors of a separable polynomial
 
@@ -24,7 +20,6 @@ irreducible factors, and those factors are pairwise coprime.  These are the
 factorization facts used in the Chinese-remainder proof of tensor-product decomposition.
 -/
 
-noncomputable section
 
 open Polynomial UniqueFactorizationMonoid
 open scoped BigOperators
@@ -83,8 +78,3 @@ theorem distinctNormalizedFactors_pairwise_coprime
     apply hij
     apply Subtype.ext
     exact normalizedFactors_eq_of_dvd p i.1 hi j.1 hj h
-
-end Completion
-end ValuationTheory
-
-end

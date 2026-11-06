@@ -55,7 +55,7 @@ theorem fundamentalUnitForShift_unitExponentReindex
       unitExponentReindex K f w)
     (fun _ ↦ by simp [unitExponentReindex])).symm
 
-noncomputable def unitDecompositionMap :
+def unitDecompositionMap :
     torsion K × ({w : InfinitePlace K // w ≠ w₀} → ℤ) →
       (𝓞 K)ˣ :=
   fun p ↦ p.1 * fundamentalUnitForShift p.2
@@ -132,38 +132,3 @@ theorem fundamentalUnitForShift_neg
     fundamentalUnitForShift (-z) = (fundamentalUnitForShift z)⁻¹ := by
   classical
   simp [fundamentalUnitForShift, Finset.prod_inv_distrib]
-
-@[simp]
-theorem unitDecompositionEquiv_symm_apply_mul
-    (ζ : torsion K) (z : {w : InfinitePlace K // w ≠ w₀} → ℤ) :
-    (unitDecompositionEquiv K).symm (ζ * fundamentalUnitForShift z) =
-      (ζ, z) := by
-  exact (unitDecompositionEquiv K).symm_apply_apply (ζ, z)
-
-@[simp]
-theorem unitDecompositionEquiv_symm_apply_fundamentalUnitForShift
-    (z : {w : InfinitePlace K // w ≠ w₀} → ℤ) :
-    (unitDecompositionEquiv K).symm (fundamentalUnitForShift z) = (1, z) := by
-  simpa using unitDecompositionEquiv_symm_apply_mul K 1 z
-
-theorem unitDecompositionEquiv_mul
-    (p q : torsion K × ({w : InfinitePlace K // w ≠ w₀} → ℤ)) :
-    unitDecompositionEquiv K (p.1 * q.1, p.2 + q.2) =
-      unitDecompositionEquiv K p * unitDecompositionEquiv K q := by
-  simp only [unitDecompositionEquiv_apply, fundamentalUnitForShift_add,
-    Subgroup.coe_mul]
-  ac_rfl
-
-@[simp]
-theorem unitDecompositionEquiv_symm_mul (u v : (𝓞 K)ˣ) :
-    (unitDecompositionEquiv K).symm (u * v) =
-      (((unitDecompositionEquiv K).symm u).1 *
-        ((unitDecompositionEquiv K).symm v).1,
-       ((unitDecompositionEquiv K).symm u).2 +
-        ((unitDecompositionEquiv K).symm v).2) := by
-  apply (unitDecompositionEquiv K).injective
-  simp only [Equiv.apply_symm_apply, unitDecompositionEquiv_mul]
-
-end DedekindZetaZeroFree.Theta
-
-end

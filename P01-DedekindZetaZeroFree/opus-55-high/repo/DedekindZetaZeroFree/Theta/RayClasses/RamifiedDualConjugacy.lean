@@ -19,7 +19,7 @@ variable {η : DedekindZetaZeroFree.RayClassCharacter F m}
 
 include instNF
 
- noncomputable def barData {η : DedekindZetaZeroFree.RayClassCharacter F m}
+ def barData {η : DedekindZetaZeroFree.RayClassCharacter F m}
     (χ : RayCharacterData F m hm η) : RayCharacterData F m hm (conjugateRayCharacter η) where
   ψ := (starRingEnd ℂ).toMonoidHom.comp χ.ψ
   descent := by
@@ -37,7 +37,7 @@ include instNF
       have hc := DFunLike.congr_fun h c
       simpa using congrArg (starRingEnd ℂ) hc
 
-private theorem primal_sum (hF : NumberField.IsTotallyComplex F) (hmt : m ≠ ⊤)
+theorem primal_sum (hF : NumberField.IsTotallyComplex F) (hmt : m ≠ ⊤)
     (η : DedekindZetaZeroFree.RayClassCharacter F m)
     (χ : RayCharacterData F m hm η) (D : RayThetaRepresentatives F m hm)
     (u : ℝ) (hu : 0 < u) :
@@ -57,13 +57,12 @@ private theorem primal_sum (hF : NumberField.IsTotallyComplex F) (hmt : m ≠ �
   have hclass : ClassGroup.mk F (rayIdealFractionalIdeal F (a : Ideal (𝓞 F)) ha) = C⁻¹ :=
     mk_inverseOrdinaryClassCoprimeRepresentative F m hm C
   have haeq : rayIdealFractionalIdeal F (a : Ideal (𝓞 F)) ha = FractionalIdeal.mk0 F a := by
-    apply Units.ext
     rfl
   simpa only [haeq, a, mk_inverseOrdinaryClassCoprimeRepresentative, inv_inv] using
     rayTheta_primal_fiber_eq_weightedIdealBlock hF m (a : Ideal (𝓞 F)) hm ha
       (inverseOrdinaryClassCoprimeRepresentative_coprime F m hm C) hmt η χ D u hu
 
-private theorem uniform_aux (hF : NumberField.IsTotallyComplex F) (hmt : m ≠ ⊤)
+theorem uniform_aux (hF : NumberField.IsTotallyComplex F) (hmt : m ≠ ⊤)
     {η : DedekindZetaZeroFree.RayClassCharacter F m}
     (χ : RayCharacterData F m hm η) (hprim : η.IsPrimitive) :
     ∃ w : ℂ, w ≠ 0 ∧ ‖w‖ = 1 ∧
@@ -90,7 +89,7 @@ private theorem uniform_aux (hF : NumberField.IsTotallyComplex F) (hmt : m ≠ �
   let w := rayNormalizedGaussFactor m η b τ
   have hw : ‖w‖ = 1 := rayNormalizedGaussFactor_norm_eq_one hF m hm hmt η hprim
     β hgen b hb hcop hbimage e rfl τ rfl
-  refine ⟨w, norm_ne_zero_iff.mp (by rw [hw]; exact one_ne_zero), hw, ?_⟩
+  refine ⟨w, norm_ne_zero_iff.mp (by positivity), hw, ?_⟩
   intro D t ht
   letI : Fintype (RayIdealClass F m hm) := Fintype.ofFinite _
   letI : Fintype (ClassGroup (𝓞 F)) := Fintype.ofFinite _
@@ -154,7 +153,3 @@ theorem normalizedRayDualTheta_eq_ramified_conjugate
       normalizedRayDualTheta D χ.ψ t = w * normalizedRayConjugateTheta D χ.ψ t := by
   obtain ⟨w, hw, _, hdual⟩ := uniform_aux hF hmt χ hprim
   exact ⟨w, hw, hdual D⟩
-
-end DedekindZetaZeroFree.Hecke.Theta
-
-end

@@ -17,9 +17,7 @@ theorem realSpectrum_mem_iff_resolventSet
   simp only [Set.mem_setOf_eq]
   rw [← KPResolventPencil.isUnit_shiftedPencil_iff Δ hDense B hbase (μ : ℂ)]
   rw [not_iff_not]
-  congr 1
   rw [KPResolventPencil.shiftedPencil]
-  congr 1
   rw [RCLike.real_smul_eq_coe_smul (K := ℂ)]
   norm_num
 
@@ -30,12 +28,12 @@ theorem spectrum_iff_pencil
   have hne : ((1 + μ : ℝ) : ℂ) ≠ 0 := by
     rw [Complex.ofReal_ne_zero]; positivity
   have hc : (((1 + μ)⁻¹ : ℝ) : ℂ) ≠ 0 := by
-    rw [Complex.ofReal_ne_zero]; exact inv_ne_zero (by positivity)
+    simp_all
   have hinv : ((((1 + μ)⁻¹ : ℝ) : ℂ))⁻¹ = ((1 + μ : ℝ) : ℂ) := by
-    rw [← Complex.ofReal_inv, inv_inv]
+    simp
   have h1 : ((Units.mk0 (((1 + μ)⁻¹ : ℝ) : ℂ) hc) • (1 : H →L[ℂ] H))
       = algebraMap ℂ (H →L[ℂ] H) (((1 + μ)⁻¹ : ℝ) : ℂ) := by
-    rw [Units.smul_def, Units.val_mk0, Algebra.algebraMap_eq_smul_one]
+    rfl
   have h2 : ((Units.mk0 (((1 + μ)⁻¹ : ℝ) : ℂ) hc)⁻¹ • B)
       = ((1 + μ : ℝ) : ℂ) • B := by
     rw [Units.smul_def, Units.val_inv_eq_inv_val, Units.val_mk0, hinv]
@@ -71,19 +69,17 @@ theorem eigenspace_transfer
   obtain ⟨hR, hleft0, hright0⟩ := hbase
   have hright : ∀ v : Δ.domain, B (Δ v + (v : H)) = (v : H) := by
     intro v
-    have h := hright0 v
-    rwa [neg_smul, one_smul, sub_neg_eq_add] at h
+    simp_all
   have hleft : ∀ u : H, Δ ⟨B u, hR u⟩ + B u = u := by
     intro u
-    have h := hleft0 u
-    rwa [neg_smul, one_smul, sub_neg_eq_add] at h
+    simp_all
   have hcinv : (((1 + μ : ℝ) : ℂ))⁻¹ = (((1 + μ)⁻¹ : ℝ) : ℂ) :=
-    (Complex.ofReal_inv (1 + μ)).symm
+    by simp
   have hβc : (((1 + μ)⁻¹ : ℝ) : ℂ) * ((1 + μ : ℝ) : ℂ) = 1 := by
     rw [← Complex.ofReal_mul, inv_mul_cancel₀ (by positivity), Complex.ofReal_one]
   have hcβ : ((1 + μ : ℝ) : ℂ) * (((1 + μ)⁻¹ : ℝ) : ℂ) = 1 := by
     rw [mul_comm, hβc]
-  have hμc : ((1 + μ : ℝ) : ℂ) - 1 = (μ : ℂ) := by push_cast; ring
+  have hμc : ((1 + μ : ℝ) : ℂ) - 1 = (μ : ℂ) := by simp
   have hs : ∀ (a : ℂ) (y : H), a • y - y = (a - 1) • y := by
     intro a y; rw [sub_smul, one_smul]
   ext x
@@ -120,14 +116,13 @@ theorem eigenspace_transfer
     show Δ ⟨x, hxdom⟩ - (μ : ℂ) • x = 0
     have hdom : (⟨x, hxdom⟩ : Δ.domain) = ((1 + μ : ℝ) : ℂ) • ⟨B x, hR x⟩ := by
       ext
-      simp only [Submodule.coe_smul]
-      exact hx1
+      omega
     have hDx : Δ ⟨x, hxdom⟩ = ((1 + μ : ℝ) : ℂ) • Δ ⟨B x, hR x⟩ := by
       rw [hdom]; exact map_smul Δ.toFun ((1 + μ : ℝ) : ℂ) ⟨B x, hR x⟩
     have hl : Δ ⟨B x, hR x⟩ = x - B x := eq_sub_iff_add_eq.mpr (hleft x)
     rw [hDx, hl, hx, smul_sub, smul_smul, hcβ, one_smul, hs, hμc, sub_self]
 
-private theorem inverse_isPositive
+theorem inverse_isPositive
     {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
     (Δ : H →ₗ.[ℂ] H) (hDense : Dense (Δ.domain : Set H))
     (B : H →L[ℂ] H) (hΔ : IsSelfAdjoint Δ)
@@ -149,7 +144,7 @@ private theorem inverse_isPositive
       rw [hf]
     _ = inner ℂ x (B y) := by rw [hleft]
 
-private theorem positive_spectrum_interval
+theorem positive_spectrum_interval
     {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
     (B : H →L[ℂ] H) (hp : B.IsPositive) (hn : ‖B‖ ≤ 1) :
     spectrum ℂ B ⊆ Complex.ofReal '' Set.Icc (0 : ℝ) 1 := by
@@ -170,7 +165,7 @@ private theorem positive_spectrum_interval
     exact le_trans (Complex.re_le_norm z) (h1.trans hh)
   exact ⟨z.re, ⟨h0, hz1⟩, he.symm⟩
 
-private theorem reciprocal_isolated
+theorem reciprocal_isolated
     {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
     (Δ : H →ₗ.[ℂ] H) (B : H →L[ℂ] H)
     (hspec : spectrum ℂ B ⊆ Complex.ofReal '' Set.Icc (0 : ℝ) 1)
@@ -198,7 +193,7 @@ private theorem reciprocal_isolated
     have hh : 1 ≤ t⁻¹ := (one_le_inv₀ htpos).mpr ht.2
     linarith
   have heq : (1 + (t⁻¹ - 1))⁻¹ = t := by
-    rw [show 1 + (t⁻¹ - 1) = t⁻¹ by ring, inv_inv]
+    simp
   have hνspec : t⁻¹ - 1 ∈ KPBelowThreshold.realSpectrum B := by
     apply (spectrum_iff_pencil B (t⁻¹ - 1) hν).mp
     rwa [heq]
@@ -252,7 +247,7 @@ theorem kp_cont_resolvent_spectrum_transfer
   obtain ⟨hdom, hl, hr⟩ := hbase'
   have hleft : ∀ u : H, Δ ⟨B u, hdom u⟩ + B u = u := by
     intro u
-    simpa only [neg_smul, one_smul, sub_neg_eq_add] using hl u
+    simp_all
   have hright : ∀ v : Δ.domain, B (Δ v + (v : H)) = (v : H) := by
     intro v
     simpa only [neg_smul, one_smul, sub_neg_eq_add] using hr v
@@ -293,7 +288,7 @@ theorem kp_cont_resolvent_spectrum_transfer
     refine ⟨by simp, by simpa using htpos, by simpa using hμ, ?_⟩
     have hm := (hrecip (t⁻¹ - 1) hμ).mp
     have he : (1 + (t⁻¹ - 1))⁻¹ = t := by
-      rw [show 1 + (t⁻¹ - 1) = t⁻¹ by ring, inv_inv]
+      simp
     have hm' := hm (by rwa [he])
     simpa only [Complex.ofReal_sub, Complex.ofReal_inv, Complex.ofReal_one] using hm'
   · intro μ hμ
@@ -314,5 +309,3 @@ theorem kp_cont_resolvent_spectrum_transfer
     rw [Filter.principal_mono]
     intro y hy
     exact ⟨hy.1, lt_of_le_of_lt hy.2.2 hbd⟩
-
-end DedekindZetaZeroFree

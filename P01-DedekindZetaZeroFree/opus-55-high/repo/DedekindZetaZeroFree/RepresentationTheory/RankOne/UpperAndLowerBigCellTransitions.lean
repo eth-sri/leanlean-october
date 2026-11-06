@@ -14,12 +14,12 @@ set_option maxHeartbeats 1200000
  def leftCoordinates (M : Matrix (Fin 2) (Fin 2) ℂ) : Fin 3 → ℂ :=
   ![M 1 0 / M 0 0, (M 0 0)^2 / M.det, M 0 1 / M 0 0]
 
-private theorem leftCoordinates_nonzero (M : Matrix.GeneralLinearGroup (Fin 2) ℂ)
+theorem leftCoordinates_nonzero (M : Matrix.GeneralLinearGroup (Fin 2) ℂ)
     (hM : M.val 0 0 ≠ 0) : leftCoordinates M.val 1 ≠ 0 := by
   simp only [leftCoordinates, Matrix.cons_val_one, Matrix.cons_val_zero]
   exact div_ne_zero (pow_ne_zero _ hM) (Matrix.GeneralLinearGroup.det_ne_zero M)
 
-private theorem leftCoordinates_reconstruct (M : Matrix.GeneralLinearGroup (Fin 2) ℂ)
+theorem leftCoordinates_reconstruct (M : Matrix.GeneralLinearGroup (Fin 2) ℂ)
     (hM : M.val 0 0 ≠ 0) :
     Matrix.ProjGenLinGroup.mk (leftMatrix (leftCoordinates M.val)) = Matrix.ProjGenLinGroup.mk M := by
   have hdet : M.val 0 0 * M.val 1 1 - M.val 0 1 * M.val 1 0 ≠ 0 := by
@@ -48,14 +48,14 @@ private theorem leftCoordinates_reconstruct (M : Matrix.GeneralLinearGroup (Fin 
     Matrix.GeneralLinearGroup (Fin 2) ℂ :=
   a w * rightMatrix (x w) * (rightMatrix (x₀ w))⁻¹ * (a w)⁻¹
 
-private theorem mirroredMatrix_base {F : Type} [Field F] [NumberField F]
+theorem mirroredMatrix_base {F : Type} [Field F] [NumberField F]
     (a : InfinitePlace F → Matrix.GeneralLinearGroup (Fin 2) ℂ)
     (x₀ : KPGlobalResidualConstruction.ArchCoordinates F) (w : InfinitePlace F) :
     mirroredMatrix a x₀ x₀ w = 1 := by
   unfold mirroredMatrix
   group
 
-private theorem mirroredMatrix_smooth {F : Type} [Field F] [NumberField F]
+theorem mirroredMatrix_smooth {F : Type} [Field F] [NumberField F]
     (a : InfinitePlace F → Matrix.GeneralLinearGroup (Fin 2) ℂ)
     (x₀ : KPGlobalResidualConstruction.ArchCoordinates F) (w : InfinitePlace F) :
     ContDiffOn ℝ (⊤ : ℕ∞) (fun x => (mirroredMatrix a x₀ x w).val)
@@ -74,7 +74,7 @@ private theorem mirroredMatrix_smooth {F : Type} [Field F] [NumberField F]
     simp only [mirroredMatrix, Units.val_mul, rightMatrix_val _ (hx w)]
     rfl)
 
-private theorem mirrored_coordinates {F : Type} [Field F] [NumberField F]
+theorem mirrored_coordinates {F : Type} [Field F] [NumberField F]
     (a : InfinitePlace F → Matrix.GeneralLinearGroup (Fin 2) ℂ)
     (x₀ : KPGlobalResidualConstruction.ArchCoordinates F)
     (hx₀ : x₀ ∈ KPGlobalResidualConstruction.archDomain F) :

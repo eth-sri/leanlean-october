@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Arithmetic Frobenius in a finite abelian tower
 
@@ -27,14 +22,13 @@ to an intermediate field is arithmetic Frobenius at the prime below it.
 
 open scoped NumberField
 
-noncomputable section
 
 namespace ClassFieldTheory
 
 open NumberField IsDedekindDomain IdeleGroup
 open GlobalClassFieldTheory.GlobalClassFields
 
-private theorem arithmeticFinitePlacePrimeArtin_restrict_tower_of_globalArtin
+theorem arithmeticFinitePlacePrimeArtin_restrict_tower_of_globalArtin
     (K E L : Type) [Field K] [Field E] [Field L]
     [NumberField K] [NumberField E] [NumberField L]
     [Algebra K E] [Algebra E L] [Algebra K L] [IsScalarTower K E L]
@@ -86,7 +80,3 @@ theorem arithmeticFrobeniusAt_restrict_tower
     _ = arithmeticFrobeniusAt (K := K) wE :=
       GlobalClassFieldComparison.arithmeticPrimeArtin_eq_arithmeticFrobeniusAt
         v wE hwE hunramE
-
-end ClassFieldTheory
-
-end

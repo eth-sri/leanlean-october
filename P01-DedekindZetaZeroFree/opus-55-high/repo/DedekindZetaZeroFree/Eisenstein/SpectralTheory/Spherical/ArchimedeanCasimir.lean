@@ -28,7 +28,7 @@ def archCasimir (f : GInfinity F → ℂ) (a : GInfinity F) : ℂ :=
 
 include ζ hζ
 
-private theorem arch_twice (f : KPArch.Space (KPCuspLogShape.dimension F) → ℂ)
+theorem arch_twice (f : KPArch.Space (KPCuspLogShape.dimension F) → ℂ)
     (a : GInfinity F) (i : Fin (KPCuspLogShape.dimension F)) (j k : Fin 6) :
     archRight F (KPCusp.complexPlace F i) j
       (archRight F (KPCusp.complexPlace F i) k (f ∘ KPMsFixedHaarDisintegration.archBasepoint F)) a =

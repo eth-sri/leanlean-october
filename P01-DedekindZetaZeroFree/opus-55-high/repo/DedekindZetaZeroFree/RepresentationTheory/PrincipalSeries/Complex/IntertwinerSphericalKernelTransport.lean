@@ -76,11 +76,8 @@ noncomputable def kappa (z : ℂ) : ComplexSU2 :=
     constructor
     · ext i j
       fin_cases i <;> fin_cases j <;>
-        simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.star_apply,
-          Complex.star_def, Complex.mul_conj', ← Complex.ofReal_pow,
-          ← Complex.ofReal_add, hn, hn', mul_comm]
-    · simp [Matrix.det_fin_two, Complex.star_def, Complex.mul_conj',
-        mul_comm, ← Complex.ofReal_pow, ← Complex.ofReal_add, hn, hn']⟩
+        simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.star_apply, Complex.mul_conj', ← Complex.ofReal_pow, ← Complex.ofReal_add, hn, hn', mul_comm]
+    · simp [Matrix.det_fin_two, Complex.mul_conj', mul_comm, ← Complex.ofReal_pow, ← Complex.ofReal_add, hn']⟩
 
 noncomputable def unsignedUpper (z : ℂ) : ComplexGL2 :=
   upperTriangular (Units.mk0 (-1 / (radius z : ℂ)) (by
@@ -192,7 +189,7 @@ private theorem hopfLinear_norm (a b : ℂ)
     calc
       _ = (a.re^2+a.im^2+b.re^2+b.im^2)^2 * (x 0^2+x 1^2+x 2^2) := by ring
       _ = _ := by rw [h]; ring
-  nlinarith [norm_nonneg x, norm_nonneg (hopfLinear a b x)]
+  simp_all
 
 private theorem hopfLinear_action (H : ComplexSU2 → rawSphere)
     (hH : HasRawHopfCoordinates H) (l k : ComplexSU2) :
@@ -203,9 +200,7 @@ private theorem hopfLinear_action (H : ComplexSU2 → rawSphere)
   obtain ⟨h0, h1⟩ := su2_entries k
   ext i
   fin_cases i <;>
-    simp [compactSphereCoordinate, hopfLinear, Matrix.mul_apply, Fin.sum_univ_two,
-      h0, h1, Complex.mul_re, Complex.mul_im, Complex.star_def,
-      ← Complex.normSq_eq_norm_sq, Complex.normSq_apply] <;> ring
+    simp [compactSphereCoordinate, hopfLinear, Matrix.mul_apply, Fin.sum_univ_two, h0, h1, Complex.mul_re, Complex.mul_im, ← Complex.normSq_eq_norm_sq, Complex.normSq_apply] <;> ring
 
 private theorem hopf_kappa (H : ComplexSU2 → rawSphere)
     (hH : HasRawHopfCoordinates H) (z : ℂ) : H (kappa z) = sigma z := by
@@ -214,16 +209,12 @@ private theorem hopf_kappa (H : ComplexSU2 → rawSphere)
   have hr : radius z ≠ 0 := (radius_pos z).ne'
   ext i
   fin_cases i <;>
-    simp [compactSphereCoordinate, kappa, sigma, sigmaVector, Complex.star_def,
-      Complex.div_re, Complex.div_im, Complex.mul_re, Complex.mul_im,
-      Complex.normSq_apply, ← Complex.normSq_eq_norm_sq]
+    simp [compactSphereCoordinate, kappa, sigma, sigmaVector, Complex.div_re, Complex.div_im, Complex.mul_re, Complex.mul_im, Complex.normSq_apply, ← Complex.normSq_eq_norm_sq]
   · rw [← radius_sq]
     field_simp
   · rw [← radius_sq]
     field_simp
-  · simp only [← Complex.ofReal_pow, Complex.ofReal_re, Complex.ofReal_im,
-      zero_pow (by decide : 2 ≠ 0), add_zero, ← Complex.ofReal_div,
-      ← Complex.ofReal_pow, Complex.ofReal_re, abs_of_pos (radius_pos z)]
+  · simp only [← Complex.ofReal_pow, Complex.ofReal_re, Complex.ofReal_im, ← Complex.ofReal_div, ← Complex.ofReal_pow, Complex.ofReal_re, abs_of_pos (radius_pos z)]
     have hn := Complex.normSq_eq_norm_sq z
     simp [Complex.normSq_apply] at hn
     rw [div_pow, ← hn, ← radius_sq]
@@ -356,7 +347,7 @@ theorem raw_polynomial_latitude_integrable (p : MvPolynomial (Fin 3) ℂ)
     (x : rawSphere) :
     Integrable (rawLatitudeKernel w x p) rawSphereArea := by
   let φ : rawSphere → ℝ := fun y => (1 - inner ℝ (x : rawAmbient) (y : rawAmbient)) / 2
-  have hφ : Measurable φ := by dsimp [φ]; fun_prop
+  have hφ : Measurable φ := by fun_prop
   have hkm : Integrable w (Measure.map φ rawSphereArea) := by
     rw [show Measure.map φ rawSphereArea = volume.restrict (Set.Icc (0 : ℝ) 1) from
       (ComplexFractionalInverse.KernelMass.normalized_area_projection_rotation 3 0 x).trans
@@ -378,8 +369,4 @@ theorem raw_polynomial_latitude_integrable (p : MvPolynomial (Fin 3) ℂ)
   have h := (show IntegrableOn (fun y => (w (φ y) : ℂ)) Set.univ rawSphereArea by
     simpa using hi).mul_continuousOn hp.continuousOn isCompact_univ
   change Integrable (fun y => (w (φ y) : ℂ) * rawPolynomialSphere p y) rawSphereArea
-  simpa only [IntegrableOn, Measure.restrict_univ] using h
-
-end DedekindZetaZeroFree.KPCplxHarmonicIntertwinerSpectrum.HarmonicIntegral
-
-end
+  simp_all

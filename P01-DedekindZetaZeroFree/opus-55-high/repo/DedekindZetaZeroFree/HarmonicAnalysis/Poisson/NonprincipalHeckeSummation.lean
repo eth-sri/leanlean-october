@@ -16,7 +16,7 @@ open scoped NumberField Classical ContDiff
 
 namespace DedekindZetaZeroFree.LargeSieve.NonprincipalPoisson
 
-private lemma cpow_strip_bound (Y : ℝ) (hY : 0 < Y) (c a b : ℝ) :
+lemma cpow_strip_bound (Y : ℝ) (hY : 0 < Y) (c a b : ℝ) :
     ∃ B : ℝ, 0 ≤ B ∧ ∀ s : ℂ, s.re ∈ Set.Icc a b →
       ‖(Y : ℂ) ^ ((c : ℂ) * s)‖ ≤ B := by
   have hd : Differentiable ℂ (fun s : ℂ => (Y : ℂ) ^ ((c : ℂ) * s)) :=
@@ -32,8 +32,7 @@ private lemma cpow_strip_bound (Y : ℝ) (hY : 0 < Y) (c a b : ℝ) :
     simp
   rw [he]
   have hb := hB s.re hs
-  rw [Real.norm_eq_abs, abs_of_nonneg (norm_nonneg _)] at hb
-  exact hb.trans (le_max_left _ _)
+  simp_all
 
 private lemma Gammaℂ_ne_zero_of_im_ne_zero {s : ℂ} (hs : s.im ≠ 0) :
     Complex.Gammaℂ s ≠ 0 := by
@@ -44,7 +43,7 @@ private lemma Gammaℂ_ne_zero_of_im_ne_zero {s : ℂ} (hs : s.im ≠ 0) :
   · intro h0
     rw [Complex.Gamma_eq_zero_iff] at h0
     obtain ⟨m, hm⟩ := h0
-    exact hs (by rw [hm]; simp)
+    simp_all
 
 def mellinIntegrand {F : Type} [Field F] [NumberField F]
     {m : Ideal (𝓞 F)} {η : DedekindZetaZeroFree.RayClassCharacter F m}
@@ -85,7 +84,7 @@ theorem mellinIntegrand_regularity
   · by_cases hab : a ≤ b
     swap
     · refine ⟨0, 0, le_rfl, le_rfl, fun σ t hσ ht => ?_⟩
-      exact (hab (hσ.1.trans hσ.2)).elim
+      simp_all
     obtain ⟨B, hB, hboundB⟩ := cpow_strip_bound Y hY (-1 / 2) a b
     obtain ⟨E, hE, hboundE⟩ := cpow_strip_bound X hX 1 a b
     obtain ⟨G, A, hG, hA, hboundG⟩ :=
@@ -124,7 +123,7 @@ theorem mellinIntegrand_regularity
       have : |a| + |b| + |t| ≤ R * (1 + |t|) := by
         dsimp [R]; nlinarith [abs_nonneg a, abs_nonneg b, abs_nonneg t]
       exact (hn.trans (by linarith : |σ| + |t| ≤ |a| + |b| + |t|)).trans this
-    have hu : 1 ≤ 1 + |t| := by linarith [abs_nonneg t]
+    have hu : 1 ≤ 1 + |t| := by simp
     have hup : |t| ≤ (1 + |t|) ^ (3 / 2 : ℝ) := by
       calc |t| ≤ 1 + |t| := by linarith
         _ = (1 + |t|) ^ (1 : ℝ) := (Real.rpow_one _).symm
@@ -183,7 +182,7 @@ open scoped NumberField Classical ContDiff
 
 namespace DedekindZetaZeroFree.LargeSieve.NonprincipalPoisson
 
-private lemma reflection_powers (D q X : ℝ) (hD : 0 < D) (hq : 0 < q)
+lemma reflection_powers (D q X : ℝ) (hD : 0 < D) (hq : 0 < q)
     (hX : 0 < X) (s : ℂ) :
     ((D : ℂ) * (q : ℂ)) ^ (s / 2) *
       ((D : ℂ) * (q : ℂ)) ^ (-(1 - s) / 2) * (X : ℂ) ^ (1 - s) =
@@ -205,10 +204,10 @@ private lemma reflection_powers (D q X : ℝ) (hD : 0 < D) (hq : 0 < q)
     Complex.cpow_add _ _ hqne, hhalf, Complex.ofReal_div,
     Complex.div_cpow_ofReal_nonneg hX.le hq.le,
     Complex.cpow_neg (q : ℂ) s]
-  simp only [div_inv_eq_mul, div_eq_mul_inv, inv_inv]
+  simp only [div_eq_mul_inv, inv_inv]
   ring
 
-private lemma reflected_integrand_eq
+lemma reflected_integrand_eq
     {F : Type} [Field F] [NumberField F]
     (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
     (η : DedekindZetaZeroFree.RayClassCharacter F m) (w : EntireHeckeWitness η)
@@ -235,7 +234,7 @@ private lemma reflected_integrand_eq
         apply tsum_congr
         intro I
         by_cases hI : I = ⊥
-        · simp [Set.indicator, hI, RayOperations.map_bot]
+        · simp [Set.indicator, hI]
         · simp [Set.indicator, hI]
       _ = _ := hT.symm
   rw [mellinIntegrand, w.functionalEquation,
@@ -292,10 +291,9 @@ theorem mellinIntegrand_reflection_dual
   have hr : 1 ≤ r := by
     have hfin := NumberField.IsTotallyComplex.finrank (K := F)
     have hpos : 0 < Module.finrank ℚ F := Module.finrank_pos
-    dsimp [r]
     omega
   have hc0 : 0 < c := lt_trans zero_lt_one hc
-  have ha0 : a ⊥ = 0 := by simp [a, RayOperations.map_bot]
+  have ha0 : a ⊥ = 0 := by simp [a]
   have ha : ∀ I, ‖a I‖ ≤ 1 := by
     intro I
     simpa [a] using RayOperations.norm_le_one η I
@@ -334,8 +332,8 @@ theorem mellinIntegrand_reflection_dual
       summable_subtype_iff_indicator.mp hnorm
     exact hs.congr fun I => by by_cases hI : I = ⊥ <;> simp [Set.indicator, hI]
   have htsum : (∑' I : {I : Ideal (𝓞 F) // I ≠ ⊥}, f I.val) =
-      ∑' I : Ideal (𝓞 F), if I = ⊥ then 0 else f I := by
-    exact (tsum_subtype ({I : Ideal (𝓞 F) | I ≠ ⊥}) f).trans
+      ∑' I : Ideal (𝓞 F), if I = ⊥ then 0 else f I := 
+    (tsum_subtype ({I : Ideal (𝓞 F) | I ≠ ⊥}) f).trans
       (tsum_congr fun I => by by_cases hI : I = ⊥ <;> simp [Set.indicator, hI])
   refine ⟨hleft, hnormAll, hsumAll, ?_⟩
   rw [← Vendor.verticalIntegral_one_sub c]
@@ -369,7 +367,7 @@ theorem mellinIntegrand_source_line
       (∑ᶠ I : Ideal (𝓞 F), idealMellinWeight η.toFun h X I) =
         Vendor.verticalIntegral σ (mellinIntegrand w h X) := by
   have ha0 : η.toFun ⊥ = 0 := by
-    exact (η.eq_zero_iff' ⊥).mpr (Or.inl rfl)
+    simp
   have ha : ∀ I : Ideal (𝓞 F), ‖η.toFun I‖ ≤ 1 :=
     RayOperations.norm_le_one η
   have heq : ∀ s : ℂ, 1 < s.re → mellinIntegrand w h X s =
@@ -384,8 +382,7 @@ theorem mellinIntegrand_source_line
       rw [Complex.Gammaℂ_def]
       refine mul_ne_zero (mul_ne_zero two_ne_zero ?_)
         (Complex.Gamma_ne_zero_of_re_pos (by linarith))
-      exact Complex.cpow_ne_zero_iff.mpr (Or.inl
-        (mul_ne_zero two_ne_zero (Complex.ofReal_ne_zero.mpr Real.pi_ne_zero)))
+      simp
     have hr : 1 ≤ NumberField.InfinitePlace.nrComplexPlaces F := by
       have hfin := NumberField.IsTotallyComplex.finrank (K := F)
       have hpos : 0 < Module.finrank ℚ F := Module.finrank_pos
@@ -412,8 +409,7 @@ theorem mellinIntegrand_source_line
       intro I hI
       change I ≠ ⊥
       intro hbot
-      subst I
-      simpa [Function.mem_support, ha0] using hI
+      simp_all
     have hΛ : w.Λ s = heckeCompletionFactor F m s * idealCoefficientLSeries η.toFun s := by
       rw [← (w.hasSum s hs).tsum_eq, tsum_mul_left, hL]
     have hGQ := Vendor.Gammaℂ_mul_originMellinQ_eq_mellin h hh hcompact s
@@ -436,15 +432,13 @@ theorem mellinIntegrand_source_line
       mellin h ((σ : ℂ) + t * Complex.I) * (X : ℂ) ^ ((σ : ℂ) + t * Complex.I) *
         idealCoefficientLSeries η.toFun ((σ : ℂ) + t * Complex.I) := by
     intro t
-    exact heq _ (by simpa using hσ)
+    simp_all
   refine ⟨?_, ?_⟩
   · exact (idealMellin_verticalIntegrable η.toFun ha0 ha hh hcompact hX hσ).congr
       (Filter.Eventually.of_forall fun t => (hline t).symm)
   · rw [idealMellin_finsum_eq_verticalIntegral η.toFun ha0 ha hh hcompact hX hσ]
     unfold Vendor.verticalIntegral
-    congr 1
-    apply MeasureTheory.integral_congr_ae
-    exact Filter.Eventually.of_forall fun t => (hline t).symm
+    simp_all
 
 end DedekindZetaZeroFree.LargeSieve.NonprincipalPoisson
 
@@ -535,9 +529,3 @@ theorem nonprincipalPoisson
                   fieldTransform D r h (X * (Ideal.absNorm I : ℝ) / q) := by
   obtain ⟨w⟩ := exists_entireHeckeWitness hF hm η hprim hnonprincipal
   exact ⟨w.W, w.norm_W, nonprincipalPoisson_of_witness hF m hm η w⟩
-
-end DedekindZetaZeroFree.LargeSieve
-
-end
-
-end

@@ -51,8 +51,7 @@ def translationHom : Multiplicative F →* ProjectiveGroup F where
   toFun x := Matrix.ProjGenLinGroup.mk (unipotent (Multiplicative.toAdd x))
   map_one' := by simp
   map_mul' x y := by
-    change Matrix.ProjGenLinGroup.mk (unipotent (Multiplicative.toAdd x + Multiplicative.toAdd y)) = _
-    rw [unipotent_add, map_mul]
+    simp
 theorem parameter_iff (S : Subgroup (ProjectiveGroup F)) (x : F) :
     TranslationParameter S x ↔ translationHom (Multiplicative.ofAdd x) ∈ S := by
   constructor
@@ -215,7 +214,7 @@ theorem shear_preserves_iff (M : Submodule R (Plane F))
       exact M.add_mem hv (hx v hv)
     · intro hv
       have hm := hx (v + x • f v) hv
-      have he : f (v + x • f v) = f v := by simp [map_add, map_smul, hff]
+      have he : f (v + x • f v) = f v := by simp_all
       rw [he] at hm
       simpa using M.sub_mem hv hm
 end DedekindZetaZeroFree.KPCuspParabolicLattices.Multipliers
@@ -242,7 +241,7 @@ theorem latticeAut_eq (M : Submodule R (Plane F)) :
       Matrix.ProjGenLinGroup.mk A = g ∧ ∀ v, v ∈ M ↔ (A : Matrix (Fin 2) (Fin 2) F) *ᵥ v ∈ M} =
       ((matrixAut M).map Matrix.ProjGenLinGroup.mk : Set (ProjectiveGroup F)) := by
     ext g
-    simp only [Set.mem_setOf_eq, Subgroup.mem_map]
+    simp only [Set.mem_setOf_eq]
     constructor
     · rintro ⟨A, rfl, hA⟩; exact ⟨A, hA, rfl⟩
     · rintro ⟨A, hA, rfl⟩; exact ⟨A, rfl, hA⟩
@@ -253,16 +252,8 @@ theorem scalar_preserves (M : Submodule R (Plane F)) (u : Fˣ)
   obtain ⟨r, hr⟩ := hu
   have he : (u : F) = algebraMap R F (r : R) := congrArg Units.val hr.symm
   have hei : (↑u⁻¹ : F) = algebraMap R F (↑r⁻¹ : R) := by
-    have h := congrArg (fun z : Fˣ => (↑z⁻¹ : F)) hr.symm
-    exact h
-  constructor
-  · intro hv
-    rw [he, algebraMap_smul]
-    exact M.smul_mem r hv
-  · intro hv
-    have hm := M.smul_mem (↑r⁻¹ : R) hv
-    rw [← algebraMap_smul F, ← hei, smul_smul] at hm
-    simpa using hm
+    simp_all
+  simp_all
 theorem projective_preserves_of_eigen_one
     (M : Submodule R (Plane F)) (hM : FullLattice F M)
     (A : Matrix.GeneralLinearGroup (Fin 2) F)
@@ -277,8 +268,7 @@ theorem projective_preserves_of_eigen_one
         (u : F) • ((A : Matrix (Fin 2) (Fin 2) F) *ᵥ v) := by
       rw [← hu, Units.val_mul, ← Matrix.mulVec_mulVec]
       have hs : (↑(Matrix.GeneralLinearGroup.scalar (Fin 2) u) : Matrix (Fin 2) (Fin 2) F) *ᵥ v = (u : F) • v := by
-        ext i
-        simp [Matrix.GeneralLinearGroup.coe_scalar, Matrix.mulVec, dotProduct, Matrix.scalar, Matrix.diagonal]
+        simp
       rw [hs, Matrix.mulVec_smul]
     have hui : u ∈ IntegralUnits F := by
       apply eigen_unit_integral_of_fullLattice M hM (Matrix.GeneralLinearGroup.toLin C).toLinearEquiv
@@ -286,8 +276,7 @@ theorem projective_preserves_of_eigen_one
       · obtain ⟨v, hv0, hAv⟩ := hv
         apply Module.End.hasEigenvalue_of_hasEigenvector
         refine ⟨Module.End.mem_eigenspace_iff.mpr ?_, hv0⟩
-        change (C : Matrix (Fin 2) (Fin 2) F) *ᵥ v = (u : F) • v
-        rw [hCv, hAv]
+        simp_all
     intro v
     have hc := hC v
     rw [hCv, ← scalar_preserves M u hui] at hc
@@ -307,7 +296,7 @@ def conjEnd (B : Matrix.GeneralLinearGroup (Fin 2) F) : Module.End F (Plane F) :
     (rootEnd.comp (Matrix.GeneralLinearGroup.toLin B⁻¹ : Module.End F (Plane F)))
 theorem rootEnd_formula (v : Plane F) : rootEnd v = ![v 1, 0] := by
   ext i
-  fin_cases i <;> simp [rootEnd, Matrix.mulVecLin_apply, Matrix.mulVec, dotProduct, Fin.sum_univ_two]
+  fin_cases i <;> simp [rootEnd, Matrix.mulVec, dotProduct, Fin.sum_univ_two]
 theorem rootEnd_square (v : Plane F) : rootEnd (rootEnd v) = 0 := by
   simp [rootEnd_formula]
 theorem inv_mulVec (B : Matrix.GeneralLinearGroup (Fin 2) F) (v : Plane F) :
@@ -344,14 +333,13 @@ theorem conj_unipotent_eigen (B : Matrix.GeneralLinearGroup (Fin 2) F) (x : F) :
   · intro hz
     have he := congrArg (fun v => (↑B⁻¹ : Matrix (Fin 2) (Fin 2) F) *ᵥ v) hz
     simp only [inv_mulVec, Matrix.mulVec_zero] at he
-    have h := congrFun he 0
-    simpa using h
+    simp_all
   · rw [conj_unipotent_vec]
     have he : conjEnd B ((↑B : Matrix (Fin 2) (Fin 2) F) *ᵥ ![1, 0]) = 0 := by
       rw [conjEnd_formula, inv_mulVec, rootEnd_formula]
       change (↑B : Matrix (Fin 2) (Fin 2) F) *ᵥ (0 : Plane F) = 0
-      exact Matrix.mulVec_zero _
-    rw [he, smul_zero, add_zero]
+      simp
+    simp_all
 theorem full_translation_ideal (M : Submodule R (Plane F)) (hM : FullLattice F M)
     (q : Projectivization F (Plane F)) (σ : ProjectiveGroup F)
     (hσ : σ • StandardCusp F = q) :
@@ -413,12 +401,12 @@ private theorem isZLattice_of_commensurable {V : Type*} [NormedAddCommGroup V] [
   haveI : DiscreteTopology J := by
     change DiscreteTopology {x : V // x ∈ (J : Set V)}
     rw [← AddSubgroup.coe_toIntSubmodule]
-    exact (inferInstance : DiscreteTopology J.toIntSubmodule)
+    omega
   haveI : DiscreteTopology L := h.discreteTopology_iff.mpr inferInstance
   have hd : DiscreteTopology L.toIntSubmodule := by
     change DiscreteTopology {x : V // x ∈ (L.toIntSubmodule : Set V)}
     rw [AddSubgroup.coe_toIntSubmodule]
-    exact (inferInstance : DiscreteTopology L)
+    omega
   letI := hd
   refine ⟨hd, ?_⟩
   constructor
@@ -433,9 +421,8 @@ private theorem isZLattice_of_commensurable {V : Type*} [NormedAddCommGroup V] [
     rw [Nat.cast_smul_eq_nsmul]
     exact Submodule.subset_span hm.1
   have hh := (Submodule.span ℝ (L.toIntSubmodule : Set V)).smul_mem (n : ℝ)⁻¹ hs
-  have hn' : (n : ℝ) ≠ 0 := by exact_mod_cast (Nat.ne_of_gt hn)
-  rw [smul_smul, inv_mul_cancel₀ hn', one_smul] at hh
-  exact hh
+  have hn' : (n : ℝ) ≠ 0 := by positivity
+  simp_all
 
 theorem finite_index_ideal_isZLattice
     (F : Type*) [Field F] [NumberField F]
@@ -464,19 +451,7 @@ theorem finite_index_ideal_isZLattice
   have hJ' : J'.toIntSubmodule = NumberField.mixedEmbedding.idealLattice F I := by
     ext x
     rw [NumberField.mixedEmbedding.mem_idealLattice, hI]
-    constructor
-    · intro hx
-      change x ∈ J' at hx
-      change x ∈ (J : Submodule (NumberField.RingOfIntegers F) F).toAddSubgroup.map f at hx
-      rw [AddSubgroup.mem_map] at hx
-      obtain ⟨y, hy, hyx⟩ := hx
-      exact ⟨y, by simpa using hy, hyx⟩
-    · rintro ⟨y, hy, rfl⟩
-      change (NumberField.mixedEmbedding F) y ∈ J'
-      change (NumberField.mixedEmbedding F) y ∈
-        (J : Submodule (NumberField.RingOfIntegers F) F).toAddSubgroup.map f
-      rw [AddSubgroup.mem_map]
-      exact ⟨y, by simpa using hy, rfl⟩
+    rfl
   haveI hd : DiscreteTopology J'.toIntSubmodule := by
     rw [hJ']; infer_instance
   haveI hz : IsZLattice ℝ J'.toIntSubmodule :=
@@ -524,7 +499,7 @@ def PreservesUpToHomothety (M : Submodule (Order F) (Vec F)) (g : PGL2 F) : Prop
       Set.image (fun v : Vec F => (a : F) • v) (M : Set (Vec F))
 
 def infinity : Cusp F :=
-  Projectivization.mk F ![1, 0] (by simp [Matrix.cons_val_zero])
+  Projectivization.mk F ![1, 0] (by simp)
 
 def conjugatedStabilizer (Γ : Subgroup (PGL2 F)) (q : Cusp F) (σ : PGL2 F) :
     Subgroup (PGL2 F) :=
@@ -562,7 +537,7 @@ theorem mem_projectiveAutomorphisms_iff (M : Submodule (Order F) (Vec F)) (g : P
         ∀ v : Vec F, v ∈ M ↔ (A : Matrix (Fin 2) (Fin 2) F) *ᵥ v ∈ M} =
       ((integralMatrixAutomorphisms F M).map Matrix.ProjGenLinGroup.mk : Set (PGL2 F)) := by
     ext g
-    simp only [Set.mem_setOf_eq, Subgroup.mem_map]
+    simp only [Set.mem_setOf_eq]
     constructor
     · rintro ⟨A, rfl, hA⟩; exact ⟨A, hA, rfl⟩
     · rintro ⟨A, hA, rfl⟩; exact ⟨A, rfl, hA⟩
@@ -572,15 +547,14 @@ theorem mem_projectiveAutomorphisms_iff (M : Submodule (Order F) (Vec F)) (g : P
   rw [← hset]
   rfl
 
-private theorem inv_mulVec_mulVec (A : Matrix.GeneralLinearGroup (Fin 2) F) (v : Vec F) :
+theorem inv_mulVec_mulVec (A : Matrix.GeneralLinearGroup (Fin 2) F) (v : Vec F) :
     (↑A⁻¹ : Matrix (Fin 2) (Fin 2) F) *ᵥ ((↑A : Matrix (Fin 2) (Fin 2) F) *ᵥ v) = v := by
   rw [Matrix.mulVec_mulVec, ← Units.val_mul, inv_mul_cancel, Units.val_one,
     Matrix.one_mulVec]
 
-private theorem scalar_mulVec (a : Fˣ) (v : Vec F) :
+theorem scalar_mulVec (a : Fˣ) (v : Vec F) :
     (↑(Matrix.GeneralLinearGroup.scalar (Fin 2) a) : Matrix (Fin 2) (Fin 2) F) *ᵥ v = (a : F) • v := by
-  ext i
-  simp [Matrix.mulVec, dotProduct, Matrix.scalar, Matrix.diagonal, Pi.smul_apply]
+  simp
 
 theorem preservesUpToHomothety_iff_mem_projectiveAutomorphisms
     (M : Submodule (Order F) (Vec F)) (g : PGL2 F) :
@@ -607,8 +581,7 @@ theorem preservesUpToHomothety_iff_mem_projectiveAutomorphisms
         have hm : (↑A : Matrix (Fin 2) (Fin 2) F) *ᵥ v ∈
             Set.image (fun v : Vec F => (a : F) • v) (M : Set (Vec F)) := by
           refine ⟨(↑B : Matrix (Fin 2) (Fin 2) F) *ᵥ v, hv, ?_⟩
-          change (a : F) • ((↑B : Matrix (Fin 2) (Fin 2) F) *ᵥ v) = _
-          rw [hBv, smul_smul, Units.mul_inv, one_smul]
+          simp_all
         rw [← him] at hm
         obtain ⟨w, hw, he⟩ := hm
         have he' := congrArg (fun z => (↑A⁻¹ : Matrix (Fin 2) (Fin 2) F) *ᵥ z) he
@@ -623,7 +596,7 @@ theorem preservesUpToHomothety_iff_mem_projectiveAutomorphisms
       refine ⟨(↑A⁻¹ : Matrix (Fin 2) (Fin 2) F) *ᵥ v, ?_, ?_⟩
       · apply (hp _).mpr
         simpa [Matrix.mulVec_mulVec, ← Units.val_mul] using hv
-      · simp [Matrix.mulVec_mulVec, ← Units.val_mul]
+      simp
 
 theorem subgroup_le_projectiveAutomorphisms
     (M : Submodule (Order F) (Vec F)) (Γ : Subgroup (PGL2 F))
@@ -636,12 +609,12 @@ def rationalMatrixLinearEquiv (A : Matrix.GeneralLinearGroup (Fin 2) F) :
     Vec F ≃ₗ[Order F] Vec F :=
   (Matrix.GeneralLinearGroup.toLin A).toLinearEquiv.restrictScalars (Order F)
 
-private theorem gl_mulVec_mul (A B : Matrix.GeneralLinearGroup (Fin 2) F) (v : Vec F) :
+theorem gl_mulVec_mul (A B : Matrix.GeneralLinearGroup (Fin 2) F) (v : Vec F) :
     (↑(A * B) : Matrix (Fin 2) (Fin 2) F) *ᵥ v =
       (↑A : Matrix (Fin 2) (Fin 2) F) *ᵥ ((↑B : Matrix (Fin 2) (Fin 2) F) *ᵥ v) := by
   rw [Units.val_mul, Matrix.mulVec_mulVec]
 
-private theorem gl_inv_mulVec (A : Matrix.GeneralLinearGroup (Fin 2) F) (v : Vec F) :
+theorem gl_inv_mulVec (A : Matrix.GeneralLinearGroup (Fin 2) F) (v : Vec F) :
     (↑A⁻¹ : Matrix (Fin 2) (Fin 2) F) *ᵥ ((↑A : Matrix (Fin 2) (Fin 2) F) *ᵥ v) = v := by
   rw [← gl_mulVec_mul, inv_mul_cancel, Units.val_one, Matrix.one_mulVec]
 
@@ -668,7 +641,7 @@ theorem projectiveAutomorphisms_conjugate
         · intro hv
           refine ⟨(↑A⁻¹ : Matrix (Fin 2) (Fin 2) F) *ᵥ v, hv, ?_⟩
           change (↑A : Matrix (Fin 2) (Fin 2) F) *ᵥ ((↑A⁻¹ : Matrix (Fin 2) (Fin 2) F) *ᵥ v) = v
-          simpa using gl_inv_mulVec F A⁻¹ v
+          simp
       rw [hmem, hmem, gl_mulVec_mul, gl_mulVec_mul, gl_inv_mulVec]
       exact hp _
   · intro hg
@@ -685,14 +658,13 @@ theorem projectiveAutomorphisms_conjugate
           have he' := congrArg (fun t => (↑A⁻¹ : Matrix (Fin 2) (Fin 2) F) *ᵥ t) he
           change (↑A⁻¹ : Matrix (Fin 2) (Fin 2) F) *ᵥ ((↑A : Matrix (Fin 2) (Fin 2) F) *ᵥ z) =
             (↑A⁻¹ : Matrix (Fin 2) (Fin 2) F) *ᵥ ((↑A : Matrix (Fin 2) (Fin 2) F) *ᵥ w) at he'
-          rw [gl_inv_mulVec, gl_inv_mulVec] at he'
-          exact he' ▸ hz
+          simp_all
         · intro hw; exact ⟨w, hw, rfl⟩
       rw [← hmem v, ← hmem ((↑(A⁻¹ * B * A) : Matrix (Fin 2) (Fin 2) F) *ᵥ v)]
       rw [gl_mulVec_mul, gl_mulVec_mul]
       have hinv (w : Vec F) : (↑A : Matrix (Fin 2) (Fin 2) F) *ᵥ
           ((↑A⁻¹ : Matrix (Fin 2) (Fin 2) F) *ᵥ w) = w := by
-        simpa using gl_inv_mulVec F A⁻¹ w
+        simp
       rw [hinv]
       exact hp _
     · simp only [MulEquiv.toMonoidHom_eq_coe, MonoidHom.coe_coe, MulAut.conj_apply]
@@ -712,8 +684,7 @@ theorem isRankTwoLattice_map (M : Submodule (Order F) (Vec F))
       rw [Submodule.map_span]
       rfl
     rw [hmap, hM.2]
-    rw [Submodule.map_top]
-    exact LinearMap.range_eq_top.mpr (Matrix.GeneralLinearGroup.toLin A).toLinearEquiv.surjective
+    simp
 
  theorem fixes_infinity_upper (g : PGL2 F) (hg : g • infinity F = infinity F) :
     IsUpperTriangular F g := by
@@ -727,7 +698,7 @@ theorem isRankTwoLattice_map (M : Submodule (Order F) (Vec F))
   rw [hzero] at h
   change 0 = ((A : Matrix (Fin 2) (Fin 2) F) *ᵥ ![1, 0]) 1 at h
   simpa [Matrix.mulVec, dotProduct, Fin.sum_univ_two] using h.symm
-private theorem conjugated_upper (Γ : Subgroup (PGL2 F)) (q : Cusp F) (σ : PGL2 F)
+theorem conjugated_upper (Γ : Subgroup (PGL2 F)) (q : Cusp F) (σ : PGL2 F)
     (hσ : σ • infinity F = q) :
     ∀ g ∈ conjugatedStabilizer F Γ q σ, IsUpperTriangular F g := by
   intro g hg
@@ -787,8 +758,3 @@ theorem kp_cusp_arithmetic_parabolic_stabilizers
     KPCuspParabolicLattices.finite_index_ideal_isZLattice F J hJ L hLle hLindex
   exact ⟨J, L, E, ι, ρ, hJ, hLle, hLindex, hlattice, hunit.1, hunit.2,
     hι, hρ, hexact, htranslation, hratio⟩
-
-end DedekindZetaZeroFree
-
-end
-end

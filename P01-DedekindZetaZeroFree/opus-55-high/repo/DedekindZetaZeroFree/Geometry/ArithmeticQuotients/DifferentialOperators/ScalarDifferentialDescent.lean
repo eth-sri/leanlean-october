@@ -79,7 +79,7 @@ private theorem measurable_smooth {W : Type*} [NormedAddCommGroup W] [NormedSpac
   rw [h]
   exact hg.continuousOn.restrict.measurable
 
-private theorem smooth_mul {a : ActualChart (U := U) (H := H)} {f g : omega a → ℂ}
+theorem smooth_mul {a : ActualChart (U := U) (H := H)} {f g : omega a → ℂ}
     (hf : SmoothOnLift a f) (hg : SmoothOnLift a g) :
     SmoothOnLift a (fun x => f x * g x) := by
   obtain ⟨f', hf', he⟩ := hf
@@ -92,7 +92,7 @@ private theorem smooth_ofReal {a : ActualChart (U := U) (H := H)} {f : omega a �
   exact ⟨fun x => (g x : ℂ), Complex.ofRealCLM.contDiff.comp_contDiffOn hg,
     fun x => by dsimp; rw [he x]⟩
 
-private theorem differential_zero_germ {d : ℕ} {f : HyperbolicChart.Space d → ℂ}
+theorem differential_zero_germ {d : ℕ} {f : HyperbolicChart.Space d → ℂ}
     {x : HyperbolicChart.Space d} (h : f =ᶠ[𝓝 x] 0) :
     HyperbolicChart.differential d f x = 0 := by
   funext i k
@@ -327,7 +327,7 @@ private theorem differential_measurable (f : ScalarFields F ζ hζ U R P H)
     filter_upwards [e.arrow.isOpen_domain.mem_nhds hx] with y hy
     simpa [scalarDifferentialZeroExtension, e.source_shrinking hy, e.target_shrinking hy] using hc.2 a b e y hy
 
-private theorem support_normSquare (v : Family (U := U) (H := H)) :
+theorem support_normSquare (v : Family (U := U) (H := H)) :
     tsupport (normSquare v) = cotangentSupport v := by
   have hzero (a : ActualChart (U := U) (H := H)) (x : omega a)
       (hx : q a x.val ∉ cotangentSupport v) : coefficient v a x = 0 := by
@@ -354,7 +354,7 @@ private theorem support_normSquare (v : Family (U := U) (H := H)) :
     rw [← hq, Function.mem_support, normSquare_chart]
     simpa using hn
 
-private theorem compact_family_of_support (v : Family (U := U) (H := H))
+theorem compact_family_of_support (v : Family (U := U) (H := H))
     {K : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U)} (hK : IsCompact K)
     (hs : cotangentSupport v ⊆ K) : HasCompactSupport (normSquare v) := by
   rw [HasCompactSupport, support_normSquare]
@@ -382,7 +382,7 @@ private theorem cutoff_cotangent (η : KPFiniteCuspAtlas.rawXU F ζ hζ U → �
     rw [q_branch, W.val.property.2.2 a b e x hx, map_smul]
     rfl
 
-private theorem smul_support_left (f : ScalarFields F ζ hζ U R P H)
+theorem smul_support_left (f : ScalarFields F ζ hζ U R P H)
     (v : ChartFields F ζ hζ U R P H)
     (hv : IsMeasurableCotangentFamily (fun a x => f a x • v a x)) :
     cotangentSupport ⟨_, hv⟩ ⊆ scalarSupport f := by
@@ -390,7 +390,7 @@ private theorem smul_support_left (f : ScalarFields F ζ hζ U R P H)
   rintro x ⟨a, y, hq, hn⟩
   exact ⟨a, y, hq, (smul_ne_zero_iff.mp hn).1⟩
 
-private theorem smul_support_right (f : ScalarFields F ζ hζ U R P H)
+theorem smul_support_right (f : ScalarFields F ζ hζ U R P H)
     (v : Family (U := U) (H := H))
     (hv : IsMeasurableCotangentFamily (fun a x => f a x • coefficient v a x)) :
     cotangentSupport ⟨_, hv⟩ ⊆ cotangentSupport v := by

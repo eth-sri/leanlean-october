@@ -60,9 +60,7 @@ theorem three_circles (ℓ : ℂ → ℂ) (c : ℂ) (R r₀ r₁ r₂ : ℝ) (hr
     calc Real.exp z.re ≤ Real.exp (Real.log r₂) := Real.exp_le_exp.mpr hz
       _ = r₂ := Real.exp_log (by linarith)
   have hmem : ∀ z : ℂ, z.re ≤ Real.log r₂ → c + Complex.exp z ∈ closedBall c r₂ := by
-    intro z hz
-    rw [mem_closedBall, dist_eq_norm, add_sub_cancel_left]
-    exact hexp_le z hz
+    simp_all
   let f : ℂ → ℂ := fun z => ℓ (c + Complex.exp z)
   have hd : DiffContOnCl ℂ f (verticalStrip (Real.log r₀) (Real.log r₂)) := by
     apply DifferentiableOn.diffContOnCl
@@ -118,7 +116,7 @@ theorem three_circles (ℓ : ℂ → ℂ) (c : ℂ) (R r₀ r₁ r₂ : ℝ) (hr
     rw [Complex.exp_log hw0']
   rw [hfz, hre] at key
   have hx0 : 0 ≤ (Real.log |w| - Real.log r₀) / (Real.log r₂ - Real.log r₀) :=
-    div_nonneg (by linarith) hsub.le
+    by positivity
   have hx1 : (Real.log |w| - Real.log r₀) / (Real.log r₂ - Real.log r₀) ≤
       (Real.log r₁ - Real.log r₀) / (Real.log r₂ - Real.log r₀) :=
     div_le_div_of_nonneg_right (by linarith) hsub.le
@@ -134,7 +132,7 @@ theorem three_circles (ℓ : ℂ → ℂ) (c : ℂ) (R r₀ r₁ r₂ : ℝ) (hr
 theorem absorb (C θ ε : ℝ) (hC : 0 < C) (hθ0 : 0 ≤ θ) (hθ1 : θ < 1) (hε : 0 < ε) :
     ∃ K : ℝ, 0 ≤ K ∧ ∀ x : ℝ, 1 ≤ x → C * x ^ θ ≤ ε * x + K := by
   obtain ⟨X, hX⟩ : ∃ X : ℝ, X = (C / ε) ^ (1 / (1 - θ)) := ⟨_, rfl⟩
-  have hXpos : 0 < X := by rw [hX]; exact Real.rpow_pos_of_pos (div_pos hC hε) _
+  have hXpos : 0 < X := by rw [hX]; positivity
   have hXθ : X ^ (1 - θ) = C / ε := by
     rw [hX, ← Real.rpow_mul (div_pos hC hε).le, one_div, inv_mul_cancel₀ (by linarith),
       Real.rpow_one]
@@ -160,5 +158,3 @@ theorem absorb (C θ ε : ℝ) (hC : 0 < C) (hθ0 : 0 ≤ θ) (hθ1 : θ < 1) (h
     calc C * x ^ θ ≤ ε * x ^ (1 - θ) * x ^ θ := h5
       _ = ε * x := by rw [mul_assoc, h3]
       _ ≤ ε * x + C * X := by linarith
-
-end DedekindZetaZeroFree.Quantitative.ThreeCircles

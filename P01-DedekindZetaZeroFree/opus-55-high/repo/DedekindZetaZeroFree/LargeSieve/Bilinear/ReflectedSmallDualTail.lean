@@ -19,7 +19,3 @@ def smallDualTail (F : Type*) [Field F] [NumberField F]
     (a : Ideal (𝓞 F) → ℂ) : ℂ :=
   ∑ d ∈ D, a d * (T / (Ideal.absNorm d : ℝ) : ℂ) *
     ∑' b : Ideal (𝓞 F), dualSummand F k T d b
-
-end DedekindZetaZeroFree.LargeSieve.ReflectedTails
-
-end

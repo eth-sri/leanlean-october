@@ -65,7 +65,7 @@ local instance (q : S) : Fintype (Cosets F ζ hζ M S q) := Fintype.ofFinite _
       (representative F ζ hζ M S q (QuotientGroup.mk t)))⁻¹ = 1
     rw [representative_coset, mul_inv_cancel]⟩
 
-private theorem polarPart_representative (q : S) (t : Torus F ζ hζ S q) :
+theorem polarPart_representative (q : S) (t : Torus F ζ hζ S q) :
     (polarPart F ζ hζ M S q t : Torus F ζ hζ S q) *
       representative F ζ hζ M S q (QuotientGroup.mk t) = t := by
   dsimp [polarPart]
@@ -75,7 +75,7 @@ private theorem polarPart_representative (q : S) (t : Torus F ζ hζ S q) :
     (Cosets F ζ hζ M S q → ℂ) :=
   inducedCosetEquiv (Polar F ζ hζ M S q) (M q.val).polarization.ωL.toMonoidHom
 
-private theorem fiberCosets_apply (q : S) (v : Fiber F ζ hζ M S q)
+theorem fiberCosets_apply (q : S) (v : Fiber F ζ hζ M S q)
     (c : Cosets F ζ hζ M S q) :
     fiberCosets F ζ hζ M S q v c =
       fiberEvaluation F ζ hζ M S q (representative F ζ hζ M S q c) v := rfl
@@ -86,7 +86,7 @@ private theorem fiberCosets_apply (q : S) (v : Fiber F ζ hζ M S q)
     (functionTensorEquiv.trans (LinearEquiv.piCongrRight fun _ =>
       (PiTensorProduct.constantBaseRingEquiv S ℂ).toLinearEquiv))
 
-private theorem tensorFiberCosets_apply (v : ProductFiber F ζ hζ M S)
+theorem tensorFiberCosets_apply (v : ProductFiber F ζ hζ M S)
     (c : ∀ q : S, Cosets F ζ hζ M S q) :
     tensorFiberCosets F ζ hζ M S v c =
       Coordinates (fun q => fiberEvaluation F ζ hζ M S q
@@ -106,7 +106,7 @@ private theorem tensorFiberCosets_apply (v : ProductFiber F ζ hζ M S)
     exact PiTensorProduct.constantBaseRingEquiv_tprod _
   | add v w hv hw => simpa only [map_add, Pi.add_apply] using congrArg₂ (· + ·) hv hw
 
-private theorem coordinates_polarPart (v : ProductFiber F ζ hζ M S)
+theorem coordinates_polarPart (v : ProductFiber F ζ hζ M S)
     (t : ∀ q : S, Torus F ζ hζ S q) :
     Coordinates (fun q => fiberEvaluation F ζ hζ M S q (t q)) v =
       (∏ q, ((M q.val).polarization.ωL (polarPart F ζ hζ M S q (t q)) : ℂ)) *
@@ -300,7 +300,7 @@ private theorem recoveredCoordinate_borel
 
 open _root_.DedekindZetaZeroFree.KPLiteralTensor.KernelAndHCRange.PointwiseKernel renaming tensorEvaluation_map → tensorEvaluation_map
 
-private theorem coordinates_inducingAction
+theorem coordinates_inducingAction
     (v : ProductFiber F ζ hζ M S) (t : ∀ q : S, Torus F ζ hζ S q)
     (b : ∀ q : S, (M q.val).borel.B) :
     Coordinates (fun q => fiberEvaluation F ζ hζ M S q (t q))
@@ -340,7 +340,7 @@ private theorem coordinates_inducingAction
       vectorization_coordinates F ζ hζ M S φ hφ,
       recoveredCoordinate_borel F ζ hζ M S φ hφ, sub_self]
 
-private theorem vectorization_right_stabilizer
+theorem vectorization_right_stabilizer
     (φ : ProductCover F ζ hζ S → ℂ) (J : OpenSubgroup (ProductCover F ζ hζ S))
     (hJ : ∀ a ∈ J, KPLocalPrincipalSeries.vectorRightTranslation a φ = φ) :
     ∀ a ∈ J, KPLocalPrincipalSeries.vectorRightTranslation a

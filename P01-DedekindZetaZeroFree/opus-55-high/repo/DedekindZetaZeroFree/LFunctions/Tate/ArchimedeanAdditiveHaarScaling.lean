@@ -92,14 +92,12 @@ private theorem localArchEquiv_abs_det (F : Type) [Field F] [NumberField F]
     apply (mixedEmbedding.euclidean.toMixed F).injective
     change (mixedEmbedding.euclidean.toMixed F) (localArchEquiv F d x) = _
     rw [localArchEquiv_apply]
-    simp only [PoissonArch.infiniteAdeleToSpace_coordinates, map_mul,
-      LinearMap.prodMap_apply, ContinuousLinearEquiv.coe_coe,
-      LinearMap.comp_apply, ContinuousLinearEquiv.apply_symm_apply]
+    simp only [PoissonArch.infiniteAdeleToSpace_coordinates, map_mul, LinearMap.prodMap_apply, LinearMap.comp_apply]
     have hx := PoissonArch.infiniteAdeleToSpace_coordinates F
       ((PoissonArch.infiniteAdeleToSpace F).symm x)
     rw [ContinuousLinearEquiv.apply_symm_apply] at hx
     rw [← hx]
-    ext v <;> simp [R, C, z, mul_comm]
+    rfl
   rw [he, ContinuousLinearEquiv.toLinearEquiv_symm]
   have hd := LinearMap.det_conj
     ((LinearMap.pi fun v => (R v).comp (LinearMap.proj v)).prodMap
@@ -125,7 +123,7 @@ theorem archimedean_map_mul (g : (InfiniteAdeleRing F)ˣ) :
   let A := localArchEquiv F g
   let μ := PoissonArch.traceMeasure F
   have hmm : Measurable (fun x : InfiniteAdeleRing F => g.val * x) :=
-    (continuous_const.mul continuous_id).measurable
+    by fun_prop
   have hes : Measurable (e.symm : PoissonArch.Space F → InfiniteAdeleRing F) :=
     e.symm.continuous.measurable
   have hAmeas : Measurable (A : PoissonArch.Space F → PoissonArch.Space F) :=
@@ -147,9 +145,7 @@ theorem archimedean_map_mul (g : (InfiniteAdeleRing F)ˣ) :
       rw [InfiniteAdeleRing.norm_def]
       refine Finset.prod_pos fun v _ => pow_pos ?_ _
       exact norm_pos_iff.mpr (Pi.isUnit_iff.mp g.isUnit v).ne_zero
-    have hcoe : Measure.map (A : PoissonArch.Space F → PoissonArch.Space F) μ =
-        Measure.map (A.toLinearMap) μ := rfl
-    rw [hcoe, h, abs_inv, hdetabs, ENNReal.ofReal_inv_of_pos hpos]
+    simp_all
   calc
     Measure.map (fun x : InfiniteAdeleRing F => g.val * x)
         (Measure.map e.symm μ)
@@ -160,6 +156,3 @@ theorem archimedean_map_mul (g : (InfiniteAdeleRing F)ˣ) :
     _ = Measure.map e.symm ((ENNReal.ofReal ‖g.val‖)⁻¹ • μ) := by rw [hmap]
     _ = (ENNReal.ofReal ‖g.val‖)⁻¹ • Measure.map e.symm μ := by
           rw [Measure.map_smul _ hes.aemeasurable]
-
-end
-end DedekindZetaZeroFree.TateSLocalMeasurability

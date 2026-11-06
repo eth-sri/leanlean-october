@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Metaplectic.Intertwining.DiagonalInverseRootS
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.KPTameTransposeUnitNumeratorSteps
 open scoped NumberField Classical
 open NumberField IsDedekindDomain MeasureTheory ValuativeRel
@@ -64,7 +63,3 @@ theorem normalizedExtension_coordinate_unit_chiH_norm
     ‖chiH F ζ hζ q S P hP ε h‖ = 1 := by
   obtain ⟨e, u, he⟩ := fullDiagonal_coordinate_unit_sheet F ζ hζ q S P h hu
   exact normalizedExtension_unit_sheet_chiH_norm F ζ hζ q S P hP hnormalized ε h e u he
-
-end DedekindZetaZeroFree.KPTameTransposeUnitNumeratorSteps
-
-end

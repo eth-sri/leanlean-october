@@ -35,7 +35,7 @@ private theorem haar_left : haar.IsMulLeftInvariant := by
   let ev : MeasurableEmbedding (Subtype.val : Axis → ℝ) :=
     (isOpen_Ioi : IsOpen (Set.Ioi (0 : ℝ))).isOpenEmbedding_subtypeVal.measurableEmbedding
   let D := fun x : ℝ => ENNReal.ofReal x⁻¹
-  have hD : Measurable D := by dsimp [D]; fun_prop
+  have hD : Measurable D := by fun_prop
   constructor
   intro g
   ext s hs
@@ -66,7 +66,7 @@ private theorem haar_left : haar.IsMulLeftInvariant := by
   have hm := setLIntegral_map (μ := volume) (g := fun x : ℝ => (g : ℝ) * x)
     (s := Subtype.val '' s) (ev.measurableSet_image.mpr hs) hD (by fun_prop)
   rw [hscale, Measure.restrict_smul, lintegral_smul_measure] at hm
-  simp only [ENNReal.smul_def, smul_eq_mul] at hm
+  simp only [smul_eq_mul] at hm
   simp_rw [hmul] at hm
   rw [lintegral_const_mul _ hD] at hm
   exact (ENNReal.mul_right_inj (by simp) (by simp [g.property])).mp hm.symm
@@ -79,7 +79,7 @@ theorem density_and_haar :
   let ev : MeasurableEmbedding (Subtype.val : Axis → ℝ) :=
     (isOpen_Ioi : IsOpen (Set.Ioi (0 : ℝ))).isOpenEmbedding_subtypeVal.measurableEmbedding
   let D := fun x : ℝ => ENNReal.ofReal x⁻¹
-  have hD : Measurable D := by dsimp [D]; fun_prop
+  have hD : Measurable D := by fun_prop
   letI := haar_left
   obtain ⟨K, hK, hKmem⟩ := exists_compact_mem_nhds (1 : Axis)
   have hint : (interior K).Nonempty := ⟨1, mem_interior_iff_mem_nhds.mpr hKmem⟩
@@ -112,6 +112,3 @@ theorem density_and_haar :
       exact le_of_lt (inv_pos.mpr u.property)
 
 instance haar_isHaarMeasure : haar.IsHaarMeasure := density_and_haar.2
-
-end
-end DedekindZetaZeroFree.NormSheetsPositiveAxis

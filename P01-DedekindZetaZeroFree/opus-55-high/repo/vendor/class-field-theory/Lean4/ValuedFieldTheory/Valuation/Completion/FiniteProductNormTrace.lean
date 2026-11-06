@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Norms and traces on finite dependent products
 
@@ -57,9 +52,6 @@ theorem algebra_lmul_prod_eq_prodMap
     [Algebra R S] [Algebra R T] (x : S × T) :
     Algebra.lmul R (S × T) x =
       (Algebra.lmul R S x.1).prodMap (Algebra.lmul R T x.2) := by
-  apply LinearMap.ext
-  intro y
-  rcases y with ⟨y, z⟩
   rfl
 
 /-- The algebra norm on a binary product is the product of the component
@@ -75,7 +67,7 @@ theorem algebra_norm_prod_apply
     LinearMap.det_prodMap, ← Algebra.norm_apply, ← Algebra.norm_apply]
 
 /-- Reindexing a dependent product is an algebra equivalence. -/
-noncomputable def piCongrLeftAlgEquiv
+def piCongrLeftAlgEquiv
     {R : Type*} [CommSemiring R]
     {ι ι' : Type*} (A : ι' → Type*) [∀ i, Semiring (A i)]
     [∀ i, Algebra R (A i)] (e : ι ≃ ι') :
@@ -87,11 +79,11 @@ noncomputable def piCongrLeftAlgEquiv
     change (Equiv.piCongrLeft A e
       (fun i => algebraMap R (A (e i)) r)) (e i) =
         algebraMap R (A (e i)) r
-    exact Equiv.piCongrLeft_apply_apply A e _ i
+    simp
 
 /-- Splitting the `none` coordinate from an `Option`-indexed dependent
 product is an algebra equivalence. -/
-noncomputable def piOptionEquivProdAlgEquiv
+def piOptionEquivProdAlgEquiv
     {R : Type*} [CommSemiring R]
     {ι : Type*} (A : Option ι → Type*) [∀ i, Semiring (A i)]
     [∀ i, Algebra R (A i)] :
@@ -123,14 +115,13 @@ theorem algebra_norm_pi_apply
     have hEx : E x' = x := by
       apply E.symm.injective
       rw [E.symm_apply_apply]
-      funext i
       rfl
     calc
       Algebra.norm R x = Algebra.norm R (E x') := congrArg _ hEx.symm
       _ = Algebra.norm R x' := Algebra.norm_eq_of_algEquiv E x'
       _ = ∏ i : α, Algebra.norm R (x' i) := h _ _
-      _ = ∏ j : β, Algebra.norm R (x j) := by
-        exact Fintype.prod_equiv e _ _ (fun i => rfl)
+      _ = ∏ j : β, Algebra.norm R (x j) := 
+        Fintype.prod_equiv e _ _ (fun i => rfl)
   · intro A _ _ _ _ x
     simp only [Fintype.prod_empty]
     rw [Algebra.norm_apply]
@@ -175,7 +166,6 @@ theorem algebra_trace_pi_apply
     have hEx : E x' = x := by
       apply E.symm.injective
       rw [E.symm_apply_apply]
-      funext i
       rfl
     calc
       Algebra.trace R (∀ j : β, A j) x =
@@ -183,14 +173,14 @@ theorem algebra_trace_pi_apply
         rw [← Algebra.trace_eq_of_algEquiv E x']
         rw [hEx]
       _ = ∑ i : α, Algebra.trace R (A (e i)) (x' i) := h _ _
-      _ = ∑ j : β, Algebra.trace R (A j) (x j) := by
-        exact Fintype.sum_equiv e _ _ (fun i => rfl)
+      _ = ∑ j : β, Algebra.trace R (A j) (x j) := 
+        Fintype.sum_equiv e _ _ (fun i => rfl)
   · intro A _ _ _ _ x
     simp only [Fintype.sum_empty]
     rw [Algebra.trace_apply]
     let b : Basis (Fin 0) R ((i : PEmpty) → A i) := Basis.empty _
     rw [LinearMap.trace_eq_matrix_trace R b]
-    simp [Matrix.trace]
+    rfl
   · intro α _ h A _ _ _ _ x
     let E := piOptionEquivProdAlgEquiv (R := R) A
     let y : A none × ((i : α) → A (some i)) := E x
@@ -207,8 +197,3 @@ theorem algebra_trace_pi_apply
         rfl
       _ = ∑ i : Option α, Algebra.trace R (A i) (x i) := by
         rw [Fintype.sum_option]
-
-end Completion
-end ValuationTheory
-
-end

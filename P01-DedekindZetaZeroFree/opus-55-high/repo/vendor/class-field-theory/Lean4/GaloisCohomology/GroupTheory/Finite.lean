@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Finite group theory for the splitting corollaries
 
@@ -75,8 +71,8 @@ theorem exists_index_prime_supergroup_of_card_prime_power
       apply hD
       apply
         (Subgroup.card_eq_iff_eq_top D).mp
-      rw [hDcard, hmv, hGcard]
-    exact lt_of_le_of_ne hmle hmne
+      simp_all
+    omega
   have hmPred : m ≤ v - 1 :=
     Nat.le_sub_one_of_lt hmv
   have hpowDvd :
@@ -190,17 +186,6 @@ theorem exists_element_of_prime_order :
       (G := G) p hpDvd
   exact ⟨p, g, hp, hg⟩
 
-/-- Every nontrivial finite group contains an actual cyclic subgroup
-of prime cardinality. -/
-theorem exists_cyclic_subgroup_of_prime_card :
-    ∃ (p : ℕ) (P : Subgroup G),
-      p.Prime ∧ Nat.card P = p ∧ IsCyclic P := by
-  obtain ⟨p, g, hp, hg⟩ :=
-    exists_element_of_prime_order G
-  refine
-    ⟨p, Subgroup.zpowers g, hp, ?_, inferInstance⟩
-  rw [Nat.card_zpowers, hg]
-
 end PrimeOrder
 
 section DoubleCosets
@@ -271,15 +256,7 @@ theorem rightSubgroup_le_normalCore_of_doubleCoset_projection_injective
     Subgroup.mem_bot.mp hk
   subst k
   simp only [mul_one] at heq
-  have hconj : g * d * g⁻¹ = h := by
-    calc
-      g * d * g⁻¹ =
-          (g * d) * g⁻¹ := rfl
-      _ = (h * g) * g⁻¹ := by
-        rw [heq]
-      _ = h := by simp
-  rw [hconj]
-  exact hh
+  simp_all
 
 /-- Equality between the number of left cosets and the number of
 double cosets forces the right subgroup into the normal core. -/
@@ -337,7 +314,3 @@ theorem doubleCoset_card_eq_leftCoset_iff_of_normalCore_eq_bot
         H D hcard
   · rintro rfl
     rfl
-
-end DoubleCosets
-
-end

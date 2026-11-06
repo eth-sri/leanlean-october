@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Analysis.SmoothFunctions.CompactOpenHolomorph
 
 @[expose] public section
 
-noncomputable section
 
 namespace DedekindZetaZeroFree.KPCompactInteriorH1
 
@@ -52,20 +51,7 @@ theorem exists_smooth_cutoff {n : ℕ} (hn : 0 < n)
     simp only [η, hz, sub_zero]
   have hbumpcont : ∀ x : K, ContDiff ℝ (⊤ : ℕ∞) (fun y => bump x y) := fun x => (bump x).contDiff
   have hcontdiff : ContDiff ℝ (⊤ : ℕ∞) η := by
-    have hprod : ContDiff ℝ (⊤ : ℕ∞) (fun y => ∏ x ∈ t, (1 - bump x y)) := by
-      have hfun : (fun y => ∏ x ∈ t, (1 - bump x y)) =
-          (∏ x ∈ t, fun y => 1 - bump x y) := by
-        funext y
-        rw [Finset.prod_apply]
-      rw [hfun]
-      refine Finset.induction_on t ?_ ?_
-      · have : (∏ x ∈ (∅ : Finset K), (fun y => 1 - bump x y)) = (1 : Space n → ℝ) := by simp
-        rw [this]
-        exact contDiff_const
-      · intro a s has ih
-        rw [Finset.prod_insert has]
-        exact (contDiff_const.sub (hbumpcont a)).mul ih
-    simpa only [η] using contDiff_const.sub hprod
+    fun_prop
 
   have hsupp : Function.support η ⊆ ⋃ x ∈ t, tsupport (bump x) := by
     intro y hy
@@ -139,7 +125,3 @@ theorem exists_smooth_cutoff {n : ℕ} (hn : 0 < n)
             rw [EuclideanSpace.norm_single, norm_one, mul_one]
         _ ≤ max C2 0 := hC2' x
         _ ≤ max 1 (max C2 0) := le_max_right _ _
-
-end DedekindZetaZeroFree.KPCompactInteriorH1
-
-end

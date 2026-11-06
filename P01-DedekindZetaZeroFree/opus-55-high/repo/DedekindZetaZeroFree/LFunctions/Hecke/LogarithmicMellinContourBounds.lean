@@ -39,7 +39,7 @@ theorem completedGrowth
   let B : ℝ := 1 + |a| + |b|
   let E : ℝ := Real.exp ((|Real.log X| + |Real.log D|) * B)
   have hB : 1 ≤ B := by dsimp [B]; linarith [abs_nonneg a, abs_nonneg b]
-  have hB0 : 0 ≤ B := le_trans (by norm_num) hB
+  have hB0 : 0 ≤ B := by positivity
   have hE : 0 ≤ E := Real.exp_nonneg _
   refine ⟨CH * E * (max CU 0 * CG), B ^ (3 / 2 : ℝ) + AG,
     by positivity, by positivity, ?_⟩
@@ -49,11 +49,11 @@ theorem completedGrowth
   have him : s.im = t := by simp [s]
   have hs0 : s ≠ 0 := by
     intro h
-    have : t = 0 := by simpa [him] using congrArg Complex.im h
+    have : t = 0 := by simp_all
     norm_num [this] at ht
   have hs1 : s ≠ 1 := by
     intro h
-    have : t = 0 := by simpa [him] using congrArg Complex.im h
+    have : t = 0 := by simp_all
     norm_num [this] at ht
   have hσabs : |σ| ≤ B := by
     apply abs_le.mpr
@@ -163,7 +163,7 @@ namespace DedekindZetaZeroFree.LargeSieve.WeightedSeries.PoissonLogHeckeStrip
 
 open Filter
 
-private lemma patchPoint (R B : ℂ → ℂ) (p : ℂ) (S : Set ℂ)
+lemma patchPoint (R B : ℂ → ℂ) (p : ℂ) (S : Set ℂ)
     (hB : Vendor.HolomorphicNear B p) (heq : R =ᶠ[𝓝[≠] p] B)
     (hR : ∀ s ∈ S, s ≠ p → DifferentiableAt ℂ R s) :
     ∃ G : ℂ → ℂ, (∀ s ∈ S, DifferentiableAt ℂ G s) ∧ ∀ s, s ≠ p → G s = R s := by
@@ -185,18 +185,18 @@ private lemma patchPoint (R B : ℂ → ℂ) (p : ℂ) (S : Set ℂ)
     exact ((hB.self_of_nhds).congr_of_eventuallyEq hGp)
   · exact ((hR s hs hsp).congr_of_eventuallyEq (hGs s hsp))
 
-private lemma powerDiff (X : ℝ) (hX : 0 < X) (s : ℂ) :
+lemma powerDiff (X : ℝ) (hX : 0 < X) (s : ℂ) :
     DifferentiableAt ℂ (fun z : ℂ => (X : ℂ) ^ z) s :=
   (AnalyticAt.cpow analyticAt_const analyticAt_id
     (Complex.ofReal_mem_slitPlane.mpr hX)).differentiableAt
 
-private lemma productDiff {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ} {H : ℂ → ℂ}
+lemma productDiff {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ} {H : ℂ → ℂ}
     (hf : Vendor.LogMellinAdmissible f δ P H) (L : ℂ → ℂ) (X : ℝ) (hX : 0 < X)
     (s : ℂ) (hs : -δ < s.re) (hs0 : s ≠ 0) (hL : DifferentiableAt ℂ L s) :
-    DifferentiableAt ℂ (Vendor.logMellinProduct H L X) s := by
-  exact ((hf.differentiableAt s hs hs0).mul (powerDiff X hX s)).mul hL
+    DifferentiableAt ℂ (Vendor.logMellinProduct H L X) s := 
+  ((hf.differentiableAt s hs hs0).mul (powerDiff X hX s)).mul hL
 
-private lemma partDiff (c : ℕ → ℂ) (N : ℕ) (p s : ℂ) (hs : s ≠ p) :
+lemma partDiff (c : ℕ → ℂ) (N : ℕ) (p s : ℂ) (hs : s ≠ p) :
     DifferentiableAt ℂ (fun z : ℂ => ∑ j ∈ Finset.Icc 1 N, c j / (z - p) ^ j) s := by
   refine DifferentiableAt.fun_sum fun j _ => ?_
   exact (differentiableAt_const _).div (by fun_prop) (pow_ne_zero _ (sub_ne_zero.mpr hs))
@@ -243,7 +243,7 @@ theorem principalContour
   obtain ⟨B1, hB1, heq1⟩ := hp1
   have hnear0 : Vendor.HolomorphicNear (fun s => B0 s - Q1 s) 0 := by
     filter_upwards [hB0, isOpen_ne.mem_nhds (show (0 : ℂ) ≠ 1 by norm_num)] with s hb hs
-    exact hb.sub (hQ1 s hs)
+    fun_prop
   have heqR0 : R =ᶠ[𝓝[≠] 0] (fun s => B0 s - Q1 s) := by
     filter_upwards [heq0] with s hs
     simp only [sub_zero] at hs
@@ -256,7 +256,7 @@ theorem principalContour
       exact ((hdiff s hs.1 hs0 hs.2).sub (hQ0 s hs0)).sub (hQ1 s hs.2))
   have hnear1 : Vendor.HolomorphicNear (fun s => B1 s - Q0 s) 1 := by
     filter_upwards [hB1, isOpen_ne.mem_nhds (show (1 : ℂ) ≠ 0 by norm_num)] with s hb hs
-    exact hb.sub (hQ0 s hs)
+    fun_prop
   have havoid0 : ∀ᶠ s : ℂ in 𝓝 (1 : ℂ), s ≠ 0 :=
     isOpen_ne.mem_nhds (show (1 : ℂ) ≠ 0 by norm_num)
   have heqR1 : G0 =ᶠ[𝓝[≠] 1] (fun s => B1 s - Q0 s) := by
@@ -269,8 +269,7 @@ theorem principalContour
     ring
   obtain ⟨G, hG, heqG⟩ := patchPoint G0 (fun s => B1 s - Q0 s) 1
     {s : ℂ | -δ < s.re} hnear1 heqR1 (by
-      intro s hs hs1
-      exact hG0 s ⟨hs, hs1⟩)
+      simp_all)
   refine ⟨G, fun s hs => (hG s hs).differentiableWithinAt, ?_⟩
   intro s hs hs0 hs1
   rw [heqG s hs1, heqG0 s hs0]
@@ -311,9 +310,7 @@ theorem positiveLine
   have ha0 : ∀ I, 0 ≤ a I := by
     intro I
     dsimp [a]
-    split_ifs
-    · exact le_rfl
-    · exact Real.rpow_nonneg (Nat.cast_nonneg _) _
+    positivity
   have hterm : ∀ (t : ℝ) (I : Ideal (𝓞 F)),
       ‖(if I = ⊥ then 0 else
         c I * (Ideal.absNorm I : ℂ) ^ (-((b : ℂ) + (t : ℂ) * Complex.I)))‖ ≤ a I := by
@@ -322,7 +319,7 @@ theorem positiveLine
     · simp [hI, a]
     · have hn : 0 < (Ideal.absNorm I : ℝ) := by
         have hn0 : Ideal.absNorm I ≠ 0 := fun hz => hI (Ideal.absNorm_eq_zero_iff.mp hz)
-        exact_mod_cast Nat.pos_of_ne_zero hn0
+        positivity
       simp only [if_neg hI, a, norm_mul]
       rw [← Complex.ofReal_natCast, Complex.norm_cpow_eq_rpow_re_of_pos hn]
       simp only [Complex.neg_re, Complex.add_re, Complex.ofReal_re, Complex.mul_re,
@@ -396,7 +393,7 @@ theorem negativeLine
     intro h
     have : a = 0 := by simpa [hzre] using congrArg Complex.re h
     linarith
-  have hzcont : Continuous z := by unfold z; fun_prop
+  have hzcont : Continuous z := by fun_prop
   have hcont : Continuous (fun t : ℝ => Vendor.logMellinProduct H L X (z t)) := by
     refine continuous_iff_continuousAt.mpr fun t => ?_
     have hH := hf.differentiableAt (z t) (by rw [hzre]; exact haδ) (hz0 t)
@@ -434,7 +431,7 @@ theorem negativeLine
             (hbar t) (norm_nonneg _) (by positivity)
       _ = (D ^ (1 / 2 - a) * C * B) * (1 + |t|) ^ k := by ring
   let A : ℝ := X ^ a * (D ^ (1 / 2 - a) * C * B)
-  have hA : 0 ≤ A := by dsimp [A]; positivity
+  have hA : 0 ≤ A := by positivity
   have hprod (t : ℝ) : ‖Vendor.logMellinProduct H L X (z t)‖ ≤
       A * ((1 + |t|) ^ k * ‖H (z t)‖) := by
     simp only [Vendor.logMellinProduct, norm_mul, hXpow]
@@ -458,7 +455,7 @@ theorem negativeLine
   obtain ⟨C1, hC1⟩ :=
     isCompact_Icc.exists_bound_of_continuousOn (hcont.continuousOn (s := Set.Icc (-1) 1))
   let K : ℝ := 4 * (A * CH + max C1 0)
-  have hK : 0 ≤ K := by dsimp [K]; positivity
+  have hK : 0 ≤ K := by positivity
   have hbound (t : ℝ) : ‖Vendor.logMellinProduct H L X (z t)‖ ≤ K * (1 + t ^ 2)⁻¹ := by
     have hstep : ((1 + |t|) ^ 2)⁻¹ ≤ (1 + t ^ 2)⁻¹ := by
       have hle : 1 + t ^ 2 ≤ (1 + |t|) ^ 2 := by nlinarith [abs_nonneg t, sq_abs t]
@@ -600,9 +597,3 @@ theorem principalLogMellinProduct_contour_data
     (principalZetaContinuation F hF)
     (principalZetaContinuation_analyticOnNhd F hF)
     (principalZetaResidueCoefficient F hF) hp hf X hX
-
-end DedekindZetaZeroFree.LargeSieve
-
-end
-
-end

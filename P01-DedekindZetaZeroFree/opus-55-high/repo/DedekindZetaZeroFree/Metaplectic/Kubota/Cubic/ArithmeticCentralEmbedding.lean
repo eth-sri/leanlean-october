@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.Metaplectic.Kubota.PGLCentralTransitions
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.KPRankOneShellRepair
 
 open scoped NumberField
@@ -50,7 +49,7 @@ theorem canonicalKernel_finite (P : Polarization S.heisenberg) :
   let f : rootsOfUnity 3 F → S.borel.projection.ker := fun e =>
     ⟨KPPGLLocalCover.centralInjection F ζ hζ (Sum.inr q) e, by
       rw [canonicalKernel_eq F ζ hζ q S P]
-      exact ⟨e, rfl⟩⟩
+      simp⟩
   apply Finite.of_surjective f
   intro g
   have hg : g.val ∈ (KPPGLLocalCover.centralInjection F ζ hζ (Sum.inr q)).range := by
@@ -58,7 +57,3 @@ theorem canonicalKernel_finite (P : Polarization S.heisenberg) :
     exact g.property
   obtain ⟨e, he⟩ := hg
   exact ⟨e, Subtype.ext he⟩
-
-end DedekindZetaZeroFree.KPRankOneShellRepair
-
-end

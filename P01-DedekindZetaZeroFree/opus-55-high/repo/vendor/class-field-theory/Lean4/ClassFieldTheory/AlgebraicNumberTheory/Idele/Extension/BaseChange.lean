@@ -16,14 +16,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
-
 set_option autoImplicit false
 
 /-!
@@ -38,7 +30,6 @@ open scoped NumberField TensorProduct
 open NumberField
 
 noncomputable section
-
 
 variable
     (K L : Type*) [Field K] [NumberField K]
@@ -82,17 +73,6 @@ def inclusion :
     IdeleGroup K →* RelativeIdeleGroup K L :=
   (Units.map (adeleInclusion K L)).comp
     (IdeleGroup.equivAdeleRingUnits (K := K)).toMonoidHom
-
-omit [NumberField L] in
-theorem inclusion_injective :
-    Function.Injective (inclusion K L) := by
-  exact
-    (Units.map_injective
-      (Algebra.TensorProduct.includeLeft_injective
-        (R := K) (S := K)
-        (A := NumberField.AdeleRing (𝓞 K) K) (B := L)
-        (FaithfulSMul.algebraMap_injective K L))).comp
-      (IdeleGroup.equivAdeleRingUnits (K := K)).injective
 
 /-- The diagonal copy of `Lˣ` inside the relative idele group. -/
 def principalIdele :

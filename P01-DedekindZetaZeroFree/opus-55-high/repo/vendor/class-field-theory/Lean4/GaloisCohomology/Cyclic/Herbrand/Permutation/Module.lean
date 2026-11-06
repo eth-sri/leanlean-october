@@ -16,14 +16,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Herbrand quotients of permutation lattices
 
@@ -87,7 +79,6 @@ def trivialIntFixedToZModHom :
             ZMod (Fintype.card G))
       map_one' := by simp
       map_mul' := by
-        intro x y
         simp }
 
 theorem trivialIntFixedToZModHom_surjective :
@@ -123,8 +114,8 @@ theorem trivialIntFixedToZModHom_ker :
     have hx0 :
         ((Multiplicative.toAdd
           (x : Multiplicative ℤ) : ℤ) :
-            ZMod (Fintype.card G)) = 0 := by
-      exact congrArg Multiplicative.toAdd hx
+            ZMod (Fintype.card G)) = 0 := 
+      congrArg Multiplicative.toAdd hx
     rcases
         (ZMod.intCast_zmod_eq_zero_iff_dvd _ _).1 hx0
       with ⟨z, hz⟩
@@ -150,12 +141,11 @@ theorem trivialIntFixedToZModHom_ker :
           (x : Multiplicative ℤ) : ℤ) :
             ZMod (Fintype.card G)) = 0
       rw [← hz, tateNormHom_apply, trivialInt_tateNorm_toAdd]
-      apply (ZMod.intCast_zmod_eq_zero_iff_dvd _ _).2
-      exact ⟨Multiplicative.toAdd z, rfl⟩)
+      simp)
 
 /-- The degree-zero Herbrand group of the trivial integer module is
 `ℤ / |G|ℤ`. -/
-noncomputable def trivialIntHerbrandH0EquivZMod :
+def trivialIntHerbrandH0EquivZMod :
     letI := trivialIntMulDistribMulAction G
     HerbrandH0 G (Multiplicative ℤ) ≃*
       Multiplicative (ZMod (Fintype.card G)) := by
@@ -212,9 +202,8 @@ theorem trivialInt_normKernelSubgroup_eq_bot :
                 (x : Multiplicative ℤ) = 0 := by
         rw [← trivialInt_tateNorm_toAdd]
         exact congrArg Multiplicative.toAdd hx
-      exact (mul_eq_zero.mp hnorm).resolve_left (by
-        exact_mod_cast Fintype.card_ne_zero))
-  · exact bot_le
+      simp_all)
+  simp
 
 theorem trivialIntHerbrandHMinusOneFinite
     (σ : G) :
@@ -279,8 +268,7 @@ theorem trivialInt_herbrandHMinusOne_card_eq_one
               congrArg
                 (fun z ↦ HerbrandHMinusOne.mk σ z)
                 (Subsingleton.elim x y)⟩
-  rw [Nat.card_eq_one_iff_unique]
-  exact ⟨inferInstance, inferInstance⟩
+  simp
 
 /-- For the one-point orbit, the Herbrand quotient of the trivial
 integer lattice is the order of the acting group. -/
@@ -650,7 +638,7 @@ def permutationFunctionMulDistribMulAction :
   one_smul f := by
     funext i
     change f ((1 : G)⁻¹ • i) = f i
-    rw [inv_one, one_smul]
+    simp
   mul_smul g h f := by
     funext i
     change f ((g * h)⁻¹ • i) =
@@ -660,7 +648,7 @@ def permutationFunctionMulDistribMulAction :
   smul_mul _ _ _ := rfl
 
 /-- A chosen representative of the orbit containing `i`. -/
-noncomputable def chosenPermutationOrbitRepresentative
+def chosenPermutationOrbitRepresentative
     (i : ι) : ι :=
   Quotient.out
     (Quotient.mk'' i :
@@ -679,7 +667,7 @@ theorem chosenPermutationOrbitRepresentative_sameOrbit
 
 /-- A chosen group element carrying the chosen representative of
 the orbit of `i` to `i`. -/
-noncomputable def chosenPermutationOrbitTransport
+def chosenPermutationOrbitTransport
     (i : ι) : G :=
   Classical.choose
     (chosenPermutationOrbitRepresentative_sameOrbit
@@ -702,7 +690,7 @@ abbrev permutationOrbitStabilizer
 
 /-- Integer-valued functions on a finite `G`-set, decomposed into the
 induced modules belonging to its orbits. -/
-noncomputable def permutationFunctionOrbitEquiv :
+def permutationFunctionOrbitEquiv :
     letI _stabilizerAction :
         ∀ ω : MulAction.orbitRel.Quotient G ι,
           MulDistribMulAction
@@ -760,14 +748,7 @@ noncomputable def permutationFunctionOrbitEquiv :
     have hω :
         (Quotient.mk'' (x⁻¹ • ω.out) :
             MulAction.orbitRel.Quotient G ι) = ω := by
-      calc
-        (Quotient.mk'' (x⁻¹ • ω.out) :
-            MulAction.orbitRel.Quotient G ι) =
-            Quotient.mk'' ω.out := by
-              exact Quotient.sound
-                (MulAction.orbitRel_apply.mpr
-                  ⟨x⁻¹, rfl⟩)
-        _ = ω := Quotient.out_eq' ω
+      simp
     let t : G :=
       chosenPermutationOrbitTransport
         (G := G) (x⁻¹ • ω.out)
@@ -794,8 +775,6 @@ noncomputable def permutationFunctionOrbitEquiv :
     simpa [h, mul_assoc] using hcov
   · intro f k
     funext ω
-    apply Subtype.ext
-    funext x
     rfl
 
 omit [Fintype G] [Fintype ι] in
@@ -1239,7 +1218,7 @@ def stableQuotientMulDistribMulAction
     change
       QuotientGroup.mk' B ((1 : G) • x) =
         QuotientGroup.mk' B x
-    rw [one_smul]
+    simp
   mul_smul g h q := by
     refine QuotientGroup.induction_on q ?_
     intro x
@@ -1282,11 +1261,7 @@ theorem stableSubgroup_subtype_equivariant
         B hstable
     ∀ (g : G) (x : B),
       B.subtype (g • x) = g • B.subtype x := by
-  let :=
-    stableSubgroupMulDistribMulAction
-      B hstable
-  intro g x
-  rfl
+  simp
 
 /-- The quotient map by a stable subgroup is equivariant. -/
 theorem stableSubgroup_quotientMap_equivariant
@@ -1312,16 +1287,7 @@ theorem stableSubgroup_quotientMap_exact
       QuotientGroup.mk' B x = 1 ↔
         ∃ b : B, B.subtype b = x := by
   intro x
-  constructor
-  · intro hx
-    have hxB :
-        x ∈ B :=
-      (QuotientGroup.eq_one_iff x).mp hx
-    exact ⟨⟨x, hxB⟩, rfl⟩
-  · rintro ⟨b, rfl⟩
-    exact
-      (QuotientGroup.eq_one_iff b.1).mpr
-        b.2
+  simp
 
 end FiniteIndexStableSubgroup
 
@@ -1455,25 +1421,4 @@ theorem herbrandQuotient_eq_of_finiteIndex_stableSubgroup
           (G := G) (A := A ⧸ B) σ = 1 :=
     herbrandQuotient_eq_one_of_finite_module
       (G := G) (A := A ⧸ B) σ hgen
-  change
-    @herbrandQuotient G A _ _ _ _
-        σ hA.1 hA.2 =
-      @herbrandQuotient G B _ _ _ _
-        σ hB.1 hB.2
-  calc
-    @herbrandQuotient G A _ _ _ _
-          σ hA.1 hA.2 =
-        @herbrandQuotient G B _ _ _ _
-            σ hB.1 hB.2 *
-          @herbrandQuotient G (A ⧸ B)
-            _ _ _ _ σ hQ.1 hQ.2 :=
-      hmult
-    _ = @herbrandQuotient G B _ _ _ _
-          σ hB.1 hB.2 := by
-      rw [hquotient, mul_one]
-
-end FiniteIndexStableSubgroupFiniteness
-
-end CyclicCohomology
-
-end
+  simp_all

@@ -31,7 +31,7 @@ theorem oneEquiv_map (m : Ideal R) :
   constructor
   · rintro ⟨r, hr, rfl⟩
     change algebraMap R K r ∈ (((m : FractionalIdeal R⁰ K) * 1) : FractionalIdeal R⁰ K)
-    simpa using (FractionalIdeal.mem_coeIdeal_of_mem R⁰ hr : algebraMap R K r ∈ (m : FractionalIdeal R⁰ K))
+    simp_all
   · intro hx
     change (x : K) ∈ (((m : FractionalIdeal R⁰ K) * 1) : FractionalIdeal R⁰ K) at hx
     rw [mul_one] at hx
@@ -55,11 +55,9 @@ def rankEquivR (m : Ideal R) (I : FractionalIdeal R⁰ K)
 theorem residue_smul (m : Ideal R) (I : FractionalIdeal R⁰ K)
     (r : R) (x : fractionalResidueModule m I) :
     Ideal.Quotient.mk m r • x = r • x := by
-  induction x using Submodule.Quotient.induction_on
-  rename_i x
-  rw [fractionalResidueModule_mk_smul_mk, Submodule.Quotient.mk_smul]
+  rfl
 
-noncomputable def fractionalResidueEquiv (m : Ideal R) (I : FractionalIdeal R⁰ K)
+def fractionalResidueEquiv (m : Ideal R) (I : FractionalIdeal R⁰ K)
     (hm : m ≠ ⊥) (hI : I ≠ 0) :
     (R ⧸ m) ≃ₗ[R ⧸ m] fractionalResidueModule m I := by
   let e := rankEquivR m I hm hI
@@ -73,7 +71,3 @@ noncomputable def fractionalResidueEquiv (m : Ideal R) (I : FractionalIdeal R⁰
   rw [residue_smul]
   rw [← e.map_smul]
   congr 1
-
-end
-
-end DedekindZetaZeroFree.Hecke

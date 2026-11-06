@@ -102,7 +102,7 @@ def sectionShape (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
   ⟨fun i => (if KPCusp.complexPlace F i = w then Real.log r.val / 2 else 0) -
     Real.log r.val / (2 * (KPCuspLogShape.dimension F : ℝ)), by
     convert single_slot_mean_zero F hF w (Real.log r.val / 2) using 1 <;>
-      simp only [div_div, mul_comm]⟩
+      simp only [div_div]⟩
 
 def radialMeasure : Measure ℝ :=
   volume.withDensity (fun r => ENNReal.ofReal (r ^ 2)⁻¹)
@@ -276,8 +276,3 @@ structure AllLevels (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
   compatible : ∀ V U h, Nonempty
     (LevelCompatibility F ζ hζ R P h (atlas V) (atlas U)
       (disintegration V) (disintegration U))
-
-end DedekindZetaZeroFree.KPMsFixedHaar
-
-end
-end

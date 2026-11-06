@@ -124,7 +124,3 @@ variable (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
     rw [KPLocalCover.mul_epsilon, KPLocalChartTopology.complex_sigmaTwo_eq_one, mul_one]
   simp_rw [hm, map_mul, Units.val_mul]
   exact Finset.prod_mul_distrib
-
-end DedekindZetaZeroFree.EisensteinReferenceSections.SourceTorusEvaluation
-
-end

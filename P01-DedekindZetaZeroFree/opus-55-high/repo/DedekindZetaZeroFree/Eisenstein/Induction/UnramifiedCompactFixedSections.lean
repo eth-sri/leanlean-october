@@ -10,7 +10,6 @@ open NumberField IsDedekindDomain MeasureTheory ValuativeRel
 namespace DedekindZetaZeroFree.KPExceptionalRaw.FiniteSource.GoodSphericalVector
 open KPLocalPrincipalSeries KPLocalStoneVonNeumann
 noncomputable section
-set_option autoImplicit false
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 variable (q : HeightOneSpectrum (𝓞 F))
@@ -32,7 +31,7 @@ def actual_split_compact_level
   have hq : Continuous p := QuotientGroup.continuous_mk
   have hqo : IsOpenMap p := QuotientGroup.isOpenMap_coe
   have he : Set.range (p.comp k) = p '' Set.range k := by
-    simp [MonoidHom.comp_apply, Set.range_comp]
+    simp [Set.range_comp]
   refine { toOpenSubgroup := {
     toSubgroup := (p.comp k).range
     isOpen' := ?_ }, isCompact := ?_ }
@@ -73,11 +72,6 @@ theorem actual_split_compact_factor (ht : ringChar (KPTameCompact.O F q ⧸ KPTa
         (KPPGLLocalCover.projection F ζ hζ (Sum.inr q) (g * K⁻¹))
     rw [(KPPGLLocalCover.projection F ζ hζ (Sum.inr q)).map_mul,
       (KPPGLLocalCover.projection F ζ hζ (Sum.inr q)).map_inv, ← hG]
-    change _ = KPLocalSmoothRepresentation.ordinaryPGLMap F q
-      (KPPGLLocalCover.baseQuotient F (Sum.inr q) G *
-        (KPPGLLocalCover.baseQuotient F (Sum.inr q)
-          (KPTameCompact.inclusion F q r⁻¹))⁻¹)
-    rw [map_mul, map_inv, map_inv, inv_inv]
     rfl
   refine ⟨⟨g * K⁻¹, hb⟩, ⟨K, hkmem⟩, ?_⟩
   simp
@@ -107,9 +101,7 @@ theorem actual_split_compact_retract
   obtain ⟨u, he⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp (hp.trans hA.symm)
   have hz : (KPTameCompact.inclusion F q k) 1 0 = 0 := by
     have he10 := congrArg (fun C : KPRankOneInduction.GL2 F q => C 1 0) he
-    simp only [Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two,
-      Matrix.GeneralLinearGroup.coe_scalar, Matrix.scalar_apply, Matrix.diagonal_apply,
-      Fin.reduceEq, if_true, if_false, mul_zero, zero_add, add_zero, hA10] at he10
+    simp only [Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two, Matrix.GeneralLinearGroup.coe_scalar, Matrix.scalar_apply, Matrix.diagonal_apply, Fin.reduceEq, if_true, if_false, mul_zero, add_zero, hA10] at he10
     exact (mul_eq_zero.mp he10).resolve_right u.ne_zero
   have hki : k 1 0 = 0 := by
     apply Subtype.ext
@@ -118,13 +110,11 @@ theorem actual_split_compact_retract
   have hdet : IsUnit (k 0 0 * k 1 1) := by
     simpa [Matrix.det_fin_two, hki] using k.det.isUnit
   let a : (KPTameCompact.O F q)ˣ := (isUnit_of_mul_isUnit_left hdet).unit
-  have ha : (a : KPTameCompact.O F q) = k 0 0 := (isUnit_of_mul_isUnit_left hdet).unit_spec
+  have ha : (a : KPTameCompact.O F q) = k 0 0 := by rfl
   let t : KPTameCompact.O F q := - (a⁻¹ : (KPTameCompact.O F q)ˣ) * k 0 1
   let d := k * KPStandardLocalRootLifts.integralN F q t
   have hd10 : (KPTameCompact.inclusion F q d) 1 0 = 0 := by
-    simp [d, map_mul, Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply,
-      Fin.sum_univ_two, KPStandardLocalRootLifts.integralN, KPTameCompact.inclusion,
-      KPLocalCube.integerInclusion, Matrix.GeneralLinearGroup.map_apply, hki]
+    simp [d, map_mul, Matrix.mul_apply, Fin.sum_univ_two, KPStandardLocalRootLifts.integralN, KPTameCompact.inclusion, KPLocalCube.integerInclusion, hki]
   have hd01 : (KPTameCompact.inclusion F q d) 0 1 = 0 := by
     have hai : k 0 0 * ((a⁻¹ : (KPTameCompact.O F q)ˣ) : KPTameCompact.O F q) = 1 := by
       rw [← ha]; exact Units.mul_inv a
@@ -138,8 +128,8 @@ theorem actual_split_compact_retract
         KPStandardLocalRootLifts.integralN] using hdt]
     rfl
   let D := rawSplit F ζ hζ q ht d
-  have hD : D ∈ actualTorus F ζ hζ q := by
-    exact ⟨KPTameCompact.inclusion F q d, rfl, hd10, hd01⟩
+  have hD : D ∈ actualTorus F ζ hζ q := 
+    ⟨KPTameCompact.inclusion F q d, rfl, hd10, hd01⟩
   let j : actualTorus F ζ hζ q := ⟨D, hD⟩
   have hn : (S.borel.upperRoot (Multiplicative.ofAdd (t : LocalField F q)) :
       ActualCover F ζ hζ q) = rawSplit F ζ hζ q ht
@@ -164,12 +154,12 @@ theorem actual_split_compact_retract
   rw [hr]
   exact ⟨d, rfl⟩
 
-private lemma raw_split_projection (g : ActualCover F ζ hζ q) :
+lemma raw_split_projection (g : ActualCover F ζ hζ q) :
     S.borel.projection g = KPLocalSmoothRepresentation.projection F ζ hζ q g := by
   obtain ⟨r, rfl⟩ := QuotientGroup.mk_surjective g
   exact (S.openCell S.polarization).projection_eq r
 
-private lemma raw_split_ratio (b : S.borel.B) :
+lemma raw_split_ratio (b : S.borel.B) :
     S.borel.coordinate (S.borel.retract b) =
       KPRankOneInduction.borelRatio F q
         ⟨KPLocalSmoothRepresentation.projection F ζ hζ q b.val,
@@ -185,15 +175,13 @@ private lemma raw_split_ratio (b : S.borel.B) :
     simpa only [G, y, Subgroup.coe_mul, map_mul, S.borel.torus_projection,
       S.borel.upperRoot_projection] using hp.symm
   have h10 : G 1 0 = 0 := by
-    simp [G, KubotaRankTwo.d, KubotaRankTwo.n, Matrix.GeneralLinearGroup.coe_mul,
-      Matrix.mul_apply, Fin.sum_univ_two]
+    simp [G, KubotaRankTwo.d, KubotaRankTwo.n, Matrix.mul_apply, Fin.sum_univ_two]
   apply Units.ext
   symm
   rw [KPRankOneInduction.borelRatio_eq F q _ G hG h10]
-  simp [G, KubotaRankTwo.d, KubotaRankTwo.n, Matrix.GeneralLinearGroup.coe_mul,
-    Matrix.mul_apply, Fin.sum_univ_two, y]
+  simp [G, KubotaRankTwo.d, KubotaRankTwo.n, Matrix.mul_apply, Fin.sum_univ_two, y]
 
-private lemma raw_split_intersection_norm
+lemma raw_split_intersection_norm
     (ht : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3)
     (b : S.borel.B) (hb : b.val ∈ rawCompact F ζ hζ q ht) :
     localAbs (LocalField F q) (S.borel.coordinate (S.borel.retract b)) = 1 := by
@@ -239,6 +227,3 @@ theorem actual_split_compact_iwasawa
     simp [kp, k.property]
   · intro b hb
     exact raw_split_intersection_norm F ζ hζ q S ht b hb
-
-end
-end DedekindZetaZeroFree.KPExceptionalRaw.FiniteSource.GoodSphericalVector

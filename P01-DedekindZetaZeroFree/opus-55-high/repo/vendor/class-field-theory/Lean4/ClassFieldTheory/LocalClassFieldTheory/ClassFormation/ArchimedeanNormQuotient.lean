@@ -15,13 +15,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # The real/complex norm quotient
 
@@ -107,8 +100,7 @@ theorem absoluteValueDecompositionGroup_eq_infinitePlaceStabilizer
       exact
         (InfinitePlace.eq_iff_isEquiv
           (w := σ • w) (v := w)).1 hσ
-    simpa using
-      (absoluteValueDecompositionGroup K w.1).inv_mem hσi
+    simp_all
 
 /-- Field norms commute with compatible changes of both the base and
 extension fields. -/
@@ -129,7 +121,7 @@ theorem normUnits_map_ringEquiv
     eK (Algebra.norm K (x : L)) =
       Algebra.norm K' (eL (x : L))
   rw [Algebra.norm_eq_of_equiv_equiv eK eL he]
-  exact eK.apply_symm_apply _
+  simp
 
 /-- Compatibility of a square of ring equivalences is symmetric. -/
 theorem ringEquiv_compat_symm
@@ -259,30 +251,6 @@ theorem herbrandH0_card_eq_one_of_group_card_eq_one
         simp)
   exact Nat.card_unique
 
-/-- At a complex place above a real place, the completion norm quotient
-is the concrete quotient for `ℂ/ℝ`. -/
-def infiniteCompletionNormQuotientEquivRealComplex
-    (v : InfinitePlace K) (w : InfinitePlace L)
-    (hw : w.comap (algebraMap K L) = v)
-    (hv : v.IsReal) (hwc : w.IsComplex) :
-    letI : w.1.LiesOver v.1 :=
-      ⟨congrArg (fun q : InfinitePlace K => q.1) hw⟩
-    NormQuotient v.Completion w.Completion ≃*
-      NormQuotient ℝ ℂ := by
-  letI : w.1.LiesOver v.1 :=
-    ⟨congrArg (fun q : InfinitePlace K => q.1) hw⟩
-  letI :
-      NumberField.ComplexEmbedding.LiesOver
-        (InfinitePlace.Completion.extensionEmbedding w)
-        (InfinitePlace.Completion.extensionEmbedding v) :=
-    InfinitePlace.LiesOver.extensionEmbedding_liesOver_of_isReal
-      w hv
-  exact
-    normQuotientEquivOfRingEquiv
-      (InfinitePlace.Completion.ringEquivRealOfIsReal hv)
-      (InfinitePlace.Completion.ringEquivComplexOfIsComplex hwc)
-      (by ext; simp)
-
 /-- The algebraic localization used in the local cohomology block is
 canonically the whole absolute-value completion, also at an infinite
 place. -/
@@ -325,8 +293,7 @@ def localizedCompletionNormQuotientEquivAbsoluteCompletions
     normQuotientEquivOfRingEquiv
       (RingEquiv.refl v.1.Completion) eL
       (by
-        ext x
-        exact eLAlg.commutes x)
+        rfl)
 
 /-- Written using the underlying absolute-value completions, the norm
 quotient at a complex place above a real place is again the concrete
@@ -398,8 +365,7 @@ def absoluteCompletionNormQuotientEquivRealComplex
           (y : v.1.Completion) =
             algebraMap K v.1.Completion
               (WithAbs.equiv v.1 y) := by
-        rw [← AbsoluteValue.toCompletion_eq_algebraMap]
-        simp
+        rfl
       have hmap :
           AbsoluteValue.completionMap v.1 w.1
               (infinitePlaceAbsoluteValueExtension v w hw).2
@@ -464,7 +430,7 @@ theorem realUnitsSign_surjective :
   · exact ⟨1, by simp [realUnitsSign]⟩
   · exact ⟨-1, by
       apply Units.ext
-      simp [realUnitsSign]⟩
+      simp⟩
 
 /-- A nonzero real unit has trivial sign precisely when it is positive. -/
 @[simp]
@@ -516,8 +482,8 @@ theorem realUnitsSign_ker_eq_complexNormSubgroup :
   · intro hx
     let z : ℂ :=
       (Real.sqrt (x : ℝ) : ℝ)
-    have hz : z ≠ 0 := by
-      exact Complex.ofReal_ne_zero.mpr
+    have hz : z ≠ 0 := 
+      Complex.ofReal_ne_zero.mpr
         (ne_of_gt (Real.sqrt_pos.2 hx))
     let u : ℂˣ := Units.mk0 z hz
     refine ⟨u, ?_⟩
@@ -529,7 +495,7 @@ theorem realUnitsSign_ker_eq_complexNormSubgroup :
   · rintro ⟨u, rfl⟩
     change 0 < Algebra.norm ℝ (u : ℂ)
     rw [Algebra.norm_complex_apply, Complex.normSq_pos]
-    exact Units.ne_zero u
+    simp
 
 /-- The norm quotient for `ℂ/ℝ` is the two-element sign group. -/
 def realComplexNormQuotientEquivSign :
@@ -541,7 +507,7 @@ def realComplexNormQuotientEquivSign :
 
 /-- The real/complex norm quotient is finite via its equivalence with
 the integral sign group. -/
-noncomputable instance realComplexNormQuotientFinite :
+instance realComplexNormQuotientFinite :
     Finite (NormQuotient ℝ ℂ) :=
   Finite.of_equiv ℤˣ
     realComplexNormQuotientEquivSign.symm.toEquiv
@@ -890,7 +856,3 @@ theorem infinitePlaceLocalHerbrandHMinusOneFinite
     Finite.of_injective
       (fun _ => false)
       (fun x y _ => Subsingleton.elim x y)
-
-end LocalClassFieldTheory
-
-end

@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Basic factors in the formal logarithm product argument
 
@@ -38,7 +35,7 @@ def formalLogOnePlusProductArgumentBasicFactor
           Finsupp.single (1 : Fin 2) 1
 
 /-- The finite set of the left, right, and mixed basic exponent vectors. -/
-noncomputable def formalLogOnePlusProductArgumentBasicFactorFinset :
+def formalLogOnePlusProductArgumentBasicFactorFinset :
     Finset (Fin 2 →₀ ℕ) := by
   classical
   exact
@@ -58,13 +55,6 @@ theorem mem_formalLogOnePlusProductArgumentBasicFactorFinset
   classical
   simp [formalLogOnePlusProductArgumentBasicFactorFinset,
     formalLogOnePlusProductArgumentBasicFactor]
-
-/-- Establishes the identity `formalLogOnePlusProductArgumentBasicFactorFinset.card = 3`. -/
-@[simp] theorem formalLogOnePlusProductArgumentBasicFactorFinset_card :
-    formalLogOnePlusProductArgumentBasicFactorFinset.card = 3 := by
-  classical
-  simp [formalLogOnePlusProductArgumentBasicFactorFinset,
-    finsupp_fin_two_single_left_ne_single_right]
 
 /-- Labels the left, right, and mixed basic factors by `0`, `1`, and `2`.
 Non-basic inputs receive the mixed label; all uses that recover a factor from
@@ -132,16 +122,10 @@ theorem formalLogOnePlusProductArgumentBasicFactorLabel_eq_one
   unfold formalLogOnePlusProductArgumentBasicFactorLabel
   by_cases hleft : m = Finsupp.single (0 : Fin 2) 1
   · simp [hleft, finsupp_fin_two_single_left_ne_single_right]
-  · by_cases hright : m = Finsupp.single (1 : Fin 2) 1
-    · have hrightLeft :
-          Finsupp.single (1 : Fin 2) 1 ≠
-            Finsupp.single (0 : Fin 2) 1 :=
-        finsupp_fin_two_single_left_ne_single_right.symm
-      simp [hright, hrightLeft]
-    · simp [hleft, hright]
+  simp_all
 
 /-- Finitely supported sequences of `q` basic factors. -/
-noncomputable def formalLogOnePlusProductArgumentBasicFactorProductChoices
+def formalLogOnePlusProductArgumentBasicFactorProductChoices
     (q : ℕ) : Finset (ℕ →₀ (Fin 2 →₀ ℕ)) := by
   classical
   exact
@@ -174,21 +158,8 @@ theorem mem_formalLogOnePlusProductArgumentBasicFactorProductChoices
         mem_formalLogOnePlusProductArgumentBasicFactorFinset.2
           (h.2 i hi)⟩
 
-/--
-Establishes the identity `(formalLogOnePlusProductArgumentBasicFactorProductChoices q).card = 3 ^
-q`.
--/
-theorem formalLogOnePlusProductArgumentBasicFactorProductChoices_card
-    (q : ℕ) :
-    (formalLogOnePlusProductArgumentBasicFactorProductChoices q).card =
-      3 ^ q := by
-  classical
-  rw [formalLogOnePlusProductArgumentBasicFactorProductChoices,
-    Finset.card_finsupp]
-  simp
-
 /-- Sequences of `q` basic factors whose exponent-vector sum is `e`. -/
-noncomputable def formalLogOnePlusProductArgumentBasicFactorChoices
+def formalLogOnePlusProductArgumentBasicFactorChoices
     (q : ℕ) (e : Fin 2 →₀ ℕ) :
     Finset (ℕ →₀ (Fin 2 →₀ ℕ)) := by
   classical
@@ -211,22 +182,6 @@ theorem mem_formalLogOnePlusProductArgumentBasicFactorChoices
           formalLogOnePlusProductArgumentBasicFactor (l i) := by
   classical
   simp [formalLogOnePlusProductArgumentBasicFactorChoices]
-
-/-- Proves the bound `(formalLogOnePlusProductArgumentBasicFactorChoices q e).card ≤ 3 ^ q`. -/
-theorem formalLogOnePlusProductArgumentBasicFactorChoices_card_le_three_pow
-    (q : ℕ) (e : Fin 2 →₀ ℕ) :
-    (formalLogOnePlusProductArgumentBasicFactorChoices q e).card ≤ 3 ^ q := by
-  classical
-  calc
-    (formalLogOnePlusProductArgumentBasicFactorChoices q e).card ≤
-        (formalLogOnePlusProductArgumentBasicFactorProductChoices q).card := by
-      apply Finset.card_le_card
-      intro l hl
-      rw [mem_formalLogOnePlusProductArgumentBasicFactorProductChoices]
-      rw [mem_formalLogOnePlusProductArgumentBasicFactorChoices] at hl
-      exact ⟨(Finset.mem_finsuppAntidiag.mp hl.1).2, hl.2⟩
-    _ = 3 ^ q :=
-      formalLogOnePlusProductArgumentBasicFactorProductChoices_card q
 
 /-- The number of left factors among the first `q` entries of `l`. -/
 def formalLogOnePlusProductArgumentLeftChoiceCount
@@ -327,15 +282,7 @@ theorem formalLogOnePlusProductArgument_mixedChoiceCount_eq_labelCount_two
           (2 : Fin 3) := by
       intro htwo
       rcases hbasic i hi with hleft | hright | hmixed'
-      · rw [hleft] at htwo
-        simp at htwo
-      · rw [hright] at htwo
-        simp at htwo
+      · simp_all
+      · simp_all
       · exact hmixed hmixed'
     simp [hmixed, hlabel]
-
-
-end MultiplicativeIntegerValuation
-end LocalFieldTheory.DiscreteValuationField
-
-end

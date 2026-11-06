@@ -34,17 +34,10 @@ theorem quadraticCharacter_of_rayClassRealization
   have he : ∀ x : ClassFieldTheory.RayClassGroup m,
       e (QuotientGroup.mk x) = R.artin x := by
     intro x
-    have : QuotientGroup.quotientKerEquivOfSurjective R.artin R.artin_surjective
-        (QuotientGroup.mk x) = R.artin x := by
-      change (QuotientGroup.kerLift R.artin) (QuotientGroup.mk x) = R.artin x
-      rw [QuotientGroup.kerLift_mk]
-    simpa only [e, ClassFieldTheory.rayClassSubgroupQuotientEquiv, MulEquiv.trans_apply,
-      QuotientGroup.quotientMulEquivOfEq_mk] using this
+    rfl
   have hj : ∀ x : ClassFieldTheory.RayClassGroup m,
       j (QuotientGroup.mk x) = ⟨ψ x, MonoidHom.mem_range.mpr ⟨x, rfl⟩⟩ := by
     intro x
-    change (QuotientGroup.quotientKerEquivRange ψ) (QuotientGroup.mk x) =
-      ψ.rangeRestrict x
     rfl
   refine ⟨χ, ?_, ?_, ?_, ?_⟩
   · intro a b hab
@@ -58,12 +51,10 @@ theorem quadraticCharacter_of_rayClassRealization
       rw [← he x, MulEquiv.symm_apply_apply]
     have h1 : χ₀ (R.artin x) = ⟨ψ x, MonoidHom.mem_range.mpr ⟨x, rfl⟩⟩ := by
       rw [show χ₀ (R.artin x) = j (e.symm (R.artin x)) from rfl, hsymm, hj x]
-    rw [hval (R.artin x), h1]
+    simp_all
   · have hcard : Nat.card (ClassFieldTheory.RayClassGroup m ⧸ ψ.ker) = 2 :=
       quadraticCharacter_quotient_card_two ψ hsq hn
     have hgal : Nat.card (R.extension ≃ₐ[F] R.extension) = 2 :=
       (Nat.card_congr e.symm.toEquiv).trans hcard
     rw [← IsGalois.card_aut_eq_finrank F R.extension]
     exact hgal
-
-end DedekindZetaZeroFree.LargeSieve

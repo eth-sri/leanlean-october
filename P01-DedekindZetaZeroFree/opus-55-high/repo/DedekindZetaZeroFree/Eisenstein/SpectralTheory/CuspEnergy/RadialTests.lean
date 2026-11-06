@@ -119,7 +119,3 @@ structure StructuralInputs (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
       potential * (∫ p, Real.exp (2 * p.2) * η p.2 ^ 2 * ‖v.scalar p‖ ^ 2
         ∂chartMeasure G) ≤
       (∫ p, η p.2 ^ 2 * v.gradientSq p ∂chartMeasure G)
-
-end DedekindZetaZeroFree.KPMeanZeroWeightedEnergy
-
-end

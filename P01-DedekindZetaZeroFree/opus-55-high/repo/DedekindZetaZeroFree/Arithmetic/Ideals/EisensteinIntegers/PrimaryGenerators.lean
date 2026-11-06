@@ -14,7 +14,7 @@ theorem existsUnique_primaryGenerator (E : Type) [Field E] [NumberField E]
   obtain ⟨hA_ne, hA3⟩ := (mem_I3 E (A : Ideal (R E))).mp A.2
   set g : R E := Submodule.IsPrincipal.generator (A : Ideal (R E)) with hg
   have hspan : Ideal.span {g} = (A : Ideal (R E)) :=
-    Submodule.IsPrincipal.span_singleton_generator (A : Ideal (R E))
+    by simp_all
   have hg_ne : g ≠ 0 := by
     intro h0
     refine hA_ne ?_
@@ -105,12 +105,10 @@ theorem eq_of_span_eq_of_red3_eq (E : Type) [Field E] [NumberField E]
     x = y := by
   obtain ⟨u, hu⟩ :=
     (Ideal.span_singleton_eq_span_singleton.mp hxy).symm
-  have hx3y : IsUnit (red3 E y) := by rw [← hxy3]; exact hx3
+  have hx3y : IsUnit (red3 E y) := by simp_all
   have hu_red : red3 E (u : R E) = 1 := by
     have h : red3 E y * red3 E (u : R E) = red3 E y * 1 := by
       rw [mul_one, ← map_mul, hu, hxy3]
     exact (hx3y.mul_right_inj).mp h
   have hu_one : u = 1 := unit_eq_one_of_red3_eq_one E u hu_red
-  rw [← hu, hu_one, Units.val_one, mul_one]
-
-end DedekindZetaZeroFree.Eisenstein
+  simp_all

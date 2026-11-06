@@ -45,5 +45,3 @@ theorem zetaFactorization_factor_one_ne_zero
     exact_mod_cast NumberField.dedekindZeta_residue_ne_zero L
   rw [zetaFactorization_product_at_one K L f hf hfactor] at hres
   exact (Finset.prod_ne_zero_iff.mp (mul_ne_zero_iff.mp hres).1) i (Finset.mem_univ i)
-
-end DedekindZetaZeroFree.HeckeCorollary

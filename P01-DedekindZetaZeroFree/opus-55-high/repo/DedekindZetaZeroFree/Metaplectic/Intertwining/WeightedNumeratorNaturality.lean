@@ -12,14 +12,12 @@ namespace DedekindZetaZeroFree.KPActualResidueSources
 open KPLocalPrincipalSeries KPLocalStoneVonNeumann KPRankOneCenterInducedDiagonalComparison
 open KPRankOneShellContinuation KPActualScalarBinding
 
-noncomputable section
-set_option autoImplicit false
 set_option maxHeartbeats 1200000
 set_option backward.isDefEq.respectTransparency false
 
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
-private theorem evaluation_analytic (ε : Sign) (s : ℂ) :
+theorem evaluation_analytic (ε : Sign) (s : ℂ) :
     AnalyticAt ℂ (fun z => (evaluationUnit (KPExceptionalRaw.LocalField F q) ε z : ℂ)) s := by
   cases ε
   · change AnalyticAt ℂ (fun z => KPRankOneRootParameter.r (KPExceptionalRaw.LocalField F q) z) s
@@ -31,7 +29,7 @@ private theorem evaluation_analytic (ε : Sign) (s : ℂ) :
       fun_prop
     · exact Complex.exp_ne_zero _
 
-private theorem denominator_analytic (ε : Sign) (s : ℂ) :
+theorem denominator_analytic (ε : Sign) (s : ℂ) :
     AnalyticAt ℂ (fun z => denominator (KPExceptionalRaw.LocalField F q) ε z) s := by
   cases ε <;> unfold denominator KPRankOneRootParameter.t KPRankOneRootParameter.r <;> dsimp
   · fun_prop
@@ -40,9 +38,9 @@ private theorem denominator_analytic (ε : Sign) (s : ℂ) :
     apply AnalyticAt.pow
     apply AnalyticAt.inv
     · fun_prop
-    · exact Complex.exp_ne_zero _
+    simp
 
-private theorem scalar_laurent_analytic {V : Type*} [AddCommMonoid V] [Module ℂ V]
+theorem scalar_laurent_analytic {V : Type*} [AddCommMonoid V] [Module ℂ V]
     (p : ℤ →₀ V) (l : V →ₗ[ℂ] ℂ)
     (u : ℂ → ℂˣ) (s : ℂ)
     (hu : AnalyticAt ℂ (fun z => (u z : ℂ)) s) :
@@ -80,13 +78,13 @@ theorem actual_weighted_numerator_all_parameters
   let l : (centerCompactLevel F ζ hζ q S.heisenberg S.borel I (sourceSign ε) J →ₗ[ℂ]
       centerCompactLevel F ζ hζ q S.heisenberg S.borel I (targetSign ε) J) →ₗ[ℂ] ℂ :=
     { toFun := fun M => ((M φ).val.val k).val (S.borel.weyl h)
-      map_add' := by intros; rfl
-      map_smul' := by intros; rfl }
+      map_add' := by simp
+      map_smul' := by simp }
   let l' : (centerCompactLevel F ζ hζ q S.heisenberg S.borel I (sourceSign (targetSign ε)) J →ₗ[ℂ]
       centerCompactLevel F ζ hζ q S.heisenberg S.borel I (targetSign (targetSign ε)) J) →ₗ[ℂ] ℂ :=
     { toFun := fun M => ((M (actualWeightedLevelFlip F ζ hζ q S I E hE J hJ ε φ)).val.val k).val h
-      map_add' := by intros; rfl
-      map_smul' := by intros; rfl }
+      map_add' := by simp
+      map_smul' := by simp }
   let L : ℂ → ℂ := fun z =>
     denominator (KPExceptionalRaw.LocalField F q) (targetSign ε) (-z - 1/3) *
       normPower (KPExceptionalRaw.LocalField F q) (S.borel.coordinate h) (1/3) *
@@ -136,6 +134,3 @@ theorem actual_weighted_numerator_all_parameters
     exact hch z hz
   exact hL.eqOn_of_preconnected_of_eventuallyEq hR isPreconnected_univ
     (Set.mem_univ z₀) hev (Set.mem_univ s)
-
-end
-end DedekindZetaZeroFree.KPActualResidueSources

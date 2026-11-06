@@ -30,7 +30,7 @@ def enlargedProfiles
     (C.polarization q.val) .plus
     (ExteriorVectorHaar.canonicalProfile F ζ hζ P C q.val (fun h => hq (hE h))) s
 
-private theorem rationalStageEval_insert
+theorem rationalStageEval_insert
     (t : KPGlobalTorusFunctionData.E F ζ hζ)
     (v : ∀ q : E, KPGlobalTorusFiniteStages.LocalFiber F ζ hζ P C q.val) :
     rationalStageEval F ζ hζ P C T (hE.trans hET) t

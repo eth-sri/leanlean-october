@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Eisenstein.Sections.Iwasawa.FullCompactProduc
 
 @[expose] public section
 
-noncomputable section
 open scoped NumberField Classical
 open NumberField IsDedekindDomain
 
@@ -18,7 +17,3 @@ theorem continuous_scalarQuotient_comp_amalgamation :
     Continuous ((KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ).comp
       (KPAdelicCoverRestrictedProduct.amalgamation F ζ hζ)) :=
   (QuotientGroup.continuous_mk).comp QuotientGroup.continuous_mk
-
-end DedekindZetaZeroFree.PrincipalOfKP
-
-end

@@ -74,7 +74,7 @@ open scoped Classical BigOperators
 namespace DedekindZetaZeroFree.KPGlobalResidualConstruction.CanonicalWholeCoreNative.NativeWordInverse.ActualInverseValue.RightWordSobolev
 open KPContLocalNorm RightFrame.PullbackWords
 
-private theorem coordinate_as_word {n : ℕ} (l : List (Fin n)) (f : Space n → ℂ) :
+theorem coordinate_as_word {n : ℕ} (l : List (Fin n)) (f : Space n → ℂ) :
     constantDirectionWord (l.map (fun i => EuclideanSpace.single i 1)) f =
       coordinateDerivativeList l f := by
   induction l with
@@ -86,7 +86,7 @@ private theorem coordinate_as_word {n : ℕ} (l : List (Fin n)) (f : Space n →
     rw [ih]
     rfl
 
-private theorem finite_lp_combination {E I : Type*} [MeasurableSpace E] [Fintype I]
+theorem finite_lp_combination {E I : Type*} [MeasurableSpace E] [Fintype I]
     (μ : Measure E) (c : I → E → ℝ) (v : I → E → ℂ)
     (hc : ∀ i, AEStronglyMeasurable (c i) μ)
     (hv : ∀ i, MemLp (v i) 2 μ)
@@ -211,7 +211,7 @@ open scoped Classical NumberField BigOperators
 namespace DedekindZetaZeroFree.KPGlobalResidualConstruction.CanonicalWholeCoreNative.NativeWordInverse.ActualInverseValue.GroupChartSobolev
 open KPContLocalNorm KPContActualSphericalRightFieldIdentification
 
-private theorem rightWord_eq_directional {n b : ℕ}
+theorem rightWord_eq_directional {n b : ℕ}
     (fields : Fin b → Space n → Space n) (w : List (Fin b)) (f : Space n → ℂ) :
     KPContRightJets.rightWord fields w f = RightFrame.PullbackWords.directionalWord fields w f := by
   induction w with

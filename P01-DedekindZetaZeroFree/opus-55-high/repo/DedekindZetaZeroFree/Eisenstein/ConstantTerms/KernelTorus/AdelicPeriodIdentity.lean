@@ -26,7 +26,7 @@ variable (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
 variable (s : ℂ) (hs : s ∈ KPContActualChamberNormalSeries.V)
 variable (a : Cusps F ζ hζ C R P H U) (t : ℝ) (b : KPCuspCharts.Shape F)
 include hι hf hs in
-private theorem kernel_period_sheet_eq (ε : rootsOfUnity 3 F) :
+theorem kernel_period_sheet_eq (ε : rootsOfUnity 3 F) :
  (∫ z : KernelTorus F ζ hζ C R P H U a,
    KPContActualChamberNormalSeries.E F ζ hζ U ι f s (cuspGroup F ζ hζ C R P H U a t (Quotient.out z) b ε)
    ∂KPContActualChamberOutgoingAdapter.fiberMeasure F ζ hζ C R P H U a) =

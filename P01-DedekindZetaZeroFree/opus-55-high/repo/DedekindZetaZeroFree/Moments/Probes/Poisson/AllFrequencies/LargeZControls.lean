@@ -51,7 +51,7 @@ private lemma mem_OmegaStar_line (p : EulerDomain.Coordinates) (h1 : p.1.re = 4)
   rw [h1, h2]
   refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> linarith
 
-private lemma freq_pos (u : Frequency D.recipe) : 0 < frequencyNorm D.recipe u := by
+lemma freq_pos (u : Frequency D.recipe) : 0 < frequencyNorm D.recipe u := by
   rw [← rawFrequency_norm D u]
   exact_mod_cast D.recipe.A.exteriorNorm_pos _
 
@@ -161,7 +161,7 @@ private theorem rawKernel_norm_eq (u : Frequency D.recipe) (hq : 0 < frequencyNo
   simp only [zero_mul, mul_zero, sub_zero, add_zero, zero_add, zero_sub]
   try ring_nf
 
-private theorem rawFactor_norm_le (ε : ℝ) (hε : 0 < ε) :
+theorem rawFactor_norm_le (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ (u : Frequency D.recipe) (ξ w z : ℂ), ξ.re = 4 → w.re = 4 →
       2 ≤ z.re → ‖rawFactor D u ξ w z‖ ≤ C * frequencyNorm D.recipe u ^ ε := by
   obtain ⟨C, hC, hp, hm, hL⟩ := right_bounds D

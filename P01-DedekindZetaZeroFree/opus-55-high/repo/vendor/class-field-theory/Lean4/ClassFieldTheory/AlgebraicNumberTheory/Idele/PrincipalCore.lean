@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Principal ideles and the idele class group
 
@@ -25,7 +22,6 @@ open scoped NumberField
 open NumberField IsDedekindDomain
 
 noncomputable section
-
 
 variable (K : Type*) [Field K] [NumberField K]
 
@@ -69,20 +65,8 @@ theorem principalIdele_injective :
 def principalSubgroup : Subgroup (IdeleGroup K) :=
   (principalIdele K).range
 
-/-- The multiplicative group `Kˣ`, identified with the subgroup of principal
-ideles. -/
-def principalEquiv : Kˣ ≃* principalSubgroup K :=
-  MonoidHom.ofInjective (principalIdele_injective K)
-
-@[simp]
-theorem coe_principalEquiv (x : Kˣ) :
-    (principalEquiv K x : IdeleGroup K) = principalIdele K x :=
-  MonoidHom.ofInjective_apply (principalIdele_injective K)
-
 end IdeleGroup
 
 /-- The idele class group `C_K = I_K / Kˣ`. -/
 abbrev IdeleClassGroup :=
   IdeleGroup K ⧸ IdeleGroup.principalSubgroup K
-
-end

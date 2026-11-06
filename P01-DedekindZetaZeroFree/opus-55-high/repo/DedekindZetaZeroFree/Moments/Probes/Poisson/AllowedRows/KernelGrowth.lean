@@ -71,7 +71,7 @@ theorem Llam_inv_right_line (ε : ℝ) (hε : 0 < ε) :
   calc ‖(D.Llam u ξ)⁻¹‖ ≤ C := h u ξ hξ.ge
     _ ≤ C * U ^ ε := le_mul_of_one_le_right hC.le hUe
 
-private theorem recip_bound' (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : ConvexityExponent D A_F)
+theorem recip_bound' (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : ConvexityExponent D A_F)
     (hρ : HeightSpec D A_F ρ) (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∃ Uε : ℝ, 2 ≤ Uε ∧ ∀ U : ℝ, Uε ≤ U →
       ∀ u : D.Row, u.toFrequency.u ≠ 1 → U ≤ D.q u → D.q u < 2 * U → u ∉ exceptionalSet D ρ U →
@@ -79,7 +79,7 @@ private theorem recip_bound' (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : ConvexityE
           D.Llam u s ≠ 0 ∧ ‖(D.Llam u s)⁻¹‖ ≤ C * U ^ ε :=
   Recip.recip_bound D A_F ρ hA hconv hρ ε hε
 
-private theorem rowFactor_combine (u : D.Row) (U : ℝ) (hU : 0 < U) (hq : D.q u < 2 * U)
+theorem rowFactor_combine (u : D.Row) (U : ℝ) (hU : 0 < U) (hq : D.q u < 2 * U)
     (hq0 : 0 < D.q u) (ε : ℝ) (hε : 0 < ε) (ξ w z : ℂ) (C1 C2 C3 C4 P : ℝ)
     (hC1 : 0 ≤ C1) (hC2 : 0 ≤ C2) (hC3 : 0 ≤ C3) (hC4 : 0 ≤ C4) (hP : 0 ≤ P)
     (hz : ‖D.zetaSCont (6 * z)‖ ≤ C1)
@@ -182,7 +182,7 @@ theorem K_norm_eq (u : D.Row) (hq : 0 < D.q u) (ξ : ℂ) (v y : ℝ) (p : ℝ �
   simp only [zero_mul, mul_zero, sub_zero, add_zero, zero_add, zero_sub]
   try ring_nf
 
-private theorem K_majorant_aux (u : D.Row) (U : ℝ) (hU0 : 0 < U) (hqU : U ≤ D.q u)
+theorem K_majorant_aux (u : D.Row) (U : ℝ) (hU0 : 0 < U) (hqU : U ≤ D.q u)
     (ε A_F C x : ℝ) (hC : 0 ≤ C) (ξ : ℂ) (hx : ξ.re = x) (Z : ℝ) (hZ : 0 < Z) (p : ℝ × ℝ)
     (hR : ‖rowFactor D u ξ ((Scales.wLine : ℂ) + (p.2 : ℂ) * Complex.I)
         ((Scales.zLine : ℂ) + (p.1 : ℂ) * Complex.I)‖ ≤
@@ -267,7 +267,7 @@ theorem kernel_majorant_right (A_F : ℝ) (hconv : ConvexityExponent D A_F) (ε 
   rw [him] at hR
   exact K_majorant_aux D u U hU0 hqU ε A_F C Scales.rightLine hC.le ξ hξ Z hZ p hR
 
-private theorem xg_pad_le_x1 : Scales.goodLine - EulerDomain.pad ≤ Scales.rightLine := by
+theorem xg_pad_le_x1 : Scales.goodLine - EulerDomain.pad ≤ Scales.rightLine := by
   rw [Scales.rightLine_eq]
   unfold Scales.goodLine EulerDomain.pad
   norm_num
@@ -284,7 +284,7 @@ private theorem x_g_le_x₁ : Scales.goodLine ≤ Scales.rightLine := by
   unfold Scales.goodLine
   norm_num
 
-private theorem K_cont_swap (u : D.Row) (hu : u.toFrequency.u ≠ 1) (hq : 0 < D.q u) (Z : ℝ)
+theorem K_cont_swap (u : D.Row) (hu : u.toFrequency.u ≠ 1) (hq : 0 < D.q u) (Z : ℝ)
     (hZ : 0 < Z) (ξ : ℂ) (hx : Scales.goodLine - EulerDomain.pad ≤ ξ.re) (hξ : D.Llam u ξ ≠ 0) :
     Continuous (fun p : ℝ × ℝ => K D u ξ ((Scales.wLine : ℂ) + (p.2 : ℂ) * Complex.I)
           ((Scales.zLine : ℂ) + (p.1 : ℂ) * Complex.I) Z) :=
@@ -293,7 +293,7 @@ private theorem K_cont_swap (u : D.Row) (hu : u.toFrequency.u ≠ 1) (hq : 0 < D
   have h2 := h.comp (continuous_swap (X := ℝ) (Y := ℝ))
   exact h2
 
-private theorem Llam_ne_rect (ρ U : ℝ) (hU : 0 ≤ U) (u : D.Row) (hu : u.toFrequency.u ≠ 1)
+theorem Llam_ne_rect (ρ U : ℝ) (hU : 0 ≤ U) (u : D.Row) (hu : u.toFrequency.u ≠ 1)
     (hU1 : U ≤ D.q u) (hU2 : D.q u < 2 * U) (hexc : u ∉ exceptionalSet D ρ U) (ξ : ℂ)
     (hx : Scales.goodLine ≤ ξ.re) (him : |ξ.im| ≤ 2 * U ^ ρ) : D.Llam u ξ ≠ 0 := by
   have hnn : 0 ≤ U ^ ρ := Real.rpow_nonneg hU ρ

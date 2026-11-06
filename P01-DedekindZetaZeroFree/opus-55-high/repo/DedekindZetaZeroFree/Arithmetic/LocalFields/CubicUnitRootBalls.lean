@@ -31,10 +31,10 @@ theorem rootDepth_spec [CharZero K] (v : AddValuation K (WithTop ℤ))
     (hnormalized : ∃ π : K, v π = (1 : WithTop ℤ))
     (ζ : (Ring v)ˣ) (hζ : IsPrimitiveRoot ((ζ : Ring v) : K) 3) :
     v (1 - ((ζ : Ring v) : K)) = (rootDepth v ζ : WithTop ℤ) := by
-  have hne : v (1 - ((ζ : Ring v) : K)) ≠ ⊤ := by
-    exact fun h => (hζ.ne_one (by decide)) ((sub_eq_zero.mp (v.top_iff.mp h)).symm)
-  have hnonneg : 0 ≤ v (1 - ((ζ : Ring v) : K)) := by
-    exact ((1 - (ζ : Ring v)) : Ring v).property
+  have hne : v (1 - ((ζ : Ring v) : K)) ≠ ⊤ := 
+    fun h => (hζ.ne_one (by decide)) ((sub_eq_zero.mp (v.top_iff.mp h)).symm)
+  have hnonneg : 0 ≤ v (1 - ((ζ : Ring v) : K)) := 
+    ((1 - (ζ : Ring v)) : Ring v).property
   generalize he : v (1 - ((ζ : Ring v) : K)) = a at *
   cases a with
   | top => exact (hne rfl).elim
@@ -48,7 +48,7 @@ theorem mem_maximalIdeal_pow_iff {K : Type*} [Field K] (v : AddValuation K (With
     (a : Ring v) (j : ℕ) :
     a ∈ (IsLocalRing.maximalIdeal (Ring v)) ^ j ↔ (j : WithTop ℤ) ≤ v (a : K) := by
   obtain ⟨π, hπ⟩ := hnormalized
-  let p : Ring v := ⟨π, by change 0 ≤ v π; rw [hπ]; decide⟩
+  let p : Ring v := ⟨π, by change 0 ≤ v π; positivity⟩
   have hp : v (p : K) = 1 := hπ
   have hm : IsLocalRing.maximalIdeal (Ring v) = Ideal.span {p} := by
     ext b
@@ -62,12 +62,7 @@ theorem mem_maximalIdeal_pow_iff {K : Type*} [Field K] (v : AddValuation K (With
   rw [hm, Ideal.span_singleton_pow, Ideal.mem_span_singleton,
     (Valuation.valuationSubring.integers v.toValuation).dvd_iff_le]
   change v ((p : K) ^ j) ≤ v (a : K) ↔ _
-  rw [v.map_pow, hp]
-  have hn : j • (1 : WithTop ℤ) = (j : WithTop ℤ) := by
-    change j • (↑(1 : ℤ) : WithTop ℤ) = ↑(j : ℤ)
-    rw [← WithTop.coe_nsmul]
-    simp
-  rw [hn]
+  simp_all
 
 theorem mem_principalUnits_iff (v : AddValuation K (WithTop ℤ)) (hn : ∃ π : K, v π = 1)
     (u : (Ring v)ˣ) (j : ℕ) (hj : j ≠ 0) :
@@ -75,7 +70,7 @@ theorem mem_principalUnits_iff (v : AddValuation K (WithTop ℤ)) (hn : ∃ π :
   rw [principalUnits, if_neg hj]
   change (u : Ring v) - 1 ∈ IsLocalRing.maximalIdeal (Ring v) ^ j ↔ _
   rw [mem_maximalIdeal_pow_iff v hn]
-  convert Iff.rfl using 2 <;> simp
+  rfl
 
 theorem unit_valuation_eq_zero (v : AddValuation K (WithTop ℤ)) (u : (Ring v)ˣ) : v ((u : Ring v) : K) = 0 := by
   have h := (Valuation.valuationSubring.integers v.toValuation).one_of_isUnit u.isUnit
@@ -113,7 +108,7 @@ theorem rootCoset_valuation_le (v : AddValuation K (WithTop ℤ))
   have ha' : (j : WithTop ℤ) ≤ v (((a : Ring v) : K) - 1) := by
     have h := (mem_maximalIdeal_pow_iff v hn ((a : Ring v) - 1) j).mp
       (by simpa [principalUnits, hj] using ha)
-    convert h using 1 <;> simp
+    omega
   have hf : (((ξ * a : (Ring v)ˣ) : Ring v) : K) - ((ξ : Ring v) : K) =
       ((ξ : Ring v) : K) * (((a : Ring v) : K) - 1) := by simp; ring
   rw [hf, v.map_mul, unit_valuation_eq_zero, zero_add]
@@ -146,7 +141,7 @@ theorem rootCosets_pairwise_disjoint [CharZero K] (v : AddValuation K (WithTop �
     exact_mod_cast h3
   omega
 
-private theorem cubic_factor [CharZero K] (v : AddValuation K (WithTop ℤ))
+theorem cubic_factor [CharZero K] (v : AddValuation K (WithTop ℤ))
     (ζ : (Ring v)ˣ) (hz : IsPrimitiveRoot ((ζ : Ring v) : K) 3) (x : K) :
     v (x ^ 3 - 1) = v (x - 1) + v (x - ((ζ : Ring v) : K)) +
       v (x - ((ζ : Ring v) : K) ^ 2) := by
@@ -164,12 +159,12 @@ private theorem cubic_factor [CharZero K] (v : AddValuation K (WithTop ℤ))
       _ = _ := by rw [hp, hz.pow_eq_one]; ring
   rw [hf, v.map_mul, v.map_mul]
 
-private theorem distance_large (v : AddValuation K (WithTop ℤ)) (x a b : K)
+theorem distance_large (v : AddValuation K (WithTop ℤ)) (x a b : K)
     (h : v (a - b) < v (x - a)) : v (x - b) = v (a - b) := by
   rw [show x - b = (x - a) + (a - b) by ring]
   exact v.map_add_eq_of_lt_right h
 
-private theorem rootCoset_valuation_iff (v : AddValuation K (WithTop ℤ))
+theorem rootCoset_valuation_iff (v : AddValuation K (WithTop ℤ))
     (hn : ∃ π : K, v π = 1) (ξ u : (Ring v)ˣ) (j : ℕ) (hj : j ≠ 0) :
     u ∈ rootCoset v ξ j ↔ (j : WithTop ℤ) ≤ v (((u : Ring v) : K) - ((ξ : Ring v) : K)) := by
   constructor
@@ -187,7 +182,7 @@ private theorem rootCoset_valuation_iff (v : AddValuation K (WithTop ℤ))
     rw [hf, v.map_mul, unit_valuation_eq_zero, zero_add]
     exact hu
 
-private theorem root_gaps [CharZero K] (v : AddValuation K (WithTop ℤ))
+theorem root_gaps [CharZero K] (v : AddValuation K (WithTop ℤ))
     (hn : ∃ π : K, v π = 1) (ζ : (Ring v)ˣ)
     (hz : IsPrimitiveRoot ((ζ : Ring v) : K) 3) :
     v (1 - ((ζ : Ring v) : K)) = (rootDepth v ζ : WithTop ℤ) ∧
@@ -196,8 +191,7 @@ private theorem root_gaps [CharZero K] (v : AddValuation K (WithTop ℤ))
       (rootDepth v ζ : WithTop ℤ) := by
   have hzn : ζ ≠ 1 := by
     intro h
-    apply hz.ne_one (by decide)
-    simpa [h]
+    simp_all
   have hzn2 : ζ ^ 2 ≠ 1 := by
     intro h
     exact hz.pow_ne_one_of_pos_of_lt (by decide : 2 ≠ 0) (by decide : 2 < 3)
@@ -210,11 +204,11 @@ private theorem root_gaps [CharZero K] (v : AddValuation K (WithTop ℤ))
   refine ⟨rootDepth_spec v hn ζ hz, ?_, ?_⟩
   · have h := cubeRoots_sub_valuation v hn ζ hz 1 (ζ ^ 2)
       (by simp [cubeRoots]) (by simp [cubeRoots]) (Ne.symm hzn2)
-    simpa using h
+    omega
   · exact cubeRoots_sub_valuation v hn ζ hz ζ (ζ ^ 2)
       (by simp [cubeRoots]) (by simp [cubeRoots]) hzn12
 
-private theorem depth_shift (t : WithTop ℤ) (j r : ℕ) (h : 2 * r ≤ j) :
+theorem depth_shift (t : WithTop ℤ) (j r : ℕ) (h : 2 * r ≤ j) :
     (j : WithTop ℤ) ≤ t + (r : WithTop ℤ) + r ↔
       ((j - 2 * r : ℕ) : WithTop ℤ) ≤ t := by
   cases t with
@@ -225,7 +219,7 @@ private theorem depth_shift (t : WithTop ℤ) (j r : ℕ) (h : 2 * r ≤ j) :
     rw [← WithTop.coe_add, ← WithTop.coe_add, WithTop.coe_le_coe, WithTop.coe_le_coe]
     omega
 
-private theorem three_balls (v : AddValuation K (WithTop ℤ)) (x a b c : K)
+theorem three_balls (v : AddValuation K (WithTop ℤ)) (x a b c : K)
     (r j : ℕ) (hj : 3 * r < j)
     (hab : v (a - b) = (r : WithTop ℤ))
     (hac : v (a - c) = (r : WithTop ℤ))
@@ -240,16 +234,16 @@ private theorem three_balls (v : AddValuation K (WithTop ℤ)) (x a b c : K)
   have hca : v (c - a) = (r : WithTop ℤ) := by rw [v.map_sub_swap, hac]
   have hcb : v (c - b) = (r : WithTop ℤ) := by rw [v.map_sub_swap, hbc]
   have caseA (h : (r : WithTop ℤ) < v (x - a)) :
-      v (x - b) = (r : WithTop ℤ) ∧ v (x - c) = (r : WithTop ℤ) := by
-    exact ⟨(distance_large v x a b (by rwa [hab])).trans hab,
+      v (x - b) = (r : WithTop ℤ) ∧ v (x - c) = (r : WithTop ℤ) := 
+    ⟨(distance_large v x a b (by rwa [hab])).trans hab,
       (distance_large v x a c (by rwa [hac])).trans hac⟩
   have caseB (h : (r : WithTop ℤ) < v (x - b)) :
-      v (x - a) = (r : WithTop ℤ) ∧ v (x - c) = (r : WithTop ℤ) := by
-    exact ⟨(distance_large v x b a (by rwa [hba])).trans hba,
+      v (x - a) = (r : WithTop ℤ) ∧ v (x - c) = (r : WithTop ℤ) := 
+    ⟨(distance_large v x b a (by rwa [hba])).trans hba,
       (distance_large v x b c (by rwa [hbc])).trans hbc⟩
   have caseC (h : (r : WithTop ℤ) < v (x - c)) :
-      v (x - a) = (r : WithTop ℤ) ∧ v (x - b) = (r : WithTop ℤ) := by
-    exact ⟨(distance_large v x c a (by rwa [hca])).trans hca,
+      v (x - a) = (r : WithTop ℤ) ∧ v (x - b) = (r : WithTop ℤ) := 
+    ⟨(distance_large v x c a (by rwa [hca])).trans hca,
       (distance_large v x c b (by rwa [hcb])).trans hcb⟩
   have shift := fun t => depth_shift t j r (by omega)
   constructor
@@ -314,7 +308,4 @@ theorem cubicPreimage_deep [CharZero K] (v : AddValuation K (WithTop ℤ))
     rcases hξ with rfl | rfl | rfl
     · exact Or.inl (by simpa using h)
     · exact Or.inr (Or.inl h)
-    · exact Or.inr (Or.inr (by simpa using h))
-
-end CubicUnitBalls
-end DedekindZetaZeroFree
+    simp_all

@@ -48,6 +48,3 @@ structure PrincipalRayHeckeData (F : Type) [Field F] [NumberField F]
   reflection : ∀ s : ℂ, s ≠ 0 → s ≠ 1 → Λ s = Λ (1 - s)
   order_bound : ∀ ε : ℝ, 0 < ε → ∃ C : ℝ, ∀ s : ℂ,
     ‖E s‖ ≤ C * Real.exp (‖s‖ ^ (1 + ε))
-
-end
-end DedekindZetaZeroFree

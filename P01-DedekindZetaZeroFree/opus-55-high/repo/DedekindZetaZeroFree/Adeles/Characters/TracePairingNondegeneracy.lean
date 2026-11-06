@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Adeles.Characters.TraceCharacter
 
 @[expose] public section
 
-noncomputable section
 
 open scoped NumberField
 open NumberField IsDedekindDomain
@@ -43,7 +42,3 @@ theorem localFiniteCharacter_right_nondegenerate (v : HeightOneSpectrum (𝓞 F)
     ∃ x : v.adicCompletion F, localFiniteCharacter F v (x * y) ≠ 1 := by
   obtain ⟨x, hx⟩ := localFiniteCharacter_left_nondegenerate F v y hy
   exact ⟨x, by simpa only [mul_comm] using hx⟩
-
-end DedekindZetaZeroFree
-
-end

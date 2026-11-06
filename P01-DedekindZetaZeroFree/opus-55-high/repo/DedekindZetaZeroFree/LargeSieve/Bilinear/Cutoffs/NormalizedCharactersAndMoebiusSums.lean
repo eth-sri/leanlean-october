@@ -48,6 +48,3 @@ theorem normalizedValue_mul (n : R →* ℝ≥0) (χ : R →* ℂ) (a b : R) :
     normalizedValue n χ (a * b) = normalizedValue n χ a * normalizedValue n χ b := by
   simp only [normalizedValue, map_mul, NNReal.coe_mul, Real.sqrt_mul (n a).coe_nonneg,
     Complex.ofReal_mul, div_mul_div_comm]
-
-end
-end DedekindZetaZeroFree.LargeSieve.Vendor.CutoffDifference.SplitData

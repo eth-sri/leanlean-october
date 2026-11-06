@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 namespace LocalClassFieldTheory
 open RamificationTheory CyclicCohomology
 
@@ -43,7 +39,7 @@ theorem closedFixingSubgroup_bot_eq_baseField :
   ext σ
   change σ ∈ (⊥ : IntermediateField K Ω).fixingSubgroup ↔
     σ ∈ (⊤ : Subgroup (Gal(Ω / K)))
-  rw [IntermediateField.fixingSubgroup_bot]
+  simp
 
 /-- The fixing subgroup of an intermediate field lies in the fixing subgroup
 of the base field. -/
@@ -103,7 +99,7 @@ theorem baseFixingToAmbientQuotient_ker
   change
     (QuotientGroup.mk' (closedFixingSubgroup K Ω E).toSubgroup x.1 = 1) ↔
       x.1 ∈ (closedFixingSubgroup K Ω E).toSubgroup
-  exact QuotientGroup.eq_one_iff x.1
+  simp
 
 /-- The base fixing group is the whole ambient Galois group, hence its map to
 the ambient quotient is onto. -/
@@ -117,8 +113,7 @@ theorem baseFixingToAmbientQuotient_surjective
       σ ∈ (closedFixingSubgroup K Ω
         (⊥ : IntermediateField K Ω)).toSubgroup := by
     change σ ∈ (⊥ : IntermediateField K Ω).fixingSubgroup
-    rw [IntermediateField.fixingSubgroup_bot]
-    exact Subgroup.mem_top σ
+    simp
   exact ⟨⟨σ, hσ⟩, rfl⟩
 
 /-- The abstract class-formation quotient for `E/K` is the ordinary quotient of the
@@ -162,6 +157,3 @@ def baseFixingExtensionQuotientEquivGaloisGroup
       (AlgEquiv.autCongr
         (IntermediateField.equivOfEq
           (InfiniteGalois.fixedField_fixingSubgroup E))))
-
-end
-end LocalClassFieldTheory

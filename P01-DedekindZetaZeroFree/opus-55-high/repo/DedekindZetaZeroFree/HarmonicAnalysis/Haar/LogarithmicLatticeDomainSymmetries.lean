@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Arithmetic.Units.RayUnitHalfOpenDomain
 
 @[expose] public section
 
-noncomputable section
 
 open scoped NumberField Pointwise
 open MeasureTheory
@@ -91,7 +90,3 @@ theorem topLogDomainIntegral_reflection (ht : (⊤ : Ideal (𝓞 F)) ≠ ⊥)
       (he.setIntegral_image_emb e.measurableEmbedding f
         (RayCoset.rayUnitHalfOpenDomain F ⊤ ht)).symm
     _ = _ := hN.setIntegral_eq hQ hf
-
-end DedekindZetaZeroFree.Hecke.Theta
-
-end

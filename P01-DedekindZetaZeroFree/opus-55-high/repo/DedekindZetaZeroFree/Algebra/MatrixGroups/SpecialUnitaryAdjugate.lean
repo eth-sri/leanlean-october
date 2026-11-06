@@ -34,5 +34,3 @@ theorem _root_.Matrix.specialUnitaryGroup.star_eq_adjugate (g : Matrix.specialUn
         rw [Matrix.adjugate_mul, hmem.2, one_smul, Matrix.one_mul]
     _ = (g : Matrix n n α).adjugate := by
         rw [Matrix.mul_assoc, hmul, Matrix.mul_one]
-
-end DedekindZetaZeroFree.TauCeti

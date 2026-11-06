@@ -91,16 +91,7 @@ theorem dyad_row_count :
       (dyadRows D U).Finite ∧ ((dyadRows D U).ncard : ℝ) ≤ C * U :=
   DedekindZetaZeroFree.Quantitative.ActualRowCount.dyadRows_count D
 
-lemma entireNumerator (u : D.Row) (hu : u.u ≠ 1) : RowKernelGrowth.EntireNumerator D u := by
-  obtain ⟨hp, -⟩ := RowNonprincipal.inducers_nonprincipal D u hu
-  obtain ⟨g, hg, hgeq⟩ := RowHeckeBridge.hecke_exists_entire D.recipe.A (D.inducers u).plus hp
-  refine ⟨fun s => DedekindZetaZeroFree.Detector.finiteEulerDeletionMask F (RowHeckeBridge.deletionSet D u)
-      (fun v => (D.inducers u).plus.character v.asIdeal) s * g s,
-    (RowHeckeBridge.mask_differentiable D.recipe.A (D.inducers u).plus hp _
-      (RowHeckeBridge.deletionSet_finite D u)).mul hg, fun s hs => ?_⟩
-  have hs0 : 0 < s.re := by linarith
-  simp only
-  rw [RowHeckeBridge.Lpsi_eq_mask_mul D u hp s hs, hgeq s hs0]
+lemma entireNumerator (u : D.Row) (hu : u.u ≠ 1) : RowKernelGrowth.EntireNumerator D u := by apply DedekindZetaZeroFree.Quantitative.RowsGoodCentral.entireNumerator_of_ne_one <;> assumption
 
 theorem wz_height_bound (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : ConvexityExponent D A_F)
     (hρ : HeightSpec D A_F ρ) (B ε : ℝ) (hB : 0 < B) (hε : 0 < ε) :

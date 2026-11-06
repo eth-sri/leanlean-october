@@ -20,12 +20,12 @@ namespace DedekindZetaZeroFree.AbelianQuotient
   cases h
   exact MulEquiv.refl _
 
-private theorem rayClassGroupCast_prime
+theorem rayClassGroupCast_prime
     {K : Type} [Field K] [NumberField K]
     {m₁ m₂ : ClassFieldTheory.RayClassModulus K} (h : m₁ = m₂)
     (v : HeightOneSpectrum (𝓞 K)) (hv : v ∉ m₁.finitePart.support) :
     rayClassGroupCast h (ClassFieldTheory.rayClassOfFinitePrime m₁ v hv) =
-      ClassFieldTheory.rayClassOfFinitePrime m₂ v (by rw [← h]; exact hv) := by
+      ClassFieldTheory.rayClassOfFinitePrime m₂ v (by simp_all) := by
   cases h
   rfl
 
@@ -64,16 +64,13 @@ theorem faithfulConductorRayCharacter
     obtain ⟨x, hx⟩ := hsurj g
     have h1 : ψ x = 1 := by rw [hψ]; rfl
     change σ (artin x) = 1 at h1
-    rw [hx] at h1
-    exact hg h1
+    simp_all
   · intro p w hw hcop
     have hcount : c.finitePart p = 0 :=
       (finiteRayModulusIdeal_coprime K c.finitePart p).mp hcop
     have hp : p ∉ (narrowIdealModulus K m hm).finitePart.support := by
-      simp only [Finsupp.mem_support_iff, not_not, narrowIdealModulus_finitePart, hmdef,
-        finiteRayModulusIdeal_count]
-      exact hcount
-    have hp' : p ∉ c.finitePart.support := by rw [← h]; exact hp
+      simp_all
+    have hp' : p ∉ c.finitePart.support := by simp_all
     have hunram : Algebra.IsUnramifiedAt (𝓞 K) w.asIdeal :=
       (normConductorIdeal_coprime K E p).mp hcop w hw
     have hprim : ClassFieldTheory.GlobalClassFieldComparison.normConductorArtin K E
@@ -90,12 +87,5 @@ theorem faithfulConductorRayCharacter
       change σ ((ClassFieldTheory.GlobalClassFieldComparison.normConductorArtin K E)
         (e (ClassFieldTheory.rayClassOfFinitePrime (narrowIdealModulus K m hm) p hp)))
         = σ (ClassFieldTheory.arithmeticFrobeniusAt (K := K) w)
-      rw [hcast]
-      change σ (ClassFieldTheory.GlobalClassFieldComparison.normConductorArtin K E
-        (ClassFieldTheory.rayClassOfFinitePrime c p hp')) = _
-      rw [hprim]
+      simp_all
     rw [hval]
-
-end DedekindZetaZeroFree.AbelianQuotient
-
-end

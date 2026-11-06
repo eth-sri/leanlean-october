@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Frobenius lifts on completed p-adic Lubin--Tate levels
 
@@ -40,7 +37,7 @@ open LocalFieldTheory.DiscreteValuationField.Examples.Qp
 /-- The ordinary completed-base algebra structure on a completed level,
 named so it can coexist with the Frobenius-twisted structure. -/
 @[reducible]
-noncomputable def padicCompletedLevelOriginalAlgebra
+def padicCompletedLevelOriginalAlgebra
     (p : ℕ) [Fact p.Prime] (n : ℕ) :
     Algebra (padicCompletedUnramifiedField p)
       (padicCompletedLevelField p n) :=
@@ -49,7 +46,7 @@ noncomputable def padicCompletedLevelOriginalAlgebra
 /-- The codomain algebra structure whose scalar map is arithmetic
 Frobenius followed by the ordinary scalar inclusion. -/
 @[reducible]
-noncomputable def padicCompletedLevelFrobeniusAlgebra
+def padicCompletedLevelFrobeniusAlgebra
     (p : ℕ) [Fact p.Prime] (n : ℕ) :
     Algebra (padicCompletedUnramifiedField p)
       (padicCompletedLevelField p n) :=
@@ -57,20 +54,6 @@ noncomputable def padicCompletedLevelFrobeniusAlgebra
     ((algebraMap (padicCompletedUnramifiedField p)
         (padicCompletedLevelField p n)).comp
       (padicCompletedUnramifiedFrobenius p).toAlgHom.toRingHom)
-
-/-- The twisted level algebra map applies completed Frobenius before scalar
-extension. -/
-theorem padicCompletedLevelFrobeniusAlgebra_algebraMap
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (a : padicCompletedUnramifiedField p) :
-    @algebraMap
-        (padicCompletedUnramifiedField p)
-        (padicCompletedLevelField p n)
-        _ _ (padicCompletedLevelFrobeniusAlgebra p n) a =
-      algebraMap (padicCompletedUnramifiedField p)
-        (padicCompletedLevelField p n)
-        (padicCompletedUnramifiedFrobenius p a) :=
-  rfl
 
 /-- Arithmetic Frobenius fixes the completed primitive polynomial because
 its coefficients descend to `ℚ_[p]`. -/
@@ -86,7 +69,7 @@ theorem padicCompletedPrimitivePolynomial_frobenius
         algebraMap ℚ_[p] (padicCompletedUnramifiedField p) := by
     apply RingHom.ext
     intro a
-    exact (padicCompletedUnramifiedFrobenius p).commutes a
+    simp
   rw [Polynomial.map_map, hcomp]
 
 /-- A completed unit-parameter root annihilates the primitive minimal
@@ -116,7 +99,7 @@ theorem padicCompletedUnitParameterRoot_aeval_minpoly_frobenius
 
 /-- The semilinear algebra homomorphism extending arithmetic Frobenius and
 sending the chosen primitive root to the prescribed unit-parameter root. -/
-noncomputable def padicCompletedFrobeniusLiftAlgHom
+def padicCompletedFrobeniusLiftAlgHom
     (p : ℕ) [Fact p.Prime] (n : ℕ)
     (a : standardLubinTateUnitParameter (padicLocalField p) n) :
     @AlgHom
@@ -161,7 +144,7 @@ theorem padicCompletedFrobeniusLiftAlgHom_primitiveRoot
 
 /-- The underlying field homomorphism of the prescribed completed
 Frobenius lift. -/
-noncomputable def padicCompletedFrobeniusLift
+def padicCompletedFrobeniusLift
     (p : ℕ) [Fact p.Prime] (n : ℕ)
     (a : standardLubinTateUnitParameter (padicLocalField p) n) :
     padicCompletedLevelField p n →+*
@@ -262,7 +245,7 @@ theorem padicCompletedFrobeniusLift_surjective
 
 /-- The actual field automorphism extending arithmetic Frobenius and
 having the prescribed action on the completed primitive root. -/
-noncomputable def padicCompletedFrobeniusLiftEquiv
+def padicCompletedFrobeniusLiftEquiv
     (p : ℕ) [Fact p.Prime] (n : ℕ)
     (a : standardLubinTateUnitParameter (padicLocalField p) n) :
     padicCompletedLevelField p n ≃+*
@@ -270,32 +253,6 @@ noncomputable def padicCompletedFrobeniusLiftEquiv
   RingEquiv.ofBijective (padicCompletedFrobeniusLift p n a)
     ⟨(padicCompletedFrobeniusLift p n a).injective,
       padicCompletedFrobeniusLift_surjective p n a⟩
-
-/-- The completed Frobenius-lift equivalence acts on base scalars by
-arithmetic Frobenius. -/
-@[simp]
-theorem padicCompletedFrobeniusLiftEquiv_algebraMap
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (a : standardLubinTateUnitParameter (padicLocalField p) n)
-    (b : padicCompletedUnramifiedField p) :
-    padicCompletedFrobeniusLiftEquiv p n a
-        (algebraMap (padicCompletedUnramifiedField p)
-          (padicCompletedLevelField p n) b) =
-      algebraMap (padicCompletedUnramifiedField p)
-        (padicCompletedLevelField p n)
-        (padicCompletedUnramifiedFrobenius p b) :=
-  padicCompletedFrobeniusLift_algebraMap p n a b
-
-/-- The completed Frobenius-lift equivalence has the prescribed value on
-the primitive root. -/
-@[simp]
-theorem padicCompletedFrobeniusLiftEquiv_primitiveRoot
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (a : standardLubinTateUnitParameter (padicLocalField p) n) :
-    padicCompletedFrobeniusLiftEquiv p n a
-        (padicCompletedPrimitiveRoot p n) =
-      padicCompletedUnitParameterRoot p n a :=
-  padicCompletedFrobeniusLift_primitiveRoot p n a
 
 /-- The direct completed standard unit action annihilates the primitive
 minimal polynomial for the Frobenius-twisted codomain structure. -/
@@ -330,7 +287,7 @@ theorem
 
 /-- The semilinear algebra homomorphism extending arithmetic Frobenius and
 sending the primitive root to its actual completed standard unit action. -/
-noncomputable def padicCompletedUnitFrobeniusLiftAlgHom
+def padicCompletedUnitFrobeniusLiftAlgHom
     (p : ℕ) [Fact p.Prime] (n : ℕ)
     (u : (padicLocalField p).valuationSubringˣ) :
     @AlgHom
@@ -383,7 +340,7 @@ theorem padicCompletedUnitFrobeniusLiftAlgHom_primitiveRoot
 
 /-- The underlying field homomorphism of the unit-indexed completed
 Frobenius lift. -/
-noncomputable def padicCompletedUnitFrobeniusLift
+def padicCompletedUnitFrobeniusLift
     (p : ℕ) [Fact p.Prime] (n : ℕ)
     (u : (padicLocalField p).valuationSubringˣ) :
     padicCompletedLevelField p n →+*
@@ -473,9 +430,7 @@ theorem padicCompletedUnitFrobeniusLift_surjective
   have hle : Algebra.adjoin E ({y} : Set L) ≤ S := by
     apply Algebra.adjoin_le
     intro z hz
-    rw [Set.mem_singleton_iff] at hz
-    subst z
-    exact hy
+    simp_all
   rw [show Algebra.adjoin E ({y} : Set L) = ⊤ by
         simpa only [E, L, y] using
           padicCompletedStandardPrimitivePointUnitAction_adjoin_eq_top
@@ -487,7 +442,7 @@ theorem padicCompletedUnitFrobeniusLift_surjective
 
 /-- The actual field automorphism extending arithmetic Frobenius and acting
 on the primitive root by the direct completed standard unit action. -/
-noncomputable def padicCompletedUnitFrobeniusLiftEquiv
+def padicCompletedUnitFrobeniusLiftEquiv
     (p : ℕ) [Fact p.Prime] (n : ℕ)
     (u : (padicLocalField p).valuationSubringˣ) :
     padicCompletedLevelField p n ≃+*
@@ -523,7 +478,3 @@ theorem padicCompletedUnitFrobeniusLiftEquiv_primitiveRoot
           (padicCompletedLevelCompleteDVF p n).valuationSubring) :
         padicCompletedLevelField p n)) :=
   padicCompletedUnitFrobeniusLift_primitiveRoot p n u
-
-end LubinTate
-
-end

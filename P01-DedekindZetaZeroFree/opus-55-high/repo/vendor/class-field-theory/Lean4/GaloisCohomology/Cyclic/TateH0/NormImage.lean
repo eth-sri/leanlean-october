@@ -14,13 +14,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-set_option autoImplicit false
 /-! Provides the public declarations in the `CyclicCohomology.TateH0.NormImage` Lean module. -/
 
 namespace CyclicCohomology
@@ -67,8 +60,8 @@ def tateUnitsH0IsoInvariantsQuotient (K L : Type)
     .mk A.norm.toModuleCatHom (groupCohomology.d₀₁ A)
       (Rep.norm_comp_d_eq_zero A)
   have hker :
-      LinearMap.ker S.g.hom = unitsInvariantSubmodule K L := by
-    exact groupCohomology.d₀₁_ker_eq_invariants A
+      LinearMap.ker S.g.hom = unitsInvariantSubmodule K L := 
+    groupCohomology.d₀₁_ker_eq_invariants A
   let eK : LinearMap.ker S.g.hom ≃ₗ[ℤ] unitsInvariantSubmodule K L :=
     LinearEquiv.ofEq _ _ hker
   have hboundary :
@@ -78,11 +71,9 @@ def tateUnitsH0IsoInvariantsQuotient (K L : Type)
     constructor
     · rintro ⟨y, ⟨z, rfl⟩, rfl⟩
       refine ⟨z, ?_⟩
-      apply Subtype.ext
       rfl
     · rintro ⟨z, rfl⟩
       refine ⟨S.moduleCatToCycles z, ⟨z, rfl⟩, ?_⟩
-      apply Subtype.ext
       rfl
   let eQ :
       S.moduleCatLeftHomologyData.H ≅
@@ -113,10 +104,7 @@ lemma additive_toMul_finset_sum_units {ι : Type*} (L : Type*) [Field L]
     Additive.toMul (Finset.sum s f) =
       Finset.prod s (fun i => Additive.toMul (f i)) := by
   classical
-  refine Finset.induction_on s ?h0 ?hstep
-  · simp
-  · intro a s ha hs
-    simp [Finset.sum_insert, Finset.prod_insert, ha, hs]
+  rfl
 
 /-- The additive subgroup of `Additive Kˣ` attached to the multiplicative norm subgroup. -/
 def additiveNormSubgroup (K L : Type u) [Field K] [Field L] [Algebra K L] :
@@ -172,7 +160,7 @@ lemma invariantsUnitsAddEquivBaseUnits_map_tateNormSubgroup (K L : Type)
         (invariantsUnitsAddEquivBaseUnits K L
           (unitsNormToInvariantsLinearMap K L z)) ∈ localNormSubgroup K L
     let a : Lˣ := Additive.toMul z
-    rw [show z = Additive.ofMul a by cases z; rfl]
+    rw [show z = Additive.ofMul a by rfl]
     have hmap :=
       congrArg Additive.toMul
         (invariantsUnitsAddEquivBaseUnits_unitsNorm_apply K L a)
@@ -191,7 +179,7 @@ lemma invariantsUnitsAddEquivBaseUnits_map_tateNormSubgroup (K L : Type)
           = Additive.ofMul (normUnits K L x) :=
             invariantsUnitsAddEquivBaseUnits_unitsNorm_apply K L x
       _ = Additive.ofMul (Additive.toMul y) := congrArg Additive.ofMul hx
-      _ = y := by cases y; rfl
+      _ = y := by rfl
 
 /-- The multiplicative invariant-unit equivalence maps Tate norms onto field norms. -/
 lemma invariantsUnitsEquivBaseUnits_map_tateNormSubmodule (K L : Type)
@@ -204,6 +192,3 @@ lemma invariantsUnitsEquivBaseUnits_map_tateNormSubmodule (K L : Type)
   apply Submodule.toAddSubgroup_injective
   rw [Submodule.map_toAddSubgroup]
   exact invariantsUnitsAddEquivBaseUnits_map_tateNormSubgroup K L
-
-end
-end CyclicCohomology

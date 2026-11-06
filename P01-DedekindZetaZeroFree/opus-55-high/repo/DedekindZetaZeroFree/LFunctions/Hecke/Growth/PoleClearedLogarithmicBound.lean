@@ -19,7 +19,7 @@ theorem rlogrBound_poleClear (H : ℂ → ℂ) (a b w : ℂ)
   let t : ℝ := (1 + ‖s‖) * Real.log (2 + ‖s‖)
   have hR : 0 ≤ ‖s‖ := norm_nonneg s
   have hlog : 0 ≤ Real.log (2 + ‖s‖) := Real.log_nonneg (by linarith)
-  have ht : 0 ≤ t := mul_nonneg (by positivity) hlog
+  have ht : 0 ≤ t := by positivity
   have hlin : 1 + ‖s‖ ≤ Real.exp t := by
     calc
       1 + ‖s‖ ≤ 2 + ‖s‖ := by linarith
@@ -32,7 +32,7 @@ theorem rlogrBound_poleClear (H : ℂ → ℂ) (a b w : ℂ)
     · linarith
     · exact hsub.trans hlin
     · exact norm_nonneg _
-    · exact (Real.exp_pos _).le
+    positivity
   have hE : Real.exp t ≤ Real.exp ((K + 2) * t) :=
     Real.exp_le_exp.mpr (by nlinarith)
   have hmain : ‖s‖ * ‖s - 1‖ * ‖H s‖ ≤ C * Real.exp ((K + 2) * t) := by
@@ -69,5 +69,3 @@ theorem rlogrBound_poleClear (H : ℂ → ℂ) (a b w : ℂ)
       dsimp [t]
       rw [mul_assoc (K + 2)]
       ring
-
-end DedekindZetaZeroFree.Hecke

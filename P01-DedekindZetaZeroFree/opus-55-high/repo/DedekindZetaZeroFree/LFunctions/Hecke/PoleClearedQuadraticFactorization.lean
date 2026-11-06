@@ -9,16 +9,15 @@ public import DedekindZetaZeroFree.LFunctions.Hecke.QuadraticLocalEulerFactors
 
 namespace DedekindZetaZeroFree.LargeSieve
 
-noncomputable section
 open scoped NumberField Classical Topology
 open Filter IsDedekindDomain
 
-private theorem norm_le_one_of_cube {F : Type} [Field F] [NumberField F]
+theorem norm_le_one_of_cube {F : Type} [Field F] [NumberField F]
     {f : Ideal (𝓞 F)} (η : DedekindZetaZeroFree.RayClassCharacter F f)
     (hq : ∀ I : Ideal (𝓞 F), η I ^ 3 = η I) (I : Ideal (𝓞 F)) : ‖η I‖ ≤ 1 := by
   have hfac : η I * (η I ^ 2 - 1) = 0 := by
     have : η I * (η I ^ 2 - 1) = η I ^ 3 - η I := by ring
-    rw [this, hq I, sub_self]
+    simp_all
   rcases mul_eq_zero.mp hfac with h0 | h1
   · simp [h0]
   · have hsq : η I ^ 2 = 1 := sub_eq_zero.mp h1
@@ -26,7 +25,7 @@ private theorem norm_le_one_of_cube {F : Type} [Field F] [NumberField F]
       rw [← norm_mul, ← pow_two, hsq]; simp
     nlinarith [norm_nonneg (η I)]
 
-private theorem quadratic_idealHeckeL_factorization_aux
+theorem quadratic_idealHeckeL_factorization_aux
     (F : Type) [Field F] [NumberField F]
     (hF : NumberField.IsTotallyComplex F)
     (f : Ideal (𝓞 F)) (hf : f ≠ ⊥)
@@ -52,7 +51,7 @@ private theorem quadratic_idealHeckeL_factorization_aux
     exact quadratic_local_euler_factors F hF f hf η hq hn hp d p s hs
   exact HasProd.unique hgrouped.2 (hfun.symm ▸ hprod)
 
-private theorem poleCleared_agrees_on_halfplane
+theorem poleCleared_agrees_on_halfplane
     (F : Type) [Field F] [NumberField F]
     (hF : NumberField.IsTotallyComplex F)
     (f : Ideal (𝓞 F)) (hf : f ≠ ⊥)
@@ -70,7 +69,7 @@ private theorem poleCleared_agrees_on_halfplane
   refine HasSum.unique (pE.hasSum s hs) ?_
   exact ((principal_idealHeckeL_absolute_euler_product d.extension s hs).1.hasSum).mul_left _
 
-private theorem poleCleared_base_series
+theorem poleCleared_base_series
     (F : Type) [Field F] [NumberField F]
     (pF : PrincipalHeckeWitness (principalUnitRayCharacter F)) :
     ∀ s : ℂ, 1 < s.re →
@@ -80,7 +79,7 @@ private theorem poleCleared_base_series
   refine HasSum.unique (pF.hasSum s hs) ?_
   exact ((principal_idealHeckeL_absolute_euler_product F s hs).1.hasSum).mul_left _
 
-private theorem poleCleared_eta_series
+theorem poleCleared_eta_series
     {F : Type} [Field F] [NumberField F]
     {f : Ideal (𝓞 F)} (hf : f ≠ ⊥)
     (η : DedekindZetaZeroFree.RayClassCharacter F f)
@@ -92,7 +91,7 @@ private theorem poleCleared_eta_series
   refine HasSum.unique (w.hasSum s hs) ?_
   exact ((idealHeckeL_absolute_euler_product η s hf hη hs).1.hasSum).mul_left _
 
-private theorem eq_of_agrees_on_halfplane {A B : ℂ → ℂ}
+theorem eq_of_agrees_on_halfplane {A B : ℂ → ℂ}
     (hA : Differentiable ℂ A) (hB : Differentiable ℂ B)
     (h : ∀ s : ℂ, 1 < s.re → A s = B s) : ∀ s : ℂ, A s = B s := by
   have hA' : AnalyticOnNhd ℂ A Set.univ :=
@@ -105,7 +104,7 @@ private theorem eq_of_agrees_on_halfplane {A B : ℂ → ℂ}
   have hev : A =ᶠ[𝓝 (2 : ℂ)] B := by
     filter_upwards [hU.mem_nhds hmem] with s hs using h s hs
   have hEq := AnalyticOnNhd.eq_of_eventuallyEq hA' hB' hev
-  exact fun s => congr_fun hEq s
+  simp_all
 
 theorem poleClearedHecke_factorization
     (F : Type) [Field F] [NumberField F]
@@ -125,9 +124,7 @@ theorem poleClearedHecke_factorization
   have hsig := quadraticExtension_signature F d.extension hF d.degree_two
   have hexp : Differentiable ℂ (fun s : ℂ =>
       Complex.exp ((heckeCompletionLogScale F d.extension f : ℂ) * s)) :=
-    Complex.differentiable_exp.comp
-      ((differentiable_const (c := (heckeCompletionLogScale F d.extension f : ℂ))).mul
-        differentiable_id)
+    by fun_prop
   have hB : Differentiable ℂ (fun s : ℂ =>
       Complex.exp ((heckeCompletionLogScale F d.extension f : ℂ) * s) * pF.U s * w.Λ s) :=
     (hexp.mul pF.differentiable_U).mul w.differentiable
@@ -139,12 +136,8 @@ theorem poleClearedHecke_factorization
   have hzeta := quadratic_idealHeckeL_factorization_aux F hF f hf η hq hn hp d s hs
   have hscale := heckeCompletionFactor_scaling F d.extension f hf hsig.2 s
   have hs0 : s ≠ 0 := by intro h; rw [h] at hs; norm_num at hs
-  have hs1 : s ≠ 1 := by intro h; rw [h] at hs; norm_num at hs
+  have hs1 : s ≠ 1 := by intro h; simp_all
   have hU_E := pE.poleClearing s hs0 hs1
   have hU_F := pF.poleClearing s hs0 hs1
   rw [hU_E, hU_F, hE, hFb, hW, hzeta, hscale]
   ring
-
-end
-
-end DedekindZetaZeroFree.LargeSieve

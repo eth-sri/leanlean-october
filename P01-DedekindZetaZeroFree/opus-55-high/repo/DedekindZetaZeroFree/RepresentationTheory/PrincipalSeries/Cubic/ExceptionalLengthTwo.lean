@@ -15,7 +15,6 @@ open scoped NumberField Valued
 open NumberField IsDedekindDomain
 open KPLocalExceptionalConstruction KPLocalStoneVonNeumann KPLocalPrincipalSeries
 
-set_option autoImplicit false
 set_option maxHeartbeats 4000000
 set_option backward.isDefEq.respectTransparency false
 
@@ -83,7 +82,7 @@ theorem actual_principal_series_length_le_two : by
       (KPJacquetExceptionalFactorSeparation.factorMinus S.borel P) i p hi hp he
     exact hle.trans hlen.le
 
-private theorem length_ge_two_of_opposite_maps
+theorem length_ge_two_of_opposite_maps
     {G V W : Type*} [Group G]
     [AddCommGroup V] [Module ℂ V] [AddCommGroup W] [Module ℂ W]
     (ρ : Representation ℂ G V) (σ : Representation ℂ G W)
@@ -98,8 +97,7 @@ private theorem length_ge_two_of_opposite_maps
     apply LinearMap.ext
     intro w
     have hw : B w ∈ A.ker.asSubmodule := LinearMap.congr_fun hcomp w
-    rw [H] at hw
-    exact hw
+    simp_all
   have htop : A.ker.asSubmodule ≠ ⊤ := by
     intro H
     apply hA
@@ -151,7 +149,7 @@ theorem actual_principal_series_length_two : by
       IsNonarchimedeanLocalField.isCompact_closedBall (LocalField F q) 1⟩,
       by
         rw [(ValuativeRel.valuation (LocalField F q)).isOpen_integer.interior_eq]
-        exact ⟨0, by simp⟩⟩
+        simp⟩
   let μ := MeasureTheory.Measure.addHaarMeasure O
   have hμ : μ ((ValuativeRel.valuation (LocalField F q)).integer : Set (LocalField F q)) = 1 :=
     MeasureTheory.Measure.addHaarMeasure_self
@@ -161,7 +159,3 @@ theorem actual_principal_series_length_two : by
     hnonzero.1 hnonzero.2 hcomp.1 hcomp.2
   have hle := actual_principal_series_length_le_two F ζ hζ q S P
   exact ⟨le_antisymm hle.1 hge.1, le_antisymm hle.2 hge.2⟩
-
-end DedekindZetaZeroFree.KPRankOneShellRepair
-
-end

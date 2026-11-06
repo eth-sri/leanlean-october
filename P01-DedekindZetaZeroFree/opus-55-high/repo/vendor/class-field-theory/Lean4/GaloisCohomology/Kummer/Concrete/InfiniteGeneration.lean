@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # infinite actual-field form
 
@@ -27,7 +24,6 @@ This is the actual-field `n`-th-power case.  It does not claim the general
 abstract-operator statement of the Kummer generation theorem.
 -/
 
-noncomputable section
 
 namespace KummerTheory
 
@@ -84,7 +80,3 @@ theorem kummerRootSet_adjoin_eq_top
     ⟨x, FiniteGaloisIntermediateField.subset_adjoin K {x} (Set.mem_singleton x)⟩
   have hxE : xE ∈ U.comap E.val := htop_le (Set.mem_univ xE)
   exact hxE
-
-end KummerTheory
-
-end

@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Concrete prime-norm evaluation
 
@@ -93,9 +89,7 @@ theorem concreteNormResidueSymbolOfEmbedding_apply_primeNorm
     (Eᵢ).finite
   let hBKEfinite : Finite (BK.field.toSubgroup ⧸
       extensionSubgroup BK.field (Eᵢ).field (Eᵢ).below) := by
-    change Finite ((intrinsicAbstractBase K).toSubgroup ⧸
-      extensionSubgroup (intrinsicAbstractBase K) (Eᵢ).field (Eᵢ).below)
-    exact hEfinite
+    omega
   let KR := BK.toFiniteResidueAbstractField D
   let S := D.frobeniusFixedField KR (Eᵢ).field (Eᵢ).below sigma
   let hSB := D.frobeniusFixedField_le
@@ -107,7 +101,7 @@ theorem concreteNormResidueSymbolOfEmbedding_apply_primeNorm
   let e := baseUnitsEquivGaloisAmbientFixed K (SeparableClosure K)
   let a := relativeNorm (intrinsicAbsoluteUnits K) (intrinsicAbstractBase K) S hSB pi
   have hbase : e (Additive.ofMul x) = a := by
-    simpa only [BK, KR, S, hSB, e, a] using hx
+    omega
   have hprimeNorm :
       D.finiteReciprocityHom (intrinsicAbsoluteUnits K) v (v.classFieldAxiom_implies_unramifiedUnitCohomology hcf)
           BK (Eᵢ).field (Eᵢ).below (Additive.ofMul q) =
@@ -121,8 +115,7 @@ theorem concreteNormResidueSymbolOfEmbedding_apply_primeNorm
       D.abstractReciprocityEquiv (intrinsicAbsoluteUnits K) v hcf BK Eᵢ
           (Additive.ofMul (Abelianization.of q)) =
         finiteNormClass (intrinsicAbsoluteUnits K) (intrinsicAbstractBase K) (Eᵢ).field (Eᵢ).below a := by
-    rw [D.abstractReciprocityEquiv_apply_of (intrinsicAbsoluteUnits K) v hcf BK Eᵢ q]
-    exact hprimeNorm
+    simp_all
   have hnormTransport :
       finiteNormQuotientEquivEmbeddedNormQuotient
           K (SeparableClosure K) L i
@@ -167,7 +160,7 @@ theorem concreteNormResidueSymbolOfEmbedding_apply_primeNorm
                 (finiteGaloisAbstractQuotientEquivGaloisGroupOfEmbedding
                   K L i q))))) =
         Additive.ofMul (normClass K L x)
-    rw [hsource, hreciprocity, hnormTransport]
+    simp_all
   change
     (concreteReciprocityEquivOfEmbedding K L i D v hcf).symm
         (normClass K L x) =
@@ -176,7 +169,3 @@ theorem concreteNormResidueSymbolOfEmbedding_apply_primeNorm
   apply (concreteReciprocityEquivOfEmbedding K L i D v hcf).injective
   rw [(concreteReciprocityEquivOfEmbedding K L i D v hcf).apply_symm_apply]
   exact (congrArg Additive.toMul hforward).symm
-
-end LocalClassFieldTheory
-
-end

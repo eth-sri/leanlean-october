@@ -6,7 +6,6 @@ public import DedekindZetaZeroFree.Moments.Principal.TripleMellin.ShearedKernelI
 
 namespace DedekindZetaZeroFree.NormalizedProbe.TripleMellin
 open TripleMellinRaw
-noncomputable section
 open MeasureTheory
 open scoped NumberField Classical
 variable {F : Type} [Field F] [NumberField F]
@@ -19,8 +18,7 @@ theorem orbit_term_mellin (P : PrincipalData A σ η hS)
     ProbePoissonOrbitFormula.term A σ η hS P (frequencySection P)
       X.val Y.val Z.val (orbitIndexEquiv P i) =
       tripleMellinNormalization * ∫ t : ℝ × ℝ × ℝ,
-        initialTripleMellinSummand P X.val Y.val Z.val i t := by
-  exact TermRace.term_inversion_race P N X Y Z i
+        initialTripleMellinSummand P X.val Y.val Z.val i t := by apply DedekindZetaZeroFree.NormalizedProbe.TripleMellin.TermRace.term_inversion_race <;> assumption
 
 theorem probe_eq_mellin_integral (P : PrincipalData A σ η hS)
     (N : MellinNormalizationData A σ η hS P) (X Y Z : {x : ℝ // 0 < x}) :
@@ -31,6 +29,3 @@ theorem probe_eq_mellin_integral (P : PrincipalData A σ η hS)
   simp_rw [orbit_term_mellin P N X Y Z]
   rw [tsum_mul_left]
   exact (integral_eq_sum P X.val Y.val Z.val X.property Y.property Z.property).symm
-
-end
-end DedekindZetaZeroFree.NormalizedProbe.TripleMellin

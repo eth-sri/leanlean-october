@@ -27,7 +27,7 @@ theorem finiteBall_eq_valuation_product (F : Type) [Field F] [NumberField F]
   intro v
   exact (Set.ext_iff.mp (PoissonSLocalBalls.ball_eq_normBall F v.val (k v)) (z v)).symm
 
-private theorem ideal_fiber (F : Type) [Field F] [NumberField F]
+theorem ideal_fiber (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (𝓞 F))) (k : S → ℤ) :
     (↑(PoissonS.ballFractionalIdeal F S k) : Set F) =
       {i : F | i ∈ sIntegerRing F S ∧
@@ -35,9 +35,7 @@ private theorem ideal_fiber (F : Type) [Field F] [NumberField F]
   rw [← sGlobalBoundedIdealSet_eq_ballFractionalIdeal]
   ext i
   rw [finiteBall_eq_valuation_product]
-  simp only [sGlobalBoundedIdealSet, Set.mem_setOf_eq,
-    PoissonSLocalBalls.mem_ball, PoissonFinite.diagonal,
-    HeightOneSpectrum.adicCompletion.valued_coe]
+  simp only [sGlobalBoundedIdealSet, Set.mem_setOf_eq, PoissonSLocalBalls.mem_ball, PoissonFinite.diagonal]
   have hv (v : S) : Valued.v (FinitePlace.embedding v.val i) = v.val.valuation F i :=
     HeightOneSpectrum.adicCompletion.valued_coe _ _ _
   simp_rw [hv]
@@ -189,7 +187,3 @@ theorem exists_uniform_ball_partition (F : Type) [Field F] [NumberField F]
         simp [PoissonFinite.diagonal, map_add]
       rw [hd]
       exact hi.2
-
-end DedekindZetaZeroFree.PoissonSUniformBallPartition
-
-end

@@ -8,7 +8,6 @@ public import DedekindZetaZeroFree.Arithmetic.LocalFields.SixthPowerChineseRemai
 open scoped NumberField Classical
 namespace DedekindZetaZeroFree.SArithmeticData
 noncomputable section
-set_option autoImplicit false
 set_option backward.isDefEq.respectTransparency false
 variable {F : Type} [Field F] [NumberField F]
 
@@ -208,8 +207,8 @@ theorem H_S6_perfect (A : SArithmeticData F) : Function.Bijective A.H_S6 := by
         intro a
         apply (mem_rootsOfUnity 6 _).2
         rw [← map_pow, powerQuotient_pow_eq_one A.G 6, map_one])
-      left_inv := by intro f; ext a; rfl
-      right_inv := by intro f; ext a; rfl }
+      left_inv := by intro f; rfl
+      right_inv := by intro f; rfl }
   have hcard : Nat.card A.V = Nat.card (A.V →* rootsOfUnity 6 F) := by
     calc
       Nat.card A.V = Nat.card (A.V →* Fˣ) :=
@@ -220,6 +219,3 @@ theorem H_S6_perfect (A : SArithmeticData F) : Function.Bijective A.H_S6 := by
       rw [← hcard]
       exact (Nat.card_pos (α := A.V)).ne')
   exact (Nat.bijective_iff_injective_and_card A.H_S6).2 ⟨hinj, hcard⟩
-
-end
-end DedekindZetaZeroFree.SArithmeticData

@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Topological structure of local-field units
 
@@ -42,7 +37,7 @@ variable {K : Type u} [Field K]
 first principal units are a finite cyclic `p`-group times
 `[K : ℚ_p]` copies of `ℤ_p`; adjoining the valuation and Teichmuller factors
 gives the displayed topological decomposition of `Kˣ` in the canonical factor order. -/
-noncomputable def chosenFieldUnitsStructure_mixedCharacteristic
+def chosenFieldUnitsStructure_mixedCharacteristic
     (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
     [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
     [Finite (IsLocalRing.ResidueField v.valuationSubring)] [CharZero K]
@@ -84,7 +79,7 @@ noncomputable def chosenFieldUnitsStructure_mixedCharacteristic
 
 /-- The exact principal-unit factor in the equal-characteristic field-unit structure theorem, reindexed from
 the prime-to-`p` degrees and residue-basis coordinates by `ℕ`. -/
-noncomputable def chosenFirstPrincipalUnitStructure_equalCharacteristic
+def chosenFirstPrincipalUnitStructure_equalCharacteristic
     (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
     [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
     [Finite (IsLocalRing.ResidueField v.valuationSubring)]
@@ -102,8 +97,7 @@ noncomputable def chosenFirstPrincipalUnitStructure_equalCharacteristic
   let : ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete
       (Valued.v : _root_.Valuation K
         (WithZero (Multiplicative ℤ))) := by
-    change ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v
-    infer_instance
+    omega
   let E :=
     (CompleteDVF.higherPrincipalUnitGroup.iwasawaGlobalAdicPrincipalUnitsContinuousAddEquiv
       F hπ).trans
@@ -120,33 +114,3 @@ noncomputable def chosenFirstPrincipalUnitStructure_equalCharacteristic
           F.toCompleteDVF 1) :=
     I.symm.trans E
   exact LocalFieldTheory.DiscreteValuationField.continuousMulEquivOfAdditiveTarget eAdd
-
-/-- The local-field structure theory, the equal-characteristic field-unit structure theorem.  In equal characteristic the
-Iwasawa generators identify the first principal units with a countable
-product of `ℤ_p`; adjoining the valuation and Teichmuller factors gives the
-canonical topological decomposition of `Kˣ`. -/
-noncomputable def chosenFieldUnitsStructure_equalCharacteristic
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
-    [Finite (IsLocalRing.ResidueField v.valuationSubring)]
-    [CharP K (ofWithZeroValuation v).residueCharacteristic] :
-    let F : LocalField.{u, 0} K := ofWithZeroValuation v
-    letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-    Multiplicative ℤ ×
-        (Multiplicative (ZMod (Nat.card F.residueField - 1)) ×
-          Multiplicative (ℕ → ℤ_[F.residueCharacteristic])) ≃ₜ* Kˣ := by
-  let F : LocalField.{u, 0} K := ofWithZeroValuation v
-  letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-  let hex := F.toCompleteDVF.exists_uniformizer
-  let π := Classical.choose hex
-  have hπ : v.IsUniformizer (π : K) := Classical.choose_spec hex
-  let ePrincipal :=
-    chosenFirstPrincipalUnitStructure_equalCharacteristic v
-  exact
-    CompleteDVF.higherPrincipalUnitGroup.fieldUnitsContinuousMulEquivUniformizerRootsPrincipalUnitsOfWithZeroValuation
-      v hπ (Multiplicative (ℕ → ℤ_[F.residueCharacteristic])) ePrincipal
-
-end LocalField
-end LocalFieldTheory.DiscreteValuationField
-
-end

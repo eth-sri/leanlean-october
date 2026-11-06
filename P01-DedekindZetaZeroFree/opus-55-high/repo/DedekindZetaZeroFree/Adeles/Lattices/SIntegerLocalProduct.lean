@@ -25,8 +25,7 @@ def sLocalDiagonal (F : Type*) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
     (t : F) (v : InfinitePlace F) :
     (sLocalDiagonal F S t).1 v = algebraMap F v.Completion t := by
-  simp only [sLocalDiagonal]
-  exact InfiniteAdeleRing.algebraMap_apply F t v
+  rfl
 
 @[simp] theorem sLocalDiagonal_finite (F : Type*) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (RingOfIntegers F))) (t : F) (v : S) :
@@ -41,15 +40,13 @@ private theorem valued_algebraMap_adicCompletion (F : Type*) [Field F] [NumberFi
     (v : HeightOneSpectrum (RingOfIntegers F)) (t : F) :
     Valued.v (algebraMap F (v.adicCompletion F) t) = v.valuation F t := by
   rw [show algebraMap F (v.adicCompletion F) t = (t : v.adicCompletion F) from rfl]
-  exact IsDedekindDomain.HeightOneSpectrum.adicCompletion.valued_coe F v t
+  simp
 
-private theorem mem_sIntegerRing_iff_valuation (F : Type*) [Field F] [NumberField F]
+theorem mem_sIntegerRing_iff_valuation (F : Type*) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (RingOfIntegers F))) (t : F) :
     t ∈ sIntegerRing F S ↔
       ∀ v : HeightOneSpectrum (RingOfIntegers F), v ∉ S → v.valuation F t ≤ 1 := by
-  rw [sIntegerRing, Set.integer_eq]
-  simp only [Subring.mem_iInf, ValuationSubring.mem_toSubring, Valuation.mem_valuationSubring_iff,
-    Finset.mem_coe]
+  rfl
 
 theorem mem_sIntegerRing_iff (F : Type*) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (RingOfIntegers F))) (t : F) :
@@ -76,7 +73,3 @@ def sIntegerDiagonal (F : Type*) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (RingOfIntegers F))) (t : sIntegerRing F S) :
     sIntegerDiagonal F S t = sLocalDiagonal F S (t : F) := by
   rfl
-
-end DedekindZetaZeroFree
-
-end

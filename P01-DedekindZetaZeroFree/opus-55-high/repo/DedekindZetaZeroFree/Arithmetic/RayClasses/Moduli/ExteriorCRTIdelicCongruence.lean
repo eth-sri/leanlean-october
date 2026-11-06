@@ -14,7 +14,7 @@ open ClassFieldTheory.GlobalClassFieldComparison
 
 noncomputable section
 
-private theorem exp_zero_iff (F : Type) [Field F] [NumberField F]
+theorem exp_zero_iff (F : Type) [Field F] [NumberField F]
     (v : HeightOneSpectrum (𝓞 F)) (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) :
     idealPrimeExponent v.asIdeal I = 0 ↔ ¬ I ≤ v.asIdeal := by
   rw [idealPrimeExponent, Multiset.count_eq_zero,
@@ -28,14 +28,14 @@ private theorem exp_mul (F : Type) [Field F] [NumberField F]
   simp [idealPrimeExponent, UniqueFactorizationMonoid.normalizedFactors_mul hI hJ,
     Multiset.count_add]
 
-private theorem le_pow_exp (F : Type) [Field F] [NumberField F]
+theorem le_pow_exp (F : Type) [Field F] [NumberField F]
     (v : HeightOneSpectrum (𝓞 F)) (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) :
     I ≤ v.asIdeal ^ idealPrimeExponent v.asIdeal I := by
   rw [← Ideal.dvd_iff_le, pow_dvd_iff_le_emultiplicity,
     UniqueFactorizationMonoid.emultiplicity_eq_count_normalizedFactors v.irreducible hI]
   simp [idealPrimeExponent]
 
-private theorem ratio_higher (F : Type) [Field F] [NumberField F]
+theorem ratio_higher (F : Type) [Field F] [NumberField F]
     (v : HeightOneSpectrum (𝓞 F)) (a b : 𝓞 F) (ha : a ≠ 0) (hb : b ≠ 0)
     (hav : a ∉ v.asIdeal) (hbv : b ∉ v.asIdeal) (k : ℕ)
     (hab : a - b ∈ v.asIdeal ^ k) :
@@ -64,14 +64,10 @@ private theorem ratio_higher (F : Type) [Field F] [NumberField F]
     have haeq : Units.map (v.adicCompletionIntegers F).subtype.toMonoidHom hua.unit =
         integralElementLocalUnit F v a ha := by
       apply Units.ext
-      change (↑hua.unit : v.adicCompletionIntegers F).val = _
-      rw [hua.unit_spec]
       rfl
     have hbeq : Units.map (v.adicCompletionIntegers F).subtype.toMonoidHom hub.unit =
         integralElementLocalUnit F v b hb := by
       apply Units.ext
-      change (↑hub.unit : v.adicCompletionIntegers F).val = _
-      rw [hub.unit_spec]
       rfl
     rw [haeq, hbeq]
   · have hmem : aa - bb ∈ IsLocalRing.maximalIdeal (v.adicCompletionIntegers F) ^ k := by
@@ -80,10 +76,9 @@ private theorem ratio_higher (F : Type) [Field F] [NumberField F]
         v.adicCompletionIntegers F) - 1 = (aa - bb) * ↑(hub.unit⁻¹) := by
       simp only [div_eq_mul_inv, Units.val_mul, hua.unit_spec]
       have hbi : bb * (↑(hub.unit⁻¹) : v.adicCompletionIntegers F) = 1 := by
-        simpa only [hub.unit_spec] using hub.unit.mul_inv
+        simp
       rw [sub_mul, hbi]
-    rw [heq]
-    exact Ideal.mul_mem_right _ _ hmem
+    simp_all
 
 theorem crt_removed_ratio_mem_primeTo
     (F : Type) [Field F] [NumberField F] (A : SArithmeticData F)
@@ -186,7 +181,7 @@ theorem crt_removed_ratio_mem_primeTo
         change _ ∈ ClassFieldTheory.rayLocalHigherUnitGroup v _
         rwa [ClassFieldTheory.mem_rayLocalHigherUnitGroup_iff]
       convert (RayClass.localHigherUnitGroup v (idealPrimeExponent v.asIdeal f)).inv_mem hbmem using 1
-      simp [div_eq_mul_inv, mul_comm, mul_left_comm, mul_assoc]
+      simp
     · rw [if_neg hvs, div_one]
       have hs0 : idealPrimeExponent v.asIdeal fS = 0 := by
         apply (exp_zero_iff F v fS hsplit.2.1).mpr
@@ -235,9 +230,7 @@ theorem removed_principal_integral_ratio_ideal
   have hkey :
       toPrincipalIdeal (𝓞 F) F (Units.mk0 (b : F) (by exact_mod_cast hb)) =
         integralUnit F (Ideal.span {b}) (by simpa using hb) := by
-    refine Units.ext ?_
-    rw [coe_toPrincipalIdeal, RayClassBridge.integralUnit_val,
-      FractionalIdeal.coeIdeal_span_singleton, Units.val_mk0]
+    simp
 
   simp only [map_div, IdeleGroup.fractionalIdeal_principalIdele, hkey]
   rw [div_div, div_div, mul_comm]
@@ -305,7 +298,7 @@ theorem exterior_removed_idele_ideal
       (Units.mk0 (a : F) (by exact_mod_cast ha)) rfl v hv
     change Valued.v (algebraMap F (v.adicCompletion F) (a : F)) = _ at hval
     change -WithZero.log (Valued.v (algebraMap F (v.adicCompletion F) (a : F))) = _
-    rw [hval, WithZero.log_exp, neg_neg]
+    simp_all
 
 open RayClassBridge ClassFieldTheory.GlobalClassFieldComparison
 
@@ -379,8 +372,7 @@ theorem primeTo_idele_evaluation (F : Type) [Field F] [NumberField F] (hc : Numb
        QuotientGroup.mk' M'.congruenceSubgroup
          (QuotientGroup.mk' (IdeleGroup.principalSubgroup F) a) := by
    apply (RayClass.rayClassGroupEquivIdealRayClassGroup M').injective
-   simp only [rayClassGroupEquivOriginalIdele, MulEquiv.trans_apply,
-      MulEquiv.apply_symm_apply]
+   simp only [rayClassGroupEquivOriginalIdele, MulEquiv.trans_apply]
    have hI : rayClassGroupEquivOriginal F M
        (QuotientGroup.mk' (ClassFieldTheory.rayPrincipalIdealSubgroupInPrimeTo M) I) =
        RayClass.idealRayProjection M' A := by
@@ -396,13 +388,13 @@ theorem primeTo_idele_evaluation (F : Type) [Field F] [NumberField F] (hc : Numb
      rfl
    rw [hproj, ← RayClass.quotientRaySubgroupEquivIdeleRayQuotient_mk,
      MulEquiv.symm_apply_apply, RayClass.quotientRaySubgroupEquivIdealRayClassGroup_mk]
-   exact (MulEquiv.apply_symm_apply _ _).symm
+   simp
  change rayCharacter F hc m hm η
    ((rayClassGroupEquivOriginalIdele F M).symm
      (QuotientGroup.mk' M'.congruenceSubgroup
        (QuotientGroup.mk' (IdeleGroup.principalSubgroup F) a))) = _
  rw [← he, MulEquiv.symm_apply_apply]
- exact DFunLike.congr_fun (rayCharacter_comp_quotient F hc m hm η) I
+ rfl
 
 theorem principal_ratio_transfer
     (F : Type) [Field F] [NumberField F] (A : SArithmeticData F)
@@ -501,15 +493,13 @@ theorem s_removed_principal_ideal (F : Type) [Field F] [NumberField F] (A : SAri
     rw [map_div, sFiniteInsertion_component, if_pos hv]
     have hp : IdeleGroup.finiteComponent v (IdeleGroup.principalIdele F x) =
       ClassFieldTheory.finitePlaceUnitEmbedding v x := by
-      apply Units.ext
       rfl
     rw [hp, div_self']
   · intro v hv
     rw [map_div, sFiniteInsertion_component, if_neg hv, div_one, hu]
-    apply Units.ext
     rfl
 
-private theorem unit_quotient_coprime {R : Type*} [CommRing R]
+theorem unit_quotient_coprime {R : Type*} [CommRing R]
     (q : Ideal R) (x : R) :
     IsUnit (Ideal.Quotient.mk q x) ↔ Ideal.span {x} ⊔ q = ⊤ := by
   constructor
@@ -623,7 +613,6 @@ theorem integral_exterior_crt_transfer
   let x : Fˣ := Units.mk0 (a : F) (by exact_mod_cast ha)
   let y : Fˣ := Units.mk0 (b : F) (by exact_mod_cast hb)
   have hnx : FixedSResidue.fieldUnit A n = x := by
-    apply Units.ext
     rfl
   have hs : finiteDiagonalIdele F A (FixedSResidue.fieldUnit A n) =
       ∏ v : {v // v ∈ A.Sf}, IdeleGroup.finitePlaceIdele v.val
@@ -657,8 +646,3 @@ theorem integral_exterior_crt_transfer
     rw [s_removed_principal_ideal F A a ha e he]
   exact principal_ratio_transfer F A omega sigma hinfinite hlocal n y
     e.val (Ideal.span {b}) e.property.1 (by simpa using hb) hcI hcJ hprime hideal
-
-end
-end DedekindZetaZeroFree.Detector.ExteriorDyadic.ResidueFiberAdapter.ExteriorCharacterSteps
-
-end

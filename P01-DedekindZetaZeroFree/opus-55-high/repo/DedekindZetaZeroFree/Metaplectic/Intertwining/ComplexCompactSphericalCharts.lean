@@ -46,7 +46,7 @@ theorem hopfVector_norm (k : ComplexSU2) : ‖hopfVector k‖ = 1 := by
 noncomputable def hopf (k : ComplexSU2) : Sphere :=
   ⟨hopfVector k, by simpa only [Metric.mem_sphere, dist_zero_right] using hopfVector_norm k⟩
 
-private theorem hopf_coordinates : CompactCharts.HasHopfCoordinates hopf := by
+theorem hopf_coordinates : CompactCharts.HasHopfCoordinates hopf := by
   intro k
   rfl
 
@@ -57,11 +57,8 @@ def rowSU2 (a b : ℂ) (h : ‖a‖ ^ 2 + ‖b‖ ^ 2 = 1) : ComplexSU2 :=
     constructor
     · ext i j
       fin_cases i <;> fin_cases j <;>
-        simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.star_apply,
-          Complex.star_def, Complex.mul_conj', ← Complex.ofReal_pow,
-          ← Complex.ofReal_add, h, h', mul_comm]
-    · simp [Matrix.det_fin_two, Complex.star_def, Complex.mul_conj',
-        mul_comm, ← Complex.ofReal_pow, ← Complex.ofReal_add, h, h']⟩
+        simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.star_apply, Complex.mul_conj', ← Complex.ofReal_pow, ← Complex.ofReal_add, h, h', mul_comm]
+    · simp [Matrix.det_fin_two, Complex.mul_conj', mul_comm, ← Complex.ofReal_pow, ← Complex.ofReal_add, h']⟩
 
 theorem hopf_surjective : Function.Surjective hopf := by
   intro x
@@ -115,9 +112,7 @@ theorem principalSeries_open_bruhat (s : ℝ) (f : PrincipalSeries s) (g : Compl
     apply Matrix.GeneralLinearGroup.ext
     intro i j
     fin_cases i <;> fin_cases j <;>
-      simp [CompactCharts.upperTriangular_coe_matrix, weyl, upperUnipotent, Matrix.GeneralLinearGroup.coe_mul,
-        Matrix.mul_apply, Fin.sum_univ_two, a, d, Matrix.GeneralLinearGroup.val_det_apply,
-        Matrix.det_fin_two]
+      simp [CompactCharts.upperTriangular_coe_matrix, weyl, upperUnipotent, Matrix.mul_apply, Fin.sum_univ_two, a, d, Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two]
     all_goals field_simp
     all_goals ring
   conv_lhs => rw [hg, f.property.1]
@@ -125,7 +120,7 @@ theorem principalSeries_open_bruhat (s : ℝ) (f : PrincipalSeries s) (g : Compl
   unfold inductionWeight complexAbs
   have he : ‖(a : ℂ) / (d : ℂ)‖ = ‖(Matrix.GeneralLinearGroup.det g : ℂ)‖ /
       ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 0‖ ^ 2 := by
-    simp [a, d, norm_div, norm_neg, div_div, sq]
+    simp [a, d, norm_neg, div_div, sq]
   rw [he]
   apply congrArg Complex.ofReal
   calc
@@ -161,7 +156,7 @@ theorem hopf_fiber_row_data (k l : ComplexSU2) (h : hopf k = hopf l) :
 private lemma ratio_of_product (a b : ℂ) (ha : a ≠ 0) :
     b / a = star (a * star b) / (‖a‖ ^ 2 : ℂ) := by
   have hn : (‖a‖ ^ 2 : ℂ) = a * star a := by
-    simp [Complex.star_def, Complex.mul_conj', ← Complex.ofReal_pow]
+    simp [Complex.mul_conj', ← Complex.ofReal_pow]
   rw [hn, star_mul, star_star]
   field_simp [ha, star_ne_zero.mpr ha]
 theorem principalSeries_infinity_bruhat (s : ℝ) (f : PrincipalSeries s) (g : ComplexGL2)
@@ -175,9 +170,7 @@ theorem principalSeries_infinity_bruhat (s : ℝ) (f : PrincipalSeries s) (g : C
     apply Matrix.GeneralLinearGroup.ext
     intro i j
     fin_cases i <;> fin_cases j <;>
-      simp [CompactCharts.upperTriangular_coe_matrix, lowerUnipotent, Matrix.GeneralLinearGroup.coe_mul,
-        Matrix.mul_apply, Fin.sum_univ_two, a, d, Matrix.GeneralLinearGroup.val_det_apply,
-        Matrix.det_fin_two]
+      simp [CompactCharts.upperTriangular_coe_matrix, lowerUnipotent, Matrix.mul_apply, Fin.sum_univ_two, a, d, Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two]
     all_goals field_simp
     all_goals ring
   conv_lhs => rw [hg, f.property.1]
@@ -185,7 +178,7 @@ theorem principalSeries_infinity_bruhat (s : ℝ) (f : PrincipalSeries s) (g : C
   unfold inductionWeight complexAbs
   have he : ‖(a : ℂ) / (d : ℂ)‖ = ‖(Matrix.GeneralLinearGroup.det g : ℂ)‖ /
       ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 1‖ ^ 2 := by
-    simp [a, d, norm_div, norm_neg, div_div, sq]
+    simp [a, d, div_div, sq]
   rw [he]
   apply congrArg Complex.ofReal
   calc
@@ -215,21 +208,17 @@ theorem compactRestriction_hopf_fiber (s : ℝ) (f : PrincipalSeries s)
     have hbl : (l : Matrix (Fin 2) (Fin 2) ℂ) 1 1 ≠ 0 := by
       have := su2_bottomRow_norm_sq l
       intro hb
-      simp [hl, hb] at this
+      simp_all
     rw [principalSeries_infinity_bruhat s f _ hbk, principalSeries_infinity_bruhat s f _ hbl]
     simp only [hdetk, hdetl]
     change (Real.rpow (‖(1:ℂ)‖ / ‖(k : Matrix (Fin 2) (Fin 2) ℂ) 1 1‖ ^ 2) (1+2*s):ℂ) *
       infinityCoordinate f ((k : Matrix (Fin 2) (Fin 2) ℂ) 1 0 / (k : Matrix (Fin 2) (Fin 2) ℂ) 1 1) =
       (Real.rpow (‖(1:ℂ)‖ / ‖(l : Matrix (Fin 2) (Fin 2) ℂ) 1 1‖ ^ 2) (1+2*s):ℂ) *
       infinityCoordinate f ((l : Matrix (Fin 2) (Fin 2) ℂ) 1 0 / (l : Matrix (Fin 2) (Fin 2) ℂ) 1 1)
-    simp only [ha, hl, zero_div]
-    rw [h1]
+    simp_all
   · have hl : (l : Matrix (Fin 2) (Fin 2) ℂ) 1 0 ≠ 0 := by
       intro hl
-      rw [hl, norm_zero, zero_pow (by decide)] at h0
-      have hn : ‖(k : Matrix (Fin 2) (Fin 2) ℂ) 1 0‖ = 0 := by
-        nlinarith [norm_nonneg ((k : Matrix (Fin 2) (Fin 2) ℂ) 1 0)]
-      exact ha (norm_eq_zero.mp hn)
+      simp_all
     rw [principalSeries_open_bruhat s f _ ha, principalSeries_open_bruhat s f _ hl]
     simp only [hdetk, hdetl]
     change (Real.rpow (‖(1:ℂ)‖ / ‖(k : Matrix (Fin 2) (Fin 2) ℂ) 1 0‖ ^ 2) (1+2*s):ℂ) *
@@ -237,7 +226,7 @@ theorem compactRestriction_hopf_fiber (s : ℝ) (f : PrincipalSeries s)
       (Real.rpow (‖(1:ℂ)‖ / ‖(l : Matrix (Fin 2) (Fin 2) ℂ) 1 0‖ ^ 2) (1+2*s):ℂ) *
       openCoordinate f ((l : Matrix (Fin 2) (Fin 2) ℂ) 1 1 / (l : Matrix (Fin 2) (Fin 2) ℂ) 1 0)
     rw [ratio_of_product _ _ ha, ratio_of_product _ _ hl, hp, h0]
-    simp only [← Complex.ofReal_pow, h0]
+    simp_all
 
  theorem hopf_open_ratio (k : ComplexSU2)
     (ha : (k : Matrix (Fin 2) (Fin 2) ℂ) 1 0 ≠ 0) :
@@ -255,10 +244,10 @@ theorem compactRestriction_hopf_fiber (s : ℝ) (f : PrincipalSeries s)
   have hp : (hopfVector k 0 : ℂ) - Complex.I * (hopfVector k 1 : ℂ) =
       2 * star (a * star b) := by
     change ((2 * (a * star b).re : ℝ) : ℂ) - Complex.I * ((2 * (a * star b).im : ℝ) : ℂ) = _
-    apply Complex.ext <;> simp [Complex.mul_re, Complex.mul_im, Complex.star_def] <;> ring
+    apply Complex.ext <;> simp [Complex.mul_re, Complex.mul_im] <;> ring
   rw [hn, hp]
   have hn' : (‖a‖ ^ 2 : ℂ) = a * star a := by
-    simp [Complex.star_def, Complex.mul_conj', ← Complex.ofReal_pow]
+    simp [Complex.mul_conj', ← Complex.ofReal_pow]
   rw [hn', star_mul, star_star]
   change b / a = _
   field_simp [show a ≠ 0 from ha, star_ne_zero.mpr (show a ≠ 0 from ha)]
@@ -279,10 +268,10 @@ theorem hopf_infinity_ratio (k : ComplexSU2)
   have hp : (hopfVector k 0 : ℂ) + Complex.I * (hopfVector k 1 : ℂ) =
       2 * (a * star b) := by
     change ((2 * (a * star b).re : ℝ) : ℂ) + Complex.I * ((2 * (a * star b).im : ℝ) : ℂ) = _
-    apply Complex.ext <;> simp [Complex.mul_re, Complex.mul_im, Complex.star_def] <;> ring
+    apply Complex.ext <;> simp [Complex.mul_re, Complex.mul_im] <;> ring
   rw [hn, hp]
   have hn' : (‖b‖ ^ 2 : ℂ) = b * star b := by
-    simp [Complex.star_def, Complex.mul_conj', ← Complex.ofReal_pow]
+    simp [Complex.mul_conj', ← Complex.ofReal_pow]
   rw [hn']
   change a / b = _
   field_simp [show b ≠ 0 from hb, star_ne_zero.mpr (show b ≠ 0 from hb)]
@@ -308,8 +297,7 @@ theorem hopf_bottomRow_coordinates (k : ComplexSU2) :
   change (Real.rpow (‖(1:ℂ)‖ / ‖(k : Matrix (Fin 2) (Fin 2) ℂ) 1 0‖ ^ 2) (1+2*s):ℂ) *
       openCoordinate f ((k : Matrix (Fin 2) (Fin 2) ℂ) 1 1 / (k : Matrix (Fin 2) (Fin 2) ℂ) 1 0) = _
   rw [hopf_open_ratio k ha, (hopf_bottomRow_coordinates k).1, norm_one]
-  congr 3
-  simp [div_div]
+  simp
  theorem compactRestriction_infinity_hopf (s : ℝ) (f : PrincipalSeries s) (k : ComplexSU2)
     (hb : (k : Matrix (Fin 2) (Fin 2) ℂ) 1 1 ≠ 0) :
     compactRestriction s f k =
@@ -322,8 +310,7 @@ theorem hopf_bottomRow_coordinates (k : ComplexSU2) :
   change (Real.rpow (‖(1:ℂ)‖ / ‖(k : Matrix (Fin 2) (Fin 2) ℂ) 1 1‖ ^ 2) (1+2*s):ℂ) *
       infinityCoordinate f ((k : Matrix (Fin 2) (Fin 2) ℂ) 1 0 / (k : Matrix (Fin 2) (Fin 2) ℂ) 1 1) = _
   rw [hopf_infinity_ratio k hb, (hopf_bottomRow_coordinates k).2, norm_one]
-  congr 3
-  simp [div_div]
+  simp
 
 theorem existsUnique_sphereProfile (s : ℝ) (f : PrincipalSeries s) :
     ∃! F : Sphere → ℂ, IsSphereSmooth F ∧
@@ -334,7 +321,7 @@ theorem existsUnique_sphereProfile (s : ℝ) (f : PrincipalSeries s) :
   intro G hG
   funext x
   obtain ⟨k, rfl⟩ := hopf_surjective x
-  exact (hG.2 k).symm.trans (hf k)
+  simp_all
 
 noncomputable def sphereProfile (s : ℝ) (f : PrincipalSeries s) : Sphere → ℂ :=
   Classical.choose (existsUnique_sphereProfile s f).exists
@@ -347,7 +334,7 @@ theorem sphereProfile_spec (s : ℝ) (f : PrincipalSeries s) :
 noncomputable def bottomHopf (m : Matrix (Fin 2) (Fin 2) ℂ) : Ambient :=
   WithLp.toLp 2 ![2 * (m 1 0 * star (m 1 1)).re,
     2 * (m 1 0 * star (m 1 1)).im, Complex.normSq (m 1 0) - Complex.normSq (m 1 1)]
-private lemma bottomHopf_norm (m : Matrix (Fin 2) (Fin 2) ℂ) :
+lemma bottomHopf_norm (m : Matrix (Fin 2) (Fin 2) ℂ) :
     ‖bottomHopf m‖ = Complex.normSq (m 1 0) + Complex.normSq (m 1 1) := by
   have hprod : (m 1 0 * star (m 1 1)).re ^ 2 +
       (m 1 0 * star (m 1 1)).im ^ 2 = Complex.normSq (m 1 0) * Complex.normSq (m 1 1) := by
@@ -365,7 +352,7 @@ private lemma bottomHopf_norm (m : Matrix (Fin 2) (Fin 2) ℂ) :
     nlinarith
   nlinarith [norm_nonneg (bottomHopf m), Complex.normSq_nonneg (m 1 0),
     Complex.normSq_nonneg (m 1 1)]
-private lemma bottomHopf_ne_zero (g : ComplexGL2) :
+lemma bottomHopf_ne_zero (g : ComplexGL2) :
     bottomHopf (g : Matrix (Fin 2) (Fin 2) ℂ) ≠ 0 := by
   intro he
   have h := bottomHopf_norm (g : Matrix (Fin 2) (Fin 2) ℂ)
@@ -374,13 +361,12 @@ private lemma bottomHopf_ne_zero (g : ComplexGL2) :
     nlinarith [Complex.normSq_nonneg ((g : Matrix (Fin 2) (Fin 2) ℂ) 1 0),
       Complex.normSq_nonneg ((g : Matrix (Fin 2) (Fin 2) ℂ) 1 1)]
   have h1 : Complex.normSq ((g : Matrix (Fin 2) (Fin 2) ℂ) 1 1) = 0 := by
-    nlinarith [Complex.normSq_nonneg ((g : Matrix (Fin 2) (Fin 2) ℂ) 1 0),
-      Complex.normSq_nonneg ((g : Matrix (Fin 2) (Fin 2) ℂ) 1 1)]
+    simp_all
   have hd := Matrix.GeneralLinearGroup.det_ne_zero g
   rw [Complex.normSq_eq_zero] at h0 h1
   apply hd
   simp [Matrix.det_fin_two, h0, h1]
-private lemma bottomHopf_smooth : ContDiff ℝ (⊤ : ℕ∞) bottomHopf := by
+lemma bottomHopf_smooth : ContDiff ℝ (⊤ : ℕ∞) bottomHopf := by
   apply PiLp.contDiff_toLp.comp
   apply contDiff_pi.mpr
   intro i
@@ -412,11 +398,7 @@ lemma bottomHopf_upper (a d : ℂˣ) (b : ℂ) (g : ComplexGL2) :
   apply PiLp.ext
   intro i
   fin_cases i <;>
-    simp [bottomHopf, CompactCharts.upperTriangular_coe_matrix, Matrix.GeneralLinearGroup.coe_mul,
-      Matrix.mul_apply,
-      Fin.sum_univ_two, PiLp.smul_apply, Complex.normSq_mul, Complex.normSq_eq_norm_sq,
-      star_mul, Complex.star_def, mul_assoc, mul_left_comm, mul_comm,
-      Complex.mul_conj', ← Complex.ofReal_pow, Complex.mul_re, Complex.mul_im]
+    simp [bottomHopf, CompactCharts.upperTriangular_coe_matrix, Matrix.mul_apply, Fin.sum_univ_two, PiLp.smul_apply, Complex.normSq_eq_norm_sq, star_mul, mul_assoc, mul_comm, Complex.mul_re, Complex.mul_im]
   all_goals simp only [mul_pow, ← Complex.normSq_eq_norm_sq, Complex.normSq_apply] at *
   all_goals ring
 lemma spherePullback_chart_smooth (F : Sphere → ℂ) (hF : IsSphereSmooth F)
@@ -440,8 +422,8 @@ noncomputable def rawSphereSection (s : ℝ) (F : Sphere → ℂ) (hF : IsSphere
     · intro a d b g
       have hs : HasCovariance s (normalizedSection s) := (normalizedSection s).property.1
       dsimp only
-      rw [hs, bottomHopf_upper, radialExtension_pos_smul F _ _ (by
-        exact sq_pos_of_pos (norm_pos_iff.mpr d.ne_zero))]
+      rw [hs, bottomHopf_upper, radialExtension_pos_smul F _ _ (
+        sq_pos_of_pos (norm_pos_iff.mpr d.ne_zero))]
       ring
     · have hs : ContDiff ℝ (⊤ : ℕ∞) (openCoordinate (normalizedSection s)) :=
         (normalizedSection s).property.2.1
@@ -481,7 +463,7 @@ private lemma normalizedSection_su2 (s : ℝ) (k : ComplexSU2) :
   rw [hdet, hn]
   simp
 
-private lemma rawSphereSection_compact (s : ℝ) (F : Sphere → ℂ) (hF : IsSphereSmooth F) (k : ComplexSU2) :
+lemma rawSphereSection_compact (s : ℝ) (F : Sphere → ℂ) (hF : IsSphereSmooth F) (k : ComplexSU2) :
     compactRestriction s (rawSphereSection s F hF) k = F (hopf k) := by
   change normalizedSection s (complexSU2Embedding k) *
     radialExtension F (bottomHopf (k : Matrix (Fin 2) (Fin 2) ℂ)) = _
@@ -530,9 +512,7 @@ private lemma inverse_profile_pointwise (s : ℝ) (f : PrincipalSeries s)
       rw [hb, norm_zero, zero_pow (by decide)] at h
       linarith
     rw [compactRestriction_infinity_hopf s f k hb]
-    simp only [Bool.false_eq_true, if_false, inverseHopfWeight, inverseHopfCoordinate,
-      hemisphereSign, neg_one_mul, Complex.ofReal_neg, Complex.ofReal_one, neg_mul,
-      one_mul, sub_neg_eq_add]
+    simp only [Bool.false_eq_true, if_false, inverseHopfWeight, inverseHopfCoordinate, hemisphereSign, Complex.ofReal_neg, Complex.ofReal_one, neg_mul, one_mul, sub_neg_eq_add]
     rw [hcoord 0, hcoord 1, hcoord 2]
     congr 1
     · congr 2
@@ -556,7 +536,7 @@ private lemma inverse_profile_pointwise (s : ℝ) (f : PrincipalSeries s)
     rw [hcoord 0, hcoord 1, hcoord 2]
     congr 1
     · congr 2
-      simp only [← sub_eq_add_neg]
+      simp only
       field_simp
     · congr 1
       push_cast
@@ -631,11 +611,3 @@ end DedekindZetaZeroFree.ComplexFractionalInverse
 section
 
 namespace DedekindZetaZeroFree.ComplexFractionalInverse
-open KPCplxCharacterHaar KPCplxPrincipalSeriesCharts KPCplxIntertwinerEigenvalues
-open scoped NNReal BigOperators Matrix Matrix.Norms.Elementwise
-
-open CompactCharts.RotationToChartsSteps
-
-end DedekindZetaZeroFree.ComplexFractionalInverse
-
-end

@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Finiteness of the ideal-theoretic ray class group
 
@@ -39,5 +34,3 @@ theorem rayClassGroup_finite
   let : Finite (RayClass.RayClassGroup m') := inferInstance
   exact Finite.of_equiv (RayClass.RayClassGroup m')
     (GlobalClassFieldComparison.rayClassGroupEquivOriginalIdele K m).symm.toEquiv
-
-end ClassFieldTheory

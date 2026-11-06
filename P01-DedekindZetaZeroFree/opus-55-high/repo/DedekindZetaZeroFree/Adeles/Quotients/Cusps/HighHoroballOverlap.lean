@@ -34,7 +34,7 @@ theorem arithmetic_dense_free (Γ : Subgroup (KPCuspArithmetic.PGL2 F)) [Countab
     intro i hi
     apply Continuous.pow
     apply Continuous.inv₀ _ (fun x => Real.exp_ne_zero _)
-    exact Real.continuous_exp.comp (continuous_snd.comp (continuous_apply i))
+    fun_prop
   have hpos (x : KPArch.Space (KPCuspLogShape.dimension F)) :
       ENNReal.ofReal (KPArch.volumeDensity _ x) ≠ 0 := by
     apply ne_of_gt
@@ -146,6 +146,3 @@ theorem atlas_high_overlap_stabilizes_cusp (A : KPFiniteCuspAtlas.Atlas F ζ hζ
     (A.cuspAtlas j.1).fundamentalDomain (A.cuspAtlas j.1).isFundamentalDomain
     ((A.cuspAtlas j.1).end_embedding j.2).injective γ z
     (hmono hz) (hmono hγz)
-end DedekindZetaZeroFree.KPMsResidualTailRestoration.SharpConstantTerm
-
-end

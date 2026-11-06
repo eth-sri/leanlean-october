@@ -6,7 +6,6 @@ public import DedekindZetaZeroFree.RepresentationTheory.Smooth.DerivativeWordLin
 
 @[expose] public section
 
-noncomputable section
 set_option backward.isDefEq.respectTransparency false
 open scoped Classical NumberField Topology
 open Filter
@@ -103,7 +102,3 @@ theorem word_continuous (U : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
   rw [finitePart_eq F ζ hζ]
   intro U h
   exact word_continuous_at_finite_level F ζ hζ U.toOpenSubgroup f hf h w
-
-end DedekindZetaZeroFree.KPMsClearedTruncationL2.ActualWordSpatial
-
-end

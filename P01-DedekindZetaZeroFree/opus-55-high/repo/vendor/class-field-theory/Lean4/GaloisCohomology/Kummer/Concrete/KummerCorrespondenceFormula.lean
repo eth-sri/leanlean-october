@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # the Kummer pairing formula
 
@@ -108,8 +102,7 @@ def restrictedKummerTransposeMulEquivOfAdjoin
   letI : CommGroup Gal(L/K) := by infer_instance
   let t := restrictedKummerTranspose n hmu Delta hDelta
   have ht : Function.Injective t :=
-    restrictedKummerTranspose_injective_of_adjoin
-      n hmu Delta hDelta hgenerate
+    by omega
   have hexponent : ∀ sigma : Gal(L/K), sigma ^ (n : ℕ) = 1 := by
     intro sigma
     apply ht
@@ -378,21 +371,6 @@ theorem restrictedKummerEvaluationLocus_isClosed
     (restrictedKummerTranspose_evaluation_continuous n hmu Delta hDelta q)
     continuous_const
 
-/-- Evaluation loci are compact as closed subsets of the profinite Galois
-group. -/
-theorem restrictedKummerEvaluationLocus_isCompact
-    {L : Type*} [Field L] [Algebra K L] [IsGalois K L]
-    (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (Delta : KummerSubgroup K n)
-    (hDelta : Delta.1 ≤
-      finiteKummerRadicalSubgroup (K := K) (L := L) n)
-    (chi : RestrictedRadicalQuotient n Delta →*
-      nthRootsSubgroup L (n : ℕ))
-    (q : RestrictedRadicalQuotient n Delta) :
-    IsCompact (restrictedKummerEvaluationLocus n hmu Delta hDelta chi q) :=
-  (restrictedKummerEvaluationLocus_isClosed
-    n hmu Delta hDelta chi q).isCompact
-
 /-- Membership in all evaluation loci is exactly equality with the target
 character.  Together with compactness of `Gal(L/K)`, this identifies the
 precise finite-intersection problem remaining in the surjectivity proof. -/
@@ -514,9 +492,3 @@ def kummerRadicalExtensionRestrictedTransposeMulEquiv
     (kummerRadicalExtensionRestrictedTranspose n hn hmu Delta)
     ⟨kummerRadicalExtensionRestrictedTranspose_injective n hn hmu Delta,
       kummerRadicalExtensionRestrictedTranspose_surjective n hn hmu Delta⟩
-
-end RadicalExtensionPairing
-
-end KummerTheory
-
-end

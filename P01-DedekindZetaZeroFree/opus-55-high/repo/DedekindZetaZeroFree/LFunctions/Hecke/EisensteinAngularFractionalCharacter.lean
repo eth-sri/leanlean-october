@@ -31,5 +31,3 @@ theorem continuous_archimedeanAngular : Continuous archimedeanAngular := by
   apply Continuous.subtype_mk
   exact Units.continuous_val.div (Complex.continuous_ofReal.comp Units.continuous_val.norm)
     (fun z => Complex.ofReal_ne_zero.mpr (norm_ne_zero_iff.mpr z.ne_zero))
-
-end DedekindZetaZeroFree.Eisenstein

@@ -8,7 +8,7 @@ public import DedekindZetaZeroFree.Adeles.Quotients.ArchimedeanFiniteProduct
 noncomputable section
 namespace DedekindZetaZeroFree.PGLComplex.AdelicSlices
 open MeasureTheory Topology NumberField
-open scoped Classical Pointwise NumberField ENNReal Matrix.Norms.Operator
+open scoped Classical Pointwise ENNReal Matrix.Norms.Operator
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
 abbrev ActualCover := KPCubicCoverConstruction.AdelicPGL2Cover F ζ hζ
@@ -29,36 +29,15 @@ instance : BorelSpace (X F ζ hζ) := ⟨rfl⟩
 def finiteTuples : Subgroup (KPAdelicCoverRestrictedProduct.RestrictedCover F ζ hζ) where
   carrier := {g | ∀ w : NumberField.InfinitePlace F, g (Sum.inl w) = 1}
   one_mem' := by simp
-  mul_mem' := by intro g h hg hh w; simp [hg w, hh w]
-  inv_mem' := by intro g hg w; simp [hg w]
+  mul_mem' := by simp_all
+  inv_mem' := by simp
 
 def finiteSubgroup : Subgroup (ActualCover F ζ hζ) :=
   (finiteTuples F ζ hζ).map
     ((KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ).comp
       (KPAdelicCoverRestrictedProduct.amalgamation F ζ hζ))
 
-abbrev FiniteLevel := CompactOpenLevel (finiteSubgroup F ζ hζ)
-
-def levelSubgroup (U : FiniteLevel F ζ hζ) : Subgroup (ActualCover F ζ hζ) :=
-  U.toOpenSubgroup.toSubgroup.map (finiteSubgroup F ζ hζ).subtype
-
 abbrev centreMap := KPAdelicCoverRestrictedProduct.pglCentralInjection F ζ hζ
-
-def rightSubgroup (U : FiniteLevel F ζ hζ) (geometric : Bool) :
-    Subgroup (ActualCover F ζ hζ) :=
-  if geometric then levelSubgroup F ζ hζ U ⊔ (centreMap F ζ hζ).range
-  else levelSubgroup F ζ hζ U
-
-abbrev LevelSpace (U : FiniteLevel F ζ hζ) (geometric : Bool) :=
-  DoubleCoset.Quotient (rationalSubgroup F ζ hζ : Set (ActualCover F ζ hζ))
-    (rightSubgroup F ζ hζ U geometric : Set (ActualCover F ζ hζ))
-
-instance (U : FiniteLevel F ζ hζ) (geometric : Bool) :
-    TopologicalSpace (LevelSpace F ζ hζ U geometric) :=
-  inferInstanceAs (TopologicalSpace (_root_.Quotient _))
-
-instance (U : FiniteLevel F ζ hζ) (geometric : Bool) :
-    MeasurableSpace (LevelSpace F ζ hζ U geometric) := borel _
 
 abbrev ArchGroup := NumberField.InfinitePlace F → Matrix.ProjGenLinGroup (Fin 2) ℂ
 
@@ -114,7 +93,3 @@ theorem actual_product_splitting :
     inferInstance, hfiniteLC⟩
   · exact (ActualQuotient.actual_cover_lc_t2_group F ζ hζ).2.1
   · exact ActualQuotient.actual_cover_secondCountable F ζ hζ
-
-end DedekindZetaZeroFree.PGLComplex.AdelicSlices
-
-end

@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Geometry.Cusps.AffineTorusBundles.QuotientCoo
 
 @[expose] public section
 
-noncomputable section
 open scoped Classical Matrix Pointwise
 open MeasureTheory Set
 
@@ -97,7 +96,7 @@ theorem measurable_fundamental_domain_of_properly_discontinuous_ae_free
     obtain ⟨htC, hxt⟩ := mem_iUnion.mp ht
     obtain ⟨n, hn⟩ := hf htC
     refine ⟨n, 1, ?_⟩
-    simpa [Function.comp_def, hn] using hxt
+    simp_all
   · have hempty : ∀ᵐ x ∂ν, False := by
       filter_upwards [hfree] with x hx
       exact hT ⟨⟨x, hx⟩⟩
@@ -153,10 +152,9 @@ theorem properlyDiscontinuous_of_equivariant
       change Finite {g : H // g ∈ T ∧ r g = j}
       infer_instance
     convert hfin using 1
-    ext g
-    simp
+    rfl
 
-private theorem translation_formula
+theorem translation_formula
     (F : Type*) [Field F] [NumberField F]
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ExtensionData F S)
@@ -171,11 +169,11 @@ private theorem translation_formula
     intro hz
     exact A.det_ne_zero (by simp [Matrix.det_fin_two, hc, hd, hz])
   have hv : A 0 1 / A 1 1 = x.val := by
-    rw [ht, hd, mul_div_cancel_right₀ _ hn]
+    simp_all
   have hr : D.ratio (D.inclusion (Multiplicative.ofAdd x)) = 1 := by
     have hm : D.inclusion (Multiplicative.ofAdd x) ∈ D.ratio.ker := by
       rw [← D.exact]
-      exact ⟨Multiplicative.ofAdd x, rfl⟩
+      simp
     exact hm
   rw [G.crossAction_formula _ A hA hc, hv, hr]
   apply Prod.ext
@@ -202,8 +200,7 @@ theorem actual_ratio_kernel_properly_discontinuous
   have hx : ∀ g : D.ratio.ker, ∃ x : D.L, D.inclusion (Multiplicative.ofAdd x) = g.val := by
     intro g
     have hm : g.val ∈ D.inclusion.range := by rw [D.exact]; exact g.property
-    obtain ⟨x, hx⟩ := hm
-    exact ⟨x.toAdd, hx⟩
+    simp_all
   choose x hx using hx
   let b : D.ratio.ker → N := fun g => ⟨embedding F (x g).val, ⟨(x g).val, (x g).property, rfl⟩⟩
   have hb : Function.Injective b := by
@@ -244,8 +241,8 @@ theorem actual_cross_action_properly_discontinuous
   letI : DiscreteTopology Λ := KPCuspLogShape.logarithm_discrete F hF D.E D.integralUnits
   let r : D.E →* Multiplicative Λ :=
     { toFun := fun u => Multiplicative.ofAdd ⟨ell (Additive.ofMul u), ⟨Additive.ofMul u, rfl⟩⟩
-      map_one' := by apply Multiplicative.toAdd.injective; apply Subtype.ext; exact ell.map_zero
-      map_mul' := by intro a b; apply Multiplicative.toAdd.injective; apply Subtype.ext; exact ell.map_add _ _ }
+      map_one' := by simp
+      map_mul' := by intro a b; apply Multiplicative.toAdd.injective; apply Subtype.ext; simp }
   letI : ProperlyDiscontinuousSMul (Multiplicative Λ) (Shape F) := by
     have hd : ProperlyDiscontinuousVAdd Λ (Shape F) :=
       Λ.toAddSubgroup.properlyDiscontinuousVAdd_of_tendsto_cofinite
@@ -256,9 +253,7 @@ theorem actual_cross_action_properly_discontinuous
     apply (Set.Finite.preimage Multiplicative.toAdd.injective.injOn hfin).subset
     rintro u ⟨y, ⟨x, hx, hxy⟩, hy⟩
     refine ⟨y, ⟨x, hx, ?_⟩, hy⟩
-    change u.toAdd.val + x = y
-    change u.toAdd.val + x = y at hxy
-    simpa only [add_comm] using hxy
+    simp_all
   letI : MulAction D.E (Shape F) := MulAction.compHom _ r
   letI : ContinuousConstSMul D.E (Shape F) := ⟨fun u => by change Continuous (fun b : Shape F => (r u).toAdd.val + b); fun_prop⟩
   letI : Finite r.ker := by
@@ -279,7 +274,7 @@ theorem actual_cross_action_properly_discontinuous
   change p.2 + ell (Additive.ofMul (D.ratio g)) = ell (Additive.ofMul (D.ratio g)) + p.2
   exact add_comm _ _
 
-private theorem actual_group_countable (F : Type*) [Field F] [NumberField F]
+theorem actual_group_countable (F : Type*) [Field F] [NumberField F]
     (S : Subgroup (KPCuspArithmetic.PGL2 F)) : Countable S := by
   letI : Countable F := Finsupp.Countable.of_moduleFinite (R := ℚ) (M := F)
   letI : Countable (Matrix (Fin 2) (Fin 2) F) := by change Countable (Fin 2 → Fin 2 → F); infer_instance
@@ -300,23 +295,20 @@ theorem actual_fixed_locus_null
     obtain ⟨x, hx⟩ := hmem
     have hx0 : (x.toAdd : F) ≠ 0 := by
       intro hz
-      have he : x = 1 := by apply Multiplicative.toAdd.injective; exact Subtype.ext hz
-      apply hg
-      rw [← hx, he, map_one]
+      simp_all
     obtain ⟨A, hA, hc⟩ := D.upper g g.property
     have hAi : Matrix.ProjGenLinGroup.mk A = (D.inclusion x : KPCuspArithmetic.PGL2 F) := by rw [hA, hx]
     obtain ⟨_, hd, ht⟩ := D.unipotentFormula x.toAdd A hAi
     have hn : A 1 1 ≠ 0 := by
       intro hz
       exact A.det_ne_zero (by simp [Matrix.det_fin_two, hc, hd, hz])
-    have hv : A 0 1 / A 1 1 = (x.toAdd : F) := by rw [ht, hd, mul_div_cancel_right₀ _ hn]
+    have hv : A 0 1 / A 1 1 = (x.toAdd : F) := by simp_all
     have hempty : {p : Cross F | G.crossAction g p = p} = ∅ := by
       apply eq_empty_iff_forall_notMem.mpr
       intro p hp
       have hi := congrArg (fun q : Cross F => q.1 i) hp
       rw [G.crossAction_formula g A hA hc, hr] at hi
-      simp only [crossAffine, affine, embedding, OneMemClass.coe_one, Units.val_one,
-        map_one, one_mul] at hi
+      simp only [crossAffine, affine, embedding, OneMemClass.coe_one, Units.val_one] at hi
       rw [hv] at hi
       change (KPCusp.complexPlace F i).embedding 1 * p.1 i +
         (KPCusp.complexPlace F i).embedding (x.toAdd : F) = p.1 i at hi
@@ -364,7 +356,7 @@ theorem actual_cross_action_ae_free
   · have hn : ∀ᵐ p ∂(volume.prod μ), G.crossAction g p ≠ p := by
       rw [ae_iff]
       simpa only [not_not] using actual_fixed_locus_null F hF S D G μ g hg
-    exact hn.mono fun p hp he => (hp he).elim
+    simp_all
 
 theorem actual_measurable_fundamental_domain
     (F : Type*) [Field F] [NumberField F]
@@ -384,7 +376,3 @@ theorem actual_measurable_fundamental_domain
     actual_cross_action_properly_discontinuous F hF S D hdisc G
   exact measurable_fundamental_domain_of_properly_discontinuous_ae_free
     (volume.prod μ) (actual_cross_action_ae_free F hF S D G μ)
-
-end DedekindZetaZeroFree.KPCuspChart.SectionConstruction
-
-end

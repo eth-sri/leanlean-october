@@ -4,12 +4,11 @@ public import ValuedFieldTheory.Valuation.AbsoluteValue.AlgebraicLocalization
 public import ValuedFieldTheory.Valuation.AbsoluteValue.AlgebraicExtension.Core
 public import ValuedFieldTheory.Valuation.AbsoluteValue.AlgebraicExtension.FiniteNormExtension
 public import ValuedFieldTheory.Valuation.AbsoluteValue.AlgebraicExtension.NormFormula
-public import ValuedFieldTheory.Valuation.AbsoluteValue.AlgebraicExtension.NormFormulaAbsoluteValue
+public import ValuedFieldTheory.Valuation.AbsoluteValue.AlgebraicExtension.NormFormulaIntegralClosure
 public import ValuedFieldTheory.Valuation.AbsoluteValue.AlgebraicExtension.NormFormulaCoefficients
 public import ValuedFieldTheory.Valuation.AbsoluteValue.AlgebraicExtension.NormFormulaExtension
-public import ValuedFieldTheory.Valuation.AbsoluteValue.AlgebraicExtension.NormFormulaIntegralClosure
 public import ValuedFieldTheory.Valuation.AbsoluteValue.AlgebraicExtension.RamificationInvariants
-public import ValuedFieldTheory.Valuation.AbsoluteValue.AlgebraicExtension.UniqueExtensionCoefficients
+public import ValuedFieldTheory.Valuation.Henselian.IrreduciblePolynomialBounds
 public import ValuedFieldTheory.Valuation.AbsoluteValue.AlgebraicExtension.UniqueValuationSubring
 public import ValuedFieldTheory.Valuation.AbsoluteValue.Completeness
 public import ValuedFieldTheory.Valuation.AbsoluteValue.Completion
@@ -34,33 +33,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-set_option autoImplicit false
 
 /-!
 # Extension of valuations to finite field extensions
@@ -109,7 +81,7 @@ abbrev absoluteValueExtension_algebraicCompletionClosure
 
 /-- The unique extension `\bar v` of the completion absolute value to
 `\bar K_v`. -/
-noncomputable def absoluteValueExtension_algebraicClosureAbsoluteValue
+def absoluteValueExtension_algebraicClosureAbsoluteValue
     {K : Type u} [Field K] (vK : AbsoluteValue K ℝ)
     (hvK : vK.IsNontrivial) :
     AbsoluteValue (absoluteValueExtension_algebraicCompletionClosure vK) ℝ :=
@@ -132,9 +104,8 @@ theorem absoluteValueExtension_algebraicClosureAbsoluteValue_algebraMap
       (AbsoluteValue.completionAbsoluteValue_complete vK)
       (AbsoluteValue.completionAbsoluteValue_isNontrivial vK hvK)).isExtension x
 
-
 /-- A `K_v`-embedding of the algebraic localization into `\bar K_v`. -/
-noncomputable def absoluteValueExtension_localizationEmbedding
+def absoluteValueExtension_localizationEmbedding
     {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
     [Algebra.IsAlgebraic K L]
     (vK : AbsoluteValue K ℝ) (w : AbsoluteValueExtension vK L) :
@@ -192,15 +163,11 @@ theorem absoluteValueExtension_localizationAbsoluteValue_eq_pullback
           (absoluteValueExtension_localizationEmbedding vK w).injective = R.extension := by
     apply R.unique
     intro x
-    change absoluteValueExtension_algebraicClosureAbsoluteValue vK hvK
-      (absoluteValueExtension_localizationEmbedding vK w
-        (algebraMap vK.Completion (AbsoluteValue.algebraicLocalization vK w.1 w.2) x)) = _
-    rw [(absoluteValueExtension_localizationEmbedding vK w).commutes]
-    exact absoluteValueExtension_algebraicClosureAbsoluteValue_algebraMap vK hvK x
+    simp
   exact hleft.trans hright.symm
 
 /-- Pull `\bar v` back along a `K`-embedding of `L` into `\bar K_v`. -/
-noncomputable def absoluteValueExtension_pullback
+def absoluteValueExtension_pullback
     {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
     (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
     (tau : L →ₐ[K] absoluteValueExtension_algebraicCompletionClosure vK) :
@@ -229,7 +196,7 @@ The construction pulls the canonical absolute value on the algebraic
 closure of the completion back along an actual embedding of the
 overfield.  Unlike the finite normal-closure specialization, this
 statement does not impose a finite-dimensional hypothesis. -/
-noncomputable def AbsoluteValueExtension.extendToAlgebraicallyClosed
+def AbsoluteValueExtension.extendToAlgebraicallyClosed
     {K : Type u} {L : Type v} {Ω : Type*}
     [Field K] [Field L] [Field Ω]
     [Algebra K L] [Algebra L Ω] [Algebra K Ω]
@@ -284,7 +251,7 @@ theorem AbsoluteValueExtension.extendToAlgebraicallyClosed_algebraMap
       u.1 (u.isNontrivial hvK) IsAlgClosed.lift x
 
 /-- The `K`-embedding attached to an exact extension `w | v`. -/
-noncomputable def absoluteValueExtension_embeddingOfExtension
+def absoluteValueExtension_embeddingOfExtension
     {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
     [Algebra.IsAlgebraic K L]
     (vK : AbsoluteValue K ℝ) (w : AbsoluteValueExtension vK L) :
@@ -345,18 +312,6 @@ theorem absoluteValueExtension_extension_eq_pullback_embeddingOfExtension
           (AbsoluteValue.toAlgebraicLocalization vK w.1 w.2 x)
       exact h
 
-/-- Clause (i) of the valuation-extension theorem: every exact extension of `v` to an algebraic extension
-`L / K` is the pullback of `\bar v` along a `K`-embedding into `\bar K_v`. -/
-theorem absoluteValueExtension_extension_exists_embedding
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
-    [Algebra.IsAlgebraic K L]
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
-    (w : AbsoluteValueExtension vK L) :
-    ∃ tau : L →ₐ[K] absoluteValueExtension_algebraicCompletionClosure vK,
-      w.1 = absoluteValueExtension_pullback vK hvK tau := by
-  exact ⟨absoluteValueExtension_embeddingOfExtension vK w,
-    absoluteValueExtension_extension_eq_pullback_embeddingOfExtension vK hvK w⟩
-
 /-- Conjugacy of two `K`-embeddings over the completion `K_v`. -/
 def AbsoluteValueExtensionConjugateOverCompletion
     {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
@@ -392,8 +347,7 @@ theorem absoluteValueExtension_algebraicClosureAbsoluteValue_algEquiv
     change absoluteValueExtension_algebraicClosureAbsoluteValue vK hvK
       (sigma (algebraMap vK.Completion
         (absoluteValueExtension_algebraicCompletionClosure vK) y)) = _
-    rw [sigma.commutes]
-    exact absoluteValueExtension_algebraicClosureAbsoluteValue_algebraMap vK hvK y
+    simp
   exact congrArg (fun b : AbsoluteValue _ ℝ => b x) ha
 
 /-- Conjugate embeddings induce the same extension of `v`. -/
@@ -411,7 +365,7 @@ theorem absoluteValueExtension_pullback_eq_of_conjugate
   rw [hsigma x, absoluteValueExtension_algebraicClosureAbsoluteValue_algEquiv]
 
 /-- The dense embedding of `\bar K_v` into its metric completion. -/
-noncomputable def absoluteValueExtension_algebraicClosureToCompletionRingHom
+def absoluteValueExtension_algebraicClosureToCompletionRingHom
     {K : Type u} [Field K] (vK : AbsoluteValue K ℝ)
     (hvK : vK.IsNontrivial) :
     absoluteValueExtension_algebraicCompletionClosure vK →+*
@@ -434,7 +388,7 @@ theorem absoluteValueExtension_algebraicClosureToCompletionRingHom_apply
 /-- The `K_v`-algebra structure on the completion of `\bar K_v` induced by
 the dense algebraic closure. -/
 @[implicit_reducible]
-noncomputable def absoluteValueExtension_algebraicClosureCompletionAlgebra
+def absoluteValueExtension_algebraicClosureCompletionAlgebra
     {K : Type u} [Field K] (vK : AbsoluteValue K ℝ)
     (hvK : vK.IsNontrivial) :
     Algebra vK.Completion
@@ -444,7 +398,7 @@ noncomputable def absoluteValueExtension_algebraicClosureCompletionAlgebra
       (absoluteValueExtension_algebraicCompletionClosure vK))).toAlgebra
 
 /-- The dense algebraic-closure map as a `K_v`-algebra homomorphism. -/
-noncomputable def absoluteValueExtension_algebraicClosureToCompletionAlgHom
+def absoluteValueExtension_algebraicClosureToCompletionAlgHom
     {K : Type u} [Field K] (vK : AbsoluteValue K ℝ)
     (hvK : vK.IsNontrivial) :
     letI := absoluteValueExtension_algebraicClosureCompletionAlgebra vK hvK
@@ -457,7 +411,7 @@ noncomputable def absoluteValueExtension_algebraicClosureToCompletionAlgHom
 
 /-- A valuation-preserving `K`-embedding `tau` extends isometrically from
 `L` to a map between metric completions. -/
-noncomputable def absoluteValueExtension_embeddingToAlgebraicClosureCompletionRingHom
+def absoluteValueExtension_embeddingToAlgebraicClosureCompletionRingHom
     {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
     (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
     (w : AbsoluteValueExtension vK L)
@@ -500,7 +454,7 @@ theorem absoluteValueExtension_embeddingToAlgebraicClosureCompletion_isometry
       vK hvK w tau htau)
 
 /-- Extension of `tau` to the completion `L_w`. -/
-noncomputable def absoluteValueExtension_embeddingCompletionMap
+def absoluteValueExtension_embeddingCompletionMap
     {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
     (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
     (w : AbsoluteValueExtension vK L)
@@ -622,7 +576,7 @@ theorem absoluteValueExtension_embeddingCompletionMap_completionMap
         (absoluteValueExtension_algebraicCompletionClosure vK)]
 
 /-- The completion extension of `tau`, bundled over `K_v`. -/
-noncomputable def absoluteValueExtension_embeddingCompletionAlgHom
+def absoluteValueExtension_embeddingCompletionAlgHom
     {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
     (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
     (w : AbsoluteValueExtension vK L)
@@ -686,7 +640,7 @@ theorem absoluteValueExtension_embeddingCompletionAlgHom_mem_range
   · intro x _ hx
     rcases hx with ⟨a, ha⟩
     refine ⟨a⁻¹, ?_⟩
-    simpa only [map_inv₀] using congrArg Inv.inv ha
+    simp_all
   · intro x y _ _ hx hy
     simpa only [map_mul] using j.range.mul_mem hx hy
   · exact z.property
@@ -695,7 +649,7 @@ theorem absoluteValueExtension_embeddingCompletionAlgHom_mem_range
 `K_v`-embedding of the common localization.  The construction first extends
 to metric completions and then factors through the actual dense copy of
 `\bar K_v`; no completeness of the algebraic closure is assumed. -/
-noncomputable def absoluteValueExtension_localizationEmbeddingOfPullback
+def absoluteValueExtension_localizationEmbeddingOfPullback
     {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
     (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
     (w : AbsoluteValueExtension vK L)
@@ -785,10 +739,7 @@ theorem absoluteValueExtension_algHom_conjugate_in_algClosure
   change psi (phi x) = phi' x
   change psi (algebraMap E A x) = phi' x at hx
   rw [RingHom.algebraMap_toAlgebra] at hx
-  have hphi : phi.toRingHom x = phi x :=
-    congrFun (AlgHom.coe_toRingHom phi) x
-  rw [hphi] at hx
-  exact hx
+  simp_all
 
 /-- The difficult direction of clause (ii) of the valuation-extension theorem: equality of pullback absolute
 values forces conjugacy over `K_v`. -/
@@ -837,25 +788,3 @@ theorem absoluteValueExtension_pullback_eq_iff_conjugate
   constructor
   · exact absoluteValueExtension_conjugate_of_pullback_eq vK hvK
   · exact absoluteValueExtension_pullback_eq_of_conjugate vK hvK
-
-/-- The valuation-extension theorem, with its two clauses packaged together.
-The only global side condition is that the base absolute value is
-nontrivial. -/
-theorem absoluteValueExtension_extension_theorem
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
-    [Algebra.IsAlgebraic K L]
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial) :
-    (∀ w : AbsoluteValueExtension vK L,
-      ∃ tau : L →ₐ[K] absoluteValueExtension_algebraicCompletionClosure vK,
-        w.1 = absoluteValueExtension_pullback vK hvK tau) ∧
-    (∀ tau tau' : L →ₐ[K] absoluteValueExtension_algebraicCompletionClosure vK,
-      absoluteValueExtension_pullback vK hvK tau =
-          absoluteValueExtension_pullback vK hvK tau' ↔
-        AbsoluteValueExtensionConjugateOverCompletion vK tau tau') := by
-  exact ⟨absoluteValueExtension_extension_exists_embedding vK hvK,
-    absoluteValueExtension_pullback_eq_iff_conjugate vK hvK⟩
-
-end Valuations
-end AlgebraicNumberTheory
-
-end

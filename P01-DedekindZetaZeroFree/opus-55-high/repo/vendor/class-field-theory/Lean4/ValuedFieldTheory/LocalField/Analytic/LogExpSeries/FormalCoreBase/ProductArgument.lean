@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # The two-variable formal logarithm product argument
 
@@ -79,16 +74,6 @@ theorem formalLogOnePlusProductArgument_eq_mul_sub_one
   change X0 + X1 + X0 * X1 = (1 + X0) * (1 + X1) - 1
   ring
 
-/-- Adding one to the product argument recovers
-`(1 + X) * (1 + Y)`. -/
-theorem formalLogOnePlusProductArgument_one_add
-    (A : Type*) [CommRing A] :
-    1 + formalLogOnePlusProductArgument A =
-      (1 + MvPowerSeries.X (0 : Fin 2)) *
-        (1 + MvPowerSeries.X (1 : Fin 2)) := by
-  rw [formalLogOnePlusProductArgument_eq_mul_sub_one]
-  ring
-
 /--
 Establishes the identity `MvPowerSeries.constantCoeff (formalLogOnePlusProductArgument A) = 0`.
 -/
@@ -96,7 +81,7 @@ theorem formalLogOnePlusProductArgument_constantCoeff
     (A : Type*) [CommRing A] :
     MvPowerSeries.constantCoeff (formalLogOnePlusProductArgument A) = 0 := by
   rw [formalLogOnePlusProductArgument_eq_mul_sub_one]
-  simp [MvPowerSeries.constantCoeff_X]
+  simp
 
 /--
 The formal product argument has zero constant coefficient, so it admits substitution into the
@@ -158,7 +143,7 @@ theorem formalLogOnePlusProductArgument_coeff_eq_zero_of_not_basic
           Finsupp.single (1 : Fin 2) 1) :
     MvPowerSeries.coeff e (formalLogOnePlusProductArgument A) = 0 := by
   rw [formalLogOnePlusProductArgument_coeff]
-  simp [hleft, hright, hmixed]
+  simp_all
 
 /-- Establishes the inequality `Finsupp.single (0 : Fin 2) 1 ≠ Finsupp.single (1 : Fin 2) 1`. -/
 theorem finsupp_fin_two_single_left_ne_single_right :
@@ -176,8 +161,7 @@ theorem finsupp_fin_two_single_left_ne_mixed :
       Finsupp.single (0 : Fin 2) 1 +
         Finsupp.single (1 : Fin 2) 1 := by
   intro h
-  have hcoord := congrArg (fun e : Fin 2 →₀ ℕ => e (1 : Fin 2)) h
-  simp at hcoord
+  simp_all
 
 /--
 Establishes the inequality `Finsupp.single (1 : Fin 2) 1 ≠ Finsupp.single (0 : Fin 2) 1 +
@@ -188,8 +172,7 @@ theorem finsupp_fin_two_single_right_ne_mixed :
       Finsupp.single (0 : Fin 2) 1 +
         Finsupp.single (1 : Fin 2) 1 := by
   intro h
-  have hcoord := congrArg (fun e : Fin 2 →₀ ℕ => e (0 : Fin 2)) h
-  simp at hcoord
+  simp_all
 
 /--
 Establishes the identity `MvPowerSeries.coeff (Finsupp.single (0 : Fin 2) 1)
@@ -250,19 +233,16 @@ theorem formalLogOnePlusProductArgument_coeff_ne_zero_left_coord_le_one
   have hgt : 1 < e (0 : Fin 2) := Nat.lt_of_not_ge hle
   have hleft : e ≠ Finsupp.single (0 : Fin 2) 1 := by
     intro he
-    have hcoord : e (0 : Fin 2) ≤ 1 := by simp [he]
-    exact (not_le_of_gt hgt) hcoord
+    simp_all
   have hright : e ≠ Finsupp.single (1 : Fin 2) 1 := by
     intro he
-    have hcoord : e (0 : Fin 2) ≤ 1 := by simp [he]
-    exact (not_le_of_gt hgt) hcoord
+    simp_all
   have hmixed :
       e ≠
         Finsupp.single (0 : Fin 2) 1 +
           Finsupp.single (1 : Fin 2) 1 := by
     intro he
-    have hcoord : e (0 : Fin 2) ≤ 1 := by simp [he]
-    exact (not_le_of_gt hgt) hcoord
+    simp_all
   exact hcoeff
     (formalLogOnePlusProductArgument_coeff_eq_zero_of_not_basic
       A e hleft hright hmixed)
@@ -277,19 +257,16 @@ theorem formalLogOnePlusProductArgument_coeff_ne_zero_right_coord_le_one
   have hgt : 1 < e (1 : Fin 2) := Nat.lt_of_not_ge hle
   have hleft : e ≠ Finsupp.single (0 : Fin 2) 1 := by
     intro he
-    have hcoord : e (1 : Fin 2) ≤ 1 := by simp [he]
-    exact (not_le_of_gt hgt) hcoord
+    simp_all
   have hright : e ≠ Finsupp.single (1 : Fin 2) 1 := by
     intro he
-    have hcoord : e (1 : Fin 2) ≤ 1 := by simp [he]
-    exact (not_le_of_gt hgt) hcoord
+    simp_all
   have hmixed :
       e ≠
         Finsupp.single (0 : Fin 2) 1 +
           Finsupp.single (1 : Fin 2) 1 := by
     intro he
-    have hcoord : e (1 : Fin 2) ≤ 1 := by simp [he]
-    exact (not_le_of_gt hgt) hcoord
+    simp_all
   exact hcoeff
     (formalLogOnePlusProductArgument_coeff_eq_zero_of_not_basic
       A e hleft hright hmixed)
@@ -354,7 +331,7 @@ theorem formalLogOnePlusProductArgument_coeff_ne_zero_eq_basic
       formalLogOnePlusProductArgument_constantCoeff A
   have hnotzero : e ≠ 0 := by
     intro he
-    exact hcoeff (by simpa [he] using hzeroCoeff)
+    simp_all
   rcases (Nat.le_one_iff_eq_zero_or_eq_one).1 hleftle with hleft0 | hleft1
   · rcases (Nat.le_one_iff_eq_zero_or_eq_one).1 hrightle with hright0 | hright1
     · exfalso
@@ -367,31 +344,3 @@ theorem formalLogOnePlusProductArgument_coeff_ne_zero_eq_basic
         finsupp_fin_two_eq_single_left_of_coords_eq e hleft1 hright0
     · exact Or.inr <| Or.inr <|
         finsupp_fin_two_eq_mixed_of_coords_eq_one e hleft1 hright1
-
-/--
-Establishes the identity `l i = Finsupp.single (0 : Fin 2) 1 ∨ l i = Finsupp.single (1 : Fin 2) 1
-∨ l i = Finsupp.single (0 : Fin 2) 1 + Finsupp.single (1 : Fin 2) 1`.
--/
-theorem formalLogOnePlusProductArgument_pow_term_factor_eq_basic_of_prod_ne_zero
-    (A : Type*) [CommRing A] {q : ℕ}
-    {l : ℕ →₀ (Fin 2 →₀ ℕ)}
-    (hprod :
-      (∏ i ∈ Finset.range q,
-        MvPowerSeries.coeff (l i) (formalLogOnePlusProductArgument A)) ≠ 0)
-    {i : ℕ} (hi : i ∈ Finset.range q) :
-    l i = Finsupp.single (0 : Fin 2) 1 ∨
-      l i = Finsupp.single (1 : Fin 2) 1 ∨
-        l i =
-          Finsupp.single (0 : Fin 2) 1 +
-            Finsupp.single (1 : Fin 2) 1 := by
-  have hfactor :
-      MvPowerSeries.coeff (l i) (formalLogOnePlusProductArgument A) ≠ 0 := by
-    intro hzero
-    exact hprod (Finset.prod_eq_zero hi hzero)
-  exact formalLogOnePlusProductArgument_coeff_ne_zero_eq_basic A (l i) hfactor
-
-
-end MultiplicativeIntegerValuation
-end LocalFieldTheory.DiscreteValuationField
-
-end

@@ -15,13 +15,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Completions of absolute-valued fields
 
@@ -42,7 +35,7 @@ namespace AbsoluteValue
 universe u v w
 
 /-- The norm absolute value on the completion attached to `vK`. -/
-noncomputable def completionAbsoluteValue
+def completionAbsoluteValue
     {K : Type u} [Field K] (vK : AbsoluteValue K ℝ) :
     AbsoluteValue vK.Completion ℝ :=
   NormedField.toAbsoluteValue vK.Completion
@@ -56,23 +49,6 @@ theorem completionAbsoluteValue_coe
   change ‖(x : vK.Completion)‖ = vK x
   rw [UniformSpace.Completion.norm_coe]
   rfl
-
-/-- The uniformity defined by the completion absolute value is the native
-completion uniformity. -/
-theorem completionAbsoluteValue_uniformSpace_eq
-    {K : Type u} [Field K] (vK : AbsoluteValue K ℝ) :
-    (completionAbsoluteValue vK).uniformSpace =
-      (@UniformSpace.Completion.uniformSpace (WithAbs vK) inferInstance) := by
-  ext s
-  rw [(AbsoluteValue.hasBasis_uniformity
-      (completionAbsoluteValue vK)).mem_iff,
-    Metric.uniformity_basis_dist.mem_iff]
-  have hdist : ∀ p : vK.Completion × vK.Completion,
-      dist p.1 p.2 = completionAbsoluteValue vK (p.1 - p.2) := by
-    intro p
-    rw [dist_eq_norm]
-    rfl
-  simp [hdist, AbsoluteValue.map_sub]
 
 /-- The field equipped with its completion absolute value is complete. -/
 theorem completionAbsoluteValue_complete
@@ -91,13 +67,11 @@ theorem completionAbsoluteValue_isNontrivial
   rcases hvK with ⟨x, hx0, hx1⟩
   refine ⟨(x : vK.Completion), ?_, ?_⟩
   · intro hx
-    have hx' : (WithAbs.equiv vK).symm x = 0 :=
-      UniformSpace.Completion.coe_injective (α := WithAbs vK) hx
-    exact hx0 (by simpa using congrArg (WithAbs.equiv vK) hx')
+    simp_all
   · simpa using hx1
 
 /-- The canonical embedding of an absolute-valued field in its completion. -/
-noncomputable def toCompletion
+def toCompletion
     {K : Type u} [Field K] (vK : AbsoluteValue K ℝ) :
     K →+* vK.Completion :=
   UniformSpace.Completion.coeRingHom.comp
@@ -128,7 +102,7 @@ theorem denseRange_toCompletion
       (WithAbs.toAbs_surjective vK).denseRange
       (@UniformSpace.Completion.continuous_coe (WithAbs vK) inferInstance)
 
- noncomputable def baseToExtensionCompletion
+ def baseToExtensionCompletion
     {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
     (vK : AbsoluteValue K ℝ) (wL : AbsoluteValue L ℝ) :
     WithAbs vK →+* wL.Completion :=
@@ -156,7 +130,7 @@ private theorem baseToExtensionCompletion_norm
 
 /-- The isometric embedding between completions induced by an exact extension
 of absolute values. -/
-noncomputable def completionMap
+def completionMap
     {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
     (vK : AbsoluteValue K ℝ) (wL : AbsoluteValue L ℝ)
     (hw : Extends vK wL) :
@@ -201,7 +175,7 @@ theorem completionMap_isometry
 
 /-- The algebra structure on the extension completion induced by the
 completion map.  It is deliberately explicit rather than a global instance. -/
-@[reducible] noncomputable def completionAlgebra
+@[reducible] def completionAlgebra
     {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
     (vK : AbsoluteValue K ℝ) (wL : AbsoluteValue L ℝ)
     (hw : Extends vK wL) :
@@ -220,14 +194,14 @@ theorem completionAlgebra_algebraMap
 
 /-- The algebra structure on an extension completion induced by the dense
 copy of the extension field.  It is deliberately explicit. -/
-@[reducible] noncomputable def extensionCompletionAlgebra
+@[reducible] def extensionCompletionAlgebra
     {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
     (wL : AbsoluteValue L ℝ) :
     Algebra K wL.Completion :=
   ((toCompletion wL).comp (algebraMap K L)).toAlgebra
 
 /-- The canonical dense embedding as an algebra homomorphism. -/
-noncomputable def toCompletionAlgHom
+def toCompletionAlgHom
     {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
     (wL : AbsoluteValue L ℝ) :
     letI := extensionCompletionAlgebra (K := K) wL
@@ -281,205 +255,3 @@ theorem completionAbsoluteValue_isNonarchimedean
   rw [completionAbsoluteValue_coe]
   change vK (n : K) ≤ 1
   simpa using hvK.apply_natCast_le_one (by simp) (by simp)
-
-/-- A nonarchimedean absolute value and its completion absolute value have the
-same range. -/
-theorem completionAbsoluteValue_range_eq
-    {K : Type u} [Field K] (vK : AbsoluteValue K ℝ)
-    (hvK : IsNonarchimedean (vK : K → ℝ)) :
-    Set.range (completionAbsoluteValue vK) = Set.range vK := by
-  let vC := completionAbsoluteValue vK
-  have hvC : IsNonarchimedean (vC : vK.Completion → ℝ) :=
-    completionAbsoluteValue_isNonarchimedean vK hvK
-  apply Set.Subset.antisymm
-  · rintro r ⟨y, rfl⟩
-    by_cases hy : y = 0
-    · subst y
-      exact ⟨0, by simp⟩
-    · have hypos : 0 < vC y := vC.pos hy
-      obtain ⟨x, hx⟩ :=
-        (denseRange_toCompletion vK).exists_dist_lt y hypos
-      have hclose :
-          vC (y - algebraMap K vK.Completion x) < vC y := by
-        change dist y (toCompletion vK x) < ‖y‖ at hx
-        change ‖y - toCompletion vK x‖ < ‖y‖
-        simpa only [dist_eq_norm] using hx
-      have hne : vC y ≠ vC (-(y - algebraMap K vK.Completion x)) := by
-        rw [AbsoluteValue.map_neg]
-        exact ne_of_gt hclose
-      have hsum := IsNonarchimedean.add_eq_max_of_ne
-        (fun a => vC.map_neg a) hvC hne
-      refine ⟨x, ?_⟩
-      calc
-        vK x = vC (algebraMap K vK.Completion x) :=
-          (completionAbsoluteValue_coe vK x).symm
-        _ = vC (y + -(y - algebraMap K vK.Completion x)) := by
-          congr 1
-          ring
-        _ = max (vC y) (vC (-(y - algebraMap K vK.Completion x))) := hsum
-        _ = vC y := by
-          rw [AbsoluteValue.map_neg]
-          exact max_eq_left hclose.le
-  · rintro r ⟨x, rfl⟩
-    exact ⟨algebraMap K vK.Completion x,
-      completionAbsoluteValue_coe vK x⟩
-
-section CompleteTarget
-
-variable {K : Type u} {D : Type w} [Field K] [Field D]
-
- noncomputable def toCompleteTargetRingHom
-    (vK : AbsoluteValue K ℝ) (vD : AbsoluteValue D ℝ)
-    (i : K →+* D) :
-    WithAbs vK →+* WithAbs vD :=
-  (WithAbs.equiv vD).symm.toRingHom.comp
-    (i.comp (WithAbs.equiv vK).toRingHom)
-
-private theorem toCompleteTargetRingHom_norm
-    (vK : AbsoluteValue K ℝ) (vD : AbsoluteValue D ℝ)
-    (i : K →+* D) (hi : ∀ x : K, vD (i x) = vK x)
-    (x : WithAbs vK) :
-    ‖toCompleteTargetRingHom vK vD i x‖ = ‖x‖ := by
-  change vD (i (WithAbs.equiv vK x)) = vK (WithAbs.equiv vK x)
-  exact hi _
-
- theorem toCompleteTargetRingHom_isometry
-    (vK : AbsoluteValue K ℝ) (vD : AbsoluteValue D ℝ)
-    (i : K →+* D) (hi : ∀ x : K, vD (i x) = vK x) :
-    Isometry (toCompleteTargetRingHom vK vD i) :=
-  AddMonoidHomClass.isometry_of_norm _
-    (toCompleteTargetRingHom_norm vK vD i hi)
-
-/-- A value-preserving embedding into a complete target extends uniquely from
-the field to its metric completion. -/
-noncomputable def completionMapToCompleteTarget
-    (vK : AbsoluteValue K ℝ) (vD : AbsoluteValue D ℝ)
-    [CompleteSpace (WithAbs vD)]
-    (i : K →+* D) (hi : ∀ x : K, vD (i x) = vK x) :
-    vK.Completion →+* WithAbs vD :=
-  UniformSpace.Completion.extensionHom
-    (toCompleteTargetRingHom vK vD i)
-    (toCompleteTargetRingHom_isometry vK vD i hi).continuous
-
-private theorem completionMapToCompleteTarget_withAbs_coe
-    (vK : AbsoluteValue K ℝ) (vD : AbsoluteValue D ℝ)
-    [CompleteSpace (WithAbs vD)]
-    (i : K →+* D) (hi : ∀ x : K, vD (i x) = vK x)
-    (x : WithAbs vK) :
-    completionMapToCompleteTarget vK vD i hi
-        (x : vK.Completion) =
-      toCompleteTargetRingHom vK vD i x :=
-  UniformSpace.Completion.extensionHom_coe
-    (toCompleteTargetRingHom vK vD i)
-    (toCompleteTargetRingHom_isometry vK vD i hi).continuous x
-
-/-- The extension map to a complete target agrees with the original map on
-embedded source elements. -/
-@[simp]
-theorem completionMapToCompleteTarget_coe
-    (vK : AbsoluteValue K ℝ) (vD : AbsoluteValue D ℝ)
-    [CompleteSpace (WithAbs vD)]
-    (i : K →+* D) (hi : ∀ x : K, vD (i x) = vK x)
-    (x : K) :
-    completionMapToCompleteTarget vK vD i hi
-        (algebraMap K vK.Completion x) =
-      (WithAbs.equiv vD).symm (i x) := by
-  change completionMapToCompleteTarget vK vD i hi
-      (((WithAbs.equiv vK).symm x : WithAbs vK) : vK.Completion) = _
-  rw [completionMapToCompleteTarget_withAbs_coe]
-  rfl
-
-/-- An isometric source map extends to an isometry from the completion. -/
-theorem completionMapToCompleteTarget_isometry
-    (vK : AbsoluteValue K ℝ) (vD : AbsoluteValue D ℝ)
-    [CompleteSpace (WithAbs vD)]
-    (i : K →+* D) (hi : ∀ x : K, vD (i x) = vK x) :
-    Isometry (completionMapToCompleteTarget vK vD i hi) :=
-  (toCompleteTargetRingHom_isometry vK vD i hi).completion_extension
-
-/-- A continuous map from the completion is determined by its restriction to
-the canonical dense copy of the source field. -/
-theorem completionMapToCompleteTarget_eq_of_coe_eq
-    (vK : AbsoluteValue K ℝ) (vD : AbsoluteValue D ℝ)
-    [CompleteSpace (WithAbs vD)]
-    (i : K →+* D) (hi : ∀ x : K, vD (i x) = vK x)
-    (g : vK.Completion →+* WithAbs vD) (hg : Continuous g)
-    (hcoe : ∀ x : K,
-      completionMapToCompleteTarget vK vD i hi
-          (algebraMap K vK.Completion x) =
-        g (algebraMap K vK.Completion x)) :
-    completionMapToCompleteTarget vK vD i hi = g := by
-  ext x
-  refine UniformSpace.Completion.induction_on (α := WithAbs vK) x ?_ ?_
-  · exact isClosed_eq
-      (completionMapToCompleteTarget_isometry vK vD i hi).continuous hg
-  · intro a
-    have ha : (a : vK.Completion) =
-        algebraMap K vK.Completion (WithAbs.equiv vK a) := by
-      change (a : vK.Completion) =
-        (((WithAbs.equiv vK).symm (WithAbs.equiv vK a) : WithAbs vK) :
-          vK.Completion)
-      exact congrArg (fun z : WithAbs vK ↦ (z : vK.Completion))
-        ((WithAbs.equiv vK).symm_apply_apply a).symm
-    rw [ha]
-    exact hcoe (WithAbs.equiv vK a)
-
-end CompleteTarget
-
-section CompleteTargetTower
-
-variable {K : Type u} {L : Type v} {D : Type w}
-variable [Field K] [Field L] [Field D] [Algebra K L]
-
-/-- Dense-point compatibility for extending `L → D` and first embedding the
-completed base in the completion of `L`. -/
-@[simp]
-theorem completionMapToCompleteTarget_comp_completionMap_coe
-    (vK : AbsoluteValue K ℝ) (wL : AbsoluteValue L ℝ)
-    (hw : Extends vK wL) (vD : AbsoluteValue D ℝ)
-    [CompleteSpace (WithAbs vD)]
-    (i : L →+* D) (hi : ∀ x : L, vD (i x) = wL x)
-    (x : K) :
-    completionMapToCompleteTarget wL vD i hi
-        (completionMap vK wL hw (algebraMap K vK.Completion x)) =
-      (WithAbs.equiv vD).symm (i (algebraMap K L x)) := by
-  rw [completionMap_coe, toCompletion_eq_algebraMap,
-    completionMapToCompleteTarget_coe]
-
-/-- Two continuous maps out of the completed base agree if they agree on the
-original base field after passage through the extension completion. -/
-theorem completionMapToCompleteTarget_comp_completionMap_eq_of_coe_eq
-    (vK : AbsoluteValue K ℝ) (wL : AbsoluteValue L ℝ)
-    (hw : Extends vK wL) (vD : AbsoluteValue D ℝ)
-    [CompleteSpace (WithAbs vD)]
-    (i : L →+* D) (hi : ∀ x : L, vD (i x) = wL x)
-    (g : vK.Completion →+* WithAbs vD) (hg : Continuous g)
-    (hcoe : ∀ x : K,
-      (WithAbs.equiv vD).symm (i (algebraMap K L x)) =
-        g (algebraMap K vK.Completion x)) :
-    (completionMapToCompleteTarget wL vD i hi).comp
-        (completionMap vK wL hw) = g := by
-  ext x
-  refine UniformSpace.Completion.induction_on (α := WithAbs vK) x ?_ ?_
-  · exact isClosed_eq
-      ((completionMapToCompleteTarget_isometry wL vD i hi).continuous.comp
-        (completionMap_isometry vK wL hw).continuous) hg
-  · intro a
-    have ha : (a : vK.Completion) =
-        algebraMap K vK.Completion (WithAbs.equiv vK a) := by
-      change (a : vK.Completion) =
-        (((WithAbs.equiv vK).symm (WithAbs.equiv vK a) : WithAbs vK) :
-          vK.Completion)
-      exact congrArg (fun z : WithAbs vK ↦ (z : vK.Completion))
-        ((WithAbs.equiv vK).symm_apply_apply a).symm
-    rw [ha]
-    exact
-      (completionMapToCompleteTarget_comp_completionMap_coe
-        vK wL hw vD i hi (WithAbs.equiv vK a)).trans
-        (hcoe (WithAbs.equiv vK a))
-
-end CompleteTargetTower
-
-end AbsoluteValue
-
-end

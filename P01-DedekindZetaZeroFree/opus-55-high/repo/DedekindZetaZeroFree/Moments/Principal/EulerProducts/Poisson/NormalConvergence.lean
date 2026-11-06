@@ -18,11 +18,11 @@ variable {F : Type} [Field F] [NumberField F]
 variable {A : SArithmeticData F} {σ : F →+* ℂ}
 variable {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
 
-private lemma Q_gt_one (p : ExteriorPrime A) : 1 < Q p := by
+lemma Q_gt_one (p : ExteriorPrime A) : 1 < Q p := by
   change 1 < (Ideal.absNorm p.val.asIdeal : ℝ)
   exact_mod_cast NumberField.HeightOneSpectrum.one_lt_absNorm p.val
 
-private lemma chi_le (p : ExteriorPrime A) (u : A.R) :
+lemma chi_le (p : ExteriorPrime A) (u : A.R) :
     ‖chi (σ := σ) p (Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) u)‖ ≤ 1 := by
   letI := A.exteriorResidue_finite (primeIdeal p)
   letI := Fintype.ofFinite (A.R ⧸ A.extendIdeal (primeIdeal p))ˣ
@@ -34,33 +34,33 @@ private lemma chi_le (p : ExteriorPrime A) (u : A.R) :
     simpa only [MulChar.coe_equivToUnitHom] using h.le
   · simp [MulChar.map_nonunit _ hu]
 
-private lemma eta_le (p : ExteriorPrime A) : ‖η p.val.asIdeal‖ ≤ 1 := by
+lemma eta_le (p : ExteriorPrime A) : ‖η p.val.asIdeal‖ ≤ 1 := by
   by_cases h : η p.val.asIdeal = 0
   · simp [h]
   · exact (RayClassBridge.rayClassCharacter_norm_of_ne_zero F
       (primitive12_totallyComplex F A.zeta12 A.primitive_zeta12)
       A.modulus A.modulus_ne_zero η p.val.asIdeal h).le
 
-private lemma qPower_norm (p : ExteriorPrime A) (s : ℂ) :
+lemma qPower_norm (p : ExteriorPrime A) (s : ℂ) :
     ‖qPower p s‖ = Real.exp (s.re * Real.log (Q p)) := by
   simp [qPower, Complex.norm_exp]
 
-private lemma norm_V' (p : ExteriorPrime A) (z : ℂ) :
+lemma norm_V' (p : ExteriorPrime A) (z : ℂ) :
     ‖V p z‖ = Real.exp ((-6 * z.re) * Real.log (Q p)) := by
   simp [V, qPower_norm]
 
-private lemma norm_W' (p : ExteriorPrime A) (u : A.R) (w : ℂ) :
+lemma norm_W' (p : ExteriorPrime A) (u : A.R) (w : ℂ) :
     ‖W (σ := σ) p u w‖ ≤ Real.exp (-w.re * Real.log (Q p)) := by
   simp only [W, norm_mul, qPower_norm, Complex.neg_re]
   exact mul_le_of_le_one_left (Real.exp_pos _).le (chi_le p u)
 
-private lemma norm_D' (p : ExteriorPrime A) (u : A.R) (ξ : ℂ) :
+lemma norm_D' (p : ExteriorPrime A) (u : A.R) (ξ : ℂ) :
     ‖D (σ := σ) (η := η) p u ξ‖ ≤ Real.exp (-ξ.re * Real.log (Q p)) := by
   simp only [D, norm_mul, norm_star, qPower_norm, Complex.neg_re]
   exact mul_le_of_le_one_left (Real.exp_pos _).le
     (mul_le_one₀ (eta_le p) (norm_nonneg _) (chi_le p u))
 
-private lemma norm_E' (C : A.GeneralArithmeticContext σ η hS)
+lemma norm_E' (C : A.GeneralArithmeticContext σ η hS)
     (p : ExteriorPrime A) (ξ z : ℂ) :
     ‖E C p ξ z‖ = Real.exp ((4 - 6 * ξ.re - 6 * z.re) * Real.log (Q p)) := by
   have hθ : ‖vartheta C p‖ = 1 := Circle.norm_coe _
@@ -71,12 +71,12 @@ private lemma norm_E' (C : A.GeneralArithmeticContext σ η hS)
   simp
   ring
 
-private lemma star_region (x : Coordinates) (hx : x ∈ DedekindZetaZeroFree.Quantitative.EulerDomain.OmegaStar) :
+lemma star_region (x : Coordinates) (hx : x ∈ DedekindZetaZeroFree.Quantitative.EulerDomain.OmegaStar) :
     0 < 6 * x.2.2.re ∧ 0 < x.2.1.re ∧ 0 < x.1.re ∧ 0 < 6 * x.1.re + 6 * x.2.2.re - 4 := by
   obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11⟩ := hx
   refine ⟨by linarith, by linarith, by linarith, by linarith⟩
 
-private lemma norms_lt_one_star (C : A.GeneralArithmeticContext σ η hS)
+lemma norms_lt_one_star (C : A.GeneralArithmeticContext σ η hS)
     (p : ExteriorPrime A) (u : A.R) (x : Coordinates)
     (hx : x ∈ DedekindZetaZeroFree.Quantitative.EulerDomain.OmegaStar) :
     ‖V p x.2.2‖ < 1 ∧ ‖W (σ := σ) p u x.2.1‖ < 1 ∧
@@ -92,7 +92,7 @@ private lemma norms_lt_one_star (C : A.GeneralArithmeticContext σ η hS)
   · exact (norm_D' p u _).trans_lt (hexp _ (by linarith))
   · rw [norm_E']; exact hexp _ (by linarith)
 
-private lemma denominators_ne_zero_star (C : A.GeneralArithmeticContext σ η hS)
+lemma denominators_ne_zero_star (C : A.GeneralArithmeticContext σ η hS)
     (p : ExteriorPrime A) (u : A.R) (x : Coordinates)
     (hx : x ∈ DedekindZetaZeroFree.Quantitative.EulerDomain.OmegaStar) :
     1 - V p x.2.2 ≠ 0 ∧
@@ -316,16 +316,13 @@ noncomputable section
 open DedekindZetaZeroFree NumberField
 open scoped Classical
 
-theorem OmegaStar_isOpen : IsOpen OmegaStar := by
-  simp only [OmegaStar, Set.setOf_and]
-  repeat' apply IsOpen.inter
-  all_goals exact isOpen_lt (by fun_prop) (by fun_prop)
+theorem OmegaStar_isOpen : IsOpen OmegaStar := by apply DedekindZetaZeroFree.Quantitative.EulerGeometry.OmegaStar_isOpen <;> assumption
 
 variable {F : Type} [Field F] [NumberField F]
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 variable (D : FixedData S η)
 
-private theorem localFactor_diffOn_star (u : D.Row)
+theorem localFactor_diffOn_star (u : D.Row)
     (pr : LocalFiniteSums.ExteriorPrime D.recipe.A) :
     DifferentiableOn ℂ
       (fun p : Coordinates => CorrectionFactors.localFactor D.context u.toFrequency pr p.1 p.2.1 p.2.2)

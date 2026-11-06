@@ -12,13 +12,12 @@ namespace DedekindZetaZeroFree.KPExteriorActualJacquetShells
 open KPLocalExceptionalConstruction KPExteriorActualJacquetShellsRaw
 
 noncomputable section
-set_option autoImplicit false
 
 variable {K : Type*} [Field K] [ValuativeRel K] [TopologicalSpace K]
   [IsNonarchimedeanLocalField K] [MeasurableSpace K] [BorelSpace K]
  def B (p : K) (k : ℤ) : Set K := {x | ∃ u : (valuation K).integer, x = p ^ k * (u : K)}
  def S (p : K) (k : ℤ) : Set K := {x | ∃ u ∈ KPTameGauss.integerUnitShell K, x = p ^ k * u}
-private lemma B_mem (p : K) (hp : p ≠ 0) (k : ℤ) (x : K) :
+lemma B_mem (p : K) (hp : p ≠ 0) (k : ℤ) (x : K) :
     x ∈ B p k ↔ p ^ (-k) * x ∈ ((valuation K).integer : Set K) := by
   constructor
   · rintro ⟨u, rfl⟩
@@ -27,7 +26,7 @@ private lemma B_mem (p : K) (hp : p ≠ 0) (k : ℤ) (x : K) :
   · intro hx
     refine ⟨⟨p ^ (-k) * x, hx⟩, ?_⟩
     rw [← mul_assoc, ← zpow_add₀ hp, add_neg_cancel, zpow_zero, one_mul]
-private lemma B_measurable (p : K) (hp : p ≠ 0) (k : ℤ) : MeasurableSet (B p k) := by
+lemma B_measurable (p : K) (hp : p ≠ 0) (k : ℤ) : MeasurableSet (B p k) := by
   have he : B p k = (fun x : K => p ^ (-k) * x) ⁻¹' ((valuation K).integer : Set K) := by
     ext x; exact B_mem p hp k x
   rw [he]
@@ -66,8 +65,7 @@ private lemma parts (π : (valuation K).integer) (hπ : Irreducible π) (k : ℤ
     have hv : valuation K ((π : K) * (u : K)) < 1 := by
       rw [map_mul]
       exact lt_of_le_of_lt (mul_le_of_le_one_right zero_le u.property) hval
-    rw [he, htval] at hv
-    exact (lt_irrefl _ hv)
+    simp_all
 private lemma S_measurable (π : (valuation K).integer) (hπ : Irreducible π) (k : ℤ) :
     MeasurableSet (S (π : K) k) := by
   have hp : (π : K) ≠ 0 := by intro h; exact hπ.ne_zero (Subtype.ext h)
@@ -80,7 +78,7 @@ private lemma S_measurable (π : (valuation K).integer) (hπ : Irreducible π) (
     · intro hx; exact ⟨Or.inr hx, fun hb => hd hb hx⟩
     · rintro ⟨h | h, hn⟩
       · exact (hn h).elim
-      · exact h
+      omega
   rw [he]
   exact (B_measurable _ hp k).diff (B_measurable _ hp (k+1))
 private lemma integral_partition {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
@@ -102,8 +100,7 @@ private lemma integral_partition {V : Type*} [NormedAddCommGroup V] [NormedSpace
       rw [Finset.sum_Icc_succ_top (by omega)]
       exact add_assoc _ _ _
     · have hd := (parts π hπ (e - ((n + 1 : ℕ) : ℤ))).2
-      rw [hk] at hd
-      exact hd
+      simp_all
     · exact S_measurable π hπ _
     · exact hf'.left_of_union
     · exact hf'.right_of_union
@@ -123,6 +120,3 @@ theorem spherical_partition_integral
   have h := integral_partition μ π hπ f (e : ℤ) (R + e) (by
     simpa only [hk, B, truncationBall] using hf)
   simpa only [hk, B, S, zpow_natCast, truncationBall, sphericalBall, sphericalShell] using h
-
-end
-end DedekindZetaZeroFree.KPExteriorActualJacquetShells

@@ -6,7 +6,6 @@ public import Mathlib.MeasureTheory.Function.L2Space
 
 @[expose] public section
 
-noncomputable section
 set_option maxHeartbeats 1000000
 set_option backward.isDefEq.respectTransparency false
 open scoped Topology BigOperators

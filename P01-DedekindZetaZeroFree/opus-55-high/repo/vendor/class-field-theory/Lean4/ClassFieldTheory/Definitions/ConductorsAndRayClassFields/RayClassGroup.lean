@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Ideal-theoretic ray class groups
 -/
@@ -37,5 +32,3 @@ instance instIsMulCommutativeRayClassGroup
     {K : Type u} [Field K] [NumberField K]
     (m : RayClassModulus K) : IsMulCommutative (RayClassGroup m) :=
   ⟨⟨fun a b => mul_comm a b⟩⟩
-
-end ClassFieldTheory

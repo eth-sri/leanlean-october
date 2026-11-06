@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Transporting local-field structures to a small representative
 
@@ -41,7 +36,7 @@ variable (K : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
   nonarchimedeanLocalField_small K
 
 /-- The canonical valuation pulled back to the small carrier. -/
-noncomputable def shrinkLocalFieldValuation :
+def shrinkLocalFieldValuation :
     letI : Small.{0} K := smallLocalField K
     Valuation (Shrink.{0} K) (ValueGroupWithZero K) := by
   letI : Small.{0} K := smallLocalField K
@@ -49,7 +44,7 @@ noncomputable def shrinkLocalFieldValuation :
 
 /-- The valuative relation on the small carrier, transported from `K`. -/
 @[instance_reducible]
-noncomputable def shrinkLocalFieldValuativeRel :
+def shrinkLocalFieldValuativeRel :
     letI : Small.{0} K := smallLocalField K
     ValuativeRel (Shrink.{0} K) := by
   letI : Small.{0} K := smallLocalField K
@@ -128,7 +123,7 @@ theorem shrinkLocalField_isValuativeTopology :
       s ∈ 𝓝 (0 : Shrink.{0} K) ↔ h '' s ∈ 𝓝 (0 : K) := by
     have h0 : h (0 : Shrink.{0} K) = (0 : K) := by
       change e (0 : Shrink.{0} K) = 0
-      exact map_zero e
+      simp
     calc
       s ∈ 𝓝 (0 : Shrink.{0} K) ↔
           h ⁻¹' (h '' s) ∈ 𝓝 (0 : Shrink.{0} K) := by
@@ -184,16 +179,14 @@ theorem shrinkLocalField_isValuativeTopology :
       change valuation K (e z) < valuation K (e (e.symm a)) at hv
       simpa only [e.apply_symm_apply] using hv
     change e z ∈ e '' s at hzK
-    rcases hzK with ⟨w, hw, hew⟩
-    simpa [e.injective hew] using hw
+    simp_all
   · rintro ⟨a, ha0, hsub⟩
     refine ⟨e a, by simpa using ha0, ?_⟩
     intro z hz
     have hzS : e.symm z ∈ s := hsub (by
       apply (shrinkLocalField_valuation_lt_iff K (e.symm z) a).2
       change valuation K (e (e.symm z)) < valuation K (e a)
-      change valuation K z < valuation K (e a) at hz
-      simpa only [e.apply_symm_apply] using hz)
+      simp_all)
     change z ∈ e '' s
     exact ⟨e.symm z, hzS, e.apply_symm_apply z⟩
 
@@ -210,60 +203,3 @@ theorem shrinkLocalField_isNonarchimedeanLocalField :
     toLocallyCompactSpace := shrinkLocalField_locallyCompact K
     toIsNontrivial := shrinkLocalField_isNontrivial K
   }
-
-section ValuationExtension
-
-universe v w x y
-
-/-- A valuation-extension relation survives transport along compatible field
-equivalences.  This applies in particular to the two `Shrink` equivalences. -/
-theorem hasExtension_comap_ringEquivs
-    {F : Type v} {G : Type w} {F₀ : Type x} {G₀ : Type y}
-    [Field F] [Field G] [Field F₀] [Field G₀]
-    [Algebra F G] [Algebra F₀ G₀]
-    {ΓF ΓG : Type*}
-    [LinearOrderedCommGroupWithZero ΓF]
-    [LinearOrderedCommGroupWithZero ΓG]
-    (eF : F₀ ≃+* F) (eG : G₀ ≃+* G)
-    (h : ∀ a : F₀, eG (algebraMap F₀ G₀ a) =
-      algebraMap F G (eF a))
-    (vF : Valuation F ΓF) (vG : Valuation G ΓG)
-    [vF.HasExtension vG] :
-    (vF.comap eF.toRingHom).HasExtension
-      (vG.comap eG.toRingHom) := by
-  constructor
-  rw [Valuation.isEquiv_iff_val_le_one]
-  intro a
-  change vF (eF a) ≤ 1 ↔ vG (eG (algebraMap F₀ G₀ a)) ≤ 1
-  rw [h]
-  exact (Valuation.HasExtension.val_map_le_one_iff vF vG (eF a)).symm
-
-/-- Equivalent valuations may replace both valuations in an extension
-relation.  This is useful when a transported valuation is equivalent, but
-not definitionally equal, to the canonical valuation on `Shrink`. -/
-theorem hasExtension_of_isEquiv
-    {F : Type v} {G : Type w}
-    [CommRing F] [Ring G] [Algebra F G]
-    {ΓF ΓF' ΓG ΓG' : Type*}
-    [LinearOrderedCommMonoidWithZero ΓF]
-    [LinearOrderedCommMonoidWithZero ΓF']
-    [LinearOrderedCommMonoidWithZero ΓG]
-    [LinearOrderedCommMonoidWithZero ΓG']
-    (vF : Valuation F ΓF) (vF' : Valuation F ΓF')
-    (vG : Valuation G ΓG) (vG' : Valuation G ΓG')
-    [vF.HasExtension vG]
-    (hF : vF.IsEquiv vF') (hG : vG.IsEquiv vG') :
-    vF'.HasExtension vG' := by
-  constructor
-  intro x y
-  have hext : vF.IsEquiv (vG.comap (algebraMap F G)) :=
-    Valuation.HasExtension.val_isEquiv_comap
-  exact (hF.symm x y).trans
-    ((hext x y).trans
-      (hG (algebraMap F G x) (algebraMap F G y)))
-
-end ValuationExtension
-
-end LocalFieldTheory
-
-end

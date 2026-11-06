@@ -5,8 +5,6 @@ public import DedekindZetaZeroFree.Metaplectic.Intertwining.Spherical.CubicShell
 
 @[expose] public section
 
-set_option autoImplicit false
-noncomputable section
 namespace DedekindZetaZeroFree.KPLocalTameIntertwiningBlock
 open scoped NumberField Classical
 open NumberField IsDedekindDomain MeasureTheory ValuativeRel
@@ -39,7 +37,6 @@ theorem kernel_generators_mem_of_actual_compact
     rw [map_mul, KPStandardLocalRootLifts.W_eq_compact F ζ hζ q ht]
     have hA := KPStandardLocalRootLifts.A_eq_compact F ζ hζ q ht (-1)
     have hu : KPTameCompact.unitInclusion F q (-1) = -1 := by
-      apply Units.ext
       rfl
     rw [hu] at hA
     rw [hA]
@@ -53,7 +50,3 @@ theorem kernel_generators_mem_of_actual_compact
       (KPStandardLocalRootLifts.N F ζ hζ (Sum.inr q) (x : LocalField F q))
     rw [KPStandardLocalRootLifts.N_eq_compact F ζ hζ q ht x]
     rfl
-
-end DedekindZetaZeroFree.KPLocalTameIntertwiningBlock
-
-end

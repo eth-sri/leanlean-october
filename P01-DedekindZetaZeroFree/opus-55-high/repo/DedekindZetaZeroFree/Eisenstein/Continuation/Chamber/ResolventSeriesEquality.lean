@@ -356,7 +356,7 @@ theorem actual_test_class_represents (φ : Tests) :
   exact (KPContSectorLineL2Isometry.scalarEmbedding_coe F ζ hζ level R P H
     (actualTestEmbedding F ζ hζ C R P H U φ)).symm
 
-private theorem chart_parameter_congr {n : ℕ} (B : LocalBall n)
+theorem chart_parameter_congr {n : ℕ} (B : LocalBall n)
     {O : Set ℂ} {f g : ℂ → Space n → ℂ} (he : Set.EqOn f g O)
     (hf : KPCutoffSource.ChartSmoothHolomorphicOn B f O) :
     KPCutoffSource.ChartSmoothHolomorphicOn B g O := by
@@ -368,7 +368,7 @@ private theorem chart_parameter_congr {n : ℕ} (B : LocalBall n)
   rw [← he hs]
   exact hje s hs α x
 
-private theorem series_parameter_congr {n : ℕ} (B : LocalBall n)
+theorem series_parameter_congr {n : ℕ} (B : LocalBall n)
     {c : ℂ} {ρ : ℝ} {b : ℕ → Space n → ℂ} {f g : ℂ → Space n → ℂ}
     (he : Set.EqOn f g (Metric.ball c ρ)) (hf : SmoothPowerSeriesOn B c ρ b f) :
     SmoothPowerSeriesOn B c ρ b g := by
@@ -448,7 +448,7 @@ theorem literal_series_smoothTaylorData :
     exact congrArg (fun Z : Smooth => coefficient Z.val A)
       (he s (hclosed (Metric.ball_subset_closedBall hs)))
 open KPContActualSphericalFlatStage in
-private theorem formula_stage
+theorem formula_stage
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
     (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
@@ -506,7 +506,7 @@ private theorem formula_stage
       KPContFlatRationalCosetCovariance.rationalTerm_transport_mk F ζ hζ s
         (coreInclusion F ζ hζ U ι vv) g γ
 
-private theorem represented_pairing (Z Z' : Smooth) (u u' : HU)
+theorem represented_pairing (Z Z' : Smooth) (u u' : HU)
     (hZ : Represents Z.val u) (hZ' : Represents Z'.val u') :
     Integrable (coveredPair Z' (scalar Z)) μ ∧
       (∫ x, coveredPair Z' (scalar Z) x ∂μ) = inner ℂ u u' := by
@@ -530,7 +530,7 @@ private theorem represented_pairing (Z Z' : Smooth) (u u' : HU)
   rw [L2.inner_def]
   exact integral_congr_ae hab.symm
 
-private theorem quotient_transfer (Z : Smooth) (ψ : KPContActualAllCuspSource.Covered F ζ hζ C R P H U → ℂ)
+theorem quotient_transfer (Z : Smooth) (ψ : KPContActualAllCuspSource.Covered F ζ hζ C R P H U → ℂ)
     (hint : Integrable (coveredPair Z ψ) μ) :
     Integrable (quotientPair Z ψ) R.quotientHaar ∧
       (∫ x, quotientPair Z ψ x ∂(R.quotientHaar)) = ∫ x, coveredPair Z ψ x ∂μ := by
@@ -569,7 +569,7 @@ theorem covered_formula_actual (φ : Tests) (s : ℂ) (hs : s ∈ Ω \ poles) :
   exact (integral_add (hC.covered_integrable s hs.1) hWpair.1).trans
     (congrArg (fun z => (∫ x, coveredPair (source.descent.cutoff s) (testScalar φ) x ∂μ) + z) hWpair.2)
 
-private theorem meromorphic_clm {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E]
+theorem meromorphic_clm {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E]
     {g : ℂ → E} {O : Set ℂ} (L : E →L[ℂ] ℂ) (hg : MeromorphicOn g O) :
     MeromorphicOn (fun s => L (g s)) O := by
   intro s hs

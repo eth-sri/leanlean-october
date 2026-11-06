@@ -18,7 +18,7 @@ noncomputable section
 variable (F : Type) [Field F] [NumberField F]
 variable (q : HeightOneSpectrum (𝓞 F))
 
-private lemma reflected_t (s : ℂ) :
+lemma reflected_t (s : ℂ) :
     KPRankOneRootParameter.t (KPExceptionalRaw.LocalField F q) (-s-1/3) =
       (KPRankOneRootParameter.t (KPExceptionalRaw.LocalField F q) s)⁻¹ := by
   let Q : ℂ := (residueCardinality (KPExceptionalRaw.LocalField F q) : ℂ)
@@ -98,10 +98,10 @@ theorem reflected_regular_dictionary
     rw [show denominator (KPExceptionalRaw.LocalField F q) .plus (-s-1/3) =
         1 - KPRankOneRootParameter.t (KPExceptionalRaw.LocalField F q) (-s-1/3) from rfl, htneg]
   refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
-  · rw [hdm]; exact sub_ne_zero.mpr hw6inv.symm
-  · rw [hdp]; exact sub_ne_zero.mpr hw6.symm
-  · rw [hdm2]; exact sub_ne_zero.mpr hw6.symm
-  · rw [hdp2]; exact sub_ne_zero.mpr hw6inv.symm
+  · rw [hdm]; positivity
+  · rw [hdp]; positivity
+  · rw [hdm2]; positivity
+  · rw [hdp2]; positivity
   · rw [← pow_mul]; exact hts.symm
   · rw [hts]; exact hw6
   · exact ⟨(w ^ 2)⁻¹, inv_ne_zero (pow_ne_zero 2 hw), by rw [inv_pow, ← pow_mul, hts],
@@ -131,26 +131,26 @@ set_option backward.isDefEq.respectTransparency false
  def CubicResidueDenomRegular {F : Type*} [Field F] (u : F) (r : RatFunc F) : Prop :=
   r.denom.eval u ≠ 0
 
-private lemma cubicResidueDenomRegular_constant {F : Type*} [Field F] (u c : F) : CubicResidueDenomRegular u (RatFunc.C c) := by
+lemma cubicResidueDenomRegular_constant {F : Type*} [Field F] (u c : F) : CubicResidueDenomRegular u (RatFunc.C c) := by
   simp [CubicResidueDenomRegular]
-private lemma cubicResidueDenomRegular_coordinate {F : Type*} [Field F] (u : F) : CubicResidueDenomRegular u (RatFunc.X : RatFunc F) := by
+lemma cubicResidueDenomRegular_coordinate {F : Type*} [Field F] (u : F) : CubicResidueDenomRegular u (RatFunc.X : RatFunc F) := by
   simp [CubicResidueDenomRegular]
-private lemma cubicResidueDenomRegular_add {F : Type*} [Field F] {u : F} {r s : RatFunc F}
-    (hr : CubicResidueDenomRegular u r) (hs : CubicResidueDenomRegular u s) : CubicResidueDenomRegular u (r+s) := by
-  exact fun h => (mul_ne_zero hr hs) (by
+lemma cubicResidueDenomRegular_add {F : Type*} [Field F] {u : F} {r s : RatFunc F}
+    (hr : CubicResidueDenomRegular u r) (hs : CubicResidueDenomRegular u s) : CubicResidueDenomRegular u (r+s) := 
+  fun h => (mul_ne_zero hr hs) (by
     simpa using Polynomial.eval_eq_zero_of_dvd_of_eval_eq_zero (RatFunc.denom_add_dvd r s) h)
-private lemma cubicResidueDenomRegular_mul {F : Type*} [Field F] {u : F} {r s : RatFunc F}
-    (hr : CubicResidueDenomRegular u r) (hs : CubicResidueDenomRegular u s) : CubicResidueDenomRegular u (r*s) := by
-  exact fun h => (mul_ne_zero hr hs) (by
+lemma cubicResidueDenomRegular_mul {F : Type*} [Field F] {u : F} {r s : RatFunc F}
+    (hr : CubicResidueDenomRegular u r) (hs : CubicResidueDenomRegular u s) : CubicResidueDenomRegular u (r*s) := 
+  fun h => (mul_ne_zero hr hs) (by
     simpa using Polynomial.eval_eq_zero_of_dvd_of_eval_eq_zero (RatFunc.denom_mul_dvd r s) h)
-private lemma cubicResidueDenomRegular_inv_of_value_ne_zero {F : Type*} [Field F] {u : F} {r : RatFunc F}
+lemma cubicResidueDenomRegular_inv_of_value_ne_zero {F : Type*} [Field F] {u : F} {r : RatFunc F}
     (_hr : CubicResidueDenomRegular u r) (hv : RatFunc.eval (RingHom.id F) u r ≠ 0) : CubicResidueDenomRegular u r⁻¹ := by
   have hr0 : r ≠ 0 := by intro h; simp [h] at hv
   intro h
   have hn := Polynomial.eval_eq_zero_of_dvd_of_eval_eq_zero (RatFunc.denom_inv_dvd hr0) h
   apply hv
   simp [RatFunc.eval, hn]
-private lemma cubicResidue_eval_inv_of_denom_regular_of_value_ne_zero {F : Type*} [Field F] {u : F} {r : RatFunc F}
+lemma cubicResidue_eval_inv_of_denom_regular_of_value_ne_zero {F : Type*} [Field F] {u : F} {r : RatFunc F}
     (hr : CubicResidueDenomRegular u r) (hv : RatFunc.eval (RingHom.id F) u r ≠ 0) :
     RatFunc.eval (RingHom.id F) u r⁻¹ = (RatFunc.eval (RingHom.id F) u r)⁻¹ := by
   have hr0 : r ≠ 0 := by intro h; simp [h] at hv
@@ -237,12 +237,12 @@ private theorem residue_scalar_regular_eval
   letI := Fintype.ofFinite CubicCharacters.Mu3
   have hb (ε : CubicCharacters.Mu3) := (CubicResidueRegularValue.const w ((ε : ℂˣ) : ℂ)).mul ((CubicResidueRegularValue.var w).pow 2)
   have hb0 (ε : CubicCharacters.Mu3) : ((ε : ℂˣ) : ℂ)*w^2 ≠ 0 :=
-    mul_ne_zero (ε : ℂˣ).ne_zero (pow_ne_zero _ hw0)
+    by simp_all
   have hb1 (ε : CubicCharacters.Mu3) : ((ε : ℂˣ) : ℂ)*w^2 ≠ 1 := by
     intro he
     have hp := congrArg (fun z : ℂ => z^3) he
-    have hε : (((ε : ℂˣ) : ℂ))^3 = 1 := by
-      exact congrArg Units.val ((mem_rootsOfUnity 3 (ε : ℂˣ)).mp ε.property)
+    have hε : (((ε : ℂˣ) : ℂ))^3 = 1 := 
+      congrArg Units.val ((mem_rootsOfUnity 3 (ε : ℂˣ)).mp ε.property)
     rw [mul_pow,hε,one_mul,← pow_mul,one_pow] at hp
     exact hw6 hp
   have hs := CubicResidueRegularValue.sum Finset.univ (fun ξ _ => CubicResidueRegularValue.sum Finset.univ (fun ε _ =>
@@ -278,8 +278,7 @@ theorem forward_regular_residue
       (Valuation.integer (valuation K)))).ne'
   have hα0 : α ≠ 0 := by
     intro he
-    rw [he, zero_pow (by decide)] at hα
-    exact hq0 hα.symm
+    simp_all
   let w := r K s / α
   have hr0 : r K s ≠ 0 := Complex.exp_ne_zero _
   have hw0 : w ≠ 0 := div_ne_zero hr0 hα0
@@ -333,26 +332,26 @@ set_option linter.style.haveILetI false
  abbrev CubicResidueDenominatorRegular {F : Type*} [Field F] (u : F) (r : RatFunc F) : Prop :=
   r.denom.eval u ≠ 0
 
-private lemma cubicResidueDenominatorRegular_constant {F : Type*} [Field F] (u c : F) : CubicResidueDenominatorRegular u (RatFunc.C c) := by
+lemma cubicResidueDenominatorRegular_constant {F : Type*} [Field F] (u c : F) : CubicResidueDenominatorRegular u (RatFunc.C c) := by
   simp [CubicResidueDenominatorRegular]
-private lemma cubicResidueDenominatorRegular_indeterminate {F : Type*} [Field F] (u : F) : CubicResidueDenominatorRegular u (RatFunc.X : RatFunc F) := by
+lemma cubicResidueDenominatorRegular_indeterminate {F : Type*} [Field F] (u : F) : CubicResidueDenominatorRegular u (RatFunc.X : RatFunc F) := by
   simp [CubicResidueDenominatorRegular]
-private lemma cubicResidueDenominatorRegular_add {F : Type*} [Field F] {u : F} {r s : RatFunc F}
-    (hr : CubicResidueDenominatorRegular u r) (hs : CubicResidueDenominatorRegular u s) : CubicResidueDenominatorRegular u (r+s) := by
-  exact fun h => (mul_ne_zero hr hs) (by
+lemma cubicResidueDenominatorRegular_add {F : Type*} [Field F] {u : F} {r s : RatFunc F}
+    (hr : CubicResidueDenominatorRegular u r) (hs : CubicResidueDenominatorRegular u s) : CubicResidueDenominatorRegular u (r+s) := 
+  fun h => (mul_ne_zero hr hs) (by
     simpa using Polynomial.eval_eq_zero_of_dvd_of_eval_eq_zero (RatFunc.denom_add_dvd r s) h)
-private lemma cubicResidueDenominatorRegular_mul {F : Type*} [Field F] {u : F} {r s : RatFunc F}
-    (hr : CubicResidueDenominatorRegular u r) (hs : CubicResidueDenominatorRegular u s) : CubicResidueDenominatorRegular u (r*s) := by
-  exact fun h => (mul_ne_zero hr hs) (by
+lemma cubicResidueDenominatorRegular_mul {F : Type*} [Field F] {u : F} {r s : RatFunc F}
+    (hr : CubicResidueDenominatorRegular u r) (hs : CubicResidueDenominatorRegular u s) : CubicResidueDenominatorRegular u (r*s) := 
+  fun h => (mul_ne_zero hr hs) (by
     simpa using Polynomial.eval_eq_zero_of_dvd_of_eval_eq_zero (RatFunc.denom_mul_dvd r s) h)
-private lemma cubicResidueDenominatorRegular_inv_of_value_ne_zero {F : Type*} [Field F] {u : F} {r : RatFunc F}
+lemma cubicResidueDenominatorRegular_inv_of_value_ne_zero {F : Type*} [Field F] {u : F} {r : RatFunc F}
     (_hr : CubicResidueDenominatorRegular u r) (hv : RatFunc.eval (RingHom.id F) u r ≠ 0) : CubicResidueDenominatorRegular u r⁻¹ := by
   have hr0 : r ≠ 0 := by intro h; simp [h] at hv
   intro h
   have hn := Polynomial.eval_eq_zero_of_dvd_of_eval_eq_zero (RatFunc.denom_inv_dvd hr0) h
   apply hv
   simp [RatFunc.eval, hn]
-private lemma cubicResidue_eval_inv_of_regular_nonzero {F : Type*} [Field F] {u : F} {r : RatFunc F}
+lemma cubicResidue_eval_inv_of_regular_nonzero {F : Type*} [Field F] {u : F} {r : RatFunc F}
     (hr : CubicResidueDenominatorRegular u r) (hv : RatFunc.eval (RingHom.id F) u r ≠ 0) :
     RatFunc.eval (RingHom.id F) u r⁻¹ = (RatFunc.eval (RingHom.id F) u r)⁻¹ := by
   have hr0 : r ≠ 0 := by intro h; simp [h] at hv
@@ -364,13 +363,13 @@ private lemma cubicResidue_eval_inv_of_regular_nonzero {F : Type*} [Field F] {u 
   CubicResidueDenominatorRegular u r ∧ RatFunc.eval (RingHom.id F) u r = v
 private lemma cubicResidue_regularityAtValue.constant {F : Type*} [Field F] (u v : F) : cubicResidue_regularityAtValue u (RatFunc.C v) v :=
   ⟨cubicResidueDenominatorRegular_constant u v, by simp⟩
-private lemma cubicResidue_regularityAtValue.indeterminate {F : Type*} [Field F] (u : F) : cubicResidue_regularityAtValue u RatFunc.X u :=
+lemma cubicResidue_regularityAtValue.indeterminate {F : Type*} [Field F] (u : F) : cubicResidue_regularityAtValue u RatFunc.X u :=
   ⟨cubicResidueDenominatorRegular_indeterminate u, by simp⟩
-private lemma cubicResidue_regularityAtValue.add_values {F : Type*} [Field F] {u a b : F} {r s : RatFunc F}
+lemma cubicResidue_regularityAtValue.add_values {F : Type*} [Field F] {u a b : F} {r s : RatFunc F}
     (hr : cubicResidue_regularityAtValue u r a) (hs : cubicResidue_regularityAtValue u s b) : cubicResidue_regularityAtValue u (r+s) (a+b) := by
   refine ⟨cubicResidueDenominatorRegular_add hr.1 hs.1, ?_⟩
   rw [RatFunc.eval_add (RingHom.id F) u hr.1 hs.1, hr.2, hs.2]
-private lemma cubicResidue_regularityAtValue.mul_values {F : Type*} [Field F] {u a b : F} {r s : RatFunc F}
+lemma cubicResidue_regularityAtValue.mul_values {F : Type*} [Field F] {u a b : F} {r s : RatFunc F}
     (hr : cubicResidue_regularityAtValue u r a) (hs : cubicResidue_regularityAtValue u s b) : cubicResidue_regularityAtValue u (r*s) (a*b) := by
   refine ⟨cubicResidueDenominatorRegular_mul hr.1 hs.1, ?_⟩
   rw [RatFunc.eval_mul (RingHom.id F) u hr.1 hs.1, hr.2, hs.2]
@@ -380,11 +379,11 @@ private lemma cubicResidue_regularityAtValue.neg_value {F : Type*} [Field F] {u 
 private lemma cubicResidue_regularityAtValue.sub_values {F : Type*} [Field F] {u a b : F} {r s : RatFunc F}
     (hr : cubicResidue_regularityAtValue u r a) (hs : cubicResidue_regularityAtValue u s b) : cubicResidue_regularityAtValue u (r-s) (a-b) := by
   simpa only [sub_eq_add_neg] using hr.add_values hs.neg_value
-private lemma cubicResidue_regularityAtValue.inv_nonzero_value {F : Type*} [Field F] {u a : F} {r : RatFunc F}
+lemma cubicResidue_regularityAtValue.inv_nonzero_value {F : Type*} [Field F] {u a : F} {r : RatFunc F}
     (hr : cubicResidue_regularityAtValue u r a) (ha : a ≠ 0) : cubicResidue_regularityAtValue u r⁻¹ a⁻¹ := by
   have hv : RatFunc.eval (RingHom.id F) u r ≠ 0 := hr.2 ▸ ha
   exact ⟨cubicResidueDenominatorRegular_inv_of_value_ne_zero hr.1 hv, by rw [cubicResidue_eval_inv_of_regular_nonzero hr.1 hv, hr.2]⟩
-private lemma cubicResidue_regularityAtValue.div_nonzero_value {F : Type*} [Field F] {u a b : F} {r s : RatFunc F}
+lemma cubicResidue_regularityAtValue.div_nonzero_value {F : Type*} [Field F] {u a b : F} {r s : RatFunc F}
     (hr : cubicResidue_regularityAtValue u r a) (hs : cubicResidue_regularityAtValue u s b) (hb : b ≠ 0) : cubicResidue_regularityAtValue u (r/s) (a/b) := by
   simpa only [div_eq_mul_inv] using hr.mul_values (hs.inv_nonzero_value hb)
 private lemma cubicResidue_regularityAtValue.nat_power {F : Type*} [Field F] {u a : F} {r : RatFunc F}
@@ -441,12 +440,12 @@ theorem residue_scalar_regular_evaluation
   have hb (ε : CubicCharacters.Mu3) :=
     (cubicResidue_regularityAtValue.constant w ((ε : ℂˣ) : ℂ)).mul_values ((cubicResidue_regularityAtValue.indeterminate w).nat_power 2)
   have hb0 (ε : CubicCharacters.Mu3) : ((ε : ℂˣ) : ℂ)*w^2 ≠ 0 :=
-    mul_ne_zero (ε : ℂˣ).ne_zero (pow_ne_zero _ hw)
+    by simp_all
   have hb1 (ε : CubicCharacters.Mu3) : ((ε : ℂˣ) : ℂ)*w^2 ≠ 1 := by
     intro he
     have hp := congrArg (fun z : ℂ => z^3) he
-    have hε : (((ε : ℂˣ) : ℂ))^3 = 1 := by
-      exact congrArg Units.val ((mem_rootsOfUnity 3 (ε : ℂˣ)).mp ε.property)
+    have hε : (((ε : ℂˣ) : ℂ))^3 = 1 := 
+      congrArg Units.val ((mem_rootsOfUnity 3 (ε : ℂˣ)).mp ε.property)
     rw [mul_pow,hε,one_mul,← pow_mul,one_pow] at hp
     exact hw6 hp
   have hs := cubicResidue_regularityAtValue.finite_sum Finset.univ (fun ξ _ => cubicResidue_regularityAtValue.finite_sum Finset.univ (fun ε _ =>
@@ -477,10 +476,9 @@ variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 variable (q : HeightOneSpectrum (𝓞 F))
 
-open KPLocalPrincipalSeries KPRankOneCenterInducedDiagonalComparison
-open KPRankOneShellContinuation KPActualResidueSources
+open KPRankOneCenterInducedDiagonalComparison
+open KPActualResidueSources
 section WeightedContinuedTransport
-set_option autoImplicit false
 set_option maxHeartbeats 1500000
 set_option backward.isDefEq.respectTransparency false
 variable (F : Type) [Field F] [NumberField F]
@@ -492,7 +490,7 @@ variable (hE : ∀ (f : CenterModule S.heisenberg) (h : KPExceptionalRaw.actualT
 variable (J : CompactOpenLevel (KPRankOneOpenCellKernel.Cover F ζ hζ q))
 variable (hJ : J.toOpenSubgroup ≤ I.compact.toOpenSubgroup)
 
-private theorem continued_weighted_minus
+theorem continued_weighted_minus
     (μ : Measure (KPExceptionalRaw.LocalField F q))
     (p : CenterLevelLaurentOperator F ζ hζ q S.heisenberg S.borel I J .plus)
     (pRev : CenterLevelLaurentOperator F ζ hζ q S.heisenberg S.borel I J .minus)
@@ -528,7 +526,7 @@ private theorem continued_weighted_minus
     linear_combination hh
   exact cancel hd hd' hn
 
-private theorem continued_weighted_plus
+theorem continued_weighted_plus
     (μ : Measure (KPExceptionalRaw.LocalField F q))
     (p : CenterLevelLaurentOperator F ζ hζ q S.heisenberg S.borel I J .minus)
     (pRev : CenterLevelLaurentOperator F ζ hζ q S.heisenberg S.borel I J .plus)
@@ -602,7 +600,7 @@ end WeightedContinuedTransport
 
 open scoped TensorProduct
 
-private theorem transported_numerators
+theorem transported_numerators
     (S : ActualKPBinding F ζ hζ q) (P : Polarization S.heisenberg) [DecidableEq S.D]
     (dx : Measure (KPExceptionalRaw.LocalField F q)) [dx.IsAddHaarMeasure]
     (J : CompactOpenLevel (KPExceptionalRaw.ActualCover F ζ hζ q))
@@ -617,7 +615,7 @@ private theorem transported_numerators
   exact centerLevelLaurentTransport_isNumerator F ζ hζ q S.heisenberg S.borel P
     S.iwasawa J dx Jτ ε p hp
 
-private theorem forward_scalar_center_transport
+theorem forward_scalar_center_transport
     {Vp Vm W Cp Cm : Type*}
     [AddCommMonoid Vp] [Module ℂ Vp] [AddCommMonoid Vm] [Module ℂ Vm]
     [AddCommMonoid W] [Module ℂ W]
@@ -638,7 +636,7 @@ private theorem forward_scalar_center_transport
 
 set_option maxHeartbeats 1500000 in
 set_option backward.isDefEq.respectTransparency false in
-private theorem continued_reverse_from_reflected_forward
+theorem continued_reverse_from_reflected_forward
     (S : ActualKPBinding F ζ hζ q) (P : Polarization S.heisenberg) [DecidableEq S.D]
     (dx : Measure (KPExceptionalRaw.LocalField F q)) [dx.IsAddHaarMeasure]
     (J : CompactOpenLevel (KPExceptionalRaw.ActualCover F ζ hζ q))
@@ -709,7 +707,7 @@ private theorem reverse_scalar_of_center_transport
 
 set_option maxHeartbeats 1500000 in
 set_option backward.isDefEq.respectTransparency false in
-private theorem continued_reverse_scalar
+theorem continued_reverse_scalar
     (S : ActualKPBinding F ζ hζ q) (P : Polarization S.heisenberg) [DecidableEq S.D]
     (dx : Measure (KPExceptionalRaw.LocalField F q)) [dx.IsAddHaarMeasure]
     (J : CompactOpenLevel (KPExceptionalRaw.ActualCover F ζ hζ q))
@@ -741,7 +739,7 @@ private theorem continued_reverse_scalar
     (centerLevelTensorEquiv F ζ hζ q S.heisenberg S.borel P S.iwasawa .plus J)
     (centerLevelTensorEquiv F ζ hζ q S.heisenberg S.borel P S.iwasawa .minus J) _ _ c hc
 
-private theorem residue_scalar_inverse
+theorem residue_scalar_inverse
     (dx : Measure (KPExceptionalRaw.LocalField F q))
     (ω : (valuation (KPExceptionalRaw.LocalField F q)).integer)
     (hω : IsPrimitiveRoot ω 3)
@@ -750,8 +748,7 @@ private theorem residue_scalar_inverse
     residueScalar (KPExceptionalRaw.LocalField F q) dx z' =
       residueScalar (KPExceptionalRaw.LocalField F q) dx z := by
   have hω' : IsPrimitiveRoot (ω : KPExceptionalRaw.LocalField F q) 3 :=
-    hω.map_of_injective (f := (valuation (KPExceptionalRaw.LocalField F q)).integer.subtype)
-      Subtype.val_injective
+    by simp_all
   have hti : t₀⁻¹ ≠ 1 := by simpa using ht
   rw [residueScalar, residueScalar,
     KPRankoneCubicScalarSum.finiteScalar_eq _ _ hω' _ _ z' t₀⁻¹ hz' hz't hti,
@@ -799,8 +796,3 @@ theorem reverse_two_cell_residue
   rw [hs, ← (Reverse.residue_scalar_regular_evaluation
     (KPExceptionalRaw.LocalField F q) dx w hw hw6).2] at hc
   exact hc
-
-end
-end DedekindZetaZeroFree.KPActualScalarBinding.ResidueSteps
-
-end

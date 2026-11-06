@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Ideles supported at one place
 
@@ -51,8 +46,8 @@ omit [NumberField K] in
  theorem infinitePlaceValue_same
     (v : InfinitePlace K)
     (x : v.Completionˣ) :
-    infinitePlaceValue v x v = x := by
-  exact Pi.mulSingle_eq_same
+    infinitePlaceValue v x v = x := 
+  Pi.mulSingle_eq_same
     (M := fun u : InfinitePlace K ↦ u.Completionˣ) v x
 
 omit [NumberField K] in
@@ -61,8 +56,8 @@ omit [NumberField K] in
     (v w : InfinitePlace K)
     (x : v.Completionˣ)
     (h : w ≠ v) :
-    infinitePlaceValue v x w = 1 := by
-  exact Pi.mulSingle_eq_of_ne
+    infinitePlaceValue v x w = 1 := 
+  Pi.mulSingle_eq_of_ne
     (M := fun u : InfinitePlace K ↦ u.Completionˣ) h x
 
 /-- The idele whose `v`-component is prescribed and whose other
@@ -78,7 +73,7 @@ def infinitePlaceIdele
       funext w
       by_cases hw : w = v
       · subst w
-        exact infinitePlaceValue_same v 1
+        simp
       · exact infinitePlaceValue_of_ne v w 1 hw
     apply Prod.ext
     · change
@@ -94,9 +89,7 @@ def infinitePlaceIdele
       by_cases hw : w = v
       · subst w
         simp
-      · simp [infinitePlaceValue_of_ne v w x hw,
-          infinitePlaceValue_of_ne v w y hw,
-          infinitePlaceValue_of_ne v w (x * y) hw]
+      simp_all
     apply Prod.ext
     · change
         ContinuousMulEquiv.piUnits.symm
@@ -123,9 +116,7 @@ theorem continuous_infinitePlaceIdele
     simpa only [infinitePlaceValue] using
       (continuous_mulSingle
         (A := fun u : InfinitePlace K ↦ u.Completionˣ) v)
-  exact
-    (ContinuousMulEquiv.piUnits.symm.continuous.comp
-      hvalue).prodMk continuous_const
+  fun_prop
 
 /-- The continuous homomorphism inserting a unit at one archimedean place. -/
 def infinitePlaceIdeleContinuous
@@ -153,8 +144,7 @@ theorem infinitePlaceIdele_infiniteComponent_same
     ContinuousMulEquiv.piUnits
         (ContinuousMulEquiv.piUnits.symm
           (infinitePlaceValue v x)) v = x
-  rw [ContinuousMulEquiv.piUnits.apply_symm_apply]
-  exact infinitePlaceValue_same v x
+  simp
 
 /-- An archimedean one-place idele has component one at every other
 archimedean place. -/
@@ -169,8 +159,7 @@ theorem infinitePlaceIdele_infiniteComponent_of_ne
     ContinuousMulEquiv.piUnits
         (ContinuousMulEquiv.piUnits.symm
           (infinitePlaceValue v x)) w = 1
-  rw [ContinuousMulEquiv.piUnits.apply_symm_apply]
-  exact infinitePlaceValue_of_ne v w x h
+  simp_all
 
 /-- An archimedean one-place idele has component one at every finite
 place. -/
@@ -226,11 +215,9 @@ def finitePlaceIdele
         have hAway :
             ∀ᶠ w : HeightOneSpectrum (𝓞 K) in Filter.cofinite,
               w ≠ v := by
-          rw [Filter.eventually_cofinite]
           simp
         filter_upwards [hAway] with w hw
-        rw [finitePlaceValue_of_ne v w x hw]
-        exact Subgroup.one_mem _⟩)
+        simp_all⟩)
   map_one' := by
     apply Prod.ext
     · rfl
@@ -240,7 +227,7 @@ def finitePlaceIdele
       by_cases hw : w = v
       · subst w
         simp
-      · simp [finitePlaceValue_of_ne v w 1 hw]
+      simp_all
   map_mul' x y := by
     apply Prod.ext
     · simp
@@ -251,9 +238,7 @@ def finitePlaceIdele
       by_cases hw : w = v
       · subst w
         simp
-      · simp [finitePlaceValue_of_ne v w x hw,
-          finitePlaceValue_of_ne v w y hw,
-          finitePlaceValue_of_ne v w (x * y) hw]
+      simp_all
 
 /-- A finite-place idele recovers its prescribed component at the
 supporting place. -/
@@ -332,7 +317,7 @@ private theorem relativeInfinitePlaceValue_of_ne
   simp [relativeInfinitePlaceValue, h]
 
 /-- Restricted local tensor data supported at one archimedean place. -/
- noncomputable def relativeInfinitePlaceData
+ def relativeInfinitePlaceData
     (v : InfinitePlace K)
     (z : (v.Completion ⊗[K] L)ˣ) :
     RelativeLocalIdeleData (K := K) (L := L) where
@@ -348,13 +333,8 @@ private theorem relativeInfinitePlaceValue_of_ne
         (relativeIdeleToLocalData
           (K := K) (L := L)
           (1 : RelativeIdeleGroup K L)).finite w = 1 := by
-      change
-        RelativeIdeleGroup.finiteComponent
-            (K := K) (L := L) w
-            (1 : RelativeIdeleGroup K L) = 1
-      exact map_one _
-    rw [hOne] at hw
-    exact hw
+      rfl
+    simp_all
   eventually_inverse_integral i := by
     have hBase :=
       (relativeIdeleToLocalData
@@ -365,13 +345,8 @@ private theorem relativeInfinitePlaceValue_of_ne
         (relativeIdeleToLocalData
           (K := K) (L := L)
           (1 : RelativeIdeleGroup K L)).finite w = 1 := by
-      change
-        RelativeIdeleGroup.finiteComponent
-            (K := K) (L := L) w
-            (1 : RelativeIdeleGroup K L) = 1
-      exact map_one _
-    rw [hOne] at hw
-    exact hw
+      rfl
+    simp_all
 
 /-- A relative idele supported at the single archimedean place `v`. -/
 def relativeInfinitePlaceIdele
@@ -456,7 +431,7 @@ omit [NumberField L] [FiniteDimensional K L] in
   simp [relativeFinitePlaceValue, h]
 
 /-- Restricted local data supported at one finite place. -/
- noncomputable def relativeFinitePlaceData
+ def relativeFinitePlaceData
     (v : HeightOneSpectrum (𝓞 K))
     (z : (v.adicCompletion K ⊗[K] L)ˣ) :
     RelativeLocalIdeleData (K := K) (L := L) where
@@ -470,21 +445,14 @@ omit [NumberField L] [FiniteDimensional K L] in
     have hAway :
         ∀ᶠ w : HeightOneSpectrum (𝓞 K) in Filter.cofinite,
           w ≠ v := by
-      rw [Filter.eventually_cofinite]
       simp
     filter_upwards [hBase, hAway] with w hw hne
     have hOne :
         (relativeIdeleToLocalData
           (K := K) (L := L)
           (1 : RelativeIdeleGroup K L)).finite w = 1 := by
-      change
-        RelativeIdeleGroup.finiteComponent
-            (K := K) (L := L) w
-            (1 : RelativeIdeleGroup K L) = 1
-      exact map_one _
-    rw [hOne] at hw
-    simpa [relativeFinitePlaceValue_of_ne
-      (L := L) v w z hne] using hw
+      rfl
+    simp_all
   eventually_inverse_integral i := by
     have hBase :=
       (relativeIdeleToLocalData
@@ -493,21 +461,14 @@ omit [NumberField L] [FiniteDimensional K L] in
     have hAway :
         ∀ᶠ w : HeightOneSpectrum (𝓞 K) in Filter.cofinite,
           w ≠ v := by
-      rw [Filter.eventually_cofinite]
       simp
     filter_upwards [hBase, hAway] with w hw hne
     have hOne :
         (relativeIdeleToLocalData
           (K := K) (L := L)
           (1 : RelativeIdeleGroup K L)).finite w = 1 := by
-      change
-        RelativeIdeleGroup.finiteComponent
-            (K := K) (L := L) w
-            (1 : RelativeIdeleGroup K L) = 1
-      exact map_one _
-    rw [hOne] at hw
-    simpa [relativeFinitePlaceValue_of_ne
-      (L := L) v w z hne] using hw
+      rfl
+    simp_all
 
 /-- A relative idele supported at the single finite place `v`. -/
 def relativeFinitePlaceIdele
@@ -564,9 +525,3 @@ theorem relativeFinitePlaceIdele_infiniteComponent
   rw [relativeFinitePlaceIdele,
     relativeIdeleOfLocalData_infiniteComponent]
   rfl
-
-end Relative
-
-end RelativeIdeleGroup
-
-end

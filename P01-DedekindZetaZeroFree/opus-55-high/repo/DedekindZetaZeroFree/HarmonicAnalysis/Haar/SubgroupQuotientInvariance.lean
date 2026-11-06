@@ -16,7 +16,7 @@ variable (K : Subgroup (KPSmoothLocalQuotientCharts.ActualCover F ζ hζ))
 variable (hK : IsCompact (K : Set (KPSmoothLocalQuotientCharts.ActualCover F ζ hζ)))
 include hK
 
-private theorem subgroup_modular_one (k : K) :
+theorem subgroup_modular_one (k : K) :
     letI := (ActualQuotient.actual_cover_lc_t2_group F ζ hζ).2.2
     letI := (ActualQuotient.actual_cover_lc_t2_group F ζ hζ).2.1
     letI := (ActualQuotient.actual_cover_lc_t2_group F ζ hζ).1

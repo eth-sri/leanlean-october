@@ -6,7 +6,6 @@ public import Mathlib.MeasureTheory.Group.Integral
 
 @[expose] public section
 
-noncomputable section
 
 open scoped Classical
 
@@ -31,7 +30,7 @@ theorem compactSubgroup_character_integral
       (∫ x in (U : Set G), (χ x : ℂ) ∂μ) = ∫ _ in (U : Set G), (1 : ℂ) ∂μ :=
         setIntegral_congr_fun hU.measurableSet (fun x hx => by simp [ht x hx])
       _ = ((μ (U : Set G)).toReal : ℂ) := by
-        simp [setIntegral_const, Measure.real, Complex.real_smul]
+        simp [Measure.real, Complex.real_smul]
   · rw [if_neg ht]
     obtain ⟨u, hu, hne⟩ : ∃ u ∈ U, χ u ≠ 1 := by simpa using ht
     have hmem (x : G) : u + x ∈ U ↔ x ∈ U :=
@@ -43,7 +42,7 @@ theorem compactSubgroup_character_integral
       by_cases hx : x ∈ U
       · simp [Set.indicator_of_mem hx, Set.indicator_of_mem ((hmem x).mpr hx),
           AddChar.map_add_eq_mul]
-      · simp [Set.indicator_of_notMem hx, Set.indicator_of_notMem (mt (hmem x).mp hx)]
+      simp_all
     have heq : (χ u : ℂ) * (∫ x in (U : Set G), (χ x : ℂ) ∂μ) =
         ∫ x in (U : Set G), (χ x : ℂ) ∂μ := by
       have h := integral_add_left_eq_self (μ := μ)
@@ -52,8 +51,4 @@ theorem compactSubgroup_character_integral
       exact h
     have hc : (χ u : ℂ) ≠ 1 := fun h => hne (Circle.coe_eq_one.mp h)
     by_contra hI
-    exact hc ((mul_eq_right₀ hI).mp heq)
-
-end DedekindZetaZeroFree
-
-end
+    simp_all

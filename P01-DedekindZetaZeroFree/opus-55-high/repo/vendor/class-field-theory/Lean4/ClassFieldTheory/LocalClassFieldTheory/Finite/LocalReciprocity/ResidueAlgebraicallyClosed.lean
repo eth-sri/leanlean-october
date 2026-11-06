@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 namespace LocalClassFieldTheory
 
 /-!
@@ -109,10 +103,7 @@ theorem valuationSubringComapMap_isLocalHom (A : ValuationSubring Omega) :
   obtain ⟨u, hu⟩ := hx
   have hx0 : (x : F) ≠ 0 := by
     intro hzero
-    have hmapZero : valuationSubringComapMap (F := F) A x = 0 := by
-      apply Subtype.ext
-      simp [valuationSubringComapMap, hzero]
-    exact Units.ne_zero u (hu.trans hmapZero)
+    simp_all
   let xinv : A.comap (algebraMap F Omega) :=
     ⟨(x : F)⁻¹, by
       change algebraMap F Omega ((x : F)⁻¹) ∈ A
@@ -127,8 +118,7 @@ theorem valuationSubringComapMap_isLocalHom (A : ValuationSubring Omega) :
           have hprodA : (u : A) * ((u⁻¹ : Aˣ) : A) = 1 := u.val_inv
           exact congrArg A.subtype hprodA
         exact (eq_inv_of_mul_eq_one_right hprod).symm
-      rw [hinv]
-      exact (u⁻¹ : Aˣ).val.property⟩
+      simp_all⟩
   let xu : (A.comap (algebraMap F Omega))ˣ :=
     { val := x
       inv := xinv
@@ -137,7 +127,7 @@ theorem valuationSubringComapMap_isLocalHom (A : ValuationSubring Omega) :
   exact ⟨xu, rfl⟩
 
 /-- The residue-field embedding induced by pullback of a valuation ring. -/
-noncomputable def valuationSubringComapResidueMap
+def valuationSubringComapResidueMap
     (A : ValuationSubring Omega) :
     IsLocalRing.ResidueField (A.comap (algebraMap F Omega)) →+*
       IsLocalRing.ResidueField A := by
@@ -223,8 +213,3 @@ theorem valuationSubring_comap_residueField_isPurelyInseparable
       apply congrArg (IsLocalRing.residue A)
       apply Subtype.ext
       exact hz
-
-end PurelyInseparableComap
-
-end
-end LocalClassFieldTheory

@@ -8,7 +8,10 @@ public import ClassFieldTheory.GlobalClassFieldTheory.ClassFieldAxiom.SUnitKumme
 public import ClassFieldTheory.GlobalClassFieldTheory.ClassFieldAxiom.SUnitKummerPrimeSelection.PrimeSet
 public import ClassFieldTheory.GlobalClassFieldTheory.ClassFieldAxiom.SUnitKummerPrimeSelection.DecompositionFields
 public import ClassFieldTheory.GlobalClassFieldTheory.ClassFieldAxiom.SUnitKummerPrimeSelection.Conclusion
-public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Principal
+public import ClassFieldTheory.AlgebraicNumberTheory.Idele.PrincipalCore
+public import GaloisCohomology.Cyclic.Herbrand.HerbrandLowDegree.EquivariantEquiv
+public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Cohomology.Herbrand
+public import ClassFieldTheory.LocalClassFieldTheory.ClassFormation.Valuation
 public import ValuedFieldTheory.LocalField.DiscreteValuationField.FieldUnitPowerIndexFormulas
 public import Mathlib.Algebra.Group.Subgroup.Finite
 public import Mathlib.GroupTheory.Index
@@ -21,20 +24,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-set_option autoImplicit false
 
 /-!
 # S-unit localization modulo local powers
@@ -158,15 +147,11 @@ theorem mem_powMonoidHom_range_adicCompletionIntegers_iff
         Valued.v ((y : (v.adicCompletion K)ˣ) :
             v.adicCompletion K) ^ (n : ℕ) = 1 := by
       rw [Units.val_pow_eq_pow_val] at hyValPow
-      rw [map_pow] at hyValPow
-      exact hyValPow
+      simp_all
     have hyVal :
         Valued.v ((y : (v.adicCompletion K)ˣ) :
             v.adicCompletion K) = 1 :=
-      (pow_left_injective
-        (M := WithZero (Multiplicative ℤ))
-        (n := (n : ℕ)) n.ne_zero)
-          (by simpa only [one_pow] using hyValPow')
+      by simp_all
     let yO : v.adicCompletionIntegers K :=
       ⟨(y : v.adicCompletion K), hyVal.le⟩
     have hyOUnit : IsUnit yO :=
@@ -197,7 +182,7 @@ theorem mem_powMonoidHom_range_adicCompletionIntegers_iff
       (FaithfulSMul.algebraMap_injective
         (v.adicCompletionIntegers K)
         (v.adicCompletion K))
-    rw [map_pow, hzField, hy]
+    simp_all
 
 /-- The unit-valued localization map and the field-valued localization map
 defining `Δ` have the same kernel. -/
@@ -230,7 +215,6 @@ theorem sUnitLocalUnitPowerMap_ker
         Units.map
           (algebraMap K (v.1.adicCompletion K)).toMonoidHom
           (x : Kˣ) := by
-    apply Units.ext
     rfl
   rw [mem_sUnitLocalPowerKernel_iff, MonoidHom.mem_ker]
   constructor
@@ -243,8 +227,7 @@ theorem sUnitLocalUnitPowerMap_ker
     have hvField :=
       (mem_powMonoidHom_range_adicCompletionIntegers_iff
         v.1 n (localUnit v)).mp hvInteger
-    rw [localUnit_toField v] at hvField
-    exact hvField
+    simp_all
   · intro hx
     funext v
     rw [Pi.one_apply]
@@ -377,8 +360,8 @@ theorem sUnitLocalUnitPowerMap_sUnitKummerPrimeSet_surjective
       rw [powMonoidHom_apply]
       apply Subtype.ext
       exact hy
-  have hHle : H ≤ SU := by
-    exact inf_le_left
+  have hHle : H ≤ SU := 
+    inf_le_left
   have hsup :
       H ⊔ Npow = D.carrier := by
     change
@@ -600,7 +583,7 @@ theorem sUnitLocalUnitPowerMap_sUnitKummerPrimeSet_surjective
       change
         algebraMap K (w.1.adicCompletion K) ((n : ℕ) : K) =
           ((n : ℕ) : w.1.adicCompletion K)
-      rw [map_natCast]
+      simp
     have hnuN :
         Valued.v ((n : ℕ) : w.1.adicCompletion K) = 1 := by
       rw [← hnatCast,
@@ -619,7 +602,7 @@ theorem sUnitLocalUnitPowerMap_sUnitKummerPrimeSet_surjective
       rw [←
         F.valuation_natCast_lt_one_iff_residueCharacteristic_dvd]
       rw [hnuNF]
-      exact lt_irrefl 1
+      simp
     let :
         Fact
           (Nat.Coprime (n : ℕ)
@@ -628,8 +611,8 @@ theorem sUnitLocalUnitPowerMap_sUnitKummerPrimeSet_surjective
         hpnd).symm⟩
     let eValuationSubringUnits :
         F.valuationSubringˣ ≃*
-          (w.1.adicCompletionIntegers K)ˣ := by
-      exact MulEquiv.refl ((w.1.adicCompletionIntegers K)ˣ)
+          (w.1.adicCompletionIntegers K)ˣ := 
+      MulEquiv.refl ((w.1.adicCompletionIntegers K)ˣ)
     have hindexPackaged :
         Nat.card
             (F.valuationSubringˣ ⧸
@@ -664,8 +647,8 @@ theorem sUnitLocalUnitPowerMap_sUnitKummerPrimeSet_surjective
             Nat.card
               (F.valuationSubringˣ ⧸
                 (powMonoidHom (n : ℕ) :
-                  F.valuationSubringˣ →* F.valuationSubringˣ).range) := by
-          exact Nat.card_congr
+                  F.valuationSubringˣ →* F.valuationSubringˣ).range) := 
+          Nat.card_congr
             (LocalFieldTheory.nthPowerQuotientEquivOfMulEquiv
               (w.1.adicCompletionIntegers K)ˣ
               F.valuationSubringˣ
@@ -692,7 +675,7 @@ theorem sUnitLocalUnitPowerMap_sUnitKummerPrimeSet_surjective
         (hzetaPrimitive.map_of_injective
           (algebraMap K
             (w.1.adicCompletion K)).injective).card_rootsOfUnity
-    simpa only [hroots] using hindex
+    omega
   have hTcard :
       T.card =
         sUnitKummerPrimeCount
@@ -731,7 +714,7 @@ theorem sUnitLocalUnitPowerMap_sUnitKummerPrimeSet_surjective
   let : Finite rangeF :=
     Nat.finite_of_card_ne_zero (by
       rw [hRangeCard]
-      exact pow_ne_zero _ n.ne_zero)
+      simp)
   have hRangeTop :
       rangeF = ⊤ :=
     Subgroup.eq_top_of_card_eq rangeF
@@ -739,7 +722,3 @@ theorem sUnitLocalUnitPowerMap_sUnitKummerPrimeSet_surjective
   exact
     (MonoidHom.range_eq_top
       (G := SUnitGroup (K := K) S') (N := LocalPowerTarget) (f := f)).mp hRangeTop
-
-end GlobalClassFieldTheory.ClassFieldAxiom
-
-end

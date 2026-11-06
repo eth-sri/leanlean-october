@@ -67,7 +67,7 @@ private theorem spherical_word_matrix_smooth (w : KPContHolomorphicKGeneration.R
  def tracelessCoordinates (X : Matrix (Fin 2) (Fin 2) ℂ) : Fin 3 → ℂ :=
   ![(X 0 0 - X 1 1)/2, X 0 1, X 1 0]
 
-private theorem matrix_six_real_decomposition (X : Matrix (Fin 2) (Fin 2) ℂ) :
+theorem matrix_six_real_decomposition (X : Matrix (Fin 2) (Fin 2) ℂ) :
     X = ((X 0 0 + X 1 1)/2) • (1 : Matrix (Fin 2) (Fin 2) ℂ) +
       ∑ i : Fin 3, ∑ j : Fin 2,
         (if j = 0 then (tracelessCoordinates X i).re else (tracelessCoordinates X i).im) •
@@ -87,14 +87,14 @@ private theorem matrix_six_real_decomposition (X : Matrix (Fin 2) (Fin 2) ℂ) :
  abbrev CGL := KPCplxCharacterHaar.ComplexGL2
  abbrev ambient := KPCplxPrincipalSeriesCharts.matrixFunction
 
-private theorem ambient_gl (f : CGL → ℂ) (g : CGL) : ambient f (g : Mat) = f g := by
+theorem ambient_gl (f : CGL → ℂ) (g : CGL) : ambient f (g : Mat) = f g := by
   simp only [KPCplxPrincipalSeriesCharts.matrixFunction]
   rw [dite_eq_left (Matrix.GeneralLinearGroup.det_ne_zero g)]
   congr 1
   apply Units.ext
   rfl
 
-private theorem ambient_scalar (f : CGL → ℂ)
+theorem ambient_scalar (f : CGL → ℂ)
     (hf : ∀ (c : ℂˣ) (g : CGL), f (Matrix.GeneralLinearGroup.scalar (Fin 2) c * g) = f g)
     (c : ℂˣ) (g : Mat) : ambient f ((c : ℂ) • g) = ambient f g := by
   by_cases hg : g.det = 0
@@ -115,7 +115,7 @@ private theorem spherical_scalar (s : ℂ) (c : ℂˣ) (g : CGL) :
     KPContFlatLogNormSmooth.complexMatrixLogNorm_scalar,
     KPCplxPrincipalSeriesCharts.central_invariance]
 
-private theorem right_scalar (f : CGL → ℂ) (X : Mat)
+theorem right_scalar (f : CGL → ℂ) (X : Mat)
     (hf : ∀ (c : ℂˣ) (g : CGL), f (Matrix.GeneralLinearGroup.scalar (Fin 2) c * g) = f g)
     (hs : ContDiffOn ℝ (⊤ : ℕ∞) (ambient f) {g | g.det ≠ 0})
     (c : ℂˣ) (g : CGL) :
@@ -154,7 +154,7 @@ private theorem spherical_word_scalar (W : KPContHolomorphicKGeneration.RealLieW
   | cons X W ih =>
     exact right_scalar _ X ih (spherical_word_matrix_smooth W s) c g
 
-private theorem central_derivative_zero (f : CGL → ℂ)
+theorem central_derivative_zero (f : CGL → ℂ)
     (hf : ∀ (c : ℂˣ) (g : CGL), f (Matrix.GeneralLinearGroup.scalar (Fin 2) c * g) = f g)
     (hs : ContDiffOn ℝ (⊤ : ℕ∞) (ambient f) {g | g.det ≠ 0}) (z : ℂ) (g : CGL) :
     fderiv ℝ (ambient f) (g : Mat) (z • (g : Mat)) = 0 := by

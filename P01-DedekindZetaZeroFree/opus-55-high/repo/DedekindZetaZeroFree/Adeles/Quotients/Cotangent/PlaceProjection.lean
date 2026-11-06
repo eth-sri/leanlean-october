@@ -49,18 +49,18 @@ private theorem product_deriv (n : ℕ) (g : Fin n → Matrix.GeneralLinearGroup
     exact (ContinuousLinearMap.proj i : KPArch.Space n →L[ℝ] KPArch.H3).hasFDerivAt.fderiv
   rw [hp]
   simp [ContinuousLinearMap.pi_apply, ContinuousLinearMap.comp_apply, hv]
-private theorem coframe_zero (n : ℕ) (p v : HyperbolicChart.Space n) (i : Fin n)
+theorem coframe_zero (n : ℕ) (p v : HyperbolicChart.Space n) (i : Fin n)
     (hv : ∀ k, v (i,k) = 0) : ∀ k, CotangentLogCoframe.C n p v (i,k) = 0 := by
   intro k
   fin_cases k <;> simp [CotangentLogCoframe.C, hv]
 private theorem A_zero (n : ℕ) (v : HyperbolicChart.Space n) (i : Fin n)
     (hv : ∀ k, v (i,k) = 0) : CotangentLogCoframe.A n v i = 0 := by
   simp [CotangentLogCoframe.A_apply, hv]
-private theorem Ainv_zero (n : ℕ) (v : KPArch.Space n) (i : Fin n)
+theorem Ainv_zero (n : ℕ) (v : KPArch.Space n) (i : Fin n)
     (hv : v i = 0) : ∀ k, (CotangentLogCoframe.A n).symm v (i,k) = 0 := by
   intro k
   fin_cases k <;> simp [CotangentLogCoframe.A, hv]
-private theorem H_basis_zero (n : ℕ) (p : HyperbolicChart.Space n) (i j : Fin n)
+theorem H_basis_zero (n : ℕ) (p : HyperbolicChart.Space n) (i j : Fin n)
     (hij : i ≠ j) (l : Fin 3) : ∀ k,
       CotangentLogCoframe.H n p (EuclideanSpace.basisFun (Fin n × Fin 3) ℝ (j,l)) (i,k) = 0 := by
   intro k
@@ -132,7 +132,7 @@ private theorem Q_block {c : Fin (H.atlas U).componentCount}
         simp
       · simp [mask, hli]
     rw [Finset.sum_eq_zero (fun lm _ => hz lm), mul_zero]
-private theorem cast_places {i j : Fin (H.atlas U).componentCount} (h : i = j)
+theorem cast_places {i j : Fin (H.atlas U).componentCount} (h : i = j)
     (s : LiftedChart (F:=F) (ζ:=ζ) (hζ:=hζ) (U:=U) (H:=H) i) :
     (h ▸ s).places = s.places := by
   cases h

@@ -25,15 +25,11 @@ theorem basis_of_delta_tests
     refine (Fintype.linearIndependent_iff (v := L)).mpr ?_
     intro g hg j
     have h := congrArg (fun w : W => (LinearMap.applyₗ (test j)) w.val) hg
-    simp only [map_sum, map_smul, map_zero, Submodule.coe_sum, Submodule.coe_smul,
-      LinearMap.smul_apply, LinearMap.zero_apply, LinearMap.applyₗ_apply_apply] at h
+    simp only [map_sum, map_smul, Submodule.coe_sum, Submodule.coe_smul, LinearMap.applyₗ_apply_apply] at h
     rw [Finset.sum_eq_single j] at h
-    · rw [hpair, if_pos rfl, mul_one, smul_eq_mul] at h
-      exact (mul_eq_zero.mp h).resolve_right hv
-    · intro b _ hbj
-      simp [hpair, if_neg hbj]
-    · intro hj
-      exact absurd (Finset.mem_univ j) hj
+    · simp_all
+    · simp_all
+    simp
 
   have hcard : Fintype.card ι = Module.finrank K W :=
     le_antisymm (LinearIndependent.fintype_card_le_finrank hli) hdim
@@ -93,8 +89,8 @@ theorem root_restriction_and_mass
         KPPGLLocalCover.N F ζ hζ (Sum.inr q) x) =
           (rootLevelSet F ζ hζ q m).indicator (fun _ => if i = j then 1 else 0) x) := by
   have hfinite : μ (rootLevelSet F ζ hζ q m) ≠ ⊤ := hcompact.measure_ne_top
-  have hpositive : 0 < rootMass F ζ hζ q μ m := by
-    exact ENNReal.toReal_pos (hopen.measure_pos μ ⟨0, hzero⟩).ne' hfinite
+  have hpositive : 0 < rootMass F ζ hζ q μ m := 
+    ENNReal.toReal_pos (hopen.measure_pos μ ⟨0, hzero⟩).ne' hfinite
   have hπint : (π : LocalField F q) ∈ (valuation (LocalField F q)).integer := by
     rw [Valuation.mem_integer_iff]
     apply (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt
@@ -109,8 +105,7 @@ theorem root_restriction_and_mass
     refine ⟨⟨(π : LocalField F q) ^ r * x,
       (valuation (LocalField F q)).integer.mul_mem
         ((valuation (LocalField F q)).integer.pow_mem hπint r) (hints hx)⟩, ?_⟩
-    change x = ((π : LocalField F q) ^ r)⁻¹ * ((π : LocalField F q) ^ r * x)
-    rw [← mul_assoc, inv_mul_cancel₀ (pow_ne_zero _ π.ne_zero), one_mul]
+    simp
   · intro i j x
     by_cases hx : x ∈ rootLevelSet F ζ hζ q m
     · by_cases hij : i = j
@@ -135,17 +130,15 @@ theorem root_restriction_and_mass
       · have hnot : eta F ζ hζ q π i * KPPGLLocalCover.W F ζ hζ (Sum.inr q) *
             KPPGLLocalCover.N F ζ hζ (Sum.inr q) x ∉
             bruhatSupport F ζ hζ q S P π j m := by
-          rw [hcell]
-          exact fun h => hij h.1
+          simp_all
         have hz := Function.notMem_support.mp (fun h => hnot (hsupport j h))
-        simpa only [Set.indicator_of_mem hx, if_neg hij] using hz
+        simp_all
     · have hnot : eta F ζ hζ q π i * KPPGLLocalCover.W F ζ hζ (Sum.inr q) *
           KPPGLLocalCover.N F ζ hζ (Sum.inr q) x ∉
           bruhatSupport F ζ hζ q S P π j m := by
-        rw [hcell]
-        exact fun h => hx h.2
+        simp_all
       have hz := Function.notMem_support.mp (fun h => hnot (hsupport j h))
-      simpa only [Set.indicator_of_notMem hx] using hz
+      simp_all
 
 end DedekindZetaZeroFree.KPTameJacquetBruhatTests.BruhatRootRestriction
 
@@ -229,7 +222,7 @@ variable (F : Type) [Field F] [NumberField F]
   map_one' := by
     apply Subtype.ext
     change S.borel.retract (1 : S.borel.B) = 1
-    exact map_one _
+    simp
   map_mul' b c := by
     apply Subtype.ext
     change S.borel.retract (inBorel F ζ hζ q S P (b * c)) = _
@@ -387,7 +380,7 @@ theorem eventually_matrixChartDepth :
     (integrable_indicator_iff hs).mpr (integrableOn_const hfinite)
   refine ⟨hi.integrableOn, ?_⟩
   rw [integral_indicator hs, Measure.restrict_restrict_of_subset (hr₀ r hr)]
-  simp [rootMass, integral_const, smul_eq_mul, Measure.real]
+  simp [rootMass, integral_const, Measure.real]
 theorem conductor_trivial_on_integers
     (ψ : Multiplicative (LocalField F q) →* ℂˣ)
     (hc : HasConductorIntegers F q ψ)
@@ -525,10 +518,7 @@ private theorem pgl_weyl_diagonal (K : Type*) [Field K] (u : Kˣ) :
   apply Matrix.ProjGenLinGroup.mk_eq_mk_iff.mpr
   refine ⟨u, ?_⟩
   apply Units.ext
-  ext i j
-  fin_cases i <;> fin_cases j <;>
-    simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.GeneralLinearGroup.coe_scalar,
-      Matrix.scalar, Matrix.diagonal_apply]
+  simp
 
 private theorem weyl_coordinate (h : actualTorus F ζ hζ q) :
     S.borel.coordinate (S.borel.weyl h) = (S.borel.coordinate h)⁻¹ := by
@@ -595,7 +585,7 @@ def scalarSections (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign) :
   carrier := {f | (∀ (b : BL F ζ hζ q S P) (g : ActualCover F ζ hζ q),
     f ((b : ActualCover F ζ hζ q) * g) = chi F ζ hζ q S P hP ε b * f g) ∧
     SmoothVector rightTranslationRepresentation f}
-  zero_mem' := ⟨by intros; simp, ⟨⊤, by intros; simp⟩⟩
+  zero_mem' := ⟨by simp, ⟨⊤, by simp⟩⟩
   add_mem' := by
     intro f g hf hg
     refine ⟨?_, (mem_smoothSubmodule _ _).mp ((smoothSubmodule _).add_mem
@@ -719,8 +709,8 @@ def jacquetDualEquiv (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign)
         simpa only [smul_eq_mul] using L.property t f⟩
       left_inv := by intro L; rfl
       right_inv := by intro L; rfl
-      map_add' := by intros; rfl
-      map_smul' := by intros; rfl }
+      map_add' := by simp
+      map_smul' := by simp }
   exact (rootCoinvariantsUniversalEquiv (scalarAction F ζ hζ q S P hP ε)
     (KPLocalSmoothRepresentation.upperRoot F ζ hζ q) ψ ℂ).trans e
 
@@ -731,8 +721,8 @@ def jacquetDualEquiv (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign)
     (f : scalarSections F ζ hζ q S P hP ε) :
     descend F ζ hζ q S P hP ε ψ L
       (rootCoinvariantsMk (scalarAction F ζ hζ q S P hP ε)
-        (KPLocalSmoothRepresentation.upperRoot F ζ hζ q) ψ f) = L.val f := by
-  exact rootCoinvariantsLift_mk _ _ _ _ _
+        (KPLocalSmoothRepresentation.upperRoot F ζ hζ q) ψ f) = L.val f := 
+  rootCoinvariantsLift_mk _ _ _ _ _
 
 theorem descend_basis_separates
     (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign)
@@ -771,7 +761,7 @@ theorem normalized_test_dual_basis
   have hd : ∀ i j, d i (e j) = if i = j then 1 else 0 := by
     intro i j
     simp only [d, e, descend_mk, map_smul, smul_eq_mul, hpair]
-    rw [← mul_assoc, inv_mul_cancel₀ hv, one_mul]
+    simp_all
   have hdual : Module.DualBases e d :=
     { eval_same := fun i => by simpa using hd i i
       eval_of_ne := fun i j hij => by simpa [hij] using hd i j
@@ -781,8 +771,7 @@ theorem normalized_test_dual_basis
     exact congrFun hdual.coe_basis j
   · intro i j
     change d i (hdual.basis j) = _
-    rw [show hdual.basis j = e j from congrFun hdual.coe_basis j]
-    exact hd i j
+    simp_all
 
 theorem stable_value_torus_covariance
     (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign)
@@ -929,9 +918,3 @@ theorem tame_jacquet_test_duality
     apply normalized_test_dual_basis F ζ hζ q S P hP ε ψ Λ
       (rootMass F ζ hζ q μ m : ℂ) _ test hp
     exact_mod_cast ne_of_gt hpositive
-
-end DedekindZetaZeroFree.KPTameJacquetTestDuality
-
-end
-
-end

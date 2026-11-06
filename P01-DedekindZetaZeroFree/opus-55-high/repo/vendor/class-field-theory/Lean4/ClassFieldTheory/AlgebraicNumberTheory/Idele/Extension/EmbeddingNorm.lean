@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Norms through an ambient Galois extension
 
@@ -82,111 +78,13 @@ theorem embeddingToAlgebraicClosure_surjective
 
 /-- Embeddings of a subextension into a finite normal overfield are the
 same as embeddings into an algebraic closure. -/
-noncomputable def embeddingToAlgebraicClosureEquiv
+def embeddingToAlgebraicClosureEquiv
     [FiniteDimensional K M] [Normal K M] :
     (L →ₐ[K] M) ≃
       (L →ₐ[K] AlgebraicClosure M) :=
   Equiv.ofBijective embeddingToAlgebraicClosure
     ⟨embeddingToAlgebraicClosure_injective,
       embeddingToAlgebraicClosure_surjective⟩
-
-/-- The subgroup of `Gal(M/K)` fixing the embedded copy of `L`. -/
-def fixingSubextension :
-    Subgroup (M ≃ₐ[K] M) :=
-  (IsScalarTower.toAlgHom K L M).fieldRange.fixingSubgroup
-
-/-- Restriction of an automorphism of `M/K` to the embedded copy of `L`. -/
-def restrictToSubextension
-    (σ : M ≃ₐ[K] M) : L →ₐ[K] M :=
-  σ.toAlgHom.comp
-    (IsScalarTower.toAlgHom K L M)
-
-/-- Extend an embedding `L →ₐ[K] M` to an automorphism of the normal
-extension `M/K`. -/
-noncomputable def liftSubextensionEmbedding
-    [Normal K M] (f : L →ₐ[K] M) :
-    M ≃ₐ[K] M :=
-  AlgEquiv.ofBijective (f.liftNormal M)
-    (AlgHom.normal_bijective K M M _)
-
-theorem restrict_liftSubextensionEmbedding
-    [Normal K M] (f : L →ₐ[K] M) :
-    restrictToSubextension
-        (liftSubextensionEmbedding f) = f := by
-  ext x
-  exact f.liftNormal_commutes M x
-
-/-- The canonical map from right cosets of the fixing subgroup to
-embeddings of the subextension. -/
-noncomputable def cosetToEmbedding
-    [Normal K M] :
-    (M ≃ₐ[K] M) ⧸
-        fixingSubextension (K := K) (L := L) (M := M) →
-      (L →ₐ[K] M) :=
-  fun q ↦
-    Quotient.liftOn' q restrictToSubextension (by
-      intro σ τ hστ
-      rw [QuotientGroup.leftRel_apply] at hστ
-      ext x
-      have hfix :=
-        (IntermediateField.mem_fixingSubgroup_iff
-          (IsScalarTower.toAlgHom K L M).fieldRange
-          (σ⁻¹ * τ)).1 hστ
-          (algebraMap L M x)
-          (by exact ⟨x, rfl⟩)
-      change σ (algebraMap L M x) =
-        τ (algebraMap L M x)
-      have ht : τ = σ * (σ⁻¹ * τ) := by
-        group
-      rw [ht, AlgEquiv.mul_apply, hfix])
-
-/-- Right cosets `Gal(M/K)/Gal(M/L)` are canonically the `K`-embeddings
-`L → M`. This is the index set in the coset form of the Galois product norm formula. -/
-noncomputable def cosetEquivEmbedding
-    [Normal K M] :
-    (M ≃ₐ[K] M) ⧸
-        fixingSubextension (K := K) (L := L) (M := M) ≃
-      (L →ₐ[K] M) where
-  toFun := cosetToEmbedding
-  invFun f :=
-    (liftSubextensionEmbedding f :
-      (M ≃ₐ[K] M) ⧸
-        fixingSubextension
-          (K := K) (L := L) (M := M))
-  right_inv f :=
-    restrict_liftSubextensionEmbedding f
-  left_inv q := by
-    refine Quotient.inductionOn' q ?_
-    intro σ
-    apply QuotientGroup.eq.mpr
-    change
-      (liftSubextensionEmbedding
-          (restrictToSubextension σ))⁻¹ * σ ∈
-        (IsScalarTower.toAlgHom K L M).fieldRange.fixingSubgroup
-    rw [IntermediateField.mem_fixingSubgroup_iff
-      (IsScalarTower.toAlgHom K L M).fieldRange]
-    intro y hy
-    rcases hy with ⟨x, rfl⟩
-    change
-      ((liftSubextensionEmbedding
-          (restrictToSubextension σ))⁻¹ * σ)
-          (algebraMap L M x) =
-        algebraMap L M x
-    rw [AlgEquiv.mul_apply]
-    have hres :=
-      DFunLike.congr_fun
-        (restrict_liftSubextensionEmbedding
-          (restrictToSubextension σ)) x
-    change
-      liftSubextensionEmbedding
-          (restrictToSubextension σ)
-          (algebraMap L M x) =
-        σ (algebraMap L M x) at hres
-    rw [← hres]
-    exact
-      (liftSubextensionEmbedding
-        (restrictToSubextension σ)).symm_apply_apply
-          (algebraMap L M x)
 
 /-- The field norm of a subextension, computed in an ambient finite
 Galois extension, is the product over all embeddings into that extension. -/
@@ -212,8 +110,8 @@ theorem norm_eq_prod_embeddings_in_galoisExtension
       Algebra.norm_eq_prod_embeddings K
         (AlgebraicClosure M) x
     _ = ∏ f : L →ₐ[K] M,
-        algebraMap M (AlgebraicClosure M) (f x) := by
-      exact ((embeddingToAlgebraicClosureEquiv
+        algebraMap M (AlgebraicClosure M) (f x) := 
+      ((embeddingToAlgebraicClosureEquiv
           (K := K) (L := L) (M := M)).prod_comp
             (fun f ↦ f x)).symm
 
@@ -228,13 +126,6 @@ variable
     [IsScalarTower K L M]
     [FiniteDimensional K L] [FiniteDimensional K M]
     [IsGalois K M]
-
-local instance :
-    Fintype
-      ((M ≃ₐ[K] M) ⧸
-        fixingSubextension
-          (K := K) (L := L) (M := M)) :=
-  Fintype.ofFinite _
 
 /-- The linear polynomial representing a chosen `K`-embedding `L → M`. -/
 def embeddingPolynomial
@@ -454,40 +345,6 @@ theorem includeLeft_norm_eq_prod_scalarEmbeddings
   rw [← hright, ← hleft,
     map_normPolynomial_eq_embeddingProductPolynomial b]
 
-/-- Coset form of the scalar-extension formula.  The product is indexed
-by `Gal(M/K) / Gal(M/L)`. -/
-theorem includeLeft_norm_eq_prod_galoisCosets
-    [Infinite K]
-    (A : Type*) [CommRing A] [Algebra K A]
-    [Nontrivial A] (x : A ⊗[K] L) :
-    (Algebra.TensorProduct.includeLeft
-      (R := K) (S := K) (A := A) (B := M))
-        (Algebra.norm A x) =
-      ∏ q :
-          (M ≃ₐ[K] M) ⧸
-            fixingSubextension
-              (K := K) (L := L) (M := M),
-        scalarEmbedding A
-          (cosetEquivEmbedding q) x := by
-  calc
-    (Algebra.TensorProduct.includeLeft
-      (R := K) (S := K) (A := A) (B := M))
-        (Algebra.norm A x) =
-      ∏ f : L →ₐ[K] M,
-        scalarEmbedding A f x :=
-      includeLeft_norm_eq_prod_scalarEmbeddings
-        (K := K) (L := L) (M := M) A x
-    _ = ∏ q :
-          (M ≃ₐ[K] M) ⧸
-            fixingSubextension
-              (K := K) (L := L) (M := M),
-        scalarEmbedding A
-          (cosetEquivEmbedding q) x := by
-      exact
-        ((cosetEquivEmbedding
-          (K := K) (L := L) (M := M)).prod_comp
-            (fun f ↦ scalarEmbedding A f x)).symm
-
 end UniversalPolynomial
 
 section RelativeAdeles
@@ -500,13 +357,6 @@ variable
     [IsScalarTower K L M]
     [FiniteDimensional K L] [FiniteDimensional K M]
     [IsGalois K M]
-
-local instance :
-    Fintype
-      ((M ≃ₐ[K] M) ⧸
-        fixingSubextension
-          (K := K) (L := L) (M := M)) :=
-  Fintype.ofFinite _
 
 /-- A field embedding inside an ambient Galois extension, extended to
 relative adèles. -/
@@ -550,39 +400,3 @@ theorem inclusion_norm_eq_prod_embeddings
     adeleInclusion_norm_eq_prod_embeddings
       (K := K) (L := L) (M := M)
       (a : RelativeAdeleRing K L)
-
-/-- The literal coset form for arbitrary relative idèles:
-
-`i_{M/K}(N_{L/K}(a)) = ∏_{σ ∈ Gal(M/K)/Gal(M/L)} σ(a)`.
--/
-theorem inclusion_norm_eq_prod_galoisCosets
-    (a : RelativeIdeleGroup K L) :
-    inclusion K M (norm K L a) =
-      ∏ q :
-          (M ≃ₐ[K] M) ⧸
-            fixingSubextension
-              (K := K) (L := L) (M := M),
-        ideleEmbedding
-          (cosetEquivEmbedding q) a := by
-  calc
-    inclusion K M (norm K L a) =
-      ∏ f : L →ₐ[K] M,
-        ideleEmbedding f a :=
-      inclusion_norm_eq_prod_embeddings
-        (K := K) (L := L) (M := M) a
-    _ = ∏ q :
-          (M ≃ₐ[K] M) ⧸
-            fixingSubextension
-              (K := K) (L := L) (M := M),
-        ideleEmbedding
-          (cosetEquivEmbedding q) a := by
-      exact
-        ((cosetEquivEmbedding
-          (K := K) (L := L) (M := M)).prod_comp
-            (fun f ↦ ideleEmbedding f a)).symm
-
-end RelativeAdeles
-
-end RelativeIdeleGroup
-
-end

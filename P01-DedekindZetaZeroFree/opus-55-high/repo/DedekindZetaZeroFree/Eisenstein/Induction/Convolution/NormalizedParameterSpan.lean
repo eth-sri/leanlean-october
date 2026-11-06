@@ -68,7 +68,7 @@ local instance (K : Subgroup (G F ζ hζ)) : BorelSpace K := ⟨rfl⟩
   rw [hh]
   rfl
 
-private theorem half_power (t : KPGlobalTorusFunctionData.E F ζ hζ) :
+theorem half_power (t : KPGlobalTorusFunctionData.E F ζ hζ) :
     KPGlobalExceptionalParameter.realLogPower
       (((KPGlobalTorusFunctionData.delta F ζ hζ t : NNReal) : ℝ)) (1 / 2) =
         KPGlobalTorusFunctionData.deltaHalf F ζ hζ t := by
@@ -93,7 +93,7 @@ private theorem half_power (t : KPGlobalTorusFunctionData.E F ζ hζ) :
   rw [sourceChi_hN F ζ hζ r x c hc, hc]
   exact hh
 
-private theorem normalized_parameter_span_finite
+theorem normalized_parameter_span_finite
     (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
     (μ : Measure K) [μ.IsHaarMeasure] [IsProbabilityMeasure μ]
     (f : Flat F ζ hζ K) (a : G F ζ hζ) (h : C(K, ℂ))

@@ -61,7 +61,7 @@ def finiteRoot
 open KPAdelicCoverRestrictedProduct
 attribute [local instance] localTopology
 
-private theorem finiteRoot_integral_iff
+theorem finiteRoot_integral_iff
     (q : IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers F))
     (x : q.adicCompletion F) : x ∈ KPTameCompact.O F q ↔ x ∈ q.adicCompletionIntegers F := by
   letI : ValuativeRel (q.adicCompletion F) := ClassFieldTheory.finitePlaceCompletionValuativeRel F q
@@ -71,7 +71,7 @@ private theorem finiteRoot_integral_iff
     (Valued.v : Valuation (q.adicCompletion F) (WithZero (Multiplicative ℤ)))
   exact Valuation.vle_one_iff Valued.v
 
-private theorem finiteRoot_good
+theorem finiteRoot_good
     (q : IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers F))
     (hq : ¬ Bad F q) (t : KPTameCompact.O F q) :
     KPStandardLocalRootLifts.N F ζ hζ (Sum.inr q) t ∈ compact F ζ hζ (Sum.inr q) := by
@@ -103,7 +103,7 @@ private theorem finiteRoot_good
       · rfl
     rw [he, map_add, KPStandardLocalRootLifts.N_add]
 
-private theorem finiteRootTupleHom_continuous : Continuous (finiteRootTupleHom F ζ hζ) := by
+theorem finiteRootTupleHom_continuous : Continuous (finiteRootTupleHom F ζ hζ) := by
   letI : ∀ v : KPHilbert.Place F, IsTopologicalGroup (KPLocalCover.CubicGL2Raw F ζ hζ v) := by
     intro v
     cases v with

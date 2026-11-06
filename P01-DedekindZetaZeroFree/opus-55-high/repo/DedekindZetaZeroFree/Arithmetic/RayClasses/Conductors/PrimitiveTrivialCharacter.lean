@@ -21,15 +21,13 @@ theorem principal_primitive_top_character_exists
     · simp [hI]
     by_cases hJ : J = ⊥
     · simp [hJ]
-    simp [hI, hJ, Ideal.mul_eq_bot]
+    simp [hI, hJ]
   · simp
   · intro I
     simp
   · intro α hα _ _
-    simp [Ideal.span_singleton_eq_bot, hα]
+    simp [hα]
   · intro I hI _
     simp [hI]
   · intro 𝔣 h𝔣
     exact absurd h𝔣 (not_lt_of_ge le_top)
-
-end DedekindZetaZeroFree.PrincipalMu12Pointwise

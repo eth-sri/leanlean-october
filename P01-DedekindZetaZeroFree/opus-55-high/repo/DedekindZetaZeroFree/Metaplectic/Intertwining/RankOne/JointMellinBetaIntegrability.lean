@@ -36,7 +36,6 @@ theorem multiplicativeHaar_sigmaFinite
     rw [← e.toOrderIso.le_iff_le]
     change e (ValuativeRel.valuation K x) ≤ e (e.symm (WithZero.exp (l.toNat : ℤ)))
     rw [e.apply_symm_apply, ← WithZero.exp_log hv, WithZero.exp_le_exp]
-    change l ≤ (l.toNat : ℤ)
     omega
   letI : T2Space K := CubicUnitCharacters.t2Space_of_isValuativeTopology K
   letI : BorelSpace Kˣ := ⟨by
@@ -98,8 +97,7 @@ theorem mellin_integrable
       ext x
       simp only [Set.mem_range, Set.mem_compl_iff, Set.mem_singleton_iff]
       exact ⟨fun ⟨u, hu⟩ => hu ▸ u.ne_zero, fun hx => ⟨Units.mk0 x hx, rfl⟩⟩
-    rw [hr]
-    exact (measurableSet_singleton 0).compl
+    simp_all
   obtain ⟨B, hB⟩ := hφlc.continuous.bounded_above_of_compact_support hφcs
   let e := IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K
   open scoped WithZeroTopology in
@@ -107,9 +105,7 @@ theorem mellin_integrable
       (IsValuativeTopology.continuous_valuation (R := K)).continuousOn
   let M : ℤ := WithZero.log (e (max γ 1))
   have hmax : e (max γ 1) ≠ 0 := by
-    have hh : (0 : ValuativeRel.ValueGroupWithZero K) < max γ 1 :=
-      lt_of_lt_of_le zero_lt_one (le_max_right _ _)
-    simpa using (e.toOrderIso.strictMono hh).ne'
+    simp
   let shell : ℕ → Set Kˣ := fun n => {x | A (x : K) = q ^ (M - (n : ℤ))}
   have hm (n : ℕ) : MeasurableSet (shell n) :=
     (hA.comp he.measurable) (measurableSet_singleton _)
@@ -129,13 +125,12 @@ theorem mellin_integrable
       (Filter.Eventually.of_forall (fun x : Kˣ => hB (x : K)))
     exact hd.congr_fun (fun x hx => by simp only [f, shell, Set.mem_setOf_eq] at *; rw [hx]) (hm n)
   let r := Real.exp (-s.re * Real.log q)
-  have hr0 : 0 ≤ r := (Real.exp_pos _).le
-  have hr1 : r < 1 := Real.exp_lt_one_iff.mpr (by
-    exact mul_neg_of_neg_of_pos (neg_neg_of_pos hs) (Real.log_pos hq))
+  have hr0 : 0 ≤ r := by positivity
+  have hr1 : r < 1 := Real.exp_lt_one_iff.mpr (
+    mul_neg_of_neg_of_pos (neg_neg_of_pos hs) (Real.log_pos hq))
   have hw (n : ℕ) : ‖w n‖ = Real.exp (s.re * ((M : ℝ) * Real.log q)) * r ^ n := by
     rw [Complex.norm_exp]
-    simp only [w, Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, mul_zero, sub_zero,
-      Real.log_zpow, Int.cast_sub, Int.cast_natCast]
+    simp only [Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, mul_zero, sub_zero, Real.log_zpow, Int.cast_sub, Int.cast_natCast]
     rw [show s.re * (((M : ℝ) - (n : ℝ)) * Real.log q) =
       s.re * ((M : ℝ) * Real.log q) + (n : ℝ) * (-s.re * Real.log q) by ring,
       Real.exp_add, Real.exp_nat_mul]
@@ -164,11 +159,11 @@ theorem mellin_integrable
     exact hx (by simp [f, hh]))
   let k : ℤ := WithZero.log (e (ValuativeRel.valuation K (x : K)))
   have hek : e (ValuativeRel.valuation K (x : K)) ≠ 0 := by
-    simpa [e] using (Valuation.ne_zero_iff _).mpr x.ne_zero
+    simp
   have hk : k ≤ M := (WithZero.log_le_log hek hmax).mpr
     (e.toOrderIso.monotone ((hγ ⟨(x : K), hxφ, rfl⟩).trans (le_max_left _ _)))
   refine Set.mem_iUnion.mpr ⟨(M - k).toNat, ?_⟩
-  have hnk : M - (((M - k).toNat : ℕ) : ℤ) = k := by rw [Int.toNat_of_nonneg (sub_nonneg.mpr hk)]; omega
+  have hnk : M - (((M - k).toNat : ℕ) : ℤ) = k := by simp_all
   change A (x : K) = q ^ (M - (((M - k).toNat : ℕ) : ℤ))
   rw [hnk]
   simp only [A, KPCubicHaar.abs, if_neg x.ne_zero]
@@ -244,12 +239,7 @@ open MeasureTheory
 variable (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
   [TopologicalSpace K] [IsNonarchimedeanLocalField K]
 
-lemma abs_pos (x : K) (hx : x ≠ 0) : 0 < KPCubicHaar.abs K x := by
-  have hq : 0 < (KPCubicUnitIndices.residueCard K : ℝ) := by
-    exact_mod_cast (lt_of_lt_of_le (by norm_num : 0 < 2)
-      (KPCubicUnitIndices.two_le_residueCard K))
-  simp only [KPCubicHaar.abs, if_neg hx]
-  exact zpow_pos hq _
+lemma abs_pos (x : K) (hx : x ≠ 0) : 0 < KPCubicHaar.abs K x := by apply DedekindZetaZeroFree.KPCubicHaar.abs_pos <;> assumption
 
 lemma abs_continuousAt (x : K) (hx : x ≠ 0) : ContinuousAt (KPCubicHaar.abs K) x := by
   have hv := (ValuativeRel.valuation K).locally_const
@@ -259,7 +249,7 @@ lemma abs_continuousAt (x : K) (hx : x ≠ 0) : ContinuousAt (KPCubicHaar.abs K)
   have hy0 : y ≠ 0 := by
     intro hy0
     have : ValuativeRel.valuation K x = 0 := by simpa [hy0] using hy.symm
-    exact hx ((Valuation.zero_iff (ValuativeRel.valuation K)).mp this)
+    simp_all
   simp only [KPCubicHaar.abs, if_neg hx, if_neg hy0, hy]
 
 variable [MeasurableSpace K] [BorelSpace K]
@@ -277,11 +267,3 @@ lemma mellin_continuous (φ : K → ℂ) (hφ : IsLocallyConstant φ) (s : ℂ) 
     (Complex.continuous_exp.comp (continuous_const.mul
       (Complex.continuous_ofReal.comp (hab.log (fun x =>
         ne_of_gt (abs_pos K _ (Units.ne_zero x)))))))
-
-end KPJointRegulator
-
-end DedekindZetaZeroFree
-
-end
-
-end

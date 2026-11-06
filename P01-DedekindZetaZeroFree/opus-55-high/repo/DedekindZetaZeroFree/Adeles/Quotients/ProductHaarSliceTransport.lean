@@ -4,10 +4,9 @@ public import DedekindZetaZeroFree.Adeles.Quotients.ArchimedeanFiniteProduct
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.PGLComplex.AdelicSlicesRaw
 open MeasureTheory Topology NumberField
-open scoped Classical Pointwise NumberField ENNReal Matrix.Norms.Operator
+open scoped Classical Pointwise ENNReal Matrix.Norms.Operator
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
 theorem productHaarTransport
@@ -48,15 +47,6 @@ theorem productHaarTransport
     funext p; exact (he p.1 p.2).symm
   rw [heq, Measure.prod_smul_right, Measure.map_smul]
   · exact (Measure.isMulLeftInvariant_eq_smul μ μ₀).symm
-  · exact e.continuous.measurable.aemeasurable
+  fun_prop
 
 namespace ProductHaarTransportProof
-open Set Function
-variable {G A : Type*} [_root_.Group G] [MulAction G A] [MeasurableSpace A]
-  [Countable G] [MeasurableConstSMul G A]
-  {μ : Measure A} [SMulInvariantMeasure G A μ]
-end ProductHaarTransportProof
-
-end DedekindZetaZeroFree.PGLComplex.AdelicSlicesRaw
-
-end

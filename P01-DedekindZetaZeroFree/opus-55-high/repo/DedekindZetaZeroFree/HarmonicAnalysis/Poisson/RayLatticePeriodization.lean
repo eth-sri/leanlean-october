@@ -24,7 +24,3 @@ include hD hfund
 
 instance latticeVAddInvariant : VAddInvariantMeasure Γ E ν :=
   ⟨fun γ s _ => measure_preimage_add ν (γ : E) s⟩
-
-end DedekindZetaZeroFree.AbelianQuotient.Theta
-
-end

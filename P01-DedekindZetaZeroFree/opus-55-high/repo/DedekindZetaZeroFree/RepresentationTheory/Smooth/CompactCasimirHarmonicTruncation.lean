@@ -25,7 +25,7 @@ noncomputable def symmetricPowerTrace (n : ℕ) (g : U2) : ℂ :=
 noncomputable def rankOneCharacter (ℓ : ℕ) (g : U2) : ℂ :=
   symmetricPowerTrace (2 * ℓ) g / Matrix.det g.val ^ ℓ
 
-private theorem compactU2 : CompactSpace U2 := by
+theorem compactU2 : CompactSpace U2 := by
   apply isCompact_iff_compactSpace.mp
   apply Metric.isCompact_iff_isClosed_bounded.mpr
   refine ⟨isClosed_unitary, ?_⟩
@@ -36,8 +36,3 @@ private theorem compactU2 : CompactSpace U2 := by
   exact le_of_eq (CStarRing.norm_coe_unitary ⟨g, hg⟩)
 
 attribute [local instance] compactU2
-
-end KPCompactHarmonic
-end DedekindZetaZeroFree
-
-end

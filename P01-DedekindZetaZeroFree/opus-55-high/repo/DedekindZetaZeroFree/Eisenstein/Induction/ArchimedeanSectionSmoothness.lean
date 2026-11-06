@@ -6,7 +6,6 @@ public import DedekindZetaZeroFree.RepresentationTheory.RankOne.TranslatedBigCel
 
 @[expose] public section
 
-noncomputable section
 open scoped Classical NumberField Topology Matrix.Norms.Elementwise
 open NumberField
 set_option backward.isDefEq.respectTransparency false
@@ -24,7 +23,7 @@ open _root_.DedekindZetaZeroFree.KPLiteralChamber renaming sectionTuple_right �
   change Matrix.GeneralLinearGroup.map _ (Matrix.GeneralLinearGroup.map _ M) = M
   apply Units.ext
   ext i j
-  simp [Matrix.GeneralLinearGroup.map]
+  simp
 
  theorem arch_chart_smooth (g : RestrictedCover F ζ hζ) (w : InfinitePlace F) :
     ContDiffOn ℝ (⊤ : ℕ∞) (fun z : KPGlobalResidualConstruction.ArchCoordinates F =>
@@ -97,13 +96,9 @@ open _root_.DedekindZetaZeroFree.KPLiteralChamber renaming sectionTuple_right �
       intro v
       cases v with
       | inl w => rfl
-      | inr q => change g (Sum.inr q) * 1 = g (Sum.inr q); exact mul_one _
+      | inr q => change g (Sum.inr q) * 1 = g (Sum.inr q); simp
 
  theorem scalar_induced : KPLiteralRaw.Induced F ζ hζ 0 (RawSource.scalarValue F ζ hζ P C) := by
   refine ⟨⟨SourceContinuity.scalar_continuous F ζ hζ P C,
     scalar_chart_smooth F ζ hζ P C, SourceLevels.level F ζ hζ P C,
     SourceLevels.scalar_fixed F ζ hζ P C⟩, RationalCovariance.covariance F ζ hζ P C⟩
-
-end DedekindZetaZeroFree.EisensteinReferenceSections.SourceSmooth
-
-end

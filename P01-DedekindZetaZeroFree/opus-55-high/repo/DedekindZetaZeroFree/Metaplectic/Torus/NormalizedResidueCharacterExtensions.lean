@@ -37,19 +37,18 @@ variable (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisen
    refine ⟨KubotaRankTwo.d (LocalField F q) y 1, ?_, ?_, ?_⟩
    · rfl
    · simp [KubotaRankTwo.d]
-   · simp [KubotaRankTwo.d]⟩
-private theorem abs_unit (u : (KPTameCompact.O F q)ˣ) :
+   rfl⟩
+theorem abs_unit (u : (KPTameCompact.O F q)ˣ) :
  localAbs (LocalField F q) (KPTameCompact.unitInclusion F q u) = 1 := by
  have hv : valuation (LocalField F q) (KPTameCompact.unitInclusion F q u : LocalField F q) = 1 :=
    (Valuation.integer.integers (valuation (LocalField F q))).valuation_unit u
  simp [localAbs, hv]
-private theorem class_units : unitCubeClasses (LocalField F q) =
+theorem class_units : unitCubeClasses (LocalField F q) =
  ((QuotientGroup.mk' (CubicCharacters.cubes (LocalField F q)ˣ)).comp
  (KPTameCompact.unitInclusion F q)).range := by
  rw [unitCubeClasses, Subgroup.map_sup]
  have hz : (CubicCharacters.cubes (LocalField F q)ˣ).map
    (QuotientGroup.mk' (CubicCharacters.cubes (LocalField F q)ˣ)) = ⊥ := by
-   rw [Subgroup.map_eq_bot_iff]
    simp
  rw [hz, sup_bot_eq]
  exact (MonoidHom.range_comp _ _).symm
@@ -63,7 +62,7 @@ private theorem class_units : unitCubeClasses (LocalField F q) =
    have h1 : KPPGLLocalCover.A F ζ hζ (Sum.inr q) 1 =
      ((S.borel.cubeLift 1 : actualTorus F ζ hζ q) : ActualCover F ζ hζ q) := by
      rw [S.cube_actual]; simp
-   rw [h1, map_one]; rfl
+   simp_all
  map_mul' u v := by
    apply Subtype.ext
    change KPPGLLocalCover.A F ζ hζ (Sum.inr q) _ =
@@ -72,7 +71,7 @@ private theorem class_units : unitCubeClasses (LocalField F q) =
      KPTameCompact.B3_units F q ζ hζ ht u v]
    simp
 
-private theorem unit_center_value
+theorem unit_center_value
  (ht : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3) (u : (KPTameCompact.O F q)ˣ)
  (hu : (unitLift F ζ hζ q S ht u) ∈ S.heisenberg.C) :
  S.heisenberg.ω ⟨unitLift F ζ hζ q S ht u, hu⟩ = 1 := by
@@ -111,7 +110,7 @@ theorem normalized_extension_exists
    rw [hQ]
    change S.cubeClassEquiv (S.heisenberg.π (U u)) ∈ unitCubeClasses (LocalField F q)
    rw [S.cube_class, S.coordinate_lift _ _ rfl, class_units F q]
-   exact ⟨u, rfl⟩
+   simp
  let UA : (KPTameCompact.O F q)ˣ →* Q.L.comap S.heisenberg.π := U.codRestrict _ hUm
  let pA : Q.L.comap S.heisenberg.π →* Q.L :=
    (S.heisenberg.π.comp (Q.L.comap S.heisenberg.π).subtype).codRestrict _ (fun a => a.property)
@@ -119,7 +118,7 @@ theorem normalized_extension_exists
  have hsurj : Function.Surjective pU := by
    intro d
    have hm : S.cubeClassEquiv d ∈ unitCubeClasses (LocalField F q) := by
-     rw [← hmap]; exact ⟨d, d.property, rfl⟩
+     rw [← hmap]; simp
    rw [class_units F q] at hm
    obtain ⟨u, hu⟩ := hm
    refine ⟨u, ?_⟩
@@ -139,8 +138,8 @@ theorem normalized_extension_exists
    rw [Q.extends_center _ hc]
    exact unit_center_value F ζ hζ q S htame u hc
  let c := pU.liftOfSurjective hsurj ⟨f, hk⟩
- have hcu (u) : c (pU u) = f u := by
-   exact MonoidHom.liftOfRightInverse_comp_apply _ _ _ _ _
+ have hcu (u) : c (pU u) = f u := 
+   MonoidHom.liftOfRightInverse_comp_apply _ _ _ _ _
  let corr : Q.L.comap S.heisenberg.π →* ℂˣ := c.comp pA
  have hcorr (a : Q.L.comap S.heisenberg.π) (ha : (a : actualTorus F ζ hζ q) ∈ S.heisenberg.C) : corr a = 1 := by
    have hp : pA a = 1 := by
@@ -203,7 +202,3 @@ theorem normalized_extension_exists
  rw [heq, map_mul, hun, mul_one, hext ca ce.property]
  change (S.heisenberg.ω (S.central e * S.borel.cubeLift y) : ℂ) = _
  rw [map_mul, Units.val_mul, S.central_character, S.borel.exceptional_cube]
-
-end DedekindZetaZeroFree.KPTameTransposeLiteral
-
-end

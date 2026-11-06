@@ -21,7 +21,3 @@ theorem localCompactFactor_compact_finite (q : HeightOneSpectrum (𝓞 F)) :
       Set (KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr q))) := by
   simpa [localCompactFactor] using
     (KPAdelicCoverRestrictedProduct.finiteCompact_compact_open F ζ hζ q).1
-
-end DedekindZetaZeroFree.PrincipalOfKP
-
-end

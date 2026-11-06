@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Degree-zero Tate cohomology and the norm quotient
 
@@ -55,6 +52,3 @@ def H0TateUnitsIsoNormQuotient (K L : Type)
           exact QuotientGroup.mk'_surjective _))
   exact tateUnitsH0IsoInvariantsQuotient K L ≪≫
     eInv.toModuleIso ≪≫ eNorm.toIntLinearEquiv.toModuleIso
-
-end
-end CyclicCohomology

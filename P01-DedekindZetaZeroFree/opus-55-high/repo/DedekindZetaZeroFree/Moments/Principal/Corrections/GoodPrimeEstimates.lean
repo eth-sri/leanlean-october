@@ -7,9 +7,7 @@ public import DedekindZetaZeroFree.Moments.Principal.Corrections.Definitions
 open scoped NumberField Classical
 open NumberField IsDedekindDomain
 
-noncomputable section
 namespace DedekindZetaZeroFree.CorrectionFactors
-set_option autoImplicit false
 
 open LocalFiniteSums
 
@@ -17,15 +15,15 @@ variable {F : Type} [Field F] [NumberField F]
 variable {A : SArithmeticData F} {σ : F →+* ℂ}
 variable {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
 
-private lemma correction_Q_gt_one (p : ExteriorPrime A) : 1 < Q p := by
+lemma correction_Q_gt_one (p : ExteriorPrime A) : 1 < Q p := by
   change 1 < (Ideal.absNorm p.val.asIdeal : ℝ)
   exact_mod_cast NumberField.HeightOneSpectrum.one_lt_absNorm p.val
 
-private lemma correction_Q_ge_two (p : ExteriorPrime A) : 2 ≤ Q p := by
+lemma correction_Q_ge_two (p : ExteriorPrime A) : 2 ≤ Q p := by
   change 2 ≤ (Ideal.absNorm p.val.asIdeal : ℝ)
   exact_mod_cast NumberField.HeightOneSpectrum.one_lt_absNorm p.val
 
-private lemma correction_chi_le (p : ExteriorPrime A) (u : A.R) :
+lemma correction_chi_le (p : ExteriorPrime A) (u : A.R) :
     ‖chi (σ := σ) p (Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) u)‖ ≤ 1 := by
   letI := A.exteriorResidue_finite (primeIdeal p)
   letI := Fintype.ofFinite (A.R ⧸ A.extendIdeal (primeIdeal p))ˣ
@@ -37,33 +35,33 @@ private lemma correction_chi_le (p : ExteriorPrime A) (u : A.R) :
     simpa only [MulChar.coe_equivToUnitHom] using h.le
   · simp [MulChar.map_nonunit _ hu]
 
-private lemma correction_eta_le (p : ExteriorPrime A) : ‖η p.val.asIdeal‖ ≤ 1 := by
+lemma correction_eta_le (p : ExteriorPrime A) : ‖η p.val.asIdeal‖ ≤ 1 := by
   by_cases h : η p.val.asIdeal = 0
   · simp [h]
   · exact (RayClassBridge.rayClassCharacter_norm_of_ne_zero F
       (primitive12_totallyComplex F A.zeta12 A.primitive_zeta12)
       A.modulus A.modulus_ne_zero η p.val.asIdeal h).le
 
-private lemma correction_qPower_norm (p : ExteriorPrime A) (s : ℂ) :
+lemma correction_qPower_norm (p : ExteriorPrime A) (s : ℂ) :
     ‖qPower p s‖ = Real.exp (s.re * Real.log (Q p)) := by
   simp [qPower, Complex.norm_exp]
 
-private lemma correction_norm_V (p : ExteriorPrime A) (z : ℂ) :
+lemma correction_norm_V (p : ExteriorPrime A) (z : ℂ) :
     ‖V p z‖ = Real.exp ((-6 * z.re) * Real.log (Q p)) := by
   simp [V, correction_qPower_norm]
 
-private lemma correction_norm_W (p : ExteriorPrime A) (u : A.R) (w : ℂ) :
+lemma correction_norm_W (p : ExteriorPrime A) (u : A.R) (w : ℂ) :
     ‖W (σ := σ) p u w‖ ≤ Real.exp (-w.re * Real.log (Q p)) := by
   simp only [W, norm_mul, correction_qPower_norm, Complex.neg_re]
   exact mul_le_of_le_one_left (Real.exp_pos _).le (correction_chi_le p u)
 
-private lemma correction_norm_D (p : ExteriorPrime A) (u : A.R) (ξ : ℂ) :
+lemma correction_norm_D (p : ExteriorPrime A) (u : A.R) (ξ : ℂ) :
     ‖D (σ := σ) (η := η) p u ξ‖ ≤ Real.exp (-ξ.re * Real.log (Q p)) := by
   simp only [D, norm_mul, norm_star, correction_qPower_norm, Complex.neg_re]
   exact mul_le_of_le_one_left (Real.exp_pos _).le
     (mul_le_one₀ (correction_eta_le p) (norm_nonneg _) (correction_chi_le p u))
 
-private lemma correction_norm_E (C : A.GeneralArithmeticContext σ η hS)
+lemma correction_norm_E (C : A.GeneralArithmeticContext σ η hS)
     (p : ExteriorPrime A) (ξ z : ℂ) :
     ‖E C p ξ z‖ = Real.exp ((4 - 6 * ξ.re - 6 * z.re) * Real.log (Q p)) := by
   have hθ : ‖vartheta C p‖ = 1 := Circle.norm_coe _
@@ -74,13 +72,13 @@ private lemma correction_norm_E (C : A.GeneralArithmeticContext σ η hS)
   simp
   ring
 
-private lemma correction_region (x : Coordinates) (hx : x ∈ Omega) :
+lemma correction_region (x : Coordinates) (hx : x ∈ Omega) :
     1 / 1000 < 6 * x.2.2.re ∧ 1 / 1000 < x.2.1.re ∧
     1 / 1000 < x.1.re ∧ 1 / 1000 < 6 * x.1.re + 6 * x.2.2.re - 4 := by
   rcases hx with h | h <;> rcases h with ⟨hξ, hw, hz⟩ <;>
     refine ⟨by linarith, by linarith, by linarith, by linarith⟩
 
-private lemma correction_norms_lt_one (C : A.GeneralArithmeticContext σ η hS)
+lemma correction_norms_lt_one (C : A.GeneralArithmeticContext σ η hS)
     (p : ExteriorPrime A) (u : A.R) (x : Coordinates) (hx : x ∈ Omega) :
     ‖V p x.2.2‖ < 1 ∧ ‖W (σ := σ) p u x.2.1‖ < 1 ∧
     ‖D (σ := σ) (η := η) p u x.1‖ < 1 ∧ ‖E C p x.1 x.2.2‖ < 1 := by
@@ -95,7 +93,7 @@ private lemma correction_norms_lt_one (C : A.GeneralArithmeticContext σ η hS)
   · exact (correction_norm_D p u _).trans_lt (hexp _ (by linarith))
   · rw [correction_norm_E]; exact hexp _ (by linarith)
 
-private lemma correction_decay_exponents (x : Coordinates) (hx : x ∈ Omega) :
+lemma correction_decay_exponents (x : Coordinates) (hx : x ∈ Omega) :
     -6 * x.2.2.re - x.2.1.re ≤ -(1 + 1 / 4000 : ℝ) ∧
     -x.1.re - 6 * x.2.2.re ≤ -(1 + 1 / 4000 : ℝ) ∧
     -x.1.re - x.2.1.re ≤ -(1 + 1 / 4000 : ℝ) ∧
@@ -186,7 +184,7 @@ private lemma correction_denominator_gap (C : A.GeneralArithmeticContext σ η h
   · linarith [hsub (D (σ := σ) (η := η) p u x.1)]
   · linarith [hsub (E C p x.1 x.2.2)]
 
-private lemma correction_numerator_bound (q t : ℝ) (hq : 2 ≤ q) (ht : 0 ≤ t)
+lemma correction_numerator_bound (q t : ℝ) (hq : 2 ≤ q) (ht : 0 ≤ t)
     (v w d e : ℂ) (hv : ‖v‖ ≤ 1) (hw : ‖w‖ ≤ 1) (hd : ‖d‖ ≤ 1)
     (hvw : ‖v‖ * ‖w‖ ≤ t) (hdv : ‖d‖ * ‖v‖ ≤ t)
     (hdw : ‖d‖ * ‖w‖ ≤ t) (hdwv : q * ‖d‖ * ‖w‖ * ‖v‖ ≤ t)
@@ -201,7 +199,7 @@ private lemma correction_numerator_bound (q t : ℝ) (hq : 2 ≤ q) (ht : 0 ≤ 
   have hqm : ‖(q : ℂ) - 1‖ ≤ 2 * q := by
     have h := norm_sub_le (q : ℂ) 1
     rw [hqn, norm_one] at h; linarith
-  have hw2 : ‖w ^ 2‖ ≤ 1 := by simpa using (pow_le_one₀ (norm_nonneg w) hw : ‖w‖ ^ 2 ≤ 1)
+  have hw2 : ‖w ^ 2‖ ≤ 1 := by simp_all
   have hw2v : ‖w ^ 2 * v‖ ≤ 1 := by
     rw [norm_mul]; exact mul_le_one₀ hw2 (norm_nonneg _) hv
   have hbr : ‖(1 - (q : ℂ)⁻¹) + (q : ℂ)⁻¹ * w - w ^ 2 + w ^ 2 * v - d‖ ≤ 6 := by
@@ -251,7 +249,7 @@ theorem good_correction_denominators_ne_zero
     intro a ha heq
     have : a = 1 := (sub_eq_zero.mp heq).symm
     simp [this] at ha
-  exact ⟨h _ hv, h _ hw, h _ hd, h _ he⟩
+  simp_all
 
 set_option maxHeartbeats 1500000 in
 
@@ -280,7 +278,7 @@ theorem good_correction_holomorphic
   apply DifferentiableAt.differentiableWithinAt
   unfold goodFactor goodRational
   dsimp only
-  fun_prop (disch := assumption)
+  fun_prop
 
 theorem good_correction_numerator
     (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A) (u : A.R)
@@ -315,10 +313,8 @@ theorem good_correction_uniform_bound :
   let c : ℝ := 1 - Real.exp (-(1 / 1000 : ℝ) * Real.log 2)
   have hc : 0 < c := by
     dsimp [c]
-    have hl : 0 < Real.log 2 := Real.log_pos (by norm_num)
-    have he : Real.exp (-(1 / 1000 : ℝ) * Real.log 2) < 1 :=
-      Real.exp_lt_one_iff.mpr (mul_neg_of_neg_of_pos (by norm_num) hl)
-    linarith
+    have hl : 0 < Real.log 2 := by positivity
+    simp_all
   refine ⟨12 / (c * c), by positivity, ?_⟩
   intro F _ _ A σ η hS C p u hu x hx
   have ht : 0 ≤ (Q p) ^ (-(1 + 1 / 4000 : ℝ)) :=
@@ -343,7 +339,3 @@ theorem good_correction_uniform_bound :
     _ ≤ (12 * (Q p) ^ (-(1 + 1 / 4000 : ℝ))) / (c * c) :=
       (le_div_iff₀ hc2).mpr (by simpa only [mul_comm] using hh)
     _ = _ := by ring
-
-end DedekindZetaZeroFree.CorrectionFactors
-
-end

@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Finite unrestricted local-block families
 
@@ -24,7 +21,6 @@ unrestricted places.
 open scoped NumberField BigOperators ValuativeRel Classical NNReal
 open NumberField IsDedekindDomain
 
-noncomputable section
 
 open AlgebraicNumberTheory.Valuations
 open CyclicCohomology.ProfiniteCohomology.Herbrand
@@ -182,4 +178,3 @@ theorem relativeUnrestrictedLocalBlockFamilyHerbrandHMinusOneFinite
       (localBlockFamilyHerbrandHMinusOneEquiv
         d σ hgen).symm.toEquiv
 
-end

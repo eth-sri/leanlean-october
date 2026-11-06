@@ -33,7 +33,7 @@ def thetaProfileGaussianContour
 def thetaProfileGaussianKernel (C₀ A₀ : ℝ) (r : ℕ) (T : ℝ) : ℂ :=
   thetaProfileGaussianContour C₀ A₀ r 0 T
 
-private theorem gaussianContour_bound
+theorem gaussianContour_bound
     (C₀ A₀ : ℝ) (r : ℕ) (hC₀ : 0 < C₀) (hA₀ : 0 < A₀) (hr : 1 ≤ r)
     (σ : ℝ) :
     ∃ D : ℝ, 0 < D ∧ ∀ T : ℝ, 0 < T → ∀ t : ℝ,
@@ -71,7 +71,7 @@ private theorem gaussianContour_bound
       simp only [Real.rpow_eq_pow]
       ring
 
-private theorem gaussianContour_continuous_line
+theorem gaussianContour_continuous_line
     (C₀ A₀ : ℝ) (r : ℕ) (hC₀ : 0 < C₀) (hA₀ : 0 < A₀) (hr : 1 ≤ r)
     (σ T : ℝ) (hT : 0 < T) :
     Continuous (thetaProfileGaussianContourIntegrand C₀ A₀ r σ T) := by
@@ -91,7 +91,7 @@ theorem thetaProfileGaussianContour_integrable
     (gaussianContour_continuous_line C₀ A₀ r hC₀ hA₀ hr σ T hT).aestronglyMeasurable
     (Filter.Eventually.of_forall (hb T hT))
 
-private theorem gaussian_polynomial_decay (t : ℝ) :
+theorem gaussian_polynomial_decay (t : ℝ) :
     Real.exp (-(1 / 2 : ℝ) * t ^ 2) ≤ 4 * (1 + |t|) ^ (-2 : ℝ) := by
   have he := Real.add_one_le_exp (t ^ 2 / 2)
   have hp : (1 + |t|) ^ 2 ≤ 4 * Real.exp (t ^ 2 / 2) := by
@@ -103,7 +103,7 @@ private theorem gaussian_polynomial_decay (t : ℝ) :
     convert Real.exp_zero using 1 <;> ring
   nlinarith [mul_le_mul_of_nonneg_left hp (Real.exp_nonneg (-(1 / 2 : ℝ) * t ^ 2))]
 
-private theorem gaussianContour_strip_decay
+theorem gaussianContour_strip_decay
     (C₀ A₀ : ℝ) (r : ℕ) (hC₀ : 0 < C₀) (hA₀ : 0 < A₀) (hr : 1 ≤ r)
     (a b T : ℝ) (hab : a ≤ b) (hT : 0 < T) :
     ∃ D : ℝ, 0 ≤ D ∧ ∀ s ∈ comparisonClosedStrip a b,
@@ -114,7 +114,7 @@ private theorem gaussianContour_strip_decay
   let m : ℝ := |a| + |b|
   let k : ℝ := 2 * Real.pi * (r : ℝ)
   let D : ℝ := C * Real.exp (m ^ 2 + k ^ 2 / 2 + m * |Real.log T|)
-  refine ⟨4 * D, by dsimp [D]; positivity, ?_⟩
+  refine ⟨4 * D, by positivity, ?_⟩
   intro s hs
   have hm : |s.re| ≤ m := by
     apply abs_le.mpr
@@ -126,7 +126,7 @@ private theorem gaussianContour_strip_decay
       dsimp [m]
       linarith [hs.2, abs_nonneg a]
   have hsq : s.re ^ 2 ≤ m ^ 2 := by
-    have hm0 : 0 ≤ m := by dsimp [m]; positivity
+    have hm0 : 0 ≤ m := by positivity
     nlinarith [sq_abs s.re, mul_nonneg (sub_nonneg.mpr hm)
       (add_nonneg hm0 (abs_nonneg s.re))]
   have hlog : Real.log T * s.re ≤ m * |Real.log T| := by
@@ -159,7 +159,7 @@ private theorem gaussianContour_strip_decay
         rw [mul_assoc, ← Real.exp_add]
         congr 2
         ring
-  have hD : 0 ≤ D := by dsimp [D]; positivity
+  have hD : 0 ≤ D := by positivity
   calc
     _ ≤ D * Real.exp (-(1 / 2 : ℝ) * s.im ^ 2) := hg
     _ ≤ D * (4 * (1 + |s.im|) ^ (-2 : ℝ)) :=
@@ -201,8 +201,7 @@ theorem thetaProfileGaussianKernel_continuousOn
       (bound := fun t : ℝ => D * Real.exp (-(1 / 2 : ℝ) * t ^ 2))
     · intro T hT
       exact (gaussianContour_continuous_line C₀ A₀ r hC₀ hA₀ hr 0 T hT).aestronglyMeasurable
-    · intro T hT
-      exact Filter.Eventually.of_forall (fun t => by simpa [Real.rpow_zero] using hb T hT t)
+    · simp_all
     · exact (integrable_exp_neg_mul_sq (by norm_num : (0 : ℝ) < 1 / 2)).const_mul D
     · apply Filter.Eventually.of_forall
       intro t
@@ -213,19 +212,18 @@ theorem thetaProfileGaussianKernel_continuousOn
       exact continuousOn_const.mul hp
   change ContinuousOn (fun T : ℝ => (1 / (2 * Real.pi) : ℝ) •
     ∫ t : ℝ, thetaProfileGaussianContourIntegrand C₀ A₀ r 0 T t) (Set.Ioi 0)
-  exact (continuousOn_const : ContinuousOn (fun _ : ℝ => (1 / (2 * Real.pi) : ℝ))
-    (Set.Ioi 0)).smul hi
+  fun_prop
 
-private theorem gaussianKernel_power_bound
+theorem gaussianKernel_power_bound
     (C₀ A₀ : ℝ) (r : ℕ) (hC₀ : 0 < C₀) (hA₀ : 0 < A₀) (hr : 1 ≤ r)
     (a : ℝ) :
     ∃ C : ℝ, 0 < C ∧ ∀ T : ℝ, 0 < T →
       ‖thetaProfileGaussianKernel C₀ A₀ r T‖ ≤ C * Real.rpow T a := by
   obtain ⟨D, hD, hb⟩ := gaussianContour_bound C₀ A₀ r hC₀ hA₀ hr a
   let J : ℝ := ∫ t : ℝ, Real.exp (-(1 / 2 : ℝ) * t ^ 2)
-  have hJ : 0 ≤ J := MeasureTheory.integral_nonneg (fun t => (Real.exp_pos _).le)
+  have hJ : 0 ≤ J := by positivity
   let B : ℝ := (1 / (2 * Real.pi)) * D * J
-  have hB : 0 ≤ B := by dsimp [B]; positivity
+  have hB : 0 ≤ B := by positivity
   refine ⟨B + 1, by linarith, ?_⟩
   intro T hT
   have hg := integrable_exp_neg_mul_sq (by norm_num : (0 : ℝ) < 1 / 2)
@@ -274,7 +272,7 @@ theorem thetaProfileGaussianKernel_absolute_moment
         ring
   have hsmall : MeasureTheory.IntegrableOn f (Set.Ioc (0 : ℝ) 1) := by
     have hg : MeasureTheory.IntegrableOn (fun _ : ℝ => C) (Set.Ioc (0 : ℝ) 1) :=
-      MeasureTheory.integrableOn_const (by simp)
+      by simp
     apply hg.mono' ((hc.mono (fun T (hT : T ∈ Set.Ioc (0 : ℝ) 1) => hT.1)).aestronglyMeasurable
       measurableSet_Ioc)
     filter_upwards [MeasureTheory.ae_restrict_mem measurableSet_Ioc] with T hT
@@ -296,8 +294,5 @@ theorem thetaProfileGaussianKernel_rpow_bound
     (C₀ A₀ : ℝ) (r : ℕ) (hC₀ : 0 < C₀) (hA₀ : 0 < A₀) (hr : 1 ≤ r)
     (a : ℝ) :
     ∃ C : ℝ, 0 < C ∧ ∀ T : ℝ, 0 < T →
-      ‖thetaProfileGaussianKernel C₀ A₀ r T‖ ≤ C * Real.rpow T a := by
-  exact gaussianKernel_power_bound C₀ A₀ r hC₀ hA₀ hr a
-
-end
-end DedekindZetaZeroFree
+      ‖thetaProfileGaussianKernel C₀ A₀ r T‖ ≤ C * Real.rpow T a := 
+  gaussianKernel_power_bound C₀ A₀ r hC₀ hA₀ hr a

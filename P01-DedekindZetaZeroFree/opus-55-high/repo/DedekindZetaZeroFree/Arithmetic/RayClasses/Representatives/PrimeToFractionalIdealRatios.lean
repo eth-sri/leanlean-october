@@ -5,7 +5,6 @@ public import ClassFieldTheory.Definitions.FrobeniusAndHilbertClassFields.Number
 
 @[expose] public section
 
-noncomputable section
 
 namespace DedekindZetaZeroFree.LargeSieve.RayBridge
 
@@ -37,7 +36,7 @@ theorem exists_integralIdealUnit_ratio (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
       exact (Associates.count_ne_zero_iff_dvd hm v.irreducible).mpr
         (Ideal.dvd_iff_le.mpr hle)
     apply (Ideal.isMaximal_def.mp (v.isPrime.isMaximal v.ne_bot)).lt_iff.mp
-    exact lt_of_le_of_ne le_sup_left (fun he => hnot (he ▸ le_sup_right))
+    simp_all
   let A : Ideal (𝓞 F) := ∏ v ∈ s, v.asIdeal ^ (e v).toNat
   let B : Ideal (𝓞 F) := ∏ v ∈ s, v.asIdeal ^ (-e v).toNat
   have hA : A ≠ ⊥ := Finset.prod_ne_zero_iff.mpr
@@ -57,16 +56,16 @@ theorem exists_integralIdealUnit_ratio (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
       apply ClassFieldTheory.NumberFieldFractionalIdealGroup.ext_count
       intro v
       rw [ClassFieldTheory.NumberFieldFractionalIdealGroup.count_factorization]
-      exact ClassFieldTheory.NumberFieldFractionalIdealGroup.countVector_apply _ v
+      rfl
     rw [← hj, ClassFieldTheory.NumberFieldFractionalIdealGroup.factorization_val]
     change (∏ v ∈ s, (v.asIdeal : FractionalIdeal (nonZeroDivisors (𝓞 F)) F) ^ e v) = _
     have ha : (A : FractionalIdeal (nonZeroDivisors (𝓞 F)) F) =
-        ∏ v ∈ s, (v.asIdeal : FractionalIdeal (nonZeroDivisors (𝓞 F)) F) ^ (e v).toNat := by
-      exact (map_prod (FractionalIdeal.coeIdealHom (nonZeroDivisors (𝓞 F)) F) _ _).trans
+        ∏ v ∈ s, (v.asIdeal : FractionalIdeal (nonZeroDivisors (𝓞 F)) F) ^ (e v).toNat := 
+      (map_prod (FractionalIdeal.coeIdealHom (nonZeroDivisors (𝓞 F)) F) _ _).trans
         (Finset.prod_congr rfl (fun v _ => FractionalIdeal.coeIdeal_pow (nonZeroDivisors (𝓞 F)) F _ _))
     have hb : (B : FractionalIdeal (nonZeroDivisors (𝓞 F)) F) =
-        ∏ v ∈ s, (v.asIdeal : FractionalIdeal (nonZeroDivisors (𝓞 F)) F) ^ (-e v).toNat := by
-      exact (map_prod (FractionalIdeal.coeIdealHom (nonZeroDivisors (𝓞 F)) F) _ _).trans
+        ∏ v ∈ s, (v.asIdeal : FractionalIdeal (nonZeroDivisors (𝓞 F)) F) ^ (-e v).toNat := 
+      (map_prod (FractionalIdeal.coeIdealHom (nonZeroDivisors (𝓞 F)) F) _ _).trans
         (Finset.prod_congr rfl (fun v _ => FractionalIdeal.coeIdeal_pow (nonZeroDivisors (𝓞 F)) F _ _))
     rw [ha, hb, ← Finset.prod_inv_distrib, ← Finset.prod_mul_distrib]
     apply Finset.prod_congr rfl
@@ -75,7 +74,3 @@ theorem exists_integralIdealUnit_ratio (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
     conv_lhs => rw [hn]
     rw [zpow_sub₀ (FractionalIdeal.coeIdeal_ne_zero.mpr v.ne_bot)]
     simp only [zpow_natCast, div_eq_mul_inv]
-
-end DedekindZetaZeroFree.LargeSieve.RayBridge
-
-end

@@ -65,13 +65,6 @@ private theorem ext_transport (x : M) :
     (letI := transported F (M := M); extChartAt 𝓘(ℝ, Coordinates F) x) =
     (extChartAt 𝓘(ℝ, PGLComplex.ProductCoordinates (NumberField.InfinitePlace F)) x).trans
       (reindexChart F).symm.toPartialEquiv := by
-  letI := reindexChartedSpace F
-  change ((chartAt (PGLComplex.ProductCoordinates (NumberField.InfinitePlace F)) x).trans
-    (reindexChart F).symm).extend 𝓘(ℝ, Coordinates F) = _
-  have h {V : Type} [NormedAddCommGroup V] [NormedSpace ℝ V] :
-      (𝓘(ℝ, V)).toPartialEquiv = PartialEquiv.refl V := by ext <;> simp
-  simp only [extChartAt, OpenPartialHomeomorph.extend, h, PartialEquiv.trans_refl,
-    chartAt_reindexChartedSpace]
   rfl
 
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
@@ -126,9 +119,8 @@ private theorem manifold_transport [IsManifold 𝓘(ℝ, PGLComplex.ProductCoord
   have hc := (𝓘(ℝ, PGLComplex.ProductCoordinates (NumberField.InfinitePlace F))).contDiffOn_extendCoordChange
     (IsManifold.subset_maximalAtlas (n := ∞) (I := 𝓘(ℝ, PGLComplex.ProductCoordinates (NumberField.InfinitePlace F))) he)
     (IsManifold.subset_maximalAtlas (n := ∞) (I := 𝓘(ℝ, PGLComplex.ProductCoordinates (NumberField.InfinitePlace F))) hf)
-  simp only [ModelWithCorners.extendCoordChange, modelWithCornersSelf_coe, Function.id_comp,
-    Function.comp_id, Set.range_id, Set.preimage_id_eq, Set.inter_univ] at hc ⊢
-  have h : (𝓘(ℝ, PGLComplex.ProductCoordinates (NumberField.InfinitePlace F))).toPartialEquiv = PartialEquiv.refl _ := by ext <;> simp
+  simp only [ModelWithCorners.extendCoordChange, modelWithCornersSelf_coe, Function.id_comp, Set.range_id, Set.inter_univ] at hc ⊢
+  have h : (𝓘(ℝ, PGLComplex.ProductCoordinates (NumberField.InfinitePlace F))).toPartialEquiv = PartialEquiv.refl _ := by rfl
   simp only [OpenPartialHomeomorph.extend, h, PartialEquiv.trans_refl] at hc
   change ContDiffOn ℝ ∞ (fun a => f (e.symm a)) (e.target ∩ e.symm ⁻¹' f.source) at hc
   change ContDiffOn ℝ ∞ (fun a => (coordinateReindex F).symm (f (e.symm ((coordinateReindex F) a)))) _
@@ -154,8 +146,8 @@ private theorem lie_transport [Group M]
   letI := manifold_transport F (M := M)
   have hm : ContMDiff (𝓘(ℝ, Coordinates F).prod 𝓘(ℝ, Coordinates F))
       𝓘(ℝ, PGLComplex.ProductCoordinates (NumberField.InfinitePlace F)) ∞
-      (fun p : M × M => p.1 * p.2) := by
-    exact (e.contMDiff.comp contMDiff_fst).mul (e.contMDiff.comp contMDiff_snd)
+      (fun p : M × M => p.1 * p.2) := 
+    (e.contMDiff.comp contMDiff_fst).mul (e.contMDiff.comp contMDiff_snd)
   letI : ContMDiffMul 𝓘(ℝ, Coordinates F) ∞ M := {
     contMDiff_mul := e.symm.contMDiff.comp hm }
   exact { contMDiff_inv := e.symm.contMDiff.comp ((e.contMDiff).inv) }
@@ -170,9 +162,7 @@ private theorem exponential_reindex :
   have hm : PGLComplex.sl2Matrix ((PGLComplex.productCoordinatesFlatten (NumberField.InfinitePlace F)).symm (coordinateReindex F a) w) = lieMatrix F a w := by
     ext i j
     fin_cases i <;> fin_cases j <;> apply Complex.ext <;>
-      simp [lieMatrix, PGLComplex.sl2Matrix, PGLComplex.productCoordinatesFlatten,
-        coordinateReindex, ContinuousLinearEquiv.piCongrLeft, LinearEquiv.piCongrLeft,
-        Equiv.piCongrLeft, Equiv.piCongrLeft', finProdFinEquiv] <;> rfl
+      simp [lieMatrix, PGLComplex.sl2Matrix, PGLComplex.productCoordinatesFlatten, coordinateReindex, ContinuousLinearEquiv.piCongrLeft, Equiv.piCongrLeft, Equiv.piCongrLeft', finProdFinEquiv] <;> rfl
   change Matrix.ProjGenLinGroup.mk ((NormedSpace.isUnit_exp (PGLComplex.sl2Matrix
     ((PGLComplex.productCoordinatesFlatten (NumberField.InfinitePlace F)).symm (coordinateReindex F a) w))).unit) = _
   rw [hm]
@@ -307,8 +297,3 @@ theorem raw_lie_exponential_data (F : Type) [Field F] [NumberField F] :
       OpenPartialHomeomorph.symm_symm]
     congr 1
     exact congrArg (PGLComplex.productAffineChart ι) (funext (fun w => hC₀ (g w)))
-
-end DedekindZetaZeroFree.LocalQuotientCharts.ExponentialHaarFrame
-
-end
-end

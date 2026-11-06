@@ -5,14 +5,13 @@ public import DedekindZetaZeroFree.Analysis.ContourIntegration.SubquadraticGrowt
 
 @[expose] public section
 
-noncomputable section
 
 open scoped Classical
 open MeasureTheory
 
 namespace DedekindZetaZeroFree.LargeSieve.Vendor
 
-private lemma sum_Icc_one_eq (f : ℕ → ℂ) (m : ℕ) :
+lemma sum_Icc_one_eq (f : ℕ → ℂ) (m : ℕ) :
     ∑ k ∈ Finset.Icc 1 m, f k
       = (∑ k ∈ Finset.Icc 2 m, f k) + (if m = 0 then 0 else f 1) := by
   rcases m with _ | m
@@ -22,9 +21,9 @@ private lemma sum_Icc_one_eq (f : ℕ → ℂ) (m : ℕ) :
       ext k
       simp only [Finset.mem_Icc, Finset.mem_insert]
       omega
-    rw [h, Finset.sum_insert (by simp only [Finset.mem_Icc]; omega), add_comm]
+    rw [h, Finset.sum_insert (by simp), add_comm]
 
-private lemma differentiableOn_rational_principal (R : ℂ) (p : ℝ) (k : ℕ) :
+lemma differentiableOn_rational_principal (R : ℂ) (p : ℝ) (k : ℕ) :
     DifferentiableOn ℂ (fun s : ℂ => R / (s - (p : ℂ)) ^ k) {s | s ≠ (p : ℂ)} := by
   intro s hs
   have hne : s - (p : ℂ) ≠ 0 := sub_ne_zero.mpr hs
@@ -47,7 +46,7 @@ private theorem verticalIntegral_finset_sum {ι : Type*} (s : Finset ι) (f : ι
       integrable_finsetSum s (fun i hi => hf i (Finset.mem_insert_of_mem hi))
     have hsplit : (fun z => ∑ i ∈ insert a s, f i z)
         = (fun z => f a z + ∑ i ∈ s, f i z) := by
-      funext z; rw [Finset.sum_insert ha]
+      simp_all
     rw [hsplit, verticalIntegral_add c (f a) (fun z => ∑ i ∈ s, f i z) hfa hfs,
       ih (fun i hi => hf i (Finset.mem_insert_of_mem hi)), Finset.sum_insert ha]
 
@@ -72,7 +71,7 @@ theorem verticalIntegral_sub_eq_sum_residues_of_finite_order
     verticalIntegral b F - verticalIntegral a F =
       ∑ p : S, if n p = 0 then 0 else C p 1 := by
   classical
-  have hcard : Fintype.card ↥S = S.card := by simp [Finset.card_attach]
+  have hcard : Fintype.card ↥S = S.card := by simp
   let e : ↥S ≃ Fin S.card := Fintype.equivFinOfCardEq hcard
   let p : Fin S.card → ℝ := fun j => (e.symm j).val
   let R : Fin S.card → ℂ := fun j => if n (e.symm j) = 0 then 0 else C (e.symm j) 1
@@ -140,8 +139,7 @@ theorem verticalIntegral_sub_eq_sum_residues_of_finite_order
       exact fun h => hs.2 ⟨q, h.symm⟩)
   have hG_diff : DifferentiableOn ℂ G (U \ Set.range (fun j : Fin S.card => (p j : ℂ))) := by
     have h : DifferentiableOn ℂ G (U \ Set.range (fun q : ↥S => (q.val : ℂ))) := by
-      simp only [G]
-      exact hF_holo.sub hH_diff
+      fun_prop
     rwa [← hrange] at h
 
   have hG_int (c : ℝ) (hFc : Complex.VerticalIntegrable F c)
@@ -158,7 +156,7 @@ theorem verticalIntegral_sub_eq_sum_residues_of_finite_order
       show (1 / (2 * Real.pi) : ℂ) * ∫ t : ℝ, G (c + t * Complex.I) = _
       rw [show (fun t : ℝ => G (c + t * Complex.I))
           = (fun t : ℝ => F (c + t * Complex.I) - H (c + t * Complex.I)) from by
-        funext t; simp only [G]]
+        rfl]
       rw [verticalIntegral, verticalIntegral, ← mul_sub, integral_sub]
       · exact hFc
       · exact hHint
@@ -171,15 +169,14 @@ theorem verticalIntegral_sub_eq_sum_residues_of_finite_order
     obtain ⟨C₀, A, hC₀, hA, hgr⟩ := hgrowth
     let K : ℝ := ∑ q : ↥S, ∑ k ∈ Finset.Icc 2 (n q), ‖C q k‖
     have hKnn : 0 ≤ K := by
-      simp only [K]
-      exact Finset.sum_nonneg (fun q _ => Finset.sum_nonneg (fun k _ => norm_nonneg _))
+      positivity
     refine ⟨C₀ + K, A, add_nonneg hC₀ hKnn, hA, ?_⟩
     intro σ t hσ ht
     have hsre : ((σ : ℂ) + (t : ℂ) * Complex.I).re = σ := by simp
     have hsim : ((σ : ℂ) + (t : ℂ) * Complex.I).im = t := by simp
     have hexp1 : 1 ≤ Real.exp (A * (1 + |t|) ^ (3 / 2 : ℝ)) := by
       rw [Real.one_le_exp_iff]
-      exact mul_nonneg hA (Real.rpow_nonneg (by positivity) _)
+      positivity
     have hFs : ‖F ((σ : ℂ) + (t : ℂ) * Complex.I)‖
         ≤ C₀ * Real.exp (A * (1 + |t|) ^ (3 / 2 : ℝ)) := hgr σ t hσ ht
     have hstep : ∀ q : ↥S, ‖∑ k ∈ Finset.Icc 2 (n q),
@@ -191,7 +188,7 @@ theorem verticalIntegral_sub_eq_sum_residues_of_finite_order
         (Finset.mem_Icc.mp hk).1 (a := a) (b := b)
         (s := ((σ : ℂ) + (t : ℂ) * Complex.I))
         (by rw [hsre]; exact hσ) (by rw [hsim]; exact ht)
-      simpa using hle
+      omega
     have hHs : ‖H ((σ : ℂ) + (t : ℂ) * Complex.I)‖ ≤ K := by
       simp only [H, K]
       exact le_trans (norm_sum_le _ _) (Finset.sum_le_sum (fun q _ => hstep q))
@@ -250,7 +247,3 @@ theorem verticalIntegral_sub_eq_sum_residues_of_finite_order
   rw [hmain]
   rw [← Equiv.sum_comp (e := e.symm)
     (g := fun q : ↥S => if n q = 0 then 0 else C q 1)]
-
-end DedekindZetaZeroFree.LargeSieve.Vendor
-
-end

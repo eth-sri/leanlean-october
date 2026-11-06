@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.Metaplectic.Torus.InverseRootCentralSheetValu
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.TameInverseRootValueAudit
 
 open scoped NumberField Classical
@@ -49,7 +48,7 @@ theorem eventual_inverse_root_normalized_test_indicator
   obtain ⟨R, hR⟩ := eventual_inverse_root_chart_ratio_cube F ζ hζ q S P hP π hπ
   refine ⟨max D R, ?_⟩
   intro m hm i f hf u v
-  have hmd : D ≤ m := (le_max_left _ _).trans hm
+  have hmd : D ≤ m := by omega
   have hmr : R ≤ m := (le_max_right _ _).trans hm
   have hdepth : KPLocalChartTopology.MatrixChartDepth F q m := (hdeep m hmd).1
   let chart : LocalField F q → LocalField F q := fun t =>
@@ -127,7 +126,3 @@ theorem eventual_inverse_root_normalized_test_indicator
     apply hv
     refine ⟨t, ht, ?_⟩
     rw [hv', Units.val_div_eq_div_val, hw]
-
-end DedekindZetaZeroFree.TameInverseRootValueAudit
-
-end

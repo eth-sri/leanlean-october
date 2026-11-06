@@ -15,7 +15,6 @@ open KPLocalPrincipalSeries KPLocalStoneVonNeumann
 open KPRankOneShellContinuation
 
 noncomputable section
-set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
@@ -81,6 +80,3 @@ structure RawFiniteInducingData where
     (openCell P).eta = ordinaryIota F ζ hζ
 
 attribute [instance] RawFiniteInducingData.groupD RawFiniteInducingData.finiteD
-
-end
-end DedekindZetaZeroFree.KPExceptionalRaw

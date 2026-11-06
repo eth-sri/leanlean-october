@@ -22,7 +22,7 @@ theorem rayCharacterEntire
   classical
 
   obtain ⟨ψ, hψdesc, hψprinc⟩ := rayCharacterDescent K m hm χ
-  have hψ : ψ ≠ 1 := fun h => hχ (hψprinc.mpr h)
+  have hψ : ψ ≠ 1 := by simp_all
 
   obtain ⟨ρ, F, hF, hpartial⟩ := partialRayZetaRegularization K m hm
   haveI : Fintype (RayIdealClass K m hm) := Fintype.ofFinite _
@@ -38,5 +38,3 @@ theorem rayCharacterEntire
   cases hq : rayIdealClass K m hm I with
   | none => rfl
   | some c => rfl
-
-end DedekindZetaZeroFree.AbelianQuotient

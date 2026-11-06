@@ -6,9 +6,7 @@ public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.ComplexUnits.MinimumPow
 @[expose] public section
 
 namespace DedekindZetaZeroFree.ThetaRawSheetEnvelope.WeightedWhittakerSheets
-noncomputable section
 open MeasureTheory NumberField
-set_option autoImplicit false
 variable {F : Type} [Field F] [NumberField F]
 
 theorem weighted_archPowerMajorant_integrable (ν : Measure ℂˣ) [ν.IsHaarMeasure]
@@ -28,6 +26,3 @@ theorem weighted_archPowerMajorant_integrable (ν : Measure ℂˣ) [ν.IsHaarMea
   rw [← Real.rpow_add hz2 s (1 / 4 : ℝ), ← Real.rpow_add hz2 s (-B)]
   rw [← Real.rpow_natCast ‖z.val‖ 2, ← Real.rpow_mul hz.le, ← Real.rpow_mul hz.le]
   congr 2 <;> ring
-
-end
-end DedekindZetaZeroFree.ThetaRawSheetEnvelope.WeightedWhittakerSheets

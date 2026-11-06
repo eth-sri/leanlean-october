@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.LocalMellin.BallShellPo
 
 @[expose] public section
 
-noncomputable section
 
 namespace DedekindZetaZeroFree.KPRankOneBetaUnramified.ShellIntegrals
 
@@ -36,7 +35,3 @@ theorem geometric_shell_integral {K : Type*} [MeasurableSpace K]
   simp_rw [setIntegral_congr_fun (hm _) (hval _), setIntegral_const,
     hmass, Complex.real_smul]
   exact tsum_mul_left
-
-end DedekindZetaZeroFree.KPRankOneBetaUnramified.ShellIntegrals
-
-end

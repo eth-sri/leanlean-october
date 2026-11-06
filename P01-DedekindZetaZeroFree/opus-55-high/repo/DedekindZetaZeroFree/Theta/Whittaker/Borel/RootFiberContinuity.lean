@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Theta.Whittaker.Borel.RootFibersAndHaar
 
 @[expose] public section
 
-noncomputable section
 open scoped NumberField
 open NumberField IsDedekindDomain
 
@@ -115,8 +114,4 @@ theorem rawBorelRootFiber_continuous
   apply (QuotientAddGroup.isQuotientMap_mk R).continuous_iff.mpr
   change Continuous (fun z : A => rawBorelRootFiber F ζ hζ θ b (QuotientAddGroup.mk z))
   simp_rw [hfiber]
-  exact hcont.comp (hN.mul continuous_const)
-
-end DedekindZetaZeroFree.KPWildKernelSource
-
-end
+  fun_prop

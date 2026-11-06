@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.Analysis.Sobolev.Mollification.L2Convergence
 
 @[expose] public section
 
-noncomputable section
 
 namespace DedekindZetaZeroFree.KPCompactInteriorH1
 
@@ -101,7 +100,3 @@ theorem exists_nonequivariant_h1_sequence {n r : ℕ}
       apply integral_congr_ae
       filter_upwards with x
       rw [(hmoll m).2.2.2 x j]
-
-end DedekindZetaZeroFree.KPCompactInteriorH1
-
-end

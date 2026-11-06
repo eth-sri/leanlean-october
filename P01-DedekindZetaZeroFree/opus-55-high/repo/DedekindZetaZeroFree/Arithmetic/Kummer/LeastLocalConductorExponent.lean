@@ -6,7 +6,6 @@ public import DedekindZetaZeroFree.Arithmetic.Kummer.LocalNormCharacter
 
 namespace DedekindZetaZeroFree.RMKummerLeastLocalExponent
 
-noncomputable section
 open scoped NumberField Classical
 open IsDedekindDomain
 
@@ -29,8 +28,8 @@ theorem finiteExponent_eq_ord (F : Type) [Field F] [NumberField F]
     (v : HeightOneSpectrum (𝓞 F)) :
     (M F (RMKummerConductor.m F h12 x)
       (RMKummerConductor.m_ne_bot F h12 x)).finitePart v =
-      idealPrimeExponent v.asIdeal (RMKummerConductor.m F h12 x) := by
-  exact M_finitePart F (RMKummerConductor.m F h12 x) (RMKummerConductor.m_ne_bot F h12 x) v
+      idealPrimeExponent v.asIdeal (RMKummerConductor.m F h12 x) := 
+  M_finitePart F (RMKummerConductor.m F h12 x) (RMKummerConductor.m_ne_bot F h12 x) v
 
 theorem lambda_trivial_on_conductor_units (F : Type) [Field F] [NumberField F]
     (h12 : (primitiveRoots 12 F).Nonempty) (x : Fˣ)
@@ -55,7 +54,7 @@ theorem lambda_nontrivial_below_conductor (F : Type) [Field F] [NumberField F]
     intro hh
     have h2 := (finiteExponent_isLeast F h12 x v).2 hh
     rw [finiteExponent_eq_ord F h12 x v] at h2
-    exact absurd h2 (not_le.mpr hk)
+    omega
   obtain ⟨t, ht, htk⟩ := Set.not_subset.mp hnot
   exact ⟨t, ht, htk⟩
 
@@ -64,6 +63,3 @@ theorem higherUnitGroup_zero (F : Type) [Field F] [NumberField F]
     ClassFieldTheory.rayLocalHigherUnitGroup v 0 =
       (v.adicCompletionIntegers F).units :=
   ClassFieldTheory.rayLocalHigherUnitGroup_zero v
-
-end
-end DedekindZetaZeroFree.RMKummerLeastLocalExponent

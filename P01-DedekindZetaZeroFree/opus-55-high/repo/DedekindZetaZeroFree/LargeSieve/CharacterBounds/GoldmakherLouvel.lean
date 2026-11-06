@@ -31,12 +31,11 @@ theorem goldmakherLouvel :
     refine ⟨C, hC, ?_⟩
     intro M N hM hN lam
     have hB1 : Sieve.B1 F 𝔠 𝓕 M N ≤ C * (M * N) ^ δ * (M + N) := by
-      have h := hCb M N hM hN
-      simpa [Real.rpow_one] using h
+      simp_all
     have hQ := Sieve.Q1_le_B1_mul_energy 𝓕 M N lam
     have henergy : 0 ≤ Sieve.energy F 𝔠 N lam := by
       simp only [Sieve.energy]
-      exact Finset.sum_nonneg fun b _ => by positivity
+      positivity
     calc
       (∑ 𝔞 ∈ Sieve.paperShell F 𝔠 M,
           ‖∑ 𝔟 ∈ Sieve.paperShell F 𝔠 N, lam 𝔟 * (𝓕.χ 𝔟) 𝔞‖ ^ 2)
@@ -48,5 +47,3 @@ theorem goldmakherLouvel :
       _ = C * (M * N) ^ δ * (M + N) * Sieve.energy F 𝔠 N lam := by ring
   obtain ⟨D, _hD, hD⟩ := Sieve.shell_bound_to_target_finsum F 𝔠 𝓕 hShell ε hε
   exact ⟨D, hD⟩
-
-end DedekindZetaZeroFree.LargeSieve

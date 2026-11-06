@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Frobenius action remainders
 
@@ -108,14 +103,11 @@ theorem frobeniusQuotientAction_fixedFieldInclusion (D : DegreeData G)
   let k : K.field.toSubgroup := Quotient.out σ.1
   have hσk : σ.1 = QuotientGroup.mk k := (Quotient.out_eq' σ.1).symm
   have hσClosure : σ.1 ∈
-      (D.frobeniusClosure K L hLK σ).toSubgroup := by
-    exact Subgroup.le_topologicalClosure _
+      (D.frobeniusClosure K L hLK σ).toSubgroup := 
+    Subgroup.le_topologicalClosure _
       (Subgroup.subset_closure (by simp))
   have hkFixed : k ∈ D.frobeniusFixedSubgroupWithin K L hLK σ := by
-    change QuotientGroup.mk k ∈
-      (D.frobeniusClosure K L hLK σ).toSubgroup
-    rw [← hσk]
-    exact hσClosure
+    simp_all
   rw [← D.extensionSubgroup_frobeniusFixedField K L hLK σ] at hkFixed
   obtain ⟨s, hs⟩ := hkFixed
   rw [hσk]
@@ -316,9 +308,7 @@ theorem conjugate_frobeniusFixedField_actionConjugate
           (fun z : K.field.toSubgroup =>
             (QuotientGroup.mk z :
               K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK)) hyK
-      rw [hyKq]
-      rw [← hσ']
-      exact htClosure'
+      simp_all
     exact ⟨yK, by simpa [DegreeData.frobeniusClosure] using hyClosure', by simp [yK]⟩
 
 end DegreeData
@@ -422,11 +412,3 @@ theorem frobeniusActionRemainder_apply_fixedField (D : DegreeData G)
   change B.ρ (φ.1 ^ D.frobeniusExponent K L hLK σ) (B.ρ σ.1⁻¹ aI) =
     B.ρ (φ.1 ^ D.frobeniusExponent K L hLK σ) aI
   rw [hinv]
-
-end DegreeData
-
-end fixedFieldRemainderActions
-
-end
-
-end ClassFormation

@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # The quotient induced by a ray-class Artin map
 
@@ -40,7 +36,3 @@ def rayClassSubgroupQuotientEquiv
   (QuotientGroup.quotientMulEquivOfEq R.artin_ker.symm).trans
     (QuotientGroup.quotientKerEquivOfSurjective
       R.artin R.artin_surjective)
-
-end ClassFieldTheory
-
-end

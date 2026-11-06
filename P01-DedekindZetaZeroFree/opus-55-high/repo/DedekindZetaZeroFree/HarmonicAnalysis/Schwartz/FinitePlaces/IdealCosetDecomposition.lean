@@ -28,14 +28,14 @@ private lemma small {s : Set X} (hs : s ∈ 𝓝 (0 : X)) :
   have hh (v : S) : ∃ k : ℤ, {x : v.val.adicCompletion F | Valued.v x ≤ WithZero.exp (-k)} ⊆ t v := by
     obtain ⟨γ, hγ⟩ := Valued.mem_nhds_zero.mp (ht v)
     have hn : MonoidWithZeroHom.ValueGroup₀.embedding γ.val ≠ 0 := by
-      simpa using γ.ne_zero
+      simp
     obtain ⟨n, hn'⟩ := WithZero.exists_exp_neg_natCast_lt hn
     refine ⟨n, fun x hx => hγ ?_⟩
     rw [Set.mem_setOf_eq, Valuation.restrict_lt_iff_lt_embedding]
     exact hx.trans_lt hn'
   choose k hk using hh
   exact ⟨k, fun x hx => hts (fun v _ => hk v (hx v))⟩
-private lemma openBall (k : S → ℤ) (b : X) :
+lemma openBall (k : S → ℤ) (b : X) :
     IsOpen {x : X | ∀ v, Valued.v (x v - b v) ≤ WithZero.exp (-k v)} := by
   have ho (v : S) : IsOpen {x : v.val.adicCompletion F | Valued.v x ≤ WithZero.exp (-k v)} := by
     obtain ⟨a, ha⟩ := HeightOneSpectrum.valuedAdicCompletion_surjective F v.val (WithZero.exp (-k v))
@@ -44,8 +44,7 @@ private lemma openBall (k : S → ℤ) (b : X) :
       have ha0 : a = 0 := (Valued.v.restrict.map_eq_zero_iff).mp h
       exact WithZero.exp_ne_zero (ha.symm.trans (by simp [ha0]))
     convert Valued.isOpen_closedBall (v.val.adicCompletion F) hn using 1
-    ext x
-    simp only [Set.mem_setOf_eq, Valuation.restrict_le_iff, ha]
+    simp_all
   convert isOpen_iInter_of_finite (fun v : S => (ho v).preimage (by fun_prop : Continuous (fun x : X => x v - b v))) using 1
   ext x
   simp
@@ -65,7 +64,7 @@ private lemma uniform (φ : X → ℂ) (hl : IsLocallyConstant φ) (hc : HasComp
   have hh : (x, y) ∈ (fun p : X × X => p.2 - p.1) ⁻¹' s :=
     hk (fun v => by simpa only [Pi.sub_apply, Valuation.map_sub_swap] using h v)
   exact hse hh
-private lemma transBall (k : S → ℤ) (x y z : X)
+lemma transBall (k : S → ℤ) (x y z : X)
     (hxy : ∀ v, Valued.v (x v - y v) ≤ WithZero.exp (-k v))
     (hyz : ∀ v, Valued.v (y v - z v) ≤ WithZero.exp (-k v)) :
     ∀ v, Valued.v (x v - z v) ≤ WithZero.exp (-k v) := by
@@ -104,14 +103,14 @@ theorem exists_uniform_ball_expansion
   have hf : (q '' tsupport φ).Finite :=
     isCompact_iff_finite.mp (hsupport.image hql.continuous)
   let t := hf.toFinset
-  have hmem (x : ((v : S) → v.val.adicCompletion F)) (hx : φ x ≠ 0) : q x ∈ t := by
-    exact hf.mem_toFinset.mpr ⟨x, subset_tsupport φ hx, rfl⟩
+  have hmem (x : ((v : S) → v.val.adicCompletion F)) (hx : φ x ≠ 0) : q x ∈ t := 
+    hf.mem_toFinset.mpr ⟨x, subset_tsupport φ hx, rfl⟩
   have heq (x : ((v : S) → v.val.adicCompletion F)) (j : Quotient r) :
       (∀ v : S, Valued.v (x v - j.out v) ≤ WithZero.exp (-k v)) ↔ q x = j := by
     change r.r x j.out ↔ _
     rw [← Quotient.eq]
     change q x = Quotient.mk r j.out ↔ q x = j
-    rw [Quotient.out_eq]
+    simp
   have hsum (x : ((v : S) → v.val.adicCompletion F)) : φ x = ∑ j : t, φ j.val.out *
       (if ∀ v : S, Valued.v (x v - j.val.out v) ≤ WithZero.exp (-k v) then (1 : ℂ) else 0) := by
     simp_rw [heq]
@@ -155,7 +154,7 @@ open NumberField IsDedekindDomain
 
 namespace DedekindZetaZeroFree.PoissonFinite.BallExpansion
 
-private theorem le_of_counts (F : Type) [Field F] [NumberField F]
+theorem le_of_counts (F : Type) [Field F] [NumberField F]
     (I J : FractionalIdeal (RingOfIntegers F)⁰ F) (hI : I ≠ 0) (hJ : J ≠ 0)
     (h : ∀ v, FractionalIdeal.count F v J ≤ FractionalIdeal.count F v I) : I ≤ J := by
   rw [← FractionalIdeal.finprod_heightOneSpectrum_factorization' F hI,
@@ -166,14 +165,14 @@ private theorem le_of_counts (F : Type) [Field F] [NumberField F]
           FractionalIdeal.count F v A) := by
     apply Set.Finite.subset (Filter.eventually_cofinite.mp (FractionalIdeal.finite_factors A))
     intro v hv hz
-    exact hv (by simp [hz])
+    simp_all
   apply finprod_le_finprod (hs I) (hs J)
   intro v
   apply zpow_le_zpow_right_of_le_one₀ _ _ (h v)
   · exact bot_lt_iff_ne_bot.mpr (FractionalIdeal.coeIdeal_ne_zero.mpr v.ne_bot)
   · exact FractionalIdeal.coeIdeal_le_one
 
-private theorem mem_iff_valuations (F : Type) [Field F] [NumberField F]
+theorem mem_iff_valuations (F : Type) [Field F] [NumberField F]
     (I : FractionalIdeal (RingOfIntegers F)⁰ F) (hI : I ≠ 0) (x : F) :
     x ∈ I ↔ ∀ v, v.valuation F x ≤ WithZero.exp (-FractionalIdeal.count F v I) := by
   by_cases hx : x = 0
@@ -194,9 +193,9 @@ private theorem mem_iff_valuations (F : Type) [Field F] [NumberField F]
   · intro h
     apply le_of_counts F P I hP hI
     intro v
-    simpa only [hv, WithZero.exp_le_exp, neg_le_neg_iff] using h v
+    simp_all
 
-private theorem count_ball (F : Type) [Field F] [NumberField F]
+theorem count_ball (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (RingOfIntegers F))) (k : S → ℤ)
     (w : HeightOneSpectrum (RingOfIntegers F)) :
     FractionalIdeal.count F w (∏ v : S,
@@ -236,7 +235,7 @@ private theorem mem_ball (F : Type) [Field F] [NumberField F]
     · simpa only [dif_pos hv] using h ⟨v, hv⟩
     · simpa only [dif_neg hv, neg_zero, WithZero.exp_zero] using m.property v hv
 
-private theorem exists_ball_center (F : Type) [Field F] [NumberField F]
+theorem exists_ball_center (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
     (k : S → ℤ) (b : (v : S) → v.val.adicCompletion F) :
     ∃ a : (S : Set (HeightOneSpectrum (RingOfIntegers F))).integer F,
@@ -293,10 +292,7 @@ private theorem exists_ball_center (F : Type) [Field F] [NumberField F]
       (multiplicity v.val.asIdeal (Ideal.span {d}) : ℤ))) =
       WithZero.exp (-(multiplicity v.val.asIdeal (Ideal.span {d}) : ℤ)) ^ t *
         WithZero.exp (-k v) := by
-    rw [← WithZero.exp_nsmul, ← WithZero.exp_add]
-    congr 1
-    simp only [nsmul_eq_mul]
-    ring
+    simp
   rw [hexp, ← hval] at hcr
   exact (mul_le_mul_iff_right₀ (pow_pos (bot_lt_iff_ne_bot.mpr WithZero.exp_ne_zero) t)).mp hcr
 
@@ -354,7 +350,7 @@ namespace DedekindZetaZeroFree.PoissonFinite.BallExpansion
 open scoped Topology
 open Set
 
-private theorem compact_support_periods {G : Type*} [AddCommGroup G] [TopologicalSpace G] [IsTopologicalAddGroup G]
+theorem compact_support_periods {G : Type*} [AddCommGroup G] [TopologicalSpace G] [IsTopologicalAddGroup G]
     (φ : G → ℂ) (hlocal : IsLocallyConstant φ) (hsupport : HasCompactSupport φ) :
     ∃ U : AddSubgroup G, IsOpen (U : Set G) ∧ ∀ u ∈ U, ∀ x, φ (u + x) = φ x := by
   let U : AddSubgroup G :=
@@ -366,16 +362,14 @@ private theorem compact_support_periods {G : Type*} [AddCommGroup G] [Topologica
       neg_mem' := by
         intro u hu x
         simpa using (hu (-u + x)).symm }
-  have hn : IsOpen {p : G × G | φ (p.1 + p.2) = φ p.2} := by
-    exact ((hlocal.comp_continuous (continuous_fst.add continuous_snd)).prodMk
+  have hn : IsOpen {p : G × G | φ (p.1 + p.2) = φ p.2} := 
+    ((hlocal.comp_continuous (continuous_fst.add continuous_snd)).prodMk
       (hlocal.comp_continuous continuous_snd)) {q : ℂ × ℂ | q.1 = q.2}
   obtain ⟨V, W, hVo, hWo, h0V, hKW, hVW⟩ :=
     generalized_tube_lemma (isCompact_singleton (x := (0 : G))) hsupport.isCompact hn
       (by
         intro p hp
-        have hp0 : p.1 = 0 := hp.1
-        change φ (p.1 + p.2) = φ p.2
-        rw [hp0, zero_add])
+        simp_all)
   have h0 : (0 : G) ∈ V := h0V (by simp)
   have hN : V ∩ (fun u : G => -u) ⁻¹' V ∈ 𝓝 (0 : G) :=
     (hVo.inter (hVo.preimage continuous_neg)).mem_nhds (by simpa using And.intro h0 h0)
@@ -396,8 +390,8 @@ theorem exists_open_period_subgroup
     (φ : ((v : S) → v.val.adicCompletion F) → ℂ) (hlocal : IsLocallyConstant φ)
     (hsupport : HasCompactSupport φ) :
     ∃ U : AddSubgroup (((v : S) → v.val.adicCompletion F)), IsOpen (U : Set (((v : S) → v.val.adicCompletion F))) ∧
-      ∀ u ∈ U, ∀ x : ((v : S) → v.val.adicCompletion F), φ (u + x) = φ x := by
-  exact compact_support_periods φ hlocal hsupport
+      ∀ u ∈ U, ∀ x : ((v : S) → v.val.adicCompletion F), φ (u + x) = φ x := 
+  compact_support_periods φ hlocal hsupport
 
 end DedekindZetaZeroFree.PoissonFinite.BallExpansion
 
@@ -428,9 +422,7 @@ theorem isCompact_phase_annihilator
     simp only [Set.setOf_forall]
     refine isClosed_iInter fun u => isClosed_iInter fun _ => ?_
     apply isClosed_eq _ continuous_const
-    exact continuous_finset_prod _ fun v _ =>
-      (continuous_subtype_val.comp (he v)).comp
-        (continuous_const.mul (continuous_apply v))
+    fun_prop
   have hcompact : IsCompact {y : ((v : S) → v.val.adicCompletion F) |
       ∀ v, y v ∈ Metric.closedBall 0 (‖t v‖ / ε)} :=
     isCompact_pi_infinite fun v => isCompact_closedBall _ _
@@ -643,12 +635,3 @@ theorem fourierIntegral_hasCompactSupport_of_period (S : Finset (HeightOneSpectr
   intro y hy u hu
   by_contra hne
   exact hy (fourierIntegral_eq_zero_of_period F S e μ φ u y (hperiod u hu) hne)
-
-end Fourier
-
-end PoissonFinite
-end DedekindZetaZeroFree
-
-end
-
-end

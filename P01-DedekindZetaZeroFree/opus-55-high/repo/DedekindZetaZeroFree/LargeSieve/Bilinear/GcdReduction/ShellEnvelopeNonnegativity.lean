@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.LargeSieve.Bilinear.GcdTailAndMaskedShellBoun
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.LargeSieve.Sieve.GcdReduction
 open scoped NumberField Classical
 
@@ -16,7 +15,3 @@ theorem envelope_nonneg
     0 ≤ B2env F c Q W M X K := by
   unfold B2env
   exact Real.sSup_nonneg' ⟨0, Or.inl (Or.inl rfl), le_rfl⟩
-
-end DedekindZetaZeroFree.LargeSieve.Sieve.GcdReduction
-
-end

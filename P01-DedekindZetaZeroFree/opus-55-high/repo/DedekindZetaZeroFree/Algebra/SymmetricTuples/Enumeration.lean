@@ -23,14 +23,6 @@ License: vendor root LICENSE.
 -/
 
 namespace Sym
-
-variable {X Y : Type*} {d e : ℕ}
-
-@[simp]
-theorem map_append (f : X → Y) (s : Sym X d) (t : Sym X e) :
-    Sym.map f (s.append t) = (Sym.map f s).append (Sym.map f t) :=
-  Subtype.ext <| by simp [Multiset.map_add]
-
 end Sym
 
 namespace DedekindZetaZeroFree.TauCeti
@@ -49,14 +41,9 @@ theorem coe_ofFn (f : Fin n → α) : (ofFn f : Multiset α) = ↑(List.ofFn f) 
 theorem count_coe_ofFn [DecidableEq α] (f : Fin n → α) (a : α) :
     Multiset.count a (ofFn f : Multiset α) = (Finset.univ.filter fun i => f i = a).card := by
   have hmap : (ofFn f : Multiset α) = Multiset.map f Finset.univ.val := by
-    simp [List.ofFn_eq_map, Finset.val_univ_fin]
+    simp
   rw [hmap, Multiset.count_map, ← Finset.filter_val, Finset.card_val]
   simp only [eq_comm]
-
-@[simp]
-theorem mem_ofFn {a : α} {f : Fin n → α} : a ∈ ofFn f ↔ ∃ i, f i = a := by
-  rw [← _root_.Sym.mem_coe, coe_ofFn]
-  simp
 
 theorem ofFn_surjective : Function.Surjective (ofFn : (Fin n → α) → Sym α n) := by
   rintro ⟨s, hs⟩
@@ -64,19 +51,6 @@ theorem ofFn_surjective : Function.Surjective (ofFn : (Fin n → α) → Sym α 
   have hlen : l.length = n := by simpa using hs
   subst hlen
   exact ⟨l.get, Subtype.ext (by simp)⟩
-
-@[simp]
-theorem ofFn_cons (a : α) (f : Fin n → α) : ofFn (Fin.cons a f) = a ::ₛ ofFn f :=
-  Subtype.ext <| by simp [Sym.coe_cons, List.ofFn_succ]
-
-@[simp]
-theorem map_ofFn (f : α → β) (g : Fin n → α) : Sym.map f (ofFn g) = ofFn (f ∘ g) :=
-  Sym.coe_injective <| by simp [Sym.coe_map]
-
-@[simp]
-theorem ofFn_fin_append (f : Fin m → α) (g : Fin n → α) :
-    ofFn (Fin.append f g) = (ofFn f).append (ofFn g) :=
-  Sym.coe_injective <| by simp [Sym.coe_append, List.ofFn_fin_append]
 
 theorem ofFn_comp_perm (σ : Equiv.Perm (Fin n)) (f : Fin n → α) : ofFn (f ∘ σ) = ofFn f :=
   Sym.coe_injective <| by simpa using Multiset.coe_eq_coe.2 (σ.ofFn_comp_perm f)
@@ -102,13 +76,7 @@ noncomputable def symFinTwoEquiv (d : ℕ) : Sym (Fin 2) d ≃ Fin (d + 1) :=
         (Finset.Nat.antidiagonalEquivFin d)
 
 @[simp]
-theorem coe_symFinTwoEquiv_apply (d : ℕ) (s : Sym (Fin 2) d) :
-    (symFinTwoEquiv d s : ℕ) = Multiset.count 0 (s : Multiset (Fin 2)) := (rfl)
-
-@[simp]
 theorem coe_symFinTwoEquiv_symm_apply (d : ℕ) (i : Fin (d + 1)) :
     (((symFinTwoEquiv d).symm i : Sym (Fin 2) d) : Multiset (Fin 2))
       = Multiset.replicate (i : ℕ) 0 + Multiset.replicate (d - (i : ℕ)) 1 := by
   simp [symFinTwoEquiv, Fin.sum_univ_two, Multiset.nsmul_singleton]
-
-end DedekindZetaZeroFree.TauCeti

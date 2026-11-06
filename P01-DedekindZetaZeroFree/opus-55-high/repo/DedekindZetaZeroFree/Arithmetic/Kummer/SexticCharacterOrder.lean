@@ -8,7 +8,7 @@ open scoped NumberField
 open IsDedekindDomain
 
 namespace DedekindZetaZeroFree.Detector.Conductor
-private theorem no_real (F : Type) [Field F] [NumberField F]
+theorem no_real (F : Type) [Field F] [NumberField F]
     (ζ : F) (hζ : IsPrimitiveRoot ζ 12) : IsEmpty (F →+* ℝ) := by
   constructor
   intro φ
@@ -18,9 +18,9 @@ private theorem no_real (F : Type) [Field F] [NumberField F]
     have he' : ((φ ζ)^2)^6 = 1^6 := by simpa [← pow_mul] using he
     exact (pow_left_inj₀ (sq_nonneg _) (by norm_num) (by norm_num : (6:ℕ) ≠ 0)).mp he'
   have hd := h.dvd_of_pow_eq_one 2 hs
-  norm_num at hd
+  omega
 
-private theorem support_finite (F : Type) [Field F] [NumberField F] (u : Fˣ) :
+theorem support_finite (F : Type) [Field F] [NumberField F] (u : Fˣ) :
     {v : HeightOneSpectrum (𝓞 F) | v.valuation F (u : F) ≠ 1}.Finite := by
   apply ((HeightOneSpectrum.Support.finite (𝓞 F) (u : F)).union
     (HeightOneSpectrum.Support.finite (𝓞 F) ((u : F)⁻¹))).subset
@@ -32,7 +32,7 @@ private theorem support_finite (F : Type) [Field F] [NumberField F] (u : Fˣ) :
     exact (one_lt_inv₀ (lt_of_le_of_ne bot_le (Ne.symm (by simpa using (Units.ne_zero (Units.map (v.valuation F).toMonoidWithZeroHom.toMonoidHom u)))))).mpr h
   · exact Or.inl h
 
-private theorem prime_coprime (F : Type) [Field F] [NumberField F]
+theorem prime_coprime (F : Type) [Field F] [NumberField F]
     (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
     (v : HeightOneSpectrum (𝓞 F))
     (hv : v ∉ (RayClassBridge.narrowIdealModulus F m hm).finitePart.support) :
@@ -119,4 +119,3 @@ theorem global_kummer_sixth_power
   change (R (P d) : ℂ) ^ 6 = 1 at hx
   rw [hd] at hx
   simpa [c, R, RayClassBridge.rayCharacter_integral] using hx
-end DedekindZetaZeroFree.Detector.Conductor

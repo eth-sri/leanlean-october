@@ -8,7 +8,6 @@ open scoped NumberField Classical
 
 noncomputable section
 namespace DedekindZetaZeroFree.CorrectionFactors
-set_option autoImplicit false
 
 open LocalFiniteSums
 open Filter Set Metric
@@ -22,8 +21,8 @@ private theorem normal_holomorphic {ι : Type*} (g : ι → Coordinates → ℂ)
   obtain ⟨r, hr, hsub⟩ := Metric.nhds_basis_closedBall.mem_iff.mp (hU.mem_nhds hx)
   obtain ⟨M, hMs, hMb⟩ := hM (closedBall x r) hsub (isCompact_closedBall x r)
   have hhalf : 0 < r / 2 := by positivity
-  have hinside {y : Coordinates} (hy : y ∈ ball x (r / 2)) : y ∈ closedBall x r := by
-    exact ball_subset_closedBall (ball_subset_ball (by linarith) hy)
+  have hinside {y : Coordinates} (hy : y ∈ ball x (r / 2)) : y ∈ closedBall x r := 
+    ball_subset_closedBall (ball_subset_ball (by linarith) hy)
   have hderiv : ∀ i y, y ∈ ball x (r / 2) → ‖fderiv ℂ (g i) y‖ ≤ (4 / r) * M i := by
     intro i y hy
     have hball : ball y (r / 2) ⊆ closedBall x r := by
@@ -69,7 +68,7 @@ private lemma norm_qPower (p : ExteriorPrime A) (s : ℂ) :
 private lemma norm_vartheta (C : A.GeneralArithmeticContext σ η hS)
     (p : ExteriorPrime A) : ‖vartheta C p‖ = 1 := by
   rw [vartheta]
-  exact Circle.norm_coe _
+  simp
 
 private lemma norm_gammaTwo (C : A.GeneralArithmeticContext σ η hS)
     (p : ExteriorPrime A) : ‖gammaTwo C p‖ ≤ 1 := by
@@ -77,7 +76,7 @@ private lemma norm_gammaTwo (C : A.GeneralArithmeticContext σ η hS)
   exact NormalizedProbe.PrincipalData.norm_idealGauss_le_one A σ hS (primeIdeal p)
     (generator C p) (generator_generates C p) 2
 
-private lemma region_lower (x : Coordinates) (hx : x ∈ Omega) :
+lemma region_lower (x : Coordinates) (hx : x ∈ Omega) :
     (99799 / 100000 : ℝ) < x.1.re ∧ (299 / 100000 : ℝ) < x.2.1.re ∧
       (15999 / 100000 : ℝ) < x.2.2.re := by
   rcases hx with h | h <;> rcases h with ⟨ha, hb, hc⟩ <;>
@@ -103,7 +102,7 @@ private lemma norm_series_le (C : A.GeneralArithmeticContext σ η hS)
   exact mul_le_mul_of_nonneg_right
     (mul_le_of_le_one_left (norm_nonneg _) he) (Real.rpow_nonneg (Q_pos p).le _)
 
-private lemma shell_bound (C : A.GeneralArithmeticContext σ η hS)
+lemma shell_bound (C : A.GeneralArithmeticContext σ η hS)
     (p : ExteriorPrime A) (t k J : ℕ) (ht : 0 < t) (hk : k ≤ 1) :
     ‖Ctk C p t k J‖ ≤ (Q p) ^ ((t : ℝ) + (k : ℝ) / 2) := by
   interval_cases k
@@ -111,7 +110,7 @@ private lemma shell_bound (C : A.GeneralArithmeticContext σ η hS)
       norm_Ctk_zero_le C p t J ht
   · simpa using norm_Ctk_one_le C p t J ht
 
-private lemma shell_exponent (e : Fin 2) (l k m : ℕ) (ht : 0 < e.val + 3 * l)
+lemma shell_exponent (e : Fin 2) (l k m : ℕ) (ht : 0 < e.val + 3 * l)
     (hk : k ≤ 1) (x : Coordinates) (hx : x ∈ Omega) :
     ((e.val + 3 * l : ℕ) : ℝ) + (k : ℝ) / 2 - (e.val : ℝ) * (1 / 2 + x.1.re) -
       (l : ℝ) * (1 + 3 * x.1.re) - (k : ℝ) * x.2.1.re - 6 * (m : ℝ) * x.2.2.re ≤
@@ -134,8 +133,8 @@ private lemma shell_exponent (e : Fin 2) (l k m : ℕ) (ht : 0 < e.val + 3 * l)
 
 private lemma ratio_pos : 0 < ratio := Real.rpow_pos_of_pos (by norm_num) _
 
-private lemma ratio_lt_one : ratio < 1 := by
-  exact Real.rpow_lt_one_of_one_lt_of_neg (by norm_num) (by norm_num)
+lemma ratio_lt_one : ratio < 1 := 
+  Real.rpow_lt_one_of_one_lt_of_neg (by norm_num) (by norm_num)
 
  def weight (i : Fin 2 × ℕ × ℕ × ℕ) : ℝ :=
   4 * ratio ^ i.2.1 * (1 / 2 : ℝ) ^ i.2.2.1 * ratio ^ i.2.2.2
@@ -152,9 +151,9 @@ private lemma weight_summable : Summable weight := by
   have hh : Summable (fun n : ℕ => (1 / 2 : ℝ) ^ n) :=
     summable_geometric_of_lt_one (by norm_num) (by norm_num)
   have hkm := hh.mul_of_nonneg hr (fun n => by positivity) (fun n => by positivity)
-  have hlkm := hr.mul_of_nonneg hkm (fun n => by positivity) (fun n => by dsimp; positivity)
+  have hlkm := hr.mul_of_nonneg hkm (fun n => by positivity) (fun n => by positivity)
   have h := (Summable.of_finite : Summable (fun _ : Fin 2 => (4 : ℝ))).mul_of_nonneg hlkm
-    (fun _ => by norm_num) (fun n => by dsimp; positivity)
+    (fun _ => by norm_num) (fun n => by positivity)
   change Summable (fun i : Fin 2 × ℕ × ℕ × ℕ =>
     4 * ratio ^ i.2.1 * (1 / 2 : ℝ) ^ i.2.2.1 * ratio ^ i.2.2.2)
   simpa only [mul_assoc] using h
@@ -219,20 +218,17 @@ private lemma zero_term (C : A.GeneralArithmeticContext σ η hS)
       if k = 0 then V p x.2.2 ^ m else 0 := by
   by_cases hk : k = 0
   · subst k
-    simp only [seriesTerm, Fin.val_zero, pow_zero, Nat.mul_zero, Nat.add_zero,
-      Int.ofNat_zero, sub_zero, zero_sub, zpow_zero, one_mul, Ctk_zero_zero, zero_mul,
-      sub_self, sub_zero, if_true]
+    simp only [seriesTerm, Fin.val_zero, pow_zero, Nat.mul_zero, Nat.add_zero, Int.ofNat_zero, zero_sub, one_mul, Ctk_zero_zero, sub_self, if_true]
     rw [V, qPower, qPower, ← Complex.exp_nat_mul]
     norm_num only [mul_zero, neg_zero, zpow_zero, one_mul, mul_one, Nat.cast_zero,
       zero_mul, sub_zero, zero_sub]
     congr 1
-    push_cast
     ring
   · have hJ : j.val + 6 * m ≠ 0 := by omega
     unfold seriesTerm
     rw [show (0 : Fin 2).val + 3 * 0 = 0 by rfl,
       Ctk_zero_pos C p k _ (Nat.pos_of_ne_zero hk), if_neg hJ]
-    simp only [mul_zero, zero_mul, if_neg hk]
+    simp_all
 
 private lemma term_bound (C : A.GeneralArithmeticContext σ η hS)
     (p : ExteriorPrime A) (j : Fin 6) (hj : j.val ≠ 0)
@@ -244,13 +240,13 @@ private lemma term_bound (C : A.GeneralArithmeticContext σ η hS)
   · apply (positive_term_bound C p j θ _ _ _ _ ht x hx).trans
     exact mul_le_of_le_one_left (div_nonneg (weight_nonneg _) (by norm_num))
       (Real.rpow_le_one_of_one_le_of_nonpos (by linarith [two_le_Q p]) (by norm_num))
-  · have he : i.1 = 0 := Fin.ext (by simp; omega)
+  · have he : i.1 = 0 := Fin.ext (by omega)
     have hl : i.2.1 = 0 := by omega
     rw [he, hl, zero_term C p j hj θ]
     split_ifs with hk
     · rw [norm_pow]
       have h := pow_le_pow_left₀ (norm_nonneg _) (norm_V_bound p x hx) i.2.2.2
-      simp only [weight, he, hl, hk, pow_zero, mul_one]
+      simp only [weight, hl, hk, pow_zero, mul_one]
       nlinarith [pow_nonneg hr.le i.2.2.2]
     · simp only [norm_zero]
       exact div_nonneg (weight_nonneg _) (by norm_num)
@@ -289,7 +285,3 @@ theorem bad_factor_holomorphic (C : A.GeneralArithmeticContext σ η hS)
   have h := normal_holomorphic _ hg Omega isOpen_Omega
     (bad_factor_normal_majorants C p j hj θ)
   simpa only [badFactor, f, tsum_mul_left] using h
-
-end DedekindZetaZeroFree.CorrectionFactors
-
-end

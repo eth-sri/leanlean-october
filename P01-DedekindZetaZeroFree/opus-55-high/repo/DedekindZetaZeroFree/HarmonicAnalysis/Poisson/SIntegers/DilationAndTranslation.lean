@@ -13,19 +13,17 @@ open NumberField IsDedekindDomain MeasureTheory
 
 namespace DedekindZetaZeroFree.PoissonS.ScaleShift
 
-private theorem scalarAction_eq (F : Type) [Field F] [NumberField F]
+theorem scalarAction_eq (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (RingOfIntegers F))) (a : Fˣ) (x : Space F S) :
     scalarAction F S (a : F) x = Covolume.fieldDilation F S a x := by
   apply Prod.ext
   · apply (mixedEmbedding.euclidean.toMixed F).injective
-    simp only [scalarAction, Covolume.fieldDilation, PoissonArch.fieldMul,
-      PoissonArch.infiniteAdeleToSpace_coordinates, map_mul,
-      ContinuousLinearEquiv.apply_symm_apply]
+    simp only [scalarAction, Covolume.fieldDilation, PoissonArch.fieldMul, PoissonArch.infiniteAdeleToSpace_coordinates, map_mul]
     rw [← InfiniteAdeleRing.mixedEmbedding_eq_algebraMap_comp]
     rw [← PoissonArch.infiniteAdeleToSpace_coordinates]
     simp
   · rfl
-private theorem dilation_lattice (F : Type) [Field F] [NumberField F]
+theorem dilation_lattice (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (RingOfIntegers F))) (a : Fˣ) (c : F) :
     (lattice F S c).map (Covolume.fieldDilation F S a).toAddEquiv.toAddMonoidHom =
       lattice F S ((a : F) * c) := by
@@ -56,7 +54,6 @@ theorem tsum_scalar_lattice
       congr 1
       funext m
       congr 1
-      change scalarAction F S (a : F) (m : Space F S) = (e m : Space F S)
       rw [scalarAction_eq]
       rfl
     _ = _ := e.toEquiv.tsum_eq (fun m : lattice F S ((a : F) * c) => f m)
@@ -86,7 +83,7 @@ attribute [local instance] completionMeasurable completionBorel
         (ContinuousLinearEquiv.unitsEquivAut ℂ (a.map v.val.embedding)).restrictScalars ℝ))).trans
     (NumberField.mixedEmbedding.euclidean.toMixed F).symm
 
-private theorem archEquiv_apply (F : Type) [Field F] [NumberField F] (a : Fˣ)
+theorem archEquiv_apply (F : Type) [Field F] [NumberField F] (a : Fˣ)
     (x : PoissonArch.Space F) : archEquiv F a x = PoissonArch.fieldMul F (a : F) x := by
   apply (NumberField.mixedEmbedding.euclidean.toMixed F).injective
   simp only [archEquiv, PoissonArch.fieldMul, ContinuousLinearEquiv.trans_apply,
@@ -99,12 +96,12 @@ private theorem archEquiv_apply (F : Type) [Field F] [NumberField F] (a : Fˣ)
     v.adicCompletion F ≃ₜ v.adicCompletion F where
   toFun x := algebraMap F (v.adicCompletion F) (a : F) * x
   invFun x := algebraMap F (v.adicCompletion F) ((a⁻¹ : Fˣ) : F) * x
-  left_inv x := by simp [← mul_assoc, ← map_mul]
-  right_inv x := by simp [← mul_assoc, ← map_mul]
+  left_inv x := by simp
+  right_inv x := by simp
   continuous_toFun := continuous_const.mul continuous_id
   continuous_invFun := continuous_const.mul continuous_id
 
-private theorem local_fourier_scale (F : Type) [Field F] [NumberField F]
+theorem local_fourier_scale (F : Type) [Field F] [NumberField F]
     (v : HeightOneSpectrum (RingOfIntegers F))
     (e : AddChar (v.adicCompletion F) Circle)
     (μ : Measure (v.adicCompletion F)) [μ.IsAddHaarMeasure]
@@ -117,8 +114,7 @@ private theorem local_fourier_scale (F : Type) [Field F] [NumberField F]
   let c : (v.adicCompletion F)ˣ := a.map (algebraMap F (v.adicCompletion F))
   have hm := CompletionHaarModule.map_mul F v μ c
   have hn : ‖(c : v.adicCompletion F)‖ = FinitePlace.mk v (a : F) := by
-    change ‖FinitePlace.embedding v (a : F)‖ = _
-    rw [FinitePlace.mk_apply]
+    rfl
   have hc : 0 < FinitePlace.mk v (a : F) :=
     FinitePlace.pos_iff.mpr a.ne_zero
   have hi := integral_map_equiv (μ := μ) (localEquiv F v a).toMeasurableEquiv
@@ -126,8 +122,7 @@ private theorem local_fourier_scale (F : Type) [Field F] [NumberField F]
       ((a⁻¹ : Fˣ) : F) * y)) : ℂ))
   have hmap : Measure.map (localEquiv F v a) μ =
       ENNReal.ofReal ((FinitePlace.mk v (a : F))⁻¹) • μ := by
-    change Measure.map (fun x => (c : v.adicCompletion F) * x) μ = _
-    rw [hm, hn, ENNReal.ofReal_inv_of_pos hc]
+    aesop
   rw [(localEquiv F v a).toMeasurableEquiv_coe, hmap, integral_smul_measure,
     ENNReal.toReal_ofReal (inv_nonneg.mpr hc.le)] at hi
   have hp (x : v.adicCompletion F) :
@@ -136,11 +131,11 @@ private theorem local_fourier_scale (F : Type) [Field F] [NumberField F]
     calc
       _ = -(algebraMap F (v.adicCompletion F) (a : F) *
         algebraMap F (v.adicCompletion F) ((a⁻¹ : Fˣ) : F)) * (x * y) := by ring
-      _ = -x * y := by simp [← map_mul]
+      _ = -x * y := by simp
   change _ = ∫ x, φ (algebraMap F (v.adicCompletion F) (a : F) * x) *
     (e (-(algebraMap F (v.adicCompletion F) (a : F) * x) *
       (algebraMap F (v.adicCompletion F) ((a⁻¹ : Fˣ) : F) * y)) : ℂ) ∂μ at hi
-  simpa only [hp, Complex.real_smul, Complex.ofReal_inv] using hi.symm
+  simp_all
 
 theorem scalarAction_fst
     (F : Type) [Field F] [NumberField F]
@@ -156,8 +151,7 @@ theorem scalarAction_fst
     ← NumberField.InfiniteAdeleRing.mixedEmbedding_eq_algebraMap_comp]
   have hx := PoissonArch.infiniteAdeleToSpace_coordinates F
     ((PoissonArch.infiniteAdeleToSpace F).symm x.1)
-  rw [ContinuousLinearEquiv.apply_symm_apply] at hx
-  rw [← hx]
+  simp_all
 
 theorem scalar_pullback_tensor
     (F : Type) [Field F] [NumberField F]
@@ -211,10 +205,7 @@ theorem scalar_pullback_tensor
     have hmodule : ((productModule F S (a : F))⁻¹ : ℂ) =
         ((PoissonArch.fieldModule F (a : F))⁻¹ : ℂ) *
           ∏ v : S, ((FinitePlace.mk v.val (a : F))⁻¹ : ℂ) := by
-      simp only [productModule, ← Covolume.DilationArch.fieldModule_eq F,
-        mul_inv, Complex.ofReal_mul, Complex.ofReal_inv,
-        ← Finset.prod_inv_distrib, ← Complex.ofReal_prod,
-        Finset.prod_coe_sort]
+      simp only [productModule, ← Covolume.DilationArch.fieldModule_eq F, mul_inv, Complex.ofReal_mul]
       rw [← Finset.prod_coe_sort S (fun v => FinitePlace.mk v (a : F)),
         Complex.ofReal_prod, Finset.prod_inv_distrib]
     rw [hmodule]
@@ -277,7 +268,7 @@ theorem finite_components_locallyCompact
   letI : ∀ v : S, LocallyCompactSpace (v.val.adicCompletion F) := hv
   exact ⟨hv, inferInstance⟩
 
-private lemma char_local {K : Type*} [NormedField K] [IsUltrametricDist K]
+lemma char_local {K : Type*} [NormedField K] [IsUltrametricDist K]
     (e : AddChar K Circle) (he : Continuous e) : IsLocallyConstant e := by
   obtain ⟨r, hr, h⟩ := KPFiniteLocal.character_trivial_near_zero e he
   apply (IsLocallyConstant.iff_eventually_eq e).mpr
@@ -285,7 +276,7 @@ private lemma char_local {K : Type*} [NormedField K] [IsUltrametricDist K]
   filter_upwards [Metric.ball_mem_nhds x hr] with y hy
   have hyx : e (y-x) = 1 := h _ (by simpa [Metric.mem_ball, dist_eq_norm] using hy)
   have hz := e.map_add_eq_mul (y-x) x
-  simpa [hyx] using hz
+  simp_all
 
 theorem tensorFunction_shift_modulation_bruhatSchwartz
     (F : Type) [Field F] [NumberField F]
@@ -307,9 +298,7 @@ theorem tensorFunction_shift_modulation_bruhatSchwartz
     have hp' : (fun x : PoissonArch.Space F => Complex.exp
         (((2 * Real.pi * inner ℝ b.1 (PoissonArch.traceAdapter F x) : ℝ) : ℂ) * Complex.I)).HasTemperateGrowth := by
       apply Complex.hasTemperateGrowth_exp_mul_I.comp
-      exact (Function.HasTemperateGrowth.const (2 * Real.pi)).mul
-        ((Function.hasTemperateGrowth_inner_right b.1).comp
-          (PoissonArch.traceAdapter F).hasTemperateGrowth)
+      fun_prop
     convert hp' using 1
     funext x
     simp only [p, PoissonArch.tracePairing_eq_inner, Complex.ofReal_mul, Complex.ofReal_ofNat]
@@ -331,7 +320,7 @@ theorem tensorFunction_shift_modulation_bruhatSchwartz
       ψ, tracePhase, p, Prod.fst_add, Prod.snd_add, Pi.add_apply, Finset.prod_mul_distrib]
     ring
 
-private lemma phase_symm (F : Type) [Field F] [NumberField F]
+lemma phase_symm (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
     (e : (v : S) → AddChar (v.val.adicCompletion F) Circle)
     (x y : Space F S) : tracePhase F S e x y = tracePhase F S e y x := by
@@ -339,9 +328,7 @@ private lemma phase_symm (F : Type) [Field F] [NumberField F]
       PoissonArch.tracePairing F y.1 x.1 := by
     simp only [PoissonArch.tracePairing]
     congr 1
-    · apply Finset.sum_congr rfl
-      intro v hv
-      rw [mul_comm]
+    · grind
     · congr 1
       apply Finset.sum_congr rfl
       intro v hv
@@ -352,7 +339,7 @@ private lemma phase_symm (F : Type) [Field F] [NumberField F]
   apply Finset.prod_congr rfl
   intro v hv
   rw [mul_comm]
-private lemma phase_add_left (F : Type) [Field F] [NumberField F]
+lemma phase_add_left (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
     (e : (v : S) → AddChar (v.val.adicCompletion F) Circle)
     (x y z : Space F S) :
@@ -377,7 +364,7 @@ private lemma phase_add_left (F : Type) [Field F] [NumberField F]
     rw [add_mul, (e v).map_add_eq_mul, Circle.coe_mul]
   rw [hf]
   ring
-private lemma phase_neg_left (F : Type) [Field F] [NumberField F]
+lemma phase_neg_left (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
     (e : (v : S) → AddChar (v.val.adicCompletion F) Circle)
     (x y : Space F S) : tracePhase F S e (-x) y = (tracePhase F S e x y)⁻¹ := by
@@ -386,7 +373,7 @@ private lemma phase_neg_left (F : Type) [Field F] [NumberField F]
     PoissonArch.tracePairing_eq_inner, inner_neg_left, Complex.ofReal_neg, mul_neg,
     Complex.exp_neg, neg_mul, (e _).map_neg_eq_inv, Circle.coe_inv]
   rw [Finset.prod_inv_distrib, mul_inv]
-private lemma phase_zero_left (F : Type) [Field F] [NumberField F]
+lemma phase_zero_left (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
     (e : (v : S) → AddChar (v.val.adicCompletion F) Circle)
     (y : Space F S) : tracePhase F S e 0 y = 1 := by
@@ -396,7 +383,7 @@ private lemma phase_unit (F : Type) [Field F] [NumberField F]
     (e : (v : S) → AddChar (v.val.adicCompletion F) Circle)
     (x y : Space F S) : tracePhase F S e x y * tracePhase F S e (-x) y = 1 := by
   rw [← phase_add_left, add_neg_cancel, phase_zero_left]
-private lemma phase_add_right (F : Type) [Field F] [NumberField F]
+lemma phase_add_right (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
     (e : (v : S) → AddChar (v.val.adicCompletion F) Circle)
     (x y z : Space F S) :
@@ -458,10 +445,7 @@ theorem fourierIntegral_shift_modulation
     filter_upwards [] with x
     simp only [Prod.fst_neg, Prod.snd_neg, Pi.neg_apply, PoissonArch.tracePairing_eq_inner,
       inner_neg_left, Complex.ofReal_neg]
-    rw [← mul_assoc]
-    congr 2
-    congr 1
-    ring
+    grind
   rw [hFourier, hFourier, ← integral_const_mul]
   calc
     _ = ∫ x, tracePhase F S e (y-b) t *
@@ -683,9 +667,7 @@ private theorem localArchEquiv_abs_det (F : Type) [Field F] [NumberField F]
     apply (mixedEmbedding.euclidean.toMixed F).injective
     change (mixedEmbedding.euclidean.toMixed F) (localArchEquiv F d x) = _
     rw [localArchEquiv_apply]
-    simp only [PoissonArch.infiniteAdeleToSpace_coordinates, map_mul,
-      LinearMap.prodMap_apply, ContinuousLinearEquiv.coe_coe,
-      LinearMap.comp_apply, ContinuousLinearEquiv.apply_symm_apply]
+    simp only [PoissonArch.infiniteAdeleToSpace_coordinates, map_mul, LinearMap.prodMap_apply, LinearMap.comp_apply]
     have hx := PoissonArch.infiniteAdeleToSpace_coordinates F
       ((PoissonArch.infiniteAdeleToSpace F).symm x)
     rw [ContinuousLinearEquiv.apply_symm_apply] at hx
@@ -773,20 +755,19 @@ theorem traceFourier_local_unit_scale (F : Type) [Field F] [NumberField F]
     ∫ x, g (A.symm x) ∂(volume : Measure (PoissonArch.Space F)) at hi
   simp_rw [hp] at hi
   unfold PoissonArch.traceFourier PoissonArch.traceMeasure
-  simp only [integral_smul_measure, ENNReal.toReal_ofReal (PoissonArch.haarScalar_pos F).le,
-    smul_eq_mul]
+  simp only [integral_smul_measure, ENNReal.toReal_ofReal (PoissonArch.haarScalar_pos F).le]
   rw [← hi]
   simp only [g, A, localArchEquiv_apply, Complex.real_smul]
   ring
 
 private lemma norm_pow (F : Type) [Field F] [NumberField F] (v : HeightOneSpectrum (RingOfIntegers F))
     (d : (v.adicCompletion F)ˣ) : ∃ k : ℤ, ‖d.val‖ = (v.asIdeal.absNorm : ℝ)^(-k) := by
-  have hd : Valued.v d.val ≠ (0 : WithZero (Multiplicative ℤ)) := by
-    exact (Valued.v.map_eq_zero_iff).not.mpr d.ne_zero
+  have hd : Valued.v d.val ≠ (0 : WithZero (Multiplicative ℤ)) := 
+    (Valued.v.map_eq_zero_iff).not.mpr d.ne_zero
   refine ⟨-WithZero.log (Valued.v d.val), ?_⟩
   rw [FinitePlace.norm_def, WithZeroMulInt.toNNReal_neg_apply _ hd, neg_neg]
   simp
-private lemma ballfacts (F : Type) [Field F] [NumberField F]
+lemma ballfacts (F : Type) [Field F] [NumberField F]
     (v : HeightOneSpectrum (RingOfIntegers F))
     (μv : Measure (v.adicCompletion F)) [μv.IsAddHaarMeasure] :
     0 < μv {x | ‖x‖ ≤ 1} ∧ μv {x | ‖x‖ ≤ 1} ≠ ⊤ := by
@@ -799,7 +780,7 @@ private lemma ballfacts (F : Type) [Field F] [NumberField F]
     simpa [Metric.closedBall, dist_zero_right] using
       (isCompact_closedBall (0 : v.adicCompletion F) (1 : ℝ))
   exact ⟨ho.measure_pos μv ⟨0, by simp⟩, hc.measure_lt_top.ne⟩
-private lemma generic_ball_mass (F : Type) [Field F] [NumberField F]
+lemma generic_ball_mass (F : Type) [Field F] [NumberField F]
     (v : HeightOneSpectrum (RingOfIntegers F))
     (μv : Measure (v.adicCompletion F)) [μv.IsAddHaarMeasure] (k : ℤ) :
     μv.real {x | ‖x‖ ≤ (v.asIdeal.absNorm : ℝ)^(-k)} =
@@ -809,8 +790,8 @@ private lemma generic_ball_mass (F : Type) [Field F] [NumberField F]
   have hm : 0 < m := integerVolume_pos F v
   have hU := ballfacts F v μv
   let c : ENNReal := ENNReal.ofReal m / μv U
-  have hc0 : c ≠ 0 := by
-    exact ENNReal.div_ne_zero.mpr ⟨by simpa using hm, hU.2⟩
+  have hc0 : c ≠ 0 := 
+    ENNReal.div_ne_zero.mpr ⟨by simpa using hm, hU.2⟩
   have hctop : c ≠ ⊤ := by
     apply ENNReal.div_ne_top ENNReal.ofReal_ne_top hU.1.ne'
   let ν : Measure (v.adicCompletion F) := c • μv
@@ -861,8 +842,8 @@ theorem finite_unit_integral_scale (F : Type) [Field F] [NumberField F]
     · intro h
       have hh := mul_le_mul_of_nonneg_left h (norm_nonneg (d⁻¹).val)
       nlinarith [hi]
-  have hUm : MeasurableSet U := by
-    exact (isClosed_le continuous_norm continuous_const).measurableSet
+  have hUm : MeasurableSet U := 
+    (isClosed_le continuous_norm continuous_const).measurableSet
   have hmass : ν.real U = ‖d.val‖ * μv.real U := by
     change ((μv.map A) U).toReal = _
     rw [Measure.map_apply (show Measurable A from A.continuous.measurable) hUm, hpre]
@@ -935,9 +916,3 @@ theorem fourierIntegral_local_dilation
   rw [Finset.prod_mul_distrib]
   simp only [localDilationModule, Complex.ofReal_mul, Complex.ofReal_prod]
   ring
-
-end DedekindZetaZeroFree.PoissonS
-
-end
-
-end

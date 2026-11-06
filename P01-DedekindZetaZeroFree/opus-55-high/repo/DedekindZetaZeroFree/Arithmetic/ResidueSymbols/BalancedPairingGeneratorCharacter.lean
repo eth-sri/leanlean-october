@@ -39,5 +39,3 @@ theorem balancedPairingGeneratorChar_primitive (B : R → M → ℂ)
   change B x (r • z) = 1
   rw [← hbalanced r x z]
   exact hJ (r * x) (J.mul_mem_left r hx)
-
-end DedekindZetaZeroFree.Hecke

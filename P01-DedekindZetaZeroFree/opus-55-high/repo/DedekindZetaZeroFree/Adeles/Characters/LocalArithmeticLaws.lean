@@ -8,12 +8,11 @@ open scoped NumberField Classical
 open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.SArithmeticData.GaussCorrection
 noncomputable section
-set_option autoImplicit false
 variable {F : Type} [Field F] [NumberField F]
 
 open Filter Topology
 
-private lemma pow_near_one {K : Type*} [NormedField K] [IsUltrametricDist K]
+lemma pow_near_one {K : Type*} [NormedField K] [IsUltrametricDist K]
     (x : K) (hx : ‖x - 1‖ < 1) (n : ℕ) : ‖x ^ n - 1‖ ≤ ‖x - 1‖ := by
   have hnorm : ‖x‖ ≤ 1 := by
     have h := IsUltrametricDist.norm_add_le_max (x - 1) (1 : K)
@@ -27,7 +26,7 @@ private lemma pow_near_one {K : Type*} [NormedField K] [IsUltrametricDist K]
     rw [norm_mul]
     exact (mul_le_mul_of_nonneg_left hnorm (norm_nonneg _)).trans (by simpa using ih)
 
-private lemma local_circle_character {K : Type*} [NormedField K] [IsUltrametricDist K]
+lemma local_circle_character {K : Type*} [NormedField K] [IsUltrametricDist K]
     (Φ : Kˣ →* Circle) (hc : Continuous Φ) : IsLocallyConstant Φ := by
   have harc : (1 : Circle) ∈ Circle.centeredArc (Real.pi / 2) := by
     rw [Circle.mem_centeredArc (by linarith [Real.pi_pos])]
@@ -58,7 +57,7 @@ private lemma local_circle_character {K : Type*} [NormedField K] [IsUltrametricD
     have h := hkill (t * z⁻¹) ht
     simpa only [map_mul, map_inv, mul_inv_eq_one] using h
 
-private lemma continuous_ideleClassGroup_ofAdicCompletion (v : HeightOneSpectrum (𝓞 F)) :
+lemma continuous_ideleClassGroup_ofAdicCompletion (v : HeightOneSpectrum (𝓞 F)) :
     Continuous (NumberField.IdeleClassGroup.ofAdicCompletion (𝓞 F) F v) := by
   apply continuous_quot_mk.comp
   apply Continuous.units_map
@@ -211,7 +210,7 @@ theorem outside_units_trivial (A : SArithmeticData F)
   (∏ w : InfinitePlace F, Units.map (NumberField.AdeleRing.ofCompletion (𝓞 F) F w) (y.1 w)) *
     ∏ v : {v // v ∈ A.Sf}, Units.map (NumberField.AdeleRing.ofAdicCompletion (𝓞 F) F v.val) (y.2 v)
 
-private lemma sIdele_infinite (A : SArithmeticData F) (y : A.G) (w : InfinitePlace F) :
+lemma sIdele_infinite (A : SArithmeticData F) (y : A.G) (w : InfinitePlace F) :
     (sIdele A y).val.1 w = (y.1 w : w.Completion) := by
   classical
   have hval : (sIdele A y).val =
@@ -226,11 +225,10 @@ private lemma sIdele_infinite (A : SArithmeticData F) (y : A.G) (w : InfinitePla
     rfl
   have hf : (∏ i : {v // v ∈ A.Sf}, AdeleRing.ofAdicCompletion (𝓞 F) F i.val ↑(y.2 i)).1 = 1 := by
     erw [Prod.fst_prod]
-    change (∏ i : {v // v ∈ A.Sf}, (1 : InfiniteAdeleRing F)) = 1
     simp
   erw [Prod.fst_mul, hi, hf, mul_one, Finset.univ_prod_mulSingle]
 
-private lemma sIdele_finite (A : SArithmeticData F) (y : A.G) (v : HeightOneSpectrum (𝓞 F)) :
+lemma sIdele_finite (A : SArithmeticData F) (y : A.G) (v : HeightOneSpectrum (𝓞 F)) :
     (sIdele A y).val.2 v = if h : v ∈ A.Sf then (y.2 ⟨v, h⟩ : v.adicCompletion F) else 1 := by
   classical
   have hval : (sIdele A y).val =
@@ -240,7 +238,6 @@ private lemma sIdele_finite (A : SArithmeticData F) (y : A.G) (v : HeightOneSpec
   rw [hval]
   have hi : (∏ i : InfinitePlace F, AdeleRing.ofCompletion (𝓞 F) F i ↑(y.1 i)).2 = 1 := by
     erw [Prod.snd_prod]
-    change (∏ i : InfinitePlace F, (1 : FiniteAdeleRing (𝓞 F) F)) = 1
     simp
   erw [Prod.snd_mul, hi, one_mul]
   erw [Prod.snd_prod]
@@ -268,7 +265,7 @@ private lemma sIdele_finite (A : SArithmeticData F) (y : A.G) (v : HeightOneSpec
     intro h
     exact hv (h.symm ▸ b.property)
 
-private lemma sIdele_value (A : SArithmeticData F)
+lemma sIdele_value (A : SArithmeticData F)
     (Φ : A.ArithmeticIdeleClasses →* Circle) (y : A.G) :
     Φ (QuotientGroup.mk (sIdele A y)) = (A.ideleSInverseProduct Φ y)⁻¹ := by
   simp [sIdele, ideleSInverseProduct, ideleInfiniteComponent, ideleFiniteComponent,
@@ -339,8 +336,7 @@ theorem localArithmeticLaws_units (A : SArithmeticData F)
   have hprincipal : QuotientGroup.mk x = (1 : A.ArithmeticIdeleClasses) := by
     apply (QuotientGroup.eq_one_iff _).mpr
     exact ⟨ε.val, rfl⟩
-  rw [hprincipal, map_one] at h
-  exact inv_eq_one.mp h.symm
+  simp_all
 
 theorem localArithmeticLaws_principal_of_valuation (A : SArithmeticData F)
     (Φ : A.ArithmeticIdeleClasses →* Circle)
@@ -423,7 +419,7 @@ private lemma generator_valuation (A : SArithmeticData F)
   have hrv : v.valuation F (r : F) ≤ WithZero.exp (-(n : ℤ)) := by
     apply hmap
     rw [← hr.2]
-    exact Ideal.subset_span (Set.mem_singleton r)
+    simp
   obtain ⟨b, hb, hbn⟩ : ∃ b : 𝓞 F, b ∈ I.val ∧ b ∉ v.asIdeal ^ (n + 1) := by
     contrapose! hnot
     exact hnot
@@ -444,10 +440,9 @@ private lemma generator_valuation (A : SArithmeticData F)
     exact hbv.trans h
   have hnz : v.valuation F (r : F) ≠ 0 := by
     rw [← ha]
-    exact (Valuation.ne_zero_iff _).mpr a.ne_zero
+    simp
   rw [← WithZero.exp_log hnz, WithZero.exp_le_exp] at hrv hrv'
   have he : WithZero.log (v.valuation F (r : F)) = -(n : ℤ) := by
-    push_cast at hrv'
     omega
   change Valued.v ((WithVal.toVal (v.valuation F) (a : F) : WithVal (v.valuation F)) : v.adicCompletion F) = _
   rw [HeightOneSpectrum.valuedAdicCompletion_eq_valuation', ha, ← WithZero.exp_log hnz, he]
@@ -472,6 +467,3 @@ theorem localArithmeticLaws (A : SArithmeticData F)
   · intro v z
     exact (IsLocallyConstant.iff_exists_open _).mp
       (localArithmeticLaws_finite A Φ hcont v.val) z
-
-end
-end DedekindZetaZeroFree.SArithmeticData.GaussCorrection

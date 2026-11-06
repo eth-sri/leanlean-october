@@ -11,7 +11,6 @@ open scoped NumberField Valued
 open NumberField IsDedekindDomain MeasureTheory
 
 noncomputable section
-set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
 variable (q : HeightOneSpectrum (𝓞 F))
@@ -25,7 +24,7 @@ local instance cubeRatioLocalField : IsNonarchimedeanLocalField K :=
 local instance cubeRatioMeasurable : MeasurableSpace K := borel K
 local instance cubeRatioBorel : BorelSpace K := ⟨rfl⟩
 
-private theorem cube_ratio_generic
+theorem cube_ratio_generic
     (L : Type*) [Field L] [CharZero L] [ValuativeRel L] [TopologicalSpace L]
     [IsNonarchimedeanLocalField L] [MeasurableSpace L] [BorelSpace L]
     (dx : Measure L) [dx.IsAddHaarMeasure]
@@ -69,7 +68,7 @@ private theorem cube_ratio_generic
       (measurePreserving_prod_mul μ μ)
     have ht := (MeasurePreserving.id μ).prod (measurePreserving_mul_left μ c)
     convert ht.comp hs using 1
-    funext z; simp [D, Function.comp_def]
+    rfl
   have hcube : Measure.map (fun z : Lˣ × Lˣ => (z.1,z.2^3)) (μ.prod μ) =
       ENNReal.ofReal ((C.index : ℝ)/3) • (μ.prod μ).restrict (Set.univ ×ˢ (C : Set Lˣ)) := by
     change Measure.map (Prod.map id (fun z : Lˣ => z^3)) (μ.prod μ) = _
@@ -85,8 +84,8 @@ private theorem cube_ratio_generic
     (KPRankOneCubicProjection.local_character_count L (κ : L)
       (hκ.map_of_injective (f := (KPCubicUnitIndices.Integers L).subtype) Subtype.val_injective)).1
   let _ := hdis
-  have hR (k) : MeasurableSet (R k) := by
-    exact (isOpen_discrete {k}).preimage
+  have hR (k) : MeasurableSet (R k) := 
+    (isOpen_discrete {k}).preimage
       (QuotientGroup.continuous_mk.comp (by fun_prop)) |>.measurableSet
   have hpre (k) : D (cRep k) ⁻¹' R k = Set.univ ×ˢ (C : Set Lˣ) := by
     ext z
@@ -115,7 +114,7 @@ private theorem cube_ratio_generic
       exact hij (hi.symm.trans hj)
     have hu : (⋃ k, R k) = Set.univ := by
       ext z; simp only [Set.mem_iUnion, R, Set.mem_ofPred_eq, Set.mem_univ, iff_true]
-      exact ⟨Q (z.2/z.1), rfl⟩
+      simp
     have hp := Measure.restrict_iUnion (μ := μ.prod μ) hd hR
     rw [hu, Measure.restrict_univ] at hp
     simpa only [Measure.sum_fintype] using hp
@@ -145,9 +144,5 @@ theorem actual_cube_ratio_pushforward
     μ.prod μ = ENNReal.ofReal (KPCubicHaar.abs K 3 / 3) •
       ∑ k : KPLocalTorus.CubeClasses Kˣ,
         Measure.map (fun xy : Kˣ × Kˣ =>
-          (xy.1 * xy.2 ^ 3, cRep k * xy.1)) (μ.prod μ) := by
-  exact cube_ratio_generic K dx κ hκ cRep hcRep
-
-end
-
-end DedekindZetaZeroFree.KPActualFullKernelArithmetic
+          (xy.1 * xy.2 ^ 3, cRep k * xy.1)) (μ.prod μ) := 
+  cube_ratio_generic K dx κ hκ cRep hcRep

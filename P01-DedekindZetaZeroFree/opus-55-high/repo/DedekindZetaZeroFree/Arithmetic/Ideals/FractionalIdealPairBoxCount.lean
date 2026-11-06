@@ -13,7 +13,7 @@ namespace KPChamberLattice
 
 open NumberField Module
 
-private theorem lattice_count {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+theorem lattice_count {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     {ι : Type*} [Fintype ι] (b : Basis ι ℝ E) :
     ∃ C : ℝ, 0 < C ∧ ∀ R : ℝ, 1 ≤ R →
       ∀ s : Set E, (∀ x ∈ s, x ∈ Submodule.span ℤ (Set.range b) ∧ ‖x‖ ≤ R) →
@@ -21,7 +21,7 @@ private theorem lattice_count {E : Type*} [NormedAddCommGroup E] [NormedSpace �
   classical
   let L := b.equivFunL.toContinuousLinearMap
   let A : ℝ := ‖L‖ + 1
-  have hA : 0 < A := by dsimp [A]; positivity
+  have hA : 0 < A := by positivity
   refine ⟨(2 * A + 3) ^ Fintype.card ι, by positivity, ?_⟩
   intro R hR s hs
   let N : ℤ := ⌈A * R⌉
@@ -29,7 +29,7 @@ private theorem lattice_count {E : Type*} [NormedAddCommGroup E] [NormedSpace �
   let f : E → ι → ℤ := fun x i => ⌊b.repr x i⌋
   have hrepr (x : E) (hx : x ∈ s) (i : ι) : (f x i : ℝ) = b.repr x i := by
     obtain ⟨z, hz⟩ := (b.mem_span_iff_repr_mem ℤ x).mp (hs x hx).1 i
-    simpa [f, ← hz] using (Int.floor_intCast (R := ℝ) z)
+    simp [f, ← hz]
   have hf : Set.MapsTo f s (t : Set (ι → ℤ)) := by
     intro x hx
     apply Fintype.mem_piFinset.mpr
@@ -55,7 +55,7 @@ private theorem lattice_count {E : Type*} [NormedAddCommGroup E] [NormedSpace �
     apply b.ext_elem
     intro i
     rw [← hrepr x hx i, ← hrepr y hy i, congrFun hxy i]
-  have hN : 0 ≤ N := Int.ceil_nonneg (mul_nonneg hA.le (by linarith))
+  have hN : 0 ≤ N := by positivity
   have hc : ((Finset.Icc (-N) N).card : ℝ) ≤ (2 * A + 3) * R := by
     have he := Int.card_Icc_of_le (-N) N (by omega)
     have he' : ((Finset.Icc (-N) N).card : ℝ) = 2 * (N : ℝ) + 1 := by
@@ -71,14 +71,13 @@ private theorem lattice_count {E : Type*} [NormedAddCommGroup E] [NormedSpace �
     _ = ((Finset.Icc (-N) N).card : ℝ) ^ Fintype.card ι := by
       rw [Set.ncard_coe_finset]
       dsimp only [t]
-      rw [Fintype.card_piFinset]
-      simp only [Finset.prod_const, Finset.card_univ, Nat.cast_pow]
+      simp
     _ ≤ ((2 * A + 3) * R) ^ Fintype.card ι :=
       pow_le_pow_left₀ (by positivity) hc _
     _ = (2 * A + 3) ^ Fintype.card ι * R ^ Fintype.card ι := mul_pow _ _ _
 
 open scoped Classical in
-private theorem mixed_norm_bound (F : Type*) [Field F] [NumberField F]
+theorem mixed_norm_bound (F : Type*) [Field F] [NumberField F]
     (x : F) (R : ℝ) (hR : 0 ≤ R) (hx : ∀ φ : F →+* ℂ, ‖φ x‖ ≤ R) :
     ‖mixedEmbedding F x‖ ≤ R := by
   classical
@@ -91,9 +90,7 @@ private theorem mixed_norm_bound (F : Type*) [Field F] [NumberField F]
     exact hx _
   · apply pi_norm_le_iff_of_nonneg hR |>.mpr
     intro w
-    rw [← mixedEmbedding.normAtPlace_apply_of_isComplex w.prop,
-      mixedEmbedding.normAtPlace_apply, ← InfinitePlace.norm_embedding_eq]
-    exact hx _
+    simp_all
 
 def idealPairBox (F : Type*) [Field F] [NumberField F]
     (J : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) (R : ℝ) : Set (F × F) :=
@@ -159,7 +156,3 @@ theorem kp_chamber_lattice_box_count (F : Type*) [Field F] [NumberField F]
   change (s.ncard : ℝ) ≤ _
   rw [Set.ncard_image_of_injective s hinj, hd] at hc
   exact hc
-
-end DedekindZetaZeroFree
-
-end

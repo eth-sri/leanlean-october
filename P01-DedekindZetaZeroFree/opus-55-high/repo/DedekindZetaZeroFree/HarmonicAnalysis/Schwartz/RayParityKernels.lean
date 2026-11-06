@@ -25,7 +25,7 @@ theorem exists_rayParitySchwartz (δ : Finset (RayCoset.RealPlaces K)) :
         ∏ v ∈ δ, (Theta.traceRealCoordinateCLM K v x : ℂ))
     classical
     induction δ using Finset.induction_on with
-    | empty => simpa using Function.HasTemperateGrowth.const (1 : ℂ)
+    | empty => simp
     | insert a s ha ih =>
       have ha' : Function.HasTemperateGrowth
           (fun x : euclidean.mixedSpace K ↦
@@ -38,11 +38,10 @@ theorem exists_rayParitySchwartz (δ : Finset (RayCoset.RealPlaces K)) :
         funext x
         rw [Finset.prod_insert ha]
       rw [h]
-      exact ha'.mul ih
+      fun_prop
   refine ⟨SchwartzMap.smulLeftCLM ℂ g (Theta.traceGaussianSchwartz K), fun x ↦ ?_⟩
   rw [SchwartzMap.smulLeftCLM_apply_apply hP, Theta.traceGaussianSchwartz_apply]
-  change g x * Theta.latticeGaussian Real.pi x = gδ K δ x
-  rw [gδ]
+  rfl
 
 def rayParitySchwartz (δ : Finset (RayCoset.RealPlaces K)) :
     SchwartzMap (euclidean.mixedSpace K) ℂ :=
@@ -52,7 +51,3 @@ def rayParitySchwartz (δ : Finset (RayCoset.RealPlaces K)) :
     (x : euclidean.mixedSpace K) :
     rayParitySchwartz K δ x = gδ K δ x :=
   Classical.choose_spec (exists_rayParitySchwartz K δ) x
-
-end DedekindZetaZeroFree.AbelianQuotient.RayParity
-
-end

@@ -13,38 +13,38 @@ section DeterminantBilinear
 
 variable (K : Type*) [Field K]
 
-private lemma det₂_zero_left (x : K × K) : det₂ K 0 x = 0 := by
+lemma det₂_zero_left (x : K × K) : det₂ K 0 x = 0 := by
   simp [det₂]
 
-private lemma det₂_zero_right (x : K × K) : det₂ K x 0 = 0 := by
+lemma det₂_zero_right (x : K × K) : det₂ K x 0 = 0 := by
   simp [det₂]
 
-private lemma det₂_add_left (x y z : K × K) :
+lemma det₂_add_left (x y z : K × K) :
     det₂ K (x + y) z = det₂ K x z + det₂ K y z := by
   simp only [det₂, Prod.fst_add, Prod.snd_add]
   ring
 
-private lemma det₂_add_right (x y z : K × K) :
+lemma det₂_add_right (x y z : K × K) :
     det₂ K x (y + z) = det₂ K x y + det₂ K x z := by
   simp only [det₂, Prod.fst_add, Prod.snd_add]
   ring
 
-private lemma det₂_smul_left (a : K) (x y : K × K) :
+lemma det₂_smul_left (a : K) (x y : K × K) :
     det₂ K (a • x) y = a * det₂ K x y := by
   simp only [det₂, Prod.smul_fst, Prod.smul_snd, smul_eq_mul]
   ring
 
-private lemma det₂_smul_right (b : K) (x y : K × K) :
+lemma det₂_smul_right (b : K) (x y : K × K) :
     det₂ K x (b • y) = b * det₂ K x y := by
   simp only [det₂, Prod.smul_fst, Prod.smul_snd, smul_eq_mul]
   ring
 
-private lemma det₂_smul_smul (a b : K) (x y : K × K) :
+lemma det₂_smul_smul (a b : K) (x y : K × K) :
     det₂ K (a • x) (b • y) = (a * b) * det₂ K x y := by
   rw [det₂_smul_left, det₂_smul_right]
   ring
 
-private lemma det₂_std : det₂ K (1, 0) (0, 1) = 1 := by
+lemma det₂_std : det₂ K (1, 0) (0, 1) = 1 := by
   simp [det₂]
 
 end DeterminantBilinear
@@ -53,13 +53,13 @@ section DeterminantBilinearScalars
 
 variable {R : Type*} [CommRing R] {K : Type*} [Field K] [Algebra R K]
 
-private lemma det₂_smul_left_R (r : R) (x y : K × K) :
+lemma det₂_smul_left_R (r : R) (x y : K × K) :
     det₂ K (r • x) y = r • det₂ K x y := by
   simp only [det₂, Prod.smul_fst, Prod.smul_snd]
   simp only [Algebra.smul_def]
   ring
 
-private lemma det₂_smul_right_R (r : R) (x y : K × K) :
+lemma det₂_smul_right_R (r : R) (x y : K × K) :
     det₂ K x (r • y) = r • det₂ K x y := by
   simp only [det₂, Prod.smul_fst, Prod.smul_snd]
   simp only [Algebra.smul_def]
@@ -71,23 +71,23 @@ section DeterminantLinearEquiv
 
 variable (K : Type*) [Field K]
 
-private lemma det₂_linearEquiv_std (g : (K × K) ≃ₗ[K] (K × K)) :
+lemma det₂_linearEquiv_std (g : (K × K) ≃ₗ[K] (K × K)) :
     det₂ K (g (1, 0)) (g (0, 1)) = LinearMap.det g.toLinearMap := by
   have hdet := LinearMap.det_toMatrix (Module.Basis.finTwoProd K) g.toLinearMap
   rw [← hdet, Matrix.det_fin_two]
   simp [LinearMap.toMatrix_apply, det₂]
   rw [mul_comm]
 
-private lemma det₂_linearEquiv (g : (K × K) ≃ₗ[K] (K × K)) (x y : K × K) :
+lemma det₂_linearEquiv (g : (K × K) ≃ₗ[K] (K × K)) (x y : K × K) :
     det₂ K (g x) (g y) = LinearMap.det g.toLinearMap * det₂ K x y := by
   have hx : g x = x.1 • g (1, 0) + x.2 • g (0, 1) := by
     have h : x = x.1 • (1, 0) + x.2 • (0, 1) := by
-      ext <;> simp
+      simp
     conv_lhs => rw [h]
     rw [map_add, map_smul, map_smul]
   have hy : g y = y.1 • g (1, 0) + y.2 • g (0, 1) := by
     have h : y = y.1 • (1, 0) + y.2 • (0, 1) := by
-      ext <;> simp
+      simp
     conv_lhs => rw [h]
     rw [map_add, map_smul, map_smul]
   have key : det₂ K (g x) (g y) =
@@ -126,8 +126,8 @@ theorem kp_cusp_determinantSubmodule_fg
             ((fun p : (K × K) × (K × K) => det₂ K p.1 p.2) ''
               ((S : Set (K × K)) ×ˢ (S : Set (K × K)))))
         (fun x y hx hy => Submodule.subset_span ⟨(x, y), Set.mem_prod.mpr ⟨hx, hy⟩, rfl⟩)
-        (fun y _ => by rw [det₂_zero_left]; exact Submodule.zero_mem _)
-        (fun x _ => by rw [det₂_zero_right]; exact Submodule.zero_mem _)
+        (fun y _ => by rw [det₂_zero_left]; simp)
+        (fun x _ => by rw [det₂_zero_right]; simp)
         (fun x y z _ _ _ h1 h2 => by
           rw [det₂_add_left]; exact Submodule.add_mem _ h1 h2)
         (fun x y z _ _ _ h1 h2 => by
@@ -142,8 +142,8 @@ theorem kp_cusp_determinantSubmodule_isFractional
     (R : Type*) [CommRing R] [IsDedekindDomain R]
     (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
     (M : FullLattice R K) :
-    IsFractional R⁰ (determinantSubmodule R K M.val) := by
-  exact FractionalIdeal.isFractional_of_fg (kp_cusp_determinantSubmodule_fg R K M)
+    IsFractional R⁰ (determinantSubmodule R K M.val) := 
+  FractionalIdeal.isFractional_of_fg (kp_cusp_determinantSubmodule_fg R K M)
 
 theorem kp_cusp_determinantSubmodule_ne_bot
     (R : Type*) [CommRing R] [IsDedekindDomain R]
@@ -223,7 +223,7 @@ theorem kp_cusp_determinantSubmodule_ideal_coordinates
       FractionalIdeal R⁰ K) : Submodule R K) =
       Submodule.span R {det₂ K v w} *
         ((I : Submodule R K) * (J : Submodule R K)) := by
-    simp only [FractionalIdeal.coe_mul, FractionalIdeal.coe_spanSingleton]
+    simp
   have hmain : determinantSubmodule R K M =
       Submodule.span R {det₂ K v w} *
         ((I : Submodule R K) * (J : Submodule R K)) := by
@@ -260,7 +260,7 @@ theorem kp_cusp_determinantSubmodule_ideal_coordinates
       have hz' : det₂ K v w * z ∈ determinantSubmodule R K M :=
         Submodule.mem_comap.mp (hIJ hz)
       have hsmul : (r • det₂ K v w) * z = r • (det₂ K v w * z) := by
-        simp only [Algebra.smul_def, mul_assoc]
+        simp
       rw [hsmul]
       exact Submodule.smul_mem _ r hz'
   rw [hmain]
@@ -300,5 +300,3 @@ theorem kp_cusp_determinantSubmodule_coordinateLattice
          rfl⟩
   rw [hmain]
   exact hcoe.symm
-
-end DedekindZetaZeroFree

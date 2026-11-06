@@ -47,10 +47,7 @@ private theorem pgl_weyl_diagonal (K : Type*) [Field K] (u : Kˣ) :
   apply Matrix.ProjGenLinGroup.mk_eq_mk_iff.mpr
   refine ⟨u, ?_⟩
   apply Units.ext
-  ext i j
-  fin_cases i <;> fin_cases j <;>
-    simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.GeneralLinearGroup.coe_scalar,
-      Matrix.scalar, Matrix.diagonal_apply]
+  simp
 
 private theorem weyl_coordinate (h : actualTorus F ζ hζ q) :
     S.borel.coordinate (S.borel.weyl h) = (S.borel.coordinate h)⁻¹ := by
@@ -124,7 +121,7 @@ def scalarSections (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign) :
   carrier := {f | (∀ (b : BL F ζ hζ q S P) (g : ActualCover F ζ hζ q),
     f ((b : ActualCover F ζ hζ q) * g) = chi F ζ hζ q S P hP ε b * f g) ∧
     SmoothVector rightTranslationRepresentation f}
-  zero_mem' := ⟨by intros; simp, ⟨⊤, by intros; simp⟩⟩
+  zero_mem' := ⟨by simp, ⟨⊤, by simp⟩⟩
   add_mem' := by
     intro f g hf hg
     refine ⟨?_, (mem_smoothSubmodule _ _).mp ((smoothSubmodule _).add_mem
@@ -210,7 +207,3 @@ abbrev whittakerSpace (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign)
     (ψ : Multiplicative (LocalField F q) →* ℂˣ) :=
   algebraicWhittaker (scalarAction F ζ hζ q S P hP ε)
     (KPLocalSmoothRepresentation.upperRoot F ζ hζ q) ψ
-
-end DedekindZetaZeroFree.KPTameJacquetBruhatTests.Raw
-
-end

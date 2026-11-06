@@ -86,7 +86,3 @@ structure Cutoffs where
   derivative_bound : ∀ n i x,
     scalarGradientNorm F ζ hζ hF U a (rho n) i x +
       ‖scalarLaplacian F ζ hζ hF U a (rho n) i x‖ ≤ bound
-
-end DedekindZetaZeroFree.KPCuspCutoffGraphApproximation
-
-end

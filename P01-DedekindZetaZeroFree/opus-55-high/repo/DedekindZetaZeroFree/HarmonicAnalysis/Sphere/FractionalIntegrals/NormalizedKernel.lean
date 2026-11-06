@@ -51,16 +51,13 @@ theorem fractionalKernel_nonneg (α : ℝ) (hα : 0 < α) (x y : Sphere) :
         mem_sphere_zero_iff_norm.mp y.property]
   linarith
 
-@[simp] theorem fractionalKernel_one (x y : Sphere) : fractionalKernel 1 x y = 1 := by
-  simp [fractionalKernel]
-
-private lemma interval_kernel_integrable (α : ℝ) (hα : 0 < α) :
+lemma interval_kernel_integrable (α : ℝ) (hα : 0 < α) :
     Integrable (fun t : ℝ => α * t ^ (α - 1)) (volume.restrict (Icc 0 1)) := by
   have h := (intervalIntegral.intervalIntegrable_rpow' (a := 0) (b := 1)
     (r := α - 1) (by linarith)).const_mul α
   exact (intervalIntegrable_iff_integrableOn_Icc_of_le (by norm_num)).mp h
 
-private lemma interval_kernel_mass (α : ℝ) (hα : 0 < α) :
+lemma interval_kernel_mass (α : ℝ) (hα : 0 < α) :
     (∫ t : ℝ in Icc 0 1, α * t ^ (α - 1)) = 1 := by
   rw [integral_Icc_eq_integral_Ioc, ← intervalIntegral.integral_of_le (by norm_num),
     intervalIntegral.integral_const_mul, integral_rpow (Or.inl (by linarith))]
@@ -73,7 +70,7 @@ theorem fractionalKernel_mass_of_projection (α : ℝ) (hα : 0 < α) (x : Spher
     Integrable (fractionalKernel α x) sphereArea ∧
     (∫ y : Sphere, fractionalKernel α x y ∂sphereArea) = 1 := by
   let p : Sphere → ℝ := fun y => (1 - inner ℝ (x : Ambient) (y : Ambient)) / 2
-  have hp : Measurable p := by dsimp [p]; fun_prop
+  have hp : Measurable p := by fun_prop
   have hi : Integrable (fun t : ℝ => α * t ^ (α - 1)) (Measure.map p sphereArea) := by
     rw [show Measure.map p sphereArea = _ from hprojection]
     exact interval_kernel_integrable α hα
@@ -96,5 +93,3 @@ theorem fractionalKernel_mass (α : ℝ) (hα : 0 < α) :
       KernelMass.normalized_area_coordinate_projection
   obtain ⟨hi, hm⟩ := fractionalKernel_mass_of_projection α hα x hprojection
   exact ⟨hi, fractionalKernel_nonneg α hα x, hm⟩
-
-end DedekindZetaZeroFree.ComplexFractionalInverse

@@ -58,7 +58,7 @@ def idealTraceDual (I : NonzeroFractionalIdeal F) : Set (Space F) :=
   {y | ∀ x : F, x ∈ (I : FractionalIdeal (RingOfIntegers F)⁰ F) →
     tracePairing F (minkowskiEmbedding F x) y ∈ Set.range (fun n : ℤ => (n : ℝ))}
 
-private theorem trace_embedding (x z : F) :
+theorem trace_embedding (x z : F) :
     tracePairing F (minkowskiEmbedding F x) (minkowskiEmbedding F z) =
       (Algebra.trace ℚ F (x * z) : ℝ) := by
   have ht := trace_eq_sum_embeddings (K := ℚ) (L := F) ℂ (x := x * z)
@@ -68,10 +68,7 @@ private theorem trace_embedding (x z : F) :
     (fun i => mixedEmbedding.indexEquiv F i (x*z)) (fun φ => φ (x*z))
     (fun i => rfl)] at ht
   have ht' := congrArg Complex.re ht
-  simp only [Fintype.sum_sum_type, Fintype.sum_prod_type, Fin.sum_univ_two,
-    mixedEmbedding.indexEquiv_apply_isReal, mixedEmbedding.indexEquiv_apply_isComplex_fst,
-    mixedEmbedding.indexEquiv_apply_isComplex_snd, map_mul, ComplexEmbedding.conjugate_coe_eq,
-    map_sum, Complex.add_re, Complex.conj_re, Complex.ratCast_re] at ht'
+  simp only [Fintype.sum_sum_type, Fintype.sum_prod_type, Fin.sum_univ_two, mixedEmbedding.indexEquiv_apply_isReal, mixedEmbedding.indexEquiv_apply_isComplex_fst, mixedEmbedding.indexEquiv_apply_isComplex_snd, map_mul, ComplexEmbedding.conjugate_coe_eq, Complex.add_re] at ht'
   have hr (w : {w : InfinitePlace F // w.IsReal}) (a : F) :
       (w.val.embedding a).re = InfinitePlace.embedding_of_isReal w.prop a ∧
       (w.val.embedding a).im = 0 := by
@@ -82,7 +79,7 @@ private theorem trace_embedding (x z : F) :
   simpa [tracePairing, minkowskiEmbedding, AddMonoidHom.comp_apply,
     mixedEmbedding, (hr _ _).1, (hr _ _).2,
     Finset.sum_add_distrib, ← two_mul, Finset.mul_sum] using ht'.symm
-private theorem trace_dual_rational (I : NonzeroFractionalIdeal F) (y : Space F)
+theorem trace_dual_rational (I : NonzeroFractionalIdeal F) (y : Space F)
     (hy : y ∈ idealTraceDual F I) : ∃ z : F, minkowskiEmbedding F z = y := by
   let b := basisOfFractionalIdeal F I
   have hb (i : Module.Free.ChooseBasisIndex ℤ I) : b i ∈ (I : FractionalIdeal (RingOfIntegers F)⁰ F) := by
@@ -104,7 +101,7 @@ private theorem trace_dual_rational (I : NonzeroFractionalIdeal F) (y : Space F)
   simp only [Finset.mul_sum, mul_smul_comm, map_sum, map_smul,
     b.trace_mul_traceDual, smul_eq_mul, mul_ite, mul_one, mul_zero,
     Finset.sum_ite_eq, Finset.mem_univ, if_true, Rat.cast_intCast]
-private theorem trace_integral_iff (q : ℚ) :
+theorem trace_integral_iff (q : ℚ) :
     (q : ℝ) ∈ Set.range (fun n : ℤ => (n : ℝ)) ↔
       q ∈ (algebraMap ℤ ℚ).range := by
   constructor
@@ -142,8 +139,3 @@ theorem idealTraceDual_eq (I : NonzeroFractionalIdeal F) :
     intro x hx
     rw [trace_embedding, trace_integral_iff, mul_comm]
     exact hz x hx
-
-end PoissonArch
-end DedekindZetaZeroFree
-
-end

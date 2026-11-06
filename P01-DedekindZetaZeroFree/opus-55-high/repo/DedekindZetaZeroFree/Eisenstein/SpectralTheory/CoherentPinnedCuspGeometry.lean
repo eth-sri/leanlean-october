@@ -20,7 +20,7 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
   fun v => if v = w then Real.log r.val / 2 else 0
  def ell (w : InfinitePlace F) (r : Radius) : KPGlobalTorusFunctionData.Ideles F :=
   archDiagonalIdele F ζ hζ (logarithmicSlots F w r)
-private theorem exp_log_half (r : Radius) : Real.exp (Real.log r.val / 2) = Real.sqrt r.val := by
+theorem exp_log_half (r : Radius) : Real.exp (Real.log r.val / 2) = Real.sqrt r.val := by
   have he : Real.exp (Real.log r.val / 2) ^ 2 = r.val := by
     rw [← Real.exp_nat_mul]
     convert Real.exp_log r.property using 1
@@ -29,7 +29,7 @@ private theorem exp_log_half (r : Radius) : Real.exp (Real.log r.val / 2) = Real
   have hs := Real.sq_sqrt r.property.le
   nlinarith [Real.exp_pos (Real.log r.val / 2), Real.sqrt_nonneg r.val]
 omit [NumberField F] in
-private theorem exp_slots (w v : InfinitePlace F) (r : Radius) :
+theorem exp_slots (w v : InfinitePlace F) (r : Radius) :
     (Real.exp (logarithmicSlots F w r v) : ℂ) = positiveSlots F w r v := by
   by_cases hv : v = w
   · simp [logarithmicSlots, positiveSlots, hv, exp_log_half]
@@ -57,18 +57,18 @@ private theorem archIdele_continuous : Continuous (archDiagonalIdele F ζ hζ) :
     exact ((continuous_pi fun w => Units.continuous_val.comp
       (continuous_inv.comp ((continuous_pi_iff.mp (archSlot_continuous F ζ hζ)) w))).prodMk continuous_const)
 omit [NumberField F] in
-private theorem logarithmicSlots_continuous (w : InfinitePlace F) :
+theorem logarithmicSlots_continuous (w : InfinitePlace F) :
     Continuous (logarithmicSlots F w) := by
   apply continuous_pi
   intro v
   by_cases hv : v = w
   · simp only [logarithmicSlots, hv, ↓reduceIte]
-    exact (continuous_subtype_val.log (fun r => r.property.ne')).div_const 2
+    fun_prop
   · simp only [logarithmicSlots, hv, ↓reduceIte]
     exact continuous_const
  theorem ell_continuous (w : InfinitePlace F) : Continuous (ell F ζ hζ w) :=
   (archIdele_continuous F ζ hζ).comp (logarithmicSlots_continuous F w)
-private theorem archIdele_add (u v : InfinitePlace F → ℝ) :
+theorem archIdele_add (u v : InfinitePlace F → ℝ) :
     archDiagonalIdele F ζ hζ (u + v) = archDiagonalIdele F ζ hζ u * archDiagonalIdele F ζ hζ v := by
   apply Units.ext
   apply Prod.ext
@@ -78,7 +78,7 @@ private theorem archIdele_add (u v : InfinitePlace F → ℝ) :
     rw [Real.exp_add, Complex.ofReal_mul, map_mul]
     rfl
   · exact (one_mul _).symm
-private theorem archIdele_zero : archDiagonalIdele F ζ hζ 0 = 1 := by
+theorem archIdele_zero : archDiagonalIdele F ζ hζ 0 = 1 := by
   apply Units.ext
   apply Prod.ext
   · funext w
@@ -147,14 +147,14 @@ private theorem archIdele_zero : archDiagonalIdele F ζ hζ 0 = 1 := by
       exact (ell_slots F ζ hζ w r v).symm
     | inr q =>
       change 1 = KPStandardLocalRootLifts.A F ζ hζ (Sum.inr q) 1
-      rw [KPStandardLocalRootLifts.A_one]
+      simp
   obtain ⟨t, ht, hp⟩ :=
     KPGlobalCenterRationalCharacterExtension.CubeDiagonalProduct.standard_diagonal_torus_ratio
       F ζ hζ (ell F ζ hζ w r)
       (KPGlobalTorusFunctionData.archDiagonalTuple F ζ hζ (positiveSlots F w r)) he
   have hh : t = KPGlobalTorusFunctionData.torusArchChart F ζ hζ (positiveSlots F w r) := Subtype.ext ht
   exact hh ▸ hp
-private theorem archTuple_continuous :
+theorem archTuple_continuous :
     Continuous (fun u : InfinitePlace F → ℝ =>
       KPGlobalTorusFunctionData.archDiagonalTuple F ζ hζ (fun v => (Real.exp (u v) : ℂ))) := by
   let := KPAdelicCoverRestrictedProduct.localTopology F ζ hζ
@@ -215,7 +215,7 @@ private theorem archTuple_continuous :
   rw [he]
   exact hq.comp ((archTuple_continuous F ζ hζ).comp (logarithmicSlots_continuous F w))
 open _root_.DedekindZetaZeroFree.KPStandardLocalRootLifts renaming d_mul_matrix → d_mul_matrix
-private theorem archTuple_add (u v : InfinitePlace F → ℝ) :
+theorem archTuple_add (u v : InfinitePlace F → ℝ) :
     KPGlobalTorusFunctionData.archDiagonalTuple F ζ hζ (fun w => (Real.exp ((u+v) w) : ℂ)) =
       KPGlobalTorusFunctionData.archDiagonalTuple F ζ hζ (fun w => (Real.exp (u w) : ℂ)) *
         KPGlobalTorusFunctionData.archDiagonalTuple F ζ hζ (fun w => (Real.exp (v w) : ℂ)) := by
@@ -231,8 +231,6 @@ private theorem archTuple_add (u v : InfinitePlace F → ℝ) :
           Units.mk0 ((InfinitePlace.Completion.ringEquivComplexOfIsComplex
             (KPHilbert.infinite_isComplex F ζ hζ w)).symm (Real.exp (t w) : ℂ)) _) = _
       simp only [Complex.ofReal_ne_zero.mpr (Real.exp_ne_zero _), ↓reduceDIte]
-      congr 1
-      apply Units.ext
       rfl
     change _ = KPGlobalTorusFunctionData.archDiagonalTuple F ζ hζ _ (Sum.inl w) *
       KPGlobalTorusFunctionData.archDiagonalTuple F ζ hζ _ (Sum.inl w)
@@ -249,13 +247,13 @@ private theorem archTuple_add (u v : InfinitePlace F → ℝ) :
       map_one,one_mul,d_mul_matrix]
   | inr q =>
     change (1 : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr q)) = 1*1
-    rw [one_mul]
-private theorem archLift_add (u v : InfinitePlace F → ℝ) :
+    simp
+theorem archLift_add (u v : InfinitePlace F → ℝ) :
     KPGlobalTorusFunctionData.archDiagonalLift F ζ hζ (fun w => (Real.exp ((u+v) w) : ℂ)) =
       KPGlobalTorusFunctionData.archDiagonalLift F ζ hζ (fun w => (Real.exp (u w) : ℂ)) *
         KPGlobalTorusFunctionData.archDiagonalLift F ζ hζ (fun w => (Real.exp (v w) : ℂ)) := by
   simp only [KPGlobalTorusFunctionData.archDiagonalLift,archTuple_add,map_mul]
-private theorem archLift_zero :
+theorem archLift_zero :
     KPGlobalTorusFunctionData.archDiagonalLift F ζ hζ (fun _ => (1 : ℂ)) = 1 := by
   have he : KPGlobalTorusFunctionData.archDiagonalTuple F ζ hζ (fun _ => (1 : ℂ)) = 1 := by
     apply RestrictedProduct.ext
@@ -266,7 +264,7 @@ private theorem archLift_zero :
         (if h : (1 : ℂ) = 0 then 1 else
           Units.mk0 ((InfinitePlace.Completion.ringEquivComplexOfIsComplex
             (KPHilbert.infinite_isComplex F ζ hζ w)).symm 1) _) = 1
-      simp only [one_ne_zero, ↓reduceDIte,map_one, Units.mk0_one,KPStandardLocalRootLifts.A_one]
+      simp
     | inr q => rfl
   simp only [KPGlobalTorusFunctionData.archDiagonalLift,he,map_one]
  theorem section_one (w : InfinitePlace F) :
@@ -387,7 +385,7 @@ theorem exists_geometry_and_actual_transport
   refine ⟨hF, B, D, hrad, hk,
     fun U => fixed_haar_radial_integration (atlas F ζ hζ hF U) R P (D U), ?_⟩
   intro V U h
-  have hslot : (D V).radial.slot = (D U).radial.slot := by rw [hrad V, hrad U]
+  have hslot : (D V).radial.slot = (D U).radial.slot := by simp_all
   obtain ⟨l,rho,c,a,hc,ha,hcl,hal,hcomm,hbeta,hprob,hcoeff,hkernel,hchart⟩ :=
     exists_actual_compatibility_laws R P h (D V) (D U) hslot
   exact ⟨l,rho,c,a,hc,ha,hcl,hal,hcomm,hbeta,hprob,hcoeff,hslot,hkernel,hchart⟩
@@ -431,9 +429,3 @@ theorem coherent_cusp_geometry
         chart_commutes := hchart
         induced_kernel := hkernel }⟩ }
   exact ⟨L, hk⟩
-
-end DedekindZetaZeroFree.KPMsFixedHaar
-
-end
-
-end

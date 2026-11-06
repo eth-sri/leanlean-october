@@ -7,24 +7,23 @@ public import DedekindZetaZeroFree.LargeSieve.Bilinear.Cutoffs.NormalizedCharact
 open scoped NumberField Classical BigOperators NNReal
 namespace DedekindZetaZeroFree.LargeSieve.Vendor.CutoffDifference
 open SplitData
-noncomputable section
 variable {R : Type*} [CommMonoidWithZero R] [UniqueFactorizationMonoid R]
   [Subsingleton Rˣ]
 
-private theorem nodup_prod_eq_finset_prod (l : Multiset R) (hl : l.Nodup) :
+theorem nodup_prod_eq_finset_prod (l : Multiset R) (hl : l.Nodup) :
     l.prod = ∏ x ∈ l.toFinset, x := by
   rw [Finset.prod_multiset_count]
   refine Finset.prod_congr rfl fun x hx => ?_
-  rw [Multiset.count_eq_one_of_mem hl (Multiset.mem_toFinset.mp hx), pow_one]
+  simp_all
 
-private theorem moebius_finset_prod_prime (S : Finset R) (hS : ∀ p ∈ S, Prime p) :
+theorem moebius_finset_prod_prime (S : Finset R) (hS : ∀ p ∈ S, Prime p) :
     UniqueFactorizationMonoid.moebius (∏ p ∈ S, p) = (-1 : ℤ) ^ S.card := by
   classical
   induction S using Finset.induction_on with
   | empty => simp
   | insert a S ha ih =>
     have hSa : Prime a := hS a (Finset.mem_insert_self a S)
-    have hS' : ∀ p ∈ S, Prime p := fun p hp => hS p (Finset.mem_insert_of_mem hp)
+    have hS' : ∀ p ∈ S, Prime p := by simp_all
     have hrel : IsRelPrime a (∏ p ∈ S, p) := by
       refine hSa.irreducible.isRelPrime_iff_not_dvd.mpr ?_
       rw [Prime.dvd_finsetProd_iff hSa]
@@ -69,7 +68,7 @@ theorem squarefree_divisor_dictionary (g : R) (hg0 : g ≠ 0) (hg : Squarefree g
       refine ⟨S.val, ?_, ?_⟩
       · rw [Multiset.le_iff_subset S.nodup, ← Multiset.toFinset_subset, Finset.val_toFinset]
         exact hS
-      · rw [nodup_prod_eq_finset_prod S.val S.nodup, Finset.val_toFinset]
+      simp
   ·
     intro S hS T hT heq
     simp only [SetLike.mem_coe, Finset.mem_powerset] at hS hT
@@ -103,10 +102,9 @@ theorem squarefree_divisor_dictionary (g : R) (hg0 : g ≠ 0) (hg : Squarefree g
       rw [Multiset.mem_toFinset, Multiset.mem_powerset] at hm
       rw [← hprod]
       obtain ⟨t, ht⟩ := Multiset.le_iff_exists_add.mp hm
-      rw [ht, Multiset.prod_add]
-      exact dvd_mul_right _ _
+      simp_all
     · intro hd
-      have hd0 : d ≠ 0 := fun h => hg0 (by rw [h] at hd; exact zero_dvd_iff.mp hd)
+      have hd0 : d ≠ 0 := fun h => hg0 (by simp_all)
       refine ⟨UniqueFactorizationMonoid.factors d, ?_, ?_⟩
       · rw [Multiset.mem_toFinset, Multiset.mem_powerset]
         rw [UniqueFactorizationMonoid.factors_eq_normalizedFactors,
@@ -114,6 +112,3 @@ theorem squarefree_divisor_dictionary (g : R) (hg0 : g ≠ 0) (hg : Squarefree g
         exact (UniqueFactorizationMonoid.dvd_iff_normalizedFactors_le_normalizedFactors
           hd0 hg0).mp hd
       · exact associated_iff_eq.mp (UniqueFactorizationMonoid.factors_prod hd0)
-
-end
-end DedekindZetaZeroFree.LargeSieve.Vendor.CutoffDifference

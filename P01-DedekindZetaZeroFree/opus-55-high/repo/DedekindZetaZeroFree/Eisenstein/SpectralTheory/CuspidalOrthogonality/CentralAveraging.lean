@@ -67,7 +67,7 @@ def centralComplexAverage (g : CoveredSpherical F ζ hζ U → ℂ) :
   intro ε _
   exact (KPContSectorCentralHaarInvariance.z_measurePreserving F ζ hζ R U ε).integrable_comp_of_integrable hg
 
-private theorem complex_measurable_iff_comp_q
+theorem complex_measurable_iff_comp_q
     (a : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℂ) :
     Measurable a ↔ Measurable (a ∘ q F ζ hζ U) := by
   have hmap := Continuous.map_borel_eq
@@ -284,8 +284,8 @@ theorem cuspJointChart_measurable (Y : ℝ) (hY : AdmissibleCutoff A Y) :
 end DedekindZetaZeroFree.KPGlobalResidualConstruction.SourceCuspidalOrthogonality.Transport
 
 noncomputable section
-open scoped Classical NumberField ENNReal
 open MeasureTheory
+open scoped Classical NumberField ENNReal
 namespace DedekindZetaZeroFree.KPGlobalResidualConstruction.SourceCuspidalOrthogonality.Transport
 open KPMsFixedHaarDisintegration KPContSectorCoveredQuotientVocabulary KPContSectorFixedPushforwardSupport
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
@@ -312,8 +312,8 @@ end DedekindZetaZeroFree.KPGlobalResidualConstruction.SourceCuspidalOrthogonalit
 
 noncomputable section
 set_option backward.isDefEq.respectTransparency false
-open scoped Classical NumberField
 open MeasureTheory
+open scoped Classical NumberField
 namespace DedekindZetaZeroFree.KPGlobalResidualConstruction.SourceCuspidalOrthogonality.Transport
 variable (F : Type) [Field F] [NumberField F]
 variable (K L : AddSubgroup F) (hKL : K ≤ L)
@@ -582,8 +582,8 @@ theorem pairing_centralAverage (u h : SmoothSections F ζ hζ C R P H U) (v : X)
 end DedekindZetaZeroFree.KPGlobalResidualConstruction.SourceCuspidalOrthogonality.Bridge
 
 noncomputable section
-open scoped Classical NumberField Topology
 open MeasureTheory
+open scoped Classical NumberField Topology
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1800000
 namespace DedekindZetaZeroFree.KPGlobalResidualConstruction.SourceCuspidalOrthogonality

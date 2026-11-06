@@ -5,7 +5,6 @@ public import ClassFieldTheory.GlobalClassFieldTheory.GlobalClassFields.MathlibG
 @[expose] public section
 
 namespace DedekindZetaZeroFree.KummerConductorFrobenius
-noncomputable section
 open scoped NumberField Classical
 open IsDedekindDomain
 
@@ -33,6 +32,3 @@ theorem transport_prime {F : Type} [Field F] [NumberField F]
       f (ClassFieldTheory.rayClassOfFinitePrime b v (h ▸ hv)) := by
   subst b
   rfl
-
-end
-end DedekindZetaZeroFree.KummerConductorFrobenius

@@ -8,8 +8,8 @@ public import Mathlib.Analysis.Complex.HalfPlane
 namespace DedekindZetaZeroFree
 
 theorem mellin_punctured_halfplane_isOpen (σ : ℝ) (hσ : σ < 1) :
-    IsOpen {s : ℂ | σ < s.re ∧ s ≠ 1} := by
-  exact (Complex.isOpen_re_gt σ).inter isOpen_ne
+    IsOpen {s : ℂ | σ < s.re ∧ s ≠ 1} := 
+  (Complex.isOpen_re_gt σ).inter isOpen_ne
 
 theorem mellin_punctured_halfplane_isPreconnected (σ : ℝ) (hσ : σ < 1) :
     IsPreconnected {s : ℂ | σ < s.re ∧ s ≠ 1} := by
@@ -74,8 +74,4 @@ theorem mellin_punctured_halfplane_two_accPt :
     linarith
   · exact ⟨ε / 2, by positivity, rfl⟩
   · intro h
-    have hi := congrArg Complex.im h
-    simp at hi
-    linarith
-
-end DedekindZetaZeroFree
+    simp_all

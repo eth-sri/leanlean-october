@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Algebraic laws for Hilbert pairings
 -/
@@ -43,5 +40,3 @@ def IsNondegenerate
       (∀ b : PowerClassGroup K n, B a b = 1) → a = 1) ∧
     (∀ b : PowerClassGroup K n,
       (∀ a : PowerClassGroup K n, B a b = 1) → b = 1)
-
-end ClassFieldTheory.HilbertPairing

@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Canonical Kummer algebras
 -/
@@ -27,5 +24,3 @@ polynomial is reducible, so no root in a chosen closure is required. -/
 abbrev KummerAlgebra
     (K : Type u) [Field K] (n : ℕ+) (a : Kˣ) :=
   AdjoinRoot (Polynomial.X ^ (n : ℕ) - Polynomial.C (a : K))
-
-end ClassFieldTheory

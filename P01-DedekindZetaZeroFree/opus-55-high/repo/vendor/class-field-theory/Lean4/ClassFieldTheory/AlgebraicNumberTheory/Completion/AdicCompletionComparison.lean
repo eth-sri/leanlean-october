@@ -3,9 +3,8 @@ module
 public import ClassFieldTheory.AlgebraicNumberTheory.Completion.AdicCompletionMap
 public import ClassFieldTheory.AlgebraicNumberTheory.Completion.Comparison
 public import ClassFieldTheory.AlgebraicNumberTheory.Adele.IntegralTensorSupport.IdeleSupport
-public import ClassFieldTheory.AlgebraicNumberTheory.Adele.IntegralTensorSupport.Localization
-public import ClassFieldTheory.AlgebraicNumberTheory.Adele.IntegralTensorSupport.AbsoluteValue
 public import ClassFieldTheory.AlgebraicNumberTheory.Adele.IntegralTensorSupport.Lattice
+public import ClassFieldTheory.AlgebraicNumberTheory.Adele.IntegralTensorSupport.AbsoluteValue
 public import ClassFieldTheory.AlgebraicNumberTheory.Adele.IntegralTensorSupport.FinitePlaceCompletion
 public import ClassFieldTheory.AlgebraicNumberTheory.Adele.IntegralTensorSupport.LocalTensorDecomposition
 public import Mathlib.NumberTheory.RamificationInertia.Valuation
@@ -18,17 +17,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
-
-
-
-set_option autoImplicit false
 
 /-!
 # Comparing the exact-extension and concrete adic-completion maps
@@ -54,7 +42,7 @@ variable
 
 /-- The concrete homomorphism of adic completions associated with an
 exact extension of the normalized absolute value. -/
-noncomputable def finitePlaceExtensionAdicCompletionMap
+def finitePlaceExtensionAdicCompletionMap
     (w : HeightOneSpectrum (𝓞 K))
     (a : AbsoluteValueExtension
       (HeightOneSpectrum.adicAbv K w) L) :
@@ -89,7 +77,7 @@ theorem finitePlaceExtensionAdicCompletionMap_coe
           (algebraMap K (w.adicCompletion K) x) =
         algebraMap K
           (HeightOneSpectrum.adicAbv K w).Completion x
-    exact (relativeFinitePlaceCompletionAlgEquiv w).symm.commutes x
+    simp
   change
     finitePlaceExtensionAdicCompletionRingEquiv
         (K := K) (L := L) w a
@@ -182,13 +170,6 @@ theorem finitePlaceExtensionAdicCompletionMap_eq_finitePlaceAdicCompletionMap
           (k : w.adicCompletion K)
     rw [finitePlaceExtensionAdicCompletionMap_coe,
       finitePlaceAdicCompletionMap_coe]
-    change
-      (algebraMap K L k :
-        (finitePlaceExtensionCentre
-          (K := K) (L := L) w a).adicCompletion L) =
-      (algebraMap K L k :
-        (finitePlaceExtensionCentre
-          (K := K) (L := L) w a).adicCompletion L)
     rfl
 
 /-- The concrete completion at a finite place above `w` is finite over the
@@ -344,7 +325,7 @@ theorem finitePlaceExtensionAdicCompletionMap_valued
   have hk : k ≠ 0 := by
     intro hk
     have : Valued.v x = 0 := by
-      rw [← hkval, hk, map_zero]
+      simp_all
     apply hx
     simpa using this
   let z : w.adicCompletion K := x * (k : w.adicCompletion K)⁻¹
@@ -370,12 +351,11 @@ theorem finitePlaceExtensionAdicCompletionMap_valued
   have hkcoe :
       (k : w.adicCompletion K) ≠ 0 := by
     change algebraMap K (w.adicCompletion K) k ≠ 0
-    exact (map_ne_zero
-      (algebraMap K (w.adicCompletion K))).2 hk
+    simp_all
   have hx_factor :
       x = z * (k : w.adicCompletion K) := by
     dsimp [z]
-    rw [mul_assoc, inv_mul_cancel₀ hkcoe, mul_one]
+    simp_all
   calc
     Valued.v
         (finitePlaceExtensionAdicCompletionMap K L w a x) =
@@ -419,5 +399,3 @@ theorem finitePlaceAdicCompletionMap_valued
   rw [←
     finitePlaceExtensionAdicCompletionMap_eq_finitePlaceAdicCompletionMap]
   exact finitePlaceExtensionAdicCompletionMap_valued K L w a x
-
-end

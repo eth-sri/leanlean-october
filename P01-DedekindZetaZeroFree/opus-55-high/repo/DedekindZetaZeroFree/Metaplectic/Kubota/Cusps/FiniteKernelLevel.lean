@@ -18,7 +18,7 @@ set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1000000
 open KPMsResidualTailRestoration.SharpConstantTerm.FiberStability
 
-private theorem finiteBase_finiteRoot_principal (r : F) : KPCuspGenuineMonodromy.finiteBase F ζ hζ
+theorem finiteBase_finiteRoot_principal (r : F) : KPCuspGenuineMonodromy.finiteBase F ζ hζ
  (finiteRoot F ζ hζ (algebraMap F (IsDedekindDomain.FiniteAdeleRing (𝓞 F) F) r)) =
  KPFiniteComponents.diagonal F (KPChamberBruhatTwoCells.rationalUnipotent F r) := by
  let x := finiteParameter F (algebraMap F (IsDedekindDomain.FiniteAdeleRing (𝓞 F) F) r)
@@ -37,7 +37,7 @@ private theorem finiteBase_finiteRoot_principal (r : F) : KPCuspGenuineMonodromy
  convert h using 1
  · rfl
  · fin_cases i <;> fin_cases j <;> rfl
-private theorem rationalUnipotent_fixes_infinity (r : F) : KPChamberBruhatTwoCells.rationalUnipotent F r • KPCuspArithmetic.infinity F = KPCuspArithmetic.infinity F := by
+theorem rationalUnipotent_fixes_infinity (r : F) : KPChamberBruhatTwoCells.rationalUnipotent F r • KPCuspArithmetic.infinity F = KPCuspArithmetic.infinity F := by
  unfold KPChamberBruhatTwoCells.rationalUnipotent KPCuspArithmetic.infinity
  rw [Projectivization.PGL.mk_smul_mk]
  congr 1
@@ -53,7 +53,7 @@ variable (a : KPContFlatCuspIncomingEvaluation.Cusps F ζ hζ C R P H U)
 
 open KPContFlatCuspIncomingEvaluation
 
-private theorem rational_parameter_mem_actual_parabolic (r:F)
+theorem rational_parameter_mem_actual_parabolic (r:F)
  (hr : (finiteRepresentative F ζ hζ C R P H U a 1)⁻¹ *
  finiteRoot F ζ hζ (algebraMap F (IsDedekindDomain.FiniteAdeleRing (𝓞 F) F) r) *
  finiteRepresentative F ζ hζ C R P H U a 1 ∈ (atlasLevel F ζ hζ C R P H U).toOpenSubgroup) :

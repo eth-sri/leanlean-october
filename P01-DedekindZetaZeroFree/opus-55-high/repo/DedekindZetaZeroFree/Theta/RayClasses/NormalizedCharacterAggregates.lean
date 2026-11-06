@@ -74,12 +74,12 @@ theorem conductorNorm_pos (hm : m ≠ ⊥) : 0 < conductorNorm F m := by
   · exact_mod_cast (abs_pos.mpr (NumberField.discr_ne_zero F))
   · exact_mod_cast (Nat.pos_of_ne_zero (mt Ideal.absNorm_eq_zero_iff.mp hm))
 
-theorem conductorScale_pos (hm : m ≠ ⊥) : 0 < conductorScale F m := by
-  exact Real.sqrt_pos.mpr (conductorNorm_pos hm)
+theorem conductorScale_pos (hm : m ≠ ⊥) : 0 < conductorScale F m := 
+  Real.sqrt_pos.mpr (conductorNorm_pos hm)
 
 theorem conductorScale_sq (hm : m ≠ ⊥) :
-    conductorScale F m ^ 2 = conductorNorm F m := by
-  exact Real.sq_sqrt (le_of_lt (conductorNorm_pos hm))
+    conductorScale F m ^ 2 = conductorNorm F m := 
+  Real.sq_sqrt (le_of_lt (conductorNorm_pos hm))
 
 def normalizedRayTheta (D : RayThetaRepresentatives F m hm)
     (ψ : RayIdealClass F m hm →* ℂ) (t : ℝ) : ℂ := by
@@ -105,7 +105,3 @@ def normalizedRayConjugateTheta (D : RayThetaRepresentatives F m hm)
   exact (4 : ℂ) ^ NumberField.InfinitePlace.nrComplexPlaces F *
     ∑ c : RayIdealClass F m hm,
       (starRingEnd ℂ) (ψ c) * RayTheta.fδ (D.coset c) ∅ (t / conductorScale F m)
-
-end DedekindZetaZeroFree.Hecke.Theta
-
-end

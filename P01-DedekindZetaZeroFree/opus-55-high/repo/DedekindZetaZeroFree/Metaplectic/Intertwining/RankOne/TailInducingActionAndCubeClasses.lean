@@ -60,7 +60,3 @@ theorem actualRootAction_cube (P : Polarization S.heisenberg) (Îµ : Sign) (s : â
   unfold actualRootAction
   rw [ht]
   exact rootCharacter_inducingAction S.borel P _ _ u V
-
-end DedekindZetaZeroFree.KPRankOneShellRepair
-
-end

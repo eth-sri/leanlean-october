@@ -27,8 +27,8 @@ lemma seminorm_bddAbove (j : ℕ) (φ : ComplexProjectiveLine → ℂ)
         (hinf.continuous_iteratedFDeriv (by simp)).norm.continuousOn
   have hfin : BddAbove (⋃ q ∈ Finset.range (j + 1),
       ((fun z : ℂ => ‖iteratedFDeriv ℝ q (φ ∘ projectiveOpen) z‖) '' Metric.closedBall 0 1 ∪
-       (fun z : ℂ => ‖iteratedFDeriv ℝ q (φ ∘ projectiveInfinity) z‖) '' Metric.closedBall 0 1)) := by
-    exact (Finset.finite_toSet _).bddAbove_biUnion.mpr (fun q _ => hb q)
+       (fun z : ℂ => ‖iteratedFDeriv ℝ q (φ ∘ projectiveInfinity) z‖) '' Metric.closedBall 0 1)) := 
+    (Finset.finite_toSet _).bddAbove_biUnion.mpr (fun q _ => hb q)
   apply BddAbove.union bddAbove_singleton
   apply hfin.mono
   rintro r ⟨q, hq, z, hz, hr⟩
@@ -128,9 +128,7 @@ lemma norm_local_chart_composition_le {n : ℕ} (j q : ℕ) (hq : q ≤ j)
     apply norm_iteratedFDerivWithin_comp_le hg.contDiffOn hz (by simp)
       uniqueDiffOn_univ hV.uniqueDiffOn (mapsTo_univ _ _) hu
     · simpa only [iteratedFDerivWithin_univ] using hgi
-    · intro i hi hiq
-      rw [hwithin]
-      exact hD i hi hiq
+    simp_all
   constructor
   · apply hbound _ hop
     intro i hi
@@ -165,5 +163,3 @@ lemma compact_iteratedFDeriv_power_bound {E F : Type*}
   apply hAi.trans
   apply (le_max_left A 1).trans
   exact le_self_pow₀ (le_max_right A 1) (by omega)
-
-end DedekindZetaZeroFree.RepresentationTheory.KPComplexIntertwinerParameterMajorant

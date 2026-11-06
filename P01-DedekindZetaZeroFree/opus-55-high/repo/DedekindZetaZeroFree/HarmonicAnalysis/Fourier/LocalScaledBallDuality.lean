@@ -65,7 +65,7 @@ theorem localScaledBallDual_eq_finiteCompletionBall
     congr 1
     omega
   rw [he]
-  exact mul_le_mul_iff_of_pos_left WithZero.exp_pos
+  simp
 
 theorem localScaledBallDual_map_mul_eq_annihilator
     (v : HeightOneSpectrum (𝓞 F)) (b : (v.adicCompletion F)ˣ) (m : ℤ) :
@@ -74,7 +74,7 @@ theorem localScaledBallDual_map_mul_eq_annihilator
       localFiniteAnnihilator F v (finiteCompletionBall F v m) := by
   apply AddSubgroup.map_comap_eq_self
   intro x hx
-  exact ⟨(↑b⁻¹ : v.adicCompletion F) * x, by simp [mul_assoc]⟩
+  exact ⟨(↑b⁻¹ : v.adicCompletion F) * x, by simp⟩
 
 theorem localFiniteAnnihilator_map_localScaledBallDual
     (v : HeightOneSpectrum (𝓞 F)) (b : (v.adicCompletion F)ˣ) (m : ℤ) :
@@ -158,8 +158,7 @@ theorem natCard_localScaledBallDualQuotient
       convert (finiteCompletionBall F v m).sub_mem hj hi using 1 <;> abel
     have he : (QuotientAddGroup.mk (r i) : localScaledBallDualQuotient F v b m) =
         QuotientAddGroup.mk (r j) := QuotientAddGroup.eq_iff_sub_mem.mpr hs
-    rw [hr, hr] at he
-    exact hij he
+    simp_all
   have hunion : (localScaledBallDual F v b m : Set (v.adicCompletion F)) = ⋃ i, C i := by
     ext x
     constructor
@@ -173,7 +172,7 @@ theorem natCard_localScaledBallDualQuotient
     · intro hx
       obtain ⟨i, hi⟩ := Set.mem_iUnion.mp hx
       have := (localScaledBallDual F v b m).add_mem (hHL hi) (r i).property
-      simpa only [sub_add_cancel, SetLike.mem_coe] using this
+      simp_all
   have hmeasure : localNormalizedHaar F v
       (localScaledBallDual F v b m : Set (v.adicCompletion F)) =
       (Nat.card (localScaledBallDualQuotient F v b m) : ENNReal) *
@@ -188,7 +187,3 @@ theorem natCard_localScaledBallDualQuotient
   rw [ENNReal.toReal_mul, ENNReal.toReal_natCast] at hreal
   exact (eq_div_iff (ne_of_gt (localScaledBallDual_masses_pos_finite F v b m).1)).mpr
     hreal.symm
-
-end DedekindZetaZeroFree
-
-end

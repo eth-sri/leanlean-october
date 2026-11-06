@@ -40,5 +40,3 @@ theorem regularCharacterDeterminant
           (Nat.card G / orderOf g) := Finset.prod_pow _ _ _
     _ = (1 - x ^ orderOf g) ^ (Nat.card G / orderOf g) := by
       rw [rootsEulerPolynomial (orderOf g) hf x]
-
-end DedekindZetaZeroFree.AbelianQuotient

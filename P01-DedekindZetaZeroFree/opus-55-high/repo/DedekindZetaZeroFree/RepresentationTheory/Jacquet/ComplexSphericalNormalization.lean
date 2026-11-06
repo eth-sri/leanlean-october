@@ -33,7 +33,7 @@ theorem sphericalSeed_value (y : ℂˣ) :
   rw [sphericalSeed, whittaker_vZero (4 * Real.pi) (by positivity)
     frequency frequency_coe, radius,
     besselKThird_eq_KThird _ (mul_pos (by positivity) (norm_pos_iff.mpr y.ne_zero))]
-  exact Complex.ofReal_mul _ _
+  simp
 
 theorem sphericalSeed_mem_core :
     (sphericalSeed : PrincipalSeries negativeParameter) ∈ KPGlobalResidualConstruction.complexCore := by
@@ -47,7 +47,7 @@ theorem sphericalSeed_mem_core :
   apply Submodule.smul_mem
   apply Submodule.smul_mem
   rw [KPCplxIntertwinerEigenvalues.harmonicKType_zero_eq_span]
-  exact Submodule.subset_span (Set.mem_singleton _)
+  simp
 
 def sphericalCoreSeed : KPGlobalResidualConstruction.complexCore :=
   ⟨(sphericalSeed : PrincipalSeries negativeParameter), sphericalSeed_mem_core⟩
@@ -72,7 +72,7 @@ theorem completion_coordinate_norm (A : SArithmeticData F) (w : InfinitePlace F)
     (KPHilbert.infinite_isComplex F A.zeta12 A.primitive_zeta12 w)).isometry
   have hd := hi.dist_eq z 0
   change dist (coordinate A w z) (coordinate A w 0) = dist z 0 at hd
-  simpa only [map_zero, dist_zero_right] using hd
+  simp_all
 
 theorem sphericalSeed_completion_value (A : SArithmeticData F) (w : InfinitePlace F)
     (z : w.Completionˣ) :
@@ -87,7 +87,7 @@ theorem sphericalSeed_completion_value (A : SArithmeticData F) (w : InfinitePlac
     exact (coordinate A w).symm_apply_apply _
   rw [← hu, complexJacquet_actualDiagonal, sphericalSeed_value]
   have hn : ‖(y : ℂ)‖ = ‖(z : w.Completion)‖ := completion_coordinate_norm A w _
-  rw [hn, Real.sqrt_sq (norm_nonneg _), hu]
+  simp_all
 
 theorem sphericalCoreSeed_ne_zero : sphericalCoreSeed ≠ 0 := by
   intro hz
@@ -99,9 +99,7 @@ theorem sphericalCoreSeed_ne_zero : sphericalCoreSeed ≠ 0 := by
   unfold whittakerValue
   have hz' : imageAction frequency (Matrix.ProjGenLinGroup.mk (diagonal (1 : ℂˣ)))
       (0 : Theta frequency) = 0 := by
-    apply Subtype.ext
-    change KPCplxPrincipalSeriesCharts.pi negativeParameter (Matrix.ProjGenLinGroup.mk (diagonal (1 : ℂˣ))) 0 = 0
-    exact KPGlobalResidualConstruction.pi_zero _ _
+    rfl
   rw [hz', map_zero]
 
 def coreInStandardImage : KPGlobalResidualConstruction.complexCore →ₗ[ℂ] Theta frequency :=
@@ -125,7 +123,7 @@ theorem continuous_whittaker_sphericalCore_ne_zero (A : SArithmeticData F)
     have hd : diagonal (1 : ℂˣ) = 1 := by
       apply Units.ext
       ext i j
-      fin_cases i <;> fin_cases j <;> simp [diagonal, Matrix.one_apply]
+      fin_cases i <;> fin_cases j <;> simp [diagonal]
     rw [hd, Matrix.ProjGenLinGroup.mk_one]
     congr 1
     apply Subtype.ext
@@ -145,7 +143,3 @@ theorem sphericalSeed_completion_normalization (A : SArithmeticData F)
   refine ⟨a⁻¹, inv_ne_zero ha, fun z => ?_⟩
   rw [he, ContinuousLinearMap.smul_apply, smul_eq_mul, ← mul_assoc,
     inv_mul_cancel₀ ha, one_mul, sphericalSeed_completion_value]
-
-end DedekindZetaZeroFree.RootDerivatives
-
-end

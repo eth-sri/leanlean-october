@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Valuations of standard Lubin--Tate iterates at a primitive point
 
@@ -43,7 +40,7 @@ variable {K : Type u} [Field K]
 
 /-- The `i`-fold standard polynomial iterate, evaluated at the primitive
 point in the complete level valuation ring. -/
-noncomputable def standardLubinTatePrimitivePointIterateInteger
+def standardLubinTatePrimitivePointIterateInteger
     {F : LocalField.{u, v} K} {π : F.valuationSubring}
     (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
     (n i : ℕ) :
@@ -101,11 +98,11 @@ theorem standardLubinTatePrimitivePointIterateInteger_addVal
       let q := Nat.card F.residueField
       let d := (q - 1) * q ^ n
       let y := standardLubinTatePrimitivePointIterateInteger hπ n i
-      have hi' : i ≤ n := Nat.le_trans (Nat.le_succ i) hi
+      have hi' : i ≤ n := by omega
       have hiy :
           IsDiscreteValuationRing.addVal target.valuationSubring y =
-            (q ^ i : ℕ) := by
-        exact ih hi'
+            (q ^ i : ℕ) := 
+        ih hi'
       have hπval :
           IsDiscreteValuationRing.addVal target.valuationSubring
               (standardLubinTateLevelCoefficientHom hπ n π) =
@@ -122,10 +119,9 @@ theorem standardLubinTatePrimitivePointIterateInteger_addVal
           IsDiscreteValuationRing.addVal target.valuationSubring
               (standardLubinTateLevelCoefficientHom hπ n π * y) =
             (d + q ^ i : ℕ) := by
-        rw [IsDiscreteValuationRing.addVal_mul, hπval, hiy]
-        rfl
-      have hqone : 1 < q := by
-        exact Finite.one_lt_card
+        simp_all
+      have hqone : 1 < q := 
+        Finite.one_lt_card
       have hqpos : 0 < q := Nat.zero_lt_one.trans hqone
       have hpowle : q ^ (i + 1) ≤ q ^ n :=
         Nat.pow_le_pow_right hqpos hi
@@ -138,8 +134,7 @@ theorem standardLubinTatePrimitivePointIterateInteger_addVal
             Nat.mul_le_mul_right (q ^ n) hqsub
       have htailpos : 0 < q ^ i := Nat.pow_pos hqpos
       have hnatlt : q ^ (i + 1) < d + q ^ i :=
-        hpowle.trans_lt
-          (hdegreele.trans_lt (Nat.lt_add_of_pos_right htailpos))
+        by omega
       have henatlt :
           (q ^ (i + 1) : ℕ∞) < (d + q ^ i : ℕ) := by
         exact_mod_cast hnatlt
@@ -156,7 +151,3 @@ theorem standardLubinTatePrimitivePointIterateInteger_addVal
         hpow, hmul]
       rw [min_eq_left]
       exact henatlt.le
-
-end LubinTate
-
-end

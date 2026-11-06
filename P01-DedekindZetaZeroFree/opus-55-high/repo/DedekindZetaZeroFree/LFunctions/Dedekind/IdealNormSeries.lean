@@ -32,7 +32,7 @@ namespace DedekindZetaZeroFree.Odlyzko
 
 variable (K : Type*) [Field K] [NumberField K]
 
-noncomputable def dedekindZetaSummand (s : ℂ) (n : ℕ) : ℂ :=
+def dedekindZetaSummand (s : ℂ) (n : ℕ) : ℂ :=
   LSeries.term (fun m ↦ (idealNormCount K m : ℂ)) s n
 
 @[simp] lemma dedekindZetaSummand_zero (s : ℂ) :
@@ -53,7 +53,7 @@ namespace DedekindZetaZeroFree.Odlyzko
 
 variable (K : Type*) [Field K] [NumberField K]
 
-noncomputable def idealInverseNormPower (s : ℂ) (I : Ideal (𝓞 K)) : ℂ :=
+def idealInverseNormPower (s : ℂ) (I : Ideal (𝓞 K)) : ℂ :=
   if I = 0 then 0 else ((absNorm I : ℂ) ^ (-s))
 
 lemma idealInverseNormPower_zero (s : ℂ) :
@@ -119,7 +119,7 @@ lemma hasSum_idealInverseNormPower_fiber (s : ℂ) (n : ℕ) :
       Complex.cpow_neg, div_eq_mul_inv]
     simp
 
-private lemma summable_idealInverseNormPower_fiber (s : ℂ) (n : ℕ) :
+lemma summable_idealInverseNormPower_fiber (s : ℂ) (n : ℕ) :
     Summable
       (fun I : {I : Ideal (𝓞 K) // absNorm I = n} ↦
         idealInverseNormPower K s I) := by
@@ -177,9 +177,3 @@ theorem hasSum_nonzeroIdeal_inverseNormPower {s : ℂ} (hs : 1 < s.re) :
         (Subtype.val_injective.extend_apply f 0 J).symm
   rw [hext] at h
   exact (hasSum_extend_zero Subtype.val_injective).1 h
-
-end DedekindZetaZeroFree.Odlyzko
-
-end
-
-end

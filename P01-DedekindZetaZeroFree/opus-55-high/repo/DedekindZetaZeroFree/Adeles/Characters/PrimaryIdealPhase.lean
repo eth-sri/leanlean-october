@@ -15,7 +15,6 @@ open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.SArithmeticData.GaussCorrection.EisensteinExtensionArithmetic
 
 noncomputable section
-set_option autoImplicit false
 variable {F : Type} [Field F] [NumberField F]
 
  abbrev e (A : SArithmeticData F) := ClassCharacterGluing.exteriorFractionalUnit A
@@ -23,20 +22,20 @@ variable {F : Type} [Field F] [NumberField F]
   ⟨I.val * J.val, mul_ne_zero I.property.1 J.property.1,
     by rw [Ideal.mul_sup_eq_of_coprime_left I.property.2]; exact J.property.2⟩
  def unitIdeal (A : SArithmeticData F) : A.Exterior := ⟨⊤, by simp⟩
-private lemma e_inj (A : SArithmeticData F) : Function.Injective (e A) := by
+lemma e_inj (A : SArithmeticData F) : Function.Injective (e A) := by
   intro I J h
   apply A.exteriorIdealEquiv.injective
   apply Subtype.ext
   apply (FractionalIdeal.coeIdeal_inj (K := F)).mp
   simpa only [e, ClassCharacterGluing.exteriorFractionalUnit_val, A.exteriorIdealEquiv_apply] using congrArg Units.val h
-private lemma e_prod (A : SArithmeticData F) (I J : A.Exterior) :
+lemma e_prod (A : SArithmeticData F) (I J : A.Exterior) :
     e A (prod A I J) = e A I * e A J :=
   ClassCharacterGluing.exteriorFractionalUnit_mul A I J _ rfl
-private lemma e_unit (A : SArithmeticData F) : e A (unitIdeal A) = 1 := by
+lemma e_unit (A : SArithmeticData F) : e A (unitIdeal A) = 1 := by
   apply Units.ext
   rw [e, ClassCharacterGluing.exteriorFractionalUnit_val]
   simp [SArithmeticData.extendIdeal, unitIdeal, Ideal.map_top]
-private lemma e_ratio (A : SArithmeticData F) (K : (FractionalIdeal A.R⁰ F)ˣ) :
+lemma e_ratio (A : SArithmeticData F) (K : (FractionalIdeal A.R⁰ F)ˣ) :
     ∃ I J : A.Exterior, K = e A I / e A J := by
   let k : FractionalIdeal A.R⁰ F := K
   have hn : k.num ≠ ⊥ := by
@@ -44,13 +43,13 @@ private lemma e_ratio (A : SArithmeticData F) (K : (FractionalIdeal A.R⁰ F)ˣ)
     exact K.ne_zero (FractionalIdeal.num_eq_zero_iff.mp h)
   let d : Ideal A.R := Ideal.span {(k.den : A.R)}
   have hd : d ≠ ⊥ := by
-    simpa [d, Ideal.span_singleton_eq_bot] using nonZeroDivisors.coe_ne_zero k.den
+    simp [d, Ideal.span_singleton_eq_bot]
   let I := A.exteriorIdealEquiv.symm ⟨k.num, hn⟩
   let J := A.exteriorIdealEquiv.symm ⟨d, hd⟩
-  have hI : A.extendIdeal I = k.num := by
-    exact congrArg Subtype.val (A.exteriorIdealEquiv.apply_symm_apply ⟨k.num, hn⟩)
-  have hJ : A.extendIdeal J = d := by
-    exact congrArg Subtype.val (A.exteriorIdealEquiv.apply_symm_apply ⟨d, hd⟩)
+  have hI : A.extendIdeal I = k.num := 
+    congrArg Subtype.val (A.exteriorIdealEquiv.apply_symm_apply ⟨k.num, hn⟩)
+  have hJ : A.extendIdeal J = d := 
+    congrArg Subtype.val (A.exteriorIdealEquiv.apply_symm_apply ⟨d, hd⟩)
   refine ⟨I, J, ?_⟩
   apply (eq_div_iff_mul_eq').mpr
   apply Units.ext
@@ -63,7 +62,7 @@ private lemma e_ratio (A : SArithmeticData F) (K : (FractionalIdeal A.R⁰ F)ˣ)
   ⟨DHCubic.lambda F A ι I.val, by
     change DHCubic.lambda F A ι I.val ∈ Metric.sphere 0 1
     simpa [DHCubic.lambda] using DHCubic.lambdaF_exterior_norm (DHCubic.E0 F A) F A ι I⟩
-private lemma phase_prod (A : SArithmeticData F) (ι : DHCubic.E0 F A →+* ℂ)
+lemma phase_prod (A : SArithmeticData F) (ι : DHCubic.E0 F A →+* ℂ)
     (I J : A.Exterior) : phase A ι (prod A I J) = phase A ι I * phase A ι J := by
   apply Subtype.ext
   exact DHCubic.lambdaF_mul (DHCubic.E0 F A) F ι I.val J.val
@@ -73,9 +72,8 @@ private lemma phase_unit (A : SArithmeticData F) (ι : DHCubic.E0 F A →+* ℂ)
     apply Subtype.ext
     simp [prod, unitIdeal, Ideal.mul_top]
   have hh := phase_prod A ι (unitIdeal A) (unitIdeal A)
-  rw [h] at hh
-  exact (mul_left_cancel (hh.symm.trans (mul_one _).symm))
-private lemma phase_ratio_eq (A : SArithmeticData F) (ι : DHCubic.E0 F A →+* ℂ)
+  simp_all
+lemma phase_ratio_eq (A : SArithmeticData F) (ι : DHCubic.E0 F A →+* ℂ)
     (I J I' J' : A.Exterior) (h : e A I / e A J = e A I' / e A J') :
     phase A ι I / phase A ι J = phase A ι I' / phase A ι J' := by
   apply (div_eq_div_iff_mul_eq_mul).mpr
@@ -139,7 +137,6 @@ open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.SArithmeticData.GaussCorrection.EisensteinExtensionArithmetic.FiniteNormalization
 
 noncomputable section
-set_option autoImplicit false
 variable {F : Type} [Field F] [NumberField F]
 
 theorem exists_congruence_open_subgroup
@@ -214,7 +211,6 @@ open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.SArithmeticData.GaussCorrection.EisensteinExtensionArithmetic.FiniteNormalization
 
 noncomputable section
-set_option autoImplicit false
 variable {F : Type} [Field F] [NumberField F]
 
  def clearingIdeal (x : F) : Ideal (𝓞 F) where
@@ -230,7 +226,7 @@ variable {F : Type} [Field F] [NumberField F]
     simp only [map_mul]
     rw [← mul_assoc, mul_comm x, mul_assoc, hn]
 
-private theorem clearing_coprime (x : F) (v : HeightOneSpectrum (𝓞 F))
+theorem clearing_coprime (x : F) (v : HeightOneSpectrum (𝓞 F))
     (hx : v.valuation F x ≤ 1) : clearingIdeal x ⊔ v.asIdeal = ⊤ := by
   obtain ⟨n, d, hd⟩ := v.exists_primeCompl_mul_eq_of_integer x hx
   have hdmem : (d : 𝓞 F) ∈ clearingIdeal x := ⟨n, hd⟩
@@ -241,14 +237,13 @@ private theorem clearing_coprime (x : F) (v : HeightOneSpectrum (𝓞 F))
     (show clearingIdeal x ≤ clearingIdeal x ⊔ v.asIdeal from le_sup_left) hdmem
   exact hdnot (Eq.mp (congrArg (fun I : Ideal (𝓞 F) => (d : 𝓞 F) ∈ I) heq.symm) hmem)
 
-private theorem clearing_ne_bot (x : F) : clearingIdeal x ≠ ⊥ := by
+theorem clearing_ne_bot (x : F) : clearingIdeal x ≠ ⊥ := by
   obtain ⟨⟨n, d⟩, hd⟩ := IsLocalization.surj (nonZeroDivisors (𝓞 F)) x
   intro h
   have : (d : 𝓞 F) ∈ clearingIdeal x := ⟨n, hd⟩
-  rw [h, Ideal.mem_bot] at this
-  exact (nonZeroDivisors.ne_zero d.prop) this
+  simp_all
 
-private theorem nonzero_congruent (D J : Ideal (𝓞 F)) (hD : D ≠ ⊥)
+theorem nonzero_congruent (D J : Ideal (𝓞 F)) (hD : D ≠ ⊥)
     (h : D ⊔ J = ⊤) : ∃ b ∈ D, b ≠ 0 ∧ b - 1 ∈ J := by
   have h1 : (1 : 𝓞 F) ∈ D ⊔ J := by rw [h]; trivial
   obtain ⟨b, hb, c, hc, hbc⟩ := Submodule.mem_sup.mp h1
@@ -262,36 +257,36 @@ private theorem nonzero_congruent (D J : Ideal (𝓞 F)) (hD : D ≠ ⊥)
     rw [this]
     exact J.neg_mem hc
 
-private theorem clearing_modulus_coprime (S : Finset (HeightOneSpectrum (𝓞 F)))
+theorem clearing_modulus_coprime (S : Finset (HeightOneSpectrum (𝓞 F)))
     (m : 𝓞 F) (hm : m ≠ 0)
     (hSm : ∀ v : HeightOneSpectrum (𝓞 F), m ∈ v.asIdeal → v ∈ S)
     (x : F) (hx : ∀ v ∈ S, v.valuation F x ≤ 1) :
     clearingIdeal x ⊔ Ideal.span {m} = ⊤ := by
   by_contra h
   obtain ⟨M, hM, hle⟩ := Ideal.ne_top_iff_exists_maximal.mp h
-  have hmM : m ∈ M := hle ((show Ideal.span {m} ≤ clearingIdeal x ⊔ Ideal.span {m} from le_sup_right) (Ideal.subset_span (by simp)))
+  have hmM : m ∈ M := by simp_all
   have hM0 : M ≠ ⊥ := by
     intro heq
-    exact hm (Ideal.mem_bot.mp (heq ▸ hmM))
+    simp_all
   let v : HeightOneSpectrum (𝓞 F) := ⟨M, hM.isPrime, hM0⟩
   have hcop := clearing_coprime x v (hx v (hSm v hmM))
   have : clearingIdeal x ⊔ v.asIdeal ≤ M := sup_le (le_trans le_sup_left hle) le_rfl
   rw [hcop] at this
   exact hM.ne_top (top_unique this)
 
-private theorem prime_not_mem_of_congruent (S : Finset (HeightOneSpectrum (𝓞 F)))
+theorem prime_not_mem_of_congruent (S : Finset (HeightOneSpectrum (𝓞 F)))
     (m b : 𝓞 F) (hb : b - 1 ∈ Ideal.span {m} * (∏ v ∈ S, v.asIdeal)) :
     ∀ v ∈ S, b ∉ v.asIdeal := by
   intro v hv hbv
-  have hp : (∏ w ∈ S, w.asIdeal) ≤ v.asIdeal := by
-    exact le_trans Ideal.prod_le_inf (Finset.inf_le hv)
+  have hp : (∏ w ∈ S, w.asIdeal) ≤ v.asIdeal := 
+    le_trans Ideal.prod_le_inf (Finset.inf_le hv)
   have hb1 : b - 1 ∈ v.asIdeal := hp (Ideal.mul_le_right hb)
   have h1 : (1 : 𝓞 F) ∈ v.asIdeal := by
     have := v.asIdeal.sub_mem hbv hb1
     simpa using this
   exact v.isPrime.ne_top ((Ideal.eq_top_iff_one _).mpr h1)
 
-private theorem exterior_of_not_mem (S : Finset (HeightOneSpectrum (𝓞 F)))
+theorem exterior_of_not_mem (S : Finset (HeightOneSpectrum (𝓞 F)))
     (b : 𝓞 F) (hb : ∀ v ∈ S, b ∉ v.asIdeal) :
     Ideal.span {b} ⊔ (∏ v ∈ S, v.asIdeal) = ⊤ := by
   apply Ideal.sup_prod_eq_top
@@ -374,7 +369,6 @@ open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.SArithmeticData.GaussCorrection.EisensteinExtensionArithmetic
 
 noncomputable section
-set_option autoImplicit false
 variable {F : Type} [Field F] [NumberField F]
 
 namespace FiniteNormalizationTopology
@@ -392,8 +386,8 @@ theorem extend_dense_character (e : H →* G) (he : DenseRange e)
   have hs : Function.Surjective f := by
     intro x
     obtain ⟨g, rfl⟩ := QuotientGroup.mk'_surjective K.toSubgroup x
-    have hopen : IsOpen (q ⁻¹' {q g}) := by
-      exact (isOpen_discrete {q g}).preimage continuous_quotient_mk'
+    have hopen : IsOpen (q ⁻¹' {q g}) := 
+      (isOpen_discrete {q g}).preimage continuous_quotient_mk'
     have hn : (q ⁻¹' {q g}).Nonempty := ⟨g, rfl⟩
     obtain ⟨a, ha⟩ := he.exists_mem_open hopen hn
     exact ⟨a, ha⟩
@@ -434,7 +428,7 @@ theorem finite_diagonal_dense (A : SArithmeticData F) :
       intro he
       have hh := congrFun hux ⟨v, hv⟩
       simp only [val, he, map_zero] at hh
-      exact (u ⟨v, hv⟩).ne_zero hh
+      simp_all
     refine ⟨(A.diagonal (Units.mk0 x hx0)).2, ?_, ⟨Units.mk0 x hx0, rfl⟩⟩
     convert hu using 1
     funext v
@@ -451,7 +445,7 @@ end FiniteNormalizationTopology
   if w.embedding.comp (algebraMap (DHCubic.E0 F A) F) = ι then
     Eisenstein.archimedeanAngular.comp (Units.map w.embedding.toMonoidHom)
   else (Eisenstein.archimedeanAngular.comp (Units.map w.embedding.toMonoidHom))⁻¹
-private theorem infinityDiagonal_apply (A : SArithmeticData F)
+theorem infinityDiagonal_apply (A : SArithmeticData F)
     (ι : DHCubic.E0 F A →+* ℂ) (w : InfinitePlace F) (a : Fˣ) :
     (infinityDiagonal A ι w a : ℂ) =
       DHCubic.infinityComponent (DHCubic.E0 F A) F ι w (w.embedding (a : F)) := by
@@ -463,7 +457,7 @@ private theorem infinityDiagonal_apply (A : SArithmeticData F)
  def infinityDiagonalProduct (A : SArithmeticData F)
     (ι : DHCubic.E0 F A →+* ℂ) : Fˣ →* Circle :=
   ∏ w : InfinitePlace F, infinityDiagonal A ι w
-private theorem infinityDiagonalProduct_apply (A : SArithmeticData F)
+theorem infinityDiagonalProduct_apply (A : SArithmeticData F)
     (ι : DHCubic.E0 F A →+* ℂ) (a : Fˣ) :
     (infinityDiagonalProduct A ι a : ℂ) =
       ∏ w : InfinitePlace F,
@@ -518,7 +512,7 @@ theorem principalDiscrepancy_primary_congruence (A : SArithmeticData F)
   have hn : (∏ w : InfinitePlace F,
       DHCubic.infinityComponent (DHCubic.E0 F A) F ι w (w.embedding (α : F))) ≠ 0 := by
     rw [← ha, ← infinityDiagonalProduct_apply A ι a]
-    exact Circle.coe_ne_zero _
+    simp
   simpa using mul_inv_cancel₀ hn
 
 theorem principalDiscrepancy_primary_ratio (A : SArithmeticData F)
@@ -601,7 +595,6 @@ open scoped NumberField Classical
 open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.SArithmeticData.GaussCorrection
 noncomputable section
-set_option autoImplicit false
 variable {F : Type} [Field F] [NumberField F]
 
 namespace EisensteinInfinityRecipe
@@ -611,8 +604,8 @@ def angularCompletion (w : InfinitePlace F) : w.Completionˣ →* Circle :=
     (Units.map (InfinitePlace.Completion.extensionEmbedding w).toMonoidHom)
 
 theorem continuous_angularCompletion (w : InfinitePlace F) :
-    Continuous (angularCompletion w) := by
-  exact Eisenstein.continuous_archimedeanAngular.comp
+    Continuous (angularCompletion w) := 
+  Eisenstein.continuous_archimedeanAngular.comp
     ((InfinitePlace.Completion.isometry_extensionEmbedding w).continuous.units_map _)
 
 def character (A : SArithmeticData F) (σ : F →+* ℂ) (w : InfinitePlace F) :
@@ -628,7 +621,7 @@ theorem character_apply (A : SArithmeticData F) (σ : F →+* ℂ)
         (σ.comp (algebraMap (DHCubic.E0 F A) F)) w
         (InfinitePlace.Completion.extensionEmbedding w (z : w.Completion)))⁻¹ := by
   have hz : InfinitePlace.Completion.extensionEmbedding w (z : w.Completion) ≠ 0 :=
-    (map_ne_zero (InfinitePlace.Completion.extensionEmbedding w)).mpr z.ne_zero
+    by simp
   unfold character DHCubic.infinityComponent
   split_ifs
   · simp [angularCompletion, DHCubic.angular]
@@ -681,7 +674,7 @@ theorem continuous_glue (A : SArithmeticData F) (χ : A.G →* Circle)
   have hs (a : Fˣ) :
       ClassCharacterSteps.sRestriction A
         (NumberField.IdeleGroup.unitEmbedding (𝓞 F) F a) = A.diagonal a := by
-    ext <;> rfl
+    rfl
   have hi (a : Fˣ) :
       ClassCharacterSteps.exteriorIdealMap A
         (NumberField.IdeleGroup.unitEmbedding (𝓞 F) F a) =
@@ -690,7 +683,7 @@ theorem continuous_glue (A : SArithmeticData F) (χ : A.G →* Circle)
       (_root_.IdeleGroup.fractionalIdeal (_root_.IdeleGroup.principalIdele F a)) = _
     rw [_root_.IdeleGroup.fractionalIdeal_principalIdele]
     apply Units.ext
-    simp only [Units.coe_map, MonoidHom.coe_coe, coe_toPrincipalIdeal]
+    simp only [Units.coe_map, coe_toPrincipalIdeal]
     change (FractionalIdeal.extendedHom F A.R)
       (FractionalIdeal.spanSingleton (𝓞 F)⁰ (a : F)) =
         FractionalIdeal.spanSingleton A.R⁰ (a : F)
@@ -702,7 +695,7 @@ theorem continuous_glue (A : SArithmeticData F) (χ : A.G →* Circle)
       ext x
       simp only [RingHom.comp_apply, RingHom.id_apply, IsFractionRing.map,
         IsLocalization.map_eq]
-      exact (IsScalarTower.algebraMap_apply (𝓞 F) A.R F x).symm
+      rfl
     rw [hm]
     rfl
   have hker : NumberField.IdeleGroup.principalSubgroup (𝓞 F) F ≤
@@ -710,8 +703,7 @@ theorem continuous_glue (A : SArithmeticData F) (χ : A.G →* Circle)
     rintro x ⟨a, rfl⟩
     change κ (ClassCharacterSteps.exteriorIdealMap A _) *
       (χ (ClassCharacterSteps.sRestriction A _))⁻¹ = 1
-    rw [hi, hs, hprincipal]
-    exact mul_inv_cancel _
+    simp_all
   let Φ : A.ArithmeticIdeleClasses →* Circle :=
     QuotientGroup.lift _ (ClassCharacterSteps.rawCharacter A χ κ) hker
   have heval : ∀ x : NumberField.IdeleGroup (𝓞 F) F,
@@ -728,15 +720,13 @@ theorem glued_infinity (A : SArithmeticData F) (χ : A.G →* Circle)
     A.ideleInfiniteComponent Φ w z = (χ (Pi.mulSingle w z, 1))⁻¹ := by
   have h := (ClassCharacterSteps.glued_character_local_components A χ κ Φ heval).1
     (Pi.mulSingle w z, 1)
-  simp only [Pi.mulSingle_apply, map_one, inv_one, Finset.prod_const_one,
-    mul_one] at h
+  simp only at h
   have hp : (∏ x : InfinitePlace F,
       Φ (NumberField.IdeleClassGroup.ofCompletion (𝓞 F) F x (Pi.mulSingle (M := fun u : InfinitePlace F => u.Completionˣ) w z x))) =
         A.ideleInfiniteComponent Φ w z := by
     rw [Finset.prod_eq_single w]
     · simp [ideleInfiniteComponent]
-    · intro u _ hu
-      rw [Pi.mulSingle_eq_of_ne hu, map_one, map_one]
+    · simp_all
     · simp
   simpa only [Finset.prod_inv_distrib, inv_inv, hp, Pi.one_apply, map_one,
     Finset.prod_const_one, inv_one, mul_one] using congrArg Inv.inv h
@@ -748,8 +738,8 @@ def sCharacter (A : SArithmeticData F) (σ : F →+* ℂ)
 
 theorem continuous_sCharacter (A : SArithmeticData F) (σ : F →+* ℂ)
     (τ : ((v : {v // v ∈ A.Sf}) → (v.val.adicCompletion F)ˣ) →* Circle)
-    (hτ : Continuous τ) : Continuous (sCharacter A σ τ) := by
-  exact (hτ.comp continuous_snd).mul (EisensteinInfinityRecipe.continuous_product A σ).inv
+    (hτ : Continuous τ) : Continuous (sCharacter A σ τ) := 
+  (hτ.comp continuous_snd).mul (EisensteinInfinityRecipe.continuous_product A σ).inv
 
 theorem sCharacter_infinity (A : SArithmeticData F) (σ : F →+* ℂ)
     (τ : ((v : {v // v ∈ A.Sf}) → (v.val.adicCompletion F)ˣ) →* Circle)
@@ -761,8 +751,7 @@ theorem sCharacter_infinity (A : SArithmeticData F) (σ : F →+* ℂ)
   rw [map_one, one_mul, inv_inv]
   rw [Finset.prod_eq_single w]
   · simp
-  · intro u _ h
-    rw [Pi.mulSingle_eq_of_ne h, map_one]
+  · simp_all
   · simp
 
 theorem assemble (A : SArithmeticData F) (σ : F →+* ℂ)
@@ -790,7 +779,7 @@ theorem assemble (A : SArithmeticData F) (σ : F →+* ℂ)
       sCharacter A σ τ (A.diagonal a) := by
     change _ = τ ((A.diagonal a).2) *
       (EisensteinInfinityRecipe.product A σ (A.diagonal a))⁻¹
-    rw [hprincipal, mul_assoc, mul_inv_cancel, mul_one]
+    simp_all
   obtain ⟨Λ, hΛ, heval⟩ := continuous_glue A (sCharacter A σ τ) κ
     (continuous_sCharacter A σ τ hτ) hp
   refine ⟨Λ, hΛ,
@@ -844,8 +833,3 @@ theorem eisensteinExtension (A : SArithmeticData F) (σ : F →+* ℂ) :
       ∏ w, (EisensteinInfinityRecipe.character A σ w ((A.diagonal a).1 w) : ℂ)
   simp_rw [EisensteinInfinityRecipe.character_diagonal]
   rw [Finset.prod_inv_distrib]
-
-end
-end DedekindZetaZeroFree.SArithmeticData.GaussCorrection
-
-end

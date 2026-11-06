@@ -18,9 +18,9 @@ private lemma rel {x y : Ideal (𝓞 F)} (h : x ⊔ y = ⊤) : IsRelPrime x y :=
   apply top_unique
   rw [← h]
   exact sup_le (Ideal.dvd_iff_le.mp hz) (Ideal.dvd_iff_le.mp hz')
-private lemma sup_rel {x y : Ideal (𝓞 F)} (h : IsRelPrime x y) : x ⊔ y = ⊤ :=
+lemma sup_rel {x y : Ideal (𝓞 F)} (h : IsRelPrime x y) : x ⊔ y = ⊤ :=
   Ideal.isUnit_iff.mp (h (Ideal.dvd_iff_le.mpr le_sup_left) (Ideal.dvd_iff_le.mpr le_sup_right))
-private lemma norm_divisor_le {a b : Ideal (𝓞 F)} (hb : b ≠ ⊥) (hab : a ∣ b) :
+lemma norm_divisor_le {a b : Ideal (𝓞 F)} (hb : b ≠ ⊥) (hab : a ∣ b) :
     ExplicitTerms.norm a ≤ ExplicitTerms.norm b := by
   unfold ExplicitTerms.norm
   exact_mod_cast Nat.le_of_dvd (Nat.pos_of_ne_zero (mt Ideal.absNorm_eq_zero_iff.mp hb))
@@ -113,9 +113,8 @@ lemma admissible_normalized_reindex (c d : Ideal (𝓞 F)) (hd0 : d ≠ ⊥)
   apply Finset.sum_congr rfl
   intro e he
   have hn : ((Sieve.MainBoundary.idealSize F) (h*e) : ℝ) = ExplicitTerms.norm (h*e) := by
-    simp [Sieve.MainBoundary.idealSize, ExplicitTerms.norm]
-  rw [hn]
-  split_ifs <;> simp
+    rfl
+  simp_all
 open UniqueFactorizationMonoid
 
 private lemma ideal_radical_eq (q : Ideal (𝓞 F)) (hq : q ≠ ⊥) :
@@ -127,7 +126,7 @@ private lemma ideal_radical_eq (q : Ideal (𝓞 F)) (hq : q ≠ ⊥) :
   let P := (factors r).toFinset
   have heq : P.inf (fun p => p) = r := by
     have h := IsDedekindDomain.inf_prime_pow_eq_prod P (fun p => p) (fun _ => 1)
-      hp (by intro i hi j hj hij; exact hij)
+      hp (by simp)
     calc
       P.inf (fun p => p) = ∏ p ∈ P, p := by simpa only [pow_one] using h
       _ = r := hprod
@@ -141,7 +140,7 @@ private lemma ideal_radical_eq (q : Ideal (𝓞 F)) (hq : q ≠ ⊥) :
       rw [Finset.inf_insert]
       apply Ideal.IsRadical.inf
       · exact (Ideal.isPrime_of_prime (hpr p (by simp))).isRadical
-      · exact ih (by intro t ht; exact hpr t (by simp [ht]))
+      simp_all
   have hR : r.IsRadical := heq ▸ hgen P hp
   apply le_antisymm
   · exact (hR.radical_le_iff).mpr (Ideal.dvd_iff_le.mp radical_dvd_self)
@@ -172,11 +171,11 @@ private lemma moebius_euler (g : Ideal (𝓞 F)) (hg0 : g ≠ ⊥) (hg : Squaref
   obtain ⟨hp,hprod,hd,hi,hmu,hmem⟩ := Vendor.CutoffDifference.squarefree_divisor_dictionary g hg0 hg
   change (∑ d ∈ Vendor.CutoffDifference.SplitData.divisors g, (moebius d : ℂ) * v d) = _
   rw [hd, Finset.sum_image hi]
-  have hP : (factors g).toFinset = primeFactors g := by rw [factors_eq_normalizedFactors]; rfl
+  have hP : (factors g).toFinset = primeFactors g := by simp
   rw [hP]
   rw [show (∏ p ∈ primeFactors g, (1 - χ p / (Real.sqrt (ExplicitTerms.norm p) : ℂ))) =
       ∏ p ∈ primeFactors g, (1 + (-v p)) by
-    apply Finset.prod_congr rfl; intro p hp; change 1 - v p = 1 + -v p; ring]
+    rfl]
   rw [Finset.prod_one_add]
   apply Finset.sum_congr rfl
   intro S hS
@@ -239,14 +238,12 @@ private lemma rel_of_sup {x y : Ideal (𝓞 F)} (h : x ⊔ y = ⊤) : IsRelPrime
   apply top_unique
   rw [← h]
   exact sup_le (Ideal.dvd_iff_le.mp hz) (Ideal.dvd_iff_le.mp hz')
-private lemma rho_density (a : Ideal (𝓞 F)) :
+lemma rho_density (a : Ideal (𝓞 F)) :
     sigma4Rho a = Vendor.CutoffDifference.density (Sieve.MainBoundary.idealSize F) a := by
   unfold sigma4Rho badPrimes Vendor.CutoffDifference.density
   rw [UniqueFactorizationMonoid.factors_eq_normalizedFactors]
-  apply Finset.prod_congr rfl
-  intro p hp
-  simp [Sieve.MainBoundary.idealSize]
-private lemma rho_mul (a b : Ideal (𝓞 F)) (ha : a ≠ ⊥) (hb : b ≠ ⊥)
+  rfl
+lemma rho_mul (a b : Ideal (𝓞 F)) (ha : a ≠ ⊥) (hb : b ≠ ⊥)
     (hab : IsRelPrime a b) : sigma4Rho (a*b) = sigma4Rho a * sigma4Rho b := by
   unfold sigma4Rho badPrimes
   change (∏ p ∈ UniqueFactorizationMonoid.primeFactors (a*b),
@@ -254,7 +251,7 @@ private lemma rho_mul (a b : Ideal (𝓞 F)) (ha : a ≠ ⊥) (hb : b ≠ ⊥)
   rw [UniqueFactorizationMonoid.primeFactors_mul_eq_union ha hb,
     Finset.prod_union (UniqueFactorizationMonoid.disjoint_primeFactors hab)]
   rfl
-private lemma prime_size (p : Ideal (𝓞 F)) (hp : Prime p) :
+lemma prime_size (p : Ideal (𝓞 F)) (hp : Prime p) :
     1 < ((Sieve.MainBoundary.idealSize F) p : ℝ) := by
   have h0 : Ideal.absNorm p ≠ 0 := fun h => hp.ne_zero (Ideal.absNorm_eq_zero_iff.mp h)
   have h1 : Ideal.absNorm p ≠ 1 :=
@@ -307,11 +304,10 @@ theorem uncollected_boundary (c d j : Ideal (𝓞 F))
     apply Finset.sum_congr rfl
     intro a ha
     have haK := ((Sieve.mem_idealAdmissibleFinset F (c*d) K a).mp ha).2.2
-    have hn : (n a : ℝ) = ExplicitTerms.norm a := by simp [n, Sieve.MainBoundary.idealSize, ExplicitTerms.norm]
+    have hn : (n a : ℝ) = ExplicitTerms.norm a := by rfl
     unfold Vendor.CutoffDifference.normalizedValue Vendor.CutoffDifference.cutoff
     change ExplicitTerms.norm a ≤ K at haK
-    rw [hn, if_pos haK]
-    simp
+    simp_all
   have hjc : IsRelPrime j c := (rel_of_sup hjcd).of_dvd_right (dvd_mul_right c d)
   have hjd : IsRelPrime j d := (rel_of_sup hjcd).of_dvd_right (dvd_mul_left d c)
   have hdc' := rel_of_sup hdc
@@ -340,7 +336,7 @@ theorem uncollected_boundary (c d j : Ideal (𝓞 F))
     apply Finset.sum_congr rfl
     intro b hb
     unfold Vendor.CutoffDifference.normalizedValue
-    have hn : (n b : ℝ) = ExplicitTerms.norm b := by simp [n, Sieve.MainBoundary.idealSize, ExplicitTerms.norm]
+    have hn : (n b : ℝ) = ExplicitTerms.norm b := by rfl
     rw [hn]
     ring
   change _ = (sigma4Rho (c*j) : ℂ) *
@@ -360,8 +356,3 @@ theorem uncollected_boundary (c d j : Ideal (𝓞 F))
           Vendor.CutoffDifference.baseCutoffSum n χ K H *
           (Vendor.CutoffDifference.density n d : ℂ) := by ring
     _ = _ := by rw [hfixed]; ring
-end DedekindZetaZeroFree.LargeSieve.Bilinear.MainBoundary
-
-end
-
-end

@@ -18,8 +18,8 @@ namespace ResidueCoefficientAux
 
 theorem integral_lift (a : Ideal (𝓞 F)) (ha : a ≠ ⊥)
     (x : {x : F // x ∈ (rayIdealFractionalIdeal F a ha : FractionalIdeal (𝓞 F)⁰ F)}) :
-    ∃ α : 𝓞 F, α ∈ a ∧ (algebraMap (𝓞 F) F) α = x.val := by
-  exact (FractionalIdeal.mem_coeIdeal (𝓞 F)⁰).mp x.property
+    ∃ α : 𝓞 F, α ∈ a ∧ (algebraMap (𝓞 F) F) α = x.val := 
+  (FractionalIdeal.mem_coeIdeal (𝓞 F)⁰).mp x.property
 
 theorem coefficient_mul (a : Ideal (𝓞 F)) (ha : a ≠ ⊥)
     (x : {x : F // x ∈ (rayIdealFractionalIdeal F a ha : FractionalIdeal (𝓞 F)⁰ F)})
@@ -30,11 +30,7 @@ theorem coefficient_mul (a : Ideal (𝓞 F)) (ha : a ≠ ⊥)
     FractionalIdeal (𝓞 F)⁰ F) = (Ideal.span {α} : FractionalIdeal (𝓞 F)⁰ F)
   rw [FractionalIdeal.coeIdeal_mul, integralElementIdeal_coe, ← hαx,
     ← FractionalIdeal.coeIdeal_span_singleton]
-  change ((Ideal.span {α} : FractionalIdeal (𝓞 F)⁰ F) *
-    (rayIdealFractionalIdeal F a ha : FractionalIdeal (𝓞 F)⁰ F)⁻¹) *
-      rayIdealFractionalIdeal F a ha = _
-  rw [mul_assoc, ← Units.val_inv_eq_inv_val, ← Units.val_mul, inv_mul_cancel,
-    Units.val_one, mul_one]
+  simp_all
 
 theorem quotient_unit_iff (m : Ideal (𝓞 F)) (α : 𝓞 F) :
     IsUnit (Ideal.Quotient.mk m α) ↔ Ideal.span {α} ⊔ m = ⊤ := by
@@ -61,7 +57,7 @@ theorem quotient_unit_iff (m : Ideal (𝓞 F)) (α : 𝓞 F) :
     simpa [mul_comm] using ht
 
 end ResidueCoefficientAux
-private theorem span_coprime_of_unit (m : Ideal (𝓞 F)) (α : 𝓞 F)
+theorem span_coprime_of_unit (m : Ideal (𝓞 F)) (α : 𝓞 F)
     (hu : IsUnit (Ideal.Quotient.mk m α)) : Ideal.span {α} ⊔ m = ⊤ := by
   obtain ⟨z, hz⟩ := hu.exists_right_inv
   obtain ⟨z, rfl⟩ := Ideal.Quotient.mk_surjective z
@@ -71,7 +67,7 @@ private theorem span_coprime_of_unit (m : Ideal (𝓞 F)) (α : 𝓞 F)
     Ideal.mem_sup_left (Ideal.mul_mem_right z _ (Ideal.subset_span (by simp)))
   have h2 := (Ideal.span {α} ⊔ m).sub_mem h1 (Ideal.mem_sup_right hc)
   simpa using h2
-private theorem positive_empty (hF : NumberField.IsTotallyComplex F) (x : F) :
+theorem positive_empty (hF : NumberField.IsTotallyComplex F) (x : F) :
     ∀ φ : F →+* ℝ, 0 < φ x := by
   letI := hF
   intro φ
@@ -80,7 +76,7 @@ private theorem positive_empty (hF : NumberField.IsTotallyComplex F) (x : F) :
     (Complex.ofRealHom.comp φ)
   ext y
   simp
-private theorem principal_ray_compatible (hF : NumberField.IsTotallyComplex F)
+theorem principal_ray_compatible (hF : NumberField.IsTotallyComplex F)
     (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) (hmt : m ≠ ⊤)
     (α β : 𝓞 F) (hu : IsUnit (Ideal.Quotient.mk m α))
     (hres : Ideal.Quotient.mk m α = Ideal.Quotient.mk m β) :
@@ -101,7 +97,7 @@ private theorem principal_ray_compatible (hF : NumberField.IsTotallyComplex F)
     (⟨⟨Ideal.Quotient.mk m z, Ideal.Quotient.mk m α, by simpa [mul_comm] using hz, hz⟩, rfl⟩)
   have hzn : Ideal.span {z} ≠ ⊥ := by
     intro he
-    exact hαz (by simp [Ideal.span_singleton_eq_bot.mp he])
+    simp_all
   have hA := rayIdealClass_span F m hm (α*z) hαz (Ideal.Quotient.eq.mp (by simpa using hzα)) (positive_empty hF _)
   have hB := rayIdealClass_span F m hm (β*z) hβz (Ideal.Quotient.eq.mp (by simpa using hzβ)) (positive_empty hF _)
   rw [← Ideal.span_singleton_mul_span_singleton, rayIdealClass_mul,
@@ -153,12 +149,7 @@ theorem coprimeIdealResidueUnits_integralElementIdeal_ne_bot
       (Iₐ : FractionalIdeal (𝓞 F)⁰ F)⁻¹ = 0 := by
     rw [← integralElementIdeal_coe, hbot, FractionalIdeal.coeIdeal_bot]
   have hspan : FractionalIdeal.spanSingleton (𝓞 F)⁰ x.val = 0 := by
-    calc
-      _ = (FractionalIdeal.spanSingleton (𝓞 F)⁰ x.val *
-          (Iₐ : FractionalIdeal (𝓞 F)⁰ F)⁻¹) * Iₐ := by
-        rw [mul_assoc, ← Units.val_inv_eq_inv_val, ← Units.val_mul, inv_mul_cancel,
-          Units.val_one, mul_one]
-      _ = 0 := by rw [hz, zero_mul]
+    simp_all
   exact hxne (FractionalIdeal.spanSingleton_eq_zero_iff.mp hspan)
 
 theorem coprimeIdealResidueUnits_integralElementIdeal_coprime
@@ -304,8 +295,8 @@ def coprimeIdealResidueCoefficient (hF : NumberField.IsTotallyComplex F)
     (m a : Ideal (𝓞 F)) (hm : m ≠ ⊥) (ha : a ≠ ⊥)
     (hcop : a ⊔ m = ⊤) (hmt : m ≠ ⊤)
     (η : DedekindZetaZeroFree.RayClassCharacter F m)
-    (E : RayCharacterData F m hm η) : coprimeIdealResidue F m a hm ha → ℂ := by
-  exact fun q => η (integralElementIdeal (rayIdealFractionalIdeal F a ha)
+    (E : RayCharacterData F m hm η) : coprimeIdealResidue F m a hm ha → ℂ := 
+  fun q => η (integralElementIdeal (rayIdealFractionalIdeal F a ha)
     (Classical.choose (fractionalIdealQuotientMk_surjective
       (rayIdealFractionalIdeal F a ha : FractionalIdeal (𝓞 F)⁰ F)
       ((rayIdealFractionalIdeal F a ha * rayIdealFractionalIdeal F m hm) :
@@ -420,7 +411,3 @@ theorem coprimeIdealResidueRayClass_unit_invariant :
   apply Option.some.inj
   rw [← coprimeIdealResidueRayClass_lift hF m a hm ha hcop hmt η E (ε • q) y hy,
     ← coprimeIdealResidueRayClass_lift hF m a hm ha hcop hmt η E q x hx, hi]
-
-end DedekindZetaZeroFree.Hecke.Theta
-
-end

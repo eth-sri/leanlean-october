@@ -76,7 +76,7 @@ variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
 variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
 variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 set_option maxHeartbeats 1000000 in
-private theorem localized_green
+theorem localized_green
     (emb : KPContActualSectorTestEmbeddings.Properties (U := U) (H := H))
     (dif : KPContActualSectorTestDifferentialDescent.Properties (U := U) (H := H))
     (a : ShrunkChart F ζ hζ U R P H) (φ : S_U F ζ hζ U R P H) (W : T_U F ζ hζ U R P H)

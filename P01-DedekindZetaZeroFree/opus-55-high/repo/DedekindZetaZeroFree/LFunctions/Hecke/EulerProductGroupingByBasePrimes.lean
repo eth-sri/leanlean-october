@@ -48,5 +48,3 @@ theorem principal_idealHeckeL_euler_grouped_hasProd
     (fun Q : {Q : IsDedekindDomain.HeightOneSpectrum (𝓞 E) //
         Q.under (𝓞 F) = p} =>
       (1 - (Ideal.absNorm Q.val.asIdeal : ℂ) ^ (-s))⁻¹)
-
-end DedekindZetaZeroFree.LargeSieve

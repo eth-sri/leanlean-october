@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # The finite prime set for an S-unit Kummer extension
 
@@ -36,7 +33,7 @@ variable {K : Type} [Field K]
 
 /-- The finite set `T` of primes chosen for the coordinate cyclic extensions
 that detect the enlarged `S`-unit Kummer radical. -/
-noncomputable def sUnitKummerPrimeSet
+def sUnitKummerPrimeSet
     {Omega : Type} [Field Omega] [Algebra K Omega]
     [IsSepClosure K Omega]
     (E : IntermediateField K Omega)
@@ -119,9 +116,3 @@ theorem sUnitKummerPrimeSet_disjoint_enlargeByFiniteKummerRadicalSupport
       p v hp hv hn r eG S i
       (enlargeByFiniteKummerRadicalSupport_subset_sUnitKummerAvoidedBasePlaces
         (K := K) (Omega := Omega) E n hmu S hwS)
-
-end FinitePlaces
-
-end GlobalClassFieldTheory.ClassFieldAxiom
-
-end

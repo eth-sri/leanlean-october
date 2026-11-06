@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Comparison of public and idelic higher-unit groups
 
@@ -27,7 +23,6 @@ comparison at the boundary between the two APIs.
 open scoped NumberField
 open NumberField IsDedekindDomain
 
-noncomputable section
 
 namespace ClassFieldTheory
 
@@ -38,7 +33,3 @@ theorem rayLocalHigherUnitGroup_eq_rayClass
     (v : HeightOneSpectrum (𝓞 K)) (n : ℕ) :
     rayLocalHigherUnitGroup v n = RayClass.localHigherUnitGroup v n := by
   rfl
-
-end ClassFieldTheory
-
-end

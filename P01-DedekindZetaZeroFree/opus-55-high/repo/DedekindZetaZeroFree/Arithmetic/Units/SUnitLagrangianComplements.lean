@@ -11,7 +11,7 @@ namespace IsotropicComplement
 variable {K M : Type*} [Field K] [AddCommGroup M] [Module K M]
   [FiniteDimensional K M]
 
-private lemma extend_disjoint (E B : Submodule K M) (hd : Disjoint E B)
+lemma extend_disjoint (E B : Submodule K M) (hd : Disjoint E B)
     (x : M) (hx : x ∉ E ⊔ B) : Disjoint E (B ⊔ K ∙ x) := by
   rw [Submodule.disjoint_def]
   intro v hvE hv
@@ -28,9 +28,9 @@ private lemma extend_disjoint (E B : Submodule K M) (hd : Disjoint E B)
         (E ⊔ B).sub_mem (Submodule.mem_sup_left hvE) (Submodule.mem_sup_right hb)
       simpa only [add_sub_cancel_left] using this
     have := (E ⊔ B).smul_mem a⁻¹ haz
-    simpa [smul_smul, ha] using this
+    simp_all
 
-private lemma extend_isotropic (H : LinearMap.BilinForm K M) (hAlt : H.IsAlt)
+lemma extend_isotropic (H : LinearMap.BilinForm K M) (hAlt : H.IsAlt)
     (B : Submodule K M) (hB : B ≤ H.orthogonal B)
     (x : M) (hx : x ∈ H.orthogonal B) :
     B ⊔ K ∙ x ≤ H.orthogonal (B ⊔ K ∙ x) := by
@@ -88,8 +88,7 @@ theorem exists_lagrangian_complement
     exact Submodule.disjoint_def.mp hEB x hxE hxB
   have htop : E ⊔ B = ⊤ := by
     have := H.orthogonal_orthogonal hPerfect hAlt.isRefl (E ⊔ B)
-    rw [horth, H.orthogonal_bot] at this
-    exact this.symm
+    simp_all
   have hc : IsCompl E B := ⟨hEB, codisjoint_iff.mpr htop⟩
   have hdimE := H.finrank_orthogonal hPerfect E
   rw [hLagrangian] at hdimE
@@ -147,7 +146,3 @@ def PrimaryLagrangianComplementSpec (A : SArithmeticData F)
       x ∈ A.primarySubspace ℓ B ↔
         ∀ y : A.PrimarySpace ℓ, y ∈ A.primarySubspace ℓ B →
           H (Additive.toMul y.val) (Additive.toMul x.val) = 1)
-
-end
-end SArithmeticData
-end DedekindZetaZeroFree

@@ -152,7 +152,3 @@ theorem rawCoreInsertion_maxAction (s : RestrictedTensorSimple.Level (bad R.A P 
     rawCoreInsertion_stage R.A P C t _ (g * k.val) ht',
     ← stageMaxAction_transition R P C s t hst k hfix]
   exact rawStageValue_maxAction R P C t k g _
-
-end DedekindZetaZeroFree.FourierContinuation.LiteralSource
-
-end

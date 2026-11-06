@@ -19,12 +19,7 @@ theorem split_root_invariance {G : Type*} [Group G]
   intro s
   apply Matrix.SL2.transvection_induction
       (fun s => ∀ g, θ (j s * g) = θ g) ?_ ?_ s
-  · intro i k hik z
-    fin_cases i <;> fin_cases k
-    · exact (hik rfl).elim
-    · exact hupper z
-    · exact hlower z
-    · exact (hik rfl).elim
+  · simp_all
   · intro A B hA hB g
     rw [map_mul, mul_assoc, hA, hB]
 
@@ -46,5 +41,3 @@ theorem unipotentFiber_eq
     rw [ht]; abel
   change θ (n r * g) = _
   rw [hr', AddChar.map_add_eq_mul, mul_assoc, hθn]
-
-end DedekindZetaZeroFree.KPGlobalGenericity

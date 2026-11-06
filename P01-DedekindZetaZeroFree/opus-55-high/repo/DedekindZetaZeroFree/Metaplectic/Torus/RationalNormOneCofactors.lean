@@ -15,7 +15,7 @@ open KPLocalPrincipalSeries KPLocalExceptionalConstruction KPLocalStoneVonNeuman
 open _root_.DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualRaisingGeometry renaming arch_center → arch_center
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-private theorem central_norm_one_correction
+theorem central_norm_one_correction
     (t : KPGlobalTorusFunctionData.E F ζ hζ) :
     ∃ c : KPGlobalCenterRationalCharacter.Z F ζ hζ,
       KPGlobalTorusFunctionData.delta F ζ hζ (c.val * t) = 1 := by
@@ -51,7 +51,7 @@ private theorem central_norm_one_correction
   rw [map_mul, Units.val_mul, NNReal.coe_mul,hc,hzdelta]
   exact inv_mul_cancel₀ hd.ne'
 
-private theorem central_scalar_covariance
+theorem central_scalar_covariance
     (f : smoothRationalFiber F ζ hζ) (c : KPGlobalCenterRationalCharacter.Z F ζ hζ)
     (t : KPGlobalTorusFunctionData.E F ζ hζ) :
     f.val.val (c.val * t) = (KPGlobalCenterRationalCharacter.omegaA F ζ hζ c : ℂ) * f.val.val t := by
@@ -63,7 +63,7 @@ private theorem central_scalar_covariance
   rw [hc] at he
   simpa only [map_one, one_mul] using he
 
-private theorem rationalStageEval_central
+theorem rationalStageEval_central
     (P : KPGlobalTorusFiniteStages.CompatibleModelData F ζ hζ)
     (C : KPGlobalTorusFiniteStages.LocalFiberData F ζ hζ P)
     (E : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F))) (hE : C.exceptional ⊆ E)

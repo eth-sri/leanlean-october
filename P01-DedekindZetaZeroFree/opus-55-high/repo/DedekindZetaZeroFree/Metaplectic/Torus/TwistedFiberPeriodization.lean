@@ -11,7 +11,6 @@ namespace DedekindZetaZeroFree.TorusChartTransport
 open KPGlobalTorusBorelNormTwistTransport
 open KPGlobalTorusBorelTwistCompatibilityBorelInduction
 noncomputable section
-set_option autoImplicit false
 set_option maxRecDepth 2000
 set_option maxHeartbeats 800000
 
@@ -34,6 +33,3 @@ def chartTerm (C : ModelData F ζ hζ) (s : ℂ)
     (a : KPGlobalTorusPeriodizationInverse.PeriodizationIndex F ζ hζ C) :
     GroupArch F → ℂ :=
   fun z => (f.val (groupArchChart F ζ hζ z * g)).val.val ((rationalRep F ζ hζ C).lift a).val
-
-end
-end DedekindZetaZeroFree.TorusChartTransport

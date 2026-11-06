@@ -25,7 +25,7 @@ theorem summable_norm_schwartz_translate_restrict
   let n := Module.finrank ℤ L + 1
   obtain ⟨C, hC, hdecay⟩ := f.decay n 0
   have hdecay' (y : V) : ‖y‖ ^ n * ‖f y‖ ≤ C := by
-    simpa only [iteratedFDeriv_zero_apply, norm_iteratedFDeriv_zero] using hdecay y
+    simp_all
   obtain ⟨R, hR⟩ := K.isCompact.isBounded.exists_norm_le
   have hclosed : IsClosed (L : Set V) := L.toAddSubgroup.isClosed_of_discreteTopology
   have hdiscrete : IsDiscrete (L : Set V) :=
@@ -37,7 +37,7 @@ theorem summable_norm_schwartz_translate_restrict
       (Filter.eventually_ge_atTop _)
   have hg : Summable (fun v : L => (C * 2 ^ n) * ‖(v : V)‖⁻¹ ^ n) := by
     simpa only [Submodule.norm_coe] using
-      (ZLattice.summable_norm_pow_inv L n (by dsimp [n]; omega)).mul_left (C * 2 ^ n)
+      (ZLattice.summable_norm_pow_inv L n (by omega)).mul_left (C * 2 ^ n)
   refine Summable.of_norm_bounded_eventually hg ?_
   filter_upwards [htail] with v hv
   rw [Real.norm_of_nonneg (norm_nonneg _)]
@@ -78,7 +78,7 @@ theorem continuous_periodisation
     rw [← ContinuousMap.tsum_apply hF]
     rfl
   rw [heq]
-  exact (∑' v, F v).continuous
+  fun_prop
 
 theorem periodisation_add_lattice
     {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
@@ -89,7 +89,3 @@ theorem periodisation_add_lattice
   unfold periodisation
   have he := (Equiv.addLeft v).tsum_eq (fun w : L => f (x + (w : V)))
   simpa only [Equiv.coe_addLeft, Submodule.coe_add, add_assoc] using he
-
-end DedekindZetaZeroFree.PoissonArch
-
-end

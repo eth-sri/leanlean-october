@@ -95,7 +95,3 @@ theorem core_reference_detected
   induction w using PiTensorProduct.induction_on with
   | smul_tprod c x => simp only [map_smul, hp x, smul_zero]
   | add x y hx hy => simp only [map_add, hx, hy, add_zero]
-
-end DedekindZetaZeroFree.FourierContinuation
-
-end

@@ -119,7 +119,7 @@ theorem variable_partition_bound
     · intro b hb
       rw [hC]
       exact Finset.mem_biUnion.mpr ⟨j, hj, hb⟩
-    · intro b _ _; positivity
+    simp
   calc ∑ a ∈ R, ‖∑ b ∈ C, lam b * K b a‖ ^ 2
       = ∑ i ∈ P, ∑ a ∈ row i, ‖∑ b ∈ C, lam b * K b a‖ ^ 2 := by
         rw [hR, Finset.sum_biUnion hrow]
@@ -231,7 +231,7 @@ theorem sum_sq_le_card_mul_energy (Q : DedekindZetaZeroFree.QuadraticHeckeFamily
     (hSsf : ∀ b ∈ S, Squarefree b ∧ b ⊔ c = ⊤) :
     ∑ a ∈ R, ‖∑ b ∈ S, lam b * (Q.χ b) a‖ ^ 2
       ≤ (R.card : ℝ) * (S.card : ℝ) * ∑ b ∈ S, ‖lam b‖ ^ 2 := by
-  have hE0 : 0 ≤ ∑ b ∈ S, ‖lam b‖ ^ 2 := Finset.sum_nonneg (fun b _ => by positivity)
+  have hE0 : 0 ≤ ∑ b ∈ S, ‖lam b‖ ^ 2 := by positivity
   calc ∑ a ∈ R, ‖∑ b ∈ S, lam b * (Q.χ b) a‖ ^ 2
       ≤ ∑ _a ∈ R, (S.card : ℝ) * ∑ b ∈ S, ‖lam b‖ ^ 2 :=
         Finset.sum_le_sum (fun a _ => norm_row_le_card_mul Q S lam hSsf a)
@@ -293,7 +293,7 @@ open scoped NumberField Classical BigOperators
 namespace DedekindZetaZeroFree.LargeSieve.Sieve.MainBoundaryPrefix
 variable {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
 
-private theorem intersect_partition {A : Type*} [DecidableEq A]
+theorem intersect_partition {A : Type*} [DecidableEq A]
     (R : Finset A) (blocks : ℕ → Finset A) (P : Finset ℕ) (U : Finset A)
     (hU : P.biUnion blocks = U) (hR : R ⊆ U) :
     R = P.biUnion (fun i => R ∩ blocks i) := by
@@ -303,11 +303,10 @@ private theorem intersect_partition {A : Type*} [DecidableEq A]
   · intro ha
     have := hR ha
     rw [← hU, Finset.mem_biUnion] at this
-    obtain ⟨i, hi, hai⟩ := this
-    exact ⟨i, hi, ha, hai⟩
-  · rintro ⟨i, hi, ha, _⟩; exact ha
+    simp_all
+  simp_all
 
-private theorem intersect_disjoint {A : Type*} [DecidableEq A]
+theorem intersect_disjoint {A : Type*} [DecidableEq A]
     (R : Finset A) (blocks : ℕ → Finset A) (P : Finset ℕ)
     (h : Set.PairwiseDisjoint (↑P : Set ℕ) blocks) :
     Set.PairwiseDisjoint (↑P : Set ℕ) (fun i => R ∩ blocks i) := by
@@ -317,7 +316,7 @@ private theorem intersect_disjoint {A : Type*} [DecidableEq A]
 def prefixBlock (q : Ideal (𝓞 F)) (X : ℝ) (R : Finset (Ideal (𝓞 F)))
     (i : ℕ) : Finset (Ideal (𝓞 F)) := R ∩ clippedDyadicBlock F q X i
 
-private theorem prefixBlock_zero_card (q : Ideal (𝓞 F)) (X : ℝ)
+theorem prefixBlock_zero_card (q : Ideal (𝓞 F)) (X : ℝ)
     (R : Finset (Ideal (𝓞 F))) : (prefixBlock q X R 0).card ≤ 1 := by
   have h : prefixBlock q X R 0 ⊆ {⊤} := by
     intro a ha
@@ -356,21 +355,21 @@ theorem prefixBlock_bound (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
     (prefixBlock D.bad (2 * N) S j) z hs
   by_cases hi : i = 0
   · subst i
-    simp only [blockMajorant, if_pos rfl]
+    simp only [blockMajorant]
     have h0 : ((prefixBlock D.bad X R 0).card : ℝ) ≤ 1 := by
       exact_mod_cast prefixBlock_zero_card D.bad X R
     exact hc.trans (mul_le_mul_of_nonneg_right
       (mul_le_of_le_one_left (by positivity) h0) (by positivity))
   by_cases hj : j = 0
   · subst j
-    simp only [blockMajorant, if_neg hi, if_pos rfl]
+    simp only [blockMajorant, if_neg hi]
     have h0 : ((prefixBlock D.bad (2 * N) S 0).card : ℝ) ≤ 1 := by
       exact_mod_cast prefixBlock_zero_card D.bad (2 * N) S
     exact hc.trans (mul_le_mul_of_nonneg_right
       (mul_le_of_le_one_right (by positivity) h0) (by positivity))
   obtain ⟨i', rfl⟩ := Nat.exists_eq_succ_of_ne_zero hi
   obtain ⟨j', rfl⟩ := Nat.exists_eq_succ_of_ne_zero hj
-  simp only [blockMajorant, Nat.succ_ne_zero, if_false, Nat.add_sub_cancel]
+  simp only [blockMajorant, Nat.succ_ne_zero, if_false]
   apply transposed_shell_bound Q D ((2 : ℝ) ^ i') ((2 : ℝ) ^ j')
   · intro a ha
     exact (Finset.mem_inter.mp (Finset.mem_inter.mp ha).2).1
@@ -407,7 +406,7 @@ theorem sum_blockMajorant (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
   rw [Finset.sum_range_succ']
   have hrow0 : (∑ j ∈ Finset.range (Vendor.dyadicLength (2 * N) + 1),
       blockMajorant Q D X N R S 0 j) = (S.card : ℝ) := by
-    simp only [blockMajorant, if_pos rfl]
+    simp only [blockMajorant]
     exact sum_prefixBlock_card D.bad (2 * N) (by linarith) S hS
   rw [hrow0]
   have hsum : (∑ i ∈ Finset.range (Vendor.dyadicLength X),
@@ -490,7 +489,7 @@ theorem core_prefix_operator_bound
               (∑ u ∈ S, ‖z u‖ ^ 2) := by
   obtain ⟨C, hC, _, hcount⟩ := DedekindZetaZeroFree.LargeSieve.exists_ideal_count_bound_finset F
   let H : ℝ := 2 * C + (Nat.card Q.G : ℝ) ^ 2
-  have hH : 0 < H := by dsimp [H]; positivity
+  have hH : 0 < H := by positivity
   refine ⟨H, hH, ?_⟩
   intro X N hX hN R S hR hS z
   have hRc : (R.card : ℝ) ≤ C * X := hcount X hX R (fun a ha =>
@@ -509,7 +508,7 @@ theorem core_prefix_operator_bound
       H * (1 + X + N + T) := by
     have hRc' : (R.card : ℝ) ≤ (2 * C) * X := by nlinarith
     have hSc' : (S.card : ℝ) ≤ (2 * C) * N := by nlinarith
-    have hH2 : 2 * C ≤ H := by dsimp [H]; nlinarith [sq_nonneg (Nat.card Q.G : ℝ)]
+    have hH2 : 2 * C ≤ H := by dsimp [H]; simp
     have hHG : (Nat.card Q.G : ℝ) ^ 2 ≤ H := by dsimp [H]; linarith
     have hx := mul_le_mul_of_nonneg_right hH2 hX0
     have hn := mul_le_mul_of_nonneg_right hH2 hN0
@@ -525,9 +524,3 @@ theorem core_prefix_operator_bound
       mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hinner (by positivity))
         (by positivity)
     _ = _ := by unfold MainBoundaryBound.shellPrefixEnvelope; dsimp [T]; ring
-
-end DedekindZetaZeroFree.LargeSieve.Sieve.MainBoundaryPrefix
-
-end
-
-end

@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Theta.Profiles.MixedThetaDefinitions
 
 @[expose] public section
 
-noncomputable section
 
 open Classical MeasureTheory NumberField
 open NumberField.mixedEmbedding.fundamentalCone
@@ -16,7 +15,7 @@ variable (K : Type*) [Field K] [NumberField K]
 
 open NumberField.InfinitePlace NumberField.Units.dirichletUnitTheorem
 
-private theorem centeredCovolume_pos (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ) :
+theorem centeredCovolume_pos (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ) :
     0 < mixedThetaCovolume K I := by
   have hI : 0 < FractionalIdeal.absNorm (I : FractionalIdeal (𝓞 K)⁰ K) :=
     lt_of_le_of_ne (FractionalIdeal.absNorm_nonneg _) (Ne.symm
@@ -24,7 +23,7 @@ private theorem centeredCovolume_pos (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ) :
   have hd : 0 < |(discr K : ℝ)| := abs_pos.mpr (by exact_mod_cast discr_ne_zero K)
   exact mul_pos (by exact_mod_cast hI) (Real.sqrt_pos.mpr hd)
 
-private theorem centeredShape_prod (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ)
+theorem centeredShape_prod (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ)
     (t : ℝ) (ht : 0 < t) (u : Angular K) :
     (∏ w : {w : InfinitePlace K // IsReal w}, mixedThetaShape K I t u w.1) *
       ∏ w : {w : InfinitePlace K // IsComplex w}, (mixedThetaShape K I t u w.1)^2 =
@@ -98,8 +97,7 @@ theorem mixedRadialTheta_poisson
     covolume_shapeIdealLattice_mixedThetaShape K I (1 / t) (one_div_pos.mpr ht) u]
   have hq := centeredShape_inverse K I t u
   simp_rw [hq]
-  simp [NNReal.smul_def, Real.toNNReal_of_nonneg (le_of_lt (one_div_pos.mpr ht)),
-    max_eq_left (le_of_lt (inv_pos.mpr ht)), ht.ne']
+  simp [NNReal.smul_def, max_eq_left (le_of_lt (inv_pos.mpr ht))]
 
 theorem mixedAngularAverage_poisson
     (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ) (t : ℝ) (ht : 0 < t) :
@@ -108,7 +106,3 @@ theorem mixedAngularAverage_poisson
   unfold mixedAngularAverage mixedNegAngularAverage
   simp_rw [mixedRadialTheta_poisson K I t ht]
   exact integral_const_mul _ _
-
-end DedekindZetaZeroFree.AbelianQuotient.Theta
-
-end

@@ -23,23 +23,23 @@ def HasFinitePrincipalPart (M : ℂ → ℂ) (p : ℂ) (coeff : ℕ → ℂ) (N 
     ∀ᶠ s in nhdsWithin p ({p}ᶜ),
       M s = B s + ∑ j ∈ Finset.Icc 1 N, coeff j / (s - p) ^ j
 
-private lemma HolomorphicNear.analyticAt' {A : ℂ → ℂ} {p : ℂ} (h : HolomorphicNear A p) :
+lemma HolomorphicNear.analyticAt' {A : ℂ → ℂ} {p : ℂ} (h : HolomorphicNear A p) :
     AnalyticAt ℂ A p := Complex.analyticAt_iff_eventually_differentiableAt.mpr h
 
-private lemma AnalyticAt.holomorphicNear' {A : ℂ → ℂ} {p : ℂ} (h : AnalyticAt ℂ A p) :
+lemma AnalyticAt.holomorphicNear' {A : ℂ → ℂ} {p : ℂ} (h : AnalyticAt ℂ A p) :
     HolomorphicNear A p := Complex.analyticAt_iff_eventually_differentiableAt.mp h
 
 private lemma HolomorphicNear.add' {A B : ℂ → ℂ} {p : ℂ}
     (hA : HolomorphicNear A p) (hB : HolomorphicNear B p) :
     HolomorphicNear (fun s => A s + B s) p := by
   filter_upwards [hA, hB] with s ha hb
-  exact ha.add hb
+  fun_prop
 
 private lemma HolomorphicNear.mul' {A B : ℂ → ℂ} {p : ℂ}
     (hA : HolomorphicNear A p) (hB : HolomorphicNear B p) :
     HolomorphicNear (fun s => A s * B s) p := by
   filter_upwards [hA, hB] with s ha hb
-  exact ha.mul hb
+  fun_prop
 
 private lemma HolomorphicNear.const' (c : ℂ) (p : ℂ) :
     HolomorphicNear (fun _ => c) p :=
@@ -48,20 +48,20 @@ private lemma HolomorphicNear.const' (c : ℂ) (p : ℂ) :
 private lemma HolomorphicNear.const_mul' {B : ℂ → ℂ} {p : ℂ} (c : ℂ)
     (hB : HolomorphicNear B p) : HolomorphicNear (fun s => c * B s) p := by
   filter_upwards [hB] with s hs
-  exact hs.const_mul c
+  fun_prop
 
 private lemma HolomorphicNear.congr' {A B : ℂ → ℂ} {p : ℂ} (hAB : A =ᶠ[𝓝 p] B)
     (hA : HolomorphicNear A p) : HolomorphicNear B p :=
   AnalyticAt.holomorphicNear' ((analyticAt_congr hAB).mp (hA.analyticAt'))
 
-private lemma HolomorphicNear.sub_const_comp {A : ℂ → ℂ} {p : ℂ}
+lemma HolomorphicNear.sub_const_comp {A : ℂ → ℂ} {p : ℂ}
     (hA : HolomorphicNear A 0) : HolomorphicNear (fun s => A (s - p)) p := by
   have hmap : Tendsto (fun s : ℂ => s - p) (𝓝 p) (𝓝 0) := by
     have h : Tendsto (fun s : ℂ => s - p) (𝓝 p) (𝓝 (p - p)) :=
       tendsto_id.sub tendsto_const_nhds
     simpa using h
   filter_upwards [hmap.eventually hA] with s hs
-  exact hs.comp s (by fun_prop)
+  fun_prop
 
 private lemma HolomorphicNear.finset_sum {ι : Type*} (K : Finset ι) {B : ι → ℂ → ℂ} {p : ℂ}
     (hB : ∀ k ∈ K, HolomorphicNear (B k) p) :
@@ -72,17 +72,17 @@ private lemma HolomorphicNear.finset_sum {ι : Type*} (K : Finset ι) {B : ι �
   | insert a s ha ih =>
     have h1 : HolomorphicNear (B a) p := hB a (Finset.mem_insert_self a s)
     have h2 : HolomorphicNear (fun t => ∑ k ∈ s, B k t) p :=
-      ih (fun k hk => hB k (Finset.mem_insert_of_mem hk))
+      by simp_all
     simpa [Finset.sum_insert ha] using h1.add' h2
 
-private lemma taylor_split {g : ℂ → ℂ} {p : ℂ} (hg : HolomorphicNear g p) (n : ℕ) :
+lemma taylor_split {g : ℂ → ℂ} {p : ℂ} (hg : HolomorphicNear g p) (n : ℕ) :
     ∃ F : ℂ → ℂ, HolomorphicNear F p ∧ ∀ᶠ s in 𝓝 p,
       g s = (∑ i ∈ Finset.range n, (iteratedDeriv i g p / (i.factorial : ℂ)) * (s - p) ^ i)
         + (s - p) ^ n * F s := by
   have hg' : AnalyticAt ℂ (fun t : ℂ => g (p + t)) 0 := by
     have h1 : AnalyticAt ℂ (fun t : ℂ => p + t) 0 := by fun_prop
     have hgan : AnalyticAt ℂ g (p + 0) := by simpa using hg.analyticAt'
-    simpa [Function.comp_def] using hgan.comp h1
+    fun_prop
   obtain ⟨F', hF'an, hF'⟩ := AnalyticAt.exists_eventuallyEq_sum_add_pow_mul hg' n
   refine ⟨fun s => F' (s - p), (AnalyticAt.holomorphicNear' hF'an).sub_const_comp, ?_⟩
   have hshift : Tendsto (fun s : ℂ => s - p) (𝓝 p) (𝓝 0) := by
@@ -99,10 +99,9 @@ private lemma taylor_split {g : ℂ → ℂ} {p : ℂ} (hg : HolomorphicNear g p
       = ∑ i ∈ Finset.range n, (iteratedDeriv i g p / (i.factorial : ℂ)) * (s - p) ^ i := by
     refine Finset.sum_congr rfl fun i _ => ?_
     ring
-  rw [hsum] at hs
-  exact hs
+  simp_all
 
-private lemma taylor_reindex (a : ℕ → ℂ) (z : ℂ) (N : ℕ) :
+lemma taylor_reindex (a : ℕ → ℂ) (z : ℂ) (N : ℕ) :
     (∑ i ∈ Finset.range N, a i * z ^ i) = ∑ j ∈ Finset.Icc 1 N, a (N - j) * z ^ (N - j) := by
   symm
   have hset : Finset.Icc 1 N = (Finset.range N).image (fun i => N - i) := by
@@ -127,7 +126,7 @@ private lemma taylor_reindex (a : ℕ → ℂ) (z : ℂ) (N : ℕ) :
   have hi' : i < N := Finset.mem_range.mp hi
   rw [show N - (N - i) = i by omega]
 
-private lemma div_pow_split {A : ℂ → ℂ} {p : ℂ} {N : ℕ} (hN : 1 ≤ N)
+lemma div_pow_split {A : ℂ → ℂ} {p : ℂ} {N : ℕ} (hN : 1 ≤ N)
     {c : ℕ → ℂ} {F : ℂ → ℂ} (hF : HolomorphicNear F p)
     (hA : ∀ᶠ s in 𝓝 p,
       A s = (∑ j ∈ Finset.Icc 1 N, c j * (s - p) ^ (N - j)) + (s - p) ^ N * F s) :
@@ -147,11 +146,10 @@ private lemma div_pow_split {A : ℂ → ℂ} {p : ℂ} {N : ℕ} (hN : 1 ≤ N)
     Finset.sum_congr rfl hterm]
   exact add_comm _ _
 
-private lemma hasFinitePrincipalPart_of_holomorphicNear {B : ℂ → ℂ} {p : ℂ}
+lemma hasFinitePrincipalPart_of_holomorphicNear {B : ℂ → ℂ} {p : ℂ}
     (hB : HolomorphicNear B p) (N : ℕ) :
     HasFinitePrincipalPart B p (fun _ => 0) N := by
   refine ⟨B, hB, ?_⟩
-  filter_upwards with s
   simp
 
 namespace HasFinitePrincipalPart
@@ -162,7 +160,7 @@ private lemma congr_fun {M M' : ℂ → ℂ} {p : ℂ} {coeff : ℕ → ℂ} {N 
   obtain ⟨B, hB, hEq⟩ := h
   exact ⟨B, hB, hMM'.symm.trans hEq⟩
 
-private lemma congr_coeff {M : ℂ → ℂ} {p : ℂ} {coeff coeff' : ℕ → ℂ} {N : ℕ}
+lemma congr_coeff {M : ℂ → ℂ} {p : ℂ} {coeff coeff' : ℕ → ℂ} {N : ℕ}
     (h : HasFinitePrincipalPart M p coeff N)
     (hcc : ∀ j ∈ Finset.Icc 1 N, coeff j = coeff' j) :
     HasFinitePrincipalPart M p coeff' N := by
@@ -236,7 +234,7 @@ private lemma finset_sum {ι : Type*} (K : Finset ι) {M : ι → ℂ → ℂ}
   refine ⟨fun s => ∑ k ∈ K, B k s, HolomorphicNear.finset_sum K (fun k _ => hBhol k), ?_⟩
   have hall : ∀ᶠ s in 𝓝[≠] p, ∀ k ∈ K,
       M k s = B k s + ∑ j ∈ Finset.Icc 1 N, coeff k j / (s - p) ^ j :=
-    (Finset.eventually_all K).mpr (fun k hk => hBeq k hk)
+    by simp_all
   filter_upwards [hall] with s hs
   rw [Finset.sum_congr rfl hs, Finset.sum_add_distrib]
   congr 1
@@ -251,9 +249,9 @@ private lemma logPrincipalPart_holomorphicNear (P : Polynomial ℂ) {p : ℂ} (h
   unfold logPrincipalPart
   refine HolomorphicNear.finset_sum P.support fun k _ => ?_
   filter_upwards [isOpen_ne.mem_nhds hp] with s hs
-  exact (differentiableAt_const _).div (by fun_prop) (pow_ne_zero _ hs)
+  simp_all
 
-private lemma cpow_const_holomorphicNear (X : ℝ) (hX : 0 < X) (p : ℂ) :
+lemma cpow_const_holomorphicNear (X : ℝ) (hX : 0 < X) (p : ℂ) :
     HolomorphicNear (fun s : ℂ => (X : ℂ) ^ s) p :=
   AnalyticAt.holomorphicNear' (AnalyticAt.cpow analyticAt_const analyticAt_id (Complex.ofReal_mem_slitPlane.2 hX))
 
@@ -270,7 +268,7 @@ private lemma decomp (h : LogMellinAdmissible f δ P H) :
       (by simpa using neg_lt_zero.mpr h.delta_pos)
   refine ⟨A, ?_, ?_⟩
   · filter_upwards [hopen] with s hs
-    exact hAdiff s hs
+    fun_prop
   · filter_upwards [(show ∀ᶠ s in 𝓝[≠] (0 : ℂ), -δ < s.re from
       Filter.Eventually.filter_mono nhdsWithin_le_nhds (show ∀ᶠ s in 𝓝 (0:ℂ), -δ < s.re from hopen)),
       self_mem_nhdsWithin] with s hs hs0
@@ -287,7 +285,7 @@ private lemma holomorphicNear (h : LogMellinAdmissible f δ P H) {p : ℂ}
     hAhol.add' (logPrincipalPart_holomorphicNear P hp0)
   have heq : (fun s => A s + logPrincipalPart P s) =ᶠ[𝓝 p] H := by
     filter_upwards [hopen, isOpen_ne.mem_nhds hp0] with s hs hs0
-    exact (hAeq s hs hs0).symm
+    simp_all
   exact hsum.congr' heq
 
 end LogMellinAdmissible
@@ -368,8 +366,7 @@ theorem logMellinProduct_principalPart_zero {f : ℝ → ℂ} {δ : ℝ}
   · filter_upwards [hAeq] with s hs
     rw [logMellinProduct, hs]
     ring
-  · intro j hj
-    simp
+  simp
 
 theorem logMellinProduct_principalPart_one {f : ℝ → ℂ} {δ : ℝ}
     {P : Polynomial ℂ} {H : ℂ → ℂ} (h : LogMellinAdmissible f δ P H)
@@ -394,7 +391,3 @@ theorem logMellinProduct_principalPart_one {f : ℝ → ℂ} {δ : ℝ}
     simp only [Finset.Icc_self, Finset.sum_singleton, pow_one]
     field_simp
     ring
-
-end DedekindZetaZeroFree.LargeSieve.Vendor
-
-end

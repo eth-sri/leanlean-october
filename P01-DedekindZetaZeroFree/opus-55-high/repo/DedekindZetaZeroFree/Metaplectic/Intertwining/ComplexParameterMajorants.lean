@@ -45,7 +45,7 @@ theorem halfPlane_neighborhood (s₀ : ℂ) (hs₀ : -(1 / 6 : ℝ) < s₀.re) :
     have hdist : ‖s - s₀‖ < ε := by rwa [dist_eq_norm] at hs
     have h1 : |s.re - s₀.re| ≤ ‖s - s₀‖ := by
       have := RCLike.abs_re_le_norm (s - s₀)
-      simpa using this
+      omega
     have hnorm : 0 ≤ ‖s - s₀‖ := norm_nonneg _
     have hlower : s₀.re - ‖s - s₀‖ ≤ s.re := by
       have := (abs_le.mp h1).1
@@ -57,7 +57,7 @@ theorem halfPlane_neighborhood (s₀ : ℂ) (hs₀ : -(1 / 6 : ℝ) < s₀.re) :
     have hdist : ‖s - s₀‖ < ε := by rwa [dist_eq_norm] at hs
     have h1 : |s.re - s₀.re| ≤ ‖s - s₀‖ := by
       have := RCLike.abs_re_le_norm (s - s₀)
-      simpa using this
+      omega
     have hb_le : b ≤ s.re := by
       have hnorm : 0 ≤ ‖s - s₀‖ := norm_nonneg _
       have : s₀.re - ‖s - s₀‖ ≤ s.re := by
@@ -111,8 +111,8 @@ lemma sourceSeminorm_bddAbove (j : ℕ) (φ : CompactPicture) :
         (φ.infinity_smooth.continuous_iteratedFDeriv (by simp)).norm.continuousOn
   have hfin : BddAbove (⋃ q ∈ Finset.range (j + 1),
       ((fun z : ℂ => ‖iteratedFDeriv ℝ q (φ ∘ projectiveOpen) z‖) '' Metric.closedBall 0 1 ∪
-       (fun z : ℂ => ‖iteratedFDeriv ℝ q (φ ∘ projectiveInfinity) z‖) '' Metric.closedBall 0 1)) := by
-    exact (Finset.finite_toSet _).bddAbove_biUnion.mpr (fun q _ => hb q)
+       (fun z : ℂ => ‖iteratedFDeriv ℝ q (φ ∘ projectiveInfinity) z‖) '' Metric.closedBall 0 1)) := 
+    (Finset.finite_toSet _).bddAbove_biUnion.mpr (fun q _ => hb q)
   apply BddAbove.union bddAbove_singleton
   apply hfin.mono
   rintro r ⟨q, hq, z, hz, hr⟩
@@ -145,18 +145,7 @@ noncomputable def forwardSection (s : ℂ) (φ : CompactPicture) (g : ComplexGL2
  lemma ratio_wn (x : ℂ) :
     rowRatio (weyl * upperUnipotent x) = (1 + ‖x‖ ^ 2)⁻¹ := by
   unfold rowRatio bottomRowNormSq weyl upperUnipotent
-  simp [Matrix.GeneralLinearGroup.det, Matrix.GeneralLinearGroup.coe_mul,
-    Matrix.mul_apply, Fin.sum_univ_two, Matrix.det_fin_two]
-
-structure CompactGroupChart (n : ℕ) where
-  domain : Set (Fin n → ℝ)
-  domain_open : IsOpen domain
-  closedSet : Set (Fin n → ℝ)
-  closedSet_compact : IsCompact closedSet
-  closedSet_subset : closedSet ⊆ domain
-  lift : (Fin n → ℝ) → ComplexSU2
-  lift_smooth : ContDiffOn ℝ ∞
-    (fun u => (lift u : Matrix (Fin 2) (Fin 2) ℂ)) domain
+  simp
 
 structure ChartDifferentialOperator (n j : ℕ) (U : Set (Fin n → ℝ)) where
   coefficient : (q : Fin (j + 1)) → (Fin q.val → Fin n) → (Fin n → ℝ) → ℂ
@@ -176,7 +165,7 @@ noncomputable def planarEnvelope (p : ℝ) (x : ℂ) : ℝ :=
 noncomputable def planarHaar (h : ℝ) : Measure ℂ :=
   ENNReal.ofReal h • euclideanArea
 
-private lemma radial_rpow_integral (p : ℝ) (hp : 1 < p) :
+lemma radial_rpow_integral (p : ℝ) (hp : 1 < p) :
     ∫ r in Set.Ioi (0 : ℝ), r * (1 + r ^ 2) ^ (-p) = 1 / (2 * (p - 1)) := by
   have hp1 : (0 : ℝ) < p - 1 := by linarith
   have hne : (2 * (1 - p)) ≠ 0 := by linarith
@@ -200,9 +189,7 @@ private lemma radial_rpow_integral (p : ℝ) (hp : 1 < p) :
       rw [show (1 - p - 1 : ℝ) = -p by ring]
       rw [div_eq_iff hne]
       ring
-    have hgfun : (fun r : ℝ => (1 + r ^ 2) ^ (1 - p) / (2 * (1 - p))) = g := by
-      funext r; rw [hgdef]
-    rwa [hgfun, heq] at hd3
+    simp_all
   have hpos : ∀ x ∈ Set.Ioi (0 : ℝ), (0 : ℝ) ≤ x * (1 + x ^ 2) ^ (-p) := by
     intro x hx
     have hx1 : (0 : ℝ) < 1 + x ^ 2 := by positivity
@@ -216,10 +203,7 @@ private lemma radial_rpow_integral (p : ℝ) (hp : 1 < p) :
     have h2 : Tendsto (fun r : ℝ => (1 + r ^ 2) ^ (-(p - 1)) / (2 * (1 - p)))
         atTop (𝓝 0) := by
       simpa using h1.div_const (2 * (1 - p))
-    have hg' : g = fun r : ℝ => (1 + r ^ 2) ^ (-(p - 1)) / (2 * (1 - p)) := by
-      funext r
-      rw [hgdef, show (1 - p : ℝ) = -(p - 1) by ring]
-    rwa [hg']
+    simp_all
   have hmain := integral_Ioi_of_hasDerivAt_of_nonneg' hderiv hpos htend
   rw [hmain, show g 0 = 1 / (2 * (1 - p)) by simp [hgdef]]
   rw [show (1 - p : ℝ) = -(p - 1) by ring]
@@ -242,24 +226,18 @@ private lemma radial_rpow_integral (p : ℝ) (hp : 1 < p) :
           rfl
     _ = ∫ q in Set.Ioi (0 : ℝ) ×ˢ Set.Ioo (-π) π,
           q.1 * ((1 + q.1 ^ 2) ^ (-p)) := by
-          refine setIntegral_congr_fun (measurableSet_Ioi.prod measurableSet_Ioo) ?_
-          intro q hq
-          have hq1 : (0 : ℝ) < q.1 := Set.mem_Ioi.mp hq.1
-          simp only [Complex.norm_polarCoord_symm, smul_eq_mul]
-          rw [abs_of_pos hq1]
+          simp
     _ = (∫ r in Set.Ioi (0 : ℝ), r * (1 + r ^ 2) ^ (-p)) *
           ∫ _ in Set.Ioo (-π) π, (1 : ℝ) := by
           rw [Measure.volume_eq_prod ℝ ℝ,
             ← setIntegral_prod_mul (fun r : ℝ => r * (1 + r ^ 2) ^ (-p))
               (fun _ => (1 : ℝ)) (Set.Ioi (0 : ℝ)) (Set.Ioo (-π) π)]
-          refine setIntegral_congr_fun (measurableSet_Ioi.prod measurableSet_Ioo) ?_
-          intro q _
-          simp only [Pi.one_apply, mul_one]
+          simp
     _ = π / (p - 1) := by
           rw [hrad, h2pi]
           field_simp
 
-private lemma planarEnvelope_volume_integrable (p : ℝ) (hp : 1 < p) :
+lemma planarEnvelope_volume_integrable (p : ℝ) (hp : 1 < p) :
     Integrable (planarEnvelope p) (volume : Measure ℂ) := by
   by_contra h
   have hval := planarEnvelope_volume_integral p hp
@@ -287,8 +265,7 @@ private lemma rowRatio_pos (g : ComplexGL2) : 0 < rowRatio g := by
       apply norm_eq_zero.mp
       nlinarith [sq_nonneg ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 1‖]
     have h1 : (g : Matrix (Fin 2) (Fin 2) ℂ) 1 1 = 0 := by
-      apply norm_eq_zero.mp
-      nlinarith [sq_nonneg ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 0‖]
+      simp_all
     apply hdet
     simp [Matrix.det_fin_two, h0, h1]
   exact div_pos (norm_pos_iff.mpr (Matrix.GeneralLinearGroup.det g).ne_zero) hr
@@ -305,7 +282,7 @@ private lemma rowRatio_pos (g : ComplexGL2) : 0 < rowRatio g := by
   norm_num [positiveParameter]
   ring
 
-private lemma bottomRowLine_upper (a d : ℂˣ) (b : ℂ) (g : ComplexGL2) :
+lemma bottomRowLine_upper (a d : ℂˣ) (b : ℂ) (g : ComplexGL2) :
     bottomRowLine (upperTriangular a d b * g) = bottomRowLine g := by
   have hup : (upperTriangular a d b : Matrix (Fin 2) (Fin 2) ℂ) =
       !![(a : ℂ), b; 0, (d : ℂ)] := rfl
@@ -318,12 +295,12 @@ private lemma bottomRowLine_upper (a d : ℂˣ) (b : ℂ) (g : ComplexGL2) :
   · congr 1
     exact mul_div_mul_left _ _ d.ne_zero
 
-private lemma bottomRowLine_wn (x : ℂ) :
+lemma bottomRowLine_wn (x : ℂ) :
     bottomRowLine (weyl * upperUnipotent x) = projectiveOpen x := by
   unfold bottomRowLine weyl upperUnipotent
-  simp [Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two]
+  simp
 
-private lemma bottomRowLine_lower (u : ℂ) :
+lemma bottomRowLine_lower (u : ℂ) :
     bottomRowLine (lowerUnipotent u) = projectiveInfinity u := by
   by_cases hu : u = 0
   · subst u
@@ -401,7 +378,3 @@ theorem compact_g_local_halfPlane_majorant (s₀ : ℂ)
   refine ⟨C, N, hC, ?_⟩
   intro s φ x u hs hu
   exact hc s φ φ.open_smooth φ.infinity_smooth x u (hb s hs).2 (hb s hs).1 hu
-
-end DedekindZetaZeroFree.KPComplexIntertwinerParameterMajorant
-
-end

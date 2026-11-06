@@ -58,20 +58,13 @@ theorem rayCharacterDescent
           ClassFieldTheory.NumberFieldFractionalIdealGroup K) :
             FractionalIdeal (nonZeroDivisors (𝓞 K)) K) =
           (I : FractionalIdeal (nonZeroDivisors (𝓞 K)) K) := by
-        show ((rayIdealFractionalIdeal K I hI :
-          ClassFieldTheory.NumberFieldFractionalIdealGroup K) :
-            FractionalIdeal (nonZeroDivisors (𝓞 K)) K) =
-          (I : FractionalIdeal (nonZeroDivisors (𝓞 K)) K)
-        rw [rayIdealFractionalIdeal_coe]
+        rfl
       have hfI := hf I hI hcoprime (rayIdealClassRepresentative K m hm I hI hcoprime) hJ
       have hlift : lift (QuotientGroup.mk' N
           (rayIdealClassRepresentative K m hm I hI hcoprime)) =
           f (rayIdealClassRepresentative K m hm I hI hcoprime) := by
-        dsimp only [lift]
-        rw [← MonoidHom.comp_apply, QuotientGroup.lift_comp_mk']
+        rfl
       simp only [ψ, MonoidHom.comp_apply, Units.coeHom_apply]
       rw [hlift]
       exact hfI.symm
   exact ⟨ψ, hψ, rayCharacterPrincipalCriterion K m hm χ ψ hψ⟩
-
-end DedekindZetaZeroFree.AbelianQuotient

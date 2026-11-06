@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # finite Kummer dual separation
 
@@ -42,12 +39,9 @@ def characterToNthRoots
         φ g ^ (n : ℕ) = φ (g ^ (n : ℕ)) := (map_pow φ g (n : ℕ)).symm
         _ = 1 := by rw [hexponent g, map_one]⟩
   map_one' := by
-    apply Subtype.ext
-    exact map_one φ
+    simp
   map_mul' := by
-    intro g h
-    apply Subtype.ext
-    exact map_mul φ g h
+    simp
 
 /-- A finite character evaluates in the subgroup of `n`th roots of unity. -/
 @[simp] theorem characterToNthRoots_apply
@@ -96,12 +90,9 @@ def nthRootsSubgroupMap
           (map_pow (Units.map (algebraMap K L).toMonoidHom) z.1 n).symm
         _ = 1 := by rw [z.2, map_one]⟩
   map_one' := by
-    apply Subtype.ext
-    exact map_one (Units.map (algebraMap K L).toMonoidHom)
+    simp
   map_mul' := by
-    intro z w
-    apply Subtype.ext
-    exact map_mul (Units.map (algebraMap K L).toMonoidHom) z.1 w.1
+    simp
 
 /-- The canonical map from roots of unity into the `n`th-roots subgroup is injective. -/
 theorem nthRootsSubgroupMap_injective
@@ -125,7 +116,7 @@ def nthRootsSubgroupEquivRootsOfUnity
   map_mul' _ _ := rfl
 
 /-- The subgroup of `n`th roots of unity has a canonical finite type structure. -/
-noncomputable instance nthRootsSubgroupFintype
+instance nthRootsSubgroupFintype
     (K : Type*) [Field K] (n : ℕ) [NeZero n] : Fintype (nthRootsSubgroup K n) :=
   letI : Fintype (rootsOfUnity n K) := Fintype.ofFinite _
   Fintype.ofEquiv (rootsOfUnity n K)
@@ -165,18 +156,10 @@ def unitCharactersEquivNthRoots
   toFun := characterToNthRoots n hexponent
   invFun χ := (nthRootsSubgroup K (n : ℕ)).subtype.comp χ
   left_inv φ := by
-    apply MonoidHom.ext
-    intro g
     rfl
   right_inv χ := by
-    apply MonoidHom.ext
-    intro g
-    apply Subtype.ext
     rfl
   map_mul' φ ψ := by
-    apply MonoidHom.ext
-    intro g
-    apply Subtype.ext
     rfl
 
 /-- Finite abelian duality with the character codomain restricted to the
@@ -229,17 +212,16 @@ def transposeCharacterEquiv
     { toFun := fun r => e r g
       map_one' := by simp
       map_mul' := by
-        intro r s
-        exact congrArg (fun χ : G →* M => χ g) (map_mul e r s) }
+        simp }
   map_one' := by
     apply MonoidHom.ext
     intro r
-    exact map_one (e r)
+    simp
   map_mul' := by
     intro g h
     apply MonoidHom.ext
     intro r
-    exact map_mul (e r) g h
+    simp
 
 /-- The transposed character equivalence evaluates by pairing with the original character. -/
 @[simp] theorem transposeCharacterEquiv_apply
@@ -321,7 +303,3 @@ def transposeCharacterMulEquiv
   MulEquiv.ofBijective (transposeCharacterEquiv e)
     ⟨transposeCharacterEquiv_injective n hmu hexponent e,
       transposeCharacterEquiv_surjective n hmu hexponent e⟩
-
-end KummerTheory
-
-end

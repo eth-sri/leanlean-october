@@ -10,14 +10,12 @@ open NumberField IsDedekindDomain
 
 namespace DedekindZetaZeroFree.KPDeepRawSplitting
 
-noncomputable section
-set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 variable (v : HeightOneSpectrum (𝓞 F))
 
-private lemma tau_chart (K : Type*) [Field K] (M : Type*) [CommGroup M]
+lemma tau_chart (K : Type*) [Field K] (M : Type*) [CommGroup M]
     (B : Kˣ → Kˣ → M)
     (hL : ∀ a b c, B (a * b) c = B a c * B b c)
     (hR : ∀ a b c, B a (b * c) = B a b * B a c)
@@ -124,13 +122,13 @@ private lemma tau_chart (K : Type*) [Field K] (M : Type*) [CommGroup M]
         have hst : B (U / S) (V / S) = 1 := by
           apply hS
           simp only [Units.val_div_eq_div_val, ← add_div, hsum]
-          exact div_self S.ne_zero
+          simp
         have hsti : B (S / U) (S / V) = 1 := by
           have he : B (U / S)⁻¹ (V / S)⁻¹ = 1 := by rw [hIL, hIR, hst]; simp
-          simpa only [inv_div] using he
+          omega
         have he : B (S / U) (S / V) =
             B (S / KubotaRankTwo.X K g) (S / KubotaRankTwo.X K h) := by
-          simp only [U, V, hDL, hDR, hL, hR, hAL, hAR, hDL', hDR', mul_one, one_mul, div_one]
+          simp only [U, V, hDL, hDR, hL, hR, hAL, hDR', mul_one, one_mul]
         exact he ▸ hsti
 
 theorem sigmaTwo_eq_one_on_Gamma (r : ℕ)
@@ -186,14 +184,13 @@ theorem raw_section_splitting (r : ℕ)
           KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr v)) =
         ⟨g.val * h.val,
           1 * 1 * KPLocalCover.sigmaTwo F ζ hζ (Sum.inr v) g.val h.val⟩
-      rw [hsigma g g.property h h.property, one_mul, one_mul]
+      simp_all
   }
   refine ⟨s, (fun _ => rfl), ?_, ?_⟩
   · intro g h heq
     apply Subtype.ext
     exact congrArg (fun x : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr v) => x.g) heq
-  · ext g
-    rfl
+  rfl
 
 theorem deep_raw_splitting :
     ∃ m : ℕ, 1 ≤ m ∧
@@ -227,6 +224,3 @@ theorem deep_raw_splitting :
     intro g hg h hh
     exact sigmaTwo_eq_one_on_Gamma F ζ hζ v r hcharts g h hg hh
   exact ⟨hcharts, hsigma, raw_section_splitting F ζ hζ v r hsigma⟩
-
-end
-end DedekindZetaZeroFree.KPDeepRawSplitting

@@ -5,8 +5,6 @@ public import Mathlib.LinearAlgebra.Basis.VectorSpace
 @[expose] public section
 
 namespace DedekindZetaZeroFree.KPExceptionalRaw.FiniteSource.TameWhittakerSteps.Uniqueness.ReverseMinor
-noncomputable section
-set_option autoImplicit false
 open Module
 
 theorem exists_dual_diagonal_pairings_of_independent
@@ -38,6 +36,3 @@ theorem exists_dual_diagonal_pairings_of_independent
   · rw [← hb2, Basis.constr_basis]; simp [f1, hne.symm]
   · rw [← hb1, Basis.constr_basis]; simp [f2, hne]
   · rw [← hb2, Basis.constr_basis]; simp [f2]
-
-end
-end DedekindZetaZeroFree.KPExceptionalRaw.FiniteSource.TameWhittakerSteps.Uniqueness.ReverseMinor

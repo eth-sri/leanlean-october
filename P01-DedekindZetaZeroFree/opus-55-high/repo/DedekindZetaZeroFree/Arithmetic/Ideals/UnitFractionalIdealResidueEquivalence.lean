@@ -13,12 +13,12 @@ namespace DedekindZetaZeroFree.Hecke
 variable {F : Type} [Field F] [NumberField F]
 
 theorem residueFractionalIdeal_le_one (m : Ideal (NumberField.RingOfIntegers F)) :
-    (m : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) ≤ 1 := by
-  exact FractionalIdeal.coeIdeal_le_one
+    (m : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) ≤ 1 := 
+  FractionalIdeal.coeIdeal_le_one
 
 theorem residueFractionalIdeal_ne_zero_iff (m : Ideal (NumberField.RingOfIntegers F)) :
-    (m : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) ≠ 0 ↔ m ≠ ⊥ := by
-  exact FractionalIdeal.coeIdeal_ne_zero
+    (m : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) ≠ 0 ↔ m ≠ ⊥ := 
+  FractionalIdeal.coeIdeal_ne_zero
 
 def residueUnitLinearEquiv {F : Type} [Field F] :
     NumberField.RingOfIntegers F ≃ₗ[NumberField.RingOfIntegers F]
@@ -58,8 +58,8 @@ def residueFractionalOneEquiv (m : Ideal (NumberField.RingOfIntegers F)) :
     (NumberField.RingOfIntegers F ⧸ m) ≃ₗ[NumberField.RingOfIntegers F]
       fractionalIdealQuotient
         (1 : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F)
-        (m : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) := by
-  exact Submodule.Quotient.equiv m _ residueUnitLinearEquiv (residueUnitLinearEquiv_map m)
+        (m : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) := 
+  Submodule.Quotient.equiv m _ residueUnitLinearEquiv (residueUnitLinearEquiv_map m)
 
 @[simp] theorem residueFractionalOneEquiv_apply_mk
     (m : Ideal (NumberField.RingOfIntegers F)) (α : NumberField.RingOfIntegers F) :
@@ -69,7 +69,3 @@ def residueFractionalOneEquiv (m : Ideal (NumberField.RingOfIntegers F)) :
         (m : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F)
         ⟨algebraMap (NumberField.RingOfIntegers F) F α, FractionalIdeal.coe_mem_one (NumberField.RingOfIntegers F)⁰ α⟩ := by
   rfl
-
-end DedekindZetaZeroFree.Hecke
-
-end

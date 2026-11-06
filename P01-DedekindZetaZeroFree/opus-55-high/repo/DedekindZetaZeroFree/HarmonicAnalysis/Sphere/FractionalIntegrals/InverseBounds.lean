@@ -59,7 +59,7 @@ private theorem inverseCore_sub {F P : Sphere → ℂ}
   funext x
   ring
 
-private theorem inverseCore_bound {F : Sphere → ℂ} (hF : IsSphereSmooth F)
+theorem inverseCore_bound {F : Sphere → ℂ} (hF : IsSphereSmooth F)
     (x : Sphere) : ‖inverseCore F x‖ ≤ (29 / 2 : ℝ) * rotationSup 2 F := by
   have hT := fractionalIntegral_rotation (1 / 3) (by norm_num) F hF
   have hG := fractionalIntegral_rotation (2 / 3) (by norm_num)
@@ -196,5 +196,3 @@ theorem actual_chart_inverse_bound (β : ℂˣ) (n : ℕ) :
           (standardIntertwiner β f) := by
       simp only [Seminorm.smul_apply, NNReal.smul_def, smul_eq_mul, NNReal.coe_mul]
       ring
-
-end DedekindZetaZeroFree.ComplexFractionalInverse

@@ -26,9 +26,7 @@ theorem idealAbsoluteSum_converges (F : Type) [Field F] [NumberField F]
   classical
   have hnonneg (I : Ideal (𝓞 F)) : 0 ≤ idealAbsoluteWeight F σ I := by
     unfold idealAbsoluteWeight
-    split_ifs
-    · exact le_rfl
-    · exact Real.rpow_nonneg (Nat.cast_nonneg _) _
+    positivity
   let a : ℕ → ℝ := fun n => Nat.card {I : Ideal (𝓞 F) // Ideal.absNorm I = n}
   have hlim : Filter.Tendsto
       (fun n : ℕ => (∑ k ∈ Finset.Icc 1 n, a k) / (n : ℝ))
@@ -44,15 +42,15 @@ theorem idealAbsoluteSum_converges (F : Type) [Field F] [NumberField F]
       Finset.sum_Ioc_add_eq_sum_Icc (n.zero_le),
       ← Finset.card_preimage_eq_sum_card_image_eq
         (fun k _ ↦ Ideal.finite_setOfPred_absNorm_eq k)]
-    simp [a, Set.coe_eq_subtype]
+    simp [Set.coe_eq_subtype]
   have hL : LSeriesSummable (fun n => (a n : ℂ)) (σ : ℂ) := by
     apply LSeriesSummable_of_sum_norm_bigO_and_nonneg (r := 1)
     · exact Asymptotics.isBigO_atTop_natCast_rpow_of_tendsto_div_rpow
         (by simpa using hlim)
     · intro n
-      exact Nat.cast_nonneg _
+      positivity
     · exact zero_le_one
-    · simpa using hσ
+    omega
   have hfiber (n : ℕ) :
       (∑' I : {I : Ideal (𝓞 F) // Ideal.absNorm I = n},
         idealAbsoluteWeight F σ I.val) =
@@ -60,7 +58,7 @@ theorem idealAbsoluteSum_converges (F : Type) [Field F] [NumberField F]
     rw [LSeries.norm_term_eq]
     by_cases hn : n = 0
     · subst n
-      simp only [if_pos rfl]
+      simp only
       have hz (I : {I : Ideal (𝓞 F) // Ideal.absNorm I = 0}) :
           idealAbsoluteWeight F σ I.val = 0 := by
         simp [idealAbsoluteWeight, Ideal.absNorm_eq_zero_iff.mp I.property]
@@ -84,15 +82,10 @@ theorem idealAbsoluteSum_converges (F : Type) [Field F] [NumberField F]
         letI := (Ideal.finite_setOfPred_absNorm_eq (S := 𝓞 F) n).fintype
         exact summable_of_finite_support (Set.toFinite _)
       · exact hL.norm.congr (fun n => (hfiber n).symm)
-    · intro I
-      exact ⟨Ideal.absNorm I, rfl, fun n hn => hn.symm⟩
+    simp
   refine ⟨hs, hnonneg, ?_, hs.hasSum⟩
   have htop : idealAbsoluteWeight F σ (⊤ : Ideal (𝓞 F)) = 1 := by
     simp [idealAbsoluteWeight]
   have hle := hs.le_tsum (⊤ : Ideal (𝓞 F)) (fun I _ => hnonneg I)
   rw [htop] at hle
-  exact lt_of_lt_of_le zero_lt_one hle
-
-end
-
-end DedekindZetaZeroFree
+  positivity

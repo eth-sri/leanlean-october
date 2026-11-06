@@ -22,7 +22,7 @@ local notation "hζ" => R.A.primitive_zeta12
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 
-private theorem raw_projected (raw : Raw R.A) :
+theorem raw_projected (raw : Raw R.A) :
     pglProjection F ζ hζ (scalarQuotient F ζ hζ (amalgamation F ζ hζ raw)) =
       QuotientGroup.mk' (scalarSubgroup F) (restrictedProjection F ζ hζ raw) := by
   simp only [pglProjection, scalarQuotient, projection_amalgamation,

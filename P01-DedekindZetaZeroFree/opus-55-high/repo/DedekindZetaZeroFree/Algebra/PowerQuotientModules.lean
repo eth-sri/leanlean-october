@@ -31,5 +31,3 @@ def addEquivToZModLinearEquiv (n : ℕ) (M N : Type*)
     map_smul' := by
       intro c x
       exact ZMod.map_smul e c x }
-
-end DedekindZetaZeroFree

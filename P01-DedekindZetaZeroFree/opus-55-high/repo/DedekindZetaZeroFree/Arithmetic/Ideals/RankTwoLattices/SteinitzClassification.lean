@@ -17,10 +17,7 @@ theorem kp_cusp_class_eq_iff_scalar
     ClassGroup.mk K (Units.mk0 I hI) = ClassGroup.mk K (Units.mk0 J hJ) ↔
       ∃ c : K, c ≠ 0 ∧ FractionalIdeal.spanSingleton R⁰ c * I = J := by
   refine (ClassGroup.equiv K).injective.eq_iff.symm.trans ?_
-  simp only [ClassGroup.equiv_mk, FractionalIdeal.canonicalEquiv_self,
-    Units.coe_mapEquiv, RingEquiv.coe_toMulEquiv, RingEquiv.refl_apply,
-    QuotientGroup.mk'_eq_mk', mem_principal_ideals_iff,
-    Units.ext_iff, Units.val_mul, Units.val_mk0, exists_prop]
+  simp only [ClassGroup.equiv_mk, FractionalIdeal.canonicalEquiv_self, Units.coe_mapEquiv, RingEquiv.coe_toMulEquiv, RingEquiv.refl_apply, QuotientGroup.mk'_eq_mk', mem_principal_ideals_iff, Units.ext_iff, Units.val_mul, Units.val_mk0]
   constructor
   · rintro ⟨X, ⟨x, hX⟩, hx⟩
     refine ⟨x, ?_, ?_⟩
@@ -31,7 +28,7 @@ theorem kp_cusp_class_eq_iff_scalar
     refine ⟨Units.mk0 _ (FractionalIdeal.spanSingleton_ne_zero_iff.mpr hx), ⟨x, rfl⟩, ?_⟩
     simpa only [mul_comm] using! eq_J
 
-private theorem scalar_mul_ideal
+theorem scalar_mul_ideal
     (R : Type*) [CommRing R] [IsDedekindDomain R]
     (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
     (c : K) (I : FractionalIdeal R⁰ K) :
@@ -64,8 +61,7 @@ private theorem scalar_mul_ideal
   have hx := (Submodule.span K (coordinateLattice R K I J : Set (K × K))).add_mem
     (Submodule.smul_mem _ (x.1 / a) (Submodule.subset_span he1))
     (Submodule.smul_mem _ (x.2 / b) (Submodule.subset_span he2))
-  convert hx using 1
-  ext <;> simp [div_mul_cancel₀, ha0, hb0]
+  simp_all
 
  def coordinate_full_lattice
     (R : Type*) [CommRing R] [IsDedekindDomain R]
@@ -73,7 +69,7 @@ private theorem scalar_mul_ideal
     (I J : FractionalIdeal R⁰ K) (hI : I ≠ 0) (hJ : J ≠ 0) : FullLattice R K :=
   ⟨coordinateLattice R K I J, coordinate_full R K I J hI hJ⟩
 
-private theorem determinant_nonzero
+theorem determinant_nonzero
     (R : Type*) [CommRing R] [IsDedekindDomain R]
     (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
     (M : FullLattice R K) : determinantIdeal R K M ≠ 0 := by
@@ -81,7 +77,7 @@ private theorem determinant_nonzero
   apply kp_cusp_determinantSubmodule_ne_bot R K M
   exact (congrArg Subtype.val h).trans FractionalIdeal.coe_zero
 
-private theorem determinant_class_map
+theorem determinant_class_map
     (R : Type*) [CommRing R] [IsDedekindDomain R]
     (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
     (M N : FullLattice R K) (g : (K × K) ≃ₗ[K] (K × K))
@@ -96,7 +92,7 @@ private theorem determinant_class_map
   rw [scalar_mul_ideal]
   exact (kp_cusp_determinantSubmodule_map R K M.val g).symm.trans (by rw [hg]; rfl)
 
-private theorem determinant_coordinate
+theorem determinant_coordinate
     (R : Type*) [CommRing R] [IsDedekindDomain R]
     (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
     (D : FractionalIdeal R⁰ K) (hD : D ≠ 0) :
@@ -235,8 +231,7 @@ theorem kp_cusp_latticeDeterminantClass_bijective
     refine ⟨Quotient.mk (latticeSetoid R K)
       (coordinate_full_lattice R K 1 (I : FractionalIdeal R⁰ K) one_ne_zero I.ne_zero), ?_⟩
     rw [latticeDeterminantClass_mk, determinant_coordinate]
-    congr 1
-    exact Units.ext rfl
+    simp
 
 theorem kp_cusp_numberField_lattice_quotient_finite
     (F : Type*) [Field F] [NumberField F] :
@@ -245,5 +240,3 @@ theorem kp_cusp_numberField_lattice_quotient_finite
     NumberField.RingOfIntegers.instFintypeClassGroup F
   exact Finite.of_injective (latticeDeterminantClass (NumberField.RingOfIntegers F) F)
     (kp_cusp_latticeDeterminantClass_bijective _ _).1
-
-end DedekindZetaZeroFree

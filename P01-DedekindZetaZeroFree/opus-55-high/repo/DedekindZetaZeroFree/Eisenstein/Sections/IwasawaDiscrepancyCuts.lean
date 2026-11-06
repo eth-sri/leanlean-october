@@ -20,7 +20,7 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
     (a : ℝ) (v : Functions F ζ hζ) : Functions F ζ hζ :=
   fun g => if discrepancy F ζ hζ K hK g = a then v g else 0
 
-private theorem compact_mask_locallyConstant (K : Subgroup (G F ζ hζ))
+theorem compact_mask_locallyConstant (K : Subgroup (G F ζ hζ))
     (hK : IwasawaCompact F ζ hζ K) :
     IsLocallyConstant (fun k : K => fun g => discrepancy F ζ hζ K hK (g * k.val)) := by
   apply (IsLocallyConstant.iff_eventually_eq _).mpr
@@ -93,7 +93,7 @@ private theorem compact_mask_locallyConstant (K : Subgroup (G F ζ hζ))
     · intro c x hx ih
       exact S.smul_mem c ih
 
-private theorem discrepancy_right_level (K : Subgroup (G F ζ hζ))
+theorem discrepancy_right_level (K : Subgroup (G F ζ hζ))
     (hK : IwasawaCompact F ζ hζ K) :
     ∃ U : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ, ∀ g u,
       u ∈ KPGlobalTorusFunctionData.globalLevel F ζ hζ U →

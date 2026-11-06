@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Perfectness of a finite nondegenerate Hilbert pairing
 
@@ -53,10 +47,8 @@ universe u
     change (f a) ^ (n : ℕ) = 1
     rw [← map_pow, powerClass_pow_order K n a, map_one])
   left_inv f := by
-    ext a
     rfl
   right_inv f := by
-    ext a
     rfl
 
 /-- A finite nondegenerate pairing on power classes is perfect: its adjoint
@@ -97,11 +89,7 @@ theorem IsNondegenerate.bijective
   have hinj : Function.Injective B := by
     intro a b hab
     have hOne : B (a * b⁻¹) = 1 := by
-      rw [map_mul, map_inv, hab, mul_inv_cancel]
+      simp_all
     have hEq : a * b⁻¹ = 1 := hB.1 _ (fun c => DFunLike.congr_fun hOne c)
     exact (mul_inv_eq_one).mp hEq
   exact (Nat.bijective_iff_injective_and_card B).2 ⟨hinj, hCard⟩
-
-end ClassFieldTheory.HilbertPairing
-
-end

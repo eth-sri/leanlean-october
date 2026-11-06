@@ -75,8 +75,7 @@ theorem weil_finite_cutoff_coset_reduction
       convert H.sub_mem hj hi using 1 <;> abel
     have he : (QuotientAddGroup.mk (r i) : Q) =
         QuotientAddGroup.mk (r j) := QuotientAddGroup.eq_iff_sub_mem.mpr hs
-    rw [hr, hr] at he
-    exact hij he
+    simp_all
   have hunion : (U : Set (v.adicCompletion F)) = ⋃ i, C i := by
     ext x
     constructor
@@ -89,7 +88,7 @@ theorem weil_finite_cutoff_coset_reduction
     · intro hx
       obtain ⟨i, hi⟩ := Set.mem_iUnion.mp hx
       have := U.add_mem (hHU hi) (r i).property
-      simpa only [sub_add_cancel, SetLike.mem_coe] using this
+      simp_all
   have hmeas (i : Q) : MeasurableSet (C i) :=
     (isOpen_finiteCompletionBall_coset F v (r i) m).measurableSet
   have hint (i : Q) : IntegrableOn f (C i) μ := by
@@ -114,7 +113,7 @@ theorem weil_finite_cutoff_coset_reduction
         rintro x ⟨hx, hxL⟩
         apply hi
         convert L.sub_mem hxL (hHL hx) using 1 <;> abel
-      rw [hempty, setIntegral_empty, heval, if_neg hi]
+      simp_all
   have hUL : (U : Set (v.adicCompletion F)) ∩ L = L :=
     Set.inter_eq_right.mpr hLU
   have heqL : (∫ x in (U : Set (v.adicCompletion F)), f x ∂μ) =
@@ -154,7 +153,7 @@ theorem weil_finite_cutoff_coset_reduction
     · intro hx
       obtain ⟨i, hi⟩ := Set.mem_iUnion.mp hx
       have := L.add_mem (hHL hi) (t i).property
-      simpa only [sub_add_cancel, SetLike.mem_coe] using this
+      simp_all
   change (∫ x in (U : Set (v.adicCompletion F)), f x ∂μ) = _
   rw [heqL, hDunion, integral_iUnion_fintype
     (fun i => (isOpen_finiteCompletionBall_coset F v (t i) m).measurableSet)
@@ -192,7 +191,3 @@ theorem localFiniteQuadraticCutoff_eventually_eq_stationaryGaussSum
     (finiteCompletionBall F v (-(n : ℤ)))
     (isCompact_finiteCompletionBall F v _) (isOpen_finiteCompletionBall F v _)
     (hN n hn).2
-
-end DedekindZetaZeroFree
-
-end

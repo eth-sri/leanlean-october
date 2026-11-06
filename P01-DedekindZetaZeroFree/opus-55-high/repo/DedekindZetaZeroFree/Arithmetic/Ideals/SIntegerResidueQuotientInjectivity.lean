@@ -65,5 +65,3 @@ theorem exteriorQuotientMap_injective (A : SArithmeticData F) (I : A.Exterior) :
   apply (v.intValuation_le_pow_iff_mem a n).mp
   rw [← v.valuation_of_algebraMap (K := F)]
   exact hmap ha
-
-end DedekindZetaZeroFree.ArithGaussCRT

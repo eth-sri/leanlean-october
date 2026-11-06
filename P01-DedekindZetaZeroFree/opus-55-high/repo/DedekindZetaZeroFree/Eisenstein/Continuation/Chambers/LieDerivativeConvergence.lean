@@ -15,7 +15,7 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 
-private theorem generic_chamber_majorant {K : Subgroup (G F ζ hζ)}
+theorem generic_chamber_majorant {K : Subgroup (G F ζ hζ)}
     (hK : IwasawaCompact F ζ hζ K) (f : Flat F ζ hζ K)
     (s : ℂ) (hs : (1/3 : ℝ) < s.re) (T : Set (G F ζ hζ)) (hT : IsCompact T) :
     ∃ B : KPChamberBruhatTwoCells.RationalQuotient F → ℝ, Summable B ∧

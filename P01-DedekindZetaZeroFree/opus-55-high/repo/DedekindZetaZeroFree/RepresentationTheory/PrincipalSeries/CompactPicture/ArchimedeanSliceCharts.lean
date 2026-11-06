@@ -18,24 +18,24 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
     KPGlobalTorusBorelTwistCompatibility.GroupArch F :=
   fun j => if j = w then ![u, 1, v] else ![0, 1, 0]
 
-private theorem sliceCoordinates_domain (w : InfinitePlace F) (u v : ℂ) :
+theorem sliceCoordinates_domain (w : InfinitePlace F) (u v : ℂ) :
     sliceCoordinates F w u v ∈ KPGlobalTorusBorelTwistCompatibility.groupArchDomain F := by
   intro j
   by_cases hj : j = w <;> simp [sliceCoordinates, hj]
 
-private theorem leftMatrix_zero : leftMatrix ![0, 1, 0] = 1 := by
+theorem leftMatrix_zero : leftMatrix ![0, 1, 0] = 1 := by
   apply Matrix.GeneralLinearGroup.ext
   rw [leftMatrix_val _ (by simp)]
   intro i j
   fin_cases i <;> fin_cases j <;> simp
 
-private theorem leftMatrix_lower (u : ℂ) : leftMatrix ![u, 1, 0] = lowerUnipotent u := by
+theorem leftMatrix_lower (u : ℂ) : leftMatrix ![u, 1, 0] = lowerUnipotent u := by
   apply Matrix.GeneralLinearGroup.ext
   rw [leftMatrix_val _ (by simp)]
   intro i j
   fin_cases i <;> fin_cases j <;> simp [lowerUnipotent]
 
-private theorem groupArchChart_slice_lower (w : InfinitePlace F) (u : ℂ) :
+theorem groupArchChart_slice_lower (w : InfinitePlace F) (u : ℂ) :
     KPGlobalTorusBorelTwistCompatibility.groupArchChart F ζ hζ (sliceCoordinates F w u 0) =
       archMatrixInsertion F ζ hζ (Function.update 1 w (lowerUnipotent u)) := by
   rw [← sectionTuple_left]
@@ -89,7 +89,7 @@ theorem productHCScalar_infinity_chart (b : KPGlobalTorusFunctionData.finitePart
   simpa only [Function.update_self, mul_one, Function.update_idem] using
     productHCScalar_lower_sweep F ζ hζ K hK C f b w (Function.update a w 1)
 
-private theorem weyl_upper_eq_lower_weyl (u : ℂ) :
+theorem weyl_upper_eq_lower_weyl (u : ℂ) :
     weyl * upperUnipotent u = lowerUnipotent u * weyl := by
   apply Matrix.GeneralLinearGroup.ext
   intro i j

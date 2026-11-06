@@ -43,16 +43,12 @@ variable (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisen
   (hP : IsTamePolarization F ζ hζ q S P)
 
 theorem B_powers (π : (LocalField F q)ˣ) (a b : ℤ) :
-    KPHilbert.B3 F ζ hζ (Sum.inr q) (π ^ a) (π ^ b) = 1 := by
-  exact KPTameLiteralNormalizationAtomic.DiagonalArithmetic.uniformizer_hilbert_powers
-    F ζ hζ q π a b
+    KPHilbert.B3 F ζ hζ (Sum.inr q) (π ^ a) (π ^ b) = 1 := by apply DedekindZetaZeroFree.KPTameLiteralNormalizationAtomic.DiagonalArithmetic.uniformizer_hilbert_powers <;> assumption
 
 include S in
 theorem diagonal_scalar (π : (LocalField F q)ˣ) (a b : ℤ) :
     diagonalLift F ζ hζ q π (a,b) =
-      KPPGLLocalCover.A F ζ hζ (Sum.inr q) (π ^ (a-b)) := by
-  exact KPTameLiteralNormalizationAtomic.DiagonalArithmetic.diagonal_lift_scalar
-    F ζ hζ q S π a b
+      KPPGLLocalCover.A F ζ hζ (Sum.inr q) (π ^ (a-b)) := by apply DedekindZetaZeroFree.KPTameLiteralNormalizationAtomic.DiagonalArithmetic.diagonal_lift_scalar <;> assumption
 
 def IsNormalizedTameExtension : Prop :=
   ∀ (h : HL F ζ hζ q S P) (e : rootsOfUnity 3 F)
@@ -83,8 +79,8 @@ private theorem cube_chi (π : (LocalField F q)ˣ)
         (residueCardinality (LocalField F q) : ℂ) ^ n := by
   have hc : (S.borel.cubeLift (π ^ (-n)) : actualTorus F ζ hζ q) ∈ HL F ζ hζ q S P := by
     rw [HL, Subgroup.mem_comap]
-    have he : S.heisenberg.π (S.borel.cubeLift (π ^ (-n))) = 1 := by
-      exact (show (S.borel.cubeLift (π ^ (-n)) : actualTorus F ζ hζ q) ∈ S.heisenberg.π.ker by
+    have he : S.heisenberg.π (S.borel.cubeLift (π ^ (-n))) = 1 := 
+      (show (S.borel.cubeLift (π ^ (-n)) : actualTorus F ζ hζ q) ∈ S.heisenberg.π.ker by
         rw [S.heisenberg.quotient_kernel]; exact (S.borel.cubeLift _).property)
     rw [he]; exact P.L.one_mem
   let h : HL F ζ hζ q S P := ⟨S.borel.cubeLift (π ^ (-n)), hc⟩
@@ -107,8 +103,7 @@ private theorem cube_chi (π : (LocalField F q)ˣ)
   have hp : localAbs (LocalField F q) π = (residueCardinality (LocalField F q) : ℝ)⁻¹ := by
     simp [localAbs, hπ, Real.rpow_neg_one]
   have hQ : 0 < (residueCardinality (LocalField F q) : ℝ) := by exact_mod_cast Nat.card_pos
-  simp only [normPower, ← zpow_neg, neg_neg, ← zpow_natCast, ← zpow_mul, abs_zpow,
-    hp, inv_zpow, Real.log_inv, Real.log_zpow, ← Complex.exp_add]
+  simp only [normPower, ← zpow_neg, neg_neg, ← zpow_natCast, ← zpow_mul, abs_zpow, hp, inv_zpow, Real.log_zpow, ← Complex.exp_add]
   push_cast
   conv_lhs => arg 1; ring_nf
   rw [Complex.exp_int_mul, Complex.exp_log]
@@ -133,7 +128,3 @@ theorem actual_minus_transports
   congr 1
   congr 1
   fin_cases i <;> norm_num [transportExponent, ZMod.val_one]
-
-end DedekindZetaZeroFree.KPTameTransposeLiteralCoefficients
-
-end

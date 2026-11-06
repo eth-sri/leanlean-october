@@ -27,7 +27,7 @@ private lemma line_continuous (a : ℝ) (ha : a ∈ Set.Icc (-(99 / 100 : ℝ)) 
   · have : (1 : ℝ) ≤ n := by exact_mod_cast h
     linarith [ha.1]
 
-private lemma uniform_bound :
+lemma uniform_bound :
     ∃ B : ℝ, 0 < B ∧ ∀ a : ℝ, a ∈ Set.Icc (-(99 / 100 : ℝ)) (-(87 / 100 : ℝ)) →
     ∀ t : ℝ, ‖Complex.Gamma ((a : ℂ) + (t : ℂ) * Complex.I)‖ ≤ B := by
   obtain ⟨M, hM, hbound⟩ := gamma_real_interval_bound (a := 1 / 100) (b := 3) (by norm_num)

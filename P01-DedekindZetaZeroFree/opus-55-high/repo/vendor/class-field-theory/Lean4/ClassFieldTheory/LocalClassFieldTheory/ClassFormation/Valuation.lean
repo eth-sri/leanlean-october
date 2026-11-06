@@ -13,12 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-set_option autoImplicit false
 /-! Provides the public declarations in the `LocalClassFieldTheory.ClassFormation.Valuation` Lean module. -/
 
 namespace LocalClassFieldTheory
@@ -138,9 +132,6 @@ theorem integerUnitsToFieldUnits_galoisGroup_equivariant
     letI := galoisGroupFieldUnitsMulDistribMulAction K L
     integerUnitsToFieldUnits L (σ • x) =
       σ • integerUnitsToFieldUnits L x := by
-  let := galoisGroupIntegerUnitsMulDistribMulActionOfIsIntegralClosure K L
-  let := galoisGroupFieldUnitsMulDistribMulAction K L
-  ext
   rfl
 
 /-- A Galois automorphism preserves the normalized additive valuation.  The
@@ -179,8 +170,8 @@ theorem valuationMap_unitsMapEquiv_galoisGroup
       v L (Additive.ofMul (Units.mapEquiv σ.toMulEquiv ϖ)) = 1 := by
     rw [hmapϖ]
     exact hvσπinv
-  have hϖ : valuationMap L (Additive.ofMul ϖ) = 1 := by
-    exact v_inverseIntegerRingUniformizerFieldUnit L
+  have hϖ : valuationMap L (Additive.ofMul ϖ) = 1 := 
+    v_inverseIntegerRingUniformizerFieldUnit L
   let n : Int := valuationMap L (Additive.ofMul x)
   let u : 𝒪[L]ˣ := uniformizerUnitFactor L ϖ hϖ x
   let σu : 𝒪[L]ˣ := Units.mapEquiv e.toMulEquiv u
@@ -237,14 +228,7 @@ theorem valuationUnitsMulHom_eq_one_iff_valuationMap_eq_zero
     [IsNonarchimedeanLocalField L] (x : Lˣ) :
     valuationUnitsMulHom L x = 1 ↔
       valuationMap L (Additive.ofMul x) = 0 := by
-  change valuationUnitsMulHom L x = 1 ↔
-    Multiplicative.toAdd (valuationUnitsMulHom L x) = 0
-  constructor
-  · intro hx
-    exact congrArg Multiplicative.toAdd hx
-  · intro hx
-    apply Multiplicative.toAdd.injective
-    exact hx
+  rfl
 
 /-- Exactness at `Lˣ`: the kernel of normalized valuation consists exactly
 of the units of the valuation integer ring. -/
@@ -263,18 +247,6 @@ theorem valuationUnitsMulHom_eq_one_iff_exists_integerUnit
       (integerUnitsToFieldUnits_mem_range_iff_valuationMap_eq_zero L
         (integerUnitsToFieldUnits L y)).1 ⟨y, rfl⟩
 
-/-- Exactness of the multiplicative valuation sequence at `Lˣ`, stated as
-the equality of the actual range and kernel subgroups. -/
-theorem integerUnitsToFieldUnits_range_eq_ker_valuationUnitsMulHom
-    (L : Type u) [Field L] [ValuativeRel L] [TopologicalSpace L]
-    [IsNonarchimedeanLocalField L] :
-    MonoidHom.range (integerUnitsToFieldUnits L) =
-      MonoidHom.ker (valuationUnitsMulHom L) := by
-  ext x
-  change (∃ y : 𝒪[L]ˣ, integerUnitsToFieldUnits L y = x) ↔
-    valuationUnitsMulHom L x = 1
-  exact (valuationUnitsMulHom_eq_one_iff_exists_integerUnit L x).symm
-
 /-- The multiplicative normalized valuation `Lˣ → Multiplicative ℤ` is
 surjective. -/
 theorem valuationUnitsMulHom_surjective
@@ -287,6 +259,3 @@ theorem valuationUnitsMulHom_surjective
   change Multiplicative.ofAdd (valuationMap L x) = n
   rw [hx]
   rfl
-
-end
-end LocalClassFieldTheory

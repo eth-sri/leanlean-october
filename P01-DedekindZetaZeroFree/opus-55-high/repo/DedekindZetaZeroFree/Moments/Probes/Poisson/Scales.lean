@@ -48,7 +48,3 @@ theorem yScale_pos (Z : ℝ) (hZ : 0 < Z) : 0 < yScale Z := Real.rpow_pos_of_pos
 
 theorem rightLine_eq : rightLine = 10000001 / 10000000 := by
   unfold rightLine contourOffset; norm_num
-
-end
-
-end DedekindZetaZeroFree.Quantitative.Scales

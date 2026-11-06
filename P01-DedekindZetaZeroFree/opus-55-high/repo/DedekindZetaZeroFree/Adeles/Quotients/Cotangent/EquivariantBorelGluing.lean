@@ -207,7 +207,7 @@ private lemma T_symm_coord {i : Fin (H.atlas U).componentCount}
         (T ψ x hx (EuclideanSpace.basisFun (Fin (d F) × Fin 3) ℂ k))]
   rw [inner_conj_symm, hb]
 
-private lemma measurable_ambientSequence (cover : CountableCover F ζ hζ U R P H)
+lemma measurable_ambientSequence (cover : CountableCover F ζ hζ U R P H)
     (f : SequenceFields cover) (hf : IsPieceSequence cover f) (n : ℕ) :
     Measurable (ambientSequence cover f n) := by
   have hω : MeasurableSet (omega (cover.chart n)) := by
@@ -242,7 +242,7 @@ def rawG (cover : CountableCover F ζ hζ U R P H) (f : SequenceFields cover) :
     (ambientSequence cover f i.1) x.val
     (cell_subset_domain cover a i.1 i.2 (cellIndex_mem cover a x))
 
-private lemma rawG_cell (cover : CountableCover F ζ hζ U R P H)
+lemma rawG_cell (cover : CountableCover F ζ hζ U R P H)
     (f : SequenceFields cover) (a : ShrunkChart F ζ hζ U R P H)
     (n k : ℕ) (x : omega a) (hx : x.val ∈ cell cover a n k) :
     rawG cover f a x = inverseTransport ((enumeration cover a n).branch k)
@@ -353,14 +353,14 @@ private lemma q_actualBranch {a b : ShrunkChart F ζ hζ U R P H}
   apply Quotient.sound
   exact ⟨e.gamma, rfl⟩
 
-private lemma cellIndex_fst (cover : CountableCover F ζ hζ U R P H)
+lemma cellIndex_fst (cover : CountableCover F ζ hζ U R P H)
     (a : ShrunkChart F ζ hζ U R P H) (x : omega a) (n : ℕ)
     (hx : q a x.val ∈ basePiece cover n) : (cellIndex cover a x).1 = n := by
   by_contra hne
   have hb := kp_cont_actual_cotangent_borel_refinement F ζ hζ U R P H cover
   exact Set.disjoint_left.mp (hb.pairwise_disjoint hne) (cellIndex_mem cover a x).1 hx
 
-private lemma rawG_at_branch (cover : CountableCover F ζ hζ U R P H)
+lemma rawG_at_branch (cover : CountableCover F ζ hζ U R P H)
     (f : SequenceFields cover) (hf : IsPieceSequence cover f)
     (a : ShrunkChart F ζ hζ U R P H) (n : ℕ)
     (e : Branch a (cover.chart n)) (x : omega a) (hx : x.val ∈ e.domain)
@@ -452,7 +452,7 @@ def G (cover : CountableCover F ζ hζ U R P H) (f : PieceSequence cover) :
     rw [KPContCotangentActualGroupoidIdentities.identity_psi]
     exact KPContActualCotangentMeasurableFamilies.omega_subset_larger a hx
 
-private lemma rawG_on_piece (cover : CountableCover F ζ hζ U R P H)
+lemma rawG_on_piece (cover : CountableCover F ζ hζ U R P H)
     (f : SequenceFields cover) (hf : IsPieceSequence cover f) (n : ℕ)
     (y : omega (cover.chart n)) (hy : q (cover.chart n) y.val ∈ basePiece cover n) :
     rawG cover f (cover.chart n) y = f n y := by

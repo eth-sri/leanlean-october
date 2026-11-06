@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Local Hilbert symbols
 
@@ -43,7 +39,7 @@ variable [ValuativeRel K] [TopologicalSpace K]
   [IsNonarchimedeanLocalField K]
 
 /-- The local Artin automorphism of the concrete Kummer extension. -/
-noncomputable def chosenSimpleKummerNormResidueAutomorphism
+def chosenSimpleKummerNormResidueAutomorphism
     (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
     (hmu : (primitiveRoots (n : ℕ) K).Nonempty) (b : Kˣ) :
     Kˣ →* Gal((chosenSimpleKummerExtension K n hnK b)/K) := by
@@ -56,7 +52,7 @@ noncomputable def chosenSimpleKummerNormResidueAutomorphism
 
 /-- The local Hilbert symbol `(a,b)ₙ`, valued in the actual subgroup
 `μₙ(K)`. -/
-noncomputable def localHilbertSymbol
+def localHilbertSymbol
     (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
     (hmu : (primitiveRoots (n : ℕ) K).Nonempty) (a b : Kˣ) :
     nthRootsSubgroup K (n : ℕ) :=
@@ -67,7 +63,7 @@ noncomputable def localHilbertSymbol
 
 /-- For fixed `b`, the local Hilbert symbol is a homomorphism in its first
 argument. -/
-noncomputable def localHilbertSymbolHom
+def localHilbertSymbolHom
     (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
     (hmu : (primitiveRoots (n : ℕ) K).Nonempty) (b : Kˣ) :
     Kˣ →* nthRootsSubgroup K (n : ℕ) :=
@@ -104,70 +100,7 @@ theorem localHilbertSymbol_map_eq_rootQuotient
             (chosenSimpleKummerRootCharacter K n hnK hmu b
               (chosenSimpleKummerNormResidueAutomorphism
                 K n hnK hmu b a))) = _
-  rw [(nthRootsSubgroupEquivOfPrimitiveRoots
-    K (chosenSimpleKummerExtension K n hnK b) n hmu).apply_symm_apply]
-  exact
-    chosenSimpleKummerRootCharacter_apply K n hnK hmu b
-      (chosenSimpleKummerNormResidueAutomorphism K n hnK hmu b a)
-
-/-- The local Artin automorphism acts on the chosen radical by
-multiplication with the Hilbert symbol. -/
-theorem normResidueAutomorphism_map_rootUnit_eq_hilbertSymbol_mul
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) (a b : Kˣ) :
-    let E := chosenSimpleKummerExtension K n hnK b
-    let sigma : Gal(E/K) :=
-      chosenSimpleKummerNormResidueAutomorphism K n hnK hmu b a
-    let beta : Eˣ := chosenSimpleKummerRootUnit K n hnK b
-    Units.map sigma beta =
-      Units.map (algebraMap K E).toMonoidHom
-          (localHilbertSymbol K n hnK hmu a b).1 * beta := by
-  let E := chosenSimpleKummerExtension K n hnK b
-  let sigma : Gal(E/K) :=
-    chosenSimpleKummerNormResidueAutomorphism K n hnK hmu b a
-  let beta : Eˣ := chosenSimpleKummerRootUnit K n hnK b
-  change Units.map sigma beta =
-    Units.map (algebraMap K E).toMonoidHom
-      (localHilbertSymbol K n hnK hmu a b).1 * beta
-  have hmap0 := congrArg Subtype.val
-    (localHilbertSymbol_map_eq_rootQuotient K n hnK hmu a b)
-  have hmap :
-      Units.map (algebraMap K E).toMonoidHom
-          (localHilbertSymbol K n hnK hmu a b).1 =
-        rootQuotient (K := K) (L := E) beta sigma := by
-    change
-      Units.map
-          (algebraMap K (chosenSimpleKummerExtension K n hnK b)).toMonoidHom
-          (localHilbertSymbol K n hnK hmu a b).1 =
-        rootQuotient
-          (K := K) (L := chosenSimpleKummerExtension K n hnK b)
-          (chosenSimpleKummerRootUnit K n hnK b)
-          (chosenSimpleKummerNormResidueAutomorphism K n hnK hmu b a) at hmap0
-    simpa only [E, beta, sigma] using hmap0
-  rw [hmap]
-  simpa only [AlgEquiv.smul_units_def] using
-    (rootQuotient_mul_right
-      (K := K) (L := E) beta sigma).symm
-
-/-- Element-valued form of the defining Artin action. -/
-theorem normResidueAutomorphism_apply_root_eq_hilbertSymbol_mul
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) (a b : Kˣ) :
-    let E := chosenSimpleKummerExtension K n hnK b
-    let beta : E := (chosenSimpleKummerRootUnit K n hnK b : Eˣ)
-    chosenSimpleKummerNormResidueAutomorphism K n hnK hmu b a beta =
-      algebraMap K E ((localHilbertSymbol K n hnK hmu a b).1 : K) * beta := by
-  let E := chosenSimpleKummerExtension K n hnK b
-  let betaUnit : Eˣ := chosenSimpleKummerRootUnit K n hnK b
-  have hunit :
-      Units.map
-          (chosenSimpleKummerNormResidueAutomorphism K n hnK hmu b a) betaUnit =
-        Units.map (algebraMap K E).toMonoidHom
-            (localHilbertSymbol K n hnK hmu a b).1 * betaUnit := by
-    simpa only [E, betaUnit] using
-      (normResidueAutomorphism_map_rootUnit_eq_hilbertSymbol_mul
-        K n hnK hmu a b)
-  exact congrArg (fun u : Eˣ => (u : E)) hunit
+  simp
 
 /-- The concrete Artin homomorphism has precisely the local norm subgroup
 as its kernel. -/
@@ -185,50 +118,3 @@ theorem chosenSimpleKummerNormResidueAutomorphism_ker
   change (abelianLocalArtinMonoidHom K E).ker =
     LocalFieldTheory.localNormSubgroup K E
   exact abelianLocalArtinMonoidHom_ker K E
-
-/-- Every norm from `K(ⁿ√b)` is killed by the Hilbert-symbol character. -/
-theorem localNormSubgroup_le_localHilbertSymbolHom_ker
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) (b : Kˣ) :
-    LocalFieldTheory.localNormSubgroup K
-        (chosenSimpleKummerExtension K n hnK b) ≤
-      (localHilbertSymbolHom K n hnK hmu b).ker := by
-  intro a ha
-  have hartin :
-      chosenSimpleKummerNormResidueAutomorphism K n hnK hmu b a = 1 := by
-    have hker :
-        a ∈ (chosenSimpleKummerNormResidueAutomorphism K n hnK hmu b).ker := by
-      rw [chosenSimpleKummerNormResidueAutomorphism_ker K n hnK hmu b]
-      exact ha
-    exact hker
-  change localHilbertSymbolHom K n hnK hmu b a = 1
-  simp [localHilbertSymbolHom, hartin]
-
-/-- The local Hilbert symbol descended to the concrete local norm
-quotient. -/
-noncomputable def localHilbertSymbolFromNormQuotient
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) (b : Kˣ) :
-    LocalFieldTheory.NormQuotient K
-        (chosenSimpleKummerExtension K n hnK b) →*
-      nthRootsSubgroup K (n : ℕ) :=
-  LocalFieldTheory.normQuotientLift
-    (localHilbertSymbolHom K n hnK hmu b)
-    (localNormSubgroup_le_localHilbertSymbolHom_ker
-      K n hnK hmu b)
-
-@[simp]
-theorem localHilbertSymbolFromNormQuotient_normClass
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) (a b : Kˣ) :
-    localHilbertSymbolFromNormQuotient K n hnK hmu b
-        (LocalFieldTheory.normClass K
-          (chosenSimpleKummerExtension K n hnK b) a) =
-      localHilbertSymbol K n hnK hmu a b := by
-  rw [localHilbertSymbolFromNormQuotient]
-  exact localHilbertSymbolHom_apply K n hnK hmu a b
-
-end Kummer
-end LocalClassFieldTheory
-
-end

@@ -6,13 +6,12 @@ public import DedekindZetaZeroFree.HarmonicAnalysis.Fourier.Lattices.Periodisati
 
 @[expose] public section
 
-noncomputable section
 open scoped FourierTransform SchwartzMap
 open Module MeasureTheory
 
 namespace DedekindZetaZeroFree.PoissonArch
 
-private theorem integrableOn_character_periodisation
+theorem integrableOn_character_periodisation
     {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
     [FiniteDimensional ℝ V] [MeasurableSpace V] [BorelSpace V]
     (L : Submodule ℤ V) [DiscreteTopology L] [IsZLattice ℝ L]
@@ -118,7 +117,3 @@ theorem torusPeriodisation_mFourierCoeff
           ((isCompact_univ_pi (fun _ => isCompact_Icc)).image
             ((b.ofZLatticeBasis ℝ L).equivFun.symm.toLinearMap.continuous_of_finiteDimensional)).measure_lt_top)
       (dualVector_b L b n)
-
-end DedekindZetaZeroFree.PoissonArch
-
-end

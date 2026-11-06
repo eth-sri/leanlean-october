@@ -74,7 +74,7 @@ theorem conductor_shape_of_local_exponents (Sf : Finset (HeightOneSpectrum (𝓞
       by_cases hv : v ∈ Sf
       · change idealPrimeExponent p c ≤ _
         rw [show idealPrimeExponent p c = 0 from hzero v hv]
-        exact Nat.zero_le _
+        simp
       · exact (hext v hv).ge
     · simp [Multiset.count_eq_zero.mpr hp]
   obtain ⟨s, hs⟩ := hdvd
@@ -103,8 +103,7 @@ theorem conductor_shape_of_local_exponents (Sf : Finset (HeightOneSpectrum (𝓞
     · have he := hext v hv
       change idealPrimeExponent p f = idealPrimeExponent p c at he
       change idealPrimeExponent p s ≤ _
-      have hz : idealPrimeExponent p s = 0 := by omega
-      simp [hz]
+      simp_all
   · simp [Multiset.count_eq_zero.mpr hp]
 
 theorem squarefree_conductor_shape_of_depth_bound (h12 : (primitiveRoots 12 F).Nonempty)
@@ -139,8 +138,7 @@ theorem squarefree_conductor_shape_of_depth_bound (h12 : (primitiveRoots 12 F).N
     rcases Nat.le_one_iff_eq_zero_or_eq_one.mp hn with hn | hn
     · rw [hn] at he ⊢
       simpa using he
-    · rw [hn] at he ⊢
-      simpa using he
+    simp_all
   · intro v hv
     rw [hzero v hv, zero_add]
     exact hbound v hv
@@ -155,8 +153,7 @@ theorem higher_unit_one_add_four (v : HeightOneSpectrum (𝓞 F))
   obtain ⟨n, u, htwo⟩ := IsDiscreteValuationRing.eq_unit_mul_pow_irreducible (x := (2 : O)) (by norm_num) hϖ
   have hn : squareUnitDepth v = 2 * n + 1 := by
     dsimp [squareUnitDepth, squareUnitOrdTwo]
-    rw [IsDiscreteValuationRing.addVal_def (2 : O) u hϖ n htwo]
-    simp
+    simp_all
   have hfour : (4 : O) = (u * u : Oˣ) * ϖ ^ (2 * n) := by
     calc (4 : O) = (2 : O) * 2 := by norm_num
          _ = (u * u : Oˣ) * ϖ ^ (2 * n) := by rw [htwo]; simp [pow_mul]; ring
@@ -208,7 +205,7 @@ theorem conductor_depth_of_higher_unit_squares
     hsym]
   erw [map_one]
   exact inv_one
-private theorem squareOneAddFour {R : Type} [CommRing R] [IsDomain R] [IsDiscreteValuationRing R]
+theorem squareOneAddFour {R : Type} [CommRing R] [IsDomain R] [IsDiscreteValuationRing R]
     [HenselianRing R (IsLocalRing.maximalIdeal R)]
     (b : R) (hb : b ∈ IsLocalRing.maximalIdeal R) : IsSquare (1 + 4*b) := by
   let f : Polynomial R := Polynomial.X ^ 2 + Polynomial.X - Polynomial.C b
@@ -238,8 +235,7 @@ theorem squareUnitDepth_higher_units_are_squares (v : HeightOneSpectrum (𝓞 F)
   obtain ⟨b, hb, ht'⟩ := higher_unit_one_add_four v t ht
   obtain ⟨y, hy⟩ := squareOneAddFour b hb
   refine ⟨(y : v.adicCompletion F), ?_⟩
-  rw [ht']
-  exact congrArg (fun x : R => (x : v.adicCompletion F)) hy
+  simp_all
 
 theorem squarefree_conductor_shape (h12 : (primitiveRoots 12 F).Nonempty)
     (A : SArithmeticData F) (σ : F →+* ℂ)
@@ -273,14 +269,14 @@ private theorem exp_mul (a b : Ideal (𝓞 F)) (ha : a ≠ ⊥) (hb : b ≠ ⊥)
     idealPrimeExponent v.asIdeal (a * b) = idealPrimeExponent v.asIdeal a + idealPrimeExponent v.asIdeal b := by
   simp [idealPrimeExponent, normalizedFactors_mul ha hb]
 private theorem exp_le_one (a : Ideal (𝓞 F)) (ha : Squarefree a)
-    (v : HeightOneSpectrum (𝓞 F)) : idealPrimeExponent v.asIdeal a ≤ 1 := by
-  exact Multiset.nodup_iff_count_le_one.mp ((squarefree_iff_nodup_normalizedFactors ha.ne_zero).mp ha) _
+    (v : HeightOneSpectrum (𝓞 F)) : idealPrimeExponent v.asIdeal a ≤ 1 := 
+  Multiset.nodup_iff_count_le_one.mp ((squarefree_iff_nodup_normalizedFactors ha.ne_zero).mp ha) _
 private theorem exp_zero (a : Ideal (𝓞 F)) (ha : a ≠ ⊥)
     (v : HeightOneSpectrum (𝓞 F)) (hv : ¬ a ≤ v.asIdeal) : idealPrimeExponent v.asIdeal a = 0 := by
   apply Multiset.count_eq_zero.mpr
   intro h
   exact hv ((Ideal.mem_normalizedFactors_iff ha).mp h).2
-private theorem coprime_exp (a b : Ideal (𝓞 F)) (ha : a ≠ ⊥) (hb : b ≠ ⊥)
+theorem coprime_exp (a b : Ideal (𝓞 F)) (ha : a ≠ ⊥) (hb : b ≠ ⊥)
     (hab : a ⊔ b = ⊤) (v : HeightOneSpectrum (𝓞 F)) :
     idealPrimeExponent v.asIdeal a = 0 ∨ idealPrimeExponent v.asIdeal b = 0 := by
   by_contra h
@@ -290,7 +286,7 @@ private theorem coprime_exp (a b : Ideal (𝓞 F)) (ha : a ≠ ⊥) (hb : b ≠ 
   have hj : b ≤ v.asIdeal := ((Ideal.mem_normalizedFactors_iff hb).mp
     (Multiset.count_pos.mp (Nat.pos_of_ne_zero h.2))).2
   exact v.isPrime.ne_top (top_unique (hab ▸ sup_le hi hj))
-private theorem odd_residue (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F)) (hv : v ∉ A.Sf) :
+theorem odd_residue (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F)) (hv : v ∉ A.Sf) :
     ringChar (IsLocalRing.ResidueField (v.adicCompletionIntegers F)) ≠ 2 := by
   have htwo : (2 : 𝓞 F) ∉ v.asIdeal := by
     intro h
@@ -364,13 +360,13 @@ theorem equal_class_quotient_conductor (h12 : (primitiveRoots 12 F).Nonempty)
       have hzero := (RMKummerCharacterAPI.local_conductor F h12 x v).2 htriv
       have hna : ¬ a ≤ v.asIdeal := by
         intro h
-        have hs : A.cS ≤ v.asIdeal := by
-          exact (Ideal.prod_le_inf : (∏ w ∈ A.Sf, w.asIdeal) ≤ A.Sf.inf (fun w => w.asIdeal)).trans (Finset.inf_le hv)
+        have hs : A.cS ≤ v.asIdeal := 
+          (Ideal.prod_le_inf : (∏ w ∈ A.Sf, w.asIdeal) ≤ A.Sf.inf (fun w => w.asIdeal)).trans (Finset.inf_le hv)
         exact v.isPrime.ne_top (top_unique ((KummerSquarefreeMembers.exterior_iff A a).mp hqa ▸ sup_le h hs))
       have hnb : ¬ b ≤ v.asIdeal := by
         intro h
-        have hs : A.cS ≤ v.asIdeal := by
-          exact (Ideal.prod_le_inf : (∏ w ∈ A.Sf, w.asIdeal) ≤ A.Sf.inf (fun w => w.asIdeal)).trans (Finset.inf_le hv)
+        have hs : A.cS ≤ v.asIdeal := 
+          (Ideal.prod_le_inf : (∏ w ∈ A.Sf, w.asIdeal) ≤ A.Sf.inf (fun w => w.asIdeal)).trans (Finset.inf_le hv)
         exact v.isPrime.ne_top (top_unique ((KummerSquarefreeMembers.exterior_iff A b).mp hqb ▸ sup_le h hs))
       rw [exp_mul a b ha.ne_zero hb.ne_zero v, exp_zero a ha.ne_zero v hna, exp_zero b hb.ne_zero v hnb]
       exact Nat.eq_zero_of_le_zero hzero
@@ -405,7 +401,7 @@ open IsDedekindDomain
 open ClassFieldTheory
 set_option backward.isDefEq.respectTransparency false
 
-private theorem quadratic_value_ext {K : Type*} [Field K] (a b : K)
+theorem quadratic_value_ext {K : Type*} [Field K] (a b : K)
     (ha : a ^ 2 = 1) (hb : b ^ 2 = 1) (h : a = 1 ↔ b = 1) : a = b := by
   rcases sq_eq_one_iff.mp ha with ha | ha
   · exact ha.trans (h.mp ha).symm
@@ -436,7 +432,7 @@ theorem lambda_diagonal_eq_actual_two (h12 : (primitiveRoots 12 F).Nonempty)
   · simpa only [← map_pow, ← map_one σ] using congrArg σ hz
   · have hσ : σ (z.val : F) = 1 ↔ z = 1 := by
       rw [← map_one σ, σ.injective.eq_iff]
-      exact ⟨fun h => Subtype.ext (Units.ext h), fun h => by rw [h]; rfl⟩
+      simp
     have hlambda : (RMKummerLocalNormCharacter.lambda F h12 x v au : ℂ) = 1 ↔ H = 1 := by
       have hh := RMKummerLocalHilbertComparison.lambda_eq_inverse_localHilbertSymbol
         F h12 x v au
@@ -491,8 +487,7 @@ theorem lambda_uniformizer_eq_cubic_residue (h12 : (primitiveRoots 12 F).Nonempt
   have he : -GlobalClassFieldTheory.Reciprocity.finitePlaceNormalizedValuation F v a = 1 := by
     rw [ArithmeticContext.actual_cft_normalizedValuation_log, ha, WithZero.log_exp]
     rfl
-  rw [he, zpow_one] at ht
-  rw [ht]
+  simp_all
 
 theorem Xi_prime_eq_lambda_global_uniformizer (h12 : (primitiveRoots 12 F).Nonempty)
     (x a : Fˣ) (v : HeightOneSpectrum (𝓞 F))
@@ -736,13 +731,13 @@ theorem totalCharacter_top_apply (h12 : (primitiveRoots 12 F).Nonempty)
     RMKummerSquareCharacter.Xi_one]
   rfl
 
-private theorem crtHigherUnits_iff (v : HeightOneSpectrum (𝓞 F)) (k : ℕ)
+theorem crtHigherUnits_iff (v : HeightOneSpectrum (𝓞 F)) (k : ℕ)
     (u : (v.adicCompletion F)ˣ) :
     CRTLocalHigherUnits F v k u ↔ u ∈ ClassFieldTheory.rayLocalHigherUnitGroup v k := by
   rw [ClassFieldTheory.mem_rayLocalHigherUnitGroup_iff]
   rfl
 
-private theorem crtSupport_eq (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) :
+theorem crtSupport_eq (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) :
     CRTIdealSupport F m = (M F m hm).finitePart.support := by
   ext v
   simp only [CRTIdealSupport, Finset.mem_preimage, Finsupp.mem_support_iff,
@@ -836,7 +831,7 @@ theorem quotient_values (h12 : (primitiveRoots 12 F).Nonempty) (x y : Fˣ) :
       intro hd
       have hle : RMKummerConductor.m F h12 x * RMKummerConductor.m F h12 y ≤ p :=
         Ideal.dvd_iff_le.mp hd
-      have ht : p = ⊤ := by rw [← hpcop, sup_eq_left.mpr hle]
+      have ht : p = ⊤ := by simp_all
       exact (Ideal.isPrime_of_prime hp).ne_top ht
     have hprime := RMKummerQuotientPrime.quotient_prime F h12 x y v
       (by rw [hp.dvd_mul]; exact not_or.mpr ⟨hnot, quotient_unramified h12 x y v hnot⟩)
@@ -868,7 +863,7 @@ theorem exteriorValues_of_formula
     have hz := (KummerExteriorValues.cubicSexticValue_shared_zero A σ η hS C
       (KummerSquarefreeMembers.exteriorIndex A c hc hcopc)
       (KummerExteriorValues.exteriorIndex A d hd hcopd) hcd).1
-    exact ⟨(hformula c hc hcopc d hd hcopd).trans hz, hz⟩
+    simp_all
   · intro c d hc hd hcopc hcopd hcd
     dsimp only
     rw [hformula c hc hcopc d (KummerSquarefreeMembers.exteriorIndex A d hd hcopd).property.1 hcopd,
@@ -939,7 +934,7 @@ theorem exists_exactOutput_of_arithmetic_realizations (h12 : (primitiveRoots 12 
     cls_top := C.integralCls_top
     cls_mul := C.integralCls_mul_uniform
     C := fun _ _ => 1
-    C_sq := by intros; simp
+    C_sq := by simp
     reciprocity := by
       intro a b ha hqa hb hqb hab
       rw [KummerFamilyAssembly.totalCharacter_constrained_apply _ _ _ _ _ _ _ _ ⟨ha, hqa⟩,
@@ -999,9 +994,3 @@ theorem exists_actualKummerFamily (h12 : (primitiveRoots 12 F).Nonempty)
     exact RMKummerConductorArithmetic.actual_cubic_sextic_value h12 A σ η hS C
   · apply productOutput_of_conductor h12 A σ η hS C
     exact RMKummerConductorArithmetic.equal_class_quotient_conductor h12 A σ η hS C
-
-end RMKummerFamily
-end
-end DedekindZetaZeroFree
-
-end

@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Intrinsic absolute Galois data
 
@@ -53,7 +49,7 @@ abbrev intrinsicAbstractBase
 
 /-- The canonical equivalence from the intrinsic abstract base subgroup to the
 full absolute Galois group. -/
-noncomputable def intrinsicAbstractBaseEquivAbsolute
+def intrinsicAbstractBaseEquivAbsolute
     (F : Type) [Field F] :
     (intrinsicAbstractBase F).toSubgroup ≃*
       intrinsicAbsoluteGalois F :=
@@ -62,18 +58,10 @@ noncomputable def intrinsicAbstractBaseEquivAbsolute
       closedFixingSubgroup_bot_eq_baseField,
       baseField_toSubgroup])).trans Subgroup.topEquiv
 
-/-- The inverse intrinsic-base equivalence has underlying automorphism equal to
-the supplied absolute Galois automorphism. -/
-@[simp]
-theorem intrinsicAbstractBaseEquivAbsolute_symm_apply_val
-    (F : Type) [Field F] (σ : intrinsicAbsoluteGalois F) :
-    ((intrinsicAbstractBaseEquivAbsolute F).symm σ).1 = σ := by
-  simp [intrinsicAbstractBaseEquivAbsolute]
-
 /-- The intrinsic abstract base packaged as a finite abstract field; its
 defining quotient is the trivial finite quotient. -/
 @[reducible]
-noncomputable def intrinsicFiniteAbstractBase
+def intrinsicFiniteAbstractBase
     (F : Type) [Field F] :
     FiniteAbstractField (intrinsicAbsoluteGalois F) where
   field := intrinsicAbstractBase F
@@ -92,6 +80,3 @@ theorem intrinsicFiniteAbstractBase_eq_base
   change intrinsicAbstractBase F =
     baseField (intrinsicAbsoluteGalois F) at h
   exact FiniteAbstractField.eq_of_field_eq _ _ h
-
-end LocalClassFieldTheory
-end

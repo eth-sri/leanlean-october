@@ -16,14 +16,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Residue arithmetic for finite-place power indices
 
@@ -35,12 +27,10 @@ open scoped NumberField Classical NNReal ValuativeRel
 open NumberField IsDedekindDomain
 open LocalFieldTheory
 
-noncomputable section
 
 namespace GlobalClassFieldTheory.ClassFieldAxiom
 
 variable {K : Type} [Field K] [NumberField K]
-
 
 /-- The ideal norm is the cardinality of the residue field of the
 corresponding adic completion. -/
@@ -163,7 +153,7 @@ theorem ramificationIndexOfWithZeroValuation_eq_extensionRamificationIndex
                 base.toDVF target.toDVF ϖ : target.valuationSubring) : E) =
               (p : E) := by
           change algebraMap ℚ_[p] E (p : ℚ_[p]) = (p : E)
-          exact map_natCast _ _
+          simp
         exact (congrArg ν himage).symm.trans hval
       _ =
           WithZero.exp
@@ -175,7 +165,6 @@ theorem ramificationIndexOfWithZeroValuation_eq_extensionRamificationIndex
           WithZero.exp
             (-(ValuationTheory.DiscreteValuationField.ValuedExtension.ramificationIndex
               base.toDVF target.toDVF : ℤ)) := by
-        congr 1
         simp
   have hcustom :=
     LocalFieldTheory.DiscreteValuationField.LocalField.valuation_residueCharacteristic_eq_exp_neg_ramificationIndex
@@ -347,8 +336,3 @@ theorem absNorm_eq_residueCharacteristic_pow_residueDegree
             F.residueCharacteristic).toDVF
           F.toCompleteDVF.toDVF
   exact card_localField_residueField_eq_pow_residueDegree ν
-
-
-end GlobalClassFieldTheory.ClassFieldAxiom
-
-end

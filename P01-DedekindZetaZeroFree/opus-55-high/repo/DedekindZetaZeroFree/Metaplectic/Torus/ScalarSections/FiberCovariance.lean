@@ -41,7 +41,7 @@ theorem fiberEvaluation_left (f : ∀ v, Plus A P C v) (u g : Raw A) (q : KPFini
   rw [← hh]
   ring
 
-private theorem archValues_left (f : ∀ v, Plus A P C v) (u g : Raw A)
+theorem archValues_left (f : ∀ v, Plus A P C v) (u g : Raw A)
     (a d : InfinitePlace F → ℂˣ) (b : InfinitePlace F → ℂ)
     (hp : ∀ w, complexMatrix A w (u (Sum.inl w)) =
       KPCplxPrincipalSeriesCharts.upperTriangular (a w) (d w) (b w)) :

@@ -31,16 +31,15 @@ private lemma exponent_eq_one_iff (K : Type*) [Field K] [ValuativeRel K]
   constructor
   · intro h
     have hlog : WithZero.log (e (valuation K (x : K))) = 0 := by
-      have := congrArg Multiplicative.toAdd h
-      simpa using this
+      simp_all
     have he : e (valuation K (x : K)) = 1 := by
       rw [← WithZero.exp_log (show e (valuation K (x : K)) ≠ 0 by simp [e]), hlog]
       exact WithZero.exp_zero
-    exact e.injective (by simpa using he)
+    simp_all
   · intro h
     simp [h]
 
-private lemma exponent_uniformizer (K : Type*) [Field K] [ValuativeRel K]
+lemma exponent_uniformizer (K : Type*) [Field K] [ValuativeRel K]
     [TopologicalSpace K] [IsNonarchimedeanLocalField K] (π : Kˣ)
     (hπ : valuation K (π : K) = uniformizer K) :
     exponent K π = Multiplicative.ofAdd 1 := by
@@ -55,15 +54,13 @@ private lemma exponent_uniformizer (K : Type*) [Field K] [ValuativeRel K]
       apply WithZero.le_exp_of_log_le
       omega
     · have hsmall : WithZero.exp (-1 : ℤ) < (1 : WithZero (Multiplicative ℤ)) := by
-        rw [← WithZero.exp_zero, WithZero.exp_lt_exp]
-        omega
+        simp
       have hlt : e.symm (WithZero.exp (-1 : ℤ)) < 1 := by
         simpa using e.symm.strictMono hsmall
       have hle := le_uniformizer_iff.mpr hlt
       simpa using e.strictMono.monotone hle
   change Multiplicative.ofAdd (-WithZero.log (e (valuation K (π : K)))) = _
-  rw [hπ, he, WithZero.log_exp]
-  rfl
+  simp_all
 
  noncomputable def coordinateMap (K : Type*) [Field K] [ValuativeRel K]
     (π : Kˣ) : Multiplicative ℤ × (𝒪[K])ˣ →* Kˣ where
@@ -88,7 +85,6 @@ private lemma coordinateMap_bijective (K : Type*) [Field K] [ValuativeRel K]
     change exponent K (π ^ p.1.toAdd * m p.2) = _
     rw [map_mul, map_zpow, exponent_uniformizer K π hπ, hm, mul_one]
     apply Multiplicative.toAdd.injective
-    change p.1.toAdd * 1 = p.1.toAdd
     simp
   constructor
   · intro p q hpq
@@ -120,7 +116,6 @@ private lemma coordinateMap_bijective (K : Type*) [Field K] [ValuativeRel K]
     change π ^ n.toAdd * m u = x
     rw [hum]
     dsimp [y]
-    rw [← mul_assoc, ← zpow_add]
     simp
 
 private lemma cube_coordinate_iff (K : Type*) [Field K] [ValuativeRel K]
@@ -140,10 +135,8 @@ private lemma cube_coordinate_iff (K : Type*) [Field K] [ValuativeRel K]
     have hj := congrArg (fun q : Multiplicative ℤ × (𝒪[K])ˣ => q.1.toAdd) hp
     have hu := congrArg Prod.snd hp
     refine ⟨?_, p.2, hu⟩
-    change (3 : ℤ) ∣ j
     change 3 * p.1.toAdd = j at hj
-    rw [← hj]
-    exact dvd_mul_right _ _
+    omega
   · rintro ⟨⟨n, hn⟩, w, hw⟩
     refine ⟨f (Multiplicative.ofAdd n, w), ?_⟩
     change f (Multiplicative.ofAdd n, w) ^ 3 = _
@@ -266,23 +259,19 @@ theorem integrate_cube_resolution
     exact_mod_cast (Subgroup.FiniteIndex.index_ne_zero (H := H))) (by norm_num)
   simp only [finsum_eq_sum_of_fintype] at hresolution ⊢
   have hcont : Continuous (fun v : Kˣ => a * ∑ i : I, ∑ j : J, (χ i j v : ℂ)) := by
-    exact continuous_const.mul (continuous_finset_sum _ fun i _ =>
-      continuous_finset_sum _ fun j _ => Units.continuous_val.comp (χ i j).continuous)
+    fun_prop
   have hH : MeasurableSet (H : Set Kˣ) := by
     have he : (H : Set Kˣ) = {v : Kˣ | a * ∑ i : I, ∑ j : J, (χ i j v : ℂ) ≠ 0} := by
       ext v
       change v ∈ H ↔ a * ∑ i : I, ∑ j : J, (χ i j v : ℂ) ≠ 0
       rw [hresolution v]
       change v ∈ H ↔ c * Set.indicator (H : Set Kˣ) (fun v => (ψ v : ℂ)) v ≠ 0
-      by_cases hv : v ∈ H
-      · simp [Set.indicator_of_mem hv, hv, hc, Units.ne_zero]
-      · simp [Set.indicator_of_notMem hv, hv]
+      simp_all
     rw [he]
     exact (isClosed_singleton.preimage hcont).measurableSet.compl
   let G : Kˣ → ℂ := fun v => a * ∑ i : I, ∑ j : J, (χ i j v : ℂ) * F v
   have hG : Integrable G μ := by
-    exact (integrable_finsetSum _ fun i _ =>
-      integrable_finsetSum _ fun j _ => hχF i j).const_mul a
+    fun_prop
   have hGeq : ∀ v, G v = c * Set.indicator (H : Set Kˣ)
       (fun v => (ψ v : ℂ) * F v) v := by
     intro v
@@ -309,7 +298,7 @@ theorem integrate_cube_resolution
     filter_upwards [] with v
     by_cases hv : v ∈ H
     · simp [hv]
-    · simp [hv, hGeq v, Set.indicator_of_notMem hv]
+    · simp [hv, hGeq v]
   simp_rw [hcomp] at hsub
   rw [integral_const_mul, hrestrict] at hsub
   have hh := (mul_left_cancel₀ hc hsub)
@@ -355,7 +344,6 @@ private theorem cube_proper (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
   haveI : ProperSpace K := .of_nontriviallyNormedField_of_weaklyLocallyCompactSpace K
   have hp : IsProperMap (fun x : K => x ^ 3) := by
     convert (Polynomial.X ^ 3 : Polynomial K).isProperMap_eval (by simp) using 1
-    funext x
     simp
   have hprod : IsProperMap (fun p : K × Kᵐᵒᵖ => (p.1 ^ 3, p.2 ^ 3)) := hp.prodMap (by
     simpa only [MulOpposite.op_pow] using
@@ -363,7 +351,7 @@ private theorem cube_proper (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
         MulOpposite.opHomeomorph.symm.isProperMap)
   have hcomm : (fun p : K × Kᵐᵒᵖ => (p.1 ^ 3, p.2 ^ 3)) ∘ Units.embedProduct K =
       Units.embedProduct K ∘ (fun x : Kˣ => x ^ 3) := by
-    funext x; ext <;> simp [Units.embedProduct]
+    rfl
   apply isProperMap_of_comp_of_inj (by fun_prop) Units.continuous_embedProduct
     (by rw [← hcomm]; exact hprod.comp Units.isClosedEmbedding_embedProduct.isProperMap)
   exact Units.embedProduct_injective K
@@ -405,9 +393,7 @@ theorem compact_test_integrability
     have hint : Integrable (fun y : Kˣ => (ψ (y ^ 3) : ℂ) * F (y ^ 3))
         (KPCubicHaar.multiplicativeHaar K dx) :=
       (hcont.comp (continuous_id.pow 3)).integrable_of_hasCompactSupport hcs2
-    refine hint.congr ?_
-    filter_upwards with y
-    simp only [Function.comp_apply, hΩ y]
+    simp_all
   · intro χ
     exact ((Units.continuous_val.comp χ.continuous).mul hF.continuous).integrable_of_hasCompactSupport
       hFc.mul_left
@@ -490,13 +476,9 @@ lemma valuationExponent_mul (y z : Kˣ) :
   have hz : ValuativeRel.valuation K ((z : K)) ≠ 0 :=
     (Valuation.ne_zero_iff (ValuativeRel.valuation K)).mpr (Units.ne_zero z)
   have hiy : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K
-      (ValuativeRel.valuation K (y : K)) ≠ 0 := fun h =>
-    hy ((IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K).injective
-      (h.trans (map_zero (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K)).symm))
+      (ValuativeRel.valuation K (y : K)) ≠ 0 := by simp_all
   have hiz : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K
-      (ValuativeRel.valuation K (z : K)) ≠ 0 := fun h =>
-    hz ((IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K).injective
-      (h.trans (map_zero (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K)).symm))
+      (ValuativeRel.valuation K (z : K)) ≠ 0 := by simp_all
   simp only [valuationExponent, Units.val_mul, map_mul,
     map_mul (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K)]
   rw [WithZero.log_mul hiy hiz]
@@ -504,34 +486,7 @@ lemma valuationExponent_mul (y z : Kˣ) :
 
 lemma valueGroupWithZeroIsoInt_uniformizer :
     IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K (ValuativeRel.uniformizer K) =
-      WithZero.exp (-1 : ℤ) := by
-  set iso := IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K with hiso
-  have hu : ValuativeRel.uniformizer K ≠ 0 := ValuativeRel.uniformizer_ne_zero
-  have hne : iso (ValuativeRel.uniformizer K) ≠ 0 := fun h =>
-    hu (iso.injective (h.trans (map_zero iso).symm))
-  have hlt : iso (ValuativeRel.uniformizer K) < 1 := by
-    rw [← map_one iso]
-    exact (map_lt_map_iff iso).mpr ValuativeRel.uniformizer_lt_one
-  have hexp1 : WithZero.exp (-1 : ℤ) < (1 : ℤᵐ⁰) := by
-    rw [← WithZero.exp_zero]
-    exact WithZero.exp_lt_exp.mpr (by norm_num)
-  have h1 : WithZero.exp (-1 : ℤ) ≤ iso (ValuativeRel.uniformizer K) := by
-    have hsym : iso.symm (WithZero.exp (-1 : ℤ)) < (1 : ValuativeRel.ValueGroupWithZero K) := by
-      have h := (map_lt_map_iff iso.symm).mpr hexp1
-      rwa [map_one iso.symm] at h
-    have hthis : iso.symm (WithZero.exp (-1 : ℤ)) ≤ ValuativeRel.uniformizer K :=
-      ValuativeRel.le_uniformizer_iff.mpr hsym
-    have h := (map_le_map_iff iso).mpr hthis
-    rwa [OrderMonoidIso.apply_symm_apply] at h
-  have h2 : iso (ValuativeRel.uniformizer K) ≤ WithZero.exp (-1 : ℤ) := by
-    have hk : (iso (ValuativeRel.uniformizer K)).log < 0 := by
-      refine (WithZero.exp_lt_exp (a := (iso (ValuativeRel.uniformizer K)).log)
-        (b := 0)).mp ?_
-      rw [WithZero.exp_log hne, WithZero.exp_zero]
-      exact hlt
-    rw [← WithZero.exp_log hne]
-    exact WithZero.exp_le_exp.mpr (by omega)
-  exact le_antisymm h2 h1
+      WithZero.exp (-1 : ℤ) := by apply DedekindZetaZeroFree.KPRamifiedBetaConductorSeries.uniformizer_value_exponent <;> assumption
 
 lemma valuationExponent_uniformizer (π : Kˣ)
     (hπ : ValuativeRel.valuation K (π : K) = ValuativeRel.uniformizer K) :
@@ -574,7 +529,7 @@ lemma sum_mu3_zpow (j : ℤ) :
       intro hc
       refine h ((hprim.zpow_eq_one_iff_dvd j).mp ?_)
       have hval : (((ζ₀ : ℂˣ)) : ℂ) = Complex.exp (2 * Real.pi * Complex.I / 3) := by
-        simp [ζ₀, IsPrimitiveRoot.toRootsOfUnity, rootsOfUnity.mkOfPowEq, Units.val_mk0]
+        rfl
       rw [← hval, ← Units.val_zpow_eq_zpow_val, hc, Units.val_one]
     set S : ℂ := ∑ ζ : CubicCharacters.Mu3, ((ζ : ℂˣ) ^ j : ℂ) with hS
     have hre : (∑ ζ : CubicCharacters.Mu3, (((ζ₀ * ζ : CubicCharacters.Mu3) : ℂˣ) ^ j : ℂ)) = S :=
@@ -591,7 +546,7 @@ lemma sum_mu3_zpow (j : ℤ) :
     rcases mul_eq_zero.mp hzero with hc | hc
     · exact absurd (sub_eq_zero.mp hc)
         fun hh => hωj (Units.ext (by rw [Units.val_zpow_eq_zpow_val]; exact hh))
-    · exact hc
+    omega
 
 section ValuationAndCharacterSum
 
@@ -634,7 +589,7 @@ lemma sum_cubic_character_values_uniformizer_unit [Finite (CubicUnitCharacters.C
   simp only [finsum_eq_sum_of_fintype]
   simp_rw [hξ]
   rw [← Finset.mul_sum]
-  split_ifs <;> simp
+  simp
 
 theorem exists_cubic_character_family
     (π : Kˣ) (hπ : valuation K (π : K) = uniformizer K) (z : ℂˣ) :
@@ -660,7 +615,7 @@ theorem isOpen_unit_cubes [CharZero K] : IsOpen (KPCubicUnitIndices.cubeUnits K 
   have he : (KPCubicUnitIndices.cubeUnits K : Set (𝒪[K])ˣ) =
       (fun u : (𝒪[K])ˣ => u ^ 3) '' Set.univ := by
     ext u
-    simp [KPCubicUnitIndices.cubeUnits, MonoidHom.mem_range]
+    simp [KPCubicUnitIndices.cubeUnits]
   rw [he]
   exact (isCompact_univ.image (continuous_id.pow 3)).isClosed
 
@@ -691,7 +646,6 @@ noncomputable def unitCubicDualEquiv : CubicUnitCharacters.Character K ≃
   · apply Continuous.subtype_mk
     exact (continuous_of_discreteTopology (f := f)).comp QuotientGroup.continuous_mk
   · intro χ
-    ext x
     rfl
   · intro f
     apply MonoidHom.ext
@@ -745,7 +699,7 @@ theorem sum_unit_cubic_characters (u : (𝒪[K])ˣ) :
   · rw [if_neg hu]
     have hq : (QuotientGroup.mk' H) u ≠ 1 := by
       intro h
-      exact hu ((QuotientGroup.eq_one_iff u).mp h)
+      simp_all
     obtain ⟨f, hf⟩ := CommGroup.exists_apply_ne_one_of_hasEnoughRootsOfUnity Q ℂ hq
     let ξ₀ := (unitCubicDualEquiv K).symm f
     have hξ : ((ξ₀ u : ℂˣ) : ℂ) ≠ 1 := by
@@ -759,8 +713,6 @@ theorem sum_unit_cubic_characters (u : (𝒪[K])ˣ) :
     have he' : ((ξ₀ u : ℂˣ) : ℂ) * S = S := by
       conv_lhs => rw [hS, Finset.mul_sum]
       rw [← he]
-      apply Finset.sum_congr rfl
-      intro ξ _
       rfl
     have hz : (((ξ₀ u : ℂˣ) : ℂ) - 1) * S = 0 := by
       rw [sub_mul, he', one_mul, sub_self]
@@ -867,8 +819,8 @@ theorem family_beta_integrable
     have hpow : (((ζ : ℂˣ) : ℂ)) ^ 3 = 1 := by
       simpa only [Units.val_pow_eq_pow_val, Units.val_one] using
         congrArg Units.val ((mem_rootsOfUnity 3 _).mp ζ.property)
-    have hnorm : ‖((ζ : ℂˣ) : ℂ)‖ = 1 := by
-      exact Complex.norm_eq_one_of_pow_eq_one hpow (by norm_num)
+    have hnorm : ‖((ζ : ℂˣ) : ℂ)‖ = 1 := 
+      Complex.norm_eq_one_of_pow_eq_one hpow (by norm_num)
     rw [hnorm, one_mul]
   apply integrable_character_beta K dx π hπ ξ (χ ξ ζ)
     (fun u => by simpa using hχ ξ ζ 0 u) ((ζ : ℂˣ) * z)
@@ -966,7 +918,3 @@ theorem kp_rankone_cubic_character_expansion
       simpa only [hdesc] using KPCubicFamilyResolution.integrable_cube_pullback
         K κ hκ dx (fun v : Kˣ => (χ 1 1 v : ℂ) * betaFunction K s v) (htwists 1 1)
     exact ⟨hpull, htwists, habs (betaFunction K s) hpull htwists⟩
-
-end DedekindZetaZeroFree
-
-end

@@ -21,15 +21,7 @@ set_option maxHeartbeats 1600000
   convert complexSU2_isCompact using 1
   exact Subtype.range_coe.symm
 
-theorem su2Embedding_continuous : Continuous complexSU2Embedding := by
-  apply Units.continuous_iff.mpr
-  constructor
-  · exact continuous_subtype_val
-  · have hi (k : ComplexSU2) : (↑(complexSU2Embedding k)⁻¹ : Matrix (Fin 2) (Fin 2) ℂ) = star (k : Matrix (Fin 2) (Fin 2) ℂ) := by
-      rw [← map_inv]
-      rfl
-    simp_rw [hi]
-    exact continuous_subtype_val.star
+theorem su2Embedding_continuous : Continuous complexSU2Embedding := by apply DedekindZetaZeroFree.KPCplxInverseTopology.embedding_continuous <;> assumption
 
 theorem section_continuous (s : ℝ) (f : PrincipalSeries s) : Continuous (f : ComplexGL2 → ℂ) := by
   have h := (evaluation_point_eval_continuous s 1).comp (evaluation_rightTranslate_orbit_continuous s f)

@@ -19,17 +19,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Tame local power-residue formula
 
@@ -61,11 +50,11 @@ theorem nthRootsSubgroup_valuationMap_eq_zero
       ((n : ℕ) : ℤ) * valuationMap K (Additive.ofMul z.1) = 0 := by
     rw [z.2, valuationMap_ofMul_one] at hpow
     exact hpow.symm
-  exact (mul_eq_zero.mp hzero).resolve_left (by exact_mod_cast n.ne_zero)
+  simp_all
 
 /-- The canonical valuation-ring unit underlying a local `n`-th root of
 unity. -/
-noncomputable def nthRootIntegerUnit
+def nthRootIntegerUnit
     (n : ℕ+) (z : nthRootsSubgroup K (n : ℕ)) : 𝒪[K]ˣ :=
   integerUnitOfValuationMapZero K z.1
     (nthRootsSubgroup_valuationMap_eq_zero K n z)
@@ -85,7 +74,7 @@ theorem nthRootIntegerUnit_pow
 
 /-- Reduction of roots of unity from a nonarchimedean local field to its
 residue field. -/
-noncomputable def localNthRootsReduction
+def localNthRootsReduction
     (n : ℕ+) :
     nthRootsSubgroup K (n : ℕ) →* rootsOfUnity (n : ℕ) 𝓀[K] where
   toFun z :=
@@ -137,7 +126,6 @@ theorem localNthRootsReduction_nthRootsSubgroupMap
   rw [residueUnitsMap_integerUnitsToResidueUnits]
   congr 1
   apply Units.ext
-  apply Subtype.ext
   rfl
 
 omit [TopologicalSpace K] [IsNonarchimedeanLocalField K] in
@@ -159,7 +147,6 @@ theorem valuationMap_eq_zero_of_pow_eq_map_integerUnit
           (integerUnitsToFieldUnits K u) =
         integerUnitsToFieldUnits L
           (integerUnitsMapOfValuationExtension K L u) := by
-    apply Units.ext
     rfl
   have hbaseValuationMap :
       valuationMap L
@@ -168,9 +155,7 @@ theorem valuationMap_eq_zero_of_pow_eq_map_integerUnit
               (integerUnitsToFieldUnits K u))) = 0 := by
     rw [hfieldUnits, valuationMap_apply, v_integerUnitsToFieldUnits]
   have hpow := valuationMap_ofMul_pow L beta (n : ℕ)
-  rw [hbetaPow, hbaseValuationMap] at hpow
-  exact (mul_eq_zero.mp hpow.symm).resolve_left (by
-    exact_mod_cast n.ne_zero)
+  simp_all
 
 omit [TopologicalSpace K] [IsNonarchimedeanLocalField K] in
 /-- The canonical valuation-ring lift of such a root has the prescribed
@@ -201,7 +186,6 @@ theorem integerUnitOfValuationMapZero_pow_eq_integerUnitsMap
         (integerUnitsToFieldUnits K u) := hbetaPow
     _ = integerUnitsToFieldUnits L
         (integerUnitsMapOfValuationExtension K L u) := by
-      apply Units.ext
       rfl
 
 /-- Arithmetic Frobenius divided by the original integer unit reduces to its
@@ -242,12 +226,7 @@ theorem residue_arithmeticFrobenius_integerUnitQuotient
           Units.mapEquiv
             (galoisGroupResidueFieldEquivOfIsIntegralClosure K L phi).toMulEquiv
             uBar := by
-        apply Units.ext
-        have hval := congrArg Units.val
-          (galoisGroupResidueFieldEquivOfIsIntegralClosure_integerUnitsToResidueUnits
-            K L phi u).symm
-        simpa only [uFrobenius, uBar, residueUnitsConcreteEquiv_apply,
-          Units.coe_mapEquiv] using hval
+        rfl
       _ = uBar ^ Nat.card 𝓀[K] := by
         apply Units.ext
         change
@@ -259,7 +238,7 @@ theorem residue_arithmeticFrobenius_integerUnitQuotient
             K L (uBar : 𝓀[L])
   have hcardPos : 0 < Nat.card 𝓀[K] := by
     rw [Nat.card_eq_fintype_card]
-    exact Fintype.card_pos_iff.mpr ⟨0⟩
+    positivity
   change
     residueUnitsConcreteEquiv L
         (integerUnitsToResidueUnits L (uFrobenius / u)) =
@@ -275,7 +254,7 @@ theorem residue_arithmeticFrobenius_integerUnitQuotient
     _ = uBar ^ (Nat.card 𝓀[K] - 1) := by
       have hcard :
           Nat.card 𝓀[K] = (Nat.card 𝓀[K] - 1) + 1 :=
-        (Nat.sub_add_cancel hcardPos).symm
+        by omega
       rw [hcard, pow_succ]
       simp
 
@@ -333,8 +312,7 @@ theorem localNthRootsReduction_injective
     apply
       (Valuation.integer.integers
         (ValuativeRel.valuation K)).isUnit_iff_valuation_eq_one.mpr
-    change ValuativeRel.valuation K ((n : ℕ) : K) = 1
-    exact hn
+    simp_all
   have hzUnit : IsUnit (zO : 𝒪[K]) := zO.isUnit
   have hderiv : IsUnit (f.derivative.eval (zO : 𝒪[K])) := by
     simpa [f, Polynomial.derivative_sub, Polynomial.derivative_one,
@@ -357,7 +335,7 @@ theorem localNthRootsReduction_injective
 
 /-- Away from the residue characteristic, reduction identifies the local
 and residue-field `n`-th roots of unity. -/
-noncomputable def localNthRootsReductionEquiv
+def localNthRootsReductionEquiv
     (n : ℕ+)
     (hn : ValuativeRel.valuation K ((n : ℕ) : K) = 1)
     (hmu : (primitiveRoots (n : ℕ) K).Nonempty) :
@@ -387,10 +365,7 @@ noncomputable def localNthRootsReductionEquiv
       (localNthRootsReduction_injective K n hn)
   have htarget :
       Fintype.card (rootsOfUnity (n : ℕ) 𝓀[K]) = (n : ℕ) := by
-    apply Nat.le_antisymm htargetLe
-    calc
-      (n : ℕ) = Fintype.card (nthRootsSubgroup K (n : ℕ)) := hsource.symm
-      _ ≤ Fintype.card (rootsOfUnity (n : ℕ) 𝓀[K]) := hsourceLe
+    omega
   apply MulEquiv.ofBijective (localNthRootsReduction K n)
   apply (Fintype.bijective_iff_injective_and_card
     (localNthRootsReduction K n)).2
@@ -470,8 +445,8 @@ theorem residue_arithmeticFrobenius_kummerRootQuotient
   have hdvd : (n : ℕ) ∣ Nat.card 𝓀[K] - 1 :=
     dvd_residueCard_sub_one_of_primitiveRoots K n hn hmu
   let m := (Nat.card 𝓀[K] - 1) / (n : ℕ)
-  have hcard : Nat.card 𝓀[K] - 1 = (n : ℕ) * m := by
-    exact (Nat.div_mul_cancel hdvd).symm.trans (Nat.mul_comm _ _)
+  have hcard : Nat.card 𝓀[K] - 1 = (n : ℕ) * m := 
+    (Nat.div_mul_cancel hdvd).symm.trans (Nat.mul_comm _ _)
   have hbetaOPow :
       betaO ^ (n : ℕ) = integerUnitsMapOfValuationExtension K L u := by
     simpa only [betaO] using
@@ -512,7 +487,7 @@ theorem residue_arithmeticFrobenius_kummerRootQuotient
 
 /-- The finite-field tame power-residue symbol, lifted canonically to the
 local `n`-th roots of unity. -/
-noncomputable def localTamePowerResidueSymbol
+def localTamePowerResidueSymbol
     (n : ℕ+)
     (hn : ValuativeRel.valuation K ((n : ℕ) : K) = 1)
     (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
@@ -580,8 +555,8 @@ theorem nthRootsSubgroupMap_localTamePowerResidueSymbol_eq_arithmeticFrobenius_r
     exact RadicalDatum.smul_algebraMap_unit
       (K := K) (L := L) sigma (integerUnitsToFieldUnits K u)
   let quotientRoot : nthRootsSubgroup L (n : ℕ) :=
-    ⟨rootQuotient (K := K) (L := L) beta phi, by
-      exact rootQuotient_mem_nthRootsSubgroup_of_pow_fixed
+    ⟨rootQuotient (K := K) (L := L) beta phi, 
+      rootQuotient_mem_nthRootsSubgroup_of_pow_fixed
         (K := K) (L := L) hbetaPowFixed phi⟩
   have hnL : ValuativeRel.valuation L ((n : ℕ) : L) = 1 := by
     have hmap :=
@@ -606,7 +581,6 @@ theorem nthRootsSubgroupMap_localTamePowerResidueSymbol_eq_arithmeticFrobenius_r
   have hbetaFrobeniusOField :
       integerUnitsToFieldUnits L betaFrobeniusO =
         phi • integerUnitsToFieldUnits L betaO := by
-    apply Units.ext
     rfl
   have hquotientOField :
       integerUnitsToFieldUnits L quotientO =
@@ -615,11 +589,7 @@ theorem nthRootsSubgroupMap_localTamePowerResidueSymbol_eq_arithmeticFrobenius_r
       integerUnitsToFieldUnits L quotientO =
           integerUnitsToFieldUnits L betaFrobeniusO /
             integerUnitsToFieldUnits L betaO := by
-        change
-          integerUnitsToFieldUnits L (betaFrobeniusO / betaO) =
-            integerUnitsToFieldUnits L betaFrobeniusO /
-              integerUnitsToFieldUnits L betaO
-        exact map_div (integerUnitsToFieldUnits L) betaFrobeniusO betaO
+        rfl
       _ = phi • integerUnitsToFieldUnits L betaO /
           integerUnitsToFieldUnits L betaO := by
         rw [hbetaFrobeniusOField]
@@ -716,10 +686,7 @@ theorem natCast_ne_zero_of_valuation_eq_one
     (hn : ValuativeRel.valuation K ((n : ℕ) : K) = 1) :
     ((n : ℕ) : K) ≠ 0 := by
   intro hn0
-  have hzero :
-      ValuativeRel.valuation K (0 : K) = 1 := by
-    simpa only [hn0] using hn
-  exact zero_ne_one ((ValuativeRel.valuation K).map_zero.symm.trans hzero)
+  simp_all
 
 /-- For a valuation-ring unit `u`, the Hilbert symbol with the chosen inverse
 prime element in the first slot is the tame residue symbol of `u`.  The proof
@@ -765,8 +732,8 @@ theorem
     simpa only [E, beta] using
       chosenSimpleKummerRootUnit_pow K n hnK b
   have hbetaPow :
-      (beta : E) ^ (n : ℕ) = algebraMap K E (b : K) := by
-    exact congrArg Units.val hbetaPowUnits
+      (beta : E) ^ (n : ℕ) = algebraMap K E (b : K) := 
+    congrArg Units.val hbetaPowUnits
   have hbVal : ValuativeRel.valuation K (b : K) = 1 := by
     apply valuation_eq_one_of_valuationMap_eq_zero K
     rw [valuationMap_apply]
@@ -781,10 +748,7 @@ theorem
     simpa only [E, beta] using
       chosenSimpleKummerExtension_adjoin_root_eq_top K n hnK b
   have hgen : Algebra.adjoin K {(beta : E)} = ⊤ := by
-    apply
-      (IntermediateField.adjoin_simple_eq_top_iff_of_isAlgebraic
-        (Algebra.IsAlgebraic.isAlgebraic (beta : E))).mp
-    exact hgenIntermediate
+    simp_all
   let : IsUnramifiedValuedExtension K E :=
     isUnramifiedValuedExtension_of_unit_kummer_generator
       n (b : K) (beta : E) hbVal hn hbetaVal hbetaPow hgen
@@ -909,8 +873,8 @@ theorem localHilbertSymbol_integerUnit_integerUnit_eq_one
     simpa only [E, beta] using
       chosenSimpleKummerRootUnit_pow K n hnK b
   have hbetaPow :
-      (beta : E) ^ (n : ℕ) = algebraMap K E (b : K) := by
-    exact congrArg Units.val hbetaPowUnits
+      (beta : E) ^ (n : ℕ) = algebraMap K E (b : K) := 
+    congrArg Units.val hbetaPowUnits
   have hbVal : ValuativeRel.valuation K (b : K) = 1 := by
     apply valuation_eq_one_of_valuationMap_eq_zero K
     rw [valuationMap_apply]
@@ -925,10 +889,7 @@ theorem localHilbertSymbol_integerUnit_integerUnit_eq_one
     simpa only [E, beta] using
       chosenSimpleKummerExtension_adjoin_root_eq_top K n hnK b
   have hgen : Algebra.adjoin K {(beta : E)} = ⊤ := by
-    apply
-      (IntermediateField.adjoin_simple_eq_top_iff_of_isAlgebraic
-        (Algebra.IsAlgebraic.isAlgebraic (beta : E))).mp
-    exact hgenIntermediate
+    simp_all
   let : IsUnramifiedValuedExtension K E :=
     isUnramifiedValuedExtension_of_unit_kummer_generator
       n (b : K) (beta : E) hbVal hn hbetaVal hbetaPow hgen
@@ -1018,10 +979,5 @@ theorem localHilbertSymbol_tame_formula
         (localHilbertSymbol_integerUnit_inverseIntegerRingUniformizerFieldUnit_eq_tame_inv
           K n hn hmu u)
     _ = localTamePowerResidueSymbol K n hn hmu u ^
-          (-valuationMap K (Additive.ofMul x)) := by
-      exact inv_zpow' _ _
-
-end Kummer
-end LocalClassFieldTheory
-
-end
+          (-valuationMap K (Additive.ofMul x)) := 
+      inv_zpow' _ _

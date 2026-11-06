@@ -56,13 +56,10 @@ theorem denominator_mem_iff (S : Finset (HeightOneSpectrum (𝓞 F)))
 
 theorem valuation_denominator_eq_one (S : Finset (HeightOneSpectrum (𝓞 F)))
     (v : HeightOneSpectrum (𝓞 F)) (hv : v ∉ S) :
-    v.valuation F (algebraMap (𝓞 F) F (denominator S)) = 1 := by
-  exact v.valuation_eq_one_iff_notMem.mpr (fun h => hv ((denominator_mem_iff S v).mp h))
+    v.valuation F (algebraMap (𝓞 F) F (denominator S)) = 1 := 
+  v.valuation_eq_one_iff_notMem.mpr (fun h => hv ((denominator_mem_iff S v).mp h))
 
 theorem valuation_denominator_lt_one (S : Finset (HeightOneSpectrum (𝓞 F)))
     (v : HeightOneSpectrum (𝓞 F)) (hv : v ∈ S) :
-    v.valuation F (algebraMap (𝓞 F) F (denominator S)) < 1 := by
-  exact (v.valuation_lt_one_iff_mem (K := F) _).mpr ((denominator_mem_iff S v).mpr hv)
-
-end
-end DedekindZetaZeroFree.SIntegerLocalization
+    v.valuation F (algebraMap (𝓞 F) F (denominator S)) < 1 := 
+  (v.valuation_lt_one_iff_mem (K := F) _).mpr ((denominator_mem_iff S v).mpr hv)

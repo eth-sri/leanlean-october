@@ -11,8 +11,6 @@ open scoped Topology ContDiff
 
 namespace DedekindZetaZeroFree.KPGlobalTorusBorelTwistCompatibilityBorelInduction
 open KPGlobalTorusBorelNormTwistTransport
-noncomputable section
-set_option autoImplicit false
 
 set_option backward.isDefEq.respectTransparency false in
 set_option maxHeartbeats 800000 in
@@ -40,8 +38,8 @@ theorem integral_contDiffOn_of_locally_dominated_jets
     let L := continuousMultilinearCurryLeftEquiv ℝ (fun _ : Fin (n + 1) => E) ℂ
     obtain ⟨s, b, hs, hsS, hb, h⟩ := hbound (n + 1) u hu
     have hf'm : AEStronglyMeasurable (fun x =>
-        fderivWithin ℝ (iteratedFDerivWithin ℝ n (fun v => F v x) S) S u) μ := by
-      exact L.continuous.comp_aestronglyMeasurable (hmeas (n + 1) u hu)
+        fderivWithin ℝ (iteratedFDerivWithin ℝ n (fun v => F v x) S) S u) μ := 
+      L.continuous.comp_aestronglyMeasurable (hmeas (n + 1) u hu)
     have hh := hasFDerivAt_integral_of_dominated_of_fderiv_le (𝕜 := ℝ)
       (F := fun v x => iteratedFDerivWithin ℝ n (fun w => F w x) S v)
       (F' := fun v x => fderivWithin ℝ (iteratedFDerivWithin ℝ n (fun w => F w x) S) S v)
@@ -77,7 +75,7 @@ theorem integral_contDiffOn_of_locally_dominated_jets
       intro u hu
       rw [iteratedFDerivWithin_succ_eq_comp_left, Function.comp_apply,
         fderivWithin_congr ih (ih hu), (hd n u hu).hasFDerivWithinAt.fderivWithin (hS.uniqueDiffOn u hu)]
-      exact (continuousMultilinearCurryLeftEquiv ℝ (fun _ : Fin (n + 1) => E) ℂ).symm_apply_apply _
+      simp
   refine ⟨?_, fun n u hu => heq n hu⟩
   apply (contDiffOn_iff_continuousOn_differentiableOn hS.uniqueDiffOn).mpr
   constructor
@@ -98,8 +96,8 @@ theorem functionsQ_chart_integral (C : ModelData F ζ hζ) (s : ℂ)
     ((functionsQ F ζ hζ C s f).val (groupArchChart F ζ hζ z * g)).val.val 1 =
       ∫ x, twistedIntegrand F ζ hζ C s r
         (f.val (groupArchChart F ζ hζ z * g)) 1 x
-        ∂KPGlobalTorusPeriodizationInverse.probabilityHaar F ζ hζ C := by
-  exact twistedQ_formula F ζ hζ C s r
+        ∂KPGlobalTorusPeriodizationInverse.probabilityHaar F ζ hζ C := 
+  twistedQ_formula F ζ hζ C s r
     (f.val (groupArchChart F ζ hζ z * g)) 1
 
 theorem functionsQ_right_level (C : ModelData F ζ hζ) (s : ℂ)
@@ -152,8 +150,7 @@ theorem functionsQ_chart_contDiff_of_local_extension (C : ModelData F ζ hζ) (s
   apply (hsm.mono (Set.subset_univ _)).congr
   intro y hy
   rw [functionsQ_chart_integral F ζ hζ C s r f g y]
-  apply integral_congr_ae
-  exact Filter.Eventually.of_forall (fun x => (hEq y hy.2 x).symm)
+  simp_all
 
 theorem functionsQ_preserves_level (C : ModelData F ζ hζ) (s : ℂ)
     (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
@@ -173,6 +170,3 @@ theorem functionsQ_preserves_level (C : ModelData F ζ hζ) (s : ℂ)
     intro y hy x
     rw [hEq y hy x, TorusChartTransport.weightedChartIntegrand_eq F ζ hζ C s r f g y]
   · exact functionsQ_right_level F ζ hζ C s J f hf
-
-end
-end DedekindZetaZeroFree.KPGlobalTorusBorelTwistCompatibilityBorelInduction

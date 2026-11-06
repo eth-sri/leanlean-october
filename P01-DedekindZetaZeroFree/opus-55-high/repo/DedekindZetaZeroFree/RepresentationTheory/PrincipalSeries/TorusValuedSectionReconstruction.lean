@@ -6,7 +6,6 @@ public import DedekindZetaZeroFree.RepresentationTheory.Jacquet.TameBruhatTestDu
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.KPTameTransposeSectionReconstruction
 
 open scoped NumberField Classical
@@ -21,7 +20,7 @@ variable (F : Type) [Field F] [NumberField F]
   (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
   (hP : IsTamePolarization F ζ hζ q S P)
 
-private theorem scalar_retract_reduction
+theorem scalar_retract_reduction
     (ε : Sign) (f : scalarSections F ζ hζ q S P hP ε)
     (b : S.borel.B) (g : ActualCover F ζ hζ q) :
     f.val ((b : ActualCover F ζ hζ q) * g) =
@@ -30,9 +29,7 @@ private theorem scalar_retract_reduction
   have ha : S.borel.retract a = 1 := by
     simp [a, S.borel.retract_torus]
   let aL : BL F ζ hζ q S P := ⟨a, ⟨a, by
-    change S.borel.retract a ∈ HL F ζ hζ q S P
-    rw [ha]
-    exact Subgroup.one_mem _, rfl⟩⟩
+    simp_all, rfl⟩⟩
   have hr : (retractL F ζ hζ q S P aL : actualTorus F ζ hζ q) = 1 := by
     change S.borel.retract (inBorel F ζ hζ q S P aL) = 1
     have : inBorel F ζ hζ q S P aL = a := Subtype.ext rfl
@@ -45,7 +42,7 @@ private theorem scalar_retract_reduction
   rw [hc, one_mul] at hf
   simpa [aL, a, mul_assoc] using hf
 
-private theorem normPower_product (x y : (LocalField F q)ˣ) :
+theorem normPower_product (x y : (LocalField F q)ˣ) :
     normPower (LocalField F q) (x * y) (1 / 2) =
       normPower (LocalField F q) x (1 / 2) *
         normPower (LocalField F q) y (1 / 2) := by
@@ -66,9 +63,7 @@ theorem reconstruction_section_membership
   · intro b g
     apply Subtype.ext
     funext t
-    cases ε <;> simp only [inducingAction, inducingScalar,
-      normPower, zero_mul, Complex.exp_zero, mul_one,
-      LinearMap.smul_apply, deltaHalf]
+    cases ε <;> simp only [inducingAction, inducingScalar, normPower, zero_mul, Complex.exp_zero, mul_one, deltaHalf]
     · change (v ((b : ActualCover F ζ hζ q) * g)).val t =
         normPower (LocalField F q) (S.borel.coordinate (S.borel.retract b)) (1 / 2) *
           (v g).val (t * S.borel.retract b)
@@ -114,7 +109,3 @@ theorem reconstruction_section_membership
     rw [hv, hv]
     have hf : ∀ x, f.val (x * j) = f.val x := congrFun (hJ j hj)
     cases ε <;> simp only [← mul_assoc, hf]
-
-end DedekindZetaZeroFree.KPTameTransposeSectionReconstruction
-
-end

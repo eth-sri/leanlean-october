@@ -39,7 +39,7 @@ def cellN (t : F) : GL (Fin 2) F := Matrix.GeneralLinearGroup.mkOfDetNeZero
 def cellW : GL (Fin 2) F := Matrix.GeneralLinearGroup.mkOfDetNeZero
   !![0, -1; 1, 0] (by simp [Matrix.det_fin_two])
 
-private theorem cell_mem_mk (A : GL (Fin 2) F) :
+theorem cell_mem_mk (A : GL (Fin 2) F) :
     Matrix.ProjGenLinGroup.mk A ∈ rationalBorel F ↔ A 1 0 = 0 := by
   constructor
   · rintro ⟨B, hB, he⟩
@@ -51,28 +51,26 @@ private theorem cell_mem_mk (A : GL (Fin 2) F) :
   · intro hA
     exact ⟨A, hA, rfl⟩
 
-private theorem cell_coset_eq (A B : GL (Fin 2) F) :
+theorem cell_coset_eq (A B : GL (Fin 2) F) :
     rationalCoset F (Matrix.ProjGenLinGroup.mk A) =
       rationalCoset F (Matrix.ProjGenLinGroup.mk B) ↔ (B * A⁻¹) 1 0 = 0 := by
   change Quotient.mk _ _ = Quotient.mk _ _ ↔ _
   rw [Quotient.eq, QuotientGroup.rightRel_apply, ← map_inv, ← map_mul, cell_mem_mk]
 
-private theorem open_cell_eq (t u : F) :
+theorem open_cell_eq (t u : F) :
     cellIndex F (some t) = cellIndex F (some u) ↔ t = u := by
   change rationalCoset F (Matrix.ProjGenLinGroup.mk (cellW F * cellN F t)) =
     rationalCoset F (Matrix.ProjGenLinGroup.mk (cellW F * cellN F u)) ↔ _
   rw [cell_coset_eq]
-  simp [cellN, cellW, Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_inv,
-    Matrix.inv_def, Matrix.adjugate_fin_two, Matrix.det_fin_two,
-    Matrix.mul_apply, Fin.sum_univ_two, add_neg_eq_zero]
+  simp [cellN, cellW, Matrix.inv_def, Matrix.det_fin_two, Matrix.mul_apply, Fin.sum_univ_two, add_neg_eq_zero]
 
-private theorem closed_ne_open (t : F) : cellIndex F none ≠ cellIndex F (some t) := by
+theorem closed_ne_open (t : F) : cellIndex F none ≠ cellIndex F (some t) := by
   change rationalCoset F (Matrix.ProjGenLinGroup.mk 1) ≠
     rationalCoset F (Matrix.ProjGenLinGroup.mk (cellW F * cellN F t))
   rw [ne_eq, cell_coset_eq]
-  simp [cellN, cellW, Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two]
+  simp [cellN, cellW, Matrix.mul_apply, Fin.sum_univ_two]
 
-private theorem cell_surjective (q : RationalQuotient F) :
+theorem cell_surjective (q : RationalQuotient F) :
     ∃ i, cellIndex F i = q := by
   obtain ⟨A, hA⟩ := Matrix.ProjGenLinGroup.mk_surjective (Quotient.out q)
   have hq : rationalCoset F (Matrix.ProjGenLinGroup.mk A) = q := by
@@ -89,9 +87,7 @@ private theorem cell_surjective (q : RationalQuotient F) :
     change rationalCoset F (Matrix.ProjGenLinGroup.mk
       (cellW F * cellN F (A 1 1 / A 1 0))) = _
     rw [cell_coset_eq]
-    simp [cellN, cellW, Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_inv,
-      Matrix.inv_def, Matrix.adjugate_fin_two, Matrix.det_fin_two,
-      Matrix.mul_apply, Fin.sum_univ_two]
+    simp [cellN, cellW, Matrix.inv_def, Matrix.det_fin_two, Matrix.mul_apply, Fin.sum_univ_two]
     field_simp
     ring
 
@@ -180,9 +176,3 @@ theorem eisenstein_two_cells (s : PGL(2, F) →* G) (fR : G → ℂ)
     rationalTerm F s fR g (cellIndex F none) = _
   simp only [cellIndex, rationalTerm_eq F s fR hB g, map_one, one_mul]
   exact add_comm _ _
-
-end Lifts
-
-end DedekindZetaZeroFree.KPChamberBruhatTwoCells
-
-end

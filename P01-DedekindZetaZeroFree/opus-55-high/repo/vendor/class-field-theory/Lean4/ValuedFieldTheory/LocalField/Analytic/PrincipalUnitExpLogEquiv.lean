@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Exponential and logarithm on deep principal units
 
@@ -39,7 +35,7 @@ logarithm series give mutually inverse topological group isomorphisms
 `m^n ≃ U^n` (with the additive source written multiplicatively).
 Surjectivity onto the standard value group `ℤᵐ⁰` is the formal normalization
 condition; a normalized uniformizer is chosen internally. -/
-noncomputable def chosenExpLogContinuousMulEquiv
+def chosenExpLogContinuousMulEquiv
     (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
     [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
     [Finite (IsLocalRing.ResidueField v.valuationSubring)] [CharZero K]
@@ -75,7 +71,7 @@ noncomputable def chosenExpLogContinuousMulEquiv
     dsimp [p, LF]
     infer_instance
   have hlevel' : (e : ℚ) / ((p : ℚ) - 1) < (n : ℚ) := by
-    simpa [e, p, LF] using hlevel
+    omega
   have hpden : (0 : ℚ) < (p : ℚ) - 1 := by
     have hp : 1 < p := (Fact.out : Nat.Prime p).one_lt
     exact sub_pos.mpr (by exact_mod_cast hp)
@@ -169,8 +165,3 @@ noncomputable def chosenExpLogContinuousMulEquiv
     principalUnitExpLogContinuousMulEquivOfExact_ofWithZeroValuationScaled
       (v := v) (p := p) e n (π := π) hπval hn hlevel'
       hnKexp hnvalExp hnKlog hnvalLog hcomplete hlog_exp hexp_log
-
-end MultiplicativeIntegerValuation
-end LocalFieldTheory.DiscreteValuationField
-
-end

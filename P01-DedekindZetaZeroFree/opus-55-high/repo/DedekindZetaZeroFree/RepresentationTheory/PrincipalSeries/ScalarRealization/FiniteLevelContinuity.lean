@@ -27,21 +27,21 @@ local instance : IsTopologicalGroup (RestrictedCover F ζ hζ) := RestrictedProd
     (fun v y => match v with | Sum.inl _ => 1 | Sum.inr _ => y)
     (Filter.Eventually.of_forall (fun v y hy => by cases v <;> simpa using hy)) x
 
-private theorem finiteTruncate_continuous : Continuous (finiteTruncate (F := F) (ζ := ζ) (hζ := hζ)) := by
+theorem finiteTruncate_continuous : Continuous (finiteTruncate (F := F) (ζ := ζ) (hζ := hζ)) := by
   unfold finiteTruncate
   apply RestrictedProduct.mapAlong_continuous
   intro v
   cases v
   · exact continuous_const
-  · exact continuous_id
+  fun_prop
 
  def rawToG : RestrictedCover F ζ hζ →* KPGlobalTorusFunctionData.G F ζ hζ :=
   (scalarQuotient F ζ hζ).comp (amalgamation F ζ hζ)
 
-private theorem rawToG_continuous : Continuous (rawToG (F := F) (ζ := ζ) (hζ := hζ)) :=
+theorem rawToG_continuous : Continuous (rawToG (F := F) (ζ := ζ) (hζ := hζ)) :=
   continuous_quot_mk.comp continuous_quot_mk
 
-private theorem gauss_matrix {K : Type*} [Field K] (g : KubotaRankTwo.GL2 K)
+theorem gauss_matrix {K : Type*} [Field K] (g : KubotaRankTwo.GL2 K)
     (ha : g 0 0 ≠ 0) :
     g = Matrix.GeneralLinearGroup.scalar (Fin 2) (g.det / Units.mk0 (g 0 0) ha) *
       (KPStandardLocalRootLifts.lowerN K (g 1 0 / g 0 0) *
@@ -84,7 +84,7 @@ private theorem gauss_matrix {K : Type*} [Field K] (g : KubotaRankTwo.GL2 K)
   archUnits (fun w => if h : (x (Sum.inl w)).g 0 0 = 0 then 1 else
     (x (Sum.inl w)).g.det / Units.mk0 ((x (Sum.inl w)).g 0 0) h)
 
-private theorem gauss_decomposition (x : RestrictedCover F ζ hζ)
+theorem gauss_decomposition (x : RestrictedCover F ζ hζ)
     (ha : ∀ w : InfinitePlace F, (x (Sum.inl w)).g 0 0 ≠ 0)
     (he : ∀ w : InfinitePlace F, (x (Sum.inl w)).epsilon = 1) :
     x = scalarTuple F ζ hζ (gaussScalar x) * groupArchTuple F ζ hζ (gaussCoords x) * finiteTruncate x := by
@@ -93,11 +93,10 @@ private theorem gauss_decomposition (x : RestrictedCover F ζ hζ)
   cases v with
   | inr q =>
     have hu : Units.map (adeleEval F (Sum.inr q)).toMonoidHom (gaussScalar x) = 1 := by
-      apply Units.ext
       rfl
     change x (Sum.inr q) = KPScalarSplitCentral.scalarHom F ζ hζ (Sum.inr q)
       (Units.map (adeleEval F (Sum.inr q)).toMonoidHom (gaussScalar x)) * 1 * x (Sum.inr q)
-    rw [hu, map_one, one_mul, one_mul]
+    simp_all
   | inl w =>
     let e := InfinitePlace.Completion.ringEquivComplexOfIsComplex (KPHilbert.infinite_isComplex F ζ hζ w)
     have hz : e (((x (Sum.inl w)).g 0 0)^2 / ((x (Sum.inl w)).g.det : w.Completion)) ≠ 0 := by
@@ -120,7 +119,7 @@ private theorem gauss_decomposition (x : RestrictedCover F ζ hζ)
       have hz' : (gaussCoords x) w 1 = e (((x (Sum.inl w)).g 0 0)^2 / ((x (Sum.inl w)).g.det : w.Completion)) := rfl
       simp only [hz', dif_neg hz]
       apply Units.ext
-      simp only [Units.val_mk0, e.symm_apply_apply, Units.val_div_eq_div_val, Units.val_pow_eq_pow_val]
+      simp
     apply (KPLocalChartTopology.complexCoordinates F ζ hζ w).injective
     apply Prod.ext
     · change (x (Sum.inl w)).g = ((scalarTuple F ζ hζ (gaussScalar x) * groupArchTuple F ζ hζ (gaussCoords x) * finiteTruncate x) (Sum.inl w)).g
@@ -152,22 +151,22 @@ private theorem gauss_decomposition (x : RestrictedCover F ζ hζ)
     change (a (Sum.inl w))⁻¹ * 1 * a (Sum.inl w) = 1
     simp⟩
 
-private theorem finiteImageConj_continuous (a : RestrictedCover F ζ hζ) :
-    Continuous (finiteImageConj a) := by
-  exact (rawToG_continuous.comp ((continuous_const.mul finiteTruncate_continuous).mul continuous_const)).subtype_mk _
+theorem finiteImageConj_continuous (a : RestrictedCover F ζ hζ) :
+    Continuous (finiteImageConj a) := 
+  (rawToG_continuous.comp ((continuous_const.mul finiteTruncate_continuous).mul continuous_const)).subtype_mk _
 
-private theorem archEntry_continuous (w : InfinitePlace F) (i j : Fin 2) :
+theorem archEntry_continuous (w : InfinitePlace F) (i j : Fin 2) :
     Continuous (fun x : RestrictedCover F ζ hζ => (x (Sum.inl w)).g i j) := by
   have hc := (KPLocalChartTopology.complex_topological_cover F ζ hζ w).2.2.2.1.continuous
   exact (continuous_apply j).comp ((continuous_apply i).comp
     ((Units.continuous_val (M := Matrix (Fin 2) (Fin 2) w.Completion)).comp (hc.comp (RestrictedProduct.continuous_eval _))))
 
-private theorem archDet_continuous (w : InfinitePlace F) :
+theorem archDet_continuous (w : InfinitePlace F) :
     Continuous (fun x : RestrictedCover F ζ hζ => ((x (Sum.inl w)).g.det : w.Completion)) := by
   have hc := (KPLocalChartTopology.complex_topological_cover F ζ hζ w).2.2.2.1.continuous
   exact Units.continuous_val.comp (Matrix.GeneralLinearGroup.continuous_det.comp (hc.comp (RestrictedProduct.continuous_eval _)))
 
-private theorem gaussCoords_continuousAt : ContinuousAt (gaussCoords (F := F) (ζ := ζ) (hζ := hζ)) 1 := by
+theorem gaussCoords_continuousAt : ContinuousAt (gaussCoords (F := F) (ζ := ζ) (hζ := hζ)) 1 := by
   apply continuousAt_pi.mpr
   intro w
   have he : Continuous (InfinitePlace.Completion.ringEquivComplexOfIsComplex (KPHilbert.infinite_isComplex F ζ hζ w)) :=
@@ -179,11 +178,11 @@ private theorem gaussCoords_continuousAt : ContinuousAt (gaussCoords (F := F) (�
   · exact he.continuousAt.comp (((archEntry_continuous w 0 0).continuousAt.pow 2).div (archDet_continuous w).continuousAt (by simp))
   · exact he.continuousAt.comp ((archEntry_continuous w 0 1).continuousAt.div (archEntry_continuous w 0 0).continuousAt (by simp))
 
-private theorem gaussCoords_one_mem : gaussCoords (1 : RestrictedCover F ζ hζ) ∈ groupArchDomain F := by
+theorem gaussCoords_one_mem : gaussCoords (1 : RestrictedCover F ζ hζ) ∈ groupArchDomain F := by
   intro w
   simp [gaussCoords]
 
-private theorem good_arch_eventually : ∀ᶠ x : RestrictedCover F ζ hζ in 𝓝 1,
+theorem good_arch_eventually : ∀ᶠ x : RestrictedCover F ζ hζ in 𝓝 1,
     (∀ w : InfinitePlace F, (x (Sum.inl w)).g 0 0 ≠ 0) ∧
     (∀ w : InfinitePlace F, (x (Sum.inl w)).epsilon = 1) := by
   have ha : ∀ w : InfinitePlace F, ∀ᶠ x : RestrictedCover F ζ hζ in 𝓝 1, (x (Sum.inl w)).g 0 0 ≠ 0 := by
@@ -197,9 +196,9 @@ private theorem good_arch_eventually : ∀ᶠ x : RestrictedCover F ζ hζ in �
     have hc : Continuous (fun x : RestrictedCover F ζ hζ => (x (Sum.inl w)).epsilon) :=
       continuous_snd.comp (hi.continuous.comp (RestrictedProduct.continuous_eval _))
     exact hc.continuousAt.eventually ((isOpen_discrete ({1} : Set (rootsOfUnity 3 F))).mem_nhds (by rfl))
-  exact (Filter.eventually_all.mpr ha).and (Filter.eventually_all.mpr he)
+  simp_all
 
-private theorem rawToG_gauss (x : RestrictedCover F ζ hζ)
+theorem rawToG_gauss (x : RestrictedCover F ζ hζ)
     (ha : ∀ w : InfinitePlace F, (x (Sum.inl w)).g 0 0 ≠ 0)
     (he : ∀ w : InfinitePlace F, (x (Sum.inl w)).epsilon = 1) :
     rawToG x = groupArchChart F ζ hζ (gaussCoords x) * rawToG (finiteTruncate x) := by
@@ -212,7 +211,7 @@ private theorem rawToG_gauss (x : RestrictedCover F ζ hζ)
 
 set_option maxHeartbeats 800000 in
 
-private theorem scalar_raw_continuousAt_one
+theorem scalar_raw_continuousAt_one
     (P : KPGlobalTorusFunctionData.Polarization F ζ hζ)
     (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
     (f : InducedLevel F ζ hζ P J) (a : RestrictedCover F ζ hζ) :
@@ -231,7 +230,7 @@ private theorem scalar_raw_continuousAt_one
       change rawToG (a⁻¹ * finiteTruncate 1 * a) = 1
       have htr : finiteTruncate (1 : RestrictedCover F ζ hζ) = 1 := by
         ext v; cases v <;> rfl
-      rw [htr, mul_one, inv_mul_cancel, map_one]
+      simp_all
     rw [hi]
     exact J.toOpenSubgroup.one_mem
   filter_upwards [good_arch_eventually, hj] with x hx hjx
@@ -245,7 +244,7 @@ private theorem scalar_raw_continuousAt_one
     group
   rw [heq, f.property.2 _ ⟨_, hlev⟩]
 
-private theorem scalar_raw_continuous
+theorem scalar_raw_continuous
     (P : KPGlobalTorusFunctionData.Polarization F ζ hζ)
     (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
     (f : InducedLevel F ζ hζ P J) :
@@ -254,7 +253,7 @@ private theorem scalar_raw_continuous
   intro a
   have hc0 := scalar_raw_continuousAt_one P J f a
   have hc1 : ContinuousAt (fun x : RestrictedCover F ζ hζ => x * a⁻¹) a :=
-    (continuous_id.mul continuous_const).continuousAt
+    by fun_prop
   have hc := (show ContinuousAt (fun x : RestrictedCover F ζ hζ => (f.val.val (rawToG (x * a))).val.val 1) ((fun x : RestrictedCover F ζ hζ => x * a⁻¹) a) by simpa using hc0).comp (f := fun x : RestrictedCover F ζ hζ => x * a⁻¹) (x := a) hc1
   simpa only [Function.comp_def, inv_mul_cancel_right] using hc
 
@@ -268,7 +267,3 @@ theorem inducedLevel_scalar_continuous
     (QuotientGroup.isQuotientMap_mk (splitScalarSubgroup F ζ hζ)).comp
       (QuotientGroup.isQuotientMap_mk (M F ζ hζ))
   exact hq.continuous_iff.mpr (scalar_raw_continuous P J f)
-
-end DedekindZetaZeroFree.KPMsResidualTailRestoration.OutgoingTailL2.AngularBound
-
-end

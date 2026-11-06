@@ -25,7 +25,6 @@ open KPRankOneReverseRegulatorShells KPRankOneReverseRegulatorSpecialization
 open KPRankOneLiftedRegulatedDiagonalAlgebra
 
 noncomputable section
-set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
@@ -98,8 +97,7 @@ theorem jointRationalDomain_open_connected_nonempty :
     exact (isOpen_lt continuous_const continuous_snd.norm).inter ((isOpen_lt continuous_snd.norm continuous_const).inter ((isOpen_lt (continuous_snd.norm.pow 3) hcont.norm).inter (isOpen_lt hcont.norm continuous_const)))
   · rw [hD]
     exact hs.isPreconnected.image E ((Complex.continuous_exp.comp continuous_fst).prodMk (Complex.continuous_exp.comp continuous_snd)).continuousOn
-  · rw [hD]
-    exact hSn.image E
+  simp_all
 
 theorem cone_iff_jointRationalDomain (r t₀ : ℂˣ)
     (ht₀ : (t₀ : ℂ) = t F q (r : ℂ)) (lam : ℂ) :
@@ -114,18 +112,14 @@ theorem cone_iff_jointRationalDomain (r t₀ : ℂˣ)
   have lt_iff : ∀ a b : ℝ,
       (residueCardinality (LocalField F q) : ℝ).rpow a
         < (residueCardinality (LocalField F q) : ℝ).rpow b ↔ a < b := by
-    intro a b
-    change (residueCardinality (LocalField F q) : ℝ) ^ a
-      < (residueCardinality (LocalField F q) : ℝ) ^ b ↔ a < b
-    exact Real.rpow_lt_rpow_left_iff hq1
+    simp_all
   have hneg1 : (residueCardinality (LocalField F q) : ℝ)⁻¹
       = (residueCardinality (LocalField F q) : ℝ).rpow (-1) := by
     change (residueCardinality (LocalField F q) : ℝ)⁻¹
       = (residueCardinality (LocalField F q) : ℝ) ^ (-1 : ℝ)
     exact (Real.rpow_neg_one _).symm
   have hz0 : (1 : ℝ) = (residueCardinality (LocalField F q) : ℝ).rpow 0 := by
-    change (1 : ℝ) = (residueCardinality (LocalField F q) : ℝ) ^ (0 : ℝ)
-    exact (Real.rpow_zero _).symm
+    simp
   have hQ : ‖Q F q lam‖ = (residueCardinality (LocalField F q) : ℝ).rpow (-lam.re) := by
     unfold Q
     rw [Complex.norm_exp]
@@ -143,9 +137,7 @@ theorem cone_iff_jointRationalDomain (r t₀ : ℂˣ)
       = (residueCardinality (LocalField F q) : ℝ).rpow (-3 * lam.re) := by
     have hcast : ((residueCardinality (LocalField F q) : ℝ).rpow (-lam.re)) ^ 3
         = ((residueCardinality (LocalField F q) : ℝ).rpow (-lam.re)).rpow (3 : ℝ) := by
-      change ((residueCardinality (LocalField F q) : ℝ).rpow (-lam.re)) ^ 3
-        = ((residueCardinality (LocalField F q) : ℝ).rpow (-lam.re)) ^ (3 : ℝ)
-      exact (Real.rpow_natCast _ 3).symm
+      simp
     rw [hcast]
     have hmul : ((residueCardinality (LocalField F q) : ℝ).rpow (-lam.re)).rpow (3 : ℝ)
         = (residueCardinality (LocalField F q) : ℝ).rpow (-lam.re * 3) := by
@@ -175,9 +167,3 @@ theorem cone_iff_jointRationalDomain (r t₀ : ℂˣ)
         simpa only [hneg1] using hlo
       have := (lt_iff _ _).mp h
       linarith
-
-end
-
-end DedekindZetaZeroFree.KPRankOneRegulatedDiagonalKernel
-
-end

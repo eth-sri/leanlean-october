@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # The rational cyclotomic principal-idele product formula
 
@@ -182,8 +178,3 @@ theorem normalizedCyclotomicZHatIdeleValue_principalIdele_eq_zero
       K x).2
       (rationalCyclotomicZHatIdeleValue_principalFinitePart_eq_one
         (Units.map (Algebra.norm ℚ) x))
-
-end Reciprocity
-end GlobalClassFieldTheory
-
-end

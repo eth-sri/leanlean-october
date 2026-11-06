@@ -19,7 +19,7 @@ variable (C : LocalFiberData F A.zeta12 A.primitive_zeta12 P)
 local notation "ζ" => A.zeta12
 local notation "hζ" => A.primitive_zeta12
 
-private theorem pure_rawCoreFiber_torus (s : RestrictedTensorSimple.Level (bad A P C))
+theorem pure_rawCoreFiber_torus (s : RestrictedTensorSimple.Level (bad A P C))
     (x : ∀ j : s.val, Plus A P C j.val) (u g : Raw A)
     (t : ∀ q, KPLocalExceptionalConstruction.actualTorus F ζ hζ q)
     (a d : InfinitePlace F → ℂˣ) (b : InfinitePlace F → ℂ)
@@ -85,7 +85,7 @@ theorem rawCoreFiber_torus
       exact smul_comm _ _ _
     | add x y hx hy => simp only [map_add, hx, hy, smul_add]
 
-private theorem rational_contraction_torus (r : KPGlobalCenterRationalCharacter.R F ζ hζ)
+theorem rational_contraction_torus (r : KPGlobalCenterRationalCharacter.R F ζ hζ)
     (f : ProductUnitary F ζ hζ P) :
     rationalEvaluation A
       (PrincipalOfKP.ResidueCoreBridge.CanonicalBinding.productUnitaryToRational F ζ hζ P

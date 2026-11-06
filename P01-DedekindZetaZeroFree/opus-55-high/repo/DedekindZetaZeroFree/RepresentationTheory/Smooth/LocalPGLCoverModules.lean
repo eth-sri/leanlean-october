@@ -68,7 +68,7 @@ def upperRoot : Multiplicative (KPRankOneInduction.LocalField F w) →*
     change KPPGLLocalCover.N F ζ hζ (Sum.inr w)
       (0 : KPHilbert.Completion F (Sum.inr w)) = 1
     have h := KPPGLLocalCover.N_add F ζ hζ (Sum.inr w) 0 0
-    simpa only [add_zero, mul_eq_left] using h.symm
+    simp_all
   map_mul' t u := KPPGLLocalCover.N_add F ζ hζ (Sum.inr w) _ _
 
 def lowerRoot : Multiplicative (KPRankOneInduction.LocalField F w) →*
@@ -78,7 +78,7 @@ def lowerRoot : Multiplicative (KPRankOneInduction.LocalField F w) →*
     change KPPGLLocalCover.LowerN F ζ hζ (Sum.inr w)
       (0 : KPHilbert.Completion F (Sum.inr w)) = 1
     have h := KPPGLLocalCover.LowerN_add F ζ hζ (Sum.inr w) 0 0
-    simpa only [add_zero, mul_eq_left] using h.symm
+    simp_all
   map_mul' t u := KPPGLLocalCover.LowerN_add F ζ hζ (Sum.inr w) _ _
 
 abbrev OrdinaryCoinvariants {V : Type*} [AddCommGroup V] [Module ℂ V]
@@ -133,37 +133,3 @@ def smoothGenuine {V : Type*} [AddCommGroup V] [Module ℂ V]
     (ρ : Representation ℂ (FiniteCover F ζ hζ w) V) : Prop :=
   letI := finiteCoverTopology F ζ hζ w m
   SmoothRepresentation ρ ∧ genuine F ζ hζ w ρ
-
-def scalarRepresentation {H : Type*} [Group H] (χ : H →* ℂˣ) :
-    Representation ℂ H ℂ where
-  toFun h := (χ h : ℂ) • LinearMap.id
-  map_one' := by ext; simp
-  map_mul' h k := by ext; simp [mul_smul, mul_comm]
-
-abbrev ScalarInduced (χ : Borel F ζ hζ w →* ℂˣ) :=
-  Induced F ζ hζ w m (scalarRepresentation χ)
-
-def scalarInducedRepresentation
-    (hm : KPLocalChartTopology.MatrixChartDepth F w m)
-    (χ : Borel F ζ hζ w →* ℂˣ) :
-    Representation ℂ (FiniteCover F ζ hζ w) (ScalarInduced F ζ hζ w m χ) := by
-  letI := finiteCoverTopology F ζ hζ w m
-  letI := (KPPGLLocalCover.finite_topological_cover F ζ hζ w m hm).2.2.1
-  exact smoothIndRepresentation (Borel F ζ hζ w) (scalarRepresentation χ) (dB F ζ hζ w)
-
-def scalarValue (χ : Borel F ζ hζ w →* ℂˣ)
-    (f : ScalarInduced F ζ hζ w m χ) (g : FiniteCover F ζ hζ w) : ℂ :=
-  f.val.val g
-
-@[simp] theorem scalarInducedRepresentation_apply
-    (hm : KPLocalChartTopology.MatrixChartDepth F w m)
-    (χ : Borel F ζ hζ w →* ℂˣ) (a g : FiniteCover F ζ hζ w)
-    (f : ScalarInduced F ζ hζ w m χ) :
-    scalarValue F ζ hζ w m χ
-      (scalarInducedRepresentation F ζ hζ w m hm χ a f) g =
-      scalarValue F ζ hζ w m χ f (g * a) := rfl
-
-end DedekindZetaZeroFree.KPLocalSmoothRepresentation
-
-end
-end

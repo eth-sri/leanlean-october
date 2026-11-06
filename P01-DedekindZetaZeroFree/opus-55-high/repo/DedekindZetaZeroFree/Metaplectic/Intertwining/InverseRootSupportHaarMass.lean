@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Metaplectic.Intertwining.DiagonalInverseRootS
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.KPTameTransposeUnitNumeratorSteps
 open scoped NumberField Classical
 open NumberField IsDedekindDomain MeasureTheory ValuativeRel
@@ -37,8 +36,7 @@ theorem rootLevelSet_eq_congruence_ideal
     obtain ⟨c, hc⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp hp'
     have h01 := congrArg (fun g : GL (Fin 2) (LocalField F q) => g 0 1) hc
     have h11 := congrArg (fun g : GL (Fin 2) (LocalField F q) => g 1 1) hc
-    simp [Matrix.GeneralLinearGroup.coe_scalar, Matrix.scalar, Matrix.diagonal_apply,
-      KubotaRankTwo.n, Matrix.mul_apply, Fin.sum_univ_two] at h01 h11
+    simp [Matrix.GeneralLinearGroup.coe_scalar, Matrix.scalar, Matrix.diagonal_apply, KubotaRankTwo.n, Matrix.mul_apply] at h01 h11
     obtain ⟨k₀, hk₀, he₀⟩ := k.property
     have hent := (KPLocalCube.mem_integerCongruence_iff F q m k₀).mp hk₀
     have h11ideal : k₀ 1 1 - 1 ∈ KPLocalCube.maximalIdeal F q ^ m := by simpa using hent 1 1
@@ -58,8 +56,8 @@ theorem rootLevelSet_eq_congruence_ideal
       Units.val_inv_eq_inv_val (Units.map (KPLocalCube.LocalIntegers F q).subtype.toMonoidHom u)
     change (k₀ 0 1 : LocalField F q) * ((↑u⁻¹ : KPLocalCube.LocalIntegers F q) : LocalField F q) = x
     rw [hui, hu, hk01, hk11]
-    have hinv : (k.val 1 1)⁻¹ = (c : LocalField F q) := by
-      exact inv_eq_of_mul_eq_one_right h11
+    have hinv : (k.val 1 1)⁻¹ = (c : LocalField F q) := 
+      inv_eq_of_mul_eq_one_right h11
     rw [hinv, h01]
   · rintro _ ⟨y, hy, rfl⟩
     let n₀ : KPLocalCube.IntegerGL2 F q :=
@@ -99,7 +97,7 @@ theorem fullDiagonal_residual_ideal_image
     have hc : ((u * w⁻¹ : (KPTameCompact.O F q)ˣ) : LocalField F q) =
         (U : LocalField F q) * (KPTameCompact.unitInclusion F q w : LocalField F q)⁻¹ := by
       change (KPTameCompact.unitInclusion F q (u * w⁻¹) : LocalField F q) = _
-      simp only [map_mul, map_inv, Units.val_mul, Units.val_inv_eq_inv_val, U]
+      simp_all
     rw [hc, hw']
     dsimp
     ring
@@ -161,7 +159,7 @@ theorem fullDiagonal_inverse_root_ideal_image
   obtain ⟨w, hw⟩ := fullDiagonal_shifted_unit F q π hπ u t
   have hd : (U : LocalField F q) + π * t ≠ 0 := by
     rw [← hw]
-    exact (KPTameCompact.unitInclusion F q w).ne_zero
+    simp
   change (π ^ ((i.val : ℤ) + 1) : (LocalField F q)ˣ) / ((U : LocalField F q) + π * t) =
     ((π ^ ((i.val : ℤ) + 1) / U : (LocalField F q)ˣ) : LocalField F q) -
       ((π ^ ((i.val : ℤ) + 2) / U^2 : (LocalField F q)ˣ) : LocalField F q) *
@@ -169,7 +167,7 @@ theorem fullDiagonal_inverse_root_ideal_image
   rw [show (i.val : ℤ) + 2 = ((i.val : ℤ) + 1) + 1 by omega,
     zpow_add, zpow_one]
   simp only [Units.val_mul, Units.val_div_eq_div_val, Units.val_pow_eq_pow_val]
-  simp only [zpow_add, zpow_one, zpow_ofNat, Units.val_mul, Units.val_pow_eq_pow_val]
+  simp only [zpow_add, zpow_ofNat, Units.val_mul, Units.val_pow_eq_pow_val]
   field_simp
   <;> ring
 
@@ -261,8 +259,4 @@ theorem fullDiagonal_inverse_root_real_mass
   rw [fullDiagonal_inverse_root_haar_mass F q ζ hζ S P μ π hπ u i m hm,
     ENNReal.toReal_mul, ENNReal.toReal_ofReal]
   · rfl
-  · exact le_of_lt (zpow_pos (by exact_mod_cast Nat.card_pos) _)
-
-end DedekindZetaZeroFree.KPTameTransposeUnitNumeratorSteps
-
-end
+  positivity

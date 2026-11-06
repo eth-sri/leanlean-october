@@ -28,10 +28,8 @@ private lemma chart_formula (s : ℝ) (f : PrincipalSeries s) (g : ComplexGL2)
     apply Matrix.GeneralLinearGroup.ext
     intro i j
     cases north <;> fin_cases i <;> fin_cases j <;>
-      simp [upperTriangular_coe_matrix, weyl, upperUnipotent, lowerUnipotent,
-        Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two,
-        a, d, Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two]
-    all_goals simp only [Bool.false_eq_true, Bool.true_eq, if_false, if_true] at h
+      simp [upperTriangular_coe_matrix, weyl, upperUnipotent, lowerUnipotent, Matrix.mul_apply, Fin.sum_univ_two, a, d, Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two]
+    all_goals simp only [Bool.false_eq_true, if_false, if_true] at h
     all_goals field_simp [h]
     all_goals ring
   conv_lhs => rw [hg, f.property.1]
@@ -41,7 +39,7 @@ private lemma chart_formula (s : ℝ) (f : PrincipalSeries s) (g : ComplexGL2)
     unfold inductionWeight complexAbs
     have he : ‖(a : ℂ) / (d : ℂ)‖ = ‖(Matrix.GeneralLinearGroup.det g : ℂ)‖ /
         ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 (if north then 0 else 1)‖ ^ 2 := by
-      cases north <;> simp [a, d, norm_div, norm_neg, div_div, sq]
+      cases north <;> simp [a, d, norm_neg, div_div, sq]
     rw [he]
     calc
       _ = Real.rpow (‖(Matrix.GeneralLinearGroup.det g : ℂ)‖ /
@@ -69,7 +67,7 @@ private lemma matrix_chart_smooth (s : ℝ) (f : PrincipalSeries s)
       (((contDiffAt_norm ℝ hc).comp m he.contDiffAt).pow 2)
       (pow_ne_zero 2 (norm_ne_zero_iff.mpr hc))
   have hp : ‖m.det‖ / ‖m 1 c‖ ^ 2 ≠ 0 :=
-    div_ne_zero (norm_ne_zero_iff.mpr hm) (pow_ne_zero 2 (norm_ne_zero_iff.mpr hc))
+    by positivity
   have hw : ContDiffAt ℝ (⊤ : ℕ∞) (fun g : Matrix (Fin 2) (Fin 2) ℂ =>
       (Real.rpow (‖g.det‖ / ‖g 1 c‖ ^ 2) (1+2*s) : ℂ)) m :=
     by
@@ -78,15 +76,13 @@ private lemma matrix_chart_smooth (s : ℝ) (f : PrincipalSeries s)
         by
           have hr0 : ContDiffAt ℝ (⊤ : ℕ∞) (fun t : ℝ => Real.rpow t (1+2*s))
               (‖m.det‖ / ‖m 1 c‖ ^ 2) := Real.contDiffAt_rpow_const_of_ne hp
-          have hcomp := hr0.comp m hn
-          simpa only [Function.comp_def] using hcomp
+          fun_prop
       have hcomp := Complex.ofRealCLM.contDiff.contDiffAt.comp m hr
       simpa only [Function.comp_def, Complex.ofRealCLM_apply] using hcomp
   have hratio : ContDiffAt ℝ (⊤ : ℕ∞) (fun g : Matrix (Fin 2) (Fin 2) ℂ =>
       g 1 d / g 1 c) m := by
     simp only [div_eq_mul_inv]
-    exact (show ContDiffAt ℝ (⊤ : ℕ∞) (fun g : Matrix (Fin 2) (Fin 2) ℂ => g 1 d) m by
-      fun_prop).mul (he.contDiffAt.inv hc)
+    fun_prop
   have hf : ContDiff ℝ (⊤ : ℕ∞)
       (if north then openCoordinate f else infinityCoordinate f) := by
     cases north
@@ -133,11 +129,8 @@ def hopfChartSU2OfUnitBottomRow (a b : ℂ) (h : ‖a‖ ^ 2 + ‖b‖ ^ 2 = 1) 
     constructor
     · ext i j
       fin_cases i <;> fin_cases j <;>
-        simp [rowMatrix, Matrix.mul_apply, Fin.sum_univ_two, Matrix.star_apply,
-          Complex.star_def, Complex.mul_conj', ← Complex.ofReal_pow,
-          ← Complex.ofReal_add, h, h', mul_comm]
-    · simp [rowMatrix, Matrix.det_fin_two, Complex.star_def, Complex.mul_conj',
-        mul_comm, ← Complex.ofReal_pow, ← Complex.ofReal_add, h, h']⟩
+        simp [rowMatrix, Matrix.mul_apply, Fin.sum_univ_two, Matrix.star_apply, Complex.mul_conj', ← Complex.ofReal_pow, ← Complex.ofReal_add, h, h', mul_comm]
+    · simp [rowMatrix, Matrix.det_fin_two, Complex.mul_conj', mul_comm, ← Complex.ofReal_pow, ← Complex.ofReal_add, h']⟩
 
 private lemma sphere_equation (x : Sphere) :
     (x : Ambient) 0 ^ 2 + (x : Ambient) 1 ^ 2 + (x : Ambient) 2 ^ 2 = 1 := by
@@ -154,12 +147,12 @@ noncomputable def northA (x : Ambient) : ℂ := Real.sqrt ((1 + x 2) / 2)
 noncomputable def northB (x : Ambient) : ℂ :=
   ⟨x 0 / (2 * Real.sqrt ((1 + x 2) / 2)), -x 1 / (2 * Real.sqrt ((1 + x 2) / 2))⟩
 
-private lemma south_lift (H : ComplexSU2 → Sphere) (hH : HasHopfCoordinates H)
+lemma south_lift (H : ComplexSU2 → Sphere) (hH : HasHopfCoordinates H)
     (x : Sphere) (hx : (x : Ambient) 2 < 1) :
     ∃ k : ComplexSU2, H k = x ∧ (k : Matrix (Fin 2) (Fin 2) ℂ) =
       rowMatrix (southA x) (southB x) := by
   let r : ℝ := Real.sqrt ((1 - (x : Ambient) 2) / 2)
-  have hr : 0 < r := Real.sqrt_pos.2 (by linarith)
+  have hr : 0 < r := by positivity
   have hr2 : r ^ 2 = (1 - (x : Ambient) 2) / 2 := Real.sq_sqrt (by linarith)
   have hs := sphere_equation x
   have ha : ‖southA x‖ ^ 2 = (1 + (x : Ambient) 2) / 2 := by
@@ -170,7 +163,7 @@ private lemma south_lift (H : ComplexSU2 → Sphere) (hH : HasHopfCoordinates H)
     nlinarith [hr2]
   have hb : ‖southB x‖ ^ 2 = (1 - (x : Ambient) 2) / 2 := by
     change ‖(r : ℂ)‖ ^ 2 = _
-    simpa only [Complex.norm_real, Real.norm_eq_abs, sq_abs] using hr2
+    simp_all
   refine ⟨hopfChartSU2OfUnitBottomRow (southA x) (southB x) (by rw [ha, hb]; ring), ?_, rfl⟩
   apply Subtype.ext
   rw [hH]
@@ -178,19 +171,17 @@ private lemma south_lift (H : ComplexSU2 → Sphere) (hH : HasHopfCoordinates H)
   intro i
   fin_cases i
   · change 2 * ((southA x) * star (southB x)).re = (x : Ambient) 0
-    simp only [Function.comp_apply, Complex.ofRealCLM_apply, southA, southB, Complex.star_def, Complex.conj_ofReal, Complex.mul_re,
-      Complex.ofReal_re, Complex.ofReal_im, mul_zero, sub_zero]
+    simp only [southA, southB, Complex.star_def, Complex.conj_ofReal, Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, mul_zero, sub_zero]
     change 2 * ((x : Ambient) 0 / (2*r) * r) = _
     field_simp [ne_of_gt hr]
   · change 2 * ((southA x) * star (southB x)).im = (x : Ambient) 1
-    simp only [Function.comp_apply, Complex.ofRealCLM_apply, southA, southB, Complex.star_def, Complex.conj_ofReal, Complex.mul_im,
-      Complex.ofReal_re, Complex.ofReal_im, mul_zero, zero_add]
+    simp only [southA, southB, Complex.star_def, Complex.conj_ofReal, Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im, mul_zero, zero_add]
     change 2 * ((x : Ambient) 1 / (2*r) * r) = _
     field_simp [ne_of_gt hr]
   · change ‖southA x‖ ^ 2 - ‖southB x‖ ^ 2 = (x : Ambient) 2
     rw [ha, hb]; ring
 
-private lemma north_lift (H : ComplexSU2 → Sphere) (hH : HasHopfCoordinates H)
+lemma north_lift (H : ComplexSU2 → Sphere) (hH : HasHopfCoordinates H)
     (x : Sphere) (hx : -1 < (x : Ambient) 2) :
     ∃ k : ComplexSU2, H k = x ∧ (k : Matrix (Fin 2) (Fin 2) ℂ) =
       rowMatrix (northA x) (northB x) := by
@@ -200,7 +191,7 @@ private lemma north_lift (H : ComplexSU2 → Sphere) (hH : HasHopfCoordinates H)
   have hs := sphere_equation x
   have ha : ‖northA x‖ ^ 2 = (1 + (x : Ambient) 2) / 2 := by
     change ‖(r : ℂ)‖ ^ 2 = _
-    simpa only [Complex.norm_real, Real.norm_eq_abs, sq_abs] using hr2
+    simp_all
   have hb : ‖northB x‖ ^ 2 = (1 - (x : Ambient) 2) / 2 := by
     rw [← Complex.normSq_eq_norm_sq]
     simp only [Complex.normSq_apply, ← sq]
@@ -226,7 +217,7 @@ private lemma north_lift (H : ComplexSU2 → Sphere) (hH : HasHopfCoordinates H)
   · change ‖northA x‖ ^ 2 - ‖northB x‖ ^ 2 = (x : Ambient) 2
     rw [ha, hb]; ring
 
-private lemma rowMatrix_smooth {a b : Ambient → ℂ} {x : Ambient}
+lemma rowMatrix_smooth {a b : Ambient → ℂ} {x : Ambient}
     (ha : ContDiffAt ℝ (⊤ : ℕ∞) a x) (hb : ContDiffAt ℝ (⊤ : ℕ∞) b x) :
     ContDiffAt ℝ (⊤ : ℕ∞) (fun y => rowMatrix (a y) (b y)) x := by
   have hc : ContDiff ℝ (⊤ : ℕ∞) (star : ℂ → ℂ) := Complex.conjCLE.contDiff
@@ -240,55 +231,55 @@ private lemma rowMatrix_smooth {a b : Ambient → ℂ} {x : Ambient}
   · exact ha
   · exact hb
 
-private lemma south_smooth (x : Ambient) (hx : x 2 < 1) :
+lemma south_smooth (x : Ambient) (hx : x 2 < 1) :
     ContDiffAt ℝ (⊤ : ℕ∞) (fun y => rowMatrix (southA y) (southB y)) x := by
   have hp : 0 < (1 - x 2) / 2 := by linarith
   have hr : ContDiffAt ℝ (⊤ : ℕ∞) (fun y : Ambient => Real.sqrt ((1 - y 2) / 2)) x := by
     have ht : ContDiffAt ℝ (⊤ : ℕ∞) (fun y : Ambient => (1 - y 2) / 2) x := by fun_prop
     exact ht.sqrt (ne_of_gt hp)
-  have hn : Real.sqrt ((1 - x 2) / 2) ≠ 0 := ne_of_gt (Real.sqrt_pos.2 hp)
+  have hn : Real.sqrt ((1 - x 2) / 2) ≠ 0 := by positivity
   have h0 : ContDiffAt ℝ (⊤ : ℕ∞) (fun y : Ambient => y 0 / (2 * Real.sqrt ((1 - y 2) / 2))) x := by
     apply ContDiffAt.div
     · fun_prop
     · exact contDiffAt_const.mul hr
-    · exact mul_ne_zero (by norm_num) hn
+    simp_all
   have h1 : ContDiffAt ℝ (⊤ : ℕ∞) (fun y : Ambient => y 1 / (2 * Real.sqrt ((1 - y 2) / 2))) x := by
     apply ContDiffAt.div
     · fun_prop
     · exact contDiffAt_const.mul hr
-    · exact mul_ne_zero (by norm_num) hn
+    simp_all
   apply rowMatrix_smooth
   · convert (Complex.ofRealCLM.contDiff.contDiffAt.comp x h0).add
       ((Complex.ofRealCLM.contDiff.contDiffAt.comp x h1).mul (contDiffAt_const (c := Complex.I))) using 1
     funext y
-    apply Complex.ext <;> simp only [Function.comp_apply, Complex.ofRealCLM_apply, southA, ← Complex.ofReal_div, ← Complex.ofReal_mul, Complex.add_re, Complex.add_im, Complex.mul_I_re, Complex.mul_I_im, Complex.ofReal_re, Complex.ofReal_im, neg_zero, add_zero, zero_add]
+    apply Complex.ext <;> simp only [Function.comp_apply, Complex.ofRealCLM_apply, southA, Complex.add_re, Complex.add_im, Complex.mul_I_re, Complex.mul_I_im, Complex.ofReal_re, Complex.ofReal_im, neg_zero, add_zero, zero_add]
   · exact Complex.ofRealCLM.contDiff.contDiffAt.comp x hr
 
-private lemma north_smooth (x : Ambient) (hx : -1 < x 2) :
+lemma north_smooth (x : Ambient) (hx : -1 < x 2) :
     ContDiffAt ℝ (⊤ : ℕ∞) (fun y => rowMatrix (northA y) (northB y)) x := by
   have hp : 0 < (1 + x 2) / 2 := by linarith
   have hr : ContDiffAt ℝ (⊤ : ℕ∞) (fun y : Ambient => Real.sqrt ((1 + y 2) / 2)) x := by
     have ht : ContDiffAt ℝ (⊤ : ℕ∞) (fun y : Ambient => (1 + y 2) / 2) x := by fun_prop
     exact ht.sqrt (ne_of_gt hp)
-  have hn : Real.sqrt ((1 + x 2) / 2) ≠ 0 := ne_of_gt (Real.sqrt_pos.2 hp)
+  have hn : Real.sqrt ((1 + x 2) / 2) ≠ 0 := by positivity
   have h0 : ContDiffAt ℝ (⊤ : ℕ∞) (fun y : Ambient => y 0 / (2 * Real.sqrt ((1 + y 2) / 2))) x := by
     apply ContDiffAt.div
     · fun_prop
     · exact contDiffAt_const.mul hr
-    · exact mul_ne_zero (by norm_num) hn
+    simp_all
   have h1 : ContDiffAt ℝ (⊤ : ℕ∞) (fun y : Ambient => -y 1 / (2 * Real.sqrt ((1 + y 2) / 2))) x := by
     apply ContDiffAt.div
     · fun_prop
     · exact contDiffAt_const.mul hr
-    · exact mul_ne_zero (by norm_num) hn
+    simp_all
   apply rowMatrix_smooth
   · exact Complex.ofRealCLM.contDiff.contDiffAt.comp x hr
   · convert (Complex.ofRealCLM.contDiff.contDiffAt.comp x h0).add
       ((Complex.ofRealCLM.contDiff.contDiffAt.comp x h1).mul (contDiffAt_const (c := Complex.I))) using 1
     funext y
-    apply Complex.ext <;> simp only [Function.comp_apply, Complex.ofRealCLM_apply, northB, ← Complex.ofReal_div, ← Complex.ofReal_mul, ← Complex.ofReal_neg, Complex.add_re, Complex.add_im, Complex.mul_I_re, Complex.mul_I_im, Complex.ofReal_re, Complex.ofReal_im, neg_zero, add_zero, zero_add]
+    apply Complex.ext <;> simp only [Function.comp_apply, Complex.ofRealCLM_apply, northB, Complex.add_re, Complex.add_im, Complex.mul_I_re, Complex.mul_I_im, Complex.ofReal_re, Complex.ofReal_im, neg_zero, add_zero, zero_add]
 
-private lemma local_lifts (H : ComplexSU2 → Sphere) (hH : HasHopfCoordinates H)
+lemma local_lifts (H : ComplexSU2 → Sphere) (hH : HasHopfCoordinates H)
     (p : Sphere) :
     ∃ (M : Ambient → Matrix (Fin 2) (Fin 2) ℂ) (V : Set Ambient),
       IsOpen V ∧ (p : Ambient) ∈ V ∧ ContDiffAt ℝ (⊤ : ℕ∞) M p ∧
@@ -303,7 +294,7 @@ private lemma local_lifts (H : ComplexSU2 → Sphere) (hH : HasHopfCoordinates H
       north_smooth p hp', fun q hq => north_lift H hH q hq⟩
     exact isOpen_lt continuous_const (by fun_prop)
 
-private lemma matrixFunction_compact (f : ComplexGL2 → ℂ) (k : ComplexSU2) :
+lemma matrixFunction_compact (f : ComplexGL2 → ℂ) (k : ComplexSU2) :
     matrixFunction f (k : Matrix (Fin 2) (Fin 2) ℂ) = f (complexSU2Embedding k) := by
   have hd : (k : Matrix (Fin 2) (Fin 2) ℂ).det ≠ 0 := by
     rw [(Matrix.mem_specialUnitaryGroup_iff.mp k.property).2]
@@ -329,9 +320,9 @@ theorem smooth_hopf_descent (H : ComplexSU2 → Sphere) (hH : HasHopfCoordinates
     exact hf k _ (Classical.choose_spec (hsurj (H k))).symm
   refine ⟨F, ?_, hF⟩
   have hmat := principalSeries_matrix_smooth s f
-  have hopen : IsOpen {g : Matrix (Fin 2) (Fin 2) ℂ | g.det ≠ 0} := by
-    exact isOpen_ne.preimage (show Continuous (fun g : Matrix (Fin 2) (Fin 2) ℂ => g.det) by
-      simp only [Matrix.det_fin_two]; fun_prop)
+  have hopen : IsOpen {g : Matrix (Fin 2) (Fin 2) ℂ | g.det ≠ 0} := 
+    isOpen_ne.preimage (show Continuous (fun g : Matrix (Fin 2) (Fin 2) ℂ => g.det) by
+      fun_prop)
   intro x hx
   let N : Ambient → Ambient := fun y => ‖y‖⁻¹ • y
   have hN : ContDiffAt ℝ (⊤ : ℕ∞) N x :=
@@ -350,9 +341,9 @@ theorem smooth_hopf_descent (H : ComplexSU2 → Sphere) (hH : HasHopfCoordinates
   have hmAt : ContDiffAt ℝ (⊤ : ℕ∞) (matrixFunction f) (M (N x)) :=
     hmat.contDiffAt (hopen.mem_nhds hd)
   have hMN : ContDiffAt ℝ (⊤ : ℕ∞) (fun y => M (N y)) x := by
-    exact hM.comp x hN
+    fun_prop
   have hcomp : ContDiffAt ℝ (⊤ : ℕ∞) (fun y => matrixFunction f (M (N y))) x :=
-    by simpa only [Function.comp_def] using hmAt.comp x hMN
+    by fun_prop
   apply (hcomp.congr_of_eventuallyEq ?_).contDiffWithinAt
   have heV : ∀ᶠ y in nhds x, N y ∈ V := hN.continuousAt (hV.mem_nhds hp)
   have hne : ∀ᶠ y in nhds x, y ≠ 0 := isOpen_ne.mem_nhds hx
@@ -364,7 +355,3 @@ theorem smooth_hopf_descent (H : ComplexSU2 → Sphere) (hH : HasHopfCoordinates
   change F q = matrixFunction f (M (q : Ambient))
   rw [← hMl, matrixFunction_compact]
   exact (hlq ▸ hF l).symm
-
-end DedekindZetaZeroFree.ComplexFractionalInverse.CompactCharts
-
-end

@@ -4,7 +4,6 @@ public import Mathlib
 
 @[expose] public section
 
-noncomputable section
 
 open MeasureTheory
 open scoped ENNReal
@@ -26,8 +25,7 @@ theorem lintegral_fin_nat_prod_eq_prod {n : ℕ} {E : Fin n → Type*}
         Fin.insertNth_apply_succAbove]
       have hgm : Measurable (fun y : (j : Fin n) → E (Fin.succAbove 0 j) =>
           ∏ x, f (Fin.succAbove 0 x) (y x)) := by
-        simpa using Finset.measurable_prod (Finset.univ : Finset (Fin n))
-          (fun i _ => (hf (Fin.succAbove 0 i)).comp (measurable_pi_apply i))
+        fun_prop
       rw [lintegral_prod_mul (hf 0).aemeasurable hgm.aemeasurable,
         ← n_ih (fun i => hf (Fin.succAbove 0 i))]
 
@@ -51,11 +49,7 @@ theorem lintegral_fintype_prod_eq_prod' {ι : Type*} [Fintype ι] {E : ι → Ty
       fun x => ∏ i, g i (x i) := by
     have h := Measure.ae_eq_pi (μ := μ) (f := f) (f' := g) hg
     filter_upwards [h] with x hx
-    exact Finset.prod_congr rfl fun i _ => congrFun hx i
+    simp_all
   rw [lintegral_congr_ae hpi,
     lintegral_fintype_prod_eq_prod (fun i => hgm i)]
   exact Finset.prod_congr rfl fun i _ => lintegral_congr_ae (hg i).symm
-
-end DedekindZetaZeroFree.FiniteProductDensity
-
-end

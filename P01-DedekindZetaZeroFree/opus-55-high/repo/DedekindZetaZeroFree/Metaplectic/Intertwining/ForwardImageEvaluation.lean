@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.RepresentationTheory.RankOne.PrincipalSeries.
 
 @[expose] public section
 
-noncomputable section
 open scoped NumberField Valued
 open NumberField IsDedekindDomain MeasureTheory ValuativeRel
 namespace DedekindZetaZeroFree.KPRankOneShellRepair
@@ -50,7 +49,3 @@ theorem actualCanonicalForwardMap_evaluation_surjective (g : ActualCover F ζ h�
     (IPlus S.borel P g⁻¹ f)).val g = _ at he'
   change (actualCanonicalForwardLinear F ζ hζ q S P μ hμ f).val 1 = v at hf
   exact he'.trans (by simpa [IMinus, principalSeries, vectorRightTranslation] using hf)
-
-end DedekindZetaZeroFree.KPRankOneShellRepair
-
-end

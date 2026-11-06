@@ -6,7 +6,6 @@ public import Mathlib.Analysis.Complex.Basic
 
 @[expose] public section
 
-noncomputable section
 open scoped Classical Topology
 open Filter
 namespace DedekindZetaZeroFree.FourierContinuation.CurrentOutputExtension
@@ -30,6 +29,3 @@ theorem moving_evaluation_derivative [LocallyCompactSpace β]
   simp only [Function.comp_def,zero_add,ContinuousMap.smul_apply,ContinuousMap.sub_apply]
   simp only [Complex.real_smul]
   ring
-end DedekindZetaZeroFree.FourierContinuation.CurrentOutputExtension
-
-end

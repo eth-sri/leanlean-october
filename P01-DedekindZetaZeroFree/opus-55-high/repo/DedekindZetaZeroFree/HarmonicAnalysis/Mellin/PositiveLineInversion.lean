@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.HarmonicAnalysis.Mellin.RegularizedVerticalDe
 
 @[expose] public section
 
-noncomputable section
 
 open MeasureTheory
 
@@ -21,7 +20,7 @@ theorem mellin_inversion_positive_line (h : ℝ → ℂ)
   have hF : ∀ s : ℂ, 0 < s.re → DifferentiableAt ℂ (mellin h) s := by
     intro s hs
     have hd := differentiableAt_mellin_iteratedDeriv_of_pos (h := h) h_smooth h_compact 0 hs
-    rwa [iteratedDeriv_zero] at hd
+    fun_prop
   have hcont : Continuous fun t : ℝ => mellin h ((σ : ℂ) + (t : ℂ) * Complex.I) := by
     rw [continuous_iff_continuousAt]
     intro t
@@ -78,7 +77,7 @@ theorem mellin_inversion_positive_line (h : ℝ → ℂ)
       rw [← Set.Iic_union_Ici (a := (1 : ℝ))]
       exact hIic1.union hIci
     have : Integrable (fun t : ℝ => mellin h ((σ : ℂ) + (t : ℂ) * Complex.I)) volume := by
-      rwa [IntegrableOn, Measure.restrict_univ] at huniv
+      simp_all
     exact this
   refine ⟨hVI, fun x hx => ?_⟩
   have hconv : MellinConvergent h σ := by
@@ -86,7 +85,3 @@ theorem mellin_inversion_positive_line (h : ℝ → ℂ)
       (s := (σ : ℂ)) (by simpa using hσ)
     rwa [iteratedDeriv_zero] at hd
   exact mellinInv_mellin_eq σ h hx hconv hVI (h_smooth.continuous.continuousAt)
-
-end DedekindZetaZeroFree.LargeSieve.Vendor
-
-end

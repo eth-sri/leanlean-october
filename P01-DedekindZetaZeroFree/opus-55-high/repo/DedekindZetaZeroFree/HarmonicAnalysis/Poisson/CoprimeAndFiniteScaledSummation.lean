@@ -1,7 +1,7 @@
 module
 
 public import DedekindZetaZeroFree.HarmonicAnalysis.Poisson.PrincipalHeckeSummation
-public import DedekindZetaZeroFree.Arithmetic.Ideals.NonzeroMultiplesEquivalence
+public import DedekindZetaZeroFree.Arithmetic.RayClasses.Character
 public import DedekindZetaZeroFree.Arithmetic.Ideals.MoebiusCoprimality
 
 @[expose] public section
@@ -60,14 +60,14 @@ theorem finite_scaled_principalPoisson
     have hdpos : (0 : ℝ) < (Ideal.absNorm d : ℝ) := by
       have hne : Ideal.absNorm d ≠ 0 := by
         rw [Ne, Ideal.absNorm_eq_zero_iff]; exact hD d hd
-      exact_mod_cast Nat.pos_of_ne_zero hne
+      positivity
     have hpp := principalPoisson F hF h hh hcompact
       (X / (Ideal.absNorm d : ℝ)) (div_pos hX hdpos)
     dsimp only at hpp
     obtain ⟨-, -, hmain⟩ := hpp
     rw [← hα] at hmain
     have h1 : ((X / (Ideal.absNorm d : ℝ) : ℝ) : ℂ) =
-        (X : ℂ) / (Ideal.absNorm d : ℂ) := by push_cast; ring
+        (X : ℂ) / (Ideal.absNorm d : ℂ) := by simp
     have h2 : ∀ I : Ideal (𝓞 F),
         (X / (Ideal.absNorm d : ℝ)) * (Ideal.absNorm I : ℝ) =
           X * (Ideal.absNorm I : ℝ) / (Ideal.absNorm d : ℝ) := by
@@ -110,19 +110,15 @@ open scoped NumberField Classical
 
 namespace DedekindZetaZeroFree.LargeSieve.PoissonCoprimeExact
 
-private theorem finsum_ite_eq_finsum_subtype {α : Type*} {M : Type*} [AddCommMonoid M]
+theorem finsum_ite_eq_finsum_subtype {α : Type*} {M : Type*} [AddCommMonoid M]
     (p : α → Prop) [DecidablePred p] (g : α → M) :
     (∑ᶠ a : α, if p a then g a else 0) = ∑ᶠ a : Subtype p, g a := by
   rw [finsum_subtype_eq_finsum_cond (f := g) (p := p)]
   apply finsum_congr
   intro i
   by_cases hp : p i
-  · rw [if_pos hp]
-    exact (finsum_eq_single (fun _ : p i => g i) hp
-      (fun x hx => absurd (Subsingleton.elim x hp) hx)).symm
-  · rw [if_neg hp]
-    haveI : IsEmpty (p i) := ⟨fun x => hp x⟩
-    exact (finsum_of_isEmpty (fun _ : p i => g i)).symm
+  · simp_all
+  simp_all
 
 theorem multiplesFinsum_eq_scaledPrincipal
     {F : Type*} [Field F] [NumberField F]
@@ -144,7 +140,7 @@ theorem multiplesFinsum_eq_scaledPrincipal
     · intro I
       obtain ⟨J, hJ⟩ := I.2.2
       refine ⟨⟨J, fun hbot => I.2.1 ?_⟩, Subtype.ext hJ.symm⟩
-      rw [hJ, hbot, Ideal.mul_bot]
+      simp_all
 
   have heq : ∀ J : {J : Ideal (𝓞 F) // J ≠ ⊥},
       h ((Ideal.absNorm J.val : ℝ) / (X / (Ideal.absNorm d : ℝ))) =
@@ -169,9 +165,7 @@ theorem multiplesFinsum_eq_scaledPrincipal
         h ((Ideal.absNorm I : ℝ) / (X / (Ideal.absNorm d : ℝ)))) =
       ∑ᶠ I : Ideal (𝓞 F), if I ≠ ⊥ then
         h ((Ideal.absNorm I : ℝ) / (X / (Ideal.absNorm d : ℝ))) else 0 from by
-    apply finsum_congr
-    intro I
-    by_cases hI : I = ⊥ <;> simp [hI]]
+    simp]
   rw [finsum_ite_eq_finsum_subtype (fun I : Ideal (𝓞 F) => I ≠ ⊥)
     (fun I => h ((Ideal.absNorm I : ℝ) / (X / (Ideal.absNorm d : ℝ))))]
   exact key.symm
@@ -243,9 +237,3 @@ theorem poissonCoprimeExact
        F hF h hh hcompact X hX (idealDivisors m)
       (fun _ hd => ne_bot_of_mem_idealDivisors hd)
       (fun d => (UniqueFactorizationMonoid.moebius d : ℂ))
-
-end DedekindZetaZeroFree.LargeSieve
-
-end
-
-end

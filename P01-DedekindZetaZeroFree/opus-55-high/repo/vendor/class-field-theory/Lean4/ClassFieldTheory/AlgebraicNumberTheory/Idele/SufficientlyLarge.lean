@@ -20,18 +20,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # A sufficiently large finite set of places
 
@@ -47,7 +35,6 @@ open scoped NumberField
 open NumberField IsDedekindDomain
 
 noncomputable section
-
 
 variable {K : Type*} [Field K] [NumberField K]
 
@@ -72,7 +59,7 @@ integral. -/
     (exists_finset_supportedAt
       (classRepresentative (K := K) c))
 
-private theorem classRepresentative_mem_support
+theorem classRepresentative_mem_support
     (c : ClassGroup (𝓞 K)) :
     classRepresentative (K := K) c ∈
       supportedAt (K := K)
@@ -88,7 +75,7 @@ def sufficientlyLargeFiniteSet :
   classical
   exact Finset.univ.biUnion (classRepresentativeSupport (K := K))
 
-private theorem classRepresentative_mem_sufficientlyLarge
+theorem classRepresentative_mem_sufficientlyLarge
     (c : ClassGroup (𝓞 K)) :
     classRepresentative (K := K) c ∈
       supportedAt (K := K)
@@ -139,8 +126,7 @@ theorem supportedAt_sup_principalSubgroup_eq_top :
     idealClass_surjective_on_sufficientlyLarge
       (K := K) (idealClass a)
   have hquot : a * r⁻¹ ∈ (idealClass (K := K)).ker := by
-    rw [MonoidHom.mem_ker, map_mul, map_inv, hr]
-    simp
+    simp_all
   have hquot' :
       a * r⁻¹ ∈ supportedAt (K := K) S ⊔ principalSubgroup K :=
     hkernel hquot
@@ -149,14 +135,3 @@ theorem supportedAt_sup_principalSubgroup_eq_top :
     Subgroup.mem_sup_left hrS
   convert Subgroup.mul_mem _ hquot' hr' using 1
   group
-
-/-- Existential form of the sufficiently-large support theorem. -/
-theorem exists_finset_supportedAt_sup_principalSubgroup_eq_top :
-    ∃ S : Finset (HeightOneSpectrum (𝓞 K)),
-      supportedAt (K := K) (S : Set _) ⊔ principalSubgroup K = ⊤ :=
-  ⟨sufficientlyLargeFiniteSet (K := K),
-    supportedAt_sup_principalSubgroup_eq_top (K := K)⟩
-
-end IdeleGroup
-
-end

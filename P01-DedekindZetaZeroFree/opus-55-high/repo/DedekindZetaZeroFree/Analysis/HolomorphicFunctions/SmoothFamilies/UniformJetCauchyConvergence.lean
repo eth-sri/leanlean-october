@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Analysis.HolomorphicFunctions.SmoothFamilies.
 
 @[expose] public section
 
-noncomputable section
 
 namespace DedekindZetaZeroFree.KPContLocalHolomorphyUpgrade.CauchyAssembly.ContourLift
 
@@ -138,7 +137,3 @@ theorem scalar_jet_cauchy_uniform {n : ℕ} (B : LocalBall n)
   have hh := hN M hM (⟨z, hz⟩, α, x)
   rw [hsum] at hh
   simpa only [dist_eq_norm, norm_sub_rev, g] using hh
-
-end DedekindZetaZeroFree.KPContLocalHolomorphyUpgrade.CauchyAssembly.ContourLift
-
-end

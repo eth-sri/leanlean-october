@@ -13,7 +13,6 @@ open scoped NumberField Classical BigOperators NNReal
 open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.KPGlobalCenterRationalCharacterExtension.CubeDiagonalProduct
 noncomputable section
-set_option autoImplicit false
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
@@ -24,10 +23,10 @@ theorem localValue_standard_diagonal (v : KPHilbert.Place F)
         (ne_of_gt (localAbs_pos F v y)))) := by
   have h1 : IsUnit ((KubotaRankTwo.d (KPHilbert.Completion F v) y 1 :
       Matrix (Fin 2) (Fin 2) (KPHilbert.Completion F v)) 0 0) := by
-    rw [KubotaRankTwo.coe_d]; exact Units.isUnit y
+    simp
   have h2 : IsUnit ((KubotaRankTwo.d (KPHilbert.Completion F v) y 1 :
       Matrix (Fin 2) (Fin 2) (KPHilbert.Completion F v)) 1 1) := by
-    rw [KubotaRankTwo.coe_d]; exact isUnit_one
+    simp
   change localValue F ζ hζ v
     (⟨KubotaRankTwo.d (KPHilbert.Completion F v) y 1, 1⟩ :
       KPLocalCover.CubicGL2Raw F ζ hζ v) =
@@ -35,15 +34,10 @@ theorem localValue_standard_diagonal (v : KPHilbert.Place F)
       (ne_of_gt (localAbs_pos F v y))))
   rw [localValue, dif_pos ⟨h1, h2⟩]
   have hunit : h1.unit * h2.unit⁻¹ = y := by
-    ext
-    rw [Units.val_mul, Units.val_inv_eq_inv_val, IsUnit.unit_spec, IsUnit.unit_spec,
-      KubotaRankTwo.coe_d]
     simp
   rw [map_one, one_mul]
   congr 1
-  congr 1
-  congr 1
-  rw [hunit]
+  simp
 
 end
 end DedekindZetaZeroFree.KPGlobalCenterRationalCharacterExtension.CubeDiagonalProduct
@@ -55,7 +49,6 @@ open scoped NumberField Classical BigOperators NNReal
 open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.KPGlobalCenterRationalCharacterModulus
 noncomputable section
-set_option autoImplicit false
 
 theorem local_value_modulus (F : Type) [Field F] [NumberField F]
     (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (v : KPHilbert.Place F)
@@ -93,7 +86,6 @@ section
 open scoped Classical BigOperators NNReal
 namespace DedekindZetaZeroFree.KPGlobalCenterRationalCharacterModulus
 noncomputable section
-set_option autoImplicit false
 
 theorem finite_product_modulus_transport {I : Type*}
     (f : I → ℂˣ) (a : I → (ℝ≥0)ˣ) (χ : (ℝ≥0)ˣ →* (ℝ≥0)ˣ)
@@ -110,15 +102,12 @@ theorem finite_product_modulus_transport {I : Type*}
       finprod_eq_prod_of_mulSupport_toFinset_subset a ha has]
 
   have hcoe : ((∏ i ∈ s, f i : ℂˣ) : ℂ) = ∏ i ∈ s, (f i : ℂ) :=
-    map_prod (Units.coeHom ℂ) f s
+    by simp
   rw [hcoe, norm_prod]
 
   have hχ : χ (∏ i ∈ s, a i) = ∏ i ∈ s, χ (a i) := map_prod χ a s
   rw [hχ]
-  rw [show ((∏ i ∈ s, χ (a i) : (ℝ≥0)ˣ) : ℝ≥0) = ∏ i ∈ s, (χ (a i) : ℝ≥0) from
-        map_prod (Units.coeHom ℝ≥0) (fun i => χ (a i)) s]
-  rw [NNReal.coe_prod]
-  exact Finset.prod_congr rfl (fun i _ => h i)
+  simp_all
 
 end
 end DedekindZetaZeroFree.KPGlobalCenterRationalCharacterModulus
@@ -130,7 +119,6 @@ open scoped NumberField Classical BigOperators NNReal
 open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.KPGlobalCenterRationalCharacterExtension
 noncomputable section
-set_option autoImplicit false
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
@@ -149,9 +137,7 @@ theorem cube_diagonal_product (y : CubicCharacters.cubes (Ideles F))
       CubeDiagonalProduct.standard_diagonal_torus_ratio F ζ hζ y.val x hx
     have hc : t ∈ Z F ζ hζ := by
       rw [CubeDiagonalProduct.covered_torus_center_eq_cubes F ζ hζ]
-      change KPGlobalTorusFunctionData.p F ζ hζ t ∈ CubicCharacters.cubes (Ideles F)
-      rw [hp]
-      exact y.property
+      simp_all
     exact ⟨⟨t, hc⟩, ht⟩
   · intro hc
     letI : NumberField.IsTotallyComplex F := primitive12_totallyComplex F ζ hζ
@@ -185,7 +171,6 @@ open scoped NumberField Classical BigOperators NNReal
 open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.KPGlobalCenterRationalCharacterExtension
 noncomputable section
-set_option autoImplicit false
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
@@ -230,7 +215,6 @@ open NumberField IsDedekindDomain
 
 namespace DedekindZetaZeroFree.KPGlobalCenterRationalCharacter
 noncomputable section
-set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
@@ -276,8 +260,7 @@ private lemma preimage_diag (A : KPGlobalTorusFunctionData.AdelicMatrixGroup F)
   obtain ⟨z, hz, he⟩ := hB
   obtain ⟨u, rfl⟩ := hz
   rw [← he]
-  simp [Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
-    Matrix.mul_apply, Matrix.scalar, Fin.sum_univ_two, h01, h10]
+  simp [Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_apply, Matrix.scalar, Fin.sum_univ_two, h01, h10]
 private lemma ratio_continuous : Continuous (KPGlobalTorusFunctionData.torusRatio F) := by
   let q := QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F)
   let S := (KPGlobalTorusFunctionData.ordinaryTorus F : Set (KPAdelicCoverRestrictedProduct.AdelicPGL2 F))
@@ -292,27 +275,27 @@ private lemma ratio_continuous : Continuous (KPGlobalTorusFunctionData.torusRati
     constructor
     · change Continuous (fun A : q ⁻¹' S => (u A).val)
       have he : (fun A : q ⁻¹' S => (u A).val) = fun A => A.val 0 0 := by
-        funext A; exact IsUnit.unit_spec _
+        rfl
       rw [he]
-      exact (show Continuous (fun A : KPGlobalTorusFunctionData.AdelicMatrixGroup F => A 0 0) from (continuous_apply 0).comp ((continuous_apply 0).comp (Units.continuous_val : Continuous (fun A : KPGlobalTorusFunctionData.AdelicMatrixGroup F => A.val)))).comp continuous_subtype_val
+      fun_prop
     · have he : (fun A : q ⁻¹' S => (u A)⁻¹.val) = fun A => A.val⁻¹ 0 0 := by
         funext A; exact diag_inverse F A.val (preimage_diag F A.val A.property).1 (preimage_diag F A.val A.property).2
       change Continuous (fun A : q ⁻¹' S => (u A)⁻¹.val)
       rw [he]
-      exact (show Continuous (fun A : KPGlobalTorusFunctionData.AdelicMatrixGroup F => A⁻¹ 0 0) from (continuous_apply 0).comp ((continuous_apply 0).comp (Units.continuous_coe_inv : Continuous (fun A : KPGlobalTorusFunctionData.AdelicMatrixGroup F => (A⁻¹ : KPGlobalTorusFunctionData.AdelicMatrixGroup F).val)))).comp continuous_subtype_val
+      fun_prop
   have hw : Continuous w := by
     apply Units.continuous_iff.mpr
     constructor
     · change Continuous (fun A : q ⁻¹' S => (w A).val)
       have he : (fun A : q ⁻¹' S => (w A).val) = fun A => A.val 1 1 := by
-        funext A; exact IsUnit.unit_spec _
+        rfl
       rw [he]
-      exact (show Continuous (fun A : KPGlobalTorusFunctionData.AdelicMatrixGroup F => A 1 1) from (continuous_apply 1).comp ((continuous_apply 1).comp (Units.continuous_val : Continuous (fun A : KPGlobalTorusFunctionData.AdelicMatrixGroup F => A.val)))).comp continuous_subtype_val
+      fun_prop
     · have he : (fun A : q ⁻¹' S => (w A)⁻¹.val) = fun A => A.val⁻¹ 1 1 := by
         funext A; exact diag_inverse11 F A.val (preimage_diag F A.val A.property).1 (preimage_diag F A.val A.property).2
       change Continuous (fun A : q ⁻¹' S => (w A)⁻¹.val)
       rw [he]
-      exact (show Continuous (fun A : KPGlobalTorusFunctionData.AdelicMatrixGroup F => A⁻¹ 1 1) from (continuous_apply 1).comp ((continuous_apply 1).comp (Units.continuous_coe_inv : Continuous (fun A : KPGlobalTorusFunctionData.AdelicMatrixGroup F => (A⁻¹ : KPGlobalTorusFunctionData.AdelicMatrixGroup F).val)))).comp continuous_subtype_val
+      fun_prop
   have he : (KPGlobalTorusFunctionData.torusRatio F) ∘ S.restrictPreimage q =
       fun A => u A * (w A)⁻¹ := by
     funext A
@@ -320,7 +303,7 @@ private lemma ratio_continuous : Continuous (KPGlobalTorusFunctionData.torusRati
     exact KPGlobalTorusFunctionData.ratio_formula F _ A.val rfl
       (preimage_diag F A.val A.property).1 (preimage_diag F A.val A.property).2
   rw [he]
-  exact hu.mul hw.inv
+  fun_prop
 
 private theorem p_continuous : Continuous (KPGlobalTorusFunctionData.p F ζ hζ) := by
   apply (ratio_continuous F).comp
@@ -365,7 +348,7 @@ def localValue (v : KPHilbert.Place F) (g : KPLocalCover.CubicGL2Raw F ζ hζ v)
         (localAbs F v (h.1.unit * h.2.unit⁻¹)) (ne_of_gt (localAbs_pos F v _))))
   else 1
 
-private theorem central_mul_A (v : KPHilbert.Place F) (ε : rootsOfUnity 3 F)
+theorem central_mul_A (v : KPHilbert.Place F) (ε : rootsOfUnity 3 F)
     (y : (KPHilbert.Completion F v)ˣ) :
     KPLocalCover.centralInjection F ζ hζ v ε * KPStandardLocalRootLifts.A F ζ hζ v y =
       (⟨KubotaRankTwo.d (KPHilbert.Completion F v) y 1, ε⟩ :
@@ -389,22 +372,17 @@ private theorem localValue_diag (v : KPHilbert.Place F) (ε : rootsOfUnity 3 F)
           (ne_of_gt (localAbs_pos F v y)))) := by
   have h1 : IsUnit ((KubotaRankTwo.d (KPHilbert.Completion F v) y 1 :
       Matrix (Fin 2) (Fin 2) (KPHilbert.Completion F v)) 0 0) := by
-    rw [KubotaRankTwo.coe_d]; exact Units.isUnit y
+    simp
   have h2 : IsUnit ((KubotaRankTwo.d (KPHilbert.Completion F v) y 1 :
       Matrix (Fin 2) (Fin 2) (KPHilbert.Completion F v)) 1 1) := by
-    rw [KubotaRankTwo.coe_d]; exact isUnit_one
+    simp
   rw [localValue, dif_pos ⟨h1, h2⟩]
   have hunit : h1.unit * h2.unit⁻¹ = y := by
-    ext
-    rw [Units.val_mul, Units.val_inv_eq_inv_val, IsUnit.unit_spec, IsUnit.unit_spec,
-      KubotaRankTwo.coe_d]
     simp
   congr 1
   congr 1
   congr 1
-  apply Units.ext
-  show localAbs F v (h1.unit * h2.unit⁻¹) = localAbs F v y
-  rw [hunit]
+  simp
 
 theorem localValue_complex (w : InfinitePlace F) (ε : rootsOfUnity 3 F)
     (y : (KPHilbert.Completion F (Sum.inl w))ˣ) :
@@ -443,16 +421,12 @@ private theorem localAbs_one (v : KPHilbert.Place F) :
 private theorem localValue_one (v : KPHilbert.Place F) :
     localValue F ζ hζ v (1 : KPLocalCover.CubicGL2Raw F ζ hζ v) = 1 := by
   have h1 : IsUnit ((1 : KPLocalCover.CubicGL2Raw F ζ hζ v).g 0 0) := by
-    rw [KPLocalCover.one_g]; exact isUnit_one
+    simp
   have h2 : IsUnit ((1 : KPLocalCover.CubicGL2Raw F ζ hζ v).g 1 1) := by
-    rw [KPLocalCover.one_g]; exact isUnit_one
+    simp
   have hu1 : h1.unit = 1 := by
-    ext
-    rw [IsUnit.unit_spec, KPLocalCover.one_g]
     simp
   have hu2 : h2.unit = 1 := by
-    ext
-    rw [IsUnit.unit_spec, KPLocalCover.one_g]
     simp
   rw [localValue, dif_pos ⟨h1, h2⟩]
   simp only [hu1, hu2, inv_one, mul_one, localAbs_one F v]
@@ -468,11 +442,11 @@ theorem rawProduct_one : rawProduct F ζ hζ 1 = 1 := by
   exact finprod_one
 
 theorem rawProduct_mul (x y : rawCenter F ζ hζ) :
-    rawProduct F ζ hζ (x * y) = rawProduct F ζ hζ x * rawProduct F ζ hζ y := by
-  exact (KPGlobalCenterRationalCharacterExtension.raw_character_laws F ζ hζ).2.1 x y
+    rawProduct F ζ hζ (x * y) = rawProduct F ζ hζ x * rawProduct F ζ hζ y := 
+  (KPGlobalCenterRationalCharacterExtension.raw_character_laws F ζ hζ).2.1 x y
 
-theorem rawProduct_continuous : Continuous (rawProduct F ζ hζ) := by
-  exact (KPGlobalCenterRationalCharacterExtension.raw_character_laws F ζ hζ).2.2
+theorem rawProduct_continuous : Continuous (rawProduct F ζ hζ) := 
+  (KPGlobalCenterRationalCharacterExtension.raw_character_laws F ζ hζ).2.2
 
 private theorem localValue_central (v : KPHilbert.Place F) (ε : rootsOfUnity 3 F) :
     localValue F ζ hζ v (KPLocalCover.centralInjection F ζ hζ v ε) =
@@ -480,8 +454,7 @@ private theorem localValue_central (v : KPHilbert.Place F) (ε : rootsOfUnity 3 
   have h := localValue_diag F ζ hζ v ε 1
   have hd : KubotaRankTwo.d (KPHilbert.Completion F v) (1 : (KPHilbert.Completion F v)ˣ) 1 = 1 := by
     apply Matrix.GeneralLinearGroup.ext
-    intro i j
-    fin_cases i <;> fin_cases j <;> simp
+    simp
   change localValue F ζ hζ v ⟨1, ε⟩ = _
   simpa [hd, localAbs_one] using h
 
@@ -503,18 +476,15 @@ private theorem localValue_scalar (v : KPHilbert.Place F)
     (u : (KPHilbert.Completion F v)ˣ) :
     localValue F ζ hζ v (KPScalarSplitCentral.scalarHom F ζ hζ v u) = 1 := by
   have hu : (KPScalarSplitCentral.scalarHom F ζ hζ v u).g 0 0 = u := by
-    simp [KPScalarSplitCentral.scalarHom, KPScalarSplitCentral.scalarLift,
-      KPScalarSplitCentral.scalarMatrix, KPLocalCover.sectionMap, Matrix.scalar]
+    rfl
   have hu' : (KPScalarSplitCentral.scalarHom F ζ hζ v u).g 1 1 = u := by
-    simp [KPScalarSplitCentral.scalarHom, KPScalarSplitCentral.scalarLift,
-      KPScalarSplitCentral.scalarMatrix, KPLocalCover.sectionMap, Matrix.scalar]
+    rfl
   have h1 : IsUnit ((KPScalarSplitCentral.scalarHom F ζ hζ v u).g 0 0) := hu ▸ u.isUnit
   have h2 : IsUnit ((KPScalarSplitCentral.scalarHom F ζ hζ v u).g 1 1) := hu' ▸ u.isUnit
   have he1 : h1.unit = u := Units.ext (h1.unit_spec.trans hu)
   have he2 : h2.unit = u := Units.ext (h2.unit_spec.trans hu')
   rw [localValue, dif_pos ⟨h1, h2⟩]
-  simp [he1, he2, localAbs_one, KPScalarSplitCentral.scalarHom,
-    KPScalarSplitCentral.scalarLift, KPLocalCover.sectionMap]
+  simp [localAbs_one, KPScalarSplitCentral.scalarHom, KPScalarSplitCentral.scalarLift, KPLocalCover.sectionMap]
 
 theorem rawProduct_splitScalar (u : Ideles F) (x : rawCenter F ζ hζ)
     (hx : x.val = KPAdelicCoverRestrictedProduct.scalarTuple F ζ hζ u) :
@@ -541,8 +511,7 @@ theorem center_has_raw_lift (z : Z F ζ hζ) :
   refine ⟨⟨x, ?_⟩, he⟩
   change KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
     (KPAdelicCoverRestrictedProduct.amalgamation F ζ hζ x) ∈ (Z F ζ hζ).map (E F ζ hζ).subtype
-  rw [he]
-  exact ⟨z.val, z.property, rfl⟩
+  simp_all
 
 theorem rawProduct_independent (x y : rawCenter F ζ hζ)
     (hxy : KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
@@ -564,7 +533,7 @@ theorem rawProduct_independent (x y : rawCenter F ζ hζ)
       apply (QuotientGroup.eq_one_iff _).mpr
       exact ⟨u, rfl⟩
     rw [he]
-    exact Subgroup.one_mem _
+    simp
   let s : rawCenter F ζ hζ := ⟨t u, ht⟩
   have hm : ((x * y⁻¹) * s⁻¹).val ∈ KPAdelicCoverRestrictedProduct.M F ζ hζ := by
     apply (QuotientGroup.eq_one_iff _).mp
@@ -639,12 +608,11 @@ theorem omegaValue_continuous : Continuous (omegaValue F ζ hζ) := by
     rw [he]
     exact rawProduct_continuous F ζ hζ
   let toS (z : Z F ζ hζ) : S := ⟨z.val.val, ⟨z.val, z.property, rfl⟩⟩
-  have ht : Continuous toS := (continuous_subtype_val.comp continuous_subtype_val).subtype_mk _
+  have ht : Continuous toS := by fun_prop
   have he : omegaValue F ζ hζ = f ∘ toS := by
-    funext z
-    congr 1
+    rfl
   rw [he]
-  exact hf.comp ht
+  fun_prop
 
 def omegaA : Z F ζ hζ →ₜ* ℂˣ :=
   { toFun := omegaValue F ζ hζ
@@ -655,8 +623,8 @@ def omegaA : Z F ζ hζ →ₜ* ℂˣ :=
 theorem omegaA_raw_formula (z : Z F ζ hζ) (x : rawCenter F ζ hζ)
     (hx : KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
       (KPAdelicCoverRestrictedProduct.amalgamation F ζ hζ x.val) = z.val.val) :
-    omegaA F ζ hζ z = rawProduct F ζ hζ x := by
-  exact rawProduct_independent F ζ hζ _ x
+    omegaA F ζ hζ z = rawProduct F ζ hζ x := 
+  rawProduct_independent F ζ hζ _ x
     ((Classical.choose_spec (center_has_raw_lift F ζ hζ z)).trans hx.symm)
 
 theorem central_root_mem (ε : rootsOfUnity 3 F) :
@@ -665,7 +633,7 @@ theorem central_root_mem (ε : rootsOfUnity 3 F) :
   have hker : KPAdelicCoverRestrictedProduct.pglCentralInjection F ζ hζ ε ∈
       (KPAdelicCoverRestrictedProduct.pglProjection F ζ hζ).ker := by
     rw [← KPAdelicCoverRestrictedProduct.pglCentralInjection_kernel F ζ hζ]
-    exact ⟨ε, rfl⟩
+    simp
   have hproj : KPAdelicCoverRestrictedProduct.pglProjection F ζ hζ
       (KPAdelicCoverRestrictedProduct.pglCentralInjection F ζ hζ ε) = 1 :=
     MonoidHom.mem_ker.mp hker
@@ -673,8 +641,7 @@ theorem central_root_mem (ε : rootsOfUnity 3 F) :
     change KPAdelicCoverRestrictedProduct.pglCentralInjection F ζ hζ ε ∈
       (KPGlobalTorusFunctionData.ordinaryTorus F).comap
         (KPAdelicCoverRestrictedProduct.pglProjection F ζ hζ)
-    rw [Subgroup.mem_comap, hproj]
-    exact Subgroup.one_mem _
+    simp_all
   refine ⟨⟨⟨KPAdelicCoverRestrictedProduct.pglCentralInjection F ζ hζ ε, hE⟩,
     Subgroup.mem_center_iff.mpr (fun g => Subtype.ext ?_)⟩, rfl⟩
   exact Subgroup.mem_center_iff.mp
@@ -699,8 +666,7 @@ theorem omegaA_genuine (ε : rootsOfUnity 3 F) :
   have hm : r ∈ rawCenter F ζ hζ := by
     change KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
       (KPAdelicCoverRestrictedProduct.amalgamation F ζ hζ r) ∈ (Z F ζ hζ).map (E F ζ hζ).subtype
-    rw [hr]
-    exact ⟨(centralRoot F ζ hζ ε).val, (centralRoot F ζ hζ ε).property, rfl⟩
+    simp_all
   rw [omegaA_raw_formula F ζ hζ _ ⟨r, hm⟩ hr]
   unfold rawProduct
   have hf : (fun w => localValue F ζ hζ w (r w)) =
@@ -712,7 +678,7 @@ theorem omegaA_genuine (ε : rootsOfUnity 3 F) :
         localValue_central F ζ hζ v ε
     · simp [r, KPAdelicCoverRestrictedProduct.localToRestricted, hw, localValue_one]
   rw [hf]
-  rw [finprod_eq_single _ v (by intro w hw; simp [hw])]
+  rw [finprod_eq_single _ v (by simp_all)]
   simp
 
 theorem diagonalTuple_restricted (y : Ideles F) :
@@ -747,11 +713,10 @@ theorem diagonalTuple_restricted (y : Ideles F) :
   | inr q =>
     have hq : ¬ KPAdelicCoverRestrictedProduct.Bad F q := by
       intro h
-      exact hv ⟨q, Or.inr h, rfl⟩
+      simp_all
     have hu : ∃ u : KPHilbert.LocalIntegerUnits F q,
         KPHilbert.integerUnitInclusion F q u = KPGlobalCubicIdelePairing.ideleEval F (Sum.inr q) y := by
-      by_contra h
-      exact hv ⟨q, Or.inl h, rfl⟩
+      simp_all
     obtain ⟨u, hu⟩ := hu
     rw [KPAdelicCoverRestrictedProduct.compact, KPAdelicCoverRestrictedProduct.finiteCompact, dif_neg hq]
     refine ⟨KPStandardLocalRootLifts.integralA F q u, ?_⟩
@@ -767,8 +732,8 @@ def diagonalLift (y : Ideles F) : KPGlobalTorusFunctionData.G F ζ hζ :=
     (KPAdelicCoverRestrictedProduct.amalgamation F ζ hζ (diagonalTuple F ζ hζ y))
 
 theorem cubeLift_mem (y : CubicCharacters.cubes (Ideles F)) :
-    ∃ z : Z F ζ hζ, z.val.val = diagonalLift F ζ hζ y.val := by
-  exact (KPGlobalCenterRationalCharacterExtension.cube_diagonal_product F ζ hζ y
+    ∃ z : Z F ζ hζ, z.val.val = diagonalLift F ζ hζ y.val := 
+  (KPGlobalCenterRationalCharacterExtension.cube_diagonal_product F ζ hζ y
     (diagonalTuple F ζ hζ y.val) (fun _ => rfl)).1
 
 def cubeLift (y : CubicCharacters.cubes (Ideles F)) : Z F ζ hζ :=
@@ -785,7 +750,7 @@ theorem omegaA_cube (y : CubicCharacters.cubes (Ideles F)) :
   have hx : x ∈ rawCenter F ζ hζ := by
     change diagonalLift F ζ hζ y.val ∈ (Z F ζ hζ).map (E F ζ hζ).subtype
     rw [← cubeLift_formula F ζ hζ y]
-    exact ⟨(cubeLift F ζ hζ y).val, (cubeLift F ζ hζ y).property, rfl⟩
+    simp
   rw [omegaA_raw_formula F ζ hζ _ ⟨x, hx⟩ (cubeLift_formula F ζ hζ y).symm]
   exact (KPGlobalCenterRationalCharacterExtension.cube_diagonal_product F ζ hζ y x
     (fun _ => rfl)).2 hx
@@ -804,23 +769,19 @@ theorem R_eq_product (g : E F ζ hζ) :
     g ∈ R F ζ hζ ↔ ∃ (a : Fˣ) (z : Z F ζ hζ),
       KPGlobalTorusFunctionData.s F ζ hζ a * z.val = g := by
   rw [R, Subgroup.mem_sup_of_normal_right]
-  constructor
-  · rintro ⟨x, ⟨a, rfl⟩, z, hz, h⟩
-    exact ⟨a, ⟨z, hz⟩, h⟩
-  · rintro ⟨a, z, h⟩
-    exact ⟨_, ⟨a, rfl⟩, z.val, z.property, h⟩
+  simp
 
 theorem R_eq_principal_preimage : R F ζ hζ =
     (KPGlobalPrincipalCubicLagrangian.A F).comap
       ((QuotientGroup.mk' (CubicCharacters.cubes (Ideles F))).comp
-        (KPGlobalTorusFunctionData.p F ζ hζ)) := by
-  exact (KPGlobalCenterRationalCharacterExtension.rational_subgroup_geometry F ζ hζ).1
+        (KPGlobalTorusFunctionData.p F ζ hζ)) := 
+  (KPGlobalCenterRationalCharacterExtension.rational_subgroup_geometry F ζ hζ).1
 
-theorem R_closed : IsClosed (R F ζ hζ : Set (E F ζ hζ)) := by
-  exact (KPGlobalCenterRationalCharacterExtension.rational_subgroup_geometry F ζ hζ).2.1
+theorem R_closed : IsClosed (R F ζ hζ : Set (E F ζ hζ)) := 
+  (KPGlobalCenterRationalCharacterExtension.rational_subgroup_geometry F ζ hζ).2.1
 
-theorem R_maximal_abelian : KPLocalPolarization.IsMaximalAbelian (R F ζ hζ) := by
-  exact (KPGlobalCenterRationalCharacterExtension.rational_subgroup_geometry F ζ hζ).2.2
+theorem R_maximal_abelian : KPLocalPolarization.IsMaximalAbelian (R F ζ hζ) := 
+  (KPGlobalCenterRationalCharacterExtension.rational_subgroup_geometry F ζ hζ).2.2
 
 def rationalCenterFactor (g : R F ζ hζ) : Z F ζ hζ :=
   Classical.choose (Classical.choose_spec ((R_eq_product F ζ hζ g.val).mp g.property))
@@ -884,8 +845,8 @@ theorem lambdaValue_mul (g h : R F ζ hζ) :
     lambdaValue_formula F ζ hζ h a₂ z₂ hz₂,
     lambdaValue_formula F ζ hζ (g * h) (a₁ * a₂) (z₁ * z₂) hgh, map_mul]
 
-theorem lambdaValue_continuous : Continuous (lambdaValue F ζ hζ) := by
-  exact KPGlobalCenterRationalCharacterExtension.rational_extension_continuous F ζ hζ
+theorem lambdaValue_continuous : Continuous (lambdaValue F ζ hζ) := 
+  KPGlobalCenterRationalCharacterExtension.rational_extension_continuous F ζ hζ
     (omegaA F ζ hζ) (lambdaValue F ζ hζ) (lambdaValue_formula F ζ hζ)
 
 def lambdaR : R F ζ hζ →ₜ* ℂˣ :=
@@ -896,8 +857,8 @@ def lambdaR : R F ζ hζ →ₜ* ℂˣ :=
 
 theorem lambdaR_formula (g : R F ζ hζ) (a : Fˣ) (z : Z F ζ hζ)
     (h : KPGlobalTorusFunctionData.s F ζ hζ a * z.val = g.val) :
-    lambdaR F ζ hζ g = omegaA F ζ hζ z := by
-  exact lambdaValue_formula F ζ hζ g a z h
+    lambdaR F ζ hζ g = omegaA F ζ hζ z := 
+  lambdaValue_formula F ζ hζ g a z h
 
 theorem lambdaR_rational (a : Fˣ) (g : R F ζ hζ)
     (hg : g.val = KPGlobalTorusFunctionData.s F ζ hζ a) : lambdaR F ζ hζ g = 1 := by
@@ -915,15 +876,15 @@ def nu : E F ζ hζ →* (ℝ≥0)ˣ :=
 theorem nu_formula (g : E F ζ hζ) :
     ((nu F ζ hζ g : ℝ≥0) : ℝ) =
       (((KPGlobalTorusFunctionData.ideleAbs F (KPGlobalTorusFunctionData.p F ζ hζ g)
-        : ℝ≥0) : ℝ)) ^ (1 / 6 : ℝ) := by
-  exact NNReal.coe_rpow _ _
+        : ℝ≥0) : ℝ)) ^ (1 / 6 : ℝ) := 
+  NNReal.coe_rpow _ _
 
 theorem nu_positive (g : E F ζ hζ) : 0 < ((nu F ζ hζ g : ℝ≥0) : ℝ) := by
   exact_mod_cast pos_iff_ne_zero.mpr (Units.ne_zero (nu F ζ hζ g))
 
 theorem nu_continuous : Continuous (nu F ζ hζ) := by
-  have h6 : Continuous sixthPower := by
-    exact (NNReal.continuous_rpow_const (by norm_num : (0 : ℝ) ≤ 1 / 6)).units_map _
+  have h6 : Continuous sixthPower := 
+    (NNReal.continuous_rpow_const (by norm_num : (0 : ℝ) ≤ 1 / 6)).units_map _
   exact h6.comp ((ideleAbs_continuous F).comp (p_continuous F ζ hζ))
 
 theorem nu_centralRoot (ε : rootsOfUnity 3 F) :
@@ -931,7 +892,7 @@ theorem nu_centralRoot (ε : rootsOfUnity 3 F) :
   have hker : KPAdelicCoverRestrictedProduct.pglCentralInjection F ζ hζ ε ∈
       (KPAdelicCoverRestrictedProduct.pglProjection F ζ hζ).ker := by
     rw [← KPAdelicCoverRestrictedProduct.pglCentralInjection_kernel F ζ hζ]
-    exact ⟨ε, rfl⟩
+    simp
   have hp : KPAdelicCoverRestrictedProduct.pglProjection F ζ hζ
       (centralRoot F ζ hζ ε).val.val = 1 := by
     rw [centralRoot_formula]
@@ -941,20 +902,17 @@ theorem nu_centralRoot (ε : rootsOfUnity 3 F) :
     have ht : ((KPAdelicCoverRestrictedProduct.pglProjection F ζ hζ).restrict
         (fun t ht => ht)) (centralRoot F ζ hζ ε).val =
           (1 : KPGlobalTorusFunctionData.ordinaryTorus F) := Subtype.ext hp
-    change KPGlobalTorusFunctionData.torusRatio F _ = 1
-    rw [ht, map_one]
+    simp_all
   change sixthPower (KPGlobalTorusFunctionData.ideleAbs F
     (KPGlobalTorusFunctionData.p F ζ hζ (centralRoot F ζ hζ ε).val)) = 1
-  rw [hp', map_one, map_one]
+  simp_all
 
  theorem p_rational (a : Fˣ) : KPGlobalTorusFunctionData.p F ζ hζ (KPGlobalTorusFunctionData.s F ζ hζ a) = IdeleGroup.unitEmbedding (𝓞 F) F a := by
   let A := KPAdelicCoverRestrictedProduct.rationalBase F (KubotaRankTwo.d F a 1)
   have hp : KPAdelicCoverRestrictedProduct.pglProjection F ζ hζ (KPGlobalTorusFunctionData.s F ζ hζ a).val = QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F) A := by
-    change QuotientGroup.mk' _ (KPAdelicCoverRestrictedProduct.projection F ζ hζ (KPAdelicCoverRestrictedProduct.rationalSection F ζ hζ _)) = _
-    rw [KPAdelicCoverRestrictedProduct.projection_rationalSection]
     rfl
-  have h10 : A 1 0 = 0 := by simp [A, KPAdelicCoverRestrictedProduct.rationalBase]
-  have h01 : A 0 1 = 0 := by simp [A, KPAdelicCoverRestrictedProduct.rationalBase]
+  have h10 : A 1 0 = 0 := by rfl
+  have h01 : A 0 1 = 0 := by rfl
   have h := KPGlobalTorusFunctionData.ratio_formula F
     ⟨_, (KPGlobalTorusFunctionData.s F ζ hζ a).property⟩ A hp.symm h10 h01
   apply Units.ext
@@ -964,19 +922,15 @@ theorem nu_centralRoot (ε : rootsOfUnity 3 F) :
   rw [h]
   have he1 : (KPGlobalTorusFunctionData.diagonal_entries_units F A h10 h01).1.unit = IdeleGroup.unitEmbedding (𝓞 F) F a := by
     apply Units.ext
-    rw [IsUnit.unit_spec]
-    simp [A, KPAdelicCoverRestrictedProduct.rationalBase, NumberField.IdeleGroup.unitEmbedding]
+    rfl
   have he2 : (KPGlobalTorusFunctionData.diagonal_entries_units F A h10 h01).2.unit = 1 := by
     apply Units.ext
-    rw [IsUnit.unit_spec]
-    simp [A, KPAdelicCoverRestrictedProduct.rationalBase]
+    rfl
   simp [he1, he2]
-private theorem nu_rational (a : Fˣ) : nu F ζ hζ (KPGlobalTorusFunctionData.s F ζ hζ a) = 1 := by
+theorem nu_rational (a : Fˣ) : nu F ζ hζ (KPGlobalTorusFunctionData.s F ζ hζ a) = 1 := by
   have he : (IdeleGroup.equivAdeleRingUnitsContinuousMulEquiv F).symm
       (IdeleGroup.unitEmbedding (𝓞 F) F a) = IdeleGroup.principalIdele F a := by
-    apply (IdeleGroup.equivAdeleRingUnitsContinuousMulEquiv F).injective
-    rw [ContinuousMulEquiv.apply_symm_apply]
-    exact (IdeleGroup.equivAdeleRingUnits_principalIdele F a).symm
+    rfl
   change sixthPower ((IdeleGroup.absoluteNorm
     ((IdeleGroup.equivAdeleRingUnitsContinuousMulEquiv F).symm
       (KPGlobalTorusFunctionData.p F ζ hζ (KPGlobalTorusFunctionData.s F ζ hζ a))))⁻¹) = 1
@@ -993,8 +947,3 @@ theorem lambdaR_norm (g : R F ζ hζ) :
   obtain ⟨a, z, hz⟩ := (R_eq_product F ζ hζ g.val).mp g.property
   rw [lambdaR_formula F ζ hζ g a z hz, omegaA_norm F ζ hζ z, ← hz,
     map_mul, nu_rational F ζ hζ a, one_mul]
-
-end
-end DedekindZetaZeroFree.KPGlobalCenterRationalCharacter
-
-end

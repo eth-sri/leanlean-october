@@ -22,7 +22,7 @@ variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
 variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
 variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
-private theorem phase_eventually_constant {i : Fin (H.atlas U).componentCount}
+theorem phase_eventually_constant {i : Fin (H.atlas U).componentCount}
     {a b : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (H := H) i}
     (e : Arrow a b) (x : M F) (hx : x ∈ e.domain) :
     e.phase =ᶠ[𝓝 x] fun _ => e.phase x := by
@@ -47,7 +47,7 @@ private theorem codifferential_smul_const (d : ℕ) (W : HyperbolicChart.Space d
   ring
  def part (d : ℕ) (f : ℂ →L[ℝ] ℝ) (v : EuclideanSpace ℂ (Fin d × Fin 3)) :
     EuclideanSpace ℝ (Fin d × Fin 3) := WithLp.toLp 2 (fun k => f (v k))
-private theorem part_complexification (d : ℕ) (f : ℂ →L[ℝ] ℝ)
+theorem part_complexification (d : ℕ) (f : ℂ →L[ℝ] ℝ)
     (A : EuclideanSpace ℝ (Fin d × Fin 3) →L[ℝ] EuclideanSpace ℝ (Fin d × Fin 3))
     (v : EuclideanSpace ℂ (Fin d × Fin 3)) :
     part d f (operatorComplexification _ A v) = A (part d f v) := by
@@ -240,7 +240,7 @@ private theorem continuous_proj (a : ActualChart (U := U) (H := H)) :
   show Continuous (Quotient.mk _)
   exact continuous_quotient_mk'
 
-private theorem continuous_componentMap (a : ActualChart (U := U) (H := H)) :
+theorem continuous_componentMap (a : ActualChart (U := U) (H := H)) :
     Continuous (KPFiniteCuspAtlas.componentMap F ζ hζ U
       ((H.atlas U).representative a.component)) := by
   have hh := (H.atlas U).components.continuous.comp (continuous_sigmaMk (i := a.component))
@@ -249,7 +249,7 @@ private theorem continuous_componentMap (a : ActualChart (U := U) (H := H)) :
 private theorem continuous_q (a : ActualChart (U := U) (H := H)) : Continuous (q a) :=
   (continuous_componentMap a).comp ((continuous_proj a).comp continuous_labeledA_self)
 
-private theorem coordinateDerivative_congr {d : ℕ} {i : Fin d} {k : Fin 3}
+theorem coordinateDerivative_congr {d : ℕ} {i : Fin d} {k : Fin 3}
     {f g : HyperbolicChart.Space d → ℂ} {p : HyperbolicChart.Space d}
     (h : f =ᶠ[nhds p] g) :
     HyperbolicChart.coordinateDerivative d i k f p =
@@ -345,7 +345,7 @@ private theorem smooth_codifferential {a : ActualChart (U := U) (H := H)}
   exact ((((hcd i 2 0).neg.add (contDiffOn_const.mul (hs i 0))).sub
     ((hexp i).mul (hcd i 0 1))).sub ((hexp i).mul (hcd i 1 2)))
 
-private theorem compact_cotangentSupport (W : T_U F ζ hζ U R P H) :
+theorem compact_cotangentSupport (W : T_U F ζ hζ U R P H) :
     IsCompact (cotangentSupport W.val) := by
   let g : KPFiniteCuspAtlas.rawXU F ζ hζ U → NNReal :=
     fun x => if x ∈ cotangentSupport W.val then normSquare W.val x else 0

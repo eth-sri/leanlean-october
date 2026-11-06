@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # The preliminary global Artin homomorphism
 
@@ -46,7 +40,7 @@ variable {K L : Type}
 /-- The preliminary global Artin homomorphism
 `[·, L / K] : I_K → Gal(L / K)`, defined as the product of all local
 Artin homomorphisms. -/
-noncomputable def globalArtinMonoidHom :
+def globalArtinMonoidHom :
     IdeleGroup K →* (L ≃ₐ[K] L) :=
   infinitePlaceGlobalArtinMonoidHom
       (K := K) (L := L) *
@@ -156,112 +150,6 @@ theorem globalArtinMonoidHom_ideleNorm_eq_one
       (K := K) (L := L)
       ((relativeIdeleBaseChangeMulEquiv
         (K := K) (L := L)).symm a)
-
-/-- The actual global Artin symbol after an ordinary idele norm, expanded
-simultaneously at all archimedean and finite places.  The factors are
-indexed by the genuine places upstairs, and use the ordinary LCFT field
-norm on the corresponding completions. -/
-theorem globalArtinMonoidHom_norm_eq_place_products
-    {M : Type}
-    [Field M] [NumberField M] [Algebra K M]
-    (a : IdeleGroup M) :
-    letI : ∀ W : InfinitePlace M,
-        W.1.LiesOver
-      (infinitePlaceBelow (K := K) W).1 :=
-      fun _ => ⟨rfl⟩
-    letI : ∀ W : HeightOneSpectrum (𝓞 M),
-        Algebra
-          ((finitePlaceBelow
-            (K := K) W).adicCompletion K)
-          (W.adicCompletion M) :=
-      fun W =>
-        (finitePlaceAdicCompletionMap
-          K M
-          (finitePlaceBelow (K := K) W)
-          ⟨W, rfl⟩).toAlgebra
-    globalArtinMonoidHom
-        (K := K) (L := L)
-        (IdeleGroup.norm K M a) =
-      (∏ W : InfinitePlace M,
-        chosenInfinitePlaceArtinMonoidHom
-          (K := K) (L := L)
-          (infinitePlaceBelow (K := K) W)
-          (LocalFieldTheory.normUnits
-            (infinitePlaceBelow
-              (K := K) W).Completion
-            W.Completion
-            (IdeleGroup.infiniteComponent W a))) *
-      ∏ᶠ W : HeightOneSpectrum (𝓞 M),
-        chosenFinitePlaceArtinMonoidHom
-          (K := K) (L := L)
-          (finitePlaceBelow (K := K) W)
-          (LocalFieldTheory.normUnits
-            ((finitePlaceBelow
-              (K := K) W).adicCompletion K)
-            (W.adicCompletion M)
-            (IdeleGroup.finiteComponent W a)) := by
-  classical
-  let : ∀ W : InfinitePlace M,
-      W.1.LiesOver
-        (infinitePlaceBelow (K := K) W).1 :=
-    fun _ => ⟨rfl⟩
-  let : ∀ W : HeightOneSpectrum (𝓞 M),
-      Algebra
-        ((finitePlaceBelow
-          (K := K) W).adicCompletion K)
-        (W.adicCompletion M) :=
-    fun W =>
-      (finitePlaceAdicCompletionMap
-        K M
-        (finitePlaceBelow (K := K) W)
-        ⟨W, rfl⟩).toAlgebra
-  change
-    infinitePlaceGlobalArtinMonoidHom
-        (K := K) (L := L)
-        (IdeleGroup.norm K M a) *
-      finitePlaceGlobalArtinMonoidHom
-        (K := K) (L := L)
-        (IdeleGroup.norm K M a) = _
-  rw [infinitePlaceGlobalArtinMonoidHom_norm_eq_prod,
-    finitePlaceGlobalArtinMonoidHom_norm_eq_finprod]
-
-omit [NumberField K] [NumberField L] in
-/-- In an actual field diamond `K ⊂ K'`, `L ⊂ L'`, the standard
-restriction map distributes over every local factor of the upper global
-Artin symbol.  The vertical Galois map is exactly the composite supplied
-by mathlib: first restrict scalars from `K'` to `K`, then restrict the
-automorphism of `L'` to the normal subextension `L`. -/
-theorem restrict_globalArtinMonoidHom_apply
-    {K' L' : Type}
-    [Field K'] [NumberField K']
-    [Field L'] [NumberField L']
-    [Algebra K K'] [Algebra K' L'] [Algebra K L']
-    [IsScalarTower K K' L']
-    [Algebra L L'] [IsScalarTower K L L']
-    [IsAbelianGalois K' L']
-    (a : IdeleGroup K') :
-    ((AlgEquiv.restrictNormalHom L).comp
-        (AlgEquiv.restrictScalarsHom K))
-        (globalArtinMonoidHom
-          (K := K') (L := L') a) =
-      (∏ v : InfinitePlace K',
-        ((AlgEquiv.restrictNormalHom L).comp
-            (AlgEquiv.restrictScalarsHom K))
-          (chosenInfinitePlaceArtinMonoidHom
-            (K := K') (L := L') v
-            (IdeleGroup.infiniteComponent v a))) *
-      ∏ᶠ v : HeightOneSpectrum (𝓞 K'),
-        ((AlgEquiv.restrictNormalHom L).comp
-            (AlgEquiv.restrictScalarsHom K))
-          (chosenFinitePlaceArtinMonoidHom
-            (K := K') (L := L') v
-            (IdeleGroup.finiteComponent v a)) := by
-  rw [globalArtinMonoidHom_apply, map_mul, map_prod]
-  rw [MonoidHom.map_finprod
-    ((AlgEquiv.restrictNormalHom L).comp
-      (AlgEquiv.restrictScalarsHom K))
-    (finitePlaceArtinFactors_hasFiniteMulSupport
-      (K := K') (L := L') a)]
 
 /-- Norm--restriction for the actual global Artin homomorphism.  In a number-field
 diamond `K ⊂ K'`, `L ⊂ L'`, the ordinary idele norm and mathlib's standard
@@ -414,8 +302,7 @@ theorem globalArtinMonoidHom_infinitePlaceIdele
       rw [MonoidHom.comp_apply,
         infinitePlaceIdele_infiniteComponent_of_ne v w x hwv,
         map_one]
-    · intro hv
-      exact (hv (Finset.mem_univ v)).elim
+    simp
   have hfinite :
       finitePlaceGlobalArtinMonoidHom
           (K := K) (L := L) (infinitePlaceIdele v x) =
@@ -429,7 +316,7 @@ theorem globalArtinMonoidHom_infinitePlaceIdele
     apply finprod_eq_one_of_forall_eq_one
     intro w
     rw [infinitePlaceIdele_finiteComponent, map_one]
-  rw [hinfinite, hfinite, mul_one]
+  simp_all
 
 /-- The global Artin symbol of a finite one-place idele is its local
 finite-place Artin symbol. -/
@@ -535,9 +422,4 @@ theorem globalArtinMonoidHom_surjective :
       _ = ⊤ := by
         rw [IntermediateField.fixingSubgroup_bot]
   apply MonoidHom.range_eq_top.mp
-  simpa only [H] using hHtop
-
-end Reciprocity
-end GlobalClassFieldTheory
-
-end
+  omega

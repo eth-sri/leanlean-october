@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Finite restricted products under scalar extension
 
@@ -37,7 +32,6 @@ open NumberField IsDedekindDomain
 
 noncomputable section
 
-
 open AlgebraicNumberTheory.Valuations
 
 universe u v
@@ -50,7 +44,7 @@ variable
 
 /-- Reindex a dependent product along an equivalence, retaining its
 coordinatewise multiplicative structure. -/
-noncomputable def piCongrLeftMulEquiv
+def piCongrLeftMulEquiv
     {ι ι' : Type*} (M : ι' → Type*)
     [∀ i, Mul (M i)] (e : ι ≃ ι') :
     (∀ i, M (e i)) ≃* ∀ j, M j where
@@ -58,19 +52,12 @@ noncomputable def piCongrLeftMulEquiv
   map_mul' f g := by
     funext j
     obtain ⟨i, rfl⟩ := e.surjective j
-    change
-      Equiv.piCongrLeft M e (f * g) (e i) =
-        Equiv.piCongrLeft M e f (e i) *
-          Equiv.piCongrLeft M e g (e i)
-    rw [Equiv.piCongrLeft_apply_apply,
-      Equiv.piCongrLeft_apply_apply,
-      Equiv.piCongrLeft_apply_apply]
-    rfl
+    simp
 
 /-- At one finite place of `K`, the canonical local tensor decomposition followed by completion
 comparison identifies the tensor-unit group with the product of the concrete
 adic unit groups at all finite places of `L` above it. -/
-noncomputable def finitePlaceTensorUnitsEquivAboveAdic
+def finitePlaceTensorUnitsEquivAboveAdic
     (w : HeightOneSpectrum (𝓞 K)) :
     (w.adicCompletion K ⊗[K] L)ˣ ≃*
       ∀ W : {W : HeightOneSpectrum (𝓞 L) //
@@ -164,7 +151,7 @@ theorem finitePlaceTensorUnitsEquivAboveAdic_localFieldIdeleInclusion
 
 /-- Flatten products first over finite places of `K` and then over places
 above them into one product over all finite places of `L`. -/
-noncomputable def finitePlaceAbovePiMulEquiv :
+def finitePlaceAbovePiMulEquiv :
     (∀ w : HeightOneSpectrum (𝓞 K),
       ∀ W : {W : HeightOneSpectrum (𝓞 L) //
           finitePlaceBelow (K := K) W = w},
@@ -180,15 +167,13 @@ noncomputable def finitePlaceAbovePiMulEquiv :
     subst w
     rfl
   right_inv f := by
-    funext W
     rfl
   map_mul' f g := by
-    funext W
     rfl
 
 /-- The unrestricted product of all finite local tensor-unit groups is the
 unrestricted product of all concrete finite local unit groups of `L`. -/
-noncomputable def relativeFiniteTensorPiMulEquiv :
+def relativeFiniteTensorPiMulEquiv :
     (∀ w : HeightOneSpectrum (𝓞 K),
       (w.adicCompletion K ⊗[K] L)ˣ) ≃*
       ∀ W : HeightOneSpectrum (𝓞 L),
@@ -413,7 +398,7 @@ theorem RelativeFiniteIdeleData.ext
 
 /-- Adjoin the trivial infinite family, so that the established relative
 idele support theorem can be applied to finite restricted data. -/
-noncomputable def RelativeFiniteIdeleData.toLocalData
+def RelativeFiniteIdeleData.toLocalData
     (a : RelativeFiniteIdeleData (K := K) (L := L)) :
     RelativeLocalIdeleData (K := K) (L := L) where
   infinite _ := 1
@@ -447,7 +432,7 @@ theorem RelativeFiniteIdeleData.eventually_aboveAdicUnit
 
 /-- Flatten a finite relative restricted family into an ordinary finite
 idele of `L`. -/
-noncomputable def relativeFiniteIdeleToFiniteIdele
+def relativeFiniteIdeleToFiniteIdele
     (a : RelativeFiniteIdeleData (K := K) (L := L)) :
     FiniteIdeleGroup L :=
   ⟨relativeFiniteTensorPiMulEquiv
@@ -478,7 +463,7 @@ theorem relativeFiniteIdeleToFiniteIdele_apply
 
 /-- Pull an ordinary finite idele back to the unrestricted family of
 finite tensor-unit factors. -/
-noncomputable def finiteIdeleRelativeTensorFamily
+def finiteIdeleRelativeTensorFamily
     (y : FiniteIdeleGroup L) :
     ∀ w : HeightOneSpectrum (𝓞 K),
       (w.adicCompletion K ⊗[K] L)ˣ :=
@@ -529,7 +514,7 @@ theorem finiteIdeleRelativeTensorFamily_eventually_basisIntegralUnit
 
 /-- Pull an ordinary finite idele back to finite relative restricted
 data. -/
-noncomputable def finiteIdeleToRelativeFiniteIdeleData
+def finiteIdeleToRelativeFiniteIdeleData
     (y : FiniteIdeleGroup L) :
     RelativeFiniteIdeleData (K := K) (L := L) where
   finite :=
@@ -548,7 +533,7 @@ noncomputable def finiteIdeleToRelativeFiniteIdeleData
 
 /-- The finite relative restricted product is the ordinary finite idele
 group of the extension field. -/
-noncomputable def relativeFiniteIdeleEquiv :
+def relativeFiniteIdeleEquiv :
     RelativeFiniteIdeleData (K := K) (L := L) ≃
       FiniteIdeleGroup L where
   toFun :=
@@ -565,9 +550,7 @@ noncomputable def relativeFiniteIdeleEquiv :
           (relativeFiniteTensorPiMulEquiv
             (K := K) (L := L) a.finite) =
         a.finite
-    exact
-      (relativeFiniteTensorPiMulEquiv
-        (K := K) (L := L)).symm_apply_apply a.finite
+    simp
   right_inv y := by
     apply Subtype.ext
     change
@@ -576,20 +559,18 @@ noncomputable def relativeFiniteIdeleEquiv :
           ((relativeFiniteTensorPiMulEquiv
             (K := K) (L := L)).symm (fun W => y W)) =
         fun W => y W
-    exact
-      (relativeFiniteTensorPiMulEquiv
-        (K := K) (L := L)).apply_symm_apply (fun W => y W)
+    simp
 
 /-- The transported group structure on the finite relative restricted
 product. -/
-noncomputable instance relativeFiniteIdeleDataGroup :
+instance relativeFiniteIdeleDataGroup :
     Group (RelativeFiniteIdeleData (K := K) (L := L)) :=
   (relativeFiniteIdeleEquiv
     (K := K) (L := L)).group
 
 /-- The finite restricted-product comparison as a multiplicative
 equivalence. -/
-noncomputable def relativeFiniteIdeleMulEquiv :
+def relativeFiniteIdeleMulEquiv :
     RelativeFiniteIdeleData (K := K) (L := L) ≃*
       FiniteIdeleGroup L :=
   (relativeFiniteIdeleEquiv
@@ -605,5 +586,3 @@ theorem relativeFiniteIdeleMulEquiv_apply
       relativeFiniteIdeleToFiniteIdele
         (K := K) (L := L) a :=
   rfl
-
-end

@@ -10,7 +10,6 @@ open NumberField IsDedekindDomain MeasureTheory
 namespace DedekindZetaZeroFree.KPGlobalTorusBorelTwistCompatibilityBorelInduction
 open KPGlobalTorusBorelNormTwistTransport
 noncomputable section
-set_option autoImplicit false
 set_option maxRecDepth 2000
 set_option maxHeartbeats 800000
 
@@ -56,12 +55,12 @@ def functionsMap (P Q : Polarization F ζ hζ)
     intro f k
     apply Subtype.ext
     funext g
-    exact T.map_add _ _
+    simp
   map_smul' := by
     intro c f
     apply Subtype.ext
     funext g
-    exact T.map_smul c _
+    simp
 
 def functionsP (C : ModelData F ζ hζ) (s : ℂ) :
     InducedFunctions F ζ hζ (twist F ζ hζ (productModel F ζ hζ C) s) →ₗ[ℂ]
@@ -121,10 +120,6 @@ theorem unionMap_continuous (P Q : Polarization F ζ hζ)
       inducedStageInclusion F ζ hζ P J =
       (q.val ∘ inducedStageInclusion F ζ hζ Q J) ∘
         levelMap F ζ hζ P Q L hL J := by
-    funext f
     rfl
   rw [he]
   exact (q.property J).comp (hcont J)
-
-end
-end DedekindZetaZeroFree.KPGlobalTorusBorelTwistCompatibilityBorelInduction

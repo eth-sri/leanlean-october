@@ -71,7 +71,7 @@ theorem localFourierIntegral_finset_sum_smul (v : HeightOneSpectrum (𝓞 F))
     localFourierIntegral F v (∑ i ∈ s, a i • f i) =
       ∑ i ∈ s, a i • localFourierIntegral F v (f i)) T ?_ ?_ hf
   · intro _
-    simp [localFourierIntegral_zero]
+    simp
   · intro b T hb ih hf'
     rw [Finset.sum_insert hb]
     have hfa : a b • f b ∈ localSchwartz F v :=
@@ -83,7 +83,3 @@ theorem localFourierIntegral_finset_sum_smul (v : HeightOneSpectrum (𝓞 F))
       localFourierIntegral_smul F v (a b) (f b),
       ih fun i hi => hf' i (Finset.mem_insert_of_mem hi)]
     rw [Finset.sum_insert hb]
-
-end DedekindZetaZeroFree
-
-end

@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Finite norm quotients for rational fixed fields
 
@@ -45,7 +41,7 @@ local instance
   N.normal_of_isMulCommutative
 
 @[instance_reducible]
- noncomputable def rationalNormQuotientIdeleClassCommGroup
+ def rationalNormQuotientIdeleClassCommGroup
     (F : Type) [Field F] [NumberField F] :
     CommGroup (IdeleClassGroup F) :=
   open scoped IsMulCommutative in
@@ -67,14 +63,7 @@ local instance
             (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
           K (le_baseField K))] :
     NumberField
-      (abstractFixedField ℚ (SeparableClosure ℚ) K) := by
-  let _ : FiniteDimensional ℚ
-      (abstractFixedField ℚ (SeparableClosure ℚ) K) :=
-    abstractFixedField_finiteDimensional
-      ℚ (SeparableClosure ℚ) K hKfinite
-  exact
-    NumberField.of_module_finite ℚ
-      (abstractFixedField ℚ (SeparableClosure ℚ) K)
+      (abstractFixedField ℚ (SeparableClosure ℚ) K) := by apply GlobalClassFieldTheory.Reciprocity.instNumberFieldSubtypeSeparableClosureRatMemIntermediateFieldAbstractFixedFieldOfFiniteQuotientAlgEquivSubgroupBaseFieldExtensionSubgroup <;> assumption
 
  theorem rationalNormQuotientAbstractRelativeFixedFieldNumberField
     (K L : ClosedSubgroup
@@ -113,11 +102,9 @@ private theorem addEquiv_trans_symm_trans_symm_trans_apply_eq
     (h : eV y = eB (eA z))
     (ht : eC z = w) :
     (((eV.trans eB.symm).trans eA.symm).trans eC) y = w := by
-  change eC (eA.symm (eB.symm (eV y))) = w
-  rw [h, eB.symm_apply_apply, eA.symm_apply_apply]
-  exact ht
+  simp_all
 
-private theorem rationalTowerRelativeClass_baseChange
+theorem rationalTowerRelativeClass_baseChange
     (F E : Type)
     [Field F] [NumberField F]
     [Field E] [NumberField E]
@@ -138,12 +125,9 @@ private theorem rationalTowerRelativeClass_baseChange
       (K := ℚ) (L := E)).symm (Additive.toMul c)
   have hTower :=
     relativeIdeleClassBaseChangeMulEquiv_tower ℚ F E dQ
-  have hBase :=
-    (_root_.relativeIdeleClassBaseChangeMulEquiv
-      (K := ℚ) (L := E)).apply_symm_apply (Additive.toMul c)
-  exact Eq.trans hTower hBase
+  aesop
 
-private theorem rationalTowerRelativeClass_norm
+theorem rationalTowerRelativeClass_norm
     (F E : Type)
     [Field F] [NumberField F]
     [Field E] [NumberField E]
@@ -174,7 +158,7 @@ private theorem rationalTowerRelativeClass_norm
     (ordinaryIdeleClassNorm_relativeIdeleClassBaseChange dF).symm.trans
       (congrArg (_root_.ideleClassNorm F E) hbase)
 
- noncomputable abbrev rationalRelativeFixedFieldIdeleClassAdditiveType
+ abbrev rationalRelativeFixedFieldIdeleClassAdditiveType
     (K L : ClosedSubgroup
       (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
     (hLK : L.toSubgroup ≤ K.toSubgroup)
@@ -202,7 +186,7 @@ private theorem rationalTowerRelativeClass_norm
     NumberField.of_module_finite ℚ E
   Additive (IdeleClassGroup E)
 
- noncomputable abbrev rationalOrdinaryNormQuotientAdditiveType
+ abbrev rationalOrdinaryNormQuotientAdditiveType
     (K L : ClosedSubgroup
       (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
     (hLK : L.toSubgroup ≤ K.toSubgroup)
@@ -237,7 +221,7 @@ private theorem rationalTowerRelativeClass_norm
   Additive
     (IdeleClassGroup F ⧸ (_root_.ideleClassNorm F E).range)
 
-@[instance_reducible]  noncomputable instance
+@[instance_reducible]  instance
     rationalOrdinaryNormQuotientAdditiveTypeAddCommGroup
     (K L : ClosedSubgroup
       (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
@@ -291,22 +275,11 @@ private theorem rationalTowerRelativeClass_norm
   have hforward :
       S ≤ AddSubgroup.comap e.symm.toAddMonoidHom T := by
     intro x hx
-    change e.symm x ∈ T
-    rw [← hmap]
-    exact ⟨x, hx, rfl⟩
+    aesop
   have hinverse :
       T ≤ AddSubgroup.comap e.toAddMonoidHom S := by
     intro y hy
-    change e y ∈ S
-    have hy' : y ∈ S.map e.symm.toAddMonoidHom := by
-      rw [hmap]
-      exact hy
-    rcases hy' with ⟨x, hx, hxy⟩
-    have heq : e y = x := by
-      apply e.symm.injective
-      simpa using hxy.symm
-    rw [heq]
-    exact hx
+    aesop
   let f : (A ⧸ S) →+ (B ⧸ T) :=
     QuotientAddGroup.map S T e.symm.toAddMonoidHom hforward
   let g : (B ⧸ T) →+ (A ⧸ S) :=
@@ -319,38 +292,16 @@ private theorem rationalTowerRelativeClass_norm
         refine QuotientAddGroup.induction_on q ?_
         intro x
         change (↑(e (e.symm x)) : A ⧸ S) = ↑x
-        rw [e.apply_symm_apply]
+        simp
       right_inv := by
         intro q
         refine QuotientAddGroup.induction_on q ?_
         intro x
         change (↑(e.symm (e x)) : B ⧸ T) = ↑x
-        rw [e.symm_apply_apply]
+        simp
       map_add' := f.map_add }
 
-private theorem quotientAddEquivOfEquivMapEq_mk
-    {A B : Type*} [AddCommGroup A] [AddCommGroup B]
-    (S : AddSubgroup A) (T : AddSubgroup B)
-    (e : B ≃+ A)
-    (hmap : S.map e.symm.toAddMonoidHom = T)
-    (x : A) :
-    quotientAddEquivOfEquivMapEq S T e hmap
-        (QuotientAddGroup.mk' S x) =
-      QuotientAddGroup.mk' T (e.symm x) := by
-  have hforward :
-      S ≤ AddSubgroup.comap e.symm.toAddMonoidHom T := by
-    intro y hy
-    change e.symm y ∈ T
-    rw [← hmap]
-    exact ⟨y, hy, rfl⟩
-  change
-    QuotientAddGroup.map S T e.symm.toAddMonoidHom hforward
-        (QuotientAddGroup.mk' S x) =
-      QuotientAddGroup.mk' T (e.symm x)
-  rw [QuotientAddGroup.map_mk']
-  rfl
-
- noncomputable def additiveQuotientEquiv
+ def additiveQuotientEquiv
     {G : Type*} [CommGroup G] (H : Subgroup G) :
     (Additive G ⧸ H.toAddSubgroup) ≃+
       Additive (G ⧸ H) := by
@@ -358,18 +309,11 @@ private theorem quotientAddEquivOfEquivMapEq_mk
     MonoidHom.toAdditive (QuotientGroup.mk' H)
   let T := normAdd.ker
   have hT : H.toAddSubgroup = T := by
-    ext g
-    change
-      Additive.toMul g ∈ H ↔
-        QuotientGroup.mk' H (Additive.toMul g) = 1
-    exact (QuotientGroup.eq_one_iff (Additive.toMul g)).symm
+    aesop
   have hmap :
       H.toAddSubgroup.map
           (AddEquiv.refl (Additive G)).symm.toAddMonoidHom = T := by
-    change
-      H.toAddSubgroup.map (AddMonoidHom.id (Additive G)) = T
-    rw [AddSubgroup.map_id]
-    exact hT
+    simp_all
   let modelEquiv :
       (Additive G ⧸ H.toAddSubgroup) ≃+
         (Additive G ⧸ T) :=
@@ -379,15 +323,12 @@ private theorem quotientAddEquivOfEquivMapEq_mk
     intro q
     obtain ⟨g, hg⟩ :=
       QuotientGroup.mk'_surjective H (Additive.toMul q)
-    refine ⟨Additive.ofMul g, ?_⟩
-    apply Additive.toMul.injective
-    change QuotientGroup.mk' H g = Additive.toMul q
-    exact hg
+    aesop
   exact modelEquiv.trans
     (QuotientAddGroup.quotientKerEquivOfSurjective
       normAdd hsurjective)
 
- noncomputable def quotientAddEquivOfEquivMapEqToQuotient
+ def quotientAddEquivOfEquivMapEqToQuotient
     {A G : Type*} [AddCommGroup A] [CommGroup G]
     (S : AddSubgroup A) (N : Subgroup G) [N.Normal]
     (e : Additive G ≃+ A)
@@ -396,7 +337,7 @@ private theorem quotientAddEquivOfEquivMapEq_mk
   (quotientAddEquivOfEquivMapEq S N.toAddSubgroup e hmap).trans
     (additiveQuotientEquiv N)
 
- noncomputable def addEquivTransQuotientOfEquivMapEq
+ def addEquivTransQuotientOfEquivMapEq
     {Q A G : Type*}
     [AddCommGroup Q] [AddCommGroup A] [CommGroup G]
     (S : AddSubgroup A) (N : Subgroup G) [N.Normal]
@@ -406,7 +347,7 @@ private theorem quotientAddEquivOfEquivMapEq_mk
   eConcrete.trans
     (quotientAddEquivOfEquivMapEqToQuotient S N e hmap)
 
-private theorem map_addRange_eq_monoidRange_toAddSubgroup_of_equiv
+theorem map_addRange_eq_monoidRange_toAddSubgroup_of_equiv
     {U A G H : Type*}
     [AddCommGroup U] [AddCommGroup A] [CommGroup G] [CommGroup H]
     (f : U →+ A) (g : G →* H)
@@ -427,20 +368,14 @@ private theorem map_addRange_eq_monoidRange_toAddSubgroup_of_equiv
         ((congrArg (fun z => eA.symm (f z))
             (eU.apply_symm_apply u)).trans
           ((congrArg eA.symm hu).trans hny))
-  · intro hy
-    obtain ⟨d, hd⟩ := hy
-    let c : Additive G := Additive.ofMul d
-    let u : U := eU c
-    exact
-      ⟨f u, ⟨u, rfl⟩,
-        (hcompat c).trans (congrArg Additive.ofMul hd)⟩
+  aesop
 
 /-- The ordinary idele class group of the upper fixed field, identified
 directly with the corresponding fixed part of the rational absolute
 idele-class representation.  Unlike
 `rationalAbstractExtensionIdeleClassEquiv`, this comparison does not
 package a Galois action and therefore does not require normality. -/
-noncomputable def
+def
     rationalAbstractRelativeFixedFieldIdeleClassEquivFixed
     (K L : ClosedSubgroup
       (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
@@ -482,7 +417,7 @@ noncomputable def
     rationalAbstractRelativeFixedFieldIdeleClassEquivFixedOfFiniteDimensional
       K L hLK
 
- noncomputable def rationalRelativeFixedFieldNormComparison
+ def rationalRelativeFixedFieldNormComparison
     (K L : ClosedSubgroup
       (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
     (hLK : L.toSubgroup ≤ K.toSubgroup)
@@ -526,7 +461,7 @@ noncomputable def
       (Additive.ofMul
         (_root_.ideleClassNorm F E (Additive.toMul c))))
 
- noncomputable def rationalRelativeFixedFieldNormPreimageComparison
+ def rationalRelativeFixedFieldNormPreimageComparison
     (K L : ClosedSubgroup
       (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
     (hLK : L.toSubgroup ≤ K.toSubgroup)
@@ -645,7 +580,7 @@ private theorem rationalRelativeFixedFieldNormPreimageComparison_eq
     exact hAmbient.trans (heUpper.trans (congrArg eFixed heRelative).symm)
   · rfl
 
- noncomputable def rationalRelativeFixedFieldNormCohomologyComparison
+ def rationalRelativeFixedFieldNormCohomologyComparison
     (K L : ClosedSubgroup
       (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
     (hLK : L.toSubgroup ≤ K.toSubgroup)
@@ -942,7 +877,7 @@ theorem
   apply eK.injective
   exact Eq.trans (eK.apply_symm_apply (f (eUpper c))) hcompat
 
- noncomputable def rationalFiniteNormQuotientConcreteStep
+ def rationalFiniteNormQuotientConcreteStep
     (K L : ClosedSubgroup
       (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
     (hLK : L.toSubgroup ≤ K.toSubgroup)
@@ -958,7 +893,7 @@ theorem
 /-- The finite norm quotient in the rational absolute representation is
 the ordinary idele-class quotient by the actual norm subgroup of the
 fixed-field extension. -/
-noncomputable def
+def
     rationalFiniteNormQuotientEquivIdeleClassNormQuotient
     (K L : ClosedSubgroup
       (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
@@ -1042,7 +977,7 @@ noncomputable def
     (hmap := map_rationalFiniteNormSubgroup_eq_ordinaryIdeleClassNormRange_concrete
       (hKfinite := hKfinite) (hfinite := hfinite) K L hLK hnormal)
 
- noncomputable def rationalFiniteNormQuotientClassValue
+ def rationalFiniteNormQuotientClassValue
     (K L : ClosedSubgroup
       (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
     (hLK : L.toSubgroup ≤ K.toSubgroup)
@@ -1147,8 +1082,3 @@ theorem
     addEquivTransQuotientOfEquivMapEq,
     quotientAddEquivOfEquivMapEqToQuotient]
   rfl
-
-end Reciprocity
-end GlobalClassFieldTheory
-
-end

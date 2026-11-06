@@ -25,9 +25,6 @@ theorem projection_compare (g : G F ζ hζ) (w : NumberField.InfinitePlace F) :
           (KPHilbert.infinite_isComplex F ζ hζ w)).toRingHom
         (KPCuspGenuineMonodromy.archProjection F ζ hζ g w) := by
   obtain ⟨g, rfl⟩ := QuotientGroup.mk'_surjective (splitScalarSubgroup F ζ hζ) g
-  change Matrix.ProjGenLinGroup.mk (Matrix.GeneralLinearGroup.map _ (projection F ζ hζ g)) =
-    Matrix.ProjGenLinGroup.map _ (Matrix.ProjGenLinGroup.mk (matrixEval F (Sum.inl w) (projection F ζ hζ g)))
-  rw [Matrix.ProjGenLinGroup.map_mk, Matrix.GeneralLinearGroup.map_comp]
   rfl
 
 theorem arch_finite_factorization (g : G F ζ hζ) :
@@ -57,7 +54,7 @@ theorem arch_finite_factorization (g : G F ζ hζ) :
   refine ⟨a, ⟨c, hc⟩, ?_⟩
   change g = KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a *
     ((KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a)⁻¹ * g)
-  rw [mul_inv_cancel_left]
+  simp
 
 def archRational (σ : KPCuspArithmetic.PGL2 F) : KPSmoothActualFlowData.GInfinity F :=
   fun v => Matrix.ProjGenLinGroup.mk (Matrix.GeneralLinearGroup.map v.embedding σ.out)
@@ -89,8 +86,6 @@ theorem rationalLift_archProjection (σ : KPCuspArithmetic.PGL2 F) :
     ext x
     change NumberField.InfinitePlace.Completion.extensionEmbedding w
       (algebraMap F w.Completion x) = w.embedding x
-    change NumberField.InfinitePlace.Completion.extensionEmbedding w
-      ((WithAbs.equiv w.1).symm x : w.Completion) = _
     simp
   change Matrix.ProjGenLinGroup.mk
     (Matrix.GeneralLinearGroup.map _ (Matrix.GeneralLinearGroup.map _ σ.out)) = _
@@ -116,7 +111,7 @@ theorem finiteProjection_local_infinite (v : NumberField.InfinitePlace F)
     funext q
     have h := restrictedProjection_eval F ζ hζ (localToRestricted F ζ hζ (Sum.inl v) g) (Sum.inr q)
     have hn : localToRestricted F ζ hζ (Sum.inl v) g (Sum.inr q) = 1 := by
-      exact RestrictedProduct.mulSingle_eq_of_ne' _ _ (by simp)
+      rfl
     rw [hn, map_one] at h
     convert congrArg (fun m => m i j) h using 1
     · rfl
@@ -136,11 +131,7 @@ theorem finiteProjection_rationalLift (σ : KPCuspArithmetic.PGL2 F) :
       (rationalLift F ζ hζ σ) = KPFiniteComponents.diagonal F σ := by
   obtain ⟨m, rfl⟩ := Matrix.ProjGenLinGroup.mk_surjective σ
   rw [rationalLift_mk]
-  change Matrix.ProjGenLinGroup.mk (Matrix.GeneralLinearGroup.map (RingHom.snd _ _)
-    (projection F ζ hζ (rationalHom F ζ hζ m))) = _
-  exact congrArg (fun k => Matrix.ProjGenLinGroup.mk
-    (Matrix.GeneralLinearGroup.map (RingHom.snd _ _) k))
-      (projection_rationalSection F ζ hζ m)
+  rfl
 
 theorem rationalLift_finite_factor (γ : KPCuspArithmetic.PGL2 F) :
     ∃ ε : rootsOfUnity 3 F,
@@ -155,7 +146,7 @@ theorem rationalLift_finite_factor (γ : KPCuspArithmetic.PGL2 F) :
       rw [projection_compare]
       have hh := MonoidHom.mem_ker.mp s.property
       rw [hh]
-      exact map_one _
+      simp
     rw [map_mul, hf, mul_one, rationalLift_archProjection] at h
     change archRational F γ = PGLComplex.AdelicSlicesRaw.archProjection F ζ hζ
       (PGLComplex.AdelicSlicesRaw.archimedeanInsertion F ζ hζ a) at h
@@ -174,12 +165,7 @@ theorem rationalLift_finite_factor (γ : KPCuspArithmetic.PGL2 F) :
       map_mul, map_inv, hf, mul_inv_cancel]
   obtain ⟨ε, hε⟩ := hm
   refine ⟨ε, ?_⟩
-  have he : s = KPCuspGenuineMonodromy.central F ζ hζ ε *
-      KPCuspGenuineMonodromy.finiteRationalLift F ζ hζ γ := by
-    rw [hε]
-    group
-  exact hs.trans (congrArg (fun c : KPFiniteCuspAtlas.FiniteCover F ζ hζ =>
-    KPSmoothActualFlowData.archimedeanInsertion F ζ hζ (archRational F γ) * c.val) he)
+  simp_all
 
 theorem insertion_commutes (a : KPSmoothActualFlowData.GInfinity F)
     (c : KPFiniteCuspAtlas.FiniteCover F ζ hζ) :
@@ -191,25 +177,14 @@ theorem insertion_commutes (a : KPSmoothActualFlowData.GInfinity F)
     rw [projection_compare]
     have h := MonoidHom.mem_ker.mp c.property
     rw [h]
-    exact map_one _
+    simp
   exact RepresentationTheory.ArchFiniteSplitting.insertion_commutes_finite F ζ hζ a ⟨c.val, hc⟩
 
 theorem central_comm (ε : rootsOfUnity 3 F) (c : KPFiniteCuspAtlas.FiniteCover F ζ hζ) :
-    KPCuspGenuineMonodromy.central F ζ hζ ε * c = c * KPCuspGenuineMonodromy.central F ζ hζ ε := by
-  apply Subtype.ext
-  exact (Subgroup.mem_center_iff.mp
-    (pglCentralInjection_central F ζ hζ ⟨ε, rfl⟩) c).symm
+    KPCuspGenuineMonodromy.central F ζ hζ ε * c = c * KPCuspGenuineMonodromy.central F ζ hζ ε := by apply DedekindZetaZeroFree.KPFiniteCuspAtlas.central_comm <;> assumption
 
 theorem projective_action_mk (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) (q : KPArch.H3) :
-    KPArch.action (Matrix.ProjGenLinGroup.mk g).out q = KPArch.action g q := by
-  have he : Matrix.ProjGenLinGroup.mk (Matrix.ProjGenLinGroup.mk g).out =
-      Matrix.ProjGenLinGroup.mk g := Quotient.out_eq _
-  obtain ⟨u, hu⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp he
-  calc
-    _ = KPArch.action ((Matrix.ProjGenLinGroup.mk g).out *
-        Matrix.GeneralLinearGroup.scalar (Fin 2) u) q := by
-      rw [(KPArch.action_laws _ _ _).2, KPArch.scalar_action]
-    _ = KPArch.action g q := congrArg (fun k => KPArch.action k q) hu
+    KPArch.action (Matrix.ProjGenLinGroup.mk g).out q = KPArch.action g q := by apply DedekindZetaZeroFree.KPMsFixedHaar.projective_action_mk <;> assumption
 
 theorem archBasepoint_rational_mul (γ : KPCuspArithmetic.PGL2 F)
     (a : KPSmoothActualFlowData.GInfinity F) :
@@ -317,7 +292,7 @@ theorem cusp_lift_exists
   let u' : KPGlobalTorusFunctionData.globalLevel F ζ hζ U :=
     ⟨((u⁻¹).val : KPFiniteCuspAtlas.FiniteCover F ζ hζ).val, by
       rw [hlevel]
-      exact ⟨(u⁻¹).val, (u⁻¹).property, rfl⟩⟩
+      simp⟩
   let g' := rationalLift F ζ hζ γ * Quotient.out x
   have hgx : KPSmoothLocalQuotientCharts.quotientMap F ζ hζ g' = x := by
     change Quotient.mk (QuotientGroup.rightRel
@@ -363,6 +338,3 @@ theorem cusp_lift_exists
       MonoidHom.codRestrict_apply, KPSmoothLocalQuotientCharts.centreMap] using congrArg
       (fun k : G F ζ hζ => KPSmoothActualFlowData.archimedeanInsertion F ζ hζ (archRational F γ) *
         KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a * k) hfin'
-end DedekindZetaZeroFree.KPMsActualCuspSource
-
-end

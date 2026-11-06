@@ -4,12 +4,11 @@ public import DedekindZetaZeroFree.Adeles.Quotients.FiniteCuspAtlas
 
 @[expose] public section
 
-noncomputable section
 open scoped Classical
 open MeasureTheory
 namespace DedekindZetaZeroFree.KPContGenericEndMapRigidity
 
-private theorem actual_element_of_open_overlap
+theorem actual_element_of_open_overlap
     {G X : Type*} [Group G] [Countable G] [TopologicalSpace X]
     [MeasurableSpace X] [MulAction G X] [ContinuousConstSMul G X]
     (μ : Measure X) [μ.IsOpenPosMeasure]
@@ -93,8 +92,4 @@ theorem actual_high_intersection_of_endMap_injective
       (σ • x₀) = σ • y₀
     rw [KPCuspGenuineMonodromy.cuspInclusion_formula, mul_smul, mul_smul, inv_smul_smul]
     change (p : KPCuspArithmetic.PGL2 F) • KPCuspCharts.toArch F c = KPCuspCharts.toArch F d at hp
-    rw [← hc, ← hd', hp]
-
-end DedekindZetaZeroFree.KPContGenericEndMapRigidity
-
-end
+    simp_all

@@ -45,8 +45,7 @@ private theorem ratio_eq {F : Type*} [Field F]
     (h : Matrix.ProjGenLinGroup.mk A = Matrix.ProjGenLinGroup.mk B) :
     A 0 0 / A 1 1 = B 0 0 / B 1 1 := by
   obtain ⟨u, rfl⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp h
-  simp only [Units.val_mul, Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_apply,
-    Fin.sum_univ_two, Matrix.scalar, Matrix.diagonal_apply]
+  simp only [Units.val_mul, Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_apply, Fin.sum_univ_two, Matrix.scalar]
   simp
   rw [mul_div_mul_right _ _ (Units.ne_zero u)]
  def representative {F : Type*} [Field F]
@@ -97,8 +96,8 @@ private theorem ratioValue_formula {F : Type*} [Field F]
  def upperRatio {F : Type*} [Field F]
     (S : Subgroup (ProjectiveGroup F))
     (hS : ∀ g ∈ S, Upper g) : S →* Fˣ where
-  toFun g := Units.mk0 (ratioValue S hS g) (by
-    exact div_ne_zero (diagonal_ne_zero _ (representative_upper S hS g)).1
+  toFun g := Units.mk0 (ratioValue S hS g) (
+    div_ne_zero (diagonal_ne_zero _ (representative_upper S hS g)).1
       (diagonal_ne_zero _ (representative_upper S hS g)).2)
   map_one' := by apply Units.ext; exact ratioValue_one S hS
   map_mul' g h := by apply Units.ext; exact ratioValue_mul S hS g h
@@ -292,7 +291,7 @@ def LatticeAutomorphisms (M : Submodule (IntegralOrder F) (Plane F)) :
       ∀ v : Plane F, v ∈ M ↔ (A : Matrix (Fin 2) (Fin 2) F) *ᵥ v ∈ M}
 
 def StandardCusp : Projectivization F (Plane F) :=
-  Projectivization.mk F ![1, 0] (by simp [Matrix.cons_val_zero])
+  Projectivization.mk F ![1, 0] (by simp)
 
 def CuspSubgroup (Γ : Subgroup (ProjectiveGroup F))
     (q : Projectivization F (Plane F)) (σ : ProjectiveGroup F) :
@@ -301,9 +300,3 @@ def CuspSubgroup (Γ : Subgroup (ProjectiveGroup F))
 
 def IntegralUnits : Subgroup Fˣ :=
   (Units.map (algebraMap (IntegralOrder F) F).toMonoidHom).range
-
-end DedekindZetaZeroFree.KPCuspParabolicLattices
-
-end
-
-end

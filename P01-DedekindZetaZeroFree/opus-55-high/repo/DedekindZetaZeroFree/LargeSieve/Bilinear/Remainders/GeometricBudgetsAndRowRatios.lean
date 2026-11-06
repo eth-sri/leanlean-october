@@ -11,7 +11,7 @@ open scoped NumberField Classical BigOperators
 namespace DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitAssembly.LocalTailRatios
 open ExplicitTerms
 
-private lemma ratios_from_squares (T Y Z U H : ℝ)
+lemma ratios_from_squares (T Y Z U H : ℝ)
     (hT : 0 < T) (hY : 0 < Y) (hZ : 0 < Z) (hU : 0 < U) (hH : 1 ≤ H)
     (hzlo : (T*U)^2 ≤ (H*Z)^2)
     (hyhi : (Y*U)^2 ≤ (H*T)^2)
@@ -30,7 +30,7 @@ private lemma ratios_from_squares (T Y Z U H : ℝ)
   · apply (div_le_div_iff₀ hH0 hZ).mpr
     nlinarith [mul_le_mul_of_nonneg_left hzhi' hU.le]
 
-private lemma original_squares (M R B U H : ℝ) (hM : 0 < M) (hR : 0 < R)
+lemma original_squares (M R B U H : ℝ) (hM : 0 < M) (hR : 0 < R)
     (hB : 0 < B) (hU : 0 < U) (hH : 2 ≤ H)
     (hRB : B ≤ R) (hBR : R ≤ 2*B) :
     let T := Real.sqrt (M/R)
@@ -60,11 +60,9 @@ private lemma original_squares (M R B U H : ℝ) (hM : 0 < M) (hR : 0 < R)
   · exact hcmp3.trans (le_mul_of_one_le_left hMR.le (by linarith))
   · have hb : M/B ≤ H^2*(M/R) := hcmp2.trans
       (mul_le_mul_of_nonneg_right hH2 hMR.le)
-    calc
-      _ ≤ (H^2*(M/R))*U^2 := mul_le_mul_of_nonneg_right hb (sq_nonneg U)
-      _ = _ := by ring
+    simp_all
 
-private lemma reflected_square_ratios (M N d E V R B U q : ℝ)
+lemma reflected_square_ratios (M N d E V R B U q : ℝ)
     (hM : 0 < M) (hN : 0 < N) (hd : 0 < d) (hE : 0 < E) (hV : 0 < V)
     (hR : 0 < R) (hB : 0 < B) (hU : 0 < U) (hq : 1 ≤ q)
     (hVRlo : N^2 ≤ d^2*V) (hVRhi : d^2*V ≤ 4*N^2)
@@ -265,7 +263,7 @@ lemma tailBudget_of_ratio_lower_bounds (a T Y Z L s H : ℝ)
     have hdiv : Real.rpow (s / H) (1-a) = Real.rpow s (1-a) / Real.rpow H (1-a) :=
       Real.div_rpow hs0.le hH.le (1-a)
     rw [show 1-a = -(a-1) by ring, hneg (a-1), div_inv_eq_mul, mul_comm] at hdiv
-    simpa only [show -(a-1) = 1-a by ring] using hdiv
+    simp_all
   have hexp := Real.rpow_le_rpow_of_exponent_le hs (show -a ≤ 1-a by linarith)
   have hfirst := hpow₁.trans (he₁.le.trans (mul_le_mul_of_nonneg_left hexp
     (Real.rpow_nonneg hH.le a)))
@@ -293,7 +291,7 @@ def pairBudget {F : Type} [Field F] [NumberField F]
     (C : Context Q) (a : ℝ) (p : Ideal (𝓞 F) × Ideal (𝓞 F)) (hp : C.ValidPair p) : ℝ :=
   blockBudget C a p hp 1 true + ∑ B ∈ dyadicScales C, blockBudget C a p hp B
 
-private lemma blockBudget_bound
+lemma blockBudget_bound
     {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
     {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
     (C : Context Q) (a A U B : ℝ) (unit : Bool)
@@ -389,7 +387,7 @@ theorem geometric_pair_budget
   let P := Real.rpow H a + 2 * Real.rpow H (a - 1)
   let J := 2 + 1 / Real.log 2
   have hP : 0 ≤ P := by dsimp [P]; positivity
-  have hJ : 0 ≤ J := by dsimp [J]; positivity
+  have hJ : 0 ≤ J := by positivity
   refine ⟨(A ^ 3 + A ^ 2) * P * J, by positivity, ?_⟩
   intro C hCD hCδ hM hN hKlo hKhi hd hdN p hp hpair
   have hM0 : 0 < C.M := by linarith
@@ -397,8 +395,8 @@ theorem geometric_pair_budget
   have hX : 1 ≤ C.M * C.N := by nlinarith
   have hX0 : 0 < C.M * C.N := by positivity
   have hK : 1 ≤ C.K := (le_max_left _ _).trans hKlo
-  have hpowε : Real.rpow (C.M * C.N) (-ε) ≤ 1 := by
-    exact Real.rpow_le_one_of_one_le_of_nonpos hX (by linarith)
+  have hpowε : Real.rpow (C.M * C.N) (-ε) ≤ 1 := 
+    Real.rpow_le_one_of_one_le_of_nonpos hX (by linarith)
   have hKM : C.K ≤ C.M := hKhi.trans (by nlinarith)
   have hkn : (dyadicScales C).card + (1 : ℝ) ≤ J * (C.M * C.N) := by
     have hcard : ((dyadicScales C).card : ℝ) ≤ Vendor.dyadicLength C.K := by
@@ -486,8 +484,3 @@ theorem geometric_pair_budget
       rw [Real.rpow_add hX0, Real.rpow_ofNat]
       ring
     _ ≤ _ := mul_le_mul_of_nonneg_left hpows (by positivity)
-end DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitAssembly.LocalTailAux
-
-end
-
-end

@@ -21,5 +21,3 @@ theorem integral_finite_ae_partition {α I : Type*} [MeasurableSpace α] [Fintyp
   have hunion := integral_iUnion_fintype (μ := μ) (s := C) (f := g) hC hdisj
     (fun i => IntegrableOn.mono_set (f := g) hg (hsub i))
   rw [← hunion, setIntegral_congr_set hUC]
-
-end DedekindZetaZeroFree.KPCubeAverageError

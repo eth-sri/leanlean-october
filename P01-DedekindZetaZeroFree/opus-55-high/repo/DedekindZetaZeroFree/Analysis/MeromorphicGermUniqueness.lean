@@ -5,7 +5,6 @@ public import Mathlib.Analysis.Complex.Basic
 
 @[expose] public section
 
-noncomputable section
 open scoped Topology
 namespace DedekindZetaZeroFree.KPMsSameContinuationGreen.ContinuationUniqueness
 
@@ -25,7 +24,3 @@ theorem meromorphic_germ_unique {f g : ℂ → ℂ} {O V : Set ℂ}
   have he := meromorphicOrderAt_eq_top_iff.mp hprop
   filter_upwards [he] with z hz
   exact sub_eq_zero.mp hz
-
-end DedekindZetaZeroFree.KPMsSameContinuationGreen.ContinuationUniqueness
-
-end

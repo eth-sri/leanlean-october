@@ -28,7 +28,3 @@ namespace SU2
 noncomputable instance : MeasurableSpace SU2 := borel SU2
 
 instance : BorelSpace SU2 := ⟨rfl⟩
-
-end SU2
-
-end DedekindZetaZeroFree.TauCeti

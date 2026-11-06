@@ -12,17 +12,12 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # The zeroth local higher-unit group
 -/
 
 open scoped NumberField
 
-noncomputable section
 
 namespace ClassFieldTheory
 
@@ -40,7 +35,3 @@ theorem rayLocalHigherUnitGroup_zero
   change RayClass.localHigherUnitGroup v 0 =
     (v.adicCompletionIntegers K).units
   exact RayClass.localHigherUnitGroup_zero v
-
-end ClassFieldTheory
-
-end

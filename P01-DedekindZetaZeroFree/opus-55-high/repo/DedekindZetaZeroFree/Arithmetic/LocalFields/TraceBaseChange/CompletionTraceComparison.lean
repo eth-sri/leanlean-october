@@ -100,7 +100,3 @@ theorem trace_mem_padicIntegers (v : HeightOneSpectrum (𝓞 F))
     change completionMap F v ((rationalCompletionEquiv F v).symm
       ((rationalCompletionEquiv F v) z)) = completionMap F v z
     simp) x
-
-end DedekindZetaZeroFree.PlaceTraceAdapter
-
-end

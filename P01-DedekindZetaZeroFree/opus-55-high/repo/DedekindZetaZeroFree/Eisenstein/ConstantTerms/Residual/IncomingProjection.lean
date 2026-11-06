@@ -21,7 +21,7 @@ variable (a : Cusps F ζ hζ C R P H U)
 variable {S : Type*} [AddCommGroup S] [Module ℂ S] [FiniteDimensional ℂ S]
 variable (ι : S →ₗ[ℂ] KPContFlatCommonLevelKernel.CommonSphericalStage F ζ hζ U)
 
-private theorem inverse_fix (a z : ℂ) (ha : a ≠ 0) (h : a * z = z) : a⁻¹ * z = z := by
+theorem inverse_fix (a z : ℂ) (ha : a ≠ 0) (h : a * z = z) : a⁻¹ * z = z := by
   calc
     a⁻¹ * z = a⁻¹ * (a * z) := congrArg (a⁻¹ * ·) h.symm
     _ = z := by rw [← mul_assoc, inv_mul_cancel₀ ha, one_mul]
@@ -33,7 +33,7 @@ private theorem average_fix {T : Type*} [Fintype T] [Nonempty T]
   simp only [h, Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
   rw [← mul_assoc, inv_mul_cancel₀ (Nat.cast_ne_zero.mpr Fintype.card_ne_zero), one_mul]
 
-private theorem sheet_central_level (s : ℂ) (hs : s ∈ KPContinuation.spectralDomain) (v : S)
+theorem sheet_central_level (s : ℂ) (hs : s ∈ KPContinuation.spectralDomain) (v : S)
     (ε : KPContSectorPhaseComponentCharts.centralLevel F ζ hζ
       (atlasLevel F ζ hζ C R P H U)) :
     (KPCuspGenuineMonodromy.chi F ζ hζ ε.val : ℂ) *

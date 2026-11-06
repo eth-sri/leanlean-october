@@ -25,7 +25,7 @@ theorem originMellinShift_spec (s : ℂ) :
 def originMellinQ (h : ℝ → ℂ) (s : ℂ) : ℂ :=
   originMellinChart h (originMellinShift s) s
 
-private theorem originMellinChart_eq_of_lt (h : ℝ → ℂ)
+theorem originMellinChart_eq_of_lt (h : ℝ → ℂ)
     (hh : ContDiff ℝ ∞ h) (hc : HasCompactSupport h) {m n : ℕ} {s : ℂ}
     (hm : -(m : ℝ) < s.re) (hn : -(n : ℝ) < s.re) :
     originMellinChart h m s = originMellinChart h n s := by
@@ -40,8 +40,7 @@ private theorem originMellinChart_eq_of_lt (h : ℝ → ℂ)
   intro n
   induction n with
   | zero =>
-      intro m hm _ _
-      rw [Nat.le_zero.mp hm]
+      simp
   | succ n ih =>
       intro m hm hms hns
       rcases Nat.eq_or_lt_of_le hm with rfl | hlt
@@ -70,15 +69,11 @@ theorem originMellinQ_differentiable (h : ℝ → ℂ)
 theorem originMellinQ_eq_chart (h : ℝ → ℂ)
     (hh : ContDiff ℝ ∞ h) (hc : HasCompactSupport h) (n : ℕ) (s : ℂ)
     (hs : -(n : ℝ) < s.re) :
-    originMellinQ h s = originMellinChart h n s := by
-  exact originMellinChart_eq_of_lt h hh hc (originMellinShift_spec s) hs
+    originMellinQ h s = originMellinChart h n s := 
+  originMellinChart_eq_of_lt h hh hc (originMellinShift_spec s) hs
 
 theorem originMellinQ_eq_mellin_div_Gammaℂ (h : ℝ → ℂ)
     (hh : ContDiff ℝ ∞ h) (hc : HasCompactSupport h) (s : ℂ) (hs : 0 < s.re) :
     originMellinQ h s = mellin h s / Complex.Gammaℂ s := by
   rw [originMellinQ_eq_chart h hh hc 0 s (by simpa using hs)]
   simp [originMellinChart, div_eq_mul_inv]
-
-end DedekindZetaZeroFree.LargeSieve.Vendor
-
-end

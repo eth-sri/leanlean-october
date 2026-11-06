@@ -53,10 +53,6 @@ theorem inner_conjugation (x : V) (j : ι) :
   simp
 
 @[simp]
-theorem conjugation_zero : conjugation e (0 : V) = 0 := by
-  simp [conjugation_apply]
-
-@[simp]
 theorem conjugation_add (x y : V) :
     conjugation e (x + y) = conjugation e x + conjugation e y := by
   simp [conjugation_apply, inner_add_right, add_smul, Finset.sum_add_distrib]
@@ -65,10 +61,6 @@ theorem conjugation_add (x y : V) :
 theorem conjugation_smul (c : 𝕜) (x : V) :
     conjugation e (c • x) = (starRingEnd 𝕜) c • conjugation e x := by
   simp [conjugation_apply, inner_smul_right, Finset.smul_sum, smul_smul]
-
-@[simp]
-theorem conjugation_neg (x : V) : conjugation e (-x) = -conjugation e x := by
-  simp [conjugation_apply, inner_neg_right, neg_smul, Finset.sum_neg_distrib]
 
 @[simp]
 theorem conjugation_sub (x y : V) :
@@ -84,16 +76,6 @@ theorem conjugation_conjugation (x : V) : conjugation e (conjugation e x) = x :=
   exact e.sum_repr' x
 
 @[simp]
-theorem conjugation_basis (j : ι) : conjugation e (e j) = e j := by
-  classical
-  have h : ∀ i, (starRingEnd 𝕜) ⟪e i, e j⟫_𝕜 = ⟪e i, e j⟫_𝕜 := fun i ↦ by
-    rw [orthonormal_iff_ite.mp e.orthonormal]
-    split <;> simp
-  rw [conjugation_apply]
-  simp only [h]
-  exact e.sum_repr' (e j)
-
-@[simp]
 theorem inner_conjugation_conjugation (x y : V) :
     ⟪conjugation e x, conjugation e y⟫_𝕜 = (starRingEnd 𝕜) ⟪x, y⟫_𝕜 := by
   have hxy : ⟪x, y⟫_𝕜 = ∑ i, (starRingEnd 𝕜) ⟪e i, x⟫_𝕜 * ⟪e i, y⟫_𝕜 := by
@@ -104,12 +86,6 @@ theorem inner_conjugation_conjugation (x y : V) :
   refine Finset.sum_congr rfl fun i _ ↦ ?_
   rw [inner_smul_left, inner_conjugation]
   simp [mul_comm]
-
-@[simp]
-theorem inner_conjugation_left_basis (x : V) (j : ι) :
-    ⟪conjugation e x, e j⟫_𝕜 = ⟪e j, x⟫_𝕜 := by
-  conv_lhs => rw [← conjugation_basis e j]
-  rw [inner_conjugation_conjugation, inner_conj_symm]
 
 @[simp]
 theorem norm_conjugation (x : V) : ‖conjugation e x‖ = ‖x‖ := by
@@ -152,29 +128,9 @@ theorem conjCLM_conjCLM (A : V →L[𝕜] V) : conjCLM e (conjCLM e A) = A := by
   simp
 
 @[simp]
-theorem conjCLM_zero : conjCLM e (0 : V →L[𝕜] V) = 0 := by
-  ext x
-  simp
-
-@[simp]
-theorem conjCLM_add (A B : V →L[𝕜] V) : conjCLM e (A + B) = conjCLM e A + conjCLM e B := by
-  ext x
-  simp
-
-@[simp]
-theorem conjCLM_neg (A : V →L[𝕜] V) : conjCLM e (-A) = -conjCLM e A := by
-  ext x
-  simp
-
-@[simp]
 theorem conjCLM_sub (A B : V →L[𝕜] V) : conjCLM e (A - B) = conjCLM e A - conjCLM e B := by
   ext x
   simp
-
-@[simp]
-theorem conjCLM_smul (c : 𝕜) (A : V →L[𝕜] V) : conjCLM e (c • A) = star c • conjCLM e A := by
-  ext x
-  simp [RCLike.star_def]
 
 theorem norm_conjCLM_le (A : V →L[𝕜] V) : ‖conjCLM e A‖ ≤ ‖A‖ :=
   LinearMap.mkContinuous_norm_le _ (norm_nonneg A) _
@@ -188,7 +144,3 @@ theorem lipschitzWith_one_conjCLM : LipschitzWith 1 (conjCLM e) :=
   LipschitzWith.of_dist_le_mul fun A B ↦ by
     rw [dist_eq_norm, dist_eq_norm, ← conjCLM_sub, norm_conjCLM]
     simp
-
-end ConjugateOperator
-
-end DedekindZetaZeroFree.TauCeti

@@ -35,11 +35,8 @@ theorem primeEulerRegroup
         apply IsDedekindDomain.HeightOneSpectrum.ext
         exact hQ.2.over.symm
       left_inv := fun Q => by
-        apply Subtype.ext
-        apply IsDedekindDomain.HeightOneSpectrum.ext
         rfl
       right_inv := fun Q => by
-        apply Subtype.ext
         rfl }
   letI := Fintype.ofEquiv _ e.symm
   change HasProd
@@ -52,5 +49,3 @@ theorem primeEulerRegroup
       (fun Q => (1 - (Ideal.absNorm Q.1.asIdeal : ℂ) ^ (-s))⁻¹)
       (fun Q => (1 - (Ideal.absNorm Q.1 : ℂ) ^ (-s))⁻¹) (fun Q => rfl)]
   exact hasProd_fintype _
-
-end DedekindZetaZeroFree.AbelianQuotient

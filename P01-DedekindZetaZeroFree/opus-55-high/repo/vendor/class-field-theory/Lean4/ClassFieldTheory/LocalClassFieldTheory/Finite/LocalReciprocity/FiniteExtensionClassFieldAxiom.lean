@@ -16,14 +16,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-
-set_option autoImplicit false
-
 namespace LocalClassFieldTheory
 
 open LocalFieldTheory
@@ -166,7 +158,7 @@ theorem finiteExtensionUnits_tate_card_of_generator
         rw [show algebraMap 𝒪[K] K =
           (ValuativeRel.valuation K).integer.subtype from rfl,
           Polynomial.map_toSubring]
-        exact minpoly.aeval K (y : L)
+        simp
       rwa [Polynomial.aeval_map_algebraMap K (y : L) p] at hmaproot
   let hIntegralClosure : IsIntegralClosure
       (ValuativeRel.valuation L).valuationSubring
@@ -239,6 +231,3 @@ theorem finiteTowerUnits_tate_card_of_generator
       toIsNontrivial := inferInstance }
 
   exact finiteExtensionUnits_tate_card_of_generator K L g hg
-
-end
-end LocalClassFieldTheory

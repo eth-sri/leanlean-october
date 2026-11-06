@@ -11,7 +11,7 @@ open scoped Classical NumberField
 
 namespace DedekindZetaZeroFree.KPContinuation.ChamberFlatSource
 
-private theorem actual_right_chart_smooth
+theorem actual_right_chart_smooth
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
     {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
@@ -34,7 +34,7 @@ private theorem actual_right_chart_smooth
     (KPContActualSphericalFlatStage.L F ζ hζ U ι s v) (heq x hx))).mono
   exact Set.inter_subset_right
 
-private theorem actual_scalar_kfinite
+theorem actual_scalar_kfinite
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
     {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
@@ -63,7 +63,7 @@ private theorem actual_scalar_kfinite
       T.invariant k w' hw', ?_⟩
     rfl
 
-private theorem actual_level_all
+theorem actual_level_all
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
     {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
@@ -81,7 +81,7 @@ private theorem actual_level_all
     rw [he]
   · rw [hz, mul_zero, mul_zero]
 
-private theorem half_modulus_multiplier
+theorem half_modulus_multiplier
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (s : ℂ) (t : KPGlobalTorusFunctionData.E F ζ hζ) :
     KPGlobalTorusFunctionData.deltaHalf F ζ hζ t *

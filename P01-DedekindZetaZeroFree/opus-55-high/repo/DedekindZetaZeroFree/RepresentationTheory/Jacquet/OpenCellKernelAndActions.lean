@@ -27,10 +27,10 @@ private theorem orbit_lc {G V : Type*} [Group G] [TopologicalSpace G]
   intro g
   refine ⟨{x | g⁻¹ * x ∈ J},
     J.isOpen.preimage (continuous_const.mul continuous_id), ?_, ?_⟩
-  · simpa using J.one_mem
+  · simp
   · intro x hx
     have he := congrArg (fun w => ρ g w) (hJ (g⁻¹ * x) hx)
-    simpa only [← Module.End.mul_apply, ← map_mul, mul_inv_cancel_left] using he
+    simp_all
 
 private theorem compact_avoids_inverse {K : Type*} [Field K] [TopologicalSpace K]
     [IsTopologicalRing K] [T1Space K] {S : Set K} (hS : IsCompact S) :
@@ -39,12 +39,12 @@ private theorem compact_avoids_inverse {K : Type*} [Field K] [TopologicalSpace K
     isClosed_singleton.isOpen_compl.preimage (continuous_fst.mul continuous_snd)
   obtain ⟨U, V, hU, hV, h0, hSV, hUV⟩ :=
     generalized_tube_lemma (isCompact_singleton (x := (0 : K))) hS hO
-      (by rintro ⟨y, x⟩ ⟨hy, hx⟩; change y = 0 at hy; simp [hy])
+      (by rintro ⟨y, x⟩ ⟨hy, hx⟩; simp_all)
   refine ⟨U, hU, h0 (Set.mem_singleton 0), ?_⟩
   intro y hy x hx
   exact hUV (show (y, x) ∈ U ×ˢ V from ⟨hy, hSV hx⟩)
 
-private theorem lc_covariant_smooth
+theorem lc_covariant_smooth
     {G E : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
     [AddCommGroup E] [Module ℂ E]
     (H : Subgroup G) (τ : Representation ℂ H E) (d : H →* (ℝ≥0)ˣ)
@@ -250,8 +250,6 @@ theorem kernel_restriction_hasCompactSupport
     let A := KPStandardLocalRootLifts.weylSwap (KPRankOneInduction.LocalField F w) *
       KubotaRankTwo.n (KPRankOneInduction.LocalField F w) x
     have hA : Matrix.ProjGenLinGroup.mk A = projection F ζ hζ w g := by
-      change Matrix.ProjGenLinGroup.mk (_ * _) = _
-      rw [map_mul, map_mul]
       rfl
     have hd : g ∈ KPJacquetBruhatCharts.delta F ζ hζ w := by
       refine ⟨A, hA, ?_⟩
@@ -273,9 +271,7 @@ theorem kernel_restriction_hasCompactSupport
     simp [hzero _ hxi]
   apply HasCompactSupport.intro (K := Metric.closedBall 0 ε⁻¹)
   · exact isCompact_closedBall _ _
-  · intro x hx
-    apply hlarge x
-    simpa [Metric.mem_closedBall, dist_zero_right, not_le] using hx
+  simp_all
 
 end DedekindZetaZeroFree.KPJacquetOpenCellSections
 
@@ -351,8 +347,6 @@ theorem torus_conjugates_upperRoot_ratio
   have hn (y : Multiplicative (KPRankOneInduction.LocalField F w)) :
       projection F ζ hζ w (upperRoot F ζ hζ w y) =
         KPRankOneInductionRaw.ordinaryUpperRootHom F w y := by
-    change Matrix.ProjGenLinGroup.mk (KubotaRankTwo.n _ _) =
-      Matrix.ProjGenLinGroup.mk (KPRankOneInductionRaw.upperRootMatrix F w _)
     rfl
   exact FiniteCentralBorel.torusLift_conjugates_root F w
     (projection F ζ hζ w) (projection_kernel_central F ζ hζ w)
@@ -433,8 +427,8 @@ theorem extensionFunction_on (φ : TestFunctions F w (E := E))
       (b.val * KPPGLLocalCover.W F ζ hζ (Sum.inr w) *
         upperRoot F ζ hζ w (Multiplicative.ofAdd x)) =
       (Real.sqrt ((deltaB F ζ hζ w b : ℝ≥0) : ℝ) : ℂ) •
-        τB b (KPJacquetStepFunction.value φ x) := by
-  exact extension_on F ζ hζ w τB φ b x
+        τB b (KPJacquetStepFunction.value φ x) := 
+  extension_on F ζ hζ w τB φ b x
 
 include hm in
 omit [FiniteDimensional ℂ E] in
@@ -532,8 +526,8 @@ def restriction (hm : KPLocalChartTopology.MatrixChartDepth F w m)
     LinearMap.ker (ev1 F ζ hζ w m τB) →ₗ[ℂ] TestFunctions F w (E := E) where
   toFun f := ⟨⟨fun x => f.val.val.val
     (KPPGLLocalCover.W F ζ hζ (Sum.inr w) *
-      upperRoot F ζ hζ w (Multiplicative.ofAdd x)), by
-      exact restriction_locallyConstant F ζ hζ w m hm τB f⟩, by
+      upperRoot F ζ hζ w (Multiplicative.ofAdd x)), 
+      restriction_locallyConstant F ζ hζ w m hm τB f⟩, by
         apply KPJacquetOpenCellSections.kernel_restriction_hasCompactSupport
           F ζ hζ w m hm τB f.val
         exact f.property⟩
@@ -606,13 +600,13 @@ omit [FiniteDimensional ℂ E] in
       (↑(↑(KPRankOneInduction.halfModulus (deltaB F ζ hζ w) p.1) : ℝ) : ℂ) • _ at hf
     rw [KPRankOneInduction.halfModulus_eq] at hf
     simpa only [mul_assoc] using hf.symm
-  · have hb : g ∈ Borel F ζ hζ w := by
-      exact (show g ∈ (Borel F ζ hζ w : Set (FiniteCover F ζ hζ w)) from
+  · have hb : g ∈ Borel F ζ hζ w := 
+      (show g ∈ (Borel F ζ hζ w : Set (FiniteCover F ζ hζ w)) from
         (KPJacquetBruhatCharts.omega_complement F ζ hζ w ▸ hg))
     rw [extension_off F ζ hζ w τB _ ⟨g, hb⟩]
     have hf := f.val.val.property ⟨g, hb⟩ 1
     have hzero : f.val.val.val 1 = 0 := f.property
-    simpa only [mul_one, hzero, map_zero] using hf.symm
+    simp_all
 
 theorem range_ext_w : LinearMap.range (ext_w F ζ hζ w m hm τB hτB) =
     LinearMap.ker (ev1 F ζ hζ w m τB) := by
@@ -632,8 +626,7 @@ omit [FiniteDimensional ℂ E] in
   change ev1 F ζ hζ w m τB
     (inducedRepresentation F ζ hζ w m hm τB b.val f) = 0
   rw [ev1_borel F ζ hζ w m hm τB b f]
-  change ev1 F ζ hζ w m τB f = 0 at hf
-  rw [hf, map_zero]
+  simp_all
 
 omit [FiniteDimensional ℂ E] in
 def openCellRepresentation : Representation ℂ (Borel F ζ hζ w)
@@ -659,8 +652,7 @@ def openCellRepresentation : Representation ℂ (Borel F ζ hζ w)
             (ext_w F ζ hζ w m hm τB hτB ψ),
             borel_stable F ζ hζ w m hm τB b
               (extension_mem_kernel F ζ hζ w m hm τB hτB ψ)⟩ := by
-        apply Subtype.ext
-        simp only [map_add, Submodule.coe_add]
+        simp
       rw [h, map_add]
     map_smul' := by
       intro c φ
@@ -673,8 +665,7 @@ def openCellRepresentation : Representation ℂ (Borel F ζ hζ w)
             (ext_w F ζ hζ w m hm τB hτB φ),
             borel_stable F ζ hζ w m hm τB b
               (extension_mem_kernel F ζ hζ w m hm τB hτB φ)⟩ := by
-        apply Subtype.ext
-        simp only [map_smul, Submodule.coe_smul]
+        simp
       rw [h, map_smul]
       rfl }
   map_one' := by
@@ -697,17 +688,17 @@ def openCellRepresentation : Representation ℂ (Borel F ζ hζ w)
         (ext_w F ζ hζ w m hm τB hτB
           (restriction F ζ hζ w m hm τB ⟨_, _⟩))
     rw [extension_restrict]
-    simp only [Subgroup.coe_mul, map_mul, Module.End.mul_apply]
+    simp
 
 theorem ext_w_borel (b : Borel F ζ hζ w) (φ : TestFunctions F w (E := E)) :
     ext_w F ζ hζ w m hm τB hτB
       (openCellRepresentation F ζ hζ w m hm τB hτB b φ) =
       inducedRepresentation F ζ hζ w m hm τB b.val
-        (ext_w F ζ hζ w m hm τB hτB φ) := by
-  exact extension_restrict F ζ hζ w m hm τB hτB _
+        (ext_w F ζ hζ w m hm τB hτB φ) := 
+  extension_restrict F ζ hζ w m hm τB hτB _
 
 include hτB in
-private theorem smooth_borel_induced :
+theorem smooth_borel_induced :
     letI := finiteCoverTopology F ζ hζ w m
     SmoothRepresentation (G := Borel F ζ hζ w) (V := Induced F ζ hζ w m τB)
       ((inducedRepresentation F ζ hζ w m hm τB).comp
@@ -719,7 +710,7 @@ private theorem smooth_borel_induced :
   intro b hb
   exact hJ b.val hb
 
-private theorem smooth_open_cell :
+theorem smooth_open_cell :
     letI := finiteCoverTopology F ζ hζ w m
     SmoothRepresentation (openCellRepresentation F ζ hζ w m hm τB hτB) := by
   letI := finiteCoverTopology F ζ hζ w m
@@ -742,27 +733,20 @@ def r : Torus F ζ hζ w →* (KPRankOneInduction.LocalField F w)ˣ := by
     map_one' := by
       change KPRankOneInduction.borelRatio F w
         (KPRankOneInduction.borelProjection F w (projection F ζ hζ w) 1) = 1
-      simp only [map_one]
+      simp
     map_mul' := by
       intro a b
       change KPRankOneInduction.borelRatio F w
         (KPRankOneInduction.borelProjection F w (projection F ζ hζ w)
           (torusInBorel F ζ hζ w m hm a * torusInBorel F ζ hζ w m hm b)) = _
-      simp only [map_mul] }
+      simp }
 
 def d (h : Torus F ζ hζ w) : ℝ :=
   ((deltaB F ζ hζ w (torusInBorel F ζ hζ w m hm h) : ℝ≥0) : ℝ)
 
  theorem weyl_matrix_inv :
     (KPStandardLocalRootLifts.weylSwap (KPRankOneInduction.LocalField F w))⁻¹ =
-      KPStandardLocalRootLifts.weylSwap (KPRankOneInduction.LocalField F w) := by
-  symm
-  apply eq_inv_of_mul_eq_one_left
-  apply Units.ext
-  ext i j
-  fin_cases i <;> fin_cases j <;>
-    simp [Units.val_mul, Matrix.mul_apply, Fin.sum_univ_two,
-      KPStandardLocalRootLifts.weylSwap, Matrix.GeneralLinearGroup.mkOfDetNeZero]
+      KPStandardLocalRootLifts.weylSwap (KPRankOneInduction.LocalField F w) := by apply DedekindZetaZeroFree.KPJacquetBruhatCharts.weyl_matrix_inv <;> assumption
 
  theorem projection_weyl : projection F ζ hζ w
     (KPPGLLocalCover.W F ζ hζ (Sum.inr w)) =
@@ -779,42 +763,34 @@ def alpha : Torus F ζ hζ w →* Torus F ζ hζ w where
           projection_weyl, hA]
       · dsimp [W]
         rw [weyl_matrix_inv]
-        simp [Units.val_mul, Matrix.mul_apply, Fin.sum_univ_two,
-          KPStandardLocalRootLifts.weylSwap, Matrix.GeneralLinearGroup.mkOfDetNeZero, hb, Matrix.vecMul, dotProduct]
+        simp [Matrix.mul_apply, Fin.sum_univ_two, KPStandardLocalRootLifts.weylSwap, Matrix.GeneralLinearGroup.mkOfDetNeZero, hb, Matrix.vecMul, dotProduct]
       · dsimp [W]
         rw [weyl_matrix_inv]
-        simp [Units.val_mul, Matrix.mul_apply, Fin.sum_univ_two,
-          KPStandardLocalRootLifts.weylSwap, Matrix.GeneralLinearGroup.mkOfDetNeZero, hc, Matrix.vecMul, dotProduct]⟩
+        simp [Matrix.mul_apply, Fin.sum_univ_two, KPStandardLocalRootLifts.weylSwap, Matrix.GeneralLinearGroup.mkOfDetNeZero, hc, Matrix.vecMul, dotProduct]⟩
   map_one' := by
-    apply Subtype.ext
-    change KPPGLLocalCover.W F ζ hζ (Sum.inr w) * 1 *
-      (KPPGLLocalCover.W F ζ hζ (Sum.inr w))⁻¹ = 1
     simp
   map_mul' := by
-    intro a b
-    apply Subtype.ext
-    change _ * (a.val * b.val) * _ = (_ * a.val * _) * (_ * b.val * _)
-    group
+    simp
 
 def tauW : Representation ℂ (Torus F ζ hζ w) E where
   toFun h := τB (torusInBorel F ζ hζ w m hm (alpha F ζ hζ w h))
   map_one' := by
     rw [map_one]
     change τB 1 = 1
-    exact map_one τB
+    simp
   map_mul' := by
     intro a b
     rw [map_mul]
     change τB (torusInBorel F ζ hζ w m hm (alpha F ζ hζ w a) *
       torusInBorel F ζ hζ w m hm (alpha F ζ hζ w b)) = _
-    exact map_mul τB _ _
+    simp
 
 theorem torus_conjugates_root (h : Torus F ζ hζ w)
     (x : KPRankOneInduction.LocalField F w) :
     h.val * upperRoot F ζ hζ w (Multiplicative.ofAdd x) * h.val⁻¹ =
       upperRoot F ζ hζ w (Multiplicative.ofAdd
-        ((r F ζ hζ w m hm h : KPRankOneInduction.LocalField F w) * x)) := by
-  exact KPJacquetOpenCellSections.torus_conjugates_upperRoot_ratio F ζ hζ w m hm h x
+        ((r F ζ hζ w m hm h : KPRankOneInduction.LocalField F w) * x)) := 
+  KPJacquetOpenCellSections.torus_conjugates_upperRoot_ratio F ζ hζ w m hm h x
 
 theorem d_eq_abs_r (h : Torus F ζ hζ w) :
     d F ζ hζ w m hm h =
@@ -834,8 +810,7 @@ theorem d_alpha (h : Torus F ζ hζ w) :
   have hu : (W * A * W⁻¹ : KPRankOneInduction.GL2 F w) 1 0 = 0 := by
     dsimp [W]
     rw [weyl_matrix_inv]
-    simp [Units.val_mul, Matrix.mul_apply, Fin.sum_univ_two, Matrix.vecMul, dotProduct,
-      KPStandardLocalRootLifts.weylSwap, Matrix.GeneralLinearGroup.mkOfDetNeZero, hb]
+    simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.vecMul, dotProduct, KPStandardLocalRootLifts.weylSwap, Matrix.GeneralLinearGroup.mkOfDetNeZero, hb]
   change ((deltaB F ζ hζ w (torusInBorel F ζ hζ w m hm (alpha F ζ hζ w h)) : ℝ≥0) : ℝ) = _
   rw [KPRankOneInduction.deltaB_eq F w (projection F ζ hζ w) _ (W * A * W⁻¹) hWA hu]
   change _ = (((deltaB F ζ hζ w (torusInBorel F ζ hζ w m hm h) : ℝ≥0) : ℝ))⁻¹
@@ -850,11 +825,7 @@ theorem d_alpha (h : Torus F ζ hζ w) :
       KPStandardLocalRootLifts.weylSwap (KPRankOneInduction.LocalField F w)) 1 1 = A 0 0 := by
     simp [Units.val_mul, Matrix.mul_apply, Fin.sum_univ_two, Matrix.vecMul, dotProduct,
       KPStandardLocalRootLifts.weylSwap, Matrix.GeneralLinearGroup.mkOfDetNeZero]
-  change ‖(KPStandardLocalRootLifts.weylSwap (KPRankOneInduction.LocalField F w) * A *
-    KPStandardLocalRootLifts.weylSwap (KPRankOneInduction.LocalField F w)) 0 0 /
-    (KPStandardLocalRootLifts.weylSwap (KPRankOneInduction.LocalField F w) * A *
-    KPStandardLocalRootLifts.weylSwap (KPRankOneInduction.LocalField F w)) 1 1‖ = _
-  rw [h00, h11, ← inv_div, norm_inv]
+  simp_all
 
 theorem upperRoot_action
     (hτN : ∀ y, τB (rootInBorel F ζ hζ w y) = 1)
@@ -908,8 +879,7 @@ theorem torus_action (h : Torus F ζ hζ w)
     (((r F ζ hζ w m hm h)⁻¹ : (KPRankOneInduction.LocalField F w)ˣ) * x)
   have hz : (r F ζ hζ w m hm h : KPRankOneInduction.LocalField F w) * z = x := by
     dsimp [z]
-    simp only [Units.val_inv_eq_inv_val]
-    rw [← mul_assoc, mul_inv_cancel₀ (Units.ne_zero _), one_mul]
+    simp
   have hc := torus_conjugates_root F ζ hζ w m hm h z
   rw [hz] at hc
   have hn : upperRoot F ζ hζ w (Multiplicative.ofAdd x) * h.val =
@@ -989,11 +959,3 @@ theorem tauW_inflation
       τ (alpha F ζ hζ w h) := by
   change τ (q (torusInBorel F ζ hζ w m hm (alpha F ζ hζ w h))) = _
   rw [hqH]
-
-end TorusInflation
-
-end DedekindZetaZeroFree.KPJacquetOpenCell
-
-end
-
-end

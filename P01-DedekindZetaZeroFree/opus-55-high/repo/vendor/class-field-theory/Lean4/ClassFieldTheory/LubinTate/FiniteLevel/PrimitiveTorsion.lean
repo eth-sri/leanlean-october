@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Primitive Lubin--Tate torsion points
 
@@ -42,7 +39,7 @@ variable {K : Type u} [Field K]
 
 /-- The `n`-fold standard iterate after extending coefficients from the
 valuation ring to the base field. -/
-noncomputable def standardLubinTatePolynomialIterateOverField
+def standardLubinTatePolynomialIterateOverField
     (F : LocalField.{u, v} K) (π : F.valuationSubring) (n : ℕ) :
     Polynomial K :=
   (standardLubinTatePolynomialIterate F π n).map
@@ -50,24 +47,12 @@ noncomputable def standardLubinTatePolynomialIterateOverField
 
 /-- The `n`-fold standard iterate after extending coefficients to the fixed
 separable closure of the base field. -/
-noncomputable def standardLubinTatePolynomialIterateOverSeparableClosure
+def standardLubinTatePolynomialIterateOverSeparableClosure
     (F : LocalField.{u, v} K) (π : F.valuationSubring) (n : ℕ) :
     Polynomial (SeparableClosure K) :=
   (standardLubinTatePolynomialIterate F π n).map
     ((algebraMap K (SeparableClosure K)).comp
       (algebraMap F.valuationSubring K))
-
-/-- Evaluation of the field-valued iterate is evaluation over the valuation
-ring with the coefficient embedding. -/
-@[simp]
-theorem standardLubinTatePolynomialIterateOverField_eval
-    (F : LocalField.{u, v} K) (π : F.valuationSubring)
-    (n : ℕ) (x : K) :
-    (standardLubinTatePolynomialIterateOverField F π n).eval x =
-      Polynomial.eval₂ (algebraMap F.valuationSubring K) x
-        (standardLubinTatePolynomialIterate F π n) := by
-  rw [standardLubinTatePolynomialIterateOverField,
-    Polynomial.eval_map]
 
 /-- Evaluation of the separable-closure-valued iterate is evaluation over
 the valuation ring with the composite coefficient embedding. -/
@@ -220,8 +205,7 @@ theorem chosenStandardLubinTatePrimitiveRoot_iterate_ne_zero
     chosenStandardLubinTatePrimitiveRoot_equation hπ n
   rw [hzero, zero_pow, zero_add] at hequation
   · apply hπ.ne_zero
-    apply (algebraMap K (SeparableClosure K)).injective
-    simpa using hequation
+    simp_all
   · exact Nat.sub_ne_zero_of_lt
       (Finite.one_lt_card : 1 < Nat.card F.residueField)
 
@@ -237,57 +221,3 @@ theorem chosenStandardLubinTatePrimitiveRoot_ne_zero
     Polynomial.eval_zero_map,
     standardLubinTatePolynomialIterate_eval_zero,
     map_zero]
-
-/-- Applying the `(n - m)`-fold standard iterate to a primitive
-level-`n + 1` point gives a root of the primitive level-`m + 1`
-polynomial. -/
-theorem chosenStandardLubinTatePrimitivePredecessor_isRoot
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    {m n : ℕ} (hmn : m ≤ n) :
-    let y :=
-      (standardLubinTatePolynomialIterateOverSeparableClosure
-        F π (n - m)).eval
-          (chosenStandardLubinTatePrimitiveRoot hπ n)
-    ((standardLubinTatePrimitivePolynomialOverField F π m).map
-      (algebraMap K (SeparableClosure K))).IsRoot y := by
-  let y :=
-    (standardLubinTatePolynomialIterateOverSeparableClosure
-      F π (n - m)).eval
-        (chosenStandardLubinTatePrimitiveRoot hπ n)
-  have hyIterate :
-      (standardLubinTatePolynomialIterateOverSeparableClosure F π m).eval
-          y =
-        (standardLubinTatePolynomialIterateOverSeparableClosure F π n).eval
-          (chosenStandardLubinTatePrimitiveRoot hπ n) := by
-    calc
-      (standardLubinTatePolynomialIterateOverSeparableClosure F π m).eval
-          y =
-          (standardLubinTatePolynomialIterateOverSeparableClosure
-            F π (m + (n - m))).eval
-              (chosenStandardLubinTatePrimitiveRoot hπ n) :=
-        (standardLubinTatePolynomialIterateOverSeparableClosure_eval_add
-          F π m (n - m)
-          (chosenStandardLubinTatePrimitiveRoot hπ n)).symm
-      _ =
-          (standardLubinTatePolynomialIterateOverSeparableClosure F π n).eval
-            (chosenStandardLubinTatePrimitiveRoot hπ n) := by
-        rw [Nat.add_sub_of_le hmn]
-  have hyEquation :
-      (standardLubinTatePolynomialIterateOverSeparableClosure F π m).eval
-            y ^ (Nat.card F.residueField - 1) +
-        algebraMap K (SeparableClosure K) (π : K) = 0 := by
-    rw [hyIterate]
-    exact chosenStandardLubinTatePrimitiveRoot_equation hπ n
-  change Polynomial.eval y
-      ((standardLubinTatePrimitivePolynomialOverField F π m).map
-        (algebraMap K (SeparableClosure K))) = 0
-  rw [Polynomial.eval_map,
-    standardLubinTatePrimitivePolynomialOverField_eval₂]
-  simpa only [
-    standardLubinTatePolynomialIterateOverSeparableClosure_eval] using
-      hyEquation
-
-end LubinTate
-
-end

@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.HarmonicAnalysis.Mellin.EntireRegularizedQuot
 
 @[expose] public section
 
-noncomputable section
 open scoped NumberField Classical ContDiff
 
 namespace DedekindZetaZeroFree.LargeSieve.Vendor
@@ -18,7 +17,7 @@ private lemma Gammaℂ_ne_zero_of_im_ne_zero {s : ℂ} (hs : s.im ≠ 0) :
   · intro h0
     rw [Complex.Gamma_eq_zero_iff] at h0
     obtain ⟨m, hm⟩ := h0
-    exact hs (by rw [hm]; simp)
+    simp_all
 
 private lemma Gammaℂ_ne_zero_of_re_pos {s : ℂ} (hs : 0 < s.re) :
     Complex.Gammaℂ s ≠ 0 := by
@@ -69,7 +68,3 @@ theorem Gammaℂ_mul_originMellinQ_eq_shift (h : ℝ → ℂ)
     _ = ((-1 : ℂ) ^ n * mellin (iteratedDeriv n h) (s + (n : ℂ))) /
           (∏ j ∈ Finset.range n, (s + (j : ℂ))) := by
         field_simp
-
-end DedekindZetaZeroFree.LargeSieve.Vendor
-
-end

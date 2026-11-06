@@ -8,8 +8,6 @@ public import DedekindZetaZeroFree.Theta.Profiles.ShiftedCubicBetaIntegrability
 noncomputable section
 namespace DedekindZetaZeroFree
 open NumberField IsDedekindDomain MeasureTheory ValuativeRel
-open scoped NumberField
-set_option autoImplicit false
 open scoped Classical
 variable (F : Type) [Field F] [NumberField F]
 variable (q : HeightOneSpectrum (𝓞 F))
@@ -30,12 +28,12 @@ private lemma regular_C {F : Type*} [Field F] (u c : F) : Regular u (RatFunc.C c
 private lemma regular_X {F : Type*} [Field F] (u : F) : Regular u (RatFunc.X : RatFunc F) := by
   simp [Regular]
 private lemma regular_add {F : Type*} [Field F] {u : F} {r s : RatFunc F}
-    (hr : Regular u r) (hs : Regular u s) : Regular u (r+s) := by
-  exact fun h => (mul_ne_zero hr hs) (by
+    (hr : Regular u r) (hs : Regular u s) : Regular u (r+s) := 
+  fun h => (mul_ne_zero hr hs) (by
     simpa using Polynomial.eval_eq_zero_of_dvd_of_eval_eq_zero (RatFunc.denom_add_dvd r s) h)
 private lemma regular_mul {F : Type*} [Field F] {u : F} {r s : RatFunc F}
-    (hr : Regular u r) (hs : Regular u s) : Regular u (r*s) := by
-  exact fun h => (mul_ne_zero hr hs) (by
+    (hr : Regular u r) (hs : Regular u s) : Regular u (r*s) := 
+  fun h => (mul_ne_zero hr hs) (by
     simpa using Polynomial.eval_eq_zero_of_dvd_of_eval_eq_zero (RatFunc.denom_mul_dvd r s) h)
 private lemma regular_inv {F : Type*} [Field F] {u : F} {r : RatFunc F}
     (_hr : Regular u r) (hv : RatFunc.eval (RingHom.id F) u r ≠ 0) : Regular u r⁻¹ := by
@@ -208,8 +206,7 @@ private theorem characterR_one (m : ℂ) (ξ : CubicUnitCharacters.Character K) 
     have ha0 : a ≠ 1 := by
       intro e
       have en : (CubicUnitCharacters.residueCard K : ℂ) = 1 := inv_eq_one.mp e
-      have hn : CubicUnitCharacters.residueCard K = 1 := by exact_mod_cast en
-      omega
+      simp_all
     apply ha0
     exact RatFunc.C_injective (by simpa only [map_one] using h)
   have hb0 : b ≠ 0 := mul_ne_zero (by simpa using Units.ne_zero (ε : ℂˣ)) RatFunc.X_ne_zero
@@ -225,19 +222,17 @@ private theorem characterR_one (m : ℂ) (ξ : CubicUnitCharacters.Character K) 
   · have he := rationalR_evaluates_one (RatFunc.C a) (RatFunc.C m) b ha hb0 hb false
       (CubicUnitCharacters.conductor K ξ)
     convert he using 1
-    · simp only [characterR,hξ,ite_true,rationalR,ite_false]
+    · simp only [characterR, hξ, ite_true, rationalR]
       rfl
-    · simp only [KPRankoneCubicScalarSum.betaFactor,hξ,ite_true,
-        KPRankoneCubicScalarSum.unramifiedFactor, map_natCast,map_inv₀,map_div,map_sub,map_one]
-      simp [a,b, map_div, map_sub, map_natCast, map_inv₀]
+    · simp only [KPRankoneCubicScalarSum.betaFactor, hξ, ite_true, KPRankoneCubicScalarSum.unramifiedFactor]
+      simp [a, b, map_sub, map_natCast, map_inv₀]
   · have he := rationalR_evaluates_one (RatFunc.C a) (RatFunc.C m) b ha hb0 hb true
       (CubicUnitCharacters.conductor K ξ)
     convert he using 1
     · simp only [characterR,hξ,ite_false,rationalR,ite_true]
       rfl
-    · simp only [KPRankoneCubicScalarSum.betaFactor,hξ,ite_false,map_natCast,map_inv₀,
-        map_div,map_sub,map_one]
-      simp [a,b, map_div, map_sub, map_natCast, map_inv₀]
+    · simp only [KPRankoneCubicScalarSum.betaFactor, hξ, ite_false]
+      simp [a, map_sub, map_natCast, map_inv₀]
  def shiftedModel (m : ℂ) (j : ℤ) (u : (ValuativeRel.valuation K).integerˣ) : RatFunc (RatFunc ℂ) :=
   (RatFunc.X : RatFunc (RatFunc ℂ)) ^ (-j) * (1-RatFunc.X) / 3 *
     ∑ᶠ ξ : CubicUnitCharacters.Character K, ∑ᶠ ε : CubicCharacters.Mu3,
@@ -317,7 +312,7 @@ end ShiftedBetaAlgebra
 namespace ShiftedBetaPower
 variable (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
   [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-private theorem absPower (ρ : ℂ) (x : Kˣ) :
+theorem absPower (ρ : ℂ) (x : Kˣ) :
     Complex.exp (-ρ * (Real.log (KPCubicHaar.abs K (x : K)) : ℂ)) =
       Complex.exp (-ρ * (Real.log (CubicUnitCharacters.residueCard K : ℝ) : ℂ)) ^
         (-KPCubicExpansion.valuationExponent K x) := by
@@ -333,10 +328,9 @@ private theorem absPower (ρ : ℂ) (x : Kˣ) :
   change _ = ((-KPCubicExpansion.valuationExponent K x : ℤ) : ℂ) *
     (-ρ * Complex.log (CubicUnitCharacters.residueCard K : ℂ))
   simp only [Int.cast_neg]
-  push_cast
   ring
   rfl
-private theorem ramified_shell_substitution {E : Type*} [Field E] (a m Q : E) (f : ℕ) (hf : 1 ≤ f)
+theorem ramified_shell_substitution {E : Type*} [Field E] (a m Q : E) (f : ℕ) (hf : 1 ≤ f)
     (hQ : Q ≠ 0) (hQA : Q-a ≠ 0) :
     m * (a/Q)^(f-1) * (a/Q-a) / (1-a/Q) =
       (1-Q) * (m * a^f * Q^(1-(f : ℤ)) / (Q-a)) := by
@@ -349,7 +343,7 @@ private theorem ramified_shell_substitution {E : Type*} [Field E] (a m Q : E) (f
   rw [haf]
   field_simp
   <;> ring
-private theorem unramified_shell_substitution {E : Type*} [Field E] (a m b Q : E)
+theorem unramified_shell_substitution {E : Type*} [Field E] (a m b Q : E)
     (hQ : Q ≠ 0) (hb : 1-b ≠ 0) (hbQ : b-Q ≠ 0) (hQA : Q-a ≠ 0)
     (ha : a ≠ 0) :
     m * ((1-a)*(b/(1-b)+(a/Q)/(1-a/Q)+a/(b*(a/Q)-a))+1-2*a) =
@@ -359,7 +353,7 @@ private theorem unramified_shell_substitution {E : Type*} [Field E] (a m b Q : E
 
 section
 variable [MeasurableSpace K] [BorelSpace K]
-private theorem prescribed_beta_cone
+theorem prescribed_beta_cone
     (dx : Measure K) [dx.IsAddHaarMeasure] (π : Kˣ)
     (hπ : valuation K (π : K) = uniformizer K)
     (ξ : CubicUnitCharacters.Character K) (b : ℂˣ) (η : Kˣ →ₜ* ℂˣ)
@@ -408,8 +402,8 @@ private theorem prescribed_beta_cone
       exact le_of_lt (by simpa using hx)
     exact ENNReal.toReal_pos (Measure.measure_pos_of_mem_nhds dx hn).ne'
       ((IsNonarchimedeanLocalField.isCompact_closedBall K 1).measure_ne_top)
-  have hvol : dx (𝒪[K] : Set K) = ENNReal.ofReal (KPRankOneRamifiedBeta.m K dx) := by
-    exact (ENNReal.ofReal_toReal ((IsNonarchimedeanLocalField.isCompact_closedBall K 1).measure_ne_top)).symm
+  have hvol : dx (𝒪[K] : Set K) = ENNReal.ofReal (KPRankOneRamifiedBeta.m K dx) := 
+    (ENNReal.ofReal_toReal ((IsNonarchimedeanLocalField.isCompact_closedBall K 1).measure_ne_top)).symm
   have hQn : Q ≠ 0 := Complex.exp_ne_zero _
   have hQnorm : ‖Q‖ = q.rpow (-ρ.re) := by
     rw [Complex.norm_exp]
@@ -446,8 +440,7 @@ private theorem prescribed_beta_cone
       change q⁻¹ < _ ∧ _ < 1 ∧ q⁻¹ / _ < _ ∧ _ < 1
       change q⁻¹ < _ ∧ _ < 1 ∧ q⁻¹ / _ < ‖Complex.exp ((ρ-1)*(Real.log q : ℂ))‖ ∧
         ‖Complex.exp ((ρ-1)*(Real.log q : ℂ))‖ < 1
-      rw [hun]
-      exact ⟨hb0,hb1,hu0,hu1⟩
+      simp_all
     obtain ⟨hint,he⟩ := KPRankOneUnramifiedBetaShells.integral_three_region K dx _ hm hvol b u hreg
     have hfun : (fun y : Kˣ => (η y : ℂ)*KPCubicExpansion.betaFunction K ρ y) =
         KPRankOneUnramifiedBetaShells.integrand K b u := by
@@ -481,7 +474,7 @@ end
  def shiftedTest (c : Kˣ) (ρ : ℂ) (v : Kˣ) : ℂ :=
   if (v : K)+(c : K)=0 then 0 else
     Complex.exp (-ρ*(Real.log (KPCubicHaar.abs K ((v : K)+(c : K))) : ℂ))
-private theorem shiftedTest_mul (c : Kˣ) (ρ : ℂ) (y : Kˣ) :
+theorem shiftedTest_mul (c : Kˣ) (ρ : ℂ) (y : Kˣ) :
     shiftedTest K c ρ (-c*y) =
       Complex.exp (-ρ*(Real.log (KPCubicHaar.abs K (c : K)) : ℂ))*
         KPCubicExpansion.betaFunction K ρ y := by
@@ -493,8 +486,7 @@ private theorem shiftedTest_mul (c : Kˣ) (ρ : ℂ) (y : Kˣ) :
   · have hy0 : 1-(y : K) ≠ 0 := sub_ne_zero.mpr (by
       intro e; apply hy; exact Units.ext e.symm)
     have hs : 0 < KPCubicHaar.abs K (1-(y : K)) := KPCubicHaar.abs_pos K hy0
-    simp only [shiftedTest,he,mul_eq_zero, c.ne_zero,hy0,or_self,ite_false,
-      KPCubicExpansion.betaFunction,ite_eq_right_iff]
+    simp only [shiftedTest, he, mul_eq_zero, c.ne_zero, hy0, or_self, ite_false, KPCubicExpansion.betaFunction]
     rw [if_neg hy,KPCubicHaar.abs_mul,Real.log_mul hc.ne' hs.ne',Complex.ofReal_add,
       mul_add,Complex.exp_add]
     congr 1
@@ -503,20 +495,12 @@ private theorem shiftedTest_mul (c : Kˣ) (ρ : ℂ) (y : Kˣ) :
     ring
 section
 variable [MeasurableSpace K] [BorelSpace K]
-private theorem units_measurableMul : MeasurableMul Kˣ := by
+theorem units_measurableMul : MeasurableMul Kˣ := by
   have hv : Measurable (fun x : Kˣ => (x : K)) := MeasurableSpace.le_map_comap
   constructor <;> intro a
-  · change Measurable (fun x : Kˣ => a*x)
-    rw [measurable_iff_comap_le]
-    unfold Units.instMeasurableSpace
-    rw [MeasurableSpace.comap_comp]
-    exact (hv.const_mul (a : K)).comap_le
-  · change Measurable (fun x : Kˣ => x*a)
-    rw [measurable_iff_comap_le]
-    unfold Units.instMeasurableSpace
-    rw [MeasurableSpace.comap_comp]
-    exact (hv.mul_const (a : K)).comap_le
-private theorem shifted_character_integral
+  · fun_prop
+  fun_prop
+theorem shifted_character_integral
     (μ : Measure Kˣ) [μ.IsMulLeftInvariant] (c : Kˣ) (ρ : ℂ) (η : Kˣ →ₜ* ℂˣ)
     (hi : Integrable (fun y : Kˣ => (η y : ℂ)*KPCubicExpansion.betaFunction K ρ y) μ) :
     Integrable (fun v : Kˣ => (η v : ℂ)*shiftedTest K c ρ v) μ ∧
@@ -531,16 +515,16 @@ private theorem shifted_character_integral
     dsimp [d]; ring
   have ht : Integrable (fun y : Kˣ => (η (-c*y) : ℂ)*shiftedTest K c ρ (-c*y)) μ := by
     simp_rw [he]
-    exact hi.const_mul d
+    fun_prop
   refine ⟨?_, ?_⟩
   · have hr := ht.comp_mul_left (-c)⁻¹
-    simpa only [← mul_assoc,mul_inv_cancel,one_mul] using hr
+    simp_all
   · rw [← integral_mul_left_eq_self (fun v : Kˣ => (η v : ℂ)*shiftedTest K c ρ v) (-c)]
     simp_rw [he]
     rw [integral_const_mul]
 end
 
-private theorem multiplicativeHaar_isHaar [MeasurableSpace K] [BorelSpace K]
+theorem multiplicativeHaar_isHaar [MeasurableSpace K] [BorelSpace K]
     (dx : Measure K) [dx.IsAddHaarMeasure] :
     (KPCubicHaar.multiplicativeHaar K dx).IsHaarMeasure := by
   letI := IsTopologicalAddGroup.rightUniformSpace K
@@ -681,8 +665,7 @@ theorem actual_shifted_beta_common_zero
       (fun y => KPCubicExpansion.omega K t y * ShiftedBetaPower.shiftedTest K c ρ (y^3)) := by
       funext y
       unfold ShiftedBetaPower.shiftedTest
-      simp only [Units.val_pow_eq_pow_val]
-      split_ifs <;> simp
+      simp
     rw [eorig,he]
     have es (ξ : CubicUnitCharacters.Character K) (ε : CubicCharacters.Mu3) := (hshift ξ ε).2
     simp_rw [es,(hbet _ _).2, hχeq,ShiftedBetaPower.absPower K ρ c]
@@ -762,8 +745,7 @@ theorem actual_shifted_beta_common_zero
       rw [hu0,mul_one,add_zero] at he
       have hc0 : KPCubicExpansion.valuationExponent K (-c) = KPCubicExpansion.valuationExponent K c := by
         simp [KPCubicExpansion.valuationExponent,Units.val_neg,Valuation.map_neg]
-      rw [hc0] at he
-      exact he
+      omega
     rw [hj]
     congr 1
     apply finsum_congr
@@ -771,7 +753,3 @@ theorem actual_shifted_beta_common_zero
     apply finsum_congr
     intro ε
     rw [hcu,hθ,Units.val_mul,Units.val_zpow_eq_zpow_val,Units.val_mul]
-
-end DedekindZetaZeroFree
-
-end

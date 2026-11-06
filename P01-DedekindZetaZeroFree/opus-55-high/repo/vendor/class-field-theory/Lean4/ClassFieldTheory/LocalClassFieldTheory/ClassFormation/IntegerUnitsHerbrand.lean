@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 namespace LocalClassFieldTheory
 
 open LocalFieldTheory
@@ -38,7 +33,6 @@ Herbrand groups of `V`, together with finiteness of the quotient, gives
 `h(G, 𝒪_Lˣ) = 1` by the Herbrand-quotient multiplicativity theorem.
 -/
 
-noncomputable section
 
 open scoped ValuativeRel
 open CyclicCohomology.ProfiniteCohomology.Herbrand
@@ -84,20 +78,7 @@ theorem chosenNormalBasisIntegerUnitsHerbrand_shortExact
   have hrange :=
     chosenNormalBasisPrincipalUnitSubgroupInclusion_range_eq_ker_quotient
       (L := L) V
-  constructor
-  · intro ha
-    have ha' : a ∈ MonoidHom.ker
-        (chosenNormalBasisIntegerUnitsQuotientMap (L := L) V) := ha
-    rw [← hrange] at ha'
-    exact ha'
-  · rintro ⟨v, rfl⟩
-    have hv :
-        chosenNormalBasisPrincipalUnitSubgroupInclusion (L := L) V v ∈
-          MonoidHom.range
-            (chosenNormalBasisPrincipalUnitSubgroupInclusion (L := L) V) :=
-      ⟨v, rfl⟩
-    rw [hrange] at hv
-    exact hv
+  simp
 
 /-- Integer-unit Herbrand calculation at one chosen normal-basis
 level.  The only low-degree cohomology input is the proved vanishing of
@@ -146,13 +127,13 @@ theorem integerUnits_herbrandQuotient_eq_one_of_chosenNormalBasis
   refine ⟨hU, ?_⟩
   let : Finite (HerbrandH0 (Gal(L / K)) 𝒪[L]ˣ) := hU.1
   let : Finite (HerbrandHMinusOne (Gal(L / K)) 𝒪[L]ˣ g) := hU.2
-  have hVone : herbrandQuotient (G := Gal(L / K)) (A := V) g = 1 := by
-    exact herbrandQuotient_eq_one_of_card_eq
+  have hVone : herbrandQuotient (G := Gal(L / K)) (A := V) g = 1 := 
+    herbrandQuotient_eq_one_of_card_eq
       (G := Gal(L / K)) (A := V) g
       (by simp only [Nat.card_unique])
   have hQone :
-      herbrandQuotient (G := Gal(L / K)) (A := 𝒪[L]ˣ ⧸ V) g = 1 := by
-    exact herbrandQuotient_eq_one_of_finite_module
+      herbrandQuotient (G := Gal(L / K)) (A := 𝒪[L]ˣ ⧸ V) g = 1 := 
+    herbrandQuotient_eq_one_of_finite_module
       (G := Gal(L / K)) (A := 𝒪[L]ˣ ⧸ V) g hg
   have hmul : herbrandQuotient (G := Gal(L / K)) (A := 𝒪[L]ˣ) g =
       herbrandQuotient (G := Gal(L / K)) (A := V) g *
@@ -162,7 +143,7 @@ theorem integerUnits_herbrandQuotient_eq_one_of_chosenNormalBasis
       (chosenNormalBasisPrincipalUnitSubgroupInclusion (L := L) V)
       (chosenNormalBasisIntegerUnitsQuotientMap (L := L) V)
       hseq.1 hseq.2.1 hseq.2.2.1 hseq.2.2.2.1 hsurj g hg
-  exact hmul.trans (by rw [hVone, hQone, one_mul])
+  simp_all
 
 variable [TopologicalSpace L] [IsNonarchimedeanLocalField L]
   [Module.Finite 𝒪[K] 𝒪[L]]
@@ -193,6 +174,3 @@ theorem exists_integerUnits_herbrandQuotient_eq_one_of_large_chosenNormalBasisLe
   intro n hcn V hV g hg hH0 hHminusOne
   exact integerUnits_herbrandQuotient_eq_one_of_chosenNormalBasis
     K L n V hV (hc n hcn V hV) g hg hH0 hHminusOne
-
-end
-end LocalClassFieldTheory

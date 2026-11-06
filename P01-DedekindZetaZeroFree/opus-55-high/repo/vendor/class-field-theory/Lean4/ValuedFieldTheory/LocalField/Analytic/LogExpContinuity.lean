@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Topology of exponential and logarithm
 
@@ -38,7 +35,7 @@ variable {K : Type u} [Field K]
 
 /-- The endpoint exponential of the deep exponential–logarithm equivalence, as a homomorphism from the
 additive ideal (written multiplicatively) to the higher principal units. -/
-noncomputable def principalUnitExpSeriesHomOfMaximalIdealPowOfWithZeroValuationScaled
+def principalUnitExpSeriesHomOfMaximalIdealPowOfWithZeroValuationScaled
     [Algebra ℚ K]
     (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
     [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
@@ -69,7 +66,7 @@ noncomputable def principalUnitExpSeriesHomOfMaximalIdealPowOfWithZeroValuationS
         apply Subtype.ext
         apply Units.ext
         apply Subtype.ext
-        simp [principalUnitExpSeriesOfMaximalIdealPowOfWithZeroValuationScaled]
+        simp
       map_mul' := by
         intro a b
         simpa using
@@ -211,7 +208,7 @@ theorem continuousAt_zero_principalUnitExpSeries_maximalIdealPow_fieldVal_ofWith
         (v := v) (p := p) e (x := x) hx hnK hnval hthreshold hcomplete
     rw [principalUnitExpSeries_maximalIdealPow_val_ofWithZeroValuationScaled,
       hv]
-    simpa [x] using ha
+    omega
 
 /-- The field value of the endpoint exponential is continuous everywhere.
 Translation in `m^n`, exponential additivity, and continuity of multiplication
@@ -330,8 +327,7 @@ theorem continuous_principalUnitExpSeriesHomOfMaximalIdealPowOfWithZeroValuation
   have hField : Continuous
       (fun a : Multiplicative I => ((((H a : LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F n) :
         F.valuationSubringˣ) : F.valuationSubring) : K)) := by
-    convert hFieldAdd.comp continuous_toAdd using 1
-    rfl
+    fun_prop
   have hVal : Continuous
       (fun a : Multiplicative I =>
         (((H a : LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F n) : F.valuationSubringˣ) :
@@ -399,8 +395,7 @@ theorem continuous_principalUnitLogSeriesOfHigherPrincipalUnitGroupOfWithZeroVal
     fun u => ⟨(u : F.valuationSubringˣ),
       LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup.antitone F hn u.property⟩
   have hι : Continuous ι := by
-    apply Continuous.subtype_mk
-    exact continuous_subtype_val
+    fun_prop
   let L : LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F 1 →* Multiplicative K :=
     principalUnitLogSeriesHomOfWithZeroValuationScaled
       (v := v) (p := p) e hnK hnval hcomplete
@@ -419,12 +414,7 @@ theorem continuous_principalUnitLogSeriesOfHigherPrincipalUnitGroupOfWithZeroVal
             (F.maximalIdeal ^ n : Ideal F.valuationSubring)) :
           F.valuationSubring) : K)) := by
     convert hfield using 1
-    funext u
-    change principalUnitLogSeriesOfWithZeroValuation v (ι u) hnK =
-      Multiplicative.toAdd (L (ι u))
-    exact
-      (principalUnitLogSeriesHomOfWithZeroValuationScaled_apply_toAdd
-        (v := v) (p := p) e hnK hnval hcomplete (ι u)).symm
+    rfl
   have hValEndpoint : Continuous
       (fun u : LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F n =>
         ((principalUnitLogSeriesOfHigherPrincipalUnitGroupOfWithZeroValuationScaled
@@ -440,7 +430,7 @@ theorem continuous_principalUnitLogSeriesOfHigherPrincipalUnitGroupOfWithZeroVal
 /-- The deep exponential–logarithm equivalence as a topological group isomorphism, once the two exact
 series-composition identities have been supplied.  Continuity of both maps is
 not an assumption: it is furnished by the endpoint theorems above. -/
-noncomputable def principalUnitExpLogContinuousMulEquivOfExact_ofWithZeroValuationScaled
+def principalUnitExpLogContinuousMulEquivOfExact_ofWithZeroValuationScaled
     [Algebra ℚ K]
     (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
     [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
@@ -508,8 +498,3 @@ noncomputable def principalUnitExpLogContinuousMulEquivOfExact_ofWithZeroValuati
           (continuous_principalUnitLogSeriesOfHigherPrincipalUnitGroupOfWithZeroValuationScaled
             (v := v) (p := p) e n (π := π) hπval hn hlevel
             hnKlog hnvalLog hcomplete) }
-
-end MultiplicativeIntegerValuation
-end LocalFieldTheory.DiscreteValuationField
-
-end

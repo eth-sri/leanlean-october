@@ -14,7 +14,7 @@ open IsDedekindDomain
 variable {F : Type} [Field F] [NumberField F]
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
-private theorem exteriorPrime_notMem_Sf {A : SArithmeticData F}
+theorem exteriorPrime_notMem_Sf {A : SArithmeticData F}
     (p : LocalFiniteSums.ExteriorPrime A) : p.val ∉ A.Sf := by
   intro hp
   have h := (A.exterior_iff ⟨p.val.asIdeal, p.val.ne_bot⟩).mp p.property p.val hp
@@ -34,7 +34,7 @@ private theorem exteriorPrime_notMem_Sf {A : SArithmeticData F}
     rw [map_mul]
     exact (mul_le_mul_of_nonneg_right (a.property p.val p.property) zero_le).trans (by simpa using hb)
 
-private theorem order_eq_exponent (A : SArithmeticData F) (r : A.R)
+theorem order_eq_exponent (A : SArithmeticData F) (r : A.R)
     (I : A.Exterior) (hgen : A.Generates I r) (p : ThetaBranch.ExteriorPrime A) :
     ThetaBranch.order p.val (Units.mk0 (r : F) (by exact_mod_cast hgen.1)) =
       (idealPrimeExponent p.val.asIdeal I.val : ℤ) := by
@@ -56,7 +56,7 @@ private theorem order_eq_exponent (A : SArithmeticData F) (r : A.R)
   have hrv : p.val.valuation F (r : F) ≤ WithZero.exp (-(n : ℤ)) := by
     apply hmap
     rw [← hgen.2]
-    exact Ideal.subset_span (Set.mem_singleton r)
+    simp
   obtain ⟨a, ha, han⟩ : ∃ a : 𝓞 F, a ∈ I.val ∧ a ∉ p.val.asIdeal ^ (n + 1) := by
     contrapose! hnot
     exact hnot
@@ -79,7 +79,6 @@ private theorem order_eq_exponent (A : SArithmeticData F) (r : A.R)
     (Valuation.ne_zero_iff _).mpr (by exact_mod_cast hgen.1 : (r : F) ≠ 0)
   rw [← WithZero.exp_log hnz, WithZero.exp_le_exp] at hrv hrv'
   change -WithZero.log (p.val.valuation F (r : F)) = (n : ℤ)
-  push_cast at hrv'
   omega
 
  def recipeArithmeticContext (R : PrincipalMellin.ActualRecipe S η) :
@@ -136,8 +135,7 @@ theorem actual_context_and_raw_frequencies
         Units.mk0 (r : F) (by exact_mod_cast hIgen.1) := Units.ext rfl
     have h6 := (R.probe.frequencies.sixthFree u.val u.property ⟨p.val, hpS⟩).2
     rw [hrow, order_eq_exponent R.A r I hIgen ⟨p.val, hpS⟩] at h6
-    simp only [Subtype.coe_mk] at h6
-    omega
+    simp_all
   choose U hUeq using hU
   exact ⟨recipeArithmeticContext R, U, rfl, hUeq⟩
 
@@ -170,7 +168,7 @@ open IsDedekindDomain
     rw [map_mul]
     exact (mul_le_mul_of_nonneg_right (x.property v hv) zero_le).trans_lt (by simpa using hy)
 
-private lemma residueCoefficient_eq_one (A : SArithmeticData F) (σ : F →+* ℂ)
+lemma residueCoefficient_eq_one (A : SArithmeticData F) (σ : F →+* ℂ)
     (I : A.Exterior) (x : A.R)
     (h : AllRowEuler.UnitCovariance.residueCoefficient σ I x = 1) :
     A.sexticResidue I x = 1 := by
@@ -178,7 +176,7 @@ private lemma residueCoefficient_eq_one (A : SArithmeticData F) (σ : F →+* �
   rw [h2] at h
   exact σ.injective (by simpa using h)
 
-private lemma coprime_conductor_cofinite (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) :
+lemma coprime_conductor_cofinite (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) :
     ∀ᶠ v : HeightOneSpectrum (𝓞 F) in Filter.cofinite, v.asIdeal ⊔ m = ⊤ := by
   apply Filter.eventually_cofinite.mpr
   apply (Ideal.finite_factors hm).subset
@@ -189,7 +187,7 @@ private lemma coprime_conductor_cofinite (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) :
   exact (hvmax.eq_of_le hv (show v.asIdeal ≤ v.asIdeal ⊔ m from le_sup_left)).symm ▸
     (show m ≤ v.asIdeal ⊔ m from le_sup_right)
 
-private lemma sexticResidue_one_valuation (A : SArithmeticData F)
+lemma sexticResidue_one_valuation (A : SArithmeticData F)
     (v : HeightOneSpectrum (𝓞 F)) (hv : v ∉ A.Sf) (x : A.R)
     (h : A.sexticResidue (ThetaBranch.primeIdeal A ⟨v, hv⟩) x = 1) :
     v.valuation F ((x : F) ^ ((Ideal.absNorm v.asIdeal - 1) / 6) - 1) < 1 := by
@@ -242,9 +240,9 @@ private lemma sexticResidue_one_valuation (A : SArithmeticData F)
   have hval2 : v.valuation F
       ((x ^ ((Ideal.absNorm v.asIdeal - 1) / 6) - 1 : A.R) : F) < 1 :=
     hmap hmem
-  simpa [map_sub, map_pow] using hval2
+  omega
 
-private lemma eventually_coefficient_of_principal
+lemma eventually_coefficient_of_principal
     (R : PrincipalMellin.ActualRecipe S η)
     (U : AllRowEuler.InitialSeparation.RawFrequency R.A)
     (ν : Detector.PrimitiveFrequencyCharacter F) (hν : ν.character.IsPrincipal)
@@ -256,7 +254,7 @@ private lemma eventually_coefficient_of_principal
         AllRowEuler.InitialSeparation.plusExteriorCoefficient R.σ U
           (ThetaBranch.primeIdeal R.A ⟨v, hv⟩) = 1 := by
   have hSf : ∀ᶠ v : HeightOneSpectrum (𝓞 F) in Filter.cofinite, v ∉ R.A.Sf :=
-    Filter.eventually_cofinite.mpr (by simpa using R.A.Sf.finite_toSet)
+    by simp
   have hcop : ∀ᶠ v : HeightOneSpectrum (𝓞 F) in Filter.cofinite,
       v.asIdeal ⊔ U.ideal.val = ⊤ :=
     coprime_conductor_cofinite U.ideal.val U.ideal.property.1
@@ -283,7 +281,7 @@ private lemma eventually_coefficient_of_principal
   rw [show (ThetaBranch.primeIdeal R.A ⟨v, hv⟩).val = v.asIdeal from rfl, hdel]
   exact hν v.asIdeal v.ne_bot h2
 
-private lemma eventually_coefficient_of_principal_target
+lemma eventually_coefficient_of_principal_target
     (R : PrincipalMellin.ActualRecipe S η)
     (U : AllRowEuler.InitialSeparation.RawFrequency R.A)
     (ν : Detector.PrimitiveFrequencyCharacter F) (hν : ν.character.IsPrincipal)
@@ -295,7 +293,7 @@ private lemma eventually_coefficient_of_principal_target
         AllRowEuler.InitialSeparation.plusExteriorCoefficient R.σ U
           (ThetaBranch.primeIdeal R.A ⟨v, hv⟩) = 1 := by
   have hSf : ∀ᶠ v : HeightOneSpectrum (𝓞 F) in Filter.cofinite, v ∉ R.A.Sf :=
-    Filter.eventually_cofinite.mpr (by simpa using R.A.Sf.finite_toSet)
+    by simp
   have hcop : ∀ᶠ v : HeightOneSpectrum (𝓞 F) in Filter.cofinite,
       v.asIdeal ⊔ U.ideal.val = ⊤ :=
     coprime_conductor_cofinite U.ideal.val U.ideal.property.1
@@ -333,7 +331,7 @@ private lemma eventually_coefficient_of_principal_target
   rw [htarget, one_mul] at hmain
   simpa using congrArg star hmain
 
-private lemma nonprincipal_of_eventually
+lemma nonprincipal_of_eventually
     (R : PrincipalMellin.ActualRecipe S η)
     (u : Frequency R) (U : AllRowEuler.InitialSeparation.RawFrequency R.A)
     (hU : U.u = u.val.val) (hu : u ≠ principalFrequency R)
@@ -342,7 +340,7 @@ private lemma nonprincipal_of_eventually
         AllRowEuler.InitialSeparation.plusExteriorCoefficient R.σ U
           (ThetaBranch.primeIdeal R.A ⟨v, hv⟩) = 1) : False := by
   have hSf : ∀ᶠ v : HeightOneSpectrum (𝓞 F) in Filter.cofinite, v ∉ R.A.Sf :=
-    Filter.eventually_cofinite.mpr (by simpa using R.A.Sf.finite_toSet)
+    by simp
   have hev3 : ∀ᶠ v : HeightOneSpectrum (𝓞 F) in Filter.cofinite,
       v.valuation F ((U.u : F) ^ ((Ideal.absNorm v.asIdeal - 1) / 6) - 1) < 1 := by
     filter_upwards [hSf, hev] with v hvSf hv
@@ -367,8 +365,7 @@ private lemma nonprincipal_of_eventually
         6 * ThetaBranch.order v x := by
       rw [← hbrow, show Units.mk0 (U.u : F) hne = x ^ 6 from hx.symm]
       unfold ThetaBranch.order
-      rw [Units.val_pow_eq_pow_val, map_pow, WithZero.log_pow]
-      ring
+      simp
     have h0 : 0 ≤ ThetaBranch.order v (ThetaReflectionData.rowUnit R.A u.val) := by
       simpa using (R.probe.frequencies.sixthFree u.val u.property ⟨v, hv⟩).1
     have hlt : ThetaBranch.order v (ThetaReflectionData.rowUnit R.A u.val) < 6 := by
@@ -391,17 +388,16 @@ private lemma nonprincipal_of_eventually
   have hgU : ((gU : R.A.U) : Fˣ) = R.probe.allowed.generator I0 := by
     apply Units.ext
     rw [hgencoe]
-    simp [gU, SArithmeticData.unitEquiv, Set.unitEquivUnitsInteger]
+    rfl
   obtain ⟨w, hw, huniqw⟩ := R.probe.frequencies.factorization u.val
   have hpv : ThetaReflectionData.rowUnit R.A (principalFrequency R).val = 1 := by
     apply Units.ext
-    simp [ThetaReflectionData.rowUnit, principalFrequency]
+    rfl
   have hA : ∃ γ : R.A.U, ThetaReflectionData.rowUnit R.A u.val =
       ThetaReflectionData.rowUnit R.A (principalFrequency R).val *
         R.probe.allowed.generator I0 ^ 6 * γ.val ^ 6 := by
     refine ⟨x0 * gU⁻¹, ?_⟩
     have hcoe : (((x0 * gU⁻¹ : R.A.U)) : Fˣ) = x * ((gU : R.A.U) : Fˣ)⁻¹ := by
-      simp only [Subgroup.coe_mul, Subgroup.coe_inv]
       rfl
     rw [hpv, hcoe, hgU, hbrow.symm, ← show x ^ 6 = Units.mk0 (U.u : F) hne from hx]
     rw [one_mul, mul_pow, inv_pow, ← mul_assoc,
@@ -411,7 +407,7 @@ private lemma nonprincipal_of_eventually
         R.probe.allowed.generator I0 ^ 6 * γ.val ^ 6 := by
     refine ⟨gU⁻¹, ?_⟩
     have hcoe : (((gU⁻¹ : R.A.U)) : Fˣ) = ((gU : R.A.U) : Fˣ)⁻¹ := by
-      simp only [Subgroup.coe_inv]
+      rfl
     rw [hcoe, hgU, inv_pow, mul_assoc, mul_inv_cancel, mul_one]
   have h1 := huniqw (u, I0) hB
   have h2 := huniqw (principalFrequency R, I0) hA
@@ -444,12 +440,3 @@ end
 section
 
 namespace DedekindZetaZeroFree.PrincipalMellinComparison.NonprincipalContinuation
-noncomputable section
-open scoped Classical NumberField
-variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-
-end
-end DedekindZetaZeroFree.PrincipalMellinComparison.NonprincipalContinuation
-
-end

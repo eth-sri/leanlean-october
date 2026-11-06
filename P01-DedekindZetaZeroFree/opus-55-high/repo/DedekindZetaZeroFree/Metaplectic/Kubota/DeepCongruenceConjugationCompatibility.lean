@@ -10,13 +10,12 @@ open NumberField IsDedekindDomain Topology
 namespace DedekindZetaZeroFree.KPDeepConjugationGerms
 
 noncomputable section
-set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 variable (v : HeightOneSpectrum (𝓞 F))
 
-private lemma d_inv (a b : (KPLocalCube.LocalField F v)ˣ) :
+lemma d_inv (a b : (KPLocalCube.LocalField F v)ˣ) :
     (KubotaRankTwo.d (KPLocalCube.LocalField F v) a b)⁻¹ =
       KubotaRankTwo.d (KPLocalCube.LocalField F v) a⁻¹ b⁻¹ := by
   apply inv_eq_of_mul_eq_one_right
@@ -24,7 +23,7 @@ private lemma d_inv (a b : (KPLocalCube.LocalField F v)ˣ) :
   fin_cases i <;> fin_cases j <;>
     simp [KubotaRankTwo.coe_d, Matrix.mul_apply, Fin.sum_univ_two]
 
-private lemma X_continuousAt_open (g : KPLocalCube.LocalGL2 F v)
+lemma X_continuousAt_open (g : KPLocalCube.LocalGL2 F v)
     (hg : g 1 0 ≠ 0) : ContinuousAt (KubotaRankTwo.X (KPLocalCube.LocalField F v)) g := by
   have hc : Continuous (fun k : KPLocalCube.LocalGL2 F v => k 1 0) :=
     by fun_prop
@@ -37,7 +36,7 @@ private lemma X_continuousAt_open (g : KPLocalCube.LocalGL2 F v)
     simp [KubotaRankTwo.X, KubotaRankTwo.x, hk]
   exact hc.continuousAt.congr hh.symm
 
-private lemma cubes_nhds (m : ℕ) (hm : 1 ≤ m)
+lemma cubes_nhds (m : ℕ) (hm : 1 ≤ m)
     (hcharts : ∀ k ∈ KPLocalCube.Gamma F v m,
       (∀ i : Fin 2, ∃ t : (KPLocalCube.LocalField F v)ˣ,
         ((t ^ 3 : (KPLocalCube.LocalField F v)ˣ) :
@@ -48,14 +47,11 @@ private lemma cubes_nhds (m : ℕ) (hm : 1 ≤ m)
       KubotaRankTwo.d (KPLocalCube.LocalField F v) t 1) := by
     rw [Units.continuous_iff]
     constructor
-    · apply continuous_pi; intro i
-      apply continuous_pi; intro j
-      fin_cases i <;> fin_cases j <;> simp [KubotaRankTwo.coe_d] <;> fun_prop
+    · fun_prop
     · apply continuous_pi; intro i
       apply continuous_pi; intro j
       simp_rw [d_inv F v]
-      fin_cases i <;> fin_cases j <;> simp [KubotaRankTwo.coe_d] <;> try exact continuous_const
-      exact Units.continuous_val.inv₀ (fun u => u.ne_zero)
+      fun_prop
   have ho := (KPLocalCube.Gamma_compact_open F v m hm).2
   have hone : KubotaRankTwo.d (KPLocalCube.LocalField F v) 1 1 = 1 := by
     ext i j; fin_cases i <;> fin_cases j <;> simp [KubotaRankTwo.coe_d]
@@ -66,7 +62,7 @@ private lemma cubes_nhds (m : ℕ) (hm : 1 ≤ m)
   obtain ⟨u, hu⟩ := (hcharts _ ht).1 0
   exact ⟨u, Units.ext (by simpa [KubotaRankTwo.coe_d] using hu)⟩
 
-private lemma lift_conjugation (g k : KPLocalCube.LocalGL2 F v)
+lemma lift_conjugation (g k : KPLocalCube.LocalGL2 F v)
     (hs : KPLocalCover.sectionMap F ζ hζ (Sum.inr v) g *
       KPLocalCover.sectionMap F ζ hζ (Sum.inr v) k *
       (KPLocalCover.sectionMap F ζ hζ (Sum.inr v) g)⁻¹ =
@@ -85,10 +81,7 @@ private lemma lift_conjugation (g k : KPLocalCube.LocalGL2 F v)
       dsimp at hx
       subst xg
       change KPLocalCover.CubicGL2Raw.mk _ _ = KPLocalCover.CubicGL2Raw.mk _ _
-      congr 1
-      · simp [KPLocalCover.rawMul, mul_assoc]
-      · simpa [KPLocalCover.rawMul, KPLocalCover.sectionMap, mul_comm] using
-          congrArg (fun z => xe * z) he
+      simp_all
   exact (mul_inv_eq_iff_eq_mul).mpr hmul
 
  def Good (g : KPLocalCube.LocalGL2 F v) : Prop :=
@@ -97,17 +90,17 @@ private lemma lift_conjugation (g k : KPLocalCube.LocalGL2 F v)
       x * KPLocalCover.sectionMap F ζ hζ (Sum.inr v) k * x⁻¹ =
         KPLocalCover.sectionMap F ζ hζ (Sum.inr v) (g * k * g⁻¹)
 
-private lemma symbol_cube_left (a b : (KPLocalCube.LocalField F v)ˣ)
+lemma symbol_cube_left (a b : (KPLocalCube.LocalField F v)ˣ)
     (ha : a ∈ KPLocalCube.cubes F v) : KPHilbert.B3 F ζ hζ (Sum.inr v) a b = 1 := by
   obtain ⟨t, rfl⟩ := ha
   exact (KPHilbert.B3_laws F ζ hζ (Sum.inr v)).2.2.2.2.1 t b |>.1
 
-private lemma symbol_cube_right (a b : (KPLocalCube.LocalField F v)ˣ)
+lemma symbol_cube_right (a b : (KPLocalCube.LocalField F v)ˣ)
     (hb : b ∈ KPLocalCube.cubes F v) : KPHilbert.B3 F ζ hζ (Sum.inr v) a b = 1 := by
   obtain ⟨t, rfl⟩ := hb
   exact (KPHilbert.B3_laws F ζ hζ (Sum.inr v)).2.2.2.2.1 a t |>.2
 
-private lemma Good_open (m : ℕ) (hm : 1 ≤ m)
+lemma Good_open (m : ℕ) (hm : 1 ≤ m)
     (hcharts : ∀ k ∈ KPLocalCube.Gamma F v m,
       (∀ i : Fin 2, ∃ t : (KPLocalCube.LocalField F v)ˣ,
         ((t ^ 3 : (KPLocalCube.LocalField F v)ˣ) :
@@ -154,8 +147,8 @@ private lemma Good_open (m : ℕ) (hm : 1 ≤ m)
           KubotaRankTwo.det (KPLocalCube.LocalField F v) (g * k * g⁻¹)) =
         (KubotaRankTwo.X (KPLocalCube.LocalField F v) (g * k) /
           KubotaRankTwo.X (KPLocalCube.LocalField F v) g) /
-            KubotaRankTwo.det (KPLocalCube.LocalField F v) (g * k * g⁻¹) := by
-        exact div_mul_eq_div_div _ _ _
+            KubotaRankTwo.det (KPLocalCube.LocalField F v) (g * k * g⁻¹) := 
+        div_mul_eq_div_div _ _ _
       rw [heq]
       exact (KPLocalCube.cubes F v).div_mem hratio (hcharts _ hq).2
     rw [symbol_cube_right F ζ hζ v _ _ hb,
@@ -168,7 +161,7 @@ private lemma Good_open (m : ℕ) (hm : 1 ≤ m)
       KPLocalCover.sigmaTwo F ζ hζ (Sum.inr v) (g * k * g⁻¹) g)
   rw [he, hs1, hs2]
 
-private lemma Good_mul (g h : KPLocalCube.LocalGL2 F v)
+lemma Good_mul (g h : KPLocalCube.LocalGL2 F v)
     (hg : Good F ζ hζ v g) (hh : Good F ζ hζ v h) : Good F ζ hζ v (g * h) := by
   have hc : Filter.Tendsto (fun k : KPLocalCube.LocalGL2 F v => h * k * h⁻¹)
       (𝓝 1) (𝓝 1) := by
@@ -189,7 +182,7 @@ private lemma Good_mul (g h : KPLocalCube.LocalGL2 F v)
         (KPLocalCover.sectionMap F ζ hζ (Sum.inr v) g)⁻¹ := by group
     _ = _ := by rw [hyk, hgk]; congr 1; group
 
-private lemma Good_all (m : ℕ) (hm : 1 ≤ m)
+lemma Good_all (m : ℕ) (hm : 1 ≤ m)
     (hcharts : ∀ k ∈ KPLocalCube.Gamma F v m,
       (∀ i : Fin 2, ∃ t : (KPLocalCube.LocalField F v)ˣ,
         ((t ^ 3 : (KPLocalCube.LocalField F v)ˣ) :
@@ -291,11 +284,5 @@ theorem raw_extension_conjugation_near_identity (m : ℕ) (hm : 1 ≤ m)
       dsimp at hx
       subst xg
       change KPLocalCover.CubicGL2Raw.mk _ _ = KPLocalCover.CubicGL2Raw.mk _ _
-      congr 1
-      · simp [KPLocalCover.rawMul, mul_assoc]
-      · simpa [KPLocalCover.rawMul, KPLocalCover.sectionMap, mul_comm] using
-          congrArg (fun z => xe * z) he
+      simp_all
   exact (mul_inv_eq_iff_eq_mul).mpr hmul
-
-end
-end DedekindZetaZeroFree.KPDeepConjugationGerms

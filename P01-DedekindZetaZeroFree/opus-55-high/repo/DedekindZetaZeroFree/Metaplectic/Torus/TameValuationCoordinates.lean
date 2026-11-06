@@ -35,7 +35,7 @@ lemma unit_of_exponent_zero (y : Kˣ)
     y ∈ (KPRamifiedBeta.unitsInclusion K).range := by
   have hn : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K
       (valuation K (y : K)) ≠ 0 := by
-    simpa using (Units.ne_zero y)
+    simp
   have hv : valuation K (y : K) = 1 := by
     apply (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K).injective
     change IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K (valuation K (y : K)) =
@@ -52,7 +52,7 @@ lemma unit_of_exponent_zero (y : Kˣ)
   apply Units.ext
   exact congrArg (fun x : 𝒪[K] => (x : K)) hu
 
-private lemma cubes_le_modVal_ker : CubicCharacters.cubes Kˣ ≤ (modVal K).ker := by
+lemma cubes_le_modVal_ker : CubicCharacters.cubes Kˣ ≤ (modVal K).ker := by
   intro y hy
   change ∃ x : Kˣ, x ^ 3 = y at hy
   obtain ⟨x, rfl⟩ := hy
@@ -61,7 +61,7 @@ private lemma cubes_le_modVal_ker : CubicCharacters.cubes Kˣ ≤ (modVal K).ker
   change (3 : ZMod 3) * (KPCubicExpansion.valuationExponent K x : ZMod 3) = 0
   rw [show (3 : ZMod 3) = 0 from rfl, zero_mul]
 
-private lemma modVal_ker (π : Kˣ)
+lemma modVal_ker (π : Kˣ)
     (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K
       (valuation K (π : K)) = WithZero.exp (-1 : ℤ)) :
     (modVal K).ker = (KPRamifiedBeta.unitsInclusion K).range ⊔ CubicCharacters.cubes Kˣ := by
@@ -86,7 +86,6 @@ private lemma modVal_ker (π : Kˣ)
       ring
     have heq : y = u * π ^ KPCubicExpansion.valuationExponent K y := by
       dsimp [u]
-      rw [mul_assoc, ← zpow_add]
       simp
     rw [heq]
     exact Subgroup.mul_mem _ (Subgroup.mem_sup_left hum) (Subgroup.mem_sup_right hcm)
@@ -127,7 +126,6 @@ theorem valuation_quotient_coordinates [CharZero K]
     change Multiplicative.ofAdd (KPCubicExpansion.valuationExponent K
       (π ^ (j.toAdd.val : ℤ)) : ZMod 3) = j
     rw [KPCubicExpansion.valuationExponent_zpow, hp, mul_one]
-    change (((j.toAdd.val : ℤ) : ZMod 3)) = j.toAdd
     simp
   refine ⟨QuotientGroup.liftEquiv (unitCubeClasses K) hsurj hker, ?_, ?_⟩
   · intro y
@@ -141,7 +139,3 @@ theorem valuation_quotient_coordinates [CharZero K]
 abbrev DiagonalValuations := ℤ × ℤ
 
 def transportExponent (j : Fin 3) : ℤ := if j = 2 then 2 else 1
-
-end
-
-end DedekindZetaZeroFree.KPTameValuationCoordinates

@@ -4,7 +4,6 @@ public import Mathlib.MeasureTheory.Integral.DominatedConvergence
 
 @[expose] public section
 
-noncomputable section
 open MeasureTheory
 open scoped ENNReal
 namespace DedekindZetaZeroFree.OrbitExpansion.AbsoluteIntegration
@@ -53,10 +52,6 @@ theorem summable_majorant_ae {b : ι → X → ℝ}
     ∀ᵐ x ∂μ, Summable (fun i => b i x) := by
   have hi' (i : ι) : Integrable (fun x => (b i x : ℂ)) μ := (hi i).ofReal
   have hn (i : ι) (x : X) : ‖(b i x : ℂ)‖ = b i x := by
-    rw [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (hp i x)]
+    simp_all
   have h := norm_sum_ae hi' (by simpa only [hn] using hs)
   simpa only [hn] using h
-
-end DedekindZetaZeroFree.OrbitExpansion.AbsoluteIntegration
-
-end

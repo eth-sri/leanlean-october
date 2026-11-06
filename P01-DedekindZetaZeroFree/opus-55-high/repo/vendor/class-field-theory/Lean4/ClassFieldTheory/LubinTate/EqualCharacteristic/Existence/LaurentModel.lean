@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Equal-characteristic Laurent-series model
 
@@ -40,114 +37,7 @@ variable {K : Type u} [Field K]
 
 /-- The Laurent-series parameter `T`, written through the localization map
 from power series so its later transport to the local field is definitional. -/
-noncomputable def equalCharacteristicLaurentUniformizer
+def equalCharacteristicLaurentUniformizer
     (F : LocalField.{u, v} K) : F.residueField⸨X⸩ :=
   algebraMap F.residueField⟦X⟧ F.residueField⸨X⸩
     (PowerSeries.X : F.residueField⟦X⟧)
-
-/-- In equal characteristic, Laurent-series evaluation at a chosen
-uniformizer is a field equivalence onto the local field. -/
-noncomputable def equalCharacteristicLaurentRingEquiv
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    {pi : F.valuationSubring}
-    (hpi : F.valuation.IsUniformizer (pi : K)) :
-    F.residueField⸨X⸩ ≃+* K := by
-  let f := CompleteDVF.higherPrincipalUnitGroup.iwasawaResidueRank F
-  let n : ℕ+ :=
-    ⟨f, Module.finrank_pos⟩
-  let eval : F.residueField⸨X⸩ →+* K :=
-    CompleteDVF.EqualCharacteristicLaurent.adicLaurentSeriesEvalHom
-      (F := F.toCompleteDVF) F.residueCharacteristic (n := n)
-      (by
-        simpa [f, n] using
-          CompleteDVF.higherPrincipalUnitGroup.residueField_card_eq_residueCharacteristic_pow_iwasawaResidueRank F)
-      pi hpi
-  exact RingEquiv.ofBijective eval
-    ⟨RingHom.injective eval,
-      CompleteDVF.EqualCharacteristicLaurent.adicLaurentSeriesEvalHom_surjective
-        (F := F.toCompleteDVF) F.residueCharacteristic (n := n)
-        (by
-          simpa [f, n] using
-            CompleteDVF.higherPrincipalUnitGroup.residueField_card_eq_residueCharacteristic_pow_iwasawaResidueRank F)
-        pi hpi⟩
-
-/-- States the theorem `equalCharacteristicLaurentRingEquiv_apply`. -/
-@[simp]
-theorem equalCharacteristicLaurentRingEquiv_apply
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    {pi : F.valuationSubring}
-    (hpi : F.valuation.IsUniformizer (pi : K))
-    (x : F.residueField⸨X⸩) :
-    equalCharacteristicLaurentRingEquiv F hpi x =
-      CompleteDVF.EqualCharacteristicLaurent.adicLaurentSeriesEvalHom
-        (F := F.toCompleteDVF) F.residueCharacteristic
-        (n :=
-          ⟨CompleteDVF.higherPrincipalUnitGroup.iwasawaResidueRank F,
-            Module.finrank_pos⟩)
-        (by
-          simpa using
-            CompleteDVF.higherPrincipalUnitGroup.residueField_card_eq_residueCharacteristic_pow_iwasawaResidueRank F)
-        pi hpi x := by
-  rfl
-
-/-- States the theorem `equalCharacteristicLaurentRingEquiv_algebraMap_C`. -/
-@[simp]
-theorem equalCharacteristicLaurentRingEquiv_algebraMap_C
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    {pi : F.valuationSubring}
-    (hpi : F.valuation.IsUniformizer (pi : K))
-    (a : F.residueField) :
-    equalCharacteristicLaurentRingEquiv F hpi
-        (algebraMap F.residueField⟦X⟧ F.residueField⸨X⸩
-          (PowerSeries.C a)) =
-      CompleteDVF.EqualCharacteristicLaurent.coeffHom
-        (F := F.toCompleteDVF) F.residueCharacteristic
-        (n :=
-          ⟨CompleteDVF.higherPrincipalUnitGroup.iwasawaResidueRank F,
-            Module.finrank_pos⟩)
-        (by
-          simpa using
-            CompleteDVF.higherPrincipalUnitGroup.residueField_card_eq_residueCharacteristic_pow_iwasawaResidueRank F)
-        a := by
-  rw [equalCharacteristicLaurentRingEquiv_apply]
-  exact
-    CompleteDVF.EqualCharacteristicLaurent.adicLaurentSeriesEvalHom_algebraMap_C
-      (F := F.toCompleteDVF) F.residueCharacteristic
-      (n :=
-        ⟨CompleteDVF.higherPrincipalUnitGroup.iwasawaResidueRank F,
-          Module.finrank_pos⟩)
-      (by
-        simpa using
-          CompleteDVF.higherPrincipalUnitGroup.residueField_card_eq_residueCharacteristic_pow_iwasawaResidueRank F)
-      pi hpi a
-
-/-- States the theorem `equalCharacteristicLaurentRingEquiv_algebraMap_X`. -/
-@[simp]
-theorem equalCharacteristicLaurentRingEquiv_algebraMap_X
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    {pi : F.valuationSubring}
-    (hpi : F.valuation.IsUniformizer (pi : K)) :
-    equalCharacteristicLaurentRingEquiv F hpi
-        (algebraMap F.residueField⟦X⟧ F.residueField⸨X⸩
-          (PowerSeries.X : F.residueField⟦X⟧)) =
-      (pi : K) := by
-  rw [equalCharacteristicLaurentRingEquiv_apply]
-  exact
-    CompleteDVF.EqualCharacteristicLaurent.adicLaurentSeriesEvalHom_algebraMap_X
-      (F := F.toCompleteDVF) F.residueCharacteristic
-      (n :=
-        ⟨CompleteDVF.higherPrincipalUnitGroup.iwasawaResidueRank F,
-          Module.finrank_pos⟩)
-      (by
-        simpa using
-          CompleteDVF.higherPrincipalUnitGroup.residueField_card_eq_residueCharacteristic_pow_iwasawaResidueRank F)
-      pi hpi
-
-end EqualCharacteristic
-end LubinTate
-
-end

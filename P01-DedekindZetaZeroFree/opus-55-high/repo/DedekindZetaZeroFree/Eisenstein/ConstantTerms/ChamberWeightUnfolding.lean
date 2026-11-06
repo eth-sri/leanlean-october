@@ -116,7 +116,7 @@ theorem standard_integrable (K : Subgroup (G F ζ hζ))
   exact ⟨hh.aestronglyMeasurable,
     by simpa only [HasFiniteIntegral, ofReal_norm] using hfinite⟩
 
-private theorem literal_two_cells_probability (K : Subgroup (G F ζ hζ))
+theorem literal_two_cells_probability (K : Subgroup (G F ζ hζ))
     (hK : IwasawaCompact F ζ hζ K) (f : Flat F ζ hζ K)
     (s : ℂ) (hs : (1 : ℝ) / 3 < s.re) (g : G F ζ hζ) :
     (∫ q : KPAdditiveQuotient F,

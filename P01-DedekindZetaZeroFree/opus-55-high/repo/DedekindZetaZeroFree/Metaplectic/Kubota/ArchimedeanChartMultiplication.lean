@@ -77,15 +77,11 @@ private theorem base_domain : archBase F ∈ archDomain F := by
   intro i
   have hd : ContDiffOn ℝ (⊤ : ℕ∞) (fun p : ArchCoordinates F × ArchCoordinates F =>
       1+p.1 w 2*p.2 w 0) (V ×ˢ V) := by fun_prop
-  have hn : ∀p∈V ×ˢ V, 1+p.1 w 2*p.2 w 0 ≠ 0 := fun p hp => hden p.1 hp.1 p.2 hp.2 w
+  have hn : ∀p∈V ×ˢ V, 1+p.1 w 2*p.2 w 0 ≠ 0 := by simp_all
   have hinv := hd.inv hn
   have hc₁ (k : Fin 3) : ContDiffOn ℝ (⊤ : ℕ∞) (fun p : ArchCoordinates F × ArchCoordinates F => p.1 w k) (V ×ˢ V) := by fun_prop
   have hc₂ (k : Fin 3) : ContDiffOn ℝ (⊤ : ℕ∞) (fun p : ArchCoordinates F × ArchCoordinates F => p.2 w k) (V ×ˢ V) := by fun_prop
-  fin_cases i <;> simp [product, div_eq_mul_inv, inv_pow]
+  fin_cases i <;> simp [product, div_eq_mul_inv]
   · exact (hc₁ 0).add (((hc₁ 1).mul (hc₂ 0)).mul hinv)
   · exact ((hc₁ 1).mul (hc₂ 1)).mul ((hd.pow 2).inv (fun p hp => pow_ne_zero _ (hn p hp)))
-  · exact (hc₂ 2).add (((hc₁ 2).mul (hc₂ 1)).mul hinv)
-
-end DedekindZetaZeroFree.KPGlobalResidualConstruction.NativeChartProduct
-
-end
+  fun_prop

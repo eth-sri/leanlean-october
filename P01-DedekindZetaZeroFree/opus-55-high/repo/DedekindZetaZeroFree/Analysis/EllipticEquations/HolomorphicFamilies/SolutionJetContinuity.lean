@@ -45,7 +45,7 @@ theorem smooth_holomorphic_jet_continuous {n : ℕ} (B : LocalBall n)
   intro z₀ hz₀ K hK hKB m ε hε
   obtain ⟨ρ, hρ, hρO, coeff, hc⟩ := hh z₀ hz₀
   let r := ρ / 2
-  have hr : 0 < r := by dsimp [r]; positivity
+  have hr : 0 < r := by positivity
   have hrρ : r < ρ := by dsimp [r]; linarith
   obtain ⟨N, hN⟩ := hc.2.2 K hK hKB m r hr.le hrρ (ε / 3) (by positivity)
   letI : CompactSpace K := isCompact_iff_compactSpace.mp hK
@@ -55,14 +55,13 @@ theorem smooth_holomorphic_jet_continuous {n : ℕ} (B : LocalBall n)
   let J : ℂ → CompactJets K m := fun z =>
     ∑ q ∈ Finset.range N, (z - z₀) ^ q • j q
   have hJ : Continuous J := by
-    dsimp [J]
     fun_prop
   obtain ⟨δ, hδ, hδJ⟩ := Metric.continuousAt_iff.mp hJ.continuousAt
     (ε / 3) (by positivity)
   refine ⟨min δ r, lt_min hδ hr, ?_⟩
   intro z hz hdist α x
-  have hzr : z ∈ Metric.closedBall z₀ r := by
-    exact (Metric.mem_closedBall).mpr ((hdist.trans_le (min_le_right _ _)).le)
+  have hzr : z ∈ Metric.closedBall z₀ r := 
+    (Metric.mem_closedBall).mpr ((hdist.trans_le (min_le_right _ _)).le)
   have hzρ : z ∈ Metric.ball z₀ ρ :=
     Metric.closedBall_subset_ball hrρ hzr
   have hz₀r : z₀ ∈ Metric.closedBall z₀ r := Metric.mem_closedBall_self hr.le
@@ -99,7 +98,7 @@ theorem smooth_holomorphic_jet_continuous {n : ℕ} (B : LocalBall n)
   calc
     _ = ‖(coordinateDerivative α (h z) x - J z α x) +
         (J z α x - J z₀ α x) + (J z₀ α x - coordinateDerivative α (h z₀) x)‖ := by
-      congr 1; ring
+      simp
     _ ≤ ‖coordinateDerivative α (h z) x - J z α x‖ +
         ‖J z α x - J z₀ α x‖ + ‖J z₀ α x - coordinateDerivative α (h z₀) x‖ :=
       (norm_add_le _ _).trans (add_le_add (norm_add_le _ _) le_rfl)
@@ -121,9 +120,7 @@ private theorem iteratedDerivativeTest_apply {n : ℕ} {B : LocalBall n}
     funext x
     simp only [iteratedDerivativeTest, coordinateDerivativeList]
     rw [TestFunction.lineDerivCLM_eq_fderivCLM]
-    rw [TestFunction.fderivCLM_apply_of_le _ (by simp)]
-    change fderiv ℝ (fun y => iteratedDerivativeTest l φ y) x _ = _
-    rw [ih]
+    simp_all
 
 private theorem lp_mul_test_integrable {n : ℕ} {B : LocalBall n}
     (u : BallL2 B) (φ : TestFunction B.toOpens ℂ ⊤) :
@@ -198,7 +195,7 @@ theorem scaleSobolev_norm {n k : ℕ} {B : LocalBall n}
     (scaleSobolev c u).sobolevNorm = ‖c‖ * u.sobolevNorm := by
   unfold IntegerSobolev.sobolevNorm IntegerSobolev.normSq
   simp only [scaleSobolev, norm_smul, mul_pow, ← Finset.mul_sum]
-  rw [Real.sqrt_mul (sq_nonneg _), Real.sqrt_sq_eq_abs, abs_norm]
+  simp
 
 theorem subtractSobolev_norm_le {n k : ℕ} {B : LocalBall n}
     (u v : IntegerSobolev B k) :
@@ -236,7 +233,7 @@ theorem subtractSobolev_represents {n k : ℕ} {B : LocalBall n}
     (u.derivatives (⟨fun _ => 0, by simp⟩ : MultiIndex n k))
     (v.derivatives (⟨fun _ => 0, by simp⟩ : MultiIndex n k))] with x hx hy hsub
   change (u.derivatives _ - v.derivatives _) x = _
-  simpa only [Pi.sub_apply, hx, hy] using hsub
+  simp_all
 
 theorem scaleSobolev_represents {n k : ℕ} {B : LocalBall n}
     (c : ℂ) (u : IntegerSobolev B k) (f : Space n → ℂ)
@@ -248,7 +245,7 @@ theorem scaleSobolev_represents {n k : ℕ} {B : LocalBall n}
   filter_upwards [hu, Lp.coeFn_smul c
     (u.derivatives (⟨fun _ => 0, by simp⟩ : MultiIndex n k))] with x hx hsmul
   change (c • u.derivatives _) x = _
-  simpa only [Pi.smul_apply, smul_eq_mul, hx] using hsmul
+  simp_all
 
 def addSobolev {n k : ℕ} {B : LocalBall n}
     (u v : IntegerSobolev B k) : IntegerSobolev B k :=
@@ -275,7 +272,3 @@ theorem addSobolev_represents {n k : ℕ} {B : LocalBall n}
   simpa only [neg_one_mul, sub_neg_eq_add] using
     subtractSobolev_represents u (scaleSobolev (-1) v) f (fun x => (-1 : ℂ) * g x)
       hu (scaleSobolev_represents (-1) v g hv)
-
-end DedekindZetaZeroFree.KPContLocalHolomorphyUpgrade.CauchyAssembly
-
-end

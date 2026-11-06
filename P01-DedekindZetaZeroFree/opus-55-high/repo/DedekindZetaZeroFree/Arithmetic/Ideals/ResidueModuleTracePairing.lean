@@ -41,16 +41,6 @@ theorem fractionalIdealQuotient_isTorsionBySet
     Module (NumberField.RingOfIntegers F ⧸ m) (fractionalIdealQuotient I J) :=
   (fractionalIdealQuotient_isTorsionBySet m I J hJI hratio).module
 
-@[simp] theorem fractionalIdealQuotient_mk_smul
-    (m : Ideal (NumberField.RingOfIntegers F))
-    (I J : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F)
-    (hJI : J ≤ I)
-    (hratio : I * (m : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) = J) :
-    letI := fractionalIdealQuotientResidueModule m I J hJI hratio
-    ∀ (r : NumberField.RingOfIntegers F) (x : fractionalIdealQuotient I J),
-      Ideal.Quotient.mk m r • x = r • x := by
-  exact (fractionalIdealQuotient_isTorsionBySet m I J hJI hratio).mk_smul
-
 def idealRatioResidueLinearEquiv
     (m : Ideal (NumberField.RingOfIntegers F)) (hm : m ≠ ⊥)
     (I J : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F)
@@ -65,7 +55,7 @@ def idealRatioResidueLinearEquiv
       intro r x
       obtain ⟨r, rfl⟩ := Ideal.Quotient.mk_surjective r
       change (idealRatioResidueEquiv m hm I J hI hJI hratio) (r • x) = r • (idealRatioResidueEquiv m hm I J hI hJI hratio) x
-      exact (idealRatioResidueEquiv m hm I J hI hJI hratio).map_smul r x }
+      simp }
 
 @[simp] theorem idealRatioResidueLinearEquiv_apply
     (m : Ideal (NumberField.RingOfIntegers F)) (hm : m ≠ ⊥)
@@ -117,7 +107,3 @@ theorem residueTraceQuotientPairing_balance
       (residueFractionalIdeal_le_one m) (residueFractionalOneEquiv m k) (r • t)
   rw [(residueFractionalOneEquiv m).map_smul]
   exact traceQuotientPairing_balance _ _ _ _ _ r _ t
-
-end DedekindZetaZeroFree.Hecke
-
-end

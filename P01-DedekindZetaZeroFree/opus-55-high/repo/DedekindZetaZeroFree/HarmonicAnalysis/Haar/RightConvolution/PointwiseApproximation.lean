@@ -14,7 +14,7 @@ open scoped NumberField Classical Topology Matrix.Norms.Elementwise
 open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming pgl_locallyCompact → pgl_locallyCompact
 open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming pgl_secondCountable → pgl_secondCountable
 
-private theorem integrable_compact_weight
+theorem integrable_compact_weight
     {A : Type*} [TopologicalSpace A] [MeasurableSpace A] [OpensMeasurableSpace A]
     (μ : Measure A) [IsFiniteMeasureOnCompacts μ]
     (k : A → ℝ) (f : A → ℂ) (hk : Continuous k)
@@ -28,7 +28,7 @@ private theorem integrable_compact_weight
     HasCompactSupport.mul_right (f := fun a => (k a : ℂ)) (f' := f) hcs
   exact hc.integrable_of_hasCompactSupport hprod
 
-private theorem compact_weight_error_le
+theorem compact_weight_error_le
     {A : Type*} [TopologicalSpace A] [MeasurableSpace A] [OpensMeasurableSpace A]
     (μ : Measure A) [IsFiniteMeasureOnCompacts μ]
     (k : A → ℝ) (f : A → ℂ) (hk : Continuous k)
@@ -54,7 +54,7 @@ private theorem compact_weight_error_le
   apply (norm_integral_le_of_norm_le (hki.mul_const ε) (Eventually.of_forall hb)).trans_eq
   rw [integral_mul_const, hm, one_mul]
 
-private theorem compact_weights_tendsto
+theorem compact_weights_tendsto
     {A : Type*} [TopologicalSpace A] [MeasurableSpace A] [OpensMeasurableSpace A]
     (μ : Measure A) [IsFiniteMeasureOnCompacts μ]
     (k : ℕ → A → ℝ) (f : A → ℂ) (x : A)

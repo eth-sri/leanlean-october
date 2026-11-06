@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Locality and support conditions for global Hilbert pairing families
 -/
@@ -43,5 +39,3 @@ def HasFiniteSupport
   ∀ a b : Fˣ,
     Function.HasFiniteMulSupport (fun v : HeightOneSpectrum (𝓞 F) ↦
       finiteFactor F B hmu v a b)
-
-end ClassFieldTheory.GlobalHilbertPairingFamily

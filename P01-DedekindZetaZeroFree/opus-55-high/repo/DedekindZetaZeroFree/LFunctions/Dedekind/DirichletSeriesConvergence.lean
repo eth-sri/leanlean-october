@@ -18,7 +18,6 @@ Port to Lean 4.35.0-rc2: local imports and namespace renamed; module visibility 
 The full upstream Apache-2.0 license is included in LICENSE.
 -/
 
-noncomputable section
 
 open Filter Ideal Set Topology
 
@@ -60,7 +59,3 @@ theorem hasSum_dedekindZeta {s : ℂ} (hs : 1 < s.re) :
       (NumberField.dedekindZeta K s) := by
   rw [dedekindZeta_eq_LSeries_idealNormCount]
   exact (lSeriesSummable_idealNormCount K hs).LSeriesHasSum
-
-end DedekindZetaZeroFree.Odlyzko
-
-end

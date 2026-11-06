@@ -49,10 +49,6 @@ theorem quadratic_entireHeckeWitness_root_number
   have hL2 : w.Λ (2 : ℂ) ≠ 0 := by
     have hpE2 := principalUnitHeckeWitness_U_two_ne_zero d.extension pE
     intro hw0
-    refine hpE2 ?_
-    rw [hfactor 2, hw0]
-    ring
+    simp_all
   refine ⟨hdual, hW1, fun s => ?_, hL2⟩
   rw [w.selfdual_functionalEquation hq s, hW1, one_mul]
-
-end DedekindZetaZeroFree.LargeSieve

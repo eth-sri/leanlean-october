@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Metaplectic.Intertwining.DiagonalJacobiansAnd
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.KPTameTransposeUnitNumeratorSteps
 
 open scoped NumberField Classical
@@ -109,7 +108,7 @@ theorem fullDiagonal_actual_support_lower_row
   have hk11 : k.val 1 1 ≠ 0 := by
     obtain ⟨r, hr⟩ := (hm.2 k.val k.property).1 1
     rw [← hr]
-    exact pow_ne_zero _ r.ne_zero
+    simp
   obtain ⟨hv, he⟩ := fullDiagonal_lower_row_constraint B k.val (π ^ i.val)
     (π ^ (-1 : ℤ)) (π ^ ((i.val : ℤ) + 1)) v x hB10 hB11 hk11 hp'
   exact ⟨hv, k, he⟩
@@ -186,8 +185,7 @@ theorem fullDiagonal_shifted_unit
   have hp : valuation (LocalField F q) (π : LocalField F q) < 1 := by
     apply (map_lt_map_iff (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt
       (LocalField F q))).mp
-    rw [hπ, map_one, ← WithZero.exp_zero, WithZero.exp_lt_exp]
-    norm_num
+    simp_all
   have hpt : valuation (LocalField F q) ((π : LocalField F q) * t) < 1 := by
     rw [map_mul]
     have ht : valuation (LocalField F q) (t : LocalField F q) ≤ 1 := t.property
@@ -232,11 +230,7 @@ theorem fullDiagonal_actual_support_inverse_root_chart
   have hd : (KPTameCompact.unitInclusion F q u : LocalField F q) +
       (π : LocalField F q) * t ≠ 0 := by
     rw [← hw]
-    exact (KPTameCompact.unitInclusion F q w).ne_zero
+    simp
   apply (eq_div_iff (by simpa only [mul_comm] using hd)).mpr
   field_simp at ht
   linear_combination ht
-
-end DedekindZetaZeroFree.KPTameTransposeUnitNumeratorSteps
-
-end

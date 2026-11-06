@@ -163,10 +163,6 @@ theorem actualCanonicalForwardMap_integrable
     (g : ActualCover F ζ hζ q) (h : actualTorus F ζ hζ q) :
     Integrable (fun x : LocalField F q =>
       (f.val (S.borel.liftedW⁻¹ *
-        (S.borel.upperRoot (Multiplicative.ofAdd x) : ActualCover F ζ hζ q) * g)).val h) μ := by
-  exact actualCanonicalContinued_integrable F q ζ hζ S P μ hμ .plus 0
+        (S.borel.upperRoot (Multiplicative.ofAdd x) : ActualCover F ζ hζ q) * g)).val h) μ := 
+  actualCanonicalContinued_integrable F q ζ hζ S P μ hμ .plus 0
     (by norm_num [convergenceHalfPlane]) f g h
-
-end DedekindZetaZeroFree.KPRankOneShellRepair
-
-end

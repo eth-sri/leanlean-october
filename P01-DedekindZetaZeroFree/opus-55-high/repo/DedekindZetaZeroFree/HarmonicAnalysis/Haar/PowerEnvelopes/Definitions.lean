@@ -21,8 +21,5 @@ theorem finitePowerMajorant_nonneg (M r : ℝ) (hr : 0 ≤ r) :
   · exact le_refl 0
 
 theorem archPowerMajorant_nonneg (B r : ℝ) (hr : 0 ≤ r) :
-    0 ≤ archPowerMajorant B r := by
-  exact le_min (Real.rpow_nonneg hr _) (Real.rpow_nonneg hr _)
-
-end
-end DedekindZetaZeroFree.ThetaRawSheetEnvelope.WeightedWhittakerSheets
+    0 ≤ archPowerMajorant B r := 
+  le_min (Real.rpow_nonneg hr _) (Real.rpow_nonneg hr _)

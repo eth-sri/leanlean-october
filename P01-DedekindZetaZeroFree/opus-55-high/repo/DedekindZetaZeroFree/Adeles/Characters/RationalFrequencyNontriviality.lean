@@ -21,8 +21,8 @@ def adelicRationalFrequencyCharacter (t : F) :
 
 theorem continuous_adelicRationalFrequencyCharacter (t : F) :
     Continuous (adelicRationalFrequencyCharacter F t :
-      AdeleRing (𝓞 F) F → Circle) := by
-  exact (continuous_adelicTraceCharacter F).comp (continuous_const.mul continuous_id)
+      AdeleRing (𝓞 F) F → Circle) := 
+  (continuous_adelicTraceCharacter F).comp (continuous_const.mul continuous_id)
 
 theorem adelicRationalFrequencyCharacter_diagonal (t a : F) :
     adelicRationalFrequencyCharacter F t
@@ -33,8 +33,8 @@ theorem adelicRationalFrequencyCharacter_diagonal (t a : F) :
   exact adelicTraceCharacter_diagonal F (t * a)
 
 def adelicRationalFrequencyQuotientCharacter (t : F) :
-    AddChar (AdeleRing (𝓞 F) F ⧸ AdeleRing.principalSubgroup (𝓞 F) F) Circle := by
-  exact AddChar.toAddMonoidHomEquiv.symm
+    AddChar (AdeleRing (𝓞 F) F ⧸ AdeleRing.principalSubgroup (𝓞 F) F) Circle := 
+  AddChar.toAddMonoidHomEquiv.symm
     (QuotientAddGroup.lift (AdeleRing.principalSubgroup (𝓞 F) F)
       (adelicRationalFrequencyCharacter F t).toAddMonoidHom (by
         rintro x ⟨a, rfl⟩
@@ -64,7 +64,7 @@ theorem adelicRationalFrequencyQuotientCharacter_eq_one_iff (t : F) :
       have he := congrArg (fun χ => χ
         (QuotientAddGroup.mk' (AdeleRing.principalSubgroup (𝓞 F) F) x)) h
       simpa only [adelicRationalFrequencyQuotientCharacter_mk, AddChar.one_apply] using he
-    exact (map_eq_zero (algebraMap F (AdeleRing (𝓞 F) F))).mp ht
+    simp_all
   · rintro rfl
     apply AddChar.ext
     intro x
@@ -76,8 +76,8 @@ theorem adelicRationalFrequencyQuotientCharacter_eq_one_iff (t : F) :
       simp
 
 theorem adelicRationalFrequencyQuotientCharacter_ne_one_iff (t : F) :
-    adelicRationalFrequencyQuotientCharacter F t ≠ 1 ↔ t ≠ 0 := by
-  exact not_congr (adelicRationalFrequencyQuotientCharacter_eq_one_iff F t)
+    adelicRationalFrequencyQuotientCharacter F t ≠ 1 ↔ t ≠ 0 := 
+  not_congr (adelicRationalFrequencyQuotientCharacter_eq_one_iff F t)
 
 theorem adelicRationalFrequencyQuotientCharacter_one :
     adelicRationalFrequencyQuotientCharacter F 1 =
@@ -122,8 +122,3 @@ theorem adelicTraceCharacter_ne_one :
     intro y
     simp [h]
   exact one_ne_zero hz
-
-end DedekindZetaZeroFree
-
-end
-end

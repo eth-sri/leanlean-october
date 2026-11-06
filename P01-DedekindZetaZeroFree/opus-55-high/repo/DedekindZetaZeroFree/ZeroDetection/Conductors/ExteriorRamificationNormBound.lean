@@ -31,8 +31,8 @@ theorem norm_le_exterior_prime_product
     obtain ⟨v, hv, hvJ⟩ := Multiset.mem_bind.mp hJ
     have heq := Multiset.eq_of_mem_replicate hvJ
     exact v.ne_bot heq.symm
-  have hnormM : 0 < Ideal.absNorm M.prod := by
-    exact Nat.pos_of_ne_zero (mt Ideal.absNorm_eq_zero_iff.mp hM)
+  have hnormM : 0 < Ideal.absNorm M.prod := 
+    Nat.pos_of_ne_zero (mt Ideal.absNorm_eq_zero_iff.mp hM)
   refine ⟨(Ideal.absNorm M.prod : ℝ), by exact_mod_cast hnormM, ?_⟩
   intro I hI T hin hout hT
   let N : Multiset (Ideal (𝓞 F)) := T.val.map HeightOneSpectrum.asIdeal
@@ -69,8 +69,6 @@ theorem norm_le_exterior_prime_product
     apply Nat.le_of_dvd (Nat.mul_pos hnormM ?_) (by simpa using map_dvd Ideal.absNorm hdvd)
     exact Nat.pos_of_ne_zero (mt Ideal.absNorm_eq_zero_iff.mp hN)
   have heq : (Ideal.absNorm N.prod : ℝ) = ∏ v ∈ T, (Ideal.absNorm v.asIdeal : ℝ) := by
-    simp [N, ← map_multiset_prod, Multiset.map_map, Finset.prod_map_val]
+    simp [N, Finset.prod_map_val]
   exact_mod_cast heq ▸ (show (Ideal.absNorm I : ℝ) ≤
       (Ideal.absNorm M.prod : ℝ) * (Ideal.absNorm N.prod : ℝ) by exact_mod_cast hnorm)
-
-end DedekindZetaZeroFree.Detector.Conductor.NormFactorization

@@ -11,14 +11,14 @@ open scoped NumberField Classical
 open NumberField IsDedekindDomain
 variable {F : Type} [Field F] [NumberField F]
 
-private theorem support_symbol_eq_residue (A : SArithmeticData F)
+theorem support_symbol_eq_residue (A : SArithmeticData F)
     (G : ThetaBranch.AllowedRecipe A) (σ : F →+* ℂ)
     (d c : A.Exterior) (hd : Squarefree d.val)
     (r : A.R) (hr : (G.generator c : F) = (r : F)) :
     ThetaPhaseSeparation.idealSymbol A σ d (G.generator c) = σ (A.sexticResidue d r) := by
   have hr0 : r ≠ 0 := by
     intro h
-    exact (G.generator c).ne_zero (hr.trans (by simp [h]))
+    simp_all
   have he : ThetaReflectionData.rowUnit A ⟨r, hr0⟩ = G.generator c := Units.ext hr.symm
   have hchar : A.sexticResiduePowerChar σ d 1
       (Ideal.Quotient.mk (A.extendIdeal d) r) = σ (A.sexticResidue d r) := by
@@ -90,7 +90,7 @@ private theorem archPhase_eq_trace (A : SArithmeticData F) (x : InfiniteAdeleRin
     InfinitePlace.Completion.ringEquivComplexOfIsComplex_apply]
   rw [ProbeAdditive.archPhase, ← Complex.exp_sum]
   congr 1
-  simp only [Complex.ofReal_sum, Finset.mul_sum, Complex.ofReal_mul, Complex.ofReal_ofNat]
+  simp only [Finset.mul_sum, Complex.ofReal_mul, Complex.ofReal_ofNat]
   apply Finset.sum_congr rfl
   intro w hw
   ring
@@ -165,12 +165,10 @@ def SourceCharacterCompatibility
   map_one' := by
     have hH : R.A.H_S (R.A.diagonal ε.val) 1 = 1 := by
       have h := R.A.H_S_mul_right (R.A.diagonal ε.val) 1 1
-      exact mul_left_cancel (show R.A.H_S (R.A.diagonal ε.val) 1 *
-        R.A.H_S (R.A.diagonal ε.val) 1 = R.A.H_S (R.A.diagonal ε.val) 1 * 1 by
-          simpa using h.symm)
+      simp_all
     simp [SArithmeticData.correctionLS, SArithmeticData.ideleSInverseProduct, hH]
 
-private theorem representativeSourceCharacter_eq
+theorem representativeSourceCharacter_eq
     {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
     (R : PrincipalMellin.ActualRecipe S η) (ε δ : R.A.U)
     (h : (QuotientGroup.mk ε : R.A.UnitQuotient) = QuotientGroup.mk δ) :
@@ -215,7 +213,7 @@ theorem exists_rational_source_characters
       rw [← norm_pow, hp, norm_one]
     change ‖_ * R.σ ((R.A.H_S (R.A.diagonal (rep v).val)
       (R.A.diagonal x) : Fˣ) : F)‖ = 1
-    rw [norm_mul, Circle.norm_coe, hn, mul_one]
+    simp_all
   · intro ε x
     exact (DFunLike.congr_fun
       (representativeSourceCharacter_eq R (rep (QuotientGroup.mk ε)) ε (hrep _)) x)
@@ -258,7 +256,3 @@ theorem exists_primitive_source_characters
     rfl
   choose ψ hprim htrace using hp
   exact ⟨ψ, hprim, htrace⟩
-
-end DedekindZetaZeroFree.PrincipalMellinSource
-
-end

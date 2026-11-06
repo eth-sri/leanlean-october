@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Local components of the ordinary idele norm
 
@@ -33,7 +27,6 @@ forms of the local idele norm formula.
 open scoped BigOperators NumberField TensorProduct NumberField.LiesOver
 open NumberField IsDedekindDomain
 
-noncomputable section
 
 namespace IdeleGroup
 
@@ -48,7 +41,7 @@ variable
 
 /-- The relative-tensor coordinate form underlying the public finite-place
 formula below. -/
-private theorem finiteComponent_norm_eq_prod_extensions
+theorem finiteComponent_norm_eq_prod_extensions
     (v : HeightOneSpectrum (𝓞 K))
     (a : IdeleGroup L) :
     let vK := HeightOneSpectrum.adicAbv K v
@@ -158,8 +151,6 @@ private theorem finiteComponent_norm_eq_prod_extensions
             vK.Completionˣ) : vK.Completion) := by
       change _ = Units.coeHom vK.Completion _
       rw [map_prod]
-      apply Finset.prod_congr rfl
-      intro w _
       rfl
 
 /-- The finite-place form of the ordinary idele norm. Each factor
@@ -320,7 +311,7 @@ private theorem finiteComponent_norm_eq_prod_completion
 the concrete adic completions.  Thus the component at `v` is the product
 of the ordinary field norms of the components at all finite places above
 `v`. -/
-private theorem finiteComponent_norm_eq_prod_exact_index
+theorem finiteComponent_norm_eq_prod_exact_index
     (v : HeightOneSpectrum (𝓞 K))
     (a : IdeleGroup L) :
     let vK := HeightOneSpectrum.adicAbv K v
@@ -426,8 +417,8 @@ private theorem finiteComponent_norm_eq_prod_exact_index
                 (K := K) (L := L) v w).symm.toMulEquiv
               (finiteComponent
                 (finitePlaceExtensionEquivAbove
-                  (K := K) (L := L) v w).1 a))) := by
-      exact congrArg (Units.mapEquiv eBase.toMulEquiv) hcompletion
+                  (K := K) (L := L) v w).1 a))) := 
+      congrArg (Units.mapEquiv eBase.toMulEquiv) hcompletion
     _ = ∏ w : AbsoluteValueExtension vK L,
         Units.mapEquiv eBase.toMulEquiv
           (Units.map (Algebra.norm vK.Completion)
@@ -582,7 +573,7 @@ theorem finiteComponent_norm_eq_prod
 
 /-- The absolute-value-extension-coordinate form underlying the public
 archimedean formula below. -/
-private theorem infiniteComponent_norm_eq_prod_extensions
+theorem infiniteComponent_norm_eq_prod_extensions
     (v : InfinitePlace K)
     (a : IdeleGroup L) :
     let vK := v.1
@@ -690,11 +681,7 @@ private theorem infiniteComponent_norm_eq_prod_extensions
               (AlgebraicNumberTheory.Valuations.localTensorUnitsEquivCompletionProduct
                 vK hvK x' w)) :
             vK.Completionˣ) : vK.Completion) := by
-      change _ = Units.coeHom vK.Completion _
-      rw [map_prod]
-      apply Finset.prod_congr rfl
-      intro w _
-      rfl
+      simp
 
 /-- The completion-coordinate form underlying the public archimedean
 formula below, already reindexed by concrete infinite places. -/
@@ -964,8 +951,7 @@ theorem infiniteComponent_norm_eq_prod
         Units.mapEquiv eBase.symm.toMulEquiv
           (Units.mapEquiv eBase.toMulEquiv
             (infiniteComponent v (norm K L a))) := by
-      apply Units.ext
-      simp
+      rfl
     _ = Units.mapEquiv eBase.symm.toMulEquiv
         (∏ W : {W : InfinitePlace L //
             _root_.infinitePlaceBelow (K := K) W = v},
@@ -1019,14 +1005,7 @@ theorem infiniteComponent_norm_eq_prod
       have hx :
           Units.mapEquiv eExtension.toMulEquiv x =
             infiniteComponent W.1 a := by
-        apply Units.ext
-        change
-          (InfinitePlace.Completion.equiv W.1).symm
-              ((InfinitePlace.Completion.equiv W.1)
-                (infiniteComponent W.1 a : W.1.Completion)) =
-            (infiniteComponent W.1 a : W.1.Completion)
-        exact
-          (InfinitePlace.Completion.equiv W.1).symm_apply_apply _
+        rfl
       rw [hx] at hNorm
       change
         Units.mapEquiv eBase.symm.toMulEquiv
@@ -1036,7 +1015,3 @@ theorem infiniteComponent_norm_eq_prod
             v.Completion W.1.Completion
             (infiniteComponent W.1 a)
       exact hNorm
-
-end IdeleGroup
-
-end

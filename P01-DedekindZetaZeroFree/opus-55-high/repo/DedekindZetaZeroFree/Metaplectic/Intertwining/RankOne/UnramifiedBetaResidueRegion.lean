@@ -24,15 +24,14 @@ private lemma eq_one (x : K) : KPCubicHaar.abs K x = 1 ↔ valuation K x = 1 := 
     have he := WithZero.exp_log hn
     rw [h, WithZero.exp_zero] at he
     exact (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K).injective (he.symm.trans (map_one _).symm)
-  · intro h; simp [h]
+  simp_all
 local instance : UniformSpace K := IsTopologicalAddGroup.rightUniformSpace K
 local instance : IsUniformAddGroup K := isUniformAddGroup_of_addCommGroup (G := K)
-private lemma measurable_ball : MeasurableSet {x : K | valuation K x < 1} := by
+lemma measurable_ball : MeasurableSet {x : K | valuation K x < 1} := by
   have h := (valuation K).isOpen_ball 1
   convert h.measurableSet using 1
-  ext x
-  exact (valuation K).restrict_lt_one_iff.symm
-private lemma ball_ideal : {x : K | valuation K x < 1} =
+  simp
+lemma ball_ideal : {x : K | valuation K x < 1} =
     (𝒪[K]).subtype '' (IsLocalRing.maximalIdeal (𝒪[K]) : Set (𝒪[K])) := by
   ext x
   constructor
@@ -59,8 +58,7 @@ private lemma embedding : MeasurableEmbedding (Units.val : Kˣ → K) := by
     ext x
     simp only [Set.mem_range, Set.mem_compl_iff, Set.mem_singleton_iff]
     exact ⟨by rintro ⟨u, rfl⟩; exact u.ne_zero, fun h => ⟨Units.mk0 x h, rfl⟩⟩
-  rw [he]
-  exact (MeasurableSet.singleton 0).compl
+  simp_all
 private lemma integrand_one (b u : ℂˣ) (y : Kˣ) (hy : y ∈ residue K) :
     rawIntegrand K b u y = 1 := by
   have hv : valuation K (y : K) = 1 := (eq_one K _).mp hy.1
@@ -72,19 +70,19 @@ private lemma integrand_one (b u : ℂˣ) (y : Kˣ) (hy : y ∈ residue K) :
     simp [KPCubicExpansion.valuationExponent, hw]
   simp [rawIntegrand, hn, KPRankOneCubicProjection.eta, he, hf, hy.2]
  def R : Set K := {x | valuation K x = 1 ∧ valuation K (1-x) = 1}
-private lemma R_diff : R K = (𝒪[K] : Set K) \
+lemma R_diff : R K = (𝒪[K] : Set K) \
     ({x : K | valuation K x < 1} ∪ {x : K | valuation K (1-x) < 1}) := by
   ext x
   change (valuation K x = 1 ∧ valuation K (1-x) = 1) ↔
     (valuation K x ≤ 1 ∧ ¬ (valuation K x < 1 ∨ valuation K (1-x) < 1))
   have hv : valuation K (1-x) ≤ max 1 (valuation K x) := by simpa using (valuation K).map_sub 1 x
   constructor
-  · rintro ⟨h1,h2⟩; simp [h1,h2]
+  · simp_all
   · rintro ⟨h1,h2⟩
     have hn := not_or.mp h2
     have h3 : valuation K (1-x) ≤ 1 := by simpa [max_eq_left h1] using hv
     exact ⟨le_antisymm h1 (not_lt.mp hn.1), le_antisymm h3 (not_lt.mp hn.2)⟩
-private lemma R_measurable : MeasurableSet (R K) := by
+lemma R_measurable : MeasurableSet (R K) := by
   rw [R_diff]
   exact (Valued.isClosed_integer K).measurableSet.diff
     ((measurable_ball K).union ((measurable_ball K).preimage (by fun_prop)))
@@ -108,7 +106,7 @@ private lemma residue_mass (dx : Measure K) :
     _ = ∫⁻ x in R K, (1 : ℝ≥0∞) ∂dx := setLIntegral_congr_fun (R_measurable K) (by
       intro x hx; simp [(eq_one K x).mpr hx.1])
     _ = _ := by simp
-private lemma R_volume (dx : Measure K) [dx.IsAddHaarMeasure]
+lemma R_volume (dx : Measure K) [dx.IsAddHaarMeasure]
     (m : ℝ) (hm : 0 < m) (hvol : dx (𝒪[K] : Set K) = ENNReal.ofReal m) :
     dx.real (R K) = m * (1 - 2 * (KPCubicUnitIndices.residueCard K : ℝ)⁻¹) := by
   let B : Set K := {x | valuation K x < 1}
@@ -177,10 +175,7 @@ theorem residue_region (dx : Measure K) [dx.IsAddHaarMeasure]
     fun y hy => integrand_one K b u y hy
   refine ⟨(integrableOn_const hfinite (C := (1 : ℂ))).congr_fun he.symm (residue_measurable K), ?_⟩
   rw [setIntegral_congr_fun (residue_measurable K) he, integral_const]
-  simp only [Measure.real, Measure.restrict_apply_univ, residue_mass,
-    R_volume K dx m hm hvol, Complex.real_smul, mul_one]
+  simp only [Measure.real, Measure.restrict_apply_univ, residue_mass, Complex.real_smul, mul_one]
   change (dx.real (R K) : ℂ) = _
   rw [R_volume K dx m hm hvol]
   simp [rawA]
-end
-end DedekindZetaZeroFree.KPRankOneUnramifiedBetaShells.RegionDecomposition

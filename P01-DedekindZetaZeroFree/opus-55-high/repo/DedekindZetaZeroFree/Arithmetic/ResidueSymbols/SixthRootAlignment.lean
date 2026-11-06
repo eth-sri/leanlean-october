@@ -39,15 +39,11 @@ theorem aligned_embedding_exists (S : SArithmeticData F) :
       (KPLocalCover.complexSixthGenerator : ℂ) ^
         KPLocalCover.sixthExponent F S.zeta12 S.primitive_zeta12 z := by
     rw [← hz, map_pow]
-    have : φ.toRingHom (S.zeta12 ^ 2) = (KPLocalCover.complexSixthGenerator : ℂ) := by
-      rw [map_pow, show φ.toRingHom S.zeta12 = w from hφ, hw2]
-    rw [this]
+    simp_all
   have hcoe : (KPLocalCover.coefficientEmbedding F S.zeta12 S.primitive_zeta12 z : ℂ) =
       (KPLocalCover.complexSixthGenerator : ℂ) ^
         KPLocalCover.sixthExponent F S.zeta12 S.primitive_zeta12 z := by
-    show ((KPLocalCover.complexSixthGenerator ^
-      KPLocalCover.sixthExponent F S.zeta12 S.primitive_zeta12 z : ℂˣ) : ℂ) = _
-    rw [Units.val_pow_eq_pow_val]
+    rfl
   rw [hval, hcoe]
 
 theorem aligned_recipe_exists
@@ -113,7 +109,3 @@ theorem norm_one (v : R.A.UnitQuotient) (x : Fˣ) : ‖L R v x‖ = 1 :=
 
 theorem compatible : PrincipalMellinSource.SourceCharacterCompatibility R (psi R) (L R) :=
   ⟨psi_apply R, (PrincipalMellinSource.exists_rational_source_characters R).choose_spec.2⟩
-end Characters
-end DedekindZetaZeroFree.MomentSources
-
-end

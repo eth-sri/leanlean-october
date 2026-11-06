@@ -14,7 +14,7 @@ namespace DedekindZetaZeroFree.KPContFlatCommonLevelKernel
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-private theorem exp_smul_eq_of_support (s : ℂ) (a b : ℝ) (c : ℂ)
+theorem exp_smul_eq_of_support (s : ℂ) (a b : ℝ) (c : ℂ)
     (h : ((a - b : ℝ) : ℂ) * c = 0) :
     Complex.exp (s * (a : ℂ)) * c = Complex.exp (s * (b : ℂ)) * c := by
   rcases mul_eq_zero.mp h with h | h

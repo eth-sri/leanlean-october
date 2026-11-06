@@ -9,7 +9,6 @@ open NumberField IsDedekindDomain
 noncomputable section
 namespace DedekindZetaZeroFree.MaskedPrimePowerCRTFactorization
 open LocalFiniteSums
-set_option autoImplicit false
 
 variable {F : Type} [Field F] [NumberField F]
 variable {A : SArithmeticData F} {σ : F →+* ℂ}
@@ -44,7 +43,7 @@ private theorem generates_valuation (p : ExteriorPrime A)
   have hdvd (k : ℕ) : p.val.asIdeal ^ k ∣ I.val ↔ k ≤ n := by
     rw [pow_dvd_iff_le_emultiplicity,
       UniqueFactorizationMonoid.emultiplicity_eq_count_normalizedFactors p.val.irreducible I.property.1]
-    simp [n, exponent, idealPrimeExponent]
+    simp [n, idealPrimeExponent]
   have hIn : I.val ≤ p.val.asIdeal ^ n := Ideal.dvd_iff_le.mp ((hdvd n).mpr le_rfl)
   have hnot : ¬ I.val ≤ p.val.asIdeal ^ (n + 1) := by
     rw [← Ideal.dvd_iff_le, hdvd]; omega
@@ -57,7 +56,7 @@ private theorem generates_valuation (p : ExteriorPrime A)
   have hrv : p.val.valuation F (r : F) ≤ WithZero.exp (-(n : ℤ)) := by
     apply hmap
     rw [← hr.2]
-    exact Ideal.subset_span (Set.mem_singleton r)
+    simp
   obtain ⟨a, ha, han⟩ : ∃ a : 𝓞 F, a ∈ I.val ∧ a ∉ p.val.asIdeal ^ (n + 1) := by
     contrapose! hnot
     exact hnot
@@ -80,11 +79,10 @@ private theorem generates_valuation (p : ExteriorPrime A)
     (Valuation.ne_zero_iff _).mpr (by exact_mod_cast hr.1)
   rw [← WithZero.exp_log hnz, WithZero.exp_le_exp] at hrv hrv'
   have hv : WithZero.log (p.val.valuation F (r : F)) = -(n : ℤ) := by
-    push_cast at hrv'
     omega
   rw [← WithZero.exp_log hnz, hv]
 
-private theorem fieldTrace_eq_exterior_product (hS : A.ContainsTraceBadPlaces)
+theorem fieldTrace_eq_exterior_product (hS : A.ContainsTraceBadPlaces)
     (P : Finset (ExteriorPrime A)) (x : F)
     (hx : ∀ v : HeightOneSpectrum (𝓞 F), v ∉ A.Sf →
       (∀ p ∈ P, p.val ≠ v) →
@@ -165,7 +163,7 @@ private lemma uniformizer_ne_zero (C : A.GeneralArithmeticContext σ η hS)
   exact (map_ne_zero (algebraMap F (LocalField p))).mpr
     (by exact_mod_cast (generator_generates C p).1)
 
-private lemma congruent_of_residueMap_eq_generator (C : A.GeneralArithmeticContext σ η hS)
+lemma congruent_of_residueMap_eq_generator (C : A.GeneralArithmeticContext σ η hS)
     (p : ExteriorPrime A) (n : ℕ) (x y : A.R)
     (h : residueMap C p n x = residueMap C p n y) :
     CompatiblePrimeRawLocal.Congruent C p n (algebraMap F (LocalField p) (x : F))
@@ -175,11 +173,11 @@ private lemma congruent_of_residueMap_eq_generator (C : A.GeneralArithmeticConte
   obtain ⟨r, hr⟩ := Ideal.mem_span_singleton.mp hmem
   refine ⟨⟨algebraMap F (LocalField p) (r : F),
     CompatiblePrimeRawLocal.sInteger_local_integral p r⟩, ?_⟩
-  simp only [Subtype.coe_mk]
+  simp only
   rw [← map_sub, ← Subalgebra.coe_sub, hr, Subalgebra.coe_mul, Subalgebra.coe_pow,
     map_mul, map_pow, uniformizer]
 
-private lemma negTrace_congr (C : A.GeneralArithmeticContext σ η hS)
+lemma negTrace_congr (C : A.GeneralArithmeticContext σ η hS)
     (p : ExteriorPrime A) {x y : LocalField p}
     (h : x - y ∈ p.val.adicCompletionIntegers F) :
     negativeTrace p x = negativeTrace p y := by
@@ -187,12 +185,12 @@ private lemma negTrace_congr (C : A.GeneralArithmeticContext σ η hS)
   rw [hxy, AddChar.map_add_eq_mul,
     CompatiblePrimeRawLocal.negativeTrace_integer C p ⟨x - y, h⟩, mul_one]
 
-private lemma unit_val_inv_mem (p : ExteriorPrime A) (u : (LocalIntegers p)ˣ) :
+lemma unit_val_inv_mem (p : ExteriorPrime A) (u : (LocalIntegers p)ˣ) :
     ((u.val : LocalField p))⁻¹ ∈ p.val.adicCompletionIntegers F := by
-  have hmul : (u.val : LocalField p) * ((u⁻¹).val : LocalField p) = 1 := by
-    exact congrArg (fun z : LocalIntegers p => (z : LocalField p)) (Units.mul_inv u)
+  have hmul : (u.val : LocalField p) * ((u⁻¹).val : LocalField p) = 1 := 
+    congrArg (fun z : LocalIntegers p => (z : LocalField p)) (Units.mul_inv u)
   rw [inv_eq_of_mul_eq_one_right hmul]
-  exact ((u⁻¹).val).2
+  simp
 
 theorem phase_crt (C : A.GeneralArithmeticContext σ η hS)
     (Is Ia Ih : A.Exterior) (s a h : A.R)
@@ -238,8 +236,7 @@ theorem phase_crt (C : A.GeneralArithmeticContext σ η hS)
     intro w hw hwP
     have h := phase_integral_outside_support C Is Ia s a hs ha P hSupportS hSupportA
       ((h - a * d') * v') w hw hwP
-    dsimp only [X]
-    exact h
+    omega
   have hfield := fieldTrace_eq_exterior_product hS P X hx
   change (Circle.coeHom (A.fieldTraceCharacter X)) = _
   rw [hfield, map_prod, ← Finset.prod_coe_sort]
@@ -353,7 +350,3 @@ theorem phase_crt (C : A.GeneralArithmeticContext σ η hS)
       (mul_mem (mul_mem hemem hVpmem) (unit_val_inv_mem p.val (sU p)))
   rw [negTrace_congr C p.val hdiff]
   rfl
-
-end DedekindZetaZeroFree.MaskedPrimePowerCRTFactorization
-
-end

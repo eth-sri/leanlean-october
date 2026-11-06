@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Analysis.SmoothFunctions.CompactOpenHolomorph
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.KPContActualLocalSolutionFamily.CoefficientRestriction
 open MeasureTheory KPContLocalNorm
 
@@ -36,7 +35,3 @@ theorem continuous_covariance_of_ae {n : ℕ} (A : LocalBall n)
   have hcont2 : ContinuousOn (fun p => χ * f p) (A.carrier ∩ τ ⁻¹' A.carrier) :=
     continuousOn_const.mul (hf.mono Set.inter_subset_left)
   exact fun p hp => Measure.eqOn_open_of_ae_eq h4 hU hcont1 hcont2 hp
-
-end DedekindZetaZeroFree.KPContActualLocalSolutionFamily.CoefficientRestriction
-
-end

@@ -51,11 +51,10 @@ theorem actual_forward_uniform_infinity_data
     exact continuous_subtype_val.comp (S.borel.upperRoot_continuous.comp continuous_ofAdd)
   have hn0 : nLift F ζ hζ q 0 = 1 := by
     rw [← (S.openCell P).upper_eq]
-    change (S.borel.upperRoot 1 : Cover F ζ hζ q) = 1
     simp
   have ht : Continuous (fun x : LocalField F q =>
       signedWeyl F ζ hζ q * nLift F ζ hζ q (-x) * openCoordinate F ζ hζ q 0) :=
-    (continuous_const.mul (hn.comp continuous_neg)).mul continuous_const
+    by fun_prop
   have ht0 : signedWeyl F ζ hζ q * nLift F ζ hζ q (-(0 : LocalField F q)) *
       openCoordinate F ζ hζ q 0 = 1 := by
     simp [openCoordinate, hn0]
@@ -71,17 +70,13 @@ theorem actual_forward_uniform_infinity_data
   have hval : valuation (LocalField F q) ((v⁻¹ : (LocalField F q)ˣ) : LocalField F q) < γ := by
     apply e.toOrderIso.lt_iff_lt.mp
     have hv0 : e (valuation (LocalField F q) (v : LocalField F q)) ≠ 0 :=
-      (map_ne_zero e).2 (by simpa using v.ne_zero)
+      by simp
     have hγ0 : e γ ≠ 0 := (map_ne_zero e).2 hγ
     apply (WithZero.log_lt_log (by
       change e (valuation (LocalField F q) ((v⁻¹ : (LocalField F q)ˣ) : LocalField F q)) ≠ 0
-      exact (map_ne_zero e).2 (by simpa using v⁻¹.ne_zero)) hγ0).mp
+      simp) hγ0).mp
     change valuationIndex F q v⁻¹ < m
     have hi : valuationIndex F q v⁻¹ = -valuationIndex F q v := by
       simp [valuationIndex, Units.val_inv_eq_inv_val, map_inv₀, WithZero.log_inv]
-    rw [hi]
     omega
   exact hγU hval
-
-end
-end DedekindZetaZeroFree.KPActualResidueSources

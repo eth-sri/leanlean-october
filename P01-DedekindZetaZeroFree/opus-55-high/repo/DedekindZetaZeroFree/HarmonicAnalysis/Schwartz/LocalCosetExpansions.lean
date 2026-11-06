@@ -31,7 +31,7 @@ variable {K : Type*} [Field K] [ValuativeRel K] [TopologicalSpace K]
   [IsNonarchimedeanLocalField K]
 variable {E : Type*} [AddCommGroup E] [Module ℂ E]
 
-private theorem small_level (O : Set K) (hO : O ∈ nhds (0 : K)) :
+theorem small_level (O : Set K) (hO : O ∈ nhds (0 : K)) :
     ∃ J : AddSubgroup K, IsOpen (J : Set K) ∧ IsCompact (J : Set K) ∧
       (J : Set K) ⊆ O := by
   obtain ⟨γ, _, hγ⟩ := (IsValuativeTopology.hasBasis_nhds_zero K).mem_iff.mp hO
@@ -115,8 +115,7 @@ theorem finite_coset_expansion (φ : CcLC K E) (H : AddSubgroup K)
       QuotientAddGroup.mk' H x = q.val := by
     change x - a q ∈ H ↔ _
     rw [← QuotientAddGroup.eq_iff_sub_mem]
-    change QuotientAddGroup.mk' H x = QuotientAddGroup.mk' H (a q) ↔ _
-    rw [ha]
+    simp_all
   have hv (q : S) (x : K) (hx : x ∈ additiveCoset H (a q)) :
       value φ x = value φ (a q) := by
     simpa using hφ (a q) (x - a q) hx
@@ -156,7 +155,7 @@ theorem finite_coset_expansion (φ : CcLC K E) (H : AddSubgroup K)
     exact (r.sum_comp (fun q =>
       (additiveCoset H (a q)).indicator (fun _ => value φ (a q)) x)).symm
 
-private theorem compact_character_unitary
+theorem compact_character_unitary
     (U : AddSubgroup K) (hUc : IsCompact (U : Set K))
     (ψ : Multiplicative K →* ℂˣ) (hψ : Continuous ψ) (u : K) (hu : u ∈ U) :
     ‖(ψ (Multiplicative.ofAdd u) : ℂ)‖ = 1 := by
@@ -174,9 +173,9 @@ private theorem compact_character_unitary
     exact (not_lt_of_ge hb) hn
   have hi := hle (-u) (U.neg_mem hu)
   have hp : ψ (Multiplicative.ofAdd (-u)) = (ψ (Multiplicative.ofAdd u))⁻¹ := by
-    rw [ofAdd_neg, map_inv]
+    simp
   rw [hp, Units.val_inv_eq_inv_val, norm_inv] at hi
-  have hn : 0 < ‖(ψ (Multiplicative.ofAdd u) : ℂ)‖ := norm_pos_iff.mpr (Units.ne_zero _)
+  have hn : 0 < ‖(ψ (Multiplicative.ofAdd u) : ℂ)‖ := by simp
   exact le_antisymm (hle u hu) ((inv_le_one₀ hn).mp hi)
 
 theorem exists_character_adapted_expansion (φ : CcLC K E)
@@ -208,7 +207,7 @@ theorem exists_character_adapted_expansion (φ : CcLC K E)
   obtain ⟨O, hO, hOc⟩ := Filter.mem_comap.mp hn
   obtain ⟨J, hJo, hJc, hJO⟩ := small_level ((U : Set K) ∩ O)
     (Filter.inter_mem (hUopen.mem_nhds U.zero_mem) hO)
-  have hJU : J ≤ U := fun j hj => (hJO hj).1
+  have hJU : J ≤ U := by simp_all
   have hψJ (j : K) (hj : j ∈ J) : ψ (Multiplicative.ofAdd j) = 1 := by
     have he : c ⟨j, hJU hj⟩ = 1 := by
       apply Circle.eq_one_of_forall_pow_mem_centeredArc_pi_div_two
@@ -220,8 +219,7 @@ theorem exists_character_adapted_expansion (φ : CcLC K E)
         change (ψ (Multiplicative.ofAdd (n • j)) : ℂ) =
           (ψ (Multiplicative.ofAdd j) : ℂ) ^ n
         rw [ofAdd_nsmul, map_pow, Units.val_pow_eq_pow_val]
-      change c ⟨n • j, hJU hnj⟩ ∈ Circle.centeredArc (Real.pi / 2) at hh
-      rwa [hp] at hh
+      simp_all
     apply Units.ext
     exact congrArg (fun z : Circle => (z : ℂ)) he
   obtain ⟨H, hHJ, hHo, hHc, hφH⟩ := exists_compactOpen_translation_level φ J hJo hJc
@@ -233,8 +231,8 @@ variable [MeasurableSpace K] [BorelSpace K]
 theorem compactOpen_volume_pos_lt_top (μ : Measure K) [μ.IsAddHaarMeasure]
     (H : AddSubgroup K) (hHopen : IsOpen (H : Set K))
     (hHcompact : IsCompact (H : Set K)) :
-    0 < μ (H : Set K) ∧ μ (H : Set K) < ⊤ := by
-  exact ⟨hHopen.measure_pos μ ⟨0, H.zero_mem⟩, hHcompact.measure_lt_top⟩
+    0 < μ (H : Set K) ∧ μ (H : Set K) < ⊤ := 
+  ⟨hHopen.measure_pos μ ⟨0, H.zero_mem⟩, hHcompact.measure_lt_top⟩
 
 end LocalField
 
@@ -246,8 +244,8 @@ variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E]
   [FiniteDimensional ℂ E]
 
 theorem integrable (φ : CcLC K E) (μ : Measure K) [μ.IsAddHaarMeasure] :
-    Integrable (value φ) μ := by
-  exact φ.val.continuous.integrable_of_hasCompactSupport φ.property
+    Integrable (value φ) μ := 
+  φ.val.continuous.integrable_of_hasCompactSupport φ.property
 
 theorem integrable_inverse_character_smul (φ : CcLC K E)
     (ψ : Multiplicative K →* ℂˣ) (hψ : Continuous ψ)
@@ -258,9 +256,3 @@ theorem integrable_inverse_character_smul (φ : CcLC K E)
       ((Units.continuous_val.comp (hψ.inv)).comp continuous_ofAdd)
   exact (hc.smul φ.val.continuous).integrable_of_hasCompactSupport
     (φ.property.smul_left (f := fun x => ((ψ (Multiplicative.ofAdd x) : ℂ)⁻¹)))
-
-end Integrability
-
-end DedekindZetaZeroFree.KPJacquetStepFunction
-
-end

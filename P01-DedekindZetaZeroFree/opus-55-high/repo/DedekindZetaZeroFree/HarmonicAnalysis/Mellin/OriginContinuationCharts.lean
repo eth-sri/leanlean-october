@@ -36,7 +36,7 @@ theorem originMellinChart_differentiableAt (h : ℝ → ℂ)
       (fun z : ℂ => ((-1 : ℂ) ^ n / (2 * (Real.pi : ℂ)) ^ n) *
         mellin (iteratedDeriv n h) (z + (n : ℂ)) *
         (Complex.Gammaℂ (z + (n : ℂ)))⁻¹) s :=
-    ((differentiableAt_const ((-1 : ℂ) ^ n / (2 * (Real.pi : ℂ)) ^ n)).mul hm).mul hg
+    by simp_all
   rw [show originMellinChart h n = (fun z : ℂ =>
       ((-1 : ℂ) ^ n / (2 * (Real.pi : ℂ)) ^ n) *
         mellin (iteratedDeriv n h) (z + (n : ℂ)) *
@@ -63,8 +63,7 @@ theorem originMellinChart_succ (h : ℝ → ℂ)
       = ((-1 : ℂ) ^ n / (2 * (Real.pi : ℂ)) ^ n) *
           ((s + (n : ℂ)) / (2 * (Real.pi : ℂ))) := by
     have hpi : (2 * (Real.pi : ℂ)) ≠ 0 := by
-      have : (Real.pi : ℂ) ≠ 0 := by exact_mod_cast Real.pi_ne_zero
-      exact mul_ne_zero two_ne_zero this
+      simp
     rw [pow_succ, pow_succ]
     field_simp
   rw [hA, show originMellinChart h n s =
@@ -87,7 +86,3 @@ theorem originMellinChart_succ (h : ℝ → ℂ)
           mellin (iteratedDeriv n h) (s + (n : ℂ)) *
           (((s + (n : ℂ)) / (2 * (Real.pi : ℂ))) *
             (Complex.Gammaℂ ((s + (n : ℂ)) + 1))⁻¹) := by ring
-
-end DedekindZetaZeroFree.LargeSieve.Vendor
-
-end

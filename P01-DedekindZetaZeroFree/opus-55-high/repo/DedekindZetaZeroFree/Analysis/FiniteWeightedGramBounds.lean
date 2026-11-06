@@ -15,12 +15,12 @@ namespace DedekindZetaZeroFree.LargeSieve.Vendor
 
 open scoped NumberField Classical
 
-private lemma mul_sum_sum_eq {ι : Type*} (a : ℂ) (f g : ι → ℂ) (s : Finset ι) :
+lemma mul_sum_sum_eq {ι : Type*} (a : ℂ) (f g : ι → ℂ) (s : Finset ι) :
     a * (∑ i ∈ s, f i) * (∑ i ∈ s, g i) = ∑ i ∈ s, ∑ j ∈ s, a * f i * g j := by
   have h1 : a * (∑ i ∈ s, f i) = ∑ i ∈ s, a * f i := Finset.mul_sum ..
   rw [h1, Finset.sum_mul_sum]
 
-private lemma energy_gram_identity {α β : Type*} (R : Finset α) (S : Finset β)
+lemma energy_gram_identity {α β : Type*} (R : Finset α) (S : Finset β)
     (w : α → ℝ) (k : β → α → ℂ) (lam : β → ℂ) :
     ((∑ a ∈ R, w a * ‖∑ b ∈ S, lam b * k b a‖ ^ 2 : ℝ) : ℂ) =
       ∑ b ∈ S, ∑ d ∈ S, (starRingEnd ℂ) (lam b) * lam d *
@@ -33,8 +33,7 @@ private lemma energy_gram_identity {α β : Type*} (R : Finset α) (S : Finset �
   · refine Finset.sum_congr rfl (fun a _ => ?_)
     have hconj : (starRingEnd ℂ) (∑ b ∈ S, lam b * k b a) =
         ∑ b ∈ S, (starRingEnd ℂ) (lam b) * (starRingEnd ℂ) (k b a) := by
-      rw [map_sum]
-      exact Finset.sum_congr rfl (fun b _ => map_mul _ _ _)
+      simp
     calc (w a : ℂ) * ((‖∑ b ∈ S, lam b * k b a‖ : ℂ)) ^ 2
         = (w a : ℂ) * (starRingEnd ℂ) (∑ b ∈ S, lam b * k b a) * (∑ b ∈ S, lam b * k b a) := by
           rw [← Complex.ofReal_pow, ← Complex.normSq_eq_norm_sq, Complex.normSq_eq_conj_mul_self]
@@ -55,7 +54,7 @@ private lemma energy_gram_identity {α β : Type*} (R : Finset α) (S : Finset �
       · exact Finset.sum_congr rfl (fun a _ => by ring)
       · rw [← Finset.mul_sum]
 
-private lemma gram_form_bound {β : Type*} (S : Finset β) (M : β → β → ℂ) (v : β → ℂ)
+lemma gram_form_bound {β : Type*} (S : Finset β) (M : β → β → ℂ) (v : β → ℂ)
     (D H : ℝ) (hD : 0 ≤ D) (hH : 0 ≤ H)
     (hdiag : ∀ b ∈ S, ‖M b b‖ ≤ D)
     (hoff : ∀ b ∈ S, ∀ d ∈ S, b ≠ d → ‖M b d‖ ≤ H) :
@@ -65,14 +64,14 @@ private lemma gram_form_bound {β : Type*} (S : Finset β) (M : β → β → �
       ≤ ∑ b ∈ S, ∑ d ∈ S, ‖v b‖ * ‖v d‖ * ‖M d b‖ := by
     refine (norm_sum_le _ _).trans (Finset.sum_le_sum (fun b hb => ?_))
     refine (norm_sum_le _ _).trans (Finset.sum_le_sum (fun d hd => ?_))
-    rw [norm_mul, norm_mul, Complex.norm_conj]
+    simp
   have h2 : ∑ b ∈ S, ∑ d ∈ S, ‖v b‖ * ‖v d‖ * ‖M d b‖
       ≤ ∑ b ∈ S, ∑ d ∈ S, ‖v b‖ * ‖v d‖ * (if d = b then D else H) := by
     refine Finset.sum_le_sum (fun b hb => Finset.sum_le_sum (fun d hd => ?_))
     refine mul_le_mul_of_nonneg_left ?_ (by positivity)
     by_cases h : d = b
-    · rw [h, if_pos rfl]; exact hdiag b hb
-    · rw [if_neg h]; exact hoff d hd b hb h
+    · simp_all
+    simp_all
   have hErase : ∑ b ∈ S, ∑ d ∈ S.erase b, ‖v b‖ * ‖v d‖ ≤ (∑ b ∈ S, ‖v b‖) ^ 2 := by
     have hsub : ∀ b ∈ S, ∑ d ∈ S.erase b, ‖v b‖ * ‖v d‖ ≤ ∑ d ∈ S, ‖v b‖ * ‖v d‖ := by
       intro b hb
@@ -93,8 +92,7 @@ private lemma gram_form_bound {β : Type*} (S : Finset β) (M : β → β → �
     have hs : ∑ x ∈ S.erase b, ‖v b‖ * ‖v x‖ * (if x = b then D else H)
         = ∑ x ∈ S.erase b, ‖v b‖ * ‖v x‖ * H :=
       Finset.sum_congr rfl (fun d hd => by
-        have hdb : d ≠ b := (Finset.mem_erase.mp hd).1
-        simp [hdb])
+        simp_all)
     rw [hs, if_pos rfl]
     ring
   have hsum : ∑ b ∈ S, ∑ d ∈ S, ‖v b‖ * ‖v d‖ * (if d = b then D else H)
@@ -160,5 +158,3 @@ theorem finite_weighted_gram_bound_subset {α β : Type*}
   refine le_trans ?_ (Finset.sum_le_sum_of_subset_of_nonneg hsub
     (fun a ha _ => mul_nonneg (hw a ha) (sq_nonneg _)))
   exact Finset.sum_le_sum (fun a ha => le_mul_of_one_le_left (sq_nonneg _) (hw0 a ha))
-
-end DedekindZetaZeroFree.LargeSieve.Vendor

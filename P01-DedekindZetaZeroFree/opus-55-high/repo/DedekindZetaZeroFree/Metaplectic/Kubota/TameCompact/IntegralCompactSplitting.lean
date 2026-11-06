@@ -14,7 +14,6 @@ open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.KPGoodCompactSplitting
 
 noncomputable section
-set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
@@ -44,16 +43,16 @@ theorem kappa_mul (g h : KPTameCompact.K0 F v) :
 theorem kappa_one :
     KPTameCompact.kappa F v ζ hζ (1 : KPTameCompact.K0 F v) = 1 := by
   apply KPTameCompact.kappa_zero F v ζ hζ
-  simp [KPTameCompact.c, Matrix.one_apply]
+  rfl
 
 def kStar : KPTameCompact.K0 F v →*
     KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr v) where
   toFun g := ⟨KPTameCompact.inclusion F v g, KPTameCompact.kappa F v ζ hζ g⟩
-  map_one' := by
-    exact congrArg₂ KPLocalCover.CubicGL2Raw.mk
+  map_one' := 
+    congrArg₂ KPLocalCover.CubicGL2Raw.mk
       ((KPTameCompact.inclusion F v).map_one) (kappa_one F ζ hζ v hv)
-  map_mul' g h := by
-    exact congrArg₂ KPLocalCover.CubicGL2Raw.mk
+  map_mul' g h := 
+    congrArg₂ KPLocalCover.CubicGL2Raw.mk
       ((KPTameCompact.inclusion F v).map_mul g h) (kappa_mul F ζ hζ v hv g h)
 
 theorem kStar_eq_section_on_Gamma (m : ℕ)
@@ -96,7 +95,7 @@ theorem kStar_continuous (m : ℕ)
   have hS : IsOpen S := (KPLocalCube.Gamma_compact_open F v m hm.1).2.preimage hi
   let q : S → KPLocalCube.Gamma F v m := fun g =>
     ⟨KPTameCompact.inclusion F v g.val, g.property⟩
-  have hq : Continuous q := (hi.comp continuous_subtype_val).subtype_mk _
+  have hq : Continuous q := by fun_prop
   have hchart := (KPLocalChartTopology.translatedChart_isOpenEmbedding
     F ζ hζ v m hm 1).continuous
   have hres : Continuous (fun g : S => kStar F ζ hζ v hv g.val) := by
@@ -108,8 +107,7 @@ theorem kStar_continuous (m : ℕ)
   apply (continuousOn_iff_continuous_restrict.mpr hres).continuousAt
   apply hS.mem_nhds
   change KPTameCompact.inclusion F v 1 ∈ KPLocalCube.Gamma F v m
-  rw [map_one]
-  exact Subgroup.one_mem _
+  simp
 
 theorem kStar_compact_image (m : ℕ)
     (hm : KPLocalChartTopology.MatrixChartDepth F v m) :
@@ -152,16 +150,16 @@ theorem kStar_upper_triangular (g : KPTameCompact.K0 F v)
     (hc : KPTameCompact.c F v g = 0) :
     kStar F ζ hζ v hv g =
       KPLocalCover.sectionMap F ζ hζ (Sum.inr v)
-        (KPTameCompact.inclusion F v g) := by
-  exact congrArg (@KPLocalCover.CubicGL2Raw.mk F _ _ ζ hζ (Sum.inr v) (KPTameCompact.inclusion F v g))
+        (KPTameCompact.inclusion F v g) := 
+  congrArg (@KPLocalCover.CubicGL2Raw.mk F _ _ ζ hζ (Sum.inr v) (KPTameCompact.inclusion F v g))
     (KPTameCompact.kappa_zero F v ζ hζ g hc)
 
 theorem kStar_swap (g : KPTameCompact.K0 F v)
     (hc : KPTameCompact.c F v g = 1) :
     kStar F ζ hζ v hv g =
       KPLocalCover.sectionMap F ζ hζ (Sum.inr v)
-        (KPTameCompact.inclusion F v g) := by
-  exact congrArg (@KPLocalCover.CubicGL2Raw.mk F _ _ ζ hζ (Sum.inr v) (KPTameCompact.inclusion F v g))
+        (KPTameCompact.inclusion F v g) := 
+  congrArg (@KPLocalCover.CubicGL2Raw.mk F _ _ ζ hζ (Sum.inr v) (KPTameCompact.inclusion F v g))
     (KPTameCompact.kappa_norm_one F v ζ hζ g (by rw [hc, norm_one]))
 
 theorem kStar_unit_diagonal (u u' : (KPTameCompact.O F v)ˣ)
@@ -196,13 +194,10 @@ end DedekindZetaZeroFree.KPGoodCompactSplitting
 
 section
 
-open scoped NumberField ValuativeRel Classical
-open NumberField IsDedekindDomain
 
 namespace DedekindZetaZeroFree.KPGoodCompactSplitting
 
 noncomputable section
-set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
@@ -214,8 +209,3 @@ include hv
 theorem projection_kStar (g : KPTameCompact.K0 F v) :
     KPLocalCover.projection F ζ hζ (Sum.inr v)
       (kStar F ζ hζ v hv g) = KPTameCompact.inclusion F v g := rfl
-
-end
-end DedekindZetaZeroFree.KPGoodCompactSplitting
-
-end

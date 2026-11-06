@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # The ideal attached to an idele
 
@@ -32,7 +27,6 @@ open scoped NumberField RestrictedProduct WithZero
 open NumberField IsDedekindDomain
 
 noncomputable section
-
 
 variable {K : Type*} [Field K] [NumberField K]
 
@@ -77,9 +71,7 @@ theorem localOrder_eq_zero_iff (v : HeightOneSpectrum (𝓞 K))
       simpa [WithZero.logEquiv_apply] using h
     have hu := (WithZero.logEquiv (G := ℤ)).injective h'
     simpa [z] using congrArg Units.val hu
-  · intro h
-    rw [h]
-    rfl
+  simp_all
 
 /-- The set of finite places where a finite idele is not an integral unit is
 finite. -/
@@ -113,8 +105,7 @@ def valuationVector :
     fun a b => by
       apply Multiplicative.ext
       ext v
-      exact congrArg Multiplicative.toAdd
-        (map_mul (localOrder v) (a v) (b v))
+      simp
 
 @[simp]
 theorem valuationVector_apply (a : FiniteIdeleGroup K)
@@ -176,7 +167,7 @@ theorem valuationVector_surjective :
     Function.Surjective (valuationVector (K := K)) := by
   intro e
   refine ⟨valuationVectorSection e.toAdd, ?_⟩
-  exact valuationVector_valuationVectorSection e.toAdd
+  simp
 
 end FiniteIdeleGroup
 
@@ -206,8 +197,8 @@ def factorization :
       FractionalIdealGroup K :=
   MonoidHom.mk' (fun exps =>
       exps.toAdd.prod fun v n => primePowerHom v (Multiplicative.ofAdd n))
-    fun a b => by
-      exact Finsupp.prod_hom_add_index (fun v => primePowerHom v)
+    fun a b => 
+      Finsupp.prod_hom_add_index (fun v => primePowerHom v)
 
 @[simp]
 theorem factorization_val (exps :
@@ -269,9 +260,7 @@ theorem ext_count {I J : FractionalIdealGroup K}
       K (Units.ne_zero I),
     ← FractionalIdeal.finprod_heightOneSpectrum_factorization'
       K (Units.ne_zero J)]
-  exact finprod_congr fun v => congrArg
-    (fun n : ℤ =>
-      (v.asIdeal : FractionalIdeal (nonZeroDivisors (𝓞 K)) K) ^ n) (h v)
+  simp_all
 
 theorem factorization_injective :
     Function.Injective (factorization (K := K)) := by
@@ -287,10 +276,7 @@ theorem factorization_surjective :
   apply ext_count
   intro v
   rw [count_factorization]
-  change countVector I v =
-    FractionalIdeal.count K v
-      (I : FractionalIdeal (nonZeroDivisors (𝓞 K)) K)
-  exact countVector_apply I v
+  rfl
 
 /-- Multiplicative unique factorization of nonzero fractional ideals by
 finite primes. -/
@@ -358,15 +344,6 @@ theorem fractionalIdeal_ker :
       exact (localOrder_eq_zero_iff v (a v)).2 (ha v)
     simp [fractionalIdeal, hv]
 
-/-- The ideal group as the quotient of finite ideles by the everywhere
-integral finite ideles. -/
-def quotientIntegralEquiv :
-    FiniteIdeleGroup K ⧸ integralSubgroup ≃*
-      FractionalIdealGroup K := by
-  rw [← fractionalIdeal_ker]
-  exact QuotientGroup.quotientKerEquivOfSurjective
-    fractionalIdeal fractionalIdeal_surjective
-
 end FiniteIdeleGroup
 
 namespace IdeleGroup
@@ -399,15 +376,6 @@ theorem fractionalIdeal_ker :
   rw [← MonoidHom.mem_ker,
     FiniteIdeleGroup.fractionalIdeal_ker]
 
-/-- The ideal group as the quotient of all ideles by those integral at
-every finite place. -/
-def quotientIntegralEquiv :
-    IdeleGroup K ⧸ integralAtFinitePlaces ≃*
-      FractionalIdealGroup K := by
-  rw [← fractionalIdeal_ker]
-  exact QuotientGroup.quotientKerEquivOfSurjective
-    fractionalIdeal fractionalIdeal_surjective
-
 /-- The canonical surjection from ideles to the ordinary ideal class
 group. -/
 def idealClass :
@@ -429,7 +397,3 @@ def quotientIdealClassKernelEquiv :
       ClassGroup (𝓞 K) :=
   QuotientGroup.quotientKerEquivOfSurjective
     idealClass idealClass_surjective
-
-end IdeleGroup
-
-end

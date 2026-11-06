@@ -41,7 +41,7 @@ theorem hasExteriorDyadicConductorSieve_of_balancedSection
     detector_exterior_dyadic_conductor_sieve F A B K_bal hK sigma hSigma C0 hC0
   exact ⟨K, hK0, hbound s⟩
 
-private theorem dyadic_arbitrary {F : Type} [Field F] [NumberField F]
+theorem dyadic_arbitrary {F : Type} [Field F] [NumberField F]
     (A : SArithmeticData F) (sigma : FixedSResidue.FullLocalCharacters A) (C0 K : ℝ)
     (hK : ∀ (X U : ℝ), 1 ≤ X → 2 ≤ U →
       ∀ (n : ℕ) (omega : Fin n → PrimitiveFrequencyCharacter F),
@@ -65,7 +65,7 @@ private theorem dyadic_arbitrary {F : Type} [Field F] [NumberField F]
     (fun i => hcond (e i)) c hc
   simpa only [Function.comp_apply,
     e.sum_comp (fun i => ‖∑ a ∈ c.support, c a * (omega i).character a.val‖^2)] using h
-private theorem finite_cauchy_schwarz {ι : Type} (s : Finset ι) (z : ι → ℂ) :
+theorem finite_cauchy_schwarz {ι : Type} (s : Finset ι) (z : ι → ℂ) :
     ‖∑ i ∈ s, z i‖ ^ 2 ≤ (s.card : ℝ) * ∑ i ∈ s, ‖z i‖ ^ 2 := by
   calc
     _ ≤ (∑ i ∈ s, ‖z i‖)^2 := by
@@ -74,7 +74,7 @@ private theorem finite_cauchy_schwarz {ι : Type} (s : Finset ι) (z : ι → �
     _ ≤ _ := by
       simpa using Finset.sum_mul_sq_le_sq_mul_sq s (fun _ => (1 : ℝ)) (fun i => ‖z i‖)
 
-private theorem finite_partition_sum {α β M : Type} [DecidableEq β] [Nonempty β]
+theorem finite_partition_sum {α β M : Type} [DecidableEq β] [Nonempty β]
     [AddCommMonoid M] (T : Finset α) (L : Finset β) (B : β → Finset α)
     (hsub : ∀ l ∈ L, B l ⊆ T)
     (huniq : ∀ a ∈ T, ∃! l : {l // l ∈ L}, a ∈ B l.val)
@@ -99,14 +99,10 @@ private theorem finite_partition_sum {α β M : Type} [DecidableEq β] [Nonempty
       simpa only [← hg] using hlabel a haT
   calc
     _ = ∑ l ∈ L, ∑ a ∈ T with g a = l, f a := by
-      apply Finset.sum_congr rfl
-      intro l hl
-      rw [hf l hl]
+      simp_all
     _ = _ := Finset.sum_fiberwise_of_maps_to (fun a ha => by
-      dsimp [g]
-      rw [dif_pos ha]
-      exact (label a ha).property) f
-private theorem block_coefficients {F : Type} [Field F] [NumberField F]
+      simp_all) f
+theorem block_coefficients {F : Type} [Field F] [NumberField F]
     (Sf : Finset (HeightOneSpectrum (𝓞 F)))
     (h : SSupportedPartition.SupportedIdeal Sf)
     (B : Finset (NonzeroIdeal F))
@@ -127,7 +123,7 @@ private theorem block_coefficients {F : Type} [Field F] [NumberField F]
   let T := B.preimage f hf.injOn
   let c : SSupportedPartition.Exterior Sf →₀ ℂ := Finsupp.onFinset T
     (fun a => if a ∈ T then b (f a) else 0)
-    (fun a ha => by by_contra hh; simp [hh] at ha)
+    (fun a ha => by simp_all)
   have hc : c.support ⊆ T := Finsupp.support_onFinset_subset
   have sum_transport {M : Type} [AddCommMonoid M] (g : NonzeroIdeal F → M) :
       (∑ a ∈ T, g (f a)) = ∑ I ∈ B, g I := by
@@ -140,8 +136,7 @@ private theorem block_coefficients {F : Type} [Field F] [NumberField F]
       obtain ⟨a, ha⟩ := hex I hI
       have he : f a = I := Subtype.ext ha.symm
       exact ⟨a, Finset.mem_preimage.mpr (he ▸ hI), he⟩
-    · intro a ha
-      rfl
+    simp
   refine ⟨c, ?_, ?_, ?_⟩
   · intro a ha
     exact ⟨f a, Finset.mem_preimage.mp (hc ha), rfl⟩
@@ -152,8 +147,7 @@ private theorem block_coefficients {F : Type} [Field F] [NumberField F]
       calc
         _ = ∑ a ∈ T, c a * ω.character a.val := by
           apply Finset.sum_subset hc
-          intro a ha hnot
-          simp [Finsupp.notMem_support_iff.mp hnot]
+          simp_all
         _ = _ := by
           apply Finset.sum_congr rfl
           intro a ha
@@ -168,8 +162,7 @@ private theorem block_coefficients {F : Type} [Field F] [NumberField F]
       calc
         _ = ∑ a ∈ T, ‖c a‖^2 := by
           apply Finset.sum_subset hc
-          intro a ha hnot
-          simp [Finsupp.notMem_support_iff.mp hnot]
+          simp
         _ = _ := by
           apply Finset.sum_congr rfl
           intro a ha
@@ -227,8 +220,7 @@ theorem detector_logarithmic_sieve_gluing
     rw [henergy b]
     symm
     apply Finset.sum_subset hbs
-    intro I hI hn
-    simp [Finsupp.notMem_support_iff.mp hn]
+    simp
   choose tag htag hfixed using htype
   have htagfin : ∀ i, tag i ∈ hL.toFinset := fun i => hL.mem_toFinset.mpr (htag i)
   have hblock : ∀ l ∈ L, ∀ sigma ∈ hL.toFinset,
@@ -346,7 +338,7 @@ theorem detector_logarithmic_sieve_gluing
           gcongr
         _ = _ := by ring
 
-private theorem logarithmic_power_absorption (m : ℕ) (hm : 0 < m)
+theorem logarithmic_power_absorption (m : ℕ) (hm : 0 < m)
     (e : ℝ) (he : 0 < e) :
     ∃ C : ℝ, 0 < C ∧ ∀ N : ℝ, 2 ≤ N →
       (1 + Real.log N)^m ≤ C * N^e := by
@@ -415,6 +407,3 @@ theorem detector_logarithmic_sieve_gluing_epsilon
         _ ≤ D * (C * (N * U) ^ epsilon) * (N + U ^ 2) *
               ∑ I ∈ b.support, ‖b I‖ ^ 2 := by gcongr
         _ = _ := by ring
-
-end
-end DedekindZetaZeroFree.Detector

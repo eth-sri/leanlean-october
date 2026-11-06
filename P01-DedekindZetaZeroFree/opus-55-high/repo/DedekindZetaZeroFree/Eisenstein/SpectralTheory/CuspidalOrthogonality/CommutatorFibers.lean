@@ -31,7 +31,7 @@ def AllCuspMeanZero (u : Smooth) : Prop :=
     ∀ b t, ∫ q, frameFiber F ζ hζ C R P H U a u b t q
       ∂KPContActualChamberOutgoingAdapter.fiberMeasure F ζ hζ C R P H U a = 0
 
-private theorem frame_horizontal (u : Smooth) (b : KPCuspCharts.Shape F) (t : ℝ) :
+theorem frame_horizontal (u : Smooth) (b : KPCuspCharts.Shape F) (t : ℝ) :
     (fun x : KPCuspCharts.Horizontal F =>
       KPContActualCutoffSmoothDescent.frameValue F ζ hζ C R P H U u a ((x,b),t)) ∈
       KPCuspGenuineMonodromy.horizontalSections (ζ := ζ) (hζ := hζ)

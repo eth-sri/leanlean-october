@@ -43,5 +43,3 @@ theorem rayCharacter_eq_of_eq_away {m q : Ideal (𝓞 F)}
     exact mul_right_cancel₀ hJne key
   ·
     rw [(η.eq_zero_iff' I).mpr (Or.inr hIm), (θ.eq_zero_iff' I).mpr (Or.inr hIm)]
-
-end DedekindZetaZeroFree.LargeSieve

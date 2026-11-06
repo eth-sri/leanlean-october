@@ -47,5 +47,3 @@ theorem conductor_character
   simp only [MonoidHom.comp_apply]
   rw [hA p (RayBridge.prime_not_mem_fullModulus_support (finiteModulusIdeal c)
         (finiteModulusIdeal_ne_bot c) p hcop) Q hQ]
-
-end DedekindZetaZeroFree.LargeSieve.RootNumber

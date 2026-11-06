@@ -50,7 +50,7 @@ theorem initial_same_class_gram
       _ ≤ L * (2 * N) := mul_le_mul_of_nonneg_left hb2hi hL0
       _ = 2 * L * N := by ring
   have hN0 : 0 ≤ N := by linarith
-  have hC0 : 0 ≤ 2 * L * N := by nlinarith [hL0, hN0]
+  have hC0 : 0 ≤ 2 * L * N := by positivity
   have hprod : (Ideal.absNorm (Q.cond b1 * Q.cond b2) : ℝ) ≤ (2 * L * N) * (2 * L * N) := by
     rw [map_mul Ideal.absNorm]
     push_cast
@@ -72,5 +72,3 @@ theorem initial_same_class_gram
     _ = A * (2 * L) ^ (1 + ε) * N ^ (1 + ε) := by
         rw [Real.mul_rpow (by linarith : (0 : ℝ) ≤ 2 * L) hN0]
         ring
-
-end DedekindZetaZeroFree.LargeSieve.Sieve

@@ -14,7 +14,7 @@ open scoped Classical
 def complexUnitLaurentLinearEvaluation (u : ℂˣ) : (ℤ →₀ ℂ) →ₗ[ℂ] ℂ :=
   Finsupp.linearCombination ℂ (fun n : ℤ => (u : ℂ) ^ n)
 
-private lemma laurentValue_eq (u : ℂˣ) (p : ℤ →₀ ℂ) :
+lemma laurentValue_eq (u : ℂˣ) (p : ℤ →₀ ℂ) :
     complexUnitLaurentLinearEvaluation u p = p.sum (fun n c => (u : ℂ) ^ n * c) := by
   simp [complexUnitLaurentLinearEvaluation, Finsupp.linearCombination_apply, smul_eq_mul, mul_comm]
 
@@ -71,18 +71,9 @@ theorem compact_set_integral_laurent_family
   have he : (∑ y : D, complexUnitLaurentLinearEvaluation (u t)
       (ν.real (G ⁻¹' {(y : T → ℂ)}) • Q y y.property)) =
       ∑ y : D, ν.real (G ⁻¹' {(y : T → ℂ)}) • (y : T → ℂ) t := by
-    apply Finset.sum_congr rfl
-    intro y hy
-    change complexUnitLaurentLinearEvaluation (u t)
-      ((ν.real (G ⁻¹' {(y : T → ℂ)}) : ℂ) • Q y y.property) = _
-    rw [map_smul, ← hQ y y.property t]
-    rfl
+    simp_all
   rw [he]
   change _ = ∑ y ∈ D.attach, ν.real (G ⁻¹' {y.val}) • y.val t
   rw [Finset.sum_attach D (fun y : T → ℂ => ν.real (G ⁻¹' {y}) • y t)]
   rw [← finite_family_integral ν G hG t]
   exact (integral_subtype_comap hAm (fun x => H x t)).symm
-
-end DedekindZetaZeroFree.KPTameTransposeBaseChartNumerator
-
-end

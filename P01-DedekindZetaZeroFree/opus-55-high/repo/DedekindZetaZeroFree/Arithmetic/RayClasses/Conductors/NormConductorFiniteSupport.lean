@@ -5,7 +5,6 @@ public import ClassFieldTheory.GlobalClassFieldTheory.GlobalClassFields.MathlibG
 
 @[expose] public section
 
-noncomputable section
 
 open scoped NumberField Classical
 open IsDedekindDomain
@@ -36,12 +35,11 @@ theorem normConductorFiniteSupport
           (K := K) (L := E)) p = 0 ↔
         p ∉ (GlobalClassFieldTheory.GlobalClassFields.ideleClassNormNarrowFiniteConductor
           (K := K) (L := E)).support := by
-    rw [Finsupp.mem_support_iff]
-    exact not_not.symm
+    simp
   rw [hmem,
     GlobalClassFieldTheory.GlobalClassFields.ideleClassNorm_narrowFiniteConductor_support_eq_ramifiedBaseFinitePlaces,
     mem_ramifiedBaseFinitePlaces_iff]
-  simp only [not_exists, not_and, not_not]
+  simp
 
 theorem narrowIdealModulus_normConductor
     (K E : Type) [Field K] [NumberField K] [Field E] [NumberField E]
@@ -66,7 +64,3 @@ theorem normConductorIdeal_coprime
   intro c m
   rw [finiteRayModulusIdeal_coprime]
   exact normConductorFiniteSupport K E p
-
-end DedekindZetaZeroFree.AbelianQuotient
-
-end

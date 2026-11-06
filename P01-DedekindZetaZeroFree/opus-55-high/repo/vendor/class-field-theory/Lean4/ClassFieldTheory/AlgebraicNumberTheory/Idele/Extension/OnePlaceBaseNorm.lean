@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Norms of base units supported at one finite place
 
@@ -46,7 +41,7 @@ variable
 
 /-- The map from units of the completion below `v` to units of the
 completion at `v`, using the actual finite-place completion map. -/
-noncomputable def finitePlaceBaseUnitExtension
+def finitePlaceBaseUnitExtension
     (v : HeightOneSpectrum (𝓞 L)) :
     ((_root_.finitePlaceBelow (K := K) v).adicCompletion K)ˣ →*
       (v.adicCompletion L)ˣ :=
@@ -58,7 +53,7 @@ noncomputable def finitePlaceBaseUnitExtension
 
 /-- The degree of the actual completed extension at `v` over the
 completion at the place below `v`. -/
-noncomputable def finitePlaceCompletionDegree
+def finitePlaceCompletionDegree
     (v : HeightOneSpectrum (𝓞 L)) : ℕ := by
   let q := _root_.finitePlaceBelow (K := K) v
   let W :
@@ -132,7 +127,7 @@ theorem norm_finitePlaceIdele_finitePlaceBaseUnitExtension
     apply Finset.prod_eq_one
     intro W _
     rw [finitePlaceIdele_infiniteComponent]
-    exact map_one _
+    simp
   · apply Subtype.ext
     funext r
     change
@@ -245,7 +240,7 @@ theorem norm_finitePlaceIdele_eq_finitePlaceIdele_normUnits
     apply Finset.prod_eq_one
     intro W' _
     rw [finitePlaceIdele_infiniteComponent]
-    exact map_one _
+    simp
   · apply Subtype.ext
     funext r
     change
@@ -319,7 +314,3 @@ theorem ideleClassNorm_finitePlaceIdeleClass_eq_normUnits
     _root_.ideleClassNorm_mk,
     norm_finitePlaceIdele_eq_finitePlaceIdele_normUnits]
   rfl
-
-end IdeleGroup
-
-end

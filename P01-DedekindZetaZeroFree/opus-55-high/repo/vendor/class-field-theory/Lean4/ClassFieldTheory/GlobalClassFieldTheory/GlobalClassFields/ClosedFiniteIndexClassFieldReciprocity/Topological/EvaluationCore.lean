@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Generic evaluation core for transported reciprocity
 
@@ -34,8 +31,7 @@ open Reciprocity
 /-- Canonical class-group commutativity supplies normality in the transport formula. -/
 theorem closedFiniteIndexEvaluationCoreClassGroupIsMulCommutative
     (F : Type) [Field F] [NumberField F] :
-    IsMulCommutative (IdeleClassGroup F) :=
-  IsMulCommutative.of_comm (fun a b => mul_comm a b)
+    IsMulCommutative (IdeleClassGroup F) := by apply normIdeleClassGroup_isMulCommutative <;> assumption
 
 attribute [local instance] closedFiniteIndexEvaluationCoreClassGroupIsMulCommutative
 
@@ -66,8 +62,3 @@ theorem globalReciprocityContinuousMulEquiv_trans_quotientOfEq_apply
       congrArg
         (QuotientGroup.quotientMulEquivOfEq hNorm)
         (globalReciprocityContinuousMulEquiv_apply K L σ)
-
-end GlobalClassFields
-end GlobalClassFieldTheory
-
-end

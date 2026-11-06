@@ -16,11 +16,8 @@ noncomputable section
 
 def reciprocalGamma (z : ℂ) : ℂ := (Complex.Gamma z)⁻¹
 
-theorem reciprocalGamma_differentiable : Differentiable ℂ reciprocalGamma := by
-  exact Complex.differentiable_one_div_Gamma
-
-@[simp] theorem reciprocalGamma_neg_nat (n : ℕ) : reciprocalGamma (-(n : ℂ)) = 0 := by
-  simp [reciprocalGamma, Complex.Gamma_neg_nat_eq_zero]
+theorem reciprocalGamma_differentiable : Differentiable ℂ reciprocalGamma := 
+  Complex.differentiable_one_div_Gamma
 
 theorem reciprocalGamma_strip_exp_bound (a b : ℝ) (hab : a ≤ b) :
     ∃ C : ℝ, 0 < C ∧ ∀ z : ℂ, a ≤ z.re → z.re ≤ b →
@@ -94,7 +91,3 @@ theorem thetaProfileReciprocalMellinFactor_strip_exp_bound
       mul_le_mul (mul_le_mul_of_nonneg_left hp (norm_nonneg _)) hpow
         (by positivity) (by positivity)
     _ = _ := by ring
-
-end
-
-end DedekindZetaZeroFree

@@ -36,7 +36,7 @@ theorem thetaPolynomialGaussianAbsorption (d : ℕ) (a : ℝ) (ha : 0 < a) :
             ≤ (1 + max N₀ 1) ^ d * 1 := by
               refine mul_le_mul (pow_le_pow_left₀ (by positivity) (by linarith) d) ?_
                 (Real.exp_pos _).le (by positivity)
-              rw [Real.exp_le_one_iff]; nlinarith [sq_nonneg u]
+              simp_all
             _ = (1 + max N₀ 1) ^ d := by ring
             _ ≤ max ((1 + max N₀ 1) ^ d) (2 ^ d) := le_max_left _ _
       · have huN₀ : N₀ ≤ u := le_trans (le_max_left _ _) hlt.le
@@ -50,7 +50,7 @@ theorem thetaPolynomialGaussianAbsorption (d : ℕ) (a : ℝ) (ha : 0 < a) :
             _ = 2 ^ d * 1 := by
               congr 1
               rw [← Real.rpow_natCast u d, ← Real.rpow_add (by linarith : (0 : ℝ) < u)]
-              rw [show (d : ℝ) + -(d : ℝ) = 0 by ring, Real.rpow_zero]
+              simp
             _ = 2 ^ d := by ring
             _ ≤ max ((1 + max N₀ 1) ^ d) (2 ^ d) := le_max_right _ _
 
@@ -62,5 +62,3 @@ theorem thetaPolynomialGaussianAbsorption (d : ℕ) (a : ℝ) (ha : 0 < a) :
             Real.exp (-(a / 2) * u ^ 2) := by rw [hexp]; ring
       _ ≤ max ((1 + max N₀ 1) ^ d) (2 ^ d) * Real.exp (-(a / 2) * u ^ 2) :=
           mul_le_mul_of_nonneg_right hfu (Real.exp_pos _).le
-
-end DedekindZetaZeroFree

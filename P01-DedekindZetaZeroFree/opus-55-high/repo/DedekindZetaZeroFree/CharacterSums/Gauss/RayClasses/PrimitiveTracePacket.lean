@@ -12,7 +12,6 @@ https://github.com/LeanPool/lean-pool
 Revision: 68aa6ee63d20ad76bcc15f595adfc72949991f06.
 -/
 
-noncomputable section
 open scoped NumberField nonZeroDivisors
 open DedekindZetaZeroFree.AbelianQuotient
 
@@ -51,8 +50,7 @@ theorem coprimeIdealResidueCoefficient_integral_lift
     have hc := (ResidueCoefficientAux.quotient_unit_iff m α).mp (hu ▸ u.isUnit)
     have hn : α ≠ 0 := by
       intro hz
-      have : m = ⊤ := by simpa [hz] using hc
-      exact hmt this
+      simp_all
     rw [← hu, unitCharExtend_coe]
     change η (integralElementIdeal (rayIdealFractionalIdeal F a ha) x) =
       (η a)⁻¹ * (residueRayCharacter hF hm hmt η u : ℂ)
@@ -307,7 +305,3 @@ theorem coprimeIdealResiduePacket_eq_gauss_conjugate_coefficient
     _ = (η a)⁻¹ * ((starRingEnd ℂ) (unitCharExtend χ k) * τ) *
         (η b * (starRingEnd ℂ) (η b)) := by rw [hbconj, mul_one]
     _ = _ := by ring
-
-end DedekindZetaZeroFree.Hecke.Theta
-
-end

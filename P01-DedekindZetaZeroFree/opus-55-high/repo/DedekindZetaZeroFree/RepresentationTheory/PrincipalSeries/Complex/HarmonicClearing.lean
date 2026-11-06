@@ -52,7 +52,7 @@ theorem native_harmonic_finite_words
         rfl
     exact hall _
   rw [KPContHolomorphicKGeneration.complexSphericalWord_zero]
-  exact congrArg (fun h : ComplexGL2 → ℂ => D (e j).val * h a) (hword (e j).val).symm
+  simp_all
 
 section PolynomialWords
 open scoped ContDiff Matrix.Norms.Elementwise
@@ -60,22 +60,22 @@ set_option backward.isDefEq.respectTransparency false
 
  abbrev WordMat := KPContHolomorphicKGeneration.Mat
  def wordDomain : Set WordMat := {g | g.det ≠ 0}
-private theorem wordDomain_open : IsOpen wordDomain := by
+theorem wordDomain_open : IsOpen wordDomain := by
   have hc : Continuous (fun g : WordMat => g.det) := by
-    simp only [Matrix.det_fin_two]; fun_prop
+    fun_prop
   exact isOpen_ne_fun hc continuous_const
  def wordPhase (g : WordMat) : ℂ :=
   (Real.log (‖g.det‖ / (‖g 1 0‖ ^ 2 + ‖g 1 1‖ ^ 2)) : ℂ)
  def wordExponent : Polynomial ℂ :=
   Polynomial.C (1 + 2 * (positiveParameter : ℂ)) + Polynomial.C 2 * Polynomial.X
-private theorem word_row_pos (g : WordMat) (hg : g ∈ wordDomain) :
+theorem word_row_pos (g : WordMat) (hg : g ∈ wordDomain) :
     0 < ‖g 1 0‖ ^ 2 + ‖g 1 1‖ ^ 2 := by
   by_contra h
   push Not at h
   have h10 : g 1 0 = 0 := norm_eq_zero.mp (by nlinarith [norm_nonneg (g 1 0), norm_nonneg (g 1 1)])
-  have h11 : g 1 1 = 0 := norm_eq_zero.mp (by nlinarith [norm_nonneg (g 1 0), norm_nonneg (g 1 1)])
+  have h11 : g 1 1 = 0 := by simp_all
   exact hg (by rw [Matrix.det_fin_two, h10, h11]; ring)
-private theorem wordPhase_smooth : ContDiffOn ℝ ∞ wordPhase wordDomain := by
+theorem wordPhase_smooth : ContDiffOn ℝ ∞ wordPhase wordDomain := by
   have hd : ContDiff ℝ ∞ (fun g : WordMat => g.det) := by
     simp only [Matrix.det_fin_two]; fun_prop
   have hr : ContDiff ℝ ∞ (fun g : WordMat => ‖g 1 0‖ ^ 2 + ‖g 1 1‖ ^ 2) := by
@@ -88,7 +88,7 @@ private theorem wordPhase_smooth : ContDiffOn ℝ ∞ wordPhase wordDomain := by
   exact Complex.ofRealCLM.contDiff.comp_contDiffOn hl
  def wordDirection (X : WordMat) (h : WordMat → ℂ) (g : WordMat) : ℂ :=
   fderiv ℝ h g (g * X)
-private theorem wordDirection_smooth (X : WordMat) {h : WordMat → ℂ}
+theorem wordDirection_smooth (X : WordMat) {h : WordMat → ℂ}
     (hh : ContDiffOn ℝ ∞ h wordDomain) :
     ContDiffOn ℝ ∞ (wordDirection X h) wordDomain := by
   apply (hh.fderiv_of_isOpen wordDomain_open (m := ∞) (by simp)).clm_apply
@@ -107,13 +107,13 @@ private theorem wordDirection_smooth (X : WordMat) {h : WordMat → ℂ}
       PolynomialSeparated (wordAtom p h)
   | add {f g} : PolynomialSeparated f → PolynomialSeparated g →
       PolynomialSeparated (fun s a => f s a + g s a)
-private theorem polynomialSeparated_smooth {H} (hH : PolynomialSeparated H) (s : ℂ) :
+theorem polynomialSeparated_smooth {H} (hH : PolynomialSeparated H) (s : ℂ) :
     ContDiffOn ℝ ∞ (H s) wordDomain := by
   induction hH with
   | atom p h hh =>
     exact ((contDiffOn_const.mul wordPhase_smooth).cexp.mul contDiffOn_const).mul hh
   | add hf hg ihf ihg => exact ihf.add ihg
-private theorem polynomialSeparated_derivative {H} (hH : PolynomialSeparated H) (X : WordMat) :
+theorem polynomialSeparated_derivative {H} (hH : PolynomialSeparated H) (X : WordMat) :
     ∃ H', PolynomialSeparated H' ∧ ∀ s g, g ∈ wordDomain →
       H' s g = wordDirection X (H s) g := by
   induction hH with
@@ -128,8 +128,7 @@ private theorem polynomialSeparated_derivative {H} (hH : PolynomialSeparated H) 
     have he := (((hp.hasFDerivAt.const_mul (wordExponent.eval s)).cexp).mul_const (p.eval s)).mul hd.hasFDerivAt
     change _ = fderiv ℝ (((fun a => Complex.exp (wordExponent.eval s * wordPhase a) * p.eval s) * h)) g (g * X)
     rw [he.fderiv]
-    simp [wordAtom, Polynomial.eval_mul, ContinuousLinearMap.add_apply,
-      ContinuousLinearMap.smul_apply, wordDirection]
+    simp [wordAtom, Polynomial.eval_mul, wordDirection]
     ring
   | @add H G hf hG ihf ihg =>
     obtain ⟨H', hH', eH⟩ := ihf
@@ -142,7 +141,7 @@ private theorem polynomialSeparated_derivative {H} (hH : PolynomialSeparated H) 
     have hdG := ((polynomialSeparated_smooth hG s).contDiffAt (wordDomain_open.mem_nhds hg)).differentiableAt (by simp)
     simp only [wordDirection, fderiv_fun_add hdH hdG, ContinuousLinearMap.add_apply]
 
-private theorem polynomialSeparated_finite {H} (hH : PolynomialSeparated H) :
+theorem polynomialSeparated_finite {H} (hH : PolynomialSeparated H) :
     ∃ (n : ℕ) (p : Fin n → Polynomial ℂ) (h : Fin n → WordMat → ℂ),
       (∀ j, ContDiffOn ℝ ∞ (h j) wordDomain) ∧
       ∀ s g, H s g = Complex.exp (wordExponent.eval s * wordPhase g) *
@@ -151,7 +150,7 @@ private theorem polynomialSeparated_finite {H} (hH : PolynomialSeparated H) :
   | atom p h hh =>
     exact ⟨1, fun _ => p, fun _ => h, fun _ => hh, by
       intro s g
-      simp [Fin.sum_univ_one, wordAtom, mul_assoc]⟩
+      simp [wordAtom, mul_assoc]⟩
   | @add H G hf hg ihf ihg =>
     obtain ⟨n, p, h, hh, he⟩ := ihf
     obtain ⟨m, q, k, hk, ke⟩ := ihg
@@ -165,7 +164,7 @@ private theorem polynomialSeparated_finite {H} (hH : PolynomialSeparated H) :
       rw [he, ke, Fin.sum_univ_add]
       simp only [Fin.append_left, Fin.append_right, mul_add]
 
-private theorem polynomial_word_separated (w : KPContHolomorphicKGeneration.RealLieWord) :
+theorem polynomial_word_separated (w : KPContHolomorphicKGeneration.RealLieWord) :
     ∃ H, PolynomialSeparated H ∧ ∀ s a,
       KPContHolomorphicKGeneration.complexSphericalWord w s a = H s (a : WordMat) := by
   induction w with
@@ -188,8 +187,7 @@ private theorem polynomial_word_separated (w : KPContHolomorphicKGeneration.Real
       filter_upwards [wordDomain_open.mem_nhds (Matrix.GeneralLinearGroup.det_ne_zero a)] with g hg
       unfold matrixFunction
       change g.det ≠ 0 at hg
-      rw [dif_pos hg]
-      exact he s (Matrix.GeneralLinearGroup.mkOfDetNeZero g hg)
+      simp_all
     change fderiv ℝ (matrixFunction (KPContHolomorphicKGeneration.complexSphericalWord w s))
       (a : WordMat) ((a : WordMat) * X) = _
     rw [heq.fderiv_eq]
@@ -221,16 +219,13 @@ theorem sphericalWord_polynomial_smooth_factors
 
 end PolynomialWords
 
-private theorem entire_det {m : ℕ} (A : ℂ → Matrix (Fin m) (Fin m) ℂ)
+theorem entire_det {m : ℕ} (A : ℂ → Matrix (Fin m) (Fin m) ℂ)
     (hA : ∀ i j, AnalyticOnNhd ℂ (fun s => A s i j) Set.univ) :
     AnalyticOnNhd ℂ (fun s => (A s).det) Set.univ := by
   simp only [Matrix.det_apply']
-  apply Finset.analyticOnNhd_fun_sum
-  intro σ hσ
-  exact analyticOnNhd_const.mul
-    (Finset.analyticOnNhd_fun_prod _ (fun i hi => hA (σ i) i))
+  fun_prop
 
-private theorem entire_adjugate {m : ℕ} (A : ℂ → Matrix (Fin m) (Fin m) ℂ)
+theorem entire_adjugate {m : ℕ} (A : ℂ → Matrix (Fin m) (Fin m) ℂ)
     (hA : ∀ i j, AnalyticOnNhd ℂ (fun s => A s i j) Set.univ) (i j : Fin m) :
     AnalyticOnNhd ℂ (fun s => (A s).adjugate i j) Set.univ := by
   simp only [Matrix.adjugate_apply]
@@ -240,7 +235,7 @@ private theorem entire_adjugate {m : ℕ} (A : ℂ → Matrix (Fin m) (Fin m) �
   · subst a
     simp only [Matrix.updateRow_apply]
     exact analyticOnNhd_const
-  · simpa [Matrix.updateRow_apply, ha] using hA a b
+  simp_all
 
 theorem normalized_adjugate_clearing {m : ℕ}
     (A : ℂ → Matrix (Fin m) (Fin m) ℂ)
@@ -276,7 +271,7 @@ theorem normalized_adjugate_clearing {m : ℕ}
 
 section HarmonicClearingAssembly
 open KPCplxIntertwinerEigenvalues KPCplxHarmonicExtraction MeasureTheory
-open scoped Matrix ContDiff Matrix.Norms.Elementwise
+open scoped ContDiff Matrix.Norms.Elementwise
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1500000
 
@@ -284,18 +279,18 @@ set_option maxHeartbeats 1500000
  def cProj (μ : Measure ComplexSU2) (hp : IsProbabilityMeasure μ) (ℓ : ℕ)
     (h : PrincipalSeries positiveParameter) : PrincipalSeries positiveParameter :=
   (characterAverage_section_exists positiveParameter μ hp ℓ h).choose
-private theorem cProj_eval (μ : Measure ComplexSU2) (hp : IsProbabilityMeasure μ) (ℓ : ℕ)
+theorem cProj_eval (μ : Measure ComplexSU2) (hp : IsProbabilityMeasure μ) (ℓ : ℕ)
     (h : PrincipalSeries positiveParameter) (g : ComplexGL2) :
     cProj μ hp ℓ h g = characterAverage positiveParameter μ ℓ h g :=
   (characterAverage_section_exists positiveParameter μ hp ℓ h).choose_spec g
-private theorem cProj_mem (μ : Measure ComplexSU2) (hhaar : μ.IsHaarMeasure)
+theorem cProj_mem (μ : Measure ComplexSU2) (hhaar : μ.IsHaarMeasure)
     (hp : IsProbabilityMeasure μ) (ℓ : ℕ) (h : PrincipalSeries positiveParameter) :
     cProj μ hp ℓ h ∈ HS ℓ := by
   obtain ⟨p,hp',he⟩ := characterAverage_compact_polynomial positiveParameter μ hhaar hp ℓ h
   refine ⟨p,hp',?_⟩
   ext k
   exact (he k).trans (cProj_eval μ hp ℓ h (complexSU2Embedding k)).symm
-private theorem cProj_self_compact (μ : Measure ComplexSU2) (hhaar : μ.IsHaarMeasure)
+theorem cProj_self_compact (μ : Measure ComplexSU2) (hhaar : μ.IsHaarMeasure)
     (hp : IsProbabilityMeasure μ) (ℓ : ℕ) (h : PrincipalSeries positiveParameter)
     (hh : h ∈ HS ℓ) (k : ComplexSU2) :
     cProj μ hp ℓ h (complexSU2Embedding k) = h (complexSU2Embedding k) := by
@@ -310,7 +305,7 @@ private theorem cProj_self_compact (μ : Measure ComplexSU2) (hhaar : μ.IsHaarM
     exact congrArg (star (su2HarmonicCharacter ℓ t) * ·) (he' (k*t)).symm
   rw [e1, CompactPolynomial.harmonic_character_projection_diagonal μ hhaar hp ℓ p hp' k]
   exact he' k
-private theorem cProj_sum_eval (μ : Measure ComplexSU2) (hp : IsProbabilityMeasure μ)
+theorem cProj_sum_eval (μ : Measure ComplexSU2) (hp : IsProbabilityMeasure μ)
     (ℓ : ℕ) {ι : Type} [Fintype ι] (h : ι → PrincipalSeries positiveParameter)
     (c : ι → ℂ) (g : ComplexGL2) :
     characterAverage positiveParameter μ ℓ (∑ j, c j • h j) g =
@@ -347,10 +342,10 @@ private theorem cProj_sum_eval (μ : Measure ComplexSU2) (hp : IsProbabilityMeas
     positivity
   exact funext (fun z => hf.eqOn_of_preconnected_of_mem_closure hh
     isPreconnected_univ (Set.mem_univ 0) hc (Set.mem_univ z))
-private theorem clear_ratio_pos (g : ComplexGL2) : 0 < sphericalRatio g := by
+theorem clear_ratio_pos (g : ComplexGL2) : 0 < sphericalRatio g := by
   have hb := RepresentationTheory.KPContHolomorphicKGenerationProve.RaisingCalculation.rowB_pos g
   exact div_pos (norm_pos_iff.mpr (Units.ne_zero _)) hb
-private theorem clear_spherical_real (t : ℝ) (g : ComplexGL2) :
+theorem clear_spherical_real (t : ℝ) (g : ComplexGL2) :
     KPContHolomorphicKGeneration.complexSpherical t g = sphericalSection (positiveParameter + t) g := by
   change Complex.exp (_ * (Real.log (sphericalRatio g) : ℂ)) =
     ((sphericalRatio g ^ (1 + 2 * (positiveParameter + t)) : ℝ) : ℂ)
@@ -358,7 +353,7 @@ private theorem clear_spherical_real (t : ℝ) (g : ComplexGL2) :
   congr 1
   push_cast
   ring
-private theorem clear_word_real (w : KPContHolomorphicKGeneration.RealLieWord) (t : ℝ) (g : ComplexGL2) :
+theorem clear_word_real (w : KPContHolomorphicKGeneration.RealLieWord) (t : ℝ) (g : ComplexGL2) :
     KPContHolomorphicKGeneration.complexSphericalWord w t g =
       KPContHolomorphicKGeneration.rightWord (positiveParameter + t) w
         (sphericalSection (positiveParameter + t)) g := by
@@ -375,7 +370,7 @@ private theorem clear_word_real (w : KPContHolomorphicKGeneration.RealLieWord) (
   rw [show KPContHolomorphicKGeneration.complexSpherical (t : ℂ) =
     (sphericalSection (positiveParameter + t) : ComplexGL2 → ℂ) from funext (clear_spherical_real t)]
   exact congrFun (hw _).symm g
-private theorem clear_word_factor (w : KPContHolomorphicKGeneration.RealLieWord) (s : ℂ) (g : ComplexGL2)
+theorem clear_word_factor (w : KPContHolomorphicKGeneration.RealLieWord) (s : ℂ) (g : ComplexGL2)
     (a d : ℂˣ) (b : ℂ) (k : ComplexSU2)
     (hg : g = upperTriangular a d b * complexSU2Embedding k) :
     KPContHolomorphicKGeneration.complexSphericalWord w s g =
@@ -394,19 +389,19 @@ private theorem clear_word_factor (w : KPContHolomorphicKGeneration.RealLieWord)
   exact congrFun (entire_of_real (KPContHolomorphicKGeneration.complexSphericalWord_holomorphic w g)
     ((KPContHolomorphicKGeneration.complexSphericalWord_holomorphic [] g).mul
       (KPContHolomorphicKGeneration.complexSphericalWord_holomorphic w (complexSU2Embedding k))) hr) s
-private theorem clear_section_factor (h : PrincipalSeries positiveParameter) (g : ComplexGL2)
+theorem clear_section_factor (h : PrincipalSeries positiveParameter) (g : ComplexGL2)
     (a d : ℂˣ) (b : ℂ) (k : ComplexSU2)
     (hg : g = upperTriangular a d b * complexSU2Embedding k) :
     h g = sphericalSection positiveParameter g * h (complexSU2Embedding k) := by
   rw [hg, h.property.1, (sphericalSection positiveParameter).property.1,
     RepresentationTheory.KPContHolomorphicKGenerationProve.RaisingCalculation.spherical_compact, mul_one]
-private theorem clear_spherical_tw (s : ℂ) (g : ComplexGL2) :
+theorem clear_spherical_tw (s : ℂ) (g : ComplexGL2) :
     KPContHolomorphicKGeneration.complexSpherical s g = tw s g * sphericalSection positiveParameter g := by
   rw [← KPContHolomorphicKGeneration.complexSpherical_zero]
   unfold KPContHolomorphicKGeneration.complexSpherical tw sphericalRatio
   rw [← Complex.exp_add]
   congr 1 <;> ring
-private theorem compact_to_global {ι : Type} [Fintype ι]
+theorem compact_to_global {ι : Type} [Fintype ι]
     (s : ℂ) (h : PrincipalSeries positiveParameter)
     (w : ι → KPContHolomorphicKGeneration.RealLieWord) (c : ι → ℂ)
     (he : ∀ k, h (complexSU2Embedding k) = ∑ j, c j *
@@ -421,7 +416,7 @@ private theorem compact_to_global {ι : Type} [Fintype ι]
   rw [clear_word_factor (w j) s g a d b k hg]
   ring
 
-private theorem projected_word_polynomial (μ : Measure ComplexSU2) (hhaar : μ.IsHaarMeasure)
+theorem projected_word_polynomial (μ : Measure ComplexSU2) (hhaar : μ.IsHaarMeasure)
     (hp : IsProbabilityMeasure μ) (ℓ : ℕ) (w : KPContHolomorphicKGeneration.RealLieWord) :
     ∃ (n m : ℕ) (v : Fin n → KPContHolomorphicKGeneration.RealLieWord) (c : Fin n → ℂ)
       (p : Fin m → Polynomial ℂ) (h : Fin m → HS ℓ),
@@ -446,7 +441,7 @@ private theorem projected_word_polynomial (μ : Measure ComplexSU2) (hhaar : μ.
           (∑ r, (p r).eval s • h r) (complexSU2Embedding k * complexSU2Embedding t)) := by
       funext t
       rw [← complexSU2Embedding.map_mul, eh]
-      simp only [Submodule.coe_sum, Submodule.coe_smul, Finset.sum_apply, Pi.smul_apply, smul_eq_mul]
+      simp
     rw [ee]
     have eavg := cProj_sum_eval μ hp ℓ h (fun r => (p r).eval s) (complexSU2Embedding k)
     rw [characterAverage_formula] at eavg
@@ -465,7 +460,7 @@ private theorem projected_word_polynomial (μ : Measure ComplexSU2) (hhaar : μ.
     filter_upwards [] with t
     rw [KPContHolomorphicKGeneration.complexSphericalWord_zero]
 
-private theorem harmonic_polynomial_word_family (μ : Measure ComplexSU2) (hhaar : μ.IsHaarMeasure)
+theorem harmonic_polynomial_word_family (μ : Measure ComplexSU2) (hhaar : μ.IsHaarMeasure)
     (hp : IsProbabilityMeasure μ) (ℓ : ℕ) (f : HS ℓ) :
     ∃ (n m : ℕ) (v : Fin n → KPContHolomorphicKGeneration.RealLieWord)
       (c : Fin n → Polynomial ℂ) (p : Fin m → Polynomial ℂ) (h : Fin m → HS ℓ),
@@ -541,7 +536,7 @@ private theorem harmonic_polynomial_word_family (μ : Measure ComplexSU2) (hhaar
       _ = _ := eqsum
       _ = _ := hsum.symm.trans hself
 
-private theorem harmonic_clearing_assembly (ℓ : ℕ) (f : HS ℓ) :
+theorem harmonic_clearing_assembly (ℓ : ℕ) (f : HS ℓ) :
     ∃ (n : ℕ) (w : Fin n → KPContHolomorphicKGeneration.RealLieWord)
       (q : ℂ → ℂ) (b : Fin n → ℂ → ℂ),
       AnalyticOnNhd ℂ q Set.univ ∧ q 0 = 1 ∧
@@ -621,9 +616,5 @@ theorem local_harmonic_cleared_word_reconstruction
         q s * Complex.exp (2 * s * (Real.log
           (‖((Matrix.GeneralLinearGroup.det a : ℂˣ) : ℂ)‖ /
             KPCplxPrincipalSeriesCharts.bottomRowNormSq a) : ℂ)) * f a =
-          ∑ j, b j s * KPContHolomorphicKGeneration.complexSphericalWord (w j) s a := by
-  exact harmonic_clearing_assembly ℓ ⟨f, hf⟩
-
-end DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualRaisingLocal
-
-end
+          ∑ j, b j s * KPContHolomorphicKGeneration.complexSphericalWord (w j) s a := 
+  harmonic_clearing_assembly ℓ ⟨f, hf⟩

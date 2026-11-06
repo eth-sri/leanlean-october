@@ -202,10 +202,7 @@ open KPContLocalEnergy.SobolevEnergyEstimates.Raw
 
  theorem list_smooth {n : ℕ} (l : List (Fin n)) {f : Space n → ℂ}
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
-    ContDiff ℝ (⊤ : ℕ∞) (coordinateDerivativeList l f) := by
-  induction l with
-  | nil => exact hf
-  | cons i l ih => exact (ih.fderiv_right (by simp)).clm_apply contDiff_const
+    ContDiff ℝ (⊤ : ℕ∞) (coordinateDerivativeList l f) := by apply DedekindZetaZeroFree.WeakJets.Raw.list_smooth <;> assumption
 
 private theorem list_perm {n : ℕ} {l k : List (Fin n)} (hp : l.Perm k)
     {f : Space n → ℂ} (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
@@ -235,7 +232,7 @@ private theorem directions_count {n k : ℕ} (α : MultiIndex n k) (i : Fin n) :
     α.directions.count i = counts α i := by
   rw [MultiIndex.directions, List.count_flatMap,
     ← List.sum_toFinset _ (List.nodup_finRange n)]
-  simp [Function.comp_def, List.count_replicate, counts]
+  simp [List.count_replicate, counts]
 
 private theorem counts_index {n k : ℕ} (γ : Counts n) (hγ : (∑ i, γ i) ≤ k) :
     counts (indexOfCounts γ hγ) = γ := rfl
@@ -269,8 +266,8 @@ private theorem coordinate_add {n a b k : ℕ} (α : MultiIndex n a) (β : Multi
   have h₁ := u.weak_derivatives A (derivativeTest β φ)
   have h₂ := u.weak_derivatives AB φ
   have hcomp : coordinateDerivative A (coordinateDerivative β (fun y => φ y)) =
-      coordinateDerivative AB (fun y => φ y) := by
-    exact coordinate_add A β hab φ.contDiff
+      coordinateDerivative AB (fun y => φ y) := 
+    coordinate_add A β hab φ.contDiff
   change (∫ x in B.carrier, u.derivatives (KPContLocalEnergy.SobolevEnergyEstimates.Raw.zeroIndex n k) x *
     coordinateDerivative A (coordinateDerivative β (fun y => φ y)) x) =
     (-1 : ℂ) ^ A.degree *
@@ -284,7 +281,7 @@ private theorem coordinate_add {n a b k : ℕ} (α : MultiIndex n a) (β : Multi
     change (∑ i, (counts α + counts β) i) = (∑ i, counts α i) + (∑ i, counts β i)
     exact Finset.sum_add_distrib
   rw [hdeg, pow_add] at h₁
-  have hne : (-1 : ℂ) ^ A.degree ≠ 0 := pow_ne_zero _ (by norm_num)
+  have hne : (-1 : ℂ) ^ A.degree ≠ 0 := by simp
   change (∫ x in B.carrier, jet u (counts α) x * coordinateDerivative β (fun y => φ y) x) =
     (-1 : ℂ) ^ β.degree * (∫ x in B.carrier, jet u (counts α + counts β) x * φ x)
   simp only [jet, dif_pos ha, dif_pos hab]
@@ -375,7 +372,3 @@ theorem differentiated_weak_equation {n r : ℕ} {B : LocalBall n}
     (DedekindZetaZeroFree.WeakJets.Raw.weak_product_rule B)
     (DedekindZetaZeroFree.WeakJets.Raw.weak_product_rule B)
     D hcρ z u₁ u h hu heq α φ
-
-end DedekindZetaZeroFree.KPContLocalRegularity.SobolevIteration
-
-end

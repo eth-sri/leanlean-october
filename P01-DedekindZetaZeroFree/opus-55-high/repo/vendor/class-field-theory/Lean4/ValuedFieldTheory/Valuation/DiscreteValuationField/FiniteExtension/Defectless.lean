@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Defectlessness from a finite extension of valuation rings
 
@@ -26,7 +21,6 @@ Completeness and Henselianity play no role once the target valuation ring is a
 finite module over the base valuation ring.
 -/
 
-noncomputable section
 
 namespace ValuationTheory.DiscreteValuationField.ValuedExtension
 
@@ -50,12 +44,10 @@ theorem isDefectless_of_moduleFinite
     IsLocalRing.primesOver_eq target.valuationSubring base.maximalIdeal_ne_bot
   have hq : target.maximalIdeal ∈ base.maximalIdeal.primesOver target.valuationSubring := by
     rw [hprimes]
-    exact Set.mem_singleton target.maximalIdeal
+    rfl
   let : target.maximalIdeal.LiesOver base.maximalIdeal := hq.2
   let : Subsingleton (base.maximalIdeal.primesOver target.valuationSubring) :=
-    Set.Subsingleton.coe_sort (by
-      rw [hprimes]
-      exact Set.subsingleton_singleton)
+    by simp_all
   have hsum :=
     Ideal.sum_ramification_inertia_eq_finrank base.maximalIdeal target.valuationSubring
   rw [Fintype.sum_subsingleton _ ⟨target.maximalIdeal, hq⟩] at hsum
@@ -66,7 +58,3 @@ theorem isDefectless_of_moduleFinite
       base.maximalIdeal target.maximalIdeal base.maximalIdeal_ne_bot,
     IsFractionRing.finrank_eq base.valuationSubring K target.valuationSubring L]
   exact hsum.symm
-
-end ValuationTheory.DiscreteValuationField.ValuedExtension
-
-end

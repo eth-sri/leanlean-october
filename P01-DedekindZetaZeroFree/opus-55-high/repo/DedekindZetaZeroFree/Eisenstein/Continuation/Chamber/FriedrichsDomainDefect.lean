@@ -122,7 +122,7 @@ end DedekindZetaZeroFree.KPContActualChamberDomainDefect
 
 namespace DedekindZetaZeroFree
 
-private theorem domainDefect_clm_jet
+theorem domainDefect_clm_jet
     {A B : Type*} [NormedAddCommGroup A] [NormedSpace ℂ A]
     [NormedAddCommGroup B] [NormedSpace ℂ B]
     (L : A →L[ℂ] B) (g : ℂ → A) (O : Set ℂ) (hO : UniqueDiffOn ℂ O)
@@ -133,7 +133,7 @@ private theorem domainDefect_clm_jet
   rw [L.iteratedFDerivWithin_comp_left hg hO hs le_rfl]
   rfl
 
-private theorem domainDefect_leibniz
+theorem domainDefect_leibniz
     {A : Type*} [NormedAddCommGroup A] [NormedSpace ℂ A] [CompleteSpace A]
     (F : Type) [Field F] [NumberField F]
     (u : ℕ → ℂ → A) (z : ℕ → ℂ → A × A) (h : ℂ → A)
@@ -196,7 +196,7 @@ private theorem domainDefect_leibniz
   abel
 
 open KPContActualSphericalFlatStage in
-private theorem domainDefect_stage
+theorem domainDefect_stage
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
     (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)

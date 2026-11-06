@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.Theta.RayClasses.FunctionalEquationPair
 
 @[expose] public section
 
-noncomputable section
 
 open scoped NumberField
 open DedekindZetaZeroFree.AbelianQuotient
@@ -36,7 +35,7 @@ theorem normalizedRayTheta_one_div
   intro c hc
   ring
 
-private lemma conj_fδ_empty (D : RayCoset.Data F) (t : ℝ) :
+lemma conj_fδ_empty (D : RayCoset.Data F) (t : ℝ) :
     (starRingEnd ℂ) (RayTheta.fδ D ∅ t) = RayTheta.fδ D ∅ t := by
   unfold RayTheta.fδ
   split_ifs with ht
@@ -50,7 +49,7 @@ private lemma conj_fδ_empty (D : RayCoset.Data F) (t : ℝ) :
     apply tsum_congr
     intro l
     simp [RayParity.gδ, Theta.latticeGaussian, ← Complex.exp_conj]
-  · exact map_zero _
+  simp
 
 theorem normalizedRayConjugateTheta_eq_conj
     (D : RayThetaRepresentatives F m hm) (ψ : RayIdealClass F m hm →* ℂ)
@@ -59,7 +58,3 @@ theorem normalizedRayConjugateTheta_eq_conj
   classical
   unfold normalizedRayConjugateTheta normalizedRayTheta
   simp only [map_mul, map_pow, map_ofNat, map_sum, conj_fδ_empty]
-
-end DedekindZetaZeroFree.Hecke.Theta
-
-end

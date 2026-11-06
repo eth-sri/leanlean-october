@@ -47,15 +47,12 @@ theorem kp_cusp_lineClass_mk
   have hi : coefficientIdeal R K M (Projectivization.mk K v hv).rep
       (Projectivization.mk K v hv).rep_nonzero =
       coefficientIdeal R K M ((a : K) • v) (smul_ne_zero a.ne_zero hv) := by
-    apply FractionalIdeal.ext
-    intro t
-    change t • (Projectivization.mk K v hv).rep ∈ M.val ↔ t • ((a : K) • v) ∈ M.val
-    rw [he]
+    simp_all
   rw [hi, kp_cusp_coefficientIdeal_smul R K M v hv (a : K) a.ne_zero,
     ← mul_assoc, FractionalIdeal.spanSingleton_mul_spanSingleton,
     mul_inv_cancel₀ a.ne_zero, FractionalIdeal.spanSingleton_one, one_mul]
 
-private theorem cusp_lineClass_map
+theorem cusp_lineClass_map
     (R : Type*) [CommRing R] [IsDedekindDomain R]
     (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
     (M N : FullLattice R K) (g : (K × K) ≃ₗ[K] (K × K))
@@ -76,7 +73,7 @@ private theorem cusp_lineClass_map
   · intro ht
     exact Submodule.mem_map_of_mem ht
 
-private theorem cusp_determinantClass_coordinates
+theorem cusp_determinantClass_coordinates
     (R : Type*) [CommRing R] [IsDedekindDomain R]
     (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
     (M : FullLattice R K) (I J : FractionalIdeal R⁰ K) (hI : I ≠ 0) (hJ : J ≠ 0)
@@ -149,8 +146,7 @@ theorem kp_cusp_lineEquivalent_iff_lineClass_eq
       have h := hg (e (s, (0 : J.val)))
       have hleft : (e (s, (0 : J.val)) : K × K) = t • v := by simpa using he s (0 : J.val)
       have hright : (f (e (s, (0 : J.val))) : K × K) = (eI s : K) • v' := by
-        simp only [f, LinearEquiv.trans_apply, LinearEquiv.symm_apply_apply,
-          LinearEquiv.prodCongr_apply, map_zero]
+        simp only [f, LinearEquiv.trans_apply, LinearEquiv.symm_apply_apply, LinearEquiv.prodCongr_apply]
         have hz : eJ (0 : J.val) = (0 : J'.val) := map_zero eJ
         rw [hz]
         simpa using he' (eI s) (0 : J'.val)
@@ -163,7 +159,7 @@ theorem kp_cusp_lineEquivalent_iff_lineClass_eq
     apply (Projectivization.mk_eq_mk_iff K _ _ _ _).mpr
     exact ⟨Units.mk0 (eI s : K) hsi, hgv.symm⟩
 
-private theorem cusp_coordinate_isLattice
+theorem cusp_coordinate_isLattice
     (R : Type*) [CommRing R] [IsDedekindDomain R]
     (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
     (I J : FractionalIdeal R⁰ K) (hI : I ≠ 0) (hJ : J ≠ 0) :
@@ -184,7 +180,7 @@ private theorem cusp_coordinate_isLattice
   have h₂ : ((0, t) : K × K) ∈ coordinateLattice R K I J :=
     ⟨Submodule.zero_mem _, ht⟩
   have he : x = (x.1 / s) • (s, 0) + (x.2 / t) • (0, t) := by
-    ext <;> simp [hs0, ht0]
+    simp_all
   rw [he]
   exact Submodule.add_mem _
     (Submodule.smul_mem _ _ (Submodule.subset_span h₁))
@@ -263,5 +259,3 @@ theorem kp_cusp_numberField_finite_lineOrbits
     Finite (Quotient (lineSetoid (NumberField.RingOfIntegers F) F M.val)) := by
   obtain ⟨e, _⟩ := kp_cusp_lineOrbit_classGroup_equiv (NumberField.RingOfIntegers F) F M
   exact Finite.of_injective e e.injective
-
-end DedekindZetaZeroFree

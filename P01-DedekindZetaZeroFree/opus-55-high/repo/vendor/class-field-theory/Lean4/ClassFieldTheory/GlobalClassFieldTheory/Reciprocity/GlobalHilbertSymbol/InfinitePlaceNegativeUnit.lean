@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Negative units and the real infinite-place Artin map
 -/
@@ -21,26 +18,24 @@ set_option autoImplicit false
 open scoped Classical NumberField
 open NumberField
 
-noncomputable section
 
 namespace GlobalClassFieldTheory
 namespace Reciprocity
 
 variable (K : Type) [Field K] [NumberField K]
 
-private theorem ringEquiv_unit_div_neg_one
+theorem ringEquiv_unit_div_neg_one
     {F : Type*} [Field F] (e : F ≃+* ℝ) (x : Fˣ) :
     e ((x / (-1 : Fˣ) : Fˣ) : F) = -e (x : F) := by
   calc
     e ((x / (-1 : Fˣ) : Fˣ) : F) =
         e (x : F) / e (-1 : F) :=
       by
-        rw [Units.val_div_eq_div_val]
-        exact map_div₀ e (x : F) (-1 : F)
+        simp
     _ = -e (x : F) := by
       rw [map_neg, map_one, div_neg, div_one]
 
-private theorem monoidHom_eq_of_div_apply_eq_one
+theorem monoidHom_eq_of_div_apply_eq_one
     {G H : Type*} [Group G] [Monoid H]
     (f : G →* H) (x y : G) (h : f (x / y) = 1) :
     f x = f y := by
@@ -79,14 +74,9 @@ theorem chosenInfinitePlaceArtin_globalUnit_eq_neg_one_of_real_of_neg
     rw [hqCoord]
     linarith
   let artin := chosenInfinitePlaceArtinMonoidHom (K := K) (L := L) v
-  have hqArtin : artin q = 1 := by
-    exact chosenInfinitePlaceArtinMonoidHom_eq_one_of_real_pos
+  have hqArtin : artin q = 1 := 
+    chosenInfinitePlaceArtinMonoidHom_eq_one_of_real_pos
       (K := K) (L := L) v hv q hqPos
   change artin a_v = artin (-1 : v.Completionˣ)
   apply monoidHom_eq_of_div_apply_eq_one artin
-  simpa only [q] using hqArtin
-
-end Reciprocity
-end GlobalClassFieldTheory
-
-end
+  omega

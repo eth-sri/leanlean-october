@@ -34,7 +34,7 @@ section CompactGroup
 variable {𝕜 G : Type*} [RCLike 𝕜] [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
   [CompactSpace G] [MeasurableSpace G] [BorelSpace G]
 
-private theorem norm_toLp_le (F : C(G, 𝕜)) :
+theorem norm_toLp_le (F : C(G, 𝕜)) :
     ‖ContinuousMap.toLp (E := 𝕜) 2 (haarProb G) 𝕜 F‖ ≤ ‖F‖ := by
   have hmass : measureUnivNNReal (haarProb G) = 1 :=
     ENNReal.coe_inj.1 (by simp [coe_measureUnivNNReal])
@@ -46,7 +46,7 @@ private theorem norm_toLp_le (F : C(G, 𝕜)) :
     _ ≤ 1 * ‖F‖ := mul_le_mul_of_nonneg_right hop (norm_nonneg F)
     _ = ‖F‖ := one_mul _
 
-private theorem inner_toLp_left (F : C(G, 𝕜)) (f : Lp 𝕜 2 (haarProb G)) :
+theorem inner_toLp_left (F : C(G, 𝕜)) (f : Lp 𝕜 2 (haarProb G)) :
     ⟪ContinuousMap.toLp 2 (haarProb G) 𝕜 F, f⟫_𝕜
       = ∫ x, (starRingEnd 𝕜) (F x) * f x ∂(haarProb G) := by
   rw [L2.inner_def]
@@ -60,12 +60,12 @@ noncomputable def convSectionCM (k : C(G, 𝕜)) : C(G, C(G, 𝕜)) :=
     (star (k.comp ⟨fun p : G × G => p.1 * p.2⁻¹, continuous_fst.mul continuous_snd.inv⟩))
 
 omit [CompactSpace G] [MeasurableSpace G] [BorelSpace G] in
-private theorem convSectionCM_apply (k : C(G, 𝕜)) (x y : G) :
+theorem convSectionCM_apply (k : C(G, 𝕜)) (x y : G) :
     convSectionCM k x y = (starRingEnd 𝕜) (k (x * y⁻¹)) :=
   (rfl)
 
 omit [MeasurableSpace G] [BorelSpace G] in
-private theorem norm_convSectionCM_le (k : C(G, 𝕜)) (x : G) : ‖convSectionCM k x‖ ≤ ‖k‖ :=
+theorem norm_convSectionCM_le (k : C(G, 𝕜)) (x : G) : ‖convSectionCM k x‖ ≤ ‖k‖ :=
   (ContinuousMap.norm_le _ (norm_nonneg k)).2 fun y => by
     rw [convSectionCM_apply, RCLike.norm_conj]
     exact k.norm_coe_le_norm _
@@ -74,11 +74,11 @@ noncomputable def convSection (k : C(G, 𝕜)) : C(G, Lp 𝕜 2 (haarProb G)) :=
   ⟨fun x => ContinuousMap.toLp 2 (haarProb G) 𝕜 (convSectionCM k x),
     (ContinuousMap.toLp (E := 𝕜) 2 (haarProb G) 𝕜).continuous.comp (convSectionCM k).continuous⟩
 
-private theorem convSection_apply (k : C(G, 𝕜)) (x : G) :
+theorem convSection_apply (k : C(G, 𝕜)) (x : G) :
     convSection k x = ContinuousMap.toLp 2 (haarProb G) 𝕜 (convSectionCM k x) :=
   (rfl)
 
-private theorem norm_convSection_le (k : C(G, 𝕜)) (x : G) : ‖convSection k x‖ ≤ ‖k‖ :=
+theorem norm_convSection_le (k : C(G, 𝕜)) (x : G) : ‖convSection k x‖ ≤ ‖k‖ :=
   (norm_toLp_le _).trans (norm_convSectionCM_le k x)
 
 noncomputable def convolutionₗ (k : C(G, 𝕜)) : Lp 𝕜 2 (haarProb G) →ₗ[𝕜] C(G, 𝕜) where
@@ -95,7 +95,7 @@ theorem norm_convolutionₗ_le (k : C(G, 𝕜)) (f : Lp 𝕜 2 (haarProb G)) :
 noncomputable def convolutionCLM (k : C(G, 𝕜)) : Lp 𝕜 2 (haarProb G) →L[𝕜] C(G, 𝕜) :=
   LinearMap.mkContinuous (convolutionₗ k) ‖k‖ (norm_convolutionₗ_le k)
 
-private theorem convolutionCLM_apply_apply' (k : C(G, 𝕜)) (f : Lp 𝕜 2 (haarProb G)) (x : G) :
+theorem convolutionCLM_apply_apply' (k : C(G, 𝕜)) (f : Lp 𝕜 2 (haarProb G)) (x : G) :
     convolutionCLM k f x = ⟪convSection k x, f⟫_𝕜 :=
   (rfl)
 
@@ -121,10 +121,7 @@ theorem convolutionCLM_toLp_apply (k f : C(G, 𝕜)) (x : G) :
     _ = ∫ z, F (z⁻¹ * x) ∂(haarProb G) :=
         (integral_inv_eq_self (fun w => F (w * x)) (haarProb G)).symm
     _ = ∫ z, k z * f (z⁻¹ * x) ∂(haarProb G) := by
-        refine integral_congr_ae (Filter.Eventually.of_forall fun z => ?_)
-        have hz : x * (z⁻¹ * x)⁻¹ = z := by group
-        rw [hFdef]
-        simp only [hz]
+        simp_all
 
 theorem convolutionCLM_toLp_sub_apply (k f : C(G, 𝕜))
     (hk : ∫ g, k g ∂(haarProb G) = 1) (x : G) :
@@ -166,23 +163,22 @@ noncomputable def weightedSectionsCM (k H : C(G, 𝕜)) : C(G, C(G, 𝕜)) :=
 noncomputable def weightedSections (k H : C(G, 𝕜)) : C(G, Lp 𝕜 2 (haarProb G)) :=
   ⟨fun x => H x • convSection k x, H.continuous.smul (convSection k).continuous⟩
 
-private theorem integrable_weightedSectionsCM (k H : C(G, 𝕜)) :
+theorem integrable_weightedSectionsCM (k H : C(G, 𝕜)) :
     Integrable (fun x => H x • convSectionCM k x) (haarProb G) :=
   integrable_continuousMap G (weightedSectionsCM k H)
 
-private theorem integrable_weightedSections (k H : C(G, 𝕜)) :
+theorem integrable_weightedSections (k H : C(G, 𝕜)) :
     Integrable (fun x => H x • convSection k x) (haarProb G) :=
   integrable_continuousMap G (weightedSections k H)
 
-private theorem integral_weightedSections (k H : C(G, 𝕜)) :
+theorem integral_weightedSections (k H : C(G, 𝕜)) :
     ∫ x, H x • convSection k x ∂(haarProb G)
       = ContinuousMap.toLp 2 (haarProb G) 𝕜
           (∫ x, H x • convSectionCM k x ∂(haarProb G)) := by
   rw [← ContinuousLinearMap.integral_comp_comm _ (integrable_weightedSectionsCM k H)]
-  refine integral_congr_ae (Filter.Eventually.of_forall fun x => ?_)
-  simp only [map_smul, convSection_apply]
+  rfl
 
-private theorem integral_weightedSectionsCM_apply (k H : C(G, 𝕜)) (y : G) :
+theorem integral_weightedSectionsCM_apply (k H : C(G, 𝕜)) (y : G) :
     (∫ x, H x • convSectionCM k x ∂(haarProb G)) y
       = ∫ x, H x * (starRingEnd 𝕜) (k (x * y⁻¹)) ∂(haarProb G) := by
   have hcomm := (ContinuousMap.evalCLM (R := 𝕜) (M := 𝕜) y).integral_comp_comm
@@ -191,7 +187,7 @@ private theorem integral_weightedSectionsCM_apply (k H : C(G, 𝕜)) (y : G) :
     smul_eq_mul] at hcomm
   exact hcomm.symm
 
-private theorem inner_convolutionOperator_toLp (k : C(G, 𝕜)) (f : Lp 𝕜 2 (haarProb G))
+theorem inner_convolutionOperator_toLp (k : C(G, 𝕜)) (f : Lp 𝕜 2 (haarProb G))
     (H : C(G, 𝕜)) :
     ⟪convolutionOperator k f, ContinuousMap.toLp 2 (haarProb G) 𝕜 H⟫_𝕜
       = ⟪f, ∫ x, H x • convSection k x ∂(haarProb G)⟫_𝕜 := by
@@ -239,8 +235,7 @@ theorem convolutionCLM_compMeasurePreserving_mul_right (k : C(G, 𝕜))
   refine integral_congr_ae ?_
   filter_upwards [Lp.coeFn_compMeasurePreserving (E := 𝕜) (p := 2) f
     (measurePreserving_mul_right (haarProb G) g₀)] with y hy
-  rw [hy, hg y]
-  rfl
+  simp_all
 
 theorem convolutionOperator_compMeasurePreserving_mul_right (k : C(G, 𝕜))
     (f : Lp 𝕜 2 (haarProb G)) (g₀ : G) :
@@ -257,7 +252,7 @@ theorem convolutionOperator_compMeasurePreserving_mul_right (k : C(G, 𝕜))
   exact Filter.Eventually.of_forall fun y =>
     (convolutionCLM_compMeasurePreserving_mul_right k f g₀ y).symm
 
-private theorem norm_convolutionCLM_apply_sub_apply_le (k : C(G, 𝕜)) (f : Lp 𝕜 2 (haarProb G))
+theorem norm_convolutionCLM_apply_sub_apply_le (k : C(G, 𝕜)) (f : Lp 𝕜 2 (haarProb G))
     (x y : G) :
     ‖convolutionCLM k f x - convolutionCLM k f y‖
       ≤ ‖convSection k x - convSection k y‖ * ‖f‖ := by
@@ -269,7 +264,7 @@ noncomputable def convolutionUnitBallImage (k : C(G, 𝕜)) : Set (G →ᵇ 𝕜
       ContinuousMap.isometryEquivBoundedOfCompact G 𝕜 (convolutionCLM k f)) ''
     Metric.closedBall 0 1
 
-private theorem convolutionUnitBallImage_apply_mem_closedBall (k : C(G, 𝕜)) (F : G →ᵇ 𝕜) (x : G)
+theorem convolutionUnitBallImage_apply_mem_closedBall (k : C(G, 𝕜)) (F : G →ᵇ 𝕜) (x : G)
     (hF : F ∈ convolutionUnitBallImage k) : F x ∈ Metric.closedBall (0 : 𝕜) ‖k‖ := by
   obtain ⟨f, hf, rfl⟩ := hF
   rw [Metric.mem_closedBall, dist_zero_right] at hf ⊢
@@ -280,7 +275,7 @@ private theorem convolutionUnitBallImage_apply_mem_closedBall (k : C(G, 𝕜)) (
     _ ≤ ‖k‖ * 1 := by gcongr
     _ = ‖k‖ := mul_one _
 
-private theorem equicontinuous_convolutionUnitBallImage (k : C(G, 𝕜)) :
+theorem equicontinuous_convolutionUnitBallImage (k : C(G, 𝕜)) :
     Equicontinuous ((↑) : convolutionUnitBallImage k → G → 𝕜) := by
   intro x₀
   rw [Metric.equicontinuousAt_iff_right]
@@ -296,7 +291,7 @@ private theorem equicontinuous_convolutionUnitBallImage (k : C(G, 𝕜)) :
     _ = ‖convSection k x - convSection k x₀‖ := by rw [mul_one, norm_sub_rev]
     _ < ε := hx
 
-private theorem isCompact_closure_convolutionUnitBallImage (k : C(G, 𝕜)) :
+theorem isCompact_closure_convolutionUnitBallImage (k : C(G, 𝕜)) :
     IsCompact (closure (convolutionUnitBallImage k)) :=
   BoundedContinuousFunction.arzela_ascoli _ (isCompact_closedBall (0 : 𝕜) ‖k‖) _
     (convolutionUnitBallImage_apply_mem_closedBall k) (equicontinuous_convolutionUnitBallImage k)
@@ -346,7 +341,3 @@ theorem orthogonalComplement_iSup_eigenspaces_convolutionOperator_eq_bot (k : C(
     (isCompactOperator_convolutionOperator k)
     (ContinuousLinearMap.isSelfAdjoint_iff_isSymmetric.1
       (isSelfAdjoint_convolutionOperator k hk))
-
-end CompactGroup
-
-end DedekindZetaZeroFree.TauCeti

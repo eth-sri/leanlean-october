@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # The p-adic completed-unramified coefficient field
 
@@ -76,14 +70,14 @@ abbrev padicCompletedUnramifiedValuation
 
 /-- The valued-field structure induced by the canonical Witt DVR
 valuation. -/
-noncomputable instance padicCompletedUnramifiedFieldValued
+instance padicCompletedUnramifiedFieldValued
     (p : ℕ) [Fact p.Prime] :
     Valued (padicCompletedUnramifiedField p) ℤᵐ⁰ :=
   Valued.mk' (padicCompletedUnramifiedValuation p)
 
 /-- The original Witt integer ring is the valuation ring of its fraction
 field with the canonical DVR valuation. -/
-noncomputable def
+def
     padicCompletedUnramifiedWittRingEquivValuationSubring
     (p : ℕ) [Fact p.Prime] :
     padicCompletedUnramifiedWittRing p ≃+*
@@ -143,11 +137,11 @@ theorem padicCompletedUnramifiedValuation_isAdicComplete
       (S := v.valuationSubring)).2 hcompleteAsW
   rw [RingHom.algebraMap_toAlgebra,
     ValuationTheory.ringEquiv_map_maximalIdeal e] at hcompleteMap
-  simpa only [v] using hcompleteMap
+  omega
 
 /-- The completed-unramified Witt fraction field, packaged with its actual
 complete rank-one discrete valuation. -/
-noncomputable def padicCompletedUnramifiedCompleteDVF
+def padicCompletedUnramifiedCompleteDVF
     (p : ℕ) [Fact p.Prime] :
     CompleteDVF (padicCompletedUnramifiedField p) where
   ValueGroup := ℤᵐ⁰
@@ -157,7 +151,7 @@ noncomputable def padicCompletedUnramifiedCompleteDVF
       isAdicComplete :=
         padicCompletedUnramifiedValuation_isAdicComplete p }
 
-private theorem
+theorem
     padicCompletedUnramifiedWittRing_intValuation_frobenius
     (p : ℕ) [Fact p.Prime]
     (x : padicCompletedUnramifiedWittRing p) :
@@ -225,7 +219,7 @@ private theorem
 
 /-- The canonical `ℚ_[p]`-algebra structure obtained by extending
 `ℤ_[p] → W(AlgebraicClosure (ZMod p))` to fraction fields. -/
-noncomputable instance padicCompletedUnramifiedFieldAlgebra
+instance padicCompletedUnramifiedFieldAlgebra
     (p : ℕ) [Fact p.Prime] :
     Algebra ℚ_[p] (padicCompletedUnramifiedField p) := by
   let g : ℤ_[p] →+* padicCompletedUnramifiedField p :=
@@ -254,7 +248,7 @@ theorem padicCompletedUnramifiedField_algebraMap_padicInt
 
 /-- The canonical map from the valuation ring of `ℚ_[p]` into the valuation
 ring of the completed-unramified field. -/
-noncomputable def padicCompletedUnramifiedIntegerMap
+def padicCompletedUnramifiedIntegerMap
     (p : ℕ) [Fact p.Prime] :
     (padicLocalField p).valuationSubring →+*
       (padicCompletedUnramifiedCompleteDVF p).valuationSubring :=
@@ -388,7 +382,7 @@ theorem padicCompletedUnramifiedValuation_hasExtension
 
 /-- Typeclass form of
 `padicCompletedUnramifiedValuation_hasExtension`. -/
-noncomputable instance
+instance
     padicCompletedUnramifiedValuation_hasExtensionInstance
     (p : ℕ) [Fact p.Prime] :
     (padicLocalField p).toCompleteDVF.valuation.HasExtension
@@ -397,7 +391,7 @@ noncomputable instance
 
 /-- Mathlib's Witt-vector fraction-field Frobenius, regarded over the
 canonical p-adic base field. -/
-noncomputable def padicCompletedUnramifiedFrobenius
+def padicCompletedUnramifiedFrobenius
     (p : ℕ) [Fact p.Prime] :
     padicCompletedUnramifiedField p ≃ₐ[ℚ_[p]]
       padicCompletedUnramifiedField p := by
@@ -506,45 +500,3 @@ theorem padicCompletedUnramifiedFrobenius_valuation
       rw [(v.valuation E).map_div,
         v.valuation_of_algebraMap (K := E),
         v.valuation_of_algebraMap (K := E)]
-
-/-- Witt Frobenius is continuous for the canonical valuation topology on
-the completed-unramified coefficient field. -/
-theorem padicCompletedUnramifiedFrobenius_continuous
-    (p : ℕ) [Fact p.Prime] :
-    Continuous (padicCompletedUnramifiedFrobenius p) := by
-  apply continuous_of_continuousAt_zero
-    (padicCompletedUnramifiedFrobenius p).toAddMonoidHom
-  simp_rw [ContinuousAt, map_zero,
-    (Valued.hasBasis_nhds_zero
-      (padicCompletedUnramifiedField p) ℤᵐ⁰).tendsto_iff
-      (Valued.hasBasis_nhds_zero
-        (padicCompletedUnramifiedField p) ℤᵐ⁰),
-    true_and, forall_const]
-  intro γ
-  refine ⟨γ, fun x hx ↦ ?_⟩
-  change
-    (Valued.v :
-      Valuation (padicCompletedUnramifiedField p) ℤᵐ⁰).restrict
-        (padicCompletedUnramifiedFrobenius p x) < γ.1
-  change
-    (Valued.v :
-      Valuation (padicCompletedUnramifiedField p) ℤᵐ⁰).restrict
-        x < γ.1 at hx
-  rw [Valuation.restrict_lt_iff_lt_embedding] at hx ⊢
-  change
-    padicCompletedUnramifiedValuation p
-        (padicCompletedUnramifiedFrobenius p x) <
-      MonoidWithZeroHom.ValueGroup₀.embedding
-        (f := (.ofClass
-          (padicCompletedUnramifiedValuation p))) γ.1
-  change
-    padicCompletedUnramifiedValuation p x <
-      MonoidWithZeroHom.ValueGroup₀.embedding
-        (f := (.ofClass
-          (padicCompletedUnramifiedValuation p))) γ.1 at hx
-  rw [padicCompletedUnramifiedFrobenius_valuation]
-  exact hx
-
-end LubinTate
-
-end

@@ -22,12 +22,6 @@ def whittakerSpace (β : ℂˣ) (ψ : AddChar ℂ Circle) :
     simp only [ContinuousLinearMap.smul_apply, smul_eq_mul, hL t h]
     ring
 
-@[simp] theorem mem_whittakerSpace (β : ℂˣ) (ψ : AddChar ℂ Circle)
-    (L : Theta β →L[ℂ] ℂ) :
-    L ∈ whittakerSpace β ψ ↔ ∀ (t : ℂ) (h : Theta β),
-      L (imageAction β (Matrix.ProjGenLinGroup.mk (upperUnipotent t)) h) =
-        (ψ t : ℂ) * L h := Iff.rfl
-
 noncomputable def jacquetIntegrand (ψ : AddChar ℂ Circle)
     (f : PrincipalSeries positiveParameter) (x : ℂ) : ℂ :=
   (ψ (-x) : ℂ) * openCoordinate f x
@@ -36,7 +30,7 @@ noncomputable def jacquetIntegral (β : ℂˣ) (ψ : AddChar ℂ Circle)
     (f : PrincipalSeries positiveParameter) : ℂ :=
   ∫ x : ℂ, jacquetIntegrand ψ f x ∂characterHaar β
 
-private theorem source_whittaker_spanning (γ : ℂˣ) (hne : character (γ : ℂ) ≠ 1)
+theorem source_whittaker_spanning (γ : ℂˣ) (hne : character (γ : ℂ) ≠ 1)
     (L : PrincipalSeries positiveParameter →L[ℂ] ℂ)
     (hL : KPCplxClosedCellJets.IsEigenDistribution positiveParameter (character (γ : ℂ)) L) :
     ∃ a : ℂ, L = a • KPCplxJacquetFunctional.jacquetFunctional γ := by
@@ -50,7 +44,7 @@ private theorem source_whittaker_spanning (γ : ℂˣ) (hne : character (γ : �
   exact ⟨a, sub_eq_zero.mp
     (KPCplxClosedCellJets.closed_cell_no_nontrivial_eigen_distribution _ hne _ hs he)⟩
 
-private theorem jacquet_rescale (β γ : ℂˣ) (f : PrincipalSeries positiveParameter) :
+theorem jacquet_rescale (β γ : ℂˣ) (f : PrincipalSeries positiveParameter) :
     jacquetIntegral β (character (γ : ℂ)) f =
       ((characterScale β / characterScale γ : ℝ) : ℂ) *
         KPCplxJacquetFunctional.jacquetFunctional γ f := by
@@ -88,7 +82,7 @@ theorem transported_jacquet_generator (β : ℂˣ) (ψ : AddChar ℂ Circle)
   obtain ⟨γ, hγ⟩ := character_classification ψ hψ hne
   have hchar : ψ = character (γ : ℂ) := by
     ext x
-    exact congrArg (fun z : Circle => (z : ℂ)) (hγ x)
+    simp_all
   subst ψ
   obtain ⟨e, he, _⟩ := standardIntertwiner_topological_image_isomorphism β
   let c : ℂ := ((characterScale β / characterScale γ : ℝ) : ℂ)
@@ -143,13 +137,9 @@ theorem transported_jacquet_generator (β : ℂˣ) (ψ : AddChar ℂ Circle)
         field_simp
       rw [hLa]
       exact Submodule.smul_mem _ _ (Submodule.subset_span (Set.mem_singleton L0))
-    · exact Submodule.span_le.mpr (by
-        intro L hL
-        rw [Set.mem_singleton_iff] at hL
-        subst L
-        exact hmem)
+    simp_all
 
-private theorem dimension_span_singleton {V : Type*} [AddCommGroup V] [Module ℂ V]
+theorem dimension_span_singleton {V : Type*} [AddCommGroup V] [Module ℂ V]
     (v : V) (hv : v ≠ 0) :
     Module.rank ℂ (Submodule.span ℂ {v}) = 1 ∧
       Module.finrank ℂ (Submodule.span ℂ {v}) = 1 := by
@@ -165,5 +155,3 @@ theorem whittaker_dimension_one (β : ℂˣ) (ψ : AddChar ℂ Circle)
     @ContinuousLinearMap.addCommGroup ℂ _ ℂ _ (Theta β) _ _ ℂ _ _ _ _ (RingHom.id ℂ) _
   rw [hspan]
   exact dimension_span_singleton L hL
-
-end DedekindZetaZeroFree.KPCplxWhittakerUnique

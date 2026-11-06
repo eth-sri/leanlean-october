@@ -40,5 +40,3 @@ theorem thetaStretchedExponentialPower_bound (p B : ℝ) (hp : 0 < p) (hB : 0 < 
       (fun t : ℝ => Real.rpow t r) :=
     (thetaStretchedExponentialPower p B hp hB r).const_mul_left A
   exact hbig.trans hlit.isBigO
-
-end DedekindZetaZeroFree

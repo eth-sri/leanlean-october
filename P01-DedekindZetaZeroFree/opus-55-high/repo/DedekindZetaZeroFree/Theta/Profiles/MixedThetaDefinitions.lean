@@ -52,7 +52,3 @@ def mixedNegAngularAverage (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ) (t : ℝ) : �
 def alpha : ℝ :=
   (2 : ℝ) ^ (nrRealPlaces K + nrComplexPlaces K) * regulator K /
     (torsionOrder K : ℝ)
-
-end DedekindZetaZeroFree.AbelianQuotient.Theta
-
-end

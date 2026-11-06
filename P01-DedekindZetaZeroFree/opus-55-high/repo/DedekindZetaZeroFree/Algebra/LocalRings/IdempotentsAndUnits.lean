@@ -50,15 +50,5 @@ instance IsLocalRing.isDedekindFiniteMonoid {R : Type*} [Ring R] [IsLocalRing R]
           p = (p * q) * p := by rw [hpq, one_mul]
           _ = p * (q * p) := by rw [mul_assoc]
           _ = 0 := by rw [h0, mul_zero]
-      simpa only [hp0, mul_zero, zero_mul] using hpq
-    · exact h1
-
-@[simp]
-theorem IsLocalRing.sq_add_self_eq_zero_iff {R : Type*} [Ring R] [IsLocalRing R] [CharP R 2]
-    (t : R) : t ^ 2 + t = 0 ↔ t = 0 ∨ t = 1 := by
-  rw [CharTwo.add_eq_zero, pow_two]
-  constructor
-  · exact IsLocalRing.eq_zero_or_eq_one_of_isIdempotentElem
-  · rintro (rfl | rfl) <;> simp
-
-end DedekindZetaZeroFree.TauCeti
+      simp_all
+    omega

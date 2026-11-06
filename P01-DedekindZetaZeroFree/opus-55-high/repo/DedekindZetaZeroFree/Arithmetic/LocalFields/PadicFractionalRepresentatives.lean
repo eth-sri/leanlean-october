@@ -102,7 +102,7 @@ lemma unique_representative (z : ℚ_[p]) (r s : ℚ)
     (hs : s ∈ Subring.closure ({((p.1 : ℚ)⁻¹)} : Set ℚ) ∧
       0 ≤ s ∧ s < 1 ∧ ‖z - (s : ℚ_[p])‖ ≤ 1) : r = s := by
   have hn : ‖((r-s : ℚ) : ℚ_[p])‖ ≤ 1 := by
-    have he : ((r-s : ℚ) : ℚ_[p]) = (z - (s : ℚ_[p])) - (z - (r : ℚ_[p])) := by push_cast; ring
+    have he : ((r-s : ℚ) : ℚ_[p]) = (z - (s : ℚ_[p])) - (z - (r : ℚ_[p])) := by simp
     rw [he]
     rw [sub_eq_add_neg]
     exact (Padic.nonarchimedean _ _).trans (max_le hs.2.2.2 (by rw [norm_neg]; exact hr.2.2.2))
@@ -112,6 +112,3 @@ lemma unique_representative (z : ℚ_[p]) (r s : ℚ)
   have : a = 0 := by omega
   rw [this, Int.cast_zero] at ha
   exact sub_eq_zero.mp ha
-end DedekindZetaZeroFree.RationalPadicArithmetic
-
-end

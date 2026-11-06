@@ -29,7 +29,7 @@ def DyadicBand (k : ℕ) (x : ℝ) : Prop :=
 private theorem prod_factors (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) :
     (normalizedFactors I).prod = I := by
   simpa using prod_normalizedFactors_eq hI
-private theorem coprime_of_disjoint (I J : Ideal (𝓞 F)) (hI : I ≠ ⊥) (hJ : J ≠ ⊥)
+theorem coprime_of_disjoint (I J : Ideal (𝓞 F)) (hI : I ≠ ⊥) (hJ : J ≠ ⊥)
     (hd : Disjoint (normalizedFactors I) (normalizedFactors J)) : I ⊔ J = ⊤ := by
   apply Ideal.isUnit_iff.mp
   change IsUnit (gcd I J)
@@ -68,7 +68,7 @@ private theorem split_exists (J n : Ideal (𝓞 F)) (hJ : J ≠ ⊥) (hn : n ≠
   · rw [← Multiset.prod_add, show t + u = normalizedFactors n from Multiset.filter_add_not P _,
       prod_factors n hn]
 
-private theorem supported_filter (J h : Ideal (𝓞 F)) (hs : IdealSupportedOn h J) :
+theorem supported_filter (J h : Ideal (𝓞 F)) (hs : IdealSupportedOn h J) :
     (normalizedFactors h).filter (fun p => p ∈ idealPrimeSupport J) = normalizedFactors h := by
   apply Multiset.filter_eq_self.mpr
   intro p hp
@@ -85,7 +85,7 @@ private theorem split_h_eq (J n h a : Ideal (𝓞 F)) (hh : h ≠ ⊥) (ha : a �
   rw [he, normalizedFactors_mul hh ha, Multiset.filter_add,
     supported_filter J h hs, exterior_filter J a hc, add_zero, prod_factors h hh]
 
-private theorem dyadic_exists (x : ℝ) (hx : 1 ≤ x) : ∃ k : ℕ, DyadicBand k x := by
+theorem dyadic_exists (x : ℝ) (hx : 1 ≤ x) : ∃ k : ℕ, DyadicBand k x := by
   obtain ⟨m, hm⟩ := pow_unbounded_of_one_lt x (by norm_num : (1 : ℝ) < 2)
   have he : ∃ m : ℕ, x ≤ (2 : ℝ)^m := ⟨m, hm.le⟩
   refine ⟨Nat.find he, ?_⟩
@@ -96,7 +96,7 @@ private theorem dyadic_exists (x : ℝ) (hx : 1 ≤ x) : ∃ k : ℕ, DyadicBand
     simpa [this] using le_antisymm (by simpa [this] using hk) hx
   · refine ⟨?_, hk⟩
     exact lt_of_not_ge (Nat.find_min he (by omega : Nat.find he - 1 < Nat.find he))
-private theorem dyadic_unique (x : ℝ) (k l : ℕ)
+theorem dyadic_unique (x : ℝ) (k l : ℕ)
     (hk : DyadicBand k x) (hl : DyadicBand l x) : k = l := by
   have upper (m : ℕ) (hm : DyadicBand m x) : x ≤ (2 : ℝ) ^ m := by
     unfold DyadicBand at hm
@@ -113,7 +113,7 @@ private theorem dyadic_unique (x : ℝ) (k l : ℕ)
     exact (minimal k l hk (by omega)).not_ge (upper l hl)
   · by_contra h
     exact (minimal l k hl (by omega)).not_ge (upper k hk)
-private theorem dyadic_upper (x : ℝ) (hx : 1 ≤ x) (k : ℕ) (hk : DyadicBand k x) :
+theorem dyadic_upper (x : ℝ) (hx : 1 ≤ x) (k : ℕ) (hk : DyadicBand k x) :
     (2 : ℝ)^k ≤ 2*x := by
   unfold DyadicBand at hk
   split_ifs at hk with h
@@ -123,7 +123,7 @@ private theorem dyadic_upper (x : ℝ) (hx : 1 ≤ x) (k : ℕ) (hk : DyadicBand
     rw [he, pow_succ]
     linarith [hk.1]
 
-private theorem bad_factors (Sf : Finset (HeightOneSpectrum (𝓞 F))) :
+theorem bad_factors (Sf : Finset (HeightOneSpectrum (𝓞 F))) :
     normalizedFactors (badIdeal Sf) = Sf.val.map HeightOneSpectrum.asIdeal := by
   change normalizedFactors (∏ v ∈ Sf, v.asIdeal) = _
   rw [Finset.prod_eq_multiset_prod]
@@ -131,7 +131,7 @@ private theorem bad_factors (Sf : Finset (HeightOneSpectrum (𝓞 F))) :
   intro p hp
   obtain ⟨v, hv, rfl⟩ := Multiset.mem_map.mp hp
   exact v.prime
-private theorem supported_exponent_injective (Sf : Finset (HeightOneSpectrum (𝓞 F))) :
+theorem supported_exponent_injective (Sf : Finset (HeightOneSpectrum (𝓞 F))) :
     Function.Injective (fun h : SupportedIdeal Sf =>
       fun v : Sf => idealPrimeExponent v.val.asIdeal h.val.val) := by
   intro h g he
@@ -144,12 +144,12 @@ private theorem supported_exponent_injective (Sf : Finset (HeightOneSpectrum (�
       exact congrFun he ⟨v, hv⟩
     · have hh : p ∉ normalizedFactors h.val.val := fun hh => hp (h.property (Multiset.mem_toFinset.mpr hh))
       have hg : p ∉ normalizedFactors g.val.val := fun hg => hp (g.property (Multiset.mem_toFinset.mpr hg))
-      simp [Multiset.count_eq_zero_of_notMem hh, Multiset.count_eq_zero_of_notMem hg]
+      simp_all
   apply Subtype.ext
   apply Subtype.ext
   simpa only [prod_normalizedFactors_eq h.val.property, prod_normalizedFactors_eq g.val.property,
     normalize_eq] using congrArg Multiset.prod factors_eq
-private theorem exponent_norm_bound (n p : Ideal (𝓞 F)) (hn : n ≠ ⊥) (hp : Prime p) :
+theorem exponent_norm_bound (n p : Ideal (𝓞 F)) (hn : n ≠ ⊥) (hp : Prime p) :
     (2 : ℝ) ^ idealPrimeExponent p n ≤ idealNorm n := by
   have hd : p ^ idealPrimeExponent p n ∣ n := by
     have hle : Multiset.replicate ((normalizedFactors n).count p) p ≤ normalizedFactors n :=
@@ -167,14 +167,14 @@ private theorem exponent_norm_bound (n p : Ideal (𝓞 F)) (hn : n ≠ ⊥) (hp 
   apply hh.trans
   simpa only [idealNorm, map_pow, Nat.cast_pow] using hnorm
 
-private theorem exponent_cutoff (n p : Ideal (𝓞 F)) (hn : n ≠ ⊥) (hp : Prime p)
+theorem exponent_cutoff (n p : Ideal (𝓞 F)) (hn : n ≠ ⊥) (hp : Prime p)
     (X : ℝ) (hX : idealNorm n ≤ X) :
     (idealPrimeExponent p n : ℝ) ≤ Real.log X / Real.log 2 := by
   have hb := exponent_norm_bound n p hn hp
   apply (le_div_iff₀ (Real.log_pos (by norm_num : (1 : ℝ) < 2))).mpr
   simpa only [Real.log_pow] using
     Real.log_le_log (by positivity : (0 : ℝ) < 2^idealPrimeExponent p n) (hb.trans hX)
-private theorem label_card_nat (Sf : Finset (HeightOneSpectrum (𝓞 F)))
+theorem label_card_nat (Sf : Finset (HeightOneSpectrum (𝓞 F)))
     (L : Finset (SupportedIdeal Sf × ℕ)) (m : ℕ)
     (hs : ∀ l ∈ L, ∀ v : Sf, idealPrimeExponent v.val.asIdeal l.1.val.val ≤ m)
     (hk : ∀ l ∈ L, l.2 ≤ m) : L.card ≤ (m+1)^(Sf.card+1) := by
@@ -194,7 +194,7 @@ private theorem label_card_nat (Sf : Finset (HeightOneSpectrum (𝓞 F)))
   simpa only [Fintype.card_coe, Fintype.card_prod, Fintype.card_fun, Fintype.card_fin,
     pow_succ] using hc
 
-private theorem finite_norm_set (N : ℝ) :
+theorem finite_norm_set (N : ℝ) :
     {n : NonzeroIdeal F | idealNorm n.val ≤ N}.Finite := by
   have h := (Ideal.finite_setOfPred_absNorm_le (S := 𝓞 F) ⌊N⌋₊).preimage
     (show Set.InjOn (fun n : NonzeroIdeal F => n.val) _ from
@@ -203,13 +203,13 @@ private theorem finite_norm_set (N : ℝ) :
   intro n hn
   exact Nat.le_floor hn
 
-private theorem label_card_real (Sf : Finset (HeightOneSpectrum (𝓞 F)))
+theorem label_card_real (Sf : Finset (HeightOneSpectrum (𝓞 F)))
     (L : Finset (SupportedIdeal Sf × ℕ)) (N : ℝ) (hN : 2 ≤ N)
     (hs : ∀ l ∈ L, idealNorm l.1.val.val ≤ N)
     (hk : ∀ l ∈ L, (2 : ℝ)^l.2 ≤ 2*N) :
     (L.card : ℝ) ≤ (2 + 1 / Real.log 2) ^ (Sf.card+1) *
       (1 + Real.log N) ^ (Sf.card+1) := by
-  have h2 : 0 < Real.log 2 := Real.log_pos (by norm_num)
+  have h2 : 0 < Real.log 2 := by positivity
   have hN0 : 0 < N := by linarith
   have hlog : 0 ≤ Real.log N := Real.log_nonneg (by linarith)
   let m := ⌊Real.log (2*N) / Real.log 2⌋₊
@@ -232,7 +232,7 @@ private theorem label_card_real (Sf : Finset (HeightOneSpectrum (𝓞 F)))
     have hh : (m : ℝ) ≤ Real.log (2*N) / Real.log 2 :=
       Nat.floor_le (by rw [hr]; positivity)
     rw [hr, div_eq_mul_inv] at hh
-    have hp : 0 ≤ 1 / Real.log 2 := le_of_lt (one_div_pos.mpr h2)
+    have hp : 0 ≤ 1 / Real.log 2 := by positivity
     have hmul : 0 ≤ (1 / Real.log 2) * Real.log N := mul_nonneg hp hlog
     simp only [Nat.cast_add, Nat.cast_one]
     dsimp [m] at *
@@ -265,8 +265,7 @@ theorem factor_unique (Sf : Finset (HeightOneSpectrum (𝓞 F)))
         b.2.property.1 b.1.property b.2.property.2 hb.1,
         ← split_h_eq (badIdeal Sf) n.val h a hh ha hs hc he]
     have ea : b.2.val = a := by
-      apply mul_left_cancel₀ hh
-      exact (by simpa only [eh] using hb.1.symm.trans he)
+      simp_all
     apply Prod.ext
     · exact Subtype.ext (Subtype.ext eh)
     · exact Subtype.ext ea
@@ -322,7 +321,7 @@ theorem finite_dyadic_partition
       · exact congrArg (fun p : SupportedIdeal Sf × Exterior Sf => p.1) hh
       · apply dyadic_unique (idealNorm a.val)
         · simpa only [hh] using hk n
-        · exact hband
+        omega
   let T := (finite_norm_set (F := F) N).toFinset
   let L := T.image label
   let B : (SupportedIdeal Sf × ℕ) → Finset (NonzeroIdeal F) :=
@@ -357,6 +356,3 @@ theorem finite_dyadic_partition
       (fun l hl => (hbounds l hl).2.2)
   · intro b
     exact Finset.sum_fiberwise_of_maps_to hL (fun n => ‖b n‖^2)
-
-end
-end DedekindZetaZeroFree.Detector.SSupportedPartition

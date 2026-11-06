@@ -39,20 +39,14 @@ theorem uniform_shortest_frequency (d : ℕ) (L : Submodule ℤ (Euclidean d))
 
   haveI : DiscreteTopology (PoissonArch.dualLattice L) := inferInstance
   have h0mem : ({0} : Set (PoissonArch.dualLattice L)) ∈ nhds (0 : PoissonArch.dualLattice L) :=
-    (isOpen_discrete _).mem_nhds (Set.mem_singleton 0)
+    by simp_all
   obtain ⟨ε, hεpos, hε⟩ := Metric.mem_nhds_iff.mp h0mem
   have hnorm : ∀ ξ : PoissonArch.dualLattice L,
       (ξ : Euclidean d) ≠ 0 → ε ≤ ‖(ξ : Euclidean d)‖ := by
     intro ξ hξ
     by_contra hlt
     rw [not_le] at hlt
-    have hmem : ξ ∈ Metric.ball (0 : PoissonArch.dualLattice L) ε := by
-      rw [Metric.mem_ball, dist_eq_norm]
-      simpa using hlt
-    have h0 : ξ = 0 := by
-      have := hε hmem
-      simpa using this
-    exact hξ (by simpa [h0])
+    simp_all
 
   have hbound : ∀ i : Fin d, ∃ m : ℝ, ∀ b ∈ B, m ≤ (b : Fin d → ℝ) i := by
     intro i
@@ -71,8 +65,7 @@ theorem uniform_shortest_frequency (d : ℕ) (L : Submodule ℤ (Euclidean d))
       exact Finset.single_le_sum (fun j _ => abs_nonneg (m j)) (Finset.mem_univ i)
     linarith
   refine ⟨Real.exp (-2 * M) * ε ^ 2, ?_, ?_⟩
-  · have := Real.exp_pos (-2 * M)
-    positivity
+  · positivity
   · intro b hb ξ hξ
     have hsum : shapeEnergy b ξ =
         ∑ i, Real.exp (2 * (b : Fin d → ℝ) i) * ‖(ξ : Euclidean d) i‖ ^ 2 := rfl
@@ -164,9 +157,7 @@ private theorem eigen_test (t : ℝ) (b : KPCuspCharts.Shape F)
       (horizontalEnergy t b ξ : ℂ) * fourierCharacter ξ y := by
   unfold horizontalLaplacian horizontalEnergy shapeEnergy
   simp_rw [fourier_second, exponent_single]
-  simp only [Complex.mul_re, Complex.conj_re, Complex.conj_im, Complex.one_re,
-    Complex.one_im, Complex.I_re, Complex.I_im, mul_one, mul_zero, zero_mul, sub_zero,
-    zero_sub, neg_neg, Complex.I_sq]
+  simp only [Complex.mul_re, Complex.I_re, Complex.I_im, mul_one, mul_zero, zero_sub]
   simp only [Complex.ofReal_mul, Complex.ofReal_sum, Complex.ofReal_pow, Complex.ofReal_ofNat]
   rw [Finset.mul_sum, Finset.sum_mul]
   rw [← Finset.sum_neg_distrib]
@@ -249,19 +240,19 @@ def constantSections (V : Submodule ℂ ℂ) :
   add_mem' := by
     intro f g hf hg
     exact ⟨Submodule.add_mem _ hf.1 hg.1,
-      by intro z; rw [Pi.add_apply, Pi.add_apply, hf.2 z, hg.2 z]⟩
+      by intro z; simp_all⟩
   smul_mem' := by
     intro a f hf
     exact ⟨Submodule.smul_mem _ a hf.1,
-      by intro z; rw [Pi.smul_apply, Pi.smul_apply, hf.2 z]⟩
+      by intro z; simp_all⟩
 
-private theorem character_add (ξ : Euclidean (KPCuspLogShape.dimension F)) (x y : KPCuspCharts.Horizontal F) :
+theorem character_add (ξ : Euclidean (KPCuspLogShape.dimension F)) (x y : KPCuspCharts.Horizontal F) :
     fourierCharacter ξ (x+y) = fourierCharacter ξ x * fourierCharacter ξ y := by
   unfold fourierCharacter
   rw [map_add, inner_add_right]
   rw [mul_add]
   rw [Complex.ofReal_add, add_mul, Complex.exp_add]
-private theorem character_zero (ξ : Euclidean (KPCuspLogShape.dimension F)) :
+theorem character_zero (ξ : Euclidean (KPCuspLogShape.dimension F)) :
     fourierCharacter ξ (0 : KPCuspCharts.Horizontal F) = 1 := by
   simp [fourierCharacter]
 private theorem mode_lift (ξ : Frequency S D ρ) (y : KPCuspCharts.Horizontal F) :
@@ -287,9 +278,9 @@ private theorem mode_equiv_test (V : Submodule ℂ ℂ) (ξ : Frequency S D ρ) 
       exact (mul_left_cancel₀ haz (by simpa [mul_comm] using hh))
   · rintro ⟨ha, haz | hallowed⟩
     · subst a
-      have hz : (fun z => (0 : ℂ) * torusMode S D ρ ξ z) = 0 := by funext z; exact zero_mul _
+      have hz : (fun z => (0 : ℂ) * torusMode S D ρ ξ z) = 0 := by funext z; simp
       rw [hz]
-      exact Submodule.zero_mem _
+      simp
     · constructor
       · intro z
         induction z using Quotient.inductionOn with
@@ -300,11 +291,11 @@ private theorem mode_equiv_test (V : Submodule ℂ ℂ) (ξ : Frequency S D ρ) 
       · intro x y
         simp only [mode_lift, character_add, hallowed x]
         ring
-private theorem zero_mode_test (V : Submodule ℂ ℂ) (f : constantSections (ζ := ζ) (hζ := hζ) S D ρ V) z :
+theorem zero_mode_test (V : Submodule ℂ ℂ) (f : constantSections (ζ := ζ) (hζ := hζ) S D ρ V) z :
     f.val z = f.val 0 * torusMode S D ρ 0 z := by
   induction z using Quotient.inductionOn with
   | h y => simp [mode_lift, fourierCharacter, f.property.2]
-private theorem zero_holonomy_test (V : Submodule ℂ ℂ) (h : ∃ x : D.L,
+theorem zero_holonomy_test (V : Submodule ℂ ℂ) (h : ∃ x : D.L,
     KPCuspGenuineMonodromy.chi F ζ hζ (ρ (D.inclusion (Multiplicative.ofAdd x))) ≠ 1) :
     constantSections (ζ := ζ) (hζ := hζ) S D ρ V = ⊥ := by
   obtain ⟨x, hx⟩ := h
@@ -343,7 +334,7 @@ private theorem eval_injective (V : Submodule ℂ ℂ) : Function.Injective (eva
       (KPCuspGenuineMonodromy.chi F ζ hζ (ρ s) : ℂ) *
         ((KPCuspGenuineMonodromy.chi F ζ hζ (ρ t) : ℂ) * f.val z)
     simp [mul_assoc]
-private theorem scalar_ker (V : Submodule ℂ ℂ) : D.ratio.ker ≤ (scalarAction (ζ := ζ) (hζ := hζ) S D ρ V).ker := by
+theorem scalar_ker (V : Submodule ℂ ℂ) : D.ratio.ker ≤ (scalarAction (ζ := ζ) (hζ := hζ) S D ρ V).ker := by
   intro s hs
   rw [← D.exact] at hs
   obtain ⟨x, rfl⟩ := hs
@@ -407,13 +398,13 @@ private theorem constantSystem_test (V : Submodule ℂ ℂ)
       have hpow : ρ s ^ 3 = 1 := by
         apply Subtype.ext
         exact (ρ s).property
-      rw [hpow, map_one, Units.val_one]
+      simp_all
     rw [Complex.norm_eq_one_of_pow_eq_one hp (by norm_num), one_mul]
   · intro x f
     have hx : D.ratio (D.inclusion (Multiplicative.ofAdd x)) = 1 := by
       change D.inclusion (Multiplicative.ofAdd x) ∈ D.ratio.ker
       rw [← D.exact]
-      exact ⟨_, rfl⟩
+      simp
     rw [hx, map_one]
     rfl
 
@@ -486,8 +477,8 @@ private theorem kernel_euclidean_full (hF : NumberField.InfinitePlace.nrRealPlac
     ext i
     change star (KPCuspCharts.embedding F (u : F) i) * (coordinates _ (a • x) i) =
       a • (star (KPCuspCharts.embedding F (u : F) i) * coordinates _ x i)
-    simp [mul_comm, mul_left_comm]
-private theorem scale_pair (u : Fˣ) (ξ : Euclidean (KPCuspLogShape.dimension F)) (y : KPCuspCharts.Horizontal F) :
+    simp [mul_left_comm]
+theorem scale_pair (u : Fˣ) (ξ : Euclidean (KPCuspLogShape.dimension F)) (y : KPCuspCharts.Horizontal F) :
     inner ℝ (linearScale u ξ) ((coordinates _).symm y) =
       inner ℝ ξ ((coordinates _).symm (fun i => KPCuspCharts.embedding F (u : F) i * y i)) := by
   simp only [PiLp.inner_apply (𝕜 := ℝ)]
@@ -498,7 +489,7 @@ private theorem scale_pair (u : Fˣ) (ξ : Euclidean (KPCuspLogShape.dimension F
   simp_rw [real_inner_eq_re_inner ℂ, RCLike.inner_apply]
   change (y i * star (star (KPCuspCharts.embedding F (u : F) i) * coordinates _ ξ i)).re =
     ((KPCuspCharts.embedding F (u : F) i * y i) * star (coordinates _ ξ i)).re
-  simp [mul_comm, mul_left_comm, mul_assoc]
+  simp [mul_comm, mul_assoc]
  theorem scale_mul (u v : Fˣ) (ξ : Euclidean (KPCuspLogShape.dimension F)) :
     linearScale (u*v) ξ = linearScale u (linearScale v ξ) := by
   ext i
@@ -544,7 +535,7 @@ private theorem scale_pair (u : Fˣ) (ξ : Euclidean (KPCuspLogShape.dimension F
     rw [← scale_mul]
     simp only [map_inv, Subgroup.coe_inv, mul_inv_cancel]
     exact scale_one _
-  map_add' ξ η := by apply Subtype.ext; exact (linearScale _).map_add _ _
+  map_add' ξ η := by simp
  def frequencyTransport (V : Submodule ℂ ℂ)
     (O : KPCuspGenuineMonodromy.CuspOutput (ζ := ζ) (hζ := hζ) S D ρ V) :
     S →* Multiplicative (AddAut (Frequency S D ρ)) where
@@ -562,14 +553,14 @@ private theorem scale_pair (u : Fˣ) (ξ : Euclidean (KPCuspLogShape.dimension F
     apply Subtype.ext
     change linearScale (D.ratio (s*t) : Fˣ) ξ = linearScale (D.ratio s : Fˣ) (linearScale (D.ratio t : Fˣ) ξ)
     rw [map_mul, Subgroup.coe_mul, scale_mul]
-private theorem translation_conjugate (s : S) (x : D.L) :
+theorem translation_conjugate (s : S) (x : D.L) :
     ∃ y : D.L, (y : F) = ((D.ratio s : Fˣ) : F) * x ∧
       D.inclusion (Multiplicative.ofAdd y) = s * D.inclusion (Multiplicative.ofAdd x) * s⁻¹ := by
   obtain ⟨τ, hτone, hτmul, hτformula⟩ := KPCuspLogShape.upper_translation_cocycle F S D.upper D.E D.ratio D.ratioFormula
   have hker (x : Multiplicative D.L) : D.ratio (D.inclusion x) = 1 := by
     apply MonoidHom.mem_ker.mp
     rw [← D.exact]
-    exact ⟨x, rfl⟩
+    simp
   have hτi (x : D.L) : τ (D.inclusion (Multiplicative.ofAdd x)) = (x : F) := by
     obtain ⟨A, hA⟩ := Matrix.ProjGenLinGroup.mk_surjective (D.inclusion (Multiplicative.ofAdd x) : KPCuspArithmetic.PGL2 F)
     obtain ⟨h0, hd, ht⟩ := D.unipotentFormula x A hA
@@ -588,18 +579,18 @@ private theorem translation_conjugate (s : S) (x : D.L) :
     simp only [mul_inv_cancel, hτone] at hiinv
     rw [hτmul, hτmul]
     have hrk : D.ratio k = 1 := hker _
-    simp only [map_mul, hrk, mul_one, Units.val_mul, Subgroup.coe_mul]
+    simp only [map_mul, hrk, mul_one]
     have hk : τ k = x := hτi x
     rw [hk]
     linear_combination -hiinv
   rw [← ht, ← hy]
   exact (hτi y.toAdd).symm
-private theorem scale_character (u : Fˣ) (ξ : Euclidean (KPCuspLogShape.dimension F)) (y : KPCuspCharts.Horizontal F) :
+theorem scale_character (u : Fˣ) (ξ : Euclidean (KPCuspLogShape.dimension F)) (y : KPCuspCharts.Horizontal F) :
     fourierCharacter (linearScale u ξ) y =
       fourierCharacter ξ (fun i => KPCuspCharts.embedding F (u : F) i * y i) := by
   unfold fourierCharacter
   rw [scale_pair]
-private theorem preserves_allowed_forward (V : Submodule ℂ ℂ)
+theorem preserves_allowed_forward (V : Submodule ℂ ℂ)
     (O : KPCuspGenuineMonodromy.CuspOutput (ζ := ζ) (hζ := hζ) S D ρ V)
     (s : S) (ξ : Frequency S D ρ) (h : allowedFrequency (ζ := ζ) (hζ := hζ) S D ρ ξ) :
     allowedFrequency (ζ := ζ) (hζ := hζ) S D ρ (frequencyTransport S D ρ V O s ξ) := by
@@ -612,8 +603,8 @@ private theorem preserves_allowed_forward (V : Submodule ℂ ℂ)
     rw [hy]
     simp [KPCuspCharts.embedding]
   rw [he, h y, hi]
-  simp [mul_assoc]
-private theorem preserves_allowed_test (V : Submodule ℂ ℂ)
+  simp
+theorem preserves_allowed_test (V : Submodule ℂ ℂ)
     (O : KPCuspGenuineMonodromy.CuspOutput (ζ := ζ) (hζ := hζ) S D ρ V)
     (s : S) (ξ : Frequency S D ρ) :
     allowedFrequency (ζ := ζ) (hζ := hζ) S D ρ (frequencyTransport S D ρ V O s ξ) ↔
@@ -621,15 +612,7 @@ private theorem preserves_allowed_test (V : Submodule ℂ ℂ)
   constructor
   · intro h
     have hh := preserves_allowed_forward S D ρ V O s⁻¹ _ h
-    have he : frequencyTransport S D ρ V O s⁻¹ (frequencyTransport S D ρ V O s ξ) = ξ := by
-      change (dualScale S D ρ V O s⁻¹) ((dualScale S D ρ V O s) ξ) = ξ
-      apply Subtype.ext
-      change linearScale (D.ratio s⁻¹ : Fˣ) (linearScale (D.ratio s : Fˣ) ξ) = ξ
-      rw [← scale_mul]
-      simp only [map_inv, Subgroup.coe_inv, inv_mul_cancel]
-      exact scale_one _
-    rw [he] at hh
-    exact hh
+    simp_all
   · exact preserves_allowed_forward S D ρ V O s ξ
 
 structure CuspOutput (V : Submodule ℂ ℂ)
@@ -706,10 +689,3 @@ theorem cusp_frequency_gap
         (4 * Real.pi ^ 2 * Real.exp (2 * t)) * c := by ring
     _ ≤ (4 * Real.pi ^ 2 * Real.exp (2 * t)) * shapeEnergy b ξ :=
       mul_le_mul_of_nonneg_left hh (by positivity)
-
-end Cusp
-end KPCuspFrequencyGap
-
-end DedekindZetaZeroFree
-
-end

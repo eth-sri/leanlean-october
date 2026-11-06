@@ -34,8 +34,8 @@ theorem compactZeroExtension_ae {n : ℕ} {B : LocalBall n}
 
 theorem compactZeroExtension_tsupport {n : ℕ} {B : LocalBall n}
     {K : Set (Space n)} (hK : IsCompact K) (f : BallL2 B) :
-    tsupport (compactZeroExtension K f) ⊆ K := by
-  exact closure_minimal Set.support_indicator_subset hK.isClosed
+    tsupport (compactZeroExtension K f) ⊆ K := 
+  closure_minimal Set.support_indicator_subset hK.isClosed
 
 theorem compactZeroExtension_hasCompactSupport {n : ℕ} {B : LocalBall n}
     {K : Set (Space n)} (hK : IsCompact K) (f : BallL2 B) :
@@ -79,8 +79,7 @@ theorem integral_norm_sq_sub_eq {n : ℕ} (B : LocalBall n)
   simp only [real_inner_self_eq_norm_sq]
   apply integral_congr_ae
   filter_upwards [Lp.coeFn_sub (hg.toLp g) f, hg.coeFn_toLp] with x hx hgx
-  simp only [Pi.sub_apply] at hx
-  rw [hx, hgx]
+  simp_all
 
 theorem integral_norm_sq_sub_tendsto {n : ℕ} (B : LocalBall n)
     (g : ℕ → Space n → ℂ) (hg : ∀ m, MemLp (g m) 2 (volume.restrict B.carrier))
@@ -98,7 +97,7 @@ def shrinkingBump {n : ℕ} (δ : ℝ) (hδ : 0 < δ) (m : ℕ) :
 theorem shrinkingBump_rOut_le {n : ℕ} (δ : ℝ) (hδ : 0 < δ) (m : ℕ) :
     (shrinkingBump (n := n) δ hδ m).rOut ≤ δ := by
   change δ / (m + 1 : ℝ) ≤ δ
-  exact div_le_self hδ.le (by have := Nat.cast_nonneg (α := ℝ) m; linarith)
+  exact div_le_self hδ.le (by simp)
 
 theorem shrinkingBump_rOut_tendsto {n : ℕ} (δ : ℝ) (hδ : 0 < δ) :
     Tendsto (fun m => (shrinkingBump (n := n) δ hδ m).rOut) atTop (𝓝 0) := by
@@ -126,8 +125,8 @@ def translateL2 {n : ℕ} (f : Lp ℂ 2 (volume : Measure (Space n))) (t : Space
   simpa [translateL2] using hx
 
  theorem translateL2_norm {n : ℕ} (f : Lp ℂ 2 (volume : Measure (Space n))) (t : Space n) :
-    ‖translateL2 f t‖ = ‖f‖ := by
-  exact Lp.norm_compMeasurePreserving f (measurePreserving_sub_right volume t)
+    ‖translateL2 f t‖ = ‖f‖ := 
+  Lp.norm_compMeasurePreserving f (measurePreserving_sub_right volume t)
 
  theorem averaged_translateL2_tendsto {n : ℕ}
     (f : Lp ℂ 2 (volume : Measure (Space n)))
@@ -155,7 +154,7 @@ theorem coordinateDerivativeList_singleton_mollification {n : ℕ}
     (ContinuousLinearMap.precompL (Space n) (ContinuousLinearMap.lsmul ℝ ℝ))
     (hs.fderiv_right (m := (1 : ℕ∞)) (by simp)).continuous hg x
   rw [ContinuousLinearMap.integral_apply hi]
-  simp only [ContinuousLinearMap.precompL_apply]
+  rfl
 
 private theorem derivative_support {n : ℕ} (l : List (Fin n)) (f : Space n → ℂ) :
     tsupport (coordinateDerivativeList l f) ⊆ tsupport f := by
@@ -208,7 +207,7 @@ theorem weak_derivatives_zero_off_compact {n : ℕ} (B : LocalBall n)
   have ha := h heq
   filter_upwards [ha, ae_restrict_mem Metric.isOpen_ball.measurableSet] with x hx hxB
   exact fun hxK => hx ⟨hxB, hxK⟩
-private theorem coordinateDerivativeList_congr_nhds {n : ℕ} (l : List (Fin n))
+theorem coordinateDerivativeList_congr_nhds {n : ℕ} (l : List (Fin n))
     {f g : Space n → ℂ} {x : Space n} (h : f =ᶠ[𝓝 x] g) :
     coordinateDerivativeList l f =ᶠ[𝓝 x] coordinateDerivativeList l g := by
   induction l with
@@ -217,7 +216,7 @@ private theorem coordinateDerivativeList_congr_nhds {n : ℕ} (l : List (Fin n))
       filter_upwards [ih.fderiv (𝕜 := ℝ)] with y hy
       exact congrArg (fun L => L (EuclideanSpace.single i 1)) hy
 
-private theorem integral_compactZeroExtension_mul {n : ℕ} {B : LocalBall n}
+theorem integral_compactZeroExtension_mul {n : ℕ} {B : LocalBall n}
     {K : Set (Space n)} (hK : IsCompact K) (hKB : K ⊆ B.carrier)
     (f : BallL2 B) (hf : ∀ᵐ x ∂volume.restrict B.carrier, x ∉ K → f x = 0)
     (g : Space n → ℂ) :
@@ -252,8 +251,7 @@ theorem compactZeroExtension_weak_identity {n : ℕ} (B : LocalBall n)
     apply closure_minimal _ isClosed_closure
     intro x hx
     apply subset_closure
-    simp only [Function.mem_support] at hx ⊢
-    exact fun hz => hx (by simp [hz])
+    simp_all
   have hχB : tsupport χ ⊆ B.carrier := by
     rw [χ.tsupport_eq]
     apply Metric.closedBall_subset_ball
@@ -281,19 +279,17 @@ theorem compactZeroExtension_weak_identity {n : ℕ} (B : LocalBall n)
     filter_upwards [hw] with x hx
     by_cases hxK : x ∈ K
     · simp only [coordinateDerivative]; rw [(coordinateDerivativeList_congr_nhds α.directions (hψ x hxK)).eq_of_nhds]
-    · rw [hx hxK, zero_mul, zero_mul]
+    simp_all
   have hright : (∫ x in B.carrier, w.derivatives α x * φ x) =
       ∫ x in B.carrier, w.derivatives α x * ψ x := by
     apply integral_congr_ae
     filter_upwards [weak_derivatives_zero_off_compact B w K hK hw α] with x hx
     by_cases hxK : x ∈ K
     · rw [(hψ x hxK).eq_of_nhds]
-    · rw [hx hxK, zero_mul, zero_mul]
-  rw [hleft, hright]
-  exact heq
+    simp_all
+  simp_all
 theorem directions_length_h1 {n : ℕ} (α : MultiIndex n 1) : α.directions.length = α.degree := by
-  simp only [MultiIndex.directions, MultiIndex.degree, List.length_flatMap, List.map_map,
-    List.length_replicate, ← List.sum_toFinset _ (List.nodup_finRange _), List.toFinset_finRange]
+  simp only [MultiIndex.directions, MultiIndex.degree, List.length_flatMap, List.length_replicate, ← List.sum_toFinset _ (List.nodup_finRange _), List.toFinset_finRange]
 
 theorem averaged_translateL2_integrable {n : ℕ}
     (f : Lp ℂ 2 (volume : Measure (Space n))) (φ : ContDiffBump (0 : Space n)) :
@@ -328,8 +324,8 @@ theorem averaged_translateL2_integrable {n : ℕ}
   obtain ⟨C, hC⟩ := (hqc.isCompact_range hq.continuous).isBounded.exists_norm_le
   have hC' (x : Space n) : ‖q x‖ ≤ C := hC _ (Set.mem_range_self x)
   have htriple : Integrable (fun p : Space n × Space n =>
-      q p.1 • (φ.normed volume p.2 • g (p.1 - p.2))) (volume.prod volume) := by
-    exact hbase.bdd_smul C (hq.continuous.comp continuous_fst).aestronglyMeasurable
+      q p.1 • (φ.normed volume p.2 • g (p.1 - p.2))) (volume.prod volume) := 
+    hbase.bdd_smul C (hq.continuous.comp continuous_fst).aestronglyMeasurable
       (Eventually.of_forall (fun p => hC' p.1))
   have ht (t : Space n) : L (translateL2 f t) Q = ∫ x, q x • g (x - t) := by
     rw [hpair]
@@ -350,7 +346,7 @@ theorem averaged_translateL2_integrable {n : ℕ}
   simp only [ContinuousLinearMap.flip_apply]
   have hs (t : Space n) : L (φ.normed volume t • translateL2 f t) Q =
       φ.normed volume t • L (translateL2 f t) Q :=
-    (L.flip Q).restrictScalars ℝ |>.map_smul _ _
+    by simp
   simp_rw [hs, ht, ← integral_smul]
   have hswap : Integrable (Function.uncurry fun t x =>
       φ.normed volume t • q x • g (x - t)) (volume.prod volume) := by
@@ -369,8 +365,7 @@ private theorem zero_dirs (n k : ℕ) : (zeroIndex n k).directions = [] := by
   simp [MultiIndex.directions, zeroIndex]
 private theorem first_dirs {n : ℕ} (i : Fin n) : (firstIndex i).directions = [i] := by
   classical
-  simp only [MultiIndex.directions, firstIndex, apply_ite Fin.val, Fin.val_one,
-    Fin.val_zero, List.replicate_one, List.replicate_zero]
+  simp only [MultiIndex.directions, firstIndex, apply_ite Fin.val, Fin.val_one, Fin.val_zero]
   have h : ∀ l : List (Fin n), l.flatMap (fun j => if j = i then [j] else []) = l.filter (· = i) := by
     intro l; induction l with
     | nil => rfl
@@ -400,14 +395,14 @@ private theorem first_degree {n : ℕ} (i : Fin n) : (firstIndex i).degree = 1 :
   simp only [firstIndex, MultiIndex.degree, apply_ite Fin.val, Fin.val_one, Fin.val_zero]
   simp
 
-private theorem compactZeroExtension_integrable {n : ℕ} {B : LocalBall n}
+theorem compactZeroExtension_integrable {n : ℕ} {B : LocalBall n}
     {K : Set (Space n)} (hK : IsCompact K) (hKB : K ⊆ B.carrier) (f : BallL2 B) :
     Integrable (compactZeroExtension K f) volume := by
   apply (integrableOn_iff_integrable_of_support_subset
     (Set.support_indicator_subset : Function.support (compactZeroExtension K f) ⊆ K)).mp
   exact ((compactZeroExtension_memLp hK hKB f).locallyIntegrable (by norm_num)).integrableOn_isCompact hK
 
-private theorem mollification_L2 {n : ℕ} (B : LocalBall n)
+theorem mollification_L2 {n : ℕ} (B : LocalBall n)
     (f : BallL2 B) (K : Set (Space n)) (hK : IsCompact K) (hKB : K ⊆ B.carrier)
     (hf : ∀ᵐ x ∂volume.restrict B.carrier, x ∉ K → f x = 0)
     (φ : ℕ → ContDiffBump (0 : Space n))
@@ -440,7 +435,7 @@ private theorem mollification_L2 {n : ℕ} (B : LocalBall n)
   rw [← hRf]
   exact R.continuous.tendsto _ |>.comp (averaged_translateL2_tendsto (hg.toLp g) φ hφ)
 
-private theorem reflected_bump_derivative {n : ℕ}
+theorem reflected_bump_derivative {n : ℕ}
     (φ : ContDiffBump (0 : Space n)) (i : Fin n) (x y : Space n) :
     coordinateDerivativeList [i] (fun t => (φ.normed volume (x - t) : ℂ)) y =
       -(fderiv ℝ (φ.normed volume) (x - y) (EuclideanSpace.single i 1) : ℂ) := by
@@ -514,7 +509,3 @@ theorem approximate_compact_integerSobolev {n : ℕ} (B : LocalBall n)
     (CompactApproximation.weak_derivatives_zero_off_compact B w K hK hw α)
     (CompactApproximation.shrinkingBump δ hδ)
     (CompactApproximation.shrinkingBump_rOut_tendsto δ hδ)
-
-end DedekindZetaZeroFree.KPContLocalEnergy.SobolevEnergyEstimates
-
-end

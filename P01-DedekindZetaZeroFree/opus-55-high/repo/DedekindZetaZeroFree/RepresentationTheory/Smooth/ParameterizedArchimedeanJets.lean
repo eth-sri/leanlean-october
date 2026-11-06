@@ -118,7 +118,7 @@ open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming affineTa
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
 set_option backward.isDefEq.respectTransparency false in
-private theorem right_parameter_jets {P : Type*} [TopologicalSpace P]
+theorem right_parameter_jets {P : Type*} [TopologicalSpace P]
     (f : L F → ℂ) (hf : AffineSmooth F f) (b : P → L F) (hb : Continuous b) (n : ℕ) :
     ContinuousOn (fun p : KPGlobalResidualConstruction.ArchCoordinates F × P =>
       iteratedFDeriv ℝ n (fun x => f

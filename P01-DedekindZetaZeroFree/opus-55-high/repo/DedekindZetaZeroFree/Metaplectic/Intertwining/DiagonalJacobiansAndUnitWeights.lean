@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.Metaplectic.Torus.Cubic.SignedWeylConjugation
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.KPTameTransposeUnitNumeratorSteps
 
 open scoped NumberField Classical
@@ -59,8 +58,7 @@ theorem normalizedExtension_unit_sheet_value
     (P.ωL h : ℂ) = (ordinaryIota F ζ hζ e : ℂ) := by
   have hAone : KPPGLLocalCover.A F ζ hζ (Sum.inr q) 1 = 1 := by
     have hc := S.cube_actual (1 : (LocalField F q)ˣ)
-    simp only [one_pow, map_one] at hc
-    exact hc.symm
+    simp_all
   have he' : (h.val : ActualCover F ζ hζ q) =
       KPPGLLocalCover.centralInjection F ζ hζ (Sum.inr q) e *
         KPPGLLocalCover.A F ζ hζ (Sum.inr q) (KPTameCompact.unitInclusion F q u) *
@@ -84,8 +82,7 @@ theorem normalizedExtension_unit_sheet_chiH
     exact (S.openCell P).central_eq e
   have ha : ((c⁻¹ * h.val : actualTorus F ζ hζ q) : ActualCover F ζ hζ q) =
       KPPGLLocalCover.A F ζ hζ (Sum.inr q) (KPTameCompact.unitInclusion F q u) := by
-    change (c : ActualCover F ζ hζ q)⁻¹ * (h.val : ActualCover F ζ hζ q) = _
-    rw [hc, he, inv_mul_cancel_left]
+    simp_all
   have hcoord : S.borel.coordinate h.val = KPTameCompact.unitInclusion F q u := by
     have hh := S.coordinate_lift (c⁻¹ * h.val) _ ha
     simpa only [map_mul, map_inv, c, (S.openCell P).central_coordinate e,

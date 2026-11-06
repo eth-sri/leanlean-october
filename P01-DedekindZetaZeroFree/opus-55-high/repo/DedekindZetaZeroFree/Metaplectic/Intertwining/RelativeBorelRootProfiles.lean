@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Metaplectic.Intertwining.CubicRootResidualInt
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.KPTameTransposeLiteralMassTransport.DiagonalLiftGeometry
 open scoped NumberField Classical
 open NumberField IsDedekindDomain MeasureTheory ValuativeRel
@@ -77,7 +76,3 @@ theorem eventual_normalized_test_root_profile
         KPPGLLocalCover.N F ζ hζ (Sum.inr q) t ∈ bruhatSupport F ζ hζ q S P π i m := by
       simpa only [diagonalLift_index_zero_eq_eta, testSupport, bruhatSupport] using hsup
     exact ht ((hchart i i t).mp hsup').2
-
-end DedekindZetaZeroFree.KPTameTransposeLiteralMassTransport.DiagonalLiftGeometry
-
-end

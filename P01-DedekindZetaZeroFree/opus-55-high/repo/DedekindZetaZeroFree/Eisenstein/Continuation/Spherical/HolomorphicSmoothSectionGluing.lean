@@ -537,7 +537,7 @@ theorem patchedCoefficient_ae_representative (Ω : Set ℂ)
   have hfull : (⋃ p ∈ T, D p) = Set.univ := Set.eq_univ_of_univ_subset hcover
   rwa [hfull, Measure.restrict_univ] at hae
 
-private theorem patchedComponent_ae (Ω : Set ℂ)
+theorem patchedComponent_ae (Ω : Set ℂ)
     (u : ℂ → KPContSectorClosedLpSubspace.H F ζ hζ R U)
     (locals : LocalRepresentatives F ζ hζ U R P H Ω u)
     (s : ℂ) (hs : s ∈ Ω) (f : BorelL2Scalars F ζ hζ U R)
@@ -571,7 +571,7 @@ private theorem patchedComponent_ae (Ω : Set ℂ)
         (hmeas i))).mpr hc
   rwa [metric_volume] at he
 
-private theorem scalar_ae_of_component_ae (f g : GenuineCoveredScalars F ζ hζ U)
+theorem scalar_ae_of_component_ae (f g : GenuineCoveredScalars F ζ hζ U)
     (hf : Measurable f.val) (hg : Measurable g.val)
     (he : ∀ i, (S F ζ hζ U R P H f i).val =ᵐ[KPArch.hyperbolicVolume (KPCuspLogShape.dimension F)]
       (S F ζ hζ U R P H g i).val) : f.val =ᵐ[coveredMeasure F ζ hζ R U] g.val := by
@@ -624,7 +624,7 @@ private theorem scalar_ae_of_component_ae (f g : GenuineCoveredScalars F ζ hζ 
   have hnorm : ‖d.val v‖ ^ 2 = 0 := le_antisymm (ENNReal.ofReal_eq_zero.mp hv) (sq_nonneg _)
   exact sub_eq_zero.mp (norm_eq_zero.mp (sq_eq_zero_iff.mp hnorm))
 
-private theorem patchedScalar_ae (Ω : Set ℂ)
+theorem patchedScalar_ae (Ω : Set ℂ)
     (u : ℂ → KPContSectorClosedLpSubspace.H F ζ hζ R U)
     (locals : LocalRepresentatives F ζ hζ U R P H Ω u)
     (s : ℂ) (hs : s ∈ Ω) (f : BorelL2Scalars F ζ hζ U R)
@@ -639,7 +639,7 @@ private theorem patchedScalar_ae (Ω : Set ℂ)
   rw [scalarRepresentative_eq_symm, LinearEquiv.apply_symm_apply]
   exact he
 
-private theorem patched_represents (Ω : Set ℂ)
+theorem patched_represents (Ω : Set ℂ)
     (u : ℂ → KPContSectorClosedLpSubspace.H F ζ hζ R U)
     (locals : LocalRepresentatives F ζ hζ U R P H Ω u)
     (s : ℂ) (hs : s ∈ Ω) : Represents F ζ hζ U R P H
@@ -652,7 +652,7 @@ private theorem patched_represents (Ω : Set ℂ)
     (congrArg (fun v : KPContSectorClosedLpSubspace.H F ζ hζ R U =>
       (v : KPContSectorClosedLpSubspace.CoveredL2 F ζ hζ R U)) hf))
 
-private theorem smooth_represents_unique (w w' : smoothSections F ζ hζ U R P H)
+theorem smooth_represents_unique (w w' : smoothSections F ζ hζ U R P H)
     (v : KPContSectorClosedLpSubspace.H F ζ hζ R U)
     (hw : Represents F ζ hζ U R P H w.val v) (hw' : Represents F ζ hζ U R P H w'.val v) : w = w' := by
   letI := (levelSupport F ζ hζ R P
@@ -696,7 +696,7 @@ theorem localRepresentatives_gluing (Ω : Set ℂ) (hΩ : IsOpen Ω)
   · intro s hs a c
     exact group_lift_formula F ζ hζ U _ a c
 
-private theorem derivativeList_eqOn {n : ℕ} {B : LocalBall n}
+theorem derivativeList_eqOn {n : ℕ} {B : LocalBall n}
     {f g : Space n → ℂ} (h : Set.EqOn f g B.carrier) (l : List (Fin n)) :
     Set.EqOn (coordinateDerivativeList l f) (coordinateDerivativeList l g) B.carrier := by
   induction l with

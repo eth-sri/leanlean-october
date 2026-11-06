@@ -18,7 +18,6 @@ The upstream Apache-2.0 license is included in
 DedekindZetaZeroFree/LICENSE.
 -/
 
-noncomputable section
 
 namespace DedekindZetaZeroFree.AbelianQuotient.Theta
 
@@ -40,7 +39,7 @@ theorem schwartzLatticePoisson (L : Submodule ℤ E)
   letI : IsZLattice ℝ (dualLattice L) := by
     constructor
     rw [← span_range_dualRealBasis L b]
-    exact ZSpan.span_top (dualRealBasis L b)
+    simp
   have habs : Summable (fun ℓ : L => ‖f (ℓ : E)‖) := by
     simpa only [zero_add] using schwartzLatticeDecay_pointwise L f 0
   have hdualabs : Summable (fun ξ : dualLattice L =>
@@ -86,7 +85,3 @@ theorem schwartzLatticePoisson (L : Submodule ℤ E)
       (fun ξ : dualLattice L => (FourierTransform.fourier f) (ξ : E))
   rw [← heq]
   exact habs.of_norm.hasSum
-
-end DedekindZetaZeroFree.AbelianQuotient.Theta
-
-end

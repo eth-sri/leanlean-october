@@ -46,7 +46,7 @@ def denominatorNorm {S : Finset (HeightOneSpectrum (𝓞 F))}
 end ProbeSeparation
 
 open ProbeSeparation in
-private theorem probeDenominatorLe (F : Type) [Field F] [NumberField F]
+theorem probeDenominatorLe (F : Type) [Field F] [NumberField F]
     {S : Finset (HeightOneSpectrum (𝓞 F))} (p : Presentation F S)
     (a b : ReducedPair F S) (r : Integers F S)
     (h : value F p a + (r : F) = value F p b) : b.1.val ≤ a.1.val := by
@@ -68,7 +68,7 @@ private theorem probeDenominatorLe (F : Type) [Field F] [NumberField F]
     exact Ideal.subset_span (Set.mem_singleton s)
   have hqt : Ideal.Quotient.mk a.1.val t = 0 := by
     have hcq := congrArg (Ideal.Quotient.mk a.1.val) hc
-    simp only [map_add, map_mul, hqs, mul_zero, zero_mul, add_zero, p.lift_spec] at hcq
+    simp only [map_add, map_mul, hqs, mul_zero, zero_mul, add_zero] at hcq
     rw [show Ideal.Quotient.mk a.1.val d = (a.2 : (Integers F S) ⧸ a.1.val) from
       p.lift_spec _ _] at hcq
     have hcancel := congrArg (fun x => (↑a.2⁻¹ : (Integers F S) ⧸ a.1.val) * x) hcq
@@ -131,8 +131,7 @@ theorem probe_sinteger_product_norm_lower_bound (F : Type) [Field F] [NumberFiel
       NumberField.FinitePlace.maximalIdeal_injective.injOn).subset
     intro w hw
     simp only [Function.mem_mulSupport, f] at hw
-    by_contra h
-    exact hw (if_neg h)
+    simp_all
   have hle : (∏ᶠ w : NumberField.FinitePlace F, w (r : F)) ≤ ∏ᶠ w, f w := by
     apply finprod_le_finprod₀ (NumberField.FinitePlace.hasFiniteMulSupport hrF)
       (fun w => apply_nonneg w _) hf
@@ -153,10 +152,7 @@ theorem probe_sinteger_product_norm_lower_bound (F : Type) [Field F] [NumberFiel
       Equiv.coe_fn_symm_mk, NumberField.FinitePlace.maximalIdeal_mk]
     rw [finprod_eq_prod_of_mulSupport_subset _ (s := S)]
     · exact Finset.prod_congr rfl fun v hv => if_pos hv
-    · intro v hv
-      simp only [Function.mem_mulSupport] at hv
-      by_contra h
-      exact hv (if_neg h)
+    simp_all
   rw [heq] at hle
   have hnonneg : 0 ≤ ∏ w : NumberField.InfinitePlace F, w (r : F) ^ w.mult := by
     positivity
@@ -164,7 +160,7 @@ theorem probe_sinteger_product_norm_lower_bound (F : Type) [Field F] [NumberFiel
   exact mul_le_mul_of_nonneg_left hle hnonneg
 
 open ProbeSeparation in
-private theorem probeProductNormMul (F : Type) [Field F] [NumberField F]
+theorem probeProductNormMul (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (𝓞 F))) (x y : F) :
     productNorm F S (x*y) = productNorm F S x * productNorm F S y := by
   simp only [productNorm, map_mul, mul_pow, Finset.prod_mul_distrib]
@@ -233,6 +229,3 @@ theorem probe_reduced_fraction_separation (F : Type) [Field F] [NumberField F]
   rw [Real.rpow_neg (by linarith : 0 ≤ V), Real.rpow_two]
   apply (inv_le_iff_one_le_mul₀ (by positivity : 0 < V^2)).mpr
   nlinarith [hl]
-
-end
-end DedekindZetaZeroFree

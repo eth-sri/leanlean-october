@@ -49,18 +49,10 @@ def weight (i : Fin (d + 1)) : ℤ := 2 * (i : ℕ) - (d : ℤ)
 
 theorem weight_def (i : Fin (d + 1)) : weight d i = 2 * (i : ℕ) - (d : ℤ) := (rfl)
 
-@[simp]
-theorem weight_zero : weight d 0 = -(d : ℤ) := by simp [weight_def]
-
-@[simp]
-theorem weight_last : weight d (Fin.last d) = (d : ℤ) := by
-  rw [weight_def, Fin.val_last]
-  ring
-
 theorem weight_injective : Function.Injective (weight d) := by
   intro i j hij
   rw [weight_def, weight_def] at hij
-  exact Fin.ext (by omega)
+  omega
 
 theorem symPower_torusHom_weightBasis (z : Circle) (i : Fin (d + 1)) :
     symPower d (torusHom z) (weightBasis d i) = (z : ℂ) ^ weight d i • weightBasis d i := by
@@ -73,11 +65,11 @@ theorem symPower_torusHom_weightBasis (z : Circle) (i : Fin (d + 1)) :
   congr 1
 
   rw [weight_def, ← pow_mul_inv_pow_eq_zpow₀ (Circle.coe_ne_zero z) hi]
-  simp [coe_symFinTwoEquiv_symm_apply]
+  simp
 
 noncomputable def genericTorus : Circle := Circle.exp 1
 
-private theorem coe_genericTorus_zpow_injective :
+theorem coe_genericTorus_zpow_injective :
     Function.Injective fun m : ℤ => (genericTorus : ℂ) ^ m := by
   intro m n hmn
   have h : (genericTorus ^ m : Circle) = genericTorus ^ n :=
@@ -85,13 +77,12 @@ private theorem coe_genericTorus_zpow_injective :
   rw [genericTorus, ← Circle.exp_intCast_mul, ← Circle.exp_intCast_mul, mul_one, mul_one] at h
   obtain ⟨k, hk⟩ := Circle.exp_eq_exp.1 h
   rcases eq_or_ne k 0 with rfl | hk0
-  · have hmn' : (m : ℝ) = (n : ℝ) := by simpa using hk
-    exact_mod_cast hmn'
+  · simp_all
   · refine absurd ?_ ((irrational_pi.intCast_mul (m := 2 * k) (by omega)).ne_int (m - n))
     push_cast
     linear_combination -hk
 
-private theorem coe_genericTorus_zpow_weight_injective :
+theorem coe_genericTorus_zpow_weight_injective :
     Function.Injective fun i : Fin (d + 1) => (genericTorus : ℂ) ^ weight d i :=
   fun _ _ h => weight_injective d (coe_genericTorus_zpow_injective h)
 
@@ -109,7 +100,3 @@ theorem eq_span_weightBasis_mem {W : Submodule ℂ (Sym[ℂ]^d(Fin 2 → ℂ))}
     W = Submodule.span ℂ {v | ∃ i : Fin (d + 1), weightBasis d i = v ∧ v ∈ W} :=
   (weightBasis d).eq_span_self_mem (symPower_torusHom_weightBasis d genericTorus)
     (coe_genericTorus_zpow_weight_injective d) (hW genericTorus)
-
-end SU2
-
-end DedekindZetaZeroFree.TauCeti

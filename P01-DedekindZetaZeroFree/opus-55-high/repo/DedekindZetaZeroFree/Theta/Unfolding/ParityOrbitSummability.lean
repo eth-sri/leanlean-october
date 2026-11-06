@@ -99,7 +99,3 @@ theorem hasSum_signedOrbitWeight (D : Data K)
     (δ : Finset (RealPlaces K)) (s : ℂ) (hs : 1 < s.re) :
     HasSum (signedOrbitWeight D δ s) (Zδ D δ s) :=
   (summable_signedOrbitWeight D δ s hs).hasSum
-
-end DedekindZetaZeroFree.AbelianQuotient.RayCoset
-
-end

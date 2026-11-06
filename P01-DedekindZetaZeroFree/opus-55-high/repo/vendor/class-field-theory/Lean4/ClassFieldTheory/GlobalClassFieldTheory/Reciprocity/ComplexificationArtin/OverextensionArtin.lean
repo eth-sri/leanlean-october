@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Artin reciprocity on the ramified infinite-place overextension
 
@@ -51,7 +47,7 @@ local instance
     IsMulCommutative (IdeleClassGroup F) :=
   ⟨⟨fun a b => mul_comm a b⟩⟩
 
- noncomputable def quotientLiftData
+ def quotientLiftData
     {A B : Type} [CommGroup A] [Group B]
     (N : Subgroup A) (f : A →* B)
     (hN : ∀ x, x ∈ N → f x = 1) :
@@ -59,9 +55,9 @@ local instance
       ∀ x, g (QuotientGroup.mk' N x) = f x} := by
   refine ⟨QuotientGroup.lift N f hN, ?_⟩
   intro x
-  exact QuotientGroup.lift_mk _ _ _
+  rfl
 
-private theorem globalNormResidueEquiv_mk_one
+theorem globalNormResidueEquiv_mk_one
     (F E : Type)
     [Field F] [NumberField F]
     [Field E] [NumberField E] [Algebra F E]
@@ -78,10 +74,9 @@ private theorem globalNormResidueEquiv_mk_one
               (_root_.ideleClassNorm F E).range
               (1 : IdeleClassGroup F)))) =
       1
-  simpa only [globalNormResidueMonoidHom_apply] using
-    map_one (globalNormResidueMonoidHom F E)
+  simp
 
-private theorem globalNormResidueEquiv_mk
+theorem globalNormResidueEquiv_mk
     (F E : Type)
     [Field F] [NumberField F]
     [Field E] [NumberField E] [Algebra F E]
@@ -91,16 +86,9 @@ private theorem globalNormResidueEquiv_mk
         (globalNormResidueEquiv F E)
         (QuotientGroup.mk c) =
       globalNormResidueMonoidHom F E c := by
-  change
-    Additive.toMul
-        (globalNormResidueEquiv F E
-          (Additive.ofMul
-            (QuotientGroup.mk'
-              (_root_.ideleClassNorm F E).range c))) =
-      globalNormResidueMonoidHom F E c
-  exact (globalNormResidueMonoidHom_apply F E c).symm
+  rfl
 
-private theorem globalNormResidueEquiv_ne_one_of_ne_mk_one
+theorem globalNormResidueEquiv_ne_one_of_ne_mk_one
     (F E : Type)
     [Field F] [NumberField F]
     [Field E] [NumberField E] [Algebra F E]
@@ -192,7 +180,7 @@ theorem
 
 /-- The actual local-factor product for the special overextension,
 descended through principal ideles of its real fixed field. -/
-noncomputable def
+def
     ramifiedInfinitePlaceOverextensionIdeleClassArtinMonoidHom
     (v : InfinitePlace K)
     (hRamified :
@@ -218,9 +206,7 @@ noncomputable def
           (K := K) (L := L) v))
     (by
       rintro _ ⟨x, rfl⟩
-      exact
-        ramifiedInfinitePlaceOverextensionGlobalArtin_principalIdele
-          (K := K) (L := L) v hRamified x)
+      simp)
 
 omit [NumberField K] [FiniteDimensional K L] in
 /-- Evaluation of the descended special-overextension Artin map on
@@ -251,8 +237,7 @@ theorem
           infinitePlaceComplexificationOverfield
             (K := K) (L := L) v)
         a := by
-  rw [ramifiedInfinitePlaceOverextensionIdeleClassArtinMonoidHom]
-  exact QuotientGroup.lift_mk _ _ _
+  rfl
 
 omit [NumberField K] [FiniteDimensional K L] in
 /-- The descended special-overextension Artin map kills every
@@ -304,7 +289,7 @@ theorem
           (K := K) (L := L) v)
       a
 
- noncomputable def
+ def
     ramifiedInfinitePlaceOverextensionNormQuotientArtinData
     (v : InfinitePlace K)
     (hRamified :
@@ -328,14 +313,11 @@ theorem
     (ramifiedInfinitePlaceOverextensionIdeleClassArtinMonoidHom
       (K := K) (L := L) v hRamified)
     (by
-      rintro _ ⟨c, rfl⟩
-      exact
-        ramifiedInfinitePlaceOverextensionIdeleClassArtinMonoidHom_ideleClassNorm
-          (K := K) (L := L) v hRamified c)
+      simp)
 
 /-- The chosen-local-factor Artin map on the actual norm quotient of
 the special overextension. -/
-noncomputable def
+def
     ramifiedInfinitePlaceOverextensionNormQuotientArtinMonoidHom
     (v : InfinitePlace K)
     (hRamified :
@@ -457,7 +439,7 @@ theorem
   exact hσc.trans hτc.symm
 
 omit [NumberField K] [FiniteDimensional K L] in
-private theorem
+theorem
     ramifiedInfinitePlaceOverextensionGlobalNormResidue_ne_one_of_ne_mk_one
     (v : InfinitePlace K)
     (hRamified :
@@ -494,7 +476,7 @@ private theorem
       q hq
 
 omit [NumberField K] [FiniteDimensional K L] in
-private theorem
+theorem
     ramifiedInfinitePlaceOverextensionGlobalNormResidue_mk
     (v : InfinitePlace K)
     (hRamified :
@@ -574,8 +556,7 @@ theorem
                 (ramifiedInfinitePlaceRealFixedField
                   (K := K) (L := L) v hRamified))) =
         1 := by
-    rw [ramifiedInfinitePlaceOverextensionNormQuotientArtinMonoidHom_mk,
-      map_one]
+    simp
   have hResidueOne :
       AddEquiv.toMultiplicative
           (globalNormResidueEquiv
@@ -629,7 +610,7 @@ theorem
         (K := K) (L := L) v hRamified hArtinNe hNormResidueNe
 
 omit [NumberField K] [FiniteDimensional K L] in
-private theorem
+theorem
     ramifiedInfinitePlaceOverextensionIdeleClassArtin_eq_globalNormResidueEquiv_mk
     (v : InfinitePlace K)
     (hRamified :
@@ -775,12 +756,3 @@ theorem
   rw [
     globalNormResidueMonoidHom_ramifiedInfinitePlaceOverextension_ideleClass_mk,
     globalArtinMonoidHom_infinitePlaceIdele]
-
-end
-
-end ComplexConjugationOverextension
-
-end Reciprocity
-end GlobalClassFieldTheory
-
-end

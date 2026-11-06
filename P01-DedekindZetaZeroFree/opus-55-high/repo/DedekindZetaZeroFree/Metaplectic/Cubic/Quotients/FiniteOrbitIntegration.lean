@@ -23,7 +23,7 @@ theorem card_cubic_center : Nat.card (rootsOfUnity 3 F) = 3 := by
   exact (IsPrimitiveRoot.pow (by norm_num : 0 < 12) hζ
     (by norm_num : 12 = 4 * 3)).card_rootsOfUnity
 
-private lemma ennreal_inv_mul_eq_inv {o c : ℕ} (h : o * c = 3) :
+lemma ennreal_inv_mul_eq_inv {o c : ℕ} (h : o * c = 3) :
     (3 : ℝ≥0∞)⁻¹ * (c : ℝ≥0∞) = (o : ℝ≥0∞)⁻¹ := by
   have hcast : (o : ℝ≥0∞) * (c : ℝ≥0∞) = 3 := by
     rw [← Nat.cast_mul, h]; norm_num
@@ -34,7 +34,7 @@ private lemma ennreal_inv_mul_eq_inv {o c : ℕ} (h : o * c = 3) :
   rw [← hcast, ENNReal.mul_inv (Or.inl ho0') (Or.inr hc0'), mul_assoc,
     ENNReal.inv_mul_cancel hc0' ENNReal.coe_ne_top, mul_one]
 
-private lemma measurable_iff_comp_q (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
+lemma measurable_iff_comp_q (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
     (a : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ≥0∞) :
     Measurable a ↔ Measurable (a ∘ q F ζ hζ U) := by
   have hmap := Continuous.map_borel_eq
@@ -134,7 +134,7 @@ theorem borelDescent_q (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
       centralAverage F ζ hζ U ψ v :=
   (Classical.choose_spec (existsUnique_borel_descent F ζ hζ U ψ hψ).exists).2 v
 
-private lemma lintegral_centralAverage
+lemma lintegral_centralAverage
     (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
     (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
     (ψ : CoveredSpherical F ζ hζ U → ℝ≥0∞) (hψ : Measurable ψ) :

@@ -17,7 +17,7 @@ abbrev localRho (p : KPFinitePlace F) :=
   KPRankOneShellRepair.actualCanonicalImageRepresentation F R.A.zeta12 R.A.primitive_zeta12
     p (D.finiteData p).inducing (D.finiteData p).inducing.polarization
     (D.finiteData p).haar (D.finiteData p).haar_integer
-private lemma norm_rep_left {G V : Type*} [Group G] [AddCommGroup V] [Module ℂ V]
+lemma norm_rep_left {G V : Type*} [Group G] [AddCommGroup V] [Module ℂ V]
     (ρ : Representation ℂ G V) (ell : V →ₗ[ℂ] ℂ) (n g : G) (φ : V) (c : ℂ)
     (h : ell (ρ n (ρ g φ)) = c * ell (ρ g φ)) (hc : ‖c‖ = 1) :
     ‖ell (ρ (n * g) φ)‖ = ‖ell (ρ g φ)‖ := by
@@ -46,7 +46,7 @@ variable (R : PrincipalMellin.ActualRecipe S η)
 variable {Q : AdmissibleFlatSources R} {T : Realization R Q}
 variable (D : SourceFactorization R Q T)
 
-private lemma norm_rep_central {G V : Type*} [Group G] [AddCommGroup V] [Module ℂ V]
+lemma norm_rep_central {G V : Type*} [Group G] [AddCommGroup V] [Module ℂ V]
     (ρ : Representation ℂ G V) (ell : V →ₗ[ℂ] ℂ) (a b z c : G) (φ : V) (u : ℂ)
     (he : a * b = z * c) (hg : ρ z (ρ c φ) = u • ρ c φ) (hu : ‖u‖ = 1) :
     ‖ell (ρ (a * b) φ)‖ = ‖ell (ρ c φ)‖ := by
@@ -74,7 +74,7 @@ lemma local_ell_torus_product_norm (p : KPFinitePlace F)
       R.A.primitive_zeta12 p (D.finiteData p).inducing (D.finiteData p).inducing.polarization
       (D.finiteData p).haar (D.finiteData p).haar_integer _ _) hc
 
-private lemma norm_rep_bruhat {G V : Type*} [Group G] [AddCommGroup V] [Module ℂ V]
+lemma norm_rep_bruhat {G V : Type*} [Group G] [AddCommGroup V] [Module ℂ V]
     (ρ : Representation ℂ G V) (ell : V →ₗ[ℂ] ℂ) (a w n n' b l c : G) (φ : V)
     (he : a * w * n = n' * (a * b * l))
     (hr : ‖ell (ρ (n' * (a * b * l)) φ)‖ = ‖ell (ρ (a * b * l) φ)‖)
@@ -115,7 +115,7 @@ theorem local_ell_bruhat_norm (p : KPFinitePlace F) (x H : (p.adicCompletion F)�
     (local_ell_left_root_norm R D p _ _ φ)
     (local_ell_torus_product_norm R D p x (-(H⁻¹ ^ 2)) _)
 
-private lemma norm_rep_map_three {G H V : Type*} [Group G] [Group H]
+lemma norm_rep_map_three {G H V : Type*} [Group G] [Group H]
     [AddCommGroup V] [Module ℂ V] (f : G →* H) (ρ : Representation ℂ H V)
     (ell : V →ₗ[ℂ] ℂ) (a b c d : G) (φ : V)
     (h : ‖ell (ρ (f a * f b * f c) φ)‖ = ‖ell (ρ (f d) φ)‖) :
@@ -167,23 +167,13 @@ lemma exterior_upper_mem (p : ThetaBranch.ExteriorPrime R.A) (t : KPTameCompact.
 
 lemma exterior_lower_mem (p : ThetaBranch.ExteriorPrime R.A) (t : KPTameCompact.O F p.val) :
     KPStandardLocalRootLifts.LowerN F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p.val) t ∈
-      KPAdelicCoverRestrictedProduct.compact F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p.val) := by
-  change _ ∈ KPAdelicCoverRestrictedProduct.finiteCompact F R.A.zeta12 R.A.primitive_zeta12 p.val
-  rw [KPAdelicCoverRestrictedProduct.finiteCompact, dite_eq_right (ExteriorWhittakerValues.exterior_not_bad p)]
-  refine ⟨KPStandardLocalRootLifts.integralLowerN F p.val t, ?_⟩
-  exact (KPStandardLocalRootLifts.LowerN_eq_compact F R.A.zeta12 R.A.primitive_zeta12 p.val
-    (fun h => ExteriorWhittakerValues.exterior_not_bad p (Or.inr h)) t).symm
+      KPAdelicCoverRestrictedProduct.compact F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p.val) := by apply DedekindZetaZeroFree.OrbitExpansion.ExteriorDigits.lower_compact <;> assumption
 
 lemma exterior_weyl_mem (p : ThetaBranch.ExteriorPrime R.A) :
     KPStandardLocalRootLifts.W F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p.val) ∈
-      KPAdelicCoverRestrictedProduct.compact F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p.val) := by
-  change _ ∈ KPAdelicCoverRestrictedProduct.finiteCompact F R.A.zeta12 R.A.primitive_zeta12 p.val
-  rw [KPAdelicCoverRestrictedProduct.finiteCompact, dite_eq_right (ExteriorWhittakerValues.exterior_not_bad p)]
-  refine ⟨KPStandardLocalRootLifts.integralW F p.val, ?_⟩
-  exact (KPStandardLocalRootLifts.W_eq_compact F R.A.zeta12 R.A.primitive_zeta12 p.val
-    (fun h => ExteriorWhittakerValues.exterior_not_bad p (Or.inr h))).symm
+      KPAdelicCoverRestrictedProduct.compact F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p.val) := by apply DedekindZetaZeroFree.OrbitExpansion.ExteriorDigits.weyl_compact <;> assumption
 
-private lemma slot_right_fixed {G H V : Type*} [Group G] [Group H]
+lemma slot_right_fixed {G H V : Type*} [Group G] [Group H]
     [AddCommGroup V] [Module ℂ V] (f : G →* H) (ρ : Representation ℂ H V)
     (ell : V →ₗ[ℂ] ℂ) (a k : G) (v : V) (hk : ρ (f k) v = v) :
     ell (ρ (f (a * k)) v) = ell (ρ (f a) v) := by

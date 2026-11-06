@@ -7,10 +7,8 @@ public import DedekindZetaZeroFree.Arithmetic.LocalFields.ResiduePhases.Definiti
 open scoped NumberField Classical
 open NumberField IsDedekindDomain
 
-noncomputable section
 namespace DedekindZetaZeroFree.CRTRawLocalModel
 open LocalFiniteSums
-set_option autoImplicit false
 
 variable {F : Type} [Field F] [NumberField F]
 variable {A : SArithmeticData F} {σ : F →+* ℂ}
@@ -63,19 +61,19 @@ theorem rawPhase_representatives_independent
   obtain ⟨b, hb⟩ := hc
   let z : LocalIntegers p := (↑s⁻¹ * ↑a⁻¹) * b * q - ↑s⁻¹ * r * v'
   have hs : (s.val : LocalField p) ≠ 0 := by
-    exact (s.isUnit.map (LocalIntegers p).subtype).ne_zero
+    simp
   have ha : (a.val : LocalField p) ≠ 0 := by
-    exact (a.isUnit.map (LocalIntegers p).subtype).ne_zero
+    simp
   have hz := CRTRawLocalPhaseAlgebra.phase_difference
     (uniformizer C p) (s.val : LocalField p) (a.val : LocalField p)
     (h.val : LocalField p) (d : LocalField p) (d' : LocalField p)
     (v : LocalField p) (v' : LocalField p) (r : LocalField p)
     (q : LocalField p) (b : LocalField p) t k J
     (CRTRawLocalPhaseAlgebra.uniformizer_ne_zero C p) hs ha hr hq hb
-  have hsi : ((↑s⁻¹ : LocalIntegers p) : LocalField p) = (s.val : LocalField p)⁻¹ := by
-    exact (map_units_inv (LocalIntegers p).subtype s)
-  have hai : ((↑a⁻¹ : LocalIntegers p) : LocalField p) = (a.val : LocalField p)⁻¹ := by
-    exact map_units_inv (LocalIntegers p).subtype a
+  have hsi : ((↑s⁻¹ : LocalIntegers p) : LocalField p) = (s.val : LocalField p)⁻¹ := 
+    (map_units_inv (LocalIntegers p).subtype s)
+  have hai : ((↑a⁻¹ : LocalIntegers p) : LocalField p) = (a.val : LocalField p)⁻¹ := 
+    map_units_inv (LocalIntegers p).subtype a
   have hz' : negativeTrace p
       (((h.val : LocalField p) * uniformizer C p ^ J -
         (a.val : LocalField p) * uniformizer C p ^ t * d) * v /
@@ -90,7 +88,3 @@ theorem rawPhase_representatives_independent
     simp only [map_sub, map_mul, ValuationSubring.coe_subtype, hsi, hai]
   rw [AddChar.map_sub_eq_div, div_eq_one] at hz'
   exact congrArg (fun x : Circle => (x : ℂ)) hz'
-
-end DedekindZetaZeroFree.CRTRawLocalModel
-
-end

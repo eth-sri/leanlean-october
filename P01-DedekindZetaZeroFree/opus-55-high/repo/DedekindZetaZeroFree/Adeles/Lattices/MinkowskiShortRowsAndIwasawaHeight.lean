@@ -68,7 +68,7 @@ private def linT (d : ℕ) (T : Fin d → Matrix.SpecialLinearGroup (Fin 2) ℂ)
     simp [Pi.add_apply, add_mul, Finset.sum_add_distrib]
   map_smul' c r := by
     funext ij
-    simp [Pi.smul_apply, smul_eq_mul, Finset.mul_sum, mul_assoc]
+    simp [Pi.smul_apply, smul_eq_mul, mul_assoc]
     ring
 
 private def curT (d : ℕ) (T : Fin d → Matrix.SpecialLinearGroup (Fin 2) ℂ) :
@@ -91,7 +91,7 @@ private theorem curT_eq (d : ℕ) (T : Fin d → Matrix.SpecialLinearGroup (Fin 
 private theorem det_curT (d : ℕ) (T : Fin d → Matrix.SpecialLinearGroup (Fin 2) ℂ) :
     LinearMap.det (curT d T) = 1 := by
   rw [curT_eq, LinearMap.det_pi]
-  simp [LinearMap.det_toLin', Matrix.det_transpose, Matrix.SpecialLinearGroup.det_coe]
+  simp
 
 private def transform (d : ℕ) (T : Fin d → Matrix.SpecialLinearGroup (Fin 2) ℂ) :
     Space d →ₗ[ℂ] Space d :=
@@ -124,23 +124,21 @@ private theorem sum_rowNormSq_eq (d : ℕ) (r : Space d)
   rw [EuclideanSpace.norm_sq_eq, Fintype.sum_prod_type]
   refine Finset.sum_congr rfl fun i _ => ?_
   rw [rowNormSq, EuclideanSpace.norm_sq_eq]
-  refine Finset.sum_congr rfl fun j _ => ?_
-  simp [transform_apply, row, Matrix.vecMul, WithLp.ofLp_toLp]
+  rfl
 
-private theorem rowNormSq_nonneg (d : ℕ) (r : Space d)
+theorem rowNormSq_nonneg (d : ℕ) (r : Space d)
     (T : Fin d → Matrix.SpecialLinearGroup (Fin 2) ℂ) (i : Fin d) :
     0 ≤ rowNormSq d r T i := by
-  rw [rowNormSq]; exact sq_nonneg _
+  rw [rowNormSq]; simp
 
-private theorem prod_le_mean_pow {ι : Type*} [Fintype ι] [Nonempty ι] (z : ι → ℝ)
+theorem prod_le_mean_pow {ι : Type*} [Fintype ι] [Nonempty ι] (z : ι → ℝ)
     (hz : ∀ i, 0 ≤ z i) :
     ∏ i, z i ≤ ((∑ i, z i) / (Fintype.card ι : ℝ)) ^ Fintype.card ι := by
   have hn : (0 : ℝ) < (Fintype.card ι : ℝ) := by exact_mod_cast Fintype.card_pos
   have hw : ∀ i ∈ (Finset.univ : Finset ι), 0 ≤ (1 / (Fintype.card ι : ℝ) : ℝ) :=
-    fun i _ => by positivity
+    by simp
   have hw' : ∑ i ∈ (Finset.univ : Finset ι), (1 / (Fintype.card ι : ℝ) : ℝ) = 1 := by
-    rw [Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
-    field_simp
+    simp
   have key := Real.geom_mean_le_arith_mean_weighted (s := (Finset.univ : Finset ι))
     (fun _ : ι => (1 / (Fintype.card ι : ℝ) : ℝ)) z hw hw' (fun i _ => hz i)
   rw [Real.finsetProd_rpow (Finset.univ : Finset ι) z (fun i _ => hz i), ← Finset.mul_sum] at key
@@ -172,8 +170,7 @@ theorem kp_cusp_minkowski_short_rows (d : ℕ) (hd : 1 ≤ d)
       k = Real.sqrt Real.pi ^ n / Real.Gamma ((n : ℝ) / 2 + 1) := ⟨_, rfl⟩
   have hkpos : 0 < k := by
     rw [hk]
-    exact div_pos (pow_pos (Real.sqrt_pos.mpr Real.pi_pos) n)
-      (Real.Gamma_pos_of_pos (by positivity))
+    positivity
 
   let b := Module.Free.chooseBasis ℤ Λ
   let F := ZSpan.fundamentalDomain (b.ofZLatticeBasis ℝ)
@@ -189,12 +186,12 @@ theorem kp_cusp_minkowski_short_rows (d : ℕ) (hd : 1 ≤ d)
     (ENNReal.ofReal_toReal hFfin).symm
 
   obtain ⟨R, hR⟩ : ∃ R : ℝ, R = max 1 (volume.real F * 2 ^ n / k + 1) := ⟨_, rfl⟩
-  have hR1 : 1 ≤ R := by rw [hR]; exact le_max_left _ _
+  have hR1 : 1 ≤ R := by rw [hR]; simp
   have hRpos : 0 < R := lt_of_lt_of_le one_pos hR1
   have hRle : R ≤ R ^ n := by
     simpa using pow_le_pow_right₀ hR1 hn1
   have hRk : volume.real F * 2 ^ n < R ^ n * k := by
-    have h1 : volume.real F * 2 ^ n / k + 1 ≤ R := by rw [hR]; exact le_max_right _ _
+    have h1 : volume.real F * 2 ^ n / k + 1 ≤ R := by rw [hR]; simp
     have h2 : (volume.real F * 2 ^ n / k + 1) * k ≤ R * k :=
       mul_le_mul_of_nonneg_right h1 hkpos.le
     rw [add_mul, div_mul_cancel₀ _ hkpos.ne', one_mul] at h2
@@ -209,7 +206,7 @@ theorem kp_cusp_minkowski_short_rows (d : ℕ) (hd : 1 ≤ d)
   have hdet : LinearMap.det ((CuspShortRows.transform d T).restrictScalars ℝ) = 1 :=
     CuspShortRows.transform_det_real d T
   have hdetne : LinearMap.det ((CuspShortRows.transform d T).restrictScalars ℝ) ≠ 0 := by
-    rw [hdet]; norm_num
+    positivity
   let s : Set (CuspShortRows.Space d) :=
     ((CuspShortRows.transform d T).restrictScalars ℝ) ⁻¹' Metric.ball 0 R
   have hconv : Convex ℝ s := (convex_ball (0 : CuspShortRows.Space d) R).linear_preimage _
@@ -221,7 +218,7 @@ theorem kp_cusp_minkowski_short_rows (d : ℕ) (hd : 1 ≤ d)
     rw [Measure.addHaar_preimage_linearMap volume hdetne, hdet]
     norm_num
   have hpow2 : ENNReal.ofReal ((2 : ℝ) ^ n) = (2 : ℝ≥0∞) ^ n := by
-    rw [ENNReal.ofReal_pow (by norm_num : (0 : ℝ) ≤ 2), ENNReal.ofReal_ofNat]
+    simp
   have hlt : volume F * 2 ^ Module.finrank ℝ (CuspShortRows.Space d) < volume s := by
     rw [← hn, hFvol, hvol, hball, ← hpow2, ← ENNReal.ofReal_mul (by positivity)]
     exact (ENNReal.ofReal_lt_ofReal_iff (by positivity)).mpr hRk
@@ -273,13 +270,11 @@ theorem kp_cusp_minkowski_iwasawa_height (d : ℕ) (hd : 1 ≤ d)
     have hsingle : Matrix.vecMul (CuspShortRows.row d r i)
         ((CuspShortRows.iwasawa (z i) (hz i) : Matrix.SpecialLinearGroup (Fin 2) ℂ) :
           Matrix (Fin 2) (Fin 2) ℂ) = 0 := by
-      have := congrArg WithLp.ofLp hzero
-      simpa [WithLp.ofLp_toLp] using this
+      simp_all
     have hdet0 : ((CuspShortRows.iwasawa (z i) (hz i) :
         Matrix.SpecialLinearGroup (Fin 2) ℂ) : Matrix (Fin 2) (Fin 2) ℂ).det = 0 :=
       Matrix.exists_vecMul_eq_zero_iff.mp ⟨CuspShortRows.row d r i, hrow i, hsingle⟩
-    rw [hdet] at hdet0
-    exact one_ne_zero hdet0
+    simp_all
   have hmain : ((C / d) ^ d)⁻¹ ≤ (∏ i : Fin d,
       CuspShortRows.rowNormSq d r (fun i => CuspShortRows.iwasawa (z i) (hz i)) i)⁻¹ :=
     inv_anti₀ hpos hprod
@@ -287,8 +282,3 @@ theorem kp_cusp_minkowski_iwasawa_height (d : ℕ) (hd : 1 ≤ d)
     rw [← inv_pow, inv_div]
   rw [CuspShortRows.height, ← heq]
   exact hmain
-
-end DedekindZetaZeroFree
-
-end
-end

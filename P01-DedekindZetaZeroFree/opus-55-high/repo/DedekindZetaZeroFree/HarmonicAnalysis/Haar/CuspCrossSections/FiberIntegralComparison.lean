@@ -6,7 +6,6 @@ public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.CuspCrossSections.MeanZ
 
 @[expose] public section
 
-noncomputable section
 open MeasureTheory
 open scoped Classical ENNReal
 
@@ -56,29 +55,7 @@ theorem continuous_invariant_cross_integrable
 theorem invariant_cross_section_bounded (G : KPCuspCharts.ChartOutput F hF S D)
     (f : KPCuspCharts.Cross F → ℝ) (hf : Continuous f)
     (hinv : ∀ (s : S) (x : KPCuspCharts.Cross F), f (G.crossAction s x) = f x) :
-    ∃ C : ℝ, ∀ x, ‖f x‖ ≤ C := by
-  have hrel : ∀ x y, KPCuspCharts.crossRelation F S x y → f x = f y := by
-    intro x y hxy
-    change MulAction.orbitRel S _ (KPCuspCharts.toArch F (x, 0))
-      (KPCuspCharts.toArch F (y, 0)) at hxy
-    obtain ⟨s, hs⟩ := MulAction.mem_orbit_iff.mp ((MulAction.orbitRel_apply).mp hxy)
-    obtain ⟨A, hA, hc⟩ := D.upper s.val s.property
-    change KPCuspSiegel.action F s.val (KPCuspCharts.toArch F (y, 0)) =
-      KPCuspCharts.toArch F (x, 0) at hs
-    rw [G.actual_action s A hA hc] at hs
-    have hp := (KPCuspCharts.toArchHomeomorph F G.positive_dimension).injective hs
-    have hx : G.crossAction s y = x := by
-      rw [G.crossAction_formula s A hA hc]
-      exact congrArg Prod.fst hp
-    rw [← hx]
-    exact hinv s y
-  let q : KPCuspCharts.CrossQuotient F S → ℝ := Quotient.lift f hrel
-  have hq : Continuous q := hf.quotient_lift _
-  letI := G.compact_cross
-  obtain ⟨C, hC⟩ := isCompact_univ.exists_bound_of_continuousOn hq.continuousOn
-  refine ⟨C, fun x => ?_⟩
-  exact
-    hC (Quotient.mk (KPCuspCharts.crossRelation F S) x) (Set.mem_univ _)
+    ∃ C : ℝ, ∀ x, ‖f x‖ ≤ C := by apply DedekindZetaZeroFree.KPMeanZeroWeightedEnergy.GapCoercivity.CrossSection.ActualDomain.bounded <;> assumption
 
 theorem invariant_torus_slice_integrable
     {ρ : S →* rootsOfUnity 3 F}
@@ -221,7 +198,3 @@ theorem invariant_fiber_integral_comparison
     ∂(volume.prod G.shapeMeasure).restrict G.fundamentalDomain) = 0 at hvanish
   rw [integral_sub hfint havgint] at hvanish
   exact sub_eq_zero.mp hvanish
-
-end DedekindZetaZeroFree.KPMeanZeroWeightedEnergy.GapCoercivity.CrossSection
-
-end

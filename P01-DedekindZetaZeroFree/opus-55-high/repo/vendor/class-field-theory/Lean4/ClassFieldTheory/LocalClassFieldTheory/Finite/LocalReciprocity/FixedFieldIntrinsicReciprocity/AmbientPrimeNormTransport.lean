@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Valuation-one units and abstract prime norm-residue transport
 
@@ -55,8 +51,7 @@ theorem exists_valuationOne_unit_of_ringEquiv
       ⟨phi (x : L), (hmem (x : L)).1 x.property⟩
     invFun := fun y =>
       ⟨phi.symm (y : M), (hmem (phi.symm (y : M))).2 (by
-        rw [phi.apply_symm_apply]
-        exact y.property)⟩
+        simp)⟩
     left_inv := fun x => by
       ext
       simp
@@ -88,7 +83,7 @@ theorem exists_valuationOne_unit_of_ringEquiv
   have huM :
       (uM : M) = ((piOM : 𝒪[M]) : M) := rfl
   have hpM : pM = uM⁻¹ := by
-    simp [pM, pL, uM]
+    rfl
   have hpLvalue :
       IsNonarchimedeanLocalField.valuationMap L
         (Additive.ofMul pL) = 1 := by
@@ -106,7 +101,7 @@ theorem exists_valuationOne_unit_of_ringEquiv
 
 /-- A chosen valuation-one unit whose image under a valuation-compatible
 ring equivalence also has valuation one. -/
-noncomputable def chosenValuationOneUnitOfRingEquiv
+def chosenValuationOneUnitOfRingEquiv
     (L M : Type)
     [Field L] [ValuativeRel L] [TopologicalSpace L]
     [IsNonarchimedeanLocalField L]
@@ -196,8 +191,7 @@ theorem valuationSubring_mem_iff_of_separableClosureRingEquiv
   change
     jL x ∈ localSeparableValuationSubring F ↔
       jM (phi x) ∈ localSeparableValuationSubring K
-  rw [hphi x, hpsi]
-  rfl
+  simp_all
 
 /-- Field norms on units commute with compatible ring equivalences of the
 base and extension fields. -/
@@ -219,9 +213,7 @@ theorem normUnits_mapEquiv
   have hnorm :=
     Algebra.norm_eq_of_equiv_equiv
       phiF phiE hcomm (y : E)
-  apply phiF.symm.injective
-  rw [phiF.symm_apply_apply]
-  exact hnorm.symm
+  simp_all
 
 /-- Compatible ring equivalences preserve equality of unit norm classes. -/
 theorem normClass_mapEquiv
@@ -316,8 +308,8 @@ theorem
   let hS'B : S'.toSubgroup ≤
       (intrinsicAbstractBase F).toSubgroup :=
     fixingSubgroupLeBase F (SeparableClosure F) L
-  have hS'S : S' = S := by
-    exact closedFixingSubgroup_abstractFixedField_eq
+  have hS'S : S' = S := 
+    closedFixingSubgroup_abstractFixedField_eq
       F (SeparableClosure F) S
   let pi' : ambientFixedAddSubgroup
       (intrinsicAbsoluteUnits F) S' :=
@@ -402,20 +394,7 @@ theorem
             (Additive.ofMul x) := by
     rw [relativeNorm_abstractFixedFieldUnit_eq_normUnits]
     rw [hnorm]
-  apply Additive.ofMul.injective
-  change
-    (abstractFixedFieldUnitsEquivGaloisFixed
-      K (SeparableClosure K) H).symm
-        (relativeNorm
-          (galoisAmbientUnitsRep K (SeparableClosure K))
-          H L hLH
-          (abstractRelativeFixedFieldUnitsEquivGaloisFixed
-            K (SeparableClosure K) H L hLH
-              (Additive.ofMul p))) =
-      Additive.ofMul x
-  rw [hrelative,
-    (abstractFixedFieldUnitsEquivGaloisFixed
-      K (SeparableClosure K) H).symm_apply_apply]
+  simp_all
 
 /-- Evaluates the abstract fixed-field norm-residue symbol on the norm of a
 prime element as the abelianized restriction of its Frobenius element. -/
@@ -697,7 +676,3 @@ theorem
   exact
     abstractFixedFieldNormResidueSymbol_eq_of_primeNorm
       K H J hJH sigma pH xPrime0 hprime hphiNorm
-
-end LocalClassFieldTheory
-
-end

@@ -15,5 +15,3 @@ theorem entire_division_at_zero (q : ℂ → ℂ) (hq : Differentiable ℂ q) (h
   · intro s
     have h := sub_smul_dslope_of_zero hq0 s
     simpa using h.symm
-
-end DedekindZetaZeroFree.AbelianQuotient

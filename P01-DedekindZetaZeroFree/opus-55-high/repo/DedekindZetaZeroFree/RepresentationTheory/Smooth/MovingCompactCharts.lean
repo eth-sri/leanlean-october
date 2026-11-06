@@ -14,7 +14,7 @@ open KPContinuation.ChamberFlatSource.ChartMatrix
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1000000
 
-private theorem continuous_chartMatrix :
+theorem continuous_chartMatrix :
     Continuous (fun x : {x : Fin 3 → ℂ // x 1 ≠ 0} => chartMatrix x.val) := by
   have hc (i : Fin 3) : Continuous (fun x : {x : Fin 3 → ℂ // x 1 ≠ 0} => x.val i) :=
     (continuous_apply i).comp continuous_subtype_val

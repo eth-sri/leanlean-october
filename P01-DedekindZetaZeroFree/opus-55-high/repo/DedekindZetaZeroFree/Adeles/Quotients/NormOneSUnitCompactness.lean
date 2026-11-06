@@ -30,20 +30,19 @@ def J : Subgroup (IdeleClassGroup.normOneSubgroup (K := F)) :=
 def supportedClassRestriction : A.H →* A.J :=
   A.supportedClassMap.rangeRestrict
 
-private theorem continuous_normOneClassQuotient : Continuous A.normOneClassQuotient := by
-  exact (QuotientGroup.continuous_mk.comp continuous_subtype_val).subtype_mk _
+theorem continuous_normOneClassQuotient : Continuous A.normOneClassQuotient := 
+  (QuotientGroup.continuous_mk.comp continuous_subtype_val).subtype_mk _
 
-private theorem isOpenMap_normOneClassQuotient : IsOpenMap A.normOneClassQuotient := by
+theorem isOpenMap_normOneClassQuotient : IsOpenMap A.normOneClassQuotient := by
   let q := QuotientGroup.mk' (IdeleGroup.principalSubgroup F)
   let T : Set (IdeleClassGroup F) := IdeleClassGroup.normOneSubgroup (K := F)
   have h : (IdeleGroup.normOneSubgroup (K := F) : Set (IdeleGroup F)) = q ⁻¹' T := by
-    ext a
-    exact (IdeleClassGroup.mk_mem_normOneSubgroup_iff a).symm
+    rfl
   exact ((QuotientGroup.isOpenMap_coe (N := IdeleGroup.principalSubgroup F)).restrictPreimage T).comp
     (Homeomorph.setCongr h).isOpenMap
 
-private theorem isOpenMap_supportedClassMap : IsOpenMap A.supportedClassMap := by
-  exact (isOpenMap_normOneClassQuotient A).domRestrict A.isOpen_H
+theorem isOpenMap_supportedClassMap : IsOpenMap A.supportedClassMap := 
+  (isOpenMap_normOneClassQuotient A).domRestrict A.isOpen_H
 
 theorem isOpen_J :
     IsOpen (A.J : Set (IdeleClassGroup.normOneSubgroup (K := F))) := by
@@ -51,20 +50,20 @@ theorem isOpen_J :
   simpa only [Set.image_univ] using isOpenMap_supportedClassMap A Set.univ isOpen_univ
 
 theorem isClosed_J :
-    IsClosed (A.J : Set (IdeleClassGroup.normOneSubgroup (K := F))) := by
-  exact A.J.isClosed_of_isOpen A.isOpen_J
+    IsClosed (A.J : Set (IdeleClassGroup.normOneSubgroup (K := F))) := 
+  A.J.isClosed_of_isOpen A.isOpen_J
 
 theorem continuous_supportedClassRestriction :
-    Continuous A.supportedClassRestriction := by
-  exact ((continuous_normOneClassQuotient A).comp continuous_subtype_val).subtype_mk _
+    Continuous A.supportedClassRestriction := 
+  ((continuous_normOneClassQuotient A).comp continuous_subtype_val).subtype_mk _
 
 theorem isOpenMap_supportedClassRestriction :
-    IsOpenMap A.supportedClassRestriction := by
-  exact (isOpenMap_supportedClassMap A).codRestrict _
+    IsOpenMap A.supportedClassRestriction := 
+  (isOpenMap_supportedClassMap A).codRestrict _
 
 theorem surjective_supportedClassRestriction :
-    Function.Surjective A.supportedClassRestriction := by
-  exact A.supportedClassMap.rangeRestrict_surjective
+    Function.Surjective A.supportedClassRestriction := 
+  A.supportedClassMap.rangeRestrict_surjective
 
 theorem ker_supportedClassRestriction :
     A.supportedClassRestriction.ker = A.principalIntersection := by
@@ -105,17 +104,9 @@ theorem sCoordinatesRaw_H_norm (h : A.H) :
 def sCoordinates : A.H →* A.G1 where
   toFun h := ⟨A.sCoordinatesRaw h.1.1, A.sCoordinatesRaw_H_norm h⟩
   map_one' := by
-    apply Subtype.ext
-    apply Prod.ext
-    · funext w
-      exact congrFun (map_one ContinuousMulEquiv.piUnits) w
-    · rfl
+    rfl
   map_mul' h k := by
-    apply Subtype.ext
-    apply Prod.ext
-    · funext w
-      exact congrFun (map_mul ContinuousMulEquiv.piUnits h.1.1.1 k.1.1.1) w
-    · rfl
+    rfl
 
 theorem exists_supportedUnitQuotientProjection :
     ∃ p : (A.H ⧸ A.principalIntersection) →* (A.G1 ⧸ A.L),
@@ -139,7 +130,6 @@ theorem exists_supportedUnitQuotientProjection :
     rintro h ⟨u, rfl⟩
     change A.sCoordinates (A.principalSupported u) ∈ A.diagonalS.range
     refine ⟨u, ?_⟩
-    apply Subtype.ext
     rfl
   let p := QuotientGroup.map A.principalIntersection A.L A.sCoordinates hsub
   refine ⟨p, ?_, ?_, fun h => rfl⟩
@@ -148,8 +138,8 @@ theorem exists_supportedUnitQuotientProjection :
   · exact QuotientGroup.map_surjective_of_surjective A.principalIntersection A.L
       A.sCoordinates ((QuotientGroup.mk'_surjective A.L).comp hsur) hsub
 
-instance compactSpace_J : CompactSpace A.J := by
-  exact isCompact_iff_compactSpace.mp A.isClosed_J.isCompact
+instance compactSpace_J : CompactSpace A.J := 
+  isCompact_iff_compactSpace.mp A.isClosed_J.isCompact
 
 instance compactSpace_supportedPrincipalQuotient :
     CompactSpace (A.H ⧸ A.principalIntersection) := by
@@ -159,7 +149,3 @@ instance compactSpace_supportedPrincipalQuotient :
 instance compactSpace_LQuotient : CompactSpace (A.G1 ⧸ A.L) := by
   obtain ⟨p, hc, hs, hp⟩ := A.exists_supportedUnitQuotientProjection
   exact hs.compactSpace hc
-
-end
-end SArithmeticData
-end DedekindZetaZeroFree

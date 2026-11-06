@@ -21,7 +21,7 @@ variable (C : LocalFiberData F A.zeta12 A.primitive_zeta12 P)
 local notation "ζ" => A.zeta12
 local notation "hζ" => A.primitive_zeta12
 
-private theorem matrix_section (w : InfinitePlace F) (M : Matrix.GeneralLinearGroup (Fin 2) ℂ) :
+theorem matrix_section (w : InfinitePlace F) (M : Matrix.GeneralLinearGroup (Fin 2) ℂ) :
     complexMatrix A w (sectionTuple F ζ hζ (fun _ => M) (Sum.inl w)) = M := by
   unfold complexMatrix sectionTuple
   change Matrix.GeneralLinearGroup.map _ (Matrix.GeneralLinearGroup.map _ M) = M
@@ -73,14 +73,14 @@ theorem localValue_arch_chart_smooth (g : Raw A) (w : InfinitePlace F)
   congr 1
   exact congrArg (fun m : KPCplxCharacterHaar.ComplexGL2 => f.val m) (Units.ext rfl)
 
-private theorem archScalar_chart_smooth (g : Raw A) (v : KPHilbert.Place F) (f : Plus A P C v) :
+theorem archScalar_chart_smooth (g : Raw A) (v : KPHilbert.Place F) (f : Plus A P C v) :
     ContDiffOn ℝ (⊤ : ℕ∞) (fun z : ArchCoordinates F => archScalar A P C v
       ((g * sectionTuple F ζ hζ (fun w => rightMatrix (z w))) v) f) (archDomain F) := by
   cases v with
   | inl w => exact localValue_arch_chart_smooth A P C g w f
   | inr q => exact contDiffOn_const
 
-private theorem finiteValue_chart (g : Raw A) (v : KPHilbert.Place F) (f : Plus A P C v)
+theorem finiteValue_chart (g : Raw A) (v : KPHilbert.Place F) (f : Plus A P C v)
     (z : ArchCoordinates F) :
     finiteValue A P C v ((g * sectionTuple F ζ hζ (fun w => rightMatrix (z w))) v) f =
       finiteValue A P C v (g v) f := by
@@ -88,7 +88,7 @@ private theorem finiteValue_chart (g : Raw A) (v : KPHilbert.Place F) (f : Plus 
   | inl w => rfl
   | inr q => change f.val (KPPGLLocalCover.coverQuotient F ζ hζ _ (g _ * 1)) = _; rw [mul_one]; rfl
 
-private theorem rawStageValue_chart_smooth (s : RestrictedTensorSimple.Level (bad A P C))
+theorem rawStageValue_chart_smooth (s : RestrictedTensorSimple.Level (bad A P C))
     (x : RestrictedTensorSimple.Stage (Plus A P C) s.val) (g : Raw A) :
     ContDiffOn ℝ (⊤ : ℕ∞) (fun z : ArchCoordinates F =>
       rawStageValue A P C s (g * sectionTuple F ζ hζ (fun w => rightMatrix (z w))) x)

@@ -39,7 +39,7 @@ theorem gammaQuotient_differentiableOn (r : ℕ) :
   have hnum : DifferentiableAt ℂ (fun s : ℂ => Complex.Gammaℂ s) s := by
     have heq : (fun s : ℂ => Complex.Gammaℂ s)
         = fun s : ℂ => (2:ℂ) * (2 * (Real.pi:ℂ)) ^ (-s) * Complex.Gamma s := by
-      funext s; rw [Complex.Gammaℂ_def]
+      rfl
     rw [heq]
     exact ((differentiableAt_const (2:ℂ)).mul (differentiableAt_id.neg.const_cpow
       (Or.inl (by norm_num : (2 * (Real.pi:ℂ)) ≠ 0)))).mul hGam
@@ -48,7 +48,7 @@ theorem gammaQuotient_differentiableOn (r : ℕ) :
       ((differentiableAt_const (1:ℂ)).sub differentiableAt_id)
   exact ((hnum.pow r).mul (hden.pow r))
 
-private lemma norm_cpow_ofReal_le_one {y : ℝ} (hy0 : 0 ≤ y) (hy1 : y ≤ 1) {w : ℂ}
+lemma norm_cpow_ofReal_le_one {y : ℝ} (hy0 : 0 ≤ y) (hy1 : y ≤ 1) {w : ℂ}
     (hw : 0 ≤ w.re) : ‖(y:ℂ)^w‖ ≤ 1 := by
   rcases hy0.lt_or_eq with h | h
   · rw [Complex.norm_cpow_eq_rpow_re_of_pos h]
@@ -56,9 +56,9 @@ private lemma norm_cpow_ofReal_le_one {y : ℝ} (hy0 : 0 ≤ y) (hy1 : y ≤ 1) 
   · subst h
     rcases eq_or_ne w 0 with rfl | hw0
     · simp
-    · rw [Complex.ofReal_zero, Complex.zero_cpow hw0]; simp
+    simp_all
 
-private lemma norm_betaIntegral_le {u : ℂ} {d a : ℝ} (hu : 0 < u.re) (ha : 0 < a)
+lemma norm_betaIntegral_le {u : ℂ} {d a : ℝ} (hu : 0 < u.re) (ha : 0 < a)
     (hau : a ≤ u.re) (hd : 1 ≤ d) :
     ‖Complex.betaIntegral u (d:ℂ)‖ ≤ 1 / a := by
   rw [Complex.betaIntegral]
@@ -72,13 +72,13 @@ private lemma norm_betaIntegral_le {u : ℂ} {d a : ℝ} (hu : 0 < u.re) (ha : 0
     have hx1 : x ≤ 1 := hx.2
     have h1 : ‖(x:ℂ)^(u-1)‖ ≤ x ^ (a - 1) := by
       rw [Complex.norm_cpow_eq_rpow_re_of_pos hx0]
-      have : a - 1 ≤ (u - 1).re := by simp only [Complex.sub_re, Complex.one_re]; linarith
+      have : a - 1 ≤ (u - 1).re := by simp_all
       exact Real.rpow_le_rpow_of_exponent_ge hx0 hx1 this
     have h2 : ‖(1 - (x:ℂ))^((d:ℂ)-1)‖ ≤ 1 := by
-      have hcast : (1 - (x:ℂ)) = ((1 - x : ℝ):ℂ) := by push_cast; ring
+      have hcast : (1 - (x:ℂ)) = ((1 - x : ℝ):ℂ) := by simp
       rw [hcast]
       refine norm_cpow_ofReal_le_one (by linarith) (by linarith) ?_
-      simp only [Complex.sub_re, Complex.ofReal_re, Complex.one_re]; linarith
+      simp_all
     calc ‖(x:ℂ)^(u-1)‖ * ‖(1 - (x:ℂ))^((d:ℂ)-1)‖ ≤ x ^ (a-1) * 1 := by gcongr
       _ = x ^ (a-1) := by ring
   · have h1 : a - 1 + 1 = a := by ring
@@ -86,22 +86,18 @@ private lemma norm_betaIntegral_le {u : ℂ} {d a : ℝ} (hu : 0 < u.re) (ha : 0
       Real.zero_rpow ha.ne']
     simp
 
-private lemma norm_ofReal_eq_abs (x : ℝ) : ‖(x:ℂ)‖ = |x| := by
-  have h : ‖(x:ℂ)‖^2 = x^2 := by
-    rw [Complex.sq_norm, Complex.normSq_apply]; simp; ring
-  have h2 : |‖(x:ℂ)‖| = |x| := by rw [← sq_eq_sq_iff_abs_eq_abs, h]
-  rwa [abs_of_nonneg (norm_nonneg _)] at h2
+lemma norm_ofReal_eq_abs (x : ℝ) : ‖(x:ℂ)‖ = |x| := by
+  simp
 
-private lemma ascPochhammer_eval_prod (N : ℕ) (z : ℂ) :
+lemma ascPochhammer_eval_prod (N : ℕ) (z : ℂ) :
     (ascPochhammer ℂ N).eval z = ∏ j ∈ Finset.range N, (z + (j:ℂ)) := by
   induction N with
   | zero => simp
   | succ n ih =>
     rw [ascPochhammer_succ_right, Polynomial.eval_mul, ih, Finset.prod_range_succ]
-    congr 1
     simp
 
-private lemma norm_ascPochhammer_eval_le {a b : ℝ} (ha : 0 < a) (hab : a ≤ b) (N : ℕ) (s : ℂ)
+lemma norm_ascPochhammer_eval_le {a b : ℝ} (ha : 0 < a) (hab : a ≤ b) (N : ℕ) (s : ℂ)
     (hs : a ≤ s.re) (hsb : s.re ≤ b) :
     ‖(ascPochhammer ℂ N).eval (1 - s)‖ ≤ ((b + 1 + N) * (1 + |s.im|))^N := by
   rw [ascPochhammer_eval_prod]
@@ -115,14 +111,14 @@ private lemma norm_ascPochhammer_eval_le {a b : ℝ} (ha : 0 < a) (hab : a ≤ b
         have hre : |1 - s.re + (j:ℝ)| ≤ b + 1 + N := by
           have hb1 : |1 - s.re| ≤ b + 1 := by
             rw [abs_le]; constructor <;> linarith
-          have hjabs : |(j:ℝ)| = (j:ℝ) := abs_of_nonneg (Nat.cast_nonneg j)
+          have hjabs : |(j:ℝ)| = (j:ℝ) := by simp
           calc |1 - s.re + (j:ℝ)| ≤ |1 - s.re| + |(j:ℝ)| := abs_add_le _ _
             _ = |1 - s.re| + (j:ℝ) := by rw [hjabs]
             _ ≤ (b + 1) + N := by linarith
         have hre' : ((1 - s) + (j:ℂ)).re = 1 - s.re + (j:ℝ) := by
-          simp [Complex.add_re, Complex.sub_re]
+          rfl
         have him' : ((1 - s) + (j:ℂ)).im = -s.im := by
-          simp [Complex.add_im, Complex.sub_im]
+          simp
         calc ‖((1 - s) + (j:ℂ))‖ ≤ |((1 - s) + (j:ℂ)).re| + |((1 - s) + (j:ℂ)).im| :=
               Complex.norm_le_abs_re_add_abs_im _
           _ = |1 - s.re + (j:ℝ)| + |s.im| := by rw [hre', him', abs_neg]
@@ -135,27 +131,26 @@ private lemma norm_ascPochhammer_eval_le {a b : ℝ} (ha : 0 < a) (hab : a ≤ b
     _ = ((b + 1 + N) * (1 + |s.im|))^N := by
         rw [Finset.prod_const, Finset.card_range]
 
-private lemma gamma_ratio_bound {a b : ℝ} (ha : 0 < a) (hab : a ≤ b) :
+lemma gamma_ratio_bound {a b : ℝ} (ha : 0 < a) (hab : a ≤ b) :
     ∃ C : ℝ, 0 < C ∧ ∀ s : ℂ, a ≤ s.re → s.re ≤ b →
       ‖Complex.Gamma s / Complex.Gamma (1 - s)‖ ≤
         C * (1 + |s.im|) ^ (Nat.ceil (2 * b) + 1) := by
   set N : ℕ := Nat.ceil (2 * b) + 1 with hNdef
   have hN : 2 * b + 1 ≤ (N:ℝ) := by
     have h := Nat.le_ceil (2 * b)
-    rw [hNdef]; push_cast; linarith
+    simp_all
   have hCval : 0 < (1/a) * (b + 1 + N)^N + 1 := by
     have h1 : (0:ℝ) < 1/a := by positivity
     have h2 : (0:ℝ) ≤ (b + 1 + N)^N :=
       pow_nonneg (by linarith [ha, hab] : (0:ℝ) ≤ b + 1 + N) N
-    have h3 : (0:ℝ) ≤ 1/a * (b + 1 + N)^N := mul_nonneg h1.le h2
-    linarith
+    positivity
   refine ⟨(1/a) * (b + 1 + N)^N + 1, hCval, ?_⟩
   intro s hs hsb
   by_cases hpole : ∃ k : ℕ, 1 - s = -(k:ℂ)
   · obtain ⟨k, hk⟩ := hpole
     have hz : Complex.Gamma (1 - s) = 0 := by rw [hk, Complex.Gamma_neg_nat_eq_zero]
     rw [hz, div_zero, norm_zero]
-    exact mul_nonneg hCval.le (by positivity)
+    positivity
   · push Not at hpole
     have hPne : (ascPochhammer ℂ N).eval (1 - s) ≠ 0 := by
       rw [ascPochhammer_eval_prod]
@@ -231,8 +226,7 @@ theorem gammaQuotient_polynomial_bound {a b : ℝ} (ha : 0 < a) (hab : a ≤ b) 
   refine ⟨(C₀ * (2*π)^(1-2*a) + 1)^r, (Nat.ceil (2*b)+1) * r, by positivity, ?_⟩
   intro s hs hsb
   have hne : (2*π:ℂ) ≠ 0 := by
-    simp only [ne_eq, mul_eq_zero, OfNat.ofNat_ne_zero, false_or]
-    exact_mod_cast (ne_of_gt (by positivity : (0:ℝ) < π))
+    simp
   have hcpow : (2*π:ℂ)^(-s) / (2*π:ℂ)^(-(1-s)) = (2*π:ℂ)^(1-2*s) := by
     rw [div_eq_mul_inv, ← Complex.cpow_neg, ← Complex.cpow_add _ _ hne]
     congr 1
@@ -245,10 +239,10 @@ theorem gammaQuotient_polynomial_bound {a b : ℝ} (ha : 0 < a) (hab : a ≤ b) 
       (C₀ * (2*π)^(1-2*a)) * (1 + |s.im|)^(Nat.ceil (2*b)+1) := by
     rw [hdecomp, norm_mul]
     have h2 : ‖(2*π:ℂ)^(1-2*s)‖ ≤ (2*π)^(1-2*a) := by
-      have hbase : (2:ℂ) * (π:ℂ) = ((2*π : ℝ):ℂ) := by push_cast; ring
+      have hbase : (2:ℂ) * (π:ℂ) = ((2*π : ℝ):ℂ) := by simp
       rw [hbase, Complex.norm_cpow_eq_rpow_re_of_pos (by positivity : (0:ℝ) < 2*π)]
       have hre : (1 - 2*s).re = 1 - 2*s.re := by
-        simp [Complex.sub_re, Complex.one_re, Complex.mul_re]
+        simp
       rw [hre]
       exact Real.rpow_le_rpow_of_exponent_le (by linarith [Real.pi_gt_three] : (1:ℝ) ≤ 2*π)
         (by linarith)
@@ -267,7 +261,3 @@ theorem gammaQuotient_polynomial_bound {a b : ℝ} (ha : 0 < a) (hab : a ≤ b) 
         have h2 : (0:ℝ) ≤ C₀ * (2*π)^(1-2*a) := by positivity
         exact mul_le_mul_of_nonneg_right
           (pow_le_pow_left₀ h2 (by linarith : C₀ * (2*π)^(1-2*a) ≤ C₀ * (2*π)^(1-2*a) + 1) r) h1
-
-end DedekindZetaZeroFree.LargeSieve.Vendor
-
-end

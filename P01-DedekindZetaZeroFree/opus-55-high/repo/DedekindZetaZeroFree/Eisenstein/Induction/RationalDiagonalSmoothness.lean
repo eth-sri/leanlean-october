@@ -9,7 +9,6 @@ open NumberField IsDedekindDomain MeasureTheory
 namespace DedekindZetaZeroFree.RationalDiagonalSectionSmoothness
 open KPGlobalTorusBorelNormTwistTransport
 noncomputable section
-set_option autoImplicit false
 set_option maxHeartbeats 1000000
 set_option maxRecDepth 2000
 variable (F : Type) [Field F] [NumberField F]
@@ -52,8 +51,7 @@ theorem rationalLift_split (y : Fˣ) :
             (KPHilbert.infinite_isComplex F ζ hζ w))
               (algebraMap F (KPHilbert.Completion F (Sum.inl w)) y.val)) = _
       exact RingEquiv.symm_apply_apply _ _
-    change (a (Sum.inl w))⁻¹ * r (Sum.inl w) = 1
-    rw [he, inv_mul_cancel]
+    simp_all
   · change q r = q a * q (a⁻¹ * r)
     simp
 
@@ -89,6 +87,3 @@ theorem rational_eval_contDiffOn (P : Polarization F ζ hζ)
     group
   rw [hm, TorusChartTransport.groupArchDiagonalTransport_absorption F ζ hζ _ z hz]
   rfl
-
-end
-end DedekindZetaZeroFree.RationalDiagonalSectionSmoothness

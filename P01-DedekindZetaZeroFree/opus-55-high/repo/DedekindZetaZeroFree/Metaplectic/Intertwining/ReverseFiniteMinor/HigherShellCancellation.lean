@@ -20,7 +20,6 @@ open _root_.DedekindZetaZeroFree.ActualReverseMinorTestIntegral renaming actual_
 open _root_.DedekindZetaZeroFree.ActualReverseMinorTestIntegral renaming actual_test_family_zero → actual_test_family_zero
 open _root_.DedekindZetaZeroFree.ActualReverseMinorTestIntegral renaming testDeformation → testDeformation
 open _root_.DedekindZetaZeroFree.ActualReverseMinorTestIntegral renaming testCompact → testCompact
-set_option autoImplicit false
 set_option maxHeartbeats 1500000
 set_option backward.isDefEq.respectTransparency false
 
@@ -31,7 +30,7 @@ variable (F : Type) [Field F] [NumberField F]
   (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
   (hμ : μ ((valuation (LocalField F q)).integer : Set (LocalField F q)) = 1)
 
-private theorem actual_reverse_coordinate_eq_of_chamber_eq
+theorem actual_reverse_coordinate_eq_of_chamber_eq
     (f : sectionSpace S.borel P .minus 0)
     (g₁ g₂ : ActualCover F ζ hζ q)
     (heq : ∀ s : ℂ, convergenceHalfPlane .minus s →
@@ -128,7 +127,6 @@ open KPLocalExceptionalConstruction KPLocalStoneVonNeumann KPLocalPrincipalSerie
 open KPRankOneShellContinuation KPRankOneShellRepair KPTameJacquetTestDuality
 open KPTameTransposeKernelUnfoldingRaw KPTameValuationCoordinates
 open _root_.DedekindZetaZeroFree.ActualReverseMinorHigherShell renaming eventual_actual_higher_shell_cancellation → eventual_actual_higher_shell_cancellation
-set_option autoImplicit false
 set_option maxHeartbeats 1500000
 set_option backward.isDefEq.respectTransparency false
 
@@ -138,7 +136,7 @@ private theorem valuation_norm_le (x y : LocalField F q) :
     valuation (LocalField F q) x ≤ valuation (LocalField F q) y ↔ ‖x‖ ≤ ‖y‖ := by
   rw [← Valuation.Compatible.vle_iff_le]
   change Valued.v x ≤ Valued.v y ↔ _
-  exact (Valued.toNormedField.norm_le_iff).symm
+  simp
 
 private theorem ball_norm (π : (LocalField F q)ˣ) (r : ℕ) (x : LocalField F q) :
     x ∈ expandingBall F q π r ↔ ‖x‖ ≤ ‖(π : LocalField F q)‖⁻¹ ^ r := by
@@ -153,9 +151,7 @@ private theorem ball_norm (π : (LocalField F q)ˣ) (r : ℕ) (x : LocalField F 
   change (∃ u : (valuation (LocalField F q)).integer, x = a * (u : LocalField F q)) ↔ _
   rw [← hn]
   constructor
-  · rintro ⟨u, rfl⟩
-    rw [norm_mul]
-    exact mul_le_of_le_one_right (norm_nonneg _) ((hm _).mp u.property)
+  · simp_all
   · intro hx
     refine ⟨⟨x / a, (hm _).mpr ?_⟩, (mul_div_cancel₀ x ha).symm⟩
     rw [norm_div, div_le_one (norm_pos_iff.mpr ha)]
@@ -198,13 +194,8 @@ private theorem stableIntegral_of_higher_shell_cancellation
     exact hx.trans (pow_le_pow_right₀ hn hrs)
   have hzero : expandingBall F q π 0 = lowShell F q := by
     ext x
-    simp only [expandingBall, lowShell, pow_zero, Units.val_one, inv_one, one_mul,
-      Set.mem_setOf_eq, Valuation.mem_integer_iff]
-    constructor
-    · rintro ⟨o, rfl⟩
-      exact (Valuation.mem_integer_iff _ _).mp o.property
-    · intro hx
-      exact ⟨⟨x, hx⟩, rfl⟩
+    simp only [expandingBall, lowShell, pow_zero, Units.val_one, inv_one, one_mul, Set.mem_setOf_eq]
+    simp
   have hbase : (∫ x in expandingBall F q π 1, g x ∂μ) =
       (∫ x in lowShell F q, g x ∂μ) +
       (∫ x in conductorOneShell F q π, g x ∂μ) := by
@@ -273,9 +264,3 @@ theorem eventual_actual_stable_value_eq_two_shells
         jacquetIntegrand F ζ hζ q S P hP .plus ψ (eta F ζ hζ q π i) Rf x ∂μ) = 0 := by
     simpa only [Rf, jacquetIntegrand, hcoordinates] using hM m hm f hf r hr
   exact stableIntegral_of_higher_shell_cancellation F q μ π hπ _ hint hcancel
-
-end DedekindZetaZeroFree.ActualReverseMinorStableAssembly
-
-end
-
-end

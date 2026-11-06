@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # The finite idèle topology and adele units
 
@@ -38,7 +33,7 @@ variable (K : Type*) [Field K] [NumberField K]
 
 /-- The finite restricted-product idèles and finite adele units are
 canonically isomorphic as topological groups. -/
-noncomputable def finiteEquivFiniteAdeleUnitsContinuousMulEquiv :
+def finiteEquivFiniteAdeleUnitsContinuousMulEquiv :
     FiniteIdeleGroup K ≃ₜ*
       (IsDedekindDomain.FiniteAdeleRing (𝓞 K) K)ˣ :=
   (RestrictedProduct.unitsContinuousMulEquiv
@@ -87,8 +82,6 @@ theorem continuous_finiteEquivFiniteAdeleUnits :
       intro v
       exact Units.continuous_val
     exact h.congr (fun a => by
-      apply RestrictedProduct.ext
-      intro v
       rfl)
   · have h : Continuous (RestrictedProduct.mapAlong
         (fun v : HeightOneSpectrum (𝓞 K) => (v.adicCompletion K)ˣ)
@@ -105,8 +98,6 @@ theorem continuous_finiteEquivFiniteAdeleUnits :
       intro v
       exact Units.continuous_coe_inv
     exact h.congr (fun a => by
-      apply RestrictedProduct.ext
-      intro v
       rfl)
 
 /-- The algebraic equivalence from restricted-product idèles to adele units
@@ -122,7 +113,7 @@ theorem continuous_equivAdeleRingUnits :
 
 /-- The full restricted-product idèle group is canonically isomorphic to
 Mathlib's adele-unit idèle group as a topological group. -/
-noncomputable def equivAdeleRingUnitsContinuousMulEquiv :
+def equivAdeleRingUnitsContinuousMulEquiv :
     IdeleGroup K ≃ₜ* (NumberField.AdeleRing (𝓞 K) K)ˣ := by
   let e := finiteEquivFiniteAdeleUnitsContinuousMulEquiv K
   refine
@@ -135,7 +126,3 @@ noncomputable def equivAdeleRingUnitsContinuousMulEquiv :
     (Homeomorph.prodUnits.continuous.fst).prodMk
       (e.symm.continuous.comp Homeomorph.prodUnits.continuous.snd)
   exact hprod.congr (fun _ => rfl)
-
-end IdeleGroup
-
-end

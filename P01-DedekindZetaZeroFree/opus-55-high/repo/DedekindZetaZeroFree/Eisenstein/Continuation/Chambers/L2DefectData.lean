@@ -13,8 +13,8 @@ open scoped ENNReal
 
 abbrev chamber : Set ℂ := KPEisensteinChamber.chamber
 
-theorem chamber_isOpen : IsOpen chamber := by
-  exact isOpen_lt continuous_const Complex.continuous_re
+theorem chamber_isOpen : IsOpen chamber := 
+  isOpen_lt continuous_const Complex.continuous_re
 
 section ScalarFormula
 variable {G Q X H A : Type*} [Group G] [Fintype A]
@@ -38,17 +38,3 @@ def spectralCorrection {H : Type*} [NormedAddCommGroup H] [NormedSpace ℂ H]
 
 def graphNorm {H : Type*} [NormedAddCommGroup H] [NormedSpace ℂ H]
     (Δ : H →ₗ.[ℂ] H) (u : Δ.domain) : ℝ := ‖(u : H)‖ + ‖Δ u‖
-
-section CuspOutput
-variable {Y A W : Type*} [MeasurableSpace Y] [Fintype A]
-  [NormedAddCommGroup W]
-
-end CuspOutput
-
-section GraphEstimates
-variable {H : Type*} [NormedAddCommGroup H] [NormedSpace ℂ H]
-
-end GraphEstimates
-end DedekindZetaZeroFree.KPChamberL2Defect
-
-end

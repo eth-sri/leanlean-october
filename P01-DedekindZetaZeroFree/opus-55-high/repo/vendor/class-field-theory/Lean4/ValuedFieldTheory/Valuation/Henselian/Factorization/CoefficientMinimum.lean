@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # the finite minimum coefficient
 
@@ -42,8 +38,7 @@ theorem henselFactorization_exists_mem_finset_dvd_all
   classical
   induction s using Finset.induction_on with
   | empty =>
-      rcases hs with ⟨x, hx⟩
-      simp at hx
+      simp_all
   | @insert a s ha ih =>
       by_cases hs' : s.Nonempty
       · rcases ih hs' with ⟨π, hπs, hπall⟩
@@ -60,12 +55,7 @@ theorem henselFactorization_exists_mem_finset_dvd_all
           rcases hx with rfl | hxs
           · exact dvd_refl _
           · exact dvd_trans haπ (hπall x hxs)
-      · refine ⟨a, Finset.mem_insert_self a s, ?_⟩
-        intro x hx
-        rw [Finset.mem_insert] at hx
-        rcases hx with rfl | hxs
-        · exact dvd_refl _
-        · exact False.elim (hs' ⟨x, hxs⟩)
+      simp_all
 
 /-- the finite set of coefficients of two polynomials from
 which the construction chooses the minimum-value coefficient. -/
@@ -130,15 +120,13 @@ theorem henselFactorization_exists_coeff_dvd_all_two_polynomials
     · exact hπall (P.coeff n)
         (henselFactorization_mem_twoPolynomialCoeffFinset_left
           (P := P) (Q := Q) hn)
-    · rw [Polynomial.notMem_support_iff.mp hn]
-      exact dvd_zero π
+    simp_all
   · intro n
     by_cases hn : n ∈ Q.support
     · exact hπall (Q.coeff n)
         (henselFactorization_mem_twoPolynomialCoeffFinset_right
           (P := P) (Q := Q) hn)
-    · rw [Polynomial.notMem_support_iff.mp hn]
-      exact dvd_zero π
+    simp_all
 
 /-- if the two polynomials have coefficients in an ideal, the
 chosen finite-minimum coefficient lies in the same ideal. -/
@@ -217,8 +205,8 @@ theorem henselFactorization_exists_pi_factor_initial_errors_of_nonempty
         (f - g0 * h0) (a * g0 + b * h0 - 1) ∧
         (∃ f1 : R[X], f - g0 * h0 = Polynomial.C π * f1) ∧
           (∃ e1 : R[X],
-            a * g0 + b * h0 - 1 = Polynomial.C π * e1) := by
-  exact henselFactorization_exists_coeff_mem_ideal_minimum_factor_two_polynomials
+            a * g0 + b * h0 - 1 = Polynomial.C π * e1) := 
+  henselFactorization_exists_coeff_mem_ideal_minimum_factor_two_polynomials
     (R := R) (I := IsLocalRing.maximalIdeal R)
     (P := f - g0 * h0) (Q := a * g0 + b * h0 - 1)
     herr hbezerr hs
@@ -243,8 +231,8 @@ theorem henselFactorization_exists_pi_factor_initial_errors_of_residue_lifts_of_
         (f - g0 * h0) (a * g0 + b * h0 - 1) ∧
         (∃ f1 : R[X], f - g0 * h0 = Polynomial.C π * f1) ∧
           (∃ e1 : R[X],
-            a * g0 + b * h0 - 1 = Polynomial.C π * e1) := by
-  exact henselFactorization_exists_pi_factor_initial_errors_of_nonempty
+            a * g0 + b * h0 - 1 = Polynomial.C π * e1) := 
+  henselFactorization_exists_pi_factor_initial_errors_of_nonempty
     (R := R) (f := f) (g0 := g0) (h0 := h0) (a := a) (b := b)
     (henselFactorization_coeff_mem_maximalIdeal_sub_mul_of_residue_lifts
       hfbar hg0 hh0)
@@ -263,8 +251,7 @@ theorem henselFactorization_left_eq_zero_of_twoPolynomialCoeffFinset_empty
         P.coeff n ∈ henselFactorization_twoPolynomialCoeffFinset P Q :=
       henselFactorization_mem_twoPolynomialCoeffFinset_left
         (P := P) (Q := Q) hn
-    rw [h] at hmem
-    simp at hmem
+    simp_all
   · exact Polynomial.notMem_support_iff.mp hn
 
 /-- if the finite coefficient set is empty, the second
@@ -279,8 +266,7 @@ theorem henselFactorization_right_eq_zero_of_twoPolynomialCoeffFinset_empty
         Q.coeff n ∈ henselFactorization_twoPolynomialCoeffFinset P Q :=
       henselFactorization_mem_twoPolynomialCoeffFinset_right
         (P := P) (Q := Q) hn
-    rw [h] at hmem
-    simp at hmem
+    simp_all
   · exact Polynomial.notMem_support_iff.mp hn
 
 /-- the empty finite coefficient set is exactly the branch
@@ -297,10 +283,4 @@ theorem henselFactorization_twoPolynomialCoeffFinset_empty_iff
       henselFactorization_right_eq_zero_of_twoPolynomialCoeffFinset_empty
         (P := P) (Q := Q) h⟩
   · rintro ⟨rfl, rfl⟩
-    unfold henselFactorization_twoPolynomialCoeffFinset
-    simp
-
-end Valuations
-end AlgebraicNumberTheory
-
-end
+    rfl

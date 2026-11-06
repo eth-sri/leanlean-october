@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 namespace ClassFormation
 
 open KummerTheory
@@ -178,8 +175,8 @@ theorem valuationAt_fixedFieldInclusion_of_unramified
               FiniteAbstractFieldExtension.degree] using
                 relativeNorm_fixedFieldInclusion A EF a]
     _ = (E.degree : ℕ) •
-        ((v.valuationAt E.base a : v.valueGroup) : ZHat) := by
-          exact congrArg Subtype.val
+        ((v.valuationAt E.base a : v.valueGroup) : ZHat) := 
+          congrArg Subtype.val
             (map_nsmul (v.valuationAt E.base) (E.degree : ℕ) a)
     _ = (E.residueDegree D : ℕ) •
         ((v.valuationAt E.base a : v.valueGroup) : ZHat) := by
@@ -218,8 +215,3 @@ theorem norm_prime_of_totallyRamified (v : ValuationData D A)
   rw [IsPrimeElement] at hπ ⊢
   apply Subtype.ext
   exact htower.symm.trans (congrArg Subtype.val hπ)
-
-end ValuationData
-
-end
-end ClassFormation

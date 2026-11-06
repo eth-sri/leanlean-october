@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.Theta.Whittaker.SphericalCRTProduct
 
 @[expose] public section
 
-noncomputable section
 set_option maxHeartbeats 1200000
 
 set_option backward.isDefEq.respectTransparency true
@@ -121,7 +120,3 @@ theorem exterior_unit_covariance (D : MomentSources.SourceFactorization R Q T)
       (D.finiteData p.val).inducing.polarization (D.finiteData p.val).haar
       (D.finiteData p.val).haar_integer _)
     (exterior_reference_unit_fixed D p u) a e hc
-
-end DedekindZetaZeroFree.ExteriorWhittakerValues
-
-end

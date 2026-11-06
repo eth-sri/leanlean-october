@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # principal-ideal limit route
 
@@ -24,7 +20,6 @@ chosen chosen element `π`.  This is the route needed for complete valued fields
 whose maximal ideal is not assumed principal or adically separated.
 -/
 
-noncomputable section
 
 open scoped Polynomial
 
@@ -58,8 +53,8 @@ theorem henselFactorization_infiniteG_coeff_spanAdicCoeffCauchy_of_mem_span
             (gbar := gbar) (m := m) (d := d)
             hf hg0map hg0nat hgbar_nat hglead hh0deg
             hfactor0 hbezFactor hmd)
-          N).coeff i) := by
-  exact henselFactorization_coeff_adicCoeffCauchy_of_sub_coeff_mem
+          N).coeff i) := 
+  henselFactorization_coeff_adicCoeffCauchy_of_sub_coeff_mem
     (Ideal.span ({π} : Set R))
     (Pseq := fun N : ℕ =>
       henselFactorization_henselIterate π g0
@@ -171,8 +166,8 @@ theorem henselFactorization_infiniteH_coeff_spanAdicCoeffCauchy_of_mem_span
             (gbar := gbar) (m := m) (d := d)
             hf hg0map hg0nat hgbar_nat hglead hh0deg
             hfactor0 hbezFactor hmd)
-          N).coeff i) := by
-  exact henselFactorization_coeff_adicCoeffCauchy_of_sub_coeff_mem
+          N).coeff i) := 
+  henselFactorization_coeff_adicCoeffCauchy_of_sub_coeff_mem
     (Ideal.span ({π} : Set R))
     (Pseq := fun N : ℕ =>
       henselFactorization_henselIterate π h0
@@ -380,7 +375,7 @@ theorem henselFactorization_exists_limit_factorization_of_mem_span_principal
               hf hg0map hg0nat hgbar_nat hglead hh0deg
               hfactor0 hbezFactor hmd n i)
     · simpa [I] using hGlim
-    · simpa [I] using hHlim
+    omega
   have hGredSpan : ∀ i : ℕ, (G - g0).coeff i ∈ Ideal.span ({π} : Set R) :=
     henselFactorization_limit_reduction_of_approx_reduction
       (I := Ideal.span ({π} : Set R))
@@ -444,8 +439,3 @@ theorem henselFactorization_exists_limit_factorization_of_mem_span_principal
   refine ⟨G, H, hGdeg, hHdeg, hfactor, ?_, ?_⟩
   · rw [hGmap0, hg0map]
   · rw [hHmap0, hh0map]
-
-end Valuations
-end AlgebraicNumberTheory
-
-end

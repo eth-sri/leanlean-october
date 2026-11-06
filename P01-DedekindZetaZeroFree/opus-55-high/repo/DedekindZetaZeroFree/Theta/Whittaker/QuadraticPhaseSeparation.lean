@@ -33,11 +33,7 @@ def powerfulIndex (A : SArithmeticData F) (T : Frozen A)
   ⟨idealPrimeExponent p.asIdeal T.h.val % 6, Nat.mod_lt _ (by decide)⟩
 
  theorem order_mul (p : HeightOneSpectrum (𝓞 F)) (x y : Fˣ) :
-  order p (x*y) = order p x + order p y := by
-  have hx : p.valuation F (x : F) ≠ 0 := (map_ne_zero (p.valuation F)).mpr x.ne_zero
-  have hy : p.valuation F (y : F) ≠ 0 := (map_ne_zero (p.valuation F)).mpr y.ne_zero
-  simp only [order, Units.val_mul, map_mul, WithZero.log_mul hx hy]
-  omega
+  order p (x*y) = order p x + order p y := by apply DedekindZetaZeroFree.ThetaBranch.ord_mul <;> assumption
  theorem order_U (A : SArithmeticData F) (u : A.U)
     (p : HeightOneSpectrum (𝓞 F)) (hp : p ∉ A.Sf) : order p u.val = 0 := by
   have hv : p.valuation F (u.val : F) = 1 := u.property p hp
@@ -85,8 +81,8 @@ def freeze (A : SArithmeticData F) (G : AllowedRecipe A)
       simp
     intro hz
     have hz' := congrArg Fin.val hz
-    simp only [rowIndex, Fin.val_zero, he, Int.natCast_mod, Int.toNat_natCast] at hz'
-    exact hn hz'
+    simp only [rowIndex, Fin.val_zero, he] at hz'
+    omega
   · have hle : v.c.val * v.n.val ⊔ D.d.val * b.f.val ≤ v.n.val ⊔ b.f.val :=
       sup_le_sup Ideal.mul_le_right Ideal.mul_le_right
     exact top_le_iff.mp (v.coprime.ge.trans hle)
@@ -176,7 +172,7 @@ theorem mixedPhase_eq_quadraticPairing_squarefree (A : SArithmeticData F) (G : A
 
 private theorem order_inv (p : HeightOneSpectrum (𝓞 F)) (x : Fˣ) : order p x⁻¹ = - order p x := by
   simp only [order, Units.val_inv_eq_inv_val, map_inv₀, WithZero.log_inv]
-private theorem separation_order_mul (p : HeightOneSpectrum (𝓞 F)) (x y : Fˣ) : order p (x*y) = order p x + order p y := by
+theorem separation_order_mul (p : HeightOneSpectrum (𝓞 F)) (x y : Fˣ) : order p (x*y) = order p x + order p y := by
   simp only [order, Units.val_mul, map_mul]
   rw [WithZero.log_mul ((Valuation.ne_zero_iff _).mpr x.ne_zero) ((Valuation.ne_zero_iff _).mpr y.ne_zero), neg_add]
 theorem allowed_class_cocycle (A : SArithmeticData F) (G : AllowedRecipe A) (x y : Fˣ)
@@ -190,15 +186,15 @@ theorem allowed_class_cocycle (A : SArithmeticData F) (G : AllowedRecipe A) (x y
       rw [div_eq_mul_inv, separation_order_mul, order_inv, hord ⟨p, hp⟩, add_neg_cancel]
     have hl : WithZero.log (p.valuation F ((x/y : Fˣ) : F)) = 0 := by
       change -(WithZero.log (p.valuation F ((x/y : Fˣ) : F))) = 0 at ho
-      exact neg_eq_zero.mp ho
+      omega
     have hn : p.valuation F ((x/y : Fˣ) : F) ≠ 0 := (Valuation.ne_zero_iff _).mpr (x/y).ne_zero
     calc p.valuation F ((x/y : Fˣ) : F) = WithZero.exp (WithZero.log (p.valuation F ((x/y : Fˣ) : F))) := (WithZero.exp_log hn).symm
          _ = 1 := by rw [hl, WithZero.exp_zero]
   have hB : ThetaReflectionData.rationalClass A (x/y) ∈ G.B := by
     rw [map_div]
     exact G.B.div_mem hx hy
-  have hE : ThetaReflectionData.rationalClass A (x/y) ∈ A.E := by
-    exact ⟨A.diagonal (x/y), ⟨x/y, hu, rfl⟩, rfl⟩
+  have hE : ThetaReflectionData.rationalClass A (x/y) ∈ A.E := 
+    ⟨A.diagonal (x/y), ⟨x/y, hu, rfl⟩, rfl⟩
   have hk : x/y ∈ (ThetaReflectionData.rationalClass A).ker := by
     change ThetaReflectionData.rationalClass A (x/y) = 1
     apply Subgroup.mem_bot.mp
@@ -210,7 +206,7 @@ private theorem order_prod {ι : Type*} (s : Finset ι) (f : ι → Fˣ) (p : He
   induction s using Finset.induction_on with
   | empty => simp [order]
   | @insert a s ha ih => simp only [Finset.prod_insert ha, Finset.sum_insert ha, separation_order_mul, ih]
-private theorem sf_exponent (A : SArithmeticData F) (c : A.Exterior) (hc : Squarefree c.val) (p : HeightOneSpectrum (𝓞 F)) :
+theorem sf_exponent (A : SArithmeticData F) (c : A.Exterior) (hc : Squarefree c.val) (p : HeightOneSpectrum (𝓞 F)) :
     idealPrimeExponent p.asIdeal c.val = if p ∈ support c.val then 1 else 0 := by
   have hn := (squarefree_iff_nodup_normalizedFactors c.property.1).mp hc
   unfold idealPrimeExponent
@@ -247,10 +243,7 @@ private theorem prime_generators_order (A : SArithmeticData F) (G : AllowedRecip
       simp only [Subtype.ext_iff]
     rw [heq]
     simp
-  · rw [if_neg hp]
-    apply Finset.sum_eq_zero
-    intro q _
-    rw [if_neg (by intro he; exact hp (he ▸ q.property))]
+  simp_all
 theorem prime_generators_cocycle (A : SArithmeticData F) (G : AllowedRecipe A) (c : A.Exterior) (hc : Squarefree c.val) :
     (∏ q : {q // q ∈ support c.val}, G.generator (primeIdeal A (supportPrime A c q))) / G.generator c ∈ ThetaReflectionData.rationalGamma A := by
   apply allowed_class_cocycle A G
@@ -261,12 +254,12 @@ theorem prime_generators_cocycle (A : SArithmeticData F) (G : AllowedRecipe A) (
   · exact G.allowed c
   · exact prime_generators_order A G c hc
 
-private theorem residue_spec (p : HeightOneSpectrum (𝓞 F)) (x : Fˣ)
+theorem residue_spec (p : HeightOneSpectrum (𝓞 F)) (x : Fˣ)
     (hx : order p x = 0) : IsUnitResidue p x (unitResidue p x) := by
   simpa only [unitResidue, dif_pos hx] using
     (existsUnique_unitResidue p x hx).exists.choose_spec
 
-private theorem residue_mul (p : HeightOneSpectrum (𝓞 F)) (x y : Fˣ)
+theorem residue_mul (p : HeightOneSpectrum (𝓞 F)) (x y : Fˣ)
     (hx : order p x = 0) (hy : order p y = 0) :
     unitResidue p (x*y) = unitResidue p x * unitResidue p y := by
   have hxy : order p (x*y) = 0 := by rw [order_mul, hx, hy, add_zero]
@@ -279,12 +272,12 @@ private theorem residue_mul (p : HeightOneSpectrum (𝓞 F)) (x y : Fˣ)
   · simp only [ht, hu, map_mul]
     ring
 
-private theorem symbol_mul_units (A : SArithmeticData F) (σ : F →+* ℂ)
+theorem symbol_mul_units (A : SArithmeticData F) (σ : F →+* ℂ)
     (p : ExteriorPrime A) (x y : Fˣ) (hx : order p.val x = 0) (hy : order p.val y = 0) :
     symbol A σ p (x*y) = symbol A σ p x * symbol A σ p y := by
   simp only [symbol, residue_mul p.val x y hx hy, map_mul]
 
-private theorem symbol_one (A : SArithmeticData F) (σ : F →+* ℂ) (p : ExteriorPrime A) :
+theorem symbol_one (A : SArithmeticData F) (σ : F →+* ℂ) (p : ExteriorPrime A) :
     symbol A σ p 1 = 1 := by
   have h : unitResidue p.val 1 = 1 := by
     apply (existsUnique_unitResidue p.val 1 (by simp [order])).unique
@@ -324,7 +317,7 @@ private theorem symbol_prod_units (A : SArithmeticData F) (σ : F →+* ℂ)
   | @insert a s ha ih =>
     rw [Finset.prod_insert ha, Finset.prod_insert ha,
       symbol_mul_units A σ p _ _ (hf a (Finset.mem_insert_self _ _))
-        (by rw [order_prod]; exact Finset.sum_eq_zero (fun i hi => hf i (Finset.mem_insert_of_mem hi))),
+        (by rw [order_prod]; simp_all),
       ih (fun i hi => hf i (Finset.mem_insert_of_mem hi))]
 
 private theorem symbol_prime_product (A : SArithmeticData F) (G : AllowedRecipe A)
@@ -483,7 +476,7 @@ private theorem red_sextic_primitive (F : Type) [Field F] [NumberField F]
   intro l hl
   have hd2 : 2 ∣ l := hr3.dvd_of_pow_eq_one l (by rw [pow_right_comm, hl, one_pow])
   have hd3 : 3 ∣ l := hr2.dvd_of_pow_eq_one l (by rw [pow_right_comm, hl, one_pow])
-  exact Nat.lcm_dvd hd2 hd3
+  omega
 
 private theorem residue_six_dvd (A : SArithmeticData F) (p : ExteriorPrime A) :
     6 ∣ Fintype.card (DHCubic.Residue F p.val) - 1 := by
@@ -538,17 +531,17 @@ private theorem residue_order (A : SArithmeticData F) (σ : F →+* ℂ) (p : Ex
   exact (orderOf_injective (MulChar.ringHomCompHom (σ.comp (algebraMap (𝓞 F) F)))
     (MulChar.injective_ringHomComp hi) χ).trans hc
 
-private theorem symbol_norm_le (A : SArithmeticData F) (σ : F →+* ℂ)
+theorem symbol_norm_le (A : SArithmeticData F) (σ : F →+* ℂ)
     (p : ExteriorPrime A) (x : Fˣ) : ‖symbol A σ p x‖ ≤ 1 := by
   unfold symbol
   by_cases hx : unitResidue p.val x = 0
-  · simpa [hx, MulChar.map_zero] using (show (0 : ℝ) ≤ 1 by norm_num)
+  · simp [hx, MulChar.map_zero]
   · let u := (isUnit_iff_ne_zero.mpr hx).unit
     have h := Complex.norm_eq_one_of_mem_rootsOfUnity
       ((residueCharacter A σ p).apply_mem_rootsOfUnity u)
     exact le_of_eq (by simpa [MulChar.coe_equivToUnitHom, u] using h)
 
-private theorem symbol_zpow_norm_le (A : SArithmeticData F) (σ : F →+* ℂ)
+theorem symbol_zpow_norm_le (A : SArithmeticData F) (σ : F →+* ℂ)
     (p : ExteriorPrime A) (x : Fˣ) (z : ℤ) : ‖symbol A σ p x ^ z‖ ≤ 1 := by
   by_cases hx : symbol A σ p x = 0
   · rw [hx]
@@ -564,7 +557,7 @@ private theorem symbol_zpow_norm_le (A : SArithmeticData F) (σ : F →+* ℂ)
       simpa [symbol, MulChar.coe_equivToUnitHom, u] using h
     simp [norm_zpow, hn]
 
-private theorem gauss_norm {k : Type*} [Field k] [Fintype k]
+theorem gauss_norm {k : Type*} [Field k] [Fintype k]
     (χ : MulChar k ℂ) (ψ : AddChar k ℂ) (hχ : χ ≠ 1) (hψ : ψ.IsPrimitive) :
     ‖gaussSum χ ψ‖ = Real.sqrt (Fintype.card k : ℝ) := by
   have h := gaussSum_mul_gaussSum_eq_card hχ hψ
@@ -581,12 +574,12 @@ theorem norm_gaussTwo (A : SArithmeticData F) (σ : F →+* ℂ)
   have hn : (residueCharacter A σ p) ^ 2 ≠ 1 :=
     pow_ne_one_of_lt_orderOf (by norm_num) (by rw [residue_order]; norm_num)
   have hpos : 0 < Real.sqrt (Fintype.card (DHCubic.Residue F p.val) : ℝ) :=
-    Real.sqrt_pos.mpr (by positivity)
+    by positivity
   simp only [gaussTwo, norm_mul, norm_inv, Complex.norm_real,
     Real.norm_of_nonneg (Real.sqrt_nonneg _), gauss_norm _ _ hn (hψ p)]
-  exact inv_mul_cancel₀ hpos.ne'
+  simp
 
-private theorem digit_scalar_norm_le {k : Type*} [Field k] [Fintype k]
+theorem digit_scalar_norm_le {k : Type*} [Field k] [Fintype k]
     (χ : MulChar k ℂ) (ψ : AddChar k ℂ) (hχ : orderOf χ = 6)
     (hψ : ψ.IsPrimitive) (hQ : Nat.Coprime (Fintype.card k) 6)
     (j : Fin 6) (e : ℕ) :
@@ -610,18 +603,13 @@ private theorem digit_scalar_norm_le {k : Type*} [Field k] [Fintype k]
         Complex.norm_real, Real.norm_of_nonneg (by linarith)]
     rw [hsub]
     have hg : ‖gaussSum (χ ^ 2) ψ‖ = Real.sqrt (Fintype.card k : ℝ) :=
-      gauss_norm _ _ (pow_ne_one_of_lt_orderOf (by norm_num) (by rw [hχ]; norm_num)) hψ
+      gauss_norm _ _ (pow_ne_one_of_lt_orderOf (by norm_num) (by omega)) hψ
     have hp : ‖(Fintype.card k : ℂ) ^ (-((e : ℤ) / 3))‖ =
         (Fintype.card k : ℝ).rpow (-(e / 3 : ℕ) : ℝ) := by
-      rw [norm_zpow, Complex.norm_natCast, ← Real.rpow_intCast]
-      congr 1
-      have hm : ((e : ℤ) / 3) = ((e / 3 : ℕ) : ℤ) := (Int.natCast_ediv e 3).symm
-      rw [hm]
-      push_cast
-      rfl
+      simp
     have hs : ‖(Real.sqrt (Fintype.card k : ℝ) : ℂ)⁻¹‖ =
         (Real.sqrt (Fintype.card k : ℝ))⁻¹ := by
-      simp [norm_inv, Complex.norm_real, Real.norm_of_nonneg (Real.sqrt_nonneg _)]
+      simp
     have hspos : 0 < Real.sqrt (Fintype.card k : ℝ) := Real.sqrt_pos.mpr hQ0
     have hsq := Real.sq_sqrt hQ0.le
     have hrnon : 0 ≤ (Fintype.card k : ℝ).rpow (-(e / 3 : ℕ) : ℝ) :=
@@ -670,17 +658,17 @@ private theorem omegaScalar_norm_le (A : SArithmeticData F) (σ : F →+* ℂ)
     ‖omegaScalar A σ ψ p‖ ≤ 1 := by
   simpa [omegaScalar, betaLocal_zero] using scalar_norm_le A σ ψ hψ p 1 0
 
-private theorem prod_norm_le_one {ι : Type*} [Fintype ι] (f : ι → ℂ)
+theorem prod_norm_le_one {ι : Type*} [Fintype ι] (f : ι → ℂ)
     (hf : ∀ i, ‖f i‖ ≤ 1) : ‖∏ i, f i‖ ≤ 1 := by
   rw [norm_prod]
   exact Finset.prod_le_one₀ (fun _ _ => norm_nonneg _) (fun i _ => hf i)
 
-private theorem mul_norm_le_one {a b : ℂ} (ha : ‖a‖ ≤ 1) (hb : ‖b‖ ≤ 1) :
+theorem mul_norm_le_one {a b : ℂ} (ha : ‖a‖ ≤ 1) (hb : ‖b‖ ≤ 1) :
     ‖a*b‖ ≤ 1 := by
   rw [norm_mul]
   nlinarith [norm_nonneg a, norm_nonneg b]
 
-private theorem pow_norm_le_one {a : ℂ} (ha : ‖a‖ ≤ 1) (n : ℕ) : ‖a^n‖ ≤ 1 := by
+theorem pow_norm_le_one {a : ℂ} (ha : ‖a‖ ≤ 1) (n : ℕ) : ‖a^n‖ ≤ 1 := by
   rw [norm_pow]
   exact pow_le_one₀ (norm_nonneg a) ha
 
@@ -702,7 +690,7 @@ private theorem rho_bound (A : SArithmeticData F) (G : AllowedRecipe A)
     intro p
     exact symbol_zpow_norm_le A σ _ _ _
 
-private theorem lambda_bound (A : SArithmeticData F) (G : AllowedRecipe A)
+theorem lambda_bound (A : SArithmeticData F) (G : AllowedRecipe A)
     (U : UnitRepresentatives A) (σ : F →+* ℂ)
     (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
     (hψ : ∀ p, (ψ p).IsPrimitive) (L : Fˣ →* ℂ) (hL : ∀ x, ‖L x‖ = 1)
@@ -732,7 +720,7 @@ private theorem omega_bound (A : SArithmeticData F) (G : AllowedRecipe A)
     intro p hp
     have hQ := idealNorm_prime_ge_two p.asIdeal p.prime
     have hqi : (idealNorm p.asIdeal)⁻¹ ≤ 1 := (inv_le_one₀ (by linarith)).mpr (by linarith)
-    have hnon : 0 ≤ (idealNorm p.asIdeal)⁻¹ := inv_nonneg.mpr (by linarith)
+    have hnon : 0 ≤ (idealNorm p.asIdeal)⁻¹ := by positivity
     rw [← Complex.ofReal_inv, ← Complex.ofReal_one, ← Complex.ofReal_sub,
       Complex.norm_real, Real.norm_of_nonneg (by linarith)]
     linarith
@@ -776,11 +764,11 @@ theorem factors_norm_le (A : SArithmeticData F) (G : AllowedRecipe A)
     (L : Fˣ →* ℂ) (hL : ∀ x : Fˣ, ‖L x‖ = 1)
     (T : Frozen A) (d c : A.Exterior) :
     ‖omega A G U σ ψ L T‖ ≤ omegaMajorant A T ∧
-    ‖rho A G U σ ψ L T d‖ ≤ 1 ∧ ‖lambda A G U σ ψ L T c‖ ≤ 1 := by
-  exact ⟨omega_bound A G U σ ψ hψ L hL T, rho_bound A G U σ ψ hψ L hL T d,
+    ‖rho A G U σ ψ L T d‖ ≤ 1 ∧ ‖lambda A G U σ ψ L T c‖ ≤ 1 := 
+  ⟨omega_bound A G U σ ψ hψ L hL T, rho_bound A G U σ ψ hψ L hL T d,
     lambda_bound A G U σ ψ hψ L hL T c⟩
 
-private theorem unitResidue_mul (p : HeightOneSpectrum (𝓞 F)) (x y : Fˣ)
+theorem unitResidue_mul (p : HeightOneSpectrum (𝓞 F)) (x y : Fˣ)
     (hx : order p x = 0) (hy : order p y = 0) :
     unitResidue p (x*y) = unitResidue p x * unitResidue p y := by
   have hxy : order p (x*y) = 0 := by rw [order_mul]; omega
@@ -803,7 +791,7 @@ private theorem unitResidue_mul (p : HeightOneSpectrum (𝓞 F)) (x y : Fˣ)
     (by simpa [unitResidue, hxy] using
       (existsUnique_unitResidue p (x*y) hxy).exists.choose_spec) hxyres)
 
-private theorem symbol_mul (A : SArithmeticData F) (σ : F →+* ℂ)
+theorem symbol_mul (A : SArithmeticData F) (σ : F →+* ℂ)
     (p : ExteriorPrime A) (x y : Fˣ) (hx : order p.val x = 0)
     (hy : order p.val y = 0) :
     symbol A σ p (x*y) = symbol A σ p x * symbol A σ p y := by
@@ -838,26 +826,26 @@ private theorem symbol_zpow (A : SArithmeticData F) (σ : F →+* ℂ)
   | negSucc n =>
     rw [zpow_negSucc, symbol_inv _ _ _ _ (by rw [order_pow,hx,mul_zero]), symbol_pow _ _ _ _ _ hx,
       zpow_negSucc]
-private theorem coordinate_coprime_d (A : SArithmeticData F) (G : AllowedRecipe A)
+theorem coordinate_coprime_d (A : SArithmeticData F) (G : AllowedRecipe A)
     (m : ThetaReflectionData.Row A) (D : RowFactorization A G m)
     (b : Branch A G m D) (v : Coordinates A G m D b) :
     D.d.val ⊔ v.c.val = ⊤ := by
   have hle : v.c.val*v.n.val ⊔ D.d.val*b.f.val ≤ v.c.val ⊔ D.d.val :=
     sup_le_sup Ideal.mul_le_left Ideal.mul_le_left
   rw [sup_comm]; exact top_le_iff.mp (v.coprime.ge.trans hle)
-private theorem coordinate_coprime_f (A : SArithmeticData F) (G : AllowedRecipe A)
+theorem coordinate_coprime_f (A : SArithmeticData F) (G : AllowedRecipe A)
     (m : ThetaReflectionData.Row A) (D : RowFactorization A G m)
     (b : Branch A G m D) (v : Coordinates A G m D b) :
     v.c.val ⊔ b.f.val = ⊤ := by
   have hle : v.c.val*v.n.val ⊔ D.d.val*b.f.val ≤ v.c.val ⊔ b.f.val :=
     sup_le_sup Ideal.mul_le_left Ideal.mul_le_right
   exact top_le_iff.mp (v.coprime.ge.trans hle)
-private theorem symbol_generator_unit (A : SArithmeticData F) (G : AllowedRecipe A)
+theorem symbol_generator_unit (A : SArithmeticData F) (G : AllowedRecipe A)
     (I J : A.Exterior) (p : ExteriorPrime A) (hp : p.val ∈ support I.val)
     (hc : I.val ⊔ J.val = ⊤) : order p.val (G.generator J) = 0 := by
   rw [generator_order]
   exact_mod_cast exp_zero p.val I.val J.val hp hc
-private theorem d_argument_split (A : SArithmeticData F) (G : AllowedRecipe A)
+theorem d_argument_split (A : SArithmeticData F) (G : AllowedRecipe A)
     (U : UnitRepresentatives A) (σ : F →+* ℂ)
     (m : ThetaReflectionData.Row A) (D : RowFactorization A G m)
     (b : Branch A G m D) (v : Coordinates A G m D b)
@@ -908,7 +896,7 @@ private theorem c_argument_split (A : SArithmeticData F) (G : AllowedRecipe A)
   rw [← zpow_natCast, ← zpow_mul]
   norm_num
 
-private theorem radical_dvd (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) : idealRadical I ∣ I := by
+theorem radical_dvd (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) : idealRadical I ∣ I := by
   have hd := Multiset.toFinset_prod_dvd_prod (normalizedFactors I)
   have he : (normalizedFactors I).prod = I := (associated_iff_eq.mp (prod_normalizedFactors hI))
   rw [he] at hd
@@ -948,7 +936,7 @@ private theorem f_argument_split (A : SArithmeticData F) (G : AllowedRecipe A)
     symbol_mul A σ _ _ _ hunit hd2, symbol_zpow A σ _ _ _ hd, mul_pow, mul_pow]
   congr 2
   rw [← zpow_natCast, ← zpow_mul]
-private theorem active_row_index (A : SArithmeticData F) (G : AllowedRecipe A)
+theorem active_row_index (A : SArithmeticData F) (G : AllowedRecipe A)
     (m : ThetaReflectionData.Row A) (D : RowFactorization A G m)
     (b : Branch A G m D) (v : Coordinates A G m D b)
     (p : {p // p ∈ support b.f.val}) :
@@ -973,7 +961,7 @@ private theorem active_row_index (A : SArithmeticData F) (G : AllowedRecipe A)
   apply Fin.ext
   simp only [rowIndex, powerfulIndex, freeze, hv]
   omega
-private theorem masks_one (A : SArithmeticData F) (G : AllowedRecipe A)
+theorem masks_one (A : SArithmeticData F) (G : AllowedRecipe A)
     (m : ThetaReflectionData.Row A) (D : RowFactorization A G m)
     (b : Branch A G m D) (v : Coordinates A G m D b) :
     rowMask A (freeze A G m D b v) D.d = 1 ∧
@@ -1006,8 +994,7 @@ private theorem coefficient_split_squarefree (A : SArithmeticData F) (G : Allowe
   have hLsplit : (L (coordinateRepresentative A G U m D b v))⁻¹ =
       (L ((U.representative v.epsilon).val * G.generator v.a * G.generator v.n ^ 3 *
         G.generator b.f ^ (-2:ℤ)))⁻¹ * L (G.generator D.d)^2 * (L (G.generator v.c))⁻¹ := by
-    simp only [coordinateRepresentative, map_div, map_mul, map_pow, map_zpow, zpow_neg,
-      zpow_ofNat, mul_inv, inv_div, inv_pow, inv_inv]
+    simp only [coordinateRepresentative, map_div, map_mul, map_pow, zpow_neg, zpow_ofNat, mul_inv, inv_div]
     simp only [map_inv, map_pow, inv_inv]
     ring
   unfold exactCoefficient separatedCoefficient
@@ -1020,7 +1007,7 @@ private theorem coefficient_split_squarefree (A : SArithmeticData F) (G : Allowe
   rw [hLsplit, ← hmix]
   unfold mixedPhase idealSymbol
   simp only [Finset.prod_mul_distrib, ← Finset.prod_zpow]
-  simp only [div_eq_mul_inv, mul_inv, frozenArgument, powerfulIndex, freeze]
+  simp only [div_eq_mul_inv, mul_inv, frozenArgument]
   let H := ∏ p ∈ support D.h.val \ support b.f.val, (1 - (idealNorm p.asIdeal : ℂ)⁻¹)
   let O := ∏ p : {p // p ∈ support D.d.val}, omegaScalar A σ ψ (supportPrime A D.d p)
   let R := ∏ p : {p // p ∈ support D.d.val}, symbol A σ (supportPrime A D.d p)
@@ -1064,8 +1051,8 @@ theorem exact_coefficient_separated_squarefree (A : SArithmeticData F) (G : Allo
     (b : Branch A G m D) (v : Coordinates A G m D b) :
     exactCoefficient A G U σ ψ m D b v *
       (L (coordinateRepresentative A G U m D b v))⁻¹ =
-    separatedCoefficient A G U σ ψ L (freeze A G m D b v) D.d v.c := by
-  exact coefficient_split_squarefree A G U σ ψ L hrec m D b v
+    separatedCoefficient A G U σ ψ L (freeze A G m D b v) D.d v.c := 
+  coefficient_split_squarefree A G U σ ψ L hrec m D b v
 
 def profileIndex (A : SArithmeticData F) (G : AllowedRecipe A)
     (U : UnitRepresentatives A) (T : Frozen A) (sd sc : G.B) : A.V :=
@@ -1092,14 +1079,14 @@ private theorem norm_div (A : SArithmeticData F) (x y : A.G) : A.norm (x / y) = 
   simp [SArithmeticData.norm, div_eq_mul_inv, norm_mul, norm_inv, mul_pow,
     Finset.prod_mul_distrib, Finset.prod_inv_distrib, inv_pow]
   ring
-private theorem gen_norm (A : SArithmeticData F) (G : AllowedRecipe A) (I : A.Exterior) :
+theorem gen_norm (A : SArithmeticData F) (G : AllowedRecipe A) (I : A.Exterior) :
   A.norm (A.diagonal (G.generator I)) = A.exteriorNorm I := by
   obtain ⟨r, hr, he⟩ := G.generates I
   exact A.generator_norm I r hr (G.generator I) he
-private theorem U_norm (A : SArithmeticData F) (u : A.U) :
+theorem U_norm (A : SArithmeticData F) (u : A.U) :
     A.norm (A.diagonal u.val) = 1 := by
-  have h : A.diagonal (u.val ^ 6) ∈ A.Gamma := by
-    exact Subgroup.mem_map_of_mem _ (Subgroup.mem_map_of_mem (powMonoidHom 6) u.property)
+  have h : A.diagonal (u.val ^ 6) ∈ A.Gamma := 
+    Subgroup.mem_map_of_mem _ (Subgroup.mem_map_of_mem (powMonoidHom 6) u.property)
   have h6 : A.norm (A.diagonal u.val) ^ 6 = 1 := by
     have hh : A.norm (A.diagonal (u.val ^ 6)) = 1 := A.Gamma_le_G1 h
     change normHom A (A.diagonal (u.val ^ 6)) = 1 at hh
@@ -1143,6 +1130,3 @@ theorem coordinate_class_norm (A : SArithmeticData F) (G : AllowedRecipe A)
       (A.norm (A.diagonal (G.generator D.d)) * A.norm (A.diagonal (G.generator b.f))) ^ 2) = _
     simp only [gen_norm, U_norm, one_mul, profileArgument, freeze, mul_pow]
     ring
-
-end
-end DedekindZetaZeroFree.ThetaPhaseSeparation

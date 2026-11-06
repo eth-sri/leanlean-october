@@ -78,8 +78,8 @@ theorem evaluated_central (g : RestrictedCover F ζ hζ) (e : CentralTuples F) :
   have htail q (hq : q ∉ u.val) :
       (LocalSeed.finite F ζ hζ P C q).val
         (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q) (g (Sum.inr q))) =
-        localReference F ζ hζ P C q := by
-    exact SourceTensor.evaluatedStage_tail F ζ hζ P C g q
+        localReference F ζ hζ P C q := 
+    SourceTensor.evaluatedStage_tail F ζ hζ P C g q
       (fun h => hq (Finset.mem_union_left _ h))
   have hetail q (hq : q ∉ u.val) : e (Sum.inr q) = 1 := by
     by_contra h
@@ -92,8 +92,7 @@ theorem evaluated_central (g : RestrictedCover F ζ hζ) (e : CentralTuples F) :
     change (LocalSeed.finite F ζ hζ P C q).val
       (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q)
         (KPLocalCover.centralInjection F ζ hζ (Sum.inr q) (e (Sum.inr q)) * g (Sum.inr q))) = _
-    rw [LocalCovariance.finite_central, hetail q hq, map_one, Units.val_one, one_smul]
-    exact htail q hq
+    simp_all
   rw [SourceTensor.evaluatedTensor_stage F ζ hζ P C _ u htail',
     SourceTensor.evaluatedTensor_stage F ζ hζ P C g u htail,
     SourceTensor.realization_stage, SourceTensor.realization_stage]
@@ -175,8 +174,7 @@ theorem value_amalgamation (g : RestrictedCover F ζ hζ) (m : KPAdelicCoverRest
     change (g⁻¹ * h) * g = h
     rw [← Subgroup.mem_center_iff.mp hc g, ← mul_assoc, mul_inv_cancel, one_mul]
   have hi := value_amalgamation F ζ hζ P C g ⟨_, hm⟩
-  rw [hh] at hi
-  exact hi.symm
+  simp_all
 
 def amalgamatedValue : CubicGL2Adelic F ζ hζ → KPGlobalTorusPeriodizationInverse.ProductUnitary F ζ hζ P :=
   Quotient.lift (value F ζ hζ P C)
@@ -204,8 +202,7 @@ theorem amalgamatedValue_scalar (z : Ideles F) (g : CubicGL2Adelic F ζ hζ) :
   have hh : scalarHom F ζ hζ z * g = h := by
     rw [← Subgroup.mem_center_iff.mp hc g, hz, ← mul_assoc, mul_inv_cancel, one_mul]
   have hi := amalgamatedValue_scalar F ζ hζ P C z g
-  rw [hh] at hi
-  exact hi.symm
+  simp_all
 
 def quotientValue : KPGlobalTorusFunctionData.G F ζ hζ →
     KPGlobalTorusPeriodizationInverse.ProductUnitary F ζ hζ P :=
@@ -232,7 +229,7 @@ theorem value_right_spherical (q : HeightOneSpectrum (𝓞 F)) (hq : q ∉ C.exc
   apply value_right_level
   constructor
   · intro w
-    simp [localToRestricted]
+    rfl
   · apply Subgroup.mem_iInf.mpr
     intro r
     change KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr r)
@@ -317,7 +314,3 @@ theorem scalarValue_right_spherical (q : HeightOneSpectrum (𝓞 F)) (hq : q ∉
     scalarValue F ζ hζ P C (g * scalarQuotient F ζ hζ (localInjection F ζ hζ (Sum.inr q) k)) =
       scalarValue F ζ hζ P C g := by
   rw [scalarValue, scalarValue, quotientValue_right_spherical F ζ hζ P C q hq k hk hb g]
-
-end DedekindZetaZeroFree.EisensteinReferenceSections.RawSource
-
-end

@@ -96,9 +96,3 @@ noncomputable section
 open scoped NumberField Classical Topology
 open NumberField
 namespace DedekindZetaZeroFree.KPLiteral
-variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-
-end DedekindZetaZeroFree.KPLiteral
-
-end
-end

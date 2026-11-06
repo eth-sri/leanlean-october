@@ -11,7 +11,6 @@ open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.KPScalarSplitCentral
 
 noncomputable section
-set_option autoImplicit false
 set_option maxHeartbeats 800000
 
 variable (F : Type) [Field F] [NumberField F]
@@ -30,7 +29,7 @@ private theorem X_scalar (z : (KPHilbert.Completion F v)ˣ) :
   apply Units.ext
   simp [KubotaRankTwo.X, KubotaRankTwo.x, scalarMatrix, Matrix.scalar]
 
-private theorem X_scalar_mul (z : (KPHilbert.Completion F v)ˣ)
+theorem X_scalar_mul (z : (KPHilbert.Completion F v)ˣ)
     (g : KPLocalCover.LocalGL2 F v) :
     KubotaRankTwo.X (KPHilbert.Completion F v) (scalarMatrix F v z * g) =
       z * KubotaRankTwo.X (KPHilbert.Completion F v) g := by
@@ -39,18 +38,16 @@ private theorem X_scalar_mul (z : (KPHilbert.Completion F v)ˣ)
   simp only [KubotaRankTwo.X, Units.val_mk0, Units.val_mul]
   unfold KubotaRankTwo.x
   have he (i j : Fin 2) : (scalarMatrix F v z * g) i j = (z : KPHilbert.Completion F v) * g i j := by
-    fin_cases i <;> fin_cases j <;> simp [scalarMatrix, Matrix.mul_apply, Matrix.scalar]
-  rw [he 1 0, he 1 1]
-  simp only [mul_eq_zero, z.ne_zero, false_or]
-  split_ifs <;> rfl
+    simp
+  simp
 
-private theorem X_mul_scalar (z : (KPHilbert.Completion F v)ˣ)
+theorem X_mul_scalar (z : (KPHilbert.Completion F v)ˣ)
     (g : KPLocalCover.LocalGL2 F v) :
     KubotaRankTwo.X (KPHilbert.Completion F v) (g * scalarMatrix F v z) =
       z * KubotaRankTwo.X (KPHilbert.Completion F v) g := by
   rw [← Matrix.GeneralLinearGroup.scalar_commute, X_scalar_mul]
 
-private theorem B3_ninth (a b : (KPHilbert.Completion F v)ˣ) :
+theorem B3_ninth (a b : (KPHilbert.Completion F v)ˣ) :
     KPHilbert.B3 F ζ hζ v a b ^ 9 = 1 := by
   apply Subtype.ext
   change (KPHilbert.B3 F ζ hζ v a b : Fˣ) ^ 9 = 1
@@ -84,7 +81,7 @@ theorem sigmaTwo_scalar_scalar (z z' : (KPHilbert.Completion F v)ˣ) :
   simp only [KPLocalCover.sigmaTwo, KubotaElementaryLastArgument.tau,
     ← map_mul, X_scalar, KubotaRankTwo.det, Matrix.GeneralLinearGroup.det_scalar,
     Fintype.card_fin]
-  rw [show z * z' / z = z' from by simp [mul_comm],
+  rw [show z * z' / z = z' from by simp,
     show z * z' / (z' * z ^ 2) = z⁻¹ from by
       apply Units.ext
       simp only [Units.val_div_eq_div_val, Units.val_mul, Units.val_pow_eq_pow_val,
@@ -116,7 +113,7 @@ theorem sigmaTwo_scalar_commutator (z : (KPHilbert.Completion F v)ˣ)
   simp only [KPLocalCover.sigmaTwo, KubotaElementaryLastArgument.tau,
     X_scalar_mul, X_mul_scalar, X_scalar, KubotaRankTwo.det,
     Matrix.GeneralLinearGroup.det_scalar, Fintype.card_fin]
-  rw [show z * KubotaRankTwo.X K g / z = KubotaRankTwo.X K g from by simp [mul_comm],
+  rw [show z * KubotaRankTwo.X K g / z = KubotaRankTwo.X K g from by simp,
     show z * KubotaRankTwo.X K g / (KubotaRankTwo.X K g * z ^ 2) = z⁻¹ from by
       apply Units.ext
       simp only [Units.val_div_eq_div_val, Units.val_mul, Units.val_pow_eq_pow_val,
@@ -125,9 +122,7 @@ theorem sigmaTwo_scalar_commutator (z : (KPHilbert.Completion F v)ˣ)
     show z * KubotaRankTwo.X K g / KubotaRankTwo.X K g = z from by simp,
     show z * KubotaRankTwo.X K g / (z * Matrix.GeneralLinearGroup.det g) =
       KubotaRankTwo.X K g / Matrix.GeneralLinearGroup.det g from by
-        apply Units.ext
-        simp only [Units.val_div_eq_div_val, Units.val_mul]
-        field_simp]
+        simp]
   change B (KubotaRankTwo.X K g) z⁻¹ * B (z ^ 2) (Matrix.GeneralLinearGroup.det g) ^ 2 /
     (B z (KubotaRankTwo.X K g / Matrix.GeneralLinearGroup.det g) *
       B (Matrix.GeneralLinearGroup.det g) (z ^ 2) ^ 2) = _
@@ -151,8 +146,6 @@ theorem sigmaTwo_scalar_commutator_eq_one (z : (KPHilbert.Completion F v)ˣ)
   exact B3_ninth F ζ hζ v z _
 
 theorem scalarLift_one : scalarLift F ζ hζ v 1 = 1 := by
-  change KPLocalCover.CubicGL2Raw.mk (scalarMatrix F v 1) 1 = _
-  rw [map_one]
   rfl
 
 theorem scalarLift_mul (z z' : (KPHilbert.Completion F v)ˣ) :
@@ -198,7 +191,7 @@ private theorem scalar_continuous (K : Type*) [Field K] [TopologicalSpace K]
     · simpa [Matrix.scalar, Matrix.diagonal_apply, h] using (continuous_const : Continuous (fun _ : Kˣ => (0 : K)))
   · change Continuous (fun z : Kˣ => ((Matrix.GeneralLinearGroup.scalar (Fin 2) z)⁻¹).val)
     have hinv (z : Kˣ) : (Matrix.GeneralLinearGroup.scalar (Fin 2) z)⁻¹ =
-        Matrix.GeneralLinearGroup.scalar (Fin 2) z⁻¹ := (Matrix.GeneralLinearGroup.scalar (Fin 2)).map_inv z |>.symm
+        Matrix.GeneralLinearGroup.scalar (Fin 2) z⁻¹ := by rfl
     simp_rw [hinv]
     change Continuous (fun z : Kˣ => Matrix.scalar (Fin 2) ((z⁻¹ : Kˣ) : K))
     apply continuous_pi
@@ -209,7 +202,7 @@ private theorem scalar_continuous (K : Type*) [Field K] [TopologicalSpace K]
     · simpa [Matrix.scalar, Matrix.diagonal_apply, h] using (Units.continuous_coe_inv : Continuous (fun z : Kˣ => (z⁻¹ : Kˣ).val))
     · simpa [Matrix.scalar, Matrix.diagonal_apply, h] using (continuous_const : Continuous (fun _ : Kˣ => (0 : K)))
 
-private theorem scalar_range_closed (K : Type*) [Field K] [TopologicalSpace K]
+theorem scalar_range_closed (K : Type*) [Field K] [TopologicalSpace K]
     [IsTopologicalRing K] [T2Space K] :
     IsClosed (Set.range (Matrix.GeneralLinearGroup.scalar (Fin 2) (R := K))) := by
   have he : Set.range (Matrix.GeneralLinearGroup.scalar (Fin 2) (R := K)) =
@@ -217,7 +210,7 @@ private theorem scalar_range_closed (K : Type*) [Field K] [TopologicalSpace K]
     ext g
     constructor
     · rintro ⟨z, rfl⟩
-      simp [Matrix.scalar]
+      simp
     · rintro ⟨h01, h10, hdiag⟩
       have hn : g 0 0 ≠ 0 := by
         intro h
@@ -225,12 +218,10 @@ private theorem scalar_range_closed (K : Type*) [Field K] [TopologicalSpace K]
         simp [Matrix.det_fin_two, h, h01, h10] at hd
       refine ⟨Units.mk0 (g 0 0) hn, ?_⟩
       apply Matrix.GeneralLinearGroup.ext
-      intro i j
-      fin_cases i <;> fin_cases j <;> simp [Matrix.scalar, h01, h10, hdiag]
+      simp_all
   rw [he]
   have hc (i j : Fin 2) : Continuous (fun g : Matrix.GeneralLinearGroup (Fin 2) K => g i j) := by
-    have hv : Continuous (fun g : Matrix.GeneralLinearGroup (Fin 2) K => (g : Matrix (Fin 2) (Fin 2) K)) := Units.continuous_val
-    exact (continuous_apply j).comp ((continuous_apply i).comp hv)
+    fun_prop
   exact (isClosed_eq (hc 0 1) continuous_const).inter
     ((isClosed_eq (hc 1 0) continuous_const).inter (isClosed_eq (hc 0 0) (hc 1 1)))
 
@@ -250,12 +241,11 @@ theorem finite_continuous_closed (w : HeightOneSpectrum (𝓞 F)) (m : ℕ)
   have hU : IsOpen U := hopen.preimage hs
   have h1 : (1 : (KPHilbert.Completion F (Sum.inr w))ˣ) ∈ U := by
     change scalarMatrix F (Sum.inr w) 1 ∈ KPLocalCube.Gamma F w m
-    rw [map_one]
-    exact (KPLocalCube.Gamma F w m).one_mem
+    simp
   have hchart := KPLocalChartTopology.translatedChart_isOpenEmbedding F ζ hζ w m hm 1
   have hres : Continuous (U.domRestrict (scalarHom F ζ hζ (Sum.inr w))) := by
     have hk : Continuous (fun z : U => (⟨scalarMatrix F (Sum.inr w) z.val, z.property⟩ : KPLocalCube.Gamma F w m)) :=
-      (hs.comp continuous_subtype_val).subtype_mk _
+      by fun_prop
     convert hchart.continuous.comp hk using 1
     ext z
     simp [KPLocalChartTopology.translatedChart, scalarHom, scalarLift]
@@ -316,7 +306,7 @@ theorem complex_continuous_closed (w : InfinitePlace F) :
   · apply continuous_induced_rng.mpr
     change Continuous (fun z : (KPHilbert.Completion F (Sum.inl w))ˣ =>
       (scalarMatrix F (Sum.inl w) z, (1 : rootsOfUnity 3 F)))
-    exact hs.prodMk continuous_const
+    fun_prop
   · have hset : Set.range (scalarHom F ζ hζ (Sum.inl w)) =
         (KPLocalChartTopology.complexCoordinates F ζ hζ w) ⁻¹'
           (Set.range (scalarMatrix F (Sum.inl w)) ×ˢ {(1 : rootsOfUnity 3 F)}) := by
@@ -348,6 +338,3 @@ theorem good_compact_unit_scalar (w : HeightOneSpectrum (𝓞 F))
   change KPLocalCover.CubicGL2Raw.mk _ 1 = KPLocalCover.CubicGL2Raw.mk _ 1
   congr 1
   exact (Matrix.GeneralLinearGroup.map_scalar (KPTameCompact.O F w).subtype u).symm
-
-end
-end DedekindZetaZeroFree.KPScalarSplitCentral

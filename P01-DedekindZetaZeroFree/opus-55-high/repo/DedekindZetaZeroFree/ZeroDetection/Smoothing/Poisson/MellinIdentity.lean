@@ -114,15 +114,7 @@ lemma power_id (q : ℕ) (X : ℝ) (hq : 0 < q) (hX : 0 < X) (s z : ℂ) :
     Complex.cpow_neg (X : ℂ), div_inv_eq_mul, neg_add, Complex.cpow_add _ _ hqc]
   ring
 
-lemma ideals_countable : Countable (Ideal (𝓞 F)) := by
-  apply Set.countable_univ_iff.mp
-  have h : (⋃ N : ℕ, {n : Ideal (𝓞 F) | Ideal.absNorm n ≤ N}).Countable :=
-    Set.countable_iUnion fun N => (Ideal.finite_setOfPred_absNorm_le N).countable
-  have he : (⋃ N : ℕ, {n : Ideal (𝓞 F) | Ideal.absNorm n ≤ N}) = Set.univ := by
-    ext n
-    simp only [Set.mem_iUnion, Set.mem_setOf_eq, Set.mem_univ, iff_true]
-    exact ⟨Ideal.absNorm n, le_rfl⟩
-  rwa [he] at h
+lemma ideals_countable : Countable (Ideal (𝓞 F)) := by apply DedekindZetaZeroFree.FiniteHaarNormalization.ideals_countable <;> assumption
 
 def coef (U : ℝ) {m : Ideal (𝓞 F)} (ω : RayClassCharacter F m) (w : ℂ)
     (n : Ideal (𝓞 F)) : ℂ :=

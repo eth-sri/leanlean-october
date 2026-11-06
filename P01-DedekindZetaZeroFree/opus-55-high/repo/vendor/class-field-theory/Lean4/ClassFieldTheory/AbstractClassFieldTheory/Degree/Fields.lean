@@ -15,13 +15,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-set_option autoImplicit false
-
 namespace ClassFormation
 
 open CyclicCohomology
@@ -142,7 +135,7 @@ theorem mem_fieldInertiaWithin_iff (D : DegreeData G) (K : ClosedSubgroup G)
 
 /-- The absolute residue degree as the cardinality of the actual quotient of
 `ZHat` by the degree image. -/
-noncomputable def residueDegreeCardinal (D : DegreeData G)
+def residueDegreeCardinal (D : DegreeData G)
     (K : ClosedSubgroup G) : Cardinal :=
   relativeIndexCardinal
     (show D.fieldImage K ≤ (⊤ : Subgroup ZHatMul) from le_top)
@@ -184,14 +177,6 @@ namespace FiniteResidueAbstractField
 
 variable {D : DegreeData G}
 
-/-- Bundle a field at the boundary where its actual residue quotient is known
-to be finite. -/
-def ofField (D : DegreeData G) (K : ClosedSubgroup G)
-    [hfinite : Finite (D.residueQuotient K)] :
-    FiniteResidueAbstractField D where
-  field := K
-  finiteResidueQuotient := hfinite
-
 /-- The underlying subgroup. -/
 @[implicit_reducible]
 def toSubgroup (K : FiniteResidueAbstractField D) : Subgroup G :=
@@ -203,7 +188,7 @@ instance (K : FiniteResidueAbstractField D) :
   K.finiteResidueQuotient
 
 /-- The positive absolute residue degree. -/
-noncomputable def residueDegree (K : FiniteResidueAbstractField D) : ℕ+ := by
+def residueDegree (K : FiniteResidueAbstractField D) : ℕ+ := by
   letI : Nonempty (D.residueQuotient K.field) := ⟨QuotientGroup.mk 1⟩
   exact ⟨Nat.card (D.residueQuotient K.field), Nat.card_pos⟩
 
@@ -252,7 +237,7 @@ def quotient (E : AbstractExtension G) : Type u :=
 
 /-- The honest cardinal degree of an arbitrary abstract extension.  Unlike
 the raw natural-valued subgroup index, this does not encode infinity as zero. -/
-noncomputable def degreeCardinal (E : AbstractExtension G) : Cardinal :=
+def degreeCardinal (E : AbstractExtension G) : Cardinal :=
   relativeIndexCardinal E.below
 
 /-- The cardinal degree of an abstract extension is the cardinality of its coset space. -/
@@ -263,14 +248,14 @@ noncomputable def degreeCardinal (E : AbstractExtension G) : Cardinal :=
 /-- The relative residue degree of an arbitrary abstract extension, as the
 cardinality of the actual coset type of degree images.  This is the canonical
 general API: an infinite residue degree remains an infinite cardinal. -/
-noncomputable def relativeResidueDegreeCardinal
+def relativeResidueDegreeCardinal
     (E : AbstractExtension G) (D : DegreeData G) : Cardinal :=
   relativeIndexCardinal (Subgroup.map_mono (f := D.degree.toMonoidHom) E.below)
 
 /-- The relative ramification index of an arbitrary abstract extension, as
 the cardinality of the actual coset type inside the degree kernel.  In
 particular, infinity is not encoded as zero. -/
-noncomputable def relativeRamificationIndexCardinal
+def relativeRamificationIndexCardinal
     (E : AbstractExtension G) (D : DegreeData G) : Cardinal :=
   relativeIndexCardinal
     (show E.field.toSubgroup ⊓ D.degree.toMonoidHom.ker ≤
@@ -350,32 +335,8 @@ def totalExtension : AbstractExtension G where
 /-- Cardinal degrees multiply in an arbitrary abstract-extension tower. -/
 theorem degreeCardinal_mul :
     T.topExtension.degreeCardinal * T.baseExtension.degreeCardinal =
-      T.totalExtension.degreeCardinal := by
-  exact relativeIndexCardinal_mul T.top_le_middle T.middle_le_base
-
-/-- Cardinal residue degrees multiply in an arbitrary abstract-extension
-tower. -/
-theorem relativeResidueDegreeCardinal_mul (D : DegreeData G) :
-    T.topExtension.relativeResidueDegreeCardinal D *
-        T.baseExtension.relativeResidueDegreeCardinal D =
-      T.totalExtension.relativeResidueDegreeCardinal D := by
-  exact relativeIndexCardinal_mul
-    (Subgroup.map_mono (f := D.degree.toMonoidHom) T.top_le_middle)
-    (Subgroup.map_mono (f := D.degree.toMonoidHom) T.middle_le_base)
-
-/-- Cardinal ramification indices multiply in an arbitrary
-abstract-extension tower. -/
-theorem relativeRamificationIndexCardinal_mul (D : DegreeData G) :
-    T.topExtension.relativeRamificationIndexCardinal D *
-        T.baseExtension.relativeRamificationIndexCardinal D =
-      T.totalExtension.relativeRamificationIndexCardinal D := by
-  exact relativeIndexCardinal_mul
-    (show T.top.toSubgroup ⊓ D.degree.toMonoidHom.ker ≤
-      T.middle.toSubgroup ⊓ D.degree.toMonoidHom.ker from
-        inf_le_inf T.top_le_middle le_rfl)
-    (show T.middle.toSubgroup ⊓ D.degree.toMonoidHom.ker ≤
-      T.base.toSubgroup ⊓ D.degree.toMonoidHom.ker from
-        inf_le_inf T.middle_le_base le_rfl)
+      T.totalExtension.degreeCardinal := 
+  relativeIndexCardinal_mul T.top_le_middle T.middle_le_base
 
 end Tower
 
@@ -407,59 +368,6 @@ theorem isTotallyRamified_iff_image_le (E : AbstractExtension G) (D : DegreeData
       E.base.toSubgroup.map D.degree.toMonoidHom ≤
         E.field.toSubgroup.map D.degree.toMonoidHom :=
   Iff.rfl
-
-/-- An unramified extension has cardinal ramification index one. -/
-theorem relativeRamificationIndexCardinal_eq_one_of_isUnramified
-    (E : AbstractExtension G) (D : DegreeData G) (hE : E.IsUnramified D) :
-    E.relativeRamificationIndexCardinal D = 1 := by
-  have heq :
-      E.field.toSubgroup ⊓ D.degree.toMonoidHom.ker =
-        E.base.toSubgroup ⊓ D.degree.toMonoidHom.ker := by
-    apply le_antisymm
-    · exact inf_le_inf E.below le_rfl
-    · intro x hx
-      exact ⟨hE hx, hx.2⟩
-  change
-    intersectionIndexCardinal
-      (E.field.toSubgroup ⊓ D.degree.toMonoidHom.ker)
-      (E.base.toSubgroup ⊓ D.degree.toMonoidHom.ker) = 1
-  rw [heq]
-  exact relativeIndexCardinal_self _
-
-/-- A totally ramified extension has cardinal residue degree one. -/
-theorem relativeResidueDegreeCardinal_eq_one_of_isTotallyRamified
-    (E : AbstractExtension G) (D : DegreeData G)
-    (hE : E.IsTotallyRamified D) :
-    E.relativeResidueDegreeCardinal D = 1 := by
-  have heq :
-      E.field.toSubgroup.map D.degree.toMonoidHom =
-        E.base.toSubgroup.map D.degree.toMonoidHom :=
-    le_antisymm (Subgroup.map_mono (f := D.degree.toMonoidHom) E.below) hE
-  change
-    intersectionIndexCardinal
-      (E.field.toSubgroup.map D.degree.toMonoidHom)
-      (E.base.toSubgroup.map D.degree.toMonoidHom) = 1
-  rw [heq]
-  exact relativeIndexCardinal_self _
-
-/-- For an unramified extension, its cardinal degree is its lifted residue
-degree. -/
-theorem degreeCardinal_eq_lift_relativeResidueDegreeCardinal_of_isUnramified
-    (E : AbstractExtension G) (D : DegreeData G) (hE : E.IsUnramified D) :
-    E.degreeCardinal =
-      Cardinal.lift.{u} (E.relativeResidueDegreeCardinal D) := by
-  rw [E.degreeCardinal_eq_relativeResidueDegreeCardinal_mul_relativeRamificationIndexCardinal D,
-    E.relativeRamificationIndexCardinal_eq_one_of_isUnramified D hE, mul_one]
-
-/-- For a totally ramified extension, its cardinal degree is its
-ramification cardinal. -/
-theorem degreeCardinal_eq_relativeRamificationIndexCardinal_of_isTotallyRamified
-    (E : AbstractExtension G) (D : DegreeData G)
-    (hE : E.IsTotallyRamified D) :
-    E.degreeCardinal = E.relativeRamificationIndexCardinal D := by
-  rw [E.degreeCardinal_eq_relativeResidueDegreeCardinal_mul_relativeRamificationIndexCardinal D,
-    E.relativeResidueDegreeCardinal_eq_one_of_isTotallyRamified D hE]
-  simp
 
 end AbstractExtension
 
@@ -531,16 +439,6 @@ theorem extensionQuotientMk_apply (L : GaloisSubextension K)
       (QuotientGroup.mk k :
         K.toSubgroup ⧸ extensionSubgroup K L.field L.below) :=
   rfl
-
-/-- Eliminate a Galois quotient without exposing a chosen representative. -/
-protected theorem extensionQuotient_inductionOn
-    (L : GaloisSubextension K) {motive : L.extensionQuotient → Prop}
-    (q : L.extensionQuotient)
-    (mk : ∀ k : K.toSubgroup, motive (L.extensionQuotientMk k)) :
-    motive q := by
-  exact @Quotient.inductionOn' K.toSubgroup
-    (QuotientGroup.leftRel (extensionSubgroup K L.field L.below))
-    motive q mk
 
 /-- Unramifiedness is the canonical inertia-containment condition. -/
 theorem isUnramified_iff_inertia_le (L : GaloisSubextension K)
@@ -661,14 +559,14 @@ instance representedQuotientFinite :
         extensionSubgroup E.base E.field E.below) :=
   E.finiteQuotient
 
-private theorem degreeCardinal_lt_aleph0 :
+theorem degreeCardinal_lt_aleph0 :
     E.toAbstractExtension.degreeCardinal < Cardinal.aleph0 := by
   change Cardinal.mk
       (E.base.toSubgroup ⧸ extensionSubgroup E.base E.field E.below) <
     Cardinal.aleph0
-  exact Cardinal.lt_aleph0_of_finite _
+  simp
 
-private theorem relativeDegreeCardinals_lt_aleph0 (D : DegreeData G) :
+theorem relativeDegreeCardinals_lt_aleph0 (D : DegreeData G) :
     Cardinal.lift.{u}
           (E.toAbstractExtension.relativeResidueDegreeCardinal D) <
         Cardinal.aleph0 ∧
@@ -678,7 +576,7 @@ private theorem relativeDegreeCardinals_lt_aleph0 (D : DegreeData G) :
       E.toAbstractExtension.relativeResidueDegreeCardinal D ≠ 0 := by
     rw [AbstractExtension.relativeResidueDegreeCardinal,
       relativeIndexCardinal, intersectionIndexCardinal]
-    exact Cardinal.mk_ne_zero _
+    simp
   have hresidue :
       Cardinal.lift.{u}
           (E.toAbstractExtension.relativeResidueDegreeCardinal D) ≠ 0 := by
@@ -688,7 +586,7 @@ private theorem relativeDegreeCardinals_lt_aleph0 (D : DegreeData G) :
       E.toAbstractExtension.relativeRamificationIndexCardinal D ≠ 0 := by
     rw [AbstractExtension.relativeRamificationIndexCardinal,
       relativeIndexCardinal, intersectionIndexCardinal]
-    exact Cardinal.mk_ne_zero _
+    simp
   apply (Cardinal.mul_lt_aleph0_iff_of_ne_zero
     hresidue hramification).mp
   rw [← E.toAbstractExtension.degreeCardinal_eq_relativeResidueDegreeCardinal_mul_relativeRamificationIndexCardinal D]
@@ -709,7 +607,7 @@ theorem relativeRamificationIndexCardinal_lt_aleph0
 /-- The residue coset type of a finite extension is finite.  This is derived
 from the cardinal fundamental identity, rather than from a natural-valued
 index whose infinite case would be represented by zero. -/
-noncomputable instance residueQuotientFinite (D : DegreeData G) :
+instance residueQuotientFinite (D : DegreeData G) :
     Finite
       (↥(E.base.toSubgroup.map D.degree.toMonoidHom) ⧸
         (E.field.toSubgroup.map D.degree.toMonoidHom).subgroupOf
@@ -721,7 +619,7 @@ noncomputable instance residueQuotientFinite (D : DegreeData G) :
 
 /-- The inertia coset type of a finite extension is finite.  As for the
 residue quotient, this is a consequence of the cardinal fundamental identity. -/
-noncomputable instance ramificationQuotientFinite (D : DegreeData G) :
+instance ramificationQuotientFinite (D : DegreeData G) :
     Finite
       (↥(E.base.toSubgroup ⊓ D.degree.toMonoidHom.ker) ⧸
         (E.field.toSubgroup ⊓ D.degree.toMonoidHom.ker).subgroupOf
@@ -782,14 +680,12 @@ coercion of its positive degree.  This theorem is a finite-only bridge, not a
 general natural-valued degree definition. -/
 @[simp] theorem relIndex_eq_degree :
     E.field.toSubgroup.relIndex E.base.toSubgroup = (E.degree : ℕ) := by
-  rw [Subgroup.relIndex, Subgroup.index, E.degree_coe]
   rfl
 
 /-- The index of the represented extension subgroup is the finite extension
 degree. -/
 @[simp] theorem extensionSubgroup_index_eq_degree :
     (extensionSubgroup E.base E.field E.below).index = (E.degree : ℕ) := by
-  rw [Subgroup.index, E.degree_coe]
   rfl
 
 /-- The relative index of the mapped field subgroups is the positive residue
@@ -862,27 +758,6 @@ theorem residueDegree_eq_degree_of_isUnramified (D : DegreeData G)
   rw [E.degree_eq_residueDegree_mul_ramificationIndex D,
     E.ramificationIndex_eq_one_of_isUnramified D hE, mul_one]
 
-/-- In a totally ramified finite extension, ramification index equals
-extension degree. -/
-theorem ramificationIndex_eq_degree_of_isTotallyRamified (D : DegreeData G)
-    (hE : E.IsTotallyRamified D) :
-    (E.ramificationIndex D : ℕ) = (E.degree : ℕ) := by
-  rw [E.degree_eq_residueDegree_mul_ramificationIndex D,
-    E.residueDegree_eq_one_of_isTotallyRamified D hE, one_mul]
-
-/-- For a finite extension, its cardinal-valued degree is the cardinal cast
-of its positive natural degree. -/
-@[simp] theorem degreeCardinal_eq_coe :
-    E.toAbstractExtension.degreeCardinal =
-      ((E.degree : ℕ) : Cardinal) := by
-  change Cardinal.mk
-      (E.base.toSubgroup ⧸ extensionSubgroup E.base E.field E.below) =
-    (Nat.card
-      (E.base.toSubgroup ⧸ extensionSubgroup E.base E.field E.below) : Cardinal)
-  simpa [quotient, subgroup] using
-    ((Nat.cast_card :
-      (Nat.card E.quotient : Cardinal) = Cardinal.mk E.quotient).symm)
-
 /-- For a finite extension, the cardinal-valued relative residue degree is
 the cardinal cast of the positive natural residue degree. -/
 @[simp] theorem relativeResidueDegreeCardinal_eq_coe (D : DegreeData G) :
@@ -896,21 +771,6 @@ the cardinal cast of the positive natural residue degree. -/
         (↥(E.base.toSubgroup.map D.degree.toMonoidHom) ⧸
           (E.field.toSubgroup.map D.degree.toMonoidHom).subgroupOf
             (E.base.toSubgroup.map D.degree.toMonoidHom)) : Cardinal)
-  exact (Nat.cast_card).symm
-
-/-- For a finite extension, the cardinal-valued relative ramification index
-is the cardinal cast of the positive natural ramification index. -/
-@[simp] theorem relativeRamificationIndexCardinal_eq_coe (D : DegreeData G) :
-    E.toAbstractExtension.relativeRamificationIndexCardinal D =
-      ((E.ramificationIndex D : ℕ) : Cardinal) := by
-  change Cardinal.mk
-    (↥(E.base.toSubgroup ⊓ D.degree.toMonoidHom.ker) ⧸
-      (E.field.toSubgroup ⊓ D.degree.toMonoidHom.ker).subgroupOf
-        (E.base.toSubgroup ⊓ D.degree.toMonoidHom.ker)) =
-      (Nat.card
-        (↥(E.base.toSubgroup ⊓ D.degree.toMonoidHom.ker) ⧸
-          (E.field.toSubgroup ⊓ D.degree.toMonoidHom.ker).subgroupOf
-            (E.base.toSubgroup ⊓ D.degree.toMonoidHom.ker)) : Cardinal)
   exact (Nat.cast_card).symm
 
 end FiniteAbstractExtension
@@ -962,7 +822,7 @@ variable {D : DegreeData G}
 residue quotient is finite, then the upper field also has finite absolute
 residue quotient.  This is the minimal honest boundary constructor: it uses
 the actual quotient types and the cardinal tower identity. -/
-noncomputable def ofRelativeInclusion (D : DegreeData G)
+def ofRelativeInclusion (D : DegreeData G)
     (field : ClosedSubgroup G) (base : FiniteResidueAbstractField D)
     (below : field.toSubgroup ≤ base.field.toSubgroup)
     [finiteRelativeResidueQuotient : Finite
@@ -987,9 +847,8 @@ noncomputable def ofRelativeInclusion (D : DegreeData G)
             (field.toSubgroup.map D.degree.toMonoidHom).subgroupOf
               (base.field.toSubgroup.map D.degree.toMonoidHom)) <
         Cardinal.aleph0
-      exact Cardinal.lt_aleph0_of_finite _, by
-      rw [D.residueDegreeCardinal_eq_mk_residueQuotient]
-      exact Cardinal.lt_aleph0_of_finite _⟩)
+      simp, by
+      simp⟩)
 
 end FiniteResidueAbstractField
 
@@ -1017,7 +876,7 @@ variable {D : DegreeData G}
 with the corresponding honest residue data on its upper endpoint.  Finiteness
 of the upper absolute residue quotient is deduced from the cardinal-valued
 tower identity, which is the source of truth for arbitrary-index data. -/
-noncomputable def ofInclusion (D : DegreeData G)
+def ofInclusion (D : DegreeData G)
     (field : ClosedSubgroup G) (base : FiniteResidueAbstractField D)
     (below : field.toSubgroup ≤ base.field.toSubgroup)
     [finiteQuotient : Finite
@@ -1037,9 +896,7 @@ noncomputable def ofInclusion (D : DegreeData G)
       }
       rw [← E.toAbstractExtension.relativeResidueDegreeCardinal_mul_residueDegreeCardinal D]
       apply Cardinal.mul_lt_aleph0_iff.mpr
-      exact Or.inr (Or.inr ⟨E.relativeResidueDegreeCardinal_lt_aleph0 D, by
-        rw [D.residueDegreeCardinal_eq_mk_residueQuotient]
-        exact Cardinal.lt_aleph0_of_finite (D.residueQuotient base.field)⟩) }
+      simp }
   base := base
   below := below
   finiteQuotient := finiteQuotient
@@ -1060,15 +917,15 @@ instance (E : FiniteResidueAbstractExtension D) :
   E.finiteQuotient
 
 /-- The positive relative degree. -/
-noncomputable def degree (E : FiniteResidueAbstractExtension D) : ℕ+ :=
+def degree (E : FiniteResidueAbstractExtension D) : ℕ+ :=
   E.toFiniteAbstractExtension.degree
 
 /-- The positive relative residue degree. -/
-noncomputable def residueDegree (E : FiniteResidueAbstractExtension D) : ℕ+ :=
+def residueDegree (E : FiniteResidueAbstractExtension D) : ℕ+ :=
   E.toFiniteAbstractExtension.residueDegree D
 
 /-- The positive relative ramification index. -/
-noncomputable def ramificationIndex
+def ramificationIndex
     (E : FiniteResidueAbstractExtension D) : ℕ+ :=
   E.toFiniteAbstractExtension.ramificationIndex D
 
@@ -1119,7 +976,7 @@ theorem eq_of_field_eq (K L : FiniteAbstractField G)
       rfl
 
 /-- The distinguished base field, bundled with its trivial finite quotient. -/
-noncomputable def base (G : Type u) [Group G] [TopologicalSpace G] :
+def base (G : Type u) [Group G] [TopologicalSpace G] :
     FiniteAbstractField G where
   field := baseField G
   finite := by
@@ -1127,8 +984,7 @@ noncomputable def base (G : Type u) [Group G] [TopologicalSpace G] :
         (le_baseField (baseField G))).Normal := by
       rw [show extensionSubgroup (baseField G) (baseField G)
           (le_baseField (baseField G)) = ⊤ by
-        ext x
-        exact Iff.rfl]
+        rfl]
       infer_instance
     let : Subsingleton
         ((baseField G).toSubgroup ⧸
@@ -1161,7 +1017,7 @@ instance (K : FiniteAbstractField G) :
 quotient.  This is derived from the finite relative quotient and the
 surjectivity of the ambient degree map. -/
 @[implicit_reducible]
-noncomputable def toFiniteResidueAbstractField
+def toFiniteResidueAbstractField
     (K : FiniteAbstractField G) (D : DegreeData G) :
     DegreeData.FiniteResidueAbstractField D where
   field := K.field
@@ -1182,7 +1038,7 @@ noncomputable def toFiniteResidueAbstractField
 
 /-- The positive absolute residue degree of a field finite over the
 distinguished base. -/
-noncomputable def residueDegree (K : FiniteAbstractField G)
+def residueDegree (K : FiniteAbstractField G)
     (D : DegreeData G) : ℕ+ :=
   (K.toFiniteResidueAbstractField D).residueDegree
 
@@ -1227,7 +1083,7 @@ namespace FiniteAbstractFieldExtension
 over the distinguished base.  Finiteness of the upper field follows from the
 actual quotient tower. -/
 @[implicit_reducible]
-noncomputable def ofInclusion (field : ClosedSubgroup G)
+def ofInclusion (field : ClosedSubgroup G)
     (base : FiniteAbstractField G)
     (below : field.toSubgroup ≤ base.field.toSubgroup)
     [finiteQuotient : Finite
@@ -1250,7 +1106,7 @@ noncomputable def ofInclusion (field : ClosedSubgroup G)
       · change Cardinal.mk
           (base.field.toSubgroup ⧸
             extensionSubgroup base.field field below) < Cardinal.aleph0
-        exact Cardinal.lt_aleph0_of_finite _
+        simp
       · change Cardinal.mk
           ((baseField G).toSubgroup ⧸
             extensionSubgroup (baseField G) base.field
@@ -1280,16 +1136,16 @@ def IsTotallyRamified (E : FiniteAbstractFieldExtension G)
   E.toFiniteAbstractExtension.IsTotallyRamified D
 
 /-- The positive relative degree. -/
-noncomputable def degree (E : FiniteAbstractFieldExtension G) : ℕ+ :=
+def degree (E : FiniteAbstractFieldExtension G) : ℕ+ :=
   E.toFiniteAbstractExtension.degree
 
 /-- The positive relative residue degree. -/
-noncomputable def residueDegree (E : FiniteAbstractFieldExtension G)
+def residueDegree (E : FiniteAbstractFieldExtension G)
     (D : DegreeData G) : ℕ+ :=
   E.toFiniteAbstractExtension.residueDegree D
 
 /-- The positive relative ramification index. -/
-noncomputable def ramificationIndex (E : FiniteAbstractFieldExtension G)
+def ramificationIndex (E : FiniteAbstractFieldExtension G)
     (D : DegreeData G) : ℕ+ :=
   E.toFiniteAbstractExtension.ramificationIndex D
 
@@ -1309,15 +1165,10 @@ instance (E : FiniteAbstractFieldExtension G) :
   E.finiteQuotient
 
 /-- Canonically enrich both endpoints with their finite residue quotients. -/
-noncomputable def toFiniteResidueAbstractExtension
+def toFiniteResidueAbstractExtension
     (E : FiniteAbstractFieldExtension G) (D : DegreeData G) :
     DegreeData.FiniteResidueAbstractExtension D where
   field := E.field.toFiniteResidueAbstractField D
   base := E.base.toFiniteResidueAbstractField D
   below := E.below
   finiteQuotient := E.finiteQuotient
-
-end FiniteAbstractFieldExtension
-
-end
-end ClassFormation

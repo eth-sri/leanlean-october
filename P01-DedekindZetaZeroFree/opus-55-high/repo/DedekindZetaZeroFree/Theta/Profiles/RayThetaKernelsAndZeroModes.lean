@@ -59,7 +59,3 @@ def g0δ (D : RayCoset.Data K) (δ : Finset (RayCoset.RealPlaces K)) : ℂ :=
       ((RayCoset.rayUnitTorsionCard K D.m : ℂ) *
         (RayCoset.modulusCovolume K D.m : ℂ))
   else 0
-
-end DedekindZetaZeroFree.AbelianQuotient.RayTheta
-
-end

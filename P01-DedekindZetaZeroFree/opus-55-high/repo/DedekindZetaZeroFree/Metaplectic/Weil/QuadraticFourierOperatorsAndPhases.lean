@@ -75,7 +75,3 @@ def complexGamma (A : SArithmeticData F)
 def complexWeilPhase (A : SArithmeticData F)
     (w : InfinitePlace F) (a : w.Completionˣ) : ℂ :=
   A.complexGamma w a / A.complexGamma w 1
-
-end DedekindZetaZeroFree.SArithmeticData
-
-end

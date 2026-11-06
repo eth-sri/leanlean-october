@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Conductors of finite abelian extensions
 -/
@@ -30,5 +27,3 @@ def IsAbelianConductor
     (c : RayClassModulus K) : Prop :=
   ∀ m : RayClassModulus K,
     EmbedsInRayClassField K L m ↔ c ≤ m
-
-end ClassFieldTheory

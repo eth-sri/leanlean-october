@@ -10,7 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
 /-!
 # Basic structure of nonarchimedean local fields
 
@@ -18,7 +17,6 @@ Compactness facts and the normalized integer-valued valuation attached to a
 nonarchimedean local field.
 -/
 
-set_option autoImplicit false
 
 namespace LocalFieldTheory
 
@@ -34,7 +32,7 @@ open scoped ValuativeRel WithZero
 
 It is obtained by transporting the value group to `WithZero (Multiplicative Int)` and then taking
 the exponent of the nonzero value of a field unit. -/
-noncomputable def v (K : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
+def v (K : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
     [IsNonarchimedeanLocalField K] : Additive Kˣ → Int :=
   fun x =>
     Multiplicative.toAdd
@@ -70,8 +68,7 @@ theorem v_surjective (K : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K
     simp
   have ha0 : a ≠ 0 := by
     intro h
-    apply hγ_ne
-    simpa [h] using ha.symm
+    simp_all
   refine ⟨Additive.ofMul (Units.mk0 a ha0), ?_⟩
   simp [v, γ, ha]
 
@@ -141,50 +138,6 @@ theorem v_zpow (K : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
         (-(((n + 1 : Nat) : Int))) * v K (Additive.ofMul x)
       ring
 
-/-- The valuation of a unit times an integral power is the valuation of the unit plus the scaled
-valuation of the powered factor. -/
-theorem v_mul_zpow (K : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] (x ϖ : Kˣ) (n : Int) :
-    v K (Additive.ofMul (x * ϖ ^ n)) =
-      v K (Additive.ofMul x) + n * v K (Additive.ofMul ϖ) := by
-  rw [v_mul, v_zpow]
-
-/-- An integral power of a normalized uniformizer has valuation equal to its exponent. -/
-theorem v_zpow_of_uniformizer (K : Type u) [Field K] [ValuativeRel K]
-    [TopologicalSpace K] [IsNonarchimedeanLocalField K] (ϖ : Kˣ)
-    (hϖ : v K (Additive.ofMul ϖ) = 1) (n : Int) :
-    v K (Additive.ofMul (ϖ ^ n)) = n := by
-  rw [v_zpow, hϖ, mul_one]
-
-/-- Multiplying by the `n`-th power of a normalized uniformizer shifts valuation by `n`. -/
-theorem v_mul_zpow_of_uniformizer (K : Type u) [Field K] [ValuativeRel K]
-    [TopologicalSpace K] [IsNonarchimedeanLocalField K] (x ϖ : Kˣ)
-    (hϖ : v K (Additive.ofMul ϖ) = 1) (n : Int) :
-    v K (Additive.ofMul (x * ϖ ^ n)) = v K (Additive.ofMul x) + n := by
-  rw [v_mul_zpow, hϖ, mul_one]
-
-/-- A quotient has valuation zero exactly when its numerator and denominator have equal valuation.
-A quotient has valuation zero exactly when its numerator and denominator have equal valuation. -/
-theorem v_div_eq_zero_iff (K : Type u) [Field K] [ValuativeRel K]
-    [TopologicalSpace K] [IsNonarchimedeanLocalField K] (x y : Kˣ) :
-    v K (Additive.ofMul (x / y)) = 0 ↔
-      v K (Additive.ofMul x) = v K (Additive.ofMul y) := by
-  rw [v_div, sub_eq_zero]
-
-/-- Two field units have equal valuation exactly when their quotient has valuation zero. -/
-theorem v_eq_iff_v_div_eq_zero (K : Type u) [Field K] [ValuativeRel K]
-    [TopologicalSpace K] [IsNonarchimedeanLocalField K] (x y : Kˣ) :
-    v K (Additive.ofMul x) = v K (Additive.ofMul y) ↔
-      v K (Additive.ofMul (x / y)) = 0 :=
-  (v_div_eq_zero_iff K x y).symm
-
-/-- A nonarchimedean local field contains a unit representative of normalized valuation one. -/
-theorem v_uniformiser (K : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] :
-    ∃ ϖ : Kˣ, v K (Additive.ofMul ϖ) = 1 := by
-  obtain ⟨x, hx⟩ := v_surjective K 1
-  exact ⟨Additive.toMul x, hx⟩
-
 /-- The canonical inclusion of valuation-integer units into field units. -/
 def integerUnitsToFieldUnits (K : Type u) [Field K] [ValuativeRel K] : 𝒪[K]ˣ →* Kˣ :=
   Units.map (algebraMap 𝒪[K] K).toMonoidHom
@@ -219,16 +172,4 @@ theorem v_integerUnitsToFieldUnits (K : Type u) [Field K] [ValuativeRel K]
         (Valuation.integer.integers (ValuativeRel.valuation K)) x)
   rw [v_apply]
   apply (WithZero.toAdd_unzero_eq_iff _ 0).2
-  change
-    (_root_.IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K)
-        (ValuativeRel.valuation K
-          ((integerUnitsToFieldUnits K x : Kˣ) : K)) =
-      ((Multiplicative.ofAdd (0 : Int) : Multiplicative Int) :
-        WithZero (Multiplicative Int))
-  rw [hxv, map_one]
-  rfl
-
-end IsNonarchimedeanLocalField
-
-end
-end LocalFieldTheory
+  simp_all

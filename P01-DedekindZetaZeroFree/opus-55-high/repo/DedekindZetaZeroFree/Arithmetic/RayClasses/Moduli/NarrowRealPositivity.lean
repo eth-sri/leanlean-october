@@ -35,5 +35,3 @@ theorem narrowRayRealPositivity
     rwa [hemb] at hpos
   · intro h v _
     exact h (v.1.embedding_of_isReal v.2)
-
-end DedekindZetaZeroFree.AbelianQuotient

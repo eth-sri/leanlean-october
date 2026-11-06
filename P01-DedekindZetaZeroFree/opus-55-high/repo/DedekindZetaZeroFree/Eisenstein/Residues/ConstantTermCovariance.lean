@@ -5,7 +5,6 @@ public import Mathlib.Analysis.Complex.Basic
 
 @[expose] public section
 
-noncomputable section
 open Filter
 open scoped Topology
 
@@ -28,7 +27,7 @@ theorem cleared_limit_of_chamber_transformation
   let L : ℂ → ℂ := fun s => A s - p s
   let R : ℂ → ℂ := fun s => m s * (B s - q s)
   have hL : MeromorphicOn L U := hA.sub hp
-  have hR : MeromorphicOn R U := hm.mul (hB.sub hq)
+  have hR : MeromorphicOn R U := by fun_prop
   obtain ⟨z, hzV⟩ := hne
   have hlocal : L =ᶠ[𝓝[≠] z] R :=
     (Filter.Eventually.filter_mono nhdsWithin_le_nhds (hV.mem_nhds hzV)).mono
@@ -52,13 +51,9 @@ theorem cleared_limit_of_chamber_transformation
       _ = s * (m s * (B s - q s)) := by rw [hs]
       _ = m s * (s * B s - s * q s) := by ring
   have hlcont : ContinuousAt (fun s => C s - s * p s) 0 :=
-    hC.sub (continuousAt_id.mul hp0)
+    by fun_prop
   have hrcont : ContinuousAt (fun s => m s * (D s - s * q s)) 0 :=
-    hm0.mul (hD.sub (continuousAt_id.mul hq0))
+    by fun_prop
   have he := Filter.EventuallyEq.eq_of_nhds
     ((hlcont.eventuallyEq_nhds_iff_eventuallyEq_nhdsNE hrcont).mp hcleared)
   simpa using he
-
-end DedekindZetaZeroFree.KPLiteralPeriod.ConstantTermCovariance.ResidueCovariance
-
-end

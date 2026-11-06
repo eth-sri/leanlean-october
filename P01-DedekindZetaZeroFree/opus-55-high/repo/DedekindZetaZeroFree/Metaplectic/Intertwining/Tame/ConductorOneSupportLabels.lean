@@ -33,19 +33,15 @@ theorem conductor_matrix_constraints {K : Type*} [Field K]
     Matrix.vecMul, dotProduct] at h10 h11
   have hv : v ≠ 0 := by
     intro hv
-    rw [hv, zero_mul] at h10
-    exact mul_ne_zero p₂.ne_zero hk11 h10.symm
+    simp_all
   refine ⟨c, hv, h10, h11, ?_⟩
   have hd := congrArg Matrix.GeneralLinearGroup.det hc
   have detd (r s : Kˣ) : Matrix.GeneralLinearGroup.det (KubotaRankTwo.d K r s) = r * s := by
-    apply Units.ext
-    simp [Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two]
+    simp
   have detn (t : K) : Matrix.GeneralLinearGroup.det (KubotaRankTwo.n K t) = 1 := by
-    apply Units.ext
-    simp [Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two]
+    simp
   have detw : Matrix.GeneralLinearGroup.det (KubotaRankTwo.w K) = 1 := by
-    apply Units.ext
-    simp [Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two, KubotaRankTwo.w]
+    simp
   have dets : Matrix.GeneralLinearGroup.det (KPStandardLocalRootLifts.weylSwap K) = -1 := by
     apply Units.ext
     simp [Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two, KPStandardLocalRootLifts.weylSwap]
@@ -55,7 +51,7 @@ theorem conductor_matrix_constraints {K : Type*} [Field K]
     simpa [mul_assoc] using hd
   exact neg_injective he
 
-private theorem conductor_matrix_valuation_label {K : Type*} [Field K] [ValuativeRel K]
+theorem conductor_matrix_valuation_label {K : Type*} [Field K] [ValuativeRel K]
     [TopologicalSpace K] [IsNonarchimedeanLocalField K]
     (b a p₁ p₂ : Kˣ) (k : GL (Fin 2) K) (z v x : K)
     (hk11 : valuation K (k 1 1) = 1) (hk10 : valuation K (k 1 0) ≤ 1)
@@ -81,8 +77,7 @@ private theorem conductor_matrix_valuation_label {K : Type*} [Field K] [Valuativ
     simpa [R, map_div₀, hk11] using hk10
   have hxlt : 1 < valuation K x := by
     apply (map_lt_map_iff (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K)).mp
-    rw [map_one, hx, ← WithZero.exp_zero, WithZero.exp_lt_exp]
-    norm_num
+    simp_all
   have he : (a : K) / v = R - x := by
     apply (div_eq_iff hv).mpr
     apply mul_right_cancel₀ c.ne_zero
@@ -113,15 +108,14 @@ private theorem conductor_matrix_valuation_label {K : Type*} [Field K] [Valuativ
     simpa only [KPCubicExpansion.valuationExponent_mul, hU, add_zero] using hh'
   have hD : KPCubicExpansion.valuationExponent K (Matrix.GeneralLinearGroup.det k) = 0 := by
     unfold KPCubicExpansion.valuationExponent
-    rw [hdet, map_one, WithZero.log_one, neg_zero]
+    simp_all
   have hd' := congrArg (KPCubicExpansion.valuationExponent K) hd
   simp only [KPCubicExpansion.valuationExponent_mul, ← zpow_natCast c 2,
     KPCubicExpansion.valuationExponent_zpow, hD, add_zero] at hd'
   have hi : KPCubicExpansion.valuationExponent K p₁ - KPCubicExpansion.valuationExponent K p₂ +
       KPCubicExpansion.valuationExponent K a + 2 = -KPCubicExpansion.valuationExponent K b := by
     omega
-  rw [hi, Int.cast_neg, hb]
-  exact neg_zero
+  simp_all
 local instance (F : Type) [Field F] [NumberField F] (q : HeightOneSpectrum (𝓞 F)) :
     ValuativeRel (KPLocalCube.LocalField F q) := ClassFieldTheory.finitePlaceCompletionValuativeRel F q
 local instance (F : Type) [Field F] [NumberField F] (q : HeightOneSpectrum (𝓞 F)) :
@@ -196,7 +190,7 @@ open KPTameJacquetBruhatTests.Raw
       (KPCubicExpansion.valuationExponent K y : ZMod 3) + (KPCubicExpansion.valuationExponent K z : ZMod 3)
     rw [KPCubicExpansion.valuationExponent_mul, Int.cast_add]
 
-private theorem conductor_borel_label
+theorem conductor_borel_label
     (F : Type) [Field F] [NumberField F]
     (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
     (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
@@ -230,7 +224,7 @@ private theorem conductor_borel_label
       (retractL F ζ hζ q S P b).property, rfl⟩
   exact hL hmem
 
-private theorem conductor_one_valuation
+theorem conductor_one_valuation
     (F : Type) [Field F] [NumberField F] (q : HeightOneSpectrum (𝓞 F))
     (π : (LocalField F q)ˣ)
     (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
@@ -246,7 +240,7 @@ private theorem conductor_one_valuation
   obtain ⟨o, ho⟩ := hx.1
   have hxu : e (valuation (LocalField F q) x) ≤ WithZero.exp (1 : ℤ) := by
     rw [ho]
-    simp only [pow_one, Units.val_inv_eq_inv_val, map_mul, map_inv₀]
+    simp only [pow_one, map_mul, map_inv₀]
     have hep : e (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ) := hπ
     rw [hep]
     rw [← WithZero.exp_neg]
@@ -394,9 +388,3 @@ theorem offlabel_standard_zero
   apply conductor_actual_factorization_label F ζ hζ q S P hP π hπ m hm i f'.1 f'.2 b k₀ v x hx
   simpa only [(S.openCell P).upper_eq, KPRankOneOpenCellKernel.nLift,
     eta, diagonalLift] using hg
-
-end DedekindZetaZeroFree.KPTameConductorOneBruhat.StandardIntegral
-
-end
-
-end

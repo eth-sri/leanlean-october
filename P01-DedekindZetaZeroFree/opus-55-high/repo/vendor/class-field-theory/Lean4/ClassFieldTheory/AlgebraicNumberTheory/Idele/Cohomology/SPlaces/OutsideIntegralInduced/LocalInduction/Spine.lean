@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Shared completion spine for integral local induction
 
@@ -48,33 +43,33 @@ variable (vK : AbsoluteValue K ℝ)
 
 /-- The base-field algebra structure on the chosen extension completion. -/
 @[reducible]
-noncomputable def extensionCompletionAlgebra :
+def extensionCompletionAlgebra :
     Algebra K w.1.Completion :=
   AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
 
 /-- The scalar action underlying `extensionCompletionAlgebra`. -/
 @[reducible]
-noncomputable def extensionCompletionSMul :
+def extensionCompletionSMul :
     SMul K w.1.Completion :=
   (extensionCompletionAlgebra vK w).toSMul
 
 /-- The completed-base algebra structure on the chosen extension
 completion. -/
 @[reducible]
-noncomputable def completionAlgebra :
+def completionAlgebra :
     Algebra vK.Completion w.1.Completion :=
   AbsoluteValue.completionAlgebra vK w.1 w.2
 
 /-- The canonical valued structure on the completed base place. -/
 @[reducible]
-noncomputable def baseValued
+def baseValued
     (hvKna : IsNonarchimedean (vK : K → ℝ)) :
     Valued vK.Completion ℝ≥0 :=
   finitePlaceCompletionValued vK hvKna
 
 /-- The canonical valuative relation on the completed base place. -/
 @[reducible]
-noncomputable def baseValuativeRel
+def baseValuativeRel
     (hvKna : IsNonarchimedean (vK : K → ℝ)) :
     letI : Valued vK.Completion ℝ≥0 := baseValued vK hvKna
     ValuativeRel vK.Completion :=
@@ -82,14 +77,14 @@ noncomputable def baseValuativeRel
 
 /-- The canonical valued structure on the chosen localized completion. -/
 @[reducible]
-noncomputable def localizedValued
+def localizedValued
     (hvKna : IsNonarchimedean (vK : K → ℝ)) :
     Valued (LocalizedCompletion vK w) ℝ≥0 :=
   localizedCompletionFinitePlaceValued vK w hvKna
 
 /-- The canonical valuative relation on the chosen localized completion. -/
 @[reducible]
-noncomputable def localizedValuativeRel
+def localizedValuativeRel
     (hvKna : IsNonarchimedean (vK : K → ℝ)) :
     letI : Valued (LocalizedCompletion vK w) ℝ≥0 :=
       localizedValued vK w hvKna
@@ -99,7 +94,7 @@ noncomputable def localizedValuativeRel
 /-- The canonical algebra of the localized completion over the completed
 base valuation ring. -/
 @[reducible]
-noncomputable def integerAlgebra
+def integerAlgebra
     (hvKna : IsNonarchimedean (vK : K → ℝ)) :
     letI := extensionCompletionAlgebra vK w
     letI : SMul K w.1.Completion := extensionCompletionSMul vK w
@@ -166,7 +161,3 @@ theorem isIntegralClosure
       (LocalizedCompletion vK w) :=
   localizedCompletionIsIntegralClosureWithExtension
     vK w hvK hvKna
-
-end LocalInductionInternal
-
-end

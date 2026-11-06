@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.RepresentationTheory.RankOne.TranslatedBigCel
 
 @[expose] public section
 
-noncomputable section
 open scoped NumberField Classical
 namespace DedekindZetaZeroFree.KPLiteralChamber
 open KPLiteralRaw
@@ -24,7 +23,3 @@ theorem literal_raw_group_chart_contDiffOn_source (h : Functions F ζ hζ) (hh :
     (KPGlobalTorusBorelTwistCompatibility.groupArchChart F ζ hζ z₀ * g)).comp hq hqO
   apply (H.congr (fun z hz => congrArg h (heq z hz))).mono
   exact Set.inter_subset_right
-
-end DedekindZetaZeroFree.KPLiteralChamber
-
-end

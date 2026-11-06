@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # The fixed source in the totally ramified reciprocity argument
 
@@ -304,18 +300,16 @@ theorem abstractReciprocity_cyclicTotallyRamified_fixedSource
   let wUnitM : v.unitAddSubgroup MF :=
     v.unitInclusion EML hUnramifiedML w
   let wM : ambientFixedAddSubgroup A M.field := wUnitM.1
-  have hpiLM : v.IsPrimeElement MF piLM := by
-    exact v.prime_of_unramified EML hUnramifiedML piL hpiL
+  have hpiLM : v.IsPrimeElement MF piLM := 
+    v.prime_of_unramified EML hUnramifiedML piL hpiL
   let cM : ambientFixedAddSubgroup A M.field := k • piSigmaM
   let bM : ambientFixedAddSubgroup A M.field := k • piLM + wM
   let uM : ambientFixedAddSubgroup A M.field := cM - k • piLM
   have hbM :
       bM = fixedFieldInclusion A E.field M.field hML (k • piL + w.1) := by
-    apply Subtype.ext
     rfl
   have hcM :
       cM = fixedFieldInclusion A Sigma M.field hMSigma (k • piSigma) := by
-    apply Subtype.ext
     rfl
   have hNormL :
       relativeNorm A M₀ M.field hMM₀
@@ -357,8 +351,8 @@ theorem abstractReciprocity_cyclicTotallyRamified_fixedSource
             (relativeNorm A K.field E.field E.below (k • piL + w.1)) :=
         hNormL
       _ = fixedFieldInclusion A K.field M₀ hM₀K
-          (relativeNorm A K.field Sigma hSigmaK (k • piSigma)) := by
-        exact congrArg
+          (relativeNorm A K.field Sigma hSigmaK (k • piSigma)) := 
+        congrArg
           (fixedFieldInclusion A K.field M₀ hM₀K) hnorm
       _ = relativeNorm A M₀ M.field hMM₀
           (fixedFieldInclusion A Sigma M.field hMSigma (k • piSigma)) :=
@@ -383,7 +377,7 @@ theorem abstractReciprocity_cyclicTotallyRamified_fixedSource
     ext x
     constructor
     · intro _
-      exact Subgroup.mem_top x
+      simp
     · intro _
       exact hg x
   let hNcomm : CommGroup N.extensionQuotient := IsCyclic.commGroup
@@ -403,9 +397,7 @@ theorem abstractReciprocity_cyclicTotallyRamified_fixedSource
   let cB : B.V := eB.symm cM
   have haNLocal :
       B₀.ρ g aN - aN = eB₀.symm (wM - uM) := by
-    have h := haN
-    change B₀.ρ g aN - aN = eB₀.symm (wM - uM) at h
-    exact h
+    omega
   have hActionPrimitive : eB (B.ρ gB aB) = eB₀ (B₀.ρ g aN) := by
     apply Subtype.ext
     calc
@@ -413,10 +405,10 @@ theorem abstractReciprocity_cyclicTotallyRamified_fixedSource
           relativeCosetAction A K.field M.field M.below (eB aB) gB :=
         extensionFixedRepresentation_action_coe
           A K.field M.field M.below M.normal gB aB
-      _ = relativeCosetAction A M₀ M.field hMM₀ (eB₀ aN) g := by
-        exact (M.relativeCosetAction_lowerInclusionHom A S (eB₀ aN) g).symm
-      _ = (eB₀ (B₀.ρ g aN)).1 := by
-        exact (extensionFixedRepresentation_action_coe
+      _ = relativeCosetAction A M₀ M.field hMM₀ (eB₀ aN) g := 
+        (M.relativeCosetAction_lowerInclusionHom A S (eB₀ aN) g).symm
+      _ = (eB₀ (B₀.ρ g aN)).1 := 
+        (extensionFixedRepresentation_action_coe
           A M₀ M.field hMM₀ N.normal g aN).symm
   have hprimitiveB : B.ρ gB aB - aB = eB.symm (wM - uM) := by
     apply eB.injective
@@ -424,7 +416,7 @@ theorem abstractReciprocity_cyclicTotallyRamified_fixedSource
       eB (B.ρ gB aB - aB) =
           eB₀ (B₀.ρ g aN) - eB₀ aN := by
         rw [map_sub, hActionPrimitive]
-        simp [aB]
+        rfl
       _ = eB₀ (B₀.ρ g aN - aN) := by
         rw [map_sub]
       _ = eB₀ (eB₀.symm (wM - uM)) :=
@@ -456,8 +448,7 @@ theorem abstractReciprocity_cyclicTotallyRamified_fixedSource
                 piSigmaM tB := by
           refine Quotient.inductionOn' tB ?_
           intro t
-          simp only [relativeCosetAction_mk]
-          exact map_nsmul (A.ρ t.1) k piSigmaM.1
+          simp
         rw [hActionNsmul]
         congr 1
         have h :=
@@ -467,7 +458,7 @@ theorem abstractReciprocity_cyclicTotallyRamified_fixedSource
           relativeCosetAction A K.field M.field M.below
               (fixedFieldInclusion A Sigma M.field hMSigma piSigma) tB =
             (fixedFieldInclusion A Sigma M.field hMSigma piSigma).1 at h
-        simpa [piSigmaM] using h
+        omega
       _ = (eB cB).1 := rfl
   have hgb : B.ρ gB bB = B.ρ tB bB := by
     apply eB.injective
@@ -488,8 +479,8 @@ theorem abstractReciprocity_cyclicTotallyRamified_fixedSource
               (fixedFieldInclusion A E.field M.field hML (k • piL + w.1)) tB at h
         rw [hbM]
         exact h
-      _ = (eB (B.ρ tB bB)).1 := by
-        exact (extensionFixedRepresentation_action_coe
+      _ = (eB (B.ρ tB bB)).1 := 
+        (extensionFixedRepresentation_action_coe
           A K.field M.field M.below M.normal tB bB).symm
   have hcomm : Commute gB tB :=
     (D.abstractReciprocityTotallyRamified_generator_commutes_frobenius
@@ -508,8 +499,8 @@ theorem abstractReciprocity_cyclicTotallyRamified_fixedSource
           A M₀ M.field hMM₀ N.normal g xB₀
       _ = relativeCosetAction A K.field M.field M.below (eB xB) gB :=
         M.relativeCosetAction_lowerInclusionHom A S (eB xB) g
-      _ = (eB (B.ρ gB xB)).1 := by
-        exact (extensionFixedRepresentation_action_coe
+      _ = (eB (B.ρ gB xB)).1 := 
+        (extensionFixedRepresentation_action_coe
           A K.field M.field M.below M.normal gB xB).symm
   have hxB₀ : B₀.ρ g xB₀ = xB₀ := by
     apply eB₀.injective
@@ -524,7 +515,6 @@ theorem abstractReciprocity_cyclicTotallyRamified_fixedSource
       N.normal N.finite g hg).symm xCycle
   refine ⟨x, ?_⟩
   have hxFormula : fixedFieldInclusion A M₀ M.field hMM₀ x = eB xB := by
-    apply Subtype.ext
     rfl
   have hActionVal :=
     v.valuationAt_extensionFixedRepresentation_action
@@ -534,7 +524,6 @@ theorem abstractReciprocity_cyclicTotallyRamified_fixedSource
       k • v.oneValue := by
     rw [hxFormula]
     have hxBFormula : eB xB = bM + eB aB - eB (B.ρ tB aB) := by
-      apply Subtype.ext
       rfl
     rw [hxBFormula]
     dsimp only [bM]
@@ -550,9 +539,3 @@ theorem abstractReciprocity_cyclicTotallyRamified_fixedSource
     _ = k • (1 : ZHat) := rfl
     _ = Int.castRingHom ZHat (k : ℤ) := by
       simp
-
-end ValuationData
-
-end ClassFormation
-
-end

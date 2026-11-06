@@ -118,7 +118,7 @@ theorem transport_formula (s : ℂ) (hs : s ∈ KPContinuation.spectralDomain)
   (((LinearMap.proj ε).comp (sheetEvaluation F ζ hζ C R P H U a ι 0)).smulRight
     (Pi.single ε (1 : ℂ))).toContinuousLinearMap
 
-private lemma sheetEvaluation_toContinuousLinearMap_eq_sum (s : ℂ) :
+lemma sheetEvaluation_toContinuousLinearMap_eq_sum (s : ℂ) :
     (sheetEvaluation F ζ hζ C R P H U a ι s).toContinuousLinearMap =
       ∑ ε : rootsOfUnity 3 F,
         Complex.exp (s * (KPContFlatSourceRecipe.alpha F ζ hζ
@@ -142,7 +142,7 @@ private lemma sheetEvaluation_toContinuousLinearMap_eq_sum (s : ℂ) :
   · intro h
     exact absurd (Finset.mem_univ ε') h
 
-private lemma differentiableOn_postcompose
+lemma differentiableOn_postcompose
     {E₀ E₁ E₂ : Type*} [AddCommGroup E₀] [Module ℂ E₀] [TopologicalSpace E₀]
     [AddCommGroup E₁] [Module ℂ E₁] [TopologicalSpace E₁]
     [AddCommGroup E₂] [Module ℂ E₂] [TopologicalSpace E₂]

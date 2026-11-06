@@ -30,7 +30,7 @@ def single : q.adicCompletion F →+ KPAdeles F where
 @[simp] theorem eval_single (y : q.adicCompletion F) :
     adeleEval F (Sum.inr q) (single F q y) = y := by
   change RestrictedProduct.single (fun w : HeightOneSpectrum (𝓞 F) => w.adicCompletionIntegers F) q y q = y
-  exact RestrictedProduct.single_eq_same _ _ _
+  simp
 
 theorem continuous_eval : Continuous (adeleEval F (Sum.inr q)) :=
   (RestrictedProduct.continuous_eval q).comp continuous_snd
@@ -44,7 +44,7 @@ theorem continuous_single : Continuous (single F q) := by
     ⟨Pi.single q x, by
       intro w hw
       have hwq : w ≠ q := hw
-      simpa [Pi.single_eq_of_ne hwq] using (w.adicCompletionIntegers F).zero_mem⟩
+      simp_all⟩
   have hf : Continuous f := RestrictedProduct.continuous_rng_of_principal.mpr
     (_root_.continuous_single q)
   exact continuous_const.prodMk ((RestrictedProduct.continuous_inclusion hs).comp hf)
@@ -124,7 +124,7 @@ instance awayMeasure_isAddHaarMeasure (μ : Measure (q.adicCompletion F)) [μ.Is
   · exact_mod_cast (Measure.addHaarScalarFactor_pos_of_isAddHaarMeasure
       (Measure.map (join F q).symm (KPAdditiveHaar.adelicMeasure F))
       ((Measure.addHaar : Measure (Away F q)).prod μ)).ne'
-  · exact ENNReal.coe_ne_top
+  simp
 
 theorem join_measurePreserving (μ : Measure (q.adicCompletion F)) [μ.IsAddHaarMeasure] :
     MeasurePreserving (join F q) ((awayMeasure F q μ).prod μ)
@@ -132,9 +132,4 @@ theorem join_measurePreserving (μ : Measure (q.adicCompletion F)) [μ.IsAddHaar
   refine ⟨(continuous_join F q).measurable, ?_⟩
   rw [← split_measure F q μ, Measure.map_map (continuous_join F q).measurable
     (continuous_join_symm F q).measurable]
-  simp only [Function.comp_def, AddEquiv.apply_symm_apply]
-  exact @Measure.map_id' (KPAdeles F) _ (KPAdditiveHaar.adelicMeasure F)
-
-end DedekindZetaZeroFree.FourierContinuation.AdditiveCoordinate
-
-end
+  simp

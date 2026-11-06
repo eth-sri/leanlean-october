@@ -18,16 +18,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # The full S-unit Kummer norm core
 
@@ -70,9 +60,7 @@ theorem even_or_no_realInfinitePlace_of_primitiveRoots
   · refine Or.inr ?_
     have hnNeTwo : (n : ℕ) ≠ 2 := by
       intro hnTwo
-      apply hnEven
-      rw [hnTwo]
-      exact ⟨1, by omega⟩
+      simp_all
     have hnLarge : 2 < (n : ℕ) := by
       omega
     obtain ⟨zeta, hzeta⟩ := hmu
@@ -92,7 +80,7 @@ theorem even_or_no_realInfinitePlace_of_primitiveRoots
 /-- The chosen finite support used for the full `S`-unit Kummer
 construction: it contains the prescribed seed, a support large enough to
 represent every idele class, and the finite support of the exponent. -/
-noncomputable def sUnitKummerNormSupport
+def sUnitKummerNormSupport
     (n : ℕ+)
     (S : Finset (HeightOneSpectrum (𝓞 K))) :
     Finset (HeightOneSpectrum (𝓞 K)) :=
@@ -178,7 +166,7 @@ theorem supportedAt_sUnitKummerNormSupport_sup_principalSubgroup_eq_top
     intro v hv
     exact Finset.mem_union_left _
       (Finset.mem_union_right _ hv)
-  · exact le_rfl
+  rfl
 
 /-- On the chosen Kummer norm support, the principal part of the
 local power subgroup consists exactly of powers of `S`-units. -/
@@ -228,9 +216,7 @@ theorem
       NumberField.of_module_finite K M
     let : (RelativeIdeleGroup.principalSubgroup K M).Normal :=
       ⟨fun x hx g => by
-        have hconj : g * x * g⁻¹ = x := by
-          rw [mul_comm g x, mul_assoc, mul_inv_cancel, mul_one]
-        rwa [hconj]⟩
+        simp_all⟩
     have hSplitS :
         ∀ w : HeightOneSpectrum (𝓞 K), w ∈ S' →
           _root_.FinitePlaceSplitsCompletely
@@ -242,7 +228,6 @@ theorem
               (IdeleGroup.principalIdele K b) =
             Units.map
               (algebraMap K (w.adicCompletion K)).toMonoidHom b := by
-        apply Units.ext
         rfl
       rw [hprincipal] at hbLocal
       simpa only [M] using
@@ -259,7 +244,6 @@ theorem
               (IdeleGroup.principalIdele K b) =
             Units.map
               (algebraMap K w.Completion).toMonoidHom b := by
-        apply Units.ext
         rfl
       rw [hprincipal] at hbLocal
       simpa only [M] using
@@ -297,7 +281,7 @@ theorem
                 (S' : Set (HeightOneSpectrum (𝓞 K))) ⊔
               IdeleGroup.principalSubgroup K := by
         rw [hLarge]
-        exact Subgroup.mem_top a
+        simp
       rcases Subgroup.mem_sup.mp ha with
         ⟨u, hu, q, hq, huq⟩
       have hInfinite :
@@ -307,7 +291,7 @@ theorem
                 (K := K) (L := M) w := by
         intro w
         rw [hInfiniteTop w]
-        exact Subgroup.mem_top _
+        simp
       have hFinite :
           ∀ w : HeightOneSpectrum (𝓞 K),
             IdeleGroup.finiteComponent w u ∈
@@ -321,7 +305,7 @@ theorem
         · rw [
             _root_.chosenFinitePlaceLocalNormSubgroup_eq_top_of_splitsCompletely
               (K := K) (L := M) w (hSplitS w hwS)]
-          exact Subgroup.mem_top _
+          simp
         · apply
             _root_.adicCompletionIntegerUnits_le_chosenFinitePlaceLocalNormSubgroup
               (K := K) (L := M) w (hAway w hwS)
@@ -367,7 +351,7 @@ theorem
         (K := K) (L := M) sigma hsigma
     have hDegreeLe :
         Module.finrank K M ≤ 1 := by
-      simpa only [hNormTop, Subgroup.index_top] using hLower
+      simp_all
     have hDegree :
         Module.finrank K M = 1 :=
       le_antisymm hDegreeLe Module.finrank_pos
@@ -483,10 +467,7 @@ theorem card_ideleClassPowerLocalUnitQuotient_on_kummerNormSupport
         (n : ℕ) ^ totalPlaceCard (K := K) S' *
           (n : ℕ) ^ totalPlaceCard (K := K) S' := by
     rw [two_mul, pow_add]
-  exact
-    Nat.eq_of_mul_eq_mul_left
-      (pow_pos n.pos (totalPlaceCard (K := K) S'))
-      (hProduct.trans hPower)
+  simp_all
 
 /-- The power quotient on the chosen support has the same cardinality
 as the degree of the full `S`-unit Kummer extension. -/
@@ -538,8 +519,3 @@ theorem
           (K := K) (Omega := Omega) n hnK hmu S'
     _ = Module.finrank K E :=
       IsGalois.card_aut_eq_finrank K E
-
-end GlobalClassFields
-end GlobalClassFieldTheory
-
-end

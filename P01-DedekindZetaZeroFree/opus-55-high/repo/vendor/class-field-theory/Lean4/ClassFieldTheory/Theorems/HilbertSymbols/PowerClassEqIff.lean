@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Equality of power classes
 
@@ -30,7 +27,5 @@ an `n`-th power. -/
 theorem powerClass_eq_iff
     (K : Type u) [Field K] (n : ℕ+) (a b : Kˣ) :
     powerClass K n a = powerClass K n b ↔
-      a / b ∈ (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range := by
-  exact QuotientGroup.eq_iff_div_mem
-
-end ClassFieldTheory
+      a / b ∈ (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range := 
+  QuotientGroup.eq_iff_div_mem

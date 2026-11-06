@@ -11,7 +11,7 @@ open MeasureTheory KPContLocalNorm KPContLocalEnergy
 
 open KPContLocalHolomorphyUpgrade.CauchyAssembly KPContLocalRegularity
 
-private theorem forcing_jet_continuity {n : ℕ} (A : LocalBall n)
+theorem forcing_jet_continuity {n : ℕ} (A : LocalBall n)
     (Ω : Set ℂ) (h : ℂ → Space n → ℂ)
     (hh : KPCutoffSource.ChartSmoothHolomorphicOn A h Ω) :
     Raw.JetContinuousOn A h Ω := by
@@ -33,7 +33,7 @@ private theorem forcing_jet_continuity {n : ℕ} (A : LocalBall n)
 
 open KPContLocalOrbifold
 
-private lemma deriv_smooth {n : ℕ} (B : LocalBall n) (u : Space n → ℂ)
+lemma deriv_smooth {n : ℕ} (B : LocalBall n) (u : Space n → ℂ)
     (hu : ContDiffOn ℝ (⊤ : ℕ∞) u B.carrier) (l : List (Fin n)) :
     ContDiffOn ℝ (⊤ : ℕ∞) (coordinateDerivativeList l u) B.carrier := by
   induction l with
@@ -45,10 +45,10 @@ private lemma deriv_smooth {n : ℕ} (B : LocalBall n) (u : Space n → ℂ)
   (Fintype.card (MultiIndex n k) : ℝ) *
     (measureUnivNNReal (volume.restrict C.carrier) : ℝ) ^ (2 : ℝ)⁻¹ + 1
 
-private lemma normFactor_pos {n : ℕ} (C : LocalBall n) (k : ℕ) :
+lemma normFactor_pos {n : ℕ} (C : LocalBall n) (k : ℕ) :
     0 < normFactor C k := by unfold normFactor; positivity
 
-private lemma smooth_bound {n : ℕ} (B C : LocalBall n)
+lemma smooth_bound {n : ℕ} (B C : LocalBall n)
     (hCB : Metric.closedBall C.center C.radius ⊆ B.carrier) (k : ℕ)
     (u : Space n → ℂ) (hu : ContDiffOn ℝ (⊤ : ℕ∞) u B.carrier)
     (P : ℝ) (hP : 0 ≤ P)
@@ -74,8 +74,7 @@ private lemma smooth_bound {n : ℕ} (B C : LocalBall n)
     rw [hw α]
     filter_upwards [MemLp.coeFn_toLp (hL2 α), ae_restrict_mem Metric.isOpen_ball.measurableSet]
       with x hx hxC
-    rw [hx]
-    exact hb α x hxC
+    simp_all
   refine ⟨w, ?_, ?_⟩
   · unfold Represents value
     rw [hw]
@@ -92,7 +91,7 @@ private lemma smooth_bound {n : ℕ} (B C : LocalBall n)
     unfold normFactor
     nlinarith
 
-private lemma larger_ball {n : ℕ} (A B : LocalBall n)
+lemma larger_ball {n : ℕ} (A B : LocalBall n)
     (hAB : Metric.closedBall A.center A.radius ⊆ B.carrier) :
     ∃ C : LocalBall n, C.center = A.center ∧ A.radius < C.radius ∧
       Metric.closedBall C.center C.radius ⊆ B.carrier := by
@@ -103,14 +102,14 @@ private lemma larger_ball {n : ℕ} (A B : LocalBall n)
     rfl, by dsimp; linarith, hsub⟩
 
  def lowIndex {n k l : ℕ} (hkl : k ≤ l) (α : MultiIndex n k) : MultiIndex n l :=
-  ⟨fun i => ⟨(α.val i).val, by have := (α.val i).isLt; omega⟩, α.property.trans hkl⟩
+  ⟨fun i => ⟨(α.val i).val, by omega⟩, α.property.trans hkl⟩
  def lowSobolev {n k l : ℕ} {B : LocalBall n} (hkl : k ≤ l)
     (u : IntegerSobolev B l) : IntegerSobolev B k where
   derivatives α := u.derivatives (lowIndex hkl α)
   weak_derivatives α := u.weak_derivatives (lowIndex hkl α)
-private lemma low_value {n k l : ℕ} {B : LocalBall n} (hkl : k ≤ l)
+lemma low_value {n k l : ℕ} {B : LocalBall n} (hkl : k ≤ l)
     (u : IntegerSobolev B l) : value (lowSobolev hkl u) = value u := rfl
-private lemma low_norm {n k l : ℕ} {B : LocalBall n} (hkl : k ≤ l)
+lemma low_norm {n k l : ℕ} {B : LocalBall n} (hkl : k ≤ l)
     (u : IntegerSobolev B l) : (lowSobolev hkl u).sobolevNorm ≤ u.sobolevNorm := by
   classical
   apply Real.sqrt_le_sqrt
@@ -122,9 +121,9 @@ private lemma low_norm {n k l : ℕ} {B : LocalBall n} (hkl : k ≤ l)
     funext i
     apply Fin.ext
     exact congrArg (fun a : MultiIndex n l => (a.val i).val) hab
-  · intro α _; exact Finset.mem_univ _
-  · intro α _; exact le_rfl
-  · intro α _ _; exact sq_nonneg _
+  · simp
+  · simp
+  simp
 
  def family_restrictCoefficients {n : ℕ} {A B : LocalBall n} {cρ Cρ κ Λ : ℝ}
     (hAB : A.carrier ⊆ B.carrier) (D : Coefficients B cρ Cρ κ Λ) :
@@ -137,11 +136,11 @@ private lemma low_norm {n k l : ℕ} {B : LocalBall n} (hkl : k ≤ l)
   symmetric x hx := D.symmetric x (hAB hx)
   ellipticity x hx := D.ellipticity x (hAB hx)
   upper_bound x hx := D.upper_bound x (hAB hx)
-private lemma family_restrictCoefficients_smooth {n : ℕ} {A B : LocalBall n} {cρ Cρ κ Λ : ℝ}
+lemma family_restrictCoefficients_smooth {n : ℕ} {A B : LocalBall n} {cρ Cρ κ Λ : ℝ}
     (hAB : A.carrier ⊆ B.carrier) (hclosed : Metric.closedBall A.center A.radius ⊆ B.carrier)
-    (D : Coefficients B cρ Cρ κ Λ) : SmoothNearClosedBall (family_restrictCoefficients hAB D) := by
-  exact ⟨B.carrier, Metric.isOpen_ball, hclosed, D.density_smooth, D.matrix_smooth⟩
-private lemma family_weakEquation_restrict {n : ℕ} {A B : LocalBall n} {cρ Cρ κ Λ : ℝ}
+    (D : Coefficients B cρ Cρ κ Λ) : SmoothNearClosedBall (family_restrictCoefficients hAB D) := 
+  ⟨B.carrier, Metric.isOpen_ball, hclosed, D.density_smooth, D.matrix_smooth⟩
+lemma family_weakEquation_restrict {n : ℕ} {A B : LocalBall n} {cρ Cρ κ Λ : ℝ}
     (hAB : A.carrier ⊆ B.carrier) (D : Coefficients B cρ Cρ κ Λ) (z : ℂ)
     (u : IntegerSobolev B 1) (h : BallL2 B) (hw : WeakEquation D z u h) :
     WeakEquation (family_restrictCoefficients hAB D) z (restrictSobolev hAB u) (restrictBallL2 hAB h) := by
@@ -200,7 +199,7 @@ private lemma family_weakEquation_restrict {n : ℕ} {A B : LocalBall n} {cρ C�
   rw [h0 (value u)]
   exact heq
 
-private theorem fixed_parameter_forcing_small {n : ℕ} (D : LineChart n)
+theorem fixed_parameter_forcing_small {n : ℕ} (D : LineChart n)
     {H : Type*} [NormedAddCommGroup H] [NormedSpace ℂ H]
     (R : H →L[ℂ] BallL2 D.outer)
     (O : Set ℂ) (hO : IsOpen O) (a : ℂ → ℂ) (ha : ContinuousOn a O)
@@ -242,15 +241,15 @@ private theorem fixed_parameter_forcing_small {n : ℕ} (D : LineChart n)
   let j : CompactJets K k := KPLocalCubeSobolevJets.finiteCompactJet D.outer K hBD
     (h z₀) ((hsmooth z₀ hz₀).of_le (by simp))
   let P : ℝ := ‖j‖ + 1
-  have hP : 0 ≤ P := by dsimp [P]; positivity
+  have hP : 0 ≤ P := by positivity
   obtain ⟨δh, hδh, hdh⟩ := hjcont z₀ hz₀ K hK hBD k 1 zero_lt_one
   obtain ⟨δa, hδa, hda⟩ := hilbert_difference_small O a ha hz₀ zero_lt_one
   obtain ⟨δv, hδv, hdv⟩ := hilbert_difference_small O v hv hz₀ zero_lt_one
   let δb := min δh (min δa δv)
-  have hδb : 0 < δb := lt_min hδh (lt_min hδa hδv)
+  have hδb : 0 < δb := by positivity
   let U := T * (‖R‖ * (‖v z₀‖ + 1) + normFactor B k * P) + 1
   have hFactorB := normFactor_pos B k
-  have hU : 0 < U := by dsimp [U]; positivity
+  have hU : 0 < U := by positivity
   have hbound : ∀ z ∈ O, dist z z₀ < δb → ∃ q : IntegerSobolev C k,
       Represents q (f z) ∧ q.sobolevNorm ≤ U := by
     intro z hz hdist
@@ -368,7 +367,7 @@ private theorem fixed_parameter_forcing_small {n : ℕ} (D : LineChart n)
     ellipticityLower_pos := hκ
     coefficients := D
     smooth_coefficients := hD
-    density_invariant := by intro g x hx; simp
+    density_invariant := by simp
     cutoff := η
     cutoff_smooth := η.contDiff
     cutoff_compact := η.hasCompactSupport
@@ -376,7 +375,7 @@ private theorem fixed_parameter_forcing_small {n : ℕ} (D : LineChart n)
       rw [η.tsupport_eq]
       exact Metric.closedBall_subset_ball (by change 3 * A.radius / 4 < A.radius; linarith [A.radius_pos])
     cutoff_one := by intro x hx; exact η.one_of_mem_closedBall hx
-    cutoff_invariant := by intro g x; simp }
+    cutoff_invariant := by simp }
 
 theorem weighted_solution_jet_continuity {n : ℕ} (A : LocalBall n)
     {cρ Cρ κ Λ : ℝ} (D : Coefficients A cρ Cρ κ Λ)
@@ -410,7 +409,7 @@ theorem weighted_solution_jet_continuity {n : ℕ} (A : LocalBall n)
   intro z₀ hz₀ K hK hKD m ε hε
   obtain ⟨C, hCD, T, hT, hest⟩ :=
     KPContSmoothPromotion.LocalSolutionEstimates.LocalFamily.chart_solution_difference_jet_estimate D' K hK hKD m (a z₀)
-  have hη : 0 < ε / (2 * T) := div_pos hε (by positivity)
+  have hη : 0 < ε / (2 * T) := by positivity
   obtain ⟨δ₁, hδ₁, hsmall⟩ :=
     fixed_parameter_forcing_small D' R Ω hΩ a ha
       v hv h hh hweak' f hf
@@ -451,7 +450,3 @@ theorem weighted_solution_jet_continuity {n : ℕ} (A : LocalBall n)
           _ < T * (ε / T) := mul_lt_mul_of_pos_left hsum hT
           _ = ε := mul_div_cancel₀ ε hT.ne'
       exact hm)
-
-end DedekindZetaZeroFree.KPContActualLocalSolutionFamily.CoefficientRestriction
-
-end

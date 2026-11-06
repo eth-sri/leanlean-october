@@ -24,7 +24,7 @@ def mixedRadialJacobian (y : realSpace K) : ℝ :=
     (∏ v : {v : InfinitePlace K // IsComplex v}, expMapBasis y v.1)⁻¹ *
       (2 : ℝ)⁻¹ ^ nrComplexPlaces K * (Module.finrank ℚ K : ℝ) * regulator K
 
-private theorem radialJacobian_eq_prod (y : realSpace K) :
+theorem radialJacobian_eq_prod (y : realSpace K) :
     mixedRadialJacobian K y = (∏ v, expMapBasis y v) *
       ((2 : ℝ)⁻¹ ^ nrComplexPlaces K * (Module.finrank ℚ K : ℝ) * regulator K) := by
   have hp : Real.exp ((Module.finrank ℚ K : ℝ) * y dirichletUnitTheorem.w₀) =
@@ -41,7 +41,7 @@ private theorem radialJacobian_eq_prod (y : realSpace K) :
   field_simp
   <;> ring
 
-private theorem weighted_log_sum (y : realSpace K) :
+theorem weighted_log_sum (y : realSpace K) :
     ∑ v : InfinitePlace K, (v.mult : ℝ) * Real.log (expMapBasis y v) =
       (Module.finrank ℚ K : ℝ) * y dirichletUnitTheorem.w₀ := by
   have h := congrArg Real.log (prod_expMapBasis_pow y)
@@ -114,7 +114,3 @@ theorem norm_mixedMellinGaussian
   intro v hv
   rw [norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos (hq v), Complex.norm_exp]
   congr 2 <;> simp [Complex.mul_re, ← Complex.ofReal_pow]
-
-end DedekindZetaZeroFree.AbelianQuotient.Theta
-
-end

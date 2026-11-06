@@ -44,7 +44,7 @@ lemma re_inner_apply_eq {Δ : H →ₗ.[ℂ] H} {B : H →L[ℂ] H}
       ‖B u‖ ^ 2 + (inner ℂ (B u) (Δ ⟨B u, hBdom u⟩)).re := by
   have key : inner ℂ (B u) u =
       inner ℂ (B u) ((Δ ⟨B u, hBdom u⟩ : H) + B u) := by
-    conv_rhs => rw [hleft u]
+    simp_all
   rw [key, inner_add_right, Complex.add_re]
   rw [show (inner ℂ (B u) (B u)).re = ‖B u‖ ^ 2 from by
     change RCLike.re (inner ℂ (B u) (B u)) = ‖B u‖ ^ 2
@@ -150,10 +150,7 @@ lemma mem_eigenspace_iff (Δ : H →ₗ.[ℂ] H) (μ : ℝ) (v : H) :
     refine ⟨w.property, ?_⟩
     simpa only [LinearMap.mem_ker, LinearMap.sub_apply, LinearMap.smul_apply,
       Submodule.subtype_apply, sub_eq_zero, LinearPMap.toFun_eq_coe] using hw
-  · rintro ⟨hv, he⟩
-    refine ⟨⟨v, hv⟩, ?_, rfl⟩
-    simpa only [LinearMap.mem_ker, LinearMap.sub_apply, LinearMap.smul_apply,
-      Submodule.subtype_apply, sub_eq_zero, LinearPMap.toFun_eq_coe] using he
+  simp_all
 
 lemma finite_eigenspace_below_threshold
     (Δ : H →ₗ.[ℂ] H) (B : H →L[ℂ] H) (d : ℝ)
@@ -166,7 +163,7 @@ lemma finite_eigenspace_below_threshold
           (inner ℂ (B u) (u - B u)).re + ‖K u‖ ^ 2)
     (μ : ℝ) (hμ : μ < d) : Module.Finite ℂ (eigenspace Δ μ) := by
   let ε := (d - μ) / 2
-  have hε : 0 < ε := by dsimp [ε]; linarith
+  have hε : 0 < ε := by positivity
   obtain ⟨K, hK, hest⟩ := hcoercivity ε hε
   let T : eigenspace Δ μ →L[ℂ] H :=
     ((μ + 1 : ℝ) • (eigenspace Δ μ).subtypeL)
@@ -179,7 +176,7 @@ lemma finite_eigenspace_below_threshold
   have hBT : B (T v) = (v : H) := by rw [hTv]; exact hright ⟨v, hv⟩
   have hinner : (inner ℂ (v : H) (T v - (v : H))).re = μ * ‖(v : H)‖ ^ 2 := by
     rw [hTv, add_sub_cancel_right, he, inner_smul_right, Complex.mul_re]
-    simp [inner_self_eq_norm_sq, ← Complex.ofReal_pow]
+    simp [← Complex.ofReal_pow]
   have h := hest (T v)
   rw [hBT, hinner] at h
   change ε * ‖(v : H)‖ ^ 2 ≤ ‖K (T v)‖ ^ 2
@@ -195,7 +192,7 @@ lemma essential_empty_of_isolated_below (Δ : H →ₗ.[ℂ] H) (B : H →L[ℂ]
     essentialSpectrum Δ B ∩ Set.Iio d = ∅ := by
   apply Set.eq_empty_iff_forall_notMem.mpr
   rintro μ ⟨⟨hs, hn⟩, hμ⟩
-  exact hn (hiso μ hs hμ)
+  simp_all
 
 lemma no_accPt_of_isolated_below (Δ : H →ₗ.[ℂ] H) (B : H →L[ℂ] H) (d : ℝ)
     (hiso : ∀ μ ∈ realSpectrum B, μ < d → IsIsolatedFiniteEigenvalue Δ B μ)
@@ -215,9 +212,9 @@ lemma window_norm_bound (B : H →L[ℂ] H) (hB : IsSelfAdjoint B) (hBp : 0 ≤ 
     (hJ : ∀ μ ∈ J, μ ≤ m) (v : spectralSubspace B J) :
     ‖(v : H)‖ ≤ (1 + m) * ‖B v‖ := by
   let a : ℝ := 1 / (1 + m)
-  have ha : 0 < a := by dsimp [a]; positivity
+  have ha : 0 < a := by positivity
   let f : ℝ → ℝ := fun x => max 0 x * max 0 (a - x)
-  have hf : Continuous f := by dsimp [f]; fun_prop
+  have hf : Continuous f := by fun_prop
   have hfJ : ∀ μ ∈ J, f (1 / (1 + μ)) = 0 := by
     intro μ hμ
     by_cases hμ0 : 0 < 1 + μ
@@ -232,7 +229,7 @@ lemma window_norm_bound (B : H →L[ℂ] H) (hB : IsSelfAdjoint B) (hBp : 0 ≤ 
       (_ : ∀ μ ∈ J, f (1 / (1 + μ)) = 0), (cfc f B).toLinearMap.ker at hv
     exact (Submodule.mem_iInf _).mp ((Submodule.mem_iInf _).mp ((Submodule.mem_iInf _).mp hv f) hf) hfJ
   let g : ℝ → ℝ := fun x => max 0 (a - x)
-  have hg : Continuous g := by dsimp [g]; fun_prop
+  have hg : Continuous g := by fun_prop
   have hfg : cfc f B = B * cfc g B := by
     have hh := cfc_mul (fun x : ℝ => x) g B continuousOn_id hg.continuousOn
     rw [cfc_id' ℝ B hB] at hh
@@ -242,9 +239,9 @@ lemma window_norm_bound (B : H →L[ℂ] H) (hB : IsSelfAdjoint B) (hBp : 0 ≤ 
     simp [f, g, max_eq_right (spectrum_nonneg_of_nonneg hBp hx)]
   have hgv : cfc g B (v : H) = 0 := by
     apply hinj
-    simpa only [map_zero, ← ContinuousLinearMap.mul_apply, ← hfg] using hvf
+    simp_all
   let k : ℝ → ℝ := fun x => max a x
-  have hk : Continuous k := by dsimp [k]; fun_prop
+  have hk : Continuous k := by fun_prop
   have hkB : cfc k B = B + cfc g B := by
     have hh := cfc_add B (fun x : ℝ => x) g continuousOn_id hg.continuousOn
     rw [cfc_id' ℝ B hB] at hh
@@ -253,9 +250,9 @@ lemma window_norm_bound (B : H →L[ℂ] H) (hB : IsSelfAdjoint B) (hBp : 0 ≤ 
     intro x hx
     dsimp [k, g]
     rcases le_total a x with h | h
-    · rw [max_eq_right h, max_eq_left (sub_nonpos.mpr h)]; ring
-    · rw [max_eq_left h, max_eq_right (sub_nonneg.mpr h)]; ring
-  have hkval : cfc k B (v : H) = B v := by rw [hkB, ContinuousLinearMap.add_apply, hgv, add_zero]
+    · simp_all
+    simp_all
+  have hkval : cfc k B (v : H) = B v := by simp_all
   let r : ℝ → ℝ := fun x => 1 / k x
   have hkr : ∀ x, 0 < k x := fun x => ha.trans_le (le_max_left _ _)
   have hr : Continuous r := by exact continuous_const.div hk (fun x => ne_of_gt (hkr x))
@@ -297,11 +294,7 @@ lemma finite_spectralSubspace_below_threshold
     intro x y hxy
     have hx := hleft x
     have hy := hleft y
-    have hΔxy : Δ ⟨B x, hBdom x⟩ = Δ ⟨B y, hBdom y⟩ := by
-      congr 1
-      exact Subtype.ext hxy
-    rw [hΔxy, hxy, hy] at hx
-    exact hx.symm
+    simp_all
   obtain ⟨m, hm, hmd, hJm⟩ : ∃ m : ℝ, 0 ≤ m ∧ m < d ∧ ∀ μ ∈ J, μ ≤ m := by
     rcases J.eq_empty_or_nonempty with hJe | hJe
     · exact ⟨0, le_rfl, hd, by simp [hJe]⟩
@@ -310,10 +303,10 @@ lemma finite_spectralSubspace_below_threshold
       intro μ hμ
       exact (hj.2 hμ).trans (le_max_right _ _)
   let ε := (d - m) / 2
-  have hε : 0 < ε := by dsimp [ε]; linarith
+  have hε : 0 < ε := by positivity
   obtain ⟨K, hK, hest⟩ := coercive_bound d hBdom hleft hcoercivity ε hε
   let a : ℝ := 1 / (1 + m)
-  have ha : 0 < a := by dsimp [a]; positivity
+  have ha : 0 < a := by positivity
   apply finite_of_compact_sq_lower_bound (K.comp (spectralSubspace B J).subtypeL)
     (hK.comp_clm _) (ε * a ^ 2) (by positivity)
   intro v
@@ -343,7 +336,7 @@ lemma eigenspace_ne_bot_of_pencil_eigenvector
   · have h := hleft u
     conv at h => rhs; rw [he, add_smul, one_smul]
     have he' : Δ ⟨B u, hBdom u⟩ = μ • B u := add_right_cancel h
-    simpa only [Complex.coe_smul] using he'
+    omega
   · intro hzero
     apply hu
     rw [he, hzero, smul_zero]
@@ -407,5 +400,3 @@ theorem kp_cont_below_threshold_discreteness
     isolated_below_of_finite_windows Δ B d hB hBdom hleft hright hcoercivity hfinite
   exact ⟨essential_empty_of_isolated_below Δ B d hiso, hfinite, hiso,
     no_accPt_of_isolated_below Δ B d hiso⟩
-
-end DedekindZetaZeroFree

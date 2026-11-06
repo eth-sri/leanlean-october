@@ -60,17 +60,17 @@ private theorem laplacian_congr (f g : M F → ℂ) (x : M F) (he : f =ᶠ[𝓝 
   rw [cd_congr _ _ x h22 i 2, cd_congr f g x he i 2,
     cd_congr _ _ x h00 i 0, cd_congr _ _ x h11 i 1]
 
-private theorem coordinateDerivative_zero (i : Fin (d F)) (k : Fin 3) :
+theorem coordinateDerivative_zero (i : Fin (d F)) (k : Fin 3) :
     HyperbolicChart.coordinateDerivative (d F) i k (0 : M F → ℂ) = 0 := by
   funext p
   simp [HyperbolicChart.coordinateDerivative]
 
-private theorem laplacian_zero :
+theorem laplacian_zero :
     (fun x : M F => HyperbolicChart.laplacian (d F) (0 : M F → ℂ) x) = 0 := by
   funext x
   simp [HyperbolicChart.laplacian, coordinateDerivative_zero]
 
-private theorem contDiffAt_coordinateDerivative (f : M F → ℂ) (x : M F)
+theorem contDiffAt_coordinateDerivative (f : M F → ℂ) (x : M F)
     (hf : ContDiffAt ℝ (⊤ : ℕ∞) f x) (i : Fin (d F)) (k : Fin 3) :
     ContDiffAt ℝ (⊤ : ℕ∞) (fun p => HyperbolicChart.coordinateDerivative (d F) i k f p) x := by
   have h := (hf.fderiv_right (m := (⊤ : ℕ∞)) (by simp))
@@ -147,7 +147,7 @@ variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
 variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
 variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
-private theorem coefficient_isotropyChart (a : ActualChart (U := U) (H := H))
+theorem coefficient_isotropyChart (a : ActualChart (U := U) (H := H))
     (s : Sections F ζ hζ U R P H) (x : M F) :
     (isotropyChart a).coefficient s x = (s a.component).val (labeledA (placeEquiv F ζ hζ) x) := by
   simp [isotropyChart, KPContCotangentActualOverlap.LiftedChart.coefficient,
@@ -165,7 +165,7 @@ private theorem labeledA_labeledAInv (z : SymmetricSpace F) :
   rw [ContinuousLinearEquiv.apply_symm_apply]
   simp
 
-private theorem contDiff_labeledAInv :
+theorem contDiff_labeledAInv :
     ContDiff ℝ (⊤ : ℕ∞) (labeledAInv (placeEquiv F ζ hζ) : SymmetricSpace F → M F) := by
   have h : (labeledAInv (placeEquiv F ζ hζ) : SymmetricSpace F → M F) =
       fun z => (CotangentLogCoframe.A (d F)).symm (fun k => z ((placeEquiv F ζ hζ) k)) := rfl

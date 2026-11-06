@@ -4,14 +4,13 @@ public import DedekindZetaZeroFree.Metaplectic.Intertwining.RankOne.LaurentCoeff
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.KPRankOneShellRepair
 open scoped NumberField Valued
 open NumberField IsDedekindDomain MeasureTheory ValuativeRel
 open KPLocalExceptionalConstruction KPLocalStoneVonNeumann KPLocalPrincipalSeries
 open KPRankOneShellContinuation
 
-private theorem finite_detection {V I : Type*} [AddCommGroup V] [Module ℂ V]
+theorem finite_detection {V I : Type*} [AddCommGroup V] [Module ℂ V]
     [FiniteDimensional ℂ V] (l : I → V →ₗ[ℂ] ℂ)
     (hl : ∀ v, (∀ i, l i v = 0) → v = 0) :
     ∃ d : Finset I, ∀ v, (∀ i ∈ d, l i v = 0) → v = 0 := by
@@ -25,7 +24,7 @@ private theorem finite_detection {V I : Type*} [AddCommGroup V] [Module ℂ V]
   apply hl v
   intro i
   have hle : p (insert i d) ≤ p d := iInf_le_iInf_of_subset (Finset.subset_insert i d)
-  have he : p d ≤ p (insert i d) := hmin ⟨insert i d, rfl⟩ hle
+  have he : p d ≤ p (insert i d) := by simp_all
   have hd : v ∈ p d := by simpa only [p, Submodule.mem_iInf, LinearMap.mem_ker] using hv
   have hi' : p (insert i d) ≤ (l i).ker :=
     iInf_le_of_le i (iInf_le_of_le (Finset.mem_insert_self i d) le_rfl)
@@ -85,7 +84,3 @@ theorem actualCoefficientOperator_finite_support :
   change ((actualCoefficientOperator F ζ hζ q S P J hJ μ hμ π hπ ε n (b i)).val.val z.1).val z.2 = 0
   rw [actualCoefficientOperator_coordinate]
   exact Finsupp.notMem_support_iff.mp hns
-
-end DedekindZetaZeroFree.KPRankOneShellRepair
-
-end

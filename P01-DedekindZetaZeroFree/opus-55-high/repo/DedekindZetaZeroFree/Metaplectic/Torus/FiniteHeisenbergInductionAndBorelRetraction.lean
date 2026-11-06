@@ -16,7 +16,6 @@ open KPLocalPrincipalSeries KPLocalStoneVonNeumann
 open KPRankOneShellContinuation
 
 noncomputable section
-set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
@@ -110,6 +109,3 @@ theorem exists_rawFiniteInducingData :
     change y ^ 3 = (v : (LocalField F q)ˣ) at hy
     rw [hy]
     exact hv
-
-end
-end DedekindZetaZeroFree.KPExceptionalRaw

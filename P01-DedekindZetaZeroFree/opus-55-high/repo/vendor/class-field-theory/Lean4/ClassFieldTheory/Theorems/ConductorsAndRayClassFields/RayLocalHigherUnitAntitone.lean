@@ -12,17 +12,12 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Monotonicity of local higher-unit groups
 -/
 
 open scoped NumberField
 
-noncomputable section
 
 namespace ClassFieldTheory
 
@@ -39,7 +34,3 @@ theorem rayLocalHigherUnitGroup_antitone
   change RayClass.localHigherUnitGroup v n ≤
     RayClass.localHigherUnitGroup v m
   exact RayClass.localHigherUnitGroup_antitone v hmn
-
-end ClassFieldTheory
-
-end

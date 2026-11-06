@@ -201,17 +201,7 @@ lemma orbitMass_nonneg (N : TraceHaarTransport R) {Q : AdmissibleFlatSources R}
   exact integral_nonneg (fun _ => norm_nonneg _)
 lemma sheet_coordinates_continuous (w : InfinitePlace F) (Z : ℝ) (hZ : 0 < Z) :
     Continuous (fun p : PositiveAxis × R.A.G1 =>
-      (sheetTranslation R.A w ⟨p.1.val / Z, div_pos p.1.property hZ⟩ p.2).val) := by
-  have ht : Continuous (fun p : PositiveAxis × R.A.G1 =>
-      (⟨p.1.val / Z, div_pos p.1.property hZ⟩ : PositiveAxis)) :=
-    ((continuous_subtype_val.comp continuous_fst).div_const Z).subtype_mk _
-  change Continuous (fun p : PositiveAxis × R.A.G1 =>
-    normSection R.A w ⟨p.1.val / Z, div_pos p.1.property hZ⟩ * p.2.val)
-  have he : (fun p : PositiveAxis × R.A.G1 =>
-    normSection R.A w ⟨p.1.val / Z, div_pos p.1.property hZ⟩ * p.2.val) =
-    (normSplit R.A w) ∘ (fun p => (⟨p.1.val / Z, div_pos p.1.property hZ⟩, p.2)) := rfl
-  rw [he]
-  exact (normSplit R.A w).continuous.comp (ht.prodMk continuous_snd)
+      (sheetTranslation R.A w ⟨p.1.val / Z, div_pos p.1.property hZ⟩ p.2).val) := by apply DedekindZetaZeroFree.OrbitExpansion.sheetCoordinate_continuous <;> assumption
 end DedekindZetaZeroFree.OrbitFrequencies
 end
 

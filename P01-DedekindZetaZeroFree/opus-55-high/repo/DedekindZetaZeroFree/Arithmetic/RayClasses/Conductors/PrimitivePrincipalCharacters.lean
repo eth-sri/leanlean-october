@@ -6,7 +6,6 @@ public import DedekindZetaZeroFree.Arithmetic.RayClasses.Character
 
 namespace DedekindZetaZeroFree.Hecke
 
-noncomputable section
 
 open scoped NumberField Classical
 
@@ -39,7 +38,3 @@ theorem primitivePrincipal_apply_eq_ite
     exact (η.eq_zero_iff' ⊥).mpr (Or.inl rfl)
   · rw [if_neg hI]
     exact primitivePrincipal_apply_nonzero η hprimitive hprincipal I hI
-
-end
-
-end DedekindZetaZeroFree.Hecke

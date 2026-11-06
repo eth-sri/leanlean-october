@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Joint local components of relative adeles and ideles
 
@@ -28,7 +25,6 @@ open scoped NumberField TensorProduct
 open NumberField IsDedekindDomain
 
 noncomputable section
-
 
 universe u v
 
@@ -154,25 +150,13 @@ def relativeIdeleLocalComponents :
         RelativeIdeleGroup.finiteComponent
           (K := K) (L := L) w z⟩
   map_one' := by
-    apply Prod.ext
-    · funext w
-      exact map_one
-        (RelativeIdeleGroup.infiniteComponent
-          (K := K) (L := L) w)
-    · funext w
-      exact map_one
-        (RelativeIdeleGroup.finiteComponent
-          (K := K) (L := L) w)
+    rfl
   map_mul' x y := by
     apply Prod.ext
     · funext w
-      exact map_mul
-        (RelativeIdeleGroup.infiniteComponent
-          (K := K) (L := L) w) x y
+      simp
     · funext w
-      exact map_mul
-        (RelativeIdeleGroup.finiteComponent
-          (K := K) (L := L) w) x y
+      simp
 
 omit [NumberField L] [FiniteDimensional K L] in
 @[simp]
@@ -211,5 +195,3 @@ theorem relativeIdeleLocalComponents_injective :
   · intro w
     have h := congrArg (fun z => z.2 w) hxy
     exact congrArg Units.val h
-
-end

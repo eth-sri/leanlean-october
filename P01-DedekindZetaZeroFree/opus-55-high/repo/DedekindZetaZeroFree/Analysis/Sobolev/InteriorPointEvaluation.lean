@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Analysis.Sobolev.LocalEmbeddingAndSmoothRepre
 
 @[expose] public section
 
-noncomputable section
 open MeasureTheory
 
 namespace DedekindZetaZeroFree.KPGlobalResidualConstruction.CanonicalWholeCoreNative.NativeWordInverse.ActualInverseValue
@@ -56,14 +55,10 @@ theorem exists_outer_ball_sobolev_point_bound {n : ℕ} (A T : LocalBall n)
   let α : MultiIndex n 0 := ⟨fun _ => 0, by simp⟩
   have hzero : coordinateDerivative α g x = g x := by
     have hnil : (List.finRange n).flatMap (fun _ => ([] : List (Fin n))) = [] :=
-      List.flatMap_eq_nil_iff.mpr (by simp)
+      by simp
     simp [coordinateDerivative, MultiIndex.directions, α, hnil, coordinateDerivativeList]
   have heval : j α ⟨x, hx⟩ = f x := by
     rw [hj α ⟨x, hx⟩, hzero, hfg (hAB hx)]
   rw [← heval]
   exact ((ContinuousMap.norm_coe_le_norm (j α) ⟨x, hx⟩).trans
     (norm_le_pi_norm j α)).trans hjbound
-
-end DedekindZetaZeroFree.KPGlobalResidualConstruction.CanonicalWholeCoreNative.NativeWordInverse.ActualInverseValue
-
-end

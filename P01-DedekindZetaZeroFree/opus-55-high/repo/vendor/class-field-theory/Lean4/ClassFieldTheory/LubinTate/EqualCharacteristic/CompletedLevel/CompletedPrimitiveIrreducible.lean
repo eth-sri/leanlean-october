@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # The completed theta-intertwining theorem: irreducibility after completed unramified base change
 
@@ -33,7 +27,6 @@ is extended to the completed level field.
 noncomputable section
 
 open scoped LaurentSeries Polynomial PowerSeries
-
 
 universe u v
 
@@ -52,7 +45,7 @@ noncomputable local instance equalCharacteristicCompletedPrimitiveIrreducibleBas
 
 /-- Coefficientwise extension of the integral primitive polynomial from
 `κ[[T]]` to `(AlgebraicClosure κ)[[T]]`. -/
-noncomputable def equalCharacteristicCompletedIntegralPrimitivePolynomial
+def equalCharacteristicCompletedIntegralPrimitivePolynomial
     (F : LocalField.{u, v} K) (n : ℕ) :
     Polynomial (AlgebraicClosure F.residueField)⟦X⟧ :=
   (equalCharacteristicLubinTateIntegralPrimitivePolynomial F n).map
@@ -62,8 +55,8 @@ noncomputable def equalCharacteristicCompletedIntegralPrimitivePolynomial
 /-- States the theorem `equalCharacteristicCompletedIntegralPrimitivePolynomial_monic`. -/
 theorem equalCharacteristicCompletedIntegralPrimitivePolynomial_monic
     (F : LocalField.{u, v} K) (n : ℕ) :
-    (equalCharacteristicCompletedIntegralPrimitivePolynomial F n).Monic := by
-  exact (equalCharacteristicLubinTateIntegralPrimitivePolynomial_monic F n).map _
+    (equalCharacteristicCompletedIntegralPrimitivePolynomial F n).Monic := 
+  (equalCharacteristicLubinTateIntegralPrimitivePolynomial_monic F n).map _
 
 /-- States the theorem `equalCharacteristicCompletedIntegralPrimitivePolynomial_natDegree`. -/
 theorem equalCharacteristicCompletedIntegralPrimitivePolynomial_natDegree
@@ -132,10 +125,7 @@ theorem equalCharacteristicCompletedIntegralPrimitivePolynomial_map_constantCoef
             (algebraMap F.residueField (AlgebraicClosure F.residueField))) =
         (algebraMap F.residueField (AlgebraicClosure F.residueField)).comp
           (PowerSeries.constantCoeff (R := F.residueField)) := by
-    ext f
-    simp only [RingHom.comp_apply,
-      ← PowerSeries.coeff_zero_eq_constantCoeff_apply,
-      PowerSeries.coeff_map]
+    rfl
   rw [hcomp, ← Polynomial.map_map,
     equalCharacteristicLubinTateIntegralPrimitivePolynomial_map_constantCoeff]
   simp
@@ -210,8 +200,3 @@ theorem equalCharacteristicCompletedPrimitivePolynomial_irreducible
     (equalCharacteristicCompletedIntegralPrimitivePolynomial_monic F n).irreducible_iff_irreducible_map_fraction_map.mp
       (equalCharacteristicCompletedIntegralPrimitivePolynomial_irreducible F n)
   rwa [equalCharacteristicCompletedIntegralPrimitivePolynomial_map] at hmap
-
-end EqualCharacteristic
-end LubinTate
-
-end

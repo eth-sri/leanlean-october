@@ -15,13 +15,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Archimedean power indices in idele class quotients
 
@@ -96,7 +89,7 @@ theorem nthPowerSubgroup_le_infinitePositiveSubgroup
       simp at hzero
     change 0 < emb (((y ^ (n : ℕ) : w.Completionˣ) : w.Completion))
     rw [Units.val_pow_eq_pow_val, map_pow, hm, pow_add, ← pow_two]
-    exact sq_pos_of_ne_zero (pow_ne_zero m hyne)
+    positivity
   · exact False.elim (hwNotReal hw)
 
 /-- The sign of a unit at a real infinite place. -/
@@ -165,12 +158,11 @@ theorem realInfinitePlaceSignHom_surjective
       simp [realInfinitePlaceSignHom, eu, hs]
   | pos =>
       refine ⟨eu.symm 1, ?_⟩
-      apply Units.ext
-      simp [realInfinitePlaceSignHom, eu, hs]
+      simp_all
 
 /-- The quotient by positive units at a real place is its two-element
 sign group. -/
-noncomputable def realInfinitePositiveQuotientEquivSign
+def realInfinitePositiveQuotientEquivSign
     (w : InfinitePlace K)
     (hw : w.IsReal) :
     w.Completionˣ ⧸ RayClass.infinitePositiveSubgroup w ≃*
@@ -251,9 +243,7 @@ theorem nthPowerSubgroup_eq_top_of_real_odd
         x ∈ RayClass.infinitePositiveSubgroup w := by
       rw [RayClass.mem_infinitePositiveSubgroup_iff]
       intro hw'
-      have hproof : hw' = hw := Subsingleton.elim _ _
-      subst hproof
-      exact hxpos
+      omega
     obtain ⟨y, hy⟩ :=
       _root_.exists_infinitePositiveSubgroup_nthRoot
         w (n : ℕ) n.pos x hxPositive
@@ -297,13 +287,9 @@ theorem card_infinitePlace_nthPowerQuotient
       simpa [hw, hn] using
         card_realInfinitePositiveQuotient w hw
     · have hodd : Odd (n : ℕ) :=
-        (Nat.even_or_odd (n : ℕ)).resolve_left hn
+        by simp_all
       rw [nthPowerSubgroup_eq_top_of_real_odd n w hw hodd]
-      let :
-          Subsingleton
-            (w.Completionˣ ⧸ (⊤ : Subgroup w.Completionˣ)) :=
-        QuotientGroup.subsingleton_quotient_top
-      simp [hw, hn]
+      simp_all
   · have hpower :
         (powMonoidHom (n : ℕ) :
             w.Completionˣ →* w.Completionˣ).range =
@@ -314,14 +300,4 @@ theorem card_infinitePlace_nthPowerQuotient
         RayClass.infinitePositiveSubgroup w = ⊤ := by
       ext x
       simp [RayClass.mem_infinitePositiveSubgroup_iff, hw]
-    rw [hpower, hpositive]
-    let :
-        Subsingleton
-          (w.Completionˣ ⧸ (⊤ : Subgroup w.Completionˣ)) :=
-      QuotientGroup.subsingleton_quotient_top
-    simp [hw]
-
-
-end GlobalClassFieldTheory.ClassFieldAxiom
-
-end
+    simp_all

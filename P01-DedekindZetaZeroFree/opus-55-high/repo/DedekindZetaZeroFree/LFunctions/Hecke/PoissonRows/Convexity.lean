@@ -16,7 +16,7 @@ variable {F : Type} [Field F] [NumberField F]
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 variable (D : FixedData S η)
 
-private lemma rpow_conductor_le {Q q U Cc K e : ℝ} (hCc : 0 < Cc) (hK1 : 1 ≤ K)
+lemma rpow_conductor_le {Q q U Cc K e : ℝ} (hCc : 0 < Cc) (hK1 : 1 ≤ K)
     (hK2 : 2 * Cc ≤ K) (hU : 0 ≤ U) (hq : q < 2 * U) (hQ0 : 0 ≤ Q) (hQ : Q ≤ Cc * q)
     (he0 : 0 ≤ e) (he1 : e ≤ 1) : Q ^ e ≤ K * U ^ e := by
   have hQK : Q ≤ K * U := by
@@ -31,7 +31,7 @@ private lemma rpow_conductor_le {Q q U Cc K e : ℝ} (hCc : 0 < Cc) (hK1 : 1 ≤
     _ = K ^ e * U ^ e := Real.mul_rpow (by linarith) hU
     _ ≤ K * U ^ e := mul_le_mul_of_nonneg_right hKe (Real.rpow_nonneg hU e)
 
-private lemma num_combine {m n Q q U Y Ce C1 K σ d ε : ℝ} (hCe : 0 < Ce) (hC1 : 0 < C1)
+lemma num_combine {m n Q q U Y Ce C1 K σ d ε : ℝ} (hCe : 0 < Ce) (hC1 : 0 < C1)
     (hK : 0 < K) (hU : 1 ≤ U) (hq : q < 2 * U) (hq0 : 0 < q) (hd : d ≤ ε) (hε : 0 < ε)
     (hY : 0 ≤ Y) (hm : m ≤ Ce * q ^ (ε / 2)) (hn0 : 0 ≤ n) (hn : n ≤ C1 * Q * Y)
     (hQ : Q ≤ K * U ^ ((1 + d - σ) / 2)) (hQ0 : 0 ≤ Q) :
@@ -58,7 +58,7 @@ private lemma num_combine {m n Q q U Y Ce C1 K σ d ε : ℝ} (hCe : 0 < Ce) (hC
     _ ≤ (Ce * 2 ^ (ε / 2) * C1 * K) * U ^ ((1 - σ) / 2 + ε) * Y :=
         mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left h2 hc) hY
 
-private lemma det_combine {n Q U Y C1 K σ d ε : ℝ} (hC1 : 0 < C1) (hK : 0 ≤ K) (hU : 1 ≤ U)
+lemma det_combine {n Q U Y C1 K σ d ε : ℝ} (hC1 : 0 < C1) (hK : 0 ≤ K) (hU : 1 ≤ U)
     (hd : d ≤ ε) (hε : 0 < ε) (hY : 0 ≤ Y) (hn : n ≤ C1 * Q * Y)
     (hQ : Q ≤ K * U ^ ((1 + d - σ) / 2)) :
     n ≤ (C1 * K) * U ^ ((1 - σ) / 2 + ε) * Y := by

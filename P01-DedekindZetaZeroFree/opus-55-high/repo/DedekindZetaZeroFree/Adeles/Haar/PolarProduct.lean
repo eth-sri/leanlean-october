@@ -9,7 +9,6 @@ namespace DedekindZetaZeroFree.ThetaPositiveSheetMellin
 noncomputable section
 open MeasureTheory NumberField
 open scoped Classical ENNReal
-set_option autoImplicit false
 variable {F : Type} [Field F] [NumberField F]
 
 instance archMeasurableSpace (w : InfinitePlace F) : MeasurableSpace w.Completionˣ :=
@@ -45,12 +44,9 @@ abbrev PA := ThetaProfileHaarSheets.PositiveAxis
  instance instLocallyCompactSpacePolarHaarPositiveAxis : LocallyCompactSpace PA := isOpen_Ioi.locallyCompactSpace
  instance instIsTopologicalGroupPolarHaarPositiveAxis : IsTopologicalGroup PA where
   continuous_mul := by
-    apply Continuous.subtype_mk
-    exact (continuous_subtype_val.comp continuous_fst).mul
-      (continuous_subtype_val.comp continuous_snd)
+    fun_prop
   continuous_inv := by
-    apply Continuous.subtype_mk
-    exact continuous_subtype_val.inv₀ (fun x => x.property.ne')
+    fun_prop
  def complexPolar (p : PA × Circle) : ℂˣ :=
   Units.mk0 ((Real.sqrt (p.1 : ℝ) : ℂ) * p.2) (mul_ne_zero
     (Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr p.1.property).ne') p.2.coe_ne_zero)
@@ -58,16 +54,16 @@ abbrev PA := ThetaProfileHaarSheets.PositiveAxis
   (⟨‖(z : ℂ)‖ ^ 2, sq_pos_of_pos (norm_pos_iff.mpr z.ne_zero)⟩,
     ⟨(z : ℂ) / (‖(z : ℂ)‖ : ℂ), by
       apply mem_sphere_zero_iff_norm.mpr
-      simp [norm_div, norm_pos_iff.mpr z.ne_zero, z.ne_zero]⟩)
+      simp⟩)
  theorem complexPolar_left_inv (p : PA × Circle) :
     polarInverse (complexPolar p) = p := by
   rcases p with ⟨⟨t, ht⟩, w⟩
   have hs := Real.sqrt_pos.mpr ht
   apply Prod.ext
   · apply Subtype.ext
-    simp [polarInverse, complexPolar, norm_mul, abs_of_pos hs, Real.sq_sqrt ht.le]
+    simp [polarInverse, complexPolar, abs_of_pos hs, Real.sq_sqrt ht.le]
   · apply Circle.ext
-    simp [polarInverse, complexPolar, norm_mul, abs_of_pos hs]
+    simp [polarInverse, complexPolar, abs_of_pos hs]
     field_simp [Complex.ofReal_ne_zero.mpr hs.ne']
  theorem complexPolar_right_inv (z : ℂˣ) :
     complexPolar (polarInverse z) = z := by
@@ -83,13 +79,10 @@ abbrev PA := ThetaProfileHaarSheets.PositiveAxis
   ring
  theorem complexPolar_continuous : Continuous complexPolar := by
   apply Units.isEmbedding_val₀.continuous_iff.mpr
-  exact (Complex.continuous_ofReal.comp (Real.continuous_sqrt.comp
-    (continuous_subtype_val.comp continuous_fst))).mul
-    (continuous_subtype_val.comp continuous_snd)
+  fun_prop
  theorem polarInverse_continuous : Continuous polarInverse := by
   apply Continuous.prodMk
-  · apply Continuous.subtype_mk
-    exact Units.continuous_val.norm.pow 2
+  · fun_prop
   · apply Continuous.subtype_mk
     exact Units.continuous_val.div
       (Complex.continuous_ofReal.comp Units.continuous_val.norm)
@@ -138,8 +131,8 @@ theorem groupMeasurableSpace_eq_prod (A : SArithmeticData F) :
   haveI hu : ∀ w : InfinitePlace F, SecondCountableTopology w.Completionˣ := fun w => by
     haveI := hc w
     exact (unitsHomeomorphNeZero (G₀ := w.Completion)).isInducing.secondCountableTopology
-  haveI hf : ∀ v : A.Sf, SecondCountableTopology (ThetaFiniteCutoff.LocalUnits A v) := fun v => by
-    exact (unitsHomeomorphNeZero (G₀ := v.val.adicCompletion F)).isInducing.secondCountableTopology
+  haveI hf : ∀ v : A.Sf, SecondCountableTopology (ThetaFiniteCutoff.LocalUnits A v) := fun v => 
+    (unitsHomeomorphNeZero (G₀ := v.val.adicCompletion F)).isInducing.secondCountableTopology
   letI : MeasurableSpace A.G := Prod.instMeasurableSpace
   exact (Prod.borelSpace (α := (w : InfinitePlace F) → w.Completionˣ)
     (β := (v : A.Sf) → ThetaFiniteCutoff.LocalUnits A v)).measurable_eq.symm
@@ -164,11 +157,8 @@ instance productHaar_isHaarMeasure (A : SArithmeticData F)
   haveI : ∀ w : InfinitePlace F, SigmaFinite (archHaar A w (ν w)) := fun w => inferInstance
   haveI : ∀ v : A.Sf, SigmaFinite (μ v) := fun v => inferInstance
   have hm : (Prod.instMeasurableSpace : MeasurableSpace A.G) =
-      ThetaProfileHaarSheets.groupMeasurableSpace A := by
-    exact BorelSpace.measurable_eq
+      ThetaProfileHaarSheets.groupMeasurableSpace A := 
+    BorelSpace.measurable_eq
   unfold productHaar
   rw [← hm, Measure.map_id']
   infer_instance
-
-end
-end DedekindZetaZeroFree.ThetaPositiveSheetMellin

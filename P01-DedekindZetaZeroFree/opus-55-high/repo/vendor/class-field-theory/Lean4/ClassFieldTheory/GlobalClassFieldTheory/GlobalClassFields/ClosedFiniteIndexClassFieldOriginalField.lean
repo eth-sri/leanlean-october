@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Transport to the original number field
 
@@ -34,7 +31,7 @@ variable {K : Type} [Field K] [NumberField K]
 
 /-- The canonical fixed-field copy, regarded as an algebra over the
 original number field. -/
-noncomputable instance closedFiniteIndexClassFieldBaseAlgebraOverOriginal
+instance closedFiniteIndexClassFieldBaseAlgebraOverOriginal
     (H : Subgroup (IdeleClassGroup K))
     (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
     [H.FiniteIndex] :
@@ -46,7 +43,7 @@ noncomputable instance closedFiniteIndexClassFieldBaseAlgebraOverOriginal
 
 /-- The base-field identification as an equivalence of algebras over
 the original number field. -/
-noncomputable def closedFiniteIndexClassFieldBaseEquivOverOriginal
+def closedFiniteIndexClassFieldBaseEquivOverOriginal
     (H : Subgroup (IdeleClassGroup K))
     (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
     [H.FiniteIndex] :
@@ -60,7 +57,7 @@ noncomputable def closedFiniteIndexClassFieldBaseEquivOverOriginal
 
 /-- The selected class field, regarded as an algebra over the original
 number field through its canonical fixed-field copy. -/
-noncomputable instance closedFiniteIndexClassFieldAlgebraOverOriginal
+instance closedFiniteIndexClassFieldAlgebraOverOriginal
     (H : Subgroup (IdeleClassGroup K))
     (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
     [H.FiniteIndex] :
@@ -96,7 +93,7 @@ theorem closedFiniteIndexClassField_algebraMap_original
           (K := K) H hclosed x) :=
   rfl
 
-noncomputable instance
+instance
     closedFiniteIndexClassFieldBaseFiniteDimensionalOverOriginal
     (H : Subgroup (IdeleClassGroup K))
     (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
@@ -107,7 +104,7 @@ noncomputable instance
   (closedFiniteIndexClassFieldBaseEquivOverOriginal
     (K := K) H hclosed).toLinearEquiv.finiteDimensional
 
-noncomputable instance closedFiniteIndexClassFieldScalarTowerOverOriginal
+instance closedFiniteIndexClassFieldScalarTowerOverOriginal
     (H : Subgroup (IdeleClassGroup K))
     (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
     [H.FiniteIndex] :
@@ -118,7 +115,7 @@ noncomputable instance closedFiniteIndexClassFieldScalarTowerOverOriginal
         (K := K) H hclosed) :=
   IsScalarTower.of_algebraMap_eq' rfl
 
-noncomputable instance
+instance
     closedFiniteIndexClassFieldFiniteDimensionalOverOriginal
     (H : Subgroup (IdeleClassGroup K))
     (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
@@ -132,7 +129,7 @@ noncomputable instance
     (closedFiniteIndexClassField
       (K := K) H hclosed)
 
-noncomputable instance closedFiniteIndexClassFieldIsGaloisOverOriginal
+instance closedFiniteIndexClassFieldIsGaloisOverOriginal
     (H : Subgroup (IdeleClassGroup K))
     (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
     [H.FiniteIndex] :
@@ -192,7 +189,7 @@ noncomputable instance closedFiniteIndexClassFieldIsGaloisOverOriginal
           (closedFiniteIndexClassField
             (K := K) H hclosed))) x := rfl
 
-noncomputable instance
+instance
     closedFiniteIndexClassFieldIsAbelianGaloisOverOriginal
     (H : Subgroup (IdeleClassGroup K))
     (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
@@ -248,11 +245,7 @@ theorem closedFiniteIndexClassField_ideleClassNorm_range
             (R := ℚ)
             (A₁ := closedFiniteIndexClassField
               (K := K) H hclosed))
-          (fun x => by
-            exact closedFiniteIndexClassField_algebraMap_original
+          (fun x => 
+            closedFiniteIndexClassField_algebraMap_original
               (K := K) H hclosed x)
     _ = H.map g := hCanonical
-end GlobalClassFields
-end GlobalClassFieldTheory
-
-end

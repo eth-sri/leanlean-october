@@ -65,7 +65,7 @@ variable (S : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F)))
     compactRestriction_representatives F ζ hζ M S h.val U h.property.2 k] at he
   exact he
 
-private theorem productFixedLevel_finite
+theorem productFixedLevel_finite
     (U : ∀ q : S, OpenSubgroup (Cover F ζ hζ S q)) :
     Module.Finite ℂ (productFixedLevel F ζ hζ M S U) := by
   let (q : S) : Module.Finite ℂ (Fiber F ζ hζ M S q) :=

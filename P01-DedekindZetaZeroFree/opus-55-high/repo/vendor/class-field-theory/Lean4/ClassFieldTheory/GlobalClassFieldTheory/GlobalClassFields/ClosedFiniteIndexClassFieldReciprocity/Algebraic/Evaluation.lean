@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Evaluation of algebraic closed finite-index reciprocity
 
@@ -24,7 +21,6 @@ is inherited without reconstructing the selected class-field instance tower.
 
 open scoped Classical IsMulCommutative NumberField
 
-noncomputable section
 
 namespace GlobalClassFieldTheory
 namespace GlobalClassFields
@@ -45,8 +41,3 @@ theorem closedFiniteIndexClassFieldGaloisEquivNormQuotient_apply
         (K := K) H hclosed σ :=
   closedFiniteIndexClassFieldGaloisContinuousEquivNormQuotient_apply
     (K := K) H hclosed σ
-
-end GlobalClassFields
-end GlobalClassFieldTheory
-
-end

@@ -15,13 +15,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # The coefficient source for the p-adic changed-uniformizer intertwiner
 
@@ -54,7 +47,7 @@ abbrev padicCompletedUnramifiedWittRing (p : ℕ) [Fact p.Prime] :=
   WittVector p (AlgebraicClosure (ZMod p))
 
 /-- The canonical inclusion `ℤ_[p] → W(AlgebraicClosure (ZMod p))`. -/
-noncomputable def padicIntToCompletedUnramifiedWittRing
+def padicIntToCompletedUnramifiedWittRing
     (p : ℕ) [Fact p.Prime] :
     ℤ_[p] →+* padicCompletedUnramifiedWittRing p :=
   (WittVector.map
@@ -76,7 +69,7 @@ theorem padicIntToCompletedUnramifiedWittRing_frobenius
 
 /-- The chosen valuation ring of `ℚ_[p]` maps canonically into the
 completed-unramified Witt ring. -/
-noncomputable def padicValuationSubringToCompletedUnramifiedWittRing
+def padicValuationSubringToCompletedUnramifiedWittRing
     (p : ℕ) [Fact p.Prime] :
     (padicLocalField p).valuationSubring →+*
       padicCompletedUnramifiedWittRing p := by
@@ -99,7 +92,7 @@ theorem padicValuationSubringToCompletedUnramifiedWittRing_uniformizer
         ((padicIntEquivValuationSubring p).symm
           (padicIntEquivValuationSubring p (p : ℤ_[p]))) =
       (p : padicCompletedUnramifiedWittRing p)
-  rw [RingEquiv.symm_apply_apply, map_natCast]
+  simp
 
 /-- Witt Frobenius fixes the chosen p-adic valuation-ring coefficients. -/
 theorem padicValuationSubringToCompletedUnramifiedWittRing_frobenius
@@ -119,7 +112,7 @@ theorem padicValuationSubringToCompletedUnramifiedWittRing_frobenius
       ((padicIntEquivValuationSubring p).symm z)
 
 /-- The induced map on p-adic integer units. -/
-noncomputable def padicValuationUnitToCompletedUnramifiedWittUnit
+def padicValuationUnitToCompletedUnramifiedWittUnit
     (p : ℕ) [Fact p.Prime] :
     (padicLocalField p).valuationSubringˣ →*
       (padicCompletedUnramifiedWittRing p)ˣ :=
@@ -157,7 +150,7 @@ noncomputable def padicValuationUnitToCompletedUnramifiedWittUnit
 
 /-- The actual unit `ε` used as the linear coefficient of the p-adic
 changed-uniformizer intertwiner. -/
-noncomputable def padicChangedUniformizerLinearCoefficient
+def padicChangedUniformizerLinearCoefficient
     (p : ℕ) [Fact p.Prime]
     (u : (padicLocalField p).valuationSubringˣ) :
     (padicCompletedUnramifiedWittRing p)ˣ :=
@@ -214,7 +207,7 @@ theorem padicChangedUniformizerLinearCoefficient_frobenius
       (completedUnramifiedWittUnit_coeff_zero_ne_zero p
         (padicValuationUnitToCompletedUnramifiedWittUnit p u)))
 
- noncomputable def padicChangedUniformizerCoefficientOperator
+ def padicChangedUniformizerCoefficientOperator
     (p : ℕ) [Fact p.Prime]
     (u : (padicLocalField p).valuationSubringˣ)
     (m : ℕ) :
@@ -229,7 +222,7 @@ theorem padicChangedUniformizerLinearCoefficient_frobenius
   map_add' a b := by
     simp only [map_add, mul_add]
 
-private theorem padicChangedUniformizerCoefficientOperator_maps_pow_succ
+theorem padicChangedUniformizerCoefficientOperator_maps_pow_succ
     (p : ℕ) [Fact p.Prime]
     (u : (padicLocalField p).valuationSubringˣ)
     (m : ℕ) (hm : 2 ≤ m) :
@@ -256,9 +249,7 @@ private theorem padicChangedUniformizerCoefficientOperator_maps_pow_succ
   have hcI :
       (↑((padicValuationUnitToCompletedUnramifiedWittUnit p u)⁻¹) : W) *
           (p : W) ^ (m - 1) ∈ I :=
-    I.mul_mem_left
-      (↑((padicValuationUnitToCompletedUnramifiedWittUnit p u)⁻¹) : W)
-      hpPowI
+    by simp_all
   intro n x hx
   have hφxMap : φ x ∈ (I ^ n).map φ :=
     Ideal.mem_map_of_mem φ hx
@@ -302,7 +293,3 @@ theorem existsUnique_padicChangedUniformizerCoefficient
       (padicChangedUniformizerCoefficientOperator_maps_pow_succ
         p u m hm)
       b
-
-end LubinTate
-
-end

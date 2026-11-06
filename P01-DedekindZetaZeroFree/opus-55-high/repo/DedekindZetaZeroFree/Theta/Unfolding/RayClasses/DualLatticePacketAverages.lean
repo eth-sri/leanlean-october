@@ -87,9 +87,3 @@ theorem coprimeIdealResidue_dual_common_averages :
   apply integral_congr_ae
   exact Filter.Eventually.of_forall (fun h =>
     coprimeIdealResidue_dual_common_packet hF m a hm ha hcop hmt η E u hu lift hlift h)
-
-end Coprime
-
-end DedekindZetaZeroFree.Hecke.Theta
-
-end

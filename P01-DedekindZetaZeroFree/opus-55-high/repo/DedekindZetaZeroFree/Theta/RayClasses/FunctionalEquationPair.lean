@@ -15,10 +15,10 @@ namespace DedekindZetaZeroFree.AbelianQuotient.RayTheta
 variable {K : Type} [Field K] [NumberField K]
 
 private lemma q_pos (t : ℝ) (ht : 0 < t) (h : RayCoset.logHyperplane K)
-    (v : InfinitePlace K) : 0 < q K t h v := by
-  exact mul_pos (Real.rpow_pos_of_pos ht _) (Real.exp_pos _)
+    (v : InfinitePlace K) : 0 < q K t h v := 
+  mul_pos (Real.rpow_pos_of_pos ht _) (Real.exp_pos _)
 
-private lemma q_inv (t : ℝ) (ht : 0 < t) (h : RayCoset.logHyperplane K) :
+lemma q_inv (t : ℝ) (ht : 0 < t) (h : RayCoset.logHyperplane K) :
     (fun v => (q K (1 / t) h v)⁻¹) = q K t (-h) := by
   funext v
   simp [q, one_div, Real.inv_rpow ht.le, Real.exp_neg, mul_inv_rev, mul_comm]
@@ -53,8 +53,8 @@ theorem fδ_one_div
   rw [if_pos (one_div_pos.mpr ht), if_pos ht]
   rw [integral_congr_ae (Filter.Eventually.of_forall heq), integral_const_mul]
   simp only [Complex.ofReal_mul, Complex.ofReal_div, Complex.ofReal_ofNat]
-  simp only [one_div, mul_inv_rev, inv_inv]
-  simp only [Complex.ofReal_one, inv_one, inv_inv, mul_one]
+  simp only [mul_inv_rev]
+  simp only [Complex.ofReal_one]
   field_simp
   <;> ring
 
@@ -69,8 +69,8 @@ def Pδ (D : RayCoset.Data K) (δ : Finset (RayCoset.RealPlaces K)) :
   hf_int := locallyIntegrableOn_fδ D δ
   hg_int := locallyIntegrableOn_gδDual D δ
   hk := by norm_num
-  hε := by
-    exact pow_ne_zero _ (neg_ne_zero.mpr Complex.I_ne_zero)
+  hε := 
+    pow_ne_zero _ (neg_ne_zero.mpr Complex.I_ne_zero)
   h_feq := by
     intro t ht
     simpa only [Real.rpow_one, smul_eq_mul] using fδ_one_div D δ t ht
@@ -104,7 +104,3 @@ theorem g0δ_of_nonempty (D : RayCoset.Data K)
     (δ : Finset (RayCoset.RealPlaces K)) (hδ : δ.Nonempty) :
     g0δ D δ = 0 := by
   simp [g0δ, hδ.ne_empty]
-
-end DedekindZetaZeroFree.AbelianQuotient.RayTheta
-
-end

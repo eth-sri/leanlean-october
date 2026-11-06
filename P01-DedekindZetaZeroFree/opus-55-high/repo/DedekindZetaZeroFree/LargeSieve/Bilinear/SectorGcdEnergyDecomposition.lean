@@ -21,28 +21,28 @@ def gcdBlock {R L G D : Type*} [Fintype R] [Fintype L]
   ∑ r, ∑ l, ∑ k, if sector l = g ∧ sector k = g ∧ gcdLabel l k = d then
     (w r : ℂ) * (A r l * x l) * star (A r k * x k) else 0
 
-private lemma ofReal_normSq_eq (z : ℂ) : ((‖z‖ ^ 2 : ℝ) : ℂ) = z * star z := by
+lemma ofReal_normSq_eq (z : ℂ) : ((‖z‖ ^ 2 : ℝ) : ℂ) = z * star z := by
   rw [Complex.ofReal_pow, Complex.star_def, ← Complex.mul_conj']
 
-private lemma ofReal_mul_normSq_eq (w : NNReal) (z : ℂ) :
+lemma ofReal_mul_normSq_eq (w : NNReal) (z : ℂ) :
     (((w : ℝ) * ‖z‖ ^ 2 : ℝ) : ℂ) = (w : ℂ) * (z * star z) := by
   rw [Complex.ofReal_mul, ofReal_normSq_eq]
 
-private lemma ofReal_sum_eq {R : Type*} [Fintype R] (X : R → ℝ) :
+lemma ofReal_sum_eq {R : Type*} [Fintype R] (X : R → ℝ) :
     ((∑ r, X r : ℝ) : ℂ) = ∑ r, (X r : ℂ) := by
   rw [Complex.ofReal_sum]
 
-private lemma sum_mul_star_sum {L : Type*} [Fintype L] (f : L → ℂ) :
+lemma sum_mul_star_sum {L : Type*} [Fintype L] (f : L → ℂ) :
     (∑ l, f l) * star (∑ l, f l) = ∑ l, ∑ k, f l * star (f k) := by
   rw [star_sum, Finset.sum_mul]
   exact Finset.sum_congr rfl fun l _ => Finset.mul_sum ..
 
-private lemma ite_mul_star_ite (a b : ℂ) (P Q : Prop) [Decidable P] [Decidable Q] :
+lemma ite_mul_star_ite (a b : ℂ) (P Q : Prop) [Decidable P] [Decidable Q] :
     (if P then a else 0) * star (if Q then b else 0) =
       if P ∧ Q then a * star b else 0 := by
   by_cases hP : P <;> by_cases hQ : Q <;> simp [hP, hQ]
 
-private lemma sector_sum_eq {R L G : Type*} [Fintype L]
+lemma sector_sum_eq {R L G : Type*} [Fintype L]
     (A : R → L → ℂ) (sector : L → G) (x : L → ℂ) (g : G) (r : R) :
     (∑ l, ∑ k,
         (if sector l = g then A r l * x l else 0) *
@@ -53,28 +53,22 @@ private lemma sector_sum_eq {R L G : Type*} [Fintype L]
   refine Finset.sum_congr rfl fun l _ => Finset.sum_congr rfl fun k _ => ?_
   exact ite_mul_star_ite (A r l * x l) (A r k * x k) (sector l = g) (sector k = g)
 
-private lemma sum_pool_ite {D : Type*} (pool : Finset D) (d0 : D)
+lemma sum_pool_ite {D : Type*} (pool : Finset D) (d0 : D)
     (hd : d0 ∈ pool) (P : Prop) [Decidable P] (Y : ℂ) :
     (∑ d ∈ pool, if P ∧ d0 = d then Y else 0) = if P then Y else 0 := by
   classical
   by_cases hP : P
-  · rw [if_pos hP]
-    refine (Finset.sum_eq_single_of_mem d0 hd ?_).trans ?_
-    · intro d _ hne
-      rw [if_neg (show ¬(P ∧ d0 = d) from fun hc => hne hc.2.symm)]
-    · simp [hP]
-  · rw [if_neg hP]
-    refine Finset.sum_eq_zero fun d _ => ?_
-    rw [if_neg (show ¬(P ∧ d0 = d) from fun hc => hP hc.1)]
+  · simp_all
+  simp_all
 
-private lemma sum_pool_sum_swap {L D : Type*} [Fintype L] (pool : Finset D)
+lemma sum_pool_sum_swap {L D : Type*} [Fintype L] (pool : Finset D)
     (F : L → L → D → ℂ) :
     (∑ d ∈ pool, ∑ l, ∑ k, F l k d) = ∑ l, ∑ k, ∑ d ∈ pool, F l k d := by
   rw [Finset.sum_comm]
   refine Finset.sum_congr rfl fun l _ => ?_
   rw [Finset.sum_comm]
 
-private lemma gcdBlock_eq {R L G D : Type*} [Fintype R] [Fintype L]
+lemma gcdBlock_eq {R L G D : Type*} [Fintype R] [Fintype L]
     (w : R → NNReal) (A : R → L → ℂ) (sector : L → G)
     (gcdLabel : L → L → D) (x : L → ℂ) (g : G) (d : D) :
     gcdBlock w A sector gcdLabel x g d =
@@ -93,18 +87,15 @@ private lemma gcdBlock_eq {R L G D : Type*} [Fintype R] [Fintype L]
     rw [if_pos (show sector l = g ∧ sector k = g ∧ gcdLabel l k = d from ⟨h1, h2, h3⟩)]
     ring
   · rw [if_neg h, mul_zero]
-    rw [if_neg (show ¬(sector l = g ∧ sector k = g ∧ gcdLabel l k = d) from
-      fun hc => h ⟨⟨hc.1, hc.2.1⟩, hc.2.2⟩)]
+    simp_all
 
-private lemma sum_sector_eq_sum {L G : Type*} [Fintype L] [Fintype G]
+lemma sum_sector_eq_sum {L G : Type*} [Fintype L] [Fintype G]
     (f : L → ℂ) (sector : L → G) :
     (∑ g, ∑ l, if sector l = g then f l else 0) = ∑ l, f l := by
   rw [Finset.sum_comm]
-  refine Finset.sum_congr rfl fun l _ => ?_
-  rw [Finset.sum_ite_eq]
   simp
 
-private lemma sum_mul_sum_swap {R G : Type*} [Fintype R] [Fintype G]
+lemma sum_mul_sum_swap {R G : Type*} [Fintype R] [Fintype G]
     (u : R → ℝ) (c : ℝ) (f : R → G → ℝ) :
     (∑ r, u r * (c * ∑ g, f r g)) = c * ∑ g, ∑ r, u r * f r g := by
   have h1 : (∑ r, u r * (c * ∑ g, f r g)) = ∑ r, ∑ g, u r * (c * f r g) := by
@@ -119,7 +110,7 @@ private lemma sum_mul_sum_swap {R G : Type*} [Fintype R] [Fintype G]
     rw [Finset.mul_sum]
     refine Finset.sum_congr rfl fun g _ => ?_
     rw [Finset.mul_sum]
-  rw [h1, h2, h3, h4]
+  simp_all
 
 private lemma row_bound {R L G : Type*} [Fintype L] [Fintype G]
     (A : R → L → ℂ) (sector : L → G) (x : L → ℂ) (r : R) :
@@ -190,7 +181,7 @@ theorem weighted_energy_eq_gcd_blocks
       ((A r l * x l) * star (A r k * x k))
   rw [hL, hR]
 
-private lemma sum_weight_normSq_le {R L G D : Type*} [Fintype R] [Fintype L]
+lemma sum_weight_normSq_le {R L G D : Type*} [Fintype R] [Fintype L]
     (w : R → NNReal) (A : R → L → ℂ) (sector : L → G)
     (gcdLabel : L → L → D) (x : L → ℂ) (g : G)
     (pool : Finset D) (hpool : ∀ l k, gcdLabel l k ∈ pool) :
@@ -223,6 +214,3 @@ theorem weighted_energy_le_sector_gcd_blocks
         apply mul_le_mul_of_nonneg_left _ (by positivity)
         exact Finset.sum_le_sum fun g _ =>
           sum_weight_normSq_le w A sector gcdLabel x g pool hpool
-
-end
-end DedekindZetaZeroFree.LargeSieve.Vendor.GcdReduction

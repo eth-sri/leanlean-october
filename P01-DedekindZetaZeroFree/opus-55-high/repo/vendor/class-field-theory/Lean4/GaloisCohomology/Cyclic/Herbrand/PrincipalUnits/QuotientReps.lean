@@ -10,9 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-set_option autoImplicit false
 /-! Provides the public declarations in the `CyclicCohomology.Herbrand.PrincipalUnits.QuotientReps` Lean module. -/
 
 namespace CyclicCohomology
@@ -109,20 +106,4 @@ theorem integerUnitsModPrincipalUnitsAtLevelMk_eq_one_iff
     integerUnitsModPrincipalUnitsAtLevelMk K n x = 1 ↔
       x ∈ principalUnits K n := by
   change (QuotientGroup.mk x : 𝒪[K]ˣ ⧸ principalUnits K n) = 1 ↔ _
-  exact QuotientGroup.eq_one_iff x
-
-/-- Two units represent the same class exactly when their quotient is a level principal unit. -/
-@[simp]
-theorem integerUnitsModPrincipalUnitsAtLevelMk_eq_iff_div_mem
-    (K : Type u) [Field K] [ValuativeRel K] (n : Nat) (x y : 𝒪[K]ˣ) :
-    integerUnitsModPrincipalUnitsAtLevelMk K n x =
-        integerUnitsModPrincipalUnitsAtLevelMk K n y ↔
-      x / y ∈ principalUnits K n := by
-  change
-    (QuotientGroup.mk x : 𝒪[K]ˣ ⧸ principalUnits K n) =
-      QuotientGroup.mk y ↔ _
-  exact QuotientGroup.eq_iff_div_mem
-
-end
-
-end CyclicCohomology
+  simp

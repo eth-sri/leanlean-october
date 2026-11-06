@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.LocalFields.ValuationSh
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.KPRankOneShellRepair.CompactBorel
 open scoped NumberField Valued
 open NumberField IsDedekindDomain MeasureTheory ValuativeRel
@@ -24,7 +23,3 @@ theorem integral_affine (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
   have HH := he.integral_map (μ := μ) (fun x => f (x + t))
   rw [hm] at HH
   exact HH.symm.trans (integral_add_right_eq_self f t)
-
-end DedekindZetaZeroFree.KPRankOneShellRepair.CompactBorel
-
-end

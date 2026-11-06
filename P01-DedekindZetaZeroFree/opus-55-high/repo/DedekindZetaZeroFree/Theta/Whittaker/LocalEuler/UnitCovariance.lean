@@ -40,7 +40,3 @@ theorem residueCoefficient_norm_of_isUnit (I : A.Exterior) (u : A.R)
     rw [← map_pow]
     simpa using congrArg (fun u : Fˣ => σ (u : F)) hp
   exact Complex.norm_eq_one_of_pow_eq_one hp' (by decide)
-
-end DedekindZetaZeroFree.AllRowEuler.UnitCovariance
-
-end

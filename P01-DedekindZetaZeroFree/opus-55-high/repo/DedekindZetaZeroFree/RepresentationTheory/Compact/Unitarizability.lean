@@ -37,7 +37,7 @@ theorem exists_pos_mul_norm_le_norm_map (π : ContRepresentation 𝕜 G V) (hπ 
   obtain ⟨M, hM⟩ := isCompact_univ.exists_bound_of_continuousOn (f := fun g : G ↦ π g)
     hπ.continuousOn
   set M' := max M 1
-  have hM'pos : 0 < M' := lt_of_lt_of_le zero_lt_one (le_max_right _ _)
+  have hM'pos : 0 < M' := by positivity
   refine ⟨M'⁻¹, inv_pos.mpr hM'pos, fun g v ↦ ?_⟩
   have hcancel : π g⁻¹ (π g v) = v := Representation.inv_self_apply π.toRepresentation g v
   have hstep : ‖v‖ ≤ M' * ‖π g v‖ :=
@@ -85,7 +85,7 @@ theorem inner_gramOperator (v w : V) :
 theorem inner_gramOperator_left (v w : V) :
     ⟪gramOperator π hπ v, w⟫_𝕜 = ∫ g, ⟪π g v, π g w⟫_𝕜 ∂haarProb G := by
   rw [← inner_conj_symm, inner_gramOperator, ← integral_conj]
-  exact integral_congr_ae (Filter.Eventually.of_forall fun g ↦ inner_conj_symm _ _)
+  simp
 
 theorem isSymmetric_gramOperator : (gramOperator π hπ : V →ₗ[𝕜] V).IsSymmetric := fun v w ↦ by
   simp only [ContinuousLinearMap.coe_coe]
@@ -101,8 +101,7 @@ private theorem integrable_norm_sq (v : V) :
 theorem inner_gramOperator_self (v : V) :
     ⟪gramOperator π hπ v, v⟫_𝕜 = ((∫ g, ‖π g v‖ ^ 2 ∂haarProb G : ℝ) : 𝕜) := by
   rw [inner_gramOperator_left, ← integral_ofReal]
-  refine integral_congr_ae (Filter.Eventually.of_forall fun g ↦ ?_)
-  simp [inner_self_eq_norm_sq_to_K]
+  simp
 
 theorem exists_pos_mul_norm_sq_le_re_inner_gramOperator :
     ∃ c : ℝ, 0 < c ∧ ∀ v : V, c * ‖v‖ ^ 2 ≤ re ⟪gramOperator π hπ v, v⟫_𝕜 := by
@@ -124,24 +123,3 @@ theorem inner_gramOperator_map_map (g : G) (v w : V) :
   rw [inner_gramOperator, inner_gramOperator]
   simpa only [map_mul, mul_apply_eq_comp] using
     integral_mul_right_eq_self (μ := haarProb G) (fun h ↦ ⟪π h v, π h w⟫_𝕜) g
-
-@[simp]
-theorem adjoint_comp_gramOperator_comp (g : G) :
-    (ContinuousLinearMap.adjoint (π g)).comp ((gramOperator π hπ).comp (π g)) =
-      gramOperator π hπ := by
-  ext w
-  apply ext_inner_left 𝕜
-  intro v
-  simp only [ContinuousLinearMap.comp_apply, ContinuousLinearMap.adjoint_inner_right,
-    inner_gramOperator_map_map]
-
-@[simp]
-theorem gramOperator_eq_one (hunitary : DedekindZetaZeroFree.TauCeti.ContRepresentation.IsUnitary π) :
-    gramOperator π hπ = 1 := by
-  let := NormedSpace.restrictScalars ℝ 𝕜 V
-  let := IsScalarTower.restrictScalars ℝ 𝕜 V
-  have hconst : gramFamily π hπ = ContinuousMap.const G 1 :=
-    ContinuousMap.ext fun g ↦ hunitary.adjoint_comp_self g
-  rw [gramOperator, hconst, haarAverage_const]
-
-end ContRepresentation

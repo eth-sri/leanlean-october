@@ -20,7 +20,7 @@ private theorem root_four (ε : rootsOfUnity 3 F) : ε ^ 4 = ε := by
   have hp : ε ^ 3 = 1 := by apply Subtype.ext; exact ε.property
   rw [pow_succ, hp, one_mul]
 
-private theorem stage_exponent_three (x : symplecticQuotient F ζ hζ C L) : x ^ 3 = 1 := by
+theorem stage_exponent_three (x : symplecticQuotient F ζ hζ C L) : x ^ 3 = 1 := by
   obtain ⟨d, rfl⟩ := QuotientGroup.mk_surjective x
   have hd : d.val ^ 3 = 1 := by
     obtain ⟨y, hy⟩ := QuotientGroup.mk'_surjective
@@ -48,8 +48,7 @@ private theorem stage_exponent_three (x : symplecticQuotient F ζ hζ C L) : x ^
       map_one' := by
         apply MonoidHom.ext
         intro y
-        change ordinaryRoots F ζ hζ (b 1 y ^ 4) = 1
-        rw [h2, one_pow, map_one]
+        simp_all
       map_mul' := by
         intro x y
         apply MonoidHom.ext
@@ -131,6 +130,3 @@ theorem actual_finite_heisenberg :
       commutator_mem := H_commutator_mem F ζ hζ C L
       commutator_pairing := H_commutator_character F ζ hζ C L }
   exact ⟨T, rfl, rfl, (by intro z; rfl), (by intro x y; rfl)⟩
-
-end
-end DedekindZetaZeroFree.TorusFiniteHeisenberg

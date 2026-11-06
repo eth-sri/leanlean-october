@@ -55,7 +55,3 @@ def integerMap (v : HeightOneSpectrum (𝓞 F)) :
 @[simp] theorem integerMap_coe (v : HeightOneSpectrum (𝓞 F)) (x : 𝓞 F) :
     (integerMap F v x : v.adicCompletion F) =
       algebraMap F (v.adicCompletion F) (x : F) := rfl
-
-end DedekindZetaZeroFree.TraceBaseChange
-
-end

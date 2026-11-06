@@ -45,7 +45,7 @@ def ComplexDescentIdentities (C : ShrunkChart F ζ hζ U R P H)
         (∫ x, f x ∂(C.liftedMeasure.restrict (C.quotientMap ⁻¹' E))) =
           (∫ b, fbar b ∂((baseMeasure F ζ hζ U R P H C).restrict E)))
 
-private theorem shrunk_descends {C : ShrunkChart F ζ hζ U R P H} {S : Type*}
+theorem shrunk_descends {C : ShrunkChart F ζ hζ U R P H} {S : Type*}
     [MeasurableSpace S] (f : C.domain → S) (hf : Measurable f)
     (hinv : ∀ σ y, f (C.action σ y) = f y) :
     BorelDescends C.quotientMap f :=

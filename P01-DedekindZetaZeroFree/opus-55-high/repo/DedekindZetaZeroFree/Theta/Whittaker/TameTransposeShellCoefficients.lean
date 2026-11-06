@@ -9,7 +9,6 @@ public import DedekindZetaZeroFree.Metaplectic.Intertwining.ReverseFiniteMinor.H
 
 section
 
-noncomputable section
 namespace DedekindZetaZeroFree.KPTameTransposeLiteralCoefficients
 
 open scoped NumberField Classical
@@ -33,11 +32,5 @@ theorem normalized_tame_extension_exists
     (htame : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3) :
     ∃ P' : Polarization S.heisenberg,
       IsTamePolarization F ζ hζ q S P' ∧
-        IsNormalizedTameExtension F ζ hζ q S P' := by
-  exact KPTameTransposeLiteral.normalized_extension_exists F ζ hζ q S htame
-
-end DedekindZetaZeroFree.KPTameTransposeLiteralCoefficients
-
-end
-
-end
+        IsNormalizedTameExtension F ζ hζ q S P' := 
+  KPTameTransposeLiteral.normalized_extension_exists F ζ hζ q S htame

@@ -34,19 +34,14 @@ theorem principal_mem_supported_iff (x : Fˣ) :
     Algebra.algebraMap_self_apply, v.valuedAdicCompletion_eq_valuation']
 
 theorem principal_mem_H_iff (x : Fˣ) :
-    A.principalNormOne x ∈ A.H ↔ x ∈ A.U := by
-  exact A.principal_mem_supported_iff x
+    A.principalNormOne x ∈ A.H ↔ x ∈ A.U := 
+  A.principal_mem_supported_iff x
 
 def principalSupported : A.U →* A.H :=
   (A.principalNormOne.comp A.U.subtype).codRestrict _ fun u =>
     (A.principal_mem_H_iff u.val).2 u.prop
 
-theorem diagonal_norm_one (u : A.U) : A.norm (A.diagonal u.val) = 1 := by
-  have h := A.sCoordinatesRaw_norm (IdeleGroup.principalIdele F u.val)
-    ((A.principal_mem_supported_iff u.val).2 u.prop)
-  change A.norm (A.diagonal u.val) = _ at h
-  rw [IdeleGroup.absoluteNorm_principalIdele] at h
-  simpa only [Units.val_one, NNReal.coe_one, inv_one] using h
+theorem diagonal_norm_one (u : A.U) : A.norm (A.diagonal u.val) = 1 := by apply DedekindZetaZeroFree.SArithmeticData.norm_diagonal_unit <;> assumption
 
 def diagonalS : A.U →* A.G1 :=
   (A.diagonal.comp A.U.subtype).codRestrict _ fun u => A.diagonal_norm_one u
@@ -54,8 +49,7 @@ def diagonalS : A.U →* A.G1 :=
 def exteriorDiagonal : A.U →* A.C where
   toFun u := A.exteriorCoordinates (A.principalSupported u)
   map_one' := by
-    ext v
-    simp [exteriorCoordinates]
+    rfl
   map_mul' u v := by
     ext w
     simp [exteriorCoordinates]
@@ -79,7 +73,7 @@ theorem Gamma1_eq_sixthPower_image :
     · exact ⟨u', rfl⟩
     · apply Subtype.ext
       change A.diagonal (u ^ 6) = g.val
-      exact (congrArg A.diagonal hux).trans hxg
+      simp_all
   · rintro ⟨u, ⟨v, hv⟩, hug⟩
     refine ⟨u.val, ⟨v.val, v.prop, ?_⟩, ?_⟩
     · exact congrArg Subtype.val hv
@@ -133,7 +127,3 @@ theorem principalIntersection_map_supportedChart
   apply MonoidHom.ext
   intro u
   exact A.supportedChart_principal e he u
-
-end
-end SArithmeticData
-end DedekindZetaZeroFree

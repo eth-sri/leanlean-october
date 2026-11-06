@@ -36,6 +36,3 @@ def rationalStandard
   (rationalDenominator K ε v)⁻¹ •
     p.sum (fun n M =>
       ((if ε = .plus then v else v⁻¹) ^ n) • LinearMap.baseChange (RatFunc ℂ) M)
-
-end
-end DedekindZetaZeroFree.KPRankOneGenericComposition

@@ -47,8 +47,8 @@ def canonicalSmoothRepresentation {G V : Type*} [Group G]
 theorem canonicalSmoothModule_linear_continuous {V W : Type*}
     [AddCommGroup V] [Module ℂ V] [AddCommGroup W] [Module ℂ W]
     [TopologicalSpace W] [ContinuousAdd W] [ContinuousSMul ℂ W]
-    (f : CanonicalSmoothModule V →ₗ[ℂ] W) : Continuous f := by
-  exact IsModuleTopology.continuous_of_linearMap f
+    (f : CanonicalSmoothModule V →ₗ[ℂ] W) : Continuous f := 
+  IsModuleTopology.continuous_of_linearMap f
 
 theorem smoothRepresentation_orbit_isLocallyConstant {G V : Type*}
     [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
@@ -60,10 +60,10 @@ theorem smoothRepresentation_orbit_isLocallyConstant {G V : Type*}
   intro g
   refine ⟨{x : G | g⁻¹ * x ∈ J},
     J.isOpen.preimage (continuous_const.mul continuous_id), ?_, ?_⟩
-  · simpa using J.one_mem
+  · simp
   · intro x hx
     have heq := congrArg (fun w => ρ g w) (hJ (g⁻¹ * x) hx)
-    simpa only [← Module.End.mul_apply, ← map_mul, mul_inv_cancel_left] using heq
+    simp_all
 
 def algebraicWhittaker {K G V : Type*} [AddCommGroup K] [Group G]
     [AddCommGroup V] [Module ℂ V] (ρ : Representation ℂ G V)
@@ -78,12 +78,3 @@ def algebraicWhittaker {K G V : Type*} [AddCommGroup K] [Group G]
     intro c ℓ hℓ t v
     simp only [LinearMap.smul_apply, smul_eq_mul, hℓ t v]
     ring
-
-@[simp] theorem mem_algebraicWhittaker {K G V : Type*} [AddCommGroup K] [Group G]
-    [AddCommGroup V] [Module ℂ V] (ρ : Representation ℂ G V)
-    (n : Multiplicative K →* G) (ψ : Multiplicative K →* ℂˣ) (ℓ : V →ₗ[ℂ] ℂ) :
-    ℓ ∈ algebraicWhittaker ρ n ψ ↔ ∀ t v, ℓ (ρ (n t) v) = (ψ t : ℂ) * ℓ v := Iff.rfl
-
-end DedekindZetaZeroFree
-
-end

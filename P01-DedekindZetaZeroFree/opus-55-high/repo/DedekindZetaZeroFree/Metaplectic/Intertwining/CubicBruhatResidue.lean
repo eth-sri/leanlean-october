@@ -33,8 +33,7 @@ open KPRankOneOpenCellKernel
 namespace ActualShellPort
 open scoped Classical
 open KPActualResidueSources KPRankOneLiftedRegulatedDiagonalAlgebra
-set_option autoImplicit false
-private theorem rational_ext {K : Type*} [Field K] (R S : RatFunc K) (u : Set K) (hu : u.Infinite)
+theorem rational_ext {K : Type*} [Field K] (R S : RatFunc K) (u : Set K) (hu : u.Infinite)
     (he : ∀ a ∈ u, R.denom.eval a ≠ 0 ∧ S.denom.eval a ≠ 0 ∧
       RatFunc.eval (RingHom.id K) a R = RatFunc.eval (RingHom.id K) a S) : R = S := by
   have hp : R.num * S.denom = S.num * R.denom := by
@@ -46,9 +45,9 @@ private theorem rational_ext {K : Type*} [Field K] (R S : RatFunc K) (u : Set K)
     change Polynomial.eval a (R.num * S.denom) = Polynomial.eval a (S.num * R.denom)
     simpa only [Polynomial.eval_mul] using (div_eq_div_iff hR hS).mp h
   have hh := (RatFunc.num_mul_eq_mul_denom_iff (RatFunc.denom_ne_zero S)).mp hp
-  rwa [RatFunc.num_div_denom] at hh
+  simp_all
 
-private theorem shell_two_variable_rational_unique (R S : RatFunc (RatFunc ℂ))
+theorem shell_two_variable_rational_unique (R S : RatFunc (RatFunc ℂ))
     (u v : Set ℂ) (hui : u.Infinite) (hvi : v.Infinite)
     (he : ∀ r ∈ u, ∀ Q ∈ v,
       RatFunc.eval (RingHom.id ℂ) r (RatFunc.eval (RingHom.id (RatFunc ℂ)) (RatFunc.C Q) R) =
@@ -62,7 +61,7 @@ private theorem shell_two_variable_rational_unique (R S : RatFunc (RatFunc ℂ))
   apply rational_ext R S (RatFunc.C '' (v \ (RatFunc.C ⁻¹' bad)))
     (hgood.image RatFunc.C_injective.injOn)
   rintro _ ⟨Q,hQ,rfl⟩
-  have hdR : R.denom.eval (RatFunc.C Q) ≠ 0 := fun h => hQ.2 (Or.inl h)
+  have hdR : R.denom.eval (RatFunc.C Q) ≠ 0 := by aesop
   have hdS : S.denom.eval (RatFunc.C Q) ≠ 0 := fun h => hQ.2 (Or.inr h)
   refine ⟨hdR,hdS,?_⟩
   let RQ := RatFunc.eval (RingHom.id (RatFunc ℂ)) (RatFunc.C Q) R
@@ -72,8 +71,7 @@ private theorem shell_two_variable_rational_unique (R S : RatFunc (RatFunc ℂ))
     (Polynomial.finite_setOf_isRoot (RatFunc.denom_ne_zero RQ)).union
       (Polynomial.finite_setOf_isRoot (RatFunc.denom_ne_zero SQ))
   apply rational_ext RQ SQ (u \ badr) (hui.diff hbadr)
-  intro r hr
-  exact ⟨fun h => hr.2 (Or.inl h), fun h => hr.2 (Or.inr h), he r hr.1 Q hQ.1⟩
+  aesop
 
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
@@ -88,25 +86,22 @@ set_option backward.isDefEq.respectTransparency false in
   refine { toFun := fun x => KPExceptionalRaw.ordinaryIota F ζ hζ (KPHilbert.B3 F ζ hζ (Sum.inr q) c x), map_one' := ?_, map_mul' := ?_, continuous_toFun := ?_ }
   · have hb : KPHilbert.B3 F ζ hζ (Sum.inr q) c 1 = 1 := by
       have h := (KPHilbert.B3_laws F ζ hζ (Sum.inr q)).2.1 c 1 1
-      simp only [one_mul] at h
-      exact (mul_eq_left.mp h.symm)
+      simp_all
     rw [hb,map_one]
   · intro x y
     rw [(KPHilbert.B3_laws F ζ hζ (Sum.inr q)).2.1,map_mul]
   · have hB := (KPHilbert.B3_continuous F ζ hζ (Sum.inr q)).comp
       ((continuous_const : Continuous (fun _ : (LocalField F q)ˣ => c)).prodMk continuous_id)
-    have hI : Continuous (fun e : rootsOfUnity 3 F => KPExceptionalRaw.ordinaryIota F ζ hζ e) :=
-      continuous_of_discreteTopology
-    exact hI.comp hB
-private lemma actualHilbertCharacter_cubic (c x : (LocalField F q)ˣ) :
+    fun_prop
+lemma actualHilbertCharacter_cubic (c x : (LocalField F q)ˣ) :
     actualHilbertCharacter F ζ hζ q c x ^ 3 = 1 := by
   change (KPExceptionalRaw.ordinaryIota F ζ hζ _ ) ^ 3 = 1
   rw [← map_pow]
   have h : (KPHilbert.B3 F ζ hζ (Sum.inr q) c x)^3 = 1 := by
     apply Subtype.ext
     exact (mem_rootsOfUnity 3 _).mp (KPHilbert.B3 F ζ hζ (Sum.inr q) c x).property
-  rw [h,map_one]
-private lemma actualHilbertCharacter_eq_one_iff (c : (LocalField F q)ˣ) :
+  simp_all
+lemma actualHilbertCharacter_eq_one_iff (c : (LocalField F q)ˣ) :
     actualHilbertCharacter F ζ hζ q c = 1 ↔ c ∈ CubicCharacters.cubes (LocalField F q)ˣ := by
   constructor
   · intro hc
@@ -144,9 +139,7 @@ private lemma actualHilbertCharacter_eq_one_iff (c : (LocalField F q)ˣ) :
       rw [map_pow]
       apply Subtype.ext
       exact (mem_rootsOfUnity 3 _).mp (f y).property
-    change (KPExceptionalRaw.ordinaryIota F ζ hζ (KPHilbert.B3 F ζ hζ (Sum.inr q) (y^3) x) : ℂ) = 1
-    have hi := congrArg (fun e : rootsOfUnity 3 F => (KPExceptionalRaw.ordinaryIota F ζ hζ e : ℂ)) h
-    simpa only [map_one, Units.val_one] using hi
+    simp_all
 private lemma actualUc_neg_one
     (S : ActualKPBinding F ζ hζ q) (P : Polarization S.heisenberg) [DecidableEq S.D]
     (rep : S.D → KPExceptionalRaw.actualTorus F ζ hζ q)
@@ -203,9 +196,9 @@ private theorem shell_domain_parameter (r w : ℂ) (hw : (r,w) ∈ KPRankOneRegu
     exact Complex.exp_log hw0
   refine ⟨ru,tu,lam,rfl,rfl,hQ,?_⟩
   apply (KPRankOneRegulatedDiagonalKernel.cone_iff_jointRationalDomain F q ru tu rfl lam).mpr
-  simpa only [hQ, ru, Units.val_mk0] using hw
+  aesop
 
-private theorem shell_joint_cone_continuation_unique (R S : RatFunc (RatFunc ℂ))
+theorem shell_joint_cone_continuation_unique (R S : RatFunc (RatFunc ℂ))
     (he : ∀ (r t₀ : ℂˣ), (t₀ : ℂ) = KPRankOneReverseRegulatorShells.t F q (r : ℂ) → ∀ ρ : ℂ,
       KPJointRegulator.cone (LocalField F q) t₀ ρ →
       evaluateRational R r (Q F q ρ) = evaluateRational S r (Q F q ρ)) : R = S := by
@@ -217,10 +210,9 @@ private theorem shell_joint_cone_continuation_unique (R S : RatFunc (RatFunc ℂ
   apply shell_two_variable_rational_unique R S u v hui hvi
   intro r hr w hw
   obtain ⟨ru,tu,ρ,hru,htu,hQ,hcone⟩ := shell_domain_parameter F q r w (huv ⟨hr,hw⟩)
-  have h := he ru tu htu ρ hcone
-  simpa only [hru,hQ,evaluateRational] using h
+  aesop
 
-private theorem actual_shell_rational_model_unique
+theorem actual_shell_rational_model_unique
     (dx : Measure (LocalField F q))
     (Jreg : CenterStandardFamily F ζ hζ q S.heisenberg S.borel S.iwasawa dx)
     (rep : S.D → KPExceptionalRaw.actualTorus F ζ hζ q)
@@ -249,7 +241,7 @@ private theorem actual_shell_rational_model_unique
         intro he
         have hn := hcone.2.2.2
         rw [← sub_eq_zero.mp he, norm_one] at hn
-        exact lt_irrefl _ hn)
+        simp_all)
       ρ ⟨hcone.2.1,by
         change (KPCubicUnitIndices.residueCard (LocalField F q) : ℝ).rpow (-3*ρ.re) < _
         rw [← ht₀]
@@ -266,16 +258,16 @@ private lemma regular_C {F : Type*} [Field F] (u c : F) : Regular u (RatFunc.C c
 private lemma regular_X {F : Type*} [Field F] (u : F) : Regular u (RatFunc.X : RatFunc F) := by
   simp [Regular]
 private lemma regular_add {F : Type*} [Field F] {u : F} {r s : RatFunc F}
-    (hr : Regular u r) (hs : Regular u s) : Regular u (r+s) := by
-  exact fun h => (mul_ne_zero hr hs) (by
+    (hr : Regular u r) (hs : Regular u s) : Regular u (r+s) := 
+  fun h => (mul_ne_zero hr hs) (by
     simpa using Polynomial.eval_eq_zero_of_dvd_of_eval_eq_zero (RatFunc.denom_add_dvd r s) h)
 private lemma regular_mul_eval {F : Type*} [Field F] {u : F} {r s : RatFunc F}
-    (hr : Regular u r) (hs : Regular u s) : Regular u (r*s) := by
-  exact fun h => (mul_ne_zero hr hs) (by
+    (hr : Regular u r) (hs : Regular u s) : Regular u (r*s) := 
+  fun h => (mul_ne_zero hr hs) (by
     simpa using Polynomial.eval_eq_zero_of_dvd_of_eval_eq_zero (RatFunc.denom_mul_dvd r s) h)
 private lemma regular_inv {F : Type*} [Field F] {u : F} {r : RatFunc F}
     (_hr : Regular u r) (hv : RatFunc.eval (RingHom.id F) u r ≠ 0) : Regular u r⁻¹ := by
-  have hr0 : r ≠ 0 := by intro h; simp [h] at hv
+  have hr0 : r ≠ 0 := by intro h; simp_all
   intro h
   have hn := Polynomial.eval_eq_zero_of_dvd_of_eval_eq_zero (RatFunc.denom_inv_dvd hr0) h
   apply hv
@@ -283,7 +275,7 @@ private lemma regular_inv {F : Type*} [Field F] {u : F} {r : RatFunc F}
 private lemma eval_inv {F : Type*} [Field F] {u : F} {r : RatFunc F}
     (hr : Regular u r) (hv : RatFunc.eval (RingHom.id F) u r ≠ 0) :
     RatFunc.eval (RingHom.id F) u r⁻¹ = (RatFunc.eval (RingHom.id F) u r)⁻¹ := by
-  have hr0 : r ≠ 0 := by intro h; simp [h] at hv
+  have hr0 : r ≠ 0 := by intro h; simp_all
   have hm := RatFunc.eval_mul (f := RingHom.id F) (a := u) hr (regular_inv hr hv)
   rw [mul_inv_cancel₀ hr0, RatFunc.eval_one] at hm
   exact eq_inv_of_mul_eq_one_right hm.symm
@@ -384,7 +376,7 @@ private theorem rationalR_evaluates {E : Type*} [Field E]
     have he := ((hM.mul (hB.sub hA)).mul (hX.sub (hA.mul hB))).div
       (((h1.sub hB).mul (hB.sub hX)).mul (hX.sub hA))
       (mul_ne_zero (mul_ne_zero hb hbQ) hQA)
-    simpa only [rationalR,Bool.false_eq_true,ite_false,map_one] using he
+    aesop
 
  def numericBetaR
     (K : Type*) [Field K] [CharZero K] [ValuativeRel K] [TopologicalSpace K]
@@ -495,7 +487,7 @@ private lemma numericShellSlice_evaluates (r Q : ℂ) (p : ShellNumerator)
   simpa only [numericShellSlice, evaluateNumerator, shellDenominator, Finsupp.sum,
     map_one, map_inv₀] using h
 
-private lemma rational_unique_of_numeric_values (R S : RatFunc ℂ) (u : Set ℂ)
+lemma rational_unique_of_numeric_values (R S : RatFunc ℂ) (u : Set ℂ)
     (hu : u.Infinite)
     (he : ∀ Q ∈ u, RatFunc.eval (RingHom.id ℂ) Q R = RatFunc.eval (RingHom.id ℂ) Q S) :
     R = S := by
@@ -503,8 +495,7 @@ private lemma rational_unique_of_numeric_values (R S : RatFunc ℂ) (u : Set ℂ
   have hb : bad.Finite := (Polynomial.finite_setOf_isRoot (RatFunc.denom_ne_zero R)).union
     (Polynomial.finite_setOf_isRoot (RatFunc.denom_ne_zero S))
   apply rational_ext R S (u \ bad) (hu.diff hb)
-  intro Q hQ
-  exact ⟨fun h => hQ.2 (Or.inl h), fun h => hQ.2 (Or.inr h), he Q hQ.1⟩
+  aesop
 
 private lemma numericShellSlice_one (r : ℂ) (p : ShellNumerator)
     (hr : r ≠ 0) (hd : shellDenominator F q r 1 ≠ 0) :
@@ -537,7 +528,7 @@ private lemma numericShellSlice_one (r : ℂ) (p : ShellNumerator)
       shellDenominator, one_pow, one_zpow, mul_one] using hv
   exact ⟨hs.1,hres.1,hs.2.trans hres.2.symm⟩
 
-private lemma exists_preferred_cube_representatives
+lemma exists_preferred_cube_representatives
     (K : Type*) [Field K] :
     ∃ cRep : KPLocalTorus.CubeClasses Kˣ → Kˣ,
       (∀ k, QuotientGroup.mk' (CubicCharacters.cubes Kˣ) (cRep k) = k) ∧ cRep 1 = -1 := by
@@ -547,34 +538,30 @@ private lemma exists_preferred_cube_representatives
     change (-1 : Kˣ)^3 = -1
     norm_num
   have hmk : QuotientGroup.mk' (CubicCharacters.cubes Kˣ) (-1) = 1 := by
-    exact (QuotientGroup.eq_one_iff _).mpr hneg
+    simp_all
   have hsur : Function.Surjective (QuotientGroup.mk' (CubicCharacters.cubes Kˣ)) :=
     QuotientGroup.mk'_surjective _
   choose c hc using hsur
   refine ⟨fun k => if k=1 then -1 else c k, ?_, ?_⟩
   · intro k
-    by_cases hk : k=1
-    · simpa [hk] using hmk
-    · simpa [hk] using hc k
+    aesop
   · simp
 
-private lemma preferred_character_eq_one_iff
+lemma preferred_character_eq_one_iff
     (cRep : KPLocalTorus.CubeClasses (LocalField F q)ˣ → (LocalField F q)ˣ)
     (hcRep : ∀ k, QuotientGroup.mk' (CubicCharacters.cubes (LocalField F q)ˣ) (cRep k) = k)
     (k : KPLocalTorus.CubeClasses (LocalField F q)ˣ) :
     actualHilbertCharacter F ζ hζ q (cRep k) = 1 ↔ k = 1 := by
   rw [actualHilbertCharacter_eq_one_iff]
-  change (cRep k ∈ CubicCharacters.cubes (LocalField F q)ˣ) ↔ _
   rw [← QuotientGroup.eq_one_iff]
-  change (QuotientGroup.mk' (CubicCharacters.cubes (LocalField F q)ˣ) (cRep k) = 1) ↔ _
-  rw [hcRep]
+  simp_all
 
-private lemma abs_localAbs (x : (LocalField F q)ˣ) :
+lemma abs_localAbs (x : (LocalField F q)ˣ) :
     KPCubicHaar.abs (LocalField F q) (x : LocalField F q) = localAbs (LocalField F q) x := by
   simp [KPCubicHaar.abs, localAbs, Units.ne_zero, Real.rpow_intCast]
   rfl
 
-private lemma actual_mellin_model
+lemma actual_mellin_model
     (dx : Measure (LocalField F q)) [dx.IsAddHaarMeasure]
     (π : (LocalField F q)ˣ) (hπ : valuation (LocalField F q) π = uniformizer (LocalField F q))
     (χ : (LocalField F q)ˣ →ₜ* ℂˣ) (hχ : ∀ x, χ x^3=1)
@@ -594,7 +581,7 @@ private lemma actual_mellin_model
   simp_rw [abs_localAbs F q] at h
   exact h.2.symm
 
-private lemma normPower_regulator (c : (LocalField F q)ˣ) (ρ : ℂ) :
+lemma normPower_regulator (c : (LocalField F q)ˣ) (ρ : ℂ) :
     normPower (LocalField F q) c ρ = (Q F q ρ)^KPCubicExpansion.valuationExponent (LocalField F q) c := by
   rw [normPower, ← abs_localAbs F q, KPRankOneUnramifiedBetaShells.abs_eq_q_neg_valuation,
     Real.log_zpow, Complex.ofReal_mul, Complex.ofReal_intCast, Int.cast_neg, Q,
@@ -655,7 +642,7 @@ private lemma finite_numeric_full_model_one {I : Type*} [Fintype I]
   have hs := Evaluates.sum Finset.univ (fun k _ => (Evaluates.const (1:ℂ) (U k)).mul (hb k))
   simpa only [finite_numeric_full_model] using (Evaluates.const (1:ℂ) (δ/3)).mul hs
 
-private lemma exists_actual_finite_mellin_models
+lemma exists_actual_finite_mellin_models
     (dx : Measure (LocalField F q)) [dx.IsAddHaarMeasure]
     (π : (LocalField F q)ˣ) (hπ : valuation (LocalField F q) π = uniformizer (LocalField F q))
     (φ : LocalField F q → ℂ) (hφ : IsLocallyConstant φ) (hcφ : HasCompactSupport φ)
@@ -679,9 +666,7 @@ private lemma exists_actual_finite_mellin_models
   · intro k
     have h := hr k
     rw [preferred_character_eq_one_iff F ζ hζ q cRep hcRep k] at h
-    by_cases hk : k = 1
-    · simpa only [if_pos hk] using h
-    · simpa only [if_neg hk] using h
+    aesop
 
 private lemma finite_numeric_full_model_identity_class
     [Fintype (KPLocalTorus.CubeClasses (LocalField F q)ˣ)]
@@ -741,8 +726,7 @@ private lemma finite_numeric_full_model_identity_class
     · rw [hneg,actualUc_neg_one F ζ hζ q S P rep hrep d e r]
       simp only [ite_true,hw,one_mul]
       field_simp [ha]
-    · intro k hk hne
-      simp only [hne,ite_false,zero_mul,zero_div,mul_zero]
+    · simp_all
     · simp
   rw [hs] at h
   convert h using 1
@@ -796,8 +780,8 @@ private lemma actual_fixed_root_full_model
   have hbn (ε : CubicCharacters.Mu3) : ‖b ε‖ = ‖(z : ℂ)‖ := by
     dsimp [b]
     rw [norm_mul, Complex.norm_eq_one_of_mem_rootsOfUnity ε.property, one_mul]
-  have hb0 (ε) : b ε ≠ 0 := by
-    exact norm_pos_iff.mp (by rw [hbn]; exact norm_pos_iff.mpr z.ne_zero)
+  have hb0 (ε) : b ε ≠ 0 := 
+    norm_pos_iff.mp (by rw [hbn]; simp)
   have hb1 (ε) : b ε ≠ 1 := by
     intro he
     have h := hz1
@@ -868,7 +852,7 @@ private lemma actual_fixed_root_full_model
       finite_numeric_full_model_identity_class F ζ hζ q S P dx M r rep hrep d e cRep hneg
         φ weight hw b hb0 hb1 hMr
 
-private lemma norm_annulus_infinite (a b : ℝ) (ha : 0 ≤ a) (hab : a < b) :
+lemma norm_annulus_infinite (a b : ℝ) (ha : 0 ≤ a) (hab : a < b) :
     {Q : ℂ | a < ‖Q‖ ∧ ‖Q‖ < b}.Infinite := by
   have ho : IsOpen {Q : ℂ | a < ‖Q‖ ∧ ‖Q‖ < b} :=
     (isOpen_lt continuous_const continuous_norm).inter
@@ -881,7 +865,7 @@ private lemma norm_annulus_infinite (a b : ℝ) (ha : 0 ≤ a) (hab : a < b) :
     constructor <;> linarith
   exact infinite_of_mem_nhds (c : ℂ) (ho.mem_nhds hmem)
 
-private lemma shellDenominator_one_of_cube_root
+lemma shellDenominator_one_of_cube_root
     (r t₀ z : ℂˣ) (ht : (t₀ : ℂ) = KPRankOneReverseRegulatorShells.t F q (r : ℂ)) (hz : z^3=t₀)
     (hz1 : ‖(z : ℂ)‖ < 1) : shellDenominator F q r 1 ≠ 0 := by
   have ht1 : ‖(t₀ : ℂ)‖ < 1 := by
@@ -902,8 +886,7 @@ private lemma shellDenominator_one_of_cube_root
     exact (inv_lt_one₀ (zero_lt_one.trans hq3)).mpr hq3
   have hqne : (residueCardinality (LocalField F q) : ℂ)^(-3:ℤ) ≠ 1 := by
     intro he
-    rw [he,norm_one] at hqinv
-    exact lt_irrefl _ hqinv
+    simp_all
   simp only [shellDenominator,one_pow,one_zpow,mul_one,← ht]
   exact mul_ne_zero (mul_ne_zero (sub_ne_zero.mpr htne.symm)
     (sub_ne_zero.mpr (by intro h; exact htne (inv_eq_one.mp h.symm))))
@@ -960,7 +943,7 @@ private lemma actual_fixed_root_shell_residue
           intro he
           have hn := hcone.2.2.2
           rw [← he,norm_one] at hn
-          exact lt_irrefl _ hn)
+          simp_all)
         ρ ⟨hcone.2.1,by rw [← ht]; exact hcone.2.2.1⟩
     have hs := numericShellSlice_evaluates F q r (Q F q ρ) p (Complex.exp_ne_zero _) hden
     have hv := (hi ρ hcone).2
@@ -972,10 +955,10 @@ private lemma actual_fixed_root_shell_residue
   rw [heq] at hb
   exact ⟨hb.2.1,hb.2.2.symm.trans hr.2⟩
 
-private lemma polynomial_evaluates (p : Polynomial ℂ) (x : ℂ) :
+lemma polynomial_evaluates (p : Polynomial ℂ) (x : ℂ) :
     Evaluates x (algebraMap (Polynomial ℂ) (RatFunc ℂ) p) (p.eval x) := by
   refine ⟨by simp [Regular],?_⟩
-  simp [RatFunc.eval,RatFunc.num_algebraMap,Polynomial.eval₂_id]
+  simp
 
 private lemma scaled_root_evaluates (α w : ℂ) (R : RatFunc ℂ)
     (hR : R.denom.eval (α*w) ≠ 0) :
@@ -992,8 +975,7 @@ private lemma scaled_root_evaluates (α w : ℂ) (R : RatFunc ℂ)
     (polynomial_evaluates (R.denom.comp (Polynomial.C α*Polynomial.X)) w)
     (by simpa only [Polynomial.eval_comp,Polynomial.eval_mul,Polynomial.eval_C,
       Polynomial.eval_X] using hR)
-  simpa only [Polynomial.eval_comp,Polynomial.eval_mul,Polynomial.eval_C,
-    Polynomial.eval_X,RatFunc.eval,Polynomial.eval₂_id] using h
+  aesop
 
 private lemma betaFactor_evaluates
     (K : Type*) [Field K] [CharZero K] [ValuativeRel K] [TopologicalSpace K]
@@ -1008,7 +990,7 @@ private lemma betaFactor_evaluates
   · have hBi := hB.inv hb0
     have hden : (1-b)*(1-b⁻¹) ≠ 0 :=
       mul_ne_zero (sub_ne_zero.mpr hb1.symm)
-        (sub_ne_zero.mpr (by intro h; exact hb1 (inv_eq_one.mp h.symm)))
+        (sub_ne_zero.mpr (by intro h; simp_all))
     have h := ((h1.sub (hA.mul hB)).mul (h1.sub (hA.mul hBi))).div
       ((h1.sub hB).mul (h1.sub hBi)) hden
     simpa only [KPRankoneCubicScalarSum.betaFactor,hξ,ite_true,
@@ -1033,7 +1015,7 @@ private lemma rationalResidueScalar_evaluates
   letI := Fintype.ofFinite CubicCharacters.Mu3
   have hb (ε : CubicCharacters.Mu3) := (Evaluates.const w ((ε : ℂˣ) : ℂ)).mul ((Evaluates.var w).pow 2)
   have hb0 (ε : CubicCharacters.Mu3) : ((ε : ℂˣ) : ℂ)*w^2 ≠ 0 :=
-    mul_ne_zero (ε : ℂˣ).ne_zero (pow_ne_zero _ hw0)
+    by simp_all
   have hb1 (ε : CubicCharacters.Mu3) : ((ε : ℂˣ) : ℂ)*w^2 ≠ 1 := by
     intro he
     have hn : ‖((ε : ℂˣ) : ℂ)*w^2‖ < 1 := by
@@ -1075,7 +1057,7 @@ private theorem actual_shell_restriction_residue
   · have hq : (residueCardinality (LocalField F q) : ℂ) ≠ 0 := by
       exact_mod_cast (Nat.card_pos (α := IsLocalRing.ResidueField
         (Valuation.integer (valuation (LocalField F q))))).ne'
-    have hα0 : α ≠ 0 := by intro h; rw [h, zero_pow (by decide)] at hα; exact hq hα.symm
+    have hα0 : α ≠ 0 := by intro h; simp_all
     exact scaled_root_rational_denom_ne_zero α hα0 _
   · by_cases hzero : φ = 0
     · have hm := actual_shell_rational_model_unique F ζ hζ q S P dx Jreg rep hrep d
@@ -1101,7 +1083,7 @@ private theorem actual_shell_restriction_residue
       have hq1 : 1 < (residueCardinality (LocalField F q) : ℝ) := by
         exact_mod_cast (Finite.one_lt_card (α := IsLocalRing.ResidueField
           (Valuation.integer (valuation (LocalField F q)))))
-      have ha0 : 0 < a := inv_pos.mpr (zero_lt_one.trans hq1)
+      have ha0 : 0 < a := by positivity
       have ha1 : a < 1 := (inv_lt_one₀ (zero_lt_one.trans hq1)).mpr hq1
       have hsqrt : Real.sqrt a < 1 := by
         simpa only [Real.sqrt_one] using Real.sqrt_lt_sqrt ha0.le ha1
@@ -1133,7 +1115,7 @@ private theorem actual_shell_restriction_residue
       exact hl.2.trans (hres.2.trans (by rw [hr.2]; dsimp [z]; ring))
 
 open KPRankOneReverseRegulatorSpecialization
-private theorem actual_joint_shell_Q1_standard_coefficient
+theorem actual_joint_shell_Q1_standard_coefficient
     (dx : Measure (LocalField F q)) [dx.IsAddHaarMeasure]
     (Jreg : CenterStandardFamily F ζ hζ q S.heisenberg S.borel S.iwasawa dx)
     (rep : S.D → KPExceptionalRaw.actualTorus F ζ hζ q)
@@ -1175,7 +1157,7 @@ private theorem actual_joint_shell_Q1_standard_coefficient
       exact hp' r hr₀ ρ hreg h)
   have hrestrict : restrictionAtOne F q (p h) = restrictionAtOne F q (p' h) := by
     unfold restrictionAtOne
-    rw [heq h]
+    simp_all
   rw [hrestrict]
   exact actual_restriction_eq_double_coefficient F ζ hζ q S P
     S.iwasawa dx Jreg rep hrep d φ hφ hcφ p' hp' r hr h
@@ -1272,14 +1254,14 @@ set_option backward.isDefEq.respectTransparency false in
   toFun a := ⟨(Jreg.op .minus z (Jreg.op .plus z a)).val,
     by simpa [targetSign,targetParameter,sourceParameter] using
       (Jreg.op .minus z (Jreg.op .plus z a)).property⟩
-  map_add' a b := by apply Subtype.ext; simp only [map_add,Submodule.coe_add]
-  map_smul' c a := by apply Subtype.ext; simp only [map_smul,Submodule.coe_smul]; rfl
+  map_add' a b := by simp
+  map_smul' c a := by simp
 
 set_option maxHeartbeats 1500000 in
 set_option synthInstance.maxHeartbeats 100000 in
 set_option backward.isDefEq.respectTransparency false in
 
-private theorem compact_whole_from_pure
+theorem compact_whole_from_pure
     (S : ActualKPBinding F ζ hζ q) (P : Polarization S.heisenberg) [DecidableEq S.D]
     (dx : Measure (LocalField F q))
     (Jreg : CenterStandardFamily F ζ hζ q S.heisenberg S.borel S.iwasawa dx)
@@ -1373,9 +1355,7 @@ private theorem residue_regular_locus_infinite
   have hi := Set.infinite_univ.sdiff hb
   apply hi.mono
   intro w hw
-  rcases hw with ⟨_,hw⟩
-  exact ⟨fun h => hw (Or.inl (Or.inl h)),
-    fun h => hw (Or.inl (Or.inr h)),fun h => hw (Or.inr h)⟩
+  aesop
 
 private theorem both_standard_denominators_regular
     (α w : ℂ) (hα : α^6=(residueCardinality (LocalField F q) : ℂ))
@@ -1396,9 +1376,7 @@ private theorem both_standard_denominators_regular
     change (α*w)^6 = _
     rw [mul_pow,hα]
   have h6ne : (r₀ : ℂ)^6 ≠ (residueCardinality (LocalField F q) : ℂ) := by
-    rw [h6]
-    intro he
-    exact hw6 ((mul_left_cancel₀ hq0) (by simpa using he))
+    simp_all
   refine ⟨r₀,rfl,?_,?_⟩
   · simp only [denominator,ite_true, KPRankOneRootParameter.t,hroot]
     apply sub_ne_zero.mpr
@@ -1437,7 +1415,7 @@ private theorem scalar_composition_of_center_transport
 set_option maxHeartbeats 1500000 in
 set_option backward.isDefEq.respectTransparency false in
 
-private theorem continued_scalar_from_compact_whole
+theorem continued_scalar_from_compact_whole
     (S : ActualKPBinding F ζ hζ q) (P : Polarization S.heisenberg) [DecidableEq S.D]
     (dx : Measure (LocalField F q))
     (Jτ : TauStandardFamily F ζ hζ q S.heisenberg S.borel P S.iwasawa dx)
@@ -1496,10 +1474,7 @@ private theorem continued_scalar_from_compact_whole
       funext g
       have hg := congrFun h g
       simpa [centerCompactTrivialization,sourceSign,targetSign,sourceParameter,targetParameter,cm] using hg
-    change _ = (centerCompactTrivialization F ζ hζ q S.heisenberg S.borel S.iwasawa .plus z
-      (c • f.val)).val
-    rw [map_smul]
-    exact hh
+    simp_all
   haveI : Nontrivial (InducedModule P) := by
     apply Module.nontrivial_of_finrank_pos (R := ℂ)
     rw [tau_finrank_eq_index S.heisenberg P]
@@ -1532,7 +1507,7 @@ private theorem rational_eq_of_regular_infinite
     change Polynomial.eval w (R.num*T.denom) = Polynomial.eval w (T.num*R.denom)
     simpa only [Polynomial.eval_mul] using (div_eq_div_iff hR hT).mp h
   have hh := (RatFunc.num_mul_eq_mul_denom_iff (RatFunc.denom_ne_zero T)).mp hp
-  rwa [RatFunc.num_div_denom] at hh
+  simp_all
 
 private lemma scalar_regular (c : ℂ) (R : RatFunc ℂ) (w : ℂ)
     (hR : R.denom.eval w ≠ 0) :
@@ -1542,7 +1517,7 @@ private lemma scalar_regular (c : ℂ) (R : RatFunc ℂ) (w : ℂ)
   refine ⟨?_, by rw [RatFunc.eval_mul _ _ (by simp) hR, RatFunc.eval_C]; rfl⟩
   intro h
   have hh := Polynomial.eval_eq_zero_of_dvd_of_eval_eq_zero (RatFunc.denom_mul_dvd (RatFunc.C c) R) h
-  exact hR (by simpa using hh)
+  simp_all
 private lemma sum_regular {ι : Type*} (s : Finset ι) (a : ι → RatFunc ℂ) (w : ℂ)
     (ha : ∀ i ∈ s, (a i).denom.eval w ≠ 0) :
     (∑ i ∈ s, a i).denom.eval w ≠ 0 ∧
@@ -1683,7 +1658,7 @@ private lemma numeric_sub {w a b : ℂ} {A B : RatFunc ℂ}
   simpa [sub_eq_add_neg] using numeric_add ha (numeric_mul (numeric_const w (-1)) hb)
 private lemma numeric_inv {w a : ℂ} {A : RatFunc ℂ}
     (ha : Numeric w A a) (ha0 : a ≠ 0) : Numeric w A⁻¹ a⁻¹ := by
-  have hA0 : A ≠ 0 := by intro h; subst A; simp [Numeric] at ha; exact ha0 ha.symm
+  have hA0 : A ≠ 0 := by intro h; subst A; simp [Numeric] at ha; simp_all
   have hi : A⁻¹.denom.eval w ≠ 0 := by
     intro h
     have hn := Polynomial.eval_eq_zero_of_dvd_of_eval_eq_zero (RatFunc.denom_inv_dvd hA0) h
@@ -1800,10 +1775,10 @@ private theorem rational_from_continued
     rw [ep,em]
     exact hn w hw.1 hw.2.1 hw.2.2 r₀ he
 
-private lemma numeric_polynomial (p : Polynomial ℂ) (w : ℂ) :
+lemma numeric_polynomial (p : Polynomial ℂ) (w : ℂ) :
     Numeric w (algebraMap (Polynomial ℂ) (RatFunc ℂ) p) (p.eval w) := by
   refine ⟨by simp, ?_⟩
-  simp [RatFunc.eval, RatFunc.num_algebraMap, Polynomial.eval₂_id]
+  simp
 
 private lemma numeric_scaled_root (α w : ℂ) (R : RatFunc ℂ)
     (hR : R.denom.eval (α*w) ≠ 0) :
@@ -1819,8 +1794,7 @@ private lemma numeric_scaled_root (α w : ℂ) (R : RatFunc ℂ)
   have hn := numeric_polynomial (R.num.comp (Polynomial.C α*Polynomial.X)) w
   have hd := numeric_polynomial (R.denom.comp (Polynomial.C α*Polynomial.X)) w
   have hdn : (R.denom.comp (Polynomial.C α*Polynomial.X)).eval w ≠ 0 := by
-    simpa only [Polynomial.eval_comp,Polynomial.eval_mul,Polynomial.eval_C,
-      Polynomial.eval_X] using hR
+    simp_all
   simpa only [Polynomial.eval_comp,Polynomial.eval_mul,Polynomial.eval_C,
     Polynomial.eval_X,RatFunc.eval,Polynomial.eval₂_id,div_eq_mul_inv] using
       numeric_mul hn (numeric_inv hd hdn)

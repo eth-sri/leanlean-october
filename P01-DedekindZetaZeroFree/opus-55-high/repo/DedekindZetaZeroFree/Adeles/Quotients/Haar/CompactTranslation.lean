@@ -43,7 +43,7 @@ variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ
     change KPSmoothActualFlowData.archimedeanInsertion F ζ hζ (fun w => ((k*l) w).val) = _
     exact (KPSmoothActualFlowData.archimedean_insertion_properties F ζ hζ).2.1 _ _
 
-private theorem compact_modular_one (k : KPMsGreenFlux.K F) :
+theorem compact_modular_one (k : KPMsGreenFlux.K F) :
     letI := (ActualQuotient.actual_cover_lc_t2_group F ζ hζ).2.2
     letI := (ActualQuotient.actual_cover_lc_t2_group F ζ hζ).2.1
     letI := (ActualQuotient.actual_cover_lc_t2_group F ζ hζ).1

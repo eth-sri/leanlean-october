@@ -55,16 +55,6 @@ open NativeScalarMixedTensorGeneration CurrentFiniteFamily
 
 open _root_.DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation renaming Source → Source
 open scoped TensorProduct
-local instance (T : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F))) (j : InfinitePlace F ⊕ T) :
-    AddCommGroup (mixedSource F ζ hζ (nativeInducingData A P C) T j) := by
-  cases j with
-  | inl w => dsimp [mixedSource]; infer_instance
-  | inr q => exact SourceReconstruction.localPlusAdd F ζ hζ (nativeInducingData A P C) (Sum.inr q.val)
-local instance (T : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F))) (j : InfinitePlace F ⊕ T) :
-    Module ℂ (mixedSource F ζ hζ (nativeInducingData A P C) T j) := by
-  cases j with
-  | inl w => dsimp [mixedSource]; infer_instance
-  | inr q => exact SourceReconstruction.localPlusModule F ζ hζ (nativeInducingData A P C) (Sum.inr q.val)
 
 end DedekindZetaZeroFree.FourierContinuation.CurrentTailLevel
 

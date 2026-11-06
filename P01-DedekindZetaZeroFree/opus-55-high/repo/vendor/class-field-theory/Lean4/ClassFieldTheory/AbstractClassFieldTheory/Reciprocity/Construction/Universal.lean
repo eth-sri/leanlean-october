@@ -14,13 +14,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-set_option autoImplicit false
 /-!
 Proves the universal norm-descent argument from maximal-unramified units to finite intermediate
 norm subgroups.
@@ -32,7 +25,6 @@ open KummerTheory
 
 open CyclicCohomology
 
-noncomputable section
 open CategoryTheory
 open scoped BigOperators
 -- Mathlib's `Rep ℤ G` currently fixes the acting group to universe zero.
@@ -688,8 +680,3 @@ theorem universalNormDescent
   intro M
   exact v.universalNormDescent_mem_finiteUnitNormRange hAxiom K L hLK φ hφ
     s τ u uᵢ hstar aK haK M
-
-end ValuationData
-
-end
-end ClassFormation

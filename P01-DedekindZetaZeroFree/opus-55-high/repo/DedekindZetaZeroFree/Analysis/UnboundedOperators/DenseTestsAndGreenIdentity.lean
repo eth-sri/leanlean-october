@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.GenuineSector.TestE
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree
 namespace KPTestGreenTransfer
 
@@ -51,8 +50,3 @@ theorem descend_dense_green
     simpa only [KPTestOperator.testDomain, LinearMap.coe_range, DenseRange] using hcotangent
   have hf := KPTestOperator.descend_formalAdjoint ι hι j hj A B hgreen
   exact ⟨hs, ht, hf, hf, laplacian_pairing ι hι j hj A B hgreen⟩
-
-end KPTestGreenTransfer
-end DedekindZetaZeroFree
-
-end

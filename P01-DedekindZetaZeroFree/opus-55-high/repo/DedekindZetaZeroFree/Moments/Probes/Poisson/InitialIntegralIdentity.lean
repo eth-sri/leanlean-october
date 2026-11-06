@@ -98,12 +98,7 @@ theorem q_pos (u : D.Row) : 0 < D.q u := by
     exact Fintype.card_pos)
 
 theorem cpow_eq_comparisonRealPower {q : ℝ} (hq : 0 < q) (s : ℂ) :
-    (q : ℂ) ^ s = comparisonRealPower q s := by
-  have hqc : (q : ℂ) ≠ 0 := by exact_mod_cast hq.ne'
-  unfold comparisonRealPower
-  rw [Complex.cpow_def_of_ne_zero hqc, Complex.ofReal_log hq.le]
-  congr 1
-  ring
+    (q : ℂ) ^ s = comparisonRealPower q s := by apply DedekindZetaZeroFree.NormalizedProbe.TripleMellin.TermRace.cpow_positive <;> assumption
 
 def strictRegion : Set (ℂ × ℂ × ℂ) := {p | 4 < p.1.re ∧ 4 < p.2.1.re ∧ 2 < p.2.2.re}
 
@@ -130,7 +125,7 @@ theorem closedRegion_subset_closure : closedRegion ⊆ closure strictRegion := b
   simp only [strictRegion, Set.mem_setOf_eq, Complex.add_re, Complex.ofReal_re]
   exact ⟨by linarith, by linarith, by linarith⟩
 
-private theorem crp_aux (q : ℝ) (z : ℂ) (s : ℂ) :
+theorem crp_aux (q : ℝ) (z : ℂ) (s : ℂ) :
     s = comparisonRealPower q z * (comparisonRealPower q (-z) * s) := by
   rw [← mul_assoc]
   have : comparisonRealPower q z * comparisonRealPower q (-z) = 1 := by
@@ -138,7 +133,7 @@ private theorem crp_aux (q : ℝ) (z : ℂ) (s : ℂ) :
     rw [← Complex.exp_add, ← add_mul, add_neg_cancel, zero_mul, Complex.exp_zero]
   rw [this, one_mul]
 
-private theorem majorant_antitone' (i : NormalizedProbe.MellinSeriesIndex D.recipe.probe)
+theorem majorant_antitone' (i : NormalizedProbe.MellinSeriesIndex D.recipe.probe)
     {a b c a' b' c' : ℝ} (ha : a ≤ a') (hb : b ≤ b') (hc : c ≤ c') :
     NormalizedProbe.separatedSeriesMajorant D.recipe.probe i a' b' c' ≤
       NormalizedProbe.separatedSeriesMajorant D.recipe.probe i a b c := by

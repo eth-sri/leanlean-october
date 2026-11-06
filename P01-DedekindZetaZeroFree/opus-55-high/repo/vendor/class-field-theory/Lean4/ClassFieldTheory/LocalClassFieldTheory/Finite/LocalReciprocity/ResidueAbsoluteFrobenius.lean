@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 namespace LocalClassFieldTheory
 
 open ClassFormation
@@ -86,7 +83,7 @@ def residueFrobeniusToLimit :
         @Continuous ZHatMul (E.unop ≃ₐ[k] E.unop)
           inferInstance (krullTopology k E.unop)
           (finiteResidueFrobeniusIntermediate k Omega E.unop) :=
-      (finiteResidueFrobeniusIntermediate k Omega E.unop).continuous_toFun
+      by fun_prop
     let (E : (FiniteGaloisIntermediateField k Omega)ᵒᵖ) :
         TopologicalSpace (E.unop ≃ₐ[k] E.unop) :=
       ((InfiniteGalois.asProfiniteGaloisGroupFunctor k Omega).obj E).toProfinite.toTop.str
@@ -100,7 +97,7 @@ def residueFrobeniusToLimit :
           krullTopology k E.unop by
         change (⊥ : TopologicalSpace (E.unop ≃ₐ[k] E.unop)) = krullTopology k E.unop
         exact (@DiscreteTopology.eq_bot _ (krullTopology k E.unop) inferInstance).symm]
-      exact hcontinuous E
+      fun_prop
 
 omit [IsGalois k Omega] in
 /-- States the theorem `residueFrobeniusToLimit_apply_component`. -/
@@ -161,8 +158,7 @@ theorem restrictNormalHom_frobeniusAlgEquivOfAlgebraic
         (FiniteField.frobeniusAlgEquivOfAlgebraic k Omega) E x
     _ = algebraMap E Omega
         (FiniteField.frobeniusAlgEquivOfAlgebraic k E x) := by
-      simp only [FiniteField.coe_frobeniusAlgEquivOfAlgebraic]
-      exact (map_pow (algebraMap E Omega) x (Fintype.card k)).symm
+      rfl
 
 /-- The distinguished element `1 ∈ ℤ̂` acts on the whole algebraic Galois
 extension by the actual arithmetic Frobenius. -/
@@ -181,6 +177,3 @@ theorem residueAbsoluteFrobenius_one :
       (FiniteField.frobeniusAlgEquivOfAlgebraic k Omega)
   rw [restrictNormalHom_residueAbsoluteFrobenius_one,
     restrictNormalHom_frobeniusAlgEquivOfAlgebraic]
-
-end
-end LocalClassFieldTheory

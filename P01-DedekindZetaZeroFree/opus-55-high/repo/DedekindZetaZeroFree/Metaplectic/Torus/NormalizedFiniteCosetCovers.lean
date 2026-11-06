@@ -10,7 +10,7 @@ namespace DedekindZetaZeroFree.KPSpatialSmoothing
 open KPGlobalTorusFunctionData KPGlobalTorusFiniteStagesCofinality
 
 open _root_.DedekindZetaZeroFree.KPGlobalTorusBorelTwistCompatibility renaming finitePart_normal → finitePart_normal
-private theorem normalized_shrink
+theorem normalized_shrink
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (D : KPMsRationalCompactCrossPairing.Iwasawa F ζ hζ) (J : FiniteLevel F ζ hζ) :
     ∃ J0 : FiniteLevel F ζ hζ,
@@ -63,7 +63,7 @@ private theorem normalized_shrink
       (k.val * l.val)⁻¹ * u.val * (k.val * l.val)
     group
   · rfl
-private theorem torus_cover
+theorem torus_cover
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (J : FiniteLevel F ζ hζ) :
     ∃ (n : ℕ) (r : Fin n → E F ζ hζ),

@@ -24,7 +24,7 @@ theorem determinantTwist_cocycle
     B (det K g) (det K h) ^ 2 * B (det K (g * h)) (det K k) ^ 2 =
       B (det K h) (det K k) ^ 2 * B (det K g) (det K (h * k)) ^ 2 := by
   simp only [map_mul, hL, hR, mul_pow]
-  simp only [mul_assoc, mul_left_comm, mul_comm]
+  simp only [mul_assoc, mul_comm]
 
 theorem sigmaTwo_cocycle
     (K : Type*) [Field K] (M : Type*) [CommGroup M]
@@ -77,7 +77,3 @@ theorem sigmaTwo_n_mul_mul_n
     (B : Kˣ → Kˣ → M) (g h : GL2 K) (t t' : K) :
     sigmaTwo K M B (n K t * g) (h * n K t') = sigmaTwo K M B g h := by
   simp only [sigmaTwo, tau_n_mul_mul_n, map_mul, det_n, one_mul, mul_one]
-
-end KubotaCocycleAlgebra
-
-end DedekindZetaZeroFree

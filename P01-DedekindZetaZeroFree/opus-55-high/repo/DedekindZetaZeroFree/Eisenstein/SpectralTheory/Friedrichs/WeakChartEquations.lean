@@ -58,7 +58,7 @@ structure ChartCoefficients (A : LocalBall (KPCuspLogShape.dimension F * 3)) whe
     ∀ v : Space (KPCuspLogShape.dimension F * 3),
       (∑ i, ∑ j, data.matrix p i j * v i * v j) ≤ upperEllipticity * ‖v‖ ^ 2
 
-private lemma coordinates_snd (p : Space (KPCuspLogShape.dimension F * 3))
+lemma coordinates_snd (p : Space (KPCuspLogShape.dimension F * 3))
     (i : Fin (KPCuspLogShape.dimension F)) :
     (coordinates F p i).2 = p (finProdFinEquiv (i, 2)) := rfl
 
@@ -75,7 +75,7 @@ private lemma coordinates_snd (p : Space (KPCuspLogShape.dimension F * 3))
   · rw [if_pos h, if_pos h]; simp only [diagFun, coordinates_snd]
   · rw [if_neg h, if_neg h]
 
-private lemma contDiff_diagFun (j : Fin (KPCuspLogShape.dimension F * 3)) :
+lemma contDiff_diagFun (j : Fin (KPCuspLogShape.dimension F * 3)) :
     ContDiff ℝ (⊤ : ℕ∞) (fun p : Space (KPCuspLogShape.dimension F * 3) => diagFun F p j) := by
   by_cases h : (finProdFinEquiv.symm j).2 = 2
   · simp only [diagFun, h, if_true]; fun_prop
@@ -235,7 +235,7 @@ def chartCoefficients (A : LocalBall (KPCuspLogShape.dimension F * 3)) :
           _ = Λ * ∑ i, (v i) ^ 2 := by rw [Finset.mul_sum]
           _ = Λ * ‖v‖ ^ 2 := by rw [EuclideanSpace.real_norm_sq_eq] }
 
-private theorem matrix_pin (A : LocalBall (KPCuspLogShape.dimension F * 3)) :
+theorem matrix_pin (A : LocalBall (KPCuspLogShape.dimension F * 3)) :
     (chartCoefficients F A).data.matrix =
       (fun p => Matrix.diagonal (fun j =>
         let ik := finProdFinEquiv.symm j
@@ -247,7 +247,7 @@ private theorem matrix_pin (A : LocalBall (KPCuspLogShape.dimension F * 3)) :
   funext j
   simp only [diagFun, coordinates_snd]
 
-private theorem restriction_section
+theorem restriction_section
     (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
     (O : OrbifoldChart F ζ hζ U R P H i x) (m : PhaseSheets F ζ hζ U)
     (A : LocalBall (KPCuspLogShape.dimension F * 3))
@@ -276,7 +276,7 @@ private theorem restriction_section
   rw [hS] at hp
   exact hp
 
-private theorem value_stabilizer
+theorem value_stabilizer
     (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
     (O : OrbifoldChart F ζ hζ U R P H i x) (m : PhaseSheets F ζ hζ U)
     (A : LocalBall (KPCuspLogShape.dimension F * 3))

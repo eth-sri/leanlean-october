@@ -1,6 +1,16 @@
 module
 
-public import ClassFieldTheory.LocalClassFieldTheory.ClassFormation.LocalBlocks.FamilyClassAxiom
+public import ClassFieldTheory.LocalClassFieldTheory.ClassFormation.LocalBlocks.Family.Instances
+public import ClassFieldTheory.LocalClassFieldTheory.ClassFormation.LocalBlocks.Family.H0
+public import ClassFieldTheory.LocalClassFieldTheory.ClassFormation.LocalBlocks.Family.HMinusOne
+public import ClassFieldTheory.LocalClassFieldTheory.ClassFormation.LocalizedCompletionCohomology.CompMulEquiv
+public import ClassFieldTheory.LocalClassFieldTheory.ClassFormation.LocalizedCompletionCohomology.Algebra
+public import ClassFieldTheory.LocalClassFieldTheory.ClassFormation.LocalizedCompletionCohomology.Generator
+public import ClassFieldTheory.LocalClassFieldTheory.ClassFormation.LocalizedCompletionCohomology.HerbrandEquiv
+public import ClassFieldTheory.LocalClassFieldTheory.ClassFormation.LocalizedCompletionCohomology.Finite
+public import ClassFieldTheory.LocalClassFieldTheory.ClassFormation.LocalizedCompletionCohomology.Cardinality.H0
+public import ClassFieldTheory.LocalClassFieldTheory.ClassFormation.LocalizedCompletionCohomology.Cardinality.HMinusOne
+public import GaloisCohomology.Cyclic.Herbrand.Product
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Cohomology.SPlaces.LocalBlocks
 public import ClassFieldTheory.AlgebraicNumberTheory.Completion.ChosenLocalization
 
@@ -12,11 +22,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-set_option autoImplicit false
 
 /-!
 # Cohomology of the unrestricted factors of a relative `S`-idele
@@ -30,7 +35,6 @@ open scoped NumberField BigOperators ValuativeRel Classical NNReal
 open NumberField IsDedekindDomain
 
 noncomputable section
-
 
 open AlgebraicNumberTheory.Valuations
 open CyclicCohomology.ProfiniteCohomology.Herbrand
@@ -47,7 +51,7 @@ variable {K L : Type}
 /-- The local degree attached to one unrestricted place.  At a finite
 place it is the degree of the chosen localization; at an infinite place
 it is one or two according as the place is unramified or ramified. -/
-noncomputable def relativeUnrestrictedSPlaceLocalDegree
+def relativeUnrestrictedSPlaceLocalDegree
     (S : Finset (HeightOneSpectrum (𝓞 K))) :
     RelativeUnrestrictedSPlaceIndex (K := K) S → ℕ :=
   fun i =>
@@ -333,5 +337,3 @@ theorem relativeUnrestrictedLocalHerbrandHMinusOne_card_eq_one
           (chosenFinitePlaceExtension
             (L := L) v.1)
           σ hgen
-
-end

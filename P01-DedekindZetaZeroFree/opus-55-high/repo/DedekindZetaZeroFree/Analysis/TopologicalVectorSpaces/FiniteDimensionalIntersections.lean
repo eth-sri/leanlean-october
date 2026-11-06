@@ -5,7 +5,6 @@ public import Mathlib.Analysis.Complex.Basic
 
 @[expose] public section
 
-noncomputable section
 set_option linter.style.haveILetI false
 namespace DedekindZetaZeroFree.KPLiteralTensor.KernelAndHCRange.CoreGeneration
 
@@ -18,7 +17,3 @@ theorem finite_stage_intersection_closed
   haveI : FiniteDimensional ℂ (A ⊓ S : Submodule ℂ V) :=
     Submodule.finiteDimensional_of_le (le_trans inf_le_left hAT)
   exact Submodule.closed_of_finiteDimensional (A ⊓ S)
-
-end DedekindZetaZeroFree.KPLiteralTensor.KernelAndHCRange.CoreGeneration
-
-end

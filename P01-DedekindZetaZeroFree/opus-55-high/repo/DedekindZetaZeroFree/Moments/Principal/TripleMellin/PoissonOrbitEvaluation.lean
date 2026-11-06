@@ -35,7 +35,7 @@ theorem finiteTrace_nontrivial (P : PrincipalData A σ η hS)
   intro v h
   obtain ⟨x, hx⟩ := PoissonS.ScaleShift.traceConductor_nontrivial
     F A.Sf P.finiteTrace (poissonNormalization P N).traceConductor v
-  exact hx (by rw [h]; rfl)
+  simp_all
 
 theorem probe_eq_orbit_sum (P : PrincipalData A σ η hS)
     (N : MellinNormalizationData A σ η hS P)
@@ -51,6 +51,3 @@ theorem probe_eq_orbit_sum (P : PrincipalData A σ η hS)
     (poissonNormalization P N) (finiteTrace_nontrivial P N) N.disintegration
     ρ hρ X.val Y.val Z.val X.property Y.property Z.property
   exact ⟨h.1, h.2.2⟩
-
-end
-end DedekindZetaZeroFree.NormalizedProbe.TripleMellin

@@ -37,7 +37,7 @@ theorem weakFirst_zero_on_open {n r : ℕ} {Ω W : Opens (E n)}
       show Integrable (fun x => (g j x) a)
         ((volume.restrict (Ω : Set (E n))).restrict k)
       rw [Measure.restrict_restrict hkc.measurableSet, Set.inter_eq_left.mpr hkΩ]
-      simpa only [Function.comp_apply, EuclideanSpace.coe_proj] using hproj
+      simp_all
     · intro g0 hg0 hg0c hg0s
       have hcast : ContDiff ℝ ∞ (fun x => (g0 x : ℂ)) :=
         Complex.ofRealCLM.contDiff.comp hg0
@@ -99,7 +99,7 @@ private theorem compactZeroExtension_memLp {n r : ℕ} {Ω : Opens (E n)}
     MemLp (compactZeroExtension K f) 2 volume :=
   (memLp_indicator_iff_restrict hK.measurableSet.nullMeasurableSet).2 (hf.2 K hK hKΩ)
 
-private theorem compactZeroExtension_ae_eq {n r : ℕ} {Ω : Opens (E n)}
+theorem compactZeroExtension_ae_eq {n r : ℕ} {Ω : Opens (E n)}
     {K : Set (E n)} {f : E n → V r}
     (hf : ∀ᵐ x ∂volume.restrict (Ω : Set (E n)),
       x ∈ (Ω : Set (E n)) \ K → f x = 0) :
@@ -152,7 +152,7 @@ theorem compactZeroExtension_properties {n r : ℕ} {Ω : Opens (E n)}
     compactZeroExtension_ae_eq hf
   have hGae : ∀ j, compactZeroExtension K (g j) =ᵐ[volume.restrict (Ω : Set (E n))] g j :=
     fun j => compactZeroExtension_ae_eq (weakFirst_zero_off_compact hK hKΩ hfg hf j)
-  exact ⟨hFmem, hGmem, hFint, hGint, hFzero, hGzero, hFtsupp, hGtsupp, hFae, hGae⟩
+  simp_all
 
 theorem compactZeroExtension_weak_identity {n r : ℕ} {Ω : Opens (E n)}
     {K : Set (E n)} {f : E n → V r} {g : Fin n → E n → V r}
@@ -180,8 +180,7 @@ theorem compactZeroExtension_weak_identity {n r : ℕ} {Ω : Opens (E n)}
   have hηc_c : HasCompactSupport ηc := hηc.comp_left (g := Complex.ofRealCLM) (by simp)
   have hΨ_c : HasCompactSupport (fun x => ηc x * ψ x) :=
     hηc_c.of_isClosed_subset isClosed_closure (closure_mono fun x hx => by
-      simp only [Function.mem_support] at hx ⊢
-      exact fun h => hx (by rw [h, zero_mul]))
+      simp_all)
   have hΨ_ts : tsupport (fun x => ηc x * ψ x) ⊆ (Ω : Set (E n)) := by
     refine (tsupport_mul_subset_left (f := ηc) (g := ψ)).trans ?_
     rw [hηc_ts]
@@ -195,7 +194,7 @@ theorem compactZeroExtension_weak_identity {n r : ℕ} {Ω : Opens (E n)}
   have hcont : Continuous (coordinatePartial j ψ) := by
     have h1 := hψ.continuous_fderiv_apply (𝕜 := ℝ) (n := ∞) (by simp)
     have h2 : Continuous fun x : E n => (fderiv ℝ ψ x) (coordinateDirection j) :=
-      h1.comp (continuous_id.prodMk (continuous_const : Continuous fun _ : E n => coordinateDirection j))
+      by fun_prop
     exact h2
 
   haveI : IsFiniteMeasure (volume.restrict K) := isFiniteMeasure_restrict.2 hK.measure_ne_top
@@ -323,7 +322,3 @@ theorem compactZeroExtension_weakFirst {n r : ℕ} {Ω : Opens (E n)}
   · intro j ψ a
     have h := compactZeroExtension_weak_identity hK hKΩ hfg hf (fun y => ψ y) ψ.contDiff' j a
     simpa using h.2.2
-
-end DedekindZetaZeroFree.KPCompactInteriorH1
-
-end

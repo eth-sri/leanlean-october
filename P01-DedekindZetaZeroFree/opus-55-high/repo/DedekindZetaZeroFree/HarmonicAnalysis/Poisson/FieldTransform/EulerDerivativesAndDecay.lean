@@ -31,9 +31,7 @@ theorem B_euler_inverse_integrable (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
     have hBc : Continuous (fun t : ℝ => B D r h ((c : ℂ) + (t : ℂ) * Complex.I)) :=
       (B_differentiableOn D r h hD hr hh hhc).continuousOn.comp_continuous (by fun_prop) (by
         intro t
-        show 0 < ((c : ℂ) + (t : ℂ) * Complex.I).re
-        simp [Complex.add_re, Complex.ofReal_re, Complex.mul_re, Complex.I_re, Complex.I_im,
-          Complex.ofReal_im, hc])
+        simp_all)
     exact (((hexp.const_cpow (Or.inl (Complex.ofReal_ne_zero.mpr hx.ne'))).mul
       (hexp.pow j)).mul hBc).aestronglyMeasurable
   · filter_upwards with t
@@ -47,8 +45,7 @@ theorem B_euler_inverse_integrable (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
             nlinarith [abs_nonneg c, abs_nonneg t, mul_nonneg (abs_nonneg c) (abs_nonneg t)]
     have hx_bound : ‖(x : ℂ) ^ (-s)‖ = x ^ (-c) := by
       rw [hs, Complex.norm_cpow_eq_rpow_re_of_pos hx]
-      simp [Complex.neg_re, Complex.add_re, Complex.ofReal_re, Complex.mul_re, Complex.I_re,
-        Complex.I_im, Complex.ofReal_im]
+      simp
     have hb_bound : ‖(-s) ^ j‖ ≤ ((1 + |c|) * (1 + |t|)) ^ j := by
       rw [norm_pow, norm_neg]
       exact pow_le_pow_left₀ (norm_nonneg _) hs_bound j
@@ -62,9 +59,7 @@ theorem B_euler_inverse_integrable (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
     have key : (1 + |t|) ^ j * (1 + |t|) ^ (-((j + 3 : ℕ) : ℝ)) =
         (1 + |t|) ^ (-((3 : ℕ) : ℝ)) := by
       rw [← Real.rpow_natCast (1 + |t|) j, ← Real.rpow_add (by positivity : 0 < 1 + |t|)]
-      congr 1
-      push_cast
-      ring
+      simp
     calc ‖(x : ℂ) ^ (-s) * (-s) ^ j * B D r h s‖
         = ‖(x : ℂ) ^ (-s)‖ * ‖(-s) ^ j‖ * ‖B D r h s‖ := by rw [norm_mul, norm_mul]
       _ = x ^ (-c) * ‖(-s) ^ j‖ * ‖B D r h s‖ := by rw [hx_bound]
@@ -257,7 +252,3 @@ theorem fieldTransform_euler_two_ended_bound
         (Real.rpow_le_rpow_of_exponent_le hx (by linarith)) hC₂
       _ ≤ (C₁ + C₂ + 1) * x ^ (-(n : ℝ)) :=
         mul_le_mul_of_nonneg_right (by linarith) (Real.rpow_nonneg hxpos.le _)
-
-end DedekindZetaZeroFree.LargeSieve
-
-end

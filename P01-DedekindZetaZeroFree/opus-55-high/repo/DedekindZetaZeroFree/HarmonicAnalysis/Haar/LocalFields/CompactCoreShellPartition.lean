@@ -4,14 +4,13 @@ public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.LocalFields.ValuationSh
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.KPRankOneShellRepair
 open scoped NumberField Valued
 open NumberField IsDedekindDomain ValuativeRel
 open KPLocalExceptionalConstruction KPLocalPrincipalSeries
 variable (F : Type) [Field F] [NumberField F] (q : HeightOneSpectrum (𝓞 F))
 
-private theorem abs_bound (m : ℤ) (x : LocalField F q) :
+theorem abs_bound (m : ℤ) (x : LocalField F q) :
     KPCubicHaar.abs (LocalField F q) x ≤ (residueCardinality (LocalField F q) : ℝ) ^ m ↔
     valuation (LocalField F q) x ≤
       (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)).symm (WithZero.exp m) := by
@@ -21,7 +20,7 @@ private theorem abs_bound (m : ℤ) (x : LocalField F q) :
   by_cases hx : x = 0
   · simp [hx, (zpow_pos (lt_trans zero_lt_one hq) m).le]
   have hv : e (valuation (LocalField F q) x) ≠ 0 := by
-    exact (map_ne_zero e).mpr ((valuation (LocalField F q)).ne_zero_iff.mpr hx)
+    simp_all
   simp only [KPCubicHaar.abs, if_neg hx]
   change (residueCardinality (LocalField F q) : ℝ) ^ WithZero.log (e (valuation (LocalField F q) x)) ≤
     (residueCardinality (LocalField F q) : ℝ) ^ m ↔ _
@@ -32,12 +31,12 @@ private theorem abs_bound (m : ℤ) (x : LocalField F q) :
   conv_rhs => rw [← WithZero.exp_log hv]
   exact WithZero.exp_le_exp.symm
 
-private theorem core_compact (m : ℤ) : IsCompact {x : LocalField F q | KPCubicHaar.abs (LocalField F q) x ≤
+theorem core_compact (m : ℤ) : IsCompact {x : LocalField F q | KPCubicHaar.abs (LocalField F q) x ≤
     (residueCardinality (LocalField F q) : ℝ) ^ m} := by
   simp_rw [abs_bound]
   exact IsNonarchimedeanLocalField.isCompact_closedBall _ _
 
-private theorem outer_closed (m : ℤ) : IsClosed {x : LocalField F q | (residueCardinality (LocalField F q) : ℝ) ^ (m - 1) < KPCubicHaar.abs (LocalField F q) x} := by
+theorem outer_closed (m : ℤ) : IsClosed {x : LocalField F q | (residueCardinality (LocalField F q) : ℝ) ^ (m - 1) < KPCubicHaar.abs (LocalField F q) x} := by
   have he : {x : LocalField F q | (residueCardinality (LocalField F q) : ℝ) ^ (m - 1) < KPCubicHaar.abs (LocalField F q) x} =
       {x : LocalField F q | valuation (LocalField F q) x ≤
         (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)).symm (WithZero.exp (m - 1))}ᶜ := by
@@ -95,19 +94,11 @@ theorem actual_shell_compact_partition (M : ℕ) :
         simp only [KPCubicHaar.abs, if_neg hx0]
         rfl
       have hj : (M : ℤ) ≤ j := by
-        rw [habs, zpow_le_zpow_iff_right₀ hq] at hx
-        omega
+        simp_all
       let n : ℕ := (j - M).toNat
       have hn : ((M + n : ℕ) : ℤ) = j := by
-        dsimp [n]
-        rw [Int.toNat_of_nonneg (by omega)]
         omega
       apply Set.mem_iUnion.mpr
       refine ⟨n, ?_⟩
       change _ < KPCubicHaar.abs (LocalField F q) x ∧ KPCubicHaar.abs (LocalField F q) x ≤ _
-      rw [hn, habs]
-      exact ⟨(zpow_lt_zpow_iff_right₀ hq).mpr (by omega), le_rfl⟩
-
-end DedekindZetaZeroFree.KPRankOneShellRepair
-
-end
+      simp_all

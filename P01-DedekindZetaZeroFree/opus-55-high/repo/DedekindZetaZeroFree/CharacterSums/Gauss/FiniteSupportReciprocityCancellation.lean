@@ -12,15 +12,14 @@ open NumberField IsDedekindDomain
 
 namespace DedekindZetaZeroFree.GaussProductCancellation
 noncomputable section
-set_option autoImplicit false
 variable {F : Type} [Field F] [NumberField F]
 
  def assemblyPhase (A : SArithmeticData F) (σ : F →+* ℂ) (p : A.Exterior) (x : A.R) : ℂ :=
   σ (A.sexticResidue p x)
-private theorem assemblyPhase_mul (A : SArithmeticData F) (σ : F →+* ℂ) (p : A.Exterior) (x y : A.R) :
+theorem assemblyPhase_mul (A : SArithmeticData F) (σ : F →+* ℂ) (p : A.Exterior) (x y : A.R) :
     assemblyPhase A σ p (x * y) = assemblyPhase A σ p x * assemblyPhase A σ p y := by
   unfold assemblyPhase SArithmeticData.sexticResidue SArithmeticData.residueValue
-  simp only [map_mul]
+  simp
 
 variable {ι : Type*}
  def productExterior (A : SArithmeticData F) (p : ι → A.Exterior)
@@ -37,7 +36,7 @@ private theorem productExterior_generates (A : SArithmeticData F) (p : ι → A.
   change (∏ v ∈ T, A.extendIdeal (p v)) = _
   simp only [SArithmeticData.extendIdeal, productExterior]
   exact (map_prod (Ideal.mapHom (algebraMap (𝓞 F) A.R)) _ _).symm
-private theorem assemblyPhase_modulus_prod (A : SArithmeticData F) (σ : F →+* ℂ)
+theorem assemblyPhase_modulus_prod (A : SArithmeticData F) (σ : F →+* ℂ)
     (p : ι → A.Exterior) (T : Finset ι) (x : A.R) :
     assemblyPhase A σ (productExterior A p T) x =
       ∏ v ∈ T, assemblyPhase A σ (p v) x := by
@@ -75,9 +74,9 @@ private theorem assembly_finite_support_crt (A : SArithmeticData F) (σ : F →+
     simpa using A.idealGauss_top σ hS (productExterior A p ∅) ht _ hgen 2
   | @insert a T ha ih =>
     have hPa : Squarefree (p a).val := hSquare.squarefree_of_dvd
-      (by simp only [Finset.prod_insert ha]; exact dvd_mul_right _ _)
+      (by simp only [Finset.prod_insert ha]; simp)
     have hPT : Squarefree (∏ v ∈ T, (p v).val) := hSquare.squarefree_of_dvd
-      (by simp only [Finset.prod_insert ha]; exact dvd_mul_left _ _)
+      (by simp only [Finset.prod_insert ha]; simp)
     have hcopT : ∀ v ∈ T, ∀ w ∈ T, v ≠ w → (p v).val ⊔ (p w).val = ⊤ :=
       fun v hv w hw => hcop v (Finset.mem_insert_of_mem hv) w (Finset.mem_insert_of_mem hw)
     have hcopA : (p a).val ⊔ (productExterior A p T).val = ⊤ := by
@@ -164,7 +163,7 @@ private theorem assembly_finite_support_reciprocal
         intro v _
         apply Finset.prod_congr
         · ext w; simp
-        · intro w _; rfl
+        simp
       rw [← hcomb']
       apply Finset.prod_congr rfl
       intro v _
@@ -305,7 +304,6 @@ open NumberField IsDedekindDomain
 
 namespace DedekindZetaZeroFree.GaussProductCancellation
 noncomputable section
-set_option autoImplicit false
 variable {F : Type} [Field F] [NumberField F]
 
 theorem prime_product_replacement
@@ -404,7 +402,6 @@ open NumberField IsDedekindDomain
 
 namespace DedekindZetaZeroFree.GlobalPairCancel
 noncomputable section
-set_option autoImplicit false
 
 variable {F : Type} [Field F] [NumberField F]
 
@@ -442,8 +439,7 @@ theorem principalCharacter_pow_six (A : SArithmeticData F) (σ : F →+* ℂ)
     rw [← map_pow]
     have hh := congrArg (fun z : Fˣ => (z : F))
       (A.sexticResidueFamily_normalized.1 I x)
-    simp only [Units.val_pow_eq_pow_val, Units.val_one] at hh
-    rw [hh, map_one]
+    simp_all
   have transport : ∀ (J K : Ideal A.R) (h : J = K)
       (χ : MulChar (A.R ⧸ J) ℂ), χ ^ 6 = 1 →
       GeneratorInvariance.transportCharacter J K h χ ^ 6 = 1 := by
@@ -462,8 +458,7 @@ theorem HasArithmeticRecipes.compatible (A : SArithmeticData F) (σ : F →+* �
     refine ⟨A.exteriorIdealEquiv.symm ⟨Ideal.span {a}, by simpa using ha⟩,
       ha, ?_⟩
     rw [← A.exteriorIdealEquiv_apply]
-    exact (congrArg Subtype.val (A.exteriorIdealEquiv.apply_symm_apply
-      ⟨Ideal.span {a}, by simpa using ha⟩)).symm
+    simp
   refine ⟨?_, ?_, ?_⟩
   · intro x
     rw [hD.2.2.1]
@@ -483,7 +478,6 @@ theorem HasArithmeticRecipes.compatible (A : SArithmeticData F) (σ : F →+* �
             (GeneratorInvariance.transportCharacter J K hJK χ) := by
       intro J K L hJK hKL hJL χ
       subst K
-      subst L
       rfl
     exact ht _ _ _ hI.2.symm hab hJ.2.symm _
 
@@ -565,7 +559,7 @@ theorem frequencyTheta_mul (A : SArithmeticData F) (σ : F →+* ℂ)
     frequencyTheta A σ p (x * y) =
       frequencyTheta A σ p x * frequencyTheta A σ p y := by
   unfold frequencyTheta SArithmeticData.sexticResidue SArithmeticData.residueValue
-  rw [map_mul, map_mul, map_mul]
+  simp
 
 theorem actual_pair_phase_cancel
     (A : SArithmeticData F) (σ : F →+* ℂ)
@@ -596,7 +590,7 @@ theorem actual_pair_phase_cancel
     have haz : Ideal.Quotient.mk (A.extendIdeal I) a = 0 := by
       apply Ideal.Quotient.eq_zero_iff_mem.mpr
       rw [← ha.2]
-      exact Ideal.subset_span (Set.mem_singleton a)
+      simp
     apply IsUnit.of_mul_eq_one (Ideal.Quotient.mk (A.extendIdeal I) s)
     have hh := congrArg (Ideal.Quotient.mk (A.extendIdeal I)) hrs
     simpa only [map_add, map_mul, map_one, haz, zero_mul, zero_add, mul_comm] using hh
@@ -661,7 +655,7 @@ private theorem productExterior_generates (A : SArithmeticData F) (p : ι → A.
   change (∏ v ∈ T, A.extendIdeal (p v)) = _
   simp only [SArithmeticData.extendIdeal, productExterior]
   exact (map_prod (Ideal.mapHom (algebraMap (𝓞 F) A.R)) _ _).symm
-private theorem frequencyTheta_modulus_prod (A : SArithmeticData F) (σ : F →+* ℂ)
+theorem frequencyTheta_modulus_prod (A : SArithmeticData F) (σ : F →+* ℂ)
     (p : ι → A.Exterior) (T : Finset ι) (x : A.R) :
     frequencyTheta A σ (productExterior A p T) x =
       ∏ v ∈ T, frequencyTheta A σ (p v) x := by
@@ -699,9 +693,9 @@ theorem idealGauss_finite_support_crt (A : SArithmeticData F) (σ : F →+* ℂ)
     simpa using A.idealGauss_top σ hS (productExterior A p ∅) ht _ hgen 2
   | @insert a T ha ih =>
     have hPa : Squarefree (p a).val := hSquare.squarefree_of_dvd
-      (by simp only [Finset.prod_insert ha]; exact dvd_mul_right _ _)
+      (by simp only [Finset.prod_insert ha]; simp)
     have hPT : Squarefree (∏ v ∈ T, (p v).val) := hSquare.squarefree_of_dvd
-      (by simp only [Finset.prod_insert ha]; exact dvd_mul_left _ _)
+      (by simp only [Finset.prod_insert ha]; simp)
     have hcopT : ∀ v ∈ T, ∀ w ∈ T, v ≠ w → (p v).val ⊔ (p w).val = ⊤ :=
       fun v hv w hw => hcop v (Finset.mem_insert_of_mem hv) w (Finset.mem_insert_of_mem hw)
     have hcopA : (p a).val ⊔ (productExterior A p T).val = ⊤ := by
@@ -839,13 +833,7 @@ theorem global_pair_cancel
     intro v _
     apply Finset.prod_congr
     · ext w
-      simp only [Finset.mem_compl, Finset.mem_singleton]
-    · intro w _
-      rfl
+      simp
+    simp
   rw [hCancel', mul_one, ← Finset.prod_mul_distrib]
   simp only [mul_assoc]
-
-end
-end DedekindZetaZeroFree.GlobalPairCancel
-
-end

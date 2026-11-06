@@ -6,10 +6,8 @@ public import DedekindZetaZeroFree.HarmonicAnalysis.Mellin.FiniteLocalUnitsInteg
 @[expose] public section
 
 namespace DedekindZetaZeroFree.ThetaRawSheetEnvelope.WeightedWhittakerSheets
-noncomputable section
 open MeasureTheory NumberField
 open scoped Topology
-set_option autoImplicit false
 variable {F : Type} [Field F] [NumberField F]
 
 theorem weighted_finitePowerMajorant_integrable
@@ -26,16 +24,14 @@ theorem weighted_finitePowerMajorant_integrable
     intro x
     by_cases hx : ‖x‖ ≤ M
     · refine ⟨Metric.ball x M, Metric.isOpen_ball, ?_, ?_⟩
-      · rw [Metric.mem_ball, dist_self]
-        exact hM
+      · simp_all
       · intro y hy
         have hy' : ‖y‖ ≤ M := by
           rw [Metric.mem_ball, dist_eq_norm] at hy
-          calc ‖y‖ = ‖x + (y - x)‖ := by congr 1; ring
+          calc ‖y‖ = ‖x + (y - x)‖ := by simp
             _ ≤ max ‖x‖ ‖y - x‖ := IsUltrametricDist.norm_add_le_max x (y - x)
             _ ≤ M := max_le hx hy.le
-        simp only [hg]
-        rw [if_pos hy', if_pos hx]
+        simp_all
     · refine ⟨{y | M < ‖y‖}, isOpen_lt continuous_const continuous_norm, ?_, ?_⟩
       · exact not_le.mp hx
       · intro y hy
@@ -44,9 +40,7 @@ theorem weighted_finitePowerMajorant_integrable
         rw [if_neg (not_le.mpr hy), if_neg hx]
   have hgc : HasCompactSupport g := by
     refine HasCompactSupport.intro (isCompact_closedBall (0 : v.adicCompletion F) M) ?_
-    intro x hx
-    simp only [hg]
-    exact if_neg (by rw [Metric.mem_closedBall, dist_eq_norm] at hx; simpa using hx)
+    simp_all
   have hz : 0 < (((s + 1 / 4 : ℝ) : ℂ)).re := by
     simp only [Complex.ofReal_re]; linarith
   have h := DedekindZetaZeroFree.ProbeSheetGlobalIntegrability.finiteUnitsMellin_integrable
@@ -63,6 +57,3 @@ theorem weighted_finitePowerMajorant_integrable
       Real.rpow_add hnpos s (1 / 4)]
     rfl
   · rw [if_neg h, zero_mul, norm_zero, finitePowerMajorant, if_neg h, mul_zero]
-
-end
-end DedekindZetaZeroFree.ThetaRawSheetEnvelope.WeightedWhittakerSheets

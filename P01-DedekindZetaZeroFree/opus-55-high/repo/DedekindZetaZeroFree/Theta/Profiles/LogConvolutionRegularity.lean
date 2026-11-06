@@ -56,9 +56,7 @@ theorem logConvolution_c2 {I : Type*} [Fintype I]
     intro i j hj
     exact (hH i).continuous_iteratedDeriv j (by exact_mod_cast hj)
   have hm : ∀ i j, j ≤ 2 → ∀ u, AEStronglyMeasurable (F i j u) logConvolutionMeasure := by
-    intro i j hj u
-    exact hKmeas.mul (((hc i j hj).measurable.comp
-      (measurable_const.sub Real.measurable_log)).aestronglyMeasurable)
+    fun_prop
   have hb : ∀ i j, j ≤ 2 → ∀ u T, ‖F i j u T‖ ≤ C 0 j * ‖K T‖ := by
     intro i j hj u T
     dsimp [F]
@@ -75,7 +73,7 @@ theorem logConvolution_c2 {I : Type*} [Fintype I]
       (fun u => Filter.Eventually.of_forall (hb i j hj u)) (hKint.const_mul (C 0 j))
     apply Filter.Eventually.of_forall
     intro T
-    exact continuous_const.mul ((hc i j hj).comp (continuous_id.sub continuous_const))
+    fun_prop
   have haDeriv : ∀ i j, j < 2 → ∀ u, HasDerivAt (A i j) (A i (j + 1) u) u := by
     intro i j hj u
     refine (hasDerivAt_integral_of_dominated_loc_of_deriv_le
@@ -95,7 +93,7 @@ theorem logConvolution_c2 {I : Type*} [Fintype I]
     funext u
     apply integral_congr_ae
     filter_upwards [hpos] with T hT
-    simp [logProfile, logConvolution, A, F, Real.exp_sub, Real.exp_log hT]
+    simp [logProfile, F, Real.exp_sub, Real.exp_log hT]
   have heq : ∀ i j, j ≤ 2 → iteratedDeriv j (logProfile (logConvolution K (H i))) = A i j := by
     intro i j hj
     induction j with
@@ -115,7 +113,7 @@ theorem logConvolution_c2 {I : Type*} [Fintype I]
     constructor
     · intro j hj
       rw [heq i j hj]
-      exact haCont i j hj
+      fun_prop
     · intro j hj
       rw [heq i j (by omega)]
       exact fun u => (haDeriv i j hj u).differentiableAt
@@ -140,6 +138,3 @@ theorem logConvolution_c2 {I : Type*} [Fintype I]
     change ‖A i j u‖ ≤ _ at hh
     change ‖A i j u‖ ≤ C σ j * (∫ T, ‖K T‖ * T ^ σ ∂logConvolutionMeasure) * Real.exp (-σ * u)
     convert hh using 1 <;> ring
-
-end
-end DedekindZetaZeroFree

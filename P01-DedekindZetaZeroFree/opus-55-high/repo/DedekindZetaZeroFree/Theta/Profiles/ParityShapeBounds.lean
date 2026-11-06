@@ -7,7 +7,6 @@ public import DedekindZetaZeroFree.Arithmetic.Units.RayUnitTorsionFibers
 
 @[expose] public section
 
-noncomputable section
 
 open Classical NumberField
 open NumberField.mixedEmbedding
@@ -17,12 +16,12 @@ namespace DedekindZetaZeroFree
 
 variable (K : Type) [Field K] [NumberField K]
 
-private theorem parityContinuous (δ : Finset (RayCoset.RealPlaces K)) :
+theorem parityContinuous (δ : Finset (RayCoset.RealPlaces K)) :
     Continuous (RayParity.gδ K δ) := by
   unfold RayParity.gδ Theta.latticeGaussian
   fun_prop
 
-private theorem parityPolynomialBound (δ : Finset (RayCoset.RealPlaces K)) (y : euclidean.mixedSpace K) :
+theorem parityPolynomialBound (δ : Finset (RayCoset.RealPlaces K)) (y : euclidean.mixedSpace K) :
  ‖RayParity.gδ K δ y‖ ≤ (1 + ‖y‖) ^ δ.card * Real.exp (-Real.pi * ‖y‖ ^ 2) := by
   rw [RayParity.gδ, norm_mul, Theta.norm_latticeGaussian]
   apply mul_le_mul_of_nonneg_right _ (Real.exp_pos _).le
@@ -35,12 +34,12 @@ private theorem parityPolynomialBound (δ : Finset (RayCoset.RealPlaces K)) (y :
       exact hb.trans (by linarith [norm_nonneg y]))
     _ = _ := by simp
 
-private theorem parityScaleRadial (q : NumberField.InfinitePlace K → ℝ) (x : euclidean.mixedSpace K) (r : ℝ) :
+theorem parityScaleRadial (q : NumberField.InfinitePlace K → ℝ) (x : euclidean.mixedSpace K) (r : ℝ) :
  RayParity.Q K (fun v => r * q v) x = r • RayParity.Q K q x := by
   unfold RayParity.Q
   have he : (fun v => r * q v) = r • q := rfl
-  rw [he, map_smul, smul_mul_assoc, map_smul]
-private theorem parityCompactLower (S : Set (RayCoset.logHyperplane K)) (hS : IsCompact S) :
+  simp_all
+theorem parityCompactLower (S : Set (RayCoset.logHyperplane K)) (hS : IsCompact S) :
  ∃ m : ℝ, 0 < m ∧ ∀ h ∈ S, ∀ x : euclidean.mixedSpace K,
    m * ‖x‖ ≤ ‖RayParity.Q K (fun v => Real.exp (h.val v)) x‖ := by
   let T := S ×ˢ Metric.sphere (0 : euclidean.mixedSpace K) 1
@@ -55,7 +54,7 @@ private theorem parityCompactLower (S : Set (RayCoset.logHyperplane K)) (hS : Is
       apply continuous_pi
       intro v
       exact Real.continuous_exp.comp ((continuous_apply v).comp (continuous_subtype_val.comp continuous_fst))
-    · exact (Theta.traceToMixed K).continuous.comp continuous_snd
+    fun_prop
   obtain ⟨m, hm, hb⟩ := hT.exists_forall_le' hc.continuousOn (a := 0) (by
     rintro ⟨h,x⟩ ⟨hh,hx⟩
     apply norm_pos_iff.mpr
@@ -74,7 +73,7 @@ private theorem parityCompactLower (S : Set (RayCoset.logHyperplane K)) (hS : Is
     have he : RayParity.Q K (fun v => Real.exp (h.val v)) ((‖x‖⁻¹ : ℝ) • x) =
        (‖x‖⁻¹ : ℝ) • RayParity.Q K (fun v => Real.exp (h.val v)) x := by
       unfold RayParity.Q
-      rw [map_smul, mul_smul_comm, map_smul]
+      simp
     rw [he, _root_.norm_smul, Real.norm_eq_abs, abs_of_nonneg (inv_nonneg.mpr (norm_nonneg x))] at hb'
     have := mul_le_mul_of_nonneg_left hb' (norm_nonneg x)
     have hn : ‖x‖ ≠ 0 := norm_ne_zero_iff.mpr hx
@@ -111,7 +110,7 @@ theorem thetaParityShapeBounds
     have hy : y = r • RayParity.Q K (fun v => Real.exp (h.val v)) x := parityScaleRadial K _ _ _
     have hlower : r * (m * ‖x‖) ≤ ‖y‖ := by
       rw [hy, _root_.norm_smul, Real.norm_eq_abs, abs_of_pos hr]
-      exact mul_le_mul_of_nonneg_left (hb h hh x) hr.le
+      simp_all
     have hsquare : m ^ 2 * r ^ 2 * ‖x‖ ^ 2 ≤ ‖y‖ ^ 2 := by
       have : (r * (m * ‖x‖)) ^ 2 ≤ ‖y‖ ^ 2 :=
         pow_le_pow_left₀ (by positivity) hlower 2
@@ -153,8 +152,7 @@ theorem continuousOn_thetaParityShape
     · exact continuousOn_fst.rpow_const (fun x hx => Or.inl (ne_of_gt hx))
     · exact (Real.continuous_exp.comp ((continuous_apply v).comp
         (continuous_subtype_val.comp (continuous_fst.comp continuous_snd)))).continuousOn
-  · exact (Theta.traceToMixed K).continuous.comp_continuousOn
-      (continuous_snd.comp continuous_snd).continuousOn
+  fun_prop
 
 theorem continuousOn_thetaParityShape_neg
     (δ : Finset (RayCoset.RealPlaces K)) :
@@ -176,8 +174,7 @@ theorem continuousOn_thetaParityShape_neg
     · exact continuousOn_fst.rpow_const (fun x hx => Or.inl (ne_of_gt hx))
     · exact (Real.continuous_exp.comp ((continuous_apply v).comp
         (continuous_subtype_val.comp (continuous_neg.comp (continuous_fst.comp continuous_snd))))).continuousOn
-  · exact (Theta.traceToMixed K).continuous.comp_continuousOn
-      (continuous_snd.comp continuous_snd).continuousOn
+  fun_prop
 
 theorem thetaParity_zero (δ : Finset (RayCoset.RealPlaces K)) :
     RayParity.gδ K δ (0 : euclidean.mixedSpace K) =
@@ -186,8 +183,4 @@ theorem thetaParity_zero (δ : Finset (RayCoset.RealPlaces K)) :
   · simp [h, RayParity.gδ, Theta.latticeGaussian]
   · obtain ⟨v, hv⟩ := Finset.nonempty_iff_ne_empty.mpr h
     simp only [h, if_false, RayParity.gδ, map_zero, Complex.ofReal_zero]
-    rw [Finset.prod_eq_zero hv (by simp), zero_mul]
-
-end DedekindZetaZeroFree
-
-end
+    simp_all

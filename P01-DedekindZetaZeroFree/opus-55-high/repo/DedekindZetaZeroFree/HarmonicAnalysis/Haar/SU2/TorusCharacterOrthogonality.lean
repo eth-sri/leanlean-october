@@ -36,7 +36,7 @@ theorem character_symPower_mul_conj_mul_four_mul_sin_sq (m n : ℕ) (θ : ℝ) :
       = 4 * ((Real.sin θ : ℂ) * (symPower m).character (torusExp θ))
           * ((Real.sin θ : ℂ) * (symPower n).character (torusExp θ)) := by
     ring
-  rw [show ((4 * Real.sin θ ^ 2 : ℝ) : ℂ) = 4 * (Real.sin θ : ℂ) ^ 2 by push_cast; ring, habsorb,
+  rw [show ((4 * Real.sin θ ^ 2 : ℝ) : ℂ) = 4 * (Real.sin θ : ℂ) ^ 2 by simp, habsorb,
     sin_mul_character_symPower_torusExp, sin_mul_character_symPower_torusExp]
   push_cast
   ring
@@ -64,7 +64,3 @@ theorem character_symPower_orthonormal_torusExp (m n : ℕ) :
     split <;> simp, ← hreal]
   push_cast
   ring
-
-end SU2
-
-end DedekindZetaZeroFree.TauCeti

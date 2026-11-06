@@ -17,7 +17,7 @@ open DedekindZetaZeroFree.RepresentationTheory.KPSmoothCoreCasimirEnergy.Infinit
 private lemma expansion (x : M) : x = ∑ p : Idx, c x p • e p := by
   ext i j
   fin_cases i <;> fin_cases j <;>
-    simp [e, c, Fintype.sum_prod_type, Fintype.sum_bool, Matrix.single, Matrix.sum_apply, Finset.sum_apply, Matrix.smul_apply, Complex.real_smul] <;>
+    simp [e, c, Fintype.sum_prod_type, Matrix.single, Matrix.sum_apply, Complex.real_smul] <;>
     apply Complex.ext <;> simp
 
 private lemma bilinear_expand (B : M →L[ℝ] M →L[ℝ] ℂ) (x y : M) :
@@ -36,9 +36,7 @@ private lemma tensor (m : M) (p q : Idx) :
   rcases q with ⟨d,f,t⟩
   fin_cases a <;> fin_cases b <;> cases s <;>
     fin_cases d <;> fin_cases f <;> cases t <;>
-    simp [c, noncompactMatrix, compactMatrix, Fin.sum_univ_three,
-      Matrix.mul_apply, Fin.sum_univ_two, Matrix.smul_apply,
-      smul_eq_mul, Complex.mul_re, Complex.mul_im, Complex.div_re, Complex.div_im] <;> ring
+    simp [c, noncompactMatrix, compactMatrix, Fin.sum_univ_three, Matrix.mul_apply, Fin.sum_univ_two, Matrix.smul_apply, smul_eq_mul, Complex.mul_re, Complex.mul_im] <;> ring
 private lemma contraction_expand (B : M →L[ℝ] M →L[ℝ] ℂ) (X : Fin 3 → M) :
     (∑ j, B (X j) (X j)) =
     ∑ p : Idx, ∑ q : Idx, (∑ j, c (X j) p * c (X j) q) • B (e p) (e q) := by
@@ -97,20 +95,18 @@ open KPCplxPrincipalSeriesCharts
  def diagVel (c : ℂ) (m : Mat) (t : ℝ) : Mat :=
   !![c * Complex.exp (t * c), 0; 0, -c * Complex.exp (-(t * c))] * m
 
-private theorem diagPath_zero (c : ℂ) (m : Mat) : diagPath c m 0 = m := by
-  simp [diagPath, Matrix.mul_apply, Fin.sum_univ_two]
+theorem diagPath_zero (c : ℂ) (m : Mat) : diagPath c m 0 = m := by
+  simp [diagPath]
   ext i j
   fin_cases i <;> fin_cases j <;> simp [Matrix.vecMul, dotProduct, Fin.sum_univ_two]
 
-private theorem diagPath_deriv (c : ℂ) (m : Mat) (t : ℝ) :
+theorem diagPath_deriv (c : ℂ) (m : Mat) (t : ℝ) :
     HasDerivAt (diagPath c m) (diagVel c m t) t := by
   have h := ((Complex.hasDerivAt_exp (t * c)).hasFDerivAt.restrictScalars ℝ).comp_hasDerivAt t
     (Complex.ofRealCLM.hasDerivAt.mul_const c)
   have hn := ((Complex.hasDerivAt_exp (-(t * c))).hasFDerivAt.restrictScalars ℝ).comp_hasDerivAt t
     (Complex.ofRealCLM.hasDerivAt.mul_const c).neg
-  simp only [Complex.ofRealCLM_apply, mul_one, one_mul,
-    ContinuousLinearMap.coe_restrictScalars, ContinuousLinearMap.toSpanSingleton_apply,
-    smul_eq_mul] at h hn
+  simp only [Complex.ofRealCLM_apply] at h hn
   apply hasDerivAt_pi.mpr
   intro i
   apply hasDerivAt_pi.mpr
@@ -119,15 +115,13 @@ private theorem diagPath_deriv (c : ℂ) (m : Mat) (t : ℝ) :
   · simpa [diagPath, diagVel, Matrix.mul_apply, Fin.sum_univ_two, mul_comm, mul_left_comm, mul_assoc] using h.mul_const (m 0 j)
   · simpa [diagPath, diagVel, Matrix.mul_apply, Fin.sum_univ_two, mul_comm, mul_left_comm, mul_assoc] using hn.mul_const (m 1 j)
 
-private theorem diagVel_deriv (c : ℂ) (m : Mat) :
+theorem diagVel_deriv (c : ℂ) (m : Mat) :
     HasDerivAt (diagVel c m) ((c ^ 2) • m) 0 := by
   have h := ((Complex.hasDerivAt_exp (0 * c)).hasFDerivAt.restrictScalars ℝ).comp_hasDerivAt 0
     (Complex.ofRealCLM.hasDerivAt.mul_const c)
   have hn := ((Complex.hasDerivAt_exp (-(0 * c))).hasFDerivAt.restrictScalars ℝ).comp_hasDerivAt 0
     (Complex.ofRealCLM.hasDerivAt.mul_const c).neg
-  simp only [Complex.ofRealCLM_apply, mul_one, one_mul,
-    ContinuousLinearMap.coe_restrictScalars, ContinuousLinearMap.toSpanSingleton_apply,
-    smul_eq_mul, zero_mul, neg_zero, Complex.exp_zero] at h hn
+  simp only [Complex.ofRealCLM_apply, zero_mul, neg_zero, Complex.exp_zero] at h hn
   apply hasDerivAt_pi.mpr
   intro i
   apply hasDerivAt_pi.mpr
@@ -136,7 +130,7 @@ private theorem diagVel_deriv (c : ℂ) (m : Mat) :
   · simpa [diagVel, Matrix.mul_apply, Fin.sum_univ_two, smul_eq_mul, pow_two, mul_assoc] using (h.const_mul c).mul_const (m 0 j)
   · simpa [diagVel, Matrix.mul_apply, Fin.sum_univ_two, smul_eq_mul, pow_two, mul_assoc] using (hn.const_mul (-c)).mul_const (m 1 j)
 
-private theorem diag_weight (s : ℝ) (c : ℂ) (t : ℝ) :
+theorem diag_weight (s : ℝ) (c : ℂ) (t : ℝ) :
     inductionWeight s (Units.mk0 (Complex.exp (t * c)) (Complex.exp_ne_zero _))
       (Units.mk0 (Complex.exp (-(t * c))) (Complex.exp_ne_zero _)) =
       Real.exp ((2 * (1 + 2 * s) * c.re) * t) := by
@@ -149,7 +143,7 @@ private theorem diag_weight (s : ℝ) (c : ℂ) (t : ℝ) :
   congr 1
   ring
 
-private theorem diag_covariance (s : ℝ) (f : PrincipalSeries s)
+theorem diag_covariance (s : ℝ) (f : PrincipalSeries s)
     (g : KPCplxCharacterHaar.ComplexGL2) (c : ℂ) (t : ℝ) :
     matrixFunction f.val (diagPath c (g : Mat) t) =
       (Real.exp ((2 * (1 + 2 * s) * c.re) * t) : ℂ) * f g := by
@@ -168,7 +162,7 @@ private theorem diag_covariance (s : ℝ) (f : PrincipalSeries s)
   rw [hc.1]
   rw [diag_weight]
 
-private theorem diag_hessian (s : ℝ) (f : PrincipalSeries s)
+theorem diag_hessian (s : ℝ) (f : PrincipalSeries s)
     (g : KPCplxCharacterHaar.ComplexGL2) (c : ℂ) :
     fderiv ℝ (fderiv ℝ (matrixFunction f.val)) (g : Mat)
       (diagVel c (g : Mat) 0) (diagVel c (g : Mat) 0) +
@@ -179,8 +173,8 @@ private theorem diag_hessian (s : ℝ) (f : PrincipalSeries s)
   let F := matrixFunction f.val
   let m : Mat := g
   let k : ℝ := 2 * (1 + 2 * s) * c.re
-  have ho : IsOpen {m : Mat | m.det ≠ 0} := by
-    exact isOpen_ne.preimage (by fun_prop)
+  have ho : IsOpen {m : Mat | m.det ≠ 0} := 
+    isOpen_ne.preimage (by fun_prop)
   have hf := ((principalSeries_mem_iff s f.val).mp f.property).2
   have hd := hf.fderiv_of_isOpen ho (m := (⊤ : ℕ∞)) (by simp)
   have hpdet (t : ℝ) : (diagPath c m t).det ≠ 0 :=
@@ -200,7 +194,7 @@ private theorem diag_hessian (s : ℝ) (f : PrincipalSeries s)
       ((Real.hasDerivAt_exp (k * t)).comp t ((hasDerivAt_id t).const_mul k))).mul_const (f g)
     dsimp only [Function.comp_def] at hh hx
     rw [heq] at hh
-    convert hh.unique hx using 1 <;> simp [mul_comm, mul_left_comm, mul_assoc]
+    convert hh.unique hx using 1 <;> simp [mul_comm, mul_assoc]
   have hD0 : DifferentiableAt ℝ (fderiv ℝ F) (diagPath c m 0) := by
     rw [diagPath_zero]; exact hD
   have hchain := HasFDerivAt.comp_hasDerivAt (E := Matrix (Fin 2) (Fin 2) ℂ →L[ℝ] ℂ) 0 hD0.hasFDerivAt (diagPath_deriv c m 0)
@@ -231,18 +225,17 @@ theorem diagonal_hessian_covariance (s : ℝ)
   let r : ℝ := 1 / Real.sqrt 2
   have hr : r ^ 2 = 1 / 2 := by
     dsimp [r]
-    rw [div_pow, Real.sq_sqrt (by norm_num)]
-    norm_num
+    simp
   have hv : diagVel (r : ℂ) (g : Mat) 0 = noncompactMatrix 0 * (g : Mat) := by
     congr 1
     ext i j
     fin_cases i <;> fin_cases j <;>
-      simp [diagVel, noncompactMatrix, r, Matrix.smul_apply, smul_eq_mul]
+      simp [diagVel, noncompactMatrix, r, smul_eq_mul]
   have hvi : diagVel (Complex.I * r) (g : Mat) 0 = compactMatrix 0 * (g : Mat) := by
     congr 1
     ext i j
     fin_cases i <;> fin_cases j <;>
-      simp [diagVel, compactMatrix, noncompactMatrix, r, Matrix.smul_apply, smul_eq_mul]
+      simp [diagVel, compactMatrix, noncompactMatrix, r, smul_eq_mul]
   have hc : (r : ℂ) ^ 2 = ((1 / 2 : ℝ) : ℂ) := by exact_mod_cast hr
   have hci : (Complex.I * (r : ℂ)) ^ 2 = ((-(1 / 2) : ℝ) : ℂ) := by
     rw [mul_pow, Complex.I_sq, hc]
@@ -260,11 +253,9 @@ theorem diagonal_hessian_covariance (s : ℝ)
   rw [hi] at h2
   simp only [mul_zero, zero_pow (by decide : 2 ≠ 0), Complex.ofReal_zero, zero_mul] at h2
   have hs1 : (((1 / 2 : ℝ) : ℂ) • (g : Mat)) = (1 / 2 : ℝ) • (g : Mat) := by
-    ext i j
-    simp [smul_eq_mul]
+    rfl
   have hs2 : (((-(1 / 2) : ℝ) : ℂ) • (g : Mat)) = (-(1 / 2) : ℝ) • (g : Mat) := by
-    ext i j
-    simp [smul_eq_mul]
+    rfl
   rw [hs1, map_smul] at h1
   rw [hs2, map_smul] at h2
   simp only [Complex.real_smul, Complex.ofReal_neg, Complex.ofReal_div, Complex.ofReal_one, Complex.ofReal_ofNat] at h1 h2
@@ -315,7 +306,7 @@ theorem offdiagonal_pauli_contraction
     ext i j
     fin_cases i <;> fin_cases j <;>
       simp [compactMatrix, noncompactMatrix, upperRoot, lowerRoot, a, Complex.real_smul]
-    <;> simp [mul_left_comm Complex.I, ← mul_assoc, Complex.I_mul_I]
+    <;> simp [mul_left_comm Complex.I, Complex.I_mul_I]
   rw [h1, h2, k1, k2]
   simp only [Matrix.smul_mul, Matrix.add_mul, Matrix.sub_mul, Matrix.neg_mul,
     map_smul, map_add, map_sub, map_neg, ContinuousLinearMap.smul_apply,
@@ -324,7 +315,7 @@ theorem offdiagonal_pauli_contraction
   have ha : (a : ℂ) * a = 1 / 2 := by
     have hs : (Real.sqrt 2 : ℂ) * (Real.sqrt 2 : ℂ) = 2 := by
       norm_cast
-      nlinarith [Real.sq_sqrt (show (0 : ℝ) ≤ 2 by norm_num)]
+      simp
     dsimp [a]
     rw [Complex.ofReal_inv, ← mul_inv, hs]
     norm_num
@@ -364,9 +355,7 @@ private lemma path (g : KPCplxCharacterHaar.ComplexGL2) :
   apply hasDerivAt_pi.mpr
   intro j
   fin_cases i <;> fin_cases j <;>
-    simp only [upperRoot, lowerRoot, Matrix.mul_apply, Fin.sum_univ_two,
-      Matrix.of_apply, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_succ', Matrix.cons_val_zero', Matrix.head_cons,
-      zero_mul, one_mul, add_zero, zero_add]
+    simp only [upperRoot, lowerRoot, Matrix.mul_apply, Fin.sum_univ_two, Matrix.of_apply, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_succ', Matrix.cons_val_zero', zero_mul, one_mul, add_zero, zero_add]
   · simpa using h.mul_const ((g : Matrix (Fin 2) (Fin 2) ℂ) 0 0)
   · simpa using h.mul_const ((g : Matrix (Fin 2) (Fin 2) ℂ) 0 1)
   · exact hasDerivAt_const _ _
@@ -381,7 +370,7 @@ private lemma cov (s t : ℝ) (f : PrincipalSeries s) (g : KPCplxCharacterHaar.C
   have hdet : (!![(Real.exp t : ℂ), 0; 0, 1] * (g : Matrix (Fin 2) (Fin 2) ℂ)).det ≠ 0 := by
     rw [Matrix.det_mul]
     apply mul_ne_zero
-    · simpa [Matrix.det_fin_two] using (a t).ne_zero
+    · simp [Matrix.det_fin_two]
     · exact Matrix.GeneralLinearGroup.det_ne_zero g
   rw [matrixFunction, dif_pos hdet]
   apply congrArg f.val
@@ -399,7 +388,7 @@ private lemma firstDerivative (s : ℝ) (f : PrincipalSeries s) (g : KPCplxChara
   have hp := path g
   have hz : !![(Real.exp (0 : ℝ) : ℂ), 0; 0, 1] * (g : Matrix (Fin 2) (Fin 2) ℂ) = g := by
     have h1 : !![(Real.exp (0 : ℝ) : ℂ), 0; 0, 1] = (1 : Matrix (Fin 2) (Fin 2) ℂ) := by
-      ext i j; fin_cases i <;> fin_cases j <;> simp [Matrix.one_apply]
+      ext i j; fin_cases i <;> fin_cases j <;> simp
     rw [h1, one_mul]
   have hdf : HasFDerivAt (matrixFunction f.val)
       (fderiv ℝ (matrixFunction f.val) (g : Matrix (Fin 2) (Fin 2) ℂ))
@@ -457,7 +446,7 @@ local notation "Mat" => Matrix (Fin 2) (Fin 2) ℂ
 
 private theorem invertible_open : IsOpen {m : Mat | m.det ≠ 0} := by
   have hc : Continuous (fun m : Mat => m.det) := by
-    simp only [Matrix.det_fin_two]; fun_prop
+    fun_prop
   exact isOpen_ne_fun hc continuous_const
 
 private theorem matrixFunction_coe (f : ComplexGL2 → ℂ) (g : ComplexGL2) :
@@ -466,22 +455,18 @@ private theorem matrixFunction_coe (f : ComplexGL2 → ℂ) (g : ComplexGL2) :
   rw [dif_pos (Matrix.GeneralLinearGroup.det_ne_zero g)]
   congr 1
   apply Matrix.GeneralLinearGroup.ext
-  intro i j
-  rfl
+  simp
 
-private theorem affine_upper (z : ℂ) (t : ℝ) :
+theorem affine_upper (z : ℂ) (t : ℝ) :
     (upperUnipotent ((t : ℂ) * z) : Mat) = 1 + t • (z • upperRoot) := by
   ext i j
   fin_cases i <;> fin_cases j <;>
-    simp [upperUnipotent, upperRoot, Matrix.one_apply, Complex.real_smul,
-      Matrix.smul_apply]
+    simp [upperUnipotent, upperRoot, Complex.real_smul]
 
-private theorem upper_invariant (s : ℝ) (f : PrincipalSeries s)
+theorem upper_invariant (s : ℝ) (f : PrincipalSeries s)
     (g : ComplexGL2) (x : ℂ) : f.val (upperUnipotent x * g) = f.val g := by
   have hc := ((principalSeries_mem_iff s f.val).mp f.property).1 (1 : ℂˣ) 1 x g
   have he : upperTriangular (1 : ℂˣ) 1 x = upperUnipotent x := by
-    apply Matrix.GeneralLinearGroup.ext
-    intro i j
     rfl
   simpa [he, inductionWeight, complexAbs] using hc
 
@@ -537,11 +522,11 @@ theorem upper_unipotent_hessian_covariance (s : ℝ)
   have hh := hD.hasFDerivAt.clm_apply (L.hasFDerivAt (x := m))
   have hzero : fderiv ℝ (fun a : Mat => fderiv ℝ F a (L a)) m = 0 := by
     rw [he.fderiv_eq]
-    exact (hasFDerivAt_const (0 : ℂ) m).fderiv
+    simp
   have hv := congrArg (fun A : Mat →L[ℝ] ℂ => A V) (hh.fderiv.symm.trans hzero)
   have hsum : fderiv ℝ F m (L V) + fderiv ℝ (fderiv ℝ F) m V (L m) = 0 := by
     convert hv using 1 <;> rfl
-  have hsym := hsm.isSymmSndFDerivAt (by simp [minSmoothness]) (L m) V
+  have hsym := hsm.isSymmSndFDerivAt (by simp) (L m) V
   change fderiv ℝ (fderiv ℝ F) m (L m) V +
     fderiv ℝ (fderiv ℝ F) m V (L m) = -(2 : ℂ) * fderiv ℝ F m (L V)
   have hsym' : fderiv ℝ (fderiv ℝ F) m (L m) V =
@@ -568,24 +553,22 @@ theorem pauli_square_sum :
         (3 : ℂ) • (1 : Matrix (Fin 2) (Fin 2) ℂ) := by
   have hsq : (Real.sqrt 2 : ℂ) ^ 2 = 2 := by
     norm_cast
-    exact Real.sq_sqrt (by norm_num)
+    simp
   have hn : (Real.sqrt 2 : ℂ) ≠ 0 := by
     intro h
-    rw [h] at hsq
-    norm_num at hsq
+    simp_all
   ext a b
   fin_cases a <;> fin_cases b <;>
-    simp [Fin.sum_univ_succ, noncompactMatrix, compactMatrix, Matrix.mul_apply,
-      Matrix.smul_apply, Matrix.one_apply] <;> field_simp <;>
+    simp [Fin.sum_univ_succ, noncompactMatrix, compactMatrix, Matrix.smul_apply] <;> field_simp <;>
     simp [Complex.I_sq, hsq] <;> norm_num
 
 open scoped Matrix.Norms.Operator in
-private theorem casimir_path_hasDeriv_components (g : KPCplxCharacterHaar.ComplexGL2)
+theorem casimir_path_hasDeriv_components (g : KPCplxCharacterHaar.ComplexGL2)
     (M : Matrix (Fin 2) (Fin 2) ℂ) :
     ∀ i j, HasDerivAt (fun t : ℝ => ((g : Matrix (Fin 2) (Fin 2) ℂ) * NormedSpace.exp ((t : ℂ) • M)) i j) (((g : Matrix (Fin 2) (Fin 2) ℂ) * M) i j) 0 := by
   have h := ((hasDerivAt_exp_smul_const (𝕂 := ℂ) M ((0 : ℝ) : ℂ)).hasFDerivAt.restrictScalars ℝ).comp_hasDerivAt (f := fun t : ℝ => (t : ℂ)) 0 Complex.ofRealCLM.hasDerivAt
   have hmat := h.const_mul (g : Matrix (Fin 2) (Fin 2) ℂ)
-  simp only [Complex.ofRealCLM_apply, Complex.ofReal_one, ContinuousLinearMap.coe_restrictScalars, ContinuousLinearMap.toSpanSingleton_apply, one_smul, zero_smul, NormedSpace.exp_zero, mul_one, one_mul] at hmat
+  simp only [Complex.ofRealCLM_apply, Complex.ofReal_one] at hmat
   intro i j
   have hi := (ContinuousLinearMap.proj i : Matrix (Fin 2) (Fin 2) ℂ →L[ℝ] Fin 2 → ℂ).hasFDerivAt.comp_hasDerivAt 0 hmat
   have hj := (ContinuousLinearMap.proj j : (Fin 2 → ℂ) →L[ℝ] ℂ).hasFDerivAt.comp_hasDerivAt 0 hi
@@ -636,8 +619,8 @@ theorem localDerivative_fderiv (s : ℝ) (b : LocalBasis)
     localDerivative s b f g =
       fderiv ℝ (KPCplxPrincipalSeriesCharts.matrixFunction f.val)
         (g : Matrix (Fin 2) (Fin 2) ℂ)
-        ((g : Matrix (Fin 2) (Fin 2) ℂ) * cartanMatrix b) := by
-  exact rightDerivative_fderiv s f g (cartanMatrix b)
+        ((g : Matrix (Fin 2) (Fin 2) ℂ) * cartanMatrix b) := 
+  rightDerivative_fderiv s f g (cartanMatrix b)
 
 open scoped Matrix.Norms.Elementwise in
 
@@ -708,14 +691,14 @@ theorem radial_fderiv_zero (s : ℝ)
     intro j
     simpa using ((hasDerivAt_id (0 : ℝ)).add_const 1).smul_const (m i j)
   have hh := hd.hasFDerivAt.comp_hasDerivAt_of_eq 0 hp (by simp)
-  have hn : ∀ᶠ t : ℝ in nhds 0, t + 1 ≠ 0 := by
-    exact (isOpen_ne.preimage (by fun_prop : Continuous (fun t : ℝ => t + 1))).mem_nhds (by norm_num)
+  have hn : ∀ᶠ t : ℝ in nhds 0, t + 1 ≠ 0 := 
+    (isOpen_ne.preimage (by fun_prop : Continuous (fun t : ℝ => t + 1))).mem_nhds (by norm_num)
   have he : F ∘ (fun t : ℝ => (t + 1) • m) =ᶠ[nhds 0] (fun _ => f g) := by
     filter_upwards [hn] with t ht
     let c : ℂˣ := Units.mk0 ((t + 1 : ℝ) : ℂ) (by exact_mod_cast ht)
     have hc : ((Matrix.GeneralLinearGroup.scalar (Fin 2) c * g) : Matrix (Fin 2) (Fin 2) ℂ) =
         (t + 1) • m := by
-      simp only [Units.val_mul, Matrix.GeneralLinearGroup.coe_scalar, c, Units.val_mk0]
+      simp only [Matrix.GeneralLinearGroup.coe_scalar, c, Units.val_mk0]
       rw [Matrix.scalar_apply]
       ext i j
       simp [Matrix.diagonal_mul, m, Complex.real_smul]
@@ -827,9 +810,3 @@ theorem normalized_casimir (s : ℝ)
           (B (compactMatrix 1 * m) (compactMatrix 1 * m) +
             B (compactMatrix 2 * m) (compactMatrix 2 * m))) := by ring
     _ = _ := by rw [hd, ho]; push_cast; ring
-
-end DedekindZetaZeroFree.RepresentationTheory.KPSmoothCoreCasimirEnergy.CasimirHessian
-
-end
-
-end

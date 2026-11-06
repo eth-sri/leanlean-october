@@ -15,13 +15,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Norm quotients for unramified local extensions
 
@@ -33,7 +26,6 @@ the valuation quotient have the same finite cardinality.
 -/
 
 noncomputable section
-
 
 namespace LocalClassFieldTheory
 
@@ -66,10 +58,10 @@ theorem localNormSubgroup_le_unramifiedNormSubgroup :
       (LocalFieldTheory.normUnits K L y))
   rw [v_normUnits_eq_residue_finrank_mul_of_isGalois K L,
     unramifiedValuation_residue_finrank_eq_finrank K L]
-  exact dvd_mul_right _ _
+  simp
 
 /-- The canonical map from the norm quotient to the valuation quotient. -/
-noncomputable def normQuotientToUnramifiedNormQuotient :
+def normQuotientToUnramifiedNormQuotient :
     NormQuotient K L →*
       Kˣ ⧸ unramifiedNormSubgroup K (Module.finrank K L) :=
   normQuotientLift
@@ -102,7 +94,7 @@ theorem normQuotientToUnramifiedNormQuotient_surjective :
     (unramifiedNormClass_surjective K (Module.finrank K L))
 
 /-- Cyclicity identifies the unramified Galois group with its abelianization. -/
-noncomputable def galoisGroupEquivAbelianizationOfUnramifiedValuation :
+def galoisGroupEquivAbelianizationOfUnramifiedValuation :
     Gal(L / K) ≃* Abelianization (Gal(L / K)) := by
   letI : IsCyclic (Gal(L / K)) :=
     isCyclic_galoisGroup_of_unramifiedValuation K L
@@ -124,7 +116,7 @@ noncomputable local instance unramifiedNormComparisonNormQuotientFinite :
     ((galoisGroupEquivAbelianizationOfUnramifiedValuation K L).toEquiv.trans
       (abelianizationEquivNormQuotient K L).toEquiv)
 
-private theorem normQuotient_card_eq_finrank :
+theorem normQuotient_card_eq_finrank :
     Nat.card (NormQuotient K L) = Module.finrank K L := by
   let : Finite (Abelianization (Gal(L / K))) :=
     Finite.of_surjective Abelianization.of QuotientGroup.mk_surjective
@@ -177,7 +169,7 @@ theorem normSubgroup_eq_unramifiedNormSubgroup_of_isIntegralClosure :
     exact (unramifiedNormClass_eq_one_iff_mem K (Module.finrank K L) x).2 hx
 
 /-- The actual unramified norm quotient is the normalized valuation quotient. -/
-noncomputable def normQuotientUnramifiedValuationEquivZModOfIsIntegralClosure :
+def normQuotientUnramifiedValuationEquivZModOfIsIntegralClosure :
     NormQuotient K L ≃*
       Multiplicative (ZMod (Module.finrank K L)) :=
   (normQuotientEquivOfSubgroupEq K L
@@ -195,7 +187,3 @@ theorem normQuotientUnramifiedValuationEquivZModOfIsIntegralClosure_mk
   rw [normQuotientUnramifiedValuationEquivZModOfIsIntegralClosure,
     MulEquiv.trans_apply, normQuotientEquivOfSubgroupEq_normClass,
     unramifiedNormQuotientEquivZMod_mk]
-
-end LocalClassFieldTheory
-
-end

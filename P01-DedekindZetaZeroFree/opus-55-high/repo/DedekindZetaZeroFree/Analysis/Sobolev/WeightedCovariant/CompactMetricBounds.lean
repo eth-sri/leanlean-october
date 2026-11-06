@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Analysis.Sobolev.WeightedCovariant.Coordinate
 
 @[expose] public section
 
-noncomputable section
 
 namespace DedekindZetaZeroFree
 
@@ -13,7 +12,7 @@ namespace KPCompactInteriorH1
 open MeasureTheory TopologicalSpace
 open scoped ContDiff InnerProductSpace
 
-private lemma inner_re_eq {r : ℕ} (v w : V r) :
+lemma inner_re_eq {r : ℕ} (v w : V r) :
     Complex.re ⟪v, w⟫_ℂ = ∑ a, ((v a).re * (w a).re + (v a).im * (w a).im) := by
   rw [PiLp.inner_apply]
   simp only [Complex.re_sum]
@@ -62,12 +61,8 @@ private lemma quadratic_smul {n r : ℕ} {Ω : Opens (E n)} (Q : InverseMetric �
   rw [Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro a _
-  have hre : ∀ j, ((c • v) j a).re = c * (v j a).re := fun j => by
-    simp only [Pi.smul_apply, WithLp.ofLp_smul, Pi.smul_apply, Complex.real_smul,
-      Complex.ofReal_re, Complex.mul_re, Complex.ofReal_im, zero_mul, sub_zero]
-  have him : ∀ j, ((c • v) j a).im = c * (v j a).im := fun j => by
-    simp only [Pi.smul_apply, WithLp.ofLp_smul, Pi.smul_apply, Complex.real_smul,
-      Complex.ofReal_im, Complex.mul_im, Complex.ofReal_re, mul_zero, zero_mul, add_zero]
+  have hre : ∀ j, ((c • v) j a).re = c * (v j a).re := by simp
+  have him : ∀ j, ((c • v) j a).im = c * (v j a).im := by simp
   simp only [hre, him, Finset.mul_sum]
   rw [mul_add]
   congr 1
@@ -89,11 +84,11 @@ private lemma quadratic_pos {n r : ℕ} {Ω : Opens (E n)} (Q : InverseMetric Ω
   have hnonneg : ∀ (u : Fin n → ℝ), 0 ≤ ∑ j, u j * (∑ k, Q.Q x j k * u k) := by
     intro u
     have := Matrix.PosSemidef.dotProduct_mulVec_nonneg hpsd u
-    simpa [dotProduct, Matrix.mulVec] using this
+    positivity
   have hpos : ∀ (u : Fin n → ℝ), u ≠ 0 → 0 < ∑ j, u j * (∑ k, Q.Q x j k * u k) := by
     intro u hu
     have := Matrix.PosDef.dotProduct_mulVec_pos hpd hu
-    simpa [dotProduct, Matrix.mulVec] using this
+    positivity
   have hex : ∃ a : Fin r, ∃ j : Fin n, v j a ≠ 0 := by
     by_contra h
     push Not at h
@@ -134,16 +129,11 @@ private lemma exists_ellipticity {n r : ℕ} (Ω : Opens (E n))
   have hSclosed : IsClosed S := by
     rw [hSdef]
     have hcont : Continuous (fun v : Fin n → V r => ∑ j, ‖v j‖ ^ (2:ℕ)) :=
-      continuous_finsetSum Finset.univ
-        (fun j _ => ((continuous_apply j).norm).pow 2)
+      by fun_prop
     exact isClosed_eq hcont continuous_const
   have hScomp : IsCompact S := by
     rcases Nat.eq_zero_or_pos n with hn | hn
-    · subst hn
-      rw [hSdef]
-      convert isCompact_empty using 1
-      ext v
-      simp [Finset.univ_eq_empty]
+    · simp_all
     · have hSsub : S ⊆ Metric.closedBall 0 1 := by
         intro v hv
         rw [Metric.mem_closedBall, dist_zero_right,
@@ -152,8 +142,7 @@ private lemma exists_ellipticity {n r : ℕ} (Ω : Opens (E n))
         have h1 : ‖v j‖ ^ (2:ℕ) ≤ ∑ k, ‖v k‖ ^ (2:ℕ) :=
           Finset.single_le_sum (f := fun k => ‖v k‖ ^ (2:ℕ))
             (fun k _ => by positivity) (Finset.mem_univ j)
-        rw [hv] at h1
-        nlinarith [norm_nonneg (v j)]
+        simp_all
       exact IsCompact.of_isClosed_subset (isCompact_closedBall 0 1) hSclosed hSsub
   have hφcont : ContinuousOn (fun p : E n × (Fin n → V r) => Q.quadratic p.1 p.2)
       (C ×ˢ S) := by
@@ -165,20 +154,14 @@ private lemma exists_ellipticity {n r : ℕ} (Ω : Opens (E n))
     apply ContinuousOn.mul
     · exact (Q.smooth j k).continuousOn.comp continuous_fst.continuousOn
         (fun p hp => hCΩ hp.1)
-    · have h1 : Continuous (fun p : E n × (Fin n → V r) => p.2 j) :=
-        (continuous_apply j).comp continuous_snd
-      have h2 : Continuous (fun p : E n × (Fin n → V r) => p.2 k) :=
-        (continuous_apply k).comp continuous_snd
-      exact ((Complex.continuous_re.comp continuous_inner).comp
-        (h1.prodMk h2)).continuousOn
+    fun_prop
   have hKS : IsCompact (C ×ˢ S) := hC.prod hScomp
   have hpos : ∀ p ∈ C ×ˢ S, 0 < Q.quadratic p.1 p.2 := by
     rintro ⟨x, u⟩ ⟨hx, hu⟩
     have hu1 : ∑ j, ‖u j‖ ^ (2:ℕ) = 1 := hu
     have hu0 : u ≠ 0 := by
       intro h
-      rw [h] at hu1
-      simp at hu1
+      simp_all
     exact quadratic_pos Q x (hCΩ hx) hu0
   obtain ⟨κ, hκ, hκle⟩ := hKS.exists_forall_le' hφcont hpos
   set T : Set ℝ := (fun p : E n × (Fin n → V r) => Q.quadratic p.1 p.2) '' (C ×ˢ S) with hT
@@ -208,12 +191,11 @@ private lemma exists_ellipticity {n r : ℕ} (Ω : Opens (E n))
     have hspos : 0 < s := Real.sqrt_pos.mpr hsum_pos
     have hs2 : s ^ 2 = ∑ j, ‖v j‖ ^ (2:ℕ) := Real.sq_sqrt hsum_pos.le
     set u : Fin n → V r := fun j => (s⁻¹ : ℝ) • v j with hu
-    have hu_smul : u = (s⁻¹ : ℝ) • v := by funext j; rfl
+    have hu_smul : u = (s⁻¹ : ℝ) • v := by rfl
     have husum : ∑ j, ‖u j‖ ^ (2:ℕ) = 1 := by
       have hterm : ∀ j, ‖u j‖ ^ (2:ℕ) = (s⁻¹) ^ 2 * ‖v j‖ ^ (2:ℕ) := by
         intro j
-        simp only [hu, Pi.smul_apply, norm_smul, Real.norm_eq_abs,
-          abs_of_pos (inv_pos.mpr hspos), mul_pow]
+        simp only [hu, norm_smul, Real.norm_eq_abs, abs_of_pos (inv_pos.mpr hspos), mul_pow]
       simp only [hterm, ← Finset.mul_sum]
       rw [← hs2, ← mul_pow, inv_mul_cancel₀ (ne_of_gt hspos), one_pow]
     have huS : u ∈ S := husum
@@ -266,7 +248,7 @@ theorem exists_compact_metric_bounds {n r : ℕ} (Ω : Opens (E n))
         sSup (Set.range fun j : Fin n => sSup ((fun x => ‖A.A j x‖) '' C)) := by
       apply le_csSup
       · exact (Set.finite_range _).bddAbove
-      · exact Set.mem_range_self j
+      simp
     exact le_trans h1 (le_trans h2 (le_max_right _ _))
 
 theorem weightedMeasure_mutually_absolutelyContinuous {n : ℕ}
@@ -287,9 +269,9 @@ theorem weightedMeasure_mutually_absolutelyContinuous {n : ℕ}
     refine withDensity_absolutelyContinuous' ?_ ?_
     · exact ENNReal.measurable_ofReal.comp_aemeasurable hwae
     · filter_upwards [self_mem_ae_restrict hΩ] with x hx
-      exact ne_of_gt (ENNReal.ofReal_pos.mpr (hwpos x hx))
+      simp_all
 
-private theorem weight_bounds {n : ℕ} (Ω : Opens (E n))
+theorem weight_bounds {n : ℕ} (Ω : Opens (E n))
     (C : Set (E n)) (hC : IsCompact C) (hCΩ : C ⊆ (Ω : Set (E n)))
     (w : E n → ℝ) (hw : ContDiffOn ℝ ∞ w (Ω : Set (E n)))
     (hwpos : ∀ x ∈ (Ω : Set (E n)), 0 < w x) :
@@ -304,7 +286,7 @@ private theorem weight_bounds {n : ℕ} (Ω : Opens (E n))
     intro x hx
     exact (hne ⟨x, hx⟩).elim
 
-private theorem weight_measure_bounds {n : ℕ} (Ω : Opens (E n))
+theorem weight_measure_bounds {n : ℕ} (Ω : Opens (E n))
     (C : Set (E n)) (hC : IsCompact C) (hCΩ : C ⊆ (Ω : Set (E n)))
     (w : E n → ℝ) (hw : ContDiffOn ℝ ∞ w (Ω : Set (E n)))
     (hwpos : ∀ x ∈ (Ω : Set (E n)), 0 < w x) :
@@ -342,19 +324,17 @@ private theorem weight_measure_bounds {n : ℕ} (Ω : Opens (E n))
     filter_upwards [ae_restrict_mem hC.measurableSet] with x hx
     exact ENNReal.ofReal_le_ofReal (hab x hx).2
 
-private theorem supported_restrict_iff {n r : ℕ} (C : Set (E n))
+theorem supported_restrict_iff {n r : ℕ} (C : Set (E n))
     (hC : MeasurableSet C) (μ : Measure (E n)) (f : E n → V r)
     (hfsupp : ∀ᵐ x ∂μ, x ∉ C → f x = 0) :
     MemLp f 2 μ ↔ MemLp f 2 (μ.restrict C) := by
   refine ⟨fun hf => hf.restrict C, fun hf => ?_⟩
   have heq : C.indicator f =ᵐ[μ] f := by
     filter_upwards [hfsupp] with x hx
-    by_cases h : x ∈ C
-    · simp [h]
-    · simp [h, hx h]
+    simp_all
   exact ((memLp_indicator_iff_restrict hC.nullMeasurableSet).mpr hf).ae_eq heq
 
-private theorem connection_term_memLp {n r : ℕ} (Ω : Opens (E n))
+theorem connection_term_memLp {n r : ℕ} (Ω : Opens (E n))
     (C : Set (E n)) (hC : IsCompact C) (hCΩ : C ⊆ (Ω : Set (E n)))
     (A : Connection (r := r) Ω) (f : E n → V r)
     (hf : MemLp f 2 (volume.restrict (Ω : Set (E n))))
@@ -376,7 +356,7 @@ private theorem connection_term_memLp {n r : ℕ} (Ω : Opens (E n))
         ((hb (Set.mem_image_of_mem _ hxC)).trans (le_max_left _ _)) (norm_nonneg _)
       _ = ‖((max b 0) • (fun x => ‖f x‖)) x‖ := by simp [abs_of_nonneg (le_max_right b 0)]
   · simp [hx hxC]
-private theorem compact_section_memLp_iff {n r : ℕ} (Ω : Opens (E n))
+theorem compact_section_memLp_iff {n r : ℕ} (Ω : Opens (E n))
     (C : Set (E n)) (hC : IsCompact C) (hCΩ : C ⊆ (Ω : Set (E n)))
     (w : E n → ℝ) (hw : ContDiffOn ℝ ∞ w (Ω : Set (E n)))
     (hwpos : ∀ x ∈ (Ω : Set (E n)), 0 < w x)
@@ -393,7 +373,7 @@ private theorem compact_section_memLp_iff {n r : ℕ} (Ω : Opens (E n))
     Measure.restrict_restrict_of_subset hCΩ]
   exact ⟨fun hf => hf.of_measure_le_smul hb hhi, fun hf => hf.of_measure_le_smul hc hlo⟩
 
-private theorem energy_meas {n r : ℕ} (Ω : Opens (E n))
+theorem energy_meas {n r : ℕ} (Ω : Opens (E n))
     (w : E n → ℝ) (hw : ContDiffOn ℝ ∞ w (Ω : Set (E n)))
     (Q : InverseMetric Ω) (d : Fin n → E n → V r)
     (hd : ∀ j, AEStronglyMeasurable (d j) (volume.restrict (Ω : Set (E n)))) :
@@ -405,11 +385,8 @@ private theorem energy_meas {n r : ℕ} (Ω : Opens (E n))
       (volume.restrict (Ω : Set (E n))) := fun j k =>
     ((Q.smooth j k).continuousOn.aestronglyMeasurable Ω.isOpen.measurableSet).mul
       (Complex.continuous_re.comp_aestronglyMeasurable ((hd j).inner (hd k)))
-  convert Finset.aestronglyMeasurable_sum Finset.univ (fun j _ =>
-      Finset.aestronglyMeasurable_sum Finset.univ (fun k _ => hh j k)) using 1
-  funext x
-  simp
-private theorem compact_energy_iff {n r : ℕ} (Ω : Opens (E n))
+  fun_prop
+theorem compact_energy_iff {n r : ℕ} (Ω : Opens (E n))
     (C : Set (E n)) (hC : IsCompact C) (hCΩ : C ⊆ (Ω : Set (E n)))
     (w : E n → ℝ) (hw : ContDiffOn ℝ ∞ w (Ω : Set (E n)))
     (hwpos : ∀ x ∈ (Ω : Set (E n)), 0 < w x)
@@ -432,7 +409,7 @@ private theorem compact_energy_iff {n r : ℕ} (Ω : Opens (E n))
     filter_upwards [hzero] with x hx
     by_cases hxC : x ∈ C
     · obtain ⟨hwx, hqx, hax⟩ := hbound x hxC
-      have hs : 0 ≤ ∑ j, ‖d j x‖ ^ 2 := Finset.sum_nonneg fun _ _ => sq_nonneg _
+      have hs : 0 ≤ ∑ j, ‖d j x‖ ^ 2 := by positivity
       have hqn : 0 ≤ Q.quadratic x (fun j => d j x) :=
         (mul_nonneg hk.le hs).trans (hqx _).1
       constructor
@@ -545,7 +522,7 @@ theorem compact_finiteH0_iff_weighted_covariant_memLp {n r : ℕ}
     funext x
     simp [covariantFirst]
 
-private theorem weighted_sq_integral {n r : ℕ} (Ω : Opens (E n)) (w : E n → ℝ)
+theorem weighted_sq_integral {n r : ℕ} (Ω : Opens (E n)) (w : E n → ℝ)
     (hw : ContDiffOn ℝ ∞ w (Ω : Set (E n)))
     (hwpos : ∀ x ∈ (Ω : Set (E n)), 0 < w x) (f : E n → V r) :
     (∫ x, ‖f x‖ ^ 2 ∂KPChartL2.weightedMeasure n (Ω : Set (E n)) w) =
@@ -646,9 +623,7 @@ private theorem density_bounds {n r : ℕ} (Ω : Opens (E n))
     · have hWFpos : 0 ≤ w x * F := mul_nonneg (ha.le.trans hwx.1) hF
       have ht : 0 ≤ a⁻¹*(w x*Q.quadratic x d) + 2*(a*κ)⁻¹*(w x*F) +
           2*n*M^2*a⁻¹*(w x*Q.quadratic x d) :=
-        add_nonneg (add_nonneg (mul_nonneg (inv_nonneg.mpr ha.le) hwqn)
-          (mul_nonneg (mul_nonneg (by norm_num) (inv_nonneg.mpr (mul_pos ha hk).le)) hWFpos))
-          (mul_nonneg (mul_nonneg (by positivity) (inv_nonneg.mpr ha.le)) hwqn)
+        by positivity
       nlinarith
   · simp [hfx hxC, hgx, hxC, covariantFirst, InverseMetric.quadratic]
 
@@ -702,8 +677,8 @@ theorem kp_cont_compact_h1_metric_bounds {n r : ℕ} (Ω : Opens (E n))
     exists_compact_metric_bounds Ω C hC hCΩ w hw hwpos Q A
   let B := b + 2 * b * Λ + 2 * b * Λ * n * M ^ 2
   let D := a⁻¹ + 2 * (a * κ)⁻¹ + 2 * n * M ^ 2 * a⁻¹
-  have hB : 0 < B := by dsimp [B]; positivity
-  have hD : 0 < D := by dsimp [D]; positivity
+  have hB : 0 < B := by positivity
+  have hD : 0 < D := by positivity
   refine ⟨(2 * Real.sqrt D)⁻¹, 2 * Real.sqrt B,
     inv_pos.mpr (mul_pos (by norm_num) (Real.sqrt_pos.mpr hD)),
     mul_pos (by norm_num) (Real.sqrt_pos.mpr hB), ?_⟩
@@ -722,17 +697,17 @@ theorem kp_cont_compact_h1_metric_bounds {n r : ℕ} (Ω : Opens (E n))
   have hgI : ∀ j, Integrable (fun x => ‖g j x‖ ^ 2) μ := fun j =>
     (h0.2 j).integrable_norm_pow (by norm_num)
   have hGI : Integrable (fun x => ∑ j, ‖g j x‖ ^ 2) μ :=
-    integrable_finset_sum _ (fun j _ => hgI j)
+    by fun_prop
   have hUI : Integrable (fun x => w x * ‖f x‖ ^ 2) μ :=
     weighted_sq_integrable Ω w hw hwpos f hW.1
   have hTI : Integrable (fun x => w x * Q.quadratic x (fun j => covariantFirst A f g j x)) μ := hW.2
   have hpoint := density_bounds Ω C w Q A a b κ Λ M ha hb hk hl hM hbound f g hfsupp hgsupp
-  have hF : 0 ≤ F := integral_nonneg fun _ => sq_nonneg _
-  have hG : 0 ≤ G := integral_nonneg fun _ => Finset.sum_nonneg fun _ _ => sq_nonneg _
+  have hF : 0 ≤ F := by positivity
+  have hG : 0 ≤ G := by positivity
   have hU : 0 ≤ U := by
     apply integral_nonneg_of_ae
     filter_upwards [ae_restrict_mem Ω.isOpen.measurableSet] with x hx
-    exact mul_nonneg (hwpos x hx).le (sq_nonneg _)
+    simp_all
   have hT : 0 ≤ T := integral_nonneg_of_ae (hpoint.mono fun x hx => hx.1)
   have hupper : U + T ≤ B * (F + G) := by
     have hh := integral_mono_ae (hUI.add hTI) ((hfI.add hGI).const_mul B)
@@ -766,7 +741,3 @@ theorem kp_cont_compact_h1_metric_bounds {n r : ℕ} (Ω : Opens (E n))
     nlinarith only [h0bounds.2, hlower_sqrt, hh]
   · have hh := mul_le_mul_of_nonneg_left h0bounds.1 (Real.sqrt_nonneg B)
     nlinarith only [hWbounds.2, hupper_sqrt, hh]
-
-end DedekindZetaZeroFree
-
-end

@@ -20,7 +20,7 @@ variable (C : KPGlobalTorusFiniteStages.LocalFiberData F A.zeta12 A.primitive_ze
  def compactTailStage (E : Finset (KPFinitePlace F)) : Set (Raw A) :=
   {g | ∀ q, q ∉ E → g (Sum.inr q) ∈ finiteCompact F A.zeta12 A.primitive_zeta12 q}
 
-private theorem compactTailStage_open (E : Finset (KPFinitePlace F)) :
+theorem compactTailStage_open (E : Finset (KPFinitePlace F)) :
     IsOpen (compactTailStage A E) := by
   have h := RestrictedProduct.isOpen_forall_imp_mem
     (R := fun v : KPHilbert.Place F => KPLocalCover.CubicGL2Raw F A.zeta12 A.primitive_zeta12 v)

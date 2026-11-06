@@ -9,11 +9,9 @@ open scoped NumberField Classical
 open NumberField IsDedekindDomain
 
 namespace DedekindZetaZeroFree.ArithmeticContext
-noncomputable section
-set_option autoImplicit false
 set_option maxHeartbeats 800000
 open scoped Pointwise
-private theorem compact_reps_open {G : Type*} [CommGroup G] [TopologicalSpace G]
+theorem compact_reps_open {G : Type*} [CommGroup G] [TopologicalSpace G]
     [IsTopologicalGroup G] (H P : Subgroup G) (ho : IsOpen (H : Set G))
     (K : Set G) (hc : IsCompact K) (hrep : ∀ g : G, ∃ k ∈ K, g / k ∈ P) :
     ∃ C : Set H, IsCompact C ∧ ∀ h : H, ∃ c ∈ C, h.val / c.val ∈ P := by
@@ -108,7 +106,7 @@ theorem normOne_sixth_unit_quotient_compact (A : SArithmeticData F) :
     refine ⟨f c, ⟨c, hc, rfl⟩, u, ?_⟩
     have hf_h : f h = g := by
       change (e (e.symm (g, 1))).1 = g
-      rw [e.apply_symm_apply]
+      simp
     rw [map_div, hf_h] at hu'
     exact hu'.symm
   letI := SArithmeticData.sunitSixthPowerQuotient_finite F A
@@ -142,6 +140,3 @@ theorem normOne_sixth_unit_quotient_compact (A : SArithmeticData F) :
   apply isCompact_univ_iff.mp
   rw [← hsurj]
   exact hB.image QuotientGroup.continuous_mk
-
-end
-end DedekindZetaZeroFree.ArithmeticContext

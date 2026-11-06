@@ -33,9 +33,9 @@ theorem exists_conductor_split
   have hsplit : f = fS * qO := by
     rw [← hfac]
     exact (Finset.prod_filter_mul_prod_filter_not M (fun v => v ∈ A.Sf) g).symm
-  have hne : fS * qO ≠ ⊥ := by rw [← hsplit]; exact hf
-  have hfS : fS ≠ ⊥ := fun h => hne (Ideal.mul_eq_bot.mpr (Or.inl h))
-  have hqO : qO ≠ ⊥ := fun h => hne (Ideal.mul_eq_bot.mpr (Or.inr h))
+  have hne : fS * qO ≠ ⊥ := by simp_all
+  have hfS : fS ≠ ⊥ := by simp_all
+  have hqO : qO ≠ ⊥ := by simp_all
 
   have hsupp : ∀ v : HeightOneSpectrum (𝓞 F), fS ≤ v.asIdeal → v ∈ A.Sf := by
     intro v hvle
@@ -100,13 +100,13 @@ private theorem exponent_mul (v : HeightOneSpectrum (𝓞 F))
   simp [idealPrimeExponent, UniqueFactorizationMonoid.normalizedFactors_mul hI hJ,
     Multiset.count_add]
 
-private theorem cS_le_asIdeal (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F))
+theorem cS_le_asIdeal (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F))
     (hv : v ∈ A.Sf) : A.cS ≤ v.asIdeal := by
   rw [SArithmeticData.cS]
   exact (Ideal.prod_le_inf : (∏ w ∈ A.Sf, w.asIdeal) ≤ A.Sf.inf (fun w => w.asIdeal)).trans
     (Finset.inf_le hv)
 
-private theorem pow_le_of_exponent (v : HeightOneSpectrum (𝓞 F)) (I : Ideal (𝓞 F))
+theorem pow_le_of_exponent (v : HeightOneSpectrum (𝓞 F)) (I : Ideal (𝓞 F))
     (hI : I ≠ ⊥) : I ≤ v.asIdeal ^ idealPrimeExponent v.asIdeal I := by
   rw [← Ideal.dvd_iff_le]
   rw [pow_dvd_iff_le_emultiplicity,
@@ -124,7 +124,7 @@ theorem slocal_conductor_trivial_of_sprime_compatibility
   intro alpha n hn hfS hcS
   have halpha0 : alpha ≠ 0 := by
     intro h
-    have h1 : (n.val : F) = 0 := by rw [hn, h]; simp
+    have h1 : (n.val : F) = 0 := by simp_all
     exact n.property (Subtype.ext (by simpa using h1))
   have hlocal : ∀ v : {v // v ∈ A.Sf},
       CRTLocalHigherUnits F v.val (idealPrimeExponent v.val.asIdeal f)
@@ -132,8 +132,7 @@ theorem slocal_conductor_trivial_of_sprime_compatibility
     intro v
     have hsup : Ideal.span {alpha} ⊔ v.val.asIdeal = ⊤ := by
       have hle := sup_le_sup_left (cS_le_asIdeal A v.val v.property) (Ideal.span {alpha})
-      rw [hcS] at hle
-      exact top_le_iff.mp hle
+      simp_all
     have hmem : alpha ∉ v.val.asIdeal := by
       intro hmem
       have hle2 : Ideal.span {alpha} ≤ v.val.asIdeal :=
@@ -171,13 +170,8 @@ theorem slocal_conductor_trivial_of_sprime_compatibility
     refine ⟨hunit.unit, ?_, ?_⟩
     · apply Units.ext
       rw [Units.coe_map, IsUnit.unit_spec]
-      simp only [b, SArithmeticData.diagonal, MonoidHom.coe_mk, OneHom.coe_mk,
-        FixedSResidue.fieldUnit, Units.val_mk0, hn]
+      simp only [b, SArithmeticData.diagonal, MonoidHom.coe_mk, OneHom.coe_mk, FixedSResidue.fieldUnit, hn]
       simp
-      change ({toCompletion := ↑(WithVal.toVal (HeightOneSpectrum.valuation F v.val)
-          (algebraMap (𝓞 F) F alpha))} : v.val.adicCompletion F)
-        = algebraMap F (v.val.adicCompletion F) (algebraMap (𝓞 F) F alpha)
-      rw [← IsScalarTower.algebraMap_apply (𝓞 F) F (v.val.adicCompletion F) alpha]
       rfl
     · simpa [IsUnit.unit_spec] using hb1
   have hinf : ∀ w : InfinitePlace F,
@@ -200,7 +194,6 @@ section
 
 namespace DedekindZetaZeroFree.Detector.ExteriorDyadic
 
-noncomputable section
 open scoped Classical NumberField
 open NumberField IsDedekindDomain
 
@@ -322,7 +315,7 @@ theorem primitive_residue_fibers_of_decomposition
         (hi ▸ hs) (hk ▸ ht) hli hlk (lift j i) (lift j k)
       · exact transport_bridge i.val (qO' j) hi
       · exact transport_bridge k.val (qO' j) hk
-      · exact hilam
+      omega
     apply Subtype.ext
     by_contra hn
     exact hdist hn (fun n => congrFun heq n)
@@ -389,8 +382,3 @@ theorem primitive_residue_fibers
       (omega i).conductor (fS i) (qO i) (hsplit i)).2.2).trans (hconductor i)
   exact primitive_residue_fibers_of_decomposition F A hprincipal sigma hSigma
     I omega hdist V qO fS hsplit hcompat htrivial hfinite hbound lam hbridge
-
-end
-end DedekindZetaZeroFree.Detector.ExteriorDyadic
-
-end

@@ -9,7 +9,6 @@ open scoped NumberField Classical
 open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.SArithmeticData.GaussCorrection
 noncomputable section
-set_option autoImplicit false
 variable {F : Type} [Field F] [NumberField F]
 
 structure CorrectedWeilExtension (A : SArithmeticData F) (H : A.V → A.V → Fˣ)
@@ -35,6 +34,3 @@ structure CorrectedWeilExtension (A : SArithmeticData F) (H : A.V → A.V → F�
     (x : NumberField.IdeleGroup (𝓞 F) F), A.RepresentsExteriorIdeal I x →
       (G (QuotientGroup.mk x) : ℂ) =
         star (σ (A.sexticResidue I (4 : A.R))) * A.idealGauss σ hS I p hp 3
-
-end
-end DedekindZetaZeroFree.SArithmeticData.GaussCorrection

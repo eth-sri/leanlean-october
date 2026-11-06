@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Theta.Whittaker.TameTransposeShellCoefficient
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.KPLocalTameIntertwiningBlock
 open scoped NumberField Classical
 open NumberField IsDedekindDomain ValuativeRel
@@ -27,7 +26,7 @@ theorem actual_conductor_one_residue
   let Ψ : AddChar (LocalField F q) ℂ :=
     { toFun := fun x => (ψ (Multiplicative.ofAdd x) : ℂ)
       map_zero_eq_one' := by simp
-      map_add_eq_mul' := by intro x y; exact congrArg Units.val (ψ.map_mul _ _) }
+      map_add_eq_mul' := by simp }
   have hΨ : Continuous Ψ := Units.continuous_val.comp hψ
   have hO : ∀ u : 𝒪[LocalField F q], Ψ (u : LocalField F q) = 1 := by
     intro u
@@ -42,9 +41,7 @@ theorem actual_conductor_one_residue
       change IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
         (valuation (LocalField F q) ((π : LocalField F q)⁻¹)) ≤
         IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q) 1 at hh
-      rw [map_inv₀, map_inv₀, hπ, map_one, ← WithZero.exp_neg, ← WithZero.exp_zero,
-        WithZero.exp_le_exp] at hh
-      omega
+      simp_all
     have hn := (hconductor (π : LocalField F q)⁻¹).not.mpr hnot
     push Not at hn
     obtain ⟨u, hu⟩ := hn
@@ -83,10 +80,7 @@ theorem actual_pi_first_residue
   have hc1 : c 1 = 1 := by
     simp only [c, map_one]
     have H := (KPHilbert.B3_laws F ζ hζ (Sum.inr q)).2.1 π 1 1
-    simp only [one_mul] at H
-    have H1 : KPHilbert.B3 F ζ hζ (Sum.inr q) π 1 = 1 := by
-      exact (mul_left_cancel (H.symm.trans (mul_one _).symm))
-    rw [H1, map_one]
+    simp_all
   let d : (Residue F q)ˣ →* ℂˣ :=
     { toFun := fun x => c (s x)
       map_one' := by rw [hfiber (s 1) 1 (by simpa using hs 1), hc1]
@@ -104,7 +98,3 @@ theorem actual_pi_first_residue
     obtain ⟨u, rfl⟩ := hr x
     rw [MulChar.ofUnitHom_coe, hd]
     exact hκ u
-
-end DedekindZetaZeroFree.KPLocalTameIntertwiningBlock
-
-end

@@ -102,7 +102,3 @@ theorem rayTheta_dual_fiber_eq_residuePacketIntegral
   simp only [Nat.cast_mul]
   field_simp
   <;> ring
-
-end DedekindZetaZeroFree.Hecke.Theta
-
-end

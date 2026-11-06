@@ -15,14 +15,14 @@ set_option backward.isDefEq.respectTransparency false
 
  def Bcurve (c d z : ℂ) (t : ℝ) : ℝ := ‖c‖^2 + ‖d + (t:ℂ)*c*z‖^2
  def Bvel (c d z : ℂ) : ℝ := 2 * inner ℝ d (c*z)
-private lemma Bcurve_deriv (c d z : ℂ) : HasDerivAt (Bcurve c d z) (Bvel c d z) 0 := by
+lemma Bcurve_deriv (c d z : ℂ) : HasDerivAt (Bcurve c d z) (Bvel c d z) 0 := by
   have h := ((Complex.ofRealCLM.hasDerivAt (x := (0:ℝ))).mul_const (c*z)).const_add d
   have hd := h.norm_sq
   convert hd.const_add (‖c‖^2) using 1
   · funext t; simp [Bcurve, mul_assoc]
   · simp [Bvel]
 
-private lemma Bvel_complex (c d z : ℂ) :
+lemma Bvel_complex (c d z : ℂ) :
     (Bvel c d z : ℂ) = c*z*star d + d*star (c*z) := by
   simp only [Bvel, real_inner_eq_re_inner ℂ, RCLike.inner_apply]
   change ((2 * (c*z*star d).re : ℝ):ℂ) = _
@@ -35,7 +35,7 @@ private lemma Bvel_complex (c d z : ℂ) :
  def Wvel (c d z : ℂ) : ℂ :=
   (2*c*star (c*z)*(‖c‖^2+‖d‖^2:ℝ) - 2*c*star d*(Bvel c d z:ℂ)) /
     ((‖c‖^2+‖d‖^2:ℝ):ℂ)^2
-private lemma Wcurve_deriv (c d z : ℂ) (hb : ‖c‖^2+‖d‖^2 ≠ 0) :
+lemma Wcurve_deriv (c d z : ℂ) (hb : ‖c‖^2+‖d‖^2 ≠ 0) :
     HasDerivAt (Wcurve c d z) (Wvel c d z) 0 := by
   have h := ((Complex.ofRealCLM.hasDerivAt (x := (0:ℝ))).mul_const (c*z)).const_add d
   have hB := Complex.ofRealCLM.hasFDerivAt.comp_hasDerivAt 0 (Bcurve_deriv c d z)
@@ -50,7 +50,7 @@ private lemma Wcurve_deriv (c d z : ℂ) (hb : ‖c‖^2+‖d‖^2 ≠ 0) :
     (-((1+2*s:ℝ):ℂ) * (Bvel c d z:ℂ) / ((‖c‖^2+‖d‖^2:ℝ):ℂ) *
       (2*c*star d/((‖c‖^2+‖d‖^2:ℝ):ℂ))^n +
       (n:ℂ)*(2*c*star d/((‖c‖^2+‖d‖^2:ℝ):ℂ))^(n-1)*Wvel c d z)
-private lemma Hcurve_deriv (s : ℝ) (n : ℕ) (D : ℝ) (c d z : ℂ)
+lemma Hcurve_deriv (s : ℝ) (n : ℕ) (D : ℝ) (c d z : ℂ)
     (hD : 0 < D) (hb : 0 < ‖c‖^2+‖d‖^2) :
     HasDerivAt (Hcurve s n D c d z) (Hvel s n D c d z) 0 := by
   have hr := (hasDerivAt_const (0:ℝ) D).div (Bcurve_deriv c d z) (by simpa [Bcurve] using hb.ne')
@@ -68,7 +68,7 @@ private lemma Hcurve_deriv (s : ℝ) (n : ℕ) (D : ℝ) (c d z : ℂ)
     field_simp [hD.ne', hb.ne']
     <;> ring
 
-private lemma highest_orbit_curve (s : ℝ) (n : ℕ) (g : ComplexGL2) (z : ℂ) (t : ℝ) :
+lemma highest_orbit_curve (s : ℝ) (n : ℕ) (g : ComplexGL2) (z : ℂ) (t : ℝ) :
     harmonicSection s n (g * upperUnipotent ((t:ℂ)*z)) =
       Hcurve s n ‖(g : Matrix (Fin 2) (Fin 2) ℂ).det‖ (g 1 0) (g 1 1) z t := by
   change (Real.rpow (‖((g * upperUnipotent ((t:ℂ)*z) : ComplexGL2) : Matrix (Fin 2) (Fin 2) ℂ).det‖ /
@@ -80,14 +80,14 @@ private lemma highest_orbit_curve (s : ℝ) (n : ℕ) (g : ComplexGL2) (z : ℂ)
       g 1 1 + (t:ℂ)*(g 1 0*z) := by ring
   simp [Matrix.det_fin_two, he, mul_assoc, add_comm, mul_comm, mul_left_comm]
 
-private lemma highest_orbit_deriv (s : ℝ) (n : ℕ) (g : ComplexGL2) (z : ℂ) :
+lemma highest_orbit_deriv (s : ℝ) (n : ℕ) (g : ComplexGL2) (z : ℂ) :
     deriv (fun t : ℝ => harmonicSection s n (g * upperUnipotent ((t:ℂ)*z))) 0 =
       Hvel s n ‖(g : Matrix (Fin 2) (Fin 2) ℂ).det‖ (g 1 0) (g 1 1) z := by
   simp_rw [highest_orbit_curve]
   exact (Hcurve_deriv s n _ _ _ z
     (norm_pos_iff.mpr (Matrix.GeneralLinearGroup.det_ne_zero g)) (rowB_pos g)).deriv
 
-private lemma Hvel_plus (s : ℝ) (n : ℕ) (D : ℝ) (c d : ℂ)
+lemma Hvel_plus (s : ℝ) (n : ℕ) (D : ℝ) (c d : ℂ)
     (hb : ‖c‖^2+‖d‖^2 ≠ 0) :
     (Hvel s n D c d 1 - Complex.I * Hvel s n D c d Complex.I)/2 =
       -((n:ℂ)+((1+2*s:ℝ):ℂ))/2 *
@@ -141,7 +141,7 @@ theorem highestImage_upper (β : ℂˣ) (n : ℕ) :
   simp only [Real.rpow_eq_pow, Complex.star_def, Complex.ofReal_add, Complex.ofReal_pow] at ⊢
   convert hh using 1 <;> ring
 
-private lemma whittaker_one (β : ℂˣ) (h : Theta β) :
+lemma whittaker_one (β : ℂˣ) (h : Theta β) :
     whittakerValue β h 1 = KPCplxJacquetFunctional.thetaJacquetFunctional β h := by
   have hd : diagonal (1:ℂˣ) = 1 := by
     apply Matrix.GeneralLinearGroup.ext

@@ -45,16 +45,3 @@ theorem residueNormalizer_pos
     GlobalZetaNormalizer.positive_simple_exceptional_normalizer  F ζ hζ S
   exact ⟨by simpa [residueNormalizer, hzero] using him,
     by simpa [residueNormalizer, hzero] using hre⟩
-
-section TensorFormulas
-
-universe u v
-variable (V : KPHilbert.Place F → Type u) (W : KPHilbert.Place F → Type v)
-  [∀ i, AddCommGroup (V i)] [∀ i, Module ℂ (V i)]
-  [∀ i, AddCommGroup (W i)] [∀ i, Module ℂ (W i)]
-
-end TensorFormulas
-
-end DedekindZetaZeroFree.KPGlobalFiniteSIntertwiner
-
-end

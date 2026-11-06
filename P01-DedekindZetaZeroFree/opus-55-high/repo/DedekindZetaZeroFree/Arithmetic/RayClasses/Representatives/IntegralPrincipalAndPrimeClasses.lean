@@ -6,7 +6,6 @@ public import ClassFieldTheory.Definitions.ConductorsAndRayClassFields.RayClassO
 
 @[expose] public section
 
-noncomputable section
 
 namespace DedekindZetaZeroFree.LargeSieve.RayBridge
 
@@ -39,8 +38,7 @@ theorem idealClass_integral_principal (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
     exact Subgroup.subset_closure
       ⟨_, integral_isRayCongruent m hm a ha hcong hpos, rfl⟩
   unfold idealClass
-  rw [QuotientGroup.mk'_apply, QuotientGroup.eq_one_iff]
-  exact hmem
+  simp_all
 
 theorem prime_not_mem_fullModulus_support (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
     (p : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
@@ -59,9 +57,4 @@ theorem idealClass_prime (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
     idealClass m hm p.asIdeal p.ne_bot hcop =
       ClassFieldTheory.rayClassOfFinitePrime (fullModulus m hm) p
         (prime_not_mem_fullModulus_support m hm p hcop) := by
-  unfold idealClass ClassFieldTheory.rayClassOfFinitePrime
-  congr 1
-
-end DedekindZetaZeroFree.LargeSieve.RayBridge
-
-end
+  rfl

@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # The ramified prime factor of a rational cyclotomic principal idele
 
@@ -51,8 +48,3 @@ theorem rationalCyclotomicPrincipalFinitePlaceCharacter_at_prime
       exact
         rationalCyclotomicPrincipalFinitePlaceCharacter_at_prime_succ_formula
           p n x
-
-end Reciprocity
-end GlobalClassFieldTheory
-
-end

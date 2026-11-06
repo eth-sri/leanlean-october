@@ -17,14 +17,14 @@ variable (F : Type) [Field F] [NumberField F]
  (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
  (hP : IsTamePolarization F ζ hζ q S P)
 
-private theorem scalar_deformation_value
+theorem scalar_deformation_value
     (f : scalarSections F ζ hζ q S P hP .minus) (s : ℂ)
     (g : ActualCover F ζ hζ q) :
     ((deformedTest F ζ hζ q S P hP f s).val g).val 1 =
       normPower (LocalField F q)
         (S.borel.coordinate (S.borel.retract (S.iwasawa.borelPart g)))
-        (sourceParameter .minus s) * f.val g := by
-  exact KPTameTransposeKernelUnfoldingRaw.HigherShellCubicUnitConjugation.deformedTest_scalar_value
+        (sourceParameter .minus s) * f.val g := 
+  KPTameTransposeKernelUnfoldingRaw.HigherShellCubicUnitConjugation.deformedTest_scalar_value
     F ζ hζ q S P hP (scalarCoordinateEquiv F ζ hζ q S P hP)
     (fun _ _ _ => rfl) f s g
 
@@ -62,7 +62,7 @@ theorem eventual_deformed_test_root_profile
     unfold diagonalAnchorTwist normPower
     rw [KPTameTransposeKernelUnfoldingRaw.HigherShellCubicUnitConjugation.iwasawa_norm_right_compact
       F ζ hζ q S _ ⟨_, hk⟩]
-  · simp only [Set.indicator_of_notMem ht, mul_zero]
+  simp_all
 
 theorem diagonalAnchorTwist_eq
     (π : (LocalField F q)ˣ) (i : Fin 3) (s : ℂ) :
@@ -74,10 +74,10 @@ theorem diagonalAnchorTwist_eq
       refine ⟨KubotaRankTwo.d (LocalField F q) (π ^ i.val) 1, ?_, ?_, ?_⟩
       · rfl
       · simp [KubotaRankTwo.d]
-      · simp [KubotaRankTwo.d]⟩
+      rfl⟩
   have ht : (S.borel.torus t : ActualCover F ζ hζ q) = eta F ζ hζ q π i := by
     rw [S.torus_full]
-    simp [t, eta]
+    rfl
   have hc : S.borel.coordinate (S.borel.retract (S.borel.torus t)) = π ^ i.val := by
     rw [S.borel.retract_torus]
     exact S.coordinate_lift t _ rfl
@@ -87,7 +87,7 @@ theorem diagonalAnchorTwist_eq
     have h1 : KPPGLLocalCover.A F ζ hζ (Sum.inr q) 1 =
         ((S.borel.cubeLift 1 : actualTorus F ζ hζ q) : ActualCover F ζ hζ q) := by
       rw [S.cube_actual]; simp
-    rw [h1, map_one]; rfl
+    simp_all
   unfold diagonalAnchorTwist normPower
   rw [he, one_mul, ← ht,
     KPTameTransposeKernelUnfoldingRaw.HigherShellCubicUnitConjugation.iwasawa_norm_left_borel
@@ -131,8 +131,8 @@ theorem eventual_deformed_test_kernel_profile
       KPPGLLocalCover.W F ζ hζ (Sum.inr q) =
       KPPGLLocalCover.W F ζ hζ (Sum.inr q) *
       KPPGLLocalCover.N F ζ hζ (Sum.inr q)
-        (x + ((π ^ i.val : (LocalField F q)ˣ) : LocalField F q) / (u : LocalField F q)) := by
-    exact ((mul_inv_eq_iff_eq_mul).mp
+        (x + ((π ^ i.val : (LocalField F q)ˣ) : LocalField F q) / (u : LocalField F q)) := 
+    ((mul_inv_eq_iff_eq_mul).mp
       (KPRankOneJacquetZeroCompactCoefficients.weyl_conjugates_upper F ζ hζ q _)).symm
   simp only [mul_assoc]
   rw [hw]
@@ -227,11 +227,3 @@ theorem diagonal_deformation_eq_evaluation_monomial
   congr 1
   push_cast
   ring
-
-@[simp] theorem diagonalAnchorTwist_zero (π : (LocalField F q)ˣ) (i : Fin 3) :
-    diagonalAnchorTwist F ζ hζ q S π i 0 = 1 := by
-  simp [diagonalAnchorTwist, normPower, sourceParameter]
-
-end DedekindZetaZeroFree.KPTameTransposeLiteralMassTransport.DiagonalLiftGeometry
-
-end

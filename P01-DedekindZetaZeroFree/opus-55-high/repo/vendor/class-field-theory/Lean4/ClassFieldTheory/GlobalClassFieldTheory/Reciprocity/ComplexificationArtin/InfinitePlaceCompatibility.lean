@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Infinite-place local-global Artin compatibility
 
@@ -49,7 +45,7 @@ local instance
 
 /-- The real infinite place of the conjugation fixed field obtained
 by restricting the concrete complex place of the overfield. -/
-noncomputable def ramifiedInfinitePlaceRealFixedPlace
+def ramifiedInfinitePlaceRealFixedPlace
     (v : InfinitePlace K)
     (hRamified :
       (chosenInfinitePlaceAbove (L := L) v).IsRamified K) :
@@ -109,9 +105,7 @@ theorem ramifiedInfinitePlaceRealFixedPlace_isReal
             (ramifiedInfinitePlaceOverfieldConjugation
               (K := K) (L := L) v hRamified (x : E)) =
           star (E.val.toRingHom (x : E)) := by
-      exact
-        ramifiedInfinitePlaceOverfieldConjugation_apply
-          (K := K) (L := L) v hRamified (x : E)
+      rfl
     rw [ComplexEmbedding.conjugate_coe_eq]
     change
       star (E.val.toRingHom (algebraMap K' E x)) =
@@ -270,7 +264,7 @@ theorem
 
 /-- Restriction from the complex-conjugation overextension back to
 the original finite abelian extension. -/
-noncomputable def ramifiedInfinitePlaceOverextensionRestriction
+def ramifiedInfinitePlaceOverextensionRestriction
     (v : InfinitePlace K)
     (hRamified :
       (chosenInfinitePlaceAbove (L := L) v).IsRamified K) :
@@ -351,7 +345,7 @@ theorem ramifiedInfinitePlaceOverextensionRestriction_conjugation
 
 /-- A rational-separable-closure embedding of the complexification
 overfield extending the standard embedding of its original top field. -/
-noncomputable def
+def
     infinitePlaceComplexificationOverfieldSeparableClosureEmbedding
     (v : InfinitePlace K) :
     infinitePlaceComplexificationOverfield
@@ -450,38 +444,7 @@ theorem
             (K := K) (L := L) v hRamified)
           (infinitePlaceComplexificationOverfield
             (K := K) (L := L) v)).range
-  constructor
-  · intro h
-    have hq :
-        QuotientGroup.mk'
-            (_root_.ideleClassNorm
-              (ramifiedInfinitePlaceRealFixedField
-                (K := K) (L := L) v hRamified)
-              (infinitePlaceComplexificationOverfield
-                (K := K) (L := L) v)).range c =
-          1 := by
-      apply e.injective
-      exact h.trans (map_one e).symm
-    exact (QuotientGroup.eq_one_iff c).1 hq
-  · intro hc
-    have hq :
-        QuotientGroup.mk'
-            (_root_.ideleClassNorm
-              (ramifiedInfinitePlaceRealFixedField
-                (K := K) (L := L) v hRamified)
-              (infinitePlaceComplexificationOverfield
-                (K := K) (L := L) v)).range c =
-          1 :=
-      (QuotientGroup.eq_one_iff c).2 hc
-    calc
-      e (QuotientGroup.mk'
-          (_root_.ideleClassNorm
-            (ramifiedInfinitePlaceRealFixedField
-              (K := K) (L := L) v hRamified)
-            (infinitePlaceComplexificationOverfield
-              (K := K) (L := L) v)).range c) = e 1 :=
-        congrArg e hq
-      _ = 1 := map_one e
+  simp
 
 omit [NumberField K] [FiniteDimensional K L] in
 /-- For every rational-separable-closure embedding, the norm-residue
@@ -571,17 +534,17 @@ theorem
       ramifiedInfinitePlaceOverextensionCyclotomicRestriction_conjugation_ne_one
         (K := K) (L := L) v hRamified
     rw [hstandard, map_one]
-  · exact hconjugation
+  omega
 
 /-- The base global norm-residue value at the negative-one class of `v`. -/
-noncomputable def ramifiedInfinitePlaceGlobalNormResidueNegOneValue
+def ramifiedInfinitePlaceGlobalNormResidueNegOneValue
     (v : InfinitePlace K) :
     Gal(L / K) :=
   globalNormResidueMonoidHom K L
     (IdeleGroup.infinitePlaceIdeleClass v (-1 : v.Completionˣ))
 
 /-- The chosen local Artin value at negative one at `v`. -/
-noncomputable def ramifiedInfinitePlaceLocalArtinNegOneValue
+def ramifiedInfinitePlaceLocalArtinNegOneValue
     (v : InfinitePlace K) :
     Gal(L / K) :=
   chosenInfinitePlaceArtinMonoidHom
@@ -589,7 +552,7 @@ noncomputable def ramifiedInfinitePlaceLocalArtinNegOneValue
 
 /-- The embedding of `L` induced by the chosen embedding of its
 complexification overfield. -/
-noncomputable def
+def
     infinitePlaceComplexificationLowerSeparableClosureEmbedding
     (v : InfinitePlace K) :
     L →ₐ[ℚ] SeparableClosure ℚ :=
@@ -614,7 +577,7 @@ theorem
       (K := K) (L := L) v
 
 /-- The upper negative-one idele class used in the overextension diamond. -/
-noncomputable def ramifiedInfinitePlaceOverextensionNegOneIdeleClass
+def ramifiedInfinitePlaceOverextensionNegOneIdeleClass
     (v : InfinitePlace K)
     (hRamified :
       (chosenInfinitePlaceAbove (L := L) v).IsRamified K) :
@@ -629,7 +592,7 @@ noncomputable def ramifiedInfinitePlaceOverextensionNegOneIdeleClass
         (K := K) (L := L) v hRamified).Completionˣ)
 
 /-- The upper global norm-residue value in the overextension diamond. -/
-noncomputable def
+def
     ramifiedInfinitePlaceOverextensionGlobalNormResidueNegOneValue
     (v : InfinitePlace K)
     (hRamified :
@@ -650,7 +613,7 @@ noncomputable def
       (K := K) (L := L) v hRamified)
 
 /-- The upper norm-residue value after actual Galois restriction. -/
-noncomputable def
+def
     ramifiedInfinitePlaceRestrictedOverextensionNormResidueNegOneValue
     (v : InfinitePlace K)
     (hRamified :
@@ -662,7 +625,7 @@ noncomputable def
       (K := K) (L := L) v hRamified)
 
 /-- The lower norm-residue value of the normed upper negative-one class. -/
-noncomputable def
+def
     ramifiedInfinitePlaceNormedOverextensionNormResidueNegOneValue
     (v : InfinitePlace K)
     (hRamified :
@@ -677,7 +640,7 @@ noncomputable def
       (ramifiedInfinitePlaceOverextensionNegOneIdeleClass
         (K := K) (L := L) v hRamified))
 
-private theorem ramifiedInfinitePlace_normResidueDiamond_neg_one
+theorem ramifiedInfinitePlace_normResidueDiamond_neg_one
     (v : InfinitePlace K)
     (hRamified :
       (chosenInfinitePlaceAbove (L := L) v).IsRamified K) :
@@ -701,7 +664,7 @@ private theorem ramifiedInfinitePlace_normResidueDiamond_neg_one
         (K := K) (L := L) v hRamified)
 
 omit [FiniteDimensional K L] in
-private theorem
+theorem
     ramifiedInfinitePlace_restrictedOverextensionNormResidue_neg_one
     (v : InfinitePlace K)
     (hRamified :
@@ -718,7 +681,7 @@ private theorem
     ramifiedInfinitePlaceOverextension_globalNormResidueOfEmbedding_neg_one,
     ramifiedInfinitePlaceOverextensionRestriction_conjugation]
 
-private theorem ramifiedInfinitePlace_normedNormResidue_neg_one
+theorem ramifiedInfinitePlace_normedNormResidue_neg_one
     (v : InfinitePlace K)
     (hRamified :
       (chosenInfinitePlaceAbove (L := L) v).IsRamified K) :
@@ -768,10 +731,3 @@ theorem
         (K := K) (L := L) v hRamified).symm.trans
         (ramifiedInfinitePlace_restrictedOverextensionNormResidue_neg_one
           (K := K) (L := L) v hRamified))
-
-end ComplexConjugationOverextension
-
-end Reciprocity
-end GlobalClassFieldTheory
-
-end

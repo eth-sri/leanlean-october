@@ -21,7 +21,7 @@ variable {F : Type} [Field F] [NumberField F]
  theorem radiusMultiplier_pos (u : Fˣ) : 0 < radiusMultiplier u :=
   Real.exp_pos _
 
-private theorem radiusMultiplier_eq_prod (u : Fˣ) :
+theorem radiusMultiplier_eq_prod (u : Fˣ) :
     radiusMultiplier u = ∏ i : Fin (KPCuspLogShape.dimension F),
       ‖(KPCusp.complexPlace F i).embedding (u : F)‖ ^ 2 := by
   unfold radiusMultiplier logRatio
@@ -38,7 +38,7 @@ private theorem radiusMultiplier_eq_prod (u : Fˣ) :
   ⟨fun i => Real.log ((KPCusp.complexPlace F i) (u : F)) -
     logRatio u / (KPCuspLogShape.dimension F : ℝ), by
     have hd0 : (KPCuspLogShape.dimension F : ℝ) ≠ 0 := by
-      exact_mod_cast (Nat.ne_of_gt hd)
+      positivity
     change (∑ i : Fin (KPCuspLogShape.dimension F),
       (Real.log ((KPCusp.complexPlace F i) (u : F)) -
         logRatio u / (KPCuspLogShape.dimension F : ℝ))) = 0
@@ -76,9 +76,7 @@ open _root_.DedekindZetaZeroFree.KPCuspCharts renaming upper_action → upper_ac
     rw [hA, map_zero]
   have hratio : (Matrix.GeneralLinearGroup.map w.embedding A) 0 0 =
       w.embedding (u : F) * (Matrix.GeneralLinearGroup.map w.embedding A) 1 1 := by
-    change w.embedding ((A : Matrix (Fin 2) (Fin 2) F) 0 0) = _
-    rw [hr, map_mul]
-    rfl
+    simp_all
   change KPArch.action (Matrix.GeneralLinearGroup.map w.embedding A) _ = _
   rw [upper_action _ hz _ ((map_ne_zero _).mpr (Units.ne_zero u)) hratio]
   apply Prod.ext
@@ -98,7 +96,7 @@ open _root_.DedekindZetaZeroFree.KPCuspChart.SectionConstruction renaming horizo
 open MeasureTheory
 open scoped ENNReal
 
-private theorem horizontal_map_volume (u : Fˣ) (v : F) :
+theorem horizontal_map_volume (u : Fˣ) (v : F) :
     Measure.map (fun x : KPCuspCharts.Horizontal F => fun i =>
       (KPCusp.complexPlace F i).embedding (u : F) * x i +
         (KPCusp.complexPlace F i).embedding v) volume =
@@ -122,11 +120,11 @@ private theorem horizontal_map_volume (u : Fˣ) (v : F) :
     (horizontalLinear a).continuous_of_finiteDimensional.measurable,
     hm, Measure.map_smul _ (by fun_prop), map_add_right_eq_self]
 
-private theorem logHeight_scaled (hd : 0 < KPCuspLogShape.dimension F)
+theorem logHeight_scaled (hd : 0 < KPCuspLogShape.dimension F)
     (u : Fˣ) (r : ℝ) (hr : 0 < r) :
     logHeight (F := F) (radiusMultiplier u * r) =
       logHeight (F := F) r + logRatio u / (KPCuspLogShape.dimension F : ℝ) := by
-  have hd0 : (KPCuspLogShape.dimension F : ℝ) ≠ 0 := by exact_mod_cast (Nat.ne_of_gt hd)
+  have hd0 : (KPCuspLogShape.dimension F : ℝ) ≠ 0 := by positivity
   unfold logHeight radiusMultiplier
   rw [Real.log_mul (Real.exp_pos _).ne' hr.ne', Real.log_exp]
   field_simp
@@ -150,8 +148,7 @@ open _root_.DedekindZetaZeroFree.KPMsFixedHaar.PinnedRadialCharts renaming actua
     (crossCoordinate GS.positive_dimension u (A 0 1 / A 1 1) p)) (by
     intro p q hpq
     have hsource : KPCuspCharts.totalRelation F S (p,0) (q,0) := by
-      obtain ⟨g,hg⟩ := MulAction.mem_orbit_iff.mp (MulAction.orbitRel_apply.mp hpq)
-      exact ⟨g,hg⟩
+      aesop
     have htarget : KPCuspCharts.totalRelation F T
         (crossCoordinate GS.positive_dimension u (A 0 1 / A 1 1) p,
           logRatio u / (KPCuspLogShape.dimension F : ℝ))
@@ -166,7 +163,7 @@ open _root_.DedekindZetaZeroFree.KPMsFixedHaar.PinnedRadialCharts renaming actua
       change (Matrix.ProjGenLinGroup.mk A * g.val * (Matrix.ProjGenLinGroup.mk A)⁻¹) •
         (Matrix.ProjGenLinGroup.mk A • KPCuspCharts.toArch F (q,0)) = _
       simp only [mul_smul, inv_smul_smul]
-      exact congrArg (fun x => Matrix.ProjGenLinGroup.mk A • x) hg
+      aesop
     obtain ⟨g,hg⟩ := (actual_coordinate_relation GT _ _).mp htarget
     have he := congrArg Prod.fst hg
     apply Quotient.sound
@@ -179,7 +176,7 @@ open _root_.DedekindZetaZeroFree.KPMsFixedHaar.PinnedRadialCharts renaming actua
     obtain ⟨g', hg'⟩ := hh
     exact ⟨g',hg'⟩)
 
-private theorem crossTransition_continuous
+theorem crossTransition_continuous
     {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
     {S T : Subgroup (KPCuspArithmetic.PGL2 F)}
     {DS : KPCuspCharts.ParabolicData F S} {DT : KPCuspCharts.ParabolicData F T}
@@ -274,7 +271,7 @@ open _root_.DedekindZetaZeroFree.KPMsFixedHaar.AllLevelGeometry renaming coordin
     (-sectionShape F hF w ⟨radiusMultiplier u, radiusMultiplier_pos u⟩)) ∘
       crossTransition GS GT A hA u hr h
 
-private theorem pinnedCrossTransition_formula
+theorem pinnedCrossTransition_formula
     {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
     {S T : Subgroup (KPCuspArithmetic.PGL2 F)}
     {DS : KPCuspCharts.ParabolicData F S} {DT : KPCuspCharts.ParabolicData F T}
@@ -289,13 +286,9 @@ private theorem pinnedCrossTransition_formula
     (p : KPCuspCharts.Cross F) :
     pinnedCrossTransition GS GT w A hA u hr h (Quotient.mk _ p) =
       Quotient.mk _ (pinnedCrossCoordinate hF GS.positive_dimension w u (A 0 1 / A 1 1) p) := by
-  unfold pinnedCrossTransition
-  simp only [Function.comp_apply]
-  change actual_shape_translation GT _ (Quotient.mk _ _) = _
-  rw [actual_shape_translation_formula]
   rfl
 
-private theorem pinnedCrossTransition_continuous
+theorem pinnedCrossTransition_continuous
     {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
     {S T : Subgroup (KPCuspArithmetic.PGL2 F)}
     {DS : KPCuspCharts.ParabolicData F S} {DT : KPCuspCharts.ParabolicData F T}
@@ -369,8 +362,7 @@ private theorem actual_shifted_pinned_chart_commutes
     apply Prod.ext
     · funext i
       dsimp [crossCoordinate]
-      rw [add_sub_cancel_right, mul_div_cancel_left₀ _
-        ((map_ne_zero _).mpr (Units.ne_zero u))]
+      simp
     · exact add_sub_cancel_right p.2 (shapeShift hd u)
   right_inv := by
     intro p
@@ -387,7 +379,7 @@ private theorem actual_shifted_pinned_chart_commutes
       (((continuous_apply i).comp continuous_fst).sub continuous_const).div_const _).prodMk
         (continuous_snd.sub continuous_const)
 
-private theorem crossCoordinate_map_product (hd : 0 < KPCuspLogShape.dimension F)
+theorem crossCoordinate_map_product (hd : 0 < KPCuspLogShape.dimension F)
     (u : Fˣ) (v : F) (μ : Measure (KPCuspCharts.Shape F)) [μ.IsAddHaarMeasure] :
     Measure.map (crossCoordinate hd u v) (volume.prod μ) =
       ENNReal.ofReal (radiusMultiplier u)⁻¹ • (volume.prod μ) := by
@@ -399,7 +391,7 @@ private theorem crossCoordinate_map_product (hd : 0 < KPCuspLogShape.dimension F
   rw [← Measure.map_prod_map volume μ (by fun_prop) (by fun_prop),
     horizontal_map_volume, map_add_right_eq_self, Measure.prod_smul_left]
 
-private theorem crossCoordinate_map_restrict (hd : 0 < KPCuspLogShape.dimension F)
+theorem crossCoordinate_map_restrict (hd : 0 < KPCuspLogShape.dimension F)
     (u : Fˣ) (v : F) (μ : Measure (KPCuspCharts.Shape F)) [μ.IsAddHaarMeasure]
     (E : Set (KPCuspCharts.Cross F)) :
     Measure.map (crossCoordinate hd u v) ((volume.prod μ).restrict E) =
@@ -420,7 +412,7 @@ open _root_.DedekindZetaZeroFree.KPMsFixedHaar.NormOneTransition renaming shapeM
 open _root_.DedekindZetaZeroFree.KPMsFixedHaar.NormOneTransition renaming crossAction_toArch → crossAction_toArch
 open _root_.DedekindZetaZeroFree.KPMsFixedHaar.NormOneTransition.IndexPort renaming integral_index → integral_index
 
-private theorem crossAction_toArch_height
+theorem crossAction_toArch_height
     {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
     {S : Subgroup (KPCuspArithmetic.PGL2 F)} {D : KPCuspCharts.ParabolicData F S}
     (G : KPCuspCharts.ChartOutput F hF S D) (g : S) (p : KPCuspCharts.Cross F) (t : ℝ) :
@@ -430,7 +422,7 @@ private theorem crossAction_toArch_height
   rw [G.actual_action g M hM hc, G.crossAction_formula g M hM hc]
   rfl
 
-private theorem crossTransition_section_measure
+theorem crossTransition_section_measure
     {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
     {S T : Subgroup (KPCuspArithmetic.PGL2 F)}
     {DS : KPCuspCharts.ParabolicData F S}
@@ -465,7 +457,7 @@ private theorem crossTransition_section_measure
     crossCoordinate_map_restrict GS.positive_dimension u _ GS.shapeMeasure,
     Measure.map_smul _ measurable_quotient_mk''.aemeasurable]
 
-private theorem inclusion_image_fd
+theorem inclusion_image_fd
     {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
     {S T : Subgroup (KPCuspArithmetic.PGL2 F)}
     {DS : KPCuspCharts.ParabolicData F S} {DT : KPCuspCharts.ParabolicData F T}
@@ -517,7 +509,7 @@ private theorem inclusion_image_fd
     change t • ((e.symm g).val • _) = g.val.val • (t • _)
     rw [← he]
     simp only [mul_smul, inv_smul_smul]
-  exact congrArg Prod.fst hp
+  simp_all
 
 private theorem crossTransition_section_measure_index
     {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
@@ -640,16 +632,13 @@ private theorem angularTransition_continuous
   change Continuous (fun b : KPCuspCharts.Shape F =>
     (QuotientAddGroup.mk b : KPCuspCharts.Base F hF DT.E DT.integralUnits) +
       QuotientAddGroup.mk (shapeShift GS.positive_dimension u))
-  have hc : Continuous (fun b : KPCuspCharts.Shape F =>
-      (QuotientAddGroup.mk b : KPCuspCharts.Base F hF DT.E DT.integralUnits)) :=
-    continuous_quotient_mk'
-  exact hc.add continuous_const
+  fun_prop
 
 open _root_.DedekindZetaZeroFree.KPMsFixedHaar.PinnedRadialCharts renaming actual_shape_translation → actual_shape_translation
 open _root_.DedekindZetaZeroFree.KPMsFixedHaar.PinnedRadialCharts renaming actual_shape_translation_formula → actual_shape_translation_formula
 open _root_.DedekindZetaZeroFree.KPMsFixedHaar.NormOneTransition renaming sectionMeasure_alt_domain → sectionMeasure_alt_domain
 
-private theorem actual_shape_translation_measurable
+theorem actual_shape_translation_measurable
     {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
     {S : Subgroup (KPCuspArithmetic.PGL2 F)} {D : KPCuspCharts.ParabolicData F S}
     (G : KPCuspCharts.ChartOutput F hF S D) (b : KPCuspCharts.Shape F) :
@@ -659,7 +648,7 @@ private theorem actual_shape_translation_measurable
     ((Homeomorph.prodCongr (Homeomorph.refl (KPCuspCharts.Horizontal F))
       (Homeomorph.addRight b)).continuous.measurable)
 
-private theorem sectionMeasure_shape_translation
+theorem sectionMeasure_shape_translation
     {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
     {S : Subgroup (KPCuspArithmetic.PGL2 F)} {D : KPCuspCharts.ParabolicData F S}
     (G : KPCuspCharts.ChartOutput F hF S D) (b : KPCuspCharts.Shape F) :
@@ -677,8 +666,7 @@ private theorem sectionMeasure_shape_translation
       (fun y : KPCuspCharts.Shape F => y + b)) (volume.prod G.shapeMeasure) = _
     rw [← Measure.map_prod_map volume G.shapeMeasure (by fun_prop) (by fun_prop),
       map_add_right_eq_self]
-    exact congrArg (fun μ : Measure (KPCuspCharts.Horizontal F) => μ.prod G.shapeMeasure)
-      (Measure.map_id (μ := volume))
+    simp
   have hfd : IsFundamentalDomain S (e '' G.fundamentalDomain)
       (volume.prod G.shapeMeasure) := by
     apply G.isFundamentalDomain.image_of_equiv e.toEquiv
@@ -701,8 +689,7 @@ private theorem sectionMeasure_shape_translation
     (actual_shape_translation_measurable G b) measurable_quotient_mk'']
   have hc : actual_shape_translation G b ∘ Quotient.mk (KPCuspCharts.crossRelation F S) =
       Quotient.mk (KPCuspCharts.crossRelation F S) ∘ e := by
-    funext x
-    exact actual_shape_translation_formula G b x
+    rfl
   rw [hc, ← Measure.map_map measurable_quotient_mk'' e.continuous.measurable]
   have he := e.measurableEmbedding.restrict_map (volume.prod G.shapeMeasure) (e '' G.fundamentalDomain)
   change (Measure.map e (volume.prod G.shapeMeasure)).restrict (e '' G.fundamentalDomain) =
@@ -711,7 +698,7 @@ private theorem sectionMeasure_shape_translation
   rw [he.symm]
   exact (sectionMeasure_alt_domain G _ hfd).trans G.sectionMeasure_formula
 
-private theorem pinnedCrossTransition_section_measure_index
+theorem pinnedCrossTransition_section_measure_index
     {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
     {S T : Subgroup (KPCuspArithmetic.PGL2 F)}
     {DS : KPCuspCharts.ParabolicData F S} {DT : KPCuspCharts.ParabolicData F T}
@@ -800,7 +787,7 @@ variable {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
   ⟨cuspLabel M x.1, pinnedCrossTransition (Geometry AV x.1) (Geometry AU (cuspLabel M x.1))
     w N.matrix N.upper N.ratio N.ratio_formula (matrix_inclusion h M x.1 N) x.2⟩
 
-private theorem crossMap_continuous
+theorem crossMap_continuous
     (h : V.toOpenSubgroup.toSubgroup ≤ U.toOpenSubgroup.toSubgroup)
     (M : ComponentMatching AV AU) (w : NumberField.InfinitePlace F) :
     Continuous (crossMap h M w) := by
@@ -821,7 +808,7 @@ private theorem crossMap_continuous
     (M : ComponentMatching AV AU) (j : CuspIndex AV) : 0 < scale h M j :=
   radiusMultiplier_pos _
 
-private theorem crossMap_section_index
+theorem crossMap_section_index
     (h : V.toOpenSubgroup.toSubgroup ≤ U.toOpenSubgroup.toSubgroup)
     (M : ComponentMatching AV AU) (w : NumberField.InfinitePlace F) (j : CuspIndex AV) :
     Measure.map (fun x => crossMap h M w (⟨j,x⟩ : CrossSection AV)) (Geometry AV j).sectionMeasure =
@@ -849,8 +836,7 @@ private theorem crossMap_section_index
         Quotient.mk (KPCuspCharts.crossRelation F (cuspGroup AU (cuspLabel M j))) ∘
           pinnedCrossCoordinate hF (Geometry AV j).positive_dimension w N.ratio
             (N.matrix 0 1 / N.matrix 1 1) := by
-      funext p
-      exact pinnedCrossTransition_formula _ _ _ _ _ _ _ _ _
+      rfl
     rw [hp]
     apply measurable_quotient_mk''.comp
     unfold pinnedCrossCoordinate crossCoordinate
@@ -874,7 +860,7 @@ private theorem crossMap_section_index
       ENNReal.ofReal (2 * (KPCuspLogShape.dimension F : ℝ))) •
       Measure.map (fun x => (⟨j,x⟩ : CrossSection AV)) (Geometry AV j).sectionMeasure
 
-private theorem crossMap_scaled_section
+theorem crossMap_scaled_section
     (h : V.toOpenSubgroup.toSubgroup ≤ U.toOpenSubgroup.toSubgroup)
     (M : ComponentMatching AV AU) (w : NumberField.InfinitePlace F)
     (wV : Fin AV.componentCount → ℝ≥0∞) (wU : Fin AU.componentCount → ℝ≥0∞)
@@ -931,7 +917,7 @@ private theorem crossMap_scaled_section
       N.matrix N.upper N.ratio N.ratio_formula (matrix_inclusion h M ω.1 N) ω.2 -
       QuotientAddGroup.mk (sectionShape F hF w ⟨scale h M ω.1,scale_pos h M ω.1⟩)⟩
 
-private theorem angularMap_continuous
+theorem angularMap_continuous
     (h : V.toOpenSubgroup.toSubgroup ≤ U.toOpenSubgroup.toSubgroup)
     (M : ComponentMatching AV AU) (w : NumberField.InfinitePlace F) :
     Continuous (angularMap h M w) := by
@@ -960,14 +946,7 @@ private theorem projection_commutes
     dsimp only [angularProjection, Sigma.fst, Sigma.snd]
     rw [pinnedCrossTransition_formula, (Geometry AU (cuspLabel M j)).atlas.projection_formula,
       (Geometry AV j).atlas.projection_formula]
-    let B := KPCuspCharts.Base F hF (Parabolic AU (cuspLabel M j)).E
-      (Parabolic AU (cuspLabel M j)).integralUnits
-    let s := shapeShift (Geometry AV j).positive_dimension (upperMatrix h M j).ratio
-    let z := sectionShape F hF w ⟨scale h M j,scale_pos h M j⟩
-    change (QuotientAddGroup.mk ((p.2 + s) - z) : B) =
-      ((QuotientAddGroup.mk p.2 : B) + (QuotientAddGroup.mk s : B)) -
-        (QuotientAddGroup.mk z : B)
-    rw [QuotientAddGroup.mk_sub, QuotientAddGroup.mk_add]
+    rfl
 
 private theorem chart_commutes
     (P : SphericalTransport F ζ hζ)
@@ -977,14 +956,14 @@ private theorem chart_commutes
     (r : Set.Ioi YV) (hr : YU < scale h M x.1 * r.val) :
     P.forget V U h (pinned_cusp_chart AV w YV hV (x,r)) =
       pinned_cusp_chart AU w YU hU
-        (crossMap h M w x,⟨scale h M x.1 * r.val,hr⟩) := by
-  exact actual_shifted_pinned_chart_commutes P h AV AU x.1 (cuspLabel M x.1)
+        (crossMap h M w x,⟨scale h M x.1 * r.val,hr⟩) := 
+  actual_shifted_pinned_chart_commutes P h AV AU x.1 (cuspLabel M x.1)
     (M.rational x.1.1) (correction M x.1) (M.central x.1.1) (M.level x.1.1)
     (M.formula x.1.1) (upperMatrix h M x.1).matrix (upperMatrix h M x.1).projective_formula
     (upperMatrix h M x.1).upper (upperMatrix h M x.1).ratio
     (upperMatrix h M x.1).ratio_formula (matrix_inclusion h M x.1 _) w YV YU hV hU x.2 r hr
 
-private theorem scale_cross_measurable
+theorem scale_cross_measurable
     (h : V.toOpenSubgroup.toSubgroup ≤ U.toOpenSubgroup.toSubgroup)
     (M : ComponentMatching AV AU) : Measurable (fun x : CrossSection AV => ENNReal.ofReal (scale h M x.1)) := by
   have hc : Continuous (fun x : CrossSection AV => ENNReal.ofReal (scale h M x.1)) := by
@@ -995,7 +974,7 @@ private theorem scale_cross_measurable
         ENNReal.ofReal (scale h M j)))
   exact hc.measurable
 
-private theorem scale_angular_measurable
+theorem scale_angular_measurable
     (h : V.toOpenSubgroup.toSubgroup ≤ U.toOpenSubgroup.toSubgroup)
     (M : ComponentMatching AV AU) : Measurable (fun ω : Omega AV => ENNReal.ofReal (scale h M ω.1)) := by
   have hc : Continuous (fun ω : Omega AV => ENNReal.ofReal (scale h M ω.1)) := by
@@ -1006,7 +985,7 @@ private theorem scale_angular_measurable
         (Parabolic AV j).integralUnits => ENNReal.ofReal (scale h M j)))
   exact hc.measurable
 
-private theorem scaledSectionMeasure_eq_density
+theorem scaledSectionMeasure_eq_density
     (h : V.toOpenSubgroup.toSubgroup ≤ U.toOpenSubgroup.toSubgroup)
     (M : ComponentMatching AV AU) (wV : Fin AV.componentCount → ℝ≥0∞) :
     scaledSectionMeasure h M wV = (weighted_section_measure AV wV).withDensity
@@ -1037,7 +1016,7 @@ private theorem scaledSectionMeasure_eq_density
 open _root_.DedekindZetaZeroFree.KPMsFixedHaar.AllLevelMeasureTransport renaming beta_eq_marginal → beta_eq_marginal
 open _root_.DedekindZetaZeroFree.KPMsFixedHaar renaming weighted_angular_measure → weighted_angular_measure
 
-private theorem scaledAngular_eq_marginal
+theorem scaledAngular_eq_marginal
     (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
     (P : SphericalTransport F ζ hζ)
     (h : V.toOpenSubgroup.toSubgroup ≤ U.toOpenSubgroup.toSubgroup)
@@ -1052,14 +1031,7 @@ private theorem scaledAngular_eq_marginal
   rw [← lintegral_indicator hE, lintegral_map
     ((scale_angular_measurable h M).indicator hE) (angular_measurable AV)]
   rw [← lintegral_indicator ((angular_measurable AV) hE)]
-  apply lintegral_congr
-  intro x
-  by_cases hx : angularProjection AV x ∈ E
-  · rw [Set.indicator_of_mem (show x ∈ angularProjection AV ⁻¹' E from hx),
-      Set.indicator_of_mem hx]
-    rfl
-  · rw [Set.indicator_of_notMem (show x ∉ angularProjection AV ⁻¹' E from hx),
-      Set.indicator_of_notMem hx]
+  rfl
 
 private theorem angularMap_scaled_beta
     (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
@@ -1084,7 +1056,7 @@ open _root_.DedekindZetaZeroFree.KPMsFixedHaar.AllLevelMeasureTransport renaming
 open _root_.DedekindZetaZeroFree.KPMsFixedHaar renaming probability_map → probability_map
 open _root_.DedekindZetaZeroFree.KPMsFixedHaar renaming kernel_angular_lintegral → kernel_angular_lintegral
 
-private theorem fiber_label_ae
+theorem fiber_label_ae
     (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
     (P : SphericalTransport F ζ hζ) (DV : GeometricDisintegration AV R P) (ω : Omega AV) :
     ∀ᵐ x ∂DV.unipotent ω, x.1 = ω.1 := by
@@ -1118,10 +1090,10 @@ private theorem fiber_label_ae
     ∂DV.unipotent ω) = _ at he
   rw [hfun, lintegral_indicator hs, setLIntegral_one] at he
   have hprob : (DV.unipotent ω) {x : CrossSection AV | x.1 = ω.1} = 1 := by
-    simpa using he
+    simp_all
   exact (mem_ae_iff_prob_eq_one hs).mpr hprob
 
-private theorem kernel_scaled_section
+theorem kernel_scaled_section
     (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
     (P : SphericalTransport F ζ hζ)
     (h : V.toOpenSubgroup.toSubgroup ≤ U.toOpenSubgroup.toSubgroup)
@@ -1137,8 +1109,7 @@ private theorem kernel_scaled_section
   rw [← lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
   apply lintegral_congr_ae
   filter_upwards [fiber_label_ae R P DV ω] with x hx
-  dsimp only [Pi.mul_apply]
-  rw [hx]
+  simp_all
 
 private theorem induced_kernel
     (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
@@ -1170,8 +1141,8 @@ private theorem induced_probability
       DV.componentWeight j.1 * (degree M j : ℝ≥0∞) else 0) = DU.componentWeight k.1) :
     Measure.map (angularMap h M w)
       (probability AV (DV.beta.withDensity (fun ω => ENNReal.ofReal (scale h M ω.1)))) =
-      probability AU DU.beta := by
-  exact probability_map AV AU _ _ _ (angularMap_continuous h M w).measurable
+      probability AU DU.beta := 
+  probability_map AV AU _ _ _ (angularMap_continuous h M w).measurable
     (angularMap_scaled_beta R P h M w DV DU hbalance)
 
 private theorem coefficient
@@ -1190,7 +1161,7 @@ private theorem coefficient
       MeasurableSet.univ, Set.preimage_univ]
   exact congrArg ENNReal.toReal hm.symm
 
-private theorem geometric_chart_eq_pinned
+theorem geometric_chart_eq_pinned
     (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
     (P : SphericalTransport F ζ hζ) (DV : GeometricDisintegration AV R P)
     (Y : ℝ) (hY : AdmissibleCutoff AV Y) (x : CrossSection AV) (r : Set.Ioi Y) :
@@ -1248,9 +1219,3 @@ private theorem actual_chart_commutes
     coefficient R P h M DV.radial.slot DV DU hbalance,?_,?_⟩
   · exact induced_kernel R P h M DV.radial.slot DV DU hbalance
   · exact actual_chart_commutes R P h M DV DU hslot
-
-end Globalization
-
-end DedekindZetaZeroFree.KPMsFixedHaar.RadiusShift
-
-end

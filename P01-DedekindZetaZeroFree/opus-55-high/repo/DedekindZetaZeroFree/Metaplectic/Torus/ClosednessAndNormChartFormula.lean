@@ -13,37 +13,16 @@ variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 open KPAdelicCoverRestrictedProduct KPGlobalTorusFunctionData
 set_option maxRecDepth 2000
 set_option maxHeartbeats 800000
-private theorem archmatrix (z : TorusArch F) :
+theorem archmatrix (z : TorusArch F) :
     let A := restrictedProjection F ζ hζ (archDiagonalTuple F ζ hζ z)
     A 1 0 = 0 ∧ A 0 1 = 0 ∧ A 1 1 = 1 := by
   dsimp [restrictedProjection, matrixValue, matrixEntry]
   constructor
-  · apply Prod.ext
-    · funext w
-      change _ = 0
-      simp [archDiagonalTuple, KPStandardLocalRootLifts.A, KPLocalCover.sectionMap]
-    · apply RestrictedProduct.ext
-      intro w
-      change _ = 0
-      simp [archDiagonalTuple]
+  · rfl
   constructor
-  · apply Prod.ext
-    · funext w
-      change _ = 0
-      simp [archDiagonalTuple, KPStandardLocalRootLifts.A, KPLocalCover.sectionMap]
-    · apply RestrictedProduct.ext
-      intro w
-      change _ = 0
-      simp [archDiagonalTuple]
-  · apply Prod.ext
-    · funext w
-      change _ = 1
-      simp [archDiagonalTuple, KPStandardLocalRootLifts.A, KPLocalCover.sectionMap]
-    · apply RestrictedProduct.ext
-      intro w
-      change _ = 1
-      simp [archDiagonalTuple]
-private theorem archp (z : TorusArch F) :
+  · rfl
+  rfl
+theorem archp (z : TorusArch F) :
     (p F ζ hζ (torusArchChart F ζ hζ z) : KPAdelicCoverRestrictedProduct.Adeles F) =
       (restrictedProjection F ζ hζ (archDiagonalTuple F ζ hζ z)) 0 0 := by
   let A := restrictedProjection F ζ hζ (archDiagonalTuple F ζ hζ z)
@@ -58,7 +37,7 @@ private theorem archp (z : TorusArch F) :
   rw [hr]
   have h1 : (diagonal_entries_units F A h10 h01).2.unit = 1 := by
     apply Units.ext
-    simpa using h11
+    rfl
   rw [h1]
   simp [A]
 private theorem archp_finite (z : TorusArch F) :
@@ -118,15 +97,13 @@ theorem delta_chart_formula (z : TorusArch F) (hz : z ∈ torusArchDomain F) :
       (KPHilbert.infinite_isComplex F ζ hζ w)).symm (z w))
       ((InfinitePlace.Completion.ringEquivComplexOfIsComplex
       (KPHilbert.infinite_isComplex F ζ hζ w)).symm 0) = _ at h
-  simpa only [dist_zero_right, map_zero] using h
+  simp_all
 
 end
 end DedekindZetaZeroFree.KPGlobalTorusBorelNormTwistTransport.AnalyticInputs
 
 section
 
-open scoped NumberField Classical Matrix NNReal
-open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.KPGlobalTorusBorelNormTwistTransport.AnalyticInputs
 noncomputable section
 variable (F : Type) [Field F] [NumberField F]
@@ -146,8 +123,7 @@ private theorem diagonal_preimage :
     have hA : A = B * Matrix.GeneralLinearGroup.scalar (Fin 2) u := by
       rw [hu]; simp
     rw [hA]
-    simp [Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
-      Matrix.mul_apply, Matrix.scalar_apply, h10, h01]
+    simp [Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_apply, Matrix.scalar_apply, h10, h01]
   · rintro ⟨h10, h01⟩
     exact ⟨A, rfl, h10, h01⟩
 private theorem ordinarytorusclosed : IsClosed (ordinaryTorus F : Set (AdelicPGL2 F)) := by
@@ -155,13 +131,8 @@ private theorem ordinarytorusclosed : IsClosed (ordinaryTorus F : Set (AdelicPGL
   change IsClosed ((fun A : AdelicGL2 F => QuotientGroup.mk' (scalarSubgroup F) A) ⁻¹' _)
   rw [diagonal_preimage]
   have hc (i j : Fin 2) : Continuous (fun A : AdelicGL2 F => A i j) :=
-    (continuous_apply j).comp (Matrix.GeneralLinearGroup.continuous_apply
-      (fun A : AdelicGL2 F => A) continuous_id i)
+    by fun_prop
   exact (isClosed_eq (hc 1 0) continuous_const).inter (isClosed_eq (hc 0 1) continuous_const)
 
-theorem actualtorusclosed : IsClosed (torus F ζ hζ : Set (KPGlobalTorusFunctionData.G F ζ hζ)) := by
-  exact (ordinarytorusclosed F).preimage (adelic_pgl_topological_cover F ζ hζ).2.2.2.continuous
-end
-end DedekindZetaZeroFree.KPGlobalTorusBorelNormTwistTransport.AnalyticInputs
-
-end
+theorem actualtorusclosed : IsClosed (torus F ζ hζ : Set (KPGlobalTorusFunctionData.G F ζ hζ)) := 
+  (ordinarytorusclosed F).preimage (adelic_pgl_topological_cover F ζ hζ).2.2.2.continuous

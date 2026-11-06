@@ -9,7 +9,6 @@ open scoped NumberField Classical BigOperators NNReal
 open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.KPGlobalCenterRationalCharacterExtension
 noncomputable section
-set_option autoImplicit false
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 abbrev E := KPGlobalTorusFunctionData.E F ζ hζ
@@ -50,6 +49,3 @@ def rawProduct (x : rawCenter F ζ hζ) : ℂˣ :=
 
 def rationalCenterSubgroup : Subgroup (E F ζ hζ) :=
   (KPGlobalTorusFunctionData.s F ζ hζ).range ⊔ Z F ζ hζ
-
-end
-end DedekindZetaZeroFree.KPGlobalCenterRationalCharacterExtension

@@ -60,7 +60,3 @@ theorem continuous_rightRegularLp_apply (f : Lp 𝕜 2 (haarProb G)) :
     (ContinuousMap.curry ⟨fun p : G × G => p.2 * p.1, continuous_snd.mul continuous_fst⟩).continuous
   simp only [rightRegularLp_apply]
   exact continuous_const.compMeasurePreservingLp hg _ (by simp)
-
-end CompactGroup
-
-end DedekindZetaZeroFree.TauCeti

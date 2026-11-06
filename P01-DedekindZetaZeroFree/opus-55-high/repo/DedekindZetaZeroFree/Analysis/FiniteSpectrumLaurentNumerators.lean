@@ -11,7 +11,7 @@ namespace DedekindZetaZeroFree.KPTameTransposeUnitNumeratorSteps.Augmentation
 
 open ValuativeRel KPLocalPrincipalSeries KPRankOneShellContinuation KPRankOneRootParameter
 
-private theorem chamber_evaluation_infinite
+theorem chamber_evaluation_infinite
     (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
     [TopologicalSpace K] [IsNonarchimedeanLocalField K] (ε : Sign) :
     {u : ℂˣ | ∃ s : ℂ, convergenceHalfPlane ε s ∧ evaluationUnit K ε s = u}.Infinite := by
@@ -21,8 +21,7 @@ private theorem chamber_evaluation_infinite
     dsimp [a] at h
     cases ε <;> simp only [if_true, if_false, reduceCtorEq] at h
     · exact_mod_cast h
-    · have : (m : ℝ) = (n : ℝ) := by linarith
-      exact_mod_cast this
+    simp_all
   have hl : Real.log (residueCardinality K : ℝ) ≠ 0 := by
     apply ne_of_gt
     apply Real.log_pos
@@ -36,9 +35,7 @@ private theorem chamber_evaluation_infinite
         Complex.ofReal_re, Complex.neg_im, Complex.ofReal_im, mul_zero, sub_zero, if_true]
     | minus =>
       change ‖(r K (x : ℂ))⁻¹‖ = _
-      simp only [r, norm_inv, Complex.norm_exp, Complex.mul_re, Complex.neg_re,
-        Complex.ofReal_re, Complex.neg_im, Complex.ofReal_im, mul_zero, sub_zero,
-        ← Real.exp_neg, neg_mul, neg_neg, reduceCtorEq, if_false]
+      simp only [r, norm_inv, Complex.norm_exp, Complex.mul_re, Complex.neg_re, Complex.ofReal_re, Complex.ofReal_im, mul_zero, sub_zero, ← Real.exp_neg, neg_mul, neg_neg, reduceCtorEq, if_false]
   have hinj : Function.Injective (fun n => evaluationUnit K ε (a n : ℂ)) := by
     intro m n h
     apply ha
@@ -64,10 +61,8 @@ private theorem scalarLaurent_coeff (Q : ℤ →₀ ℂ) (n : ℤ) :
     AddMonoidAlgebra.coeff_single]
   rw [Finset.sum_eq_single n]
   · simp
-  · intro b hb hbn
-    simp [hbn]
-  · intro hn
-    simp [Finsupp.notMem_support_iff.mp hn]
+  · simp_all
+  simp
 
 private theorem scalarLaurent_eval (Q : ℤ →₀ ℂ) (u : ℂˣ) :
     LaurentPolynomial.eval₂ (RingHom.id ℂ) u (scalarLaurent Q) =
@@ -113,9 +108,3 @@ theorem scalar_laurent_chamber_unique
   intro n
   have he := congrArg (fun L : LaurentPolynomial ℂ => L.coeff n) hpoly
   simpa only [scalarLaurent_coeff] using he
-
-end DedekindZetaZeroFree.KPTameTransposeUnitNumeratorSteps.Augmentation
-
-end
-
-end

@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Finite levels of the rational idele-class direct limit
 
@@ -67,7 +61,7 @@ instance rationalTowerClassGroupMul
 
 /-- The canonical finite Galois closure, inside `SeparableClosure ℚ`,
 of a finite rational intermediate field. -/
-noncomputable def rationalNormalClosure
+def rationalNormalClosure
     (K : IntermediateField ℚ (SeparableClosure ℚ))
     [FiniteDimensional ℚ K] :
     FiniteGaloisIntermediateField ℚ (SeparableClosure ℚ) :=
@@ -81,7 +75,7 @@ noncomputable def rationalNormalClosure
 
 /-- Absolute left cosets fixing a finite rational intermediate field,
 identified with its embeddings into the canonical normal closure. -/
-noncomputable def
+def
     rationalBaseFixingCosetEquivNormalClosure
     (K : IntermediateField ℚ (SeparableClosure ℚ))
     [FiniteDimensional ℚ K] :
@@ -105,7 +99,7 @@ noncomputable def
 /-- Embed the actual idele class group of a finite rational
 intermediate field into the relative presentation at its canonical
 finite Galois closure. -/
-noncomputable def rationalIntermediateIdeleClassToNormalClosure
+def rationalIntermediateIdeleClassToNormalClosure
     (K : IntermediateField ℚ (SeparableClosure ℚ))
     [FiniteDimensional ℚ K] :
     IdeleClassGroup K →*
@@ -116,7 +110,7 @@ noncomputable def rationalIntermediateIdeleClassToNormalClosure
 
 /-- The canonical map from the actual idele class group of a finite
 rational intermediate field to the absolute idele-class direct limit. -/
-noncomputable def rationalIntermediateIdeleClassToDirectLimit
+def rationalIntermediateIdeleClassToDirectLimit
     (K : IntermediateField ℚ (SeparableClosure ℚ))
     [FiniteDimensional ℚ K] :
     IdeleClassGroup K →* rationalIdeleClassDirectLimit :=
@@ -151,8 +145,7 @@ theorem
       rationalRelativeIdeleClassToDirectLimit
         (rationalNormalClosure K)
         (RelativeIdeleGroup.classEmbedding (IntermediateField.inclusion (IntermediateField.le_normalClosure K)) c)
-  rw [(_root_.relativeIdeleClassBaseChangeMulEquiv
-    (K := ℚ) (L := K)).symm_apply_apply]
+  simp
 
 /-- At a finite Galois rational intermediate field, the ordinary
 idele-class comparison followed by the absolute direct-limit map is the
@@ -171,7 +164,7 @@ theorem
     (IntermediateField.le_normalClosure
       (E : IntermediateField ℚ (SeparableClosure ℚ)))
 
-private theorem rationalRelativeIdeleClassEmbedding_commutativeSquare
+theorem rationalRelativeIdeleClassEmbedding_commutativeSquare
     {F E N₁ N₂ : IntermediateField ℚ (SeparableClosure ℚ)}
     [NumberField F] [NumberField E] [NumberField N₁] [NumberField N₂]
     (hFE : F ≤ E) (hFN₁ : F ≤ N₁) (hEN₂ : E ≤ N₂) (hN₁N₂ : N₁ ≤ N₂)
@@ -230,8 +223,8 @@ theorem
           (IntermediateField.inclusion hN)
           (RelativeIdeleGroup.classEmbedding (K := ℚ) (L := F)
             (M := rationalNormalClosure F)
-            (IntermediateField.inclusion hFN) c) := by
-    exact rationalRelativeIdeleClassEmbedding_commutativeSquare
+            (IntermediateField.inclusion hFN) c) := 
+    rationalRelativeIdeleClassEmbedding_commutativeSquare
       hFE hFN hEN hN c
   calc
     _ = rationalRelativeIdeleClassToDirectLimit (rationalNormalClosure E)
@@ -248,8 +241,8 @@ theorem
           (IntermediateField.inclusion hN)
           (RelativeIdeleGroup.classEmbedding (K := ℚ) (L := F)
             (M := rationalNormalClosure F)
-            (IntermediateField.inclusion hFN) c)) := by
-      exact congrArg
+            (IntermediateField.inclusion hFN) c)) := 
+      congrArg
         (rationalRelativeIdeleClassToDirectLimit (rationalNormalClosure E)) hcomp
     _ = rationalRelativeIdeleClassToDirectLimit (rationalNormalClosure F)
         (RelativeIdeleGroup.classEmbedding (K := ℚ) (L := F)
@@ -262,9 +255,3 @@ theorem
         hN
     _ = _ :=
       (rationalIntermediateIdeleClassToDirectLimit_baseChange F c).symm
-
-
-end Reciprocity
-end GlobalClassFieldTheory
-
-end

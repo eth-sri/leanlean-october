@@ -6,11 +6,10 @@ public import DedekindZetaZeroFree.Arithmetic.Units.PrincipalizingRayCharacterCo
 
 namespace DedekindZetaZeroFree
 
-noncomputable section
 open scoped NumberField Classical
 open UniqueFactorizationMonoid Filter
 
-private theorem pcSmall_support_norm_le {F : Type} [Field F] [NumberField F]
+theorem pcSmall_support_norm_le {F : Type} [Field F] [NumberField F]
     (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) :
     (∏ p ∈ idealPrimeSupport I, idealNorm p) ≤ idealNorm I := by
   have hd : (∏ p ∈ idealPrimeSupport I, p) ∣ I := by
@@ -23,7 +22,7 @@ private theorem pcSmall_support_norm_le {F : Type} [Field F] [NumberField F]
   simpa [idealNorm, map_prod, Nat.cast_prod] using (show
     ((Ideal.absNorm (∏ p ∈ idealPrimeSupport I, p) : ℕ) : ℝ) ≤ (Ideal.absNorm I : ℝ) by exact_mod_cast hn)
 
-private theorem pcSmall_local_bound (C δ ε : ℝ) (hC : 0 ≤ C) (hδ : 0 < δ) (hε : 0 < ε) :
+theorem pcSmall_local_bound (C δ ε : ℝ) (hC : 0 ≤ C) (hδ : 0 < δ) (hε : 0 < ε) :
     ∃ B : ℝ, ∀ Q : ℝ, B ≤ Q → 1 ≤ Q → 1 + C * Q ^ (-δ) ≤ Q ^ ε := by
   obtain ⟨B, hB⟩ := eventually_atTop.mp ((tendsto_rpow_atTop hε).eventually
     (eventually_ge_atTop (1 + C)))
@@ -80,8 +79,7 @@ theorem fixed_small_prime_subpower
         exact (Finset.mem_filter.mp h).2
       · intro p _
         exact le_trans zero_le_one (hf p)
-      · intro p _ _
-        exact hf p
+      simp_all
     calc
       (∏ p ∈ idealPrimeSupport I.val, f p) ≤
           ∏ p ∈ idealPrimeSupport I.val, (if p ∈ s then f p else 1) * idealNorm p ^ ε :=
@@ -98,7 +96,3 @@ theorem fixed_small_prime_subpower
         exact Real.rpow_le_rpow
           (Finset.prod_nonneg (fun p h => le_trans zero_le_one (hq p h)))
           (pcSmall_support_norm_le I.val I.property.1) hε.le
-
-end
-
-end DedekindZetaZeroFree

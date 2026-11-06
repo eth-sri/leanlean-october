@@ -21,11 +21,9 @@ theorem haar_fractionalIntegral_of_stereographic_pushforward (β : ℂˣ) (p : �
   let d : ℂ → ℝ := fun z => (1 + ‖z‖ ^ 2) ^ (-2 : ℝ) / Real.pi
   let K : Sphere → ℂ := fun y => (fractionalKernel (1 / 3) x y : ℂ) * F y
   have hd : Measurable (fun z => ENNReal.ofReal (d z)) := by
-    dsimp [d]
     fun_prop
   have hdpos (z : ℂ) : 0 ≤ d z := by
-    dsimp [d]
-    exact div_nonneg (Real.rpow_nonneg (by positivity) _) Real.pi_pos.le
+    positivity
   have hi : AEStronglyMeasurable K sphereArea :=
     (fractionalIntegral_integrable (1 / 3) (by norm_num) hF x).aestronglyMeasurable
   have hm := integral_map hp.aemeasurable (hpush ▸ hi)
@@ -67,5 +65,3 @@ theorem intertwiner_hopf_integral (H : ComplexSU2 → Sphere) (hH : HasHopfCoord
   exact Filter.Eventually.of_forall (fun z => by
     simpa only [ComplexLocal.StereographicTransport.denominator, fractionalKernel,
       Real.rpow_eq_pow, mul_assoc] using heval z)
-
-end DedekindZetaZeroFree.ComplexFractionalInverse.CompactCharts

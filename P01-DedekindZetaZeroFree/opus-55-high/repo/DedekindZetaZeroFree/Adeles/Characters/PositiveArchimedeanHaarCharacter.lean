@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.Adeles.PositiveArchimed
 
 @[expose] public section
 
-noncomputable section
 open MeasureTheory
 open scoped Classical NumberField ENNReal NNReal Topology
 set_option maxHeartbeats 1600000
@@ -18,19 +17,13 @@ theorem archDiagonalIdele_ideleAbs (u : NumberField.InfinitePlace F → ℝ) :
       Real.exp (2 * ∑ w, u w) := by
   let a := archDiagonalIdele F ζ hζ u
   have hf : ((IdeleGroup.equivAdeleRingUnitsContinuousMulEquiv F).symm a).2 = 1 := by
-    apply (IdeleGroup.finiteEquivFiniteAdeleUnits (K := F)).injective
-    apply Units.ext
-    have he := congrArg (fun u : KPAdelicCoverRestrictedProduct.Ideles F => u.val.2)
-      ((IdeleGroup.equivAdeleRingUnitsContinuousMulEquiv F).apply_symm_apply a)
-    exact he
+    rfl
   have hw (w : NumberField.InfinitePlace F) :
       ((InfiniteIdeleGroup.component w
         ((IdeleGroup.equivAdeleRingUnitsContinuousMulEquiv F).symm a).1 : w.Completionˣ) : w.Completion) =
         (NumberField.InfinitePlace.Completion.ringEquivComplexOfIsComplex
           (KPHilbert.infinite_isComplex F ζ hζ w)).symm (Real.exp (u w) : ℂ) := by
-    have he := congrArg (fun u : KPAdelicCoverRestrictedProduct.Ideles F => u.val.1 w)
-      ((IdeleGroup.equivAdeleRingUnitsContinuousMulEquiv F).apply_symm_apply a)
-    exact he
+    rfl
   change (((IdeleGroup.absoluteNorm
     ((IdeleGroup.equivAdeleRingUnitsContinuousMulEquiv F).symm a))⁻¹ : ℝ≥0ˣ) : ℝ) = _
   rw [IdeleGroup.absoluteNorm_apply, hf, map_one, one_mul, inv_inv,
@@ -47,13 +40,9 @@ theorem archDiagonalIdele_ideleAbs (u : NumberField.InfinitePlace F → ℝ) :
       (KPHilbert.infinite_isComplex F ζ hζ w)).symm (Real.exp (u w) : ℂ))
       ((NumberField.InfinitePlace.Completion.ringEquivComplexOfIsComplex
       (KPHilbert.infinite_isComplex F ζ hζ w)).symm 0) = _ at h
-    simpa [Complex.norm_real, abs_of_pos (Real.exp_pos _)] using h
+    simp_all
   simp_rw [hw, hn, (KPHilbert.infinite_isComplex F ζ hζ _).mult_eq_two, ← Real.exp_nat_mul]
   rw [← Real.exp_sum]
   congr 1
   rw [Finset.mul_sum]
   simp
-
-end DedekindZetaZeroFree.KPGlobalResidualConstruction.PositiveArchCharacter
-
-end

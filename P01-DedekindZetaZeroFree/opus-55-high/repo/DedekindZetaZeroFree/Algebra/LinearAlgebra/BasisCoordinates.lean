@@ -30,5 +30,3 @@ theorem eq_smul_of_repr_support_subset_singleton (b : Module.Basis ι K V) {w : 
     _ = b.repr.symm (Finsupp.single i (b.repr w i)) :=
         congrArg _ (Finsupp.support_subset_singleton.1 h)
     _ = b.repr w i • b i := b.repr_symm_single i _
-
-end Module.Basis

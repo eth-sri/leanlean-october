@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Moments.Principal.EulerProducts.LocalSeriesDe
 
 @[expose] public section
 
-noncomputable section
 open scoped NumberField Classical
 open UniqueFactorizationMonoid
 namespace DedekindZetaZeroFree.CorrectionFactors.Exponent
@@ -37,7 +36,3 @@ theorem exists_primeFree (I : A.Exterior) (p : ExteriorPrime A) :
     rw [heq]
     exact Ideal.mul_le_right
   exact ⟨⟨J, hJ, hcop⟩, hn ▸ heq, hnot⟩
-
-end DedekindZetaZeroFree.CorrectionFactors.Exponent
-
-end

@@ -135,7 +135,7 @@ theorem unipotent_open_coordinate (f : IMinusActual F ζ hζ v S P)
   rw [mul_assoc, ← Subgroup.coe_mul, ← map_mul]
   rfl
 
-private theorem kernel_compact (f : IMinusActual F ζ hζ v S P) (hf : f.val 1 = 0) :
+theorem kernel_compact (f : IMinusActual F ζ hζ v S P) (hf : f.val 1 = 0) :
     HasCompactSupport (fun x : LocalField F v => f.val (S.borel.liftedW *
       (S.borel.upperRoot (Multiplicative.ofAdd x) : ActualCover F ζ hζ v))) := by
   classical
@@ -428,7 +428,7 @@ theorem exists_unique_stableJacquet
     μ (truncationBall F v π) g
     (fun m f => compact_integrability F ζ hζ v S P μ hgood π hπ ψ hψcont hψunitary hcond f m)
     (open_cell_stabilization_compatible F ζ hζ v S P μ N hN hgood π hπ ψ hψcont hψunitary hcond)
-private theorem integrand_translate
+theorem integrand_translate
     (ψ : AddChar (LocalField F v) ℂ) (hψunitary : ∀ x, ‖ψ x‖ = 1)
     (f : IMinusActual F ζ hζ v S P) (t x : LocalField F v) :
     jacquetIntegrand F ζ hζ v S P ψ
@@ -521,8 +521,8 @@ def Orbit (π : (LocalField F v)ˣ) (b : Fiber F ζ hζ v inducingData P) (j : �
   QPower F v (-(j : ℝ) / 6) • Action F ζ hζ v inducingData P (Lift F ζ hζ v (π ^ j)) b
 end
 end DedekindZetaZeroFree.ExteriorWhittakerValues.ActualSpherical
-open scoped NumberField Valued
 open NumberField IsDedekindDomain ValuativeRel
+open scoped NumberField Valued
 namespace DedekindZetaZeroFree.ExteriorWhittakerValues.ActualSpherical
 open KPLocalExceptionalConstruction KPLocalStoneVonNeumann KPLocalPrincipalSeries
 noncomputable section
@@ -567,13 +567,13 @@ variable (inducingData : CanonicalFiniteInducingData F ζ hζ v) (P : Polarizati
       intro j hj
       rfl⟩
 
-private lemma split_picture_constant
+lemma split_picture_constant
     (I : IwasawaData inducingData.borel)
     (φ : compactLevel inducingData.borel P I .minus I.compact)
     (k : I.compact.toOpenSubgroup) : φ.val.val k = φ.val.val 1 := by
   exact φ.property k 1 k (by simp)
 
-private lemma split_picture_fixed
+lemma split_picture_fixed
     (ht : ringChar (KPTameCompact.O F v ⧸ KPTameCompact.p F v) ≠ 3)
     (I : IwasawaData inducingData.borel)
     (hC : (I.compact.toOpenSubgroup : Subgroup (ActualCover F ζ hζ v)) =
@@ -672,7 +672,7 @@ theorem compact_evaluation_of_split_iwasawa
   rw [he] at h
   exact h.2
 
-private lemma split_factor
+lemma split_factor
     (ht : ringChar (KPTameCompact.O F v ⧸ KPTameCompact.p F v) ≠ 3)
     (g : ActualCover F ζ hζ v) :
     ∃ b : inducingData.borel.B, ∃ k : Compact F ζ hζ v ht,
@@ -701,7 +701,7 @@ private lemma split_factor
   exact ⟨⟨g * k⁻¹, hb⟩, ⟨k, ⟨r⁻¹, rfl⟩⟩, by simp⟩
 
 include P in
-private lemma split_retract
+lemma split_retract
     (ht : ringChar (KPTameCompact.O F v ⧸ KPTameCompact.p F v) ≠ 3)
     (b : inducingData.borel.B) (hb : b.val ∈ Compact F ζ hζ v ht) :
     inducingData.borel.retract b ∈ IntegralTorus F ζ hζ v ht := by
@@ -772,7 +772,7 @@ private lemma split_retract
   exact ⟨d, rfl⟩
 
 include P in
-private lemma split_projection (g : ActualCover F ζ hζ v) :
+lemma split_projection (g : ActualCover F ζ hζ v) :
     inducingData.borel.projection g = KPLocalSmoothRepresentation.projection F ζ hζ v g := by
   obtain ⟨r, rfl⟩ := QuotientGroup.mk_surjective g
   exact (inducingData.openCell P).projection_eq r
@@ -869,8 +869,8 @@ theorem compact_evaluation_equiv
   rwa [hC] at hb
 end
 end DedekindZetaZeroFree.ExteriorWhittakerValues.ActualSpherical
-open scoped NumberField Valued
 open NumberField IsDedekindDomain ValuativeRel
+open scoped NumberField Valued
 namespace DedekindZetaZeroFree.ExteriorWhittakerValues.ActualSpherical
 open KPLocalExceptionalConstruction KPLocalStoneVonNeumann
 noncomputable section
@@ -929,8 +929,8 @@ theorem normalized_orbit_period
   ring
 end
 end DedekindZetaZeroFree.ExteriorWhittakerValues.ActualSpherical
-open scoped NumberField Valued
 open NumberField IsDedekindDomain ValuativeRel
+open scoped NumberField Valued
 namespace DedekindZetaZeroFree.ExteriorWhittakerValues.ActualSpherical
 open KPLocalExceptionalConstruction KPLocalStoneVonNeumann
 noncomputable section
@@ -963,7 +963,7 @@ private lemma unit_lift_compact
   ext i j
   fin_cases i <;> fin_cases j <;> rfl
 
-private lemma dimension_three
+lemma dimension_three
     (ht : ringChar (KPTameCompact.O F v ⧸ KPTameCompact.p F v) ≠ 3) :
     Module.finrank ℂ (Fiber F ζ hζ v inducingData P) = 3 := by
   have h3 : (3 : (valuation (LocalField F v)).integer) ∉
@@ -982,7 +982,7 @@ private lemma dimension_three
       (FaithfulSMul.algebraMap_injective F (LocalField F v))) h3]
   norm_num
 
-private lemma unit_of_exp_zero (y : (LocalField F v)ˣ)
+lemma unit_of_exp_zero (y : (LocalField F v)ˣ)
     (h : KPCubicExpansion.valuationExponent (LocalField F v) y = 0) :
     ∃ u : (KPTameCompact.O F v)ˣ, KPTameCompact.unitInclusion F v u = y := by
   have hn : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F v)
@@ -1005,7 +1005,7 @@ private lemma unit_of_exp_zero (y : (LocalField F v)ˣ)
   apply Units.ext
   exact congrArg (fun x : (valuation (LocalField F v)).integer => (x : LocalField F v)) hu
 
-private lemma class_decomposition
+lemma class_decomposition
     (π : (LocalField F v)ˣ)
     (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F v)
       (valuation (LocalField F v) (π : LocalField F v)) = WithZero.exp (-1 : ℤ))
@@ -1043,7 +1043,7 @@ private lemma class_decomposition
     exact ⟨π ^ (n / 3), rfl⟩
   rw [hc, mul_one]
 
-private lemma orbit_span_top {H V : Type*} [Group H] [AddCommGroup V] [Module ℂ V]
+lemma orbit_span_top {H V : Type*} [Group H] [AddCommGroup V] [Module ℂ V]
     (ρ : Representation ℂ H V) (hirr : ρ.IsIrreducible) (b : V) (hb : b ≠ 0) :
     Submodule.span ℂ (Set.range (fun g : H => ρ g b)) = ⊤ := by
   let S : Subrepresentation ρ := ⟨Submodule.span ℂ (Set.range (fun g : H => ρ g b)), by
@@ -1244,7 +1244,7 @@ local instance contributionTopologyStep2 : TopologicalSpace (Fiber F ζ hζ v in
 variable [NormedSpace ℂ (Fiber F ζ hζ v inducingData P)]
 
 include P in
-private lemma signed_upper (H : (LocalField F v)ˣ) :
+lemma signed_upper (H : (LocalField F v)ˣ) :
     inducingData.borel.liftedW * KPPGLLocalCover.N F ζ hζ (Sum.inr v) H =
       KPPGLLocalCover.N F ζ hζ (Sum.inr v) (-(H⁻¹ : (LocalField F v)ˣ) : LocalField F v) *
         KPPGLLocalCover.A F ζ hζ (Sum.inr v) (H⁻¹ ^ (2 : ℕ)) *
@@ -1268,7 +1268,7 @@ private lemma signed_upper (H : (LocalField F v)ˣ) :
     (KPHilbert.B3_laws F ζ hζ (Sum.inr v)).2.2.2.2.2 _ |>.2.1]
   simp
 
-private lemma minus_torus_eval (φ : Sections F ζ hζ v inducingData P)
+lemma minus_torus_eval (φ : Sections F ζ hζ v inducingData P)
     (t : actualTorus F ζ hζ v) (g : ActualCover F ζ hζ v) :
     φ.val ((t : ActualCover F ζ hζ v) * g) =
     normPower (LocalField F v) (inducingData.borel.coordinate t) (1/2) •
@@ -1314,7 +1314,7 @@ private lemma right_fixed (ht : ringChar (KPTameCompact.O F v ⧸ KPTameCompact.
   exact congrArg (fun f : Sections F ζ hζ v inducingData P => f.val g)
     (hφ ⟨k, hk⟩)
 
-private lemma central_eval (φ : Sections F ζ hζ v inducingData P)
+lemma central_eval (φ : Sections F ζ hζ v inducingData P)
     (z : rootsOfUnity 3 F) (g : ActualCover F ζ hζ v) :
     φ.val
       (KPPGLLocalCover.centralInjection F ζ hζ (Sum.inr v) z * g) =
@@ -1330,7 +1330,7 @@ private lemma central_eval (φ : Sections F ζ hζ v inducingData P)
       (inducingData.openCell P).central_coordinate, normPower, localAbs_one]
   rw [hs, one_smul, (inducingData.openCell P).genuine, inducingData.openCell_ordinary]
 
-private lemma diagonal_product_eval (φ : Sections F ζ hζ v inducingData P)
+lemma diagonal_product_eval (φ : Sections F ζ hζ v inducingData P)
     (a b : (LocalField F v)ˣ) (g : ActualCover F ζ hζ v) :
     φ.val
       (KPPGLLocalCover.A F ζ hζ (Sum.inr v) a *
@@ -1595,8 +1595,8 @@ def shellContribution (ψ : AddChar (LocalField F v) ℂ)
 
 end
 end DedekindZetaZeroFree.ExteriorWhittakerValues.ActualJacquet
-open scoped NumberField Valued ValuativeRel BigOperators ENNReal
 open NumberField IsDedekindDomain MeasureTheory ValuativeRel
+open scoped NumberField Valued ValuativeRel BigOperators ENNReal
 
 namespace DedekindZetaZeroFree.ExteriorWhittakerValues.ActualShellRegion
 
@@ -1614,7 +1614,7 @@ variable (μ : Measure (LocalField F v)) [μ.IsAddHaarMeasure]
 variable (N : AddGroupNorm (Fiber F ζ hζ v inducingData P))
 variable (hN : ∀ (c : ℂ) (b : Fiber F ζ hζ v inducingData P), N (c • b) = ‖c‖ * N b)
 
-private lemma qPower_mul (a b : ℝ) :
+lemma qPower_mul (a b : ℝ) :
     QPower F v a *
       QPower F v b =
         QPower F v (a + b) := by
@@ -1669,8 +1669,8 @@ theorem ball_contribution_of_constant_value
 
 end
 end DedekindZetaZeroFree.ExteriorWhittakerValues.ActualShellRegion
-open scoped NumberField Valued ValuativeRel BigOperators ENNReal
 open NumberField IsDedekindDomain MeasureTheory ValuativeRel
+open scoped NumberField Valued ValuativeRel BigOperators ENNReal
 
 namespace DedekindZetaZeroFree.ExteriorWhittakerValues.ActualShellRegion
 
@@ -1821,8 +1821,8 @@ theorem compatible_shell_contribution_of_scaled_value
 
 end
 end DedekindZetaZeroFree.ExteriorWhittakerValues.ActualShellRegion
-open scoped NumberField Valued ValuativeRel BigOperators ENNReal
 open NumberField IsDedekindDomain MeasureTheory ValuativeRel
+open scoped NumberField Valued ValuativeRel BigOperators ENNReal
 namespace DedekindZetaZeroFree.ExteriorWhittakerValues.ActualShellIntegral
 open KPLocalExceptionalConstruction KPLocalPrincipalSeries KPLocalStoneVonNeumann
 open ExteriorWhittakerValues.ActualSpherical KPExteriorUnitShellIntegrals ExteriorWhittakerValues.ActualJacquet
@@ -1833,14 +1833,14 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
   (P : Polarization inducingData.heisenberg)
 variable (μ : Measure (LocalField F v)) [μ.IsAddHaarMeasure]
 variable (hμ : μ ((valuation (LocalField F v)).integer : Set (LocalField F v)) = 1)
-private lemma compact_N (ht : ringChar (KPTameCompact.O F v ⧸ KPTameCompact.p F v) ≠ 3)
+lemma compact_N (ht : ringChar (KPTameCompact.O F v ⧸ KPTameCompact.p F v) ≠ 3)
     (u : (valuation (LocalField F v)).integer) :
     KPPGLLocalCover.N F ζ hζ (Sum.inr v) u ∈ Compact F ζ hζ v ht := by
   refine ⟨KPStandardLocalRootLifts.integralN F v u, ?_⟩
   change KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr v) _ = _
   rw [KPPGLLocalCover.N, KPStandardLocalRootLifts.N_eq_compact F ζ hζ v ht u]
   rfl
-private lemma compact_A (ht : ringChar (KPTameCompact.O F v ⧸ KPTameCompact.p F v) ≠ 3)
+lemma compact_A (ht : ringChar (KPTameCompact.O F v ⧸ KPTameCompact.p F v) ≠ 3)
     (u : (valuation (LocalField F v)).integerˣ) :
     KPPGLLocalCover.A F ζ hζ (Sum.inr v) (KPTameCompact.unitInclusion F v u) ∈
       Compact F ζ hζ v ht := by
@@ -1848,17 +1848,17 @@ private lemma compact_A (ht : ringChar (KPTameCompact.O F v ⧸ KPTameCompact.p 
   change KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr v) _ = _
   rw [KPPGLLocalCover.A, KPStandardLocalRootLifts.A_eq_compact F ζ hζ v ht u]
   rfl
-private lemma compact_W (ht : ringChar (KPTameCompact.O F v ⧸ KPTameCompact.p F v) ≠ 3) :
+lemma compact_W (ht : ringChar (KPTameCompact.O F v ⧸ KPTameCompact.p F v) ≠ 3) :
     KPPGLLocalCover.W F ζ hζ (Sum.inr v) ∈ Compact F ζ hζ v ht := by
   refine ⟨KPStandardLocalRootLifts.integralW F v, ?_⟩
   change KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr v) _ = _
   rw [KPPGLLocalCover.W, KPStandardLocalRootLifts.W_eq_compact F ζ hζ v ht]
   rfl
-private lemma signedW_eq : KPRankOneOpenCellKernel.signedWeyl F ζ hζ v =
+lemma signedW_eq : KPRankOneOpenCellKernel.signedWeyl F ζ hζ v =
     KPPGLLocalCover.A F ζ hζ (Sum.inr v) (-1) * KPPGLLocalCover.W F ζ hζ (Sum.inr v) := by
   rfl
 include P in
-private lemma compact_signedW (ht : ringChar (KPTameCompact.O F v ⧸ KPTameCompact.p F v) ≠ 3) :
+lemma compact_signedW (ht : ringChar (KPTameCompact.O F v ⧸ KPTameCompact.p F v) ≠ 3) :
     inducingData.borel.liftedW ∈ Compact F ζ hζ v ht := by
   rw [(inducingData.openCell P).weyl_eq, signedW_eq]
   apply Subgroup.mul_mem
@@ -1872,7 +1872,7 @@ private lemma right_fixed (ht : ringChar (KPTameCompact.O F v ⧸ KPTameCompact.
       φ.val g := by
   exact congrArg (fun f : Sections F ζ hζ v inducingData P => f.val g)
     (hφ ⟨k, hk⟩)
-private lemma minus_eval (φ : Sections F ζ hζ v inducingData P)
+lemma minus_eval (φ : Sections F ζ hζ v inducingData P)
     (t : actualTorus F ζ hζ v) (g : ActualCover F ζ hζ v) :
     φ.val ((t : ActualCover F ζ hζ v) * g) =
     normPower (LocalField F v) (inducingData.borel.coordinate t) (1/2) •
@@ -1934,7 +1934,7 @@ theorem spherical_ball_section_evaluation (ht : ringChar (KPTameCompact.O F v �
     (uniformizerUnit F v π hπ ^ (-(e : ℤ))) rfl
   rw [hcoord]
   rfl
-private lemma pi_value (π : (valuation (LocalField F v)).integer) (hπ : Irreducible π) :
+lemma pi_value (π : (valuation (LocalField F v)).integer) (hπ : Irreducible π) :
     IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F v)
       (valuation (LocalField F v) (π : LocalField F v)) = WithZero.exp (-1 : ℤ) := by
   let E := IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F v)

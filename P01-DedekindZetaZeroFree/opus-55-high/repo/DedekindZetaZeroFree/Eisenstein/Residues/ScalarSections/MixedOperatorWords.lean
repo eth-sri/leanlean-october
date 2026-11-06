@@ -91,45 +91,10 @@ theorem coreResidue_stage_generator
   | lie i => exact coreResidue_stage_word R P C s [i] x
   | finite q hq a => exact coreResidue_stage_finite R P C s q hq a x
 
-def stageWord (s : RestrictedTensorSimple.Level (bad R.A P C)) :
-    List (StageGenerator R P C s) → Module.End ℂ (RestrictedTensorSimple.Stage (Plus R.A P C) s.val)
-  | [] => LinearMap.id
-  | b :: w => (stageGenerator R P C s b).comp (stageWord s w)
-
 def stageScalarWord (s : RestrictedTensorSimple.Level (bad R.A P C)) :
     List (StageGenerator R P C s) → (Functions R → Functions R)
   | [], f => f
   | b :: w, f => stageScalarGenerator R P C s b (stageScalarWord s w f)
-
-theorem coreResidue_stage_mixed_word
-    (s : RestrictedTensorSimple.Level (bad R.A P C))
-    (w : List (StageGenerator R P C s))
-    (x : RestrictedTensorSimple.Stage (Plus R.A P C) s.val) :
-    coreResidue R P C (RestrictedTensorSimple.stageInclusion _ _ _ s
-      (stageWord R P C s w x)) =
-    stageScalarWord R P C s w
-      (coreResidue R P C (RestrictedTensorSimple.stageInclusion _ _ _ s x)) := by
-  induction w with
-  | nil => rfl
-  | cons b w ih =>
-    change coreResidue R P C (RestrictedTensorSimple.stageInclusion _ _ _ s
-      (stageGenerator R P C s b (stageWord R P C s w x))) = _
-    rw [coreResidue_stage_generator, ih]
-    rfl
-
-def evaluatedResidueStageWord (s : RestrictedTensorSimple.Level (bad R.A P C))
-    (w : List (StageGenerator R P C s)) :
-    RestrictedTensorSimple.Stage (Plus R.A P C) s.val →ₗ[ℂ] Functions R :=
-  (coreResidue R P C).comp ((RestrictedTensorSimple.stageInclusion _ _ _ s).comp
-    (stageWord R P C s w))
-
-@[simp] theorem evaluatedResidueStageWord_apply
-    (s : RestrictedTensorSimple.Level (bad R.A P C))
-    (w : List (StageGenerator R P C s))
-    (x : RestrictedTensorSimple.Stage (Plus R.A P C) s.val) :
-    evaluatedResidueStageWord R P C s w x = stageScalarWord R P C s w
-      (coreResidue R P C (RestrictedTensorSimple.stageInclusion _ _ _ s x)) :=
-  coreResidue_stage_mixed_word R P C s w x
 
 end DedekindZetaZeroFree.FourierContinuation.LiteralSource
 

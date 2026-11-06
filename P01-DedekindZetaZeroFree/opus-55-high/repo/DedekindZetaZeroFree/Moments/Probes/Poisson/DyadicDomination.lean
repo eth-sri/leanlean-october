@@ -104,7 +104,7 @@ theorem norm_Jnp_le (k : ℕ) (Z : ℝ) (hZ : 0 < Z) :
 
 def rowNormTotal (Z : ℝ) : ℝ := ∑' u : D.Row, ∫ t : ℝ × ℝ × ℝ, ‖initialRowIntegrand D u Z t‖
 
-private theorem partition_facts (Z : ℝ) (hZ : 0 < Z) :
+theorem partition_facts (Z : ℝ) (hZ : 0 < Z) :
     Summable (fun k : ℕ => ∑ u ∈ (nonprincipalDyad_finite D k).toFinset,
       ∫ t : ℝ × ℝ × ℝ, ‖initialRowIntegrand D u Z t‖) ∧
     ∑' k : ℕ, ∑ u ∈ (nonprincipalDyad_finite D k).toFinset,

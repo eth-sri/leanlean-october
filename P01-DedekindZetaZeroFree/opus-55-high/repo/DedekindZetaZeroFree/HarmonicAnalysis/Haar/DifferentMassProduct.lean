@@ -19,13 +19,13 @@ def halfNormMass (F : Type*) [Field F] [NumberField F]
   1 / Real.sqrt ((Ideal.absNorm v.asIdeal : ℝ) ^ exponent F v)
 
 theorem differentIdeal_ne_bot (F : Type*) [Field F] [NumberField F] :
-    differentIdeal ℤ (NumberField.RingOfIntegers F) ≠ ⊥ := by
-  exact _root_.differentIdeal_ne_bot
+    differentIdeal ℤ (NumberField.RingOfIntegers F) ≠ ⊥ := 
+  _root_.differentIdeal_ne_bot
 
 theorem one_lt_absNorm (F : Type*) [Field F] [NumberField F]
     (v : IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers F)) :
-    1 < Ideal.absNorm v.asIdeal := by
-  exact NumberField.RingOfIntegers.HeightOneSpectrum.one_lt_absNorm v
+    1 < Ideal.absNorm v.asIdeal := 
+  NumberField.RingOfIntegers.HeightOneSpectrum.one_lt_absNorm v
 
 theorem exponent_finite_support (F : Type*) [Field F] [NumberField F] :
     Set.Finite {v : IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers F) |
@@ -55,8 +55,8 @@ theorem finprod_halfNormMass_eq_natAbs_discr (F : Type*) [Field F] [NumberField 
   classical
   let s := (exponent_finite_support F).toFinset
   have hs (v : IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers F))
-      (hv : exponent F v ≠ 0) : v ∈ s := by
-    exact (exponent_finite_support F).mem_toFinset.mpr hv
+      (hv : exponent F v ≠ 0) : v ∈ s := 
+    (exponent_finite_support F).mem_toFinset.mpr hv
   have hfactor : (∏ v ∈ s, v.asIdeal ^ exponent F v) =
       differentIdeal ℤ (NumberField.RingOfIntegers F) := by
     rw [← Ideal.finprod_heightOneSpectrum_pow_multiplicity (differentIdeal_ne_bot F)]
@@ -65,7 +65,7 @@ theorem finprod_halfNormMass_eq_natAbs_discr (F : Type*) [Field F] [NumberField 
     intro v hv
     apply hs
     intro h
-    exact hv (by simp [exponent] at h ⊢; simp [h])
+    exact hv (by simp [exponent] at h ⊢; omega)
   have hnorm : (∏ v ∈ s, (Ideal.absNorm v.asIdeal : ℝ) ^ exponent F v) =
       ((NumberField.discr F).natAbs : ℝ) := by
     have h := congrArg (fun I => (Ideal.absNorm I : ℝ)) hfactor
@@ -81,11 +81,4 @@ theorem finprod_halfNormMass_eq_abs_discr (F : Type*) [Field F] [NumberField F] 
     (∏ᶠ v : IsDedekindDomain.HeightOneSpectrum (NumberField.RingOfIntegers F),
       halfNormMass F v) = 1 / Real.sqrt |(NumberField.discr F : ℝ)| := by
   rw [finprod_halfNormMass_eq_natAbs_discr]
-  congr 2
-  rw [← Int.cast_natCast, Int.natCast_natAbs, Int.cast_abs]
-
-end
-
-end DedekindZetaZeroFree.DifferentMass
-
-end
+  simp

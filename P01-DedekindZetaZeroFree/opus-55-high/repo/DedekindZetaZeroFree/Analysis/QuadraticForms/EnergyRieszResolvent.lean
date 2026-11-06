@@ -57,7 +57,7 @@ theorem energyRieszResolvent_properties
     calc ‖j ∘L j.adjoint‖ ≤ ‖j‖ * ‖j.adjoint‖ := ContinuousLinearMap.opNorm_comp_le _ _
       _ = ‖j‖ * ‖j‖ := by rw [LinearIsometryEquiv.norm_map ContinuousLinearMap.adjoint j]
       _ ≤ 1 := by nlinarith [norm_nonneg j, hcontract]
-  exact ⟨hBsa, hBpos, hBinj, hBdense, hnorm⟩
+  simp_all
 
 theorem energyRieszResolvent_variational
     {W H : Type*} [NormedAddCommGroup W] [InnerProductSpace ℂ W] [CompleteSpace W]
@@ -95,7 +95,3 @@ theorem energyRieszResolvent_estimates
       _ = ‖f‖ := one_mul _
   exact ⟨by rw [h1]; exact pow_le_pow_left₀ (norm_nonneg _) h2 2, h1,
     pow_le_pow_left₀ (norm_nonneg _) h3 2⟩
-
-end DedekindZetaZeroFree
-
-end

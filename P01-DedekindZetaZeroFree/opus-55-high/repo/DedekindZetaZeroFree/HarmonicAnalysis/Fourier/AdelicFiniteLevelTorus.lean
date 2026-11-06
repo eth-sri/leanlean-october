@@ -8,7 +8,7 @@ public import DedekindZetaZeroFree.HarmonicAnalysis.Fourier.SmoothCompactTorusEx
 noncomputable section
 namespace DedekindZetaZeroFree.ThetaAdditiveFourier.FiniteLevelDescent
 open NumberField IsDedekindDomain MeasureTheory
-open scoped NumberField Classical
+open scoped Classical
 
 variable {F : Type*} [Field F] [NumberField F]
   (K : AddSubgroup (FiniteAdeleRing (𝓞 F) F))
@@ -55,8 +55,8 @@ theorem continuous_torusFamily {d P : Type*} [TopologicalSpace P]
     (f : P × SmoothAdeleQuotient F → ℂ)
     (hf : ∀ p, HasSmoothAdditiveLevel K (fun q => f (p, q)))
     (hc : Continuous f) :
-    Continuous (fun z : P × UnitAddTorus d => torusFamily K e f z.1 z.2) := by
-  exact (continuous_descend_family K f hf hc).comp
+    Continuous (fun z : P × UnitAddTorus d => torusFamily K e f z.1 z.2) := 
+  (continuous_descend_family K f hf hc).comp
     (continuous_fst.prodMk (e.symm.continuous.comp continuous_snd))
 
 section Haar
@@ -64,18 +64,6 @@ variable {d : Type*} [Fintype d]
 
 local instance : MeasureSpace UnitAddCircle := ⟨AddCircle.haarAddCircle⟩
 
-local instance : Measure.IsAddHaarMeasure (volume : Measure UnitAddCircle) :=
-  inferInstanceAs (Measure.IsAddHaarMeasure AddCircle.haarAddCircle)
-
-local instance : IsProbabilityMeasure (volume : Measure UnitAddCircle) :=
-  inferInstanceAs (IsProbabilityMeasure AddCircle.haarAddCircle)
-
 def coordinateMap (e : finiteLevelAdditiveQuotient K ≃ₜ+ UnitAddTorus d) :
     SmoothAdeleQuotient F →+ UnitAddTorus d :=
   e.toAddEquiv.toAddMonoidHom.comp (QuotientAddGroup.mk' (finiteLevelImage K))
-
-end Haar
-
-end DedekindZetaZeroFree.ThetaAdditiveFourier.FiniteLevelDescent
-
-end

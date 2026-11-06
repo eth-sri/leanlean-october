@@ -50,7 +50,7 @@ variable (D : KPMsFixedHaarDisintegration.Disintegration A R P)
       norm_num
     simpa only [cutoff, he] using hl w i x
 
-private theorem cutoff_eventually_one (Y : ℝ)
+theorem cutoff_eventually_one (Y : ℝ)
     (hY : KPMsFixedHaarDisintegration.AdmissibleCutoff A Y) (x : X F ζ hζ) :
     ∀ᶠ n : ℕ in atTop, cutoff A R P D Y n x = 1 := by
   have ht : Tendsto (fun n : ℕ => Y + (n : ℝ)) atTop atTop :=

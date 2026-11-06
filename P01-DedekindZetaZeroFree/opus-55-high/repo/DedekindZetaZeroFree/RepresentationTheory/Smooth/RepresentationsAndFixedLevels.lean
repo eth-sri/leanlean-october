@@ -17,8 +17,8 @@ def SmoothRepresentation (ρ : Representation ℂ G V) : Prop :=
 def fixedSubmodule (ρ : Representation ℂ G V) (J : Subgroup G) : Submodule ℂ V where
   carrier := {v | ∀ j : J, ρ (j : G) v = v}
   zero_mem' := by intro j; simp
-  add_mem' := by intro x y hx hy j; simp [hx j, hy j]
-  smul_mem' := by intro a x hx j; simp [hx j]
+  add_mem' := by simp_all
+  smul_mem' := by simp_all
 
 structure CompactOpenLevel (G : Type*) [Group G] [TopologicalSpace G] where
   toOpenSubgroup : OpenSubgroup G
@@ -54,5 +54,3 @@ def rightTranslationRepresentation : Representation ℂ G (G → ℂ) where
 
 @[simp] theorem rightTranslationRepresentation_apply (g : G) (f : G → ℂ) (x : G) :
     rightTranslationRepresentation g f x = f (x * g) := rfl
-
-end DedekindZetaZeroFree

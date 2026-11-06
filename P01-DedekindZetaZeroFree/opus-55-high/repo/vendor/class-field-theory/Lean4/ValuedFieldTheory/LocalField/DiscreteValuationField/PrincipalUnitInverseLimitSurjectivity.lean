@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Compact surjectivity criterion for the principal-unit inverse limit
 
@@ -24,7 +21,6 @@ surjectivity on the inverse limit.  Indeed, the fibers over the coordinates
 of a fixed target form a decreasing sequence of nonempty compact closed sets.
 -/
 
-noncomputable section
 
 universe u v w
 
@@ -162,9 +158,3 @@ theorem surjective_principalUnitProdiscreteLimit_of_surjective_coordinates
     Function.Surjective g :=
   Internal.surjective_principalUnitProdiscreteLimit_of_surjective_coordinates
     F g hg hsur
-
-end higherPrincipalUnitGroup
-end CompleteDVF
-end LocalFieldTheory.DiscreteValuationField
-
-end

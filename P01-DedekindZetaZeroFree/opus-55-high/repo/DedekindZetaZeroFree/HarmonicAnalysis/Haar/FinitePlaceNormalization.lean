@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Theta.Periods.FiniteHaarTransport
 
 @[expose] public section
 
-noncomputable section
 open scoped Classical NumberField
 open NumberField IsDedekindDomain MeasureTheory ValuativeRel
 namespace DedekindZetaZeroFree.FourierContinuation.CurrentFiniteHaarBinding
@@ -32,7 +31,3 @@ theorem finiteHaar_eq (N : MomentSources.TraceHaarTransport R) (q : KPFinitePlac
       mem_adicCompletionIntegers_of_norm_le_one q⟩
   rw [hO, N.finite_mass q, integerVolume_eq] at h
   exact h
-
-end DedekindZetaZeroFree.FourierContinuation.CurrentFiniteHaarBinding
-
-end

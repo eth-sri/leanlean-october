@@ -61,9 +61,6 @@ theorem measurePreserving_archTraceCoordinates :
   let v := mixedEmbedding.euclidean.toMixed F
   have hcoord : (archTraceCoordinates F ζ hζ : InfiniteAdeleRing F → _) =
       fun a => e ((v (u a)).2) := by
-    funext a w
-    simp only [e, MeasurableEquiv.piCongrLeft, complexPlacesEquiv]
-    rw [PoissonArch.infiniteAdeleToSpace_coordinates]
     rfl
   rw [hcoord, KPAdditiveHaar.archMeasure]
   have hu : Measurable u := u.continuous.measurable
@@ -73,7 +70,7 @@ theorem measurePreserving_archTraceCoordinates :
       (Measure.map u.symm (PoissonArch.traceMeasure F)) =
       Measure.map e (Measure.map Prod.snd (Measure.map v (PoissonArch.traceMeasure F))) := by
     have hf : Measurable (fun a : InfiniteAdeleRing F => e ((v (u a)).2)) :=
-      he.comp (measurable_snd.comp (hv.comp hu))
+      by fun_prop
     rw [Measure.map_map hf u.symm.continuous.measurable]
     have hc : (fun a : InfiniteAdeleRing F => e ((v (u a)).2)) ∘ u.symm =
         e ∘ Prod.snd ∘ v := by funext a; simp
@@ -153,7 +150,3 @@ theorem integral_archTraceCoordinates (f : (InfinitePlace F → ℂ) → ℂ) :
       ∫ x, f x ∂Measure.pi (fun _ : InfinitePlace F => characterHaar standardComplexParameter) := by
   have h := measurePreserving_archTraceCoordinates F ζ hζ
   rw [← h.map_eq, (archTraceCoordinates F ζ hζ).measurableEmbedding.integral_map]
-
-end DedekindZetaZeroFree.TraceHaarTransport
-
-end

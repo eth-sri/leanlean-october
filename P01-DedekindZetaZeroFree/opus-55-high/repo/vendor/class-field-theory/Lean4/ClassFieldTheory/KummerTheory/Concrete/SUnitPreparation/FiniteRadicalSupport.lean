@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Finite support for Kummer radicals
 
@@ -81,9 +78,7 @@ theorem sUnitKummerSubgroup_le_finiteKummerRadicalSubgroup
   · intro x hx
     obtain ⟨y, rfl⟩ :=
       (KummerTheory.mem_unitNthPowersSubgroup_iff n).mp hx
-    exact
-      (KummerTheory.mem_finiteKummerRadicalSubgroup_iff n).mpr
-        ⟨Units.map (algebraMap K L).toMonoidHom y, by simp⟩
+    simp
 
 /-- Enlarging the finite set of places enlarges the `S`-unit group. -/
 theorem sUnitGroup_mono
@@ -97,7 +92,7 @@ theorem sUnitGroup_mono
 
 /-- A chosen finite set of places outside which a given global unit is
 an integral unit. -/
-noncomputable def chosenUnitFiniteSupport (x : Kˣ) :
+def chosenUnitFiniteSupport (x : Kˣ) :
     Finset (HeightOneSpectrum (𝓞 K)) :=
   Classical.choose
     (IdeleGroup.exists_finset_supportedAt
@@ -166,7 +161,7 @@ theorem finite_chosenFiniteKummerRadicalQuotient
 
 /-- A chosen representative of a class in the actual finite Kummer
 radical quotient. -/
-noncomputable def chosenFiniteKummerRadicalRepresentative
+def chosenFiniteKummerRadicalRepresentative
     {L : Type*} [Field L] [Algebra K L]
     (n : ℕ+)
     (q :
@@ -197,7 +192,7 @@ theorem chosenFiniteKummerRadicalRepresentative_spec
 
 /-- The union of the supports of one representative of every actual
 Kummer radical class. -/
-noncomputable def finiteKummerRadicalSupport
+def finiteKummerRadicalSupport
     {L : Type*} [Field L] [Algebra K L]
     [FiniteDimensional K L] [IsGalois K L]
     (n : ℕ+)
@@ -219,7 +214,7 @@ noncomputable def finiteKummerRadicalSupport
 
 /-- Enlarge any prescribed finite set by the finite supports needed to
 represent all actual Kummer radical classes by `S`-units. -/
-noncomputable def enlargeByFiniteKummerRadicalSupport
+def enlargeByFiniteKummerRadicalSupport
     {L : Type*} [Field L] [Algebra K L]
     [FiniteDimensional K L] [IsGalois K L]
     (n : ℕ+)
@@ -304,11 +299,11 @@ theorem finiteKummerRadicalSubgroup_le_enlargedSUnitKummerSubgroup
     chosenFiniteKummerRadicalRepresentative
       (K := K) (L := L) n q
   have hbclass : D.radicalQuotientMk bD =
-      D.radicalQuotientMk aD := by
-    exact chosenFiniteKummerRadicalRepresentative_spec
+      D.radicalQuotientMk aD := 
+    chosenFiniteKummerRadicalRepresentative_spec
       (K := K) (L := L) n q
-  have habpower : aD / bD ∈ D.ambientNthPowersSubgroup := by
-    exact (D.radicalQuotientMk_eq_iff aD bD).1 hbclass.symm
+  have habpower : aD / bD ∈ D.ambientNthPowersSubgroup := 
+    (D.radicalQuotientMk_eq_iff aD bD).1 hbclass.symm
   obtain ⟨z, hz⟩ :=
     (D.mem_ambientNthPowersSubgroup_iff).1 habpower
   apply Subgroup.mem_sup.mpr
@@ -322,9 +317,7 @@ theorem finiteKummerRadicalSubgroup_le_enlargedSUnitKummerSubgroup
         ⟨z, rfl⟩,
       ?_⟩
   change bD.1 * z ^ (n : ℕ) = aD.1
-  rw [hz]
-  change bD.1 * (aD.1 / bD.1) = aD.1
-  simp [div_eq_mul_inv, mul_comm, mul_left_comm]
+  simp_all
 
 /-- Exact radical identification after the chosen finite enlargement. -/
 theorem enlargedSUnitKummerSubgroup_eq_finiteKummerRadicalSubgroup
@@ -402,7 +395,3 @@ theorem kummerRadicalExtension_enlargedSUnitKummerSubgroup_eq
   exact
     KummerTheory.kummerRadicalExtension_finiteKummerRadicalSubgroup_eq
       E n hmu hexponent
-
-end KummerTheory
-
-end

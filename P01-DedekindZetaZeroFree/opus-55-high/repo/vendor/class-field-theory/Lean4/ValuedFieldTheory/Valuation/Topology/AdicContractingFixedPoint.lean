@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Fixed points of adically contracting additive maps
 
@@ -65,10 +62,7 @@ private theorem contractingApproximation_sub_mem_pow
   intro n
   induction n with
   | zero =>
-      rw [pow_zero, Ideal.one_eq_top]
-      exact (Submodule.mem_top :
-        contractingApproximation T b 0 -
-          contractingApproximation T b (0 + 1) ∈ (⊤ : Ideal R))
+      simp
   | succ n ih =>
       simpa only [contractingApproximation_succ,
         add_sub_add_left_eq_sub, ← T.map_sub] using hT n ih
@@ -117,8 +111,7 @@ private theorem eq_of_eq_add_of_maps_pow_succ
     intro n
     induction n with
     | zero =>
-        rw [pow_zero, Ideal.one_eq_top]
-        exact (Submodule.mem_top : x - y ∈ (⊤ : Ideal R))
+        simp
     | succ n ih =>
         rw [hx, hy, add_sub_add_left_eq_sub, ← T.map_sub]
         exact hT n ih
@@ -146,12 +139,10 @@ theorem existsUnique_eq_add_of_maps_pow_succ
   have ha' :
       ∀ n, x n ≡ a [SMOD (I ^ n : Ideal R)] := by
     intro n
-    simpa only [ideal_smul_top_eq_self] using ha n
+    simp_all
   have hfix : a = b + T a :=
     contractingApproximation_limit_is_fixed I T hT b a (by
       simpa only [x] using ha')
   refine ⟨a, hfix, ?_⟩
   intro y hy
   exact eq_of_eq_add_of_maps_pow_succ I T hT b hy hfix
-
-end IsAdicComplete

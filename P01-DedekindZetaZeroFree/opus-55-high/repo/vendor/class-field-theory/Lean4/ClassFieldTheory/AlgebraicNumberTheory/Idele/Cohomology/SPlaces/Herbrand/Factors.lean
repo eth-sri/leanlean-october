@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Transport from local blocks to unrestricted factors
 
@@ -27,7 +23,6 @@ open scoped NumberField BigOperators ValuativeRel Classical NNReal
 open NumberField IsDedekindDomain
 
 noncomputable section
-
 
 open AlgebraicNumberTheory.Valuations
 open CyclicCohomology.ProfiniteCohomology.Herbrand
@@ -47,7 +42,7 @@ variable {K L : Type}
 
 omit [NumberField L] in
 @[reducible]
- noncomputable def
+ def
     relativeUnrestrictedSPlaceFactorsActionProvider
     (S : Finset (HeightOneSpectrum (𝓞 K))) :
     MulDistribMulAction (L ≃ₐ[K] L)
@@ -58,7 +53,7 @@ omit [NumberField L] in
 
 omit [NumberField L] in
 @[reducible]
- noncomputable def
+ def
     relativeUnrestrictedSPlaceLocalBlockFamilyActionProvider
     (S : Finset (HeightOneSpectrum (𝓞 K))) :
     MulDistribMulAction (L ≃ₐ[K] L)
@@ -73,7 +68,7 @@ omit [NumberField L] in
 /-- The equivariant realization by local blocks identifies degree-zero
 Herbrand cohomology of the actual unrestricted factors with that of the
 local-block family. -/
-noncomputable def
+def
     relativeUnrestrictedSPlaceFactorsHerbrandH0EquivLocalBlockFamily
     (S : Finset (HeightOneSpectrum (𝓞 K))) :
     @HerbrandH0 (L ≃ₐ[K] L)
@@ -110,7 +105,7 @@ omit [NumberField L] in
 /-- The equivariant realization by local blocks identifies degree-minus-one
 Herbrand cohomology of the actual unrestricted factors with that of the
 local-block family. -/
-noncomputable def
+def
     relativeUnrestrictedSPlaceFactorsHerbrandHMinusOneEquivLocalBlockFamily
     (S : Finset (HeightOneSpectrum (𝓞 K)))
     (σ : L ≃ₐ[K] L) :
@@ -384,6 +379,4 @@ theorem relativeUnrestrictedSPlaceFactors_herbrandQuotient
       S σ hgen,
     relativeUnrestrictedSPlaceFactorsHerbrandHMinusOne_card_eq_one
       S σ hgen]
-  simp only [Nat.cast_prod, Nat.cast_one, div_one]
-
-end
+  simp

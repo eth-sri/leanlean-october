@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # The full conductor as a minimal modulus
 
@@ -27,7 +23,6 @@ of ray class fields, the theorem asserts existence of this least modulus.
 open scoped Classical NumberField
 open NumberField IsDedekindDomain
 
-noncomputable section
 
 namespace ClassFieldTheory
 
@@ -44,7 +39,3 @@ theorem embedsInRayClassField_iff_conductor_le
     { finitePart := H.fullConductor.finitePart
       infinitePart := H.fullConductor.infinitePart }
   exact ⟨c, normFullConductor_isAbelianConductor K L⟩
-
-end ClassFieldTheory
-
-end

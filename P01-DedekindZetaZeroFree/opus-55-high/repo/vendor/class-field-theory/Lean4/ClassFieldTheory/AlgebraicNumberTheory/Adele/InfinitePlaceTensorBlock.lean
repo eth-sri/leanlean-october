@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Archimedean relative-idele factors as induced local blocks
 
@@ -34,7 +29,6 @@ open NumberField
 noncomputable section
 
 open LocalClassFieldTheory
-
 
 open AlgebraicNumberTheory.Valuations
 open HilbertRamification
@@ -96,8 +90,7 @@ theorem infinitePlaceCompletionAlgEquiv_algebraMap
         (y : v.1.Completion) =
           algebraMap K v.1.Completion
             (WithAbs.equiv v.1 y) := by
-      rw [← AbsoluteValue.toCompletion_eq_algebraMap]
-      simp
+      rfl
     change
       AbsoluteValue.completionMap v.1 u.1 u.2
           (y : v.1.Completion) =
@@ -110,7 +103,7 @@ theorem infinitePlaceCompletionAlgEquiv_algebraMap
 
 /-- Base change of the first tensor factor from the concrete
 archimedean completion to the absolute-value completion. -/
-noncomputable def infinitePlaceLocalTensorAlgEquiv
+def infinitePlaceLocalTensorAlgEquiv
     (w : InfinitePlace K) :
     w.Completion ⊗[K] L ≃ₐ[K]
       LocalTensorAlgebra (L := L) w.1 :=
@@ -118,19 +111,8 @@ noncomputable def infinitePlaceLocalTensorAlgEquiv
     (infinitePlaceCompletionAlgEquiv w)
     (AlgEquiv.refl : L ≃ₐ[K] L)
 
-omit [NumberField K] [NumberField L] [FiniteDimensional K L] in
-/-- The concrete-to-absolute completion comparison acts componentwise
-on a pure tensor. -/
-@[simp]
-theorem infinitePlaceLocalTensorAlgEquiv_tmul
-    (w : InfinitePlace K) (a : w.Completion) (x : L) :
-    infinitePlaceLocalTensorAlgEquiv
-        (K := K) (L := L) w (a ⊗ₜ[K] x) =
-      infinitePlaceCompletionAlgEquiv w a ⊗ₜ[K] x := by
-  rfl
-
 /-- The induced multiplicative equivalence on local tensor units. -/
-noncomputable def infinitePlaceLocalTensorUnitsEquiv
+def infinitePlaceLocalTensorUnitsEquiv
     (w : InfinitePlace K) :
     (w.Completion ⊗[K] L)ˣ ≃*
       (LocalTensorAlgebra (L := L) w.1)ˣ :=
@@ -187,7 +169,7 @@ variable [IsGalois K L]
 
 /-- The local tensor decomposition for the actual archimedean component type used by the
 relative idele restricted product. -/
-noncomputable def
+def
     infinitePlaceTensorUnitsEquivLocalPlaceBlock
     (w : InfinitePlace K)
     (hw : w.1.IsNontrivial)
@@ -301,9 +283,3 @@ theorem
         w.1 hw u σ
         (infinitePlaceLocalTensorUnitsEquiv
           (K := K) (L := L) w z)
-
-end Equivariance
-
-end Galois
-
-end

@@ -11,7 +11,6 @@ open NumberField IsDedekindDomain
 
 namespace DedekindZetaZeroFree.CRTAbsoluteSeries
 noncomputable section
-set_option autoImplicit false
 set_option maxHeartbeats 800000
 
 variable {F : Type} [Field F] [NumberField F]
@@ -60,7 +59,7 @@ private theorem finiteCoefficient_bound
   letI := D.finiteResidue a ha
   have hb := FiniteTransform.finiteCoefficient_norm_le A.R.toSubring
     (D.generator s) a h (D.character (D.generator s)) (D.character a)
-    D.additiveCharacter (fun x => by rw [hD.additive_recipe]; exact Circle.norm_coe _)
+    D.additiveCharacter (fun x => by rw [hD.additive_recipe]; simp)
   change ‖FiniteTransform.finiteCoefficient A.R.toSubring (D.generator s) a h
     (D.character (D.generator s)) (D.character a) D.additiveCharacter‖ ≤ _
   convert hb using 1
@@ -90,16 +89,16 @@ private theorem summand_bound
     exact NormalizedProbe.PrincipalData.norm_idealGauss_le_one A σ hS _ _ _ _
   have ht : ‖D.theta (D.generator i.1.val * D.generator i.2.1 ^ 3)‖ = 1 := by
     rw [hD.theta_recipe _ (mul_ne_zero (D.generates _).1 (pow_ne_zero _ (D.generates _).1))]
-    exact Circle.norm_coe _
+    simp
   have hf := finiteCoefficient_bound A D σ η hS G hD i.1 i.2.1 i.2.2.1
     (u * D.generator i.2.2.2 ^ 6)
   have he1 : (-1 / 2 - ξ).re = -1 / 2 - ξ.re := by
-    norm_num [Complex.sub_re, Complex.neg_re, Complex.div_re, Complex.normSq]
+    simp
   have he2 : (-1 - 3 * ξ).re = -1 - 3 * ξ.re := by
-    norm_num [Complex.sub_re, Complex.neg_re, Complex.mul_re]
+    simp
   have he3 : (-w).re = -w.re := Complex.neg_re w
   have he4 : (-6 * z).re = -6 * z.re := by
-    norm_num [Complex.neg_re, Complex.mul_re]
+    simp
   unfold comparisonEulerPoissonSummand
   simp only [norm_mul, ht, mul_one, realPower_norm _ (A.exteriorNorm_pos _),
     he1, he2, he3, he4]
@@ -131,27 +130,19 @@ private theorem fixedMajorant_summable
     change Summable (fun c : ExteriorSquarefreeIdeal A.cS =>
       A.exteriorNorm c.val ^ (-(ξ.re - 1 / 2))) at H
     convert H using 1
-    ext c
-    congr 1
-    ring
+    simp
   have hn : Summable (fun n : A.Exterior => A.exteriorNorm n ^ (2 - 3 * ξ.re)) := by
     convert ProbeExteriorIdealCount.ideal_norm_summable F A.cS (3 * ξ.re - 2)
       (by linarith) using 1
-    ext n
-    congr 1
-    ring
+    simp
   have hs : Summable (fun s : A.Exterior => A.exteriorNorm s ^ (1 - w.re)) := by
     convert ProbeExteriorIdealCount.ideal_norm_summable F A.cS (w.re - 1)
       (by linarith) using 1
-    ext s
-    congr 1
-    ring
+    simp
   have hr : Summable (fun r : A.Exterior => A.exteriorNorm r ^ (-6 * z.re)) := by
     convert ProbeExteriorIdealCount.ideal_norm_summable F A.cS (6 * z.re)
       (by linarith) using 1
-    ext r
-    congr 1
-    ring
+    simp
   have hnonneg : ∀ (I : A.Exterior) (t : ℝ), 0 ≤ A.exteriorNorm I ^ t :=
     fun I t => (Real.rpow_pos_of_pos (A.exteriorNorm_pos I) t).le
   have Hsr := hs.mul_of_nonneg hr (fun s => hnonneg s _) (fun r => hnonneg r _)
@@ -179,11 +170,6 @@ include hCl σ η hS G hD Iu hu hu_allowed hsixthfree hξ hw hz in
 theorem weightedSummand_summable :
     Summable (fun i : ExteriorIndex A =>
       ‖comparisonEulerPoissonSummand F A D u ξ w z
-        i.1 i.2.1 i.2.2.1 i.2.2.2‖) := by
-  exact (fixedMajorant_summable A ξ w z hξ hw hz).of_nonneg_of_le
+        i.1 i.2.1 i.2.2.1 i.2.2.2‖) := 
+  (fixedMajorant_summable A ξ w z hξ hw hz).of_nonneg_of_le
     (fun i => norm_nonneg _) (summand_bound A D σ η hS G hD u ξ w z)
-
-end FixedFrequency
-
-end
-end DedekindZetaZeroFree.CRTAbsoluteSeries

@@ -52,7 +52,7 @@ theorem idealSetIntNorm_eq_norm
     ((idealSetIntNorm K J a : ℝ)) = mixedEmbedding.norm (a : mixedSpace K) :=
   intNorm_idealSetEquiv_apply a
 
-noncomputable def idealSetIntNormFiberEquiv
+def idealSetIntNormFiberEquiv
     (J : (Ideal (𝓞 K))⁰) (n : ℕ) :
     {a : idealSet K J // idealSetIntNorm K J a = n} ≃
       {a : idealSet K J //
@@ -61,7 +61,7 @@ noncomputable def idealSetIntNormFiberEquiv
     rw [← idealSetIntNorm_eq_norm K J a]
     exact_mod_cast Iff.rfl
 
-private theorem finite_idealSetIntNorm_fiber
+theorem finite_idealSetIntNorm_fiber
     (J : (Ideal (𝓞 K))⁰) (n : ℕ) :
     Finite {a : idealSet K J // idealSetIntNorm K J a = n} := by
   let : Fintype {I : Ideal (𝓞 K) // absNorm I = n} :=
@@ -96,8 +96,7 @@ theorem idealSetIntNorm_ne_zero
   have hpos := fundamentalCone.norm_pos_of_mem a.prop.1
   rw [← idealSetIntNorm_eq_norm K J a] at hpos
   intro h
-  rw [h] at hpos
-  exact absurd hpos (by norm_num)
+  simp_all
 
 theorem fundamentalConeNormCount_eq_torsion_mul
     (J : (Ideal (𝓞 K))⁰) (n : ℕ) :
@@ -207,7 +206,7 @@ def partialDedekindZeta (C : ClassGroup (𝓞 K)) (s : ℂ) : ℂ :=
   LSeries (fun n ↦ (classIdealNormCount K C n : ℂ)) s
 
 open Classical in
-noncomputable def idealNormFiberEquivNonzero
+def idealNormFiberEquivNonzero
     {n : ℕ} (hn : n ≠ 0) :
     {I : Ideal (𝓞 K) // absNorm I = n} ≃
       {I : (Ideal (𝓞 K))⁰ // absNorm (I : Ideal (𝓞 K)) = n} where
@@ -300,7 +299,7 @@ def classIdealNormFiberEquiv
     (fun I : (Ideal (𝓞 K))⁰ ↦ ClassGroup.mk0 I = C)
     (fun I ↦ absNorm (I : Ideal (𝓞 K)) = n)
 
-noncomputable instance finite_classIdealNormFiber
+instance finite_classIdealNormFiber
     (C : ClassGroup (𝓞 K)) (n : ℕ) :
     Finite
       {I : {I : (Ideal (𝓞 K))⁰ // ClassGroup.mk0 I = C} //
@@ -322,7 +321,7 @@ noncomputable instance finite_classIdealNormFiber
     (classIdealNormFiberEquiv K C n).symm
 
 open Classical in
-private theorem summable_inverseNormPower_inverseIdealClass
+theorem summable_inverseNormPower_inverseIdealClass
     (C : ClassGroup (𝓞 K)) {s : ℂ} (hs : 1 < s.re) :
     Summable
       (fun I : {I : (Ideal (𝓞 K))⁰ // ClassGroup.mk0 I = C} ↦
@@ -397,7 +396,7 @@ abbrev InverseIdealClass (J : (Ideal (𝓞 K))⁰) :=
   {I : (Ideal (𝓞 K))⁰ // ClassGroup.mk0 I = (ClassGroup.mk0 J)⁻¹}
 
 open Classical in
-noncomputable def inverseIdealClassEquivPrincipalIdealAbove
+def inverseIdealClassEquivPrincipalIdealAbove
     (J : (Ideal (𝓞 K))⁰) :
     InverseIdealClass K J ≃ PrincipalIdealAbove K J := by
   let e₁ :
@@ -430,7 +429,7 @@ noncomputable def inverseIdealClassEquivPrincipalIdealAbove
   exact e₁.trans (e₂.trans e₃)
 
 open Classical in
-private theorem absNorm_inverseIdealClassEquivPrincipalIdealAbove
+theorem absNorm_inverseIdealClassEquivPrincipalIdealAbove
     (J : (Ideal (𝓞 K))⁰) (I : InverseIdealClass K J) :
     absNorm (inverseIdealClassEquivPrincipalIdealAbove K J I).1.1 =
       absNorm (J : Ideal (𝓞 K)) *
@@ -453,7 +452,7 @@ def principalIdealAboveNormFiberEquiv
   exact Equiv.subtypeEquivRight fun _ ↦ by
     grind
 
-noncomputable instance finite_principalIdealAboveNormFiber
+instance finite_principalIdealAboveNormFiber
     (J : (Ideal (𝓞 K))⁰) (n : ℕ) :
     Finite {I : PrincipalIdealAbove K J //
       absNorm I.1.1 = n} := by
@@ -476,7 +475,7 @@ noncomputable instance finite_principalIdealAboveNormFiber
     (principalIdealAboveNormFiberEquiv K J n).symm
 
 open Classical in
-private theorem summable_inverseNormPower_principalIdealAbove
+theorem summable_inverseNormPower_principalIdealAbove
     (J : (Ideal (𝓞 K))⁰) {s : ℂ} (hs : 1 < s.re) :
     Summable
       (fun I : PrincipalIdealAbove K J ↦
@@ -494,7 +493,7 @@ private theorem summable_inverseNormPower_principalIdealAbove
   exact mem_nonZeroDivisors_iff_ne_zero.mp I.1.2
 
 open Classical in
-private theorem hasSum_principalIdealAbove_inverseNormPower
+theorem hasSum_principalIdealAbove_inverseNormPower
     (J : (Ideal (𝓞 K))⁰) {s : ℂ} (hs : 1 < s.re) :
     HasSum
       (fun I : PrincipalIdealAbove K J ↦
@@ -616,7 +615,3 @@ theorem partialDedekindZeta_eq_normalized_fundamentalConeZeta
   partialDedekindZeta_eq_normalized_fundamentalConeZeta_of_mk0 K C
     (inverseClassIdealRepresentative K C)
     (mk0_inverseClassIdealRepresentative K C) hs
-
-end DedekindZetaZeroFree.AbelianQuotient.Theta
-
-end

@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Theta.Unfolding.OrbitExtractionDefinitions
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.OrbitExpansion
 open MomentSources MeasureTheory ThetaProfileHaarSheets ThetaSheetExactUnfolding
 open ThetaExpansion.SignedExpansion
@@ -27,7 +26,7 @@ theorem branch_norm_one {Q : AdmissibleFlatSources R} (P : Packet R Q)
       (R.probe.unitReps.representative v).val) y : Fˣ) : F))‖ = 1 := by
     apply (pow_eq_one_iff_of_nonneg (norm_nonneg _) (by decide : 6 ≠ 0)).mp
     rw [← norm_pow, hp, norm_one]
-  simp only [norm_mul, Circle.norm_coe, hn, mul_one]
+  simp_all
 
 theorem orbitSheet_norm_le {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
     (v : R.A.UnitQuotient) (m : ThetaReflectionData.Row R.A) (b : Bool)
@@ -44,8 +43,4 @@ theorem orbitSheet_norm_le {N : TraceHaarTransport R} (C : JointUpperVanishingSo
       digitWeight R m d * orbitFrequencyValue R C.sources C.realization v i
         (signedArgument R m b z.val d))
   · simp only [zero_mul, norm_zero]
-    exact Finset.sum_nonneg (fun _ _ => norm_nonneg _)
-
-end DedekindZetaZeroFree.OrbitExpansion
-
-end
+    positivity

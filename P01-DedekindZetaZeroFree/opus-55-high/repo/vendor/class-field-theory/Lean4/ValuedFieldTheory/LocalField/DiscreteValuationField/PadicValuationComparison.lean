@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Comparison of the chosen and canonical valuations on the p-adic field
 
@@ -30,7 +24,6 @@ valuations and makes the comparison usable when transporting valuation
 extensions.
 -/
 
-noncomputable section
 
 open scoped ValuativeRel
 
@@ -112,10 +105,3 @@ theorem localCompleteDVFValuation_hasExtension_of_padicLocalField
     (LocalFieldTheory.localCompleteDVF ℚ_[p]).valuation.HasExtension wE :=
   ValuationTheory.DiscreteValuationField.ValuedExtension.hasExtension_of_isEquiv_base
     (localCompleteDVF_valuation_isEquiv_padicLocalField p)
-
-end Qp
-end Examples
-end DiscreteValuationField
-end LocalFieldTheory
-
-end

@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Arithmetic.RayClasses.Moduli.IntegralNarrowCo
 
 @[expose] public section
 
-noncomputable section
 
 open scoped NumberField Classical
 open IsDedekindDomain
@@ -49,14 +48,14 @@ theorem rayIdealClass_mul
         exact top_unique (h ▸ sup_le_sup_right Ideal.mul_le_right m)
     rw [rayIdealClass_eq_none K m hm (I * J) hIJ,
       rayIdealClass_eq_none K m hm J hJ]
-    cases rayIdealClass K m hm I <;> rfl
-  have hIn : I ≠ ⊥ := fun h => hI (Or.inl h)
-  have hJn : J ≠ ⊥ := fun h => hJ (Or.inl h)
-  have hIc : I ⊔ m = ⊤ := not_not.mp (fun h => hI (Or.inr h))
-  have hJc : J ⊔ m = ⊤ := not_not.mp (fun h => hJ (Or.inr h))
+    simp
+  have hIn : I ≠ ⊥ := by simp_all
+  have hJn : J ≠ ⊥ := by simp_all
+  have hIc : I ⊔ m = ⊤ := by simp_all
+  have hJc : J ⊔ m = ⊤ := by simp_all
   have hIJn : I * J ≠ ⊥ := by
     intro h
-    exact (not_or.mpr ⟨hIn, hJn⟩) (Ideal.mul_eq_bot.mp h)
+    simp_all
   have hIJc : I * J ⊔ m = ⊤ := by
     rw [Ideal.mul_sup_eq_of_coprime_left hIc, hJc]
   rw [rayIdealClass_eq_some K m hm I hIn hIc,
@@ -77,7 +76,7 @@ theorem rayIdealClass_span
     (α : 𝓞 K) (hα : α ≠ 0) (hcong : α - 1 ∈ m)
     (hpos : ∀ φ : K →+* ℝ, 0 < φ (α : K)) :
     rayIdealClass K m hm (Ideal.span {α}) = some 1 := by
-  have hn : Ideal.span {α} ≠ ⊥ := fun h => hα (Ideal.span_singleton_eq_bot.mp h)
+  have hn : Ideal.span {α} ≠ ⊥ := by simp_all
   have hc : Ideal.span {α} ⊔ m = ⊤ := by
     apply (Ideal.eq_top_iff_one _).mpr
     have ha : α ∈ Ideal.span {α} ⊔ m := Ideal.mem_sup_left (Ideal.subset_span (by simp))
@@ -90,13 +89,8 @@ theorem rayIdealClass_span
   change rayIdealFractionalIdeal K (Ideal.span {α}) hn ∈
     ClassFieldTheory.rayPrincipalIdealSubgroup (narrowIdealModulus K m hm)
   apply Subgroup.subset_closure
-  have hαK : (α : K) ≠ 0 := by
-    exact NumberField.RingOfIntegers.coe_ne_zero_iff.mpr hα
+  have hαK : (α : K) ≠ 0 := 
+    NumberField.RingOfIntegers.coe_ne_zero_iff.mpr hα
   refine ⟨Units.mk0 (α : K) hαK,
     (integralNarrowRayCongruence K m hm α hαK).mpr ⟨hcong, hpos⟩, ?_⟩
-  apply Units.ext
-  simp [coe_toPrincipalIdeal, FractionalIdeal.coeIdeal_span_singleton]
-
-end DedekindZetaZeroFree.AbelianQuotient
-
-end
+  simp

@@ -33,7 +33,7 @@ structure UnramifiedCompactInducingData
   compact_borel_retract : ∀ b : A.B,
     (b : G) ∈ I.compact.toOpenSubgroup → A.retract b ∈ compactTorus A I
 
-private lemma orth_mem (P : Polarization T) (d : D)
+lemma orth_mem (P : Polarization T) (d : D)
     (hd : ∀ l ∈ P.L, T.pairing d l = 1) : d ∈ P.L := by
   have hsym (l : D) (hl : l ∈ P.L) : T.pairing l d = 1 := by
     have hh := T.alternating (d * l)
@@ -61,7 +61,7 @@ private lemma orth_mem (P : Polarization T) (d : D)
     (fun l hl => Subgroup.subset_closure (Set.mem_insert_of_mem d hl)) hc
   rw [← he]
   exact Subgroup.subset_closure (Set.mem_insert d _)
-private lemma fixed_support (A : LocalBorelData (K := K) (G := G) T)
+lemma fixed_support (A : LocalBorelData (K := K) (G := G) T)
     (P : Polarization T) (I : IwasawaData A)
     (h : UnramifiedCompactInducingData A P I)
     (v : InducedModule P) (hv : v ∈ fixedSubmodule (tau P) (compactTorus A I))
@@ -72,7 +72,7 @@ private lemma fixed_support (A : LocalBorelData (K := K) (G := G) T)
   obtain ⟨j, hj, rfl⟩ := Subgroup.mem_map.mp hl
   have hjL : T.π j ∈ P.L := by
     rw [← h.polarization_image]
-    exact Subgroup.mem_map.mpr ⟨j, hj, rfl⟩
+    simp_all
   have hr : v.val (x * j) = v.val x := congrArg (fun w : InducedModule P => w.val x) (hv ⟨j, hj⟩)
   have hl' : v.val (j * x) = v.val x := by
     rw [v.property ⟨j, hjL⟩ x]
@@ -109,7 +109,7 @@ private lemma fixed_support (A : LocalBorelData (K := K) (G := G) T)
       exact congrArg (fun u : ℂˣ => (u : ℂ)) (P.ωL.map_mul a ⟨x, hx⟩)
     · have hax : T.π ((a : H) * x) ∉ P.L := by
         rw [map_mul, P.L.mul_mem_cancel_left a.property]; exact hx
-      simp only [dif_neg hx, dif_neg hax, mul_zero]⟩
+      simp_all⟩
 
  lemma baseVector_fixed (A : LocalBorelData (K := K) (G := G) T)
     (P : Polarization T) (I : IwasawaData A)
@@ -185,15 +185,13 @@ theorem normalized_inducing_vector
     constructor
     · intro b k k' he
       have hb : (b : G) ∈ I.compact.toOpenSubgroup := by
-        have hb' : (b : G) = (k' : G) * (k : G)⁻¹ := by rw [he]; simp [mul_assoc]
+        have hb' : (b : G) = (k' : G) * (k : G)⁻¹ := by simp_all
         rw [hb']; exact I.compact.toOpenSubgroup.mul_mem k'.property
           (I.compact.toOpenSubgroup.inv_mem k.property)
       rw [action_compact A P I b hb v]
       exact (hv ⟨A.retract b, h.compact_borel_retract b hb⟩).symm
     · refine ⟨⊤, ?_⟩
       intro j hj
-      apply funext
-      intro k
       rfl⟩
 
  lemma constantPicture_level (A : LocalBorelData (K := K) (G := G) T)
@@ -207,8 +205,8 @@ theorem normalized_inducing_vector
     (P : Polarization T) (I : IwasawaData A)
     (φ : compactPicture A P I .plus)
     (hφ : φ ∈ compactLevel A P I .plus I.compact)
-    (k : I.compact.toOpenSubgroup) : φ.val k = φ.val 1 := by
-  exact hφ k 1 k (by simp)
+    (k : I.compact.toOpenSubgroup) : φ.val k = φ.val 1 := 
+  hφ k 1 k (by simp)
 
  lemma picture_fiber_fixed (A : LocalBorelData (K := K) (G := G) T)
     (P : Polarization T) (I : IwasawaData A)
@@ -234,15 +232,13 @@ theorem normalized_inducing_vector
     (compact_level_identification A P I .plus I.compact le_rfl 0 _).mpr
       (by simpa using f.property)⟩
   left_inv φ := by
-    apply Subtype.ext
-    exact (compactTrivialization A P I .plus 0).symm_apply_apply φ.val
+    simp
   right_inv f := by
-    apply Subtype.ext
-    exact (compactTrivialization A P I .plus 0).apply_symm_apply f.val
-  map_add' := by intros; apply Subtype.ext; simp
-  map_smul' := by intros; apply Subtype.ext; simp
+    simp
+  map_add' := by simp
+  map_smul' := by simp
 
-private lemma section_equiv_one (A : LocalBorelData (K := K) (G := G) T)
+lemma section_equiv_one (A : LocalBorelData (K := K) (G := G) T)
     (P : Polarization T) (I : IwasawaData A)
     (φ : compactLevel A P I .plus I.compact) :
     ((compactSectionEquiv A P I φ).val.val 1) = φ.val.val 1 := by
@@ -270,9 +266,7 @@ theorem normalized_plus_spherical_vector
   · intro g hg
     let cg := (compactSectionEquiv A P I).symm ⟨g, hg.1⟩
     have hev : cg.val.val 1 = g.val 1 := by
-      have he := section_equiv_one A P I cg
-      rw [(compactSectionEquiv A P I).apply_symm_apply] at he
-      exact he.symm
+      rfl
     have hvg : cg.val.val 1 = v := hu _ ⟨picture_fiber_fixed A P I cg.val cg.property,
       by rw [hev]; exact hg.2⟩
     have hc : cg = c := by
@@ -315,8 +309,8 @@ private def inducingEvaluation (A : LocalBorelData (K := K) (G := G) T)
     apply Subtype.ext
     exact (fixed_vector_formula A P I h v.val v.property).symm
   right_inv c := by simp [baseVector_one]
-  map_add' := by intros; rfl
-  map_smul' := by intros; rfl
+  map_add' := by simp
+  map_smul' := by simp
 
 theorem inducing_fixed_line
     (A : LocalBorelData (K := K) (G := G) T)
@@ -341,8 +335,8 @@ private def compactFiberEquiv (A : LocalBorelData (K := K) (G := G) T)
     funext k
     exact (picture_constant A P I φ.val φ.property k).symm
   right_inv v := rfl
-  map_add' := by intros; rfl
-  map_smul' := by intros; rfl
+  map_add' := by simp
+  map_smul' := by simp
 
 theorem plus_compact_fixed_line
     (A : LocalBorelData (K := K) (G := G) T)
@@ -356,9 +350,3 @@ theorem plus_compact_fixed_line
   have hi := inducing_fixed_line A P I _h
   letI : Module.Finite ℂ (fixedSubmodule (tau P) (compactTorus A I)) := hi.1
   exact ⟨(Module.Finite.equiv_iff e).mpr hi.1, by rw [e.finrank_eq]; exact hi.2⟩
-
-end
-
-end DedekindZetaZeroFree.KPLocalGoodSphericalImage
-
-end

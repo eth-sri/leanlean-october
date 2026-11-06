@@ -19,7 +19,6 @@ theorem finite_geometric_tail (c : ℤ → ℂ) (C r : ℂ)
         C * r ^ n₀ / (1 - r)) := by
   let d : ℕ := (n₀ - nmin).toNat
   have hd : nmin + (d : ℤ) = n₀ := by
-    dsimp [d]
     omega
   have hgeom : HasSum (fun k : ℕ => C * r ^ n₀ * r ^ k)
       (C * r ^ n₀ / (1 - r)) := by
@@ -44,18 +43,14 @@ theorem finite_geometric_tail (c : ℤ → ℂ) (C r : ℂ)
       simp only [Finset.mem_range] at hk
       simp only [Finset.mem_Ico]
       omega
-    · intro k hk l hl he
-      omega
+    · simp
     · intro j hj
       simp only [Finset.mem_Ico] at hj
       refine ⟨(j - nmin).toNat, ?_, ?_⟩
       · simp only [Finset.mem_range]
         omega
       · omega
-    · intro k hk
-      rfl
+    simp
   simpa only [hfinite] using
     hshift.sum_range_add (f := fun k : ℕ =>
       c (nmin + (k : ℤ)) * r ^ (nmin + (k : ℤ))) (k := d)
-
-end DedekindZetaZeroFree.KPRankOneMellinShellReassembly

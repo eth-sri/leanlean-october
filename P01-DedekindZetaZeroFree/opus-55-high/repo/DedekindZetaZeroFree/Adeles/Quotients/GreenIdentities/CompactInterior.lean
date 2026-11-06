@@ -40,7 +40,7 @@ theorem smoothOnLift_sectionFields
   simp [sectionFields, LiftedChart.coefficient,
     KPContCotangentActualGenuineTwistIsotropy.isotropyChart, ChartKind.representative]
 
-private lemma cd_eventually (d : ℕ) (f g : HyperbolicChart.Space d → ℂ)
+lemma cd_eventually (d : ℕ) (f g : HyperbolicChart.Space d → ℂ)
     (x : HyperbolicChart.Space d) (h : f =ᶠ[nhds x] g) (i : Fin d) (k : Fin 3) :
     HyperbolicChart.coordinateDerivative d i k f =ᶠ[nhds x]
       HyperbolicChart.coordinateDerivative d i k g := by
@@ -48,7 +48,7 @@ private lemma cd_eventually (d : ℕ) (f g : HyperbolicChart.Space d → ℂ)
   exact congrArg (fun A : HyperbolicChart.Space d →L[ℝ] ℂ =>
     A (HyperbolicChart.coordinateVector d i k)) hy
 
-private lemma lap_local (d : ℕ) (f g : HyperbolicChart.Space d → ℂ)
+lemma lap_local (d : ℕ) (f g : HyperbolicChart.Space d → ℂ)
     (x : HyperbolicChart.Space d) (h : f =ᶠ[nhds x] g) :
     HyperbolicChart.laplacian d f x = HyperbolicChart.laplacian d g x := by
   unfold HyperbolicChart.laplacian
@@ -58,7 +58,7 @@ private lemma lap_local (d : ℕ) (f g : HyperbolicChart.Space d → ℂ)
   have hcc := fun k => cd_eventually d _ _ x (hc k) i k
   rw [(hc 2).eq_of_nhds, (hcc 2).eq_of_nhds, (hcc 0).eq_of_nhds, (hcc 1).eq_of_nhds]
 
-private lemma lap_zero (d : ℕ) (f : HyperbolicChart.Space d → ℂ)
+lemma lap_zero (d : ℕ) (f : HyperbolicChart.Space d → ℂ)
     (x : HyperbolicChart.Space d) (hx : x ∉ tsupport f) : HyperbolicChart.laplacian d f x = 0 := by
   rw [lap_local d f (fun _ => 0) x (notMem_tsupport_iff_eventuallyEq.mp hx)]
   have hz : ∀ i k, HyperbolicChart.coordinateDerivative d i k
@@ -67,7 +67,7 @@ private lemma lap_zero (d : ℕ) (f : HyperbolicChart.Space d → ℂ)
   simp only [HyperbolicChart.laplacian, hz]
   simp
 
-private lemma compact_green (d : ℕ) (hd : 1 ≤ d)
+lemma compact_green (d : ℕ) (hd : 1 ≤ d)
     (Ω : Set (HyperbolicChart.Space d)) (hΩ : IsOpen Ω)
     (f g : HyperbolicChart.Space d → ℂ)
     (hf : HyperbolicChart.IsTestFunction d Ω f) (hg : HyperbolicChart.IsTestFunction d Ω g) :
@@ -99,7 +99,7 @@ private lemma compact_green (d : ℕ) (hd : 1 ≤ d)
       congr 1; funext p; simp [HyperbolicChart.pairing, star_sum, mul_comm]
     _ = _ := by rw [← hgf]; congr 1; funext p; ring
 
-private lemma compact_localization {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+lemma compact_localization {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     [FiniteDimensional ℝ E] (Ω : Set E) (hΩ : IsOpen Ω)
     (K : Set E) (hK : IsCompact K) (hKΩ : K ⊆ Ω) (f : E → ℂ)
     (hf : ContDiffOn ℝ ∞ f Ω) :
@@ -134,7 +134,7 @@ private lemma compact_localization {E : Type*} [NormedAddCommGroup E] [NormedSpa
     filter_upwards [hWo.mem_nhds (hKW hx), hΩ.mem_nhds (hKΩ hx)] with y hyW hyΩ
     simp [F, hyΩ, (hχone y).mp (subset_closure hyW)]
 
-private lemma local_green (d : ℕ) (hd : 1 ≤ d)
+lemma local_green (d : ℕ) (hd : 1 ≤ d)
     (Ω : Set (HyperbolicChart.Space d)) (hΩ : IsOpen Ω)
     (f g : HyperbolicChart.Space d → ℂ)
     (hf : ContDiffOn ℝ ∞ f Ω) (hg : HyperbolicChart.IsTestFunction d Ω g) :
@@ -170,7 +170,7 @@ private lemma local_green (d : ℕ) (hd : 1 ≤ d)
     apply (CotangentLogCoframe.A (KPContCotangentActualOverlap.d F)).symm.continuous.comp
     exact continuous_pi fun k => continuous_apply _
 
-private lemma map_compact_coordinates (a : ShrunkChart F ζ hζ U R P H) :
+lemma map_compact_coordinates (a : ShrunkChart F ζ hζ U R P H) :
     Measure.map (fun y : a.domain => (coordinates a y).val) a.liftedMeasure =
       ((H.disintegration U).componentWeight a.component / (Nat.card a.Isotropy : ℝ≥0∞)) •
         (HyperbolicChart.measure (d F)).restrict (omega a) := by

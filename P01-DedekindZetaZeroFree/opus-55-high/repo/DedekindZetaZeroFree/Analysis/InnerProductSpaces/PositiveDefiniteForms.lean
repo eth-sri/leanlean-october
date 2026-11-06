@@ -71,5 +71,3 @@ theorem exists_continuousLinearEquiv_inner_map_map (S : V →L[𝕜] V)
   conv_lhs => rw [← b.sum_repr' x, ← b.sum_repr' y]
   simp only [map_sum, map_smul, sum_inner, inner_sum, inner_smul_left, inner_smul_right, hkey]
   simp [inner_conj_symm, mul_comm]
-
-end DedekindZetaZeroFree.TauCeti

@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Geometry.ArithmeticQuotients.LocalCharts.Line
 
 @[expose] public section
 
-noncomputable section
 open scoped Classical ENNReal
 open MeasureTheory Topology
 
@@ -27,7 +26,3 @@ theorem quotient_hausdorff (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U) :
     KPFiniteAdelicCuspEnds.FundamentalDomainGeometry.arithmeticStabilizer_properlyDiscontinuous_of_compact
       F hF _ (KPCuspGenuineMonodromy.finiteBase_level_compact F ζ hζ U) _
   exact A.components.symm.isEmbedding.t2Space
-
-end DedekindZetaZeroFree.CoreChartLocalizers
-
-end

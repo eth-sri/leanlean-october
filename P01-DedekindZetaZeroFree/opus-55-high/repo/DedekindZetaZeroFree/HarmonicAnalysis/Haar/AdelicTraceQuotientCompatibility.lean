@@ -13,7 +13,7 @@ set_option backward.isDefEq.respectTransparency false
 namespace DedekindZetaZeroFree.KPContinuation.ChamberOutgoingSource
 variable (F : Type) [Field F] [NumberField F]
 
-private theorem archMeasure_eq : KPAdditiveHaar.archMeasure F =
+theorem archMeasure_eq : KPAdditiveHaar.archMeasure F =
     Measure.map (InfiniteAdeleRing.ringEquiv_mixedSpace F).symm
       (QuotientProbability.finiteLevelInfiniteHaar F) := by
   have hcoord : (fun x : PoissonArch.Space F =>
@@ -42,7 +42,7 @@ private theorem archMeasure_eq : KPAdditiveHaar.archMeasure F =
   rw [show (InfiniteAdeleRing.ringEquiv_mixedSpace F).symm ∘
       (mixedEmbedding.euclidean.toMixed F) = (PoissonArch.infiniteAdeleToSpace F).symm from hcoord]
 
-private theorem archInverse_measurable : Measurable (InfiniteAdeleRing.ringEquiv_mixedSpace F).symm := by
+theorem archInverse_measurable : Measurable (InfiniteAdeleRing.ringEquiv_mixedSpace F).symm := by
   have heq : (InfiniteAdeleRing.ringEquiv_mixedSpace F).symm =
       (PoissonArch.infiniteAdeleToSpace F).symm ∘ (mixedEmbedding.euclidean.toMixed F).symm := by
     funext x
@@ -80,7 +80,7 @@ theorem adelicMeasure_eq_product : KPAdditiveHaar.adelicMeasure F =
   · exact archInverse_measurable F
   · exact measurable_id
 
-private theorem fundamentalDomain_of_op {A : Type*} [AddCommGroup A] [MeasurableSpace A]
+theorem fundamentalDomain_of_op {A : Type*} [AddCommGroup A] [MeasurableSpace A]
     (L : AddSubgroup A) (D : Set A) (μ : Measure A)
     (h : IsAddFundamentalDomain L.op D μ) : IsAddFundamentalDomain L D μ := by
   have hv (g : L) (x : A) : (L.equivOp g) +ᵥ x = g +ᵥ x := by

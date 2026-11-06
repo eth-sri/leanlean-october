@@ -38,5 +38,3 @@ lemma one_lt_primeIdealNorm (P : HeightOneSpectrum (𝓞 K)) :
 
 noncomputable def primeIdealFactor (P : HeightOneSpectrum (𝓞 K)) (s : ℂ) : ℂ :=
   localFactor (primeIdealNorm K P) s
-
-end DedekindZetaZeroFree.Odlyzko

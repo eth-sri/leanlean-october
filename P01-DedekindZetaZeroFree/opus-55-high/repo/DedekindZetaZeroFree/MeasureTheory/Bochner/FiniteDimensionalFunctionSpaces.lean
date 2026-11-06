@@ -5,7 +5,6 @@ import DedekindZetaZeroFree.Algebra.LinearAlgebra.FunctionInterpolation
 
 public section
 
-noncomputable section
 
 open scoped Classical Topology
 
@@ -13,7 +12,7 @@ namespace DedekindZetaZeroFree.FiniteFunctionSpaces
 
 open MeasureTheory Filter
 
-private theorem integral_mem_finite_function_space
+theorem integral_mem_finite_function_space
     {X Y : Type*} [MeasurableSpace X] (μ : Measure X)
     (T : Submodule ℂ (Y → ℂ)) [FiniteDimensional ℂ T]
     (f : X → Y → ℂ) (hf : ∀ᵐ x ∂μ, f x ∈ T)
@@ -32,8 +31,7 @@ private theorem integral_mem_finite_function_space
       apply Finset.sum_congr rfl
       intro i _
       exact integral_mul_const _ _
-    · intro i _
-      exact (hi (p i)).mul_const _
+    fun_prop
   rw [hrepr]
   exact T.sum_mem (fun i _ => T.smul_mem _ (b i).property)
 
@@ -45,5 +43,3 @@ theorem integral_mem_finite_linear_image
     (fun y => ∫ x, f x y ∂μ) ∈ J.range := by
   let : FiniteDimensional ℂ J.range := Module.Finite.range J
   exact integral_mem_finite_function_space μ J.range f hf hi
-
-end DedekindZetaZeroFree.FiniteFunctionSpaces

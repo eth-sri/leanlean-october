@@ -9,18 +9,17 @@ public import DedekindZetaZeroFree.Moments.Probes.GaussianRowDomination
 section
 
 namespace DedekindZetaZeroFree.PoissonProbeDyadicMomentTransfer.ActualDyadicMomentSource
-noncomputable section
 open scoped NumberField Classical
 variable {F : Type} [Field F] [NumberField F]
 
-private theorem finite_mulChar_norm_le_one {R : Type*} [CommRing R] [Fintype R]
+theorem finite_mulChar_norm_le_one {R : Type*} [CommRing R] [Fintype R]
     (χ : MulChar R ℂ) (r : R) : ‖χ r‖ ≤ 1 := by
   by_cases hr : IsUnit r
   · obtain ⟨u, rfl⟩ := hr
     exact (Complex.norm_eq_one_of_mem_rootsOfUnity (χ.apply_mem_rootsOfUnity u)).le
   · simp [χ.map_nonunit hr]
 
-private theorem gaussian_square_norm_bound (qc qn Z : ℝ)
+theorem gaussian_square_norm_bound (qc qn Z : ℝ)
     (hc : 0 < qc) (hn : 0 < qn) (hZ : 0 < Z) :
     |thetaReflectionGaussian (qc * qn ^ 3 / Z)| / (Real.sqrt qc * qn) ≤
       (Real.exp 4 / (2 * Real.sqrt Real.pi) * Z ^ 2) *
@@ -100,8 +99,3 @@ theorem forwardSummand_norm_summable_of_weight
     ext i
     ring
   exact hmajor.of_nonneg_of_le (fun _ => norm_nonneg _) (fun i => hb i.1 i.2)
-
-end
-end DedekindZetaZeroFree.PoissonProbeDyadicMomentTransfer.ActualDyadicMomentSource
-
-end

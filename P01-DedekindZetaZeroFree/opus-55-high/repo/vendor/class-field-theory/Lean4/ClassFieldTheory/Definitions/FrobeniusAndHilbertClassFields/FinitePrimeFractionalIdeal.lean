@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Fractional ideal represented by a finite prime
 -/
@@ -39,7 +34,3 @@ def finitePrimeFractionalIdeal
   Units.mk0
     (v.asIdeal : FractionalIdeal (nonZeroDivisors (𝓞 K)) K)
     (FractionalIdeal.coeIdeal_ne_zero.mpr v.ne_bot)
-
-end ClassFieldTheory
-
-end

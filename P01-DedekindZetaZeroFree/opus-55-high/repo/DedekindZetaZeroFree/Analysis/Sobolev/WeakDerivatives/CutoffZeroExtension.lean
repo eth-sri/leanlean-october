@@ -34,7 +34,7 @@ private theorem list_support {n : ℕ} (l : List (Fin n)) (a : Space n → ℂ) 
   | nil => exact Set.Subset.rfl
   | cons i l ih => exact (tsupport_fderiv_apply_subset ℝ (EuclideanSpace.single i 1)).trans ih
 
-private theorem list_congr {n : ℕ} (l : List (Fin n)) {a b : Space n → ℂ}
+theorem list_congr {n : ℕ} (l : List (Fin n)) {a b : Space n → ℂ}
     {x : Space n} (hab : a =ᶠ[𝓝 x] b) :
     coordinateDerivativeList l a =ᶠ[𝓝 x] coordinateDerivativeList l b := by
   induction l with
@@ -95,7 +95,7 @@ private theorem expansion_bound {n : ℕ} (B : LocalBall n) (l : List (Fin n))
     have hn := Lp.norm_le_mul_norm_of_ae_le_mul
       (f := h.toLp _) (g := hz.toLp z) (c := max C 1) (by
         filter_upwards [h.coeFn_toLp, hz.coeFn_toLp, hb] with x hx hy hb
-        simpa only [hx, hy] using hb)
+        simp_all)
     rw [hnz] at hn
     exact hn.trans (mul_le_mul_of_nonneg_left (jet_norm_le u γ) (le_max_of_le_right zero_le_one))
   | cons i l ih =>
@@ -221,7 +221,7 @@ theorem cutoff_global_weak_sobolev {n : ℕ} (B : LocalBall n) (k : ℕ)
   choose C hC HC using hC
   let L : ℝ := 1 + ∑ α, C α
   have hsumC : 0 ≤ ∑ α, C α := Finset.sum_nonneg fun α _ => (hC α).le
-  refine ⟨L, by dsimp [L]; linarith, ?_⟩
+  refine ⟨L, by positivity, ?_⟩
   intro u
   have HU := fun α => HC α u
   choose hm hnorm using HU
@@ -254,10 +254,7 @@ theorem cutoff_global_weak_sobolev {n : ℕ} (B : LocalBall n) (k : ℕ)
         (fun x => χ x • u.derivatives z x) := by
       funext x
       simp only [extendedExpansion, productExpansion, jet_zero]
-      by_cases hx : x ∈ B.carrier
-      · simp only [Set.indicator_of_mem hx]
-        rfl
-      · simp [hx]
+      rfl
     exact hd0.trans (ae_of_all _ (congrFun he))
   · intro α
     filter_upwards [hd α] with x hx hχx
@@ -279,7 +276,3 @@ theorem cutoff_global_weak_sobolev {n : ℕ} (B : LocalBall n) (k : ℕ)
           Finset.sum_sq_le_sq_sum_of_nonneg (fun α _ => norm_nonneg _)⟩
       _ ≤ (∑ α, C α) * u.sobolevNorm := hsum
       _ ≤ L * u.sobolevNorm := mul_le_mul_of_nonneg_right (by dsimp [L]; linarith) hn
-
-end DedekindZetaZeroFree.KPLocalCubeSobolevJets.Interior
-
-end

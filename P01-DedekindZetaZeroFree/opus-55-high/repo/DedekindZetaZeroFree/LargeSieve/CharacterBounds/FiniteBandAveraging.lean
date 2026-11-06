@@ -8,7 +8,7 @@ open scoped NumberField Classical
 
 namespace DedekindZetaZeroFree.LargeSieve.Vendor
 
-private lemma band_incidence (L : ℕ) (t : ℝ) {ι : Type*} (U : Finset ι) (bad : Fin L → ι → Prop)
+lemma band_incidence (L : ℕ) (t : ℝ) {ι : Type*} (U : Finset ι) (bad : Fin L → ι → Prop)
     (w : ι → ℝ) (db : ∀ i a, Decidable (bad i a)) (hw : ∀ a ∈ U, 0 ≤ w a)
     (hc : ∀ a ∈ U, ((@Finset.filter (Fin L) (fun i => bad i a) (fun i => db i a) Finset.univ).card : ℝ) ≤ t) :
     (∑ i : Fin L, ∑ a ∈ @Finset.filter ι (bad i) (db i) U, w a) ≤ t * ∑ a ∈ U, w a := by
@@ -57,7 +57,7 @@ theorem finite_band_average
         C * (∑ b ∈ S, ‖lam b‖ ^ 2)} B →
       6 * t ≤ (L : ℝ) → B ≤ 4 * B_T) := by
   classical
-  have hLpos : (0 : ℝ) < L := by exact_mod_cast (by omega : 0 < L)
+  have hLpos : (0 : ℝ) < L := by positivity
   have hresult : ∀ lam : β → ℂ,
       ∑ a ∈ R, ‖∑ b ∈ S, lam b * A a b‖ ^ 2 ≤
         (2 * B_T + 3 * (t / (L : ℝ)) * B) * (∑ b ∈ S, ‖lam b‖ ^ 2) := by
@@ -126,9 +126,9 @@ theorem finite_band_average
       exact hh
     have hs := Finset.sum_le_sum (fun i (_ : i ∈ (Finset.univ : Finset (Fin L))) => hsingle i)
     have hr := band_incidence L t R (fun i a => ¬rowGood i a)
-      (fun a => ‖∑ b ∈ S, lam b * A a b‖ ^ 2) (fun i a => inferInstance) (fun _ _ => sq_nonneg _) (by intro a ha; simpa using hbad_row a ha)
+      (fun a => ‖∑ b ∈ S, lam b * A a b‖ ^ 2) (fun i a => inferInstance) (fun _ _ => sq_nonneg _) (by omega)
     have hc := band_incidence L t S (fun i b => ¬colGood i b)
-      (fun b => ‖lam b‖ ^ 2) (fun i b => inferInstance) (fun _ _ => sq_nonneg _) (by intro b hb; simpa using hbad_col b hb)
+      (fun b => ‖lam b‖ ^ 2) (fun i b => inferInstance) (fun _ _ => sq_nonneg _) (by omega)
     have he : 0 ≤ ∑ b ∈ S, ‖lam b‖ ^ 2 := by positivity
     have hb := hbound lam
     have hsum : (L : ℝ) * (∑ a ∈ R, ‖∑ b ∈ S, lam b * A a b‖ ^ 2) ≤
@@ -156,5 +156,3 @@ theorem finite_band_average
     exact (div_le_iff₀ hLpos).mpr (by linarith)
   have hm := mul_le_mul_of_nonneg_right hratio hB
   linarith
-
-end DedekindZetaZeroFree.LargeSieve.Vendor

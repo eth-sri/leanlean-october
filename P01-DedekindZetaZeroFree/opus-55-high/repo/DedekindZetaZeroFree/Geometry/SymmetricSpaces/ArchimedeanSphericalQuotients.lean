@@ -25,16 +25,12 @@ def KInfinity : Subgroup (KPSmoothActualFlowData.GInfinity F) :=
     (KPArithmeticAction.ProjectiveGroup (KPCuspLogShape.dimension F))
     (origin F)).comap (complexPlaceHom F)
 
-private lemma archBasepoint_eq_smul (g : KPSmoothActualFlowData.GInfinity F) :
+lemma archBasepoint_eq_smul (g : KPSmoothActualFlowData.GInfinity F) :
     KPMsFixedHaarDisintegration.archBasepoint F g = complexPlaceHom F g • origin F := by
   funext i
   show KPArch.action (g (KPCusp.complexPlace F i)).out (0, 0) =
     (g (KPCusp.complexPlace F i)) • ((0, 0) : KPArch.H3)
   conv_rhs => rw [← Quotient.out_eq (g (KPCusp.complexPlace F i))]
-  change KPArch.action (Quotient.out (g (KPCusp.complexPlace F i))) (0, 0) =
-    Matrix.ProjGenLinGroup.mk (Quotient.out (g (KPCusp.complexPlace F i))) •
-      ((0, 0) : KPArch.H3)
-  rw [Matrix.ProjGenLinGroup.mk_smul KPArch.scalar_action]
   rfl
 
 theorem mem_KInfinity_iff (g : KPSmoothActualFlowData.GInfinity F) :
@@ -55,14 +51,14 @@ def infinitePlaceEquiv (ζ : F) (hζ : IsPrimitiveRoot ζ 12) :
     change Fintype.equivFin {v : InfinitePlace F // v.IsComplex}
       ⟨KPCusp.complexPlace F i, _⟩ = i
     unfold KPCusp.complexPlace
-    convert (Fintype.equivFin {v : InfinitePlace F // v.IsComplex}).apply_symm_apply i
+    simp
 
-private lemma infinitePlaceEquiv_complexPlace (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+lemma infinitePlaceEquiv_complexPlace (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (i : Fin (InfinitePlace.nrComplexPlaces F)) :
     infinitePlaceEquiv F ζ hζ (KPCusp.complexPlace F i) = i :=
   (infinitePlaceEquiv F ζ hζ).right_inv i
 
-private lemma complexPlace_infinitePlaceEquiv (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
+lemma complexPlace_infinitePlaceEquiv (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (w : InfinitePlace F) :
     KPCusp.complexPlace F (infinitePlaceEquiv F ζ hζ w) = w :=
   (infinitePlaceEquiv F ζ hζ).left_inv w
@@ -77,7 +73,7 @@ private lemma product_origin_stabilizer_compact :
         Set (KPArithmeticAction.ProjectiveGroup (KPCuspLogShape.dimension F)))
   exact KPArithmeticAction.product_origin_stabilizer_compact (KPCuspLogShape.dimension F)
 
-private lemma mem_product_origin_stabilizer_iff
+lemma mem_product_origin_stabilizer_iff
     (h : KPArithmeticAction.ProjectiveGroup (KPCuspLogShape.dimension F)) :
     h ∈ MulAction.stabilizer
         (KPArithmeticAction.ProjectiveGroup (KPCuspLogShape.dimension F)) (origin F) ↔
@@ -112,7 +108,7 @@ theorem KInfinity_compact (ζ : F) (hζ : IsPrimitiveRoot ζ 12) :
   have hcont : Continuous (fun h : KPArithmeticAction.ProjectiveGroup
       (KPCuspLogShape.dimension F) => fun w : InfinitePlace F =>
         h (infinitePlaceEquiv F ζ hζ w)) :=
-    continuous_pi fun w => continuous_apply _
+    by fun_prop
   have himage : (KInfinity F : Set (KPSmoothActualFlowData.GInfinity F)) =
       (fun h : KPArithmeticAction.ProjectiveGroup (KPCuspLogShape.dimension F) =>
         fun w : InfinitePlace F => h (infinitePlaceEquiv F ζ hζ w)) ''
@@ -148,12 +144,7 @@ theorem archBasepoint_continuous :
       (fun g => complexPlaceHom F g • origin F) from funext (archBasepoint_eq_smul F)]
   change Continuous (fun g : KPSmoothActualFlowData.GInfinity F =>
     fun i => g (KPCusp.complexPlace F i) • ((0,0) : KPArch.H3))
-  refine continuous_pi fun i => ?_
-  have hpair : Continuous (fun g : KPSmoothActualFlowData.GInfinity F =>
-      (g (KPCusp.complexPlace F i), ((0,0) : KPArch.H3))) :=
-    (continuous_apply (KPCusp.complexPlace F i)).prodMk continuous_const
-  simpa only [Function.comp_def] using
-    KPArithmeticAction.hyperbolicContinuousSMul.continuous_smul.comp hpair
+  fun_prop
 
 theorem archBasepoint_eq_iff (a b : KPSmoothActualFlowData.GInfinity F) :
     KPMsFixedHaarDisintegration.archBasepoint F a =
@@ -188,8 +179,6 @@ theorem sectionMatrix_formula (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     sectionMatrix F ζ hζ x w =
       !![(Real.exp (x (infinitePlaceEquiv F ζ hζ w)).2 : ℂ),
           (x (infinitePlaceEquiv F ζ hζ w)).1; 0, 1] := by
-  simp only [sectionMatrix, sectionGL, KPArithmeticAction.hyperbolicGLSection,
-    KPArch.height]
   rfl
 
 def iwasawaSection (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
@@ -217,7 +206,3 @@ theorem section_continuous (ζ : F) (hζ : IsPrimitiveRoot ζ 12) :
   intro w
   refine QuotientGroup.continuous_mk.comp ?_
   exact KPArithmeticAction.hyperbolicGLSection_continuous.comp (continuous_apply _)
-
-end DedekindZetaZeroFree.KPContSectorArchSphericalFibers
-
-end

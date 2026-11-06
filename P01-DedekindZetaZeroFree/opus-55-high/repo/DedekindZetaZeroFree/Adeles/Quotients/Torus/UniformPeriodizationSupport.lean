@@ -11,7 +11,6 @@ open NumberField IsDedekindDomain MeasureTheory
 namespace DedekindZetaZeroFree.KPGlobalTorusBorelTwistCompatibilityBorelInduction.UniformFiberLevel
 open KPGlobalTorusBorelNormTwistTransport
 noncomputable section
-set_option autoImplicit false
 set_option maxHeartbeats 800000
 set_option maxRecDepth 2000
 
@@ -104,17 +103,9 @@ theorem twisted_torus_level_finite (C : ModelData F ζ hζ) (s : ℂ)
         (KPGlobalTorusFiniteStages.productModel F ζ hζ C) U :=
     { toFun := fun v => ⟨(A v).val, hA v⟩
       map_add' := by
-        intro v w
-        apply Subtype.ext
-        change (A (v + w)).val = (A v).val + (A w).val
-        exact congrArg (fun x : KPGlobalTorusPeriodizationInverse.ProductUnitary F ζ hζ C => x.val)
-          (A.map_add v w)
+        simp
       map_smul' := by
-        intro c v
-        apply Subtype.ext
-        change (A (c • v)).val = c • (A v).val
-        exact congrArg (fun x : KPGlobalTorusPeriodizationInverse.ProductUnitary F ζ hζ C => x.val)
-          (A.map_smul c v) }
+        simp }
   letI := unitary_torus_level_finite F ζ hζ C U
   apply Module.Finite.of_injective B
   intro v w h
@@ -183,6 +174,3 @@ theorem exists_uniform_chart_support (C : ModelData F ζ hζ) (s : ℂ)
   refine ⟨S, ?_⟩
   intro f z a ha
   exact hS ⟨(f.val.val (groupArchChart F ζ hζ z * g)).val, hU _ f z⟩ a ha
-
-end
-end DedekindZetaZeroFree.KPGlobalTorusBorelTwistCompatibilityBorelInduction.UniformFiberLevel

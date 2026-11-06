@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Comparison of maximal and simple local Kummer pairings
 
@@ -29,7 +23,6 @@ to that simple extension, together with functoriality of root quotients,
 identifies the maximal pairing with the existing local Hilbert symbol.
 -/
 
-noncomputable section
 
 namespace KummerTheory
 
@@ -59,21 +52,7 @@ theorem rootQuotient_map_intermediateFieldInclusion
   apply Units.ext
   simp only [rootQuotient, AlgEquiv.smul_units_def,
     Units.val_div_eq_div_val, Units.coe_map]
-  calc
-    sigma (IntermediateField.inclusion hEF (beta : E)) /
-        IntermediateField.inclusion hEF (beta : E) =
-      IntermediateField.inclusion hEF
-          (intermediateFieldRestrictNormalHom E F hEF sigma (beta : E)) /
-        IntermediateField.inclusion hEF (beta : E) :=
-      congrArg
-        (fun x : F => x / IntermediateField.inclusion hEF (beta : E))
-        hcomm.symm
-    _ = IntermediateField.inclusion hEF
-        (intermediateFieldRestrictNormalHom E F hEF sigma (beta : E) /
-          (beta : E)) :=
-      (map_div₀ (IntermediateField.inclusion hEF).toRingHom
-        (intermediateFieldRestrictNormalHom E F hEF sigma (beta : E))
-        (beta : E)).symm
+  simp_all
 
 end KummerTheory
 
@@ -213,8 +192,8 @@ theorem localHilbertSymbol_mul_right
         localHilbertSymbol K n hnK hmu a c := by
   calc
     localHilbertSymbol K n hnK hmu a (b * c) =
-        maximalLocalKummerPairingRightHom K n hnK hmu a (b * c) := by
-      exact (maximalLocalKummerPairingRightHom_eq_localHilbertSymbolHom
+        maximalLocalKummerPairingRightHom K n hnK hmu a (b * c) := 
+      (maximalLocalKummerPairingRightHom_eq_localHilbertSymbolHom
         K n hnK hmu a (b * c)).symm
     _ = maximalLocalKummerPairingRightHom K n hnK hmu a b *
         maximalLocalKummerPairingRightHom K n hnK hmu a c :=
@@ -223,7 +202,7 @@ theorem localHilbertSymbol_mul_right
         localHilbertSymbol K n hnK hmu a c := by
       rw [maximalLocalKummerPairingRightHom_eq_localHilbertSymbolHom,
         maximalLocalKummerPairingRightHom_eq_localHilbertSymbolHom]
-      simp only [localHilbertSymbolHom_apply]
+      rfl
 
 /-- The local Hilbert symbol of a unit and its nonzero complement is one. -/
 @[simp]
@@ -330,10 +309,10 @@ theorem localHilbertSymbol_skew
           localHilbertSymbolHom K n hnK hmu z y
     exact map_mul (localHilbertSymbolHom K n hnK hmu z) x y
   have hmul_right (x y z : Kˣ) :
-      B x (y * z) = B x y * B x z := by
-    exact localHilbertSymbol_mul_right K n hnK hmu x y z
-  have hneg_self (x : Kˣ) : B x (-x) = 1 := by
-    exact localHilbertSymbol_neg_self K n hnK hmu x
+      B x (y * z) = B x y * B x z := 
+    localHilbertSymbol_mul_right K n hnK hmu x y z
+  have hneg_self (x : Kˣ) : B x (-x) = 1 := 
+    localHilbertSymbol_neg_self K n hnK hmu x
   have hexpand :
       B (a * b) (-(a * b)) =
         (B a (-a) * B a b) * (B b (-b) * B b a) := by
@@ -349,8 +328,3 @@ theorem localHilbertSymbol_skew
       _ = B (a * b) (-(a * b)) := hexpand.symm
       _ = 1 := hneg_self (a * b)
   exact (eq_inv_iff_mul_eq_one).2 hprod
-
-end Kummer
-end LocalClassFieldTheory
-
-end

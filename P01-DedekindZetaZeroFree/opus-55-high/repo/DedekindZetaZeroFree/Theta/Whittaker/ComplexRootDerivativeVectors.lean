@@ -30,13 +30,13 @@ noncomputable def realUpperRootDerivativeFunction (β : ℂˣ) (z : ℂ)
 
 open scoped Matrix.Norms.Elementwise ContDiff
 local notation "Mat" => Matrix (Fin 2) (Fin 2) ℂ
-private theorem unipotent_affine (z : ℂ) (t : ℝ) :
+theorem unipotent_affine (z : ℂ) (t : ℝ) :
   (upperUnipotent ((t : ℂ) * z) : Mat) = (1 : Mat) + t • !![0,z;0,0] := by
   ext i j
-  fin_cases i <;> fin_cases j <;> simp [upperUnipotent, Matrix.one_apply, Complex.real_smul, Matrix.smul_apply]
+  fin_cases i <;> fin_cases j <;> simp [upperUnipotent, Complex.real_smul]
 private theorem invertible_open : IsOpen {p : Mat × ℂ | p.1.det ≠ 0} := by
   have hc : Continuous (fun p : Mat × ℂ => p.1.det) := by
-    simp only [Matrix.det_fin_two]; fun_prop
+    fun_prop
   exact isOpen_ne_fun hc continuous_const
 private theorem smooth_slice (F : Mat × ℂ → ℂ)
     (hF : ContDiffOn ℝ ∞ F {p | p.1.det ≠ 0}) (X : Mat) :
@@ -131,23 +131,17 @@ theorem imageAction_smul (β : ℂˣ) (g : ComplexPGL2) (a : ℂ) (h : Theta β)
     imageAction β g (a • h) = a • imageAction β g h := by
   induction g using Quotient.inductionOn with
   | _ g =>
-    apply Subtype.ext
-    apply Subtype.ext
-    funext x
     rfl
 
-private theorem whittakerValue_smul (β : ℂˣ) (a : ℂ) (h : Theta β) (y : ℂˣ) :
+theorem whittakerValue_smul (β : ℂˣ) (a : ℂ) (h : Theta β) (y : ℂˣ) :
     whittakerValue β (a • h) y = a * whittakerValue β h y := by
   simp [whittakerValue, imageAction_smul]
 
-private theorem whittakerValue_add (β : ℂˣ) (h k : Theta β) (y : ℂˣ) :
+theorem whittakerValue_add (β : ℂˣ) (h k : Theta β) (y : ℂˣ) :
     whittakerValue β (h + k) y = whittakerValue β h y + whittakerValue β k y := by
   have he : imageAction β (Matrix.ProjGenLinGroup.mk (diagonal y)) (h + k) =
       imageAction β (Matrix.ProjGenLinGroup.mk (diagonal y)) h +
       imageAction β (Matrix.ProjGenLinGroup.mk (diagonal y)) k := by
-    apply Subtype.ext
-    apply Subtype.ext
-    funext x
     rfl
   simp only [whittakerValue, he, map_add]
 
@@ -156,7 +150,7 @@ private theorem diagonal_upper (y : ℂˣ) (x : ℂ) :
   apply Units.ext
   ext i j
   fin_cases i <;> fin_cases j <;>
-    simp [diagonal, upperUnipotent, Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two]
+    simp [diagonal, upperUnipotent, Matrix.mul_apply, Fin.sum_univ_two]
 
 theorem whittakerValue_upperUnipotent (β : ℂˣ) (h : Theta β) (y : ℂˣ) (x : ℂ) :
     whittakerValue β (imageAction β (Matrix.ProjGenLinGroup.mk (upperUnipotent x)) h) y =
@@ -198,12 +192,10 @@ noncomputable def whittakerCLM (β : ℂˣ) (y : ℂˣ) : Theta β →L[ℂ] ℂ
     { toFun := imageAction β (Matrix.ProjGenLinGroup.mk (diagonal y))
       map_add' := by
         intro h k
-        apply Subtype.ext
-        apply Subtype.ext
         rfl
       map_smul' := by
         intro a h
-        exact imageAction_smul β _ a h }
+        rfl }
   exact (thetaJacquetFunctional β).comp
     { toLinearMap := T
       cont := (imageAction_continuous β).comp
@@ -241,14 +233,14 @@ theorem whittaker_realUpperRootDerivative_of_tendsto (c : ℝ)
     change whittakerValue β h y = whittakerValue β
       (imageAction β (Matrix.ProjGenLinGroup.mk (upperUnipotent ((0 : ℂ) * z))) h) y
     rw [whittakerValue_upperUnipotent]
-    simp [character]
+    simp
   change Filter.Tendsto (fun t : ℝ => L ((t⁻¹ : ℂ) •
     (imageAction β (Matrix.ProjGenLinGroup.mk (upperUnipotent ((t : ℂ) * z))) h - h)))
     (nhdsWithin 0 {0}ᶜ) (nhds (L (dPiRealUpperRoot β z h))) at hl
   rw [he] at hl
   exact tendsto_nhds_unique hl hs
 
-private theorem realUpperRootDerivative_hasDerivAt (β : ℂˣ) (z : ℂ)
+theorem realUpperRootDerivative_hasDerivAt (β : ℂˣ) (z : ℂ)
     (h : Theta β) (g : ComplexGL2) :
     HasDerivAt (fun t : ℝ => (h : PrincipalSeries negativeParameter)
       (g * upperUnipotent ((t : ℂ) * z)))
@@ -313,7 +305,7 @@ theorem whittaker_complexUpperRootDerivatives (c : ℝ) (hc : 0 < c)
     mul_one, mul_zero, sub_zero, zero_sub, add_zero, zero_add,
     Complex.mul_I_re]
   constructor <;> apply Complex.ext <;>
-    simp [Complex.mul_re, Complex.mul_im, Complex.div_re, Complex.div_im] <;> ring
+    simp [Complex.mul_re, Complex.mul_im] <;> ring
 
 theorem whittaker_vZero (c : ℝ) (hc : 0 < c)
     (β : ℂˣ) (hβ : (β : ℂ) = (c : ℂ)) (y : ℂˣ) :
@@ -344,7 +336,3 @@ theorem vZero_spherical (c : ℝ) (hc : 0 < c)
     (β : ℂˣ) (hβ : (β : ℂ) = (c : ℂ)) (k : compactSubgroup) :
     imageAction β k (vZero c β) = vZero c β := by
   rw [vZero, imageAction_smul, (spherical_image β).2 k]
-
-end DedekindZetaZeroFree.KPCplxRootDerivativeVectors
-
-end

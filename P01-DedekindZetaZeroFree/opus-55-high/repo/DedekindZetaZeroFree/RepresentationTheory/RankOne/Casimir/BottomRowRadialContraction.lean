@@ -47,7 +47,7 @@ open scoped Matrix.Norms.Operator in
   Complex.normSq g.det / (Complex.normSq (g 1 0) + Complex.normSq (g 1 1))^2
 
 open scoped Matrix.Norms.Operator in
-private theorem matrix_det_basis_jet (g : Matrix (Fin 2) (Fin 2) ℂ) (j : Fin 6) :
+theorem matrix_det_basis_jet (g : Matrix (Fin 2) (Fin 2) ℂ) (j : Fin 6) :
     HasDerivAt (fun t : ℝ => (g * NormedSpace.exp ((t : ℂ) •
       KPSmoothActualFlowData.basisMatrix j)).det) 0 0 := by
   have h := matrix_path_components g (KPSmoothActualFlowData.basisMatrix j)
@@ -102,13 +102,13 @@ open scoped Matrix.Norms.Operator in
   rw [KPArch.action_height]
   simp [matrixHeightSquared, KPArch.height, div_pow, Complex.sq_norm, add_comm]
 
-private theorem matrix_height_squared_scalar (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) (u : ℂˣ) :
+theorem matrix_height_squared_scalar (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) (u : ℂˣ) :
     matrixHeightSquared ((g * Matrix.GeneralLinearGroup.scalar (Fin 2) u : Matrix.GeneralLinearGroup (Fin 2) ℂ) : Matrix (Fin 2) (Fin 2) ℂ) = matrixHeightSquared g := by
   rw [matrix_height_squared_action, matrix_height_squared_action,
     (KPArch.action_laws g (Matrix.GeneralLinearGroup.scalar (Fin 2) u) (0,0)).2,
     KPArch.scalar_action]
 
-private theorem matrix_height_squared_pgl_out (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) :
+theorem matrix_height_squared_pgl_out (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) :
     matrixHeightSquared (Matrix.ProjGenLinGroup.mk g).out = matrixHeightSquared g := by
   obtain ⟨u, hu⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp
     (show Matrix.ProjGenLinGroup.mk g = Matrix.ProjGenLinGroup.mk (Matrix.ProjGenLinGroup.mk g).out from
@@ -119,7 +119,7 @@ private theorem matrix_height_squared_pgl_out (g : Matrix.GeneralLinearGroup (Fi
   Real.exp (2 * (KPArch.action g.out (0,0)).2)
 
 open scoped Matrix.Norms.Operator in
-private theorem pgl_height_squared_basis_jet (g : Matrix.ProjGenLinGroup (Fin 2) ℂ) (j : Fin 6) :
+theorem pgl_height_squared_basis_jet (g : Matrix.ProjGenLinGroup (Fin 2) ℂ) (j : Fin 6) :
     HasDerivAt (fun t : ℝ => pglHeightSquared (g *
       Matrix.ProjGenLinGroup.mk (KPSmoothActualFlowData.matrixExponential ((t : ℂ) •
         KPSmoothActualFlowData.basisMatrix j))))
@@ -168,12 +168,12 @@ open scoped Matrix.Norms.Operator in
       apply Units.ext; simp
     rw [hunit, map_one]
 
-private theorem bottomRowJet_mul (c d : ℂ) (r s : ℝ) (j : Fin 6) :
+theorem bottomRowJet_mul (c d : ℂ) (r s : ℝ) (j : Fin 6) :
     bottomRowJet c d (r * s) j = r * bottomRowJet c d s j := by
   fin_cases j <;> simp [bottomRowJet] <;> ring
 
 open scoped Matrix.Norms.Operator in
-private theorem global_height_squared_basis_jet (g : KPSmoothActualFlowData.GInfinity F)
+theorem global_height_squared_basis_jet (g : KPSmoothActualFlowData.GInfinity F)
     (w : NumberField.InfinitePlace F) (j : Fin 6) :
     HasDerivAt (fun t : ℝ => globalPglHeightSquared F (g * KPSmoothActualFlowData.flow F (w,j) t))
       (bottomRowJet ((g w).out 1 0) ((g w).out 1 1) (globalPglHeightSquared F g) j) 0 := by
@@ -205,7 +205,7 @@ variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
   globalPglHeightSquared F (KPSmoothLocalQuotientCharts.archProjection F ζ hζ q)
 
 open scoped Matrix.Norms.Operator in
-private theorem upstairs_height_squared_basis_jet (c g : Cover F ζ hζ)
+theorem upstairs_height_squared_basis_jet (c g : Cover F ζ hζ)
     (w : NumberField.InfinitePlace F) (j : Fin 6) :
     HasDerivAt (fun t : ℝ => upstairsHeightSquared F ζ hζ
       (c⁻¹ * (g * KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
@@ -216,7 +216,7 @@ private theorem upstairs_height_squared_basis_jet (c g : Cover F ζ hζ)
   simpa only [upstairsHeightSquared, ← mul_assoc, map_mul, projection_insertion] using
     global_height_squared_basis_jet F (KPSmoothLocalQuotientCharts.archProjection F ζ hζ (c⁻¹ * g)) w j
 
-private theorem global_height_literal (ζ₀ : F) (hζ₀ : IsPrimitiveRoot ζ₀ 12) (g : KPSmoothActualFlowData.GInfinity F) :
+theorem global_height_literal (ζ₀ : F) (hζ₀ : IsPrimitiveRoot ζ₀ 12) (g : KPSmoothActualFlowData.GInfinity F) :
     globalPglHeightSquared F g =
       Real.exp (2 * (KPCuspLogShape.dimension F : ℝ) *
         KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F)
@@ -244,7 +244,7 @@ private theorem global_height_literal (ζ₀ : F) (hζ₀ : IsPrimitiveRoot ζ�
 
 end JetCalculus
 
-private theorem normalRadial_eq_upstairs (c a : Cover F ζ hζ) :
+theorem normalRadial_eq_upstairs (c a : Cover F ζ hζ) :
     normalRadial c a = upstairsHeightSquared F ζ hζ (c⁻¹ * a) := by
   unfold normalRadial upstairsHeightSquared
   exact (global_height_literal F ζ hζ

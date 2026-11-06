@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # The norm image of an archimedean tensor factor
 
@@ -30,7 +25,6 @@ finite-place tensor-norm comparison.
 open scoped NumberField TensorProduct NumberField.LiesOver
 open NumberField
 
-noncomputable section
 
 open LocalClassFieldTheory
 
@@ -123,31 +117,11 @@ theorem infiniteTensorNormSubgroup_eq_localNormSubgroup
             (eTensorUnits z),
           ⟨eTensorUnits z, rfl⟩, ?_⟩
       apply eVUnits.injective
-      change
-        eVUnits
-            (eVUnits.symm
-              (localTensorDetNorm
-                (K := K) (L := L) v.1
-                (eTensorUnits z))) =
-          eVUnits
-            (infiniteTensorDetNorm
-              (K := K) (L := L) v z)
-      rw [eVUnits.apply_symm_apply]
-      exact (hTensorNorm z).symm
+      simp_all
     · rintro ⟨_, ⟨z, rfl⟩, rfl⟩
       refine ⟨eTensorUnits.symm z, ?_⟩
       apply eVUnits.injective
-      change
-        eVUnits
-            (infiniteTensorDetNorm
-              (K := K) (L := L) v
-              (eTensorUnits.symm z)) =
-          eVUnits
-            (eVUnits.symm
-              (localTensorDetNorm
-                (K := K) (L := L) v.1 z))
-      rw [hTensorNorm, eTensorUnits.apply_symm_apply,
-        eVUnits.apply_symm_apply]
+      simp_all
   let eLocalized :
       E ≃ₐ[v.1.Completion] w.1.Completion :=
     AlgebraicNumberTheory.Valuations.localizedCompletionEquivCompletion
@@ -218,4 +192,3 @@ theorem infiniteTensorNormSubgroup_eq_localNormSubgroup
       (K := K) (L := L) v.1 u v.isNontrivial]
   exact hNormTransport
 
-end

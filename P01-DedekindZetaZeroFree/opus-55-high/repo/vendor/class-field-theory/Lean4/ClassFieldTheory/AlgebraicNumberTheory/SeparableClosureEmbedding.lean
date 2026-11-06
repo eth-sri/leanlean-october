@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Embeddings into a separable closure
 
@@ -58,18 +53,14 @@ theorem continuous_algEquiv_autCongr
   intro x hx
   have hxN : e.symm x ∈ N :=
     ⟨x, hx, rfl⟩
-  have hfix :=
-    (IntermediateField.mem_fixingSubgroup_iff N σ).1 hσ
-      (e.symm x) hxN
-  change e (σ (e.symm x)) = x
-  rw [hfix, e.apply_symm_apply]
+  simp_all
 
 variable (K : Type u) (L : Type v) [Field K] [Field L] [Algebra K L]
   [Algebra.IsSeparable K L]
 
 /-- A chosen embedding of a separable extension into the separable closure of
 its base field. -/
-noncomputable def separableEmbeddingIntoSeparableClosure :
+def separableEmbeddingIntoSeparableClosure :
     L →ₐ[K] SeparableClosure K :=
   IsSepClosed.lift
 
@@ -77,7 +68,7 @@ variable (K : Type*) [Field K] [NumberField K]
 
 /-- A chosen `ℚ`-embedding of a number field into mathlib's fixed
 separable closure of `ℚ`. -/
-noncomputable def numberFieldSeparableClosureEmbedding :
+def numberFieldSeparableClosureEmbedding :
     K →ₐ[ℚ] SeparableClosure ℚ :=
   IsSepClosed.lift
 
@@ -87,18 +78,14 @@ def numberFieldInRationalSeparableClosure :
     IntermediateField ℚ (SeparableClosure ℚ) :=
   (numberFieldSeparableClosureEmbedding K).fieldRange
 
-noncomputable instance
+instance
     numberFieldInRationalSeparableClosure_finiteDimensional :
     FiniteDimensional ℚ
       (numberFieldInRationalSeparableClosure K) :=
   ((numberFieldSeparableClosureEmbedding K).equivFieldRange.toLinearEquiv).finiteDimensional
 
-noncomputable instance
+instance
     numberFieldInRationalSeparableClosure_numberField :
     NumberField (numberFieldInRationalSeparableClosure K) where
   to_charZero := inferInstance
   to_finiteDimensional := inferInstance
-
-end AlgebraicNumberTheory
-
-end

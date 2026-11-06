@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Congruence description of local higher units
 
@@ -28,7 +23,6 @@ where the condition reduces to being an integral unit.
 
 open scoped NumberField
 
-noncomputable section
 
 namespace ClassFieldTheory
 
@@ -57,7 +51,7 @@ theorem mem_rayLocalHigherUnitGroup_iff
     refine ⟨z, ?_, ?_⟩
     · have hback :
           (v.adicCompletionIntegers K).toSubmonoid.unitsEquivUnitsType.symm z = y := by
-        exact Equiv.symm_apply_apply _ _
+        rfl
       rw [hback]
       exact hxy
     · have hq : Ideal.Quotient.mk
@@ -82,7 +76,3 @@ theorem mem_rayLocalHigherUnitGroup_iff
     exact (Ideal.Quotient.mk_eq_one_iff_sub_mem
       (I := (IsLocalRing.maximalIdeal (v.adicCompletionIntegers K)) ^ n)
       (z : v.adicCompletionIntegers K)).mpr hcong
-
-end ClassFieldTheory
-
-end

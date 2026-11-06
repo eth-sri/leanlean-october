@@ -4,7 +4,7 @@ public import Mathlib.LinearAlgebra.Matrix.IsDiag
 public import DedekindZetaZeroFree.Algebra.Matrices.TwoDimensionalAdjugate
 public import DedekindZetaZeroFree.Algebra.MatrixGroups.SpecialUnitaryAdjugate
 public import DedekindZetaZeroFree.Geometry.UnitaryGroups.Compactness
-public import DedekindZetaZeroFree.Geometry.Circle.InverseSeparation
+public import Mathlib.Analysis.SpecialFunctions.Complex.Circle
 
 @[expose] public section
 
@@ -107,9 +107,7 @@ theorem continuous_torusMatrix : Continuous torusMatrix := by
   have hcoe : Continuous fun z : Circle => (z : ℂ) := continuous_subtype_val
   have hinv : Continuous fun z : Circle => ((z : ℂ))⁻¹ := hcoe.inv₀ fun z => z.coe_ne_zero
   refine Continuous.matrix_diagonal (continuous_pi fun i => ?_)
-  fin_cases i
-  · exact hcoe
-  · exact hinv
+  fun_prop
 
 noncomputable def torusHom : Circle →* SU2 where
   toFun z := ⟨torusMatrix z, torusMatrix_mem z⟩
@@ -164,81 +162,10 @@ theorem mem_torus_iff {g : SU2} :
     ext i j
     fin_cases i <;> fin_cases j <;> simp [hz, h01, h10, h11]
 
-theorem torusHom_injective : Function.Injective torusHom := fun z w h => by
-  have h00 := congrArg (fun g : SU2 => (g : Matrix (Fin 2) (Fin 2) ℂ) 0 0) h
-  exact Circle.ext (by simpa using h00)
-
-noncomputable def torusContinuousMulEquiv : Circle ≃ₜ* torus where
-  __ := MonoidHom.ofInjective torusHom_injective
-  continuous_toFun := continuous_torusHom.subtype_mk _
-  continuous_invFun :=
-    (Continuous.homeoOfEquivCompactToT2
-      (f := (MonoidHom.ofInjective torusHom_injective).toEquiv)
-      (continuous_torusHom.subtype_mk _)).continuous_invFun
-
-instance : CompactSpace torus := torusContinuousMulEquiv.toHomeomorph.compactSpace
-
-@[simp]
-theorem torusContinuousMulEquiv_apply (z : Circle) :
-    (torusContinuousMulEquiv z : SU2) = torusHom z := (rfl)
-
-@[simp]
-theorem torusHom_torusContinuousMulEquiv_symm (g : torus) :
-    torusHom (torusContinuousMulEquiv.symm g) = (g : SU2) :=
-  (torusContinuousMulEquiv_apply _).symm.trans
-    (congrArg Subtype.val (torusContinuousMulEquiv.apply_symm_apply g))
-
 instance : IsMulCommutative torus :=
   .of_setLike_mul_comm <| by
     rintro _ ⟨z, rfl⟩ _ ⟨w, rfl⟩
     rw [← map_mul, ← map_mul, mul_comm]
-
-def circleI : Circle := ⟨Complex.I, mem_sphere_zero_iff_norm.mpr (by simp)⟩
-
-private theorem coe_circleI : (circleI : ℂ) = Complex.I := (rfl)
-
-private theorem circleI_sq_ne_one : (circleI : ℂ) ^ 2 ≠ 1 := by
-  rw [coe_circleI, Complex.I_sq]
-  norm_num
-
-theorem mem_torus_of_commute_torusHom {z : Circle} (hz : (z : ℂ) ^ 2 ≠ 1) {g : SU2}
-    (h : torusHom z * g = g * torusHom z) : g ∈ torus := by
-  have hsub : (z : ℂ) - ((z : ℂ))⁻¹ ≠ 0 := circle_sub_inv_ne_zero hz
-  have hmat : torusMatrix z * (g : Matrix (Fin 2) (Fin 2) ℂ)
-      = (g : Matrix (Fin 2) (Fin 2) ℂ) * torusMatrix z := by
-    have hval := congrArg Subtype.val h
-    simpa only [Submonoid.coe_mul, coe_torusHom] using hval
-  have h01 : (g : Matrix (Fin 2) (Fin 2) ℂ) 0 1 = 0 := by
-    have hentry := congrFun (congrFun hmat 0) 1
-    simp only [Matrix.mul_apply, Fin.sum_univ_two, torusMatrix_apply_zero_zero,
-      torusMatrix_apply_zero_one, torusMatrix_apply_one_one, zero_mul, mul_zero, add_zero,
-      zero_add] at hentry
-    have hmul : (g : Matrix (Fin 2) (Fin 2) ℂ) 0 1 * ((z : ℂ) - ((z : ℂ))⁻¹) = 0 := by
-      linear_combination hentry
-    exact (mul_eq_zero.mp hmul).resolve_right hsub
-  have h10 : (g : Matrix (Fin 2) (Fin 2) ℂ) 1 0 = 0 := by
-    have hentry := congrFun (congrFun hmat 1) 0
-    simp only [Matrix.mul_apply, Fin.sum_univ_two, torusMatrix_apply_zero_zero,
-      torusMatrix_apply_one_one, torusMatrix_apply_one_zero, zero_mul, mul_zero, add_zero,
-      zero_add] at hentry
-    have hmul : (g : Matrix (Fin 2) (Fin 2) ℂ) 1 0 * ((z : ℂ) - ((z : ℂ))⁻¹) = 0 := by
-      linear_combination -hentry
-    exact (mul_eq_zero.mp hmul).resolve_right hsub
-  refine mem_torus_iff.mpr fun i j hij => ?_
-  fin_cases i <;> fin_cases j <;> simp_all
-
-theorem centralizer_torusHom {z : Circle} (hz : (z : ℂ) ^ 2 ≠ 1) :
-    Subgroup.centralizer ({torusHom z} : Set SU2) = torus := by
-  refine le_antisymm (fun g hg => ?_) (fun g hg => ?_)
-  · exact mem_torus_of_commute_torusHom hz (Subgroup.mem_centralizer_iff.mp hg _ rfl)
-  · obtain ⟨u, rfl⟩ := hg
-    rw [Subgroup.mem_centralizer_iff]
-    rintro h rfl
-    rw [← map_mul, ← map_mul, mul_comm]
-
-theorem exists_centralizer_torusHom_eq_torus :
-    ∃ z : Circle, Subgroup.centralizer ({torusHom z} : Set SU2) = torus :=
-  ⟨circleI, centralizer_torusHom circleI_sq_ne_one⟩
 
 theorem eq_or_eq_inv_of_trace_torusMatrix_eq {z w : Circle}
     (h : (torusMatrix w).trace = (torusMatrix z).trace) : w = z ∨ w = z⁻¹ := by
@@ -274,21 +201,6 @@ theorem trace_torusExp (θ : ℝ) :
 
   simp [Complex.two_cos]
 
-@[simp]
-theorem torusExp_add (θ φ : ℝ) : torusExp (θ + φ) = torusExp θ * torusExp φ := by
-  rw [torusExp, torusExp, torusExp, Circle.exp_add, map_mul]
-
-@[simp]
-theorem torusExp_zero : torusExp 0 = 1 := by rw [torusExp, Circle.exp_zero, map_one]
-
-@[simp]
-theorem torusExp_neg (θ : ℝ) : torusExp (-θ) = (torusExp θ)⁻¹ :=
-  eq_inv_of_mul_eq_one_left (by rw [← torusExp_add, neg_add_cancel, torusExp_zero])
-
 theorem continuous_torusExp : Continuous torusExp :=
   (continuous_torusHom.comp Circle.exp.continuous).congr fun θ => by
     rw [Function.comp_apply, torusExp]
-
-end SU2
-
-end DedekindZetaZeroFree.TauCeti

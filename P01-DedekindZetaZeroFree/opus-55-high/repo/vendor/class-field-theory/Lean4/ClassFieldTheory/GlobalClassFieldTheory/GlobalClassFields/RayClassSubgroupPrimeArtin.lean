@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Arithmetic prime Artin symbols on ray-class fixed fields
 
@@ -27,14 +22,13 @@ prime idèle, with the arithmetic global Artin symbol of that field.
 
 open scoped Classical NumberField
 
-noncomputable section
 
 namespace GlobalClassFieldTheory
 namespace GlobalClassFields
 
 open NumberField IsDedekindDomain IdeleGroup Reciprocity
 
-private theorem arithmeticFinitePlacePrimeArtin_restrict_tower
+theorem arithmeticFinitePlacePrimeArtin_restrict_tower
     (K L E : Type) [Field K] [Field L] [Field E]
     [NumberField K] [NumberField L] [NumberField E]
     [Algebra K L] [Algebra K E] [Algebra E L] [IsScalarTower K E L]
@@ -52,7 +46,7 @@ private theorem arithmeticFinitePlacePrimeArtin_restrict_tower
           (K := K) (L := L) (E := E))
         (IdeleGroup.finitePrimeIdele v))
 
-private theorem rayClassFieldGaloisEquivRayClassGroup_symm_mk
+theorem rayClassFieldGaloisEquivRayClassGroup_symm_mk
     {K : Type} [Field K] [NumberField K]
     (m : RayClass.Modulus K) (c : IdeleClassGroup K) :
     (rayClassFieldGaloisEquivRayClassGroup (K := K) m).symm
@@ -62,7 +56,7 @@ private theorem rayClassFieldGaloisEquivRayClassGroup_symm_mk
   exact (rayClassFieldGaloisEquivRayClassGroup_globalNormResidue
     (K := K) m c).symm
 
-private theorem rayClassField_arithmeticFinitePlacePrimeArtin
+theorem rayClassField_arithmeticFinitePlacePrimeArtin
     {K : Type} [Field K] [NumberField K]
     (m : RayClass.Modulus K)
     (v : HeightOneSpectrum (𝓞 K)) :
@@ -85,11 +79,9 @@ private theorem rayClassField_arithmeticFinitePlacePrimeArtin
         (IdeleGroup.finitePrimeIdele v)
   change (rayClassFieldGaloisEquivRayClassGroup (K := K) m).symm
       ((QuotientGroup.mk' m.congruenceSubgroup c)⁻¹) = _
-  rw [map_inv, hgeo]
-  exact (Reciprocity.arithmeticGlobalNormResidueMonoidHom_apply
-    K (rayClassField K m) c).symm.trans hnormprime
+  simp_all
 
-private theorem rayClassSubgroup_restrict_transport
+theorem rayClassSubgroup_restrict_transport
     {K : Type} [Field K] [NumberField K]
     (m : RayClass.Modulus K)
     (H : Subgroup (RayClass.RayClassGroup m))
@@ -128,8 +120,8 @@ private theorem rayClassSubgroup_restrict_transport
           simp [f]
     _ = σ (F.val (α.symm x)) :=
       AlgEquiv.restrictNormalHom_apply F σ (α.symm x)
-    _ = f ((AlgEquiv.restrictNormalHom E σ) x) := by
-      exact (AlgEquiv.restrictNormal_commutes σ E x).symm
+    _ = f ((AlgEquiv.restrictNormalHom E σ) x) := 
+      (AlgEquiv.restrictNormal_commutes σ E x).symm
 
 /-- The fixed-field ray-class Artin map sends the ray class of an ordinary
 prime idèle to the arithmetic global Artin element of the fixed field. -/
@@ -181,8 +173,3 @@ theorem rayClassSubgroupArtin_finitePrimeIdele
         (arithmeticFinitePlacePrimeArtin (K := K) (L := L) v)
     _ = arithmeticFinitePlacePrimeArtin (K := K) (L := E) v :=
       arithmeticFinitePlacePrimeArtin_restrict_tower K L E v
-
-end GlobalClassFields
-end GlobalClassFieldTheory
-
-end

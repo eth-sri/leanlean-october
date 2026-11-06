@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Finite p-adic cyclic data for local-global Artin compatibility
 
@@ -99,7 +96,7 @@ local instance numberFieldTowerBaseSubgroupCompactSpace :
 
 /-- The finite quotient coordinate on the compatible embedded copy of
 the absolute Galois group of `K`. -/
-noncomputable def numberFieldTowerFiniteQuotientCoordinate :
+def numberFieldTowerFiniteQuotientCoordinate :
     (numberFieldTowerBaseSubgroup K L).toSubgroup →ₜ*
       ((numberFieldTowerBaseSubgroup K L).toSubgroup ⧸
         extensionSubgroup
@@ -117,89 +114,16 @@ noncomputable def numberFieldTowerFiniteQuotientCoordinate :
 
 /-- The genuine `p`-adic cyclotomic degree on the rational absolute
 Galois group. -/
-noncomputable def rationalSeparableClosurePadicCyclotomicDegree
+def rationalSeparableClosurePadicCyclotomicDegree
     (p : Nat.Primes) :
     Gal(SeparableClosure ℚ / ℚ) →ₜ*
       Multiplicative ℤ_[p.1] :=
   (rationalCyclotomicPadicCoordinate p).comp
     rationalAbsoluteGaloisRestrictionToCyclotomicZHat
 
-/-- The kernel of the absolute `p`-adic cyclotomic degree is exactly
-the fixing subgroup of the actual `p`-primary cyclotomic field in the
-rational separable closure. -/
-theorem rationalSeparableClosurePadicCyclotomicDegree_ker
-    (p : Nat.Primes) :
-    (rationalSeparableClosurePadicCyclotomicDegree
-        p).toMonoidHom.ker =
-      (rationalCyclotomicPadicField p).fixingSubgroup := by
-  let : Algebra ℚ rationalCyclotomicZHatField :=
-    rationalCyclotomicZHatField.algebra'
-  let : @Normal ℚ rationalCyclotomicZHatField _ _
-      rationalCyclotomicZHatField.algebra' :=
-    rationalCyclotomicZHatField_normal
-  let E :=
-    rationalCyclotomicPadicFieldWithinZHat p
-  ext σ
-  change
-    rationalCyclotomicPadicCoordinate p
-        (rationalAbsoluteGaloisRestrictionToCyclotomicZHat σ) =
-      1 ↔
-    σ ∈ (IntermediateField.lift E).fixingSubgroup
-  constructor
-  · intro hσ
-    have hr :
-        rationalAbsoluteGaloisRestrictionToCyclotomicZHat σ ∈
-          E.fixingSubgroup := by
-      rw [
-        rationalCyclotomicPadicFieldWithinZHat_fixingSubgroup]
-      exact hσ
-    refine (IntermediateField.mem_fixingSubgroup_iff
-      (IntermediateField.lift E) σ).2 ?_
-    intro x hx
-    let xC : rationalCyclotomicZHatField :=
-      ⟨x, IntermediateField.lift_le E hx⟩
-    have hxE : xC ∈ E :=
-      (IntermediateField.mem_lift xC).1 hx
-    have hfix :
-        (rationalAbsoluteGaloisRestrictionToCyclotomicZHat σ) xC =
-          xC :=
-      (IntermediateField.mem_fixingSubgroup_iff
-        E
-          (rationalAbsoluteGaloisRestrictionToCyclotomicZHat σ)).1 hr xC hxE
-    calc
-      σ x =
-          algebraMap rationalCyclotomicZHatField (SeparableClosure ℚ)
-            ((rationalAbsoluteGaloisRestrictionToCyclotomicZHat σ) xC) := by
-              exact
-                (AlgEquiv.restrictNormal_commutes
-                  σ rationalCyclotomicZHatField xC).symm
-      _ = algebraMap rationalCyclotomicZHatField
-            (SeparableClosure ℚ) xC := by
-            rw [hfix]
-      _ = x := rfl
-  · intro hσ
-    have hr :
-        rationalAbsoluteGaloisRestrictionToCyclotomicZHat σ ∈
-          E.fixingSubgroup := by
-      rw [IntermediateField.mem_fixingSubgroup_iff]
-      intro x hx
-      apply Subtype.ext
-      have hfix :
-          σ x.1 = x.1 :=
-        (IntermediateField.mem_fixingSubgroup_iff
-          (IntermediateField.lift E) σ).1 hσ x.1
-            ((IntermediateField.mem_lift x).2 hx)
-      exact
-        (AlgEquiv.restrictNormal_commutes
-          σ rationalCyclotomicZHatField x).trans hfix
-    rw [
-      rationalCyclotomicPadicFieldWithinZHat_fixingSubgroup]
-      at hr
-    exact hr
-
 /-- The genuine rational cyclotomic `p`-adic degree restricted to the
 compatible embedded copy of the absolute Galois group of `K`. -/
-noncomputable def numberFieldTowerBaseSubgroupPadicCyclotomicDegree
+def numberFieldTowerBaseSubgroupPadicCyclotomicDegree
     (p : Nat.Primes) :
     (numberFieldTowerBaseSubgroup K L).toSubgroup →ₜ*
       Multiplicative ℤ_[p.1] :=
@@ -209,7 +133,7 @@ noncomputable def numberFieldTowerBaseSubgroupPadicCyclotomicDegree
 
 /-- The simultaneous finite-extension and cyclotomic `p`-adic
 coordinate on the compatible absolute Galois group of `K`. -/
-noncomputable def numberFieldTowerFinitePadicCoordinate
+def numberFieldTowerFinitePadicCoordinate
     (p : Nat.Primes) :
     (numberFieldTowerBaseSubgroup K L).toSubgroup →ₜ*
       (((numberFieldTowerBaseSubgroup K L).toSubgroup ⧸
@@ -228,18 +152,16 @@ noncomputable def numberFieldTowerFinitePadicCoordinate
     { toFun := fun τ =>
         (finiteCoordinate τ, padicDegree τ)
       map_one' := by
-        simp only [map_one]
-        rfl
+        simp
       map_mul' := by
-        intro σ τ
-        simp only [map_mul, Prod.mul_def]
+        simp
       continuous_toFun :=
         finiteCoordinate.continuous_toFun.prodMk
           padicDegree.continuous_toFun }
 
 /-- The actual image of the simultaneous finite and `p`-adic
 cyclotomic coordinate, as a closed subgroup of the product. -/
-noncomputable def numberFieldTowerFinitePadicImage
+def numberFieldTowerFinitePadicImage
     (p : Nat.Primes) :
     ClosedSubgroup
       (((numberFieldTowerBaseSubgroup K L).toSubgroup ⧸
@@ -272,7 +194,7 @@ noncomputable def numberFieldTowerFinitePadicImage
 
 /-- The `p`-adic degree on the actual simultaneous-coordinate image is
 its second projection. -/
-noncomputable def numberFieldTowerFinitePadicImageDegree
+def numberFieldTowerFinitePadicImageDegree
     (p : Nat.Primes) :
     (numberFieldTowerFinitePadicImage
         (K := K) (L := L) p).toSubgroup →ₜ*
@@ -318,7 +240,7 @@ theorem numberFieldTowerFinitePadicImageDegree_ker_finite
 
 /-- The simultaneous coordinate with codomain restricted to its actual
 closed image. -/
-noncomputable def numberFieldTowerFinitePadicRangeRestriction
+def numberFieldTowerFinitePadicRangeRestriction
     (p : Nat.Primes) :
     (numberFieldTowerBaseSubgroup K L).toSubgroup →ₜ*
       (numberFieldTowerFinitePadicImage
@@ -360,7 +282,7 @@ theorem numberFieldTowerFinitePadicRangeRestriction_surjective
 /-- The inverse image in the compatible absolute Galois group of the
 closed cyclic subgroup generated by one simultaneous finite/`p`-adic
 coordinate. -/
-noncomputable def numberFieldTowerFinitePadicCyclicPreimage
+def numberFieldTowerFinitePadicCyclicPreimage
     (p : Nat.Primes)
     (τ : (numberFieldTowerBaseSubgroup K L).toSubgroup) :
     ClosedSubgroup
@@ -609,7 +531,7 @@ theorem
 /-- The cyclic preimage, embedded back into the rational absolute
 Galois group.  Its fixed field is the concrete auxiliary number field
 used in the finite-place reduction. -/
-noncomputable def numberFieldTowerFinitePadicCyclicFixedSubgroup
+def numberFieldTowerFinitePadicCyclicFixedSubgroup
     (p : Nat.Primes)
     (τ : (numberFieldTowerBaseSubgroup K L).toSubgroup) :
     ClosedSubgroup (Gal(SeparableClosure ℚ / ℚ)) := by
@@ -709,13 +631,7 @@ theorem
     change
       u.1 ∈ U.toSubgroup.map H.toSubgroup.subtype ↔
         u ∈ U.toSubgroup
-    constructor
-    · rintro ⟨z, hz, hzu⟩
-      have hzu' : z = u :=
-        Subtype.ext hzu
-      exact hzu' ▸ hz
-    · intro hu
-      exact ⟨u, hu, rfl⟩
+    simp
   exact hext.symm ▸ hU
 
 /-- The relative subgroup defined by the ambient auxiliary fixed
@@ -743,13 +659,7 @@ theorem
   change
     u.1 ∈ U.toSubgroup.map H.toSubgroup.subtype ↔
       u ∈ U.toSubgroup
-  constructor
-  · rintro ⟨z, hz, hzu⟩
-    have hzu' : z = u :=
-      Subtype.ext hzu
-    exact hzu' ▸ hz
-  · intro hu
-    exact ⟨u, hu, rfl⟩
+  simp
 
 /-- Ambient form of the kernel-intersection statement. -/
 theorem
@@ -794,12 +704,7 @@ theorem
       rationalSeparableClosurePadicCyclotomicDegree
           p u.1 =
         1
-    calc
-      rationalSeparableClosurePadicCyclotomicDegree p u.1 =
-          rationalSeparableClosurePadicCyclotomicDegree p σ :=
-        congrArg
-          (rationalSeparableClosurePadicCyclotomicDegree p) huσ
-      _ = 1 := hσ.2
+    simp_all
   have huN :=
     hrelative ⟨huU, huDegree⟩
   change σ ∈ T.toSubgroup
@@ -836,7 +741,7 @@ theorem numberFieldTowerFinitePadicCyclicFixedSubgroup_isOpen
 
 /-- The auxiliary cyclic fixed subgroup as a genuine finite Galois
 subextension of the compatible abstract field attached to `K`. -/
-noncomputable def
+def
     numberFieldTowerFinitePadicCyclicGaloisSubextension
     (p : Nat.Primes)
     (τ : (numberFieldTowerBaseSubgroup K L).toSubgroup)
@@ -869,7 +774,7 @@ noncomputable def
 /-- The auxiliary fixed subgroup, with its absolute finite-index
 witness, as the finite abstract field used by fixed-field global
 reciprocity. -/
-noncomputable def numberFieldTowerFinitePadicAuxiliaryAbstractField
+def numberFieldTowerFinitePadicAuxiliaryAbstractField
     (p : Nat.Primes)
     (τ : (numberFieldTowerBaseSubgroup K L).toSubgroup)
     (hτ :
@@ -886,7 +791,7 @@ noncomputable def numberFieldTowerFinitePadicAuxiliaryAbstractField
 top subgroup is the intersection of the auxiliary fixing subgroup
 with the subgroup fixing `L`, hence its concrete top field is the
 auxiliary compositum with `L`. -/
-noncomputable def
+def
     numberFieldTowerFinitePadicAuxiliaryCompositumSubextension
     (p : Nat.Primes)
     (τ : (numberFieldTowerBaseSubgroup K L).toSubgroup) :
@@ -955,8 +860,8 @@ theorem
       rationalCyclotomicZHatFieldGalEquivZHat
           (AlgEquiv.restrictNormalHom
             rationalCyclotomicZHatField σ) =
-        1 := by
-    exact hσ.2
+        1 := 
+    hσ.2
   apply Multiplicative.toAdd.injective
   change
     zHatToPadicInt p
@@ -974,9 +879,4 @@ theorem
             rationalCyclotomicZHatField σ)) =
       0 at hdegreeAdd
   rw [hdegreeAdd]
-  exact map_zero (zHatToPadicInt p)
-
-end Reciprocity
-end GlobalClassFieldTheory
-
-end
+  simp

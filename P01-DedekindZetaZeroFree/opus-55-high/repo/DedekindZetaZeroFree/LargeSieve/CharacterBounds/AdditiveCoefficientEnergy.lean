@@ -22,7 +22,7 @@ theorem finite_row_minkowski {ι κ : Type*} (M : Finset ι)
   have hgnorm_sq : ∀ j, ‖g j‖ ^ 2 = ∑ m ∈ M, ‖f j m‖ ^ 2 := by
     intro j
     rw [EuclideanSpace.norm_sq_eq]
-    simp only [g, PiLp.toLp_apply]
+    simp only [g]
     rw [← Finset.sum_subtype M (fun x => Iff.rfl) (fun a => ‖f j a‖ ^ 2)]
 
   have hgnorm : ∀ j, ‖g j‖ ≤ Real.sqrt B * u j := by
@@ -36,7 +36,7 @@ theorem finite_row_minkowski {ι κ : Type*} (M : Finset ι)
     Summable.of_norm_bounded (hsum.mul_left (Real.sqrt B)) hgnorm
   have hsum_norm : Summable (fun j => ‖g j‖) :=
     Summable.of_norm_bounded (hsum.mul_left (Real.sqrt B))
-      (fun j => by rw [Real.norm_eq_abs, abs_of_nonneg (norm_nonneg _)]; exact hgnorm j)
+      (fun j => by simp_all)
 
   have hnorm_tsum : ‖∑' j, g j‖ ≤ Real.sqrt B * (∑' j, u j) := by
     calc ‖∑' j, g j‖ ≤ ∑' j, ‖g j‖ := norm_tsum_le_tsum_norm hsum_norm
@@ -54,9 +54,7 @@ theorem finite_row_minkowski {ι κ : Type*} (M : Finset ι)
             rw [ContinuousLinearEquiv.map_tsum]
       _ = ∑' j, (EuclideanSpace.equiv ↥M ℂ) (g j) m := Pi.tsum_apply hsum_e
       _ = ∑' j, f j m.1 := by
-            apply tsum_congr
-            intro j
-            simp only [EuclideanSpace.equiv, PiLp.coe_continuousLinearEquiv, g, PiLp.toLp_apply]
+            rfl
 
   have hsq : ‖∑' j, g j‖ ^ 2 = ∑ m ∈ M, ‖∑' j, f j m‖ ^ 2 := by
     rw [EuclideanSpace.norm_sq_eq, hkey]
@@ -83,7 +81,7 @@ noncomputable section
 open scoped Classical NumberField
 variable {F : Type} [Field F] [NumberField F]
 
-private theorem sum_units {R : Type*} [CommMonoid R] [Fintype R]
+theorem sum_units {R : Type*} [CommMonoid R] [Fintype R]
     {M : Type*} [AddCommMonoid M] (f : R → M)
     (hf : ∀ x, ¬IsUnit x → f x = 0) :
     (∑ x : Rˣ, f x) = ∑ x : R, f x := by
@@ -91,7 +89,7 @@ private theorem sum_units {R : Type*} [CommMonoid R] [Fintype R]
   · intro x hx
     apply hf
     simpa only [Set.mem_range, IsUnit] using hx
-  · intro x; rfl
+  simp
  def presentation (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A) :
     ProbeSeparation.Presentation F A.Sf where
   generator I hI := D.generator (A.exteriorIdealEquiv.symm ⟨I,hI⟩)
@@ -101,7 +99,7 @@ private theorem sum_units {R : Type*} [CommMonoid R] [Fintype R]
     exact h.trans (congrArg Subtype.val (A.exteriorIdealEquiv.apply_symm_apply ⟨I,hI⟩))
   lift I d := Quotient.out (d : A.R ⧸ I)
   lift_spec I d := Quotient.out_eq _
-private theorem generator_eq (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
+theorem generator_eq (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
     (s : A.Exterior) (h : Ideal.span {D.generator s} ≠ ⊥) :
     (presentation A D).generator (Ideal.span {D.generator s}) h = D.generator s := by
   change D.generator (A.exteriorIdealEquiv.symm _) = _
@@ -117,7 +115,7 @@ private theorem generator_eq (A : SArithmeticData F) (D : ComparisonPoissonCoeff
  def rho (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
     (T : Finset A.Exterior) (i : Σ s : ↥T, (FiniteTransform.Residue A.R.toSubring (D.generator s))ˣ) :
     ProbeSeparation.ReducedPair F A.Sf := ⟨⟨Ideal.span {D.generator i.1}, span_ne A D i.1⟩, i.2⟩
-private theorem rho_injective (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
+theorem rho_injective (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
     (T : Finset A.Exterior) : Function.Injective (rho A D T) := by
   apply Function.Injective.sigma_map
     (β₂ := fun I : {I : Ideal A.R // I ≠ ⊥} => (A.R ⧸ I.val)ˣ)
@@ -129,13 +127,13 @@ private theorem rho_injective (A : SArithmeticData F) (D : ComparisonPoissonCoef
     apply Subtype.ext
     simpa only [A.exteriorIdealEquiv_apply, ← (D.generates s).2, ← (D.generates t).2] using congrArg Subtype.val h
   · intro s x y h; exact h
-private theorem rho_norm (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
+theorem rho_norm (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
     (T : Finset A.Exterior) (i : Σ s : ↥T, (FiniteTransform.Residue A.R.toSubring (D.generator s))ˣ) :
     ProbeSeparation.denominatorNorm F (rho A D T i) = A.exteriorNorm i.1 := by
   change (Nat.card (A.R ⧸ Ideal.span {D.generator i.1}) : ℝ) = _
   rw [(D.generates i.1).2, A.exteriorResidue_card]
   rfl
-private theorem row_mem (A : SArithmeticData F) (N : ℝ) (hN : 1 ≤ N)
+theorem row_mem (A : SArithmeticData F) (N : ℝ) (hN : 1 ≤ N)
     (K : Set A.G) {m : A.R} (hm : m ∈ NormalizedProbe.scaledIntegralRows A N K) :
     m ∈ ProbeAdditive.boxRows F A.Sf N (NormalizedProbe.asLocalPoint A '' K) := by
   obtain ⟨k, hk, he⟩ := hm
@@ -143,18 +141,14 @@ private theorem row_mem (A : SArithmeticData F) (N : ℝ) (hN : 1 ≤ N)
   rw [he]
   have hmul : ∀ x y : A.G, NormalizedProbe.asLocalPoint A (x*y) =
       NormalizedProbe.asLocalPoint A x * NormalizedProbe.asLocalPoint A y := by
-    intro x y; ext <;> rfl
+    intro x y; rfl
   rw [hmul]
   simp only [NormalizedProbe.radialSection, dif_pos (by linarith : 0 < N),
     NormalizedProbe.asLocalPoint, SArithmeticData.localToAdditive_radialSection]
 private theorem point_continuous (A : SArithmeticData F) : Continuous (NormalizedProbe.asLocalPoint A) := by
   apply Continuous.prodMk
-  · apply continuous_pi
-    intro w
-    exact Units.continuous_val.comp ((continuous_apply w).comp continuous_fst)
-  · apply continuous_pi
-    intro v
-    exact Units.continuous_val.comp ((continuous_apply v).comp continuous_snd)
+  · fun_prop
+  fun_prop
 private theorem indexed_sieve (A : SArithmeticData F)
     (e : (v : A.Sf) → AddChar (v.val.adicCompletion F) Circle)
     (he : ∀ v, Continuous (e v)) (htrace : ProbeAdditive.TraceCompatible F A.Sf e)
@@ -213,8 +207,7 @@ private theorem indexed_sieve (A : SArithmeticData F)
       ‖∑ x : ↥P, starRingEnd ℂ (bP x) * ProbeAdditive.phase F A.Sf e
         (sLocalDiagonal F A.Sf ((m : F) * ProbeSeparation.value F p x.val))‖ := by
     rw [← Complex.norm_conj]
-    simp only [map_sum, map_mul, hphase, RingHomCompTriple.comp_apply,
-      starRingEnd_self_apply, RingHom.id_apply]
+    simp only [map_sum, map_mul, hphase, RingHomCompTriple.comp_apply, RingHom.id_apply]
   simp only [Complex.norm_conj] at hh
   rw [henergy] at hh
   have hrowsum : (∑ m : ↥rows, ‖∑ x : ↥P, starRingEnd ℂ (bP x) * ProbeAdditive.phase F A.Sf e
@@ -229,7 +222,7 @@ private theorem indexed_sieve (A : SArithmeticData F)
       apply Finset.sum_congr rfl; intro m hm; rw [hinner, hneg]
     _ ≤ ∑ m ∈ rows, ‖∑ x : ↥P, starRingEnd ℂ (bP x) * ProbeAdditive.phase F A.Sf e
         (sLocalDiagonal F A.Sf ((m : F) * ProbeSeparation.value F p x.val))‖^2 :=
-      Finset.sum_le_sum_of_subset_of_nonneg hsub (by intros; positivity)
+      Finset.sum_le_sum_of_subset_of_nonneg hsub (by simp)
     _ ≤ _ := hh
 private theorem phase_eq (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
     (e : (v : A.Sf) → AddChar (v.val.adicCompletion F) Circle)
@@ -395,7 +388,7 @@ theorem separated_finite_row_energy (A : SArithmeticData F)
     NormalizedProbe.gaussRow A D s m *
       ProbeLogWeight.mode L j (A.exteriorNorm s / Y)
   let B : ℝ := C₀ * (X * Y + (a * Y) ^ 2) * (E / Y)
-  have hB : 0 ≤ B := by dsimp [B]; positivity
+  have hB : 0 ≤ B := by positivity
   have hr : ∀ j, (∑ m ∈ M, ‖r j m‖ ^ 2) ≤ B := by
     intro j
     exact (hsieve (X * Y) (a * Y) hXY haY M hM T hT' Y L j).trans
@@ -541,14 +534,14 @@ theorem additiveCoefficient_energy_normalization_le {C X Y : ℝ}
       nlinarith [mul_nonneg (sub_nonneg.mpr hYX) hY.le]
     _ = 2 * C := by field_simp; <;> ring
 
-private lemma finiteCharacter_norm_le_one {R : Type*} [CommRing R] [Fintype R]
+lemma finiteCharacter_norm_le_one {R : Type*} [CommRing R] [Fintype R]
     (χ : MulChar R ℂ) (d : R) : ‖χ d‖ ≤ 1 := by
   by_cases hd : IsUnit d
   · obtain ⟨u, rfl⟩ := hd
     have h := Complex.norm_eq_one_of_mem_rootsOfUnity (χ.apply_mem_rootsOfUnity u)
     simpa using h.le
   · simp [χ.map_nonunit hd]
-private lemma normalizedResidueCoefficient_energy {R : Type*} [CommRing R] [Fintype R]
+lemma normalizedResidueCoefficient_energy {R : Type*} [CommRing R] [Fintype R]
     (χ : MulChar R ℂ) (Y q : ℝ) (hq : 0 < q)
     (hcard : (Fintype.card R : ℝ) ≤ q) (z : R → ℂ) (hz : ∀ d, ‖z d‖ ≤ 1) :
     (∑ d : R, ‖(Y⁻¹ : ℂ) * (Real.sqrt q : ℂ)⁻¹ * χ d * z d‖ ^ 2) ≤ Y⁻¹ ^ 2 := by
@@ -574,7 +567,7 @@ private lemma normalizedResidueCoefficient_energy {R : Type*} [CommRing R] [Fint
     _ ≤ q * (Y⁻¹ ^ 2 * q⁻¹) := mul_le_mul_of_nonneg_right hcard (by positivity)
     _ = Y⁻¹ ^ 2 := by field_simp
 
-private lemma gaussResidue_card (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
+lemma gaussResidue_card (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
     (s : A.Exterior) : Nat.card (FiniteTransform.Residue A.R.toSubring (D.generator s)) =
       Ideal.absNorm s.val := by
   change Nat.card (A.R ⧸ Ideal.span {D.generator s}) = _
@@ -687,15 +680,15 @@ theorem additiveCoefficient_scaled_normalization (A : SArithmeticData F)
   rw [tsum_congr hterm, tsum_mul_left]
   ring
 
-private lemma asLocalPoint_mul (A : SArithmeticData F) (g h : A.G) :
+lemma asLocalPoint_mul (A : SArithmeticData F) (g h : A.G) :
     asLocalPoint A (g * h) = asLocalPoint A g * asLocalPoint A h := by rfl
-private lemma localUnits_point (A : SArithmeticData F) (g : A.G) :
+lemma localUnits_point (A : SArithmeticData F) (g : A.G) :
     (ProbeSheet.localUnits A g).val = asLocalPoint A g := by rfl
-private lemma radialSection_mul' (A : SArithmeticData F) (T U : ℝ) (hT : 0 < T) (hU : 0 < U) :
+lemma radialSection_mul' (A : SArithmeticData F) (T U : ℝ) (hT : 0 < T) (hU : 0 < U) :
     radialSection A (T * U) = radialSection A T * radialSection A U := by
   simp only [radialSection, dif_pos hT, dif_pos hU, dif_pos (mul_pos hT hU)]
   exact A.radialSection_mul T U hT hU
-private lemma logweight_argument (A : SArithmeticData F) (q X Y : ℝ)
+lemma logweight_argument (A : SArithmeticData F) (q X Y : ℝ)
     (hq : 0 < q) (hX : 0 < X) (hY : 0 < Y) (t : A.G1) (m : A.R) :
     sLocalDiagonal F A.Sf (m : F) *
       asLocalPoint A (((t : A.G) * radialSection A (q * X))⁻¹) =
@@ -709,7 +702,7 @@ private lemma logweight_argument (A : SArithmeticData F) (q X Y : ℝ)
   rw [← mul_assoc, mul_inv, asLocalPoint_mul]
   simp only [radialSection, dif_pos (div_pos hq hY)]
   ring
-private lemma sqrt_neg_half (v : ℝ) (hv : 0 < v) :
+lemma sqrt_neg_half (v : ℝ) (hv : 0 < v) :
     (Real.sqrt v : ℂ)⁻¹ = (v ^ (-(1 / 2 : ℝ)) : ℝ) := by
   rw [Real.sqrt_eq_rpow, ← Complex.ofReal_inv, ← Real.rpow_neg hv.le]
 
@@ -750,7 +743,7 @@ theorem additiveCoefficient_logweight_expansion (A : SArithmeticData F)
   intro s
   rw [hcut _ (div_pos (A.exteriorNorm_pos s) hY)]
 
-private lemma finite_mode_exchange (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
+lemma finite_mode_exchange (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
     (c : ℤ → SLocalProduct F A.Sf →ᵇ ℂ) (hc : Summable (fun j => ‖c j‖))
     (L Y : ℝ) (T : Finset A.Exterior) (y : SLocalProduct F A.Sf) (m : A.R) :
     (∑ s ∈ T, gaussRow A D s m *
@@ -795,8 +788,7 @@ theorem additiveCoefficient_finite_fourier_exchange (A : SArithmeticData F)
             asLocalPoint A (((t : A.G) * radialSection A (X * Y))⁻¹)) *
           ProbeLogWeight.mode L j (A.exteriorNorm s / Y) := by
         apply Finset.sum_congr rfl
-        intro s hs
-        rw [if_pos (hf s hs)]
+        simp_all
       _ = _ := finite_mode_exchange A D c hcnorm L Y T _ m
   · simp [ProbeLogWeight.truncatedSeries, (hT s).not.mp hs]
 
@@ -876,9 +868,3 @@ theorem principal_additiveCoefficient_square_energy (A : SArithmeticData F)
     P.compactSupport P.supportUnits P.W1 X Y hXpos hYpos t ht, henergy, ?_⟩
   intro hYX
   exact henergy.trans (additiveCoefficient_energy_normalization_le hC hXpos hYpos hYX)
-
-end
-end NormalizedProbe
-end DedekindZetaZeroFree
-
-end

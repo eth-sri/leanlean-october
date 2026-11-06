@@ -25,5 +25,3 @@ structure QuadraticRayExtensionData
     (Q : HeightOneSpectrum (𝓞 extension)), Q.asIdeal.LiesOver p.asIdeal →
       (character (ClassFieldTheory.arithmeticFrobeniusAt (K := F) Q) : ℂ) =
         η p.asIdeal
-
-end DedekindZetaZeroFree.LargeSieve

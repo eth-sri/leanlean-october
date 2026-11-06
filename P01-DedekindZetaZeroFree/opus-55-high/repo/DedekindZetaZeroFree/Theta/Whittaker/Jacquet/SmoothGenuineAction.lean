@@ -54,11 +54,4 @@ theorem standardCharacter_properties :
         (localFiniteCharacter F v x.toAdd : ℂ)) from continuous_subtype_val.comp ((continuous_localFiniteCharacter F v).comp
         (show Continuous (Multiplicative.toAdd : Multiplicative (v.adicCompletion F) → _)
           from continuous_id)))
-  · intro b
-    exact Circle.norm_coe _
-
-variable (m : ℕ) (hm : KPLocalChartTopology.MatrixChartDepth F v m)
-
-end DedekindZetaZeroFree.KPWildCompactProjectorKirillov.ActualInput
-
-end
+  simp

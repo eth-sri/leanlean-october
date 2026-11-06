@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Ray-principal ideals are prime to the modulus
 
@@ -27,7 +22,6 @@ integral-unit-valued at every finite prime in the modulus support.
 
 open scoped Classical NumberField
 
-noncomputable section
 
 namespace ClassFieldTheory
 
@@ -56,7 +50,3 @@ theorem rayPrincipalIdealSubgroup_le_primeToIdeals
     ((IdeleGroup.principalIdele K x).2 v)).2
   apply RayClass.localHigherUnitGroup_le_integralUnits v (m.finitePart v)
   exact hx.1 v hv
-
-end ClassFieldTheory
-
-end

@@ -17,15 +17,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Compactness of norm-one idele classes
 
@@ -39,7 +30,6 @@ open NumberField IsDedekindDomain
 open NumberField.Units.dirichletUnitTheorem
 
 noncomputable section
-
 
 variable {K : Type*} [Field K] [NumberField K]
 
@@ -123,9 +113,7 @@ theorem isCompact_localAnnulus (w : InfinitePlace K) (B : ℝ) :
     NontriviallyNormedField.ofNormNeOne
       ⟨2, by
         intro h
-        have hz : ‖(2 : w.Completion)‖ = 0 := by rw [h, norm_zero]
-        rw [hnorm_two] at hz
-        norm_num at hz,
+        simp_all,
        by rw [hnorm_two]; norm_num⟩
   let : ProperSpace w.Completion :=
     ProperSpace.of_nontriviallyNormedField_of_weaklyLocallyCompactSpace
@@ -186,7 +174,7 @@ theorem mem_annulus_iff (a : InfiniteIdeleGroup K) (B : ℝ) :
     refine ⟨ContinuousMulEquiv.piUnits a, ?_, ?_⟩
     · intro w _
       exact ha w
-    · exact ContinuousMulEquiv.piUnits.symm_apply_apply a
+    rfl
 
 /-- The archimedean norm is continuous. -/
 theorem continuous_archimedeanNorm :
@@ -297,12 +285,8 @@ theorem sum_logNorm_eq_neg_distinguished
               ‖((component w a : w.Completionˣ) :
                 w.Completion)‖ ^ w.mult) := by
               rw [Real.log_prod]
-              · apply Finset.sum_congr rfl
-                intro w _
-                rw [Real.log_pow]
-              · intro w _
-                exact pow_ne_zero _ <|
-                  norm_ne_zero_iff.mpr (component w a).ne_zero
+              · simp
+              simp
       _ = 0 := by rw [hprod, Real.log_one]
   rw [Fintype.sum_eq_add_sum_subtype_ne _ (w₀ (K := K))] at hsum
   have hsum' :
@@ -350,9 +334,7 @@ theorem abs_log_norm_component_le
           (fun v _ ↦ logNorm_component_le a hlog v)).trans ?_
       rw [nsmul_eq_mul]
       apply mul_le_mul_of_nonneg_right _ hr
-      exact_mod_cast
-        (Fintype.card_subtype_le
-          (fun w : InfinitePlace K ↦ w ≠ w₀ (K := K)))
+      simp
   · have h := logNorm_component_le a hlog ⟨w, hw⟩
     rw [logNorm, abs_mul, Nat.abs_cast] at h
     refine (le_trans ?_ h).trans ?_
@@ -379,7 +361,7 @@ theorem mem_annulus_of_logNorm_le
       0 <
         ‖((component w a : w.Completionˣ) :
           w.Completion)‖ :=
-    norm_pos_iff.mpr (component w a).ne_zero
+    by simp
   have habs :
       -B ≤
           Real.log
@@ -462,13 +444,7 @@ theorem exists_ringUnit_logNorm_le (a : InfiniteIdeleGroup K) :
       NumberField.Units.logEmbedding K
           (Additive.ofMul u.toMul⁻¹) =
         -(f : logSpace K) := by
-    calc
-      NumberField.Units.logEmbedding K
-          (Additive.ofMul u.toMul⁻¹) =
-          -NumberField.Units.logEmbedding K u := by
-            rw [← map_neg]
-            rfl
-      _ = -(f : logSpace K) := congrArg Neg.neg hu
+    simp_all
   rw [logNorm_mul, logNorm_principalRingUnit, hinv,
     ← sub_eq_add_neg, ← ZSpan.fract_apply]
   exact ZSpan.norm_fract_le b (logNorm a)
@@ -519,8 +495,7 @@ theorem archimedeanNorm_eq_one_of_normOne_integral
   have hfin :=
     finite_absoluteNorm_eq_one_of_integral a.2 hintegral
   change absoluteNorm a = 1 at hnorm
-  rw [absoluteNorm_apply, hfin, one_mul] at hnorm
-  exact inv_eq_one.mp hnorm
+  simp_all
 
 /-- The fixed compact set of norm-one ideles which are integral at every
 finite place and logarithmically reduced modulo the ordinary units. -/
@@ -575,15 +550,15 @@ theorem exists_compactIntegralNormOneSet_representative
       (InfiniteIdeleGroup.ringUnitToFieldUnit (K := K) u)
   let b : IdeleGroup K := a * p
   have hpIntegral :
-      p ∈ integralAtFinitePlaces (K := K) := by
-    exact principalRingUnit_mem_integralAtFinitePlaces u
+      p ∈ integralAtFinitePlaces (K := K) := 
+    principalRingUnit_mem_integralAtFinitePlaces u
   have hbIntegral :
-      b.2 ∈ FiniteIdeleGroup.integralSubgroup (K := K) := by
-    exact (integralAtFinitePlaces (K := K)).mul_mem hintegral
+      b.2 ∈ FiniteIdeleGroup.integralSubgroup (K := K) := 
+    (integralAtFinitePlaces (K := K)).mul_mem hintegral
       hpIntegral
   have hpNorm :
-      p ∈ normOneSubgroup (K := K) := by
-    exact principalSubgroup_le_normOneSubgroup
+      p ∈ normOneSubgroup (K := K) := 
+    principalSubgroup_le_normOneSubgroup
       ⟨InfiniteIdeleGroup.ringUnitToFieldUnit (K := K) u, rfl⟩
   have hbNorm :
       b ∈ normOneSubgroup (K := K) :=
@@ -593,8 +568,8 @@ theorem exists_compactIntegralNormOneSet_representative
     archimedeanNorm_eq_one_of_normOne_integral b hbNorm hbIntegral
   have hbLog :
       ‖InfiniteIdeleGroup.logNorm b.1‖ ≤
-        InfiniteIdeleGroup.logFundamentalBound (K := K) := by
-    exact hu
+        InfiniteIdeleGroup.logFundamentalBound (K := K) := 
+    hu
   have hbAnnulus :
       b.1 ∈ InfiniteIdeleGroup.annulus (K := K)
         ((Fintype.card (InfinitePlace K) : ℝ) *
@@ -627,16 +602,16 @@ one such representative; use `1` for the (irrelevant) remaining classes. -/
   else
     1
 
-private theorem normOneIdealClassRepresentative_mem
+theorem normOneIdealClassRepresentative_mem
     (c : ClassGroup (𝓞 K)) :
     normOneIdealClassRepresentative (K := K) c ∈
       normOneSubgroup (K := K) := by
   rw [normOneIdealClassRepresentative]
   split_ifs with h
   · exact (Classical.choose_spec h).1
-  · exact (normOneSubgroup (K := K)).one_mem
+  simp
 
-private theorem idealClass_normOneIdealClassRepresentative
+theorem idealClass_normOneIdealClassRepresentative
     (c : ClassGroup (𝓞 K))
     (h : ∃ a : IdeleGroup K,
       a ∈ normOneSubgroup (K := K) ∧ idealClass a = c) :
@@ -683,8 +658,7 @@ theorem exists_integral_normOne_reduction
   let d : IdeleGroup K := a * r⁻¹
   have hdClass : idealClass d = 1 := by
     dsimp [d]
-    rw [map_mul, map_inv, hrClass]
-    exact mul_inv_cancel _
+    simp_all
   have hdPrincipal :
       fractionalIdeal d ∈
         (toPrincipalIdeal (𝓞 K) K).range := by
@@ -744,7 +718,7 @@ theorem compactIntegralNormOneSet_subset_normOne :
   have hfin :=
     finite_absoluteNorm_eq_one_of_integral a.2 ha.2.1
   change absoluteNorm a = 1
-  rw [absoluteNorm_apply, hfin, ha.2.2, inv_one, mul_one]
+  simp_all
 
 theorem compactNormOneClassCover_subset_normOne :
     compactNormOneClassCover (K := K) ⊆
@@ -826,7 +800,3 @@ instance normOneSubgroupCompactSpace :
     CompactSpace (normOneSubgroup (K := K)) :=
   isCompact_iff_compactSpace.mp
     (normOneSubgroup_isCompact (K := K))
-
-end IdeleClassGroup
-
-end

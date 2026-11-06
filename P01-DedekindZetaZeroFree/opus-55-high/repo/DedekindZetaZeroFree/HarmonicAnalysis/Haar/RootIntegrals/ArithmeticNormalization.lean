@@ -50,21 +50,5 @@ theorem arithmeticRootMeasure_eq (p : KPHilbert.Place F) :
   | inl w => exact traceHaar_eq_characterOne
   | inr q => exact FourierContinuation.finiteHaar_transport N q (M q)
 
-omit M in
-instance arithmeticRootMeasureSigmaFinite (p : KPHilbert.Place F) :
-    SigmaFinite (arithmeticRootMeasure R N p) := by
-  cases p with
-  | inl w =>
-    change SigmaFinite ArchSelfDual.complexMeasure
-    change SigmaFinite ((2 : ℝ≥0) • (volume : Measure ℂ))
-    infer_instance
-  | inr q =>
-    letI := N.finiteHaar_add q
-    exact inferInstanceAs (SigmaFinite (N.finiteHaar q))
-
 def arithmeticStageScale (s : Finset (KPHilbert.Place F)) : ℝ :=
   ∏ p : s, arithmeticRootScale R p
-
-end DedekindZetaZeroFree.FourierContinuation.FaithfulSource
-
-end

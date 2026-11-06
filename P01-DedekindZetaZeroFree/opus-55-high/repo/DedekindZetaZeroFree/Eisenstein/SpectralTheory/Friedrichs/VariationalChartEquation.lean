@@ -97,7 +97,7 @@ theorem closed_ball_shrinking (i : Fin (H.atlas U).componentCount)
     (by rintro y ⟨p, hp, rfl⟩; exact hA hp)
 
 open KPContLocalEnergy in
-private theorem weighted_test_integrable {n : ℕ} {B : LocalBall n}
+theorem weighted_test_integrable {n : ℕ} {B : LocalBall n}
     {cρ Cρ κ Λ : ℝ} (D : Coefficients B cρ Cρ κ Λ)
     (w : BallL2 B) (φ : TestFunction B.toOpens ℂ ⊤) :
     Integrable (fun x => (D.density x : ℂ) * w x * star (φ x))
@@ -200,12 +200,12 @@ private theorem index_cases {n : ℕ} (α : MultiIndex n 1) :
       simpa [firstIndex, hji] using hj
  theorem reindexed_zero {n m : ℕ} (e : Fin n ≃ Fin m) :
     reindexedIndex e (zeroIndex n 1) = zeroIndex m 1 := by rfl
-private theorem reindexed_first {n m : ℕ} (e : Fin n ≃ Fin m) (j : Fin n) :
+theorem reindexed_first {n m : ℕ} (e : Fin n ≃ Fin m) (j : Fin n) :
     reindexedIndex e (firstIndex j) = firstIndex (e j) := by
   apply Subtype.ext
   funext k
   simp [reindexedIndex, firstIndex, e.symm_apply_eq]
-private theorem reindex_direction {n m : ℕ} (e : Fin n ≃ Fin m) (j : Fin n) :
+theorem reindex_direction {n m : ℕ} (e : Fin n ≃ Fin m) (j : Fin n) :
     LinearIsometryEquiv.piLpCongrLeft 2 ℝ ℝ e (EuclideanSpace.single j 1) =
       EuclideanSpace.single (e j) 1 := by
   ext k
@@ -341,7 +341,7 @@ private theorem reindex_direction {n m : ℕ} (e : Fin n ≃ Fin m) (j : Fin n) 
     (KPContCotangentActualOverlap.placeEquiv F ζ hζ).symm (Equiv.refl _)).trans
       (KPContActualCotangentChartRestriction.coefficientIndex (F := F)))
 
-private theorem canonical_coordinate (p : Space (KPCuspLogShape.dimension F * 3)) :
+theorem canonical_coordinate (p : Space (KPCuspLogShape.dimension F * 3)) :
     KPContActualSectorChartEquivariantInputs.toActual (F := F) (ζ := ζ) (hζ := hζ)
       (LinearIsometryEquiv.piLpCongrLeft 2 ℝ ℝ (canonicalIndex F ζ hζ) p) = coordinates F p := by
   funext i
@@ -357,7 +357,7 @@ private theorem canonical_coordinate (p : Space (KPCuspLogShape.dimension F * 3)
       KPContActualCotangentChartRestriction.coefficientIndex, canonicalIndex,
       LinearIsometryEquiv.piLpCongrLeft_apply, coordinates, KPArchRealCoordinates.coordinates]
 
-private theorem canonical_ball_inside (i : Fin (H.atlas U).componentCount)
+theorem canonical_ball_inside (i : Fin (H.atlas U).componentCount)
     (A : LocalBall (KPCuspLogShape.dimension F * 3))
     (a : ShrunkChart F ζ hζ U R P H) (ha : coordinates F '' KPContLocalCubeEmbedding.closedCarrier A ⊆ a.domain) :
     KPContActualSectorFormWeakLocalization.InteriorBall (H := H) a
@@ -387,7 +387,7 @@ private theorem canonical_ball_inside (i : Fin (H.atlas U).componentCount)
     rw [he]
     exact ha ⟨_,hp',rfl⟩
 
-private theorem exists_sobolev_value (μG : Measure (KPMsFixedHaarDisintegration.Cover F ζ hζ))
+theorem exists_sobolev_value (μG : Measure (KPMsFixedHaarDisintegration.Cover F ζ hζ))
     (hμG : μG.IsHaarMeasure) (hR : R.adelicHaar = μG)
     (realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ U R P H)
     (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
@@ -458,7 +458,7 @@ private theorem exists_sobolev_value (μG : Measure (KPMsFixedHaarDisintegration
   rw [he]
   rfl
 
-private theorem diagonal_pairing {n : ℕ} (a : Fin n → ℝ) (b c : Fin n → ℂ) :
+theorem diagonal_pairing {n : ℕ} (a : Fin n → ℝ) (b c : Fin n → ℂ) :
     (∑ i : Fin n, ∑ j : Fin n, ((Matrix.diagonal a) i j : ℂ) * b j * c i) =
       ∑ i : Fin n, (a i : ℂ) * b i * c i := by
   apply Finset.sum_congr rfl
@@ -466,7 +466,7 @@ private theorem diagonal_pairing {n : ℕ} (a : Fin n → ℝ) (b c : Fin n → 
   simp [Matrix.diagonal_apply, apply_ite (fun t : ℝ => (t : ℂ)),
     mul_ite, ite_mul]
 
-private theorem weakEquation_zero_of_diagonal_pairing {n : ℕ} {A : LocalBall n}
+theorem weakEquation_zero_of_diagonal_pairing {n : ℕ} {A : LocalBall n}
     {cρ Cρ κ Λ : ℝ} (D : Coefficients A cρ Cρ κ Λ)
     (ρ : Space n → ℝ) (g : Space n → Fin n → ℝ)
     (hρ : D.density = ρ) (hg : D.matrix = fun p => Matrix.diagonal (g p))

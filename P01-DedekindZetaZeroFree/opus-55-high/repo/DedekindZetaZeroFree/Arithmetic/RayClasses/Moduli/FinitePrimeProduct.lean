@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.Arithmetic.RayClasses.Conductors.ModulusIdeal
 @[expose] public section
 
 namespace DedekindZetaZeroFree.KummerConductorProduct
-noncomputable section
 open scoped NumberField Classical
 open IsDedekindDomain
 
@@ -19,6 +18,3 @@ theorem modulus_eq (F : Type) [Field F] [NumberField F]
   apply ClassFieldTheory.RayClassModulus.ext
   · exact PrimitiveRay.modulusIdeal_M _
   · exact Subsingleton.elim _ _
-
-end
-end DedekindZetaZeroFree.KummerConductorProduct

@@ -62,7 +62,7 @@ theorem chart_base_fibers (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     let g : C.G F ζ hζ hF U := ⟨γ⁻¹, C.separated γ⁻¹ x y hx hy hγ'⟩
     have hgx : C.orthogonal g x ∈ C.extendedDomain := by
       rw [← C.invariant_extension g]
-      exact ⟨x, hx, rfl⟩
+      simp_all
     refine ⟨g, ?_⟩
     apply congrArg Subtype.val
       (C.coordinates_embedding.injective (a₁ := ⟨C.orthogonal g x, hgx⟩)
@@ -87,7 +87,7 @@ theorem chart_base_fiber_norm (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     (h : C.toBase F ζ hζ hF U x = C.toBase F ζ hζ hF U y) :
     ‖x‖ = ‖y‖ := by
   obtain ⟨g, rfl⟩ := (chart_base_fibers F ζ hζ hF U A C hx hy).mp h
-  exact (C.orthogonal g).norm_map x |>.symm
+  simp
 
 set_option maxHeartbeats 800000 in
 
@@ -113,7 +113,7 @@ theorem chart_invariant_coordinate_bump (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF
           (C.orthogonal g).continuous
         exact (hcont.closure_preimage_subset (Function.support f)) hy
       have hh := hs ht
-      simpa only [Metric.mem_ball, dist_zero_right, LinearIsometryEquiv.norm_map] using hh
+      simp_all
     have hsub : tsupport b ⊆ ⋃ g : C.G F ζ hζ hF U,
         tsupport (fun y => f (C.orthogonal g y)) := by
       apply closure_minimal
@@ -143,8 +143,7 @@ theorem chart_invariant_coordinate_bump (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF
     apply Fintype.sum_bijective (fun h : C.G F ζ hζ hF U => h * g)
       (Group.mulRight_bijective g)
     intro h
-    rw [map_mul]
-    rfl
+    simp
 
 set_option maxHeartbeats 800000 in
 
@@ -180,7 +179,7 @@ theorem chart_ball_toBase_isOpenMap (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
       (KPCuspGenuineMonodromy.Component F ζ hζ U (A.representative C.component))
       (C.coordinates y.val))).symm
 
-private theorem chart_toBase_continuousOn (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
+theorem chart_toBase_continuousOn (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     (C : Chart F ζ hζ hF U A) :
     ContinuousOn (C.toBase F ζ hζ hF U) C.extendedDomain := by
   have h : Continuous (fun z : KPFiniteCuspAtlas.SymmetricSpace F =>
@@ -246,7 +245,7 @@ theorem chart_descend_coordinate_bump (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U
           funext z
           exact hformula z z.property
         rw [heq]
-        exact (hb.comp continuous_subtype_val).continuousAt
+        fun_prop
       change Filter.Tendsto f (nhds x) (nhds (f x))
       have hyx : Set.restrict B p y = x := (hl ⟨x, hxO⟩).2
       rw [hyx] at hmap
@@ -264,7 +263,7 @@ theorem chart_descend_coordinate_bump (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U
     dsimp [f]
     split_ifs
     · exact hn _
-    · exact le_rfl
+    rfl
   · intro y hy
     by_cases hyB : y ∈ B
     · exact hformula y hyB
@@ -279,13 +278,13 @@ theorem chart_descend_coordinate_bump (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U
       change f (p y) = b y
       simp only [f, dif_neg hpy, hyb]
 
-private theorem chart_action_smooth (γ : KPCuspArithmetic.PGL2 F) :
+theorem chart_action_smooth (γ : KPCuspArithmetic.PGL2 F) :
     ContDiff ℝ (⊤ : ℕ∞) (fun z : KPFiniteCuspAtlas.SymmetricSpace F => γ • z) := by
   change ContDiff ℝ (⊤ : ℕ∞) (KPCuspSiegel.action F γ)
   unfold KPCuspSiegel.action KPCuspSiegel.glAction
   exact (KPArch.productAction_contDiff _ _).of_le (by simp)
 
-private theorem component_projection_invariant (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
+theorem component_projection_invariant (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     (j : Fin A.componentCount)
     (γ : KPCuspGenuineMonodromy.Component F ζ hζ U (A.representative j))
     (z : KPFiniteCuspAtlas.SymmetricSpace F) :
@@ -296,7 +295,7 @@ private theorem component_projection_invariant (A : KPFiniteCuspAtlas.Atlas F ζ
   apply congrArg (KPFiniteCuspAtlas.componentMap F ζ hζ U (A.representative j))
   apply Quotient.sound
   apply MulAction.orbitRel_apply.mpr
-  exact MulAction.mem_orbit_iff.mpr ⟨γ, rfl⟩
+  simp
 
 set_option maxHeartbeats 800000 in
 
@@ -410,7 +409,7 @@ theorem finite_smooth_chart_partition (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U
   let e : Fin (Fintype.card s) ≃ s := (Fintype.equivFin s).symm
   let bs : Fin (Fintype.card s) → X F ζ hζ U → ℝ := fun i => b (e i)
   let S : X F ζ hζ U → ℝ := fun x => ∑ i, bs i x
-  have hS : Continuous S := continuous_finset_sum _ (fun i _ => hb (e i))
+  have hS : Continuous S := by fun_prop
   have hS0 : ∀ x, 0 ≤ S x := fun x => Finset.sum_nonneg (fun i _ => hn (e i) x)
   have hSK : ∀ x ∈ K, 0 < S x := by
     intro x hx
@@ -422,11 +421,10 @@ theorem finite_smooth_chart_partition (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U
     exact (show 0 < bs (e.symm ⟨y, hy⟩) x by simpa [bs, he] using hxy).trans_le hle
   obtain ⟨a, ha, haK⟩ := hK.exists_forall_le' hS.continuousOn hSK
   let δ := a / 2
-  have hδ : 0 < δ := by dsimp [δ]; positivity
+  have hδ : 0 < δ := by positivity
   let D : ℝ → ℝ := fun t => t + δ * Real.smoothTransition (2 - 2 * t / δ)
   have hD : ContDiff ℝ (⊤ : ℕ∞) D :=
-    contDiff_id.add (contDiff_const.mul (Real.smoothTransition.contDiff.comp
-      (contDiff_const.sub ((contDiff_const.mul contDiff_id).div_const δ))))
+    by fun_prop
   have hDpos : ∀ t, 0 ≤ t → 0 < D t := by
     intro t ht
     by_cases h : 0 < t
@@ -480,7 +478,3 @@ theorem finite_smooth_chart_partition (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U
     change (∑ i, bs i x / D (S x)) = 1
     rw [← Finset.sum_div, hDeq _ hx.le]
     exact div_self (ne_of_gt (hδ.trans hx))
-
-end DedekindZetaZeroFree.CoreChartLocalizers.CutoffConstruction
-
-end

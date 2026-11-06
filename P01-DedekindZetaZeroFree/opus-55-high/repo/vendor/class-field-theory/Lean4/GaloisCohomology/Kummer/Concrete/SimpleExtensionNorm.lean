@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Norm witnesses in simple Kummer extensions
 
@@ -29,7 +23,6 @@ of the roots of unity by the image of the simple Kummer character, so it does
 not require the defining power polynomial to be irreducible.
 -/
 
-noncomputable section
 
 namespace KummerTheory
 

@@ -11,7 +11,7 @@ open scoped NumberField Classical Topology
 variable {F : Type} [Field F] [NumberField F]
 variable {f : Ideal (𝓞 F)} {η : DedekindZetaZeroFree.RayClassCharacter F f}
 
-private lemma conj_eq_self_of_cube_eq_self {z : ℂ} (h : z ^ 3 = z) :
+lemma conj_eq_self_of_cube_eq_self {z : ℂ} (h : z ^ 3 = z) :
     (starRingEnd ℂ) z = z := by
   have hfac : z * (z - 1) * (z + 1) = z ^ 3 - z := by ring
   have hzero : z * (z - 1) * (z + 1) = 0 := by rw [hfac, sub_eq_zero.mpr h]
@@ -59,5 +59,3 @@ theorem EntireHeckeWitness.selfdual_functionalEquation (w : EntireHeckeWitness �
     ∀ s : ℂ, w.Λ s = w.W * w.Λ (1 - s) := by
   intro s
   rw [w.functionalEquation s, congrFun (w.dual_eq_self hη) (1 - s)]
-
-end DedekindZetaZeroFree.LargeSieve

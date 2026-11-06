@@ -20,8 +20,7 @@ theorem selected_scalar_numerator_zero_continuous
     (r : ℝ) (hr : 0 < r)
     (hb : Metric.ball (0 : ℂ) r ⊆ KPContinuation.spectralDomain)
     (hp : ∀ s ∈ Metric.ball (0 : ℂ) r, s ∈ P.poles → s = 0) :
-    Continuous (selectedScalarNumerator D r 0) := by
-  exact ResidueContinuity.selected_residue_continuous D P hjoint horder r hr hb hp
+    Continuous (selectedScalarNumerator D r 0) := by apply DedekindZetaZeroFree.ResidueContinuity.selected_residue_continuous <;> assumption
 
 end DedekindZetaZeroFree.ThetaExpansion
 

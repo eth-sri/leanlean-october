@@ -13,7 +13,7 @@ namespace DedekindZetaZeroFree.KPCoinvariants.TransversalAverages
 
 open ValuativeRel
 
-private lemma compact_bound {K : Type*} [Field K] [ValuativeRel K] [TopologicalSpace K]
+lemma compact_bound {K : Type*} [Field K] [ValuativeRel K] [TopologicalSpace K]
     [IsNonarchimedeanLocalField K] (S : Set K) (hS : IsCompact S) :
     ∃ γ : (ValueGroupWithZero K)ˣ, S ⊆ {x | valuation K x ≤ γ} := by
   let v := valuation K
@@ -33,20 +33,20 @@ private lemma compact_bound {K : Type*} [Field K] [ValuativeRel K] [TopologicalS
     apply Set.mem_iUnion.mpr
     refine ⟨Units.mk0 (max (v x) 1)
       (ne_of_gt (lt_of_lt_of_le zero_lt_one (le_max_right _ _))), ?_⟩
-    exact le_max_left (v x) 1
+    simp
   · intro a b
     refine ⟨if a ≤ b then b else a, ?_, ?_⟩
     · intro x hx
       split_ifs with h
       · exact le_trans (show v x ≤ a from hx) (show (a : ValueGroupWithZero K) ≤ b from h)
-      · exact hx
+      omega
     · intro x hx
       split_ifs with h
       · exact hx
       · exact le_trans (show v x ≤ b from hx)
           (show (b : ValueGroupWithZero K) ≤ a from le_of_not_ge h)
 
-private lemma finite_transversal {K : Type*} [AddCommGroup K] [TopologicalSpace K] [IsTopologicalAddGroup K]
+lemma finite_transversal {K : Type*} [AddCommGroup K] [TopologicalSpace K] [IsTopologicalAddGroup K]
     (J L : AddSubgroup K) (hJo : IsOpen (J : Set K)) (hLc : IsCompact (L : Set K)) :
     ∃ R : Finset K, (∀ r ∈ R, r ∈ L) ∧
       (∀ l ∈ L, ∃! r : {r // r ∈ R}, l - r.val ∈ J) ∧ R.Nonempty := by
@@ -79,9 +79,7 @@ private lemma finite_transversal {K : Type*} [AddCommGroup K] [TopologicalSpace 
         change q'.val = mk l
         rw [← (hrep q').2, hq']
         exact (QuotientAddGroup.eq_iff_sub_mem.mpr hr').symm
-      apply Subtype.ext
-      change r.val = rep q
-      rw [← hq', heq]
+      simp_all
   · let q : Q := ⟨mk 0, ⟨0, L.zero_mem, rfl⟩⟩
     exact ⟨rep q, (hmem _).mpr ⟨q, rfl⟩⟩
 
@@ -140,8 +138,7 @@ theorem transversal_average_kills_relation
     intro a b hab
     have hd : a.val - b.val ∈ J := by
       have hd' := J.sub_mem (hp a) (hp b)
-      rw [hab] at hd'
-      convert hd' using 1 <;> abel
+      simp_all
     exact (hR.2 a.val (hR.1 a.val a.property)).unique
       (by simp) hd
   have hpbij : Function.Bijective p :=
@@ -176,11 +173,10 @@ theorem transversal_average_kills_relation
         map_mul, Units.val_mul]
     rw [← Module.End.mul_apply, ← map_mul, ← ofAdd_add,
       hrepr (r.val + n) (p r).val (hp r), hc, smul_smul]
-    simp [mul_inv_rev, mul_comm, mul_left_comm, mul_assoc]
-  simp only [LinearMap.smul_apply, LinearMap.sum_apply, map_sub, map_smul,
-    smul_sub, Finset.sum_sub_distrib]
+    simp
+  simp only [LinearMap.smul_apply, LinearMap.sum_apply, map_sub, map_smul]
   rw [hsum]
-  simp [smul_smul, mul_comm, mul_left_comm, mul_assoc, Finset.smul_sum]
+  simp [smul_smul, mul_left_comm, Finset.smul_sum]
 
 end DedekindZetaZeroFree.KPCoinvariants.TransversalAverages
 
@@ -206,7 +202,7 @@ theorem coinvariants_map_injective_of_annihilating_averages
   obtain ⟨v, rfl⟩ := Representation.Coinvariants.mk_surjective ρ y
   have hrel : i (u - v) ∈ Representation.Coinvariants.ker τ := by
     apply (Representation.Coinvariants.mk_eq_zero τ).mp
-    simpa only [map_sub, Representation.Coinvariants.map_mk, sub_eq_zero] using hxy
+    simp_all
   obtain ⟨R, hR, hkillR⟩ := hkill (i (u - v)) hrel
   have hcard : (R.card : ℂ) ≠ 0 := by
     exact_mod_cast (Finset.card_ne_zero.mpr hR)
@@ -399,9 +395,8 @@ theorem exact (ρU : Representation ℂ (Multiplicative K) U)
       change Representation.Coinvariants.mk (twistedRepresentation ρW ψ) (p (i v)) = 0
       have hv : i v ∈ LinearMap.ker p.toLinearMap := by
         rw [← hex]
-        exact LinearMap.mem_range_self _ v
-      have hz : p (i v) = 0 := hv
-      rw [hz, map_zero]
+        simp
+      simp_all
     · have hk : Representation.Coinvariants.ker (twistedRepresentation ρW ψ) ≤
           (Representation.Coinvariants.ker (twistedRepresentation ρV ψ)).map p.toLinearMap := by
         apply Submodule.span_le.mpr
@@ -418,17 +413,13 @@ theorem exact (ρU : Representation ℂ (Multiplicative K) U)
       obtain ⟨r, hr, hpr⟩ := hk hpv
       change p r = p v at hpr
       have hvr : v - r ∈ LinearMap.range i.toLinearMap := by
-        rw [hex]
-        change p (v - r) = 0
-        simp [hpr]
+        simp_all
       obtain ⟨t, ht⟩ := hvr
       refine ⟨Representation.Coinvariants.mk (twistedRepresentation ρU ψ) t, ?_⟩
       change Representation.Coinvariants.mk (twistedRepresentation ρV ψ) (i t) =
         Representation.Coinvariants.mk (twistedRepresentation ρV ψ) v
       apply (Representation.Coinvariants.mk_eq_iff _).mpr
-      change i t = v - r at ht
-      rw [ht]
-      convert (Representation.Coinvariants.ker (twistedRepresentation ρV ψ)).neg_mem hr using 1 <;> abel
+      simp_all
   · intro w
     obtain ⟨v, rfl⟩ := Representation.Coinvariants.mk_surjective
       (twistedRepresentation ρW ψ) w
@@ -444,7 +435,3 @@ theorem restrict_smooth {G : Type*} [Group G] [TopologicalSpace G]
     IsSmooth (ρ.comp n) := by
   intro v
   exact (hρ v).preimage (hn.comp continuous_ofAdd)
-
-end DedekindZetaZeroFree.KPCoinvariants
-
-end

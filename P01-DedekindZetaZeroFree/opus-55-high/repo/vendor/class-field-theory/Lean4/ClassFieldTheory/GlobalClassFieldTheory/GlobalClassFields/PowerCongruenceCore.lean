@@ -19,17 +19,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Power congruence subgroups inside finite-index idele-class subgroups
 
@@ -45,7 +34,6 @@ global class fields.
 
 open scoped NumberField Classical
 
-noncomputable section
 
 namespace GlobalClassFieldTheory
 namespace GlobalClassFields
@@ -96,25 +84,20 @@ theorem ideleClassPowerLocalUnitSubgroup_le_closedFiniteIndexSubgroup
     a * (b ^ (n : ℕ))⁻¹
   have hbInfComponent (w : InfinitePlace K) :
       IdeleGroup.infiniteComponent w b = bInf w := by
-    change
-      ContinuousMulEquiv.piUnits
-          (ContinuousMulEquiv.piUnits.symm bInf) w =
-        bInf w
-    exact congrFun
-      (ContinuousMulEquiv.piUnits.apply_symm_apply bInf) w
+    rfl
   have hbInfPow (w : InfinitePlace K) :
       (bInf w) ^ (n : ℕ) =
-        IdeleGroup.infiniteComponent w a := by
-    exact hbInf w
+        IdeleGroup.infiniteComponent w a := 
+    hbInf w
   have hbFiniteComponent
       (v : ↥S) :
-      IdeleGroup.finiteComponent v.1 b = bS v := by
-    exact IdeleGroup.finiteIdeleOfFinset_apply_mem S bS v
+      IdeleGroup.finiteComponent v.1 b = bS v := 
+    IdeleGroup.finiteIdeleOfFinset_apply_mem S bS v
   have hbFinitePow
       (v : ↥S) :
       (bS v) ^ (n : ℕ) =
-        IdeleGroup.finiteComponent v.1 a := by
-    exact hbS v
+        IdeleGroup.finiteComponent v.1 a := 
+    hbS v
   have huInfinite :
       u.1 ∈ m.infiniteCongruenceSubgroup := by
     rw [RayClass.Modulus.mem_infiniteCongruenceSubgroup_iff_local]
@@ -133,7 +116,7 @@ theorem ideleClassPowerLocalUnitSubgroup_le_closedFiniteIndexSubgroup
     change IdeleGroup.infiniteComponent w u ∈
       m.localInfiniteCongruenceSubgroup w
     rw [huComponent]
-    exact Subgroup.one_mem _
+    simp
   have huFinite :
       u.2 ∈ RayClass.finiteCongruenceSubgroup m.finitePart := by
     rw [RayClass.mem_finiteCongruenceSubgroup_iff]
@@ -158,7 +141,7 @@ theorem ideleClassPowerLocalUnitSubgroup_le_closedFiniteIndexSubgroup
       change IdeleGroup.finiteComponent v u ∈
         RayClass.localHigherUnitGroup v (m.finitePart v)
       rw [huComponent]
-      exact Subgroup.one_mem _
+      simp
     · have hmv : m.finitePart v = 0 := by
         by_contra hmv
         exact hv (hS (Finsupp.mem_support_iff.mpr hmv))
@@ -188,7 +171,7 @@ theorem ideleClassPowerLocalUnitSubgroup_le_closedFiniteIndexSubgroup
     apply
       RayClass.modulusInsideClosedFiniteIndex_spec
         H hclosed
-    simpa only [m] using hquCongruence
+    omega
   have hbPowH : q (b ^ (n : ℕ)) ∈ H := by
     change q (b ^ H.index) ∈ H
     rw [map_pow]
@@ -199,17 +182,6 @@ theorem ideleClassPowerLocalUnitSubgroup_le_closedFiniteIndexSubgroup
   have haDecomposition :
       a = b ^ (n : ℕ) * u := by
     dsimp only [u]
-    calc
-      a = a *
-          ((b ^ (n : ℕ)) * (b ^ (n : ℕ))⁻¹) := by
-        simp
-      _ = b ^ (n : ℕ) *
-          (a * (b ^ (n : ℕ))⁻¹) := by
-        ac_rfl
+    simp
   rw [haDecomposition, map_mul]
   exact H.mul_mem hbPowH hquH
-
-end GlobalClassFields
-end GlobalClassFieldTheory
-
-end

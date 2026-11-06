@@ -33,9 +33,9 @@ theorem global_from_shell_bounds
   have hη : 0 < ε / 2 := by linarith
   have hηle : 0 ≤ ε / 2 := hη.le
   obtain ⟨C, hC, hshellC⟩ := hshell (ε / 2) hη
-  have hC' : 0 ≤ C + 2 * A + 1 := unit_block_extension_constant_nonneg C A hC hA
+  have hC' : 0 ≤ C + 2 * A + 1 := by positivity
   set k : ℝ := 2 + 1 / ((ε / 2) * Real.log 2) with hkdef
-  have hk : 0 < k := by rw [hkdef]; exact DedekindZetaZeroFree.LargeSieve.Vendor.dyadicLength_small_power_constant_pos hη
+  have hk : 0 < k := by positivity
   refine ⟨(C + 2 * A + 1) * k ^ 2, mul_nonneg hC' (sq_nonneg k), ?_⟩
   intro M N hM hN lam
   have hM0 : 0 < M := by linarith
@@ -43,9 +43,9 @@ theorem global_from_shell_bounds
   have hMN0 : 0 < M * N := mul_pos hM0 hN0
   have hub := unit_block_extension F c 𝓕 (ε / 2) hηle C hC A hA hcount hshellC
   have henergy_nn : 0 ≤ ∑ b ∈ idealAdmissibleFinset F c N, ‖lam b‖ ^ 2 :=
-    Finset.sum_nonneg fun b _ => sq_nonneg _
+    by positivity
   have hBbig_nn : 0 ≤ (C + 2 * A + 1) * ((M * N) ^ (ε / 2)) * (M + N) :=
-    mul_nonneg (mul_nonneg hC' (Real.rpow_nonneg hMN0.le _)) (by linarith)
+    by positivity
   have hblock : ∀ i ∈ Finset.range (DedekindZetaZeroFree.LargeSieve.Vendor.dyadicLength M + 1),
       ∀ j ∈ Finset.range (DedekindZetaZeroFree.LargeSieve.Vendor.dyadicLength N + 1),
       ∑ a ∈ clippedDyadicBlock F c M i,
@@ -59,8 +59,7 @@ theorem global_from_shell_bounds
     have hnj0 : 0 ≤ dyadicScale j := by linarith
     have hB'nn : 0 ≤ (C + 2 * A + 1) * (dyadicScale i * dyadicScale j) ^ (ε / 2) *
         (dyadicScale i + dyadicScale j) :=
-      mul_nonneg (mul_nonneg hC' (Real.rpow_nonneg (mul_nonneg hmi0 hnj0) _))
-        (by linarith)
+      by positivity
     have hsub := DedekindZetaZeroFree.LargeSieve.Vendor.finite_subrange_bound
       (idealDyadicBlock F c i) (clippedDyadicBlock F c M i)
       (idealDyadicBlock F c j) (clippedDyadicBlock F c N j)
@@ -124,8 +123,7 @@ theorem global_from_shell_bounds
       ring
     have h3 : (M * N) ^ (ε / 2) * (M * N) ^ (ε / 2) = (M * N) ^ ε := by
       rw [← Real.rpow_add hMN0 (ε / 2) (ε / 2)]
-      congr 1
-      ring
+      simp
     calc ((Finset.range (DedekindZetaZeroFree.LargeSieve.Vendor.dyadicLength M + 1)).card : ℝ) *
           ((Finset.range (DedekindZetaZeroFree.LargeSieve.Vendor.dyadicLength N + 1)).card : ℝ) *
           ((C + 2 * A + 1) * ((M * N) ^ (ε / 2)) * (M + N))
@@ -143,5 +141,3 @@ theorem global_from_shell_bounds
     _ ≤ (C + 2 * A + 1) * k ^ 2 * (M * N) ^ ε * (M + N) *
           ∑ b ∈ idealAdmissibleFinset F c N, ‖lam b‖ ^ 2 :=
         mul_le_mul_of_nonneg_right hfinal henergy_nn
-
-end DedekindZetaZeroFree.LargeSieve.Sieve

@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Spectral extensions of nonarchimedean absolute values
 
@@ -37,8 +32,7 @@ namespace AbsoluteValue
       rcases hv with ⟨x, hx0, hx1⟩
       refine ⟨WithAbs.toAbs v x, ?_, ?_⟩
       · intro hx
-        apply hx0
-        simpa using congrArg (WithAbs.equiv v) hx
+        simp_all
       · simpa [WithAbs.norm_eq_apply_ofAbs] using hx1)
 
 /-- Algebraicity is transported across the canonical `WithAbs` base-field
@@ -46,8 +40,8 @@ equivalence. -/
  instance withAbsAlgebra_isAlgebraic
     {K L : Type*} [Field K] [Field L] [Algebra K L]
     [Algebra.IsAlgebraic K L] (v : AbsoluteValue K ℝ) :
-    Algebra.IsAlgebraic (WithAbs v) L := by
-  exact Algebra.IsAlgebraic.tower_top
+    Algebra.IsAlgebraic (WithAbs v) L := 
+  Algebra.IsAlgebraic.tower_top
     (K := K) (L := WithAbs v) (A := L)
 
 /-- The strong triangle inequality on the induced normed-field structure. -/
@@ -135,7 +129,7 @@ extension over an algebraic extension. -/
 
 /-- existence branch: the spectral norm, bundled as the unique
 nonarchimedean absolute-value extension of the complete base valuation. -/
-noncomputable def spectralExtension
+def spectralExtension
     {K L : Type*} [Field K] [Field L] [Algebra K L]
     [Algebra.IsAlgebraic K L]
     (v : AbsoluteValue K ℝ)
@@ -161,22 +155,6 @@ noncomputable def spectralExtension
       (max_le
         (le_add_of_nonneg_right hy_nonneg)
         (le_add_of_nonneg_left hx_nonneg))
-
-/-- The absolute-value extension constructed is
-nonarchimedean. -/
-theorem spectralExtension_isNonarchimedean
-    {K L : Type*} [Field K] [Field L] [Algebra K L]
-    [Algebra.IsAlgebraic K L]
-    (v : AbsoluteValue K ℝ)
-    (hcomplete : CompleteSpace (WithAbs v))
-    (hnonarch : IsNonarchimedean (v : K → ℝ))
-    (hv : v.IsNontrivial) :
-    IsNonarchimedean
-      (spectralExtension (K := K) (L := L)
-        v hcomplete hnonarch hv : L → ℝ) := by
-  intro x y
-  simpa [spectralExtension] using
-    spectral_spectralNorm_strong_triangle v hnonarch x y
 
 /-- The absolute-value extension constructed restricts to
 the given base valuation. -/
@@ -217,7 +195,7 @@ private theorem spectral_unique_spectralNorm
     (K := WithAbs v) (L := L) (f := w) ?_ x
   intro a
   rw [WithAbs.algebraMap_left_apply, hw_ext]
-  exact (WithAbs.norm_eq_apply_ofAbs v a).symm
+  rfl
 
 /-- nonarchimedean complete branch: uniqueness of the
 absolute-value extension, stated as equality with the constructed extension. -/
@@ -235,8 +213,3 @@ theorem eq_spectralExtension_of_extends
   ext x
   exact spectral_unique_spectralNorm
     v hcomplete hnonarch hv w hw_ext x
-
-
-end AbsoluteValue
-
-end

@@ -75,7 +75,3 @@ theorem embedding_evaluation (m : ℕ) (hm : KPLocalChartTopology.MatrixChartDep
     (rho F ζ hζ q S P μ hμ) m hm (image_smooth F ζ hζ q S P μ hμ m hm)
     (image_genuine F ζ hζ q S P μ hμ)
     (KPWildCompactProjectorKirillov.ActualInput.standardCharacter_properties F q).1 s e
-
-end DedekindZetaZeroFree.FourierContinuation.WildActualMirabolic
-
-end

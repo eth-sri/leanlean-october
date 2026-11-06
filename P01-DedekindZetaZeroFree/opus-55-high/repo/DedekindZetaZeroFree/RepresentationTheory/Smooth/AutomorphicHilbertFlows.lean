@@ -86,7 +86,7 @@ section
 noncomputable section
 
 open MeasureTheory NumberField
-open scoped NumberField Matrix ContDiff Manifold Classical Matrix.Norms.Operator ENNReal
+open scoped Matrix ContDiff Manifold Classical Matrix.Norms.Operator ENNReal
 
 namespace DedekindZetaZeroFree.KPSmoothActualFlowData
 
@@ -212,7 +212,7 @@ def rightTranslation (g : G) : LeftQuotient Γ → LeftQuotient Γ :=
     intro a b hab
     apply QuotientGroup.rightRel_apply.mpr
     have hab' := QuotientGroup.rightRel_apply.mp hab
-    simpa only [mul_inv_rev, mul_assoc, mul_inv_cancel_left] using hab')
+    simp_all)
 
 theorem rightTranslation_one : rightTranslation Γ 1 = id := by
   funext x
@@ -262,59 +262,14 @@ def translationIsometry (g : G) : Lp ℂ 2 μ ≃ₗᵢ[ℂ] Lp ℂ 2 μ :=
       rw [← Lp.compMeasurePreserving_comp_apply]
       have he : rightTranslation Γ g ∘ rightTranslation Γ g⁻¹ = id := by
         rw [← rightTranslation_mul, inv_mul_cancel, rightTranslation_one]
-      simpa only [he] using Lp.compMeasurePreserving_id_apply f
+      simp_all
     right_inv := by
       intro f
       change Lp.compMeasurePreserving _ _ (Lp.compMeasurePreserving _ _ f) = f
       rw [← Lp.compMeasurePreserving_comp_apply]
       have he : rightTranslation Γ g⁻¹ ∘ rightTranslation Γ g = id := by
         rw [← rightTranslation_mul, mul_inv_cancel, rightTranslation_one]
-      simpa only [he] using Lp.compMeasurePreserving_id_apply f }
-
-def translationHom : G →* (Lp ℂ 2 μ ≃ₗᵢ[ℂ] Lp ℂ 2 μ) where
-  toFun := translationIsometry Γ μ hμ
-  map_one' := by
-    apply LinearIsometryEquiv.ext
-    intro f
-    change Lp.compMeasurePreserving (rightTranslation Γ 1) (hμ 1) f = f
-    simpa only [rightTranslation_one] using Lp.compMeasurePreserving_id_apply f
-  map_mul' g h := by
-    apply LinearIsometryEquiv.ext
-    intro f
-    change Lp.compMeasurePreserving (rightTranslation Γ (g * h)) (hμ (g * h)) f =
-      Lp.compMeasurePreserving (rightTranslation Γ g) (hμ g)
-        (Lp.compMeasurePreserving (rightTranslation Γ h) (hμ h) f)
-    rw [← Lp.compMeasurePreserving_comp_apply]
-    simp only [rightTranslation_mul Γ g h]
-
-theorem quotient_unitary_action (hμ : ∀ g, MeasurePreserving (rightTranslation Γ g) μ μ)
-    (hΓ : IsClosed (Γ : Set G))
-    [μ.InnerRegularCompactLTTop] [IsLocallyFiniteMeasure μ] :
-    ∃ π : StronglyContinuousHilbertRepresentation
-      (G := G) (H := Lp ℂ 2 μ),
-      ∀ g f, (π.operator g f : LeftQuotient Γ → ℂ) =ᵐ[μ]
-        fun x => f (rightTranslation Γ g x) := by
-  have hq : IsOpenQuotientMap (Quotient.mk'' : G → LeftQuotient Γ) := by
-    have he : (Quotient.mk'' : G → LeftQuotient Γ) =
-        (inversionHomeomorph Γ).symm ∘ (QuotientGroup.mk ∘ Inv.inv) := by
-      funext g
-      simp [inversionHomeomorph, QuotientGroup.quotientRightRelEquivQuotientLeftRel]
-    rw [he]
-    exact (inversionHomeomorph Γ).symm.isOpenQuotientMap.comp
-      ((QuotientGroup.isOpenQuotientMap_mk (N := Γ)).comp
-        (Homeomorph.inv G).isOpenQuotientMap)
-  haveI : T2Space (LeftQuotient Γ) :=
-    (t2Space_iff_of_isOpenQuotientMap hq).mpr (by
-      convert hΓ.preimage (continuous_snd.mul continuous_fst.inv) using 1
-      ext p
-      exact Quotient.eq.trans (QuotientGroup.rightRel_apply (s := Γ)))
-  refine ⟨{ operator := translationHom Γ μ hμ, strongly_continuous := ?_ }, ?_⟩
-  · intro f
-    let c : C(G × LeftQuotient Γ, LeftQuotient Γ) :=
-      ⟨_, continuous_rightTranslation Γ⟩
-    exact (continuous_const.compMeasurePreservingLp c.curry.continuous hμ (by simp))
-  · intro g f
-    exact Lp.coeFn_compMeasurePreserving f (hμ g)
+      simp_all }
 
 end DedekindZetaZeroFree.KPSmoothQuotientTranslationFlow
 
@@ -326,7 +281,7 @@ section
 noncomputable section
 
 open MeasureTheory NumberField
-open scoped NumberField Matrix ContDiff Manifold Classical Matrix.Norms.Operator ENNReal
+open scoped Matrix ContDiff Manifold Classical Matrix.Norms.Operator ENNReal
 
 namespace DedekindZetaZeroFree.KPSmoothActualFlowData
 
@@ -338,7 +293,7 @@ def rightTranslate (g : G F ζ hζ) : X F ζ hζ → X F ζ hζ :=
     intro a b hab
     apply QuotientGroup.rightRel_apply.mpr
     have hab' := QuotientGroup.rightRel_apply.mp hab
-    simpa only [mul_inv_rev, mul_assoc, mul_inv_cancel_left] using hab')
+    simp_all)
 
 abbrev H (μ : Measure (X F ζ hζ)) := Lp ℂ 2 μ
 
@@ -361,24 +316,6 @@ structure QuotientMeasureData where
           φ (KPRationalAdelicSplitting.rationalPGLHom F ζ hζ γ *
             (Quotient.out x)) ∂measure
 
-theorem actual_quotient_unitary_action (μ : QuotientMeasureData F ζ hζ) :
-    ∃ π : StronglyContinuousHilbertRepresentation
-      (G := G F ζ hζ) (H := H F ζ hζ μ.measure),
-      ∀ (g : G F ζ hζ) (f : H F ζ hζ μ.measure),
-        (π.operator g f : X F ζ hζ → ℂ) =ᵐ[μ.measure]
-          fun x => f (rightTranslate F ζ hζ g x) := by
-  letI := (ActualQuotient.actual_cover_lc_t2_group F ζ hζ).2.2
-  letI := μ.regular
-  letI := μ.finiteOnCompacts
-  letI := (ActualQuotient.actual_cover_lc_t2_group F ζ hζ).2.1
-  haveI : BorelSpace (X F ζ hζ) := ⟨rfl⟩
-  haveI : WeaklyLocallyCompactSpace (X F ζ hζ) := by
-    let e := KPSmoothQuotientTranslationFlow.inversionHomeomorph (rationalSubgroup F ζ hζ)
-    exact e.symm.isOpenQuotientMap.weaklyLocallyCompactSpace
-  exact KPSmoothQuotientTranslationFlow.quotient_unitary_action
-    (rationalSubgroup F ζ hζ) μ.measure μ.rightInvariant
-    (ActualQuotient.actual_rational_closed_discrete F ζ hζ).1
-
 def basisMatrix (j : Fin 6) : Matrix (Fin 2) (Fin 2) ℂ :=
   sl2Matrix (fun k => if k = j then 1 else 0)
 
@@ -398,8 +335,8 @@ theorem actual_archimedean_lie_data :
           D.exponential = exponential F ∧
           (∀ b c : B F, D.basis b c = if c = b then 1 else 0) ∧
           (∀ (g : GInfinity F) (a b : B F),
-            D.basis.equivFun (D.adjoint g (D.basis b)) a = adjointMatrix F g a b) := by
-  exact PGLComplex.product_lie_exponential_data (InfinitePlace F)
+            D.basis.equivFun (D.adjoint g (D.basis b)) a = adjointMatrix F g a b) := 
+  PGLComplex.product_lie_exponential_data (InfinitePlace F)
 
 theorem flow_properties (b : B F) :
     flow F b 0 = 1 ∧
@@ -408,8 +345,7 @@ theorem flow_properties (b : B F) :
   have hr (t : ℝ) : (fun c : B F => if c = b then t else 0) =
       t • (fun c : B F => if c = b then (1 : ℝ) else 0) := by
     funext c
-    simp only [Pi.smul_apply, smul_eq_mul]
-    split_ifs <;> simp
+    simp
   refine ⟨?_, ?_, ?_⟩
   · unfold flow
     rw [hr, zero_smul]
@@ -434,11 +370,6 @@ theorem flow_properties (b : B F) :
         exact continuous_const
     exact hc.comp hcoords
 
-def pi (μ : QuotientMeasureData F ζ hζ) :
-    StronglyContinuousHilbertRepresentation
-      (G := G F ζ hζ) (H := H F ζ hζ μ.measure) :=
-  (actual_quotient_unitary_action F ζ hζ μ).choose
-
 def SmoothAutomorphic (f : X F ζ hζ → ℂ) : Prop :=
   Continuous f ∧ ∀ x : X F ζ hζ,
     ContDiff ℝ (⊤ : ℕ∞) (fun a : LieCoordinates F =>
@@ -451,8 +382,3 @@ def flowDerivative (b : B F) (f : X F ζ hζ → ℂ) : X F ζ hζ → ℂ := fu
 def wordDerivative : List (B F) → (X F ζ hζ → ℂ) → X F ζ hζ → ℂ
   | [], f => f
   | b :: w, f => flowDerivative F ζ hζ b (wordDerivative w f)
-
-end DedekindZetaZeroFree.KPSmoothActualFlowData
-
-end
-end

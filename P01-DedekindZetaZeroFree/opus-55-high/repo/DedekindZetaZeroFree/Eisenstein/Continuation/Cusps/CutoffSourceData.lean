@@ -34,17 +34,14 @@ theorem radialCutoff_smooth (d : ℕ) {T : ℝ} (χ : SmoothCuspCutoff T) (s b :
   unfold radialCutoff KPIncomingCasimir.heightFactor
   have hcast : ContDiff ℝ (⊤ : ℕ∞) (fun t : ℝ => (t : ℂ)) := by
     have hcoe : (fun t : ℝ => (t : ℂ)) = Complex.ofRealCLM := by
-      funext t
-      exact (Complex.ofRealCLM_apply t).symm
+      rfl
     rw [hcoe]
     exact Complex.ofRealCLM.contDiff
   have hχ : ContDiff ℝ (⊤ : ℕ∞) (fun t : ℝ => (χ.toFun t : ℂ)) :=
     hcast.comp χ.smooth
-  exact (hχ.mul (Complex.contDiff_exp.comp
-    ((contDiff_const.mul hcast) : ContDiff ℝ (⊤ : ℕ∞)
-      (fun t : ℝ => ((d : ℂ) * ((4 : ℂ) / 3 + 2 * s)) * (t : ℂ))))).mul contDiff_const
+  fun_prop
 
-private theorem wave_hasDerivAt (d : ℕ) (s b : ℂ) (t : ℝ) :
+theorem wave_hasDerivAt (d : ℕ) (s b : ℂ) (t : ℝ) :
     HasDerivAt (fun u : ℝ => KPIncomingCasimir.heightFactor d s u * b)
       ((d : ℂ) * ((4 : ℂ) / 3 + 2 * s) *
         (KPIncomingCasimir.heightFactor d s t * b)) t := by
@@ -54,9 +51,9 @@ private theorem wave_hasDerivAt (d : ℕ) (s b : ℂ) (t : ℝ) :
     (((Complex.ofRealCLM.hasDerivAt (x := t)).const_mul
       ((d : ℂ) * ((4 : ℂ) / 3 + 2 * s))).cexp.mul_const b)
 
-private theorem cutoff_hasDerivAt {T : ℝ} (χ : SmoothCuspCutoff T) (t : ℝ) :
-    HasDerivAt (fun u : ℝ => (χ.toFun u : ℂ)) ((deriv χ.toFun t : ℝ) : ℂ) t := by
-  exact ((χ.smooth.differentiable (by simp)) t).hasDerivAt.ofReal_comp
+theorem cutoff_hasDerivAt {T : ℝ} (χ : SmoothCuspCutoff T) (t : ℝ) :
+    HasDerivAt (fun u : ℝ => (χ.toFun u : ℂ)) ((deriv χ.toFun t : ℝ) : ℂ) t := 
+  ((χ.smooth.differentiable (by simp)) t).hasDerivAt.ofReal_comp
 
 theorem radialCutoff_equation (d : ℕ) (hd : 0 < d) {T : ℝ}
     (χ : SmoothCuspCutoff T) (s b : ℂ) (t : ℝ) :
@@ -109,10 +106,7 @@ theorem incoming_commutator_support (d : ℕ) {T : ℝ}
       filter_upwards [Iio_mem_nhds hlow] with u hu
       exact χ.zero_below u (le_of_lt hu)
     · have hhigh : T + 1 < t := by
-        simp only [Set.mem_Icc, not_and_or, not_le] at ht
-        rcases ht with ht | ht
-        · exact (hlow ht).elim
-        · exact ht
+        simp_all
       refine ⟨1, ?_⟩
       filter_upwards [Ioi_mem_nhds hhigh] with u hu
       exact χ.one_above u (le_of_lt hu)
@@ -182,7 +176,3 @@ def ChartSobolevHolomorphicOn {n : ℕ} (B : KPContLocalNorm.LocalBall n)
         (volume.restrict B.carrier) ∧
       (fun x => v s α x) =ᵐ[volume.restrict B.carrier]
         KPContLocalNorm.coordinateDerivative α (g s)
-
-end DedekindZetaZeroFree.KPCutoffSource
-
-end

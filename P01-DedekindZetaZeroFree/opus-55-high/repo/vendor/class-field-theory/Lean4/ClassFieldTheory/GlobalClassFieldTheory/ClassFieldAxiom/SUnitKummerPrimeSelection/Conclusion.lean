@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # The conclusion of S-unit Kummer prime selection
 
@@ -28,7 +24,6 @@ open scoped NumberField Classical IsMulCommutative
 open NumberField IsDedekindDomain
 open KummerTheory
 
-noncomputable section
 
 namespace GlobalClassFieldTheory.ClassFieldAxiom
 
@@ -157,7 +152,7 @@ theorem
             (powMonoidHom (n : ℕ) :
               (wi.adicCompletion K)ˣ →*
                 (wi.adicCompletion K)ˣ).range := by
-        simpa [wT, wi] using hxLocal wT
+        simp_all
       have hfixed :
           (beta : N) ∈
             IntermediateField.fixedField
@@ -210,9 +205,7 @@ theorem
                   R).1))
       rw [show Fix = MulAction.stabilizer R (beta : N) from rfl,
         MulAction.mem_stabilizer_iff]
-      simpa only [
-        MulAction.subgroup_smul_def,
-        AlgEquiv.smul_def] using hfix
+      omega
     have hspan :
         (⨆ i :
             Fin
@@ -245,7 +238,7 @@ theorem
       let sigmaR : R := ⟨sigma, hsigma⟩
       have hsigmaFix : sigmaR ∈ Fix := by
         rw [hFixTop]
-        exact Subgroup.mem_top sigmaR
+        simp
       have hfix :
           sigmaR • (beta : N) = (beta : N) := by
         exact
@@ -253,9 +246,7 @@ theorem
             (show
               sigmaR ∈ MulAction.stabilizer R (beta : N) by
               simpa only [Fix] using hsigmaFix)
-      simpa only [
-        MulAction.subgroup_smul_def,
-        AlgEquiv.smul_def] using hfix
+      omega
     have hbetaEmbedded :
         (beta : N) ∈
           enlargedSUnitKummerEmbeddedExtension
@@ -331,10 +322,7 @@ theorem
         _ =
             Units.map (algebraMap K N).toMonoidHom
               (x : Kˣ) := by
-          apply Units.ext
-          exact
-            (IsScalarTower.algebraMap_apply
-              K E N ((x : Kˣ) : K)).symm
+          rfl
     apply
       (mem_sUnitLocalPowerKernel_iff
         (K := K) n S' T x).mpr
@@ -434,10 +422,4 @@ theorem supportedAt_sup_principalSubgroup_eq_top_of_enlargeByRadicalSupport
           intro v hv
           exact subset_enlargeByFiniteKummerRadicalSupport
             (K := K) (L := L) n hmu S hv)).trans le_sup_left
-  · exact le_sup_right
-
-end FinitePlaces
-
-end GlobalClassFieldTheory.ClassFieldAxiom
-
-end
+  simp

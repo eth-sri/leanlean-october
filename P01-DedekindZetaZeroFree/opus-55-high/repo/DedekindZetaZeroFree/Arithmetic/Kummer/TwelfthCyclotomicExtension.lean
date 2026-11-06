@@ -28,5 +28,3 @@ theorem cyclotomic12_context (K : Type) [Field K] [NumberField K] :
   · intro x hx
     obtain ⟨j, hj, hjx⟩ := hζ.eq_pow_of_pow_eq_one hx
     exact ⟨j, hj, hjx.symm⟩
-
-end DedekindZetaZeroFree

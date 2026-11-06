@@ -36,7 +36,7 @@ theorem forwardSummand_eq_lambda_mul_character (A : SArithmeticData F)
     ProbeJointAbsoluteMass.modulusNorm]
   ring
 
-private theorem original_tsum_expanded (A : SArithmeticData F)
+theorem original_tsum_expanded (A : SArithmeticData F)
     (σ : F →+* ℂ) (η : RayClassCharacter F A.modulus)
     (hS : A.ContainsTraceBadPlaces) (P : PrincipalData A σ η hS)
     (X Y Z : ℝ) (s : A.Exterior)
@@ -105,7 +105,3 @@ theorem principal_original_integrated_row_expansion (A : SArithmeticData F)
     (∑' m, expandedProbeSummand A P.coefficients P.W0 P.W1 X Y Z t s m (c,n))
     ∂P.domain.measure) = _
   simp only [original_tsum_expanded A σ η hS P, integral_const_mul, mul_assoc]
-
-end
-end NormalizedProbe
-end DedekindZetaZeroFree

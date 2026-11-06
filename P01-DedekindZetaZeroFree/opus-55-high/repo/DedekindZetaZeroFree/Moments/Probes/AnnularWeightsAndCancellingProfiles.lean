@@ -13,13 +13,13 @@ open scoped ContDiff
 namespace RadialCancellingProfile
  def bump : ContDiffBump (9 / 4 : ℝ) := ⟨1 / 2, 1, by norm_num, by norm_num⟩
  def phi (z : ℂ) : ℂ := (bump (Complex.normSq z) : ℂ)
-private theorem phi_smooth : ContDiff ℝ (⊤ : ℕ∞) phi := by
+theorem phi_smooth : ContDiff ℝ (⊤ : ℕ∞) phi := by
   apply Complex.ofRealCLM.contDiff.comp
   apply bump.contDiff.comp
   change ContDiff ℝ (⊤ : ℕ∞) (fun z : ℂ => z.re * z.re + z.im * z.im)
   exact (Complex.reCLM.contDiff.mul Complex.reCLM.contDiff).add
     (Complex.imCLM.contDiff.mul Complex.imCLM.contDiff)
-private theorem phi_annulus : tsupport phi ⊆ {z : ℂ | 1 ≤ ‖z‖ ∧ ‖z‖ ≤ 2} := by
+theorem phi_annulus : tsupport phi ⊆ {z : ℂ | 1 ≤ ‖z‖ ∧ ‖z‖ ≤ 2} := by
   apply closure_minimal
   · intro z hz
     have hb : bump (Complex.normSq z) ≠ 0 := by simpa [Function.mem_support, phi] using hz
@@ -31,20 +31,20 @@ private theorem phi_annulus : tsupport phi ⊆ {z : ℂ | 1 ≤ ‖z‖ ∧ ‖z
     constructor <;> nlinarith
   · exact isClosed_le continuous_const continuous_norm |>.inter
       (isClosed_le continuous_norm continuous_const)
-private theorem phi_annular : IsComplexAnnular phi := by
+theorem phi_annular : IsComplexAnnular phi := by
   refine ⟨phi_smooth, ?_, 1, 2, by norm_num, by norm_num, phi_annulus⟩
   apply IsCompact.of_isClosed_subset (isCompact_closedBall (0 : ℂ) 2) isClosed_closure
   intro z hz
   simpa using (phi_annulus hz).2
-private theorem phi_radial (z w : ℂ) (h : ‖z‖ = ‖w‖) : phi z = phi w := by
+theorem phi_radial (z w : ℂ) (h : ‖z‖ = ‖w‖) : phi z = phi w := by
   simp [phi, Complex.normSq_eq_norm_sq, h]
-private theorem phi_mellin_ne : complexNormMellin phi (5 / 6) ≠ 0 := by
+theorem phi_mellin_ne : complexNormMellin phi (5 / 6) ≠ 0 := by
   let w : ℂ → ℝ := fun z => (max (‖z‖ ^ 2) 1) ^ (-1 / 6 : ℝ)
   have hw : Continuous w := by
     apply Continuous.rpow_const ((continuous_norm.pow 2).max continuous_const)
     intro z
     left
-    exact ne_of_gt (lt_of_lt_of_le (by norm_num : (0 : ℝ) < 1) (le_max_right _ _))
+    positivity
   let g : ℂ → ℝ := fun z => (phi z).re * w z
   have hc : Continuous g := (Complex.reCLM.continuous.comp phi_smooth.continuous).mul hw
   have hk : HasCompactSupport g := phi_annular.2.1.comp_left (g := Complex.reCLM) (by simp) |>.mul_right
@@ -56,9 +56,7 @@ private theorem phi_mellin_ne : complexNormMellin phi (5 / 6) ≠ 0 := by
         apply bump.one_of_mem_closedBall
         norm_num [bump, Complex.normSq_apply, Metric.mem_closedBall, Real.dist_eq]
       dsimp [g, phi, w]
-      rw [hb]
-      simp only [Complex.ofReal_re, one_mul]
-      exact (Real.rpow_pos_of_pos (lt_of_lt_of_le (by norm_num : (0 : ℝ) < 1) (le_max_right _ _)) _).ne'
+      positivity
   have he : complexNormMellinIntegrand phi (5 / 6) = fun z => (g z : ℂ) := by
     funext z
     by_cases hz : phi z = 0
@@ -74,7 +72,7 @@ private theorem phi_mellin_ne : complexNormMellin phi (5 / 6) ≠ 0 := by
   exact mul_ne_zero (inv_ne_zero (by exact_mod_cast Real.pi_ne_zero))
     (by exact_mod_cast hp.ne')
  def dil (z : ℂ) : ℂ := phi ((1 / 2 : ℝ) • z)
-private theorem dil_annular : IsComplexAnnular dil := by
+theorem dil_annular : IsComplexAnnular dil := by
   have hs : ContDiff ℝ (⊤ : ℕ∞) dil := phi_smooth.comp (contDiff_id.const_smul (1 / 2 : ℝ))
   have ha : tsupport dil ⊆ {z : ℂ | 2 ≤ ‖z‖ ∧ ‖z‖ ≤ 4} := by
     apply closure_minimal
@@ -88,7 +86,7 @@ private theorem dil_annular : IsComplexAnnular dil := by
   intro z hz
   simpa using (ha hz).2
  def f (z : ℂ) : ℂ := phi z - (1 / 4 : ℂ) * dil z
-private theorem f_annular : IsComplexAnnular f := by
+theorem f_annular : IsComplexAnnular f := by
   refine ⟨phi_smooth.sub (contDiff_const.mul dil_annular.1),
     phi_annular.2.1.sub (dil_annular.2.1.mul_left), 1, 4, by norm_num, by norm_num, ?_⟩
   apply closure_minimal
@@ -104,7 +102,7 @@ private theorem f_annular : IsComplexAnnular f := by
       norm_num [norm_smul, Real.norm_eq_abs] at h'
       constructor <;> linarith [h'.1, h'.2]
   · exact (isClosed_le continuous_const continuous_norm).inter (isClosed_le continuous_norm continuous_const)
-private theorem f_integral_zero : (∫ z : ℂ, f z) = 0 := by
+theorem f_integral_zero : (∫ z : ℂ, f z) = 0 := by
   have hi : Integrable phi volume := phi_smooth.continuous.integrable_of_hasCompactSupport phi_annular.2.1
   have hj : Integrable dil volume := dil_annular.1.continuous.integrable_of_hasCompactSupport dil_annular.2.1
   change (∫ z : ℂ, phi z - (1 / 4 : ℂ) * dil z) = 0
@@ -115,7 +113,7 @@ private theorem f_integral_zero : (∫ z : ℂ, f z) = 0 := by
     exact h
   rw [he]
   ring
-private theorem dil_mellin : complexNormMellin dil (5 / 6) =
+theorem dil_mellin : complexNormMellin dil (5 / 6) =
     ((2 : ℝ) ^ (5 / 3 : ℝ) : ℝ) * complexNormMellin phi (5 / 6) := by
   have he : complexNormMellinIntegrand dil (5 / 6) = fun z =>
       (((2 : ℝ) ^ (-1 / 3 : ℝ) : ℝ) : ℂ) * complexNormMellinIntegrand phi (5 / 6) ((1 / 2 : ℝ) • z) := by
@@ -158,7 +156,7 @@ private theorem dil_mellin : complexNormMellin dil (5 / 6) =
   unfold complexNormMellin
   push_cast
   linear_combination (Real.pi : ℂ)⁻¹ * (∫ x : ℂ, complexNormMellinIntegrand phi (5 / 6) x) * hp'
-private theorem f_mellin_ne : complexNormMellin f (5 / 6) ≠ 0 := by
+theorem f_mellin_ne : complexNormMellin f (5 / 6) ≠ 0 := by
   have hi := complexAnnular_normMellin_integrable phi phi_annular (1 / 6) (by norm_num) (by norm_num)
   have hj := complexAnnular_normMellin_integrable dil dil_annular (1 / 6) (by norm_num) (by norm_num)
   norm_num at hi hj
@@ -182,14 +180,12 @@ private theorem f_mellin_ne : complexNormMellin f (5 / 6) ≠ 0 := by
   have hn : (1 : ℂ) - (1 / 4 : ℂ) * (((2 : ℝ) ^ (5 / 3 : ℝ) : ℝ) : ℂ) ≠ 0 := by
     have h : (1 : ℝ) - (1 / 4 : ℝ) * (2 : ℝ) ^ (5 / 3 : ℝ) ≠ 0 := by linarith
     have hc : ((1 - (1 / 4 : ℝ) * (2 : ℝ) ^ (5 / 3 : ℝ) : ℝ) : ℂ) ≠ 0 := by exact_mod_cast h
-    push_cast at hc
-    norm_num at hc ⊢
-    exact hc
+    simp_all
   rw [show complexNormMellin phi (5 / 6) -
     (1 / 4 : ℂ) * (↑((2 : ℝ) ^ (5 / 3 : ℝ)) * complexNormMellin phi (5 / 6)) =
     (1 - (1 / 4 : ℂ) * ↑((2 : ℝ) ^ (5 / 3 : ℝ))) * complexNormMellin phi (5 / 6) by ring]
   exact mul_ne_zero hn phi_mellin_ne
-private theorem profile_exists : ∃ f : ℂ → ℂ, IsComplexAnnular f ∧
+theorem profile_exists : ∃ f : ℂ → ℂ, IsComplexAnnular f ∧
     (∀ z w : ℂ, ‖z‖ = ‖w‖ → f z = f w) ∧
     (∫ z : ℂ, f z) = 0 ∧ complexNormMellin (complexTraceFourier f) (1 / 6 : ℝ) ≠ 0 := by
   refine ⟨f, f_annular, ?_, f_integral_zero, ?_⟩
@@ -198,7 +194,7 @@ private theorem profile_exists : ∃ f : ℂ → ℂ, IsComplexAnnular f ∧
     rw [phi_radial z w h]
     congr 2
     apply phi_radial
-    simp [norm_mul, h]
+    simp [h]
   · rw [complexTraceFourier_normMellin f f_annular (1 / 6) (by norm_num) (by norm_num)]
     convert mul_ne_zero (complexGamma_ratio_ne_zero (1 / 6) (by norm_num) (by norm_num)) f_mellin_ne using 1 <;> norm_num
 end RadialCancellingProfile
@@ -210,8 +206,8 @@ theorem exists_radial_complex_cancelling_profile :
     ∃ f : ℂ → ℂ, IsComplexAnnular f ∧
       (∀ z w : ℂ, ‖z‖ = ‖w‖ → f z = f w) ∧
       (∫ z : ℂ, f z ∂(volume : Measure ℂ)) = 0 ∧
-      complexNormMellin (complexTraceFourier f) (1 / 6 : ℝ) ≠ 0 := by
-  exact RadialCancellingProfile.profile_exists
+      complexNormMellin (complexTraceFourier f) (1 / 6 : ℝ) ≠ 0 := 
+  RadialCancellingProfile.profile_exists
 
 end
 end DedekindZetaZeroFree
@@ -266,8 +262,8 @@ theorem complex_profile_ne_zero (f : ℂ → ℂ)
   simp [complexNormMellin, complexNormMellinIntegrand, complexTraceFourier]
 
 theorem arithmetic_complex_place (A : SArithmeticData F) :
-    Nonempty {v : InfinitePlace F // v.IsComplex} := by
-  exact ⟨⟨Classical.arbitrary (InfinitePlace F), A.infinite_isComplex _⟩⟩
+    Nonempty {v : InfinitePlace F // v.IsComplex} := 
+  ⟨⟨Classical.arbitrary (InfinitePlace F), A.infinite_isComplex _⟩⟩
 
 def shellCoordinates (A : SArithmeticData F) (f : ℂ → ℂ) (hf : IsComplexAnnular f)
     (hrad : ∀ z w : ℂ, ‖z‖ = ‖w‖ → f z = f w) : AnnularCoordinates F A.Sf where
@@ -371,9 +367,7 @@ theorem modulus_eq_canonical (S : Finset (HeightOneSpectrum (𝓞 F)))
   unfold modulus TateTensorProfile.modulus
   congr 1
   rw [InfiniteAdeleRing.norm_def]
-  apply Finset.prod_congr rfl
-  intro v hv
-  rw [(NumberField.IsTotallyComplex.isComplex v).mult_eq_two]
+  simp
 
 theorem exists_tensor_from_haar_comparison (A : SArithmeticData F)
     (e : (v : ↥A.Sf) → AddChar (v.val.adicCompletion F) Circle)
@@ -566,8 +560,7 @@ theorem probeRealWeightMellin_one (W : ProbeRealAnnularWeight) :
       (W v : ℂ) * (v : ℂ) ^ (1 : ℂ) / (v : ℂ) = (W v : ℂ) := by
     intro v
     by_cases hv : 0 < v
-    · simp [Complex.cpow_one, ne_of_gt hv,
-        Complex.ofReal_ne_zero.mpr (ne_of_gt hv)]
+    · simp [Complex.cpow_one, Complex.ofReal_ne_zero.mpr (ne_of_gt hv)]
     · have hz : W v = 0 := by
         apply image_eq_zero_of_notMem_tsupport
         intro he
@@ -618,9 +611,7 @@ theorem probeBump_nonzero : (probeBump : ℝ → ℝ) ≠ 0 := by
     ContDiffBump.one_of_mem_closedBall (f := probeBump) (x := (1 : ℝ)) (by
       rw [Metric.mem_closedBall, dist_self]
       exact probeBump.rIn_pos.le)
-  have h2 : probeBump (1 : ℝ) = 0 := congrFun h 1
-  rw [h1] at h2
-  exact one_ne_zero h2
+  simp_all
 
 def probeRealBumpWeight : ProbeRealAnnularWeight where
   toFun := probeBump
@@ -679,10 +670,9 @@ theorem ProbeWeight.fourier_zero (F : Type) [Field F] [NumberField F]
   have hx : ∀ x : InfinitePlace F, (0 : InfiniteAdeleRing F) x = 0 := fun x => rfl
   have h0 : ProbeAdditive.phase F S e (0 : SLocalProduct F S) = 1 := by
     unfold ProbeAdditive.phase ProbeAdditive.archPhase
-    simp only [Prod.fst_zero, Prod.snd_zero]
-    simp [AddChar.map_zero_eq_one, NumberField.InfiniteAdeleRing, hx]
+    simp_all
   rw [ProbeWeight.fourier]
-  simp only [mul_zero, neg_zero, h0, mul_one]
+  simp_all
 
 theorem probe_fixed_weight_construction (F : Type) [Field F] [NumberField F]
     (A : SArithmeticData F)
@@ -712,7 +702,7 @@ theorem probe_fixed_weight_construction (F : Type) [Field F] [NumberField F]
       c.finite_regular, fun x => rfl⟩
   · rw [ProbeWeight.fourier_zero]
     exact hmass
-  · exact hmellin
+  positivity
 
 end
 end DedekindZetaZeroFree
@@ -722,14 +712,3 @@ end
 section
 
 namespace DedekindZetaZeroFree.ProbeAnnularTensorWeights
-noncomputable section
-open scoped Classical NumberField
-open NumberField IsDedekindDomain MeasureTheory
-
-variable (F : Type) [Field F] [NumberField F]
-variable (S : Finset (HeightOneSpectrum (𝓞 F)))
-
-end
-end DedekindZetaZeroFree.ProbeAnnularTensorWeights
-
-end

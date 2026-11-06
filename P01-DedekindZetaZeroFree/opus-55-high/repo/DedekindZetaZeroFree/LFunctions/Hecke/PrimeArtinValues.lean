@@ -25,5 +25,3 @@ noncomputable def primeArtinValue
   classical
   exact if Ideal.inertia (L ≃ₐ[K] L) W.asIdeal ≤ ρ.ker then
     (ρ (ClassFieldTheory.arithmeticFrobeniusAt (K := K) W) : ℂ) else 0
-
-end DedekindZetaZeroFree.AbelianQuotient

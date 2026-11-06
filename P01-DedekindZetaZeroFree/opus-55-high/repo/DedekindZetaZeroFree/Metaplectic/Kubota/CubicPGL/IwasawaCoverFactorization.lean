@@ -8,7 +8,6 @@ open scoped NumberField Valued
 open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.ActualFiniteBorel.IwasawaProof
 noncomputable section
-set_option autoImplicit false
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 variable (q : HeightOneSpectrum (𝓞 F))
@@ -59,6 +58,3 @@ theorem covered_intersection (b : KPLocalSmoothRepresentation.Borel F ζ hζ q)
       (KPPGLLocalCover.projection F ζ hζ (Sum.inr q) b.val)
   rw [← hk]
   rfl
-
-end
-end DedekindZetaZeroFree.ActualFiniteBorel.IwasawaProof

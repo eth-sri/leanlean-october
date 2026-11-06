@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Metaplectic.Weil.Complex.CompletionTraceOpera
 
 @[expose] public section
 
-noncomputable section
 open Filter NumberField
 open scoped Topology
 
@@ -39,7 +38,3 @@ theorem complexWeilPhase_eq_one
     {F : Type} [Field F] [NumberField F] (A : SArithmeticData F)
     (w : InfinitePlace F) (a : w.Completionˣ) : A.complexWeilPhase w a = 1 := by
   simp [complexWeilPhase, complexGamma]
-
-end DedekindZetaZeroFree.SArithmeticData
-
-end

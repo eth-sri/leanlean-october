@@ -31,7 +31,7 @@ variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
 variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
 variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
-private theorem compactMultiplier_bounded
+theorem compactMultiplier_bounded
     (η : CompactMultiplier (U := U) (H := H)) :
     ∃ B D : ℝ, 0 ≤ B ∧ 0 ≤ D ∧ (∀ x, |η.val.val x| ≤ B) ∧
       ∀ (a : ActualChart (U := U) (H := H)) (y : KPContCotangentOverlapRationalBranches.omega a),
@@ -61,7 +61,7 @@ private theorem compactMultiplier_bounded
     exact mul_le_mul_of_nonneg_right (hB _) (norm_nonneg _)
   exact borelS F ζ hζ U R P H ⟨f, hf, hlp⟩
 
-private theorem actualBorelProduct_coefficient
+theorem actualBorelProduct_coefficient
     (η : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ)
     (hη : Measurable η) (B : ℝ) (hB : ∀ x, |η x| ≤ B)
     (s : BorelL2Sections F ζ hζ U R P H) (a : ActualChart (U := U) (H := H))
@@ -454,7 +454,7 @@ private theorem coordinateDomain_isOpen (a : ActualChart (U := U) (H := H)) :
   unfold toActual labeledA
   fun_prop
 
-private theorem smooth_liftExtension_flat (a : ActualChart (U := U) (H := H))
+theorem smooth_liftExtension_flat (a : ActualChart (U := U) (H := H))
     (f : omega a → ℂ) (hf : SmoothOnLift a f) :
     ContDiffOn ℝ (⊤ : ℕ∞) (liftExtension a f) (omega a) := by
   obtain ⟨g, hg, he⟩ := hf
@@ -629,7 +629,7 @@ open WeakJets.Raw
         change N j _ x = _ at h3
         rw [h2, h3, add_comm]
 
-private theorem multipliedSobolev_zero {n : ℕ} (B : LocalBall n) (Ω : Set (Space n))
+theorem multipliedSobolev_zero {n : ℕ} (B : LocalBall n) (Ω : Set (Space n))
     (hΩ : IsOpen Ω) (hB : IsCompact (closure B.carrier) ∧ closure B.carrier ⊆ Ω)
     (b : Space n → ℂ) (hb : ContDiffOn ℝ (⊤ : ℕ∞) b Ω)
     (u : IntegerSobolev B 1) :
@@ -638,7 +638,7 @@ private theorem multipliedSobolev_zero {n : ℕ} (B : LocalBall n) (Ω : Set (Sp
   simp only [multipliedSobolev, ↓reduceIte]
   exact mulBall_ae B b _ _
 
-private theorem multipliedSobolev_first {n : ℕ} (B : LocalBall n) (Ω : Set (Space n))
+theorem multipliedSobolev_first {n : ℕ} (B : LocalBall n) (Ω : Set (Space n))
     (hΩ : IsOpen Ω) (hB : IsCompact (closure B.carrier) ∧ closure B.carrier ⊆ Ω)
     (b : Space n → ℂ) (hb : ContDiffOn ℝ (⊤ : ℕ∞) b Ω)
     (u : IntegerSobolev B 1) (j : Fin n) :
@@ -739,7 +739,7 @@ private theorem product_weakChartData
     dsimp [cutoffPartial]
     ring
 
-private theorem actualBorelProduct_supported
+theorem actualBorelProduct_supported
     (η : CompactMultiplier (U := U) (H := H))
     (hη : Measurable η.val.val) (C : ℝ) (hC : ∀ x, |η.val.val x| ≤ C)
     (s : BorelL2Sections F ζ hζ U R P H) (x : KPFiniteCuspAtlas.rawXU F ζ hζ U)

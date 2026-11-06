@@ -12,7 +12,7 @@ namespace DedekindZetaZeroFree.KPLiteralTensor
 open KPCplxPrincipalSeriesCharts KPCplxIntertwinerEigenvalues KPCplxActualImage
 open KPLocalPrincipalSeries
 
-noncomputable def harmonicQuotient :
+def harmonicQuotient :
     harmonicPlus →ₗ[ℂ] KPGlobalResidualConstruction.complexCore :=
   ((standardIntertwiner (1 : ℂˣ)).toLinearMap.domRestrict harmonicPlus).codRestrict
     KPGlobalResidualConstruction.complexCore (by
@@ -25,8 +25,7 @@ noncomputable def harmonicQuotient :
       have hmem : (standardIntertwiner (1 : ℂˣ)) (x : PrincipalSeries positiveParameter) ∈
           (KPComplexStandardIntertwinerGerm.ownedCore positiveParameter).map
             (standardIntertwiner (1 : ℂˣ)).toLinearMap := ⟨x, hx, rfl⟩
-      rw [himg] at hmem
-      exact hmem)
+      simp_all)
 
 theorem harmonicQuotient_surjective : Function.Surjective harmonicQuotient := by
   intro y
@@ -41,7 +40,3 @@ theorem harmonicQuotient_surjective : Function.Surjective harmonicQuotient := by
 
 theorem harmonicQuotient_val (x : harmonicPlus) :
     (harmonicQuotient x).val = standardIntertwiner (1 : ℂˣ) x.val := rfl
-
-end DedekindZetaZeroFree.KPLiteralTensor
-
-end

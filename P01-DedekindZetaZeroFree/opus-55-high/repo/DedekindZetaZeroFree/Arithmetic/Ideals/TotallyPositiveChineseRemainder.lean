@@ -8,7 +8,7 @@ open scoped NumberField
 
 namespace DedekindZetaZeroFree.AbelianQuotient
 
-private lemma exists_shift_totallyPositive
+lemma exists_shift_totallyPositive
     (K : Type) [Field K] [NumberField K] (d₀ : 𝓞 K) (N : ℕ) (hN : 0 < N) :
     ∃ t : ℕ, d₀ + (t * N : 𝓞 K) ≠ 0 ∧
       ∀ φ : K →+* ℝ, 0 < φ ((d₀ + (t * N : 𝓞 K) : 𝓞 K) : K) := by
@@ -46,11 +46,11 @@ private lemma exists_shift_totallyPositive
     have hmul : (T : ℝ) * (N : ℝ) ≤ (t : ℝ) * (N : ℝ) :=
       mul_le_mul_of_nonneg_right hcast hNn
     have hcoeeq : ((d₀ + (t * N : 𝓞 K) : 𝓞 K) : K) = (d₀ : K) + (t : K) * (N : K) := by
-      push_cast; ring
+      rfl
     rw [hcoeeq, map_add, map_mul, map_natCast, map_natCast]
     linarith
-  have hNne : (N : 𝓞 K) ≠ 0 := by
-    exact Nat.cast_ne_zero.mpr (Nat.pos_iff_ne_zero.mp hN)
+  have hNne : (N : 𝓞 K) ≠ 0 := 
+    Nat.cast_ne_zero.mpr (Nat.pos_iff_ne_zero.mp hN)
   by_cases hzero : d₀ + (T * N : 𝓞 K) = 0
   · refine ⟨T + 1, ?_, hTle (T + 1) (Nat.le_succ T)⟩
     intro h
@@ -77,7 +77,7 @@ theorem positiveIdealCRT
   obtain ⟨d₀, hd₀D, j, hjm, hsum⟩ := hcop'.exists
   have hd₀m : d₀ - 1 ∈ m := by
     have heq : d₀ - 1 = -j := by rw [← hsum]; ring
-    rw [heq]; exact m.neg_mem hjm
+    simp_all
   have hDm : D ⊓ m ≠ ⊥ := Ideal.inf_ne_bot_of_ne_bot hD hm
   have hNpos : 0 < Ideal.absNorm (D ⊓ m) :=
     Nat.pos_of_ne_zero fun h => hDm (Ideal.absNorm_eq_zero_iff.mp h)
@@ -98,5 +98,3 @@ theorem positiveIdealCRT
         (Ideal.absNorm (D ⊓ m) : 𝓞 K) * (t : 𝓞 K) := by ring
     rw [hmul]
     exact m.mul_mem_right _ (Ideal.mem_inf.mp hNmem).2
-
-end DedekindZetaZeroFree.AbelianQuotient

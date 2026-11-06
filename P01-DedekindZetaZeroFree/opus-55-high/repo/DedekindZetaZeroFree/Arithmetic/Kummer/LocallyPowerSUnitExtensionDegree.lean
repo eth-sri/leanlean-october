@@ -9,7 +9,6 @@ open scoped NumberField Classical
 
 namespace DedekindZetaZeroFree
 
-noncomputable section
 
 set_option maxHeartbeats 800000
 
@@ -80,7 +79,3 @@ theorem arith_sunit_kummer_degree_one
   exact (ideleClassNorm_range_top_and_finrank_eq_one_of_supportedAt F L A.Sf
     hSplit hAway hInf
     (supportedAt_sup_principalSubgroup_eq_top_of_classGroup_subsingleton F A hCl)).2
-
-end
-
-end DedekindZetaZeroFree

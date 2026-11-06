@@ -18,7 +18,7 @@ open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources renaming archEquiv
 open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources renaming basepoint_eq → basepoint_eq
 
 set_option backward.isDefEq.respectTransparency false in
-private theorem original_full_K (d : ℕ) (μ : Measure (G d)) [μ.IsHaarMeasure] :
+theorem original_full_K (d : ℕ) (μ : Measure (G d)) [μ.IsHaarMeasure] :
     ∃ (e : G d ≃ₜ (X d × K d)) (c : ℝ≥0), 0 < c ∧
       (∀ g, (e g).1 = g • o d) ∧
       (∀ x k, e.symm (x, k) =
@@ -48,7 +48,7 @@ private theorem original_full_K (d : ℕ) (μ : Measure (G d)) [μ.IsHaarMeasure
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
 
 set_option backward.isDefEq.respectTransparency false in
-private theorem original_recipe_full_K
+theorem original_recipe_full_K
     (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ) :
     ∃ (e : KPSmoothActualFlowData.GInfinity F ≃ₜ
         (X (KPCuspLogShape.dimension F) × K (KPCuspLogShape.dimension F)))
@@ -89,7 +89,7 @@ open KPActualComponentHaarSources
 
 set_option backward.isDefEq.respectTransparency false in
 
-private theorem actual_atlas_group_domain
+theorem actual_atlas_group_domain
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (U : KPMsFixedHaar.Level F ζ hζ)
     (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
@@ -290,7 +290,7 @@ open _root_.DedekindZetaZeroFree.KPCompactStabilizerHaarSources renaming cocycle
   simp only [htest] at hh
   exact hh.symm
 
-private theorem actual_component_pinned_domain
+theorem actual_component_pinned_domain
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (U : KPMsFixedHaar.Level F ζ hζ)
     (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
@@ -375,7 +375,7 @@ private theorem actual_component_pinned_domain
     rw [← hproduct, hem.restrict_map, hem.injective.preimage_image, Measure.prod_restrict]
   rw [hrestrict, Measure.map_map hq hem.measurable]
 
-private theorem actual_component_pinned_full_K
+theorem actual_component_pinned_full_K
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (U : KPMsFixedHaar.Level F ζ hζ)
     (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
@@ -467,7 +467,7 @@ private theorem actual_component_pinned_full_K
   rw [hp, Measure.map_map hms (e.symm.measurable.prodMap measurable_id)]
   rfl
 
-private theorem actual_component_fiber_projection
+theorem actual_component_fiber_projection
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (U : KPMsFixedHaar.Level F ζ hζ)
     (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
@@ -487,7 +487,7 @@ private theorem actual_component_fiber_projection
   apply Quotient.sound
   exact ⟨1,ε,u,by simp,by simp⟩
 
-private theorem actual_component_test_average
+theorem actual_component_test_average
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (U : KPMsFixedHaar.Level F ζ hζ)
     (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
@@ -593,7 +593,7 @@ private theorem actual_component_test_average
 
 open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources renaming actual_finiteOrbit_positive_finite → actual_finiteOrbit_positive_finite
 
-private theorem actual_component_localized_joint_tests
+theorem actual_component_localized_joint_tests
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (U : KPMsFixedHaar.Level F ζ hζ)
     (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)

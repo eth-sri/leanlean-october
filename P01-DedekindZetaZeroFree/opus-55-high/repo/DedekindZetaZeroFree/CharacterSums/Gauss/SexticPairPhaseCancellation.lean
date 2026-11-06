@@ -28,5 +28,3 @@ theorem raw_phase_cancel (β γ : ℂ) (hβγ : β = γ) (hβ : β ^ 6 = 1)
     push_cast
     ring
   rw [hA, zpow_natCast]
-
-end DedekindZetaZeroFree.SexticPairwiseExponent

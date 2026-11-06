@@ -50,7 +50,7 @@ variable {U : Level F ζ hζ}
     simp
   simp only [zero_smul, hz, (archimedean_insertion_properties F ζ hζ).1, mul_one]
 
-private theorem word_compact_hasDerivAt
+theorem word_compact_hasDerivAt
     (u : smoothSpace F ζ hζ U) (word : List (KPSmoothActualFlowData.B F))
     (w : NumberField.InfinitePlace F) (c : Fin 3) (g : G F ζ hζ) (t : ℝ) :
     let v := word.foldr (fun b f => rightDerivative F ζ hζ b.1 b.2 f)
@@ -73,7 +73,7 @@ private theorem word_compact_hasDerivAt
   simp only [← compact_direction_curve_insertion, compact_directionJet] at hd
   fin_cases c <;> exact hd
 
-private theorem compact_second_binding
+theorem compact_second_binding
     (u : smoothSpace F ζ hζ U) (w : NumberField.InfinitePlace F) (c : Fin 3) (g : G F ζ hζ) :
     let v := fun a => u.val (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ a)
     deriv (fun t => deriv (fun r => v (g *

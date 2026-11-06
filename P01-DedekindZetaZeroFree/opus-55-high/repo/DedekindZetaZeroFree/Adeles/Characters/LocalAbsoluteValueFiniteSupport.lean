@@ -7,8 +7,6 @@ public import DedekindZetaZeroFree.Metaplectic.Torus.RationalCenterCharacterData
 open scoped NumberField Classical BigOperators NNReal
 open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.KPGlobalCenterRationalCharacterExtension.CubeDiagonalProduct
-noncomputable section
-set_option autoImplicit false
 variable (F : Type) [Field F] [NumberField F]
 
 theorem idele_localAbs_hasFiniteMulSupport (y : Ideles F) :
@@ -52,6 +50,3 @@ theorem idele_localAbs_hasFiniteMulSupport (y : Ideles F) :
       rw [Units.val_mk0, Units.val_one]
       exact hnn
     exact hv hf1
-
-end
-end DedekindZetaZeroFree.KPGlobalCenterRationalCharacterExtension.CubeDiagonalProduct

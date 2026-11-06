@@ -30,7 +30,7 @@ section Algebra
 
 variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
 
-private lemma base_left (D : H →ₗ.[ℂ] H) (B : H →L[ℂ] H)
+lemma base_left (D : H →ₗ.[ℂ] H) (B : H →L[ℂ] H)
     (hB : GenuineInverse D (-1) B) :
     ∃ h : ∀ x : H, B x ∈ D.domain,
       (∀ x, D ⟨B x, h x⟩ = x - B x) ∧
@@ -41,9 +41,9 @@ private lemma base_left (D : H →ₗ.[ℂ] H) (B : H →L[ℂ] H)
     have hx := h1 x
     simp only [neg_smul, one_smul, sub_neg_eq_add] at hx
     exact eq_sub_of_add_eq hx
-  · simpa only [neg_smul, one_smul, sub_neg_eq_add] using h2
+  simp_all
 
-private lemma genuine_formula (D : H →ₗ.[ℂ] H) (B : H →L[ℂ] H)
+lemma genuine_formula (D : H →ₗ.[ℂ] H) (B : H →L[ℂ] H)
     (hB : GenuineInverse D (-1) B) (z : ℂ)
     (hz : IsUnit (shiftedPencil B z)) :
     GenuineInverse D z (shiftedResolvent B z) := by
@@ -86,7 +86,7 @@ private lemma genuine_formula (D : H →ₗ.[ℂ] H) (B : H →L[ℂ] H)
     rw [he]
     exact DFunLike.congr_fun hCA (y : H)
 
-private lemma genuine_unit (D : H →ₗ.[ℂ] H) (B : H →L[ℂ] H)
+lemma genuine_unit (D : H →ₗ.[ℂ] H) (B : H →L[ℂ] H)
     (hB : GenuineInverse D (-1) B) (z : ℂ) (R : H →L[ℂ] H)
     (hR : GenuineInverse D z R) : IsUnit (shiftedPencil B z) := by
   rcases base_left D B hB with ⟨h, h1, h2⟩
@@ -118,15 +118,14 @@ private lemma genuine_unit (D : H →ₗ.[ℂ] H) (B : H →L[ℂ] H)
   · rw [add_mul, one_mul, smul_mul_assoc, hRA]
     simp [shiftedPencil]
 
-private lemma genuine_unique (D : H →ₗ.[ℂ] H) (z : ℂ)
+lemma genuine_unique (D : H →ₗ.[ℂ] H) (z : ℂ)
     (R S : H →L[ℂ] H) (hR : GenuineInverse D z R) (hS : GenuineInverse D z S) :
     R = S := by
   rcases hR with ⟨hr, hr1, hr2⟩
   rcases hS with ⟨hs, hs1, hs2⟩
   ext x
   have he := hr2 ⟨S x, hs x⟩
-  rw [hs1] at he
-  exact he
+  simp_all
 
 end Algebra
 
@@ -169,11 +168,8 @@ theorem analyticOnNhd_shiftedResolvent
   intro z hz
   have hA : AnalyticAt ℂ (shiftedPencil B) z := by
     unfold shiftedPencil
-    exact analyticAt_const.sub ((analyticAt_id.add analyticAt_const).smul analyticAt_const)
+    fun_prop
   have hi : AnalyticAt ℂ Ring.inverse (shiftedPencil B z) :=
     analyticOnNhd_inverse (𝕜 := ℂ) (shiftedPencil B z)
       ((isUnit_shiftedPencil_iff D hDense B hB z).mpr hz)
   exact analyticAt_const.mul (hi.comp hA)
-
-end
-end DedekindZetaZeroFree.KPResolventPencil

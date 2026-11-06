@@ -48,14 +48,13 @@ lemma continuous_rescaleCost (A : SArithmeticData F) (B u : ℝ) :
   apply continuous_finset_prod
   intro w hw
   have hc : Continuous (fun t => (‖((radial A t).1 w : w.Completion)‖ ^ 2) /
-      (‖((radial A u).1 w : w.Completion)‖ ^ 2)) := by
-    exact (show Continuous (fun t : ℝ => ‖((radial A t).1 w : w.Completion)‖ ^ 2) from
+      (‖((radial A u).1 w : w.Completion)‖ ^ 2)) := 
+    (show Continuous (fun t : ℝ => ‖((radial A t).1 w : w.Completion)‖ ^ 2) from
       (Units.continuous_val.comp
         ((continuous_apply w).comp (continuous_fst.comp (continuous_radial A)))).norm.pow 2).div_const _
   have hp (t : ℝ) : 0 < (‖((radial A t).1 w : w.Completion)‖ ^ 2) /
       (‖((radial A u).1 w : w.Completion)‖ ^ 2) :=
-    div_pos (pow_pos (norm_pos_iff.mpr (Units.ne_zero _)) 2)
-      (pow_pos (norm_pos_iff.mpr (Units.ne_zero _)) 2)
+    by simp
   exact (hc.rpow_const (fun t => Or.inl (hp t).ne')).max
     (hc.rpow_const (fun t => Or.inl (hp t).ne'))
 
@@ -76,7 +75,7 @@ lemma product_rescale (A : SArithmeticData F) (M B u t : ℝ) (y : A.G) :
       exact archPowerMajorant_nonneg _ _ (sq_nonneg _)
     · intro w hw
       have hp (t : ℝ) : 0 < ‖((radial A t).1 w : w.Completion)‖ ^ 2 :=
-        pow_pos (norm_pos_iff.mpr (Units.ne_zero _)) 2
+        by simp
       have hr : 0 < ‖((y * radial A u).1 w : w.Completion)‖ ^ 2 :=
         pow_pos (norm_pos_iff.mpr (Units.ne_zero _)) 2
       have he : ‖((y * radial A t).1 w : w.Completion)‖ ^ 2 =
@@ -94,7 +93,3 @@ lemma product_rescale (A : SArithmeticData F) (M B u t : ℝ) (y : A.G) :
   have hfin : 0 ≤ ∏ p : A.Sf, finitePowerMajorant M ‖(y.2 p : p.val.adicCompletion F)‖ :=
     Finset.prod_nonneg fun p _ => finitePowerMajorant_nonneg M _ (norm_nonneg _)
   exact (mul_le_mul_of_nonneg_left ha hfin).trans_eq (by ring)
-
-end DedekindZetaZeroFree.SheetRescaling
-
-end

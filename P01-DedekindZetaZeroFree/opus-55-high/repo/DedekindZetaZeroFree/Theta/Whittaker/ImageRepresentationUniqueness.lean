@@ -4,13 +4,11 @@ public import DedekindZetaZeroFree.RepresentationTheory.Jacquet.WhittakerCoinvar
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.ExteriorWhittakerValues.ActualWhittaker
 open scoped NumberField Valued
 open NumberField IsDedekindDomain MeasureTheory ValuativeRel
 open KPLocalExceptionalConstruction KPLocalStoneVonNeumann KPLocalPrincipalSeries
 open KPRankOneShellRepair
-set_option autoImplicit false
 set_option maxHeartbeats 2000000
 set_option backward.isDefEq.respectTransparency false
 
@@ -24,11 +22,7 @@ theorem equivariant_rank_le_one_of_coinvariant_rank_le_one
   let e := rootCoinvariantsUniversalEquiv ρ n ψ ℂ
   letI : Module.Finite ℂ (RootEquivariantMaps ρ n ψ ℂ) := e.finiteDimensional
   rw [← e.rank_eq, ← Module.finrank_eq_rank]
-  have hfin : Module.finrank ℂ (Module.Dual ℂ (RootCoinvariants ρ n ψ)) ≤ 1 := by
-    rw [Subspace.dual_finrank_eq]
-    exact Module.finrank_le_of_rank_le (by simpa using hJ :
-      Module.rank ℂ (RootCoinvariants ρ n ψ) ≤ (1 : ℕ))
-  exact_mod_cast hfin
+  simp_all
 
 theorem rank_le_one
     (F : Type) [Field F] [NumberField F]
@@ -41,10 +35,6 @@ theorem rank_le_one
     (ψ : Multiplicative (LocalField F q) →ₜ* ℂˣ) (hne : ψ.toMonoidHom ≠ 1) :
     Module.rank ℂ (RootEquivariantMaps
       (actualCanonicalImageRepresentation F ζ hζ q S P μ hμ)
-      (KPLocalJacquetImage.root S.borel) ψ.toMonoidHom ℂ) ≤ 1 := by
-  exact equivariant_rank_le_one_of_coinvariant_rank_le_one _ _ _
+      (KPLocalJacquetImage.root S.borel) ψ.toMonoidHom ℂ) ≤ 1 := 
+  equivariant_rank_le_one_of_coinvariant_rank_le_one _ _ _
     (coinvariant_rank_le_one F ζ hζ q S P μ hμ ht ψ hne)
-
-end DedekindZetaZeroFree.ExteriorWhittakerValues.ActualWhittaker
-
-end

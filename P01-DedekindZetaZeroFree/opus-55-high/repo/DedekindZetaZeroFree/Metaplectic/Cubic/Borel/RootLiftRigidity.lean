@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.RepresentationTheory.RankOne.PGL2BorelAndFlag
 
 @[expose] public section
 
-noncomputable section
 
 namespace DedekindZetaZeroFree.FiniteCentralBorel
 
@@ -16,7 +15,7 @@ theorem finite_character_trivial
   letI := Fintype.ofFinite C
   let m : ℕ := Fintype.card C
   have hm : (m : ℚ) ≠ 0 := by
-    exact_mod_cast (Fintype.card_ne_zero : Fintype.card C ≠ 0)
+    positivity
   have hx : m • ((m : ℚ)⁻¹ • x) = x := by
     rw [← Nat.cast_smul_eq_nsmul ℚ, smul_smul, mul_inv_cancel₀ hm, one_smul]
   rw [← hx, ofAdd_nsmul, map_pow]
@@ -38,7 +37,7 @@ private lemma correction_trivial {V : Type*} [AddCommGroup V] [Module ℚ V]
     simp [hfg y]
   let d : Multiplicative V →* π.ker :=
     { toFun := fun y => ⟨f y * (g y)⁻¹, hker y⟩
-      map_one' := by apply Subtype.ext; simp
+      map_one' := by simp
       map_mul' := by
         intro a b
         apply Subtype.ext
@@ -59,14 +58,14 @@ open scoped Matrix
 variable (F : Type*) [Field F] [NumberField F]
     (v : HeightOneSpectrum (RingOfIntegers F))
 
-private lemma ordinary_borel_conjugates (b : upperBorel F v) (x : LocalField F v) :
+lemma ordinary_borel_conjugates (b : upperBorel F v) (x : LocalField F v) :
     b.val * ordinaryUpperRootHom F v (Multiplicative.ofAdd x) * b.val⁻¹ =
       ordinaryUpperRootHom F v (Multiplicative.ofAdd ((borelRatio F v b : LocalField F v) * x)) := by
   obtain ⟨A, hA, hu⟩ := b.property
   have hne : A 1 1 ≠ 0 := by
     have hd := Matrix.GeneralLinearGroup.det_ne_zero A
     rw [Matrix.det_fin_two] at hd
-    simpa [hu] using (mul_ne_zero_iff.mp (by simpa [hu] using hd : A 0 0 * A 1 1 ≠ 0)).2
+    simp_all
   have heq : A * upperRootMatrix F v x =
       upperRootMatrix F v ((borelRatio F v b : LocalField F v) * x) * A := by
     apply Units.ext
@@ -85,9 +84,8 @@ private lemma ordinary_borel_conjugates (b : upperBorel F v) (x : LocalField F v
   change Matrix.ProjGenLinGroup.mk A * Matrix.ProjGenLinGroup.mk (upperRootMatrix F v x) *
     (Matrix.ProjGenLinGroup.mk A)⁻¹ = Matrix.ProjGenLinGroup.mk (upperRootMatrix F v _)
   have hp := congrArg (Matrix.ProjGenLinGroup.mk) heq
-  simp only [map_mul, upperRootElement] at hp
-  rw [hp, mul_assoc, mul_inv_cancel, mul_one]
-  rfl
+  simp only [map_mul] at hp
+  simp_all
 
 theorem torusLift_conjugates_root
     {G : Type*} [Group G] (π : G →* PGL2 F v) [Finite π.ker]
@@ -108,7 +106,3 @@ theorem torusLift_conjugates_root
     simp only [map_mul, map_inv, hn]
     exact ordinary_borel_conjugates F v ⟨π t, htB⟩ (Multiplicative.toAdd y)
   exact correction_trivial π hcentral f g hfg (Multiplicative.ofAdd x)
-
-end DedekindZetaZeroFree.FiniteCentralBorel
-
-end

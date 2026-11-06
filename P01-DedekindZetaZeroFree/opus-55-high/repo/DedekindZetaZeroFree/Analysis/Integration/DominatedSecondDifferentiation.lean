@@ -66,5 +66,3 @@ theorem TwoDerivativeData.integral_calculus (h : TwoDerivativeData μ f) :
         h.continuous_integral_two⟩
   · intro j hj t
     interval_cases j <;> simp [iteratedDeriv_succ, hd0, hd1]
-end
-end DedekindZetaZeroFree.SourceSheet.Differentiation

@@ -42,8 +42,7 @@ theorem logPrincipalPart_differentiableAt (P : Polynomial ℂ) (s : ℂ) (hs : s
   change DifferentiableAt ℂ (fun s => ∑ k ∈ P.support,
     ((-1 : ℂ) ^ k * (k.factorial : ℂ) * P.coeff k) / s ^ (k + 1)) s
   refine DifferentiableAt.fun_sum (fun k _ => ?_)
-  have hne : s ^ (k + 1) ≠ 0 := pow_ne_zero _ hs
-  exact (differentiableAt_const _).div (by fun_prop) hne
+  simp_all
 
 namespace LogMellinAdmissible
 
@@ -73,8 +72,3 @@ theorem differentiableAt (h : LogMellinAdmissible f δ P H) (s : ℂ)
       with z hz
     exact hHA z hz.1 hz.2
   exact ((hA s hs).add (logPrincipalPart_differentiableAt P s hs0)).congr_of_eventuallyEq heq
-
-end LogMellinAdmissible
-end DedekindZetaZeroFree.LargeSieve.Vendor
-
-end

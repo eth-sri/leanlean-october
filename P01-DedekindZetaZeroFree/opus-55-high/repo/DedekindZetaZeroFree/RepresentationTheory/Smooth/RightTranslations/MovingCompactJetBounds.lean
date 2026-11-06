@@ -95,7 +95,7 @@ theorem right_word_finite_level
       (v : KPFiniteCuspAtlas.FiniteCover F ζ hζ)
     rw [mul_assoc, ← hc.eq, ← mul_assoc, ih]
 
-private theorem word_congr_open {d b : ℕ} (V : Set (Space d)) (hV : IsOpen V)
+theorem word_congr_open {d b : ℕ} (V : Set (Space d)) (hV : IsOpen V)
     (fields : Fin b → Space d → Space d) (w : List (Fin b)) (f h : Space d → ℂ)
     (heq : Set.EqOn f h V) : Set.EqOn (KPContRightJets.rightWord fields w f)
       (KPContRightJets.rightWord fields w h) V := by
@@ -302,7 +302,7 @@ theorem smooth_word_coefficient_expansion {n m b : ℕ} {U : Set (Space m)} {V :
           rw [term_deriv s hs, ih (fun t ht => hss t (by simp [ht]))]
       exact sum_deriv ts (fun _ h => h)
 
-private theorem vector_decomp' {d : ℕ} (v : Space d) :
+theorem vector_decomp' {d : ℕ} (v : Space d) :
     v = ∑ i : Fin d, v i • EuclideanSpace.single i 1 := by
   apply PiLp.ext
   intro j
@@ -326,14 +326,14 @@ theorem euclidean_multilinear_coordinate_expansion {d n : ℕ} (L : Space d [×n
   intro a _
   rw [L.map_smul_univ]
 
-private lemma coord_smooth' {d : ℕ} {U : Set (Space d)} (hU : IsOpen U)
+lemma coord_smooth' {d : ℕ} {U : Set (Space d)} (hU : IsOpen U)
     (u : Space d → ℂ) (hu : ContDiffOn ℝ (⊤ : ℕ∞) u U) (l : List (Fin d)) :
     ContDiffOn ℝ (⊤ : ℕ∞) (coordinateDerivativeList l u) U := by
   induction l with
   | nil => exact hu
   | cons i l ih => exact (ih.fderiv_of_isOpen hU (by simp)).clm_apply contDiffOn_const
 
-private theorem iterated_coordinate (n : ℕ) {d : ℕ} (u : Space d → ℂ)
+theorem iterated_coordinate (n : ℕ) {d : ℕ} (u : Space d → ℂ)
     (U : Set (Space d)) (hU : IsOpen U) (hu : ContDiffOn ℝ (⊤ : ℕ∞) u U)
     (x : Space d) (hx : x ∈ U) (a : Fin n → Fin d) :
     iteratedFDeriv ℝ n u x (fun i => EuclideanSpace.single (a i) 1) =
@@ -352,7 +352,7 @@ private theorem iterated_coordinate (n : ℕ) {d : ℕ} (u : Space d → ℂ)
     rw [heq.fderiv_eq]
     simp only [List.ofFn_succ, coordinateDerivativeList]
 
-private lemma coord_perm' {d : ℕ} {U : Set (Space d)} (hU : IsOpen U)
+lemma coord_perm' {d : ℕ} {U : Set (Space d)} (hU : IsOpen U)
     (u : Space d → ℂ) (hu : ContDiffOn ℝ (⊤ : ℕ∞) u U)
     {l r : List (Fin d)} (hp : l.Perm r) :
     Set.EqOn (coordinateDerivativeList l u) (coordinateDerivativeList r u) U := by
@@ -381,7 +381,7 @@ private lemma coord_perm' {d : ℕ} {U : Set (Space d)} (hU : IsOpen U)
     simpa using hsym.symm
   | trans h1 h2 ih1 ih2 => exact fun x hx => (ih1 hx).trans (ih2 hx)
 
-private lemma list_index' {d k : ℕ} (l : List (Fin d)) (hl : l.length ≤ k) :
+lemma list_index' {d k : ℕ} (l : List (Fin d)) (hl : l.length ≤ k) :
     ∃ α : MultiIndex d k, α.directions.Perm l := by
   classical
   have hsum : ∑ i : Fin d, l.count i = l.length := by
@@ -399,7 +399,7 @@ private lemma list_index' {d k : ℕ} (l : List (Fin d)) (hl : l.length ≤ k) :
   rw [← List.ofFn_eq_map, List.sum_ofFn]
   simp
 
-private lemma coord_append {d : ℕ} (l r : List (Fin d)) (u : Space d → ℂ) :
+lemma coord_append {d : ℕ} (l r : List (Fin d)) (u : Space d → ℂ) :
     coordinateDerivativeList l (coordinateDerivativeList r u) = coordinateDerivativeList (l++r) u := by
   induction l with
   | nil => rfl
@@ -509,14 +509,14 @@ open KPContLocalNorm
 open scoped Topology ContDiff BigOperators
 variable {E A : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [TopologicalSpace A]
 
-private lemma coord_sm {d : ℕ} (B : LocalBall d) (u : Space d → ℂ)
+lemma coord_sm {d : ℕ} (B : LocalBall d) (u : Space d → ℂ)
     (hu : ContDiffOn ℝ (⊤ : ℕ∞) u B.carrier) (l : List (Fin d)) :
     ContDiffOn ℝ (⊤ : ℕ∞) (coordinateDerivativeList l u) B.carrier := by
   induction l with
   | nil => exact hu
   | cons i l ih => exact (ih.fderiv_of_isOpen Metric.isOpen_ball (by simp)).clm_apply contDiffOn_const
 
-private lemma semi_nonneg {d m : ℕ} (B : LocalBall d) (K : Set (Space d))
+lemma semi_nonneg {d m : ℕ} (B : LocalBall d) (K : Set (Space d))
     (hK : IsCompact K) (hKB : K ⊆ B.carrier) (u : Space d → ℂ)
     (hu : ContDiffOn ℝ (⊤ : ℕ∞) u B.carrier) :
     0 ≤ compactJetSeminorm m B K hK hKB u hu := by
@@ -634,7 +634,7 @@ theorem compact_weighted_coordinate_jet_bound {d : ℕ}
       ring
     _ ≤ (M₀+1) * J := mul_le_mul_of_nonneg_right (le_add_of_nonneg_right zero_le_one) hJ
 
-private lemma smooth_list_sum {d : ℕ} (B : LocalBall d) (u : Space d → ℂ)
+lemma smooth_list_sum {d : ℕ} (B : LocalBall d) (u : Space d → ℂ)
     (hu : ContDiffOn ℝ (⊤ : ℕ∞) u B.carrier) (W : Set (A × E))
     (ψ : A × E → Space d) (hψB : Set.MapsTo ψ W B.carrier)
     (hψsm : ∀ a, ContDiffOn ℝ (⊤ : ℕ∞) (fun y => ψ (a,y)) {y | (a,y) ∈ W})
@@ -709,7 +709,7 @@ section FinalAssembly
 open KPContLocalNorm KPContRightJets
 open scoped Topology ContDiff BigOperators
 
-private theorem combo_expansion {d m b : ℕ} {U : Set (Space m)} {V : Set (Space d)}
+theorem combo_expansion {d m b : ℕ} {U : Set (Space m)} {V : Set (Space d)}
     (hU : IsOpen U) (hV : IsOpen V) (π : Space m → Space d)
     (fields : Fin b → Space m → Space m)
     (hπ : ContDiffOn ℝ (⊤ : ℕ∞) π U)
@@ -755,7 +755,7 @@ variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
 variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
 
 set_option maxHeartbeats 600000 in
-private theorem local_compact_bound
+theorem local_compact_bound
     (D : KPContActualCommonDiskRightHolomorphy.Combination F) (n : ℕ)
     (g : G F ζ hζ) (x : ArchCoordinates F) (hx : x ∈ archDomain F) :
     ∃ W : Set (G F ζ hζ × ArchCoordinates F), IsOpen W ∧ (g,x) ∈ W ∧

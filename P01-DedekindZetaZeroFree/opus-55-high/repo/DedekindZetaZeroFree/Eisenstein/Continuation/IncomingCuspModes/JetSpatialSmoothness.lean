@@ -12,7 +12,7 @@ namespace DedekindZetaZeroFree.KPContActualCutoffSmoothDescent
 
 open KPContLocalNorm KPContLocalHolomorphyUpgrade.CauchyAssembly
 
-private theorem jetContinuous {n : ℕ} (A : LocalBall n)
+theorem jetContinuous {n : ℕ} (A : LocalBall n)
     (Ω : Set ℂ) (h : ℂ → Space n → ℂ)
     (hh : KPCutoffSource.ChartSmoothHolomorphicOn A h Ω) : Raw.JetContinuousOn A h Ω := by
   intro z₀ hz₀ K hK hKA m ε hε

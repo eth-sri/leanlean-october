@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Metaplectic.Torus.FiniteHeisenbergInducingDat
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.KPForwardHomRepair
 
 open scoped NumberField
@@ -24,7 +23,3 @@ theorem canonicalUpperRoot_eq (P : Polarization S.heisenberg)
 theorem canonicalSignedWeyl_eq (P : Polarization S.heisenberg) :
     S.borel.liftedW = KPRankOneOpenCellKernel.signedWeyl F ζ hζ q :=
   (S.openCell P).weyl_eq
-
-end DedekindZetaZeroFree.KPForwardHomRepair
-
-end

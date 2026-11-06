@@ -45,7 +45,4 @@ theorem heckeNonprincipalFunctionalEquation
   · apply strongPair_orderOneBound P hk hP
     obtain ⟨C, b, p, hC, hb, hp, htail⟩ := hdecay
     refine ⟨C, b, p, hC.le, hb, hp, ?_⟩
-    intro t ht
-    simpa [hf₀, hg₀, Real.rpow_eq_pow] using htail t ht
-
-end DedekindZetaZeroFree.Hecke
+    simp_all

@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Maximal finite Kummer extensions of local fields
 
@@ -25,7 +20,6 @@ For a positive integer `n` that is nonzero in a nonarchimedean local field,
 the Kummer extension obtained by adjoining all `n`-th roots is finite.
 -/
 
-noncomputable section
 
 universe v
 
@@ -71,7 +65,3 @@ theorem maximalKummerRadicalExtension_finiteDimensional
     (K := K) (Omega := Omega) n hnK hmu Delta
   let _ : Finite Gal(E/K) := Finite.of_equiv (R →* M) e.symm.toEquiv
   exact IsGalois.finiteDimensional_of_finite K E
-
-end KummerTheory
-
-end

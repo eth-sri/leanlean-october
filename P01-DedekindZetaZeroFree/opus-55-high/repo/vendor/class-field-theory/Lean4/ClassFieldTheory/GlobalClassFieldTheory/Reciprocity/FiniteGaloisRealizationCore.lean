@@ -20,18 +20,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Finite Galois number-field extensions in the rational separable closure
 
@@ -66,7 +54,7 @@ variable
 
 /-- The embedding of the lower field obtained by restricting the one
 chosen embedding of the top field. -/
-noncomputable def numberFieldTowerLowerEmbedding :
+def numberFieldTowerLowerEmbedding :
     K →ₐ[ℚ] SeparableClosure ℚ :=
   (numberFieldSeparableClosureEmbedding L).comp
     (IsScalarTower.toAlgHom ℚ K L)
@@ -88,7 +76,7 @@ theorem numberFieldTowerBaseField_le_topField :
   exact ⟨algebraMap K L y, rfl⟩
 
 /-- The standard inclusion algebra on the two nested field ranges. -/
-noncomputable instance numberFieldTowerBaseFieldAlgebra :
+instance numberFieldTowerBaseFieldAlgebra :
     Algebra (numberFieldTowerBaseField K L)
       (numberFieldInRationalSeparableClosure L) :=
   (IntermediateField.inclusion
@@ -99,15 +87,15 @@ instance numberFieldTowerBaseFieldScalarTower :
       (numberFieldInRationalSeparableClosure L) :=
   IsScalarTower.of_algebraMap_eq' rfl
 
-noncomputable instance numberFieldTowerBaseField_finiteDimensional :
+instance numberFieldTowerBaseField_finiteDimensional :
     FiniteDimensional ℚ (numberFieldTowerBaseField K L) :=
   (numberFieldTowerLowerEmbedding K L).equivFieldRange.toLinearEquiv.finiteDimensional
 
-noncomputable instance numberFieldTowerBaseField_numberField :
+instance numberFieldTowerBaseField_numberField :
     NumberField (numberFieldTowerBaseField K L) :=
   NumberField.of_module_finite ℚ (numberFieldTowerBaseField K L)
 
-noncomputable instance numberFieldTowerTopField_finiteDimensional :
+instance numberFieldTowerTopField_finiteDimensional :
     FiniteDimensional (numberFieldTowerBaseField K L)
       (numberFieldInRationalSeparableClosure L) :=
   FiniteDimensional.right ℚ
@@ -126,7 +114,7 @@ theorem numberFieldTowerFieldRangeEquiv_algebraMap (x : K) :
         ((numberFieldTowerLowerEmbedding K L).equivFieldRange x) := by
   rfl
 
-noncomputable instance numberFieldTowerTopField_isGalois :
+instance numberFieldTowerTopField_isGalois :
     IsGalois (numberFieldTowerBaseField K L)
       (numberFieldInRationalSeparableClosure L) := by
   let _ : Algebra
@@ -143,10 +131,7 @@ noncomputable instance numberFieldTowerTopField_isGalois :
       (g :=
         (numberFieldSeparableClosureEmbedding L).equivFieldRange.toRingEquiv)
       (by
-        apply RingHom.ext
-        intro x
-        exact
-          (numberFieldTowerFieldRangeEquiv_algebraMap K L x).symm)
+        rfl)
 
 /-- The closed subgroup representing the compatible embedded copy of
 `K`. -/
@@ -179,7 +164,7 @@ theorem numberFieldTowerTopSubgroup_le_baseSubgroup :
 /-- The separable closure of `K` is identified with
 `SeparableClosure ℚ` endowed with the algebra structure induced by the
 compatible lower embedding. -/
-noncomputable def numberFieldTowerSeparableClosureEquiv :
+def numberFieldTowerSeparableClosureEquiv :
     let i := numberFieldTowerLowerEmbedding K L
     letI : Algebra K (SeparableClosure ℚ) :=
       i.toRingHom.toAlgebra
@@ -202,14 +187,14 @@ noncomputable def numberFieldTowerSeparableClosureEquiv :
 /-- The algebra structure on the rational separable closure induced by
 the compatible lower embedding in a number-field tower. -/
 @[reducible]
-noncomputable def numberFieldTowerSeparableClosureBaseAlgebra :
+def numberFieldTowerSeparableClosureBaseAlgebra :
     Algebra K (SeparableClosure ℚ) :=
   (numberFieldTowerLowerEmbedding K L).toRingHom.toAlgebra
 
 /-- The algebra structure on the rational separable closure induced by
 the chosen embedding of the top number field. -/
 @[reducible]
-noncomputable def numberFieldTowerSeparableClosureTopAlgebra :
+def numberFieldTowerSeparableClosureTopAlgebra :
     Algebra L (SeparableClosure ℚ) :=
   (numberFieldSeparableClosureEmbedding L).toRingHom.toAlgebra
 
@@ -300,146 +285,10 @@ theorem numberFieldTowerSeparableClosure_isGalois :
     IsGalois.of_algEquiv
       (numberFieldTowerSeparableClosureEquiv K L)
 
-/-- Continuous restriction from the compatible separable closure to
-the actual finite Galois extension in the original number-field
-tower. -/
-noncomputable def numberFieldTowerSeparableClosureRestriction :
-    letI : Algebra K (SeparableClosure ℚ) :=
-      numberFieldTowerSeparableClosureBaseAlgebra K L
-    letI : Algebra L (SeparableClosure ℚ) :=
-      numberFieldTowerSeparableClosureTopAlgebra L
-    letI : IsScalarTower K L (SeparableClosure ℚ) :=
-      numberFieldTowerSeparableClosureScalarTower K L
-    Gal(SeparableClosure ℚ / K) →ₜ*
-      Gal(L / K) := by
-  letI : Algebra K (SeparableClosure ℚ) :=
-    numberFieldTowerSeparableClosureBaseAlgebra K L
-  let _ : Algebra L (SeparableClosure ℚ) :=
-    numberFieldTowerSeparableClosureTopAlgebra L
-  let _ : IsScalarTower K L (SeparableClosure ℚ) :=
-    numberFieldTowerSeparableClosureScalarTower K L
-  let eL : L →ₐ[K] SeparableClosure ℚ :=
-    IsScalarTower.toAlgHom K L (SeparableClosure ℚ)
-  let E : IntermediateField K (SeparableClosure ℚ) :=
-    eL.fieldRange
-  letI : FiniteDimensional K E :=
-    eL.equivFieldRange.toLinearEquiv.finiteDimensional
-  letI : IsGalois K E :=
-    IsGalois.of_algEquiv eL.equivFieldRange
-  let c :
-      Gal(L / K) ≃*
-        Gal(E / K) :=
-    AlgEquiv.autCongr eL.equivFieldRange
-  let rE :
-      Gal(SeparableClosure ℚ / K) →*
-        Gal(E / K) :=
-    AlgEquiv.restrictNormalHom E
-  refine
-    { toMonoidHom :=
-        AlgEquiv.restrictNormalHom L
-      continuous_toFun := ?_ }
-  have hrE : Continuous rE :=
-    InfiniteGalois.restrictNormalHom_continuous E
-  have hc : Continuous c.symm :=
-    continuous_of_discreteTopology
-  apply (hc.comp hrE).congr
-  intro σ
-  apply AlgEquiv.ext
-  intro x
-  apply eL.injective
-  change
-    eL
-        (((AlgEquiv.autCongr eL.equivFieldRange).symm
-          (AlgEquiv.restrictNormalHom E σ)) x) =
-      eL ((AlgEquiv.restrictNormalHom L σ) x)
-  have he (y : E) :
-      eL (eL.equivFieldRange.symm y) = E.val y := by
-    exact
-      congrArg Subtype.val
-        (eL.equivFieldRange.apply_symm_apply y)
-  calc
-    eL
-          (((AlgEquiv.autCongr eL.equivFieldRange).symm
-            (AlgEquiv.restrictNormalHom E σ)) x) =
-        E.val
-          ((AlgEquiv.restrictNormalHom E σ)
-            (eL.equivFieldRange x)) := by
-      simpa only [AlgEquiv.autCongr_symm,
-        AlgEquiv.autCongr_apply, AlgEquiv.trans_apply,
-        AlgEquiv.symm_symm] using
-        he
-          ((AlgEquiv.restrictNormalHom E σ)
-            (eL.equivFieldRange x))
-    _ = σ (eL x) := by
-      exact
-        AlgEquiv.restrictNormal_commutes σ E
-          (eL.equivFieldRange x)
-    _ = eL ((AlgEquiv.restrictNormalHom L σ) x) := by
-      exact
-        (AlgEquiv.restrictNormal_commutes σ L x).symm
-
-/-- The compatible continuous restriction evaluates as ordinary
-normal-field restriction. -/
-@[simp]
-theorem numberFieldTowerSeparableClosureRestriction_apply
-    (σ :
-      letI : Algebra K (SeparableClosure ℚ) :=
-        numberFieldTowerSeparableClosureBaseAlgebra K L
-      letI : Algebra L (SeparableClosure ℚ) :=
-        numberFieldTowerSeparableClosureTopAlgebra L
-      letI : IsScalarTower K L (SeparableClosure ℚ) :=
-        numberFieldTowerSeparableClosureScalarTower K L
-      Gal(SeparableClosure ℚ / K)) :
-    letI : Algebra K (SeparableClosure ℚ) :=
-      numberFieldTowerSeparableClosureBaseAlgebra K L
-    letI : Algebra L (SeparableClosure ℚ) :=
-      numberFieldTowerSeparableClosureTopAlgebra L
-    letI : IsScalarTower K L (SeparableClosure ℚ) :=
-      numberFieldTowerSeparableClosureScalarTower K L
-    numberFieldTowerSeparableClosureRestriction K L σ =
-      AlgEquiv.restrictNormalHom L σ := by
-  let _ : Algebra K (SeparableClosure ℚ) :=
-    numberFieldTowerSeparableClosureBaseAlgebra K L
-  let _ : Algebra L (SeparableClosure ℚ) :=
-    numberFieldTowerSeparableClosureTopAlgebra L
-  let _ : IsScalarTower K L (SeparableClosure ℚ) :=
-    numberFieldTowerSeparableClosureScalarTower K L
-  change
-    (numberFieldTowerSeparableClosureRestriction K L).toMonoidHom σ =
-      AlgEquiv.restrictNormalHom L σ
-  rfl
-
-/-- Restriction from the compatible separable closure onto the finite
-Galois top field is surjective. -/
-theorem numberFieldTowerSeparableClosureRestriction_surjective :
-    letI : Algebra K (SeparableClosure ℚ) :=
-      numberFieldTowerSeparableClosureBaseAlgebra K L
-    letI : Algebra L (SeparableClosure ℚ) :=
-      numberFieldTowerSeparableClosureTopAlgebra L
-    letI : IsScalarTower K L (SeparableClosure ℚ) :=
-      numberFieldTowerSeparableClosureScalarTower K L
-    Function.Surjective
-      (numberFieldTowerSeparableClosureRestriction K L) := by
-  let : Algebra K (SeparableClosure ℚ) :=
-    numberFieldTowerSeparableClosureBaseAlgebra K L
-  let : Algebra L (SeparableClosure ℚ) :=
-    numberFieldTowerSeparableClosureTopAlgebra L
-  let : IsScalarTower K L (SeparableClosure ℚ) :=
-    numberFieldTowerSeparableClosureScalarTower K L
-  let _ : IsGalois K (SeparableClosure ℚ) :=
-    numberFieldTowerSeparableClosure_isGalois K L
-  intro τ
-  obtain ⟨σ, hσ⟩ :=
-    AlgEquiv.restrictNormalHom_surjective
-      (F := K) (K₁ := L) (E := SeparableClosure ℚ) τ
-  refine ⟨σ, ?_⟩
-  rw [numberFieldTowerSeparableClosureRestriction_apply]
-  exact hσ
-
 /-- A `K`-automorphism of the common rational separable closure,
 viewed as the corresponding rational automorphism fixing the embedded
 copy of `K`. -/
-noncomputable def numberFieldTowerSeparableClosureToBaseSubgroup :
+def numberFieldTowerSeparableClosureToBaseSubgroup :
     letI : Algebra K (SeparableClosure ℚ) :=
       numberFieldTowerSeparableClosureBaseAlgebra K L
     Gal(SeparableClosure ℚ / K) →*
@@ -461,17 +310,15 @@ noncomputable def numberFieldTowerSeparableClosureToBaseSubgroup :
     { toFun := fun σ =>
         ⟨AlgEquiv.restrictScalars ℚ σ, hmem σ⟩
       map_one' := by
-        apply Subtype.ext
         rfl
       map_mul' := by
         intro σ τ
-        apply Subtype.ext
         rfl }
 
 /-- The compatible `K`-absolute Galois group is exactly the fixing
 subgroup of the embedded copy of `K` inside the rational absolute
 Galois group. -/
-noncomputable def numberFieldTowerSeparableClosureEquivBaseSubgroup :
+def numberFieldTowerSeparableClosureEquivBaseSubgroup :
     letI : Algebra K (SeparableClosure ℚ) :=
       numberFieldTowerSeparableClosureBaseAlgebra K L
     Gal(SeparableClosure ℚ / K) ≃*
@@ -498,38 +345,7 @@ noncomputable def numberFieldTowerSeparableClosureEquivBaseSubgroup :
         (numberFieldTowerLowerEmbedding K L x)
         ⟨x, rfl⟩
   · intro σ
-    apply AlgEquiv.ext
-    intro x
     rfl
   · intro τ
     apply Subtype.ext
-    apply AlgEquiv.ext
-    intro x
     rfl
-
-omit [FiniteDimensional K L] [IsGalois K L] in
-/-- Coercing the base-subgroup comparison equivalence gives restriction of
-scalars to the rational base. -/
-@[simp]
-theorem numberFieldTowerSeparableClosureEquivBaseSubgroup_apply_coe
-    (σ :
-      letI : Algebra K (SeparableClosure ℚ) :=
-        numberFieldTowerSeparableClosureBaseAlgebra K L
-      Gal(SeparableClosure ℚ / K)) :
-    letI : Algebra K (SeparableClosure ℚ) :=
-      numberFieldTowerSeparableClosureBaseAlgebra K L
-    ((numberFieldTowerSeparableClosureEquivBaseSubgroup K L σ :
-        (numberFieldTowerBaseSubgroup K L).toSubgroup) :
-      Gal(SeparableClosure ℚ / ℚ)) =
-      AlgEquiv.restrictScalars ℚ σ := by
-  let : Algebra K (SeparableClosure ℚ) :=
-    numberFieldTowerSeparableClosureBaseAlgebra K L
-  change
-    (numberFieldTowerSeparableClosureToBaseSubgroup K L σ).1 =
-      AlgEquiv.restrictScalars ℚ σ
-  rfl
-
-end Reciprocity
-end GlobalClassFieldTheory
-
-end

@@ -101,7 +101,6 @@ theorem character_orthonormal_self [IsAlgClosed 𝕜] (hunitary : IsUnitary π)
       (Module.finrank 𝕜 V : 𝕜)⁻¹ := by
     intro i
     simp only [π.schur_orthogonality_basis hπ hunitary hirr e]
-    rw [Finset.sum_eq_single i (fun k _ hk ↦ by simp [hk]) (by simp)]
     simp
   rw [inner_characterLp_eq_sum π hπ π hπ e e, Finset.sum_congr rfl fun i _ ↦ hrow i,
     Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul, mul_inv_cancel₀ hd]
@@ -114,7 +113,3 @@ theorem character_orthonormal_distinct (ρ : ContRepresentation 𝕜 G W) (hρ :
     ⟪characterLp π hπ, characterLp ρ hρ⟫_𝕜 = 0 := by
   rw [inner_characterLp_eq_sum π hπ ρ hρ (stdOrthonormalBasis 𝕜 V) (stdOrthonormalBasis 𝕜 W)]
   simp [schur_orthogonality_distinct ρ hρ π hπ hunitary hdistinct]
-
-end Orthogonality
-
-end ContRepresentation

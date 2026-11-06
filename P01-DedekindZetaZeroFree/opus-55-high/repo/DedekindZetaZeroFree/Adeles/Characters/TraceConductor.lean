@@ -21,9 +21,7 @@ private theorem prime_eq (v : HeightOneSpectrum (𝓞 F)) :
     rw [Ideal.mem_comap]
     change algebraMap ℤ (𝓞 F) x ∈ v.asIdeal ↔
       algebraMap (𝓞 ℚ) (𝓞 F) ((Rat.IsIntegralClosure.intEquiv (𝓞 ℚ)).symm x) ∈ v.asIdeal
-    rw [DFunLike.congr_fun (RingHom.ext_int (algebraMap ℤ (𝓞 F))
-      ((algebraMap (𝓞 ℚ) (𝓞 F)).comp (Rat.IsIntegralClosure.intEquiv (𝓞 ℚ)).symm.toRingHom)) x]
-    rfl
+    simp
   rw [he, ← h, Ideal.absNorm_span_singleton]
   simp
 private theorem continuous_cast_map {p q : Nat.Primes} {K : Type} [Field K]
@@ -59,31 +57,25 @@ private theorem char_eq (v : HeightOneSpectrum (𝓞 F)) :
       (PlaceTraceAdapter.padicMap F v)
   have hj (q : ℚ) : j (q : ℚ_[ResidueTrace.rationalPrimeBelow v]) =
       algebraMap F (v.adicCompletion F) (algebraMap ℚ F q) := by
-    exact DFunLike.congr_fun (RingHom.ext_rat (j.comp (algebraMap ℚ _))
-      ((algebraMap F _).comp (algebraMap ℚ F))) q
+    simp
   have hc : Continuous j := continuous_cast_map hp _ hmap
   have hb : j = ResidueTrace.baseEmbedding v :=
     (Classical.choose_spec (ResidueTrace.existsUnique_baseEmbedding v)).2 j ⟨hc, hj⟩
   unfold ResidueTrace.localTraceCharacter localFiniteCharacter PlaceTraceAdapter.trace
   rw [← hb]
   exact traceChar_cast hp (PlaceTraceAdapter.padicMap F v)
-private theorem phase_single (A : SArithmeticData F) (v : ↥A.Sf)
+theorem phase_single (A : SArithmeticData F) (v : ↥A.Sf)
     (u : PoissonFinite.Space F A.Sf) (y : v.val.adicCompletion F) :
     PoissonS.finiteBallTraceCharacter F A.Sf
       (u * (Pi.single v y : PoissonFinite.Space F A.Sf)) =
       localFiniteCharacter F v.val (u v * y) := by
   rw [PoissonS.finiteBallTraceCharacter_apply, Finset.prod_eq_single v]
   · simp only [Pi.mul_apply, Pi.single_eq_same]
-  · intro w hw hne
-    have hs : (Pi.single v y : PoissonFinite.Space F A.Sf) w = 0 := by
-      simp [Pi.single_eq_of_ne hne]
-    simp only [Pi.mul_apply, hs, mul_zero]
-    exact AddChar.map_zero_eq_one _
-  · intro hn
-    exact False.elim (hn (Finset.mem_univ v))
+  · simp_all
+  simp
 
 set_option backward.isDefEq.respectTransparency false in
-private theorem conductor_localFinite (A : SArithmeticData F) :
+theorem conductor_localFinite (A : SArithmeticData F) :
     PoissonS.TraceConductor F A.Sf (fun v => localFiniteCharacter F v.val) := by
   intro v y
   have hball := congrArg (fun E : Set (PoissonFinite.Space F A.Sf) =>
@@ -105,8 +97,7 @@ private theorem conductor_localFinite (A : SArithmeticData F) :
       · subst w
         simpa only [Pi.single_eq_same] using h
       · simp only [Pi.single_eq_of_ne hw, norm_zero]
-        exact le_of_lt (zpow_pos (by exact_mod_cast
-          (Nat.zero_lt_of_lt (NumberField.RingOfIntegers.HeightOneSpectrum.one_lt_absNorm w.val))) _))
+        positivity)
     intro x hx
     let u : PoissonFinite.Space F A.Sf := Pi.single v x
     have hu : u ∈ PoissonS.finiteBall F A.Sf (fun _ => 0) := by
@@ -124,5 +115,3 @@ theorem canonical_trace_conductor (A : SArithmeticData F) :
   have hc := conductor_localFinite A
   intro v y
   simpa only [char_eq] using hc v y
-
-end DedekindZetaZeroFree.PrincipalProbeConstruction

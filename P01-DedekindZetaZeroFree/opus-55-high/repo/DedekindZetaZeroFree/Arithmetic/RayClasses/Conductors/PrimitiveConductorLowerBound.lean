@@ -49,5 +49,3 @@ theorem primitive_conductor_support_lower
   rw [mem_finitePart_support_iff]
   intro hcontra
   exact hp (le_antisymm le_top (hcontra ▸ sup_le_sup_left hle p.asIdeal))
-
-end DedekindZetaZeroFree.LargeSieve.RootNumber

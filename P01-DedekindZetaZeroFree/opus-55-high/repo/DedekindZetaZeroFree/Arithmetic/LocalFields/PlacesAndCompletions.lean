@@ -35,7 +35,3 @@ instance (F : Type u) [Field F] [NumberField F] (v : KPPlace F) :
 instance (F : Type u) [Field F] [NumberField F] (v : KPPlace F) :
     Algebra F (KPCompletion F v) := by
   cases v <;> dsimp [KPCompletion] <;> infer_instance
-
-end DedekindZetaZeroFree
-
-end

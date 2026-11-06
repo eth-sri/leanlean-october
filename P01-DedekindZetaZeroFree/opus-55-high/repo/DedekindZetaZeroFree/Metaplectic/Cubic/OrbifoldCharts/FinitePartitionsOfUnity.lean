@@ -118,7 +118,7 @@ variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
     have hz : C.coefficient s y = 0 := norm_eq_zero.mp (he ▸ hh)
     rw [hz]; simp
 
-private theorem derivative_identity {n : ℕ}
+theorem derivative_identity {n : ℕ}
     (N : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U)) (hN : IsOpen N)
     (η : Fin n → KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ)
     (hη : ∀ x ∈ N, ∑ i, η i x = 1)

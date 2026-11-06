@@ -20,7 +20,7 @@ local instance : IsTopologicalGroup (G F ζ hζ) :=
 local instance (K : Subgroup (G F ζ hζ)) : MeasurableSpace K := borel K
 local instance (K : Subgroup (G F ζ hζ)) : BorelSpace K := ⟨rfl⟩
 
-private theorem projected_chamber_interchange
+theorem projected_chamber_interchange
     (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
     (μ : Measure K) [IsProbabilityMeasure μ]
     (f : Flat F ζ hζ K) (a g : G F ζ hζ) (h : C(K, ℂ))

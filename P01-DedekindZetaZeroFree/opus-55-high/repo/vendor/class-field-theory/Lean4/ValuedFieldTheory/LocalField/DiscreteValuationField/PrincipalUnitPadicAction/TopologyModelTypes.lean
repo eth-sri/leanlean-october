@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Type-level topology models for principal units
 
@@ -56,7 +52,7 @@ discrete space.
 /-- The topology on additive first principal units induced by the maximal-
 ideal adic topology on the valuation ring. -/
 @[implicit_reducible]
-noncomputable def principalUnitAdicTopology
+def principalUnitAdicTopology
     (F : CompleteDVF.{u, v} K) :
     TopologicalSpace
       (Additive
@@ -81,19 +77,19 @@ def equiv (F : CompleteDVF.{u, v} K) :
         ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) 1) where
   toFun := AdicPrincipalUnits.val
   invFun := fun x => ⟨x⟩
-  left_inv := fun x => by cases x; rfl
+  left_inv := fun x => by rfl
   right_inv := fun _ => rfl
 
 /--
 Equips the target with its canonical `TopologicalSpace` structure, namely `TopologicalSpace
 (AdicPrincipalUnits F)`.
 -/
-noncomputable instance (F : CompleteDVF.{u, v} K) :
+instance (F : CompleteDVF.{u, v} K) :
     TopologicalSpace (AdicPrincipalUnits F) :=
   (principalUnitAdicTopology F).induced AdicPrincipalUnits.val
 
 /-- Forget the wrapper while retaining the topology recorded in its type. -/
-noncomputable def homeomorph (F : CompleteDVF.{u, v} K) :
+def homeomorph (F : CompleteDVF.{u, v} K) :
     AdicPrincipalUnits F ≃ₜ
       WithTopology
         (Additive
@@ -145,12 +141,6 @@ def of (F : CompleteDVF.{u, v} K)
       ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) 1)) :
     (of F x).val = x := rfl
 
-/-- Establishes the identity `of F x.val = x`. -/
-@[simp] theorem of_val (F : CompleteDVF.{u, v} K)
-    (x : AdicPrincipalUnits F) : of F x.val = x := by
-  cases x
-  rfl
-
 /-- The algebraic equivalence underlying the adic model. -/
 def addEquiv (F : CompleteDVF.{u, v} K) :
     AdicPrincipalUnits F ≃+
@@ -185,7 +175,7 @@ def equiv (F : CompleteDVF.{u, v} K) (n : ℕ) :
       Additive (Internal.principalUnitQuotientCarrier F n) where
   toFun := DiscretePrincipalUnitQuotient.val
   invFun := fun x => ⟨x⟩
-  left_inv := fun x => by cases x; rfl
+  left_inv := fun x => by rfl
   right_inv := fun _ => rfl
 
 /--
@@ -246,19 +236,12 @@ def of (F : CompleteDVF.{u, v} K) (n : ℕ)
     addEquiv F n (of F n x) = x := by
   rw [addEquiv_apply, val_of]
 
-/-- Establishes the identity `of F n x.val = x`. -/
-@[simp] theorem of_val (F : CompleteDVF.{u, v} K) (n : ℕ)
-    (x : DiscretePrincipalUnitQuotient F n) :
-    of F n x.val = x := by
-  cases x
-  rfl
-
 end DiscretePrincipalUnitQuotient
 
 /-- The product topology of the discrete coordinates on the additive
 principal-unit inverse limit. -/
 @[implicit_reducible]
-noncomputable def principalUnitProdiscreteTopology
+def principalUnitProdiscreteTopology
     (F : CompleteDVF.{u, v} K) :
     TopologicalSpace (Additive (Internal.principalUnitInverseLimitCarrier F)) := by
   letI : (n : ℕ) → TopologicalSpace (Internal.principalUnitQuotientCarrier F n) :=
@@ -280,19 +263,19 @@ def equiv (F : CompleteDVF.{u, v} K) :
       Additive (Internal.principalUnitInverseLimitCarrier F) where
   toFun := PrincipalUnitProdiscreteLimit.val
   invFun := fun x => ⟨x⟩
-  left_inv := fun x => by cases x; rfl
+  left_inv := fun x => by rfl
   right_inv := fun _ => rfl
 
 /--
 Equips the target with its canonical `TopologicalSpace` structure, namely `TopologicalSpace
 (PrincipalUnitProdiscreteLimit F)`.
 -/
-noncomputable instance (F : CompleteDVF.{u, v} K) :
+instance (F : CompleteDVF.{u, v} K) :
     TopologicalSpace (PrincipalUnitProdiscreteLimit F) :=
   (principalUnitProdiscreteTopology F).induced PrincipalUnitProdiscreteLimit.val
 
 /-- Forget the wrapper while retaining its fixed prodiscrete topology. -/
-noncomputable def homeomorph (F : CompleteDVF.{u, v} K) :
+def homeomorph (F : CompleteDVF.{u, v} K) :
     PrincipalUnitProdiscreteLimit F ≃ₜ
       WithTopology
         (Additive (Internal.principalUnitInverseLimitCarrier F))
@@ -357,12 +340,6 @@ def of (F : CompleteDVF.{u, v} K)
     (x : Additive (Internal.principalUnitInverseLimitCarrier F)) :
     (of F x).val = x := rfl
 
-/-- Establishes the identity `of F x.val = x`. -/
-@[simp] theorem of_val (F : CompleteDVF.{u, v} K)
-    (x : PrincipalUnitProdiscreteLimit F) : of F x.val = x := by
-  cases x
-  rfl
-
 /-- Evaluation at one discrete coordinate, as an additive homomorphism. -/
 def coordinate (F : CompleteDVF.{u, v} K) (n : ℕ) :
     PrincipalUnitProdiscreteLimit F →+
@@ -384,11 +361,3 @@ DiscretePrincipalUnitQuotient.of F n (Additive.ofMul
         (Internal.principalUnitInverseLimitCarrierEval F n
           (Additive.toMul (addEquiv F x)))) :=
   rfl
-
-end PrincipalUnitProdiscreteLimit
-
-end higherPrincipalUnitGroup
-end CompleteDVF
-end LocalFieldTheory.DiscreteValuationField
-
-end

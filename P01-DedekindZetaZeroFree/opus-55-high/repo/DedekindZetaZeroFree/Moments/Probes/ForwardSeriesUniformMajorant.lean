@@ -6,7 +6,6 @@ public import DedekindZetaZeroFree.Moments.Probes.ForwardGaussianSeriesBounds
 @[expose] public section
 
 namespace DedekindZetaZeroFree.MomentSources
-noncomputable section
 open scoped NumberField Classical
 variable {F : Type} [Field F] [NumberField F]
 
@@ -43,6 +42,3 @@ theorem forward_hasSum
       ThetaReflectionData.forwardSummand R.A R.probe.coefficients m Z i.1 i.2)
       (ThetaReflectionData.forwardB R.A R.probe.coefficients m Z) :=
   (forward_summand_norm_summable R m Z hZ).of_norm.hasSum
-
-end
-end DedekindZetaZeroFree.MomentSources

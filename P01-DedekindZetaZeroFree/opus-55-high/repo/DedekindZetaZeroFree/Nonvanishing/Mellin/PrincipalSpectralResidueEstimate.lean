@@ -1,9 +1,20 @@
 module
 
-public import DedekindZetaZeroFree.Nonvanishing.Mellin.PrincipalInitialContourRegularity
-public import DedekindZetaZeroFree.Nonvanishing.Mellin.PrincipalFirstPoleContour
-public import DedekindZetaZeroFree.Nonvanishing.Mellin.PrincipalResidueKernelContourBounds
-public import DedekindZetaZeroFree.Nonvanishing.Mellin.PrincipalContourRemainderDecomposition
+public import DedekindZetaZeroFree.Nonvanishing.Mellin.InitialFrequencyDecomposition
+public import DedekindZetaZeroFree.Moments.Principal.EulerCorrectionsAndDoubleResidue
+public import DedekindZetaZeroFree.Moments.Comparison.PoissonMellinKernelData
+public import DedekindZetaZeroFree.Moments.Comparison.TripleMellinKernel
+public import DedekindZetaZeroFree.Nonvanishing.Mellin.PrincipalProductSpectralProperties
+public import DedekindZetaZeroFree.Moments.Comparison.FarDyadSummability
+public import DedekindZetaZeroFree.LFunctions.Hecke.EulerCorrectionAndQuotientContinuation
+public import DedekindZetaZeroFree.LFunctions.Hecke.KummerConductorStripBounds
+public import DedekindZetaZeroFree.Moments.Principal.Numerator.RightHalfPlaneBounds
+public import DedekindZetaZeroFree.ZeroDetection.ExceptionalZeros.PrimitiveDenominatorRectanglesAndDyadicCounts
+public import DedekindZetaZeroFree.Moments.Principal.Numerator.StripRegularization
+public import DedekindZetaZeroFree.LFunctions.Hecke.UniformRegularizationBoundaryBounds
+public import DedekindZetaZeroFree.LFunctions.Hecke.RegularizationStripGrowth
+public import DedekindZetaZeroFree.Analysis.PhragmenLindelof.PolynomialBoundaryBounds
+public import DedekindZetaZeroFree.Moments.Principal.NumeratorPoleExtraction
 public import DedekindZetaZeroFree.LFunctions.Hecke.PrincipalResidueNonvanishing
 
 @[expose] public section
@@ -18,15 +29,6 @@ open MeasureTheory
 
 variable {F : Type} [Field F] [NumberField F]
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-
-@[simp] theorem frequencyNorm_principalFrequency
-    (R : PrincipalMellin.ActualRecipe S η) :
-    frequencyNorm R (principalFrequency R) = 1 := by
-  simp only [frequencyNorm, principalFrequency, FiniteTransform.exteriorNorm,
-    FiniteTransform.Residue, Ideal.span_singleton_one]
-  haveI : Subsingleton (R.A.R.toSubring ⧸ (⊤ : Ideal R.A.R.toSubring)) :=
-    Ideal.Quotient.subsingleton_iff.mpr rfl
-  simp
 
 def principalRegularization (R : PrincipalMellin.ActualRecipe S η) (s : ℂ) : ℂ :=
   R.continuation.R s * ∏ v ∈ R.A.Sf,
@@ -91,15 +93,15 @@ theorem principal_arithmetic_compatibility (R : PrincipalMellin.ActualRecipe S �
     (C : R.A.GeneralArithmeticContext R.σ R.target R.traceBad)
     (hC : R.probe.correction = C.correction) :
     WeightedFiniteCoefficient.ArithmeticCompatibility R.A R.probe.coefficients
-      R.σ R.target R.traceBad C.correction := by
-  exact PrincipalCorrection.probe_arithmetic_compatibility C R.probe hC
+      R.σ R.target R.traceBad C.correction := 
+  PrincipalCorrection.probe_arithmetic_compatibility C R.probe hC
     (principal_arithmetic_binding R C hC)
 
 theorem principal_actual_arithmetic_compatibility
     (R : PrincipalMellin.ActualRecipe S η) :
     WeightedFiniteCoefficient.ArithmeticCompatibility R.A R.probe.coefficients
-      R.σ R.target R.traceBad (principalArithmeticContext R).correction := by
-  exact principal_arithmetic_compatibility R (principalArithmeticContext R) rfl
+      R.σ R.target R.traceBad (principalArithmeticContext R).correction := 
+  principal_arithmetic_compatibility R (principalArithmeticContext R) rfl
 
 def principalEulerFrequency (R : PrincipalMellin.ActualRecipe S η) :
     CorrectionFactors.Frequency (principalArithmeticContext R) where
@@ -115,12 +117,6 @@ def principalEulerFrequency (R : PrincipalMellin.ActualRecipe S η) :
   sixthFree := by
     intro p
     simp only [idealPrimeExponent]
-    have ht : UniqueFactorizationMonoid.normalizedFactors
-        (⊤ : Ideal (NumberField.RingOfIntegers F)) = 0 :=
-      by simpa only [Ideal.one_eq_top] using
-        (UniqueFactorizationMonoid.normalizedFactors_one
-          (α := Ideal (NumberField.RingOfIntegers F)))
-    rw [ht]
     simp
 
 def principalContourCorrection (R : PrincipalMellin.ActualRecipe S η) (ξ w z : ℂ) : ℂ :=
@@ -234,6 +230,3 @@ theorem principal_real_weight_rapid_strip_decay (R : PrincipalMellin.ActualRecip
   have heq : (s.re : ℂ) + (s.im : ℂ) * Complex.I = s := Complex.re_add_im s
   rw [heq] at h
   exact h.trans (mul_le_mul_of_nonneg_right (by linarith) (Real.rpow_nonneg (by positivity) _))
-
-end
-end DedekindZetaZeroFree.PrincipalMellinComparison

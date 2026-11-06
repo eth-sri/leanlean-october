@@ -10,7 +10,7 @@ open scoped Classical NumberField WithZero
 open NumberField IsDedekindDomain MeasureTheory Set
 
 variable {K : Type*} [NontriviallyNormedField K] [ProperSpace K]
-private theorem compact_annulus (a R : ℝ) (ha : 0 < a) :
+theorem compact_annulus (a R : ℝ) (ha : 0 < a) :
     IsCompact {x : Kˣ | a ≤ ‖x.val‖ ∧ ‖x.val‖ ≤ R} := by
   apply Units.isOpenEmbedding_val.isEmbedding.isCompact_iff.mpr
   have he : Units.val '' {x : Kˣ | a ≤ ‖x.val‖ ∧ ‖x.val‖ ≤ R} =
@@ -18,14 +18,14 @@ private theorem compact_annulus (a R : ℝ) (ha : 0 < a) :
     ext x
     constructor
     · rintro ⟨u, hu, rfl⟩
-      simpa [Metric.mem_closedBall, dist_zero_right] using And.intro hu.2 hu.1
+      simp_all
     · rintro ⟨hx, ha'⟩
       have hn : x ≠ 0 := by intro h; simp [h] at ha'; linarith
       exact ⟨Units.mk0 x hn, ⟨ha', by simpa [Metric.mem_closedBall, dist_zero_right] using hx⟩, rfl⟩
   rw [he]
   exact (isCompact_closedBall _ _).inter_right (isClosed_le continuous_const continuous_norm)
 
-private theorem finite_generic [MeasurableSpace K] [BorelSpace K]
+theorem finite_generic [MeasurableSpace K] [BorelSpace K]
     (g : K → ℂ) (hg : Continuous g) (hc : HasCompactSupport g)
     (ν : Measure Kˣ) [ν.IsHaarMeasure] (z : ℂ) (hz : 0 < z.re) :
     Integrable (fun x : Kˣ => g x.val * (‖x.val‖ : ℂ) ^ z) ν := by
@@ -50,7 +50,7 @@ private theorem finite_generic [MeasurableSpace K] [BorelSpace K]
       simp only [s, mem_preimage, mem_setOf_eq, Units.val_mul, Units.val_pow_eq_pow_val, norm_mul, norm_pow]
       change (r^(n+1)*R ≤ r^n*‖x.val‖ ∧ r^n*‖x.val‖ ≤ r^n*R) ↔ _
       rw [pow_succ]
-      simp only [pow_zero, pow_one, one_mul]
+      simp only [pow_zero, one_mul]
       rw [mul_assoc, mul_le_mul_iff_right₀ (pow_pos hr n), mul_le_mul_iff_right₀ (pow_pos hr n)]
       simp
     rw [← measure_preimage_mul ν (u ^ n) (s n), he]
@@ -116,6 +116,3 @@ theorem finiteUnitsMellin_integrable
   letI : NontriviallyNormedField (v.adicCompletion F) :=
     Valued.toNontriviallyNormedField (v.adicCompletion F) ℤᵐ⁰
   exact finite_generic g hlc.continuous hc ν z hz
-
-end
-end DedekindZetaZeroFree.ProbeSheetGlobalIntegrability

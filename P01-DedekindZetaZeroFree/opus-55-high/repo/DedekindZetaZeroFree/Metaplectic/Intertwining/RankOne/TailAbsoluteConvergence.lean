@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.LocalFields.CompactCore
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.KPRankOneShellRepair
 open scoped NumberField Valued
 open NumberField IsDedekindDomain MeasureTheory ValuativeRel
@@ -15,7 +14,7 @@ variable (F : Type) [Field F] [NumberField F]
   (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
   (S : CanonicalFiniteInducingData F ζ hζ q)
 
-private theorem summable_three (A : ℕ → ℝ) (c : ℝ) (hc0 : 0 ≤ c) (hc1 : c < 1)
+theorem summable_three (A : ℕ → ℝ) (c : ℝ) (hc0 : 0 ≤ c) (hc1 : c < 1)
     (hA : ∀ n, 0 ≤ A n) (hrec : ∀ n, A (n + 3) = c * A n) : Summable A := by
   have hsub : ∀ i : Fin 3, Summable (fun n : ℕ => A (n * 3 + i.val)) := by
     intro i
@@ -72,7 +71,7 @@ theorem actual_tail_absolute_convergence (P : Polarization S.heisenberg)
   change Summable A
   apply summable_three A ‖actualShellRatio F q ε s‖ (norm_nonneg _) hratio
   · intro n
-    exact integral_nonneg (fun x => norm_nonneg _)
+    positivity
   · intro n
     have H := hM (M + n) (Nat.le_add_right M n) s φ k h
     have hi : ((M + (n + 3) : ℕ) : ℤ) = ((M + n : ℕ) : ℤ) + 3 := by
@@ -81,7 +80,3 @@ theorem actual_tail_absolute_convergence (P : Polarization S.heisenberg)
     dsimp only [A]
     rw [hi]
     exact H
-
-end DedekindZetaZeroFree.KPRankOneShellRepair
-
-end

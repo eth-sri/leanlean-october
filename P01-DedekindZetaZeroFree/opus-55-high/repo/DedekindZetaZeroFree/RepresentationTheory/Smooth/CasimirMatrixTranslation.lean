@@ -13,7 +13,7 @@ open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.CanonicalNativeChambe
 open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.CanonicalNativeChamberCasimir renaming matrix_omega_left_right → matrix_omega_left_right
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 800000
-private theorem left_translate (X k : Matrix (Fin 2) (Fin 2) ℂ)
+theorem left_translate (X k : Matrix (Fin 2) (Fin 2) ℂ)
     (f : Matrix (Fin 2) (Fin 2) ℂ → ℂ) :
     matrixLeftDerivative X (fun a => f (a*k)) = fun a => matrixLeftDerivative X f (a*k) := by
   funext a

@@ -13,7 +13,6 @@ open KPLocalStoneVonNeumann KPLocalPrincipalSeries KPRankOneOpenCellKernel
 open KPActualScalarBinding
 
 noncomputable section
-set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
@@ -30,7 +29,7 @@ open KPJacquetBruhatCharts KPLocalSmoothRepresentation
  def E1 : Set (G F ζ hζ q) :=
   {x | ∃ h : x ∈ delta F ζ hζ q, deltaCoordinate F ζ hζ q ⟨x,h⟩ ∈ M F q}
 
-private theorem M_clopen : IsClopen (M F q) := by
+theorem M_clopen : IsClopen (M F q) := by
   have hM : IsOpen (M F q) := by
     rw [isOpen_iff_mem_nhds]
     intro x hx
@@ -41,7 +40,7 @@ private theorem M_clopen : IsClopen (M F q) := by
     exact (valuation (K F q)).map_add x t |>.trans_lt (max_lt hx ht)
   exact ⟨AddSubgroup.isClosed_of_isOpen
     (Valuation.ltAddSubgroup (valuation (K F q)) 1) hM, hM⟩
-private theorem O_clopen : IsClopen (O F q) := by
+theorem O_clopen : IsClopen (O F q) := by
   have hO : IsOpen (O F q) := by
     rw [isOpen_iff_mem_nhds]
     intro x hx
@@ -52,30 +51,30 @@ private theorem O_clopen : IsClopen (O F q) := by
     exact (valuation (K F q)).map_add x t |>.trans (max_le hx ht.le)
   exact ⟨AddSubgroup.isClosed_of_isOpen
     ((valuation (K F q)).leAddSubgroup 1) hO, hO⟩
-private theorem O_compact : IsCompact (O F q) :=
+theorem O_compact : IsCompact (O F q) :=
   IsNonarchimedeanLocalField.isCompact_closedBall (K F q) 1
-private theorem M_compact : IsCompact (M F q) :=
+theorem M_compact : IsCompact (M F q) :=
   (O_compact F q).of_isClosed_subset (M_clopen F q).isClosed (fun x h => show valuation (K F q) x ≤ 1 from le_of_lt h)
-private theorem E0_open : IsOpen (E0 F ζ hζ q) := by
+theorem E0_open : IsOpen (E0 F ζ hζ q) := by
   let h := omegaHomeomorph F ζ hζ q (KPAdelicCoverRestrictedProduct.depth F ζ hζ q)
     (KPAdelicCoverRestrictedProduct.depth_admissible F ζ hζ q)
   have hc : Continuous (omegaCoordinate F ζ hζ q) := by
     have he : Prod.snd ∘ h.symm = omegaCoordinate F ζ hζ q := rfl
     rw [← he]
-    exact continuous_snd.comp h.symm.continuous
+    fun_prop
   have he : E0 F ζ hζ q = Subtype.val ''
       ((omegaCoordinate F ζ hζ q) ⁻¹' O F q) := by ext; simp [E0]
   rw [he]
   exact ((charts_open_and_borel_closed F ζ hζ q _
     (KPAdelicCoverRestrictedProduct.depth_admissible F ζ hζ q)).1.isOpenMap_subtype_val)
       _ ((O_clopen F q).isOpen.preimage hc)
-private theorem E1_open : IsOpen (E1 F ζ hζ q) := by
+theorem E1_open : IsOpen (E1 F ζ hζ q) := by
   let h := deltaHomeomorph F ζ hζ q (KPAdelicCoverRestrictedProduct.depth F ζ hζ q)
     (KPAdelicCoverRestrictedProduct.depth_admissible F ζ hζ q)
   have hc : Continuous (deltaCoordinate F ζ hζ q) := by
     have he : Prod.snd ∘ h.symm = deltaCoordinate F ζ hζ q := rfl
     rw [← he]
-    exact continuous_snd.comp h.symm.continuous
+    fun_prop
   have he : E1 F ζ hζ q = Subtype.val ''
       ((deltaCoordinate F ζ hζ q) ⁻¹' M F q) := by ext; simp [E1]
   rw [he]
@@ -83,7 +82,7 @@ private theorem E1_open : IsOpen (E1 F ζ hζ q) := by
     (KPAdelicCoverRestrictedProduct.depth_admissible F ζ hζ q)).2.1.isOpenMap_subtype_val)
       _ ((M_clopen F q).isOpen.preimage hc)
 
-private theorem E_cover : E0 F ζ hζ q ∪ E1 F ζ hζ q = Set.univ := by
+theorem E_cover : E0 F ζ hζ q ∪ E1 F ζ hζ q = Set.univ := by
   apply Set.eq_univ_of_forall
   intro x
   by_cases hx : x ∈ omega F ζ hζ q
@@ -95,7 +94,7 @@ private theorem E_cover : E0 F ζ hζ q ∪ E1 F ζ hζ q = Set.univ := by
       have hd : A 1 1 ≠ 0 := by
         intro hd
         have h0 : s = 0 := by simp [s, omegaCoordinate_eq F ζ hζ q ⟨x,hx⟩ A hA, hd]
-        exact hs (by simp [h0, O])
+        simp_all
       have hδ : x ∈ delta F ζ hζ q := ⟨A,hA,hd⟩
       refine Or.inr ⟨hδ, ?_⟩
       have ho := overlap_coordinates F ζ hζ q x hx hδ
@@ -113,7 +112,7 @@ private theorem E_cover : E0 F ζ hζ q ∪ E1 F ζ hζ q = Set.univ := by
     refine Or.inr ⟨hd, ?_⟩
     simp [M, deltaCoordinate_eq F ζ hζ q ⟨x,hd⟩ A hA, hc]
 
-private theorem E_disjoint : Disjoint (E0 F ζ hζ q) (E1 F ζ hζ q) := by
+theorem E_disjoint : Disjoint (E0 F ζ hζ q) (E1 F ζ hζ q) := by
   rw [Set.disjoint_left]
   rintro x ⟨hx,h0⟩ ⟨hδ,h1⟩
   have ho := overlap_coordinates F ζ hζ q x hx hδ
@@ -125,7 +124,7 @@ private theorem E_disjoint : Disjoint (E0 F ζ hζ q) (E1 F ζ hζ q) := by
       (omegaCoordinate F ζ hζ q ⟨x,hx⟩)⁻¹ := by rw [ho.1, inv_inv]
   rw [he, map_inv₀] at h1
   exact not_lt_of_ge (by simpa using (inv_le_inv₀ (show (0 : ValueGroupWithZero (K F q)) < 1 by simp) (zero_lt_iff.mpr hv)).mpr h0) h1
-private theorem E0_rep (x : G F ζ hζ q) (A : KPRankOneInduction.GL2 F q)
+theorem E0_rep (x : G F ζ hζ q) (A : KPRankOneInduction.GL2 F q)
     (ha : Matrix.ProjGenLinGroup.mk A = projection F ζ hζ q x) :
     x ∈ E0 F ζ hζ q ↔ A 1 0 ≠ 0 ∧ valuation (K F q) (A 1 1 / A 1 0) ≤ 1 := by
   constructor
@@ -135,7 +134,7 @@ private theorem E0_rep (x : G F ζ hζ q) (A : KPRankOneInduction.GL2 F q)
   · rintro ⟨hc,hv⟩
     have hx : x ∈ omega F ζ hζ q := ⟨A,ha,hc⟩
     exact ⟨hx, by simpa [omegaCoordinate_eq F ζ hζ q ⟨x,hx⟩ A ha] using hv⟩
-private theorem E1_rep (x : G F ζ hζ q) (A : KPRankOneInduction.GL2 F q)
+theorem E1_rep (x : G F ζ hζ q) (A : KPRankOneInduction.GL2 F q)
     (ha : Matrix.ProjGenLinGroup.mk A = projection F ζ hζ q x) :
     x ∈ E1 F ζ hζ q ↔ A 1 1 ≠ 0 ∧ valuation (K F q) (A 1 0 / A 1 1) < 1 := by
   constructor
@@ -154,7 +153,7 @@ private theorem E0_left (b : Borel F ζ hζ q) (x : G F ζ hζ q) :
   obtain ⟨B,hB,hb⟩ := b.property
   obtain ⟨A,hA⟩ := Matrix.ProjGenLinGroup.mk_surjective (projection F ζ hζ q x)
   have hBA : Matrix.ProjGenLinGroup.mk (B*A) = projection F ζ hζ q (b.val*x) := by
-    rw [map_mul, map_mul, hB, hA]
+    simp_all
   rw [E0_rep F ζ hζ q _ (B*A) hBA, E0_rep F ζ hζ q _ A hA,
     bottom_mul F q B A hb 0, bottom_mul F q B A hb 1]
   have hn : B 1 1 ≠ 0 := by
@@ -166,7 +165,7 @@ private theorem E1_left (b : Borel F ζ hζ q) (x : G F ζ hζ q) :
   obtain ⟨B,hB,hb⟩ := b.property
   obtain ⟨A,hA⟩ := Matrix.ProjGenLinGroup.mk_surjective (projection F ζ hζ q x)
   have hBA : Matrix.ProjGenLinGroup.mk (B*A) = projection F ζ hζ q (b.val*x) := by
-    rw [map_mul, map_mul, hB, hA]
+    simp_all
   rw [E1_rep F ζ hζ q _ (B*A) hBA, E1_rep F ζ hζ q _ A hA,
     bottom_mul F q B A hb 0, bottom_mul F q B A hb 1]
   have hn : B 1 1 ≠ 0 := by
@@ -190,7 +189,7 @@ private theorem proj_mu (s : K F q) :
     fin_cases i <;> fin_cases j <;>
       simp [KubotaRankTwo.coe_w, KubotaRankTwo.coe_n, mu, Matrix.mul_apply]
   rw [openCoordinate, map_mul, map_inv, hp, hn, ← map_inv, ← map_mul, hm]
-private theorem proj_W : projection F ζ hζ q (KPPGLLocalCover.W F ζ hζ (Sum.inr q)) =
+theorem proj_W : projection F ζ hζ q (KPPGLLocalCover.W F ζ hζ (Sum.inr q)) =
     Matrix.ProjGenLinGroup.mk (KPStandardLocalRootLifts.weylSwap (K F q)) := rfl
 private theorem swap_inv : (KPStandardLocalRootLifts.weylSwap (K F q))⁻¹ =
     KPStandardLocalRootLifts.weylSwap (K F q) := by
@@ -232,25 +231,25 @@ private theorem omega_signed_factor (x : G F ζ hζ q) (hx : x ∈ omega F ζ h�
       field_simp
       ring
   exact ⟨⟨_,hb⟩, by simp [s, mul_assoc]⟩
-private theorem delta_right_W_omega (x : G F ζ hζ q) (hx : x ∈ delta F ζ hζ q) :
+theorem delta_right_W_omega (x : G F ζ hζ q) (hx : x ∈ delta F ζ hζ q) :
     x * KPPGLLocalCover.W F ζ hζ (Sum.inr q) ∈ omega F ζ hζ q := by
   obtain ⟨A,hA,hd⟩ := hx
   refine ⟨A * KPStandardLocalRootLifts.weylSwap (K F q), ?_, ?_⟩
   · rw [map_mul, map_mul, proj_W, hA]
   · simpa [KPStandardLocalRootLifts.weylSwap, Matrix.mul_apply, Fin.sum_univ_two] using hd
 
-private theorem E_compl : (E0 F ζ hζ q)ᶜ = E1 F ζ hζ q := by
+theorem E_compl : (E0 F ζ hζ q)ᶜ = E1 F ζ hζ q := by
   ext x
   have hc : x ∈ E0 F ζ hζ q ∨ x ∈ E1 F ζ hζ q := by
     have hc := E_cover F ζ hζ q
     exact show x ∈ E0 F ζ hζ q ∪ E1 F ζ hζ q by rw [hc]; trivial
   have hd := Set.disjoint_left.mp (E_disjoint F ζ hζ q)
   exact ⟨fun h => hc.resolve_left h, fun h h0 => hd h0 h⟩
-private theorem E0_clopen : IsClopen (E0 F ζ hζ q) := by
+theorem E0_clopen : IsClopen (E0 F ζ hζ q) := by
   refine ⟨?_, E0_open F ζ hζ q⟩
   rw [← isOpen_compl_iff, E_compl]
   exact E1_open F ζ hζ q
-private theorem E1_clopen : IsClopen (E1 F ζ hζ q) := by
+theorem E1_clopen : IsClopen (E1 F ζ hζ q) := by
   rw [← E_compl]
   exact (E0_clopen F ζ hζ q).compl
 
@@ -285,7 +284,7 @@ theorem actual_translated_cell_clopen_partition :
     · exact (hij rfl).elim
     · exact E_disjoint F ζ hζ q
     · exact (E_disjoint F ζ hζ q).symm
-    · exact (hij rfl).elim
+    omega
   · apply Set.eq_univ_of_forall
     intro x
     have hx : x ∈ E0 F ζ hζ q ∪ E1 F ζ hζ q := by rw [E_cover]; trivial
@@ -313,6 +312,3 @@ theorem actual_translated_cell_clopen_partition :
     fin_cases i
     · simpa [g,E] using (E0_pullback F ζ hζ q ▸ O_compact F q)
     · simpa [g,E] using (E1_pullback F ζ hζ q ▸ M_compact F q)
-
-end
-end DedekindZetaZeroFree.KPActualResidueSources

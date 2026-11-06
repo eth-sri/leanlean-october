@@ -14,7 +14,7 @@ open MeasureTheory
 
  def oneKernel (g : SchwartzMap ℝ ℂ) (σ t : ℝ) : ℂ :=
   g (Real.exp (t / 2)) * (Real.exp (σ * t) : ℂ)
-private theorem oneKernel_integrable (g : SchwartzMap ℝ ℂ) (σ : ℝ) (hσ : 0 < σ) :
+theorem oneKernel_integrable (g : SchwartzMap ℝ ℂ) (σ : ℝ) (hσ : 0 < σ) :
     Integrable (oneKernel g σ) := by
   obtain ⟨k, hk⟩ := exists_nat_ge (2 * (σ + 1))
   let C₀ := SchwartzMap.seminorm ℝ 0 0 g
@@ -36,8 +36,8 @@ private theorem oneKernel_integrable (g : SchwartzMap ℝ ℂ) (σ : ℝ) (hσ :
         congr 1
         ring
       rw [hpow] at hg
-      have hgb : ‖g (Real.exp (t / 2))‖ ≤ C₁ / Real.exp ((k : ℝ) / 2 * t) := by
-        exact (le_div_iff₀ (Real.exp_pos _)).mpr (by simpa [mul_comm] using hg)
+      have hgb : ‖g (Real.exp (t / 2))‖ ≤ C₁ / Real.exp ((k : ℝ) / 2 * t) := 
+        (le_div_iff₀ (Real.exp_pos _)).mpr (by simpa [mul_comm] using hg)
       have hh : σ - (k : ℝ) / 2 ≤ -1 := by linarith
       calc
         ‖g (Real.exp (t / 2))‖ * Real.exp (σ * t) ≤
@@ -67,7 +67,7 @@ private theorem oneKernel_integrable (g : SchwartzMap ℝ ℂ) (σ : ℝ) (hσ :
   have hc : Continuous (oneKernel g σ) := g.continuous.comp (by fun_prop) |>.mul (by fun_prop)
   exact hc.aestronglyMeasurable
 
-private theorem positive_log_substitution (f : ℝ → ℂ) :
+theorem positive_log_substitution (f : ℝ → ℂ) :
     (IntegrableOn f (Set.Ioi 0) ↔
       Integrable (fun t : ℝ => (Real.exp (t / 2) / 2) • f (Real.exp (t / 2)))) ∧
     (∫ x : ℝ in Set.Ioi 0, f x) =
@@ -76,7 +76,7 @@ private theorem positive_log_substitution (f : ℝ → ℂ) :
     ext x
     simp only [Set.mem_image, Set.mem_univ, true_and, Set.mem_Ioi]
     constructor
-    · rintro ⟨t, rfl⟩; exact Real.exp_pos _
+    · rintro ⟨t, rfl⟩; positivity
     · intro hx
       exact ⟨2 * Real.log x, by simpa using Real.exp_log hx⟩
   have hd (t : ℝ) : HasDerivAt (fun u : ℝ => Real.exp (u / 2))
@@ -85,7 +85,7 @@ private theorem positive_log_substitution (f : ℝ → ℂ) :
       ((hasDerivAt_id t).div_const 2).exp
   have hinj : Function.Injective (fun t : ℝ => Real.exp (t / 2)) := by
     intro t u h
-    exact (div_left_inj' (by norm_num : (2 : ℝ) ≠ 0)).mp (Real.exp_injective h)
+    simp_all
   rw [← hrange]
   constructor
   · simpa only [integrableOn_univ, abs_of_pos (by positivity : 0 < Real.exp (_ / 2) / 2)] using
@@ -94,7 +94,7 @@ private theorem positive_log_substitution (f : ℝ → ℂ) :
   · simpa only [setIntegral_univ, abs_of_pos (by positivity : 0 < Real.exp (_ / 2) / 2)] using
       integral_image_eq_integral_abs_deriv_smul MeasurableSet.univ
         (fun t _ => (hd t).hasDerivWithinAt) hinj.injOn f
-private theorem log_values (σ t : ℝ) :
+theorem log_values (σ t : ℝ) :
     Real.log (Real.exp (t / 2) ^ 2) = t ∧
     ((Real.exp (t / 2) ^ 2 : ℝ) : ℂ) ^ (σ : ℂ) = (Real.exp (σ * t) : ℂ) := by
   have he : Real.exp (t / 2) ^ 2 = Real.exp t := by
@@ -110,7 +110,7 @@ private theorem log_values (σ t : ℝ) :
  def reflected (g : SchwartzMap ℝ ℂ) : SchwartzMap ℝ ℂ :=
   SchwartzMap.compCLMOfContinuousLinearEquiv ℂ (ContinuousLinearEquiv.neg ℝ) g
 
-private theorem positive_test (g : SchwartzMap ℝ ℂ) (σ : ℝ) (hσ : 0 < σ)
+theorem positive_test (g : SchwartzMap ℝ ℂ) (σ : ℝ) (hσ : 0 < σ)
     (φ : ℝ → ℂ) (hφ : Continuous φ) (hb : ∃ C : ℝ, ∀ t, ‖φ t‖ ≤ C) :
     IntegrableOn (fun x : ℝ => (g x * ((x ^ 2 : ℝ) : ℂ) ^ (σ : ℂ) / (x : ℂ)) *
       φ (Real.log (x ^ 2))) (Set.Ioi 0) ∧
@@ -143,8 +143,8 @@ theorem real_multiplicative_haar_log_test
             φ (Real.log (x ^ 2))) =
           ∫ t : ℝ, rawRealSignedLogKernel g σ t * φ t := by
   obtain ⟨k, hk⟩ := real_signed_log_kernel_isSchwartz g σ hσ
-  have hi : Integrable (rawRealSignedLogKernel g σ) := by
-    exact k.integrable.congr (Filter.Eventually.of_forall hk)
+  have hi : Integrable (rawRealSignedLogKernel g σ) := 
+    k.integrable.congr (Filter.Eventually.of_forall hk)
   refine ⟨hi, ?_⟩
   intro φ hφ hb
   let f : ℝ → ℂ := fun x =>
@@ -206,19 +206,15 @@ open MeasureTheory Set MeasureTheory.Measure
  def pol (g : ℂ → ℂ) (σ : ℝ) (φ : ℝ → ℂ) (p : ℝ × ℝ) : ℂ :=
   g ((p.1 : ℂ) * Complex.exp ((p.2 : ℂ) * Complex.I)) *
     (p.1 ^ (2 * σ - 1) : ℝ) * φ (Real.log (p.1 ^ 2))
-private lemma pol_meas (g : SchwartzMap ℂ ℂ) (σ : ℝ) (φ : ℝ → ℂ)
+lemma pol_meas (g : SchwartzMap ℂ ℂ) (σ : ℝ) (φ : ℝ → ℂ)
     (hφ : Continuous φ) : AEStronglyMeasurable (pol g σ φ) := by
   unfold pol
   apply Measurable.aestronglyMeasurable
-  apply Measurable.mul
-  · apply Measurable.mul
-    · exact g.continuous.measurable.comp (by fun_prop)
-    · exact Complex.continuous_ofReal.measurable.comp (measurable_fst.pow_const _)
-  · exact hφ.measurable.comp (Real.measurable_log.comp (by fun_prop))
-private lemma circle_norm (r θ : ℝ) (hr : 0 < r) :
+  fun_prop
+lemma circle_norm (r θ : ℝ) (hr : 0 < r) :
     ‖(r : ℂ) * Complex.exp ((θ : ℂ) * Complex.I)‖ = r := by
-  simp [norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hr]
-private lemma pol_bound (g : SchwartzMap ℂ ℂ) (σ : ℝ) (φ : ℝ → ℂ)
+  simp [Complex.norm_real, Real.norm_eq_abs, abs_of_pos hr]
+lemma pol_bound (g : SchwartzMap ℂ ℂ) (σ : ℝ) (φ : ℝ → ℂ)
     (C : ℝ) (hC : ∀ t, ‖φ t‖ ≤ C) (m : ℕ) (p : ℝ × ℝ) (hp : 0 < p.1) :
     ‖pol g σ φ p‖ ≤ (SchwartzMap.seminorm ℝ m 0 g * C) * p.1 ^ (2 * σ - 1 - m) := by
   have hn := circle_norm p.1 p.2 hp
@@ -235,7 +231,7 @@ private lemma pol_bound (g : SchwartzMap ℂ ℂ) (σ : ℝ) (φ : ℝ → ℂ)
     _ ≤ (SchwartzMap.seminorm ℝ m 0 g / p.1 ^ m) * p.1 ^ (2 * σ - 1) * C :=
       mul_le_mul (mul_le_mul_of_nonneg_right hg (Real.rpow_nonneg hp.le _)) (hC _) (norm_nonneg _) (by positivity)
     _ = _ := by rw [Real.rpow_sub hp (2 * σ - 1) (m : ℝ), Real.rpow_natCast]; ring
-private lemma pol_int (g : SchwartzMap ℂ ℂ) (σ : ℝ) (hσ : 0 < σ)
+lemma pol_int (g : SchwartzMap ℂ ℂ) (σ : ℝ) (hσ : 0 < σ)
     (φ : ℝ → ℂ) (hφ : Continuous φ) (C : ℝ) (hC : ∀ t, ‖φ t‖ ≤ C) :
     IntegrableOn (pol g σ φ) (Ioi 0 ×ˢ Ioo (-Real.pi) Real.pi) := by
   obtain ⟨m, hm⟩ := exists_nat_gt (2 * σ)
@@ -273,10 +269,10 @@ private lemma pol_int (g : SchwartzMap ℂ ℂ) (σ : ℝ) (hσ : 0 < σ)
     · intro h
       by_cases hp : p.1 ≤ 1
       · exact Or.inl ⟨⟨h.1, hp⟩, h.2⟩
-      · exact Or.inr ⟨lt_of_not_ge hp, h.2⟩
+      simp_all
   rw [← heq]
   exact h₁.union h₂
-private lemma circle_integral_shift (g : ℂ → ℂ) (r : ℝ) :
+lemma circle_integral_shift (g : ℂ → ℂ) (r : ℝ) :
     (∫ θ : ℝ in Ioo (-Real.pi) Real.pi, g ((r : ℂ) * Complex.exp ((θ : ℂ) * Complex.I))) =
       ∫ θ : ℝ in Icc 0 (2 * Real.pi), g ((r : ℂ) * Complex.exp ((θ : ℂ) * Complex.I)) := by
   have hp : Function.Periodic (fun θ : ℝ => g ((r : ℂ) * Complex.exp ((θ : ℂ) * Complex.I))) (2 * Real.pi) := by
@@ -291,7 +287,7 @@ private lemma circle_integral_shift (g : ℂ → ℂ) (r : ℝ) :
     intervalIntegral.integral_of_le (by positivity), integral_Ioc_eq_integral_Ioo,
     ← integral_Icc_eq_integral_Ioc] at hi
   exact hi
-private lemma polar_algebra (g : ℂ → ℂ) (σ : ℝ) (φ : ℝ → ℂ) (p : ℝ × ℝ) (hp : 0 < p.1) :
+lemma polar_algebra (g : ℂ → ℂ) (σ : ℝ) (φ : ℝ → ℂ) (p : ℝ × ℝ) (hp : 0 < p.1) :
     p.1 • ((g (Complex.polarCoord.symm p) *
       ((‖Complex.polarCoord.symm p‖ ^ 2 : ℝ) : ℂ) ^ (σ : ℂ) /
       ((‖Complex.polarCoord.symm p‖ ^ 2 : ℝ) : ℂ)) *
@@ -308,7 +304,7 @@ private lemma polar_algebra (g : ℂ → ℂ) (σ : ℝ) (φ : ℝ → ℂ) (p :
   push_cast
   field_simp
   <;> ring
-private lemma polar_test (g : SchwartzMap ℂ ℂ) (σ : ℝ) (hσ : 0 < σ)
+lemma polar_test (g : SchwartzMap ℂ ℂ) (σ : ℝ) (hσ : 0 < σ)
     (φ : ℝ → ℂ) (hφ : Continuous φ) (C : ℝ) (hC : ∀ t, ‖φ t‖ ≤ C) :
     (∫ z : ℂ, (g z * ((‖z‖ ^ 2 : ℝ) : ℂ) ^ (σ : ℂ) /
       ((‖z‖ ^ 2 : ℝ) : ℂ)) * φ (Real.log (‖z‖ ^ 2))) =
@@ -336,7 +332,7 @@ private lemma polar_test (g : SchwartzMap ℂ ℂ) (σ : ℝ) (hσ : 0 < σ)
       push_cast
       ring
 
-private theorem radialLogIdentity
+theorem radialLogIdentity
     (g : ℂ → ℂ) (σ : ℝ) (φ : ℝ → ℂ) :
     (∫ r : ℝ in Set.Ioi 0,
       ((∫ θ : ℝ in Set.Icc 0 (2 * Real.pi),
@@ -348,7 +344,7 @@ private theorem radialLogIdentity
     ext x
     simp only [Set.mem_image, Set.mem_univ, true_and, Set.mem_Ioi]
     constructor
-    · rintro ⟨t, rfl⟩; exact Real.exp_pos _
+    · rintro ⟨t, rfl⟩; positivity
     · intro hx
       exact ⟨2 * Real.log x, by simpa using Real.exp_log hx⟩
   have hd (t : ℝ) : HasDerivAt (fun u : ℝ => Real.exp (u / 2))
@@ -357,7 +353,7 @@ private theorem radialLogIdentity
       ((hasDerivAt_id t).div_const 2).exp
   have hinj : Function.Injective (fun t : ℝ => Real.exp (t / 2)) := by
     intro t u h
-    exact (div_left_inj' (by norm_num : (2 : ℝ) ≠ 0)).mp (Real.exp_injective h)
+    simp_all
   rw [← hrange]
   rw [integral_image_eq_integral_abs_deriv_smul MeasurableSet.univ
     (fun t _ => (hd t).hasDerivWithinAt) hinj.injOn]
@@ -455,7 +451,7 @@ theorem finite_positive_weights_pushforward
       _ = _ := by
         rw [integral_withDensity_eq_integral_toReal_smul
           (hu i).ennreal_ofReal (Filter.Eventually.of_forall fun x => ENNReal.ofReal_lt_top)]
-        simp only [ENNReal.toReal_ofReal (hu0 i _), Complex.real_smul, smul_eq_mul]
+        simp_all
   have huint : ∀ i, Integrable (fun x => c i * (u i x : ℂ) * φ (L x)) ν :=
     fun i => ((hui i).ofReal.const_mul (c i)).mul_bdd
       (hφ.measurable.comp hL).aestronglyMeasurable
@@ -503,15 +499,11 @@ theorem integrable_weight_pushforward_finite
     · exact hbi.im.neg.real_toNNReal
   have hdecomp : ∀ x, (∑ i, c i * (u i x : ℂ)) = b x := by
     intro x
-    simp only [Fin.sum_univ_succ, Fin.sum_univ_zero, Fin.val_zero,
-      Fin.val_succ, Matrix.cons_val_zero, Matrix.cons_val_succ,
-      u, c, zero_add, add_zero]
+    simp only [Fin.sum_univ_succ, Fin.sum_univ_zero, Matrix.cons_val_zero, Matrix.cons_val_succ, u, c, add_zero]
     have hr : ((b x).re.toNNReal : ℝ) - ((-(b x).re).toNNReal : ℝ) = (b x).re := by
-      simp only [Real.coe_toNNReal']
-      exact max_zero_sub_max_neg_zero_eq_self _
+      simp
     have hi : ((b x).im.toNNReal : ℝ) - ((-(b x).im).toNNReal : ℝ) = (b x).im := by
-      simp only [Real.coe_toNNReal']
-      exact max_zero_sub_max_neg_zero_eq_self _
+      simp
     simp only [Real.coe_toNNReal'] at hr hi
     apply Complex.ext <;> simp <;> linarith
   obtain ⟨μ, hμ, w, hw, he⟩ :=
@@ -560,8 +552,7 @@ theorem radial_kernel_test_continuous_bounded
   have hmeas : ∀ s : ℝ, AEStronglyMeasurable
       (fun r : ℝ => k r * φ (r + s)) volume := by
     intro s
-    exact hk.aestronglyMeasurable.mul
-      (hφ.comp (continuous_id.add continuous_const)).aestronglyMeasurable
+    fun_prop
   have hbound : ∀ s : ℝ, ∀ᵐ r : ℝ, ‖k r * φ (r + s)‖ ≤ ‖k r‖ * C := by
     intro s
     exact Filter.Eventually.of_forall fun r => by
@@ -663,8 +654,3 @@ theorem schwartzTensor_log_pushforward_radial_factorization
           (hφ.comp (continuous_id.add continuous_const))
           (by obtain ⟨C, hC⟩ := hb; exact ⟨C, fun r => hC _⟩)]
       _ = _ := he φ hφ hb
-
-end
-end DedekindZetaZeroFree.ProbeSheetLogDensityRegularity
-
-end

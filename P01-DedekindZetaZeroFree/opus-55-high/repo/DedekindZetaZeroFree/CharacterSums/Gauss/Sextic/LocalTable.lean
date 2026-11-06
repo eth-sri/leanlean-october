@@ -61,7 +61,6 @@ theorem T_eq_finiteField (C : A.GeneralArithmeticContext σ η hS)
     T C p a y = FiniteGaussTable.T (chi (σ := σ) p) (primeTrace C p)
       (SArithmeticData.sexticExponent a) (depthOneEquiv C p y) := by
   have hr (x : Residue C p 1) : reduction C p 1 (by decide) x = depthOneEquiv C p x := by
-    obtain ⟨x, rfl⟩ := Ideal.Quotient.mk_surjective x
     rfl
   unfold T FiniteGaussTable.T
   apply Fintype.sum_equiv (depthOneEquiv C p).toEquiv
@@ -71,23 +70,19 @@ theorem T_eq_finiteField (C : A.GeneralArithmeticContext σ η hS)
   change (quotientTrace C p 1 (y * x) : ℂ) =
     (quotientTrace C p 1 ((depthOneEquiv C p).symm
       (depthOneEquiv C p y * depthOneEquiv C p x)) : ℂ)
-  rw [← map_mul, RingEquiv.symm_apply_apply]
+  simp
 
 private theorem exponent_dvd (a : ℤ) :
     (6 : ℕ) ∣ SArithmeticData.sexticExponent a ↔ (6 : ℤ) ∣ a := by
-  have h₀ := Int.emod_nonneg a (by decide : (6 : ℤ) ≠ 0)
-  have h₁ := Int.emod_lt_of_pos a (by decide : (0 : ℤ) < 6)
+  have h₀ := by omega
+  have h₁ := by omega
   have he : SArithmeticData.sexticExponent a < 6 := by
     unfold SArithmeticData.sexticExponent
     omega
   rw [Nat.dvd_iff_mod_eq_zero, Nat.mod_eq_of_lt he]
   unfold SArithmeticData.sexticExponent
   rw [Int.toNat_eq_zero]
-  constructor
-  · intro h
-    exact Int.dvd_of_emod_eq_zero (by omega)
-  · intro h
-    rw [Int.emod_eq_zero_of_dvd h]
+  omega
 
 private theorem prime_card (p : ExteriorPrime A) :
     (Fintype.card (A.R ⧸ A.extendIdeal (primeIdeal p)) : ℝ) = Q p := by
@@ -120,8 +115,7 @@ theorem T_ne_zero (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A
     T C p a y = (chi (σ := σ) p (depthOneEquiv C p y))⁻¹ ^ a * tau C p a := by
   have hy' : depthOneEquiv C p y ≠ 0 := by
     intro h
-    apply hy
-    exact (depthOneEquiv C p).injective (h.trans (map_zero _).symm)
+    simp_all
   let u := Units.mk0 (depthOneEquiv C p y) hy'
   let v := (chi (σ := σ) p).toUnitHom u
   have hv : v ^ (6 : ℕ) = 1 := by
@@ -168,7 +162,7 @@ theorem T_generator_power (C : A.GeneralArithmeticContext σ η hS)
     have hg : residueMap C p 1 (generator C p) = 0 := by
       change Ideal.Quotient.mk (Ideal.span {generator C p ^ 1}) (generator C p) = 0
       apply Ideal.Quotient.eq_zero_iff_mem.mpr
-      simpa using Ideal.subset_span (Set.mem_singleton (generator C p))
+      simp
     rw [map_pow, hg, zero_pow hn, T_zero]
 
 theorem chi_neg_one (p : ExteriorPrime A) : chi (σ := σ) p (-1) = 1 := by
@@ -182,9 +176,4 @@ theorem chi_neg_one (p : ExteriorPrime A) : chi (σ := σ) p (-1) = 1 := by
   rw [MulChar.ofUnitHom_coe]
   rw [show (-1 : A.R ⧸ A.extendIdeal (primeIdeal p)) =
     ((-1 : (A.R ⧸ A.extendIdeal (primeIdeal p))ˣ) : _) by simp, MulChar.ofUnitHom_coe] at h
-  change σ ((A.sexticResidueFamily (primeIdeal p) (-1) : Fˣ) : F) = 1
-  simpa only [map_one] using h
-
-end DedekindZetaZeroFree.CanonicalLocalGaussTable
-
-end
+  simp_all

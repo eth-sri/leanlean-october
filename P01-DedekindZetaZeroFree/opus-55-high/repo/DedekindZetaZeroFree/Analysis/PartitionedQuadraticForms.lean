@@ -77,5 +77,3 @@ theorem finite_partition_quadratic_bound
     _ = (Q.card : ℝ) * ((P.card : ℝ) * (B * ∑ b ∈ C, ‖lam b‖ ^ 2)) := by
         rw [hcollapse]
     _ = (P.card : ℝ) * (Q.card : ℝ) * B * (∑ b ∈ C, ‖lam b‖ ^ 2) := by ring
-
-end DedekindZetaZeroFree.LargeSieve.Vendor

@@ -11,7 +11,6 @@ open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.KPAdelicCoverRestrictedProduct
 
 noncomputable section
-set_option autoImplicit false
 set_option maxHeartbeats 400000
 
 variable (F : Type) [Field F] [NumberField F]
@@ -36,15 +35,15 @@ def Bad (q : HeightOneSpectrum (𝓞 F)) : Prop :=
   ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) = 2 ∨
     ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) = 3
 
-theorem bad_finite : {q : HeightOneSpectrum (𝓞 F) | Bad F q}.Finite := by
-  exact DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.bad_finite F
+theorem bad_finite : {q : HeightOneSpectrum (𝓞 F) | Bad F q}.Finite := 
+  DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.bad_finite F
 
 theorem deepLift_mul (q : HeightOneSpectrum (𝓞 F))
     (g h : KPLocalCube.Gamma F q (depth F ζ hζ q)) :
     KPLocalCover.sectionMap F ζ hζ (Sum.inr q) (g * h).val =
       KPLocalCover.sectionMap F ζ hζ (Sum.inr q) g.val *
-        KPLocalCover.sectionMap F ζ hζ (Sum.inr q) h.val := by
-  exact DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.deepLift_mul F ζ hζ q g h
+        KPLocalCover.sectionMap F ζ hζ (Sum.inr q) h.val := 
+  DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.deepLift_mul F ζ hζ q g h
 
 def deepLift (q : HeightOneSpectrum (𝓞 F)) :
     KPLocalCube.Gamma F q (depth F ζ hζ q) →*
@@ -82,8 +81,8 @@ abbrev CentralTuples := RestrictedProduct
   (fun _ => ((⊥ : Subgroup (rootsOfUnity 3 F)) : Set _)) Filter.cofinite
 
 theorem centralTuples_finiteSupport (ε : CentralTuples F) :
-    Function.HasFiniteMulSupport (fun v => ε v) := by
-  exact DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.centralTuples_finiteSupport F ε
+    Function.HasFiniteMulSupport (fun v => ε v) := 
+  DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.centralTuples_finiteSupport F ε
 
 def centralProduct : CentralTuples F →* rootsOfUnity 3 F where
   toFun ε := ∏ᶠ v, ε v
@@ -95,15 +94,13 @@ def centralTupleMap : CentralTuples F →* RestrictedCover F ζ hζ :=
   RestrictedProduct.mapAlongMonoidHom _ _ id Filter.tendsto_id
     (fun v => KPLocalCover.centralInjection F ζ hζ v)
     (Filter.Eventually.of_forall (fun v => by
-      intro ε hε
-      have : ε = 1 := hε
-      simpa [this] using (compact F ζ hζ v).one_mem))
+      simp))
 
 def M : Subgroup (RestrictedCover F ζ hζ) :=
   (centralProduct F).ker.map (centralTupleMap F ζ hζ)
 
-theorem M_central : M F ζ hζ ≤ Subgroup.center (RestrictedCover F ζ hζ) := by
-  exact DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.M_central F ζ hζ
+theorem M_central : M F ζ hζ ≤ Subgroup.center (RestrictedCover F ζ hζ) := 
+  DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.M_central F ζ hζ
 
 instance M_normal : (M F ζ hζ).Normal :=
   Subgroup.normal_of_le_center (M_central F ζ hζ)
@@ -126,8 +123,8 @@ def centralInjection : rootsOfUnity 3 F →* CubicGL2Adelic F ζ hζ :=
 
 theorem localInjection_central (v : KPHilbert.Place F) (ε : rootsOfUnity 3 F) :
     localInjection F ζ hζ v (KPLocalCover.centralInjection F ζ hζ v ε) =
-      centralInjection F ζ hζ ε := by
-  exact DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.localInjection_central F ζ hζ v ε
+      centralInjection F ζ hζ ε := 
+  DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.localInjection_central F ζ hζ v ε
 
 abbrev Adeles := NumberField.AdeleRing (𝓞 F) F
 abbrev AdelicGL2 := Matrix.GeneralLinearGroup (Fin 2) (Adeles F)
@@ -142,8 +139,8 @@ def matrixEval (v : KPHilbert.Place F) : AdelicGL2 F →* KPLocalCover.LocalGL2 
 
 theorem matrixEntry_integral (x : RestrictedCover F ζ hζ) (i j : Fin 2) :
     ∀ᶠ q in Filter.cofinite,
-      (x (Sum.inr q)).g i j ∈ q.adicCompletionIntegers F := by
-  exact DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.matrixEntry_integral F ζ hζ x i j
+      (x (Sum.inr q)).g i j ∈ q.adicCompletionIntegers F := 
+  DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.matrixEntry_integral F ζ hζ x i j
 
 def matrixEntry (x : RestrictedCover F ζ hζ) (i j : Fin 2) : Adeles F :=
   (fun w => (x (Sum.inl w)).g i j,
@@ -154,19 +151,19 @@ def matrixValue (x : RestrictedCover F ζ hζ) : Matrix (Fin 2) (Fin 2) (Adeles 
   fun i j => matrixEntry F ζ hζ x i j
 
 theorem matrixValue_inv (x : RestrictedCover F ζ hζ) :
-    matrixValue F ζ hζ x * matrixValue F ζ hζ x⁻¹ = 1 := by
-  exact DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.matrixValue_inv F ζ hζ x
+    matrixValue F ζ hζ x * matrixValue F ζ hζ x⁻¹ = 1 := 
+  DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.matrixValue_inv F ζ hζ x
 
 theorem matrixValue_inv_left (x : RestrictedCover F ζ hζ) :
-    matrixValue F ζ hζ x⁻¹ * matrixValue F ζ hζ x = 1 := by
-  exact DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.matrixValue_inv_left F ζ hζ x
+    matrixValue F ζ hζ x⁻¹ * matrixValue F ζ hζ x = 1 := 
+  DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.matrixValue_inv_left F ζ hζ x
 
-theorem matrixValue_one : matrixValue F ζ hζ 1 = 1 := by
-  exact DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.matrixValue_one F ζ hζ
+theorem matrixValue_one : matrixValue F ζ hζ 1 = 1 := 
+  DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.matrixValue_one F ζ hζ
 
 theorem matrixValue_mul (x y : RestrictedCover F ζ hζ) :
-    matrixValue F ζ hζ (x * y) = matrixValue F ζ hζ x * matrixValue F ζ hζ y := by
-  exact DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.matrixValue_mul F ζ hζ x y
+    matrixValue F ζ hζ (x * y) = matrixValue F ζ hζ x * matrixValue F ζ hζ y := 
+  DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.matrixValue_mul F ζ hζ x y
 
 def restrictedProjection : RestrictedCover F ζ hζ →* AdelicGL2 F where
   toFun x := ⟨matrixValue F ζ hζ x, matrixValue F ζ hζ x⁻¹,
@@ -176,17 +173,17 @@ def restrictedProjection : RestrictedCover F ζ hζ →* AdelicGL2 F where
 
 theorem restrictedProjection_eval (x : RestrictedCover F ζ hζ) (v : KPHilbert.Place F) :
     matrixEval F v (restrictedProjection F ζ hζ x) =
-      KPLocalCover.projection F ζ hζ v (x v) := by
-  exact DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.restrictedProjection_eval F ζ hζ x v
+      KPLocalCover.projection F ζ hζ v (x v) := 
+  DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.restrictedProjection_eval F ζ hζ x v
 
-theorem restrictedProjection_surjective : Function.Surjective (restrictedProjection F ζ hζ) := by
-  exact DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.restrictedProjection_surjective F ζ hζ
+theorem restrictedProjection_surjective : Function.Surjective (restrictedProjection F ζ hζ) := 
+  DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.restrictedProjection_surjective F ζ hζ
 
-theorem restrictedProjection_continuous : Continuous (restrictedProjection F ζ hζ) := by
-  exact DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.restrictedProjection_continuous F ζ hζ
+theorem restrictedProjection_continuous : Continuous (restrictedProjection F ζ hζ) := 
+  DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.restrictedProjection_continuous F ζ hζ
 
-theorem M_le_ker : M F ζ hζ ≤ (restrictedProjection F ζ hζ).ker := by
-  exact DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.M_le_ker F ζ hζ
+theorem M_le_ker : M F ζ hζ ≤ (restrictedProjection F ζ hζ).ker := 
+  DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.M_le_ker F ζ hζ
 
 def projection : CubicGL2Adelic F ζ hζ →* AdelicGL2 F :=
   QuotientGroup.lift (M F ζ hζ) (restrictedProjection F ζ hζ) (M_le_ker F ζ hζ)
@@ -195,20 +192,20 @@ def projection : CubicGL2Adelic F ζ hζ →* AdelicGL2 F :=
     projection F ζ hζ (amalgamation F ζ hζ x) = restrictedProjection F ζ hζ x := rfl
 
 theorem range_centralInjection_eq_ker :
-    (centralInjection F ζ hζ).range = (projection F ζ hζ).ker := by
-  exact DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.range_centralInjection_eq_ker F ζ hζ
+    (centralInjection F ζ hζ).range = (projection F ζ hζ).ker := 
+  DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.range_centralInjection_eq_ker F ζ hζ
 
 theorem adelic_topological_cover :
     T2Space (CubicGL2Adelic F ζ hζ) ∧ LocallyCompactSpace (CubicGL2Adelic F ζ hζ) ∧
       IsTopologicalGroup (CubicGL2Adelic F ζ hζ) ∧
-      IsLocalHomeomorph (projection F ζ hζ) := by
-  exact DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.adelic_topological_cover F ζ hζ
+      IsLocalHomeomorph (projection F ζ hζ) := 
+  DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.adelic_topological_cover F ζ hζ
 
 theorem projection_localInjection (v w : KPHilbert.Place F)
     (g : KPLocalCover.CubicGL2Raw F ζ hζ v) :
     matrixEval F w (projection F ζ hζ (localInjection F ζ hζ v g)) =
-      (localToRestricted F ζ hζ v g w).g := by
-  exact DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.projection_localInjection F ζ hζ v w g
+      (localToRestricted F ζ hζ v g w).g := 
+  DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.projection_localInjection F ζ hζ v w g
 
 abbrev Ideles := (Adeles F)ˣ
 
@@ -218,18 +215,18 @@ def scalarCoordinates (z : Ideles F) (v : KPHilbert.Place F) :
 
 theorem scalarTuple_restricted (z : Ideles F) :
     ∀ᶠ v in Filter.cofinite,
-      scalarCoordinates F ζ hζ z v ∈ (compact F ζ hζ v : Set _) := by
-  exact DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.scalarTuple_restricted F ζ hζ z
+      scalarCoordinates F ζ hζ z v ∈ (compact F ζ hζ v : Set _) := 
+  DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.scalarTuple_restricted F ζ hζ z
 
 def scalarTupleValue (z : Ideles F) : RestrictedCover F ζ hζ :=
   ⟨scalarCoordinates F ζ hζ z, scalarTuple_restricted F ζ hζ z⟩
 
-theorem scalarTupleValue_one : scalarTupleValue F ζ hζ 1 = 1 := by
-  exact DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.scalarTupleValue_one F ζ hζ
+theorem scalarTupleValue_one : scalarTupleValue F ζ hζ 1 = 1 := 
+  DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.scalarTupleValue_one F ζ hζ
 
 theorem scalarTupleValue_mul (z z' : Ideles F) :
-    scalarTupleValue F ζ hζ (z * z') = scalarTupleValue F ζ hζ z * scalarTupleValue F ζ hζ z' := by
-  exact DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.scalarTupleValue_mul F ζ hζ z z'
+    scalarTupleValue F ζ hζ (z * z') = scalarTupleValue F ζ hζ z * scalarTupleValue F ζ hζ z' := 
+  DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.scalarTupleValue_mul F ζ hζ z z'
 
 def scalarTuple : Ideles F →* RestrictedCover F ζ hζ where
   toFun := scalarTupleValue F ζ hζ
@@ -240,12 +237,12 @@ def scalarHom : Ideles F →* CubicGL2Adelic F ζ hζ :=
   (amalgamation F ζ hζ).comp (scalarTuple F ζ hζ)
 
 theorem projection_scalarHom (z : Ideles F) :
-    projection F ζ hζ (scalarHom F ζ hζ z) = Matrix.GeneralLinearGroup.scalar (Fin 2) z := by
-  exact DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.projection_scalarHom F ζ hζ z
+    projection F ζ hζ (scalarHom F ζ hζ z) = Matrix.GeneralLinearGroup.scalar (Fin 2) z := 
+  DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.projection_scalarHom F ζ hζ z
 
 theorem scalarHom_central :
-    (scalarHom F ζ hζ).range ≤ Subgroup.center (CubicGL2Adelic F ζ hζ) := by
-  exact DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.scalarHom_central F ζ hζ
+    (scalarHom F ζ hζ).range ≤ Subgroup.center (CubicGL2Adelic F ζ hζ) := 
+  DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.scalarHom_central F ζ hζ
 
 def splitScalarSubgroup : Subgroup (CubicGL2Adelic F ζ hζ) := (scalarHom F ζ hζ).range
 
@@ -260,8 +257,8 @@ def scalarQuotient : CubicGL2Adelic F ζ hζ →* CubicPGL2Adelic F ζ hζ :=
 def scalarSubgroup : Subgroup (AdelicGL2 F) :=
   (Matrix.GeneralLinearGroup.scalar (Fin 2) : Ideles F →* AdelicGL2 F).range
 
-theorem scalarSubgroup_central : scalarSubgroup F ≤ Subgroup.center (AdelicGL2 F) := by
-  exact DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.scalarSubgroup_central F
+theorem scalarSubgroup_central : scalarSubgroup F ≤ Subgroup.center (AdelicGL2 F) := 
+  DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.scalarSubgroup_central F
 
 instance scalarSubgroup_normal : (scalarSubgroup F).Normal :=
   Subgroup.normal_of_le_center (scalarSubgroup_central F)
@@ -269,8 +266,8 @@ instance scalarSubgroup_normal : (scalarSubgroup F).Normal :=
 abbrev AdelicPGL2 := AdelicGL2 F ⧸ scalarSubgroup F
 
 theorem splitScalar_le_ker : splitScalarSubgroup F ζ hζ ≤
-    ((QuotientGroup.mk' (scalarSubgroup F)).comp (projection F ζ hζ)).ker := by
-  exact DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.splitScalar_le_ker F ζ hζ
+    ((QuotientGroup.mk' (scalarSubgroup F)).comp (projection F ζ hζ)).ker := 
+  DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.splitScalar_le_ker F ζ hζ
 
 def pglProjection : CubicPGL2Adelic F ζ hζ →* AdelicPGL2 F :=
   QuotientGroup.lift (splitScalarSubgroup F ζ hζ)
@@ -280,25 +277,25 @@ def pglProjection : CubicPGL2Adelic F ζ hζ →* AdelicPGL2 F :=
 def pglCentralInjection : rootsOfUnity 3 F →* CubicPGL2Adelic F ζ hζ :=
   (scalarQuotient F ζ hζ).comp (centralInjection F ζ hζ)
 
-theorem pglCentralInjection_injective : Function.Injective (pglCentralInjection F ζ hζ) := by
-  exact DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.pglCentralInjection_injective F ζ hζ
+theorem pglCentralInjection_injective : Function.Injective (pglCentralInjection F ζ hζ) := 
+  DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.pglCentralInjection_injective F ζ hζ
 
-theorem pglProjection_surjective : Function.Surjective (pglProjection F ζ hζ) := by
-  exact DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.pglProjection_surjective F ζ hζ
+theorem pglProjection_surjective : Function.Surjective (pglProjection F ζ hζ) := 
+  DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.pglProjection_surjective F ζ hζ
 
 theorem pglCentralInjection_kernel :
-    (pglCentralInjection F ζ hζ).range = (pglProjection F ζ hζ).ker := by
-  exact DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.pglCentralInjection_kernel F ζ hζ
+    (pglCentralInjection F ζ hζ).range = (pglProjection F ζ hζ).ker := 
+  DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.pglCentralInjection_kernel F ζ hζ
 
 theorem pglCentralInjection_central :
-    (pglCentralInjection F ζ hζ).range ≤ Subgroup.center (CubicPGL2Adelic F ζ hζ) := by
-  exact DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.pglCentralInjection_central F ζ hζ
+    (pglCentralInjection F ζ hζ).range ≤ Subgroup.center (CubicPGL2Adelic F ζ hζ) := 
+  DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.pglCentralInjection_central F ζ hζ
 
 theorem adelic_pgl_topological_cover :
     T2Space (CubicPGL2Adelic F ζ hζ) ∧ LocallyCompactSpace (CubicPGL2Adelic F ζ hζ) ∧
       IsTopologicalGroup (CubicPGL2Adelic F ζ hζ) ∧
-      IsLocalHomeomorph (pglProjection F ζ hζ) := by
-  exact DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.adelic_pgl_topological_cover F ζ hζ
+      IsLocalHomeomorph (pglProjection F ζ hζ) := 
+  DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.adelic_pgl_topological_cover F ζ hζ
 
 def rationalBase : KubotaRankTwo.GL2 F →* AdelicGL2 F :=
   Matrix.GeneralLinearGroup.map (algebraMap F (Adeles F))
@@ -310,8 +307,8 @@ def rationalCoordinates (g : KubotaRankTwo.GL2 F) (v : KPHilbert.Place F) :
 
 theorem rationalCoordinates_restricted (g : KubotaRankTwo.GL2 F) :
     ∀ᶠ v in Filter.cofinite,
-      rationalCoordinates F ζ hζ g v ∈ (compact F ζ hζ v : Set _) := by
-  exact DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.rationalCoordinates_restricted F ζ hζ g
+      rationalCoordinates F ζ hζ g v ∈ (compact F ζ hζ v : Set _) := 
+  DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.rationalCoordinates_restricted F ζ hζ g
 
 def rationalTuple (g : KubotaRankTwo.GL2 F) : RestrictedCover F ζ hζ :=
   ⟨rationalCoordinates F ζ hζ g, rationalCoordinates_restricted F ζ hζ g⟩
@@ -323,15 +320,15 @@ def rationalSection (g : KubotaRankTwo.GL2 F) : CubicGL2Adelic F ζ hζ :=
     rationalTuple F ζ hζ g v = rationalCoordinates F ζ hζ g v := rfl
 
 theorem projection_rationalSection (g : KubotaRankTwo.GL2 F) :
-    projection F ζ hζ (rationalSection F ζ hζ g) = rationalBase F g := by
-  exact DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.projection_rationalSection F ζ hζ g
+    projection F ζ hζ (rationalSection F ζ hζ g) = rationalBase F g := 
+  DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.projection_rationalSection F ζ hζ g
 
 theorem rationalSection_mul (g h : KubotaRankTwo.GL2 F) :
-    rationalSection F ζ hζ (g * h) = rationalSection F ζ hζ g * rationalSection F ζ hζ h := by
-  exact DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.rationalSection_mul F ζ hζ g h
+    rationalSection F ζ hζ (g * h) = rationalSection F ζ hζ g * rationalSection F ζ hζ h := 
+  DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.rationalSection_mul F ζ hζ g h
 
-theorem rationalSection_one : rationalSection F ζ hζ 1 = 1 := by
-  exact DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.rationalSection_one F ζ hζ
+theorem rationalSection_one : rationalSection F ζ hζ 1 = 1 := 
+  DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.rationalSection_one F ζ hζ
 
 def rationalHom : KubotaRankTwo.GL2 F →* CubicGL2Adelic F ζ hζ where
   toFun := rationalSection F ζ hζ
@@ -340,23 +337,23 @@ def rationalHom : KubotaRankTwo.GL2 F →* CubicGL2Adelic F ζ hζ where
 
 theorem rationalSection_scalar (z : Fˣ) :
     rationalSection F ζ hζ (Matrix.GeneralLinearGroup.scalar (Fin 2) z) =
-      scalarHom F ζ hζ (Units.map (algebraMap F (Adeles F)) z) := by
-  exact DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.rationalSection_scalar F ζ hζ z
+      scalarHom F ζ hζ (Units.map (algebraMap F (Adeles F)) z) := 
+  DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.rationalSection_scalar F ζ hζ z
 
 theorem rationalCoordinates_N (x : F) (v : KPHilbert.Place F) :
     rationalCoordinates F ζ hζ (KubotaRankTwo.n F x) v =
-      KPStandardLocalRootLifts.N F ζ hζ v (algebraMap F (KPHilbert.Completion F v) x) := by
-  exact DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.rationalCoordinates_N F ζ hζ x v
+      KPStandardLocalRootLifts.N F ζ hζ v (algebraMap F (KPHilbert.Completion F v) x) := 
+  DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.rationalCoordinates_N F ζ hζ x v
 
 theorem rationalCoordinates_A (y : Fˣ) (v : KPHilbert.Place F) :
     rationalCoordinates F ζ hζ (KubotaRankTwo.d F y 1) v =
-      KPStandardLocalRootLifts.A F ζ hζ v (Units.map (algebraMap F (KPHilbert.Completion F v)) y) := by
-  exact DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.rationalCoordinates_A F ζ hζ y v
+      KPStandardLocalRootLifts.A F ζ hζ v (Units.map (algebraMap F (KPHilbert.Completion F v)) y) := 
+  DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.rationalCoordinates_A F ζ hζ y v
 
 theorem rationalCoordinates_W (v : KPHilbert.Place F) :
     rationalCoordinates F ζ hζ (KPStandardLocalRootLifts.weylSwap F) v =
-      KPStandardLocalRootLifts.W F ζ hζ v := by
-  exact DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.rationalCoordinates_W F ζ hζ v
+      KPStandardLocalRootLifts.W F ζ hζ v := 
+  DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.rationalCoordinates_W F ζ hζ v
 
 def pglCompact (v : KPHilbert.Place F) : Subgroup (KPPGLLocalCover.CubicPGL2 F ζ hζ v) :=
   (compact F ζ hζ v).map (KPPGLLocalCover.coverQuotient F ζ hζ v)
@@ -383,8 +380,8 @@ def pglCentralTupleMap : CentralTuples F →* RestrictedPGLCover F ζ hζ :=
 def pglM : Subgroup (RestrictedPGLCover F ζ hζ) :=
   (centralProduct F).ker.map (pglCentralTupleMap F ζ hζ)
 
-theorem pglM_central : pglM F ζ hζ ≤ Subgroup.center (RestrictedPGLCover F ζ hζ) := by
-  exact DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.pglM_central F ζ hζ
+theorem pglM_central : pglM F ζ hζ ≤ Subgroup.center (RestrictedPGLCover F ζ hζ) := 
+  DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.pglM_central F ζ hζ
 
 instance pglM_normal : (pglM F ζ hζ).Normal :=
   Subgroup.normal_of_le_center (pglM_central F ζ hζ)
@@ -396,38 +393,35 @@ theorem scalar_quotient_commutes_with_amalgamation :
       Continuous e ∧ Continuous e.symm ∧
       ∀ x : RestrictedCover F ζ hζ,
         e (scalarQuotient F ζ hζ (amalgamation F ζ hζ x)) =
-          QuotientGroup.mk' (pglM F ζ hζ) (restrictedPGLQuotient F ζ hζ x) := by
-  exact DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.scalar_quotient_commutes_with_amalgamation F ζ hζ
+          QuotientGroup.mk' (pglM F ζ hζ) (restrictedPGLQuotient F ζ hζ x) := 
+  DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.scalar_quotient_commutes_with_amalgamation F ζ hζ
 
 theorem local_pgl_injection (v : KPHilbert.Place F) :
     ∃ j : KPPGLLocalCover.CubicPGL2 F ζ hζ v →* CubicPGL2Adelic F ζ hζ,
       Function.Injective j ∧ Continuous j ∧
       ∀ g : KPLocalCover.CubicGL2Raw F ζ hζ v,
         j (KPPGLLocalCover.coverQuotient F ζ hζ v g) =
-          scalarQuotient F ζ hζ (localInjection F ζ hζ v g) := by
-  exact DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.local_pgl_injection F ζ hζ v
+          scalarQuotient F ζ hζ (localInjection F ζ hζ v g) := 
+  DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.local_pgl_injection F ζ hζ v
 
 theorem finiteCompact_compact_open (q : HeightOneSpectrum (𝓞 F)) :
     IsCompact (finiteCompact F ζ hζ q : Set (KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr q))) ∧
-      IsOpen (finiteCompact F ζ hζ q : Set (KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr q))) := by
-  exact DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.finiteCompact_compact_open F ζ hζ q
+      IsOpen (finiteCompact F ζ hζ q : Set (KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr q))) := 
+  DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.finiteCompact_compact_open F ζ hζ q
 
 theorem compact_open (v : KPHilbert.Place F) :
-    IsOpen (compact F ζ hζ v : Set (KPLocalCover.CubicGL2Raw F ζ hζ v)) := by
-  exact DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.compact_open F ζ hζ v
+    IsOpen (compact F ζ hζ v : Set (KPLocalCover.CubicGL2Raw F ζ hζ v)) := 
+  DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.compact_open F ζ hζ v
 
 end
 end DedekindZetaZeroFree.KPAdelicCoverRestrictedProduct
 
 section
 
-open scoped NumberField Classical BigOperators
-open NumberField IsDedekindDomain
 
 namespace DedekindZetaZeroFree.KPAdelicCoverRestrictedProduct
 
 noncomputable section
-set_option autoImplicit false
 set_option maxHeartbeats 400000
 
 variable (F : Type) [Field F] [NumberField F]
@@ -435,15 +429,10 @@ variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
 attribute [local instance] localTopology
 
-theorem projection_surjective : Function.Surjective (projection F ζ hζ) := by
-  exact DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.projection_surjective F ζ hζ
+theorem projection_surjective : Function.Surjective (projection F ζ hζ) := 
+  DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.projection_surjective F ζ hζ
 
-theorem rationalHom_injective : Function.Injective (rationalHom F ζ hζ) := by
-  exact DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.rationalHom_injective F ζ hζ
+theorem rationalHom_injective : Function.Injective (rationalHom F ζ hζ) := 
+  DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.rationalHom_injective F ζ hζ
 
 attribute [local instance] pglLocalTopology
-
-end
-end DedekindZetaZeroFree.KPAdelicCoverRestrictedProduct
-
-end

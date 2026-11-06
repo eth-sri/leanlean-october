@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Geometry.ArithmeticQuotients.SectionSpaces.Bo
 
 @[expose] public section
 
-noncomputable section
 open scoped Classical ENNReal
 open MeasureTheory Topology
 
@@ -14,7 +13,7 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
 variable (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
 variable (U : CompactOpenLevel (KPFiniteCuspAtlas.FiniteCover F ζ hζ))
 
-private theorem chart_component_eq (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
+theorem chart_component_eq (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}
     (C : FiniteCutoffs F ζ hζ hF U A K) (i : Fin C.count) :
     ∀ x : E (C.chart i).n,
@@ -33,7 +32,7 @@ private theorem chart_component_eq (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
   have := A.components.injective (h1.trans h2.symm)
   exact congrArg Sigma.fst this
 
-private theorem phase_value (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
+theorem phase_value (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}
     (C : FiniteCutoffs F ζ hζ hF U A K) (i : Fin C.count) (x : E (C.chart i).n)
     (s : KPFiniteCuspAtlas.genuineScalars F ζ hζ U)
@@ -119,7 +118,7 @@ private theorem arithmetic_smul_continuous (γ : KPCuspArithmetic.PGL2 F) :
   simp only [KPCuspSiegel.action_mk]
   exact (KPArch.productAction_contDiff _ _).continuous
 
-private theorem measurable_transition (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
+theorem measurable_transition (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     (M : Realization F ζ hζ hF U A) {K : Set (X F ζ hζ U)}
     (C : FiniteCutoffs F ζ hζ hF U A K) (i : Fin C.count) :
     ∃ γ : E (C.chart i).n → KPCuspGenuineMonodromy.Component F ζ hζ U
@@ -195,7 +194,7 @@ theorem frame_comparison (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     apply Quotient.sound
     refine ⟨γ i x, (hγ i x hx).symm, ?_⟩
     change (a : ℂ) = _ * ((phase i x : ℂ) * (a : ℂ))
-    simp [phase, ← mul_assoc]
+    simp [phase]
   refine ⟨{
     phase := phase
     measurable_phase := fun i => hmeas i (fun g =>
@@ -257,7 +256,3 @@ theorem frame_comparison (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
   · intro i
     filter_upwards [ae_restrict_mem Metric.isOpen_ball.measurableSet] with x hx
     exact hframe i x ((C.chart i).closed_ball_in_extension (subset_closure hx))
-
-end DedekindZetaZeroFree.CoreChartLocalizers
-
-end

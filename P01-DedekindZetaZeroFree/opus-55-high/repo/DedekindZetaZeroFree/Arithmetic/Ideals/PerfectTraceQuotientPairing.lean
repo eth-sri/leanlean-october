@@ -31,7 +31,7 @@ def quotientCongr
   subst I'
   exact LinearEquiv.refl _ _
 
-private theorem quotientCongr_mk
+theorem quotientCongr_mk
     (I I' J : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) (h : I = I')
     (x : I.coeToSubmodule) :
     quotientCongr I I' J h (fractionalIdealQuotientMk I J x) =
@@ -44,8 +44,8 @@ def rayTraceQuotientEquiv
     rayTraceQuotient m ≃ₗ[NumberField.RingOfIntegers F]
       fractionalIdealQuotient
         (traceDualFractionalIdeal (m : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F))
-        (traceDualFractionalIdeal (1 : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F)) := by
-  exact quotientCongr _ _ _
+        (traceDualFractionalIdeal (1 : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F)) := 
+  quotientCongr _ _ _
     (traceDualFractionalIdeal_coeIdeal_eq_inv_mul_codifferent m hm).symm
 
 @[simp] theorem rayTraceQuotientEquiv_mk
@@ -57,8 +57,8 @@ def rayTraceQuotientEquiv
       fractionalIdealQuotientMk _ (traceDualFractionalIdeal 1)
         ⟨(β : F), by
           rw [traceDualFractionalIdeal_coeIdeal_eq_inv_mul_codifferent m hm]
-          exact β.property⟩ := by
-  exact quotientCongr_mk _ _ _
+          exact β.property⟩ := 
+  quotientCongr_mk _ _ _
     (traceDualFractionalIdeal_coeIdeal_eq_inv_mul_codifferent m hm).symm β
 
 @[instance_reducible] def rayTraceQuotientModule
@@ -99,14 +99,7 @@ local notation "B" => rayTraceQuotientPairing m hm
     B (k + k') t = B k t * B k' t := by
   simp [rayTraceQuotientPairing, residueTraceQuotientPairing]
 
-@[simp] theorem rayTraceQuotientPairing_add_right (k : R) (t t' : T) :
-    B k (t + t') = B k t * B k t' := by
-  simp [rayTraceQuotientPairing, residueTraceQuotientPairing]
-
 @[simp] theorem rayTraceQuotientPairing_zero_left (t : T) : B 0 t = 1 := by
-  simp [rayTraceQuotientPairing, residueTraceQuotientPairing]
-
-@[simp] theorem rayTraceQuotientPairing_zero_right (k : R) : B k 0 = 1 := by
   simp [rayTraceQuotientPairing, residueTraceQuotientPairing]
 
 theorem rayTraceQuotientPairing_balance :
@@ -119,9 +112,6 @@ theorem rayTraceQuotientPairing_balance :
   rw [(rayTraceQuotientEquiv m hm).map_smul]
   exact residueTraceQuotientPairing_balance m hm (Ideal.Quotient.mk m r) k
     (rayTraceQuotientEquiv m hm t)
-
-@[simp] theorem norm_rayTraceQuotientPairing (k : R) (t : T) : ‖B k t‖ = 1 := by
-  exact norm_traceQuotientPairing _ _ _ _ _ _ _
 
 theorem rayTraceQuotientPairing_left_radical (k : R) :
     (∀ t : T, B k t = 1) ↔ k = 0 := by
@@ -136,8 +126,7 @@ theorem rayTraceQuotientPairing_left_radical (k : R) :
     exact (residueFractionalOneEquiv m).injective
       ((traceQuotientPairing_left_radical _ _ _ _ _ _).mp h' |>.trans
         (residueFractionalOneEquiv m).map_zero.symm)
-  · rintro rfl t
-    exact rayTraceQuotientPairing_zero_left m hm t
+  simp_all
 
 def charCongr {G H : Type} [AddCommGroup G] [AddCommGroup H]
     (e : G ≃+ H) : AddChar H ℂ ≃+ AddChar G ℂ where
@@ -145,15 +134,15 @@ def charCongr {G H : Type} [AddCommGroup G] [AddCommGroup H]
   invFun χ := χ.compAddMonoidHom e.symm.toAddMonoidHom
   left_inv χ := by ext x; simp
   right_inv χ := by ext x; simp
-  map_add' χ ψ := by ext x; rfl
+  map_add' χ ψ := by rfl
 
 def oneTraceEquiv (hm : m ≠ ⊥) :
     fractionalIdealQuotient (1 : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F)
       (m : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) ≃+
     AddChar (fractionalIdealQuotient (traceDualFractionalIdeal
       (m : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F))
-      (traceDualFractionalIdeal 1)) ℂ := by
-  exact AddEquiv.ofBijective
+      (traceDualFractionalIdeal 1)) ℂ := 
+  AddEquiv.ofBijective
     (traceQuotientPairing 1 _ one_ne_zero
       ((residueFractionalIdeal_ne_zero_iff m).mpr hm) (residueFractionalIdeal_le_one m))
     (by
@@ -181,15 +170,15 @@ def oneTraceEquiv (hm : m ≠ ⊥) :
           (m : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F))
           (traceDualFractionalIdeal 1)) = Ideal.absNorm m := by
         simpa only [one_mul] using conductorTraceQuotient_card m hm 1 one_ne_zero
-      exact hA.trans hT.symm)
+      omega)
 
 def oneTraceTransposeEquiv (hm : m ≠ ⊥) :
     fractionalIdealQuotient (traceDualFractionalIdeal
       (m : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F))
       (traceDualFractionalIdeal 1) ≃+
     AddChar (fractionalIdealQuotient (1 : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F)
-      (m : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F)) ℂ := by
-  exact AddEquiv.ofBijective
+      (m : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F)) ℂ := 
+  AddEquiv.ofBijective
     (traceQuotientPairingTranspose 1 _ one_ne_zero
       ((residueFractionalIdeal_ne_zero_iff m).mpr hm) (residueFractionalIdeal_le_one m))
     (by
@@ -217,9 +206,9 @@ def oneTraceTransposeEquiv (hm : m ≠ ⊥) :
           (m : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F))
           (traceDualFractionalIdeal 1)) = Ideal.absNorm m := by
         simpa only [one_mul] using conductorTraceQuotient_card m hm 1 one_ne_zero
-      exact hT.trans hA.symm)
+      omega)
 
-private theorem oneTraceTransposeEquiv_apply
+theorem oneTraceTransposeEquiv_apply
     (x : fractionalIdealQuotient (1 : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F)
       (m : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F))
     (y : fractionalIdealQuotient (traceDualFractionalIdeal
@@ -235,9 +224,5 @@ def rayTraceQuotientPairingTransposeEquiv (hm : m ≠ ⊥) : T ≃+ AddChar R �
     ((oneTraceTransposeEquiv m hm).trans (charCongr (residueFractionalOneEquiv m).toAddEquiv))
 
 @[simp] theorem rayTraceQuotientPairingTransposeEquiv_apply (t : T) (k : R) :
-    rayTraceQuotientPairingTransposeEquiv m hm t k = B k t := by
-  exact oneTraceTransposeEquiv_apply m hm _ _
-
-end DedekindZetaZeroFree.Hecke
-
-end
+    rayTraceQuotientPairingTransposeEquiv m hm t k = B k t := 
+  oneTraceTransposeEquiv_apply m hm _ _

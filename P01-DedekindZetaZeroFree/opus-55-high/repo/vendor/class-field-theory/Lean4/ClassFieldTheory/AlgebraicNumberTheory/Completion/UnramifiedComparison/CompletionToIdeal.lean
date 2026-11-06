@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # From completed to ideal-theoretic unramifiedness
 
@@ -46,7 +40,7 @@ variable
 
 /-- The actual image of the chosen global integral uniformizer in the
 integer ring of the chosen localized completion. -/
-noncomputable def chosenFinitePlaceTargetIntegralUniformizer
+def chosenFinitePlaceTargetIntegralUniformizer
     (v : HeightOneSpectrum (𝓞 K)) :
     𝒪[ChosenFinitePlaceLocalizedCompletion
       (K := K) (L := L) v] :=
@@ -115,8 +109,8 @@ theorem chosenFinitePlace_integralUniformizer_map_isUniformizer
           Ideal.map
             integerMap
             (Ideal.span ({πData.completionInteger} :
-              Set 𝒪[vK.Completion])) := by
-        exact congrArg
+              Set 𝒪[vK.Completion])) := 
+        congrArg
           (Ideal.map integerMap)
           hpiBaseMaximalIdeal
       _ = Ideal.span ({πTarget} : Set 𝒪[E]) := by
@@ -232,15 +226,7 @@ theorem
           (algebraMap K (v.adicCompletion K)
             (πData.integer : K)) =
         (eTarget πTarget : W.adicCompletion L) := by
-    rw [hpiTargetField]
-    change
-      finitePlaceExtensionAdicCompletionMap K L v w
-          ((πData.integer : K) : v.adicCompletion K) =
-        ((algebraMap K L (πData.integer : K) : L) :
-          W.adicCompletion L)
-    exact
-      finitePlaceExtensionAdicCompletionMap_coe
-        K L v w (πData.integer : K)
+    rfl
   have hpiConcreteValuation :
       Valued.v
           (algebraMap K (v.adicCompletion K)
@@ -269,8 +255,8 @@ theorem
             (finitePlaceExtensionAdicCompletionMap
               K L v w
               (algebraMap K (v.adicCompletion K)
-                (πData.integer : K))) := by
-        exact congrArg
+                (πData.integer : K))) := 
+        congrArg
           (fun x : W.adicCompletion L => Valued.v x)
           hmapPi.symm
       _ =
@@ -283,8 +269,8 @@ theorem
               K L v w
               (algebraMap K (v.adicCompletion K)
                 (πData.integer : K))
-      _ = WithZero.exp (-1 : ℤ) ^ eGlobal := by
-        exact congrArg (fun z => z ^ eGlobal)
+      _ = WithZero.exp (-1 : ℤ) ^ eGlobal := 
+        congrArg (fun z => z ^ eGlobal)
           hpiConcreteValuation
   have hexp :
       WithZero.exp (-1 : ℤ) =
@@ -298,15 +284,12 @@ theorem
         (WithZero.exp_nsmul _ _).symm
       _ =
           WithZero.exp (-(eGlobal : ℤ)) := by
-        congr 1
         simp
   have hint :
       (-1 : ℤ) = -(eGlobal : ℤ) :=
     WithZero.exp_injective hexp
   have heGlobal : eGlobal = 1 := by
-    have heInt : (1 : ℤ) = (eGlobal : ℤ) :=
-      neg_injective hint
-    exact_mod_cast heInt.symm
+    omega
   exact heGlobal
 
 /-- Unramifiedness of the actual chosen localized completion forces
@@ -409,6 +392,4 @@ theorem
         (P.asIdeal.under (𝓞 K)).ResidueField :=
     PerfectField.ofFinite
   apply Ideal.ramificationIdx_eq_one_iff.mp
-  exact hRamification.trans hChosenRamification
-
-end
+  omega

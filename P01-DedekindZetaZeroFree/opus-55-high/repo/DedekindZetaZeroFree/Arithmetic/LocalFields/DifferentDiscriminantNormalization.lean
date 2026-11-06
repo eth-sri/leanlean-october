@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.SIntegers.FundamentalDo
 
 @[expose] public section
 
-noncomputable section
 open scoped Classical nonZeroDivisors
 open NumberField IsDedekindDomain MeasureTheory
 

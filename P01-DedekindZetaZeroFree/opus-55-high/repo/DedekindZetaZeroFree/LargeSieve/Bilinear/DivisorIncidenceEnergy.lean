@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.LargeSieve.Bilinear.GcdTailAndMaskedShellBoun
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.LargeSieve.Sieve.CoreCoefficient
 open scoped NumberField Classical
 
@@ -28,7 +27,7 @@ theorem divisor_incidence_sum
     have hc : (S.filter (fun d => d ∣ b)).card ≤ (DedekindZetaZeroFree.LargeSieve.idealDivisors b).card := by
       apply Finset.card_le_card
       intro d hd
-      exact (DedekindZetaZeroFree.LargeSieve.mem_idealDivisors hb0).mpr (Finset.mem_filter.mp hd).2
+      simp_all
     calc ((S.filter (fun d => d ∣ b)).card : ℝ)
         ≤ (DedekindZetaZeroFree.LargeSieve.idealDivisorCount b : ℝ) := by exact_mod_cast hc
       _ ≤ A * (Ideal.absNorm b : ℝ) ^ ε := hA b
@@ -51,7 +50,3 @@ theorem divisor_incidence_sum
         Finset.sum_le_sum fun b hb => mul_le_mul_of_nonneg_right (hinc b hb) (sq_nonneg _)
     _ = A * Real.rpow 2 ε * Real.rpow N ε * energy F c N lam := by
         rw [energy, Finset.mul_sum]
-
-end DedekindZetaZeroFree.LargeSieve.Sieve.CoreCoefficient
-
-end

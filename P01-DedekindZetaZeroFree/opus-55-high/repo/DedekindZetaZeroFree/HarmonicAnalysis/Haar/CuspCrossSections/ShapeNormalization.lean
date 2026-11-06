@@ -37,14 +37,14 @@ namespace DedekindZetaZeroFree.KPCuspChart.SectionConstruction
     refine Fin.lastCases ?_ (fun j => ?_) i <;>
       simp [KPArch.shape, Finset.mul_sum]
 
-private theorem normalized_succ (d : ℕ) :
+theorem normalized_succ (d : ℕ) :
     ∃ μ : Measure (KPCuspLogShape.hyperplane (d+1)), μ.IsAddHaarMeasure ∧
       Measure.map (fun p : ((Fin (d+1) → ℂ) × KPCuspLogShape.hyperplane (d+1)) × ℝ =>
         fun i => (p.1.1 i, p.2 + p.1.2.val i))
         ((volume.prod μ).prod (radialMeasure (d+1))) = KPArch.hyperbolicVolume (d+1) := by
   let c := ENNReal.ofReal (d+1 : ℝ)
   let e := (shapeEquiv d).toContinuousLinearEquiv
-  have hc : c ≠ 0 := by dsimp [c]; positivity
+  have hc : c ≠ 0 := by positivity
   have hct : c ≠ ⊤ := ENNReal.ofReal_ne_top
   letI : (c • (volume : Measure (Fin d → ℝ))).IsAddHaarMeasure :=
     Measure.IsAddHaarMeasure.smul volume hc hct
@@ -111,7 +111,3 @@ theorem normalized_shape_haar
         KPArch.hyperbolicVolume (KPCuspLogShape.dimension F)
   rw [hd]
   exact normalized_succ d
-
-end DedekindZetaZeroFree.KPCuspChart.SectionConstruction
-
-end

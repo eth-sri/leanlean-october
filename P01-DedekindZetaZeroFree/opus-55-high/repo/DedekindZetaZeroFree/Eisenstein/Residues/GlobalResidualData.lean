@@ -3,7 +3,8 @@ module
 public import DedekindZetaZeroFree.RepresentationTheory.RankOne.FiniteExceptionalRepresentationData
 public import DedekindZetaZeroFree.Metaplectic.Torus.RationalCentralCharacter
 public import DedekindZetaZeroFree.Algebra.TensorProduct.RestrictedTensorSimplicity
-public import DedekindZetaZeroFree.Eisenstein.Continuation.SmoothMeromorphicFunctions
+public import DedekindZetaZeroFree.Eisenstein.Induction.HolomorphicSectionsAndResidueGerms
+public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.SpectralCoordinateAndPoleOrders
 public import DedekindZetaZeroFree.Eisenstein.Induction.BorelBruhatTwoCells
 public import DedekindZetaZeroFree.HarmonicAnalysis.Poisson.AdditivePeriodization
 public import DedekindZetaZeroFree.Eisenstein.Induction.ExceptionalParameterExponents
@@ -113,8 +114,3 @@ abbrev smoothRationalFiber : Submodule ℂ (RationalFiber F ζ hζ) := by
 
 def upperConstantTerm (dq : Measure (Y F)) (f : G F ζ hζ → ℂ) (g : G F ζ hζ) : ℂ :=
   ∫ q, f (KPGlobalTorusFunctionData.N F ζ hζ (Quotient.out q) * g) ∂dq
-
-end DedekindZetaZeroFree.KPGlobalResidualConstruction
-
-end
-end

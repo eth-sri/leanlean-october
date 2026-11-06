@@ -44,8 +44,7 @@ private theorem finite_matching
     MonoidHom.mk' (fun d => (pairingHom F ζ hζ d).comp
       ((KPGlobalPrincipalCubicLagrangian.A F).subtype.comp H.subtype))
       (fun d e => MonoidHom.ext (fun a => by
-        change pairingHom F ζ hζ (d * e) a.val.val = _
-        exact DFunLike.congr_fun (map_mul (pairingHom F ζ hζ) d e) a.val.val))
+        simp))
   let Φ := K.map r
   let E := CommGroup.subgroupOrderIsoSubgroupMonoidHom H F
   have hr : r x ∈ (E (E.symm (OrderDual.toDual Φ))).ofDual := by
@@ -128,5 +127,3 @@ theorem rational_compact_open_annihilator
     have hky : pairingHom F ζ hζ k y = 1 := congrArg Subtype.val (hisotropic k hk y hy)
     rw [hxy, hky, inv_one, mul_one]
   · simp [a]
-end
-end DedekindZetaZeroFree.KPGlobalTorusTensorFibers

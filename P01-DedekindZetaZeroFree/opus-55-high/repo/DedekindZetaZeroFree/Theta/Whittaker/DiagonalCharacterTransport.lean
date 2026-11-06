@@ -7,11 +7,10 @@ public import DedekindZetaZeroFree.RepresentationTheory.Kirillov.ProjectorGermsA
 
 @[expose] public section
 
-noncomputable section
 open scoped NumberField
 open NumberField IsDedekindDomain MeasureTheory
 namespace DedekindZetaZeroFree.KPExceptionalRaw.FiniteSource.TameWhittakerSteps.RawTransport
-private theorem scalar_on_ball (F : Type) [Field F] [NumberField F]
+theorem scalar_on_ball (F : Type) [Field F] [NumberField F]
     (v : HeightOneSpectrum (𝓞 F)) (χ : AddChar (v.adicCompletion F) Circle)
     (hc : Continuous χ) (n : ℤ) :
     ∃ y : v.adicCompletion F, ∀ x ∈ finiteCompletionBall F v n,
@@ -52,16 +51,14 @@ private theorem scalar_on_ball (F : Type) [Field F] [NumberField F]
     apply integral_congr_ae
     filter_upwards with x
     by_cases hx : x ∈ finiteCompletionBall F v n
-    · simp [f, U, localCosetIndicator_apply, hx, Set.indicator_of_mem,
-        δ, AddChar.mulShift_apply, mul_comm, mul_assoc]
+    · simp [f, U, localCosetIndicator_apply, hx, Set.indicator_of_mem, δ, AddChar.mulShift_apply, mul_comm]
       exact hx
     · simp [f, U, localCosetIndicator_apply, hx, Set.indicator_of_notMem]
       exact lt_of_not_ge hx
   rw [heq, (compactSubgroup_character_integral (localNormalizedHaar F v) U
     (isCompact_finiteCompletionBall F v n) δ hδ).2] at hy
   have ht : ∀ x ∈ U, δ x = 1 := by
-    by_contra h
-    simp [h] at hy
+    simp_all
   refine ⟨y, fun x hx => ?_⟩
   have h := ht x hx
   change χ x * localFiniteCharacter F v (-y * x) = 1 at h
@@ -86,7 +83,7 @@ theorem scalar_global (F : Type) [Field F] [NumberField F]
         {y | χ x.val = localFiniteCharacter F v (x.val * y)} := by
       ext y
       simp only [S, Set.mem_setOf_eq, Set.mem_iInter]
-      exact ⟨fun h x => h x x.property, fun h x hx => h ⟨x, hx⟩⟩
+      simp
     rw [heq]
     apply isClosed_iInter
     intro x
@@ -132,32 +129,30 @@ theorem conjugation_quotient
     rw [← map_mul, ← map_mul, hc]
   have hi (x : N) (v : V) : ρ g⁻¹ (β x v) = α (s.symm x) (ρ g⁻¹ v) := by
     apply (Representation.apply_bijective ρ g).injective
-    change ρ g (ρ g⁻¹ (β x v)) = ρ g (α (s.symm x) (ρ g⁻¹ v))
-    rw [hf, s.apply_symm_apply]
-    simp [← Module.End.mul_apply, ← mul_assoc, ← map_mul, α, β]
+    simp_all
   let f : α.Coinvariants →ₗ[ℂ] β.Coinvariants :=
     Representation.Coinvariants.lift α
       ((Representation.Coinvariants.mk β).comp (ρ g)) (by
         intro x
         ext v
-        simp only [LinearMap.comp_apply, hf, Representation.Coinvariants.mk_self_apply])
+        simp_all)
   let i : β.Coinvariants →ₗ[ℂ] α.Coinvariants :=
     Representation.Coinvariants.lift β
       ((Representation.Coinvariants.mk α).comp (ρ g⁻¹)) (by
         intro x
         ext v
-        simp only [LinearMap.comp_apply, hi, Representation.Coinvariants.mk_self_apply])
+        simp_all)
   refine ⟨{ f with invFun := i, left_inv := ?_, right_inv := ?_ }⟩
   · intro v
     induction v using Representation.Coinvariants.induction_on with
     | h v =>
       change Representation.Coinvariants.mk α (ρ g⁻¹ (ρ g v)) = _
-      simp [← Module.End.mul_apply, ← mul_assoc, ← map_mul, α, β]
+      simp [← Module.End.mul_apply, ← map_mul, α]
   · intro v
     induction v using Representation.Coinvariants.induction_on with
     | h v =>
       change Representation.Coinvariants.mk β (ρ g (ρ g⁻¹ v)) = _
-      simp [← Module.End.mul_apply, ← mul_assoc, ← map_mul, α, β]
+      simp [← Module.End.mul_apply, ← map_mul, β]
 
 theorem character_scalar (F : Type) [Field F] [NumberField F]
     (q : HeightOneSpectrum (𝓞 F)) (χ : AddChar (q.adicCompletion F) ℂˣ)
@@ -196,8 +191,8 @@ theorem actual_character_quotient
   let s : Multiplicative (q.adicCompletion F) ≃* Multiplicative (q.adicCompletion F) :=
     { toFun := fun x => Multiplicative.ofAdd (a * Multiplicative.toAdd x)
       invFun := fun x => Multiplicative.ofAdd (a⁻¹ * Multiplicative.toAdd x)
-      left_inv := by intro x; simp [← mul_assoc, hane]
-      right_inv := by intro x; simp [← mul_assoc, hane]
+      left_inv := by intro x; simp [hane]
+      right_inv := by intro x; simp [hane]
       map_mul' := by
         intro x y
         change Multiplicative.ofAdd (a * (x.toAdd + y.toAdd)) = _
@@ -219,7 +214,3 @@ theorem actual_character_quotient
       intro x
       change χ x.toAdd = Circle.toUnits (localFiniteCharacter F q (1 * (a * x.toAdd)))
       simpa only [one_mul] using hu x.toAdd)
-
-end DedekindZetaZeroFree.KPExceptionalRaw.FiniteSource.TameWhittakerSteps.RawTransport
-
-end

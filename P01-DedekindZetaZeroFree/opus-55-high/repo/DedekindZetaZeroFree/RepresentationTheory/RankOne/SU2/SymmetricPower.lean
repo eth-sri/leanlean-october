@@ -67,8 +67,7 @@ theorem character_symPower_torusHom (z : Circle) :
       = ∑ i ∈ range (d + 1), (z : ℂ) ^ i * ((z : ℂ)⁻¹) ^ (d - i) := by
   rw [Representation.character, symPower_apply, toGL_torusHom, ← Representation.character,
     char_symPowerRep_diagonal, eval_hsymm_fin_two]
-  refine sum_congr rfl fun i _ => ?_
-  simp
+  rfl
 
 theorem character_symPower_torusHom_zpow (z : Circle) :
     (symPower d).character (torusHom z)
@@ -77,7 +76,3 @@ theorem character_symPower_torusHom_zpow (z : Circle) :
 
   exact sum_congr rfl fun i hi =>
     pow_mul_inv_pow_eq_zpow₀ (Circle.coe_ne_zero z) (Nat.lt_succ_iff.mp (mem_range.mp hi))
-
-end SU2
-
-end DedekindZetaZeroFree.TauCeti

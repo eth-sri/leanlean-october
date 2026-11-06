@@ -7,7 +7,6 @@ public import DedekindZetaZeroFree.Arithmetic.LocalFields.ArithmeticFrobeniusRes
 
 @[expose] public section
 
-noncomputable section
 
 open scoped NumberField Classical
 open IsDedekindDomain
@@ -82,9 +81,5 @@ theorem singleCharacterExactRayRealization
         W.asIdeal.LiesOver p.asIdeal →
           (p.asIdeal ⊔ m = ⊤ ↔ Ideal.inertia (L ≃ₐ[K] L) W.asIdeal ≤ ρ.ker)) ∧
       (∀ (p : HeightOneSpectrum (𝓞 K)) (W : HeightOneSpectrum (𝓞 L)),
-        W.asIdeal.LiesOver p.asIdeal → χ p.asIdeal = primeArtinValue ρ W) := by
-  exact ⟨_, singleCharacterExactRayRealization_normConductor K L ρ hρ⟩
-
-end DedekindZetaZeroFree.AbelianQuotient
-
-end
+        W.asIdeal.LiesOver p.asIdeal → χ p.asIdeal = primeArtinValue ρ W) := 
+  ⟨_, singleCharacterExactRayRealization_normConductor K L ρ hρ⟩

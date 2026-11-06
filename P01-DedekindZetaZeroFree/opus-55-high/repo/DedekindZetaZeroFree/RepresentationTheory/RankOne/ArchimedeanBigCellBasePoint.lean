@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Eisenstein.Residues.GlobalResidualData
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.KPInterface.ResidueConstruction.Raw
 open KPGlobalResidualConstruction
 open scoped Topology
@@ -21,7 +20,3 @@ theorem archChart_base (F : Type) [Field F] [NumberField F]
   apply Subtype.ext
   funext v
   cases v <;> simp [archBase] <;> rfl
-
-end DedekindZetaZeroFree.KPInterface.ResidueConstruction.Raw
-
-end

@@ -20,7 +20,3 @@ def dualCutoffTail (F : Type*) [Field F] [NumberField F]
     (a : Ideal (𝓞 F) → ℂ) : ℂ :=
   ∑ d ∈ D, a d * (T / (Ideal.absNorm d : ℝ) : ℂ) *
     ∑' b : Ideal (𝓞 F), dualCutoffSummand F k T L d b
-
-end DedekindZetaZeroFree.LargeSieve.ReflectedTails
-
-end

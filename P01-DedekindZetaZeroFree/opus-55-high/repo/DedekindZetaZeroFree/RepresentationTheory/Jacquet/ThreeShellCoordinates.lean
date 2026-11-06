@@ -12,8 +12,6 @@ namespace DedekindZetaZeroFree.KPExteriorActualJacquetShells
 
 open KPExteriorUnitShellIntegrals
 
-noncomputable section
-set_option autoImplicit false
 
 theorem finite_shell_coordinate_identity
     {K : Type*} [Field K] [ValuativeRel K] [TopologicalSpace K]
@@ -36,14 +34,14 @@ theorem finite_shell_coordinate_identity
   have hg (j k : ℤ) (h : j % 6 = k % 6) : g χκ ψbar j = g χκ ψbar k := by
     have hp : χκ ^ j = χκ ^ k := by
       rw [← zpow_mod_orderOf χκ j, ← zpow_mod_orderOf χκ k, hχκ]
-      exact congrArg (fun n : ℤ => χκ ^ n) h
+      simp_all
     simp only [g, hp]
   have ht : shellValue χκ ψbar e ((e + 1 : ℕ) : ℤ) =
       KPThreeShell.tameFactor Q (g χκ ψbar 2) (g χκ ψbar 4) (e + 1) := by
     have hle : ¬ ((e + 1 : ℕ) : ℤ) ≤ (e : ℤ) := by omega
-    have heq : ((e + 1 : ℕ) : ℤ) = (e : ℤ) + 1 := by push_cast; rfl
+    have heq : ((e + 1 : ℕ) : ℤ) = (e : ℤ) + 1 := by rfl
     have hd : (3 : ℤ) ∣ ((e + 1 : ℕ) : ℤ) ↔ (e + 1) % 3 = 0 := by omega
-    simp only [shellValue, hle, ↓reduceIte, heq, ↓reduceIte]
+    simp only [shellValue, ↓reduceIte, heq, ↓reduceIte]
     simp only [← heq, hle, ↓reduceIte, hd]
     unfold KPThreeShell.tameFactor
     split_ifs with h0 h1
@@ -94,6 +92,3 @@ theorem finite_shell_coordinate_identity
   simp only [KPThreeShell.shell, qPower, Q, smul_add, smul_smul,
     Nat.cast_add, Nat.cast_one, mul_assoc]
   abel
-
-end
-end DedekindZetaZeroFree.KPExteriorActualJacquetShells

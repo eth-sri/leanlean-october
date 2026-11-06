@@ -145,15 +145,15 @@ private theorem mulCLM_ae (η : RealSmoothCutoff F ζ hζ U R P H) (B : ℝ) (hB
 
  def chartCovered (a : ActualChart (U := U) (H := H)) (y : omega a) : CoveredSpherical F ζ hζ U :=
   Quotient.mk (coveredRelation F ζ hζ U) (labeledA (placeEquiv F ζ hζ) y.val, (H.atlas U).representative a.component)
-private theorem chartCovered_q (a : ActualChart (U := U) (H := H)) (y : omega a) :
+theorem chartCovered_q (a : ActualChart (U := U) (H := H)) (y : omega a) :
     KPContSectorCoveredQuotientVocabulary.q F ζ hζ U (chartCovered a y) = q a y.val := rfl
-private theorem coveredFields (g : GenuineCoveredScalars F ζ hζ U)
+theorem coveredFields (g : GenuineCoveredScalars F ζ hζ U)
     (a : ActualChart (U := U) (H := H)) (y : omega a) :
     sectionFields (S F ζ hζ U R P H g) a y = g.val (chartCovered a y) := by
   rw [sectionFields, LiftedChart.coefficient]
   simp only [isotropyChart, ChartKind.representative, one_smul, map_one, Complex.ofReal_one, Units.val_one, one_mul]
   exact S_apply F ζ hζ U R P H g a.component _
-private theorem scalarCovered_chart (f : S_U F ζ hζ U R P H)
+theorem scalarCovered_chart (f : S_U F ζ hζ U R P H)
     (a : ActualChart (U := U) (H := H)) (y : omega a) :
     (scalarCovered f).val (chartCovered a y) = f.val a y := by
   rw [← coveredFields, S_scalarCovered]

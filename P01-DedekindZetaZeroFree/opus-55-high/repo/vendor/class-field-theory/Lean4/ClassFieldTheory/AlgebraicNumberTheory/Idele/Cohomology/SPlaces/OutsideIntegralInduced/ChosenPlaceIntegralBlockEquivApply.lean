@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Compatibility of the chosen integral equivalence and inclusion
 
@@ -26,7 +22,6 @@ equivalence on underlying field units.
 open scoped NumberField TensorProduct ValuativeRel NNReal
 open NumberField IsDedekindDomain
 
-noncomputable section
 
 open AlgebraicNumberTheory.Valuations
 open HilbertRamification
@@ -59,18 +54,4 @@ theorem
         (K := K) (L := L) w₀
         (chosenFinitePlaceExtension (L := L) w₀)
         (x : (w₀.adicCompletion K ⊗[K] L)ˣ) := by
-  let vK := HeightOneSpectrum.adicAbv K w₀
-  let u := chosenFinitePlaceExtension (L := L) w₀
-  let hvK : vK.IsNontrivial := RayClass.adicAbv_isNontrivial w₀
-  let hvKna : IsNonarchimedean (vK : K → ℝ) :=
-    HeightOneSpectrum.isNonarchimedean_adicAbv K w₀
-  let := decompositionGroupLocalUnitsAction vK hvK u
-  apply
-    (inducedRightCosetCoordinates
-      (absoluteValueDecompositionGroup K u.1)).injective
-  funext q
-  apply Units.ext
   rfl
-end ChosenFinitePlace
-
-end

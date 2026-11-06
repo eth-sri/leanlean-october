@@ -25,8 +25,8 @@ theorem kp_cusp_coefficientSubmodule_isFractional
     (R : Type*) [CommRing R] [IsDedekindDomain R]
     (K : Type*) [Field K] [Algebra R K] [IsFractionRing R K]
     (M : FullLattice R K) (v : K × K) (hv : v ≠ 0) :
-    IsFractional R⁰ (coefficientSubmodule R K M.val v) := by
-  exact FractionalIdeal.isFractional_of_fg (kp_cusp_coefficientSubmodule_fg R K M v hv)
+    IsFractional R⁰ (coefficientSubmodule R K M.val v) := 
+  FractionalIdeal.isFractional_of_fg (kp_cusp_coefficientSubmodule_fg R K M v hv)
 
 theorem kp_cusp_coefficientSubmodule_ne_bot
     (R : Type*) [CommRing R] [IsDedekindDomain R]
@@ -37,10 +37,9 @@ theorem kp_cusp_coefficientSubmodule_ne_bot
   obtain ⟨r, hr, hrv⟩ := kp_cusp_full_lattice_clear_denominators R K (K × K) M.val v
   intro h
   have hm : algebraMap R K r ∈ coefficientSubmodule R K M.val v := hrv
-  rw [h, Submodule.mem_bot] at hm
-  exact hr ((IsFractionRing.injective R K) (by simpa using hm))
+  simp_all
 
-private theorem det_zero_coeff
+theorem det_zero_coeff
     {K : Type*} [Field K] (v x : K × K) (hv : v ≠ 0)
     (h : det₂ K v x = 0) : ∃ s : K, x = s • v := by
   by_cases h₁ : v.1 = 0
@@ -90,8 +89,7 @@ theorem kp_cusp_line_adapted_ideal_splitting
     · exact ⟨(0, 1), by simpa [p, det₂] using h₁⟩
   let q : M.val →ₗ[R] K := (p.restrictScalars R).comp M.val.subtype
   have hfg : q.range.FG := by
-    rw [LinearMap.range_comp]
-    simpa using M.property.fg.map (p.restrictScalars R)
+    simp
   let I : FractionalIdeal R⁰ K :=
     ⟨coefficientSubmodule R K M.val v, kp_cusp_coefficientSubmodule_isFractional R K M v hv⟩
   let J : FractionalIdeal R⁰ K := ⟨q.range, FractionalIdeal.isFractional_of_fg hfg⟩
@@ -102,12 +100,10 @@ theorem kp_cusp_line_adapted_ideal_splitting
   have hJ : J ≠ 0 := by
     obtain ⟨r, hr, hru⟩ := kp_cusp_full_lattice_clear_denominators R K (K × K) M.val u
     have hp : p ((algebraMap R K r) • u) ≠ 0 := by
-      rw [map_smul, smul_eq_mul]
-      exact mul_ne_zero (by intro hh; exact hr ((IsFractionRing.injective R K) (by simpa using hh))) hu
+      simp_all
     intro h
     have hm : p ((algebraMap R K r) • u) ∈ J.val := ⟨⟨_, hru⟩, rfl⟩
-    rw [h] at hm
-    exact hp ((FractionalIdeal.mem_zero_iff R⁰).mp hm)
+    simp_all
   letI : Module.Finite R J := Module.Finite.of_fg hfg
   letI : Module.FinitePresentation R J := Module.finitePresentation_of_finite R J
   letI : Module.Projective R J := Module.Flat.projective_of_finitePresentation
@@ -142,10 +138,7 @@ theorem kp_cusp_line_adapted_ideal_splitting
         simp only [Prod.fst_add, Prod.snd_add, Submodule.coe_add, add_smul, map_add]
         abel
       map_smul' := by
-        intro r x
-        apply Subtype.ext
-        simp only [Prod.smul_fst, Prod.smul_snd, Submodule.coe_smul, map_smul,
-          smul_add, smul_assoc, RingHom.id_apply] }
+        simp }
   have hfval (s : I) (t : J) : (f (s,t)).val = s.val • v + t.val • w := by
     dsimp [f]
     rw [hσw]
@@ -187,6 +180,4 @@ theorem kp_cusp_line_adapted_ideal_splitting
         (congrArg Subtype.val hst).symm.trans (hfval s t)⟩
     · rintro ⟨s, hs, t, ht, rfl⟩
       rw [← hfval ⟨s,hs⟩ ⟨t,ht⟩]
-      exact (f (⟨s,hs⟩, ⟨t,ht⟩)).property
-
-end DedekindZetaZeroFree
+      simp

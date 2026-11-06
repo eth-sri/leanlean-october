@@ -260,7 +260,7 @@ theorem coefficient_smul (a : ℂ) (Z : Smooth)
   rw [KPContActualChartRestrictionDensity.covered_coefficient _ _ _ _ _ _ _ _ _ _ _ _ _ hdom, he]
   rfl
 
-private theorem chart_holomorphic_congr {n : ℕ} (B : LocalBall n)
+theorem chart_holomorphic_congr {n : ℕ} (B : LocalBall n)
     {O : Set ℂ} {f g : ℂ → Space n → ℂ}
     (he : ∀ s ∈ O, Set.EqOn (f s) (g s) B.carrier)
     (hf : KPCutoffSource.ChartSmoothHolomorphicOn B f O) :
@@ -493,7 +493,7 @@ local notation "a" => KPContinuation.spectralCoordinate ((Module.finrank ℚ F /
   rw [← he]
   exact hv.differentiableAt.differentiableWithinAt
 
-private theorem chart_smul {n : ℕ} (B : LocalBall n) {O : Set ℂ}
+theorem chart_smul {n : ℕ} (B : LocalBall n) {O : Set ℂ}
     (q : ℂ → ℂ) (hq : DifferentiableOn ℂ q O) (g : ℂ → Space n → ℂ)
     (hg : KPCutoffSource.ChartSmoothHolomorphicOn B g O) :
     KPCutoffSource.ChartSmoothHolomorphicOn B (fun s => q s • g s) O := by
@@ -508,7 +508,7 @@ private theorem chart_smul {n : ℕ} (B : LocalBall n) {O : Set ℂ}
   exact (congrFun (KPContLocalHolomorphyUpgrade.CauchyAssembly.finite_coordinate_derivative_const_mul
     α.directions (q s) (g s)) x).symm
 
-private theorem sobolev_smul {n : ℕ} (B : LocalBall n) {O : Set ℂ}
+theorem sobolev_smul {n : ℕ} (B : LocalBall n) {O : Set ℂ}
     (q : ℂ → ℂ) (hq : DifferentiableOn ℂ q O) (g : ℂ → Space n → ℂ)
     (hg : KPCutoffSource.ChartSobolevHolomorphicOn B g O) :
     KPCutoffSource.ChartSobolevHolomorphicOn B (fun s => q s • g s) O := by
@@ -624,7 +624,7 @@ variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
   simpa only [lift, he, KPContRightJets.scalarLift, Function.comp_apply] using D.global_scalar_pullback
     (scalarRepresentative F ζ hζ U R P H w.val) x hx
 
-private lemma tensor_combination_smooth {m b : ℕ} (T : KPContLocalNorm.LocalBall m)
+lemma tensor_combination_smooth {m b : ℕ} (T : KPContLocalNorm.LocalBall m)
     (fields : Fin b → KPContLocalNorm.Space m → KPContLocalNorm.Space m)
     (hf : ∀ i, ContDiffOn ℝ (⊤ : ℕ∞) (fields i) T.carrier)
     (terms : List (ℂ × List (Fin b))) (f : KPContLocalNorm.Space m → ℂ)
@@ -638,7 +638,7 @@ private lemma tensor_combination_smooth {m b : ℕ} (T : KPContLocalNorm.LocalBa
   | nil => exact contDiffOn_const
   | cons t ts ih => exact (contDiffOn_const.mul (hw t.2)).add ih
 
-private lemma tensor_combination_identification (D : GroupChart F ζ hζ U R P H)
+lemma tensor_combination_identification (D : GroupChart F ζ hζ U R P H)
     (terms : Combination F) (w : smoothSections F ζ hζ U R P H)
     (x : KPContLocalNorm.Space (groupDimension F)) (hx : x ∈ D.T.carrier) :
     rightCombination F ζ hζ terms (lift F ζ hζ U R P H w.val) (D.groupLift x) =
@@ -650,7 +650,7 @@ private lemma tensor_combination_identification (D : GroupChart F ζ hζ U R P H
   intro t ht
   rw [D.identification.right_iteration _ (tensor_lifted_smooth D w) t.2 x hx]
 
-private lemma tensor_right_holomorphic
+lemma tensor_right_holomorphic
     (realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ U R P H)
     (O : Set ℂ) (hO : IsOpen O)
     (u : ℂ → KPContSectorClosedLpSubspace.H F ζ hζ R U)

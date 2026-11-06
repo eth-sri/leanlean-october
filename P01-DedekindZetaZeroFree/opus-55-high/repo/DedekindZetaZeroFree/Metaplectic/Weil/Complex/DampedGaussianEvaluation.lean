@@ -13,7 +13,6 @@ The one-dimensional Gaussian integral API is imported from Mathlib's
 
 namespace DedekindZetaZeroFree.ComplexWeil
 
-noncomputable section
 open MeasureTheory
 
 theorem gaussian_principal_prefactor (ε r : ℝ) (hε : 0 < ε) (hr : 0 < r) :
@@ -29,7 +28,6 @@ theorem gaussian_principal_prefactor (ε r : ℝ) (hε : 0 < ε) (hr : 0 < r) :
     ring
   have hbpos : 0 < Complex.normSq b := by
     rw [hb]
-    have : 0 < ε ^ 2 := sq_pos_of_pos hε
     positivity
   have harg : ((Real.pi : ℂ) / b).arg ≠ Real.pi := by
     rw [Ne, Complex.arg_eq_pi_iff]
@@ -52,7 +50,7 @@ theorem gaussian_principal_prefactor (ε r : ℝ) (hε : 0 < ε) (hr : 0 < r) :
     ← Complex.ofReal_pow, Real.sq_sqrt (norm_nonneg _), norm_div,
     Complex.norm_real, Real.norm_of_nonneg Real.pi_pos.le, Complex.norm_def, hb]
 
-private theorem real_gaussian_eval (b : ℂ) (hb : 0 < b.re) (v : ℝ) :
+theorem real_gaussian_eval (b : ℂ) (hb : 0 < b.re) (v : ℝ) :
     (∫ x : ℝ, Complex.exp (-b * (x : ℂ) ^ 2 +
       Complex.I * (2 * (Real.pi : ℂ) * (v : ℂ)) * (x : ℂ))) =
       ((Real.pi : ℂ) / b) ^ (1 / 2 : ℂ) *
@@ -68,7 +66,7 @@ private theorem real_gaussian_eval (b : ℂ) (hb : 0 < b.re) (v : ℝ) :
   field_simp
   ring
 
-private theorem rotated_integrand (β a ξ : ℂ) (ε : ℝ) (u : ℂ) (hu : ‖u‖ = 1)
+theorem rotated_integrand (β a ξ : ℂ) (ε : ℝ) (u : ℂ) (hu : ‖u‖ = 1)
     (hrotate : β * a * u ^ 2 = (‖β * a‖ : ℂ)) (s t : ℝ) :
     Complex.exp (((-ε * ‖u * ((s : ℂ) + (t : ℂ) * Complex.I)‖ ^ 2 : ℝ) : ℂ)) *
       psi β (a * (u * ((s : ℂ) + (t : ℂ) * Complex.I)) ^ 2 -
@@ -153,6 +151,3 @@ theorem damped_gaussian_evaluation (β a ξ : ℂ) (hβ : β ≠ 0) (ha : a ≠ 
   dsimp [bm, bp]
   push_cast
   ring
-
-end
-end DedekindZetaZeroFree.ComplexWeil

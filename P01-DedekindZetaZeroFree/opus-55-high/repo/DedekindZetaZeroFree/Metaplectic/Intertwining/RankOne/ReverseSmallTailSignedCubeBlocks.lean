@@ -15,7 +15,6 @@ open KPRankOneOpenCellKernel KPRankOneCenterInducedDiagonalComparison
 open KPRankOneReverseRegulatorShellsRaw
 
 noncomputable section
-set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
@@ -27,7 +26,7 @@ variable (A : LocalBorelData (K := LocalField F q) (G := Cover F ζ hζ q) T)
 variable (P : Polarization T)
 variable [MeasurableSpace (LocalField F q)] [BorelSpace (LocalField F q)]
 
-private theorem compact_level_right_invariant
+theorem compact_level_right_invariant
     (I : IwasawaData A) (L : CompactOpenLevel (Cover F ζ hζ q))
     (hL : (L.toOpenSubgroup : Subgroup (Cover F ζ hζ q)) ≤ I.compact.toOpenSubgroup)
     (ε : Sign) (z : ℂ) (ψ : centerCompactLevel F ζ hζ q T A I ε L)
@@ -54,7 +53,7 @@ private theorem compact_level_right_invariant
   change f.val ((I.borelPart g : Cover F ζ hζ q) * (k' : Cover F ζ hζ q)) = _
   rw [f.property.1, hk', he, ← hk, ← f.property.1, ← I.decomposition g]
 
-private theorem small_region_subset_nhds (U : Set (LocalField F q))
+theorem small_region_subset_nhds (U : Set (LocalField F q))
     (hU : U ∈ nhds (0 : LocalField F q)) :
     ∃ N : ℕ, ∀ v ∈ smallRegion F q N, (v : LocalField F q) ∈ U := by
   obtain ⟨γ, hγ, hγU⟩ := (IsValuativeTopology.hasBasis_nhds_zero' (LocalField F q)).mem_iff.mp hU
@@ -66,7 +65,7 @@ private theorem small_region_subset_nhds (U : Set (LocalField F q))
   change valuation (LocalField F q) (v : LocalField F q) < γ
   apply e.toOrderIso.lt_iff_lt.mp
   have hv0 : e (valuation (LocalField F q) (v : LocalField F q)) ≠ 0 :=
-    (map_ne_zero e).2 (by simpa using v.ne_zero)
+    by simp
   have hγ0 : e γ ≠ 0 := (map_ne_zero e).2 hγ
   apply (WithZero.log_lt_log hv0 hγ0).mp
   change valuationIndex F q v < m
@@ -97,11 +96,10 @@ theorem uniform_forward_germ (I : IwasawaData A) (μ : Measure (LocalField F q))
     exact continuous_subtype_val.comp (A.upperRoot_continuous.comp continuous_ofAdd)
   have hn0 : nLift F ζ hζ q 0 = 1 := by
     rw [← B.upper_eq]
-    change (A.upperRoot 1 : Cover F ζ hζ q) = 1
     simp
   have hU : {x : LocalField F q | nLift F ζ hζ q x ∈ L.toOpenSubgroup} ∈
-      nhds (0 : LocalField F q) := by
-    exact hn.continuousAt.preimage_mem_nhds
+      nhds (0 : LocalField F q) := 
+    hn.continuousAt.preimage_mem_nhds
       (L.toOpenSubgroup.isOpen.mem_nhds (by rw [hn0]; exact L.toOpenSubgroup.one_mem))
   obtain ⟨N, hN⟩ := small_region_subset_nhds F q _ hU
   refine ⟨N, ?_⟩
@@ -131,7 +129,6 @@ open KPRankOneOpenCellKernel KPRankOneCenterInducedDiagonalComparison
 open KPRankOneReverseRegulatorShellsRaw
 
 noncomputable section
-set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
@@ -158,7 +155,7 @@ private theorem block_measurable (N n : ℕ) :
     rw [IsLocallyConstant.iff_eventually_eq]
     intro v
     have hv : valuation (LocalField F q) (v : LocalField F q) ≠ 0 :=
-      (valuation (LocalField F q)).ne_zero_iff.mpr v.ne_zero
+      by simp
     have he := (valuation (LocalField F q)).locally_const hv
     filter_upwards [Units.continuous_val.continuousAt.preimage_mem_nhds he] with w hw
     exact congrArg (fun a => WithZero.log (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt
@@ -244,7 +241,7 @@ theorem constant_kernel_cube_translate (B : Binding F ζ hζ q A P)
     normPower (LocalField F q) (v * y ^ 3) lam = _
   rw [center_cube_scalar, map_smul]
   simp only [Submodule.coe_smul, Pi.smul_apply, smul_eq_mul]
-  simp only [mul_pow, norm_mul, norm_pow, inv_pow, norm_inv]
+  simp only [mul_pow, norm_mul, norm_pow, norm_inv]
   have hn (x : (LocalField F q)ˣ) (z : ℂ) :
       (normPower (LocalField F q) x z)⁻¹ = normPower (LocalField F q) x (-z) := by
     simp [normPower, neg_mul, Complex.exp_neg]
@@ -255,13 +252,12 @@ theorem constant_kernel_cube_translate (B : Binding F ζ hζ q A P)
     norm_add, norm_add]
   ring
 
-private theorem index_mul (u v : (LocalField F q)ˣ) :
+theorem index_mul (u v : (LocalField F q)ˣ) :
     valuationIndex F q (u * v) = valuationIndex F q u + valuationIndex F q v := by
   simp only [valuationIndex, Units.val_mul, map_mul]
-  rw [WithZero.log_mul]
-  all_goals simp
+  simp
 
-private theorem index_pow (u : (LocalField F q)ˣ) (n : ℕ) :
+theorem index_pow (u : (LocalField F q)ˣ) (n : ℕ) :
     valuationIndex F q (u ^ n) = (n : ℤ) * valuationIndex F q u := by
   induction n with
   | zero => simp [valuationIndex]
@@ -313,7 +309,7 @@ theorem cube_step_scalar (r : ℂˣ) (lam : ℂ) (y : (LocalField F q)ˣ) (n : �
       (Real.log (residueCardinality (LocalField F q) : ℝ) : ℂ)) by ring,
     Complex.exp_nat_mul, he]
 
-private theorem multiplicative_haar (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure] :
+theorem multiplicative_haar (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure] :
     (multiplicativeMeasure F q μ).IsHaarMeasure := by
   let K := LocalField F q
   letI := IsTopologicalAddGroup.rightUniformSpace K
@@ -380,7 +376,7 @@ theorem constant_kernel_signed_blocks (μ : Measure (LocalField F q)) [μ.IsAddH
   simp_rw [hf]
   exact integral_mul_const _ _
 
-private theorem exists_negative_index (n : ℕ) :
+theorem exists_negative_index (n : ℕ) :
     ∃ y : (LocalField F q)ˣ, valuationIndex F q y = -(n : ℤ) := by
   let e := IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
   obtain ⟨x, hx⟩ := ValuativeRel.valuation_surjective (e.symm (WithZero.exp (-(n : ℤ))))
@@ -420,8 +416,7 @@ theorem initial_signed_block_numerator (I : IwasawaData A) (μ : Measure (LocalF
     change -((N + 3 : ℕ) : ℤ) ≤ valuationIndex F q v ∧
       valuationIndex F q v ≤ ((N + 3 : ℕ) : ℤ)
     dsimp [E] at hv
-    push_cast at *
-    exact ⟨hv.1, by omega⟩
+    omega
   refine ⟨fun h => integratedShellNumerator ((multiplicativeMeasure F q μ).restrict E) S (c h), ?_⟩
   intro r hr lam h
   obtain ⟨_, he⟩ := setIntegral_finite_shell_expansion (multiplicativeMeasure F q μ)
@@ -475,7 +470,6 @@ theorem signed_block_formula (I : IwasawaData A) (μ : Measure (LocalField F q))
     have hs : v ∈ smallRegion F q N := by
       change valuationIndex F q v < -(N : ℤ)
       have hu := hv.2
-      push_cast at hu
       omega
     unfold reverseIntegrand
     rw [hprofile r hr v hs]
@@ -504,7 +498,6 @@ open KPRankOneOpenCellKernel KPRankOneCenterInducedDiagonalComparison
 open KPRankOneReverseRegulatorShellsRaw
 
 noncomputable section
-set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
@@ -516,25 +509,9 @@ variable (A : LocalBorelData (K := LocalField F q) (G := Cover F ζ hζ q) T)
 variable (P : Polarization T)
 variable [MeasurableSpace (LocalField F q)] [BorelSpace (LocalField F q)]
 
-theorem smallTail_valuationIndex_locallyConstant : IsLocallyConstant (valuationIndex F q) := by
-  rw [IsLocallyConstant.iff_eventually_eq]
-  intro x
-  have hn : valuation (LocalField F q) (x : LocalField F q) ≠ 0 :=
-    (valuation (LocalField F q)).ne_zero_iff.mpr x.ne_zero
-  have he : {y : LocalField F q | valuation (LocalField F q) y =
-      valuation (LocalField F q) (x : LocalField F q)} ∈ nhds (x : LocalField F q) := by
-    open scoped WithZeroTopology in
-    have := (IsValuativeTopology.continuous_valuation (R := LocalField F q)).continuousAt
-      (x := (x : LocalField F q))
-    rw [ContinuousAt, WithZeroTopology.tendsto_of_ne_zero hn] at this
-    exact this
-  have hp := Units.continuous_val.continuousAt.preimage_mem_nhds he
-  filter_upwards [hp] with y hy
-  change valuation (LocalField F q) (y : LocalField F q) =
-    valuation (LocalField F q) (x : LocalField F q) at hy
-  simp only [valuationIndex, hy]
+theorem smallTail_valuationIndex_locallyConstant : IsLocallyConstant (valuationIndex F q) := by apply DedekindZetaZeroFree.KPRankOneReverseLaurentShellExpansion.FiniteAnnulusSteps.reverse_compact_valuationIndex_locallyConstant <;> assumption
 
-private theorem smallTail_units_borel (K : Type*) [Field K] [TopologicalSpace K]
+theorem smallTail_units_borel (K : Type*) [Field K] [TopologicalSpace K]
     [IsTopologicalDivisionRing K] [MeasurableSpace K] [BorelSpace K] : BorelSpace Kˣ := by
   constructor
   change MeasurableSpace.comap Units.val ‹MeasurableSpace K› = borel Kˣ
@@ -574,8 +551,7 @@ theorem smallTail_factor_ne_zero (r : ℂˣ) (lam : ℂ)
   intro he
   have hz := (sub_eq_zero.mp he).symm
   have hn := smallTail_ratio_norm_lt_one F q r lam hlam
-  rw [hz, norm_one] at hn
-  exact lt_irrefl _ hn
+  simp_all
 
 theorem smallTail_region_blocks (N : ℕ) :
     smallRegion F q N = ⋃ n : ℕ, {v | -((N + 3 * n + 3 : ℕ) : ℤ) ≤
@@ -586,16 +562,11 @@ theorem smallTail_region_blocks (N : ℕ) :
   · intro hv
     let k : ℕ := (-valuationIndex F q v - (N : ℤ) - 1).toNat
     have hk : (k : ℤ) = -valuationIndex F q v - (N : ℤ) - 1 := by
-      dsimp [k]
-      exact Int.toNat_of_nonneg (by omega)
+      omega
     refine ⟨k / 3, ?_⟩
-    have hmod := Nat.mod_lt k (by decide : 0 < 3)
-    have hdiv := Nat.mod_add_div k 3
-    push_cast
+    have hmod := by omega
     omega
-  · rintro ⟨n, hn⟩
-    push_cast at hn
-    omega
+  omega
 
 theorem smallTail_block_measurable (N n : ℕ) :
     MeasurableSet {v : (LocalField F q)ˣ | -((N + 3 * n + 3 : ℕ) : ℤ) ≤
@@ -616,7 +587,6 @@ theorem smallTail_blocks_disjoint (N : ℕ) :
   rw [Set.disjoint_left]
   intro v hv hw
   simp only [Set.mem_setOf_eq] at hv hw
-  push_cast at hv hw
   omega
 
 theorem smallTail_integral_of_block_data (N : ℕ) (μ : Measure (LocalField F q)ˣ)
@@ -682,7 +652,7 @@ theorem small_tail_shells    (I : IwasawaData A) (μ : Measure (LocalField F q))
     apply hgerm r hr v
     change valuationIndex F q v < -(N : ℤ) at hv
     change valuationIndex F q v < -(N₀ : ℤ)
-    exact lt_of_lt_of_le hv (neg_le_neg (by exact_mod_cast hN))
+    omega
   obtain ⟨p, hp⟩ := SmallTail.signed_block_formula
     F ζ hζ q T A P I μ J B rep hrep d φ hφ hcφ N hprofile
   refine ⟨smallTail_smallRegion_measurable F q N, p, ?_⟩
@@ -695,8 +665,3 @@ theorem small_tail_shells    (I : IwasawaData A) (μ : Measure (LocalField F q))
     hint hmajor (hp r hr lam hlam h)
   refine ⟨htail.1, ?_⟩
   rw [htail.2, div_div]
-
-end
-end DedekindZetaZeroFree.KPRankOneReverseLaurentShellExpansion
-
-end

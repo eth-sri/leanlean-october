@@ -27,33 +27,33 @@ def digitRightTuple (m : ThetaReflectionData.Row R.A) (u : R.A.U) (y : R.A.G)
     (diagonalTuple R y * KPRationalAdelicSplitting.NTuple F R.A.zeta12 R.A.primitive_zeta12
       (digitParameter R m d))
 
-private theorem diagonalTuple_arch (y : R.A.G) (w : InfinitePlace F) :
+theorem diagonalTuple_arch (y : R.A.G) (w : InfinitePlace F) :
     diagonalTuple R y (Sum.inl w) =
       KPStandardLocalRootLifts.A F R.A.zeta12 R.A.primitive_zeta12 (Sum.inl w) (y.1 w) := by
   change KPStandardLocalRootLifts.A F R.A.zeta12 R.A.primitive_zeta12 (Sum.inl w) _ = _
   rw [localIdele_arch]
-private theorem diagonalTuple_S (y : R.A.G) (p : KPFinitePlace F) (hp : p ∈ R.A.Sf) :
+theorem diagonalTuple_S (y : R.A.G) (p : KPFinitePlace F) (hp : p ∈ R.A.Sf) :
     diagonalTuple R y (Sum.inr p) =
       KPStandardLocalRootLifts.A F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p) (y.2 ⟨p, hp⟩) := by
   change KPStandardLocalRootLifts.A F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p) _ = _
   rw [localIdele_finite R y p hp]
-private theorem diagonalTuple_exterior (y : R.A.G) (p : KPFinitePlace F) (hp : p ∉ R.A.Sf) :
+theorem diagonalTuple_exterior (y : R.A.G) (p : KPFinitePlace F) (hp : p ∉ R.A.Sf) :
     diagonalTuple R y (Sum.inr p) = 1 := by
   change KPStandardLocalRootLifts.A F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p) _ = _
   have he := localIdele_exterior R y p hp
   have he' := congrArg (KPStandardLocalRootLifts.A F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p)) he
   exact he'.trans (KPStandardLocalRootLifts.A_one F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p))
 
-private theorem nt_eval (x : KPAdeles F) (w : KPHilbert.Place F) :
+theorem nt_eval (x : KPAdeles F) (w : KPHilbert.Place F) :
     KPRationalAdelicSplitting.NTuple F R.A.zeta12 R.A.primitive_zeta12 x w =
       KPStandardLocalRootLifts.N F R.A.zeta12 R.A.primitive_zeta12 w
         (KPAdelicCoverRestrictedProduct.adeleEval F w x) := rfl
-private theorem at_eval (x : KPAdelicCoverRestrictedProduct.Ideles F) (w : KPHilbert.Place F) :
+theorem at_eval (x : KPAdelicCoverRestrictedProduct.Ideles F) (w : KPHilbert.Place F) :
     KPRationalAdelicSplitting.ATuple F R.A.zeta12 R.A.primitive_zeta12 x w =
       KPStandardLocalRootLifts.A F R.A.zeta12 R.A.primitive_zeta12 w
         (Units.map (KPAdelicCoverRestrictedProduct.adeleEval F w) x) := rfl
 
-private theorem rational_eval_pow (u : Fˣ) (w : KPHilbert.Place F) :
+theorem rational_eval_pow (u : Fˣ) (w : KPHilbert.Place F) :
     Units.map (KPAdelicCoverRestrictedProduct.adeleEval F w)
       (Units.map (algebraMap F (KPAdeles F)).toMonoidHom (u ^ 6)) =
       (Units.map (algebraMap F (KPHilbert.Completion F w)).toMonoidHom u) ^ 6 := by

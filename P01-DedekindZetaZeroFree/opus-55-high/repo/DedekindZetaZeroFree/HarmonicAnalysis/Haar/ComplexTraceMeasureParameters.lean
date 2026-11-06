@@ -6,7 +6,6 @@ public import DedekindZetaZeroFree.Adeles.Characters.StandardComplexCharacter
 
 @[expose] public section
 
-noncomputable section
 open scoped NumberField Classical ENNReal
 open NumberField MeasureTheory
 namespace DedekindZetaZeroFree.TraceHaarTransport
@@ -34,6 +33,3 @@ theorem traceHaarTransport_exists (R : PrincipalMellin.ActualRecipe S η) :
     polar_transport := rfl
     disintegration := he
     section_independent := section_integral R }⟩
-end DedekindZetaZeroFree.TraceHaarTransport
-
-end

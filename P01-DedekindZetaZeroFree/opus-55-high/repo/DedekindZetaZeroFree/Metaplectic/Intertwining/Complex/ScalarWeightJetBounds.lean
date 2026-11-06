@@ -10,29 +10,13 @@ namespace DedekindZetaZeroFree.RepresentationTheory.KPComplexIntertwinerParamete
 open KPCplxCharacterHaar KPCplxPrincipalSeriesCharts
 open scoped ContDiff Matrix.Norms.Elementwise
 
-lemma scalar_bottomRowNormSq_pos (g : ComplexGL2) : 0 < bottomRowNormSq g := by
-  have hn : 0 ≤ bottomRowNormSq g := by unfold bottomRowNormSq; positivity
-  by_contra hp
-  have hz : bottomRowNormSq g = 0 := le_antisymm (le_of_not_gt hp) hn
-  have h0 : (g : Matrix (Fin 2) (Fin 2) ℂ) 1 0 = 0 := by
-    apply norm_eq_zero.mp
-    have : ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 0‖ ^ 2 = 0 := by
-      unfold bottomRowNormSq at hz
-      nlinarith [sq_nonneg ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 1‖]
-    nlinarith [norm_nonneg ((g : Matrix (Fin 2) (Fin 2) ℂ) 1 0)]
-  have h1 : (g : Matrix (Fin 2) (Fin 2) ℂ) 1 1 = 0 := by
-    apply norm_eq_zero.mp
-    have : ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 1‖ ^ 2 = 0 := by
-      unfold bottomRowNormSq at hz
-      nlinarith [sq_nonneg ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 0‖]
-    nlinarith [norm_nonneg ((g : Matrix (Fin 2) (Fin 2) ℂ) 1 1)]
-  exact Matrix.GeneralLinearGroup.det_ne_zero g (by simp [Matrix.det_fin_two, h0, h1])
+lemma scalar_bottomRowNormSq_pos (g : ComplexGL2) : 0 < bottomRowNormSq g := by apply DedekindZetaZeroFree.KPCplxPrincipalSeriesCharts.bottom_pos <;> assumption
 
-private lemma scalar_entry_contDiffOn {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+lemma scalar_entry_contDiffOn {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     {U : Set E} {g : E → ComplexGL2}
     (hg : ContDiffOn ℝ (⊤ : ℕ∞) (fun v => (g v : Matrix (Fin 2) (Fin 2) ℂ)) U)
-    (i j : Fin 2) : ContDiffOn ℝ (⊤ : ℕ∞) (fun v => (g v : Matrix (Fin 2) (Fin 2) ℂ) i j) U := by
-  exact (contDiff_apply ℝ ℂ j).contDiffOn.comp
+    (i j : Fin 2) : ContDiffOn ℝ (⊤ : ℕ∞) (fun v => (g v : Matrix (Fin 2) (Fin 2) ℂ) i j) U := 
+  (contDiff_apply ℝ ℂ j).contDiffOn.comp
     ((contDiff_apply ℝ (Fin 2 → ℂ) i).contDiffOn.comp hg (Set.mapsTo_univ _ _))
     (Set.mapsTo_univ _ _)
 
@@ -55,8 +39,8 @@ lemma scalar_ratio_contDiffOn {E : Type*} [NormedAddCommGroup E] [NormedSpace �
 lemma scalar_log_ratio_contDiffOn {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     {U : Set E} {g : E → ComplexGL2}
     (hg : ContDiffOn ℝ (⊤ : ℕ∞) (fun v => (g v : Matrix (Fin 2) (Fin 2) ℂ)) U) :
-    ContDiffOn ℝ (⊤ : ℕ∞) (fun v => Real.log (ratio (g v))) U := by
-  exact (scalar_ratio_contDiffOn hg).log
+    ContDiffOn ℝ (⊤ : ℕ∞) (fun v => Real.log (ratio (g v))) U := 
+  (scalar_ratio_contDiffOn hg).log
     (fun v _ => (div_pos (norm_pos_iff.mpr (Units.ne_zero _))
       (scalar_bottomRowNormSq_pos (g v))).ne')
 
@@ -83,7 +67,7 @@ lemma scalar_weight_contDiffOn {E : Type*} [NormedAddCommGroup E] [NormedSpace �
   have hc : ContDiffOn ℝ (⊤ : ℕ∞)
       (fun v => (Real.log (ratio (weyl * upperUnipotent x * g v)) : ℂ)) U :=
     Complex.ofRealCLM.contDiff.comp_contDiffOn hl
-  exact (contDiffOn_const.mul hc).pow m |>.mul ((contDiffOn_const.mul hc).cexp)
+  fun_prop
 
 namespace ScalarCompactification
 
@@ -112,8 +96,7 @@ lemma rowSquare_pos {n : ℕ} (g : (Fin n → ℝ) → ComplexGL2)
   have h1 : SourceJets.actedRow g (r,u) 1 = 0 := by
     apply norm_eq_zero.mp
     unfold rowSquare at hz
-    nlinarith [sq_nonneg ‖SourceJets.actedRow g (r,u) 0‖,
-      norm_nonneg (SourceJets.actedRow g (r,u) 1)]
+    simp_all
   ext i
   fin_cases i
   · simpa [Matrix.vecMul, dotProduct, SourceJets.actedRow] using h0
@@ -178,11 +161,11 @@ lemma slice_jets_contDiffAt {P E V : Type*}
   | succ q ih =>
     simp only [iteratedFDeriv_succ_eq_comp_left, Function.comp_apply]
     have hd : ContDiffAt ℝ (⊤ : ℕ∞) (fun p : P × E =>
-        fderiv ℝ (iteratedFDeriv ℝ q (fun u => f (p.1,u))) p.2) p := by
-      exact ((ih (p.1,p.2) hp).comp (p,p.2)
+        fderiv ℝ (iteratedFDeriv ℝ q (fun u => f (p.1,u))) p.2) p := 
+      ((ih (p.1,p.2) hp).comp (p,p.2)
         (contDiffAt_fst.fst.prodMk contDiffAt_snd)).fderiv
         (m := (⊤ : ℕ∞)) contDiffAt_snd (by simp)
-    exact (continuousMultilinearCurryLeftEquiv ℝ (fun _ : Fin (q+1) => E) V).symm.toContinuousLinearEquiv.toContinuousLinearMap.contDiff.contDiffAt.comp p hd
+    fun_prop
 
 abbrev Params := (ℂ × ℝ × ℝ) × (Fin 2 → ℂ)
 
@@ -212,10 +195,7 @@ lemma weight_contDiffOn {n : ℕ} (m : ℕ) (U : Set (Fin n → ℝ))
   have hz : ContDiffOn ℝ (⊤ : ℕ∞)
       (fun p : Params × (Fin n → ℝ) => (p.1.1.2.2 : ℂ)) (domain U) :=
     Complex.ofRealCLM.contDiff.comp_contDiffOn (by fun_prop)
-  have hs : ContDiffOn ℝ (⊤ : ℕ∞)
-      (fun p : Params × (Fin n → ℝ) => p.1.1.1) (domain U) := by fun_prop
-  exact ((contDiffOn_const.mul ((hb.mul hl).sub hz)).pow m).mul
-    (((contDiffOn_const.add (contDiffOn_const.mul hs)).mul hl).cexp)
+  fun_prop
 
 lemma compact_weight_jets {n : ℕ} (j m : ℕ)
     (U K : Set (Fin n → ℝ)) (hU : IsOpen U) (hK : IsCompact K) (hKU : K ⊆ U)
@@ -248,7 +228,7 @@ lemma compact_weight_jets {n : ℕ} (j m : ℕ)
   apply le_trans (hA ?_) (le_max_left _ _)
   refine mem_iUnion₂.mpr ⟨q, Finset.mem_range.mpr (by omega), ?_⟩
   refine ⟨(((s,b,z),r),u), ⟨⟨⟨?_,hb,hz⟩,hr⟩,hu⟩,rfl⟩
-  simpa [Metric.mem_closedBall, dist_zero_right] using hs
+  simp_all
 
 noncomputable def normalizedRow (x : ℂ) : Fin 2 → ℂ :=
   ((Real.sqrt (1 + ‖x‖ ^ 2) : ℂ)⁻¹) • ![1,x]
@@ -258,9 +238,7 @@ lemma normalizedRow_mem (x : ℂ) : normalizedRow x ∈ unitRows := by
   have hd : 0 < Real.sqrt (1 + ‖x‖ ^ 2) := Real.sqrt_pos.mpr ht
   have hd2 := Real.sq_sqrt ht.le
   change ‖normalizedRow x 0‖ ^ 2 + ‖normalizedRow x 1‖ ^ 2 = 1
-  simp only [normalizedRow, Pi.smul_apply, smul_eq_mul, Matrix.cons_val_zero,
-    Matrix.cons_val_one, Matrix.head_cons, mul_one, norm_mul, norm_inv,
-    Complex.norm_real, Real.norm_eq_abs, abs_of_pos hd]
+  simp only [normalizedRow, Pi.smul_apply, smul_eq_mul, Matrix.cons_val_zero, Matrix.cons_val_one, mul_one, norm_mul, norm_inv, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hd]
   field_simp
   nlinarith
 
@@ -274,20 +252,18 @@ lemma normalizedRow_log {n : ℕ} (g : (Fin n → ℝ) → ComplexGL2)
   have he (i : Fin 2) : SourceJets.actedRow g (normalizedRow x,u) i =
       ((Real.sqrt (1 + ‖x‖ ^ 2) : ℂ)⁻¹) *
         (weyl * upperUnipotent x * g u : Matrix (Fin 2) (Fin 2) ℂ) 1 i := by
-    simp [SourceJets.actedRow, normalizedRow, weyl, upperUnipotent,
-      Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two]
+    simp [SourceJets.actedRow, normalizedRow, weyl, upperUnipotent, Matrix.mul_apply, Fin.sum_univ_two]
     ring
   have hb : rowSquare g (normalizedRow x,u) =
       bottomRowNormSq (weyl * upperUnipotent x * g u) / (1 + ‖x‖ ^ 2) := by
     unfold rowSquare bottomRowNormSq
     rw [he 0, he 1]
-    simp only [norm_mul, norm_div, norm_inv, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hd,
-      mul_pow, inv_pow, div_pow, Matrix.GeneralLinearGroup.coe_mul, hd2]
+    simp only [norm_mul, norm_inv, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hd, mul_pow, inv_pow, Matrix.GeneralLinearGroup.coe_mul, hd2]
     ring
   have hdet : ‖((Matrix.GeneralLinearGroup.det (weyl * upperUnipotent x * g u) : ℂˣ) : ℂ)‖ =
       ‖(g u : Matrix (Fin 2) (Fin 2) ℂ).det‖ := by
     change ‖(weyl * upperUnipotent x * g u : Matrix (Fin 2) (Fin 2) ℂ).det‖ = _
-    simp only [Matrix.GeneralLinearGroup.coe_mul, Matrix.det_mul]
+    simp only [Matrix.det_mul]
     have hw : (weyl : Matrix (Fin 2) (Fin 2) ℂ).det = -1 := by
       simp [weyl, Matrix.det_fin_two]
     have hx : (upperUnipotent x : Matrix (Fin 2) (Fin 2) ℂ).det = 1 := by
@@ -405,5 +381,3 @@ theorem compact_scalar_weight_jets (n j m : ℕ)
     ScalarCompactification.factor_norm m s x]
   dsimp [t]
   ring
-
-end DedekindZetaZeroFree.RepresentationTheory.KPComplexIntertwinerParameterMajorant.MatrixWeighted

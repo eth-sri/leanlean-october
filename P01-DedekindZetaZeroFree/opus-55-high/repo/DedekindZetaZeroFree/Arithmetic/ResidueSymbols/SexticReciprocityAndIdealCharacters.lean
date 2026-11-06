@@ -13,7 +13,6 @@ open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.ResidueReciprocity
 
 noncomputable section
-set_option autoImplicit false
 
 variable {F : Type} [Field F] [NumberField F]
 
@@ -127,7 +126,7 @@ theorem exists_exterior_prime_sextic_character (A : SArithmeticData F)
           (algebraMap (𝓞 F) A.R (A.primitive_zeta12.toInteger ^ (2 * j))) =
             E (Ideal.Quotient.mk I.val (z ^ j)) := by
               rw [show z ^ j = A.primitive_zeta12.toInteger ^ (2 * j) from (pow_mul _ _ _).symm]
-              exact (ArithGaussCRT.exteriorQuotientEquiv_mk A I _).symm
+              rfl
         _ = (x : A.R ⧸ A.extendIdeal I) ^ k := by
               simpa only [map_pow, E.apply_symm_apply] using hh
 
@@ -144,14 +143,13 @@ open NumberField IsDedekindDomain UniqueFactorizationMonoid
 namespace DedekindZetaZeroFree.ResidueReciprocity
 
 noncomputable section
-set_option autoImplicit false
 
 variable {F : Type} [Field F] [NumberField F]
 
 set_option backward.isDefEq.respectTransparency false
 noncomputable section
 variable {R : Type*} [CommRing R]
-private lemma unit_iff (I : Ideal R) (x : R) :
+lemma unit_iff (I : Ideal R) (x : R) :
     IsUnit (Ideal.Quotient.mk I x) ↔ Ideal.span {x} ⊔ I = ⊤ := by
   rw [isUnit_iff_exists_inv, Ideal.eq_top_iff_one]
   constructor
@@ -167,7 +165,7 @@ private lemma unit_iff (I : Ideal R) (x : R) :
     refine ⟨Ideal.Quotient.mk I z, ?_⟩
     have hh := congrArg (Ideal.Quotient.mk I) hab
     simpa [Ideal.Quotient.eq_zero_iff_mem.mpr hb] using hh
-private lemma unit_prod (s : Multiset (Ideal R)) (x : R) :
+lemma unit_prod (s : Multiset (Ideal R)) (x : R) :
     IsUnit (Ideal.Quotient.mk s.prod x) ↔ ∀ q ∈ s, IsUnit (Ideal.Quotient.mk q x) := by
   constructor
   · intro hx q hq
@@ -190,7 +188,7 @@ local notation "ext" => Ideal.map (algebraMap (𝓞 F) A.R)
   if h : q ≠ ⊥ ∧ q ⊔ A.cS = ⊤ ∧ q.IsPrime then
     p ⟨q, h.1, h.2.1⟩ ⟨q, h.2.2, h.1⟩ rfl
   else 1
-private lemma factor_le (I : A.Exterior) (q : Ideal (𝓞 F))
+lemma factor_le (I : A.Exterior) (q : Ideal (𝓞 F))
     (hq : q ∈ normalizedFactors I.val) : I.val ≤ q :=
   (Ideal.mem_normalizedFactors_iff I.property.1).mp hq |>.2
  def pull (I : A.Exterior) (q : Ideal (𝓞 F))
@@ -205,7 +203,7 @@ private lemma factor_le (I : A.Exterior) (q : Ideal (𝓞 F))
       I.val = v.asIdeal → ((A.R ⧸ A.extendIdeal I)ˣ →* Fˣ))
     (I : A.Exterior) : (A.R ⧸ A.extendIdeal I)ˣ →* Fˣ :=
   ((normalizedFactors I.val).map (fun q => pull A I q p)).prod
-private lemma ph_pow
+lemma ph_pow
     (p : (I : A.Exterior) → (v : HeightOneSpectrum (𝓞 F)) →
       I.val = v.asIdeal → ((A.R ⧸ A.extendIdeal I)ˣ →* Fˣ))
     (hp : ∀ I v hI x, p I v hI x ^ 6 = 1)
@@ -214,7 +212,7 @@ private lemma ph_pow
   · simp only [ph, dif_pos h]
     exact hp _ _ _ _
   · simp [ph, h]
-private lemma chars_pow
+lemma chars_pow
     (p : (I : A.Exterior) → (v : HeightOneSpectrum (𝓞 F)) →
       I.val = v.asIdeal → ((A.R ⧸ A.extendIdeal I)ˣ →* Fˣ))
     (hp : ∀ I v hI x, p I v hI x ^ 6 = 1)
@@ -235,7 +233,7 @@ private lemma chars_pow
   intro y hy
   obtain ⟨q, hq, rfl⟩ := Multiset.mem_map.mp hy
   exact hv q
-private lemma chars_prime
+lemma chars_prime
     (p : (I : A.Exterior) → (v : HeightOneSpectrum (𝓞 F)) →
       I.val = v.asIdeal → ((A.R ⧸ A.extendIdeal I)ˣ →* Fˣ))
     (I : A.Exterior) (v : HeightOneSpectrum (𝓞 F)) (hI : I.val = v.asIdeal) :
@@ -256,8 +254,7 @@ private lemma chars_prime
   subst v
   ext x
   have hu : Units.map (Ideal.Quotient.factor (Ideal.map_mono (le_refl i))).toMonoidHom x = x := by
-    apply Units.ext
-    simp [Ideal.Quotient.factor_eq]
+    simp
   change ((p ⟨i, hi⟩ _ hI) _ : F) = ((p ⟨i, hi⟩ _ hI) x : F)
   congr 2
 private lemma map_prod (s : Multiset (Ideal (𝓞 F))) :
@@ -273,13 +270,8 @@ private lemma unit_factors (I : A.Exterior) (x : A.R) :
     rfl
   rw [← he, unit_prod]
   simp only [Multiset.mem_map, forall_exists_index, and_imp]
-  constructor
-  · intro h q hq
-    exact h _ q hq rfl
-  · intro h j q hq hj
-    subst j
-    exact h q hq
-private lemma pull_value
+  simp
+lemma pull_value
     (p : (I : A.Exterior) → (v : HeightOneSpectrum (𝓞 F)) →
       I.val = v.asIdeal → ((A.R ⧸ A.extendIdeal I)ˣ →* Fˣ))
     (I : A.Exterior) (q : Ideal (𝓞 F)) (hq : q ∈ normalizedFactors I.val)
@@ -290,9 +282,7 @@ private lemma pull_value
   simp only [pull, dif_pos hle, MonoidHom.comp_apply]
   have hu : ((Units.map (Ideal.Quotient.factor (Ideal.map_mono hle)).toMonoidHom hx.unit) :
       A.R ⧸ ext q) = Ideal.Quotient.mk (ext q) x := by
-    change (Ideal.Quotient.factor (Ideal.map_mono hle)) (hx.unit : A.R ⧸ A.extendIdeal I) = _
-    rw [hx.unit_spec]
-    exact Ideal.Quotient.factor_mk _ x
+    rfl
   rw [← hu, MulChar.ofUnitHom_coe]
   rfl
 private lemma chars_raw
@@ -360,7 +350,6 @@ open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.SArithmeticData
 
 noncomputable section
-set_option autoImplicit false
 
 variable {F : Type} [Field F] [NumberField F]
 
@@ -393,8 +382,7 @@ theorem residueFamily_ext (A : SArithmeticData F) {C D : A.SexticResidueFamily}
   obtain ⟨r, hr⟩ := Ideal.Quotient.mk_surjective (x : A.R ⧸ A.extendIdeal I)
   have he := h I r
   unfold residueValue at he
-  rw [hr, MulChar.ofUnitHom_coe, MulChar.ofUnitHom_coe] at he
-  exact he
+  simp_all
 
 theorem residueValue_top (A : SArithmeticData F) (C : A.SexticResidueFamily)
     (I : A.Exterior) (hI : I.val = ⊤) (x : A.R) : A.residueValue C I x = 1 := by
@@ -447,7 +435,7 @@ theorem residueFamily_ext_of_prime_values (A : SArithmeticData F)
         hp Ip (HeightOneSpectrum.ofPrime hp') rfl x]
   exact hall I.val I rfl
 
-private theorem primitiveRoot_mod_ideal_of_unit_order {R : Type} [CommRing R] [IsDomain R]
+theorem primitiveRoot_mod_ideal_of_unit_order {R : Type} [CommRing R] [IsDomain R]
     (I : Ideal R) (hI : I ≠ ⊤) (z : R) (h : IsPrimitiveRoot z 6)
     (hunit : IsUnit (6 : R)) :
     IsPrimitiveRoot ((Ideal.Quotient.mk I) z) 6 := by
@@ -462,7 +450,7 @@ private theorem primitiveRoot_mod_ideal_of_unit_order {R : Type} [CommRing R] [I
       (by rw [← pow_mul, mul_comm, pow_mul, h.pow_eq_one, one_pow]) hn
   have hu : IsUnit (z ^ l - 1) := isUnit_of_dvd_unit hd hunit
   have hz : (Ideal.Quotient.mk I) (z ^ l - 1) = 0 := by
-    simpa only [map_sub, map_pow, map_one, hl, sub_self]
+    simp_all
   exact (hu.map (Ideal.Quotient.mk I)).ne_zero hz
 
 theorem residue_six_isUnit (A : SArithmeticData F) : IsUnit (6 : A.R) := by
@@ -470,14 +458,13 @@ theorem residue_six_isUnit (A : SArithmeticData F) : IsUnit (6 : A.R) := by
   let su : A.U := ⟨u, fun v hv => (v.valuation_eq_one_iff_notMem (K := F)).mpr
     (fun h => hv (A.above_six v h))⟩
   convert (A.unitEquiv su).isUnit using 1
-  apply Subtype.ext
   rfl
 
 theorem residue_extendIdeal_ne_top (A : SArithmeticData F) (I : A.Exterior)
     (hI : I.val ≠ ⊤) : A.extendIdeal I ≠ ⊤ := by
   let T : A.Exterior := ⟨⊤, top_ne_bot, by simp⟩
-  have hT : A.extendIdeal T = ⊤ := by
-    exact Ideal.map_top _
+  have hT : A.extendIdeal T = ⊤ := 
+    Ideal.map_top _
   intro h
   apply hI
   have he : A.exteriorIdealEquiv I = A.exteriorIdealEquiv T := by
@@ -557,7 +544,7 @@ theorem sexticResidue_neg_one (A : SArithmeticData F) (I : A.Exterior) :
     exact congrArg Units.val (A.sexticResidueFamily_normalized.1 I v)
   have hn : q z ^ 6 = Ideal.Quotient.mk (A.extendIdeal I) (-1) := by
     rw [← map_pow, hz]
-    simp only [RingHom.comp_apply, map_neg, map_one]
+    rfl
   unfold sexticResidue residueValue
   rw [← hn, map_pow, hpow]
 
@@ -594,8 +581,3 @@ theorem sexticResidue_sixth_unit_translate (A : SArithmeticData F)
   change (MulChar.ofUnitHom (A.sexticResidueFamily I)) (q (x * (A.unitEquiv u : A.R) ^ 6)) = _
   rw [map_mul, map_pow, map_mul, map_pow, hpow]
   exact _root_.mul_one _
-
-end
-end DedekindZetaZeroFree.SArithmeticData
-
-end

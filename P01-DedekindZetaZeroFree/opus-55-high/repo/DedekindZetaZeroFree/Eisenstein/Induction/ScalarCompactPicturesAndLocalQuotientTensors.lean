@@ -95,11 +95,10 @@ private def inducedEquiv :
   left_inv := borelQ_borelP F ζ hζ C s
   right_inv := borelP_borelQ F ζ hζ C s
 
-private theorem scalar_intertwines (P : Polarization F ζ hζ)
+theorem scalar_intertwines (P : Polarization F ζ hζ)
     (a : G F ζ hζ) (f : Induced F ζ hζ P) :
     scalar F ζ hζ P (inducedRightAction F ζ hζ P a f) =
       KPLiteralRaw.rightAction F ζ hζ a (scalar F ζ hζ P f) := by
-  funext g
   rfl
 
 private def orbitSpan {V : Type*} [AddCommMonoid V] [Module ℂ V]
@@ -124,8 +123,8 @@ private theorem mapOrbitSpan {V W : Type*} [AddCommMonoid V] [Module ℂ V]
 private theorem scalar_orbitSpan (P : Polarization F ζ hζ)
     (K : Subgroup (G F ζ hζ)) (f : Induced F ζ hζ P) :
     (orbitSpan F ζ hζ (inducedRightAction F ζ hζ P) K f).map (scalar F ζ hζ P) =
-      orbitSpan F ζ hζ (KPLiteralRaw.rightAction F ζ hζ) K (scalar F ζ hζ P f) := by
-  exact mapOrbitSpan F ζ hζ (inducedRightAction F ζ hζ P)
+      orbitSpan F ζ hζ (KPLiteralRaw.rightAction F ζ hζ) K (scalar F ζ hζ P f) := 
+  mapOrbitSpan F ζ hζ (inducedRightAction F ζ hζ P)
     (KPLiteralRaw.rightAction F ζ hζ) (scalar F ζ hζ P)
     (scalar_intertwines F ζ hζ P) K f
 
@@ -140,8 +139,8 @@ private theorem induced_orbitSpan (K : Subgroup (G F ζ hζ))
     (f : Induced F ζ hζ (twist F ζ hζ (productModel F ζ hζ C) s)) :
     (orbitSpan F ζ hζ (inducedRightAction F ζ hζ _) K f).map
       (inducedEquiv F ζ hζ C s).toLinearMap =
-      orbitSpan F ζ hζ (inducedRightAction F ζ hζ _) K (borelP F ζ hζ C s f) := by
-  exact mapOrbitSpan F ζ hζ (inducedRightAction F ζ hζ _)
+      orbitSpan F ζ hζ (inducedRightAction F ζ hζ _) K (borelP F ζ hζ C s f) := 
+  mapOrbitSpan F ζ hζ (inducedRightAction F ζ hζ _)
     (inducedRightAction F ζ hζ _) (inducedEquiv F ζ hζ C s).toLinearMap
     (borelP_intertwines F ζ hζ C s) K f
 
@@ -183,9 +182,7 @@ private theorem kFinite_iff_orbitSpan (K : Subgroup (G F ζ hζ)) (φ : G F ζ h
         have hmul : KPLiteralRaw.rightAction F ζ hζ k.val
             (KPLiteralRaw.rightAction F ζ hζ j.val φ) =
             KPLiteralRaw.rightAction F ζ hζ (k * j).val φ := by
-          funext g
-          change φ ((g * k.val) * j.val) = φ (g * (k.val * j.val))
-          rw [mul_assoc]
+          simp
         rw [hmul]
         exact Submodule.subset_span (Set.mem_range_self (k * j))
       | zero => simpa only [map_zero] using Submodule.zero_mem _
@@ -195,8 +192,8 @@ private theorem kFinite_iff_orbitSpan (K : Subgroup (G F ζ hζ)) (φ : G F ζ h
  theorem scalar_borelP_kFinite_iff (K : Subgroup (G F ζ hζ))
     (f : Induced F ζ hζ (twist F ζ hζ (productModel F ζ hζ C) s)) :
     KPLiteralRaw.KFinite F ζ hζ K (scalar F ζ hζ _ f) ↔
-      KPLiteralRaw.KFinite F ζ hζ K (scalar F ζ hζ _ (borelP F ζ hζ C s f)) := by
-  exact (kFinite_iff_orbitSpan F ζ hζ K _).trans
+      KPLiteralRaw.KFinite F ζ hζ K (scalar F ζ hζ _ (borelP F ζ hζ C s f)) := 
+  (kFinite_iff_orbitSpan F ζ hζ K _).trans
     ((Module.Finite.equiv_iff (scalarTransportOrbitEquiv F ζ hζ C s K f)).trans
       (kFinite_iff_orbitSpan F ζ hζ K _).symm)
 
@@ -208,8 +205,3 @@ end
 section
 noncomputable section
 namespace DedekindZetaZeroFree.KPLiteralTensor
-variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-
-end DedekindZetaZeroFree.KPLiteralTensor
-end
-end

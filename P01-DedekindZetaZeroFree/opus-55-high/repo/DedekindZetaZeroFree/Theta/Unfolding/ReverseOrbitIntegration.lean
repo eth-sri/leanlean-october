@@ -17,8 +17,7 @@ theorem reverse_orbit_evaluation {N : TraceHaarTransport R} (C : JointUpperVanis
     (m : ThetaReflectionData.Row R.A) (Z : ℝ) (hZ : 0 < Z) :
     Summable (fun ξ => ‖actualReflectedTerm R C v m Z ξ‖) ∧
     HasSum (actualReflectedTerm R C v m Z)
-      (∑' i : OrbitIndex R, orbitTerm R C v m false Z hZ i) := by
-  exact DedekindZetaZeroFree.OrbitExpansion.reverse_orbit_evaluation_clean R C hx v m Z hZ
+      (∑' i : OrbitIndex R, orbitTerm R C v m false Z hZ i) := by apply DedekindZetaZeroFree.OrbitExpansion.reverse_orbit_evaluation_clean <;> assumption
 
 end DedekindZetaZeroFree.ThetaExpansion.SignedExpansion
 

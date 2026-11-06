@@ -19,7 +19,7 @@ theorem powerWeight_integrable (α : ℝ) (hα : 0 < α) :
     (r := α - 1) (by linarith)).const_mul α
   exact (intervalIntegrable_iff_integrableOn_Icc_of_le (by norm_num)).mp h
 
-private lemma coeff_relation (n k : ℕ) :
+lemma coeff_relation (n k : ℕ) :
     (k : ℝ) * (((shiftedLegendre (n+1)).coeff k : ℝ) + (shiftedLegendre n).coeff k) =
       (n+1 : ℝ) * (((shiftedLegendre (n+1)).coeff k : ℝ) - (shiftedLegendre n).coeff k) := by
   simp only [coeff_shiftedLegendre, Int.cast_mul, Int.cast_pow, Int.cast_neg,
@@ -42,7 +42,7 @@ private lemma coeff_relation (n k : ℕ) :
     have hkn1 : n + 1 < k := by omega
     simp [Nat.choose_eq_zero_of_lt hkn1, Nat.choose_eq_zero_of_lt hkn]
 
-private lemma poly_relation (n : ℕ) :
+lemma poly_relation (n : ℕ) :
     X * derivative ((shiftedLegendre (n+1) + shiftedLegendre n).map (Int.castRingHom ℝ)) =
       C (n+1 : ℝ) * ((shiftedLegendre (n+1) - shiftedLegendre n).map (Int.castRingHom ℝ)) := by
   ext k
@@ -54,28 +54,28 @@ private lemma poly_relation (n : ℕ) :
 
 noncomputable def leg (n : ℕ) : ℝ[X] := (shiftedLegendre n).map (Int.castRingHom ℝ)
 
-private lemma leg_one (n : ℕ) : (leg n).eval 1 = (-1 : ℝ)^n := by
+lemma leg_one (n : ℕ) : (leg n).eval 1 = (-1 : ℝ)^n := by
   have h := shiftedLegendre_eval_symm n (0 : ℝ)
   have h0 : aeval (0 : ℝ) (shiftedLegendre n) = 1 := by
-    simp [aeval_def, ← coeff_zero_eq_eval_zero, coeff_shiftedLegendre]
+    simp [aeval_def, coeff_shiftedLegendre]
   rw [h0] at h
   simp only [sub_zero] at h
   have hh := congrArg (fun x : ℝ => (-1)^n * x) h
   simpa [aeval_def, eval₂_eq_eval_map, leg, ← mul_assoc, ← pow_add, ← two_mul,
     pow_mul] using hh.symm
 
-private lemma leg_relation (n : ℕ) (u : ℝ) :
+lemma leg_relation (n : ℕ) (u : ℝ) :
     u * ((leg (n+1)).derivative.eval u + (leg n).derivative.eval u) =
       (n+1 : ℝ) * ((leg (n+1)).eval u - (leg n).eval u) := by
   have h := congrArg (fun p : ℝ[X] => p.eval u) (poly_relation n)
   simpa [leg, derivative_add] using h
 
-private lemma weight_leg_integrable (n : ℕ) (α : ℝ) (hα : 0 < α) :
-    IntervalIntegrable (fun u : ℝ => α * u^(α-1) * (leg n).eval u) volume 0 1 := by
-  exact ((intervalIntegral.intervalIntegrable_rpow' (by linarith)).const_mul α).mul_continuousOn
+lemma weight_leg_integrable (n : ℕ) (α : ℝ) (hα : 0 < α) :
+    IntervalIntegrable (fun u : ℝ => α * u^(α-1) * (leg n).eval u) volume 0 1 := 
+  ((intervalIntegral.intervalIntegrable_rpow' (by linarith)).const_mul α).mul_continuousOn
     (leg n).continuous.continuousOn
 
-private lemma recurrence (n : ℕ) (α : ℝ) (hα : 0 < α) :
+lemma recurrence (n : ℕ) (α : ℝ) (hα : 0 < α) :
     (α + (n+1)) * (∫ u : ℝ in 0..1, α * u^(α-1) * (leg (n+1)).eval u) =
       ((n+1)-α) * (∫ u : ℝ in 0..1, α * u^(α-1) * (leg n).eval u) := by
   let F : ℝ → ℝ := fun u => α * u^α * ((leg (n+1)).eval u + (leg n).eval u)
@@ -86,8 +86,7 @@ private lemma recurrence (n : ℕ) (α : ℝ) (hα : 0 < α) :
     ((weight_leg_integrable (n+1) α hα).const_mul _).sub
       ((weight_leg_integrable n α hα).const_mul _)
   have hc : ContinuousOn F (Set.Icc 0 1) := by
-    exact ((continuous_const.mul (Real.continuous_rpow_const hα.le)).mul
-      ((leg (n+1)).continuous.add (leg n).continuous)).continuousOn
+    fun_prop
   have hd : ∀ u ∈ Set.Ioo (0 : ℝ) 1, HasDerivAt F (f u) u := by
     intro u hu
     have hr := (Real.hasDerivAt_rpow_const (p := α) (Or.inl (ne_of_gt hu.1)))
@@ -96,7 +95,7 @@ private lemma recurrence (n : ℕ) (α : ℝ) (hα : 0 < α) :
     convert h using 1
     have hp : u^α = u^(α-1) * u := by
       calc
-        u^α = u^((α-1)+1) := by congr 1; ring
+        u^α = u^((α-1)+1) := by simp
         _ = u^(α-1) * u^((1 : ℝ)) := Real.rpow_add hu.1 _ _
         _ = u^(α-1) * u := by rw [Real.rpow_one]
     dsimp [f]
@@ -113,7 +112,7 @@ private lemma recurrence (n : ℕ) (α : ℝ) (hα : 0 < α) :
     intervalIntegral.integral_const_mul, intervalIntegral.integral_const_mul] at hi
   linarith
 
-private lemma integral_formula (n : ℕ) (α : ℝ) (hα : 0 < α) :
+lemma integral_formula (n : ℕ) (α : ℝ) (hα : 0 < α) :
     (∫ u : ℝ in 0..1, α * u^(α-1) * (leg n).eval u) =
       ∏ j ∈ Finset.Icc 1 n, (((j : ℝ)-α)/((j : ℝ)+α)) := by
   induction n with
@@ -140,5 +139,3 @@ theorem shiftedLegendre_beta (ℓ : ℕ) (α : ℝ) (hα : 0 < α) (hα1 : α < 
   rw [MeasureTheory.integral_Icc_eq_integral_Ioc,
     ← intervalIntegral.integral_of_le (by norm_num : (0:ℝ) ≤ 1)]
   simpa only [leg, eval₂_eq_eval_map] using integral_formula ℓ α hα
-
-end DedekindZetaZeroFree.ComplexFractionalInverse.HarmonicIdentity

@@ -124,8 +124,7 @@ theorem coordinateTensor_fourier_zero
     (v₀ : {v : InfinitePlace F // v.IsComplex})
     (hzero : ∫ z : ℂ, f v₀ z = 0) :
     fourier F S (coordinateTensor F S f) 0 = 0 := by
-  simp only [fourier, mul_zero, neg_zero, AddChar.map_zero_eq_one,
-    mul_one]
+  simp only [fourier, mul_zero, neg_zero, AddChar.map_zero_eq_one]
   simp only [Circle.coe_one, mul_one]
   unfold additiveMeasure coordinateTensor
   rw [integral_prod_mul
@@ -141,9 +140,7 @@ theorem coordinateTensor_fourier_zero
         (PoissonArch.traceMeasure F)) = 0
     rw [integral_map_equiv (PoissonArch.infiniteAdeleToSpace F).symm.toHomeomorph.toMeasurableEquiv]
     convert archTensor_integral_zero F f v₀ hzero using 1
-    congr 1
-    funext x
-    exact congrArg (archTensor F f) ((PoissonArch.infiniteAdeleToSpace F).apply_symm_apply x)
+    simp
   rw [harch, zero_mul]
 
 theorem archTensor_integral
@@ -175,23 +172,21 @@ theorem archTensor_integral
   invFun v := v.val
   left_inv _ := rfl
   right_inv _ := rfl
-private theorem complex_phase (v : {v : InfinitePlace F // v.IsComplex})
+theorem complex_phase (v : {v : InfinitePlace F // v.IsComplex})
     (x y : InfiniteAdeleRing F) :
     (archTraceCharacter v.val ((-(x * y)) v.val) : ℂ) =
       Complex.exp (((-4 * Real.pi *
         (((InfiniteAdeleRing.ringEquiv_mixedSpace F x).2 v) *
           ((InfiniteAdeleRing.ringEquiv_mixedSpace F y).2 v)).re : ℝ) : ℂ) * Complex.I) := by
   rw [archTraceCharacter_of_isComplex v.val v.property, Circle.coe_exp]
-  simp only [Pi.neg_apply, Pi.mul_apply, map_neg, map_mul,
-    InfinitePlace.Completion.ringEquivComplexOfIsComplex_apply, Complex.neg_re,
-    InfiniteAdeleRing.ringEquiv_mixedSpace_apply]
+  simp only [InfinitePlace.Completion.ringEquivComplexOfIsComplex_apply, InfiniteAdeleRing.ringEquiv_mixedSpace_apply]
   change Complex.exp (↑(2 * Real.pi * (2 *
     ((InfinitePlace.Completion.extensionEmbedding v.val) (-(x v.val * y v.val))).re)) * Complex.I) = _
   simp only [map_neg, map_mul, Complex.neg_re]
   congr 2
   push_cast
   ring
-private theorem arch_phase (x y : InfiniteAdeleRing F) :
+theorem arch_phase (x y : InfiniteAdeleRing F) :
     (∏ v : InfinitePlace F, (archTraceCharacter v ((-(x*y)) v) : ℂ)) =
       ∏ v : {v : InfinitePlace F // v.IsComplex},
         Complex.exp (((-4 * Real.pi *
@@ -217,7 +212,7 @@ theorem archTensor_traceFourier
     rw [← Complex.exp_sum]
     congr 1
     push_cast
-    simp only [Finset.mul_sum, Finset.sum_mul]
+    simp only [Finset.mul_sum]
     apply Finset.sum_congr rfl
     intro v hv
     ring
@@ -252,9 +247,7 @@ theorem coordinateTensor_fourier
       ∏ v : S, (TateFiniteShell.annularTest F v.val (x.2 v) *
         (localFiniteCharacter F v.val (-(x.2 v * y.2 v)) : ℂ)) := by
     rw [sLocalTraceCharacter_apply]
-    simp only [Circle.coe_mul, SubmonoidClass.coe_finset_prod, coordinateTensor,
-      Prod.fst_neg, Prod.fst_mul, Prod.snd_neg, Prod.snd_mul, Pi.neg_apply, Pi.mul_apply,
-      Finset.prod_mul_distrib]
+    simp only [Circle.coe_mul, coordinateTensor, Prod.fst_neg, Prod.fst_mul, Prod.snd_neg, Prod.snd_mul, Pi.neg_apply, Pi.mul_apply, Finset.prod_mul_distrib]
     simp only [hcoe]
     change (archTensor F f (PoissonArch.infiniteAdeleToSpace F x.1) *
       ∏ v : S, TateFiniteShell.annularTest F v.val (x.2 v)) *
@@ -307,13 +300,13 @@ theorem coordinateTensor_fourier
   rw [← Complex.exp_sum]
   congr 1
   push_cast
-  simp only [Finset.mul_sum, Finset.sum_mul]
+  simp only [Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro v hv
   ring
 
-theorem modulus_nonneg (x : SLocalProduct F S) : 0 ≤ modulus F S x := by
-  exact mul_nonneg
+theorem modulus_nonneg (x : SLocalProduct F S) : 0 ≤ modulus F S x := 
+  mul_nonneg
     (by rw [InfiniteAdeleRing.norm_def]; positivity)
     (Finset.prod_nonneg (fun _ _ => norm_nonneg _))
 
@@ -326,9 +319,7 @@ theorem modulus_measurable : Measurable (modulus F S) := by
     have hm : Measurable (fun x : InfiniteAdeleRing F => ‖x v‖) :=
       (continuous_apply v).norm.measurable
     exact (hm.comp measurable_fst).pow_const v.mult
-  · apply Finset.measurable_prod
-    intro v hv
-    exact ((measurable_pi_apply v).comp measurable_snd).norm
+  fun_prop
 
 theorem multiplicativeDensityConstant_pos : 0 < multiplicativeDensityConstant F S := by
   unfold multiplicativeDensityConstant
@@ -393,10 +384,7 @@ theorem modulus_pos_iff (x : SLocalProduct F S) : 0 < modulus F S x ↔ IsUnit x
     have hn : ‖x.1‖ = 0 := by
       rw [InfiniteAdeleRing.norm_def]
       apply Finset.prod_eq_zero (Finset.mem_univ v)
-      rw [hv, norm_zero]
-      exact zero_pow (by
-        unfold InfinitePlace.mult
-        split_ifs <;> norm_num)
+      simp_all
     simpa [modulus, hn] using hx
   · apply Pi.isUnit_iff.mpr
     intro v
@@ -405,8 +393,7 @@ theorem modulus_pos_iff (x : SLocalProduct F S) : 0 < modulus F S x ↔ IsUnit x
     have hn : (∏ v : S, ‖x.2 v‖) = 0 :=
       Finset.prod_eq_zero (Finset.mem_univ v) (by simp [hv])
     change 0 < ‖x.1‖ * (∏ v : S, ‖x.2 v‖) at hx
-    rw [hn, mul_zero] at hx
-    exact (lt_irrefl 0) hx
+    simp_all
 
 theorem measurableSet_units : MeasurableSet {x : SLocalProduct F S | IsUnit x} := by
   have heq : {x : SLocalProduct F S | IsUnit x} = {x | 0 < modulus F S x} := by
@@ -504,7 +491,7 @@ theorem arch_norm_coordinates (a : InfiniteAdeleRing F) :
   have he := InfinitePlace.Completion.isometry_extensionEmbedding v
   have hz : InfinitePlace.Completion.extensionEmbedding v 0 = 0 := map_zero _
   have hn := he.dist_eq (a v) 0
-  simpa only [dist_zero_right, hz] using congrArg (fun r : ℝ => r ^ 2) hn.symm
+  simp_all
 
 theorem arch_weighted_integral
     (g : (v : {v : InfinitePlace F // v.IsComplex}) → ℂ → ℂ)
@@ -536,10 +523,7 @@ theorem arch_weighted_integral
     apply Finset.prod_congr rfl
     intro v hv
     unfold complexNormMellinIntegrand
-    split_ifs with h
-    · rw [h, norm_zero, zero_pow (by norm_num), Real.zero_rpow hz,
-        Complex.ofReal_zero, mul_zero]
-    · rfl
+    simp_all
   simp_rw [hfactor]
   have hc (x : PoissonArch.Space F) :
       InfiniteAdeleRing.ringEquiv_mixedSpace F ((PoissonArch.infiniteAdeleToSpace F).symm x) =
@@ -595,11 +579,7 @@ theorem archTensor_integrable_of_factors
     Integrable (archTensor F g) (PoissonArch.traceMeasure F) := by
   have hp := Integrable.fintype_prod_dep hg
   have ha : Integrable (fun _ : {v : InfinitePlace F // v.IsReal} → ℝ => (1 : ℂ)) volume := by
-    apply integrable_const_iff.mpr
-    right
-    constructor
-    simp only [volume_pi, Measure.pi_univ, Finset.prod_of_isEmpty]
-    exact ENNReal.one_lt_top
+    simp
   have hi := ha.mul_prod hp
   simp only [one_mul] at hi
   rw [← volume_pi, ← Measure.volume_eq_prod] at hi
@@ -607,9 +587,3 @@ theorem archTensor_integrable_of_factors
     (mixedEmbedding.euclidean.toMixed F).toHomeomorph.measurableEmbedding
     (g := fun x : mixedEmbedding.mixedSpace F => ∏ v, g v (x.2 v))
   exact (hm.mpr hi).smul_measure ENNReal.ofReal_ne_top
-
-end
-end TateTensorProfile
-end DedekindZetaZeroFree
-
-end

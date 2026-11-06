@@ -13,7 +13,6 @@ namespace DedekindZetaZeroFree
 namespace ThetaProfileHaarSheets
 
 noncomputable section
-set_option autoImplicit false
 
 abbrev PositiveAxis := {x : ℝ // 0 < x}
 
@@ -23,11 +22,11 @@ def positiveHaar : Measure PositiveAxis :=
 
 theorem positiveHaar_map_val :
     Measure.map Subtype.val positiveHaar =
-      (volume.withDensity (fun x : ℝ => ENNReal.ofReal x⁻¹)).restrict (Set.Ioi 0) := by
-  exact NormSheetsPositiveAxis.density_and_haar.1
+      (volume.withDensity (fun x : ℝ => ENNReal.ofReal x⁻¹)).restrict (Set.Ioi 0) := 
+  NormSheetsPositiveAxis.density_and_haar.1
 
-instance positiveHaar_isHaarMeasure : positiveHaar.IsHaarMeasure := by
-  exact NormSheetsPositiveAxis.density_and_haar.2
+instance positiveHaar_isHaarMeasure : positiveHaar.IsHaarMeasure := 
+  NormSheetsPositiveAxis.density_and_haar.2
 
 variable {F : Type} [Field F] [NumberField F]
 
@@ -41,8 +40,8 @@ def sqrtUnit (A : SArithmeticData F) (v₀ : InfinitePlace F)
   Units.map
     (InfinitePlace.Completion.ringEquivComplexOfIsComplex
       (A.complex_place v₀)).symm.toMonoidHom
-    (Units.mk0 (Real.sqrt (x : ℝ) : ℂ) (by
-      exact Complex.ofReal_ne_zero.mpr (ne_of_gt (Real.sqrt_pos.2 x.property))))
+    (Units.mk0 (Real.sqrt (x : ℝ) : ℂ) (
+      Complex.ofReal_ne_zero.mpr (ne_of_gt (Real.sqrt_pos.2 x.property))))
 
 def normSection (A : SArithmeticData F) (v₀ : InfinitePlace F)
     (x : PositiveAxis) : A.G := by
@@ -51,27 +50,27 @@ def normSection (A : SArithmeticData F) (v₀ : InfinitePlace F)
 
 theorem normSection_at_other_place (A : SArithmeticData F)
     (v₀ v : InfinitePlace F) (hv : v ≠ v₀) (x : PositiveAxis) :
-    (normSection A v₀ x).1 v = 1 := by
-  exact NormSheetsCoordinates.section_at_other_place A v₀ v hv x
+    (normSection A v₀ x).1 v = 1 := 
+  NormSheetsCoordinates.section_at_other_place A v₀ v hv x
 
 theorem normSection_at_finite_place (A : SArithmeticData F)
     (v₀ : InfinitePlace F) (x : PositiveAxis) (v : A.Sf) :
     (normSection A v₀ x).2 v = 1 := rfl
 
 theorem norm_normSection (A : SArithmeticData F) (v₀ : InfinitePlace F)
-    (x : PositiveAxis) : A.norm (normSection A v₀ x) = (x : ℝ) := by
-  exact (NormSheetsCoordinates.section_laws A v₀).1 x
+    (x : PositiveAxis) : A.norm (normSection A v₀ x) = (x : ℝ) := 
+  (NormSheetsCoordinates.section_laws A v₀).1 x
 
-theorem norm_positive (A : SArithmeticData F) (y : A.G) : 0 < A.norm y := by
-  exact NormSheetsCoordinates.norm_positive A y
+theorem norm_positive (A : SArithmeticData F) (y : A.G) : 0 < A.norm y := 
+  NormSheetsCoordinates.norm_positive A y
 
 def normSplit (A : SArithmeticData F) (v₀ : InfinitePlace F) :
     (PositiveAxis × A.G1) ≃ₜ* A.G where
   toFun p := normSection A v₀ p.1 * p.2.val
   invFun y :=
     (⟨A.norm y, norm_positive A y⟩,
-      ⟨(normSection A v₀ ⟨A.norm y, norm_positive A y⟩)⁻¹ * y, by
-          exact NormSheetsCoordinates.inverse_section_mem A v₀ _ y rfl⟩)
+      ⟨(normSection A v₀ ⟨A.norm y, norm_positive A y⟩)⁻¹ * y, 
+          NormSheetsCoordinates.inverse_section_mem A v₀ _ y rfl⟩)
   left_inv := (NormSheetsCoordinates.split A v₀).left_inv
   right_inv := (NormSheetsCoordinates.split A v₀).right_inv
   map_mul' := (NormSheetsCoordinates.split A v₀).map_mul'
@@ -92,13 +91,13 @@ def kernelHaar (A : SArithmeticData F) (v₀ : InfinitePlace F)
 
 instance kernelHaar_isHaarMeasure (A : SArithmeticData F) (v₀ : InfinitePlace F)
     (μG : Measure A.G) [μG.IsHaarMeasure] :
-    (kernelHaar A v₀ μG).IsHaarMeasure := by
-  exact (Classical.choose_spec (exists_unique_kernelHaar A v₀ μG)).1.1
+    (kernelHaar A v₀ μG).IsHaarMeasure := 
+  (Classical.choose_spec (exists_unique_kernelHaar A v₀ μG)).1.1
 
 theorem map_product_kernelHaar (A : SArithmeticData F) (v₀ : InfinitePlace F)
     (μG : Measure A.G) [μG.IsHaarMeasure] :
-    Measure.map (normSplit A v₀) (positiveHaar.prod (kernelHaar A v₀ μG)) = μG := by
-  exact (Classical.choose_spec (exists_unique_kernelHaar A v₀ μG)).1.2
+    Measure.map (normSplit A v₀) (positiveHaar.prod (kernelHaar A v₀ μG)) = μG := 
+  (Classical.choose_spec (exists_unique_kernelHaar A v₀ μG)).1.2
 
 abbrev Sheet (A : SArithmeticData F) (x : PositiveAxis) :=
   {y : A.G // A.norm y = (x : ℝ)}
@@ -109,8 +108,8 @@ def sheetTranslation (A : SArithmeticData F) (v₀ : InfinitePlace F)
     change A.norm (NormSheetsCoordinates.normSectionRaw A v₀ x * z.val) = (x : ℝ)
     rw [NormSheetsCoordinates.norm_mul, (NormSheetsCoordinates.section_laws A v₀).1,
       z.property, mul_one]⟩
-  invFun y := ⟨(normSection A v₀ x)⁻¹ * y.val, by
-    exact NormSheetsCoordinates.inverse_section_mem A v₀ x y.val y.property⟩
+  invFun y := ⟨(normSection A v₀ x)⁻¹ * y.val, 
+    NormSheetsCoordinates.inverse_section_mem A v₀ x y.val y.property⟩
   left_inv := (NormSheetsCoordinates.translation A v₀ x).left_inv
   right_inv := (NormSheetsCoordinates.translation A v₀ x).right_inv
   continuous_toFun := (NormSheetsCoordinates.translation A v₀ x).continuous_toFun
@@ -136,7 +135,3 @@ theorem integral_disintegration (A : SArithmeticData F) (v₀ : InfinitePlace F)
     (fun x => (sheetTranslation A v₀ x).toMeasurableEquiv)
     (fun _ y => y.val) (fun _ _ => rfl)
     positiveHaar (kernelHaar A v₀ μG) μG (map_product_kernelHaar A v₀ μG) g hg
-
-end
-end ThetaProfileHaarSheets
-end DedekindZetaZeroFree

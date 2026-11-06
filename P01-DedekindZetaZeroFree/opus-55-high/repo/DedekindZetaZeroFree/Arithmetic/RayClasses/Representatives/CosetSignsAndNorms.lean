@@ -225,9 +225,6 @@ def normWeight (D : Data K) : X D → ℝ :=
     obtain ⟨u, hu⟩ := h
     exact hu ▸ representativeNormWeight_smul D u β)
 
-@[simp] theorem isPositive_orbitMk (D : Data K) (α : Cx D) :
-    IsPositive D (orbitMk D α) ↔ TotallyPositive K α.val := Iff.rfl
-
 @[simp] theorem signδ_orbitMk (D : Data K) (δ : Finset (RealPlaces K)) (α : Cx D) :
     signδ D δ (orbitMk D α) = representativeSign δ α.val := rfl
 

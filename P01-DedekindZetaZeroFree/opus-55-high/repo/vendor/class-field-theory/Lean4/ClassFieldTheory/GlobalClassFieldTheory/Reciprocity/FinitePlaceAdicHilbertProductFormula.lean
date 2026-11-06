@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # A coherent Hilbert pairing family in a small number field
 
@@ -25,7 +22,6 @@ of the global Hilbert product formula.
 open scoped BigOperators NumberField
 open NumberField IsDedekindDomain
 
-noncomputable section
 
 namespace ClassFieldTheory
 
@@ -69,7 +65,3 @@ theorem finitePlaceAdicHilbertPairingFamily_productFormula
           exact finitePlaceAdicHilbertPairingFamily_finiteFactor
             F n hnF hmu v a b
       _ = 1 := hilbertProductFormula F n hnF hmu a b
-
-end ClassFieldTheory
-
-end

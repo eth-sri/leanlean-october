@@ -9,7 +9,6 @@ namespace DedekindZetaZeroFree.KPWildCompactProjectorKirillov.ClopenGluing
 open scoped NumberField Topology
 open NumberField IsDedekindDomain
 
-noncomputable section
 
 theorem ordinaryPGLMap_injective
     (F : Type) [Field F] [NumberField F]
@@ -28,6 +27,3 @@ theorem ordinaryPGLMap_injective
       Matrix.ProjGenLinGroup.mk_eq_one.mp hg
     rw [Matrix.GeneralLinearGroup.center_eq_range_scalar] at ha
     exact ha
-
-end
-end DedekindZetaZeroFree.KPWildCompactProjectorKirillov.ClopenGluing

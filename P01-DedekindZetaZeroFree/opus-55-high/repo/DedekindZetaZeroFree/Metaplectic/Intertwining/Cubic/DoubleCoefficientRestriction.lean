@@ -12,7 +12,6 @@ open KPLocalStoneVonNeumann KPLocalPrincipalSeries KPRankOneShellContinuation
 open KPRankOneOpenCellKernel KPRankOneCenterInducedDiagonalComparison
 open KPRankOneReverseRegulatorShells KPRankOneReverseRegulatorSpecialization KPActualScalarBinding
 noncomputable section
-set_option autoImplicit false
 set_option maxHeartbeats 2000000
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
@@ -136,7 +135,7 @@ private theorem actual_own_chamber_composition
   have hc : ConvergenceRegion F q r 0 := by
     constructor
     · norm_num
-    · convert ht using 1 <;> norm_num
+    simp_all
   have hz : convergenceHalfPlane .minus (additiveParameter F q r) := by
     apply (convergence_iff_geometric (LocalField F q) .minus _).mpr
     simp only [reduceCtorEq, if_false, KPRankOneRootParameter.t,
@@ -180,7 +179,7 @@ private theorem actual_own_chamber_composition
     exact (good_restriction F q (p h) r hd).2.trans hp'.symm
   exact ⟨hi, hH, he.symm, hval.trans (hH.trans he.symm)⟩
 
-private theorem exterior_infinite (a : ℂ) (ha : a ≠ 0) :
+theorem exterior_infinite (a : ℂ) (ha : a ≠ 0) :
     {z : ℂ | 1 < ‖a * z ^ 6‖}.Infinite := by
   obtain ⟨z, hz⟩ := IsAlgClosed.exists_pow_nat_eq ((2 : ℂ) / a) (by decide : 0 < 6)
   have hm : a * z ^ 6 = 2 := by rw [hz]; field_simp
@@ -192,7 +191,7 @@ private theorem exterior_infinite (a : ℂ) (ha : a ≠ 0) :
   rw [hm, Complex.norm_ofNat]
   norm_num
 
-private theorem ratfunc_eq_of_infinite (R S : RatFunc ℂ)
+theorem ratfunc_eq_of_infinite (R S : RatFunc ℂ)
     (s : Set ℂ) (hs : s.Infinite)
     (h : ∀ z ∈ s, Polynomial.eval z R.denom ≠ 0 ∧ Polynomial.eval z S.denom ≠ 0 ∧
       RatFunc.eval (RingHom.id ℂ) z R = RatFunc.eval (RingHom.id ℂ) z S) : R = S := by
@@ -247,8 +246,7 @@ private theorem actual_rational_coefficient_restriction
     have he' : t F q z = 1 := by
       change 1 - t F q z = 0 at he
       exact (sub_eq_zero.mp he).symm
-    rw [he'] at ht
-    norm_num at ht
+    simp_all
   refine ⟨hRden, hSden, ?_⟩
   have heR := hR r hr ht hRden
   have heS := (actual_own_chamber_composition F ζ hζ q S P I μ J
@@ -320,8 +318,7 @@ private theorem exists_rational_double
     have hcval := congrArg (fun f => (f.val g).val h) hcomp
     change actualDoubleCoefficient F ζ hζ q S.heisenberg S.borel P I μ J (S.openCell P) rep hrep d φ hφ hcφ r h = _ at hcval
     rw [hcval]
-    with_unfolding_all simp only [targetParameter, sourceParameter, targetSign, sourceSign, id_eq,
-      show Sign.minus ≠ Sign.plus from by decide, ite_false, neg_neg]
+    with_unfolding_all simp only [targetParameter, sourceParameter, targetSign, sourceSign, id_eq]
     have heplus : (evaluationUnit (LocalField F q) .plus a : ℂ) = (r : ℂ) := by
       simp [evaluationUnit, a, KPRankOneRootParameter.rUnit, root_parameter_additiveParameter]
     have heminus : (evaluationUnit (LocalField F q) .minus a : ℂ) = (r : ℂ)⁻¹ := by
@@ -393,6 +390,3 @@ theorem actual_restriction_eq_double_coefficient
     actual_rational_coefficient_restriction F ζ hζ q S P I μ J rep hrep d φ hφ hcφ p hp h R
       (fun s hs _ _ => (hR s hs).2)
   exact ⟨restriction_regular F q (p h) r hr, he ▸ (hR r hr).2⟩
-
-end
-end DedekindZetaZeroFree.KPActualResidueSources

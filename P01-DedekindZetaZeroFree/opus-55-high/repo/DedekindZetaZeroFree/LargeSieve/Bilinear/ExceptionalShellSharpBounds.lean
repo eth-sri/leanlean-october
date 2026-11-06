@@ -19,14 +19,14 @@ local instance exceptionalShellSharpBoundsClassFinite (Q : QuadraticHeckeFamily 
 noncomputable local instance exceptionalShellSharpBoundsClassFintype (Q : QuadraticHeckeFamily F c) : Fintype Q.G :=
   Fintype.ofFinite Q.G
 
-private lemma norm_sum_sq_le_card_mul_sum_norm_sq {ι : Type*} [DecidableEq ι]
+lemma norm_sum_sq_le_card_mul_sum_norm_sq {ι : Type*} [DecidableEq ι]
     (s : Finset ι) (z : ι → ℂ) :
     ‖∑ i ∈ s, z i‖ ^ 2 ≤ (s.card : ℝ) * ∑ i ∈ s, ‖z i‖ ^ 2 := by
   calc ‖∑ i ∈ s, z i‖ ^ 2
       ≤ (∑ i ∈ s, ‖z i‖) ^ 2 := pow_le_pow_left₀ (norm_nonneg _) (norm_sum_le s z) 2
     _ ≤ (s.card : ℝ) * ∑ i ∈ s, ‖z i‖ ^ 2 := sq_sum_le_card_mul_sum_sq
 
-private lemma norm_sum_sq_nested_le {ι κ : Type*} [DecidableEq ι] [DecidableEq κ]
+lemma norm_sum_sq_nested_le {ι κ : Type*} [DecidableEq ι] [DecidableEq κ]
     (s : Finset ι) (t : Finset κ) (z : ι → κ → ℂ) :
     ‖∑ i ∈ s, ∑ j ∈ t, z i j‖ ^ 2 ≤
       (s.card : ℝ) * (t.card : ℝ) * ∑ i ∈ s, ∑ j ∈ t, ‖z i j‖ ^ 2 := by
@@ -41,11 +41,11 @@ private lemma norm_sum_sq_nested_le {ι κ : Type*} [DecidableEq ι] [DecidableE
         exact (Finset.mul_sum s (fun i => ∑ j ∈ t, ‖z i j‖ ^ 2) (t.card : ℝ)).symm
     _ = (s.card : ℝ) * (t.card : ℝ) * ∑ i ∈ s, ∑ j ∈ t, ‖z i j‖ ^ 2 := by ring
 
-private lemma sum_const_mul {ι : Type*} [DecidableEq ι] (s : Finset ι) (c : ℝ) (f : ι → ℝ) :
+lemma sum_const_mul {ι : Type*} [DecidableEq ι] (s : Finset ι) (c : ℝ) (f : ι → ℝ) :
     (∑ i ∈ s, c * f i) = c * ∑ i ∈ s, f i :=
   (Finset.mul_sum s f c).symm
 
-private lemma sum_swap_three {ι κ ν : Type*} [DecidableEq ι] [DecidableEq κ] [DecidableEq ν]
+lemma sum_swap_three {ι κ ν : Type*} [DecidableEq ι] [DecidableEq κ] [DecidableEq ν]
     (s : Finset ι) (t : Finset κ) (u : Finset ν) (f : ι → κ → ν → ℝ) :
     (∑ i ∈ s, ∑ j ∈ t, ∑ k ∈ u, f i j k) = ∑ j ∈ t, ∑ k ∈ u, ∑ i ∈ s, f i j k := by
   rw [Finset.sum_comm]
@@ -192,9 +192,7 @@ theorem peeling_sharp_domination_energy (Q : QuadraticHeckeFamily F c)
             if Q.cls u = g then ‖(Q.χ (t * u)) r‖ ^ 2 else 0 := by
         intro g
         by_cases h : Q.cls u = g <;> simp [exceptionalColumnMask, h]
-      rw [Finset.sum_congr rfl fun g _ => hfun g, Finset.sum_ite_eq]
-      simp only [Finset.mem_univ, if_true]
-      exact pow_le_one₀ (norm_nonneg _) hval
+      simp_all
     calc ∑ g : Q.G, ‖lam (t * u) * exceptionalColumnMask Q r t g u‖ ^ 2
         = ∑ g : Q.G, ‖lam (t * u)‖ ^ 2 * ‖exceptionalColumnMask Q r t g u‖ ^ 2 := by
           refine Finset.sum_congr rfl fun g _ => ?_
@@ -227,9 +225,7 @@ theorem peelingSharpConstant_nonneg (Q : QuadraticHeckeFamily F c)
     0 ≤ peelingSharpConstant F c Q q C A := by
   unfold peelingSharpConstant
   have h1 : (0 : ℝ) ≤ ((exceptionalDivisors F c q).card : ℝ) ^ 2 := sq_nonneg _
-  have h2 : (0 : ℝ) ≤ (Nat.card Q.G : ℝ) := Nat.cast_nonneg _
-  have h3 : (0 : ℝ) ≤ C + 2 * A + 1 := by linarith
-  exact mul_nonneg (mul_nonneg h1 h2) h3
+  positivity
 
 theorem peeling_sharp_domination_bound (Q : QuadraticHeckeFamily F c)
     (q : Ideal (𝓞 F)) (hq : q ≠ ⊥) (hcq : c ∣ q)
@@ -287,15 +283,11 @@ theorem peeling_sharp_domination_bound (Q : QuadraticHeckeFamily F c)
         ≤ ∑ _r ∈ exceptionalDivisors F c q, ∑ b ∈ paperShell F c N, ‖lam b‖ ^ 2 :=
       Finset.sum_le_sum fun r hr => henergy r hr
     refine h1.trans (le_of_eq ?_)
-    rw [Finset.sum_const, nsmul_eq_mul]
+    simp
   have hK : 0 ≤ (C + 2 * A + 1) * (M * N) ^ ε * (M + N) := by
-    have hMN : (0 : ℝ) < M * N := mul_pos (by linarith) (by linarith)
-    have h1 : 0 ≤ (M * N) ^ ε := Real.rpow_nonneg hMN.le _
-    have h2 : 0 ≤ C + 2 * A + 1 := by linarith
-    have h3 : 0 ≤ M + N := by linarith
-    exact mul_nonneg (mul_nonneg h2 h1) h3
+    positivity
   have hDk : 0 ≤ ((exceptionalDivisors F c q).card : ℝ) * (Nat.card Q.G : ℝ) :=
-    mul_nonneg (Nat.cast_nonneg _) (Nat.cast_nonneg _)
+    by positivity
   have hfactor : ((exceptionalDivisors F c q).card : ℝ) * (Nat.card Q.G : ℝ) *
         (∑ r ∈ exceptionalDivisors F c q,
           ∑ t ∈ exceptionalDivisors F c q, ∑ g : Q.G,
@@ -354,5 +346,3 @@ theorem peeling_sharp_domination_bound (Q : QuadraticHeckeFamily F c)
           ∑ b ∈ paperShell F c N, ‖lam b‖ ^ 2 := by
         unfold peelingSharpConstant
         ring
-
-end DedekindZetaZeroFree.LargeSieve.Sieve

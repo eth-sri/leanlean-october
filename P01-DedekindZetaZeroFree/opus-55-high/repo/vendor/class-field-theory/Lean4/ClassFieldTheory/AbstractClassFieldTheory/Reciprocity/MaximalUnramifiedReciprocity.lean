@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Abstract reciprocity, maximal-unramified reciprocity
 
@@ -27,7 +22,6 @@ extension is the inverse of the unramified norm-quotient equivalence.  This file
 finite compatibility and then records the two formulas.
 -/
 
-noncomputable section
 
 namespace ClassFormation
 
@@ -125,9 +119,3 @@ theorem normResidueSymbol_finiteNormClass_eq_maximalUnramifiedRestriction
       (Additive.ofMul q)).symm.trans hreciprocity
   exact (congrArg (D.normResidueSymbol A v hcf K L) hfinite.symm).trans
     (D.normResidueSymbol_finiteReciprocityHom A v hcf K L q)
-
-end ValuationData
-
-end ClassFormation
-
-end

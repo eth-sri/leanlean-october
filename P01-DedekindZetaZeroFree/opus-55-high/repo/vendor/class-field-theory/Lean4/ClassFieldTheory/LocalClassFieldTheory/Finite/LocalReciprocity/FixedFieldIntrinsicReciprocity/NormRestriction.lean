@@ -12,17 +12,12 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Norm--restriction for local Artin maps
 
 This module proves norm--restriction naturality for actual finite abelian local Artin maps.
 -/
 
-noncomputable section
 
 namespace LocalClassFieldTheory
 
@@ -132,31 +127,13 @@ theorem AmbientEmbeddedFixedFieldPresentation.quotientRestriction
       qUpper (QuotientGroup.mk sigma) =
         upper.quotientEquiv
           (upper.extension.extensionQuotientMk sigma) := by
-    dsimp [qUpper]
-    have hmk :
-        upper.extension.extensionQuotientMulEquiv.symm
-            (QuotientGroup.mk sigma) =
-          upper.extension.extensionQuotientMk sigma := by
-      exact
-        upper.extension.extensionQuotientMulEquiv.symm_apply_eq.mpr
-          (upper.extension.extensionQuotientMk_apply sigma).symm
-    rw [hmk]
+    rfl
   have hqLower_mk :
       qLower (QuotientGroup.mk (Subgroup.inclusion hH'H sigma)) =
         lower.quotientEquiv
           (lower.extension.extensionQuotientMk
             (Subgroup.inclusion hH'H sigma)) := by
-    dsimp [qLower]
-    have hmk :
-        lower.extension.extensionQuotientMulEquiv.symm
-            (QuotientGroup.mk (Subgroup.inclusion hH'H sigma)) =
-          lower.extension.extensionQuotientMk
-            (Subgroup.inclusion hH'H sigma) := by
-      exact
-        lower.extension.extensionQuotientMulEquiv.symm_apply_eq.mpr
-          (lower.extension.extensionQuotientMk_apply
-            (Subgroup.inclusion hH'H sigma)).symm
-    rw [hmk]
+    rfl
   apply AlgEquiv.ext
   intro x
   apply jLower.injective
@@ -178,9 +155,7 @@ theorem AmbientEmbeddedFixedFieldPresentation.quotientRestriction
       upper.quotientEquiv_mk_apply sigma (algebraMap L L' x)
     _ = (Subgroup.inclusion hH'H sigma).1.1
         (jLower x) := by
-      rw [hbase x]
-      change sigma.1.1 (jLower x) = sigma.1.1 (jLower x)
-      rfl
+      simp_all
     _ = jLower
         (lower.quotientEquiv
           (lower.extension.extensionQuotientMk
@@ -313,16 +288,7 @@ theorem AmbientEmbeddedFixedFieldPresentation.fixedFieldNormResidueTransport
         ((phiUpper (algebraMap K K' x) : FUpper) : SeparableClosure K)
     rw [lower.baseEquiv_apply, upper.baseEquiv_apply,
       lower.baseEmbedding_eq, upper.baseEmbedding_eq]
-    change
-      jLower (algebraMap K L x) =
-        jUpper (algebraMap K' L' (algebraMap K K' x))
-    calc
-      jLower (algebraMap K L x) =
-          jUpper (algebraMap L L' (algebraMap K L x)) :=
-        (hbase (algebraMap K L x)).symm
-      _ = jUpper (algebraMap K' L' (algebraMap K K' x)) := by
-        rw [← IsScalarTower.algebraMap_apply K L L',
-          ← IsScalarTower.algebraMap_apply K K' L']
+    simp
   let aUpper : FUpperˣ :=
     Units.mapEquiv phiUpper.toMulEquiv a
   let aLower : FLowerˣ :=
@@ -391,9 +357,7 @@ theorem AmbientEmbeddedFixedFieldPresentation.fixedFieldNormResidueTransport
         Additive.toMul
           (symbolLower (Additive.ofMul aLower)) at hmul
     exact qActualLower.abelianizationCongr.eq_symm_apply.mpr hmul
-  simpa only [H, H', J, J', hJH, hJ'H', qActualLower, qActualUpper,
-    aUpper, aLower, symbolUpper, symbolLower] using
-    hrawActual
+  omega
 
 /-- Canonical ambient fixed-field norm-residue values commute with restriction
 and norm in an arbitrary finite square of nonarchimedean local fields. -/
@@ -641,12 +605,12 @@ theorem ambientEmbeddedNormResidueElement_norm_restriction
       upper.normResidueAbelianElement a =
         upper.quotientEquiv.abelianizationCongr
           upperQuotientValue := by
-    exact upper.normResidueAbelianElement_apply a
+    rfl
   have hlowerEval :
       lower.normResidueAbelianElement aNorm =
         lower.quotientEquiv.abelianizationCongr
           lowerQuotientValue := by
-    exact lower.normResidueAbelianElement_apply aNorm
+    rfl
   let ambientUpper : Gal(L' / K') :=
     ambientEmbeddedNormResidueElement K K' L' j eUpper a
   let ambientLower : Gal(L / K) :=
@@ -662,31 +626,8 @@ theorem ambientEmbeddedNormResidueElement_norm_restriction
             (upper.normResidueAbelianElement a)) =
         (Abelianization.equivOfComm (H := Gal(L / K))).symm
           (lower.normResidueAbelianElement aNorm)
-    rw [hupperEval, hlowerEval]
-    calc
-      restrictActual
-          ((Abelianization.equivOfComm (H := Gal(L' / K'))).symm
-            (upper.quotientEquiv.abelianizationCongr
-              upperQuotientValue)) =
-        (Abelianization.equivOfComm (H := Gal(L / K))).symm
-            (lower.quotientEquiv.abelianizationCongr
-              (lower.extension.extensionQuotientMulEquiv.abelianizationCongr.symm
-                (normResidueNaturalityAbelianizedRestriction
-                  H H' J J' hJH hJ'H' hH'H hJ'J
-                  (upper.extension.extensionQuotientMulEquiv.abelianizationCongr
-                    upperQuotientValue)))) :=
-        htarget upperQuotientValue
-      _ = (Abelianization.equivOfComm (H := Gal(L / K))).symm
-            (lower.quotientEquiv.abelianizationCongr
-              lowerQuotientValue) :=
-        congrArg
-          (fun z =>
-            (Abelianization.equivOfComm (H := Gal(L / K))).symm
-              (lower.quotientEquiv.abelianizationCongr z))
-          hambient
-  change
-    restrictActual ambientUpper = ambientLower
-  exact htransport
+    simp_all
+  omega
 
 /-- The actual finite abelian local Artin maps satisfy norm--restriction
 naturality in an arbitrary finite square of nonarchimedean local fields. -/
@@ -778,13 +719,4 @@ theorem abelianLocalArtinMonoidHom_norm_restriction
   change
     restrictActual (abelianLocalArtinMonoidHom K' L' a) =
       abelianLocalArtinMonoidHom K L aNorm
-  calc
-    restrictActual (abelianLocalArtinMonoidHom K' L' a) =
-        restrictActual ambientUpper := by
-      exact congrArg restrictActual hUpper
-    _ = ambientLower := htransport
-    _ = abelianLocalArtinMonoidHom K L aNorm := hLower.symm
-
-end LocalClassFieldTheory
-
-end
+  simp_all

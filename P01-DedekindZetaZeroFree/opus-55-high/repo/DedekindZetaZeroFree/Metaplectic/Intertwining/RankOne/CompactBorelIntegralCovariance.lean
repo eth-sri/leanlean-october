@@ -6,7 +6,6 @@ public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.AffineInvariance
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.KPRankOneShellRepair
 open scoped NumberField Valued
 open NumberField IsDedekindDomain MeasureTheory ValuativeRel
@@ -67,7 +66,3 @@ theorem actual_standard_integral_compact_borel_covariance
     ((b : ActualCover F ζ hζ q) * k))).val h ∂μ) = ∫ x, T x ∂μ
   simp_rw [hp]
   exact CompactBorel.integral_affine F q μ a ha (Multiplicative.toAdd t) T
-
-end DedekindZetaZeroFree.KPRankOneShellRepair
-
-end

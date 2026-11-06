@@ -38,11 +38,9 @@ noncomputable def character (π : ContRepresentation 𝕜 G V) (hπ : Continuous
   toFun := π.toRepresentation.character
   continuous_toFun := by
     have h : π.toRepresentation.character = fun g ↦ traceCLM 𝕜 V (π g) := by
-      funext g
-      rw [traceCLM_apply]
       rfl
     rw [h]
-    exact (traceCLM 𝕜 V).continuous.comp hπ
+    fun_prop
 
 variable (π : ContRepresentation 𝕜 G V) (hπ : Continuous π)
 
@@ -53,25 +51,6 @@ theorem coe_character : ⇑(character π hπ) = π.toRepresentation.character :=
 theorem character_apply (g : G) :
     character π hπ g = LinearMap.trace 𝕜 V (π g : V →ₗ[𝕜] V) :=
   (rfl)
-
-@[simp]
-theorem character_trivial :
-    character (ContRepresentation.trivial 𝕜 G V) continuous_const =
-      ContinuousMap.const G (Module.finrank 𝕜 V : 𝕜) := by
-  ext g
-  have hid : ((ContRepresentation.trivial 𝕜 G V g : V →L[𝕜] V) : V →ₗ[𝕜] V) = LinearMap.id :=
-    LinearMap.ext fun v ↦ ContRepresentation.trivial_apply (R := 𝕜) (G := G) (V := V) g v
-
-  rw [character_apply (ContRepresentation.trivial 𝕜 G V) continuous_const, hid,
-    LinearMap.trace_id, ContinuousMap.const_apply]
-
-@[simp]
-theorem character_restrict {H : Type*} [Monoid H] [TopologicalSpace H] (φ : H →* G)
-    (hφ : Continuous φ) :
-    character (π.restrict φ) (hπ.comp hφ) = (character π hπ).comp ⟨φ, hφ⟩ := by
-  ext h
-  rw [character_apply, ContinuousMap.comp_apply, character_apply, ContinuousMap.coe_mk,
-    ContRepresentation.restrict_apply]
 
 end Monoid
 
@@ -89,7 +68,7 @@ theorem star_character {ι : Type*} [Fintype ι] (e : OrthonormalBasis ι 𝕜 V
     star (character π hπ) = ∑ i, matrixCoeff π hπ (e i) (e i) := by
   ext g
   rw [ContinuousMap.star_apply, character_apply_eq_sum_inner π hπ e g]
-  simp [inner_conj_symm]
+  simp
 
 end MonoidInner
 
@@ -102,7 +81,3 @@ variable (π : ContRepresentation 𝕜 G V) (hπ : Continuous π)
 theorem character_conj (g h : G) :
     character π hπ (h * g * h⁻¹) = character π hπ g :=
   Representation.char_conj π.toRepresentation g h
-
-end Group
-
-end ContRepresentation

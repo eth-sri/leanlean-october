@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Finiteness of local power classes
 
@@ -56,5 +50,3 @@ theorem powerClassGroup_finite
       S (n : ℕ) hnS
   exact Finite.of_equiv (PowerClassGroup S n)
     (powerClassGroupEquivOfRingEquiv e n).toEquiv
-
-end ClassFieldTheory

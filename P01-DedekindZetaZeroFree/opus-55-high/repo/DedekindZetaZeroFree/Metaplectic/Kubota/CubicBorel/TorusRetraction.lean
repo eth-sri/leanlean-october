@@ -8,7 +8,6 @@ public import DedekindZetaZeroFree.Metaplectic.Torus.Cubic.CubeClassesAndCenterC
 open scoped NumberField
 open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.ActualFiniteBorel.Geometry
-noncomputable section
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 variable (q : HeightOneSpectrum (𝓞 F))
 open KPLocalSmoothRepresentation KPLocalInductionJacquetReciprocity
@@ -19,7 +18,7 @@ theorem root_ratio_one (x : Multiplicative (q.adicCompletion F)) :
   apply Units.ext
   rw [KPRankOneInduction.borelRatio_eq F q _ (KubotaRankTwo.n _ x.toAdd) rfl]
   · simp [KubotaRankTwo.n, Matrix.GeneralLinearGroup.mkOfDetNeZero]
-  · simp [KubotaRankTwo.n, Matrix.GeneralLinearGroup.mkOfDetNeZero]
+  rfl
 
 theorem retract_coordinate (b : Borel F ζ hζ q) :
     ActualFiniteTorus.coordinate F ζ hζ q (borelRetraction F ζ hζ q b) =
@@ -47,5 +46,3 @@ theorem torus_projection (t : ActualFiniteTorus.H F ζ hζ q) :
   change Matrix.ProjGenLinGroup.mk 1 * Matrix.ProjGenLinGroup.mk _ = _
   simp
   rfl
-end
-end DedekindZetaZeroFree.ActualFiniteBorel.Geometry

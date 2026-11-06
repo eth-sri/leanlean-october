@@ -12,7 +12,6 @@ open KPLocalStoneVonNeumann KPLocalPrincipalSeries KPRankOneShellContinuation
 open KPRankOneOpenCellKernel KPRankOneCenterInducedDiagonalComparison
 open KPRankOneLiftedRegulatedDiagonalAlgebra
 
-noncomputable section
 
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
@@ -57,6 +56,3 @@ theorem steinberg_shifted_cube (c y : (LocalField F q)ˣ)
   rw [map_div] at hs
   have hh : BR c c = 1 := (KPHilbert.B3_laws F ζ hζ (Sum.inr q)).2.2.2.2.2 c |>.1
   simpa [hh, BR, D] using hs
-
-end
-end DedekindZetaZeroFree.KPActualFullKernelArithmetic

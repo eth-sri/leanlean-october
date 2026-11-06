@@ -73,14 +73,14 @@ open scoped NumberField Classical
 namespace DedekindZetaZeroFree.LargeSieve.WeightedSeries.Sigma4
 variable {F : Type} [Field F] [NumberField F]
 
-private theorem upper_support_bound (h : ℝ → ℂ) (hh : HasCompactSupport h) :
+theorem upper_support_bound (h : ℝ → ℂ) (hh : HasCompactSupport h) :
     ∃ R : ℝ, 0 < R ∧ ∀ t : ℝ, h t ≠ 0 → t ≤ R := by
   obtain ⟨B, hB⟩ := hh.bddAbove
   refine ⟨max B 1, lt_of_lt_of_le zero_lt_one (le_max_right _ _), ?_⟩
   intro t ht
   exact le_trans (hB (subset_closure ht)) (le_max_left _ _)
 
-private theorem term_norm_bound {c m f : Ideal (𝓞 F)} (K : ℝ)
+theorem term_norm_bound {c m f : Ideal (𝓞 F)} (K : ℝ)
     (h : ℝ → ℂ) {X R : ℝ} (hX : 0 < X)
     (hR : ∀ t : ℝ, h t ≠ 0 → t ≤ R)
     (η : DedekindZetaZeroFree.RayClassCharacter F f) (I : Ideal (𝓞 F))
@@ -91,7 +91,7 @@ private theorem term_norm_bound {c m f : Ideal (𝓞 F)} (K : ℝ)
     · simp [S4Term, hc] at hI
   exact (div_le_iff₀ hX).mp (hR _ hw)
 
-private theorem allterm_norm_bound {m f : Ideal (𝓞 F)}
+theorem allterm_norm_bound {m f : Ideal (𝓞 F)}
     (h : ℝ → ℂ) {X R : ℝ} (hX : 0 < X)
     (hR : ∀ t : ℝ, h t ≠ 0 → t ≤ R)
     (η : DedekindZetaZeroFree.RayClassCharacter F f) (I : Ideal (𝓞 F))
@@ -247,7 +247,7 @@ private lemma rapid_summable (h : ℝ → ℂ) (hh : HasRapidDecayAtInfinity h)
   have hmajor : Summable (fun I : Ideal (𝓞 F) =>
       C * u ^ (-(2 : ℝ)) * (if I = ⊥ then 0 else (Ideal.absNorm I : ℝ) ^ (-(2 : ℝ)))) :=
     (DedekindZetaZeroFree.LargeSieve.summable_ideal_inverse_power F 2 (by norm_num)).mul_left _
-  refine Summable.of_nonneg_of_le (g := g) (fun I => by dsimp [g]; split <;> positivity)
+  refine Summable.of_nonneg_of_le (g := g) (fun I => by positivity)
       ?_ (hsmall.add hmajor)
   intro I
   by_cases hI : I = ⊥
@@ -304,7 +304,7 @@ theorem rapid_convergence_api :
       exact mul_le_of_le_one_right (norm_nonneg _)
         (DedekindZetaZeroFree.LargeSieve.RayOperations.norm_le_one η I)
     · simp only [if_neg hI, norm_zero]
-      split <;> positivity
+      positivity
   · intro c m f hf K h hh X hX η
     apply Summable.of_nonneg_of_le (fun I => norm_nonneg _) _ (hlinear h hh X hX)
     intro I
@@ -314,7 +314,7 @@ theorem rapid_convergence_api :
       exact mul_le_of_le_one_right (norm_nonneg _)
         (DedekindZetaZeroFree.LargeSieve.RayOperations.norm_le_one η I)
     · simp only [if_neg hI, norm_zero]
-      split <;> positivity
+      positivity
   · intro m f a hf ha h hh X hX η
     have hA : 0 < (Ideal.absNorm a : ℝ) := lt_of_lt_of_le zero_lt_one (norm_one_le ha)
     have hs := rapid_summable h hh
@@ -333,7 +333,7 @@ theorem rapid_convergence_api :
         have hη := DedekindZetaZeroFree.LargeSieve.RayOperations.norm_le_one η b
         exact mul_le_of_le_one_right (norm_nonneg _) (by nlinarith [norm_nonneg (η b)])
       · simp only [if_neg hb, norm_zero]
-        split <;> positivity
+        positivity
     · apply Summable.of_nonneg_of_le (fun b => norm_nonneg _) _ hs
       intro b
       split_ifs with hb <;> simp_all
@@ -360,7 +360,7 @@ variable {F : Type} [Field F] [NumberField F]
  def squareMap (p : SfIdeals F × NzIdeals F) : Ideal (𝓞 F) :=
   p.1.val * p.2.val ^ 2
 
-private theorem squareMap_injective : Function.Injective (squareMap (F := F)) := by
+theorem squareMap_injective : Function.Injective (squareMap (F := F)) := by
   classical
   intro p q heq
   have hc := congrArg UniqueFactorizationMonoid.normalizedFactors heq
@@ -394,25 +394,23 @@ private theorem squareMap_injective : Function.Injective (squareMap (F := F)) :=
       p.2.property q.2.property).mpr (Multiset.ext.mpr fun a => (hcount a).2))
   exact Prod.ext (Subtype.ext ha) (Subtype.ext hb)
 
-private theorem squareMap_range {I : Ideal (𝓞 F)} (hI : I ≠ ⊥) :
+theorem squareMap_range {I : Ideal (𝓞 F)} (hI : I ≠ ⊥) :
     I ∈ Set.range (squareMap (F := F)) := by
   obtain ⟨b, a, heq, hsf⟩ := exists_sq_mul_squarefree I
   have ha : a ≠ ⊥ := by
     intro hz
-    simp [hz] at heq
-    exact hI heq.symm
+    simp_all
   have hb : b ≠ ⊥ := by
     intro hz
-    simp [hz] at heq
-    exact hI heq.symm
+    simp_all
   exact ⟨(⟨a, ha, hsf⟩, ⟨b, hb⟩), by simpa [squareMap, mul_comm] using heq⟩
 
-private theorem sup_square (a b m : Ideal (𝓞 F)) :
+theorem sup_square (a b m : Ideal (𝓞 F)) :
     (a * b ^ 2) ⊔ m = ⊤ ↔ a ⊔ m = ⊤ ∧ b ⊔ m = ⊤ := by
   simp only [← Ideal.isCoprime_iff_sup_eq, IsCoprime.mul_left_iff,
     IsCoprime.pow_left_iff (by norm_num : 0 < (2 : ℕ))]
 
-private theorem sup_product (b m f : Ideal (𝓞 F)) :
+theorem sup_product (b m f : Ideal (𝓞 F)) :
     b ⊔ (m * f) = ⊤ ↔ b ⊔ m = ⊤ ∧ b ⊔ f = ⊤ := by
   simp only [← Ideal.isCoprime_iff_sup_eq, IsCoprime.mul_right_iff]
 
@@ -444,12 +442,11 @@ private theorem reindex (m : Ideal (𝓞 F)) {f : Ideal (𝓞 F)}
       simp
     have he : η (a.val * b.val ^ 2) = η a.val * (η b.val) ^ 2 := by
       simp only [pow_two, η.map_mul']
-    simp only [T, squareMap, h0, true_and, sup_square, hP _ _ a.property.1 b.property,
-      hn, he, sup_product]
+    simp only [T, squareMap, sup_square, hP _ _ a.property.1 b.property, hn, he, sup_product]
     by_cases ha : a.val ⊔ m = ⊤ ∧ P a.val
     · by_cases hbm : b.val ⊔ m = ⊤
       · by_cases hbf : b.val ⊔ f = ⊤
-        · simp [a.property.1, b.property, hb2, ha.1, ha.2, hbm, hbf, mul_assoc, mul_comm, mul_left_comm]
+        · simp [a.property.1, hb2, ha.1, ha.2, hbm, hbf, mul_assoc, mul_comm]
         · have hz : η b.val = 0 := (η.eq_zero_iff' b.val).mpr (Or.inr hbf)
           simp [ha.1, ha.2, hbm, hbf, hz]
       · simp [ha.1, ha.2, hbm]
@@ -484,7 +481,7 @@ private theorem reindex (m : Ideal (𝓞 F)) {f : Ideal (𝓞 F)}
       apply tsum_congr
       intro b
       by_cases hb : b ≠ ⊥ <;>
-        simp [Set.indicator, hb, weightedSquareSeries]
+        simp [Set.indicator, hb]
     · simp [ha]
   simp_rw [hi]
   refine (tsum_subtype {a : Ideal (𝓞 F) | a ≠ ⊥ ∧ Squarefree a}
@@ -493,7 +490,7 @@ private theorem reindex (m : Ideal (𝓞 F)) {f : Ideal (𝓞 F)}
   apply tsum_congr
   intro a
   by_cases ha : a ≠ ⊥ ∧ Squarefree a
-  · simp [Set.indicator, ha.1, ha.2, and_assoc]
+  · simp [Set.indicator, ha.1, ha.2]
   · have hx : ¬ (a ≠ ⊥ ∧ Squarefree a ∧ a ⊔ m = ⊤ ∧ P a) := by tauto
     simp [Set.indicator, ha, hx]
 
@@ -543,7 +540,7 @@ open scoped NumberField Classical
 namespace DedekindZetaZeroFree.LargeSieve.WeightedSeries.Sigma4
 variable {F : Type} [Field F] [NumberField F]
 
-private theorem sc_squarefree (c a : Ideal (𝓞 F)) (hc : c ≠ ⊥)
+theorem sc_squarefree (c a : Ideal (𝓞 F)) (hc : c ≠ ⊥)
     (ha : Squarefree a) : sc c a = (Ideal.absNorm (DedekindZetaZeroFree.LargeSieve.Bilinear.goodPart c a) : ℝ) := by
   have hne : a ≠ ⊥ := by
     intro hz
@@ -564,15 +561,15 @@ private theorem sc_squarefree (c a : Ideal (𝓞 F)) (hc : c ≠ ⊥)
   simp only [Multiset.map_id', Multiset.toFinset_val, Multiset.dedup_eq_self.mpr
     (Multiset.Nodup.filter _ hnodup)]
 
-private theorem sup_mul_iff (a b d : Ideal (𝓞 F)) :
+theorem sup_mul_iff (a b d : Ideal (𝓞 F)) :
     a ⊔ (b * d) = ⊤ ↔ a ⊔ b = ⊤ ∧ a ⊔ d = ⊤ := by
   simp only [← Ideal.isCoprime_iff_sup_eq, IsCoprime.mul_right_iff]
 
-private theorem mul_sup_iff (a b d : Ideal (𝓞 F)) :
+theorem mul_sup_iff (a b d : Ideal (𝓞 F)) :
     (a * b) ⊔ d = ⊤ ↔ a ⊔ d = ⊤ ∧ b ⊔ d = ⊤ := by
   simp only [← Ideal.isCoprime_iff_sup_eq, IsCoprime.mul_left_iff]
 
-private theorem pair_facts {c m e z : Ideal (𝓞 F)} {K : ℝ} (hc : c ≠ ⊥)
+theorem pair_facts {c m e z : Ideal (𝓞 F)} {K : ℝ} (hc : c ≠ ⊥)
     (he : e ∈ DedekindZetaZeroFree.LargeSieve.Bilinear.squarefreeBadPool c) (hem : e ⊔ m = ⊤)
     (hz : z ∈ DedekindZetaZeroFree.LargeSieve.Sieve.idealAdmissibleFinset F (m * c) K) :
     e * z ≠ ⊥ ∧ Squarefree (e * z) ∧ (e * z) ⊔ m = ⊤ ∧ sc c (e * z) ≤ K ∧
@@ -593,7 +590,7 @@ private theorem pair_facts {c m e z : Ideal (𝓞 F)} {K : ℝ} (hc : c ≠ ⊥)
   rw [sc_squarefree c (e * z) hc hezsf, ← hzg]
   exact hzn
 
-private theorem finite_reindex {c m : Ideal (𝓞 F)} {K : ℝ} (hc : c ≠ ⊥)
+theorem finite_reindex {c m : Ideal (𝓞 F)} {K : ℝ} (hc : c ≠ ⊥)
     (G : Ideal (𝓞 F) → ℂ) :
     (∑' a : Ideal (𝓞 F), if a ≠ ⊥ ∧ Squarefree a ∧ a ⊔ m = ⊤ ∧ sc c a ≤ K
       then G a else 0) =
@@ -719,7 +716,7 @@ open scoped NumberField Classical
 namespace DedekindZetaZeroFree.LargeSieve.WeightedSeries.Sigma4
 variable {F : Type} [Field F] [NumberField F]
 
-private theorem weighted_radical_reindex
+theorem weighted_radical_reindex
     {c m f : Ideal (𝓞 F)} (hc : c ≠ ⊥) (hm : m ≠ ⊥) (hf : f ≠ ⊥)
     (hcm : c.radical ∣ m) {K X : ℝ} (hK : 1 ≤ K) (hX : 0 < X)
     (h : ℝ → ℂ) (hh : HasRapidDecayAtInfinity h)
@@ -734,14 +731,12 @@ private theorem weighted_radical_reindex
     constructor
     · rintro ⟨ha, hs, ham, hn⟩
       rw [kernel_algebra.2 hc hm hcm hs ham] at hn
-      exact ⟨hs, ham, hn⟩
+      simp_all
     · rintro ⟨hs, ham, hn⟩
       exact ⟨hs.ne_zero, hs, ham, by rwa [kernel_algebra.2 hc hm hcm hs ham]⟩
   rw [tsum_eq_sum (s := DedekindZetaZeroFree.LargeSieve.Sieve.idealAdmissibleFinset F m K)
     (fun a ha => if_neg (fun hp => ha ((hmask a).mp hp)))]
-  apply Finset.sum_congr rfl
-  intro a ha
-  exact if_pos ((hmask a).mpr ha)
+  simp_all
 
 theorem radical_reindex_api :
     (∀ {c m f : Ideal (𝓞 F)}
@@ -837,12 +832,12 @@ def squareWeightSeries (m f : Ideal (𝓞 F)) (h : ℝ → ℂ) (X : ℝ)
 theorem finite_support_S4allTerm {m f : Ideal (𝓞 F)}
     (h : ℝ → ℂ) (hh : HasCompactSupport h) {X : ℝ} (hX : 0 < X)
     (η : DedekindZetaZeroFree.RayClassCharacter F f) :
-    (Function.support (S4allTerm m h X η)).Finite := by
-  exact (DedekindZetaZeroFree.LargeSieve.WeightedSeries.Sigma4.compact_support_api (F := F)).2.1 h hh hX η
+    (Function.support (S4allTerm m h X η)).Finite := 
+  (DedekindZetaZeroFree.LargeSieve.WeightedSeries.Sigma4.compact_support_api (F := F)).2.1 h hh hX η
 
 theorem rapidDecay_of_compactSupport (h : ℝ → ℂ) (hh : HasCompactSupport h) :
-    HasRapidDecayAtInfinity h := by
-  exact (DedekindZetaZeroFree.LargeSieve.WeightedSeries.Sigma4.compact_support_api (F := ℚ)).2.2.2 h hh
+    HasRapidDecayAtInfinity h := 
+  (DedekindZetaZeroFree.LargeSieve.WeightedSeries.Sigma4.compact_support_api (F := ℚ)).2.2.2 h hh
 
 theorem S4_reindex_quadratic_of_radical_dvd {c m f : Ideal (𝓞 F)}
     (hc : c ≠ ⊥) (hm : m ≠ ⊥) (hf : f ≠ ⊥) (hcm : c.radical ∣ m)
@@ -851,8 +846,8 @@ theorem S4_reindex_quadratic_of_radical_dvd {c m f : Ideal (𝓞 F)}
     (η : DedekindZetaZeroFree.RayClassCharacter F f) (hprim : η.IsPrimitive)
     (hquad : ∀ I : Ideal (𝓞 F), (η I) ^ 3 = η I) :
     S4 c m K h X η = ∑ a ∈ DedekindZetaZeroFree.LargeSieve.Sieve.idealAdmissibleFinset F m K,
-      η a * squareWeightSeries m f h X a := by
-  exact (DedekindZetaZeroFree.LargeSieve.WeightedSeries.Sigma4.radical_reindex_api (F := F)).2 hc hm hf hcm hK hX h hh η hprim hquad
+      η a * squareWeightSeries m f h X a := 
+  (DedekindZetaZeroFree.LargeSieve.WeightedSeries.Sigma4.radical_reindex_api (F := F)).2 hc hm hf hcm hK hX h hh η hprim hquad
 
 theorem S4_reindex_fixed_primes_quadratic {c m f : Ideal (𝓞 F)}
     (hc : c ≠ ⊥) (hm : m ≠ ⊥) (hf : f ≠ ⊥)
@@ -862,11 +857,5 @@ theorem S4_reindex_fixed_primes_quadratic {c m f : Ideal (𝓞 F)}
     (hquad : ∀ I : Ideal (𝓞 F), (η I) ^ 3 = η I) :
     S4 c m K h X η = ∑ e ∈ squarefreeBadPool c, if e ⊔ m = ⊤ then
       η e * (∑ z ∈ DedekindZetaZeroFree.LargeSieve.Sieve.idealAdmissibleFinset F (m * c) K,
-        η z * squareWeightSeries m f h X (e * z)) else 0 := by
-  exact (DedekindZetaZeroFree.LargeSieve.WeightedSeries.Sigma4.fixed_primes_reindex_api (F := F)).2 hc hm hf hK hX h hh η hprim hquad
-
-end DedekindZetaZeroFree.LargeSieve.Bilinear
-
-end
-
-end
+        η z * squareWeightSeries m f h X (e * z)) else 0 := 
+  (DedekindZetaZeroFree.LargeSieve.WeightedSeries.Sigma4.fixed_primes_reindex_api (F := F)).2 hc hm hf hK hX h hh η hprim hquad

@@ -16,14 +16,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Multiplicativity of the abstract reciprocity map
 
@@ -38,7 +30,6 @@ namespace ClassFormation
 open KummerTheory
 open CyclicCohomology
 
-noncomputable section
 
 open CategoryTheory
 open scoped BigOperators
@@ -167,13 +158,7 @@ theorem reciprocityMap_mul
         Fin 3 → ambientFixedAddSubgroup A E) i ∈
           v.infiniteUnitAddSubgroup E K
             (D.maximalUnramifiedField_le_of_le hLK)
-    change ∀ i : Fin 3,
-      (![p4 - p3, p1 - p3,
-          p3 - D.frobeniusQuotientAction A KR.field L hLK tau1 p3] :
-        Fin 3 → ambientFixedAddSubgroup A E) i ∈
-          v.infiniteUnitAddSubgroup E K
-            (D.maximalUnramifiedField_le_of_le hLK) at hmem
-    exact hmem
+    omega
   have huMem : u ∈ v.infiniteUnitAddSubgroup E K
       (D.maximalUnramifiedField_le_of_le hLK) := by
     simpa [u, p1, p3, p4, E, S1, S3, S4, sigma3, sigma4, m,
@@ -217,8 +202,7 @@ theorem reciprocityMap_mul
       (p3 - D.frobeniusQuotientAction A KR.field L hLK (tau4 * tau1) p3) by
         simpa [u, p1, p3, p4, tau1, tau4, sigma3, sigma4, m,
           E, S1, S3, S4, pi1, pi3] using hraw]
-    simpa only [tau, uiU, correction, B,
-      D.frobeniusQuotientRepresentation_apply] using hdiff
+    omega
   let hIfinite : Finite
       (I.toSubgroup ⧸ extensionSubgroup I E hEI) :=
     D.maximalUnramifiedExtension_finite KR.field L hLK
@@ -247,18 +231,10 @@ theorem reciprocityMap_mul
         D.maximalUnramifiedNormClass A K.field L r2 =
           D.maximalUnramifiedNormClass A K.field L r3 := by
     have hr42 : r4 = r2 := by
-      simpa [r4, r2, S4, S2, sigma4, m] using hnorm42
+      omega
     rw [← hr42, add_comm]
     exact hclasses41
   apply D.reciprocityMap_mul_of_primeNormClass_eq
     A v hAxiom K L hLK sigma1 sigma2 pi1 pi2 pi3
       hpi1 hpi2 hpi3
-  simpa [r1, r2, r3, E, S1, S2, S3, sigma3, pi1, pi2, pi3]
-    using hclasses12
-
-end DegreeData
-end reciprocityMapMultiplicativity
-
-end
-
-end ClassFormation
+  omega

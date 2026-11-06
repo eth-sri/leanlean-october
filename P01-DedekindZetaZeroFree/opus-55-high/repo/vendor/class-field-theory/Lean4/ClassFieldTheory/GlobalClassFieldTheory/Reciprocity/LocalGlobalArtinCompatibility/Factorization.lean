@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Factorization of the global Artin map through local Artin maps
 
@@ -49,7 +45,7 @@ variable
 
 /-- The finite quotient coordinate remains primary after transport to
 the relative Galois group. -/
-private theorem numberFieldTowerFiniteQuotientCoordinate_mem_primary
+theorem numberFieldTowerFiniteQuotientCoordinate_mem_primary
     (p : Nat.Primes) (τ : (numberFieldTowerBaseSubgroup K L).toSubgroup)
     (σ' : Gal(L / K))
     (hτσ :
@@ -188,81 +184,13 @@ theorem chosenFinitePlaceLocalNormSubgroup_le_globalNormResidueKernel
       ((chosenFinitePlaceArtinMonoidHom_eq_one_iff_chosenLocalNorm
         (K := K) (L := L) v x).2 hx)
 
-/-- The restriction of the global norm-residue homomorphism to one
-finite-place idele class depends only on the corresponding local Artin
-symbol.
-
-This is the exact quotient step used in the prime-primary reduction:
-the already proved inclusion of the local norm subgroup in the global
-norm kernel makes the value independent of the chosen local preimage. -/
-theorem globalNormResidue_finitePlaceIdeleClass_eq_of_localArtin_eq
-    (v : IsDedekindDomain.HeightOneSpectrum (𝓞 K))
-    (x y : (v.adicCompletion K)ˣ)
-    (hxy :
-      chosenFinitePlaceArtinMonoidHom
-          (K := K) (L := L) v x =
-        chosenFinitePlaceArtinMonoidHom
-          (K := K) (L := L) v y) :
-    globalNormResidueMonoidHom K L
-        (IdeleGroup.finitePlaceIdeleClass v x) =
-      globalNormResidueMonoidHom K L
-        (IdeleGroup.finitePlaceIdeleClass v y) := by
-  let f :
-      (v.adicCompletion K)ˣ →* (L ≃ₐ[K] L) :=
-    (globalNormResidueMonoidHom K L).comp
-      (IdeleGroup.finitePlaceIdeleClass v)
-  let g :
-      (v.adicCompletion K)ˣ →* (L ≃ₐ[K] L) :=
-    chosenFinitePlaceArtinMonoidHom
-      (K := K) (L := L) v
-  have hlocal :
-      g (x * y⁻¹) = 1 := by
-    rw [map_mul, map_inv, hxy, mul_inv_cancel]
-  have hglobal :
-      f (x * y⁻¹) = 1 := by
-    exact
-      globalNormResidueMonoidHom_finitePlaceIdeleClass_eq_one_of_localArtin_eq_one
-        (K := K) (L := L) v (x * y⁻¹) hlocal
-  have hquotient :
-      f x * (f y)⁻¹ = 1 := by
-    simpa only [map_mul, map_inv] using hglobal
-  exact mul_inv_eq_one.mp hquotient
-
-/-- Finite-place local--global compatibility for a `p`-primary
-decomposition automorphism which generates the whole relative Galois
-group.  The auxiliary-field construction is isolated in an opaque
-representative lemma, so consumers only see this short quotient step. -/
-theorem
-    globalNormResidueMonoidHom_finitePlaceIdeleClass_eq_of_primary_generator
-    (v : IsDedekindDomain.HeightOneSpectrum (𝓞 K))
-    (p : Nat.Primes)
-    (σ :
-      absoluteValueDecompositionGroup K
-        (chosenFinitePlaceExtension (L := L) v).1)
-    (hgenerate :
-      Subgroup.closure ({σ.1} : Set (Gal(L / K))) = ⊤)
-    (hprimary :
-      σ.1 ∈ CommGroup.primaryComponent (Gal(L / K)) p.1)
-    (x : (v.adicCompletion K)ˣ)
-    (hx :
-      chosenFinitePlaceArtinMonoidHom
-          (K := K) (L := L) v x = σ.1) :
-    globalNormResidueMonoidHom K L
-        (IdeleGroup.finitePlaceIdeleClass v x) = σ.1 := by
-  obtain ⟨z, hlocal, hglobal⟩ :=
-    exists_finitePlacePrimary_localGlobalRepresentative
-      (K := K) (L := L) v p σ hgenerate hprimary
-  exact
-    (globalNormResidue_finitePlaceIdeleClass_eq_of_localArtin_eq
-      (K := K) (L := L) v x z (hx.trans hlocal.symm)).trans hglobal
-
 /-- The global norm-residue symbol at one finite place, factored
 through the actual image of the chosen local Artin homomorphism.
 
 The definition uses a preimage only to specify the value.  Its
 well-definedness and multiplicativity are consequences of the genuine
 one-place norm-kernel theorem above. -/
-noncomputable def finitePlaceGlobalNormResidueFactor
+def finitePlaceGlobalNormResidueFactor
     (v : IsDedekindDomain.HeightOneSpectrum (𝓞 K)) :
     (chosenFinitePlaceArtinMonoidHom
         (K := K) (L := L) v).range →*
@@ -312,12 +240,7 @@ theorem finitePlaceGlobalNormResidueFactor_comp_rangeRestrict
         g.rangeRestrict_surjective ⟨f, hker⟩).comp
         g.rangeRestrict =
       f
-  simpa only [MonoidHom.liftOfSurjective] using
-    g.rangeRestrict.liftOfRightInverse_comp
-      (Function.surjInv g.rangeRestrict_surjective)
-      (Function.rightInverse_surjInv
-        g.rangeRestrict_surjective)
-      ⟨f, hker⟩
+  simp
 
 /-- Pointwise norm/restriction naturality, with the coercion from the
 homomorphism equality normalized once outside the descent construction. -/
@@ -340,11 +263,7 @@ homomorphism equality normalized once outside the descent construction. -/
           (globalNormResidueMonoidHomOfEmbedding K' L' j c) =
       globalNormResidueMonoidHomOfEmbedding K L
         (j.comp (IsScalarTower.toAlgHom ℚ L L'))
-        (_root_.ideleClassNorm K K' c) := by
-  exact
-    DFunLike.congr_fun
-      (globalNormResidueMonoidHomOfEmbedding_norm_restriction
-        (K := K) (L := L) (K' := K') (L' := L') j) c
+        (_root_.ideleClassNorm K K' c) := by apply GlobalClassFieldTheory.Reciprocity.finitePadicAuxiliary_globalNormResidueMonoidHomOfEmbedding_norm_restriction_apply <;> assumption
 
 /-- Norming one upper representative down a finite Galois base-change
 transports both its chosen local Artin value and its global norm-residue
@@ -399,29 +318,12 @@ fixed-field tower occurs in the declaration type. -/
           (LocalFieldTheory.normUnits
             (v.adicCompletion K) (W.adicCompletion M) y) =
         σG
-    calc
-      chosenFinitePlaceArtinMonoidHom (K := K) (L := L) v
-          (LocalFieldTheory.normUnits
-            (v.adicCompletion K) (W.adicCompletion M) y) =
-        ((AlgEquiv.restrictNormalHom L).comp
-          (AlgEquiv.restrictScalarsHom K))
-            (chosenFinitePlaceArtinMonoidHom
-              (K := M) (L := L) W y) := by
-                simpa only [MonoidHom.coe_comp, Function.comp_apply]
-                  using hnat.symm
-      _ = ((AlgEquiv.restrictNormalHom L).comp
-          (AlgEquiv.restrictScalarsHom K)) σM :=
-        congrArg
-          (((AlgEquiv.restrictNormalHom L).comp
-            (AlgEquiv.restrictScalarsHom K)) : Gal(L / M) →* Gal(L / K)) hy
-      _ = σG := hrestrict
+    simp_all
   let j : L →ₐ[ℚ] SeparableClosure ℚ :=
     AlgebraicNumberTheory.numberFieldSeparableClosureEmbedding L
   have hjLower :
       j.comp (IsScalarTower.toAlgHom ℚ L L) =
         AlgebraicNumberTheory.numberFieldSeparableClosureEmbedding L := by
-    apply AlgHom.ext
-    intro a
     rfl
   have hnormClass :
       _root_.ideleClassNorm K M
@@ -457,8 +359,8 @@ fixed-field tower occurs in the declaration type. -/
       _ = ((AlgEquiv.restrictNormalHom L).comp
           (AlgEquiv.restrictScalarsHom K))
           (globalNormResidueMonoidHom M L
-            (IdeleGroup.finitePlaceIdeleClass W y)) := by
-        exact congrArg
+            (IdeleGroup.finitePlaceIdeleClass W y)) := 
+        congrArg
           ((AlgEquiv.restrictNormalHom L).comp
             (AlgEquiv.restrictScalarsHom K))
           (DFunLike.congr_fun
@@ -568,13 +470,7 @@ field tower in the declaration type. -/
       ((AlgEquiv.restrictNormalHom L).comp
           (AlgEquiv.restrictScalarsHom K)) σM =
         σG := by
-    simpa only [
-      MonoidHom.coe_comp,
-      Function.comp_apply,
-      AlgEquiv.restrictNormalHom_id,
-      MonoidHom.id_apply,
-      AlgEquiv.restrictScalarsHom_apply
-    ] using hσMrestrict
+    simp_all
   exact
     exists_finitePlacePrimaryNormDescent_localGlobalRepresentative
       (K := K) (L := L) v W hWbelow p δM
@@ -742,12 +638,7 @@ theorem finitePlaceGlobalNormResidueFactor_eq_subtype_iff_primary
             (chosenFinitePlaceArtinMonoidHom
               (K := K) (L := L) v).range) := by
   constructor
-  · intro h p hp σ
-    exact congrArg
-      (fun f :
-        (chosenFinitePlaceArtinMonoidHom
-          (K := K) (L := L) v).range →* Gal(L / K) => f σ)
-      h
+  · simp_all
   · intro h
     apply MonoidHom.ext_of_eq_on_finitePrimaryComponents
     intro p hp σ
@@ -784,8 +675,3 @@ theorem globalNormResidueMonoidHom_comp_finitePlaceIdeleClass
   exact
     finitePlaceGlobalNormResidueFactor_eq_subtype
       (K := K) (L := L) v
-
-end Reciprocity
-end GlobalClassFieldTheory
-
-end

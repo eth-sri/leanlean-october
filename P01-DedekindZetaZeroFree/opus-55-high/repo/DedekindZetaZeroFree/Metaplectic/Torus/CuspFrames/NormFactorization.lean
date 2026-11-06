@@ -11,7 +11,7 @@ set_option backward.isDefEq.respectTransparency false
 namespace DedekindZetaZeroFree.KPMsAngularSourceRecipe
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-private theorem finiteComponent_mul (x y : G F ζ hζ) :
+theorem finiteComponent_mul (x y : G F ζ hζ) :
     finiteComponent F ζ hζ (x * y) =
       finiteComponent F ζ hζ x * finiteComponent F ζ hζ y := by
   have hx : finiteComponent F ζ hζ x ∈

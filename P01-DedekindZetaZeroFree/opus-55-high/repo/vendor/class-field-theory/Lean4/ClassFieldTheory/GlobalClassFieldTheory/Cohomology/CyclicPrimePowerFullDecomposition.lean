@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Full decomposition places in cyclic prime-power extensions
 
@@ -38,7 +32,6 @@ class norm is surjective.
 open scoped NumberField Classical
 open NumberField IsDedekindDomain
 
-noncomputable section
 
 open RelativeIdeleGroup.Cohomology
 
@@ -235,11 +228,7 @@ theorem ideleClassNorm_range_eq_top_of_splitsCompletely_outside
         (a * (IdeleGroup.principalIdele K x)⁻¹) =
       QuotientGroup.mk'
         (IdeleGroup.principalSubgroup K) a
-  rw [map_mul, map_inv, hp]
-  exact
-    mul_one
-      (QuotientGroup.mk'
-        (IdeleGroup.principalSubgroup K) a)
+  simp_all
 
 /-- The preceding surjectivity says that the idele-class norm index is
 one. -/
@@ -307,7 +296,7 @@ theorem
         hp hexponent hcard)
       S hsplit
   have hp_le_one : p ≤ 1 := by
-    simpa [hindex] using hLower
+    omega
   exact (Nat.not_lt_of_ge hp_le_one) hp.one_lt
 
 /-- In a cyclic extension of prime-power degree, infinitely many finite
@@ -353,63 +342,3 @@ theorem cyclic_prime_power_infinite_fullDecompositionPlaces
       (K := K) (L := L)
       hp hexponent hcard
   simpa [M, hDegree] using hLowerM
-
-/-- Finset-avoidance form of the conditional full-decomposition
-infinitude result, convenient for recursively choosing new places. -/
-theorem
-    exists_fullDecompositionPlace_outside_finset_of_primeSubextension_normIndex
-    {p exponent : ℕ}
-    (hp : p.Prime)
-    (hexponent : 0 < exponent)
-    (hcard : Nat.card (L ≃ₐ[K] L) = p ^ exponent)
-    (hLower :
-      p ≤
-        (RelativeIdeleGroup.Cohomology.ideleClassNorm K
-          (cyclicPrimeSubextension
-            (K := K) (L := L)
-            hp hexponent hcard)).range.index)
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
-    ∃ v : HeightOneSpectrum (𝓞 K),
-      v ∉ S ∧
-      finitePlaceDecompositionGroup
-          (K := K) (L := L) v = ⊤ := by
-  have hinfinite :=
-    cyclic_prime_power_fullDecompositionPlaces_infinite_of_primeSubextension_normIndex
-      (K := K) (L := L)
-      hp hexponent hcard hLower
-  by_contra hexists
-  push Not at hexists
-  apply hinfinite
-  apply S.finite_toSet.subset
-  intro v hv
-  by_contra hvS
-  exact (hexists v hvS) hv
-
-/-- Finset-avoidance form of the unconditional full-decomposition
-infinitude theorem. -/
-theorem exists_fullDecompositionPlace_outside_finset
-    {p exponent : ℕ}
-    (hp : p.Prime)
-    (hexponent : 0 < exponent)
-    (hcard : Nat.card (L ≃ₐ[K] L) = p ^ exponent)
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
-    ∃ v : HeightOneSpectrum (𝓞 K),
-      v ∉ S ∧
-      finitePlaceDecompositionGroup
-          (K := K) (L := L) v = ⊤ := by
-  have hinfinite :=
-    cyclic_prime_power_infinite_fullDecompositionPlaces
-      (K := K) (L := L)
-      hp hexponent hcard
-  by_contra hexists
-  push Not at hexists
-  apply hinfinite
-  apply S.finite_toSet.subset
-  intro v hv
-  by_contra hvS
-  exact (hexists v hvS) hv
-
-end Cohomology
-end GlobalClassFieldTheory
-
-end

@@ -9,7 +9,6 @@ open NumberField IsDedekindDomain
 
 namespace DedekindZetaZeroFree.WeightedFiniteCoefficient
 noncomputable section
-set_option autoImplicit false
 
 variable {F : Type} [Field F] [NumberField F]
 
@@ -97,7 +96,6 @@ theorem thetaHom_unit (A : SArithmeticData F)
     (hu : ∀ ε : A.U, A.ideleSInverseProduct Φ (A.diagonal ε.val) = 1)
     (v : A.Rˣ) : thetaHom A Φ (fieldUnit A (v : A.R) v.ne_zero) = 1 := by
   have he : fieldUnit A (v : A.R) v.ne_zero = (A.unitEquiv.symm v).val := by
-    apply Units.ext
     rfl
   change (A.ideleSInverseProduct Φ (A.diagonal _) : ℂ) = 1
   rw [he, hu, Circle.coe_one]
@@ -175,7 +173,7 @@ theorem theta_factor (A : SArithmeticData F) (D : ComparisonPoissonCoefficientDa
   intro p hp
   have he : fieldUnit A (π p ^ v p) (hn p) = fieldUnit A (π p) (D.generates _).1 ^ v p := by
     apply Units.ext
-    simp [fieldUnit]
+    rfl
   rw [he, map_pow, hD.theta_recipe _ (D.generates _).1]
   rfl
 
@@ -205,8 +203,3 @@ theorem power_factor (A : SArithmeticData F) (I : A.Exterior) (P : Finset (Exter
   intro p hp
   congr 1
   ring
-
-end Proof
-
-end
-end DedekindZetaZeroFree.WeightedFiniteCoefficient

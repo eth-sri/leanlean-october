@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # First principal units in mixed characteristic
 
@@ -136,7 +132,7 @@ theorem finite_rank_and_torsion_projection_of_surjective
     apply Subtype.ext
     apply sub_eq_zero.mp
     have hzero : tproj (x - y) = 0 := by
-      rw [map_sub, hxy, sub_self]
+      simp_all
     have hzN : (((x - y : T) : M)) ∈ N := by
       change f (((x - y : T) : M)) = 0
       exact hzero
@@ -163,8 +159,7 @@ theorem finite_rank_and_torsion_projection_of_surjective
   let : Module.Finite R (M ⧸ T) := Module.Finite.quotient R T
   have hrankFree : Module.finrank R (M ⧸ T) = d := by
     have hsum := T.finrank_quotient_add_finrank
-    rw [hrankT, add_zero] at hsum
-    exact hsum.trans hrankM
+    simp_all
   exact
     { moduleFinite := hM
       finiteTorsion := hT
@@ -174,7 +169,7 @@ theorem finite_rank_and_torsion_projection_of_surjective
 
 /-- Consume a finite quotient setup and forget the concrete quotient map
 from the result type. -/
-noncomputable def finite_rank_torsion_data_of_setup
+def finite_rank_torsion_data_of_setup
     {R M Q : Type*} [CommRing R] [IsDomain R]
     [IsPrincipalIdealRing R]
     [AddCommGroup M] [AddCommGroup Q] [Module R M] [Module R Q]
@@ -301,7 +296,7 @@ theorem mixed_principalUnitSuccKernelData
       (ramificationIndexOfWithZeroValuation v : ℚ) /
           ((F.residueCharacteristic : ℚ) - 1) < ((n + 1 : ℕ) : ℚ) :=
     lt_trans hlevel (by exact_mod_cast Nat.lt_succ_self n)
-  let hr : 1 ≤ n + 1 := Nat.succ_le_succ (Nat.zero_le n)
+  let hr : 1 ≤ n + 1 := by simp
   let deep := Additive
     (LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup (F.toCompleteDVF) (n + 1))
   let : Module R deep := F.higherPrincipalUnitPadicModule hr
@@ -331,7 +326,7 @@ theorem mixed_principalUnitSuccKernelData
 
 /-- The finite quotient map in the mixed-characteristic field-unit structure theorem, with the deep logarithmic
 lattice identified as its finite free kernel. -/
-noncomputable def mixed_firstPrincipalUnitFiniteQuotientSetup
+def mixed_firstPrincipalUnitFiniteQuotientSetup
     (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
     [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
     [Finite (IsLocalRing.ResidueField v.valuationSubring)] [CharZero K]
@@ -413,7 +408,7 @@ noncomputable def mixed_firstPrincipalUnitFiniteQuotientSetup
 /-- Algebraic data for the first principal units in the mixed-characteristic field-unit structure theorem.
 The deep logarithmic lattice supplies the free kernel; the finite-level
 principal-unit quotient detects all torsion. -/
-noncomputable def chosenMixed_firstPrincipalUnitAlgebraicData
+def chosenMixed_firstPrincipalUnitAlgebraicData
     (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
     [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
     [Finite (IsLocalRing.ResidueField v.valuationSubring)] [CharZero K]
@@ -472,8 +467,8 @@ noncomputable def chosenMixed_firstPrincipalUnitAlgebraicData
     apply Subtype.ext
     have hxy' := congrArg (fun z : Kˣ => (z : K)) hxy
     simpa [valuationUnitsToFieldUnits] using hxy'
-  have hprincipalToField : Function.Injective principalToField := by
-    exact Units.val_injective.comp
+  have hprincipalToField : Function.Injective principalToField := 
+    Units.val_injective.comp
       (hvaluationUnitsToFieldUnits.comp Subtype.val_injective)
   have hcyclic : IsAddCyclic T :=
     isAddCyclic_of_injective_multiplicative_map
@@ -499,7 +494,7 @@ noncomputable def chosenMixed_firstPrincipalUnitAlgebraicData
 /-- The mixed-characteristic field-unit structure theorem, principal-unit factor in its literal algebraic and
 topological form.  The finite torsion is a cyclic `p`-group and the free
 factor has rank `[K : Q_p]`. -/
-noncomputable def mixed_firstPrincipalUnitStructure
+def mixed_firstPrincipalUnitStructure
     (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
     [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
     [Finite (IsLocalRing.ResidueField v.valuationSubring)] [CharZero K]
@@ -550,7 +545,7 @@ noncomputable def mixed_firstPrincipalUnitStructure
 /-- The mixed-characteristic field-unit structure theorem, principal-unit factor with the logarithmic depth
 chosen internally.  Thus the statement retains only the hypotheses attached
 to the local field and a normalized valuation. -/
-noncomputable def chosenMixed_firstPrincipalUnitStructure_ofWithZeroValuation
+def chosenMixed_firstPrincipalUnitStructure_ofWithZeroValuation
     (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
     [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
     [Finite (IsLocalRing.ResidueField v.valuationSubring)] [CharZero K]
@@ -573,8 +568,3 @@ noncomputable def chosenMixed_firstPrincipalUnitStructure_ofWithZeroValuation
   have hn := Classical.choose_spec hex
   exact mixed_firstPrincipalUnitStructure
     v hv n (by simpa [F] using hn)
-
-end LocalField
-end LocalFieldTheory.DiscreteValuationField
-
-end

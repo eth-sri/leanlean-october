@@ -27,7 +27,7 @@ private theorem word_smooth (O : Set E) (hO : IsOpen O) (fields : A → E → E)
   | cons a w ih =>
     exact (ih.fderiv_of_isOpen hO (by simp)).clm_apply (hfields a)
 
-private theorem sum_derivative {T : Type*} (ts : List T) (f : T → E → ℂ)
+theorem sum_derivative {T : Type*} (ts : List T) (f : T → E → ℂ)
     (x : E) (hf : ∀ t ∈ ts, DifferentiableAt ℝ (f t) x) :
     HasFDerivAt (fun y => (ts.map (fun t => f t y)).sum)
       (ts.map (fun t => fderiv ℝ (f t) x)).sum x := by

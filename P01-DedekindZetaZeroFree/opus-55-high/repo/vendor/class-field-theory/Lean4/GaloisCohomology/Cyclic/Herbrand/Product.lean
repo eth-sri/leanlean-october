@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Herbrand quotients of finite products
 
@@ -75,17 +72,4 @@ theorem herbrandQuotient_pi
       (herbrandHMinusOnePiEquiv
         (G := G) A σ).toEquiv,
     Nat.card_pi, Nat.card_pi]
-  simp only [Nat.cast_prod]
-  simpa only [Finset.mem_univ, Finset.prod_const_one,
-    Finset.prod_filter, true_and] using
-    (Finset.prod_div_distrib
-      (s := Finset.univ)
-      (fun i : ι ↦
-        (Nat.card (HerbrandH0 G (A i)) : ℚ))
-      (fun i : ι ↦
-        (Nat.card
-          (HerbrandHMinusOne G (A i) σ) : ℚ))).symm
-
-end CyclicCohomology
-
-end
+  simp

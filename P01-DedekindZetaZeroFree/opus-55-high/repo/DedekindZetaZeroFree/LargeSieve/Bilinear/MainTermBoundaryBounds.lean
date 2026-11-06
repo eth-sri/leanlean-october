@@ -19,7 +19,7 @@ private lemma rel_of_sup {a b : Ideal (𝓞 F)} (h : a ⊔ b = ⊤) :
   exact le_antisymm le_top
     (h ▸ sup_le (Ideal.dvd_iff_le.mp hza) (Ideal.dvd_iff_le.mp hzb))
 
-private lemma annular_rows_prime_ideal_size_gt_one (p : Ideal (𝓞 F)) (hp : Prime p) :
+lemma annular_rows_prime_ideal_size_gt_one (p : Ideal (𝓞 F)) (hp : Prime p) :
     1 < ((idealSize F) p : ℝ) := by
   have h0 : Ideal.absNorm p ≠ 0 := fun h => hp.ne_zero (Ideal.absNorm_eq_zero_iff.mp h)
   have h1 : Ideal.absNorm p ≠ 1 :=
@@ -78,7 +78,7 @@ theorem collected_le_squarefree_rows
     rcases Finset.mem_filter.mp hb with ⟨hb, hbeta⟩
     obtain ⟨hlo, hhi, a, t, ha, ht, hbt⟩ := (hprops b).1 hbeta
     have hbc : b ⊔ D.bad = ⊤ := boundary_core D.bad d hd0 hd hdq K b hb
-    have hadvd : a ∣ b := by rw [hbt]; exact dvd_mul_right a (t ^ 2)
+    have hadvd : a ∣ b := by rw [hbt]; simp
     have haq : a ⊔ D.bad = ⊤ := top_unique
       (hbc.symm.trans_le (sup_le_sup (Ideal.dvd_iff_le.mp hadvd) le_rfl))
     have hbpos : 0 < Ideal.absNorm b := by
@@ -93,7 +93,7 @@ theorem collected_le_squarefree_rows
       ((Vendor.CutoffDifference.squarefree_divisor_dictionary d hd0 hd).2.2.2.2.2 t).mpr ht
     exact Finset.mem_image.mpr ⟨(t, a), Finset.mem_product.mpr ⟨htT, haA⟩, hbt.symm⟩
   let C : ℝ := ((Vendor.CutoffDifference.divisors d).card : ℝ) ^ 2 / Real.sqrt K
-  have hC : 0 ≤ C := div_nonneg (sq_nonneg _) (Real.sqrt_nonneg _)
+  have hC : 0 ≤ C := by positivity
   have hterm (b : Ideal (𝓞 F)) (hb : b ∈ S) :
       ‖(beta b : ℂ) / (Real.sqrt (Ideal.absNorm b : ℝ) : ℂ) *
         densityRow Q D.bad d N g lam b‖ ≤ C * ‖densityRow Q D.bad d N g lam b‖ := by
@@ -153,7 +153,7 @@ namespace DedekindZetaZeroFree.LargeSieve.Sieve.MainBoundaryBound
 variable {F : Type} [Field F] [NumberField F]
 variable {c : Ideal (𝓞 F)}
 
-private lemma prime_idealSize_real_gt_one (p : Ideal (𝓞 F)) (hp : Prime p) :
+lemma prime_idealSize_real_gt_one (p : Ideal (𝓞 F)) (hp : Prime p) :
     1 < (idealSize F p : ℝ) := by
   have hn0 : Ideal.absNorm p ≠ 0 := by
     intro h
@@ -165,7 +165,7 @@ private lemma prime_idealSize_real_gt_one (p : Ideal (𝓞 F)) (hp : Prime p) :
   norm_cast
   omega
 
-private lemma column_value_sq
+lemma column_value_sq
     (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
     (D : NormalizedFamilyData Q) (d : Ideal (𝓞 F)) (hdq : d ⊔ D.bad = ⊤)
     (N : ℝ) (g : Q.G) (u : Ideal (𝓞 F))
@@ -218,7 +218,7 @@ theorem cancelled_eq_collected
         ← star_pow, column_value_sq Q D d hdq N g v hv p hp hpd]
       simp
     · exact lt_of_lt_of_le zero_lt_one hK
-    · exact hH
+    omega
   unfold cancelledMainTerms collectedBoundary densityRow
   congr 1
   simp only [Finset.mul_sum]
@@ -440,7 +440,7 @@ private lemma dyadicLength_pow_le {X : ℝ} (hX : 1 ≤ X) :
     rw [← hL, pow_succ]
     linarith
 
-private lemma rpow_mul_le_pow {a b s t e : ℝ} (ha : 1 ≤ a) (hb : 1 ≤ b)
+lemma rpow_mul_le_pow {a b s t e : ℝ} (ha : 1 ≤ a) (hb : 1 ≤ b)
     (hs : 0 ≤ s) (ht : 0 ≤ t) (hse : s ≤ e) (hte : t ≤ e) :
     a ^ s * b ^ t ≤ (a * b) ^ e := by
   have ha0 : 0 ≤ a := le_trans zero_le_one ha
@@ -461,13 +461,13 @@ theorem shellPrefixEnvelope_le_of_exponent
   have hε4 : 0 < ε / 4 := by linarith
   obtain ⟨C0, hC0, hB⟩ := hE (ε / 4) hε4
   set η : ℝ := ε / 4 with hηdef
-  have hη : 0 < η := by rw [hηdef]; linarith
+  have hη : 0 < η := by omega
   have hηε : η ≤ ε := by rw [hηdef]; linarith
   have hη2ε : 2 * η ≤ ε := by rw [hηdef]; linarith
   have hηe4ε : η + ε / 4 ≤ ε := by rw [hηdef]; linarith
   set K : ℝ := 2 + 1 / (η * Real.log 2) with hKdef
   have hK : 0 < K := by
-    rw [hKdef]; exact DedekindZetaZeroFree.LargeSieve.Vendor.dyadicLength_small_power_constant_pos hη
+    positivity
   refine ⟨max 1 (2 * K * 2 ^ η + K ^ 3 * (C0 + 1) * 2 ^ (2 * η) * 8 ^ (ε / 4) *
       (4 + 2 ^ α)), lt_of_lt_of_le one_pos (le_max_left _ _), ?_⟩
   intro X Y hX hY
@@ -482,17 +482,17 @@ theorem shellPrefixEnvelope_le_of_exponent
     have h := dyadicLength_pow_le h2Y1
     rw [← hL'def] at h
     linarith
-  have h2η0 : 0 ≤ (2 : ℝ) ^ η := Real.rpow_nonneg (by norm_num) η
+  have h2η0 : 0 ≤ (2 : ℝ) ^ η := by positivity
   have hYη0 : 0 ≤ Y ^ η := Real.rpow_nonneg hY0.le η
   have hXa0 : 0 ≤ X ^ α := Real.rpow_nonneg hX0.le α
-  have h2a0 : 0 ≤ (2 : ℝ) ^ α := Real.rpow_nonneg (by norm_num) α
+  have h2a0 : 0 ≤ (2 : ℝ) ^ α := by positivity
   have h2Yeta : (2 * Y) ^ η = 2 ^ η * Y ^ η := Real.mul_rpow (by norm_num) hY0.le
   have hYeta : Y ^ η ≤ (X * Y) ^ ε := by
     have hYX : Y ≤ X * Y := by nlinarith [hX0, hY0]
     exact le_trans (Real.rpow_le_rpow hY0.le hYX hη.le)
       (Real.rpow_le_rpow_of_exponent_le hXY1 hηε)
   set Bc : ℝ := C0 * (8 * X * Y) ^ (ε / 4) * (4 * Y + 2 ^ α * X ^ α) with hBcdef
-  have hBc0 : 0 ≤ Bc := by rw [hBcdef]; positivity
+  have hBc0 : 0 ≤ Bc := by positivity
   have hterm : ∀ i ∈ Finset.range L, ∀ j ∈ Finset.range L',
       B1 F c Q ((2 : ℝ) ^ j) ((2 : ℝ) ^ i) ≤ Bc := by
     intro i hi j hj
@@ -534,18 +534,15 @@ theorem shellPrefixEnvelope_le_of_exponent
   have hR : (((L' + 1 : ℕ) : ℝ)) ≤ K * (2 * Y) ^ η := by
     have h := DedekindZetaZeroFree.LargeSieve.Vendor.dyadicLength_small_power hη h2Y1
     rw [← hL'def] at h
-    push_cast at h
     push_cast
     exact h
   have hP : (L : ℝ) ≤ K * X ^ η := by
     have h := DedekindZetaZeroFree.LargeSieve.Vendor.dyadicLength_small_power hη hX
     rw [← hLdef] at h
-    push_cast at h
     linarith
   have hP' : (L' : ℝ) ≤ K * (2 * Y) ^ η := by
     have h := DedekindZetaZeroFree.LargeSieve.Vendor.dyadicLength_small_power hη h2Y1
     rw [← hL'def] at h
-    push_cast at h
     linarith
   have hRle : (((L' + 1 : ℕ) : ℝ)) ≤ K * 2 ^ η * Y ^ η := by
     calc (((L' + 1 : ℕ) : ℝ)) ≤ K * (2 * Y) ^ η := hR
@@ -626,7 +623,6 @@ theorem shellPrefixEnvelope_le_of_exponent
       rwa [Real.rpow_one] at h
     linarith
   have hXYe : 0 ≤ (X * Y) ^ ε * (Y + X ^ α) := by
-    have : (0 : ℝ) ≤ Y + X ^ α := by linarith [hXa0, hY0.le]
     positivity
   have hnn : (0 : ℝ) ≤ (((L' + 1 : ℕ) : ℝ)) := Nat.cast_nonneg _
   have hfin : shellPrefixEnvelope F c Q X Y ≤
@@ -659,7 +655,7 @@ theorem shellPrefixEnvelope_le_of_exponent
           (mul_le_mul_of_nonneg_right (le_max_right _ _) (by positivity))
           (by linarith [hXa0, hY0.le])
 
-private lemma core_bound
+lemma core_bound
     {M N K n α ε : ℝ} (hM : 1 ≤ M) (hN : 1 ≤ N) (hK : 1 ≤ K) (hKM : K ≤ M)
     (hn1 : 1 ≤ n) (hn2 : n ≤ 2 * N) (hα : 1 ≤ α) (hα₂ : α ≤ 2) (hε : 0 < ε) :
     (M * N * n) ^ (ε/5) * ((K * n^2) * N) ^ (ε/5) * Real.sqrt (M/K) * (N + (K * n^2) ^ α)
@@ -729,8 +725,7 @@ private lemma core_bound
       ≤ 8^(ε/5) * M^ε * N^ε *
           (n^4 * Real.sqrt M * K ^ (α - 1/2) + n^4 * Real.sqrt (M/K) * N) := by
     have hA : Real.sqrt (M/K) * N ≤ n^4 * Real.sqrt (M/K) * N := by
-      have h := mul_le_mul_of_nonneg_right hn4 (by positivity : (0:ℝ) ≤ Real.sqrt (M/K) * N)
-      simpa [one_mul, mul_assoc] using h
+      simp_all
     have hB : Real.sqrt M * K^(α-1/2) * n^4 ≤ n^4 * Real.sqrt M * K^(α-1/2) :=
       le_of_eq (by ring)
     have hAB' : Real.sqrt (M/K) * N + Real.sqrt M * K^(α-1/2) * n^4 ≤
@@ -780,7 +775,7 @@ theorem cancelledMainTerms_le_of_exponent
             energy F c N lam := by
   intro ε hε
   set m : ℝ := ε / 5 with hm
-  have hmpos : 0 < m := by rw [hm]; linarith
+  have hmpos : 0 < m := by positivity
   have hm5 : 5 * m = ε := by rw [hm]; ring
   obtain ⟨C₁, hC₁, h5⟩ := cancelledMainTerms_le_envelope Q D W hW kappa m hmpos
   obtain ⟨C₂, hC₂, h4⟩ := shellPrefixEnvelope_le_of_exponent Q α hα hE m hmpos
@@ -801,7 +796,7 @@ theorem cancelledMainTerms_le_of_exponent
     simpa using this
   have h5' := h5 M N K hM hN hK hKM d hd hdb hdn g lam
   have h4' := h4 (K * n ^ 2) N hX1 hN
-  have hcore := core_bound hM hN hK hKM hn1 (by rw [hn]; exact hdn) hα hα₂ hε
+  have hcore := core_bound hM hN hK hKM hn1 (by omega) hα hα₂ hε
   have hE0 : 0 ≤ E := by rw [hE]; rw [energy]; positivity
   calc ‖cancelledMainTerms Q D.bad W kappa M N K d g lam‖
       ≤ C₁ * (M * N * n) ^ m * Real.sqrt (M / K) * S * E := h5'
@@ -815,9 +810,3 @@ theorem cancelledMainTerms_le_of_exponent
         gcongr
     _ = (C₁ * C₂ * 8 ^ m) * n ^ 4 * (M * N) ^ ε *
           (Real.sqrt M * K ^ (α - 1 / 2) + Real.sqrt (M / K) * N) * E := by ring
-
-end DedekindZetaZeroFree.LargeSieve.Sieve.MainBoundary
-
-end
-
-end

@@ -33,7 +33,7 @@ open scoped Pointwise
 
 namespace RadialPullback
 
-private theorem map_log_positiveHaar : Measure.map Real.log «μ₊» = volume := by
+theorem map_log_positiveHaar : Measure.map Real.log «μ₊» = volume := by
   have himage : Real.log '' Set.Ioi (0 : ℝ) = Set.univ := by
     apply Set.eq_univ_of_forall
     intro s
@@ -51,11 +51,6 @@ private theorem map_log_positiveHaar : Measure.map Real.log «μ₊» = volume :
   filter_upwards [ae_restrict_mem measurableSet_Ioi] with t ht
   congr 1
   have hd : (ContinuousLinearMap.toSpanSingleton ℝ (t⁻¹)).det = t⁻¹ := by
-    have he : (ContinuousLinearMap.toSpanSingleton ℝ (t⁻¹)).toLinearMap =
-        t⁻¹ • (LinearMap.id : ℝ →ₗ[ℝ] ℝ) := by
-      ext
-      simp [mul_comm]
-    rw [ContinuousLinearMap.det, he, LinearMap.det_smul]
     simp
   rw [hd, abs_of_pos (inv_pos.mpr ht)]
 theorem map_exp_volume_eq : Measure.map Real.exp volume = «μ₊» := by
@@ -83,8 +78,8 @@ theorem q_eq_exp_positiveRadialAngularLogMap
 
 theorem map_q_eq :
     Measure.map (q (K := K)) (Theta.positiveRadialHaar.prod (Theta.normalizedLogHaar K)) = μ K := by
-  have ht : ∀ᵐ th ∂(Theta.positiveRadialHaar.prod (Theta.normalizedLogHaar K)), 0 < th.1 := by
-    exact Measure.quasiMeasurePreserving_fst.ae ae_positiveHaar_pos
+  have ht : ∀ᵐ th ∂(Theta.positiveRadialHaar.prod (Theta.normalizedLogHaar K)), 0 < th.1 := 
+    Measure.quasiMeasurePreserving_fst.ae ae_positiveHaar_pos
   have he : q (K := K) =ᵐ[Theta.positiveRadialHaar.prod (Theta.normalizedLogHaar K)]
       ((fun x : InfinitePlace K → ℝ => fun v => Real.exp (x v)) ∘
         Theta.positiveRadialAngularLogMap K) := by
@@ -115,9 +110,8 @@ namespace ProductUnfolding
  instance latticeMeasurableVAdd (m : Ideal (𝓞 K)) :
     MeasurableConstVAdd (RayCoset.rayUnitLogLattice K m) (RayCoset.logHyperplane K) :=
   ⟨fun γ => by
-    change Measurable (fun h : RayCoset.logHyperplane K => (γ : RayCoset.logHyperplane K) + h)
-    exact (Homeomorph.addLeft (γ : RayCoset.logHyperplane K)).measurable⟩
-private theorem slab_sum_measure (D : RayCoset.Data K) :
+    fun_prop⟩
+theorem slab_sum_measure (D : RayCoset.Data K) :
     Measure.sum (fun γ : RayCoset.rayUnitLogLattice K D.m =>
       μrad.prod ((Theta.normalizedLogHaar K).restrict
         (γ +ᵥ RayCoset.rayUnitHalfOpenDomain K D.m D.modulus_ne_bot))) =
@@ -136,7 +130,7 @@ theorem integrable_unit_slab {E : Type*} [NormedAddCommGroup E]
   apply h.mono_measure
   exact Measure.prod_mono le_rfl Measure.restrict_le_self
 
-private theorem slab_translate_integral {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+theorem slab_translate_integral {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     (D : RayCoset.Data K) (f : ℝ × RayCoset.logHyperplane K → E)
     (γ : RayCoset.rayUnitLogLattice K D.m) :
     (∫ th, f th ∂(μrad.prod ((Theta.normalizedLogHaar K).restrict
@@ -160,7 +154,7 @@ private theorem slab_translate_integral {E : Type*} [NormedAddCommGroup E] [Norm
   rw [himage, ← Measure.prod_restrict, ← Measure.prod_restrict,
     Measure.restrict_univ] at h
   exact h
-private theorem hasSum_lattice_slab {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+theorem hasSum_lattice_slab {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     (D : RayCoset.Data K) (f : ℝ × RayCoset.logHyperplane K → E)
     (hf : Integrable f (μrad.prod (Theta.normalizedLogHaar K))) :
     HasSum (fun γ : RayCoset.rayUnitLogLattice K D.m =>
@@ -220,7 +214,7 @@ end ProductUnfolding
   have hu (v : InfinitePlace K) : 0 < RayCoset.absEmbedding D.m u v := by
     unfold RayCoset.absEmbedding
     apply InfinitePlace.pos_iff.mpr
-    exact Units.ne_zero (Units.map (algebraMap (𝓞 K) K).toMonoidHom (u : (𝓞 K)ˣ))
+    simp
   have he : (fun v => q th v * RayCoset.absEmbedding D.m u v) =
       q (th.1, th.2 + RayCoset.logAbs K (Additive.ofMul (u : (𝓞 K)ˣ))) := by
     funext v
@@ -238,8 +232,8 @@ theorem integrand_unit_shift_ae (D : RayCoset.Data K)
     integrand D δ (u • α) s =ᵐ[μB D]
       (fun th => integrand D δ α s
         (th.1, th.2 + RayCoset.logAbs K (Additive.ofMul (u : (𝓞 K)ˣ)))) := by
-  have ht : ∀ᵐ th ∂μB D, 0 < th.1 := by
-    exact Measure.quasiMeasurePreserving_fst.ae RayParity.ae_positiveHaar_pos
+  have ht : ∀ᵐ th ∂μB D, 0 < th.1 := 
+    Measure.quasiMeasurePreserving_fst.ae RayParity.ae_positiveHaar_pos
   filter_upwards [ht] with th hth
   exact integrand_unit_shift D δ α s u th hth
 
@@ -317,8 +311,8 @@ theorem measurePreserving_q : MeasurePreserving (q (K := K))
 theorem integrable_full (D : RayCoset.Data K)
     (δ : Finset (RayCoset.RealPlaces K)) (α : RayCoset.Cx D)
     (s : ℂ) (hs : 0 < s.re) :
-    Integrable (integrand D δ α s) (μrad.prod (Theta.normalizedLogHaar K)) := by
-  exact (measurePreserving_q.integrable_comp_of_integrable
+    Integrable (integrand D δ α s) (μrad.prod (Theta.normalizedLogHaar K)) := 
+  (measurePreserving_q.integrable_comp_of_integrable
     (ScaledMellin.integrable D δ α s hs)).congr
       (integrand_eq_scaledMellin_ae D δ α s).symm
 
@@ -352,8 +346,8 @@ theorem integral_norm_full (D : RayCoset.Data K)
 theorem integrable (D : RayCoset.Data K)
     (δ : Finset (RayCoset.RealPlaces K)) (α : RayCoset.Cx D)
     (s : ℂ) (hs : 0 < s.re) (u : RayCoset.U K D.m) :
-    Integrable (integrand D δ (u • α) s) (μB D) := by
-  exact (ProductUnfolding.integrable_unit_slab D (integrand D δ α s)
+    Integrable (integrand D δ (u • α) s) (μB D) := 
+  (ProductUnfolding.integrable_unit_slab D (integrand D δ α s)
     (integrable_full D δ α s hs) u).congr (integrand_unit_shift_ae D δ α s u).symm
 
 theorem hasSum_integral (D : RayCoset.Data K)
@@ -384,9 +378,5 @@ theorem summable_integral_norm (D : RayCoset.Data K)
     (δ : Finset (RayCoset.RealPlaces K)) (α : RayCoset.Cx D)
     (s : ℂ) (hs : 0 < s.re) :
     Summable (fun u : RayCoset.U K D.m =>
-      ∫ th, ‖integrand D δ (u • α) s th‖ ∂(μB D)) := by
-  exact (hasSum_integral_norm D δ α s hs).summable
-
-end DedekindZetaZeroFree.AbelianQuotient.RayParity.OrbitSlabMellin
-
-end
+      ∫ th, ‖integrand D δ (u • α) s th‖ ∂(μB D)) := 
+  (hasSum_integral_norm D δ α s hs).summable

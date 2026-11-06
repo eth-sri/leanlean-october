@@ -104,7 +104,7 @@ local instance : BorelSpace (𝒪[K])ˣ := ⟨by
   congr 1
   exact BorelSpace.measurable_eq⟩
 
-private lemma units_range : Set.range (Units.val : Kˣ → K) = {0}ᶜ := by
+lemma units_range : Set.range (Units.val : Kˣ → K) = {0}ᶜ := by
   ext x
   constructor
   · rintro ⟨y, rfl⟩; exact y.ne_zero
@@ -116,7 +116,7 @@ private lemma units_embedding : MeasurableEmbedding (Units.val : Kˣ → K) := b
     rw [@BorelSpace.measurable_eq K _ _ _,
       Units.isEmbedding_val₀.isInducing.eq_induced, borel_comap]⟩
   apply (Units.isEmbedding_val₀ : Topology.IsEmbedding (Units.val : Kˣ → K)).measurableEmbedding
-  rw [units_range]; exact (measurableSet_singleton (0 : K)).compl
+  rw [units_range]; simp
 private lemma units_map_comap (ν : Measure K) (hν : ν {0} = 0) :
     Measure.map Units.val (ν.comap (Units.val : Kˣ → K)) = ν := by
   rw [(units_embedding K).map_comap, units_range]
@@ -129,10 +129,10 @@ private lemma power_identity (q : ℝ) (hq : 0 < q) (u : ℂˣ) (s : ℂ)
   rw [Complex.ofReal_zpow]
   have ha : (q : ℂ).arg = 0 := Complex.arg_ofReal_of_nonneg hq.le
   rw [← Complex.cpow_int_mul' (by simp [ha, Real.pi_pos]) (by simp [ha, Real.pi_pos.le])]
-  rw [show ((-v : ℤ) : ℂ) * (-s) = (v : ℂ) * s by push_cast; ring]
+  rw [show ((-v : ℤ) : ℂ) * (-s) = (v : ℂ) * s by simp]
   rw [Complex.cpow_int_mul, hs, mul_zpow]
-  simp [map_zpow, zpow_neg, inv_zpow, mul_comm]
-private lemma parameter_power (q : ℝ) (hq : 1 < q) (u : ℂˣ) :
+  simp [zpow_neg, mul_comm]
+lemma parameter_power (q : ℝ) (hq : 1 < q) (u : ℂˣ) :
     (q : ℂ) ^ (1 + Complex.log (u : ℂ) / (Real.log q : ℂ)) = q * (u : ℂ) := by
   have hq0 : 0 < q := lt_trans zero_lt_one hq
   have hl : (Real.log q : ℂ) ≠ 0 := by exact_mod_cast (Real.log_pos hq).ne'
@@ -141,7 +141,7 @@ private lemma parameter_power (q : ℝ) (hq : 1 < q) (u : ℂˣ) :
   rw [show (Real.log q : ℂ) * (1 + Complex.log (u : ℂ) / (Real.log q : ℂ)) =
     (Real.log q : ℂ) + Complex.log (u : ℂ) by field_simp]
   rw [Complex.exp_add, Complex.exp_log u.ne_zero, ← Complex.ofReal_exp, Real.exp_log hq0]
-private lemma parameter_strip (q B U : ℝ) (hq : 1 < q)
+lemma parameter_strip (q B U : ℝ) (hq : 1 < q)
     (hB : B < 1) (hBU : q⁻¹ / B < U) (hU : U < 1) (hB0 : 0 < B)
     (u : ℂˣ) (hu : ‖(u : ℂ)‖ = U) :
     let s := 1 + Complex.log (u : ℂ) / (Real.log q : ℂ)
@@ -154,7 +154,7 @@ private lemma parameter_strip (q B U : ℝ) (hq : 1 < q)
     rw [Complex.norm_cpow_eq_rpow_re_of_pos hq0, norm_mul,
       Complex.norm_real, Real.norm_eq_abs, abs_of_pos hq0, hu] at hh
     exact hh
-  have hU0 : 0 < U := by rw [← hu]; exact norm_pos_iff.mpr u.ne_zero
+  have hU0 : 0 < U := by rw [← hu]; simp
   have hprod : 1 < q * U := by
     have : q⁻¹ < U := lt_trans (by
       rw [lt_div_iff₀ hB0]; nlinarith [inv_pos.mpr hq0]) hBU
@@ -185,8 +185,7 @@ private lemma integrands_agree (η : Kˣ →ₜ* ℂˣ) (u : ℂˣ) (s : ℂ) (h
   have hq : (0 : ℝ) < CubicUnitCharacters.residueCard K := by
     exact_mod_cast (Finite.card_pos (α := 𝓀[K]))
   by_cases hy : (y : K) = 1
-  · simp [Function.comp_def, KPRamifiedBeta.integrand, y.ne_zero, betaIntegrand, hy,
-      KPRamifiedBeta.normalizedAbs, show s ≠ 0 by
+  · simp [KPRamifiedBeta.integrand, betaIntegrand, hy, KPRamifiedBeta.normalizedAbs, show s ≠ 0 by
         intro hz; simp [hz] at hs0]
   · have hd : 1 - (y : K) ≠ 0 := sub_ne_zero.mpr (Ne.symm hy)
     let v := KPCubicExpansion.valuationExponent K (Units.mk0 (1 - (y : K)) hd)
@@ -195,15 +194,15 @@ private lemma integrands_agree (η : Kˣ →ₜ* ℂˣ) (u : ℂˣ) (s : ℂ) (h
       simp [KPRamifiedBeta.normalizedAbs, hd, v, KPCubicExpansion.valuationExponent]
     have ha' : KPCubicHaar.abs K (1 - (y : K)) =
         (CubicUnitCharacters.residueCard K : ℝ) ^ (-v) := ha
-    have hu : Units.mk0 (y : K) y.ne_zero = y := by ext; rfl
+    have hu : Units.mk0 (y : K) y.ne_zero = y := by simp
     simp only [Function.comp_def, KPRamifiedBeta.integrand, dif_neg y.ne_zero, hu,
       betaIntegrand, dif_neg hy, ha, ha']
     rw [power_identity _ hq u s hs v]
     ring
-private lemma density_zero (dx : Measure K) : KPRamifiedBeta.multiplicativeMeasure K dx {0} = 0 := by
+lemma density_zero (dx : Measure K) : KPRamifiedBeta.multiplicativeMeasure K dx {0} = 0 := by
   letI : T2Space K := CubicUnitCharacters.t2Space_of_isValuativeTopology K
   simp [KPRamifiedBeta.multiplicativeMeasure, withDensity_apply, KPRamifiedBeta.normalizedAbs]
-private lemma rational_agree (dx : Measure K) (ξ : CubicUnitCharacters.Character K)
+lemma rational_agree (dx : Measure K) (ξ : CubicUnitCharacters.Character K)
     (hf : 1 ≤ CubicUnitCharacters.conductor K ξ) (u : ℂ) :
     KPRamifiedBeta.rationalBeta (CubicUnitCharacters.residueCard K : ℝ) (m K dx)
         (CubicUnitCharacters.conductor K ξ) (CubicUnitCharacters.residueCard K * u) =
@@ -224,7 +223,7 @@ private lemma rational_agree (dx : Measure K) (ξ : CubicUnitCharacters.Characte
   change (m K dx : ℂ) * q⁻¹ ^ f * (q * u) ^ (f - 1) * (q * u - 1) /
     (1 - q⁻¹ * (q * u)) = (m K dx : ℂ) * u ^ (f - 1) * (u - q⁻¹) / (1 - u)
   rw [mul_pow]
-  have hd : q⁻¹ * (q * u) = u := by simp [← mul_assoc, hq]
+  have hd : q⁻¹ * (q * u) = u := by simp [hq]
   rw [hd]
   congr 1
   calc
@@ -249,7 +248,7 @@ theorem exists_eta_uniformizer_extension
   obtain ⟨χ, hχ, hb⟩ := KPRamifiedBetaConductorSeries.exists_character_extension K π hπ ξ b
   refine ⟨χ, fun k v => ?_⟩
   have hχ' : χ (KPRankOneCubicProjection.unitInclusion K v) = (ξ v : ℂˣ) := hχ v
-  rw [map_mul, map_zpow, hb, hχ']
+  simp_all
 
 theorem betaIntegral_eq_rationalBeta
     (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
@@ -272,7 +271,7 @@ theorem betaIntegral_eq_rationalBeta
     exact_mod_cast (Finite.one_lt_card (α := 𝓀[K]))
   let s : ℂ := 1 + Complex.log (u : ℂ) / (Real.log q : ℂ)
   have ha : ‖a K‖ = q⁻¹ := by
-    simp [a, q, norm_inv, ← Complex.ofReal_natCast, Complex.norm_of_nonneg (show 0 ≤ (CubicUnitCharacters.residueCard K : ℝ) by positivity)]
+    simp [a, q, norm_inv, ← Complex.ofReal_natCast]
   have hs := parameter_strip q ‖(b : ℂ)‖ ‖(u : ℂ)‖ hq hb1 (by simpa [ha] using hbu)
     hu1 (norm_pos_iff.mpr b.ne_zero) u rfl
   obtain ⟨hs0, hs1, hsB⟩ := hs
@@ -306,7 +305,7 @@ theorem betaIntegral_eq_rationalBeta
   have heval := KPRamifiedBetaConductorSeries.integral_eq_shell_series K dx ξ hξ
     (CubicUnitCharacters.conductor K ξ) hf ht hex η hηunit s hs1 hI
   change KPRamifiedBeta.betaIntegral K dx η s = _ at heval
-  have hset : {x : K | x ∈ (valuation K).integer} = (𝒪[K] : Set K) := by ext; rfl
+  have hset : {x : K | x ∈ (valuation K).integer} = (𝒪[K] : Set K) := by rfl
   rw [hset] at heval
   rw [heval]
   have hsum := KPRamifiedBeta.rationalBeta_shell_sum q (m K dx)
@@ -318,5 +317,3 @@ theorem betaIntegral_eq_rationalBeta
       CubicUnitCharacters.residueCard K * (u : ℂ) := hpower
   rw [hpower']
   exact rational_agree K dx ξ hf (u : ℂ)
-
-end DedekindZetaZeroFree

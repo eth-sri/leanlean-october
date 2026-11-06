@@ -51,7 +51,7 @@ private lemma bin_exists (X : ℝ) (hX : 1 ≤ 2 * X) (f : Ideal (𝓞 F))
   have hfn : 1 ≤ norm f := by
     unfold norm
     exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hf0)
-  have hXX : 2 * X ≤ 2 * max 1 X := by gcongr; exact le_max_right _ _
+  have hXX : 2 * X ≤ 2 * max 1 X := by simp
   have hcover : ∃ j : ℕ, norm f ≤ (2 : ℝ) ^ j :=
     ⟨Vendor.dyadicLength (2 * max 1 X), hf.trans (hXX.trans (Vendor.dyadicLength_cover _))⟩
   let j := Nat.find hcover
@@ -64,11 +64,11 @@ private lemma bin_exists (X : ℝ) (hX : 1 ≤ 2 * X) (f : Ideal (𝓞 F))
     · have hh : norm f ≤ 1 := by simpa [hj0] using hj
       linarith
   · have hk : k < Vendor.dyadicLength (2 * max 1 X) := by omega
-    have hlow : (2 : ℝ) ^ k < norm f := by
-      exact lt_of_not_ge (Nat.find_min hcover (by omega))
+    have hlow : (2 : ℝ) ^ k < norm f := 
+      lt_of_not_ge (Nat.find_min hcover (by omega))
     refine ⟨(2 : ℝ) ^ k, ?_, one_le_pow₀ (by norm_num), hlow.le.trans hf, hf0, ?_, ?_⟩
     · apply Finset.mem_insert_of_mem
-      exact Finset.mem_image.mpr ⟨k, Finset.mem_range.mpr hk, rfl⟩
+      simp_all
     · split_ifs <;> linarith
     · simpa [hj0, pow_succ'] using hj
 
@@ -141,14 +141,13 @@ private lemma bin_admissible (C : Context Q) (B : ℝ)
   let T := C.N / (norm C.d * Real.sqrt (B*C.M)) * Real.rpow (C.M*C.N) C.δ
   have hT : 0 ≤ T := by
     dsimp [T]
-    exact mul_nonneg (div_nonneg (by linarith) (mul_nonneg (by linarith) (Real.sqrt_nonneg _)))
-      (Real.rpow_nonneg (by nlinarith) _)
+    positivity
   have hZ : C.Z1 B e = T * Real.sqrt (norm e) := by unfold Context.Z1 T; ring
   have htZ : T ≤ C.Z1 B e := by rw [hZ]; exact le_mul_of_one_le_right hT hesqrt
   have hc : ErrorRectangles.lowerConstant c ≤ 1/4 := by
     unfold ErrorRectangles.lowerConstant
     apply one_div_le_one_div_of_le (by norm_num)
-    nlinarith [le_max_left (1 : ℝ) (norm c)]
+    simp
   apply Finset.mem_filter.mpr
   refine ⟨hrect, ?_⟩
   change ErrorRectangles.lowerConstant c * C.N / (norm C.d * Real.sqrt (B*C.M)) *
@@ -184,8 +183,7 @@ private lemma density_product (C : Context Q) (Z : ℝ)
       ((mem_idealDivisors (mul_ne_zero hp.hu0 hp.hv0)).mp hf)
     exact ⟨(a,b), Finset.mem_product.mpr
       ⟨(mem_idealDivisors hp.hu0).mpr ha, (mem_idealDivisors hp.hv0).mpr hb⟩, heq.symm⟩
-  · intro ab hab
-    rfl
+  simp
 
 private lemma sum_if_out {α : Type*} (s : Finset α) (P : Prop) [Decidable P]
     (f : α → ℂ) : (if P then ∑ i ∈ s, f i else 0) = ∑ i ∈ s, if P then f i else 0 := by
@@ -243,8 +241,7 @@ private lemma density_rectangles (C : Context Q) (B : ℝ)
           exact (hne (Prod.ext h1 h2)).elim
         · simp [hRb]
       · simp [hRa]
-    · intro hnmem
-      exact (hnmem hAdm).elim
+    simp_all
   · simp [hl]
 
 theorem finite_rectangle_expansion (C : Context Q) (B : ℝ) (unit : Bool)
@@ -273,7 +270,3 @@ theorem finite_rectangle_expansion (C : Context Q) (B : ℝ) (unit : Bool)
     conv_rhs => rw [Finset.sum_comm]
     simp only [mul_assoc]
   · simp
-
-end DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms.LargeDual
-
-end

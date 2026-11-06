@@ -15,12 +15,11 @@ def maxSq {κ : Type*} [Fintype κ] [Nonempty κ] (P : κ → ℝ → ℂ) (t : 
 lemma maxSq_continuous {κ : Type*} [Fintype κ] [Nonempty κ]
     (P : κ → ℝ → ℂ) (hP : ∀ k, Continuous (P k)) : Continuous (maxSq P) := by
   apply Continuous.finset_sup'_apply
-  intro k _
-  exact (hP k).norm.pow 2
+  fun_prop
 
 lemma le_maxSq {κ : Type*} [Fintype κ] [Nonempty κ]
-    (P : κ → ℝ → ℂ) (t : ℝ) (k : κ) : ‖P k t‖ ^ 2 ≤ maxSq P t := by
-  exact Finset.le_sup' (f := fun k => ‖P k t‖ ^ 2) (Finset.mem_univ k)
+    (P : κ → ℝ → ℂ) (t : ℝ) (k : κ) : ‖P k t‖ ^ 2 ≤ maxSq P t := 
+  Finset.le_sup' (f := fun k => ‖P k t‖ ^ 2) (Finset.mem_univ k)
 
 lemma maxSq_nonneg {κ : Type*} [Fintype κ] [Nonempty κ]
     (P : κ → ℝ → ℂ) (t : ℝ) : 0 ≤ maxSq P t :=
@@ -43,7 +42,7 @@ theorem maxSq_sobolev {κ : Type*} [Fintype κ] [Nonempty κ]
     add_nonneg (maxSq_nonneg P x) (maxSq_nonneg _ x)
   have hbound : ∀ k x, ‖deriv (fun t => ‖P k t‖ ^ 2) x‖ ≤ H x := by
     intro k x
-    have hd : Differentiable ℝ (P k) := (hP k).differentiable (by norm_num)
+    have hd : Differentiable ℝ (P k) := by fun_prop
     rw [(hd x).hasDerivAt.norm_sq.deriv]
     rw [Real.norm_eq_abs, abs_mul, abs_of_pos (by norm_num : (0 : ℝ) < 2)]
     have hi := abs_real_inner_le_norm (P k x) (deriv (P k) x)
@@ -64,7 +63,7 @@ theorem maxSq_sobolev {κ : Type*} [Fintype κ] [Nonempty κ]
     let I : ℝ := ∫ x in (-T - 1)..(T + 1), H x
     have hx : ∀ x ∈ Set.Icc t (t + 1), M t ≤ M x + I := by
       intro x hx
-      have hd : Differentiable ℝ (P k) := (hP k).differentiable (by norm_num)
+      have hd : Differentiable ℝ (P k) := by fun_prop
       have he := norm_sub_le_integral_of_norm_deriv_le_of_le hx.1
         ((hP k).continuous.norm.pow 2).continuousOn
         (hd.norm_sq ℂ).differentiableOn
@@ -114,8 +113,8 @@ def phase (q t : ℝ) : ℂ :=
 lemma phase_norm (q t : ℝ) : ‖phase q t‖ = 1 := by
   simp [phase, Complex.norm_exp]
 
-lemma phase_contDiff (q : ℝ) : ContDiff ℝ 1 (phase q) := by
-  exact Complex.contDiff_exp.comp
+lemma phase_contDiff (q : ℝ) : ContDiff ℝ 1 (phase q) := 
+  Complex.contDiff_exp.comp
     ((contDiff_const.mul Complex.ofRealCLM.contDiff).mul contDiff_const)
 
 lemma phase_hasDerivAt (q t : ℝ) :
@@ -185,12 +184,12 @@ theorem finite_polynomial_maximal :
     (fun i _ => (hc i).intervalIntegrable _ _)] at hheight
   let E := ∑ k, ‖b k‖ ^ 2
   let R := C₁ * K * (1 + Real.log (m+1)) ^ 2
-  have hE : 0 ≤ E := Finset.sum_nonneg (fun _ _ => sq_nonneg _)
-  have hR : 0 ≤ R := by dsimp [R]; positivity
+  have hE : 0 ≤ E := by positivity
+  have hR : 0 ≤ R := by positivity
   have hpoint : ∀ t, (∑ i, H i t) ≤ R * (1 + L ^ 2) * E := by
     intro t
     have he : (∑ k, ‖b k * phase (q k) t‖ ^ 2) = E := by
-      simp [phase_norm, norm_mul, E]
+      simp [phase_norm, E]
     have hb := hprefix m ι A K hK hop (fun k => b k * phase (q k) t)
     rw [he] at hb
     let d := fun k => (-Complex.I * (Real.log (q k) : ℂ)) * b k
@@ -253,6 +252,3 @@ theorem finite_polynomial_maximal_universe :
   rw [e.sum_comp (fun i => sSup ((fun t => detector_prefixMaxSq (A i)
     (fun k => b k * phase (q k) t)) '' Set.Icc (-T) T))] at hh
   exact hh
-
-end
-end DedekindZetaZeroFree.DetectorMaximalFiniteHeight

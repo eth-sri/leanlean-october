@@ -86,7 +86,7 @@ open KPAdelicCoverRestrictedProduct
   rw [KPCuspCharts.toArch_meanHeight F (KPCuspLogShape.dimension_pos F (nativeFamily F ζ hζ R P).totallyComplex)]
   exact ht
 
-private theorem nativeArchConstraint
+theorem nativeArchConstraint
     (j : NativeCusp F ζ hζ R P S V) (Y : ℝ)
     (a : KPSmoothActualFlowData.GInfinity F) :
     (∃ (p : KPCuspCharts.Cross F) (t : ℝ),
@@ -116,7 +116,7 @@ private theorem nativeArchConstraint
     · rw [show (c.1,c.2) = c from rfl, hc]
       exact he.symm
 
-private theorem nativeArchOpen
+theorem nativeArchOpen
     (j : NativeCusp F ζ hζ R P S V) (Y : ℝ) :
     IsOpen {a : KPSmoothActualFlowData.GInfinity F |
       ∃ (p : KPCuspCharts.Cross F) (t : ℝ),
@@ -147,7 +147,7 @@ private theorem nativeArchOpen
       KPCuspGenuineMonodromy.central F ζ hζ ε * u) ''
         ((S.atlasLevel (cofinalLevel F ζ hζ V)).toOpenSubgroup : Set (KPFiniteCuspAtlas.FiniteCover F ζ hζ))
 
-private theorem nativeFiniteOpen (j : NativeCusp F ζ hζ R P S V) :
+theorem nativeFiniteOpen (j : NativeCusp F ζ hζ R P S V) :
     IsOpen (nativeFiniteDomain F ζ hζ R P S V j) := by
   letI : IsTopologicalGroup (KPMsActualAngularSource.G F ζ hζ) :=
     (KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover F ζ hζ).2.2.1
@@ -155,7 +155,7 @@ private theorem nativeFiniteOpen (j : NativeCusp F ζ hζ R P S V) :
   intro ε
   exact (Homeomorph.mulLeft _).isOpenMap _ (S.atlasLevel (cofinalLevel F ζ hζ V)).toOpenSubgroup.isOpen
 
-private theorem nativeDomainProduct (j : NativeCusp F ζ hζ R P S V) (Y : ℝ)
+theorem nativeDomainProduct (j : NativeCusp F ζ hζ R P S V) (Y : ℝ)
     (e : (KPSmoothActualFlowData.GInfinity F × KPFiniteCuspAtlas.FiniteCover F ζ hζ) ≃ₜ* KPMsActualAngularSource.G F ζ hζ)
     (he : ∀ a c, e (a,c) = KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a * c.val) :
     nativeFullDomain F ζ hζ R P S V j Y = e ''
@@ -196,7 +196,7 @@ private theorem nativeDomainProduct (j : NativeCusp F ζ hζ R P S V) (Y : ℝ)
   exact e.toHomeomorph.isOpenMap _
     ((nativeArchOpen F ζ hζ R P S V j Y).prod (nativeFiniteOpen F ζ hζ R P S V j))
 
-private theorem nativeLevelProjection (u : KPGlobalTorusFunctionData.globalLevel F ζ hζ (cofinalLevel F ζ hζ V)) :
+theorem nativeLevelProjection (u : KPGlobalTorusFunctionData.globalLevel F ζ hζ (cofinalLevel F ζ hζ V)) :
     KPCuspGenuineMonodromy.finiteProjection F ζ hζ u.val ∈
       (S.atlasLevel (cofinalLevel F ζ hζ V)).toOpenSubgroup.toSubgroup.map (KPCuspGenuineMonodromy.finiteBase F ζ hζ) := by
   have hu : u.val ∈ (S.atlasLevel (cofinalLevel F ζ hζ V)).toOpenSubgroup.toSubgroup.map
@@ -205,7 +205,7 @@ private theorem nativeLevelProjection (u : KPGlobalTorusFunctionData.globalLevel
   obtain ⟨w, hw, hwu⟩ := hu
   exact ⟨w, hw, congrArg (KPCuspGenuineMonodromy.finiteProjection F ζ hζ) hwu⟩
 
-private theorem nativeFrameComponent
+theorem nativeFrameComponent
     (j : NativeCusp F ζ hζ R P S V)
     (a₁ a₂ : KPSmoothActualFlowData.GInfinity F)
     (ε₁ ε₂ : rootsOfUnity 3 F)
@@ -241,7 +241,7 @@ private theorem nativeFrameComponent
           (c * KPCuspGenuineMonodromy.finiteProjection F ζ hζ u₁.val)⁻¹ := by group
       _ = KPFiniteComponents.diagonal F γ := by rw [← hp]; group
 
-private theorem nativeHighTransition
+theorem nativeHighTransition
     (j : NativeCusp F ζ hζ R P S V) (Y : ℝ)
     (hY : KPMsFixedHaarDisintegration.AdmissibleCutoff (nativeAtlas F ζ hζ R P S V) Y)
     (a₁ a₂ : KPSmoothActualFlowData.GInfinity F)

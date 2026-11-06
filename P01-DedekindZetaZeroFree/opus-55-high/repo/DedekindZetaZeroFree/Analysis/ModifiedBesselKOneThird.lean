@@ -43,7 +43,7 @@ theorem schlafliKernel_neg_two_thirds_integrable (z : ℝ) (hz : 0 < z) :
     have : 0 ≤ z ^ 2 / (4 * t) := by positivity
     linarith
 
-private lemma schlafli_exponential (z u : ℝ) (hz : 0 < z) :
+lemma schlafli_exponential (z u : ℝ) (hz : 0 < z) :
     Real.exp u * schlafliKernel (-(2 / 3 : ℝ)) z ((z / 2) * Real.exp u) =
       (z / 2) ^ (-(2 / 3 : ℝ)) *
         (Real.exp (-z * Real.cosh u) * Real.exp (u / 3)) := by
@@ -68,7 +68,7 @@ theorem besselKThird_eq_modifiedBesselK (z : ℝ) (hz : 0 < z) :
   let c : ℝ := z / 2
   let F : ℝ → ℝ := fun u => Real.exp (-z * Real.cosh u) * Real.exp (u / 3)
   let H : ℝ → ℝ := fun u => Real.exp (-z * Real.cosh u) * Real.cosh ((1 / 3 : ℝ) * u)
-  have hc : 0 < c := by dsimp [c]; linarith
+  have hc : 0 < c := by positivity
   have hs : IntegrableOn (fun t => schlafliKernel (-(2 / 3 : ℝ)) z (c * t)) (Ioi 0) := by
     apply (integrableOn_Ioi_comp_mul_left_iff _ 0 hc).mpr
     simpa only [mul_zero] using schlafliKernel_neg_two_thirds_integrable z hz
@@ -98,7 +98,7 @@ theorem besselKThird_eq_modifiedBesselK (z : ℝ) (hz : 0 < z) :
     dsimp [H]
     rw [Real.cosh_abs]
     have he : (1 / 3 : ℝ) * |u| = |(1 / 3 : ℝ) * u| := by
-      rw [abs_mul, abs_of_pos (by norm_num : (0 : ℝ) < 1 / 3)]
+      simp
     rw [he, Real.cosh_abs]
   have hIH : (∫ u, H u) = 2 * modifiedBesselK (1 / 3 : ℝ) z := by
     rw [← hHabs]
@@ -140,5 +140,3 @@ theorem besselKThird_pos (z : ℝ) (hz : 0 < z) : 0 < besselKThird z := by
       exact (mul_pos (Real.rpow_pos_of_pos ht _) (Real.exp_pos _)).ne'
     rw [hsupp, Real.volume_Ioi]
     exact ENNReal.zero_lt_top
-
-end DedekindZetaZeroFree.KPCplxBessel

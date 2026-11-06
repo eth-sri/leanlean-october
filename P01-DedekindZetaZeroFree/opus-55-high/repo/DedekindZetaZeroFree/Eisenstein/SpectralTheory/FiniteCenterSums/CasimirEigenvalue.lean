@@ -60,7 +60,7 @@ variable (Z : ∀ i, Fin (m i) → KPContActualAllCuspSource.SmoothSections F ζ
   ⟨sixWord ((w i j).map (wordIndexEquiv F)) up,
     sixWord_smooth up hs _⟩
 
-private theorem centerWord_val (i : Fin n) (j : Fin (m i)) :
+theorem centerWord_val (i : Fin n) (j : Fin (m i)) :
     (centerWord F ζ hζ M R P H U m w Z i j).val = fun g =>
       KPSmoothActualFlowData.wordDerivative F ζ hζ ((w i j).map (wordIndexEquiv F))
         (originalScalar F ζ hζ (KPContActualAllCuspSource.level F ζ hζ M R P H (U i)) R P H (Z i j))
@@ -72,7 +72,7 @@ private theorem centerWord_val (i : Fin n) (j : Fin (m i)) :
 
  def finiteCenterVector : NS := ∑ i, ∑ j, a i j • centerWord F ζ hζ M R P H U m w Z i j
 
-private theorem finiteCenterVector_val :
+theorem finiteCenterVector_val :
     (finiteCenterVector F ζ hζ M R P H U m w a Z).val = fun g =>
       finiteCenterSum F ζ hζ M R P H U m w a Z (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ g) := by
   funext g

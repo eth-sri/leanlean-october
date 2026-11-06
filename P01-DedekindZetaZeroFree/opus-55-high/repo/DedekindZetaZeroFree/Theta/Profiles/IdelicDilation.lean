@@ -176,7 +176,7 @@ def kernel (P : Packet R Q) (x : ℝ) : ℂ :=
 theorem forwardProfile_one_ne_zero (P : Packet R Q) (v : R.A.UnitQuotient) :
     P.forwardProfile v 1 ≠ 0 := by
   unfold forwardProfile
-  have hcut : ∀ p : R.A.Sf, (1 : R.A.G).2 p ∈ P.cutoff p := fun p => (P.cutoff p).one_mem
+  have hcut : ∀ p : R.A.Sf, (1 : R.A.G).2 p ∈ P.cutoff p := by simp
   rw [if_pos hcut]
   apply mul_ne_zero one_ne_zero
   apply Finset.prod_ne_zero_iff.mpr
@@ -208,7 +208,3 @@ def sheet (T : Realization R Q) (P : Packet R Q)
 def H (T : Realization R Q) (P : Packet R Q) (v : R.A.UnitQuotient) (κ : R.A.V) (x : ℝ) : ℂ :=
   if hx : 0 < x then ∫ t : ThetaProfileHaarSheets.PositiveAxis,
     P.kernel t.val * T.sheet P v κ ⟨x / t.val, div_pos hx t.property⟩ ∂ThetaProfileHaarSheets.positiveHaar else 0
-end Realization
-end DedekindZetaZeroFree.MomentSources
-
-end

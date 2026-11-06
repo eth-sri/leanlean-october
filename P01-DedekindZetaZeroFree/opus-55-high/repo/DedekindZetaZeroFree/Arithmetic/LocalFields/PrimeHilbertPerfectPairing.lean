@@ -9,7 +9,6 @@ open scoped NumberField Classical
 open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.SArithmeticData
 noncomputable section
-set_option autoImplicit false
 variable {F : Type} [Field F] [NumberField F]
 
 def H_Sn (A : SArithmeticData F) (n : ℕ+) (hn : IsLocalRootOrder n) :
@@ -27,8 +26,6 @@ def H_Sn (A : SArithmeticData F) (n : ℕ+) (hn : IsLocalRootOrder n) :
   map_one' := by
     apply MonoidHom.ext
     intro y
-    change (∏ v : {v // v ∈ A.Sf},
-      A.actualLocalHilbert v.val n hn 1 (y (Sum.inr v))) = 1
     simp
   map_mul' := by
     intro x z
@@ -47,10 +44,10 @@ theorem H_Sn_apply (A : SArithmeticData F) (n : ℕ+) (hn : IsLocalRootOrder n)
 
 theorem H_Sn_mul_left (A : SArithmeticData F) (n : ℕ+) (hn : IsLocalRootOrder n)
     (x z y : Vn F A n) :
-    A.H_Sn n hn (x * z) y = A.H_Sn n hn x y * A.H_Sn n hn z y := by
-  exact congrArg (fun f => f y) (map_mul (A.H_Sn n hn) x z)
+    A.H_Sn n hn (x * z) y = A.H_Sn n hn x y * A.H_Sn n hn z y := 
+  congrArg (fun f => f y) (map_mul (A.H_Sn n hn) x z)
 
-private theorem rawNegSelf (A : SArithmeticData F)
+theorem rawNegSelf (A : SArithmeticData F)
     (v : HeightOneSpectrum (𝓞 F)) (n : ℕ+) (hn : IsLocalRootOrder n)
     (a : (v.adicCompletion F)ˣ) :
     A.actualRawHilbert n hn v (ClassFieldTheory.powerClass _ n a)
@@ -84,7 +81,7 @@ private theorem rawNegSelf (A : SArithmeticData F)
   rw [hneg, LocalClassFieldTheory.Kummer.localHilbertSymbol_neg_self,
     map_one, map_one]
 
-private theorem localAlternating (A : SArithmeticData F)
+theorem localAlternating (A : SArithmeticData F)
     (v : HeightOneSpectrum (𝓞 F)) (n : ℕ+) (hn : IsLocalRootOrder n)
     (a : PowerQuotient (v.adicCompletion F)ˣ n) :
     A.actualLocalHilbert v n hn a a = 1 := by
@@ -92,7 +89,7 @@ private theorem localAlternating (A : SArithmeticData F)
   obtain ⟨r, hr⟩ := A.finite_neg_one_isPower v n hn
   have hr0 : r ≠ 0 := by
     intro h0
-    simp [h0, n.ne_zero] at hr
+    simp_all
   let ru : (v.adicCompletion F)ˣ := Units.mk0 r hr0
   have hru : ru ^ (n : ℕ) = -1 := Units.ext (by simpa [ru] using hr)
   have hneg : ClassFieldTheory.powerClass (v.adicCompletion F) n (-1) = 1 := by
@@ -123,7 +120,7 @@ theorem H_Sn_alternating (A : SArithmeticData F) (n : ℕ+)
   intro v hv
   exact localAlternating A v.val n _ _
 
-private theorem localPerfect (A : SArithmeticData F)
+theorem localPerfect (A : SArithmeticData F)
     (v : HeightOneSpectrum (𝓞 F)) (n : ℕ+) (hn : IsLocalRootOrder n) :
     Function.Bijective (A.actualLocalHilbert v n hn) := by
   letI : ValuativeRel (v.adicCompletion F) :=
@@ -137,7 +134,7 @@ private theorem localPerfect (A : SArithmeticData F)
   constructor
   · intro a b hab
     have hOne : A.actualLocalHilbert v n hn (a * b⁻¹) = 1 := by
-      rw [map_mul, map_inv, hab, mul_inv_cancel]
+      simp_all
     exact mul_inv_eq_one.mp (A.actualLocalHilbert_left_nondegenerate v n hn _
       (fun c => DFunLike.congr_fun hOne c))
   · intro f
@@ -151,7 +148,7 @@ private theorem localPerfect (A : SArithmeticData F)
     exact (A.actualLocalHilbert_local_value v n hn a b).trans
       ((congrArg Inv.inv hb).trans (inv_inv _))
 
-private theorem productSingle (A : SArithmeticData F) (n : ℕ+)
+theorem productSingle (A : SArithmeticData F) (n : ℕ+)
     (hn : IsLocalRootOrder n) (x : Vn F A n) (v : {v // v ∈ A.Sf})
     (b : PowerQuotient (v.val.adicCompletion F)ˣ n) :
     A.H_Sn n hn x (Pi.mulSingle (Sum.inr v) b) =
@@ -159,9 +156,7 @@ private theorem productSingle (A : SArithmeticData F) (n : ℕ+)
   rw [H_Sn_apply]
   rw [Finset.prod_eq_single v]
   · simp
-  · intro w hw hwv
-    rw [Pi.mulSingle_eq_of_ne (by simpa using hwv)]
-    exact map_one _
+  · simp_all
   · simp
 
 theorem H_Sn_perfect (A : SArithmeticData F) (n : ℕ+)
@@ -212,6 +207,3 @@ def hilbertRootsZModEquiv (A : SArithmeticData F) (n : ℕ+)
   letI : NeZero (n : ℕ) := ⟨n.pos.ne'⟩
   exact hζ.zmodEquivZPowers.trans
     (MulEquiv.subgroupCongr hζ.zpowers_eq).toAdditive
-
-end
-end DedekindZetaZeroFree.SArithmeticData

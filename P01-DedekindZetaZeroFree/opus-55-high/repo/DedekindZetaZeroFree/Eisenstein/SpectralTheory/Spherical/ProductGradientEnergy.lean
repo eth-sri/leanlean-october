@@ -37,7 +37,7 @@ theorem basepoint_energy (φ : KPArch.H3 → ℂ) (hφ : ContDiff ℝ (⊤ : ℕ
   norm_num
   ring
 
-private theorem localEnergy_left (f : Matrix.GeneralLinearGroup (Fin 2) ℂ → ℂ)
+theorem localEnergy_left (f : Matrix.GeneralLinearGroup (Fin 2) ℂ → ℂ)
     (a g : Matrix.GeneralLinearGroup (Fin 2) ℂ) :
     localEnergy (fun x => f (a*x)) g = localEnergy f (a*g) := by
   simp only [localEnergy, localD_left]
@@ -109,7 +109,7 @@ open _root_.DedekindZetaZeroFree.KPContArchLaplacianNaturality renaming act → 
 open _root_.DedekindZetaZeroFree.KPContArchLaplacianNaturality renaming act_smooth → act_smooth
 open _root_.DedekindZetaZeroFree.KPContArchLaplacianNaturality renaming act_metric → act_metric
 
-private theorem coframe_norm_A (d : ℕ) (f : KPArch.Space d → ℂ)
+theorem coframe_norm_A (d : ℕ) (f : KPArch.Space d → ℂ)
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) (z : KPArch.Space d) :
     (∑ i, ∑ j, ‖HyperbolicChart.differential d (f ∘ CotangentLogCoframe.A d)
       ((CotangentLogCoframe.A d).symm z) i j‖^2) =
@@ -152,7 +152,7 @@ private theorem coframe_norm_A (d : ℕ) (f : KPArch.Space d → ℂ)
     (f ∘ CotangentLogCoframe.A d) ((hf.comp (CotangentLogCoframe.A d).contDiff).differentiable (by simp) _)
   simpa only [he, hx] using hd
 
-private theorem basepoint_norm (d : ℕ) (f : KPArch.Space d → ℂ) :
+theorem basepoint_norm (d : ℕ) (f : KPArch.Space d → ℂ) :
     KPContActualChamberOutgoingAdapter.covariantNorm d 1 f 0 ^ 2 =
       ∑ i : Fin d, ∑ j : Fin 3,
         ‖fderiv ℝ f 0 (KPContFlatCuspCasimirSpecialization.coordinateDirection d i j)‖^2 := by

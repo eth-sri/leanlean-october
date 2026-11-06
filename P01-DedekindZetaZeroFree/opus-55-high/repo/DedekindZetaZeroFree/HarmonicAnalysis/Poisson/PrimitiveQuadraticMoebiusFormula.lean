@@ -8,12 +8,11 @@ public import DedekindZetaZeroFree.Arithmetic.Ideals.MoebiusCoprimality
 
 @[expose] public section
 
-noncomputable section
 open scoped NumberField Classical ContDiff BigOperators
 
 namespace DedekindZetaZeroFree.LargeSieve.Bilinear
 
-private theorem sup_radical_eq_top_iff {F : Type} [Field F] [NumberField F]
+theorem sup_radical_eq_top_iff {F : Type} [Field F] [NumberField F]
     (I m : Ideal (𝓞 F)) : I ⊔ m.radical = ⊤ ↔ I ⊔ m = ⊤ := by
   constructor
   · intro h
@@ -23,28 +22,24 @@ private theorem sup_radical_eq_top_iff {F : Type} [Field F] [NumberField F]
         (I ⊔ m).radical = (I.radical ⊔ m.radical).radical := Ideal.radical_sup I m
         _ = (I ⊔ m.radical).radical := by
           rw [Ideal.radical_sup I m.radical, Ideal.radical_idem]
-    rw [heq, h, Ideal.radical_top]
+    simp_all
   · intro h
     apply top_unique
     calc
       (⊤ : Ideal (𝓞 F)) = I ⊔ m := h.symm
       _ ≤ I ⊔ m.radical := sup_le_sup_left Ideal.le_radical _
 
-private theorem finsum_ite_subtype {α : Type*} (p : α → Prop) [DecidablePred p] (g : α → ℂ) :
+theorem finsum_ite_subtype {α : Type*} (p : α → Prop) [DecidablePred p] (g : α → ℂ) :
     (∑ᶠ a : α, if p a then g a else 0) = ∑ᶠ a : Subtype p, g a := by
   classical
   rw [finsum_subtype_eq_finsum_cond (f := g) (p := p)]
   apply finsum_congr
   intro i
   by_cases hp : p i
-  · rw [if_pos hp]
-    exact (finsum_eq_single (fun _ : p i => g i) hp
-      (fun x hx => absurd (Subsingleton.elim x hp) hx)).symm
-  · rw [if_neg hp]
-    haveI : IsEmpty (p i) := ⟨fun x => hp x⟩
-    exact (finsum_of_isEmpty (fun _ : p i => g i)).symm
+  · simp_all
+  simp_all
 
-private theorem multiples_character {F : Type} [Field F] [NumberField F]
+theorem multiples_character {F : Type} [Field F] [NumberField F]
     {f : Ideal (𝓞 F)} (η : DedekindZetaZeroFree.RayClassCharacter F f)
     (h : ℝ → ℂ) (X : ℝ) (d : Ideal (𝓞 F)) (hd : d ≠ ⊥) :
     (∑ᶠ I : Ideal (𝓞 F), if I ≠ ⊥ ∧ d ∣ I then
@@ -61,7 +56,7 @@ private theorem multiples_character {F : Type} [Field F] [NumberField F]
     · intro I
       obtain ⟨J, hJ⟩ := I.2.2
       refine ⟨⟨J, fun hbot => I.2.1 ?_⟩, Subtype.ext hJ.symm⟩
-      rw [hJ, hbot, Ideal.mul_bot]
+      simp_all
   have hNd : (Ideal.absNorm d : ℝ) ≠ 0 := by
     exact_mod_cast (Ideal.absNorm_eq_zero_iff.not.mpr hd)
   rw [finsum_ite_subtype (fun I : Ideal (𝓞 F) => I ≠ ⊥ ∧ d ∣ I)
@@ -182,7 +177,3 @@ theorem S4all_primitive_mobius_poisson
   intro e he
   rw [multiples_character η h X e (DedekindZetaZeroFree.LargeSieve.ne_bot_of_mem_idealDivisors he), (hp e he).2]
   ring
-
-end DedekindZetaZeroFree.LargeSieve.Bilinear
-
-end

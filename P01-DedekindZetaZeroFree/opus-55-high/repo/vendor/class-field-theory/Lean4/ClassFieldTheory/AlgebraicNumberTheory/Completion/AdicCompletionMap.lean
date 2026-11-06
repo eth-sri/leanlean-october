@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # The canonical map between adic completions
 
@@ -39,7 +35,7 @@ variable
 /-- The canonical map between adic completions at a finite place and a
 chosen place above it.  It is obtained by completing the algebra map
 between the corresponding valued copies of the number fields. -/
-noncomputable def finitePlaceAdicCompletionMap
+def finitePlaceAdicCompletionMap
     (w : HeightOneSpectrum (𝓞 K))
     (W : {W : HeightOneSpectrum (𝓞 L) //
       finitePlaceBelow (K := K) W = w}) :
@@ -115,7 +111,7 @@ theorem finitePlaceAdicCompletionMap_isScalarTower
       finitePlaceAdicCompletionMap K L w W
         (x : w.adicCompletion K)
   rw [finitePlaceAdicCompletionMap_coe K L w W x]
-  exact IsScalarTower.algebraMap_apply K L (W.1.adicCompletion L) x
+  rfl
 
 /-- The canonical map between the two adic completions is continuous. -/
 theorem finitePlaceAdicCompletionMap_continuous
@@ -215,5 +211,3 @@ theorem finitePlaceAdicCompletionMap_comp
       finitePlaceAdicCompletionMap_coe
         K L vK ⟨vL, hLK⟩ k,
       IsScalarTower.algebraMap_apply K M L]
-
-end

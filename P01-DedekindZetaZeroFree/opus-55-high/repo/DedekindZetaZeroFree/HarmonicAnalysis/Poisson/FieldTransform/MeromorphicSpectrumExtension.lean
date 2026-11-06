@@ -18,14 +18,14 @@ private lemma differentiableAt_Gammaℂ {s : ℂ} (hs : ∀ m : ℕ, s ≠ -m) :
     DifferentiableAt ℂ Complex.Gammaℂ s := by
   have hfun : Complex.Gammaℂ =
       fun z : ℂ => 2 * (2 * (Real.pi : ℂ)) ^ (-z) * Complex.Gamma z := by
-    funext z; rw [Complex.Gammaℂ_def]
+    rfl
   rw [hfun]
   have hbase : (2 * (Real.pi : ℂ)) ≠ 0 :=
-    mul_ne_zero two_ne_zero (Complex.ofReal_ne_zero.mpr Real.pi_ne_zero)
+    by simp
   refine DifferentiableAt.mul ?_ (Complex.differentiableAt_Gamma s hs)
   exact (differentiableAt_const _).mul ((differentiableAt_id.neg).const_cpow (Or.inl hbase))
 
-private lemma Gammaℂ_mul_add_one {s : ℂ} (hs : s ≠ 0) :
+lemma Gammaℂ_mul_add_one {s : ℂ} (hs : s ≠ 0) :
     ((2 * Real.pi : ℝ) : ℂ) * Complex.Gammaℂ (s + 1) = Complex.Gammaℂ s * s := by
   rw [Complex.Gammaℂ_add_one hs, div_eq_mul_inv, div_eq_mul_inv]
   have hpi : (Real.pi : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
@@ -82,9 +82,9 @@ theorem A_div_analyticOnNhd (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
   refine AnalyticOnNhd.div ?_ ?_ ?_
   · exact (A_analyticOnNhd D r h hD hr hh hhc).mono (fun s hs => hs.1)
   · exact (analyticOnNhd_id (𝕜 := ℂ) (s := {s : ℂ | -1 < s.re ∧ s ≠ 0})).pow r
-  · intro x hx; exact pow_ne_zero r hx.2
+  simp_all
 
-private lemma A_zero_aux (D : ℝ) (r : ℕ) (hr : 1 ≤ r) (m : ℂ) :
+lemma A_zero_aux (D : ℝ) (r : ℕ) (hr : 1 ≤ r) (m : ℂ) :
     (D : ℂ) ^ (-(1 / 2 : ℂ)) * (((2 * Real.pi : ℝ) : ℂ) * Complex.Gammaℂ 1) ^ r *
       ((Complex.Gammaℂ 1)⁻¹) ^ (r - 1) * (m / Complex.Gammaℂ 1) =
     (D : ℂ) ^ (-(1 / 2 : ℂ)) * (((2 * Real.pi : ℝ) : ℂ) ^ r) * m := by
@@ -93,9 +93,9 @@ private lemma A_zero_aux (D : ℝ) (r : ℕ) (hr : 1 ≤ r) (m : ℂ) :
     push_cast
     field_simp
   have h3 : (1 / (Real.pi : ℂ))⁻¹ = (Real.pi : ℂ) := by
-    rw [one_div, inv_inv]
+    simp
   have h4 : m / (1 / (Real.pi : ℂ)) = m * (Real.pi : ℂ) := by
-    rw [one_div, div_eq_mul_inv, inv_inv]
+    simp
   rw [h2, h3, h4]
   have hpow : (2 : ℂ) ^ r * (Real.pi : ℂ) ^ (r - 1) * (Real.pi : ℂ) =
       (((2 * Real.pi : ℝ) : ℂ)) ^ r := by
@@ -133,7 +133,7 @@ theorem A_uniform_disk_bound (D : ℝ) (r : ℕ) (b : ℝ)
     have hre : (s + 1).re = -(m : ℝ) := by rw [hc]; simp
     have hre2 : (s + 1).re = s.re + 1 := by simp
     have hle : ‖s‖ ≤ (1 / 2 : ℝ) := by
-      rw [hKdef, Metric.mem_closedBall] at hsK; simpa using hsK
+      simp_all
     have habs : |s.re| ≤ ‖s‖ := Complex.abs_re_le_norm s
     rw [hre2] at hre
     linarith [neg_le_abs s.re]
@@ -143,12 +143,12 @@ theorem A_uniform_disk_bound (D : ℝ) (r : ℕ) (b : ℝ)
     ((differentiableAt_Gammaℂ (hs1 s hsK)).comp s (differentiableAt_id.add_const 1)).differentiableWithinAt
   have hcG : ContinuousOn (fun s : ℂ => Complex.Gammaℂ (s + 1)) K := hdG.continuousOn
   have hc2 : ContinuousOn (fun s : ℂ => (((2 * Real.pi : ℝ) : ℂ) * Complex.Gammaℂ (s + 1)) ^ r) K :=
-    (continuousOn_const.mul hcG).pow r
+    by fun_prop
   have hcInv : ContinuousOn (fun s : ℂ => (Complex.Gammaℂ (1 - s))⁻¹) K :=
     Complex.differentiable_Gammaℂ_inv.continuous.comp_continuousOn
       ((continuous_const.sub continuous_id).continuousOn)
   have hc3 : ContinuousOn (fun s : ℂ => ((Complex.Gammaℂ (1 - s))⁻¹) ^ (r - 1)) K :=
-    hcInv.pow (r - 1)
+    by fun_prop
   obtain ⟨M1, hM1⟩ := hK.exists_bound_of_continuousOn hc1
   obtain ⟨M2, hM2⟩ := hK.exists_bound_of_continuousOn hc2
   obtain ⟨M3, hM3⟩ := hK.exists_bound_of_continuousOn hc3
@@ -175,7 +175,3 @@ theorem A_uniform_disk_bound (D : ℝ) (r : ℕ) (b : ℝ)
       _ ≤ max M1 1 * max M2 1 * max M3 1 * (C' * Vendor.S b N h) := by
           gcongr
       _ = (max M1 1 * max M2 1 * max M3 1 * C') * Vendor.S b N h := by ring
-
-end DedekindZetaZeroFree.LargeSieve
-
-end

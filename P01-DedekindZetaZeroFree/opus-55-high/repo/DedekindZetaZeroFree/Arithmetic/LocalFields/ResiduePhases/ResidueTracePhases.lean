@@ -22,8 +22,8 @@ def rationalPrimeBelow (v : HeightOneSpectrum (𝓞 F)) : Nat.Primes :=
 theorem existsUnique_baseEmbedding (v : HeightOneSpectrum (𝓞 F)) :
     ∃! ι : ℚ_[rationalPrimeBelow v] →+* v.adicCompletion F,
       Continuous ι ∧ ∀ q : ℚ, ι (q : ℚ_[rationalPrimeBelow v]) =
-        algebraMap F (v.adicCompletion F) (algebraMap ℚ F q) := by
-  exact ResidueTraceFactorProductFormula.existsUnique_rationalExtension v
+        algebraMap F (v.adicCompletion F) (algebraMap ℚ F q) := 
+  ResidueTraceFactorProductFormula.existsUnique_rationalExtension v
 
 def baseEmbedding (v : HeightOneSpectrum (𝓞 F)) :
     ℚ_[rationalPrimeBelow v] →+* v.adicCompletion F :=
@@ -48,8 +48,8 @@ def IsSelfDual (v : HeightOneSpectrum (𝓞 F)) : Prop :=
 
 theorem localTrace_finite (v : HeightOneSpectrum (𝓞 F)) :
     letI := (baseEmbedding v).toAlgebra
-    Module.Finite ℚ_[rationalPrimeBelow v] (v.adicCompletion F) := by
-  exact ResidueTraceFactorProductFormula.finite_rationalExtension v (baseEmbedding v)
+    Module.Finite ℚ_[rationalPrimeBelow v] (v.adicCompletion F) := 
+  ResidueTraceFactorProductFormula.finite_rationalExtension v (baseEmbedding v)
     (baseEmbedding_spec v).1 (baseEmbedding_spec v).2
 
 theorem continuous_localTraceCharacter (v : HeightOneSpectrum (𝓞 F)) :
@@ -66,15 +66,15 @@ theorem continuous_localTraceCharacter (v : HeightOneSpectrum (𝓞 F)) :
 
 theorem diagonal_hasFiniteMulSupport (x : F) :
     Function.HasFiniteMulSupport (fun v : HeightOneSpectrum (𝓞 F) =>
-      localTraceCharacter v (algebraMap F (v.adicCompletion F) x)) := by
-  exact ResidueTraceFactorProductFormula.traceFactors_finiteSupport baseEmbedding
+      localTraceCharacter v (algebraMap F (v.adicCompletion F) x)) := 
+  ResidueTraceFactorProductFormula.traceFactors_finiteSupport baseEmbedding
     (fun v => (baseEmbedding_spec v).1) (fun v => (baseEmbedding_spec v).2) x
 
 theorem diagonal_product_formula (x : F) :
     (∏ w : InfinitePlace F, archTraceCharacter w (algebraMap F w.Completion x)) *
       (∏ᶠ v : HeightOneSpectrum (𝓞 F),
-        localTraceCharacter v (algebraMap F (v.adicCompletion F) x)) = 1 := by
-  exact ResidueTraceFactorProductFormula.traceFactors_product_formula baseEmbedding
+        localTraceCharacter v (algebraMap F (v.adicCompletion F) x)) = 1 := 
+  ResidueTraceFactorProductFormula.traceFactors_product_formula baseEmbedding
     (fun v => (baseEmbedding_spec v).1) (fun v => (baseEmbedding_spec v).2)
     diagonal_hasFiniteMulSupport x
 end DedekindZetaZeroFree.ResidueTrace
@@ -126,9 +126,7 @@ theorem eS_integer (A : SArithmeticData F) (hS : A.ContainsTraceBadPlaces)
       (algebraMap F (v.1.adicCompletion F) (r : F))) = 1
   have heq := Finset.prod_coe_sort A.Sf (fun v : HeightOneSpectrum (𝓞 F) =>
     ResidueTrace.localTraceCharacter v (algebraMap F (v.adicCompletion F) (r : F)))
-  exact (congrArg (fun t : Circle =>
-    (∏ w : InfinitePlace F, archTraceCharacter w (algebraMap F w.Completion (r : F))) * t)
-    heq).trans hglobal
+  simp_all
 
 def dividedTraceCharacter (A : SArithmeticData F) (c : A.R) : AddChar A.R Circle :=
   A.fieldTraceCharacter.compAddMonoidHom
@@ -190,8 +188,8 @@ theorem residueTraceCharacter_prime_local (A : SArithmeticData F)
       rw [hp.2]
       exact Ideal.mem_map_of_mem _ (hIv ▸ ht)
     obtain ⟨y, hy⟩ := Ideal.mem_span_singleton'.mp htR
-    have hmul : (t : F) = (y : F) * (p : F) := by
-      exact (congrArg (fun z : A.R => (z : F)) hy).symm
+    have hmul : (t : F) = (y : F) * (p : F) := 
+      (congrArg (fun z : A.R => (z : F)) hy).symm
     have htval := (w.valuation_eq_one_iff_notMem (K := F)).2 htw
     have hyp := Set.integer_valuation_le_one _ F y hw
     have hpp := Set.integer_valuation_le_one _ F p hw
@@ -219,11 +217,10 @@ theorem residueTraceCharacter_prime_local (A : SArithmeticData F)
     · exact Finset.prod_insert hv
     · intro w hw
       by_contra hn
-      have hw' : w ∉ A.Sf := fun h => hn (Finset.mem_insert_of_mem h)
+      have hw' : w ∉ A.Sf := by simp_all
       have hwv : w ≠ v := by
         intro h
-        subst w
-        exact hn (Finset.mem_insert_self v A.Sf)
+        simp_all
       exact hw (hout w hw' hwv)
   have hglobal := ResidueTrace.diagonal_product_formula ((x : F) / (p : F))
   rw [hprod] at hglobal
@@ -235,7 +232,7 @@ theorem residueTraceCharacter_prime_local (A : SArithmeticData F)
   apply (eq_inv_iff_mul_eq_one).2
   convert hglobal using 1 <;> ac_rfl
 
-private theorem approximateLocalInteger (v : HeightOneSpectrum (𝓞 F)) (o : v.adicCompletionIntegers F)
+theorem approximateLocalInteger (v : HeightOneSpectrum (𝓞 F)) (o : v.adicCompletionIntegers F)
     (ε : ℝ) (hε : 0 < ε) : ∃ r : 𝓞 F,
     dist (algebraMap (𝓞 F) (v.adicCompletion F) r) (o : v.adicCompletion F) < ε := by
   obtain ⟨y, hy⟩ := (v.denseRange_algebraMap F).exists_dist_lt
@@ -337,7 +334,7 @@ theorem residueTraceCharacter_prime_ne_one (A : SArithmeticData F)
         (algebraMap F (v.adicCompletion F) (-(p : F)⁻¹) *
           algebraMap (𝓞 F) (v.adicCompletion F) r) = 1
       convert hchar r using 1
-      simp only [map_neg, map_inv₀, map_div₀, div_eq_mul_inv, map_mul]
+      simp only [map_neg, map_inv₀, div_eq_mul_inv, map_mul]
       change ResidueTrace.localTraceCharacter v
         (-(algebraMap F (v.adicCompletion F) (p : F))⁻¹ *
           algebraMap F (v.adicCompletion F) (r : F)) = _
@@ -386,7 +383,3 @@ theorem residueTraceCharacter_squarefree_primitive (A : SArithmeticData F)
     χ (Ideal.Quotient.mk (A.extendIdeal I) y)) heq
   rw [AddChar.mulShift_apply, ← map_mul, A.residueTraceCharacter_apply] at h
   exact hy h
-
-end DedekindZetaZeroFree.SArithmeticData
-
-end

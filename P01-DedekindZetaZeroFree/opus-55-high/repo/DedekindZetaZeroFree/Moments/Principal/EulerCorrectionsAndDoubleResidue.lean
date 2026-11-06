@@ -3,8 +3,17 @@ module
 public import DedekindZetaZeroFree.LFunctions.Hecke.UniformRegularizationBoundaryBounds
 public import DedekindZetaZeroFree.LFunctions.Hecke.RegularizationStripGrowth
 public import DedekindZetaZeroFree.Analysis.PhragmenLindelof.PolynomialBoundaryBounds
-public import DedekindZetaZeroFree.ZeroDetection.Conductors.HolomorphicLogarithmControl
-public import DedekindZetaZeroFree.Moments.Principal.Corrections.ThreeVariableProductAndContinuation
+public import Mathlib.Analysis.Complex.BranchLogRoot
+public import Mathlib.Analysis.Complex.BorelCaratheodory
+public import Mathlib.Analysis.Complex.Hadamard
+public import Mathlib.Analysis.Complex.Liouville
+public import Mathlib.Analysis.Calculus.InverseFunctionTheorem.Deriv
+public import Mathlib.Analysis.Normed.Module.Connected
+public import Mathlib.Analysis.Complex.ExponentialBounds
+public import DedekindZetaZeroFree.LFunctions.Hecke.MaskedMeromorphicContinuation
+public import DedekindZetaZeroFree.Moments.Principal.Corrections.NormalProductConvergence
+public import DedekindZetaZeroFree.Moments.Principal.EulerProducts.SeparatedHeckeFactors
+public import DedekindZetaZeroFree.Moments.Principal.Corrections.SmallPrimeSubpowerBounds
 public import DedekindZetaZeroFree.Moments.Principal.Corrections.PrincipalSpecialization
 public import DedekindZetaZeroFree.Moments.Principal.Corrections.SummableMajorants
 public import DedekindZetaZeroFree.Moments.Reflected.ProbeExponentBound
@@ -17,12 +26,10 @@ public import DedekindZetaZeroFree.Moments.Probes.NormalizedPrincipalProbeExiste
 
 open scoped NumberField Classical Topology
 
-noncomputable section
 namespace DedekindZetaZeroFree.PrincipalCorrection
-set_option autoImplicit false
 
 open LocalFiniteSums CorrectionFactors InitialSeparatedEuler
-open FrequencyCharacterMasks MaskedHeckeMeromorphic MeromorphicSeparationGluing
+open FrequencyCharacterMasks MaskedHeckeMeromorphic
 
 variable {F : Type} [Field F] [NumberField F]
 variable {A : SArithmeticData F} {σ : F →+* ℂ}
@@ -86,7 +93,7 @@ theorem probe_arithmetic_compatibility
     have hE : E.toEquiv x = Ideal.Quotient.mk (A.extendIdeal c.val)
         ((FiniteTransform.canonicalLifts A.R.toSubring a).val x) := by
       conv_lhs => rw [← hout]
-      exact Ideal.quotientEquivAlgOfEq_mk A.R ha.2 _
+      rfl
     rw [hE, SArithmeticData.residueTraceCharacter_apply]
     change (A.fieldTraceCharacter ((1 : F) *
       ((FiniteTransform.canonicalLifts A.R.toSubring a).val x : F) / (a : F)) : ℂ) = _
@@ -115,7 +122,3 @@ theorem principal_specialization (C : A.GeneralArithmeticContext σ η hS)
   refine ⟨fun p s hs => ⟨principal_localFactor_eq_h_p C U hU p s hs, rfl⟩, ?_⟩
   intro s hs
   exact principal_product_specialization C U hU s hs
-
-end DedekindZetaZeroFree.PrincipalCorrection
-
-end

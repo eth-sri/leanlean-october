@@ -20,7 +20,7 @@ theorem norm_le_on_closed_strip_of_polynomial_boundary
 
   have hden : ∀ s : ℂ, -δ ≤ s.re → 1 ≤ ‖s + 2‖ := by
     intro s hs
-    have h1 : (s + 2).re = s.re + 2 := by simp [Complex.add_re]
+    have h1 : (s + 2).re = s.re + 2 := by rfl
     have h2 : 1 ≤ (s + 2).re := by rw [h1]; linarith
     exact le_trans h2 (Complex.re_le_norm (s + 2))
   have hden_ne : ∀ s : ℂ, -δ ≤ s.re → (s + 2) ^ k ≠ 0 := by
@@ -30,7 +30,7 @@ theorem norm_le_on_closed_strip_of_polynomial_boundary
   have hcl : closure {s : ℂ | -δ < s.re ∧ s.re < 1 + δ} ⊆ {s : ℂ | -δ ≤ s.re} :=
     closure_minimal (fun s hs => le_of_lt hs.1) (isClosed_Ici.preimage Complex.continuous_re)
   set g : ℂ → ℂ := fun s => f s / (s + 2) ^ k with hgdef
-  have hg_apply : ∀ s : ℂ, g s = f s / (s + 2) ^ k := fun s => by rw [hgdef]
+  have hg_apply : ∀ s : ℂ, g s = f s / (s + 2) ^ k := by simp_all
   have hgdiff : DiffContOnCl ℂ g {s : ℂ | -δ < s.re ∧ s.re < 1 + δ} := by
     refine ⟨?_, ?_⟩
     · exact (hhol.1.div ((differentiableOn_id.add_const 2).pow k)
@@ -60,7 +60,7 @@ theorem norm_le_on_closed_strip_of_polynomial_boundary
       have h2 : (2 : ℝ) ≤ 2 * ‖s + 2‖ := by linarith
       linarith [him, h2, norm_nonneg (s + 2)]
     have hfb := hboundary s hs
-    have hpos : 0 < ‖s + 2‖ ^ k := pow_pos (lt_of_lt_of_le one_pos hden1) k
+    have hpos : 0 < ‖s + 2‖ ^ k := by positivity
     rw [hg_apply, norm_div, norm_pow, div_le_iff₀ hpos]
     calc ‖f s‖ ≤ H * (2 + |s.im|) ^ k := hfb
       _ ≤ H * (3 * ‖s + 2‖) ^ k := by
@@ -81,8 +81,8 @@ theorem norm_le_on_closed_strip_of_polynomial_boundary
       _ = ‖g s‖ * ‖s + 2‖ ^ k := by rw [norm_mul, norm_pow]
   have h3 : ‖s + 2‖ ≤ 2 * (2 + |s.im|) := by
     have hnormle := Complex.norm_le_abs_re_add_abs_im (s + 2)
-    have hre2 : (s + 2).re = s.re + 2 := by simp [Complex.add_re]
-    have him2 : (s + 2).im = s.im := by simp [Complex.add_im]
+    have hre2 : (s + 2).re = s.re + 2 := by rfl
+    have him2 : (s + 2).im = s.im := by simp
     have hrepos : 0 ≤ s.re + 2 := by linarith [hs.1, hδpos]
     rw [hre2, him2, abs_of_nonneg hrepos] at hnormle
     have hle : s.re + 2 ≤ 3.1 := by linarith [hs.2, hδle]
@@ -94,5 +94,3 @@ theorem norm_le_on_closed_strip_of_polynomial_boundary
     _ = 6 ^ k * H * (2 + |s.im|) ^ k := by
         have h36 : (3 : ℝ) ^ k * 2 ^ k = 6 ^ k := by rw [← mul_pow]; norm_num
         rw [mul_pow, ← h36]; ring
-
-end DedekindZetaZeroFree

@@ -35,7 +35,7 @@ variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
   change KPGlobalTorusBorelTwistCompatibility.iwasawaNorm F R.A.zeta12 R.A.primitive_zeta12 (fullProductIwasawaData R) 1 = 1 at h
   rw [h]; simp
 
-private theorem finite_compact_mem (R : PrincipalMellin.ActualRecipe S η)
+theorem finite_compact_mem (R : PrincipalMellin.ActualRecipe S η)
     (p : KPFinitePlace F)
     (k : KPLocalCover.CubicGL2Raw F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p))
     (hk : k ∈ KPAdelicCoverRestrictedProduct.compact F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p)) :
@@ -55,7 +55,7 @@ private theorem finite_compact_mem (R : PrincipalMellin.ActualRecipe S η)
  theorem twist_zero (R : PrincipalMellin.ActualRecipe S η) (b : InducedSourceSeed R) : seedTwist R b 0 = b.value := by
   ext g; simp [seedTwist]
 
-private theorem twist_level (R : PrincipalMellin.ActualRecipe S η) (b : InducedSourceSeed R)
+theorem twist_level (R : PrincipalMellin.ActualRecipe S η) (b : InducedSourceSeed R)
     (s : ℂ) (g u : Group R)
     (hu : u ∈ KPGlobalTorusFunctionData.globalLevel F R.A.zeta12 R.A.primitive_zeta12 b.level) :
     seedTwist R b s (g * u) = seedTwist R b s g := by

@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Restriction between normal intermediate fields
 
@@ -33,7 +30,7 @@ variable {K : Type u} {Omega : Type v}
 
 /-- Restriction `Gal(F/K) → Gal(E/K)` for two intermediate fields `E ≤ F`
 in one ambient extension. -/
-noncomputable def intermediateFieldRestrictNormalHom
+def intermediateFieldRestrictNormalHom
     (E F : IntermediateField K Omega) (hEF : E ≤ F) [Normal K E] :
     (F ≃ₐ[K] F) →* (E ≃ₐ[K] E) := by
   letI : Algebra E F :=
@@ -53,7 +50,3 @@ theorem intermediateFieldRestrictNormalHom_apply_val
   let : IsScalarTower K E F := IsScalarTower.of_algebraMap_eq' rfl
   have h := AlgEquiv.restrictNormal_commutes sigma E x
   exact congrArg F.val h
-
-end RamificationTheory
-
-end

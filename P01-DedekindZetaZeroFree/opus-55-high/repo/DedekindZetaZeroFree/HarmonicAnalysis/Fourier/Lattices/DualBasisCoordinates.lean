@@ -52,7 +52,7 @@ instance dualLattice_isZLattice [FiniteDimensional ℝ V]
   letI := ZLattice.module_finite ℝ L
   constructor
   rw [dualLattice_span L (Module.Free.chooseBasis ℤ L)]
-  exact ZSpan.span_top _
+  simp
 
 variable [FiniteDimensional ℝ V]
 variable (L : Submodule ℤ V) [DiscreteTopology L] [IsZLattice ℝ L]
@@ -60,8 +60,8 @@ variable {ι : Type*} [Fintype ι] (b : Basis ι ℤ L)
 
 theorem dualLattice_eq_span_dualBasis :
     dualLattice L = Submodule.span ℤ (Set.range
-      (LinearMap.BilinForm.dualBasis (innerₗ V) (innerₗ_nondegenerate V) (b.ofZLatticeBasis ℝ L))) := by
-  exact dualLattice_span L b
+      (LinearMap.BilinForm.dualBasis (innerₗ V) (innerₗ_nondegenerate V) (b.ofZLatticeBasis ℝ L))) := 
+  dualLattice_span L b
 
 def dualVector_b : (ι → ℤ) ≃+ dualLattice L :=
   AddEquiv.ofBijective
@@ -74,7 +74,6 @@ def dualVector_b : (ι → ℤ) ≃+ dualLattice L :=
             rw [Int.cast_smul_eq_zsmul]
             exact Submodule.smul_mem _ _ (Submodule.subset_span ⟨i, rfl⟩)⟩
        map_zero' := by
-         apply Subtype.ext
          simp
        map_add' := by
          intro n m
@@ -138,7 +137,3 @@ theorem dualVector_b_fourierChar (x : V) (n : ι → ℤ) :
   apply Finset.sum_congr rfl
   intro i _
   ring
-
-end DedekindZetaZeroFree.PoissonArch
-
-end

@@ -90,7 +90,7 @@ private theorem q_actualBranch {a b : Chart (U := U) (H := H)} (e : ActualBranch
   apply Quotient.sound
   exact ⟨e.gamma, rfl⟩
 
-private theorem sectionNorm_indicator_of_coeff
+theorem sectionNorm_indicator_of_coeff
     (s u : Sections F ζ hζ U R P H) (D : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U))
     (h : ∀ i x, (u i).val x =
       (if Quotient.mk (KPFiniteCuspAtlas.sphericalRelation F ζ hζ U)
@@ -111,7 +111,7 @@ private theorem sectionNorm_indicator_of_coeff
   · rw [Set.indicator_of_notMem hx, h i x, if_neg hx]
     simp
 
-private theorem sectionNorm_indicator_of_coeff_neg
+theorem sectionNorm_indicator_of_coeff_neg
     (s u : Sections F ζ hζ U R P H) (E : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U))
     (h : ∀ i x, (u i).val x =
       (if Quotient.mk (KPFiniteCuspAtlas.sphericalRelation F ζ hζ U)
@@ -133,7 +133,7 @@ private theorem sectionNorm_indicator_of_coeff_neg
   · rw [Set.indicator_of_mem (by simp [Set.mem_compl_iff, hx]), h i x, if_neg hx,
       ← hbc, sectionNorm_component]
 
-private theorem sectionNorm_nonneg' (s : Sections F ζ hζ U R P H)
+theorem sectionNorm_nonneg' (s : Sections F ζ hζ U R P H)
     (b : KPMsFixedHaarDisintegration.Spherical F ζ hζ U) :
     0 ≤ sectionNorm F ζ hζ U R P H s b := by
   obtain ⟨⟨i, y⟩, rfl⟩ := (H.atlas U).components.surjective b
@@ -141,7 +141,7 @@ private theorem sectionNorm_nonneg' (s : Sections F ζ hζ U R P H)
   rw [sectionNorm_component]
   exact norm_nonneg _
 
-private theorem squaredNorm_indicator_of_sectionNorm
+theorem squaredNorm_indicator_of_sectionNorm
     {u w : Sections F ζ hζ U R P H} {D : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U)}
     (h : sectionNorm F ζ hζ U R P H u =
       D.indicator (sectionNorm F ζ hζ U R P H w)) :
@@ -418,7 +418,7 @@ variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
 variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
 variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
 
-noncomputable def compactExhaustion :
+def compactExhaustion :
     ℕ → Set (KPFiniteCuspAtlas.rawXU F ζ hζ U) :=
   compactCovering (KPFiniteCuspAtlas.rawXU F ζ hζ U)
 
@@ -438,7 +438,7 @@ theorem compactExhaustion_covers :
     ⋃ n, compactExhaustion F ζ hζ U n = Set.univ :=
   iUnion_compactCovering (KPFiniteCuspAtlas.rawXU F ζ hζ U)
 
-private theorem tendsto_indicator_compl_zero {α : Type*} (f : α → ℝ) (E : ℕ → Set α)
+theorem tendsto_indicator_compl_zero {α : Type*} (f : α → ℝ) (E : ℕ → Set α)
     (hmono : Monotone E) (hcov : ⋃ n, E n = Set.univ) (x : α) :
     Tendsto (fun n => (E n)ᶜ.indicator f x) atTop (𝓝 (0 : ℝ)) := by
   obtain ⟨N, hN⟩ := Set.mem_iUnion.mp (by rw [hcov]; exact Set.mem_univ x)
@@ -446,7 +446,7 @@ private theorem tendsto_indicator_compl_zero {α : Type*} (f : α → ℝ) (E : 
   filter_upwards [Filter.eventually_atTop.mpr ⟨N, fun n hn => hmono hn hN⟩] with n hn
   exact (Set.indicator_of_notMem (s := (E n)ᶜ) (f := f) (show x ∉ (E n)ᶜ from fun h => h hn)).symm
 
-private theorem antitone_indicator_compl {α : Type*} (f : α → ℝ) (hf0 : ∀ y, 0 ≤ f y)
+theorem antitone_indicator_compl {α : Type*} (f : α → ℝ) (hf0 : ∀ y, 0 ≤ f y)
     (E : ℕ → Set α) (hmono : Monotone E) (x : α) :
     Antitone fun n => (E n)ᶜ.indicator f x :=
   antitone_nat_of_succ_le fun n => by
@@ -456,7 +456,7 @@ private theorem antitone_indicator_compl {α : Type*} (f : α → ℝ) (hf0 : �
     · rw [Set.indicator_of_notMem hx]
       exact Set.indicator_nonneg (fun y _ => hf0 y) x
 
-private theorem tendsto_setLIntegral_compl {α : Type*} [MeasurableSpace α]
+theorem tendsto_setLIntegral_compl {α : Type*} [MeasurableSpace α]
     (μ : Measure α) (f : α → ℝ≥0∞) (hf : AEMeasurable f μ) (E : ℕ → Set α)
     (hE : ∀ n, MeasurableSet (E n)) (hmono : Monotone E)
     (hcov : ⋃ n, E n = Set.univ) (hfin : ∫⁻ a, f a ∂μ ≠ ∞) :
@@ -481,7 +481,7 @@ private theorem tendsto_setLIntegral_compl {α : Type*} [MeasurableSpace α]
   have := lintegral_tendsto_of_tendsto_of_antitone hmeas hanti h0 htend
   simpa using this
 
-private theorem tendsto_setIntegral_compl {α : Type*} [MeasurableSpace α]
+theorem tendsto_setIntegral_compl {α : Type*} [MeasurableSpace α]
     (μ : Measure α) (g : α → ℝ) (hg : Integrable g μ) (hg0 : ∀ y, 0 ≤ g y) (E : ℕ → Set α)
     (hE : ∀ n, MeasurableSet (E n)) (hmono : Monotone E)
     (hcov : ⋃ n, E n = Set.univ) :
@@ -495,7 +495,7 @@ private theorem tendsto_setIntegral_compl {α : Type*} [MeasurableSpace α]
   have := integral_tendsto_of_tendsto_of_antitone hf (integrable_zero α ℝ μ) hanti htend
   simpa using this
 
-private theorem norm_eq_sqrt_of_sq_eq {E : Type*} [NormedAddCommGroup E] {x : E} {A : ℝ}
+theorem norm_eq_sqrt_of_sq_eq {E : Type*} [NormedAddCommGroup E] {x : E} {A : ℝ}
     (h : ‖x‖ ^ 2 = A) : ‖x‖ = Real.sqrt A := by
   rw [← h, Real.sqrt_sq (norm_nonneg x)]
 
@@ -505,7 +505,7 @@ private theorem toSector_norm_sq (s : BorelL2Sections F ζ hζ U R P H) :
   rw [← KPContSectorLineL2Isometry.norm_sq F ζ hζ U R P H s]
   rfl
 
-private theorem ofFamily_norm_sq (r : SquareFiniteFamily (U := U) (H := H)) :
+theorem ofFamily_norm_sq (r : SquareFiniteFamily (U := U) (H := H)) :
     ‖KPContActualSectorCotangentL2.ofFamily F ζ hζ U R P H r‖ ^ 2 =
       ∫ x, (normSquare r.val x : ℝ)
         ∂KPMsFixedHaarDisintegration.sphericalMeasure F ζ hζ R P U :=

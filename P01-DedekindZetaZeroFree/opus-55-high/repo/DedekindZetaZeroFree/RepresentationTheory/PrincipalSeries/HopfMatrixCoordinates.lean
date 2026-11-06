@@ -15,5 +15,3 @@ theorem upperTriangular_coe_matrix (a d : ℂˣ) (b : ℂ) :
     ((KPCplxPrincipalSeriesCharts.upperTriangular a d b : KPCplxCharacterHaar.ComplexGL2) :
       Matrix (Fin 2) (Fin 2) ℂ) = !![(a : ℂ), b; 0, (d : ℂ)] := by
   rfl
-
-end DedekindZetaZeroFree.ComplexFractionalInverse.CompactCharts

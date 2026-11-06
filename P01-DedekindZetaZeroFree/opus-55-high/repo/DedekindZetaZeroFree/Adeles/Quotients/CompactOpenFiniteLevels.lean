@@ -18,7 +18,7 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
   ⟨fun q => ⟨⟨pglCompact F ζ hζ (Sum.inr q), (ActualFiniteFactor.pgl_standard_compact_open F ζ hζ q).2⟩,
     (ActualFiniteFactor.pgl_standard_compact_open F ζ hζ q).1⟩, Filter.Eventually.of_forall fun _ => rfl⟩
 
-private theorem standard_mem_compact
+theorem standard_mem_compact
     (u : ActualFiniteFactor.finiteSubgroup F ζ hζ)
     (hu : u ∈ (ActualFiniteFactor.productLevel F ζ hζ (standardData F ζ hζ)).subgroup) :
     u.val ∈ (KPContFlatSourceRecipe.D F ζ hζ).K := by

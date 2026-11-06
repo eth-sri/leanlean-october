@@ -13,12 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-set_option autoImplicit false
 /-! Provides the public declarations in the `LocalClassFieldTheory.ClassFormation.NormalBasisGaloisAction` Lean module. -/
 
 namespace LocalClassFieldTheory
@@ -70,7 +64,7 @@ theorem quotientActionOfSubgroupStable
     MulAction.QuotientAction G V where
   inv_mul_mem g a b hab := by
     have hsmul : g • (a⁻¹ * b) ∈ V := hstable g (a⁻¹ * b) hab
-    simpa [MulDistribMulAction.smul_mul, map_inv] using hsmul
+    simp_all
 
 /-- Descend an action by group automorphisms to the quotient by an invariant
 subgroup. -/
@@ -123,7 +117,7 @@ theorem galoisGroup_apply_mem_chosenBaseUniformizerPow_chosenNormalBasisIntegerL
         sigma y =
       sigma (algebraMap K L
         (((chosenIntegerRingUniformizer K ^ n : 𝒪[K]) : K))) * sigma y
-  rw [sigma.commutes]
+  simp
 
 variable [ValuativeRel L]
   [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
@@ -141,8 +135,7 @@ theorem galoisGroup_smul_mem_chosenNormalBasisPrincipalUnitSet
   have hstable :=
     galoisGroup_apply_mem_chosenBaseUniformizerPow_chosenNormalBasisIntegerLattice
       (K := K) (L := L) n sigma ha
-  simpa [galoisGroupIntegerUnitsMulDistribMulActionOfIsIntegralClosure_smul,
-    map_sub, map_one] using hstable
+  simp_all
 
 /-- The restricted actual Galois action on any subgroup whose carrier is
 the standard `V^n`. -/
@@ -202,8 +195,6 @@ theorem chosenNormalBasisPrincipalUnitSubgroup_sigmaMinusOne_coe
     letI := galoisGroupIntegerUnitsMulDistribMulActionOfIsIntegralClosure K L
     ((sigmaMinusOne (Gal(L / K)) V sigma a : V) : 𝒪[L]ˣ) =
       sigmaMinusOne (Gal(L / K)) 𝒪[L]ˣ sigma (a : 𝒪[L]ˣ) := by
-  let := chosenNormalBasisPrincipalUnitSubgroupMulDistribMulAction K L n V hV
-  let := galoisGroupIntegerUnitsMulDistribMulActionOfIsIntegralClosure K L
   rfl
 
 /-- The quotient action on `𝒪_Lˣ / V^n`, descended from the actual integer-unit
@@ -292,11 +283,4 @@ theorem chosenNormalBasisPrincipalUnitSubgroupInclusion_range_eq_ker_quotient
   ext a
   change (∃ v : V, (v : 𝒪[L]ˣ) = a) ↔ QuotientGroup.mk' V a = 1
   rw [QuotientGroup.mk'_apply, QuotientGroup.eq_one_iff]
-  constructor
-  · rintro ⟨v, rfl⟩
-    exact v.2
-  · intro ha
-    exact ⟨⟨a, ha⟩, rfl⟩
-
-end
-end LocalClassFieldTheory
+  simp

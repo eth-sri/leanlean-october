@@ -6,7 +6,6 @@ public import DedekindZetaZeroFree.LFunctions.Tate.ComplexFourierGaussianPairing
 
 namespace DedekindZetaZeroFree
 
-noncomputable section
 open MeasureTheory
 
 theorem complexAnnular_normMellin_integrable (f : ℂ → ℂ) (hf : IsComplexAnnular f)
@@ -19,7 +18,7 @@ theorem complexAnnular_normMellin_integrable (f : ℂ → ℂ) (hf : IsComplexAn
     apply Continuous.rpow_const ((continuous_norm.pow 2).max continuous_const)
     intro x
     left
-    exact ne_of_gt (lt_of_lt_of_le (sq_pos_of_pos ha) (le_max_right _ _))
+    positivity
   have hi : Integrable (fun x => f x * (w x : ℂ)) (volume : Measure ℂ) :=
     (hcont.continuous.mul (Complex.continuous_ofReal.comp hw)).integrable_of_hasCompactSupport
       (hcomp.mul_right)
@@ -35,7 +34,7 @@ theorem complexAnnular_normMellin_integrable (f : ℂ → ℂ) (hf : IsComplexAn
     simp only [complexNormMellinIntegrand, if_neg hx0, w]
     rw [max_eq_left (sq_le_sq₀ ha.le (norm_nonneg x) |>.2 hax)]
 
-private theorem schwartz_normMellin_integrable (g : SchwartzMap ℂ ℂ)
+theorem schwartz_normMellin_integrable (g : SchwartzMap ℂ ℂ)
     (s : ℝ) (hs : 0 < s) (hs1 : s < 1) :
     Integrable (complexNormMellinIntegrand g s) (volume : Measure ℂ) := by
   have hmeas : AEStronglyMeasurable (complexNormMellinIntegrand g s)
@@ -60,7 +59,7 @@ private theorem schwartz_normMellin_integrable (g : SchwartzMap ℂ ℂ)
     intro x
     by_cases hx : x = 0
     · simp only [hx, complexNormMellinIntegrand, ↓reduceIte, norm_zero]
-      exact mul_nonneg (apply_nonneg _ _) (Real.rpow_nonneg (by norm_num) _)
+      positivity
     · rw [hnorm x hx]
       have he : -(2 * (1 - s)) = 2 * (s - 1) := by ring
       rw [he]
@@ -115,8 +114,7 @@ lemma mellin_weight (a : ℝ) (x : ℂ) (hx : x ≠ 0) :
     (2 * Real.pi * ‖x‖ ^ 2) ^ (-a) =
       (2 * Real.pi) ^ (-a) * (‖x‖ ^ 2) ^ ((1 - a) - 1) := by
   rw [Real.mul_rpow (by positivity) (by positivity)]
-  congr 2
-  ring
+  simp
 
 lemma laplace_norm (g : ℂ → ℂ) (a : ℝ) (ha : 0 < a) (x : ℂ) (hx : x ≠ 0) :
     (∫ t : ℝ in Ioi 0,
@@ -228,7 +226,7 @@ lemma gamma_ratio (s : ℝ) (hs : 0 < s) (hs1 : s < 1) :
         (((2 * Real.pi) ^ (s - 1) * Real.Gamma (1 - s) : ℝ) : ℂ) := by
   simp only [Complex.Gammaℂ_def, Complex.Gamma_ofReal]
   rw [← Complex.ofReal_neg, ← Complex.ofReal_neg]
-  rw [show (2 : ℂ) * (Real.pi : ℂ) = ((2 * Real.pi : ℝ) : ℂ) by push_cast; rfl]
+  rw [show (2 : ℂ) * (Real.pi : ℂ) = ((2 * Real.pi : ℝ) : ℂ) by simp]
   rw [← Complex.ofReal_cpow (by positivity : 0 ≤ 2 * Real.pi),
       ← Complex.ofReal_cpow (by positivity : 0 ≤ 2 * Real.pi)]
   rw [show -(1 - s) = s - 1 by ring]
@@ -257,7 +255,7 @@ theorem complexTraceFourier_normMellin (f : ℂ → ℂ) (hf : IsComplexAnnular 
         2 * FourierTransform.fourier f (2 * (starRingEnd ℂ) y) := by
       funext y; exact complexTraceFourier_eq_fourier f y
     rw [he]
-    exact (continuous_const.mul (hc.comp (by fun_prop))).aestronglyMeasurable
+    fun_prop
   have hgi := complexTraceFourier_normMellin_integrable f hf s hs hs1
   have hmi := complexAnnular_normMellin_integrable f hf s hs hs1
   have hL := ComplexTateLaplace.laplace_mellin (complexTraceFourier f) hgm
@@ -297,7 +295,7 @@ theorem complexTraceFourier_normMellin (f : ℂ → ℂ) (hf : IsComplexAnnular 
 theorem complexGamma_ratio_ne_zero (s : ℝ) (hs : 0 < s) (hs1 : s < 1) :
     Complex.Gammaℂ (s : ℂ) / Complex.Gammaℂ ((1 - s : ℝ) : ℂ) ≠ 0 := by
   have hpi : (2 * (Real.pi : ℂ)) ≠ 0 :=
-    mul_ne_zero (by norm_num) (by exact_mod_cast Real.pi_ne_zero)
+    by simp
   apply div_ne_zero
   · exact mul_ne_zero
       (mul_ne_zero (by norm_num) (Complex.cpow_ne_zero_iff.mpr (Or.inl hpi)))
@@ -305,6 +303,3 @@ theorem complexGamma_ratio_ne_zero (s : ℝ) (hs : 0 < s) (hs1 : s < 1) :
   · exact mul_ne_zero
       (mul_ne_zero (by norm_num) (Complex.cpow_ne_zero_iff.mpr (Or.inl hpi)))
       (Complex.Gamma_ne_zero_of_re_pos (by simpa using sub_pos.mpr hs1))
-
-end
-end DedekindZetaZeroFree

@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Finite abelian extensions of number fields
 
@@ -63,9 +58,3 @@ instance {K : Type u} [Field K] [NumberField K]
 instance {K : Type u} [Field K] [NumberField K]
     (E : FiniteAbelianExtension K) : IsAbelianGalois K E :=
   E.2.2
-
-end FiniteAbelianExtension
-
-end ClassFieldTheory
-
-end

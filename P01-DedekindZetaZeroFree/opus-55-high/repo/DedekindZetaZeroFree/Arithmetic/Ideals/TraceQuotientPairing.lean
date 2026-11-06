@@ -23,8 +23,7 @@ def quotientChar {R M : Type*} [Ring R] [AddCommGroup M] [Module R M]
   AddChar.toAddMonoidHomEquiv.symm
     (QuotientAddGroup.lift p.toAddSubgroup χ.toAddMonoidHom (by
       intro x hx
-      change χ x = 1
-      exact h x hx))
+      simp_all))
 
 def representativeChar
     (J : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) (x : F) :
@@ -75,8 +74,8 @@ def traceQuotientPairing
     (hI : I ≠ 0) (hJ : J ≠ 0) (hJI : J ≤ I) :
     fractionalIdealQuotient I J →+
       AddChar (fractionalIdealQuotient
-        (traceDualFractionalIdeal J) (traceDualFractionalIdeal I)) ℂ := by
-  exact QuotientAddGroup.lift
+        (traceDualFractionalIdeal J) (traceDualFractionalIdeal I)) ℂ := 
+  QuotientAddGroup.lift
     (J.coeToSubmodule.comap I.coeToSubmodule.subtype).toAddSubgroup
     (representativePairing I J hI) (by
       intro x hx
@@ -109,9 +108,7 @@ theorem traceQuotientPairing_balance
     (traceDualFractionalIdeal J) (traceDualFractionalIdeal I) y
   rw [← fractionalIdealQuotientMk_smul, ← fractionalIdealQuotientMk_smul,
     traceQuotientPairing_mk, traceQuotientPairing_mk]
-  congr 2
-  change ((r : F) * (x : F)) * (y : F) = (x : F) * ((r : F) * (y : F))
-  ring
+  simp
 
 @[simp] theorem traceQuotientPairing_add_left
     (x x' : fractionalIdealQuotient I J)
@@ -126,8 +123,8 @@ theorem traceQuotientPairing_balance
     (y y' : fractionalIdealQuotient (traceDualFractionalIdeal J) (traceDualFractionalIdeal I)) :
     traceQuotientPairing I J hI hJ hJI x (y + y') =
       traceQuotientPairing I J hI hJ hJI x y *
-        traceQuotientPairing I J hI hJ hJI x y' := by
-  exact AddChar.map_add_eq_mul _ _ _
+        traceQuotientPairing I J hI hJ hJI x y' := 
+  AddChar.map_add_eq_mul _ _ _
 
 @[simp] theorem traceQuotientPairing_zero_left
     (y : fractionalIdealQuotient (traceDualFractionalIdeal J) (traceDualFractionalIdeal I)) :
@@ -135,18 +132,5 @@ theorem traceQuotientPairing_balance
   rw [map_zero, AddChar.zero_apply]
 
 @[simp] theorem traceQuotientPairing_zero_right (x : fractionalIdealQuotient I J) :
-    traceQuotientPairing I J hI hJ hJI x 0 = 1 := by
-  exact AddChar.map_zero_eq_one _
-
-@[simp] theorem norm_traceQuotientPairing
-    (x : fractionalIdealQuotient I J)
-    (y : fractionalIdealQuotient (traceDualFractionalIdeal J) (traceDualFractionalIdeal I)) :
-    ‖traceQuotientPairing I J hI hJ hJI x y‖ = 1 := by
-  obtain ⟨x, rfl⟩ := fractionalIdealQuotientMk_surjective I J x
-  obtain ⟨y, rfl⟩ := fractionalIdealQuotientMk_surjective
-    (traceDualFractionalIdeal J) (traceDualFractionalIdeal I) y
-  rw [traceQuotientPairing_mk, norm_rationalTracePhase]
-
-end DedekindZetaZeroFree.Hecke
-
-end
+    traceQuotientPairing I J hI hJ hJI x 0 = 1 := 
+  AddChar.map_zero_eq_one _

@@ -106,9 +106,7 @@ open NativeComplexHCSource
     { carrier := {f | T f = c • f}
       zero_mem' := by simp
       add_mem' := by
-        intro f g hf hg
-        change T (f + g) = c • (f + g)
-        rw [map_add, hf, hg, smul_add]
+        simp_all
       smul_mem' := by
         intro a f hf
         change T (a.val f) = c • a.val f
@@ -128,7 +126,7 @@ open scoped Classical BigOperators Matrix
 open KPCplxPrincipalSeriesCharts KPCplxCharacterHaar KPCplxIntertwinerEigenvalues
 open NativeComplexHCOperators
 
-private theorem basis_expansion (X : Matrix (Fin 2) (Fin 2) ℂ) (hX : Matrix.trace X = 0) :
+theorem basis_expansion (X : Matrix (Fin 2) (Fin 2) ℂ) (hX : Matrix.trace X = 0) :
     X = ∑ i : Fin 6, (KPSmoothActualFlowData.matrixCoordinates X i : ℝ) •
       KPSmoothActualFlowData.basisMatrix i := by
   have h := PGLComplex.sl2Matrix_matrixCoordinates X hX
@@ -170,9 +168,7 @@ private theorem basis_expansion (X : Matrix (Fin 2) (Fin 2) ℂ) (hX : Matrix.tr
     underlying_compact_invariant NativeComplexHCOperators.operators N l v hv, ?_⟩
   change KPCplxPrincipalSeriesCharts.pi negativeParameter
     (Matrix.ProjGenLinGroup.mk (complexSU2Embedding l)) v.val = _
-  change Matrix.ProjGenLinGroup.mk (complexSU2Embedding l) = (k : ComplexPGL2) at hl
-  rw [hl]
-  rfl
+  simp_all
 
  theorem native_operators_simple :
     IsSimpleOrder (Submodule (algebra NativeComplexHCOperators.operators) complexCore) := by
@@ -202,9 +198,3 @@ private theorem basis_expansion (X : Matrix (Fin 2) (Fin 2) ℂ) (hX : Matrix.tr
     (T : Module.End (algebra NativeComplexHCOperators.operators) complexCore) :
     ∃ c : ℂ, ∀ f, T f = c • f :=
   endomorphism_scalar_of_simple NativeComplexHCOperators.operators native_operators_simple T
-
-end DedekindZetaZeroFree.KPGlobalResidualConstruction.NativeComplexHCAlgebraic
-
-end
-
-end

@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.HarmonicAnalysis.Mellin.LocalUnitsTensorInteg
 @[expose] public section
 
 namespace DedekindZetaZeroFree.SheetPowerMinIntegrability
-noncomputable section
 open MeasureTheory Set
 
 private lemma scalar_integrable (a b : ℝ) (ha : 0 < a) (hb : b < 0) :
@@ -20,14 +19,14 @@ private lemma scalar_integrable (a b : ℝ) (ha : 0 < a) (hb : b < 0) :
     apply hi'.mono' hm.aestronglyMeasurable.restrict
     filter_upwards [ae_restrict_mem measurableSet_Ioc] with r hr
     rw [Real.norm_eq_abs, abs_of_nonneg (le_min (Real.rpow_nonneg hr.1.le _) (Real.rpow_nonneg hr.1.le _))]
-    exact min_le_left _ _
+    simp
   have hf : IntegrableOn (fun r : ℝ => min (r ^ (a-1)) (r ^ (b-1))) (Ioi 1) := by
     have hi := integrableOn_Ioi_rpow_of_lt (a := b-1) (c := 1) (by linarith) (by norm_num)
     apply hi.mono' hm.aestronglyMeasurable.restrict
     filter_upwards [ae_restrict_mem measurableSet_Ioi] with r hr
     have hr0 : 0 ≤ r := le_trans (by norm_num) hr.le
     rw [Real.norm_eq_abs, abs_of_nonneg (le_min (Real.rpow_nonneg hr0 _) (Real.rpow_nonneg hr0 _))]
-    exact min_le_right _ _
+    simp
   simpa only [Ioc_union_Ioi_eq_Ioi (by norm_num : (0:ℝ) ≤ 1)] using hn.union hf
 
 private lemma complex_integrable (a b : ℝ) (ha : 0 < a) (hb : b < 0) :
@@ -78,6 +77,3 @@ theorem complex_units_min_powers_integrable (a b : ℝ) (ha : 0 < a) (hb : b < 0
       (complex_integrable a b ha hb).integrableOn
   rw [Measure.isMulLeftInvariant_eq_smul ν μ₀]
   exact hi.smul_measure ENNReal.coe_ne_top
-
-end
-end DedekindZetaZeroFree.SheetPowerMinIntegrability

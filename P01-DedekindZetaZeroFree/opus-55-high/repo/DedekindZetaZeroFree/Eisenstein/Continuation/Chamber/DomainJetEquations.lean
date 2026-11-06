@@ -83,17 +83,17 @@ structure Properties
      by exact (integrability F ζ hζ C R P H U ι f buffer χ source hι hf k s).2.2.2,
      by exact (integrability F ζ hζ C R P H U ι f buffer χ source hι hf k s).2.2.1.2⟩
 
-  private lemma sectionClass_gs (k : ℕ) (s : ℂ) (hs : s ∈ V) :
+  lemma sectionClass_gs (k : ℕ) (s : ℂ) (hs : s ∈ V) :
       KPContActualSectorCutoffGraphLimit.sectionClass
         (U := level F ζ hζ C R P H U) (H := H)
         (gs F ζ hζ C R P H U ι hι f hf buffer χ source k s hs) = u k s := rfl
 
-  private lemma laplacianClass_gs (k : ℕ) (s : ℂ) (hs : s ∈ V) :
+  lemma laplacianClass_gs (k : ℕ) (s : ℂ) (hs : s ∈ V) :
       KPContActualSectorCutoffGraphLimit.laplacianClass
         (U := level F ζ hζ C R P H U) (H := H)
         (gs F ζ hζ C R P H U ι hι f hf buffer χ source k s hs) = dloc k s := rfl
 
-  private lemma toSector_ofReal_norm_sq
+  lemma toSector_ofReal_norm_sq
       (x : KPContSectorLineL2Isometry.BorelL2Sections F ζ hζ
         (level F ζ hζ C R P H U) R P H) :
       ENNReal.ofReal (‖KPContSectorLineL2Isometry.toSector F ζ hζ
@@ -120,7 +120,7 @@ structure Properties
     rw [hnorm]
     exact KPContSectorLineL2Isometry.ofReal_norm_sq F ζ hζ (level F ζ hζ C R P H U) R P H x
 
-  private lemma UJet_ofReal_norm_sq (k : ℕ) (s : ℂ) :
+  lemma UJet_ofReal_norm_sq (k : ℕ) (s : ℂ) :
       ENNReal.ofReal (‖u k s‖ ^ 2) =
         squareIntegral F ζ hζ C R P H U ι f buffer χ source hι hf 0 k s := by
     rw [show u k s = KPContSectorLineL2Isometry.toSector F ζ hζ
@@ -130,7 +130,7 @@ structure Properties
     simp [squareIntegral, squaredDensity, baseMeasure, KPContSectorLineL2Isometry.normIntegral,
       borelG]
 
-  private lemma DeltaJet_ofReal_norm_sq (k : ℕ) (s : ℂ) :
+  lemma DeltaJet_ofReal_norm_sq (k : ℕ) (s : ℂ) :
       ENNReal.ofReal (‖dloc k s‖ ^ 2) =
         squareIntegral F ζ hζ C R P H U ι f buffer χ source hι hf 2 k s := by
     rw [show dloc k s = KPContSectorLineL2Isometry.toSector F ζ hζ
@@ -159,7 +159,7 @@ structure Properties
       _ = dloc k s :=
           laplacianClass_gs F ζ hζ C R P H U ι hι f hf buffer χ source k s hs
 
-  private lemma three_uniform_tails
+  lemma three_uniform_tails
       (htail : KPContActualChamberThreeL2Tails.Properties F ζ hζ C R P H U
         ι f buffer χ source hι hf)
       (L : Set ℂ) (hL : IsCompact L) (hLsub : L ⊆ V) (k : ℕ) :

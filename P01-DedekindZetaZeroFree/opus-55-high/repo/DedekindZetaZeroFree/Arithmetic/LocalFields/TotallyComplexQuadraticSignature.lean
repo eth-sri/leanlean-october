@@ -30,5 +30,3 @@ theorem quadraticExtension_signature
     rw [← hE, hmult]
     ring
   exact Nat.mul_left_cancel (by norm_num) h2
-
-end DedekindZetaZeroFree.LargeSieve

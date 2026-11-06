@@ -28,10 +28,10 @@ def rawEulerOp (h : SchwartzMap ℂ ℂ) : SchwartzMap ℂ ℂ :=
 
 def angPoint (a : ℝ) : ℂ := Complex.exp ((a : ℂ) * Complex.I)
 
-private theorem continuous_angPoint : Continuous angPoint := by
+theorem continuous_angPoint : Continuous angPoint := by
   unfold angPoint; fun_prop
 
-private theorem continuous_flow (h : SchwartzMap ℂ ℂ) (x : ℝ) :
+theorem continuous_flow (h : SchwartzMap ℂ ℂ) (x : ℝ) :
     Continuous (fun a : ℝ => h (Real.exp (x / 2) • angPoint a)) :=
   h.continuous.comp
     ((continuous_const : Continuous (fun _ : ℝ => Real.exp (x / 2))).smul continuous_angPoint)
@@ -75,13 +75,11 @@ private theorem hasDerivAt_circleAverage (h : SchwartzMap ℂ ℂ) (t : ℝ) :
   obtain ⟨-, hderiv⟩ := hmain
   have hfun : (fun n : ℝ => ∫ a, h (Real.exp (n / 2) • angPoint a)
       ∂(volume.restrict (Set.Icc 0 (2 * Real.pi)))) = circleAverage h := by
-    funext n
-    simp only [circleAverage, angPoint, Complex.real_smul]
+    rfl
   have hder : (∫ a, rawEulerOp h (Real.exp (t / 2) • angPoint a)
       ∂(volume.restrict (Set.Icc 0 (2 * Real.pi)))) = circleAverage (rawEulerOp h) t := by
-    simp only [circleAverage, angPoint, Complex.real_smul]
-  rw [hfun, hder] at hderiv
-  exact hderiv
+    rfl
+  simp_all
 
 theorem circleAverage_contDiff_iteratedDeriv (g : SchwartzMap ℂ ℂ) :
     ContDiff ℝ (⊤ : ℕ∞) (circleAverage g) ∧
@@ -106,8 +104,7 @@ theorem circleAverage_contDiff_iteratedDeriv (g : SchwartzMap ℂ ℂ) :
   rw [contDiff_infty]
   intro n
   rw [contDiff_nat_iff_iteratedDeriv]
-  exact ⟨fun m _ => by rw [hiter m]; exact hcont _,
-    fun m _ => by rw [hiter m]; exact hdiff _⟩
+  simp_all
 
 end
 end DedekindZetaZeroFree.ProbeSheetLogDensityRegularity.Angular
@@ -119,15 +116,14 @@ namespace DedekindZetaZeroFree.ProbeSheetLogDensityRegularity.Angular
 noncomputable section
 open MeasureTheory
 
-private theorem circleAverage_integrable (h : SchwartzMap ℂ ℂ) (t : ℝ) :
+theorem circleAverage_integrable (h : SchwartzMap ℂ ℂ) (t : ℝ) :
     Integrable (fun θ : ℝ => h ((Real.exp (t / 2) : ℂ) *
       Complex.exp ((θ : ℂ) * Complex.I))) (volume.restrict (Set.Icc 0 (2 * Real.pi))) := by
   apply Integrable.of_bound (C := SchwartzMap.seminorm ℝ 0 0 h)
-  · apply Continuous.aestronglyMeasurable
-    exact h.continuous.comp (by fun_prop)
+  · fun_prop
   · exact Filter.Eventually.of_forall fun θ => SchwartzMap.norm_le_seminorm ℝ h _
 
-private theorem circleAverage_linear (h : SchwartzMap ℂ ℂ) (σ t : ℝ) :
+theorem circleAverage_linear (h : SchwartzMap ℂ ℂ) (σ t : ℝ) :
     circleAverage ((σ : ℂ) • h + rawEulerOp h) t =
       (σ : ℂ) * circleAverage h t + circleAverage (rawEulerOp h) t := by
   simp only [circleAverage, Pi.add_apply,
@@ -135,7 +131,7 @@ private theorem circleAverage_linear (h : SchwartzMap ℂ ℂ) (σ t : ℝ) :
   rw [integral_add ((circleAverage_integrable h t).const_mul _) (circleAverage_integrable _ t),
     integral_const_mul]
 
-private theorem weighted_hasDerivAt (h : SchwartzMap ℂ ℂ) (σ t : ℝ) :
+theorem weighted_hasDerivAt (h : SchwartzMap ℂ ℂ) (σ t : ℝ) :
     HasDerivAt (weightedCircleAverage h σ)
       (weightedCircleAverage ((σ : ℂ) • h + rawEulerOp h) σ t) t := by
   have hc := circleAverage_contDiff_iteratedDeriv h
@@ -153,7 +149,7 @@ private theorem weighted_hasDerivAt (h : SchwartzMap ℂ ℂ) (σ t : ℝ) :
   · rw [weightedCircleAverage, circleAverage_linear]
     ring
 
-private theorem weighted_iterate (h : SchwartzMap ℂ ℂ) (σ : ℝ) (n : ℕ) :
+theorem weighted_iterate (h : SchwartzMap ℂ ℂ) (σ : ℝ) (n : ℕ) :
     iteratedDeriv n (weightedCircleAverage h σ) =
       weightedCircleAverage ((fun h : SchwartzMap ℂ ℂ => (σ : ℂ) • h + rawEulerOp h)^[n] h) σ := by
   induction n with
@@ -164,7 +160,7 @@ private theorem weighted_iterate (h : SchwartzMap ℂ ℂ) (σ : ℝ) (n : ℕ) 
     rw [Function.iterate_succ_apply']
     exact (weighted_hasDerivAt _ σ t).deriv
 
-private theorem polynomial_exp_bound (k : ℕ) (b : ℝ) (hb : 0 < b) :
+theorem polynomial_exp_bound (k : ℕ) (b : ℝ) (hb : 0 < b) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ x : ℝ, 0 ≤ x → x ^ k * Real.exp (-b * x) ≤ C := by
   refine ⟨(k.factorial : ℝ) / b ^ k, by positivity, ?_⟩
   intro x hx
@@ -180,7 +176,7 @@ private theorem polynomial_exp_bound (k : ℕ) (b : ℝ) (hb : 0 < b) :
       mul_le_mul_of_nonneg_right he' (Real.exp_pos _).le
     _ = k.factorial := by rw [mul_right_comm, ← Real.exp_add]; simp
 
-private theorem weighted_norm_bound (h : SchwartzMap ℂ ℂ) (σ t : ℝ) (m : ℕ) :
+theorem weighted_norm_bound (h : SchwartzMap ℂ ℂ) (σ t : ℝ) (m : ℕ) :
     ‖weightedCircleAverage h σ t‖ ≤
       (SchwartzMap.seminorm ℝ m 0 h *
         (volume.restrict (Set.Icc 0 (2 * Real.pi))).real Set.univ / 2) *
@@ -192,7 +188,7 @@ private theorem weighted_norm_bound (h : SchwartzMap ℂ ℂ) (σ t : ℝ) (m : 
     have hn : ‖(Real.exp (t / 2) : ℂ) * Complex.exp ((θ : ℂ) * Complex.I)‖ =
         Real.exp (t / 2) := by
       rw [norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
-      simp only [Complex.norm_exp_ofReal_mul_I, mul_one]
+      simp
     have hs := SchwartzMap.norm_pow_mul_le_seminorm ℝ h m
       ((Real.exp (t / 2) : ℂ) * Complex.exp ((θ : ℂ) * Complex.I))
     rw [hn, ← Real.exp_nat_mul] at hs
@@ -241,8 +237,8 @@ theorem weightedCircleAverage_iteratedDeriv_decay (g : SchwartzMap ℂ ℂ)
   let V := (volume.restrict (Set.Icc 0 (2 * Real.pi))).real Set.univ
   let A := SchwartzMap.seminorm ℝ 0 0 h * V / 2
   let B := SchwartzMap.seminorm ℝ m 0 h * V / 2
-  have hA : 0 ≤ A := by dsimp [A, V]; positivity
-  have hB : 0 ≤ B := by dsimp [B, V]; positivity
+  have hA : 0 ≤ A := by positivity
+  have hB : 0 ≤ B := by positivity
   refine ⟨A * C₁ + B * C₂, fun t => ?_⟩
   by_cases ht : 0 ≤ t
   · have he := weighted_norm_bound h σ t m
@@ -305,8 +301,3 @@ theorem complex_angular_log_kernel_isSchwartz (g : SchwartzMap ℂ ℂ)
     exact hC t
   refine ⟨⟨Angular.weightedCircleAverage g σ, hs, hd⟩, fun t => ?_⟩
   rfl
-
-end
-end DedekindZetaZeroFree.ProbeSheetLogDensityRegularity
-
-end

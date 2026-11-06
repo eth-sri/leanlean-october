@@ -33,7 +33,7 @@ theorem homogeneous_sphere_eq_zero {p : MvPolynomial (Fin 3) ℂ} {ℓ : ℕ}
   apply MvPolynomial.funext_set (fun _ => Set.range Complex.ofReal)
     (fun _ => by simpa using Set.infinite_univ.image Complex.ofReal_injective.injOn)
   intro z hz
-  have hreal : ∀ i : Fin 3, ∃ r : ℝ, (r : ℂ) = z i := fun i => hz i (Set.mem_univ _)
+  have hreal : ∀ i : Fin 3, ∃ r : ℝ, (r : ℂ) = z i := by simp_all
   choose r hr using hreal
   let x : Ambient := WithLp.toLp 2 r
   have eval_real (y : Ambient) (hy : y ≠ 0) :
@@ -47,11 +47,8 @@ theorem homogeneous_sphere_eq_zero {p : MvPolynomial (Fin 3) ℂ} {ℓ : ℕ}
     have he : (fun i => (‖y‖ : ℂ) * ((u : Ambient) i : ℂ)) = (fun i => (y i : ℂ)) := by
       funext i
       change (‖y‖ : ℂ) * ((‖y‖⁻¹ * y i : ℝ) : ℂ) = _
-      rw [← Complex.ofReal_mul]
-      congr 1
-      rw [← mul_assoc, mul_inv_cancel₀ (norm_ne_zero_iff.mpr hy), one_mul]
-    rw [he] at hs
-    simpa only [polynomialSphere] using hs.trans (by rw [hu]; simp)
+      simp_all
+    simp_all
   have hx : x ≠ 0 ∨ x = 0 := ne_or_eq x 0
   rcases hx with hx | hx
   · have hh := eval_real x hx
@@ -62,12 +59,11 @@ theorem homogeneous_sphere_eq_zero {p : MvPolynomial (Fin 3) ℂ} {ℓ : ℕ}
         have htd : p.totalDegree = 0 := (MvPolynomial.totalDegree_zero_iff_isHomogeneous (σ := Fin 3)).mpr hp
         have hc : p = MvPolynomial.C (p.coeff 0) := MvPolynomial.totalDegree_eq_zero_iff_eq_C.mp htd
         rw [hc]
-        have hs := h (⟨WithLp.toLp 2 ![1,0,0], by simp [Metric.mem_sphere, dist_zero_right, EuclideanSpace.norm_eq, Fin.sum_univ_succ]⟩ : Sphere)
+        have hs := h (⟨WithLp.toLp 2 ![1,0,0], by simp [EuclideanSpace.norm_eq, Fin.sum_univ_succ]⟩ : Sphere)
         rw [hc] at hs
         simpa only [polynomialSphere, MvPolynomial.eval_C] using hs
       · have hs := homogeneous_eval_scale hp 0 (fun _ => 0)
-        simp [hℓ] at hs
-        simpa [hx] using hs
+        simp_all
     simpa only [x, hr, PiLp.toLp_apply, map_zero] using he
 
 theorem finite_fischer_spanning (p : MvPolynomial (Fin 3) ℂ) :
@@ -79,10 +75,9 @@ theorem finite_fischer_spanning (p : MvPolynomial (Fin 3) ℂ) :
   apply he
   have hn : ‖(x : Ambient)‖ = 1 := mem_sphere_zero_iff_norm.mp x.property
   have hs := EuclideanSpace.norm_sq_eq (x : Ambient)
-  rw [hn] at hs
-  simpa using hs.symm
+  simp_all
 
-private theorem polynomial_eval_smooth (p : MvPolynomial (Fin 3) ℂ)
+theorem polynomial_eval_smooth (p : MvPolynomial (Fin 3) ℂ)
     {f : Fin 3 → Ambient → ℂ} {s : Set Ambient}
     (hf : ∀ i, ContDiffOn ℝ (⊤ : ℕ∞) (f i) s) :
     ContDiffOn ℝ (⊤ : ℕ∞) (fun x => MvPolynomial.eval (fun i => f i x) p) s := by
@@ -117,7 +112,7 @@ noncomputable def zonalFactor (i : Option (Fin 3)) : MvPolynomial (Fin 3) ℂ :=
   match i with | none => 1 | some j => MvPolynomial.X j
 noncomputable def zonalCoord (i : Option (Fin 3)) (x : Sphere) : ℂ :=
   match i with | none => 1 | some j => ((x : Ambient) j : ℂ)
-private theorem zonal_kernel_expand (N : ℕ) (x y : Sphere) :
+theorem zonal_kernel_expand (N : ℕ) (x y : Sphere) :
     ((1 + inner ℝ (x : Ambient) (y : Ambient)) : ℂ)^N =
       ∑ w : Fin N → Option (Fin 3),
         (∏ k : Fin N, zonalCoord (w k) x) * (∏ k : Fin N, zonalCoord (w k) y) := by
@@ -128,7 +123,7 @@ private theorem zonal_kernel_expand (N : ℕ) (x y : Sphere) :
   calc
     _ = ∏ k : Fin N, ∑ i : Option (Fin 3), zonalCoord i x * zonalCoord i y := by simp
     _ = _ := by rw [Fintype.prod_sum]; simp_rw [Finset.prod_mul_distrib]
-private theorem zonalCoord_continuous (i : Option (Fin 3)) : Continuous (zonalCoord i) := by
+theorem zonalCoord_continuous (i : Option (Fin 3)) : Continuous (zonalCoord i) := by
   cases i with
   | none => exact continuous_const
   | some j =>
@@ -140,9 +135,9 @@ noncomputable def polynomialZonalApproximant (N : ℕ) (F : Sphere → ℂ) : Mv
     ∑ w : Fin N → Option (Fin 3),
       MvPolynomial.C (∫ y : Sphere, (∏ k : Fin N, zonalCoord (w k) y) * F y ∂sphereArea) *
         ∏ k : Fin N, zonalFactor (w k)
-private theorem zonalFactor_eval (i : Option (Fin 3)) (x : Sphere) :
+theorem zonalFactor_eval (i : Option (Fin 3)) (x : Sphere) :
     MvPolynomial.eval (fun i => ((x : Ambient) i : ℂ)) (zonalFactor i) = zonalCoord i x := by
-  cases i <;> simp [zonalFactor, zonalCoord, polynomialSphere]
+  cases i <;> simp [zonalFactor, zonalCoord]
 
 theorem polynomialZonalApproximant_eq_integral (N : ℕ) (F : Sphere → ℂ) (hF : Continuous F) (x : Sphere) :
     polynomialSphere (polynomialZonalApproximant N F) x =
@@ -202,7 +197,6 @@ theorem polynomialZonal_mass (N : ℕ) (x : Sphere) :
       ((1 + inner ℝ (x : Ambient) (y : Ambient)) / 2)^N ∂sphereArea) = 1 := by
   let φ : Sphere → ℝ := fun y => (1 - inner ℝ (x : Ambient) (y : Ambient)) / 2
   have hc : Continuous φ := by
-    dsimp [φ]
     fun_prop
   have hf : Continuous (fun t : ℝ => (N + 1 : ℝ) * (1 - t)^N) := by fun_prop
   have hmap := integral_map_of_stronglyMeasurable (μ := sphereArea) hc.measurable hf.stronglyMeasurable
@@ -248,7 +242,7 @@ theorem rawZonalIntegral_uniform_approximation (F : Sphere → ℂ) (hF : Contin
   have hh := positiveKernel_uniform_approximation
     (fun N x y => (N + 1 : ℝ) * ((1 + inner ℝ (x : Ambient) (y : Ambient)) / 2)^N)
     (fun δ N => (N + 1 : ℝ) * (1 - δ^2 / 4)^N)
-    (by intro N x; fun_prop)
+    (by fun_prop)
     (by intro N x y; exact mul_nonneg (by positivity) (pow_nonneg (polynomialZonal_affine_bounds x y).1 _))
     polynomialZonal_mass
     (by intro δ hd hu N; apply mul_nonneg (by positivity); apply pow_nonneg; nlinarith)
@@ -286,12 +280,10 @@ theorem finite_polynomial_smooth_density (F : Sphere → ℂ) (hF : IsSphereSmoo
   have hc : Continuous F := hF.continuous
   have hpoly := polynomialSphere_smooth (polynomialZonalApproximant N F)
   rw [show (fun y => F y - polynomialSphere (polynomialZonalApproximant N F) y) =
-      (fun y => F y + -(polynomialSphere (polynomialZonalApproximant N F) y)) by funext; ring]
+      (fun y => F y + -(polynomialSphere (polynomialZonalApproximant N F) y)) by rfl]
   rw [rotationWord_add w hF (IsSphereSmooth.neg hpoly), rotationWord_neg]
-  simp only [Pi.add_apply, Pi.neg_apply]
+  simp only
   rw [show polynomialSphere (polynomialZonalApproximant N F) =
       rawZonalIntegral N F from funext (fun z => polynomialZonalApproximant_eq_integral N F hc z)]
   rw [rawZonalIntegral_rotationWord N F hF w]
   exact hN w hw x
-
-end DedekindZetaZeroFree.ComplexFractionalInverse

@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # The negative-negative real infinite-place Hilbert factor
 -/
@@ -21,7 +18,6 @@ set_option autoImplicit false
 open scoped Classical NumberField
 open NumberField
 
-noncomputable section
 
 namespace GlobalClassFieldTheory
 namespace Reciprocity
@@ -57,8 +53,8 @@ theorem infinitePlaceKummerRootCharacter_eq_neg_one_of_real_of_neg_neg
     ⟨(-1 : Kˣ), by simp [hn]⟩
   have hArtin :
       sigma = chosenInfinitePlaceArtinMonoidHom
-        (K := K) (L := L) v (-1 : v.Completionˣ) := by
-    exact chosenInfinitePlaceArtin_globalUnit_eq_neg_one_of_real_of_neg
+        (K := K) (L := L) v (-1 : v.Completionˣ) := 
+    chosenInfinitePlaceArtin_globalUnit_eq_neg_one_of_real_of_neg
       K v hv a ha
   have haction :
       chosenInfinitePlaceArtinMonoidHom
@@ -119,8 +115,3 @@ theorem infinitePlaceKummerRootCharacter_localGlobal_of_real_of_neg_neg
     _ = infinitePlaceHilbertSymbol K n v a b := by
       apply Subtype.ext
       simp [negOne, infinitePlaceHilbertSymbol, hn, hv, ha, hb]
-
-end Reciprocity
-end GlobalClassFieldTheory
-
-end

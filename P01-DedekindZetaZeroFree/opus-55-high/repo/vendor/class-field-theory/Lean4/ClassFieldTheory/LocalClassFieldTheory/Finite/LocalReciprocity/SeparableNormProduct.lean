@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Separable field norms as products of embeddings
 
@@ -69,9 +63,7 @@ theorem prod_embeddings_algebraMap_powerBasisGen_eq
     exact AlgHom.natCard_of_splits L E Ω (fun x =>
       IsSepClosed.splits_codomain _ (Algebra.IsSeparable.isSeparable L x))
   · intro σ
-    change σ (algebraMap L E pb.gen) =
-      (σ.comp (IsScalarTower.toAlgHom k L E)) pb.gen
-    exact (AlgHom.comp_apply σ (IsScalarTower.toAlgHom k L E) pb.gen).symm
+    rfl
 
 /-- Mapping the norm of an element of a finite separable extension into a
 separably closed field gives the product of all base-field embeddings. -/
@@ -99,7 +91,3 @@ theorem algebraMap_norm_eq_prod_embeddings_of_isSepClosed
         (L := IntermediateField.adjoin k ({x} : Set E)) (E := E)
         k Ω (IntermediateField.adjoin.powerBasis hx)).symm
   · exact Algebra.IsSeparable.isSeparable k _
-
-end LocalClassFieldTheory
-
-end

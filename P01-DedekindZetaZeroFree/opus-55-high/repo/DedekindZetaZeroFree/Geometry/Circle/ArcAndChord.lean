@@ -49,5 +49,3 @@ theorem exp_mul_I_sub_exp_mul_I (α β : ℝ) :
     ring
   rw [h1, h2, Complex.exp_add, Complex.exp_add, ← mul_sub, hsin, ← Complex.ofReal_sin]
   ring
-
-end DedekindZetaZeroFree.TauCeti

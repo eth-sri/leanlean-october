@@ -18,7 +18,7 @@ open KPContSectorLineL2Isometry KPContSectorSmoothFramesSupport
 open KPContActualCotangentMeasurableFamilies
 open KPContActualSectorSmoothTestModules KPContActualSectorTestEmbeddings
 
-private theorem lifted_error_eq
+theorem lifted_error_eq
     {α β E V : Type*} [MeasurableSpace α] [MeasurableSpace β]
     [NormedAddCommGroup E] [NormedSpace ℂ E]
     [NormedAddCommGroup V] [NormedSpace ℂ V]

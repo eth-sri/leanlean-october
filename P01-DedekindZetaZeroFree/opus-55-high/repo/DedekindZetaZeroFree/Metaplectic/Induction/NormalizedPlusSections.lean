@@ -53,7 +53,3 @@ theorem normalized_canonical_section (q : IsDedekindDomain.HeightOneSpectrum (�
  refine ⟨f, hf.1, ?_⟩
  exact (KPGlobalTorusFiniteStages.referenceGoodSpherical F ζ hζ P C q hq).2.2
    (f.val 1) (value_one_fixed _ _ _ f hf.1) hf.2
-
-end DedekindZetaZeroFree.KPActualReflectionData.CanonicalPlusReferences
-
-end

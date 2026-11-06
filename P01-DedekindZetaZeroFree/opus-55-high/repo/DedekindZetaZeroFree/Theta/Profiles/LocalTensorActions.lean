@@ -22,9 +22,6 @@ theorem pi_zero (s : ℝ) (g : KPCplxCharacterHaar.ComplexPGL2) :
       (0 : KPCplxPrincipalSeriesCharts.PrincipalSeries s) = 0 := by
   induction g using Quotient.inductionOn with
   | _ g =>
-    change KPCplxPrincipalSeriesCharts.rightTranslate s g
-      (0 : KPCplxPrincipalSeriesCharts.PrincipalSeries s) = 0
-    apply Subtype.ext
     rfl
 
 theorem pi_add (s : ℝ) (g : KPCplxCharacterHaar.ComplexPGL2)
@@ -34,10 +31,6 @@ theorem pi_add (s : ℝ) (g : KPCplxCharacterHaar.ComplexPGL2)
         KPCplxPrincipalSeriesCharts.pi s g h := by
   induction g using Quotient.inductionOn with
   | _ g =>
-    change KPCplxPrincipalSeriesCharts.rightTranslate s g (f + h) =
-      KPCplxPrincipalSeriesCharts.rightTranslate s g f +
-        KPCplxPrincipalSeriesCharts.rightTranslate s g h
-    apply Subtype.ext
     rfl
 
 theorem pi_smul (s : ℝ) (g : KPCplxCharacterHaar.ComplexPGL2)
@@ -46,9 +39,6 @@ theorem pi_smul (s : ℝ) (g : KPCplxCharacterHaar.ComplexPGL2)
       c • KPCplxPrincipalSeriesCharts.pi s g f := by
   induction g using Quotient.inductionOn with
   | _ g =>
-    change KPCplxPrincipalSeriesCharts.rightTranslate s g (c • f) =
-      c • KPCplxPrincipalSeriesCharts.rightTranslate s g f
-    apply Subtype.ext
     rfl
 
 theorem complexCore_compact_mem (k : KPCplxCharacterHaar.ComplexSU2)
@@ -84,7 +74,7 @@ theorem complexCore_compact_mem (k : KPCplxCharacterHaar.ComplexSU2)
       ((KPCplxIntertwinerEigenvalues.harmonicKType_multiplicity_one
         KPCplxPrincipalSeriesCharts.negativeParameter ℓ).1 ⟨g, hg⟩ y hy)
   · rw [pi_zero]
-    exact Submodule.zero_mem _
+    simp
   · intro y z hy hz
     rw [pi_add]
     exact Submodule.add_mem _ hy hz
@@ -106,14 +96,10 @@ def complexCoreCompactLinearMap (k : KPCplxCharacterHaar.ComplexSU2) :
   toFun := fun x => complexCoreCompactAction k x
   map_add' := by
     intro x y
-    apply Subtype.ext
-    simp only [complexCoreCompactAction_coe, Submodule.coe_add]
-    rw [pi_add]
+    rfl
   map_smul' := by
     intro c x
     apply Subtype.ext
-    simp only [complexCoreCompactAction_coe, SetLike.val_smul]
-    rw [pi_smul]
     rfl
 
 def complexCoreSU2Action : Representation ℂ KPCplxCharacterHaar.ComplexSU2 complexCore where
@@ -138,7 +124,3 @@ def complexCoreSU2Action : Representation ℂ KPCplxCharacterHaar.ComplexSU2 com
         (KPCplxPrincipalSeriesCharts.pi KPCplxPrincipalSeriesCharts.negativeParameter
           (Matrix.ProjGenLinGroup.mk (KPCplxCharacterHaar.complexSU2Embedding l)) x.val)
     rw [KPCplxCharacterHaar.complexSU2Embedding.map_mul, map_mul, pi_mul]
-
-end DedekindZetaZeroFree.KPGlobalResidualConstruction
-
-end

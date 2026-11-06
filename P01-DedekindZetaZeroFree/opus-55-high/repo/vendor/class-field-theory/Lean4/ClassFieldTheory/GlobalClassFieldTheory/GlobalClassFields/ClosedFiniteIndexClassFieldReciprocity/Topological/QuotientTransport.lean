@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Continuous transport between equal quotient groups
 
@@ -31,7 +28,7 @@ variable {G : Type*} [Group G] [TopologicalSpace G]
 
 /-- Equal normal subgroups induce a continuous multiplicative equivalence
 between their quotient groups with their native quotient topologies. -/
-noncomputable def quotientContinuousMulEquivOfEq
+def quotientContinuousMulEquivOfEq
     {N H : Subgroup G} [N.Normal] [H.Normal]
     (h : N = H) :
     G ⧸ N ≃ₜ* G ⧸ H := by
@@ -52,7 +49,3 @@ theorem quotientContinuousMulEquivOfEq_apply
   exact
     (QuotientGroup.quotientMulEquivOfEq_mk
       (G := G) (M := N) (N := N) rfl g).symm
-
-end QuotientGroup
-
-end

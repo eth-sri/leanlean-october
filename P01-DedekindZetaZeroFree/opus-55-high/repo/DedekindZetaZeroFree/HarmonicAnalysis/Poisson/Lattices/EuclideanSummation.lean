@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.HarmonicAnalysis.Poisson.Lattices.Translation
 
 @[expose] public section
 
-noncomputable section
 open scoped FourierTransform SchwartzMap
 open MeasureTheory
 
@@ -18,8 +17,8 @@ theorem summable_norm_poisson_lattice_shift_modulation
     Summable (fun v : L =>
       ‖𝐞 (inner ℝ (a + (v : V)) b) • f (a + (v : V))‖) ∧
     Summable (fun w : dualLattice L =>
-      ‖𝐞 (inner ℝ a (w : V)) • (𝓕 (f : V → ℂ)) ((w : V) - b)‖) := by
-  exact ⟨summable_norm_modulated_schwartz_translate L f a b,
+      ‖𝐞 (inner ℝ a (w : V)) • (𝓕 (f : V → ℂ)) ((w : V) - b)‖) := 
+  ⟨summable_norm_modulated_schwartz_translate L f a b,
     summable_norm_shifted_fourier_schwartz_dual_lattice L f a b⟩
 
 theorem poisson_summation_lattice_shift_modulation
@@ -30,9 +29,5 @@ theorem poisson_summation_lattice_shift_modulation
     (∑' v : L, 𝐞 (inner ℝ (a + (v : V)) b) • f (a + (v : V))) =
       (ZLattice.covolume L volume : ℂ)⁻¹ *
         ∑' w : dualLattice L,
-          𝐞 (inner ℝ a (w : V)) • (𝓕 (f : V → ℂ)) ((w : V) - b) := by
-  exact poisson_shift_modulation L f a b
-
-end DedekindZetaZeroFree.PoissonArch
-
-end
+          𝐞 (inner ℝ a (w : V)) • (𝓕 (f : V → ℂ)) ((w : V) - b) := 
+  poisson_shift_modulation L f a b

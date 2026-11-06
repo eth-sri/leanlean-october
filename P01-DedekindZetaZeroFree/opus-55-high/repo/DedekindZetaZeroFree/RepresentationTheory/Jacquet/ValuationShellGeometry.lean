@@ -11,13 +11,11 @@ namespace DedekindZetaZeroFree.KPExteriorActualJacquetShellsGeometry
 
 open KPLocalExceptionalConstruction KPExteriorActualJacquetShellsRaw
 
-noncomputable section
-set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
 variable (v : HeightOneSpectrum (𝓞 F))
 
-private theorem scaled_integer_eq (a : LocalField F v) (ha : a ≠ 0) :
+theorem scaled_integer_eq (a : LocalField F v) (ha : a ≠ 0) :
     {x : LocalField F v | ∃ u : (valuation (LocalField F v)).integer,
       x = a * (u : LocalField F v)} =
       {x | valuation (LocalField F v) x ≤ valuation (LocalField F v) a} := by
@@ -75,9 +73,7 @@ theorem sphericalShell_eq_valuation_sphere
   simp only [sphericalShell, Set.mem_setOf_eq]
   rw [integerUnitShell_eq_valuation_sphere F v]
   constructor
-  · rintro ⟨u, hu, rfl⟩
-    simp only [Set.mem_setOf_eq] at hu
-    rw [map_mul, hu, mul_one]
+  · simp_all
   · intro hx
     refine ⟨a⁻¹ * x, ?_, by simp [a, ha]⟩
     change valuation (LocalField F v) (a⁻¹ * x) = 1
@@ -100,6 +96,3 @@ theorem measurableSet_sphericalShell
     (π : (valuation (LocalField F v)).integer) (hπ : Irreducible π) (e : ℕ) (l : ℤ) :
     MeasurableSet (sphericalShell F v π e l) :=
   (isCompact_sphericalShell F v π hπ e l).isClosed.measurableSet
-
-end
-end DedekindZetaZeroFree.KPExteriorActualJacquetShellsGeometry

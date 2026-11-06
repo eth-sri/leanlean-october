@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Theta.Whittaker.SelectedJacquet.CompactWeyl
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.SheetRescaling
 open KPCplxCharacterHaar KPCplxPrincipalSeriesCharts KPGlobalResidualConstruction
 open NumberField
@@ -57,7 +56,3 @@ theorem complexCompactLift_weyl :
   apply congrArg j
   rw [← complex_section_scalar_quotient ζ hζ w g u, hg]
   rfl
-
-end DedekindZetaZeroFree.SheetRescaling
-
-end

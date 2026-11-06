@@ -180,7 +180,7 @@ theorem rawKernel_w_bound (u : Frequency D.recipe) (hu : u ≠ principalFrequenc
   refine le_trans hfin (le_of_eq ?_)
   ring
 
-private theorem kdiff (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe)
+theorem kdiff (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe)
     (Z : ℝ) (hZ : 0 < Z) (ξ : ℂ) (hξ : ξ.re = 4) (w z : ℂ)
     (hw : Scales.wLine - EulerDomain.pad / 2 < w.re) (hz : z.re = Scales.zLine) :
     DifferentiableAt ℂ (fun p : ℂ × ℂ × ℂ => rawKernel D u p.1 p.2.1 p.2.2 Z) (ξ, w, z) := by

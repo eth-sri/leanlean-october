@@ -25,13 +25,11 @@ theorem compact_subgroup_norm_one {K : Type*} [NormedField K]
     (Units.continuous_val.norm.continuousOn)
   have hle (u : Kˣ) (hu : u ∈ U) : ‖(u : K)‖ ≤ 1 := by
     have h := hmax (U.mul_mem hu ha)
-    change ‖((u * a : Kˣ) : K)‖ ≤ ‖(a : K)‖ at h
-    rw [Units.val_mul, norm_mul] at h
-    nlinarith [norm_pos_iff.mpr a.ne_zero]
+    simp_all
   have h1 := hle z hz
   have h2 := hle z⁻¹ (U.inv_mem hz)
   have hm : ‖(z : K)‖ * ‖((z⁻¹ : Kˣ) : K)‖ = 1 := by
-    rw [← norm_mul]; simp
+    simp
   nlinarith [norm_nonneg (z : K), norm_nonneg ((z⁻¹ : Kˣ) : K)]
 
 def radial (P : Packet R Q) (y : R.A.G) : ℝ :=
@@ -83,7 +81,7 @@ theorem continuous_radial (P : Packet R Q) : Continuous (radial P) := by
   apply continuous_finset_prod
   intro w _
   have ht : Continuous (fun y : R.A.G => ‖(y.1 w : w.Completion)‖ ^ 2) :=
-    ((Units.continuous_val.comp ((continuous_apply w).comp continuous_fst)).norm).pow 2
+    by fun_prop
   have harg : Continuous (fun y : R.A.G => P.scale w * Real.sqrt (‖(y.1 w : w.Completion)‖ ^ 2)) :=
     continuous_const.mul (Real.continuous_sqrt.comp ht)
   exact ht.mul (KThird_continuousOn.comp_continuous harg (fun y =>
@@ -104,8 +102,7 @@ lemma axis_radial_integrable (c : ℝ) (hc : 0 < c) (s : ℂ) (hs : -(5/6 : ℝ)
   have hi := radial_integrable c hc s hs
   apply hi.congr
   filter_upwards [ae_restrict_mem measurableSet_Ioi] with t ht
-  simp [g, ENNReal.toReal_ofReal (inv_nonneg.mpr ht.le),
-    Complex.real_smul, div_eq_mul_inv, mul_comm, mul_left_comm]
+  simp [g, ENNReal.toReal_ofReal (inv_nonneg.mpr ht.le), Complex.real_smul, div_eq_mul_inv, mul_comm]
 
 lemma axis_radial_mellin (c : ℝ) (hc : 0 < c) (s : ℂ) (hs : -(5/6 : ℝ) < s.re) :
     (∫ t : PositiveAxis, (thirdBesselRadialProfile c t.val : ℂ) * (t.val : ℂ)^s ∂positiveHaar) =
@@ -119,7 +116,7 @@ lemma axis_radial_mellin (c : ℝ) (hc : 0 < c) (s : ℂ) (hs : -(5/6 : ℝ) < s
   convert thirdBesselRadialProfile_mellin c hc s hs using 1
   apply integral_congr_ae
   filter_upwards [ae_restrict_mem measurableSet_Ioi] with t ht
-  simp [ENNReal.toReal_ofReal (inv_nonneg.mpr ht.le), smul_eq_mul, Complex.real_smul]
+  simp [ENNReal.toReal_ofReal (inv_nonneg.mpr ht.le), Complex.real_smul]
   ring
 
 lemma norm_sq_sqrtUnit (A : SArithmeticData F) (w : InfinitePlace F) (x : PositiveAxis) :
@@ -131,7 +128,7 @@ lemma norm_sq_sqrtUnit (A : SArithmeticData F) (w : InfinitePlace F) (x : Positi
     change (InfinitePlace.Completion.ringEquivComplexOfIsComplex (A.complex_place w))
       ((InfinitePlace.Completion.ringEquivComplexOfIsComplex (A.complex_place w)).symm
         (Real.sqrt x.val : ℂ)) = _
-    exact RingEquiv.apply_symm_apply _ _
+    simp
   simp only [map_zero, dist_zero_right, he] at h
   rw [← h]
   simp [abs_of_pos (Real.sqrt_pos.mpr x.property), Real.sq_sqrt x.property.le]
@@ -147,7 +144,7 @@ lemma polarUnit_norm_sq (A : SArithmeticData F) (w : InfinitePlace F) (p : Posit
         (A.complex_place w)).symm.toMonoidHom p.2.toUnits : w.Completionˣ) : w.Completion) = (p.2 : ℂ) := by
     change (InfinitePlace.Completion.ringEquivComplexOfIsComplex (A.complex_place w))
       ((InfinitePlace.Completion.ringEquivComplexOfIsComplex (A.complex_place w)).symm (p.2 : ℂ)) = _
-    exact RingEquiv.apply_symm_apply _ _
+    simp
   simp only [map_zero, dist_zero_right, he, Circle.norm_coe] at h
   rw [← h]; simp
 
@@ -188,10 +185,10 @@ lemma arch_mellin (A : SArithmeticData F) (w : InfinitePlace F)
   rw [integral_fun_fst (μ := positiveHaar) (ν := ν)
     (fun t : PA => (thirdBesselRadialProfile c t.val : ℂ) * (t.val : ℂ)^s),
     axis_radial_mellin c hc s hs]
-  simp only [smul_eq_mul, Complex.real_smul, measureReal_def]
+  simp only [Complex.real_smul, measureReal_def]
   ring
 
-private lemma ofReal_prod_cpow {ι : Type*} (t : Finset ι) (a : ι → ℝ)
+lemma ofReal_prod_cpow {ι : Type*} (t : Finset ι) (a : ι → ℝ)
     (ha : ∀ i, 0 ≤ a i) (s : ℂ) :
     ((∏ i ∈ t, a i : ℝ) : ℂ)^s = ∏ i ∈ t, (a i : ℂ)^s := by
   induction t using Finset.induction_on with
@@ -222,7 +219,7 @@ theorem global_mellin (N : TraceHaarTransport R) (P : Packet R Q)
       simp only [radial, if_pos hmem, one_mul, SArithmeticData.norm, hfin, mul_one, hb]
       rw [ofReal_prod_cpow]
       · simp [a, Finset.prod_mul_distrib, Complex.ofReal_prod]
-      · intro w; positivity
+      simp
     · obtain ⟨p, hp⟩ := not_forall.mp hmem
       have hb : b y.2 = 0 := Finset.prod_eq_zero (Finset.mem_univ p) (Set.indicator_of_notMem hp _)
       rw [radial, if_neg hmem, zero_mul, Complex.ofReal_zero, zero_mul, hb, mul_zero]
@@ -267,6 +264,3 @@ theorem global_mellin (N : TraceHaarTransport R) (P : Packet R Q)
     ← Finset.prod_const (Complex.Gamma (s+5/6) * Complex.Gamma (s+7/6))]
   simp only [Finset.prod_mul_distrib]
   ring
-end DedekindZetaZeroFree.GaussianSmoothing
-
-end

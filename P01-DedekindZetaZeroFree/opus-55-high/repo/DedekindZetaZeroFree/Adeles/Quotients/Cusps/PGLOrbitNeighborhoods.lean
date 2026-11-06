@@ -28,7 +28,7 @@ theorem glAction_mul (A B : Matrix.GeneralLinearGroup (Fin 2) F)
   simp only [glAction, KPArch.productAction, map_mul]
   exact (KPArch.action_laws _ _ _).2
 
-private theorem glAction_eq_of_mk_eq (A B : Matrix.GeneralLinearGroup (Fin 2) F)
+theorem glAction_eq_of_mk_eq (A B : Matrix.GeneralLinearGroup (Fin 2) F)
     (h : Matrix.ProjGenLinGroup.mk A = Matrix.ProjGenLinGroup.mk B)
     (z : KPArch.Space (KPCuspLogShape.dimension F)) : glAction F A z = glAction F B z := by
   obtain ⟨u, rfl⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp h
@@ -46,8 +46,8 @@ def action (g : KPCuspArithmetic.PGL2 F)
 
 theorem action_mk (A : Matrix.GeneralLinearGroup (Fin 2) F)
     (z : KPArch.Space (KPCuspLogShape.dimension F)) :
-    action F (Matrix.ProjGenLinGroup.mk A) z = glAction F A z := by
-  exact glAction_eq_of_mk_eq F _ A
+    action F (Matrix.ProjGenLinGroup.mk A) z = glAction F A z := 
+  glAction_eq_of_mk_eq F _ A
     (Classical.choose_spec (Matrix.ProjGenLinGroup.mk_surjective _)) z
 
 instance : MulAction (KPCuspArithmetic.PGL2 F)
@@ -107,9 +107,3 @@ abbrev CuspQuotient (Γ : Subgroup (KPCuspArithmetic.PGL2 F))
     (q : KPCuspArithmetic.Cusp F) (U : Set (KPArch.Space (KPCuspLogShape.dimension F))) :=
   Quotient (Setoid.comap (Subtype.val : U → KPArch.Space (KPCuspLogShape.dimension F))
     (MulAction.orbitRel (parabolic F Γ q) (KPArch.Space (KPCuspLogShape.dimension F))))
-
-end KPCuspSiegel
-end DedekindZetaZeroFree
-
-end
-end

@@ -11,7 +11,7 @@ namespace ThetaDigitDescent
 
 noncomputable section
 open NumberField IsDedekindDomain
-open scoped NumberField Classical BigOperators
+open scoped Classical BigOperators
 
 variable {F : Type} [Field F] [NumberField F]
 
@@ -36,7 +36,7 @@ section KP
 
 theorem chi_sixth_pow_eq_one {k : Type*} [Field k] [Fintype k]
     (χ : MulChar k ℂ) (hχ : orderOf χ = 6) {x : k} (hx : x ≠ 0) : χ (x ^ 6) = 1 := by
-  have h6 : χ ^ 6 = 1 := by rw [← hχ]; exact pow_orderOf_eq_one χ
+  have h6 : χ ^ 6 = 1 := by rw [← hχ]; simp
   have hx6 : χ x ^ 6 = 1 := by
     rw [← MulChar.pow_apply' χ (by norm_num : (6 : ℕ) ≠ 0) x, h6]
     exact MulChar.one_apply (isUnit_iff_ne_zero.mpr hx)
@@ -51,27 +51,23 @@ theorem sexticFourierMask_mul_eq {k : Type*} [Field k] [Fintype k]
     rw [h, MulChar.map_nonunit χ (by simp [IsUnit])] at hγ
     exact one_ne_zero hγ.symm
   have hzv : γ * v = 0 ↔ v = 0 := by
-    constructor
-    · intro h; exact (mul_eq_zero.mp h).resolve_left hγ0
-    · intro h; rw [h, mul_zero]
+    simp_all
   by_cases hj : j.val = 0
   · have hmask (w : k) : sexticFourierMask χ ψ j w =
         if w = 0 then 1 - (Fintype.card k : ℂ)⁻¹ else -(Fintype.card k : ℂ)⁻¹ := by
       simp only [sexticFourierMask, if_pos hj]
     rw [hmask, hmask]
-    by_cases hv : v = 0
-    · subst hv; simp [sexticFourierMask, if_pos hj]
-    · rw [if_neg hv, if_neg (fun h => hv (hzv.mp h))]
+    simp_all
   · have hg : (χ⁻¹ ^ j.val) γ = 1 := by
       rw [MulChar.pow_apply' χ⁻¹ hj γ, MulChar.inv_apply_eq_inv', hγ, inv_one, one_pow]
     have hγv : (χ⁻¹ ^ j.val) (γ * v) = (χ⁻¹ ^ j.val) v := by
-      rw [map_mul, hg, one_mul]
+      simp_all
     have hmask (w : k) (hw : w ≠ 0) : sexticFourierMask χ ψ j w =
         (χ⁻¹ ^ j.val) w / sexticMaskGaussSum χ ψ j := by
       simp only [sexticFourierMask, if_neg hj, if_neg hw]
     by_cases hv : v = 0
-    · subst hv; simp [sexticFourierMask, if_neg hj]
-    · rw [hmask (γ * v) (mul_ne_zero hγ0 hv), hmask v hv, hγv]
+    · simp_all
+    simp_all
 
 def scale (t : F) : KPAdditiveQuotient F →+ KPAdditiveQuotient F := by
   let S := NumberField.AdeleRing.principalSubgroup (𝓞 F) F
@@ -95,15 +91,10 @@ theorem scale_continuous (t : F) : Continuous (scale (F := F) t) := by
     (NumberField.AdeleRing.principalSubgroup (𝓞 F) F)).continuous_iff.mpr
   change Continuous (fun z : KPAdeles F => scale (F := F) t (QuotientAddGroup.mk z))
   simp_rw [scale_mk]
-  exact QuotientAddGroup.continuous_mk.comp (continuous_const.mul continuous_id)
+  fun_prop
 
 theorem scale_inverse (q : Fˣ) (z : KPAdditiveQuotient F) :
     scale (F := F) (q⁻¹ : Fˣ) (scale (F := F) (q : F) z) = z := by
   obtain ⟨x, rfl⟩ := QuotientAddGroup.mk_surjective z
   rw [scale_mk, scale_mk, ← mul_assoc, ← map_mul,
     Units.inv_mul, map_one, one_mul]
-
-end KP
-end
-end ThetaDigitDescent
-end DedekindZetaZeroFree

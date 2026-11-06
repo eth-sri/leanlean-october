@@ -19,13 +19,13 @@ private lemma exp_norm_bound (Q t u : ℝ) (hQ : 2 ≤ Q) (htu : t ≤ u)
   apply Real.exp_le_exp.mpr
   simpa [mul_comm] using mul_le_mul_of_nonneg_right htu (Real.log_nonneg (show 1 ≤ Q by linarith))
 
-private lemma numerator_bound (r : ℝ) (hr : 0 ≤ r) (hr' : r ≤ 1/2)
+lemma numerator_bound (r : ℝ) (hr : 0 ≤ r) (hr' : r ≤ 1/2)
     (D E : ℂ) (hD : ‖D‖ ≤ 1) :
     ‖-(r : ℂ)^2 + ((r : ℂ)+(r : ℂ)^2-(r : ℂ)^3)*D +
       (1-(r : ℂ)+(r : ℂ)^3)*E-E*D‖ ≤
       r^2 + 2*r*‖D‖ + 3*‖E‖ := by
   have hc : ‖(r : ℂ)+(r : ℂ)^2-(r : ℂ)^3‖ ≤ 2*r := by
-    have he : (r : ℂ)+(r : ℂ)^2-(r : ℂ)^3 = ((r+r^2-r^3 : ℝ) : ℂ) := by push_cast; rfl
+    have he : (r : ℂ)+(r : ℂ)^2-(r : ℂ)^3 = ((r+r^2-r^3 : ℝ) : ℂ) := by simp
     rw [he, Complex.norm_real, Real.norm_eq_abs]
     have hr2 : r^2 ≤ r := by nlinarith
     have hr3 : 0 ≤ r^3 := by positivity
@@ -33,7 +33,7 @@ private lemma numerator_bound (r : ℝ) (hr : 0 ≤ r) (hr' : r ≤ 1/2)
     rw [abs_of_nonneg (by linarith)]
     nlinarith
   have hc' : ‖1-(r : ℂ)+(r : ℂ)^3‖ ≤ 2 := by
-    have he : 1-(r : ℂ)+(r : ℂ)^3 = ((1-r+r^3 : ℝ) : ℂ) := by push_cast; rfl
+    have he : 1-(r : ℂ)+(r : ℂ)^3 = ((1-r+r^3 : ℝ) : ℂ) := by simp
     rw [he, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (by nlinarith [show 0 ≤ r^3 by positivity]) ]
     have hr2 : r^2 ≤ r := by nlinarith
     have hr32 : r^3 ≤ r^2 := by nlinarith [mul_nonneg (sq_nonneg r) (by linarith : 0 ≤ 1-r)]
@@ -47,7 +47,7 @@ private lemma numerator_bound (r : ℝ) (hr : 0 ≤ r) (hr' : r ≤ 1/2)
         ‖(1-(r : ℂ)+(r : ℂ)^3)*E‖) + ‖E*D‖ := by gcongr; exact norm_add_le _ _
     _ = r^2 + ‖(r : ℂ)+(r : ℂ)^2-(r : ℂ)^3‖*‖D‖ +
         ‖1-(r : ℂ)+(r : ℂ)^3‖*‖E‖ + ‖E‖*‖D‖ := by
-      simp [norm_mul, norm_neg, norm_pow, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hr]
+      simp [norm_neg, norm_pow, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hr]
     _ ≤ r^2 + (2*r)*‖D‖ + 2*‖E‖ + ‖E‖*1 := by gcongr
     _ = _ := by ring
 
@@ -65,8 +65,8 @@ theorem principal_local_majorant (σ₀ : ℝ) (hσ₀ : (2 : ℝ) / 3 < σ₀) 
   have hδ : 0 < δ := CorrectionFactors.principalGap_pos σ₀ (by linarith)
   let K := 3 / δ^2
   let L := 3 * δ / 16
-  have hK : 0 < K := by dsimp [K]; positivity
-  have hL : 0 < L := by dsimp [L]; positivity
+  have hK : 0 < K := by positivity
+  have hL : 0 < L := by positivity
   refine ⟨K + K / L, by positivity, ?_⟩
   intro Q hQ α β hα hβ s hs
   dsimp only
@@ -76,7 +76,7 @@ theorem principal_local_majorant (σ₀ : ℝ) (hσ₀ : (2 : ℝ) / 3 < σ₀) 
   let h := Audit.Euler.principalCorrection (Q : ℂ)⁻¹ D E
   let M := Real.rpow Q (-2) + Real.rpow Q (-1 - σ₀) + Real.rpow Q (3 - 6 * σ₀)
   have hQpos : 0 < Q := by linarith
-  have hr : 0 ≤ r := by dsimp [r]; positivity
+  have hr : 0 ≤ r := by positivity
   have hr' : r ≤ 1/2 := by dsimp [r]; exact (inv_le_comm₀ hQpos (by norm_num)).mpr (by norm_num; exact hQ)
   have hD : ‖D‖ ≤ Real.rpow Q (-σ₀) :=
     exp_norm_bound Q (-s.re) (-σ₀) hQ (by linarith) α hα (-s) (by simp)
@@ -103,7 +103,7 @@ theorem principal_local_majorant (σ₀ : ℝ) (hσ₀ : (2 : ℝ) / 3 < σ₀) 
     apply (numerator_bound r hr hr' D E hD1).trans
     have he1 : r^2 = Real.rpow Q (-2) := by
       rw [Real.rpow_eq_pow]
-      simpa [r, Real.rpow_neg_one] using (Real.rpow_mul_natCast hQpos.le (-1) 2).symm
+      simp [r, Real.rpow_neg_one]
     have he2 : r * Real.rpow Q (-σ₀) = Real.rpow Q (-1-σ₀) := by
       simp only [Real.rpow_eq_pow]
       rw [show -1-σ₀ = (-1)+(-σ₀) by ring, Real.rpow_add hQpos, Real.rpow_neg_one]
@@ -152,6 +152,4 @@ theorem principal_majorant_summable
   have h₃ := summable_exterior_prime_norm_rpow F S (6 * σ₀ - 3) (by linarith)
   have he : -(1 + σ₀) = -1 - σ₀ := by ring
   convert (h₂.add h₁).add h₃ using 1 <;>
-    simp only [idealNorm, he, neg_sub, neg_neg, Real.rpow_eq_pow]
-
-end DedekindZetaZeroFree
+    simp only [idealNorm, he, neg_sub, Real.rpow_eq_pow]

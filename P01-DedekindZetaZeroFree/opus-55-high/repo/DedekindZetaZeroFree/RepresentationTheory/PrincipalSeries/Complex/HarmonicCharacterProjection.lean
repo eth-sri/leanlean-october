@@ -23,11 +23,11 @@ private lemma compactSphereCoordinate_continuous :
       (k : Matrix (Fin 2) (Fin 2) ℂ) 1 0 * star ((k : Matrix (Fin 2) (Fin 2) ℂ) 1 1)) :=
     (entry_continuous 1 0).mul (entry_continuous 1 1).star
   fin_cases i
-  · simp only [compactSphereCoordinate, Matrix.cons_val_zero]
+  · simp only [compactSphereCoordinate]
     exact RCLike.continuous_ofReal.comp ((Complex.continuous_re.comp h).const_mul 2)
-  · simp only [compactSphereCoordinate, Matrix.cons_val_one, Matrix.head_cons]
+  · simp only [compactSphereCoordinate]
     exact RCLike.continuous_ofReal.comp ((Complex.continuous_im.comp h).const_mul 2)
-  · simp only [compactSphereCoordinate, Matrix.cons_val_two, Matrix.tail_cons]
+  · simp only [compactSphereCoordinate]
     exact RCLike.continuous_ofReal.comp
       (((entry_continuous 1 0).norm.pow 2).sub ((entry_continuous 1 1).norm.pow 2))
 
@@ -49,13 +49,10 @@ private lemma su2HarmonicCharacter_continuous' (ℓ : ℕ) :
     | one => simp only [KPCompactHarmonic.symmetricPowerTrace]; fun_prop
     | more n hn hn1 =>
         simp only [KPCompactHarmonic.symmetricPowerTrace]
-        exact ((by fun_prop : Continuous (fun k : ComplexSU2 =>
-            Matrix.trace (k : Matrix (Fin 2) (Fin 2) ℂ))).mul hn1).sub
-          ((by fun_prop : Continuous (fun k : ComplexSU2 =>
-            Matrix.det (k : Matrix (Fin 2) (Fin 2) ℂ))).mul hn)
+        fun_prop
   unfold su2HarmonicCharacter KPCompactHarmonic.rankOneCharacter
   simp only [(Matrix.mem_specialUnitaryGroup_iff.mp (Subtype.prop _)).2, one_pow, div_one]
-  exact htrace (2 * ℓ)
+  fun_prop
 
 theorem polynomial_character_integrand_integrable (μ : Measure ComplexSU2)
     (hfinite : IsFiniteMeasure μ) (ℓ : ℕ) (q : MvPolynomial (Fin 3) ℂ)
@@ -84,7 +81,7 @@ open KPCplxCharacterHaar KPCplxIntertwinerEigenvalues MeasureTheory
 open _root_.ContRepresentation
 open DedekindZetaZeroFree.TauCeti DedekindZetaZeroFree.TauCeti.ContRepresentation
 
-private theorem sym_trace (n : ℕ) (g : ComplexSU2) :
+theorem sym_trace (n : ℕ) (g : ComplexSU2) :
     KPCompactHarmonic.symmetricPowerTrace n
       ⟨g.val, (Matrix.mem_specialUnitaryGroup_iff.mp g.property).1⟩ =
         (TauCeti.SU2.symPower n).character g := by
@@ -103,7 +100,7 @@ private theorem char_eq (n : ℕ) (g : ComplexSU2) :
   have hd : Matrix.det g.val = 1 := (Matrix.mem_specialUnitaryGroup_iff.mp g.property).2
   unfold su2HarmonicCharacter KPCompactHarmonic.rankOneCharacter
   rw [sym_trace]
-  rw [hd, one_pow, div_one]
+  simp_all
 
 theorem harmonic_character_projection_diagonal (μ : Measure ComplexSU2)
     (hhaar : μ.IsHaarMeasure) (hprob : IsProbabilityMeasure μ)
@@ -144,12 +141,10 @@ theorem harmonic_character_projection_diagonal (μ : Measure ComplexSU2)
       rw [hc, char_eq]
       exact mul_comm _ _
     rw [heq]
-    have h := TauCeti.SU2.integral_character_symPower_mul_conj (2*ℓ) (2*ℓ)
-    simp only [ite_true] at h
-    exact h
+    simp
   have hd : Module.finrank ℂ (HarmonicVendor.Harmonic ℓ) = 2*ℓ+1 := by
     rw [← e.toLinearEquiv.finrank_eq]
-    exact TauCeti.SU2.finrank_symPower (2*ℓ)
+    simp
   have hop := TauCeti.ContRepresentation.integratedOperator_eq_smul_id π hπ hf hirr
   rw [hi, hd, mul_one] at hop
   let v : HarmonicVendor.Harmonic ℓ := ⟨p, hp⟩
@@ -194,7 +189,7 @@ namespace DedekindZetaZeroFree.KPCplxHarmonicExtraction.CompactPolynomial
 open KPCplxCharacterHaar KPCplxIntertwinerEigenvalues MeasureTheory
 open scoped BigOperators
 
-private theorem recurrence_character (d : ℕ) (g : ComplexSU2) :
+theorem recurrence_character (d : ℕ) (g : ComplexSU2) :
     KPCompactHarmonic.symmetricPowerTrace d
       ⟨g.val, (Matrix.mem_specialUnitaryGroup_iff.mp g.property).1⟩ =
     (TauCeti.SU2.symPower d).character g := by
@@ -206,7 +201,7 @@ private theorem recurrence_character (d : ℕ) (g : ComplexSU2) :
     simp only [KPCompactHarmonic.symmetricPowerTrace, h0, h1, hd, one_mul]
     have h := TauCeti.SU2.trace_mul_character_symPower d g
     linear_combination h
-private theorem actual_character (ℓ : ℕ) (g : ComplexSU2) :
+theorem actual_character (ℓ : ℕ) (g : ComplexSU2) :
     su2HarmonicCharacter ℓ g = (TauCeti.SU2.symPower (2 * ℓ)).character g := by
   have hd : Matrix.det g.val = 1 := (Matrix.mem_specialUnitaryGroup_iff.mp g.property).2
   simp only [su2HarmonicCharacter, KPCompactHarmonic.rankOneCharacter, hd, one_pow,
@@ -228,7 +223,7 @@ theorem harmonic_character_projection_off_diagonal (μ : Measure ComplexSU2)
   let f : C(ComplexSU2, ℂ) := star (TauCeti.SU2.symPowerCharacter (2 * ℓ))
   have hf (g h : ComplexSU2) : f (h * g * h⁻¹) = f g := by
     simp only [f, ContinuousMap.star_apply, TauCeti.SU2.symPowerCharacter_apply]
-    rw [Representation.char_conj]
+    simp
   have hchar (g : ComplexSU2) : π.character hπ g =
       (TauCeti.SU2.symPower (2 * n)).character g := by
     change (HarmonicVendor.harmonicRepresentation n).character g = _
@@ -248,8 +243,8 @@ theorem harmonic_character_projection_off_diagonal (μ : Measure ComplexSU2)
   let ev : HarmonicVendor.Harmonic n →L[ℂ] ℂ := LinearMap.toContinuousLinearMap
     ((LinearMap.proj k).comp (KPCplxHarmonicIntertwinerSpectrum.polynomialCompactRestriction.comp
       (KPCplxHarmonicIntertwinerSpectrum.harmonicPolynomials n).subtype))
-  have hint : Integrable (fun g => f g • π g v) (TauCeti.haarProb ComplexSU2) := by
-    exact (f.continuous.smul (hπ.clm_apply continuous_const)).integrable_of_hasCompactSupport
+  have hint : Integrable (fun g => f g • π g v) (TauCeti.haarProb ComplexSU2) := 
+    (f.continuous.smul (hπ.clm_apply continuous_const)).integrable_of_hasCompactSupport
       (HasCompactSupport.of_compactSpace _)
   have hh := ev.integral_comp_comm hint
   rw [← TauCeti.ContRepresentation.integratedOperator_apply π hπ f v, hzero,
@@ -375,7 +370,7 @@ theorem polynomial_character_convolution_realization_of_projection
   refine ⟨if hℓ : ℓ ∈ I then h ℓ else 0, ?_, ?_⟩
   · split
     · exact hh ℓ ‹ℓ ∈ I›
-    · exact Submodule.zero_mem _
+    simp
   · intro k
     have hcoord := compactSphereCoordinate_is_real_unit k
     have hreal (t : ComplexSU2) :
@@ -412,7 +407,3 @@ theorem polynomial_character_convolution_realization (μ : Measure ComplexSU2)
     exact polynomial_character_convolution_realization_zero μ hhaar q
   · exact polynomial_character_convolution_realization_of_projection μ ℓ q
       (harmonic_character_projection μ hhaar hprob ℓ)
-
-end DedekindZetaZeroFree.KPCplxHarmonicExtraction.CompactPolynomial
-
-end

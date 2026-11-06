@@ -10,7 +10,6 @@ public import DedekindZetaZeroFree.Metaplectic.Torus.TameValuationCoordinates
 section
 
 noncomputable section
-set_option autoImplicit false
 set_option maxHeartbeats 800000
 
 namespace DedekindZetaZeroFree.KPLocalTameValuationWhittakerBasis.RawSectionBridge
@@ -31,7 +30,7 @@ def rawCoefficient : Sign → Representation ℂ (actualTorus F ζ hζ v) (Induc
 
 abbrev rawInduced (ε : Sign) := sectionSpace S.borel P ε 0
 
-private theorem coefficient_smooth_canonical (ε : Sign) :
+theorem coefficient_smooth_canonical (ε : Sign) :
     SmoothRepresentation (rawCoefficient F ζ hζ v S P ε) := by
   cases ε with
   | plus => exact tau_smooth S.heisenberg P
@@ -107,8 +106,7 @@ private theorem modulus_binding (h : Torus F ζ hζ v) :
  have hd := KPRankOneInduction.deltaB_eq F v (projection F ζ hζ v)
    (KPLocalInductionJacquetReciprocity.torusToBorel F ζ hζ v m hm h)
    (KubotaRankTwo.d (KPRankOneInduction.LocalField F v) (S.borel.coordinate h) 1) hp (by simp [KubotaRankTwo.coe_d])
- simp only [KubotaRankTwo.coe_d, Matrix.of_apply, Matrix.cons_val_zero, Matrix.cons_val_one,
-  Matrix.head_cons, Matrix.head_fin_const, div_one] at hd
+ simp only [KubotaRankTwo.coe_d, Matrix.of_apply, Matrix.cons_val_zero, Matrix.cons_val_one] at hd
  change (((KPRankOneInduction.halfModulus (deltaB F ζ hζ v)
   (KPLocalInductionJacquetReciprocity.torusToBorel F ζ hζ v m hm h) : ℝ≥0) : ℝ) : ℂ) = _
  rw [KPRankOneInduction.halfModulus_eq, hd]
@@ -224,8 +222,8 @@ def equiv (ε : Sign) :
         (hs f.val).mpr f.property⟩
       left_inv := by intro f; rfl
       right_inv := by intro f; rfl
-      map_add' := by intros; rfl
-      map_smul' := by intros; rfl }
+      map_add' := by simp
+      map_smul' := by simp }
   exact e.symm
 
 theorem equiv_value (ε : Sign)
@@ -246,7 +244,6 @@ end
 section
 
 noncomputable section
-set_option autoImplicit false
 set_option maxHeartbeats 800000
 
 namespace DedekindZetaZeroFree.KPLocalTameValuationWhittakerBasis
@@ -274,7 +271,7 @@ def eta (π : (K F v)ˣ) (j : Fin 3) : actualTorus F ζ hζ v :=
     refine ⟨KubotaRankTwo.d (K F v) (π ^ (j.val : ℤ)) 1, ?_, ?_, ?_⟩
     · rfl
     · simp [KubotaRankTwo.d]
-    · simp [KubotaRankTwo.d]⟩
+    rfl⟩
 
 def coefficient (S : CanonicalFiniteInducingData F ζ hζ v)
     (P : Polarization S.heisenberg) : KPLocalPrincipalSeries.Sign →
@@ -300,7 +297,7 @@ def ConductorIntegers (π : (K F v)ˣ)
   ∃ x : (valuation (K F v)).integer,
     ψ (Multiplicative.ofAdd ((x : K F v) / (π : K F v))) ≠ 1
 
-private theorem tame_three_not_mem (ht : IsTame F v) :
+theorem tame_three_not_mem (ht : IsTame F v) :
     (3 : (valuation (K F v)).integer) ∉
       IsLocalRing.maximalIdeal (valuation (K F v)).integer := by
   letI : (KPTameCompact.p F v).IsMaximal := IsLocalRing.maximalIdeal.isMaximal _
@@ -327,7 +324,7 @@ theorem exists_canonical_tame_polarization
       (WithZero.exp (-1 : ℤ)))
   have hp' : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (K F v)
       (valuation (K F v) p) = WithZero.exp (-1 : ℤ) := by
-    rw [hp]; exact (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (K F v)).apply_symm_apply _
+    simp_all
   have hpne : p ≠ 0 := by
     intro h
     have h0 : (0 : WithZero (Multiplicative ℤ)) = WithZero.exp (-1 : ℤ) := by simpa [h] using hp'
@@ -344,7 +341,6 @@ theorem exists_canonical_tame_polarization
     (KPTameValuationCoordinates.unitCubeClasses (K F v)) S.cubeClassEquiv hmap).trans e
   have hindex : L.index = 3 := by
     rw [Subgroup.index_eq_card, Nat.card_congr c.toEquiv]
-    change Nat.card (ZMod 3) = 3
     simp
   have hcard : Nat.card S.D = 9 := by
     rw [Nat.card_congr S.cubeClassEquiv.toEquiv]
@@ -459,26 +455,26 @@ def actualSectionEquiv (hm : KPLocalChartTopology.MatrixChartDepth F v m)
     (ε : KPLocalPrincipalSeries.Sign) :
     KPLocalSmoothRepresentation.PrincipalSeries F ζ hζ v m
       (KPLocalInductionJacquetReciprocity.borelRetraction F ζ hζ v)
-      (coefficient F ζ hζ v S P ε) ≃ₗ[ℂ] induced F ζ hζ v S P ε := by
-  exact RawSectionBridge.equiv F ζ hζ v S P m hm ε
+      (coefficient F ζ hζ v S P ε) ≃ₗ[ℂ] induced F ζ hζ v S P ε := 
+  RawSectionBridge.equiv F ζ hζ v S P m hm ε
 
 theorem actualSectionEquiv_value (ε : KPLocalPrincipalSeries.Sign)
     (f : KPLocalSmoothRepresentation.PrincipalSeries F ζ hζ v m
       (KPLocalInductionJacquetReciprocity.borelRetraction F ζ hζ v)
       (coefficient F ζ hζ v S P ε)) (g : ActualCover F ζ hζ v) :
-    (actualSectionEquiv F ζ hζ v S P m hm ε f).val g = f.val.val g := by
-  exact RawSectionBridge.equiv_value F ζ hζ v S P m hm ε f g
+    (actualSectionEquiv F ζ hζ v S P m hm ε f).val g = f.val.val g := 
+  RawSectionBridge.equiv_value F ζ hζ v S P m hm ε f g
 
 theorem coefficient_smooth (hm : KPLocalChartTopology.MatrixChartDepth F v m)
     (ε : KPLocalPrincipalSeries.Sign) :
     letI := KPLocalSmoothRepresentation.finiteCoverTopology F ζ hζ v m
-    SmoothRepresentation (coefficient F ζ hζ v S P ε) := by
-  exact RawSectionBridge.coefficient_smooth_at_depth F ζ hζ v S P m hm ε
+    SmoothRepresentation (coefficient F ζ hζ v S P ε) := 
+  RawSectionBridge.coefficient_smooth_at_depth F ζ hζ v S P m hm ε
 
 def jacquetMk (ε : KPLocalPrincipalSeries.Sign)
     (ψ : Multiplicative (K F v) →* ℂˣ) :
-    induced F ζ hζ v S P ε →ₗ[ℂ] Jacquet F ζ hζ v S P ε ψ := by
-  exact Representation.Coinvariants.mk (k := ℂ) (G := Multiplicative (K F v))
+    induced F ζ hζ v S P ε →ₗ[ℂ] Jacquet F ζ hζ v S P ε ψ := 
+  Representation.Coinvariants.mk (k := ℂ) (G := Multiplicative (K F v))
     (V := induced F ζ hζ v S P ε)
     (KPCoinvariants.twistedRepresentation (V := induced F ζ hζ v S P ε)
       ((principalSeries S.borel P ε 0).comp
@@ -540,9 +536,7 @@ theorem inducing_evaluation_coordinates
       (eta F ζ hζ v π d.toAdd))) = d
     erw [hj]
     change Multiplicative.ofAdd ((d.toAdd.val : ℕ) : ZMod 3) = d
-    apply congrArg Multiplicative.ofAdd
-    change ((d.toAdd.val : ℕ) : ZMod 3) = d.toAdd
-    exact ZMod.natCast_zmod_val d.toAdd
+    simp
   let a (x : actualTorus F ζ hζ v) : P.L.comap S.heisenberg.π :=
     ⟨x * (r (q x))⁻¹, by
       change S.heisenberg.π (x * (r (q x))⁻¹) ∈ P.L
@@ -598,9 +592,7 @@ theorem inducing_evaluation_coordinates
         apply LinearMap.ext
         intro y
         apply e.injective
-        simp only [LinearMap.comp_apply, LinearEquiv.coe_coe,
-          LinearEquiv.apply_symm_apply]
-        rw [he, e.apply_symm_apply] }
+        simp_all }
   exact
     { toLinearMap := Representation.Coinvariants.map ρ σ f
       invFun := Representation.Coinvariants.map σ ρ r
@@ -609,14 +601,14 @@ theorem inducing_evaluation_coordinates
         induction x using Representation.Coinvariants.induction_on with
         | h x =>
           change Representation.Coinvariants.mk _ (e.symm (e _)) = _
-          rw [e.symm_apply_apply]
+          simp
 
       right_inv := by
         intro y
         induction y using Representation.Coinvariants.induction_on with
         | h y =>
           change Representation.Coinvariants.mk σ (e (e.symm y)) = _
-          rw [e.apply_symm_apply] }
+          simp }
 
 set_option maxHeartbeats 4000000 in
 
@@ -676,7 +668,7 @@ theorem actual_whittaker_dual_bases
   let b := Module.Basis.ofEquivFun e
   refine ⟨b, b.dualBasis, ?_, ?_⟩
   · intro i j
-    simp [Module.Basis.dualBasis_apply, Finsupp.single_apply, eq_comm]
+    simp [Finsupp.single_apply, eq_comm]
   · intro φ j
     rw [Module.Basis.dualBasis_apply, Module.Basis.ofEquivFun_repr_apply]
     change c (a (q.symm (openCellClass F ζ hζ v S P m hm ε ψ φ))) j = _
@@ -684,8 +676,6 @@ theorem actual_whittaker_dual_bases
         KPJacquetTwistedCell.openCellMap F ζ hζ v m hm
           (coefficient F ζ hζ v S P ε) (coefficient_smooth F ζ hζ v S P m hm ε) ψ
           (KPJacquetOpenTestFunction.coinvariantsMk ψ φ) := by
-      apply q.injective
-      rw [q.apply_symm_apply, KPJacquetTwistedCell.openCellMap_mk]
       rfl
     rw [hq]
     rw [KPJacquetTwistedCell.coefficientEquiv_openCell_mk]
@@ -708,11 +698,3 @@ theorem actual_whittaker_dual_bases
     change (ψ (Multiplicative.ofAdd x) : ℂ)⁻¹ *
       c (KPJacquetStepFunction.value φ x) j = _
     rw [hc]
-
-end WhittakerCoordinates
-
-end DedekindZetaZeroFree.KPLocalTameValuationWhittakerBasis
-
-end
-
-end

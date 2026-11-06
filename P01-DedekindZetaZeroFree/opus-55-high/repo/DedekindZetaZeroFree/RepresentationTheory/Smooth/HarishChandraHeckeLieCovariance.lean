@@ -25,7 +25,7 @@ local notation "W" => actualRightWord F R.A.zeta12 R.A.primitive_zeta12
 def actualLieIndexEquiv : Fin (groupDimension F) ≃ KPSmoothActualFlowData.B F :=
   (lieEnumeration F).trans (actualBasisReindex F)
 
-private theorem actual_ray (b : Fin (groupDimension F)) (t : ℝ) :
+theorem actual_ray (b : Fin (groupDimension F)) (t : ℝ) :
     KPSmoothLocalQuotientCharts.matrixExp F (t • Pi.single (lieEnumeration F b) 1) =
       expA (t • Pi.single (actualLieIndexEquiv (F := F) b) 1) := by
   rw [actual_frame_ray_eq_flow]

@@ -20,7 +20,3 @@ instance adapterCompletionMeasurable (v : InfinitePlace F) :
 
 instance adapterCompletionBorel (v : InfinitePlace F) :
     BorelSpace v.Completion := ⟨rfl⟩
-
-end DedekindZetaZeroFree.SArithmeticData
-
-end

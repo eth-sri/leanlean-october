@@ -35,7 +35,4 @@ variable {𝕜 V}
 @[simp]
 theorem traceCLM_apply (T : V →L[𝕜] V) :
     traceCLM 𝕜 V T = LinearMap.trace 𝕜 V (T : V →ₗ[𝕜] V) := by
-  rw [traceCLM, LinearMap.coe_toContinuousLinearMap']
   rfl
-
-end DedekindZetaZeroFree.TauCeti

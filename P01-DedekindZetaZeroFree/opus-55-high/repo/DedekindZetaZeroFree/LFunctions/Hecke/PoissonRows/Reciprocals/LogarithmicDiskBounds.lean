@@ -95,7 +95,7 @@ theorem analytic_log_unique_ball {ℓ₁ ℓ₂ : ℂ → ℂ} {c : ℂ} {R : �
   rw [hc] at this
   linear_combination this
 
-private theorem bc_aux {ℓ : ℂ → ℂ} {c : ℂ} {R r : ℝ} (hr : 0 < r) (hrR : r < R)
+theorem bc_aux {ℓ : ℂ → ℂ} {c : ℂ} {R r : ℝ} (hr : 0 < r) (hrR : r < R)
     (hℓ : AnalyticOnNhd ℂ ℓ (Metric.ball c R)) {A : ℝ} (hA : 0 < A)
     (hRe : ∀ s ∈ Metric.ball c R, (ℓ s - ℓ c).re ≤ A) :
     ∀ s ∈ closedBall c r, ‖ℓ s - ℓ c‖ ≤ 2 * A * r / (R - r) := by
@@ -221,7 +221,7 @@ private def primeEquiv (F : Type) [Field F] [NumberField F] :
   left_inv _ := rfl
   right_inv _ := rfl
 
-private theorem char_pow {F : Type} [Field F] [NumberField F] (ω : Detector.PrimitiveFrequencyCharacter F)
+theorem char_pow {F : Type} [Field F] [NumberField F] (ω : Detector.PrimitiveFrequencyCharacter F)
     (I : Ideal (𝓞 F)) (k : ℕ) : ω.character (I ^ k) = ω.character I ^ k := by
   induction k with
   | zero => simpa using ω.character.map_top'

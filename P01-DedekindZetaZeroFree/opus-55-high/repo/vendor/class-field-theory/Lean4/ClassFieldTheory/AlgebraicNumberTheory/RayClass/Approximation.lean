@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Multiplicative weak approximation for ideles
 
@@ -28,7 +25,6 @@ open NumberField IsDedekindDomain
 
 noncomputable section
 
-
 variable {K : Type*} [Field K] [NumberField K]
 
 namespace IdeleGroup
@@ -36,7 +32,7 @@ namespace IdeleGroup
 /-- The full modulus whose finite part has exponent one exactly at the places
 of a finite set and whose infinite part is empty.  It lets the ray-class
 approximation space serve as an arbitrary finite-place approximation space. -/
-noncomputable def modulusOfFinset
+def modulusOfFinset
     (S : Finset (HeightOneSpectrum (𝓞 K))) :
     RayClass.Modulus K := by
   classical
@@ -44,16 +40,7 @@ noncomputable def modulusOfFinset
     (Finsupp.onFinset S
       (fun v => if v ∈ S then 1 else 0)
       (by
-        intro v hv
-        simpa using hv))
-
-@[simp]
-theorem modulusOfFinset_apply
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
-    (v : HeightOneSpectrum (𝓞 K)) :
-    (modulusOfFinset S).finitePart v = if v ∈ S then 1 else 0 := by
-  classical
-  rfl
+        simp))
 
 @[simp]
 theorem modulusOfFinset_support
@@ -136,8 +123,8 @@ theorem exists_principal_quotient_mem_openLocalSubgroups
       ((i : RayClass.ApproximationPlace m) →
         RayClass.approximationCompletion m i) :=
     Set.univ.pi (openLocalCosetTarget m a U)
-  have hWOpen : IsOpen W := by
-    exact isOpen_set_pi Set.finite_univ fun i _hi =>
+  have hWOpen : IsOpen W := 
+    isOpen_set_pi Set.finite_univ fun i _hi =>
       isOpen_openLocalCosetTarget m a U hU i
   have hWNonempty : W.Nonempty :=
     ⟨openLocalCosetTargetPoint m a,
@@ -290,8 +277,8 @@ theorem exists_principal_quotient_mem_openAllLocalSubgroups
       ((i : RayClass.ApproximationPlace m) →
         RayClass.approximationCompletion m i) :=
     Set.univ.pi (openAllLocalCosetTarget m a U V)
-  have hWOpen : IsOpen W := by
-    exact isOpen_set_pi Set.finite_univ fun i _hi =>
+  have hWOpen : IsOpen W := 
+    isOpen_set_pi Set.finite_univ fun i _hi =>
       isOpen_openAllLocalCosetTarget
         m a U V hU hV i
   have hWNonempty : W.Nonempty :=
@@ -410,9 +397,6 @@ def finiteIdeleOfFinset
   have haway :
       ∀ᶠ v : HeightOneSpectrum (𝓞 K) in Filter.cofinite,
         v ∉ S := by
-    rw [Filter.eventually_cofinite]
-    convert S.finite_toSet using 1
-    ext v
     simp
   filter_upwards [haway] with v hv
   change f v ∈ (v.adicCompletionIntegers K).units
@@ -426,7 +410,7 @@ theorem finiteIdeleOfFinset_apply_mem
     finiteIdeleOfFinset S a v.1 = a v := by
   classical
   change (if hv : v.1 ∈ S then a ⟨v.1, hv⟩ else 1) = a v
-  exact dite_eq_left v.2
+  simp
 
 @[simp]
 theorem finiteIdeleOfFinset_apply_notMem
@@ -473,29 +457,3 @@ theorem principalLocalQuotientMap_apply
     principalLocalQuotientMap S U x v =
       QuotientGroup.mk' (U v) ((principalIdele K x).2 v.1) :=
   rfl
-
-/-- Multiplicative weak approximation is equivalently surjectivity of the
-diagonal map to every finite product of quotients by open local subgroups. -/
-theorem principalLocalQuotientMap_surjective
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
-    (U : ∀ v : ↥S, Subgroup (v.1.adicCompletion K)ˣ)
-    (hU : ∀ v, IsOpen (U v : Set (v.1.adicCompletion K)ˣ)) :
-    Function.Surjective (principalLocalQuotientMap S U) := by
-  intro q
-  choose a ha using fun v : ↥S =>
-    QuotientGroup.mk_surjective (q v)
-  let α : IdeleGroup K :=
-    ideleOfFiniteLocalFamily S a
-  obtain ⟨x, hx⟩ :=
-    exists_principal_quotient_mem_openLocalSubgroups_finset
-      S α U hU
-  refine ⟨x, ?_⟩
-  funext v
-  rw [principalLocalQuotientMap_apply, ← ha v]
-  apply Eq.symm
-  apply (QuotientGroup.eq_iff_div_mem).2
-  simpa [α, div_eq_mul_inv] using hx v
-
-end IdeleGroup
-
-end

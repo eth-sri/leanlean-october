@@ -13,7 +13,7 @@ open DedekindZetaZeroFree.Quantitative.EulerDomain
 def shellExponent (x y v : ℝ) (e₀ k ℓ m : ℕ) : ℝ :=
   (1 / 2 - x) * e₀ + (2 - 3 * x) * ℓ + (1 / 2 - y) * k - 6 * v * m
 
-private theorem shellExponent_le_margin_aux (δ x y v : ℝ) (hδ : 0 < δ) (e₀ k ℓ m : ℕ)
+theorem shellExponent_le_margin_aux (δ x y v : ℝ) (hδ : 0 < δ) (e₀ k ℓ m : ℕ)
     (he₀ : e₀ ≤ 1) (hk : k ≤ 1) (hpos : 0 < e₀ + 3 * ℓ)
     (hx : 1 / 2 + δ ≤ x) (hA : 2 + δ ≤ 3 * x) (hB : 5 / 2 + δ ≤ 3 * x + y)
     (hC : 1 + δ ≤ x + y) (hv : δ ≤ v) :

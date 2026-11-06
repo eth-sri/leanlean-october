@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Power-class laws and representatives
 
@@ -32,7 +29,5 @@ power. -/
 theorem powerClass_eq_one_iff
     (K : Type u) [Field K] (n : ℕ+) (a : Kˣ) :
     powerClass K n a = 1 ↔
-      a ∈ (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range := by
-  exact QuotientGroup.eq_one_iff a
-
-end ClassFieldTheory
+      a ∈ (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range := 
+  QuotientGroup.eq_one_iff a

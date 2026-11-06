@@ -6,7 +6,6 @@ public import DedekindZetaZeroFree.Arithmetic.LocalFields.Residues.GlobalQuotien
 
 open scoped NumberField Classical
 open NumberField IsDedekindDomain
-noncomputable section
 namespace DedekindZetaZeroFree.LocalFiniteSumCompatibility
 open LocalFiniteSums
 variable {F : Type} [Field F] [NumberField F]
@@ -27,6 +26,3 @@ theorem exterior_notMem (p : ExteriorPrime A) : p.val ∉ A.Sf := by
   have h := (A.exterior_iff ⟨p.val.asIdeal, p.val.ne_bot⟩).mp p.property p.val hp
   rw [sup_idem] at h
   exact p.val.isPrime.ne_top h
-end DedekindZetaZeroFree.LocalFiniteSumCompatibility
-
-end

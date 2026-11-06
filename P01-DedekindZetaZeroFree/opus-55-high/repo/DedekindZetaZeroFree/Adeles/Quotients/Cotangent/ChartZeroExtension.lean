@@ -33,7 +33,7 @@ def PointwiseEquivariant (f : a.domain → E F) : Prop :=
   ∀ (γ : Gamma a) (y : a.domain),
     f (actualActionEquiv a γ y) = actualTensor a γ y (f y)
 
-private theorem q_coordinates_ext (y : a.domain) :
+theorem q_coordinates_ext (y : a.domain) :
     KPContCotangentOverlapRationalBranches.q a (coordinates a y).val = a.toBase y := by
   have hi : ∀ z : KPCuspGenuineMonodromy.SymmetricSpace F,
       labeledA (placeEquiv F ζ hζ) (labeledAInv (placeEquiv F ζ hζ) z) = z := by
@@ -67,7 +67,7 @@ def extendedFields (f : a.domain → E F) : ChartFields F ζ hζ U R P H :=
         (f (KPContActualCotangentPieceReconstruction.originalPoint a y))
     else 0
 
-private theorem originalPoint_coordinates_ext (y : a.domain) :
+theorem originalPoint_coordinates_ext (y : a.domain) :
     KPContActualCotangentPieceReconstruction.originalPoint a (coordinates a y) = y := by
   apply Subtype.ext
   funext k
@@ -173,10 +173,7 @@ private theorem extendedFields_at_branch (f : a.domain → E F)
   rw [localAmbient, dite_eq_left ht] at hc
   exact hc
 
- theorem continuous_labeledA_placeEquiv : Continuous (labeledA (placeEquiv F ζ hζ)) := by
-  apply continuous_pi
-  intro k
-  exact (continuous_apply _).comp (CotangentLogCoframe.A (d F)).continuous
+ theorem continuous_labeledA_placeEquiv : Continuous (labeledA (placeEquiv F ζ hζ)) := by apply DedekindZetaZeroFree.KPContActualCotangentExactMeasurableGluing.continuous_labeledA_placeEquiv <;> assumption
 
  def identityBranch (a : ShrunkChart F ζ hζ U R P H) : ActualBranch a a where
   component_eq := rfl
@@ -284,11 +281,11 @@ private lemma T_symm_coord {i : Fin (H.atlas U).componentCount}
         (T ψ x hx (EuclideanSpace.basisFun (Fin (d F) × Fin 3) ℂ k))]
   rw [inner_conj_symm, hb]
 
-private theorem continuous_originalPoint_ext :
+theorem continuous_originalPoint_ext :
     Continuous (KPContActualCotangentPieceReconstruction.originalPoint a) := by
   exact continuous_labeledA_placeEquiv.comp continuous_subtype_val |>.subtype_mk _
 
-private theorem measurable_localAmbient (f : a.domain → E F) (hf : Measurable f) :
+theorem measurable_localAmbient (f : a.domain → E F) (hf : Measurable f) :
     Measurable (localAmbient a f) := by
   exact Measurable.dite (hf.comp (continuous_originalPoint_ext a).measurable) measurable_const
     (continuous_labeledA_placeEquiv.isOpen_preimage _ a.domain_open).measurableSet
@@ -378,7 +375,7 @@ private theorem measurable_extendedFields (f : a.domain → E F) (hf : Measurabl
   · rw [dite_eq_right hx]
     exact extendedFields_zero_off a f b x hx
 
-private theorem extendedFields_selected (f : a.domain → E F)
+theorem extendedFields_selected (f : a.domain → E F)
     (b : ShrunkChart F ζ hζ U R P H) (x : omega b)
     (hb : q b x.val ∈ a.baseDomain) :
     extendedFields a f b x =
@@ -447,7 +444,7 @@ def extendedFamily (f : a.domain → E F)
     (hf : Measurable f) (he : PointwiseEquivariant a f) : Family (U := U) (H := H) :=
   ⟨extendedFields a f, extendedFields_isFamily a f hf he⟩
 
-private theorem base_lift_exists (z : KPFiniteCuspAtlas.rawXU F ζ hζ U) :
+theorem base_lift_exists (z : KPFiniteCuspAtlas.rawXU F ζ hζ U) :
     ∃ (b : ShrunkChart F ζ hζ U R P H) (x : omega b), q b x.val = z := by
   let c := Classical.choice
     (kp_cont_actual_cotangent_countable_shrinking F ζ hζ U R P H).2
@@ -456,7 +453,7 @@ private theorem base_lift_exists (z : KPFiniteCuspAtlas.rawXU F ζ hζ U) :
   obtain ⟨y, hy⟩ := Set.mem_range.mp hn
   exact ⟨c.chart n, coordinates (c.chart n) y, (q_coordinates_ext (c.chart n) y).trans hy⟩
 
-private theorem extended_normSquare_off (f : a.domain → E F)
+theorem extended_normSquare_off (f : a.domain → E F)
     (hf : Measurable f) (he : PointwiseEquivariant a f)
     (z : KPFiniteCuspAtlas.rawXU F ζ hζ U) (hz : z ∉ a.baseDomain) :
     normSquare (extendedFamily a f hf he) z = 0 := by
@@ -527,7 +524,7 @@ def extensionRepresentative (f : Q a) : SquareFiniteFamily (U := U) (H := H) :=
     (localRepresentative_measurable a f) (localRepresentative_equivariant a f)
     (localRepresentative_memLp a f)
 
-private theorem extendedFamily_sub (f g : a.domain → E F)
+theorem extendedFamily_sub (f g : a.domain → E F)
     (hf : Measurable f) (hg : Measurable g)
     (he : PointwiseEquivariant a f) (hge : PointwiseEquivariant a g) :
     extendedFamily a f hf he - extendedFamily a g hg hge =
@@ -900,7 +897,7 @@ theorem cutoff_represented (v : IntrinsicHilbert cover)
   rw [hv]
   rfl
 
-private theorem supported_ae_from_local (r s : Family (U := U) (H := H))
+theorem supported_ae_from_local (r s : Family (U := U) (H := H))
     (hr : ∀ b (x : omega b), q b x.val ∉ a.baseDomain → coefficient r b x = 0)
     (hs : ∀ b (x : omega b), q b x.val ∉ a.baseDomain → coefficient s b x = 0)
     (hae : localCoefficient a r =ᵐ[a.liftedMeasure] localCoefficient a s) :
@@ -973,7 +970,7 @@ def liftField (f : omega a → E F) : a.domain → E F := fun y => f (coordinate
 def ambientField (b : ShrunkChart F ζ hζ U R P H) (f : omega b → E F) : M F → E F :=
   fun x => if hx : x ∈ omega b then f ⟨x, hx⟩ else 0
 
-private theorem liftedMeasure_isFiniteMeasure : IsFiniteMeasure a.liftedMeasure := by
+theorem liftedMeasure_isFiniteMeasure : IsFiniteMeasure a.liftedMeasure := by
   letI := KPContSectorFixedMeasureLocalFiniteness.sphericalMeasure_finiteOnCompacts
     F ζ hζ R P U
   let proj : KPCuspGenuineMonodromy.SymmetricSpace F →

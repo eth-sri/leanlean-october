@@ -53,5 +53,3 @@ theorem rayCharacterPrincipalCriterion
   · intro hψ I hI hcoprime
     rw [h I, rayIdealClass_eq_some K m hm I hI hcoprime]
     simp [hψ]
-
-end DedekindZetaZeroFree.AbelianQuotient

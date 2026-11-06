@@ -14,7 +14,5 @@ theorem normalized_area_coordinate_projection :
         (1 - (y : EuclideanSpace ℝ (Fin 3)) 0) / 2)
       (((volume : Measure (EuclideanSpace ℝ (Fin 3))).toSphere Set.univ)⁻¹ •
         (volume : Measure (EuclideanSpace ℝ (Fin 3))).toSphere) =
-      (volume : Measure ℝ).restrict (Icc 0 1) := by
-  exact RawSphereProjection.normalized_coordinate_projection
-
-end DedekindZetaZeroFree.ComplexFractionalInverse.KernelMass
+      (volume : Measure ℝ).restrict (Icc 0 1) := 
+  RawSphereProjection.normalized_coordinate_projection

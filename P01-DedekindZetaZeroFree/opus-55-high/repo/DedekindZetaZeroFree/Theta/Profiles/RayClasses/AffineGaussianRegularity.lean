@@ -15,7 +15,7 @@ open Classical MeasureTheory DedekindZetaZeroFree.AbelianQuotient
 namespace DedekindZetaZeroFree.Hecke.Theta
 variable {F : Type} [Field F] [NumberField F]
 
-private theorem summable_traceGaussian (J : (FractionalIdeal (𝓞 F)⁰ F)ˣ)
+theorem summable_traceGaussian (J : (FractionalIdeal (𝓞 F)⁰ F)ˣ)
     (z : NumberField.mixedEmbedding.euclidean.mixedSpace F) {a : ℝ} (ha : 0 < a) :
     Summable (fun l : {l : F // l ∈ (J : FractionalIdeal (𝓞 F)⁰ F)} =>
       Real.exp (-a * ‖z + Theta.traceEmbedding F l.val‖ ^ 2)) := by
@@ -31,7 +31,7 @@ private theorem summable_traceGaussian (J : (FractionalIdeal (𝓞 F)⁰ F)ˣ)
   have hs' := hs.comp_injective (i := f) hf
   exact hs'
 
-private theorem summable_scaledTraceGaussian (J : (FractionalIdeal (𝓞 F)⁰ F)ˣ)
+theorem summable_scaledTraceGaussian (J : (FractionalIdeal (𝓞 F)⁰ F)ˣ)
     (x : F) {r a : ℝ} (hr : 0 < r) (ha : 0 < a) :
     Summable (fun l : {l : F // l ∈ (J : FractionalIdeal (𝓞 F)⁰ F)} =>
       Real.exp (-a * ‖r • Theta.traceEmbedding F (x + l.val)‖ ^ 2)) := by
@@ -71,7 +71,7 @@ theorem affineResidueTheta_summable_norm (h : RayCoset.logHyperplane F) :
   obtain ⟨P, c, hP, hc, hb⟩ := DedekindZetaZeroFree.thetaParityShapeBounds F ∅
     {h} (isCompact_singleton)
   have ha : 0 < c * u ^ (2 / (Module.finrank ℚ F : ℝ)) :=
-    mul_pos hc (Real.rpow_pos_of_pos hu _)
+    by positivity
   have hs := (summable_scaledTraceGaussian (I * rayIdealFractionalIdeal F m hm)
     x.val (affineResidueScale_pos I) ha).mul_left P
   apply hs.of_norm_bounded
@@ -89,7 +89,7 @@ theorem affineResidueDualTheta_summable_norm (h : RayCoset.logHyperplane F) :
   obtain ⟨P, c, hP, hc, hb⟩ := DedekindZetaZeroFree.thetaParityShapeBounds F ∅
     {h} isCompact_singleton
   have ha : 0 < c * u ^ (2 / (Module.finrank ℚ F : ℝ)) :=
-    mul_pos hc (Real.rpow_pos_of_pos hu _)
+    by positivity
   have hs := (summable_scaledTraceGaussian
     (Theta.traceDualIdealUnit F (I * rayIdealFractionalIdeal F m hm))
     0 (inv_pos.mpr (affineResidueScale_pos I)) ha).mul_left P
@@ -134,14 +134,14 @@ theorem affineResidueDualTheta_continuous :
 
 theorem affineResidueTheta_integrableOn :
     IntegrableOn (affineResidueTheta m hm I x u)
-      (RayCoset.rayUnitHalfOpenDomain F m hm) (Theta.normalizedLogHaar F) := by
-  exact ((affineResidueTheta_continuous m hm I x u hu).continuousOn.integrableOn_compact
+      (RayCoset.rayUnitHalfOpenDomain F m hm) (Theta.normalizedLogHaar F) := 
+  ((affineResidueTheta_continuous m hm I x u hu).continuousOn.integrableOn_compact
     (RayCoset.isCompact_closure_rayUnitHalfOpenDomain F m hm)).mono_set subset_closure
 
 theorem affineResidueDualTheta_integrableOn :
     IntegrableOn (affineResidueDualTheta m hm I x u)
-      (RayCoset.rayUnitHalfOpenDomain F m hm) (Theta.normalizedLogHaar F) := by
-  exact ((affineResidueDualTheta_continuous m hm I x u hu).continuousOn.integrableOn_compact
+      (RayCoset.rayUnitHalfOpenDomain F m hm) (Theta.normalizedLogHaar F) := 
+  ((affineResidueDualTheta_continuous m hm I x u hu).continuousOn.integrableOn_compact
     (RayCoset.isCompact_closure_rayUnitHalfOpenDomain F m hm)).mono_set subset_closure
 
 theorem affineResidueTheta_congr
@@ -238,11 +238,3 @@ theorem weightedIdealBlock_summable_norm (h : RayCoset.logHyperplane F) :
   simpa [affineResidueScale, neg_div, one_div] using
     mul_le_mul_of_nonneg_right hc (norm_nonneg (RayParity.gδ F ∅
      (RayParity.Q F (RayTheta.q F u h) (affineResidueScale I • Theta.traceEmbedding F x.val))))
-
-end Weighted
-
-end DedekindZetaZeroFree.Hecke.Theta
-
-end
-
-end

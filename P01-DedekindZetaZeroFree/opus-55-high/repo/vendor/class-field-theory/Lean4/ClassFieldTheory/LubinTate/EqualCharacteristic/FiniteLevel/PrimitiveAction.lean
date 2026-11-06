@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # The uniformizer norm identity: the unit action on primitive division points
 
@@ -26,8 +21,6 @@ sends a primitive level-`n+1` point to another root of the same Eisenstein
 polynomial.  This is the source of the finite-level Galois action; no
 automorphism or normality is assumed here.
 -/
-
-noncomputable section
 
 
 open scoped PowerSeries LaurentSeries Polynomial
@@ -54,11 +47,11 @@ theorem equalCharacteristicLubinTateAmbientBracket_apply_of_levelOne_torsion
   induction m with
   | zero =>
       rw [equalCharacteristicLubinTateAmbientBracket_apply]
-      simp [equalCharacteristicLubinTateAmbientPiIterate_zero]
+      simp
   | succ m ih =>
       have hxm :
-          IsEqualCharacteristicLubinTateAmbientTorsion F t (m + 1) x := by
-        exact equalCharacteristicLubinTateAmbientPiIterate_eq_zero_of_le
+          IsEqualCharacteristicLubinTateAmbientTorsion F t (m + 1) x := 
+        equalCharacteristicLubinTateAmbientPiIterate_eq_zero_of_le
           F t (Nat.succ_le_succ (Nat.zero_le m)) x hx
       rw [show m.succ + 1 = (m + 1) + 1 by omega,
         equalCharacteristicLubinTateAmbientBracket_succ_eq_of_torsion
@@ -101,8 +94,8 @@ theorem chosenEqualCharacteristicLubinTatePrimitiveRoot_iterate_bracket
           (PowerSeries.coeff 0 a) *
         equalCharacteristicLubinTateAmbientPiIterate F
           (equalCharacteristicSeparableUniformizer F) n
-          (chosenEqualCharacteristicLubinTatePrimitiveRoot F n) := by
-  exact equalCharacteristicLubinTateAmbientPrimitive_iterate_bracket F
+          (chosenEqualCharacteristicLubinTatePrimitiveRoot F n) := 
+  equalCharacteristicLubinTateAmbientPrimitive_iterate_bracket F
     (equalCharacteristicSeparableCoefficientHom F)
     (equalCharacteristicSeparableUniformizer F) n a
     (chosenEqualCharacteristicLubinTatePrimitiveRoot F n)
@@ -188,10 +181,9 @@ theorem equalCharacteristicLubinTateAmbientPrimitive_bracket_eq_coeff
           by_cases hji' : j < i
           · have hcoeff : PowerSeries.coeff j d = 0 := by
               change PowerSeries.coeff j (a - b) = 0
-              rw [map_sub, ih j hji' (by omega), sub_self]
-            rw [hcoeff, map_zero, zero_mul]
-          · have hij : i < j := lt_of_le_of_ne (Nat.le_of_not_gt hji')
-              (Ne.symm hji)
+              simp_all
+            simp_all
+          · have hij : i < j := by omega
             have hkill :
                 equalCharacteristicLubinTateAmbientPiIterate F t j
                     (equalCharacteristicLubinTateAmbientPiIterate F t (n - i) x) =
@@ -201,9 +193,7 @@ theorem equalCharacteristicLubinTateAmbientPrimitive_bracket_eq_coeff
                 F t (n := n + 1) (m := j + (n - i)) _ x hx
               omega
             rw [hkill, mul_zero]
-        · intro hnot
-          exact (hnot (Finset.mem_range.mpr
-            (Nat.lt_succ_iff.mpr hi))).elim
+        simp_all
       rw [hsum] at hshift
       have hcoeffMap : ι (PowerSeries.coeff i d) = 0 :=
         (mul_eq_zero.mp hshift).resolve_right hynonzero
@@ -227,8 +217,8 @@ theorem chosenEqualCharacteristicLubinTatePrimitiveRoot_bracket_eq_coeff
           (equalCharacteristicSeparableCoefficientHom F)
           (equalCharacteristicSeparableUniformizer F) (n + 1) b
           (chosenEqualCharacteristicLubinTatePrimitiveRoot F n)) :
-    ∀ i ≤ n, PowerSeries.coeff i a = PowerSeries.coeff i b := by
-  exact equalCharacteristicLubinTateAmbientPrimitive_bracket_eq_coeff F
+    ∀ i ≤ n, PowerSeries.coeff i a = PowerSeries.coeff i b := 
+  equalCharacteristicLubinTateAmbientPrimitive_bracket_eq_coeff F
     (equalCharacteristicSeparableCoefficientHom F)
     (equalCharacteristicSeparableUniformizer F) n
     (chosenEqualCharacteristicLubinTatePrimitiveRoot F n)
@@ -286,8 +276,3 @@ theorem equalCharacteristicLubinTatePrimitivePolynomial_isRoot_bracket
   rw [Polynomial.eval_map,
     equalCharacteristicLubinTatePrimitivePolynomial_eval₂]
   exact hzEquation
-
-end EqualCharacteristic
-end LubinTate
-
-end

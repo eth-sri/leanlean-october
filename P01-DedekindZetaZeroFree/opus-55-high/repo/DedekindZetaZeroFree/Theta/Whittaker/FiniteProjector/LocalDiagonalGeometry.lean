@@ -89,24 +89,7 @@ theorem selected_localIdele_arch (y : R.A.G) (w : InfinitePlace F) :
   · simp
 
 theorem selected_localIdele_finite (y : R.A.G) (q : R.A.Sf) :
-    Units.map (adeleEval F (Sum.inr q.val)).toMonoidHom (MomentSources.localIdele R y) = y.2 q := by
-  unfold MomentSources.localIdele
-  simp only [map_mul, map_prod]
-  have he (p : KPHilbert.Place F) (z : (KPHilbert.Completion F p)ˣ) :
-      Units.map (adeleEval F (Sum.inr q.val)).toMonoidHom (KPRationalAdelicSplitting.localIdele F p z) =
-        Pi.mulSingle (M := fun v => (KPHilbert.Completion F v)ˣ) p z (Sum.inr q.val) :=
-    eval_localIdele_units p (Sum.inr q.val) z
-  simp only [he]
-  have ha : (∏ w : InfinitePlace F, Pi.mulSingle (M := fun v => (KPHilbert.Completion F v)ˣ)
-      (Sum.inl w) (y.1 w) (Sum.inr q.val)) = 1 := by
-    apply Finset.prod_eq_one
-    intro w _
-    exact Pi.mulSingle_eq_of_ne (by simp) _
-  rw [ha, one_mul, Finset.prod_eq_single q]
-  · simp
-  · intro p _ hpq
-    exact Pi.mulSingle_eq_of_ne (Sum.inr_injective.ne (Subtype.val_injective.ne hpq.symm)) _
-  · simp
+    Units.map (adeleEval F (Sum.inr q.val)).toMonoidHom (MomentSources.localIdele R y) = y.2 q := by apply DedekindZetaZeroFree.FiniteWhittakerProjectors.selected_localIdele_finite <;> assumption
 
 theorem selected_localIdele_exterior (y : R.A.G) (q : KPFinitePlace F) (hq : q ∉ R.A.Sf) :
     Units.map (adeleEval F (Sum.inr q)).toMonoidHom (MomentSources.localIdele R y) = 1 := by
@@ -131,7 +114,7 @@ theorem selected_localIdele_exterior (y : R.A.G) (q : KPFinitePlace F) (hq : q �
     exact hq ((Sum.inr_injective he) ▸ p.property)
   rw [ha, hf, one_mul]
 
-private theorem list_product_single {I M : Type*} [DecidableEq I] [Monoid M]
+theorem list_product_single {I M : Type*} [DecidableEq I] [Monoid M]
     (l : List I) (hl : l.Nodup) (i : I) (hi : i ∈ l) (f : I → M)
     (hf : ∀ j ∈ l, j ≠ i → f j = 1) : (l.map f).prod = f i := by
   induction l with

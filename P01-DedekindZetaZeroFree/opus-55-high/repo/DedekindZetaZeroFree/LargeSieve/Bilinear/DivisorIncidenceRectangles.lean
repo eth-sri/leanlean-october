@@ -13,7 +13,6 @@ Source: lean/OAI/NumberTheory/DirichletL/QuadraticSieve/CoprimeBilinearBound.lea
 
 namespace DedekindZetaZeroFree.LargeSieve.Vendor.DivisorBlocks
 
-noncomputable section
 open scoped NumberField Classical BigOperators
 
 theorem divisor_block_bound
@@ -60,7 +59,7 @@ theorem divisor_block_bound
       congr 1
       split <;> simp
     rw [h2, h3] at h
-    simpa only [hV] using h
+    omega
 
   have hcs : (∑ d, ∑ e, V d e) ^ 2 ≤
       ((Fintype.card D : ℝ) * (Fintype.card E : ℝ)) * (∑ d, ∑ e, V d e ^ 2) := by
@@ -126,6 +125,3 @@ theorem divisor_block_bound
           mul_le_mul_of_nonneg_left hsumsq (by positivity)
       _ = _ := by ring
   simpa only [hV, hLd, hRe] using hmain
-
-end
-end DedekindZetaZeroFree.LargeSieve.Vendor.DivisorBlocks

@@ -8,8 +8,6 @@ public import ClassFieldTheory.LocalClassFieldTheory.ClassFormation.LocalizedCom
 public import ClassFieldTheory.LocalClassFieldTheory.ClassFormation.LocalizedCompletionCohomology.Finite
 public import ClassFieldTheory.LocalClassFieldTheory.ClassFormation.LocalizedCompletionCohomology.Cardinality.H0
 public import ClassFieldTheory.LocalClassFieldTheory.ClassFormation.LocalizedCompletionCohomology.Cardinality.HMinusOne
-public import ClassFieldTheory.LocalClassFieldTheory.ClassFormation.LocalizedCompletionCohomology.Cardinality.Trivial
-public import ClassFieldTheory.LocalClassFieldTheory.ClassFormation.LocalizedCompletionCohomology.Cardinality.Quotient
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Extension.LocalNorm
 public import ValuedFieldTheory.LocalField.NonarchimedeanLocalField.NormQuotient
 
@@ -21,20 +19,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-set_option autoImplicit false
 
 /-!
 # The norm image of a local tensor factor
@@ -91,7 +75,7 @@ variable (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
 /-- For a right coset of the decomposition group, conjugation followed by
 the localization/completion equivalence identifies the corresponding
 completion with the chosen algebraic localization. -/
-noncomputable def rightCosetCompletionAlgEquiv
+def rightCosetCompletionAlgEquiv
     (q : InducedRightCosets
       (absoluteValueDecompositionGroup K w.1)) :
     letI hK :=
@@ -189,7 +173,7 @@ theorem normUnits_rightCosetCompletionAlgEquiv
 
 /-- The completion tensor-product decomposition, with all factors transported to the one
 chosen algebraic localization. -/
-noncomputable def localTensorUnitsEquivChosenCoordinates :
+def localTensorUnitsEquivChosenCoordinates :
     letI hK :=
       AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
     letI : SMul K w.1.Completion := hK.toSMul
@@ -217,7 +201,7 @@ noncomputable def localTensorUnitsEquivChosenCoordinates :
 /-- The finite set of right cosets of the decomposition group.  It is
 packaged explicitly so statements about products do not depend on a chosen
 `Fintype` structure for the quotient. -/
-noncomputable def decompositionRightCosetsFinset :
+def decompositionRightCosetsFinset :
     Finset
       (InducedRightCosets
         (absoluteValueDecompositionGroup K w.1)) :=
@@ -449,8 +433,7 @@ theorem localTensorNormSubgroup_eq_localNormSubgroup
     have hq₀ :
         q₀ ∈ decompositionRightCosetsFinset
           (K := K) (vK := vK) (w := w) :=
-      mem_decompositionRightCosetsFinset
-        (K := K) (vK := vK) (w := w) q₀
+      by simp
     simpa only [f, apply_ite, map_one] using
       Finset.prod_ite_eq_of_mem
         (decompositionRightCosetsFinset
@@ -460,9 +443,3 @@ theorem localTensorNormSubgroup_eq_localNormSubgroup
           normUnits vK.Completion
             (LocalizedCompletion vK w) y)
         hq₀
-
-end ChosenCompletion
-
-end LocalClassFieldTheory
-
-end

@@ -4,19 +4,18 @@ public import DedekindZetaZeroFree.Analysis.CompactSupport.IteratedDerivatives
 
 @[expose] public section
 
-noncomputable section
 
 open MeasureTheory Set Filter Asymptotics
 open scoped NumberField Classical ContDiff Topology
 
 namespace DedekindZetaZeroFree.LargeSieve.Vendor
 
-private lemma contDiff_iteratedDeriv_of_smooth {h : ℝ → ℂ} (hh : ContDiff ℝ ∞ h) (n : ℕ) :
+lemma contDiff_iteratedDeriv_of_smooth {h : ℝ → ℂ} (hh : ContDiff ℝ ∞ h) (n : ℕ) :
     ContDiff ℝ ∞ (iteratedDeriv n h) := by
   rw [iteratedDeriv_eq_iterate]
-  exact hh.iterate_deriv n
+  fun_prop
 
-private lemma hasCompactSupport_iteratedDeriv_of_compact {h : ℝ → ℂ} (hh : HasCompactSupport h)
+lemma hasCompactSupport_iteratedDeriv_of_compact {h : ℝ → ℂ} (hh : HasCompactSupport h)
     (n : ℕ) : HasCompactSupport (iteratedDeriv n h) := by
   rw [iteratedDeriv_eq_iterate]
   induction n with
@@ -25,7 +24,7 @@ private lemma hasCompactSupport_iteratedDeriv_of_compact {h : ℝ → ℂ} (hh :
       rw [Function.iterate_succ_apply']
       exact ih.deriv
 
-private lemma eventually_eq_zero_atTop_of_hasCompactSupport {f : ℝ → ℂ}
+lemma eventually_eq_zero_atTop_of_hasCompactSupport {f : ℝ → ℂ}
     (hf : HasCompactSupport f) : ∀ᶠ t : ℝ in atTop, f t = 0 := by
   obtain ⟨K, hKc, hK0⟩ := exists_compact_iff_hasCompactSupport.mpr hf
   obtain ⟨R, hR⟩ := hKc.exists_bound_of_continuousOn continuousOn_id
@@ -34,31 +33,29 @@ private lemma eventually_eq_zero_atTop_of_hasCompactSupport {f : ℝ → ℂ}
   rw [Real.norm_eq_abs, abs_le] at h1
   linarith [h1.2]
 
-private lemma isBigO_exp_atTop_of_hasCompactSupport {f : ℝ → ℂ} (hf : HasCompactSupport f) :
+lemma isBigO_exp_atTop_of_hasCompactSupport {f : ℝ → ℂ} (hf : HasCompactSupport f) :
     f =O[atTop] (fun t : ℝ => Real.exp (-1 * t)) := by
   refine IsBigO.of_bound 0 ?_
   filter_upwards [eventually_eq_zero_atTop_of_hasCompactSupport hf] with t ht
   simp [ht]
 
-private lemma isBigO_rpow_zero_atZero {f : ℝ → ℂ} (hf : Continuous f)
+lemma isBigO_rpow_zero_atZero {f : ℝ → ℂ} (hf : Continuous f)
     (hc : HasCompactSupport f) : f =O[𝓝[>] (0 : ℝ)] (fun t : ℝ => t ^ (0 : ℝ)) := by
   obtain ⟨C, hC⟩ := hc.exists_bound_of_continuous hf
   refine IsBigO.of_bound (max C 1) ?_
-  filter_upwards [self_mem_nhdsWithin] with t ht
-  rw [Real.rpow_zero, norm_one, mul_one]
-  exact (hC t).trans (le_max_left _ _)
+  simp_all
 
-private lemma isBigO_rpow_zero_atZero' {f : ℝ → ℂ} (hf : Continuous f)
+lemma isBigO_rpow_zero_atZero' {f : ℝ → ℂ} (hf : Continuous f)
     (hc : HasCompactSupport f) : f =O[𝓝[>] (0 : ℝ)] (fun t : ℝ => t ^ (-(0 : ℝ))) := by
   simpa only [neg_zero] using isBigO_rpow_zero_atZero hf hc
 
-private lemma integral_Ioc_rpow' (R : ℝ) (hR : 0 < R) (r : ℝ) (hr : 0 < r) :
+lemma integral_Ioc_rpow' (R : ℝ) (hR : 0 < R) (r : ℝ) (hr : 0 < r) :
     ∫ t in Ioc (0 : ℝ) R, t ^ (r - 1) = R ^ r / r := by
   rw [← intervalIntegral.integral_of_le hR.le]
   rw [integral_rpow (Or.inl (by linarith : -1 < r - 1))]
   rw [Real.zero_rpow (by linarith : r - 1 + 1 ≠ 0), sub_zero, sub_add_cancel]
 
-private lemma integral_indicator_rpow_bound (M R a b : ℝ) (hM : 0 ≤ M) (hR : 0 < R)
+lemma integral_indicator_rpow_bound (M R a b : ℝ) (hM : 0 ≤ M) (hR : 0 < R)
     (ha : 0 < a) (hb : 0 < b) :
     ∫ t, (Ioc (0 : ℝ) R).indicator (fun t : ℝ => M * (t ^ (a - 1) + t ^ (b - 1))) t
         ∂(volume.restrict (Ioi 0)) = M * (R ^ a / a + R ^ b / b) := by
@@ -106,11 +103,11 @@ theorem mellin_iteratedDeriv_positive_strip_bound {h : ℝ → ℂ}
   obtain ⟨C₀, hC₀⟩ := hfcomp.exists_bound_of_continuous hfcont
   set M : ℝ := max C₀ 0 with hMdef
   have hM0 : 0 ≤ M := le_max_right _ _
-  have hM : ∀ t : ℝ, ‖iteratedDeriv n h t‖ ≤ M := fun t => (hC₀ t).trans (le_max_left _ _)
+  have hM : ∀ t : ℝ, ‖iteratedDeriv n h t‖ ≤ M := by simp_all
   obtain ⟨K, hKc, hK0⟩ := exists_compact_iff_hasCompactSupport.mpr hfcomp
   obtain ⟨R₀, hR₀⟩ := hKc.exists_bound_of_continuousOn continuousOn_id
   set R : ℝ := max R₀ 1 with hRdef
-  have hRpos : 0 < R := lt_of_lt_of_le zero_lt_one (le_max_right _ _)
+  have hRpos : 0 < R := by positivity
   have hsupp : ∀ t : ℝ, iteratedDeriv n h t ≠ 0 → t ≤ R := by
     intro t ht
     have htK : t ∈ K := by
@@ -118,12 +115,9 @@ theorem mellin_iteratedDeriv_positive_strip_bound {h : ℝ → ℂ}
       exact ht (hK0 t hcon)
     have h1 : ‖t‖ ≤ R₀ := by simpa using hR₀ t htK
     rw [Real.norm_eq_abs, abs_le] at h1
-    linarith [h1.2, le_max_left R₀ 1]
+    simp_all
   refine ⟨M * (R ^ a / a + R ^ b / b) + 1, ?_, ?_⟩
-  · have h1 : 0 ≤ M * (R ^ a / a + R ^ b / b) :=
-      mul_nonneg hM0 (add_nonneg (div_nonneg (Real.rpow_nonneg hRpos.le a) ha.le)
-        (div_nonneg (Real.rpow_nonneg hRpos.le b) hb.le))
-    linarith
+  · positivity
   · intro s hs1 hs2
     have hpt : ∀ t : ℝ, 0 < t →
         ‖(t : ℂ) ^ (s - 1) • iteratedDeriv n h t‖ ≤
@@ -133,8 +127,7 @@ theorem mellin_iteratedDeriv_positive_strip_bound {h : ℝ → ℂ}
       · rw [hft, smul_zero, norm_zero]
         by_cases hmem : t ∈ Ioc (0 : ℝ) R
         · rw [Set.indicator_of_mem hmem]
-          exact mul_nonneg hM0
-            (add_nonneg (Real.rpow_nonneg ht0.le _) (Real.rpow_nonneg ht0.le _))
+          positivity
         · rw [Set.indicator_of_notMem hmem]
       · have htR : t ≤ R := hsupp t hft
         rw [Set.indicator_of_mem (show t ∈ Ioc (0 : ℝ) R from ⟨ht0, htR⟩), norm_smul,
@@ -171,7 +164,7 @@ theorem mellin_iteratedDeriv_positive_strip_bound {h : ℝ → ℂ}
     have hmain : ‖mellin (iteratedDeriv n h) s‖ ≤ M * (R ^ a / a + R ^ b / b) := by
       have h1 : ‖mellin (iteratedDeriv n h) s‖
           = ‖∫ t in Ioi (0 : ℝ), (t : ℂ) ^ (s - 1) • iteratedDeriv n h t‖ := by
-        rw [mellin]
+        rfl
       rw [h1]
       calc ‖∫ t in Ioi (0 : ℝ), (t : ℂ) ^ (s - 1) • iteratedDeriv n h t‖
           ≤ ∫ t in Ioi (0 : ℝ), (Ioc (0 : ℝ) R).indicator
@@ -180,7 +173,3 @@ theorem mellin_iteratedDeriv_positive_strip_bound {h : ℝ → ℂ}
         _ = M * (R ^ a / a + R ^ b / b) :=
             integral_indicator_rpow_bound M R a b hM0 hRpos ha hb
     linarith
-
-end DedekindZetaZeroFree.LargeSieve.Vendor
-
-end

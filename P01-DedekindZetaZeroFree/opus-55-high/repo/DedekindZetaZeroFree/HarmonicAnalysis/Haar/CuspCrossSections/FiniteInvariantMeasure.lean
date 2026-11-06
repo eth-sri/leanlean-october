@@ -20,7 +20,7 @@ namespace DedekindZetaZeroFree.KPCuspChart.SectionConstruction
   rw [horizontalLinear, LinearMap.det_pi]
   simp only [LinearMap.det_restrictScalars, LinearMap.det_mulLeft,
     Algebra.norm_complex_apply, Complex.normSq_eq_norm_sq]
-private lemma norm_product
+lemma norm_product
     (F : Type*) [Field F] [NumberField F]
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (E : Subgroup Fˣ) (hE : E ≤ KPCuspArithmetic.rationalUnits F) (u : E) :
@@ -53,7 +53,7 @@ private lemma horizontal_invariant
     rw [horizontal_det]
     exact norm_product F hF E hE u
   have hm : Measure.map (horizontalLinear a) volume = volume := by
-    rw [Measure.map_linearMap_addHaar_eq_smul_addHaar volume (by rw [hd]; exact one_ne_zero), hd]
+    rw [Measure.map_linearMap_addHaar_eq_smul_addHaar volume (by positivity), hd]
     simp
   have ht : (fun x : Horizontal F => fun i => embedding F ((u : Fˣ) : F) i * x i + embedding F v i) =
       (fun x : Horizontal F => x + embedding F v) ∘ horizontalLinear a := rfl
@@ -91,7 +91,7 @@ open MeasureTheory
 
 namespace DedekindZetaZeroFree.KPCuspChart.SectionConstruction
 
-private theorem compact_lifts {H X : Type*} [Group H] [TopologicalSpace X]
+theorem compact_lifts {H X : Type*} [Group H] [TopologicalSpace X]
     [LocallyCompactSpace X] [T2Space X] [MulAction H X] [ContinuousConstSMul H X]
     [CompactSpace (Quotient (MulAction.orbitRel H X))] :
     ∃ K : Set X, IsCompact K ∧ ∀ x : X, ∃ g : H, g • x ∈ K := by
@@ -117,7 +117,7 @@ private theorem compact_lifts {H X : Type*} [Group H] [TopologicalSpace X]
   obtain ⟨g, hg⟩ := hrel
   exact ⟨g, hg ▸ Set.mem_iUnion.2 ⟨y, Set.mem_iUnion.2 ⟨hyt, subset_closure hvV⟩⟩⟩
 
-private theorem domain_le_cover {H X : Type*} [Group H] [MeasurableSpace X]
+theorem domain_le_cover {H X : Type*} [Group H] [MeasurableSpace X]
     [MulAction H X] [Countable H] [MeasurableConstSMul H X]
     (ν : Measure X) [SMulInvariantMeasure H X ν]
     (Ω K : Set X) (hΩ : IsFundamentalDomain H Ω ν)
@@ -131,7 +131,7 @@ private theorem domain_le_cover {H X : Type*} [Group H] [MeasurableSpace X]
   rw [← heq, hΩ.measure_eq_tsum K]
   exact measure_iUnion_le _
 
-private theorem mass_upper_action (g : Matrix.GeneralLinearGroup (Fin 2) ℂ)
+theorem mass_upper_action (g : Matrix.GeneralLinearGroup (Fin 2) ℂ)
     (hc : g 1 0 = 0) (u : ℂ) (hu : u ≠ 0) (ha : g 0 0 = u * g 1 1)
     (z : KPArch.H3) :
     KPArch.action g z = (u * z.1 + g 0 1 / g 1 1, z.2 + Real.log ‖u‖) := by
@@ -151,7 +151,7 @@ private theorem mass_upper_action (g : Matrix.GeneralLinearGroup (Fin 2) ℂ)
     field_simp
   · exact KPCuspLogShape.upper_action_snd g hc u hu ha z
 
-private theorem mass_actual_affine_action (F : Type*) [Field F] [NumberField F]
+theorem mass_actual_affine_action (F : Type*) [Field F] [NumberField F]
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ExtensionData F S)
     (g : S) (A : Matrix.GeneralLinearGroup (Fin 2) F)
@@ -163,8 +163,7 @@ private theorem mass_actual_affine_action (F : Type*) [Field F] [NumberField F]
   funext i
   let σ := (KPCusp.complexPlace F i).embedding
   have hi : (Matrix.GeneralLinearGroup.map σ A) 1 0 = 0 := by
-    change σ (A 1 0) = 0
-    simp [hc]
+    simp_all
   have hu : σ ((D.ratio g : Fˣ) : F) ≠ 0 :=
     (map_ne_zero σ).mpr (Units.ne_zero _)
   have ha : (Matrix.GeneralLinearGroup.map σ A) 0 0 =
@@ -177,14 +176,14 @@ private theorem mass_actual_affine_action (F : Type*) [Field F] [NumberField F]
   apply Prod.ext
   · change σ ((D.ratio g : Fˣ) : F) * p.1.1 i + σ (A 0 1) / σ (A 1 1) =
       σ ((D.ratio g : Fˣ) : F) * p.1.1 i + σ (A 0 1 / A 1 1)
-    rw [map_div₀]
+    simp
   · change p.2 + (p.1.2 : Fin (KPCuspLogShape.dimension F) → ℝ) i + Real.log ‖σ _‖ =
       p.2 + ((p.1.2 : Fin (KPCuspLogShape.dimension F) → ℝ) i +
         Real.log ((KPCusp.complexPlace F i) ((D.ratio g : Fˣ) : F)))
     rw [NumberField.InfinitePlace.norm_embedding_eq]
     ring
 
-private theorem mass_cross_orbit_relation
+theorem mass_cross_orbit_relation
     (F : Type*) [Field F] [NumberField F]
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (S : Subgroup (KPCuspArithmetic.PGL2 F)) (D : ExtensionData F S)
@@ -320,9 +319,3 @@ theorem normalized_finite_section
   }⟩
   rw [sectionMeasure_univ]
   exact hpositive
-
-end DedekindZetaZeroFree.KPCuspChart
-
-end
-
-end

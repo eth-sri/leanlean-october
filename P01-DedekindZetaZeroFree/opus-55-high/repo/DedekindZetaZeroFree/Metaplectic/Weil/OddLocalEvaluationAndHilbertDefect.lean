@@ -32,8 +32,8 @@ private theorem two_norm (v : HeightOneSpectrum (𝓞 F)) (hodd : ringChar (Resi
       exact hz
     exact Ring.two_ne_zero hodd hz'
   obtain ⟨u, hu⟩ := hu
-  have he : (localUnit v u : v.adicCompletion F) = 2 := by
-    exact congrArg Subtype.val hu
+  have he : (localUnit v u : v.adicCompletion F) = 2 := 
+    congrArg Subtype.val hu
   rw [← he]
   exact unit_norm v u
 private theorem scaled_annihilator (v : HeightOneSpectrum (𝓞 F))
@@ -46,7 +46,7 @@ private theorem scaled_annihilator (v : HeightOneSpectrum (𝓞 F))
   · intro hz
     by_contra hzo
     have hn : 1 < ‖z‖ := lt_of_not_ge (fun h => hzo (mem_adicCompletionIntegers_of_norm_le_one v h))
-    have hzne : z ≠ 0 := by intro h; simp [h] at hn; linarith
+    have hzne : z ≠ 0 := by intro h; simp_all
     let zi : v.adicCompletionIntegers F := ⟨z⁻¹, mem_adicCompletionIntegers_of_norm_le_one v (by
       rw [norm_inv]; exact (inv_le_one₀ (by positivity)).mpr hn.le)⟩
     have hzi : ¬ IsUnit zi := by
@@ -138,10 +138,7 @@ theorem gamma_conductor_class (A : SArithmeticData F)
       simp [AddSubgroup.mem_map, O]
     · rw [hL]
   have hQ : Subsingleton (finiteStationaryQuotient v a O) := by
-    apply QuotientAddGroup.subsingleton_iff.mpr
-    ext x
-    simp only [AddSubgroup.mem_comap, AddSubgroup.mem_top, iff_true]
-    exact (show finiteStationarySubgroup v a O ≤ O from le_of_eq hL) x.property
+    simp_all
   letI := hQ
   have hp : finiteStationaryPhase v a O 0 = 1 := by
     have he := finiteStationaryPhase_mk v a O hH 0
@@ -156,9 +153,7 @@ theorem gamma_conductor_class (A : SArithmeticData F)
   have hv := A.finiteOscillatoryValue_eq_gauss v a O hH
   rw [hG, finiteOscillatoryValue] at hv
   have hs : (Real.sqrt ‖(2 : v.adicCompletion F) * (a : v.adicCompletion F)‖ : ℂ) ≠ 0 := by
-    apply Complex.ofReal_ne_zero.mpr
-    apply (Real.sqrt_pos.mpr (norm_pos_iff.mpr _)).ne'
-    exact mul_ne_zero (by exact_mod_cast (show (2 : F) ≠ 0 from two_ne_zero)) a.ne_zero
+    simp
   have he := (div_eq_iff hs).mp hv
   have hn := A.norm_finiteGamma v a
   rw [he, norm_mul, Complex.norm_real, Complex.norm_real, Real.norm_eq_abs,
@@ -190,9 +185,8 @@ private theorem square_sum_eq_gauss {k : Type*} [Field k] [Fintype k]
         ((quadraticChar k y : ℂ) + 1) * ψ y := by
     trans (∑ _x ∈ Finset.univ with _x^2 = y, ψ y)
     · apply Finset.sum_congr rfl
-      intro x hx
-      rw [(Finset.mem_filter.mp hx).2]
-    · rw [Finset.sum_const, nsmul_eq_mul, count]
+      simp_all
+    simp_all
   simp_rw [inner, add_mul, one_mul]
   rw [Finset.sum_add_distrib, AddChar.sum_eq_zero_of_ne_one hψ, add_zero]
   rfl
@@ -217,7 +211,7 @@ private theorem square_sum_eq_gauss {k : Type*} [Field k] [Fintype k]
   rw [← square_sum_eq_gauss hodd ψ hψ] at he
   simpa [χ, AddChar.mulShift_apply] using (square_sum_eq_gauss hodd (ψ.mulShift (u : k)) hshift).trans he
 
- private theorem positive_normalization_from_norm {q r : ℝ} (hq : 0 < q) (hr : 0 ≤ r)
+ theorem positive_normalization_from_norm {q r : ℝ} (hq : 0 < q) (hr : 0 ≤ r)
     (z : ℂ) (hz : ‖z‖ = Real.sqrt q) (hphase : ‖(r : ℂ) * z‖ = 1) :
     r = (Real.sqrt q)⁻¹ := by
   rw [norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hr, hz] at hphase
@@ -249,7 +243,7 @@ private theorem square_sum_eq_gauss {k : Type*} [Field k] [Fintype k]
     (π : v.adicCompletionIntegers F) (hπ : Irreducible π) (c : ℤ) :=
   (ResidueTrace.localTraceCharacter v).compAddMonoidHom
     (AddMonoidHom.mulLeft (((uniformizer v π hπ)^c : (v.adicCompletion F)ˣ) : v.adicCompletion F))
-private theorem theta_on_lift (v : HeightOneSpectrum (𝓞 F))
+theorem theta_on_lift (v : HeightOneSpectrum (𝓞 F))
     (π : v.adicCompletionIntegers F) (hπ : Irreducible π) (c : ℤ)
     (hc : conductor v π hπ c) (x : v.adicCompletionIntegers F) :
     theta v π hπ c (IsLocalRing.residue _ x) =
@@ -272,8 +266,7 @@ private theorem theta_on_lift (v : HeightOneSpectrum (𝓞 F))
   have hK : (z : v.adicCompletion F) * (π : v.adicCompletion F) =
       (y : v.adicCompletion F) - (x : v.adicCompletion F) := by
     have h := congrArg (fun w : v.adicCompletionIntegers F => (w : v.adicCompletion F)) hz
-    push_cast at h
-    exact h
+    omega
   have hdiv : (y : v.adicCompletion F) / (π : v.adicCompletion F) =
       (x : v.adicCompletion F) / (π : v.adicCompletion F) +
         (z : v.adicCompletion F) := by
@@ -282,7 +275,7 @@ private theorem theta_on_lift (v : HeightOneSpectrum (𝓞 F))
   change psi0 v π hπ c ((y : v.adicCompletion F) / (π : v.adicCompletion F)) = _
   rw [hdiv, AddChar.map_add_eq_mul, show psi0 v π hπ c (z : v.adicCompletion F) = 1 from hc.1 z, mul_one]
 
-private theorem theta_additive_nontrivial (v : HeightOneSpectrum (𝓞 F))
+theorem theta_additive_nontrivial (v : HeightOneSpectrum (𝓞 F))
     (π : v.adicCompletionIntegers F) (hπ : Irreducible π) (c : ℤ)
     (hc : conductor v π hπ c) :
     theta v π hπ c 0 = 1 ∧
@@ -323,7 +316,7 @@ private theorem theta_additive_nontrivial (v : HeightOneSpectrum (𝓞 F))
     rwa [he] at h
 set_option maxHeartbeats 1000000 in
 
-private theorem psi0_selfDual (v : HeightOneSpectrum (𝓞 F))
+theorem psi0_selfDual (v : HeightOneSpectrum (𝓞 F))
     (π : v.adicCompletionIntegers F) (hπ : Irreducible π) (c : ℤ)
     (hc : conductor v π hπ c) (y : v.adicCompletion F) :
     (∀ x : v.adicCompletionIntegers F,
@@ -380,8 +373,7 @@ private theorem psi0_selfDual (v : HeightOneSpectrum (𝓞 F))
     exact ht
   · intro hy x
     have hh := hc.1 (⟨y, hy⟩ * x)
-    change psi0 v π hπ c (y * (x : v.adicCompletion F)) = 1 at hh
-    exact hh
+    simp_all
 
  abbrev piLattice (v : HeightOneSpectrum (𝓞 F))
     (π : v.adicCompletionIntegers F) :=
@@ -444,7 +436,7 @@ private theorem psi0_selfDual (v : HeightOneSpectrum (𝓞 F))
     exact (he ⟨t, ht⟩).trans (h ⟨t, ht⟩)
 
 set_option maxHeartbeats 1000000 in
-private theorem piLattice_admissible (v : HeightOneSpectrum (𝓞 F))
+theorem piLattice_admissible (v : HeightOneSpectrum (𝓞 F))
     (hodd : ringChar (Residue v) ≠ 2)
     (π : v.adicCompletionIntegers F) (hπ : Irreducible π) (c : ℤ)
     (hc : conductor v π hπ c) (u : (v.adicCompletionIntegers F)ˣ) :
@@ -468,7 +460,7 @@ private theorem piLattice_admissible (v : HeightOneSpectrum (𝓞 F))
     change ResidueTrace.localTraceCharacter v (_ * ((π : v.adicCompletion F) * t)^2) = 1
     rw [he]
     have hh := hc.1 ((u : v.adicCompletionIntegers F) * π * (⟨t, ht⟩ : v.adicCompletionIntegers F)^2)
-    convert hh using 1
+    omega
   · rw [stationary_piLattice v hodd π hπ c hc u]
     rintro x hx
     obtain ⟨t, ht, rfl⟩ := AddSubgroup.mem_map.mp hx
@@ -486,7 +478,7 @@ private theorem piLattice_admissible (v : HeightOneSpectrum (𝓞 F))
   · rintro ⟨t, ht⟩
     exact AddSubgroup.mem_map.mpr ⟨t, t.property, (congrArg Subtype.val ht).symm⟩
 
- noncomputable def stationary_residue_equiv (v : HeightOneSpectrum (𝓞 F))
+ def stationary_residue_equiv (v : HeightOneSpectrum (𝓞 F))
     (hodd : ringChar (Residue v) ≠ 2)
     (π : v.adicCompletionIntegers F) (hπ : Irreducible π) (c : ℤ)
     (hc : conductor v π hπ c) (u : (v.adicCompletionIntegers F)ˣ) :
@@ -501,8 +493,7 @@ private theorem piLattice_admissible (v : HeightOneSpectrum (𝓞 F))
       map_zero' := by exact map_zero (IsLocalRing.residue _)
       map_add' := by
         intro x y
-        convert map_add (IsLocalRing.residue (v.adicCompletionIntegers F)) _ _ using 1
-        congr 1 }
+        rfl }
   have hf : Function.Surjective f := by
     intro z
     obtain ⟨x, hx⟩ := IsLocalRing.residue_surjective z
@@ -515,7 +506,7 @@ private theorem piLattice_admissible (v : HeightOneSpectrum (𝓞 F))
   exact (QuotientAddGroup.quotientAddEquivOfEq hk).trans
     (QuotientAddGroup.quotientKerEquivOfSurjective f hf)
 
-private theorem stationary_residue_equiv_mk (v : HeightOneSpectrum (𝓞 F))
+theorem stationary_residue_equiv_mk (v : HeightOneSpectrum (𝓞 F))
     (hodd : ringChar (Residue v) ≠ 2)
     (π : v.adicCompletionIntegers F) (hπ : Irreducible π) (c : ℤ)
     (hc : conductor v π hπ c) (u : (v.adicCompletionIntegers F)ˣ)
@@ -525,11 +516,9 @@ private theorem stationary_residue_equiv_mk (v : HeightOneSpectrum (𝓞 F))
       IsLocalRing.residue _ ⟨x, (show (x : v.adicCompletion F) ∈
         (v.adicCompletionIntegers F).toSubring.toAddSubgroup from
           stationary_piLattice v hodd π hπ c hc u ▸ x.property)⟩ := by
-  unfold stationary_residue_equiv
-  rw [AddEquiv.trans_apply, QuotientAddGroup.quotientAddEquivOfEq_mk]
   rfl
 
-private theorem stationary_phase_residue (v : HeightOneSpectrum (𝓞 F))
+theorem stationary_phase_residue (v : HeightOneSpectrum (𝓞 F))
     (hodd : ringChar (Residue v) ≠ 2)
     (π : v.adicCompletionIntegers F) (hπ : Irreducible π) (c : ℤ)
     (hc : conductor v π hπ c) (u : (v.adicCompletionIntegers F)ˣ)
@@ -596,16 +585,14 @@ theorem gamma_preconductor_class (A : SArithmeticData F)
       _ = _ := square_sum_unit_dependence hodd ψ hψ ur
   let r := Real.sqrt ‖(2 : v.adicCompletion F) * (a : v.adicCompletion F)‖ *
     (A.finiteTraceHaar v (H : Set (v.adicCompletion F))).toReal
-  have hr : 0 ≤ r := mul_nonneg (Real.sqrt_nonneg _) ENNReal.toReal_nonneg
+  have hr : 0 ≤ r := by positivity
   have hgamma : A.finiteGamma v a = (r : ℂ) *
       ((quadratic v (ur : Residue v)) * ∑ x : Residue v, ψ (x^2)) := by
     have he := A.finiteOscillatoryValue_eq_gauss v a H (piLattice_admissible v hodd π hπ c hc u)
     unfold SArithmeticData.finiteOscillatoryValue SArithmeticData.finiteStationaryGauss at he
     rw [hsum] at he
     have hs : (Real.sqrt ‖(2 : v.adicCompletion F) * (a : v.adicCompletion F)‖ : ℂ) ≠ 0 := by
-      apply Complex.ofReal_ne_zero.mpr
-      apply (Real.sqrt_pos.mpr (norm_pos_iff.mpr ?_)).ne'
-      exact mul_ne_zero (by exact_mod_cast (show (2:F) ≠ 0 from two_ne_zero)) a.ne_zero
+      simp
     rw [div_eq_iff hs] at he
     rw [he]
     simp only [r, Complex.ofReal_mul]
@@ -646,10 +633,10 @@ abbrev OddLocalResidue (v : HeightOneSpectrum (𝓞 F)) :=
   IsLocalRing.ResidueField (v.adicCompletionIntegers F)
 
 theorem oddLocalResidue_finite (v : HeightOneSpectrum (𝓞 F)) :
-    Finite (OddLocalResidue v) := by
-  exact exteriorLocalResidue_finite v
+    Finite (OddLocalResidue v) := 
+  exteriorLocalResidue_finite v
 
-noncomputable instance oddLocalResidueFintype (v : HeightOneSpectrum (𝓞 F)) :
+instance oddLocalResidueFintype (v : HeightOneSpectrum (𝓞 F)) :
     Fintype (OddLocalResidue v) := by
   letI := oddLocalResidue_finite v
   exact Fintype.ofFinite _
@@ -710,12 +697,12 @@ def finiteQuadraticHilbertCoefficient (A : SArithmeticData F)
     (v : HeightOneSpectrum (𝓞 F)) (a b : (v.adicCompletion F)ˣ) : ℂ :=
   if A.actualLocalSymbol v 2 (Or.inl rfl) a b = 1 then 1 else -1
 
-private theorem oddLocalReduction_lift (v : HeightOneSpectrum (𝓞 F))
+theorem oddLocalReduction_lift (v : HeightOneSpectrum (𝓞 F))
     (x : OddLocalResidue v) :
     oddLocalReduction v (oddLocalResidueLift v x) = x :=
   Classical.choose_spec (IsLocalRing.residue_surjective x)
 
-private theorem oddConductorZeroCharacter_integral (v : HeightOneSpectrum (𝓞 F))
+theorem oddConductorZeroCharacter_integral (v : HeightOneSpectrum (𝓞 F))
     (π : v.adicCompletionIntegers F) (hπ : Irreducible π) (c : ℤ)
     (hc : OddTraceConductor v π hπ c) (z : v.adicCompletionIntegers F) :
     oddConductorZeroCharacter v π hπ c (z : v.adicCompletion F) = 1 :=
@@ -744,8 +731,7 @@ theorem oddResidueTheta_on_lift (v : HeightOneSpectrum (𝓞 F))
   have hK : (z : v.adicCompletion F) * (π : v.adicCompletion F) =
       (y : v.adicCompletion F) - (x : v.adicCompletion F) := by
     have h := congrArg (fun w : v.adicCompletionIntegers F => (w : v.adicCompletion F)) hz
-    push_cast at h
-    exact h
+    omega
   have hdiv : (y : v.adicCompletion F) / (π : v.adicCompletion F) =
       (x : v.adicCompletion F) / (π : v.adicCompletion F) +
         (z : v.adicCompletion F) := by
@@ -800,11 +786,11 @@ theorem oddResidueTheta_additive_nontrivial (v : HeightOneSpectrum (𝓞 F))
     have e1 : oddConductorZeroCharacter v π hπ c
         ((oddLocalResidueLift v x : v.adicCompletion F) / (π : v.adicCompletion F)) =
         oddResidueTheta v π hπ c x := by
-      rw [← oddResidueTheta_on_lift v π hπ c hc (oddLocalResidueLift v x), hx]
+      rfl
     have e2 : oddConductorZeroCharacter v π hπ c
         ((oddLocalResidueLift v y : v.adicCompletion F) / (π : v.adicCompletion F)) =
         oddResidueTheta v π hπ c y := by
-      rw [← oddResidueTheta_on_lift v π hπ c hc (oddLocalResidueLift v y), hy]
+      rfl
     rw [h1, AddChar.map_add_eq_mul, e1, e2]
   · obtain ⟨x', hx'⟩ := hc.2
     refine ⟨oddLocalReduction v x', ?_⟩
@@ -820,8 +806,7 @@ theorem oddResidueTheta_additive_nontrivial (v : HeightOneSpectrum (𝓞 F))
       rw [hupow c, hupow (c-1), ← mul_div_assoc, div_eq_iff hpi, mul_assoc,
         mul_comm (x' : v.adicCompletion F) (π : v.adicCompletion F), ← mul_assoc,
         ← zpow_add_one₀ hpi (c-1), sub_add_cancel]
-    rw [harg] at hcon
-    exact hx' hcon
+    simp_all
 
 theorem finiteGamma_odd_parity_reduction (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F))
     (π : v.adicCompletionIntegers F) (hπ : Irreducible π) (c : ℤ)
@@ -852,7 +837,7 @@ theorem finiteGamma_odd_parity_reduction (A : SArithmeticData F) (v : HeightOneS
   · rw [if_neg hn]
     obtain ⟨k, hk⟩ := Int.not_even_iff_odd.mp hn
     have heq : n = (c-1) + 2*(k+1) := by omega
-    rw [heq, scale, hodd]
+    simp_all
 
 theorem finiteGamma_odd_evaluation (A : SArithmeticData F)
     (v : HeightOneSpectrum (𝓞 F)) (hodd : ringChar (OddLocalResidue v) ≠ 2)
@@ -880,14 +865,13 @@ private theorem square_sum_eq_gauss {k : Type*} [Field k] [Fintype k]
         ((quadraticChar k y : ℂ) + 1) * ψ y := by
     trans (∑ _x ∈ Finset.univ with _x^2 = y, ψ y)
     · apply Finset.sum_congr rfl
-      intro x hx
-      rw [(Finset.mem_filter.mp hx).2]
-    · rw [Finset.sum_const, nsmul_eq_mul, count]
+      simp_all
+    simp_all
   simp_rw [inner, add_mul, one_mul]
   rw [Finset.sum_add_distrib, AddChar.sum_eq_zero_of_ne_one hψ, add_zero]
   rfl
 
-private theorem residue_neg_one (A : SArithmeticData F)
+theorem residue_neg_one (A : SArithmeticData F)
     (v : HeightOneSpectrum (𝓞 F)) : quadraticChar (OddLocalResidue v) (-1) = 1 := by
   let z : v.adicCompletion F := algebraMap F (v.adicCompletion F) (A.zeta12 ^ 3)
   have hz : z ^ 2 = -1 := weil_finite_minus_one_square F A v
@@ -933,8 +917,7 @@ theorem oddResidueEpsilon_sq (A : SArithmeticData F)
   have hsqrt : (Real.sqrt (Fintype.card (OddLocalResidue v)) : ℂ) ^ 2 =
       (Fintype.card (OddLocalResidue v) : ℂ) := by
     exact_mod_cast Real.sq_sqrt hcard.le
-  rw [hsqrt, div_self]
-  exact_mod_cast Fintype.card_ne_zero
+  simp_all
 
 theorem finiteWeilPhase_odd_hilbert_defect (A : SArithmeticData F)
     (v : HeightOneSpectrum (𝓞 F)) (hodd : ringChar (OddLocalResidue v) ≠ 2)
@@ -946,9 +929,3 @@ theorem finiteWeilPhase_odd_hilbert_defect (A : SArithmeticData F)
     exact A.finiteGamma_odd_evaluation v hodd π hπ c hc u n
   · intro π hπ c hc
     exact A.oddResidueEpsilon_sq v hodd π hπ c hc
-
-end DedekindZetaZeroFree.SArithmeticData
-
-end
-
-end

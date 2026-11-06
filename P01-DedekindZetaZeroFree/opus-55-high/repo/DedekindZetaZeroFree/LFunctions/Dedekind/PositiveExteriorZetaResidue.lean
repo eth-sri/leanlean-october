@@ -41,7 +41,7 @@ theorem principal_continuation_eq_dedekindZeta
       have hz (I : {I : Ideal (𝓞 F) // Ideal.absNorm I = 0}) :
           η I.val * (Ideal.absNorm I.val : ℂ) ^ (-s) = 0 := by
         have hI : I.val = ⊥ := Ideal.absNorm_eq_zero_iff.mp I.property
-        rw [hI, (η.eq_zero_iff' ⊥).mpr (Or.inl rfl), zero_mul]
+        simp_all
       simp [hz, LSeries.term]
     · have hterm (I : {I : Ideal (𝓞 F) // Ideal.absNorm I = n}) :
           η I.val * (Ideal.absNorm I.val : ℂ) ^ (-s) = (n : ℂ) ^ (-s) := by
@@ -75,7 +75,7 @@ theorem principal_regularization_at_one
   apply (NumberField.tendsto_sub_one_mul_dedekindZeta_nhdsGT F).congr'
   filter_upwards [self_mem_nhdsWithin] with x hx
   have hx' : 1 < (x : ℂ).re := by simpa using hx
-  rw [P.regularized _ (zero_lt_one.trans hx') (by intro h; rw [h] at hx'; norm_num at hx'),
+  rw [P.regularized _ (zero_lt_one.trans hx') (by intro h; simp_all),
     principal_continuation_eq_dedekindZeta F η hη P _ hx']
 
 theorem exterior_residue_pos
@@ -99,6 +99,3 @@ theorem exterior_regularization_at_one
   simp [exteriorRegularization, exteriorEulerFactor, exteriorResidue,
     principal_regularization_at_one F η hη P, Complex.cpow_neg,
     Complex.cpow_one, Complex.ofReal_prod]
-
-end
-end DedekindZetaZeroFree.PositiveZetaResidue

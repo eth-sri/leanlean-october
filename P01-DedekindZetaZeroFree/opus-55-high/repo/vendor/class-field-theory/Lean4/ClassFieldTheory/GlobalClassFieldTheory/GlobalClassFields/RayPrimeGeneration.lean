@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Frobenius generation of ray class groups
 
@@ -27,7 +23,6 @@ fractional ideals and the idelic-to-ideal ray-class equivalence.
 open scoped Classical NumberField
 open NumberField IsDedekindDomain
 
-noncomputable section
 
 namespace GlobalClassFieldTheory.GlobalClassFields
 
@@ -88,7 +83,3 @@ theorem rayClassGroup_hom_ext_finitePrime
   obtain ⟨I, rfl⟩ := QuotientGroup.mk'_surjective
     (RayClass.principalRayIdealSubgroup m) y
   exact DFunLike.congr_fun hcomp I
-
-end GlobalClassFieldTheory.GlobalClassFields
-
-end

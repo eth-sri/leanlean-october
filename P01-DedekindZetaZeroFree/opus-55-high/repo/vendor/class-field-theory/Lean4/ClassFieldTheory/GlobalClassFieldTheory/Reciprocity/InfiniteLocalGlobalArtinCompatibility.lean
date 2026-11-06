@@ -5,7 +5,8 @@ public import ClassFieldTheory.GlobalClassFieldTheory.Reciprocity.GlobalArtin
 public import ClassFieldTheory.GlobalClassFieldTheory.Reciprocity.OnePlaceNormKernel
 public import ClassFieldTheory.GlobalClassFieldTheory.Reciprocity.ComplexificationArtin.RationalComplexification
 public import ClassFieldTheory.GlobalClassFieldTheory.Reciprocity.ComplexificationArtin.InfinitePlaceOverfield
-public import ClassFieldTheory.GlobalClassFieldTheory.Reciprocity.ComplexificationArtin.NumberFieldComplexification
+public import ClassFieldTheory.AlgebraicNumberTheory.SeparableClosureEmbedding
+public import Mathlib.FieldTheory.Galois.Abelian
 public import ClassFieldTheory.GlobalClassFieldTheory.Reciprocity.ComplexificationArtin.RamifiedOverextension
 public import ClassFieldTheory.GlobalClassFieldTheory.Reciprocity.ComplexificationArtin.OverextensionArtin
 public import ClassFieldTheory.GlobalClassFieldTheory.Reciprocity.ComplexificationArtin.InfinitePlaceCompatibility
@@ -18,17 +19,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
-
-
-
-set_option autoImplicit false
 
 /-!
 # Archimedean local-global compatibility of Artin homomorphisms
@@ -43,7 +33,6 @@ open scoped NumberField
 open NumberField
 open IdeleGroup RelativeIdeleGroup
 
-noncomputable section
 
 namespace GlobalClassFieldTheory
 namespace Reciprocity
@@ -124,21 +113,6 @@ theorem globalNormResidueMonoidHom_infinitePlaceIdeleClass_eq_one_of_localArtin_
       ((chosenInfinitePlaceArtinMonoidHom_eq_one_iff_infiniteTensorNorm
         (K := K) (L := L) v x).1 hx)
 
-/-- The infinite tensor norm subgroup lies in the kernel of the global
-norm-residue homomorphism restricted to the one-place idele class map. -/
-theorem infiniteTensorNormSubgroup_le_globalNormResidueKernel
-    (v : InfinitePlace K) :
-    infiniteTensorNormSubgroup
-        (K := K) (L := L) v ≤
-      ((globalNormResidueMonoidHom K L).comp
-        (IdeleGroup.infinitePlaceIdeleClass v)).ker := by
-  intro x hx
-  exact
-    globalNormResidueMonoidHom_infinitePlaceIdeleClass_eq_one_of_localArtin_eq_one
-      (K := K) (L := L) v x
-      ((chosenInfinitePlaceArtinMonoidHom_eq_one_iff_infiniteTensorNorm
-        (K := K) (L := L) v x).2 hx)
-
 /-- A positive element at a real infinite place gives an actual
 idele-class norm. -/
 theorem infinitePlaceIdeleClass_mem_ideleClassNorm_range_of_real_pos
@@ -218,92 +192,12 @@ theorem globalNormResidueMonoidHom_comp_infinitePlaceIdeleClass_of_isComplex
     globalNormResidueMonoidHom_comp_infinitePlaceIdeleClass_of_unramified
       (K := K) (L := L) v
   apply InfinitePlace.isUnramified_iff.mpr
-  apply Or.inr
-  rw [chosenInfinitePlaceAbove_comap (L := L) v]
-  exact hvComplex
-
-/-- At an actually unramified infinite place, one-place idele-class
-norm membership is exactly local determinant-norm membership. -/
-theorem infinitePlaceIdeleClass_mem_ideleClassNorm_range_iff_of_unramified
-    (v : InfinitePlace K)
-    (hUnramified :
-      (chosenInfinitePlaceAbove (L := L) v).IsUnramified K)
-    (x : v.Completionˣ) :
-    IdeleGroup.infinitePlaceIdeleClass v x ∈
-        (_root_.ideleClassNorm K L).range ↔
-      x ∈ infiniteTensorNormSubgroup
-        (K := K) (L := L) v := by
-  rw [← globalNormResidueMonoidHom_eq_one_iff]
-  rw [←
-    chosenInfinitePlaceArtinMonoidHom_eq_one_iff_infiniteTensorNorm
-      (K := K) (L := L) v x]
-  have hcompat :
-      globalNormResidueMonoidHom K L
-          (IdeleGroup.infinitePlaceIdeleClass v x) =
-        chosenInfinitePlaceArtinMonoidHom
-          (K := K) (L := L) v x := by
-    simpa only [MonoidHom.comp_apply] using
-      DFunLike.congr_fun
-        (globalNormResidueMonoidHom_comp_infinitePlaceIdeleClass_of_unramified
-          (K := K) (L := L) v hUnramified) x
-  rw [hcompat]
-
-omit [FiniteDimensional K L] in
-/-- At an actually ramified real place, negative one is not a local
-determinant norm.  This is the concrete real/complex norm obstruction:
-every norm from the complex completion is positive. -/
-theorem neg_one_not_mem_infiniteTensorNormSubgroup_of_ramified
-    (v : InfinitePlace K)
-    (hRamified :
-      (chosenInfinitePlaceAbove (L := L) v).IsRamified K) :
-    (-1 : v.Completionˣ) ∉
-      infiniteTensorNormSubgroup
-        (K := K) (L := L) v := by
-  let w := chosenInfinitePlaceAbove (L := L) v
-  have hw :
-      w.comap (algebraMap K L) = v :=
-    chosenInfinitePlaceAbove_comap (L := L) v
-  let chosenInfinitePlaceLiesOver : w.1.LiesOver v.1 :=
-    ⟨congrArg (fun q : InfinitePlace K => q.1) hw⟩
-  rw [infiniteTensorNormSubgroup_eq_localNormSubgroup
-    (K := K) (L := L) v w hw]
-  rintro ⟨z, hz⟩
-  have hvReal : v.IsReal := by
-    exact hw ▸ hRamified.isReal
-  have hwComplex : w.IsComplex :=
-    hRamified.isComplex
-  have hpos :=
-    infinitePlace_normUnits_real_complex_pos
-      (K := K) (K' := L) v w hw
-      hvReal hwComplex z
-  have hneg : (0 : ℝ) < -1 := by
-    rw [hz] at hpos
-    simpa only [
-      InfinitePlace.Completion.ringEquivRealOfIsReal_apply,
-      Units.coe_neg_one, map_neg, map_one] using hpos
-  norm_num at hneg
-
-omit [FiniteDimensional K L] in
-/-- The actual chosen local Artin symbol of negative one is nontrivial
-at a ramified real place. -/
-theorem chosenInfinitePlaceArtinMonoidHom_neg_one_ne_one_of_ramified
-    (v : InfinitePlace K)
-    (hRamified :
-      (chosenInfinitePlaceAbove (L := L) v).IsRamified K) :
-    chosenInfinitePlaceArtinMonoidHom
-        (K := K) (L := L) v
-        (-1 : v.Completionˣ) ≠ 1 := by
-  intro htrivial
-  exact
-    neg_one_not_mem_infiniteTensorNormSubgroup_of_ramified
-      (K := K) (L := L) v hRamified
-      ((chosenInfinitePlaceArtinMonoidHom_eq_one_iff_infiniteTensorNorm
-        (K := K) (L := L) v (-1 : v.Completionˣ)).1 htrivial)
+  simp_all
 
 omit [NumberField K] in
 /-- Every unit at a real completion is positive either as given or
 after multiplication by negative one. -/
-private theorem realCompletionUnit_pos_or_neg_one_mul_pos
+theorem realCompletionUnit_pos_or_neg_one_mul_pos
     (v : InfinitePlace K)
     (hvReal : v.IsReal)
     (x : v.Completionˣ) :
@@ -320,12 +214,11 @@ private theorem realCompletionUnit_pos_or_neg_one_mul_pos
     InfinitePlace.Completion.ringEquivRealOfIsReal hvReal
   have hne :
       e (x : v.Completion) ≠ 0 :=
-    (map_ne_zero e).2 (Units.ne_zero x)
+    by simp
   rcases lt_or_gt_of_ne hne with hneg | hpos
   · right
     change 0 < e ((-1 : v.Completion) * (x : v.Completion))
-    rw [map_mul, map_neg, map_one]
-    simpa only [neg_one_mul] using neg_pos.mpr hneg
+    simp_all
   · exact Or.inl hpos
 
 /-- At a real place, the full archimedean local-global Artin square is
@@ -476,8 +369,3 @@ theorem infinitePlaceIdeleClass_mem_ideleClassNorm_range_iff
         (globalNormResidueMonoidHom_comp_infinitePlaceIdeleClass
           (K := K) (L := L) v) x
   rw [hcompat]
-
-end Reciprocity
-end GlobalClassFieldTheory
-
-end

@@ -45,14 +45,14 @@ theorem principalRayHeckeData_exists
         intro s hs
         exact mul_ne_zero (Complex.ne_zero_of_re_pos hs)
           (heckeCompletionFactor_ne_zero F 𝔪 hm s hs)
-      exact (hE_entire.differentiableOn.mono (Set.subset_univ _)).div hden hden_ne
+      fun_prop
     have hR' : DifferentiableOn ℂ R {s : ℂ | 0 < s.re ∧ s ≠ 1} :=
       hR_holo.mono (fun s hs => hs.1)
     have h1 : DifferentiableOn ℂ (fun s : ℂ => s - 1) {s : ℂ | 0 < s.re ∧ s ≠ 1} :=
       differentiableOn_id.sub_const 1
     have h1ne : ∀ s ∈ {s : ℂ | 0 < s.re ∧ s ≠ 1}, s - 1 ≠ 0 :=
       fun s hs => sub_ne_zero.mpr hs.2
-    exact hR'.div h1 h1ne
+    fun_prop
   ·
     have hden : DifferentiableOn ℂ (fun s : ℂ => s * heckeCompletionFactor F 𝔪 s)
         {s : ℂ | 0 < s.re} :=
@@ -62,16 +62,15 @@ theorem principalRayHeckeData_exists
       intro s hs
       exact mul_ne_zero (Complex.ne_zero_of_re_pos hs)
         (heckeCompletionFactor_ne_zero F 𝔪 hm s hs)
-    exact (hE_entire.differentiableOn.mono (Set.subset_univ _)).div hden hden_ne
+    fun_prop
   ·
     intro s hs
     have hs0 : 0 < s.re := zero_lt_one.trans hs
-    have hs1 : s ≠ 1 := by intro h; rw [h] at hs; norm_num at hs
+    have hs1 : s ≠ 1 := by intro h; simp_all
     have h := hasSum_div_heckeCompletionFactor F 𝔪 hm s hs0
       (fun I : Ideal (𝓞 F) => η I * (Ideal.absNorm I : ℂ) ^ (-s)) (Λ₀ s)
       (by simpa only [heckeCompletionFactor] using hseries s hs)
-    rw [hL_eq s hs0 hs1]
-    simpa using h
+    simp_all
   ·
     intro s hs hs1
     have hAne : heckeCompletionFactor F 𝔪 s ≠ 0 :=
@@ -97,7 +96,3 @@ def principalRayHeckeData
     (η : RayClassCharacter F 𝔪) (hprim : η.IsPrimitive) (hp : η.IsPrincipal) :
     PrincipalRayHeckeData F 𝔪 η :=
   Classical.choice (principalRayHeckeData_exists F hF 𝔪 hm η hprim hp)
-
-end
-
-end DedekindZetaZeroFree

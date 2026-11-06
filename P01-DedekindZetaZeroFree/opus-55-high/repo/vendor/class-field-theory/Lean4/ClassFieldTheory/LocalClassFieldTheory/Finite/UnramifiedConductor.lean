@@ -15,13 +15,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Conductors and unramified extensions
 
@@ -47,8 +40,8 @@ theorem normQuotientFiniteOfIsAbelianGalois
     [Field K] [ValuativeRel K] [TopologicalSpace K]
     [IsNonarchimedeanLocalField K]
     [Field L] [Algebra K L] [FiniteDimensional K L] [IsAbelianGalois K L] :
-    Finite (NormQuotient K L) := by
-  exact Finite.of_equiv Gal(L / K)
+    Finite (NormQuotient K L) := 
+  Finite.of_equiv Gal(L / K)
     ((Abelianization.equivOfComm (H := Gal(L / K))).trans
       (abelianizationEquivNormQuotient K L)).toEquiv
 
@@ -57,7 +50,7 @@ cyclic quotient of the normalized value group by the residue degree.
 
 This value-group comparison uses the separable norm-valuation formula for its
 residue degree; no unramifiedness assumption is made here. -/
-noncomputable def
+def
     chosenNormQuotientEquivZModResidueFinrank_of_fieldPrincipalUnits_zero_le
     (K L : Type)
     [Field K] [ValuativeRel K] [TopologicalSpace K]
@@ -163,7 +156,7 @@ theorem fieldPrincipalUnits_zero_le_normSubgroup_of_unramifiedValuation
   rintro x ⟨u, _hu, rfl⟩
   apply (mem_unramifiedNormSubgroup_iff K (Module.finrank K L) _).2
   rw [valuationMap_apply, v_integerUnitsToFieldUnits]
-  exact dvd_zero _
+  simp
 
 /-- An unramified finite abelian extension has conductor exponent zero. -/
 theorem localConductorExponent_eq_zero_of_unramifiedValuation
@@ -178,8 +171,8 @@ theorem localConductorExponent_eq_zero_of_unramifiedValuation
     [IsIntegralClosure 𝒪[L] 𝒪[K] L]
     [Module.Finite 𝒪[K] 𝒪[L]]
     [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L] :
-    localConductorExponent K L = 0 := by
-  exact (localConductorExponent_eq_zero_iff K L).2
+    localConductorExponent K L = 0 := 
+  (localConductorExponent_eq_zero_iff K L).2
     (fieldPrincipalUnits_zero_le_normSubgroup_of_unramifiedValuation K L)
 
 /-- An unramified finite abelian extension has conductor ideal `1`. -/
@@ -195,8 +188,8 @@ theorem localConductorIdeal_eq_one_of_unramifiedValuation
     [IsIntegralClosure 𝒪[L] 𝒪[K] L]
     [Module.Finite 𝒪[K] 𝒪[L]]
     [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L] :
-    localConductorIdeal K L = 1 := by
-  exact (localConductorIdeal_eq_one_iff_exponent_eq_zero K L).2
+    localConductorIdeal K L = 1 := 
+  (localConductorIdeal_eq_one_iff_exponent_eq_zero K L).2
     (localConductorExponent_eq_zero_of_unramifiedValuation K L)
 
 /-- A finite abelian extension whose conductor ideal is `1` is unramified.
@@ -279,16 +272,7 @@ theorem isFiniteUnramifiedValuationExtension_of_localConductorIdeal_eq_one
             (IsLocalRing.ResidueField.instModule
               (R := 𝒪[K])
               (S := 𝒪[L])) := by
-    calc
-      _ = Module.finrank K L := hdegreeNew
-      _ = @Module.finrank 𝓀[K] 𝓀[L] _ _
-          (IsLocalRing.ResidueField.instModule
-            (R := 𝒪[K])
-            (S := 𝒪[L])) := hDegreeEqResidue
-      _ = 1 * @Module.finrank 𝓀[K] 𝓀[L] _ _
-          (IsLocalRing.ResidueField.instModule
-            (R := 𝒪[K])
-            (S := 𝒪[L])) := (one_mul _).symm
+    simp_all
   exact ⟨Nat.eq_of_mul_eq_mul_right hfpos hcancel⟩
 
 /-- A finite abelian extension is unramified if and only if its conductor
@@ -331,27 +315,3 @@ theorem isUnramifiedValuedExtension_iff_localConductorExponent_eq_zero
   (isFiniteUnramifiedValuationExtension_iff_localConductorIdeal_eq_one
       K L).trans
     (localConductorIdeal_eq_one_iff_exponent_eq_zero K L)
-
-/-- Equivalently, a concrete finite abelian local extension is ramified
-exactly when its local conductor exponent is nonzero. -/
-theorem
-    not_isUnramifiedValuedExtension_iff_localConductorExponent_ne_zero
-    (K L : Type)
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field L] [ValuativeRel L] [TopologicalSpace L]
-    [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L] [IsAbelianGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K)
-      (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L]
-    [Module.Finite 𝒪[K] 𝒪[L]] :
-    ¬ IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L ↔
-      localConductorExponent K L ≠ 0 :=
-  not_congr
-    (isUnramifiedValuedExtension_iff_localConductorExponent_eq_zero
-      K L)
-
-end LocalClassFieldTheory
-
-end

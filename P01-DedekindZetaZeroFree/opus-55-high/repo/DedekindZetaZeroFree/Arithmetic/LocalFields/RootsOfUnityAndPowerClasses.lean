@@ -41,10 +41,7 @@ theorem finiteRootsEquiv_apply (A : SArithmeticData F) (v : HeightOneSpectrum (�
     (hn : IsLocalRootOrder n) (η : rootsOfUnity n F) :
     ((A.finiteRootsEquiv v n hn η : (v.adicCompletion F)ˣ) : v.adicCompletion F) =
       (algebraMap F (v.adicCompletion F)) ((η : Fˣ) : F) := by
-  haveI : NeZero n := ⟨by rcases hn with rfl | rfl | rfl <;> decide⟩
-  exact val_rootsOfUnityEquivOfPrimitiveRoots_apply_coe
-    (RingHom.injective (algebraMap F (v.adicCompletion F)))
-    ⟨_, (mem_primitiveRoots (NeZero.pos n)).2 (A.primitive_root n hn)⟩ η
+  rfl
 
 theorem neg_one_isPower (A : SArithmeticData F) (n : ℕ) (hn : IsLocalRootOrder n) :
     ∃ x : F, x ^ n = -1 := by
@@ -79,8 +76,7 @@ theorem infinite_unit_isPower (A : SArithmeticData F) (w : InfinitePlace F) (n :
     rw [hroot] at hzero
     exact Units.ne_zero u hzero
   refine ⟨Units.mk0 (e.symm y) hne, Units.ext ?_⟩
-  rw [Units.val_pow_eq_pow_val, Units.val_mk0]
-  exact hroot
+  simp_all
 
 theorem infinite_power_quotient_subsingleton (A : SArithmeticData F) (w : InfinitePlace F) (n : ℕ)
     (hn : IsLocalRootOrder n) :
@@ -99,7 +95,3 @@ theorem finite_natCast_ne_zero (A : SArithmeticData F) (v : HeightOneSpectrum (�
     RingHom.injective (algebraMap F (v.adicCompletion F)) (by
       rw [map_natCast, h, map_zero])
   exact Nat.cast_ne_zero.mpr hn0 h'
-
-end
-end SArithmeticData
-end DedekindZetaZeroFree

@@ -17,15 +17,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # The local class-field axiom for decomposition-group blocks
 
@@ -70,7 +61,7 @@ theorem tateNorm_compMulEquiv (e : H ≃* G) (a : A) :
   exact e.toEquiv.prod_comp fun g ↦ g • a
 
 /-- Transport of the fixed subgroup along an isomorphism of acting groups. -/
-noncomputable def fixedSubgroupCompMulEquiv (e : H ≃* G) :
+def fixedSubgroupCompMulEquiv (e : H ≃* G) :
     letI := MulDistribMulAction.compHom A e.toMonoidHom
     fixedSubgroup H A ≃* fixedSubgroup G A := by
   letI := MulDistribMulAction.compHom A e.toMonoidHom
@@ -85,7 +76,7 @@ noncomputable def fixedSubgroupCompMulEquiv (e : H ≃* G) :
       map_mul' := fun _ _ ↦ rfl }
 
 /-- Transport of the Tate norm kernel along an isomorphism of acting groups. -/
-noncomputable def normKernelCompMulEquiv (e : H ≃* G) :
+def normKernelCompMulEquiv (e : H ≃* G) :
     letI := MulDistribMulAction.compHom A e.toMonoidHom
     normKernelSubgroup H A ≃* normKernelSubgroup G A := by
   letI := MulDistribMulAction.compHom A e.toMonoidHom
@@ -104,7 +95,7 @@ noncomputable def normKernelCompMulEquiv (e : H ≃* G) :
 
 /-- Change of acting group for multiplicative degree-zero Herbrand
 cohomology. -/
-noncomputable def herbrandH0CompMulEquiv (e : H ≃* G) :
+def herbrandH0CompMulEquiv (e : H ≃* G) :
     letI := MulDistribMulAction.compHom A e.toMonoidHom
     HerbrandH0 H A ≃* HerbrandH0 G A := by
   letI := MulDistribMulAction.compHom A e.toMonoidHom
@@ -131,15 +122,11 @@ noncomputable def herbrandH0CompMulEquiv (e : H ≃* G) :
       rw [tateNorm_compMulEquiv e]
       exact ha)
     (fun x hx ↦ by
-      have hx1 : x = 1 := by
-        apply f.injective
-        simpa [f] using hx
-      rw [hx1]
-      exact N.one_mem)
+      simp_all)
 
 /-- Change of acting group for multiplicative degree-minus-one Herbrand
 cohomology. -/
-noncomputable def herbrandHMinusOneCompMulEquiv
+def herbrandHMinusOneCompMulEquiv
     (e : H ≃* G) (σ : H) :
     letI := MulDistribMulAction.compHom A e.toMonoidHom
     HerbrandHMinusOne H A σ ≃*
@@ -166,12 +153,4 @@ noncomputable def herbrandHMinusOneCompMulEquiv
       refine ⟨a, ?_⟩
       exact ha)
     (fun x hx ↦ by
-      have hx1 : x = 1 := by
-        apply f.injective
-        simpa [f] using hx
-      rw [hx1]
-      exact N.one_mem)
-
-end LocalClassFieldTheory
-
-end
+      simp_all)

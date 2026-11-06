@@ -11,7 +11,7 @@ open IsDedekindDomain
 
 namespace DedekindZetaZeroFree.LargeSieve
 
-private lemma invs {F : Type} [Field F] [NumberField F]
+lemma invs {F : Type} [Field F] [NumberField F]
     {f : Ideal (𝓞 F)} {η : DedekindZetaZeroFree.RayClassCharacter F f}
     (d : QuadraticRayExtensionData η) (p : HeightOneSpectrum (𝓞 F))
     (Q : HeightOneSpectrum (𝓞 d.extension)) (hQ : Q.asIdeal.LiesOver p.asIdeal) :
@@ -74,7 +74,7 @@ private lemma constant_local {F : Type} [Field F] [NumberField F]
   letI := Fintype.ofFinite {Q : HeightOneSpectrum (𝓞 d.extension) // Q.asIdeal.LiesOver p.asIdeal}
   rw [tprod_fintype, Finset.prod_const, Finset.card_univ, ← Nat.card_eq_fintype_card,
     fiber_card, hg]
-private lemma unramified_cases {F : Type} [Field F] [NumberField F]
+lemma unramified_cases {F : Type} [Field F] [NumberField F]
     {f : Ideal (𝓞 F)} {η : DedekindZetaZeroFree.RayClassCharacter F f}
     (d : QuadraticRayExtensionData η) (p : HeightOneSpectrum (𝓞 F))
     (hgood : p.asIdeal ⊔ f = ⊤)
@@ -101,28 +101,24 @@ private lemma unramified_cases {F : Type} [Field F] [NumberField F]
       apply d.character_injective
       rw [map_one]
       exact Units.ext h
-    · intro h
-      rw [h, map_one]
-      rfl
+    simp_all
   rcases sq_eq_one_iff.mp hs with h1 | hm
   · left
     have hi : Q.asIdeal.inertiaDeg (𝓞 F) = 1 := by
-      rw [← hord, hone.mp h1, orderOf_one]
-    rw [hi, mul_one] at hefg
-    exact ⟨h1, hi, hefg⟩
+      simp_all
+    simp_all
   · right
     have hi : Q.asIdeal.inertiaDeg (𝓞 F) = 2 := by
       rw [← hord]
       apply orderOf_eq_prime
       · apply d.character_injective
-        rw [map_pow, d.character_square, map_one]
+        simp_all
       · intro h
         have hh := hone.mpr h
         rw [hm] at hh
         norm_num at hh
-    rw [hi] at hefg
-    exact ⟨hm, hi, by omega⟩
-private lemma ramified_cases {F : Type} [Field F] [NumberField F]
+    simp_all
+lemma ramified_cases {F : Type} [Field F] [NumberField F]
     {f : Ideal (𝓞 F)} {η : DedekindZetaZeroFree.RayClassCharacter F f}
     (d : QuadraticRayExtensionData η) (p : HeightOneSpectrum (𝓞 F))
     (Q : HeightOneSpectrum (𝓞 d.extension)) (hQ : Q.asIdeal.LiesOver p.asIdeal)
@@ -133,12 +129,11 @@ private lemma ramified_cases {F : Type} [Field F] [NumberField F]
   have hefg := invs d p Q hQ
   have hepos := Q.asIdeal.ramificationIdx_pos (𝓞 F)
   have hfpos := Q.asIdeal.inertiaDeg_pos (𝓞 F)
-  have he1 : Q.asIdeal.ramificationIdx (𝓞 F) ≠ 1 := by
-    exact fun h => hunr (Ideal.ramificationIdx_eq_one_iff.mp h)
+  have he1 : Q.asIdeal.ramificationIdx (𝓞 F) ≠ 1 := 
+    fun h => hunr (Ideal.ramificationIdx_eq_one_iff.mp h)
   have hgb : (p.asIdeal.primesOver (𝓞 d.extension)).ncard ≠ 0 := by
     intro h
-    rw [h, zero_mul] at hefg
-    omega
+    simp_all
   have he2 : 2 ≤ Q.asIdeal.ramificationIdx (𝓞 F) := by omega
   have heupper : (p.asIdeal.primesOver (𝓞 d.extension)).ncard *
       (2 * Q.asIdeal.inertiaDeg (𝓞 F)) ≤ 2 := by
@@ -152,7 +147,7 @@ private lemma ramified_cases {F : Type} [Field F] [NumberField F]
       _ ≤ 2 := heupper
   have hi : Q.asIdeal.inertiaDeg (𝓞 F) = 1 := by omega
   rw [hi, mul_one] at heupper
-  exact ⟨hi, by omega⟩
+  omega
 
 theorem quadratic_local_euler_factors
     (F : Type) [Field F] [NumberField F]
@@ -192,7 +187,4 @@ theorem quadratic_local_euler_factors
     have hη : η p.asIdeal = 0 :=
       (η.eq_zero_iff' p.asIdeal).mpr (Or.inr hgood)
     rw [constant_local d p Q hQ s 1 1 hi hg, hη]
-    change (1 - x ^ 1)⁻¹ ^ 1 = (1 - x)⁻¹ * (1 - 0 * x)⁻¹
     simp
-
-end DedekindZetaZeroFree.LargeSieve

@@ -8,8 +8,8 @@ namespace DedekindZetaZeroFree.AbelianQuotient
 
 theorem dualEvaluation_orderOf_pos
     {G : Type*} [CommGroup G] [Finite G] (g : G) :
-    0 < orderOf g := by
-  exact orderOf_pos g
+    0 < orderOf g := 
+  orderOf_pos g
 
 theorem dualEvaluation_pow_orderOf
     {G : Type*} [CommGroup G] [Finite G] (g : G) (ρ : ComplexDual G) :
@@ -33,8 +33,8 @@ theorem dualEvaluationFibers
   let φ : H →* ℂˣ := monoidHomOfForallMemZpowers hx horder
   have hφ : φ x = ζ := monoidHomOfForallMemZpowers_apply_gen hx horder
   obtain ⟨ρ₀, hρ₀⟩ := MonoidHom.domRestrict_surjective (M := ℂ) H φ
-  have hvalue : ρ₀ g = ζ := by
-    exact (DFunLike.congr_fun hρ₀ x).trans hφ
+  have hvalue : ρ₀ g = ζ := 
+    (DFunLike.congr_fun hρ₀ x).trans hφ
   let ev : ComplexDual G →* ℂˣ :=
     { toFun := fun ρ => ρ g
       map_one' := rfl
@@ -50,5 +50,3 @@ theorem dualEvaluationFibers
   rw [hfiber, hker, CommGroup.card_domRestrictHom_ker (M := ℂ)]
   rw [H.card_eq_card_quotient_mul_card_subgroup, Nat.card_zpowers]
   exact (Nat.mul_div_cancel _ (dualEvaluation_orderOf_pos g)).symm
-
-end DedekindZetaZeroFree.AbelianQuotient

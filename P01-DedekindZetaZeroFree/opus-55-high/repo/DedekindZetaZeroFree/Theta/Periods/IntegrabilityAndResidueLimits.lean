@@ -110,14 +110,6 @@ theorem translateSpan_period_integrable (T : Realization R Q) {f : Functions R}
   exact ((translateSpan_orbit_continuous T hf g).mul trace_weight_continuous).integrable_of_hasCompactSupport
     (HasCompactSupport.of_compactSpace _)
 
-def orbit (T : Realization R Q) (g : Group R) :
-    translateSpan T →ₗ[ℂ] C(KPAdditiveQuotient F, ℂ) where
-  toFun f := ⟨fun q => f.val
-    (KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12 (Quotient.out q) * g),
-    translateSpan_orbit_continuous T f.property g⟩
-  map_add' := by intros; rfl
-  map_smul' := by intros; rfl
-
 def period (T : Realization R Q) (g : Group R) : translateSpan T →ₗ[ℂ] ℂ where
   toFun f := MomentSources.fourier R Q.dq f.val g
   map_add' f h := by

@@ -45,25 +45,21 @@ def scaledIntegralRows (A : SArithmeticData F) (T : ℝ) (K : Set A.G) : Set A.R
   {m | ∃ k ∈ K, sLocalDiagonal F A.Sf (m : F) =
     asLocalPoint A (radialSection A T * k)}
 
-private theorem localPoint_mul (A : SArithmeticData F) (x y : A.G) :
+theorem localPoint_mul (A : SArithmeticData F) (x y : A.G) :
     asLocalPoint A (x * y) = asLocalPoint A x * asLocalPoint A y := by
   ext <;> rfl
 
-private theorem localPoint_continuous (A : SArithmeticData F) :
+theorem localPoint_continuous (A : SArithmeticData F) :
     Continuous (asLocalPoint A) := by
   unfold asLocalPoint SArithmeticData.localToAdditive
-  apply Continuous.prodMk
-  · exact continuous_pi (fun w => Units.continuous_val.comp
-      ((continuous_apply w).comp continuous_fst))
-  · exact continuous_pi (fun v => Units.continuous_val.comp
-      ((continuous_apply v).comp continuous_snd))
+  fun_prop
 
-private theorem localPoint_embedding (A : SArithmeticData F) :
+theorem localPoint_embedding (A : SArithmeticData F) :
     Topology.IsEmbedding (asLocalPoint A) :=
   (Topology.IsEmbedding.piMap (fun _ => Units.isEmbedding_val₀)).prodMap
     (Topology.IsEmbedding.piMap (fun _ => Units.isEmbedding_val₀))
 
-private theorem radial_continuousOn (A : SArithmeticData F) (L : Set ℝ)
+theorem radial_continuousOn (A : SArithmeticData F) (L : Set ℝ)
     (hL : L ⊆ Set.Ioi 0) : ContinuousOn (radialSection A) L := by
   rw [continuousOn_iff_continuous_restrict]
   have hc := A.continuous_radialSection.comp
@@ -98,23 +94,17 @@ theorem common_finite_row_support (A : SArithmeticData F)
       refine ⟨(ProbeSheet.localUnits A).symm u, ?_, ?_⟩
       · change asLocalPoint A ((ProbeSheet.localUnits A).symm u) ∈ tsupport W0
         have hu : asLocalPoint A ((ProbeSheet.localUnits A).symm u) = x := by
-          change (((ProbeSheet.localUnits A) ((ProbeSheet.localUnits A).symm u) :
-            (SLocalProduct F A.Sf)ˣ) : SLocalProduct F A.Sf) = x
-          rw [MulEquiv.apply_symm_apply]
-          exact (hUnits hx).unit_spec
+          rfl
         exact hu ▸ hx
-      · change (((ProbeSheet.localUnits A) ((ProbeSheet.localUnits A).symm u) :
-          (SLocalProduct F A.Sf)ˣ) : SLocalProduct F A.Sf) = x
-        rw [MulEquiv.apply_symm_apply]
-        exact (hUnits hx).unit_spec
+      rfl
   have hC : IsCompact C := (localPoint_embedding A).isCompact_iff.mpr
     (hCimage ▸ hW0.isCompact)
   let K : Set A.G := (Set.range fun p : (closure Ω) × L × C =>
     (p.1.val : A.G) * radialSection A p.2.1.val * p.2.2.val)
   have hK : IsCompact K := by
     have hc : Continuous (fun p : (closure Ω) × L × C =>
-        (p.1.val : A.G) * radialSection A p.2.1.val * p.2.2.val) := by
-      exact ((continuous_subtype_val.comp (continuous_subtype_val.comp continuous_fst)).mul
+        (p.1.val : A.G) * radialSection A p.2.1.val * p.2.2.val) := 
+      ((continuous_subtype_val.comp (continuous_subtype_val.comp continuous_fst)).mul
         ((continuousOn_iff_continuous_restrict.mp (radial_continuousOn A L hLpos)).comp
           (continuous_fst.comp continuous_snd))).mul
         (continuous_subtype_val.comp (continuous_snd.comp continuous_snd))
@@ -147,10 +137,7 @@ theorem common_finite_row_support (A : SArithmeticData F)
   let u := (hUnits hx).unit
   let c := (ProbeSheet.localUnits A).symm u
   have hc : asLocalPoint A c = x := by
-    change (((ProbeSheet.localUnits A) ((ProbeSheet.localUnits A).symm u) :
-      (SLocalProduct F A.Sf)ˣ) : SLocalProduct F A.Sf) = x
-    rw [MulEquiv.apply_symm_apply]
-    exact (hUnits hx).unit_spec
+    rfl
   have hcC : c ∈ C := by
     change asLocalPoint A c ∈ tsupport W0
     rw [hc]
@@ -190,13 +177,11 @@ theorem original_zero_row (A : SArithmeticData F)
     have hu := hUnits (subset_tsupport W0 (show (0 : SLocalProduct F A.Sf) ∈
       Function.support W0 from h))
     exact not_isUnit_zero hu
-  have hd : sLocalDiagonal F A.Sf (0 : F) = 0 := by
-    ext <;> simp [sLocalDiagonal]
-  rw [hd, zero_mul, hz]
+  simp_all
 
 set_option maxHeartbeats 800000
 
-private theorem annular_weight_continuous (A : SArithmeticData F)
+theorem annular_weight_continuous (A : SArithmeticData F)
     (W : SLocalProduct F A.Sf → ℂ)
     (hW : ProbeWeight.IsAnnularTensor F A.Sf W) : Continuous W := by
   obtain ⟨fr, fc, ff, hr, hc, hf, heq⟩ := hW
@@ -225,7 +210,7 @@ private theorem annular_weight_continuous (A : SArithmeticData F)
     intro v hv
     exact (hf v).1.continuous.comp ((continuous_apply v).comp continuous_snd)
 
-private theorem residue_character_norm_le_one {R : Type*} [CommRing R] [Fintype R]
+theorem residue_character_norm_le_one {R : Type*} [CommRing R] [Fintype R]
     (χ : MulChar R ℂ) (r : R) : ‖χ r‖ ≤ 1 := by
   by_cases hr : IsUnit r
   · obtain ⟨u, rfl⟩ := hr
@@ -402,7 +387,7 @@ theorem principal_integrated_absolutely_convergent (A : SArithmeticData F)
       simp [f, expandedProbeSummand]
     · let C : ℝ := ‖(Y⁻¹ : ℂ) * (P.W1 (A.exteriorNorm s / Y) : ℂ) *
           (Real.sqrt (A.exteriorNorm s * X) : ℂ)⁻¹ * gaussRow A P.coefficients s m‖ * B
-      have hC : 0 ≤ C := mul_nonneg (norm_nonneg _) hBpos
+      have hC : 0 ≤ C := by positivity
       have hd : ∀ i, f s m i ≤ ENNReal.ofReal
           (C * ‖ThetaReflectionData.forwardSummand A P.coefficients ⟨m, hm⟩ Z i.1 i.2‖) *
             P.domain.measure P.domain.domain := by
@@ -422,8 +407,8 @@ theorem principal_integrated_absolutely_convergent (A : SArithmeticData F)
       calc
         (∑' i, f s m i) ≤ ∑' i : ExteriorSquarefreeIdeal A.cS × A.Exterior, ENNReal.ofReal
             (C * ‖ThetaReflectionData.forwardSummand A P.coefficients ⟨m, hm⟩ Z i.1 i.2‖) *
-              P.domain.measure P.domain.domain := by
-                exact ENNReal.tsum_le_tsum (f := fun i => f s m i) hd
+              P.domain.measure P.domain.domain := 
+                ENNReal.tsum_le_tsum (f := fun i => f s m i) hd
         _ = (∑' i : ExteriorSquarefreeIdeal A.cS × A.Exterior, ENNReal.ofReal
             (C * ‖ThetaReflectionData.forwardSummand A P.coefficients ⟨m, hm⟩ Z i.1 i.2‖)) *
               P.domain.measure P.domain.domain := ENNReal.tsum_mul_right
@@ -483,11 +468,7 @@ theorem principal_expansion_valid (A : SArithmeticData F)
     intro s m
     have hc : Continuous (asLocalPoint A) := by
       unfold asLocalPoint SArithmeticData.localToAdditive
-      apply Continuous.prodMk
-      · exact continuous_pi (fun w => Units.continuous_val.comp
-          ((continuous_apply w).comp continuous_fst))
-      · exact continuous_pi (fun v => Units.continuous_val.comp
-          ((continuous_apply v).comp continuous_snd))
+      fun_prop
     exact (ProbeLogWeight.continuous_weight A P.W0 P.annular).comp
       (continuous_const.mul (hc.comp ((continuous_subtype_val.mul continuous_const).inv)))
   have hc : ∀ j, Continuous (f j) := by
@@ -496,7 +477,7 @@ theorem principal_expansion_valid (A : SArithmeticData F)
     unfold expandedProbeSummand
     split
     · exact continuous_const
-    · exact (continuous_const.mul (hw j.1 j.2.1)).mul continuous_const
+    fun_prop
   have hi : ∀ j, IntegrableOn (f j) P.domain.domain P.domain.measure := fun j =>
     ((hc j).continuousOn.integrableOn_compact P.domain.relativelyCompact).mono_set
       subset_closure
@@ -528,9 +509,3 @@ theorem principal_expansion_valid (A : SArithmeticData F)
   apply integral_tsum (fun j => (hi j).aestronglyMeasurable)
   simpa only [f, ofReal_norm_eq_enorm] using
     (principal_integrated_absolutely_convergent A σ η hS P X Y Z hX hY hZ).ne
-
-end
-end NormalizedProbe
-end DedekindZetaZeroFree
-
-end

@@ -61,7 +61,3 @@ def lowShell : Set (LocalField F q) := (valuation (LocalField F q)).integer
 
 def conductorOneShell (π : (LocalField F q)ˣ) : Set (LocalField F q) :=
   expandingBall F q π 1 \ lowShell F q
-
-end DedekindZetaZeroFree.KPTameTransposeKernelUnfoldingRaw
-
-end

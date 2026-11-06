@@ -77,7 +77,7 @@ lemma closedDiscSup_lowerSemicontinuous {E : Type*} [TopologicalSpace E]
     rw [iSup]
     congr 1
     ext r
-    simp [Set.mem_range]
+    simp
   rw [he]
   apply lowerSemicontinuous_ciSup
   · intro f
@@ -85,5 +85,3 @@ lemma closedDiscSup_lowerSemicontinuous {E : Type*} [TopologicalSpace E]
     exact hb.mono (by rintro r ⟨x, rfl⟩; exact ⟨x, x.property, rfl⟩)
   · intro x
     exact (hF x).lowerSemicontinuous
-
-end DedekindZetaZeroFree.KPCplxPrincipalSeriesEvaluationContinuity

@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Coprime tensor-product base change of a Galois extension
 
@@ -87,7 +82,7 @@ def tensorBaseChangeAut
       (AlgEquiv.refl : M ≃ₐ[K] M) σ).toRingEquiv with
     commutes' := by
       intro m
-      simp [Algebra.TensorProduct.algebraMap_apply] }
+      simp }
 
 omit hKM hKL hGalois in
 @[simp]
@@ -130,8 +125,8 @@ theorem tensorProduct_isGalois_of_finrank_coprime
   let : Field N :=
     (tensorProduct_isField_of_finrank_coprime
       K M L hcoprime).toField
-  have hfinite : FiniteDimensional M N := by
-    exact Module.Finite.of_restrictScalars_finite K M N
+  have hfinite : FiniteDimensional M N := 
+    Module.Finite.of_restrictScalars_finite K M N
   let : FiniteDimensional M N := hfinite
   have hlow :
       Nat.card (L ≃ₐ[K] L) ≤
@@ -140,8 +135,8 @@ theorem tensorProduct_isGalois_of_finrank_coprime
       (tensorBaseChangeAut K M L)
       (tensorBaseChangeAut_injective K M L)
   have hdim :
-      Module.finrank M N = Module.finrank K L := by
-    exact Module.finrank_baseChange
+      Module.finrank M N = Module.finrank K L := 
+    Module.finrank_baseChange
   have hlow' :
       Module.finrank M N ≤
         Nat.card (N ≃ₐ[M] N) := by
@@ -155,7 +150,3 @@ theorem tensorProduct_isGalois_of_finrank_coprime
   exact
     IsGalois.of_card_aut_eq_finrank M N
       (Nat.le_antisymm hupp hlow')
-
-end TensorAutomorphisms
-
-end

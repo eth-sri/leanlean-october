@@ -142,8 +142,8 @@ def gamma1Hom (A : SArithmeticData F) : ProbeOrbitNormSum.Gamma A →* A.Gamma1 
     obtain ⟨u, hu⟩ := γ.property
     exact Subgroup.mem_map.mpr ⟨γ.val.val, Subgroup.mem_map.mpr
       ⟨u.val, u.property, congrArg Subtype.val hu⟩, rfl⟩⟩
-  map_one' := by apply Subtype.ext; apply Subtype.ext; exact map_one _
-  map_mul' x y := by apply Subtype.ext; apply Subtype.ext; exact map_mul _ _ _
+  map_one' := by rfl
+  map_mul' x y := by simp
 
 def gamma1Equiv (A : SArithmeticData F) : ProbeOrbitNormSum.Gamma A ≃* A.Gamma1 :=
   MulEquiv.ofBijective (gamma1Hom A) (by
@@ -162,7 +162,7 @@ def gamma1Equiv (A : SArithmeticData F) : ProbeOrbitNormSum.Gamma A ≃* A.Gamma
       apply Subtype.ext
       apply Subtype.ext
       change A.diagonal (u ^ 6) = γ.val.val
-      exact (congrArg A.diagonal huv).trans heq)
+      simp_all)
 
 theorem orbit_regrouping {H G N O B : Type*}
     [MeasurableSpace H] [Group G] [MulAction G H] [MulAction G N]
@@ -363,9 +363,7 @@ theorem gaussianMomentTerm_eq_doubleMomentSummand (A : SArithmeticData F)
     (σ Z : ℝ) :
     gaussianMomentTerm A σ Z =
       NormalizedProbe.gaussianDoubleMomentSummand A σ Z := by
-  funext p
-  simp only [gaussianMomentTerm, NormalizedProbe.gaussianDoubleMomentSummand,
-    modulusNorm, Real.rpow_eq_pow]
+  rfl
 
 theorem summable_gaussianMomentTerm (A : SArithmeticData F) (σ Z : ℝ)
     (hZ : 0 < Z) : Summable (gaussianMomentTerm A σ Z) := by
@@ -380,9 +378,7 @@ theorem summable_outerMoment (A : SArithmeticData F) (W1 : ProbeRealAnnularWeigh
     NormalizedProbe.exterior_weight_finite A W1 Y hY
   refine summable_of_hasFiniteSupport (hfin.subset ?_)
   intro s hs
-  simp only [Function.mem_support] at hs ⊢
-  intro hW
-  exact hs (by rw [hW, abs_zero, zero_mul])
+  simp_all
 
 theorem absoluteMass_of_joint_norm_summability (A : SArithmeticData F) (ι : F →+* ℂ)
     (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
@@ -409,13 +405,13 @@ theorem absoluteMass_of_joint_norm_summability (A : SArithmeticData F) (ι : F �
   · rw [heq]
     have hnonneg (i : Index A) : 0 ≤ (∫ t in P.domain.domain,
         ‖kernel A ι η hS P X Y Z i t‖ ∂P.domain.measure) :=
-      integral_nonneg (fun _ => norm_nonneg _)
+      by positivity
     exact (ENNReal.ofReal_tsum_of_nonneg hnonneg hs).symm
 
 theorem q_generator (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
     (s : A.Exterior) :
-    ProbeSheetTranslation.q A (D.generator s) (D.generates s).1 = A.exteriorNorm s := by
-  exact A.generator_norm s (D.generator s) (D.generates s)
+    ProbeSheetTranslation.q A (D.generator s) (D.generates s).1 = A.exteriorNorm s := 
+  A.generator_norm s (D.generator s) (D.generates s)
     (ProbeSheetTranslation.fieldUnit A (D.generator s) (D.generates s).1) rfl
 
 theorem frequency_eq_fractionPoint (A : SArithmeticData F)
@@ -470,12 +466,12 @@ theorem kernel_integrable (A : SArithmeticData F) (ι : F →+* ℂ)
   unfold kernel
   exact (heq ▸ hi).const_mul _
 
-private theorem norm_mul_raw (A : SArithmeticData F) (x y : A.G) :
+theorem norm_mul_raw (A : SArithmeticData F) (x y : A.G) :
     A.norm (x * y) = A.norm x * A.norm y := by
   simp only [SArithmeticData.norm, Prod.fst_mul, Prod.snd_mul, Pi.mul_apply,
     Units.val_mul, _root_.norm_mul, mul_pow, Finset.prod_mul_distrib]
   ring
-private theorem norm_pow_raw (A : SArithmeticData F) (x : A.G) (k : ℕ) :
+theorem norm_pow_raw (A : SArithmeticData F) (x : A.G) (k : ℕ) :
     A.norm (x ^ k) = A.norm x ^ k := by
   induction k with
   | zero => simp [SArithmeticData.norm]
@@ -515,12 +511,12 @@ theorem finiteCoefficient_norm_le (A : SArithmeticData F) (ι : F →+* ℂ)
     exact q_forwardModulus A D c n
   have hp (x : F) : ‖D.additiveCharacter x‖ = 1 := by
     rw [P.sameTrace]
-    simp [ProbeAdditive.phase, ProbeAdditive.archPhase, norm_mul, norm_prod, Complex.norm_exp]
+    simp [ProbeAdditive.phase, ProbeAdditive.archPhase, norm_prod, Complex.norm_exp]
   exact (FiniteTransform.finiteCoefficient_norm_le A.R.toSubring (D.generator s) a h
     (D.character (D.generator s)) (D.character a) D.additiveCharacter hp).trans_eq
     (congrArg₂ (fun x y : ℝ => x * y) hsN haN)
 
-private theorem numeric_mass_bound (C X Y qc qn qs qh σ w g a : ℝ)
+theorem numeric_mass_bound (C X Y qc qn qs qh σ w g a : ℝ)
     (hC : 0 ≤ C) (hX : 0 < X) (hY : 0 < Y) (hc : 0 < qc) (hn : 0 < qn)
     (hs : 0 ≤ qs) (hh : 0 < qh) (hw : 0 ≤ w) (hg : 0 ≤ g) (ha : 0 ≤ a)
     (b d : ℝ) (hb : b ≤ qs * (qc * qn ^ 3))
@@ -593,11 +589,7 @@ theorem integrated_orbit_mass_bound (A : SArithmeticData F) (ι : F →+* ℂ)
       (∫ t, ‖ProbeSheetTranslation.translatedFourier A P.finiteTrace P.additiveMeasure P.W0
         (ProbeSheetTranslation.fractionPoint A X hX (D.generator s) a h.val
           (D.generates s).1 ha h.property) t‖ ∂P.domain.measure) := by
-    simp only [kernel, norm_mul, lambda, norm_div, Complex.norm_real, Real.norm_eq_abs,
-      abs_inv, abs_of_pos hY, abs_of_nonneg (Real.sqrt_nonneg _),
-      abs_of_pos (A.exteriorNorm_pos n), abs_of_pos (mul_pos (A.exteriorNorm_pos c.val)
-        (pow_pos (A.exteriorNorm_pos n) _)), abs_div,
-      htranslate, modulusNorm]
+    simp only [kernel, norm_mul, lambda, norm_div, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (Real.sqrt_nonneg _), abs_of_pos (A.exteriorNorm_pos n), modulusNorm]
     rw [integral_const_mul]
     simp only [norm_inv, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hY,
       abs_of_pos (A.exteriorNorm_pos c.val), abs_of_pos (pow_pos (A.exteriorNorm_pos n) 3)]
@@ -753,9 +745,9 @@ theorem kernel_gamma_translate (A : SArithmeticData F) (ι : F →+* ℂ)
   exact ProbeJointNormMassTransfer.finiteCoefficient_gamma_invariant
     A ι η hS P c n s h.val γ
 
-private theorem gaussian_nonneg (x : ℝ) : 0 ≤ thetaReflectionGaussian x := by
+theorem gaussian_nonneg (x : ℝ) : 0 ≤ thetaReflectionGaussian x := by
   unfold thetaReflectionGaussian
-  split_ifs <;> positivity
+  positivity
 
 theorem rowMass_le_gaussianMomentTerm (A : SArithmeticData F) (ι : F →+* ℂ)
     (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
@@ -816,7 +808,7 @@ theorem orbit_mass_same_gaussian_majorant (A : SArithmeticData F) (ι : F →+* 
     Real.rpow_nonneg (ProbeOrbitNormSum.orbitNorm_pos A o).le _
   have hgn (x : ℝ) : 0 ≤ thetaReflectionGaussian x := by
     unfold thetaReflectionGaussian
-    split_ifs <;> positivity
+    positivity
   have hr0 (p : ExteriorSquarefreeIdeal A.cS × A.Exterior) :
       0 ≤ gaussianMomentTerm A σ Z p := by
     unfold gaussianMomentTerm
@@ -1011,7 +1003,3 @@ theorem exchanges_and_orbit_convergence (A : SArithmeticData F) (ι : F →+* �
     (fun s c n h γ t => kernel_gamma_translate A ι η hS P X Y Z s c n h γ t)
     hi hs
   exact ⟨hr.1, hr.2.1, heq.trans hr.2.2⟩
-
-end
-end ProbeJointAbsoluteMass
-end DedekindZetaZeroFree

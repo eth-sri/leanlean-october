@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.Normaliz
 
 @[expose] public section
 
-noncomputable section
 set_option backward.isDefEq.respectTransparency false
 open scoped NumberField Classical
 open NumberField IsDedekindDomain
@@ -46,7 +45,3 @@ theorem complexLocal_borel_compact (w : InfinitePlace F)
     simp only [mul_one, KPLocalChartTopology.complex_sigmaTwo_eq_one]
     cases g
     congr 1
-
-end DedekindZetaZeroFree.PrincipalOfKP
-
-end

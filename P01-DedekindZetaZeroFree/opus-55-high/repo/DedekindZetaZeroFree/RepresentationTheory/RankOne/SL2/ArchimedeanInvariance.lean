@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.RepresentationTheory.RankOne.ComplexRootGener
 
 @[expose] public section
 
-noncomputable section
 open scoped Classical MatrixGroups NumberField
 open NumberField
 namespace DedekindZetaZeroFree.FourierContinuation.ResidualArchSL2

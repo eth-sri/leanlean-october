@@ -48,7 +48,7 @@ private lemma numerator_diff {F : Type} [Field F] [NumberField F]
   exact (((h1.mul h2).mul (Complex.differentiable_Gammaℂ_inv.pow _)).mul hQ).mul
     data.E_differentiable
 
-private lemma numerator_zero {F : Type} [Field F] [NumberField F]
+lemma numerator_zero {F : Type} [Field F] [NumberField F]
     (hF : NumberField.IsTotallyComplex F) (data : PrincipalHeckeData F)
     (h : ℝ → ℂ) (Q : ℂ → ℂ) (hQ0 : Q 0 = h 0 / 2) (X : ℝ) :
     principalNumerator data Q X 0 / ((0 : ℂ) - 1) =
@@ -61,13 +61,13 @@ private lemma numerator_zero {F : Type} [Field F] [NumberField F]
     simp [principalNumerator, principalMellinResidueZero, hr1,
       Complex.Gammaℂ_def, Complex.Gamma_zero, zero_pow hp]
 
-private lemma numerator_one {F : Type} [Field F] [NumberField F]
+lemma numerator_one {F : Type} [Field F] [NumberField F]
     (hF : NumberField.IsTotallyComplex F) (data : PrincipalHeckeData F)
     (Q : ℂ → ℂ) (X : ℝ) :
     principalNumerator data Q X 1 / (1 : ℂ) = principalMellinResidueOne data Q X := by
   have hr := principalComplexPlaces_pos F hF
   have hD := principalDiscriminant_pos F
-  have hG : Complex.Gammaℂ 1 ≠ 0 := by simp [Real.pi_ne_zero]
+  have hG : Complex.Gammaℂ 1 ≠ 0 := by simp
   have hS : (Real.sqrt (principalDiscriminant F) : ℂ) ≠ 0 :=
     Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hD).ne'
   have hpow : (principalDiscriminant F : ℂ) ^ (-(1 : ℂ) / 2) =
@@ -125,7 +125,3 @@ theorem principalMellinIntegrand_residue_one
   change principalNumerator data Q X s / s =
     (s - 1) * (principalNumerator data Q X s / (s * (s - 1)))
   field_simp
-
-end DedekindZetaZeroFree.LargeSieve
-
-end

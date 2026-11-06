@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Complete infinite-place Kummer root-character comparison
 -/
@@ -21,7 +18,6 @@ set_option autoImplicit false
 open scoped Classical NumberField
 open NumberField
 
-noncomputable section
 
 namespace GlobalClassFieldTheory
 namespace Reciprocity
@@ -61,7 +57,7 @@ theorem infinitePlaceKummerRootCharacter_eq_one_of_real_of_left_pos
         (chosenSimpleKummerRootCharacter K n hnK hmu b
           (chosenInfinitePlaceArtinMonoidHom
             (K := K) (L := L) v a_v)) = 1
-  rw [hArtin, map_one, map_one]
+  simp_all
 
 omit [NumberField K] in
 /-- In the quadratic real case, positivity of the first argument gives the
@@ -93,17 +89,13 @@ theorem infinitePlaceKummerRootCharacter_localGlobal_of_real_of_two
       infinitePlaceHilbertSymbol K n v a b := by
   have haNe : InfinitePlace.embedding_of_isReal hv (a : K) ≠ 0 := by
     intro haZero
-    apply a.ne_zero
-    apply (InfinitePlace.embedding_of_isReal hv).injective
-    exact haZero.trans (InfinitePlace.embedding_of_isReal hv).map_zero.symm
+    simp_all
   rcases lt_trichotomy
       (InfinitePlace.embedding_of_isReal hv (a : K)) 0 with
     haNeg | haZero | haPos
   · have hbNe : InfinitePlace.embedding_of_isReal hv (b : K) ≠ 0 := by
       intro hbZero
-      apply b.ne_zero
-      apply (InfinitePlace.embedding_of_isReal hv).injective
-      exact hbZero.trans (InfinitePlace.embedding_of_isReal hv).map_zero.symm
+      simp_all
     rcases lt_trichotomy
         (InfinitePlace.embedding_of_isReal hv (b : K)) 0 with
       hbNeg | hbZero | hbPos
@@ -146,40 +138,8 @@ theorem infinitePlaceKummerRootCharacter_localGlobal
       have hleft :=
         (infinitePlaceKummerRootCharacter K n hnK hmu v a b).2
       have hright := (infinitePlaceHilbertSymbol K n v a b).2
-      have hleftOne :
-          (infinitePlaceKummerRootCharacter K n hnK hmu v a b).1 = 1 := by
-        calc
-          (infinitePlaceKummerRootCharacter K n hnK hmu v a b).1 =
-              (infinitePlaceKummerRootCharacter K n hnK hmu v a b).1 ^ 1 :=
-            (pow_one _).symm
-          _ = (infinitePlaceKummerRootCharacter K n hnK hmu v a b).1 ^
-                (n : ℕ) := congrArg
-                  (fun m : ℕ =>
-                    (infinitePlaceKummerRootCharacter
-                      K n hnK hmu v a b).1 ^ m) hnOne.symm
-          _ = 1 := hleft
-      have hrightOne :
-          (infinitePlaceHilbertSymbol K n v a b).1 = 1 := by
-        calc
-          (infinitePlaceHilbertSymbol K n v a b).1 =
-              (infinitePlaceHilbertSymbol K n v a b).1 ^ 1 :=
-            (pow_one _).symm
-          _ = (infinitePlaceHilbertSymbol K n v a b).1 ^ (n : ℕ) :=
-            congrArg
-              (fun m : ℕ => (infinitePlaceHilbertSymbol K n v a b).1 ^ m)
-              hnOne.symm
-          _ = 1 := hright
-      exact hleftOne.trans hrightOne.symm
+      simp_all
     · exact
         infinitePlaceKummerRootCharacter_localGlobal_of_real_of_two
           K n hnK hmu v a b hnTwo hv
-  · have hvComplex : v.IsComplex :=
-      InfinitePlace.not_isReal_iff_isComplex.mp hv
-    exact
-      infinitePlaceKummerRootCharacter_localGlobal_of_isComplex
-        K n hnK hmu v a b hvComplex
-
-end Reciprocity
-end GlobalClassFieldTheory
-
-end
+  simp_all

@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.Analysis.MeromorphicGermUniqueness
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.KPRankOneChamberUniqueness
 open scoped Topology
 open KPLocalStoneVonNeumann KPLocalPrincipalSeries KPRankOneShellContinuation
@@ -39,10 +38,6 @@ theorem chamber_identity_germ (ε : Sign) {f g : ℂ → ℂ}
 theorem chamber_identity_value (ε : Sign) {f g : ℂ → ℂ}
     (hf : Meromorphic f) (hg : Meromorphic g)
     (he : ∀ s, convergenceHalfPlane ε s → f s = g s) (s₀ : ℂ)
-    (hfc : ContinuousAt f s₀) (hgc : ContinuousAt g s₀) : f s₀ = g s₀ := by
-  exact ((hfc.eventuallyEq_nhds_iff_eventuallyEq_nhdsNE hgc).mp
+    (hfc : ContinuousAt f s₀) (hgc : ContinuousAt g s₀) : f s₀ = g s₀ := 
+  ((hfc.eventuallyEq_nhds_iff_eventuallyEq_nhdsNE hgc).mp
     (chamber_identity_germ ε hf hg he s₀)).eq_of_nhds
-
-end DedekindZetaZeroFree.KPRankOneChamberUniqueness
-
-end

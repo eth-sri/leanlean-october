@@ -19,14 +19,12 @@ private theorem smooth_arch (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (arch d) := 
   · exact Complex.equivRealProdCLM.symm.contDiff.comp
       ((EuclideanSpace.proj (𝕜 := ℝ) (i, (0 : Fin 3))).contDiff.prodMk
        (EuclideanSpace.proj (𝕜 := ℝ) (i, (1 : Fin 3))).contDiff)
-  · exact (EuclideanSpace.proj (𝕜 := ℝ) (i, (2 : Fin 3))).contDiff
+  fun_prop
 
 private theorem smooth_mean (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (KPCuspLogShape.meanHeight d) := by
   unfold KPCuspLogShape.meanHeight
   apply ContDiff.div_const
-  apply ContDiff.sum
-  intro i hi
-  exact contDiff_snd.comp (contDiff_apply ℝ KPArch.H3 i)
+  fun_prop
 
 private theorem arch_real (d : ℕ) (z : KPArch.Space d) : arch d (real d z) = z := by
   ext i <;> simp [arch, real]
@@ -55,8 +53,8 @@ theorem codifferential_star_mul (d : ℕ) (f : Space d → ℂ)
 
 private theorem derivative_smoothAt (d : ℕ) (g : Space d → ℂ) (x : Space d)
     (hg : ContDiffAt ℝ (⊤ : ℕ∞) g x) (i : Fin d) (k : Fin 3) :
-    ContDiffAt ℝ (⊤ : ℕ∞) (coordinateDerivative d i k g) x := by
-  exact (hg.fderiv_right (by simp)).clm_apply contDiffAt_const
+    ContDiffAt ℝ (⊤ : ℕ∞) (coordinateDerivative d i k g) x := 
+  (hg.fderiv_right (by simp)).clm_apply contDiffAt_const
 
 private theorem exp_mul_derivative (d : ℕ) (g : Space d → ℂ) (x : Space d)
     (hg : DifferentiableAt ℝ g x) (i : Fin d) (k : Fin 3) (hk : k ≠ 2) :
@@ -95,7 +93,6 @@ private theorem differential_smoothAt (d : ℕ) (g : Space d → ℂ) (x : Space
   · simpa [differential] using he.mul (derivative_smoothAt d g x hg i 0)
   · simpa [differential] using he.mul (derivative_smoothAt d g x hg i 1)
 
-open HyperbolicChart
  def second (d : ℕ) (h : Space d → ℂ) (x v w : Space d) : ℂ :=
   fderiv ℝ (fderiv ℝ h) x v w
 private theorem cd_second (d : ℕ) (h : Space d → ℂ) (x : Space d)
@@ -168,8 +165,7 @@ private theorem second_horizontal (d : ℕ) (u : Fin d → ℂ) (h : Space d →
         (second d h x (coordinateVector d i 0) (coordinateVector d i 0) +
          second d h x (coordinateVector d i 1) (coordinateVector d i 1)) := by
   rw [lin_zero, lin_one]
-  simp only [second, map_add, map_smul, ContinuousLinearMap.add_apply,
-    ContinuousLinearMap.smul_apply, smul_add, smul_smul, Complex.real_smul]
+  simp only [second, map_add, map_smul, ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply, smul_add, Complex.real_smul]
   rw [Complex.sq_norm, Complex.normSq_apply]
   push_cast
   ring
@@ -214,7 +210,7 @@ private theorem laplacian_congr (d : ℕ) (h f : Space d → ℂ) (x : Space d)
   apply Finset.sum_congr rfl
   intro i hi
   simp only [coordinateDerivative] at hd0 hdd ⊢
-  rw [hdd, hdd, hdd, hd0]
+  simp_all
 private theorem laplacian_mul (d : ℕ) (h : Space d → ℂ) (x : Space d) (c : ℂ)
     (hh : ContDiffAt ℝ (⊤ : ℕ∞) h x) :
     laplacian d (fun y => c * h y) x = c * laplacian d h x := by
@@ -248,10 +244,9 @@ private theorem upper_fst (A : Matrix.GeneralLinearGroup (Fin 2) ℂ)
     intro hz
     exact A.det_ne_zero (by simp [Matrix.det_fin_two, ha, hz])
   have hn : (‖A 1 1‖ ^ 2 : ℂ) = A 1 1 * star (A 1 1) := by
-    simp [Complex.star_def, Complex.mul_conj, Complex.normSq_eq_norm_sq]
+    simp [Complex.mul_conj, Complex.normSq_eq_norm_sq]
   change _ / _ = _
-  simp only [KPArch.actionDenominator, ha, zero_mul, zero_add, norm_zero, zero_pow,
-    add_zero, hr, star_zero, mul_zero, zero_mul]
+  simp only [KPArch.actionDenominator, ha, zero_mul, zero_add, norm_zero, add_zero, hr, star_zero, mul_zero, zero_mul]
   simp only [zero_pow (by decide : (2 : ℕ) ≠ 0), zero_mul, add_zero, Complex.ofReal_pow]
   rw [hn]
   have hs : star (A 1 1) ≠ 0 := star_ne_zero.mpr hd
@@ -292,10 +287,10 @@ private lemma differential_add (d : ℕ) (f g : Space d → ℂ) (x : Space d)
     fderiv_add hf hg
   ext i k
   fin_cases k <;>
-    (simp [differential, coordinateDerivative, hfd, Pi.add_apply, ContinuousLinearMap.add_apply]
+    (simp [differential, coordinateDerivative, hfd, Pi.add_apply]
      ; try ring)
 
-private lemma two_mul_re_pairing (d : ℕ) (U W : Cotangent d) :
+lemma two_mul_re_pairing (d : ℕ) (U W : Cotangent d) :
     2 * (pairing d U W).re =
       (∑ i, ∑ k, ‖(U + W) i k‖ ^ 2) - (∑ i, ∑ k, ‖U i k‖ ^ 2) -
         (∑ i, ∑ k, ‖W i k‖ ^ 2) := by
@@ -305,7 +300,7 @@ private lemma two_mul_re_pairing (d : ℕ) (U W : Cotangent d) :
     intro i k
     have h1 : (star (U i k) * W i k).re =
         (U i k).re * (W i k).re + (U i k).im * (W i k).im := by
-      simp [Complex.star_def, Complex.mul_re, Complex.conj_re, Complex.conj_im]
+      simp
     have h2 : ‖(U + W) i k‖ ^ 2 =
         ‖U i k‖ ^ 2 + ‖W i k‖ ^ 2 +
           2 * ((U i k).re * (W i k).re + (U i k).im * (W i k).im) := by
@@ -315,15 +310,12 @@ private lemma two_mul_re_pairing (d : ℕ) (U W : Cotangent d) :
     rw [h1, h2]; ring
   have hre : (pairing d U W).re = ∑ i, ∑ k, (star (U i k) * W i k).re := by
     simp only [pairing]
-    rw [← Complex.reCLM_apply]
-    simp only [map_sum, Complex.reCLM_apply]
+    simp
   calc 2 * (pairing d U W).re = 2 * (∑ i, ∑ k, (star (U i k) * W i k).re) := by rw [hre]
     _ = ∑ i, ∑ k, 2 * (star (U i k) * W i k).re := by
         simp only [Finset.mul_sum]
     _ = ∑ i, ∑ k, (‖(U + W) i k‖ ^ 2 - ‖U i k‖ ^ 2 - ‖W i k‖ ^ 2) := by
-        apply Finset.sum_congr rfl; intro i _
-        apply Finset.sum_congr rfl; intro k _
-        exact hterm i k
+        simp_all
     _ = (∑ i, ∑ k, ‖(U + W) i k‖ ^ 2) - (∑ i, ∑ k, ‖U i k‖ ^ 2) -
           (∑ i, ∑ k, ‖W i k‖ ^ 2) := by
         simp only [Finset.sum_sub_distrib]
@@ -337,14 +329,14 @@ private lemma two_mul_re_pairing (d : ℕ) (U W : Cotangent d) :
         (Nat.ne_of_gt hd) z⟩),
     KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F) z)
 
-private theorem toArch_toCoord {F : Type} [Field F] [NumberField F]
+theorem toArch_toCoord {F : Type} [Field F] [NumberField F]
     (hd : 0 < KPCuspLogShape.dimension F)
     (z : KPArch.Space (KPCuspLogShape.dimension F)) :
     KPCuspCharts.toArch F (toCoord hd z) = z := by
   funext i
   simp [KPCuspCharts.toArch, toCoord, KPCuspLogShape.shapeCoordinates]
 
-private theorem action_meanHeight
+theorem action_meanHeight
     {F : Type} [Field F] [NumberField F]
     {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
     {S : Subgroup (KPCuspArithmetic.PGL2 F)} {D : KPCuspCharts.ParabolicData F S}
@@ -359,7 +351,7 @@ private theorem action_meanHeight
   rw [G.actual_action s A hA hA10 (toCoord hd z), KPCuspCharts.toArch_meanHeight F hd]
   rfl
 
-private theorem u_action_invariant
+theorem u_action_invariant
     {F : Type} [Field F] [NumberField F]
     {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
     {S : Subgroup (KPCuspArithmetic.PGL2 F)} {D : KPCuspCharts.ParabolicData F S}
@@ -390,7 +382,7 @@ private theorem u_action_invariant
     rw [hq'def, hp'def]
     simp only [toArch_toCoord hd]
     change s⁻¹ • (s • z) = z
-    rw [← mul_smul, inv_mul_cancel, one_smul]
+    simp
   have hfin := hinv p' q' hrel
   simp only [hp'def, hq'def, toArch_toCoord hd] at hfin
   exact hfin.symm
@@ -412,8 +404,7 @@ private theorem pairing_re_invariant
   have hAUeq : ((fun z => Ac z + U z) ∘ fun z => real d (KPArch.productAction d g0 (arch d z)))
       =ᶠ[𝓝 x] fun z => (1 : ℂ) * (Ac z + U z) := by
     filter_upwards [hAceq, hUeq] with z h1 h2
-    simp only [Function.comp_apply] at h1 h2 ⊢
-    rw [h1, h2]; ring
+    simp_all
   have hAUX : ContDiffAt ℝ (⊤ : ℕ∞) (fun z => Ac z + U z) x := hAcX.add hUX
   have hAUY : ContDiffAt ℝ (⊤ : ℕ∞) (fun z => Ac z + U z)
       (real d (KPArch.productAction d g0 (arch d x))) := hAcY.add hUY
@@ -506,7 +497,7 @@ theorem cutoff_scalar_codifferential_high_orbit_invariant
   have hYX : Y = real (KPCuspLogShape.dimension F) (KPCuspCharts.toArch F p.val) := by
     rw [hYdef, hXdef, arch_real, hact, hs']
   have harchX : arch (KPCuspLogShape.dimension F) X = KPCuspCharts.toArch F q.val := by
-    rw [hXdef, arch_real]
+    rfl
   have harchY : arch (KPCuspLogShape.dimension F) Y = KPCuspCharts.toArch F p.val := by
     rw [hYX, arch_real]
   rw [← hYX]
@@ -533,8 +524,8 @@ theorem cutoff_scalar_codifferential_high_orbit_invariant
   have hN : ∀ᶠ z in 𝓝 X, T < KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F)
       (arch (KPCuspLogShape.dimension F) z) := hmeanOpen.mem_nhds hXh
   have hU_at : ∀ z, T < KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F)
-      (arch (KPCuspLogShape.dimension F) z) → ContDiffAt ℝ (⊤ : ℕ∞) U z := fun z hz => by
-    exact Complex.ofRealCLM.contDiff.contDiffAt.comp z
+      (arch (KPCuspLogShape.dimension F) z) → ContDiffAt ℝ (⊤ : ℕ∞) U z := fun z hz => 
+    Complex.ofRealCLM.contDiff.contDiffAt.comp z
       ((hu.contDiffAt ((isOpen_lt continuous_const (smooth_mean _).continuous).mem_nhds
         hz)).comp z (smooth_arch _).contDiffAt)
   have hAc_at : ∀ z, ContDiffAt ℝ (⊤ : ℕ∞) Ac z := fun z =>
@@ -595,7 +586,3 @@ theorem cutoff_scalar_codifferential_high_orbit_invariant
       (fun i k => (differential_smoothAt _ U X hUX i k).differentiableAt (by simp))]
     rw [codifferential_differential_at _ U X hUX]
   rw [hYc, hXc, hAcYX, hlap, Complex.sub_re, Complex.sub_re, hpair]
-
-end DedekindZetaZeroFree.KPCompactGreen.ScalarFluxDisintegration
-
-end

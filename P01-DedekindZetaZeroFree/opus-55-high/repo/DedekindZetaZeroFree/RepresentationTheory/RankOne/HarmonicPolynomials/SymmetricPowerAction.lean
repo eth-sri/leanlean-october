@@ -29,16 +29,13 @@ def sphereMatrix (g : ComplexSU2) : Matrix (Fin 3) (Fin 3) ℂ :=
 
 def S (g : ComplexSU2) (x : Fin 3 → ℂ) : Fin 3 → ℂ := (sphereMatrix g).mulVec x
 
-private theorem hopf_top00 (g : ComplexSU2) : (g : Matrix (Fin 2) (Fin 2) ℂ) 0 0 = star ((g : Matrix (Fin 2) (Fin 2) ℂ) 1 1) := by
+theorem hopf_top00 (g : ComplexSU2) : (g : Matrix (Fin 2) (Fin 2) ℂ) 0 0 = star ((g : Matrix (Fin 2) (Fin 2) ℂ) 1 1) := by
   have h := congrArg (fun M : Matrix (Fin 2) (Fin 2) ℂ => M 1 1) (Matrix.specialUnitaryGroup.star_eq_adjugate g)
-  simp only [Matrix.adjugate_fin_two, Matrix.star_eq_conjTranspose, Matrix.conjTranspose_apply,
-    Matrix.of_apply, Matrix.cons_val_one, Matrix.cons_val_zero, Matrix.head_cons] at h
+  simp only [Matrix.adjugate_fin_two, Matrix.star_eq_conjTranspose, Matrix.conjTranspose_apply, Matrix.of_apply, Matrix.cons_val_one, Matrix.cons_val_zero] at h
   exact h.symm
-private theorem hopf_top01 (g : ComplexSU2) : (g : Matrix (Fin 2) (Fin 2) ℂ) 0 1 = -star ((g : Matrix (Fin 2) (Fin 2) ℂ) 1 0) := by
+theorem hopf_top01 (g : ComplexSU2) : (g : Matrix (Fin 2) (Fin 2) ℂ) 0 1 = -star ((g : Matrix (Fin 2) (Fin 2) ℂ) 1 0) := by
   have h := congrArg (fun M : Matrix (Fin 2) (Fin 2) ℂ => M 0 1) (Matrix.specialUnitaryGroup.star_eq_adjugate g)
-  simp only [Matrix.adjugate_fin_two, Matrix.star_eq_conjTranspose, Matrix.conjTranspose_apply,
-    Matrix.of_apply, Matrix.cons_val_one, Matrix.cons_val_zero, Matrix.head_cons] at h
-  simpa only [neg_neg] using congrArg Neg.neg h.symm
+  simp_all
 
 private theorem hopf_Q_injective : Function.Injective Q := by
   intro x y h
@@ -61,9 +58,7 @@ theorem Q_S (g : ComplexSU2) (x : Fin 3 → ℂ) :
     Q (S g x) = star (g : Matrix (Fin 2) (Fin 2) ℂ) * Q x * g := by
   ext i j : 2
   fin_cases i <;> fin_cases j <;>
-    simp [Q, S, sphereMatrix, Matrix.mul_apply, Matrix.mulVec, dotProduct,
-      Fin.sum_univ_two, Fin.sum_univ_succ, Matrix.star_eq_conjTranspose,
-      hopf_top00, hopf_top01] <;>
+    simp [Q, S, sphereMatrix, Matrix.mul_apply, Matrix.mulVec, dotProduct, Fin.sum_univ_succ, Matrix.star_eq_conjTranspose, hopf_top00, hopf_top01] <;>
     apply Complex.ext <;>
     simp [Complex.add_re, Complex.add_im, Complex.sub_re, Complex.sub_im,
       Complex.mul_re, Complex.mul_im, Complex.neg_re, Complex.neg_im,
@@ -78,9 +73,7 @@ theorem compactSphereCoordinate_mul (k g : ComplexSU2) :
       (k : Matrix (Fin 2) (Fin 2) ℂ) * (g : Matrix (Fin 2) (Fin 2) ℂ) := rfl
   funext i
   fin_cases i <;>
-    simp [compactSphereCoordinate, S, sphereMatrix, hmul, Matrix.mul_apply,
-      Matrix.mulVec, dotProduct, Fin.sum_univ_two, Fin.sum_univ_succ,
-      hopf_top00, hopf_top01, ← Complex.normSq_eq_norm_sq, Complex.normSq_apply] <;>
+    simp [compactSphereCoordinate, S, sphereMatrix, hmul, Matrix.mul_apply, Matrix.mulVec, dotProduct, Fin.sum_univ_succ, hopf_top00, hopf_top01, ← Complex.normSq_eq_norm_sq, Complex.normSq_apply] <;>
     apply Complex.ext <;>
     simp [Complex.add_re, Complex.add_im, Complex.sub_re, Complex.sub_im,
       Complex.mul_re, Complex.mul_im, Complex.neg_re, Complex.neg_im,
@@ -119,7 +112,7 @@ theorem coefficientAction_one (p : Polynomial) : coefficientAction 1 p = p := by
   have h : coefficientAction 1 = AlgHom.id ℂ Polynomial := by
     ext i
     simp [coefficientAction, sphereMatrix_one, Matrix.one_apply]
-  exact congrArg (fun f : Polynomial →ₐ[ℂ] Polynomial => f p) h
+  simp_all
 
 theorem coefficientAction_mul (g h : ComplexSU2) (p : Polynomial) :
     coefficientAction (g * h) p = coefficientAction g (coefficientAction h p) := by
@@ -128,13 +121,12 @@ theorem coefficientAction_mul (g h : ComplexSU2) (p : Polynomial) :
     intro i
     simp only [coefficientAction, AlgHom.comp_apply, MvPolynomial.aeval_X, map_sum,
       map_mul, MvPolynomial.aeval_C, sphereMatrix_mul, Matrix.mul_apply]
-    simp only [Finset.mul_sum, Finset.sum_mul, ← mul_assoc, ← MvPolynomial.C_mul,
-      ← map_sum]
+    simp only [Finset.mul_sum, ← mul_assoc, ← MvPolynomial.C_mul, ← map_sum]
     simp only [MvPolynomial.algebraMap_eq, map_sum, Finset.sum_mul, ← MvPolynomial.C_mul]
     rw [Finset.sum_comm]
-  exact congrArg (fun f : Polynomial →ₐ[ℂ] Polynomial => f p) hh
+  simp_all
 
-private theorem pderiv_coefficientAction (g : ComplexSU2)
+theorem pderiv_coefficientAction (g : ComplexSU2)
     (p : MvPolynomial (Fin 3) ℂ) (j : Fin 3) :
     MvPolynomial.pderiv j (coefficientAction g p) =
       ∑ i, MvPolynomial.C (sphereMatrix g i j) * coefficientAction g (MvPolynomial.pderiv i p) := by
@@ -153,7 +145,7 @@ private theorem pderiv_coefficientAction (g : ComplexSU2)
       simp [Finset.sum_mul, Finset.mul_sum, Finset.sum_add_distrib,
         Pi.single_apply, mul_add, mul_ite, mul_assoc, mul_comm, mul_left_comm]
 
-private theorem polynomialLaplacian_coefficientAction (g : ComplexSU2)
+theorem polynomialLaplacian_coefficientAction (g : ComplexSU2)
     (hA : ∀ i k, ∑ j, sphereMatrix g i j * sphereMatrix g k j = if i = k then 1 else 0)
     (p : MvPolynomial (Fin 3) ℂ) :
     polynomialLaplacian (coefficientAction g p) = coefficientAction g (polynomialLaplacian p) := by
@@ -163,7 +155,7 @@ private theorem polynomialLaplacian_coefficientAction (g : ComplexSU2)
   change (∑ j, MvPolynomial.pderiv j (MvPolynomial.pderiv j (coefficientAction g p))) =
     ∑ j, coefficientAction g (MvPolynomial.pderiv j (MvPolynomial.pderiv j p))
   simp only [pderiv_coefficientAction, map_sum, MvPolynomial.pderiv_C_mul]
-  simp only [pderiv_coefficientAction, Finset.mul_sum, ← mul_assoc, ← MvPolynomial.C_mul]
+  simp only [Finset.mul_sum, ← mul_assoc, ← MvPolynomial.C_mul]
   rw [Finset.sum_comm]
   apply Finset.sum_congr rfl
   intro i hi
@@ -255,15 +247,13 @@ def harmonicContRepresentation (ℓ : ℕ) : ContRepresentation ℂ ComplexSU2 (
       map_one' := by
         apply ContinuousLinearMap.ext
         intro p
-        exact congrArg (fun f : Module.End ℂ (Harmonic ℓ) => f p)
-          (harmonicRepresentation ℓ).map_one
+        simp
       map_mul' g h := by
         apply ContinuousLinearMap.ext
         intro p
-        exact congrArg (fun f : Module.End ℂ (Harmonic ℓ) => f p)
-          ((harmonicRepresentation ℓ).map_mul g h) }
+        simp }
 
-private theorem sphereMatrix_entry_continuous (i j : Fin 3) :
+theorem sphereMatrix_entry_continuous (i j : Fin 3) :
     Continuous (fun g : ComplexSU2 => sphereMatrix g i j) := by
   have h (i j : Fin 2) : Continuous (fun g : ComplexSU2 =>
       (g : Matrix (Fin 2) (Fin 2) ℂ) i j) :=
@@ -273,7 +263,7 @@ private theorem sphereMatrix_entry_continuous (i j : Fin 3) :
   fin_cases i <;> fin_cases j <;> dsimp [sphereMatrix]
   all_goals fun_prop
 
-private theorem coefficientAction_coeff_continuous (p : Polynomial)
+theorem coefficientAction_coeff_continuous (p : Polynomial)
     (d : Fin 3 →₀ ℕ) :
     Continuous (fun g : ComplexSU2 => (coefficientAction g p).coeff d) := by
   classical
@@ -282,7 +272,7 @@ private theorem coefficientAction_coeff_continuous (p : Polynomial)
       (continuous_const : Continuous (fun _ : ComplexSU2 => (MvPolynomial.C c).coeff d))
   | add p q hp hq =>
       simp only [map_add, MvPolynomial.coeff_add]
-      exact (hp d).add (hq d)
+      fun_prop
   | mul_X p i hp =>
       simp only [map_mul, coefficientAction, MvPolynomial.aeval_X,
         Finset.mul_sum, MvPolynomial.coeff_sum]
@@ -317,7 +307,7 @@ theorem harmonicContRepresentation_continuous (ℓ : ℕ) :
 
 def triangle (n : ℕ) (f : ℤ → ℂ) :=
   ∑ a ∈ Finset.range (n + 1), ∑ b ∈ Finset.range (n - a + 1), f ((a : ℤ) - b)
-private theorem triangle_border (n : ℕ) (f : ℤ → ℂ) :
+theorem triangle_border (n : ℕ) (f : ℤ → ℂ) :
     triangle (n + 2) f = (∑ a ∈ Finset.range (n + 3), f a) +
       (∑ b ∈ Finset.range (n + 2), f (-(b : ℤ) - 1)) + triangle n f := by
   unfold triangle
@@ -328,8 +318,8 @@ private theorem triangle_border (n : ℕ) (f : ℤ → ℂ) :
         f (a + 1) + ∑ b ∈ Finset.range (n + 1 - a), f ((a : ℤ) - b) := by
     have ha' := Finset.mem_range.mp ha
     rw [show n + 2 - (a + 1) + 1 = (n + 1 - a) + 1 by omega, Finset.sum_range_succ']
-    simp only [Nat.cast_add, Nat.cast_one, sub_zero]
-    simp_rw [show ∀ b : ℕ, ((a : ℤ) + 1 - (b + 1)) = (a : ℤ) - b by intro b; push_cast; ring]
+    simp only [Nat.cast_add, Nat.cast_one]
+    simp_rw [show ∀ b : ℕ, ((a : ℤ) + 1 - (b + 1)) = (a : ℤ) - b by intro b; simp]
     simp [add_comm]
   rw [Finset.sum_congr rfl h, Finset.sum_add_distrib]
   have hinter : (∑ a ∈ Finset.range (n + 2), ∑ b ∈ Finset.range (n + 1 - a), f ((a : ℤ) - b)) =
@@ -345,7 +335,7 @@ private theorem triangle_border (n : ℕ) (f : ℤ → ℂ) :
   rw [Finset.sum_range_succ' (f := fun b : ℕ => f (-(b : ℤ))) (n := n + 2)]
   simp only [Nat.cast_add, Nat.cast_one, Nat.cast_zero, neg_zero, neg_add, sub_eq_add_neg]
   ring
-private theorem border_string (n : ℕ) (f : ℤ → ℂ) :
+theorem border_string (n : ℕ) (f : ℤ → ℂ) :
     (∑ a ∈ Finset.range (n + 1), f a) +
       (∑ b ∈ Finset.range n, f (-(b : ℤ) - 1)) =
       ∑ i ∈ Finset.range (2 * n + 1), f ((i : ℤ) - n) := by
@@ -363,19 +353,17 @@ private theorem border_string (n : ℕ) (f : ℤ → ℂ) :
   rw [hpos, hneg, add_comm]
   rw [show 2 * n + 1 = n + (n + 1) by omega]
   exact (Finset.sum_range_add (fun i : ℕ => f ((i : ℤ) - n)) n (n + 1)).symm
-private theorem triangle_low (f : ℤ → ℂ) :
+theorem triangle_low (f : ℤ → ℂ) :
     triangle 0 f = ∑ i ∈ Finset.range 1, f ((i : ℤ) - 0) := by
   simp [triangle]
-private theorem triangle_one (f : ℤ → ℂ) :
+theorem triangle_one (f : ℤ → ℂ) :
     triangle 1 f = ∑ i ∈ Finset.range 3, f ((i : ℤ) - 1) := by
   simp [triangle, Finset.sum_range_succ]
   ring
-private theorem raw_harmonic_eq (n : ℕ) :
+theorem raw_harmonic_eq (n : ℕ) :
     HomogeneousRaw.harmonicRepresentation n = harmonicRepresentation n := by
-  ext g p : 2
-  apply Subtype.ext
   rfl
-private theorem raw_character_torus (n : ℕ) (z : Circle) :
+theorem raw_character_torus (n : ℕ) (z : Circle) :
     (HomogeneousRaw.harmonicRepresentation n).character (TauCeti.SU2.torusHom z) =
       (TauCeti.SU2.symPower (2 * n)).character (TauCeti.SU2.torusHom z) := by
   have hh (m : ℕ) : (HomogeneousRaw.homogeneousRepresentation m).character (TauCeti.SU2.torusHom z) =
@@ -461,9 +449,4 @@ theorem harmonic_equiv_symPower (ℓ : ℕ) :
     have hself := _root_.ContRepresentation.character_orthonormal_self π hπ ha hi
     have hclp : ρ.characterLp hρ = π.characterLp hπ := by
       rw [_root_.ContRepresentation.characterLp_def, _root_.ContRepresentation.characterLp_def, hc]
-    rw [hclp, hself] at hzero
-    exact one_ne_zero hzero
-
-end DedekindZetaZeroFree.HarmonicVendor
-
-end
+    simp_all

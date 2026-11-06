@@ -106,8 +106,4 @@ theorem actualLocalPsi_nontrivial (ψ : ContinuousAddChar (KPAdditiveQuotient F)
         (fun w : HeightOneSpectrum (𝓞 F) => w.adicCompletionIntegers F) q
         (algebraMap F (q.adicCompletion F) t * x)) : KPAdeles F) = 1 at h
       rwa [adelicTraceCharacter_finite_single] at h
-  exact ht ((map_eq_zero (algebraMap F (KPHilbert.Completion F v))).mp hzero)
-
-end DedekindZetaZeroFree.KPInterface.ResidueConstruction.Raw
-
-end
+  simp_all

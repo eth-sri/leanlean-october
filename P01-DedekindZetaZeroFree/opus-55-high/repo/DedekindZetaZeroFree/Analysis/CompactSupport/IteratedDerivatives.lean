@@ -20,5 +20,3 @@ theorem hasCompactSupport_iteratedDeriv (h : ℝ → ℂ) (hh : HasCompactSuppor
   | succ n ih =>
       rw [iteratedDeriv_succ]
       exact ih.deriv
-
-end DedekindZetaZeroFree.LargeSieve.Vendor

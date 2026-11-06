@@ -25,7 +25,3 @@ def a (χ : MulChar k ℂ) (ψ : AddChar k ℂ) (d : ℕ) : ℂ :=
 def b (χ : MulChar k ℂ) (ψ : AddChar k ℂ) (m : ℕ) : ℂ :=
   ∑ d ∈ m.divisors, ∑ c : Fin d → k,
     if Irreducible (monicOfCoeffs d c) then (d : ℂ) * wt χ ψ (monicOfCoeffs d c) ^ (m / d) else 0
-
-end
-
-end DavenportHasse

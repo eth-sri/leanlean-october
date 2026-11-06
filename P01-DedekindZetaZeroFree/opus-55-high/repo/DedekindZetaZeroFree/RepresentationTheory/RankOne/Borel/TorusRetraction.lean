@@ -44,9 +44,7 @@ theorem projected_root (x : Adeles F) :
   · funext w; exact he (Sum.inl w)
   · apply Subtype.ext; funext q; exact he (Sum.inr q)
 
-theorem root_mem_borel (x : Adeles F) : N F ζ hζ x ∈ borel F ζ hζ := by
-  refine ⟨upper F x, (projected_root F ζ hζ x).symm, ?_⟩
-  simp [upper_entries]
+theorem root_mem_borel (x : Adeles F) : N F ζ hζ x ∈ borel F ζ hζ := by apply DedekindZetaZeroFree.KPGlobalTorusBorelNormTwistTransport.borel_root <;> assumption
 
 def torusInBorel : E F ζ hζ →* borel F ζ hζ :=
   Subgroup.inclusion (by
@@ -57,7 +55,7 @@ def torusInBorel : E F ζ hζ →* borel F ζ hζ :=
 def rootInBorel : Multiplicative (Adeles F) →* borel F ζ hζ :=
   (Nhom F ζ hζ).codRestrict _ (fun x => root_mem_borel F ζ hζ x.toAdd)
 
-private theorem root_torus_zero (x : Adeles F) (hx : N F ζ hζ x ∈ E F ζ hζ) : x = 0 := by
+theorem root_torus_zero (x : Adeles F) (hx : N F ζ hζ x ∈ E F ζ hζ) : x = 0 := by
   obtain ⟨A, hA, h10, h01⟩ := hx
   rw [projected_root] at hA
   obtain ⟨u, hu⟩ := QuotientGroup.eq.mp hA

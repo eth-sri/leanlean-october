@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Analysis.CauchyCenterContinuity
 
 @[expose] public section
 
-noncomputable section
 open scoped Topology NNReal
 open Complex Filter
 namespace DedekindZetaZeroFree.EisensteinSmoothGerms
@@ -25,7 +24,3 @@ theorem scalar_cauchy_coefficients_radius_independent
       (R := ⟨u, hu.le⟩) hu
   have he := hpt.hasFPowerSeriesAt.eq_formalMultilinearSeries hpu.hasFPowerSeriesAt
   exact congrArg (fun p : FormalMultilinearSeries ℂ ℂ ℂ => p.coeff n) he
-
-end DedekindZetaZeroFree.EisensteinSmoothGerms
-
-end

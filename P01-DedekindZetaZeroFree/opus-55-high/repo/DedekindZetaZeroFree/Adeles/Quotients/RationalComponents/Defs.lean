@@ -40,7 +40,3 @@ def C (i : Fin A.componentCount) :=
 def m (p : KPSmoothActualFlowData.GInfinity F ×
     KPFiniteCuspAtlas.FiniteCover F ζ hζ) :=
   KPSmoothActualFlowData.archimedeanInsertion F ζ hζ p.1 * p.2.val
-
-end DedekindZetaZeroFree.KPActualComponentHaarSources
-
-end

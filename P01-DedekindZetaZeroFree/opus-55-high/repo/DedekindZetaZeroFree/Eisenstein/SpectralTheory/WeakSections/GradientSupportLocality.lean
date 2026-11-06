@@ -29,7 +29,7 @@ private lemma d_pos (ζ : F) (hζ : IsPrimitiveRoot ζ 12) : 0 < d F := by
   rw [show d F = Module.finrank ℚ F / 2 from rfl, ← h.2.1]
   exact h.2.2
 
-private lemma exists_ball_exhaustion (n : ℕ) (hn : 0 < n) (U : Set (Space n))
+lemma exists_ball_exhaustion (n : ℕ) (hn : 0 < n) (U : Set (Space n))
     (hU : IsOpen U) (hne : U.Nonempty) :
     ∃ B : ℕ → LocalBall n,
       (∀ k, IsCompact (closure (B k).carrier)) ∧
@@ -158,7 +158,7 @@ private theorem normFlat (s : BorelL2Sections F ζ hζ U R P H)
     squaredNorm F ζ hζ U R P H s.val (baseFlat a x) = ENNReal.ofReal (‖scalar s a x‖ ^ 2) := by
   unfold squaredNorm baseFlat
   rw [sectionNorm_component, scalar_eq_on_chart s a x hx]
-private theorem coefficientFlat (W : Family (U := U) (H := H))
+theorem coefficientFlat (W : Family (U := U) (H := H))
     (a : ActualChart (U := U) (H := H)) (x : Space (3 * d F)) (hx : x ∈ chart a) :
     normSquare W (baseFlat a x) = ‖liftExtension a (coefficient W a) ((baseReindex (F := F)).symm x)‖₊ ^ 2 := by
   have hx' : (baseReindex (F := F)).symm x ∈ omega a := hx
@@ -175,7 +175,7 @@ private theorem decode_zero (W : Family (U := U) (H := H))
   have hk := h (coefficientIndex (F := F) (i, ![2, 0, 1] k))
   simp only [coordinateW, Equiv.symm_apply_apply] at hk
   fin_cases k <;> simp_all [Real.exp_ne_zero]
-private theorem lp_locallyIntegrable {n : ℕ} (B : LocalBall n) (u : BallL2 B) :
+theorem lp_locallyIntegrable {n : ℕ} (B : LocalBall n) (u : BallL2 B) :
     LocallyIntegrableOn u B.carrier (volume.restrict B.carrier) := by
   apply (locallyIntegrableOn_iff (μ := volume.restrict B.carrier)
     (f := (fun x => u x)) (s := B.carrier) B.toOpens.isOpen.isLocallyClosed).2

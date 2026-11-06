@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Norm group of the maximal Kummer extension
 
@@ -41,7 +35,7 @@ variable {Omega : Type} [Field Omega] [Algebra K Omega] [IsSepClosure K Omega]
 
 /-- The Galois group of the maximal exponent-`n` Kummer extension is
 canonically equivalent to the local power-class group. -/
-noncomputable def chosenMaximalKummerGaloisEquivPowerQuotient
+def chosenMaximalKummerGaloisEquivPowerQuotient
     (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
     (hmu : (primitiveRoots (n : ℕ) K).Nonempty) :
     Gal(kummerRadicalExtension (K := K) (Omega := Omega) n
@@ -65,7 +59,7 @@ noncomputable def chosenMaximalKummerGaloisEquivPowerQuotient
 
 /-- Local reciprocity and Kummer duality identify the norm quotient of the
 maximal Kummer extension with the local power-class group. -/
-noncomputable def maximalKummerNormQuotientEquivPowerQuotient
+def maximalKummerNormQuotientEquivPowerQuotient
     (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
     (hmu : (primitiveRoots (n : ℕ) K).Nonempty) :
     let E := kummerRadicalExtension (K := K) (Omega := Omega) n
@@ -123,7 +117,7 @@ theorem powMonoidHom_range_le_maximalKummerNormSubgroup
     (MonoidHom.mem_range (G := Kˣ)).1 hx
   rw [← localArtinMonoidHom_ker K E, MonoidHom.mem_ker,
     powMonoidHom_apply, map_pow]
-  exact habExponent (localArtinMonoidHom K E y)
+  simp_all
 
 /-- If the base field contains the `n`-th roots of unity, the norm subgroup
 of the maximal exponent-`n` Kummer extension is exactly `Kˣⁿ`. -/
@@ -167,10 +161,5 @@ theorem maximalKummerNormSubgroup_eq_powMonoidHom_range
       exact hPN.symm.le
     have hlt : P < N := lt_of_le_of_ne hle hne
     have hindexLt : N.index < P.index := Subgroup.index_strictAnti hlt
-    rw [hindex] at hindexLt
-    exact (Nat.lt_irrefl _ hindexLt)
-  · exact hle
-
-end LocalClassFieldTheory
-
-end
+    simp_all
+  omega

@@ -25,7 +25,7 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
   | none => p1Inf F
   | some t => p1Fin F t
 
-private theorem optP1_injective : Function.Injective (optP1 F) := by
+theorem optP1_injective : Function.Injective (optP1 F) := by
   intro i j h
   cases i with
   | none =>
@@ -60,7 +60,7 @@ private theorem optP1_injective : Function.Injective (optP1 F) := by
       have : t = u := by rw [← h0, h1, one_mul]
       exact congrArg some this
 
- noncomputable def chamberCellEquiv :
+ def chamberCellEquiv :
     KPChamberBruhatTwoCells.RationalQuotient F ≃ Option F :=
   (Equiv.ofBijective (KPChamberBruhatTwoCells.cellIndex F)
     (KPChamberBruhatTwoCells.cellIndex_bijective F)).symm

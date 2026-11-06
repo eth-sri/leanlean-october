@@ -45,7 +45,7 @@ private theorem kernel_integrable (T : Finset (HeightOneSpectrum (𝓞 F)))
         ((-2 * Real.pi * PoissonArch.tracePairing F x.1 y.1 : ℝ) : ℂ) * Complex.I by
       push_cast; ring]
     rw [Complex.norm_exp_ofReal_mul_I, one_mul, norm_prod]
-    exact Finset.prod_eq_one fun v _ => Circle.norm_coe _
+    simp
   simpa only [mul_assoc] using hf.mul_bdd hc.aestronglyMeasurable
     (Filter.Eventually.of_forall (fun x => (hn x).le))
 
@@ -77,11 +77,9 @@ private theorem kernel_integrable (T : Finset (HeightOneSpectrum (𝓞 F)))
     (PoissonS.Space F T → ℂ) →ₗ[ℂ] (PoissonS.Space F T → ℂ) where
   toFun f := dilation F T c f
   map_add' f g := by
-    funext x
-    simp only [dilation, Pi.add_apply]
+    rfl
   map_smul' a f := by
-    funext x
-    simp only [dilation, Pi.smul_apply, smul_eq_mul, RingHom.id_apply]
+    rfl
 
  def fourT (A : SArithmeticData F) (T : Finset (HeightOneSpectrum (𝓞 F))) :
     testSpace F T →ₗ[ℂ] testSpace F T where
@@ -132,13 +130,9 @@ theorem quadratic_compositions_linear (A : SArithmeticData F)
     (k • ((chirpLinearMap T c).comp ((dilationLinearMap T d).comp (fourTest A T)))).comp
       (chirpT A T c), ?_, ?_⟩
   · intro f
-    simp only [LinearMap.comp_apply]
     rfl
   · intro f
-    simp only [LinearMap.comp_apply, LinearMap.smul_apply]
-    funext y
-    simp only [Pi.smul_apply, smul_eq_mul, chirpLinearMap, dilationLinearMap, fourTest, chirpT,
-      LinearMap.coe_mk, AddHom.coe_mk]
+    rfl
 
 end DedekindZetaZeroFree.QuadraticRawProduct.TensorKernelSteps
 
@@ -156,7 +150,7 @@ namespace DedekindZetaZeroFree.QuadraticRawProduct.TensorKernelSteps
 
 variable (F : Type) [Field F] [NumberField F]
 
-private theorem recombination_phase_eq_traceCharacter
+theorem recombination_phase_eq_traceCharacter
     (S : Finset (HeightOneSpectrum (RingOfIntegers F))) (x y : PoissonS.Space F S) :
     PoissonS.tracePhase F S (fun v => localFiniteCharacter F v.val) x y =
       (sLocalTraceCharacter F S
@@ -204,7 +198,7 @@ private theorem recombination_phase_eq_traceCharacter
   have hx2 : u.2 = x.2 := rfl
   have hy2 : v.2 = y.2 := rfl
   rw [sLocalTraceCharacter_apply]
-  simp only [Circle.coe_mul, map_prod, Prod.fst_mul, Prod.snd_mul, Pi.mul_apply]
+  simp only [Circle.coe_mul, Prod.fst_mul, Prod.snd_mul, Pi.mul_apply]
   unfold PoissonS.tracePhase
   rw [← hx, ← hy, harch]
   change _ = Circle.coeHom (∏ w : InfinitePlace F, archTraceCharacter w (u.1 w * v.1 w)) *
@@ -237,7 +231,7 @@ local instance recombinationCompletionMeasurable (v : HeightOneSpectrum (𝓞 F)
 local instance recombinationCompletionBorel (v : HeightOneSpectrum (𝓞 F)) :
     BorelSpace (v.adicCompletion F) := ⟨rfl⟩
 
-private theorem recombination_fourier_tensor (A : SArithmeticData F)
+theorem recombination_fourier_tensor (A : SArithmeticData F)
     (T : Finset (HeightOneSpectrum (𝓞 F)))
     (hHaar : ∀ v, A.finiteTraceHaar v = localNormalizedHaar F v)
     (hCharacter : ∀ v, ResidueTrace.localTraceCharacter v = localFiniteCharacter F v)
@@ -276,7 +270,7 @@ private theorem recombination_fourier_tensor (A : SArithmeticData F)
   exact hi.trans (congrArg (fun c => PoissonArch.traceFourier F fArch y.1 * c)
     (by simpa only [SArithmeticData.finiteTraceFourier, hHaar, hCharacter] using hj))
 
-private theorem recombination_chirp_tensor (A : SArithmeticData F)
+theorem recombination_chirp_tensor (A : SArithmeticData F)
     (T : Finset (HeightOneSpectrum (𝓞 F)))
     (hCharacter : ∀ v, ResidueTrace.localTraceCharacter v = localFiniteCharacter F v)
     (b : F) (fArch : PoissonArch.Space F → ℂ)
@@ -307,7 +301,7 @@ private theorem recombination_chirp_tensor (A : SArithmeticData F)
   simp_rw [hfin]
   ring
 
-private theorem recombination_dilation_tensor (A : SArithmeticData F)
+theorem recombination_dilation_tensor (A : SArithmeticData F)
     (T : Finset (HeightOneSpectrum (𝓞 F))) (c : F)
     (fArch : PoissonArch.Space F → ℂ)
     (φ : (v : T) → v.val.adicCompletion F → ℂ) :
@@ -384,12 +378,11 @@ theorem quadratic_operator_on_tensor (A : SArithmeticData F)
   have hg : (∏ v ∈ T, A.finiteGamma v
       (Units.map (algebraMap F (v.adicCompletion F)).toMonoidHom a)) =
       ∏ v : T, A.finiteGamma v.val
-        (Units.map (algebraMap F (v.val.adicCompletion F)).toMonoidHom a) := by
-    exact (Finset.prod_attach T _).symm
+        (Units.map (algebraMap F (v.val.adicCompletion F)).toMonoidHom a) := 
+    (Finset.prod_attach T _).symm
   rw [hg]
   rw [Real.sqrt_prod Finset.univ (fun v _ => norm_nonneg _)]
-  simp only [Complex.ofReal_prod, Finset.prod_inv_distrib,
-    RingHom.toMonoidHom_eq_coe, MonoidHom.coe_ofClass]
+  simp only [Complex.ofReal_prod, Finset.prod_inv_distrib, RingHom.toMonoidHom_eq_coe]
   ac_rfl
 
 end DedekindZetaZeroFree.QuadraticRawProduct.TensorKernelSteps
@@ -417,7 +410,7 @@ theorem tensor_finiteTraceHaar_eq (A : SArithmeticData F)
     zpow_natCast, localHalfDifferentFactor_eq_inv_sqrt F v,
     localDifferentNorm, Nat.cast_pow, one_div]
 
-private theorem tensor_primeBelow_eq_adapter (v : HeightOneSpectrum (𝓞 F)) :
+theorem tensor_primeBelow_eq_adapter (v : HeightOneSpectrum (𝓞 F)) :
     ResidueTrace.rationalPrimeBelow v = PlaceTraceAdapter.prime F v := by
   apply Subtype.ext
   change ringChar (𝓞 F ⧸ v.asIdeal) = _
@@ -457,7 +450,7 @@ theorem tensor_finiteCharacter_eq (v : HeightOneSpectrum (𝓞 F)) :
         exact (finitePlaceAdicCompletionMap_continuous ℚ F _ _).comp
           (Rat.HeightOneSpectrum.adicCompletion.padicEquiv (PlaceTraceAdapter.rationalPlace F v)).symm.continuous
       · funext q
-        exact (hmq q).trans (by simp [PlaceTraceAdapter.padicMap, map_ratCast])
+        simp
     subst m
     rfl
   exact hgeneral _ _ (ResidueTrace.baseEmbedding_spec v).1
@@ -496,8 +489,6 @@ theorem quadratic_module_factorization
   have hfinite : (∏ v ∈ T, FinitePlace.mk v b) =
       ∏ v : T, ‖algebraMap F (v.val.adicCompletion F) b‖ := by
     rw [← Finset.prod_attach]
-    apply Finset.prod_congr rfl
-    intro v _
     rfl
   unfold PoissonS.productModule
   rw [hfinite, Real.sqrt_mul (Finset.prod_nonneg fun w _ => pow_nonneg (apply_nonneg w b) _)]
@@ -537,7 +528,7 @@ theorem tensor_quadratic_operator (A : SArithmeticData F)
         (quadratic_module_factorization T (2 * (a : F)))
     | zero =>
       change L 0 = R 0
-      simp only [map_zero]
+      simp
     | add g h hg hh ihg ihh =>
       change L (⟨g, hg⟩ + ⟨h, hh⟩) = R (⟨g, hg⟩ + ⟨h, hh⟩)
       rw [map_add, map_add, ihg, ihh]
@@ -545,9 +536,3 @@ theorem tensor_quadratic_operator (A : SArithmeticData F)
       change L (c • ⟨g, hg⟩) = R (c • ⟨g, hg⟩)
       rw [map_smul, map_smul, ih]
   exact (hL ⟨f, hf⟩).symm.trans ((heq f hf).trans (hR ⟨f, hf⟩))
-
-end DedekindZetaZeroFree.QuadraticRawProduct
-
-end
-
-end

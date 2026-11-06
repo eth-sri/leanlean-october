@@ -27,7 +27,7 @@ open _root_.DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel renaming pgl_loca
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 set_option synthInstance.maxHeartbeats 200000
-private theorem character_right_convolution_calculus
+theorem character_right_convolution_calculus
     (F : Type) [Field F] [NumberField F]
     (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (D : KPMsRationalCompactCrossPairing.Iwasawa F ζ hζ)
@@ -125,7 +125,7 @@ private theorem character_right_convolution_calculus
     · intro g
       exact actual_kernel_pointwise_approximation F ζ hζ D μL μK b hb v.val hv g
 
-private theorem kfinite_raw_orbit
+theorem kfinite_raw_orbit
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (K : Subgroup (KPLiteralRaw.G F ζ hζ)) (v : KPLiteralRaw.Functions F ζ hζ)
     (hv : KFinite F ζ hζ K v) :
@@ -141,7 +141,7 @@ private theorem kfinite_raw_orbit
   exact FiniteDimensional.of_injective (Submodule.inclusion hs)
     (Submodule.inclusion_injective hs)
 
-private theorem covariant_source_left_smooth
+theorem covariant_source_left_smooth
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (D : KPMsRationalCompactCrossPairing.Iwasawa F ζ hζ)
     (χ : actualC F ζ hζ →* ℂ)
@@ -253,10 +253,6 @@ private theorem covariant_source_left_smooth
   rfl
 
 open KPLiteralPeriod.HCCoreDensity.FiniteStageApproximation.ConvolutionSpan.ActualSourceStage
-local instance (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (K : Subgroup (KPLiteralRaw.G F ζ hζ)) : MeasurableSpace K := borel K
-local instance (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-    (K : Subgroup (KPLiteralRaw.G F ζ hζ)) : BorelSpace K := ⟨rfl⟩
 open _root_.DedekindZetaZeroFree.KPLiteralTensor.KernelAndHCRange.CoreGeneration.NormalizedFiniteSource renaming sourceChi → sourceChi
 open _root_.DedekindZetaZeroFree.KPLiteralTensor.KernelAndHCRange.CoreGeneration.NormalizedFiniteSource renaming source_covariant → source_covariant
 

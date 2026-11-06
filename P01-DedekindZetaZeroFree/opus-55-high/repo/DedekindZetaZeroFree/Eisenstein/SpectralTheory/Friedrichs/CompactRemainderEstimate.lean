@@ -99,7 +99,7 @@ structure Construction (ε : ℝ) where
     (dF - ε) * ‖BU u‖ ^ 2 ≤ (inner ℂ (BU u) (u - BU u)).re +
       ‖Kε F ζ hζ U R P H μG hμG hR realization ε partition multiplier u‖ ^ 2
 
-private theorem coord_eq_closure_of_embedding
+theorem coord_eq_closure_of_embedding
     {H V : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
     [NormedAddCommGroup V] [InnerProductSpace ℂ V]
     (D : H →ₗ.[ℂ] V) (w : ClosedGradientSpace D) (u : D.closure.domain)
@@ -132,7 +132,7 @@ private theorem continuous_iff_isQuotientMap {X Y Z : Type*} [TopologicalSpace X
     rw [← hq.isOpen_preimage]
     exact h.isOpen_preimage s hs
 
-private theorem q_coordinates_here
+theorem q_coordinates_here
     (a : KPContActualSectorSmoothTestModules.ActualChart (U := U) (H := H))
     (y : a.domain) :
     KPContCotangentOverlapRationalBranches.q a
@@ -148,7 +148,7 @@ private theorem q_coordinates_here
     KPContActualCotangentPieceHilbertSum.coordinates]
   rw [hi]
 
-private theorem lp_norm_sq_here {α : Type*} [MeasurableSpace α] {μ : Measure α}
+theorem lp_norm_sq_here {α : Type*} [MeasurableSpace α] {μ : Measure α}
     (w : Lp ℂ 2 μ) : ‖w‖ ^ 2 = ∫ x, ‖w x‖ ^ 2 ∂μ := by
   have hi := L2.inner_def (𝕜 := ℂ) w w
   have h2 : ∫ x, inner ℂ (w x) (w x) ∂μ = ((∫ x, ‖w x‖ ^ 2 ∂μ : ℝ) : ℂ) := by
@@ -164,11 +164,11 @@ private theorem lp_norm_sq_here {α : Type*} [MeasurableSpace α] {μ : Measure 
     rw [hz, Complex.ofReal_re]
   rw [← h3, hi, h2, Complex.ofReal_re]
 
-private theorem norm_sq_ofReal_mul (r : ℝ) (hr : 0 ≤ r) (z : ℂ) :
+theorem norm_sq_ofReal_mul (r : ℝ) (hr : 0 ≤ r) (z : ℂ) :
     ‖(r : ℂ) * z‖ ^ 2 = r ^ 2 * ‖z‖ ^ 2 := by
   rw [norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hr, mul_pow]
 
-private theorem measurable_sectionNorm_here (s : KPContSectorLineL2Isometry.BorelL2Sections F ζ hζ U R P H) :
+theorem measurable_sectionNorm_here (s : KPContSectorLineL2Isometry.BorelL2Sections F ζ hζ U R P H) :
     Measurable (KPContSectorSmoothFramesSupport.sectionNorm F ζ hζ U R P H s.val) := by
   have hme : Measurable (fun x =>
       KPContSectorSmoothFramesSupport.sectionNorm F ζ hζ U R P H s.val x ^ 2) := by
@@ -187,7 +187,7 @@ private theorem measurable_sectionNorm_here (s : KPContSectorLineL2Isometry.Bore
     exact norm_nonneg _
   rw [heq]; exact hme.sqrt
 
-private theorem weighted_integral_eq_here {T : ℝ}
+theorem weighted_integral_eq_here {T : ℝ}
     (partition : SquareEndPartition F ζ hζ U R P H T)
     (w : Q) (s : KPContSectorLineL2Isometry.BorelL2Sections F ζ hζ U R P H)
     (hs : KPContSectorLineL2Isometry.sectorLineIsometry F ζ hζ U R P H (jU w) =

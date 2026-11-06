@@ -49,8 +49,4 @@ theorem rayFractionalCharacterExtension
     apply Units.ext
     rw [rayIdealFractionalIdeal_coe]
     exact hJ
-  change (H (J : ClassFieldTheory.NumberFieldFractionalIdealGroup K) : ℂ) = χ I
-  rw [hJeq]
-  exact hred
-
-end DedekindZetaZeroFree.AbelianQuotient
+  simp_all

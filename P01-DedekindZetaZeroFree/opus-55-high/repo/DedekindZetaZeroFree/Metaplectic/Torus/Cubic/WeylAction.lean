@@ -60,6 +60,3 @@ theorem weyl_cube (y : (q.adicCompletion F)ˣ) :
   change W⁻¹ * ActualFiniteTorus.normalWord F ζ hζ q 1 (y ^ 3) * W =
     ActualFiniteTorus.normalWord F ζ hζ q 1 (y⁻¹ ^ 3)
   simpa using signedW_conjugates_normalWord F ζ hζ q 1 (y ^ 3)
-
-end
-end DedekindZetaZeroFree.ActualFiniteBorel.Geometry

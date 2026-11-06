@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Finite-place factors of a global Hilbert pairing family
 -/
@@ -49,7 +44,3 @@ def finiteFactor
         (Units.map (algebraMap F (v.adicCompletion F)).toMonoidHom a))
       (powerClass (v.adicCompletion F) n
         (Units.map (algebraMap F (v.adicCompletion F)).toMonoidHom b)))
-
-end ClassFieldTheory.GlobalHilbertPairingFamily
-
-end

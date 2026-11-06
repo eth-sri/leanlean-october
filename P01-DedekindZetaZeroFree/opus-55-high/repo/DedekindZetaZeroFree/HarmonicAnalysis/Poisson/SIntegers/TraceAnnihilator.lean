@@ -6,7 +6,6 @@ public import DedekindZetaZeroFree.Adeles.Characters.ArchimedeanTraceClassificat
 
 @[expose] public section
 
-noncomputable section
 
 open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree
@@ -17,7 +16,7 @@ open scoped Classical NumberField nonZeroDivisors Topology
 
 set_option backward.isDefEq.respectTransparency false
 
-private theorem sAnnihilator_arch_pairing (F : Type) [Field F] [NumberField F]
+theorem sAnnihilator_arch_pairing (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (𝓞 F))) (x y : InfiniteAdeleRing F) :
     sLocalTraceCharacter F S ((x * y, 0) : SLocalProduct F S) =
       Circle.exp (2 * Real.pi * KPArchTrace.infiniteTracePairing F x y) := by
@@ -52,18 +51,14 @@ private theorem sAnnihilator_arch_pairing (F : Type) [Field F] [NumberField F]
     | empty => intro f; simp
     | insert a s ha ih =>
         intro f
-        rw [Finset.sum_insert ha, Finset.prod_insert ha, Circle.exp_add, ih]
+        simp_all
   rw [hp, sLocalTraceCharacter_apply, Finset.mul_sum, hprod]
   have hf : (∏ v : S, localFiniteCharacter F v.val ((0 : PoissonSFiniteDensity.Space F S) v)) = 1 := by
-    apply Finset.prod_eq_one
-    intro v _
-    exact (localFiniteCharacter F v.val).map_zero_eq_one
+    simp
   rw [hf, mul_one]
-  apply Finset.prod_congr rfl
-  intro v _
   rfl
 
-private theorem sAnnihilator_arch_rational (F : Type) [Field F] [NumberField F]
+theorem sAnnihilator_arch_rational (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (𝓞 F))) (hS : PoissonS.ContainsDifferent F S)
     (y : SLocalProduct F S)
     (hy : ∀ m : sIntegerRing F S,
@@ -169,7 +164,7 @@ theorem sInteger_trace_annihilator (F : Type) [Field F] [NumberField F]
         have hh := hdiag m
         change sLocalTraceCharacter F S (z.1 * _, z.2 * _) = 1 at hh
         change sLocalTraceCharacter F S (0, z.2 * (sIntegerDiagonal F S m).2) = 1
-        simpa only [hz, zero_mul] using hh
+        simp_all
       exact congrFun heq
     have hzf : z.2 = 0 := by
       funext v
@@ -192,7 +187,7 @@ theorem sInteger_trace_annihilator (F : Type) [Field F] [NumberField F]
         · rw [Pi.single_eq_same]
         · intro w _ hw
           rw [Pi.single_eq_of_ne hw]
-          exact (localFiniteCharacter F w.val).map_zero_eq_one
+          simp
         · simp
       rw [hp] at hh
       exact hh
@@ -200,7 +195,3 @@ theorem sInteger_trace_annihilator (F : Type) [Field F] [NumberField F]
     exact Prod.ext hz hzf
   · rintro ⟨n, rfl⟩ m
     exact sLocalTraceCharacter_sIntegerDiagonal_mul_eq_one F S hS' n m
-
-end DedekindZetaZeroFree
-
-end

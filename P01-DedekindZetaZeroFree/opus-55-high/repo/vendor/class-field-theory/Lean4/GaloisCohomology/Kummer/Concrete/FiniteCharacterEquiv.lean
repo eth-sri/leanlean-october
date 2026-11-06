@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # finite Kummer character isomorphism
 
@@ -54,7 +51,7 @@ def finiteKummerRadicalSubgroup (n : ℕ+) : Subgroup Kˣ where
   inv_mem' := by
     rintro a ⟨α, hα⟩
     refine ⟨α⁻¹, ?_⟩
-    rw [inv_pow, hα, map_inv]
+    simp_all
 
 /-- The finite Kummer radical consists exactly of classes annihilated by every
 defining character. -/
@@ -111,13 +108,13 @@ theorem finiteKummerQuotientCharacter_surjective
   have hbeta : ∀ sigma : Gal(L/K), sigma • beta = f sigma * beta := by
     intro sigma
     rw [← hbeta_div sigma]
-    exact (div_mul_cancel (sigma • beta) beta).symm
+    simp
   have hbeta_pow_fixed : ∀ sigma : Gal(L/K),
       sigma • (beta ^ (n : ℕ)) = beta ^ (n : ℕ) := by
     intro sigma
     calc
-      sigma • (beta ^ (n : ℕ)) = (sigma • beta) ^ (n : ℕ) := by
-        exact map_pow (MulDistribMulAction.toMonoidHom Lˣ sigma) beta (n : ℕ)
+      sigma • (beta ^ (n : ℕ)) = (sigma • beta) ^ (n : ℕ) := 
+        map_pow (MulDistribMulAction.toMonoidHom Lˣ sigma) beta (n : ℕ)
       _ = (f sigma * beta) ^ (n : ℕ) := by rw [hbeta sigma]
       _ = (f sigma) ^ (n : ℕ) * beta ^ (n : ℕ) := mul_pow _ _ _
       _ = beta ^ (n : ℕ) := by
@@ -133,7 +130,7 @@ theorem finiteKummerQuotientCharacter_surjective
     intro ha_zero
     have : (((beta ^ (n : ℕ) : Lˣ) : L)) = 0 := by
       simpa [ha_zero] using ha.symm
-    exact (beta ^ (n : ℕ)).ne_zero this
+    simp_all
   let aunit : Kˣ := Units.mk0 a ha_ne
   have hbeta_pow : beta ^ (n : ℕ) =
       Units.map (algebraMap K L).toMonoidHom aunit := by
@@ -163,9 +160,3 @@ def finiteKummerCharacterEquiv
     ⟨(chosenFiniteKummerRadicalDatum (K := K) (L := L) n).quotientKummerCharacterWithoutSection_injective
           (nthRootsOfUnity_fixed (K := K) (L := L) n hmu),
       finiteKummerQuotientCharacter_surjective (K := K) (L := L) n hmu⟩
-
-end FiniteKummerCharacterIso
-
-end KummerTheory
-
-end

@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Finite-place tensor-norm subgroup
 
@@ -46,7 +41,3 @@ def finitePlaceTensorNormSubgroup
     Subgroup (v.adicCompletion K)ˣ :=
   (Units.map (Algebra.norm (v.adicCompletion K) :
     (v.adicCompletion K ⊗[K] L) →* v.adicCompletion K)).range
-
-end ClassFieldTheory
-
-end

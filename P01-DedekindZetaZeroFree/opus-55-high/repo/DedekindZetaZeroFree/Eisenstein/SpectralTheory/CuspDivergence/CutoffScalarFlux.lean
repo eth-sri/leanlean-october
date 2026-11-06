@@ -31,7 +31,3 @@ def cutoffScalarFlux (d : ℕ) (u : KPArch.Space d → ℝ) (a : ℝ → ℝ) :
     Space d → Cotangent d :=
   fun x i k => (a (KPCuspLogShape.meanHeight d (arch d x)) : ℂ) *
     scalarDifferential d u x i k
-
-end DedekindZetaZeroFree.KPCompactGreen.ScalarFluxDisintegration
-
-end

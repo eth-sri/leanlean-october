@@ -27,20 +27,18 @@ theorem mellin_converse_axis_inversion
     have hpoint (u : ℝ) : Real.exp u •
         ((Real.exp u : ℂ) ^ (-(c : ℂ) - 1) • g (Real.exp u)) =
         Real.exp (-(c * u)) • g (Real.exp u) := by
-      have hexp : (-(c : ℂ) - 1) = ((-c - 1 : ℝ) : ℂ) := by push_cast; rfl
+      have hexp : (-(c : ℂ) - 1) = ((-c - 1 : ℝ) : ℂ) := by simp
       rw [hexp, ← Complex.ofReal_cpow (le_of_lt (Real.exp_pos _)), ← Real.exp_mul]
       rw [← smul_assoc, Complex.real_smul, ← Complex.ofReal_mul, ← Real.exp_add]
       have hsum : u + u * (-c - 1) = -(c * u) := by ring
       rw [hsum]
       rfl
     have hh : Integrable (fun u : ℝ => Real.exp (-(c * u)) • g (Real.exp u)) := by
-      convert h using 1
-      funext u
-      exact (hpoint u).symm
+      simp_all
     convert hh.comp_neg using 1
     funext u
-    simp only [p, neg_mul, neg_neg]
-    congr 2 <;> ring
+    simp only [p]
+    simp
   have hF_int : Integrable F := by
     have h := hG_int.comp_mul_right' (show -(2 * Real.pi) ≠ 0 by simp)
     convert h using 1
@@ -101,5 +99,3 @@ theorem mellin_converse_axis_inversion
     field_simp
   rw [hscale]
   simp
-
-end DedekindZetaZeroFree

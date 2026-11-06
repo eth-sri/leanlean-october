@@ -13,7 +13,7 @@ open scoped Classical
 open Filter
 noncomputable section
 namespace DedekindZetaZeroFree.PrincipalMellin
-private theorem product_analytic {ι : Type} (f : ι → ℂ → ℂ) (U : Set ℂ)
+theorem product_analytic {ι : Type} (f : ι → ℂ → ℂ) (U : Set ℂ)
     (hU : IsOpen U) (u : ι → ℝ) (hu : Summable u) (hu0 : ∀ i, 0 ≤ u i)
     (hf : ∀ i, DifferentiableOn ℂ (f i) U)
     (hb : ∀ i z, z ∈ U → ‖f i z - 1‖ ≤ u i) :
@@ -23,7 +23,7 @@ private theorem product_analytic {ι : Type} (f : ι → ℂ → ℂ) (U : Set �
       (fun z => ∑' T : Finset ι, ∏ i ∈ T, (f i z - 1)) U := by
     apply Complex.differentiableOn_tsum_of_summable_norm hs
     · intro T
-      exact DifferentiableOn.fun_finset_prod fun i _ => (hf i).sub_const 1
+      fun_prop
     · exact hU
     · intro T z hz
       refine (Finset.norm_prod_le _ _).trans ?_
@@ -34,7 +34,7 @@ private theorem product_analytic {ι : Type} (f : ι → ℂ → ℂ) (U : Set �
     hu.of_nonneg_of_le (fun _ => norm_nonneg _) (fun i => hb i z hz)
   have hh := tprod_one_add (summable_finsetProd_of_summable_norm hnorm)
   simpa using hh
-private theorem product_bound {ι : Type} (f : ι → ℂ) (u : ι → ℝ)
+theorem product_bound {ι : Type} (f : ι → ℂ) (u : ι → ℝ)
     (hu : Summable u) (hu0 : ∀ i, 0 ≤ u i) (hb : ∀ i, ‖f i - 1‖ ≤ u i) :
     ‖∏' i, f i‖ ≤ ∑' T : Finset ι, ∏ i ∈ T, u i := by
   have hnorm : Summable (fun i => ‖f i - 1‖) :=
@@ -69,13 +69,13 @@ variable {F : Type} [Field F] [NumberField F]
     (primePlace R p) hp
   simp [primePlace] at h
   exact p.property.not_unit (by simpa [h] using (isUnit_one : IsUnit (1 : Ideal (𝓞 F))))
-private theorem primeOutside_injective {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+theorem primeOutside_injective {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
     (R : ActualRecipe S η) : Function.Injective (primeOutside R) := by
   intro p q h
   apply Subtype.ext
   apply Subtype.ext
   exact congrArg (fun v => v.val.asIdeal) h
-private theorem exterior_modulus {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+theorem exterior_modulus {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
     (R : ActualRecipe S η) (I : R.A.Exterior) : I.val ⊔ R.A.modulus = ⊤ := by
   by_contra h
   obtain ⟨p, hp, hle⟩ := Ideal.exists_le_maximal (I.val ⊔ R.A.modulus) h
@@ -85,9 +85,9 @@ private theorem exterior_modulus {S : SArithmeticData F} {η : RayClassCharacter
   have hIv : I.val ⊔ p = ⊤ := (R.A.exterior_iff ⟨I.val, I.property.1⟩).mp
     I.property.2 v (R.A.modulus_support v hmod)
   have : (⊤ : Ideal (𝓞 F)) ≤ p := by
-    rw [← hIv]; exact sup_le (le_sup_left.trans hle) le_rfl
+    simp_all
   exact hp.ne_top (top_unique this)
-private theorem local_phases {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+theorem local_phases {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
     (R : ActualRecipe S η) (p : ExteriorIdealEuler.PrimeIndex R.A.cS) :
     ‖R.target p.val.val‖ = 1 ∧
       ‖R.probe.coefficients.theta (R.probe.coefficients.generator p.val) ^ 6‖ = 1 := by
@@ -97,7 +97,7 @@ private theorem local_phases {S : SArithmeticData F} {η : RayClassCharacter F S
   · rw [norm_pow, NormalizedProbe.principal_theta_norm R.probe
       ⟨R.probe.coefficients.generator p.val, (R.probe.coefficients.generates p.val).1⟩]
     simp
-private theorem local_ne_zero {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+theorem local_ne_zero {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
     (R : ActualRecipe S η) (p : ExteriorIdealEuler.PrimeIndex R.A.cS)
     (s : ℂ) (hs : (2 / 3 : ℝ) < s.re) : R.localCorrection p s ≠ 0 := by
   have hq : 1 < idealNorm p.val.val := by
@@ -118,7 +118,7 @@ private theorem local_ne_zero {S : SArithmeticData F} {η : RayClassCharacter F 
     norm_num [Complex.sub_re, Complex.mul_re]
     linarith
 
-private theorem local_majorized {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+theorem local_majorized {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
     (R : ActualRecipe S η) (a : ℝ) (ha : (2 / 3 : ℝ) < a) :
     ∃ u : ExteriorIdealEuler.PrimeIndex R.A.cS → ℝ,
       Summable u ∧ (∀ p, 0 ≤ u p) ∧
@@ -140,7 +140,7 @@ private theorem local_majorized {S : SArithmeticData F} {η : RayClassCharacter 
       have h := NumberField.RingOfIntegers.HeightOneSpectrum.one_lt_absNorm (primePlace R p)
       exact_mod_cast h
     exact (hb _ hq _ _ (local_phases R p).1 (local_phases R p).2 s hs).1
-private theorem local_diff {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
+theorem local_diff {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
     (R : ActualRecipe S η) (p : ExteriorIdealEuler.PrimeIndex R.A.cS) :
     DifferentiableOn ℂ (R.localCorrection p) {s : ℂ | (2 / 3 : ℝ) < s.re} := by
   intro s hs
@@ -173,7 +173,7 @@ private theorem local_diff {S : SArithmeticData F} {η : RayClassCharacter F S.m
   apply DifferentiableAt.div
   · fun_prop
   · fun_prop
-  · exact mul_ne_zero hE hD
+  positivity
 theorem actual_principal_H_differentiable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
     (R : ActualRecipe S η) :
     DifferentiableOn ℂ R.H {s : ℂ | (2 / 3 : ℝ) < s.re} := by
@@ -210,7 +210,7 @@ theorem actual_principal_H_bound {S : SArithmeticData F} {η : RayClassCharacter
 
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
-private theorem spectral_full_L_inv_bounded (R : ActualRecipe S η) (a : ℝ) (ha : 1 < a) :
+theorem spectral_full_L_inv_bounded (R : ActualRecipe S η) (a : ℝ) (ha : 1 < a) :
  ∃ M : ℝ, 0 < M ∧ ∀ s : ℂ, a ≤ s.re → ‖(R.continuation.L s)⁻¹‖ ≤ M := by
  let coeff : ExteriorIdeal (⊤ : Ideal (𝓞 F)) → ℂ := fun I => R.target I.val
  let M := (3 / 2 : ℝ) * ∑' I : NonzeroIdeal F, (idealNorm I.val) ^ (-a)
@@ -226,8 +226,7 @@ private theorem spectral_full_L_inv_bounded (R : ActualRecipe S η) (a : ℝ) (h
    simp only [Function.mem_support] at hI
    refine ⟨?_, by simp⟩
    intro hzero
-   have hη : R.target I = 0 := (R.target.eq_zero_iff' I).mpr (Or.inl hzero)
-   exact hI (by simpa only [hη, zero_mul])
+   simp_all
   exact ((hasSum_subtype_iff_of_support_subset hsupport).mpr
    (R.continuation.series s (ha.trans_le hs))).tsum_eq
  rw [← hexp, ← Complex.exp_neg, Complex.norm_exp]
@@ -236,7 +235,7 @@ private theorem spectral_full_L_inv_bounded (R : ActualRecipe S η) (a : ℝ) (h
   (HeckeLogProof.ray_isCoefficient R.A.modulus R.A.modulus_ne_zero R.target) a ha s hs
  rw [Complex.neg_re]
  exact ((neg_le_abs _).trans (Complex.abs_re_le_norm _)).trans h
-private theorem spectral_L_inv_bounded (R : ActualRecipe S η) (a : ℝ) (ha : 1 < a) :
+theorem spectral_L_inv_bounded (R : ActualRecipe S η) (a : ℝ) (ha : 1 < a) :
  ∃ M : ℝ, 0 < M ∧ ∀ s : ℂ, a ≤ s.re → ‖(R.L s)⁻¹‖ ≤ M := by
  obtain ⟨M, hM, hb⟩ := spectral_full_L_inv_bounded R a ha
  let u : HeightOneSpectrum (𝓞 F) → ℝ := fun v =>
@@ -344,15 +343,14 @@ theorem actual_principal_spectral_properties
       intro I hI
       refine ⟨?_, by simp⟩
       intro hzero
-      have hη : R.target I = 0 := (R.target.eq_zero_iff' I).mpr (Or.inl hzero)
-      exact hI (by simpa only [hη, zero_mul])
+      simp_all
     exact ((hasSum_subtype_iff_of_support_subset hsupport).mpr
       (R.continuation.series s hs)).tsum_eq
   have hLzero (s : ℂ) (hs : 1 < s.re) : R.L s ≠ 0 := by
     apply MellinZeroFree.comparisonPrincipalIncompleteL_ne_zero_of_L_ne_zero
       F R.A R.target R.probe.principal R.continuation s (by linarith)
     rw [← hexp s hs]
-    exact Complex.exp_ne_zero _
+    simp
   have hN : DifferentiableOn ℂ R.N {s : ℂ | (2 / 3 : ℝ) < s.re} :=
     (((differentiable_id.sub_const (5 / 6)).pow 2).cexp.differentiableOn).mul
       (actual_principal_H_differentiable R)
@@ -377,7 +375,3 @@ theorem actual_principal_spectral_properties
           (R.target v.asIdeal)).differentiableOn.const_sub 1
     exact hNr.div hL (fun s hs => hLzero s hs)
   · exact spectral_strip_bound R
-
-end DedekindZetaZeroFree.PrincipalMellin
-
-end

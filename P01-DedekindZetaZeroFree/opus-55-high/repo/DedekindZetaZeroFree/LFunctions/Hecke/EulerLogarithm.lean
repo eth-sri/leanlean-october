@@ -11,7 +11,7 @@ open scoped NumberField Classical
 open ExteriorIdealEuler
 variable {F : Type} [Field F] [NumberField F]
 
-private theorem primeTerm_bound {cS : Ideal (𝓞 F)}
+theorem primeTerm_bound {cS : Ideal (𝓞 F)}
     (a : ExteriorIdeal cS → ℂ) (ha : IsCoefficient a)
     (σ : ℝ) (hσ : 1 < σ) (s : ℂ) (hs : σ ≤ s.re) (p : PrimeIndex cS) :
     ‖primeTerm a s p‖ ≤ (idealNorm p.val.val) ^ (-σ) ∧
@@ -22,7 +22,7 @@ private theorem primeTerm_bound {cS : Ideal (𝓞 F)}
   constructor
   · unfold primeTerm summand
     rw [norm_mul]
-    have hc : (Ideal.absNorm p.val.val : ℂ) = (idealNorm p.val.val : ℂ) := by simp [idealNorm]
+    have hc : (Ideal.absNorm p.val.val : ℂ) = (idealNorm p.val.val : ℂ) := by rfl
     rw [hc, Complex.norm_cpow_eq_rpow_re_of_pos hq0, Complex.neg_re]
     calc
       ‖a p.val‖ * (Ideal.absNorm p.val.val : ℝ) ^ (-s.re) ≤
@@ -36,7 +36,7 @@ private theorem primeTerm_bound {cS : Ideal (𝓞 F)}
       _ = (idealNorm p.val.val)⁻¹ := Real.rpow_neg_one _
       _ ≤ 1 / 2 := by simpa using inv_anti₀ (by norm_num : (0 : ℝ) < 2) hq
 
-private theorem primeLog_bound {cS : Ideal (𝓞 F)}
+theorem primeLog_bound {cS : Ideal (𝓞 F)}
     (a : ExteriorIdeal cS → ℂ) (ha : IsCoefficient a)
     (σ : ℝ) (hσ : 1 < σ) (s : ℂ) (hs : σ ≤ s.re) (p : PrimeIndex cS) :
     ‖-Complex.log (1 - primeTerm a s p)‖ ≤
@@ -50,31 +50,31 @@ private theorem primeLog_bound {cS : Ideal (𝓞 F)}
  def primeToNonzero {cS : Ideal (𝓞 F)} (p : PrimeIndex cS) : NonzeroIdeal F :=
   ⟨p.val.val, p.val.property.1⟩
 
-private theorem primeToNonzero_injective {cS : Ideal (𝓞 F)} :
+theorem primeToNonzero_injective {cS : Ideal (𝓞 F)} :
     Function.Injective (primeToNonzero (F := F) (cS := cS)) := by
   intro p q h
   apply Subtype.ext
   apply Subtype.ext
   exact congrArg (fun z : NonzeroIdeal F => z.val) h
 
-private theorem primeMajorant_summable {cS : Ideal (𝓞 F)} (σ : ℝ) (hσ : 1 < σ) :
-    Summable (fun p : PrimeIndex cS => (3 / 2 : ℝ) * (idealNorm p.val.val) ^ (-σ)) := by
-  exact ((ideal_norm_rpow_summable F σ hσ).comp_injective primeToNonzero_injective).mul_left _
+theorem primeMajorant_summable {cS : Ideal (𝓞 F)} (σ : ℝ) (hσ : 1 < σ) :
+    Summable (fun p : PrimeIndex cS => (3 / 2 : ℝ) * (idealNorm p.val.val) ^ (-σ)) := 
+  ((ideal_norm_rpow_summable F σ hσ).comp_injective primeToNonzero_injective).mul_left _
 
-private theorem primeLog_summable_norm {cS : Ideal (𝓞 F)}
+theorem primeLog_summable_norm {cS : Ideal (𝓞 F)}
     (a : ExteriorIdeal cS → ℂ) (ha : IsCoefficient a)
     (σ : ℝ) (hσ : 1 < σ) (s : ℂ) (hs : σ ≤ s.re) :
-    Summable (fun p : PrimeIndex cS => ‖-Complex.log (1 - primeTerm a s p)‖) := by
-  exact (primeMajorant_summable σ hσ).of_nonneg_of_le (fun _ => norm_nonneg _) (primeLog_bound a ha σ hσ s hs)
+    Summable (fun p : PrimeIndex cS => ‖-Complex.log (1 - primeTerm a s p)‖) := 
+  (primeMajorant_summable σ hσ).of_nonneg_of_le (fun _ => norm_nonneg _) (primeLog_bound a ha σ hσ s hs)
 
-private theorem primeTerm_differentiable {cS : Ideal (𝓞 F)}
+theorem primeTerm_differentiable {cS : Ideal (𝓞 F)}
     (a : ExteriorIdeal cS → ℂ) (p : PrimeIndex cS) :
     Differentiable ℂ (fun s => primeTerm a s p) := by
   have hn : (Ideal.absNorm p.val.val : ℂ) ≠ 0 := by
     exact_mod_cast (Ideal.absNorm_eq_zero_iff.not.mpr p.val.property.1)
   exact ((differentiable_id (𝕜 := ℂ)).neg.const_cpow (Or.inl hn)).const_mul (a p.val)
 
-private theorem primeLog_differentiable {cS : Ideal (𝓞 F)}
+theorem primeLog_differentiable {cS : Ideal (𝓞 F)}
     (a : ExteriorIdeal cS → ℂ) (ha : IsCoefficient a) (σ : ℝ) (hσ : 1 < σ)
     (p : PrimeIndex cS) :
     DifferentiableOn ℂ (fun s => -Complex.log (1 - primeTerm a s p)) {s : ℂ | σ < s.re} := by
@@ -152,6 +152,3 @@ theorem ray_isCoefficient (𝔪 : Ideal (𝓞 F)) (h𝔪 : 𝔪 ≠ ⊥) (ω : R
     induction k with
     | zero => simpa using ω.map_top'
     | succ k ih => rw [pow_succ, ω.map_mul', ih, pow_succ]
-
-end
-end DedekindZetaZeroFree.HeckeLogProof

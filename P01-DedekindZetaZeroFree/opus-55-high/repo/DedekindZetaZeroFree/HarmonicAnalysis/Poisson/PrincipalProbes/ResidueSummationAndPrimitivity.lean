@@ -49,8 +49,7 @@ theorem raw_tracePhase_eq (A : SArithmeticData F)
         (Equiv.subtypeEquivRight fun w : InfinitePlace F =>
           InfinitePlace.not_isReal_iff_isComplex).symm
       intro w
-      simp only [InfinitePlace.Completion.ringEquivComplexOfIsComplex_apply,
-        map_mul]
+      simp only [map_mul]
       rfl
   unfold PoissonS.tracePhase ProbeAdditive.phase ProbeAdditive.archPhase
   change Complex.exp (2 * (Real.pi : ℂ) * Complex.I *
@@ -77,14 +76,11 @@ theorem raw_diagonal_tracePhase_eq (A : SArithmeticData F) (σ : F →+* ℂ)
       rw [ContinuousLinearEquiv.apply_symm_apply,
         PoissonArch.infiniteAdeleToSpace_coordinates]
       have hfst : (sLocalDiagonal F A.Sf z).1 = algebraMap F (InfiniteAdeleRing F) z := by
-        funext w
-        rw [sLocalDiagonal_infinite]
-        exact (InfiniteAdeleRing.algebraMap_apply F z w).symm
+        rfl
       rw [hfst, ← InfiniteAdeleRing.mixedEmbedding_eq_algebraMap_comp]
     · rfl
   rw [hd, hd, raw_tracePhase_eq]
-  congr 1
-  exact (sLocalDiagonal F A.Sf).map_mul x y |>.symm
+  simp
 
 theorem raw_fourier_coordinate_eq (A : SArithmeticData F) (σ : F →+* ℂ)
     (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
@@ -111,7 +107,7 @@ theorem raw_fourier_coordinate_eq (A : SArithmeticData F) (σ : F →+* ℂ)
     change PoissonS.tracePhase F A.Sf P.finiteTrace
       (PoissonS.localProductToSpace F A.Sf (-((PoissonS.localProductToSpace F A.Sf).symm x)))
       (PoissonS.localProductToSpace F A.Sf y) = _
-    rw [map_neg, AddEquiv.apply_symm_apply]]
+    simp]
   simp only [PoissonS.tracePhase, Prod.fst_neg, Prod.snd_neg, Pi.neg_apply,
     PoissonArch.tracePairing_eq_inner, inner_neg_left, Complex.ofReal_neg]
   rw [← mul_assoc]
@@ -165,8 +161,8 @@ theorem raw_annular_tensor_coordinates (A : SArithmeticData F) (W : SLocalProduc
   rw [hh]
 
 theorem raw_productModule_eq_modulus (A : SArithmeticData F) (a : A.R) (ha : a ≠ 0) :
-    PoissonS.productModule F A.Sf (a : F) = ProbeCoset.modulus A a := by
-  exact (sProductModulus_eq_principalIdeal_index F A.Sf a ha).2
+    PoissonS.productModule F A.Sf (a : F) = ProbeCoset.modulus A a := 
+  (sProductModulus_eq_principalIdeal_index F A.Sf a ha).2
 
 def raw_localUnits (A : SArithmeticData F) : A.G ≃* (SLocalProduct F A.Sf)ˣ :=
   ((MulEquiv.piUnits).symm.prodCongr (MulEquiv.piUnits).symm).trans
@@ -176,7 +172,6 @@ theorem raw_localDilationModule_eq_norm (A : SArithmeticData F) (g : A.G) :
     PoissonS.localDilationModule F A.Sf (raw_localUnits A g) = A.norm g := by
   unfold PoissonS.localDilationModule SArithmeticData.norm
   congr 1
-  change ‖((raw_localUnits A g).val).1‖ = _
   rw [InfiniteAdeleRing.norm_def]
   apply Finset.prod_congr rfl
   intro v _
@@ -194,9 +189,7 @@ theorem raw_localDilationModule_eq_norm (A : SArithmeticData F) (g : A.G) :
       rw [ContinuousLinearEquiv.apply_symm_apply,
         PoissonArch.infiniteAdeleToSpace_coordinates]
       have hfst : (sLocalDiagonal F A.Sf z).1 = algebraMap F (InfiniteAdeleRing F) z := by
-        funext w
-        rw [sLocalDiagonal_infinite]
-        exact (InfiniteAdeleRing.algebraMap_apply F z w).symm
+        rfl
       rw [hfst, ← InfiniteAdeleRing.mixedEmbedding_eq_algebraMap_comp]
     · rfl
 
@@ -208,7 +201,7 @@ theorem raw_localDilationModule_eq_norm (A : SArithmeticData F) (g : A.G) :
   change PoissonS.localProductToSpace F A.Sf
     (sLocalDiagonal F A.Sf c * (PoissonS.localProductToSpace F A.Sf).symm
       (PoissonS.localProductToSpace F A.Sf (sLocalDiagonal F A.Sf x))) = _
-  rw [AddEquiv.symm_apply_apply, ← map_mul]
+  simp
 
  theorem raw_tsum_scalar_lattice (A : SArithmeticData F) (c : Fˣ) (f : PoissonS.Space F A.Sf → ℂ) :
     (∑' m : PoissonS.lattice F A.Sf (c : F), f m) =
@@ -294,12 +287,12 @@ def raw_residueCosetEquiv (A : SArithmeticData F) (s a : A.R)
       rw [← hl]
       apply Ideal.Quotient.eq.mpr
       apply Ideal.mem_span_singleton.mpr
-      exact ⟨n, by ring⟩⟩
+      simp⟩
   apply Equiv.ofBijective f
   constructor
   · intro x y h
     have hh : l + (s*a)*x = l + (s*a)*y := congrArg Subtype.val h
-    exact mul_left_cancel₀ (mul_ne_zero hs ha) (add_left_cancel hh)
+    simp_all
   · intro m
     have hh : FiniteTransform.residueMap A.R.toSubring (s*a) m.val =
         FiniteTransform.residueMap A.R.toSubring (s*a) l := m.property.trans hl.symm
@@ -441,6 +434,3 @@ theorem raw_principal_additiveCharacter_primitive
   change (k : F) = (s : F) * (n : F)
   rw [div_eq_iff hsF] at hkn
   simpa [mul_comm] using hkn
-
-end
-end DedekindZetaZeroFree.ProbeCoset

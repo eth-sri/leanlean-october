@@ -32,11 +32,9 @@ instance pglTopologicalGroup : IsTopologicalGroup (PGL2 F v) := by
   unfold PGL2 Matrix.ProjGenLinGroup
   exact QuotientGroup.instIsTopologicalGroup (Subgroup.center (GL2 F v))
 
-private lemma mul_scalar_apply (A : GL2 F v) (u : (LocalField F v)ˣ) (i j : Fin 2) :
+lemma mul_scalar_apply (A : GL2 F v) (u : (LocalField F v)ˣ) (i j : Fin 2) :
     (A * Matrix.GeneralLinearGroup.scalar (Fin 2) u) i j = A i j * (u : LocalField F v) := by
-  rw [Units.val_mul, Matrix.mul_apply, Fin.sum_univ_two]
-  fin_cases i <;> fin_cases j <;>
-    simp [Matrix.GeneralLinearGroup.coe_scalar, Matrix.scalar_apply, Matrix.diagonal_apply]
+  simp
 
  lemma mul_entry (A B : GL2 F v) (i j : Fin 2) :
     (A * B) i j = A i 0 * B 0 j + A i 1 * B 1 j := by
@@ -46,36 +44,24 @@ private lemma mul_scalar_apply (A : GL2 F v) (u : (LocalField F v)ˣ) (i j : Fin
   have hdet : (A : Matrix (Fin 2) (Fin 2) (LocalField F v)).det ≠ 0 :=
     Matrix.GeneralLinearGroup.det_ne_zero A
   rw [Matrix.det_fin_two] at hdet
-  rw [show (A : Matrix (Fin 2) (Fin 2) (LocalField F v)) 1 0 = 0 from hu,
-    mul_zero, sub_zero] at hdet
-  exact mul_ne_zero_iff.mp hdet
+  simp_all
 
  lemma inv_entry_zero {A : GL2 F v} (hu : A 1 0 = 0) : (A⁻¹) 1 0 = 0 := by
   have h11 : A 1 1 ≠ 0 := (diag_ne_zero F v hu).2
   have hmul : ((A : Matrix (Fin 2) (Fin 2) (LocalField F v)) *
       ((A⁻¹ : GL2 F v) : Matrix (Fin 2) (Fin 2) (LocalField F v))) 1 0 = 0 := by
-    have h := congr_arg
-      (fun g : GL2 F v => (g : Matrix (Fin 2) (Fin 2) (LocalField F v)) 1 0)
-      (mul_inv_cancel A)
-    simpa using h
+    simp
   rw [Matrix.mul_apply, Fin.sum_univ_two] at hmul
-  simp only [hu, zero_mul, zero_add, Matrix.one_apply, Fin.isValue, Fin.reduceEq,
-    reduceIte] at hmul
-  exact (mul_eq_zero.mp hmul).resolve_left h11
+  simp_all
 
  lemma inv_entry_zero' {A : GL2 F v} (hu : A 1 0 = 0) (hv : A 0 1 = 0) :
     (A⁻¹) 0 1 = 0 := by
   have h00 : A 0 0 ≠ 0 := (diag_ne_zero F v hu).1
   have hmul : ((A : Matrix (Fin 2) (Fin 2) (LocalField F v)) *
       ((A⁻¹ : GL2 F v) : Matrix (Fin 2) (Fin 2) (LocalField F v))) 0 1 = 0 := by
-    have h := congr_arg
-      (fun g : GL2 F v => (g : Matrix (Fin 2) (Fin 2) (LocalField F v)) 0 1)
-      (mul_inv_cancel A)
-    simpa using h
+    simp
   rw [Matrix.mul_apply, Fin.sum_univ_two] at hmul
-  simp only [hv, zero_mul, add_zero, Matrix.one_apply, Fin.isValue, Fin.reduceEq,
-    reduceIte] at hmul
-  exact (mul_eq_zero.mp hmul).resolve_left h00
+  simp_all
 
 def upperBorel : Subgroup (PGL2 F v) where
   carrier := {g | ∃ A : GL2 F v, Matrix.ProjGenLinGroup.mk A = g ∧ A 1 0 = 0}
@@ -110,7 +96,7 @@ def diagonalTorus : Subgroup (PGL2 F v) where
   have hmem : A ∈ Subgroup.center (GL2 F v) := Matrix.ProjGenLinGroup.mk_eq_one.mp hA
   rw [Matrix.GeneralLinearGroup.center_eq_range_scalar] at hmem
   obtain ⟨u, rfl⟩ := hmem
-  simp [Matrix.GeneralLinearGroup.coe_scalar, Matrix.scalar_apply, Matrix.diagonal_apply]
+  rfl
 
  lemma choose_ratio_eq (b : upperBorel F v) (A : GL2 F v)
     (hA : Matrix.ProjGenLinGroup.mk A = b.val) (hu : A 1 0 = 0) :
@@ -192,10 +178,9 @@ variable (F : Type*) [Field F] [NumberField F]
 
 def localAbs : (LocalField F v)ˣ →* (ℝ≥0)ˣ where
   toFun y := Units.mk0 ‖(y : LocalField F v)‖₊ (by
-    simp only [ne_eq, ← NNReal.coe_eq_zero, coe_nnnorm, norm_ne_zero_iff]
-    exact Units.ne_zero y)
-  map_one' := by ext; simp
-  map_mul' := by intro a b; ext; simp
+    simp)
+  map_one' := by simp
+  map_mul' := by simp
 
 def ordinaryDelta : upperBorel F v →* (ℝ≥0)ˣ :=
   (localAbs F v).comp (borelRatio F v)
@@ -204,17 +189,16 @@ theorem ordinaryDelta_eq (b : upperBorel F v) (A : GL2 F v)
     (hA : Matrix.ProjGenLinGroup.mk A = b.val) (hupper : A 1 0 = 0) :
     ((ordinaryDelta F v b : ℝ≥0) : ℝ) = ‖A 0 0 / A 1 1‖ := by
   have h1 : (ordinaryDelta F v b : ℝ≥0) = ‖(borelRatio F v b : LocalField F v)‖₊ := by
-    simp [ordinaryDelta, localAbs]
+    rfl
   rw [h1, borelRatio_eq F v b A hA hupper, coe_nnnorm]
 
 private theorem representative_upper (A : GL2 F v)
     (hA : Matrix.ProjGenLinGroup.mk A ∈ upperBorel F v) : A 1 0 = 0 := by
   obtain ⟨B, hB, hu⟩ := hA
   obtain ⟨t, rfl⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp hB
-  simpa [Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
-    Matrix.scalar, Matrix.mul_diagonal, hu] using hu
+  simp_all
 
-private theorem norm_lc {X : Type*} [TopologicalSpace X]
+theorem norm_lc {X : Type*} [TopologicalSpace X]
     (f : X → LocalField F v) (hf : Continuous f) (hn : ∀ x, f x ≠ 0) :
     IsLocallyConstant (fun x => ‖f x‖₊) := by
   rw [IsLocallyConstant.iff_eventually_eq]
@@ -223,8 +207,7 @@ private theorem norm_lc {X : Type*} [TopologicalSpace X]
     ((isOpen_lt (hf.sub continuous_const).norm continuous_const).mem_nhds
       (by
         change ‖f x - f x‖ < ‖f x‖
-        rw [sub_self, norm_zero]
-        exact norm_pos_iff.mpr (hn x)))
+        simp_all))
   filter_upwards [he] with z hz
   apply NNReal.coe_injective
   change ‖f z‖ = ‖f x‖
@@ -240,22 +223,18 @@ private theorem delta_lc : IsLocallyConstant (ordinaryDelta F v) := by
   have hq := (hp.restrictPreimage S).isQuotientMap
   let r : (p ⁻¹' S) → LocalField F v := fun A => A.val 0 0 / A.val 1 1
   have hr (A : p ⁻¹' S) :
-      (borelRatio F v (S.restrictPreimage p A) : LocalField F v) = r A := by
-    exact borelRatio_eq F v _ A.val rfl (representative_upper F v A.val A.property)
+      (borelRatio F v (S.restrictPreimage p A) : LocalField F v) = r A := 
+    borelRatio_eq F v _ A.val rfl (representative_upper F v A.val A.property)
   have hn (A : p ⁻¹' S) : r A ≠ 0 := by
     rw [← hr A]
-    exact Units.ne_zero _
-  have hd (A : p ⁻¹' S) : A.val 1 1 ≠ 0 := by
-    exact (div_ne_zero_iff.mp (hn A)).2
+    simp
+  have hd (A : p ⁻¹' S) : A.val 1 1 ≠ 0 := 
+    (div_ne_zero_iff.mp (hn A)).2
   have hval : Continuous (fun A : p ⁻¹' S =>
       (A.val : Matrix (Fin 2) (Fin 2) (LocalField F v))) :=
-    (Units.continuous_val (M := Matrix (Fin 2) (Fin 2) (LocalField F v))).comp
-      continuous_subtype_val
+    by fun_prop
   have hc : Continuous r := by
-    apply Continuous.div
-    · exact (continuous_apply 0).comp ((continuous_apply 0).comp hval)
-    · exact (continuous_apply 1).comp ((continuous_apply 1).comp hval)
-    · exact hd
+    fun_prop
   have hl := norm_lc F v r hc hn
   have hcDelta : IsLocallyConstant ((ordinaryDelta F v) ∘ S.restrictPreimage p) := by
     rw [IsLocallyConstant.iff_eventually_eq]
@@ -269,15 +248,14 @@ private theorem delta_lc : IsLocallyConstant (ordinaryDelta F v) := by
   apply hq.isCoinducing.isOpen_preimage.mp
   exact hcDelta U
 
-theorem ordinaryDelta_locallyConstant : IsLocallyConstant (ordinaryDelta F v) := by
-  exact delta_lc F v
+theorem ordinaryDelta_locallyConstant : IsLocallyConstant (ordinaryDelta F v) := 
+  delta_lc F v
 
 def halfModulus {B : Type*} [Group B] (δ : B →* (ℝ≥0)ˣ) : B →* (ℝ≥0)ˣ where
   toFun b := Units.mk0 (NNReal.sqrt (δ b : ℝ≥0)) (by
-    rw [Ne, NNReal.sqrt_eq_zero]
-    exact Units.ne_zero (δ b))
-  map_one' := by ext; simp
-  map_mul' := by intro a b; ext; simp [MonoidHom.map_mul, NNReal.sqrt_mul]
+    simp)
+  map_one' := by simp
+  map_mul' := by intro a b; ext; simp
 
 theorem halfModulus_eq {B : Type*} [Group B] (δ : B →* (ℝ≥0)ˣ) (b : B) :
     ((halfModulus δ b : ℝ≥0) : ℝ) = Real.sqrt ((δ b : ℝ≥0) : ℝ) := by
@@ -318,23 +296,20 @@ theorem upperBorel_closed : IsClosed (upperBorel F v : Set (PGL2 F v)) := by
     constructor
     · rintro ⟨B, hB, hu⟩
       obtain ⟨t, rfl⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp hB
-      simpa [Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
-        Matrix.scalar, Matrix.mul_diagonal, hu] using hu
+      simp_all
     · intro h
       exact ⟨A, rfl, h⟩
   rw [he]
   apply isClosed_eq _ continuous_const
-  exact (continuous_apply 0).comp ((continuous_apply 1).comp
-    (Units.continuous_val (M := Matrix (Fin 2) (Fin 2) (LocalField F v))))
+  fun_prop
 
  def q (A : GL2 F v) : SectionCosetSpace (upperBorel F v) :=
   Quotient.mk _ (Matrix.ProjGenLinGroup.mk A)
-private theorem rep_upper (A : GL2 F v)
+theorem rep_upper (A : GL2 F v)
     (hA : Matrix.ProjGenLinGroup.mk A ∈ upperBorel F v) : A 1 0 = 0 := by
   obtain ⟨B, hB, hu⟩ := hA
   obtain ⟨t, rfl⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp hB
-  simpa [Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
-    Matrix.scalar, Matrix.mul_diagonal, hu] using hu
+  simp_all
 private theorem q_eq (A B : GL2 F v) : q F v A = q F v B ↔ (B * A⁻¹) 1 0 = 0 := by
   rw [q, q, Quotient.eq, QuotientGroup.rightRel_apply, ← map_inv, ← map_mul]
   exact ⟨rep_upper F v _, fun h => ⟨_, rfl, h⟩⟩
@@ -344,13 +319,13 @@ private theorem q_eq (A B : GL2 F v) : q F v A = q F v B ↔ (B * A⁻¹) 1 0 = 
   Matrix.GeneralLinearGroup.mkOfDetNeZero !![0,1;1,x] (by simp [Matrix.det_fin_two])
  def altInv (x : LocalField F v) : GL2 F v :=
   Matrix.GeneralLinearGroup.mkOfDetNeZero !![-x,1;1,0] (by simp [Matrix.det_fin_two])
-private theorem chart_inv (x : LocalField F v) : (chart F v x)⁻¹ = chart F v (-x) := by
+theorem chart_inv (x : LocalField F v) : (chart F v x)⁻¹ = chart F v (-x) := by
   apply inv_eq_of_mul_eq_one_right
   apply Matrix.GeneralLinearGroup.ext
   intro i j
   fin_cases i <;> fin_cases j <;>
     simp [chart, Matrix.mul_apply, Fin.sum_univ_two]
-private theorem alt_inv (x : LocalField F v) : (alt F v x)⁻¹ = altInv F v x := by
+theorem alt_inv (x : LocalField F v) : (alt F v x)⁻¹ = altInv F v x := by
   apply inv_eq_of_mul_eq_one_right
   apply Matrix.GeneralLinearGroup.ext
   intro i j
@@ -391,20 +366,16 @@ private theorem alt_inv (x : LocalField F v) : (alt F v x)⁻¹ = altInv F v x :
 private theorem chart_cont : Continuous (chart F v) := by
   rw [Units.continuous_iff]
   constructor
-  · change Continuous (fun x : LocalField F v => (!![1,0;x,1] : Matrix _ _ _))
-    fun_prop
+  · fun_prop
   · simp only [chart_inv]
-    change Continuous (fun x : LocalField F v => (!![1,0;-x,1] : Matrix _ _ _))
     fun_prop
-private theorem alt_cont : Continuous (alt F v) := by
+theorem alt_cont : Continuous (alt F v) := by
   rw [Units.continuous_iff]
   constructor
-  · change Continuous (fun x : LocalField F v => (!![0,1;1,x] : Matrix _ _ _))
-    fun_prop
+  · fun_prop
   · simp only [alt_inv]
-    change Continuous (fun x : LocalField F v => (!![-x,1;1,0] : Matrix _ _ _))
     fun_prop
-private theorem q_cont : Continuous (q F v) :=
+theorem q_cont : Continuous (q F v) :=
   continuous_quot_mk.comp QuotientGroup.continuous_mk
 private theorem flagRep_alt (x : LocalField F v) (hx : x ≠ 0) :
     flagRep F v (↑x) = q F v (alt F v x⁻¹) := by
@@ -458,12 +429,12 @@ def upperRootElement (x : LocalField F v) : PGL2 F v :=
   Matrix.ProjGenLinGroup.mk (upperRootMatrix F v x)
 
 theorem diagonalElement_mem (y : (LocalField F v)ˣ) :
-    diagonalElement F v y ∈ upperBorel F v := by
-  exact ⟨diagonalMatrix F v y, rfl, by simp [diagonalMatrix]⟩
+    diagonalElement F v y ∈ upperBorel F v := 
+  ⟨diagonalMatrix F v y, rfl, by simp [diagonalMatrix]⟩
 
 theorem upperRootElement_mem (x : LocalField F v) :
-    upperRootElement F v x ∈ upperBorel F v := by
-  exact ⟨upperRootMatrix F v x, rfl, by simp [upperRootMatrix]⟩
+    upperRootElement F v x ∈ upperBorel F v := 
+  ⟨upperRootMatrix F v x, rfl, by simp [upperRootMatrix]⟩
 
 theorem ordinaryDelta_upperRoot (x : LocalField F v) :
     ordinaryDelta F v ⟨upperRootElement F v x, upperRootElement_mem F v x⟩ = 1 := by
@@ -495,9 +466,3 @@ def ordinaryUpperRootHom : Multiplicative (LocalField F v) →* PGL2 F v where
     change Matrix.ProjGenLinGroup.mk (upperRootMatrix F v (Multiplicative.toAdd x + Multiplicative.toAdd z)) = _
     rw [h, map_mul]
     rfl
-
-end DedekindZetaZeroFree.KPRankOneInductionRaw
-
-end
-
-end

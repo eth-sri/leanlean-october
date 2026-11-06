@@ -7,7 +7,6 @@ public import DedekindZetaZeroFree.Moments.Probes.TripleMellinAbsoluteConvergenc
 
 namespace DedekindZetaZeroFree.NormalizedProbe.TripleMellin
 open TripleMellinRaw
-noncomputable section
 open MeasureTheory
 open scoped NumberField Classical
 variable {F : Type} [Field F] [NumberField F]
@@ -53,6 +52,3 @@ theorem integral_eq_every_order (P : PrincipalData A σ η hS) (X Y Z : ℝ)
       iteratedTripleMellinIntegral (principalTripleMellinHeights A σ η hS P X Y Z) order := by
   unfold principalTripleMellinIntegral iteratedTripleMellinIntegral
   rw [integral_eq_order _ (heights_integrable P X Y Z hX hY hZ) order]
-
-end
-end DedekindZetaZeroFree.NormalizedProbe.TripleMellin

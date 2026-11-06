@@ -25,11 +25,11 @@ def sexticUnitPower {k : Type*} [Field k] (χ : MulChar k ℂ)
     (j : Fin 6) (t : k) : ℂ :=
   if IsUnit t then χ t ^ j.val else 0
 
-private theorem mask_power_ne_one {k : Type*} [Field k] [Fintype k]
+theorem mask_power_ne_one {k : Type*} [Field k] [Fintype k]
     (χ : MulChar k ℂ) (hχ : orderOf χ = 6) (j : Fin 6) (hj : j.val ≠ 0) :
     χ⁻¹ ^ j.val ≠ 1 := by
   apply pow_ne_one_of_lt_orderOf hj
-  simpa [orderOf_inv, hχ] using j.isLt
+  simp_all
 
 theorem sexticMaskGaussSum_norm {k : Type*} [Field k] [Fintype k]
     (χ : MulChar k ℂ) (ψ : AddChar k ℂ)
@@ -48,8 +48,8 @@ theorem sexticMaskGaussSum_ne_zero {k : Type*} [Field k] [Fintype k]
     (hχ : orderOf χ = 6) (hψ : ψ.IsPrimitive)
     (hQ : Nat.Coprime (Fintype.card k) 6)
     (j : Fin 6) (hj : j.val ≠ 0) :
-    sexticMaskGaussSum χ ψ j ≠ 0 := by
-  exact gaussSum_ne_zero_of_nontrivial (by exact_mod_cast Fintype.card_ne_zero)
+    sexticMaskGaussSum χ ψ j ≠ 0 := 
+  gaussSum_ne_zero_of_nontrivial (by exact_mod_cast Fintype.card_ne_zero)
     (mask_power_ne_one χ hχ j hj) hψ
 
 theorem sexticFourierMask_sum {k : Type*} [Field k] [Fintype k]
@@ -69,13 +69,13 @@ theorem sexticFourierMask_sum {k : Type*} [Field k] [Fintype k]
       simpa [mul_comm] using AddChar.sum_mulShift t hψ
     rw [hs]
     by_cases ht : t = 0
-    · simp [ht, sexticUnitPower, hj, Fintype.card_ne_zero]
+    · simp [ht, sexticUnitPower, Fintype.card_ne_zero]
     · simp [ht, sexticUnitPower, hj, isUnit_iff_ne_zero]
   · have hm (v : k) : sexticFourierMask χ ψ j v =
         (χ⁻¹ ^ j.val) v / sexticMaskGaussSum χ ψ j := by
       by_cases hv : v = 0
       · subst v
-        simp only [sexticFourierMask, if_neg hj, if_pos rfl, MulChar.map_zero, zero_div, ite_true]
+        simp only [sexticFourierMask, if_neg hj, MulChar.map_zero, zero_div, ite_true]
       · simp only [sexticFourierMask, if_neg hj, if_neg hv]
     simp_rw [hm, div_mul_eq_mul_div, ← Finset.sum_div]
     by_cases ht : t = 0
@@ -90,6 +90,3 @@ theorem sexticFourierMask_sum {k : Type*} [Field k] [Fintype k]
         simpa [gaussSum, AddChar.mulShift_apply, u, inv_pow, sexticMaskGaussSum] using h
       rw [hs, mul_div_cancel_right₀ _ (sexticMaskGaussSum_ne_zero χ ψ hχ hψ hQ j hj)]
       simp [sexticUnitPower, isUnit_iff_ne_zero, ht, MulChar.pow_apply' χ hj]
-
-end
-end DedekindZetaZeroFree

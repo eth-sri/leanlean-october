@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Evaluation of a Hilbert pairing on representatives
 -/
@@ -30,5 +26,3 @@ def symbol
     (B : HilbertPairing K n) (a b : Kˣ) :
     rootsOfUnity (n : ℕ) K :=
   B (powerClass K n a) (powerClass K n b)
-
-end ClassFieldTheory.HilbertPairing

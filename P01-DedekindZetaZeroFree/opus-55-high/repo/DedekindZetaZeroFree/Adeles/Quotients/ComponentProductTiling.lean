@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.Adeles.Quotients.RationalComponents.PartialRa
 
 @[expose] public section
 
-noncomputable section
 open scoped Classical NumberField ENNReal NNReal Pointwise
 open MeasureTheory Function
 
@@ -31,7 +30,7 @@ open _root_.DedekindZetaZeroFree.KPActualComponentHaarSources renaming tiling_qu
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-private theorem component_measurable
+theorem component_measurable
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (U : Level F ζ hζ) (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     (i : Fin A.componentCount) : MeasurableSet (C F ζ hζ hF U A i) := by
@@ -49,7 +48,7 @@ private theorem component_measurable
   rw [he]
   exact (A.components.isOpenMap _ isOpen_range_sigmaMk).measurableSet
 
-private theorem finiteOrbit_measurable
+theorem finiteOrbit_measurable
     (U : Level F ζ hζ) (g : KPFiniteCuspAtlas.FiniteCover F ζ hζ) :
     MeasurableSet (KPCuspGenuineMonodromy.finiteOrbit F ζ hζ U g) := by
   letI := (ActualQuotient.actual_cover_lc_t2_group F ζ hζ).2.2
@@ -70,7 +69,7 @@ private theorem finiteOrbit_measurable
     ((Homeomorph.mulLeft (KPCuspGenuineMonodromy.central F ζ hζ ε * g)).isOpenMap _
       U.toOpenSubgroup.isOpen).measurableSet
 
-private theorem tiling_normalize_ae
+theorem tiling_normalize_ae
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     (U : Level F ζ hζ) (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     (i : Fin A.componentCount)
@@ -97,10 +96,9 @@ private theorem tiling_normalize_ae
   change tilingArch F ζ hζ δ = γ.val at he
   change v ∈ D
   change v = tilingArch F ζ hζ δ * a at hv
-  rw [hv,he]
-  exact hγ
+  simp_all
 
-private theorem ae_domain_no_overlap {H X : Type*} [Group H] [Countable H]
+theorem ae_domain_no_overlap {H X : Type*} [Group H] [Countable H]
     [MulAction H X] [MeasurableSpace X] (μ : Measure X) (D : Set X)
     (hD : IsFundamentalDomain H D μ) :
     ∀ᵐ x ∂μ, ∀ α : H, x ∈ D → α • x ∈ D → α = 1 := by
@@ -264,7 +262,3 @@ theorem product_domain_partial_fundamental
       have hh' := congrArg (fun k => θ * k) hr
       simpa [mul_assoc] using hh'
     exact hne (congrArg (tilingRational F ζ hζ) hδθ)
-
-end DedekindZetaZeroFree.KPActualComponentHaarSources.ProductDisintegration
-
-end

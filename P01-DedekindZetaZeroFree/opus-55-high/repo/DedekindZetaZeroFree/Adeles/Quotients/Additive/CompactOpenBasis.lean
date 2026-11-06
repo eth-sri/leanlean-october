@@ -46,5 +46,3 @@ theorem finiteAdeles_compactOpen_basis_zero
   refine ⟨K, ?_, hKo, hTU⟩
   exact (KPAdelicTopology.integralAdeles_isCompact F).of_isClosed_subset
     (K.isClosed_of_isOpen hKo) hKi
-
-end DedekindZetaZeroFree.AdelicSeparation

@@ -19,17 +19,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Descent of power-local-unit idèle subgroups
 
@@ -48,7 +37,6 @@ extension and then viewed over the original number field.
 open scoped BigOperators NumberField NumberField.LiesOver
 open NumberField IsDedekindDomain
 
-noncomputable section
 
 namespace GlobalClassFieldTheory
 namespace GlobalClassFields
@@ -165,8 +153,7 @@ theorem ideleNorm_mem_powerLocalUnitSubgroup_of_supports_above
     have hWunit :
         IdeleGroup.finiteComponent W.1 a ∈
           (W.1.adicCompletionIntegers L).units :=
-      haAway W.1 (by
-        simpa only [Finset.union_empty] using hWaway)
+      by simp_all
     let z : (W.1.adicCompletionIntegers L).units :=
       ⟨IdeleGroup.finiteComponent W.1 a, hWunit⟩
     simpa only [z, Subgroup.coe_subtype] using
@@ -197,8 +184,3 @@ theorem ideleClassNorm_map_powerLocalUnitSubgroup_le_of_supports_above
         ideleNorm_mem_powerLocalUnitSubgroup_of_supports_above
           (K := K) (L := L) n S S' hS ha,
         rfl⟩
-
-end GlobalClassFields
-end GlobalClassFieldTheory
-
-end

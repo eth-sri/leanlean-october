@@ -38,10 +38,10 @@ def principalTraceDualClassEquiv (F : Type) [Field F] [NumberField F] :
   invFun C := (principalTraceDualClass F)⁻¹ * C⁻¹
   left_inv := by
     intro C
-    simp [mul_inv_rev, mul_comm, mul_left_comm]
+    simp
   right_inv := by
     intro C
-    simp [mul_inv_rev, mul_comm, mul_left_comm]
+    simp
 
 @[simp] theorem principalTraceDualClassEquiv_apply (F : Type) [Field F] [NumberField F]
     (C : ClassGroup (𝓞 F)) :
@@ -64,7 +64,3 @@ theorem mk_traceDual_inverseClassIdealRepresentative (F : Type) [Field F] [Numbe
   rw [mk_traceDualIdealUnit, ClassGroup.mk_mk0, ClassGroup.mk_mk0]
   simp [DedekindZetaZeroFree.AbelianQuotient.Theta.mk0_inverseClassIdealRepresentative,
     mul_inv_rev, mul_comm]
-
-end DedekindZetaZeroFree.Hecke
-
-end

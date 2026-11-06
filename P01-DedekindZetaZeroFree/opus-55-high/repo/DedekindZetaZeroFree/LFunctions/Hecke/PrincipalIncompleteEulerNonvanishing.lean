@@ -9,15 +9,13 @@ namespace DedekindZetaZeroFree.MellinZeroFree
 
 open scoped NumberField
 
-noncomputable section
 
 open IsDedekindDomain
 
 theorem norm_comparisonRealPower (Z : ℝ) (s : ℂ) :
     ‖comparisonRealPower Z s‖ = Real.exp (s.re * Real.log Z) := by
   rw [comparisonRealPower, Complex.norm_exp]
-  congr 1
-  simp [Complex.mul_re]
+  simp
 
 theorem comparisonPrincipalIncompleteL_eulerFactors_ne_zero
     (F : Type) [Field F] [NumberField F] (A : SArithmeticData F)
@@ -43,8 +41,7 @@ theorem comparisonPrincipalIncompleteL_eulerFactors_ne_zero
   intro h
   have h1 : η v.asIdeal * comparisonRealPower (idealNorm v.asIdeal) (-s) = 1 :=
     (sub_eq_zero.mp h).symm
-  rw [h1, norm_one] at hlt
-  exact lt_irrefl 1 hlt
+  simp_all
 
 theorem comparisonPrincipalIncompleteL_ne_zero_of_L_ne_zero
     (F : Type) [Field F] [NumberField F] (A : SArithmeticData F)
@@ -54,7 +51,3 @@ theorem comparisonPrincipalIncompleteL_ne_zero_of_L_ne_zero
     comparisonPrincipalIncompleteL F A η hη P s ≠ 0 := by
   unfold comparisonPrincipalIncompleteL
   exact mul_ne_zero hL (comparisonPrincipalIncompleteL_eulerFactors_ne_zero F A η s hs)
-
-end
-
-end DedekindZetaZeroFree.MellinZeroFree

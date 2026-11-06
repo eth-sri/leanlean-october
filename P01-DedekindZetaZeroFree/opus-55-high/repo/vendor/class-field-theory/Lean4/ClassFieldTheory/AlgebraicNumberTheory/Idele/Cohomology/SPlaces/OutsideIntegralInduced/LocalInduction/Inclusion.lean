@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Inclusion of integral local induced modules
 
@@ -45,7 +42,7 @@ variable (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
 
 /-- Pointwise inclusion of integer units embeds the integral induced
 block into the ordinary local multiplicative induced block. -/
-noncomputable def inducedIntegerUnitsToLocalPlaceBlock :
+def inducedIntegerUnitsToLocalPlaceBlock :
     letI := LocalInductionInternal.extensionCompletionAlgebra vK w
     letI : SMul K w.1.Completion :=
       LocalInductionInternal.extensionCompletionSMul vK w
@@ -103,29 +100,10 @@ noncomputable def inducedIntegerUnitsToLocalPlaceBlock :
                   LocalFieldTheory.IsNonarchimedeanLocalField.integerUnitsToFieldUnits
                     (LocalizedCompletion vK w) (f.1 g)
             rw [f.2 h g]
-            let : MulDistribMulAction
-                (Gal(LocalizedCompletion vK w / vK.Completion))
-                𝒪[LocalizedCompletion vK w]ˣ :=
-              galoisGroupIntegerUnitsMulDistribMulActionOfIsIntegralClosure
-                vK.Completion (LocalizedCompletion vK w)
-            let : MulDistribMulAction
-                (Gal(LocalizedCompletion vK w / vK.Completion))
-                (LocalizedCompletion vK w)ˣ :=
-              galoisGroupFieldUnitsMulDistribMulAction
-                vK.Completion (LocalizedCompletion vK w)
-            exact
-              integerUnitsToFieldUnits_galoisGroup_equivariant
-                vK.Completion (LocalizedCompletion vK w)
-                (decompositionGroupEquivAlgebraicLocalizationAut
-                  vK hvK w h)
-                (f.1 g)⟩
+            rfl⟩
       map_one' := by
-        apply Subtype.ext
-        funext g
         rfl
       map_mul' := fun f₁ f₂ ↦ by
-        apply Subtype.ext
-        funext g
         rfl }
 
 omit [NumberField K] [NumberField L] in
@@ -181,8 +159,3 @@ theorem inducedIntegerUnitsToLocalPlaceBlock_injective :
       (LocalizedCompletion vK w)
   exact congrArg
     (fun z : LocalPlaceBlock vK hvK w => z.1 g) h
-
-
-end IntegralInduction
-
-end

@@ -57,13 +57,13 @@ theorem arithmetic_band_data (F : Type) [Field F] [NumberField F]
   have hVM : 1 ≤ V / M := (one_le_div hMpos).mpr hV
   have hVMpos : 0 < V / M := by linarith
   have hδd : 0 < δ / (d : ℝ) := div_pos hδ hdR
-  have hL : 1 ≤ L := by dsimp [L]; omega
+  have hL : 1 ≤ L := by omega
   have hceil : 6 * ((d : ℝ) / δ) ≤ (L : ℝ) := by
     calc
       6 * ((d : ℝ) / δ) = 6 * (d : ℝ) / δ := by ring
       _ ≤ (Nat.ceil (6 * (d : ℝ) / δ) : ℝ) := Nat.le_ceil _
-      _ ≤ (L : ℝ) := by dsimp [L]; push_cast; linarith
-  have hY : 0 < Y := by dsimp [Y]; positivity
+      _ ≤ (L : ℝ) := by dsimp [L]; simp
+  have hY : 0 < Y := by positivity
   let x : ℝ := H * (V / M) ^ (1 / (d : ℝ)) * Z ^ (δ / (d : ℝ))
   have hpowVM : ((V / M) ^ (1 / (d : ℝ))) ^ d = V / M := by
     rw [← Real.rpow_natCast, ← Real.rpow_mul (le_of_lt hVMpos)]
@@ -91,8 +91,7 @@ theorem arithmetic_band_data (F : Type) [Field F] [NumberField F]
     refine ⟨(hp i).1, ?_⟩
     have hbound : (max (NumberField.discr F).natAbs (Ideal.absNorm q) : ℝ) ≤ H := by
       dsimp [H]
-      simpa only [Nat.cast_max] using
-        (le_max_right (2 : ℝ) (max ((NumberField.discr F).natAbs : ℝ) (Ideal.absNorm q : ℝ)))
+      simp
     have hpgt : x < (p i : ℝ) := by
       have hpow : (1 : ℝ) ≤ 2 ^ (i : ℕ) := one_le_pow₀ (by norm_num)
       nlinarith [(hp i).2.1]
@@ -106,7 +105,7 @@ theorem arithmetic_band_data (F : Type) [Field F] [NumberField F]
       have : x < (p i : ℝ) := by nlinarith [(hp i).2.1]
       exact lt_of_le_of_lt hxZ this
     · exact hn
-    · exact hnZ
+    omega
   · intro i a ha ha2
     have hpgt : x < (p i : ℝ) := by
       have hh : (1 : ℝ) ≤ 2 ^ (i : ℕ) := one_le_pow₀ (by norm_num)
@@ -153,7 +152,7 @@ noncomputable def bandRows (F : Type) [Field F] [NumberField F]
     (c : Ideal (𝓞 F)) (Y : ℝ) (J : ℕ) : Finset (Ideal (𝓞 F)) :=
   (Finset.range (J + 1)).biUnion (fun j => paperShell F c ((2 : ℝ) ^ j * Y))
 
-private theorem pairwiseDisjoint_bandShells (F : Type) [Field F] [NumberField F]
+theorem pairwiseDisjoint_bandShells (F : Type) [Field F] [NumberField F]
     (c : Ideal (𝓞 F)) (Y : ℝ) (hY : 0 < Y) (J : ℕ) :
     Set.PairwiseDisjoint (↑(Finset.range (J + 1)) : Set ℕ)
       (fun j => paperShell F c ((2 : ℝ) ^ j * Y)) := by
@@ -214,8 +213,7 @@ theorem dyadic_band_aggregation (F : Type) [Field F] [NumberField F]
     have hup : (Ideal.absNorm a : ℝ) ≤ 2 * ((2 : ℝ) ^ Nat.find hex * Y) := by
       have h : (2 : ℝ) ^ (Nat.find hex + 1) * Y = 2 * ((2 : ℝ) ^ Nat.find hex * Y) := by
         rw [pow_succ]; ring
-      rw [h] at hspec
-      exact hspec
+      simp_all
     show a ∈ (Finset.range (J + 1)).biUnion (fun j => paperShell F c ((2 : ℝ) ^ j * Y))
     refine Finset.mem_biUnion.mpr ⟨Nat.find hex, ?_, ?_⟩
     · exact Finset.mem_range.mpr (Nat.lt_succ_of_le hjle)
@@ -277,12 +275,11 @@ theorem rational_row_transport (F : Type) [Field F] [NumberField F]
   have hpq : ¬ p ∣ Ideal.absNorm q := by
     intro h
     have h1 : p ≤ Ideal.absNorm q := Nat.le_of_dvd hqpos h
-    have h2 := le_max_right (NumberField.discr F).natAbs (Ideal.absNorm q)
     omega
   have hcne : c ≠ ⊥ := by
     intro hc
     obtain ⟨d, hd⟩ := hcq
-    exact hq (by rw [hd, hc]; simp)
+    simp_all
   have hcpos : 0 < Ideal.absNorm c := by
     rw [Nat.pos_iff_ne_zero, Ne, Ideal.absNorm_eq_zero_iff]; exact hcne
   have hcq_le : q ≤ c := Ideal.dvd_iff_le.mp hcq
@@ -292,7 +289,6 @@ theorem rational_row_transport (F : Type) [Field F] [NumberField F]
     intro h
     have h1 : p ≤ Ideal.absNorm c := Nat.le_of_dvd hcpos h
     have h2 : Ideal.absNorm c ≤ Ideal.absNorm q := Nat.le_of_dvd hqpos habsc_dvd
-    have h3 := le_max_right (NumberField.discr F).natAbs (Ideal.absNorm q)
     omega
   have hPsupc : P ⊔ c = ⊤ := by
     rw [hPdef]
@@ -349,7 +345,7 @@ theorem rational_row_transport (F : Type) [Field F] [NumberField F]
       intro h
       rcases hp.dvd_mul.mp (h.trans habs) with h3 | h3
       · exact hpb h3
-      · exact hpq h3
+      omega
     have hsup : P ⊔ Q.cond b = ⊤ := hPsup_of (Q.cond b) hcondne hpcond
     set z : ℂ := (Q.χ b) P with hzdef
     have hz0 : z ≠ 0 := by
@@ -391,9 +387,7 @@ theorem B1_isLeast_quadratic_bound (F : Type) [Field F] [NumberField F]
   · rintro C ⟨hC0, hC⟩
     refine csSup_le ⟨0, Or.inl rfl⟩ ?_
     rintro x (hx | ⟨lam, hlam, rfl⟩)
-    · have hx0 : x = 0 := by simpa using hx
-      rw [hx0]
-      exact hC0
+    · simp_all
     · calc
         Q1 F c Q M N lam ≤ C * energy F c N lam := hC lam
         _ ≤ C * 1 := mul_le_mul_of_nonneg_left hlam hC0
@@ -514,13 +508,5 @@ theorem B1_bottom_eq_zero (F : Type) [Field F] [NumberField F]
       energy F ⊥ N lam ≤ 1 ∧ x = Q1 F ⊥ Q M N lam}) = {0} := by
     ext x
     simp only [Set.mem_union, Set.mem_singleton_iff, Set.mem_setOf_eq]
-    constructor
-    · rintro (h | ⟨lam, -, rfl⟩)
-      · exact h
-      · exact hQ1 lam
-    · intro hx; exact Or.inl hx
+    simp_all
   rw [hset, csSup_singleton]
-
-end DedekindZetaZeroFree.LargeSieve.Sieve
-
-end

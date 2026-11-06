@@ -10,11 +10,10 @@ namespace DedekindZetaZeroFree.KPActualScalarBinding
 open KPLocalStoneVonNeumann KPLocalPrincipalSeries KPRankOneOpenCellKernel
 open KPRankOneCenterInducedDiagonalComparison KPRankOneReverseRegulatorShells KPActualScalarBinding
 noncomputable section
-set_option autoImplicit false
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 variable (q : HeightOneSpectrum (𝓞 F)) (S : ActualKPBinding F ζ hζ q)
 variable (P : Polarization S.heisenberg) [DecidableEq S.D]
-private theorem upper_shift_coordinate (x s : LocalField F q) :
+theorem upper_shift_coordinate (x s : LocalField F q) :
     openCoordinate F ζ hζ q x * nLift F ζ hζ q s = openCoordinate F ζ hζ q (x+s) := by
   simp only [openCoordinate, mul_assoc, nLift, ← KPPGLLocalCover.N_add]
 
@@ -102,7 +101,7 @@ private theorem omega_signed_factor (x : G F ζ hζ q) (hx : x ∈ omega F ζ h�
       ring
   exact ⟨⟨_,hb⟩, by simp [s, mul_assoc]⟩
 
-private theorem nonzero_near_zero (U : Set (K F q)) (hU : U ∈ nhds 0) :
+theorem nonzero_near_zero (U : Set (K F q)) (hU : U ∈ nhds 0) :
     ∃ y : K F q, y ∈ U ∧ y ≠ 0 := by
   obtain ⟨γ,hγ,hsub⟩ := (IsValuativeTopology.hasBasis_nhds_zero' (K F q)).mem_iff.mp hU
   obtain ⟨δ,hδ,hδ1⟩ := Valuation.IsNontrivial.exists_lt_one (v := valuation (K F q))
@@ -114,8 +113,7 @@ private theorem nonzero_near_zero (U : Set (K F q)) (hU : U ∈ nhds 0) :
     exact (mul_lt_of_lt_one_right hp hδ1).trans_le (min_le_left _ _)
   exact ⟨y,hsub hlt,by
     intro hz
-    rw [hz,map_zero] at hy
-    exact (mul_ne_zero hp.ne' hdy) hy.symm⟩
+    simp_all⟩
 
 omit [DecidableEq S.D] in
 
@@ -154,11 +152,8 @@ theorem actual_open_coordinate_injective (z : ℂ)
       refine ⟨A * KPStandardLocalRootLifts.lowerN (K F q) y,?_,?_⟩
       · have hl : projection F ζ hζ q (KPPGLLocalCover.LowerN F ζ hζ (Sum.inr q) y) =
             Matrix.ProjGenLinGroup.mk (KPStandardLocalRootLifts.lowerN (K F q) y) := rfl
-        rw [map_mul,map_mul,hA,hl]
+        simp_all
       · simpa [KPStandardLocalRootLifts.lowerN, Matrix.mul_apply, Fin.sum_univ_two,hc] using mul_ne_zero hd hy0
     have ha := congrFun (hU _ hy.1) x
     have hb := congrFun (hV _ hy.2) x
     exact ha.symm.trans ((ho _ hxy).trans hb)
-
-end
-end DedekindZetaZeroFree.KPActualScalarBinding

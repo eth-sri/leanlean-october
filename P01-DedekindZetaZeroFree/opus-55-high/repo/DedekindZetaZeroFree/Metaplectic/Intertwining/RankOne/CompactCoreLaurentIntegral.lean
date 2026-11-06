@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.CompactIntegrationOfLau
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.KPRankOneShellRepair
 open scoped NumberField
 open NumberField IsDedekindDomain MeasureTheory
@@ -66,7 +65,3 @@ theorem actual_initial_cutoff_laurent (P : Polarization S.heisenberg)
   intro s
   rw [Finsupp.sum_single_index (by simp)]
   exact (hm x s).trans (mul_comm _ _)
-
-end DedekindZetaZeroFree.KPRankOneShellRepair
-
-end

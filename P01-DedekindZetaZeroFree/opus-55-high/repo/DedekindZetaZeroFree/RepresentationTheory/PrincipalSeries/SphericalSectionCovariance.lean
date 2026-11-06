@@ -7,18 +7,17 @@ public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.HopfMatr
 namespace DedekindZetaZeroFree.ComplexFractionalInverse.CompactCharts
 open KPCplxCharacterHaar KPCplxPrincipalSeriesCharts
 open scoped Matrix Matrix.Norms.Elementwise
-private lemma row_norm_upper (a d : ℂˣ) (b : ℂ) (g : ComplexGL2) :
+lemma row_norm_upper (a d : ℂˣ) (b : ℂ) (g : ComplexGL2) :
     bottomRowNormSq (upperTriangular a d b * g) = ‖(d : ℂ)‖ ^ 2 * bottomRowNormSq g := by
-  simp [bottomRowNormSq, Matrix.GeneralLinearGroup.coe_mul, upperTriangular_coe_matrix,
-    Matrix.mul_apply, Fin.sum_univ_two, norm_mul, mul_pow]
+  simp [bottomRowNormSq, upperTriangular_coe_matrix, Matrix.mul_apply, Fin.sum_univ_two, mul_pow]
   ring
-private lemma det_norm_upper (a d : ℂˣ) (b : ℂ) (g : ComplexGL2) :
+lemma det_norm_upper (a d : ℂˣ) (b : ℂ) (g : ComplexGL2) :
     ‖(Matrix.GeneralLinearGroup.det (upperTriangular a d b * g) : ℂ)‖ =
       ‖(a : ℂ)‖ * ‖(d : ℂ)‖ * ‖(Matrix.GeneralLinearGroup.det g : ℂ)‖ := by
   rw [map_mul, Units.val_mul, norm_mul]
   congr 1
   change ‖(↑(upperTriangular a d b) : Matrix (Fin 2) (Fin 2) ℂ).det‖ = _
-  simp [upperTriangular_coe_matrix, Matrix.det_fin_two, norm_mul]
+  simp [upperTriangular_coe_matrix, Matrix.det_fin_two]
 theorem sphericalFunction_covariance (s : ℝ) : HasCovariance s (sphericalFunction s) := by
   intro a d b g
   have hd : ‖(d : ℂ)‖ ≠ 0 := norm_ne_zero_iff.mpr d.ne_zero
@@ -52,13 +51,10 @@ theorem sphericalFunction_charts (s : ℝ) :
   have ho : openCoordinate (sphericalFunction s) = fun z : ℂ =>
       (Real.rpow (1 / (1 + ‖z‖ ^ 2)) (1+2*s) : ℂ) := by
     funext z
-    simp [openCoordinate, sphericalFunction, bottomRowNormSq,
-      Matrix.GeneralLinearGroup.val_det_apply, weyl, upperUnipotent,
-      Matrix.GeneralLinearGroup.coe_mul, Matrix.det_fin_two, Matrix.mul_apply, Fin.sum_univ_two]
+    simp [openCoordinate, sphericalFunction, bottomRowNormSq, Matrix.GeneralLinearGroup.val_det_apply, weyl, upperUnipotent, Matrix.det_fin_two, Matrix.mul_apply, Fin.sum_univ_two]
   have hi : infinityCoordinate (sphericalFunction s) = fun z : ℂ =>
       (Real.rpow (1 / (1 + ‖z‖ ^ 2)) (1+2*s) : ℂ) := by
     funext z
     simp [infinityCoordinate, sphericalFunction, bottomRowNormSq,
       Matrix.GeneralLinearGroup.val_det_apply, lowerUnipotent, Matrix.det_fin_two, add_comm]
-  exact ⟨ho ▸ hc, hi ▸ hc⟩
-end DedekindZetaZeroFree.ComplexFractionalInverse.CompactCharts
+  simp_all

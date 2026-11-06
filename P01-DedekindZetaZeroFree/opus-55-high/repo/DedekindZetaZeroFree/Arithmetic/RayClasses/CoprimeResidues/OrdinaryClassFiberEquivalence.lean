@@ -6,7 +6,6 @@ public import DedekindZetaZeroFree.Arithmetic.RayClasses.Conductors.PrimitivePri
 
 @[expose] public section
 
-noncomputable section
 
 open scoped NumberField nonZeroDivisors
 open DedekindZetaZeroFree.AbelianQuotient
@@ -15,7 +14,7 @@ namespace DedekindZetaZeroFree.Hecke.Theta
 
 variable {F : Type} [Field F] [NumberField F]
 
-private theorem classGroup_rayIdealFractionalIdeal (a : Ideal (𝓞 F)) (ha : a ≠ ⊥) :
+theorem classGroup_rayIdealFractionalIdeal (a : Ideal (𝓞 F)) (ha : a ≠ ⊥) :
     ClassGroup.mk F (rayIdealFractionalIdeal F a ha) =
       ClassGroup.mk0 ⟨a, mem_nonZeroDivisors_iff_ne_zero.mpr ha⟩ := by
   convert ClassGroup.mk_mk0 F ⟨a, mem_nonZeroDivisors_iff_ne_zero.mpr ha⟩ using 1
@@ -59,7 +58,7 @@ theorem coprimeIdealResidueRayClass_exists_integral_lift
   · simpa [hbcoeff] using hbcop
   · simpa [hbcoeff] using hbcls
 
-private theorem integral_lift_isUnit_reduction
+theorem integral_lift_isUnit_reduction
     (m a : Ideal (𝓞 F)) (hm : m ≠ ⊥) (ha : a ≠ ⊥)
     (hcop : a ⊔ m = ⊤)
     (x : ↥(rayIdealFractionalIdeal F a ha : FractionalIdeal (𝓞 F)⁰ F))
@@ -127,10 +126,6 @@ theorem coprimeIdealResidueRayClass_fiber_card_all
         (ClassGroup.mk F (rayIdealFractionalIdeal F a ha))⁻¹}) :
     Nat.card {q : coprimeIdealResidueUnits F m a hm ha hcop hmt //
       coprimeIdealResidueRayClass hF m a hm ha hcop hmt q = c} =
-        residueUnitImageCard F m := by
-  exact (coprimeIdealResidueRayClass_fiber_card hF m a hm ha hcop hmt c
+        residueUnitImageCard F m := 
+  (coprimeIdealResidueRayClass_fiber_card hF m a hm ha hcop hmt c
     (coprimeIdealResidueRayClass_surjective hF m a hm ha hcop hmt c)).2
-
-end DedekindZetaZeroFree.Hecke.Theta
-
-end

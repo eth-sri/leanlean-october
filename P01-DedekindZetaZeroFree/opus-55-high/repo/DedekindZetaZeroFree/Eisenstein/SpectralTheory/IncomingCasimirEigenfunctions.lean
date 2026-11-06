@@ -20,7 +20,7 @@ def heightFactor (d : ℕ) (s : ℂ) (t : ℝ) : ℂ :=
 def radialLaplacian (d : ℕ) (w : ℝ → ℂ) (t : ℝ) : ℂ :=
   -((d : ℂ)⁻¹ * deriv (deriv w) t) + 2 * deriv w t
 
-private theorem incoming_exp_hasDerivAt (c b : ℂ) (t : ℝ) :
+theorem incoming_exp_hasDerivAt (c b : ℂ) (t : ℝ) :
     HasDerivAt (fun u : ℝ => Complex.exp (c * (u : ℂ)) * b)
       (c * (Complex.exp (c * (t : ℂ)) * b)) t := by
   simpa only [Complex.ofRealCLM_apply, Complex.ofReal_one, mul_one,
@@ -48,13 +48,3 @@ theorem heightFactor_eigenfunction (d : ℕ) (hd : 0 < d) (s : ℂ) (b : ℂ) :
   dsimp [c]
   field_simp
   ring
-
-section RationalRealization
-
-variable {G H A : Type*} [AddCommGroup H] [Module ℂ H]
-
-end RationalRealization
-
-end DedekindZetaZeroFree.KPIncomingCasimir
-
-end

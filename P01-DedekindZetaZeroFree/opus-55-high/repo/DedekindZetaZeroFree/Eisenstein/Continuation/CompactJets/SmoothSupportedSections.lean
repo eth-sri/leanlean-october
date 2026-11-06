@@ -27,7 +27,7 @@ section ScalarCalculus
 
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimensional ℝ E]
 
-private theorem scalar_point_holomorphic (U : Set E) (O : Set ℂ) (f : ℂ → E → ℂ)
+theorem scalar_point_holomorphic (U : Set E) (O : Set ℂ) (f : ℂ → E → ℂ)
     (hh : ∀ (C : Set E) (hC : IsCompact C), C ⊆ U →
       ∀ (n : ℕ) (v : Fin n → E),
         letI : CompactSpace C := isCompact_iff_compactSpace.mp hC
@@ -42,7 +42,7 @@ private theorem scalar_point_holomorphic (U : Set E) (O : Set ℂ) (f : ℂ → 
   intro s hs
   simpa [iteratedFDerivWithin_zero_apply] using (heq s hs ⟨x, Set.mem_singleton x⟩).symm
 
-private theorem scalar_jet_joint (U : Set E) (O : Set ℂ) (f : ℂ → E → ℂ)
+theorem scalar_jet_joint (U : Set E) (O : Set ℂ) (f : ℂ → E → ℂ)
     (hh : ∀ (C : Set E) (hC : IsCompact C), C ⊆ U →
       ∀ (n : ℕ) (v : Fin n → E),
         letI : CompactSpace C := isCompact_iff_compactSpace.mp hC
@@ -83,7 +83,7 @@ private theorem jet_constant_word (n : ℕ) (u : E → ℂ) (U : Set E) (hU : Is
       RightFrame.PullbackWords.directionalWord]
     rfl
 
-private theorem basis_word (b : Module.Basis (Fin (Module.finrank ℝ E)) ℝ E)
+theorem basis_word (b : Module.Basis (Fin (Module.finrank ℝ E)) ℝ E)
     (w : List (Fin (Module.finrank ℝ E))) (u : E → ℂ) :
     RightFrame.PullbackWords.directionalWord (fun i _ => b i) w u =
       RightFrame.PullbackWords.constantDirectionWord (w.map b) u := by
@@ -201,7 +201,7 @@ theorem pointwiseJets_support (w : ℂ → Sections F ζ hζ U R P H) (O : Set �
   have hnorm : sectionNorm F ζ hζ U R P H (pointwiseJets w O k s) b = 0 := by
     rw [← hbase, sectionNorm_component, pointwiseJets_apply, hz, norm_zero]
   exact hb hnorm
-private theorem labeledAInv_smooth (p : Fin (d F) ≃ Fin (KPCuspLogShape.dimension F)) :
+theorem labeledAInv_smooth (p : Fin (d F) ≃ Fin (KPCuspLogShape.dimension F)) :
     ContDiff ℝ (⊤ : ℕ∞) (labeledAInv p) := by
   unfold labeledAInv
   apply (CotangentLogCoframe.A (d F)).symm.contDiff.comp

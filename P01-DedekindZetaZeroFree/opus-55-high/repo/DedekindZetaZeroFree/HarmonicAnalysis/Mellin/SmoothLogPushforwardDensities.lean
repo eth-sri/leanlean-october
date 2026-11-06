@@ -13,7 +13,7 @@ open MeasureTheory
 open scoped Convolution
 open scoped ContDiff
 
-private lemma bddAbove_range_norm_schwartz (g : SchwartzMap ℝ ℂ) :
+lemma bddAbove_range_norm_schwartz (g : SchwartzMap ℝ ℂ) :
     BddAbove (Set.range fun x : ℝ => ‖g x‖) :=
   ⟨(SchwartzMap.seminorm ℝ 0 0) g, by
     rintro _ ⟨x, rfl⟩
@@ -22,14 +22,14 @@ private lemma bddAbove_range_norm_schwartz (g : SchwartzMap ℝ ℂ) :
  def schwartzIterDeriv (k : SchwartzMap ℝ ℂ) (m : ℕ) : SchwartzMap ℝ ℂ :=
   ((fun g : SchwartzMap ℝ ℂ => SchwartzMap.derivCLM ℝ ℂ g)^[m]) k
 
-private lemma schwartzIterDeriv_zero (k : SchwartzMap ℝ ℂ) : schwartzIterDeriv k 0 = k := by
+lemma schwartzIterDeriv_zero (k : SchwartzMap ℝ ℂ) : schwartzIterDeriv k 0 = k := by
   simp [schwartzIterDeriv]
 
-private lemma schwartzIterDeriv_succ (k : SchwartzMap ℝ ℂ) (m : ℕ) :
+lemma schwartzIterDeriv_succ (k : SchwartzMap ℝ ℂ) (m : ℕ) :
     schwartzIterDeriv k (m + 1) = SchwartzMap.derivCLM ℝ ℂ (schwartzIterDeriv k m) := by
   simp [schwartzIterDeriv, Function.iterate_succ_apply']
 
-private lemma schwartzIterDeriv_succ_apply (k : SchwartzMap ℝ ℂ) (m : ℕ) (x : ℝ) :
+lemma schwartzIterDeriv_succ_apply (k : SchwartzMap ℝ ℂ) (m : ℕ) (x : ℝ) :
     schwartzIterDeriv k (m + 1) x = deriv (schwartzIterDeriv k m) x := by
   rw [schwartzIterDeriv_succ, SchwartzMap.derivCLM_apply]
 
@@ -41,9 +41,7 @@ theorem schwartz_weighted_translates_smooth_integrable
   classical
   have hMeasK : ∀ (g : SchwartzMap ℝ ℂ) (x : ℝ),
       AEStronglyMeasurable (fun s : ℝ => w s * g (x - s)) μ := by
-    intro g x
-    exact hw.aestronglyMeasurable.mul
-      (g.continuous.comp (continuous_const.sub continuous_id)).aestronglyMeasurable
+    fun_prop
   have hIntK : ∀ (g : SchwartzMap ℝ ℂ) (x : ℝ),
       Integrable (fun s : ℝ => w s * g (x - s)) μ := by
     intro g x
@@ -76,7 +74,7 @@ theorem schwartz_weighted_translates_smooth_integrable
       Integrable (fun x : ℝ => ∫ s, w s * schwartzIterDeriv k m (x - s) ∂μ) volume := by
     intro m
     have hg : Integrable (fun x : ℝ => (schwartzIterDeriv k m : ℝ → ℂ) x) volume :=
-      SchwartzMap.integrable (schwartzIterDeriv k m)
+      by fun_prop
     have hprod : Integrable
         (fun p : ℝ × ℝ =>
           ContinuousLinearMap.lsmul ℝ ℂ (w p.2) (schwartzIterDeriv k m (p.1 - p.2)))
@@ -85,7 +83,7 @@ theorem schwartz_weighted_translates_smooth_integrable
         (g := fun x : ℝ => (schwartzIterDeriv k m : ℝ → ℂ) x)
         (ContinuousLinearMap.lsmul ℝ ℂ) hw hg
     have h := hprod.integral_prod_left
-    simpa only [ContinuousLinearMap.lsmul_apply, smul_eq_mul] using h
+    simp_all
   have hDeriv : ∀ (m : ℕ) (x : ℝ),
       HasDerivAt (fun y : ℝ => ∫ s, w s * schwartzIterDeriv k m (y - s) ∂μ)
         (∫ s, w s * schwartzIterDeriv k (m + 1) (x - s) ∂μ) x := by
@@ -100,8 +98,8 @@ theorem schwartz_weighted_translates_smooth_integrable
       (by simp)
       (Filter.Eventually.of_forall fun y => hMeasK _ y)
       (hIntK _ x)
-      (by
-        exact (ContinuousLinearMap.toSpanSingletonCLE (𝕜 := ℝ) (E := ℂ)).continuous
+      (
+        (ContinuousLinearMap.toSpanSingletonCLE (𝕜 := ℝ) (E := ℂ)).continuous
           |>.comp_aestronglyMeasurable (hMeasK (schwartzIterDeriv k (m + 1)) x))
       (Filter.Eventually.of_forall fun a => by
         intro y _
@@ -119,12 +117,7 @@ theorem schwartz_weighted_translates_smooth_integrable
         exact ((hgd.comp_sub_const y a).const_mul (w a)).hasFDerivAt)
     have h := hmain.hasDerivAt
     rw [ContinuousLinearMap.integral_apply (hIntK' _ x)] at h
-    rw [show (∫ a, ContinuousLinearMap.toSpanSingleton ℝ
-            (w a * schwartzIterDeriv k (m + 1) (x - a)) 1 ∂μ)
-          = ∫ a, w a * schwartzIterDeriv k (m + 1) (x - a) ∂μ from
-        integral_congr_ae (Filter.Eventually.of_forall fun a =>
-          ContinuousLinearMap.toSpanSingleton_apply_one ℝ _)] at h
-    exact h
+    simp_all
   have hQ : ∀ n : ℕ, ∀ m : ℕ,
       ContDiff ℝ (n : ℕ∞ω) (fun x : ℝ => ∫ s, w s * schwartzIterDeriv k m (x - s) ∂μ) := by
     intro n
@@ -134,7 +127,7 @@ theorem schwartz_weighted_translates_smooth_integrable
       simpa using hCont m
     | succ n ih =>
       intro m
-      rw [show ((n + 1 : ℕ) : ℕ∞ω) = ((n : ℕ∞ω) + 1) from by push_cast; rfl,
+      rw [show ((n + 1 : ℕ) : ℕ∞ω) = ((n : ℕ∞ω) + 1) from by rfl,
         contDiff_succ_iff_hasFDerivAt]
       refine ⟨fun x => ContinuousLinearMap.toSpanSingleton ℝ
         (∫ s, w s * schwartzIterDeriv k (m + 1) (x - s) ∂μ), ?_, ?_⟩
@@ -280,12 +273,7 @@ theorem schwartzTensor_smooth_log_disintegration
       apply integral_congr_ae
       filter_upwards [hrq] with t ht
       rw [ht]
-    · exact ⟨fun _ => 0, fun hs => (hσ hs).elim⟩
+    simp_all
   choose p hp using hlocal
   exact ⟨p, (fun σ hσ => (hp σ hσ).1),
     (fun σ hσ => (hp σ hσ).2.1), (fun σ hσ => (hp σ hσ).2.2)⟩
-
-end
-end DedekindZetaZeroFree.ProbeSheetLogDensity
-
-end

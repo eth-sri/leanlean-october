@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Metaplectic.Weil.LocalSectionCovariance
 
 @[expose] public section
 
-noncomputable section
 open scoped Classical NumberField NNReal
 open NumberField IsDedekindDomain
 set_option backward.isDefEq.respectTransparency false
@@ -47,7 +46,7 @@ variable (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
   have hm : LocalCovariance.complexMatrix F ζ hζ w (u*g) =
       LocalCovariance.complexMatrix F ζ hζ w u * LocalCovariance.complexMatrix F ζ hζ w g := by
     unfold LocalCovariance.complexMatrix
-    exact map_mul _ _ _
+    simp
   unfold LocalCovariance.arch
   rw [he, hm, hu, (KPCplxPrincipalSeriesCharts.sphericalSection
     KPCplxPrincipalSeriesCharts.positiveParameter).property.1, map_mul, Units.val_mul]
@@ -92,7 +91,3 @@ variable (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
   congr 1
   push_cast
   ring
-
-end DedekindZetaZeroFree.EisensteinReferenceSections.LocalTorus
-
-end

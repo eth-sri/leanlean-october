@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Analysis.SmoothFunctions.CompactOpenHolomorph
 
 @[expose] public section
 
-noncomputable section
 
 namespace DedekindZetaZeroFree.KPLocalCubeSobolevJets
 
@@ -17,13 +16,13 @@ private theorem smooth_list {n : ℕ} (g : Space n → ℂ)
   induction l with
   | nil => exact hg
   | cons i l ih => exact (ih.fderiv_right (by simp)).clm_apply contDiff_const
-private theorem support_list {n : ℕ} (g : Space n → ℂ)
+theorem support_list {n : ℕ} (g : Space n → ℂ)
     (hg : HasCompactSupport g) (l : List (Fin n)) :
     HasCompactSupport (coordinateDerivativeList l g) := by
   induction l with
   | nil => exact hg
   | cons i l ih => exact ih.fderiv_apply ℝ _
-private theorem line_bound {n : ℕ} (g : Space n → ℂ)
+theorem line_bound {n : ℕ} (g : Space n → ℂ)
     (hg : ContDiff ℝ (⊤ : ℕ∞) g) (hs : HasCompactSupport g)
     (i : Fin n) (x : Fin n → ℝ) :
     ‖g ((EuclideanSpace.equiv (Fin n) ℝ).symm x)‖ₑ ≤
@@ -38,10 +37,10 @@ private theorem line_bound {n : ℕ} (g : Space n → ℂ)
     have he : (e : (Fin n → ℝ) → Space n) ∘ Function.update x i = a := rfl
     rw [← he]
     convert e.hasFDerivAt.comp_hasDerivAt t (hasDerivAt_update x i t) using 1
-    simpa [e] using (EuclideanSpace.toLp_single i (1 : ℝ)).symm
+    rfl
   have heq (t : ℝ) : deriv (g ∘ a) t =
-      coordinateDerivativeList [i] g (a t) := by
-    exact ((hg.differentiable (by simp) (a t)).hasFDerivAt.comp_hasDerivAt t (hda t)).deriv
+      coordinateDerivativeList [i] g (a t) := 
+    ((hg.differentiable (by simp) (a t)).hasFDerivAt.comp_hasDerivAt t (hda t)).deriv
   have hb := HasCompactSupport.enorm_le_lintegral_Ici_deriv
     ((hg.comp ha).of_le (by simp)) hs' (x i)
   have hx : a (x i) = e x := by simp [a]
@@ -65,8 +64,8 @@ private theorem marginal_bound {n : ℕ} (l : List (Fin n)) (hl : l.Nodup)
       let f : (Fin n → ℝ) → ℝ≥0∞ := fun y =>
         ‖coordinateDerivativeList (i :: l) g
           ((EuclideanSpace.equiv (Fin n) ℝ).symm y)‖ₑ
-      have hf : Measurable f := by
-        exact ((smooth_list g hg (i :: l)).continuous.comp
+      have hf : Measurable f := 
+        ((smooth_list g hg (i :: l)).continuous.comp
           (EuclideanSpace.equiv (Fin n) ℝ).symm.continuous).enorm.measurable
       have h1 :
         (∫⋯∫⁻_l.toFinset, (fun y : Fin n → ℝ =>
@@ -92,7 +91,6 @@ theorem norm_le_integral_full_mixed_derivative {n : ℕ} (hn : 0 < n)
   have hb := marginal_bound (List.finRange n) (List.nodup_finRange n) g hg hsupp
     ((EuclideanSpace.equiv (Fin n) ℝ) x)
   have hl : (List.finRange n).toFinset = Finset.univ := by
-    ext i
     simp
   rw [hl, lmarginal_univ] at hb
   have hm := (PiLp.volume_preserving_toLp (Fin n)).lintegral_comp_emb
@@ -107,7 +105,3 @@ theorem norm_le_integral_full_mixed_derivative {n : ℕ} (hn : 0 < n)
   have h := ENNReal.toReal_mono hf.hasFiniteIntegral.ne hb'
   rw [hnorm] at h
   simpa only [enorm_eq_nnnorm, ENNReal.coe_toReal, coe_nnnorm, f] using h
-
-end DedekindZetaZeroFree.KPLocalCubeSobolevJets
-
-end

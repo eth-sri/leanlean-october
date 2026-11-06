@@ -44,5 +44,3 @@ theorem characterOnFixedField_ne_one (ρ : ComplexDual (L ≃ₐ[K] L)) (hρ : �
   apply hρ
   rw [← characterOnFixedField_comp_restriction ρ, h]
   rfl
-
-end DedekindZetaZeroFree.AbelianQuotient

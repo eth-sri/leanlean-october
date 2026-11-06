@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Complex conjugation on a negative quadratic Kummer root
 -/
@@ -23,7 +19,6 @@ set_option autoImplicit false
 open scoped Classical ComplexConjugate ComplexOrder NumberField
 open NumberField
 
-noncomputable section
 
 namespace GlobalClassFieldTheory
 namespace Reciprocity
@@ -107,8 +102,3 @@ theorem chosenInfinitePlaceArtin_neg_one_apply_kummerRoot_of_real_of_radical_neg
         star (w.embedding beta) := hConj.eq beta
     _ = -w.embedding beta := hstar
     _ = w.embedding (-beta) := by rw [map_neg]
-
-end Reciprocity
-end GlobalClassFieldTheory
-
-end

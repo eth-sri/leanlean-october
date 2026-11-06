@@ -170,7 +170,7 @@ end DedekindZetaZeroFree.KPContActualAllCuspSource
 
 namespace DedekindZetaZeroFree
 
-private theorem allCusp_coordinate_reindex {n m : ℕ} (h : n = m)
+theorem allCusp_coordinate_reindex {n m : ℕ} (h : n = m)
     (p : KPContLocalNorm.Space (m * 3)) :
     (fun i : Fin m => CotangentLogCoframe.A n
       (WithLp.toLp 2 (fun ik : Fin n × Fin 3 =>
@@ -184,7 +184,7 @@ private theorem allCusp_coordinate_reindex {n m : ℕ} (h : n = m)
   · apply Complex.ext <;> simp [CotangentLogCoframe.A, finCongr]
   · simp [CotangentLogCoframe.A, finCongr]
 
-private theorem allCusp_chart_transport {n m : ℕ} (h : n = m)
+theorem allCusp_chart_transport {n m : ℕ} (h : n = m)
     (A : KPContLocalNorm.LocalBall m) (g v : ℂ → KPContLocalNorm.Space m → ℂ)
     (g' v' : ℂ → KPContLocalNorm.Space n → ℂ) (Ω : Set ℂ)
     (hg : ∀ s x, g' s (cast (congrArg KPContLocalNorm.Space h.symm) x) = g s x)
@@ -203,7 +203,7 @@ private theorem allCusp_chart_transport {n m : ℕ} (h : n = m)
   have hvv : v' = v := funext (fun s => funext (hv s))
   simpa [hgg, hvv] using H
 
-private theorem allCusp_closedBall_transport {n m : ℕ} (h : n = m)
+theorem allCusp_closedBall_transport {n m : ℕ} (h : n = m)
     (A : KPContLocalNorm.LocalBall m) (V : Set (KPContLocalNorm.Space m))
     (V' : Set (KPContLocalNorm.Space n))
     (hV : ∀ x, cast (congrArg KPContLocalNorm.Space h.symm) x ∈ V' ↔ x ∈ V)
@@ -215,7 +215,7 @@ private theorem allCusp_closedBall_transport {n m : ℕ} (h : n = m)
   intro x hx
   exact (hV x).mpr (hA hx)
 
-private theorem allCusp_sectionFields_injective
+theorem allCusp_sectionFields_injective
     {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
     {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
     {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}

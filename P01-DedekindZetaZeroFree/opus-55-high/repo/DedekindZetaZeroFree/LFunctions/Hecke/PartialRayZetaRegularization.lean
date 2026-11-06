@@ -41,5 +41,3 @@ theorem partialRayZetaRegularization
     exact (rayCompletedRegularization K m hm (D c) rfl c (ha c).2.2).1
   · intro c s hs
     exact (rayCompletedRegularization K m hm (D c) rfl c (ha c).2.2).2 s hs
-
-end DedekindZetaZeroFree.AbelianQuotient

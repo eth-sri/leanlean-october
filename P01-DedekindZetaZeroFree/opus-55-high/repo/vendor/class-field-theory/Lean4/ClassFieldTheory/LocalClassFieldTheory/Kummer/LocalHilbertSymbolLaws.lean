@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Kernel laws for the local Hilbert symbol
 
@@ -25,7 +22,6 @@ This also makes the induced character on the concrete norm quotient
 injective.
 -/
 
-noncomputable section
 
 namespace LocalClassFieldTheory
 namespace Kummer
@@ -61,30 +57,3 @@ theorem localHilbertSymbol_eq_one_iff_mem_localNormSubgroup
       a ∈ localNormSubgroup K (chosenSimpleKummerExtension K n hnK b) := by
   change localHilbertSymbolHom K n hnK hmu b a = 1 ↔ _
   rw [← MonoidHom.mem_ker, localHilbertSymbolHom_ker K n hnK hmu b]
-
-/-- The local Hilbert-symbol character induced on the corresponding norm
-quotient is injective. -/
-theorem localHilbertSymbolFromNormQuotient_injective
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) (b : Kˣ) :
-    Function.Injective
-      (localHilbertSymbolFromNormQuotient K n hnK hmu b) := by
-  apply
-    (localHilbertSymbolFromNormQuotient K n hnK hmu b).ker_eq_bot_iff.mp
-  ext q
-  refine NormQuotient.inductionOn
-    (motive := fun q =>
-      q ∈ (localHilbertSymbolFromNormQuotient K n hnK hmu b).ker ↔
-        q ∈ (⊥ : Subgroup
-          (NormQuotient K (chosenSimpleKummerExtension K n hnK b))))
-    q ?_
-  intro a
-  rw [MonoidHom.mem_ker, Subgroup.mem_bot,
-    localHilbertSymbolFromNormQuotient_normClass,
-    localHilbertSymbol_eq_one_iff_mem_localNormSubgroup,
-    normClass_eq_one_iff_mem]
-
-end Kummer
-end LocalClassFieldTheory
-
-end

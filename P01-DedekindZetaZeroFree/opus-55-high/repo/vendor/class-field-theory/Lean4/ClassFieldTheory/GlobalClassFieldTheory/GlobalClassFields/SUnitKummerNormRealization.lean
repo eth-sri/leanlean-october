@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Exact norm realization by the full S-unit Kummer extension
 
@@ -34,7 +28,6 @@ norm-residue index formula.
 
 open scoped NumberField Classical
 
-noncomputable section
 
 namespace GlobalClassFieldTheory
 namespace GlobalClassFields
@@ -126,9 +119,8 @@ theorem fullSUnitKummerExtension_ideleClassNormRange_eq_powerLocalUnit
     apply
       ideleClassPowerLocalUnitSubgroup_le_ideleClassNorm_range
         (K := K) (L := E) n r eG S ∅ harch
-    · intro v hv
-      simp at hv
-    · exact hAway
+    · simp
+    omega
   have hPowerLe :
       ideleClassPowerLocalUnitSubgroup
           (K := K) n S ∅ ≤
@@ -155,8 +147,3 @@ theorem fullSUnitKummerExtension_ideleClassNormRange_eq_powerLocalUnit
       (by
         rw [hPowerIndex]
         exact Nat.ne_of_gt Module.finrank_pos)).symm
-
-end GlobalClassFields
-end GlobalClassFieldTheory
-
-end

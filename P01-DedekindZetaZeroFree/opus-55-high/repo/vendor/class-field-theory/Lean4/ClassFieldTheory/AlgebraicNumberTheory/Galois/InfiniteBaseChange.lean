@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Infinite Galois base change from finite layers
 
@@ -27,7 +22,6 @@ mathlib's actual intermediate fields and uses no abstract replacement for the
 compositum.
 -/
 
-noncomputable section
 
 namespace IntermediateField
 
@@ -127,8 +121,7 @@ theorem isGalois_extendScalars_sup_of_forall_finiteGalois
         le_sup_left
   let : ∀ E : FiniteGaloisIntermediateField R B,
       IsGalois A (finiteLayer E) :=
-    fun E => by
-      simpa only [finiteLayer] using hG E
+    by omega
   have hC : C = ⨆ E : FiniteGaloisIntermediateField R B, finiteLayer E := by
     simpa only [C, finiteLayer] using
       extendScalars_sup_eq_iSup_finiteGaloisComposita A B
@@ -137,7 +130,3 @@ theorem isGalois_extendScalars_sup_of_forall_finiteGalois
   exact {
     to_isSeparable := IntermediateField.isSeparable_iSup A U
     to_normal := IntermediateField.normal_iSup A U finiteLayer }
-
-end IntermediateField
-
-end

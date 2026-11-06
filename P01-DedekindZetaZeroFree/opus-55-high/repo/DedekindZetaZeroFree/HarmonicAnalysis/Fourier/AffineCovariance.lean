@@ -26,7 +26,7 @@ def affineSchwartz (f : SchwartzMap E ℂ) (A : E ≃L[ℝ] E) (z : E) :
     (A : E ≃L[ℝ] E) (z x : E) :
     affineSchwartz f A z x = f (A (z + x)) := rfl
 
-private theorem affineFourier_linear_covariance (f : SchwartzMap E ℂ) (A : E ≃L[ℝ] E) (ξ : E) :
+theorem affineFourier_linear_covariance (f : SchwartzMap E ℂ) (A : E ≃L[ℝ] E) (ξ : E) :
     FourierTransform.fourier ((f : E → ℂ) ∘ A) ξ =
       ((|LinearMap.det A.toLinearEquiv.toLinearMap| : ℝ) : ℂ)⁻¹ *
       (FourierTransform.fourier f) (A.symm.toContinuousLinearMap.adjoint ξ) := by
@@ -69,7 +69,3 @@ theorem affineFourierCovariance (f : SchwartzMap E ℂ)
   rw [show (2 * (Real.pi : ℂ) * (inner ℝ z ξ : ℂ) * Complex.I) =
     (2 * (Real.pi : ℂ) * Complex.I * (inner ℝ z ξ : ℂ)) by ring]
   simp only [mul_assoc]
-
-end DedekindZetaZeroFree.AbelianQuotient
-
-end

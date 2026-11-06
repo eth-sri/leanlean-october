@@ -110,20 +110,20 @@ def sheetPositiveExtension (R : PrincipalMellin.ActualRecipe S η)
     (v : R.A.UnitQuotient) (κ : R.A.V) (x : ℝ) : ℂ :=
   if hx : 0 < x then C.realization.sheet C.packet v κ ⟨x, hx⟩ else 0
 
-private theorem sheet_positive_extension_log_profile (R : PrincipalMellin.ActualRecipe S η)
+theorem sheet_positive_extension_log_profile (R : PrincipalMellin.ActualRecipe S η)
     {N : TraceHaarTransport R} (C : JointDigitDescentSources R N) (v : R.A.UnitQuotient) (κ : R.A.V) :
     logProfile (sheetPositiveExtension R C v κ) = sheetLogProfile R C v κ := by
   funext u
   simp [logProfile, sheetPositiveExtension, sheetLogProfile, Real.exp_pos]
 
-private theorem log_convolution_measure_integrable_iff_positive_haar {E : Type*} [NormedAddCommGroup E]
+theorem log_convolution_measure_integrable_iff_positive_haar {E : Type*} [NormedAddCommGroup E]
     (f : ℝ → E) : Integrable f logConvolutionMeasure ↔
       Integrable (fun T : ThetaProfileHaarSheets.PositiveAxis => f T.val)
         ThetaProfileHaarSheets.positiveHaar := by
   rw [logConvolutionMeasure, ← ThetaProfileHaarSheets.positiveHaar_map_val]
   exact (MeasurableEmbedding.subtype_coe measurableSet_Ioi).integrable_map_iff
 
-private theorem log_convolution_measure_integral_eq_positive_haar (f : ℝ → ℂ) :
+theorem log_convolution_measure_integral_eq_positive_haar (f : ℝ → ℂ) :
     (∫ T, f T ∂logConvolutionMeasure) =
       ∫ T : ThetaProfileHaarSheets.PositiveAxis, f T.val
         ∂ThetaProfileHaarSheets.positiveHaar := by
@@ -150,7 +150,7 @@ theorem gaussian_kernel_measurable_and_absolute_moments (R : PrincipalMellin.Act
   simp [Packet.kernel, ENNReal.toReal_ofReal (inv_nonneg.mpr hT.le),
     smul_eq_mul, div_eq_mul_inv, mul_comm, mul_left_comm]
 
-private theorem smoothed_sheet_log_eq_log_convolution (R : PrincipalMellin.ActualRecipe S η)
+theorem smoothed_sheet_log_eq_log_convolution (R : PrincipalMellin.ActualRecipe S η)
     {N : TraceHaarTransport R} (C : JointDigitDescentSources R N) (v : R.A.UnitQuotient) (κ : R.A.V) :
     logProfile (C.realization.H C.packet v κ) =
       logProfile (logConvolution C.packet.kernel (sheetPositiveExtension R C v κ)) := by
@@ -212,7 +212,7 @@ theorem smoothed_sheet_log_calculus (R : PrincipalMellin.ActualRecipe S η)
     filter_upwards with t
     rw [heq, iteratedDeriv_comp_sub_const]
 
-private theorem min_rpow_bound_of_exp_power_bounds
+theorem min_rpow_bound_of_exp_power_bounds
     {I : Type*} (E : I → ℝ → ℝ)
     (hp : ∀ σ : ℝ, -(1 / 4 : ℝ) < σ → ∃ K : ℝ, 0 ≤ K ∧
       ∀ i u, E i u ≤ K * Real.exp (-σ * u)) :

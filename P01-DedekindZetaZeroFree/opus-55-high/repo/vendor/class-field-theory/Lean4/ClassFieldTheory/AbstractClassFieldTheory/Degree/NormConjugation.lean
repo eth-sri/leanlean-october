@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 namespace ClassFormation
 
 open KummerTheory
@@ -100,11 +96,11 @@ theorem map_extensionSubgroup_conjugate [ContinuousMul G]
     refine ⟨(conjugateSubgroupEquiv K s).symm x, ?_, ?_⟩
     · change s * x.1 * s⁻¹ ∈ L.toSubgroup
       exact (conjugateClosedSubgroup_mem L s x.1).mp hx
-    · exact (conjugateSubgroupEquiv K s).apply_symm_apply x
+    simp
 
 /-- Conjugation identifies the relative coset spaces even when the
 extension is not normal. -/
-noncomputable def relativeConjugateCosetEquiv [ContinuousMul G]
+def relativeConjugateCosetEquiv [ContinuousMul G]
     (K L : ClosedSubgroup G)
     (hLK : L.toSubgroup ≤ K.toSubgroup) (s : G) :
     (K.toSubgroup ⧸ extensionSubgroup K L hLK) ≃
@@ -162,7 +158,7 @@ instance conjugateExtension_normal [ContinuousMul G]
 
 /-- The left vertical isomorphism in the conjugation diagram of
 norm--conjugation naturality, `τ ↦ s⁻¹τs`. -/
-noncomputable def finiteReciprocityNaturalityConjugation
+def finiteReciprocityNaturalityConjugation
     [ContinuousMul G] (K L : ClosedSubgroup G)
     (hLK : L.toSubgroup ≤ K.toSubgroup) (s : G)
     [hLnormal : (extensionSubgroup K L hLK).Normal] :
@@ -190,8 +186,8 @@ theorem finiteReciprocityNaturalityConjugation_mk [ContinuousMul G]
     [hLnormal : (extensionSubgroup K L hLK).Normal]
     (k : K.toSubgroup) :
     finiteReciprocityNaturalityConjugation K L hLK s (QuotientGroup.mk k) =
-      QuotientGroup.mk (conjugateSubgroupEquiv K s k) := by
-  exact QuotientGroup.congr_mk' _ _ _ _ k
+      QuotientGroup.mk (conjugateSubgroupEquiv K s k) := 
+  QuotientGroup.congr_mk' _ _ _ _ k
 
 /-- Conjugation preserves finiteness of the Galois quotient. -/
 theorem finite_conjugateExtension [ContinuousMul G]
@@ -215,7 +211,7 @@ section Representation
 variable {G : IntegralRepGroupType} [Group G] [TopologicalSpace G]
 
 /-- Conjugation intertwines the two relative coset actions. -/
-private theorem relativeCosetAction_conjugate
+theorem relativeCosetAction_conjugate
     [ContinuousMul G] (A : Rep ℤ G)
     (K L : ClosedSubgroup G)
     (hLK : L.toSubgroup ≤ K.toSubgroup) (s : G)
@@ -229,19 +225,7 @@ private theorem relativeCosetAction_conjugate
       A.ρ s⁻¹ (relativeCosetAction A K L hLK a q) := by
   refine Quotient.inductionOn' q ?_
   intro k
-  rw [relativeConjugateCosetEquiv_mk, relativeCosetAction_mk,
-    relativeCosetAction_mk, conjugateFixedElement_coe]
-  calc
-    A.ρ (s⁻¹ * k.1 * s) (A.ρ s⁻¹ a.1) =
-        A.ρ ((s⁻¹ * k.1 * s) * s⁻¹) a.1 := by
-      have hm := congrArg (fun φ => φ a.1)
-        (map_mul A.ρ (s⁻¹ * k.1 * s) s⁻¹)
-      exact hm.symm
-    _ = A.ρ (s⁻¹ * k.1) a.1 := by
-      congr 2
-      simp [mul_assoc]
-    _ = A.ρ s⁻¹ (A.ρ k.1 a.1) := by
-      exact congrArg (fun φ => φ a.1) (map_mul A.ρ s⁻¹ k.1)
+  simp
 
 /-- Relative norms commute with the right conjugation used in the second
 diagram of norm--conjugation naturality:
@@ -287,8 +271,8 @@ theorem relativeNorm_conjugate_apply
         (conjugateFixedElement A L s a) q =
       ∑ q, relativeCosetAction A (conjugateClosedSubgroup K s)
         (conjugateClosedSubgroup L s) hConj
-        (conjugateFixedElement A L s a) (e q) := by
-          exact (e.sum_comp fun q =>
+        (conjugateFixedElement A L s a) (e q) := 
+          (e.sum_comp fun q =>
             relativeCosetAction A (conjugateClosedSubgroup K s)
               (conjugateClosedSubgroup L s) hConj
               (conjugateFixedElement A L s a) q).symm
@@ -298,8 +282,3 @@ theorem relativeNorm_conjugate_apply
       exact relativeCosetAction_conjugate A K L hLK s a q
     _ = A.ρ s⁻¹ (∑ q, relativeCosetAction A K L hLK a q) := by
       rw [map_sum]
-
-end Representation
-
-end
-end ClassFormation

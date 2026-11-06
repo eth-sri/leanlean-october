@@ -53,8 +53,7 @@ theorem rayCharacter_allIdealSeries_tendsto_one
     intro I
     by_cases hbot : I = ⊥
     · have hzero : η I = 0 := (η.eq_zero_iff' I).mpr (Or.inl hbot)
-      simp only [hzero, zero_mul, norm_zero]
-      positivity
+      simp_all
     have hn : 1 ≤ (Ideal.absNorm I : ℝ) := by
       have hn0 : Ideal.absNorm I ≠ 0 := mt Ideal.absNorm_eq_zero_iff.mp hbot
       exact_mod_cast (show 1 ≤ Ideal.absNorm I by omega)
@@ -99,11 +98,9 @@ theorem normalizedRayTheta_nonzero_somewhere
   classical
   by_contra h
   have hzero : ∀ t : ℝ, 0 < t → normalizedRayTheta D χ.ψ t = 0 := by
-    intro t ht
-    by_contra hn
-    exact h ⟨t, ht, hn⟩
+    simp_all
   obtain ⟨σ, hσ, hL⟩ := rayCharacter_allIdealSeries_nonzero_somewhere F m hm η
-  have hs : 1 < (σ : ℂ).re := by simpa using hσ
+  have hs : 1 < (σ : ℂ).re := by omega
   have hcal := (normalizedRayTheta_mellin_calibration hF D χ hnonprincipal
     (σ : ℂ) hs).2
   have hmellin : mellin (normalizedRayTheta D χ.ψ) (σ : ℂ) = 0 := by
@@ -117,7 +114,3 @@ theorem normalizedRayTheta_nonzero_somewhere
   have hprod := hcal.tsum_eq
   rw [tsum_mul_left, hmellin] at hprod
   exact (mul_ne_zero (completed_prefactor_ne_zero F m hm (σ : ℂ) hs) hL) hprod
-
-end Theta
-
-end DedekindZetaZeroFree.Hecke

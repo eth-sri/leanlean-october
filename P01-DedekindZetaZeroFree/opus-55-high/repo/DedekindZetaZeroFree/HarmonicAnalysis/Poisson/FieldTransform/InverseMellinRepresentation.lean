@@ -14,7 +14,7 @@ namespace DedekindZetaZeroFree.LargeSieve
 def fieldTransform (D : ℝ) (r : ℕ) (h : ℝ → ℂ) (x : ℝ) : ℂ :=
   if 0 < x then mellinInv 2 (B D r h) x else 0
 
-private lemma rpow_neg_le_max (c x σ : ℝ) (hx : 0 < x)
+lemma rpow_neg_le_max (c x σ : ℝ) (hx : 0 < x)
     (h : (c ≤ σ ∧ σ ≤ 2) ∨ (2 ≤ σ ∧ σ ≤ c)) :
     x ^ (-σ) ≤ max (x ^ (-c)) (x ^ (-2 : ℝ)) := by
   rcases le_total 1 x with hx1 | hx1
@@ -35,28 +35,23 @@ theorem B_inverse_integrable (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
   have hcont : Continuous (fun t : ℝ => B D r h ((c : ℂ) + (t : ℂ) * Complex.I)) :=
     (B_differentiableOn D r h hD hr hh hhc).continuousOn.comp_continuous (by fun_prop)
       (fun t => by
-        simp only [Set.mem_setOf_eq, Complex.add_re, Complex.mul_re, Complex.ofReal_re,
-          Complex.ofReal_im, Complex.I_re, Complex.I_im]
-        simpa using hc)
+        simp_all)
   haveI : NeZero ((x : ℂ)) := ⟨Complex.ofReal_ne_zero.mpr hx.ne'⟩
   have hcpow : Continuous (fun t : ℝ => (x : ℂ) ^ (-((c : ℂ) + (t : ℂ) * Complex.I))) :=
     (differentiable_const_cpow_of_neZero (x : ℂ)).continuous.comp (by fun_prop)
   refine Integrable.mono' (g := fun t : ℝ => (x ^ (-c) * C) * (1 + |t|) ^ (-2 : ℝ))
     ?_ (hcpow.mul hcont).aestronglyMeasurable ?_
   · have h1 : Integrable (fun t : ℝ => (1 + ‖t‖) ^ (-2 : ℝ)) volume :=
-      integrable_one_add_norm (E := ℝ) (r := 2) (by rw [Module.finrank_self]; norm_num)
-    have h2 : Integrable (fun t : ℝ => (1 + |t|) ^ (-2 : ℝ)) volume := by
-      simpa [Real.norm_eq_abs] using h1
-    exact h2.const_mul _
+      integrable_one_add_norm (E := ℝ) (r := 2) (by simp)
+    fun_prop
   · refine Eventually.of_forall fun t => ?_
     have h1 : ‖(x : ℂ) ^ (-((c : ℂ) + (t : ℂ) * Complex.I))‖ = x ^ (-c) := by
       rw [Complex.norm_cpow_eq_rpow_re_of_pos hx]
-      simp [Complex.neg_re, Complex.add_re, Complex.mul_re, Complex.ofReal_re,
-        Complex.ofReal_im, Complex.I_re, Complex.I_im]
+      simp
     have h2 : ‖B D r h ((c : ℂ) + (t : ℂ) * Complex.I)‖ ≤ C / (1 + |t|) ^ 2 := by
       have hp : (0 : ℝ) < (1 + |t|) ^ 2 := by positivity
       rw [le_div_iff₀ hp, mul_comm]
-      exact hC c (by simp) t
+      simp_all
     calc ‖(x : ℂ) ^ (-((c : ℂ) + (t : ℂ) * Complex.I)) *
             B D r h ((c : ℂ) + (t : ℂ) * Complex.I)‖
         = ‖(x : ℂ) ^ (-((c : ℂ) + (t : ℂ) * Complex.I))‖ *
@@ -95,8 +90,7 @@ theorem B_mellinInv_eq (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
       have hσ' : (c ≤ σ ∧ σ ≤ 2) ∨ (2 ≤ σ ∧ σ ≤ c) := Or.inl ⟨hσ.1, hσ.2⟩
       have h1 : ‖(x : ℂ) ^ (-((σ : ℂ) + (t : ℂ) * Complex.I))‖ = x ^ (-σ) := by
         rw [Complex.norm_cpow_eq_rpow_re_of_pos hx]
-        simp [Complex.neg_re, Complex.add_re, Complex.mul_re, Complex.ofReal_re,
-          Complex.ofReal_im, Complex.I_re, Complex.I_im]
+        simp
       have h2 : ‖B D r h ((σ : ℂ) + (t : ℂ) * Complex.I)‖ ≤ C := by
         simpa using hC σ hσ t
       calc ‖(x : ℂ) ^ (-((σ : ℂ) + (t : ℂ) * Complex.I)) *
@@ -122,8 +116,7 @@ theorem B_mellinInv_eq (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
       have hσ' : (c ≤ σ ∧ σ ≤ 2) ∨ (2 ≤ σ ∧ σ ≤ c) := Or.inr ⟨hσ.1, hσ.2⟩
       have h1 : ‖(x : ℂ) ^ (-((σ : ℂ) + (t : ℂ) * Complex.I))‖ = x ^ (-σ) := by
         rw [Complex.norm_cpow_eq_rpow_re_of_pos hx]
-        simp [Complex.neg_re, Complex.add_re, Complex.mul_re, Complex.ofReal_re,
-          Complex.ofReal_im, Complex.I_re, Complex.I_im]
+        simp
       have h2 : ‖B D r h ((σ : ℂ) + (t : ℂ) * Complex.I)‖ ≤ C := by
         simpa using hC σ hσ t
       calc ‖(x : ℂ) ^ (-((σ : ℂ) + (t : ℂ) * Complex.I)) *
@@ -135,7 +128,3 @@ theorem B_mellinInv_eq (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
             mul_le_mul (rpow_neg_le_max c x σ hx hσ') h2 (norm_nonneg _)
               (le_trans (Real.rpow_nonneg hx.le _) (le_max_left _ _))
         _ = max (x ^ (-c)) (x ^ (-2 : ℝ)) * C * Real.exp (0 * |t|) := by simp
-
-end DedekindZetaZeroFree.LargeSieve
-
-end

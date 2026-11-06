@@ -39,8 +39,7 @@ theorem nontrivialCharacterFactorization
       intro I hI
       change I ≠ ⊥
       intro h
-      subst I
-      simpa [hχ1] using hI
+      simp_all
     rw [← hsub]
     have hterms : (fun I : {I : Ideal (𝓞 K) // I ≠ ⊥} =>
         χ 1 I.1 * (Ideal.absNorm I.1 : ℂ) ^ (-s)) =
@@ -93,5 +92,3 @@ theorem abelianFactorization
           nontrivialCharacterFactorization K L m χ hm hprime hχ1 s hs
       _ = (∏ i : Fin (Fintype.card E), F (e i).1) * NumberField.dedekindZeta K s := by
         rw [hreindex]
-
-end DedekindZetaZeroFree.AbelianQuotient

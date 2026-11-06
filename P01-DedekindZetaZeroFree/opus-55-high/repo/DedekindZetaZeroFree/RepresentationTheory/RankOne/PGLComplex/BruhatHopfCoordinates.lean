@@ -45,11 +45,8 @@ noncomputable def kappa (z : ℂ) : ComplexSU2 :=
     constructor
     · ext i j
       fin_cases i <;> fin_cases j <;>
-        simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.star_apply,
-          Complex.star_def, Complex.mul_conj', ← Complex.ofReal_pow,
-          ← Complex.ofReal_add, hn, hn', mul_comm]
-    · simp [Matrix.det_fin_two, Complex.star_def, Complex.mul_conj',
-        mul_comm, ← Complex.ofReal_pow, ← Complex.ofReal_add, hn, hn']⟩
+        simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.star_apply, Complex.mul_conj', ← Complex.ofReal_pow, ← Complex.ofReal_add, hn, hn', mul_comm]
+    · simp [Matrix.det_fin_two, Complex.mul_conj', mul_comm, ← Complex.ofReal_pow, ← Complex.ofReal_add, hn']⟩
 
 noncomputable def unsignedUpper (z : ℂ) : ComplexGL2 :=
   upperTriangular (Units.mk0 (-1 / (radius z : ℂ)) (by
@@ -161,7 +158,7 @@ private theorem hopfLinear_norm (a b : ℂ)
     calc
       _ = (a.re^2+a.im^2+b.re^2+b.im^2)^2 * (x 0^2+x 1^2+x 2^2) := by ring
       _ = _ := by rw [h]; ring
-  nlinarith [norm_nonneg x, norm_nonneg (hopfLinear a b x)]
+  simp_all
 
 private theorem hopfLinear_action (H : ComplexSU2 → rawSphere)
     (hH : HasRawHopfCoordinates H) (l k : ComplexSU2) :
@@ -172,9 +169,7 @@ private theorem hopfLinear_action (H : ComplexSU2 → rawSphere)
   obtain ⟨h0, h1⟩ := su2_entries k
   ext i
   fin_cases i <;>
-    simp [compactSphereCoordinate, hopfLinear, Matrix.mul_apply, Fin.sum_univ_two,
-      h0, h1, Complex.mul_re, Complex.mul_im, Complex.star_def,
-      ← Complex.normSq_eq_norm_sq, Complex.normSq_apply] <;> ring
+    simp [compactSphereCoordinate, hopfLinear, Matrix.mul_apply, Fin.sum_univ_two, h0, h1, Complex.mul_re, Complex.mul_im, ← Complex.normSq_eq_norm_sq, Complex.normSq_apply] <;> ring
 
 private theorem hopf_kappa (H : ComplexSU2 → rawSphere)
     (hH : HasRawHopfCoordinates H) (z : ℂ) : H (kappa z) = sigma z := by
@@ -183,16 +178,12 @@ private theorem hopf_kappa (H : ComplexSU2 → rawSphere)
   have hr : radius z ≠ 0 := (radius_pos z).ne'
   ext i
   fin_cases i <;>
-    simp [compactSphereCoordinate, kappa, sigma, sigmaVector, Complex.star_def,
-      Complex.div_re, Complex.div_im, Complex.mul_re, Complex.mul_im,
-      Complex.normSq_apply, ← Complex.normSq_eq_norm_sq]
+    simp [compactSphereCoordinate, kappa, sigma, sigmaVector, Complex.div_re, Complex.div_im, Complex.mul_re, Complex.mul_im, Complex.normSq_apply, ← Complex.normSq_eq_norm_sq]
   · rw [← radius_sq]
     field_simp
   · rw [← radius_sq]
     field_simp
-  · simp only [← Complex.ofReal_pow, Complex.ofReal_re, Complex.ofReal_im,
-      zero_pow (by decide : 2 ≠ 0), add_zero, ← Complex.ofReal_div,
-      ← Complex.ofReal_pow, Complex.ofReal_re, abs_of_pos (radius_pos z)]
+  · simp only [← Complex.ofReal_pow, Complex.ofReal_re, Complex.ofReal_im, ← Complex.ofReal_div, ← Complex.ofReal_pow, Complex.ofReal_re, abs_of_pos (radius_pos z)]
     have hn := Complex.normSq_eq_norm_sq z
     simp [Complex.normSq_apply] at hn
     rw [div_pow, ← hn, ← radius_sq]
@@ -274,5 +265,3 @@ theorem positive_section_stereographic (H : ComplexSU2 → rawSphere)
         (↑((1 / 3 : ℝ) * (1 / denominator z) ^ (1 / 3 - 1 : ℝ)) : ℂ) =
         ↑(denominator z ^ (-(4 / 3) : ℝ)) by
       exact_mod_cast hs.symm]
-
-end DedekindZetaZeroFree.ComplexLocal.StereographicTransport

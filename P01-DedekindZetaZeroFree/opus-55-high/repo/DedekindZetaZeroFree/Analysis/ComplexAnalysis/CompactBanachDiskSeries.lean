@@ -4,9 +4,7 @@ public import Mathlib.Analysis.Complex.LocallyUniformLimit
 
 @[expose] public section
 
-noncomputable section
 open Topology Filter
-open scoped Topology
 
 namespace DedekindZetaZeroFree.KPContCompactBanachSeries
 
@@ -39,9 +37,7 @@ theorem disk_series_holomorphic (f : ℂ → E) (a : ℕ → E)
   · apply hl.differentiableOn _ Metric.isOpen_ball
     filter_upwards with M
     apply Differentiable.differentiableOn
-    apply Differentiable.fun_sum
-    intro j hj
-    exact ((differentiable_id.sub_const c).pow j).smul_const (a j)
+    fun_prop
   · intro z hz
     have ht : 0 ≤ dist z c := dist_nonneg
     have htr : dist z c < r := hz
@@ -49,7 +45,7 @@ theorem disk_series_holomorphic (f : ℂ → E) (a : ℕ → E)
     have ht' : 0 < t := lt_of_le_of_lt ht hzt
     have hs : Tendsto (fun n => F n (c + t)) atTop (𝓝 (f (c+t))) :=
       (hu t ht'.le htr').tendsto_at
-        (by simp [Complex.dist_eq,Complex.norm_real,abs_of_pos ht'])
+        (by simp [Complex.norm_real, abs_of_pos ht'])
     have hterm : Tendsto (fun n => (t : ℂ)^n • a n) atTop (𝓝 0) := by
       have hh := (hs.comp (tendsto_add_atTop_nat 1)).sub hs
       simpa [F,Finset.sum_range_succ] using hh
@@ -58,7 +54,7 @@ theorem disk_series_holomorphic (f : ℂ → E) (a : ℕ → E)
     have hn : Summable (fun n => ‖(z-c)^n • a n‖) := by
       have hratio : ‖z-c‖ / t < 1 :=
         (div_lt_one ht').mpr (by simpa [dist_eq_norm] using hzt)
-      have hratio0 : 0 ≤ ‖z-c‖ / t := div_nonneg (norm_nonneg _) ht'.le
+      have hratio0 : 0 ≤ ‖z-c‖ / t := by positivity
       have hgeom : Summable (fun n => B * (‖z-c‖ / t)^n) :=
         (summable_geometric_of_lt_one hratio0 hratio).mul_left B
       refine Summable.of_nonneg_of_le (fun n => norm_nonneg _) ?_ hgeom
@@ -90,10 +86,6 @@ theorem compact_pointwise_series {X : Type*} [TopologicalSpace X] [CompactSpace 
     obtain ⟨N,hN⟩ := hseries t ht htr ε hε
     refine ⟨N,fun M hM z hz => (ContinuousMap.norm_lt_iff _ hε).mpr ?_⟩
     intro x
-    simpa using hN M hM z hz x
+    simp_all
   exact ⟨(disk_series_holomorphic f a c r hr hs).1,
     (disk_series_holomorphic f a c r hr hs).2, hs⟩
-
-end DedekindZetaZeroFree.KPContCompactBanachSeries
-
-end

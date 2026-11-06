@@ -73,7 +73,7 @@ lemma compact_rowRatio_power_bound {n : ℕ} (j : ℕ)
   rw [he, norm_zero] at this
   exact (not_le_of_gt hδ) this
 
-private lemma slice_derivative_le {E F G : Type*}
+lemma slice_derivative_le {E F G : Type*}
     [NormedAddCommGroup E] [NormedSpace ℝ E]
     [NormedAddCommGroup F] [NormedSpace ℝ F]
     [NormedAddCommGroup G] [NormedSpace ℝ G]
@@ -111,27 +111,26 @@ private lemma slice_derivative_le {E F G : Type*}
   apply (ContinuousMultilinearMap.norm_compContinuousLinearMap_le _ _).trans
   have hp : (∏ b : Fin i, ‖L‖) ≤ 1 := by
     apply Finset.prod_le_one₀
-    · intro b _; exact norm_nonneg _
+    · simp
     · intro b _; exact ContinuousLinearMap.norm_inr_le_one ℝ E F
   simpa using mul_le_mul_of_nonneg_left hp
     (norm_nonneg (iteratedFDeriv ℝ i f (r, u)))
 
-private lemma line_row_form (x : ℂ) (k : ComplexGL2) :
+lemma line_row_form (x : ℂ) (k : ComplexGL2) :
     line (weyl * upperUnipotent x * k) =
       if (k : Matrix (Fin 2) (Fin 2) ℂ) 0 0 + x * (k : Matrix (Fin 2) (Fin 2) ℂ) 1 0 = 0
       then projectiveInfinity 0
       else projectiveOpen (((k : Matrix (Fin 2) (Fin 2) ℂ) 0 1 +
         x * (k : Matrix (Fin 2) (Fin 2) ℂ) 1 1) /
         ((k : Matrix (Fin 2) (Fin 2) ℂ) 0 0 + x * (k : Matrix (Fin 2) (Fin 2) ℂ) 1 0)) := by
-  simp [line, weyl, upperUnipotent, Matrix.GeneralLinearGroup.coe_mul,
-    Matrix.mul_apply, Fin.sum_univ_two]
+  simp [line, weyl, upperUnipotent, Matrix.mul_apply, Fin.sum_univ_two]
 
  noncomputable def rowLine {n : ℕ} (k : (Fin n → ℝ) → ComplexGL2)
     (r : Fin 2 → ℂ) (u : Fin n → ℝ) : ComplexProjectiveLine :=
   if actedRow k (r, u) 0 = 0 then projectiveInfinity 0
   else projectiveOpen (actedRow k (r, u) 1 / actedRow k (r, u) 0)
 
-private lemma rowLine_infinity {n : ℕ} (k : (Fin n → ℝ) → ComplexGL2)
+lemma rowLine_infinity {n : ℕ} (k : (Fin n → ℝ) → ComplexGL2)
     (r : Fin 2 → ℂ) (u : Fin n → ℝ) (h : actedRow k (r, u) 1 ≠ 0) :
     rowLine k r u = projectiveInfinity (actedRow k (r, u) 0 / actedRow k (r, u) 1) := by
   unfold rowLine
@@ -139,7 +138,7 @@ private lemma rowLine_infinity {n : ℕ} (k : (Fin n → ℝ) → ComplexGL2)
   · simp [h0]
   · rw [projective_chart_transition _ (div_ne_zero h0 h), inv_div]
 
-private lemma normalized_line {n : ℕ} (k : (Fin n → ℝ) → ComplexGL2)
+lemma normalized_line {n : ℕ} (k : (Fin n → ℝ) → ComplexGL2)
     (x : ℂ) (hx : x ≠ 0) (u : Fin n → ℝ) :
     line (weyl * upperUnipotent x * k u) =
       rowLine k ![x⁻¹, 1] u := by
@@ -151,14 +150,14 @@ private lemma normalized_line {n : ℕ} (k : (Fin n → ℝ) → ComplexGL2)
   rw [he 0, he 1]
   simp [rowLine, hx, mul_div_mul_left]
 
-private lemma unnormalized_line {n : ℕ} (k : (Fin n → ℝ) → ComplexGL2)
+lemma unnormalized_line {n : ℕ} (k : (Fin n → ℝ) → ComplexGL2)
     (x : ℂ) (u : Fin n → ℝ) :
     line (weyl * upperUnipotent x * k u) =
       rowLine k ![1, x] u := by
   rw [line_row_form]
   simp [rowLine, actedRow, Fin.sum_univ_two]
 
-private lemma rowRatio_slice_bound {n : ℕ} (U : Set (Fin n → ℝ)) (hU : IsOpen U)
+lemma rowRatio_slice_bound {n : ℕ} (U : Set (Fin n → ℝ)) (hU : IsOpen U)
     (k : (Fin n → ℝ) → ComplexGL2)
     (hk : ContDiffOn ℝ (⊤ : ℕ∞) (fun u => (k u : Matrix (Fin 2) (Fin 2) ℂ)) U)
     (r : Fin 2 → ℂ) (u : Fin n → ℝ) (hu : u ∈ U) (a b : Fin 2)
@@ -170,7 +169,7 @@ private lemma rowRatio_slice_bound {n : ℕ} (U : Set (Fin n → ℝ)) (hU : IsO
   exact (actedRow_contDiffOn U k hk b).continuousOn.isOpen_inter_preimage
     (isOpen_univ.prod hU) isOpen_ne
 
-private lemma rowLine_derivative_bound {n : ℕ} (j q : ℕ) (hq : q ≤ j)
+lemma rowLine_derivative_bound {n : ℕ} (j q : ℕ) (hq : q ≤ j)
     (U : Set (Fin n → ℝ)) (hU : IsOpen U)
     (k : (Fin n → ℝ) → ComplexGL2)
     (hk : ContDiffOn ℝ (⊤ : ℕ∞) (fun u => (k u : Matrix (Fin 2) (Fin 2) ℂ)) U)
@@ -226,7 +225,7 @@ private lemma rowLine_derivative_bound {n : ℕ} (j q : ℕ) (hq : q ≤ j)
     have hb : δ ≤ ‖actedRow k (r, u) 1‖ := by
       rcases hr with hr | hr
       · exact hr.trans h10
-      · exact hr
+      omega
     obtain ⟨V, hV, huV, hz, hzu, hDz, hVb⟩ := hchart 0 1 hb h10
     have he : (fun v => φ (rowLine k r v)) =ᶠ[nhds u]
         ((φ ∘ projectiveInfinity) ∘ (fun v => actedRow k (r, v) 0 / actedRow k (r, v) 1)) := by
@@ -235,7 +234,7 @@ private lemma rowLine_derivative_bound {n : ℕ} (j q : ℕ) (hq : q ≤ j)
     rw [(he.iteratedFDeriv ℝ q).self_of_nhds]
     exact (norm_local_chart_composition_le j q hq φ hop hinf V hV u huV _ hz hzu D hDz).2
 
-private lemma actedRow_ne_zero {n : ℕ} (k : (Fin n → ℝ) → ComplexGL2)
+lemma actedRow_ne_zero {n : ℕ} (k : (Fin n → ℝ) → ComplexGL2)
     (r : Fin 2 → ℂ) (u : Fin n → ℝ) (hr : r ≠ 0) : actedRow k (r,u) ≠ 0 := by
   intro he
   have hvec : Matrix.vecMul r (k u : Matrix (Fin 2) (Fin 2) ℂ) =
@@ -245,7 +244,7 @@ private lemma actedRow_ne_zero {n : ℕ} (k : (Fin n → ℝ) → ComplexGL2)
     simpa [Matrix.vecMul, dotProduct, actedRow] using hi
   exact hr (Matrix.vecMul_injective_of_isUnit (Units.isUnit (k u)) hvec)
 
-private lemma rowLine_smooth {n : ℕ}
+lemma rowLine_smooth {n : ℕ}
     (U : Set (Fin n → ℝ)) (hU : IsOpen U)
     (k : (Fin n → ℝ) → ComplexGL2)
     (hk : ContDiffOn ℝ (⊤ : ℕ∞) (fun u => (k u : Matrix (Fin 2) (Fin 2) ℂ)) U)
@@ -315,14 +314,12 @@ theorem compact_projective_source_jets (n j : ℕ)
     have hr : p.1 ≠ 0 := by
       intro he
       have hh := hp.1.2
-      have hh' : (1 : ℝ) ≤ 0 := by simpa [he, T] using hh
+      have hh' : (1 : ℝ) ≤ 0 := by simp_all
       norm_num at hh'
     have hn := SourceJets.actedRow_ne_zero g p.1 p.2 hr
     by_contra hm
-    have h0 : SourceJets.actedRow g p 0 = 0 := norm_eq_zero.mp
-      (le_antisymm ((le_max_left _ _).trans (le_of_not_gt hm)) (norm_nonneg _))
-    have h1 : SourceJets.actedRow g p 1 = 0 := norm_eq_zero.mp
-      (le_antisymm ((le_max_right _ _).trans (le_of_not_gt hm)) (norm_nonneg _))
+    have h0 : SourceJets.actedRow g p 0 = 0 := by simp_all
+    have h1 : SourceJets.actedRow g p 1 = 0 := by simp_all
     apply hn
     ext i; fin_cases i <;> simp [h0,h1])
   have hex : ∀ a b : Fin 2, ∃ D : ℝ, 1 ≤ D ∧ ∀ i : ℕ, 1 ≤ i → i ≤ j →
@@ -387,5 +384,3 @@ theorem compact_projective_source_jets (n j : ℕ)
         · simp
       · simpa using (norm_le_pi_norm (![x⁻¹,1] : Fin 2 → ℂ) 1)
     simpa only [SourceJets.normalized_line g x hxn] using hrow ![x⁻¹,1] hrT
-
-end DedekindZetaZeroFree.RepresentationTheory.KPComplexIntertwinerParameterMajorant.MatrixWeighted

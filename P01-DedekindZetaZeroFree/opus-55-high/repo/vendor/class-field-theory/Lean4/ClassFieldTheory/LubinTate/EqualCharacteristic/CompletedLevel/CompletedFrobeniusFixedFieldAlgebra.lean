@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # The completed theta-intertwining theorem: the canonical base algebra on the fixed field
 
@@ -23,7 +20,6 @@ generic scalar-action instances in later norm calculations.
 -/
 
 noncomputable section
-
 
 open scoped LaurentSeries PowerSeries
 
@@ -56,7 +52,7 @@ local instance equalCharacteristicFixedFieldAlgebraScalarTower
 /-- The completed Frobenius fixed field, viewed only as a subring of the
 completed level.  This lightweight projection lets ring-homomorphism
 consumers avoid reconstructing the ambient Laurent-base algebra. -/
-noncomputable def equalCharacteristicCompletedFrobeniusFixedFieldSubring
+def equalCharacteristicCompletedFrobeniusFixedFieldSubring
     (F : LocalField K)
     [CharP K F.residueCharacteristic]
     (a : F.residueField⟦X⟧ˣ) (n : ℕ) :
@@ -65,7 +61,7 @@ noncomputable def equalCharacteristicCompletedFrobeniusFixedFieldSubring
 
 /-- The canonical `k((T))`-algebra structure on the completed theta-intertwining theorem fixed field. -/
 @[reducible]
-noncomputable def equalCharacteristicCompletedFrobeniusFixedFieldAlgebra
+def equalCharacteristicCompletedFrobeniusFixedFieldAlgebra
     (F : LocalField K)
     [CharP K F.residueCharacteristic]
     (a : F.residueField⟦X⟧ˣ) (n : ℕ) :
@@ -78,7 +74,7 @@ noncomputable def equalCharacteristicCompletedFrobeniusFixedFieldAlgebra
 the completed Frobenius fixed field.  Naming it lets downstream files reuse
 the same structure without asking typeclass search to unfold the fixed field. -/
 @[reducible]
-noncomputable def equalCharacteristicCompletedFrobeniusFixedFieldSMul
+def equalCharacteristicCompletedFrobeniusFixedFieldSMul
     (F : LocalField K)
     [CharP K F.residueCharacteristic]
     (a : F.residueField⟦X⟧ˣ) (n : ℕ) :
@@ -90,7 +86,7 @@ noncomputable def equalCharacteristicCompletedFrobeniusFixedFieldSMul
 /-- The module structure induced by the canonical `k((T))`-algebra structure
 on the completed Frobenius fixed field. -/
 @[reducible]
-noncomputable def equalCharacteristicCompletedFrobeniusFixedFieldModule
+def equalCharacteristicCompletedFrobeniusFixedFieldModule
     (F : LocalField K)
     [CharP K F.residueCharacteristic]
     (a : F.residueField⟦X⟧ˣ) (n : ℕ) :
@@ -98,8 +94,3 @@ noncomputable def equalCharacteristicCompletedFrobeniusFixedFieldModule
       (equalCharacteristicCompletedFrobeniusFixedField F a n) :=
   @Algebra.toModule _ _ _ _
     (equalCharacteristicCompletedFrobeniusFixedFieldAlgebra F a n)
-
-end EqualCharacteristic
-end LubinTate
-
-end

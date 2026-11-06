@@ -79,11 +79,6 @@ theorem compact_uniform_conjugated_finite_level
   have hconj_eq : k⁻¹ * a * k = e (1, c⁻¹ * v * c) := by
     rw [hk_eq, ha_eq]
     simp only [← map_inv, ← map_mul]
-    congr 1
-    ext <;> simp [mul_assoc]
+    simp
   rw [hconj_eq, he 1 (c⁻¹ * v * c), h1, one_mul]
   exact ⟨_, hconjv, rfl⟩
-
-end DedekindZetaZeroFree.KPLiteralPeriod.HCCoreDensity.FiniteStageApproximation
-
-end

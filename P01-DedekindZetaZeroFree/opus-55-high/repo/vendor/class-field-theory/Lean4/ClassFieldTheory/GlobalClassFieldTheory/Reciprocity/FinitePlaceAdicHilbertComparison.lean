@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Comparison of finite-place Hilbert factors
 
@@ -26,13 +22,12 @@ established finite-place Hilbert symbol.
 open scoped NumberField
 open NumberField IsDedekindDomain
 
-noncomputable section
 
 namespace ClassFieldTheory
 
 /-- The established finite-place symbol becomes the local Mathlib-facing
 Hilbert symbol after mapping to the absolute-value completion. -/
-private theorem globalFinitePlaceHilbertSymbol_map_eq_local
+theorem globalFinitePlaceHilbertSymbol_map_eq_local
     (F : Type) [Field F] [NumberField F]
     (n : ℕ+) (hnF : ((n : ℕ) : F) ≠ 0)
     (hmu : (primitiveRoots (n : ℕ) F).Nonempty)
@@ -77,7 +72,7 @@ private theorem globalFinitePlaceHilbertSymbol_map_eq_local
 
 /-- Mapping roots of unity from the number field to the adic completion
 agrees with mapping first to the absolute-value completion. -/
-private theorem rootsOfUnity_finiteCompletion_comp
+theorem rootsOfUnity_finiteCompletion_comp
     (F : Type) [Field F] [NumberField F]
     (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) F).Nonempty)
     (v : HeightOneSpectrum (𝓞 F))
@@ -182,7 +177,3 @@ theorem finitePlaceAdicHilbertPairingFamily_finiteFactor
           rw [hglobal]
     _ = eFD (globalFinitePlaceHilbertSymbol F n hnF hmu v a b) :=
       (rootsOfUnity_finiteCompletion_comp F n hmu v hmuC _).symm
-
-end ClassFieldTheory
-
-end

@@ -9,8 +9,8 @@ open scoped Classical ENNReal
 namespace DedekindZetaZeroFree.TraceHaarTransport
 
 @[expose] public def standardComplexParameter : ℂˣ :=
-  Units.mk0 ((4 * Real.pi : ℝ) : ℂ) (by
-    exact Complex.ofReal_ne_zero.mpr (mul_pos (by norm_num) Real.pi_pos).ne')
+  Units.mk0 ((4 * Real.pi : ℝ) : ℂ) (
+    Complex.ofReal_ne_zero.mpr (mul_pos (by norm_num) Real.pi_pos).ne')
 
 public theorem standard_complex_mass :
     KPCplxCharacterHaar.characterHaar standardComplexParameter =
@@ -23,7 +23,3 @@ public theorem standard_complex_mass :
     field_simp; ring
   rw [h]
   norm_num
-
-end DedekindZetaZeroFree.TraceHaarTransport
-
-end

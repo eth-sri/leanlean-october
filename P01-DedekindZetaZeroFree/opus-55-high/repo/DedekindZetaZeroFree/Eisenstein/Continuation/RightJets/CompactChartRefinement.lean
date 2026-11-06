@@ -62,11 +62,11 @@ set_option synthInstance.maxHeartbeats 100000
  def canonicalProjection (D : GroupChart F ζ hζ U R P H) :
     Space (groupDimension F) → Space (KPCuspLogShape.dimension F * 3) :=
   fun x => (coordinates F).symm (baseCoordinates F (D.π x))
-private lemma canonicalProjection_smooth (D : GroupChart F ζ hζ U R P H) :
+lemma canonicalProjection_smooth (D : GroupChart F ζ hζ U R P H) :
     ContDiffOn ℝ (⊤ : ℕ∞) (canonicalProjection D) D.T.carrier :=
   (CoreChartLocalizers.CutoffConstruction.ChartDensityConstruction.coordinates_symm_contDiff
     (KPCuspLogShape.dimension F)).comp_contDiffOn ((baseCoordinates F).contDiff.comp_contDiffOn D.π_smooth)
-private lemma canonicalProjection_zero (D : GroupChart F ζ hζ U R P H) :
+lemma canonicalProjection_zero (D : GroupChart F ζ hζ U R P H) :
     canonicalProjection D 0 = (coordinates F).symm D.baseCenter := by
   unfold canonicalProjection GroupChart.π
   rw [ContinuousLinearEquiv.apply_symm_apply, map_zero,
@@ -88,7 +88,7 @@ private lemma canonicalProjection_zero (D : GroupChart F ζ hζ U R P H) :
       exact D.closure_source ⟨x, subset_closure (hT hx), rfl⟩
     image_inside := fun x hx => D.image_inside x (subset_closure (hT hx)) }
 
-private lemma local_piece (D : GroupChart F ζ hζ U R P H) :
+lemma local_piece (D : GroupChart F ζ hζ U R P H) :
     ∃ p : Piece (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H),
       p.group.groupLift 0 = D.groupLift 0 ∧ p.group.piece p.compact ∈ 𝓝 (D.groupLift 0) := by
   let A := canonicalChartBall F ζ hζ U R P H D.component D.baseCenter (phaseClass F ζ hζ U D.phase)

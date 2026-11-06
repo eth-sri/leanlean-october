@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # uniqueness from the integral-closure valuation ring
 
@@ -23,7 +20,6 @@ integrality over the base then forces the center of every such overring to be
 the unique maximal ideal, so the overring is the integral closure itself.
 -/
 
-noncomputable section
 
 universe u v w
 
@@ -72,8 +68,8 @@ theorem normFormula_extension_valuationSubring_eq_integralClosure_of_mem_or_inv
             (L := L) V.valuation hval (a : K)).2 a.2⟩
       map_zero' := by ext; simp
       map_one' := by ext; simp
-      map_add' := by intro a b; ext; simp
-      map_mul' := by intro a b; ext; simp }
+      map_add' := by simp
+      map_mul' := by simp }
   let : Algebra V.valuation.valuationSubring B := i.toAlgebra
   let : IsScalarTower V.valuation.valuationSubring B L :=
     IsScalarTower.of_algebraMap_eq fun _ => rfl
@@ -126,8 +122,3 @@ theorem normFormula_extension_valuationSubring_eq_integralClosure_of_mem_or_inv
   exact
     valuationSubring_eq_of_le_of_idealOfLE_eq_maximalIdeal
       B wL.valuationSubring hBW hP
-
-end Valuation
-end DiscreteValuationField
-
-end

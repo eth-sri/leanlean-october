@@ -90,7 +90,7 @@ private theorem raw_diagonal (q : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
   constructor <;> simp [diagonalHom, KubotaRankTwo.d, KPScalarSplitCentral.scalarMatrix,
     Matrix.mul_apply, Fin.sum_univ_two]
 
-private theorem global_raw_ratio
+theorem global_raw_ratio
     (e : KPGlobalTorusFunctionData.E F ζ hζ)
     (r : RestrictedCover F ζ hζ)
     (he : e.val = scalarQuotient F ζ hζ (amalgamation F ζ hζ r))
@@ -174,7 +174,7 @@ private theorem polarized_torus_geometry
 open _root_.DedekindZetaZeroFree.KPGlobalTorusFiniteStages renaming rawLocalScalarData → rawLocalScalarData
 open _root_.DedekindZetaZeroFree.ProductPolarization renaming normalizedLocalAbs_norm → normalizedLocalAbs_norm
 
-private theorem polarized_torus_deltaHalf
+theorem polarized_torus_deltaHalf
     (q : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
     (a : (C₀.polarization q).L.comap (C₀.canonical q).heisenberg.π)
     (b : B F ζ hζ P.localData) (x : rawB F ζ hζ P.localData)

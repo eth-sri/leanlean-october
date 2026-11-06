@@ -14,5 +14,3 @@ theorem hasSieveExponent_one
     (c : Ideal (𝓞 F)) (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c) :
     HasSieveExponent F c Q 1 :=
   hasSieveExponent_one_of_band F hF c Q
-
-end DedekindZetaZeroFree.LargeSieve.Sieve

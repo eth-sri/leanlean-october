@@ -49,6 +49,3 @@ def RegularPointResidueOutput
         (continuedLevel K A P I J .plus p s) = residueScalar K dx z • LinearMap.id ∧
       (continuedLevel K A P I J .plus p s).comp
         (continuedLevel K A P I J .minus pRev s) = residueScalar K dx z • LinearMap.id
-
-end
-end DedekindZetaZeroFree.KPRankOneCubicResidueReduction

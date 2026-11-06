@@ -7,7 +7,6 @@ public import DedekindZetaZeroFree.Arithmetic.Kummer.TwelfthRootsTotallyComplex
 
 namespace DedekindZetaZeroFree
 
-noncomputable section
 open scoped NumberField Classical
 
 theorem rm_hgl_oriented
@@ -50,16 +49,13 @@ theorem rm_hgl_oriented
     · apply Finset.sum_congr rfl
       intro c hc
       simp only [if_pos (hz c hc)]
-    · intro c hc
-      by_contra hn
-      have hzero : z c = 0 := Finsupp.notMem_support_iff.mp hn
-      simpa [Function.mem_support, hzero] using hc
+    simp
   have hbound := hC X Y z hX hY
   simp only [hkernel, hmass] at hbound
   apply hbound.trans
   have hXY : 0 ≤ X + Y := by linarith
   have hnorm : 0 ≤ ∑ c ∈ z.support, ‖z c‖ ^ 2 :=
-    Finset.sum_nonneg fun c _ => sq_nonneg _
+    by positivity
   exact mul_le_mul_of_nonneg_right
     (mul_le_mul_of_nonneg_right
       (mul_le_mul_of_nonneg_right (le_max_left C 1) (Real.rpow_nonneg (by positivity) _))
@@ -116,7 +112,4 @@ theorem rm_hgl_oriented_masked
         simpa only [one_mul] using mul_le_mul_of_nonneg_right (hρ d) (norm_nonneg _)
       exact pow_le_pow_left₀ (by positivity) hmul 2
     · simp only [if_neg hd]
-      split_ifs <;> positivity
-
-end
-end DedekindZetaZeroFree
+      positivity

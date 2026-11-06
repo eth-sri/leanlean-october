@@ -39,5 +39,3 @@ theorem cls_mul_eq_iff (Q : QuadraticHeckeFamily F c) (d b₁ b₂ : Ideal (𝓞
     exact mul_left_cancel h
   · intro h
     rw [Q.cls_mul d b₁ hdc hb₁c, Q.cls_mul d b₂ hdc hb₂c, h]
-
-end DedekindZetaZeroFree.LargeSieve.ClassTwists

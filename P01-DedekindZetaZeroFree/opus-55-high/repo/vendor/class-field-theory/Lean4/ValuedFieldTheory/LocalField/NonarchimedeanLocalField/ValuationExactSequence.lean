@@ -13,12 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-set_option autoImplicit false
 /-!
 # The valuation exact sequence
 
@@ -37,7 +31,7 @@ namespace IsNonarchimedeanLocalField
 open scoped ValuativeRel WithZero
 
 /-- The multiplicative normalized valuation on field units. -/
-noncomputable def valuationUnitsMulHom
+def valuationUnitsMulHom
     (K : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
     [IsNonarchimedeanLocalField K] : Kˣ →* Multiplicative Int :=
   (@WithZero.unitsWithZeroEquiv (Multiplicative Int) _).toMonoidHom.comp
@@ -45,14 +39,9 @@ noncomputable def valuationUnitsMulHom
       (Units.map (ValuativeRel.valuation K).toMonoidWithZeroHom.toMonoidHom))
 
 /-- The actual normalized valuation map on field units, bundled as an additive hom. -/
-noncomputable def valuationMap (K : Type u) [Field K] [ValuativeRel K]
+def valuationMap (K : Type u) [Field K] [ValuativeRel K]
     [TopologicalSpace K] [IsNonarchimedeanLocalField K] : Additive Kˣ →+ Int :=
   MonoidHom.toAdditive (valuationUnitsMulHom K)
-
-/-- Defines `valuationShortComplex`. -/
-def valuationShortComplex (K : Type u) [Field K] [ValuativeRel K]
-    [TopologicalSpace K] [IsNonarchimedeanLocalField K] : Additive Kˣ →+ Int :=
-  valuationMap K
 
 /-- The additive valuation map evaluates a field unit by applying the normalized integer valuation.
 The additive valuation map evaluates a field unit by applying the normalized integer valuation. -/
@@ -68,15 +57,9 @@ theorem valuationMap_surjective (K : Type u) [Field K] [ValuativeRel K]
     Function.Surjective (valuationMap K) :=
   v_surjective K
 
-/-- A chosen normalized uniformizer maps to one under the additive valuation map. -/
-theorem valuationMap_uniformiser (K : Type u) [Field K] [ValuativeRel K]
-    [TopologicalSpace K] [IsNonarchimedeanLocalField K] :
-    ∃ ϖ : Kˣ, valuationMap K (Additive.ofMul ϖ) = 1 :=
-  v_uniformiser K
-
 /-- A valuation-theoretic uniformizer, regarded as a unit of the ambient
 field.  The nonzero proof is supplied by the actual uniformizer property. -/
-noncomputable def uniformizerFieldUnit
+def uniformizerFieldUnit
     (K : Type u) [Field K] [ValuativeRel K]
     [TopologicalSpace K] [IsNonarchimedeanLocalField K]
     (π : 𝒪[K])
@@ -113,50 +96,12 @@ theorem valuationMap_uniformizerFieldUnit
     (v_integerRingIrreducibleFieldUnit K π hπIrreducible
       (uniformizerFieldUnit K π hπ) rfl)
 
-
 /-- The additive valuation map sends the zero element of the additive unit group to zero. -/
 @[simp]
 theorem valuationMap_zero (K : Type u) [Field K] [ValuativeRel K]
     [TopologicalSpace K] [IsNonarchimedeanLocalField K] :
     valuationMap K (0 : Additive Kˣ) = 0 :=
   map_zero (valuationMap K)
-
-/-- The additive valuation map sends addition of additive field units to addition of integers. -/
-theorem valuationMap_add (K : Type u) [Field K] [ValuativeRel K]
-    [TopologicalSpace K] [IsNonarchimedeanLocalField K] (x y : Additive Kˣ) :
-    valuationMap K (x + y) = valuationMap K x + valuationMap K y :=
-  map_add (valuationMap K) x y
-
-/-- The additive valuation map sends additive negation to integer negation. -/
-theorem valuationMap_neg (K : Type u) [Field K] [ValuativeRel K]
-    [TopologicalSpace K] [IsNonarchimedeanLocalField K] (x : Additive Kˣ) :
-    valuationMap K (-x) = -valuationMap K x :=
-  map_neg (valuationMap K) x
-
-/-- The additive valuation map sends subtraction to subtraction of valuations. -/
-theorem valuationMap_sub (K : Type u) [Field K] [ValuativeRel K]
-    [TopologicalSpace K] [IsNonarchimedeanLocalField K] (x y : Additive Kˣ) :
-    valuationMap K (x - y) = valuationMap K x - valuationMap K y :=
-  map_sub (valuationMap K) x y
-
-/-- The additive valuation map commutes with integral scalar multiplication. -/
-theorem valuationMap_zsmul (K : Type u) [Field K] [ValuativeRel K]
-    [TopologicalSpace K] [IsNonarchimedeanLocalField K] (n : Int) (x : Additive Kˣ) :
-    valuationMap K (n • x) = n • valuationMap K x :=
-  map_zsmul (valuationMap K) n x
-
-/-- An additive field unit maps to zero exactly when its normalized valuation is zero. -/
-theorem valuationMap_eq_zero_iff_v_eq_zero (K : Type u) [Field K] [ValuativeRel K]
-    [TopologicalSpace K] [IsNonarchimedeanLocalField K] (x : Additive Kˣ) :
-    valuationMap K x = 0 ↔ v K x = 0 := by
-  rw [valuationMap_apply]
-
-/-- The kernel of the additive valuation map consists precisely of units of normalized valuation
-zero. -/
-theorem valuationMap_mem_ker_iff (K : Type u) [Field K] [ValuativeRel K]
-    [TopologicalSpace K] [IsNonarchimedeanLocalField K] (x : Additive Kˣ) :
-    x ∈ AddMonoidHom.ker (valuationMap K) ↔ v K x = 0 := by
-  rw [AddMonoidHom.mem_ker, valuationMap_apply]
 
 /-- The multiplicative identity, viewed additively, has valuation zero. -/
 @[simp]
@@ -194,16 +139,14 @@ theorem valuation_eq_one_of_valuationMap_eq_zero (K : Type u)
       WithZero.unzero
         (x := (_root_.IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K) (ValuativeRel.valuation K (x : K)))
         (by simp) = (1 : Multiplicative Int) := by
-    have h := congrArg Multiplicative.ofAdd hx
-    simpa using h
+    simp_all
   apply (_root_.IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K).injective
   have hcoe :
       ((WithZero.unzero
         (x := (_root_.IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K) (ValuativeRel.valuation K (x : K)))
         (by simp) : Multiplicative Int) : WithZero (Multiplicative Int)) =
         (1 : WithZero (Multiplicative Int)) := by
-    simpa using congrArg
-      (fun y : Multiplicative Int => (y : WithZero (Multiplicative Int))) hunzero
+    simp_all
   rw [WithZero.coe_unzero] at hcoe
   simpa using hcoe
 
@@ -230,12 +173,6 @@ theorem valuationMap_ofMul_pow (K : Type u) [Field K] [ValuativeRel K]
       (n : Int) * valuationMap K (Additive.ofMul x) := by
   change v K (Additive.ofMul (x ^ n)) = (n : Int) * v K (Additive.ofMul x)
   exact v_pow K x n
-
-/-- A field unit has additive valuation zero exactly when its multiplicative valuation is one. -/
-theorem valuationMap_ofMul_eq_zero_iff (K : Type u) [Field K] [ValuativeRel K]
-    [TopologicalSpace K] [IsNonarchimedeanLocalField K] (x : Kˣ) :
-    valuationMap K (Additive.ofMul x) = 0 ↔ v K (Additive.ofMul x) = 0 :=
-  valuationMap_eq_zero_iff_v_eq_zero K (Additive.ofMul x)
 
 /-- Defines `additiveIntegerUnitsToFieldUnits`. -/
 def additiveIntegerUnitsToFieldUnits (K : Type u) [Field K] [ValuativeRel K] :
@@ -326,8 +263,7 @@ theorem mem_powMonoidHom_range_integerUnits_iff (K : Type u)
     rw [valuationMap_ofMul_pow] at hyValPow
     have hyVal :
         valuationMap K (Additive.ofMul y) = 0 :=
-      (mul_eq_zero.mp hyValPow).resolve_left
-        (Int.ofNat_ne_zero.mpr n.ne_zero)
+      by simp_all
     let z : 𝒪[K]ˣ :=
       integerUnitOfValuationMapZero K y hyVal
     apply
@@ -337,83 +273,6 @@ theorem mem_powMonoidHom_range_integerUnits_iff (K : Type u)
     apply integerUnitsToFieldUnits_injective K
     rw [powMonoidHom_apply, map_pow,
       integerUnitOfValuationMapZero_spec, hy]
-
-/-- The image of valuation-ring units inside field units is exactly the kernel of the additive
-valuation map. -/
-theorem additiveIntegerUnitsToFieldUnits_range_eq_ker_valuationMap (K : Type u)
-    [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K] :
-    AddMonoidHom.range (additiveIntegerUnitsToFieldUnits K) =
-      AddMonoidHom.ker (valuationMap K) := by
-  ext x
-  constructor
-  · rintro ⟨u, rfl⟩
-    change valuationMap K
-      (Additive.ofMul (integerUnitsToFieldUnits K (Additive.toMul u))) = 0
-    rw [valuationMap_apply]
-    exact v_integerUnitsToFieldUnits K (Additive.toMul u)
-  · intro hx
-    rw [AddMonoidHom.mem_ker] at hx
-    refine ⟨Additive.ofMul
-      (integerUnitOfValuationMapZero K (Additive.toMul x) ?_), ?_⟩
-    · simpa using hx
-    · simp [additiveIntegerUnitsToFieldUnits]
-
-/-- Additive quotient form of the local valuation sequence: `Kˣ / 𝒪[K]ˣ ≃ ℤ`. -/
-noncomputable def fieldUnitsModIntegerUnitsAddEquivInt (K : Type u)
-    [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K] :
-    Additive Kˣ ⧸ AddMonoidHom.range (additiveIntegerUnitsToFieldUnits K) ≃+ Int :=
-  (QuotientAddGroup.quotientAddEquivOfEq
-    (additiveIntegerUnitsToFieldUnits_range_eq_ker_valuationMap K)).trans
-    (QuotientAddGroup.quotientKerEquivOfSurjective
-      (valuationMap K) (valuationMap_surjective K))
-
-/-- The quotient of field units by valuation-ring units sends the class of a unit to its integer
-valuation. -/
-@[simp]
-theorem fieldUnitsModIntegerUnitsAddEquivInt_mk (K : Type u)
-    [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    (x : Additive Kˣ) :
-    fieldUnitsModIntegerUnitsAddEquivInt K (QuotientAddGroup.mk x) =
-      valuationMap K x := by
-  simp only [fieldUnitsModIntegerUnitsAddEquivInt, AddEquiv.trans_apply,
-    QuotientAddGroup.quotientAddEquivOfEq_mk]
-  rw [QuotientAddGroup.quotientKerEquivOfSurjective,
-    QuotientAddGroup.quotientKerEquivOfRightInverse_apply,
-    QuotientAddGroup.kerLift_mk]
-
-/-- A field-unit quotient class maps to zero exactly when its representative is a valuation-ring
-unit. -/
-theorem fieldUnitsModIntegerUnitsAddEquivInt_mk_eq_zero_iff (K : Type u)
-    [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    (x : Additive Kˣ) :
-    fieldUnitsModIntegerUnitsAddEquivInt K (QuotientAddGroup.mk x) = 0 ↔
-      valuationMap K x = 0 := by
-  rw [fieldUnitsModIntegerUnitsAddEquivInt_mk]
-
-/-- Two field units define the same class modulo valuation-ring units exactly when they have equal
-valuation. -/
-theorem fieldUnitsModIntegerUnitsAddEquivInt_mk_eq_mk_iff (K : Type u)
-    [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    (x y : Additive Kˣ) :
-    (QuotientAddGroup.mk x :
-        Additive Kˣ ⧸ AddMonoidHom.range (additiveIntegerUnitsToFieldUnits K)) =
-      QuotientAddGroup.mk y ↔ valuationMap K x = valuationMap K y := by
-  constructor
-  · intro h
-    simpa [fieldUnitsModIntegerUnitsAddEquivInt_mk] using
-      congrArg (fieldUnitsModIntegerUnitsAddEquivInt K) h
-  · intro h
-    apply (fieldUnitsModIntegerUnitsAddEquivInt K).injective
-    simpa [fieldUnitsModIntegerUnitsAddEquivInt_mk] using h
-
-/-- The difference of two quotient classes vanishes exactly when the representatives have equal
-valuation. -/
-theorem fieldUnitsModIntegerUnitsAddEquivInt_mk_sub_eq_zero_iff (K : Type u)
-    [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    (x y : Additive Kˣ) :
-    fieldUnitsModIntegerUnitsAddEquivInt K (QuotientAddGroup.mk (x - y)) = 0 ↔
-      valuationMap K x = valuationMap K y := by
-  rw [fieldUnitsModIntegerUnitsAddEquivInt_mk, map_sub, sub_eq_zero]
 
 /-- The quotient of a field unit by the corresponding power of a uniformizer has
 normalized valuation zero. -/
@@ -425,7 +284,7 @@ theorem uniformizerUnitFactorValuationZero (K : Type u)
   rw [valuationMap_ofMul_div, valuationMap_ofMul_zpow, hϖ, mul_one, sub_self]
 
 /-- The integer-unit factor in the standard decomposition `x = u * ϖ ^ v(x)`. -/
-noncomputable def uniformizerUnitFactor (K : Type u)
+def uniformizerUnitFactor (K : Type u)
     [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
     (ϖ : Kˣ) (hϖ : valuationMap K (Additive.ofMul ϖ) = 1)
     (x : Kˣ) : 𝒪[K]ˣ :=
@@ -451,8 +310,7 @@ theorem uniformizerUnitFactor_mul_uniformizer_zpow (K : Type u)
     (ϖ : Kˣ) (hϖ : valuationMap K (Additive.ofMul ϖ) = 1) (x : Kˣ) :
     integerUnitsToFieldUnits K (uniformizerUnitFactor K ϖ hϖ x) *
         ϖ ^ valuationMap K (Additive.ofMul x) = x := by
-  rw [integerUnitsToFieldUnits_uniformizerUnitFactor]
-  simp [div_eq_mul_inv, mul_assoc]
+  simp
 
 /-- Existence form of the standard decomposition `Kˣ = O_Kˣ · ⟨ϖ⟩`. -/
 theorem exists_integerUnit_mul_uniformizer_zpow (K : Type u)
@@ -463,26 +321,3 @@ theorem exists_integerUnit_mul_uniformizer_zpow (K : Type u)
         ϖ ^ valuationMap K (Additive.ofMul x) = x :=
   ⟨uniformizerUnitFactor K ϖ hϖ x,
     uniformizerUnitFactor_mul_uniformizer_zpow K ϖ hϖ x⟩
-
-/-- The chosen preimage operation for the valuation map has the requested integer valuation. -/
-theorem valuationMap_surjective_apply (K : Type u) [Field K] [ValuativeRel K]
-    [TopologicalSpace K] [IsNonarchimedeanLocalField K] (n : Int) :
-    ∃ x : Additive Kˣ, valuationMap K x = n :=
-  valuationMap_surjective K n
-
-/-- Defines `chosenValuationMapSection`. -/
-noncomputable def chosenValuationMapSection (K : Type u) [Field K] [ValuativeRel K]
-    [TopologicalSpace K] [IsNonarchimedeanLocalField K] : Int → Additive Kˣ :=
-  fun n => Classical.choose (valuationMap_surjective_apply K n)
-
-/-- The chosen section of the additive valuation map is a right inverse. -/
-@[simp]
-theorem chosenValuationMapSection_spec (K : Type u) [Field K] [ValuativeRel K]
-    [TopologicalSpace K] [IsNonarchimedeanLocalField K] (n : Int) :
-    valuationMap K (chosenValuationMapSection K n) = n :=
-  Classical.choose_spec (valuationMap_surjective_apply K n)
-
-end IsNonarchimedeanLocalField
-
-end
-end LocalFieldTheory

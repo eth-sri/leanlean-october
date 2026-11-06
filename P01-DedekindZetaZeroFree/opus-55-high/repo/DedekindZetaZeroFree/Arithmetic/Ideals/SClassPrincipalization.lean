@@ -19,7 +19,7 @@ variable (S : Set (HeightOneSpectrum (𝓞 F)))
 private lemma map_id : IsFractionRing.map (FaithfulSMul.algebraMap_injective (𝓞 F) (S.integer F)) = RingHom.id F := by
   apply IsLocalization.ringHom_ext (𝓞 F)⁰
   ext a
-  simp [IsFractionRing.map, IsLocalization.map_eq, IsScalarTower.algebraMap_apply]
+  simp [IsFractionRing.map]
 private lemma ext_span (x : F) : extHom F S (FractionalIdeal.spanSingleton (𝓞 F)⁰ x) =
     FractionalIdeal.spanSingleton (S.integer F)⁰ x := by
   rw [extHom, FractionalIdeal.extendedHom_spanSingleton, map_id]
@@ -111,7 +111,7 @@ lemma exists_unit_of_isPrincipal {K : Type*} [Field K] {R : Type*} [CommRing R] 
   obtain ⟨x, hx⟩ := h.principal
   have hIeq : I = FractionalIdeal.spanSingleton R⁰ x := by
     apply FractionalIdeal.coeToSubmodule_injective
-    simp only [FractionalIdeal.val_eq_coe, hx, FractionalIdeal.coe_spanSingleton]
+    simp_all
   have hx0 : x ≠ 0 := fun hxz => h0 (by rw [hIeq, hxz, FractionalIdeal.spanSingleton_zero])
   exact ⟨Units.mk0 x hx0, by rw [hIeq, Units.val_mk0]⟩
 
@@ -176,7 +176,3 @@ theorem exists_principalizing_sArithmeticData (F : Type) [Field F] [NumberField 
       above_six := hsix
       modulus_support := hmod }
   exact ⟨A, rfl, rfl, rfl, hprincipal⟩
-
-end
-
-end DedekindZetaZeroFree

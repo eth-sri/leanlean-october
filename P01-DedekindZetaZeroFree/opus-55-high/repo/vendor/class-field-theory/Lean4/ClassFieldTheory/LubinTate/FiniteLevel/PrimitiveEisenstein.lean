@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Eisenstein property of the standard primitive division polynomials
 
@@ -36,7 +32,6 @@ irreducible over the valuation ring.
 The argument is independent of the characteristic of `F`.
 -/
 
-noncomputable section
 
 open scoped Polynomial
 
@@ -118,7 +113,7 @@ theorem standardLubinTatePrimitivePolynomial_isEisensteinAt
     have hzero : F.residueMap (Q.coeff i) = 0 := by
       rw [hcoeff]
       simp [Polynomial.coeff_X_pow, ne_of_lt hid]
-    exact (F.toCompleteDVF.residue_eq_zero_iff (Q.coeff i)).1 hzero
+    simp_all
   · simpa [Q] using
       F.toCompleteDVF.uniformizer_not_mem_maximalIdeal_sq hπ
 
@@ -142,7 +137,3 @@ theorem standardLubinTatePrimitivePolynomial_irreducible
     (Nat.sub_pos_of_lt
       (Finite.one_lt_card : 1 < Nat.card F.residueField))
     (Nat.pow_pos Nat.card_pos)
-
-end LubinTate
-
-end

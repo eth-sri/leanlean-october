@@ -23,21 +23,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # The finite-place product of local Artin homomorphisms
 
@@ -101,47 +86,6 @@ theorem finprod_fibers_eq_sigma
           (fun x hx => Finset.mem_image_of_mem g hx) f
     _ = ∏ᶠ x : α, f x :=
       (finprod_eq_prod f hf).symm
-
-/-- A local norm of an integral unit at a finite place is again an
-integral unit at the place below. -/
-theorem normUnits_mem_finitePlaceIntegerUnits
-    {M : Type}
-    [Field M] [NumberField M] [Algebra K M]
-    (v : HeightOneSpectrum (𝓞 K))
-    (w : AbsoluteValueExtension
-      (HeightOneSpectrum.adicAbv K v) M)
-    (x :
-      ((finitePlaceExtensionCentre
-        (K := K) (L := M) v w).adicCompletion M)ˣ)
-    (hx :
-      x ∈
-        ((finitePlaceExtensionCentre
-          (K := K) (L := M) v w).adicCompletionIntegers M).units) :
-    letI : Algebra (v.adicCompletion K)
-        ((finitePlaceExtensionCentre
-          (K := K) (L := M) v w).adicCompletion M) :=
-      (finitePlaceAdicCompletionMap K M v
-        ⟨finitePlaceExtensionCentre (K := K) (L := M) v w,
-          finitePlaceBelow_finitePlaceExtensionCentre
-            (K := K) (L := M) v w⟩).toAlgebra
-    LocalFieldTheory.normUnits
-        (v.adicCompletion K)
-        ((finitePlaceExtensionCentre
-          (K := K) (L := M) v w).adicCompletion M) x ∈
-      (v.adicCompletionIntegers K).units := by
-  let W : {W : HeightOneSpectrum (𝓞 M) //
-      _root_.finitePlaceBelow (K := K) W = v} :=
-    ⟨finitePlaceExtensionCentre (K := K) (L := M) v w,
-      finitePlaceBelow_finitePlaceExtensionCentre
-        (K := K) (L := M) v w⟩
-  let : Algebra (v.adicCompletion K)
-      ((finitePlaceExtensionCentre
-        (K := K) (L := M) v w).adicCompletion M) :=
-    (finitePlaceAdicCompletionMap K M v W).toAlgebra
-  let z : (W.1.adicCompletionIntegers M).units := ⟨x, hx⟩
-  simpa only [W, z, Subgroup.coe_subtype] using
-    IdeleGroup.finitePlace_normUnits_mem_integerUnits
-      (K := K) (L := M) v W z
 
 /-- The finite local Artin factors of an idele have finite multiplicative
 support.  This is the support input for applying homomorphisms to the
@@ -238,7 +182,7 @@ theorem chosenFinitePlaceArtinMonoidHom_eq_one_of_integral_of_unramifiedAt
     (K := K) (L := L) v] at hNorm
   exact MonoidHom.mem_ker.mp hNorm
 
-private theorem chosenFinitePlaceArtinMonoidHom_eq_one_of_mem_localNorm
+theorem chosenFinitePlaceArtinMonoidHom_eq_one_of_mem_localNorm
     (v : HeightOneSpectrum (𝓞 K))
     (x : (v.adicCompletion K)ˣ)
     (hx : x ∈ chosenFinitePlaceLocalNormSubgroup
@@ -252,7 +196,7 @@ private theorem chosenFinitePlaceArtinMonoidHom_eq_one_of_mem_localNorm
 homomorphisms.  Its value on an idele is a finite product because the
 idele is locally integral almost everywhere and the extension is
 unramified away from a finite set. -/
-noncomputable def finitePlaceGlobalArtinMonoidHom :
+def finitePlaceGlobalArtinMonoidHom :
     IdeleGroup K →* (L ≃ₐ[K] L) where
   toFun a :=
     ∏ᶠ v : HeightOneSpectrum (𝓞 K),
@@ -260,8 +204,7 @@ noncomputable def finitePlaceGlobalArtinMonoidHom :
         (K := K) (L := L) v
         (IdeleGroup.finiteComponent v a)
   map_one' := by
-    simp only [map_one]
-    exact finprod_one
+    simp
   map_mul' a b := by
     simp only [map_mul]
     exact
@@ -320,11 +263,7 @@ theorem finitePlaceGlobalArtinMonoidHom_continuous :
     constructor
     · exact (IdeleGroup.supportedAt
         (K := K) (S : Set _)).one_mem
-    · intro v _
-      rw [map_one]
-      exact
-        (chosenFinitePlaceLocalNormSubgroup
-          (K := K) (L := L) v).one_mem
+    simp
   have hUker :
       U ⊆
         (finitePlaceGlobalArtinMonoidHom
@@ -371,9 +310,7 @@ theorem finitePlaceGlobalArtinMonoidHom_continuous :
   have hmap : finitePlaceGlobalArtinMonoidHom
       (K := K) (L := L) a = 1 :=
     Set.mem_preimage.mp (hUker ha)
-  change finitePlaceGlobalArtinMonoidHom
-      (K := K) (L := L) a ∈ V
-  simpa only [hmap] using mem_of_mem_nhds hV
+  simp_all
 
 /-- The finite Artin product after an idele norm is the `finprod`, over
 base finite places, of the products of the corresponding local norm
@@ -443,9 +380,9 @@ theorem finitePlaceGlobalArtinMonoidHom_norm_eq_finprod_fibers
   apply finprod_congr
   intro v
   rw [IdeleGroup.finiteComponent_norm_eq_prod]
-  rw [map_prod]
+  simp
 
-private theorem finitePlaceNormArtinFactor_eq_one_of_component_unit_of_unramified
+theorem finitePlaceNormArtinFactor_eq_one_of_component_unit_of_unramified
     {M : Type}
     [Field M] [NumberField M] [Algebra K M]
     (a : IdeleGroup M)
@@ -764,8 +701,3 @@ theorem finitePlaceGlobalArtinMonoidHom_finitePlaceIdele
   · intro w hw
     rw [finitePlaceIdele_finiteComponent_of_ne v w x hw,
       map_one]
-
-end Reciprocity
-end GlobalClassFieldTheory
-
-end

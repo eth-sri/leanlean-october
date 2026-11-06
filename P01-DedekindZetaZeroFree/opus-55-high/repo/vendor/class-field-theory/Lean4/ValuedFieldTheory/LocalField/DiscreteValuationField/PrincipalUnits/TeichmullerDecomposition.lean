@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 namespace LocalFieldTheory
 
 open ValuationTheory
@@ -78,8 +74,7 @@ theorem residueRootsTimesPrincipalUnitMulHom_surjective
   have hp : p ∈ higherPrincipalUnitGroup F 1 := by
     rw [← higherPrincipalUnitGroup.residueUnitHom_eq_one_iff F p]
     dsimp [p]
-    rw [map_mul, map_inv, hzeta']
-    simp
+    simp_all
   refine ⟨(zeta, ⟨p, hp⟩), ?_⟩
   change (zeta : F.valuationSubringˣ) * p = u
   dsimp [p]
@@ -122,23 +117,7 @@ theorem residueRootsTimesPrincipalUnitMulHom_injective
       (F := F) hresroot
   apply Prod.ext
   · exact hroot
-  · apply Subtype.ext
-    calc
-      (x.2 : F.valuationSubringˣ) =
-          (x.1 : F.valuationSubringˣ)⁻¹ *
-            ((x.1 : F.valuationSubringˣ) *
-              (x.2 : F.valuationSubringˣ)) := by
-        simp
-      _ = (x.1 : F.valuationSubringˣ)⁻¹ *
-            ((y.1 : F.valuationSubringˣ) *
-              (y.2 : F.valuationSubringˣ)) := by
-        rw [hmul]
-      _ = (y.1 : F.valuationSubringˣ)⁻¹ *
-            ((y.1 : F.valuationSubringˣ) *
-              (y.2 : F.valuationSubringˣ)) := by
-        rw [hroot]
-      _ = (y.2 : F.valuationSubringˣ) := by
-        simp
+  simp_all
 
 /--
 The specified map is bijective: `Function.Bijective
@@ -153,7 +132,7 @@ theorem residueRootsTimesPrincipalUnitMulHom_bijective
 
 /-- Unit-level form of the multiplicative unit decomposition:
 `O^*` is the product of the lifted `(q - 1)`-roots of unity and `U^1`. -/
-noncomputable def valuationSubringUnitsEquivRootsTimesPrincipalUnits
+def valuationSubringUnitsEquivRootsTimesPrincipalUnits
     [Finite F.residueField] :
     higherPrincipalUnitGroup.residueRootsOfUnityGroup F ×
         higherPrincipalUnitGroup F 1 ≃*
@@ -224,11 +203,10 @@ theorem mem_zeroSubgroup_iff_exists_valuationSubringUnitFieldUnitHom_eq
   · intro hy
     let a : F.valuation.valuationSubring.unitGroup := ⟨y, hy⟩
     refine ⟨F.valuation.valuationSubring.unitGroupMulEquiv a, ?_⟩
-    apply Units.ext
-    simp [higherPrincipalUnitGroup.valuationSubringUnitFieldUnitHom, a]
+    rfl
   · rintro ⟨u, hu⟩
     rw [← hu]
-    simp [higherPrincipalUnitGroup.valuationSubringUnitFieldUnitHom]
+    simp
 
 /-- Field-unit representative form of the multiplicative unit decomposition.
 
@@ -284,29 +262,6 @@ theorem exists_roots_principalUnit_uniformizer_zpow
             (zp.2 : F.valuationSubringˣ) *
           ϖ ^ n := by
       rw [map_mul]
-
-/-- Field-unit form with the standard subgroup equality hypothesis
-`V.zeroSubgroup = O^*`. -/
-theorem exists_roots_principalUnit_uniformizer_zpow_of_zeroSubgroup_eq_unitGroup
-    [Finite F.residueField]
-    (V : MultiplicativeIntegerValuation Kˣ)
-    (hzero : V.zeroSubgroup = F.valuation.valuationSubring.unitGroup)
-    {ϖ : Kˣ} (hϖ : V.IsUniformizer ϖ) (x : Kˣ) :
-    ∃ ζ : higherPrincipalUnitGroup.residueRootsOfUnityGroup F,
-    ∃ p : higherPrincipalUnitGroup F 1,
-    ∃ n : ℤ,
-      x =
-        higherPrincipalUnitGroup.valuationSubringUnitFieldUnitHom F
-            (ζ : F.valuationSubringˣ) *
-          higherPrincipalUnitGroup.valuationSubringUnitFieldUnitHom F
-            (p : F.valuationSubringˣ) *
-          ϖ ^ n :=
-  higherPrincipalUnitGroup.exists_roots_principalUnit_uniformizer_zpow
-    (F := F) V
-    (fun y =>
-      higherPrincipalUnitGroup.mem_zeroSubgroup_iff_exists_valuationSubringUnitFieldUnitHom_eq
-          (F := F) V hzero y)
-    hϖ x
 
 /-- Uniqueness of the field-unit form of the multiplicative unit decomposition:
 with a fixed uniformizer, the Teichmuller representative, the first principal
@@ -369,37 +324,8 @@ theorem roots_principalUnit_uniformizer_zpow_eq_iff
         (by
           simpa [higherPrincipalUnitGroup.residueRootsTimesPrincipalUnitMulHom]
             using hvaluationUnit)
-    cases hpair
-    exact ⟨rfl, rfl, hmn⟩
-  · rintro ⟨rfl, rfl, rfl⟩
-    rfl
-
-/-- Uniqueness form under the standard subgroup equality hypothesis
-`V.zeroSubgroup = O^*`. -/
-theorem roots_principalUnit_uniformizer_zpow_eq_iff_of_zeroSubgroup_eq_unitGroup
-    [Finite F.residueField]
-    (V : MultiplicativeIntegerValuation Kˣ)
-    (hzero : V.zeroSubgroup = F.valuation.valuationSubring.unitGroup)
-    {ϖ : Kˣ} (hϖ : V.IsUniformizer ϖ)
-    (ζ η : higherPrincipalUnitGroup.residueRootsOfUnityGroup F)
-    (p q : higherPrincipalUnitGroup F 1) (m n : ℤ) :
-    higherPrincipalUnitGroup.valuationSubringUnitFieldUnitHom F
-          (ζ : F.valuationSubringˣ) *
-        higherPrincipalUnitGroup.valuationSubringUnitFieldUnitHom F
-          (p : F.valuationSubringˣ) *
-        ϖ ^ m =
-      higherPrincipalUnitGroup.valuationSubringUnitFieldUnitHom F
-          (η : F.valuationSubringˣ) *
-        higherPrincipalUnitGroup.valuationSubringUnitFieldUnitHom F
-          (q : F.valuationSubringˣ) *
-        ϖ ^ n ↔
-      ζ = η ∧ p = q ∧ m = n :=
-  higherPrincipalUnitGroup.roots_principalUnit_uniformizer_zpow_eq_iff
-    (F := F) V
-    (fun y =>
-      higherPrincipalUnitGroup.mem_zeroSubgroup_iff_exists_valuationSubringUnitFieldUnitHom_eq
-        (F := F) V hzero y)
-    hϖ ζ η p q m n
+    simp_all
+  simp_all
 
 /-- The three factors in the multiplicative field-unit decomposition: Teichmuller roots,
 first principal units, and an integral power of a fixed uniformizer. -/
@@ -411,7 +337,7 @@ abbrev fieldUnitDecompositionFactors [Finite F.residueField] :
 /--
 Multiplication map from the three the multiplicative unit decomposition factors to field units.
 -/
-noncomputable def rootsPrincipalUnitUniformizerMulHom
+def rootsPrincipalUnitUniformizerMulHom
     [Finite F.residueField] (ϖ : Kˣ) :
     higherPrincipalUnitGroup.fieldUnitDecompositionFactors F →* Kˣ where
   toFun z :=
@@ -492,16 +418,13 @@ theorem rootsPrincipalUnitUniformizerMulHom_injective
             (η : F.valuationSubringˣ) *
           higherPrincipalUnitGroup.valuationSubringUnitFieldUnitHom F
             (q : F.valuationSubringˣ) *
-          ϖ ^ Multiplicative.toAdd n := by
-    exact h
+          ϖ ^ Multiplicative.toAdd n := 
+    h
   have hdecomp :=
     (higherPrincipalUnitGroup.roots_principalUnit_uniformizer_zpow_eq_iff
       (F := F) V hzero hϖ ζ η p q
         (Multiplicative.toAdd m) (Multiplicative.toAdd n)).1 hmul
-  rcases hdecomp with ⟨hζη, hpq, hmn⟩
-  have hmn' : m = n :=
-    Multiplicative.toAdd.injective hmn
-  simp [hζη, hpq, hmn']
+  simp_all
 
 /--
 The specified map is bijective: `Function.Bijective
@@ -525,7 +448,7 @@ theorem rootsPrincipalUnitUniformizerMulHom_bijective
 /-- Group-isomorphism form of the multiplicative unit decomposition: after fixing
 a uniformizer, `Kˣ` is the product of the lifted residue roots of unity, the
 first principal units, and the infinite cyclic uniformizer factor. -/
-noncomputable def fieldUnitsEquivRootsPrincipalUnitsUniformizer
+def fieldUnitsEquivRootsPrincipalUnitsUniformizer
     [Finite F.residueField]
     (V : MultiplicativeIntegerValuation Kˣ)
     (hzero :
@@ -566,7 +489,7 @@ Multiplicative.toAdd z.2`.
 
 /-- Group-isomorphism form under the standard subgroup equality hypothesis
 `V.zeroSubgroup = O^*`. -/
-noncomputable def fieldUnitsEquivRootsPrincipalUnitsUniformizer_of_zeroSubgroup_eq_unitGroup
+def fieldUnitsEquivRootsPrincipalUnitsUniformizer_of_zeroSubgroup_eq_unitGroup
     [Finite F.residueField]
     (V : MultiplicativeIntegerValuation Kˣ)
     (hzero : V.zeroSubgroup = F.valuation.valuationSubring.unitGroup)
@@ -578,11 +501,3 @@ noncomputable def fieldUnitsEquivRootsPrincipalUnitsUniformizer_of_zeroSubgroup_
       higherPrincipalUnitGroup.mem_zeroSubgroup_iff_exists_valuationSubringUnitFieldUnitHom_eq
         (F := F) V hzero y)
     hϖ
-end higherPrincipalUnitGroup
-
-end CompleteDVF
-end DiscreteValuationField
-
-end
-
-end LocalFieldTheory

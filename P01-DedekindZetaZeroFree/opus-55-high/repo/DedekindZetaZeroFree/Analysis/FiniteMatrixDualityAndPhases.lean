@@ -26,7 +26,7 @@ theorem operator_conjTranspose_norm (A : Matrix r s ℂ) :
     LinearMap.adjoint_toContinuousLinearMap]
   exact ContinuousLinearMap.adjoint.norm_map _
 
-private theorem operator_conj_norm_le (A : Matrix r s ℂ) :
+theorem operator_conj_norm_le (A : Matrix r s ℂ) :
     ‖(Matrix.toEuclideanLin (fun i j => star (A i j) : Matrix r s ℂ)).toContinuousLinearMap‖ ≤
       ‖A.toEuclideanLin.toContinuousLinearMap‖ := by
   apply ContinuousLinearMap.opNorm_le_bound _ (norm_nonneg _)
@@ -82,18 +82,17 @@ omit [DecidableEq m] in
 
 omit [DecidableEq m] in
 theorem operator_zero : operator (0 : Matrix m n ℂ) = 0 := by
-  ext x i
   simp
 
 omit [DecidableEq m] in
 theorem operator_add (A B : Matrix m n ℂ) : operator (A + B) = operator A + operator B := by
   ext x i
-  simp [add_mul, Finset.sum_add_distrib]
+  simp
 
 omit [DecidableEq m] in
 theorem operator_smul (c : ℂ) (A : Matrix m n ℂ) : operator (c • A) = c • operator A := by
   ext x i
-  simp [Finset.mul_sum, mul_assoc]
+  simp
 
 omit [DecidableEq m] in
 theorem operator_sum {κ : Type*} (S : Finset κ) (A : κ → Matrix m n ℂ) :
@@ -175,17 +174,13 @@ theorem separated_phase_norm_le [Fintype k]
   classical
   have h := Auxiliary.separated_decomposition_norm_le A A'.transpose (fun _ : k => 1)
     (fun a i => if κ i = a then 1 else 0) (fun a j => φ a (ν j))
-    (by intro a i; split_ifs <;> simp) (by intro a j; exact hφ a (ν j))
+    (by intro a i; split_ifs <;> simp) (by simp_all)
     (by
       intro i j
       simp only [one_mul, Matrix.transpose_apply]
-      simp only [ite_mul, one_mul, zero_mul, Finset.sum_ite_eq', Finset.mem_univ, if_true]
+      simp only [ite_mul, one_mul, zero_mul]
       simpa [mul_comm] using hA i j)
   have hn : ‖A.toEuclideanLin.toContinuousLinearMap‖ ≤
       (Fintype.card k : ℝ) * ‖A'.toEuclideanLin.toContinuousLinearMap‖ := by
     simpa [Auxiliary.operator, DedekindZetaZeroFree.LargeSieve.Vendor.FiniteOperator.operator_transpose_norm] using h
   simpa [mul_pow] using pow_le_pow_left₀ (norm_nonneg _) hn 2
-
-end DedekindZetaZeroFree.LargeSieve.Vendor.FiniteOperator
-
-end

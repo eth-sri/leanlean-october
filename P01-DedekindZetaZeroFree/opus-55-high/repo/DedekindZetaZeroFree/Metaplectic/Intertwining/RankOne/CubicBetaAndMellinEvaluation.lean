@@ -7,7 +7,6 @@ public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.LocalBeta.UnramifiedInt
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.RegulatedResidue
 open MeasureTheory
 open scoped ValuativeRel Topology
@@ -16,7 +15,7 @@ theorem residueCard_pos (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
     [TopologicalSpace K] [IsNonarchimedeanLocalField K] :
     0 < (KPCubicUnitIndices.residueCard K : ℝ) := by
   have h := KPCubicUnitIndices.two_le_residueCard K
-  exact_mod_cast (lt_of_lt_of_le (by norm_num : 0 < 2) h)
+  positivity
 
 theorem cube_root_norm_bounds (q : ℝ) (hq : 0 < q)
     (t z : ℂˣ) (lam : ℂ) (hz : z ^ 3 = t)
@@ -57,9 +56,7 @@ theorem beta_power_exp_coordinates
   have ha : 0 < KPCubicHaar.abs K (x : K) := KPCubicHaar.abs_pos K x.ne_zero
   have halog : (Real.log (KPCubicHaar.abs K (x : K)) : ℂ) =
       -(j : ℂ) * (Real.log q : ℂ) := by
-    rw [habs, Real.log_zpow]
-    push_cast
-    ring
+    simp_all
   have hae : (KPCubicHaar.abs K (x : K) : ℂ) =
       Complex.exp (-(j : ℂ) * (Real.log q : ℂ)) := by
     rw [← halog, ← Complex.ofReal_exp, Real.exp_log ha]
@@ -82,7 +79,7 @@ theorem betaFunction_eq_ramified_integrand
   by_cases hy : y = 1
   · subst y
     simp [KPCubicExpansion.betaFunction, KPRankOneRamifiedBeta.betaIntegrand]
-  · have hy' : (y : K) ≠ 1 := fun h => hy (Units.ext h)
+  · have hy' : (y : K) ≠ 1 := by simp_all
     rw [KPCubicExpansion.betaFunction, if_neg hy,
       KPRankOneRamifiedBeta.betaIntegrand, dif_neg hy']
     have hp := beta_power_exp_coordinates K s
@@ -112,7 +109,7 @@ theorem betaFunction_eq_unramified_integrand
     have hp := beta_power_exp_coordinates K s (Units.mk0 (1 - (y : K)) hy')
     simp only [Units.val_mk0] at hp
     rw [hp]
-    simp only [Units.val_zpow_eq_zpow_val, Units.val_mk0, div_eq_mul_inv]
+    simp only [Units.val_mk0, div_eq_mul_inv]
     ring
 
 theorem uniformizer_unit_decomposition (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K]
@@ -125,15 +122,14 @@ theorem uniformizer_unit_decomposition (K : Type*) [Field K] [ValuativeRel K] [T
     dsimp [y]
     rw [KPCubicExpansion.valuationExponent_mul, KPCubicExpansion.valuationExponent_zpow,
       KPCubicExpansion.valuationExponent_uniformizer π hπ]
-    dsimp [j]
-    ring
+    omega
   have hv : ValuativeRel.valuation K (y : K) = 1 := by
     have hn : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K (ValuativeRel.valuation K (y : K)) ≠ 0 := by simp
     have hz : WithZero.log (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K (ValuativeRel.valuation K (y : K))) = 0 := by
       simpa [KPCubicExpansion.valuationExponent] using he
     have hh := congrArg WithZero.exp hz
     rw [WithZero.exp_log hn, WithZero.exp_zero] at hh
-    exact (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K).injective (hh.trans (map_one _).symm)
+    simp_all
   let u : (𝒪[K])ˣ :=
     { val := ⟨(y : K), by change ValuativeRel.valuation K (y : K) ≤ 1; rw [hv]⟩
       inv := ⟨((y⁻¹ : Kˣ) : K), by change ValuativeRel.valuation K ((y⁻¹ : Kˣ) : K) ≤ 1; simp [hv]⟩
@@ -143,7 +139,6 @@ theorem uniformizer_unit_decomposition (K : Type*) [Field K] [ValuativeRel K] [T
   have hu : Units.map (𝒪[K]).subtype.toMonoidHom u = y := Units.ext rfl
   rw [hu]
   dsimp [y]
-  rw [← mul_assoc, ← zpow_add]
   simp
 
 theorem character_eq_eta_of_coordinates
@@ -186,7 +181,3 @@ theorem joint_strip_geometric_bounds (q : ℝ) (hq : 1 < q) (s : ℂ) (hs : s.re
   rw [← he]
   rw [mul_comm (q.rpow (s.re - 1))]
   exact mul_lt_mul_of_pos_right hlo (Real.rpow_pos_of_pos hq0 _)
-
-end DedekindZetaZeroFree.RegulatedResidue
-
-end

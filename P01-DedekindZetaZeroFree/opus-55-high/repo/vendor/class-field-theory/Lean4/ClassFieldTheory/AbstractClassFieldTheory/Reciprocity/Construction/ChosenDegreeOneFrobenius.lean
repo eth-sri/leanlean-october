@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 universe u
 
 namespace ClassFormation
@@ -36,7 +33,7 @@ namespace DegreeData
 
 /-- A chosen degree-one element of `G(\widetilde L/K)`, packaged as an
 element of the Frobenius semigroup. -/
-noncomputable def chosenDegreeOneFrobeniusElement (D : DegreeData G)
+def chosenDegreeOneFrobeniusElement (D : DegreeData G)
     (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
     (hLK : L.toSubgroup ≤ K.field.toSubgroup)
     [hLnormal : (extensionSubgroup K.field L hLK).Normal] :
@@ -78,9 +75,3 @@ theorem frobeniusExponent_chosenDegreeOneFrobeniusElement (D : DegreeData G)
         (D.extensionNormalizedDegreeContinuous_surjective K L hLK
           (Multiplicative.ofAdd (1 : ZHat)))
     _ = (Multiplicative.ofAdd (1 : ZHat)) ^ (1 : ℕ) := by simp
-
-end DegreeData
-
-end
-
-end ClassFormation

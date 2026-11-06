@@ -11,7 +11,7 @@ namespace ThetaDigitAverage
 
 noncomputable section
 open NumberField IsDedekindDomain
-open scoped NumberField BigOperators Classical
+open scoped BigOperators Classical
 
 variable {F : Type} [Field F] [NumberField F]
 
@@ -85,7 +85,3 @@ theorem residueLifts_nonempty (P : Finset (KPFinitePlace F)) :
 
 def residueLifts (P : Finset (KPFinitePlace F)) : ResidueLifts P :=
   Classical.choice (residueLifts_nonempty P)
-
-end
-end ThetaDigitAverage
-end DedekindZetaZeroFree

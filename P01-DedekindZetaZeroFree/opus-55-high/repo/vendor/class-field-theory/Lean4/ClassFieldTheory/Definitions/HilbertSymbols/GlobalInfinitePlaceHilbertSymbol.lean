@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Infinite-place Hilbert factors
 -/
@@ -51,7 +47,3 @@ def globalInfinitePlaceHilbertSymbol
       · exact 1
     · exact 1
   · exact 1
-
-end ClassFieldTheory
-
-end

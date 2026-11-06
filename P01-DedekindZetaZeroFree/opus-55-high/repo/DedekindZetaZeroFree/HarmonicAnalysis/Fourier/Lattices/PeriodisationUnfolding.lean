@@ -5,7 +5,6 @@ public import Mathlib.Analysis.Distribution.SchwartzSpace.Fourier
 
 @[expose] public section
 
-noncomputable section
 open scoped FourierTransform SchwartzMap
 open MeasureTheory
 
@@ -24,12 +23,10 @@ theorem periodisation_fourierCoefficient_eq_fourier
   classical
   letI : VAddInvariantMeasure L V (volume : Measure V) := ⟨fun v s hs => by
     change volume ((fun x : V => (v : V) + x) ⁻¹' s) = volume s
-    exact measure_preimage_add volume (v : V) s⟩
+    simp⟩
   have hc : Countable L := inferInstance
   let F : L → V → ℂ := fun v x => 𝐞 (-inner ℝ x (w : V)) • f (x + (v : V))
   have hmeas (v : L) : AEStronglyMeasurable (F v) (volume.restrict D) := by
-    apply Continuous.aestronglyMeasurable
-    dsimp [F]
     fun_prop
   have hnorm : (∑' v : L, ∫⁻ x in D, ‖F v x‖ₑ) ≠ ⊤ := by
     simp only [F, Circle.enorm_smul]
@@ -63,7 +60,3 @@ theorem periodisation_fourierCoefficient_eq_fourier
       apply integral_congr_ae
       filter_upwards [] with x
       simp only [Submodule.vadd_def, vadd_eq_add, add_comm (v : V) x, hchar, F]
-
-end DedekindZetaZeroFree.PoissonArch
-
-end

@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Adeles.Quotients.PrincipalTorusCoordinateInje
 
 @[expose] public section
 
-noncomputable section
 open scoped NumberField Classical
 open NumberField IsDedekindDomain
 set_option backward.isDefEq.respectTransparency false
@@ -46,7 +45,3 @@ theorem exists_initial :
       F A.zeta12 A.primitive_zeta12 w).choose_spec
   · filter_upwards [A.Sf.finite_toSet.compl_mem_cofinite] with q hq
     exact hf q hq
-
-end DedekindZetaZeroFree.EisensteinReferenceSections.FrozenChoices
-
-end

@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Uniqueness of the conductor
 
@@ -35,5 +32,3 @@ theorem IsAbelianConductor.unique
   apply le_antisymm
   · exact (hc d).mp ((hd d).mpr le_rfl)
   · exact (hd c).mp ((hc c).mpr le_rfl)
-
-end ClassFieldTheory

@@ -33,9 +33,7 @@ private lemma pi_smul (s : ℝ) (k : KPCplxCharacterHaar.ComplexPGL2)
       exact Submodule.subset_span ⟨k * h, rfl⟩
   | zero =>
       have hz := pi_smul s k 0 f
-      have hz' : pi s k 0 = 0 := by simpa using hz
-      rw [hz']
-      exact U.zero_mem
+      simp_all
   | add x y hx hy ihx ihy =>
       rw [pi_add]
       exact U.add_mem ihx ihy
@@ -109,7 +107,6 @@ theorem kFinite_finite_harmonic_decomposition (s : ℝ) (f : PrincipalSeries s)
       rw [← he]
       exact inf_le_left
     have hd := Submodule.finrank_mono hle
-    rw [ht.2.1] at hd
     omega
   have hzero (ℓ : ℕ) (hℓ : Module.finrank ℂ U ≤ ℓ) : a ℓ = 0 := by
     by_contra hn
@@ -144,18 +141,18 @@ open scoped Classical
 abbrev Mat := Matrix (Fin 2) (Fin 2) ℂ
 abbrev RealLieWord := List Mat
 
-noncomputable def rightLieFunction (X : Mat) (f : ComplexGL2 → ℂ)
+def rightLieFunction (X : Mat) (f : ComplexGL2 → ℂ)
     (g : ComplexGL2) : ℂ :=
   fderiv ℝ (matrixFunction f) (g : Mat) ((g : Mat) * X)
 
 section
 open scoped ContDiff Matrix.Norms.Elementwise
 set_option backward.isDefEq.respectTransparency false
-private theorem lie_inv_open : IsOpen {g : Mat | g.det ≠ 0} := by
+theorem lie_inv_open : IsOpen {g : Mat | g.det ≠ 0} := by
   have hc : Continuous (fun g : Mat => g.det) := by
-    simp only [Matrix.det_fin_two]; fun_prop
+    fun_prop
   exact isOpen_ne_fun hc continuous_const
-private theorem lie_matrix_function_gl (f : ComplexGL2 → ℂ) (g : ComplexGL2) :
+theorem lie_matrix_function_gl (f : ComplexGL2 → ℂ) (g : ComplexGL2) :
     matrixFunction f (g : Mat) = f g := by
   unfold matrixFunction
   rw [dif_pos (Matrix.GeneralLinearGroup.det_ne_zero g)]
@@ -213,15 +210,15 @@ theorem rightLieFunction_mem (s : ℝ) (X : Mat) (f : PrincipalSeries s) :
 
 end
 
-noncomputable def rightLieDerivative (s : ℝ) (X : Mat)
+def rightLieDerivative (s : ℝ) (X : Mat)
     (f : PrincipalSeries s) : PrincipalSeries s :=
   ⟨rightLieFunction X f, rightLieFunction_mem s X f⟩
 
-noncomputable def rightWord (s : ℝ) (w : RealLieWord)
+def rightWord (s : ℝ) (w : RealLieWord)
     (f : PrincipalSeries s) : PrincipalSeries s :=
   w.foldr (rightLieDerivative s) f
 
-private lemma rightWord_coe (s : ℝ) (w : RealLieWord) (f : PrincipalSeries s) :
+lemma rightWord_coe (s : ℝ) (w : RealLieWord) (f : PrincipalSeries s) :
     (rightWord s w f : ComplexGL2 → ℂ) =
       w.foldr (fun X h => rightLieFunction X h) (f : ComplexGL2 → ℂ) := by
   induction w generalizing f with
@@ -231,7 +228,7 @@ private lemma rightWord_coe (s : ℝ) (w : RealLieWord) (f : PrincipalSeries s) 
     rw [← ih]
     rfl
 
-noncomputable def complexSpherical (z : ℂ) (g : ComplexGL2) : ℂ :=
+def complexSpherical (z : ℂ) (g : ComplexGL2) : ℂ :=
   let ratio : ℝ :=
     ‖((GeneralLinearGroup.det g : ℂˣ) : ℂ)‖ / bottomRowNormSq g
   Complex.exp ((1 + 2 * ((positiveParameter : ℂ) + z)) * (Real.log ratio : ℂ))
@@ -248,10 +245,7 @@ private lemma bottomRowNormSq_pos (g : ComplexGL2) : 0 < bottomRowNormSq g := by
         norm_nonneg ((g : Matrix (Fin 2) (Fin 2) ℂ) 1 1)]
     simpa using h1
   have h11 : (g : Matrix (Fin 2) (Fin 2) ℂ) 1 1 = 0 := by
-    have h1 : ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 1‖ = 0 := by
-      nlinarith [norm_nonneg ((g : Matrix (Fin 2) (Fin 2) ℂ) 1 0),
-        norm_nonneg ((g : Matrix (Fin 2) (Fin 2) ℂ) 1 1)]
-    simpa using h1
+    simp_all
   exact hdet (by rw [det_fin_two, h10, h11]; ring)
 
 theorem complexSpherical_zero (g : ComplexGL2) :
@@ -270,7 +264,7 @@ theorem complexSpherical_zero (g : ComplexGL2) :
   push_cast
   ring
 
-noncomputable def complexSphericalWord (w : RealLieWord)
+def complexSphericalWord (w : RealLieWord)
     (z : ℂ) (g : ComplexGL2) : ℂ :=
   (w.foldr (fun X f => rightLieFunction X f) (complexSpherical z)) g
 
@@ -289,16 +283,15 @@ set_option backward.isDefEq.respectTransparency false
  def invDomain : Set Mat := {h | h.det ≠ 0}
  theorem inv_open : IsOpen invDomain := by
   have hc : Continuous (fun g : Mat => g.det) := by
-    simp only [Matrix.det_fin_two]; fun_prop
+    fun_prop
   exact isOpen_ne_fun hc continuous_const
  def phase (h : Mat) : ℂ :=
   (Real.log (‖h.det‖ / (‖h 1 0‖ ^ 2 + ‖h 1 1‖ ^ 2)) : ℂ)
  def exponent (z : ℂ) := 1 + 2 * ((positiveParameter : ℂ) + z)
-private theorem exponent_analytic : AnalyticOnNhd ℂ exponent Set.univ := by
+theorem exponent_analytic : AnalyticOnNhd ℂ exponent Set.univ := by
   unfold exponent
-  exact analyticOnNhd_const.add (analyticOnNhd_const.mul
-    (analyticOnNhd_const.add analyticOnNhd_id))
-private theorem row_pos (h : Mat) (hh : h ∈ invDomain) :
+  fun_prop
+theorem row_pos (h : Mat) (hh : h ∈ invDomain) :
     0 < ‖h 1 0‖ ^ 2 + ‖h 1 1‖ ^ 2 := by
   by_contra hn
   push Not at hn
@@ -306,8 +299,7 @@ private theorem row_pos (h : Mat) (hh : h ∈ invDomain) :
     apply norm_eq_zero.mp
     nlinarith [norm_nonneg (h 1 0), norm_nonneg (h 1 1)]
   have h11 : h 1 1 = 0 := by
-    apply norm_eq_zero.mp
-    nlinarith [norm_nonneg (h 1 0), norm_nonneg (h 1 1)]
+    simp_all
   exact hh (by rw [det_fin_two, h10, h11]; ring)
  theorem phase_smooth : ContDiffOn ℝ ∞ phase invDomain := by
   have hdet : ContDiff ℝ ∞ (fun h : Mat => h.det) := by
@@ -342,7 +334,7 @@ private theorem row_pos (h : Mat) (hh : h ∈ invDomain) :
   | add hf hg ihf ihg => exact ihf.add ihg
  def direction (X : Mat) (b : Mat → ℂ) (h : Mat) : ℂ :=
   fderiv ℝ b h (h * X)
-private theorem direction_smooth (X : Mat) {b} (hb : ContDiffOn ℝ ∞ b invDomain) :
+theorem direction_smooth (X : Mat) {b} (hb : ContDiffOn ℝ ∞ b invDomain) :
     ContDiffOn ℝ ∞ (direction X b) invDomain := by
   apply (hb.fderiv_of_isOpen inv_open (m := ∞) (by simp)).clm_apply
   have hv : ContDiff ℝ ∞ (fun h : Mat => h * X) := by
@@ -372,8 +364,7 @@ private theorem direction_smooth (X : Mat) {b} (hb : ContDiffOn ℝ ∞ b invDom
     have he' := (he.mul_const (a z)).mul hd.hasFDerivAt
     change _ = (fderiv ℝ (((fun y => Complex.exp (exponent z * phase y) * a z) * b)) h) (h * X)
     rw [he'.fderiv]
-    simp [atom, ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply,
-      direction]
+    simp [atom, direction]
     ring
   | @add H G hf hg ihf ihg =>
     obtain ⟨H', hH', eH⟩ := ihf
@@ -391,9 +382,8 @@ private theorem direction_smooth (X : Mat) {b} (hb : ContDiffOn ℝ ∞ b invDom
   filter_upwards [inv_open.mem_nhds (Matrix.GeneralLinearGroup.det_ne_zero g)] with h hh
   unfold matrixFunction
   change h.det ≠ 0 at hh
-  rw [dif_pos hh]
-  exact he (Matrix.GeneralLinearGroup.mkOfDetNeZero h hh)
-private theorem word_separated (w : RealLieWord) :
+  simp_all
+theorem word_separated (w : RealLieWord) :
     ∃ H, Separated H ∧ ∀ z g,
       complexSphericalWord w z g = H z (g : Mat) := by
   induction w with
@@ -418,13 +408,6 @@ theorem complexSphericalWord_holomorphic (w : RealLieWord) (g : ComplexGL2) :
     AnalyticOnNhd ℂ (fun z => complexSphericalWord w z g) Set.univ := by
   obtain ⟨H, hH, he⟩ := word_separated w
   have eq : (fun z => complexSphericalWord w z g) = (fun z => H z (g : Mat)) :=
-    funext (fun z => he z g)
+    by simp_all
   rw [eq]
   exact separated_analytic hH _
-
-end
-
-end DedekindZetaZeroFree.KPContHolomorphicKGeneration
-
-end
-end

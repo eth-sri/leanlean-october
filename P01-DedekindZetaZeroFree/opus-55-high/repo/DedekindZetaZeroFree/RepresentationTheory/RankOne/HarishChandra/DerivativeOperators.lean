@@ -26,7 +26,7 @@ private theorem inv_open : IsOpen {m : Mat | m.det ≠ 0} :=
  theorem mf_smul (c : ℂ) (f : ComplexGL2 → ℂ) : matrixFunction (c • f) = c • matrixFunction f := by
   funext m
   simp only [matrixFunction, Pi.smul_apply]
-  split <;> simp
+  simp
  theorem mf_diff (s : ℝ) (f : PrincipalSeries s) (g : ComplexGL2) :
     DifferentiableAt ℝ (matrixFunction (f : ComplexGL2 → ℂ)) (g : Mat) :=
   ((((principalSeries_mem_iff s _).mp f.property).2).contDiffAt
@@ -59,9 +59,7 @@ theorem hasDerivAt_flow (s : ℝ) (X : Mat) (f : PrincipalSeries s) (g : Complex
       ((g : Mat) * X) 0 := by
     have h := (((hasDerivAt_exp_smul_const (𝕂 := ℂ) X ((0 : ℝ) : ℂ)).hasFDerivAt.restrictScalars ℝ).comp_hasDerivAt (f := fun t : ℝ => (t : ℂ)) 0 Complex.ofRealCLM.hasDerivAt)
     have ht := h.const_mul (g : Mat)
-    change HasDerivAt (fun t : ℝ => (g : Mat) * NormedSpace.exp ((t : ℂ) • X))
-      ((g : Mat) * ((1 : ℂ) • (NormedSpace.exp ((0 : ℂ) • X) * X))) 0 at ht
-    simpa only [one_smul, zero_smul, NormedSpace.exp_zero, one_mul] using ht
+    simp_all
   have hc := (mf_diff s f g).hasFDerivAt.comp_hasDerivAt_of_eq 0 hm (by simp)
   have heq : (fun t : ℝ => f (g * KPSmoothActualFlowData.matrixExponential ((t : ℂ) • X))) =
       matrixFunction f ∘ (fun t : ℝ => (g : Mat) * NormedSpace.exp ((t : ℂ) • X)) := by
@@ -83,7 +81,7 @@ def direction (s : ℝ) (f : PrincipalSeries s) : Mat →ₗ[ℝ] PrincipalSerie
     simp only [derivative_apply, rightLieFunction, Matrix.mul_smul, map_smul]
     rfl
 
-private theorem cartan_derivative (s : ℝ) (b : KPSmoothCoreCasimirEnergy.LocalBasis)
+theorem cartan_derivative (s : ℝ) (b : KPSmoothCoreCasimirEnergy.LocalBasis)
     (f : PrincipalSeries s) :
     derivative s (KPSmoothCoreCasimirEnergy.cartanMatrix b) f =
       KPSmoothCoreCasimirEnergy.localDerivative s b f := by
@@ -95,8 +93,8 @@ theorem derivative_preserves_harmonic_core (s : ℝ) (X : Mat) (hX : Matrix.trac
     (f : PrincipalSeries s) (hf : f ∈ KPSmoothCoreCasimirEnergy.localHC s) :
     derivative s X f ∈ KPSmoothCoreCasimirEnergy.localHC s := by
   obtain ⟨c, hc⟩ := KPSmoothCoreCasimirEnergy.cartan_basis_normalization.2.2.2.2.2 X hX
-  have hreal : X = ∑ b, c b • KPSmoothCoreCasimirEnergy.cartanMatrix b := by
-    exact hc
+  have hreal : X = ∑ b, c b • KPSmoothCoreCasimirEnergy.cartanMatrix b := 
+    hc
   change direction s f X ∈ KPSmoothCoreCasimirEnergy.localHC s
   rw [hreal, map_sum]
   apply Submodule.sum_mem
@@ -130,7 +128,3 @@ theorem operators_hasDerivAt (i : Fin 6) (f : complexCore) (g : ComplexGL2) :
     HasDerivAt (fun t : ℝ => f.val.val
       (g * KPSmoothActualFlowData.matrixExponential ((t : ℂ) • KPSmoothActualFlowData.basisMatrix i)))
       ((operators i f).val.val g) 0 := hasDerivAt_flow _ _ _ _
-
-end DedekindZetaZeroFree.KPGlobalResidualConstruction.NativeComplexHCOperators
-
-end

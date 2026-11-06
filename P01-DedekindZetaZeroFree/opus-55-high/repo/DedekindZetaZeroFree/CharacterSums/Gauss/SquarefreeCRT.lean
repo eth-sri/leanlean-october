@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Theta.Whittaker.SphericalGeneratorExpansion
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.ExteriorWhittakerValues.NumericalSpherical
 open scoped NumberField Classical BigOperators
 open NumberField IsDedekindDomain UniqueFactorizationMonoid
@@ -178,7 +177,7 @@ theorem gauss_finiteProduct (R : PrincipalMellin.ActualRecipe S η)
         have ht : (Q p).val = ⊤ := by simp [Q, hz, exteriorSquarefreeTop]
         rw [show R.A.sexticResidue (Q p) (∏ w ∈ P.erase p, ρ w) = 1 from
           R.A.residueValue_top R.A.sexticResidueFamily (Q p) ht _]
-        simp [← show e p = idealPrimeExponent p.val.asIdeal d.val.val from rfl, hz]
+        simp [hz]
       · change R.σ (R.A.sexticResidue (Q p) _) ^ 2 = _
         simp only [Q, ho, one_ne_zero, ↓reduceIte]
         unfold SArithmeticData.sexticResidue SArithmeticData.residueValue
@@ -192,7 +191,3 @@ theorem gauss_finiteProduct (R : PrincipalMellin.ActualRecipe S η)
     convert hphase using 1
     congr 1
     ext q; simp
-
-end DedekindZetaZeroFree.ExteriorWhittakerValues.NumericalSpherical
-
-end

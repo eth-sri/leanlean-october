@@ -16,7 +16,7 @@ local instance completionMeasurable (v : HeightOneSpectrum (𝓞 F)) :
 local instance completionBorel (v : HeightOneSpectrum (𝓞 F)) :
     BorelSpace (v.adicCompletion F) := ⟨rfl⟩
 
-private theorem pi_measure_smul {ι : Type*} [Fintype ι] {X : ι → Type*}
+theorem pi_measure_smul {ι : Type*} [Fintype ι] {X : ι → Type*}
     [∀ i, MeasurableSpace (X i)] (μ : (i : ι) → Measure (X i))
     [∀ i, SigmaFinite (μ i)] (c : ι → ENNReal) (hc : ∀ i, c i ≠ ∞) :
     Measure.pi (fun i => c i • μ i) = (∏ i, c i) • Measure.pi μ := by
@@ -35,7 +35,7 @@ theorem finite_map_mul (S : Finset (HeightOneSpectrum (𝓞 F)))
         Measure.pi (fun v : S => localNormalizedHaar F v.val) := by
   have hgv (v : S) : g.val v * (↑g⁻¹ : (v : S) → v.val.adicCompletion F) v = 1 := by
     have h := congr_fun (Units.mul_inv g) v
-    simpa using h
+    omega
   have hne (v : S) : g.val v ≠ 0 := fun h0 => by
     have := hgv v
     rw [h0, zero_mul] at this
@@ -55,8 +55,7 @@ theorem finite_map_mul (S : Finset (HeightOneSpectrum (𝓞 F)))
     CompletionHaarModule.map_mul F v.val (localNormalizedHaar F v.val) (c v)]
   rw [pi_measure_smul (fun v : S => localNormalizedHaar F v.val)
     (fun v : S => (ENNReal.ofReal ‖g.val v‖)⁻¹) (fun v => ENNReal.inv_ne_top.mpr (by
-      rw [ENNReal.ofReal_ne_zero_iff]
-      exact norm_pos_iff.mpr (hne v)))]
+      simp_all))]
   have hinv : (∏ v : S, (ENNReal.ofReal ‖g.val v‖)⁻¹) =
       (∏ v : S, ENNReal.ofReal ‖g.val v‖)⁻¹ := by
     simpa using (ENNReal.prod_inv_distrib (s := Finset.univ)
@@ -67,6 +66,3 @@ theorem finite_map_mul (S : Finset (HeightOneSpectrum (𝓞 F)))
       (ENNReal.ofReal (∏ v : S, ‖g.val v‖))⁻¹ := by
     rw [hinv, ← ENNReal.ofReal_prod_of_nonneg (fun v _ => norm_nonneg (g.val v))]
   rw [hscalar]
-
-end
-end DedekindZetaZeroFree.TateSLocalMeasurability

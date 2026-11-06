@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Theta.Profiles.MixedThetaFunctionalEquationPa
 
 @[expose] public section
 
-noncomputable section
 open Classical MeasureTheory NumberField
 open scoped nonZeroDivisors
 
@@ -13,10 +12,10 @@ namespace DedekindZetaZeroFree.Hecke
 open DedekindZetaZeroFree.AbelianQuotient.Theta
 
 theorem mixedThetaPair_tailExponent_pos (F : Type) [Field F] [NumberField F] :
-    0 < 2 / (Module.finrank ℚ F : ℝ) := by
-  exact div_pos (by norm_num) (Nat.cast_pos.mpr (Module.finrank_pos (R := ℚ) (M := F)))
+    0 < 2 / (Module.finrank ℚ F : ℝ) := 
+  div_pos (by norm_num) (Nat.cast_pos.mpr (Module.finrank_pos (R := ℚ) (M := F)))
 
-private theorem centered_integral_tail (F : Type) [Field F] [NumberField F]
+theorem centered_integral_tail (F : Type) [Field F] [NumberField F]
     (I : (FractionalIdeal (𝓞 F)⁰ F)ˣ) (q : Angular F → Angular F)
     (hq : Continuous q) :
     ∃ A B : ℝ, 0 < A ∧ 0 < B ∧ ∀ t : ℝ, 1 ≤ t →
@@ -37,12 +36,12 @@ private theorem centered_integral_tail (F : Type) [Field F] [NumberField F]
     (fun u hu ↦ htail t ht (q u) (Set.mem_image_of_mem q (hsub hu)))
   simpa [Measure.real, hv] using h
 
-private theorem decay_rate_mono (a b p t : ℝ) (hab : a ≤ b) (ht : 0 ≤ t) :
+theorem decay_rate_mono (a b p t : ℝ) (hab : a ≤ b) (ht : 0 ≤ t) :
     Real.exp (-b * t ^ p) ≤ Real.exp (-a * t ^ p) := by
   apply Real.exp_le_exp.mpr
   exact mul_le_mul_of_nonneg_right (neg_le_neg hab) (Real.rpow_nonneg ht p)
 
-private theorem finite_sum_tail {ι : Type*} (s : Finset ι) (f : ι → ℝ → ℂ) (p : ℝ)
+theorem finite_sum_tail {ι : Type*} (s : Finset ι) (f : ι → ℝ → ℂ) (p : ℝ)
     (h : ∀ i ∈ s, ∃ A B : ℝ, 0 < A ∧ 0 < B ∧ ∀ t : ℝ, 1 ≤ t →
       ‖f i t‖ ≤ A * Real.exp (-B * t ^ p)) :
     ∃ A B : ℝ, 0 < A ∧ 0 < B ∧ ∀ t : ℝ, 1 ≤ t →
@@ -69,7 +68,7 @@ private theorem finite_sum_tail {ι : Type*} (s : Finset ι) (f : ι → ℝ →
             (mul_le_mul_of_nonneg_left (decay_rate_mono _ _ _ _ (min_le_right _ _) ht0) hC.le)
         _ = (A + C) * Real.exp (-(min B D) * t ^ p) := (add_mul _ _ _).symm
 
-private theorem scaled_sum_tail {ι : Type*} [Fintype ι] (f : ι → ℝ → ℂ)
+theorem scaled_sum_tail {ι : Type*} [Fintype ι] (f : ι → ℝ → ℂ)
     (p : ℝ) (c : ℂ)
     (h : ∀ i, ∃ A B : ℝ, 0 < A ∧ 0 < B ∧ ∀ t : ℝ, 1 ≤ t →
       ‖f i t - 1‖ ≤ A * Real.exp (-B * t ^ p)) :
@@ -148,7 +147,3 @@ theorem mixedThetaPair_exponential_tail (F : Type) [Field F] [NumberField F] :
         mul_le_mul_of_nonneg_left (decay_rate_mono _ _ _ _ (min_le_right _ _) ht0) hC.le
       _ ≤ (A + C) * Real.exp (-(min B D) * t ^ (2 / (Module.finrank ℚ F : ℝ))) :=
         mul_le_mul_of_nonneg_right (le_add_of_nonneg_left hA.le) (Real.exp_pos _).le
-
-end DedekindZetaZeroFree.Hecke
-
-end

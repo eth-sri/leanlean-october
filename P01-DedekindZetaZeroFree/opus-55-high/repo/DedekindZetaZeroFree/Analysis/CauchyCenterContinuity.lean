@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Analysis.HolomorphicKernels.RectangularCauchy
 
 @[expose] public section
 
-noncomputable section
 open scoped Topology
 open Complex
 namespace DedekindZetaZeroFree.ResidueContinuity
@@ -41,11 +40,7 @@ theorem continuous_center_of_continuous_circle
       rfl
     rw [he, hC]
     simp only [smul_eq_mul]
-    exact inv_mul_cancel_left₀ (by
-      exact mul_ne_zero (mul_ne_zero (by norm_num)
+    exact inv_mul_cancel_left₀ (
+      mul_ne_zero (mul_ne_zero (by norm_num)
         (Complex.ofReal_ne_zero.mpr Real.pi_ne_zero)) Complex.I_ne_zero) _
   exact ((circleCoeffCLM 0 t ht 0).continuous.comp hboundary).congr heq
-
-end DedekindZetaZeroFree.ResidueContinuity
-
-end

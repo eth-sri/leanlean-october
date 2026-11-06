@@ -6,7 +6,6 @@ public import DedekindZetaZeroFree.Arithmetic.ResidueSymbols.CodifferentTraceDua
 
 @[expose] public section
 
-noncomputable section
 set_option maxHeartbeats 2000000
 set_option backward.isDefEq.respectTransparency false
 namespace DedekindZetaZeroFree.DigitMasks
@@ -22,7 +21,7 @@ theorem rational_mul_local (p : KPFinitePlace F) (a : F) (x : p.adicCompletion F
         (algebraMap F (p.adicCompletion F) a * x) := by
   apply Prod.ext
   · change (algebraMap F (KPAdeles F) a).1 * 0 = 0
-    exact mul_zero _
+    simp
   · apply Subtype.ext
     funext q
     change (algebraMap F (q.adicCompletion F) a) *
@@ -32,7 +31,7 @@ theorem rational_mul_local (p : KPFinitePlace F) (a : F) (x : p.adicCompletion F
     by_cases h : q = p
     · subst q
       simp
-    · simp [RestrictedProduct.single_eq_of_ne _ _ h]
+    simp_all
 
 theorem trace_local (p : KPFinitePlace F) (x : p.adicCompletion F) :
     adelicTraceCharacter F (KPRationalAdelicSplitting.localAdele F (Sum.inr p) x) =
@@ -61,7 +60,3 @@ theorem digitParameter_phase (m : ThetaReflectionData.Row R.A)
   rw [hsum Finset.univ]
   simp only [trace_local]
   exact map_prod (Circle.coeHom : Circle →* ℂ) _ _
-
-end DedekindZetaZeroFree.DigitMasks
-
-end

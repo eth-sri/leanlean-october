@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.Adeles.Characters.SLocalTraceRestriction
 
 @[expose] public section
 
-noncomputable section
 
 open scoped NumberField
 open NumberField IsDedekindDomain
@@ -54,7 +53,3 @@ theorem sLocalTraceCharacter_sIntegerDiagonal_mul_eq_one
       (sIntegerDiagonal F S m * sIntegerDiagonal F S n) = 1 := by
   rw [← map_mul]
   exact sLocalTraceCharacter_sIntegerDiagonal_eq_one F S hS (m * n)
-
-end DedekindZetaZeroFree
-
-end

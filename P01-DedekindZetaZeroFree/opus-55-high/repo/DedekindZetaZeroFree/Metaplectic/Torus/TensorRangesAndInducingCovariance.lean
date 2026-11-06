@@ -37,7 +37,7 @@ theorem finite_joint_covariant_function_expansion
   let a (i : I) (x : H i) : B i := ⟨x * (r i (q i x))⁻¹, by
     apply (QuotientGroup.eq_one_iff _).mp
     change q i (x * (r i (q i x))⁻¹) = 1
-    rw [map_mul, map_inv, hr, mul_inv_cancel]⟩
+    simp_all⟩
   have ha (i : I) (b : B i) (x : H i) : a i ((b : H i) * x) = b * a i x := by
     apply Subtype.ext
     have hb : q i (b : H i) = 1 := (QuotientGroup.eq_one_iff _).mpr b.property
@@ -46,7 +46,7 @@ theorem finite_joint_covariant_function_expansion
     ⟨fun x => ((A i).ωL (a i x) : ℂ) * (if q i x = d i then 1 else 0), by
       intro b x
       have hb : q i (b : H i) = 1 := (QuotientGroup.eq_one_iff _).mpr b.property
-      simp [ha, map_mul, hb, mul_assoc]⟩
+      simp [ha, map_mul, hb]⟩
   have hcov (b : ∀ i, B i) (t : ∀ i, H i) :
       G (fun i => (b i : H i) * t i) = (∏ i, ((A i).ωL (b i) : ℂ)) * G t := by
     have aux (s : Finset I) :
@@ -82,7 +82,7 @@ theorem finite_joint_covariant_function_expansion
     rw [Fintype.prod_ite_zero]
     by_cases h : (fun i => q i (t i)) = d
     · have hh : ∀ i, q i (t i) = d i := fun i => congrFun h i
-      simp [h, hh]
+      simp [hh]
     · have hn : ¬ ∀ i, q i (t i) = d i := fun hh => h (funext hh)
       simp [h, hn]
   simp_rw [hf]
@@ -150,12 +150,7 @@ theorem rawTensorRestriction_finite_expansion
       (∑ j : Fin n, c j • PiTensorProduct.tprod ℂ (f j)) a =
       ∑ j : Fin n, c j * rawTensorRestriction F ζ hζ P T C S
         (PiTensorProduct.tprod ℂ (f j)) a := by
-    change rawFiniteTensorFunctional F ζ hζ P T C S a.t
-      (∑ j : Fin n, c j • PiTensorProduct.tprod ℂ (f j)) =
-      ∑ j : Fin n, c j * rawFiniteTensorFunctional F ζ hζ P T C S a.t
-        (PiTensorProduct.tprod ℂ (f j))
-    rw [map_sum]
-    simp only [map_smul, smul_eq_mul]
+    simp
   rw [hlin]
   simp only [hpure]
   simp only [Finset.prod_div_distrib]
@@ -198,7 +193,7 @@ def finiteRawNormFactor (C : RawLocalScalarData F ζ hζ P T)
 
 open KPAdelicCoverRestrictedProduct
 
-private theorem raw_images_commute (x y : RestrictedCover F ζ hζ)
+theorem raw_images_commute (x y : RestrictedCover F ζ hζ)
     (hc : ∀ v, Commute (KPPGLLocalCover.coverQuotient F ζ hζ v (x v))
       (KPPGLLocalCover.coverQuotient F ζ hζ v (y v))) :
     Commute (scalarQuotient F ζ hζ (amalgamation F ζ hζ x))
@@ -225,7 +220,7 @@ private theorem maximal_mem {G : Type*} [Group G] (H : Subgroup G)
     · exact hH.1 x hx y hy
     · have : y = g := hy; subst y; exact (hc x hx).symm
     · have : x = g := hx; subst x; exact hc y hy
-    · have : x = g := hx; have : y = g := hy; subst x; subst y; exact Commute.refl _
+    simp_all
   letI := Subgroup.closureCommGroupOfComm hcomm
   have he : A = H := hH.2 A hA (by
     intro x hx y hy
@@ -305,8 +300,7 @@ theorem finite_raw_restored_covariance
   let xb : KPGlobalProductPolarizationCharacter.rawB F ζ hζ P := ⟨x, by
     change scalarQuotient F ζ hζ (amalgamation F ζ hζ x) ∈
       (KPGlobalProductPolarizationCharacter.B F ζ hζ P).map (KPGlobalTorusFunctionData.E F ζ hζ).subtype
-    rw [hx]
-    exact Subgroup.mem_map.mpr ⟨g,hgB,rfl⟩⟩
+    simp_all⟩
   let a : ∀ r, (C.polarization r).L.comap (C.canonical r).heisenberg.π :=
     Function.update (fun r => 1) q.val b
   have ha : ∀ r, (a r).val.val = KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr r) (x (Sum.inr r)) := by
@@ -485,7 +479,7 @@ theorem rawTensorRestriction_insert
   intro q
   by_cases hqS : q ∈ S
   · simp only [dif_pos hqS, dif_pos (hSU hqS)]
-  · by_cases hqU : q ∈ U <;> simp only [dif_neg hqS, hqU, ↓reduceDIte]
+  simp_all
 
 theorem rawTensorRestriction_range_mono
     (C : RawLocalScalarData F ζ hζ P T)
@@ -580,8 +574,3 @@ theorem raw_smooth_restriction_finite_tensor
   funext a
   rw [rawTensorRestriction_finite_expansion F ζ hζ P T C S n c k a]
   rw [hraw a, hk (fun q : S => a.t q.val)]
-
-end
-end DedekindZetaZeroFree.KPGlobalTorusFiniteStagesIdentification
-
-end

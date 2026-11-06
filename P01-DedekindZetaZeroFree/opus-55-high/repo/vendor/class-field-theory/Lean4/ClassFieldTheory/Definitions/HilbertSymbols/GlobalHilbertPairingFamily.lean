@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Families of finite-place Hilbert pairings
 -/
@@ -32,5 +28,3 @@ place.  No reciprocity law is hidden in this data type. -/
 abbrev GlobalHilbertPairingFamily
     (F : Type u) [Field F] [NumberField F] (n : ℕ+) :=
   ∀ v : HeightOneSpectrum (𝓞 F), HilbertPairing (v.adicCompletion F) n
-
-end ClassFieldTheory

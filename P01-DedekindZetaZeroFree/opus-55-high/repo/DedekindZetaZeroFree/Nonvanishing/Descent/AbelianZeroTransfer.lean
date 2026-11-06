@@ -31,8 +31,7 @@ theorem dedekindZeta_zeroFree_of_abelian_extension
   obtain ⟨fK, fL, g, hfK, hfL, _hg, hagK, hagL, hprod⟩ := DedekindZetaZeroFree.dedekindAbelianQuotient K L hcomm
 
   have hagree : ∀ s : ℂ, 1 < s.re → fL s = fF s := by
-    intro s hs
-    rw [hagL s hs, hagF s hs]
+    simp_all
   have hident : Set.EqOn fL fF ({1}ᶜ : Set ℂ) :=
     continuation_unique_off_one fL fF hfL hfF hagree
   refine ⟨fK, hfK, hagK, ?_⟩
@@ -40,5 +39,3 @@ theorem dedekindZeta_zeroFree_of_abelian_extension
   exact product_nonvanishing_transfer ({1}ᶜ : Set ℂ) {s : ℂ | α < s.re ∧ s ≠ 1}
     fK fL g fF (fun t ht => ht.2) hident
     (fun t ht => hprod t ht) (fun t ht => hnzF t ht.1 ht.2) s ⟨hs, hsne⟩
-
-end DedekindZetaZeroFree

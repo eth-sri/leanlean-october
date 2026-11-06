@@ -17,13 +17,10 @@ theorem PrincipalHeckeWitness.U_reflection (p : PrincipalHeckeWitness η) :
   have h_agree : ∀ s : ℂ, s ≠ 0 → s ≠ 1 → p.U s = p.U (1 - s) := by
     intro s hs0 hs1
     have hs0' : 1 - s ≠ 0 := by
-      rw [sub_ne_zero]
-      exact Ne.symm hs1
+      positivity
     have hs1' : 1 - s ≠ 1 := by
       intro h
-      exact hs0 (by
-        have h2 : (1 : ℂ) + 0 = 1 + s := by simpa using sub_eq_iff_eq_add.mp h
-        exact (add_left_cancel h2).symm)
+      simp_all
     rw [p.poleClearing s hs0 hs1, p.poleClearing (1 - s) hs0' hs1',
       p.functionalEquation s hs0 hs1]
     ring
@@ -38,5 +35,3 @@ theorem PrincipalHeckeWitness.U_reflection (p : PrincipalHeckeWitness η) :
     (Complex.analyticOnNhd_univ_iff_differentiable.mpr p.differentiable_U)
     (Complex.analyticOnNhd_univ_iff_differentiable.mpr hg) hfg
   exact fun s => congrFun h s
-
-end DedekindZetaZeroFree.LargeSieve

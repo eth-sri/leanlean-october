@@ -88,7 +88,7 @@ theorem prefix_U_nonneg (B X : ℝ) : 0 ≤ ErrorRectangles.U Q B X := by
   · exact le_csSup h (Or.inl rfl)
   · rw [Real.sSup_of_not_bddAbove h]
 
-private theorem max_prefix_bound (B M N n P η A : ℝ)
+theorem max_prefix_bound (B M N n P η A : ℝ)
     (hB : 1 ≤ B) (hBM : B ≤ M) (hN : 1 ≤ N) (hn : 1 ≤ n)
     (hP : 1 ≤ P) (hη : 0 ≤ η) (hA : 0 ≤ A) :
     A * (B * max 1 (N / (n * P))) ^ η ≤ A * (2 * (M*N)) ^ η := by
@@ -102,7 +102,7 @@ private theorem max_prefix_bound (B M N n P η A : ℝ)
          _ = _ := by ring
   exact mul_le_mul_of_nonneg_left (Real.rpow_le_rpow (by positivity) hbase hη) hA
 
-private theorem rectangle_thresholds (C : Context Q) (B α η A : ℝ)
+theorem rectangle_thresholds (C : Context Q) (B α η A : ℝ)
     (hM : 1 ≤ C.M) (hN : 1 ≤ C.N) (hn : 1 ≤ norm C.d)
     (hnN : norm C.d ≤ 2*C.N) (hB : 1 ≤ B) (hBM : B ≤ C.M)
     (hα : α ∈ Set.Icc (1:ℝ) 2) (hη : 0 ≤ η) (hA : 0 ≤ A)
@@ -256,8 +256,8 @@ private lemma middle_R_bound (A η α B M N n θ Cq : ℝ)
       M + Cq*n*θ*Real.sqrt M*B^(α-1/2) := by
     rw [Real.sqrt_mul hB0.le, Real.rpow_sub hB0, ← Real.sqrt_eq_rpow]
     have hsM : (Real.sqrt M)^2 = M := Real.sq_sqrt hM0.le
-    have hsM0 : Real.sqrt M ≠ 0 := (Real.sqrt_pos.mpr hM0).ne'
-    have hsB0 : Real.sqrt B ≠ 0 := (Real.sqrt_pos.mpr hB0).ne'
+    have hsM0 : Real.sqrt M ≠ 0 := by positivity
+    have hsB0 : Real.sqrt B ≠ 0 := by positivity
     field_simp
     linear_combination -(n * B ^ α * Cq * θ) * hsM
   have hnt : 1 ≤ n*θ := by nlinarith [mul_nonneg (sub_nonneg.mpr hn) (sub_nonneg.mpr hθ)]
@@ -275,7 +275,7 @@ private lemma middle_R_bound (A η α B M N n θ Cq : ℝ)
       convert ht using 1 <;> ring
 
 end
-private theorem loss_bound (X n ζ δ Cj C0 : ℝ) (hX : 1 ≤ X)
+theorem loss_bound (X n ζ δ Cj C0 : ℝ) (hX : 1 ≤ X)
     (hn : 0 ≤ n) (hnX : n ≤ 2*X) (hζ : 0 < ζ) (hδ : 0 < δ)
     (hj : Cj ≤ C0) (h0 : 0 ≤ C0) :
     (X*n)^(ζ/4) * X^(Cj*δ) * (2*X)^(ζ/4) * X^δ ≤
@@ -299,7 +299,7 @@ private theorem loss_bound (X n ζ δ Cj C0 : ℝ) (hX : 1 ≤ X)
          apply Real.rpow_le_rpow_of_exponent_le hX
          nlinarith
 
-private theorem shape_bound (M N n θ H a u : ℝ)
+theorem shape_bound (M N n θ H a u : ℝ)
     (hM : 0 ≤ M) (hN : 0 ≤ N) (hn : 1 ≤ n) (ht : 1 ≤ θ)
     (hu : 0 ≤ u) (ha : 0 < a) (hH : 2/a+2 ≤ H) :
     2*M/a+u ≤ H*n*θ*(M+N+u) ∧
@@ -321,7 +321,7 @@ private theorem shape_bound (M N n θ H a u : ℝ)
   · nlinarith [mul_nonneg (sub_nonneg.mpr hHnt) hM, mul_nonneg (by positivity : 0 ≤ H*n*θ) hN]
   · nlinarith [mul_nonneg (by positivity : 0 ≤ H*n*θ) hM]
 
-private theorem upper_shape (M N n θ H t u : ℝ)
+theorem upper_shape (M N n θ H t u : ℝ)
     (hM : 0 ≤ M) (hN : 0 ≤ N) (hn : 1 ≤ n) (ht : 1 ≤ θ)
     (hu : 0 ≤ u) (hH : 2 ≤ H) (htt : t ≤ H) :
     2*M+n*t*θ*u ≤ H*n*θ*(M+N+u) := by
@@ -333,7 +333,7 @@ private theorem upper_shape (M N n θ H t u : ℝ)
     nlinarith [mul_nonneg (sub_nonneg.mpr htt) (by positivity : 0 ≤ n*θ*u)]
   nlinarith [mul_nonneg (by positivity : 0 ≤ H*n*θ) hN]
 
-private theorem envelope_bounds (C : Context Q) (B α η A H : ℝ)
+theorem envelope_bounds (C : Context Q) (B α η A H : ℝ)
     (hM : 1 ≤ C.M) (hN : 1 ≤ C.N) (hn : 1 ≤ norm C.d)
     (hnN : norm C.d ≤ 2*C.N) (hB : 1 ≤ B) (hBM : B ≤ C.M)
     (hδ : 0 < C.δ) (hα : α ∈ Set.Icc (1:ℝ) 2) (hη : 0 ≤ η) (hA : 0 ≤ A)
@@ -370,13 +370,13 @@ private theorem envelope_bounds (C : Context Q) (B α η A H : ℝ)
     convert hH4 using 1 <;> field_simp <;> ring
   have hsh5 := shape_bound C.M C.N (norm C.d) θ H (ErrorRectangles.lowerConstant c / 2)
     (Real.sqrt C.M*B^(α-1/2)) hM0.le hN0.le hn ht (by positivity) ha5 hH5
-  have hR0 : 0 ≤ L*H*norm C.d*θ*S := by dsimp [L,S]; positivity
+  have hR0 : 0 ≤ L*H*norm C.d*θ*S := by positivity
   have hsh := shape_bound C.M C.N (norm C.d) θ H (ErrorRectangles.lowerConstant c)
     (Real.sqrt C.M*B^(α-1/2)) hM0.le hN0.le hn ht (by positivity) ha hH
   have hS := fun P hP => rectangle_thresholds C B α η A hM hN hn hnN hB hBM hα hη hA hb P hP
   have scale : ∀ r, r ≤ H*norm C.d*θ*S → L*r ≤ L*H*norm C.d*θ*S := by
     intro r hr
-    convert mul_le_mul_of_nonneg_left hr (show 0 ≤ L by dsimp [L]; positivity) using 1 <;> ring
+    convert mul_le_mul_of_nonneg_left hr (show 0 ≤ L by positivity) using 1 <;> ring
   refine ⟨?_, ?_, ?_, ?_⟩
   · apply finiteSup_mul_le _ _ _ _ (by positivity) hR0
     intro P hP
@@ -421,7 +421,7 @@ private theorem envelope_bounds (C : Context Q) (B α η A H : ℝ)
     rw [Real.rpow_neg (by positivity : 0 ≤ C.M*C.N)] at hthr
     convert hthr using 1 <;> dsimp [θ] <;> ring
 
-private theorem combine_bound (X n ζ δ Cj C0 Ai A0 H S E e : ℝ)
+theorem combine_bound (X n ζ δ Cj C0 Ai A0 H S E e : ℝ)
     (hX : 1 ≤ X) (hn : 1 ≤ n) (hnX : n ≤ 2*X) (hζ : 0 < ζ)
     (hδ : 0 < δ) (hj : Cj ≤ C0) (hC0 : 0 ≤ C0)
     (hAi : 0 ≤ Ai) (hA0 : 0 ≤ A0) (hH : 0 ≤ H)
@@ -510,9 +510,9 @@ theorem bilinear_error_local_exponent_bound
     have hh : 0 ≤ 4 / ErrorRectangles.lowerConstant c := by positivity
     linarith
   have hH0 : 0 ≤ H := by linarith
-  have hA0 : 0 ≤ A0 := le_trans (by linarith : 0 ≤ Ap) (le_max_left _ _)
+  have hA0 : 0 ≤ A0 := by positivity
   let T := A0*H*2^(ζ/2)
-  refine ⟨(A1+A2+A3+A4+A5)*T, by dsimp [T]; positivity, ?_⟩
+  refine ⟨(A1+A2+A3+A4+A5)*T, by positivity, ?_⟩
   intro M N K hM hN hK hKM d hd0 hd hdc hn hnN g lam B unit hB hBK huB
   let C : Context Q := {
     D := D, core := core, hF := hF,
@@ -526,7 +526,7 @@ theorem bilinear_error_local_exponent_bound
   have hx0 : 0 < X := by linarith
   have hn' : 1 ≤ n := hn
   have hnX : n ≤ 2*X := by dsimp [X,n]; change (Ideal.absNorm d : ℝ) ≤ _; nlinarith
-  have hS : 0 ≤ S := by dsimp [S]; positivity
+  have hS : 0 ≤ S := by positivity
   have hEn : 0 ≤ E := Finset.sum_nonneg (fun _ _ => sq_nonneg _)
   have hBM : B ≤ M := hBK.trans hKM
   have hub : ∀ Z, 0 < Z → ErrorRectangles.U Q B Z ≤
@@ -534,13 +534,13 @@ theorem bilinear_error_local_exponent_bound
     intro Z hZ
     calc _ ≤ Ap*(B*max 1 Z)^(ζ/4)*
           min (B+(max 1 Z)^α) (max 1 Z+B^α) := hp B Z hB hZ
-         _ ≤ _ := by gcongr; exact le_max_left _ _; exact min_le_right _ _
+         _ ≤ _ := by gcongr; exact le_max_left _ _; simp
   obtain ⟨eb1, eb2, eb4, eb5⟩ := LocalExponentHelpers.envelope_bounds C B α (ζ/4)
     A0 H hM hN hn hnN hB hBM hδ hα hη.le hA0 hH hHu hH2 hub
   change ‖E1 C B unit‖+‖E2 C B unit‖+‖E3 C B unit‖+
     ‖E4 C B unit‖+‖E5 C B unit‖ ≤ _
   have comb := LocalExponentHelpers.combine_bound X n ζ δ
-  have hC0 : 0 ≤ C0 := le_trans hC3 (le_max_left _ _)
+  have hC0 : 0 ≤ C0 := by positivity
   have zC : 0 ≤ C0 := hC0
   have b1 : ‖E1 C B unit‖ ≤ A1*T*n*X^(8*ζ+(C0+2)*δ)*S*E := by
     simp only [T, ← mul_assoc]
@@ -627,7 +627,3 @@ theorem bilinear_error_local_exponent_bound
       (mul_le_mul_of_nonneg_left hr' (by positivity)) hEn)
   have hh := add_le_add (add_le_add (add_le_add (add_le_add b1 b2) b3) b4) b5
   convert hh using 1 <;> dsimp [T,X,n,S,E,norm] <;> ring
-
-end DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms
-
-end

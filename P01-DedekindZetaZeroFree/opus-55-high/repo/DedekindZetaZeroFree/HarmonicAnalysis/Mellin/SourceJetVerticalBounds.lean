@@ -5,14 +5,13 @@ public import DedekindZetaZeroFree.HarmonicAnalysis.Mellin.RegularizedGammaProdu
 
 @[expose] public section
 
-noncomputable section
 
 open scoped NumberField Classical ContDiff
 open MeasureTheory
 
 namespace DedekindZetaZeroFree.LargeSieve.Vendor
 
-private lemma iteratedDeriv_eq_zero_of_gt (b : ℝ) (h : ℝ → ℂ)
+lemma iteratedDeriv_eq_zero_of_gt (b : ℝ) (h : ℝ → ℂ)
     (hpos : PositiveSideSupport b h) :
     ∀ (n : ℕ) (x : ℝ), b < x → iteratedDeriv n h x = 0 := by
   intro n
@@ -27,7 +26,7 @@ private lemma iteratedDeriv_eq_zero_of_gt (b : ℝ) (h : ℝ → ℂ)
       rw [hev.deriv_eq]
       simp
 
-private lemma S_nonneg_aux (b : ℝ) (hb : 0 < b) (N : ℕ) (h : ℝ → ℂ)
+lemma S_nonneg_aux (b : ℝ) (hb : 0 < b) (N : ℕ) (h : ℝ → ℂ)
     (hh : ContDiff ℝ ∞ h) : 0 ≤ S b N h := by
   unfold S
   refine Finset.sum_nonneg (fun i _ => ?_)
@@ -38,7 +37,7 @@ private lemma S_nonneg_aux (b : ℝ) (hb : 0 < b) (N : ℕ) (h : ℝ → ℂ)
     ⟨0, ⟨le_rfl, le_of_lt hb⟩, rfl⟩
   exact le_trans (norm_nonneg _) (le_csSup hbd hmem)
 
-private lemma jet_le_S (b : ℝ) (hb : 0 < b) (N : ℕ) (h : ℝ → ℂ)
+lemma jet_le_S (b : ℝ) (hb : 0 < b) (N : ℕ) (h : ℝ → ℂ)
     (hh : ContDiff ℝ ∞ h) (i : ℕ) (hi : i ≤ N) (x : ℝ) (hx : x ∈ Set.Icc 0 b) :
     ‖iteratedDeriv i h x‖ ≤ S b N h := by
   have hbd : BddAbove ((fun y : ℝ => ‖iteratedDeriv i h y‖) '' Set.Icc 0 b) :=
@@ -88,17 +87,8 @@ private lemma norm_mellin_le (f : ℝ → ℂ) (b a M : ℝ) (hb : 0 < b) (ha : 
         rw [hnorm, mul_comm (x ^ (a - 1)) ‖f x‖]
         exact mul_le_mul_of_nonneg_right (hfM x ⟨le_of_lt hxb.1, hxb.2⟩)
           (Real.rpow_nonneg (le_of_lt hx) _)
-      · have hbx : b < x := by
-          simp only [Set.mem_Ioi] at hx
-          simp only [Set.mem_Ioc, not_and, not_le] at hxb
-          exact hxb hx
-        rw [Set.indicator_of_mem hx, Set.indicator_of_notMem hxb,
-          hf0 x hbx, smul_zero, norm_zero]
-    · rw [Set.indicator_of_notMem hx]
-      by_cases hxb : x ∈ Set.Ioc (0 : ℝ) b
-      · rw [Set.indicator_of_mem hxb, norm_zero]
-        exact mul_nonneg hM (Real.rpow_nonneg (le_of_lt hxb.1) _)
-      · rw [Set.indicator_of_notMem hxb]; simp
+      simp_all
+    simp_all
   have hmain := MeasureTheory.norm_integral_le_of_norm_le hGint
     (Filter.Eventually.of_forall hbound)
   have hmell : mellin f w =
@@ -113,7 +103,7 @@ private lemma norm_mellin_le (f : ℝ → ℂ) (b a M : ℝ) (hb : 0 < b) (ha : 
   have ha1 : a - 1 + 1 = a := by ring
   rw [ha1, Real.zero_rpow (ne_of_gt ha), sub_zero]
 
-private lemma rpow_le_endpoints (b : ℝ) (hb : 0 < b) {u v σ : ℝ}
+lemma rpow_le_endpoints (b : ℝ) (hb : 0 < b) {u v σ : ℝ}
     (hσ : σ ∈ Set.Icc u v) : b ^ σ ≤ max (b ^ u) (b ^ v) := by
   rcases le_total 1 b with hb1 | hb1
   · exact le_trans (Real.rpow_le_rpow_of_exponent_le hb1 hσ.2) (le_max_right _ _)
@@ -133,12 +123,11 @@ theorem originMellin_source_vertical_bound
   have hmk : k ≤ m := by omega
   have hceil : -u ≤ (Nat.ceil (-u) : ℝ) := Nat.le_ceil (-u)
   have hmcast : (m : ℝ) = (k : ℝ) + (Nat.ceil (-u) : ℝ) + 1 := by
-    rw [hmdef]; push_cast; ring
+    simp_all
   have hum : 0 < u + (m : ℝ) := by rw [hmcast]; linarith
   set C_D : ℝ := max (b ^ (u + (m : ℝ))) (b ^ (v + (m : ℝ))) / (u + (m : ℝ)) with hCDdef
   have hCDpos : 0 < C_D := by
-    rw [hCDdef]
-    exact div_pos (lt_of_lt_of_le (Real.rpow_pos_of_pos hb _) (le_max_left _ _)) hum
+    positivity
   refine ⟨m, (2 : ℝ) ^ k * C_D, mul_pos (pow_pos (by norm_num) k) hCDpos, ?_⟩
   intro h hh hc hpos σ t hσ ht
   set s : ℂ := (σ : ℂ) + (t : ℂ) * Complex.I with hsdef
@@ -184,11 +173,11 @@ theorem originMellin_source_vertical_bound
     have hone : ‖(-1 : ℂ) ^ m‖ = 1 := by simp
     rw [hone, one_mul]
     have htposm : 0 < |t| ^ m := by
-      rw [← hsim]; exact pow_pos (abs_pos.mpr hsim_ne) m
+      positivity
     exact le_trans (div_le_div_of_nonneg_right hnum (norm_nonneg _))
       (div_le_div_of_nonneg_left (mul_nonneg hS hCDpos.le) htposm hden)
   have ht1 : 1 ≤ |t| := ht
-  have htpos : 0 < |t| ^ m := pow_pos (lt_of_lt_of_le zero_lt_one ht1) m
+  have htpos : 0 < |t| ^ m := by positivity
   have hratio : (1 + |t|) ^ k / |t| ^ m ≤ 2 ^ k := by
     rw [div_le_iff₀ htpos]
     calc (1 + |t|) ^ k ≤ 2 ^ k * |t| ^ k := by
@@ -203,7 +192,3 @@ theorem originMellin_source_vertical_bound
     _ ≤ S b m h * C_D * 2 ^ k :=
         mul_le_mul_of_nonneg_left hratio (mul_nonneg hS hCDpos.le)
     _ = (2 : ℝ) ^ k * C_D * S b m h := by ring
-
-end DedekindZetaZeroFree.LargeSieve.Vendor
-
-end

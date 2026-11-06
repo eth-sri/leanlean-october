@@ -19,16 +19,14 @@ namespace DedekindZetaZeroFree.LargeSieve.Vendor
 def stripReg (f : ℂ → ℂ) (ε : ℝ) (s : ℂ) : ℂ :=
   f s * Complex.exp ((ε : ℂ) * s ^ 2)
 
-private lemma norm_exp_eps_sq (ε x T : ℝ) :
+lemma norm_exp_eps_sq (ε x T : ℝ) :
     ‖Complex.exp ((ε : ℂ) * ((x : ℂ) + (T : ℂ) * Complex.I) ^ 2)‖
       = Real.exp (ε * (x ^ 2 - T ^ 2)) := by
   rw [Complex.norm_exp]
   congr 1
-  simp only [Complex.mul_re, Complex.add_re, Complex.add_im, Complex.mul_im, pow_two,
-    Complex.ofReal_re, Complex.ofReal_im, Complex.I_re, Complex.I_im, mul_zero, add_zero,
-    sub_zero, zero_mul, mul_one, sub_neg_eq_add, zero_add]
+  simp only [Complex.mul_re, Complex.add_re, Complex.add_im, Complex.mul_im, pow_two, Complex.ofReal_re, Complex.ofReal_im, Complex.I_re, Complex.I_im, mul_zero, add_zero, sub_zero, zero_mul, mul_one, zero_add]
 
-private lemma tendsto_stripReg_zero (f : ℂ → ℂ) (s : ℂ) :
+lemma tendsto_stripReg_zero (f : ℂ → ℂ) (s : ℂ) :
     Tendsto (fun ε : ℝ => stripReg f ε s) (𝓝[>] (0 : ℝ)) (𝓝 (f s)) := by
   have h1 : Tendsto (fun ε : ℝ => (ε : ℂ) * s ^ 2) (𝓝[>] (0 : ℝ)) (𝓝 0) := by
     have h : Tendsto (fun ε : ℝ => (ε : ℂ)) (𝓝[>] (0 : ℝ)) (𝓝 (0 : ℂ)) :=
@@ -89,10 +87,9 @@ theorem integral_eq_of_exponential_strip_growth {a b : ℝ} (hab : a ≤ b)
         intro s hs
         rw [Complex.mem_reProdIm] at hs
         have hsr : a ≤ s.re ∧ s.re ≤ b := by
-          have h := hs.1
-          rwa [Set.uIcc_of_le hab] at h
+          simp_all
         have h2 : DifferentiableAt ℂ (fun s : ℂ => Complex.exp ((ε : ℂ) * s ^ 2)) s :=
-          ((differentiableAt_const (c := (ε : ℂ))).mul (differentiableAt_id.pow 2)).cexp
+          by fun_prop
         exact ((hf s hsr.1 hsr.2).mul h2).differentiableWithinAt
       have h := Complex.integral_boundary_rect_eq_zero_of_differentiableOn (stripReg f ε)
         (Complex.mk a (-T)) (Complex.mk b T) hd
@@ -100,7 +97,7 @@ theorem integral_eq_of_exponential_strip_growth {a b : ℝ} (hab : a ≤ b)
       linear_combination h
 
     set M : ℝ := max |a| |b| with hM
-    have hMnonneg : 0 ≤ M := le_trans (abs_nonneg a) (le_max_left _ _)
+    have hMnonneg : 0 ≤ M := by simp_all
     have hxM : ∀ x : ℝ, x ∈ Set.Icc a b → |x| ≤ M := by
       intro x hx
       rw [abs_le]
@@ -231,7 +228,3 @@ theorem integral_eq_of_exponential_strip_growth {a b : ℝ} (hab : a ≤ b)
       (∫ y : ℝ, f ((b : ℂ) + y * Complex.I)) :=
     tendsto_nhds_unique hBeq (hlimit b hb)
   simp only [verticalIntegral, heq]
-
-end DedekindZetaZeroFree.LargeSieve.Vendor
-
-end

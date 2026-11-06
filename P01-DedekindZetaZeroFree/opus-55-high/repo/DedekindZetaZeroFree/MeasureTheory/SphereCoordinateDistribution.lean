@@ -11,7 +11,7 @@ namespace DedekindZetaZeroFree.ComplexFractionalInverse.SphereProjection
 open MeasureTheory Set
 open scoped ENNReal
 
-private lemma coordinate_bounds (y : Sphere) :
+lemma coordinate_bounds (y : Sphere) :
     -1 ≤ (y : Ambient) 0 ∧ (y : Ambient) 0 ≤ 1 := by
   have h : ‖(y : Ambient) 0‖ ≤ 1 := by
     calc
@@ -96,11 +96,9 @@ theorem open_north_cap_of_closed
     μ {y : Sphere | t < (y : Ambient) 0} = ENNReal.ofReal (2 * Real.pi * (1 - t)) := by
   let r : ℕ → ℝ := fun n => t + (1 - t) / ((n : ℝ) + 1)
   have hrpos (n : ℕ) : 0 < r n := by
-    have : 0 < (1 - t) / ((n : ℝ) + 1) := div_pos (by linarith) (by positivity)
-    dsimp [r]
-    linarith
+    positivity
   have hrle (n : ℕ) : r n ≤ 1 := by
-    have hn : (1 : ℝ) ≤ (n : ℝ) + 1 := by exact le_add_of_nonneg_left (Nat.cast_nonneg n)
+    have hn : (1 : ℝ) ≤ (n : ℝ) + 1 := by simp
     have : (1 - t) / ((n : ℝ) + 1) ≤ 1 - t := by
       apply (div_le_iff₀ (by positivity : 0 < (n : ℝ) + 1)).mpr
       nlinarith
@@ -173,13 +171,9 @@ theorem raw_lower_caps_of_positive_north
       have hc : {y : Sphere | (y : Ambient) 0 ≤ t} =
           {y : Sphere | t < (y : Ambient) 0}ᶜ := by
         ext y
-        simp only [mem_setOf_eq, mem_compl_iff, not_lt]
+        simp
       rw [hc, measure_compl (by measurability) (measure_ne_top _ _), hmass,
         open_north_cap_of_closed μ hcap t ht0' htlt,
         ← ENNReal.ofReal_sub (4 * Real.pi) (by positivity : 0 ≤ 2 * Real.pi * (1 - t))]
       congr 1
       ring
-
-end DedekindZetaZeroFree.ComplexFractionalInverse.SphereProjection
-
-end

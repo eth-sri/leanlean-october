@@ -21,13 +21,13 @@ set_option maxHeartbeats 1600000
 def rightEvaluation (t : KPGlobalTorusFunctionData.E F ζ hζ) : KPGlobalTorusFunctionData.G F ζ hζ :=
   (KPMsRationalCompactCrossPairing.weylTorusConjugation F ζ hζ t).val
 
-private theorem W_squared : W * W = 1 := by
+theorem W_squared : W * W = 1 := by
   rw [← map_mul]
   have he : KPCubicCoverConstruction.adelicW F ζ hζ * KPCubicCoverConstruction.adelicW F ζ hζ = 1 := by
     simpa only [KPCubicCoverConstruction.adelicW,pow_two] using KPRationalAdelicSplitting.W_sq F ζ hζ
   rw [he,map_one]
 
-private theorem W_rightEvaluation (t : KPGlobalTorusFunctionData.E F ζ hζ) :
+theorem W_rightEvaluation (t : KPGlobalTorusFunctionData.E F ζ hζ) :
     W * rightEvaluation F ζ hζ t = t.val * W := by
   change W * (W * t.val * W⁻¹) = t.val * W
   have hw : W⁻¹ = W := inv_eq_of_mul_eq_one_left (W_squared F ζ hζ)

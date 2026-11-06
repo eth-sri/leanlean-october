@@ -27,16 +27,14 @@ namespace DedekindZetaZeroFree.KPFiniteAdelicLatticeStabilizers
     Set (Matrix (Fin 2) (Fin 1) (v.adicCompletion F)) :=
   {x | ∀ i j, x i j ∈ v.adicCompletionIntegers F}
 
-private lemma evaluatedVector_smul (F : Type*) [Field F] [NumberField F]
+lemma evaluatedVector_smul (F : Type*) [Field F] [NumberField F]
     (v : Place F) (g : AdelicGL F)
     (x : Matrix (Fin 2) (Fin 1) (Adeles F)) :
     evaluatedVector F v (g • x) =
       Matrix.GeneralLinearGroup.map (evaluation F v) g • evaluatedVector F v x := by
-  change (g.val * x).map (evaluation F v) =
-    g.val.map (evaluation F v) * x.map (evaluation F v)
-  exact Matrix.map_mul (f := evaluation F v)
+  rfl
 
-private lemma localTranslatedLattice_eq_smul (F : Type*) [Field F] [NumberField F]
+lemma localTranslatedLattice_eq_smul (F : Type*) [Field F] [NumberField F]
     (v : Place F) (g : AdelicGL F) :
     localTranslatedLattice F g v =
       Matrix.GeneralLinearGroup.map (evaluation F v) g • localIntegralVectors F v := rfl
@@ -73,5 +71,3 @@ theorem local_lattice_right_orbit (F : Type*) [Field F] [NumberField F] :
       exact (hv v).mpr (fun i j => hx i j v) i j
   refine ⟨⟨k, hk⟩, ?_⟩
   simp [k]
-
-end DedekindZetaZeroFree.KPFiniteAdelicLatticeStabilizers

@@ -58,6 +58,3 @@ def JointSignedUnfoldingSources.certified (C : JointSignedUnfoldingSources R N) 
   absolute := C.absolute
   upperZero := C.upperZero
   unfolding := C.unfolding
-end DedekindZetaZeroFree.MomentSources
-
-end

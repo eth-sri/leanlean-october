@@ -76,8 +76,7 @@ theorem exists_residue_addChar (π : 𝒪[K]) (hπ : Irreducible π)
   · obtain ⟨u, hu⟩ := hexact
     intro h
     have H := hχ u
-    rw [h, AddChar.one_apply] at H
-    exact hu H.symm
+    simp_all
   · intro χ' hχ'
     apply AddChar.ext
     intro x
@@ -123,9 +122,9 @@ theorem additive_haar_shell_integral [Fintype 𝓀[K]]
   have hmass : ρ Set.univ = 1 := by
     rw [Measure.map_apply hr MeasurableSet.univ, Set.preimage_univ]
     calc
-      ν Set.univ = μ (Subtype.val '' (Set.univ : Set R)) := by
-        exact comap_subtype_coe_apply hR μ Set.univ
-      _ = μ (R : Set K) := by congr 1; ext x; simp
+      ν Set.univ = μ (Subtype.val '' (Set.univ : Set R)) := 
+        comap_subtype_coe_apply hR μ Set.univ
+      _ = μ (R : Set K) := by simp
       _ = 1 := hμ
   haveI : IsFiniteMeasure ρ := ⟨by rw [hmass]; exact ENNReal.one_lt_top⟩
   have hsingle (x : k) : ρ {x} = ρ {0} := by
@@ -138,8 +137,7 @@ theorem additive_haar_shell_integral [Fintype 𝓀[K]]
     rw [← he, measure_preimage_add]
   have hsinglemass : (Fintype.card k : ℝ≥0∞) * ρ {0} = 1 := by
     have H := sum_measure_singleton (μ := ρ) (s := Finset.univ)
-    simp only [hsingle, Finset.sum_const, Finset.card_univ, nsmul_eq_mul] at H
-    simpa [hmass] using H
+    simp_all
   have hreal (x : k) : ρ.real {x} = 1 / (Fintype.card k : ℝ) := by
     have H := congrArg ENNReal.toReal hsinglemass
     simp only [ENNReal.toReal_mul, ENNReal.toReal_natCast, ENNReal.toReal_one] at H
@@ -152,7 +150,7 @@ theorem additive_haar_shell_integral [Fintype 𝓀[K]]
       integral_fintype Integrable.of_finite]
     change (∑ x : k, ρ.real {x} • f x) = _
     simp only [hreal, Complex.real_smul, Complex.ofReal_div, Complex.ofReal_one, Complex.ofReal_natCast]
-    simp only [one_div, ← Finset.mul_sum, ← div_eq_inv_mul]
+    simp only [one_div, ← div_eq_inv_mul]
     rw [← Finset.sum_div]
     rfl
   have hzero : f 0 = 0 := by simp [f, MulChar.map_zero]
@@ -189,17 +187,8 @@ theorem additive_haar_shell_integral [Fintype 𝓀[K]]
         simp only [Set.indicator_of_notMem hxs, Set.indicator_of_mem hx, dif_pos hx]
         change 0 = f (r u)
         rw [hz,hzero]
-    · have hxs : x ∉ integerUnitShell K := by
-        rintro ⟨v,rfl,-⟩
-        exact hx v.property
-      simp [Set.indicator_of_notMem hxs, Set.indicator_of_notMem hx]
+    simp_all
   rw [← integral_indicator hS, he, integral_indicator hR, ← integral_subtype_comap hR]
   convert hi using 1
   apply integral_congr_ae
-  filter_upwards [] with x
-  simp only [dif_pos x.property]
-  rfl
-
-end LocalShell
-
-end DedekindZetaZeroFree.KPTameGauss
+  simp

@@ -19,17 +19,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-
-
-
-
-set_option autoImplicit false
-
 namespace CyclicCohomology
 
 /-!
@@ -65,15 +54,11 @@ def fixedSubgroup (G : Type uG) (A : Type uA) [Group G] [CommGroup A]
   carrier := {a | ∀ g : G, g • a = a}
   one_mem' := by
     intro g
-    exact MulDistribMulAction.smul_one g
+    simp
   mul_mem' := by
-    intro a b ha hb g
-    rw [MulDistribMulAction.smul_mul, ha g, hb g]
+    simp_all
   inv_mem' := by
-    intro a ha g
-    calc
-      g • a⁻¹ = (g • a)⁻¹ := smul_inv' g a
-      _ = a⁻¹ := by rw [ha g]
+    simp
 
 variable {G : Type uG} {A : Type uA} {B : Type uB} {C : Type uC}
 variable [Group G] [Fintype G] [CommGroup A] [CommGroup B] [CommGroup C]
@@ -87,8 +72,8 @@ theorem smul_eq_of_mem_zpowers_of_sigmaMinusOne_eq_one
     {σ g : G} {a : A} (hg : g ∈ Subgroup.zpowers σ)
     (hσ : sigmaMinusOne G A σ a = 1) :
     g • a = a := by
-  have hσa : σ • a = a := by
-    exact mul_inv_eq_one.mp (by simpa [sigmaMinusOne] using hσ)
+  have hσa : σ • a = a := 
+    mul_inv_eq_one.mp (by simpa [sigmaMinusOne] using hσ)
   exact smul_eq_self_of_mem_zpowers hg hσa
 
 omit [Fintype G] [CommGroup B] [CommGroup C]
@@ -151,8 +136,7 @@ used in the low-degree Herbrand comparison. -/
   one_smul := by
     intro f
     change (fun x => f (x * 1)) = f
-    funext x
-    rw [mul_one]
+    simp
   mul_smul := by
     intro g h f
     change (fun x => f (x * (g * h))) = fun x => f ((x * g) * h)
@@ -160,11 +144,9 @@ used in the low-degree Herbrand comparison. -/
     rw [mul_assoc]
   smul_mul := by
     intro g f h
-    funext x
     rfl
   smul_one := by
     intro g
-    funext x
     rfl
 
 /-- An equivariant homomorphism commutes with the Tate norm. -/
@@ -172,7 +154,7 @@ theorem map_tateNorm (f : A →* B)
     (hf : ∀ (g : G) (a : A), f (g • a) = g • f a) (a : A) :
     f (tateNorm G A a) = tateNorm G B (f a) := by
   simp only [tateNorm, map_prod]
-  exact Finset.prod_congr rfl (fun g _hg => hf g a)
+  simp_all
 
 omit [CommGroup B] [CommGroup C]
     [MulDistribMulAction G B] [MulDistribMulAction G C] in
@@ -182,9 +164,7 @@ theorem tateNorm_mul (a b : A) :
   calc
     tateNorm G A (a * b) = ∏ g : G, (g • a) * (g • b) := by
       unfold tateNorm
-      apply Finset.prod_congr rfl
-      intro g _hg
-      exact MulDistribMulAction.smul_mul g a b
+      simp
     _ = tateNorm G A a * tateNorm G A b := by
       simp only [tateNorm, Finset.prod_mul_distrib]
 
@@ -247,22 +227,6 @@ omit [Fintype G] [CommGroup B] [CommGroup C]
 theorem sigmaMinusOneHom_apply (σ : G) (a : A) :
     sigmaMinusOneHom (G := G) (A := A) σ a = sigmaMinusOne G A σ a :=
   rfl
-
-omit [Fintype G] [CommGroup B] [CommGroup C]
-    [MulDistribMulAction G B] [MulDistribMulAction G C] in
-/-- Rewriting used in the cyclic-cohomology exact sequence: changing a lift
-by `a' * a⁻¹` changes `a^(σ-1)` by an element of `I_G A`. -/
-theorem sigmaMinusOne_mul_inv_mul (σ : G) (a a' : A) :
-    sigmaMinusOne G A σ a' =
-      sigmaMinusOne G A σ (a' * a⁻¹) * sigmaMinusOne G A σ a := by
-  simp only [sigmaMinusOne, MulDistribMulAction.smul_mul, smul_inv', mul_inv_rev]
-  simp only [inv_inv]
-  symm
-  calc
-    σ • a' * (σ • a)⁻¹ * (a * a'⁻¹) * (σ • a * a⁻¹)
-        = σ • a' * (((σ • a)⁻¹ * σ • a) * ((a * a⁻¹) * a'⁻¹)) := by
-          ac_rfl
-    _ = σ • a' * a'⁻¹ := by simp
 
 /-- Herbrand-quotient theory: the norm image `N_G A`. -/
 def tateNormSubgroup (G : Type uG) (A : Type uA) [Group G] [Fintype G] [CommGroup A]
@@ -497,86 +461,6 @@ theorem HerbrandHMinusOne.mk_eq_one_iff (σ : G)
 
 omit [CommGroup B] [CommGroup C]
     [MulDistribMulAction G B] [MulDistribMulAction G C] in
-/-- Two degree-zero representatives agree exactly when their quotient is a Tate norm. -/
-theorem HerbrandH0.mk_eq_mk_iff_div_mem (a b : fixedSubgroup G A) :
-    HerbrandH0.mk a = HerbrandH0.mk b ↔
-      (a : A) / b ∈ tateNormSubgroup G A := by
-  constructor
-  · intro h
-    have hraw :
-        (QuotientGroup.mk a :
-          fixedSubgroup G A ⧸
-            (tateNormSubgroup G A).subgroupOf (fixedSubgroup G A)) =
-          QuotientGroup.mk b := by
-      simpa only [HerbrandH0.equiv_mk] using
-        congrArg (HerbrandH0.equiv (G := G) (A := A)) h
-    simpa only [Subgroup.mem_subgroupOf, Subgroup.coe_div] using
-      (QuotientGroup.eq_iff_div_mem).1 hraw
-  · intro h
-    apply (HerbrandH0.equiv (G := G) (A := A)).injective
-    rw [HerbrandH0.equiv_mk, HerbrandH0.equiv_mk]
-    apply (QuotientGroup.eq_iff_div_mem).2
-    simpa only [Subgroup.mem_subgroupOf, Subgroup.coe_div] using h
-
-omit [CommGroup B] [CommGroup C]
-    [MulDistribMulAction G B] [MulDistribMulAction G C] in
-/-- Two degree-minus-one representatives agree exactly when their quotient is an augmentation. -/
-theorem HerbrandHMinusOne.mk_eq_mk_iff_div_mem (σ : G)
-    (a b : normKernelSubgroup G A) :
-    HerbrandHMinusOne.mk σ a = HerbrandHMinusOne.mk σ b ↔
-      (a : A) / b ∈ augmentationSubgroup G A σ := by
-  constructor
-  · intro h
-    have hraw :
-        (QuotientGroup.mk a :
-          normKernelSubgroup G A ⧸
-            (augmentationSubgroup G A σ).subgroupOf (normKernelSubgroup G A)) =
-          QuotientGroup.mk b := by
-      simpa only [HerbrandHMinusOne.equiv_mk] using
-        congrArg (HerbrandHMinusOne.equiv (G := G) (A := A) σ) h
-    simpa only [Subgroup.mem_subgroupOf, Subgroup.coe_div] using
-      (QuotientGroup.eq_iff_div_mem).1 hraw
-  · intro h
-    apply (HerbrandHMinusOne.equiv (G := G) (A := A) σ).injective
-    rw [HerbrandHMinusOne.equiv_mk, HerbrandHMinusOne.equiv_mk]
-    apply (QuotientGroup.eq_iff_div_mem).2
-    simpa only [Subgroup.mem_subgroupOf, Subgroup.coe_div] using h
-
-omit [CommGroup B] [CommGroup C]
-    [MulDistribMulAction G B] [MulDistribMulAction G C] in
-/-- Two degree-zero representatives agree exactly when the inverse-times-second
-ratio is a Tate norm. -/
-theorem HerbrandH0.mk_eq_mk_iff_inv_mul_mem (a b : fixedSubgroup G A) :
-    HerbrandH0.mk a = HerbrandH0.mk b ↔
-      (a : A)⁻¹ * b ∈ tateNormSubgroup G A := by
-  rw [HerbrandH0.mk_eq_mk_iff_div_mem]
-  constructor
-  · intro h
-    have hinv := (tateNormSubgroup G A).inv_mem h
-    simpa [div_eq_mul_inv, mul_comm] using hinv
-  · intro h
-    have hinv := (tateNormSubgroup G A).inv_mem h
-    simpa [div_eq_mul_inv, mul_comm] using hinv
-
-omit [CommGroup B] [CommGroup C]
-    [MulDistribMulAction G B] [MulDistribMulAction G C] in
-/-- Two degree-minus-one representatives agree exactly when the
-inverse-times-second ratio is an augmentation. -/
-theorem HerbrandHMinusOne.mk_eq_mk_iff_inv_mul_mem (σ : G)
-    (a b : normKernelSubgroup G A) :
-    HerbrandHMinusOne.mk σ a = HerbrandHMinusOne.mk σ b ↔
-      (a : A)⁻¹ * b ∈ augmentationSubgroup G A σ := by
-  rw [HerbrandHMinusOne.mk_eq_mk_iff_div_mem]
-  constructor
-  · intro h
-    have hinv := (augmentationSubgroup G A σ).inv_mem h
-    simpa [div_eq_mul_inv, mul_comm] using hinv
-  · intro h
-    have hinv := (augmentationSubgroup G A σ).inv_mem h
-    simpa [div_eq_mul_inv, mul_comm] using hinv
-
-omit [CommGroup B] [CommGroup C]
-    [MulDistribMulAction G B] [MulDistribMulAction G C] in
 /-- Eliminate a degree-zero Herbrand class through an arbitrary fixed-point
 representative and the canonical class map. -/
 protected theorem HerbrandH0.inductionOn
@@ -600,106 +484,10 @@ protected theorem HerbrandHMinusOne.inductionOn (σ : G)
 
 omit [CommGroup B] [CommGroup C]
     [MulDistribMulAction G B] [MulDistribMulAction G C] in
-/-- Evaluate a function on `H⁰(G,A)` from a representative-level function
-which is invariant under equality of canonical quotient classes.  This is the
-non-homomorphic elimination API; clients never need the underlying quotient
-relation. -/
-noncomputable def HerbrandH0.liftOn {M : Sort*}
-    (q : HerbrandH0 G A) (f : fixedSubgroup G A → M)
-    (_h : ∀ a b, HerbrandH0.mk a = HerbrandH0.mk b → f a = f b) : M :=
-  f (Classical.choose (HerbrandH0.mk_surjective (G := G) (A := A) q))
-
-omit [CommGroup B] [CommGroup C]
-    [MulDistribMulAction G B] [MulDistribMulAction G C] in
-/-- Eliminating a canonical degree-zero class evaluates the representative-level function. -/
-@[simp]
-theorem HerbrandH0.liftOn_mk {M : Sort*}
-    (f : fixedSubgroup G A → M)
-    (h : ∀ a b, HerbrandH0.mk a = HerbrandH0.mk b → f a = f b)
-    (a : fixedSubgroup G A) :
-    HerbrandH0.liftOn (HerbrandH0.mk a) f h = f a := by
-  unfold HerbrandH0.liftOn
-  apply h
-  exact Classical.choose_spec
-    (HerbrandH0.mk_surjective (G := G) (A := A) (HerbrandH0.mk a))
-
-omit [CommGroup B] [CommGroup C]
-    [MulDistribMulAction G B] [MulDistribMulAction G C] in
-/-- Evaluate a function on `H⁻¹(G,A)` from a representative-level
-function which is invariant under equality of canonical quotient classes. -/
-noncomputable def HerbrandHMinusOne.liftOn {M : Sort*} (σ : G)
-    (q : HerbrandHMinusOne G A σ) (f : normKernelSubgroup G A → M)
-    (_h : ∀ a b,
-      HerbrandHMinusOne.mk σ a = HerbrandHMinusOne.mk σ b → f a = f b) : M :=
-  f (Classical.choose
-    (HerbrandHMinusOne.mk_surjective (G := G) (A := A) σ q))
-
-omit [CommGroup B] [CommGroup C]
-    [MulDistribMulAction G B] [MulDistribMulAction G C] in
-/-- Eliminating a canonical degree-minus-one class evaluates the representative-level function. -/
-@[simp]
-theorem HerbrandHMinusOne.liftOn_mk {M : Sort*} (σ : G)
-    (f : normKernelSubgroup G A → M)
-    (h : ∀ a b,
-      HerbrandHMinusOne.mk σ a = HerbrandHMinusOne.mk σ b → f a = f b)
-    (a : normKernelSubgroup G A) :
-    HerbrandHMinusOne.liftOn σ (HerbrandHMinusOne.mk σ a) f h = f a := by
-  unfold HerbrandHMinusOne.liftOn
-  apply h
-  exact Classical.choose_spec
-    (HerbrandHMinusOne.mk_surjective (G := G) (A := A) σ
-      (HerbrandHMinusOne.mk σ a))
-
-omit [CommGroup B] [CommGroup C]
-    [MulDistribMulAction G B] [MulDistribMulAction G C] in
-/-- Descend a homomorphism on fixed points through `H⁰(G,A)`. -/
-def HerbrandH0.lift {M : Type*} [Group M]
-    (f : fixedSubgroup G A →* M)
-    (h : (tateNormSubgroup G A).subgroupOf (fixedSubgroup G A) ≤ f.ker) :
-    HerbrandH0 G A →* M := by
-  unfold HerbrandH0
-  exact QuotientGroup.lift
-    ((tateNormSubgroup G A).subgroupOf (fixedSubgroup G A)) f h
-
-omit [CommGroup B] [CommGroup C]
-    [MulDistribMulAction G B] [MulDistribMulAction G C] in
-/-- Descend a homomorphism on the norm kernel through `H⁻¹(G,A)`. -/
-def HerbrandHMinusOne.lift {M : Type*} [Group M] (σ : G)
-    (f : normKernelSubgroup G A →* M)
-    (h : (augmentationSubgroup G A σ).subgroupOf (normKernelSubgroup G A) ≤
-      f.ker) : HerbrandHMinusOne G A σ →* M := by
-  unfold HerbrandHMinusOne
-  exact QuotientGroup.lift
-    ((augmentationSubgroup G A σ).subgroupOf (normKernelSubgroup G A)) f h
-
-omit [CommGroup B] [CommGroup C]
-    [MulDistribMulAction G B] [MulDistribMulAction G C] in
-/-- A homomorphism descended through degree-zero Herbrand cohomology agrees on representatives. -/
-@[simp]
-theorem HerbrandH0.lift_mk {M : Type*} [Group M]
-    (f : fixedSubgroup G A →* M)
-    (h : (tateNormSubgroup G A).subgroupOf (fixedSubgroup G A) ≤ f.ker)
-    (a : fixedSubgroup G A) : HerbrandH0.lift f h (HerbrandH0.mk a) = f a := by
-  rfl
-
-omit [CommGroup B] [CommGroup C]
-    [MulDistribMulAction G B] [MulDistribMulAction G C] in
-/-- A homomorphism descended through degree-minus-one Herbrand cohomology agrees
-on representatives. -/
-@[simp]
-theorem HerbrandHMinusOne.lift_mk {M : Type*} [Group M] (σ : G)
-    (f : normKernelSubgroup G A →* M)
-    (h : (augmentationSubgroup G A σ).subgroupOf (normKernelSubgroup G A) ≤
-      f.ker) (a : normKernelSubgroup G A) :
-    HerbrandHMinusOne.lift σ f h (HerbrandHMinusOne.mk σ a) = f a := by
-  rfl
-
-omit [CommGroup B] [CommGroup C]
-    [MulDistribMulAction G B] [MulDistribMulAction G C] in
 /-- Degree-zero Herbrand cohomology is finite when the coefficient group is finite. -/
-noncomputable instance herbrandH0FiniteOfFinite [Finite A] :
-    Finite (HerbrandH0 G A) := by
-  exact Finite.of_equiv
+instance herbrandH0FiniteOfFinite [Finite A] :
+    Finite (HerbrandH0 G A) := 
+  Finite.of_equiv
     (fixedSubgroup G A ⧸
       (tateNormSubgroup G A).subgroupOf (fixedSubgroup G A))
     (HerbrandH0.equiv (G := G) (A := A)).symm.toEquiv
@@ -707,9 +495,9 @@ noncomputable instance herbrandH0FiniteOfFinite [Finite A] :
 omit [CommGroup B] [CommGroup C]
     [MulDistribMulAction G B] [MulDistribMulAction G C] in
 /-- Degree-minus-one Herbrand cohomology is finite when the coefficient group is finite. -/
-noncomputable instance herbrandHMinusOneFiniteOfFinite (σ : G) [Finite A] :
-    Finite (HerbrandHMinusOne G A σ) := by
-  exact Finite.of_equiv
+instance herbrandHMinusOneFiniteOfFinite (σ : G) [Finite A] :
+    Finite (HerbrandHMinusOne G A σ) := 
+  Finite.of_equiv
     (normKernelSubgroup G A ⧸
       (augmentationSubgroup G A σ).subgroupOf (normKernelSubgroup G A))
     (HerbrandHMinusOne.equiv (G := G) (A := A) σ).symm.toEquiv
@@ -733,24 +521,6 @@ abbrev rightRegularFunctionTateNormSubgroup : Subgroup (G → B) := by
 omit [CommGroup A] [CommGroup C]
     [MulDistribMulAction G A] [MulDistribMulAction G B]
     [MulDistribMulAction G C] in
-/-- `H⁰` of the right-regular multiplicative induced module. -/
-def rightRegularFunctionHerbrandH0 : Type (max uG uB) := by
-  letI := rightRegularFunctionMulDistribMulAction (G := G) (B := B)
-  exact HerbrandH0 G (G → B)
-
-omit [CommGroup A] [CommGroup C]
-    [MulDistribMulAction G A] [MulDistribMulAction G B]
-    [MulDistribMulAction G C] in
-/-- Degree-zero Herbrand cohomology of right-regular functions is a commutative group. -/
-noncomputable instance rightRegularFunctionHerbrandH0CommGroup :
-    CommGroup (rightRegularFunctionHerbrandH0 (G := G) (B := B)) := by
-  letI := rightRegularFunctionMulDistribMulAction (G := G) (B := B)
-  change CommGroup (HerbrandH0 G (G → B))
-  infer_instance
-
-omit [CommGroup A] [CommGroup C]
-    [MulDistribMulAction G A] [MulDistribMulAction G B]
-    [MulDistribMulAction G C] in
 /-- Norm-kernel subgroup of the right-regular multiplicative induced module. -/
 abbrev rightRegularFunctionNormKernelSubgroup : Subgroup (G → B) := by
   letI := rightRegularFunctionMulDistribMulAction (G := G) (B := B)
@@ -764,31 +534,12 @@ abbrev rightRegularFunctionAugmentationSubgroup (σ : G) : Subgroup (G → B) :=
   letI := rightRegularFunctionMulDistribMulAction (G := G) (B := B)
   exact augmentationSubgroup G (G → B) σ
 
-omit [CommGroup A] [CommGroup C]
-    [MulDistribMulAction G A] [MulDistribMulAction G B]
-    [MulDistribMulAction G C] in
-/-- `H^{-1}` of the right-regular multiplicative induced module. -/
-def rightRegularFunctionHerbrandHMinusOne (σ : G) : Type (max uG uB) := by
-  letI := rightRegularFunctionMulDistribMulAction (G := G) (B := B)
-  exact HerbrandHMinusOne G (G → B) σ
-
-omit [CommGroup A] [CommGroup C]
-    [MulDistribMulAction G A] [MulDistribMulAction G B]
-    [MulDistribMulAction G C] in
-/-- Degree-minus-one Herbrand cohomology of right-regular functions is a commutative group. -/
-noncomputable instance rightRegularFunctionHerbrandHMinusOneCommGroup (σ : G) :
-    CommGroup
-      (rightRegularFunctionHerbrandHMinusOne (G := G) (B := B) σ) := by
-  letI := rightRegularFunctionMulDistribMulAction (G := G) (B := B)
-  change CommGroup (HerbrandHMinusOne G (G → B) σ)
-  infer_instance
-
 /-- The norm of a multiplicative coboundary is trivial. This is the calculation
 `N_G(b^(σ-1)) = 1` used in the low-degree cyclic-cohomology exact sequence. -/
 theorem tateNorm_sigmaMinusOne_eq_one (σ : G) (a : A) :
     tateNorm G A (sigmaMinusOne G A σ a) = 1 := by
-  have hshift : (∏ g : G, (g * σ) • a) = ∏ g : G, g • a := by
-    exact Fintype.prod_equiv (Equiv.mulRight σ)
+  have hshift : (∏ g : G, (g * σ) • a) = ∏ g : G, g • a := 
+    Fintype.prod_equiv (Equiv.mulRight σ)
       (fun g : G => (g * σ) • a) (fun g : G => g • a) (by intro g; rfl)
   calc
     tateNorm G A (sigmaMinusOne G A σ a) = ∏ g : G, ((g * σ) • a) * (g • a)⁻¹ := by
@@ -800,8 +551,8 @@ theorem tateNorm_sigmaMinusOne_eq_one (σ : G) (a : A) :
           MulDistribMulAction.smul_mul g (σ • a) a⁻¹
         _ = (g * σ) • a * (g • a)⁻¹ := by
           rw [← SemigroupAction.mul_smul, smul_inv']
-    _ = (∏ g : G, (g * σ) • a) * ∏ g : G, (g • a)⁻¹ := by
-      exact Finset.prod_mul_distrib
+    _ = (∏ g : G, (g * σ) • a) * ∏ g : G, (g • a)⁻¹ := 
+      Finset.prod_mul_distrib
     _ = 1 := by
       rw [hshift, Finset.prod_inv_distrib, mul_inv_cancel]
 
@@ -816,10 +567,10 @@ theorem augmentationSubgroup_le_normKernelSubgroup (σ : G) :
 low-degree cyclic-cohomology exact sequence. -/
 theorem smul_tateNorm_eq (h : G) (a : A) :
     h • tateNorm G A a = tateNorm G A a := by
-  have hmap : h • (∏ g : G, g • a) = ∏ g : G, h • (g • a) := by
-    exact map_prod (MulDistribMulAction.toMonoidHom A h) (fun g : G => g • a) Finset.univ
-  have hshift : (∏ g : G, (h * g) • a) = ∏ g : G, g • a := by
-    exact Fintype.prod_equiv (Equiv.mulLeft h)
+  have hmap : h • (∏ g : G, g • a) = ∏ g : G, h • (g • a) := 
+    map_prod (MulDistribMulAction.toMonoidHom A h) (fun g : G => g • a) Finset.univ
+  have hshift : (∏ g : G, (h * g) • a) = ∏ g : G, g • a := 
+    Fintype.prod_equiv (Equiv.mulLeft h)
       (fun g : G => (h * g) • a) (fun g : G => g • a) (by intro g; rfl)
   calc
     h • tateNorm G A a = ∏ g : G, h • (g • a) := by
@@ -858,18 +609,6 @@ theorem herbrandH0_subsingleton_of_fixed_le_tateNormSubgroup
     exact h a.2
   rw [hq, hr]
 
-/-- Degree-zero Herbrand cohomology is trivial exactly when every fixed
-element is a Tate norm. -/
-theorem herbrandH0_subsingleton_iff_fixed_le_tateNormSubgroup :
-    Subsingleton (HerbrandH0 G A) ↔
-      fixedSubgroup G A ≤ tateNormSubgroup G A := by
-  constructor
-  · intro h a ha
-    apply (HerbrandH0.mk_eq_one_iff (G := G) (A := A) ⟨a, ha⟩).1
-    exact h.elim _ _
-  · exact herbrandH0_subsingleton_of_fixed_le_tateNormSubgroup
-      (G := G) (A := A)
-
 omit [CommGroup B] [CommGroup C]
     [MulDistribMulAction G B] [MulDistribMulAction G C] in
 /-- A quotient-level criterion for vanishing of `H^{-1}`: if every norm-kernel
@@ -893,19 +632,6 @@ theorem herbrandHMinusOne_subsingleton_of_normKernel_le_augmentationSubgroup
     exact h a.2
   rw [hq, hr]
 
-/-- Degree-minus-one Herbrand cohomology is trivial exactly when every
-norm-kernel element is an augmentation element. -/
-theorem herbrandHMinusOne_subsingleton_iff_normKernel_le_augmentationSubgroup
-    (σ : G) :
-    Subsingleton (HerbrandHMinusOne G A σ) ↔
-      normKernelSubgroup G A ≤ augmentationSubgroup G A σ := by
-  constructor
-  · intro h a ha
-    apply (HerbrandHMinusOne.mk_eq_one_iff (G := G) (A := A) σ ⟨a, ha⟩).1
-    exact h.elim _ _
-  · exact herbrandHMinusOne_subsingleton_of_normKernel_le_augmentationSubgroup
-      (G := G) (A := A) σ
-
 omit [Fintype G] [CommGroup C] [MulDistribMulAction G C] in
 /-- The inverse of an equivariant multiplicative equivalence is equivariant. -/
 theorem mulEquiv_symm_commutes_smul
@@ -914,10 +640,7 @@ theorem mulEquiv_symm_commutes_smul
     ∀ (g : G) (b : B), e.symm (g • b) = g • e.symm b := by
   intro g b
   apply e.injective
-  calc
-    e (e.symm (g • b)) = g • b := e.apply_symm_apply (g • b)
-    _ = g • e (e.symm b) := by rw [e.apply_symm_apply]
-    _ = e (g • e.symm b) := (he g (e.symm b)).symm
+  simp_all
 
 omit [CommGroup C] [MulDistribMulAction G C] in
 /-- Transport the `H⁰` vanishing source `A^G ≤ N_G A` across an equivariant
@@ -1014,33 +737,24 @@ theorem rightRegularFunction_mem_normKernelSubgroup_iff (f : G → B) :
           toFun q := q x
           map_one' := rfl
           map_mul' := by
-            intro q r
-            rfl
+            simp
         }
         calc
           ((∏ c : G, c • f) : G → B) x = ev (∏ c : G, c • f) := rfl
           _ = ∏ c : G, ev (c • f) := by rw [map_prod]
           _ = ∏ c : G, f (x * c) := by
-            refine Finset.prod_congr rfl ?_
-            intro c _hc
-            change (c • f) x = f (x * c)
             rfl
-      _ = ∏ g : G, f g := by
-        exact Fintype.prod_equiv (Equiv.mulLeft x)
+      _ = ∏ g : G, f g := 
+        Fintype.prod_equiv (Equiv.mulLeft x)
           (fun g : G => f (x * g)) (fun g : G => f g) (by intro g; rfl)
   constructor
   · intro hf
     change tateNorm G (G → B) f = 1 at hf
-    have hx := congrArg (fun q : G → B => q 1) hf
-    calc
-      (∏ g : G, f g) = tateNorm G (G → B) f 1 := (hnorm 1).symm
-      _ = 1 := by simpa using hx
+    simp_all
   · intro hf
     change tateNorm G (G → B) f = 1
     funext x
-    calc
-      tateNorm G (G → B) f x = ∏ g : G, f g := hnorm x
-      _ = 1 := hf
+    simp_all
 
 omit [Fintype G] [CommGroup A] [CommGroup C]
     [MulDistribMulAction G A] [MulDistribMulAction G B]
@@ -1050,14 +764,6 @@ candidate used to solve `b (x * σ) * (b x)⁻¹ = f x` on the right-regular
 induced module. -/
 def rightRegularCyclicPartialProduct (σ : G) (f : G → B) (i : ℕ) : B :=
   (Finset.range i).prod (fun k => f (σ ^ k))
-
-omit [Fintype G] [CommGroup A] [CommGroup C]
-    [MulDistribMulAction G A] [MulDistribMulAction G B]
-    [MulDistribMulAction G C] in
-/-- The partial primitive starts at `1`. -/
-theorem rightRegularCyclicPartialProduct_zero (σ : G) (f : G → B) :
-    rightRegularCyclicPartialProduct (G := G) (B := B) σ f 0 = 1 := by
-  simp [rightRegularCyclicPartialProduct]
 
 omit [Fintype G] [CommGroup A] [CommGroup C]
     [MulDistribMulAction G A] [MulDistribMulAction G B]
@@ -1079,7 +785,7 @@ theorem rightRegularCyclicPartialProduct_succ_mul_inv
         (rightRegularCyclicPartialProduct (G := G) (B := B) σ f i)⁻¹ =
       f (σ ^ i) := by
   rw [rightRegularCyclicPartialProduct_succ]
-  simp [mul_comm, mul_assoc]
+  simp
 
 omit [Fintype G] [CommGroup A] [CommGroup C]
     [MulDistribMulAction G A] [MulDistribMulAction G B]
@@ -1108,7 +814,7 @@ omit [CommGroup A] [CommGroup B] [CommGroup C]
     [MulDistribMulAction G C] in
 /-- The canonical `ZMod |G|` index of a group element with respect to a chosen
 cyclic generator. -/
-noncomputable def rightRegularCyclicIndex
+def rightRegularCyclicIndex
     (σ : G) (hgen : ∀ g : G, g ∈ Subgroup.zpowers σ) (x : G) :
     ZMod (Fintype.card G) :=
   Classical.choose (IsCyclic.unique_zpow_zmod (a := σ) hgen x)
@@ -1131,8 +837,8 @@ returns it. -/
 theorem rightRegularCyclicIndex_eq_of_repr
     (σ : G) (hgen : ∀ g : G, g ∈ Subgroup.zpowers σ)
     {x : G} {m : ZMod (Fintype.card G)} (hm : x = σ ^ m.val) :
-    rightRegularCyclicIndex (G := G) σ hgen x = m := by
-  exact ((Classical.choose_spec (IsCyclic.unique_zpow_zmod (a := σ) hgen x)).2 m hm).symm
+    rightRegularCyclicIndex (G := G) σ hgen x = m := 
+  ((Classical.choose_spec (IsCyclic.unique_zpow_zmod (a := σ) hgen x)).2 m hm).symm
 
 omit [CommGroup A] [CommGroup B] [CommGroup C]
     [MulDistribMulAction G A] [MulDistribMulAction G B]
@@ -1147,7 +853,7 @@ theorem rightRegularCyclicIndex_val_pow_of_lt
       rightRegularCyclicIndex (G := G) σ hgen (σ ^ i) =
         (i : ZMod (Fintype.card G)) := by
     apply rightRegularCyclicIndex_eq_of_repr (G := G) σ hgen
-    simp [ZMod.val_natCast_of_lt hi]
+    simp
   rw [hidx, ZMod.val_natCast_of_lt hi]
 
 omit [CommGroup A] [CommGroup C]
@@ -1155,7 +861,7 @@ omit [CommGroup A] [CommGroup C]
     [MulDistribMulAction G C] in
 /-- The group-element-indexed primitive candidate obtained from the cyclic
 partial products. -/
-noncomputable def rightRegularCyclicPrimitive
+def rightRegularCyclicPrimitive
     (σ : G) (hgen : ∀ g : G, g ∈ Subgroup.zpowers σ) (f : G → B) : G → B :=
   fun x =>
     rightRegularCyclicPartialProduct (G := G) (B := B) σ f
@@ -1174,7 +880,7 @@ theorem rightRegularCyclicPrimitive_mul_sigma_mul_inv_of_index_succ_lt
       f x := by
   let i := (rightRegularCyclicIndex (G := G) σ hgen x).val
   have hi : i + 1 < Fintype.card G := by
-    simpa [i] using hix
+    omega
   have hx : x = σ ^ i := by
     simpa [i] using rightRegularCyclicIndex_spec (G := G) σ hgen x
   have hxσ : x * σ = σ ^ (i + 1) := by
@@ -1208,15 +914,14 @@ theorem rightRegularCyclicPrimitive_mul_sigma_mul_inv_of_index_eq_card_sub_one
   have hcard_pos : 0 < Fintype.card G := Fintype.card_pos
   let i := (rightRegularCyclicIndex (G := G) σ hgen x).val
   have hi : i = Fintype.card G - 1 := by
-    simpa [i] using hix
+    omega
   have hx : x = σ ^ i := by
     simpa [i] using rightRegularCyclicIndex_spec (G := G) σ hgen x
   have horder : orderOf σ = Fintype.card G := by
     simpa [Nat.card_eq_fintype_card] using
       orderOf_eq_card_of_forall_mem_zpowers (g := σ) hgen
   have hpow_card : σ ^ Fintype.card G = 1 := by
-    rw [← horder]
-    exact pow_orderOf_eq_one σ
+    simp
   have hxσ : x * σ = 1 := by
     calc
       x * σ = σ ^ i * σ := by rw [hx]
@@ -1244,8 +949,7 @@ theorem rightRegularCyclicPrimitive_mul_sigma_mul_inv_of_index_eq_card_sub_one
         (rightRegularCyclicIndex (G := G) σ hgen (x * σ)).val *
       (rightRegularCyclicPartialProduct (G := G) (B := B) σ f
         (rightRegularCyclicIndex (G := G) σ hgen x).val)⁻¹ = f x
-  rw [hidx_xσ, hix, hx, hi]
-  exact hwrap
+  simp_all
 
 omit [CommGroup A] [CommGroup C]
     [MulDistribMulAction G A] [MulDistribMulAction G B]
@@ -1272,8 +976,7 @@ theorem rightRegularCyclicPrimitive_mul_sigma_mul_inv_of_partialProduct_eq_one
     have hcard_le : Fintype.card G ≤ i + 1 := le_of_not_gt hsucc
     have hsucc_eq : i + 1 = Fintype.card G := le_antisymm hsucc_le hcard_le
     have hlast : i = Fintype.card G - 1 := by
-      rw [← hsucc_eq]
-      simp
+      omega
     exact rightRegularCyclicPrimitive_mul_sigma_mul_inv_of_index_eq_card_sub_one
       (G := G) (B := B) σ hgen f x (by simpa [i] using hlast) hprod
 
@@ -1303,8 +1006,8 @@ theorem rightRegularFunction_prod_powers_eq_one_of_mem_normKernel
   calc
     (Finset.range (Nat.card G)).prod (fun i => f (σ ^ i)) =
         (Finset.image (fun i : ℕ => σ ^ i) (Finset.range (Nat.card G))).prod
-          (fun x => f x) := by
-      exact (Finset.prod_image (s := Finset.range (Nat.card G))
+          (fun x => f x) := 
+      (Finset.prod_image (s := Finset.range (Nat.card G))
         (g := fun i : ℕ => σ ^ i) (f := f) hinj).symm
     _ = ∏ x : G, f x := by
       rw [himage]
@@ -1362,20 +1065,6 @@ theorem rightRegularFunction_normKernel_le_augmentationSubgroup
 omit [CommGroup A] [CommGroup C]
     [MulDistribMulAction G A] [MulDistribMulAction G B]
     [MulDistribMulAction G C] in
-/-- The `H^{-1}` quotient of the right-regular multiplicative induced module
-is trivial for a cyclic group generated by `σ`. -/
-theorem rightRegularFunction_herbrandHMinusOne_subsingleton
-    (σ : G) (hgen : ∀ g : G, g ∈ Subgroup.zpowers σ) :
-    Subsingleton (rightRegularFunctionHerbrandHMinusOne (G := G) (B := B) σ) := by
-  let := rightRegularFunctionMulDistribMulAction (G := G) (B := B)
-  exact herbrandHMinusOne_subsingleton_of_normKernel_le_augmentationSubgroup
-    (G := G) (A := G → B) σ
-    (rightRegularFunction_normKernel_le_augmentationSubgroup
-      (G := G) (B := B) σ hgen)
-
-omit [CommGroup A] [CommGroup C]
-    [MulDistribMulAction G A] [MulDistribMulAction G B]
-    [MulDistribMulAction G C] in
 /-- Concrete `H⁰` source for induced modules: for the right-regular
 multiplicative induced module `G → B`, every fixed point is a norm. -/
 theorem rightRegularFunction_fixed_le_tateNormSubgroup :
@@ -1400,16 +1089,12 @@ theorem rightRegularFunction_fixed_le_tateNormSubgroup :
         toFun q := q x
         map_one' := rfl
         map_mul' := by
-          intro q r
-          rfl
+          simp
       }
       calc
         ((∏ c : G, c • d) : G → B) x = ev (∏ c : G, c • d) := rfl
         _ = ∏ c : G, ev (c • d) := by rw [map_prod]
         _ = ∏ c : G, d (x * c) := by
-          refine Finset.prod_congr rfl ?_
-          intro c _hc
-          change (c • d) x = d (x * c)
           rfl
     _ = f 1 := by
       calc
@@ -1426,22 +1111,9 @@ theorem rightRegularFunction_fixed_le_tateNormSubgroup :
                 _ = x⁻¹ * 1 := by rw [hxg_one]
                 _ = x⁻¹ := by simp
             simp [d, hxg]
-          · intro hxinv
-            simp at hxinv
+          simp
         _ = f 1 := by simp [d]
     _ = f x := hfixed_x.symm
-
-omit [CommGroup A] [CommGroup C]
-    [MulDistribMulAction G A] [MulDistribMulAction G B]
-    [MulDistribMulAction G C] in
-/-- The `H⁰` quotient of the right-regular multiplicative induced module is
-trivial. This is the degree-zero half of the low-degree Herbrand comparison. -/
-theorem rightRegularFunction_herbrandH0_subsingleton :
-    Subsingleton (rightRegularFunctionHerbrandH0 (G := G) (B := B)) := by
-  let := rightRegularFunctionMulDistribMulAction (G := G) (B := B)
-  exact herbrandH0_subsingleton_of_fixed_le_tateNormSubgroup
-    (G := G) (A := G → B) (rightRegularFunction_fixed_le_tateNormSubgroup
-      (G := G) (B := B))
 
 omit [CommGroup C] [MulDistribMulAction G B] [MulDistribMulAction G C] in
 /-- Transport `H⁰` vanishing from the right-regular trivial-subgroup model
@@ -1494,7 +1166,7 @@ on its `Multiplicative` wrapper. -/
     intro m
     change Multiplicative.ofAdd (1 • Multiplicative.toAdd m) =
       Multiplicative.ofAdd (Multiplicative.toAdd m)
-    rw [one_smul]
+    simp
   mul_smul := by
     intro g h m
     change Multiplicative.ofAdd ((g * h) • Multiplicative.toAdd m) =
@@ -1505,35 +1177,11 @@ on its `Multiplicative` wrapper. -/
     change Multiplicative.ofAdd (g • Multiplicative.toAdd (m * n)) =
       Multiplicative.ofAdd
         (g • Multiplicative.toAdd m + g • Multiplicative.toAdd n)
-    rw [show Multiplicative.toAdd (m * n) =
-        Multiplicative.toAdd m + Multiplicative.toAdd n from rfl]
-    rw [smul_add]
+    simp
   smul_one := by
     intro g
     change Multiplicative.ofAdd (g • (0 : M)) = Multiplicative.ofAdd (0 : M)
-    rw [smul_zero]
-
-omit [Group G] [Fintype G] [CommGroup A] [CommGroup B] [CommGroup C]
-    [MulDistribMulAction G A] [MulDistribMulAction G B]
-    [MulDistribMulAction G C] in
-/-- Pointwise conversion between a multiplicative wrapper on additive
-functions and functions into the multiplicative wrapper. -/
-def multiplicativeFunctionMulEquiv
-    (G : Type uG) (D : Type uB) [AddCommGroup D] :
-    Multiplicative (G → D) ≃* (G → Multiplicative D) where
-  toFun f := fun x => Multiplicative.ofAdd (Multiplicative.toAdd f x)
-  invFun f := Multiplicative.ofAdd (fun x => Multiplicative.toAdd (f x))
-  left_inv := by
-    intro f
-    rfl
-  right_inv := by
-    intro f
-    funext x
-    rfl
-  map_mul' := by
-    intro f h
-    funext x
-    rfl
+    simp
 
 omit [Group G] [Fintype G] [CommGroup A] [CommGroup B] [CommGroup C]
     [MulDistribMulAction G A] [MulDistribMulAction G B]
@@ -1548,30 +1196,14 @@ def mulEquivRightRegularFunctionOfAddEquiv
   invFun f := Multiplicative.ofAdd (e.symm (fun x => Multiplicative.toAdd (f x)))
   left_inv := by
     intro m
-    change Multiplicative.ofAdd
-        (e.symm (e (Multiplicative.toAdd m))) =
-      Multiplicative.ofAdd (Multiplicative.toAdd m)
-    exact congrArg Multiplicative.ofAdd (e.left_inv (Multiplicative.toAdd m))
+    simp
   right_inv := by
     intro f
-    funext x
-    change Multiplicative.ofAdd
-        (e (e.symm (fun y : G => Multiplicative.toAdd (f y))) x) =
-      Multiplicative.ofAdd (Multiplicative.toAdd (f x))
-    exact congrArg Multiplicative.ofAdd
-      (congrArg (fun q : G → D => q x)
-        (e.right_inv (fun y : G => Multiplicative.toAdd (f y))))
+    simp
   map_mul' := by
     intro m n
     funext x
-    change Multiplicative.ofAdd (e (Multiplicative.toAdd (m * n)) x) =
-      Multiplicative.ofAdd
-        (e (Multiplicative.toAdd m) x + e (Multiplicative.toAdd n) x)
-    rw [show Multiplicative.toAdd (m * n) =
-        Multiplicative.toAdd m + Multiplicative.toAdd n from rfl]
-    exact congrArg Multiplicative.ofAdd
-      (congrArg (fun q : G → D => q x)
-        (e.map_add (Multiplicative.toAdd m) (Multiplicative.toAdd n)))
+    simp
 
 omit [Fintype G] [CommGroup A] [CommGroup B] [CommGroup C]
     [MulDistribMulAction G A] [MulDistribMulAction G B]
@@ -1589,7 +1221,7 @@ theorem mulEquivRightRegularFunctionOfAddEquiv_commutes
       mulEquivRightRegularFunctionOfAddEquiv G e m (x * g) := by
   change Multiplicative.ofAdd (e (g • Multiplicative.toAdd m) x) =
     Multiplicative.ofAdd (e (Multiplicative.toAdd m) (x * g))
-  exact congrArg Multiplicative.ofAdd (he g (Multiplicative.toAdd m) x)
+  simp_all
 
 omit [CommGroup A] [CommGroup B] [CommGroup C]
     [MulDistribMulAction G A] [MulDistribMulAction G B]
@@ -1726,9 +1358,3 @@ theorem herbrand_finite_module_card_eq
   have hIpos : 0 < Nat.card (augmentationSubgroup G A σ) :=
     Finite.card_pos (α := augmentationSubgroup G A σ)
   exact Nat.mul_right_cancel (Nat.mul_pos hNpos hIpos) hfactor
-
-end Herbrand
-end ProfiniteCohomology
-
-end
-end CyclicCohomology

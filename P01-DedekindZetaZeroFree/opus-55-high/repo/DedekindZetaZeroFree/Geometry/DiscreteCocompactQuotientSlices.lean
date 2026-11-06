@@ -35,10 +35,8 @@ theorem exists_finite_relativelyCompact_quotient_slices
   let e := s.equivFin
   refine ⟨s.card, fun i => U (e.symm i), ?_, ?_⟩
   · intro i
-    exact ⟨hopen _, hcompact _, hinj _⟩
+    simp_all
   · apply Set.Subset.antisymm (Set.subset_univ _)
     intro x hx
     obtain ⟨g, hg, hxg⟩ := Set.mem_iUnion₂.mp (hs hx)
     exact Set.mem_iUnion.mpr ⟨e ⟨g, hg⟩, by simpa using hxg⟩
-
-end DedekindZetaZeroFree

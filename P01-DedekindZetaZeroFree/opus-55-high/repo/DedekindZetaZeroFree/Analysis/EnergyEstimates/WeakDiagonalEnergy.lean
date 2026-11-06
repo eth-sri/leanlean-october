@@ -18,7 +18,7 @@ open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.NativeBoundaryH1.Cacc
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [MeasurableSpace X]
   [BorelSpace X] {μ : Measure X} [IsFiniteMeasureOnCompacts μ] [SFinite μ]
 
-private theorem weak_cutoff_derivative
+theorem weak_cutoff_derivative
     (q : ℝ → X → X) (hq : Continuous (Function.uncurry q))
     (hμ : ∀ t, MeasurePreserving (q t) μ μ)
     (hz : ∀ x, q 0 x = x) (ha : ∀ s t x, q (s+t) x = q t (q s x))
@@ -38,7 +38,7 @@ private theorem weak_cutoff_derivative
   · intro x
     exact (Complex.abs_re_le_norm _).trans (norm_deriv_le_of_lipschitz (hLip x))
 
-private theorem squared_cutoff_lipschitz
+theorem squared_cutoff_lipschitz
     (q : ℝ → X → X) (χ : X → ℝ) (L : ℝ≥0)
     (hχb : ∀ x, |χ x| ≤ 1)
     (hLip : ∀ x, LipschitzWith L (fun t => (χ (q t x) : ℂ))) (x : X) :
@@ -56,7 +56,7 @@ private theorem squared_cutoff_lipschitz
   norm_num only [NNReal.coe_mul, NNReal.coe_ofNat]
   nlinarith [abs_nonneg (χ (q s x) - χ (q t x))]
 
-private theorem weak_real_cutoff_identity
+theorem weak_real_cutoff_identity
     (q : ℝ → X → X) (hq : Continuous (Function.uncurry q))
     (hμ : ∀ t, MeasurePreserving (q t) μ μ)
     (hz : ∀ x, q 0 x = x) (ha : ∀ s t x, q (s+t) x = q t (q s x))
@@ -129,7 +129,7 @@ private theorem weak_real_cutoff_identity
   rw [hrCross] at he
   linarith
 
-private theorem weak_diagonal_cutoff_estimate
+theorem weak_diagonal_cutoff_estimate
     {ι : Type*} [Fintype ι]
     (q : ι → ℝ → X → X)
     (hq : ∀ i, Continuous (Function.uncurry (q i)))

@@ -12,7 +12,7 @@ open scoped Classical Topology
 
 variable {F : Type} [Field F] [NumberField F]
 
-private theorem rationalPadicCharacter_locallyConstant (p : Nat.Primes) :
+theorem rationalPadicCharacter_locallyConstant (p : Nat.Primes) :
     IsLocallyConstant (rationalPadicCharacter p : ℚ_[p] → Circle) := by
   letI : Fact p.1.Prime := ⟨p.2⟩
   apply (IsLocallyConstant.iff_eventually_eq _).2
@@ -20,7 +20,7 @@ private theorem rationalPadicCharacter_locallyConstant (p : Nat.Primes) :
   have hopen : IsOpen (Set.range (fun z : ℤ_[p] => (z : ℚ_[p]))) :=
     PadicInt.isOpenEmbedding_coe.isOpen_range
   have hzero : (0 : ℚ_[p]) ∈ Set.range (fun z : ℤ_[p] => (z : ℚ_[p])) :=
-    ⟨0, rfl⟩
+    by simp
   have h := ((continuous_id.sub continuous_const :
     Continuous (fun y : ℚ_[p] => y - x)).isOpen_preimage _ hopen).mem_nhds
       (show x - x ∈ Set.range (fun z : ℤ_[p] => (z : ℚ_[p])) by simpa using hzero)
@@ -30,7 +30,7 @@ private theorem rationalPadicCharacter_locallyConstant (p : Nat.Primes) :
   rw [AddChar.map_sub_eq_div] at heq
   exact div_eq_one.mp heq
 
-private theorem localTraceCharacter_locallyConstant
+theorem localTraceCharacter_locallyConstant
     (v : HeightOneSpectrum (𝓞 F)) :
     IsLocallyConstant (ResidueTrace.localTraceCharacter v : v.adicCompletion F → Circle) := by
   letI : Fact (ResidueTrace.rationalPrimeBelow v).1.Prime :=
@@ -61,7 +61,7 @@ private theorem localTraceCharacter_locallyConstant
   rw [h, hx]
   exact rationalPadicCharacter_inv_prime_ne_one _
 
-private theorem finiteKernel_compact_support_periods {G : Type*} [AddCommGroup G]
+theorem finiteKernel_compact_support_periods {G : Type*} [AddCommGroup G]
     [TopologicalSpace G] [IsTopologicalAddGroup G]
     (φ : G → ℂ) (hlocal : IsLocallyConstant φ) (hsupport : HasCompactSupport φ) :
     ∃ U : AddSubgroup G, IsOpen (U : Set G) ∧ ∀ u ∈ U, ∀ x, φ (u + x) = φ x := by
@@ -74,12 +74,12 @@ private theorem finiteKernel_compact_support_periods {G : Type*} [AddCommGroup G
       neg_mem' := by
         intro u hu x
         simpa using (hu (-u + x)).symm }
-  have hn : IsOpen {p : G × G | φ (p.1 + p.2) = φ p.2} := by
-    exact ((hlocal.comp_continuous (continuous_fst.add continuous_snd)).prodMk
+  have hn : IsOpen {p : G × G | φ (p.1 + p.2) = φ p.2} := 
+    ((hlocal.comp_continuous (continuous_fst.add continuous_snd)).prodMk
       (hlocal.comp_continuous continuous_snd)) {q : ℂ × ℂ | q.1 = q.2}
   obtain ⟨V, W, hVo, hWo, h0V, hKW, hVW⟩ :=
     generalized_tube_lemma (isCompact_singleton (x := (0 : G))) hsupport.isCompact hn
-      (by intro p hp; change φ (p.1 + p.2) = φ p.2; rw [show p.1 = 0 from hp.1, zero_add])
+      (by intro p hp; simp_all)
   have h0 : (0 : G) ∈ V := h0V (by simp)
   have hN : V ∩ (fun u : G => -u) ⁻¹' V ∈ 𝓝 (0 : G) :=
     (hVo.inter (hVo.preimage continuous_neg)).mem_nhds (by simpa using And.intro h0 h0)
@@ -112,7 +112,7 @@ theorem finiteTraceFourier_bruhat (A : SArithmeticData F)
       (he.comp_continuous (continuous_fst.neg.mul continuous_snd)) {1}
     obtain ⟨V, W, hVo, hWo, hKV, h0W, hVW⟩ :=
       generalized_tube_lemma hf.2.isCompact (isCompact_singleton (x := (0 : v.adicCompletion F))) ho
-        (by intro p hp; simp only [Set.mem_setOf_eq, show p.2 = 0 from hp.2, mul_zero, AddChar.map_zero_eq_one])
+        (by intro p hp; simp_all)
     apply (IsLocallyConstant.iff_eventually_eq _).2
     intro y
     have hn : {z : v.adicCompletion F | z - y ∈ W} ∈ 𝓝 y :=
@@ -173,7 +173,7 @@ theorem finiteTraceFourier_bruhat (A : SArithmeticData F)
       A.finiteTraceFourier v f y = A.finiteTraceFourier v f y at hi
     exact hne ((mul_eq_right₀ hy).mp hi)
 
-private lemma finiteKernel_traceHaar (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F)) :
+lemma finiteKernel_traceHaar (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F)) :
     (A.finiteTraceHaar v).IsAddHaarMeasure := by
   let K := v.adicCompletion F
   let μ : Measure K := Measure.addHaar
@@ -190,7 +190,7 @@ private lemma finiteKernel_traceHaar (A : SArithmeticData F) (v : HeightOneSpect
   · exact ENNReal.div_ne_zero.mpr ⟨by simpa using PoissonS.integerVolume_pos F v, hf⟩
   · exact ENNReal.div_ne_top ENNReal.ofReal_ne_top hp.ne'
 
-private lemma finiteKernel_cutoff_exhaust (v : HeightOneSpectrum (𝓞 F)) (K : Set (v.adicCompletion F))
+lemma finiteKernel_cutoff_exhaust (v : HeightOneSpectrum (𝓞 F)) (K : Set (v.adicCompletion F))
     (hK : IsCompact K) : ∀ᶠ n : ℕ in atTop, K ⊆ exteriorQuadraticCutoff v n := by
   obtain ⟨R, hR⟩ := hK.isBounded.subset_closedBall (0 : v.adicCompletion F)
   have hq : (1 : ℝ) < (Ideal.absNorm v.asIdeal : ℝ) := by exact_mod_cast HeightOneSpectrum.one_lt_absNorm v
@@ -198,7 +198,7 @@ private lemma finiteKernel_cutoff_exhaust (v : HeightOneSpectrum (𝓞 F)) (K : 
   intro x hx
   exact (show ‖x‖ ≤ R from by simpa using hR hx).trans hn
 
-private lemma finiteKernel_translate_ball {K : Type*} [NormedField K] [IsUltrametricDist K]
+lemma finiteKernel_translate_ball {K : Type*} [NormedField K] [IsUltrametricDist K]
     [MeasurableSpace K] [BorelSpace K] (μ : Measure K) [μ.IsAddLeftInvariant]
     (R : ℝ) (t : K) (ht : ‖t‖ ≤ R) (g : K → ℂ) :
     (∫ x in Metric.closedBall 0 R, g (x - t) ∂μ) = ∫ x in Metric.closedBall 0 R, g x ∂μ := by
@@ -235,8 +235,8 @@ theorem finiteQuadraticCutoff_linear_eventually (A : SArithmeticData F) (v : Hei
   letI : BorelSpace (v.adicCompletion F) := ⟨rfl⟩
   letI : (A.finiteTraceHaar v).IsAddHaarMeasure := finiteKernel_traceHaar A v
   have ha : (a : v.adicCompletion F) ≠ 0 := a.ne_zero
-  have h2 : (2 : v.adicCompletion F) ≠ 0 := by exact_mod_cast (two_ne_zero : (2 : F) ≠ 0)
-  have h4 : (4 : v.adicCompletion F) ≠ 0 := by exact_mod_cast (show (4 : F) ≠ 0 by norm_num)
+  have h2 : (2 : v.adicCompletion F) ≠ 0 := by simp
+  have h4 : (4 : v.adicCompletion F) ≠ 0 := by simp
   have hs := finiteKernel_cutoff_exhaust v ((fun b : v.adicCompletion F => b/(2*(a : v.adicCompletion F))) '' K)
     (hK.image (continuous_id.div_const _))
   filter_upwards [hs, A.finiteOscillatoryIntegral_eventually_eq_value v a] with n hn hv b hb
@@ -256,7 +256,7 @@ theorem finiteQuadraticCutoff_linear_eventually (A : SArithmeticData F) (v : Hei
   rw [hbball] at hv
   rw [hv]
 
-private lemma finiteKernel_compact_fubini (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F))
+lemma finiteKernel_compact_fubini (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F))
     (a : (v.adicCompletion F)ˣ) (f : v.adicCompletion F → ℂ)
     (hf : IsLocallyConstant f ∧ HasCompactSupport f) (y : v.adicCompletion F) :
     A.finiteTraceFourier v (A.finiteQuadraticMultiplier v (a : v.adicCompletion F)
@@ -281,8 +281,8 @@ private lemma finiteKernel_compact_fubini (A : SArithmeticData F) (v : HeightOne
   let g : v.adicCompletion F → v.adicCompletion F → ℂ := fun x z =>
     f z * (ResidueTrace.localTraceCharacter v ((a : v.adicCompletion F)*x^2 - (y+z)*x) : ℂ)
   have hg : Integrable (Function.uncurry g) ((μ.restrict B).prod μ) := by
-    have hcont : Continuous (Function.uncurry g) := by
-      exact (hf.1.continuous.comp continuous_snd).mul
+    have hcont : Continuous (Function.uncurry g) := 
+      (hf.1.continuous.comp continuous_snd).mul
         (continuous_subtype_val.comp ((ResidueTrace.continuous_localTraceCharacter v).comp
           ((continuous_const.mul (continuous_fst.pow 2)).sub
             ((continuous_const.add continuous_snd).mul continuous_fst))))
@@ -291,7 +291,7 @@ private lemma finiteKernel_compact_fubini (A : SArithmeticData F) (v : HeightOne
     have hir := hi.norm
     apply hir.mono' hcont.aestronglyMeasurable
     filter_upwards [] with p
-    simp [g, Function.uncurry, norm_mul]
+    simp [g, Function.uncurry]
   have hswap := integral_integral_swap hg
   have hphase (x z : v.adicCompletion F) :
       g x z = (ResidueTrace.localTraceCharacter v ((a : v.adicCompletion F)*x^2) : ℂ) *
@@ -391,5 +391,3 @@ theorem finiteTraceFourier_quadratic_operator (A : SArithmeticData F)
   simpa only [finiteQuadraticMultiplier, finiteDilation, div_eq_mul_inv,
     neg_mul, mul_neg, one_mul, mul_comm, mul_left_comm, mul_assoc] using
     A.finiteTraceFourier_quadratic_kernel v a f hf y
-
-end DedekindZetaZeroFree.SArithmeticData

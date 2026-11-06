@@ -100,7 +100,7 @@ private theorem archBasepoint_rational (σ : KPCuspArithmetic.PGL2 F)
   rw [archBasepoint_mul, archRational_action]
   rfl
 
-private theorem productEquiv_rational (σ : KPCuspArithmetic.PGL2 F) :
+theorem productEquiv_rational (σ : KPCuspArithmetic.PGL2 F) :
     productEquiv F ζ hζ (archRational σ, KPCuspGenuineMonodromy.finiteRationalLift F ζ hζ σ) =
       KPMsClearedTruncationL2.rationalLift F ζ hζ σ := by
   rw [productEquiv_apply, rationalLift_product]

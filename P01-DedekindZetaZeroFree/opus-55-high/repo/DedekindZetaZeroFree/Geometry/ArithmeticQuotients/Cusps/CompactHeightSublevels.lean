@@ -42,7 +42,7 @@ private theorem component_injective (i : Fin a.componentCount) :
   intro x y he
   have hh : a.components ⟨i,x⟩ = a.components ⟨i,y⟩ := by
     simpa only [a.components_formula] using he
-  exact eq_of_heq (Sigma.mk.inj (a.components.injective hh)).2
+  simp_all
 private theorem same_component (i : Fin a.componentCount) (c : I a)
     (x : S (F := F)) (z : KPCuspCharts.Coordinates F)
     (he : Q a i x = L a c z) : i = c.1 := by
@@ -73,17 +73,17 @@ private theorem local_lift (c : I a) (hd : 0 < KPCuspLogShape.dimension F)
     (KPCuspCharts.toArchHomeomorph F hd) ((KPCuspCharts.toArchHomeomorph F hd).symm _)) = _
   rw [Homeomorph.apply_symm_apply, smul_inv_smul]
   simpa only [Subgroup.coe_inv] using Q_invariant a c.1 g⁻¹ y
-private theorem end_open (τ : ℝ) (c : I a) : IsOpen (E a τ c) := by
+theorem end_open (τ : ℝ) (c : I a) : IsOpen (E a τ c) := by
   have hc : IsOpenMap (KPFiniteCuspAtlas.componentMap F ζ hζ U (a.representative c.1)) := by
     have he := a.components.isOpenMap.comp (isOpenMap_sigmaMk (i := c.1))
     simpa only [Function.comp_def, a.components_formula] using he
   exact hc _ (KPFiniteAdelicCuspEnds.component_open_end F _ _ τ)
 private theorem lift_range (τ : ℝ) (hτ : a.threshold ≤ τ) (c : I a) :
-    L a c '' {z : KPCuspCharts.Coordinates F | τ < z.2} = E a τ c := by
-  exact (KPActualCollarBuffer.actual_height_descent F ζ hζ hF U a τ hτ).1 c
+    L a c '' {z : KPCuspCharts.Coordinates F | τ < z.2} = E a τ c := 
+  (KPActualCollarBuffer.actual_height_descent F ζ hζ hF U a τ hτ).1 c
 private theorem height_coordinates (τ : ℝ) (hτ : a.threshold ≤ τ)
-    (c : I a) (z : KPCuspCharts.Coordinates F) (hz : τ < z.2) : t a τ c (L a c z) = z.2 := by
-  exact (KPActualCollarBuffer.actual_height_descent F ζ hζ hF U a τ hτ).2.1 c z hz
+    (c : I a) (z : KPCuspCharts.Coordinates F) (hz : τ < z.2) : t a τ c (L a c z) = z.2 := 
+  (KPActualCollarBuffer.actual_height_descent F ζ hζ hF U a τ hτ).2.1 c z hz
 private theorem interior_height (τ : ℝ) (hτ : a.threshold ≤ τ) (c : I a)
     (x : S (F := F)) (hx : Q a c.1 x ∈ E a τ c) :
     ∃ γ : KPCuspArithmetic.PGL2 F, τ < localHeight γ x ∧
@@ -105,8 +105,7 @@ private theorem interior_height (τ : ℝ) (hτ : a.threshold ≤ τ) (c : I a)
   have hopen : IsOpen {y : S (F := F) | τ < localHeight γ y} :=
     isOpen_lt continuous_const (localHeight_smooth γ).continuous
   have htx : x ∈ {y : S (F := F) | τ < localHeight γ y} := by
-    change τ < localHeight γ x
-    rw [ht]; exact hz
+    simp_all
   filter_upwards [hopen.mem_nhds htx] with y hy
   let w := (KPCuspCharts.toArchHomeomorph F hd).symm (γ • y)
   have hw : w.2 = localHeight γ y := rfl
@@ -191,8 +190,8 @@ theorem scalar_zeroExtension_smooth_continuous
     (∀ i : Fin a.componentCount, ContDiff ℝ (⊤ : ℕ∞)
       (fun x : KPFiniteCuspAtlas.SymmetricSpace F => η
         (KPFiniteCuspAtlas.componentMap F ζ hζ U (a.representative i)
-          (KPCuspSiegel.projection F _ x)))) ∧ Continuous η := by
-  exact ⟨zeroExtension_smooth a τ T hτ hT c φ hφ hzero,
+          (KPCuspSiegel.projection F _ x)))) ∧ Continuous η := 
+  ⟨zeroExtension_smooth a τ T hτ hT c φ hφ hzero,
     zeroExtension_continuous a τ T hτ hT c φ hφ.continuous hzero⟩
 
 theorem scalar_zeroExtension_local_model
@@ -314,6 +313,3 @@ theorem height_sublevel_isCompact (T : ℝ) :
             (KPCuspGenuineMonodromy.Component F ζ hζ U (a.representative i))
             ((a.cuspAtlas i).representative c) T)) := by
   simpa only [Set.iUnion_sigma, E, Set.compl_eq_univ_sdiff] using compact_sublevel a T
-end DedekindZetaZeroFree.KPCuspCutoffGraphApproximation.GenericZeroExtension
-
-end

@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Order of arithmetic Frobenius at an unramified prime
 
@@ -30,7 +24,6 @@ degree at `w`.
 
 open scoped NumberField
 
-noncomputable section
 
 namespace ClassFieldTheory
 
@@ -103,7 +96,3 @@ theorem orderOf_arithmeticFrobeniusAt_eq_inertiaDegree
   change orderOf g = Q.inertiaDeg (𝓞 K)
   exact (Subgroup.orderOf_coe gs).trans
     (Nat.dvd_antisymm hUpper hLower)
-
-end ClassFieldTheory
-
-end

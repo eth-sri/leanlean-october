@@ -273,7 +273,7 @@ private theorem sum_complex_basis {I : Type*} [Fintype I] [DecidableEq I]
   simp only [Complex.sq_norm, Complex.normSq_apply, Finset.sum_add_distrib]
   simpa only [pow_two] using congrArg₂ (· + ·) hRe hIm
 
-private theorem differential_frame_any (d : ℕ) (f : HyperbolicChart.Space d → ℂ) (x : HyperbolicChart.Space d) (k : Fin d × Fin 3) :
+theorem differential_frame_any (d : ℕ) (f : HyperbolicChart.Space d → ℂ) (x : HyperbolicChart.Space d) (k : Fin d × Fin 3) :
     (CotangentLogCoframe.j d (HyperbolicChart.differential d f x)) k =
       fderiv ℝ f x (CotangentLogCoframe.H d x
         (EuclideanSpace.basisFun _ ℝ k)) := by
@@ -688,7 +688,7 @@ theorem smoothGradient_cusp_coframe
   simp only [KPContActualChamberOutgoingAdapter.covariantNorm, Fin.reduceEq, ite_false, ite_true]
   exact (Real.sq_sqrt (Finset.sum_nonneg fun _ _ => sq_nonneg _)).symm
 
-private theorem arch_coframe_norm_at (n : ℕ) (g : KPArch.Space n → ℂ)
+theorem arch_coframe_norm_at (n : ℕ) (g : KPArch.Space n → ℂ)
     (z : KPArch.Space n) (hg : DifferentiableAt ℝ g z) :
     (∑ i, ∑ k, ‖HyperbolicChart.differential n (g ∘ KPMeanZeroWeightedEnergy.archCoordinates n)
       (KPMeanZeroWeightedEnergy.realCoordinates n z) i k‖ ^ 2) =
@@ -1176,7 +1176,7 @@ private theorem point_holomorphic {n : ℕ} (A : LocalBall n) (Ω : Set ℂ)
     | cons i l ih => simpa using ih
   simpa [L,coordinateDerivative,hd,coordinateDerivativeList] using h.symm
 
-private theorem realCoordinates_inverse_smooth :
+theorem realCoordinates_inverse_smooth :
     ContDiff ℝ (⊤ : ℕ∞) (KPContActualChartRestrictionDensity.coordinates F).symm := by
   rw [contDiff_piLp]
   intro k
@@ -1199,7 +1199,7 @@ private theorem E_holo (hι : Function.Injective ι)
   simp [KPContActualChamberNormalSeries.compactMixedJet, hs,
     KPContActualChamberNormalSeries.mixedJet, KPContActualChamberNormalSeries.rightWord]
 
-private theorem source_chart_neighborhood (b : Bool)
+theorem source_chart_neighborhood (b : Bool)
     (i : Fin (H.atlas (level F ζ hζ C R P H U)).componentCount)
     (y : KPFiniteCuspAtlas.SymmetricSpace F) :
     ∃ B : LocalBall (KPCuspLogShape.dimension F * 3),
@@ -1236,7 +1236,7 @@ private theorem source_chart_neighborhood (b : Bool)
   · exact hh.1
   · exact hh.2.1
 
-private theorem source_coefficient_formula (b : Bool) (s : ℂ)
+theorem source_coefficient_formula (b : Bool) (s : ℂ)
     (i : Fin (H.atlas (level F ζ hζ C R P H U)).componentCount)
     (x : Space (KPCuspLogShape.dimension F * 3)) :
     KPContActualAllCuspSource.chartCoefficient F ζ hζ C R P H U
@@ -1318,7 +1318,7 @@ private theorem source_component_jet_joint (b : Bool) (k : ℕ)
   funext z
   rw [source_coefficient_formula, Homeomorph.apply_symm_apply]
 
-private theorem source_component_jet_smooth (b : Bool) (k : ℕ) (s : ℂ)
+theorem source_component_jet_smooth (b : Bool) (k : ℕ) (s : ℂ)
     (hs : s ∈ V) (i : Fin (H.atlas (level F ζ hζ C R P H U)).componentCount) :
     ContDiff ℝ (⊤ : ℕ∞) (fun y => iteratedDerivWithin k
       (fun z => KPContActualCutoffSmoothDescent.scalar F ζ hζ C R P H U
@@ -1395,7 +1395,7 @@ theorem smooth (k : ℕ) (s : ℂ) :
     exact ⟨(KPContSectorSmoothFramesSupport.smoothSections F ζ hζ (level F ζ hζ C R P H U) R P H).zero_mem,
       (KPContSectorSmoothFramesSupport.smoothSections F ζ hζ (level F ζ hζ C R P H U) R P H).zero_mem⟩
 
-private theorem source_scalar_component (w : SmoothSections F ζ hζ C R P H U)
+theorem source_scalar_component (w : SmoothSections F ζ hζ C R P H U)
     (i : Fin (H.atlas (level F ζ hζ C R P H U)).componentCount)
     (y : KPFiniteCuspAtlas.SymmetricSpace F) :
     KPContActualCutoffSmoothDescent.scalar F ζ hζ C R P H U w
@@ -1459,7 +1459,7 @@ theorem lineH_eq_source_jet (k : ℕ) (s : ℂ) (hs : s ∈ V) :
 def smoothG (k : ℕ) (s : ℂ) : SmoothSections F ζ hζ C R P H U :=
   ⟨_, (smooth F ζ hζ C R P H U ι f buffer χ source hι hf k s).1⟩
 
-private theorem actualE_component_jet_joint (hι : Function.Injective ι)
+theorem actualE_component_jet_joint (hι : Function.Injective ι)
     (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain) (k : ℕ)
     (i : Fin (H.atlas (level F ζ hζ C R P H U)).componentCount) :
     ContinuousOn (fun p : ℂ × KPFiniteCuspAtlas.SymmetricSpace F =>
@@ -1805,7 +1805,7 @@ private theorem defect_chart_holomorphic (k : ℕ)
 
 open _root_.DedekindZetaZeroFree.KPContActualCompactSectionL2Jets renaming finite_compact_lifts → KPContActualCompactSectionL2Jets.finite_compact_lifts
 
-private theorem component_compact_lifts (K : Set (Base F ζ hζ C R P H U)) (hK : IsCompact K) :
+theorem component_compact_lifts (K : Set (Base F ζ hζ C R P H U)) (hK : IsCompact K) :
     ∃ Z : Fin (H.atlas (level F ζ hζ C R P H U)).componentCount →
       Set (KPFiniteCuspAtlas.SymmetricSpace F), (∀ i, IsCompact (Z i)) ∧
       K ⊆ ⋃ i, (fun y => (H.atlas (level F ζ hζ C R P H U)).components ⟨i,Quotient.mk _ y⟩) '' Z i := by
@@ -1900,7 +1900,7 @@ private theorem lineGH_compact_square_bound (L : Set ℂ) (hL : IsCompact L) (hL
       _ = D := by simp [D]
   exact ⟨hi _ (fun x hx => (hbound s hs x hx).1), hi _ (fun x hx => (hbound s hs x hx).2)⟩
 
-private theorem smooth_coefficient_at
+theorem smooth_coefficient_at
     (w : Sections F ζ hζ C R P H U)
     (hw : KPContSectorSmoothFramesSupport.IsSmoothSections F ζ hζ (level F ζ hζ C R P H U) R P H w)
     {i : Fin (H.atlas (level F ζ hζ C R P H U)).componentCount}
@@ -1923,7 +1923,7 @@ private theorem smooth_coefficient_at
   simp only [KPContCotangentActualOverlap.LiftedChart.coefficient, hy]
   rfl
 
-private theorem metric_laplacian_sub {n : ℕ} {u v : HyperbolicChart.Space n → ℂ}
+theorem metric_laplacian_sub {n : ℕ} {u v : HyperbolicChart.Space n → ℂ}
     {x : HyperbolicChart.Space n}
     (hu : ContDiffAt ℝ (⊤ : ℕ∞) u x) (hv : ContDiffAt ℝ (⊤ : ℕ∞) v x) :
     HyperbolicChart.laplacian n (u - v) x =
@@ -2019,7 +2019,7 @@ def lineDelta (k : ℕ) (s : ℂ) : Sections F ζ hζ C R P H U :=
     (level F ζ hζ C R P H U) (H.atlas (level F ζ hζ C R P H U))
     (smoothG F ζ hζ C R P H U ι f buffer χ source hι hf k s)
 
-private theorem threeL2_rational_laplacian (γ : KPCuspArithmetic.PGL2 F)
+theorem threeL2_rational_laplacian (γ : KPCuspArithmetic.PGL2 F)
     (u : KPArch.Space (KPCuspLogShape.dimension F) → ℂ) (hu : ContDiff ℝ (⊤ : ℕ∞) u)
     (z : KPArch.Space (KPCuspLogShape.dimension F)) :
     KPContActualSphericalFlatStage.localLaplacian (KPCuspLogShape.dimension F)
@@ -2303,7 +2303,7 @@ theorem lineH_borelL2 (k : ℕ) (s : ℂ) :
   exact source.compact_collars.of_isClosed_subset isClosed_closure
     (lineH_support F ζ hζ C R P H U ι f buffer χ source hι hf k s)
 
-private theorem scalar_cusp_frame_identity
+theorem scalar_cusp_frame_identity
     (a : KPContFlatCuspIncomingEvaluation.Cusps F ζ hζ C R P H U)
     (e : KPContSectorScalarLineAlgebra.GenuineCoveredScalars F ζ hζ (level F ζ hζ C R P H U))
     (z : KPArch.Space (KPCuspLogShape.dimension F)) :
@@ -2326,7 +2326,7 @@ private theorem scalar_cusp_frame_identity
   exact hr.symm
 
 include hι hf in
-private theorem E_cusp_scalar (s : ℂ) (hs : s ∈ V)
+theorem E_cusp_scalar (s : ℂ) (hs : s ∈ V)
     (a : KPContFlatCuspIncomingEvaluation.Cusps F ζ hζ C R P H U)
     (p : KPCuspCharts.Coordinates F) :
     KPContActualChamberNormalSeries.E F ζ hζ U ι f s
@@ -2380,7 +2380,7 @@ theorem sectionNorm_cusp_scalar (k : ℕ) (s : ℂ) (hs : s ∈ V)
 
 open KPContActualChamberMeanZeroAdapter in
 include hι hf in
-private theorem scalar_correction_complement_eq (a : KPContFlatCuspIncomingEvaluation.Cusps F ζ hζ C R P H U)
+theorem scalar_correction_complement_eq (a : KPContFlatCuspIncomingEvaluation.Cusps F ζ hζ C R P H U)
     (s : ℂ) (hs : s ∈ V) (t : ℝ)
     (x : KPCuspCharts.Horizontal F) (b : KPCuspCharts.Shape F) (ε : rootsOfUnity 3 F)
     (ht : buffer.τ < t) :
@@ -2451,7 +2451,7 @@ private theorem scalar_correction_holomorphic
   simpa [KPContActualCutoffSmoothDescent.coveredPoint] using hh
 
 include hι hf in
-private theorem scalar_zero_holomorphic
+theorem scalar_zero_holomorphic
     (a : KPContFlatCuspIncomingEvaluation.Cusps F ζ hζ C R P H U)
     (p : KPCuspCharts.Coordinates F) (ht : T + 1 ≤ p.2) (hb : buffer.τ < p.2) :
     DifferentiableOn ℂ (fun w => KPContActualChamberOutgoingAdapter.zeroScalar
@@ -2680,7 +2680,7 @@ theorem lineG_cusp_split_germ (k : ℕ) (s : ℂ) (hs : s ∈ V)
     (by rw [hqt]; exact hz.1.le) (by rw [hqt]; exact hz.2)]
   rfl
 
-private theorem covariant_gradient_sum_le (n : ℕ) (g f h : KPArch.Space n → ℂ) (z : KPArch.Space n)
+theorem covariant_gradient_sum_le (n : ℕ) (g f h : KPArch.Space n → ℂ) (z : KPArch.Space n)
     (he : g =ᶠ[𝓝 z] f+h) (hf : DifferentiableAt ℝ f z) (hh : DifferentiableAt ℝ h z) :
     KPContActualChamberOutgoingAdapter.covariantNorm n 1 g z ^ 2 ≤
       2 * (KPContActualChamberOutgoingAdapter.covariantNorm n 1 f z ^ 2 +
@@ -3378,7 +3378,7 @@ theorem lineDelta_eq_rhs (k : ℕ) (s : ℂ) (hs : s ∈ V) :
     Submodule.coe_sub, Submodule.coe_smul, Submodule.coe_sum,
     Finset.sum_apply, Pi.smul_apply, smul_eq_mul, mul_assoc] using he
 
-private theorem laplacian_l2_from_rhs (k : ℕ) (s : ℂ)
+theorem laplacian_l2_from_rhs (k : ℕ) (s : ℂ)
     (he : lineDelta F ζ hζ C R P H U ι f buffer χ source hι hf k s =
       KPContActualChamberCasimirJets.lambda F s • lineG F ζ hζ C R P H U ι f buffer χ source hι hf k s -
       lineH F ζ hζ C R P H U ι f buffer χ source hι hf k s +
@@ -3429,7 +3429,7 @@ def DeltaJet (k : ℕ) (s : ℂ) : Sector F ζ hζ C R P H U :=
   KPContSectorLineL2Isometry.toSector F ζ hζ (level F ζ hζ C R P H U) R P H
     (borelDelta F ζ hζ C R P H U ι f buffer χ source hι hf k s)
 
-private theorem differential_class_from_rhs (k : ℕ) (s : ℂ)
+theorem differential_class_from_rhs (k : ℕ) (s : ℂ)
     (he : lineDelta F ζ hζ C R P H U ι f buffer χ source hι hf k s =
       KPContActualChamberCasimirJets.lambda F s • lineG F ζ hζ C R P H U ι f buffer χ source hι hf k s -
       lineH F ζ hζ C R P H U ι f buffer χ source hι hf k s +
@@ -3569,7 +3569,7 @@ theorem gradient_uniform_tails (L : Set ℂ) (hL : IsCompact L) (hLV : L ⊆ V) 
       have hh' := mul_le_mul_of_nonneg_right hh hε.le
       convert hh' using 1 <;> ring)
 
-private theorem tailworker_squared_add (u v : Sections F ζ hζ C R P H U)
+theorem tailworker_squared_add (u v : Sections F ζ hζ C R P H U)
     (x : Base F ζ hζ C R P H U) :
     KPContSectorLineL2Isometry.squaredNorm F ζ hζ (level F ζ hζ C R P H U) R P H (u+v) x ≤
       2 * KPContSectorLineL2Isometry.squaredNorm F ζ hζ (level F ζ hζ C R P H U) R P H u x +
@@ -3589,7 +3589,7 @@ private theorem tailworker_squared_add (u v : Sections F ζ hζ C R P H U)
         ENNReal.ofReal_mul (by norm_num : (0:ℝ) ≤ 2), ENNReal.ofReal_mul (by norm_num : (0:ℝ) ≤ 2)]
       norm_num
 
-private theorem tailworker_squared_smul (c : ℂ) (u : Sections F ζ hζ C R P H U)
+theorem tailworker_squared_smul (c : ℂ) (u : Sections F ζ hζ C R P H U)
     (x : Base F ζ hζ C R P H U) :
     KPContSectorLineL2Isometry.squaredNorm F ζ hζ (level F ζ hζ C R P H U) R P H (c • u) x =
       ENNReal.ofReal (‖c‖^2) * KPContSectorLineL2Isometry.squaredNorm F ζ hζ (level F ζ hζ C R P H U) R P H u x := by
@@ -3609,7 +3609,7 @@ private theorem tailworker_squared_smul (c : ℂ) (u : Sections F ζ hζ C R P H
   ∀ ε : ℝ, 0 < ε → ∃ A : ℝ, (H.atlas (level F ζ hζ C R P H U)).threshold < A ∧
     ∀ A', A ≤ A' → ∀ s ∈ L, tailworker_energy F ζ hζ C R P H U (u s) A' ≤ ENNReal.ofReal ε
 
-private theorem tailworker_energy_add (u v : Sections F ζ hζ C R P H U)
+theorem tailworker_energy_add (u v : Sections F ζ hζ C R P H U)
     (hu : ∀ i, Measurable (u i).val) (A : ℝ) :
     tailworker_energy F ζ hζ C R P H U (u+v) A ≤
       2 * tailworker_energy F ζ hζ C R P H U u A + 2 * tailworker_energy F ζ hζ C R P H U v A := by
@@ -3619,7 +3619,7 @@ private theorem tailworker_energy_add (u v : Sections F ζ hζ C R P H U)
       (level F ζ hζ C R P H U) R P H u hu).const_mul 2),
     lintegral_const_mul' _ _ (by norm_num), lintegral_const_mul' _ _ (by norm_num)]
 
-private theorem tailworker_decay_add (L : Set ℂ) (u v : ℂ → Sections F ζ hζ C R P H U)
+theorem tailworker_decay_add (L : Set ℂ) (u v : ℂ → Sections F ζ hζ C R P H U)
     (hu : ∀ s ∈ L, ∀ i, Measurable (u s i).val)
     (hdu : tailworker_decay F ζ hζ C R P H U L u)
     (hdv : tailworker_decay F ζ hζ C R P H U L v) :
@@ -3641,7 +3641,7 @@ private theorem tailworker_decay_add (L : Set ℂ) (u v : ℂ → Sections F ζ 
       congr 1
       ring
 
-private theorem tailworker_decay_smul (L : Set ℂ) (u : ℂ → Sections F ζ hζ C R P H U)
+theorem tailworker_decay_smul (L : Set ℂ) (u : ℂ → Sections F ζ hζ C R P H U)
     (c : ℂ → ℂ) (B : ℝ) (hB : 0 ≤ B) (hc : ∀ s ∈ L, ‖c s‖ ≤ B)
     (hdu : tailworker_decay F ζ hζ C R P H U L u) :
     tailworker_decay F ζ hζ C R P H U L (fun s => c s • u s) := by
@@ -3663,7 +3663,7 @@ private theorem tailworker_decay_smul (L : Set ℂ) (u : ℂ → Sections F ζ h
       have := mul_le_mul_of_nonneg_right hh hε.le
       convert this using 1 <;> ring
 
-private theorem tailworker_decay_zero (L : Set ℂ) :
+theorem tailworker_decay_zero (L : Set ℂ) :
     tailworker_decay F ζ hζ C R P H U L (fun _ => 0) := by
   intro ε hε
   refine ⟨(H.atlas (level F ζ hζ C R P H U)).threshold+1, by linarith, ?_⟩
@@ -3679,7 +3679,7 @@ private theorem tailworker_decay_zero (L : Set ℂ) :
   rw [hz]
   simp
 
-private theorem tailworker_decay_sum {ι' : Type*} (t : Finset ι')
+theorem tailworker_decay_sum {ι' : Type*} (t : Finset ι')
     (L : Set ℂ) (u : ι' → ℂ → Sections F ζ hζ C R P H U)
     (hu : ∀ i ∈ t, ∀ s ∈ L, ∀ a, Measurable (u i s a).val)
     (hd : ∀ i ∈ t, tailworker_decay F ζ hζ C R P H U L (u i)) :
@@ -3696,7 +3696,7 @@ private theorem tailworker_decay_sum {ι' : Type*} (t : Finset ι')
       (hu i (Finset.mem_insert_self _ _)) (hd i (Finset.mem_insert_self _ _))
       (ih (fun j hj => hu j (Finset.mem_insert_of_mem hj)) (fun j hj => hd j (Finset.mem_insert_of_mem hj)))
 
-private theorem tailworker_spectral_bound (L : Set ℂ) (hL : IsCompact L)
+theorem tailworker_spectral_bound (L : Set ℂ) (hL : IsCompact L)
     (hLV : L ⊆ V) (j : ℕ) :
     ∃ B : ℝ, 0 ≤ B ∧ ∀ s ∈ L, ‖KPContActualChamberCasimirJets.lambdaJet F j s‖ ≤ B := by
   have hh : ContDiff ℂ (⊤ : ℕ∞ω) (KPContActualChamberCasimirJets.lambda F) := by
@@ -3707,7 +3707,7 @@ private theorem tailworker_spectral_bound (L : Set ℂ) (hL : IsCompact L)
   obtain ⟨B,hB⟩ := hL.exists_bound_of_continuousOn (hc.mono hLV)
   exact ⟨max B 0, le_max_right _ _, fun s hs => (hB s hs).trans (le_max_left _ _)⟩
 
-private theorem tailworker_laplacian_decay (L : Set ℂ) (hL : IsCompact L) (hLV : L ⊆ V)
+theorem tailworker_laplacian_decay (L : Set ℂ) (hL : IsCompact L) (hLV : L ⊆ V)
     (k : ℕ)
     (he : ∀ s ∈ L,
       lineDelta F ζ hζ C R P H U ι f buffer χ source hι hf k s =
@@ -3781,7 +3781,7 @@ private theorem tailworker_laplacian_decay (L : Set ℂ) (hL : IsCompact L) (hLV
     exact _root_.neg_one_smul (R := ℂ) (lineH F ζ hζ C R P H U ι f buffer χ source hι hf k s)
   simpa only [v, u, hn, sub_eq_add_neg] using hbound A' hA' s hs
 
-private theorem laplacian_uniform_tails_from_rhs (L : Set ℂ) (hL : IsCompact L) (hLV : L ⊆ V)
+theorem laplacian_uniform_tails_from_rhs (L : Set ℂ) (hL : IsCompact L) (hLV : L ⊆ V)
     (k : ℕ)
     (he : ∀ s ∈ L,
       lineDelta F ζ hζ C R P H U ι f buffer χ source hι hf k s =
@@ -3813,7 +3813,7 @@ private theorem laplacian_uniform_tails_from_rhs (L : Set ℂ) (hL : IsCompact L
     show (2 : Fin 3) ≠ 1 by decide, ite_false, tailworker_decay, tailworker_energy] using
       tailworker_laplacian_decay F ζ hζ C R P H U ι f buffer χ source hι hf L hL hLV k he hdsource
 
-private theorem three_uniform_tails_from_laplacian (L : Set ℂ) (hL : IsCompact L)
+theorem three_uniform_tails_from_laplacian (L : Set ℂ) (hL : IsCompact L)
     (hLV : L ⊆ V) (k : ℕ)
     (hdelta : ∀ ε : ℝ, 0 < ε → ∃ A : ℝ,
       (H.atlas (level F ζ hζ C R P H U)).threshold < A ∧
@@ -3841,7 +3841,7 @@ private theorem three_uniform_tails_from_laplacian (L : Set ℂ) (hL : IsCompact
  def tailworker_bounded (L : Set ℂ) (u : ℂ → Sections F ζ hζ C R P H U) : Prop :=
   ∃ B : ℝ, 0 ≤ B ∧ ∀ s ∈ L, tailworker_total F ζ hζ C R P H U (u s) ≤ ENNReal.ofReal B
 
-private theorem tailworker_bounded_add (L : Set ℂ) (u v : ℂ → Sections F ζ hζ C R P H U)
+theorem tailworker_bounded_add (L : Set ℂ) (u v : ℂ → Sections F ζ hζ C R P H U)
     (hu : ∀ s ∈ L, ∀ i, Measurable (u s i).val)
     (hdu : tailworker_bounded F ζ hζ C R P H U L u)
     (hdv : tailworker_bounded F ζ hζ C R P H U L v) :
@@ -3866,7 +3866,7 @@ private theorem tailworker_bounded_add (L : Set ℂ) (u v : ℂ → Sections F �
         ENNReal.ofReal_mul (by norm_num : (0:ℝ) ≤ 2), ENNReal.ofReal_mul (by norm_num : (0:ℝ) ≤ 2)]
       norm_num
 
-private theorem tailworker_bounded_smul (L : Set ℂ) (u : ℂ → Sections F ζ hζ C R P H U)
+theorem tailworker_bounded_smul (L : Set ℂ) (u : ℂ → Sections F ζ hζ C R P H U)
     (c : ℂ → ℂ) (B : ℝ) (hB : 0 ≤ B) (hc : ∀ s ∈ L, ‖c s‖ ≤ B)
     (hdu : tailworker_bounded F ζ hζ C R P H U L u) :
     tailworker_bounded F ζ hζ C R P H U L (fun s => c s • u s) := by
@@ -3882,7 +3882,7 @@ private theorem tailworker_bounded_smul (L : Set ℂ) (u : ℂ → Sections F ζ
         (hbound s hs) (by positivity) (by positivity)
     _ = ENNReal.ofReal (B^2*A) := (ENNReal.ofReal_mul (sq_nonneg _)).symm
 
-private theorem tailworker_bounded_sum {ι' : Type*} (t : Finset ι')
+theorem tailworker_bounded_sum {ι' : Type*} (t : Finset ι')
     (L : Set ℂ) (u : ι' → ℂ → Sections F ζ hζ C R P H U)
     (hu : ∀ i ∈ t, ∀ s ∈ L, ∀ a, Measurable (u i s a).val)
     (hd : ∀ i ∈ t, tailworker_bounded F ζ hζ C R P H U L (u i)) :
@@ -3907,7 +3907,7 @@ private theorem tailworker_bounded_sum {ι' : Type*} (t : Finset ι')
       (hu i (Finset.mem_insert_self _ _)) (hd i (Finset.mem_insert_self _ _))
       (ih (fun j hj => hu j (Finset.mem_insert_of_mem hj)) (fun j hj => hd j (Finset.mem_insert_of_mem hj)))
 
-private theorem tailworker_laplacian_bounded (L : Set ℂ) (hL : IsCompact L) (hLV : L ⊆ V)
+theorem tailworker_laplacian_bounded (L : Set ℂ) (hL : IsCompact L) (hLV : L ⊆ V)
     (k : ℕ)
     (he : ∀ s ∈ L,
       lineDelta F ζ hζ C R P H U ι f buffer χ source hι hf k s =
@@ -4103,7 +4103,7 @@ private theorem gradient_global_square_bound (L : Set ℂ) (hL : IsCompact L) (h
     _ ≤ ENNReal.ofReal B + ENNReal.ofReal (N * E) := add_le_add (hcore s hs) htail
     _ = ENNReal.ofReal (B + N * E) := (ENNReal.ofReal_add hB (by positivity)).symm
 
-private theorem three_uniform_bounds_from_components (L : Set ℂ) (k : ℕ)
+theorem three_uniform_bounds_from_components (L : Set ℂ) (k : ℕ)
     (hv : ∃ B : ℝ, 0 ≤ B ∧ ∀ s ∈ L,
       squareIntegral F ζ hζ C R P H U ι f buffer χ source hι hf 0 k s ≤ ENNReal.ofReal B)
     (hg : ∃ B : ℝ, 0 ≤ B ∧ ∀ s ∈ L,

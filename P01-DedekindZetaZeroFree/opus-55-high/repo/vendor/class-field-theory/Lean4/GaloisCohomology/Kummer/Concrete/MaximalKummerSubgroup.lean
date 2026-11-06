@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # The maximal Kummer subgroup
 
@@ -57,7 +53,7 @@ theorem restrictedNthPowersSubgroup_maximal_eq (n : ℕ+) :
 
 /-- The radical quotient for the maximal Kummer subgroup is canonically the
 power-class group `Kˣ / Kˣⁿ`. -/
-noncomputable def maximalRestrictedRadicalQuotientEquiv (n : ℕ+) :
+def maximalRestrictedRadicalQuotientEquiv (n : ℕ+) :
     Kˣ ⧸ (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range ≃*
       RestrictedRadicalQuotient n (maximalKummerSubgroup K n) :=
   ((LocalFieldTheory.nthPowerQuotientEquivOfMulEquiv
@@ -70,7 +66,3 @@ noncomputable def maximalRestrictedRadicalQuotientEquiv (n : ℕ+) :
           (restrictedNthPowersSubgroup_maximal_eq K n).symm))).trans
     (restrictedRadicalQuotientMulEquiv
       n (maximalKummerSubgroup K n)).symm
-
-end KummerTheory
-
-end

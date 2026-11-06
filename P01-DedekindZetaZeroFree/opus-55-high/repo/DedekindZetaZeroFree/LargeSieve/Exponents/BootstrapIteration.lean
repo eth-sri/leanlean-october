@@ -18,12 +18,10 @@ theorem bootstrapExponent_bounds (n : ℕ) :
     1 < bootstrapExponent n ∧ bootstrapExponent n ≤ 2 := by
   have hpos : (0 : ℝ) < (n : ℝ) + 1 := by positivity
   have hle : (1 : ℝ) ≤ (n : ℝ) + 1 := by
-    have : (0 : ℝ) ≤ n := Nat.cast_nonneg n
-    linarith
+    simp
   constructor
   · rw [bootstrapExponent]
-    have : 0 < 1 / ((n : ℝ) + 1) := one_div_pos.mpr hpos
-    linarith
+    simp_all
   · rw [bootstrapExponent]
     have : 1 / ((n : ℝ) + 1) ≤ 1 := by
       rw [div_le_one hpos]; linarith
@@ -59,5 +57,3 @@ theorem hasExponent_one_of_improvement (B : ℝ → ℝ → ℝ)
   refine ⟨bootstrapExponent n, ?_, hInd n⟩
   rw [bootstrapExponent]
   linarith
-
-end DedekindZetaZeroFree.LargeSieve

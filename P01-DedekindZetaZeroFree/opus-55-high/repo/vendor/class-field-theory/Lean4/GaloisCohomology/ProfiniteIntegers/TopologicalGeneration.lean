@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 namespace ClassFormation
 
 /-!
@@ -84,17 +80,12 @@ theorem closedSubgroupGeneratedMap_topologicallyGenerates {A : Type v}
       ((Subtype.val : ↥(K : Subgroup G) → G) ''
           ((L : Subgroup ↥(K : Subgroup G)) : Set ↥(K : Subgroup G))) =
         ((Subgroup.map (K : Subgroup G).subtype L : Subgroup G) : Set G) := by
-    ext y
-    constructor
-    · rintro ⟨z, hz, rfl⟩
-      exact ⟨z, hz, rfl⟩
-    · rintro ⟨z, hz, hzy⟩
-      exact ⟨z, hz, hzy⟩
+    rfl
   rw [topologicallyGenerates_iff_dense, dense_iff_closure_eq]
   ext y
   constructor
   · intro _
-    simp only [mem_univ]
+    simp
   · intro _
     change y ∈ closure ((L : Subgroup K) : Set K)
     rw [closure_subtype]
@@ -159,8 +150,7 @@ theorem topologicallyGenerates_singleton_of_denseRange_mint
     have hz : f n ∈ Subgroup.zpowers g := by
       have hEq : f n = g ^ n.toAdd := by
         simpa [g] using (MonoidHom.apply_mint (f := f) (n := n))
-      rw [hEq]
-      exact (Subgroup.zpowers g).zpow_mem (Subgroup.mem_zpowers g) n.toAdd
+      simp_all
     exact Subgroup.le_topologicalClosure _
       (by simpa [g, Subgroup.zpowers_eq_closure] using hz)
   have hclosure :
@@ -173,7 +163,7 @@ theorem topologicallyGenerates_singleton_of_denseRange_mint
   intro x _hx
   have hx' : x ∈ closure (Set.range f) := by
     rw [hf.closure_range]
-    simp only [mem_univ]
+    simp
   exact hclosure hx'
 
 /-- Topological generation pushes forward along a continuous surjective
@@ -187,8 +177,8 @@ theorem topologicallyGenerates_image_of_continuousSurjective
       (Subgroup.closure X).map f = Subgroup.closure (f '' X) := by
     simpa using MonoidHom.map_closure f X
   have htop :
-      ((Subgroup.closure X).map f).topologicalClosure = ⊤ := by
-    exact DenseRange.topologicalClosure_map_subgroup
+      ((Subgroup.closure X).map f).topologicalClosure = ⊤ := 
+    DenseRange.topologicalClosure_map_subgroup
       (f := f) (hf := hf) (hf' := hfsurj.denseRange)
       (by simpa [TopologicallyGenerates] using hX)
   rw [TopologicallyGenerates, ← hmap]
@@ -203,7 +193,3 @@ theorem topologicallyGenerates_quotient_image
   topologicallyGenerates_image_of_continuousSurjective
     (G := G) (H := G ⧸ N) (QuotientGroup.mk' N)
     continuous_quotient_mk' (QuotientGroup.mk'_surjective N) hX
-
-end
-
-end ClassFormation

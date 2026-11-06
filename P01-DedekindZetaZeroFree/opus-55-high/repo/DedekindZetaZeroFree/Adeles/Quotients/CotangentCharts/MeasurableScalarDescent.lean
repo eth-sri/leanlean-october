@@ -32,8 +32,7 @@ def coordHomeomorph : M F ≃ₜ KPCuspGenuineMonodromy.SymmetricSpace F where
     apply (CotangentLogCoframe.A (d F)).symm.continuous.comp
     exact continuous_pi fun k => continuous_apply _
 
-theorem omega_open (a : ShrunkChart F ζ hζ U R P H) : IsOpen (omega a) :=
-  a.domain_open.preimage (coordHomeomorph (F := F) (ζ := ζ) (hζ := hζ)).continuous
+theorem omega_open (a : ShrunkChart F ζ hζ U R P H) : IsOpen (omega a) := by apply DedekindZetaZeroFree.KPContCotangentOverlapRationalBranches.omega_open <;> assumption
 
 def chartHomeomorph (a : ShrunkChart F ζ hζ U R P H) : omega a ≃ₜ a.domain :=
   (coordHomeomorph (F := F) (ζ := ζ) (hζ := hζ)).subtype (by
@@ -126,17 +125,10 @@ theorem ae_cover_iff (cover : CountableCover F ζ hζ U R P H)
 
  theorem chart_omega (a b : ShrunkChart F ζ hζ U R P H)
     (h : a.component = b.component) :
-    (targetChart a b h).omega = (isotropyChart b).omega := by
-  rcases a with ⟨i,ca,oa,da,dao,dac,das,dai⟩
-  rcases b with ⟨j,cb,ob,db,dbo,dbc,dbs,dbi⟩
-  dsimp at h
-  subst j
-  rfl
+    (targetChart a b h).omega = (isotropyChart b).omega := by apply DedekindZetaZeroFree.KPContCotangentOverlapRationalBranches.chart_omega <;> assumption
 
  theorem omega_subset (a : ShrunkChart F ζ hζ U R P H) :
-    omega a ⊆ (isotropyChart a).omega := by
-  intro x hx
-  exact a.closure_subset (subset_closure hx)
+    omega a ⊆ (isotropyChart a).omega := by apply DedekindZetaZeroFree.KPContCotangentOverlapRationalBranches.omega_subset <;> assumption
 
  def rationalBranch (a b : ShrunkChart F ζ hζ U R P H)
     (h : a.component = b.component)
@@ -165,7 +157,7 @@ theorem ae_cover_iff (cover : CountableCover F ζ hζ U R P H)
     target_shrinking := fun _ hx => hx.2
     target_larger := fun _ hx => omega_subset b hx.2 }
 
-private theorem equal_component (a b : ShrunkChart F ζ hζ U R P H)
+theorem equal_component (a b : ShrunkChart F ζ hζ U R P H)
     (x : omega a) (y : omega b) (h : q a x.val = q b y.val) : a.component = b.component := by
   have hh : (H.atlas U).components
       ⟨a.component, KPCuspSiegel.projection F
@@ -178,7 +170,7 @@ private theorem equal_component (a b : ShrunkChart F ζ hζ U R P H)
     simpa only [(H.atlas U).components_formula, KPContCotangentOverlapRationalBranches.q] using h
   exact congrArg Sigma.fst ((H.atlas U).components.injective hh)
 
-private theorem connecting_branch (a b : ShrunkChart F ζ hζ U R P H)
+theorem connecting_branch (a b : ShrunkChart F ζ hζ U R P H)
     (x : omega a) (y : omega b) (h : q a x.val = q b y.val) :
     ∃ e : ActualBranch a b, ∃ hx : x.val ∈ e.arrow.domain, e.arrow.psi x.val = y.val := by
   have hc := equal_component a b x y h

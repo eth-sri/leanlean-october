@@ -87,7 +87,7 @@ private theorem idealSymbol_eq_residue (A : SArithmeticData F) (G : AllowedRecip
     idealSymbol A σ d (G.generator c) = σ (A.sexticResidue d r) := by
   have hr0 : r ≠ 0 := by
     intro h
-    exact (G.generator c).ne_zero (hr.trans (by simp [h]))
+    simp_all
   have he : ThetaReflectionData.rowUnit A ⟨r, hr0⟩ = G.generator c :=
     Units.ext hr.symm
   have h := (NormalizedProbe.exteriorSexticRowCharacter_eq_sexticResiduePowerChar A σ d r).trans
@@ -104,7 +104,7 @@ private theorem idealSymbol_eq_residue (A : SArithmeticData F) (G : AllowedRecip
   rw [hexp, pow_one]
   rfl
 
-private theorem chosen_residue_eq
+theorem chosen_residue_eq
     {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
     (R : PrincipalMellin.ActualRecipe S η) (c d : R.A.Exterior)
     (r : R.A.R) (hgen : R.A.Generates c r)
@@ -121,8 +121,7 @@ private theorem chosen_residue_eq
       (R.A.extendIdeal c : FractionalIdeal R.A.R⁰ F) (R.probe.allowed.generator c) := by
     refine ⟨?_, hallow⟩
     rw [← hgen.2, FractionalIdeal.coeIdeal_span_singleton]
-    change FractionalIdeal.spanSingleton R.A.R⁰ (r : F) = _
-    rw [← hr]
+    simp_all
   obtain ⟨u, hu, he⟩ := C.allowed_unique _ _ _ a.isAllowedGenerator hG
   change u ^ 6 = a.radical / R.probe.allowed.generator c at he
   have heq : a.integral = r * (R.A.unitEquiv ⟨u, hu⟩ : R.A.R) ^ 6 := by
@@ -170,5 +169,3 @@ theorem actual_quadratic_family_exists
   · have hzero := KummerExteriorValues.cubicSexticValue_shared_zero
       R.A R.σ R.target R.traceBad (recipeContext R) d.val c.val hcop
     rw [hzero.2, quadraticPairing, if_neg hcop]
-
-end DedekindZetaZeroFree.PrincipalMellinGrowth

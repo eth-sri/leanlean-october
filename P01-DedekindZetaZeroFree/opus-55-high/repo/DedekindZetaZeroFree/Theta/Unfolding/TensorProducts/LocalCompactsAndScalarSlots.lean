@@ -18,7 +18,7 @@ def integerCompacts (q : KPFinitePlace F) :
   isCompact' := IsNonarchimedeanLocalField.isCompact_closedBall (q.adicCompletion F) 1
   interior_nonempty' := by
     rw [(valuation (q.adicCompletion F)).isOpen_integer.interior_eq]
-    exact ⟨0, by simp⟩
+    simp
 
 def localData (R : PrincipalMellin.ActualRecipe S η) (q : KPFinitePlace F) :
     MomentSources.LocalImageData R q where
@@ -42,7 +42,7 @@ theorem bad_exact (R : PrincipalMellin.ActualRecipe S η) (p : KPHilbert.Place F
     · exact Or.inr ⟨q, he.symm, hq⟩
   · rintro (⟨w, hw⟩ | ⟨q, he, hq⟩)
     · exact Or.inl ⟨w, hw.symm⟩
-    · exact Or.inr ⟨q, hq, he.symm⟩
+    simp_all
 
 theorem finiteSet_nonempty (A : SArithmeticData F) : A.Sf.Nonempty := by
   let p : Ideal ℤ := Ideal.span {(2 : ℤ)}
@@ -57,13 +57,9 @@ theorem finiteSet_nonempty (A : SArithmeticData F) : A.Sf.Nonempty := by
   have h2 : (2 : 𝓞 F) ∈ v.asIdeal := by
     change (2 : 𝓞 F) ∈ P
     simpa using (Ideal.mem_of_liesOver P p (2 : ℤ)).mp
-      (Ideal.subset_span (by simp [p]))
+      (Ideal.subset_span (by simp))
   refine ⟨v, A.above_six v ?_⟩
   convert P.mul_mem_left (3 : 𝓞 F) h2 using 1 <;> norm_num [v]
 
 def scalarSlot (R : PrincipalMellin.ActualRecipe S η) : R.A.Sf :=
   ⟨(finiteSet_nonempty R.A).choose, (finiteSet_nonempty R.A).choose_spec⟩
-
-end DedekindZetaZeroFree.FourierContinuation.TensorSeedSource
-
-end

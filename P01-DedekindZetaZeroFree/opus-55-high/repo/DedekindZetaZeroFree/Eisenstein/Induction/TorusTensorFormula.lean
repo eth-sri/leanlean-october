@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.Arithmetic.ResidueSymbols.Cubic.ReciprocityAn
 
 @[expose] public section
 
-noncomputable section
 open scoped Classical NumberField NNReal BigOperators
 set_option maxHeartbeats 1600000
 set_option backward.isDefEq.respectTransparency false
@@ -15,7 +14,7 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
 variable (P : KPGlobalTorusFiniteStages.CompatibleModelData F ζ hζ)
 variable (C : KPGlobalTorusFiniteStages.LocalFiberData F ζ hζ P)
 
-private theorem rawProduct_arch_only (x : rawB F ζ hζ P.localData)
+theorem rawProduct_arch_only (x : rawB F ζ hζ P.localData)
     (hf : ∀ q, x.val (Sum.inr q) = 1) :
     rawProduct F ζ hζ P.localData P.adjustment x =
       ∏ w, KPGlobalCenterRationalCharacter.localValue F ζ hζ (Sum.inl w) (x.val (Sum.inl w)) := by
@@ -37,16 +36,12 @@ private theorem rawProduct_arch_only (x : rawB F ζ hζ P.localData)
       exact localOmega_raw_formula F ζ hζ (Sum.inl w) z _ hv.symm
     | inr q =>
       have hc : rawCoordinate F ζ hζ P.localData x (Sum.inr q) = 1 := by
-        apply Subtype.ext
-        apply Subtype.ext
-        rw [hv, hf q, map_one]
-        rfl
+        simp_all
       rw [hc]
       simp only [adjustedLocalValue, map_one, one_mul]
       convert map_one (P.adjustment.chi (Sum.inr q)) using 1
       congr 1
-      apply Subtype.ext
-      exact map_one _
+      simp
   unfold rawProduct
   simp_rw [he]
   let S : Finset (KPHilbert.Place F) := Finset.univ.image Sum.inl
@@ -62,8 +57,8 @@ theorem lambdaB_arch_only
     (hf : ∀ q, x.val (Sum.inr q) = 1)
     (hx : scalarQuotient F ζ hζ (amalgamation F ζ hζ x.val) = b.val.val) :
     lambdaB F ζ hζ P.localData P.adjustment b =
-      ∏ w, KPGlobalCenterRationalCharacter.localValue F ζ hζ (Sum.inl w) (x.val (Sum.inl w)) := by
-  exact (lambdaB_raw_formula F ζ hζ P.localData P.adjustment b x hx).trans
+      ∏ w, KPGlobalCenterRationalCharacter.localValue F ζ hζ (Sum.inl w) (x.val (Sum.inl w)) := 
+  (lambdaB_raw_formula F ζ hζ P.localData P.adjustment b x hx).trans
     (rawProduct_arch_only F ζ hζ P x hf)
 
 private theorem norm_phase (ε : rootsOfUnity 3 F) :
@@ -104,7 +99,7 @@ private theorem productUnit_arch_only
     simp
   have hp (u : (ℝ≥0)ˣ) : ‖(KPGlobalCenterRationalCharacter.positiveComplex u : ℂ)‖ = ((u : ℝ≥0) : ℝ) := by
     change ‖(((u : ℝ≥0) : ℝ) : ℂ)‖ = _
-    rw [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (by positivity)]
+    simp
   have hn := lambdaB_norm F ζ hζ P.localData P.adjustment b
   rw [hl, Units.val_mul, norm_mul, hnφ, one_mul, hp] at hn
   have heq : pAll = KPGlobalCenterRationalCharacter.nu F ζ hζ b.val := by
@@ -155,7 +150,7 @@ theorem raw_image_torus (x : RestrictedCover F ζ hζ)
     · funext w; exact (hd (Sum.inl w)).2
     · apply RestrictedProduct.ext; intro q; exact (hd (Sum.inr q)).2
 
-private theorem arch_mem_product (raw : RestrictedCover F ζ hζ)
+theorem arch_mem_product (raw : RestrictedCover F ζ hζ)
     (e : KPGlobalTorusFunctionData.E F ζ hζ)
     (he : scalarQuotient F ζ hζ (amalgamation F ζ hζ raw) = e.val)
     (hf : ∀ q, raw (Sum.inr q) = 1) : e ∈ B F ζ hζ P.localData := by
@@ -168,9 +163,7 @@ private theorem arch_mem_product (raw : RestrictedCover F ζ hζ)
       (KPGlobalCubicIdelePairing.ideleEval F (Sum.inr q) (KPGlobalTorusFunctionData.p F ζ hζ e)) ∈ _
     obtain ⟨h, hr⟩ := KPGlobalCenterRationalCharacterModulus.raw_torus_local_ratio F ζ hζ raw e he (Sum.inr q)
     have hval : KPGlobalCubicIdelePairing.ideleEval F (Sum.inr q) (KPGlobalTorusFunctionData.p F ζ hζ e) = 1 := by
-      apply Units.ext
-      rw [← hr, Units.val_mul, Units.val_inv_eq_inv_val, IsUnit.unit_spec, IsUnit.unit_spec, hf q]
-      simp
+      simp_all
     rw [hval, map_one]
     exact Subgroup.one_mem _
 
@@ -231,6 +224,3 @@ theorem finiteTensorRealization_full_raw_formula
   rw [KPGlobalTorusFiniteStages.finiteTensorRealization_formula F ζ hζ P C S hS f xf t ef
     (fun _ => rfl) ht rfl]
   rfl
-end DedekindZetaZeroFree.EisensteinReferenceSections.FullTorusFormula
-
-end

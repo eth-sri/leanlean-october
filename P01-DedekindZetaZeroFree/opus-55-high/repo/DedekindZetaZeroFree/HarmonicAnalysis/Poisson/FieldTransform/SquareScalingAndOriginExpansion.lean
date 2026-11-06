@@ -5,28 +5,25 @@ public import DedekindZetaZeroFree.HarmonicAnalysis.Poisson.FieldTransform.Melli
 
 @[expose] public section
 
-noncomputable section
 open scoped Classical ContDiff
 
 namespace DedekindZetaZeroFree.LargeSieve
 
-private lemma deriv_comp_sq (F : ℝ → ℂ) (x : ℝ) (hF : DifferentiableAt ℝ F (x ^ 2)) :
+lemma deriv_comp_sq (F : ℝ → ℂ) (x : ℝ) (hF : DifferentiableAt ℝ F (x ^ 2)) :
     deriv (fun y : ℝ => F (y ^ 2)) x = deriv F (x ^ 2) * (2 * x) := by
   have hsq : HasFDerivAt (fun y : ℝ => y ^ 2) (fderiv ℝ (fun y : ℝ => y ^ 2) x) x :=
     (differentiableAt_pow 2).hasFDerivAt
   have hF' : HasFDerivAt F (fderiv ℝ F (x ^ 2)) (x ^ 2) := hF.hasFDerivAt
   have hcomp : HasFDerivAt (fun y : ℝ => F (y ^ 2))
       ((fderiv ℝ F (x ^ 2)).comp (fderiv ℝ (fun y : ℝ => y ^ 2) x)) x :=
-    HasFDerivAt.comp (f := fun y : ℝ => y ^ 2) x hF' hsq
+    by fun_prop
   have h1 : deriv (fun y : ℝ => F (y ^ 2)) x =
       (fderiv ℝ F (x ^ 2)) (deriv (fun y : ℝ => y ^ 2) x) := by
     show (fderiv ℝ (fun y : ℝ => F (y ^ 2)) x : ℝ → ℂ) 1 = _
     rw [hcomp.fderiv]
-    simp only [ContinuousLinearMap.comp_apply]
     rfl
   have hsq' : deriv (fun y : ℝ => y ^ 2) x = 2 * x := by
-    rw [deriv_pow_field 2]
-    norm_num
+    simp
   rw [h1, hsq', fderiv_eq_smul_deriv]
   simp only [Complex.real_smul]
   push_cast
@@ -62,7 +59,7 @@ private lemma contDiffOn_eval_log (P : Polynomial ℂ) :
   have hsum : ContDiffOn ℝ ∞
       (fun y : ℝ => ∑ n ∈ P.support, P.coeff n * ((Real.log y : ℝ) : ℂ) ^ n)
       (Set.Ioi 0) :=
-    ContDiffOn.sum (fun n _ => contDiffOn_const.mul (hq.pow n))
+    by fun_prop
   refine hsum.congr (fun y _ => ?_)
   rw [Polynomial.eval_eq_sum, Polynomial.sum_def]
 
@@ -78,7 +75,7 @@ private lemma S_mono (b : ℝ) (hb : 0 < b) (N : ℕ) (h : ℝ → ℂ) (hh : Co
     ⟨0, ⟨le_rfl, le_of_lt hb⟩, rfl⟩
   exact le_trans (norm_nonneg _) (le_csSup hbd hmem)
 
-private lemma eulerIter_eqOn_of_eqOn {f g : ℝ → ℂ}
+lemma eulerIter_eqOn_of_eqOn {f g : ℝ → ℂ}
     (h : Set.EqOn f g (Set.Ioi 0)) (j : ℕ) :
     Set.EqOn (Vendor.EulerIter j f) (Vendor.EulerIter j g) (Set.Ioi 0) := by
   induction j with
@@ -94,7 +91,7 @@ private lemma eulerIter_comp_sq {F : ℝ → ℂ} (hF : ContDiffOn ℝ ∞ F (Se
         (2 : ℂ) ^ j * Vendor.EulerIter j F (x ^ 2) := by
   intro j
   induction j with
-  | zero => intro x hx; simp
+  | zero => simp
   | succ j ih =>
     intro x hx
     have hev : (Vendor.EulerIter j (fun z : ℝ => F (z ^ 2))) =ᶠ[nhds x]
@@ -129,9 +126,7 @@ theorem EulerIter_fieldTransform_comp_sq_sub_originPolynomial_eq
       (fun y : ℝ => fieldTransform D r h (y ^ 2) -
         Polynomial.eval (Real.log (y ^ 2) : ℂ) (originPolynomial D r h)) (Set.Ioi 0) := by
     intro y hy
-    have hlog : ((2 * Real.log y : ℝ) : ℂ) = (Real.log (y ^ 2) : ℂ) := by
-      rw [Real.log_pow]; push_cast; ring
-    simp only [hlog]
+    simp
   rw [eulerIter_eqOn_of_eqOn hEqOn j hx]
   exact eulerIter_comp_sq hR j x hx
 

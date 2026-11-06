@@ -31,14 +31,14 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
       funext x
       by_cases h : x=w
       · subst x; simp
-      · simp [Pi.mulSingle_apply, Sum.inl_injective.ne h, h]
+      simp_all
     rw [he]
     rw [List.prod_map_eq_pow_single w _ (by intro x hx _; simp [hx])]
     rw [List.nodup_iff_count_le_one.mp (Finset.nodup_toList _) w |>.antisymm
       (Nat.succ_le_of_lt (List.count_pos_iff.mpr (by simp)))]
     simp
   | inr q =>
-    simp [ha, localToRestricted, Function.comp_def, RestrictedProduct.coe_mulSingle_apply, Pi.mulSingle_apply]
+    simp [ha, localToRestricted, Function.comp_def, RestrictedProduct.coe_mulSingle_apply]
 def sectionTuple (r : InfinitePlace F → Matrix.GeneralLinearGroup (Fin 2) ℂ) :
     RestrictedCover F ζ hζ :=
   ⟨fun v => match v with
@@ -82,9 +82,7 @@ private theorem mapped_diagonalUnit (w : InfinitePlace F) (x : ℂ) :
           (KPHilbert.infinite_isComplex F ζ hζ w)).symm x)
         (by
           intro hx
-          apply h
-          simpa using congrArg (InfinitePlace.Completion.ringEquivComplexOfIsComplex
-            (KPHilbert.infinite_isComplex F ζ hζ w)) hx)) := by
+          simp_all)) := by
   by_cases hx : x=0
   · simp [diagonalUnit, hx]
   · simp only [diagonalUnit, hx, ↓reduceDIte]
@@ -104,12 +102,11 @@ theorem sectionTuple_right (x : KPGlobalResidualConstruction.ArchCoordinates F) 
     congr 1
     · congr 1
       · simp [complexSectionHom, KPStandardLocalRootLifts.N, KPLocalCover.sectionMap]
-        apply Matrix.GeneralLinearGroup.ext; intro i j; fin_cases i <;> fin_cases j <;> simp [Matrix.GeneralLinearGroup.map]
+        apply Matrix.GeneralLinearGroup.ext; simp
       · simp [complexSectionHom, KPStandardLocalRootLifts.A, KPLocalCover.sectionMap]
         rw [← mapped_diagonalUnit F ζ hζ w (x w 1)]
         apply Matrix.GeneralLinearGroup.ext
-        intro i j
-        fin_cases i <;> fin_cases j <;> simp [Matrix.GeneralLinearGroup.map]
+        simp
     · simp [complexSectionHom, KPStandardLocalRootLifts.LowerN, KPLocalCover.sectionMap]
       apply Matrix.GeneralLinearGroup.ext; intro i j; fin_cases i <;> fin_cases j <;> simp [Matrix.GeneralLinearGroup.map, KPStandardLocalRootLifts.lowerN]
 theorem sectionTuple_left (x : KPGlobalTorusBorelTwistCompatibility.GroupArch F) :
@@ -133,12 +130,10 @@ theorem sectionTuple_left (x : KPGlobalTorusBorelTwistCompatibility.GroupArch F)
       · simp [complexSectionHom, KPStandardLocalRootLifts.A, KPLocalCover.sectionMap]
         rw [← mapped_diagonalUnit F ζ hζ w (x w 1)]
         apply Matrix.GeneralLinearGroup.ext
-        intro i j
-        fin_cases i <;> fin_cases j <;> simp [Matrix.GeneralLinearGroup.map]
+        simp
     · simp [complexSectionHom, KPStandardLocalRootLifts.N, KPLocalCover.sectionMap]
       apply Matrix.GeneralLinearGroup.ext
-      intro i j
-      fin_cases i <;> fin_cases j <;> simp [Matrix.GeneralLinearGroup.map]
+      simp
 theorem right_insertion (x : KPGlobalResidualConstruction.ArchCoordinates F) :
     KPGlobalResidualConstruction.archChart F ζ hζ x =
       KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
@@ -180,15 +175,15 @@ theorem rightCoordinates_reconstruct (M : Matrix.GeneralLinearGroup (Fin 2) ℂ)
     all_goals simp [rightCoordinates, Matrix.det_fin_two, Matrix.mul_apply, Fin.sum_univ_two,
         Matrix.scalar]
     all_goals field_simp <;> ring
-  rw [he, map_mul, Matrix.ProjGenLinGroup.mk_scalar, mul_one]
+  simp_all
  def transitionMatrix (a : InfinitePlace F → Matrix.GeneralLinearGroup (Fin 2) ℂ)
     (z₀ z : KPGlobalTorusBorelTwistCompatibility.GroupArch F)
     (w : InfinitePlace F) : Matrix.GeneralLinearGroup (Fin 2) ℂ :=
   (a w)⁻¹ * (leftMatrix (z₀ w))⁻¹ * leftMatrix (z w) * a w
-private theorem transitionMatrix_base (a : InfinitePlace F → Matrix.GeneralLinearGroup (Fin 2) ℂ)
+theorem transitionMatrix_base (a : InfinitePlace F → Matrix.GeneralLinearGroup (Fin 2) ℂ)
     (z₀ : KPGlobalTorusBorelTwistCompatibility.GroupArch F) (w : InfinitePlace F) :
     transitionMatrix F a z₀ z₀ w = 1 := by unfold transitionMatrix; group
-private theorem transitionMatrix_smooth
+theorem transitionMatrix_smooth
     (a : InfinitePlace F → Matrix.GeneralLinearGroup (Fin 2) ℂ)
     (z₀ : KPGlobalTorusBorelTwistCompatibility.GroupArch F) (w : InfinitePlace F) :
     ContDiffOn ℝ (⊤ : ℕ∞) (fun z => (transitionMatrix F a z₀ z w).val)
@@ -206,7 +201,7 @@ private theorem transitionMatrix_smooth
     intro z hz
     simp only [transitionMatrix, Units.val_mul, leftMatrix_val _ (hz w)]
     rfl)
-private theorem geometric_coordinates
+theorem geometric_coordinates
     (a : InfinitePlace F → Matrix.GeneralLinearGroup (Fin 2) ℂ)
     (z₀ : KPGlobalTorusBorelTwistCompatibility.GroupArch F)
     (hz₀ : z₀ ∈ KPGlobalTorusBorelTwistCompatibility.groupArchDomain F) :
@@ -236,7 +231,7 @@ private theorem geometric_coordinates
     ext z
     simp only [O, Set.mem_iInter, Set.mem_inter_iff, Set.mem_setOf_eq]
     constructor
-    · intro hz w; exact ⟨hz.1, hz.2 w⟩
+    · simp_all
     · intro hz; exact ⟨(hz (Classical.choice inferInstance)).1, fun w => (hz w).2⟩
   refine ⟨O, q, hO, ?_, ?_, ?_, ?_⟩
   · refine ⟨hz₀, ?_⟩
@@ -248,7 +243,7 @@ private theorem geometric_coordinates
     have hentry (i j : Fin 2) := (he w i j).mono (show O ⊆ D from fun _ hz => hz.1)
     have hdet : ContDiffOn ℝ (⊤ : ℕ∞) (fun z => (m z w).val.det) O := by
       simp only [Matrix.det_fin_two]
-      exact ((hentry 0 0).mul (hentry 1 1)).sub ((hentry 0 1).mul (hentry 1 0))
+      fun_prop
     fin_cases i <;> simp [q, rightCoordinates]
     · simpa only [div_eq_mul_inv] using! (hentry 0 1).mul ((hentry 1 1).inv hn)
     · simpa only [div_eq_mul_inv] using! hdet.mul
@@ -307,7 +302,7 @@ theorem literal_group_chart_local_transition (g : G F ζ hζ)
       rw [he]
       change S 1 * c.val = c.val
       change s 1 * c.val = c.val
-      rw [map_one, one_mul]
+      simp
     rw [← h1, ← h2]
     exact (show Commute (b⁻¹ * (l z₀)⁻¹ * l z * b, (1 : PGLComplex.AdelicSlices.finiteSubgroup F ζ hζ))
       (1, c) by unfold Commute SemiconjBy; simp).map e.toMonoidHom
@@ -321,7 +316,3 @@ theorem literal_group_chart_local_transition (g : G F ζ hζ)
       apply congrArg (fun d => s d * c.val)
       group
     _ = _ := by rw [mul_assoc (s (l z₀) * s b), ← hcomm]; group
-
-end DedekindZetaZeroFree.KPLiteralChamber
-
-end

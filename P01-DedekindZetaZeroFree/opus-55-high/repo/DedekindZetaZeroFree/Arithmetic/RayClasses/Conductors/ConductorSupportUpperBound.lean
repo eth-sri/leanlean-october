@@ -25,5 +25,3 @@ theorem conductor_support_upper
   exact (Finsupp.mem_support_iff.mp hp)
     ((hc.finiteExponent_eq_zero_iff_unramified p).mpr
       (fun W hW => (d.unramified p htop) W.asIdeal W.isPrime hW))
-
-end DedekindZetaZeroFree.LargeSieve.RootNumber

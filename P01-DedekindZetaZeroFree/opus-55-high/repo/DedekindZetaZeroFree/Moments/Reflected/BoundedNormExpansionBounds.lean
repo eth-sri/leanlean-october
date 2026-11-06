@@ -19,7 +19,7 @@ private theorem idealSymbol_norm_le_one (A : SArithmeticData F) (σ : F →+* �
   unfold ThetaPhaseSeparation.idealSymbol
   rw [norm_prod]
   apply Finset.prod_le_one₀
-  · intro p _; exact norm_nonneg _
+  · simp
   · intro p _
     unfold symbol
     let q := supportPrime A I p
@@ -209,7 +209,7 @@ private theorem compactWeightedMajorant_summable (A : SArithmeticData F) (h : A.
     apply (summable_sigma_of_nonneg (f := fun k : (f : T) × (A.UnitQuotient × PositiveRowIndex f.val) => W k.1 k.2)
       (fun k => hw k.1 k.2)).2
     exact ⟨hf, (hasSum_fintype _).summable⟩
-  simpa only [T, W, CompactMajorantIndex] using he
+  omega
 
  def compactRowMajorant (A : SArithmeticData F) (h : A.Exterior) : ℝ :=
   ∑' k : CompactMajorantIndex A h,
@@ -233,7 +233,7 @@ private theorem expansion_compactRowMajorant_bound
   let W : CompactMajorantIndex A h → ℝ := fun k =>
     A.exteriorNorm k.1.val.val ^ 2 * positiveRowWeight k.1.val 1 k.2.2
   let c : ℝ := K * A.exteriorNorm d ^ 2 / Z
-  have hc : 0 ≤ c := by dsimp [c]; positivity
+  have hc : 0 ≤ c := by positivity
   have hW : Summable W := compactWeightedMajorant_summable A h
   have hW0 : ∀ k, 0 ≤ W k := fun k =>
     mul_nonneg (sq_nonneg _) (positiveRowWeight_nonneg (A := A) k.1.val k.2.2)
@@ -274,8 +274,8 @@ theorem bounded_norm_expansion
   have he : Function.Injective e := by
     intro I J h
     exact Subtype.ext (congrArg (fun k : NonzeroIdeal F => k.val) h)
-  have hs : {h : A.Exterior | A.exteriorNorm h ≤ X}.Finite := by
-    exact (normBoundedIdeals_finite F X).preimage he.injOn
+  have hs : {h : A.Exterior | A.exteriorNorm h ≤ X}.Finite := 
+    (normBoundedIdeals_finite F X).preimage he.injOn
   let s : Finset A.Exterior := hs.toFinset
   let C : ℝ := ∑ h ∈ s, compactRowMajorant A h
   have hC : 0 ≤ C := Finset.sum_nonneg (fun h _ => compactRowMajorant_nonneg A h)
@@ -284,8 +284,8 @@ theorem bounded_norm_expansion
   have hZ0 : 0 < Z := lt_of_lt_of_le zero_lt_one hZ
   have hd0 : 0 ≤ A.exteriorNorm d :=
     zero_le_one.trans (idealNorm_ge_one _ d.property.1)
-  have hr : compactRowMajorant A h ≤ C := by
-    exact Finset.single_le_sum (fun k _ => compactRowMajorant_nonneg A k)
+  have hr : compactRowMajorant A h ≤ C := 
+    Finset.single_le_sum (fun k _ => compactRowMajorant_nonneg A k)
       (hs.mem_toFinset.mpr hh)
   have hc : Kprofile * A.exteriorNorm d ^ 2 / Z ≤ Kprofile * X ^ 2 := by
     calc
@@ -331,8 +331,7 @@ theorem scalar_parameter_absorption (M Cstar ε : ℝ)
            K * Real.rpow Z ε * Real.sqrt P * D) := by
   let t : ℝ := min (1 / 10) (ε / (100 * (M + 1) ^ 2))
   have ht : 0 < t := by
-    dsimp [t]
-    apply lt_min (by norm_num) (div_pos hε (by positivity))
+    positivity
   have ht1 : t ≤ 1 / 10 := min_le_left _ _
   have hte : 100 * t * (M + 1) ^ 2 ≤ ε := by
     have hden : 0 < 100 * (M + 1) ^ 2 := by positivity
@@ -340,7 +339,7 @@ theorem scalar_parameter_absorption (M Cstar ε : ℝ)
     apply (le_div_iff₀ hden).mp at hh
     nlinarith
   let t₃ : ℝ := 4 * (2 * M + t) * t
-  have ht₃ : 0 < t₃ := by dsimp [t₃]; positivity
+  have ht₃ : 0 < t₃ := by positivity
   let B : ℝ := 1 + (2 * M * t + 4 * M + 1) / (2 * t)
   have hB : 1 < B := by
     dsimp [B]
@@ -360,19 +359,19 @@ theorem scalar_parameter_absorption (M Cstar ε : ℝ)
     rw [heq]
     linarith
   let C : ℝ := max Cstar 1
-  have hC : 0 < C := lt_of_lt_of_le zero_lt_one (le_max_right _ _)
+  have hC : 0 < C := by positivity
   let cL : ℝ := 8 * C ^ 2
   let cD : ℝ := 8 * C ^ 3
   let cP : ℝ := C ^ (2 * t)
   let cLog : ℝ := (2 * cL) ^ t / t
   let K₁ : ℝ := cP * cLog ^ 4 * 8 * cD ^ t
   let K₂ : ℝ := cP * cL ^ 2
-  have hcL : 0 < cL := by dsimp [cL]; positivity
-  have hcD : 0 < cD := by dsimp [cD]; positivity
+  have hcL : 0 < cL := by positivity
+  have hcD : 0 < cD := by positivity
   have hcP : 0 < cP := Real.rpow_pos_of_pos hC _
-  have hcLog : 0 < cLog := div_pos (Real.rpow_pos_of_pos (by positivity) _) ht
-  have hK₁ : 0 < K₁ := by dsimp [K₁]; positivity
-  have hK₂ : 0 < K₂ := by dsimp [K₂]; positivity
+  have hcLog : 0 < cLog := by positivity
+  have hK₁ : 0 < K₁ := by positivity
+  have hK₂ : 0 < K₂ := by positivity
   refine ⟨t, t, t, t₃, t, B, K₁ + K₂, ht, ht, ht, ht₃, ht, hB,
     add_pos hK₁ hK₂, halloc, htail, ?_⟩
   intro Z P D hZ hP hD hPD
@@ -425,7 +424,7 @@ theorem scalar_parameter_absorption (M Cstar ε : ℝ)
   constructor
   · intro hR
     have hr0 : 0 < RMTailCutoff.threshold Z P D t := by
-      unfold RMTailCutoff.threshold; positivity
+      omega
     have hlog0 : 0 ≤ Real.log (2 * RMTailCutoff.threshold Z P D t) :=
       Real.log_nonneg (by linarith)
     have hlog : Real.log (2 * RMTailCutoff.threshold Z P D t) ≤
@@ -562,7 +561,7 @@ theorem idealSymbol_norm_le_one (A : SArithmeticData F) (σ : F →+* ℂ)
   unfold ThetaPhaseSeparation.idealSymbol
   rw [norm_prod]
   apply Finset.prod_le_one₀
-  · intro p _; exact norm_nonneg _
+  · simp
   · intro p _
     unfold symbol
     let q := supportPrime A I p
@@ -752,7 +751,7 @@ theorem compactWeightedMajorant_summable (A : SArithmeticData F) (h : A.Exterior
     apply (summable_sigma_of_nonneg (f := fun k : (f : T) × (A.UnitQuotient × PositiveRowIndex f.val) => W k.1 k.2)
       (fun k => hw k.1 k.2)).2
     exact ⟨hf, (hasSum_fintype _).summable⟩
-  simpa only [T, W, CompactMajorantIndex] using he
+  omega
 
 theorem compact_expansion_square_bound
     (A : SArithmeticData F) (G : AllowedRecipe A) (U : UnitRepresentatives A)
@@ -795,8 +794,3 @@ theorem compact_expansion_square_bound
   · have hd := d.property.2.1
     change A.exteriorNorm d.val.val < 2 * D at hd
     exact hd.le.trans (mul_le_mul_of_nonneg_left hDu (by norm_num))
-
-end
-end DedekindZetaZeroFree.RMParameterAbsorption
-
-end

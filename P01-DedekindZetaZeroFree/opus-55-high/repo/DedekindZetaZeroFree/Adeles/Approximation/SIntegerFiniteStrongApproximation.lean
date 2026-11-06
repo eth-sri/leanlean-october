@@ -84,10 +84,7 @@ theorem local_congruence_approximation (S : Finset (HeightOneSpectrum (𝓞 F)))
       (multiplicity v.val.asIdeal (Ideal.span {d}) : ℤ))) =
       WithZero.exp (-(multiplicity v.val.asIdeal (Ideal.span {d}) : ℤ)) ^ t *
         WithZero.exp (-k v) := by
-    rw [← WithZero.exp_nsmul, ← WithZero.exp_add]
-    congr 1
-    simp only [nsmul_eq_mul]
-    ring
+    simp
   rw [hexp, ← hval] at hcr
   exact (mul_le_mul_iff_right₀
     (pow_pos (bot_lt_iff_ne_bot.mpr WithZero.exp_ne_zero) t)).mp hcr
@@ -112,7 +109,3 @@ theorem diagonal_denseRange (S : Finset (HeightOneSpectrum (𝓞 F))) :
   intro v _
   have hv := hk v (hm v)
   simpa only [Set.mem_setOf_eq, sub_add_cancel, diagonal_apply] using hv
-
-end DedekindZetaZeroFree.PoissonSFiniteDensity
-
-end

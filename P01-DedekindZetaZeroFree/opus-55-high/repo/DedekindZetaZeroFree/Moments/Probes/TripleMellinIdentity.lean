@@ -131,7 +131,3 @@ theorem ExactTripleMellin.initial_order (A : SArithmeticData F) (σ : F →+* �
           (2 + (τz : ℂ) * Complex.I) := by
   simpa [iteratedTripleMellinIntegral, principalTripleMellinHeights] using
     (h X Y Z).2.2 (Equiv.refl (Fin 3))
-
-end
-end NormalizedProbe
-end DedekindZetaZeroFree

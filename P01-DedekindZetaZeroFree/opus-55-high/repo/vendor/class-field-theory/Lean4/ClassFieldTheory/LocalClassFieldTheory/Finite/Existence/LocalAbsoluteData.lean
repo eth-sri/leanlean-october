@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Absolute data for finite local existence
 
@@ -56,70 +51,14 @@ variable {K : Type} [Field K] [TopologicalSpace K]
 instance : Coe (OpenFiniteIndexSubgroup K) (Subgroup Kˣ) :=
   ⟨OpenFiniteIndexSubgroup.subgroup⟩
 
-/-- States the theorem `ext`. -/
-@[ext]
-theorem ext {H H' : OpenFiniteIndexSubgroup K}
-    (h : H.subgroup = H'.subgroup) : H = H' := by
-  cases H
-  cases H'
-  cases h
-  rfl
-
-/-- Provides this instance. -/
-instance : PartialOrder (OpenFiniteIndexSubgroup K) :=
-  PartialOrder.lift OpenFiniteIndexSubgroup.subgroup
-    (fun _ _ h ↦ OpenFiniteIndexSubgroup.ext h)
-
 end OpenFiniteIndexSubgroup
-
-/-- Normality over the abstract base fixing group makes the represented
-fixed field Galois over the concrete local base field. -/
-theorem abstractFixedField_isGalois_of_base_normal
-    (K : Type) [Field K]
-    (H : ClosedSubgroup (Gal(SeparableClosure K / K)))
-    (hnormal :
-      (extensionSubgroup
-        (baseField (Gal(SeparableClosure K / K))) H
-        (le_baseField H)).Normal) :
-    IsGalois K (abstractFixedField K (SeparableClosure K) H) := by
-  let B := baseField (Gal(SeparableClosure K / K))
-  have hsub :
-      extensionSubgroup B H (le_baseField H) =
-        H.toSubgroup.subgroupOf B.toSubgroup := by
-    ext sigma
-    rw [mem_extensionSubgroup_iff]
-  have hrelative :
-      (H.toSubgroup.subgroupOf B.toSubgroup).Normal := by
-    rw [← hsub]
-    exact hnormal
-  have hconj :
-      ∀ h g : Gal(SeparableClosure K / K),
-        h ∈ H.toSubgroup → g ∈ B.toSubgroup →
-          g * h * g⁻¹ ∈ H.toSubgroup :=
-    (Subgroup.normal_subgroupOf_iff (le_baseField H)).1 hrelative
-  let : H.toSubgroup.Normal :=
-    { conj_mem := fun h hh g => hconj h g hh (by simp [B, baseField]) }
-  apply (InfiniteGalois.normal_iff_isGalois
-    (abstractFixedField K (SeparableClosure K) H)).1
-  have hfix :
-      (abstractFixedField K (SeparableClosure K) H).fixingSubgroup =
-        H.toSubgroup := by
-    have hclosed := closedFixingSubgroup_abstractFixedField_eq
-      K (SeparableClosure K) H
-    exact congrArg ClosedSubgroup.toSubgroup hclosed
-  rw [hfix]
-  infer_instance
 
 variable (K : Type) [Field K]
 
 /-- The closed fixing group of the ground field is absolutely finite in the
 abstract Galois-theoretic sense (indeed, it is the full absolute Galois group). -/
-noncomputable instance intrinsicAbstractBase_index_finite :
+instance intrinsicAbstractBase_index_finite :
     Finite ((baseField (intrinsicAbsoluteGalois K)).toSubgroup ⧸
       extensionSubgroup (baseField (intrinsicAbsoluteGalois K))
-        (intrinsicAbstractBase K) (le_baseField (intrinsicAbstractBase K))) := by
-  exact (intrinsicFiniteAbstractBase K).finite
-
-end LocalClassFieldTheory
-
-end
+        (intrinsicAbstractBase K) (le_baseField (intrinsicAbstractBase K))) := 
+  (intrinsicFiniteAbstractBase K).finite

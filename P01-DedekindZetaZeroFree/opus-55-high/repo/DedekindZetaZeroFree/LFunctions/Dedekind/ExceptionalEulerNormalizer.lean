@@ -93,8 +93,8 @@ theorem actual_principal_continuation
     intro z hz hz1
     change R z / (z - 1) = P.L z
     rw [hbridge z hz, P.regularized z hz hz1, mul_div_cancel_left₀ _ (sub_ne_zero.mpr hz1)]
-  have hZ : MeromorphicOn (zeta  F ζ hζ) Set.univ := by
-    exact (hR.differentiableOn.analyticOnNhd isOpen_univ).meromorphicOn.div
+  have hZ : MeromorphicOn (zeta  F ζ hζ) Set.univ := 
+    (hR.differentiableOn.analyticOnNhd isOpen_univ).meromorphicOn.div
       ((analyticOnNhd_id.sub analyticOnNhd_const).meromorphicOn)
   refine ⟨hZ, ?_, hR, ?_, hbridge, hL, ?_, ?_⟩
   · intro z hz
@@ -104,16 +104,16 @@ theorem actual_principal_continuation
     change R z = (z - 1) * (R z / (z - 1))
     field_simp
   · intro z hz
-    rw [hL z (zero_lt_one.trans hz) (by intro h; rw [h] at hz; norm_num at hz)]
+    rw [hL z (zero_lt_one.trans hz) (by intro h; simp_all)]
     exact PositiveZetaResidue.principal_continuation_eq_dedekindZeta F
       (principalCharacter F) (principalCharacter_principal F) P z hz
   · intro z hz
-    rw [hL z (zero_lt_one.trans hz) (by intro h; rw [h] at hz; norm_num at hz)]
+    rw [hL z (zero_lt_one.trans hz) (by intro h; simp_all)]
     convert P.series z hz using 1
     ext I
     by_cases hI : I = ⊥
     · subst I
-      simp [(principalCharacter F).eq_zero_iff', Complex.zero_cpow
+      simp [Complex.zero_cpow
         (show -z ≠ 0 by intro h; have := congrArg Complex.re h; simp at this; linarith)]
     · rw [principalCharacter_principal F I hI (by simp), one_mul]
 
@@ -126,7 +126,7 @@ theorem exterior_zeta_at_two_pos
   have hs := (actual_principal_continuation  F ζ hζ).2.2.2.2.2.2.2 2 (by norm_num)
   have hterm (I : Ideal (𝓞 F)) :
       (Ideal.absNorm I : ℂ) ^ (-(2 : ℂ)) = (((Ideal.absNorm I : ℝ) ^ 2)⁻¹ : ℝ) := by
-    simp [Complex.cpow_neg, Complex.cpow_two]
+    simp [Complex.cpow_neg]
   have hre := Complex.hasSum_re hs
   have him := Complex.hasSum_im hs
   simp_rw [hterm, Complex.ofReal_re] at hre
@@ -149,9 +149,9 @@ theorem exterior_zeta_at_two_pos
     exact sub_pos.mpr ((inv_lt_one₀ (by positivity)).mpr hn2)
   simp only [exteriorZeta, he, Complex.mul_im, Complex.mul_re, Complex.ofReal_im,
     Complex.ofReal_re, hZi, mul_zero, zero_mul, add_zero, sub_zero]
-  exact ⟨trivial, mul_pos hZp hep⟩
+  simp_all
 
-private theorem euler_differentiable (F : Type) [Field F] [NumberField F]
+theorem euler_differentiable (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (𝓞 F))) :
     Differentiable ℂ (PositiveZetaResidue.exteriorEulerFactor F S) := by
   intro s
@@ -196,8 +196,7 @@ theorem exterior_positive_simple_residue
   have hev : ∀ᶠ z in 𝓝[≠] (1 : ℂ), ZS z = (z - 1) ^ (-1 : ℤ) • RS z := by
     filter_upwards [self_mem_nhdsWithin] with z hz
     have hn : z - 1 ≠ 0 := sub_ne_zero.mpr (by simpa using hz)
-    rw [heq z (by simpa using hz), zpow_neg_one, smul_eq_mul, ← mul_assoc,
-      inv_mul_cancel₀ hn, one_mul]
+    simp_all
   have han : AnalyticAt ℂ RS 1 := hg.differentiableOn.analyticOnNhd isOpen_univ 1 trivial
   have hne : RS 1 ≠ 0 := by rw [hv]; exact_mod_cast hp.ne'
   refine ⟨hm, hp, hv, ⟨Set.univ, isOpen_univ, trivial, hg.differentiableOn,
@@ -234,10 +233,8 @@ theorem positive_simple_exceptional_normalizer
   let gS := exceptionalRegularization  F ζ hζ S
   let A : ℂ → ℂ := fun s => 1 + 6 * s
   let B : ℂ → ℂ := fun s => 2 + 6 * s
-  have hA : Differentiable ℂ A := (differentiable_const (1 : ℂ)).add
-    ((differentiable_const (6 : ℂ)).mul differentiable_id)
-  have hB : Differentiable ℂ B := (differentiable_const (2 : ℂ)).add
-    ((differentiable_const (6 : ℂ)).mul differentiable_id)
+  have hA : Differentiable ℂ A := by fun_prop
+  have hB : Differentiable ℂ B := by fun_prop
   have hc := actual_principal_continuation  F ζ hζ
   have hr := exterior_positive_simple_residue  F ζ hζ S
   have hR : Differentiable ℂ RS := hc.2.2.1.mul (euler_differentiable F S)
@@ -261,8 +258,7 @@ theorem positive_simple_exceptional_normalizer
     apply (hR.comp hA).differentiableOn.div
       ((differentiable_const (6 : ℂ)).differentiableOn.mul
         (hD.mono (fun s hs => (hball s hs).2)))
-    intro s hs
-    exact mul_ne_zero (by norm_num) (hball s hs).1
+    simp_all
   have hm : MeromorphicOn cS (Metric.ball 0 ε) :=
     (hr.1.comp_analyticOnNhd (hA.differentiableOn.analyticOnNhd Metric.isOpen_ball)
       (fun _ _ => trivial)).div
@@ -307,9 +303,6 @@ theorem positive_simple_exceptional_normalizer
   · exact (hball s hs).1
   · change (gS 0).im = 0
     rw [hvreal]
-    exact Complex.ofReal_im _
+    rfl
   · change 0 < (gS 0).re
     rw [hvreal]; exact hp
-
-end
-end DedekindZetaZeroFree.GlobalZetaNormalizer

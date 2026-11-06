@@ -18,16 +18,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Arithmetic lemmas for local-field index calculations
 
@@ -47,16 +37,6 @@ section PadicLogArithmetic
 
 variable {p n : ℕ}
 
-/-- Arithmetic estimate for the field-unit logarithm:
-`p^(v_p n) <= n` for nonzero `n`.
-
-This is the arithmetic input for the logarithm-series convergence estimate
-`v_p(n) <= log_p n`. -/
-theorem pow_padicValNat_le_self
-    [Fact p.Prime] (hn : n ≠ 0) :
-    p ^ padicValNat p n ≤ n :=
-  Nat.le_of_dvd (Nat.pos_iff_ne_zero.mpr hn) pow_padicValNat_dvd
-
 /-- Arithmetic estimate for the field-unit logarithm in real logarithmic
 form: `v_p(n) <= log_p(n)`. -/
 theorem padicValNat_le_real_logb
@@ -65,60 +45,6 @@ theorem padicValNat_le_real_logb
   exact
     (Nat.cast_le.mpr (padicValNat_le_nat_log (p := p) n)).trans
       (Real.natLog_le_logb n p)
-
-/-- Asymptotic estimate for the field-unit logarithm:
-for every positive slope `c`, the linear term `n * c` eventually dominates
-the logarithmic denominator contribution `log_p(n)`. -/
-theorem tendsto_nat_mul_const_sub_logb_atTop
-    {c : ℝ} (hc : 0 < c) :
-    Tendsto (fun n : ℕ => (n : ℝ) * c - Real.logb p n) atTop atTop := by
-  have hhalf : 0 < c / 2 := by positivity
-  have hsmall :
-      (fun n : ℕ => Real.logb (p : ℝ) (n : ℝ)) =o[atTop]
-        (fun n : ℕ => (n : ℝ)) := by
-    simpa [Function.comp_def] using
-      (Real.isLittleO_logb_id_atTop (b := (p : ℝ))).comp_tendsto
-        tendsto_natCast_atTop_atTop
-  have hbound :
-      ∀ᶠ n : ℕ in atTop,
-        ‖Real.logb (p : ℝ) (n : ℝ)‖ ≤
-          (c / 2) * ‖(n : ℝ)‖ :=
-    hsmall.def hhalf
-  have hle :
-      (fun n : ℕ => (c / 2) * (n : ℝ)) ≤ᶠ[atTop]
-        (fun n : ℕ => (n : ℝ) * c - Real.logb (p : ℝ) (n : ℝ)) := by
-    filter_upwards [hbound] with n hn
-    have hnnonneg : 0 ≤ (n : ℝ) := Nat.cast_nonneg n
-    have hlog_le :
-        Real.logb (p : ℝ) (n : ℝ) ≤ (c / 2) * (n : ℝ) := by
-      calc
-        Real.logb (p : ℝ) (n : ℝ) ≤
-            ‖Real.logb (p : ℝ) (n : ℝ)‖ :=
-          le_abs_self _
-        _ ≤ (c / 2) * ‖(n : ℝ)‖ := hn
-        _ = (c / 2) * (n : ℝ) := by
-          rw [Real.norm_eq_abs, abs_of_nonneg hnnonneg]
-    calc
-      (c / 2) * (n : ℝ) =
-          (n : ℝ) * c - (c / 2) * (n : ℝ) := by
-        ring
-      _ ≤ (n : ℝ) * c - Real.logb (p : ℝ) (n : ℝ) :=
-        sub_le_sub_left hlog_le ((n : ℝ) * c)
-  have hlin :
-      Tendsto (fun n : ℕ => (c / 2) * (n : ℝ)) atTop atTop :=
-    Tendsto.const_mul_atTop hhalf tendsto_natCast_atTop_atTop
-  exact tendsto_atTop_mono' atTop hle hlin
-
-/-- The same logarithmic domination estimate with the natural series indexing
-`n + 1`, avoiding the zero denominator in the logarithm series. -/
-theorem tendsto_nat_succ_mul_const_sub_logb_atTop
-    {c : ℝ} (hc : 0 < c) :
-    Tendsto
-      (fun n : ℕ => ((n + 1 : ℕ) : ℝ) * c - Real.logb p (n + 1))
-      atTop atTop := by
-  simpa [Function.comp_def] using
-    (tendsto_nat_mul_const_sub_logb_atTop (p := p) hc).comp
-      (tendsto_add_atTop_nat 1)
 
 /-- Variant of the logarithmic domination estimate with a fixed real multiple
 of the logarithmic term.  This is the form needed after inserting the
@@ -196,8 +122,8 @@ theorem tendsto_nat_mul_const_sub_padicValNat_factorial_atTop
   have hle :
       (fun n : ℕ => (n : ℝ) * (c - 1)) ≤ᶠ[atTop]
         (fun n : ℕ =>
-          (n : ℝ) * c - (padicValNat p n.factorial : ℝ)) := by
-    exact Eventually.of_forall fun n => by
+          (n : ℝ) * c - (padicValNat p n.factorial : ℝ)) := 
+    Eventually.of_forall fun n => by
       have hdenNat : padicValNat p n.factorial ≤ n :=
         padicValNat_factorial_le (p := p) n
       have hden : (padicValNat p n.factorial : ℝ) ≤ (n : ℝ) :=
@@ -215,22 +141,12 @@ theorem padicValNat_factorial_digits
   simpa [Nat.ofDigits_digits] using
     (sub_one_mul_padicValNat_factorial (p := p) n)
 
-/-- Legendre's factorial-valuation formula with the digit expansion written out as an
-indexed sum. -/
-theorem padicValNat_factorial_digits_sum
-    [Fact p.Prime] (n : ℕ) :
-    (p - 1) * padicValNat p n.factorial =
-      ((p.digits n).mapIdx fun i a => a * p ^ i).sum -
-        (p.digits n).sum := by
-  simpa [Nat.ofDigits_eq_sum_mapIdx] using
-    padicValNat_factorial_digits (p := p) n
-
 /-- A nonzero natural number has positive sum of base-`p` digits. -/
 theorem digits_sum_pos_of_ne_zero (hn : n ≠ 0) :
     0 < (p.digits n).sum := by
   by_contra hnot
   have hsum0 : (p.digits n).sum = 0 :=
-    Nat.eq_zero_of_le_zero (Nat.le_of_not_gt hnot)
+    by omega
   have hall : ∀ a ∈ p.digits n, a = 0 :=
     List.sum_eq_zero_iff.mp hsum0
   have hmapZero :
@@ -246,7 +162,7 @@ theorem digits_sum_pos_of_ne_zero (hn : n ≠ 0) :
     simpa [Nat.ofDigits_eq_sum_mapIdx] using hmapZero
   have hn0 : n = 0 := by
     simpa [Nat.ofDigits_digits] using hof
-  exact hn hn0
+  omega
 
 /-- Legendre's formula gives the sharp bound
 `(p - 1) * v_p(n!) <= n - 1` for nonzero `n`. -/
@@ -270,9 +186,7 @@ theorem padicValNat_factorial_div_sub_one_le_inv_sub_one
   have hpden : 0 < (p : ℚ) - 1 := by
     linarith
   have hnden : 0 < (n : ℚ) - 1 := by
-    have hnq : (1 : ℚ) < n := by
-      exact_mod_cast hn
-    linarith
+    simp_all
   have hNat :
       (p - 1) * padicValNat p n.factorial ≤ n - 1 :=
     sub_one_mul_padicValNat_factorial_le_sub_one
@@ -286,7 +200,7 @@ theorem padicValNat_factorial_div_sub_one_le_inv_sub_one
       exact_mod_cast hNat
     have hpone : 1 ≤ p := hpNat.one_lt.le
     have hnone : 1 ≤ n := by omega
-    simpa [Nat.cast_mul, Nat.cast_sub hpone, Nat.cast_sub hnone] using hcast
+    simp_all
   field_simp [hnden.ne', hpden.ne']
   nlinarith
 
@@ -313,8 +227,8 @@ theorem padicValNat_factorial_le_sub_one_div_sub_one_real
           ((n - 1 : ℕ) : ℝ) := by
       exact_mod_cast hNat
     have hpone : 1 ≤ p := hpNat.one_lt.le
-    have hnone : 1 ≤ n := Nat.succ_le_of_lt (Nat.pos_of_ne_zero hn)
-    simpa [Nat.cast_mul, Nat.cast_sub hpone, Nat.cast_sub hnone] using hcast
+    have hnone : 1 ≤ n := by omega
+    simp_all
   exact (le_div_iff₀ hpden).2 (by simpa [mul_comm] using hmul)
 
 /-- Sharp asymptotic estimate for the exponential series denominator:
@@ -370,28 +284,6 @@ theorem tendsto_nat_mul_const_sub_const_mul_padicValNat_factorial_atTop
       _ ≤ (n : ℝ) * c - C * (padicValNat p n.factorial : ℝ) := by
         linarith [hCfac.trans hden_bound]
   exact tendsto_atTop_mono' atTop hle hsource
-
-/-- Higher exponential terms have strictly larger integer valuation than the
-linear term when the input has integer valuation at least two.  This is the
-termwise arithmetic input for `exp(x) - 1` having the same valuation as `x`
-on the normalized convergence ball. -/
-theorem exp_higher_term_integer_valuation_gt
-    [Fact p.Prime] {n : ℕ} (hn : 2 ≤ n) {m : ℤ} (hm : 2 ≤ m) :
-    m < (n : ℤ) * m - (padicValNat p n.factorial : ℤ) := by
-  have hn0 : n ≠ 0 := by omega
-  have hdenNat :
-      padicValNat p n.factorial + 1 ≤ n :=
-    Nat.succ_le_of_lt
-      (padicValNat_factorial_lt_of_ne_zero (p := p) hn0)
-  have hden : (padicValNat p n.factorial : ℤ) ≤ (n : ℤ) - 1 := by
-    omega
-  have hnsub : (1 : ℤ) ≤ (n : ℤ) - 1 := by
-    omega
-  have hmsub : (1 : ℤ) ≤ m - 1 := by
-    omega
-  have hpos : (0 : ℤ) < ((n : ℤ) - 1) * (m - 1) := by
-    nlinarith
-  nlinarith
 
 /-- Ramified sharp-threshold version of
 `exp_higher_term_integer_valuation_gt`: if the factorial denominator
@@ -450,7 +342,7 @@ theorem exp_higher_term_integer_valuation_gt_scaled
       (m : ℚ) <
         (((n : ℤ) * m -
           (e : ℤ) * (padicValNat p n.factorial : ℤ) : ℤ) : ℚ) := by
-    simpa [Int.cast_mul, Int.cast_sub, Int.cast_natCast] using hgoal
+    simp_all
   exact_mod_cast hgoal'
 
 /-- Arithmetic estimate at the deep exponential–logarithm threshold:
@@ -470,9 +362,7 @@ theorem padicValNat_div_sub_one_le_inv_sub_one
   have hpden : 0 < (p : ℚ) - 1 := by
     linarith
   have hnden : 0 < (n : ℚ) - 1 := by
-    have hnq : (1 : ℚ) < n := by
-      exact_mod_cast hn
-    linarith
+    simp_all
   have hpowNat : p ^ a ≤ n :=
     Nat.le_of_dvd (lt_trans Nat.zero_lt_one hn) pow_padicValNat_dvd
   have hpow : (p : ℚ) ^ a ≤ (n : ℚ) := by
@@ -495,69 +385,6 @@ theorem padicValNat_div_sub_one_le_inv_sub_one
       div_le_div_of_nonneg_right hbound hnden.le
     _ = 1 / ((p : ℚ) - 1) := by
       field_simp [hnden.ne', hpden.ne']
-
-/-- Strict form of the preceding estimate: any slope strictly bigger than
-`1/(p-1)` eventually dominates `v_p(n)` already termwise for every `n > 1`. -/
-theorem padicValNat_lt_sub_one_mul_of_inv_sub_one_lt
-    [Fact p.Prime] (hn : 1 < n) {c : ℚ}
-    (hc : 1 / ((p : ℚ) - 1) < c) :
-    (padicValNat p n : ℚ) < ((n : ℚ) - 1) * c := by
-  have hnden : 0 < (n : ℚ) - 1 := by
-    have hnq : (1 : ℚ) < n := by
-      exact_mod_cast hn
-    linarith
-  have hquot :=
-    padicValNat_div_sub_one_le_inv_sub_one (p := p) (n := n) hn
-  have hstrict :
-      (padicValNat p n : ℚ) / ((n : ℚ) - 1) < c :=
-    lt_of_le_of_lt hquot hc
-  calc
-    (padicValNat p n : ℚ) =
-        ((padicValNat p n : ℚ) / ((n : ℚ) - 1)) *
-          ((n : ℚ) - 1) := by
-      field_simp [hnden.ne']
-    _ < c * ((n : ℚ) - 1) :=
-      mul_lt_mul_of_pos_right hstrict hnden
-    _ = ((n : ℚ) - 1) * c := by
-      ring
-
-/-- Positivity form used in the valuation computation
-`v_p(x^n / n) = n v_p(x) - v_p(n)`. -/
-theorem sub_padicValNat_pos_of_inv_sub_one_lt
-    [Fact p.Prime] (hn : 1 < n) {c : ℚ}
-    (hc : 1 / ((p : ℚ) - 1) < c) :
-    0 < (n : ℚ) * c - (padicValNat p n : ℚ) := by
-  have hpNat : Nat.Prime p := Fact.out
-  have hpden : 0 < (p : ℚ) - 1 := by
-    have hp : (1 : ℚ) < p := by
-      exact_mod_cast hpNat.one_lt
-    linarith
-  have hcpos : 0 < c :=
-    (one_div_pos.mpr hpden).trans hc
-  have hlt :=
-    padicValNat_lt_sub_one_mul_of_inv_sub_one_lt
-      (p := p) (n := n) hn hc
-  have hstep : ((n : ℚ) - 1) * c < (n : ℚ) * c := by
-    nlinarith
-  exact sub_pos.mpr (hlt.trans hstep)
-
-/-- Higher logarithm terms have strictly larger integer valuation than the
-linear term above the usual `1/(p-1)` threshold. -/
-theorem log_higher_term_integer_valuation_gt
-    [Fact p.Prime] {n : ℕ} (hn : 2 ≤ n) {m : ℤ}
-    (hm : 1 / ((p : ℚ) - 1) < (m : ℚ)) :
-    m < (n : ℤ) * m - (padicValNat p n : ℤ) := by
-  have hlt :=
-    padicValNat_lt_sub_one_mul_of_inv_sub_one_lt
-      (p := p) (n := n) (by omega) (c := (m : ℚ)) hm
-  have hgoal :
-      (m : ℚ) < (n : ℚ) * (m : ℚ) - (padicValNat p n : ℚ) := by
-    nlinarith
-  have hgoal' :
-      (m : ℚ) <
-        (((n : ℤ) * m - (padicValNat p n : ℤ) : ℤ) : ℚ) := by
-    simpa [Int.cast_mul, Int.cast_sub, Int.cast_natCast] using hgoal
-  exact_mod_cast hgoal'
 
 /-- Ramified-denominator version of
 `log_higher_term_integer_valuation_gt`: if the denominator contributes
@@ -610,150 +437,5 @@ theorem log_higher_term_integer_valuation_gt_scaled
       (m : ℚ) <
         (((n : ℤ) * m -
           (e : ℤ) * (padicValNat p n : ℤ) : ℤ) : ℚ) := by
-    simpa [Int.cast_mul, Int.cast_sub, Int.cast_natCast] using hgoal
+    simp_all
   exact_mod_cast hgoal'
-
-end PadicLogArithmetic
-
-/-- If `e` divides the base-change index, the primitive quotient
-`e / gcd e e'` is one. -/
-theorem nat_div_gcd_eq_one_of_dvd {e e' : ℕ}
-    (he : 0 < e) (hdiv : e ∣ e') :
-    e / Nat.gcd e e' = 1 := by
-  rw [Nat.gcd_eq_left hdiv, Nat.div_self he]
-
-/-- Dividing the lcm by the right input removes exactly the common gcd from
-the left input. -/
-theorem nat_lcm_div_right_eq_div_gcd {a b : ℕ} (hb : 0 < b) :
-    Nat.lcm a b / b = a / Nat.gcd a b := by
-  calc
-    Nat.lcm a b / b = (a * b / Nat.gcd a b) / b := by
-      rfl
-    _ = (a * (b / Nat.gcd a b)) / b := by
-      rw [Nat.mul_div_assoc a (Nat.gcd_dvd_right a b)]
-    _ = ((b / Nat.gcd a b) * a) /
-          ((b / Nat.gcd a b) * Nat.gcd a b) := by
-      rw [Nat.mul_comm a (b / Nat.gcd a b),
-        Nat.div_mul_cancel (Nat.gcd_dvd_right a b)]
-    _ = a / Nat.gcd a b := by
-      rw [Nat.mul_div_mul_left]
-      exact Nat.div_pos
-        (Nat.le_of_dvd hb (Nat.gcd_dvd_right a b))
-        (Nat.gcd_pos_of_pos_right a hb)
-
-/-- Dividing the lcm by the left input removes exactly the common gcd from
-the right input. -/
-theorem nat_lcm_div_left_eq_div_gcd {a b : ℕ} (ha : 0 < a) :
-    Nat.lcm a b / a = b / Nat.gcd a b := by
-  simpa [Nat.lcm_comm, Nat.gcd_comm] using
-    (nat_lcm_div_right_eq_div_gcd (a := b) (b := a) ha)
-
-/-- If the lcm of two value steps divides `a * c`, the primitive part of
-the second step after removing the common gcd with `a` divides `c`. -/
-theorem nat_div_gcd_dvd_of_lcm_dvd_mul_left {a b c : ℕ}
-    (ha : 0 < a) (hdiv : Nat.lcm a b ∣ a * c) :
-    b / Nat.gcd a b ∣ c := by
-  have hquot : Nat.lcm a b / a ∣ c := by
-    rcases hdiv with ⟨q, hq⟩
-    refine ⟨q, ?_⟩
-    apply Nat.eq_of_mul_eq_mul_left ha
-    have hlcm : a * (Nat.lcm a b / a) = Nat.lcm a b := by
-      rw [Nat.mul_comm, Nat.div_mul_cancel (Nat.dvd_lcm_left a b)]
-    calc
-      a * c = Nat.lcm a b * q := hq
-      _ = (a * (Nat.lcm a b / a)) * q := by
-        rw [hlcm]
-      _ = a * ((Nat.lcm a b / a) * q) := by
-        rw [mul_assoc]
-  simpa [nat_lcm_div_left_eq_div_gcd (a := a) (b := b) ha] using hquot
-
-/-- Symmetric cancellation form: if the lcm divides `c * b`, then the
-primitive part of `a` after removing the common gcd with `b` divides `c`. -/
-theorem nat_div_gcd_dvd_of_lcm_dvd_mul_right {a b c : ℕ}
-    (hb : 0 < b) (hdiv : Nat.lcm a b ∣ c * b) :
-    a / Nat.gcd b a ∣ c := by
-  have hdiv' : Nat.lcm b a ∣ b * c := by
-    simpa [Nat.lcm_comm, mul_comm] using hdiv
-  exact nat_div_gcd_dvd_of_lcm_dvd_mul_left
-    (a := b) (b := a) (c := c) hb hdiv'
-
-/-- If multiplying by the right branch gives the lcm exactly, the remaining
-factor is the primitive left branch after removing the common gcd. -/
-theorem nat_eq_div_gcd_of_right_mul_eq_lcm {a b c : ℕ}
-    (hb : 0 < b) (h : b * c = Nat.lcm a b) :
-    c = a / Nat.gcd a b := by
-  calc
-    c = Nat.lcm a b / b := by
-      exact Nat.eq_div_of_mul_eq_right (ne_of_gt hb) h
-    _ = a / Nat.gcd a b :=
-      nat_lcm_div_right_eq_div_gcd (a := a) (b := b) hb
-
-/-- Left-handed exact lcm cancellation. -/
-theorem nat_eq_div_gcd_of_left_mul_eq_lcm {a b c : ℕ}
-    (ha : 0 < a) (h : a * c = Nat.lcm a b) :
-    c = b / Nat.gcd a b := by
-  calc
-    c = Nat.lcm a b / a := by
-      exact Nat.eq_div_of_mul_eq_right (ne_of_gt ha) h
-    _ = b / Nat.gcd a b :=
-      nat_lcm_div_left_eq_div_gcd (a := a) (b := b) ha
-
-/-- If a right-branch multiple divides the lcm, the remaining factor divides
-the primitive left branch after removing the common gcd. -/
-theorem nat_dvd_div_gcd_of_right_mul_dvd_lcm {a b c : ℕ}
-    (hb : 0 < b) (h : b * c ∣ Nat.lcm a b) :
-    c ∣ a / Nat.gcd a b := by
-  rcases h with ⟨q, hq⟩
-  have hmul : b * (c * q) = Nat.lcm a b := by
-    simpa [mul_assoc] using hq.symm
-  have hquot : c * q = Nat.lcm a b / b :=
-    Nat.eq_div_of_mul_eq_right (ne_of_gt hb) hmul
-  exact ⟨q, by
-    rw [← nat_lcm_div_right_eq_div_gcd (a := a) (b := b) hb]
-    exact hquot.symm⟩
-
-/-- Left-handed divisibility form of lcm cancellation. -/
-theorem nat_dvd_div_gcd_of_left_mul_dvd_lcm {a b c : ℕ}
-    (ha : 0 < a) (h : a * c ∣ Nat.lcm a b) :
-    c ∣ b / Nat.gcd a b := by
-  rcases h with ⟨q, hq⟩
-  have hmul : a * (c * q) = Nat.lcm a b := by
-    simpa [mul_assoc] using hq.symm
-  have hquot : c * q = Nat.lcm a b / a :=
-    Nat.eq_div_of_mul_eq_right (ne_of_gt ha) hmul
-  exact ⟨q, by
-    rw [← nat_lcm_div_left_eq_div_gcd (a := a) (b := b) ha]
-    exact hquot.symm⟩
-
-/-- Arithmetic endpoint for the tame Abhyankar formula: once the actual
-common-top calculation supplies `e' * e_top = lcm e e'`, the top ramification
-index is the primitive quotient of `e`. -/
-theorem nat_abhyankar_quotient_eq_of_right_mul_eq_lcm {e e' eTop : ℕ}
-    (he' : 0 < e') (h : e' * eTop = Nat.lcm e e') :
-    eTop = e / Nat.gcd e e' :=
-  nat_eq_div_gcd_of_right_mul_eq_lcm (a := e) (b := e') (c := eTop) he' h
-
-/-- Divisibility form used before the actual common-top equality is sharpened
-to an equality. -/
-theorem nat_abhyankar_quotient_dvd_of_right_mul_dvd_lcm {e e' eTop : ℕ}
-    (he' : 0 < e') (h : e' * eTop ∣ Nat.lcm e e') :
-    eTop ∣ e / Nat.gcd e e' :=
-  nat_dvd_div_gcd_of_right_mul_dvd_lcm
-    (a := e) (b := e') (c := eTop) he' h
-
-/-- If the lower ramification index already divides the base-change index,
-the tame Abhyankar quotient is one. -/
-theorem nat_abhyankar_quotient_eq_one_of_dvd {e e' : ℕ}
-    (he : 0 < e) (hdiv : e ∣ e') :
-    e / Nat.gcd e e' = 1 :=
-  nat_div_gcd_eq_one_of_dvd he hdiv
-
-/-- Exact index-one corollary from the common-top lcm equality. -/
-theorem nat_abhyankar_index_eq_one_of_right_mul_eq_lcm_of_dvd
-    {e e' eTop : ℕ} (he : 0 < e) (he' : 0 < e')
-    (hdiv : e ∣ e') (h : e' * eTop = Nat.lcm e e') :
-    eTop = 1 := by
-  rw [nat_abhyankar_quotient_eq_of_right_mul_eq_lcm he' h,
-    nat_abhyankar_quotient_eq_one_of_dvd he hdiv]
-
-end LocalFieldTheory.DiscreteValuationField

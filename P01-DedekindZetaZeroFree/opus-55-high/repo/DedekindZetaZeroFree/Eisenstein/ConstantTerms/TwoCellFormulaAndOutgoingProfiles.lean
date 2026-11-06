@@ -22,7 +22,7 @@ def rationalEquiv : Matrix.ProjGenLinGroup (Fin 2) F ≃* KPRationalAdelicSplitt
   induction g using Matrix.ProjGenLinGroup.induction_on with
   | mk m => rw [rationalEquiv_mk]; rfl
 
-private theorem raw_borel_mk (m : Matrix.GeneralLinearGroup (Fin 2) F) :
+theorem raw_borel_mk (m : Matrix.GeneralLinearGroup (Fin 2) F) :
     KPRationalAdelicSplitting.rationalPGLQuotient F m ∈ rawRationalBorel F ζ hζ ↔ m 1 0 = 0 := by
   have hp := DFunLike.congr_fun (KPRationalAdelicSplitting.rationalPGL_splitting F ζ hζ).2
     (KPRationalAdelicSplitting.rationalPGLQuotient F m)
@@ -46,7 +46,7 @@ private theorem raw_borel_mk (m : Matrix.GeneralLinearGroup (Fin 2) F) :
   · intro hm
     exact ⟨_, rfl, by simpa [KPAdelicCoverRestrictedProduct.rationalBase] using congrArg (algebraMap F (KPGlobalTorusFunctionData.Adeles F)) hm⟩
 
-private theorem matrix_borel_mk (m : Matrix.GeneralLinearGroup (Fin 2) F) :
+theorem matrix_borel_mk (m : Matrix.GeneralLinearGroup (Fin 2) F) :
     Matrix.ProjGenLinGroup.mk m ∈ KPChamberBruhatTwoCells.rationalBorel F ↔ m 1 0 = 0 := by
   constructor
   · rintro ⟨b, hb, he⟩

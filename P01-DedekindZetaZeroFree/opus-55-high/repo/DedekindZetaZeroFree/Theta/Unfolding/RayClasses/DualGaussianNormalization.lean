@@ -11,7 +11,6 @@ https://github.com/LeanPool/lean-pool
 Revision: 68aa6ee63d20ad76bcc15f595adfc72949991f06.
 -/
 
-noncomputable section
 open Classical
 open scoped NumberField nonZeroDivisors
 open DedekindZetaZeroFree.AbelianQuotient
@@ -20,14 +19,14 @@ namespace DedekindZetaZeroFree.Hecke.Theta
 
 variable {F : Type} [Field F] [NumberField F]
 
-private theorem dual_Q_smul (q : NumberField.InfinitePlace F → ℝ)
+theorem dual_Q_smul (q : NumberField.InfinitePlace F → ℝ)
     (c : ℝ) (x : NumberField.mixedEmbedding.euclidean.mixedSpace F) :
     RayParity.Q F q (c • x) = RayParity.Q F (fun v => c * q v) x := by
   apply (Theta.traceToMixed F).injective
   simp only [RayParity.Q, ContinuousLinearEquiv.apply_symm_apply, map_smul]
   ext v <;> simp [NumberField.mixedEmbedding.mixedSpaceOfRealSpace] <;> ring
 
-private theorem dual_gaussian_conjugation
+theorem dual_gaussian_conjugation
     (q : NumberField.InfinitePlace F → ℝ) (hq : ∀ v, q v ≠ 0)
     (x : NumberField.mixedEmbedding.euclidean.mixedSpace F) :
     RayParity.gδ F ∅ (RayParity.Q F q (Theta.traceConjugation F x)) =
@@ -38,7 +37,7 @@ private theorem dual_gaussian_conjugation
     ← Theta.traceConjugation_traceRadialScale]
   simp only [Theta.latticeGaussian, LinearIsometryEquiv.norm_map]
 
-private theorem dual_norm (m a : Ideal (𝓞 F)) (hm : m ≠ ⊥) (ha : a ≠ ⊥) :
+theorem dual_norm (m a : Ideal (𝓞 F)) (hm : m ≠ ⊥) (ha : a ≠ ⊥) :
     (FractionalIdeal.absNorm (Theta.traceDualIdealUnit F
       (rayIdealFractionalIdeal F a ha * rayIdealFractionalIdeal F m hm) :
         FractionalIdeal (𝓞 F)⁰ F) : ℝ) =
@@ -50,7 +49,7 @@ private theorem dual_norm (m a : Ideal (𝓞 F)) (hm : m ≠ ⊥) (ha : a ≠ �
   unfold conductorNorm
   ring
 
-private theorem dual_radial_scale (A N u r : ℝ) (hA : 0 < A)
+theorem dual_radial_scale (A N u r : ℝ) (hA : 0 < A)
     (hN : 0 < N) (hu : 0 < u) :
     u ^ r * (N ^ (-r))⁻¹ = (u / A) ^ r * ((A * N)⁻¹) ^ (-r) := by
   rw [Real.div_rpow hu.le hA.le, Real.inv_rpow (mul_pos hA hN).le,
@@ -189,7 +188,3 @@ theorem rayTheta_dual_fiber_eq_conjugateWeightedIdealBlock
   rw [← hneg, weightedIdealBlockNeg, if_pos hv]
   dsimp only [J]
   ring
-
-end DedekindZetaZeroFree.Hecke.Theta
-
-end

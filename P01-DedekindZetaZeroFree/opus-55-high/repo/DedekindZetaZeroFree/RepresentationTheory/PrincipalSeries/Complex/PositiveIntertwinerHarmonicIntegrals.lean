@@ -44,7 +44,7 @@ theorem positive_haar_integral_of_transport
     rw [ComplexLocal.StereographicTransport.planeProbability,
       integral_withDensity_eq_integral_toReal_smul hd
         (Filter.Eventually.of_forall (fun z => ENNReal.ofReal_lt_top))] at hm
-    simpa only [ENNReal.toReal_ofReal (hdpos _), Complex.real_smul] using hm.symm
+    simp_all
   have hc : 0 ≤ characterScale β / (2 * Real.pi) :=
     div_nonneg (characterScale_pos β).le (mul_pos (by norm_num) Real.pi_pos).le
   rw [characterHaar, integral_smul_measure, ENNReal.toReal_ofReal hc,
@@ -94,5 +94,3 @@ theorem positive_intertwiner_harmonic_integral (β : ℂˣ) (ℓ : ℕ)
   rw [hpoint]
   push_cast
   ring
-
-end DedekindZetaZeroFree.KPCplxHarmonicIntertwinerSpectrum

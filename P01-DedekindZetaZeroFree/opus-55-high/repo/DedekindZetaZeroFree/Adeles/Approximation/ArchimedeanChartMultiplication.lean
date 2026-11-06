@@ -24,7 +24,7 @@ theorem product_coordinate (y x : Fin 3 → ℂ) (hy : y 1 ≠ 0) (hx : x 1 ≠ 
   ext i
   fin_cases i <;> simp [rightCoordinates, Matrix.det_fin_two, Matrix.mul_apply, Fin.sum_univ_two]
   all_goals field_simp [hden, add_comm (y 2*x 0) 1] <;> ring
-private theorem product_domain (y x : ArchCoordinates F) (hy : y ∈ archDomain F)
+theorem product_domain (y x : ArchCoordinates F) (hy : y ∈ archDomain F)
     (hx : x ∈ archDomain F) (hden : ∀w, 1+y w 2*x w 0 ≠ 0) :
     product F (y,x) ∈ archDomain F := by
   intro w
@@ -99,7 +99,7 @@ private theorem finitePart_eq : KPGlobalTorusFunctionData.finitePart F ζ hζ =
 
  def matrixCoordinates (M : InfinitePlace F → Matrix.GeneralLinearGroup (Fin 2) ℂ) :
     ArchCoordinates F := fun w => rightCoordinates (M w).val
-private theorem coordinates_continuousAt_one : ContinuousAt (matrixCoordinates F)
+theorem coordinates_continuousAt_one : ContinuousAt (matrixCoordinates F)
     (1 : InfinitePlace F → Matrix.GeneralLinearGroup (Fin 2) ℂ) := by
   apply continuousAt_pi.mpr
   intro w
@@ -118,7 +118,7 @@ private theorem coordinates_continuousAt_one : ContinuousAt (matrixCoordinates F
   · exact (he 0 1).div (he 1 1) hn
   · exact hd.div ((he 1 1).pow 2) (pow_ne_zero _ hn)
   · exact (he 1 0).div (he 1 1) hn
-private theorem archImage_nhds (W : Set (ArchCoordinates F)) (hW : IsOpen W) (hb : archBase F ∈ W) :
+theorem archImage_nhds (W : Set (ArchCoordinates F)) (hW : IsOpen W) (hb : archBase F ∈ W) :
     (fun x w => Matrix.ProjGenLinGroup.mk (rightMatrix (x w))) '' W ∈
       nhds (1 : InfinitePlace F → Matrix.ProjGenLinGroup (Fin 2) ℂ) := by
   let Q : (InfinitePlace F → Matrix.GeneralLinearGroup (Fin 2) ℂ) →

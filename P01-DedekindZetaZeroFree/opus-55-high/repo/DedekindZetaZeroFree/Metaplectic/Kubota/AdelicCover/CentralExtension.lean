@@ -10,7 +10,6 @@ open NumberField IsDedekindDomain
 
 namespace DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw
 noncomputable section
-set_option autoImplicit false
 set_option maxHeartbeats 800000
 set_option maxRecDepth 4000
 variable (F : Type) [Field F] [NumberField F]
@@ -68,7 +67,7 @@ theorem M_closed : IsClosed (M F ζ hζ : Set (RestrictedCover F ζ hζ)) := by
   apply isClosed_of_subset_discrete_closed (t := ((restrictedProjection F ζ hζ).ker : Set _))
   · rintro x ⟨ε, hε, rfl⟩
     rw [restrictedProjection_kernel]
-    exact ⟨ε, rfl⟩
+    simp
   · exact isDiscrete_iff_discreteTopology.mpr inferInstance
   · exact (restricted_kernel_discrete F ζ hζ).2
 
@@ -100,8 +99,7 @@ theorem centralTupleMap_single (v : KPHilbert.Place F) (ε : rootsOfUnity 3 F) :
   by_cases hw : w = v
   · subst w
     simp [centralTupleMap, centralSingle, localToRestricted, RestrictedProduct.mulSingleMonoidHom]
-  · simp [centralTupleMap, centralSingle, localToRestricted, RestrictedProduct.mulSingleMonoidHom,
-      RestrictedProduct.mulSingle_eq_of_ne, hw]
+  · simp [centralTupleMap, centralSingle, localToRestricted, RestrictedProduct.mulSingleMonoidHom, hw]
 
 theorem localInjection_injective (v : KPHilbert.Place F) :
     Function.Injective (localInjection F ζ hζ v) := by
@@ -139,7 +137,7 @@ theorem localInjection_continuous (v : KPHilbert.Place F) :
     ⟨Pi.mulSingle v g, by
       intro w hw
       have hwv : w ≠ v := hw
-      simpa [Pi.mulSingle_eq_of_ne hwv] using (compact F ζ hζ w).one_mem⟩
+      simp_all⟩
   have hf : Continuous f := RestrictedProduct.continuous_rng_of_principal.mpr
     (continuous_mulSingle v)
   exact QuotientGroup.continuous_mk.comp
@@ -166,12 +164,12 @@ theorem localInjection_central (v : KPHilbert.Place F) (ε : rootsOfUnity 3 F) :
   refine ⟨centralSingle F v ε / centralSingle F (distinguishedPlace F) ε, ?_, rfl⟩
   change centralProduct F (_ / _) = 1
   simp only [map_div, centralProduct_single]
-  exact div_self' ε
+  simp
 
 theorem M_le_ker : M F ζ hζ ≤ (restrictedProjection F ζ hζ).ker := by
   rw [restrictedProjection_kernel]
   rintro x ⟨ε, hε, rfl⟩
-  exact ⟨ε, rfl⟩
+  simp
 
 def projection : CubicGL2Adelic F ζ hζ →* AdelicGL2 F :=
   QuotientGroup.lift (M F ζ hζ) (restrictedProjection F ζ hζ) (M_le_ker F ζ hζ)
@@ -179,8 +177,8 @@ def projection : CubicGL2Adelic F ζ hζ →* AdelicGL2 F :=
 @[simp] theorem projection_amalgamation (x : RestrictedCover F ζ hζ) :
     projection F ζ hζ (amalgamation F ζ hζ x) = restrictedProjection F ζ hζ x := rfl
 
-theorem centralInjection_injective : Function.Injective (centralInjection F ζ hζ) := by
-  exact (localInjection_injective F ζ hζ (distinguishedPlace F)).comp
+theorem centralInjection_injective : Function.Injective (centralInjection F ζ hζ) := 
+  (localInjection_injective F ζ hζ (distinguishedPlace F)).comp
     (KPLocalCover.centralInjection_injective F ζ hζ (distinguishedPlace F))
 
 theorem projection_surjective : Function.Surjective (projection F ζ hζ) := by
@@ -201,7 +199,7 @@ theorem range_centralInjection_eq_ker :
       rw [← centralTupleMap_single]
       apply (restrictedProjection F ζ hζ).mem_ker.mp
       rw [restrictedProjection_kernel]
-      exact ⟨centralSingle F (distinguishedPlace F) ε, rfl⟩
+      simp
     · intro hg
       have hker : g ∈ (restrictedProjection F ζ hζ).ker := hg
       rw [restrictedProjection_kernel] at hker
@@ -219,7 +217,7 @@ theorem range_centralInjection_eq_ker :
       refine ⟨centralSingle F (distinguishedPlace F) (centralProduct F ε) / ε, ?_, rfl⟩
       change centralProduct F (_ / _) = 1
       simp only [map_div, centralProduct_single]
-      exact div_self' _
+      simp
 
 theorem centralInjection_central :
     (centralInjection F ζ hζ).range ≤ Subgroup.center (CubicGL2Adelic F ζ hζ) := by
@@ -237,8 +235,8 @@ theorem centralInjection_central :
 theorem projection_localInjection (v w : KPHilbert.Place F)
     (g : KPLocalCover.CubicGL2Raw F ζ hζ v) :
     matrixEval F w (projection F ζ hζ (localInjection F ζ hζ v g)) =
-      (localToRestricted F ζ hζ v g w).g := by
-  exact restrictedProjection_eval F ζ hζ (localToRestricted F ζ hζ v g) w
+      (localToRestricted F ζ hζ v g w).g := 
+  restrictedProjection_eval F ζ hζ (localToRestricted F ζ hζ v g) w
 
 theorem adelic_discrete_kernel :
     DiscreteTopology (projection F ζ hζ).ker ∧
@@ -251,7 +249,7 @@ theorem adelic_discrete_kernel :
   let f : rootsOfUnity 3 F → (projection F ζ hζ).ker := fun ε =>
     ⟨centralInjection F ζ hζ ε, by
       rw [← range_centralInjection_eq_ker]
-      exact ⟨ε, rfl⟩⟩
+      simp⟩
   have hf : Function.Bijective f := by
     constructor
     · intro ε δ h
@@ -280,12 +278,10 @@ private theorem local_secondCountable (v : KPHilbert.Place F) :
       change SecondCountableTopology (Fin 2 → Fin 2 → w.Completion)
       infer_instance
     letI : SecondCountableTopology (KPHilbert.Completion F (Sum.inl w)) := by
-      change SecondCountableTopology w.Completion
-      infer_instance
+      omega
     letI : SecondCountableTopology (KPLocalCover.LocalGL2 F (Sum.inl w)) := by
       haveI : SecondCountableTopology (Matrix (Fin 2) (Fin 2) (KPHilbert.Completion F (Sum.inl w))) := by
-        change SecondCountableTopology (Fin 2 → Fin 2 → KPHilbert.Completion F (Sum.inl w))
-        infer_instance
+        simp_all
       letI : SecondCountableTopology (Matrix (Fin 2) (Fin 2) (KPHilbert.Completion F (Sum.inl w)))ᵐᵒᵖ :=
         MulOpposite.opHomeomorph.symm.secondCountableTopology
       exact Units.isEmbedding_embedProduct.secondCountableTopology
@@ -300,8 +296,7 @@ private theorem local_secondCountable (v : KPHilbert.Place F) :
         HeightOneSpectrum.denseRange_algebraMap F q⟩⟩
     letI : SecondCountableTopology (q.adicCompletion F) := inferInstance
     letI : SecondCountableTopology (KPHilbert.Completion F (Sum.inr q)) := by
-      change SecondCountableTopology (q.adicCompletion F)
-      infer_instance
+      omega
     letI : SecondCountableTopology (Matrix (Fin 2) (Fin 2) (KPHilbert.Completion F (Sum.inr q))) := by
       change SecondCountableTopology (Fin 2 → Fin 2 → KPHilbert.Completion F (Sum.inr q))
       infer_instance
@@ -310,12 +305,7 @@ private theorem local_secondCountable (v : KPHilbert.Place F) :
     letI : SecondCountableTopology (KPLocalCover.LocalGL2 F (Sum.inr q)) :=
       Units.isEmbedding_embedProduct.secondCountableTopology
     letI : SecondCountableTopology (KPLocalCube.LocalGL2 F q) := by
-      letI : SecondCountableTopology (Matrix (Fin 2) (Fin 2) (KPLocalCube.LocalField F q)) := by
-        change SecondCountableTopology (Fin 2 → Fin 2 → q.adicCompletion F)
-        infer_instance
-      letI : SecondCountableTopology (Matrix (Fin 2) (Fin 2) (KPLocalCube.LocalField F q))ᵐᵒᵖ :=
-        MulOpposite.opHomeomorph.symm.secondCountableTopology
-      exact Units.isEmbedding_embedProduct.secondCountableTopology
+      simp_all
     let m := depth F ζ hζ q
     have hm := depth_admissible F ζ hζ q
     let U (g : KPLocalCover.LocalGL2 F (Sum.inr q)) : Set (KPLocalCover.LocalGL2 F (Sum.inr q)) :=
@@ -431,6 +421,3 @@ theorem adelic_topological_cover :
   haveI : DiscreteTopology (projection F ζ hζ).ker := (adelic_discrete_kernel F ζ hζ).1
   exact ((ho.isQuotientMap hc (projection_surjective F ζ hζ)).isQuotientCoveringMap_of_isDiscrete_ker_monoidHom
       (SetLike.isDiscrete_iff_discreteTopology.mpr inferInstance)).isLocalHomeomorph
-
-end
-end DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw

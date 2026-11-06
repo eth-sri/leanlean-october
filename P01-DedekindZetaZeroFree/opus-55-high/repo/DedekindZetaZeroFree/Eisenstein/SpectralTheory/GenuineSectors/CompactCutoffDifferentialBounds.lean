@@ -218,21 +218,10 @@ local notation "cmap" => coord (ζ:=ζ) (hζ:=hζ)
   simp [coordinateMap, isotropyChart, targetChart, ChartKind.representative, coord]
  theorem chart_omega (a b : ShrunkChart F ζ hζ U R P H)
     (h : a.component = b.component) :
-    (targetChart a b h).omega = (isotropyChart b).omega := by
-  rcases a with ⟨i,ca,oa,da,dao,dac,das,dai⟩
-  rcases b with ⟨j,cb,ob,db,dbo,dbc,dbs,dbi⟩
-  dsimp at h
-  subst j
-  rfl
- theorem omega_open (a : ShrunkChart F ζ hζ U R P H) : IsOpen (omega a) := by
-  apply a.domain_open.preimage
-  apply continuous_pi
-  intro k
-  exact (continuous_apply _).comp (CotangentLogCoframe.A (d F)).continuous
+    (targetChart a b h).omega = (isotropyChart b).omega := by apply DedekindZetaZeroFree.KPContCotangentOverlapRationalBranches.chart_omega <;> assumption
+ theorem omega_open (a : ShrunkChart F ζ hζ U R P H) : IsOpen (omega a) := by apply DedekindZetaZeroFree.KPContActualSectorSmoothTestModules.omega_open <;> assumption
  theorem omega_subset (a : ShrunkChart F ζ hζ U R P H) :
-    omega a ⊆ (isotropyChart a).omega := by
-  intro x hx
-  exact a.closure_subset (subset_closure hx)
+    omega a ⊆ (isotropyChart a).omega := by apply DedekindZetaZeroFree.KPContCotangentOverlapRationalBranches.omega_subset <;> assumption
  def make (a b : ShrunkChart F ζ hζ U R P H) (h : a.component = b.component)
     (g : KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative a.component)) :
     ActualBranch a b := by

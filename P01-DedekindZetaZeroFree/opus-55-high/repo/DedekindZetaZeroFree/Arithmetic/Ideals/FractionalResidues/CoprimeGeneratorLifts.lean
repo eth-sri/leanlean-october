@@ -52,10 +52,8 @@ theorem fractionalResidueGenerator_lift_properties (m : Ideal R)
   have hne : β ≠ 0 := by
     intro hzero
     have hm' : (m : FractionalIdeal R⁰ K) = 1 := by
-      simpa [fractionalResidueLiftIdeal, hzero] using hsum
-    apply hm1
-    apply FractionalIdeal.coeIdeal_injective (K := K)
-    simpa using hm'
+      simp_all
+    simp_all
   refine ⟨hne, heq, ?_, ?_, hsum⟩
   · exact mul_ne_zero (FractionalIdeal.spanSingleton_ne_zero_iff.mpr hne) (inv_ne_zero hI)
   · change FractionalIdeal.spanSingleton R⁰ β * I⁻¹ ≤ 1
@@ -79,12 +77,7 @@ theorem fractionalResidueGenerator_lift_coprime_ideal (m : Ideal R)
   obtain ⟨b, hb⟩ := FractionalIdeal.le_one_iff_exists_coeIdeal.mp hble
   refine ⟨b, hb, ?_, ?_, ?_⟩
   · intro hzero
-    apply hbne
-    rw [← hb, hzero, FractionalIdeal.coeIdeal_bot]
+    simp_all
   · apply FractionalIdeal.coeIdeal_injective (K := K)
-    simpa only [FractionalIdeal.coeIdeal_sup, FractionalIdeal.coeIdeal_top, hb] using hsum
+    simp_all
   · rw [hb, fractionalResidueLiftIdeal, mul_assoc, inv_mul_cancel₀ hI, mul_one]
-
-end
-
-end DedekindZetaZeroFree.Hecke

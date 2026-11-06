@@ -66,9 +66,7 @@ variable (C : KPGlobalTorusFiniteStages.LocalFiberData F ζ hζ P)
   have hn (z : w.Completion) : ‖E z‖ = ‖z‖ :=
     (InfinitePlace.Completion.isometryEquivComplexOfIsComplex
       (KPHilbert.infinite_isComplex F ζ hζ w)).isometry.norm_map_of_map_zero (map_zero E) z
-  simp only [KPCplxPrincipalSeriesCharts.complexAbs, Units.coe_map, RingHom.coe_coe,
-    ← map_div₀, KPGlobalCenterRationalCharacterExtension.localAbs, Units.val_mul,
-    Units.val_inv_eq_inv_val, NNReal.coe_pow, coe_nnnorm]
+  simp only [KPCplxPrincipalSeriesCharts.complexAbs, Units.coe_map, KPGlobalCenterRationalCharacterExtension.localAbs, Units.val_mul, Units.val_inv_eq_inv_val, NNReal.coe_pow, coe_nnnorm]
   change ‖E (x : w.Completion) / E (y : w.Completion)‖ ^ 2 = _
   rw [← map_div₀, hn, div_eq_mul_inv]
 
@@ -136,7 +134,7 @@ variable (C : KPGlobalTorusFiniteStages.LocalFiberData F ζ hζ P)
     · apply finprod_congr
       intro v
       rw [hn]
-      simp [KPGlobalCenterRationalCharacter.sixthPower, NNReal.coe_rpow]
+      rfl
 
  theorem raw_lifts (e : KPGlobalTorusFunctionData.E F ζ hζ) :
     ∃ (u : RestrictedCover F ζ hζ)
@@ -161,7 +159,3 @@ variable (C : KPGlobalTorusFiniteStages.LocalFiberData F ζ hζ P)
     (fun w => Units.map (E w) (h (Sum.inl w)).2.unit), fun _ => rfl, ?_, he⟩
   intro w
   exact arch_matrix F ζ hζ w _ (h _) (hd _).1 (hd _).2
-
-end DedekindZetaZeroFree.EisensteinReferenceSections.TorusNorms
-
-end

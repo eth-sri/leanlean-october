@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 namespace LocalClassFieldTheory
 open CyclicCohomology
 
@@ -26,7 +23,6 @@ The recursive norm and coboundary constructions are converted here into the
 actual quotient statements `H⁰(G,V)=H⁻¹(G,V)=1` used in the local class-field-axiom theorem.
 -/
 
-noncomputable section
 
 universe u
 
@@ -60,14 +56,14 @@ theorem exists_chosenNormalBasisPrincipalUnit_herbrand_subsingleton
       (K := K) (L := L) g hgen with ⟨cm, hcm⟩
   refine ⟨max c0 cm, ?_⟩
   intro n hn V hV
-  have hc0n : c0 ≤ n := le_trans (le_max_left c0 cm) hn
-  have hcmn : cm ≤ n := le_trans (le_max_right c0 cm) hn
+  have hc0n : c0 ≤ n := by omega
+  have hcmn : cm ≤ n := by omega
   let := chosenNormalBasisPrincipalUnitSubgroupMulDistribMulAction
     K L n V hV
   have hfixed : fixedSubgroup (Gal(L / K)) V ≤
       tateNormSubgroup (Gal(L / K)) V := by
     intro a ha
-    have haSet : ((a : V) : 𝒪[L]ˣ) ∈ (V : Set 𝒪[L]ˣ) := (a : V).2
+    have haSet : ((a : V) : 𝒪[L]ˣ) ∈ (V : Set 𝒪[L]ˣ) := by simp
     have haLevel : ((a : V) : 𝒪[L]ˣ) ∈
         chosenNormalBasisPrincipalUnitSet K L n := by
       rw [← hV]
@@ -94,7 +90,7 @@ theorem exists_chosenNormalBasisPrincipalUnit_herbrand_subsingleton
     have haLevel : ((a : V) : 𝒪[L]ˣ) ∈
         chosenNormalBasisPrincipalUnitSet K L n := by
       rw [← hV]
-      exact (a : V).2
+      simp
     have haNorm :
         letI := galoisGroupIntegerUnitsMulDistribMulActionOfIsIntegralClosure K L
         tateNorm (Gal(L / K)) 𝒪[L]ˣ ((a : V) : 𝒪[L]ˣ) = 1 := by
@@ -115,6 +111,3 @@ theorem exists_chosenNormalBasisPrincipalUnit_herbrand_subsingleton
     herbrandH0_subsingleton_of_fixed_le_tateNormSubgroup hfixed,
     herbrandHMinusOne_subsingleton_of_normKernel_le_augmentationSubgroup
       g hkernel⟩
-
-end
-end LocalClassFieldTheory

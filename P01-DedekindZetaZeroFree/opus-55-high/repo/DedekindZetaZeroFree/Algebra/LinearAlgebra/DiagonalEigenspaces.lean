@@ -36,7 +36,7 @@ theorem _root_.Module.Basis.repr_apply_of_apply_basis (b : Module.Basis ι K V)
     refine b.ext fun j => ?_
     rcases eq_or_ne j i with rfl | hj
     · simp [hf j]
-    · simp [hf j, hj]
+    simp_all
   simpa using LinearMap.congr_fun key w
 
 end CommSemiring
@@ -45,13 +45,13 @@ section CoordinateSubtraction
 
 variable [CommRing K] [AddCommGroup V] [Module K V] {f : V →ₗ[K] V} {a : ι → K}
 
-private theorem repr_sub_smul_apply (b : Module.Basis ι K V) (hf : ∀ i, f (b i) = a i • b i)
+theorem repr_sub_smul_apply (b : Module.Basis ι K V) (hf : ∀ i, f (b i) = a i • b i)
     (w : V) (j k : ι) :
     b.repr (f w - a j • w) k = (a k - a j) * b.repr w k := by
   rw [map_sub, map_smul, Finsupp.sub_apply, Finsupp.smul_apply,
     b.repr_apply_of_apply_basis hf, smul_eq_mul, sub_mul]
 
-private theorem support_repr_sub_smul_subset [DecidableEq ι] (b : Module.Basis ι K V)
+theorem support_repr_sub_smul_subset [DecidableEq ι] (b : Module.Basis ι K V)
     (hf : ∀ i, f (b i) = a i • b i) (w : V) (j : ι) :
     (b.repr (f w - a j • w)).support ⊆ (b.repr w).support.erase j := by
   intro k hk
@@ -59,7 +59,7 @@ private theorem support_repr_sub_smul_subset [DecidableEq ι] (b : Module.Basis 
   rw [repr_sub_smul_apply b hf w j k] at hk0
   refine Finset.mem_erase.2 ⟨?_, Finsupp.mem_support_iff.2 (right_ne_zero_of_mul hk0)⟩
   rintro rfl
-  exact hk0 (by rw [sub_self, zero_mul])
+  simp_all
 
 end CoordinateSubtraction
 
@@ -68,7 +68,7 @@ section Field
 variable [Field K] [AddCommGroup V] [Module K V] {f : V →ₗ[K] V} {a : ι → K}
   {W : Submodule K V}
 
-private theorem self_mem_aux (b : Module.Basis ι K V) (hf : ∀ i, f (b i) = a i • b i)
+theorem self_mem_aux (b : Module.Basis ι K V) (hf : ∀ i, f (b i) = a i • b i)
     (ha : Function.Injective a) (hW : ∀ v ∈ W, f v ∈ W) :
     ∀ (n : ℕ) (w : V), w ∈ W → (b.repr w).support.card ≤ n →
       ∀ i : ι, b.repr w i ≠ 0 → b i ∈ W := by
@@ -76,9 +76,7 @@ private theorem self_mem_aux (b : Module.Basis ι K V) (hf : ∀ i, f (b i) = a 
   intro n
   induction n with
   | zero =>
-    intro w _ hcard i hi
-    have hsupp : (b.repr w).support = ∅ := Finset.card_eq_zero.1 (Nat.le_zero.1 hcard)
-    exact absurd (Finsupp.notMem_support_iff.1 (by rw [hsupp]; exact Finset.notMem_empty i)) hi
+    simp_all
   | succ n ih =>
     intro w hw hcard i hi
     by_cases hsub : (b.repr w).support ⊆ {i}
@@ -90,12 +88,11 @@ private theorem self_mem_aux (b : Module.Basis ι K V) (hf : ∀ i, f (b i) = a 
         one_smul] at hmem
     ·
       obtain ⟨j, hjs, hji⟩ := Finset.not_subset.1 hsub
-      have hjne : j ≠ i := fun h => hji (Finset.mem_singleton.2 h)
+      have hjne : j ≠ i := by simp_all
       have hmem : f w - a j • w ∈ W := W.sub_mem (hW w hw) (W.smul_mem _ hw)
       have hcard' : (b.repr (f w - a j • w)).support.card ≤ n := by
         have hle := Finset.card_le_card (support_repr_sub_smul_subset b hf w j)
         rw [Finset.card_erase_of_mem hjs] at hle
-        have hpos : 0 < (b.repr w).support.card := Finset.card_pos.2 ⟨j, hjs⟩
         omega
       refine ih _ hmem hcard' i ?_
       rw [repr_sub_smul_apply b hf w j i]
@@ -116,7 +113,3 @@ theorem _root_.Module.Basis.eq_span_self_mem (b : Module.Basis ι K V)
       ⟨k, rfl, b.self_mem_of_repr_ne_zero hf ha hW hw (Finsupp.mem_support_iff.1 hk)⟩)
   · rintro v ⟨-, -, hv⟩
     exact hv
-
-end Field
-
-end DedekindZetaZeroFree.TauCeti

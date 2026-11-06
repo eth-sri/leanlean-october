@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Algebra for localized completion cohomology
 
@@ -42,7 +39,7 @@ variable {K : Type u} {L : Type v}
 completed base.  Naming this instance keeps clients from rebuilding the
 completion tower at every declaration boundary. -/
 @[reducible]
-noncomputable def localizedCompletionBaseAlgebra
+def localizedCompletionBaseAlgebra
     (vK : AbsoluteValue K ℝ)
     (w : AbsoluteValueExtension vK L) :
     Algebra vK.Completion (LocalizedCompletion vK w) := by
@@ -79,7 +76,7 @@ theorem localizedCompletionIsGalois
 /-- The algebra structure on the algebraic localization induced by the tower
 `K → K_v → L_w`. -/
 @[reducible]
-noncomputable def localizedCompletionGlobalAlgebra
+def localizedCompletionGlobalAlgebra
     (vK : AbsoluteValue K ℝ)
     (w : AbsoluteValueExtension vK L) :
     letI : Algebra vK.Completion (LocalizedCompletion vK w) :=
@@ -106,7 +103,7 @@ theorem localizedCompletionIsScalarTower
   exact IsScalarTower.of_algebraMap_eq' rfl
 
 /-- The canonical global-to-local embedding as a `K`-algebra homomorphism. -/
-noncomputable def localizedCompletionToAlgHom
+def localizedCompletionToAlgHom
     (vK : AbsoluteValue K ℝ)
     (w : AbsoluteValueExtension vK L) :
     letI : Algebra vK.Completion (LocalizedCompletion vK w) :=
@@ -127,9 +124,7 @@ noncomputable def localizedCompletionToAlgHom
             algebraMap vK.Completion
               (LocalizedCompletion vK w)
               (algebraMap K vK.Completion x)
-        exact
-          AbsoluteValue.toAlgebraicLocalization_algebraMap
-            vK w.1 w.2 x }
+        simp }
 
 /-- The algebraic localization is generated over the completed base by the
 canonical image of the global extension. -/
@@ -190,7 +185,7 @@ theorem localizedCompletion_adjoin_image_eq_top_of_adjoin_eq_top
       Set.range (AbsoluteValue.toAlgebraicLocalization vK w.1 w.2) ⊆ R := by
     rintro _ ⟨x, rfl⟩
     change toF x ∈ R
-    have hx : toF x ∈ toF.fieldRange := ⟨x, rfl⟩
+    have hx : toF x ∈ toF.fieldRange := by simp
     rw [hfieldRange] at hx
     exact hKAdjoin hx
   apply top_unique
@@ -198,48 +193,6 @@ theorem localizedCompletion_adjoin_image_eq_top_of_adjoin_eq_top
   exact IntermediateField.adjoin_le_iff.mpr hrange
 
 variable [IsGalois K L]
-
-/-- Every element in the canonical image of the global extension is separable
-over the completed base. -/
-theorem localizedCompletion_generator_isSeparable
-    (vK : AbsoluteValue K ℝ)
-    (w : AbsoluteValueExtension vK L) (x : L) :
-    letI hK := AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
-    letI : SMul K w.1.Completion := hK.toSMul
-    letI : Algebra vK.Completion w.1.Completion :=
-      AbsoluteValue.completionAlgebra vK w.1 w.2
-    letI := localizedCompletionGlobalAlgebra vK w
-    letI := localizedCompletionIsScalarTower vK w
-    IsSeparable vK.Completion
-      (AbsoluteValue.toAlgebraicLocalization vK w.1 w.2 x) := by
-  let _ := localizedCompletionBaseAlgebra vK w
-  let _ := localizedCompletionGlobalAlgebra vK w
-  let _ := localizedCompletionIsScalarTower vK w
-  exact
-    HilbertRamification.decompositionField_toLocalization_isSeparable
-      vK w x
-
-/-- The completed-base minimal polynomial of every canonical global generator
-splits in the algebraic localization. -/
-theorem localizedCompletion_generator_minpoly_splits
-    (vK : AbsoluteValue K ℝ)
-    (w : AbsoluteValueExtension vK L) (x : L) :
-    letI hK := AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
-    letI : SMul K w.1.Completion := hK.toSMul
-    letI : Algebra vK.Completion w.1.Completion :=
-      AbsoluteValue.completionAlgebra vK w.1 w.2
-    letI := localizedCompletionGlobalAlgebra vK w
-    letI := localizedCompletionIsScalarTower vK w
-    ((minpoly vK.Completion
-        (AbsoluteValue.toAlgebraicLocalization vK w.1 w.2 x)).map
-      (algebraMap vK.Completion
-        (LocalizedCompletion vK w))).Splits := by
-  let _ := localizedCompletionBaseAlgebra vK w
-  let _ := localizedCompletionGlobalAlgebra vK w
-  let _ := localizedCompletionIsScalarTower vK w
-  exact
-    HilbertRamification.decompositionField_toLocalization_minpoly_splits
-      vK w x
 
 open scoped IsMulCommutative in
 omit [IsGalois K L] in
@@ -350,8 +303,3 @@ theorem localizedCompletion_baseField_comap_eq_fixedField_decompositionGroup
         congrArg
           (AbsoluteValue.toAlgebraicLocalization
             vK w.1 w.2) hδ
-
-
-end LocalClassFieldTheory
-
-end

@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Theta.Unfolding.TameTransposeKernel
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.KPTameTransposeLiteralShell
 
 open scoped NumberField Classical
@@ -59,8 +58,7 @@ theorem conductor_shell_haar_substitution
       · intro h; rw [h, map_one]
       · intro h
         apply e.injective
-        change e (valuation K (a * x)) = e 1
-        rwa [map_one]
+        simp_all
     rw [heq]
     have hle : valuation K ((π : K) * x) ≤ 1 ↔
         e (valuation K ((π : K) * x)) ≤ 1 := by
@@ -70,7 +68,7 @@ theorem conductor_shell_haar_substitution
       rw [← e.map_one]
       exact e.toOrderIso.le_iff_le.symm
     rw [hle, hle']
-    simp only [a, Valuation.map_mul, Valuation.map_neg, map_mul, hπK]
+    simp only [a, Valuation.map_neg, map_mul, hπK]
     by_cases hy : e (valuation K x) = 0
     · simp [hy]
     · rw [← WithZero.exp_log hy]
@@ -100,10 +98,6 @@ theorem conductor_shell_haar_substitution
   rw [← H]
   have hq : 0 < (residueCardinality K : ℝ) := by
     dsimp [residueCardinality]
-    exact_mod_cast (Nat.card_pos (α := IsLocalRing.ResidueField (valuation K).integer))
+    simp
   rw [ENNReal.toReal_inv, ENNReal.toReal_ofReal (inv_nonneg.mpr hq.le), inv_inv]
-  exact RCLike.real_smul_eq_coe_mul _ _
-
-end DedekindZetaZeroFree.KPTameTransposeLiteralShell
-
-end
+  rfl

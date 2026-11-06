@@ -33,11 +33,7 @@ private theorem denominator_ideal
       FractionalIdeal.spanSingleton (nonZeroDivisors (𝓞 F)) ((x : F)⁻¹) ≤ 1 from inf_le_left)
   have hmem (b : 𝓞 F) : b ∈ D ↔ ∃ a : 𝓞 F, (a : F) = (x : F) * (b : F) := by
     have hb : (b : F) ∈ (D : FractionalIdeal (nonZeroDivisors (𝓞 F)) F) ↔ b ∈ D := by
-      rw [FractionalIdeal.mem_coeIdeal]
-      constructor
-      · rintro ⟨c, hc, hcb⟩
-        exact (NumberField.RingOfIntegers.coe_injective hcb) ▸ hc
-      · intro hb; exact ⟨b, hb, rfl⟩
+      simp
     rw [← hb, hD]
     change ((b : F) ∈ (1 : FractionalIdeal (nonZeroDivisors (𝓞 F)) F) ∧
       (b : F) ∈ FractionalIdeal.spanSingleton (nonZeroDivisors (𝓞 F)) ((x : F)⁻¹)) ↔ _
@@ -61,9 +57,9 @@ private theorem denominator_ideal
   have hbF : (b : F) ≠ 0 := by exact_mod_cast hb0
   have hbD : b ∈ D := (hmem b).mpr ⟨a, by rw [← hab]; field_simp⟩
   intro hz
-  simpa [hz, hb0] using hbD
+  simp_all
 
-private theorem denominator_coprime
+theorem denominator_coprime
     (F : Type) [Field F] [NumberField F]
     (𝔪 : Ideal (𝓞 F)) (h𝔪 : 𝔪 ≠ ⊥) (x : Fˣ)
     (hx : ClassFieldTheory.IsRayCongruent (narrowIdealModulus F 𝔪 h𝔪) x)
@@ -76,8 +72,7 @@ private theorem denominator_coprime
   have hMP : 𝔪 ≤ P := le_trans le_sup_right hle
   have hP0 : P ≠ ⊥ := by
     intro hz
-    apply hD
-    exact le_bot_iff.mp (hz ▸ hDP)
+    simp_all
   let v : HeightOneSpectrum (𝓞 F) := ⟨P, hP.isPrime, hP0⟩
   have hv : v ∈ (narrowIdealModulus F 𝔪 h𝔪).finitePart.support := by
     change v ∈ (↑(narrowIdealModulus F 𝔪 h𝔪).finitePart.support : Set _)
@@ -85,7 +80,7 @@ private theorem denominator_coprime
     exact hMP
   have hval := ray_valuation_le_one F v _ x (hx.1 v hv)
   obtain ⟨a, b, hab⟩ := v.exists_primeCompl_mul_eq_of_integer (x : F) hval
-  have hbD : (b : 𝓞 F) ∈ D := (hmem b).mpr ⟨a, hab.symm⟩
+  have hbD : (b : 𝓞 F) ∈ D := by simp_all
   exact b.property (hDP hbD)
 
 theorem isRayCongruent_clear_denominators
@@ -120,19 +115,15 @@ theorem isRayCongruent_clear_denominators
   have hβF : (β : F) ≠ 0 := by exact_mod_cast hβ
   have hα : α ≠ 0 := by
     intro hz
-    have hh := hαeq
-    simp only [hz, map_zero] at hh
-    exact (mul_ne_zero x.ne_zero hβF) hh.symm
+    simp_all
   let b : Fˣ := Units.mk0 (β : F) hβF
   have hb : (b : F) = (β : F) := rfl
   have hbcong := (integral_finite_ray_congruent_iff F 𝔪 h𝔪 β hβ b hb).mpr hβm
   have hab : ((x * b : Fˣ) : F) = (α : F) := by
-    simpa only [Units.val_mul, hb] using hαeq.symm
+    simp_all
   have hαm : α - 1 ∈ 𝔪 := by
     apply (integral_finite_ray_congruent_iff F 𝔪 h𝔪 α hα (x * b) hab).mp
     intro v hv
     rw [map_mul]
     exact (ClassFieldTheory.rayLocalHigherUnitGroup v _).mul_mem (hx.1 v hv) (hbcong v hv)
   exact ⟨α, β, hα, hβ, hαm, hβm, hαeq⟩
-
-end DedekindZetaZeroFree.RayClassBridge

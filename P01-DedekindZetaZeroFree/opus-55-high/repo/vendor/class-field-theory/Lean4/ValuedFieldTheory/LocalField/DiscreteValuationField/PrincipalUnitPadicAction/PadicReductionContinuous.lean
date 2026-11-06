@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Continuity of reduction of p-adic integers
 
@@ -36,7 +31,7 @@ theorem isOpen_ker_padicIntToZModPow
   rw [PadicInt.ker_toZModPow]
   have hp0 : (p : ℝ) ≠ 0 := by
     exact_mod_cast (Fact.out : p.Prime).ne_zero
-  have hr : (p : ℝ) ^ (-n : ℤ) ≠ 0 := zpow_ne_zero (-n : ℤ) hp0
+  have hr : (p : ℝ) ^ (-n : ℤ) ≠ 0 := by simp_all
   have hball :
       IsOpen (Metric.closedBall (0 : ℤ_[p]) ((p : ℝ) ^ (-n : ℤ))) :=
     IsUltrametricDist.isOpen_closedBall (0 : ℤ_[p]) hr
@@ -63,5 +58,3 @@ theorem Internal.continuous_padicIntToZModPow
   rw [ContinuousAt, nhds_discrete (ZMod (p ^ n)), map_zero, Filter.tendsto_pure]
   exact (isOpen_ker_padicIntToZModPow p n).mem_nhds
     (RingHom.ker (PadicInt.toZModPow n)).zero_mem
-
-end LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup

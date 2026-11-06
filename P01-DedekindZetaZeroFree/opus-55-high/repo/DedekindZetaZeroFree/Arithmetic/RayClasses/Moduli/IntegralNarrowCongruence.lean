@@ -6,7 +6,6 @@ public import DedekindZetaZeroFree.Arithmetic.RayClasses.Moduli.NarrowRealPositi
 
 @[expose] public section
 
-noncomputable section
 
 open scoped NumberField Classical
 open IsDedekindDomain
@@ -36,7 +35,7 @@ theorem integralNarrowRayCongruence
         Nat.one_le_iff_ne_zero.mpr (Finsupp.mem_support_iff.mp hv)
       exact (localIntegralRayCongruence K v _ hn a ha).mpr
         ((mem_ideal_iff_narrow_primePowers K m hm (a - 1)).mp hmem v hv)
-    · exact (narrowRayRealPositivity K m hm (a : K)).mpr hpos
+    simp_all
 
 theorem narrowRayCongruent_valuation_le_one
     (K : Type) [Field K] [NumberField K]
@@ -48,7 +47,3 @@ theorem narrowRayCongruent_valuation_le_one
   intro v hv
   exact valuation_le_one_of_localRayCongruence K v
     ((narrowIdealModulus K m hm).finitePart v) x (hx.1 v hv)
-
-end DedekindZetaZeroFree.AbelianQuotient
-
-end

@@ -27,34 +27,33 @@ private theorem dual_antitone (v : HeightOneSpectrum (𝓞 F))
   intro y hy u hu
   exact hy u (h hu)
 
-private theorem dual_closed (v : HeightOneSpectrum (𝓞 F))
+theorem dual_closed (v : HeightOneSpectrum (𝓞 F))
     (U : AddSubgroup (v.adicCompletion F)) :
     IsClosed (localFiniteAnnihilator F v U : Set (v.adicCompletion F)) := by
   have he : (localFiniteAnnihilator F v U : Set (v.adicCompletion F)) =
       ⋂ u : U, {y | localFiniteCharacter F v (u.val * y) = 1} := by
     ext y
-    simp only [Set.mem_iInter, Set.mem_setOf_eq, mem_localFiniteAnnihilator]
-    exact ⟨fun h u => h u u.property, fun h u hu => h ⟨u, hu⟩⟩
+    simp
   rw [he]
   apply isClosed_iInter
   intro u
   exact isClosed_eq ((continuous_localFiniteCharacter F v).comp
     (continuous_const.mul continuous_id)) continuous_const
 
-private theorem dual_inner_ball (v : HeightOneSpectrum (𝓞 F))
+theorem dual_inner_ball (v : HeightOneSpectrum (𝓞 F))
     (U : AddSubgroup (v.adicCompletion F)) (ho : IsOpen (U : Set (v.adicCompletion F))) :
     ∃ n : ℤ, finiteCompletionBall F v n ≤ U := by
   obtain ⟨n, _, hn⟩ := (finiteCompletionBall_hasBasis_nhds F v 0).mem_iff.mp
     (ho.mem_nhds U.zero_mem)
   exact ⟨n, fun x hx => hn (by simpa using hx)⟩
 
-private theorem dual_outer_ball (v : HeightOneSpectrum (𝓞 F))
+theorem dual_outer_ball (v : HeightOneSpectrum (𝓞 F))
     (U : AddSubgroup (v.adicCompletion F)) (hc : IsCompact (U : Set (v.adicCompletion F))) :
     ∃ n : ℤ, U ≤ finiteCompletionBall F v n := by
   obtain ⟨k, hk⟩ := hc.elim_directed_cover
     (fun k : ℕ => (finiteCompletionBall F v (-(k : ℤ)) : Set _))
     (fun k => isOpen_finiteCompletionBall F v _)
-    (by rw [iUnion_finiteCompletionBall_neg_nat]; exact Set.subset_univ _)
+    (by rw [iUnion_finiteCompletionBall_neg_nat]; simp)
     (by
       intro i j
       refine ⟨max i j, ?_, ?_⟩ <;>
@@ -84,7 +83,7 @@ theorem isOpen_localFiniteAnnihilator
   exact mem_interior_iff_mem_nhds.mpr (Filter.mem_of_superset
     ((isOpen_finiteCompletionBall F v _).mem_nhds (AddSubgroup.zero_mem _)) h)
 
-private theorem dual_indicator_identity
+theorem dual_indicator_identity
     (v : HeightOneSpectrum (𝓞 F)) (U : AddSubgroup (v.adicCompletion F))
     (hc : IsCompact (U : Set (v.adicCompletion F)))
     (ho : IsOpen (U : Set (v.adicCompletion F))) (x : v.adicCompletion F) :
@@ -108,7 +107,7 @@ private theorem dual_indicator_identity
     (isOpen_localFiniteAnnihilator F v U hc ho)] at hi
   simpa [mul_assoc] using hi
 
-private theorem dual_mass_complex
+theorem dual_mass_complex
     (v : HeightOneSpectrum (𝓞 F)) (U : AddSubgroup (v.adicCompletion F))
     (hc : IsCompact (U : Set (v.adicCompletion F)))
     (ho : IsOpen (U : Set (v.adicCompletion F))) :
@@ -137,7 +136,3 @@ theorem localNormalizedHaar_integerRing_of_not_mem
       (v.adicCompletionIntegers F : Set (v.adicCompletion F)) = 1 := by
   rw [localNormalizedHaar_integerRing]
   simp [localHalfDifferentFactor, localDifferentExponent_eq_zero_of_not_mem F S hS v hv]
-
-end DedekindZetaZeroFree
-
-end

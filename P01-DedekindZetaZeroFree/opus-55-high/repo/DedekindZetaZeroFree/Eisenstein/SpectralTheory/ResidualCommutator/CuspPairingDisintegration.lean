@@ -50,7 +50,6 @@ local notation "A" => H.atlas V
 local notation "D" => H.disintegration V
 local notation "CS" => KPMsFixedHaarDisintegration.CrossSection A
 local notation "X" => Covered F ζ hζ C R P H U
-local instance : Fintype (rootsOfUnity 3 F) := Fintype.ofFinite _
 
 end DedekindZetaZeroFree.KPGlobalResidualConstruction.SourceCuspidalOrthogonality.Bridge
 

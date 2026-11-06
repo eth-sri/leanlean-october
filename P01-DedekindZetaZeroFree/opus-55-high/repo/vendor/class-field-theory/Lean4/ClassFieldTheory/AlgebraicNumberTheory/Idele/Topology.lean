@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # The idele topology
 
@@ -26,7 +23,6 @@ open scoped NumberField
 open NumberField IsDedekindDomain
 
 noncomputable section
-
 
 variable (K : Type*) [Field K] [NumberField K]
 
@@ -101,7 +97,3 @@ theorem finiteComponentContinuous_apply
     (a : IdeleGroup K) (v : HeightOneSpectrum (𝓞 K)) :
     finiteComponentContinuous v a = a.2 v :=
   rfl
-
-end IdeleGroup
-
-end

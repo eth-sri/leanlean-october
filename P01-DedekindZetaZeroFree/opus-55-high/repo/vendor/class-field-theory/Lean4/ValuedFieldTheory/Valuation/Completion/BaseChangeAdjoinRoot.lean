@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # A primitive extension after scalar extension
 
@@ -38,7 +32,7 @@ universe u v w
 open scoped TensorProduct Polynomial
 
 /-- Scalar extension of a power basis. -/
-noncomputable def powerBasisBaseChange
+def powerBasisBaseChange
     {K A L : Type*} [Field K] [Field A] [Field L]
     [Algebra K A] [Algebra K L]
     (pb : PowerBasis K L) : PowerBasis A (A ⊗[K] L) where
@@ -46,8 +40,7 @@ noncomputable def powerBasisBaseChange
   dim := pb.dim
   basis := Algebra.TensorProduct.basis A pb.basis
   basis_eq_pow i := by
-    rw [Algebra.TensorProduct.basis_apply, pb.basis_eq_pow]
-    simp [Algebra.TensorProduct.tmul_pow]
+    simp
 
 /-- The generator of a base-changed power basis is the tensor of one with the old generator. -/
 @[simp]
@@ -73,7 +66,7 @@ theorem minpoly_map_aeval_one_tmul
 
 /-- The canonical algebra map from the mapped primitive quotient to the
 scalar extension. -/
-noncomputable def adjoinRootToBaseChange
+def adjoinRootToBaseChange
     {K A L : Type*} [Field K] [Field A] [Field L]
     [Algebra K A] [Algebra K L]
     (pb : PowerBasis K L) :
@@ -115,7 +108,7 @@ theorem adjoinRootToBaseChange_surjective
   change e (AdjoinRoot.root q ^ (i : ℕ)) = b i
   rw [map_pow, (powerBasisBaseChange (A := A) pb).basis_eq_pow,
     adjoinRootToBaseChange_root]
-  rw [powerBasisBaseChange_gen, Algebra.TensorProduct.tmul_pow, one_pow]
+  rfl
 
 /-- The mapped primitive quotient and scalar extension have equal dimension. -/
 theorem adjoinRoot_baseChange_finrank_eq
@@ -139,7 +132,7 @@ theorem adjoinRoot_baseChange_finrank_eq
 
 /-- Canonical scalar-extension presentation, in the quotient-to-tensor
 direction. -/
-noncomputable def adjoinRootEquivBaseChange
+def adjoinRootEquivBaseChange
     {K A L : Type*} [Field K] [Field A] [Field L]
     [Algebra K A] [Algebra K L]
     (pb : PowerBasis K L) :
@@ -172,7 +165,7 @@ theorem adjoinRootEquivBaseChange_root
   exact adjoinRootToBaseChange_root (A := A) pb
 
 /-- Canonical scalar-extension presentation of a primitive field extension. -/
-noncomputable def baseChangeEquivAdjoinRoot
+def baseChangeEquivAdjoinRoot
     {K A L : Type*} [Field K] [Field A] [Field L]
     [Algebra K A] [Algebra K L]
     (pb : PowerBasis K L) :
@@ -192,8 +185,3 @@ theorem baseChangeEquivAdjoinRoot_one_tmul_gen
       (1 ⊗ₜ[K] pb.gen) = _
   rw [← adjoinRootEquivBaseChange_root]
   exact (adjoinRootEquivBaseChange (A := A) pb).symm_apply_apply _
-
-end Completion
-end ValuationTheory
-
-end

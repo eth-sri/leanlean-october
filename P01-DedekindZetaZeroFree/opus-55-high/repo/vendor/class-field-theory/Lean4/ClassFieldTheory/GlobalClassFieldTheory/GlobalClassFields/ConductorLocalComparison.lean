@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Narrow finite and local conductor exponents
 
@@ -59,7 +55,7 @@ theorem exists_localDefiningExponent
 namespace ConductorialSubgroup
 
 /-- The finite local conductor exponent seen by a conductorial subgroup. -/
-noncomputable def narrowFiniteLocalConductorExponent
+def narrowFiniteLocalConductorExponent
     (H : ConductorialSubgroup K)
     (v : HeightOneSpectrum (𝓞 K)) : ℕ :=
   Nat.find (exists_localDefiningExponent H.1 H.2 v)
@@ -79,24 +75,9 @@ theorem narrowFiniteLocalConductorExponent_le
     (v : HeightOneSpectrum (𝓞 K))
     {n : ℕ}
     (hn : RayClass.localHigherUnitClassSubgroup v n ≤ H.1) :
-    H.narrowFiniteLocalConductorExponent v ≤ n := by
-  exact Nat.find_min'
+    H.narrowFiniteLocalConductorExponent v ≤ n := 
+  Nat.find_min'
     (exists_localDefiningExponent H.1 H.2 v) hn
-
-/-- The finite local conductor exponent vanishes exactly when the full
-finite-place integral-unit class subgroup lies in the subgroup. -/
-theorem narrowFiniteLocalConductorExponent_eq_zero_iff
-    (H : ConductorialSubgroup K)
-    (v : HeightOneSpectrum (𝓞 K)) :
-    H.narrowFiniteLocalConductorExponent v = 0 ↔
-      RayClass.localHigherUnitClassSubgroup v 0 ≤ H.1 := by
-  constructor
-  · intro hzero
-    simpa only [hzero] using
-      H.narrowFiniteLocalConductorExponent_spec v
-  · intro hlocal
-    exact Nat.eq_zero_of_le_zero
-      (H.narrowFiniteLocalConductorExponent_le v hlocal)
 
 end ConductorialSubgroup
 
@@ -141,7 +122,7 @@ theorem replaceFiniteExponent_definingModulus
         have hlocal :
             m'.localInfiniteCongruenceSubgroup w =
               m.localInfiniteCongruenceSubgroup w := by
-          simp [m']
+          rfl
         rw [hlocal] at haw
         change IdeleGroup.infiniteComponent w b ∈
           m.localInfiniteCongruenceSubgroup w
@@ -163,7 +144,7 @@ theorem replaceFiniteExponent_definingModulus
           rw [IdeleGroup.finitePlaceIdele_finiteComponent_same,
             IdeleGroup.finiteComponent_apply,
             mul_inv_cancel]
-          exact Subgroup.one_mem _
+          simp
         · have haw := ha'.2 w
           have hupdate : (m'.finitePart w) = m.finitePart w := by
             simp [m', RayClass.Modulus.replaceFinitePart, hw]
@@ -221,7 +202,7 @@ theorem narrowFiniteConductorExponent_eq_narrowFiniteLocalConductorExponent
         (H.narrowFiniteLocalConductorExponent v) hlocal
     have hle :=
       H.narrowFiniteConductorExponent_le hupdate v
-    simpa [m, RayClass.Modulus.replaceFinitePart] using hle
+    simp_all
   · obtain ⟨m, hm, hmv⟩ :=
       H.narrowFiniteConductorExponent_spec v
     have hlocal :
@@ -256,8 +237,7 @@ theorem exists_definingModulus_finitePart_agrees_on_finset
       refine
         ⟨H.chosenDefiningModulus,
           H.chosenDefiningModulus_spec, ?_, ?_⟩
-      · intro v hv
-        simp at hv
+      · simp
       · intro v _hv
         rfl
   | @insert v s hv ih =>
@@ -279,14 +259,12 @@ theorem exists_definingModulus_finitePart_agrees_on_finset
         rcases Finset.mem_insert.mp hw with rfl | hws
         · simp [m', RayClass.Modulus.replaceFinitePart]
         · by_cases hwv : w = v
-          · subst w
-            simp [m', RayClass.Modulus.replaceFinitePart]
+          · simp_all
           · simpa [m', RayClass.Modulus.replaceFinitePart, hwv] using hmOn w hws
       · intro w hw
         have hwv : w ≠ v := by
           intro hwv
-          subst w
-          exact hw (Finset.mem_insert_self v s)
+          simp_all
         have hws : w ∉ s := by
           intro hws
           exact hw (Finset.mem_insert_of_mem hws)
@@ -307,8 +285,8 @@ theorem exists_definingModulus_finitePart_eq_narrowFiniteConductor
   ext v
   by_cases hv : v ∈ H.narrowFiniteConductorBoundingModulus.support
   · exact hmOn v hv
-  · have hbound : H.narrowFiniteConductorBoundingModulus v = 0 := by
-      exact Finsupp.notMem_support_iff.mp hv
+  · have hbound : H.narrowFiniteConductorBoundingModulus v = 0 := 
+      Finsupp.notMem_support_iff.mp hv
     have hmzero : m.finitePart v = 0 :=
       (hmOff v hv).trans hbound
     have hfinite_le :
@@ -316,26 +294,4 @@ theorem exists_definingModulus_finitePart_eq_narrowFiniteConductor
           H.narrowFiniteConductorBoundingModulus v := by
       simpa only [ConductorialSubgroup.narrowFiniteConductorBoundingModulus] using
         H.narrowFiniteConductor_le H.chosenDefiningModulus_spec v
-    rw [hbound] at hfinite_le
-    have hfinite_zero : H.narrowFiniteConductor v = 0 :=
-      Nat.eq_zero_of_le_zero hfinite_le
-    exact hmzero.trans hfinite_zero.symm
-
-/-- The narrow finite conductor reverses inclusions of conductorial
-subgroups. -/
-theorem narrowFiniteConductor_antitone
-    (H J : ConductorialSubgroup K)
-    (hHJ : H.1 ≤ J.1) :
-    J.narrowFiniteConductor ≤ H.narrowFiniteConductor := by
-  intro v
-  rw [J.narrowFiniteConductor_apply_eq_narrowFiniteLocalConductorExponent v,
-    H.narrowFiniteConductor_apply_eq_narrowFiniteLocalConductorExponent v]
-  apply J.narrowFiniteLocalConductorExponent_le v
-  exact (H.narrowFiniteLocalConductorExponent_spec v).trans hHJ
-
-end ConductorialSubgroup
-
-end GlobalClassFields
-end GlobalClassFieldTheory
-
-end
+    simp_all

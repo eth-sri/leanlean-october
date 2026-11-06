@@ -72,9 +72,7 @@ theorem fullCompactPreimageMax_isCompact :
       exact hx v
     · intro hy
       refine ⟨⟨fun v => y v, Filter.Eventually.of_forall hy⟩, hy, ?_⟩
-      apply RestrictedProduct.ext
-      intro v
-      simp only [inc, RestrictedProduct.mapAlong_apply, id_eq, RestrictedProduct.mk_apply]
+      rfl
   rw [← himg]
   exact hstr.image hcont
 
@@ -83,7 +81,3 @@ theorem iwasawaCompactSubgroupMax_compact :
   rw [iwasawaCompactSubgroupMax, Subgroup.coe_map]
   exact (fullCompactPreimageMax_isCompact F ζ hζ).image
     (continuous_scalarQuotient_comp_amalgamation F ζ hζ)
-
-end DedekindZetaZeroFree.PrincipalOfKP
-
-end

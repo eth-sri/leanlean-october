@@ -13,5 +13,3 @@ theorem norm_eq_one {G : Type*} [Group G] [Finite G]
       rw [← map_pow, pow_card_eq_one', map_one]
     exact congrArg (fun z : ℂˣ => (z : ℂ)) h
   · exact Nat.ne_of_gt Nat.card_pos
-
-end DedekindZetaZeroFree.RayClassBridge.FiniteOrder

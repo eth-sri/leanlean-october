@@ -11,13 +11,13 @@ namespace DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms.SupportedPairMa
 variable {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
 variable {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
 
-private lemma offdiag_iff (u v : Ideal (𝓞 F)) :
+lemma offdiag_iff (u v : Ideal (𝓞 F)) :
     u*v ≠ ⊤ ↔ u ≠ ⊤ ∨ v ≠ ⊤ := by
   have h : u*v = ⊤ ↔ u = ⊤ ∧ v = ⊤ := by
     constructor
     · intro hh
       exact ⟨top_unique (hh ▸ Ideal.mul_le_left), top_unique (hh ▸ Ideal.mul_le_right)⟩
-    · rintro ⟨rfl,rfl⟩; simp
+    simp_all
   simp only [ne_eq, h, not_and_or]
 
 private lemma column_spec (C : Context Q) {u : Ideal (𝓞 F)} (hu : u ∈ C.columns) :
@@ -86,7 +86,7 @@ variable {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
 variable {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
 def energy (C : Context Q) (f : Ideal (𝓞 F)) : ℝ :=
   ∑ u ∈ C.columns, if f ∣ u then (2:ℝ)^(UniqueFactorizationMonoid.normalizedFactors u).toFinset.card * ‖C.lam (C.d*u)‖^2 else 0
-private lemma column_spec_local (C : Context Q) {u : Ideal (𝓞 F)} (hu : u ∈ C.columns) :
+lemma column_spec_local (C : Context Q) {u : Ideal (𝓞 F)} (hu : u ∈ C.columns) :
     Squarefree u ∧ u ≠ ⊥ ∧ u ⊔ c = ⊤ ∧ Squarefree (C.d*u) ∧
     (C.d*u) ⊔ c = ⊤ ∧ C.d ⊔ u = ⊤ := by
   obtain ⟨huA, huM, huG⟩ := Finset.mem_filter.mp hu
@@ -110,15 +110,14 @@ private lemma finite_coprime_sum_bound
          (∑ v ∈ V, (2:ℝ)^(UniqueFactorizationMonoid.normalizedFactors v).toFinset.card * ‖y v‖^2)) := by
   have h := Sieve.DivisorSeparation.rectangle_operator_bound Q
     {⊤} {⊤} R U V hU hV A B hA hB
-    (by intro d hd z; have hd' : d = ⊤ := Finset.mem_singleton.mp hd; subst d; simpa using hUA z)
-    (by intro d hd z; have hd' : d = ⊤ := Finset.mem_singleton.mp hd; subst d; simpa using hVB z) x y
+    (by simp_all)
+    (by simp_all) x y
   simp only [Sieve.DivisorSeparation.idealDivisorRectangle, Finset.sum_singleton,
     Finset.card_singleton, Nat.cast_one, one_mul] at h
-  have htop : ∀ u : Ideal (𝓞 F), (⊤ : Ideal (𝓞 F)) ∣ u := fun u =>
-    by simpa only [← Ideal.one_eq_top] using one_dvd u
+  have htop : ∀ u : Ideal (𝓞 F), (⊤ : Ideal (𝓞 F)) ∣ u := by simp
   have hfilter : ∀ u : Ideal (𝓞 F), ({⊤} : Finset (Ideal (𝓞 F))).filter (fun d => d ∣ u) = {⊤} := by
     intro u; apply Finset.filter_eq_self.mpr
-    intro d hd; rw [Finset.mem_singleton.mp hd]; exact htop u
+    simp
   simp only [htop, and_true, hfilter, Finset.card_singleton,
     Nat.cast_one, mul_one, starRingEnd_apply] at h
   rw [mul_assoc (A*B)] at h
@@ -145,13 +144,13 @@ private lemma coprime_filtered_bound
     intro V f z hV hf hz
     unfold energy
     apply Finset.sum_le_sum_of_injOn (fun u => u)
-    · intro u hu v hv heq; exact heq
-    · intro u hu; exact hV (by simpa using hu)
+    · simp
+    · simp_all
     · intro u hu
       rw [if_pos (hf u hu)]
       apply mul_le_mul_of_nonneg_left _ (by positivity)
       exact pow_le_pow_left₀ (norm_nonneg _) (hz u (hV hu)) 2
-    · intros; split_ifs <;> positivity
+    · intros; positivity
   have hh := finite_coprime_sum_bound R V₁ V₂
     (fun u hu => (column_spec_local C (hV₁ hu)).2.1)
     (fun u hu => (column_spec_local C (hV₂ hu)).2.1)
@@ -249,10 +248,4 @@ theorem core_divisible_pair_bound (D : Sieve.AllIndexNormalizedFamilyData Q) :
       _ ≤ _ := add_le_add h₁ h₂
       _ = _ := by rw [hsqrt]; ring
   · refine ⟨1,zero_lt_one,?_⟩
-    intro C hC
-    exact False.elim (hex ⟨C,hC⟩)
-end DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms.SupportedRows
-
-end
-
-end
+    simp_all

@@ -71,7 +71,7 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
   rw [hh]
   exact (KPSmoothActualFlowData.archimedean_insertion_properties F ζ hζ).1
 
-private theorem recenter (O : Set (ArchCoordinates F)) (hO : IsOpen O)
+theorem recenter (O : Set (ArchCoordinates F)) (hO : IsOpen O)
     (hb : archBase F ∈ O) (x₀ : ArchCoordinates F) (hx₀ : x₀ ∈ archDomain F) :
     ∃ (V : Set (ArchCoordinates F)) (q : ArchCoordinates F → ArchCoordinates F),
       IsOpen V ∧ x₀ ∈ V ∧ ContDiffOn ℝ (⊤ : ℕ∞) q V ∧ Set.MapsTo q V O ∧

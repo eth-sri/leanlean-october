@@ -12,7 +12,6 @@ open KPLocalPrincipalSeries KPRankOneOpenCellKernel
 open KPRankOneReverseRegulatorShellsRaw
 
 noncomputable section
-set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
 variable (q : HeightOneSpectrum (𝓞 F))
@@ -21,22 +20,22 @@ variable [ValuativeRel (LocalField F q)] [IsNonarchimedeanLocalField (LocalField
  def shiftNumerator (p : ShellNumerator) (i j : ℤ) (c : ℂ) : ShellNumerator :=
   c • p.mapDomain (fun ij => (ij.1 + i, ij.2 + j))
 
-private theorem evaluate_add (p s : ShellNumerator) (r Q : ℂ) :
+theorem evaluate_add (p s : ShellNumerator) (r Q : ℂ) :
     evaluateNumerator (p + s) r Q = evaluateNumerator p r Q + evaluateNumerator s r Q := by
   unfold evaluateNumerator
   apply Finsupp.sum_add_index'
   · intro ij; simp
   · intro ij a b; ring
 
-private theorem evaluate_neg (p : ShellNumerator) (r Q : ℂ) :
+theorem evaluate_neg (p : ShellNumerator) (r Q : ℂ) :
     evaluateNumerator (-p) r Q = -evaluateNumerator p r Q := by
   have h := evaluate_add p (-p) r Q
   have hzero : evaluateNumerator (0 : ShellNumerator) r Q = 0 := by
-    simp [evaluateNumerator]
+    rfl
   rw [add_neg_cancel, hzero] at h
   linear_combination -h
 
-private theorem evaluate_shift (p : ShellNumerator) (i j : ℤ) (c r Q : ℂ)
+theorem evaluate_shift (p : ShellNumerator) (i j : ℤ) (c r Q : ℂ)
     (hr : r ≠ 0) (hQ : Q ≠ 0) :
     evaluateNumerator (shiftNumerator p i j c) r Q =
       c * r ^ i * Q ^ j * evaluateNumerator p r Q := by
@@ -74,20 +73,15 @@ theorem combine_laurent_shell_numerators (p₀ pA pInf : ShellNumerator) :
       evaluateNumerator (mSmall s) r Q = evaluateNumerator s r Q * smallFactor F q r Q := by
     dsimp [mSmall]
     rw [evaluate_add, evaluate_neg, evaluate_shift s (-6) 3 b r Q hr hQ]
-    simp only [smallFactor, t, mul_inv_rev, inv_inv, zpow_neg, zpow_natCast, inv_pow]
+    simp only [smallFactor, t, mul_inv_rev, inv_inv, zpow_neg]
     dsimp [b]
-    norm_num only [zpow_neg, zpow_natCast]
     ring_nf
-    rw [inv_pow r 6]
-    rfl
+    simp
   rw [evaluate_add, evaluate_add, eInf, eInf, eSmall, eSmall]
   change (1 - t F q r) * smallFactor F q r Q * infinityFactor F q Q ≠ 0 at hd
-  have h1 : 1 - t F q r ≠ 0 := (mul_ne_zero_iff.mp (mul_ne_zero_iff.mp hd).1).1
+  have h1 : 1 - t F q r ≠ 0 := by simp_all
   have hs : smallFactor F q r Q ≠ 0 := (mul_ne_zero_iff.mp (mul_ne_zero_iff.mp hd).1).2
   have hi : infinityFactor F q Q ≠ 0 := (mul_ne_zero_iff.mp hd).2
   change _ / ((1 - t F q r) * smallFactor F q r Q * infinityFactor F q Q) = _
   field_simp
   <;> ring
-
-end
-end DedekindZetaZeroFree.KPRankOneReverseLaurentShellExpansion

@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Low-degree Tate cohomology of binary products
 
@@ -51,20 +46,20 @@ abbrev BinaryCoefficientFamily : Bool → Type uA
 
 /-- The componentwise `G`-action on the binary coefficient family. -/
 @[reducible]
-noncomputable def binaryCoefficientFamilyAction :
+def binaryCoefficientFamilyAction :
     ∀ i, MulDistribMulAction G
       (BinaryCoefficientFamily A B i)
   | false => inferInstance
   | true => inferInstance
 
- noncomputable instance
+ instance
     (i : Bool) :
     MulDistribMulAction G
       (BinaryCoefficientFamily A B i) :=
   binaryCoefficientFamilyAction A B i
 
 /-- Reindex a binary product as a dependent family over `Bool`. -/
-noncomputable def prodEquivBinaryCoefficientFamily :
+def prodEquivBinaryCoefficientFamily :
     A × B ≃* ∀ i, BinaryCoefficientFamily A B i where
   toFun x
     | false => x.1
@@ -95,7 +90,7 @@ theorem prodEquivBinaryCoefficientFamily_smul
   funext i
   cases i <;> rfl
 
- noncomputable def piHerbrandH0EquivProd :
+ def piHerbrandH0EquivProd :
     (∀ i, HerbrandH0 G
       (BinaryCoefficientFamily A B i)) ≃*
         HerbrandH0 G A × HerbrandH0 G B where
@@ -109,7 +104,7 @@ theorem prodEquivBinaryCoefficientFamily_smul
   right_inv _ := rfl
   map_mul' _ _ := rfl
 
- noncomputable def piHerbrandHMinusOneEquivProd
+ def piHerbrandHMinusOneEquivProd
     (σ : G) :
     (∀ i, HerbrandHMinusOne G
       (BinaryCoefficientFamily A B i) σ) ≃*
@@ -126,7 +121,7 @@ theorem prodEquivBinaryCoefficientFamily_smul
   map_mul' _ _ := rfl
 
 /-- Degree-zero Tate cohomology commutes with a binary product. -/
-noncomputable def herbrandH0ProdEquiv :
+def herbrandH0ProdEquiv :
     HerbrandH0 G (A × B) ≃*
       HerbrandH0 G A × HerbrandH0 G B := by
   letI familyAction : ∀ i, MulDistribMulAction G
@@ -145,7 +140,7 @@ noncomputable def herbrandH0ProdEquiv :
         (piHerbrandH0EquivProd A B))
 
 /-- Degree-minus-one Tate cohomology commutes with a binary product. -/
-noncomputable def herbrandHMinusOneProdEquiv
+def herbrandHMinusOneProdEquiv
     (σ : G) :
     HerbrandHMinusOne G (A × B) σ ≃*
       HerbrandHMinusOne G A σ ×
@@ -238,7 +233,3 @@ theorem herbrandQuotient_prod
     herbrandHMinusOneProd_card A B σ]
   simp only [Nat.cast_mul]
   exact (div_mul_div_comm _ _ _ _).symm
-
-end CyclicCohomology
-
-end

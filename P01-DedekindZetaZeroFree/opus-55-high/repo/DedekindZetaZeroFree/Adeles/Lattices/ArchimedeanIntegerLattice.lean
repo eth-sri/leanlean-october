@@ -16,7 +16,7 @@ namespace DedekindZetaZeroFree
     continuous_toFun := (sArchModel_comparison F).1
     continuous_invFun := (sArchModel_comparison F).2.1 }
 
-private theorem mixedInteger_mem (F : Type*) [Field F] [NumberField F]
+theorem mixedInteger_mem (F : Type*) [Field F] [NumberField F]
     (x : NumberField.mixedEmbedding.mixedSpace F) :
     x ∈ NumberField.mixedEmbedding.integerLattice F ↔
       ∃ a : 𝓞 F, NumberField.mixedEmbedding F (a : F) = x := by
@@ -41,7 +41,7 @@ theorem sArchDomain_exists (F : Type*) [Field F] [NumberField F] :
   · have hz : (0 : NumberField.mixedEmbedding.mixedSpace F) ∈ U := by
       have : (0 : L) ∈ Subtype.val ⁻¹' U := by
         rw [hUzero]
-        exact Set.mem_singleton 0
+        rfl
       exact this
     change NumberField.InfiniteAdeleRing.ringEquiv_mixedSpace F 0 ∈ U
     rw [map_zero]
@@ -73,15 +73,8 @@ theorem sArchDomain_exists (F : Type*) [Field F] [NumberField F] :
         NumberField.mixedEmbedding F (a : F) = 0 := by
       change (⟨NumberField.mixedEmbedding F (a : F), haL⟩ : L) ∈
           Subtype.val ⁻¹' U ↔ _
-      rw [hUzero]
-      simp only [Set.mem_singleton_iff, Subtype.ext_iff, ZeroMemClass.coe_zero]
+      simp_all
     change NumberField.InfiniteAdeleRing.ringEquiv_mixedSpace F
       (algebraMap F (NumberField.InfiniteAdeleRing F) (a : F)) ∈ U ↔ _
     rw [← NumberField.InfiniteAdeleRing.mixedEmbedding_eq_algebraMap_comp, hiff]
-    rw [map_eq_zero_iff _ (NumberField.mixedEmbedding_injective F)]
-    change algebraMap (𝓞 F) F a = 0 ↔ a = 0
-    exact map_eq_zero_iff _ NumberField.RingOfIntegers.coe_injective
-
-end DedekindZetaZeroFree
-
-end
+    simp

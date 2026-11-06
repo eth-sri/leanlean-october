@@ -31,6 +31,3 @@ def comparisonTripleVerticalIntegral (σξ σw σz : ℝ)
       κ ((σξ : ℂ) + (t.1 : ℂ) * Complex.I)
         ((σw : ℂ) + (t.2.1 : ℂ) * Complex.I)
         ((σz : ℂ) + (t.2.2 : ℂ) * Complex.I)
-
-end
-end DedekindZetaZeroFree

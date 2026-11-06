@@ -39,8 +39,8 @@ theorem actual_small_tail_specialization :
             reverseIntegrand F ζ hζ q S.heisenberg S.borel P I μ J (S.openCell P)
               rep hrep d φ hφ hcφ r lam h v ∂multiplicativeMeasure F q μ) =
             evaluateNumerator (p h) r (Q F q lam) /
-              ((1 - t F q r) * smallFactor F q r (Q F q lam)) := by
-  exact small_tail_shells F ζ hζ q S.heisenberg S.borel P I μ J (S.openCell P)
+              ((1 - t F q r) * smallFactor F q r (Q F q lam)) := 
+  small_tail_shells F ζ hζ q S.heisenberg S.borel P I μ J (S.openCell P)
     rep hrep d φ hφ hcφ
 
 theorem actual_finite_annulus_specialization (N : ℕ) :
@@ -103,7 +103,7 @@ variable (rep : S.D → KPExceptionalRaw.actualTorus F ζ hζ q)
 variable (hrep : ∀ d, S.heisenberg.π (rep d) = d) (d : S.D)
 variable (φ : LocalField F q → ℂ) (hφ : IsLocallyConstant φ) (hcφ : HasCompactSupport φ)
 
-private theorem infinity_factor_ne_zero (lam : ℂ) (hlam : lam.re < 1) :
+theorem infinity_factor_ne_zero (lam : ℂ) (hlam : lam.re < 1) :
     infinityFactor F q (Q F q lam) ≠ 0 := by
   have hq : 0 < (residueCardinality (LocalField F q) : ℝ) := by
     exact_mod_cast (Nat.card_pos (α := IsLocalRing.ResidueField
@@ -137,7 +137,7 @@ private theorem infinity_factor_ne_zero (lam : ℂ) (hlam : lam.re < 1) :
   rw [heq, norm_one] at hlt
   exact lt_irrefl _ hlt
 
-private theorem infinity_region_measurable (N : ℕ) :
+theorem infinity_region_measurable (N : ℕ) :
     MeasurableSet (infinityRegion F q N) := by
   letI : BorelSpace (LocalField F q)ˣ := ⟨by
     change MeasurableSpace.comap Units.val inferInstance = _
@@ -146,14 +146,14 @@ private theorem infinity_region_measurable (N : ℕ) :
     exact borel_comap.symm⟩
   exact (FiniteAnnulusSteps.reverse_compact_valuationIndex_locallyConstant F q).continuous.measurable measurableSet_Ioi
 
-private theorem regions_union (N : ℕ) :
+theorem regions_union (N : ℕ) :
     (smallRegion F q N ∪ annulusRegion F q N) ∪ infinityRegion F q N = Set.univ := by
   ext v
   simp only [Set.mem_union, smallRegion, annulusRegion, infinityRegion,
     Set.mem_setOf_eq, Set.mem_univ, iff_true]
   omega
 
-private theorem regions_disjoint (N : ℕ) :
+theorem regions_disjoint (N : ℕ) :
     Disjoint (smallRegion F q N) (annulusRegion F q N) ∧
     Disjoint (smallRegion F q N ∪ annulusRegion F q N) (infinityRegion F q N) := by
   constructor <;> rw [Set.disjoint_left] <;> intro v hv hw
@@ -206,8 +206,3 @@ theorem actual_reverse_shell_expansion :
   change H F ζ hζ q S.heisenberg S.borel P I μ J (S.openCell P) rep hrep d φ hφ hcφ r lam h = _ at hsum
   rw [hsval, haval, hival] at hsum
   exact ⟨hall, hsum.trans he.symm⟩
-
-end
-end DedekindZetaZeroFree.KPActualResidueSources
-
-end

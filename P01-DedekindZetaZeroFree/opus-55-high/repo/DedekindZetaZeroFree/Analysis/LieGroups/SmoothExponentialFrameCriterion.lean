@@ -159,12 +159,12 @@ theorem right_frame_uniform_ray_expansion (D : Data G V B)
   have hw : Tendsto (fun _ : G × ℝ => (0 : ℝ)) (𝓝 (a, 0)) (𝓝 (0 : ℝ)) :=
     tendsto_const_nhds
   have hd : ∀ᶠ p in 𝓝 (a, (0 : ℝ)) ×ˢ 𝓝[Set.univ] (0 : ℝ),
-      HasFDerivWithinAt (F p.1) (F' p.1 p.2) Set.univ p.2 := by
-    exact Eventually.of_forall fun p =>
+      HasFDerivWithinAt (F p.1) (F' p.1 p.2) Set.univ p.2 := 
+    Eventually.of_forall fun p =>
       (right_frame_hasDerivAt D f h hderiv b p.1.1 p.2).hasFDerivAt.hasFDerivWithinAt
   letI : IsTopologicalGroup G := topologicalGroup_of_lieGroup (𝓘(ℝ, V)) (↑(⊤ : ℕ∞) : ℕ∞ω)
-  have hc : Continuous (fun p : (G × ℝ) × ℝ => F' p.1 p.2) := by
-    exact (ContinuousLinearMap.toSpanSingletonLIE ℝ E).continuous.comp
+  have hc : Continuous (fun p : (G × ℝ) × ℝ => F' p.1 p.2) := 
+    (ContinuousLinearMap.toSpanSingletonLIE ℝ E).continuous.comp
       ((hh b).comp ((continuous_fst.fst).mul
         (D.exponential_smooth.continuous.comp (continuous_snd.smul continuous_const))))
   have hc' : Tendsto (Function.uncurry F')
@@ -245,7 +245,7 @@ theorem right_frame_product_hasFDerivAt_zero (D : Data G V B)
       have hp : (w.map (fun b => D.exponential (c b 0 • D.basis b))).prod = 1 := by
         induction w with
         | nil => rfl
-        | cons b w ih => simp [ih, D.exponential_zero]
+        | cons b w ih => simp [D.exponential_zero]
       rw [hp, mul_one]
     have H := right_frame_insertion_hasFDerivAt_zero D f h hh hderiv b A
       hA.continuousAt _ (c b) ih
@@ -304,7 +304,7 @@ theorem continuous_right_frame_contMDiff_one
     apply ContinuousLinearMap.coe_injective
     apply D.basis.ext
     intro b
-    simp [L, A, Module.Basis.constr_basis, hF, X]
+    simp [L, A, hF, X]
   have hc (a : V) (ha : a ∈ P.source) : DifferentiableAt ℝ φ a := by
     let c : B → V →L[ℝ] ℝ := fun b =>
       (ContinuousLinearMap.proj b).comp D.basis.equivFun.toContinuousLinearEquiv.toContinuousLinearMap
@@ -314,9 +314,7 @@ theorem continuous_right_frame_contMDiff_one
     have hR0 : R 0 = P a := by
       have hz : ∀ l : List B, (l.map (fun b => D.exponential (c b 0 • D.basis b))).prod = 1 := by
         intro l
-        induction l with
-        | nil => rfl
-        | cons b l ih => simp [ih, D.exponential_zero]
+        simp_all
       dsimp [R]
       rw [hz, mul_one]
     have hR : ContMDiff (𝓘(ℝ, V)) (𝓘(ℝ, V)) (⊤ : ℕ∞) R := by
@@ -336,8 +334,8 @@ theorem continuous_right_frame_contMDiff_one
       exact ht w
     let Q : V → V := fun x => P.symm (R x)
     have hQ0 : Q 0 = a := by simp [Q, hR0, P.left_inv ha]
-    have hQ : ContDiffAt ℝ 1 Q 0 := by
-      exact (((hpi.of_le (by simp)).contMDiffAt
+    have hQ : ContDiffAt ℝ 1 Q 0 := 
+      (((hpi.of_le (by simp)).contMDiffAt
         (P.open_target.mem_nhds (P.map_source ha))).comp_of_eq
         ((hR.of_le (by simp)).contMDiffAt) hR0).contDiffAt
     have hQr (b : B) : (fun t : ℝ => Q (t • D.basis b)) =
@@ -381,8 +379,8 @@ theorem continuous_right_frame_contMDiff_one
         simpa only [hQ0, ContDiffAt.localInverse] using
           (hQ.hasStrictFDerivAt' hdL (by simp)).eventually_right_inverse
       have ht : ∀ᶠ y in 𝓝 a, R (S y) ∈ P.target := by
-        have hcont : ContinuousAt (fun y => R (S y)) a := by
-          exact hR.continuous.continuousAt.comp hS.continuousAt
+        have hcont : ContinuousAt (fun y => R (S y)) a := 
+          hR.continuous.continuousAt.comp hS.continuousAt
         apply hcont.preimage_mem_nhds
         simp only [hS0, hR0]
         exact P.open_target.mem_nhds (P.map_source ha)
@@ -399,14 +397,14 @@ theorem continuous_right_frame_contMDiff_one
     simp only [A, H, LinearMap.coe_toContinuousLinearMap', Module.Basis.constr_basis]
     let c : ℝ → G := fun t => P a * D.exponential (t • D.basis b)
     have hc0 : c 0 = P a := by simp [c, D.exponential_zero]
-    have hcs : ContMDiffAt (𝓘(ℝ, ℝ)) (𝓘(ℝ, V)) 1 c 0 := by
-      exact contMDiffAt_const.mul ((D.exponential_smooth.of_le (by simp)).contMDiffAt.comp 0
+    have hcs : ContMDiffAt (𝓘(ℝ, ℝ)) (𝓘(ℝ, V)) 1 c 0 := 
+      contMDiffAt_const.mul ((D.exponential_smooth.of_le (by simp)).contMDiffAt.comp 0
         (contMDiffAt_id.smul contMDiffAt_const))
-    have hci : ContDiffAt ℝ 1 (fun t => P.symm (c t)) 0 := by
-      exact (((hpi.of_le (by simp)).contMDiffAt
+    have hci : ContDiffAt ℝ 1 (fun t => P.symm (c t)) 0 := 
+      (((hpi.of_le (by simp)).contMDiffAt
         (P.open_target.mem_nhds (P.map_source ha))).comp_of_eq hcs hc0).contDiffAt
-    have hdi : HasDerivAt (fun t => P.symm (c t)) (X b a) 0 := by
-      exact hci.differentiableAt_one.hasDerivAt
+    have hdi : HasDerivAt (fun t => P.symm (c t)) (X b a) 0 := 
+      hci.differentiableAt_one.hasDerivAt
     have hdφ : HasFDerivAt φ (fderiv ℝ φ a) (P.symm (c 0)) := by
       simpa only [hc0, P.left_inv ha] using (hc a ha).hasFDerivAt
     have hd := hdφ.comp_hasDerivAt 0 hdi
@@ -441,7 +439,6 @@ theorem continuous_right_frame_contMDiff_one
     (φ ∘ P.symm) (P 0)
   exact hcomp
 
-open scoped Manifold ContDiff
 
 variable {G : Type*} [Group G] [TopologicalSpace G]
 variable {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
@@ -499,7 +496,7 @@ theorem right_frame_contMDiff_succ
     apply ContinuousLinearMap.coe_injective
     apply D.basis.ext
     intro b
-    simp [L, A, Module.Basis.constr_basis, hF, X]
+    simp [L, A, hF, X]
   have hrel (a : V) (ha : a ∈ P.source) :
       (fderiv ℝ φ a).comp (A a) = H a := by
     apply ContinuousLinearMap.coe_injective
@@ -509,14 +506,14 @@ theorem right_frame_contMDiff_succ
     simp only [A, H, LinearMap.coe_toContinuousLinearMap', Module.Basis.constr_basis]
     let c : ℝ → G := fun t => P a * D.exponential (t • D.basis b)
     have hc0 : c 0 = P a := by simp [c, D.exponential_zero]
-    have hcs : ContMDiffAt (𝓘(ℝ, ℝ)) (𝓘(ℝ, V)) 1 c 0 := by
-      exact contMDiffAt_const.mul ((D.exponential_smooth.of_le (by simp)).contMDiffAt.comp 0
+    have hcs : ContMDiffAt (𝓘(ℝ, ℝ)) (𝓘(ℝ, V)) 1 c 0 := 
+      contMDiffAt_const.mul ((D.exponential_smooth.of_le (by simp)).contMDiffAt.comp 0
         (contMDiffAt_id.smul contMDiffAt_const))
-    have hci : ContDiffAt ℝ 1 (fun t => P.symm (c t)) 0 := by
-      exact (((hpi.of_le (by simp)).contMDiffAt
+    have hci : ContDiffAt ℝ 1 (fun t => P.symm (c t)) 0 := 
+      (((hpi.of_le (by simp)).contMDiffAt
         (P.open_target.mem_nhds (P.map_source ha))).comp_of_eq hcs hc0).contDiffAt
-    have hdi : HasDerivAt (fun t => P.symm (c t)) (X b a) 0 := by
-      exact hci.differentiableAt_one.hasDerivAt
+    have hdi : HasDerivAt (fun t => P.symm (c t)) (X b a) 0 := 
+      hci.differentiableAt_one.hasDerivAt
     have hdφ : HasFDerivAt φ (fderiv ℝ φ a) (P.symm (c 0)) := by
       simpa only [hc0, P.left_inv ha] using (hc a ha).differentiableAt_one.hasFDerivAt
     have hd := hdφ.comp_hasDerivAt 0 hdi
@@ -586,7 +583,3 @@ theorem contMDiff_succ_of_translated_basis_derivatives
   have hc := RawFrame.continuous_right_frame_contMDiff_one d f D hf
     (fun b => (hD b).continuous) hderiv
   exact RawFrame.right_frame_contMDiff_succ d n f D hc hD hderiv
-
-end DedekindZetaZeroFree.SmoothWordOrbit.DomainToSmooth
-
-end

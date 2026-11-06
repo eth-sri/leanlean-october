@@ -20,7 +20,7 @@ local notation "H₀" => KPExceptionalRaw.actualTorus F ζ hζ q
 variable (P : Polarization S.heisenberg) [DecidableEq S.D]
 
 omit [DecidableEq S.D] in
-private theorem compact_right_invariant
+theorem compact_right_invariant
     (I : IwasawaData S.borel) (L : CompactOpenLevel (Cover F ζ hζ q))
     (hL : (L.toOpenSubgroup : Subgroup (Cover F ζ hζ q)) ≤ I.compact.toOpenSubgroup)
     (ε : Sign) (z : ℂ) (ψ : centerCompactLevel F ζ hζ q S.heisenberg S.borel I ε L)
@@ -47,7 +47,7 @@ private theorem compact_right_invariant
   change f.val ((I.borelPart g : Cover F ζ hζ q) * (k' : Cover F ζ hζ q)) = _
   rw [f.property.1, hk', he, ← hk, ← f.property.1, ← I.decomposition g]
 
-private theorem infinity_integrand_formula
+theorem infinity_integrand_formula
     (I : IwasawaData S.borel) (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
     (J : CenterStandardFamily F ζ hζ q S.heisenberg S.borel I μ)
     (rep : S.D → H₀) (hrep : ∀ d, S.heisenberg.π (rep d) = d) (d : S.D)
@@ -72,7 +72,7 @@ private theorem infinity_integrand_formula
   rw [S.openCell_ordinary P, hb]
   field_simp
 
-private theorem forward_germ
+theorem forward_germ
     (I : IwasawaData S.borel) (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
     (J : CenterStandardFamily F ζ hζ q S.heisenberg S.borel I μ)
     (rep : S.D → H₀) (hrep : ∀ d, S.heisenberg.π (rep d) = d) (d : S.D)
@@ -114,6 +114,3 @@ theorem actual_infinity_eventual_scalar
   intro r hr lam h v hv
   exact infinity_integrand_formula F ζ hζ q S P I μ J rep hrep d φ hφ hcφ
     r lam h v (hN r hr v hv)
-
-end
-end DedekindZetaZeroFree.KPActualResidueSources

@@ -34,7 +34,7 @@ run_cmd Lean.Elab.Command.liftTermElabM do
       MultilinearMap.mkPiAlgebra_apply, MultilinearMap.compLinearMap_apply]
   exact LinearMap.congr_fun h y
 
-private lemma dualDistrib_tprod_eq_tensorEvaluation
+lemma dualDistrib_tprod_eq_tensorEvaluation
     {W : ι → Type*} [∀ i, AddCommGroup (W i)] [∀ i, Module 𝕜 (W i)]
     (φ : ∀ i, W i →ₗ[𝕜] 𝕜) :
     PiTensorProduct.dualDistrib (PiTensorProduct.tprod 𝕜 φ) =
@@ -44,7 +44,7 @@ private lemma dualDistrib_tprod_eq_tensorEvaluation
   simp [PiTensorProduct.dualDistrib_apply, tensorEvaluation, PiTensorProduct.lift.tprod,
     MultilinearMap.mkPiAlgebra_apply]
 
-private theorem tensor_evaluations_separate_finite
+theorem tensor_evaluations_separate_finite
     [∀ i, Module.Finite 𝕜 (V i)]
     {A : ι → Type*} (f : ∀ i, A i → V i →ₗ[𝕜] 𝕜)
     (hsep : ∀ i (v : V i), (∀ a, f i a v = 0) → v = 0)
@@ -58,9 +58,7 @@ private theorem tensor_evaluations_separate_finite
     intro φ
     apply FiniteDimensional.mem_span_of_iInf_ker_le_ker
     intro v hv
-    have hv0 : v = 0 := hsep i v fun a => by
-      exact (Submodule.mem_iInf _).mp hv a
-    simp [hv0]
+    simp_all
   let L : (⨂[𝕜] i, Module.Dual 𝕜 (V i)) →ₗ[𝕜] 𝕜 :=
     (LinearMap.applyₗ y).comp PiTensorProduct.dualDistrib
   have hL : L = 0 := by
@@ -72,12 +70,12 @@ private theorem tensor_evaluations_separate_finite
   apply (Module.forall_dual_apply_eq_zero_iff 𝕜 y).mp
   intro φ
   let w := (PiTensorProduct.dualDistribEquiv (R := 𝕜) (M := V)).symm φ
-  have hw : PiTensorProduct.dualDistrib w = φ := by
-    exact (PiTensorProduct.dualDistribEquiv (R := 𝕜) (M := V)).apply_symm_apply φ
+  have hw : PiTensorProduct.dualDistrib w = φ := 
+    (PiTensorProduct.dualDistribEquiv (R := 𝕜) (M := V)).apply_symm_apply φ
   rw [← hw]
   exact LinearMap.congr_fun hL w
 
-private theorem tensor_evaluations_separate_functionSpace
+theorem tensor_evaluations_separate_functionSpace
     {A : ι → Type*} (z : ⨂[𝕜] i, (A i → 𝕜))
     (hz : ∀ a : ∀ i, A i,
       tensorEvaluation (fun i => (LinearMap.proj (a i) : (A i → 𝕜) →ₗ[𝕜] 𝕜)) z = 0) :
@@ -142,16 +140,14 @@ theorem tensor_evaluations_separate
     refine hsep i v (fun a => ?_)
     have h1 : (fhat i) v = 0 := hv
     have h2 := congrFun h1 a
-    simpa [fhat] using h2
+    omega
 
   let g : ∀ i, (A i → 𝕜) →ₗ[𝕜] V i := fun i => (fhat i).leftInverse
   have hg : ∀ i, (g i).comp (fhat i) = LinearMap.id := fun i =>
     LinearMap.leftInverse_comp_of_inj (hker i)
   have hleft : (PiTensorProduct.map g).comp (PiTensorProduct.map fhat) = LinearMap.id := by
     rw [← PiTensorProduct.map_comp]
-    have hfun : (fun i => g i ∘ₗ fhat i) = fun i => (LinearMap.id : V i →ₗ[𝕜] V i) :=
-      funext fun i => hg i
-    rw [hfun, PiTensorProduct.map_id]
+    simp_all
   have hinj : Function.Injective (PiTensorProduct.map fhat) := by
     intro a b hab
     have h2 : ∀ x, PiTensorProduct.map g (PiTensorProduct.map fhat x) = x :=
@@ -162,12 +158,6 @@ theorem tensor_evaluations_separate
     intro a
     have hfun : (fun i => (LinearMap.proj (a i) : (A i → 𝕜) →ₗ[𝕜] 𝕜) ∘ₗ fhat i) =
         fun i => f i (a i) := by
-      funext i
-      ext v
-      simp [fhat]
+      rfl
     rw [tensorEvaluation_map, hfun, hy a]
   exact hinj (by rw [hzero, map_zero])
-
-end DedekindZetaZeroFree.KPLiteralTensor.KernelAndHCRange.PointwiseKernel
-
-end

@@ -358,7 +358,7 @@ def cuspCoefficient (s : Sections F ζ hζ U R P H)
     Coefficient F ζ hζ U :=
   liftCoefficient F ζ hζ U R P H s i (cuspPoint F ζ hζ U R P H i j p)
 
-private theorem rationalAction_smooth (γ : KPCuspArithmetic.PGL2 F) :
+theorem rationalAction_smooth (γ : KPCuspArithmetic.PGL2 F) :
     ContDiff ℝ (⊤ : ℕ∞) (fun x : SymmetricSpace F => γ • x) := by
   obtain ⟨B, rfl⟩ := Matrix.ProjGenLinGroup.mk_surjective γ
   have he : (fun x : SymmetricSpace F =>
@@ -565,7 +565,7 @@ theorem q_closed_and_proper :
   exact ⟨hclosed, fun K hK =>
     (isProperMap_iff_isClosedMap_and_compact_fibers.mpr ⟨hcont, hclosed, hfib⟩).isCompact_preimage hK⟩
 
-private theorem sectionNorm_support_preimage (f : GenuineCoveredScalars F ζ hζ U) :
+theorem sectionNorm_support_preimage (f : GenuineCoveredScalars F ζ hζ U) :
     (q F ζ hζ U) ⁻¹' Function.support
       (sectionNorm F ζ hζ U R P H (S F ζ hζ U R P H f)) = Function.support f.val := by
   ext v

@@ -18,16 +18,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Finite conductor exponents and local norms
 
@@ -40,7 +30,6 @@ with the norm group of a chosen local field extension.
 open scoped NumberField TensorProduct
 open NumberField IsDedekindDomain
 
-noncomputable section
 
 namespace ClassFieldTheory
 
@@ -84,7 +73,7 @@ theorem IsAbelianConductor.finiteExponent_le_iff_higherUnit_le_tensorNorm
         GlobalClassFieldTheory.GlobalClassFields.ideleClassNormLocalHigherUnitExponent
           (K := K) (L := L) v := by
     rw [hcd]
-    simpa only [d] using hsource
+    omega
   have hnorm :
       (Units.map (Algebra.norm (v.adicCompletion K)) :
         (v.adicCompletion K ⊗[K] L)ˣ →*
@@ -106,7 +95,3 @@ theorem IsAbelianConductor.finiteExponent_le_iff_higherUnit_le_tensorNorm
     exact
       GlobalClassFieldTheory.GlobalClassFields.ideleClassNormLocalHigherUnitExponent_min
         (K := K) (L := L) v hn
-
-end ClassFieldTheory
-
-end

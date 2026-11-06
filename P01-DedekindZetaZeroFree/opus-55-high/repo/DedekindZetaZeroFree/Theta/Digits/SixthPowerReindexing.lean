@@ -46,7 +46,3 @@ theorem digitWeight_reindex (m : ThetaReflectionData.Row R.A) (u : R.A.U)
   exact mask_residueSixthUnit R ⟨p.val,
     ((ThetaDigitAverage.rowPrimes_finite R.A m.val m.property).mem_toFinset.mp p.property).1⟩
     u (ThetaDigitAverage.rowExponent R.A m.val p.val) (d p)
-
-end DedekindZetaZeroFree.DigitMasks
-
-end

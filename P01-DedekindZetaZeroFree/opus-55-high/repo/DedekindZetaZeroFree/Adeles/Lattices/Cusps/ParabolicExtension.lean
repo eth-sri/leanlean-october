@@ -18,21 +18,19 @@ theorem rationalUnits_of_pow_mem (F : Type*) [Field F] [NumberField F]
     Units.map (algebraMap (NumberField.RingOfIntegers F) F).toMonoidHom v = u ^ n at hu
   obtain ⟨v, hv⟩ := hu
   have hvval : algebraMap (NumberField.RingOfIntegers F) F (v : NumberField.RingOfIntegers F) =
-      (u : F) ^ n := by
-    exact congrArg Units.val hv
+      (u : F) ^ n := 
+    congrArg Units.val hv
   have hvival : algebraMap (NumberField.RingOfIntegers F) F
       ((v⁻¹ : (NumberField.RingOfIntegers F)ˣ) : NumberField.RingOfIntegers F) =
       ((u⁻¹ : Fˣ) : F) ^ n := by
-    have h : Units.map (algebraMap (NumberField.RingOfIntegers F) F).toMonoidHom v⁻¹ =
-        (u⁻¹ : Fˣ) ^ n := by rw [map_inv, hv, inv_pow]
-    exact congrArg Units.val h
+    simp_all
   obtain ⟨x, hx⟩ := IsIntegrallyClosed.exists_algebraMap_eq_of_isIntegral_pow hn
     (hvval ▸ isIntegral_algebraMap)
   obtain ⟨y, hy⟩ := IsIntegrallyClosed.exists_algebraMap_eq_of_isIntegral_pow hn
     (hvival ▸ isIntegral_algebraMap)
   have hxy : x * y = 1 := by
     apply NumberField.RingOfIntegers.coe_injective
-    simp only [map_mul, map_one, hx, hy, Units.mul_inv]
+    simp_all
   have hyx : y * x = 1 := by simpa only [mul_comm] using hxy
   refine ⟨⟨x, y, hxy, hyx⟩, ?_⟩
   apply Units.ext
@@ -76,10 +74,7 @@ theorem conjugatedStabilizer_upper (F : Type*) [Field F] [NumberField F]
   refine ⟨A, hA, ?_⟩
   have hf : Matrix.ProjGenLinGroup.mk A • KPCuspArithmetic.infinity F =
       KPCuspArithmetic.infinity F := by
-    rw [hA]
-    simp only [MulEquiv.toMonoidHom_eq_coe, MonoidHom.coe_coe, MulAut.conj_apply, inv_inv]
-    change (σ⁻¹ * k * σ) • KPCuspArithmetic.infinity F = KPCuspArithmetic.infinity F
-    exact hfix
+    simp_all
   unfold KPCuspArithmetic.infinity at hf
   rw [Projectivization.PGL.mk_smul_mk, Projectivization.mk_eq_mk_iff] at hf
   obtain ⟨a, ha⟩ := hf
@@ -96,12 +91,12 @@ theorem isZLattice_of_commensurable {V : Type*} [NormedAddCommGroup V] [NormedSp
   haveI : DiscreteTopology J := by
     change DiscreteTopology {x : V // x ∈ (J : Set V)}
     rw [← AddSubgroup.coe_toIntSubmodule]
-    exact (inferInstance : DiscreteTopology J.toIntSubmodule)
+    omega
   haveI : DiscreteTopology L := h.discreteTopology_iff.mpr inferInstance
   have hd : DiscreteTopology L.toIntSubmodule := by
     change DiscreteTopology {x : V // x ∈ (L.toIntSubmodule : Set V)}
     rw [AddSubgroup.coe_toIntSubmodule]
-    exact (inferInstance : DiscreteTopology L)
+    omega
   letI := hd
   refine ⟨hd, ?_⟩
   constructor
@@ -116,21 +111,18 @@ theorem isZLattice_of_commensurable {V : Type*} [NormedAddCommGroup V] [NormedSp
     rw [Nat.cast_smul_eq_nsmul]
     exact Submodule.subset_span hm.1
   have hh := (Submodule.span ℝ (L.toIntSubmodule : Set V)).smul_mem (n : ℝ)⁻¹ hs
-  have hn' : (n : ℝ) ≠ 0 := by exact_mod_cast (Nat.ne_of_gt hn)
-  rw [smul_smul, inv_mul_cancel₀ hn', one_smul] at hh
-  exact hh
+  have hn' : (n : ℝ) ≠ 0 := by positivity
+  simp_all
 
  theorem diagonal_ne_zero {F : Type*} [Field F]
     (A : Matrix.GeneralLinearGroup (Fin 2) F) (h : A 1 0 = 0) :
-    A 0 0 ≠ 0 ∧ A 1 1 ≠ 0 := by
-  constructor <;> intro hz <;> exact A.det_ne_zero (by simp [Matrix.det_fin_two, h, hz])
+    A 0 0 ≠ 0 ∧ A 1 1 ≠ 0 := by apply DedekindZetaZeroFree.KPCuspParabolicLattices.diagonal_ne_zero <;> assumption
 private theorem ratio_eq {F : Type*} [Field F]
     (A B : Matrix.GeneralLinearGroup (Fin 2) F)
     (h : Matrix.ProjGenLinGroup.mk A = Matrix.ProjGenLinGroup.mk B) :
     A 0 0 / A 1 1 = B 0 0 / B 1 1 := by
   obtain ⟨u, rfl⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp h
-  simp only [Units.val_mul, Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_apply,
-    Fin.sum_univ_two, Matrix.scalar, Matrix.diagonal_apply]
+  simp only [Units.val_mul, Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_apply, Fin.sum_univ_two, Matrix.scalar]
   simp
   rw [mul_div_mul_right _ _ (Units.ne_zero u)]
  def representative {F : Type*} [Field F]
@@ -181,8 +173,8 @@ private theorem ratioValue_formula {F : Type*} [Field F]
 def upperRatio {F : Type*} [Field F]
     (S : Subgroup (KPCuspArithmetic.PGL2 F))
     (hS : ∀ g ∈ S, KPCuspArithmetic.IsUpperTriangular F g) : S →* Fˣ where
-  toFun g := Units.mk0 (ratioValue S hS g) (by
-    exact div_ne_zero (diagonal_ne_zero _ (representative_upper S hS g)).1
+  toFun g := Units.mk0 (ratioValue S hS g) (
+    div_ne_zero (diagonal_ne_zero _ (representative_upper S hS g)).1
       (diagonal_ne_zero _ (representative_upper S hS g)).2)
   map_one' := by apply Units.ext; exact ratioValue_one S hS
   map_mul' g h := by apply Units.ext; exact ratioValue_mul S hS g h
@@ -286,8 +278,8 @@ def cuspTranslationInclusion {F : Type*} [Field F]
     (S : Subgroup (KPCuspArithmetic.PGL2 F)) :
     Multiplicative (cuspTranslationLattice S) →* S where
   toFun x := ⟨cuspTranslation (Multiplicative.ofAdd (x.toAdd : F)), x.toAdd.property⟩
-  map_one' := by apply Subtype.ext; exact map_one cuspTranslation
-  map_mul' x y := by apply Subtype.ext; exact map_mul cuspTranslation _ _
+  map_one' := by simp
+  map_mul' x y := by apply Subtype.ext; simp
 theorem cuspTranslationInclusion_injective {F : Type*} [Field F]
     (S : Subgroup (KPCuspArithmetic.PGL2 F)) :
     Function.Injective (cuspTranslationInclusion S) := by
@@ -360,7 +352,6 @@ def extensionDataOfRatio {F : Type*} [Field F] [NumberField F]
   surjective := (upperRatio S hS).rangeRestrict_surjective
   exact := by
     rw [cuspTranslationInclusion_range S hS]
-    ext g
     simp
   upper := hS
   unipotentFormula := cuspTranslationInclusion_formula S
@@ -394,18 +385,18 @@ def idealArithmeticModule (F : Type*) [Field F] [NumberField F]
     Submodule (NumberField.RingOfIntegers F) (Fin 2 → F) :=
   ((1 : FractionalIdeal (nonZeroDivisors (NumberField.RingOfIntegers F)) F) : Submodule _ F).comap (LinearMap.proj 0) ⊓
   (I : Submodule _ F).comap (LinearMap.proj 1)
-private theorem idealArithmeticModule_mem (F : Type*) [Field F] [NumberField F]
+theorem idealArithmeticModule_mem (F : Type*) [Field F] [NumberField F]
     (I : FractionalIdeal (nonZeroDivisors (NumberField.RingOfIntegers F)) F) (v : Fin 2 → F) :
     v ∈ idealArithmeticModule F I ↔ (∃ r : NumberField.RingOfIntegers F, algebraMap _ F r = v 0) ∧ v 1 ∈ I := by
-  simp [idealArithmeticModule, FractionalIdeal.mem_one_iff]
+  simp [idealArithmeticModule]
  def pairVec (F : Type*) [Field F] [NumberField F] :
     (F × F) ≃ₗ[NumberField.RingOfIntegers F] (Fin 2 → F) where
   toFun x := ![x.1,x.2]
   invFun x := (x 0,x 1)
   left_inv x := rfl
   right_inv x := by ext i; fin_cases i <;> rfl
-  map_add' x y := by ext i; fin_cases i <;> rfl
-  map_smul' r x := by ext i; fin_cases i <;> rfl
+  map_add' x y := by simp
+  map_smul' r x := by simp
 theorem idealArithmeticModule_full (F : Type*) [Field F] [NumberField F]
     (I : FractionalIdeal (nonZeroDivisors (NumberField.RingOfIntegers F)) F) (hI : I ≠ 0) :
     KPCuspArithmetic.IsRankTwoLattice F (idealArithmeticModule F I) := by
@@ -431,7 +422,7 @@ theorem idealArithmeticModule_full (F : Type*) [Field F] [NumberField F]
     (Submodule.smul_mem _ (x 1 / b) (Submodule.subset_span h2))
   convert hh using 1
   ext i
-  fin_cases i <;> simp [div_mul_cancel₀, hb0]
+  fin_cases i <;> simp [hb0]
 private theorem ideal_stabilizer_iff (F : Type*) [Field F] [NumberField F]
     (I : FractionalIdeal (nonZeroDivisors (NumberField.RingOfIntegers F)) F)
     (A : Matrix.GeneralLinearGroup (Fin 2) F) :
@@ -452,10 +443,8 @@ private theorem ideal_stabilizer_iff (F : Type*) [Field F] [NumberField F]
     have he : ∀ i : Fin 2, ((A : Matrix (Fin 2) (Fin 2) F) * V) i 0 =
         ((A : Matrix (Fin 2) (Fin 2) F) *ᵥ v) i := by
       intro i
-      change (∑ j : Fin 2, A i j * V j 0) = ∑ j : Fin 2, A i j * v j
       rfl
-    rw [he 0, he 1] at hh
-    exact hh
+    simp_all
   · intro h V
     have hh := (h (fun i => (A⁻¹ • V) i 0)).symm
     rw [idealArithmeticModule_mem, idealArithmeticModule_mem] at hh
@@ -546,7 +535,3 @@ theorem finite_adelic_parabolic_extension_lattice
     KPFiniteAdelicLatticeStabilizers.level_stabilizers_commensurable_standard F U hcompact hopen g
   exact extension_lattice_of_ideal_commensurable F hF I hI a
     (KPFiniteAdelicLatticeStabilizers.levelStabilizer F U g) (hlevel.trans hstandard) q σ hσ
-
-end DedekindZetaZeroFree.KPCuspFiniteArithmetic
-
-end

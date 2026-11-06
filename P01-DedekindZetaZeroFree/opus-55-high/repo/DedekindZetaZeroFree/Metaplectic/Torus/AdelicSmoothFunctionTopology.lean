@@ -92,17 +92,14 @@ theorem diagonal_entries_units (A : AdelicMatrixGroup F) (h10 : A 1 0 = 0) (h01 
       (A * Matrix.GeneralLinearGroup.scalar (Fin 2) u) k).1.unit =
       (KPGlobalTorusMatrixCertificates.diagonal_units A h).1.unit * u := by
     apply Units.ext
-    simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.GeneralLinearGroup.coe_scalar,
-      Matrix.scalar, Matrix.diagonal]
+    simp
   have h1 : (KPGlobalTorusMatrixCertificates.diagonal_units
       (A * Matrix.GeneralLinearGroup.scalar (Fin 2) u) k).2.unit =
       (KPGlobalTorusMatrixCertificates.diagonal_units A h).2.unit * u := by
     apply Units.ext
-    simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.GeneralLinearGroup.coe_scalar,
-      Matrix.scalar, Matrix.diagonal]
+    simp
   unfold rawRatio
-  rw [h0, h1]
-  simp [mul_inv_rev, mul_assoc]
+  simp_all
 
 def torusRatio : ordinaryTorus F →* Ideles F where
   toFun t :=
@@ -115,8 +112,8 @@ def torusRatio : ordinaryTorus F →* Ideles F where
     have h := Classical.choose_spec (1 : ordinaryTorus F).property
     change rawRatio F A h.2.1 = 1
     have he : QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F) A =
-        QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F) 1 := by
-      exact h.1.trans (map_one _).symm
+        QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F) 1 := 
+      h.1.trans (map_one _).symm
     rw [rawRatio_same F A 1 h.2.1 (by simp) h.2.2 he]
     apply Units.ext
     simp [rawRatio]
@@ -160,13 +157,11 @@ def rationalDiagonal : Fˣ →* KubotaRankTwo.GL2 F where
   toFun y := KubotaRankTwo.d F y 1
   map_one' := by
     apply Matrix.GeneralLinearGroup.ext
-    intro i j
-    fin_cases i <;> fin_cases j <;> simp
+    simp
   map_mul' := by
     intro x y
     apply Matrix.GeneralLinearGroup.ext
-    intro i j
-    fin_cases i <;> fin_cases j <;> simp [Matrix.mul_apply]
+    simp
 
 def rationalDiagonalLift : Fˣ →* G F ζ hζ :=
   (KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ).comp
@@ -179,12 +174,9 @@ theorem rationalDiagonalLift_mem (y : Fˣ) :
         (KPAdelicCoverRestrictedProduct.rationalHom F ζ hζ (rationalDiagonal F y))) ∈
     ordinaryTorus F
   refine ⟨KPAdelicCoverRestrictedProduct.rationalBase F (rationalDiagonal F y), ?_, ?_, ?_⟩
-  · change _ = QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F)
-      (KPAdelicCoverRestrictedProduct.projection F ζ hζ
-        (KPAdelicCoverRestrictedProduct.rationalSection F ζ hζ (rationalDiagonal F y)))
-    rw [KPAdelicCoverRestrictedProduct.projection_rationalSection]
+  · rfl
   · simp [KPAdelicCoverRestrictedProduct.rationalBase, rationalDiagonal]
-  · simp [KPAdelicCoverRestrictedProduct.rationalBase, rationalDiagonal]
+  rfl
 
 def s : Fˣ →* E F ζ hζ :=
   (rationalDiagonalLift F ζ hζ).codRestrict (torus F ζ hζ)
@@ -198,7 +190,7 @@ def iota : rootsOfUnity 3 F →* ℂˣ :=
  def integralN {R : Type*} [CommRing R] (t : R) : Matrix.GeneralLinearGroup (Fin 2) R :=
   ⟨!![1, t; 0, 1], !![1, -t; 0, 1], by ext i j; fin_cases i <;> fin_cases j <;> simp [Matrix.mul_apply],
     by ext i j; fin_cases i <;> fin_cases j <;> simp [Matrix.mul_apply]⟩
-private lemma goodN (q : HeightOneSpectrum (𝓞 F)) (hb : ¬KPAdelicCoverRestrictedProduct.Bad F q)
+lemma goodN (q : HeightOneSpectrum (𝓞 F)) (hb : ¬KPAdelicCoverRestrictedProduct.Bad F q)
     (t : q.adicCompletion F) (ht : t ∈ q.adicCompletionIntegers F) :
     KPStandardLocalRootLifts.N F ζ hζ (Sum.inr q) t ∈
       KPAdelicCoverRestrictedProduct.compact F ζ hζ (Sum.inr q) := by
@@ -267,9 +259,7 @@ def Nhom : Multiplicative (Adeles F) →* G F ζ hζ where
   map_one' := by
     change N F ζ hζ 0 = 1
     have h := N_add F ζ hζ 0 0
-    have hh : N F ζ hζ 0 * N F ζ hζ 0 = N F ζ hζ 0 * 1 := by
-      simpa only [zero_add, mul_one] using h.symm
-    exact mul_left_cancel hh
+    simp_all
   map_mul' x y := N_add F ζ hζ _ _
 
 def ideleAbs : Ideles F →* (ℝ≥0)ˣ :=
@@ -293,8 +283,8 @@ def ScalarFunctions : Submodule ℂ (T → ℂ) where
 
 def evaluation (g : T) : ScalarFunctions H χ →ₗ[ℂ] ℂ where
   toFun f := f.val g
-  map_add' := by intros; rfl
-  map_smul' := by intros; rfl
+  map_add' := by simp
+  map_smul' := by simp
 
 def rightTranslation : Representation ℂ T (ScalarFunctions H χ) where
   toFun a :=
@@ -304,9 +294,6 @@ def rightTranslation : Representation ℂ T (ScalarFunctions H χ) where
       map_smul' := by intros; rfl }
   map_one' := by ext f g; simp
   map_mul' := by intros; ext f g; simp [mul_assoc]
-
-@[simp] theorem evaluation_covariance (f : ScalarFunctions H χ) (h : H) (g : T) :
-    evaluation H χ ((h : T) * g) f = (χ h : ℂ) * evaluation H χ g f := f.property h g
 
 @[simp] theorem evaluation_rightTranslation (a g : T) (f : ScalarFunctions H χ) :
     evaluation H χ g (rightTranslation H χ a f) = evaluation H χ (g * a) f := rfl
@@ -389,28 +376,8 @@ theorem archDiagonalLift_mem (z : TorusArch F) :
     archDiagonalLift F ζ hζ z ∈ torus F ζ hζ := by
   refine ⟨KPAdelicCoverRestrictedProduct.restrictedProjection F ζ hζ
     (archDiagonalTuple F ζ hζ z), rfl, ?_, ?_⟩
-  · change KPAdelicCoverRestrictedProduct.matrixEntry F ζ hζ
-      (archDiagonalTuple F ζ hζ z) 1 0 = 0
-    apply Prod.ext
-    · funext w
-      simp [KPAdelicCoverRestrictedProduct.matrixEntry, archDiagonalTuple,
-        KPStandardLocalRootLifts.A, KPLocalCover.sectionMap]
-      rfl
-    · apply RestrictedProduct.ext
-      intro q
-      change (1 : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr q)).g 1 0 = 0
-      simp
-  · change KPAdelicCoverRestrictedProduct.matrixEntry F ζ hζ
-      (archDiagonalTuple F ζ hζ z) 0 1 = 0
-    apply Prod.ext
-    · funext w
-      simp [KPAdelicCoverRestrictedProduct.matrixEntry, archDiagonalTuple,
-        KPStandardLocalRootLifts.A, KPLocalCover.sectionMap]
-      rfl
-    · apply RestrictedProduct.ext
-      intro q
-      change (1 : KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr q)).g 0 1 = 0
-      simp
+  · rfl
+  rfl
 
 def torusArchChart (z : TorusArch F) : E F ζ hζ :=
   ⟨archDiagonalLift F ζ hζ z, archDiagonalLift_mem F ζ hζ z⟩
@@ -460,7 +427,7 @@ def jetBound (g : T) (n : ℕ) (K : JetCompact U)
   sSup ((fun z => ‖iteratedFDerivWithin ℝ n
     (fun y => f.val.val (chart y * g)) U z‖) '' K.set)
 
-private lemma jet_bdd (hU : IsOpen U) (g : T) (n : ℕ) (K : JetCompact U)
+lemma jet_bdd (hU : IsOpen U) (g : T) (n : ℕ) (K : JetCompact U)
     (f : SmoothLevel H χ chart U J) :
     BddAbove ((fun z => ‖iteratedFDerivWithin ℝ n
       (fun y => f.val.val (chart y * g)) U z‖) '' K.set) := by
@@ -572,7 +539,3 @@ def torusSmoothTopology (P : Polarization F ζ hζ) :
     (torusArchChart F ζ hζ) (torusArchDomain F) (torusArchDomain_open F)
     (fun J : FiniteLevel F ζ hζ =>
       (globalLevel F ζ hζ J).comap (torus F ζ hζ).subtype)
-
-end DedekindZetaZeroFree.KPGlobalTorusFunctionData
-
-end

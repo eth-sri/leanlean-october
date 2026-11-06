@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # finite Hensel prefixes
 
@@ -22,7 +19,6 @@ Hensel construction.  Compatible prefixes themselves are assembled once, as
 HenselFactorizationFinitePrefixState, in the next layer.
 -/
 
-noncomputable section
 
 open scoped Polynomial
 
@@ -116,7 +112,7 @@ theorem henselFactorization_extend_finite_prefix_one_step_of_mem_span
           (henselFactorization_henselIterate π h0 qCorr n +
             Polynomial.C (π ^ (n + 1)) * q) =
         Polynomial.C (π ^ (n + 2)) * fnNext := by
-    simpa [Nat.add_assoc] using hfactorNextRaw
+    omega
   refine ⟨p, q, fnNext, hpDeg, hqDeg, ?_, ?_, ?_, ?_, ?_, ?_⟩
   · intro r hr
     rcases hprefix r hr with ⟨fr, hfr⟩
@@ -141,8 +137,3 @@ theorem henselFactorization_extend_finite_prefix_one_step_of_mem_span
     rw [henselFactorization_henselIterate_update_next
       (π := π) (F0 := h0) (corr := qCorr) (n := n) (c := q)]
     exact hhNextRed i
-
-end Valuations
-end AlgebraicNumberTheory
-
-end

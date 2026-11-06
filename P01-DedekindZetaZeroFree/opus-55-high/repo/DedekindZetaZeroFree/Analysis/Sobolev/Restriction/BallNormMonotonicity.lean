@@ -11,11 +11,7 @@ namespace DedekindZetaZeroFree.KPContLocalEnergy
 open KPContLocalNorm MeasureTheory
 
 theorem coordinateDerivativeList_tsupport_subset {n : ℕ} (l : List (Fin n))
-    (f : Space n → ℂ) : tsupport (coordinateDerivativeList l f) ⊆ tsupport f := by
-  induction l with
-  | nil => exact Set.Subset.rfl
-  | cons i l ih =>
-    exact (tsupport_fderiv_apply_subset ℝ (EuclideanSpace.single i 1)).trans ih
+    (f : Space n → ℂ) : tsupport (coordinateDerivativeList l f) ⊆ tsupport f := by apply DedekindZetaZeroFree.WeakJets.Raw.list_tsupport_subset <;> assumption
 
 def restrictBallL2 {n : ℕ} {inner outer : LocalBall n}
     (hsub : inner.carrier ⊆ outer.carrier) (f : BallL2 outer) : BallL2 inner :=
@@ -72,8 +68,7 @@ theorem isWeakDerivative_restrict {n k : ℕ} {inner outer : LocalBall n}
     ← coordinateDerivative] at heq
   have hzero := integral_mul_test_restrict hsub g φ []
   simp only [coordinateDerivativeList] at hzero
-  rw [hzero] at heq
-  exact heq
+  simp_all
 
 def restrictSobolev {n k : ℕ} {inner outer : LocalBall n}
     (hsub : inner.carrier ⊆ outer.carrier) (u : IntegerSobolev outer k) :
@@ -93,7 +88,3 @@ theorem sobolevNorm_restrictSobolev_le {n k : ℕ} {inner outer : LocalBall n}
   apply Finset.sum_le_sum
   intro α _
   exact pow_le_pow_left₀ (norm_nonneg _) (norm_restrictBallL2_le hsub _) 2
-
-end DedekindZetaZeroFree.KPContLocalEnergy
-
-end

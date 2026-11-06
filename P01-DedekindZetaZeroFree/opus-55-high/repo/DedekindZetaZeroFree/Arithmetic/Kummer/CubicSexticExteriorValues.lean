@@ -54,9 +54,9 @@ theorem cubicSexticValue_shared_zero (A : SArithmeticData F) (σ : F →+* ℂ)
     a.generates b.generates hshared
   constructor
   · change σ (A.sexticResidue d a.integral) ^ 3 = 0
-    rw [h.2, map_zero, zero_pow (by decide)]
+    simp_all
   · change σ (A.sexticResidue c b.integral) ^ 3 = 0
-    rw [h.1, map_zero, zero_pow (by decide)]
+    simp_all
 
 def ExteriorValuesSpec (A : SArithmeticData F) (σ : F →+* ℂ)
     (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
@@ -83,7 +83,3 @@ def ExteriorValuesSpec (A : SArithmeticData F) (σ : F →+* ℂ)
       (hcopd : d ⊔ uniformSquareUnitModulus A.Sf = ⊤), c ⊔ d = ⊤ →
     Xi (KummerSquarefreeMembers.generator A σ η hS C c hc hcopc) d =
       Xi (KummerSquarefreeMembers.generator A σ η hS C d hd hcopd) c)
-
-end KummerExteriorValues
-end
-end DedekindZetaZeroFree

@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 namespace ClassFormation
 
 open KummerTheory
@@ -49,8 +45,8 @@ def normToBase (A : Rep ℤ G) (K : ClosedSubgroup G)
 /-- Multiplication by `n` on an additive subgroup. -/
 def nsmulOnAddSubgroup (Z : AddSubgroup ZHat) (n : ℕ) : Z →+ Z where
   toFun z := ⟨n • z.1, Z.nsmul_mem z.2 n⟩
-  map_zero' := by ext; simp
-  map_add' x y := by ext; simp
+  map_zero' := by simp
+  map_add' x y := by simp
 
 /-- The subgroup `nZ` inside a value group `Z`. -/
 def nsmulWithin (Z : AddSubgroup ZHat) (n : ℕ) : AddSubgroup Z :=
@@ -70,19 +66,6 @@ theorem mem_nsmulImage_iff (Z : AddSubgroup ZHat) (n : ℕ) (z : ZHat) :
     z ∈ nsmulImage Z n ↔ ∃ x ∈ Z, n • x = z := by
   rfl
 
-/-- Multiples of the full value group are the range of multiplication
-by the same natural number on `ZHat`. -/
-@[simp]
-theorem nsmulImage_top (n : ℕ) :
-    nsmulImage (⊤ : AddSubgroup ZHat) n =
-      (zHatMulNat n).toAddMonoidHom.range := by
-  ext z
-  constructor
-  · rintro ⟨x, _hx, rfl⟩
-    exact ⟨x, rfl⟩
-  · rintro ⟨x, rfl⟩
-    exact ⟨x, AddSubgroup.mem_top x, rfl⟩
-
 /-- Restriction of reduction modulo `n` along the inclusion `Z ≤ ℤ̂`. -/
 def valueGroupReduction (Z : AddSubgroup ZHat) (n : ℕ) (hn : 0 < n) :
     Z →+ ZMod n :=
@@ -99,7 +82,7 @@ def canonicalValueQuotientMap (Z : AddSubgroup ZHat)
     rintro _ ⟨z, rfl⟩
     change zHatReduction n hn (n • (z : ZHat)) = 0
     rw [map_nsmul]
-    simp [nsmul_eq_mul])
+    simp)
 
 /-- The canonical value map evaluates on a quotient representative by reduction modulo `n`. -/
 @[simp]
@@ -150,16 +133,6 @@ theorem canonicalValueQuotientMap_top_bijective
           (nsmulWithin (⊤ : AddSubgroup ZHat) n)
           ⟨z, AddSubgroup.mem_top z⟩,
         hz⟩
-
-/-- The quotient used by the norm has the positive degree carried by a
-finite abstract field. -/
-@[simp] theorem FiniteAbstractField.normToBase_index_eq_degree
-    {G : Type*} [Group G] [TopologicalSpace G]
-    (K : FiniteAbstractField G) :
-    (extensionSubgroup (baseField G) K.field
-      (le_baseField K.field)).index =
-      (K.toFiniteAbstractExtension.degree : ℕ) :=
-  K.toFiniteAbstractExtension.extensionSubgroup_index_eq_degree
 
 /-- **the valuation-quotient axiom.** A henselian valuation of `A_k` with respect to `d`.
 
@@ -243,11 +216,11 @@ def normCompositeAtInResidueImage (v : ValuationData D A)
     ambientFixedAddSubgroup A K.field →+
       (zHatMulNat (K.residueDegree D : ℕ)).toAddMonoidHom.range where
   toFun a := ⟨v.normCompositeAt K a, by
-    have ha : v.normCompositeAt K a ∈ (v.normCompositeAt K).range := ⟨a, rfl⟩
+    have ha : v.normCompositeAt K a ∈ (v.normCompositeAt K).range := by simp
     rw [v.normCompositeAt_range K] at ha
     obtain ⟨z, _hz, hz⟩ := ha
     exact ⟨z, hz⟩⟩
-  map_zero' := by ext; simp [normCompositeAt]
+  map_zero' := by ext; simp
   map_add' x y := by
     apply Subtype.ext
     exact map_add (v.normCompositeAt K) x y
@@ -264,8 +237,8 @@ restriction. -/
 theorem residueDegree_nsmul_dividedAt (v : ValuationData D A)
     (K : FiniteAbstractField G)
     (a : ambientFixedAddSubgroup A K.field) :
-    (K.residueDegree D : ℕ) • v.dividedAt K a = v.normCompositeAt K a := by
-  exact zHatMulNat_zHatDivide (K.residueDegree D : ℕ)
+    (K.residueDegree D : ℕ) • v.dividedAt K a = v.normCompositeAt K a := 
+  zHatMulNat_zHatDivide (K.residueDegree D : ℕ)
     (K.residueDegree D).property
     (v.normCompositeAtInResidueImage K a)
 
@@ -274,7 +247,7 @@ theorem dividedAt_mem_valueGroup (v : ValuationData D A)
     (K : FiniteAbstractField G)
     (a : ambientFixedAddSubgroup A K.field) :
     v.dividedAt K a ∈ v.valueGroup := by
-  have ha : v.normCompositeAt K a ∈ (v.normCompositeAt K).range := ⟨a, rfl⟩
+  have ha : v.normCompositeAt K a ∈ (v.normCompositeAt K).range := by simp
   rw [v.normCompositeAt_range K] at ha
   obtain ⟨z, hzZ, hz⟩ := ha
   have hzSubtype : v.normCompositeAtInResidueImage K a =
@@ -328,8 +301,3 @@ theorem normalizedValuation_surjective (v : ValuationData D A)
   rw [hsub]
   exact zHatDivide_zHatMulNat (K.residueDegree D : ℕ)
     (K.residueDegree D).property z.1
-
-end ValuationData
-
-end
-end ClassFormation

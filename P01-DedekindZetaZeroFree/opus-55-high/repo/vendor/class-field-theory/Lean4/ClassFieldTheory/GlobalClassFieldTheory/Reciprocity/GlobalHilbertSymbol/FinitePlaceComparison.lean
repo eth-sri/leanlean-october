@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Finite-place local--global Kummer comparison
 
@@ -55,7 +52,7 @@ abbrev finitePlaceKummerLocalizedCompletion
 /-- The canonical completion algebra for the localized global Kummer
 extension. -/
 @[reducible]
-noncomputable def finitePlaceKummerLocalizedAlgebra
+def finitePlaceKummerLocalizedAlgebra
     (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
     (v : HeightOneSpectrum (𝓞 K)) (b : Kˣ)
     (w : AbsoluteValueExtension
@@ -86,7 +83,7 @@ theorem finitePlaceKummerLocalizedFiniteDimensional
 
 /-- The image of the global chosen radical as a unit of the localized
 completion. -/
-noncomputable def finitePlaceKummerLocalizedRootUnit
+def finitePlaceKummerLocalizedRootUnit
     (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
     (v : HeightOneSpectrum (𝓞 K)) (b : Kˣ)
     (w : AbsoluteValueExtension
@@ -137,8 +134,8 @@ theorem finitePlaceKummerLocalizedRootUnit_pow
     AbsoluteValue.toAlgebraicLocalization vK w.1 w.2
           (((chosenSimpleKummerRootUnit K n hnK b : Lˣ) : L)) ^ (n : ℕ) =
         AbsoluteValue.toAlgebraicLocalization vK w.1 w.2
-          (((chosenSimpleKummerRootUnit K n hnK b : Lˣ) : L) ^ (n : ℕ)) := by
-      exact (map_pow
+          (((chosenSimpleKummerRootUnit K n hnK b : Lˣ) : L) ^ (n : ℕ)) := 
+      (map_pow
         (AbsoluteValue.toAlgebraicLocalization vK w.1 w.2)
         (((chosenSimpleKummerRootUnit K n hnK b : Lˣ) : L)) (n : ℕ)).symm
     _ = AbsoluteValue.toAlgebraicLocalization vK w.1 w.2
@@ -213,8 +210,3 @@ theorem finitePlaceKummerLocalized_isSplittingField
       (congrArg Units.val
         (finitePlaceKummerLocalizedRootUnit_pow K n hnK v b w))
       (finitePlaceKummerLocalizedRoot_adjoin_eq_top K n hnK v b w)
-
-end Reciprocity
-end GlobalClassFieldTheory
-
-end

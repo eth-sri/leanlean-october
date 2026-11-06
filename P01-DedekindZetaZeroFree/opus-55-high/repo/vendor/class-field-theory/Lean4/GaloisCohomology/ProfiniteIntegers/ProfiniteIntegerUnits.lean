@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Units of the profinite integers
 
@@ -30,7 +26,7 @@ noncomputable section
 namespace ClassFormation
 
 /-- The Chinese-remainder isomorphism as a topological monoid equivalence. -/
-noncomputable def zHatContinuousMulEquivPrimeProduct :
+def zHatContinuousMulEquivPrimeProduct :
     ZHat ≃ₜ* ProfiniteIntegerPrimeProduct :=
   ContinuousMulEquiv.mk'
     (continuous_zHatToProfiniteIntegerPrimeProduct.homeoOfEquivCompactToT2
@@ -38,7 +34,7 @@ noncomputable def zHatContinuousMulEquivPrimeProduct :
     zHatRingEquivProfiniteIntegerPrimeProduct.map_mul
 
 /-- The additive form of the topological Chinese-remainder isomorphism. -/
-noncomputable def zHatContinuousAddEquivPrimeProduct :
+def zHatContinuousAddEquivPrimeProduct :
     ZHat ≃ₜ+ ProfiniteIntegerPrimeProduct :=
   { zHatRingEquivProfiniteIntegerPrimeProduct.toAddEquiv with
     continuous_toFun :=
@@ -51,7 +47,7 @@ local instance (p : Nat.Primes) : Fact p.1.Prime :=
 
 /-- The canonical topological Chinese-remainder equivalence on unit
 groups. -/
-noncomputable def zHatUnitsContinuousMulEquivPrimeProduct :
+def zHatUnitsContinuousMulEquivPrimeProduct :
     ZHatˣ ≃ₜ* ((p : Nat.Primes) → ℤ_[p.1]ˣ) :=
   (Units.mapContinuousMulEquiv
     zHatContinuousMulEquivPrimeProduct).trans
@@ -65,7 +61,3 @@ theorem zHatUnitsContinuousMulEquivPrimeProduct_coe_apply
     (zHatUnitsContinuousMulEquivPrimeProduct u p : ℤ_[p.1]) =
       zHatToPadicInt p (u : ZHat) :=
   rfl
-
-end ClassFormation
-
-end

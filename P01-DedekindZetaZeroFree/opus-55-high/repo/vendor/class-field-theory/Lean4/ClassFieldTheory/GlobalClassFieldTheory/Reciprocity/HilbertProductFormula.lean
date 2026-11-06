@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # The global Hilbert product formula
 
@@ -40,7 +35,7 @@ open KummerTheory
 
 variable (K : Type) [Field K] [NumberField K]
 
-private theorem map_product_mul_finprod
+theorem map_product_mul_finprod
     {I J M N : Type} [Fintype I] [CommMonoid M] [CommMonoid N]
     (chi : M →* N) (f : I → M) (g : J → M)
     (hg : Function.HasFiniteMulSupport g) :
@@ -50,7 +45,7 @@ private theorem map_product_mul_finprod
 
 /-- The product of the Hilbert symbols of two global units over all places.
 The finite-place part is a genuine finite-support product. -/
-noncomputable def globalHilbertProduct
+def globalHilbertProduct
     (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
     (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
     (a b : Kˣ) :
@@ -120,15 +115,7 @@ theorem globalHilbertProduct_principal
         (IdeleGroup.infiniteComponent v (IdeleGroup.principalIdele K a) :
             v.Completionˣ) =
           Units.map (algebraMap K v.Completion).toMonoidHom a := by
-      apply Units.ext
-      calc
-        ((IdeleGroup.infiniteComponent v (IdeleGroup.principalIdele K a) :
-            v.Completionˣ) : v.Completion) =
-            ((a : K) : v.Completion) :=
-          IdeleGroup.infiniteComponent_principalIdele a v
-        _ = algebraMap K v.Completion (a : K) :=
-          (NumberField.InfinitePlace.Completion.algebraMap_apply
-            v (a : K)).symm
+      rfl
     rw [hcomponent]
     calc
       chi
@@ -153,18 +140,7 @@ theorem globalHilbertProduct_principal
         (IdeleGroup.finiteComponent v (IdeleGroup.principalIdele K a) :
             (v.adicCompletion K)ˣ) =
           Units.map (algebraMap K (v.adicCompletion K)).toMonoidHom a := by
-      apply Units.ext
-      calc
-        ((IdeleGroup.finiteComponent v (IdeleGroup.principalIdele K a) :
-            (v.adicCompletion K)ˣ) : v.adicCompletion K) =
-            ((a : K) : v.adicCompletion K) :=
-          IdeleGroup.finiteComponent_principalIdele a v
-        _ = algebraMap K (v.adicCompletion K) (a : K) := by
-          symm
-          have hmap := congrFun
-            (IsDedekindDomain.HeightOneSpectrum.algebraMap_adicCompletion
-              (𝓞 K) K (S := K) v) (a : K)
-          simpa using hmap
+      rfl
     rw [hcomponent]
     calc
       chi
@@ -174,8 +150,7 @@ theorem globalHilbertProduct_principal
         change finitePlaceKummerRootCharacterOfExtension K n hnK hmu v a b
           (chosenFinitePlaceExtension (L := L) v) =
             finitePlaceKummerRootCharacter K n hnK hmu v a b
-        exact finitePlaceKummerRootCharacterOfExtension_eq K n hnK hmu v a b
-          (chosenFinitePlaceExtension (L := L) v)
+        rfl
       _ = finitePlaceHilbertSymbol K n hnK hmu v a b :=
         finitePlaceKummerRootCharacter_localGlobal
           K n hnK hmu v a b
@@ -192,10 +167,5 @@ theorem hilbertSymbol_allPlaces_product_eq_one
     (∏ v : InfinitePlace K,
         infinitePlaceHilbertSymbol K n v a b) *
       ∏ᶠ v : HeightOneSpectrum (𝓞 K),
-        finitePlaceHilbertSymbol K n hnK hmu v a b = 1 := by
-  exact globalHilbertProduct_principal K n hnK hmu a b
-
-end Reciprocity
-end GlobalClassFieldTheory
-
-end
+        finitePlaceHilbertSymbol K n hnK hmu v a b = 1 := 
+  globalHilbertProduct_principal K n hnK hmu a b

@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 namespace ClassFormation
 
 open CyclicCohomology
@@ -68,8 +65,3 @@ theorem absoluteFinite {E K : ClosedSubgroup G}
       (K.toSubgroup ⧸ extensionSubgroup K M.field M.below) := M.finite
   exact relativeTowerQuotientFinite (baseField G) K M.field M.below
     (le_baseField K)
-
-end FiniteIntermediateField
-
-end
-end ClassFormation

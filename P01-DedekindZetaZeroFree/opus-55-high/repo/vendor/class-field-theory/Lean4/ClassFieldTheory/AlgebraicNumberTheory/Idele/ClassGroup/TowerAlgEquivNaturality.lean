@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Naturality of tower base change under number-field equivalences
 
@@ -34,7 +30,6 @@ local components is introduced.
 open scoped NumberField TensorProduct
 open NumberField
 
-noncomputable section
 
 variable
     {K K' L L' : Type}
@@ -51,83 +46,6 @@ variable
     {M N : Type}
     [Field M] [NumberField M]
     [Field N] [NumberField N]
-
-/-- Relative adelic transport over `ℚ` is functorial in the transported
-top field. -/
-theorem relativeAdeleCongr_trans
-    (e : K ≃ₐ[ℚ] M)
-    (f : M ≃ₐ[ℚ] N)
-    (z : RelativeAdeleRing ℚ K) :
-    relativeAdeleCongr (K := ℚ) f
-        (relativeAdeleCongr (K := ℚ) e z) =
-      relativeAdeleCongr (K := ℚ) (e.trans f) z := by
-  induction z using TensorProduct.inductionOn with
-  | add x y hx hy =>
-      simpa only [map_add] using congrArg₂ (· + ·) hx hy
-  | tmul a x =>
-      rw [relativeAdeleCongr_tmul,
-        relativeAdeleCongr_tmul,
-        relativeAdeleCongr_tmul]
-      rfl
-
-/-- Canonical transport of ordinary adele rings is functorial. -/
-theorem adeleCongr_trans
-    (e : K ≃ₐ[ℚ] M)
-    (f : M ≃ₐ[ℚ] N)
-    (a : NumberField.AdeleRing (𝓞 K) K) :
-    adeleCongr f (adeleCongr e a) =
-      adeleCongr (e.trans f) a := by
-  change
-    relativeAdeleBaseChangeRingEquiv
-        (K := ℚ) (L := N)
-        (relativeAdeleCongr (K := ℚ) f
-          ((relativeAdeleBaseChangeRingEquiv
-            (K := ℚ) (L := M)).symm
-            (relativeAdeleBaseChangeRingEquiv
-              (K := ℚ) (L := M)
-              (relativeAdeleCongr (K := ℚ) e
-                ((relativeAdeleBaseChangeRingEquiv
-                  (K := ℚ) (L := K)).symm a))))) =
-      relativeAdeleBaseChangeRingEquiv
-        (K := ℚ) (L := N)
-        (relativeAdeleCongr (K := ℚ) (e.trans f)
-          ((relativeAdeleBaseChangeRingEquiv
-            (K := ℚ) (L := K)).symm a))
-  rw [RingEquiv.symm_apply_apply,
-    relativeAdeleCongr_trans]
-
-/-- Canonical transport of ordinary ideles is functorial. -/
-theorem ideleCongr_trans
-    (e : K ≃ₐ[ℚ] M)
-    (f : M ≃ₐ[ℚ] N)
-    (a : IdeleGroup K) :
-    ideleCongr f (ideleCongr e a) =
-      ideleCongr (e.trans f) a := by
-  apply
-    (IdeleGroup.equivAdeleRingUnits
-      (K := N)).injective
-  simp only [ideleCongr, MulEquiv.trans_apply,
-    MulEquiv.apply_symm_apply]
-  apply Units.ext
-  exact adeleCongr_trans e f
-    (((IdeleGroup.equivAdeleRingUnits
-      (K := K) a :
-        (NumberField.AdeleRing (𝓞 K) K)ˣ) :
-      NumberField.AdeleRing (𝓞 K) K))
-
-/-- Canonical transport of ordinary idele classes is functorial. -/
-theorem ideleClassCongr_trans
-    (e : K ≃ₐ[ℚ] M)
-    (f : M ≃ₐ[ℚ] N)
-    (c : IdeleClassGroup K) :
-    ideleClassCongr f (ideleClassCongr e c) =
-      ideleClassCongr (e.trans f) c := by
-  refine QuotientGroup.induction_on c ?_
-  intro a
-  exact congrArg
-    (QuotientGroup.mk'
-      (IdeleGroup.principalSubgroup N))
-    (ideleCongr_trans e f a)
 
 /-- Transport of ordinary idele classes along the identity
 number-field equivalence is the identity. -/
@@ -272,8 +190,7 @@ theorem relativeAdeleCongrOfAlgEquiv_towerActual
               (a ⊗ₜ[ℚ] eK y : RelativeAdeleRing ℚ K') =
                 (a ⊗ₜ[ℚ] (1 : K')) *
                   ((1 : NumberField.AdeleRing (𝓞 ℚ) ℚ) ⊗ₜ[ℚ] eK y) := by
-            rw [Algebra.TensorProduct.tmul_mul_tmul,
-              mul_one, one_mul]
+            simp
           rw [htmul, map_mul,
             relativeAdeleBaseChangeRingEquiv_fieldInclusion]
           rw [mul_comm
@@ -336,7 +253,7 @@ theorem relativeAdeleBaseChangeRingEquiv_congrOfAlgEquiv
               ((towerRelativeAdeleRingEquiv ℚ K' L').symm q)) =
           relativeAdeleBaseChangeRingEquiv
             (K := ℚ) (L := L') q
-      rw [RingEquiv.apply_symm_apply]
+      simp
     _ =
         adeleCongr eL
           (relativeAdeleBaseChangeRingEquiv
@@ -468,4 +385,3 @@ theorem ideleClassCongr_ideleClassNorm
           (ideleClassCongr eL c) := by
       rw [hd]
 
-end

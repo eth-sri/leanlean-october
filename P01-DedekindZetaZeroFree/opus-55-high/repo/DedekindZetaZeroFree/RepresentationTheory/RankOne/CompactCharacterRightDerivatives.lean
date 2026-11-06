@@ -1,6 +1,6 @@
 module
 
-public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.PU2TracePeakApproximation
+public import DedekindZetaZeroFree.RepresentationTheory.RankOne.U2CharacterConvolutionOrthogonality
 public import DedekindZetaZeroFree.RepresentationTheory.RankOne.HarmonicPolynomials.SymmetricPowerAction
 public import DedekindZetaZeroFree.Analysis.FiniteDimensional.CompatibleComplexNorm
 public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.SU2.WeylIntegration
@@ -35,5 +35,3 @@ noncomputable def characterSecondDerivative {d : ℕ}
     (ℓ : RawHarmonicType d) (b : Fin d × Fin 3) (g : Fin d → RawU2) : ℂ :=
   deriv (fun t : ℝ => deriv (fun s : ℝ =>
     star (rawCharacter ℓ (g * basisLift B hskew b t * basisLift B hskew b s))) 0) 0
-
-end DedekindZetaZeroFree.RepresentationTheory.KPCompactHarmonicTruncation.Casimir

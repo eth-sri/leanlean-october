@@ -14,7 +14,7 @@ namespace DedekindZetaZeroFree.Detector.Conductor.LocalTwistSteps
 
 open UniqueFactorizationMonoid Topology
 
-private theorem away_coprime (F : Type) [Field F] [NumberField F]
+theorem away_coprime (F : Type) [Field F] [NumberField F]
     (v : HeightOneSpectrum (𝓞 F)) (I : Ideal (𝓞 F)) :
     v.asIdeal ⊔ Raw.idealAwayPrimePart F v I = ⊤ := by
   classical
@@ -26,7 +26,7 @@ private theorem away_coprime (F : Type) [Field F] [NumberField F]
   exact v.isMaximal.coprime_of_ne ((Ideal.isPrime_of_prime hprime).isMaximal hprime.ne_zero)
     (Multiset.mem_filter.mp hp).2.symm
 
-private theorem coset_dense (F : Type) [Field F] [NumberField F]
+theorem coset_dense (F : Type) [Field F] [NumberField F]
     (v : HeightOneSpectrum (𝓞 F)) (b : 𝓞 F) (hb : b ∉ v.asIdeal) :
     DenseRange (fun a : 𝓞 F =>
       algebraMap (𝓞 F) (v.adicCompletionIntegers F) (1 + b * a)) := by
@@ -114,5 +114,3 @@ theorem raw_local_component_unique
   · exact hlocal u h
   · have hi := hlocal u⁻¹ (by simpa only [Units.val_inv_eq_inv_val] using h)
     simpa only [map_inv, inv_inj] using hi
-
-end DedekindZetaZeroFree.Detector.Conductor.LocalTwistSteps

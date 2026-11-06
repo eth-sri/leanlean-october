@@ -52,7 +52,3 @@ theorem char_symPowerRep_diagonal (t : Fin n → kˣ) : (symPowerRep k n d).char
       (stdRep k n (diagGL t)) (fun i => (t i : k)) d (stdRep_diagGL_apply_basisFun t)]
 
   rw [eval_hsymm]
-
-end Field
-
-end DedekindZetaZeroFree.TauCeti

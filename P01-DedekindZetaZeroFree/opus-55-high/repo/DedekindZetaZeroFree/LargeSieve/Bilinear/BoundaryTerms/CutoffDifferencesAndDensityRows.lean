@@ -90,7 +90,3 @@ def squarefreeRows (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
   ∑ t ∈ Vendor.CutoffDifference.divisors d,
     ∑ a ∈ idealAdmissibleFinset F q X,
       ‖densityRow Q q d N g lam (a * t ^ 2)‖
-
-end DedekindZetaZeroFree.LargeSieve.Sieve.MainBoundaryBound
-
-end

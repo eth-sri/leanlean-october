@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 namespace LocalClassFieldTheory
 open RamificationTheory CyclicCohomology KummerTheory
 
@@ -72,7 +66,7 @@ def abstractFixedFieldUnitsEquivGaloisFixed
       intro h
       have h' : ((Additive.toMul a.1 : Ωˣ) : Ω) = 0 :=
         congrArg (abstractFixedField k Ω H).val h
-      exact (Additive.toMul a.1 : Ωˣ).ne_zero h'
+      simp_all
     exact Additive.ofMul (Units.mk0 y₀ hy₀)
   left_inv x := by
     apply Additive.ext
@@ -84,7 +78,6 @@ def abstractFixedFieldUnitsEquivGaloisFixed
     apply Units.ext
     rfl
   map_add' _ _ := by
-    apply Subtype.ext
     rfl
 
 omit [IsGalois k Ω] in
@@ -149,8 +142,8 @@ theorem abstractRelativeUnitsEquiv_extensionUnitsEquiv
         (abstractExtensionFixedRepresentationUnitsEquiv
           k Ω K L hLK hnormal x) =
       extensionFixedRepresentationEquiv
-        (galoisAmbientUnitsRep k Ω) K L hLK hnormal x := by
-  exact (abstractRelativeFixedFieldUnitsEquivGaloisFixed
+        (galoisAmbientUnitsRep k Ω) K L hLK hnormal x := 
+  (abstractRelativeFixedFieldUnitsEquivGaloisFixed
     k Ω K L hLK).apply_symm_apply
       (extensionFixedRepresentationEquiv
         (galoisAmbientUnitsRep k Ω) K L hLK hnormal x)
@@ -306,6 +299,3 @@ def abstractExtensionFixedRepresentationIsoUnitsRes
   intro x
   exact abstractExtensionFixedRepresentationUnitsEquiv_action
     k Ω K L hLK hnormal q x
-
-end
-end LocalClassFieldTheory

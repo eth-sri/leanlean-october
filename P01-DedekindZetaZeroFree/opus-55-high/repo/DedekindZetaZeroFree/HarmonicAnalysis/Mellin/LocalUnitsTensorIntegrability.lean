@@ -19,7 +19,7 @@ local instance : BorelSpace ℝˣ := ⟨by
  def shell (a : ℝ) (n : ℕ) : Set ℝˣ :=
   {x | a ^ n ≤ ‖x.val‖ ∧ ‖x.val‖ ≤ 2 * a ^ n}
 
-private lemma compact_shell (a : ℝ) (ha : 0 < a) (n : ℕ) : IsCompact (shell a n) := by
+lemma compact_shell (a : ℝ) (ha : 0 < a) (n : ℕ) : IsCompact (shell a n) := by
   apply Units.isEmbedding_val₀.isCompact_iff.mpr
   have he : Units.val '' shell a n = {x : ℝ | a ^ n ≤ ‖x‖ ∧ ‖x‖ ≤ 2 * a ^ n} := by
     ext x
@@ -35,13 +35,12 @@ private lemma compact_shell (a : ℝ) (ha : 0 < a) (n : ℕ) : IsCompact (shell 
     (isClosed_le continuous_const continuous_norm : IsClosed {x : ℝ | a ^ n ≤ ‖x‖})
   simpa only [Metric.closedBall, dist_zero_right, setOf_and] using h
 
-private lemma measure_shell (ν : Measure ℝˣ) [ν.IsHaarMeasure]
+lemma measure_shell (ν : Measure ℝˣ) [ν.IsHaarMeasure]
     (a : ℝ) (ha : 0 < a) (n : ℕ) : ν (shell a n) = ν (shell a 0) := by
   let u : ℝˣ := Units.mk0 (a ^ n) (ne_of_gt (pow_pos ha n))
   have he : (fun x : ℝˣ => u * x) ⁻¹' shell a n = shell a 0 := by
     ext x
-    simp only [shell, mem_preimage, mem_setOf_eq, Units.val_mul, u, Units.val_mk0,
-      norm_mul, Real.norm_eq_abs, abs_mul, abs_of_pos (pow_pos ha n), pow_zero, mul_one]
+    simp only [shell, mem_preimage, mem_setOf_eq, Units.val_mul, u, Units.val_mk0, Real.norm_eq_abs, abs_mul, abs_of_pos (pow_pos ha n), pow_zero, mul_one]
     constructor
     · intro h
       exact ⟨(le_mul_iff_one_le_right (pow_pos ha n)).mp h.1,
@@ -52,7 +51,7 @@ private lemma measure_shell (ν : Measure ℝˣ) [ν.IsHaarMeasure]
       · simpa [mul_comm] using (mul_le_mul_of_nonneg_right h.2 (pow_pos ha n).le)
   rw [← he, measure_preimage_mul]
 
-private lemma shell_integrable (ν : Measure ℝˣ) [ν.IsHaarMeasure]
+lemma shell_integrable (ν : Measure ℝˣ) [ν.IsHaarMeasure]
     (f : ℝˣ → ℂ) (hf : Continuous f)
     (a : ℝ) (ha : 0 < a) (B r : ℝ) (hB : 0 ≤ B) (hr0 : 0 ≤ r) (hr : r < 1)
     (hb : ∀ n, ∀ x ∈ shell a n, ‖f x‖ ≤ B * r ^ n) :
@@ -70,7 +69,7 @@ private lemma shell_integrable (ν : Measure ℝˣ) [ν.IsHaarMeasure]
     _ = (ν.real (shell a 0) * B) * r ^ n := by
       simp [measureReal_def, measure_shell ν a ha n, mul_assoc]
 
-private lemma weight_norm (g : SchwartzMap ℝ ℂ) (z : ℂ) (x : ℝˣ) :
+lemma weight_norm (g : SchwartzMap ℝ ℂ) (z : ℂ) (x : ℝˣ) :
     ‖g x.val * ((‖x.val‖ ^ 2 : ℝ) : ℂ) ^ z‖ = ‖g x.val‖ * ‖x.val‖ ^ (2 * z.re) := by
   rw [norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos (pow_pos (norm_pos_iff.mpr x.ne_zero) 2)]
   congr 1
@@ -199,7 +198,7 @@ variable (F : Type) [Field F] [NumberField F]
     [ContinuousInv₀ K] [MeasurableSpace K] [BorelSpace K] : BorelSpace Kˣ :=
   unitsBorel Units.isEmbedding_val₀
 
-private lemma cpow_prod {ι : Type*} (s : Finset ι) (a : ι → ℝ)
+lemma cpow_prod {ι : Type*} (s : Finset ι) (a : ι → ℝ)
     (ha : ∀ i ∈ s, 0 ≤ a i) (z : ℂ) :
     ((∏ i ∈ s, a i : ℝ) : ℂ) ^ z = ∏ i ∈ s, (a i : ℂ) ^ z := by
   classical
@@ -211,7 +210,7 @@ private lemma cpow_prod {ι : Type*} (s : Finset ι) (a : ι → ℝ)
       (Finset.prod_nonneg (s := s) (fun j hj => ha j (by simp [hj]))),
       ih (fun j hj => ha j (by simp [hj])), Finset.prod_insert hi]
 
-private lemma archNormProd (a : InfiniteAdeleRing F) :
+lemma archNormProd (a : InfiniteAdeleRing F) :
     (∏ v : InfinitePlace F, ‖a v‖ ^ 2) =
       (∏ v : {v : InfinitePlace F // v.IsReal},
         ‖((InfiniteAdeleRing.ringEquiv_mixedSpace F a).1 v)‖ ^ 2) *
@@ -297,8 +296,8 @@ theorem tensor_units_mellin_integrable
     ({v : InfinitePlace F // v.IsComplex} → ℂˣ)) ×
       ((v : S) → (v.val.adicCompletion F)ˣ) => c * (((∏ v, kR v (p.1.1 v)) * (∏ v, kC v (p.1.2 v))) *
     ∏ v : S, kF v (p.2 v))
-  have hk : Integrable k μ := by
-    exact (((Integrable.fintype_prod (fun v => hReal v μR inferInstance)).mul_prod
+  have hk : Integrable k μ := 
+    (((Integrable.fintype_prod (fun v => hReal v μR inferInstance)).mul_prod
       (Integrable.fintype_prod (fun v => hComplex v μC inferInstance))).mul_prod
         (Integrable.fintype_prod_dep (fun v => hFinite v (μF v) inferInstance))).const_mul c
   have hμR : μR.IsHaarMeasure := by dsimp [μR]; infer_instance
@@ -380,7 +379,7 @@ theorem schwartz_complexNormMellin_integrable
     intro x
     by_cases hx : x = 0
     · simp only [hx, complexNormMellinIntegrand, ↓reduceIte, norm_zero]
-      exact mul_nonneg (apply_nonneg _ _) (Real.rpow_nonneg (by norm_num) _)
+      positivity
     · rw [hnorm x hx]
       rw [show -(2 * (1 - s)) = 2 * (s - 1) by ring]
       exact mul_le_mul_of_nonneg_right (g.norm_le_seminorm ℂ x)
@@ -405,15 +404,13 @@ theorem schwartz_complexMellin_withDensity_integrable
       ((μ : Measure ℂ).withDensity
         (fun x => ENNReal.ofReal ((Real.pi * ‖x‖ ^ 2)⁻¹))) := by
   have hd : Measurable (fun x : ℂ => ENNReal.ofReal ((Real.pi * ‖x‖ ^ 2)⁻¹)) :=
-    ENNReal.measurable_ofReal.comp (by fun_prop)
+    by fun_prop
   rw [integrable_withDensity_iff_integrable_smul₀' hd.aemeasurable
     (Filter.Eventually.of_forall (fun x => ENNReal.ofReal_lt_top))]
   have hm : AEStronglyMeasurable (fun x : ℂ =>
       (Real.pi * ‖x‖ ^ 2)⁻¹ • (g x * ((‖x‖ ^ 2 : ℝ) : ℂ) ^ z)) μ := by
     apply Measurable.aestronglyMeasurable
-    exact (by fun_prop : Measurable (fun x : ℂ => (Real.pi * ‖x‖ ^ 2)⁻¹)).smul
-      (g.continuous.mul ((Complex.continuous_ofReal_cpow_const hz).comp
-        (continuous_norm.pow 2))).measurable
+    fun_prop
   have hbound := (schwartz_complexNormMellin_integrable g μ z.re hz).norm.const_mul Real.pi⁻¹
   apply hbound.mono' ?_ ?_
   · convert hm using 1
@@ -425,7 +422,7 @@ theorem schwartz_complexMellin_withDensity_integrable
     by_cases hx : x = 0
     · subst x
       simp [complexNormMellinIntegrand]
-    · have hn : 0 < ‖x‖ ^ 2 := pow_pos (norm_pos_iff.mpr hx) 2
+    · have hn : 0 < ‖x‖ ^ 2 := by positivity
       simp only [norm_smul, Real.norm_eq_abs,
         abs_of_nonneg (by positivity : 0 ≤ (Real.pi * ‖x‖ ^ 2)⁻¹), norm_mul,
         Complex.norm_cpow_eq_rpow_re_of_pos hn, complexNormMellinIntegrand,
@@ -455,9 +452,9 @@ theorem integrable_of_isHaarMeasure
     [SecondCountableTopology G] (μ ν : Measure G) [μ.IsHaarMeasure] [ν.IsHaarMeasure]
     {f : G → ℂ} (hf : Integrable f μ) : Integrable f ν := by
   rw [Measure.isMulLeftInvariant_eq_smul ν μ]
-  exact hf.smul_measure ENNReal.coe_ne_top
+  fun_prop
 
-private theorem complex_addHaar_map_mul (μ : Measure ℂ) [μ.IsAddHaarMeasure] (c : ℂ) (hc : c ≠ 0) :
+theorem complex_addHaar_map_mul (μ : Measure ℂ) [μ.IsAddHaarMeasure] (c : ℂ) (hc : c ≠ 0) :
     μ.map (fun x => c*x) = (ENNReal.ofReal (‖c‖ ^ 2))⁻¹ • μ := by
   let L : ℂ →ₗ[ℝ] ℂ := Algebra.lmul ℝ ℂ c
   have hdet : L.det = ‖c‖ ^ 2 := by
@@ -473,9 +470,9 @@ private theorem complex_addHaar_map_mul (μ : Measure ℂ) [μ.IsAddHaarMeasure]
     (f := L) (by rw [hdet]; positivity)
   convert hmap using 1
   · rfl
-  · rw [hdet, abs_of_nonneg (by positivity), ENNReal.ofReal_inv_of_pos (by positivity)]
+  simp_all
 
-private theorem complexUnits_density_left (μ : Measure ℂ) [μ.IsAddHaarMeasure] :
+theorem complexUnits_density_left (μ : Measure ℂ) [μ.IsAddHaarMeasure] :
     (Measure.comap Units.val
       (μ.withDensity (fun x : ℂ => ENNReal.ofReal ((Real.pi * ‖x‖ ^ 2)⁻¹)))).IsMulLeftInvariant := by
   letI : BorelSpace ℂˣ := ⟨by
@@ -484,7 +481,7 @@ private theorem complexUnits_density_left (μ : Measure ℂ) [μ.IsAddHaarMeasur
     rfl⟩
   let ev := (IsOpenUnits.isOpenEmbedding_unitsVal (M := ℂ)).measurableEmbedding
   let D := fun x : ℂ => ENNReal.ofReal ((Real.pi * ‖x‖ ^ 2)⁻¹)
-  have hD : Measurable D := by dsimp [D]; fun_prop
+  have hD : Measurable D := by fun_prop
   constructor
   intro g
   ext s hs
@@ -500,9 +497,7 @@ private theorem complexUnits_density_left (μ : Measure ℂ) [μ.IsAddHaarMeasur
     · rintro ⟨u, hu, he⟩
       refine ⟨g⁻¹ * u, ?_, ?_⟩
       · simpa using hu
-      · change ((g⁻¹ * u : ℂˣ) : ℂ) = x
-        simp only [Units.val_mul]
-        rw [he]; simp
+      simp_all
   rw [hpre, withDensity_apply _ (by exact (ev.measurableSet_image.mpr hs).preimage (by fun_prop)),
     withDensity_apply _ (ev.measurableSet_image.mpr hs)]
   have hscale := complex_addHaar_map_mul μ (g : ℂ) g.ne_zero
@@ -515,10 +510,10 @@ private theorem complexUnits_density_left (μ : Measure ℂ) [μ.IsAddHaarMeasur
   have hm := setLIntegral_map (μ := μ) (g := fun x : ℂ => (g : ℂ) * x)
     (s := Units.val '' s) (ev.measurableSet_image.mpr hs) hD (by fun_prop)
   rw [hscale, Measure.restrict_smul, lintegral_smul_measure] at hm
-  simp only [ENNReal.smul_def, smul_eq_mul] at hm
+  simp only [smul_eq_mul] at hm
   simp_rw [hmul] at hm
   rw [lintegral_const_mul _ hD] at hm
-  exact (ENNReal.mul_right_inj (by simp) (by simp [norm_pos_iff.mpr g.ne_zero])).mp hm.symm
+  exact (ENNReal.mul_right_inj (by simp) (by simp)).mp hm.symm
 
 theorem complexUnits_density_isHaarMeasure (μ : Measure ℂ) [μ.IsAddHaarMeasure] :
     (Measure.comap Units.val
@@ -529,7 +524,7 @@ theorem complexUnits_density_isHaarMeasure (μ : Measure ℂ) [μ.IsAddHaarMeasu
     rfl⟩
   let ev := (IsOpenUnits.isOpenEmbedding_unitsVal (M := ℂ)).measurableEmbedding
   let D := fun x : ℂ => ENNReal.ofReal ((Real.pi * ‖x‖ ^ 2)⁻¹)
-  have hD : Measurable D := by dsimp [D]; fun_prop
+  have hD : Measurable D := by fun_prop
   letI := complexUnits_density_left μ
   obtain ⟨K, hK, hKmem⟩ := exists_compact_mem_nhds (1 : ℂˣ)
   have hint : (interior K).Nonempty := ⟨1, mem_interior_iff_mem_nhds.mpr hKmem⟩
@@ -550,8 +545,7 @@ theorem complexUnits_density_isHaarMeasure (μ : Measure ℂ) [μ.IsAddHaarMeasu
   · rw [ev.comap_apply, withDensity_apply _ ((hK.image Units.continuous_val).measurableSet)]
     have hc : ContinuousOn (fun x : ℂ => (Real.pi * ‖x‖ ^ 2)⁻¹) (Units.val '' K) := by
       apply ContinuousOn.inv₀ (by fun_prop)
-      rintro x ⟨u, hu, rfl⟩
-      exact (mul_pos Real.pi_pos (pow_pos (norm_pos_iff.mpr u.ne_zero) 2)).ne'
+      simp
     have hi := ContinuousOn.integrableOn_compact (μ := μ) (hK.image Units.continuous_val) hc
     rw [← ofReal_integral_eq_lintegral_ofReal hi (Filter.Eventually.of_forall (fun x => by positivity))]
     exact ENNReal.ofReal_ne_top
@@ -606,8 +600,3 @@ theorem fourier_mellin_integrable
     letI := hνv
     exact ProbeSheetGlobalIntegrability.finiteUnitsMellin_integrable F v.val
       (gFinite v) (hFinite v).1 (hFinite v).2 νv z hz
-
-end
-end DedekindZetaZeroFree.ProbeSheetFourierMellinBounds
-
-end

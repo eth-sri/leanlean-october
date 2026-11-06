@@ -12,7 +12,6 @@ open NumberField IsDedekindDomain
 
 namespace DedekindZetaZeroFree.SArithmeticData
 noncomputable section
-set_option autoImplicit false
 variable {F : Type} [Field F] [NumberField F]
 
 theorem actualHilbert_roots (A : SArithmeticData F) (n : ℕ+)
@@ -71,15 +70,14 @@ theorem H_S_mul_left (A : SArithmeticData F) (x z y : A.G) :
     A.H_S (x * z) y = A.H_S x y * A.H_S z y := by
   classical
   unfold H_S actualLocalSymbol
-  simp only [Prod.snd_mul, Pi.mul_apply, map_mul, MonoidHom.mul_apply,
-    Finset.prod_mul_distrib]
+  simp only [Prod.snd_mul, Pi.mul_apply, map_mul, MonoidHom.mul_apply]
   exact Finset.prod_mul_distrib
 
 theorem H_S_mul_right (A : SArithmeticData F) (x y z : A.G) :
     A.H_S x (y * z) = A.H_S x y * A.H_S x z := by
   classical
   unfold H_S actualLocalSymbol
-  simp only [Prod.snd_mul, Pi.mul_apply, map_mul, Finset.prod_mul_distrib]
+  simp only [Prod.snd_mul, Pi.mul_apply, map_mul]
   exact Finset.prod_mul_distrib
 
 theorem H_S_skew (A : SArithmeticData F) (x y : A.G) :
@@ -127,7 +125,7 @@ theorem actualSextic_productFormula (A : SArithmeticData F) (a b : Fˣ) :
       exact A.actualLocalSymbol_diagonal v 6 (Or.inr (Or.inr rfl)) a b
     _ = 1 := by rw [finprod_inv_distrib, hraw, inv_one]
 
-private theorem raw_exponent (A : SArithmeticData F)
+theorem raw_exponent (A : SArithmeticData F)
     (v : HeightOneSpectrum (𝓞 F)) (m n : ℕ+)
     (hm : IsLocalRootOrder m) (hn : IsLocalRootOrder n)
     (hmn : (m : ℕ) ∣ (n : ℕ)) (a b : (v.adicCompletion F)ˣ) :
@@ -150,9 +148,7 @@ private theorem raw_exponent (A : SArithmeticData F)
       (((mem_primitiveRoots r.pos).1 hζ).map_of_injective (algebraMap F C).injective)⟩
   have ht (r : ℕ+) (hr : IsLocalRootOrder r) (x : rootsOfUnity (r : ℕ) C) :
       (ClassFieldTheory.rootsOfUnityEquivOfRingEquiv e r (hroots r hr) x).1 = eu x.1 := by
-    letI : NeZero (r : ℕ) := ⟨r.pos.ne'⟩
-    apply Units.ext
-    exact (val_rootsOfUnityEquivOfPrimitiveRoots_apply_coe e.injective (hroots r hr) x).symm
+    rfl
   change (ClassFieldTheory.hilbertPairingOfRingEquiv e m (hroots m hm)
       (ClassFieldTheory.localHilbertPairing C m (Nat.cast_ne_zero.mpr m.ne_zero) (hroots m hm))
       (ClassFieldTheory.powerClass _ m a) (ClassFieldTheory.powerClass _ m b)).1 =
@@ -178,12 +174,12 @@ theorem actualLocalSymbol_two_six (A : SArithmeticData F)
     (A.finiteRootsEquiv v 2 (Or.inl rfl)
       (A.actualLocalSymbol v 2 (Or.inl rfl) a b) : (v.adicCompletion F)ˣ) =
     (A.finiteRootsEquiv v 6 (Or.inr (Or.inr rfl))
-      (A.actualLocalSymbol v 6 (Or.inr (Or.inr rfl)) a b) : (v.adicCompletion F)ˣ) ^ 3 := by
-  exact A.finiteSymbolInverseTransport_exponentCompatibility v 2 6 3
+      (A.actualLocalSymbol v 6 (Or.inr (Or.inr rfl)) a b) : (v.adicCompletion F)ˣ) ^ 3 := 
+  A.finiteSymbolInverseTransport_exponentCompatibility v 2 6 3
     (Or.inl rfl) (Or.inr (Or.inr rfl))
     (A.actualRawHilbert 2 (Or.inl rfl) v)
-    (A.actualRawHilbert 6 (Or.inr (Or.inr rfl)) v) a b (by
-      exact A.raw_exponent v 2 6
+    (A.actualRawHilbert 6 (Or.inr (Or.inr rfl)) v) a b (
+      A.raw_exponent v 2 6
         (Or.inl rfl) (Or.inr (Or.inr rfl)) (by decide) a b)
 
 theorem actualLocalSymbol_three_six (A : SArithmeticData F)
@@ -191,12 +187,12 @@ theorem actualLocalSymbol_three_six (A : SArithmeticData F)
     (A.finiteRootsEquiv v 3 (Or.inr (Or.inl rfl))
       (A.actualLocalSymbol v 3 (Or.inr (Or.inl rfl)) a b) : (v.adicCompletion F)ˣ) =
     (A.finiteRootsEquiv v 6 (Or.inr (Or.inr rfl))
-      (A.actualLocalSymbol v 6 (Or.inr (Or.inr rfl)) a b) : (v.adicCompletion F)ˣ) ^ 2 := by
-  exact A.finiteSymbolInverseTransport_exponentCompatibility v 3 6 2
+      (A.actualLocalSymbol v 6 (Or.inr (Or.inr rfl)) a b) : (v.adicCompletion F)ˣ) ^ 2 := 
+  A.finiteSymbolInverseTransport_exponentCompatibility v 3 6 2
     (Or.inr (Or.inl rfl)) (Or.inr (Or.inr rfl))
     (A.actualRawHilbert 3 (Or.inr (Or.inl rfl)) v)
-    (A.actualRawHilbert 6 (Or.inr (Or.inr rfl)) v) a b (by
-      exact A.raw_exponent v 3 6 (Or.inr (Or.inl rfl))
+    (A.actualRawHilbert 6 (Or.inr (Or.inr rfl)) v) a b (
+      A.raw_exponent v 3 6 (Or.inr (Or.inl rfl))
         (Or.inr (Or.inr rfl)) (by decide) a b)
 
 private theorem outside (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F))
@@ -236,10 +232,7 @@ theorem H_S_sunit_isotropy (A : SArithmeticData F) (a b : A.U) :
   have hprod := finprod_eq_prod_of_mulSupport_subset f hsupport
   have hformula := A.actualSextic_productFormula a.val b.val
   calc
-    A.H_S (A.diagonal a.val) (A.diagonal b.val) = ∏ v ∈ A.Sf, f v := by
-      exact Finset.prod_coe_sort A.Sf f
+    A.H_S (A.diagonal a.val) (A.diagonal b.val) = ∏ v ∈ A.Sf, f v := 
+      Finset.prod_coe_sort A.Sf f
     _ = ∏ᶠ v, f v := hprod.symm
     _ = 1 := hformula
-
-end
-end DedekindZetaZeroFree.SArithmeticData

@@ -80,10 +80,5 @@ theorem actual_level_integrable_full_cover
       ((compactTrivialization S.borel P S.iwasawa (sourceSign ε) (sourceParameter ε s)
         (φ : compactPicture S.borel P S.iwasawa (sourceSign ε))).val
         (kernelW (LocalField F q) S.borel ε *
-          (S.borel.upperRoot (Multiplicative.ofAdd x) : ActualCover F ζ hζ q) * g)).val h) μ := by
-  exact actual_section_integrable F ζ hζ q S P μ hμ π hπ ε s hs _ g h
-
-end DedekindZetaZeroFree.KPRankOneShellContinuation
-
-end
-end
+          (S.borel.upperRoot (Multiplicative.ofAdd x) : ActualCover F ζ hζ q) * g)).val h) μ := 
+  actual_section_integrable F ζ hζ q S P μ hμ π hπ ε s hs _ g h

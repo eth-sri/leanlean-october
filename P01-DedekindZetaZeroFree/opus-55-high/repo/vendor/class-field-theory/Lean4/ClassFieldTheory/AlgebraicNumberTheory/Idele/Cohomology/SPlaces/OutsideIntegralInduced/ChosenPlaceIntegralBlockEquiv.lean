@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # The chosen integral tensor equivalence
 
@@ -46,7 +42,7 @@ section ChosenFinitePlace
 /-- Outside a finite exceptional set, the actual integral tensor-unit
 subgroup at a finite place is the induced module of the
 integer units at the chosen extension. -/
-noncomputable def
+def
     relativeLocalTensorDecompositionIntegralUnitSubgroupEquivInducedIntegerUnits
     (w₀ : HeightOneSpectrum (𝓞 K)) :
     relativeLocalTensorDecompositionIntegralUnitSubgroup
@@ -70,6 +66,3 @@ noncomputable def
           (RayClass.adicAbv_isNontrivial w₀)
           (HeightOneSpectrum.isNonarchimedean_adicAbv K w₀)
           (chosenFinitePlaceExtension (L := L) w₀))
-end ChosenFinitePlace
-
-end

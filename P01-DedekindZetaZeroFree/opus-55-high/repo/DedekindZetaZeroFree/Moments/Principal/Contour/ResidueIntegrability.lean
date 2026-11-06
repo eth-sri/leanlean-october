@@ -53,7 +53,7 @@ private theorem wResidue_eq_bodyR (u : D.Row) (hu : u.u = 1) (ξ z : ℂ) (Z : �
     PrincipalResidueFormulas.remainingKernel_principal D u hu]
   rfl
 
-private theorem abstract_slice (H : ℂ → ℂ → ℂ → ℂ) (ξ z : ℂ)
+theorem abstract_slice (H : ℂ → ℂ → ℂ → ℂ) (ξ z : ℂ)
     (hd : DifferentiableAt ℂ (fun p : ℂ × ℂ × ℂ => H p.1 p.2.1 p.2.2) (ξ, 1, z)) :
     ContinuousAt (fun p : ℂ × ℂ => H p.1 1 p.2) (ξ, z) := by
   have hc : ContinuousAt (fun p : ℂ × ℂ => ((p.1, (1 : ℂ), p.2) : ℂ × ℂ × ℂ)) (ξ, z) := by
@@ -61,7 +61,7 @@ private theorem abstract_slice (H : ℂ → ℂ → ℂ → ℂ) (ξ z : ℂ)
   exact ContinuousAt.comp (g := fun p : ℂ × ℂ × ℂ => H p.1 p.2.1 p.2.2)
     (f := fun p : ℂ × ℂ => ((p.1, (1 : ℂ), p.2) : ℂ × ℂ × ℂ)) hd.continuousAt hc
 
-private theorem abstract_comp {α : Type*} [TopologicalSpace α] (G : ℂ × ℂ → ℂ) (g : α → ℂ × ℂ)
+theorem abstract_comp {α : Type*} [TopologicalSpace α] (G : ℂ × ℂ → ℂ) (g : α → ℂ × ℂ)
     (a : α) (hG : ContinuousAt G (g a)) (hg : ContinuousAt g a) : ContinuousAt (fun t => G (g t)) a :=
   ContinuousAt.comp hG hg
 

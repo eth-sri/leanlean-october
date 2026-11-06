@@ -13,8 +13,8 @@ open scoped Pointwise RealInnerProductSpace ENNReal
 noncomputable def sphereRotation (g : Ambient ≃ₗᵢ[ℝ] Ambient) (x : Sphere) : Sphere :=
   ⟨g x, by simpa only [mem_sphere_zero_iff_norm, g.norm_map] using x.property⟩
 lemma sphereRotation_continuous (g : Ambient ≃ₗᵢ[ℝ] Ambient) :
-    Continuous (sphereRotation g) := by
-  exact (g.continuous.comp continuous_subtype_val).subtype_mk _
+    Continuous (sphereRotation g) := 
+  (g.continuous.comp continuous_subtype_val).subtype_mk _
 lemma sphereRotation_cone_preimage (g : Ambient ≃ₗᵢ[ℝ] Ambient) (s : Set Sphere) :
     g ⁻¹' (Ioo (0 : ℝ) 1 • (Subtype.val '' s)) =
     Ioo (0 : ℝ) 1 • (Subtype.val '' (sphereRotation g ⁻¹' s)) := by
@@ -38,8 +38,8 @@ lemma sphereRotation_preserving (g : Ambient ≃ₗᵢ[ℝ] Ambient) :
     Measure.toSphere_apply' _ hs, ← sphereRotation_cone_preimage]
   rw [g.measurePreserving.measure_preimage_emb g.toHomeomorph.measurableEmbedding]
 lemma sphereArea_rotation_preserving (g : Ambient ≃ₗᵢ[ℝ] Ambient) :
-    MeasurePreserving (sphereRotation g) sphereArea sphereArea := by
-  exact (sphereRotation_preserving g).smul_measure _
+    MeasurePreserving (sphereRotation g) sphereArea sphereArea := 
+  (sphereRotation_preserving g).smul_measure _
 lemma sphereArea_projection_rotation (g : Ambient ≃ₗᵢ[ℝ] Ambient) (x : Sphere) :
     Measure.map (fun y : Sphere => (1 - inner ℝ (g x) (y : Ambient)) / 2) sphereArea =
     Measure.map (fun y : Sphere => (1 - inner ℝ (x : Ambient) (y : Ambient)) / 2) sphereArea := by
@@ -52,7 +52,7 @@ lemma sphereArea_projection_rotation (g : Ambient ≃ₗᵢ[ℝ] Ambient) (x : S
       rw [Measure.map_map hp (sphereRotation_continuous g).measurable]
       congr 1
       ext y
-      simp [Function.comp_def, sphereRotation, g.inner_map_map]
+      simp [sphereRotation, g.inner_map_map]
 lemma sphereArea_projection_independent (x z : Sphere) :
     Measure.map (fun y : Sphere => (1 - inner ℝ (x : Ambient) (y : Ambient)) / 2) sphereArea =
     Measure.map (fun y : Sphere => (1 - inner ℝ (z : Ambient) (y : Ambient)) / 2) sphereArea := by
@@ -64,7 +64,7 @@ lemma sphereArea_projection_independent (x z : Sphere) :
 lemma sphereProjection_raw_mass :
     (volume : Measure Ambient).toSphere univ = ENNReal.ofReal (4 * Real.pi) := by
   rw [Measure.toSphere_apply_univ, EuclideanSpace.volume_ball_fin_three]
-  have hd : Module.finrank ℝ Ambient = 3 := by simp [Ambient]
+  have hd : Module.finrank ℝ Ambient = 3 := by simp
   simp only [hd, Nat.cast_ofNat, ENNReal.ofReal_one, one_pow, one_mul]
   rw [show (3 : ℝ≥0∞) = ENNReal.ofReal (3 : ℝ) by norm_num,
     ← ENNReal.ofReal_mul (by norm_num)]
@@ -76,8 +76,8 @@ noncomputable def sphereProjection_split : Ambient ≃ᵐ ℝ × EuclideanSpace 
     ((MeasurableEquiv.piFinSuccAbove (fun _ : Fin 3 => ℝ) 0).trans
       (MeasurableEquiv.prodCongr (MeasurableEquiv.refl ℝ)
         (MeasurableEquiv.toLp 2 (Fin 2 → ℝ))))
-lemma sphereProjection_split_preserving : MeasurePreserving sphereProjection_split := by
-  exact (PiLp.volume_preserving_ofLp (Fin 3)).trans
+lemma sphereProjection_split_preserving : MeasurePreserving sphereProjection_split := 
+  (PiLp.volume_preserving_ofLp (Fin 3)).trans
     ((volume_preserving_piFinSuccAbove (fun _ : Fin 3 => ℝ) 0).trans
       ((MeasurePreserving.id volume).prod (PiLp.volume_preserving_toLp (Fin 2))))
 lemma sphereProjection_split_symm_apply (z : ℝ) (w : EuclideanSpace ℝ (Fin 2)) :
@@ -247,11 +247,9 @@ lemma sphereProjection_north_cone_integrals {t : ℝ} (ht : 0 < t) (ht1 : t ≤ 
           indicator_of_notMem (show z ∉ Ico t 1 from fun h => (not_le.mpr hzt) h.1), add_zero]
       · by_cases hz1 : z < 1
         · rw [sphereProjection_north_slice_volume_upper ht (le_of_not_gt hzt) hz1]
-          simp [indicator_of_notMem (show z ∉ Ioo 0 t from fun h => hzt h.2),
-            indicator_of_mem (show z ∈ Ico t 1 from ⟨le_of_not_gt hzt,hz1⟩)]
+          simp_all
         · rw [sphereProjection_north_slice_empty ht (Or.inr (le_of_not_gt hz1))]
-          simp [indicator_of_notMem (show z ∉ Ioo 0 t from fun h => hzt h.2),
-            indicator_of_notMem (show z ∉ Ico t 1 from fun h => hz1 h.2)]
+          simp_all
     · rw [sphereProjection_north_slice_empty ht (Or.inl (le_of_not_gt hz))]
       simp [indicator_of_notMem (show z ∉ Ioo 0 t from fun h => hz h.1),
         indicator_of_notMem (show z ∉ Ico t 1 from fun h => hz (lt_of_lt_of_le ht h.1))]
@@ -293,7 +291,7 @@ lemma sphereProjection_north_cone_volume {t : ℝ} (ht : 0 < t) (ht1 : t ≤ 1) 
     intervalIntegral.integral_const_mul, intervalIntegral.integral_sub
       intervalIntegrable_const (intervalIntegral.intervalIntegrable_pow 2),
     intervalIntegral.integral_const, integral_pow]
-  simp only [Nat.reduceAdd, Nat.cast_ofNat, zero_pow, sub_zero, one_pow, one_mul]
+  simp only [Nat.reduceAdd, Nat.cast_ofNat, one_pow]
   field_simp
   <;> ring
 
@@ -302,14 +300,14 @@ lemma sphereArea_projection_eq_coordinate (x : Sphere) (i : Fin 3) :
       sphereArea =
     Measure.map (fun y : Sphere => (1 - (y : Ambient) i) / 2) sphereArea := by
   let z : Sphere := ⟨EuclideanSpace.single i (1 : ℝ), by
-    simp [mem_sphere_zero_iff_norm, PiLp.norm_single]⟩
+    simp [PiLp.norm_single]⟩
   simpa [z, EuclideanSpace.inner_single_left] using sphereArea_projection_independent x z
 
 lemma sphereProjection_raw_north_cap {t : ℝ} (ht : 0 < t) (ht1 : t ≤ 1) :
     (volume : Measure Ambient).toSphere {y : Sphere | t ≤ (y : Ambient) 0} =
       ENNReal.ofReal (2 * Real.pi * (1-t)) := by
   rw [Measure.toSphere_apply' _ (by measurability), sphereProjection_north_cone_volume ht ht1]
-  have hd : Module.finrank ℝ Ambient = 3 := by simp [Ambient]
+  have hd : Module.finrank ℝ Ambient = 3 := by simp
   simp only [hd, Nat.cast_ofNat]
   rw [show (3 : ℝ≥0∞) = ENNReal.ofReal (3 : ℝ) by norm_num,
     ← ENNReal.ofReal_mul (by norm_num)]
@@ -328,8 +326,7 @@ lemma sphereProjection_raw_antipodal (t : ℝ) :
     simp only [mem_preimage, mem_setOf_eq]
     change -(y : Ambient) 0 ≤ t ↔ -t ≤ (y : Ambient) 0
     constructor <;> intro hy <;> linarith
-  rw [heq] at h
-  exact h.symm
+  simp_all
 
 theorem sphereArea_uniform_projection (x : Sphere) :
     Measure.map (fun y : Sphere => (1 - inner ℝ (x : Ambient) (y : Ambient)) / 2)
@@ -339,5 +336,3 @@ theorem sphereArea_uniform_projection (x : Sphere) :
   exact SphereProjection.raw_lower_caps_of_positive_north
     (volume : Measure Ambient).toSphere sphereProjection_raw_mass
     sphereProjection_raw_antipodal (fun _ ht ht1 => sphereProjection_raw_north_cap ht ht1)
-
-end DedekindZetaZeroFree.ComplexFractionalInverse

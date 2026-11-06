@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.AdelicComponents.Archim
 
 @[expose] public section
 
-noncomputable section
 open scoped Classical NumberField ENNReal NNReal
 open MeasureTheory
 
@@ -28,7 +27,3 @@ theorem primitive_arch_group_domain
     rw [Subgroup.smul_def]; exact hγ
   · intro a ha
     exact hu a (by rw [Subgroup.smul_def] at ha; exact ha)
-
-end DedekindZetaZeroFree.KPActualComponentHaarSources.ProductDisintegration
-
-end

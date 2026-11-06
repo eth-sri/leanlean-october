@@ -6,7 +6,6 @@ public import DedekindZetaZeroFree.Arithmetic.ResidueSymbols.Sextic.PrincipalExt
 @[expose] public section
 
 namespace DedekindZetaZeroFree.ProbeJointNormMassTransfer
-noncomputable section
 open scoped NumberField Classical
 open NumberField
 
@@ -42,8 +41,7 @@ theorem finiteCoefficient_gamma_invariant (A : SArithmeticData F) (ι : F →+* 
     rw [← map_pow]
     have h6 := congrArg (fun z : Fˣ => (z : F))
       (A.sexticResidueFamily_normalized.1 I u)
-    simp only [Units.val_pow_eq_pow_val, Units.val_one] at h6
-    rw [h6, map_one]
+    simp_all
   have he : FiniteTransform.IsTrivialOn A.R.toSubring P.coefficients.additiveCharacter := by
     intro x
     rw [P.sameTrace]
@@ -68,6 +66,3 @@ theorem finiteCoefficient_gamma_invariant (A : SArithmeticData F) (ι : F →+* 
     (hchars _ (mul_ne_zero (P.coefficients.generates c.val).1
       (pow_ne_zero _ (P.coefficients.generates n).1)))
     _ he (A.unitEquiv ε)
-
-end
-end DedekindZetaZeroFree.ProbeJointNormMassTransfer

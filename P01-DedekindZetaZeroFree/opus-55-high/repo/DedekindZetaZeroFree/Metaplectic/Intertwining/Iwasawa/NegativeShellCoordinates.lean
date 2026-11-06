@@ -5,14 +5,12 @@ public import DedekindZetaZeroFree.Metaplectic.Intertwining.Spherical.CubicShell
 
 @[expose] public section
 
-set_option autoImplicit false
-noncomputable section
 namespace DedekindZetaZeroFree.KPLocalTameIntertwiningBlock
 open scoped NumberField Classical
 open NumberField IsDedekindDomain MeasureTheory ValuativeRel
 open KPLocalExceptionalConstruction KPLocalStoneVonNeumann KPLocalPrincipalSeries
 
-private theorem localAbs_injective (K : Type*) [Field K] [ValuativeRel K]
+theorem localAbs_injective (K : Type*) [Field K] [ValuativeRel K]
     [TopologicalSpace K] [IsNonarchimedeanLocalField K]
     (a b : Kˣ) (hab : localAbs K a = localAbs K b) :
     IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K (valuation K (a : K)) =
@@ -98,15 +96,13 @@ theorem signed_bruhat_iwasawa_coordinate
         (S.borel.upperRoot (Multiplicative.ofAdd
           ((v⁻¹ : (LocalField F q)ˣ) : LocalField F q)) : ActualCover F ζ hζ q)⁻¹ := by
       change (S.borel.upperRoot (Multiplicative.ofAdd (-((v⁻¹ : (LocalField F q)ˣ) : LocalField F q))) : ActualCover F ζ hζ q) = _
-      rw [← Subgroup.coe_inv, ← map_inv]
-      rfl
+      simp
     dsimp [b, k]
-    simp only [Subgroup.coe_mul, Subgroup.coe_inv, hi]
+    simp only [hi]
     group
   rw [borel_coordinate_of_compact_factor F ζ hζ q S _ b k he]
   dsimp [b, u]
-  simp only [map_mul, map_inv, S.borel.retract_upperRoot, S.borel.retract_torus,
-    map_one, B.coordinate_eq, B.central_coordinate, inv_one, one_mul, mul_one, inv_pow]
+  simp only [map_mul, map_inv, S.borel.retract_upperRoot, S.borel.retract_torus, B.coordinate_eq, B.central_coordinate, inv_one, one_mul, mul_one]
   congr 2
 
 theorem negative_shell_iwasawa_coordinate
@@ -145,7 +141,3 @@ theorem negative_shell_iwasawa_coordinate
     (valuation (LocalField F q) (x⁻¹ ^ 2)) = _
   rw [map_pow, map_pow, map_inv₀, map_inv₀, hx, ← WithZero.exp_neg, ← WithZero.exp_nsmul]
   congr 1
-
-end DedekindZetaZeroFree.KPLocalTameIntertwiningBlock
-
-end

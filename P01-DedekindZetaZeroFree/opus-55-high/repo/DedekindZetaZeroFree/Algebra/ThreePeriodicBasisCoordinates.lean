@@ -5,8 +5,6 @@ public import DedekindZetaZeroFree.Theta.Whittaker.CubicShellVectorIdentities
 @[expose] public section
 
 namespace DedekindZetaZeroFree.KPExteriorSpherical
-noncomputable section
-set_option autoImplicit false
 
 theorem periodic_basis_coordinate_equiv
     {V : Type*} [AddCommGroup V] [Module ℂ V]
@@ -22,13 +20,7 @@ theorem periodic_basis_coordinate_equiv
       Fin.ext_iff, eq_comm]
   have hcoord (i : Fin 3) :
       B.equivFun.symm (KPThreeShell.basis (i.val : ℤ)) = B i := by
-    apply B.equivFun.injective
-    rw [B.equivFun.apply_symm_apply]
-    ext k
-    have hm : (i.val : ℤ) % 3 = i.val := by omega
-    simp only [KPThreeShell.basis, hm, Int.toNat_natCast,
-      Module.Basis.equivFun_self]
-    simp only [Fin.ext_iff, eq_comm]
+    simp_all
   refine ⟨B.equivFun.symm, ?_, ?_⟩
   · intro j
     let i : Fin 3 := ⟨(j % 3).toNat, by omega⟩
@@ -36,7 +28,7 @@ theorem periodic_basis_coordinate_equiv
     have hb : KPThreeShell.basis j = KPThreeShell.basis (i.val : ℤ) := by
       rw [hi]
       unfold KPThreeShell.basis
-      rw [Int.emod_emod]
+      simp
     have hc : c (i.val : ℤ) = c j := by
       rw [hi]
       have hp : Function.Periodic c 3 := hperiod
@@ -49,5 +41,3 @@ theorem periodic_basis_coordinate_equiv
     intro i
     change E (Pi.basisFun ℂ (Fin 3) i) = B.equivFun.symm (Pi.basisFun ℂ (Fin 3) i)
     rw [← hstd, hE, hcoord, hB]
-end
-end DedekindZetaZeroFree.KPExteriorSpherical

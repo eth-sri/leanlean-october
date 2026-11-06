@@ -16,14 +16,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Positive-depth higher units as `1 + 𝔪ᵛⁿ`
 
@@ -35,7 +27,6 @@ the membership criterion below.
 open scoped NumberField
 open NumberField IsDedekindDomain
 
-noncomputable section
 
 namespace ClassFieldTheory
 
@@ -61,19 +52,12 @@ theorem mem_rayLocalHigherUnitGroup_iff_exists_one_add
     have hval := congrArg Units.val hxy
     change ((y : v.adicCompletionIntegers K) : v.adicCompletion K) =
       (x : v.adicCompletion K) at hval
-    calc
-      (x : v.adicCompletion K) =
-          ((y : v.adicCompletionIntegers K) : v.adicCompletion K) := hval.symm
-      _ = ((1 + ((y : v.adicCompletionIntegers K) - 1) :
-            v.adicCompletionIntegers K) : v.adicCompletion K) := by
-        congr 1
-        ring
+    simp_all
   · rintro ⟨t, ht, hx⟩
     have htmax : t ∈ IsLocalRing.maximalIdeal (v.adicCompletionIntegers K) :=
       (Ideal.pow_le_self (Nat.ne_of_gt hn)) ht
     have hnon : -t ∈ nonunits (v.adicCompletionIntegers K) :=
-      (IsLocalRing.mem_maximalIdeal (-t)).mp
-        ((IsLocalRing.maximalIdeal (v.adicCompletionIntegers K)).neg_mem htmax)
+      by simp_all
     have hunit : IsUnit (1 + t : v.adicCompletionIntegers K) := by
       simpa only [sub_neg_eq_add] using
         (IsLocalRing.isUnit_one_sub_self_of_mem_nonunits (-t) hnon)
@@ -81,21 +65,5 @@ theorem mem_rayLocalHigherUnitGroup_iff_exists_one_add
     apply (mem_rayLocalHigherUnitGroup_iff v n x).mpr
     refine ⟨y, ?_, ?_⟩
     · apply Units.ext
-      change ((y : v.adicCompletionIntegers K) : v.adicCompletion K) =
-        (x : v.adicCompletion K)
-      calc
-        ((y : v.adicCompletionIntegers K) : v.adicCompletion K) =
-            ((1 + t : v.adicCompletionIntegers K) : v.adicCompletion K) :=
-          congrArg
-            (fun z : v.adicCompletionIntegers K =>
-              (z : v.adicCompletion K)) hy
-        _ = (x : v.adicCompletion K) := hx.symm
-    · have hsub : (y : v.adicCompletionIntegers K) - 1 = t := by
-        rw [hy]
-        ring
-      rw [hsub]
-      exact ht
-
-end ClassFieldTheory
-
-end
+      simp_all
+    simp_all

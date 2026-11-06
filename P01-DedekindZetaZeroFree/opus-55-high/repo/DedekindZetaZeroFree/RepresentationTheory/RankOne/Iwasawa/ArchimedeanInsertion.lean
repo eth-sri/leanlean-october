@@ -28,7 +28,7 @@ def diagonalSection (u : InfinitePlace F → ℝ) : KPSmoothActualFlowData.GInfi
   fun w => Matrix.ProjGenLinGroup.mk
     (KubotaRankTwo.d ℂ (Units.mk0 ((Real.exp (u w) : ℝ) : ℂ) (by simp)) 1)
 
-private theorem hyperbolicGLSection_factor (z : KPArch.H3) :
+theorem hyperbolicGLSection_factor (z : KPArch.H3) :
     KPArithmeticAction.hyperbolicGLSection z =
       KubotaRankTwo.n ℂ z.1 *
         KubotaRankTwo.d ℂ (Units.mk0 ((Real.exp z.2 : ℝ) : ℂ) (by simp)) 1 := by
@@ -43,7 +43,7 @@ private theorem hyperbolicGLSection_factor (z : KPArch.H3) :
   if h : z w = 0 then 1 else Units.mk0 (e.symm (z w))
     (by exact fun h0 => h (by simpa using congrArg e h0))
 
-private theorem map_diagonal {K L : Type} [Field K] [Field L] (e : K →+* L)
+theorem map_diagonal {K L : Type} [Field K] [Field L] (e : K →+* L)
     (y : Kˣ) : Matrix.GeneralLinearGroup.map e (KubotaRankTwo.d K y 1) =
       KubotaRankTwo.d L (Units.map e y) 1 := by
   apply Matrix.GeneralLinearGroup.ext

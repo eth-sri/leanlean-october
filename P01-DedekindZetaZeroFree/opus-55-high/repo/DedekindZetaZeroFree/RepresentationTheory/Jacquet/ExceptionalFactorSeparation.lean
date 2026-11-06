@@ -25,8 +25,8 @@ abbrev factorMinus (A : LocalBorelData (K := K) (G := G) T) (P : Polarization T)
     Representation ℂ H (InducedModule P) :=
   (inducingAction A P .minus 0).comp A.torus
 
-theorem residue_cardinality_gt_one : 1 < residueCardinality K := by
-  exact Finite.one_lt_card
+theorem residue_cardinality_gt_one : 1 < residueCardinality K := 
+  Finite.one_lt_card
 
  def scalarSubrepresentationOrderIso
     {V : Type*} [AddCommGroup V] [Module ℂ V]
@@ -35,15 +35,15 @@ theorem residue_cardinality_gt_one : 1 < residueCardinality K := by
     Subrepresentation σ ≃o Subrepresentation ρ where
   toFun S := ⟨S.toSubmodule, fun h v hv => by
     have hm := S.toSubmodule.smul_mem (c h)⁻¹ (S.apply_mem_toSubmodule h hv)
-    simpa [he, smul_smul, hc] using hm⟩
+    simp_all⟩
   invFun S := ⟨S.toSubmodule, fun h v hv => by
     rw [he]
     exact S.toSubmodule.smul_mem _ (S.apply_mem_toSubmodule h hv)⟩
-  left_inv S := by ext; rfl
-  right_inv S := by ext; rfl
+  left_inv S := by rfl
+  right_inv S := by rfl
   map_rel_iff' := by rfl
 
-private theorem factor_action (A : LocalBorelData (K := K) (G := G) T)
+theorem factor_action (A : LocalBorelData (K := K) (G := G) T)
     (P : Polarization T) (ε : Sign) (h : H) (v : InducedModule P) :
     ((inducingAction A P ε 0).comp A.torus) h v =
       deltaHalf A (A.torus h) •
@@ -110,7 +110,3 @@ theorem exceptional_cube_weights
     rw [← Complex.ofReal_mul, ← Real.rpow_add hq]
     norm_num
     simp [Real.rpow_neg_one]
-
-end
-
-end DedekindZetaZeroFree.KPJacquetExceptionalFactorSeparation

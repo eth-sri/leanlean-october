@@ -6,10 +6,9 @@ public import DedekindZetaZeroFree.Metaplectic.Torus.BorelTwistCompatibility
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.ThetaExpansion
 open MomentSources NumberField
-open scoped Classical NumberField Topology
+open scoped Classical Topology
 set_option backward.isDefEq.respectTransparency false
 variable {F : Type} [Field F] [NumberField F]
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
@@ -68,7 +67,7 @@ theorem local_triangularize_by_iwasawa_compact (R : PrincipalMellin.ActualRecipe
         (KPTameCompact.inclusion F q r⁻¹), ?_, ?_⟩
       · simp only [iwasawaCompactFactor, if_pos hb]
         exact ⟨r⁻¹,rfl⟩
-      · simpa only [KPLocalCover.sectionMap_g, map_inv, inv_inv] using hr
+      simp_all
     · let k := KPGoodCompactSplitting.kStar F R.A.zeta12 R.A.primitive_zeta12 q
         (fun h3 => hb (Or.inr h3)) r⁻¹
       refine ⟨k,?_,?_⟩
@@ -138,7 +137,3 @@ theorem covered_iwasawa_decomposition (R : PrincipalMellin.ActualRecipe S η) (g
     F R.A.zeta12 R.A.primitive_zeta12 ⟨g * k.val⁻¹,hmem⟩
   refine ⟨t,x,k,?_⟩
   rw [← htx, mul_assoc, inv_mul_cancel, mul_one]
-
-end DedekindZetaZeroFree.ThetaExpansion
-
-end

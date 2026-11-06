@@ -52,12 +52,12 @@ private theorem z₀_pos' : 0 < Scales.zLine := by unfold Scales.zLine; norm_num
 private theorem xg_pad_lt_x1 : Scales.goodLine - EulerDomain.pad < Scales.rightLine := by
   rw [Scales.rightLine_eq]; unfold Scales.goodLine EulerDomain.pad; norm_num
 
-private theorem Llam_ne_of_x1 (u : D.Row) (ξ : ℂ) (h : Scales.rightLine ≤ ξ.re) : D.Llam u ξ ≠ 0 :=
+theorem Llam_ne_of_x1 (u : D.Row) (ξ : ℂ) (h : Scales.rightLine ≤ ξ.re) : D.Llam u ξ ≠ 0 :=
   RightHeckeBounds.Llam_ne_zero_of_one_lt D u ξ (by
     have : (1 : ℝ) < Scales.rightLine := by rw [Scales.rightLine_eq]; norm_num
     linarith)
 
-private theorem K_strip_bound (u : D.Row) (hu : u.u ≠ 1) (Z : ℝ) (hZ : 0 < Z) :
+theorem K_strip_bound (u : D.Row) (hu : u.u ≠ 1) (Z : ℝ) (hZ : 0 < Z) :
     ∃ Cc k : ℝ, 0 ≤ Cc ∧ 0 ≤ k ∧ ∀ ξ : ℂ, 1 + 1 / 20000000 ≤ ξ.re → ξ.re ≤ 5 →
       ∀ p : ℝ × ℝ,
       ‖PoissonKernel.K D u ξ ((Scales.wLine : ℂ) + (p.2 : ℂ) * Complex.I)

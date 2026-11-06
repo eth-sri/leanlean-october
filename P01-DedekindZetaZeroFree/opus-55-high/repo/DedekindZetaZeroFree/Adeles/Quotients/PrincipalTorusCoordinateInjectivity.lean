@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Metaplectic.Torus.ProductPolarizationCharacte
 
 @[expose] public section
 
-noncomputable section
 open scoped NumberField Classical
 open NumberField IsDedekindDomain
 set_option backward.isDefEq.respectTransparency false
@@ -24,7 +23,7 @@ theorem outside_good (q : HeightOneSpectrum (𝓞 F)) (hq : q ∉ A.Sf) :
     · exact q.asIdeal.mem_of_dvd (⟨2, by norm_num⟩ : (3 : 𝓞 F) ∣ 6) (char_mem F q 3 hb)
   exact hq (A.above_six q hs)
 
-private theorem localPairing_one_left (v : KPHilbert.Place F) (a : LocalD F v) :
+theorem localPairing_one_left (v : KPHilbert.Place F) (a : LocalD F v) :
     localPairing F A.zeta12 A.primitive_zeta12 v 1 a = 1 := by
   induction a using QuotientGroup.induction_on with
   | H a =>
@@ -99,8 +98,4 @@ theorem principal_eq_one_of_frozen_coordinates
     change beta3 F A.zeta12 A.primitive_zeta12 d (QuotientGroup.mk' _ (e u)) *
       beta3 F A.zeta12 A.primitive_zeta12 d
         (KPGlobalPrincipalCubicLagrangian.principalClass F a) = 1
-    rw [hu', hp, mul_one]
-
-end DedekindZetaZeroFree.EisensteinReferenceSections.FrozenTorus
-
-end
+    simp_all

@@ -8,7 +8,6 @@ public import DedekindZetaZeroFree.Metaplectic.Weil.Complex.AbelKernelConvergenc
 
 namespace DedekindZetaZeroFree.ComplexWeil
 
-noncomputable section
 open MeasureTheory Filter
 open scoped Topology
 
@@ -84,7 +83,4 @@ theorem FT_M_FT_schwartz (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0)
     rw [mu, integral_smul_measure, ENNReal.toReal_ofReal (norm_nonneg β), hinner]
     simp only [Complex.real_smul]
     ring
-  rw [hA, hC, hB]
-
-end
-end DedekindZetaZeroFree.ComplexWeil
+  simp_all

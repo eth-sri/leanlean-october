@@ -20,7 +20,3 @@ instance unitShellFourierAdicCompletionMeasurableSpace (v : HeightOneSpectrum (�
 
 instance unitShellFourierAdicCompletionBorelSpace (v : HeightOneSpectrum (𝓞 F)) :
     BorelSpace (v.adicCompletion F) := ⟨rfl⟩
-
-end DedekindZetaZeroFree.TateFiniteShellFourierIntegrals
-
-end

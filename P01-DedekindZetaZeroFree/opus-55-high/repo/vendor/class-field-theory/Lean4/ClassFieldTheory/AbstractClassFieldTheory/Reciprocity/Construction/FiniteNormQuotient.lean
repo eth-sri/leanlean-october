@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 universe u
 
 namespace ClassFormation
@@ -97,26 +93,6 @@ def finiteNormClass
     FiniteNormQuotient A K L hLK :=
   finiteNormClassHom A K L hLK a
 
-/-- The finite norm-class map sends zero to the trivial quotient class. -/
-@[simp]
-theorem finiteNormClass_zero
-    (A : Rep ℤ G) (K L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    [Finite (K.toSubgroup ⧸ extensionSubgroup K L hLK)] :
-    finiteNormClass A K L hLK 0 = 0 := by
-  exact map_zero (finiteNormClassHom A K L hLK)
-
-/-- Finite norm classes preserve addition of representatives. -/
-@[simp]
-theorem finiteNormClass_add
-    (A : Rep ℤ G) (K L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    [Finite (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
-    (a b : ambientFixedAddSubgroup A K) :
-    finiteNormClass A K L hLK (a + b) =
-      finiteNormClass A K L hLK a + finiteNormClass A K L hLK b := by
-  exact map_add (finiteNormClassHom A K L hLK) a b
-
 /-- Finite norm classes preserve subtraction of representatives. -/
 @[simp]
 theorem finiteNormClass_sub
@@ -125,8 +101,8 @@ theorem finiteNormClass_sub
     [Finite (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
     (a b : ambientFixedAddSubgroup A K) :
     finiteNormClass A K L hLK (a - b) =
-      finiteNormClass A K L hLK a - finiteNormClass A K L hLK b := by
-  exact map_sub (finiteNormClassHom A K L hLK) a b
+      finiteNormClass A K L hLK a - finiteNormClass A K L hLK b := 
+  map_sub (finiteNormClassHom A K L hLK) a b
 
 /-- Finite norm classes commute with natural scalar multiplication. -/
 @[simp]
@@ -136,8 +112,8 @@ theorem finiteNormClass_nsmul
     [Finite (K.toSubgroup ⧸ extensionSubgroup K L hLK)]
     (n : ℕ) (a : ambientFixedAddSubgroup A K) :
     finiteNormClass A K L hLK (n • a) =
-      n • finiteNormClass A K L hLK a := by
-  exact map_nsmul (finiteNormClassHom A K L hLK) n a
+      n • finiteNormClass A K L hLK a := 
+  map_nsmul (finiteNormClassHom A K L hLK) n a
 
 /-- The concrete quotient equivalence sends a finite norm class to its canonical coset. -/
 @[simp]
@@ -303,14 +279,7 @@ theorem maximalUnramifiedToFiniteNormQuotient_maximalUnramifiedNormClass
     (a : ambientFixedAddSubgroup A K) :
     D.maximalUnramifiedToFiniteNormQuotient A K L hLK
         (D.maximalUnramifiedNormClass A K L a) =
-      finiteNormClass A K L hLK a := by
-  exact D.maximalUnramifiedNormQuotientLift_maximalUnramifiedNormClass
+      finiteNormClass A K L hLK a := 
+  D.maximalUnramifiedNormQuotientLift_maximalUnramifiedNormClass
     A K L (finiteNormClassHom A K L hLK)
     (D.maximalUnramifiedNormSubgroup_le_finiteNormClassHom_ker A K L hLK) a
-
-end DegreeData
-
-end quotientMaps
-
-end
-end ClassFormation

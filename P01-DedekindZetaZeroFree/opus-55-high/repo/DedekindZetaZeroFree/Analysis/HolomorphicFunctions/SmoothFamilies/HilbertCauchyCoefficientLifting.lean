@@ -21,7 +21,7 @@ private theorem cauchy_map {E F : Type*}
     L ((cauchyPowerSeries g c r j) (fun _ => (1 : ℂ))) =
       (cauchyPowerSeries (fun z => L (g z)) c r j) (fun _ => (1 : ℂ)) := by
   have hne : c ∉ Metric.sphere c |r| := by
-    simp [Metric.mem_sphere, abs_of_pos hr, (ne_of_gt hr).symm]
+    simp [abs_of_pos hr, (ne_of_gt hr).symm]
   have hi := hg.sub_zpow_smul (-(j : ℤ) - 1) hne
   have hi' : CircleIntegrable (fun z => (z - c)⁻¹ ^ j • (z - c)⁻¹ • g z) c r := by
     convert hi using 1
@@ -34,11 +34,10 @@ private theorem cauchy_map {E F : Type*}
   have hm : L (∮ z in C(c, r), (z - c)⁻¹ ^ j • (z - c)⁻¹ • g z) =
       ∮ z in C(c, r), L ((z - c)⁻¹ ^ j • (z - c)⁻¹ • g z) := by
     rw [circleIntegral, circleIntegral, ← L.intervalIntegral_comp_comm hi'.out]
-    simp only [map_smul]
-  rw [hm]
-  simp only [map_smul]
+    simp
+  simp_all
 
-private theorem cauchy_congr {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E]
+theorem cauchy_congr {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E]
     (g h : ℂ → E) (c : ℂ) (r : ℝ) (hr : 0 ≤ r)
     (he : Set.EqOn g h (Metric.sphere c r)) (j : ℕ) :
     (cauchyPowerSeries g c r j) (fun _ => (1 : ℂ)) =
@@ -54,9 +53,7 @@ private theorem zero_derivative {n : ℕ} (u : Space n → ℂ) :
     coordinateDerivative (⟨fun _ => 0, by simp⟩ : MultiIndex n 0) u = u := by
   have hn : ∀ l : List (Fin n), l.flatMap (fun _ => ([] : List (Fin n))) = [] := by
     intro l
-    induction l with
-    | nil => rfl
-    | cons i l ih => simpa using ih
+    simp
   simp [coordinateDerivative, MultiIndex.directions, coordinateDerivativeList, hn]
 
  def compactFamily {n : ℕ} (B : LocalBall n) (K : Set (Space n))
@@ -132,8 +129,8 @@ private theorem coefficient_on_compact {n : ℕ} (B : LocalBall n)
     intro z hz
     have hzO := hs (Metric.sphere_subset_closedBall hz)
     apply Lp.ext
-    have hfe : (f z) =ᵐ[(volume.restrict B.carrier).restrict K] (fun x => R (v z) x) := by
-      exact ae_restrict_of_ae (s := K) (hf z hzO).2
+    have hfe : (f z) =ᵐ[(volume.restrict B.carrier).restrict K] (fun x => R (v z) x) := 
+      ae_restrict_of_ae (s := K) (hf z hzO).2
     refine (ContinuousMap.coeFn_toLp (𝕜 := ℂ) (p := 2) (μ := μK) (F z)).trans ?_
     refine Filter.EventuallyEq.trans ?_ (hT (R (v z))).symm
     have hh := mp.quasiMeasurePreserving.ae_eq hfe
@@ -210,7 +207,7 @@ namespace DedekindZetaZeroFree.KPContLocalHolomorphyUpgrade.CauchyAssembly.Conto
 open MeasureTheory KPContLocalNorm Filter Topology
 open scoped NNReal
 
-private theorem jets_continuous {n m : ℕ} (B : LocalBall n)
+theorem jets_continuous {n m : ℕ} (B : LocalBall n)
     (K : Set (Space n)) (hcompact : IsCompact K) (hK : K ⊆ B.carrier)
     (O : Set ℂ) (f : ℂ → Space n → ℂ)
     (hf : ∀ z ∈ O, ContDiffOn ℝ (⊤ : ℕ∞) (f z) B.carrier)
@@ -276,8 +273,7 @@ theorem jetContinuousOn_continuous_mul {n : ℕ} (B : LocalBall n)
       q z₀ * coordinateDerivative α (f z₀) x‖ < ε :=
     (ContinuousMap.norm_lt_iff _ hε).mp hpi x
   have hfs : ∀ t ∈ O, ContDiffOn ℝ (⊤ : ℕ∞) (fun y => q t * f t y) B.carrier := by
-    intro t ht
-    simpa only [smul_eq_mul] using (hf t ht).const_smul (q t)
+    fun_prop
   change ‖coordinateDerivativeList α.directions (fun y => q z * f z y - q z₀ * f z₀ y) x‖ < ε
   rw [finite_coordinate_derivative_sub B (hfs z hz) (hfs z₀ hz₀) α.directions (hK x.property)]
   simpa only [coordinateDerivative, finite_coordinate_derivative_const_mul] using hpt
@@ -295,7 +291,7 @@ theorem spatial_jets_differentiableOn {n : ℕ} (B : LocalBall n)
   intro c hc
   obtain ⟨s, hs, hsO⟩ := Metric.isOpen_iff.mp isOpen_interior c hc
   let ρ := s / 2
-  have hρ : 0 < ρ := by dsimp [ρ]; positivity
+  have hρ : 0 < ρ := by positivity
   have hclosed : Metric.closedBall c ρ ⊆ O := fun z hz =>
     interior_subset (hsO (Metric.closedBall_subset_ball (by dsimp [ρ]; linarith) hz))
   have hball : Metric.ball c ρ ⊆ interior O := fun z hz =>
@@ -322,11 +318,8 @@ theorem spatial_jets_differentiableOn {n : ℕ} (B : LocalBall n)
       have hm : Continuous (fun z : ℂ => max (Complex.normSq (z - w)) (d ^ 2)) := by fun_prop
       have hn : ∀ z : ℂ, max (Complex.normSq (z - w)) (d ^ 2) ≠ 0 := by
         intro z
-        exact ne_of_gt (lt_of_lt_of_le (sq_pos_of_pos hd) (le_max_right _ _))
-      dsimp [a]
-      exact ((continuous_id.sub continuous_const).mul
-        (continuous_star.comp (continuous_id.sub continuous_const))).mul
-        (Complex.continuous_ofReal.comp (hm.inv₀ hn))
+        positivity
+      fun_prop
     have haeq : ∀ z ∈ Metric.sphere c ρ, a z = (z - c) * (z - w)⁻¹ := by
       intro z hz
       have hzρ : ‖z - c‖ = ρ := mem_sphere_iff_norm.mp hz
@@ -340,16 +333,14 @@ theorem spatial_jets_differentiableOn {n : ℕ} (B : LocalBall n)
         nlinarith [norm_nonneg (z - w)]
       dsimp [a]
       rw [max_eq_left ht', Complex.inv_def]
-      simp only [Complex.star_def, Complex.ofReal_inv]
+      simp only [Complex.ofReal_inv]
       ring
     have hkernel : ∀ z ∈ Metric.sphere c ρ, (z - c)⁻¹ * a z = (z - w)⁻¹ := by
       intro z hz
       have hzc : z - c ≠ 0 := by
         intro he
-        have hzρ := mem_sphere_iff_norm.mp hz
-        rw [he, norm_zero] at hzρ
-        linarith
-      rw [haeq z hz, ← mul_assoc, inv_mul_cancel₀ hzc, one_mul]
+        simp_all
+      simp_all
     let F : ℂ → Space n → ℂ := fun z y => a z * f z y
     let V : ℂ → H := fun z => a z • v z
     have hF : ∀ z ∈ O, ContDiffOn ℝ (⊤ : ℕ∞) (F z) B.carrier :=
@@ -388,8 +379,8 @@ theorem spatial_jets_differentiableOn {n : ℕ} (B : LocalBall n)
       exact h.trans ((hf w (hclosed (Metric.ball_subset_closedBall hw))).2.symm)
     have hAf : Set.EqOn A (f w) B.carrier := Measure.eqOn_open_of_ae_eq hAe
       Metric.isOpen_ball hAs.1.continuousOn (hf w (hclosed (Metric.ball_subset_closedBall hw))).1.continuousOn
-    have hder : coordinateDerivative α A x = coordinateDerivative α (f w) x := by
-      exact (KPLocalCubeSobolevJets.coordinateDerivativeList_eventuallyEq α.directions
+    have hder : coordinateDerivative α A x = coordinateDerivative α (f w) x := 
+      (KPLocalCubeSobolevJets.coordinateDerivativeList_eventuallyEq α.directions
         (Filter.eventuallyEq_of_mem (Metric.isOpen_ball.mem_nhds hx) hAf)).eq_of_nhds
     change coordinateDerivative α (f w) x = G w
     rw [← hder, hAs.2 m α hx]
@@ -503,9 +494,3 @@ theorem cauchy_coefficients_of_jet_continuity {n : ℕ} (B : LocalBall n)
         (fun w hw => (hf w hw).1) hjets z₀ ρ hρ hclosed j).2 m α (hKB x.property)
     simp only [hderiv]
     exact hN M hM z hz α x
-
-end DedekindZetaZeroFree.KPContLocalHolomorphyUpgrade.CauchyAssembly
-
-end
-
-end

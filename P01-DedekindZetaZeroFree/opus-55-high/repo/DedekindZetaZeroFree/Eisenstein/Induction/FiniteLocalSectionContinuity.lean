@@ -37,8 +37,8 @@ variable (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
     intro w
     rfl⟩
 
- theorem finiteQuotient_continuous : Continuous (finiteQuotient F ζ hζ) := by
-  exact ((QuotientGroup.continuous_mk.comp QuotientGroup.continuous_mk).comp
+ theorem finiteQuotient_continuous : Continuous (finiteQuotient F ζ hζ) := 
+  ((QuotientGroup.continuous_mk.comp QuotientGroup.continuous_mk).comp
     (finiteProjection_continuous F ζ hζ)).subtype_mk _
 
  theorem finite_scalar_locallyConstant : IsLocallyConstant
@@ -65,8 +65,6 @@ variable (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
       RawSource.value F ζ hζ P C (finiteProjection F ζ hζ g) := by
   have ht : SourceTensor.evaluatedTensor F ζ hζ P C g =
       SourceTensor.evaluatedTensor F ζ hζ P C (finiteProjection F ζ hζ g) := by
-    apply SourceTensor.evaluatedTensor_congr
-    intro q
     rfl
   have ha : RawSource.archProduct F ζ hζ (finiteProjection F ζ hζ g) = 1 := by
     unfold RawSource.archProduct
@@ -80,7 +78,3 @@ variable (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
   unfold RawSource.scalarValue
   rw [RawSource.quotientValue_raw, value_factor, map_smul]
   rfl
-
-end DedekindZetaZeroFree.EisensteinReferenceSections.FiniteSourceTopology
-
-end

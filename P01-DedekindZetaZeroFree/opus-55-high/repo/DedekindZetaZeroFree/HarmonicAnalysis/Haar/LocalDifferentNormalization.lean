@@ -30,7 +30,7 @@ def finiteCompletionIntegersPositiveCompacts (v : HeightOneSpectrum (𝓞 F)) :
       rw [finiteCompletionBall_zero] at h
       exact h
     rw [h.interior_eq]
-    exact ⟨0, (v.adicCompletionIntegers F).zero_mem⟩⟩
+    simp⟩
 
 @[simp] theorem coe_finiteCompletionIntegersPositiveCompacts
     (v : HeightOneSpectrum (𝓞 F)) :
@@ -44,7 +44,7 @@ theorem localHalfDifferentFactor_pos (v : HeightOneSpectrum (𝓞 F)) :
     0 < localHalfDifferentFactor F v := by
   have h : 0 < (Ideal.absNorm v.asIdeal : ℝ) := by
     have := finiteCompletion_residueCard_gt_one F v
-    exact_mod_cast (lt_trans Nat.zero_lt_one this)
+    positivity
   exact Real.rpow_pos_of_pos h _
 
 def localNormalizedHaar (v : HeightOneSpectrum (𝓞 F)) :
@@ -57,7 +57,7 @@ instance localNormalizedHaar_isAddHaarMeasure (v : HeightOneSpectrum (𝓞 F)) :
   unfold localNormalizedHaar
   apply Measure.IsAddHaarMeasure.smul
   · rw [ENNReal.ofReal_ne_zero_iff]; exact localHalfDifferentFactor_pos F v
-  · exact ENNReal.ofReal_ne_top
+  simp
 
 instance localNormalizedHaar_regular (v : HeightOneSpectrum (𝓞 F)) :
     (localNormalizedHaar F v).Regular := by
@@ -93,8 +93,7 @@ theorem localHalfDifferentFactor_eq_norm_rpow (v : HeightOneSpectrum (𝓞 F)) :
     localHalfDifferentFactor F v =
       (localDifferentNorm F v : ℝ) ^ (-(1 : ℝ) / 2) := by
   have hq : 0 ≤ (Ideal.absNorm v.asIdeal : ℝ) := by
-    have := finiteCompletion_residueCard_gt_one F v
-    exact_mod_cast (le_of_lt (lt_trans Nat.zero_lt_one this))
+    simp
   rw [localHalfDifferentFactor, localDifferentNorm, Nat.cast_pow, ← Real.rpow_natCast,
     ← Real.rpow_mul hq]
   congr 1
@@ -106,7 +105,3 @@ theorem localHalfDifferentFactor_eq_inv_sqrt (v : HeightOneSpectrum (𝓞 F)) :
   have h0 : 0 ≤ (localDifferentNorm F v : ℝ) := by positivity
   rw [show (-(1 : ℝ) / 2) = -(1 / 2) by norm_num, Real.rpow_neg h0, ← Real.sqrt_eq_rpow,
     inv_eq_one_div]
-
-end DedekindZetaZeroFree
-
-end

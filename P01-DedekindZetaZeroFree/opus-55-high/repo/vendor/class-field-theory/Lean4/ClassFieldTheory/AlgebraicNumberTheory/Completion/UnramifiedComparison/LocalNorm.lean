@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Local norms at an unramified chosen finite place
 
@@ -26,7 +22,6 @@ norm subgroup of the chosen localized completion.
 open scoped NumberField Classical NNReal ValuativeRel
 open NumberField IsDedekindDomain
 
-noncomputable section
 
 open AlgebraicNumberTheory.Valuations
 open LocalClassFieldTheory

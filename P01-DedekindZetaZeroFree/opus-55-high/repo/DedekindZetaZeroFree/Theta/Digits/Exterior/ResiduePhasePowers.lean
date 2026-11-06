@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Theta.Digits.SexticReflectedLocalModel
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.OrbitExpansion.ExteriorDigits
 open scoped Classical
 
@@ -43,7 +42,3 @@ theorem digit_powers {k : Type*} [Field k] (χ : MulChar k ℂ)
     rw [show (12 : ℕ) = 6 * 2 by norm_num, pow_mul, h6, one_pow, div_one]
   rw [hv4]
   rfl
-
-end DedekindZetaZeroFree.OrbitExpansion.ExteriorDigits
-
-end

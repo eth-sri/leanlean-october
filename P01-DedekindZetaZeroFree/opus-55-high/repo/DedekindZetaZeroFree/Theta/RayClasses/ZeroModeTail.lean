@@ -8,7 +8,6 @@ public import DedekindZetaZeroFree.Theta.Profiles.RayThetaKernelsAndZeroModes
 
 @[expose] public section
 
-noncomputable section
 
 open Classical NumberField MeasureTheory
 open NumberField.mixedEmbedding
@@ -21,7 +20,7 @@ set_option maxHeartbeats 1000000
 
 variable {K : Type} [Field K] [NumberField K]
 
-private theorem kernel_cont (δ : Finset (RayCoset.RealPlaces K)) (t : ℝ) (ht : 0<t)
+theorem kernel_cont (δ : Finset (RayCoset.RealPlaces K)) (t : ℝ) (ht : 0<t)
  (x : euclidean.mixedSpace K) (neg : Bool) :
  Continuous (fun h : RayCoset.logHyperplane K => RayParity.gδ K δ
   (RayParity.Q K (RayTheta.q K t (if neg then -h else h)) x)) := by
@@ -41,7 +40,7 @@ private theorem phase_norm (x z : euclidean.mixedSpace K) :
  rw [Complex.norm_exp]; simp
 private theorem Q_zero (q : InfinitePlace K → ℝ) : RayParity.Q K q 0 = 0 := by
  simp [RayParity.Q]
-private theorem series_integrable
+theorem series_integrable
  (D : RayCoset.Data K) (δ : Finset (RayCoset.RealPlaces K))
  (L : Submodule ℤ (euclidean.mixedSpace K)) [DiscreteTopology L] [Countable L]
  (z : euclidean.mixedSpace K) (a : L → ℂ) (ha : ∀ l, ‖a l‖ ≤ 1)
@@ -91,7 +90,7 @@ private theorem series_integrable
  exact (integrable_const (μ := μ) _).mono' hm.aestronglyMeasurable
    ((ae_restrict_mem (RayCoset.measurableSet_rayUnitHalfOpenDomain K D.m D.modulus_ne_bot)).mono hnorm)
 
-private theorem puncture_sum {ι : Type*} (x : ι → euclidean.mixedSpace K)
+theorem puncture_sum {ι : Type*} (x : ι → euclidean.mixedSpace K)
  (hx : Function.Injective x) (f : ι → ℂ) (hf : Summable f) (v : ℂ)
  (hv : ∀ i, x i = 0 → f i = v) :
  ∑' i, f i = (if ∃ i, x i = 0 then v else 0) + ∑' i : {i // x i ≠ 0}, f i.val := by
@@ -149,8 +148,8 @@ private theorem puncture_integral
    integrableOn_const (RayCoset.measure_rayUnitHalfOpenDomain_lt_top K D.m D.modulus_ne_bot).ne
  rw [integral_add hvint H.2, integral_const]
  congr 1
- simp only [Measure.real, Measure.restrict_apply_univ, RayCoset.rayUnitDomainVolume, smul_eq_mul, Complex.real_smul, S, v]
-private theorem averaged_tail
+ simp only [Measure.real, Measure.restrict_apply_univ, RayCoset.rayUnitDomainVolume, Complex.real_smul, S, v]
+theorem averaged_tail
  (D : RayCoset.Data K) (δ : Finset (RayCoset.RealPlaces K))
  (L : Submodule ℤ (euclidean.mixedSpace K)) [DiscreteTopology L] [Countable L]
  (z : euclidean.mixedSpace K) (a : L → ℂ) (ha : ∀ l, ‖a l‖ ≤ 1)
@@ -190,9 +189,9 @@ private theorem averaged_tail
    S F P c p η hP hc hp hη (fun l => hgap l.val l.property)
    (summable_shiftedGaussian_punctured L z (half_pos hc)) hb
  let B := c * η ^ 2 / 2
- have hB : 0 < B := by dsimp [B]; positivity
+ have hB : 0 < B := by positivity
  let A' := ‖N‖ * A * μ.real Set.univ
- have hA' : 0 ≤ A' := by dsimp [A']; positivity
+ have hA' : 0 ≤ A' := by positivity
  refine ⟨A'+1,B,by linarith,hB,?_⟩
  intro t ht
  have hi : ‖∫ h, ∑' l, F t h l ∂μ‖ ≤ (A * Real.exp (-B * t ^ p)) * μ.real Set.univ :=
@@ -224,8 +223,8 @@ theorem rayTheta_fδ_sub_f0δ
    constructor
    · rintro ⟨l,hl⟩
      change 0 - RayCoset.normalizedBasepoint D ∈ RayCoset.normalizedLattice D
-     have eq : (l : euclidean.mixedSpace K) = 0 - RayCoset.normalizedBasepoint D := by
-       exact eq_sub_iff_add_eq.mpr (by simpa [add_comm] using hl)
+     have eq : (l : euclidean.mixedSpace K) = 0 - RayCoset.normalizedBasepoint D := 
+       eq_sub_iff_add_eq.mpr (by simpa [add_comm] using hl)
      exact eq ▸ l.property
    · intro h
      change 0 - RayCoset.normalizedBasepoint D ∈ RayCoset.normalizedLattice D at h
@@ -260,8 +259,8 @@ theorem rayTheta_gδDual_sub_g0δ
    simp only [zero_add] at hl
    simp [a,hl]
  have H := puncture_integral D δ L 0 a (fun l => (phase_norm _ _).le) hz true t ht
- have hex : ∃ l : L, (0 : euclidean.mixedSpace K) + (l : euclidean.mixedSpace K) = 0 := ⟨0,by simp⟩
- simp only [zero_add, Bool.true_eq, ↓reduceIte] at H hex
+ have hex : ∃ l : L, (0 : euclidean.mixedSpace K) + (l : euclidean.mixedSpace K) = 0 := by simp
+ simp only [zero_add, ↓reduceIte] at H hex
  simp only [RayTheta.gδDual, if_pos ht, RayTheta.g0δ]
  change _ - _ = _
  rw [show (∫ h in RayCoset.rayUnitHalfOpenDomain K D.m D.modulus_ne_bot, ∑' l : L, a l * RayParity.gδ K δ (RayParity.Q K (RayTheta.q K t (-h)) (l : euclidean.mixedSpace K)) ∂Theta.normalizedLogHaar K) = _ from H]
@@ -272,7 +271,7 @@ theorem rayTheta_gδDual_sub_g0δ
  all_goals funext h
  all_goals
    have eqp : (fun l : L => (0 : euclidean.mixedSpace K) + (l : euclidean.mixedSpace K) ≠ 0) =
-       (fun l : L => (l : euclidean.mixedSpace K) ≠ 0) := funext (fun l => by simp)
+       (fun l : L => (l : euclidean.mixedSpace K) ≠ 0) := by simp
    change (∑' l : Subtype (fun l : L => (0 : euclidean.mixedSpace K) + (l : euclidean.mixedSpace K) ≠ 0), _) = _
    rw [eqp]
 
@@ -315,13 +314,9 @@ theorem rayTheta_zeroModeTail
     have H := H2 t ht
     dsimp only [a] at H
     have eqp : (fun l : L => (0 : euclidean.mixedSpace K) + (l : euclidean.mixedSpace K) ≠ 0) =
-      (fun l : L => (l : euclidean.mixedSpace K) ≠ 0) := funext (fun _ => by simp)
+      (fun l : L => (l : euclidean.mixedSpace K) ≠ 0) := by simp
     change ‖_ * ∫ h in _, ∑' l : Subtype (fun l : L => (0 : euclidean.mixedSpace K) + (l : euclidean.mixedSpace K) ≠ 0), _ ∂_‖ ≤ _ at H
     rw [eqp] at H
-    simp only [zero_add, Bool.true_eq, ↓reduceIte] at H
+    simp only [zero_add, ↓reduceIte] at H
     exact H.trans ((mul_le_mul_of_nonneg_left e2 hA2.le).trans
       (mul_le_mul_of_nonneg_right (by linarith) (Real.exp_nonneg _)))
-
-end DedekindZetaZeroFree
-
-end

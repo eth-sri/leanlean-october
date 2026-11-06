@@ -6,7 +6,6 @@ public import DedekindZetaZeroFree.Theta.Profiles.RayThetaKernelsAndZeroModes
 
 @[expose] public section
 
-noncomputable section
 open Classical
 
 namespace DedekindZetaZeroFree.Hecke.AnalyticTailHelper
@@ -59,7 +58,7 @@ theorem continuous_tsum_thetaParityShape
   · intro i
     have he := DedekindZetaZeroFree.continuousOn_thetaParityShape K δ
     have hm : Continuous (fun h : DedekindZetaZeroFree.AbelianQuotient.RayCoset.logHyperplane K =>
-        (u, (h, y i))) := continuous_const.prodMk (continuous_id.prodMk continuous_const)
+        (u, (h, y i))) := by fun_prop
     unfold DedekindZetaZeroFree.AbelianQuotient.RayTheta.q
     simpa only [Function.comp_def, one_div] using he.comp_continuous hm (fun h => hu)
   · intro S hS
@@ -69,7 +68,3 @@ theorem continuous_tsum_thetaParityShape
     intro h hh i
     unfold DedekindZetaZeroFree.AbelianQuotient.RayTheta.q
     simpa only [one_div, neg_mul, mul_assoc] using (hb u hu h hh (y i)).1
-
-end DedekindZetaZeroFree.Hecke.AnalyticTailHelper
-
-end

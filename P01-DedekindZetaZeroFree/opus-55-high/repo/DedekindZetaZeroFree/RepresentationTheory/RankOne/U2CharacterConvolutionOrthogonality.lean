@@ -31,7 +31,3 @@ noncomputable def rawRankOneCharacter (ℓ : ℕ) (g : RawU2) : ℂ :=
 noncomputable def rawCharacter {d : ℕ} (ℓ : RawHarmonicType d)
     (g : Fin d → RawU2) : ℂ :=
   ∏ j, rawRankOneCharacter (ℓ j) (g j)
-
-end DedekindZetaZeroFree.RepresentationTheory.KPCompactHarmonicTruncation
-
-end

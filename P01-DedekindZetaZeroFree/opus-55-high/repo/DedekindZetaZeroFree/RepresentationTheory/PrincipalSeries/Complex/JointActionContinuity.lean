@@ -54,8 +54,6 @@ lemma joint_continuous {ι : Type*} (p : SeminormFamily ℂ V ι) (hp : WithSemi
     (continuous_fst.continuousAt (x := (g, v))).tendsto.eventually ho
   filter_upwards [hsmall, hb', ho'] with z hz hzb hzo
   have heq : T z.1 z.2 - T g v = T z.1 (z.2 - v) + (T z.1 v - T g v) := by
-    rw [map_sub]
-    abel
+    simp
   rw [heq]
   exact map_add_le_add (p i) _ _ |>.trans_lt (by linarith [hzb (z.2 - v)])
-end DedekindZetaZeroFree.KPCplxPrincipalSeriesJointBS

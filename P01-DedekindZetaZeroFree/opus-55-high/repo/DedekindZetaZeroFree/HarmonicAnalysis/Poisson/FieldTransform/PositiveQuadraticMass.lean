@@ -4,13 +4,12 @@ public import DedekindZetaZeroFree.HarmonicAnalysis.Poisson.FieldTransform.Melli
 
 @[expose] public section
 
-noncomputable section
 open scoped Classical ContDiff Topology
 open Asymptotics
 
 namespace DedekindZetaZeroFree.LargeSieve
 
-private theorem mellinConvergent_of_contDiff_hasCompactSupport {h : ℝ → ℂ}
+theorem mellinConvergent_of_contDiff_hasCompactSupport {h : ℝ → ℂ}
     (hh : ContDiff ℝ ∞ h) (hhc : HasCompactSupport h) {s : ℂ} (hs : 0 < s.re) :
     MellinConvergent h s := by
   have hfc : MeasureTheory.LocallyIntegrableOn h (Set.Ioi 0) MeasureTheory.volume :=
@@ -27,20 +26,20 @@ private theorem mellinConvergent_of_contDiff_hasCompactSupport {h : ℝ → ℂ}
     simpa [Real.rpow_zero] using h1
   exact mellinConvergent_of_isBigO_rpow hfc htop (by linarith) hbot hs
 
-private theorem mellinConvergent_comp_sq {f : ℝ → ℂ} (hf : MellinConvergent f (1 / 2)) :
+theorem mellinConvergent_comp_sq {f : ℝ → ℂ} (hf : MellinConvergent f (1 / 2)) :
     MellinConvergent (fun t : ℝ => f (t ^ 2)) 1 := by
   have h2 := (MellinConvergent.comp_rpow (f := f) (s := 1) (a := 2) (by norm_num)).mpr
     (by simpa using hf)
-  simpa [MellinConvergent, Complex.cpow_zero, sub_self, one_smul, Real.rpow_ofNat] using h2
+  simp_all
 
-private lemma Gammaℂ_half_ne_zero : Complex.Gammaℂ (1 / 2 : ℂ) ≠ 0 := by
+lemma Gammaℂ_half_ne_zero : Complex.Gammaℂ (1 / 2 : ℂ) ≠ 0 := by
   rw [Complex.Gammaℂ_def]
   refine mul_ne_zero (mul_ne_zero two_ne_zero ?_) (Complex.Gamma_ne_zero_of_re_pos ?_)
   · exact Complex.cpow_ne_zero_iff.mpr
       (Or.inl (mul_ne_zero two_ne_zero (Complex.ofReal_ne_zero.mpr Real.pi_ne_zero)))
   · norm_num
 
-private lemma Gammaℂ_half_pow_mul_inv_pow_mul_div (r : ℕ) (hr : 1 ≤ r) (m : ℂ) :
+lemma Gammaℂ_half_pow_mul_inv_pow_mul_div (r : ℕ) (hr : 1 ≤ r) (m : ℂ) :
     Complex.Gammaℂ (1 / 2 : ℂ) ^ r * ((Complex.Gammaℂ (1 / 2 : ℂ))⁻¹) ^ (r - 1) *
         (m / Complex.Gammaℂ (1 / 2 : ℂ)) = m := by
   have hg := Gammaℂ_half_ne_zero
@@ -75,7 +74,3 @@ theorem compact_comp_sq_integrableOn (h : ℝ → ℂ)
   have hm := mellinConvergent_of_contDiff_hasCompactSupport hh hhc (by norm_num : (0:ℝ) < (1 / 2 : ℂ).re)
   have h2 := mellinConvergent_comp_sq hm
   simpa [MellinConvergent, Complex.cpow_zero, sub_self, one_smul] using h2
-
-end DedekindZetaZeroFree.LargeSieve
-
-end

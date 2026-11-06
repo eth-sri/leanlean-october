@@ -7,7 +7,6 @@ public import DedekindZetaZeroFree.HarmonicAnalysis.Poisson.ReflectedCoprimeTrun
 
 @[expose] public section
 
-noncomputable section
 open scoped NumberField Classical ContDiff Topology
 open MeasureTheory Filter
 
@@ -58,13 +57,13 @@ theorem bilinear_middle_double_reflection_bounds
         (hvi.norm.const_mul _) (hvi.aestronglyMeasurable.mul hcont.aestronglyMeasurable) ?_
       filter_upwards with t
       have hre : (-((c : ℂ) + (t : ℂ) * Complex.I)).re = -c := by
-        simp [Complex.add_re, Complex.mul_re]
+        simp
       rw [norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos hx, hre]
       exact le_of_eq (mul_comm _ _)
     refine ⟨hint, ?_⟩
     rw [htr, Vendor.mellinInv_eq_verticalIntegral c (reflectedSquareSpectrum D r W) hx,
       Vendor.verticalIntegral]
-    rw [show (1 / (2 * Real.pi) : ℂ) = ((2 * Real.pi : ℝ) : ℂ)⁻¹ by push_cast; ring]
+    rw [show (1 / (2 * Real.pi) : ℂ) = ((2 * Real.pi : ℝ) : ℂ)⁻¹ by simp]
     congr 1
     apply integral_congr_ae
     filter_upwards with t
@@ -99,7 +98,7 @@ theorem bilinear_middle_double_reflection_bounds
         simpa using htop x hx1
       · have h1 := Nat.le_ceil z.re
         have h2 : z.re < (Nat.ceil z.re : ℝ) + 1 := by linarith
-        simpa using h2
+        omega
       · refine Asymptotics.IsBigO.of_bound C ?_
         filter_upwards [self_mem_nhdsWithin,
           (eventually_lt_nhds (show (0 : ℝ) < 1 by norm_num)).filter_mono nhdsWithin_le_nhds]
@@ -117,7 +116,3 @@ theorem bilinear_middle_double_reflection_bounds
     · intro x hx
       exact (ReflectedCoprimeTruncation.kernel_eq_mellinInv D r W a b hD hr hW hsupp ha hab
         z.re x hz hx).2
-
-end DedekindZetaZeroFree.LargeSieve
-
-end

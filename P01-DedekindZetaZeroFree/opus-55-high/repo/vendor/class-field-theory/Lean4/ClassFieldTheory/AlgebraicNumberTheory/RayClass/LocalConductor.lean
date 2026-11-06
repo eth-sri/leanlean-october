@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Local conductor subgroups in the idele class group
 
@@ -68,16 +64,8 @@ theorem localHigherUnitClassSubgroup_le_congruenceSubgroup
   by_cases hw : w = v
   · subst w
     rw [IdeleGroup.finitePlaceIdele_finiteComponent_same]
-    change
-      x ∈
-        (localHigherUnitGroup v (m.finitePart v) :
-          Set (v.adicCompletion K)ˣ)
-    exact hx
+    simp_all
   · rw [
       IdeleGroup.finitePlaceIdele_finiteComponent_of_ne
         v w x hw]
-    exact (localHigherUnitGroup w (m.finitePart w)).one_mem
-
-end RayClass
-
-end
+    simp

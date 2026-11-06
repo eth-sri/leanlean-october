@@ -281,7 +281,7 @@ variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
       RightFrame.PullbackWords.directionalWord]
     rfl
 
-private theorem jet_germ_eq (n : ℕ) (f g : E → ℂ) (U W : Set E)
+theorem jet_germ_eq (n : ℕ) (f g : E → ℂ) (U W : Set E)
     (hU : IsOpen U) (hW : IsOpen W) (x : E) (hxU : x ∈ U) (hxW : x ∈ W)
     (heq : f =ᶠ[𝓝 x] g) :
     iteratedFDerivWithin ℝ n f U x = iteratedFDerivWithin ℝ n g W x := by
@@ -343,7 +343,7 @@ variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
 variable {S : Type*} [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
 variable (ι : S →ₗ[ℂ] KPContActualSphericalFlatStage.Stage F ζ hζ U) (f : ℂ → S)
 
-private theorem compact_mixed_pullback (hι : Function.Injective ι)
+theorem compact_mixed_pullback (hι : Function.Injective ι)
     (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
     {X : Type*} [TopologicalSpace X] (O : Set X)
     (ℓ : X → KPContActualChamberNormalSeries.G F ζ hζ) (hℓ : ContinuousOn ℓ O)
@@ -428,7 +428,7 @@ private theorem iwasawa_compact_jet
   exact normalSeries_transported_compact_jet O hO W hW fields hfields hframe ψ hψ hψO
     V hk hks hwk K hK hKW n v
 
-private theorem component_value (hι : Function.Injective ι)
+theorem component_value (hι : Function.Injective ι)
     (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain) (k : ℕ) (s : ℂ) (hs : s ∈ V)
     (i : Fin (H.atlas (level F ζ hζ C R P H U)).componentCount)
     (z : KPContSectorCoveredQuotientVocabulary.SymmetricSpace F) :

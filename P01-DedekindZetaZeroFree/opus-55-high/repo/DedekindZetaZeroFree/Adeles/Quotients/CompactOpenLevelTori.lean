@@ -29,7 +29,7 @@ abbrev finiteLevelAdditiveQuotient {F : Type*} [Field F] [NumberField F]
     (K : AddSubgroup (FiniteAdeleRing (𝓞 F) F)) :=
   (AdeleRing (𝓞 F) F ⧸ AdeleRing.principalSubgroup (𝓞 F) F) ⧸ finiteLevelImage K
 
-private theorem existsOpenDiagonalZero (F : Type*) [Field F] [NumberField F] :
+theorem existsOpenDiagonalZero (F : Type*) [Field F] [NumberField F] :
     ∃ U : Set (AdeleRing (𝓞 F) F), IsOpen U ∧ (0 : AdeleRing (𝓞 F) F) ∈ U ∧
       (algebraMap F (AdeleRing (𝓞 F) F)) ⁻¹' U = ({0} : Set F) := by
   classical
@@ -39,7 +39,7 @@ private theorem existsOpenDiagonalZero (F : Type*) [Field F] [NumberField F] :
   have hW0 : (0 : mixedEmbedding.mixedSpace F) ∈ W := by
     have h : (0 : L) ∈ Subtype.val ⁻¹' W := by
       rw [hWL]
-      exact Set.mem_singleton 0
+      rfl
     exact h
   have hc : Continuous (InfiniteAdeleRing.ringEquiv_mixedSpace F) := by
     apply Continuous.prodMk
@@ -76,17 +76,15 @@ private theorem existsOpenDiagonalZero (F : Type*) [Field F] [NumberField F] :
           IsDedekindDomain.HeightOneSpectrum.adicCompletion.valued_coe] using hv
       obtain ⟨r, hr⟩ :=
         IsDedekindDomain.HeightOneSpectrum.mem_integers_of_valuation_le_one F x hfinite
-      have hL : mixedEmbedding F x ∈ L := by
-        exact ⟨r, congrArg (mixedEmbedding F) hr⟩
+      have hL : mixedEmbedding F x ∈ L := 
+        ⟨r, congrArg (mixedEmbedding F) hr⟩
       have hsmall : mixedEmbedding F x ∈ W := by
         rw [InfiniteAdeleRing.mixedEmbedding_eq_algebraMap_comp]
         exact hx.1
       have hz : (⟨mixedEmbedding F x, hL⟩ : L) = 0 := by
         have hm : (⟨mixedEmbedding F x, hL⟩ : L) ∈ Subtype.val ⁻¹' W := hsmall
-        rwa [hWL, Set.mem_singleton_iff] at hm
-      apply Set.mem_singleton_iff.mpr
-      apply NumberField.mixedEmbedding_injective
-      simpa using congrArg Subtype.val hz
+        simp_all
+      simp_all
     · intro hx
       rcases Set.mem_singleton_iff.mp hx with rfl
       simp only [Set.mem_preimage, map_zero]
@@ -108,14 +106,11 @@ theorem adelePrincipalSubgroup_discrete (F : Type*) [Field F] [NumberField F] :
         have hm : x ∈ (algebraMap F (AdeleRing (𝓞 F) F)) ⁻¹' U := by
           change algebraMap F (AdeleRing (𝓞 F) F) x ∈ U
           rwa [hx]
-        rwa [hdiag, Set.mem_singleton_iff] at hm
+        simp_all
       apply Set.mem_singleton_iff.mpr
       apply Subtype.ext
-      change (a : AdeleRing (𝓞 F) F) = 0
-      simpa only [hx0, map_zero] using hx.symm
-    · intro ha
-      rcases Set.mem_singleton_iff.mp ha with rfl
-      exact hU0
+      simp_all
+    simp_all
   rw [← heq]
   exact hU.preimage continuous_subtype_val
 
@@ -144,7 +139,7 @@ theorem adelePrincipalSubgroup_isClosed (F : Type*) [Field F] [NumberField F] :
           (not_isReal_iff_isComplex.mp v.2)).toHomeomorph)).trans
         (Homeomorph.piCongrLeft (Y := fun _ => ℂ)
           (Equiv.subtypeEquivRight (fun _ => not_isReal_iff_isComplex))))))
-private theorem mixedHomeo_apply (F : Type*) [Field F] [NumberField F]
+theorem mixedHomeo_apply (F : Type*) [Field F] [NumberField F]
     (x : InfiniteAdeleRing F) : mixedHomeo F x = InfiniteAdeleRing.ringEquiv_mixedSpace F x := by
   rfl
 
@@ -162,7 +157,7 @@ theorem additiveAdeleQuotient_compactHausdorff (F : Type*) [Field F] [NumberFiel
       (R := fun v : HeightOneSpectrum (𝓞 F) => v.adicCompletion F)
       (A := fun v => (v.adicCompletionIntegers F : Set _)) (𝓕 := Filter.cofinite)).continuous
     rw [RestrictedProduct.range_structureMap] at h
-    convert h using 1 <;> rfl
+    simp_all
   have hOpen : IsOpen (integralFiniteAdeles F : Set (FiniteAdeleRing (𝓞 F) F)) :=
     RestrictedProduct.isOpen_forall_mem (fun v => Valued.isOpen_valuationSubring _)
   let b := mixedEmbedding.latticeBasis F
@@ -176,8 +171,7 @@ theorem additiveAdeleQuotient_compactHausdorff (F : Type*) [Field F] [NumberFiel
     obtain ⟨a, rfl⟩ := QuotientAddGroup.mk'_surjective (AdeleRing.principalSubgroup (𝓞 F) F) q
     obtain ⟨r, k, hr⟩ := finiteAdele_strongApprox F (integralFiniteAdeles F) hOpen hO a.2
     have hrem : a.2 - algebraMap F (FiniteAdeleRing (𝓞 F) F) r ∈ integralFiniteAdeles F := by
-      rw [hr, add_sub_cancel_left]
-      exact k.property
+      simp_all
     let y := e (a.1 - algebraMap F (InfiniteAdeleRing F) r)
     have hf : (ZSpan.floor b y : mixedEmbedding.mixedSpace F) ∈ mixedEmbedding.integerLattice F :=
       (mixedEmbedding.mem_span_latticeBasis F).mp (ZSpan.floor b y).property
@@ -204,10 +198,7 @@ theorem additiveAdeleQuotient_compactHausdorff (F : Type*) [Field F] [NumberFiel
       dsimp [z]
       rw [map_add, ← sub_sub]
       exact (integralFiniteAdeles F).sub_mem hrem hsfin
-    · change QuotientAddGroup.mk (a - algebraMap F (AdeleRing (𝓞 F) F) z) = QuotientAddGroup.mk a
-      apply QuotientAddGroup.eq_iff_sub_mem.mpr
-      have hz : algebraMap F (AdeleRing (𝓞 F) F) z ∈ AdeleRing.principalSubgroup (𝓞 F) F := ⟨z, rfl⟩
-      simpa only [sub_sub_cancel_left] using (AdeleRing.principalSubgroup (𝓞 F) F).neg_mem hz
+    simp
   have hQ : CompactSpace (AdeleRing (𝓞 F) F ⧸ AdeleRing.principalSubgroup (𝓞 F) F) := by
     apply isCompact_univ_iff.mp
     rw [← hcover]
@@ -230,7 +221,7 @@ theorem finiteLevelImage_isCompact {F : Type*} [Field F] [NumberField F]
       show Continuous (fun x : FiniteAdeleRing (𝓞 F) F => ((0, x) : AdeleRing (𝓞 F) F))
       fun_prop)
 
-private theorem mixedHomeo_symm (F : Type*) [Field F] [NumberField F]
+theorem mixedHomeo_symm (F : Type*) [Field F] [NumberField F]
     (x : mixedEmbedding.mixedSpace F) : (mixedHomeo F).symm x =
       (InfiniteAdeleRing.ringEquiv_mixedSpace F).symm x := by rfl
 
@@ -267,8 +258,8 @@ theorem finiteLevel_torus_homeomorph {F : Type*} [Field F] [NumberField F]
     apply QuotientAddGroup.continuous_mk.comp
     apply QuotientAddGroup.continuous_mk.comp
     have hi : Continuous (fun x : mixedEmbedding.mixedSpace F =>
-        (((InfiniteAdeleRing.ringEquiv_mixedSpace F).symm x, 0) : AdeleRing (𝓞 F) F)) := by
-      exact ((mixedHomeo F).symm.continuous.congr (fun x => mixedHomeo_symm F x)).prodMk continuous_const
+        (((InfiniteAdeleRing.ringEquiv_mixedSpace F).symm x, 0) : AdeleRing (𝓞 F) F)) := 
+      ((mixedHomeo F).symm.continuous.congr (fun x => mixedHomeo_symm F x)).prodMk continuous_const
     exact hi
   have hs : Function.Surjective f := by
     intro y
@@ -330,7 +321,7 @@ theorem finiteLevel_torus_homeomorph {F : Type*} [Field F] [NumberField F]
         change algebraMap F (FiniteAdeleRing (𝓞 F) F) lam = k - 0 at h
         simpa only [sub_zero] using h
       apply (mem_finiteLevelLattice_iff K x).mpr
-      refine ⟨-lam, by rw [map_neg, hfin]; exact K.neg_mem hk, ?_⟩
+      refine ⟨-lam, by simp_all, ?_⟩
       rw [map_neg, InfiniteAdeleRing.mixedEmbedding_eq_algebraMap_comp, ← harch, map_neg,
         RingEquiv.apply_symm_apply, neg_neg]
   let e := QuotientAddGroup.liftEquiv (finiteLevelLattice K).toAddSubgroup hs hker
@@ -344,9 +335,8 @@ theorem finiteLevel_torus_homeomorph {F : Type*} [Field F] [NumberField F]
     have hp := IsZLattice.isCompact_range_of_periodic (finiteLevelLattice K)
       (QuotientAddGroup.mk : mixedEmbedding.mixedSpace F → mixedEmbedding.mixedSpace F ⧸ (finiteLevelLattice K).toAddSubgroup)
       QuotientAddGroup.continuous_mk (by
-        intro z w hw
-        rw [QuotientAddGroup.mk_add, (QuotientAddGroup.eq_zero_iff w).mpr hw, add_zero])
-    simpa only [Set.range_eq_univ.mpr QuotientAddGroup.mk_surjective] using hp
+        simp)
+    simp_all
   letI := (additiveAdeleQuotient_compactHausdorff F).2
   letI : IsClosed (finiteLevelImage K : Set (AdeleRing (𝓞 F) F ⧸ P)) :=
     (finiteLevelImage_isCompact K hcompact).isClosed
@@ -355,7 +345,7 @@ theorem finiteLevel_torus_homeomorph {F : Type*} [Field F] [NumberField F]
                   continuous_invFun := he.homeoOfEquivCompactToT2.continuous_invFun },
     fun x => QuotientAddGroup.liftEquiv_mk _ hs hker x⟩
 
-private theorem latticeTorus {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+theorem latticeTorus {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     [FiniteDimensional ℝ E] (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L]
     {ι : Type*} [Fintype ι] (b : Module.Basis ι ℤ L) :
     Nonempty ((E ⧸ L.toAddSubgroup) ≃ₜ+ UnitAddTorus ι) := by
@@ -388,7 +378,7 @@ private theorem latticeTorus {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ
       ext i
       obtain ⟨n, hn⟩ := hx i
       apply (AddCircle.coe_eq_zero_iff (1 : ℝ)).mpr
-      exact ⟨n, by simpa [c, f, Module.Basis.equivFun_apply] using hn⟩
+      simp_all
     · intro hx i
       have hi : (c.equivFun x i : UnitAddCircle) = 0 := congrFun hx i
       obtain ⟨n, hn⟩ := (AddCircle.coe_eq_zero_iff (1 : ℝ)).mp hi
@@ -402,9 +392,8 @@ private theorem latticeTorus {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ
     have hp := IsZLattice.isCompact_range_of_periodic L
       (QuotientAddGroup.mk : E → E ⧸ L.toAddSubgroup)
       QuotientAddGroup.continuous_mk (by
-        intro z w hw
-        rw [QuotientAddGroup.mk_add, (QuotientAddGroup.eq_zero_iff w).mpr hw, add_zero])
-    simpa only [Set.range_eq_univ.mpr QuotientAddGroup.mk_surjective] using hp
+        simp)
+    simp_all
   letI := hcomp
   exact ⟨{ e with continuous_toFun := he
                   continuous_invFun := he.homeoOfEquivCompactToT2.continuous_invFun }⟩
@@ -431,6 +420,3 @@ theorem finiteLevel_single_torus {F : Type*} [Field F] [NumberField F]
   letI : CompactSpace (finiteLevelAdditiveQuotient K) := g.symm.toHomeomorph.compactSpace
   letI : T2Space (finiteLevelAdditiveQuotient K) := g.symm.toHomeomorph.t2Space
   exact ⟨inferInstance, inferInstance, inferInstance, ⟨g⟩⟩
-
-end
-end DedekindZetaZeroFree

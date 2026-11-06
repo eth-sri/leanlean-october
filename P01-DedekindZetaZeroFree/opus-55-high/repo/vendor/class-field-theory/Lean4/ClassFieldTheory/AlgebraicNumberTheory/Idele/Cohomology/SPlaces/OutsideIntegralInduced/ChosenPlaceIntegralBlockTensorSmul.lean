@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Equivariance of the integral tensor block
 
@@ -26,7 +22,6 @@ restricted global Galois action.
 open scoped NumberField TensorProduct ValuativeRel NNReal
 open NumberField IsDedekindDomain
 
-noncomputable section
 
 open AlgebraicNumberTheory.Valuations
 open HilbertRamification
@@ -100,7 +95,3 @@ theorem
         (K := K) (L := L) w₀
         (chosenFinitePlaceExtension (L := L) w₀) τ
         (x : (w₀.adicCompletion K ⊗[K] L)ˣ)
-
-end ChosenFinitePlace
-
-end

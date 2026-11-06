@@ -298,7 +298,7 @@ private lemma word_smooth {m b : ℕ} {V : Set (Space m)} (hV : IsOpen V)
   | nil => exact hf
   | cons i w ih => exact (ih.fderiv_of_isOpen hV (by simp)).clm_apply (hfields i)
 
-private lemma jets_lower {n k l : ℕ} (hkl : k ≤ l)
+lemma jets_lower {n k l : ℕ} (hkl : k ≤ l)
     (u : Space n → ℂ) (K : Set (Space n)) (B : ℝ)
     (h : ∀ α : MultiIndex n l, ∀ x ∈ K, ‖coordinateDerivative α u x‖ ≤ B) :
     ∀ α : MultiIndex n k, ∀ x ∈ K, ‖coordinateDerivative α u x‖ ≤ B := by
@@ -534,13 +534,13 @@ private lemma piece_bound
     rw [level_projection F ζ hζ U v]
     exact ((p j).base_formula x ((p j).compact_inside hx)).symm
 
-private lemma sup_bound {G : Type*} (C : Set G) (f : G → ℂ) {B : ℝ}
+lemma sup_bound {G : Type*} (C : Set G) (f : G → ℂ) {B : ℝ}
     (hB : 0 ≤ B) (h : ∀ g ∈ C, ‖f g‖ ≤ B) : sSup ((fun g => ‖f g‖) '' C) ≤ B := by
   rcases C.eq_empty_or_nonempty with rfl | hC
   · simpa using hB
   · exact csSup_le (hC.image _) (by rintro _ ⟨g,hg,rfl⟩; exact h g hg)
 
-private lemma jet_bound {n : ℕ} (l : ℕ) (T : LocalBall n) (K : Set (Space n))
+lemma jet_bound {n : ℕ} (l : ℕ) (T : LocalBall n) (K : Set (Space n))
     (hK : IsCompact K) (hKT : K ⊆ T.carrier) (u : Space n → ℂ)
     (hu : ContDiffOn ℝ (⊤ : ℕ∞) u T.carrier) (α : MultiIndex n l) (x : K) :
     ‖coordinateDerivative α u x‖ ≤ compactJetSeminorm l T K hK hKT u hu := by
@@ -759,7 +759,7 @@ private lemma piece_continuous
   exact (piece_combination F ζ hζ U R P H p u.val hcoef D z.1.val
     (p.compact_inside z.1.property) z.2).symm
 
-private lemma finite_compact_continuous {G : Type*} [TopologicalSpace G] [T2Space G]
+lemma finite_compact_continuous {G : Type*} [TopologicalSpace G] [T2Space G]
     {ι : Type*} [Fintype ι] (K : ι → Set G) (hK : ∀ i, IsCompact (K i))
     (f : G → ℂ) (hf : ∀ i, ContinuousOn f (K i)) : ContinuousOn f (⋃ i, K i) := by
   have aux (S : Finset ι) : ContinuousOn f (⋃ i ∈ S, K i) ∧ IsCompact (⋃ i ∈ S, K i) := by

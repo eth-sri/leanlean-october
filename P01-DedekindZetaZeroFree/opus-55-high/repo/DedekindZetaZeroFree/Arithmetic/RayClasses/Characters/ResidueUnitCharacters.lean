@@ -12,13 +12,12 @@ open scoped NumberField
 
 variable {F : Type} [Field F] [NumberField F] {m : Ideal (𝓞 F)}
 
-private theorem residueLift_coprime (α : 𝓞 F) (u : (𝓞 F ⧸ m)ˣ)
+theorem residueLift_coprime (α : 𝓞 F) (u : (𝓞 F ⧸ m)ˣ)
     (hu : (u : 𝓞 F ⧸ m) = Ideal.Quotient.mk m α) :
     Ideal.span {α} ⊔ m = ⊤ := by
   obtain ⟨δ, hδ⟩ := Ideal.Quotient.mk_surjective ((↑(u⁻¹)) : 𝓞 F ⧸ m)
   have hprod : Ideal.Quotient.mk m (α * δ) = 1 := by
-    rw [map_mul, ← hu, hδ]
-    exact u.val_inv
+    simp_all
   have hmem : α * δ - 1 ∈ m := (Ideal.Quotient.mk_eq_one_iff_sub_mem _).mp hprod
   apply Ideal.eq_top_of_isUnit_mem _ _ isUnit_one
   have hmul : α * δ ∈ Ideal.span {α} ⊔ m :=
@@ -37,7 +36,7 @@ theorem residueUnit_exists_nonzero_lift
   have hu0 : (u : 𝓞 F ⧸ m) = 0 := by simpa [hz] using hα.symm
   exact u.isUnit.ne_zero hu0
 
-private theorem residue_positive (hF : NumberField.IsTotallyComplex F)
+theorem residue_positive (hF : NumberField.IsTotallyComplex F)
     (α : 𝓞 F) : ∀ φ : F →+* ℝ, 0 < φ (α : F) := by
   letI := hF
   intro φ
@@ -68,7 +67,7 @@ theorem residueRayCharacter_lift_compatible
   have hδ : δ ≠ 0 := by
     intro hz
     have : (↑(u⁻¹) : 𝓞 F ⧸ m) = 0 := by change Ideal.Quotient.mk m δ = 0; simp [hz]
-    exact (u⁻¹).isUnit.ne_zero this
+    simp_all
   have hδcop : Ideal.span {δ} ⊔ m = ⊤ := residueLift_coprime δ (u⁻¹) rfl
   have hβprod : Ideal.Quotient.mk m (β * δ) = 1 := by
     rw [map_mul, ← hres, ← map_mul]
@@ -80,7 +79,7 @@ theorem residueRayCharacter_lift_compatible
   rw [← Ideal.span_singleton_mul_span_singleton, η.map_mul'] at hαδ hβδ
   have hηδ : η (Ideal.span {δ}) ≠ 0 := by
     rw [ne_eq, η.eq_zero_iff']
-    simp [Ideal.span_singleton_eq_bot, hδ, hδcop]
+    simp_all
   exact mul_right_cancel₀ hηδ (hαδ.trans hβδ.symm)
 
  def residueLift (hmt : m ≠ ⊤) (u : (𝓞 F ⧸ m)ˣ) : 𝓞 F :=
@@ -95,16 +94,15 @@ theorem residueRayCharacter_lift_compatible
     (η : DedekindZetaZeroFree.RayClassCharacter F m) (u : (𝓞 F ⧸ m)ˣ) : ℂˣ :=
   Units.mk0 (η (Ideal.span {residueLift hmt u})) (by
     rw [ne_eq, η.eq_zero_iff']
-    simp [Ideal.span_singleton_eq_bot, (residueLift_spec hmt u).1,
-      (residueLift_spec hmt u).2.1])
+    simp [(residueLift_spec hmt u).1, (residueLift_spec hmt u).2.1])
 
  theorem residueValue_apply
     (hF : NumberField.IsTotallyComplex F) (hm : m ≠ ⊥) (hmt : m ≠ ⊤)
     (η : DedekindZetaZeroFree.RayClassCharacter F m)
     (α : 𝓞 F) (hα : α ≠ 0) (hcop : Ideal.span {α} ⊔ m = ⊤)
     (u : (𝓞 F ⧸ m)ˣ) (hu : (u : 𝓞 F ⧸ m) = Ideal.Quotient.mk m α) :
-    (residueValue hmt η u : ℂ) = η (Ideal.span {α}) := by
-  exact residueRayCharacter_lift_compatible hF hm hmt η _ α
+    (residueValue hmt η u : ℂ) = η (Ideal.span {α}) := 
+  residueRayCharacter_lift_compatible hF hm hmt η _ α
     (residueLift_spec hmt u).1 hα (residueLift_spec hmt u).2.1 hcop
     ((residueLift_spec hmt u).2.2.symm.trans hu)
 
@@ -139,9 +137,5 @@ theorem residueRayCharacter_apply
     (η : DedekindZetaZeroFree.RayClassCharacter F m)
     (α : 𝓞 F) (hα : α ≠ 0) (hcop : Ideal.span {α} ⊔ m = ⊤)
     (u : (𝓞 F ⧸ m)ˣ) (hu : (u : 𝓞 F ⧸ m) = Ideal.Quotient.mk m α) :
-    (residueRayCharacter hF hm hmt η u : ℂ) = η (Ideal.span {α}) := by
-  exact residueValue_apply hF hm hmt η α hα hcop u hu
-
-end
-
-end DedekindZetaZeroFree.Hecke
+    (residueRayCharacter hF hm hmt η u : ℂ) = η (Ideal.span {α}) := 
+  residueValue_apply hF hm hmt η α hα hcop u hu

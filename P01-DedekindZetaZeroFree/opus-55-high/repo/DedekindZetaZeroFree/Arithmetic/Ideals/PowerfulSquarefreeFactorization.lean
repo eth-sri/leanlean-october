@@ -6,7 +6,6 @@ public import DedekindZetaZeroFree.Arithmetic.Ideals.ExteriorIdeals.EulerWeights
 
 namespace DedekindZetaZeroFree
 
-noncomputable section
 open scoped NumberField Classical
 
 variable {F : Type} [Field F] [NumberField F]
@@ -52,7 +51,7 @@ theorem unique_coprime_powerful_squarefree_decomposition
     rw [hhc]
     split_ifs with hc
     · omega
-    · exact Or.inl rfl
+    simp
   have dsq : Squarefree d := by
     apply (UniqueFactorizationMonoid.squarefree_iff_nodup_normalizedFactors hd0).mpr
     apply Multiset.nodup_iff_count_le_one.mpr
@@ -110,10 +109,7 @@ theorem unique_coprime_powerful_squarefree_decomposition
   have heq : h' = h := associated_iff_eq.mp
     ((UniqueFactorizationMonoid.associated_iff_normalizedFactors_eq_normalizedFactors hh' hh0).mpr
       (Multiset.ext.mpr fun p => (hc' p).1))
-  have deq : d' = d := associated_iff_eq.mp
-    ((UniqueFactorizationMonoid.associated_iff_normalizedFactors_eq_normalizedFactors hd' hd0).mpr
-      (Multiset.ext.mpr fun p => (hc' p).2))
-  exact Prod.ext (Subtype.ext heq) (Subtype.ext deq)
+  simp_all
 
 theorem exterior_of_powerful_squarefree_factorization
     {cS m h d : Ideal (𝓞 F)}
@@ -153,8 +149,8 @@ theorem squarefree_radical_divisor_pow_two_le_powerful
     have hph : p ∈ idealPrimeSupport h := by
       by_contra hn
       simp [hn] at hrad
-    have hhpos : 0 < idealPrimeExponent p h := by
-      exact Multiset.count_pos.mpr (by simpa only [idealPrimeSupport, Multiset.mem_toFinset] using hph)
+    have hhpos : 0 < idealPrimeExponent p h := 
+      Multiset.count_pos.mpr (by simpa only [idealPrimeSupport, Multiset.mem_toFinset] using hph)
     have he := (hpower p hp).resolve_left (Nat.ne_of_gt hhpos)
     have hc := (Multiset.nodup_iff_count_le_one.mp hsq) p
     change 2 * (UniqueFactorizationMonoid.normalizedFactors f).count p ≤ idealPrimeExponent p h
@@ -172,8 +168,8 @@ theorem unique_powerful_square_cube_decomposition
       h = rs.1.val ^ 2 * rs.2.val ^ 3 ∧ Squarefree rs.2.val := by
   classical
   obtain ⟨e, s, hes, hs⟩ := exists_sq_mul_squarefree h
-  have he0 : e ≠ 0 := by intro he; simp [he] at hes; exact hh hes.symm
-  have hs0 : s ≠ 0 := by intro he; simp [he] at hes; exact hh hes.symm
+  have he0 : e ≠ 0 := by intro he; simp_all
+  have hs0 : s ≠ 0 := by intro he; simp_all
   have hscount := Multiset.nodup_iff_count_le_one.mp
     ((UniqueFactorizationMonoid.squarefree_iff_nodup_normalizedFactors hs0).mp hs)
   have hse : s ∣ e := by
@@ -192,10 +188,9 @@ theorem unique_powerful_square_cube_decomposition
       rw [← hes]
       simp [idealPrimeExponent, UniqueFactorizationMonoid.normalizedFactors_mul
         (pow_ne_zero _ he0) hs0, Multiset.count_nsmul]
-    rw [hexp] at hpc
     omega
   obtain ⟨r, her⟩ := hse
-  have hr0 : r ≠ 0 := by intro hr; simp [hr] at her; exact he0 her
+  have hr0 : r ≠ 0 := by intro hr; simp_all
   have hfactor : h = r ^ 2 * s ^ 3 := by
     rw [← hes, her]
     ring
@@ -224,7 +219,4 @@ theorem unique_powerful_square_cube_decomposition
   have hse' : s' = s := associated_iff_eq.mp
     ((UniqueFactorizationMonoid.associated_iff_normalizedFactors_eq_normalizedFactors hs' hs0).mpr
       (Multiset.ext.mpr fun p => (hcount p).2))
-  exact Prod.ext (Subtype.ext hre) (Subtype.ext hse')
-
-end
-end DedekindZetaZeroFree
+  simp_all

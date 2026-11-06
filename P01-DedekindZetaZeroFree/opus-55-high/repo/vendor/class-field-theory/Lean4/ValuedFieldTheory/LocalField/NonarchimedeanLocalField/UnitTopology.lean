@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # The unit subgroup of a nonarchimedean local field
 
@@ -75,7 +72,3 @@ theorem localBaseUnitSubgroup_isOpen
     ext x
     exact mem_localBaseUnitSubgroup_iff_valuation_eq_one K x]
   exact hpre
-
-end LocalFieldTheory
-
-end

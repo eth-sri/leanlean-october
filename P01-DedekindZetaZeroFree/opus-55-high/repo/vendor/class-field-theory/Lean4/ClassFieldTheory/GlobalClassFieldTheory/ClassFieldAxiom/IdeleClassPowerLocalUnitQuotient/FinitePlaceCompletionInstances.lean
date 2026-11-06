@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Canonical structures on finite completions
 
@@ -37,7 +32,7 @@ variable {K : Type} [Field K] [NumberField K]
 
 /-- The distinguished valuation on a finite completion of a number field is
 complete discrete. -/
-noncomputable instance finitePlaceAdicCompletion_isCompleteDiscrete
+instance finitePlaceAdicCompletion_isCompleteDiscrete
     (v₀ : HeightOneSpectrum (𝓞 K)) :
     ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete
       (Valued.v :
@@ -48,14 +43,14 @@ noncomputable instance finitePlaceAdicCompletion_isCompleteDiscrete
     ValuationTheory.Valuations.rankOneDiscreteValuationSubring_isAdicComplete
 
 /-- A finite completion of a number field has characteristic zero. -/
-noncomputable instance finitePlaceAdicCompletion_charZero
+instance finitePlaceAdicCompletion_charZero
     (v₀ : HeightOneSpectrum (𝓞 K)) :
     CharZero (v₀.adicCompletion K) :=
   charZero_of_injective_algebraMap
     (algebraMap K (v₀.adicCompletion K)).injective
 
 /-- The residue field of a finite completion of a number field is finite. -/
-noncomputable instance finitePlaceAdicCompletion_residueFinite
+instance finitePlaceAdicCompletion_residueFinite
     (v₀ : HeightOneSpectrum (𝓞 K)) :
     Finite
       (IsLocalRing.ResidueField
@@ -64,7 +59,3 @@ noncomputable instance finitePlaceAdicCompletion_residueFinite
             (WithZero (Multiplicative ℤ))).valuationSubring) := by
   change Finite (Valued.ResidueField (v₀.adicCompletion K))
   exact _root_.finite_adicCompletion_residueField K v₀
-
-end GlobalClassFieldTheory.ClassFieldAxiom
-
-end

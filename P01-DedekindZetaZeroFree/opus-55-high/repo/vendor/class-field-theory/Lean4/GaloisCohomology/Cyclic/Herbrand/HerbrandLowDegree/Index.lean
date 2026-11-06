@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Cardinal consequences of a Herbrand quotient
 
@@ -24,7 +21,6 @@ quotient equal to a natural number `n`, then its degree-zero cardinality is
 cardinality is at least `n`.
 -/
 
-noncomputable section
 
 namespace CyclicCohomology
 
@@ -103,31 +99,10 @@ theorem lowDegree_card_eq_of_herbrandQuotient_eq_nat_of_le
     Finite.card_pos
       (α := HerbrandHMinusOne G A σ)
   have hnle : n ≤ a := by
-    rw [hmul]
-    simpa using Nat.mul_le_mul_left n hb
+    simp_all
   have ha : a = n :=
     Nat.le_antisymm hle hnle
   refine ⟨ha, ?_⟩
   have hcancel : n * b = n * 1 := by
-    rw [← hmul, ha, mul_one]
+    omega
   exact Nat.eq_of_mul_eq_mul_left hn hcancel
-
-/-- Subsingleton form of the negative-first conclusion. -/
-theorem herbrandHMinusOne_subsingleton_of_herbrandQuotient_eq_nat_of_le
-    (σ : G) (n : ℕ) (hn : 0 < n)
-    [Finite (HerbrandH0 G A)]
-    [Finite (HerbrandHMinusOne G A σ)]
-    (hquotient :
-      herbrandQuotient (G := G) (A := A) σ = n)
-    (hle : Nat.card (HerbrandH0 G A) ≤ n) :
-    Subsingleton (HerbrandHMinusOne G A σ) := by
-  have hcard :
-      Nat.card (HerbrandHMinusOne G A σ) = 1 := by
-    exact
-      (lowDegree_card_eq_of_herbrandQuotient_eq_nat_of_le
-        σ n hn hquotient hle).2
-  exact (Nat.card_eq_one_iff_unique.mp hcard).1
-
-end CyclicCohomology
-
-end

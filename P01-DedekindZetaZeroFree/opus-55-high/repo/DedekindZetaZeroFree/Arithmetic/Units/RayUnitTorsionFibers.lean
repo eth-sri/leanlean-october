@@ -43,13 +43,12 @@ theorem rayUnitTorsion_eq_comap :
     apply Subtype.ext
     apply Subtype.ext
     funext v
-    change Real.log (v ((u : (𝓞 K)ˣ) : K)) = 0
-    rw [h v, Real.log_one]
+    simp_all
 
 instance finite_rayUnitTorsion : Finite (rayUnitTorsion K m) := by
   let f : rayUnitTorsion K m → NumberField.Units.torsion K := fun u =>
-    ⟨(u.val : (𝓞 K)ˣ), by
-      exact show u.val ∈ (NumberField.Units.torsion K).comap (U K m).subtype from
+    ⟨(u.val : (𝓞 K)ˣ), 
+      show u.val ∈ (NumberField.Units.torsion K).comap (U K m).subtype from
         (rayUnitTorsion_eq_comap K m) ▸ u.property⟩
   apply Finite.of_injective f
   intro u v h
@@ -59,8 +58,8 @@ instance finite_rayUnitTorsion : Finite (rayUnitTorsion K m) := by
 
 def rayUnitTorsionCard : ℕ := Nat.card (rayUnitTorsion K m)
 
-theorem rayUnitTorsionCard_pos : 0 < rayUnitTorsionCard K m := by
-  exact Nat.card_pos
+theorem rayUnitTorsionCard_pos : 0 < rayUnitTorsionCard K m := 
+  Nat.card_pos
 
 theorem nonempty_rayUnitLogFiberEquiv (γ : rayUnitLogLattice K m) :
     Nonempty ({u : U K m // (rayUnitLogMap K m u).toAdd = γ} ≃
@@ -71,9 +70,7 @@ theorem nonempty_rayUnitLogFiberEquiv (γ : rayUnitLogLattice K m) :
     exact ⟨u.toMul, congrArg Multiplicative.ofAdd hu⟩
   refine ⟨(Equiv.subtypeEquivRight (fun u => ?_)).trans
     (MonoidHom.fiberEquivKerOfSurjective hs (Multiplicative.ofAdd γ))⟩
-  change (rayUnitLogMap K m u).toAdd = γ ↔
-    rayUnitLogMap K m u = Multiplicative.ofAdd γ
-  exact Multiplicative.toAdd.injective.eq_iff.symm
+  rfl
 
 def rayUnitLogFiberEquiv (γ : rayUnitLogLattice K m) :
     {u : U K m // (rayUnitLogMap K m u).toAdd = γ} ≃ rayUnitTorsion K m :=
@@ -95,7 +92,3 @@ def rayUnitLogTorsionEquiv : U K m ≃ rayUnitLogLattice K m × rayUnitTorsion K
 @[simp] theorem rayUnitLogTorsionEquiv_fst (u : U K m) :
     (rayUnitLogTorsionEquiv K m u).1 = (rayUnitLogMap K m u).toAdd :=
   (exists_rayUnitLogTorsionEquiv K m).choose_spec u
-
-end DedekindZetaZeroFree.AbelianQuotient.RayCoset
-
-end

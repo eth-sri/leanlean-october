@@ -106,8 +106,7 @@ theorem hasDerivAt_integral_of_locally_dominated
       have hn : (0 : ℝ) < r / 4 / ((n : ℝ) + 1) := by positivity
       have hle : r / 4 / ((n : ℝ) + 1) ≤ r / 4 := by
         apply div_le_self (by positivity)
-        have : (0 : ℝ) ≤ n := Nat.cast_nonneg n
-        linarith
+        simp
       simp only [h, add_sub_cancel_left, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hn]
       linarith
     refine aestronglyMeasurable_of_tendsto_ae (u := atTop) (f := fun n p =>
@@ -118,7 +117,7 @@ theorem hasDerivAt_integral_of_locally_dominated
       have hd := (hdiffAt p z0 hz0).hasDerivAt
       have := hd.tendsto_slope_zero.comp hhlim
       refine this.congr fun n => ?_
-      simp [Function.comp]
+      rfl
   have key := hasDerivAt_integral_of_dominated_loc_of_deriv_le (μ := μ)
     (F := G) (x₀ := z0) (s := Metric.ball z0 (r / 2)) (ball_mem_nhds z0 hr2) hFmeas hFint
     (F' := fun z p => deriv (fun z => G z p) z) hF'meas
@@ -158,7 +157,3 @@ theorem differentiableOn_integral_prod_real
         ∀ z ∈ Metric.ball z0 r, ∀ p, ‖G z p‖ ≤ g p) :
     DifferentiableOn ℂ (fun z => ∫ p, G z p) U :=
   differentiableOn_integral_of_locally_dominated hU hmeas hdiff hdom
-
-end HolomorphicDominatedIntegral
-
-end DedekindZetaZeroFree.Quantitative

@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 namespace LocalClassFieldTheory
 
 open ClassFormation
@@ -66,7 +60,7 @@ local instance localSeparableClosureScalarTower :
 
 /-- A Chevalley extension of the local valuation to the chosen algebraic
 closure.  This is the valuation choice `w | v` made in the finite local reciprocity construction. -/
- noncomputable def localAbsoluteValuationSubring :
+ def localAbsoluteValuationSubring :
     ValuationSubring (AlgebraicClosure K) :=
   Classical.choose
     (ValuationTheory.DiscreteValuationField.Valuation.exists_extension_valuationSubring
@@ -84,7 +78,7 @@ ring of `K`. -/
     ⟨_hmap, _hlocal, hpullback⟩
   exact hpullback x
 
- noncomputable instance localAbsoluteValuationHasExtension :
+ instance localAbsoluteValuationHasExtension :
     (localCompleteDVF K).valuation.HasExtension
       (localAbsoluteValuationSubring K).valuation :=
   ValuationTheory.DiscreteValuationField.Valuation.hasExtension_valuation_of_valuationSubring_pullback
@@ -94,7 +88,7 @@ ring of `K`. -/
 /-- The valuation ring on the separable closure used in finite local reciprocity.
 We choose it
 as the pullback of the auxiliary valuation ring on the algebraic closure. -/
-noncomputable def localSeparableValuationSubring :
+def localSeparableValuationSubring :
     ValuationSubring (SeparableClosure K) :=
   (localAbsoluteValuationSubring K).comap
     (algebraMap (SeparableClosure K) (AlgebraicClosure K))
@@ -112,7 +106,7 @@ theorem localSeparableValuationSubring_pullback (x : K) :
   exact localAbsoluteValuationSubring_pullback K x
 
 /-- The valuation on the separable closure extends the base discrete valuation. -/
-noncomputable instance localSeparableValuationHasExtension :
+instance localSeparableValuationHasExtension :
     (localCompleteDVF K).valuation.HasExtension
       (localSeparableValuationSubring K).valuation :=
   ValuationTheory.DiscreteValuationField.Valuation.hasExtension_valuation_of_valuationSubring_pullback
@@ -181,7 +175,7 @@ theorem localSeparableDecompositionGroup_eq_top :
 
 /-- When the decomposition subgroup is top, the valuation ring on the
 decomposition field is the original local valuation ring. -/
- noncomputable def localBaseValuationSubringEquivDecompositionField :
+ def localBaseValuationSubringEquivDecompositionField :
     (localCompleteDVF K).valuationSubring ≃+*
       decompositionFieldValuationSubring K
         (localSeparableValuationSubring K) := by
@@ -208,29 +202,25 @@ decomposition field is the original local valuation ring. -/
       eKZ.symm (z : Z) ∈ (localCompleteDVF K).valuation.valuationSubring := by
     apply (localSeparableValuationSubring_pullback K (eKZ.symm (z : Z))).1
     have he : algebraMap K (SeparableClosure K) (eKZ.symm (z : Z)) =
-        ((z : Z) : SeparableClosure K) := by
-      exact congrArg Subtype.val (eKZ.apply_symm_apply (z : Z))
+        ((z : Z) : SeparableClosure K) := 
+      congrArg Subtype.val (eKZ.apply_symm_apply (z : Z))
     rw [he]
     exact z.property
   exact
     { toFun := fun x => ⟨eKZ (x : K), hto x⟩
       invFun := fun z => ⟨eKZ.symm (z : Z), hinv z⟩
       left_inv := fun x => by
-        apply Subtype.ext
-        exact eKZ.symm_apply_apply (x : K)
+        simp
       right_inv := fun z => by
-        apply Subtype.ext
-        exact eKZ.apply_symm_apply (z : Z)
+        simp
       map_add' := fun x y => by
-        apply Subtype.ext
-        exact map_add eKZ (x : K) (y : K)
+        simp
       map_mul' := fun x y => by
-        apply Subtype.ext
-        exact map_mul eKZ (x : K) (y : K) }
+        simp }
 
 /-- The residue field in the residue-action exact sequence is canonically the finite residue
 field of the original local field. -/
-noncomputable def localBaseResidueEquivDecompositionResidue :
+def localBaseResidueEquivDecompositionResidue :
     (localCompleteDVF K).residueField ≃+*
       decompositionResidueField K (localSeparableValuationSubring K) :=
   (IsLocalRing.ResidueField.mapEquiv
@@ -256,7 +246,7 @@ theorem localBaseResidueEquivDecompositionResidue_algebraMap
   rfl
 
 /-- The residue field attached to the local decomposition datum is finite. -/
-noncomputable instance localDecompositionResidueFinite :
+instance localDecompositionResidueFinite :
     Finite (decompositionResidueField K
       (localSeparableValuationSubring K)) := by
   have : Finite (localCompleteDVF K).residueField := by
@@ -266,7 +256,7 @@ noncomputable instance localDecompositionResidueFinite :
     (localBaseResidueEquivDecompositionResidue K).toEquiv
 
 /-- The finite local decomposition residue field has a canonical finite enumeration. -/
-noncomputable instance localDecompositionResidueFintype :
+instance localDecompositionResidueFintype :
     Fintype (decompositionResidueField K
       (localSeparableValuationSubring K)) :=
   Fintype.ofFinite _
@@ -310,7 +300,7 @@ instance localSelectedResidueIsAlgClosed :
 /-! ## Continuity of reduction and the local degree map -/
 
 /-- A fixed representative in the chosen valuation ring of a residue class. -/
- noncomputable def localSelectedResidueLift
+ def localSelectedResidueLift
     (x : selectedResidueField (localSeparableValuationSubring K)) :
     localSeparableValuationSubring K :=
   Classical.choose (IsLocalRing.residue_surjective x)
@@ -385,7 +375,7 @@ finitely many elements. -/
   exact hfix
 
 /-- The continuous residue action on the chosen residue algebraic closure. -/
-noncomputable def localSeparableResidueAlgAction :
+def localSeparableResidueAlgAction :
     Gal(SeparableClosure K / K) →ₜ*
       (selectedResidueField (localSeparableValuationSubring K) ≃ₐ[
         decompositionResidueField K (localSeparableValuationSubring K)]
@@ -406,7 +396,7 @@ theorem localSeparableResidueAlgAction_surjective :
 /-- **Finite local reciprocity, local degree map.**  The residue Frobenius degree,
 defined directly on the separable-closure model used by the local reciprocity
 formalization. -/
-noncomputable def localResidueDegree :
+def localResidueDegree :
     Gal(SeparableClosure K / K) →ₜ* ZHatMul where
   toMonoidHom :=
     (residueAbsoluteDegreeIn
@@ -441,10 +431,7 @@ theorem localResidueDegree_surjective :
 
 /-- **Finite local reciprocity.**  The actual abstract class-formation datum
 `d : G_K -> ZHat` furnished by the residue action of a local field. -/
-noncomputable def localResidueDatum :
+def localResidueDatum :
     DegreeData (Gal(SeparableClosure K / K)) where
   degree := localResidueDegree K
   degree_surjective := localResidueDegree_surjective K
-
-end
-end LocalClassFieldTheory

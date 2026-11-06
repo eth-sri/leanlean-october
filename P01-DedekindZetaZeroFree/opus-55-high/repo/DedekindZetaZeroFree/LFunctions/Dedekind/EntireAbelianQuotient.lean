@@ -27,8 +27,7 @@ theorem dedekindAbelianQuotient :
     AbelianQuotient.rayCharacterEntire K (m i) (hmχ i).1 (χ i) (hmχ i).2
   let g : ℂ → ℂ := fun s => ∏ i, F i s
   have hg : Differentiable ℂ g := by
-    simpa only [g] using
-      (Differentiable.fun_finsetProd (u := Finset.univ) fun i _ => hFdiff i)
+    fun_prop
   refine ⟨fK, fL, g, hfK, hfL, hg, hfKeq, hfLeq, ?_⟩
   intro s hs
   have hmain : Set.EqOn fL (fun s => g s * fK s) ({1}ᶜ : Set ℂ) := by
@@ -36,7 +35,7 @@ theorem dedekindAbelianQuotient :
     · exact hfL.analyticOnNhd isOpen_compl_singleton
     · exact (hg.differentiableOn.mul hfK).analyticOnNhd isOpen_compl_singleton
     · exact (isConnected_compl_singleton_of_one_lt_rank
-        (by rw [Complex.rank_real_complex]; norm_num) (1 : ℂ)).isPreconnected
+        (by simp) (1 : ℂ)).isPreconnected
     · simp
     · refine Filter.eventually_of_mem
         ((Complex.continuous_re.isOpen_preimage (Set.Ioi 1) isOpen_Ioi).mem_nhds
@@ -46,7 +45,5 @@ theorem dedekindAbelianQuotient :
           ∏ i : Fin n, ∑' I : Ideal (𝓞 K), χ i I * (Ideal.absNorm I : ℂ) ^ (-s) := by
         simp only [g]
         exact Finset.prod_congr rfl fun i _ => (hFsum i s hs).tsum_eq.symm
-      rw [hfLeq s hs, hfKeq s hs, hfac s hs, hg_eq]
+      simp_all
   exact hmain (by simpa using hs)
-
-end DedekindZetaZeroFree

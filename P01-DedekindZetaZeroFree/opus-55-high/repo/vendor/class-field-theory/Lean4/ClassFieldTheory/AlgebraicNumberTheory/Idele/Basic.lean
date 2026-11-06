@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Ideles of a number field
 
@@ -34,7 +29,6 @@ open scoped NumberField RestrictedProduct
 open NumberField IsDedekindDomain
 
 noncomputable section
-
 
 variable (K : Type*) [Field K] [NumberField K]
 
@@ -160,18 +154,3 @@ def equivAdeleRingUnits :
   ((MulEquiv.refl (InfiniteIdeleGroup K)).prodCongr
       (finiteEquivFiniteAdeleUnits (K := K))).trans
     MulEquiv.prodUnits.symm
-
-@[simp]
-theorem equivAdeleRingUnits_fst (a : IdeleGroup K) :
-    (MulEquiv.prodUnits (equivAdeleRingUnits a)).1 = a.1 := by
-  rfl
-
-@[simp]
-theorem equivAdeleRingUnits_snd (a : IdeleGroup K) :
-    (MulEquiv.prodUnits (equivAdeleRingUnits a)).2 =
-      finiteEquivFiniteAdeleUnits (K := K) a.2 := by
-  rfl
-
-end IdeleGroup
-
-end

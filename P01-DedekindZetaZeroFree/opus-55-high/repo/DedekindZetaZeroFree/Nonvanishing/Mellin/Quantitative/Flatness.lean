@@ -49,7 +49,7 @@ private lemma g_hinv (x : ℝ) (hx : 0 < x) :
   · simp_rw [hint]
     exact (integral_neg_eq_self (integrandH D x) volume).symm
 
-private lemma G_decay (a b : ℝ) (ha : 1 < a) (hab : a ≤ b) :
+lemma G_decay (a b : ℝ) (ha : 1 < a) (hab : a ≤ b) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ r ∈ Set.Icc a b, ∀ t : ℝ,
       ‖Spectral.G D ((r : ℂ) + t * Complex.I)‖ ≤ C / (1 + t ^ 2) := by
   obtain ⟨C, hC, h⟩ := SpectralData.G_bound D a b ha hab

@@ -18,7 +18,7 @@ theorem exterior_abs_measurable : Measurable (KPCubicHaar.abs K) := by
  simpa only [KPCubicUnitIndices.residueCard, CubicUnitCharacters.residueCard] using
    KPRamifiedBetaConductorSeries.normalizedAbs_measurable K
 
-private theorem exterior_shells : {u : K | 1 ≤ KPCubicHaar.abs K u} =
+theorem exterior_shells : {u : K | 1 ≤ KPCubicHaar.abs K u} =
  ⋃ n : ℕ, {u : K | KPCubicHaar.abs K u = (Nat.card 𝓀[K] : ℝ)^n} := by
  ext u
  simp only [Set.mem_iUnion, Set.mem_setOf_eq]
@@ -85,7 +85,7 @@ theorem exterior_abs_rpow_integrable
    rw [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (Real.rpow_nonneg (by rw [hu]; positivity) a), hu]
    dsimp [bound]
    rw [Real.rpow_pow_comm hQ0.le]
- · exact hsum
+ omega
 end DedekindZetaZeroFree.KPTameTransposeLiteralMassTransport.DiagonalLiftGeometry
 
 end
@@ -118,7 +118,7 @@ private theorem chiH_mul (a b : HL F ζ hζ q S P) :
  simp only [chiH, map_mul, Units.val_mul, Subgroup.coe_mul, np_mul]
  ring
 
-private theorem cube_weight (y : (LocalField F q)ˣ) (hc :
+theorem cube_weight (y : (LocalField F q)ˣ) (hc :
  (S.borel.cubeLift y : actualTorus F ζ hζ q) ∈ HL F ζ hζ q S P) :
  chiH F ζ hζ q S P hP .minus ⟨S.borel.cubeLift y, hc⟩ =
  normPower (LocalField F q) (y^3) (1/3) := by
@@ -143,7 +143,7 @@ private theorem cube_weight (y : (LocalField F q)ˣ) (hc :
  ring
 
 include hP in
-private theorem tame_coordinate_unit_cube (h : HL F ζ hζ q S P) :
+theorem tame_coordinate_unit_cube (h : HL F ζ hζ q S P) :
  ∃ (u : (KPTameCompact.O F q)ˣ) (y : (LocalField F q)ˣ),
  S.borel.coordinate h.val = KPTameCompact.unitInclusion F q u * y^3 := by
  have hm : QuotientGroup.mk' (CubicCharacters.cubes (LocalField F q)ˣ)
@@ -192,18 +192,16 @@ theorem normalized_minus_chiH_norm
    change localAbs (LocalField F q) (S.borel.coordinate a.val * S.borel.coordinate (S.borel.cubeLift y)) = _
    rw [ha, S.borel.cube_coordinate, localAbs_mul]
    have hv : valuation (LocalField F q) (KPTameCompact.unitInclusion F q u : LocalField F q) = 1 :=
-     (Valuation.integer.integers (valuation (LocalField F q))).valuation_unit u
+     by simp_all
    simp [localAbs, hv]
  rw [he, normPower, Complex.norm_exp]
- simp only [Complex.mul_re, Complex.div_re, Complex.one_re, Complex.ofReal_re,
-   Complex.ofReal_im, Complex.one_im, mul_zero, sub_zero, zero_div, mul_one,
-   one_pow, add_zero]
+ simp only [Complex.mul_re, Complex.div_re, Complex.one_re, Complex.ofReal_re, Complex.ofReal_im, Complex.one_im, mul_zero, sub_zero]
  rw [Real.rpow_def_of_pos (localAbs_pos _ _)]
  congr 1
  norm_num [Complex.normSq, Complex.ofReal_re, Complex.ofReal_im]
  ring
 
-private theorem np_norm (a : (LocalField F q)ˣ) (s : ℂ) :
+theorem np_norm (a : (LocalField F q)ˣ) (s : ℂ) :
  ‖normPower (LocalField F q) a s‖ = localAbs (LocalField F q) a ^ s.re := by
  rw [normPower, Complex.norm_exp, Real.rpow_def_of_pos (localAbs_pos _ _)]
  simp [Complex.mul_re]
@@ -278,11 +276,11 @@ variable (F : Type) [Field F] [NumberField F]
  (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
  (hP : IsTamePolarization F ζ hζ q S P)
 
-private theorem abs_unit_eq (u : (LocalField F q)ˣ) :
+theorem abs_unit_eq (u : (LocalField F q)ˣ) :
  KPCubicHaar.abs (LocalField F q) (u : LocalField F q) = localAbs (LocalField F q) u := by
  rw [KPCubicHaar.abs, if_neg (Units.ne_zero u)]
  unfold localAbs KPCubicUnitIndices.residueCard residueCardinality
- exact (Real.rpow_intCast _ _).symm
+ simp
 
 theorem eventual_diagonalDoubleKernel_product_integrable
  (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
@@ -378,9 +376,3 @@ theorem eventual_u_first_transport
  apply hM m ((le_max_left M D).trans hm) i f₀ fᵢ hf₀ hfᵢ s
  · exact hD m ((le_max_right M D).trans hm) 0 f₀ (by simpa only [Fin.val_zero, Int.ofNat_zero] using hf₀) s hs
  · exact hD m ((le_max_right M D).trans hm) i fᵢ hfᵢ s hs
-
-end DedekindZetaZeroFree.KPTameTransposeLiteralMassTransport.DiagonalLiftGeometry
-
-end
-
-end

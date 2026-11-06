@@ -19,24 +19,12 @@ theorem upper_root_action (z : ℂ) (q : KPArch.H3) :
 
 theorem projective_action_mk (g : Matrix.GeneralLinearGroup (Fin 2) ℂ)
     (q : KPArch.H3) :
-    KPArch.action (Matrix.ProjGenLinGroup.mk g).out q = KPArch.action g q := by
-  have he : Matrix.ProjGenLinGroup.mk (Matrix.ProjGenLinGroup.mk g).out =
-      Matrix.ProjGenLinGroup.mk g := Quotient.out_eq _
-  obtain ⟨u, hu⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp he
-  calc
-    _ = KPArch.action ((Matrix.ProjGenLinGroup.mk g).out *
-        Matrix.GeneralLinearGroup.scalar (Fin 2) u) q := by
-      rw [(KPArch.action_laws _ _ _).2, KPArch.scalar_action]
-    _ = KPArch.action g q := congrArg (fun k => KPArch.action k q) hu
+    KPArch.action (Matrix.ProjGenLinGroup.mk g).out q = KPArch.action g q := by apply DedekindZetaZeroFree.KPMsFixedHaar.projective_action_mk <;> assumption
 
 theorem projective_action_mul (g h : Matrix.ProjGenLinGroup (Fin 2) ℂ)
     (q : KPArch.H3) :
     KPArch.action (g * h).out q =
-      KPArch.action g.out (KPArch.action h.out q) := by
-  have he : g * h = Matrix.ProjGenLinGroup.mk (g.out * h.out) := by
-    rw [map_mul]
-    exact congrArg₂ (· * ·) (Quotient.out_eq g).symm (Quotient.out_eq h).symm
-  rw [he, projective_action_mk, (KPArch.action_laws _ _ _).2]
+      KPArch.action g.out (KPArch.action h.out q) := by apply DedekindZetaZeroFree.KPMsFixedHaar.projective_action_mul <;> assumption
 
 variable {F : Type} [Field F] [NumberField F]
 

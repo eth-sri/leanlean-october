@@ -11,13 +11,13 @@ open DedekindZetaZeroFree Filter Topology
 variable {F : Type} [Field F] [NumberField F]
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
-private theorem strip_le_four (D : FixedData S η) (a ρ : ℝ) (ha : 0 < a) (ha4 : a ≤ 4)
+theorem strip_le_four (D : FixedData S η) (a ρ : ℝ) (ha : 0 < a) (ha4 : a ≤ 4)
     (hρ : 0 < ρ) :
     ∃ B d : ℝ, 0 < B ∧ 0 ≤ d ∧ ∀ s : ℂ, a ≤ s.re → s.re ≤ 4 → ρ ≤ ‖s - 1‖ →
       ‖D.zetaSCont s‖ ≤ B * (2 + |s.im|) ^ d :=
   PrincipalNumerator.stripNumerator_bound_away_pole D.recipe a 4 ρ ha ha4 le_rfl hρ
 
-private theorem strip_poly (D : FixedData S η) (a b ρ : ℝ) (ha : 0 < a) (hab : a ≤ b)
+theorem strip_poly (D : FixedData S η) (a b ρ : ℝ) (ha : 0 < a) (hab : a ≤ b)
     (hρ : 0 < ρ) :
     ∃ C k : ℝ, 0 < C ∧ 0 ≤ k ∧ ∀ s : ℂ, a ≤ s.re → s.re ≤ b → ρ ≤ ‖s - 1‖ →
       ‖D.zetaSCont s‖ ≤ C * (1 + |s.im|) ^ k := by

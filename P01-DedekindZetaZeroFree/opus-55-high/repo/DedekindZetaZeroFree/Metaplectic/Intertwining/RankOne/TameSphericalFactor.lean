@@ -42,6 +42,3 @@ def IsSphericalVector
     principalSeries A P ε s (k : G)
       (compactTrivialization A P I ε s φ) =
         compactTrivialization A P I ε s φ
-
-end
-end DedekindZetaZeroFree.KPRankOneTameSphericalFactor

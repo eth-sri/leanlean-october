@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Separable-closure p-adic lifts for local-global Artin compatibility
 
@@ -81,7 +75,7 @@ automorphism of a finite abelian extension.
 Passing from `K` to this field is the genuine cyclic reduction used in
 the proof of finite-place local--global compatibility: over this field
 the given automorphism generates the whole Galois group. -/
-noncomputable def automorphismCyclicFixedField
+def automorphismCyclicFixedField
     (σ : Gal(L / K)) :
     IntermediateField K L :=
   IntermediateField.fixedField
@@ -95,7 +89,7 @@ noncomputable local instance automorphismCyclicFixedFieldNumberField
 
 /-- An automorphism, regarded over the fixed field of the cyclic
 subgroup it generates. -/
-noncomputable def automorphismOverCyclicFixedField
+def automorphismOverCyclicFixedField
     (σ : Gal(L / K)) :
     Gal(L / automorphismCyclicFixedField σ) :=
   IntermediateField.fixingSubgroupEquiv
@@ -103,9 +97,7 @@ noncomputable def automorphismOverCyclicFixedField
     ⟨σ, by
       rw [automorphismCyclicFixedField,
         IntermediateField.fixingSubgroup_fixedField]
-      exact
-        Subgroup.subset_closure
-          (Set.mem_singleton σ)⟩
+      simp⟩
 
 omit [NumberField K] [NumberField L] [IsAbelianGalois K L] in
 /-- Restricting the automorphism over its cyclic fixed field back to the base
@@ -114,7 +106,6 @@ field recovers the original automorphism. -/
 theorem automorphismOverCyclicFixedField_restrictScalars
     (σ : Gal(L / K)) :
     (automorphismOverCyclicFixedField σ).restrictScalars K = σ := by
-  ext x
   rfl
 
 omit [NumberField K] [NumberField L] [IsAbelianGalois K L] in
@@ -141,12 +132,9 @@ theorem automorphismOverCyclicFixedField_generates
               (automorphismCyclicFixedField σ).fixingSubgroup
           rw [automorphismCyclicFixedField,
             IntermediateField.fixingSubgroup_fixedField]
-          exact
-            Subgroup.subset_closure
-              (Set.mem_singleton σ)⟩ :
+          simp⟩ :
         M.fixingSubgroup) =
         e.symm.toMonoidHom σM := by
-    apply Subtype.ext
     rfl
   apply Subgroup.map_injective
     (f := e.symm.toMonoidHom) e.symm.injective
@@ -170,7 +158,7 @@ theorem automorphismOverCyclicFixedField_generates
 
 /-- The finite place of the cyclic fixed field obtained by restricting
 the chosen extension of `v` to that field and taking its centre. -/
-noncomputable def automorphismCyclicFixedPlace
+def automorphismCyclicFixedPlace
     (v : HeightOneSpectrum (𝓞 K))
     (σ : Gal(L / K)) :
     let M := automorphismCyclicFixedField σ
@@ -239,7 +227,7 @@ theorem finitePlaceBelow_chosenExtensionCentre_eq_automorphismCyclicFixedPlace
 /-- The exact extension of the normalized finite absolute value at the
 cyclic-reduction place whose centre is the original chosen place of
 `L`. -/
-noncomputable def automorphismCyclicFixedTopExtension
+def automorphismCyclicFixedTopExtension
     (v : HeightOneSpectrum (𝓞 K))
     (σ : Gal(L / K)) :
     let M := automorphismCyclicFixedField σ
@@ -326,8 +314,6 @@ theorem automorphismOverCyclicFixedField_mem_chosenFinitePlaceDecompositionGroup
       RamificationTheory.HilbertRamification.ValuationSubring.restrictAutomorphismScalars
           (K := K) (M := M) σM =
         σ.1 := by
-    apply AlgEquiv.ext
-    intro x
     rfl
   have hσM_wK :
       σM ∈
@@ -335,15 +321,13 @@ theorem automorphismOverCyclicFixedField_mem_chosenFinitePlaceDecompositionGroup
     apply
       (decompositionGroupRestriction_mem_absoluteValueDecompositionGroup_restrictScalars_iff
         (K := K) (M := M) wK.1 σM).mp
-    simpa only [hrestrict] using σ.2
+    simp_all
   have hequiv :
       wK.1.IsEquiv wM.1 := by
     apply
       finitePlaceExtensions_isEquiv_of_centres_eq
         (F := K) (M := M) v W wK wM
-    exact
-      (automorphismCyclicFixedTopExtension_centre
-        (K := K) (L := L) v σ.1).symm
+    aesop
   have hσM_wM :
       σM ∈
         absoluteValueDecompositionGroup M wM.1 := by
@@ -367,35 +351,13 @@ theorem automorphismOverCyclicFixedField_mem_chosenFinitePlaceDecompositionGroup
     exact hσM_wM
   exact hσM_chosen
 
-/-- A decomposition automorphism remains a decomposition
-automorphism after the cyclic fixed-field reduction, for the actual
-chosen local Artin factor over the reduced base. -/
-theorem automorphismOverCyclicFixedField_mem_chosenFinitePlaceArtin_range
-    (v : HeightOneSpectrum (𝓞 K))
-    (σ :
-      absoluteValueDecompositionGroup K
-        (chosenFinitePlaceExtension (L := L) v).1) :
-    let M := automorphismCyclicFixedField σ.1
-    automorphismOverCyclicFixedField σ.1 ∈
-      (chosenFinitePlaceArtinMonoidHom
-        (K := M) (L := L)
-        (automorphismCyclicFixedPlace v σ.1)).range := by
-  dsimp only
-  rw [
-    chosenFinitePlaceArtinMonoidHom_range
-      (K := automorphismCyclicFixedField σ.1) (L := L)
-      (automorphismCyclicFixedPlace v σ.1)]
-  exact
-    automorphismOverCyclicFixedField_mem_chosenFinitePlaceDecompositionGroup
-      (K := K) (L := L) v σ
-
 /-- Restriction from the decomposition group in the common compatible
 rational separable closure to the decomposition group at the chosen
 finite place of `L`.
 
 The codomain is transported along the proved equality between the
 restricted ambient absolute value and the supplied exact extension. -/
-noncomputable def finitePlaceSeparableClosureDecompositionRestriction
+def finitePlaceSeparableClosureDecompositionRestriction
     (v : HeightOneSpectrum (𝓞 K)) :
     letI : Algebra K (SeparableClosure ℚ) :=
       numberFieldTowerSeparableClosureBaseAlgebra K L
@@ -442,24 +404,13 @@ noncomputable def finitePlaceSeparableClosureDecompositionRestriction
             have hcomm :
                 algebraMap L (SeparableClosure ℚ)
                     ((AlgEquiv.restrictNormalHom L τ.1) x) =
-                  τ.1 (algebraMap L (SeparableClosure ℚ) x) := by
-              exact AlgEquiv.restrictNormal_commutes τ.1 L x
-            rw [hcomm]
-            exact τ.2 (algebraMap L (SeparableClosure ℚ) x)⟩
+                  τ.1 (algebraMap L (SeparableClosure ℚ) x) := 
+              AlgEquiv.restrictNormal_commutes τ.1 L x
+            aesop⟩
       map_one' := by
-        apply Subtype.ext
-        exact
-          map_one
-            (AlgEquiv.restrictNormalHom
-              (F := K) (K₁ := SeparableClosure ℚ) L)
+        simp
       map_mul' := by
-        intro τ η
-        apply Subtype.ext
-        exact
-          map_mul
-            (AlgEquiv.restrictNormalHom
-              (F := K) (K₁ := SeparableClosure ℚ) L)
-            τ.1 η.1 }
+        simp }
 
 omit [FiniteDimensional K L] in
 /-- On underlying automorphisms, the compatible finite-place
@@ -549,17 +500,11 @@ theorem finitePlaceSeparableClosureDecompositionRestriction_surjective
   refine ⟨τ, ?_⟩
   apply Subtype.ext
   change (r τ).1 = (σToRestricted σ).1
-  exact congrArg
-    (fun ρ :
-      absoluteValueDecompositionGroup K
-        (wΩ.1.comp
-          (f := algebraMap L (SeparableClosure ℚ))
-          (algebraMap L (SeparableClosure ℚ)).injective) => ρ.1)
-    hτ
+  simp_all
 
 /-- Scalar restriction embeds the decomposition group over `L` into
 the compatible decomposition group over `K`. -/
-noncomputable def
+def
     finitePlaceSeparableClosureTopDecompositionInclusion
     (v : HeightOneSpectrum (𝓞 K)) :
     letI : Algebra K (SeparableClosure ℚ) :=
@@ -590,12 +535,9 @@ noncomputable def
           (decompositionGroupRestriction_mem_absoluteValueDecompositionGroup_restrictScalars_iff
             (K := K) (M := L) wΩ.1 τ.1).2 τ.2⟩
       map_one' := by
-        apply Subtype.ext
         rfl
       map_mul' := by
-        intro τ η
-        apply Subtype.ext
-        rfl }
+        simp }
 
 omit [FiniteDimensional K L] in
 /-- The image of the top-field decomposition group is exactly the
@@ -691,7 +633,7 @@ theorem
 /-- The compatible separable-closure absolute value, regarded as an
 exact extension of the chosen absolute value on the top number
 field. -/
-noncomputable def finitePlaceSeparableClosureTopExtension
+def finitePlaceSeparableClosureTopExtension
     (v : HeightOneSpectrum (𝓞 K)) :
     letI : Algebra K (SeparableClosure ℚ) :=
       numberFieldTowerSeparableClosureBaseAlgebra K L
@@ -722,7 +664,7 @@ noncomputable def finitePlaceSeparableClosureTopExtension
 
 /-- Restriction of the compatible separable-closure valuation to the
 actual cyclotomic `ZHat`-compositum over the top number field. -/
-noncomputable def finitePlaceCyclotomicCompositumExtension
+def finitePlaceCyclotomicCompositumExtension
     (v : HeightOneSpectrum (𝓞 K)) :
     let wL :=
       chosenFinitePlaceExtension (L := L) v
@@ -809,7 +751,7 @@ theorem finitePlaceCyclotomicCompositumExtension_base_isEquiv
 /-- Restriction from the top-field decomposition group in the
 compatible separable closure to the decomposition group in the actual
 cyclotomic `ZHat`-compositum. -/
-noncomputable def
+def
     finitePlaceSeparableClosureTopCyclotomicRestriction
     (v : HeightOneSpectrum (𝓞 K)) :
     letI : Algebra L (SeparableClosure ℚ) :=
@@ -856,12 +798,9 @@ noncomputable def
         ⟨(raw τ).1, by
           simpa only [hwC] using (raw τ).2⟩
       map_one' := by
-        apply Subtype.ext
-        exact congrArg Subtype.val (map_one raw)
+        simp
       map_mul' := by
-        intro τ η
-        apply Subtype.ext
-        exact congrArg Subtype.val (map_mul raw τ η) }
+        simp }
 
 omit [FiniteDimensional K L] in
 /-- The top-field decomposition group surjects onto the decomposition
@@ -909,36 +848,11 @@ theorem
       (wL.isNontrivial
         (RayClass.adicAbv_isNontrivial v))
       wΩL
-  have hwC :
-      wΩL.1.comp
-          (f := algebraMap C (SeparableClosure ℚ))
-          (algebraMap C (SeparableClosure ℚ)).injective =
-        wC.1 := by
-    rfl
-  intro σ
-  let σRaw :
-      absoluteValueDecompositionGroup L
-        (wΩL.1.comp
-          (f := algebraMap C (SeparableClosure ℚ))
-          (algebraMap C (SeparableClosure ℚ)).injective) :=
-    ⟨σ.1, by
-      rw [hwC]
-      exact σ.2⟩
-  obtain ⟨τ, hτ⟩ := hraw σRaw
-  refine ⟨τ, ?_⟩
-  apply Subtype.ext
-  change (raw τ).1 = σRaw.1
-  exact congrArg
-    (fun ρ :
-      absoluteValueDecompositionGroup L
-        (wΩL.1.comp
-          (f := algebraMap C (SeparableClosure ℚ))
-          (algebraMap C (SeparableClosure ℚ)).injective) => ρ.1)
-    hτ
+  aesop
 
 /-- Restriction of the compatible separable-closure decomposition
 group to the actual rational cyclotomic `ZHat`-field. -/
-noncomputable def finitePlaceSeparableClosureCyclotomicRestriction
+def finitePlaceSeparableClosureCyclotomicRestriction
     (v : HeightOneSpectrum (𝓞 K)) :
     letI : Algebra K (SeparableClosure ℚ) :=
       numberFieldTowerSeparableClosureBaseAlgebra K L
@@ -975,7 +889,7 @@ noncomputable def finitePlaceSeparableClosureCyclotomicRestriction
 
 /-- The genuine `p`-adic cyclotomic degree on the compatible
 separable-closure decomposition group. -/
-noncomputable def finitePlaceSeparableClosurePadicCyclotomicDegree
+def finitePlaceSeparableClosurePadicCyclotomicDegree
     (v : HeightOneSpectrum (𝓞 K))
     (p : Nat.Primes) :
     letI : Algebra K (SeparableClosure ℚ) :=
@@ -1172,11 +1086,7 @@ theorem
       finitePlaceSeparableClosureTopCyclotomicRestriction_surjective
         (K := K) (L := L) v σ
     refine ⟨τ, ?_⟩
-    exact congrArg
-      (numberFieldCyclotomicPadicDecompositionCoordinate L
-        (finitePlaceCyclotomicCompositumExtension
-          (K := K) (L := L) v).1 p)
-      hτ
+    aesop
 
 omit [FiniteDimensional K L] in
 /-- The `p`-adic degrees contributed by the kernel of finite-place
@@ -1403,7 +1313,7 @@ theorem exists_positivePadicDegree_lift_of_surjective
   let H : AddSubgroup ℤ_[p] :=
     (restriction.ker.map degree).toAddSubgroup'
   have hHopen : IsOpen (H : Set ℤ_[p]) := by
-    simpa only [H] using hdegree
+    omega
   obtain ⟨n, hn, hmem⟩ :=
     PadicInt.exists_positive_natCast_sub_mem_of_isOpen_addSubgroup
       p H hHopen (Multiplicative.toAdd (degree s))
@@ -1418,23 +1328,8 @@ theorem exists_positivePadicDegree_lift_of_surjective
       restriction.ker.map degree at hcorrection
   obtain ⟨k, hk, hdk⟩ := hcorrection
   refine ⟨s * k, ?_, ⟨n, hn, ?_⟩⟩
-  · rw [map_mul, hs]
-    change restriction k = 1 at hk
-    rw [hk, mul_one]
-  · apply Multiplicative.ext
-    rw [map_mul]
-    change
-      Multiplicative.toAdd (degree s) +
-          Multiplicative.toAdd (degree k) =
-        n • (1 : ℤ_[p])
-    have hdk' := congrArg Multiplicative.toAdd hdk
-    change
-      Multiplicative.toAdd (degree k) =
-        (n : ℤ_[p]) -
-          Multiplicative.toAdd (degree s) at hdk'
-    rw [hdk']
-    simp only [nsmul_eq_mul, mul_one]
-    abel
+  · simp_all
+  aesop
 
 omit [FiniteDimensional K L] in
 /-- Every actual finite-place decomposition automorphism has a lift to
@@ -1498,8 +1393,3 @@ theorem
       (finitePlaceSeparableClosureRestrictionKernel_padicDegree_isOpen
         (K := K) (L := L) v p)
       σ
-
-end Reciprocity
-end GlobalClassFieldTheory
-
-end

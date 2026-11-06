@@ -4,13 +4,12 @@ public import DedekindZetaZeroFree.HarmonicAnalysis.Poisson.FieldTransform.Merom
 
 @[expose] public section
 
-noncomputable section
 open MeasureTheory
 open scoped Classical ContDiff
 
 namespace DedekindZetaZeroFree.LargeSieve
 
-private lemma gamma_ne_zero_im {s : ℂ} (hs : s.im ≠ 0) :
+lemma gamma_ne_zero_im {s : ℂ} (hs : s.im ≠ 0) :
     Complex.Gammaℂ s ≠ 0 := by
   rw [Complex.Gammaℂ_def]
   refine mul_ne_zero (mul_ne_zero two_ne_zero ?_) ?_
@@ -19,13 +18,13 @@ private lemma gamma_ne_zero_im {s : ℂ} (hs : s.im ≠ 0) :
   · intro h0
     rw [Complex.Gamma_eq_zero_iff] at h0
     obtain ⟨m, hm⟩ := h0
-    exact hs (by rw [hm]; simp)
+    simp_all
 
-private lemma gamma_ratio_shift (s : ℂ) (hs : s.im ≠ 0) :
+lemma gamma_ratio_shift (s : ℂ) (hs : s.im ≠ 0) :
     s.Gammaℂ / (1 - s).Gammaℂ =
       -((2 * Real.pi : ℂ) ^ 2 / s ^ 2) *
         ((s + 1).Gammaℂ / (-s).Gammaℂ) := by
-  have hs0 : s ≠ 0 := by intro he; apply hs; rw [he]; simp
+  have hs0 : s ≠ 0 := by intro he; simp_all
   have hms : -s ≠ 0 := neg_ne_zero.mpr hs0
   have hgam : s.Gammaℂ ≠ 0 := gamma_ne_zero_im hs
   have hgamm : (-s).Gammaℂ ≠ 0 := gamma_ne_zero_im (by simpa using neg_ne_zero.mpr hs)
@@ -34,7 +33,7 @@ private lemma gamma_ratio_shift (s : ℂ) (hs : s.im ≠ 0) :
   rw [heq, Complex.Gammaℂ_add_one hms]
   field_simp
 
-private lemma shifted_gamma_bound (u v : ℝ) (r : ℕ) (hu : -1 < u) (huv : u ≤ v) :
+lemma shifted_gamma_bound (u v : ℝ) (r : ℕ) (hu : -1 < u) (huv : u ≤ v) :
     ∃ C : ℝ, ∃ m : ℕ, 0 < C ∧ ∀ s : ℂ,
       s.re ∈ Set.Icc u v → 1 ≤ |s.im| →
       ‖(s.Gammaℂ / (1 - s).Gammaℂ) ^ r‖ ≤ C * (1 + |s.im|) ^ m := by
@@ -48,8 +47,7 @@ private lemma shifted_gamma_bound (u v : ℝ) (r : ℕ) (hu : -1 < u) (huv : u �
     rw [norm_pow, norm_neg, norm_div, norm_pow, norm_pow]
     have hn : 1 ≤ ‖s‖ := ht.trans (Complex.abs_im_le_norm s)
     have hpi : ‖(2 * Real.pi : ℂ)‖ = 2 * Real.pi := by
-      norm_cast
-      rw [Real.norm_eq_abs, abs_of_pos (by positivity)]
+      simp
     rw [hpi]
     calc ((2 * Real.pi) ^ 2 / ‖s‖ ^ 2) ^ r ≤ ((2 * Real.pi) ^ 2) ^ r := by
            gcongr
@@ -61,22 +59,22 @@ private lemma shifted_gamma_bound (u v : ℝ) (r : ℕ) (hu : -1 < u) (huv : u �
   simpa only [Complex.add_im, Complex.one_im, add_zero, mul_assoc] using
     mul_le_mul hf hg (norm_nonneg _) (by positivity)
 
-private lemma B_gamma_formula (D : ℝ) (r : ℕ) (h : ℝ → ℂ) (s : ℂ)
+lemma B_gamma_formula (D : ℝ) (r : ℕ) (h : ℝ → ℂ) (s : ℂ)
     (hr : 1 ≤ r) (hs : s.im ≠ 0) :
     B D r h s = (D : ℂ) ^ (s - 1 / 2) *
       (s.Gammaℂ / (1 - s).Gammaℂ) ^ r *
         ((1 - s).Gammaℂ * Vendor.originMellinQ h (1 - s)) := by
   have hg : (1 - s).Gammaℂ ≠ 0 := gamma_ne_zero_im (by simpa using neg_ne_zero.mpr hs)
   obtain ⟨n, rfl⟩ := Nat.exists_eq_succ_of_ne_zero (by omega : r ≠ 0)
-  simp only [B, Nat.add_sub_cancel, div_pow, pow_succ]
-  simp only [Nat.succ_sub_one, inv_pow, div_pow]
+  simp only [B, div_pow, pow_succ]
+  simp only [Nat.succ_sub_one, inv_pow]
   field_simp
 
-private lemma D_strip_bound (D u v : ℝ) (hD : 0 < D) :
+lemma D_strip_bound (D u v : ℝ) (hD : 0 < D) :
     ∃ C : ℝ, 0 < C ∧ ∀ s : ℂ, s.re ∈ Set.Icc u v →
       ‖(D : ℂ) ^ (s - 1 / 2)‖ ≤ C := by
   have hc : ContinuousOn (fun σ : ℝ => D ^ (σ - 1 / 2)) (Set.Icc u v) :=
-    (Real.continuous_const_rpow hD.ne').comp (by fun_prop) |>.continuousOn
+    by fun_prop
   obtain ⟨M, hM⟩ := isCompact_Icc.exists_bound_of_continuousOn hc
   refine ⟨|M| + 1, by positivity, ?_⟩
   intro s hs
@@ -136,7 +134,7 @@ private lemma S_mono (b : ℝ) (hb : 0 < b) (h : ℝ → ℂ)
     (Vendor.S_finite b hb m h hh i (Finset.mem_range.mpr (by omega)))
     (Set.mem_image_of_mem _ (Set.left_mem_Icc.mpr hb.le)))
 
-private lemma gamma_continuous_pos {s : ℂ} (hs : 0 < s.re) :
+lemma gamma_continuous_pos {s : ℂ} (hs : 0 < s.re) :
     ContinuousAt Complex.Gammaℂ s := by
   have hno : ∀ m : ℕ, s ≠ -m := by
     intro m he
@@ -144,15 +142,15 @@ private lemma gamma_continuous_pos {s : ℂ} (hs : 0 < s.re) :
     linarith [Nat.cast_nonneg (α := ℝ) m]
   have heq : Complex.Gammaℂ = fun z : ℂ =>
       2 * (2 * (Real.pi : ℂ)) ^ (-z) * Complex.Gamma z := by
-    funext z; rw [Complex.Gammaℂ_def]
+    rfl
   rw [heq]
   have hb : (2 * (Real.pi : ℂ)) ≠ 0 := by
-    exact mul_ne_zero two_ne_zero (Complex.ofReal_ne_zero.mpr Real.pi_ne_zero)
+    simp
   exact (continuousAt_const.mul
     ((continuousAt_id.neg).const_cpow (Or.inl hb))).mul
       (Complex.differentiableAt_Gamma s hno).continuousAt
 
-private lemma B_negative_low_bound (D : ℝ) (r : ℕ) (b δ : ℝ)
+lemma B_negative_low_bound (D : ℝ) (r : ℕ) (b δ : ℝ)
     (hD : 0 < D) (hr : 1 ≤ r) (hb : 0 < b) (hδ : 0 < δ) (hδ1 : δ < 1) :
     ∃ (N : ℕ) (C : ℝ), 0 < C ∧
       ∀ h : ℝ → ℂ, ContDiff ℝ ∞ h → HasCompactSupport h →
@@ -173,7 +171,7 @@ private lemma B_negative_low_bound (D : ℝ) (r : ℕ) (b δ : ℝ)
   have hcont : Continuous F := by
     apply continuous_iff_continuousAt.mpr
     intro t
-    have hsc : ContinuousAt s t := by fun_prop (disch := positivity)
+    have hsc : ContinuousAt s t := by fun_prop
     have hgamma : ContinuousAt (fun t => Complex.Gammaℂ (s t + 1)) t :=
       (gamma_continuous_pos (by rw [hsre]; linarith)).comp
         (hsc.add continuousAt_const)
@@ -192,8 +190,7 @@ private lemma B_negative_low_bound (D : ℝ) (r : ℕ) (b δ : ℝ)
   have hsQ : ‖Vendor.originMellinQ h (1 - s t)‖ ≤ CQ * Vendor.S b N h := by
     have he : 1 - s t = ((1 + δ : ℝ) : ℂ) + ((-t : ℝ) : ℂ) * Complex.I := by
       dsimp [s]; push_cast; ring
-    apply hQ h hh hc hp (1 - s t) (by simp [s]) (by simp [s])
-    simpa [he] using ht
+    simp_all
   have hsB := B_eq_A_div D r h hD hr hh hc (s t) hst (hsnz t)
   change ‖B D r h (s t)‖ ≤ _
   rw [hsB]
@@ -228,10 +225,10 @@ theorem B_negative_line_uniform_integral_bound
   have hw : Integrable w volume := by
     simpa [w, Real.norm_eq_abs] using
       (integrable_one_add_norm (E := ℝ) (μ := volume) (r := 2) (by simp))
-  have hw0 : ∀ t, 0 ≤ w t := by intro t; dsimp [w]; positivity
+  have hw0 : ∀ t, 0 ≤ w t := by intro t; positivity
   let J := ∫ t, w t
   have hJ : 0 ≤ J := integral_nonneg hw0
-  have hC₀ : 0 < C₀ := by dsimp [C₀]; positivity
+  have hC₀ : 0 < C₀ := by positivity
   refine ⟨N, C₀ * (J + 1), by positivity, ?_⟩
   intro h hh hc hp
   let s : ℝ → ℂ := fun t => (-δ : ℂ) + (t : ℂ) * Complex.I
@@ -245,7 +242,7 @@ theorem B_negative_line_uniform_integral_bound
   have hsre (t : ℝ) : -1 < (s t).re := by simp [s]; linarith
   have hnorm (t : ℝ) : ‖s t‖ ≤ (1 + δ) * (1 + |t|) := by
     calc ‖s t‖ ≤ ‖(-δ : ℂ)‖ + ‖(t : ℂ) * Complex.I‖ := norm_add_le _ _
-      _ = δ + |t| := by simp [norm_mul, abs_of_pos hδ]
+      _ = δ + |t| := by simp [abs_of_pos hδ]
       _ ≤ (1 + δ) * (1 + |t|) := by nlinarith [abs_nonneg t]
   have hweighted (t : ℝ) : (1 + |t|) ^ 2 * ‖f t‖ ≤ C₀ * Vendor.S b N h := by
     have ht0 : 0 ≤ 1 + |t| := by positivity
@@ -279,7 +276,7 @@ theorem B_negative_line_uniform_integral_bound
   have hdom (t : ℝ) : ‖f t‖ ≤ (C₀ * Vendor.S b N h) * w t := by
     have ht : 0 < (1 + |t|) ^ 2 := by positivity
     have he : w t = ((1 + |t|) ^ 2)⁻¹ := by
-      dsimp [w]; rw [Real.rpow_neg (by positivity), Real.rpow_two]
+      dsimp [w]; simp
     rw [he, ← div_eq_mul_inv, le_div_iff₀ ht, mul_comm]
     exact hweighted t
   have hcontB : Continuous (fun t => B D r h (s t)) := by
@@ -299,7 +296,3 @@ theorem B_negative_line_uniform_integral_bound
         integral_mono hf.norm (hw.const_mul _) hdom
     _ = C₀ * Vendor.S b N h * J := by rw [integral_const_mul]
     _ ≤ C₀ * (J + 1) * Vendor.S b N h := by nlinarith
-
-end DedekindZetaZeroFree.LargeSieve
-
-end

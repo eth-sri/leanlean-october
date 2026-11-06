@@ -4,37 +4,35 @@ public import DedekindZetaZeroFree.Geometry.Hyperbolic.Cotangent.LogarithmicCofr
 
 @[expose] public section
 
-noncomputable section
 open scoped ContDiff BigOperators
 open Filter Topology
 
 namespace DedekindZetaZeroFree.HyperbolicChart
 
-private theorem metric_derivative_injective (d : ℕ) (ψ : Space d → Space d) (x : Space d)
+theorem metric_derivative_injective (d : ℕ) (ψ : Space d → Space d) (x : Space d)
     (hm : ∀ u v : Space d, metric d (ψ x) (fderiv ℝ ψ x u) (fderiv ℝ ψ x v) = metric d x u v) :
     Function.Injective (fderiv ℝ ψ x) := by
   intro u v huv
   have hw := hm (u-v) (u-v)
-  have hz : fderiv ℝ ψ x (u-v) = 0 := by rw [map_sub, huv, sub_self]
+  have hz : fderiv ℝ ψ x (u-v) = 0 := by simp_all
   rw [hz, ← CotangentLogCoframe.inner_C, ← CotangentLogCoframe.inner_C] at hw
   have he : CotangentLogCoframe.C d x (u-v) = 0 := by simpa only [map_zero, inner_zero_left, inner_self_eq_zero] using hw.symm
   have he' : u-v = 0 := (CotangentLogCoframe.C d x).injective (he.trans (map_zero _).symm)
   exact sub_eq_zero.mp he'
-private theorem derivative_equiv (d : ℕ) (ψ : Space d → Space d) (x : Space d)
+theorem derivative_equiv (d : ℕ) (ψ : Space d → Space d) (x : Space d)
     (hm : ∀ u v : Space d, metric d (ψ x) (fderiv ℝ ψ x u) (fderiv ℝ ψ x v) = metric d x u v) :
     ∃ J : Space d ≃L[ℝ] Space d, J.toContinuousLinearMap = fderiv ℝ ψ x := by
   have hi := metric_derivative_injective d ψ x hm
   have hs : Function.Surjective (fderiv ℝ ψ x) := LinearMap.injective_iff_surjective.mp hi
   exact ⟨ContinuousLinearEquiv.ofBijective (fderiv ℝ ψ x) (LinearMap.ker_eq_bot.mpr hi)
     (LinearMap.range_eq_top.mpr hs), rfl⟩
-private theorem coordinate_trace (d : ℕ) (A : Space d → Space d) (x : Space d)
+theorem coordinate_trace (d : ℕ) (A : Space d → Space d) (x : Space d)
     (hA : DifferentiableAt ℝ A x) :
     (∑ i : Fin d, ∑ k : Fin 3,
       fderiv ℝ (fun y => A y (i,k)) x (coordinateVector d i k)) =
       LinearMap.trace ℝ (Space d) (fderiv ℝ A x).toLinearMap := by
   rw [LinearMap.trace_eq_matrix_trace ℝ (EuclideanSpace.basisFun (Fin d × Fin 3) ℝ).toBasis]
-  simp only [Matrix.trace, Matrix.diag, LinearMap.toMatrix_apply, OrthonormalBasis.coe_toBasis_repr,
-    EuclideanSpace.basisFun_repr, Fintype.sum_prod_type]
+  simp only [Matrix.trace, Matrix.diag, LinearMap.toMatrix_apply, Fintype.sum_prod_type]
   apply Finset.sum_congr rfl
   intro i _
   apply Finset.sum_congr rfl
@@ -45,8 +43,8 @@ private theorem coordinate_trace (d : ℕ) (A : Space d → Space d) (x : Space 
   apply congrArg (fun u : Space d => fderiv ℝ A x u (i,k))
   rw [OrthonormalBasis.coe_toBasis, EuclideanSpace.basisFun_apply]
   ext j
-  simp [coordinateVector, EuclideanSpace.single, PiLp.single_apply, eq_comm]
-private theorem trace_pushforward (d : ℕ) (ψ A B : Space d → Space d) (x : Space d)
+  simp [coordinateVector, EuclideanSpace.single, PiLp.single_apply]
+theorem trace_pushforward (d : ℕ) (ψ A B : Space d → Space d) (x : Space d)
     (hψ : ContDiffAt ℝ 2 ψ x) (hA : DifferentiableAt ℝ A x) (hB : DifferentiableAt ℝ B (ψ x))
     (J : Space d ≃L[ℝ] Space d) (hJ : J.toContinuousLinearMap = fderiv ℝ ψ x)
     (hpush : (B ∘ ψ) =ᶠ[𝓝 x] fun y => fderiv ℝ ψ y (A y)) :
@@ -55,7 +53,7 @@ private theorem trace_pushforward (d : ℕ) (ψ A B : Space d → Space d) (x : 
       LinearMap.trace ℝ (Space d)
         (J.symm.toContinuousLinearMap.comp (fderiv ℝ (fderiv ℝ ψ) x (A x))).toLinearMap := by
   have hψd : DifferentiableAt ℝ ψ x := hψ.differentiableAt (by norm_num)
-  have hψ2 : DifferentiableAt ℝ (fderiv ℝ ψ) x := (hψ.fderiv_right (m := 1) (by norm_num)).differentiableAt (by norm_num)
+  have hψ2 : DifferentiableAt ℝ (fderiv ℝ ψ) x := by fun_prop
   have hf := hψ2.hasFDerivAt.clm_apply hA.hasFDerivAt
   have he : (fderiv ℝ B (ψ x)).comp (fderiv ℝ ψ x) =
       (fderiv ℝ ψ x).comp (fderiv ℝ A x) +
@@ -122,7 +120,7 @@ private theorem metric_variable_derivative (d : ℕ) (z u v : Space d → Space 
       metric d (z x) (fderiv ℝ u x a) (v x) + metric d (z x) (u x) (fderiv ℝ v x a) := by
   have hc (f : Space d → Space d) (hf : DifferentiableAt ℝ f x) (k : Fin d × Fin 3) :
       DifferentiableAt ℝ (fun y => f y k) x :=
-    (EuclideanSpace.proj (𝕜 := ℝ) k).differentiableAt.comp x hf
+    by fun_prop
   have hd (f : Space d → Space d) (hf : DifferentiableAt ℝ f x) (k : Fin d × Fin 3) :
       fderiv ℝ (fun y => f y k) x a = fderiv ℝ f x a k := by
     rw [show (fun y => f y k) = (EuclideanSpace.proj (𝕜 := ℝ) k) ∘ f from rfl,
@@ -130,7 +128,7 @@ private theorem metric_variable_derivative (d : ℕ) (z u v : Space d → Space 
       ContinuousLinearMap.fderiv]
     rfl
   have he (i : Fin d) : DifferentiableAt ℝ (fun y => Real.exp (-2 * z y (i,2))) x :=
-    ((hc z hz (i,2)).const_mul (-2)).exp
+    by fun_prop
   have hed (i : Fin d) : fderiv ℝ (fun y => Real.exp (-2 * z y (i,2))) x a =
       Real.exp (-2 * z x (i,2)) * (-2 * fderiv ℝ z x a (i,2)) := by
     rw [fderiv_exp ((hc z hz (i,2)).const_mul (-2)), fderiv_const_mul (hc z hz (i,2)) (-2)]
@@ -138,14 +136,13 @@ private theorem metric_variable_derivative (d : ℕ) (z u v : Space d → Space 
   have hf (i : Fin d) : DifferentiableAt ℝ (fun y : Space d =>
       u y (i,2) * v y (i,2) + Real.exp (-2 * z y (i,2)) *
         (u y (i,0) * v y (i,0) + u y (i,1) * v y (i,1))) x :=
-    ((hc u hu (i,2)).mul (hc v hv (i,2))).add
-      ((he i).mul (((hc u hu (i,0)).mul (hc v hv (i,0))).add ((hc u hu (i,1)).mul (hc v hv (i,1)))))
+    by fun_prop
   rw [metric_fderiv]
   unfold metric
   rw [show (fun y => ∑ i : Fin d, (u y (i,2) * v y (i,2) + Real.exp (-2 * z y (i,2)) *
       (u y (i,0) * v y (i,0) + u y (i,1) * v y (i,1)))) =
       ∑ i : Fin d, fun y => u y (i,2) * v y (i,2) + Real.exp (-2 * z y (i,2)) *
-      (u y (i,0) * v y (i,0) + u y (i,1) * v y (i,1)) from by funext y; simp only [Finset.sum_apply]]
+      (u y (i,0) * v y (i,0) + u y (i,1) * v y (i,1)) from by funext y; simp]
   rw [fderiv_sum (fun i _ => hf i)]
   simp only [ContinuousLinearMap.sum_apply, ← Finset.sum_add_distrib]
   apply Finset.sum_congr rfl
@@ -160,7 +157,7 @@ private theorem metric_variable_derivative (d : ℕ) (z u v : Space d → Space 
   rw [hder.fderiv]
   simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply, smul_eq_mul,
     ContinuousLinearMap.comp_apply]
-  simp only [EuclideanSpace.proj, PiLp.proj_apply, WithLp.ofLp_toLp]
+  simp only [EuclideanSpace.proj, PiLp.proj_apply]
   ring
 
 private theorem differentiated_metric (d : ℕ) (ψ : Space d → Space d) (x a u v : Space d)
@@ -198,7 +195,7 @@ private theorem basis_coord_square (d : ℕ) (q : Space d ≃ₗᵢ[ℝ] Space d
   have hi (k : Fin d × Fin 3) : inner ℝ (b k) (EuclideanSpace.single j 1) = q (EuclideanSpace.basisFun _ ℝ k) j := by
     simp [b, EuclideanSpace.inner_single_right]
   simpa only [hi, EuclideanSpace.norm_single, Real.norm_eq_abs, abs_one, one_pow] using h
-private theorem sum_metric_variation (d : ℕ) (p a : Space d) (q : Space d ≃ₗᵢ[ℝ] Space d) :
+theorem sum_metric_variation (d : ℕ) (p a : Space d) (q : Space d ≃ₗᵢ[ℝ] Space d) :
     (∑ k : Fin d × Fin 3, ∑ i : Fin d, -2 * a (i,2) * Real.exp (-2 * p (i,2)) *
       ((CotangentLogCoframe.H d p (q (EuclideanSpace.basisFun _ ℝ k))) (i,0)^2 +
         (CotangentLogCoframe.H d p (q (EuclideanSpace.basisFun _ ℝ k))) (i,1)^2)) =
@@ -206,15 +203,14 @@ private theorem sum_metric_variation (d : ℕ) (p a : Space d) (q : Space d ≃�
   rw [Finset.sum_comm, Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro i _
-  simp only [(CotangentLogCoframe.H_apply d p _ i).1, (CotangentLogCoframe.H_apply d p _ i).2.1, mul_pow,
-    Finset.mul_sum, Finset.sum_add_distrib, ← Finset.mul_sum]
+  simp only [(CotangentLogCoframe.H_apply d p _ i).1, (CotangentLogCoframe.H_apply d p _ i).2.1, mul_pow, Finset.sum_add_distrib, ← Finset.mul_sum]
   rw [basis_coord_square d q (i,1), basis_coord_square d q (i,2)]
   have he : Real.exp (-2 * p (i,2)) * Real.exp (p (i,2)) ^ 2 = 1 := by
     rw [← Real.exp_nat_mul, ← Real.exp_add]
-    convert Real.exp_zero using 1 <;> ring
+    simp
   calc _ = -4 * a (i,2) * (Real.exp (-2 * p (i,2)) * Real.exp (p (i,2)) ^ 2) := by ring
        _ = _ := by rw [he, mul_one]
-private theorem sum_metric_trace (d : ℕ) (p : Space d) (L : Space d →L[ℝ] Space d)
+theorem sum_metric_trace (d : ℕ) (p : Space d) (L : Space d →L[ℝ] Space d)
     (q : Space d ≃ₗᵢ[ℝ] Space d) :
     (∑ k : Fin d × Fin 3, metric d p
       (L (CotangentLogCoframe.H d p (q (EuclideanSpace.basisFun _ ℝ k))))
@@ -228,8 +224,7 @@ private theorem sum_metric_trace (d : ℕ) (p : Space d) (L : Space d →L[ℝ] 
     rw [LinearMap.trace_comp_comm', LinearMap.comp_assoc]
     simp
   rw [← ht, LinearMap.trace_eq_matrix_trace ℝ (EuclideanSpace.basisFun (Fin d × Fin 3) ℝ).toBasis]
-  simp only [Matrix.trace, Matrix.diag, LinearMap.toMatrix_apply, OrthonormalBasis.coe_toBasis_repr,
-    EuclideanSpace.basisFun_repr]
+  simp only [Matrix.trace, Matrix.diag, LinearMap.toMatrix_apply]
   apply Finset.sum_congr rfl
   intro k _
   rw [← CotangentLogCoframe.inner_C]
@@ -246,7 +241,7 @@ private theorem sum_metric_trace (d : ℕ) (p : Space d) (L : Space d →L[ℝ] 
   rfl
 
 set_option maxHeartbeats 1000000 in
-private theorem metric_hessian_trace (d : ℕ) (ψ : Space d → Space d) (x a : Space d)
+theorem metric_hessian_trace (d : ℕ) (ψ : Space d → Space d) (x a : Space d)
     (hψ : ContDiffAt ℝ 2 ψ x)
     (hm : ∀ᶠ y in nhds x, ∀ u v : Space d,
       metric d (ψ y) (fderiv ℝ ψ y u) (fderiv ℝ ψ y v) = metric d y u v)
@@ -310,8 +305,8 @@ private theorem metric_hessian_trace (d : ℕ) (ψ : Space d → Space d) (x a :
   rw [htrace] at hs
   have hsource : (∑ k : Fin d × Fin 3, ∑ i : Fin d,
       -2 * a (i,2) * Real.exp (-2 * x (i,2)) * ((E k) (i,0)^2 + (E k) (i,1)^2)) =
-      -4 * ∑ i : Fin d, a (i,2) := by
-    exact sum_metric_variation d x a (LinearIsometryEquiv.refl ℝ (Space d))
+      -4 * ∑ i : Fin d, a (i,2) := 
+    sum_metric_variation d x a (LinearIsometryEquiv.refl ℝ (Space d))
   rw [hsource] at hs
   dsimp only [L] at hs
   linarith

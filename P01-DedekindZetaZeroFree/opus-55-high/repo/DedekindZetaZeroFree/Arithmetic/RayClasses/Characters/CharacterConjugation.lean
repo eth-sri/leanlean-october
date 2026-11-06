@@ -32,12 +32,6 @@ def conjugateRayCharacter (η : DedekindZetaZeroFree.RayClassCharacter F m) :
     conjugateRayCharacter η I = (starRingEnd ℂ) (η I) := by
   rfl
 
-@[simp] theorem conjugateRayCharacter_isPrimitive_iff
-    (η : DedekindZetaZeroFree.RayClassCharacter F m) :
-    (conjugateRayCharacter η).IsPrimitive ↔ η.IsPrimitive := by
-  simp [DedekindZetaZeroFree.RayClassCharacter.IsPrimitive,
-    map_eq_one_iff (starRingEnd ℂ) (star_injective)]
-
 @[simp] theorem conjugateRayCharacter_isPrincipal_iff
     (η : DedekindZetaZeroFree.RayClassCharacter F m) :
     (conjugateRayCharacter η).IsPrincipal ↔ η.IsPrincipal := by
@@ -45,9 +39,5 @@ def conjugateRayCharacter (η : DedekindZetaZeroFree.RayClassCharacter F m) :
     map_eq_one_iff (starRingEnd ℂ) (star_injective)]
 
 @[simp] theorem rayClassCharacter_apply_bot
-    (η : DedekindZetaZeroFree.RayClassCharacter F m) : η ⊥ = 0 := by
-  exact (η.eq_zero_iff' ⊥).mpr (Or.inl rfl)
-
-end
-
-end DedekindZetaZeroFree.Hecke
+    (η : DedekindZetaZeroFree.RayClassCharacter F m) : η ⊥ = 0 := 
+  (η.eq_zero_iff' ⊥).mpr (Or.inl rfl)

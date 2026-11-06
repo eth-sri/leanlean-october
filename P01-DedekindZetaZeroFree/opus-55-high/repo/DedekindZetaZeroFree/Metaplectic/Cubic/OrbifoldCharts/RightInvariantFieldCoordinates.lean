@@ -302,7 +302,7 @@ variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
 variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 open scoped Matrix.Norms.Operator
 
-private lemma variable_origin_smooth {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
+lemma variable_origin_smooth {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
     (A : V → Matrix.GeneralLinearGroup (Fin 2) ℂ)
     (hA : ContDiff ℝ (⊤ : ℕ∞) (fun x => (A x : Matrix (Fin 2) (Fin 2) ℂ))) :
     ContDiff ℝ (⊤ : ℕ∞) (fun x => KPArch.action (A x) (0, 0)) := by
@@ -341,7 +341,7 @@ private lemma variable_origin_smooth {V : Type*} [NormedAddCommGroup V] [NormedS
     · intro x
       exact (div_pos (mul_pos (norm_pos_iff.mpr (A x).det_ne_zero)
         (Real.exp_pos _)) (KPArch.actionDenominator_pos (A x) (0, 0))).ne'
-private lemma lieMatrix_smooth (w : NumberField.InfinitePlace F) :
+lemma lieMatrix_smooth (w : NumberField.InfinitePlace F) :
     ContDiff ℝ (⊤ : ℕ∞) (KPSmoothLocalQuotientCharts.lieMatrix F · w) := by
   let L : KPSmoothLocalQuotientCharts.Coordinates F →ₗ[ℝ] Matrix (Fin 2) (Fin 2) ℂ :=
     { toFun := fun a => KPSmoothLocalQuotientCharts.lieMatrix F a w
@@ -523,7 +523,7 @@ lemma right_iteration_of_differential (D : GroupChart F ζ hζ U R P H)
     exact Filter.EventuallyEq.fderiv_eq
       (Filter.eventuallyEq_iff_exists_mem.mpr ⟨D.T.carrier,
         Metric.isOpen_ball.mem_nhds hx, ih.2⟩)
-private lemma inverse_curve (D : GroupChart F ζ hζ U R P H)
+lemma inverse_curve (D : GroupChart F ζ hζ U R P H)
     (O : OpenPartialHomeomorph (KPSmoothLocalQuotientCharts.Coordinates F)
       (KPSmoothLocalQuotientCharts.ArchGroup F))
     (he : O.toPartialHomeomorph = D.exponential.chart)
@@ -555,7 +555,7 @@ private lemma inverse_curve (D : GroupChart F ζ hζ U R P H)
   rw [← he]
   exact hs.contDiffAt.differentiableAt (by simp)
 
-private lemma fields_smooth_of_inverse (D : GroupChart F ζ hζ U R P H)
+lemma fields_smooth_of_inverse (D : GroupChart F ζ hζ U R P H)
     (O : OpenPartialHomeomorph (KPSmoothLocalQuotientCharts.Coordinates F)
       (KPSmoothLocalQuotientCharts.ArchGroup F))
     (he : O.toPartialHomeomorph = D.exponential.chart)
@@ -619,7 +619,7 @@ private lemma fields_smooth_of_inverse (D : GroupChart F ζ hζ U R P H)
     rw [mfderiv_eq_fderiv]
     rfl
   exact hd''.contDiffAt.contDiffWithinAt
-private lemma differential_of_inverse (D : GroupChart F ζ hζ U R P H)
+lemma differential_of_inverse (D : GroupChart F ζ hζ U R P H)
     (hopen : IsOpen D.exponential.chart.target)
     (hcurve : ∀ b x, x ∈ D.exponential.chart.source →
       DifferentiableAt ℝ (fun t : ℝ => D.exponential.chart.symm

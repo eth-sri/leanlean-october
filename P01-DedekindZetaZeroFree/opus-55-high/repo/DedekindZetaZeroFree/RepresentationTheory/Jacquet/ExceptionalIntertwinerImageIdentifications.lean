@@ -14,8 +14,6 @@ open scoped NumberField Valued
 open NumberField IsDedekindDomain MeasureTheory ValuativeRel
 namespace DedekindZetaZeroFree.KPExceptionalRaw.FiniteSource.RankoneSteps
 open KPLocalPrincipalSeries KPLocalStoneVonNeumann KPLocalJacquetImage
-noncomputable section
-set_option autoImplicit false
 variable {K : Type*} [Field K] [ValuativeRel K] [TopologicalSpace K]
     [IsNonarchimedeanLocalField K]
 variable {G H D : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
@@ -41,7 +39,7 @@ theorem jacquetMap_injective_of_smooth (A : LocalBorelData (K := K) (G := G) T)
       σ.comp (root A) := by ext n w; simp [KPCoinvariants.twistedRepresentation]
   obtain ⟨J, L, R, _, _, _, _, _, _, hR, _, _, hk⟩ :=
     KPCoinvariants.killsRelation (σ.comp (root A)) hs 1 (by fun_prop)
-      (IsLocallyConstant.of_constant _ (by intros; simp)) v (by simpa [he] using hv)
+      (IsLocallyConstant.of_constant _ (by simp)) v (by simpa [he] using hv)
   exact ⟨R, hR, by simpa [KPCoinvariants.psiAverage] using hk⟩
 
 theorem jacquetMap_surjective (A : LocalBorelData (K := K) (G := G) T)
@@ -83,7 +81,7 @@ theorem jacquet_image_equiv (A : LocalBorelData (K := K) (G := G) T)
     { toLinearMap := j.toLinearMap.codRestrict (jacquetMap A f).range.toSubmodule (by
         intro v
         obtain ⟨u, rfl⟩ := hq v
-        exact ⟨u, (hcomp u).symm⟩)
+        simp_all)
       isIntertwining' g := by
         apply LinearMap.ext
         intro v
@@ -94,8 +92,3 @@ theorem jacquet_image_equiv (A : LocalBorelData (K := K) (G := G) T)
     exact hj (congrArg Subtype.val h)
   · rintro ⟨v, u, rfl⟩
     exact ⟨(jacquetMap A q) u, Subtype.ext (hcomp u)⟩
-
-end
-end DedekindZetaZeroFree.KPExceptionalRaw.FiniteSource.RankoneSteps
-
-end

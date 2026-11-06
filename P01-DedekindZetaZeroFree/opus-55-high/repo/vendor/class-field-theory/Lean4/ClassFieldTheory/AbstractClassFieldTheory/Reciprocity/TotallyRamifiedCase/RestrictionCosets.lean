@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Restriction transport for finite Galois subextensions
 
@@ -46,7 +43,7 @@ def bundledRestrictionHom
 
 /-- The coset map from the lower maximal-unramified quotient to a totally
 ramified quotient. -/
-noncomputable def abstractReciprocityRestrictionCosetMap
+def abstractReciprocityRestrictionCosetMap
     (D : DegreeData G) [IsTopologicalGroup G]
     (E : DegreeData.AbstractExtension G)
     (M : FiniteGaloisSubextension E.base)
@@ -97,8 +94,8 @@ theorem abstractReciprocityRestrictionCosetMap_bijective
     let aK : E.base.toSubgroup := ⟨a.1, hM₀K a.2⟩
     let bK : E.base.toSubgroup := ⟨b.1, hM₀K b.2⟩
     let z : E.base.toSubgroup := aK⁻¹ * bK
-    have habE : aK⁻¹ * bK ∈ E.subgroup := by
-      exact QuotientGroup.leftRel_apply.mp (Quotient.exact' hab)
+    have habE : aK⁻¹ * bK ∈ E.subgroup := 
+      QuotientGroup.leftRel_apply.mp (Quotient.exact' hab)
     have hzE : z.1 ∈ E.field.toSubgroup :=
       (mem_extensionSubgroup_iff E.base E.field E.below z).1 habE
     have haP : aK ∈ M.intermediateSubgroup S := by
@@ -123,7 +120,7 @@ theorem abstractReciprocityRestrictionCosetMap_bijective
     have hiE : i.1 ∈ E.field.toSubgroup := by
       have hmul := E.field.toSubgroup.mul_mem hzE
         (E.field.toSubgroup.inv_mem (hME hizM'))
-      simpa [mul_inv_rev, mul_assoc] using hmul
+      simp_all
     have hiM : i.1 ∈ M.field.toSubgroup := hInertia i hiI hiE
     have hzM : z.1 ∈ M.field.toSubgroup := by
       have hmul := M.field.toSubgroup.mul_mem hiM hizM'
@@ -144,9 +141,7 @@ theorem abstractReciprocityRestrictionCosetMap_bijective
       dsimp [i, eK, eE]
       rw [map_mul, map_inv]
       change D.degree k.1 * (D.degree e)⁻¹ = 1
-      change D.degree e = D.degree k.1 at heDegree
-      rw [heDegree]
-      simp
+      simp_all
     have hiS : (QuotientGroup.mk'
         (extensionSubgroup E.base M.field M.below)) i ∈ S :=
       ⟨i, hiI, rfl⟩
@@ -159,7 +154,7 @@ theorem abstractReciprocityRestrictionCosetMap_bijective
     simpa [i, eK, eE, mul_inv_rev, mul_assoc] using eE.2
 
 /-- The equivalence induced by the totally ramified restriction coset map. -/
-noncomputable def abstractReciprocityRestrictionCosetEquiv
+def abstractReciprocityRestrictionCosetEquiv
     (D : DegreeData G) [IsTopologicalGroup G]
     (E : DegreeData.AbstractExtension G)
     (M : FiniteGaloisSubextension E.base)
@@ -179,7 +174,7 @@ noncomputable def abstractReciprocityRestrictionCosetEquiv
 
 /-- The multiplicative restriction equivalence from the lower Galois group
 to the original totally ramified quotient. -/
-noncomputable def abstractReciprocityRestrictionMulEquiv
+def abstractReciprocityRestrictionMulEquiv
     (D : DegreeData G) [IsTopologicalGroup G]
     (E : DegreeData.AbstractExtension G)
     (M : FiniteGaloisSubextension E.base)
@@ -224,9 +219,6 @@ noncomputable def abstractReciprocityRestrictionMulEquiv
   have hr : (r : N.extensionQuotient →
       E.quotient) =
       M.abstractReciprocityRestrictionCosetMap D E hME := by
-    funext x
-    refine Quotient.inductionOn' x ?_
-    intro m
     rfl
   rw [hr]
   exact M.abstractReciprocityRestrictionCosetMap_bijective
@@ -387,7 +379,7 @@ theorem commute_of_same_restriction_of_inertia_le
             E.base E.field M.field hME E.below t :=
           congrArg (abstractReciprocityRestriction
             E.base E.field M.field hME E.below) hb
-    rw [haE, hbE, hres]
+    simp_all
   let z : E.base.toSubgroup := (a * b)⁻¹ * (b * a)
   have hzE : z ∈ extensionSubgroup E.base E.field E.below :=
     QuotientGroup.eq.mp hcosetE
@@ -446,9 +438,3 @@ theorem relativeCosetAction_eq_of_restriction_eq
   rw [map_mul]
   change A.ρ x.1 a.1 = A.ρ x.1 (A.ρ e.1 a.1)
   rw [a.2 e]
-
-end FiniteGaloisSubextension
-
-end ClassFormation
-
-end

@@ -13,11 +13,11 @@ open ThetaBranch ThetaPhaseSeparation
 
 variable {F : Type} [Field F] [NumberField F]
 
-private theorem classes_finite (A : SArithmeticData F) : Finite A.V := by
+theorem classes_finite (A : SArithmeticData F) : Finite A.V := by
   have hn (n : ℕ) (h : n = 2 ∨ n = 3) : Finite (A.LocalPowerClasses n) := by
-    have hnpos : n ≠ 0 := by rcases h with rfl | rfl <;> norm_num
+    have hnpos : n ≠ 0 := by omega
     have hc := A.Vn_card F n h
-    have : Finite (SArithmeticData.Vn F A n) := Nat.finite_of_card_ne_zero (by rw [hc]; exact pow_ne_zero _ hnpos)
+    have : Finite (SArithmeticData.Vn F A n) := Nat.finite_of_card_ne_zero (by simp_all)
     exact Finite.of_equiv _ (Equiv.sumPiEquivProdPi (fun v : A.Place => PowerQuotient (A.Completion v)ˣ n))
   letI := hn 2 (Or.inl rfl)
   letI := hn 3 (Or.inr rfl)
@@ -39,7 +39,7 @@ private theorem finiteMinkowski {I J : Type*} [Fintype I]
           EuclideanSpace ℂ I)).symm
     _ = ‖∑ j ∈ s, v j‖ := congrArg norm he
     _ ≤ ∑ j ∈ s, ‖v j‖ := norm_sum_le _ _
-    _ = _ := by simp only [v, EuclideanSpace.norm_eq, PiLp.toLp_apply]
+    _ = _ := by simp only [v, EuclideanSpace.norm_eq]
 
 theorem frozen_scalar_norm_le (A : SArithmeticData F) (G : AllowedRecipe A)
     (U : UnitRepresentatives A) (σ : F →+* ℂ)
@@ -145,13 +145,13 @@ theorem frozen_profile_scale_pos (A : SArithmeticData F) (T : Frozen A)
  def liftColumn (A : SArithmeticData F) (f : ExteriorSquarefreeIdeal A.cS → ℂ)
     (I : Ideal (𝓞 F)) : ℂ :=
   if h : ∃ d : ExteriorSquarefreeIdeal A.cS, d.val.val = I then f h.choose else 0
-private theorem liftColumn_apply (A : SArithmeticData F)
+theorem liftColumn_apply (A : SArithmeticData F)
     (f : ExteriorSquarefreeIdeal A.cS → ℂ) (d : ExteriorSquarefreeIdeal A.cS) :
     liftColumn A f d.val.val = f d := by
-  have h : ∃ e : ExteriorSquarefreeIdeal A.cS, e.val.val = d.val.val := ⟨d, rfl⟩
+  have h : ∃ e : ExteriorSquarefreeIdeal A.cS, e.val.val = d.val.val := by simp
   have he : h.choose = d := Subtype.ext (Subtype.ext h.choose_spec)
   simp only [liftColumn, dif_pos h, he]
-private theorem liftColumn_norm_le (A : SArithmeticData F)
+theorem liftColumn_norm_le (A : SArithmeticData F)
     (f : ExteriorSquarefreeIdeal A.cS → ℂ) (hf : ∀ d, ‖f d‖ ≤ 1) :
     ∀ I, ‖liftColumn A f I‖ ≤ 1 := by
   intro I
@@ -352,8 +352,8 @@ theorem frozen_dyadic_block_bound
     obtain ⟨i, hi, rfl⟩ := Finset.mem_image.mp hc
     exact (hs i hi).2
   have hrs (d) (hd : d ∈ rs) :
-      D ≤ A.exteriorNorm d.val ∧ A.exteriorNorm d.val < 2 * D := by
-    exact ⟨((frozen_row_window_finite A h D).mem_toFinset.mp hd).1,
+      D ≤ A.exteriorNorm d.val ∧ A.exteriorNorm d.val < 2 * D := 
+    ⟨((frozen_row_window_finite A h D).mem_toFinset.mp hd).1,
       ((frozen_row_window_finite A h D).mem_toFinset.mp hd).2.1⟩
   letI : Fintype rs := inferInstance
   let a : G.B × G.B → ExteriorSquarefreeIdeal A.cS → ℂ := fun q d =>
@@ -400,6 +400,3 @@ theorem frozen_dyadic_block_bound
           A.exteriorNorm T.val.n) * Real.rpow (D * C) (b / 2) * Real.sqrt (D + C) :=
       Finset.sum_le_sum (fun q _ => hq q)
     _ = _ := by simp; ring
-
-end
-end DedekindZetaZeroFree.RMDyadicSieveAggregation

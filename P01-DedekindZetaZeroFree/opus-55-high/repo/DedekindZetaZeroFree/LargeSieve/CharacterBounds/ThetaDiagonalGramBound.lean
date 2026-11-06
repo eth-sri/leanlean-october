@@ -66,5 +66,3 @@ theorem initialGram_diagonal_bound (F : Type) [Field F] [NumberField F] :
   intro c Q M hM b hb hbc
   exact hbound M hM (fun I => (Q.χ b) I)
     (fun I => DedekindZetaZeroFree.LargeSieve.quadraticFamily_norm_le_one Q hb hbc I)
-
-end DedekindZetaZeroFree.LargeSieve.Sieve

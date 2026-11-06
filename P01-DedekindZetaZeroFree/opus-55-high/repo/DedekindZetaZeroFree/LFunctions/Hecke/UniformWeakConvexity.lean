@@ -10,16 +10,15 @@ namespace DedekindZetaZeroFree
 
 open scoped NumberField
 
-noncomputable section
 
-private theorem primitive_principal_modulus_top
+theorem primitive_principal_modulus_top
     (F : Type) [Field F] [NumberField F] (𝔪 : Ideal (𝓞 F))
     (η : RayClassCharacter F 𝔪) (hprim : η.IsPrimitive) (hp : η.IsPrincipal) : 𝔪 = ⊤ := by
   by_contra hm
   obtain ⟨α, hα, _, _, hcop, hne⟩ := hprim ⊤ (lt_top_iff_ne_top.mpr hm)
   exact hne (hp _ (Ideal.span_singleton_eq_bot.not.mpr hα) hcop)
 
-private theorem order_product_growth
+theorem order_product_growth
     (δ : ℝ) (hδ : 0 < δ) (hδle : δ ≤ 1 / 10)
     (f g : ℂ → ℂ) (A B : ℝ) (hA : 0 ≤ A) (hB : 0 ≤ B)
     (hf : ∃ C : ℝ, ∀ s : ℂ, ‖f s‖ ≤ C * Real.exp (‖s‖ ^ (2 : ℝ)))
@@ -50,7 +49,7 @@ private theorem order_product_growth
       gcongr
       nlinarith [mul_le_mul_of_nonneg_left ht2 hB]
 
-private theorem reciprocal_strip_bound
+theorem reciprocal_strip_bound
     (F : Type) [Field F] [NumberField F] (𝔪 : Ideal (𝓞 F)) (hm : 𝔪 ≠ ⊥)
     (δ : ℝ) (hδ : 0 < δ) :
     ∃ A B : ℝ, 0 ≤ A ∧ 0 ≤ B ∧
@@ -79,7 +78,7 @@ private theorem reciprocal_strip_bound
       rw [show (r : ℝ) * (Real.pi * |s.im|) = (r * Real.pi) * |s.im| by ring]
       ring
 
-private theorem principal_prefactor_strip_bound
+theorem principal_prefactor_strip_bound
     (F : Type) [Field F] [NumberField F] (𝔪 : Ideal (𝓞 F)) (hm : 𝔪 ≠ ⊥)
     (δ : ℝ) (hδ : 0 < δ) :
     ∃ A B : ℝ, 0 ≤ A ∧ 0 ≤ B ∧
@@ -106,7 +105,7 @@ private theorem principal_prefactor_strip_bound
       hJs (s + 1) ⟨by simpa using (show 1 - δ ≤ s.re + 1 by linarith [hs.1]),
         by simpa using (show s.re + 1 ≤ 2 + δ by linarith [hs.2])⟩
   have hnorm : ‖(((2 * Real.pi : ℝ) : ℂ))⁻¹‖ = (2 * Real.pi)⁻¹ := by
-    rw [norm_inv, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (by positivity)]
+    simp
   rw [norm_mul, norm_mul, norm_mul, norm_pow, hnorm]
   calc
     _ ≤ q ^ (δ / 2) * (2 * Real.pi)⁻¹ * (J * Real.exp (Real.pi * |s.im|)) *
@@ -122,7 +121,7 @@ private theorem principal_prefactor_strip_bound
             (Real.exp (Real.pi * |s.im|) * Real.exp (r * (Real.pi * |s.im|))) := by ring
         _ = _ := by rw [he]
 
-private theorem nonprincipal_strip_growth
+theorem nonprincipal_strip_growth
     (F : Type) [Field F] [NumberField F] (𝔪 : Ideal (𝓞 F)) (hm : 𝔪 ≠ ⊥)
     (η : RayClassCharacter F 𝔪) (D : NonprincipalRayHeckeData F 𝔪 η)
     (δ : ℝ) (hδ : 0 < δ) (hδle : δ ≤ 1 / 10) :
@@ -134,7 +133,7 @@ private theorem nonprincipal_strip_growth
   exact order_product_growth δ hδ hδle D.Λ (heckeReciprocalCompletionFactor F 𝔪)
     A B hA hB (by convert D.order_bound 1 zero_lt_one using 1 <;> norm_num) hg
 
-private theorem principal_strip_growth
+theorem principal_strip_growth
     (F : Type) [Field F] [NumberField F] (𝔪 : Ideal (𝓞 F)) (hm : 𝔪 ≠ ⊥)
     (η : RayClassCharacter F 𝔪) (D : PrincipalRayHeckeData F 𝔪 η)
     (δ : ℝ) (hδ : 0 < δ) (hδle : δ ≤ 1 / 10) :
@@ -146,7 +145,7 @@ private theorem principal_strip_growth
   exact order_product_growth δ hδ hδle D.E _ A B hA hB
     (by convert D.order_bound 1 zero_lt_one using 1 <;> norm_num) hg
 
-private theorem norm_le_detector_strip
+theorem norm_le_detector_strip
     (δ : ℝ) (hδ : 0 < δ) (hδle : δ ≤ 1 / 10)
     (k : ℕ) (hk : 1 ≤ k) (H J : ℝ) (hH : 0 ≤ H) (hJ : 0 ≤ J)
     (f : ℂ → ℂ) (hf : Differentiable ℂ f)
@@ -173,7 +172,7 @@ private theorem norm_le_detector_strip
       hf.diffContOnCl hgr hb s hstrip
     exact hPL.trans (mul_le_mul_of_nonneg_right (le_add_of_nonneg_right hJ) (by positivity))
 
-private theorem coherent_data_bound
+theorem coherent_data_bound
     (F : Type) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F)
     (δ : ℝ) (hδ : 0 < δ) (hδle : δ ≤ 1 / 10) :
     ∃ C : ℝ, 0 < C ∧
@@ -195,14 +194,14 @@ private theorem coherent_data_bound
   intro 𝔪 hm η hprim s hs hs4
   have hp0 : 0 ≤ (1 : ℝ) / 2 + δ := by linarith
   have hfactor : 1 ≤ (1 + (Ideal.absNorm 𝔪 : ℝ)) ^ ((1 : ℝ) / 2 + δ) :=
-    Real.one_le_rpow (by have := Nat.cast_nonneg (α := ℝ) (Ideal.absNorm 𝔪); linarith) hp0
+    Real.one_le_rpow (by simp) hp0
   have hcoeff : 6 ^ k * (C * (1 + (Ideal.absNorm 𝔪 : ℝ)) ^ ((1 : ℝ) / 2 + δ)) + J ≤
       (6 ^ k * C + J) * (1 + (Ideal.absNorm 𝔪 : ℝ)) ^ ((1 : ℝ) / 2 + δ) := by
     nlinarith [mul_le_mul_of_nonneg_left hfactor hJ.le]
   constructor
   · intro hn D
     obtain ⟨hb, hr⟩ := hnp 𝔪 hm η hprim hn D
-    have h := norm_le_detector_strip δ hδ hδle k (by dsimp [k]; omega)
+    have h := norm_le_detector_strip δ hδ hδle k (by omega)
       (C * (1 + (Ideal.absNorm 𝔪 : ℝ)) ^ ((1 : ℝ) / 2 + δ)) J (by positivity) hJ.le
       (nonprincipalHeckeEntireContinuation F 𝔪 η D)
       (nonprincipalHeckeEntireContinuation_differentiable F hF 𝔪 hm η D)
@@ -220,7 +219,7 @@ private theorem coherent_data_bound
     have htop := primitive_principal_modulus_top F 𝔪 η hprim hprincipal
     subst 𝔪
     obtain ⟨hb, hr⟩ := hp η hprim hprincipal D
-    have h := norm_le_detector_strip δ hδ hδle k (by dsimp [k]; omega)
+    have h := norm_le_detector_strip δ hδ hδle k (by omega)
       C J hC.le hJ.le (principalHeckeEntireRegularization F ⊤ η D)
       (principalHeckeEntireRegularization_differentiable F hF ⊤ hm η D)
       (principal_strip_growth F ⊤ hm η D δ hδ hδle) (by simpa [k] using hb)
@@ -247,7 +246,7 @@ theorem detector_convexity_bridge
   refine ⟨k, by positivity, ?_⟩
   intro ε hε
   let δ := min ε (1 / 10)
-  have hδ : 0 < δ := lt_min hε (by norm_num)
+  have hδ : 0 < δ := by positivity
   have hδle : δ ≤ 1 / 10 := min_le_right _ _
   have hδε : δ ≤ ε := min_le_left _ _
   obtain ⟨B, hB, hbound⟩ := coherent_data_bound F htc δ hδ hδle
@@ -275,6 +274,3 @@ theorem detector_convexity_bridge
     exact mul_le_mul_of_nonneg_right hconductor (by positivity)
   obtain ⟨hnp, hp⟩ := hbound 𝔪 hm ω hprim s hs hs4
   exact ⟨fun hn D => (hnp hn D).trans hh, fun hn D => (hp hn D).trans hh⟩
-
-end
-end DedekindZetaZeroFree

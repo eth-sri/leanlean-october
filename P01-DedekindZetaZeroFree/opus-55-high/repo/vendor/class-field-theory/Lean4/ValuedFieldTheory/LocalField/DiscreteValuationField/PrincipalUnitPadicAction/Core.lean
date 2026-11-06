@@ -17,22 +17,11 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
-
-
-set_option autoImplicit false
 /-!
 Assembles the inverse-limit and topological models used to define the `ℤ_[p]`-module structure on
 principal units.
 -/
 
-noncomputable section
 
 open scoped BigOperators
 
@@ -70,8 +59,8 @@ open Internal
     (F : LocalField.{u, v} K) (n : ℕ)
     (x : (LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF) 1) :
     Additive.toMul
-        ((n : ℤ_[F.residueCharacteristic]) • Additive.ofMul x) = x ^ n := by
-  exact congrArg Additive.toMul
+        ((n : ℤ_[F.residueCharacteristic]) • Additive.ofMul x) = x ^ n := 
+  congrArg Additive.toMul
     (principalUnitPadic_natCast_smul F n x)
 
 /-- Every `U^r`, for `r >= 1`, is stable under the canonical p-adic action
@@ -92,15 +81,11 @@ theorem principalUnitPadic_smul_mem_higher
     Additive.toMul (a • Additive.ofMul x)
   have hxq :
       (higherPrincipalUnitGroup.toPrincipalUnitFiltration F.toCompleteDVF).principalUnitSubquotientMk
-        1 (n + 1) x = 1 := by
-    exact ((higherPrincipalUnitGroup.toPrincipalUnitFiltration
+        1 (n + 1) x = 1 := 
+    ((higherPrincipalUnitGroup.toPrincipalUnitFiltration
       F.toCompleteDVF).principalUnitSubquotient_mk_eq_one_iff x).2
       (by
-        change (x : F.valuationSubringˣ) ∈
-          (LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup
-            F.toCompleteDVF) (n + 1)
-        rw [hn]
-        exact hx)
+        simp_all)
   have hcoord :
       Additive.ofMul
           (principalUnitInverseLimitCarrierEval F.toCompleteDVF n
@@ -132,9 +117,7 @@ theorem principalUnitPadic_smul_mem_higher
       _ = a • Additive.ofMul (1 :
           Internal.principalUnitQuotientCarrier F.toCompleteDVF n) := by rw [hxq]
       _ = 0 := by
-        rw [show Additive.ofMul
-          (1 : Internal.principalUnitQuotientCarrier F.toCompleteDVF n) = 0 from rfl]
-        exact (principalUnitQuotientCarrierPadicModule F n).smul_zero a
+        simp
       _ = Additive.ofMul (1 :
           Internal.principalUnitQuotientCarrier F.toCompleteDVF n) := rfl
   change (y : F.valuationSubringˣ) ∈
@@ -168,9 +151,3 @@ theorem principalUnitPadic_residueCharacteristic_mul_smul_mem_succ
   exact higherPrincipalUnitGroup.pow_mem_succ_of_residue_ringChar_eq
     F.toCompleteDVF
     (residueCharacteristic_prime_and_card_eq_pow_residueDegree F).1 hr rfl hx
-
-end higherPrincipalUnitGroup
-end CompleteDVF
-end LocalFieldTheory.DiscreteValuationField
-
-end

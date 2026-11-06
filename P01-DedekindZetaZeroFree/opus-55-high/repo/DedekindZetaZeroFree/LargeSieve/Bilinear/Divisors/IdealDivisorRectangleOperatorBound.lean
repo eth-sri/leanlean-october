@@ -21,7 +21,7 @@ def idealDivisorRectangle (F : Type) [Field F] [NumberField F]
           (starRingEnd ℂ) ((Q.χ v) a)
       else 0‖
 
-private lemma rectangle_support_disjoint
+lemma rectangle_support_disjoint
     {F : Type} [Field F] [NumberField F] {u v : Ideal (𝓞 F)} (hu : u ≠ ⊥) (hv : v ≠ ⊥) :
     u ⊔ v = ⊤ ↔ Disjoint (UniqueFactorizationMonoid.normalizedFactors u).toFinset
       (UniqueFactorizationMonoid.normalizedFactors v).toFinset := by
@@ -30,8 +30,7 @@ private lemma rectangle_support_disjoint
     have hprod : (UniqueFactorizationMonoid.normalizedFactors u ∩
         UniqueFactorizationMonoid.normalizedFactors v).prod = 1 := by
       have h1 := Ideal.sup_eq_prod_inf_factors hu hv
-      rw [h, ← Ideal.one_eq_top] at h1
-      exact h1.symm
+      simp_all
     rw [Finset.disjoint_left]
     intro x hxu hxv
     rw [Multiset.mem_toFinset] at hxu hxv
@@ -50,7 +49,7 @@ private lemma rectangle_support_disjoint
       intro x hx
       exact (Finset.disjoint_left.mp hd (Multiset.mem_toFinset.mpr (Multiset.mem_inter.mp hx).1))
         (Multiset.mem_toFinset.mpr (Multiset.mem_inter.mp hx).2)
-    rw [hinter, Multiset.prod_zero, Ideal.one_eq_top]
+    simp_all
 
 set_option maxHeartbeats 2000000 in
 
@@ -167,7 +166,3 @@ theorem rectangle_operator_bound
     ← Finset.sum_coe_sort T (fun e => _),
     ← Finset.sum_coe_sort S (fun d => _)]
   exact h
-
-end DedekindZetaZeroFree.LargeSieve.Sieve.DivisorSeparation
-
-end

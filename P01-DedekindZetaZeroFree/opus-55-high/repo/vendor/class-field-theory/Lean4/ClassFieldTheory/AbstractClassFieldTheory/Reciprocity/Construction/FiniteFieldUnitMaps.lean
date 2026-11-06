@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 universe u v
 
 namespace ClassFormation
@@ -69,14 +64,14 @@ namespace ValuationData
 
 variable {D : DegreeData G} {A : Rep ℤ G}
 
-private theorem ambientFixedAddSubgroup_transport_coe
+theorem ambientFixedAddSubgroup_transport_coe
     (K L : FiniteAbstractField G) (h : K = L)
     (a : ambientFixedAddSubgroup A K.field) :
     (((h ▸ a : ambientFixedAddSubgroup A L.field) : A.V)) = a.1 := by
   cases h
   rfl
 
-private theorem valuationAt_transport
+theorem valuationAt_transport
     (v : ValuationData D A) (K L : FiniteAbstractField G) (h : K = L)
     (a : ambientFixedAddSubgroup A K.field) :
     v.valuationAt L (h ▸ a) = v.valuationAt K a := by
@@ -113,13 +108,13 @@ theorem valuationAt_frobeniusFixedFieldAction
   have hconj := v.normalizedValuation_conjugate TF k.1⁻¹ a
   let bC : ambientFixedAddSubgroup A C :=
     conjugateFixedElement A TF.field k.1⁻¹ a
-  have hCFTF : CF = TF := by
-    exact FiniteAbstractField.eq_of_field_eq CF TF hstable
+  have hCFTF : CF = TF := 
+    FiniteAbstractField.eq_of_field_eq CF TF hstable
   let bT : ambientFixedAddSubgroup A TF.field := hCFTF ▸ bC
-  have hbTcoe : bT.1 = bC.1 := by
-    exact ambientFixedAddSubgroup_transport_coe CF TF hCFTF bC
-  have hvaluationTransport : v.valuationAt TF bT = v.valuationAt CF bC := by
-    exact v.valuationAt_transport CF TF hCFTF bC
+  have hbTcoe : bT.1 = bC.1 := 
+    ambientFixedAddSubgroup_transport_coe CF TF hCFTF bC
+  have hvaluationTransport : v.valuationAt TF bT = v.valuationAt CF bC := 
+    v.valuationAt_transport CF TF hCFTF bC
   have hbT : bT = D.frobeniusFixedFieldAction
       A K L hLK σ q hq a := by
     apply Subtype.ext
@@ -139,7 +134,7 @@ theorem valuationAt_frobeniusFixedFieldAction
 
 /-- The stabilizing action restricted to the unit group of a Frobenius
 fixed field. -/
-noncomputable def frobeniusFixedFieldUnitAction
+def frobeniusFixedFieldUnitAction
     (v : ValuationData D A)
     [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
     [TotallyDisconnectedSpace G]
@@ -155,8 +150,8 @@ noncomputable def frobeniusFixedFieldUnitAction
         (le_baseField (D.frobeniusFixedField K L hLK σ)))] :
     v.unitAddSubgroup (D.frobeniusFixedAbstractField K L hLK σ) →+
       v.unitAddSubgroup (D.frobeniusFixedAbstractField K L hLK σ) where
-  toFun u := ⟨D.frobeniusFixedFieldAction A K L hLK σ q hq u.1, by
-    exact (v.mem_unitAddSubgroup_iff
+  toFun u := ⟨D.frobeniusFixedFieldAction A K L hLK σ q hq u.1, 
+    (v.mem_unitAddSubgroup_iff
       (D.frobeniusFixedAbstractField K L hLK σ)
       (D.frobeniusFixedFieldAction A K L hLK σ q hq u.1)).2
         ((v.valuationAt_frobeniusFixedFieldAction K L hLK σ q hq u.1).trans u.2)⟩
@@ -208,8 +203,8 @@ def finiteUnitInclusion
     v.unitAddSubgroup E.base →+ v.unitAddSubgroup E.field where
   toFun u := ⟨fixedFieldInclusion A E.base.field E.field.field E.below u.1,
     v.fixedFieldInclusion_mem_unitAddSubgroup E u⟩
-  map_zero' := by apply Subtype.ext; rfl
-  map_add' _ _ := by apply Subtype.ext; rfl
+  map_zero' := by rfl
+  map_add' _ _ := by rfl
 
 /-- Transporting a finite-unit inclusion along equality of its target field
 does not change its ambient coefficient. -/
@@ -248,10 +243,5 @@ def finiteUnitNorm
     v.unitAddSubgroup E.field →+ v.unitAddSubgroup E.base where
   toFun u := ⟨relativeNorm A E.base.field E.field.field E.below u.1,
     v.relativeNorm_mem_unitAddSubgroup E u⟩
-  map_zero' := by apply Subtype.ext; exact map_zero _
-  map_add' _ _ := by apply Subtype.ext; exact map_add _ _ _
-
-end ValuationData
-end
-
-end ClassFormation
+  map_zero' := by simp
+  map_add' _ _ := by simp

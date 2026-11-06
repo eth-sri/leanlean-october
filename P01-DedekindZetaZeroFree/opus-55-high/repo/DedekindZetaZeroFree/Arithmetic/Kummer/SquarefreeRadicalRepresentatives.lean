@@ -87,7 +87,3 @@ theorem representative_top_square
   change u ^ 6 = a.radical / 1 at heq
   refine ⟨u ^ 3, ?_⟩
   simpa [← pow_mul] using heq.symm
-
-end KummerSquarefreeMembers
-end
-end DedekindZetaZeroFree

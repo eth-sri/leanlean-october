@@ -19,7 +19,7 @@ local notation "N" => KPPGLLocalCover.N F ζ hζ (Sum.inr q)
 local notation "A" => KPPGLLocalCover.A F ζ hζ (Sum.inr q)
 local notation "C" => KPPGLLocalCover.centralInjection F ζ hζ (Sum.inr q)
 omit [NumberField F] in
-private theorem phase_reduction (e : rootsOfUnity 3 F) (i : Fin 3) :
+theorem phase_reduction (e : rootsOfUnity 3 F) (i : Fin 3) :
     e ^ (-8 * ((i.val : ℤ)+1)) = e ^ ((i.val : ℤ)+1) := by
   have h3 : e ^ 3 = 1 := by
     apply Subtype.ext
@@ -29,7 +29,7 @@ private theorem phase_reduction (e : rootsOfUnity 3 F) (i : Fin 3) :
     _ = e ^ (((i.val : ℤ)+1) % 3) := by congr 1; omega
     _ = _ := (zpow_eq_zpow_emod' _ h3).symm
 
-private theorem hilbert_centre_phase (π u : (LocalField F q)ˣ) (i : Fin 3) :
+theorem hilbert_centre_phase (π u : (LocalField F q)ˣ) (i : Fin 3) :
     (KPHilbert.B3 F ζ hζ (Sum.inr q)
       ((π ^ ((i.val : ℤ)+1) / u)⁻¹ ^ (2 : ℕ))
       (π ^ (2*((i.val : ℤ)+1)))) ^ 2 =
@@ -47,8 +47,8 @@ private theorem hilbert_centre_phase (π u : (LocalField F q)ˣ) (i : Fin 3) :
       map_mul' := hR u }
   change BL ((π ^ ((i.val : ℤ)+1) / u)⁻¹ ^ (2 : ℕ)) ^ 2 = _
   rw [map_pow, map_inv, map_div]
-  have hp : BL (π ^ ((i.val : ℤ)+1)) = 1 := by
-    exact uniformizer_hilbert_powers F ζ hζ q π _ _
+  have hp : BL (π ^ ((i.val : ℤ)+1)) = 1 := 
+    uniformizer_hilbert_powers F ζ hζ q π _ _
   rw [hp, one_div]
   change ((B u (π ^ (2*((i.val : ℤ)+1))))⁻¹⁻¹ ^ 2) ^ 2 = _
   rw [inv_inv]
@@ -62,7 +62,7 @@ private theorem hilbert_centre_phase (π u : (LocalField F q)ˣ) (i : Fin 3) :
   congr 1
   ring
 
-private theorem A_inv (p : (LocalField F q)ˣ) : (A p)⁻¹ = A p⁻¹ := by
+theorem A_inv (p : (LocalField F q)ˣ) : (A p)⁻¹ = A p⁻¹ := by
   apply inv_eq_of_mul_eq_one_right
   rw [KPPGLLocalCover.A_mul]
   have hB : KPHilbert.B3 F ζ hζ (Sum.inr q) p p⁻¹ = 1 := by
@@ -77,9 +77,9 @@ private theorem A_inv (p : (LocalField F q)ˣ) : (A p)⁻¹ = A p⁻¹ := by
   rw [hB, one_pow, map_one, one_mul, mul_inv_cancel]
   change KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q)
     (KPStandardLocalRootLifts.A F ζ hζ (Sum.inr q) 1) = 1
-  rw [KPStandardLocalRootLifts.A_one, map_one]
+  simp
 
-private theorem actual_centre_factorization
+theorem actual_centre_factorization
     (S : CanonicalFiniteInducingData F ζ hζ q)
     (π u : (LocalField F q)ˣ) (i : Fin 3) :
     KPRankOneShellContinuation.kernelW (LocalField F q) S.borel .minus *
@@ -103,7 +103,7 @@ private theorem actual_centre_factorization
   have hl : KPPGLLocalCover.LowerN F ζ hζ (Sum.inr q) 0 = 1 := by
     change KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q)
       (KPStandardLocalRootLifts.LowerN F ζ hζ (Sum.inr q) 0) = 1
-    rw [KPStandardLocalRootLifts.LowerN_zero, map_one]
+    simp
   rw [hl, mul_one, diagonal_lift_scalar F ζ hζ q S, diagonal_lift_scalar F ζ hζ q S]
   simp only [mul_inv_rev]
   have hc : (π ^ ((i.val : ℤ) - 0) : (LocalField F q)ˣ) *
@@ -199,11 +199,6 @@ theorem normalized_centre_torus_value
     ActualFiniteBorel.LowShellUnitCharts.unit_word_mem_HL F ζ hζ q S P hP e (u^2)
   let h : HL F ζ hζ q S P := ⟨a, ha⟩
   refine ⟨h, ?_, ?_⟩
-  · change C e * A (KPTameCompact.unitInclusion F q (u^2)) = _
-    rw [map_pow]
+  · rfl
   · exact ActualFiniteBorel.LowShellUnitCharts.normalized_chiH_word F ζ hζ q S
       P hP hnormalized h e (u^2) rfl .minus
-
-end DedekindZetaZeroFree.TameInverseRootValueAudit
-
-end

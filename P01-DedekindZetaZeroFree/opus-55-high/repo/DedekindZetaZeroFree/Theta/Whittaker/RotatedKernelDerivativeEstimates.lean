@@ -38,11 +38,11 @@ theorem exists_norm_eq_one_radialUnit_eq (y : ℂˣ) :
   · change ‖((a⁻¹ * y : ℂˣ) : ℂ)‖ = 1
     simp only [Units.val_mul, Units.val_inv_eq_inv_val, norm_mul, norm_inv]
     change (‖(‖(y : ℂ)‖ : ℂ)‖)⁻¹ * ‖(y : ℂ)‖ = 1
-    simp [Complex.norm_real, abs_of_pos hr, hr.ne']
+    simp
   · apply Units.ext
     simp only [radialUnit, dif_pos hr, Units.val_mk0, Units.val_mul, Units.val_inv_eq_inv_val]
     change (‖(y : ℂ)‖ : ℂ) * ((‖(y : ℂ)‖ : ℂ)⁻¹ * (y : ℂ)) = (y : ℂ)
-    rw [← mul_assoc, mul_inv_cancel₀ (Complex.ofReal_ne_zero.mpr hr.ne'), one_mul]
+    simp
 
 noncomputable def horizontalRealDerivative (F : ℝ → ℂ → ℂ) : ℝ → ℂ → ℂ :=
   fun ρ x => deriv (fun t : ℝ => F ρ ⟨t, x.im⟩) x.re
@@ -118,22 +118,4 @@ lemma integral_bound_of_rationalEnvelope (h : ℕ) (ρ C : ℝ) (hρ : 0 < ρ)
       integral_mono hf.norm hi hb
     _ = _ := by rw [integral_const_mul, rationalEnvelope_integral h ρ hρ]; ring
 
-lemma bottomRowNormSq_pos (g : ComplexGL2) : 0 < bottomRowNormSq g := by
-  have hn : 0 ≤ bottomRowNormSq g := by unfold bottomRowNormSq; positivity
-  by_contra hp
-  have hz : bottomRowNormSq g = 0 := le_antisymm (le_of_not_gt hp) hn
-  have h0 : (g : Matrix (Fin 2) (Fin 2) ℂ) 1 0 = 0 := by
-    have : ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 0‖ ^ 2 = 0 := by
-      unfold bottomRowNormSq at hz; nlinarith [sq_nonneg ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 1‖]
-    exact norm_eq_zero.mp ((sq_eq_zero_iff.mp this))
-  have h1 : (g : Matrix (Fin 2) (Fin 2) ℂ) 1 1 = 0 := by
-    have : ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 1‖ ^ 2 = 0 := by
-      unfold bottomRowNormSq at hz; nlinarith [sq_nonneg ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 0‖]
-    exact norm_eq_zero.mp ((sq_eq_zero_iff.mp this))
-  have hd := Matrix.GeneralLinearGroup.det_ne_zero g
-  apply hd
-  simp [Matrix.det_fin_two, h0, h1]
-
-end DedekindZetaZeroFree.KPCplxRotatedKernelEstimates
-
-end
+lemma bottomRowNormSq_pos (g : ComplexGL2) : 0 < bottomRowNormSq g := by apply DedekindZetaZeroFree.KPCplxPrincipalSeriesCharts.bottom_pos <;> assumption

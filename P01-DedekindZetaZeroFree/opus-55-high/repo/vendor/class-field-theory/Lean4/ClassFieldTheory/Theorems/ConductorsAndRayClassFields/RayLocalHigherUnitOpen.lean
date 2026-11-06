@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Openness of local higher-unit groups
 
@@ -25,7 +21,6 @@ multiplicative group of the finite completion.
 
 open scoped NumberField
 
-noncomputable section
 
 namespace ClassFieldTheory
 
@@ -42,7 +37,3 @@ theorem isOpen_rayLocalHigherUnitGroup
   change IsOpen ((RayClass.localHigherUnitGroup v n :
     Subgroup (v.adicCompletion K)ˣ) : Set (v.adicCompletion K)ˣ)
   exact RayClass.isOpen_localHigherUnitGroup v n
-
-end ClassFieldTheory
-
-end

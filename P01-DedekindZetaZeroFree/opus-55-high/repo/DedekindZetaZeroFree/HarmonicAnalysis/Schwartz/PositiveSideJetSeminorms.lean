@@ -41,7 +41,3 @@ theorem S_nonneg (b : ℝ) (hb : 0 < b) (N : ℕ) (h : ℝ → ℂ)
   unfold S
   exact Finset.sum_nonneg fun i _ =>
     Real.sSup_nonneg fun y ⟨x, _, hy⟩ => hy ▸ norm_nonneg _
-
-end
-
-end DedekindZetaZeroFree.LargeSieve.Vendor

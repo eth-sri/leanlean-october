@@ -69,11 +69,9 @@ theorem rootNumber_eq_one_of_positive_scaling
   have hexp1 : Real.exp (3 * c) = 1 := by
     have h := hW
     rw [hW3, Complex.norm_exp] at h
-    simpa using h
+    omega
   have hc : c = 0 := by
     have h3 := (Real.exp_eq_one_iff (3 * c)).mp hexp1
     linarith
   rw [hW3, hc]
   simp
-
-end DedekindZetaZeroFree.LargeSieve

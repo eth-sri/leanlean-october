@@ -21,13 +21,13 @@ def coordEquiv (hF : InfinitePlace.nrRealPlaces F = 0) :
   toFun r j := (0, fun w => r (Fintype.equivFin {w : InfinitePlace F // w.IsComplex} w, j))
   invFun f := WithLp.toLp 2 (fun ij => (f ij.2).2
     ((Fintype.equivFin {w : InfinitePlace F // w.IsComplex}).symm ij.1))
-  left_inv r := by ext ij; simp
+  left_inv r := by simp
   right_inv f := by
     haveI : IsEmpty {w : InfinitePlace F // w.IsReal} := Fintype.card_eq_zero_iff.mp hF
     funext j
     apply Prod.ext
     · exact Subsingleton.elim _ _
-    · funext w; simp
+    simp
   map_add' r s := by ext j w <;> simp
   map_smul' a r := by ext j w <;> simp
 
@@ -55,7 +55,7 @@ open NumberField
 namespace DedekindZetaZeroFree.CuspHeightProof
 variable (F : Type*) [Field F] [NumberField F]
 
-private theorem mem_coords (hF : InfinitePlace.nrRealPlaces F = 0)
+theorem mem_coords (hF : InfinitePlace.nrRealPlaces F = 0)
     (r : CuspShortRows.Space (InfinitePlace.nrComplexPlaces F)) (hr : r ∈ rowLattice F hF)
     (j : Fin 2) : coordEquiv F hF r j ∈ mixedEmbedding.integerLattice F := by
   induction hr using Submodule.span_induction with
@@ -64,10 +64,7 @@ private theorem mem_coords (hF : InfinitePlace.nrRealPlaces F = 0)
     simp only [rowBasis, Module.Basis.map_apply, LinearEquiv.apply_symm_apply]
     rw [Pi.basis_apply]
     by_cases h : j = i.1
-    · subst j
-      simp only [Pi.single_eq_same]
-      rw [← mixedEmbedding.span_latticeBasis]
-      exact Submodule.subset_span (Set.mem_range_self _)
+    · simp_all
     · simp [Pi.single_eq_of_ne h]
   | zero => simp
   | add x y hx hy ihx ihy => simpa using add_mem ihx ihy
@@ -103,7 +100,7 @@ private theorem nonzero_rows (hF : InfinitePlace.nrRealPlaces F = 0)
   ext ⟨k, j⟩
   fin_cases j <;> simp [(hab k).1, (hab k).2, ha, hb]
 
-private theorem iwasawa_norm (a b x : ℂ) (y : ℝ) (hy : 0 < y) :
+theorem iwasawa_norm (a b x : ℂ) (y : ℝ) (hy : 0 < y) :
     ‖WithLp.toLp 2 (Matrix.vecMul ![a,b] (CuspShortRows.iwasawaMatrix (x,y)))‖ ^ 2 =
       (‖a*x+b‖ ^ 2 + ‖a‖ ^ 2 * y^2) / y := by
   have hs : 0 < Real.sqrt y := Real.sqrt_pos.mpr hy
@@ -112,17 +109,16 @@ private theorem iwasawa_norm (a b x : ℂ) (y : ℝ) (hy : 0 < y) :
   have hv : Matrix.vecMul ![a,b] (CuspShortRows.iwasawaMatrix (x,y)) =
       ![a * (Real.sqrt y : ℂ), (a*x+b) / (Real.sqrt y : ℂ)] := by
     ext j
-    fin_cases j <;> simp [CuspShortRows.iwasawaMatrix, Matrix.vecMul, Fin.sum_univ_two]
+    fin_cases j <;> simp [CuspShortRows.iwasawaMatrix, Matrix.vecMul]
     ring
   rw [hv, EuclideanSpace.norm_sq_eq]
-  simp only [Fin.sum_univ_two, Matrix.cons_val_zero, Matrix.cons_val_one,
-    Matrix.head_cons, norm_mul, norm_div, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hs]
+  simp only [Fin.sum_univ_two, Matrix.cons_val_zero, Matrix.cons_val_one, norm_mul, norm_div, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hs]
   field_simp
   rw [show Real.sqrt y ^ 4 = y ^ 2 by nlinarith]
   rw [hs2]
   ring
 
-private theorem norm_height (r : KPCusp.Row F)
+theorem norm_height (r : KPCusp.Row F)
     (v : CuspShortRows.Space (InfinitePlace.nrComplexPlaces F))
     (hv : ∀ i, v (i,0) = (KPCusp.complexPlace F i).embedding r.val.1 ∧
       v (i,1) = (KPCusp.complexPlace F i).embedding r.val.2)
@@ -139,7 +135,7 @@ private theorem norm_height (r : KPCusp.Row F)
   simp_rw [iwasawa_norm _ _ _ _ (hi _)]
   simp only [KPCusp.rowDenominator, Finset.prod_div_distrib, inv_div]
 
-private theorem content_lower (J : FractionalIdeal (𝓞 F)⁰ F) (hJ : J ≠ 0)
+theorem content_lower (J : FractionalIdeal (𝓞 F)⁰ F) (hJ : J ≠ 0)
     (r : KPCusp.Row F) (a b : 𝓞 F) (ha : r.val.1 = a) (hb : r.val.2 = b) :
     0 < (FractionalIdeal.absNorm (1+J) : ℝ) ∧
       (FractionalIdeal.absNorm (1+J) : ℝ) ≤ (FractionalIdeal.absNorm (KPCusp.content F J r) : ℝ) := by
@@ -153,16 +149,13 @@ private theorem content_lower (J : FractionalIdeal (𝓞 F)⁰ F) (hJ : J ≠ 0)
     exact r.property (Prod.ext hc hd)
   have hle : KPCusp.content F J r ≤ 1+J := by
     have ha' : FractionalIdeal.spanSingleton (𝓞 F)⁰ (a : F) ≤ 1 := by
-      rw [FractionalIdeal.spanSingleton_le_iff_mem]
-      exact (FractionalIdeal.mem_one_iff (𝓞 F)⁰).mpr ⟨a, rfl⟩
+      simp
     have hb' : FractionalIdeal.spanSingleton (𝓞 F)⁰ (b : F) ≤ 1 := by
-      rw [FractionalIdeal.spanSingleton_le_iff_mem]
-      exact (FractionalIdeal.mem_one_iff (𝓞 F)⁰).mpr ⟨b, rfl⟩
+      simp
     simpa [KPCusp.content, ha, hb] using add_le_add ha' (mul_le_mul' hb' (le_refl J))
   have hN : (1+J : FractionalIdeal (𝓞 F)⁰ F) ≠ 0 := by
     intro h
-    rw [← FractionalIdeal.sup_eq_add] at h
-    exact one_ne_zero (sup_eq_bot_iff.mp h).1
+    simp_all
   have hnpos : 0 < FractionalIdeal.absNorm (1+J) :=
     lt_of_le_of_ne (FractionalIdeal.absNorm_nonneg _) (Ne.symm (FractionalIdeal.absNorm_eq_zero_iff.not.mpr hN))
   have hint : KPCusp.content F J r * (1+J)⁻¹ ≤ 1 := by
@@ -171,16 +164,15 @@ private theorem content_lower (J : FractionalIdeal (𝓞 F)⁰ F) (hJ : J ≠ 0)
   obtain ⟨I, hI⟩ := FractionalIdeal.le_one_iff_exists_coeIdeal.mp hint
   have hi0 : I ≠ ⊥ := by
     intro hi
-    have hz : KPCusp.content F J r * (1+J)⁻¹ = 0 := by simpa [hi] using hI.symm
-    exact mul_ne_zero hn (inv_ne_zero hN) hz
+    simp_all
   have hn1 : (1 : ℚ) ≤ FractionalIdeal.absNorm (KPCusp.content F J r * (1+J)⁻¹) := by
     rw [← hI, FractionalIdeal.coeIdeal_absNorm]
     exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hi0)
   rw [map_mul, map_inv₀, ← div_eq_mul_inv] at hn1
   have hbound := (le_div_iff₀ hnpos).mp hn1
-  exact ⟨by exact_mod_cast hnpos, by exact_mod_cast (by simpa using hbound : FractionalIdeal.absNorm (1+J) ≤ FractionalIdeal.absNorm (KPCusp.content F J r))⟩
+  simp_all
 
-private theorem normalized_height_aux (hF : InfinitePlace.nrRealPlaces F = 0)
+theorem normalized_height_aux (hF : InfinitePlace.nrRealPlaces F = 0)
     (J : FractionalIdeal (𝓞 F)⁰ F) (hJ : J ≠ 0) :
     ∃ c : ℝ, 0 < c ∧ ∀ z : KPArch.Space (InfinitePlace.nrComplexPlaces F),
       ∃ r : KPCusp.Row F, c ≤ KPCusp.normalizedHeight F J r z := by
@@ -234,10 +226,5 @@ theorem kp_cusp_minkowski_normalized_height (F : Type*) [Field F] [NumberField F
     (J : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) (hJ : J ≠ 0) :
     ∃ c : ℝ, 0 < c ∧
       ∀ z : KPArch.Space (NumberField.InfinitePlace.nrComplexPlaces F),
-        ∃ r : KPCusp.Row F, c ≤ KPCusp.normalizedHeight F J r z := by
-  exact CuspHeightProof.normalized_height_aux F hF J hJ
-
-end DedekindZetaZeroFree
-
-end
-end
+        ∃ r : KPCusp.Row F, c ≤ KPCusp.normalizedHeight F J r z := 
+  CuspHeightProof.normalized_height_aux F hF J hJ

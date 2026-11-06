@@ -44,19 +44,3 @@ theorem stdRep_apply (g : GL (Fin n) k) :
 theorem stdRep_apply_apply (g : GL (Fin n) k) (v : Fin n → k) :
     stdRep k n g v = (g : Matrix (Fin n) (Fin n) k) *ᵥ v := by
   rw [stdRep_apply, Matrix.mulVecLin_apply]
-
-end CommRing
-
-section Field
-
-variable [Field k]
-
-@[simp]
-theorem char_stdRep (g : GL (Fin n) k) :
-    (stdRep k n).character g = Matrix.trace (g : Matrix (Fin n) (Fin n) k) := by
-  rw [Representation.character, stdRep_apply, ← Matrix.toLin'_apply']
-  exact Matrix.trace_toLin'_eq (g : Matrix (Fin n) (Fin n) k)
-
-end Field
-
-end DedekindZetaZeroFree.TauCeti

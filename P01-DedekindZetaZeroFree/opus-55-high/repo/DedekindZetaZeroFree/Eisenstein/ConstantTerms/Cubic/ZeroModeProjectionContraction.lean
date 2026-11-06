@@ -11,7 +11,7 @@ namespace DedekindZetaZeroFree.KPContinuation.ChamberModerateGrowth
 
 open KPContFlatCuspIncomingEvaluation
 
-private lemma norm_card_inv_mul_sum_le {ι : Type*} [Fintype ι]
+lemma norm_card_inv_mul_sum_le {ι : Type*} [Fintype ι]
     (f : ι → ℂ) (C : ℝ) (hC : 0 ≤ C) (hf : ∀ i, ‖f i‖ ≤ C) :
     ‖(Fintype.card ι : ℂ)⁻¹ * ∑ i, f i‖ ≤ C := by
   rcases Nat.eq_zero_or_pos (Fintype.card ι) with h0 | hpos

@@ -15,10 +15,10 @@ variable {F : Type} [Field F] [NumberField F] (A : SArithmeticData F)
     Πʳ v : HeightOneSpectrum (𝓞 F),
       [(v.adicCompletion F)ˣ, (v.adicCompletionIntegers F).units]_[Filter.principal (A.Sf : Set _)ᶜ] :=
   ⟨fun v => if hv : v ∈ A.Sf then x.1.2 ⟨v, hv⟩ else x.2 ⟨v, hv⟩,
-    by intro v hv; change v ∉ A.Sf at hv; dsimp; rw [dif_neg hv]; exact (x.2 ⟨v, hv⟩).property⟩
+    by simp_all⟩
 
- theorem outside_cofinite : Filter.cofinite ≤ Filter.principal ((A.Sf : Set (HeightOneSpectrum (𝓞 F)))ᶜ) := by
-  exact Filter.le_principal_iff.mpr (A.Sf.eventually_cofinite_notMem)
+ theorem outside_cofinite : Filter.cofinite ≤ Filter.principal ((A.Sf : Set (HeightOneSpectrum (𝓞 F)))ᶜ) := 
+  Filter.le_principal_iff.mpr (A.Sf.eventually_cofinite_notMem)
 
 def assembly (x : A.G × (SupportedChartDefinitions.C A)) : IdeleGroup F :=
   (ContinuousMulEquiv.piUnits.symm x.1.1,
@@ -33,7 +33,7 @@ theorem assembly_supported (x : A.G × (SupportedChartDefinitions.C A)) :
   intro v hv
   change (assembly A x).2 v ∈ _
   rw [assembly_apply, dif_neg (show v ∉ A.Sf from hv)]
-  exact (x.2 ⟨v, hv⟩).property
+  simp
 
 theorem coordinates_assembly (x : A.G × (SupportedChartDefinitions.C A)) : SupportedChartDefinitions.sCoordinatesRaw A (assembly A x) = x.1 := by
   classical
@@ -94,7 +94,7 @@ theorem backward_forward (a : (SupportedChartDefinitions.H A)) : backward A (for
   · apply RestrictedProduct.ext
     intro v
     change (if h : v ∈ A.Sf then a.1.1.2 v else a.1.1.2 v) = _
-    split <;> rfl
+    simp
 
 theorem continuous_forward : Continuous (forward A) := by
   have hc : Continuous (fun a : (SupportedChartDefinitions.H A) => a.1.1) := continuous_subtype_val.comp continuous_subtype_val
@@ -123,13 +123,6 @@ def chart : (SupportedChartDefinitions.H A) ≃ₜ* (A.G1 × (SupportedChartDefi
   left_inv := backward_forward A
   right_inv := forward_backward A
   map_mul' a b := by
-    apply Prod.ext
-    · apply Subtype.ext
-      apply Prod.ext
-      · funext w; exact (InfiniteIdeleGroup.component w).map_mul _ _
-      · funext v; rfl
-    · funext v; apply Subtype.ext; rfl
+    rfl
   continuous_toFun := continuous_forward A
   continuous_invFun := continuous_backward A
-end
-end DedekindZetaZeroFree.SupportedChartConstruction

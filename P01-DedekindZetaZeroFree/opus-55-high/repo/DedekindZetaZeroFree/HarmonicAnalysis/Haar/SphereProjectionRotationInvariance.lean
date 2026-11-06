@@ -31,8 +31,7 @@ theorem normalized_area_projection_rotation (n : ℕ) (i : Fin n)
     rw [mem_sphere_zero_iff_norm.mp z.property,
       mem_sphere_zero_iff_norm.mp x.property])
   let R : ↥(Metric.sphere (0 : EuclideanSpace ℝ (Fin n)) 1) ≃ₜ ↥(Metric.sphere (0 : EuclideanSpace ℝ (Fin n)) 1) := g.toHomeomorph.subtype (fun y => by
-    change ‖y - 0‖ = 1 ↔ ‖g y - 0‖ = 1
-    simp only [sub_zero, g.norm_map])
+    simp)
   have hR : MeasurePreserving R μ μ := by
     refine ⟨R.measurable, Measure.ext fun s hs => ?_⟩
     rw [R.measurableEmbedding.map_apply,
@@ -64,5 +63,3 @@ theorem normalized_area_projection_rotation (n : ℕ) (i : Fin n)
   change (1 - inner ℝ (x : (EuclideanSpace ℝ (Fin n))) (g y)) / 2 = (1 - (y : (EuclideanSpace ℝ (Fin n))) i) / 2
   rw [← hg, g.inner_map_map]
   simp [z, EuclideanSpace.inner_single_left]
-
-end DedekindZetaZeroFree.ComplexFractionalInverse.KernelMass

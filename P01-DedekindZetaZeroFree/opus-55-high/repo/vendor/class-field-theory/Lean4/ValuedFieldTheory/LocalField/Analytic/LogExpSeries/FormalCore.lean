@@ -16,14 +16,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-
-set_option autoImplicit false
-
 open Filter
 open Polynomial
 open scoped Topology
@@ -50,7 +42,7 @@ namespace LocalFieldTheory.DiscreteValuationField
 namespace MultiplicativeIntegerValuation
 
 /-- Defines `formalLogOnePlusProductArgumentMixedLeftChoices`. -/
-noncomputable def formalLogOnePlusProductArgumentMixedLeftChoices
+def formalLogOnePlusProductArgumentMixedLeftChoices
     (q a b : ℕ) : Finset (Σ _ : Finset ℕ, Finset ℕ) :=
   ((Finset.range q).powersetCard (a + b - q)).sigma fun M =>
     ((Finset.range q \ M).powersetCard (q - b))
@@ -81,8 +73,7 @@ theorem formalLogOnePlusProductArgumentMixedLeftChoices_card
           rw [Finset.card_sdiff_of_subset hsub, Finset.card_range, hcard]
     _ = Nat.choose q (a + b - q) *
           Nat.choose (q - (a + b - q)) (q - b) := by
-          rw [Finset.sum_const]
-          simp [Finset.card_powersetCard]
+          simp
 
 /--
 Establishes the membership statement `(⟨formalLogOnePlusProductArgumentMixedPositions q l,
@@ -216,12 +207,7 @@ theorem formalLogOnePlusProductArgument_from_to_choice
       · have h1 :
           formalLogOnePlusProductArgumentBasicFactorLabel (l i) =
             (1 : Fin 3) := by
-          generalize hlabel :
-            formalLogOnePlusProductArgumentBasicFactorLabel (l i) = j
-          fin_cases j
-          · exact False.elim (h0 hlabel)
-          · rfl
-          · exact False.elim (h2 hlabel)
+          omega
         have hright :
             l i = formalLogOnePlusProductArgumentBasicFactorRight := by
           simpa [formalLogOnePlusProductArgumentBasicFactorRight] using
@@ -230,8 +216,8 @@ theorem formalLogOnePlusProductArgument_from_to_choice
           formalLogOnePlusProductArgumentMixedPositions,
           formalLogOnePlusProductArgumentLeftPositions, hi, hright,
           formalLogOnePlusProductArgumentBasicFactorRight]
-  · have hli : l i = 0 := by
-      exact Finsupp.notMem_support_iff.mp (fun hsup => hi (hsupp hsup))
+  · have hli : l i = 0 := 
+      Finsupp.notMem_support_iff.mp (fun hsup => hi (hsupp hsup))
     simp [formalLogOnePlusProductArgumentChoiceFromMixedLeft_apply_of_not_mem hi,
       hli]
 
@@ -325,7 +311,6 @@ theorem formalLogOnePlusProductArgumentBasicFactorLabelCountChoices_subset_choic
     have htarget :
         (∑ i ∈ Finset.range q, (l i) (0 : Fin 2)) =
           e (0 : Fin 2) := by
-      rw [hcoord, hleftCount, hmixedCount]
       omega
     simpa using htarget
   · rw [Finsupp.finsetSum_apply]
@@ -346,7 +331,6 @@ theorem formalLogOnePlusProductArgumentBasicFactorLabelCountChoices_subset_choic
     have htarget :
         (∑ i ∈ Finset.range q, (l i) (1 : Fin 2)) =
           e (1 : Fin 2) := by
-      rw [hcoord, hrightCount, hmixedCount]
       omega
     simpa using htarget
 
@@ -388,25 +372,7 @@ theorem formalLogOnePlusProductArgument_choiceCounts_left_coord_le_q
     e (0 : Fin 2) ≤ q := by
   rcases formalLogOnePlusProductArgument_choiceCounts_system
       hl hbasic with ⟨hleft, _hright, htotal⟩
-  have hq :
-      q =
-        e (0 : Fin 2) +
-          formalLogOnePlusProductArgumentRightChoiceCount q l := by
-    calc
-      q =
-        formalLogOnePlusProductArgumentLeftChoiceCount q l +
-            formalLogOnePlusProductArgumentRightChoiceCount q l +
-          formalLogOnePlusProductArgumentMixedChoiceCount q l := htotal.symm
-      _ =
-        (formalLogOnePlusProductArgumentLeftChoiceCount q l +
-          formalLogOnePlusProductArgumentMixedChoiceCount q l) +
-            formalLogOnePlusProductArgumentRightChoiceCount q l := by
-        simp only [Nat.add_assoc, Nat.add_left_comm, Nat.add_comm]
-      _ =
-        e (0 : Fin 2) +
-          formalLogOnePlusProductArgumentRightChoiceCount q l := by
-        rw [hleft]
-  exact Nat.le.intro hq.symm
+  omega
 
 /-- Proves the bound `e (1 : Fin 2) ≤ q`. -/
 theorem formalLogOnePlusProductArgument_choiceCounts_right_coord_le_q
@@ -417,27 +383,4 @@ theorem formalLogOnePlusProductArgument_choiceCounts_right_coord_le_q
     e (1 : Fin 2) ≤ q := by
   rcases formalLogOnePlusProductArgument_choiceCounts_system
       hl hbasic with ⟨_hleft, hright, htotal⟩
-  have hq :
-      q =
-        e (1 : Fin 2) +
-          formalLogOnePlusProductArgumentLeftChoiceCount q l := by
-    calc
-      q =
-        formalLogOnePlusProductArgumentLeftChoiceCount q l +
-            formalLogOnePlusProductArgumentRightChoiceCount q l +
-          formalLogOnePlusProductArgumentMixedChoiceCount q l := htotal.symm
-      _ =
-        (formalLogOnePlusProductArgumentRightChoiceCount q l +
-          formalLogOnePlusProductArgumentMixedChoiceCount q l) +
-            formalLogOnePlusProductArgumentLeftChoiceCount q l := by
-        simp only [Nat.add_left_comm, Nat.add_comm]
-      _ =
-        e (1 : Fin 2) +
-          formalLogOnePlusProductArgumentLeftChoiceCount q l := by
-        rw [hright]
-  exact Nat.le.intro hq.symm
-
-end MultiplicativeIntegerValuation
-end LocalFieldTheory.DiscreteValuationField
-
-end
+  omega

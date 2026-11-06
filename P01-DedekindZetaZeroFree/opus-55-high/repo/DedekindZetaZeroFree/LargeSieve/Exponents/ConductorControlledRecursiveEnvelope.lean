@@ -10,7 +10,7 @@ open scoped NumberField Classical
 
 namespace DedekindZetaZeroFree.LargeSieve.Sieve
 
-private theorem annularWeight_sieveWeight : SieveWeight DedekindZetaZeroFree.LargeSieve.Vendor.annularWeight where
+theorem annularWeight_sieveWeight : SieveWeight DedekindZetaZeroFree.LargeSieve.Vendor.annularWeight where
   smooth := DedekindZetaZeroFree.LargeSieve.Vendor.annularWeight_contDiff
   nonneg := DedekindZetaZeroFree.LargeSieve.Vendor.annularWeight_nonneg
   one_le := fun t ht => by
@@ -36,7 +36,7 @@ theorem recursiveEnvelope_of_core
   have hW : SieveWeight DedekindZetaZeroFree.LargeSieve.Vendor.annularWeight := annularWeight_sieveWeight
   intro ε hε
   set η : ℝ := ε / 2 with hηdef
-  have hηpos : 0 < η := by rw [hηdef]; linarith
+  have hηpos : 0 < η := by positivity
   have hηle : η ≤ ε := by rw [hηdef]; linarith
 
   obtain ⟨Cf, hCf0, hfar⟩ :=
@@ -45,8 +45,7 @@ theorem recursiveEnvelope_of_core
 
   obtain ⟨Cn, hCn0, hnear⟩ := recursion_near_region F c Q α hα hExponent η hηpos
   refine ⟨max Cf Cn + 1, ?_, ?_⟩
-  · have h1 := le_max_left Cf Cn
-    linarith
+  · positivity
   · intro M N hM hN
 
     set X : ℝ := M + N + N ^ (2 * α - 1) * M ^ (1 - α) with hXdef
@@ -54,10 +53,7 @@ theorem recursiveEnvelope_of_core
     set R : ℝ := (M * N) ^ ε with hRdef
     set δ : ℝ := η / (8 * ↑(max 1 (Nat.ceil (20 / η))) * (α + 1)) with hδdef
     have hXnn : 0 ≤ X := by
-      rw [hXdef]
-      have h1 : 0 ≤ N ^ (2 * α - 1) := Real.rpow_nonneg (by linarith) _
-      have h2 : 0 ≤ M ^ (1 - α) := Real.rpow_nonneg (by linarith) _
-      linarith [mul_nonneg h1 h2]
+      positivity
     have hMN1 : 1 ≤ M * N := by nlinarith
     have hCfC : Cf ≤ max Cf Cn + 1 := by
       have h1 := le_max_left Cf Cn
@@ -67,9 +63,7 @@ theorem recursiveEnvelope_of_core
       rw [hPdef, hRdef]
       exact Real.rpow_le_rpow_of_exponent_le hMN1 hηle
     have hPXnn : 0 ≤ P * X := by
-      refine mul_nonneg ?_ hXnn
-      rw [hPdef]
-      exact Real.rpow_nonneg (by linarith) _
+      positivity
     by_cases hcase : M ≤ 2 * N * (M * N) ^ δ
     ·
       have h := hnear M N hM hN hcase
@@ -90,5 +84,3 @@ theorem recursiveEnvelope_of_core
         _ ≤ (max Cf Cn + 1) * (R * X) :=
             mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_right hPR hXnn) hCnn
         _ = (max Cf Cn + 1) * R * X := by ring
-
-end DedekindZetaZeroFree.LargeSieve.Sieve

@@ -24,7 +24,7 @@ theorem ScalarGerm.coefficients_eq_circle {C : ScalarContinuation R Q}
   scalar_cauchy_coefficients_radius_independent _ _ (H.analytic g) _ _
     (half_pos H.radius_pos) ht (by linarith [H.radius_pos]) htH n
 
-private theorem coefficient_covariance (f h : ℂ → ℂ) (t : ℝ) (ht : 0 < t)
+theorem coefficient_covariance (f h : ℂ → ℂ) (t : ℝ) (ht : 0 < t)
     (c : ℂ) (he : ∀ z ∈ Metric.sphere (0 : ℂ) t, f z = c * h z) (n : ℕ) :
     (cauchyPowerSeries f 0 t).coeff n = c * (cauchyPowerSeries h 0 t).coeff n := by
   change (cauchyPowerSeries f 0 t n) (fun _ => 1) =

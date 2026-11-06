@@ -9,7 +9,6 @@ open scoped NumberField Classical BigOperators NNReal
 open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.KPGlobalCenterRationalCharacterModulus
 noncomputable section
-set_option autoImplicit false
 
 def localAbsUnit (F : Type) [Field F] [NumberField F]
     (v : KPHilbert.Place F) (y : (KPHilbert.Completion F v)ˣ) : (ℝ≥0)ˣ :=
@@ -28,6 +27,3 @@ theorem idele_abs_finite_product (F : Type) [Field F] [NumberField F]
   refine ⟨?_, ?_⟩
   · exact KPGlobalCenterRationalCharacterExtension.CubeDiagonalProduct.idele_localAbs_hasFiniteMulSupport F u
   · exact KPGlobalCenterRationalCharacterExtension.CubeDiagonalProduct.idele_localAbs_finprod F u
-
-end
-end DedekindZetaZeroFree.KPGlobalCenterRationalCharacterModulus

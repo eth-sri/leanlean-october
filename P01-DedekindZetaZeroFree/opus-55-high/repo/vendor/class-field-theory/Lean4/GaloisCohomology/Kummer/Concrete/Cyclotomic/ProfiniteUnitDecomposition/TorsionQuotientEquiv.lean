@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Torsion quotients of a profinite-integer product decomposition
 -/
@@ -28,7 +25,7 @@ open ClassFormation
 
 /-- A topological decomposition `G ≃ ℤ̂ × T` with dense torsion in `T`
 identifies the quotient of `G` by the closure of its torsion with `ℤ̂`. -/
-noncomputable def torsionQuotientEquivOfZHatMulDecomposition
+def torsionQuotientEquivOfZHatMulDecomposition
     (G T : Type*) [CommGroup G] [CommGroup T]
     [TopologicalSpace G] [TopologicalSpace T]
     [IsTopologicalGroup G] [IsTopologicalGroup T]
@@ -112,7 +109,3 @@ noncomputable def torsionQuotientEquivOfZHatMulDecomposition
           rw [←
             QuotientGroup.isOpenQuotientMap_mk.continuous_comp_iff]
           exact continuous_fst.comp E.continuous_toFun)
-
-end KummerTheory
-
-end

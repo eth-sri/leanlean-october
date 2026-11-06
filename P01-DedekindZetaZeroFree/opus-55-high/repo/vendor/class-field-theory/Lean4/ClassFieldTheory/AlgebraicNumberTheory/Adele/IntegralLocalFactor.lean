@@ -1,9 +1,8 @@
 module
 
 public import ClassFieldTheory.AlgebraicNumberTheory.Adele.IntegralTensorSupport.IdeleSupport
-public import ClassFieldTheory.AlgebraicNumberTheory.Adele.IntegralTensorSupport.Localization
-public import ClassFieldTheory.AlgebraicNumberTheory.Adele.IntegralTensorSupport.AbsoluteValue
 public import ClassFieldTheory.AlgebraicNumberTheory.Adele.IntegralTensorSupport.Lattice
+public import ClassFieldTheory.AlgebraicNumberTheory.Adele.IntegralTensorSupport.AbsoluteValue
 public import ClassFieldTheory.AlgebraicNumberTheory.Adele.IntegralTensorSupport.FinitePlaceCompletion
 public import ClassFieldTheory.AlgebraicNumberTheory.Adele.IntegralTensorSupport.LocalTensorDecomposition
 public import ClassFieldTheory.AlgebraicNumberTheory.Adele.RestrictedAction
@@ -19,18 +18,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
-
-
-
-
-set_option autoImplicit false
 
 /-!
 # Integral finite local factors of the relative idele group
@@ -49,7 +36,6 @@ open NumberField IsDedekindDomain
 
 noncomputable section
 
-
 open AlgebraicNumberTheory.Valuations
 open LocalClassFieldTheory
 
@@ -63,7 +49,7 @@ variable
 
 /-- The projection of the finite local tensor algebra to one completion
 factor in the canonical local tensor decomposition, as a ring homomorphism. -/
-noncomputable def finitePlaceLocalTensorDecompositionComponentRingHom
+def finitePlaceLocalTensorDecompositionComponentRingHom
     (w : HeightOneSpectrum (𝓞 K))
     (wL : AbsoluteValueExtension
       (HeightOneSpectrum.adicAbv K w) L) :
@@ -100,19 +86,6 @@ theorem finitePlaceLocalTensorDecompositionComponentRingHom_apply
   rfl
 
 omit [NumberField L] in
-/-- Every relative-tensor component map sends zero to zero. -/
-@[simp]
-theorem finitePlaceLocalTensorDecompositionComponent_zero
-    (w : HeightOneSpectrum (𝓞 K))
-    (wL : AbsoluteValueExtension
-      (HeightOneSpectrum.adicAbv K w) L) :
-    finitePlaceLocalTensorDecompositionComponent
-        (K := K) (L := L) w wL 0 = 0 := by
-  simpa only [finitePlaceLocalTensorDecompositionComponentRingHom_apply] using
-    (finitePlaceLocalTensorDecompositionComponentRingHom
-      (K := K) (L := L) w wL).map_zero
-
-omit [NumberField L] in
 /-- Relative-tensor component maps preserve addition. -/
 @[simp]
 theorem finitePlaceLocalTensorDecompositionComponent_add
@@ -131,7 +104,7 @@ theorem finitePlaceLocalTensorDecompositionComponent_add
       (K := K) (L := L) w wL).map_add x y
 
 /-- The corresponding component homomorphism on units. -/
-noncomputable def finitePlaceLocalTensorDecompositionUnitsComponent
+def finitePlaceLocalTensorDecompositionUnitsComponent
     (w : HeightOneSpectrum (𝓞 K))
     (wL : AbsoluteValueExtension
       (HeightOneSpectrum.adicAbv K w) L) :
@@ -143,7 +116,7 @@ noncomputable def finitePlaceLocalTensorDecompositionUnitsComponent
 
 /-- The canonical local tensor decomposition on the complete group of units of the finite local
 tensor algebra. -/
-noncomputable def finitePlaceLocalTensorDecompositionUnitsEquiv
+def finitePlaceLocalTensorDecompositionUnitsEquiv
     (w : HeightOneSpectrum (𝓞 K)) :
     (w.adicCompletion K ⊗[K] L)ˣ ≃*
       ∀ wL : AbsoluteValueExtension
@@ -406,7 +379,7 @@ theorem relativeLocalTensorDecompositionIntegralUnitAt_iff
       exact (hx wL).2
 
 /-- The actual integral-unit subgroup in a finite local tensor factor. -/
-noncomputable def relativeLocalTensorDecompositionIntegralUnitSubgroup
+def relativeLocalTensorDecompositionIntegralUnitSubgroup
     (w : HeightOneSpectrum (𝓞 K)) :
     Subgroup (w.adicCompletion K ⊗[K] L)ˣ :=
   Subgroup.comap
@@ -437,7 +410,7 @@ abbrev FinitePlaceLocalTensorDecompositionIntegralUnitProduct
 
 /-- A product subgroup is the product of its component subgroup types. -/
 @[implicit_reducible]
-noncomputable def
+def
     finitePlaceLocalTensorDecompositionIntegralUnitProductEquivPi
     (w : HeightOneSpectrum (𝓞 K)) :
     FinitePlaceLocalTensorDecompositionIntegralUnitProduct
@@ -454,22 +427,17 @@ noncomputable def
   invFun x :=
     ⟨fun wL => x wL, by
       intro wL hwL
-      exact (x wL).2⟩
+      simp⟩
   left_inv x := by
-    apply Subtype.ext
     rfl
   right_inv x := by
-    funext wL
-    apply Subtype.ext
     rfl
   map_mul' x y := by
-    funext wL
-    apply Subtype.ext
     rfl
 
 /-- Replace each valuation-ring unit subgroup by the intrinsic unit
 group of the valuation ring. -/
-noncomputable def
+def
     finitePlaceLocalTensorDecompositionIntegralUnitProductEquivPiUnits
     (w : HeightOneSpectrum (𝓞 K)) :
     FinitePlaceLocalTensorDecompositionIntegralUnitProduct
@@ -509,7 +477,7 @@ theorem mem_relativeLocalTensorDecompositionIntegralUnitSubgroup_iff
 /-- The restricted Galois action on the integral tensor-unit
 subgroup. -/
 @[implicit_reducible]
-noncomputable def
+def
     relativeLocalTensorDecompositionIntegralUnitSubgroupAction
     (w : HeightOneSpectrum (𝓞 K)) :
     MulDistribMulAction
@@ -541,7 +509,7 @@ noncomputable def
           (1 : L ≃ₐ[K] L) •
               (x : (w.adicCompletion K ⊗[K] L)ˣ) =
             (x : (w.adicCompletion K ⊗[K] L)ˣ)
-        exact one_smul (L ≃ₐ[K] L) _
+        simp
       mul_smul := by
         intro σ τ x
         apply Subtype.ext
@@ -552,7 +520,7 @@ noncomputable def
         apply Subtype.ext
         change
           σ • (1 : (w.adicCompletion K ⊗[K] L)ˣ) = 1
-        exact smul_one σ
+        simp
       smul_mul := by
         intro σ x y
         apply Subtype.ext
@@ -584,7 +552,7 @@ theorem
 
 /-- The integral local tensor-unit subgroup is exactly the product of
 the valuation-ring unit groups occurring in the canonical local tensor decomposition. -/
-noncomputable def
+def
     relativeLocalTensorDecompositionIntegralUnitSubgroupEquivProduct
     (w : HeightOneSpectrum (𝓞 K)) :
     relativeLocalTensorDecompositionIntegralUnitSubgroup
@@ -597,9 +565,7 @@ noncomputable def
     rw [mem_relativeLocalTensorDecompositionIntegralUnitSubgroup_iff,
       relativeLocalTensorDecompositionIntegralUnitAt_iff] at hx
     rw [Subgroup.mem_pi]
-    intro wL hwL
-    simpa only [finitePlaceLocalTensorDecompositionUnitsEquiv_apply] using
-      (hx wL)⟩
+    simp_all⟩
   invFun y := ⟨(finitePlaceLocalTensorDecompositionUnitsEquiv
       (K := K) (L := L) w).symm y, by
     rw [mem_relativeLocalTensorDecompositionIntegralUnitSubgroup_iff,
@@ -620,24 +586,15 @@ noncomputable def
       exact y.property wL (Set.mem_univ wL)
     simpa only [finitePlaceLocalTensorDecompositionUnitsEquiv_apply] using hy⟩
   left_inv x := by
-    apply Subtype.ext
-    exact
-      (finitePlaceLocalTensorDecompositionUnitsEquiv
-        (K := K) (L := L) w).symm_apply_apply x
+    simp
   right_inv y := by
-    apply Subtype.ext
-    exact
-      (finitePlaceLocalTensorDecompositionUnitsEquiv
-        (K := K) (L := L) w).apply_symm_apply y
+    simp
   map_mul' x y := by
-    apply Subtype.ext
-    exact
-      (finitePlaceLocalTensorDecompositionUnitsEquiv
-        (K := K) (L := L) w).map_mul x y
+    simp
 
 /-- Final local form: the integral tensor units are the product of the
 intrinsic unit groups of all completion valuation rings above `w`. -/
-noncomputable def
+def
     relativeLocalTensorDecompositionIntegralUnitSubgroupEquivPiUnits
     (w : HeightOneSpectrum (𝓞 K)) :
     relativeLocalTensorDecompositionIntegralUnitSubgroup
@@ -653,5 +610,3 @@ noncomputable def
     (K := K) (L := L) w).trans
       (finitePlaceLocalTensorDecompositionIntegralUnitProductEquivPiUnits
         (K := K) (L := L) w)
-
-end

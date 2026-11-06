@@ -13,7 +13,7 @@ variable (F : Type) [Field F] [NumberField F]
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 open _root_.DedekindZetaZeroFree.KPSmoothCoreCasimirEnergy renaming matrix_path_hasDeriv_components → matrix_path_hasDeriv_components
-private theorem flow_entry_hasDeriv
+theorem flow_entry_hasDeriv
     (b : KPSmoothActualFlowData.B F) (w : NumberField.InfinitePlace F) (i j : Fin 2) :
     HasDerivAt (fun t : ℝ => (flowMatrix F b t w).val i j)
       ((if w = b.1 then KPSmoothActualFlowData.basisMatrix b.2 else 0) i j) 0 := by
@@ -30,7 +30,7 @@ private theorem flow_entry_hasDeriv
     all_goals split_ifs <;> simp_all <;> ring
   rw [he]
 open _root_.DedekindZetaZeroFree.KPActualReflectionData.NativeFlowJet renaming flowMatrix_zero → flowMatrix_zero
-private theorem flow_direction_formula (b : KPSmoothActualFlowData.B F)
+theorem flow_direction_formula (b : KPSmoothActualFlowData.B F)
     (w : NumberField.InfinitePlace F) :
     flowDirection F b w = if w = b.1 then
       ![KPSmoothActualFlowData.basisMatrix b.2 0 1,

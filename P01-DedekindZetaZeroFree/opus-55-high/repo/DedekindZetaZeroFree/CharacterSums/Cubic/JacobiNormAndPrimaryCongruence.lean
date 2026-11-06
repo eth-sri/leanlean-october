@@ -8,7 +8,7 @@ public import DedekindZetaZeroFree.Arithmetic.Ideals.EisensteinIntegers.Coordina
 
 namespace DedekindZetaZeroFree.Eisenstein
 
-private lemma normSq_jacobiSum_self {F : Type} [Field F] [Fintype F]
+lemma normSq_jacobiSum_self {F : Type} [Field F] [Fintype F]
     (χ : MulChar F ℂ) (hχ : χ ≠ 1) (hχχ : χ * χ ≠ 1)
     (hchar : ringChar ℂ ≠ ringChar F) :
     Complex.normSq (jacobiSum χ χ) = (Fintype.card F : ℝ) := by
@@ -51,12 +51,11 @@ theorem normSq_Jq (E : Type) [Field E] [NumberField E]
   have hχ : ρqC E ω hω ι q hq0 hqp hq6 ≠ 1 := by
     intro h
     have := (ρqC_facts E ω hω ι q hq0 hqp hq6).1
-    rw [h, orderOf_one] at this
-    exact absurd this (by norm_num)
+    simp_all
   have hχχ : ρqC E ω hω ι q hq0 hqp hq6 * ρqC E ω hω ι q hq0 hqp hq6 ≠ 1 := by
     have := (ρqC_facts E ω hω ι q hq0 hqp hq6).2.2.1
     rwa [pow_two] at this
-  have hC : ringChar ℂ = 0 := (CharP.ringChar_zero_iff_CharZero ℂ).mpr inferInstance
+  have hC : ringChar ℂ = 0 := by simp
   have hchar : ringChar ℂ ≠ ringChar (R E ⧸ q) := by
     rw [hC]
     exact fun h => CharP.ringChar_ne_zero_of_finite (R E ⧸ q) h.symm
@@ -102,5 +101,3 @@ theorem red3_Jq (E : Type) [Field E] [NumberField E]
     Ideal.Quotient.eq_zero_iff_mem.mpr h
   rw [map_add, map_one] at h0
   exact eq_neg_iff_add_eq_zero.mpr h0
-
-end DedekindZetaZeroFree.Eisenstein

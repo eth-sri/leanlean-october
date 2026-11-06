@@ -67,7 +67,7 @@ def zeroExtendS : SLocalProduct F S →+ AdeleRing (𝓞 F) F where
   intro w hw
   exact RestrictedProduct.single_eq_of_ne _ _ (fun h => hv (h ▸ w.2))
 
-private theorem continuous_finite_single (v : HeightOneSpectrum (𝓞 F)) :
+theorem continuous_finite_single (v : HeightOneSpectrum (𝓞 F)) :
     Continuous (RestrictedProduct.single
       (fun w : HeightOneSpectrum (𝓞 F) => w.adicCompletionIntegers F) v) := by
   let t : v.adicCompletion F → RestrictedProduct
@@ -75,23 +75,13 @@ private theorem continuous_finite_single (v : HeightOneSpectrum (𝓞 F)) :
       (fun w : HeightOneSpectrum (𝓞 F) => (w.adicCompletionIntegers F : Set (w.adicCompletion F)))
       (Filter.principal {v}ᶜ) :=
     fun z => ⟨Pi.single v z, by
-      intro w hw
-      have hwv : w ≠ v := hw
-      change Pi.single v z w ∈ w.adicCompletionIntegers F
-      rw [Pi.single_eq_of_ne hwv]
-      exact (w.adicCompletionIntegers F).zero_mem⟩
+      simp_all⟩
   have ht : Continuous t := by
     apply RestrictedProduct.continuous_rng_of_principal.mpr
     apply continuous_pi
     intro w
     change Continuous (fun z : v.adicCompletion F => Pi.single v z w)
-    by_cases hw : w = v
-    · subst w
-      rw [show (fun z : v.adicCompletion F => Pi.single v z v) = id from
-        funext (fun z => Pi.single_eq_same v z)]
-      exact continuous_id
-    · simpa only [Pi.single_eq_of_ne hw] using
-        (continuous_const : Continuous (fun _ : v.adicCompletion F => (0 : w.adicCompletion F)))
+    fun_prop
   have h : Filter.cofinite ≤ Filter.principal ({v}ᶜ : Set (HeightOneSpectrum (𝓞 F))) := by
     simp
   exact (RestrictedProduct.continuous_inclusion h).comp ht
@@ -127,20 +117,10 @@ theorem sLocalTraceCharacter_apply (x : SLocalProduct F S) :
   rw [finprod_eq_prod_of_mulSupport_subset _ (s := S) (by
     intro v hv
     by_contra hvm
-    have hzero := zeroExtendS_finite_of_not_mem F S x v hvm
-    exact hv (by
-      dsimp only
-      rw [hzero]
-      exact (localFiniteCharacter F v).map_zero_eq_one))]
+    simp_all)]
   rw [← Finset.prod_coe_sort]
-  apply Finset.prod_congr rfl
-  intro v hv
-  rw [zeroExtendS_finite]
+  simp
 
 theorem continuous_sLocalTraceCharacter :
-    Continuous (sLocalTraceCharacter F S : SLocalProduct F S → Circle) := by
-  exact (continuous_adelicTraceCharacter F).comp (continuous_zeroExtendS F S)
-
-end DedekindZetaZeroFree
-
-end
+    Continuous (sLocalTraceCharacter F S : SLocalProduct F S → Circle) := 
+  (continuous_adelicTraceCharacter F).comp (continuous_zeroExtendS F S)

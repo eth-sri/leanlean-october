@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Embedding into a ray class field
 -/
@@ -30,5 +27,3 @@ def EmbedsInRayClassField
     (m : RayClassModulus K) : Prop :=
   ∃ R : RayClassFieldRealization K m,
     Nonempty (L →ₐ[K] R.extension)
-
-end ClassFieldTheory

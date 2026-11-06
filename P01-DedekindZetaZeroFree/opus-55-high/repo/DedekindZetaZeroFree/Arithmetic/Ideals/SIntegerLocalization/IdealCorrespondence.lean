@@ -9,10 +9,9 @@ open scoped NumberField Classical WithZero nonZeroDivisors
 open NumberField IsDedekindDomain
 
 namespace DedekindZetaZeroFree.SIntegerLocalization
-noncomputable section
 variable {F : Type} [Field F] [NumberField F]
 
-private theorem mem_of_mul_mem_of_sup_span_eq_top (I : Ideal (𝓞 F))
+theorem mem_of_mul_mem_of_sup_span_eq_top (I : Ideal (𝓞 F))
     (t x : 𝓞 F) (hc : I ⊔ Ideal.span {t} = ⊤) (hx : t * x ∈ I) : x ∈ I := by
   have h1 : (1 : 𝓞 F) ∈ I ⊔ Ideal.span {t} := by rw [hc]; trivial
   obtain ⟨a, ha, b, hb, hab⟩ := Submodule.mem_sup.mp h1
@@ -43,8 +42,7 @@ theorem under_ne_zero (S : Finset (HeightOneSpectrum (𝓞 F)))
   letI := isLocalization_away S
   intro h
   have hh := IsLocalization.map_under (Submonoid.powers (denominator S)) _ J
-  rw [h, Ideal.map_bot] at hh
-  exact hJ hh.symm
+  simp_all
 
 theorem under_exterior (S : Finset (HeightOneSpectrum (𝓞 F)))
     (J : Ideal ((S : Set (HeightOneSpectrum (𝓞 F))).integer F)) (hJ : J ≠ ⊥) :
@@ -71,7 +69,7 @@ theorem under_exterior (S : Finset (HeightOneSpectrum (𝓞 F)))
   obtain ⟨a, rfl⟩ := Ideal.Quotient.mk_surjective b
   have hmem : 1 - denominator S * a ∈ I := by
     apply Ideal.Quotient.eq_zero_iff_mem.mp
-    rw [map_sub, map_one, map_mul, hb, sub_self]
+    simp_all
   have htop : I ⊔ Ideal.span {denominator S} = ⊤ := by
     apply (Ideal.eq_top_iff_one _).mpr
     have ha : denominator S * a ∈ Ideal.span {denominator S} :=
@@ -81,6 +79,3 @@ theorem under_exterior (S : Finset (HeightOneSpectrum (𝓞 F)))
   apply top_unique
   rw [← htop, span_denominator S]
   exact sup_le_sup_left (Ideal.pow_le_self (classNumber_pos F).ne') _
-
-end
-end DedekindZetaZeroFree.SIntegerLocalization

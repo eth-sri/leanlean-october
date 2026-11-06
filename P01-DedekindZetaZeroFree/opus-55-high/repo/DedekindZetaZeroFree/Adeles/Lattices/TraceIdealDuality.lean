@@ -33,7 +33,7 @@ variable (K : Type*) [Field K] [NumberField K]
 
 open Classical in
 
-noncomputable def euclideanIdealLattice
+def euclideanIdealLattice
     (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ) :
     Submodule ℤ (mixedEmbedding.euclidean.mixedSpace K) :=
   ZLattice.comap ℝ (mixedEmbedding.idealLattice K I)
@@ -78,14 +78,14 @@ variable (K : Type*) [Field K] [NumberField K]
 
 open Classical in
 
-noncomputable def mixedTracePairing
+def mixedTracePairing
     (x y : mixedEmbedding.mixedSpace K) : ℝ :=
   (∑ w : {w : InfinitePlace K // IsReal w}, x.1 w * y.1 w) +
     ∑ w : {w : InfinitePlace K // IsComplex w},
       2 * (x.2 w * y.2 w).re
 
 open Classical in
-private theorem sum_embeddings_eq_sum_places (z : K) :
+theorem sum_embeddings_eq_sum_places (z : K) :
     (∑ φ : K →+* ℂ, φ z) =
       (∑ w : {w : InfinitePlace K // IsReal w},
           ((embedding_of_isReal w.2 z : ℝ) : ℂ)) +
@@ -216,7 +216,7 @@ variable (K : Type*) [Field K] [NumberField K]
 
 open Classical in
 
-noncomputable def divideBySqrtTwo : ℂ ≃L[ℝ] ℂ :=
+def divideBySqrtTwo : ℂ ≃L[ℝ] ℂ :=
     ContinuousLinearEquiv.smulLeft (R₁ := ℝ) (M₁ := ℂ)
       (Units.mk0 (Real.sqrt 2)⁻¹
         (inv_ne_zero (ne_of_gt (Real.sqrt_pos.2 (by norm_num)))))
@@ -232,14 +232,14 @@ theorem divideBySqrtTwo_symm_apply (z : ℂ) :
 
 open Classical in
 
-noncomputable def unscaleComplexCoordinates :
+def unscaleComplexCoordinates :
     ({w : InfinitePlace K // IsComplex w} → ℂ) ≃L[ℝ]
       ({w : InfinitePlace K // IsComplex w} → ℂ) :=
   ContinuousLinearEquiv.piCongrRight fun _ ↦ divideBySqrtTwo
 
 open Classical in
 
-noncomputable def traceToMixed :
+def traceToMixed :
     mixedEmbedding.euclidean.mixedSpace K ≃L[ℝ]
       mixedEmbedding.mixedSpace K :=
   (mixedEmbedding.euclidean.toMixed K).trans
@@ -249,13 +249,13 @@ noncomputable def traceToMixed :
 
 open Classical in
 
-noncomputable def traceEmbedding (x : K) :
+def traceEmbedding (x : K) :
     mixedEmbedding.euclidean.mixedSpace K :=
   (traceToMixed K).symm (mixedEmbedding K x)
 
 open Classical in
 
-noncomputable def traceIdealLattice
+def traceIdealLattice
     (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ) :
     Submodule ℤ (mixedEmbedding.euclidean.mixedSpace K) :=
   ZLattice.comap ℝ (mixedEmbedding.idealLattice K I)
@@ -306,7 +306,7 @@ theorem exists_traceEmbedding_eq_of_mem_traceIdealLattice
 
 open Classical in
 
-noncomputable def traceConjugation :
+def traceConjugation :
     mixedEmbedding.euclidean.mixedSpace K ≃ₗᵢ[ℝ]
       mixedEmbedding.euclidean.mixedSpace K :=
   LinearIsometryEquiv.withLpProdCongr 2
@@ -376,7 +376,7 @@ variable (K : Type*) [Field K] [NumberField K]
 
 open Classical in
 
-noncomputable def traceIdealRealBasis
+def traceIdealRealBasis
     (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ) :
     Basis (Free.ChooseBasisIndex ℤ I) ℝ
       (mixedEmbedding.euclidean.mixedSpace K) :=
@@ -473,7 +473,7 @@ theorem span_traceDual_basisOfFractionalIdeal
 
 open Classical in
 
-noncomputable def traceEmbeddingIntLinearMap :
+def traceEmbeddingIntLinearMap :
     K →ₗ[ℤ] mixedEmbedding.euclidean.mixedSpace K :=
   ((traceToMixed K).symm.toLinearEquiv.toLinearMap.restrictScalars ℤ).comp
     (mixedEmbedding K).toIntAlgHom.toLinearMap
@@ -486,7 +486,7 @@ theorem traceEmbeddingIntLinearMap_apply (x : K) :
 
 open Classical in
 
-noncomputable def conjugateTraceIdealLattice
+def conjugateTraceIdealLattice
     (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ) :
     Submodule ℤ (mixedEmbedding.euclidean.mixedSpace K) :=
   (traceIdealLattice K I).map
@@ -567,9 +567,3 @@ theorem dualLattice_traceIdealLattice
     funext i
     exact innerDualBasis_traceIdealRealBasis_apply K I i]
   exact span_conjugate_traceDual_basisOfFractionalIdeal K I
-
-end DedekindZetaZeroFree.AbelianQuotient.Theta
-
-end
-
-end

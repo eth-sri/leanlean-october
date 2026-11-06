@@ -33,8 +33,8 @@ open CubicCharacters
         ext q
         obtain ⟨x, rfl⟩ := QuotientGroup.mk'_surjective (cubes A) q
         rfl
-      right_inv := fun f => by ext x; rfl
-      map_mul' := fun f g => by ext x; rfl }
+      right_inv := fun f => by rfl
+      map_mul' := fun f g => by rfl }
 
 end DedekindZetaZeroFree.KPRankOneCubicCharacterProducts
 
@@ -66,7 +66,7 @@ def unitInclusion : (𝒪[K])ˣ →* Kˣ :=
 def eta (z : ℂˣ) (y : Kˣ) : ℂˣ :=
   z ^ KPCubicExpansion.valuationExponent K y
 
-private lemma cubes_closed : IsClosed (CubicCharacters.cubes Kˣ : Set Kˣ) := by
+lemma cubes_closed : IsClosed (CubicCharacters.cubes Kˣ : Set Kˣ) := by
   letI := IsTopologicalAddGroup.rightUniformSpace K
   letI := isUniformAddGroup_of_addCommGroup (G := K)
   letI : (Valued.v (R := K)).RankOne :=
@@ -81,7 +81,7 @@ private lemma cubes_closed : IsClosed (CubicCharacters.cubes Kˣ : Set Kˣ) := b
     ext y
     constructor
     · rintro ⟨x, rfl⟩
-      exact ⟨(x : K), (Units.val_pow_eq_pow_val x 3).symm⟩
+      simp
     · rintro ⟨x, hx⟩
       have hn : x ≠ 0 := by
         intro h
@@ -92,7 +92,7 @@ private lemma cubes_closed : IsClosed (CubicCharacters.cubes Kˣ : Set Kˣ) := b
   rw [he]
   exact hc.preimage Units.continuous_val
 
-private lemma class_pow (q : D K) : q ^ 3 = 1 := by
+lemma class_pow (q : D K) : q ^ 3 = 1 := by
   obtain ⟨y, rfl⟩ := QuotientGroup.mk'_surjective (CubicCharacters.cubes Kˣ) q
   rw [← map_pow]
   exact (QuotientGroup.eq_one_iff _).mpr ⟨y, rfl⟩
@@ -108,8 +108,8 @@ theorem local_character_count (ζ : K) (hζ : IsPrimitiveRoot ζ 3) :
     { toFun := fun χ => (rootsOfUnity 3 ℂ).subtype.comp χ.toMonoidHom
       invFun := fun f => ⟨f.codRestrict (rootsOfUnity 3 ℂ) (fun q => by
         rw [mem_rootsOfUnity, ← map_pow, class_pow, map_one]), continuous_of_discreteTopology⟩
-      left_inv := fun χ => by ext q; rfl
-      right_inv := fun f => by ext q; rfl }
+      left_inv := fun χ => by rfl
+      right_inv := fun f => by rfl }
   letI : HasEnoughRootsOfUnity ℂ (Monoid.exponent (D K)) :=
     HasEnoughRootsOfUnity.of_dvd ℂ (Monoid.exponent_dvd_of_forall_pow_eq_one (class_pow K))
   letI : Finite (X K) := Finite.of_injective e e.injective
@@ -124,8 +124,8 @@ theorem unit_mass (dx : Measure K) [dx.IsAddHaarMeasure]
     (m : ℝ) (hm : 0 < m) (hvol : dx (𝒪[K] : Set K) = ENNReal.ofReal m) :
     KPCubicHaar.multiplicativeHaar K dx
         {x : Kˣ | (x : K) ∈ 𝒪[K] ∧ ((x⁻¹ : Kˣ) : K) ∈ 𝒪[K]} =
-      ENNReal.ofReal (m * (1 - (KPCubicUnitIndices.residueCard K : ℝ)⁻¹)) := by
-  exact (kp_rankone_cubic_haar_power_measure K dx m hm hvol).2
+      ENNReal.ofReal (m * (1 - (KPCubicUnitIndices.residueCard K : ℝ)⁻¹)) := 
+  (kp_rankone_cubic_haar_power_measure K dx m hm hvol).2
 
 local instance : BorelSpace Kˣ := ⟨by
   change MeasurableSpace.comap Units.val ‹MeasurableSpace K› = borel Kˣ
@@ -148,8 +148,3 @@ theorem eta_uniformizer_coordinates (z : ℂˣ) (π : Kˣ)
     (Units.map (𝒪[K]).subtype.toMonoidHom u)) = z ^ j
   rw [KPCubicExpansion.valuationExponent_unit]
   simp
-
-end
-end DedekindZetaZeroFree.KPRankOneCubicProjection
-
-end

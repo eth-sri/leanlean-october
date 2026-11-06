@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Theta.Unfolding.TraceNormalizedSourceData
 
 @[expose] public section
 
-noncomputable section
 set_option maxHeartbeats 2000000
 set_option backward.isDefEq.respectTransparency false
 namespace DedekindZetaZeroFree.DigitMasks
@@ -39,7 +38,3 @@ theorem mask_mul_sixth {k : Type*} [Field k] [Fintype k]
     have h := congrArg (fun c : MulChar k ℂ => c (z : k)) (pow_orderOf_eq_one χ)
     simpa [hχ, MulChar.pow_apply_coe, MulChar.one_apply z.isUnit, map_pow] using h
   exact mask_mul_kernel χ ψ (z ^ 6) hz j d
-
-end DedekindZetaZeroFree.DigitMasks
-
-end

@@ -92,7 +92,6 @@ theorem rationalPrincipalIdeal_squarefree_coprime (F : Type) [Field F]
     have hpos : 0 < (NumberField.discr F).natAbs :=
       Int.natAbs_pos.mpr (NumberField.discr_ne_zero F)
     have h2 : p ≤ (NumberField.discr F).natAbs := Nat.le_of_dvd hpos h1
-    have h3 := le_max_left (NumberField.discr F).natAbs (Ideal.absNorm q)
     omega
   have havoid : ¬ p ∣ Ideal.absNorm q := by
     intro h
@@ -100,9 +99,6 @@ theorem rationalPrincipalIdeal_squarefree_coprime (F : Type) [Field F]
       rw [Nat.pos_iff_ne_zero, Ne, Ideal.absNorm_eq_zero_iff]
       exact hq
     have h2 : p ≤ Ideal.absNorm q := Nat.le_of_dvd hpos h
-    have h3 := le_max_right (NumberField.discr F).natAbs (Ideal.absNorm q)
     omega
   exact ⟨rationalPrincipalIdeal_squarefree F hp hdiscr,
     rationalPrincipalIdeal_sup_eq_top F hp q hq havoid⟩
-
-end DedekindZetaZeroFree.LargeSieve.Sieve

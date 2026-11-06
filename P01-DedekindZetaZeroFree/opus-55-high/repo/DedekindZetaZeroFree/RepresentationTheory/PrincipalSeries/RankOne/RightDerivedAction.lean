@@ -26,11 +26,7 @@ open scoped Matrix.Norms.Operator in
 private theorem matrix_path_diff (g : KPCplxCharacterHaar.ComplexGL2)
     (M : Matrix (Fin 2) (Fin 2) ℂ) :
     ∀ i j, DifferentiableAt ℝ (fun t : ℝ => ((g : Matrix (Fin 2) (Fin 2) ℂ) * NormedSpace.exp ((t : ℂ) • M)) i j) 0 := by
-  have hmat : DifferentiableAt ℝ (fun t : ℝ => (g : Matrix (Fin 2) (Fin 2) ℂ) * NormedSpace.exp ((t : ℂ) • M)) 0 := by
-    exact (differentiableAt_const _).mul ((differentiable_exp_smul_const ℂ M).differentiableAt.restrictScalars ℝ |>.comp 0 Complex.ofRealCLM.differentiableAt)
-  intro i j
-  exact (ContinuousLinearMap.proj j).differentiableAt.comp 0
-    ((ContinuousLinearMap.proj i).differentiableAt.comp 0 hmat)
+  fun_prop
 open scoped Matrix.Norms.Elementwise in
 private theorem local_path_differentiable (s : ℝ) (f : KPCplxPrincipalSeriesCharts.PrincipalSeries s) (g : KPCplxCharacterHaar.ComplexGL2)
     (M : Matrix (Fin 2) (Fin 2) ℂ) :
@@ -66,7 +62,7 @@ private theorem matrix_path_hasDeriv_components (g : KPCplxCharacterHaar.Complex
     ∀ i j, HasDerivAt (fun t : ℝ => ((g : Matrix (Fin 2) (Fin 2) ℂ) * NormedSpace.exp ((t : ℂ) • M)) i j) (((g : Matrix (Fin 2) (Fin 2) ℂ) * M) i j) 0 := by
   have h := ((hasDerivAt_exp_smul_const (𝕂 := ℂ) M ((0 : ℝ) : ℂ)).hasFDerivAt.restrictScalars ℝ).comp_hasDerivAt (f := fun t : ℝ => (t : ℂ)) 0 Complex.ofRealCLM.hasDerivAt
   have hmat := h.const_mul (g : Matrix (Fin 2) (Fin 2) ℂ)
-  simp only [Complex.ofRealCLM_apply, Complex.ofReal_one, ContinuousLinearMap.coe_restrictScalars, ContinuousLinearMap.toSpanSingleton_apply, one_smul, zero_smul, NormedSpace.exp_zero, mul_one, one_mul] at hmat
+  simp only [Complex.ofRealCLM_apply, Complex.ofReal_one] at hmat
   intro i j
   have hi := (ContinuousLinearMap.proj i : Matrix (Fin 2) (Fin 2) ℂ →L[ℝ] Fin 2 → ℂ).hasFDerivAt.comp_hasDerivAt 0 hmat
   have hj := (ContinuousLinearMap.proj j : (Fin 2 → ℂ) →L[ℝ] ℂ).hasFDerivAt.comp_hasDerivAt 0 hi
@@ -118,10 +114,7 @@ open scoped Matrix.Norms.Elementwise in
       funext t
       rw [mul_assoc]
       exact f.property.1 a d b _
-    dsimp only
-    rw [he]
-    exact deriv_const_smul (KPCplxPrincipalSeriesCharts.inductionWeight s a d : ℂ)
-      (f := fun t : ℝ => f (g * KPSmoothActualFlowData.matrixExponential ((t : ℂ) • M))) (local_path_differentiable s f g M)
+    simp_all
   · have hf := ((KPCplxPrincipalSeriesCharts.principalSeries_mem_iff s f.val).mp f.property).2
     have hcont : Continuous (fun m : Matrix (Fin 2) (Fin 2) ℂ => m.det) := by fun_prop
     have hs : IsOpen {m : Matrix (Fin 2) (Fin 2) ℂ | m.det ≠ 0} := isOpen_ne.preimage hcont
@@ -150,7 +143,6 @@ private theorem rightDerivative_add (s : ℝ) (X : Matrix (Fin 2) (Fin 2) ℂ)
   have hfh : (fun t : ℝ => (f + h) (g * KPSmoothActualFlowData.matrixExponential ((t : ℂ) • X))) =
       (fun t : ℝ => f (g * KPSmoothActualFlowData.matrixExponential ((t : ℂ) • X))) +
         (fun t : ℝ => h (g * KPSmoothActualFlowData.matrixExponential ((t : ℂ) • X))) := by
-    funext t
     rfl
   show deriv (fun t : ℝ =>
       (f + h) (g * KPSmoothActualFlowData.matrixExponential ((t : ℂ) • X))) 0 =
@@ -168,14 +160,12 @@ private theorem rightDerivative_smul (s : ℝ) (X : Matrix (Fin 2) (Fin 2) ℂ) 
   funext g
   have hsf : (fun t : ℝ => (a • f) (g * KPSmoothActualFlowData.matrixExponential ((t : ℂ) • X))) =
       (fun t : ℝ => a • f (g * KPSmoothActualFlowData.matrixExponential ((t : ℂ) • X))) := by
-    funext t
     rfl
   show deriv (fun t : ℝ =>
       (a • f) (g * KPSmoothActualFlowData.matrixExponential ((t : ℂ) • X))) 0 =
     a • deriv (fun t : ℝ =>
       f (g * KPSmoothActualFlowData.matrixExponential ((t : ℂ) • X))) 0
-  rw [hsf]
-  exact deriv_const_smul a (local_path_differentiable s f g X)
+  simp
 
 theorem right_derivative_linear_exists (s : ℝ) (X : Matrix (Fin 2) (Fin 2) ℂ) :
     ∃ D : KPCplxPrincipalSeriesCharts.PrincipalSeries s →ₗ[ℂ]
@@ -202,23 +192,12 @@ theorem right_derivative_mem (s : ℝ) (X : Matrix (Fin 2) (Fin 2) ℂ)
     (f : KPCplxPrincipalSeriesCharts.PrincipalSeries s) :
     (fun g => deriv (fun t : ℝ =>
       f (g * KPSmoothActualFlowData.matrixExponential ((t : ℂ) • X))) 0) ∈
-      KPCplxPrincipalSeriesCharts.principalSeriesSubmodule s := by
-  have he : (fun g => deriv (fun t : ℝ =>
-      f (g * KPSmoothActualFlowData.matrixExponential ((t : ℂ) • X))) 0) =
-      (rightDerivativeLinear s X f).val := by
-    funext g
-    exact (rightDerivativeLinear_apply s X f g).symm
-  rw [he]
-  exact (rightDerivativeLinear s X f).property
+      KPCplxPrincipalSeriesCharts.principalSeriesSubmodule s := by apply DedekindZetaZeroFree.RepresentationTheory.KPSmoothCoreCasimirEnergy.InfinitesimalAction.local_derivative_mem <;> assumption
 
 def localDerivative (s : ℝ) (b : LocalBasis)
     (f : KPCplxPrincipalSeriesCharts.PrincipalSeries s) :
     KPCplxPrincipalSeriesCharts.PrincipalSeries s :=
   ⟨fun g => deriv (fun t : ℝ =>
     f (g * KPSmoothActualFlowData.matrixExponential
-      ((t : ℂ) • cartanMatrix b))) 0, by
-      exact right_derivative_mem s (cartanMatrix b) f⟩
-
-end DedekindZetaZeroFree.RepresentationTheory.KPSmoothCoreCasimirEnergy.InfinitesimalAction
-
-end
+      ((t : ℂ) • cartanMatrix b))) 0, 
+      right_derivative_mem s (cartanMatrix b) f⟩

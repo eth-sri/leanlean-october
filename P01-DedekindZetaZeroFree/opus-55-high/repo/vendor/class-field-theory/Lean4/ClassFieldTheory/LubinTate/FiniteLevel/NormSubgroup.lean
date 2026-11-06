@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # The norm subgroup of a standard Lubin--Tate level
 
@@ -48,7 +44,7 @@ def standardLubinTateNormSubgroup
     (standardLubinTateLevelField hπ n)
 
 /-- The chosen base uniformizer, regarded as a nonzero field unit. -/
-noncomputable def standardLubinTateBaseUniformizerUnit
+def standardLubinTateBaseUniformizerUnit
     {F : LocalField.{u, v} K} {π : F.valuationSubring}
     (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) :
     Kˣ :=
@@ -93,39 +89,3 @@ theorem standardLubinTateBaseUniformizerUnit_mem_normSubgroup
     ⟨y, rfl⟩
   rw [hyNorm] at hyMem
   exact hyMem
-
-/-- The inverse uniformizer is also a norm, for conventions that choose the
-inverse generator of the valuation factor. -/
-theorem standardLubinTateBaseUniformizerUnit_inv_mem_normSubgroup
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (n : ℕ) :
-    (standardLubinTateBaseUniformizerUnit hπ)⁻¹ ∈
-      standardLubinTateNormSubgroup hπ n :=
-  (standardLubinTateNormSubgroup hπ n).inv_mem
-    (standardLubinTateBaseUniformizerUnit_mem_normSubgroup hπ n)
-
-/-- Every integral power of the chosen base uniformizer is a norm. -/
-theorem standardLubinTateBaseUniformizerUnit_zpowers_le_normSubgroup
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (n : ℕ) :
-    Subgroup.zpowers (standardLubinTateBaseUniformizerUnit hπ) ≤
-      standardLubinTateNormSubgroup hπ n := by
-  rw [Subgroup.zpowers_le]
-  exact standardLubinTateBaseUniformizerUnit_mem_normSubgroup hπ n
-
-/-- The same cyclic norm-subgroup inclusion using the inverse-uniformizer
-convention. -/
-theorem standardLubinTateBaseUniformizerUnit_inv_zpowers_le_normSubgroup
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (n : ℕ) :
-    Subgroup.zpowers ((standardLubinTateBaseUniformizerUnit hπ)⁻¹) ≤
-      standardLubinTateNormSubgroup hπ n := by
-  rw [Subgroup.zpowers_le]
-  exact standardLubinTateBaseUniformizerUnit_inv_mem_normSubgroup hπ n
-
-end LubinTate
-
-end

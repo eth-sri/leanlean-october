@@ -51,7 +51,7 @@ private theorem isOpen_domain (d : ℝ) : IsOpen (domain d) := by
     simpa only [Complex.ofReal_re, Complex.ofReal_im, zero_mul, sub_zero, hinner] using hp
   nlinarith
 
-private theorem eigen_not_resolvent
+theorem eigen_not_resolvent
     {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
     (Δ : H →ₗ.[ℂ] H) (μ : ℝ)
     (he : KPBelowThreshold.eigenspace Δ μ ≠ ⊥) :
@@ -65,7 +65,7 @@ private theorem eigen_not_resolvent
   rw [hz, map_zero] at h
   exact hx0 h.symm
 
-private theorem nonresolvent_mem_poleSet
+theorem nonresolvent_mem_poleSet
     {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
     (Δ : H →ₗ.[ℂ] H) (hDense : Dense (Δ.domain : Set H))
     (B : H →L[ℂ] H) (hbase : KPResolventPencil.GenuineInverse Δ (-1) B)
@@ -245,5 +245,3 @@ theorem kp_cont_below_threshold_resolvent
         obtain ⟨hunit, hformula⟩ := hlaurent z hz0 (lt_of_lt_of_le hzr (min_le_left r s))
         exact ⟨(KPResolventPencil.isUnit_shiftedPencil_iff Δ hDense B hbase z).mp hunit,
           hformula⟩
-
-end DedekindZetaZeroFree

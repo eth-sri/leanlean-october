@@ -81,16 +81,16 @@ noncomputable section
 open scoped Classical NumberField
 variable {F : Type} [Field F] [NumberField F]
 
-private theorem totallyPositive [NumberField.IsTotallyComplex F] (a : 𝓞 F) :
+theorem totallyPositive [NumberField.IsTotallyComplex F] (a : 𝓞 F) :
     ∀ φ : F →+* ℝ, 0 < φ (a : F) := by
   intro φ
   exfalso
   apply NumberField.IsTotallyComplex.complexEmbedding_not_isReal (Complex.ofRealHom.comp φ)
   rw [NumberField.ComplexEmbedding.isReal_iff]
   ext z
-  simp [NumberField.ComplexEmbedding.conjugate]
+  simp
 
-private theorem coprime_congr {R : Type*} [CommRing R] (m : Ideal R) (a b : R)
+theorem coprime_congr {R : Type*} [CommRing R] (m : Ideal R) (a b : R)
     (ha : Ideal.span {a} ⊔ m = ⊤) (hba : b - a ∈ m) : Ideal.span {b} ⊔ m = ⊤ := by
   apply top_unique
   rw [← ha]
@@ -116,8 +116,7 @@ private theorem principal_value_congr [NumberField.IsTotallyComplex F]
   obtain ⟨u, hu⟩ := hu
   obtain ⟨c, hc⟩ := Ideal.Quotient.mk_surjective (u⁻¹ : (𝓞 F ⧸ m)ˣ).val
   have he : Ideal.Quotient.mk m (a * c) = 1 := by
-    rw [map_mul, ← hu, hc]
-    exact u.val_inv
+    simp_all
   have hac' : a * c - 1 ∈ m := Ideal.Quotient.eq.mp (by simpa using he)
   have hc0 : c ≠ 0 := by
     intro hz
@@ -128,7 +127,7 @@ private theorem principal_value_congr [NumberField.IsTotallyComplex F]
     (Ideal.Quotient.eq.mpr hab).symm
   have hbc : b * c - 1 ∈ m := by
     apply Ideal.Quotient.eq.mp
-    simpa only [map_mul, map_one, hbe] using he
+    simp_all
   have hva := χ.map_span' (a * c) (mul_ne_zero ha hc0) hac' (totallyPositive _)
   have hvb := χ.map_span' (b * c) (mul_ne_zero hb hc0) hbc (totallyPositive _)
   rw [← Ideal.span_singleton_mul_span_singleton, χ.map_mul'] at hva hvb
@@ -141,7 +140,7 @@ private theorem conductor_le [NumberField.IsTotallyComplex F]
     ψ.conductor ≤ ν.conductor := by
   by_contra hn
   have hlt : ν.conductor < ν.conductor ⊔ ψ.conductor :=
-    lt_of_le_of_ne le_sup_left (fun he => hn (he ▸ le_sup_right))
+    by simp_all
   have hmt : ν.conductor ≠ ⊤ := by intro he; simp [he] at hn
   obtain ⟨a, ha, ham, _, hac, hne⟩ := ν.primitive _ hlt
   obtain ⟨x, hx, y, hy, hxy⟩ := Submodule.mem_sup.mp ham
@@ -176,8 +175,8 @@ theorem primitive_conductors_eq [NumberField.IsTotallyComplex F]
     (ν ψ : Detector.PrimitiveFrequencyCharacter F)
     (h : ∀ I : Ideal (𝓞 F), I ≠ ⊥ → I ⊔ ν.conductor = ⊤ →
       I ⊔ ψ.conductor = ⊤ → ν.character I = ψ.character I) :
-    ν.conductor = ψ.conductor := by
-  exact le_antisymm (conductor_le ψ ν (fun I hI hψ hν => (h I hI hν hψ).symm))
+    ν.conductor = ψ.conductor := 
+  le_antisymm (conductor_le ψ ν (fun I hI hψ hν => (h I hI hν hψ).symm))
     (conductor_le ν ψ h)
 
 theorem primitive_eq_of_common_domain [NumberField.IsTotallyComplex F]
@@ -190,8 +189,7 @@ theorem primitive_eq_of_common_domain [NumberField.IsTotallyComplex F]
     by_cases hbad : I = ⊥ ∨ I ⊔ ν.conductor ≠ ⊤
     · exact ((ν.character.eq_zero_iff' I).mpr hbad).trans
         ((ψ.character.eq_zero_iff' I).mpr (by simpa only [← hc] using hbad)).symm
-    · push Not at hbad
-      exact h I hbad.1 hbad.2 (by simpa only [← hc] using hbad.2)
+    simp_all
   cases ν with
   | mk m hm χ hχ =>
     cases ψ with
@@ -225,8 +223,3 @@ theorem primitive_inducers_eq_of_cofinite_prime_values
     ν = ψ := by
   apply CofinitePrimitiveRigidity.primitive_eq_of_common_domain ν ψ
   exact CofinitePrimitiveRigidity.ideal_values_eq_on_common_domain ν ψ h
-
-end
-end DedekindZetaZeroFree.PrincipalMellinComparison.NonprincipalContinuation.DetectorDyads.MinusArithmetic
-
-end

@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Ray class reciprocity
 
@@ -26,7 +22,6 @@ global reciprocity.  No global choice of ray class field is exposed.
 
 open scoped Classical NumberField
 
-noncomputable section
 
 namespace ClassFieldTheory
 
@@ -47,7 +42,3 @@ theorem rayClassField_reciprocity
     artin_frobenius := ?_ }⟩
   intro v hv w hlie
   exact R.artin_frobenius v hv w hlie
-
-end ClassFieldTheory
-
-end

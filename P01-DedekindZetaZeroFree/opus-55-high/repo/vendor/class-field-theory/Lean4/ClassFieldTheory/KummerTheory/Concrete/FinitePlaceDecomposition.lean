@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Kummer radicals and finite-place decomposition fields
 
@@ -39,7 +33,6 @@ open AlgebraicNumberTheory.Valuations
 open HilbertRamification
 open LocalClassFieldTheory
 
-noncomputable section
 
 namespace KummerTheory
 
@@ -174,7 +167,7 @@ theorem
   rw [
     localizedCompletion_baseField_comap_eq_fixedField_decompositionGroup
       vK hvK w] at hcomap
-  simpa [C, E, toE] using hcomap
+  omega
 
 omit [FiniteDimensional K L] in
 /-- A Kummer radicand is an `n`-th power in the finite-place completion
@@ -269,7 +262,7 @@ theorem
       rw [
         localizedCompletion_baseField_comap_eq_fixedField_decompositionGroup
           vK hvK w]
-      simpa [vK, w] using hfixed
+      omega
     change
       toE (beta : L) ∈ Set.range (algebraMap C E)
       at hcomap
@@ -278,11 +271,7 @@ theorem
       intro hy_zero
       have hbeta_zero : (beta : L) = 0 := by
         apply toE.injective
-        calc
-          toE (beta : L) =
-              algebraMap C E y := hy.symm
-          _ = 0 := by rw [hy_zero, map_zero]
-          _ = toE 0 := (map_zero toE).symm
+        simp_all
       exact beta.ne_zero hbeta_zero
     let yC : Cˣ := Units.mk0 y hy_ne
     have hyC : yC ^ (n : ℕ) = aC := by
@@ -322,7 +311,3 @@ theorem
             (algebraMap K
               (v.adicCompletion K)).toMonoidHom a :=
         he_base a
-
-end KummerTheory
-
-end

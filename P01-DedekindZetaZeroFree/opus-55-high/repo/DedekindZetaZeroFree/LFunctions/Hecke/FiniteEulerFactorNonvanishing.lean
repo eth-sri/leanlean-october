@@ -10,7 +10,7 @@ namespace DedekindZetaZeroFree.PrincipalMellin
 open scoped NumberField
 open NumberField IsDedekindDomain
 
-private theorem rayChar_transport_apply
+theorem rayChar_transport_apply
     {F : Type} [Field F] [NumberField F] {𝔪 𝔪' : Ideal (𝓞 F)} (h : 𝔪 = 𝔪')
     (η : RayClassCharacter F 𝔪) :
     ((h ▸ η : RayClassCharacter F 𝔪') : Ideal (𝓞 F) → ℂ) = η := by
@@ -49,9 +49,7 @@ theorem incomplete_nonzero_of_enlargement
     Q.L_holo.analyticOnNhd hopen
   have hfreq : ∃ᶠ z in nhdsWithin (2 : ℂ) {2}ᶜ, P.L z = Q.L z := by
     apply (accPt_iff_frequently_nhdsNE.mp mellin_punctured_halfplane_two_accPt).mono
-    rintro z ⟨t, ht, rfl⟩
-    apply hright
-    simp
+    simp_all
   have heq := hPa.eqOn_of_preconnected_of_frequently_eq hQa
     (mellin_punctured_halfplane_isPreconnected 0 (by norm_num))
     (mellin_punctured_halfplane_two_mem 0 (by norm_num)) hfreq
@@ -75,6 +73,4 @@ theorem incomplete_nonzero_of_enlargement
     rw [hsplit]
     ring
   intro hS
-  exact hA (by rw [key, hS, zero_mul])
-
-end DedekindZetaZeroFree.PrincipalMellin
+  simp_all

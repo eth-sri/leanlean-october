@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Fixedness of completed p-adic changed-uniformizer theta values
 
@@ -63,7 +60,7 @@ open LocalFieldTheory.DiscreteValuationField.Examples.Qp
   have hadic : IsAdic target.maximalIdeal := rfl
   exact (hadic.isAdicComplete_iff.mp target.isAdicComplete).2
 
-private theorem padicCompletedThetaFixedEvaluation_eq_of_point_eq
+theorem padicCompletedThetaFixedEvaluation_eq_of_point_eq
     (p : ℕ) [Fact p.Prime] (n : ℕ)
     (x y : (padicCompletedLevelCompleteDVF p n).valuationSubring)
     (hx : PowerSeries.HasEval x) (hy : PowerSeries.HasEval y)
@@ -174,9 +171,7 @@ theorem
   have hevaluation :
       padicCompletedLevelPowerSeriesEval p n xBack hxBack Θ =
         padicCompletedLevelPowerSeriesEval p n x hx Θ :=
-    DFunLike.congr_fun
-      (padicCompletedThetaFixedEvaluation_eq_of_point_eq
-        p n xBack x hxBack hx hpoint) Θ
+    by simp_all
   change
     r (padicCompletedLevelPowerSeriesEval p n x hx Θ) =
       padicCompletedLevelPowerSeriesEval p n x hx Θ
@@ -209,7 +204,3 @@ theorem
         (z : padicCompletedLevelField p n))
       (padicCompletedChangedUniformizerThetaValue_fixed_by_diagonalFrobeniusInteger
         p u n)
-
-end LubinTate
-
-end

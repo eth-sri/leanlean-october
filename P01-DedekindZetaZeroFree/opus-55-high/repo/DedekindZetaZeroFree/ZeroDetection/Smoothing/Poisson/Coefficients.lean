@@ -13,7 +13,7 @@ open scoped Classical
 
 variable (F : Type) [Field F] [NumberField F]
 
-private theorem a_eq_trunc (U V : ℝ) (n : Ideal (𝓞 F)) (hpos : 0 < Ideal.absNorm n)
+theorem a_eq_trunc (U V : ℝ) (n : Ideal (𝓞 F)) (hpos : 0 < Ideal.absNorm n)
     (hU : (Ideal.absNorm n : ℝ) ≤ U ^ qExp) (hV : (Ideal.absNorm n : ℝ) ≤ V ^ (2 : ℕ)) :
     a F U n = Detector.truncatedIdealMoebius F V n := by
   unfold a Detector.truncatedIdealMoebius
@@ -47,7 +47,7 @@ theorem a_eq_zero (U : ℝ) (hU : 2 ≤ U) (n : Ideal (𝓞 F))
   rw [a_eq_trunc F U V n hpos hn hNV]
   exact Detector.truncatedIdealMoebius_eq_zero F V hV2 n hn0 hn1 hNV
 
-private theorem abs_a_le_count (U : ℝ) (n : Ideal (𝓞 F)) (hn : n ≠ ⊥) :
+theorem abs_a_le_count (U : ℝ) (n : Ideal (𝓞 F)) (hn : n ≠ ⊥) :
     |a F U n| ≤ (Detector.idealDivisorCount F n : ℝ) := by
   classical
   let D := (Detector.ideal_divisors_finite F n hn).toFinset

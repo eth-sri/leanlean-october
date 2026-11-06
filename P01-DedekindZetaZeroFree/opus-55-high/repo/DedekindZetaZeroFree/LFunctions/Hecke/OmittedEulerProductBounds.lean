@@ -6,18 +6,17 @@ public import DedekindZetaZeroFree.Arithmetic.Ideals.Counting.NormSeries
 
 namespace DedekindZetaZeroFree
 
-noncomputable section
 open scoped NumberField BigOperators
 open UniqueFactorizationMonoid
 
-private lemma rpow_two_inv_mul_self (ε : ℝ) (hε : ε ≠ 0) : ((2 : ℝ) ^ (1 / ε)) ^ ε = 2 := by
+lemma rpow_two_inv_mul_self (ε : ℝ) (hε : ε ≠ 0) : ((2 : ℝ) ^ (1 / ε)) ^ ε = 2 := by
   rw [← Real.rpow_mul (by norm_num : (0 : ℝ) ≤ 2), div_mul_cancel₀ 1 hε, Real.rpow_one]
 
-private lemma threshold_bound (σ₀ ε : ℝ) (hσ₀ : 0 < σ₀) (hε : 0 < ε) (x : ℝ)
+lemma threshold_bound (σ₀ ε : ℝ) (hσ₀ : 0 < σ₀) (hε : 0 < ε) (x : ℝ)
     (hx : (2 : ℝ) ^ (1 / ε) + (2 : ℝ) ^ (1 / σ₀) ≤ x) :
     1 + x ^ (-σ₀) ≤ x ^ ε ∧ (1 - x ^ (-σ₀))⁻¹ ≤ x ^ ε := by
-  have hεnn : (0 : ℝ) ≤ (2 : ℝ) ^ (1 / ε) := Real.rpow_nonneg (by norm_num) _
-  have hσnn : (0 : ℝ) ≤ (2 : ℝ) ^ (1 / σ₀) := Real.rpow_nonneg (by norm_num) _
+  have hεnn : (0 : ℝ) ≤ (2 : ℝ) ^ (1 / ε) := by positivity
+  have hσnn : (0 : ℝ) ≤ (2 : ℝ) ^ (1 / σ₀) := by positivity
   have hxε : (2 : ℝ) ^ (1 / ε) ≤ x := (le_add_of_nonneg_right hσnn).trans hx
   have hxσ : (2 : ℝ) ^ (1 / σ₀) ≤ x := (le_add_of_nonneg_left hεnn).trans hx
   have h2ε : (2 : ℝ) ≤ x ^ ε := by
@@ -41,7 +40,7 @@ private lemma threshold_bound (σ₀ ε : ℝ) (hσ₀ : 0 < σ₀) (hε : 0 < �
     have h2 : ((1 : ℝ) / 2)⁻¹ = 2 := by norm_num
     linarith
 
-private lemma small_case (σ₀ : ℝ) (hσ₀ : 0 < σ₀) (x : ℝ) (hx : 2 ≤ x) :
+lemma small_case (σ₀ : ℝ) (hσ₀ : 0 < σ₀) (x : ℝ) (hx : 2 ≤ x) :
     1 + x ^ (-σ₀) ≤ 1 + (2 : ℝ) ^ (-σ₀) ∧
       (1 - x ^ (-σ₀))⁻¹ ≤ (1 - (2 : ℝ) ^ (-σ₀))⁻¹ := by
   have hle : x ^ (-σ₀) ≤ (2 : ℝ) ^ (-σ₀) :=
@@ -72,7 +71,7 @@ private lemma prod_norm_le_of_dvd {F : Type} [Field F] [NumberField F]
     (𝔲 : Ideal (𝓞 F)) (h𝔲 : 𝔲 ≠ ⊥) (T : Finset (Ideal (𝓞 F)))
     (hT : ∀ 𝔭 ∈ T, Prime 𝔭 ∧ 𝔭 ∣ 𝔲) :
     (∏ 𝔭 ∈ T, idealNorm 𝔭) ≤ idealNorm 𝔲 := by
-  have h𝔲0 : 𝔲 ≠ 0 := fun h => h𝔲 (by simpa using h)
+  have h𝔲0 : 𝔲 ≠ 0 := by simp_all
   have hsub : T ⊆ idealPrimeSupport 𝔲 := fun p hp =>
     Multiset.mem_toFinset.mpr
       ((UniqueFactorizationMonoid.mem_normalizedFactors_iff (α := Ideal (𝓞 F)) h𝔲0).mpr
@@ -159,7 +158,7 @@ theorem omitted_prime_euler_subpolynomial
       _ ≤ B ^ e.card * (idealNorm 𝔲) ^ ε := by
           refine mul_le_mul hconst (Real.rpow_le_rpow (Finset.prod_nonneg hnn) hnorm hε.le)
             (Real.rpow_nonneg (Finset.prod_nonneg hnn) _) ?_
-          exact pow_nonneg (le_trans zero_le_one hB1) _
+          positivity
   constructor
   · refine hstep _ ?_ hloc1
     intro 𝔭 h𝔭
@@ -170,7 +169,4 @@ theorem omitted_prime_euler_subpolynomial
     have hp2 := idealNorm_prime_ge_two 𝔭 (hT 𝔭 h𝔭).1
     have hlt : (idealNorm 𝔭) ^ (-σ₀) < 1 :=
       Real.rpow_lt_one_of_one_lt_of_neg (by linarith) (by linarith)
-    exact inv_nonneg.mpr (by linarith)
-
-end
-end DedekindZetaZeroFree
+    positivity

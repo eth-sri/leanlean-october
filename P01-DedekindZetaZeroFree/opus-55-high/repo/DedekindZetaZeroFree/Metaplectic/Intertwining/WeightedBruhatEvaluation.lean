@@ -9,7 +9,6 @@ public import DedekindZetaZeroFree.Metaplectic.Torus.CubicHeisenbergInducingData
 @[expose] public section
 
 section
-noncomputable section
 namespace DedekindZetaZeroFree.KPTameTransposeUnitNumeratorReduction
 
 open scoped NumberField Classical
@@ -79,9 +78,3 @@ theorem eventual_deformed_minusTest_bruhat_values
       F ζ hζ q S P hP (scalarCoordinateEquiv F ζ hζ q S P hP) hcoord f s g
     change ((deformedTest F ζ hζ q S P hP f s).val g).val 1 = _ at hh
     rw [hh, hz, mul_zero]
-
-end DedekindZetaZeroFree.KPTameTransposeUnitNumeratorReduction
-
-end
-
-end

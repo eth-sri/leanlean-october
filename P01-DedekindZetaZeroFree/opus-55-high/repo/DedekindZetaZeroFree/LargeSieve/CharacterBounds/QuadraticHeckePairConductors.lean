@@ -49,5 +49,3 @@ theorem initial_family_sameClass_nonprincipal (hc : c ≠ ⊥)
   rw [RayOperations.mul_apply, RayOperations.conjugate_apply,
     quadraticFamily_conj Q hb2 hb2c I] at h
   rwa [RayOperations.mul_apply]
-
-end DedekindZetaZeroFree.LargeSieve

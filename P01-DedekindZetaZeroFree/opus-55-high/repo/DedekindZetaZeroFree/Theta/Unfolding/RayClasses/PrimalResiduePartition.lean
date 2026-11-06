@@ -47,7 +47,7 @@ variable {F : Type} [Field F] [NumberField F]
     change (lift q).val + (x.val - (lift q).val) = x.val
     abel⟩
 
-private theorem residueLiftEquiv_mk
+theorem residueLiftEquiv_mk
     (I J : FractionalIdeal (𝓞 F)⁰ F) (hJI : J ≤ I)
     (lift : fractionalIdealQuotient I J → I.coeToSubmodule)
     (hlift : ∀ q, fractionalIdealQuotientMk I J (lift q) = q)
@@ -58,7 +58,7 @@ private theorem residueLiftEquiv_mk
   rw [map_add, hlift, (fractionalIdealQuotientMk_eq_zero_iff I J l).mpr z.2.property,
     add_zero]
 
-private theorem tsum_residue_partition
+theorem tsum_residue_partition
     (I J : FractionalIdeal (𝓞 F)⁰ F) (hJI : J ≤ I)
     [Fintype (fractionalIdealQuotient I J)]
     (lift : fractionalIdealQuotient I J → I.coeToSubmodule)

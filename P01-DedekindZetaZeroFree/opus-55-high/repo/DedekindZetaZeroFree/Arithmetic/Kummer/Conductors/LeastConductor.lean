@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.Arithmetic.RayClasses.Moduli.FinitePrimeProdu
 @[expose] public section
 
 namespace DedekindZetaZeroFree.KummerConductorLeast
-noncomputable section
 open scoped NumberField Classical
 
 theorem publicIsAbelianConductor (F L : Type) [Field F] [NumberField F]
@@ -27,6 +26,3 @@ theorem publicIsAbelianConductor (F L : Type) [Field F] [NumberField F]
     · exact Subsingleton.elim _ _
   rw [← heq]
   exact ClassFieldTheory.normFullConductor_isAbelianConductor F L
-
-end
-end DedekindZetaZeroFree.KummerConductorLeast

@@ -21,13 +21,11 @@ theorem exists_positive_mem_congruent_one
   obtain ⟨b0, hb0B, y, hym, hsum⟩ := Submodule.mem_sup.mp h1
   have hb0sub : b0 - 1 ∈ m := by
     have h : b0 - 1 = -y := by rw [← hsum]; ring
-    rw [h]; exact m.neg_mem hym
+    simp_all
 
   have hBm_ne : B * m ≠ ⊥ := by
     intro h
-    rcases (Ideal.mul_eq_bot.mp h) with h | h
-    · exact hB h
-    · exact hm h
+    simp_all
   set d : ℕ := (B * m).absNorm with hd
   have hd_ne : d ≠ 0 := by
     rw [hd, ne_eq, Ideal.absNorm_eq_zero_iff]; exact hBm_ne
@@ -40,22 +38,22 @@ theorem exists_positive_mem_congruent_one
   have hd_mem_m : (d : 𝓞 F) ∈ m := Ideal.mul_le_right hd_mem_mul
 
   have hcoe_add : ∀ x y : 𝓞 F, ((x + y : 𝓞 F) : F) = (x : F) + (y : F) :=
-    fun x y => map_add (algebraMap (𝓞 F) F) x y
+    by simp
   have hcoe_mul : ∀ x y : 𝓞 F, ((x * y : 𝓞 F) : F) = (x : F) * (y : F) :=
-    fun x y => map_mul (algebraMap (𝓞 F) F) x y
+    by simp
   have hcoe_nat : ∀ n : ℕ, ((n : 𝓞 F) : F) = (n : F) :=
-    fun n => map_natCast (algebraMap (𝓞 F) F) n
+    by simp
 
   set C : ℝ := ∑ φ : F →+* ℝ, |φ (b0 : F)| with hC
   obtain ⟨N, hN⟩ := exists_nat_gt (C / (d : ℝ))
   have hN' : C < (N : ℝ) * (d : ℝ) := by
     have := (div_lt_iff₀ hdR).mp hN
-    simpa [mul_comm] using this
+    omega
   set b1 : 𝓞 F := b0 + (N : 𝓞 F) * (d : 𝓞 F) with hb1
   have hb1val : ∀ φ : F →+* ℝ, φ (b1 : F) = φ (b0 : F) + (N : ℝ) * (d : ℝ) := by
     intro φ
     have h1' : (b1 : F) = (b0 : F) + (N : F) * (d : F) := by
-      rw [hb1, hcoe_add, hcoe_mul, hcoe_nat, hcoe_nat]
+      rfl
     rw [h1', map_add, map_mul, map_natCast, map_natCast]
   have hb1_pos : ∀ φ : F →+* ℝ, 0 < φ (b1 : F) := by
     intro φ
@@ -81,12 +79,10 @@ theorem exists_positive_mem_congruent_one
       rw [h]; exact m.add_mem hb1sub hd_mem_m
     · intro φ
       have h2 : ((b1 + (d : 𝓞 F) : 𝓞 F) : F) = (b1 : F) + (d : F) := by
-        rw [hcoe_add, hcoe_nat]
+        rfl
       have hz : φ (b1 : F) = 0 := by
         rw [hb1z, show ((0 : 𝓞 F) : F) = (0 : F) from map_zero (algebraMap (𝓞 F) F),
           map_zero]
       rw [h2, map_add, hz, zero_add]
       simpa only [hcoe_nat d, map_natCast] using hdR
   · exact ⟨b1, hb1z, hb1B, hb1sub, hb1_pos⟩
-
-end DedekindZetaZeroFree.LargeSieve.RayBridge

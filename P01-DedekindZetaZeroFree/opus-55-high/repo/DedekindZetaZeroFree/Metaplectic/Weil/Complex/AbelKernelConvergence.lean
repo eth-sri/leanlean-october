@@ -19,13 +19,13 @@ def EK (β a u ξ : ℂ) (ε : ℝ) : ℂ :=
     (Real.pi : ℂ) ^ 2 * ((β * u * ξ).im : ℂ) ^ 2 /
       ((ε : ℂ) + 2 * (Real.pi : ℂ) * Complex.I * (‖β * a‖ : ℂ))
 
-private lemma K_eq (β a u ξ : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0)
+lemma K_eq (β a u ξ : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0)
     (hu : ‖u‖ = 1) (hrot : β * a * u ^ 2 = (‖β * a‖ : ℂ))
     (ε : ℝ) (hε : 0 < ε) :
     K β ε a ξ = PK β a ε * Complex.exp (EK β a u ξ ε) := by
   simpa only [PK, EK] using damped_gaussian_evaluation β a ξ hβ ha ε hε u hu hrot
 
-private lemma prefactor_le (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0) (ε : ℝ) :
+lemma prefactor_le (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0) (ε : ℝ) :
     ‖β‖ * Real.pi / Real.sqrt (ε ^ 2 + 4 * Real.pi ^ 2 * ‖β * a‖ ^ 2) ≤ 1 / (2 * ‖a‖) := by
   have hbn : 0 < ‖β‖ := norm_pos_iff.mpr hβ
   have han : 0 < ‖a‖ := norm_pos_iff.mpr ha
@@ -47,25 +47,24 @@ private lemma prefactor_le (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0) (ε : �
         have ha0 : ‖a‖ ≠ 0 := ne_of_gt han
         field_simp
 
-private lemma re_div_nonneg (s : ℝ) (hs : 0 ≤ s) (b : ℂ) (hb : 0 ≤ b.re) :
+lemma re_div_nonneg (s : ℝ) (hs : 0 ≤ s) (b : ℂ) (hb : 0 ≤ b.re) :
     0 ≤ ((s : ℂ) / b).re := by
   rw [div_eq_mul_inv, Complex.re_ofReal_mul, Complex.inv_re, ← mul_div_assoc]
   exact div_nonneg (mul_nonneg hs hb) (Complex.normSq_nonneg b)
 
-private lemma re_div_nonpos (s : ℝ) (hs : s ≤ 0) (b : ℂ) (hb : 0 ≤ b.re) :
+lemma re_div_nonpos (s : ℝ) (hs : s ≤ 0) (b : ℂ) (hb : 0 ≤ b.re) :
     ((s : ℂ) / b).re ≤ 0 := by
   rw [div_eq_mul_inv, Complex.re_ofReal_mul, Complex.inv_re, ← mul_div_assoc]
   exact div_nonpos_of_nonpos_of_nonneg (mul_nonpos_of_nonpos_of_nonneg hs hb)
     (Complex.normSq_nonneg b)
 
-private lemma EK_re_le_zero (β a u ξ : ℂ) (ε : ℝ) (hε : 0 < ε) :
+lemma EK_re_le_zero (β a u ξ : ℂ) (ε : ℝ) (hε : 0 < ε) :
     (EK β a u ξ ε).re ≤ 0 := by
   have hM : 0 ≤ ((ε : ℂ) - 2 * (Real.pi : ℂ) * Complex.I * (‖β * a‖ : ℂ)).re := by
     simp [Complex.sub_re, Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im]
     linarith
   have hP : 0 ≤ ((ε : ℂ) + 2 * (Real.pi : ℂ) * Complex.I * (‖β * a‖ : ℂ)).re := by
-    simp [Complex.sub_re, Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im]
-    linarith
+    simp_all
   have h1 : ((-(Real.pi : ℂ) ^ 2 * ((β * u * ξ).re : ℂ) ^ 2 /
       ((ε : ℂ) - 2 * (Real.pi : ℂ) * Complex.I * (‖β * a‖ : ℂ)))).re ≤ 0 := by
     have hz : -(Real.pi : ℂ) ^ 2 * ((β * u * ξ).re : ℂ) ^ 2 =
@@ -107,37 +106,31 @@ theorem norm_K_le (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0)
     _ = ‖β‖ * Real.pi / Real.sqrt (ε ^ 2 + 4 * Real.pi ^ 2 * ‖β * a‖ ^ 2) := mul_one _
     _ ≤ 1 / (2 * ‖a‖) := prefactor_le β a hβ ha ε
 
-private lemma EK_continuous (β a u ξ : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0) :
+lemma EK_continuous (β a u ξ : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0) :
     Continuous (EK β a u ξ) := by
   have hr : 0 < ‖β * a‖ := norm_pos_iff.mpr (mul_ne_zero hβ ha)
   have hm (ε : ℝ) : ((ε : ℂ) - 2 * (Real.pi : ℂ) * Complex.I * (‖β * a‖ : ℂ)) ≠ 0 := by
     intro h
     have hi := congrArg Complex.im h
     simp [Complex.mul_im, Complex.mul_re] at hi
-    rcases hi with hi | hi
-    · exact hβ hi
-    · exact ha hi
+    simp_all
   have hp (ε : ℝ) : ((ε : ℂ) + 2 * (Real.pi : ℂ) * Complex.I * (‖β * a‖ : ℂ)) ≠ 0 := by
     intro h
     have hi := congrArg Complex.im h
     simp [Complex.mul_im, Complex.mul_re] at hi
-    rcases hi with hi | hi
-    · exact hβ hi
-    · exact ha hi
+    simp_all
   unfold EK
   fun_prop
 
-private lemma PK_continuous (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0) :
+lemma PK_continuous (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0) :
     Continuous (PK β a) := by
   have hr : 0 < ‖β * a‖ := norm_pos_iff.mpr (mul_ne_zero hβ ha)
   have hs (ε : ℝ) : Real.sqrt (ε ^ 2 + 4 * Real.pi ^ 2 * ‖β * a‖ ^ 2) ≠ 0 := by
-    apply ne_of_gt
-    apply Real.sqrt_pos.mpr
     positivity
   unfold PK
   fun_prop
 
-private lemma PK_zero (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0) :
+lemma PK_zero (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0) :
     PK β a 0 = ((1 / (2 * ‖a‖) : ℝ) : ℂ) := by
   have hb0 : ‖β‖ ≠ 0 := norm_ne_zero_iff.mpr hβ
   have ha0 : ‖a‖ ≠ 0 := norm_ne_zero_iff.mpr ha
@@ -148,11 +141,11 @@ private lemma PK_zero (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0) :
   rw [norm_mul]
   field_simp
 
-private lemma EK_zero (β a u ξ : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0)
+lemma EK_zero (β a u ξ : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0)
     (hrot : β * a * u ^ 2 = (‖β * a‖ : ℂ)) :
     EK β a u ξ 0 = (((2 * Real.pi * (β * (-ξ ^ 2 / (4 * a))).re : ℝ) : ℂ) * Complex.I) := by
   have hr : (‖β * a‖ : ℂ) ≠ 0 := by
-    exact_mod_cast (norm_ne_zero_iff.mpr (mul_ne_zero hβ ha))
+    simp_all
   have hp : (Real.pi : ℂ) ≠ 0 := by exact_mod_cast Real.pi_ne_zero
   have hRe : (β * (-ξ ^ 2 / (4 * a))).re =
       -(((β * u * ξ).re ^ 2 - (β * u * ξ).im ^ 2) / ‖β * a‖) / 4 := by
@@ -163,7 +156,7 @@ private lemma EK_zero (β a u ξ : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0)
   rw [hRe]
   unfold EK
   push_cast
-  simp only [Complex.ofReal_zero, zero_sub, zero_add]
+  simp only [zero_sub, zero_add]
   rw [div_neg_eq_neg_div, div_eq_mul_inv, div_eq_mul_inv]
   simp only [mul_inv_rev, Complex.inv_I]
   field_simp
@@ -191,8 +184,8 @@ theorem norm_schwartz_mul_K_le (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0)
   exact mul_le_mul_of_nonneg_left (norm_K_le β a hβ ha ε hε (y + z)) (norm_nonneg _)
 
 theorem integrable_schwartz_kernel_bound (β a : ℂ) (f : SchwartzMap ℂ ℂ) :
-    Integrable (fun z : ℂ => (1 / (2 * ‖a‖)) * ‖f z‖) (mu β) := by
-  exact (integrable_schwartz_mu β f).norm.const_mul _
+    Integrable (fun z : ℂ => (1 / (2 * ‖a‖)) * ‖f z‖) (mu β) := 
+  (integrable_schwartz_mu β f).norm.const_mul _
 
 theorem tendsto_integral_schwartz_mul_K (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0)
     (f : SchwartzMap ℂ ℂ) (y : ℂ) :
@@ -218,6 +211,3 @@ theorem tendsto_integral_schwartz_mul_K (β a : ℂ) (hβ : β ≠ 0) (ha : a �
   · exact integrable_schwartz_kernel_bound β a f
   · exact Filter.Eventually.of_forall fun z => by
       simpa only [mul_assoc] using (tendsto_K β a hβ ha (y + z)).const_mul (f z)
-
-end
-end DedekindZetaZeroFree.ComplexWeil

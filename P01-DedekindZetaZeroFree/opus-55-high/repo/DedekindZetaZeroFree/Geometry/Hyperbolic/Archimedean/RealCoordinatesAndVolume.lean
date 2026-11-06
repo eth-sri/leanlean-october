@@ -27,9 +27,7 @@ def coordinates : EuclideanSpace ℝ (Fin (d * 3)) ≃ₜ KPArch.Space d where
   right_inv := by
     intro z
     funext i
-    apply Prod.ext
-    · apply Complex.ext <;> simp
-    · simp
+    simp
   continuous_toFun := by
     apply continuous_pi
     intro i
@@ -40,7 +38,7 @@ def coordinates : EuclideanSpace ℝ (Fin (d * 3)) ≃ₜ KPArch.Space d where
         ((Complex.continuous_ofReal.comp hi).mul (continuous_const (y := Complex.I))) using 1
       funext p
       apply Complex.ext <;> simp
-    · exact (EuclideanSpace.proj (finProdFinEquiv (i, 2))).continuous
+    fun_prop
   continuous_invFun := by
     apply (PiLp.continuous_toLp 2 (fun _ : Fin (d * 3) => ℝ)).comp
     apply continuous_pi
@@ -49,7 +47,7 @@ def coordinates : EuclideanSpace ℝ (Fin (d * 3)) ≃ₜ KPArch.Space d where
     split_ifs
     · exact Complex.continuous_re.comp (continuous_fst.comp (continuous_apply _))
     · exact Complex.continuous_im.comp (continuous_fst.comp (continuous_apply _))
-    · exact continuous_snd.comp (continuous_apply _)
+    fun_prop
 
 def density (p : EuclideanSpace ℝ (Fin (d * 3))) : ℝ :=
   KPArch.volumeDensity (d) (coordinates d p)
@@ -85,7 +83,7 @@ theorem coordinate_volume : Measure.map (coordinates d) volume =
         fin_cases j
         · simpa using (h i).1.1
         · simpa using (h i).1.2
-        · simpa using (h i).2
+        simp_all
     rw [hpre, volume_pi_pi]
     simp_rw [Measure.volume_eq_prod, Measure.prod_prod]
     simp_rw [Complex.volume_preserving_equiv_real_prod.measure_preimage
@@ -107,9 +105,7 @@ theorem density_smooth : ContDiff ℝ (⊤ : ℕ∞) (density d) := by
 theorem density_positive (p : EuclideanSpace ℝ (Fin (d * 3))) :
     0 < density d p := by
   unfold density KPArch.volumeDensity KPArch.height
-  apply Finset.prod_pos
-  intro i hi
-  exact pow_pos (inv_pos.mpr (Real.exp_pos _)) 2
+  positivity
 
 theorem metric_volume : Measure.map (coordinates d)
     (volume.withDensity (fun p => ENNReal.ofReal (density d p))) =
@@ -128,7 +124,3 @@ theorem metric_volume : Measure.map (coordinates d)
   rw [← lintegral_indicator hs, ← hm, lintegral_map hg (coordinates d).continuous.measurable]
   rw [← lintegral_indicator ((coordinates d).continuous.measurable hs)]
   rfl
-
-end DedekindZetaZeroFree.KPArchRealCoordinates
-
-end

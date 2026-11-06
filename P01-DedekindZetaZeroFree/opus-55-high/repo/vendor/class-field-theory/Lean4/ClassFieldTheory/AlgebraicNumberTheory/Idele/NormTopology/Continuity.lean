@@ -4,9 +4,8 @@ public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Topology
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Extension.IdeleNormComponents
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Extension.NormLocalOrder
 public import ClassFieldTheory.AlgebraicNumberTheory.Adele.IntegralTensorSupport.IdeleSupport
-public import ClassFieldTheory.AlgebraicNumberTheory.Adele.IntegralTensorSupport.Localization
-public import ClassFieldTheory.AlgebraicNumberTheory.Adele.IntegralTensorSupport.AbsoluteValue
 public import ClassFieldTheory.AlgebraicNumberTheory.Adele.IntegralTensorSupport.Lattice
+public import ClassFieldTheory.AlgebraicNumberTheory.Adele.IntegralTensorSupport.AbsoluteValue
 public import ClassFieldTheory.AlgebraicNumberTheory.Adele.IntegralTensorSupport.FinitePlaceCompletion
 public import ClassFieldTheory.AlgebraicNumberTheory.Adele.IntegralTensorSupport.LocalTensorDecomposition
 public import ValuedFieldTheory.LocalField.NonarchimedeanLocalField.NormContinuity
@@ -19,18 +18,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
-
-
-
-
-set_option autoImplicit false
 
 /-!
 # Continuity of the global idele norm
@@ -84,7 +71,7 @@ theorem finitePlace_normUnits_mem_integerUnits
   simp
 
 omit [FiniteDimensional K L] in
-private theorem finitePlace_normUnits_continuous
+theorem finitePlace_normUnits_continuous
     (v₀ : HeightOneSpectrum (𝓞 K))
     (W : {W : HeightOneSpectrum (𝓞 L) //
       _root_.finitePlaceBelow (K := K) W = v₀}) :
@@ -120,7 +107,7 @@ private theorem finitePlace_normUnits_continuous
       (v₀.adicCompletion K) (W.1.adicCompletion L)
 
 /-- The product of all finite local norms on the integral finite components. -/
- noncomputable def integralFiniteNormComponents
+ def integralFiniteNormComponents
     (a :
       InfiniteIdeleGroup L ×
         (∀ W : HeightOneSpectrum (𝓞 L),
@@ -166,7 +153,7 @@ private theorem finitePlace_normUnits_continuous
             (K := K) (L := L) v₀ W (a.2 W.1))
 
 /-- The finite local norm product is continuous on the integral-idele chart. -/
-private theorem integralFiniteNormComponents_continuous :
+theorem integralFiniteNormComponents_continuous :
     Continuous (integralFiniteNormComponents K L) := by
   rw [continuous_pi_iff]
   intro v₀
@@ -198,7 +185,7 @@ private theorem integralFiniteNormComponents_continuous :
         ((continuous_apply W.1).comp continuous_snd))
 
 /-- The product of the archimedean local norms on the integral-idele chart. -/
- noncomputable def integralInfiniteNormComponents
+ def integralInfiniteNormComponents
     (a :
       InfiniteIdeleGroup L ×
         (∀ W : HeightOneSpectrum (𝓞 L),
@@ -226,7 +213,7 @@ private theorem integralFiniteNormComponents_continuous :
 
 omit [NumberField L] in
 /-- A norm between completions at infinite places is continuous. -/
-private theorem infinitePlace_normUnits_continuous
+theorem infinitePlace_normUnits_continuous
     (v₀ : InfinitePlace K)
     (W : {W : InfinitePlace L //
       _root_.infinitePlaceBelow (K := K) W = v₀}) :
@@ -269,10 +256,7 @@ private theorem infinitePlace_normUnits_continuous
             InfinitePlace.Completion.extensionEmbeddingOfIsReal
               hWReal ((algebraMap v₀.Completion W.1.Completion) z)
         apply Complex.ofReal_injective
-        simpa only [
-          InfinitePlace.Completion.extensionEmbeddingOfIsReal_apply] using
-          (InfinitePlace.Completion.liesOver_extensionEmbedding_apply
-            W.1 (v := v₀)).symm
+        simp
       have hBaseUnitsContinuous : Continuous eBaseUnits.symm := by
         change Continuous (Units.map eBase.symm.toMonoidHom)
         simpa only [eBase] using
@@ -282,7 +266,6 @@ private theorem infinitePlace_normUnits_continuous
         refine
           ((InfinitePlace.Completion.isometryEquivRealOfIsReal hWReal).continuous.units_map _).congr ?_
         intro x
-        apply Units.ext
         rfl
       have hNormEq :
           (fun x : W.1.Completionˣ =>
@@ -337,7 +320,6 @@ private theorem infinitePlace_normUnits_continuous
         refine
           ((InfinitePlace.Completion.isometryEquivComplexOfIsComplex hWComplex).continuous.units_map _).congr ?_
         intro x
-        apply Units.ext
         rfl
       have hNormEq :
           (fun x : W.1.Completionˣ =>
@@ -397,15 +379,12 @@ private theorem infinitePlace_normUnits_continuous
           InfinitePlace.Completion.extensionEmbedding v₀ z =
             InfinitePlace.Completion.extensionEmbedding W.1
               ((algebraMap v₀.Completion W.1.Completion) z)
-        exact
-          (InfinitePlace.Completion.liesOver_extensionEmbedding_apply
-            W.1 (v := v₀)).symm
+        simp
       have hExtensionUnitsContinuous : Continuous eExtensionUnits := by
         change Continuous (Units.map eExtension.toMonoidHom)
         refine
           ((InfinitePlace.Completion.isometryEquivComplexOfIsComplex hWComplex).continuous.units_map _).congr ?_
         intro x
-        apply Units.ext
         rfl
       have hNormEq :
           (fun x : W.1.Completionˣ =>
@@ -456,9 +435,6 @@ private theorem infinitePlace_normUnits_continuous
         refine
           (InfinitePlace.Completion.isometry_extensionEmbedding W.1).continuous.star.congr ?_
         intro x
-        change
-          star (InfinitePlace.Completion.extensionEmbedding W.1 x) =
-            star (InfinitePlace.Completion.extensionEmbedding W.1 x)
         rfl
       have hExtensionUnitsContinuous : Continuous eExtensionUnits := by
         change Continuous (Units.map eExtension.toMonoidHom)
@@ -490,7 +466,7 @@ private theorem infinitePlace_normUnits_continuous
 
 /-- The archimedean local norm product is continuous on the
 integral-idele chart. -/
-private theorem integralInfiniteNormComponents_continuous :
+theorem integralInfiniteNormComponents_continuous :
     Continuous (integralInfiniteNormComponents K L) := by
   rw [continuous_pi_iff]
   intro v₀
@@ -532,7 +508,7 @@ finite components. -/
       Filter.cofinite)
 
 /-- The integral-idele chart is an open subspace of the idele group. -/
-private theorem integralIdeleEmbedding_isOpenEmbedding
+theorem integralIdeleEmbedding_isOpenEmbedding
     (F : Type w) [Field F] [NumberField F] :
     Topology.IsOpenEmbedding (integralIdeleEmbedding F) := by
   exact
@@ -542,7 +518,7 @@ private theorem integralIdeleEmbedding_isOpenEmbedding
 
 /-- The finite part of the norm on the integral chart is the restricted
 product structure map of the finite local norm products. -/
-private theorem norm_integralIdeleEmbedding_finite
+theorem norm_integralIdeleEmbedding_finite
     (a :
       InfiniteIdeleGroup L ×
         (∀ W : HeightOneSpectrum (𝓞 L),
@@ -589,7 +565,7 @@ private theorem norm_integralIdeleEmbedding_finite
 
 /-- The infinite part of the norm on the integral chart is the product of
 the archimedean local norms. -/
-private theorem norm_integralIdeleEmbedding_infinite
+theorem norm_integralIdeleEmbedding_infinite
     (a :
       InfiniteIdeleGroup L ×
         (∀ W : HeightOneSpectrum (𝓞 L),
@@ -637,7 +613,7 @@ private theorem norm_integralIdeleEmbedding_infinite
   rfl
 
 /-- The actual idele norm is continuous on the open integral-idele chart. -/
-private theorem norm_comp_integralIdeleEmbedding_continuous :
+theorem norm_comp_integralIdeleEmbedding_continuous :
     Continuous
       ((norm K L : IdeleGroup L → IdeleGroup K) ∘
         integralIdeleEmbedding L) := by
@@ -710,34 +686,5 @@ theorem norm_continuous :
                   (W.adicCompletionIntegers L).units))) :=
       ((integralIdeleEmbedding_isOpenEmbedding L).continuousAt_iff
         (g := (norm K L : IdeleGroup L → IdeleGroup K))).mp hChartAt
-    have hOne :
-        integralIdeleEmbedding L
-          (1 :
-            InfiniteIdeleGroup L ×
-              (∀ W : HeightOneSpectrum (𝓞 L),
-                (W.adicCompletionIntegers L).units)) =
-          (1 : IdeleGroup L) := by
-      apply Prod.ext
-      · rfl
-      · apply RestrictedProduct.ext
-        intro W
-        rfl
-    rw [hOne] at hAtChart
-    exact hAtChart
+    fun_prop
   exact continuous_of_continuousAt_one (norm K L) hAt
-
-/-- The idele norm bundled as a continuous monoid homomorphism. -/
-noncomputable def ideleNormContinuousMonoidHom :
-    IdeleGroup L →ₜ* IdeleGroup K where
-  __ := norm K L
-  continuous_toFun := norm_continuous K L
-
-@[simp]
-theorem ideleNormContinuousMonoidHom_apply
-    (a : IdeleGroup L) :
-    ideleNormContinuousMonoidHom K L a = norm K L a :=
-  rfl
-
-end IdeleGroup
-
-end

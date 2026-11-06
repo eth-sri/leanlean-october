@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Construction of a closed finite-index class field
 
@@ -40,7 +35,7 @@ variable {K : Type} [Field K] [NumberField K]
 
 /-- The concrete finite Galois norm neighbourhood used to construct
 the class field of `H`. -/
-noncomputable abbrev closedFiniteIndexClassFieldNormAmbient
+abbrev closedFiniteIndexClassFieldNormAmbient
     (H : Subgroup (IdeleClassGroup K))
     (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
     [H.FiniteIndex] : Type :=
@@ -61,7 +56,7 @@ theorem closedFiniteIndexClassFieldNormAmbient_normRange_le
 
 /-- The compatible abstract base subgroup used by the selected class
 field of `H`. -/
-noncomputable abbrev closedFiniteIndexClassFieldBaseSubgroup
+abbrev closedFiniteIndexClassFieldBaseSubgroup
     (H : Subgroup (IdeleClassGroup K))
     (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
     [H.FiniteIndex] :=
@@ -73,7 +68,7 @@ noncomputable abbrev closedFiniteIndexClassFieldBaseSubgroup
 definitionally the selected base subgroup.  Keeping this presentation
 transparent avoids dependent quotient transports through the opaque tower
 package in reciprocity consumers. -/
-noncomputable abbrev
+abbrev
     closedFiniteIndexClassFieldReciprocityFiniteAbstractField
     (H : Subgroup (IdeleClassGroup K))
     (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
@@ -86,7 +81,7 @@ noncomputable abbrev
 
 /-- The finite abelian subextension selected by a closed finite-index
 idèle-class subgroup. -/
-noncomputable abbrev closedFiniteIndexClassFieldSubextension
+abbrev closedFiniteIndexClassFieldSubextension
     (H : Subgroup (IdeleClassGroup K))
     (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
     [H.FiniteIndex] :
@@ -101,7 +96,7 @@ noncomputable abbrev closedFiniteIndexClassFieldSubextension
 
 /-- The canonical fixed-field copy of the original number field used
 by the selected class field of `H`. -/
-noncomputable abbrev closedFiniteIndexClassFieldBase
+abbrev closedFiniteIndexClassFieldBase
     (H : Subgroup (IdeleClassGroup K))
     (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
     [H.FiniteIndex] : Type :=
@@ -110,7 +105,7 @@ noncomputable abbrev closedFiniteIndexClassFieldBase
       (K := K) H hclosed)
 
 /-- The actual finite abelian class field selected by `H`. -/
-noncomputable abbrev closedFiniteIndexClassField
+abbrev closedFiniteIndexClassField
     (H : Subgroup (IdeleClassGroup K))
     (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
     [H.FiniteIndex] : Type :=
@@ -122,7 +117,7 @@ noncomputable abbrev closedFiniteIndexClassField
 
 /-- The canonical equivalence from the original number field to the
 fixed-field base of its selected class field. -/
-noncomputable abbrev closedFiniteIndexClassFieldBaseEquiv
+abbrev closedFiniteIndexClassFieldBaseEquiv
     (H : Subgroup (IdeleClassGroup K))
     (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
     [H.FiniteIndex] :
@@ -132,7 +127,3 @@ noncomputable abbrev closedFiniteIndexClassFieldBaseEquiv
   ordinaryNormClassFieldBaseEquiv K
     (closedFiniteIndexClassFieldNormAmbient
       (K := K) H hclosed)
-end GlobalClassFields
-end GlobalClassFieldTheory
-
-end

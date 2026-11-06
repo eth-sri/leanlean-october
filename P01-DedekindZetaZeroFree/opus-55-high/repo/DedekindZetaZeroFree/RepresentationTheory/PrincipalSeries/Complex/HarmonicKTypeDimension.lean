@@ -20,10 +20,10 @@ noncomputable def radiusQuadratic : MvPolynomial (Fin 3) ℂ :=
 private lemma deriv_radius (i : Fin 3) :
     pderiv i radiusQuadratic = 2 * X i := by
   classical
-  simp only [radiusQuadratic, map_sum, pderiv_pow, pderiv_X, pow_one]
+  simp only [radiusQuadratic, map_sum, pderiv_pow, pderiv_X]
   rw [Finset.sum_eq_single i]
   · simp
-  · intro j hj hji; simp [Pi.single_eq_of_ne hji]
+  · simp_all
   · simp
 private lemma radius_homogeneous : radiusQuadratic.IsHomogeneous 2 := by
   apply IsHomogeneous.sum
@@ -46,7 +46,7 @@ private lemma lap_radius_hom {q : MvPolynomial (Fin 3) ℂ} {d : ℕ}
       radiusQuadratic * polynomialLaplacian q +
         (2 * (2 * (d : ℂ) + 3)) • q := by
   rw [lap_radius_mul, hq.sum_X_mul_pderiv]
-  simp only [nsmul_eq_mul, smul_eq_C_mul, map_mul, map_add, map_ofNat, map_one, C_eq_coe_nat]
+  simp only [nsmul_eq_mul, smul_eq_C_mul, map_mul, map_add, map_ofNat, C_eq_coe_nat]
   ring
 
 private theorem laplacian_radius_pow {q : MvPolynomial (Fin 3) ℂ} {degree : ℕ}
@@ -64,8 +64,7 @@ private theorem laplacian_radius_pow {q : MvPolynomial (Fin 3) ℂ} {degree : �
     simp only [Nat.cast_add, Nat.cast_mul, Nat.cast_ofNat, Nat.cast_succ,
       Nat.add_sub_cancel, smul_eq_C_mul, map_mul, map_add, map_ofNat, map_one, C_eq_coe_nat]
     cases k with
-    | zero => simp only [pow_zero, one_mul, Nat.cast_zero, mul_zero, zero_mul,
-        zero_add, add_zero, map_zero, pow_one]; ring
+    | zero => simp only [pow_zero, one_mul, Nat.cast_zero, mul_zero, zero_mul, zero_add, add_zero]; ring
     | succ k =>
       simp only [Nat.add_sub_cancel, Nat.cast_add, Nat.cast_one, pow_succ]
       ring
@@ -104,9 +103,7 @@ private lemma radial_inverse {p : MvPolynomial (Fin 3) ℂ} {n : ℕ}
   have hz : polynomialLaplacian (c⁻¹ • p) = 0 := hh.2
   change polynomialLaplacian (c⁻¹ • p) = 0 at hz
   change _ + c • (radiusQuadratic ^ (k + 1 - 1) * (c⁻¹ • p)) = _
-  rw [hz]
-  simp only [mul_zero, zero_add, Nat.add_sub_cancel, mul_smul_comm,
-    smul_smul, mul_inv_cancel₀ hc, one_smul]
+  simp_all
 
 private theorem homogeneous_fischer {p : MvPolynomial (Fin 3) ℂ} {degree : ℕ}
     (hp : p.IsHomogeneous degree) :
@@ -156,7 +153,7 @@ private theorem homogeneous_fischer {p : MvPolynomial (Fin 3) ℂ} {degree : ℕ
         by_cases hk0 : k = 0
         · subst k
           simp only [ite_true, mul_zero, Nat.sub_zero]
-          exact ⟨hp.sub hr, by change polynomialLaplacian (p - r) = 0; rw [map_sub, hrl, sub_self]⟩
+          exact ⟨hp.sub hr, by simp_all⟩
         · simp only [hk0, ite_false]
           convert hg (k - 1) (by omega) using 1
           congr 1
@@ -173,7 +170,7 @@ noncomputable def homogeneousSphereBasis (ℓ : ℕ) :
       (MvPolynomial.homogeneousSubmodule (Fin 3) ℂ ℓ) :=
   (MvPolynomial.basisRestrictSupport ℂ {d : Fin 3 →₀ ℕ | d.degree = ℓ}).map
     (LinearEquiv.ofEq _ _ (MvPolynomial.homogeneousSubmodule_eq_finsupp_supported (Fin 3) ℂ ℓ).symm)
-private theorem homogeneousSphere_finrank (ℓ : ℕ) :
+theorem homogeneousSphere_finrank (ℓ : ℕ) :
     Module.finrank ℂ (MvPolynomial.homogeneousSubmodule (Fin 3) ℂ ℓ) = Nat.multichoose 3 ℓ := by
   classical
   letI := (Finsupp.finite_of_degree_eq (σ := Fin 3) ℓ).fintype
@@ -209,7 +206,7 @@ noncomputable def harmonicLaplacianKerEquiv (ℓ : ℕ) :
   right_inv p := rfl
   map_add' p q := rfl
   map_smul' c p := rfl
-private theorem harmonic_finrank_of_laplacian_surjective (ℓ : ℕ)
+theorem harmonic_finrank_of_laplacian_surjective (ℓ : ℕ)
     (h : Function.Surjective (homogeneousLaplacian ℓ)) :
     Module.finrank ℂ (harmonicPolynomials (ℓ + 2)) + Nat.multichoose 3 ℓ =
       Nat.multichoose 3 (ℓ + 2) := by
@@ -220,30 +217,30 @@ private theorem harmonic_finrank_of_laplacian_surjective (ℓ : ℕ)
     homogeneousSphere_finrank, ← (harmonicLaplacianKerEquiv ℓ).finrank_eq] at hh
   simpa [homogeneousSphere_finrank, Nat.add_comm] using hh
 
-private theorem homogeneous_zero_pderiv {p : MvPolynomial (Fin 3) ℂ}
+theorem homogeneous_zero_pderiv {p : MvPolynomial (Fin 3) ℂ}
     (hp : p.IsHomogeneous 0) (i : Fin 3) : MvPolynomial.pderiv i p = 0 := by
   have htd : p.totalDegree = 0 := (MvPolynomial.totalDegree_zero_iff_isHomogeneous (σ := Fin 3)).mpr hp
   rw [MvPolynomial.totalDegree_eq_zero_iff_eq_C.mp htd]
   exact MvPolynomial.pderiv_C
-private theorem polynomialLaplacian_low_degree {p : MvPolynomial (Fin 3) ℂ} {ℓ : ℕ}
+theorem polynomialLaplacian_low_degree {p : MvPolynomial (Fin 3) ℂ} {ℓ : ℕ}
     (hp : p.IsHomogeneous ℓ) (hℓ : ℓ ≤ 1) : polynomialLaplacian p = 0 := by
   change (∑ i : Fin 3, MvPolynomial.pderiv i (MvPolynomial.pderiv i p)) = 0
   apply Finset.sum_eq_zero
   intro i hi
   apply homogeneous_zero_pderiv
   simpa only [Nat.sub_eq_zero_of_le hℓ] using hp.pderiv (i := i)
-private theorem harmonicPolynomials_low_degree {ℓ : ℕ} (hℓ : ℓ ≤ 1) :
+theorem harmonicPolynomials_low_degree {ℓ : ℕ} (hℓ : ℓ ≤ 1) :
     harmonicPolynomials ℓ = MvPolynomial.homogeneousSubmodule (Fin 3) ℂ ℓ := by
   apply le_antisymm inf_le_left
   intro p hp
   exact ⟨hp, polynomialLaplacian_low_degree hp hℓ⟩
-private theorem harmonicPolynomials_finrank_zero : Module.finrank ℂ (harmonicPolynomials 0) = 1 := by
+theorem harmonicPolynomials_finrank_zero : Module.finrank ℂ (harmonicPolynomials 0) = 1 := by
   rw [harmonicPolynomials_low_degree (by omega), homogeneousSphere_finrank]
-  simp [Nat.multichoose]
-private theorem harmonicPolynomials_finrank_one : Module.finrank ℂ (harmonicPolynomials 1) = 3 := by
+  simp
+theorem harmonicPolynomials_finrank_one : Module.finrank ℂ (harmonicPolynomials 1) = 3 := by
   rw [harmonicPolynomials_low_degree (by omega), homogeneousSphere_finrank]
-  simp [Nat.multichoose]
-private theorem harmonic_dimension_of_laplacian_surjective (ℓ : ℕ)
+  simp
+theorem harmonic_dimension_of_laplacian_surjective (ℓ : ℕ)
     (h : Function.Surjective (homogeneousLaplacian ℓ)) :
     Module.finrank ℂ (harmonicPolynomials (ℓ + 2)) = 2 * (ℓ + 2) + 1 := by
   have hh := harmonic_finrank_of_laplacian_surjective ℓ h
@@ -295,8 +292,7 @@ private theorem homogeneousLaplacian_surjective (n : ℕ) :
   rw [laplacian_radius_pow (hg k (by omega)).1, hzero]
   change _ + c k • (radiusQuadratic ^ (k + 1 - 1) *
     ((c k)⁻¹ • h k)) = _
-  simp only [mul_zero, zero_add, Nat.add_sub_cancel, mul_smul_comm,
-    smul_smul, mul_inv_cancel₀ hc, one_smul]
+  simp_all
 
 private theorem finrank_harmonicPolynomials (ℓ : ℕ) :
     Module.finrank ℂ (harmonicPolynomials ℓ) = 2 * ℓ + 1 := by
@@ -349,11 +345,8 @@ def rowSU2 (a b : ℂ) (h : ‖a‖ ^ 2 + ‖b‖ ^ 2 = 1) : ComplexSU2 :=
     constructor
     · ext i j
       fin_cases i <;> fin_cases j <;>
-        simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.star_apply,
-          Complex.star_def, Complex.mul_conj', ← Complex.ofReal_pow,
-          ← Complex.ofReal_add, h, h', mul_comm]
-    · simp [Matrix.det_fin_two, Complex.star_def, Complex.mul_conj',
-        mul_comm, ← Complex.ofReal_pow, ← Complex.ofReal_add, h, h']⟩
+        simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.star_apply, Complex.mul_conj', ← Complex.ofReal_pow, ← Complex.ofReal_add, h, h', mul_comm]
+    · simp [Matrix.det_fin_two, Complex.mul_conj', mul_comm, ← Complex.ofReal_pow, ← Complex.ofReal_add, h']⟩
 
 private theorem hopf_surjective : Function.Surjective hopf := by
   intro x
@@ -419,7 +412,7 @@ private theorem homogeneous_sphere_eq_zero {p : MvPolynomial (Fin 3) ℂ} {ℓ :
   apply MvPolynomial.funext_set (fun _ => Set.range Complex.ofReal)
     (fun _ => by simpa using Set.infinite_univ.image Complex.ofReal_injective.injOn)
   intro z hz
-  have hreal : ∀ i : Fin 3, ∃ r : ℝ, (r : ℂ) = z i := fun i => hz i (Set.mem_univ _)
+  have hreal : ∀ i : Fin 3, ∃ r : ℝ, (r : ℂ) = z i := by simp_all
   choose r hr using hreal
   let x : Ambient := WithLp.toLp 2 r
   have eval_real (y : Ambient) (hy : y ≠ 0) :
@@ -433,11 +426,8 @@ private theorem homogeneous_sphere_eq_zero {p : MvPolynomial (Fin 3) ℂ} {ℓ :
     have he : (fun i => (‖y‖ : ℂ) * ((u : Ambient) i : ℂ)) = (fun i => (y i : ℂ)) := by
       funext i
       change (‖y‖ : ℂ) * ((‖y‖⁻¹ * y i : ℝ) : ℂ) = _
-      rw [← Complex.ofReal_mul]
-      congr 1
-      rw [← mul_assoc, mul_inv_cancel₀ (norm_ne_zero_iff.mpr hy), one_mul]
-    rw [he] at hs
-    simpa only [polynomialSphere] using hs.trans (by rw [hu]; simp)
+      simp_all
+    simp_all
   have hx : x ≠ 0 ∨ x = 0 := ne_or_eq x 0
   rcases hx with hx | hx
   · have hh := eval_real x hx
@@ -448,12 +438,11 @@ private theorem homogeneous_sphere_eq_zero {p : MvPolynomial (Fin 3) ℂ} {ℓ :
         have htd : p.totalDegree = 0 := (MvPolynomial.totalDegree_zero_iff_isHomogeneous (σ := Fin 3)).mpr hp
         have hc : p = MvPolynomial.C (p.coeff 0) := MvPolynomial.totalDegree_eq_zero_iff_eq_C.mp htd
         rw [hc]
-        have hs := h (⟨WithLp.toLp 2 ![1,0,0], by simp [Metric.mem_sphere, dist_zero_right, EuclideanSpace.norm_eq, Fin.sum_univ_succ]⟩ : Sphere)
+        have hs := h (⟨WithLp.toLp 2 ![1,0,0], by simp [EuclideanSpace.norm_eq, Fin.sum_univ_succ]⟩ : Sphere)
         rw [hc] at hs
         simpa only [polynomialSphere, MvPolynomial.eval_C] using hs
       · have hs := homogeneous_eval_scale hp 0 (fun _ => 0)
-        simp [hℓ] at hs
-        simpa [hx] using hs
+        simp_all
     simpa only [x, hr, PiLp.toLp_apply, map_zero] using he
 
 private theorem harmonicSphere_injective (ℓ : ℕ) :

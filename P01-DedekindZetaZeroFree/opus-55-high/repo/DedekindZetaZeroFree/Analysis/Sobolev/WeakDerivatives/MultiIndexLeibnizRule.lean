@@ -67,12 +67,12 @@ private theorem directions_count {n k : ℕ} (α : MultiIndex n k) (i : Fin n) :
     α.directions.count i = counts α i := by
   rw [MultiIndex.directions, List.count_flatMap,
     ← List.sum_toFinset _ (List.nodup_finRange n)]
-  simp [Function.comp_def, List.count_replicate, counts]
+  simp [List.count_replicate, counts]
 
 private theorem counts_index {n k : ℕ} (γ : Counts n) (hγ : (∑ i, γ i) ≤ k) :
     counts (indexOfCounts γ hγ) = γ := rfl
 
-private theorem degree_index {n k : ℕ} (γ : Counts n) (hγ : (∑ i, γ i) ≤ k) :
+theorem degree_index {n k : ℕ} (γ : Counts n) (hγ : (∑ i, γ i) ≤ k) :
     (indexOfCounts γ hγ).degree = ∑ i, γ i := rfl
 
 private theorem coordinate_add {n a b k : ℕ} (α : MultiIndex n a) (β : MultiIndex n b)
@@ -104,8 +104,8 @@ private theorem coordinate_add {n a b k : ℕ} (α : MultiIndex n a) (β : Multi
   have h₁ := u.weak_derivatives A (derivativeTest β φ)
   have h₂ := u.weak_derivatives AB φ
   have hcomp : coordinateDerivative A (coordinateDerivative β (fun y => φ y)) =
-      coordinateDerivative AB (fun y => φ y) := by
-    exact coordinate_add A β hab φ.contDiff
+      coordinateDerivative AB (fun y => φ y) := 
+    coordinate_add A β hab φ.contDiff
   change (∫ x in B.carrier, u.derivatives (KPContLocalEnergy.SobolevEnergyEstimates.Raw.zeroIndex n k) x *
     coordinateDerivative A (coordinateDerivative β (fun y => φ y)) x) =
     (-1 : ℂ) ^ A.degree *
@@ -119,7 +119,7 @@ private theorem coordinate_add {n a b k : ℕ} (α : MultiIndex n a) (β : Multi
     change (∑ i, (counts α + counts β) i) = (∑ i, counts α i) + (∑ i, counts β i)
     exact Finset.sum_add_distrib
   rw [hdeg, pow_add] at h₁
-  have hne : (-1 : ℂ) ^ A.degree ≠ 0 := pow_ne_zero _ (by norm_num)
+  have hne : (-1 : ℂ) ^ A.degree ≠ 0 := by simp
   change (∫ x in B.carrier, jet u (counts α) x * coordinateDerivative β (fun y => φ y) x) =
     (-1 : ℂ) ^ β.degree * (∫ x in B.carrier, jet u (counts α + counts β) x * φ x)
   simp only [jet, dif_pos ha, dif_pos hab]
@@ -147,7 +147,6 @@ theorem jet_index {n k : ℕ} {B : LocalBall n}
     (u : IntegerSobolev B k) (α : MultiIndex n k) :
     jet u (counts α) = u.derivatives α := by
   have hi : indexOfCounts (counts α) α.property = α := by
-    apply counts_injective
     rfl
   have ha : (∑ i, counts α i) ≤ k := α.property
   rw [jet, dif_pos ha, hi]
@@ -179,16 +178,16 @@ theorem zero_degree {n r : ℕ} :
   ⟨fun x => a x * φ x, local_mul_smooth ha φ,
     φ.hasCompactSupport.mul_left, (tsupport_mul_subset_right (f := a) (g := fun x => φ x)).trans φ.tsupport_subset⟩
 
-private theorem local_partial_smooth {n : ℕ} {B : LocalBall n}
+theorem local_partial_smooth {n : ℕ} {B : LocalBall n}
     {a : Space n → ℂ} (ha : ContDiffOn ℝ (⊤ : ℕ∞) a B.carrier) (i : Fin n) :
-    ContDiffOn ℝ (⊤ : ℕ∞) (coordinateDerivativeList [i] a) B.carrier := by
-  exact ((contDiffOn_infty_iff_fderiv_of_isOpen Metric.isOpen_ball).mp ha).2.clm_apply contDiffOn_const
+    ContDiffOn ℝ (⊤ : ℕ∞) (coordinateDerivativeList [i] a) B.carrier := 
+  ((contDiffOn_infty_iff_fderiv_of_isOpen Metric.isOpen_ball).mp ha).2.clm_apply contDiffOn_const
 
-private theorem localTest_integrable {n : ℕ} {B : LocalBall n}
+theorem localTest_integrable {n : ℕ} {B : LocalBall n}
     {a : Space n → ℂ} (ha : ContDiffOn ℝ (⊤ : ℕ∞) a B.carrier)
     (φ : TestFunction B.toOpens ℂ ⊤) (v : BallL2 B) :
-    Integrable (fun x => v x * (a x * φ x)) (volume.restrict B.carrier) := by
-  exact (Lp.memLp v).integrable_mul ((localProductTest ha φ).continuous.memLp_of_hasCompactSupport
+    Integrable (fun x => v x * (a x * φ x)) (volume.restrict B.carrier) := 
+  (Lp.memLp v).integrable_mul ((localProductTest ha φ).continuous.memLp_of_hasCompactSupport
     (p := 2) (localProductTest ha φ).hasCompactSupport |>.restrict _)
 
 private theorem counts_first {n : ℕ} (i : Fin n) :
@@ -199,8 +198,7 @@ private theorem counts_first {n : ℕ} (i : Fin n) :
 
 private theorem first_dirs {n : ℕ} (i : Fin n) : (KPContLocalEnergy.SobolevEnergyEstimates.Raw.firstIndex i).directions = [i] := by
   classical
-  simp only [MultiIndex.directions, KPContLocalEnergy.SobolevEnergyEstimates.Raw.firstIndex, apply_ite Fin.val, Fin.val_one,
-    Fin.val_zero, List.replicate_one, List.replicate_zero]
+  simp only [MultiIndex.directions, KPContLocalEnergy.SobolevEnergyEstimates.Raw.firstIndex, apply_ite Fin.val, Fin.val_one, Fin.val_zero]
   have h : ∀ l : List (Fin n), l.flatMap (fun j => if j = i then [j] else []) = l.filter (· = i) := by
     intro l; induction l with
     | nil => rfl
@@ -214,12 +212,9 @@ private theorem first_dirs {n : ℕ} (i : Fin n) : (KPContLocalEnergy.SobolevEne
  def firstDerivativeTest {n : ℕ} {B : LocalBall n}
     (i : Fin n) (φ : TestFunction B.toOpens ℂ ⊤) : TestFunction B.toOpens ℂ ⊤ :=
   TestFunction.lineDerivCLM ℝ (EuclideanSpace.single i 1) φ
-private theorem firstDerivativeTest_eq {n : ℕ} {B : LocalBall n}
+theorem firstDerivativeTest_eq {n : ℕ} {B : LocalBall n}
     (i : Fin n) (φ : TestFunction B.toOpens ℂ ⊤) :
     (fun x => firstDerivativeTest i φ x) = coordinateDerivativeList [i] (fun x => φ x) := by
-  funext x
-  rw [firstDerivativeTest, TestFunction.lineDerivCLM_eq_fderivCLM]
-  rw [TestFunction.fderivCLM_apply_of_le _ (by simp)]
   rfl
 
 theorem weak_product_rule_first {n k : ℕ} {B : LocalBall n}
@@ -280,7 +275,7 @@ theorem weak_product_rule_first {n k : ℕ} {B : LocalBall n}
   rw [hleft, hright]
   linear_combination hw
 
-private theorem l2_test_unique {n : ℕ} {B : LocalBall n} (v w : BallL2 B)
+theorem l2_test_unique {n : ℕ} {B : LocalBall n} (v w : BallL2 B)
     (heq : ∀ φ : TestFunction B.toOpens ℂ ⊤,
       (∫ x in B.carrier, v x * φ x) = ∫ x in B.carrier, w x * φ x) : v = w := by
   have hl := ((Lp.memLp v).sub (Lp.memLp w)).locallyIntegrable (by norm_num)
@@ -340,7 +335,7 @@ theorem jet_unique_of_represents {n k l a : ℕ} {B : LocalBall n}
     rw [hx]
   rw [h₁, h₂, degree_index, degree_index] at hi
   simp only [jet, dif_pos hk, dif_pos hl]
-  exact mul_left_cancel₀ (pow_ne_zero _ (by norm_num)) hi
+  simp_all
 
 def WeakProductRule {n : ℕ} (B : LocalBall n) (k : ℕ) : Prop :=
   ∀ (u : IntegerSobolev B k) (γ : Counts n) (r : ℕ) (α : MultiIndex n r),
@@ -455,17 +450,17 @@ theorem directionCounts_cons {n : ℕ} (i : Fin n) (l : List (Fin n)) :
   simp only [directionCounts, List.count_cons, Pi.add_apply, unitCount]
   by_cases h : j = i
   · subst j; simp only [beq_self_eq_true, ite_true]; omega
-  · simp only [h, if_false, beq_iff_eq, Ne.symm h, ite_false, add_zero, zero_add]
+  · simp only [h, if_false, beq_iff_eq, Ne.symm h, add_zero, zero_add]
 
 theorem directionCounts_directions {n r : ℕ} (α : MultiIndex n r) :
     directionCounts α.directions = counts α := by
   funext i
   exact directions_count α i
 
-private theorem coefficientDirections_counts {n : ℕ} (γ : Counts n) (i : Fin n) :
+theorem coefficientDirections_counts {n : ℕ} (γ : Counts n) (i : Fin n) :
     ((List.finRange n).flatMap (fun j => List.replicate (γ j) j)).count i = γ i := by
   rw [List.count_flatMap, ← List.sum_toFinset _ (List.nodup_finRange n)]
-  simp [Function.comp_def, List.count_replicate]
+  simp [List.count_replicate]
 
 theorem coefficientJet_add_unit_on {n : ℕ} {B : LocalBall n}
     (γ : Counts n) (i : Fin n) {a : Space n → ℂ}
@@ -530,13 +525,11 @@ theorem weak_product_rule_list {n k : ℕ} {B : LocalBall n}
       have hbase : (∑ j, (γ + unitCount i) j) ≤ k := by
         apply le_trans (Finset.sum_le_sum (fun j _ => ?_)) hγ
         rw [directionCounts_cons]
-        change γ j + unitCount i j ≤ γ j + (unitCount i j + directionCounts l j)
-        omega
+        simp
       have hleft : (∑ j, (γ + directionCounts l) j) ≤ k := by
         apply le_trans (Finset.sum_le_sum (fun j _ => ?_)) hγ
         rw [directionCounts_cons]
-        change γ j + directionCounts l j ≤ γ j + (unitCount i j + directionCounts l j)
-        omega
+        simp
       have hright : (∑ j, (γ + unitCount i + directionCounts l) j) ≤ k := by
         simpa only [directionCounts_cons, add_assoc] using hγ
       let ψ : TestFunction B.toOpens ℂ ⊤ :=
@@ -581,9 +574,8 @@ theorem weak_product_rule_uncollected {n k r : ℕ} {B : LocalBall n}
       (-1 : ℂ) ^ α.degree *
         (∫ x in B.carrier, productExpansion u α.directions a γ x * φ x) := by
   have hlen : α.directions.length = α.degree := by
-    simp only [MultiIndex.directions, MultiIndex.degree, List.length_flatMap, List.map_map,
-      List.length_replicate, Function.comp_def]
-    simp [List.finRange, List.map_ofFn, List.sum_ofFn]
+    simp only [MultiIndex.directions, MultiIndex.degree, List.length_flatMap, List.length_replicate]
+    rfl
   simpa only [directionCounts_directions, hlen, coordinateDerivative] using
     weak_product_rule_list u α.directions γ (directionCounts_directions α ▸ hγ) ha φ
 
@@ -623,7 +615,7 @@ theorem countsChoose_add_unit {n : ℕ} (δ β : Counts n) (i : Fin n) (hi : 0 <
     have hji : j ≠ i := (Finset.mem_erase.mp hj).1
     simp [unitCount, hji]
   rw [h₁, h₂]
-  simp only [Pi.add_apply, Pi.sub_apply, unitCount, if_pos rfl, ite_true]
+  simp only [Pi.add_apply, Pi.sub_apply, unitCount, ite_true]
   rw [Nat.choose_succ_left _ _ hi, add_mul]
 
 theorem countsChoose_add_unit_zero {n : ℕ} (δ β : Counts n) (i : Fin n) (hi : β i = 0) :
@@ -632,8 +624,7 @@ theorem countsChoose_add_unit_zero {n : ℕ} (δ β : Counts n) (i : Fin n) (hi 
   apply Finset.prod_congr rfl
   intro j hj
   by_cases hji : j = i
-  · subst j
-    simp [hi, unitCount]
+  · simp_all
   · simp [unitCount, hji]
 
 def countsBox {n : ℕ} (δ : Counts n) : Finset (Counts n) :=
@@ -641,15 +632,14 @@ def countsBox {n : ℕ} (δ : Counts n) : Finset (Counts n) :=
 
 @[simp] theorem mem_countsBox {n : ℕ} (δ β : Counts n) :
     β ∈ countsBox δ ↔ ∀ i, β i ≤ δ i := by
-  simp [countsBox, Nat.lt_succ_iff]
+  simp [countsBox]
 
 theorem sum_below_countsBox {n r : ℕ} (α : MultiIndex n r) (f : Counts n → ℂ) :
     (∑ β ∈ Finset.univ.filter (fun β : MultiIndex n r => ∀ i, counts β i ≤ counts α i),
       f (counts β)) = ∑ β ∈ countsBox (counts α), f β := by
   classical
   apply Finset.sum_bij (fun β _ => counts β)
-  · intro β hβ
-    exact (mem_countsBox _ _).mpr (Finset.mem_filter.mp hβ).2
+  · simp
   · intro β hβ β' hβ' he
     exact counts_injective he
   · intro β hβ
@@ -657,8 +647,7 @@ theorem sum_below_countsBox {n r : ℕ} (α : MultiIndex n r) (f : Counts n → 
     have hd : (∑ i, β i) ≤ r :=
       (Finset.sum_le_sum (fun i _ => hb i)).trans α.property
     exact ⟨indexOfCounts β hd, Finset.mem_filter.mpr ⟨Finset.mem_univ _, hb⟩, rfl⟩
-  · intro β hβ
-    rfl
+  simp
 
 theorem countsBox_shift {n : ℕ} (δ : Counts n) (i : Fin n) (f : Counts n → ℂ) :
     (∑ β ∈ countsBox δ, f (β + unitCount i)) =
@@ -669,26 +658,14 @@ theorem countsBox_shift {n : ℕ} (δ : Counts n) (i : Fin n) (f : Counts n → 
     have hb := (mem_countsBox _ _).mp hβ
     apply Finset.mem_filter.mpr
     constructor
-    · apply (mem_countsBox _ _).mpr
-      intro j
-      exact Nat.add_le_add_right (hb j) _
+    · simp_all
     · simp [unitCount]
-  · intro β hβ β' hβ' he
-    funext j
-    have hj := congrFun he j
-    exact Nat.add_right_cancel hj
+  · simp
   · intro β hβ
     have hb := (mem_countsBox _ _).mp (Finset.mem_filter.mp hβ).1
     have hi := (Finset.mem_filter.mp hβ).2
     have hd : β - unitCount i ∈ countsBox δ := by
-      apply (mem_countsBox _ _).mpr
-      intro j
-      have hj := hb j
-      by_cases hji : j = i
-      · subst j
-        simp only [Pi.sub_apply, Pi.add_apply, unitCount, ite_true] at hj ⊢
-        omega
-      · simpa [unitCount, hji] using hj
+      simp_all
     refine ⟨β - unitCount i, hd, ?_⟩
     funext j
     by_cases hji : j = i
@@ -697,8 +674,7 @@ theorem countsBox_shift {n : ℕ} (δ : Counts n) (i : Fin n) (f : Counts n → 
       omega
     · simp [unitCount, hji]
 
-  · intro β hβ
-    rfl
+  simp
 
 theorem countsBox_pascal {n : ℕ} (δ : Counts n) (i : Fin n) (f : Counts n → ℂ) :
     (∑ β ∈ countsBox (δ + unitCount i), (countsChoose (δ + unitCount i) β : ℂ) * f β) =
@@ -718,8 +694,7 @@ theorem countsBox_pascal {n : ℕ} (δ : Counts n) (i : Fin n) (f : Counts n →
       ∑ β ∈ (countsBox (δ + unitCount i)).filter (fun β => 0 < β i),
         (countsChoose δ (β - unitCount i) : ℂ) * f β := by
     have he (β : Counts n) : β + unitCount i - unitCount i = β := by
-      funext j
-      exact Nat.add_sub_cancel _ _
+      simp
     simpa only [he] using countsBox_shift δ i (fun β => (countsChoose δ (β - unitCount i) : ℂ) * f β)
   rw [hmain, hshift, Finset.sum_filter, ← Finset.sum_add_distrib]
   apply Finset.sum_congr rfl
@@ -742,10 +717,8 @@ theorem productExpansion_countsBox {n k : ℕ} {B : LocalBall n}
       ext β
       simp only [mem_countsBox, Pi.zero_apply, Nat.le_zero, Finset.mem_singleton]
       exact ⟨fun h => funext h, fun h j => congrFun h j⟩
-    simp only [directionCounts_nil, hz, Finset.sum_singleton, countsChoose_zero_right,
-      Nat.cast_one, one_mul, coefficientJet_zero, add_zero, sub_zero, productExpansion]
-    have he : γ - 0 = γ := by funext j; exact Nat.sub_zero _
-    rw [he]
+    simp only [directionCounts_nil, hz, Finset.sum_singleton, countsChoose_zero_right, Nat.cast_one, one_mul, coefficientJet_zero, add_zero, productExpansion]
+    rfl
   | cons i l ih =>
     let δ := directionCounts l
     have hp : ContDiffOn ℝ (⊤ : ℕ∞) (coordinateDerivativeList [i] a) B.carrier :=
@@ -791,7 +764,3 @@ theorem weak_product_rule {n k : ℕ} (B : LocalBall n) : WeakProductRule B k :=
   simp only [← countsChoose_eq_multiChoose]
   rw [sum_below_countsBox α (fun β => (countsChoose (counts α) β : ℂ) *
     coefficientJet β a x * jet u (γ + counts α - β) x)]
-
-end DedekindZetaZeroFree.WeakJets.Raw
-
-end

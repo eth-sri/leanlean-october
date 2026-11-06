@@ -5,14 +5,13 @@ public import DedekindZetaZeroFree.Arithmetic.Ideals.SquarefreeDivisorsAndPrimeS
 
 @[expose] public section
 
-noncomputable section
 open scoped NumberField Classical BigOperators
 
 namespace DedekindZetaZeroFree.LargeSieve.PoissonCoprimeExact
 
 open UniqueFactorizationMonoid
 
-private lemma sum_mu {F : Type*} [Field F] [NumberField F]
+lemma sum_mu {F : Type*} [Field F] [NumberField F]
     (a : Ideal (𝓞 F)) (ha : a ≠ ⊥) :
     (∑ d ∈ idealDivisors a, (moebius d : ℂ)) = if a = ⊤ then 1 else 0 := by
   let r := UniqueFactorizationMonoid.radical a
@@ -72,7 +71,7 @@ private lemma indicator {F : Type*} [Field F] [NumberField F]
     (m I : Ideal (𝓞 F)) (hm : m ≠ ⊥) (hI : I ≠ ⊥) :
     (∑ d ∈ idealDivisors m, if d ∣ I then (moebius d : ℂ) else 0) =
       if I ⊔ m = ⊤ then 1 else 0 := by
-  have hsup : I ⊔ m ≠ ⊥ := fun h => hm (le_bot_iff.mp (h ▸ le_sup_right))
+  have hsup : I ⊔ m ≠ ⊥ := by simp_all
   have heq : (idealDivisors m).filter (fun d => d ∣ I) = idealDivisors (I ⊔ m) := by
     ext d
     simp only [Finset.mem_filter, mem_idealDivisors hm, mem_idealDivisors hsup,
@@ -94,12 +93,10 @@ theorem coprimeFinsum_eq_moebiusMultiples
       Function.support (fun I => if I ≠ ⊥ ∧ p I then g I else 0) ⊆ (S : Set (Ideal (𝓞 F))) := by
     intro I h
     have hn : I ≠ ⊥ ∧ p I := by
-      by_contra hn
-      simp [Function.mem_support, hn] at h
-    have hgI : g I ≠ 0 := by simpa only [Function.mem_support, if_pos hn] using h
+      simp_all
+    have hgI : g I ≠ 0 := by simp_all
     change I ∈ hg'.toFinset
-    rw [Set.Finite.mem_toFinset]
-    simp [Function.mem_support, hn.1, hgI]
+    simp_all
   rw [finsum_eq_finsetSum_of_support_subset _ (hs (fun I => I ⊔ m = ⊤))]
   simp_rw [finsum_eq_finsetSum_of_support_subset _ (hs (fun I => _ ∣ I))]
   simp_rw [Finset.mul_sum]
@@ -118,7 +115,3 @@ theorem coprimeFinsum_eq_moebiusMultiples
       by_cases hdI : d ∣ I <;> simp [hI, hdI]
     rw [he, hid]
     by_cases hc : I ⊔ m = ⊤ <;> simp [hI, hc]
-
-end DedekindZetaZeroFree.LargeSieve.PoissonCoprimeExact
-
-end

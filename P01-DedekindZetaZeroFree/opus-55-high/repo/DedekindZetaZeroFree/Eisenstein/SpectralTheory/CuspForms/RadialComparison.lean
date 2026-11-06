@@ -318,7 +318,7 @@ def coreLift (f : S_U F ζ hζ U R P H) : Q_U F ζ hζ U R P H μG hμG hR reali
     exact (A).closure.mem_graph
       (KPContActualSectorFriedrichsSynthesis.formTest F ζ hζ U R P H μG hμG hR realization f)⟩
 
-private theorem chi_norm_one (ε : rootsOfUnity 3 F) :
+theorem chi_norm_one (ε : rootsOfUnity 3 F) :
     ‖(KPCuspGenuineMonodromy.chi F ζ hζ ε : ℂ)‖ = 1 := by
   apply IsOfFinOrder.norm_eq_one
   apply isOfFinOrder_iff_pow_eq_one.mpr
@@ -329,7 +329,7 @@ private theorem chi_norm_one (ε : rootsOfUnity 3 F) :
   simpa only [map_pow, map_one, Units.val_pow_eq_pow_val, Units.val_one] using
     congrArg (fun x => (KPCuspGenuineMonodromy.chi F ζ hζ x : ℂ)) hp
 
-private theorem transverse_norm_eq (c : Cusp F ζ hζ U R P H)
+theorem transverse_norm_eq (c : Cusp F ζ hζ U R P H)
     (z z' : KPCuspCharts.Cross F × Coefficient F ζ hζ U)
     (h : transverseLineRelation F ζ hζ U R P H c z z') : ‖z'.2‖ = ‖z.2‖ := by
   obtain ⟨γ, -, h2⟩ := h
@@ -340,7 +340,7 @@ private theorem transverse_norm_eq (c : Cusp F ζ hζ U R P H)
     chi_norm_one F ζ hζ (((H.atlas U).line c.1).rho γ), one_mul]
   rfl
 
-private theorem hermitian_norm_proof (c : Cusp F ζ hζ U R P H)
+theorem hermitian_norm_proof (c : Cusp F ζ hζ U R P H)
     (p : KPCuspCharts.Cross F) (a : Coefficient F ζ hζ U) :
     lineNormSq F ζ hζ U R P H c (Quotient.mk _ (p,a)) = ‖a‖ ^ 2 := by
   unfold lineNormSq
@@ -348,13 +348,13 @@ private theorem hermitian_norm_proof (c : Cusp F ζ hζ U R P H)
   exact (transverse_norm_eq F ζ hζ U R P H c _ _
     (Quotient.mk_out (s := transverseLineRelation F ζ hζ U R P H c) (p, a))).symm
 
-private theorem positive_dimension_proof : 0 < d F := by
+theorem positive_dimension_proof : 0 < d F := by
   unfold d
   have : (0 : ℝ) < Module.finrank ℚ F := by
     exact_mod_cast Module.finrank_pos (R := ℚ) (M := F)
   linarith
 
-private theorem dimension_eq_proof (ζ : F) (hζ : IsPrimitiveRoot ζ 12) :
+theorem dimension_eq_proof (ζ : F) (hζ : IsPrimitiveRoot ζ 12) :
     d F = (KPCuspLogShape.dimension F : ℝ) := by
   have h := KPArch.complex_places_of_primitive_twelfth_root F ζ hζ
   have hcast : ((Module.finrank ℚ F / 2 : ℕ) : ℝ) = (Module.finrank ℚ F : ℝ) / 2 := by
@@ -377,19 +377,19 @@ open KPContCotangentActualOverlap
  def radialPoint (p : KPCuspCharts.Cross F) (t : ℝ) : M F :=
   labeledAInv (placeEquiv F ζ hζ) (KPCuspCharts.toArch F (p,t))
 
-private theorem radialVector_apply (i : Fin (KPContCotangentActualOverlap.d F)) (k : Fin 3) :
+theorem radialVector_apply (i : Fin (KPContCotangentActualOverlap.d F)) (k : Fin 3) :
   radialVector F (i,k) = if k=2 then 1 else 0 := by
   by_cases hk : k=2
   · subst k
     simp [radialVector, HyperbolicChart.coordinateVector]
   · simp [radialVector, HyperbolicChart.coordinateVector, hk]
-private theorem radialPoint_affine (p : KPCuspCharts.Cross F) (t : ℝ) :
+theorem radialPoint_affine (p : KPCuspCharts.Cross F) (t : ℝ) :
   radialPoint F ζ hζ p t = radialPoint F ζ hζ p 0 + t • radialVector F := by
   apply PiLp.ext
   rintro ⟨i,k⟩
   fin_cases k <;> simp [radialPoint, labeledAInv, CotangentLogCoframe.A,
     PiLp.add_apply, PiLp.smul_apply, KPCuspCharts.toArch, radialVector_apply, add_comm]
-private theorem radialPoint_hasDeriv (p : KPCuspCharts.Cross F) (t : ℝ) :
+theorem radialPoint_hasDeriv (p : KPCuspCharts.Cross F) (t : ℝ) :
   HasDerivAt (radialPoint F ζ hζ p) (radialVector F) t := by
   have h := (hasDerivAt_id t).smul_const (radialVector F)
   have h2 := h.const_add (radialPoint F ζ hζ p 0)
@@ -397,7 +397,7 @@ private theorem radialPoint_hasDeriv (p : KPCuspCharts.Cross F) (t : ℝ) :
   convert h2 using 1
   funext s
   exact radialPoint_affine F ζ hζ p s
-private theorem radial_deriv (g : M F → ℂ) (p : KPCuspCharts.Cross F) (t : ℝ)
+theorem radial_deriv (g : M F → ℂ) (p : KPCuspCharts.Cross F) (t : ℝ)
     (hg : DifferentiableAt ℝ g (radialPoint F ζ hζ p t)) :
     deriv (fun s => g (radialPoint F ζ hζ p s)) t =
       ∑ i : Fin (KPContCotangentActualOverlap.d F),
@@ -407,7 +407,7 @@ private theorem radial_deriv (g : M F → ℂ) (p : KPCuspCharts.Cross F) (t : �
   rw [h.deriv]
   simp only [radialVector, map_sum, HyperbolicChart.differential,
     Matrix.cons_val_zero, HyperbolicChart.coordinateDerivative]
-private theorem radial_energy_le (g : M F → ℂ) (p : KPCuspCharts.Cross F) (t : ℝ)
+theorem radial_energy_le (g : M F → ℂ) (p : KPCuspCharts.Cross F) (t : ℝ)
     (hg : DifferentiableAt ℝ g (radialPoint F ζ hζ p t)) :
     ‖deriv (fun s => g (radialPoint F ζ hζ p s)) t‖^2 ≤
       (KPContCotangentActualOverlap.d F : ℝ) *
@@ -442,7 +442,7 @@ private theorem cuspFlatScalar_radial (f : S_U F ζ hζ U R P H)
       (coefficient F ζ hζ U R P H f c p t : ℂ) := by
   simp only [cuspFlatScalar, radialPoint, labeledA_labeledAInv]
   rfl
-private theorem cuspFlatScalar_smooth
+theorem cuspFlatScalar_smooth
     (realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ U R P H)
     (f : S_U F ζ hζ U R P H) (c : Cusp F ζ hζ U R P H) :
     ContDiff ℝ (⊤ : ℕ∞) (cuspFlatScalar F ζ hζ U R P H f c) := by
@@ -544,7 +544,7 @@ theorem radialCoefficient_joint_continuous
       radialDerivative F ζ hζ U R P H f c z.1 z.2) := by
   exact actual_radial_joint_continuous F ζ hζ U R P H realization f c
 
-private theorem radialQuotient_map (c : Cusp F ζ hζ U R P H) :
+theorem radialQuotient_map (c : Cusp F ζ hζ U R P H) :
     IsQuotientMap (fun z : KPCuspCharts.Cross F × ℝ =>
       (Quotient.mk (KPCuspCharts.crossRelation F (Stabilizer F ζ hζ U R P H c)) z.1, z.2)) := by
   let G := ((H.atlas U).cuspAtlas c.1).geometry c.2
@@ -559,7 +559,7 @@ private theorem radialQuotient_map (c : Cusp F ζ hζ U R P H) :
     simp only [Function.comp_apply, G.radialPresentation_formula, Homeomorph.apply_symm_apply]
   rw [he]
   exact h
-private theorem scalarDensity_mk (f : S_U F ζ hζ U R P H)
+theorem scalarDensity_mk (f : S_U F ζ hζ U R P H)
     (c : Cusp F ζ hζ U R P H) (p : KPCuspCharts.Cross F) (t : ℝ) :
     scalarDensity F ζ hζ U R P H f c (Quotient.mk _ p) t =
       Real.exp (-2 * d F * t) * ‖coefficient F ζ hζ U R P H f c p t‖ ^ 2 := by
@@ -567,7 +567,7 @@ private theorem scalarDensity_mk (f : S_U F ζ hζ U R P H)
   rw [Quotient.lift_mk]
   exact congrArg (fun x : ℝ => Real.exp (-2 * d F * t) * x)
     (hermitian_norm_proof F ζ hζ U R P H c p _)
-private theorem gradientDensity_mk (f : S_U F ζ hζ U R P H)
+theorem gradientDensity_mk (f : S_U F ζ hζ U R P H)
     (c : Cusp F ζ hζ U R P H) (p : KPCuspCharts.Cross F) (t : ℝ) :
     gradientDensity F ζ hζ U R P H f c (Quotient.mk _ p) t =
       Real.exp (-2 * d F * t) * ‖radialDerivative F ζ hζ U R P H f c p t‖ ^ 2 := by
@@ -576,7 +576,7 @@ private theorem gradientDensity_mk (f : S_U F ζ hζ U R P H)
   exact congrArg (fun x : ℝ => Real.exp (-2 * d F * t) * x)
     (hermitian_norm_proof F ζ hζ U R P H c p _)
 
-private theorem scalarDensity_joint_continuous
+theorem scalarDensity_joint_continuous
     (realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ U R P H)
     (f : S_U F ζ hζ U R P H) (c : Cusp F ζ hζ U R P H) :
     Continuous (fun z : Y_c F ζ hζ U R P H c × ℝ =>
@@ -596,7 +596,7 @@ private theorem scalarDensity_joint_continuous
   rw [he]
   exact (Real.continuous_exp.comp (continuous_const.mul continuous_snd)).mul (hc.norm.pow 2)
 
-private theorem gradientDensity_joint_continuous
+theorem gradientDensity_joint_continuous
     (realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ U R P H)
     (f : S_U F ζ hζ U R P H) (c : Cusp F ζ hζ U R P H) :
     Continuous (fun z : Y_c F ζ hζ U R P H c × ℝ =>
@@ -613,11 +613,11 @@ private theorem gradientDensity_joint_continuous
   exact (Real.continuous_exp.comp (continuous_const.mul continuous_snd)).mul
     ((radialCoefficient_joint_continuous F ζ hζ U R P H realization f c).norm.pow 2)
 
-private theorem compact_transverse_proof (c : Cusp F ζ hζ U R P H) :
+theorem compact_transverse_proof (c : Cusp F ζ hζ U R P H) :
     CompactSpace (Y_c F ζ hζ U R P H c) :=
   (((H.atlas U).cuspAtlas c.1).geometry c.2).compact_cross
 
-private theorem finite_transverse_proof (c : Cusp F ζ hζ U R P H) :
+theorem finite_transverse_proof (c : Cusp F ζ hζ U R P H) :
     IsFiniteMeasure (nu_c F ζ hζ U R P H c) := by
   unfold nu_c
   refine ⟨?_⟩
@@ -625,7 +625,7 @@ private theorem finite_transverse_proof (c : Cusp F ζ hζ U R P H) :
   refine ENNReal.mul_lt_top ((H.disintegration U).finite_componentWeight c.1) ?_
   exact (((H.atlas U).cuspAtlas c.1).geometry c.2).finite_sectionMeasure.measure_univ_lt_top
 
-private theorem positive_transverse_proof (c : Cusp F ζ hζ U R P H) :
+theorem positive_transverse_proof (c : Cusp F ζ hζ U R P H) :
     0 < nu_c F ζ hζ U R P H c Set.univ := by
   unfold nu_c
   rw [Measure.smul_apply]
@@ -633,19 +633,19 @@ private theorem positive_transverse_proof (c : Cusp F ζ hζ U R P H) :
   · exact ne_of_gt ((H.disintegration U).positive_componentWeight c.1)
   · exact (((H.atlas U).cuspAtlas c.1).geometry c.2).positive_sectionMeasure
 
-private theorem section_base_proof (f : S_U F ζ hζ U R P H) (c : Cusp F ζ hζ U R P H)
+theorem section_base_proof (f : S_U F ζ hζ U R P H) (c : Cusp F ζ hζ U R P H)
     (t : ℝ) (y : Y_c F ζ hζ U R P H c) :
     lineBase F ζ hζ U R P H c (v_c F ζ hζ U R P H f c t y) = y ∧
     lineBase F ζ hζ U R P H c (nabla_t F ζ hζ U R P H f c t y) = y := by
   constructor <;> induction y using Quotient.inductionOn with
   | h p => rfl
 
-private theorem core_inclusion_proof (f : S_U F ζ hζ U R P H) :
+theorem core_inclusion_proof (f : S_U F ζ hζ U R P H) :
     j_U F ζ hζ U R P H μG hμG hR realization
       (coreLift F ζ hζ U R P H μG hμG hR realization f) = iota f := by
   simp [j_U, coreLift, closedGradientEmbedding]
 
-private theorem core_energy_proof (f : S_U F ζ hζ U R P H) :
+theorem core_energy_proof (f : S_U F ζ hζ U R P H) :
     q_U F ζ hζ U R P H μG hμG hR realization
       (coreLift F ζ hζ U R P H μG hμG hR realization f) =
     KPContActualSectorFriedrichsSynthesis.energy F ζ hζ U R P H μG hμG hR realization
@@ -653,7 +653,7 @@ private theorem core_energy_proof (f : S_U F ζ hζ U R P H) :
   simp [q_U, coreLift, closedGradient, closedGradientCoordinate,
     KPContActualSectorFriedrichsSynthesis.energy, closedGradientEnergy]
 
-private theorem transition_coefficient (f : S_U F ζ hζ U R P H) (c : Cusp F ζ hζ U R P H)
+theorem transition_coefficient (f : S_U F ζ hζ U R P H) (c : Cusp F ζ hζ U R P H)
     (g : Stabilizer F ζ hζ U R P H c) (p : KPCuspCharts.Cross F) (t : ℝ) :
     coefficient F ζ hζ U R P H f c
         ((((H.atlas U).cuspAtlas c.1).geometry c.2).crossAction g p) t =
@@ -665,7 +665,7 @@ private theorem transition_coefficient (f : S_U F ζ hζ U R P H) (c : Cusp F ζ
         (coefficient F ζ hζ U R P H f c p t) :=
   (cuspCoefficient_transition F ζ hζ U R P H (scalarSections f) c.1 c.2 g p t).1
 
-private theorem transition_radialDerivative (f : S_U F ζ hζ U R P H) (c : Cusp F ζ hζ U R P H)
+theorem transition_radialDerivative (f : S_U F ζ hζ U R P H) (c : Cusp F ζ hζ U R P H)
     (g : Stabilizer F ζ hζ U R P H c) (p : KPCuspCharts.Cross F) (t : ℝ) :
     radialDerivative F ζ hζ U R P H f c
         ((((H.atlas U).cuspAtlas c.1).geometry c.2).crossAction g p) t =
@@ -689,7 +689,7 @@ private theorem transition_radialDerivative (f : S_U F ζ hζ U R P H) (c : Cusp
   simp only [radialDerivative]
   rw [hfun, deriv_const_mul_field]
 
-private theorem componentMap_isEmbedding (c : Cusp F ζ hζ U R P H) :
+theorem componentMap_isEmbedding (c : Cusp F ζ hζ U R P H) :
     Topology.IsEmbedding
       (KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative c.1)) := by
   have h1 : KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative c.1) =
@@ -699,7 +699,7 @@ private theorem componentMap_isEmbedding (c : Cusp F ζ hζ U R P H) :
   rw [h1]
   exact (H.atlas U).components.isEmbedding.comp Topology.IsEmbedding.sigmaMk
 
-private theorem base_embedding_proof (c : Cusp F ζ hζ U R P H) (T : ℝ)
+theorem base_embedding_proof (c : Cusp F ζ hζ U R P H) (T : ℝ)
     (hT : ((H.atlas U).cuspAtlas c.1).threshold < T) :
     Topology.IsEmbedding (endChart F ζ hζ U R P H c T) ∧
     Set.range (endChart F ζ hζ U R P H c T) = endSet F ζ hζ U R P H c T := by
@@ -733,7 +733,7 @@ private theorem base_embedding_proof (c : Cusp F ζ hζ U R P H) (T : ℝ)
     rw [KPFiniteCuspAtlas.endMap_range F hd]
     rfl
 
-private theorem fixed_haar_proof (c : Cusp F ζ hζ U R P H) (T : ℝ)
+theorem fixed_haar_proof (c : Cusp F ζ hζ U R P H) (T : ℝ)
     (hT : ((H.atlas U).cuspAtlas c.1).threshold < T) :
     Measure.map (endChart F ζ hζ U R P H c T)
       ((nu_c F ζ hζ U R P H c).prod
@@ -834,7 +834,7 @@ private theorem fixed_haar_proof (c : Cusp F ζ hζ U R P H) (T : ℝ)
     Measure.map_map (hcomp.measurable.comp hend) hpres]
   rfl
 
-private theorem radial_tail_uniform_support
+theorem radial_tail_uniform_support
     (realization : KPContActualFixedSectorRealization.LevelRealization F ζ hζ U R P H)
     (c : Cusp F ζ hζ U R P H) (T : ℝ)
     (hT : ((H.atlas U).cuspAtlas c.1).threshold < T)
@@ -890,7 +890,7 @@ section CompactTailIntegrability
 variable {Y : Type*} [TopologicalSpace Y] [CompactSpace Y]
   [MeasurableSpace Y] [OpensMeasurableSpace Y]
   (ν : Measure Y) [IsFiniteMeasure ν]
-private theorem compact_tail_zeroExtension
+theorem compact_tail_zeroExtension
     (f : Y × ℝ → ℝ) (hf : Continuous f) (T a b : ℝ) (ha : T < a)
     (hz : ∀ y t, T < t → (t < a ∨ b < t) → f (y,t) = 0) :
     Continuous (fun z : Y × ℝ => if T < z.2 then f z else 0) ∧
@@ -926,7 +926,7 @@ private theorem compact_tail_zeroExtension
       exact hz z.1 z.2 ht hout
     · simp [ht]
 
-private theorem compact_tail_integrable
+theorem compact_tail_integrable
     (f : Y × ℝ → ℝ) (hf : Continuous f) (T a b : ℝ) (ha : T < a)
     (hz : ∀ y t, T < t → (t < a ∨ b < t) → f (y,t) = 0) :
     (∀ y, IntegrableOn (fun t => f (y,t)) (Set.Ioi T) volume) ∧
@@ -1006,7 +1006,7 @@ theorem radialDensities_integrable
     (fun y t ht hout => (hzero y t ht hout).2)
   exact ⟨fun y => ⟨hs.1 y, hg.1 y⟩, hs.2, hg.2⟩
 
-private theorem iota_norm_integral (f : S_U F ζ hζ U R P H) :
+theorem iota_norm_integral (f : S_U F ζ hζ U R P H) :
     ‖iota f‖ ^ 2 = ∫ b, sectionNorm F ζ hζ U R P H (scalarSections f) b ^ 2
       ∂KPMsFixedHaarDisintegration.sphericalMeasure F ζ hζ R P U := by
   have hsmooth : IsSmoothSections F ζ hζ U R P H (scalarSections f) :=
@@ -1162,7 +1162,7 @@ theorem scalar_radial_norm
   intro z
   exact mul_nonneg (Real.exp_pos _).le (sq_nonneg _)
 
-private theorem actual_lift_exists (x : KPFiniteCuspAtlas.rawXU F ζ hζ U) :
+theorem actual_lift_exists (x : KPFiniteCuspAtlas.rawXU F ζ hζ U) :
     ∃ (a : ActualChart (U := U) (H := H))
       (y : KPContCotangentOverlapRationalBranches.omega a),
       KPContCotangentOverlapRationalBranches.q a y.val = x := by
@@ -1495,7 +1495,7 @@ def radialLineHomeomorph (c : Cusp F ζ hζ U R P H) (T : ℝ)
     radialLineHomeomorph F ζ hζ U R P H c T hT (Quotient.mk _ (p,a),t) =
       Quotient.mk _ ((p,t),a) := rfl
 
-private theorem actualLine_quotient_open (c : Cusp F ζ hζ U R P H) :
+theorem actualLine_quotient_open (c : Cusp F ζ hζ U R P H) :
     IsOpenMap (Quotient.mk (KPCuspGenuineMonodromy.flatLineRelation F ζ hζ U
       ((H.atlas U).representative c.1) ((H.atlas U).line c.1).rho)) := by
   letI := KPFiniteAdelicCuspEnds.canonicalAction_continuousConstSMul F
@@ -1528,7 +1528,7 @@ private theorem actualLine_quotient_open (c : Cusp F ζ hζ U R P H) :
   rw [hsat]
   exact isOpen_iUnion (fun γ => (act γ).isOpenMap V hV)
 
-private theorem rawEndLine_openEmbedding (c : Cusp F ζ hζ U R P H) (T : ℝ) :
+theorem rawEndLine_openEmbedding (c : Cusp F ζ hζ U R P H) (T : ℝ) :
     IsOpenEmbedding (fun z : (KPCuspCharts.Cross F × Set.Ioi T) × Coefficient F ζ hζ U =>
       (cuspPoint F ζ hζ U R P H c.1 c.2 (z.1.1,z.1.2.val),z.2)) := by
   letI := KPFiniteAdelicCuspEnds.canonicalAction_continuousConstSMul F

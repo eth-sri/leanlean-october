@@ -28,7 +28,3 @@ def compactExtension (K : Subgroup (G F ζ hζ))
   KPGlobalExceptionalParameter.realLogPower
     (((KPGlobalTorusFunctionData.delta F ζ hζ p.1 : NNReal) : ℝ)) s *
     v (p.1.val * p.2.2.val)
-
-end DedekindZetaZeroFree.KPLiteralChamber
-
-end

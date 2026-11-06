@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.Metaplectic.Intertwining.RankOne.SignedWeylIn
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.KPRankOneShellRepair
 open scoped NumberField
 open NumberField IsDedekindDomain KPLocalExceptionalConstruction
@@ -17,7 +16,3 @@ theorem actual_tail_phase_cube (u v : (LocalField F q)ˣ) :
 
   simp only [actualTailPhase,
     DedekindZetaZeroFree.KPRankOneReverseLaurentShellExpansion.SmallTail.SignedBlockAlgebra.kappa_eq_one]
-
-end DedekindZetaZeroFree.KPRankOneShellRepair
-
-end

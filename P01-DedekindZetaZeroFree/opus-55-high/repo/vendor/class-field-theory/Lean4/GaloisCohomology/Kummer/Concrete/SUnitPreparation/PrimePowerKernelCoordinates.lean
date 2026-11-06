@@ -16,14 +16,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Prime-power kernel coordinates
 
@@ -49,8 +41,8 @@ theorem zmodPrimePower_isLocalRing
       _ ≤ p ^ v :=
         Nat.pow_le_pow_right hp.pos
           (Nat.succ_le_iff.mpr hv)⟩
-  have hmodulus : p ∣ p ^ v := by
-    exact dvd_pow_self p hv.ne'
+  have hmodulus : p ∣ p ^ v := 
+    dvd_pow_self p hv.ne'
   apply IsLocalRing.of_nonunits_add
   intro a b ha hb
   have hunit (x : ZMod (p ^ v)) :
@@ -64,13 +56,9 @@ theorem zmodPrimePower_isLocalRing
         (ZMod.isUnit_natCast_iff_not_dvd_pow hp hv).2 hx
       simpa only [ZMod.natCast_zmod_val] using hcast
   have ha' : p ∣ a.val := by
-    change ¬ IsUnit a at ha
-    exact Classical.not_not.mp
-      (mt (hunit a).2 ha)
+    simp_all
   have hb' : p ∣ b.val := by
-    change ¬ IsUnit b at hb
-    exact Classical.not_not.mp
-      (mt (hunit b).2 hb)
+    simp_all
   have hsum : p ∣ a.val + b.val :=
     dvd_add ha' hb'
   have hmultiple :
@@ -110,7 +98,7 @@ theorem free_ker_of_surjective_linearMap_of_isLocalRing
         f (sec (f x)) = f x := by
       have :=
         DFunLike.congr_fun hsec (f x)
-      simpa using this
+      omega
     rw [hsec_apply, sub_self]
   let projection : M →ₗ[R] LinearMap.ker f :=
     LinearMap.codRestrict (LinearMap.ker f) q hq
@@ -119,7 +107,6 @@ theorem free_ker_of_surjective_linearMap_of_isLocalRing
         LinearMap.id := by
     ext x
     change x.1 - sec (f x.1) = x.1
-    rw [show f x.1 = 0 from x.2]
     simp
   let : Module.Projective R (LinearMap.ker f) :=
     Module.Projective.of_split
@@ -145,12 +132,11 @@ theorem card_eq_card_pow_card_chooseBasisIndex
     Module.Finite.of_finite
   rw [Nat.card_congr
     (Module.Free.chooseBasis R M).repr.toEquiv]
-  simp only [Nat.card_eq_fintype_card,
-    Fintype.card_finsupp]
+  simp
 
 /-- Multiplicative product coordinates, interpreted as a `ZMod n`-linear
 equivalence on the additive presentations. -/
-noncomputable def additiveCoordinatesLinearEquiv
+def additiveCoordinatesLinearEquiv
     {G A B : Type*} [CommGroup G] [AddCommGroup A]
     [AddCommGroup B] (n : ℕ)
     [Module (ZMod n) (Additive G)]
@@ -167,7 +153,7 @@ noncomputable def additiveCoordinatesLinearEquiv
 /-- The canonical `ZMod n`-module on the additive presentation of a
 commutative group of exponent dividing `n`. -/
 @[reducible]
-noncomputable def additiveZModModuleOfPowEqOne
+def additiveZModModuleOfPowEqOne
     {G : Type*} [CommGroup G] (n : ℕ)
     (h : ∀ g : G, g ^ n = 1) :
     Module (ZMod n) (Additive G) :=
@@ -178,7 +164,7 @@ noncomputable def additiveZModModuleOfPowEqOne
 
 /-- Multiplicative function coordinates, interpreted as a `ZMod n`-linear
 equivalence on the additive presentations. -/
-noncomputable def additivePiLinearEquiv
+def additivePiLinearEquiv
     {G A : Type*} [CommGroup G] [AddCommGroup A]
     {ι : Type*} (n : ℕ)
     [Module (ZMod n) (Additive G)]
@@ -329,11 +315,4 @@ theorem galois_pow_eq_one_of_equiv_pi_zmod
   apply eG.injective
   rw [map_pow, map_one]
   ext i
-  apply Multiplicative.toAdd.injective
-  change
-    (n : ℕ) • Multiplicative.toAdd (eG sigma i) = 0
   simp
-
-end KummerTheory
-
-end

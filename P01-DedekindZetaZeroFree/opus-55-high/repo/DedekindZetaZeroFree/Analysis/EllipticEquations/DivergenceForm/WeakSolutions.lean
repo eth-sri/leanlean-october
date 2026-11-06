@@ -65,7 +65,3 @@ def RepresentsClassicalDerivatives {n k : ℕ} {B : LocalBall n}
 
 def functionL2Norm {n : ℕ} (B : LocalBall n) (f : Space n → ℂ) : ℝ :=
   Real.sqrt (∫ x in B.carrier, ‖f x‖ ^ 2)
-
-end DedekindZetaZeroFree.KPContLocalEnergy.SobolevEnergyEstimates.Raw
-
-end

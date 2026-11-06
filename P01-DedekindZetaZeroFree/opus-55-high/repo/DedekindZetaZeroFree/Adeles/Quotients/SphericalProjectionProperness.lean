@@ -81,7 +81,7 @@ theorem rational_lift_finite_factor_mod_center (γ : KPCuspArithmetic.PGL2 F) :
   exact hs.trans (congrArg (fun c : KPFiniteCuspAtlas.FiniteCover F ζ hζ =>
     KPSmoothActualFlowData.archimedeanInsertion F ζ hζ (archRational γ) * c.val) he)
 
-private theorem basepoint_eq_smul (g : KPSmoothActualFlowData.GInfinity F) :
+theorem basepoint_eq_smul (g : KPSmoothActualFlowData.GInfinity F) :
     KPMsFixedHaarDisintegration.archBasepoint F g =
       (fun i => g (KPCusp.complexPlace F i) • ((0,0) : KPArch.H3)) := by
   funext i
@@ -92,7 +92,7 @@ private theorem basepoint_eq_smul (g : KPSmoothActualFlowData.GInfinity F) :
   rw [he] at h
   exact h.symm
 
-private theorem local_basepoint_fiber_compact (x : KPArch.H3) :
+theorem local_basepoint_fiber_compact (x : KPArch.H3) :
     IsCompact {g : Matrix.ProjGenLinGroup (Fin 2) ℂ | g • ((0,0) : KPArch.H3) = x} := by
   have h := KPArithmeticAction.compact_transporter_of_section ((0,0) : KPArch.H3)
     KPArithmeticAction.hyperbolicProjectiveSection
@@ -136,7 +136,7 @@ theorem arch_basepoint_continuous : Continuous (KPMsFixedHaarDisintegration.arch
     fun i => g (KPCusp.complexPlace F i) • ((0,0) : KPArch.H3))
   letI := KPArithmeticAction.hyperbolicContinuousSMul
   exact continuous_pi fun i => (continuous_apply _).smul continuous_const
-private theorem local_bp_compact (C : Set KPArch.H3) (hC : IsCompact C) :
+theorem local_bp_compact (C : Set KPArch.H3) (hC : IsCompact C) :
     IsCompact {g : Matrix.ProjGenLinGroup (Fin 2) ℂ | g • ((0,0) : KPArch.H3) ∈ C} := by
   have h := KPArithmeticAction.compact_transporter_of_section ((0,0) : KPArch.H3)
     KPArithmeticAction.hyperbolicProjectiveSection
@@ -169,12 +169,12 @@ theorem arch_basepoint_proper (ζ : F) (hζ : IsPrimitiveRoot ζ 12) : IsProperM
 
 local instance : MulAction (KPCuspArithmetic.PGL2 F) (KPFiniteCuspAtlas.SymmetricSpace F) :=
   KPCuspSiegel.instMulActionPGL2SpaceDimension F
-private theorem cent_comm (ε : rootsOfUnity 3 F) (c : KPFiniteCuspAtlas.FiniteCover F ζ hζ) :
+theorem cent_comm (ε : rootsOfUnity 3 F) (c : KPFiniteCuspAtlas.FiniteCover F ζ hζ) :
     Commute (KPCuspGenuineMonodromy.central F ζ hζ ε) c := by
   apply Subtype.ext
   exact (Subgroup.mem_center_iff.mp
     (KPAdelicCoverRestrictedProduct.pglCentralInjection_central F ζ hζ ⟨ε,rfl⟩) c).symm
-private theorem q_rat (γ : KPCuspArithmetic.PGL2 F) (g : KPMsFixedHaarDisintegration.Cover F ζ hζ) :
+theorem q_rat (γ : KPCuspArithmetic.PGL2 F) (g : KPMsFixedHaarDisintegration.Cover F ζ hζ) :
     KPSmoothLocalQuotientCharts.quotientMap F ζ hζ (KPMsClearedTruncationL2.rationalLift F ζ hζ γ * g) =
       KPSmoothLocalQuotientCharts.quotientMap F ζ hζ g := by
   apply Eq.symm
@@ -185,7 +185,7 @@ private theorem q_rat (γ : KPCuspArithmetic.PGL2 F) (g : KPMsFixedHaarDisintegr
   let m := Classical.choose (Matrix.ProjGenLinGroup.mk_surjective γ)
   exact ⟨KPRationalAdelicSplitting.rationalPGLQuotient F m,
     KPRationalAdelicSplitting.rationalPGLHom_mk F ζ hζ m⟩
-private theorem remove_rat (γ : KPCuspArithmetic.PGL2 F)
+theorem remove_rat (γ : KPCuspArithmetic.PGL2 F)
     (ε : rootsOfUnity 3 F) (a : KPSmoothActualFlowData.GInfinity F)
     (c : KPFiniteCuspAtlas.FiniteCover F ζ hζ) :
     ∃ η : rootsOfUnity 3 F,
@@ -219,7 +219,7 @@ private theorem remove_rat (γ : KPCuspArithmetic.PGL2 F)
     group
   rw [← hh]
   exact q_rat F ζ hζ γ _
-private theorem bp_unrat (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (γ : KPCuspArithmetic.PGL2 F)
+theorem bp_unrat (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (γ : KPCuspArithmetic.PGL2 F)
     (a : KPSmoothActualFlowData.GInfinity F) (x : KPFiniteCuspAtlas.SymmetricSpace F)
     (ha : KPMsFixedHaarDisintegration.archBasepoint F a = γ • x) :
     KPMsFixedHaarDisintegration.archBasepoint F ((archRational γ)⁻¹ * a) = x := by
@@ -284,7 +284,7 @@ theorem spherical_projection_compact_fiber (P : KPMsFixedHaarDisintegration.Sphe
       · simp
   rw [he]
   exact ((arch_basepoint_compact_fiber F ζ hζ x).prod hD).image hf
-private theorem finite_saturation_closed
+theorem finite_saturation_closed
     (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
     (B : Set (KPFiniteCuspAtlas.SymmetricSpace F × KPFiniteCuspAtlas.FiniteCover F ζ hζ))
     (hB : IsClosed B) :

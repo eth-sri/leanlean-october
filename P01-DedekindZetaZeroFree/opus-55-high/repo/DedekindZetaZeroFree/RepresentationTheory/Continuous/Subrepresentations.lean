@@ -43,14 +43,3 @@ variable {π : ContRepresentation R G V} {W : Submodule R V} {hW : ∀ g, ∀ v 
 theorem coe_subrepresentation_apply (g : G) (v : W) :
     ((subrepresentation π W hW g v : W) : V) = π g (v : V) :=
   (rfl)
-
-@[simp]
-theorem toRepresentation_subrepresentation : (subrepresentation π W hW).toRepresentation
-      = π.toRepresentation.subrepresentation W fun g _ hv => hW g _ hv := by
-  rfl
-
-end Restriction
-
-end ContRepresentation
-
-end DedekindZetaZeroFree.TauCeti

@@ -6,7 +6,6 @@ public import DedekindZetaZeroFree.Moments.Principal.TripleMellin.PoissonOrbitEv
 
 namespace DedekindZetaZeroFree.NormalizedProbe.TripleMellin
 open TripleMellinRaw
-noncomputable section
 open MeasureTheory
 open scoped NumberField Classical
 variable {F : Type} [Field F] [NumberField F]
@@ -67,7 +66,7 @@ theorem gaussian_inversion (T : ℝ) (hT : 0 < T) :
     calc
       _ = (τ : ℂ) ^ 2 * Complex.I ^ 2 +
           ((10 - (Real.log T : ℂ)) * Complex.I) * τ + (25 - 5 * (Real.log T : ℂ)) := by ring
-      _ = _ := by rw [Complex.I_sq]; ring
+      _ = _ := by simp
   simp_rw [hk]
   refine ⟨?_, ?_⟩
   · simpa using integrable_cexp_quadratic (b := (1 : ℂ)) (by norm_num)
@@ -101,6 +100,3 @@ theorem gaussian_inversion (T : ℝ) (hT : 0 < T) :
       exact_mod_cast Real.sq_sqrt Real.pi_pos.le
     field_simp
     exact hs2.symm
-
-end
-end DedekindZetaZeroFree.NormalizedProbe.TripleMellin

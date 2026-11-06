@@ -25,23 +25,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Integral finite-place preimages of local tensor norms
 
@@ -55,7 +38,6 @@ open scoped NumberField TensorProduct ValuativeRel NNReal
 open NumberField IsDedekindDomain
 
 noncomputable section
-
 
 open AlgebraicNumberTheory.Valuations
 open LocalClassFieldTheory
@@ -264,7 +246,7 @@ theorem exists_absoluteValueCompletionIntegerUnit_of_localizedCompletion_norm_bo
 
 /-- A family of completion-integer units supported at one extension of a
 finite place. -/
-noncomputable def singleFinitePlaceIntegralUnitFamily
+def singleFinitePlaceIntegralUnitFamily
     (v₀ : HeightOneSpectrum (𝓞 K))
     (w :
       AbsoluteValueExtension
@@ -291,7 +273,7 @@ noncomputable def singleFinitePlaceIntegralUnitFamily
 
 /-- The integral local tensor unit represented by a unit in one completion
 factor and by one in every other factor. -/
-noncomputable def singleRelativeLocalTensorDecompositionIntegralUnit
+def singleRelativeLocalTensorDecompositionIntegralUnit
     (v₀ : HeightOneSpectrum (𝓞 K))
     (w :
       AbsoluteValueExtension
@@ -458,7 +440,7 @@ theorem prod_norm_finitePlaceLocalTensorDecompositionUnitsComponent_single_eq
             (fun h => h ▸ y)
             (fun _ => 1) =
           y
-      rw [dite_eq_left rfl]
+      simp
     rw [hSelf]
     exact hNorm
   · intro u _ hu
@@ -476,8 +458,7 @@ theorem prod_norm_finitePlaceLocalTensorDecompositionUnitsComponent_single_eq
       rw [dite_eq_right hwu]
     rw [hAway]
     simp
-  · intro hw
-    exact (hw (Finset.mem_univ w)).elim
+  simp
 
 omit [NumberField L] in
 /-- The determinant norm of a singly supported integral tensor unit is the
@@ -818,11 +799,7 @@ private theorem exists_singleFinitePlaceIntegralUnit_norm_eq
               w.1.Completionˣ) :
             w.1.Completion) =
         (x₀ : vK.Completion) := by
-    calc
-      _ = Algebra.norm vK.Completion
-          ((y : E) : w.1.Completion) :=
-        congrArg (Algebra.norm vK.Completion) hyO
-      _ = (x₀ : vK.Completion) := hNormTransport
+    simp_all
   exact ⟨x₀, yO, hNorm, hx₀val⟩
 
 omit [NumberField L] in
@@ -882,7 +859,7 @@ theorem exists_localTensorDecompositionIntegralUnit_localTensorNorm_eq
   have hTensorNorm :
       localTensorDetNorm
           (K := K) (L := L) vK zA = x₀ := by
-    simpa only [zA, z] using hTensorNormSingle
+    omega
   let e :=
     finitePlaceCompletionUnitsContinuousMulEquiv v₀
   calc
@@ -904,5 +881,3 @@ theorem exists_localTensorDecompositionIntegralUnit_localTensorNorm_eq
         (K := K) (L := L) v₀ zA).symm
     _ = e x₀ := congrArg e hTensorNorm
     _ = x := hx₀val
-
-end

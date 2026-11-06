@@ -8,9 +8,7 @@ public import DedekindZetaZeroFree.Arithmetic.Ideals.PrimeNormSummability
 
 open scoped NumberField Classical
 
-noncomputable section
 namespace DedekindZetaZeroFree.CorrectionFactors
-set_option autoImplicit false
 
 open LocalFiniteSums
 
@@ -28,13 +26,12 @@ private theorem frequency_good_cofinite
     (UniqueFactorizationMonoid.normalizedFactors U.ideal.val).finite_toSet.preimage
       hinj.injOn
 
-private theorem frequency_good_unit
+theorem frequency_good_unit
     (C : A.GeneralArithmeticContext σ η hS) (U : Frequency C)
     (p : ExteriorPrime A) (hp : (U.j p).val = 0) :
     IsUnit (Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) U.u) := by
   have hs := U.unitPart_spec p
-  rw [hs.1, hp, pow_zero, one_mul]
-  exact hs.2
+  simp_all
 
 private theorem exterior_not_mem (p : ExteriorPrime A) : p.val ∉ A.Sf := by
   intro hp
@@ -88,10 +85,6 @@ theorem multipliable_localFactor
     (C : A.GeneralArithmeticContext σ η hS) (U : Frequency C)
     (x : Coordinates) (hx : x ∈ Omega) :
     Multipliable (fun p : ExteriorPrime A =>
-      localFactor C U p x.1 x.2.1 x.2.2) := by
-  exact ((hasProdUniformlyOn_localFactor C U {x}
+      localFactor C U p x.1 x.2.1 x.2.2) := 
+  ((hasProdUniformlyOn_localFactor C U {x}
     isCompact_singleton (Set.singleton_subset_iff.mpr hx)).hasProd (Set.mem_singleton x)).multipliable
-
-end DedekindZetaZeroFree.CorrectionFactors
-
-end

@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Pairings on power classes
 -/
@@ -29,5 +25,3 @@ universe u
 abbrev HilbertPairing (K : Type u) [Field K] (n : ℕ+) :=
   PowerClassGroup K n →*
     (PowerClassGroup K n →* rootsOfUnity (n : ℕ) K)
-
-end ClassFieldTheory

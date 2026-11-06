@@ -51,7 +51,7 @@ private lemma coordinates_mem_coordinatePiece_iff (cover : CountableCover F ζ h
     coordinates (cover.chart n) y ∈ coordinatePiece cover n ↔ y ∈ liftedPiece cover n := by
   rw [coordinatePiece, Set.mem_preimage, liftedPiece, Set.mem_preimage, q_coordinates]
 
-private lemma indicatorFields_apply_of_mem (cover : CountableCover F ζ hζ U R P H)
+lemma indicatorFields_apply_of_mem (cover : CountableCover F ζ hζ U R P H)
     (v : Family (U := U) (H := H)) (n : ℕ) (y : omega (cover.chart n))
     (hy : q (cover.chart n) y.val ∈ basePiece cover n) :
     indicatorFields cover v n y = coefficient v (cover.chart n) y := by
@@ -128,7 +128,7 @@ private lemma coordinates_injective (a : ShrunkChart F ζ hζ U R P H) :
   intro y₁ y₂ h
   rw [← pt_coordinates a y₁, ← pt_coordinates a y₂, h]
 
-private lemma T_congr {i : Fin (H.atlas U).componentCount}
+lemma T_congr {i : Fin (H.atlas U).componentCount}
     {a b : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) i}
     (ψ : Arrow a b) {x x' : M F} (h : x = x') (hx : x ∈ ψ.domain) (hx' : x' ∈ ψ.domain) :
     T ψ x hx = T ψ x' hx' := by
@@ -139,7 +139,7 @@ private lemma e_pt (cover : CountableCover F ζ hζ U R P H)
     e cover v n (pt (cover.chart n) x) = indicatorFields cover v n x := by
   rw [e_eq_indicatorFields cover v n (pt (cover.chart n) x), coordinates_pt]
 
-private lemma ambientSequence_apply (cover : CountableCover F ζ hζ U R P H)
+lemma ambientSequence_apply (cover : CountableCover F ζ hζ U R P H)
     (f : SequenceFields cover) (n : ℕ) (x : M F) (hx : x ∈ omega (cover.chart n)) :
     ambientSequence cover f n x = f n ⟨x, hx⟩ := by
   rw [ambientSequence, dif_pos hx]
@@ -215,11 +215,11 @@ theorem indicatorSequence_represents (cover : CountableCover F ζ hζ U R P H)
       (Ext cover (toAeQuotient v)) :=
   indicatorSequence_represents_aux cover v
 
-private lemma inverseTransport_some {a b : ShrunkChart F ζ hζ U R P H}
+lemma inverseTransport_some {a b : ShrunkChart F ζ hζ U R P H}
     (e : ActualBranch a b) (g : M F → E F) (x : M F) (hx : x ∈ e.arrow.domain) :
     inverseTransport (some e) g x hx = (T e.arrow x hx).symm (g (e.arrow.psi x)) := rfl
 
-private lemma inverseTransport_indicator_eq (cover : CountableCover F ζ hζ U R P H)
+lemma inverseTransport_indicator_eq (cover : CountableCover F ζ hζ U R P H)
     (v : SquareFiniteFamily (U := U) (H := H)) (a : ShrunkChart F ζ hζ U R P H)
     (n : ℕ) (br : Branch a (cover.chart n)) (hbr : br.Properties)
     (x : M F) (hxcell : q a x ∈ basePiece cover n) (hx : x ∈ br.domain) :

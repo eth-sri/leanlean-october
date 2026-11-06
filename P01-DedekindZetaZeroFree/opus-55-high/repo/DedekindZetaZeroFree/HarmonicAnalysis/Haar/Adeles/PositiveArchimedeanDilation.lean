@@ -68,7 +68,7 @@ private theorem arch_norm (u : InfinitePlace F → ℝ) :
         (KPHilbert.infinite_isComplex F ζ hζ w))
         ((InfinitePlace.Completion.ringEquivComplexOfIsComplex
           (KPHilbert.infinite_isComplex F ζ hζ w)).symm (Real.exp (u w) : ℂ)) = _
-      exact RingEquiv.apply_symm_apply _ _
+      simp
     rw [hcoord, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
   simp_rw [hv, (KPHilbert.infinite_isComplex F ζ hζ _).mult_eq_two,
     ← Real.exp_nat_mul]
@@ -80,7 +80,7 @@ private theorem arch_norm (u : InfinitePlace F → ℝ) :
  def archMul (d : (InfiniteAdeleRing F)ˣ) (x : Adeles F) : Adeles F :=
   (d.val * x.1, x.2)
 
-private theorem map_arch_mul (d : (InfiniteAdeleRing F)ˣ) :
+theorem map_arch_mul (d : (InfiniteAdeleRing F)ˣ) :
     Measure.map (archMul F d) (KPAdditiveHaar.adelicMeasure F) =
       (ENNReal.ofReal ‖d.val‖)⁻¹ • KPAdditiveHaar.adelicMeasure F := by
   let μa := KPAdditiveHaar.archMeasure F
@@ -89,12 +89,7 @@ private theorem map_arch_mul (d : (InfiniteAdeleRing F)ˣ) :
   letI : μf.IsAddHaarMeasure := KPAdditiveHaar.finiteMeasure_isAddHaarMeasure F
   let cast : InfiniteAdeleRing F × IsDedekindDomain.FiniteAdeleRing (𝓞 F) F → Adeles F := fun x => x
   have hc : Measurable cast := by
-    have heq : (MeasurableSpace.prod inferInstance inferInstance :
-      MeasurableSpace (InfiniteAdeleRing F × IsDedekindDomain.FiniteAdeleRing (𝓞 F) F)) =
-      borel (Adeles F) := BorelSpace.measurable_eq
-    change @Measurable _ _ (MeasurableSpace.prod inferInstance inferInstance) (borel _) _
-    rw [heq]
-    exact measurable_id
+    fun_prop
   letI : SigmaCompactSpace (InfiniteAdeleRing F) :=
     (PoissonArch.infiniteAdeleToSpace F).toHomeomorph.isClosedEmbedding.sigmaCompactSpace
   have hm : Measurable (archMul F d) := by
@@ -103,7 +98,7 @@ private theorem map_arch_mul (d : (InfiniteAdeleRing F)ˣ) :
     exact hh
   have hp : Measurable (Prod.map (fun x : InfiniteAdeleRing F => d.val * x)
       (id : IsDedekindDomain.FiniteAdeleRing (𝓞 F) F → _)) :=
-    (continuous_const.mul continuous_id).measurable.prodMap measurable_id
+    by fun_prop
   have harch : Measure.map (fun x : InfiniteAdeleRing F => d.val * x) μa =
       (ENNReal.ofReal ‖d.val‖)⁻¹ • μa := TateSLocalMeasurability.archimedean_map_mul F d
   have hprod : Measure.map (Prod.map (fun x : InfiniteAdeleRing F => d.val * x)
@@ -140,7 +135,3 @@ theorem integral_arch_mul (u : InfinitePlace F → ℝ) (h : Adeles F → ℂ)
   rw [ENNReal.toReal_inv, ENNReal.toReal_ofReal (by positivity)]
   simp only [Real.exp_neg, inv_inv]
   rfl
-
-end DedekindZetaZeroFree.KPContinuation.ChamberOutgoingSource
-
-end

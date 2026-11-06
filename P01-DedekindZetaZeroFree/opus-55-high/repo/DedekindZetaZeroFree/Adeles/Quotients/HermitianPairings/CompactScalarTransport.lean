@@ -44,7 +44,7 @@ open KPContSectorCoveredQuotientVocabulary KPContSectorScalarLineAlgebra
     (s t : Sections F ζ hζ V R P H) : KPMsFixedHaarDisintegration.Spherical F ζ hζ V → ℂ :=
   fun b => let p := (H.atlas V).components.symm b; componentPair s t p.1 p.2
 
-private theorem basePair_component {V : KPMsFixedHaarDisintegration.Level F ζ hζ}
+theorem basePair_component {V : KPMsFixedHaarDisintegration.Level F ζ hζ}
     (s t : Sections F ζ hζ V R P H) (i : Fin (H.atlas V).componentCount)
     (x : SymmetricSpace F) :
     basePair s t ((H.atlas V).components ⟨i, Quotient.mk _ x⟩) =
@@ -52,7 +52,7 @@ private theorem basePair_component {V : KPMsFixedHaarDisintegration.Level F ζ h
   simp only [basePair, componentPair]
   rw [Homeomorph.symm_apply_apply, Quotient.lift_mk]
 
-private theorem basePair_continuous {V : KPMsFixedHaarDisintegration.Level F ζ hζ}
+theorem basePair_continuous {V : KPMsFixedHaarDisintegration.Level F ζ hζ}
     (s t : Sections F ζ hζ V R P H)
     (hs : ∀ i, Continuous (s i).val) (ht : ∀ i, Continuous (t i).val) :
     Continuous (basePair s t) := by
@@ -66,7 +66,7 @@ private theorem basePair_continuous {V : KPMsFixedHaarDisintegration.Level F ζ 
     exact (hs i).mul (ht i).star
   exact hc.comp (H.atlas V).components.symm.continuous
 
-private theorem basePair_pullback {V : KPMsFixedHaarDisintegration.Level F ζ hζ}
+theorem basePair_pullback {V : KPMsFixedHaarDisintegration.Level F ζ hζ}
     (s t : Sections F ζ hζ V R P H) (v : CoveredSpherical F ζ hζ V) :
     basePair s t (q F ζ hζ V v) =
       ((S F ζ hζ V R P H).symm s).val v *
@@ -83,7 +83,7 @@ private theorem basePair_pullback {V : KPMsFixedHaarDisintegration.Level F ζ h�
   simp only [LinearEquiv.apply_symm_apply, phaseCoefficient_class]
   exact (unit_product _ _ _).symm
 
-private theorem basePair_zero {V : KPMsFixedHaarDisintegration.Level F ζ hζ}
+theorem basePair_zero {V : KPMsFixedHaarDisintegration.Level F ζ hζ}
     (s t : Sections F ζ hζ V R P H)
     (K : Set (KPFiniteCuspAtlas.rawXU F ζ hζ V))
     (hT : ∀ j z, KPCuspCutoffGraph.basePoint F ζ hζ H.totallyComplex V (H.atlas V) j z ∉ K →
@@ -95,7 +95,7 @@ private theorem basePair_zero {V : KPMsFixedHaarDisintegration.Level F ζ hζ}
   simpa only [KPCuspCutoffGraph.basePoint, KPCuspSiegel.projection,
     (H.atlas V).components_formula] using hb
 
-private theorem basePair_chart {V : KPMsFixedHaarDisintegration.Level F ζ hζ}
+theorem basePair_chart {V : KPMsFixedHaarDisintegration.Level F ζ hζ}
     (s t : Sections F ζ hζ V R P H) (a : ShrunkChart F ζ hζ V R P H) (y : a.domain) :
     basePair s t (a.toBase y) = sectionFields s a (coordinates a y) *
       star (sectionFields t a (coordinates a y)) := by

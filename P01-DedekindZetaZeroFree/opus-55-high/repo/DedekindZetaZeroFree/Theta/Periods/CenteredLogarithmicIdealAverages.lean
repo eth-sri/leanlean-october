@@ -33,8 +33,8 @@ def centeredLogShape (I : (FractionalIdeal (𝓞 F)⁰ F)ˣ)
 
 theorem centeredLogShape_pos (I : (FractionalIdeal (𝓞 F)⁰ F)ˣ)
     {t : ℝ} (ht : 0 < t) (h : RayCoset.logHyperplane F)
-    (v : NumberField.InfinitePlace F) : 0 < centeredLogShape F I t h v := by
-  exact mul_pos (Real.rpow_pos_of_pos (div_pos ht (mixedThetaCovolume_pos F I)) _)
+    (v : NumberField.InfinitePlace F) : 0 < centeredLogShape F I t h v := 
+  mul_pos (Real.rpow_pos_of_pos (div_pos ht (mixedThetaCovolume_pos F I)) _)
     (Real.exp_pos _)
 
 def centeredLogIdealTheta (I : (FractionalIdeal (𝓞 F)⁰ F)ˣ)
@@ -51,7 +51,3 @@ def topLogIdealAverage (ht : (⊤ : Ideal (𝓞 F)) ≠ ⊥)
     ∫ h in RayCoset.rayUnitHalfOpenDomain F ⊤ ht,
       centeredLogIdealTheta F I t h
       ∂DedekindZetaZeroFree.AbelianQuotient.Theta.normalizedLogHaar F
-
-end DedekindZetaZeroFree.Hecke.Theta
-
-end

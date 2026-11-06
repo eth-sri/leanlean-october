@@ -14,7 +14,7 @@ open scoped Classical NumberField NNReal Topology Pointwise
 
 namespace DedekindZetaZeroFree.KPGlobalResidualKernel.ResidualChamberConstruction.RegularSymmetrySteps
 
-private theorem invariant_level {G : Type*} [Group G] [TopologicalSpace G]
+theorem invariant_level {G : Type*} [Group G] [TopologicalSpace G]
     [IsTopologicalGroup G] (N K : Subgroup G) [N.Normal]
     (hK : IsCompact (K : Set G))
     (hb : ∀ W : Set N, W ∈ nhds 1 → ∃ U : CompactOpenLevel N,
@@ -86,7 +86,7 @@ open KPMsResidualTailRestoration.OutgoingTailL2.CoordinateDescent
  def raw (D : KPGlobalTorusBorelTwistCompatibility.IwasawaData F ζ hζ) :
     IwasawaData F ζ hζ := ⟨D.K, D.compact, D.decomposition, D.overlap⟩
 
-private theorem norm_compact_supergroup
+theorem norm_compact_supergroup
     (D : KPGlobalTorusBorelTwistCompatibility.IwasawaData F ζ hζ)
     (L : Subgroup (G F ζ hζ)) (hL : IsCompact (L : Set (G F ζ hζ))) (hKL : D.K ≤ L)
     (l : L) : iwasawaNorm F ζ hζ (raw D) l.val = 1 := by

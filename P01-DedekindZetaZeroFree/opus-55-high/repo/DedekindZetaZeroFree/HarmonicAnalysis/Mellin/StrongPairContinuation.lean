@@ -19,5 +19,3 @@ theorem mellinStrongPairContinuation (P : WeakFEPair ℂ) (hk : P.k = 1)
   have h := P.functional_equation (1 - s)
   rw [hk, Complex.ofReal_one, sub_sub_cancel, smul_eq_mul] at h
   exact h
-
-end DedekindZetaZeroFree.Hecke

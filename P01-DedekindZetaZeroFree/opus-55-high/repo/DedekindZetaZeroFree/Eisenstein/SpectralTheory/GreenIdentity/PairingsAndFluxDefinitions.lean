@@ -100,8 +100,3 @@ def endSet (j : Cusps A) (Y : ℝ) :
 def quotientCore (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
     (T : ℝ) : Set (X F ζ hζ) :=
   {x | ∀ j : Cusps A, P.projection U x ∉ endSet A j T}
-
-end Atlas
-end DedekindZetaZeroFree.KPMsGreenFlux
-
-end

@@ -42,8 +42,7 @@ theorem closure_closure_singleSet_eq_forall_mem (A S : ∀ i, Subgroup (R i))
     rintro x ⟨i, h, hh, rfl⟩ j
     rcases eq_or_ne j i with rfl | hj
     · simpa [P] using hh
-    · rw [RestrictedProduct.coe_mulSingle_apply, Pi.mulSingle_eq_of_ne hj]
-      exact (S j).one_mem
+    simp_all
   have hclosure_le : closure (Subgroup.closure (singleSet A S)) ⊆ (hPsub : Set (RestrictedProduct R (fun i => (A i : Set (R i))) Filter.cofinite)) := by
     have h2 : Subgroup.closure (singleSet A S) ≤ hPsub :=
       (Subgroup.closure_le hPsub).mpr hTsub
@@ -58,8 +57,7 @@ theorem closure_closure_singleSet_eq_forall_mem (A S : ∀ i, Subgroup (R i))
     simpa only [Set.compl_setOf] using h
   let s : Finset ι := hsfin.toFinset
   have hsc : Filter.cofinite ≤ Filter.principal ((s : Set ι)ᶜ) := by
-    rw [Filter.le_principal_iff]
-    exact s.finite_toSet.compl_mem_cofinite
+    simp
   let inc := RestrictedProduct.inclusion R (fun i => (A i : Set (R i))) hsc
   let x' : RestrictedProduct R (fun i => (A i : Set (R i)))
       (Filter.principal ((s : Set ι)ᶜ)) :=
@@ -70,7 +68,7 @@ theorem closure_closure_singleSet_eq_forall_mem (A S : ∀ i, Subgroup (R i))
         Set.mem_setOf_eq, not_not] using hi⟩
   have hx' : x' ∈ inc ⁻¹' V := by
     change inc x' ∈ V
-    have hinc : inc x' = x := by ext i; rfl
+    have hinc : inc x' = x := by rfl
     rw [hinc]; exact hxV
   have hopen : IsOpen (inc ⁻¹' V) :=
     hVopen.preimage (RestrictedProduct.continuous_inclusion hsc)
@@ -89,9 +87,7 @@ theorem closure_closure_singleSet_eq_forall_mem (A S : ∀ i, Subgroup (R i))
     refine Filter.mem_of_superset ((t ∪ s).finite_toSet.compl_mem_cofinite) ?_
     intro i hi
     simp only [Finset.mem_coe, Set.mem_compl_iff, Finset.mem_union, not_or] at hi
-    change (if i ∈ t then x i else 1) ∈ A i
-    rw [if_neg hi.1]
-    exact (A i).one_mem
+    simp_all
   let G : Finset ι → RestrictedProduct R (fun i => (A i : Set (R i))) Filter.cofinite :=
     fun t => ⟨fun i => if i ∈ t then x i else 1, hgfun t⟩
   have hGmem : ∀ t : Finset ι, G t ∈ Subgroup.closure (singleSet A S) := by
@@ -99,12 +95,8 @@ theorem closure_closure_singleSet_eq_forall_mem (A S : ∀ i, Subgroup (R i))
     induction t using Finset.induction with
     | empty =>
       have h1 : G ∅ = 1 := by
-        apply Subtype.ext
-        funext i
-        show (if i ∈ (∅ : Finset ι) then x i else 1) = 1
-        simp
-      rw [h1]
-      exact (Subgroup.closure (singleSet A S)).one_mem
+        rfl
+      simp_all
     | insert a t ha ih =>
       have hstep : G (insert a t) =
           G t * RestrictedProduct.mulSingle A a (x a) := by
@@ -115,9 +107,7 @@ theorem closure_closure_singleSet_eq_forall_mem (A S : ∀ i, Subgroup (R i))
         by_cases hia : i = a
         · rw [hia, if_pos (Finset.mem_insert_self a t), if_neg ha,
             Pi.mulSingle_eq_same, one_mul]
-        · rw [Pi.mulSingle_eq_of_ne hia, mul_one]
-          congr 1
-          simp only [Finset.mem_insert, hia, false_or]
+        simp_all
       rw [hstep]
       exact (Subgroup.closure (singleSet A S)).mul_mem ih
         (Subgroup.subset_closure ⟨a, x a, hx a, rfl⟩)
@@ -140,7 +130,7 @@ theorem closure_closure_singleSet_eq_forall_mem (A S : ∀ i, Subgroup (R i))
         · rw [if_pos hit]
           simpa only [Set.mem_compl_iff, Finset.mem_coe, s, hsfin.mem_toFinset,
             Set.mem_setOf_eq, not_not] using hi
-        · rw [if_neg hit]; exact (A i).one_mem⟩
+        simp_all⟩
     have hg'W : g'.1 ∈ W := by
       apply huW
       intro i hi
@@ -150,11 +140,7 @@ theorem closure_closure_singleSet_eq_forall_mem (A S : ∀ i, Subgroup (R i))
     have hg'V : g' ∈ inc ⁻¹' V := by
       rw [← hWV]
       exact hg'W
-    have hinc : inc g' = G t := by ext i; rfl
+    have hinc : inc g' = G t := by rfl
     rw [← hinc]
     exact hg'V
   exact ⟨G t, hgV, hgH⟩
-
-end DedekindZetaZeroFree.RestrictedProductDensity
-
-end

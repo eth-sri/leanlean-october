@@ -58,7 +58,7 @@ private theorem rational_root_invariance
   rw [KPRationalAdelicSplitting.N_rational]
   exact hr
 
-private theorem rational_diagonal_invariance
+theorem rational_diagonal_invariance
     (θ : Functions F ζ hζ) (hθ : Automorphic F ζ hζ θ) (t : Fˣ) (g : G F ζ hζ) :
     θ (KPGlobalTorusFunctionData.rationalDiagonalLift F ζ hζ t * g) = θ g := by
   have hr := hθ.2.1 (Matrix.ProjGenLinGroup.mk (KubotaRankTwo.d F t 1)) g
@@ -91,7 +91,7 @@ theorem haar_fourier_vanishing_forces_root_invariance
   have hpos : 0 < μ Set.univ :=
     pos_iff_ne_zero.mpr (hμ.open_pos Set.univ isOpen_univ Set.univ_nonempty)
   have hreal : 0 < μ.real Set.univ := by
-    exact ENNReal.toReal_pos hpos.ne' hmass
+    simp
   let n := rootChar F ζ hζ
   have hncont : Continuous n :=
     KPWildIndependentGenericity.NonzeroPeriod.actual_upper_root_continuous F ζ hζ
@@ -109,8 +109,8 @@ theorem haar_fourier_vanishing_forces_root_invariance
     exact hθ.1.1.comp (hncont.mul continuous_const)
   have hint (g : G F ζ hζ) : Integrable (fun x : KPAdditiveQuotient F =>
       θ (KPGlobalTorusFunctionData.N F ζ hζ (Quotient.out x) * g) *
-        star (ψ.toAddChar x)) μ := by
-    exact ((hfcont g).mul ψ.continuous_toFun.star).integrable_of_hasCompactSupport
+        star (ψ.toAddChar x)) μ := 
+    ((hfcont g).mul ψ.continuous_toFun.star).integrable_of_hasCompactSupport
       (HasCompactSupport.of_compactSpace _)
   refine ⟨hmass, hreal, hint, ?_⟩
   intro hvan
@@ -121,7 +121,7 @@ theorem haar_fourier_vanishing_forces_root_invariance
         exact ψ.unitary (QuotientAddGroup.mk x)⟩
       map_zero_eq_one' := by
         apply Subtype.ext
-        simp only [QuotientAddGroup.mk_zero, AddChar.map_zero_eq_one, star_one, Circle.coe_one]
+        simp
       map_add_eq_mul' := by
         intro x y
         apply Subtype.ext
@@ -144,14 +144,13 @@ theorem haar_fourier_vanishing_forces_root_invariance
     change star (ψ.toAddChar (QuotientAddGroup.mk (algebraMap F (KPAdeles F) t))) = 1
     rw [show (QuotientAddGroup.mk (algebraMap F (KPAdeles F) t) : KPAdditiveQuotient F) = 0 from
       (QuotientAddGroup.eq_zero_iff _).mpr ⟨t, rfl⟩]
-    simp only [AddChar.map_zero_eq_one, star_one]
+    simp
   let ν : Measure (KPAdditiveQuotient F) := (μ Set.univ)⁻¹ • μ
   letI : ν.IsAddHaarMeasure :=
     Measure.IsAddHaarMeasure.smul μ (ENNReal.inv_ne_zero.mpr hmass)
       (ENNReal.inv_ne_top.mpr hpos.ne')
   letI : IsProbabilityMeasure ν := ⟨by
-    change ((μ Set.univ)⁻¹ • μ) Set.univ = 1
-    rw [Measure.smul_apply, smul_eq_mul, ENNReal.inv_mul_cancel hpos.ne' hmass]⟩
+    simp⟩
   have hperiod (g : G F ζ hζ) :
       KPCompactFourier.fourierPeriod F ν ψA n θ g = 0 := by
     have hp := hvan g
@@ -180,10 +179,4 @@ theorem haar_fourier_vanishing_forces_root_invariance
       θ (KPGlobalTorusFunctionData.N F ζ hζ (Quotient.out x) * g) = θ g :=
     hinv (Quotient.out x) g
   simp_rw [heq]
-  simp only [integral_const]
-  exact RCLike.real_smul_eq_coe_mul _ _
-
-end DedekindZetaZeroFree.KPLiteralPeriod
-
-end
-end
+  simp

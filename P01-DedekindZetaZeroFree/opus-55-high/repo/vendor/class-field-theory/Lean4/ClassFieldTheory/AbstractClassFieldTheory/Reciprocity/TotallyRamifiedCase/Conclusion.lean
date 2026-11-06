@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Totally ramified reciprocity
 
@@ -281,7 +278,7 @@ theorem abstractReciprocity_cyclicTotallyRamified_finiteReciprocityHom_injective
   have hkzero := v.abstractReciprocity_cyclicTotallyRamified_exponent_eq_zero
     hcf K E hTot k hk piSigma piL
       w (v.chosenPrimeElement_isPrime L) hnorm
-  rw [hxrepr, hkzero, zero_nsmul]
+  simp_all
 
 /-- The cyclic totally ramified instance of the abstract reciprocity theorem. -/
 theorem abstractReciprocity_cyclicTotallyRamified_finiteReciprocityHom_bijective
@@ -307,9 +304,3 @@ theorem abstractReciprocity_cyclicTotallyRamified_finiteReciprocityHom_bijective
       hcf hAxiom K E hTot,
     cyclicReciprocity_card_equality
       A hcf EF E.normal E.generator E.generates⟩
-
-end ValuationData
-
-end ClassFormation
-
-end

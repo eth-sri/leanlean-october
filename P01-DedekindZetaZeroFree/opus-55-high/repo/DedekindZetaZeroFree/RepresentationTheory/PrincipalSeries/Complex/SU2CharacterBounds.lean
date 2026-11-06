@@ -8,7 +8,7 @@ namespace DedekindZetaZeroFree.KPCplxHarmonicExtraction.ChartDerivativeBounds
 
 open KPCplxCharacterHaar
 
-private theorem symmetricPowerTrace_eq_symPower_character (d : ℕ) (g : ComplexSU2) :
+theorem symmetricPowerTrace_eq_symPower_character (d : ℕ) (g : ComplexSU2) :
     KPCompactHarmonic.symmetricPowerTrace d
       ⟨g.val, (Matrix.mem_specialUnitaryGroup_iff.mp g.property).1⟩ =
     (TauCeti.SU2.symPower d).character g := by
@@ -21,7 +21,7 @@ private theorem symmetricPowerTrace_eq_symPower_character (d : ℕ) (g : Complex
     have h := TauCeti.SU2.trace_mul_character_symPower d g
     linear_combination h
 
-private theorem su2HarmonicCharacter_eq_symPower_character (ℓ : ℕ) (g : ComplexSU2) :
+theorem su2HarmonicCharacter_eq_symPower_character (ℓ : ℕ) (g : ComplexSU2) :
     su2HarmonicCharacter ℓ g = (TauCeti.SU2.symPower (2 * ℓ)).character g := by
   have hd : Matrix.det g.val = 1 := (Matrix.mem_specialUnitaryGroup_iff.mp g.property).2
   simp only [su2HarmonicCharacter, KPCompactHarmonic.rankOneCharacter, hd, one_pow,
@@ -51,10 +51,5 @@ theorem su2_character_continuous_norm_bound (ℓ : ℕ) :
         ≤ ∑ i ∈ Finset.range (2 * ℓ + 1),
             ‖(z : ℂ) ^ i * ((z : ℂ))⁻¹ ^ (2 * ℓ - i)‖ := norm_sum_le _ _
       _ = ∑ _i ∈ Finset.range (2 * ℓ + 1), (1 : ℝ) := by
-          apply Finset.sum_congr rfl
-          intro i _
-          rw [norm_mul, norm_pow, norm_pow, norm_inv, Circle.norm_coe]
           simp
       _ = (2 * ℓ + 1 : ℕ) := by simp
-
-end DedekindZetaZeroFree.KPCplxHarmonicExtraction.ChartDerivativeBounds

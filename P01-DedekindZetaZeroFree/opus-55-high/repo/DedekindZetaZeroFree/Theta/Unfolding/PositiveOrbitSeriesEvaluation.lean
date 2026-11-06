@@ -19,8 +19,7 @@ theorem forward_orbit_evaluation {N : TraceHaarTransport R} (C : JointUpperVanis
     HasSum (orbitTerm R C (rowClass R u)
       (ActualRowTransfer.dyadicRow R.A R.probe.coefficients u h d) true Z hZ)
       (ThetaReflectionData.forwardB R.A R.probe.coefficients
-        (ActualRowTransfer.dyadicRow R.A R.probe.coefficients u h d) Z) := by
-  exact DedekindZetaZeroFree.OrbitExpansion.forward_orbit_evaluation R C hx u h d hh hd hc Z hZ
+        (ActualRowTransfer.dyadicRow R.A R.probe.coefficients u h d) Z) := by apply DedekindZetaZeroFree.OrbitExpansion.forward_orbit_evaluation <;> assumption
 
 end DedekindZetaZeroFree.ThetaExpansion.SignedExpansion
 

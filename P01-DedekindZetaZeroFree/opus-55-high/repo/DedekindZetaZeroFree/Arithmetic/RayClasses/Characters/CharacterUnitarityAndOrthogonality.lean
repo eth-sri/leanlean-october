@@ -6,7 +6,6 @@ public import DedekindZetaZeroFree.Arithmetic.RayClasses.Characters.FiniteOrderA
 
 namespace DedekindZetaZeroFree.Hecke
 
-noncomputable section
 
 open scoped NumberField
 open DedekindZetaZeroFree.AbelianQuotient
@@ -22,8 +21,7 @@ theorem rayClassCharacter_norm_eq_one
 
 theorem rayClassCharacter_norm_le_one
     (hm : m ≠ ⊥) (η : DedekindZetaZeroFree.RayClassCharacter F m)
-    (I : Ideal (𝓞 F)) : ‖η I‖ ≤ 1 := by
-  exact rayCharacter_norm_le_one F m hm η I
+    (I : Ideal (𝓞 F)) : ‖η I‖ ≤ 1 := by apply DedekindZetaZeroFree.AbelianQuotient.rayCharacter_norm_le_one <;> assumption
 
 theorem rayCharacterDescent_norm_eq_one
     (hm : m ≠ ⊥) (η : DedekindZetaZeroFree.RayClassCharacter F m)
@@ -36,7 +34,3 @@ theorem rayCharacterDescent_norm_eq_one
   have hpow : ψ c ^ Nat.card (RayIdealClass F m hm) = 1 := by
     rw [← map_pow, pow_card_eq_one', map_one]
   exact Complex.norm_eq_one_of_pow_eq_one hpow Nat.card_pos.ne'
-
-end
-
-end DedekindZetaZeroFree.Hecke

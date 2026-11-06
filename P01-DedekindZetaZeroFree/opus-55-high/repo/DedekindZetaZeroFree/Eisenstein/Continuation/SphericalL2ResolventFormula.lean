@@ -16,11 +16,6 @@ def ClearedHilbertGerm {H : Type*} [NormedAddCommGroup H] [NormedSpace ℂ H]
     ∃ w : ℂ → H, DifferentiableOn ℂ w (Metric.ball s₀ r) ∧
       ∀ s ∈ Metric.ball s₀ r, s ≠ s₀ → w s = (s - s₀) • v s
 
-section Formula
-variable {X A H S : Type*} [MeasurableSpace X] [Fintype A]
-    [AddCommGroup H] [Module ℂ H] [AddCommGroup S] [Module ℂ S]
-
-end Formula
 
 def ClearedSmoothGerm {X I : Type*}
     (n : I → ℕ) (balls : ∀ i, KPContLocalNorm.LocalBall (n i))
@@ -33,7 +28,3 @@ def ClearedSmoothGerm {X I : Type*}
       (∀ i, KPCutoffSource.ChartSmoothHolomorphicOn (balls i)
         (fun s => pullback i (w s)) (Metric.ball s₀ r)) ∧
       ∀ s ∈ Metric.ball s₀ r, s ≠ s₀ → w s = (s - s₀) • E s
-
-end DedekindZetaZeroFree.KPSphericalL2Formula
-
-end

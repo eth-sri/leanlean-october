@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Adeles.Characters.TraceCharacter
 
 @[expose] public section
 
-noncomputable section
 
 open scoped NumberField
 open NumberField IsDedekindDomain
@@ -108,7 +107,3 @@ theorem adelicTraceCharacter_nondegenerate (F : Type) [Field F] [NumberField F]
       exact he
   · rintro rfl y
     simp
-
-end DedekindZetaZeroFree
-
-end

@@ -41,11 +41,11 @@ def exteriorCoordinates (a : A.H) : A.C :=
 theorem exists_supportedChart :
     ∃ e : A.H ≃ₜ* (A.G1 × A.C),
       ∀ a : A.H, (e a).1.val = A.sCoordinatesRaw a.1.1 ∧
-        (e a).2 = A.exteriorCoordinates a := by
-  exact ⟨SupportedChartConstruction.chart A, fun _ => ⟨rfl, rfl⟩⟩
+        (e a).2 = A.exteriorCoordinates a := 
+  ⟨SupportedChartConstruction.chart A, fun _ => ⟨rfl, rfl⟩⟩
 
-theorem isOpen_H : IsOpen (A.H : Set (IdeleGroup.normOneSubgroup (K := F))) := by
-  exact (IdeleGroup.isOpen_supportedAt A.Sf).preimage continuous_subtype_val
+theorem isOpen_H : IsOpen (A.H : Set (IdeleGroup.normOneSubgroup (K := F))) := 
+  (IdeleGroup.isOpen_supportedAt A.Sf).preimage continuous_subtype_val
 
 instance compactSpace_C : CompactSpace A.C :=
   SupportedChartTopology.compact_exterior A.Sf
@@ -60,7 +60,3 @@ instance commGroup_G1 : CommGroup A.G1 := inferInstance
 
 instance isTopologicalGroup_G1 : IsTopologicalGroup A.G1 :=
   SupportedChartTopology.topologicalGroup_G1 A
-
-end
-end SArithmeticData
-end DedekindZetaZeroFree

@@ -21,5 +21,3 @@ instance IsSemisimpleModule.prod [IsSemisimpleModule R M] [IsSemisimpleModule R 
     (_root_.IsSemisimpleModule.range (LinearMap.inr R M N))
   rw [LinearMap.sup_range_inl_inr] at hsup
   exact .congr Submodule.topEquiv.symm
-
-end DedekindZetaZeroFree.TauCeti

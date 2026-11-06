@@ -33,7 +33,7 @@ variable (F : Type) [Field F] [NumberField F]
   subst m
   exact ClassFieldTheory.ordinaryRayClassGroupEquivClassGroup
 
-private theorem ordinaryComparison_apply (m : ClassFieldTheory.RayClassModulus F)
+theorem ordinaryComparison_apply (m : ClassFieldTheory.RayClassModulus F)
     (h : m = ClassFieldTheory.ordinaryRayClassModulus F)
     (J : ClassFieldTheory.rayClassPrimeToIdeals m) :
     ordinaryComparison F m h
@@ -75,8 +75,4 @@ theorem topRayClassEquivClassGroup_representatives (hF : NumberField.IsTotallyCo
         (topRayClassEquivClassGroup F hF ht c)⁻¹ := by
   rw [← topRayClassEquivClassGroup_rayIdealClass F hF ht (D.coset c).a
     (D.coset c).ideal_ne_bot (c⁻¹) (D.inverse_class c)]
-  exact map_inv (topRayClassEquivClassGroup F hF ht) c
-
-end DedekindZetaZeroFree.Hecke.Theta
-
-end
+  simp

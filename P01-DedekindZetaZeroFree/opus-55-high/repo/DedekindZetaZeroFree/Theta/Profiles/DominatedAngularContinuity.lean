@@ -55,7 +55,7 @@ theorem thetaDominatedAngularContinuity
             Summable.tsum_le_tsum (fun i => hu_bound t ht h hS' i) hn hu_sum
     have hbound_int : Integrable (fun _ : H => ∑' i : ι, u i) (ν.restrict D) := by
       haveI : IsFiniteMeasure (ν.restrict D) := ⟨by simpa using hνD⟩
-      exact integrable_const _
+      simp
     have hcont_ae : ∀ᵐ h ∂(ν.restrict D),
         ContinuousOn (fun t : ℝ => ∑' i : ι, F t h i) (Set.Icc a b) := by
       filter_upwards [ae_restrict_mem hD] with h hh
@@ -87,5 +87,3 @@ theorem thetaDominatedAngularContinuity
       exact (hF i).comp ((continuous_const.prodMk continuous_id).continuousOn)
         (fun h hh => ⟨ht, hh⟩)
     exact hcont.integrableOn_of_subset_isCompact hS hD hDS hνD.ne
-
-end DedekindZetaZeroFree

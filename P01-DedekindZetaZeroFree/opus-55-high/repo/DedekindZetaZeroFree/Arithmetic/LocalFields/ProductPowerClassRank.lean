@@ -22,7 +22,7 @@ instance instVnModule (F : Type) [Field F] [NumberField F]
   (AddEquiv.piAdditive (fun v : A.Place => PowerQuotient (A.Completion v)ˣ n)).module
     (ZMod n)
 
-private theorem Vn_finite_aux (F : Type) [Field F] [NumberField F]
+theorem Vn_finite_aux (F : Type) [Field F] [NumberField F]
     (A : SArithmeticData F) (n : ℕ) (hn : n = 2 ∨ n = 3) :
     Finite (Vn F A n) := by
   haveI (v : A.Place) : Finite (PowerQuotient (A.Completion v)ˣ n) := by
@@ -35,7 +35,7 @@ private theorem Vn_finite_aux (F : Type) [Field F] [NumberField F]
       exact A.finite_power_class_finite ⟨n, by omega⟩ hn v.val v.property
   infer_instance
 
-private theorem Vn_card_aux (F : Type) [Field F] [NumberField F]
+theorem Vn_card_aux (F : Type) [Field F] [NumberField F]
     (A : SArithmeticData F) (n : ℕ) (hn : n = 2 ∨ n = 3) :
     Nat.card (Vn F A n) = n ^ (2 * A.Sf.card + Module.finrank ℚ F) := by
   have hi (w : InfinitePlace F) : Nat.card (PowerQuotient w.Completionˣ n) = 1 := by
@@ -44,8 +44,8 @@ private theorem Vn_card_aux (F : Type) [Field F] [NumberField F]
     simp
   have hf (v : ↥A.Sf) : Nat.card (PowerQuotient (v.val.adicCompletion F)ˣ n) =
       n * (n * GlobalClassFieldTheory.ClassFieldAxiom.finitePlaceNthPowerDefect
-        (K := F) ⟨n, by omega⟩ v.val) := by
-    exact GlobalClassFieldTheory.ClassFieldAxiom.card_finitePlace_nthPowerQuotient_eq_defect
+        (K := F) ⟨n, by omega⟩ v.val) := 
+    GlobalClassFieldTheory.ClassFieldAxiom.card_finitePlace_nthPowerQuotient_eq_defect
       (K := F) ⟨n, by omega⟩
       ⟨A.zeta12 ^ (12 / n), (mem_primitiveRoots (show 0 < n by omega)).2
         (A.primitive_root n (by rcases hn with h | h <;> simp [IsLocalRootOrder, h]))⟩
@@ -71,7 +71,7 @@ theorem Vn_finrank (F : Type) [Field F] [NumberField F]
   haveI := Vn_finite_aux F A n hn
   have hfr := Module.natCard_eq_pow_finrank (K := ZMod n)
     (V := Additive (Vn F A n))
-  have hK : Nat.card (ZMod n) = n := by rw [Nat.card_eq_fintype_card, ZMod.card]
+  have hK : Nat.card (ZMod n) = n := by simp
   rw [hK] at hfr
   apply Nat.pow_right_injective (by omega : 1 < n)
   change n ^ _ = n ^ _
@@ -86,15 +86,9 @@ theorem Vn_finrank_complex (F : Type) [Field F] [NumberField F]
   have hreal := InfinitePlace.IsPrimitiveRoot.nrRealPlaces_eq_zero_of_two_lt
     (by decide : 2 < 12) A.primitive_zeta12
   have hdegree := InfinitePlace.card_add_two_mul_card_eq_rank (K := F)
-  rw [hreal, zero_add] at hdegree
-  rw [← hdegree]
-  ring
+  omega
 
 theorem Vn_card (F : Type) [Field F] [NumberField F]
     (A : SArithmeticData F) (n : ℕ) (hn : n = 2 ∨ n = 3) :
-    Nat.card (Vn F A n) = n ^ (2 * A.Sf.card + Module.finrank ℚ F) := by
-  exact Vn_card_aux F A n hn
-
-end
-end SArithmeticData
-end DedekindZetaZeroFree
+    Nat.card (Vn F A n) = n ^ (2 * A.Sf.card + Module.finrank ℚ F) := 
+  Vn_card_aux F A n hn

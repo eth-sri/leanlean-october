@@ -4,13 +4,11 @@ public import DedekindZetaZeroFree.Metaplectic.Torus.FiniteHeisenbergInducingDat
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.KPRankOneForwardTestVector.ActualSource
 open scoped NumberField Valued Topology
 open Classical NumberField IsDedekindDomain ValuativeRel
 open KPLocalExceptionalConstruction KPLocalStoneVonNeumann KPLocalPrincipalSeries
 
-set_option autoImplicit false
 
 theorem integer_open_cell_section
     (F : Type) [Field F] [NumberField F]
@@ -50,9 +48,4 @@ theorem integer_open_cell_section
     simp only [KPRankOneOpenCellKernel.openCoordinate,
       (S.openCell P).weyl_eq, (S.openCell P).upper_eq]
   rw [he, hf.2 x]
-  change (U : Set (LocalField F q)).indicator (fun _ => v) x = if x ∈ U then v else 0
-  exact Set.indicator_apply _ _ _
-
-end DedekindZetaZeroFree.KPRankOneForwardTestVector.ActualSource
-
-end
+  rfl

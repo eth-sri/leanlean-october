@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 namespace ClassFormation
 
 open CyclicCohomology
@@ -81,25 +78,3 @@ instance frobeniusElementsSemigroup (D : DegreeData G)
     apply Subtype.ext
     change (σ.1 * τ.1) * υ.1 = σ.1 * (τ.1 * υ.1)
     exact mul_assoc σ.1 τ.1 υ.1
-
-/--
-`extensionNormalizedDegree_frobenius` satisfies the multiplication formula
-`D.extensionNormalizedDegree K L hLK (σ * τ).1 = D.extensionNormalizedDegree K L hLK σ.1 *
-D.extensionNormalizedDegree K L hLK τ.1`.
--/
-@[simp]
-theorem extensionNormalizedDegree_frobenius_mul (D : DegreeData G)
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (CyclicCohomology.extensionSubgroup (G := G)
-      K.field L hLK).Normal]
-    (σ τ : D.FrobeniusElements K L hLK) :
-    D.extensionNormalizedDegree K L hLK (σ * τ).1 =
-      D.extensionNormalizedDegree K L hLK σ.1 *
-        D.extensionNormalizedDegree K L hLK τ.1 :=
-  map_mul _ _ _
-
-end DegreeData
-
-end
-end ClassFormation

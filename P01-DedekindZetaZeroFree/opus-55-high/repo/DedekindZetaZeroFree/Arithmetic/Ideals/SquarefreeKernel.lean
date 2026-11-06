@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.LargeSieve.Bilinear.QuadraticFormsAndSieveExp
 
 @[expose] public section
 
-noncomputable section
 open scoped NumberField Classical
 
 namespace DedekindZetaZeroFree.LargeSieve.Sieve.UniversalB2
@@ -60,9 +59,5 @@ theorem canonical_kernel_extraction
     by_cases h : v.count p % 2 = 1
     · simp [h]
     · have hzero : v.count p % 2 = 0 := by omega
-      simp [h, hzero]
+      simp [hzero]
   exact ⟨hk0, hsf, ⟨t ^ 2, heq⟩, t, ht0, heq⟩
-
-end DedekindZetaZeroFree.LargeSieve.Sieve.UniversalB2
-
-end

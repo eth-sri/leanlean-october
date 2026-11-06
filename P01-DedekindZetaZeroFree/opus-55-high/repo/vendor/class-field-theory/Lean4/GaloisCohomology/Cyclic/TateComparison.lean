@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Boundary-degree Tate cohomology for finite cyclic groups
 
@@ -49,11 +45,7 @@ def isoZeroBoundary {R G : Type u} [CommRing R] [Group G] [Fintype G]
         (groupCohomology.cochainsIso₀ A)
         (groupCohomology.cochainsIso₁ A)
         (by
-          change
-            (groupHomology.chainsIso₀ A).hom ≫ A.norm.toModuleCatHom =
-              A.tateNorm ≫ (groupCohomology.cochainsIso₀ A).hom
-          rw [Rep.tateNorm]
-          simp)
+          rfl)
         (groupCohomology.comp_d₀₁_eq A)
   exact ShortComplex.homologyMapIso eS
 
@@ -82,11 +74,9 @@ def isoFiniteCyclicZero {R G : Type u} [CommRing R] [CommGroup G] [Fintype G]
     constructor
     · rintro ⟨y, ⟨z, rfl⟩, rfl⟩
       refine ⟨z, ?_⟩
-      apply Subtype.ext
       rfl
     · rintro ⟨z, rfl⟩
       refine ⟨S.moduleCatToCycles z, ⟨z, rfl⟩, ?_⟩
-      apply Subtype.ext
       rfl
   let eQ : S.moduleCatLeftHomologyData.H ≅ T.moduleCatLeftHomologyData.H :=
     (Submodule.Quotient.equiv _ _ eK hboundary).toModuleIso
@@ -108,7 +98,7 @@ def isoFiniteCyclicNegOne {R G : Type u} [CommRing R] [CommGroup G] [Fintype G]
         (groupHomology.chainsIso₀ A)
         (groupCohomology.cochainsIso₀ A)
         (groupHomology.comp_d₁₀_eq A)
-        (by simp [S, tateComplex, Rep.tateNorm]; rfl)
+        (by rfl)
   let T := Rep.FiniteCyclicGroup.subCompNormHom A g
   have hRange : LinearMap.range S.f.hom = LinearMap.range T.f.hom := by
     dsimp [S, T]
@@ -124,15 +114,14 @@ def isoFiniteCyclicNegOne {R G : Type u} [CommRing R] [CommGroup G] [Fintype G]
     · rintro ⟨y, ⟨z, rfl⟩, rfl⟩
       have hz : S.f z ∈ LinearMap.range T.f.hom := by
         rw [← hRange]
-        exact ⟨z, rfl⟩
+        simp
       rcases hz with ⟨w, hw⟩
       refine ⟨w, ?_⟩
       apply Subtype.ext
       exact hw
     · rintro ⟨w, rfl⟩
       have hw : T.f w ∈ LinearMap.range S.f.hom := by
-        rw [hRange]
-        exact ⟨w, rfl⟩
+        simp_all
       rcases hw with ⟨z, hz⟩
       refine ⟨S.moduleCatToCycles z, ⟨z, rfl⟩, ?_⟩
       apply Subtype.ext
@@ -141,7 +130,3 @@ def isoFiniteCyclicNegOne {R G : Type u} [CommRing R] [CommGroup G] [Fintype G]
     (Submodule.Quotient.equiv _ _ eK hboundary).toModuleIso
   exact ShortComplex.homologyMapIso eS ≪≫
     S.moduleCatHomologyIso ≪≫ eQ ≪≫ T.moduleCatHomologyIso.symm
-
-end TateCohomology
-
-end

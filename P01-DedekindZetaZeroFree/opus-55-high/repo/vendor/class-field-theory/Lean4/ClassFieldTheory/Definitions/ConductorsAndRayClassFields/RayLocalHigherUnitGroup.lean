@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Higher-unit subgroups at finite places
 -/
@@ -51,7 +47,3 @@ def rayLocalHigherUnitGroup
   Subgroup.map
     (v.adicCompletionIntegers K).units.subtype
     (rayLocalHigherUnitMap v n).ker
-
-end ClassFieldTheory
-
-end

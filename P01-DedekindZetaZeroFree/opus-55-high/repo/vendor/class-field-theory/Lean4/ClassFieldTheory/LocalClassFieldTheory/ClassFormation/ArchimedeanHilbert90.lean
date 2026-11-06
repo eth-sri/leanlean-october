@@ -7,8 +7,6 @@ public import ClassFieldTheory.LocalClassFieldTheory.ClassFormation.LocalizedCom
 public import ClassFieldTheory.LocalClassFieldTheory.ClassFormation.LocalizedCompletionCohomology.Finite
 public import ClassFieldTheory.LocalClassFieldTheory.ClassFormation.LocalizedCompletionCohomology.Cardinality.H0
 public import ClassFieldTheory.LocalClassFieldTheory.ClassFormation.LocalizedCompletionCohomology.Cardinality.HMinusOne
-public import ClassFieldTheory.LocalClassFieldTheory.ClassFormation.LocalizedCompletionCohomology.Cardinality.Trivial
-public import ClassFieldTheory.LocalClassFieldTheory.ClassFormation.LocalizedCompletionCohomology.Cardinality.Quotient
 public import GaloisCohomology.Cyclic.GaloisCohomology
 
 @[expose] public section
@@ -19,18 +17,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
-
-
-
-
-set_option autoImplicit false
 
 /-!
 # The Hilbert-90 half of the local class-field axiom at every place
@@ -46,7 +32,6 @@ open HilbertRamification
 open CyclicCohomology
 open CyclicCohomology.ProfiniteCohomology.Herbrand
 
-noncomputable section
 
 namespace LocalClassFieldTheory
 
@@ -193,7 +178,3 @@ theorem localHerbrandHMinusOne_card_eq_one_of_absoluteValue
     localHerbrandHMinusOne_subsingleton
       vK hvK w σ hgen
   exact Nat.card_unique
-
-end LocalClassFieldTheory
-
-end

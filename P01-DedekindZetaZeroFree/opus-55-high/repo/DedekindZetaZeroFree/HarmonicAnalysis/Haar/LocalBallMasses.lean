@@ -62,7 +62,7 @@ private lemma absNorm_mul_localBallMass_pred (v : HeightOneSpectrum (𝓞 F)) (n
   push_cast
   ring
 
-private lemma localNormalizedHaar_finiteCompletionBall_succ
+lemma localNormalizedHaar_finiteCompletionBall_succ
     (v : HeightOneSpectrum (𝓞 F)) (n : ℤ) :
     localNormalizedHaar F v (finiteCompletionBall F v n : Set (v.adicCompletion F)) =
       ENNReal.ofReal (Ideal.absNorm v.asIdeal : ℝ) *
@@ -90,16 +90,15 @@ private lemma localNormalizedHaar_finiteCompletionBall_succ
   rw [hrunion]
   rw [measure_iUnion hrdisj hmeas]
   simp_rw [hcoset]
-  rw [tsum_fintype, Finset.sum_const, Finset.card_univ, Fintype.card_fin]
-  rw [nsmul_eq_mul, ENNReal.ofReal_natCast]
+  simp
 
-private lemma localNormalizedHaar_finiteCompletionBall_zero
+lemma localNormalizedHaar_finiteCompletionBall_zero
     (v : HeightOneSpectrum (𝓞 F)) :
     localNormalizedHaar F v (finiteCompletionBall F v 0 : Set (v.adicCompletion F)) =
       ENNReal.ofReal (localBallMass F v 0) := by
   have hset : (finiteCompletionBall F v 0 : Set (v.adicCompletion F)) =
       (v.adicCompletionIntegers F : Set (v.adicCompletion F)) := by
-    rw [finiteCompletionBall_zero]; rfl
+    rfl
   rw [hset, localNormalizedHaar_integerRing]
   have h0 : localBallMass F v 0 = localHalfDifferentFactor F v := by
     rw [localBallMass, localHalfDifferentFactor]
@@ -123,7 +122,7 @@ theorem localNormalizedHaar_finiteCompletionBall
     | zero => simpa using localNormalizedHaar_finiteCompletionBall_zero F v
     | succ k ih =>
       have hrec := localNormalizedHaar_finiteCompletionBall_succ F v (k:ℤ)
-      have hk : ((k:ℤ) + 1) = ((k+1:ℕ):ℤ) := by push_cast; ring
+      have hk : ((k:ℤ) + 1) = ((k+1:ℕ):ℤ) := by rfl
       rw [hk] at hrec
       have hreal : localBallMass F v (k:ℤ) =
           localBallMass F v ((k+1:ℕ):ℤ) * (Ideal.absNorm v.asIdeal : ℝ) := by
@@ -150,14 +149,14 @@ theorem localNormalizedHaar_finiteCompletionBall
     | zero => simpa using localNormalizedHaar_finiteCompletionBall_zero F v
     | succ k ih =>
       have hrec := localNormalizedHaar_finiteCompletionBall_succ F v (-((k+1:ℕ):ℤ))
-      have hk : (-((k+1:ℕ):ℤ)) + 1 = -(k:ℤ) := by push_cast; ring
+      have hk : (-((k+1:ℕ):ℤ)) + 1 = -(k:ℤ) := by simp
       rw [hk] at hrec
       have hstep : localBallMass F v (-((k+1:ℕ):ℤ)) =
           (Ideal.absNorm v.asIdeal : ℝ) * localBallMass F v (-(k:ℤ)) := by
         have h := absNorm_mul_localBallMass_pred F v (-(k:ℤ))
-        rw [show (-(k:ℤ) - 1) = -((k+1:ℕ):ℤ) by push_cast; ring] at h
+        rw [show (-(k:ℤ) - 1) = -((k+1:ℕ):ℤ) by omega] at h
         exact h.symm
-      rw [hrec, ih, hstep, ENNReal.ofReal_mul (le_of_lt hQpos)]
+      simp_all
   obtain ⟨k, (rfl | rfl)⟩ := n.eq_nat_or_neg
   · exact hfwd k
   · exact hbwd k
@@ -192,7 +191,3 @@ theorem localBallMass_mul_dual (v : HeightOneSpectrum (𝓞 F)) (n : ℤ) :
     push_cast
     ring
   rw [localBallMass, localBallMass, ← Real.rpow_add hQ, hsum, Real.rpow_zero]
-
-end DedekindZetaZeroFree
-
-end

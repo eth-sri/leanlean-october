@@ -28,8 +28,8 @@ def descend (ι : S →ₗ[ℂ] H) (hι : Function.Injective ι)
     (descend ι hι j A).domain = testDomain ι := rfl
 
 @[simp] theorem representative_image (ι : S →ₗ[ℂ] H) (hι : Function.Injective ι)
-    (f : S) : representative ι hι ⟨ι f, LinearMap.mem_range_self ι f⟩ = f := by
-  exact (LinearEquiv.ofInjective ι hι).symm_apply_apply f
+    (f : S) : representative ι hι ⟨ι f, LinearMap.mem_range_self ι f⟩ = f := 
+  (LinearEquiv.ofInjective ι hι).symm_apply_apply f
 
 @[simp] theorem image_representative (ι : S →ₗ[ℂ] H) (hι : Function.Injective ι)
     (f : testDomain ι) : ι (representative ι hι f) = f :=
@@ -39,7 +39,7 @@ def descend (ι : S →ₗ[ℂ] H) (hι : Function.Injective ι)
     (j : T →ₗ[ℂ] V) (A : S →ₗ[ℂ] T) (f : S) :
     descend ι hι j A ⟨ι f, LinearMap.mem_range_self ι f⟩ = j (A f) := by
   change j (A (representative ι hι ⟨ι f, _⟩)) = _
-  rw [representative_image]
+  simp
 
 theorem descend_mem (ι : S →ₗ[ℂ] H) (hι : Function.Injective ι)
     (j : T →ₗ[ℂ] V) (A : S →ₗ[ℂ] T) (f : testDomain ι) :
@@ -58,7 +58,7 @@ theorem laplacian_eq_divergence_differential
       descend j hj ι B ⟨descend ι hι j A f, descend_mem ι hι j A f⟩ := by
   change ι (B (A (representative ι hι f))) =
     ι (B (representative j hj ⟨j (A (representative ι hι f)), _⟩))
-  rw [representative_image]
+  simp
 
 theorem descend_formalAdjoint
     (ι : S →ₗ[ℂ] H) (hι : Function.Injective ι)
@@ -86,8 +86,3 @@ theorem integrable_pairing (μ : Measure X) (f g : X → W)
   apply (L2.integrable_inner (𝕜 := ℂ) (hf.toLp f) (hg.toLp g)).congr
   filter_upwards [hf.coeFn_toLp, hg.coeFn_toLp] with x hx hy
   rw [hx, hy]
-
-end KPTestL2
-end DedekindZetaZeroFree
-
-end

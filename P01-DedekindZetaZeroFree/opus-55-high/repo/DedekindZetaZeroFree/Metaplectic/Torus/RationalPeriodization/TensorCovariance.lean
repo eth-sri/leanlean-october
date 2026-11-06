@@ -37,7 +37,7 @@ theorem stage_toLeft (s : RestrictedTensorSimple.Level (bad R P C)) : s.val.toLe
   intro w
   exact Finset.mem_toLeft.mpr (s.property (arch_bad R P C w))
 
-private theorem arch_action (u : Raw R)
+theorem arch_action (u : Raw R)
     (t : ∀ q, KPLocalExceptionalConstruction.actualTorus F R.A.zeta12 R.A.primitive_zeta12 q)
     (a d : InfinitePlace F → ℂˣ) (s : RestrictedTensorSimple.Level (bad R P C))
     (y : ∀ j : s.val, Fiber R P C j) :

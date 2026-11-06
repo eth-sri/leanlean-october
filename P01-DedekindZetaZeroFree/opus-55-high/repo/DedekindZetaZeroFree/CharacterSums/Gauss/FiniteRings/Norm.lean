@@ -7,7 +7,6 @@ public import Mathlib.Analysis.SpecialFunctions.Sqrt
 
 namespace DedekindZetaZeroFree.Hecke
 
-noncomputable section
 
 open scoped BigOperators
 
@@ -22,8 +21,7 @@ theorem finiteRingGaussSum_norm_sq (e : AddChar R ℂ)
   classical
   have hpos : 0 < ∑ x : R, ‖unitCharExtend χ x‖ ^ 2 := by
     apply Finset.sum_pos'
-    · intro x hx
-      positivity
+    · simp
     · refine ⟨1, Finset.mem_univ _, ?_⟩
       have hone : unitCharExtend χ (1 : R) = 1 := by
         simpa using unitCharExtend_coe χ (1 : Rˣ)
@@ -50,8 +48,4 @@ theorem finiteRingGaussSum_normalized_norm (e : AddChar R ℂ)
     have hsquare := Real.sq_sqrt (le_of_lt hp)
     nlinarith [norm_nonneg (finiteRingGaussSum e χ)]
   rw [norm_div, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hs, hn]
-  exact div_self (ne_of_gt hs)
-
-end
-
-end DedekindZetaZeroFree.Hecke
+  simp

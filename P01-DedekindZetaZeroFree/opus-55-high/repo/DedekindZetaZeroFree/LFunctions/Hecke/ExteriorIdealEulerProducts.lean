@@ -78,7 +78,7 @@ theorem norm_summand_le {cS : Ideal (𝓞 F)}
     ‖summand a s I‖ ≤ (idealNorm I.val) ^ (-s.re) := by
   have hq0 : 0 < idealNorm I.val := lt_of_lt_of_le zero_lt_one
     (idealNorm_ge_one _ I.property.1)
-  have hc : (Ideal.absNorm I.val : ℂ) = (idealNorm I.val : ℂ) := by simp [idealNorm]
+  have hc : (Ideal.absNorm I.val : ℂ) = (idealNorm I.val : ℂ) := by rfl
   rw [summand, norm_mul, hc, Complex.norm_cpow_eq_rpow_re_of_pos hq0, Complex.neg_re]
   simpa using mul_le_mul_of_nonneg_right (ha.norm_le_one I)
     (Real.rpow_nonneg hq0.le (-s.re))
@@ -155,7 +155,7 @@ theorem exterior_ideal_euler {cS : Ideal (𝓞 F)}
     simpa only [Function.comp_def, ← hfac] using hn
   have ht : (∑' v, g v) = ∑' I : ExteriorIdeal cS, summand a s I := by
     rw [← e.tsum_eq g]
-    exact tsum_congr (fun I => (hfac I).symm)
+    simp_all
   have hp : HasProd (factor a s) (∑' I : ExteriorIdeal cS, summand a s I) := by
     have h := ExteriorEulerGeometricProduct.hasProd_geometric r
       (norm_primeTerm_lt_one a ha s hs) hg
@@ -165,11 +165,7 @@ theorem exterior_ideal_euler {cS : Ideal (𝓞 F)}
   have heq : (∑' I : ExteriorIdeal cS, summand a s I) =
       (∏' (p : PrimeIndex cS), (1 - primeTerm a s p))⁻¹ :=
     hp.unique (factors_hasProd a ha s hs)
-  refine ⟨hn, hp, ?_, ?_⟩
-  · rw [heq]
-    exact inv_ne_zero hi.2
-  · rw [heq, inv_inv]
-    exact hi.1
+  simp_all
 
 theorem constant_one_isCoefficient (cS : Ideal (𝓞 F)) :
     IsCoefficient (fun _ : ExteriorIdeal cS => (1 : ℂ)) := by
@@ -215,11 +211,7 @@ theorem zeroMaskedRay_isCoefficient {cS : Ideal (𝓞 F)}
       · intro h
         have hle : p.val.val ^ k ⊔ mask ≤ p.val.val ⊔ mask :=
           sup_le_sup_right (Ideal.pow_le_self hk) mask
-        rw [h] at hle
-        exact top_unique hle
+        simp_all
       · exact Ideal.pow_sup_eq_top
     simp only [zeroMaskedRayCoefficient, pow, hpow, hη]
     split_ifs <;> simp [hk]
-
-end
-end DedekindZetaZeroFree.ExteriorIdealEuler

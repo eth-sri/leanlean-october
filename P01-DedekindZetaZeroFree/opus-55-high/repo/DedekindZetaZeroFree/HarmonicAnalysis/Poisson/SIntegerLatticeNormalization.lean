@@ -29,8 +29,7 @@ def diagonalHom (S : Finset (HeightOneSpectrum (RingOfIntegers F))) : F →+ Spa
   map_zero' := by
     apply Prod.ext
     · simp
-    · funext v
-      exact map_zero (NumberField.FinitePlace.embedding v.val)
+    rfl
   map_add' m n := by
     ext
     · simp
@@ -46,8 +45,3 @@ def lattice (S : Finset (HeightOneSpectrum (RingOfIntegers F))) (a : F) :
 
 def differentExponent (v : HeightOneSpectrum (RingOfIntegers F)) : ℤ :=
   FractionalIdeal.count F v (FractionalIdeal.coeIdeal (differentIdeal ℤ (RingOfIntegers F)))
-
-end PoissonS.Covolume
-end DedekindZetaZeroFree
-
-end

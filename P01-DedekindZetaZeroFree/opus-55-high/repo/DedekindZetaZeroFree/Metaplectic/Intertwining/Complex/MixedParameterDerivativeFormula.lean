@@ -32,19 +32,19 @@ theorem joints_spatial_jets_at (F : ℂ × E → V) (U : Set E) (hU : IsOpen U)
   | succ n ih =>
     simp only [iteratedFDeriv_succ_eq_comp_left, Function.comp_apply]
     have hd : ContDiffAt ℝ (⊤ : ℕ∞) (fun p : ℂ × E =>
-        fderiv ℝ (iteratedFDeriv ℝ n (fun x => F (p.1, x))) p.2) p := by
-      exact ((ih (p.1,p.2) hp).comp (p,p.2) (contDiffAt_fst.fst.prodMk contDiffAt_snd)).fderiv
+        fderiv ℝ (iteratedFDeriv ℝ n (fun x => F (p.1, x))) p.2) p := 
+      ((ih (p.1,p.2) hp).comp (p,p.2) (contDiffAt_fst.fst.prodMk contDiffAt_snd)).fderiv
         (m := (⊤ : ℕ∞)) contDiffAt_snd (by simp)
-    exact (continuousMultilinearCurryLeftEquiv ℝ (fun _ : Fin (n+1) => E) V).symm.toContinuousLinearEquiv.toContinuousLinearMap.contDiff.contDiffAt.comp p hd
+    fun_prop
 
-private lemma direction_commute (F : E → V) (x : E) (hF : ContDiffAt ℝ (⊤ : ℕ∞) F x)
+lemma direction_commute (F : E → V) (x : E) (hF : ContDiffAt ℝ (⊤ : ℕ∞) F x)
     (a b : E) :
     fderiv ℝ (fun y => fderiv ℝ F y a) x b =
       fderiv ℝ (fun y => fderiv ℝ F y b) x a := by
   have hd := (hF.fderiv_right (m := (⊤ : ℕ∞)) (by simp)).differentiableAt (by simp)
   rw [fderiv_clm_apply hd (differentiableAt_const a),
     fderiv_clm_apply hd (differentiableAt_const b)]
-  simpa using hF.isSymmSndFDerivAt (by simp [minSmoothness]) b a
+  simpa using hF.isSymmSndFDerivAt (by simp) b a
 
 private lemma jet_succ (F : ℂ × E → V) (U : Set E) (hU : IsOpen U)
     (hF : ContDiffOn ℝ (⊤ : ℕ∞) F (Set.univ ×ˢ U)) (n : ℕ)
@@ -72,13 +72,13 @@ theorem jet_parameter_direction_commute (F : ℂ × E → V) (U : Set E) (hU : I
     ext m
     rw [← fderiv_continuousMultilinear_apply_const_apply
       ((joints_spatial_jets_at F U hU hF 0 p hp).differentiableAt (by simp))]
-    simp only [iteratedFDeriv_zero_apply]
+    rfl
   | succ n ih =>
     let J := fun q : ℂ × E => iteratedFDeriv ℝ n (fun y => F (q.1,y)) q.2
     have hJ := joints_spatial_jets_at F U hU hF n p hp
     let P := fun q : ℂ × E => fderiv ℝ F q (z,0)
-    have hP : ContDiffOn ℝ (⊤ : ℕ∞) P (Set.univ ×ˢ U) := by
-      exact (hF.fderiv_of_isOpen (isOpen_univ.prod hU) (by simp)).clm_apply contDiffOn_const
+    have hP : ContDiffOn ℝ (⊤ : ℕ∞) P (Set.univ ×ˢ U) := 
+      (hF.fderiv_of_isOpen (isOpen_univ.prod hU) (by simp)).clm_apply contDiffOn_const
     ext m
     rw [← fderiv_continuousMultilinear_apply_const_apply
       ((joints_spatial_jets_at F U hU hF (n+1) p hp).differentiableAt (by simp))]
@@ -116,8 +116,8 @@ theorem spatial_jet_hasDerivAt (F P : ℂ × E → ℂ) (U : Set E) (hU : IsOpen
       ((hasFDerivAt_id (𝕜 := ℝ) t).prodMk (hasFDerivAt_const (𝕜 := ℝ) u t)) using 1 <;> ext <;> rfl
   have heval : HasFDerivAt (fun s => J (s,u) a)
       ((ContinuousMultilinearMap.apply ℝ (fun _ : Fin n => E) ℂ a).comp
-        ((fderiv ℝ J (t,u)).comp (ContinuousLinearMap.inl ℝ ℂ E))) t := by
-    exact (ContinuousMultilinearMap.apply ℝ (fun _ : Fin n => E) ℂ a).hasFDerivAt.comp t hslice
+        ((fderiv ℝ J (t,u)).comp (ContinuousLinearMap.inl ℝ ℂ E))) t := 
+    (ContinuousMultilinearMap.apply ℝ (fun _ : Fin n => E) ℂ a).hasFDerivAt.comp t hslice
   have hdir (z : ℂ) : fderiv ℝ (fun s => J (s,u) a) t z =
       z * iteratedFDeriv ℝ n (fun v => P (t,v)) u a := by
     rw [heval.fderiv]
@@ -131,7 +131,7 @@ theorem spatial_jet_hasDerivAt (F P : ℂ × E → ℂ) (U : Set E) (hU : IsOpen
           ((hasFDerivAt_id (𝕜 := ℝ) t).prodMk (hasFDerivAt_const (𝕜 := ℝ) v t)) using 1 <;> ext <;> rfl
       have hh := congrArg (fun L : ℂ →L[ℝ] ℂ => L z)
         (hs.unique ((hd t v hv).hasFDerivAt.restrictScalars ℝ))
-      simpa [ContinuousLinearMap.comp_apply, mul_comm] using hh
+      simp_all
     rw [(he.iteratedFDeriv ℝ n).self_of_nhds]
     let L : ℂ →L[ℝ] ℂ := (z • ContinuousLinearMap.id ℂ ℂ).restrictScalars ℝ
     have hps : ContDiffAt ℝ (⊤ : ℕ∞) (fun v => P (t,v)) u :=
@@ -140,11 +140,9 @@ theorem spatial_jet_hasDerivAt (F P : ℂ × E → ℂ) (U : Set E) (hU : IsOpen
     exact congrArg (fun M => M a) (L.iteratedFDeriv_comp_left hps (by simp))
   have hcr : fderiv ℝ (fun s => J (s,u) a) t Complex.I =
       Complex.I • fderiv ℝ (fun s => J (s,u) a) t 1 := by
-    rw [hdir, hdir]
-    simp [smul_eq_mul]
+    simp_all
   convert complexOfReal_hasDerivAt heval.differentiableAt hcr using 1
-  change iteratedFDeriv ℝ n (fun v => P (t,v)) u a = fderiv ℝ (fun s => J (s,u) a) t 1
-  rw [hdir, one_mul]
+  simp_all
 
 theorem operator_iteratedDeriv_of_family {n j : ℕ}
     (c : (q : Fin (j+1)) → (Fin q.val → Fin n) → (Fin n → ℝ) → ℂ)
@@ -255,7 +253,7 @@ section
 
 namespace DedekindZetaZeroFree.RepresentationTheory.KPComplexIntertwinerParameterMajorant.MatrixWeighted
 
-private lemma log_absorb (m : ℕ) {ε : ℝ} (hε : 0 < ε) (y : ℝ) (hy : 1 ≤ y) :
+lemma log_absorb (m : ℕ) {ε : ℝ} (hε : 0 < ε) (y : ℝ) (hy : 1 ≤ y) :
     (1 + Real.log y) ^ m ≤ (1 + m / ε) ^ m * y ^ ε := by
   have hy0 : 0 ≤ y := le_trans zero_le_one hy
   have hypos : 0 < y := lt_of_lt_of_le one_pos hy
@@ -263,7 +261,7 @@ private lemma log_absorb (m : ℕ) {ε : ℝ} (hε : 0 < ε) (y : ℝ) (hy : 1 �
   · subst hm
     simp only [pow_zero, Nat.cast_zero, zero_div, add_zero, one_mul]
     exact Real.one_le_rpow hy hε.le
-  · have hδpos : 0 < ε / m := div_pos hε (by exact_mod_cast hm)
+  · have hδpos : 0 < ε / m := by positivity
     have hlog : 1 + Real.log y ≤ (1 + m / ε) * y ^ (ε / m) := by
       have h1 : Real.log y ≤ y ^ (ε / m) / (ε / m) := Real.log_le_rpow_div hy0 hδpos
       have h2 : y ^ (ε / m) / (ε / m) = (m / ε) * y ^ (ε / m) := by
@@ -290,7 +288,7 @@ theorem logarithmic_envelope_absorption (m : ℕ) (a p : ℝ) (hp : p < a) :
   intro t x hat
   set y : ℝ := 1 + ‖x‖ ^ 2 with hy
   have hy1 : 1 ≤ y := by
-    rw [hy]; linarith [sq_nonneg (‖x‖ : ℝ)]
+    simp_all
   have hypos : 0 < y := lt_of_lt_of_le one_pos hy1
   have hy0 : 0 ≤ y := hypos.le
   have hLnn : 0 ≤ (1 + Real.log y) ^ m := by
@@ -371,9 +369,6 @@ open KPCplxCharacterHaar KPCplxPrincipalSeriesCharts
 open scoped ContDiff Matrix.Norms.Elementwise
 
 namespace ReconstructionEstimates
-
-open Set
-
 end ReconstructionEstimates
 
 theorem compact_matrix_weighted_bound (n j : ℕ)
@@ -452,7 +447,3 @@ theorem compact_matrix_weighted_bound (n j : ℕ)
     _ ≤ L * (((2 : ℝ) ^ j * A * B * D) * seminorm j φ * envelope p x) :=
       mul_le_mul_of_nonneg_right (hcoeff u hu) (by positivity)
     _ = _ := by ring
-
-end DedekindZetaZeroFree.RepresentationTheory.KPComplexIntertwinerParameterMajorant
-
-end

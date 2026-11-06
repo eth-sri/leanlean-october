@@ -324,7 +324,7 @@ theorem probe_poisson_dual_absolute (F : Type) [Field F] [NumberField F]
   obtain ⟨hs, hsum⟩ := ProbeJointNormMassTransfer.norm_mass_transfer
     P.domain.measure P.domain.domain k
     (fun i : ProbeJointAbsoluteMass.OrbitIndex A => k (i.1,i.2.1,i.2.2.1,r i.2.2.2))
-    hi (fun i => by rw [heq]; exact hiG _) (by simpa only [heq] using ho) hunfold
+    hi (fun i => by rw [heq]; fun_prop) (by simpa only [heq] using ho) hunfold
   have hex := ProbeJointAbsoluteMass.joint_series_exchanges
     (P.domain.measure.restrict P.domain.domain) k hi hs
   have hfinite : (∫⁻ t in P.domain.domain,
@@ -350,6 +350,3 @@ theorem probe_poisson_dual_absolute (F : Type) [Field F] [NumberField F]
       ∑' i : ProbePoissonDualAbsolute.Index A, ∫ t in P.domain.domain, k i t ∂P.domain.measure :=
     e.tsum_eq (fun i => ∫ t in P.domain.domain, k i t ∂P.domain.measure)
   exact ⟨hs', (hex.2.2.2.2.1 J e).trans heint.symm, heint⟩
-
-end
-end DedekindZetaZeroFree

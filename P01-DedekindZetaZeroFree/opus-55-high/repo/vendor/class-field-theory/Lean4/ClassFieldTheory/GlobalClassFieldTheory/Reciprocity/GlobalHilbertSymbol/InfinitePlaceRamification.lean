@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Ramification of a negative quadratic Kummer radical at a real place
 -/
@@ -21,7 +18,6 @@ set_option autoImplicit false
 open scoped Classical NumberField
 open NumberField
 
-noncomputable section
 
 namespace GlobalClassFieldTheory
 namespace Reciprocity
@@ -77,13 +73,7 @@ theorem chosenSimpleKummerExtension_chosenInfinitePlace_isRamified_of_real_of_ra
       apply RingHom.ext
       intro x
       apply Complex.ofReal_injective
-      change
-        ((InfinitePlace.embedding_of_isReal hwReal
-          (algebraMap K L x) : ℝ) : ℂ) =
-          ((InfinitePlace.embedding_of_isReal hv x : ℝ) : ℂ)
-      rw [InfinitePlace.embedding_of_isReal_apply,
-        InfinitePlace.embedding_of_isReal_apply]
-      rw [← RingHom.comp_apply, ← hcomplexComp, hw]
+      simp_all
     have hsq :
         (InfinitePlace.embedding_of_isReal hwReal beta) ^ 2 =
           InfinitePlace.embedding_of_isReal hv (b : K) := by
@@ -93,14 +83,9 @@ theorem chosenSimpleKummerExtension_chosenInfinitePlace_isRamified_of_real_of_ra
           rw [map_pow]
         _ = InfinitePlace.embedding_of_isReal hwReal
             (algebraMap K L (b : K)) := by rw [hbeta]
-        _ = InfinitePlace.embedding_of_isReal hv (b : K) := by
-          exact DFunLike.congr_fun hrealComp (b : K)
+        _ = InfinitePlace.embedding_of_isReal hv (b : K) := 
+          DFunLike.congr_fun hrealComp (b : K)
     nlinarith [sq_nonneg
       (InfinitePlace.embedding_of_isReal hwReal beta)]
   apply InfinitePlace.isRamified_iff.mpr
   exact ⟨hwComplex, by rw [hw]; exact hv⟩
-
-end Reciprocity
-end GlobalClassFieldTheory
-
-end

@@ -43,13 +43,9 @@ theorem span_Jq (E : Type) [Field E] [NumberField E]
   have habs_eq : Ideal.absNorm (Ideal.span {Jq E ω hω q hq0 hqp hq6}) = Ideal.absNorm q :=
     habsP.trans habsq.symm
   have hprod : Ideal.absNorm q * Ideal.absNorm B = Ideal.absNorm q := by
-    rw [← map_mul, ← hB]
-    exact habs_eq
+    simp_all
   have hAne : Ideal.absNorm q ≠ 0 := fun h => hq0 (Ideal.absNorm_eq_zero_iff.mp h)
-  have hB1 : Ideal.absNorm B = 1 :=
-    Nat.mul_left_cancel (Nat.pos_of_ne_zero hAne) (by rw [mul_one]; exact hprod)
-  have hBtop : B = ⊤ := Ideal.absNorm_eq_one_iff.mp hB1
-  rw [hB, hBtop, Ideal.mul_top]
+  simp_all
 
 theorem Jq_eq_neg_primaryGenerator (E : Type) [Field E] [NumberField E]
     [IsCyclotomicExtension {3} ℚ E] (ω : E) (hω : IsPrimitiveRoot ω 3)
@@ -63,10 +59,9 @@ theorem Jq_eq_neg_primaryGenerator (E : Type) [Field E] [NumberField E]
     rfl
   have hxy : Ideal.span {-(Jq E ω hω q hq0 hqp hq6)} =
       Ideal.span {primaryGenerator E (q3 E q hq0 hq6)} := by
-    rw [Ideal.span_singleton_neg, hspan, hspanPG]
+    simp_all
   have hx0 : Ideal.span {-(Jq E ω hω q hq0 hqp hq6)} ≠ ⊥ := by
-    rw [Ideal.span_singleton_neg, hspan]
-    exact hq0
+    simp_all
   have hred : red3 E (-(Jq E ω hω q hq0 hqp hq6)) = 1 := by
     rw [map_neg, red3_Jq]
     simp
@@ -94,5 +89,3 @@ theorem jacobiSum_ρqC_eq_neg_primaryGenerator (E : Type) [Field E] [NumberField
       Jq E ω hω q hq0 hqp hq6 from rfl,
     Jq_eq_neg_primaryGenerator E ω hω q hq0 hqp hq6]
   simp
-
-end DedekindZetaZeroFree.Eisenstein

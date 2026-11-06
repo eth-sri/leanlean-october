@@ -16,11 +16,9 @@ theorem open_north_cap_of_closed
     μ {y : rawSphere | t < (y : rawAmbient) 0} = ENNReal.ofReal (2 * Real.pi * (1 - t)) := by
   let r : ℕ → ℝ := fun n => t + (1 - t) / ((n : ℝ) + 1)
   have hrpos (n : ℕ) : 0 < r n := by
-    have : 0 < (1 - t) / ((n : ℝ) + 1) := div_pos (by linarith) (by positivity)
-    dsimp [r]
-    linarith
+    positivity
   have hrle (n : ℕ) : r n ≤ 1 := by
-    have hn : (1 : ℝ) ≤ (n : ℝ) + 1 := by exact le_add_of_nonneg_left (Nat.cast_nonneg n)
+    have hn : (1 : ℝ) ≤ (n : ℝ) + 1 := by simp
     have : (1 - t) / ((n : ℝ) + 1) ≤ 1 - t := by
       apply (div_le_iff₀ (by positivity : 0 < (n : ℝ) + 1)).mpr
       nlinarith
@@ -93,7 +91,7 @@ theorem raw_lower_caps_of_positive_north
       have hc : {y : rawSphere | (y : rawAmbient) 0 ≤ t} =
           {y : rawSphere | t < (y : rawAmbient) 0}ᶜ := by
         ext y
-        simp only [mem_setOf_eq, mem_compl_iff, not_lt]
+        simp
       rw [hc, measure_compl (by measurability) (measure_ne_top _ _), hmass,
         open_north_cap_of_closed μ hcap t ht0' htlt,
         ← ENNReal.ofReal_sub (4 * Real.pi) (by positivity : 0 ≤ 2 * Real.pi * (1 - t))]
@@ -115,8 +113,7 @@ theorem raw_cap_distribution (t : ℝ) (ht : -1 ≤ t) (ht1 : t ≤ 1) :
       simp only [mem_preimage, mem_setOf_eq]
       change -(y : rawAmbient) 0 ≤ s ↔ -s ≤ (y : rawAmbient) 0
       constructor <;> intro hy <;> linarith
-    rw [hpre] at h
-    exact h.symm
+    simp_all
   · intro s hs hs1
     rw [Measure.toSphere_apply' _ (by measurability), north_cone_volume hs hs1]
     simp only [finrank_euclideanSpace, Fintype.card_fin]
@@ -188,5 +185,3 @@ theorem normalized_coordinate_projection :
     Measure.map (fun y : rawSphere => (1 - (y : rawAmbient) 0) / 2) rawSphereArea =
       (volume : Measure ℝ).restrict (Icc (0 : ℝ) 1) :=
   projection_of_raw_caps raw_mass raw_cap_distribution
-
-end DedekindZetaZeroFree.ComplexFractionalInverse.RawSphereProjection

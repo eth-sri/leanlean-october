@@ -19,23 +19,14 @@ def V_J (C J : Subgroup G) (chi : C →* ℂ) : Submodule ℂ (G → ℂ) where
     · intro c g
       change f (c.val * g) + h (c.val * g) = chi c * (f g + h g)
       rw [hf.1, hh.1, mul_add]
-    · intro j g
-      change f (g * j.val) + h (g * j.val) = f g + h g
-      rw [hf.2, hh.2]
+    simp_all
   smul_mem' := by
     intro a f hf
     constructor
     · intro c g
       change a * f (c.val * g) = chi c * (a * f g)
       rw [hf.1, mul_left_comm]
-    · intro j g
-      change a * f (g * j.val) = a * f g
-      rw [hf.2]
-
-@[simp] theorem mem_V_J (C J : Subgroup G) (chi : C →* ℂ) (f : G → ℂ) :
-    f ∈ V_J C J chi ↔
-      (∀ (c : C) (g : G), f (c.val * g) = chi c * f g) ∧
-      (∀ (j : J) (g : G), f (g * j.val) = f g) := Iff.rfl
+    simp_all
 
 theorem covariance {C J : Subgroup G} {chi : C →* ℂ}
     (f : V_J C J chi) (c : C) (g : G) :
@@ -74,7 +65,7 @@ def rho_J (C K J : Subgroup G) (chi : C →* ℂ)
   toFun := rightTranslate C K J chi hnormalize
   map_one' := by
     ext f g
-    simp [rightTranslate]
+    simp
   map_mul' k l := by
     ext f g
     simp [rightTranslate, mul_assoc]
@@ -93,17 +84,12 @@ def sampleMap (C K J : Subgroup G) (chi : C →* ℂ)
   toFun T i :=
     { toFun := fun w => (T w).val (r i)
       map_add' := by
-        intro w v
-        simp only [map_add, Submodule.coe_add, Pi.add_apply]
+        simp
       map_smul' := by
-        intro a w
-        simp only [map_smul, Submodule.coe_smul, Pi.smul_apply, smul_eq_mul,
-          RingHom.id_apply] }
+        simp }
   map_add' T U := by
-    ext i w
     rfl
   map_smul' a T := by
-    ext i w
     rfl
 
 @[simp] theorem sampleMap_apply (C K J : Subgroup G) (chi : C →* ℂ)
@@ -112,5 +98,3 @@ def sampleMap (C K J : Subgroup G) (chi : C →* ℂ)
     (tau : Representation ℂ K W) (n : ℕ) (r : Fin n → G)
     (T : tau.IntertwiningMap (rho_J C K J chi hnormalize)) (i : Fin n) (w : W) :
     sampleMap C K J chi hnormalize tau n r T i w = (T w).val (r i) := rfl
-
-end DedekindZetaZeroFree.CovariantSampling

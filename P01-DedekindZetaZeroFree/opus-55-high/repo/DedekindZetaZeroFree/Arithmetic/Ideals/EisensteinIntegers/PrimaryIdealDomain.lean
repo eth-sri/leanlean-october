@@ -47,5 +47,3 @@ def I3 (E : Type) [Field E] [NumberField E]
 @[simp] theorem mem_I3 (E : Type) [Field E] [NumberField E]
     [IsCyclotomicExtension {3} ℚ E] (A : Ideal (R E)) :
     A ∈ I3 E ↔ A ≠ ⊥ ∧ A ⊔ m3 E = ⊤ := Iff.rfl
-
-end DedekindZetaZeroFree.Eisenstein

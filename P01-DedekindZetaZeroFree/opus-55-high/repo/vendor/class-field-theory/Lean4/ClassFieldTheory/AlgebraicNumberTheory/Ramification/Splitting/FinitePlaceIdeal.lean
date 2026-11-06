@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Finite-place splitting through prime ideals
 
@@ -30,7 +26,6 @@ normal-closure splitting reductions.
 open scoped NumberField Classical
 open NumberField IsDedekindDomain
 
-noncomputable section
 
 open AlgebraicNumberTheory.Valuations
 open HilbertRamification
@@ -77,7 +72,6 @@ theorem absoluteValueDecompositionGroup_eq_finitePlaceStabilizer
               (finitePlaceExtensionCentre (K := K) (L := L) v w)) :=
         congrArg (finitePlaceEquiv K L σ) hc.symm
       _ = finitePlaceExtensionCentre (K := K) (L := L) v w := by
-        rw [← finitePlaceEquiv_mul]
         simp
   · intro h
     apply finitePlaceExtensionCentre_injective
@@ -204,8 +198,6 @@ theorem finitePlaceEquiv_restrictAutomorphismScalars
         (RamificationTheory.HilbertRamification.ValuationSubring.restrictAutomorphismScalars
           (K := K) (M := M) σ) W =
       finitePlaceEquiv M L σ W := by
-  apply HeightOneSpectrum.ext
-  ext x
   rfl
 
 /-- If a finite place splits completely in `L / K`, then every finite
@@ -289,7 +281,3 @@ theorem finite_nonsplittingPlaces_over_intermediate
   exact hv'
     (finitePlaceSplitsCompletely_over_intermediate_of_below
       (K := K) (M := M) (L := L) v' hsplit)
-
-end IntermediateField
-
-end

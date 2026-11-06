@@ -11,11 +11,11 @@ namespace DedekindZetaZeroFree.KPLiteralExceptionalResidue
 open KPGlobalTorusFunctionData KPAdelicCoverRestrictedProduct
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-private theorem N_eq_pglN (x : KPAdeles F) :
+theorem N_eq_pglN (x : KPAdeles F) :
     KPGlobalTorusFunctionData.N F ζ hζ x = KPRationalAdelicSplitting.pglN F ζ hζ x := by
   rfl
 
-private theorem projection_pglA (y : KPGlobalTorusFunctionData.Ideles F) :
+theorem projection_pglA (y : KPGlobalTorusFunctionData.Ideles F) :
     pglProjection F ζ hζ (KPRationalAdelicSplitting.pglA F ζ hζ y) =
       KPGlobalCubicIdelePairing.diagonalPGL F y := by
   change QuotientGroup.mk' (scalarSubgroup F)
@@ -40,7 +40,7 @@ private theorem projection_pglA (y : KPGlobalTorusFunctionData.Ideles F) :
     have h := (KPRationalAdelicSplitting.projection_A F ζ hζ y (Sum.inr q)).trans (hd (Sum.inr q)).symm
     exact congrArg (fun M : KPLocalCover.LocalGL2 F (Sum.inr q) => M i j) h
 
-private theorem torus_projection_diagonal (t : E F ζ hζ) :
+theorem torus_projection_diagonal (t : E F ζ hζ) :
     pglProjection F ζ hζ t.val = KPGlobalCubicIdelePairing.diagonalPGL F (p F ζ hζ t) := by
   obtain ⟨A, hA, h10, h01⟩ := t.property
   have hf : p F ζ hζ t = (diagonal_entries_units F A h10 h01).1.unit *

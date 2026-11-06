@@ -60,10 +60,6 @@ theorem radial_min_bound_of_power_bounds {ι : Type*} (F : ι → ℂˣ → ℂ)
       exact hz.trans ((mul_le_mul_of_nonneg_left hp hC₀).trans
         (mul_le_mul_of_nonneg_right (le_max_left _ _) (Real.rpow_nonneg hr.le _)))
     · have hp : ‖(y : ℂ)‖ ^ ((2 / 3 : ℝ) - (h : ℝ)) ≤ ‖(y : ℂ)‖ ^ (-2 * A) :=
-        Real.rpow_le_rpow_of_exponent_le (le_of_lt (lt_of_not_ge hr₁)) (by linarith)
+        by simp_all
       exact (hb₁ i y).trans ((mul_le_mul_of_nonneg_left hp hC₁).trans
         (mul_le_mul_of_nonneg_right (le_max_right _ _) (Real.rpow_nonneg hr.le _)))
-
-end DedekindZetaZeroFree.KPCplxRotatedRapidDecay
-
-end

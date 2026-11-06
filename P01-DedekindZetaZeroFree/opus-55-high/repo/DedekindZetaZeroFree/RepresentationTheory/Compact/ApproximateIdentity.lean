@@ -35,12 +35,12 @@ noncomputable def leftTranslateCM (f : C(G, E)) : C(G, C(G, E)) :=
     (f.comp ⟨fun p : G × G => p.1⁻¹ * p.2, continuous_fst.inv.mul continuous_snd⟩)
 
 omit [CompactSpace G] [MeasurableSpace G] [BorelSpace G] in
-private theorem leftTranslateCM_apply (f : C(G, E)) (z x : G) :
+theorem leftTranslateCM_apply (f : C(G, E)) (z x : G) :
     leftTranslateCM f z x = f (z⁻¹ * x) :=
   (rfl)
 
 omit [CompactSpace G] [MeasurableSpace G] [BorelSpace G] in
-private theorem leftTranslateCM_one (f : C(G, E)) : leftTranslateCM f 1 = f := by
+theorem leftTranslateCM_one (f : C(G, E)) : leftTranslateCM f 1 = f := by
   ext x
   rw [leftTranslateCM_apply, inv_one, one_mul]
 
@@ -93,7 +93,7 @@ end IsMollifier
 
 omit [CompactSpace G] [MeasurableSpace G] [BorelSpace G] in
 
-private theorem exists_symmetric_bump [LocallyCompactSpace G] {W : Set G} (hWopen : IsOpen W)
+theorem exists_symmetric_bump [LocallyCompactSpace G] {W : Set G} (hWopen : IsOpen W)
     (hW1 : (1 : G) ∈ W) (hWsymm : ∀ g ∈ W, g⁻¹ ∈ W) :
     ∃ ψ : C(G, ℝ), (∀ g, 0 ≤ ψ g) ∧ (∀ g, ψ g⁻¹ = ψ g) ∧ (∀ g ∉ W, ψ g = 0) ∧ 0 < ψ 1 := by
   obtain ⟨φ, hφ1, hφ0, -, hφIcc⟩ :=
@@ -108,9 +108,7 @@ private theorem exists_symmetric_bump [LocallyCompactSpace G] {W : Set G} (hWope
   · have hg' : g⁻¹ ∉ W := fun hc => hg (by simpa using hWsymm _ hc)
     simp only [ContinuousMap.add_apply, ContinuousMap.comp_apply, ContinuousMap.coe_mk,
       hφ0 hg, hφ0 hg', Pi.zero_apply, add_zero]
-  · simp only [ContinuousMap.add_apply, ContinuousMap.comp_apply, ContinuousMap.coe_mk, inv_one,
-      hφ1 rfl]
-    norm_num
+  simp_all
 
 variable (𝕜) in
 
@@ -176,7 +174,3 @@ theorem exists_isMollifier_norm_convolutionCLM_toLp_sub_le (f : C(G, 𝕜)) {ε 
   obtain ⟨k, hk⟩ := exists_isMollifier 𝕜 (Filter.inter_mem hU hV)
   exact ⟨k, hk.mono inter_subset_left,
     hk.norm_convolutionCLM_toLp_sub_le f hε.le fun z hz => hfV z hz.2⟩
-
-end CompactGroup
-
-end DedekindZetaZeroFree.TauCeti

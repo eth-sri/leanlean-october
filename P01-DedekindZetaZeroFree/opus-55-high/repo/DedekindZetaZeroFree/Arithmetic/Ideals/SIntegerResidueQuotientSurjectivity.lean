@@ -21,7 +21,7 @@ variable {F : Type} [Field F] [NumberField F]
     rintro a b ⟨c, hc⟩
     exact ⟨a * c, by simpa [map_mul, mul_left_comm, mul_assoc] using congrArg (algebraMap (𝓞 F) F a * ·) hc⟩
 
-private theorem denominatorIdeal_sup (A : SArithmeticData F) (I : A.Exterior) (x : A.R) :
+theorem denominatorIdeal_sup (A : SArithmeticData F) (I : A.Exterior) (x : A.R) :
     denominatorIdeal (x : F) ⊔ I.val = ⊤ := by
   classical
   by_contra h
@@ -31,8 +31,8 @@ private theorem denominatorIdeal_sup (A : SArithmeticData F) (I : A.Exterior) (x
   have hi : I.val ≤ v.asIdeal := le_sup_right.trans hle
   have hv : v ∉ A.Sf := by
     intro hv
-    have hc : A.cS ≤ v.asIdeal := by
-      exact Ideal.prod_le_inf.trans (Finset.inf_le hv)
+    have hc : A.cS ≤ v.asIdeal := 
+      Ideal.prod_le_inf.trans (Finset.inf_le hv)
     have ht : (⊤ : Ideal (𝓞 F)) ≤ M := by
       rw [← I.property.2]
       exact sup_le hi hc
@@ -62,5 +62,3 @@ theorem exteriorQuotientMap_surjective (A : SArithmeticData F) (I : A.Exterior) 
     linear_combination (x : F) * hh
   rw [he]
   exact (A.extendIdeal I).neg_mem (Ideal.mul_mem_right x (A.extendIdeal I) (Ideal.mem_map_of_mem _ hi))
-
-end DedekindZetaZeroFree.ArithGaussCRT

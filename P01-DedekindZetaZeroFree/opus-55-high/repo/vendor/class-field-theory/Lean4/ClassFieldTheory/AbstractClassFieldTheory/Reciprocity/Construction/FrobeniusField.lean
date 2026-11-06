@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 namespace ClassFormation
 
 open CyclicCohomology
@@ -129,14 +126,7 @@ theorem extensionSubgroup_frobeniusFixedField (D : DegreeData G)
     (k.1 ∈ D.frobeniusFixedField K L hLK σ) ↔
       k ∈ D.frobeniusFixedSubgroupWithin K L hLK σ
   rw [D.mem_frobeniusFixedField_iff K L hLK σ]
-  constructor
-  · rintro ⟨t, ht, htk⟩
-    have : t = k := by
-      apply Subtype.ext
-      exact htk
-    simpa [this] using ht
-  · intro hk
-    exact ⟨k, hk, rfl⟩
+  simp
 
 /-- The subgroup `I_L = G_{\widetilde L}` lies in `G_Σ`. -/
 theorem extensionInertiaWithin_le_frobeniusFixedSubgroupWithin
@@ -151,7 +141,7 @@ theorem extensionInertiaWithin_le_frobeniusFixedSubgroupWithin
   change QuotientGroup.mk k ∈
     (D.frobeniusClosure K L hLK σ).toSubgroup
   rw [(QuotientGroup.eq_one_iff k).2 hk]
-  exact Subgroup.one_mem _
+  simp
 
 /-- Ambient form of `I_L ≤ G_Σ`. -/
 theorem fieldInertia_le_frobeniusFixedField (D : DegreeData G)
@@ -219,35 +209,6 @@ def frobeniusFixedFiniteExtension (D : DegreeData G)
   below := D.frobeniusFixedField_le K L hLK σ
   finiteQuotient := D.frobeniusFixedField_finite K L hLK σ
 
-/-- finiteness of the Frobenius fixed field, with the index estimate from the proof exposed on
-the actual-field side.  For a degree-one lift, `[Σ : K] ≤ [L : K]`. -/
-theorem frobeniusFixedField_index_le_extensionIndex_of_exponent_eq_one
-    (D : DegreeData G)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    [TotallyDisconnectedSpace G]
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    [hLfinite : Finite (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
-    (σ : D.FrobeniusElements K L hLK)
-    (hσ : D.frobeniusExponent K L hLK σ = 1) :
-    (extensionSubgroup K.field (D.frobeniusFixedField K L hLK σ)
-        (D.frobeniusFixedField_le K L hLK σ)).index ≤
-      (extensionSubgroup K.field L hLK).index := by
-  let N := D.extensionInertiaWithin K.field L hLK
-  let Q := K.field.toSubgroup ⧸ N
-  let Γ : Subgroup Q :=
-    (D.frobeniusClosure K L hLK σ).toSubgroup
-  let S : Subgroup K.field.toSubgroup :=
-    D.frobeniusFixedSubgroupWithin K L hLK σ
-  rw [D.extensionSubgroup_frobeniusFixedField K L hLK σ]
-  change S.index ≤ (extensionSubgroup K.field L hLK).index
-  rw [show S = Γ.comap (QuotientGroup.mk' N) by rfl]
-  rw [Subgroup.index_comap_of_surjective Γ
-    (QuotientGroup.mk'_surjective N)]
-  exact D.frobeniusClosure_index_le_extensionIndex_of_exponent_eq_one
-    K L hLK σ hσ
-
 /-- The procyclic degree isomorphism, faithfully pulled back along
 `G_K → G_K / I_L`: `G_Σ ∩ I_K = I_L`.  This is the subgroup form of
 the equality `\widetilde Σ = \widetilde L`. -/
@@ -310,8 +271,7 @@ theorem frobeniusFixedField_fieldInertia (D : DegreeData G)
     obtain ⟨k, hkS, hkg⟩ := hg.1
     have hgdeg : D.degree g = 1 := hg.2
     have hkI : k ∈ D.fieldInertiaWithin K.field := by
-      change D.degree k.1 = 1
-      exact (congrArg D.degree hkg).trans hgdeg
+      simp_all
     have hkN : k ∈ D.extensionInertiaWithin K.field L hLK := by
       rw [← D.frobeniusFixedSubgroupWithin_inf_fieldInertiaWithin
         K L hLK σ]
@@ -346,9 +306,7 @@ theorem frobeniusFixedSubgroupWithin_normalizedDegree_image
     obtain ⟨k, hk⟩ := QuotientGroup.mk'_surjective
       (D.extensionInertiaWithin K.field L hLK) a.1
     have hkS : k ∈ D.frobeniusFixedSubgroupWithin K L hLK σ := by
-      change (QuotientGroup.mk' (D.extensionInertiaWithin K.field L hLK)) k ∈
-        (D.frobeniusClosure K L hLK σ).toSubgroup
-      exact hk.symm ▸ a.2
+      simp_all
     refine ⟨k, hkS, ?_⟩
     calc
       D.normalizedDegree K k =
@@ -358,7 +316,7 @@ theorem frobeniusFixedSubgroupWithin_normalizedDegree_image
       _ = D.extensionNormalizedDegree K L hLK a.1 :=
         congrArg (D.extensionNormalizedDegree K L hLK) hk
 
-private theorem frobeniusFixedField_mappedRelIndex (D : DegreeData G)
+theorem frobeniusFixedField_mappedRelIndex (D : DegreeData G)
     [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
     (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
     (hLK : L.toSubgroup ≤ K.field.toSubgroup)
@@ -396,11 +354,7 @@ private theorem frobeniusFixedField_mappedRelIndex (D : DegreeData G)
         (⊤ : Subgroup K.field.toSubgroup).map
           (D.restrictedDegree K.field).toMonoidHom := by
     ext z
-    constructor
-    · rintro ⟨g, hg, rfl⟩
-      exact ⟨⟨g, hg⟩, trivial, rfl⟩
-    · rintro ⟨k, _, rfl⟩
-      exact ⟨k.1, k.2, rfl⟩
+    simp
   have hscale : Function.Injective scale := by
     intro x y hxy
     apply Multiplicative.ext
@@ -465,7 +419,7 @@ theorem frobeniusFixedField_relativeResidueQuotientFinite
 
 /-- The Frobenius fixed field equipped with its actual finite absolute
 residue quotient. -/
-noncomputable def frobeniusFixedResidueField (D : DegreeData G)
+def frobeniusFixedResidueField (D : DegreeData G)
     [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
     (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
     (hLK : L.toSubgroup ≤ K.field.toSubgroup)
@@ -532,11 +486,9 @@ def frobeniusFixedFieldToClosure (D : DegreeData G) [IsTopologicalGroup G]
     rw [D.extensionSubgroup_frobeniusFixedField K L hLK σ] at hk
     exact hk
   map_one' := by
-    apply Subtype.ext
     rfl
   map_mul' := by
     intro a b
-    apply Subtype.ext
     rfl
 
 /-- The map from the Frobenius fixed field to the closure evaluates by the underlying inclusion. -/
@@ -552,96 +504,6 @@ theorem frobeniusFixedFieldToClosure_apply (D : DegreeData G)
       QuotientGroup.mk
         (Subgroup.inclusion
           (D.frobeniusFixedField_le K L hLK σ) s) :=
-  rfl
-
-/-- Every element of the Frobenius closure lifts from the Frobenius fixed field. -/
-theorem frobeniusFixedFieldToClosure_surjective (D : DegreeData G)
-    [IsTopologicalGroup G]
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (σ : D.FrobeniusElements K L hLK) :
-    Function.Surjective (D.frobeniusFixedFieldToClosure K L hLK σ) := by
-  intro a
-  obtain ⟨k, hk⟩ := QuotientGroup.mk'_surjective
-    (D.extensionInertiaWithin K.field L hLK) a.1
-  have hkS : k ∈ D.frobeniusFixedSubgroupWithin K L hLK σ := by
-    change (QuotientGroup.mk' (D.extensionInertiaWithin K.field L hLK)) k ∈
-      (D.frobeniusClosure K L hLK σ).toSubgroup
-    exact hk.symm ▸ a.2
-  let s : (D.frobeniusFixedField K L hLK σ).toSubgroup :=
-    ⟨k.1, ⟨k, hkS, rfl⟩⟩
-  refine ⟨s, ?_⟩
-  apply Subtype.ext
-  exact hk
-
-/-- The kernel of restriction `G_Σ → Γ` is precisely `I_Σ`; by
-the procyclic degree isomorphism, this is also `I_L`. -/
-theorem frobeniusFixedFieldToClosure_ker (D : DegreeData G)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    [TotallyDisconnectedSpace G]
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (σ : D.FrobeniusElements K L hLK) :
-    (D.frobeniusFixedFieldToClosure K L hLK σ).ker =
-      D.fieldInertiaWithin (D.frobeniusFixedField K L hLK σ) := by
-  ext s
-  let k : K.field.toSubgroup :=
-    Subgroup.inclusion (D.frobeniusFixedField_le K L hLK σ) s
-  have hkS : k ∈ D.frobeniusFixedSubgroupWithin K L hLK σ := by
-    have hk : k ∈
-        extensionSubgroup K.field (D.frobeniusFixedField K L hLK σ)
-          (D.frobeniusFixedField_le K L hLK σ) := s.2
-    rw [D.extensionSubgroup_frobeniusFixedField K L hLK σ] at hk
-    exact hk
-  constructor
-  · intro hs
-    have hq : QuotientGroup.mk k = 1 :=
-      congrArg Subtype.val hs
-    have hkN : k ∈ D.extensionInertiaWithin K.field L hLK :=
-      (QuotientGroup.eq_one_iff k).mp hq
-    exact hkN.2
-  · intro hs
-    have hkI : k ∈ D.fieldInertiaWithin K.field := hs
-    have hkN : k ∈ D.extensionInertiaWithin K.field L hLK := by
-      rw [← D.frobeniusFixedSubgroupWithin_inf_fieldInertiaWithin
-        K L hLK σ]
-      exact ⟨hkS, hkI⟩
-    apply Subtype.ext
-    exact (QuotientGroup.eq_one_iff k).mpr hkN
-
-/-- The canonical identification
-`G_Σ / I_Σ ≃ Γ = Gal(\widetilde L / Σ)`. -/
-def frobeniusFixedFieldQuotientEquiv (D : DegreeData G)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    [TotallyDisconnectedSpace G]
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (σ : D.FrobeniusElements K L hLK) :
-    ((D.frobeniusFixedField K L hLK σ).toSubgroup ⧸
-        D.fieldInertiaWithin (D.frobeniusFixedField K L hLK σ)) ≃*
-      D.frobeniusClosure K L hLK σ :=
-  (QuotientGroup.quotientMulEquivOfEq
-      (D.frobeniusFixedFieldToClosure_ker K L hLK σ).symm).trans
-    (QuotientGroup.quotientKerEquivOfSurjective
-      (D.frobeniusFixedFieldToClosure K L hLK σ)
-      (D.frobeniusFixedFieldToClosure_surjective K L hLK σ))
-
-/-- The Frobenius fixed-field quotient equivalence has the expected value on representatives. -/
-@[simp]
-theorem frobeniusFixedFieldQuotientEquiv_mk (D : DegreeData G)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    [TotallyDisconnectedSpace G]
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (σ : D.FrobeniusElements K L hLK)
-    (s : (D.frobeniusFixedField K L hLK σ).toSubgroup) :
-    D.frobeniusFixedFieldQuotientEquiv K L hLK σ
-        (QuotientGroup.mk s) =
-      D.frobeniusFixedFieldToClosure K L hLK σ s := by
   rfl
 
 /-- The normalized degree constructed on `Γ` in the Frobenius fixed-field theorem is exactly
@@ -682,51 +544,8 @@ theorem frobeniusFixedField_normalizedDegree_compatibility (D : DegreeData G)
           rw [D.frobeniusExponent_nsmul_fixedFieldNormalizedDegree]
     _ = (K.residueDegree : ℕ) • (D.normalizedDegree K k).toAdd := by
           rfl
-    _ = (D.degree s.1).toAdd := by
-          exact D.residueDegree_nsmul_normalizedDegree K k
+    _ = (D.degree s.1).toAdd := 
+          D.residueDegree_nsmul_normalizedDegree K k
     _ = (Sigma.residueDegree : ℕ) •
-        (D.normalizedDegree Sigma s).toAdd := by
-          exact (D.residueDegree_nsmul_normalizedDegree Sigma s).symm
-
-/-- Quotient-level form of normalized-degree compatibility. -/
-theorem frobeniusFixedFieldQuotientEquiv_degree (D : DegreeData G)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    [TotallyDisconnectedSpace G]
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (σ : D.FrobeniusElements K L hLK)
-    (q : (D.frobeniusFixedField K L hLK σ).toSubgroup ⧸
-      D.fieldInertiaWithin (D.frobeniusFixedField K L hLK σ)) :
-    D.fixedFieldNormalizedDegree K L hLK σ
-        (D.frobeniusFixedFieldQuotientEquiv K L hLK σ q) =
-      D.maximalUnramifiedDegreeEquiv
-        (D.frobeniusFixedResidueField K L hLK σ) q := by
-  refine Quotient.inductionOn' q ?_
-  intro s
-  exact D.frobeniusFixedField_normalizedDegree_compatibility
-    K L hLK σ s
-
-/-- The Frobenius characterization of the chosen lift for the fixed field `Σ`: under the canonical
-identification with `Γ`, its Frobenius is the originally chosen lift `σ`. -/
-theorem frobeniusFixedField_frobenius_eq_inClosure (D : DegreeData G)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    [TotallyDisconnectedSpace G]
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (σ : D.FrobeniusElements K L hLK) :
-    D.frobeniusFixedFieldQuotientEquiv K L hLK σ
-        (D.frobenius (D.frobeniusFixedResidueField K L hLK σ)) =
-      D.frobeniusInClosure K L hLK σ := by
-  apply D.frobeniusFixedField_normalizedDegree_injective K L hLK σ
-  exact (D.frobeniusFixedFieldQuotientEquiv_degree K L hLK σ
-    (D.frobenius (D.frobeniusFixedResidueField K L hLK σ))).trans
-      ((D.maximalUnramifiedDegreeEquiv_frobenius
-        (D.frobeniusFixedResidueField K L hLK σ)).trans
-        (D.fixedFieldNormalizedDegree_generator K L hLK σ).symm)
-
-end DegreeData
-
-end
-end ClassFormation
+        (D.normalizedDegree Sigma s).toAdd := 
+          (D.residueDegree_nsmul_normalizedDegree Sigma s).symm

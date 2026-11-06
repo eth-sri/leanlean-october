@@ -35,7 +35,3 @@ def complexRho : Representation ℂ (G F A.zeta12 A.primitive_zeta12 (Sum.inr w)
       rfl }
   map_one' := LinearMap.ext (fun x => action_one A w x)
   map_mul' g h := LinearMap.ext (fun x => action_mul A w g h x)
-
-end DedekindZetaZeroFree.KPReferenceChange.StandardCover
-
-end

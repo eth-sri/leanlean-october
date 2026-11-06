@@ -113,7 +113,7 @@ theorem raw_parabolic_torus_kernel (F : Type*) [Field F] [NumberField F]
   have hn : A 1 1 ≠ 0 := by
     intro hz
     exact A.det_ne_zero (by simp [Matrix.det_fin_two, hc, hz])
-  have hv : A 0 1 / A 1 1 = (v.toAdd : F) := by rw [ht, hd, mul_div_cancel_right₀ _ hn]
+  have hv : A 0 1 / A 1 1 = (v.toAdd : F) := by simp_all
   apply Homeomorph.ext
   intro z
   obtain ⟨x, rfl⟩ := QuotientAddGroup.mk_surjective z
@@ -194,8 +194,7 @@ theorem raw_actual_cross_action (F : Type*) [Field F] [NumberField F]
   funext i
   let σ := (KPCusp.complexPlace F i).embedding
   have hi : (Matrix.GeneralLinearGroup.map σ A) 1 0 = 0 := by
-    change σ (A 1 0) = 0
-    simp [hc]
+    simp_all
   have hu : σ ((D.ratio g : Fˣ) : F) ≠ 0 :=
     (map_ne_zero σ).mpr (Units.ne_zero _)
   have ha : (Matrix.GeneralLinearGroup.map σ A) 0 0 =
@@ -208,7 +207,7 @@ theorem raw_actual_cross_action (F : Type*) [Field F] [NumberField F]
   apply Prod.ext
   · change σ ((D.ratio g : Fˣ) : F) * p.1 i + σ (A 0 1) / σ (A 1 1) =
       σ ((D.ratio g : Fˣ) : F) * p.1 i + σ (A 0 1 / A 1 1)
-    rw [map_div₀]
+    simp
   · change 0 + (p.2 : Fin (KPCuspLogShape.dimension F) → ℝ) i + Real.log ‖σ _‖ =
       0 + ((p.2 : Fin (KPCuspLogShape.dimension F) → ℝ) i +
         Real.log ((KPCusp.complexPlace F i) ((D.ratio g : Fˣ) : F)))
@@ -332,7 +331,7 @@ theorem raw_cross_action_translation (v : D.L) (p : Cross F) :
   have hr : D.ratio (D.inclusion (Multiplicative.ofAdd v)) = 1 := by
     apply MonoidHom.mem_ker.mp
     rw [← D.exact]
-    exact ⟨_, rfl⟩
+    simp
   rw [hα _ A hA hc, hv, hr]
   ext i <;> simp [crossAffine, affine, embedding]
 
@@ -354,17 +353,13 @@ theorem raw_cross_eq_of_torus_eq (x y : Horizontal F) (b : Shape F)
     (Quotient.mk (crossRelation F S) (x, b) : CrossQuotient F S) = Quotient.mk _ (y, b) := by
   have hm : y - x ∈ translationLattice F D.L := by
     apply (QuotientAddGroup.eq_zero_iff _).mp
-    rw [QuotientAddGroup.mk_sub, h, sub_self]
+    simp_all
   obtain ⟨v, hv, hvec⟩ := hm
   apply Quotient.sound
   apply (raw_cross_relation_iff F hF S D α hα _ _).mpr
   refine ⟨D.inclusion (Multiplicative.ofAdd (⟨v, hv⟩ : D.L)), ?_⟩
   rw [raw_cross_action_translation F hF S D α hα]
-  apply Prod.ext
-  · change x + embedding F v = y
-    rw [hvec]
-    abel
-  · rfl
+  simp_all
 
 theorem raw_cross_quotient_open :
     IsOpenQuotientMap (Quotient.mk (crossRelation F S) : Cross F → CrossQuotient F S) := by
@@ -457,7 +452,7 @@ open scoped Classical
 
 namespace DedekindZetaZeroFree.KPCuspChart
 
-private theorem finite_local_charts {X Y : Type*} [TopologicalSpace X]
+theorem finite_local_charts {X Y : Type*} [TopologicalSpace X]
     [TopologicalSpace Y] [Nonempty Y] [CompactSpace Y] (f : X → Y)
     (hf : IsLocalHomeomorph f) (hs : Function.Surjective f) :
     ∃ (n : ℕ), 0 < n ∧ ∃ e : Fin n → OpenPartialHomeomorph X Y,
@@ -540,8 +535,8 @@ theorem rawShapeCover_exists (F : Type*) [Field F] [NumberField F]
   }⟩
   · intro i b b' u hb hb' h
     have hlog : KPCuspLogShape.logarithm F hF E hE (Additive.ofMul u) ∈
-        Λ.toAddSubgroup := by
-      exact AddMonoidHom.mem_range.mpr ⟨Additive.ofMul u, rfl⟩
+        Λ.toAddSubgroup := 
+      AddMonoidHom.mem_range.mpr ⟨Additive.ofMul u, rfl⟩
     have heq : f b = f b' := by
       rw [h]
       change (QuotientAddGroup.mk b : Base F hF E hE) = QuotientAddGroup.mk (b + _)
@@ -614,7 +609,7 @@ include hπl heq hW
   fun p => ⟨l (p.1, p.2.val), by rw [hπl, hW]; exact ⟨p.2.val, p.2.property, rfl⟩⟩
 
 include hlopen in
-private theorem chartLift_surjective : Function.Surjective (chartLift F hF S D π l hπl V W hW) := by
+theorem chartLift_surjective : Function.Surjective (chartLift F hF S D π l hπl V W hW) := by
   intro c
   obtain ⟨⟨z, b⟩, hz⟩ := hlopen.surjective c.val
   have hb : (QuotientAddGroup.mk b : Base F hF D.E D.integralUnits) ∈ W := by
@@ -641,7 +636,7 @@ include hsmall
     apply Subtype.ext
     exact (heq z z' p.2.val p.2.val).mpr ⟨u.val, hu, by rw [u.property, add_zero]⟩)
 
-private theorem coarseChartMap_injective :
+theorem coarseChartMap_injective :
     Function.Injective (coarseChartMap F hF S D β π l hπl heq V W hW) := by
   rintro ⟨c,b⟩ ⟨c',b'⟩ h
   obtain ⟨z, rfl⟩ := Quotient.mk_surjective c
@@ -813,9 +808,3 @@ theorem finite_affine_bundle_atlas
     compact_cross := hcompact
     crossAction := α
     crossAction_formula := hα }⟩
-
-end DedekindZetaZeroFree.KPCuspChart
-
-end
-
-end

@@ -14,8 +14,7 @@ namespace DedekindZetaZeroFree.RayClassBridge
     (F : Type) [Field F] [NumberField F] (hcomplex : NumberField.IsTotallyComplex F)
     (𝔪 : Ideal (𝓞 F)) (h𝔪 : 𝔪 ≠ ⊥) (η : RayClassCharacter F 𝔪) :
     ClassFieldTheory.rayPrincipalIdealSubgroupInPrimeTo (narrowIdealModulus F 𝔪 h𝔪) ≤
-      (fractionalCharacter F 𝔪 h𝔪 η).ker := by
-  exact fractionalCharacter_kills_rayPrincipal F hcomplex 𝔪 h𝔪 η
+      (fractionalCharacter F 𝔪 h𝔪 η).ker := by apply DedekindZetaZeroFree.RayClassBridge.fractionalCharacter_kills_rayPrincipal <;> assumption
 
 def rayCharacter
     (F : Type) [Field F] [NumberField F] (hcomplex : NumberField.IsTotallyComplex F)
@@ -78,10 +77,6 @@ theorem rayClassCharacter_norm_of_ne_zero
 theorem rayClassCharacter_norm_of_primeTo
     (F : Type) [Field F] [NumberField F] (hcomplex : NumberField.IsTotallyComplex F)
     (𝔪 : Ideal (𝓞 F)) (h𝔪 : 𝔪 ≠ ⊥) (η : RayClassCharacter F 𝔪)
-    (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) (hcop : I ⊔ 𝔪 = ⊤) : ‖η I‖ = 1 := by
-  exact rayClassCharacter_norm_of_ne_zero F hcomplex 𝔪 h𝔪 η I
+    (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) (hcop : I ⊔ 𝔪 = ⊤) : ‖η I‖ = 1 := 
+  rayClassCharacter_norm_of_ne_zero F hcomplex 𝔪 h𝔪 η I
     ((rayClassCharacter_ne_zero_iff F 𝔪 η I).mpr ⟨hI, hcop⟩)
-
-end DedekindZetaZeroFree.RayClassBridge
-
-end

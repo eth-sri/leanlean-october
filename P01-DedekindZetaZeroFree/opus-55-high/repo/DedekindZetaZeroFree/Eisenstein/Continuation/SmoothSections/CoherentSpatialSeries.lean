@@ -52,7 +52,7 @@ def coefficientMap (A : KPContActualSmoothLineGluing.ChartBall F ζ hζ U R P H)
     change _ * (c * _) = c * (_ * _)
     ring
 
-private theorem compactJet_le {d m : ℕ} (B : LocalBall d)
+theorem compactJet_le {d m : ℕ} (B : LocalBall d)
     (K : Set (Space d)) (hK : IsCompact K) (hKB : K ⊆ B.carrier)
     (u : Space d → ℂ) (hu : ContDiffOn ℝ (⊤ : ℕ∞) u B.carrier)
     {δ : ℝ} (hδ : 0 ≤ δ) (hb : ∀ α : MultiIndex d m, ∀ x : K,

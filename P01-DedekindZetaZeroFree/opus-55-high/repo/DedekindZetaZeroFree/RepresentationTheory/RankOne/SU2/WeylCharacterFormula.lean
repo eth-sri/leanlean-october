@@ -58,8 +58,7 @@ theorem character_symPower_torusHom_of_sq_eq_one {z : Circle} (hz : (z : ℂ) ^ 
   have hterm : ∀ i ∈ range (d + 1), (z : ℂ) ^ (2 * (i : ℤ) - d) = (z : ℂ) ^ d := by
     intro i _
     have hsq : (z : ℂ) ^ (2 : ℤ) = 1 := by
-      rw [zpow_two, ← pow_two]
-      exact hz
+      simp_all
     have h2 : (z : ℂ) ^ (2 * (i : ℤ)) = 1 := by
       rw [zpow_mul, hsq, one_zpow]
     rw [zpow_sub₀ hz0, h2, zpow_natCast, one_div, eq_comm]
@@ -68,7 +67,7 @@ theorem character_symPower_torusHom_of_sq_eq_one {z : Circle} (hz : (z : ℂ) ^ 
   push_cast
   ring
 
-private theorem exp_sub_exp_neg_mul_I (t : ℝ) :
+theorem exp_sub_exp_neg_mul_I (t : ℝ) :
     Complex.exp ((t : ℂ) * Complex.I) - Complex.exp (-((t : ℂ) * Complex.I))
       = 2 * Complex.I * (Real.sin t : ℂ) := by
   have h := exp_mul_I_sub_exp_mul_I t (-t)
@@ -81,7 +80,7 @@ theorem sin_mul_character_symPower_torusExp (θ : ℝ) :
     (Real.sin θ : ℂ) * (symPower d).character (torusExp θ)
       = (Real.sin (((d : ℝ) + 1) * θ) : ℂ) := by
   have hI : (2 : ℂ) * Complex.I ≠ 0 := by
-    simp [Complex.I_ne_zero]
+    simp
   refine mul_left_cancel₀ hI ?_
   have hz : ((Circle.exp θ : Circle) : ℂ) = Complex.exp ((θ : ℂ) * Complex.I) :=
     Circle.coe_exp θ
@@ -116,8 +115,7 @@ theorem character_symPower_torusExp_of_sin_eq_zero {θ : ℝ} (hθ : Real.sin θ
     simp
   have hcos : Real.cos θ ^ 2 = 1 := by
     have hpyth := Real.sin_sq_add_cos_sq θ
-    rw [hθ] at hpyth
-    simpa using hpyth
+    simp_all
   have hsq : ((Circle.exp θ : Circle) : ℂ) ^ 2 = 1 := by
     rw [hz, ← Complex.ofReal_pow, hcos, Complex.ofReal_one]
   rw [torusExp_def, character_symPower_torusHom_of_sq_eq_one d hsq, hz]
@@ -130,7 +128,3 @@ theorem conj_character_symPower_torusExp (θ : ℝ) :
   · rw [character_symPower_torusExp_of_sin_eq_zero d hθ]
     simp only [map_mul, map_pow, map_add, map_one, map_natCast, Complex.conj_ofReal]
   · rw [character_symPower_torusExp_eq_sin_div_sin d hθ, Complex.conj_ofReal]
-
-end SU2
-
-end DedekindZetaZeroFree.TauCeti

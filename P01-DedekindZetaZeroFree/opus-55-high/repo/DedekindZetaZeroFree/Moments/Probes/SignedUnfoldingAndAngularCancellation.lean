@@ -30,9 +30,8 @@ theorem mainTerm_eq_zero {N : TraceHaarTransport R} {Q : AdmissibleFlatSources R
         upperAverage R N Q T P v m b ⟨t.val / Z, div_pos t.property hZ⟩) = fun _ => (0 : ℂ) := by
       funext t
       rw [h v m b _]
-      exact mul_zero _
-    rw [he]
-    exact integral_zero _ _
+      simp
+    simp_all
   · rfl
 
 theorem smoothedTheta_sign_eq {N : TraceHaarTransport R} {Q : AdmissibleFlatSources R}
@@ -50,11 +49,7 @@ theorem smoothedTheta_sign_eq {N : TraceHaarTransport R} {Q : AdmissibleFlatSour
     filter_upwards [] with z
     exact he (Quotient.out z).val
   unfold smoothedTheta
-  split_ifs
-  · apply integral_congr_ae
-    filter_upwards [] with t
-    rw [hq]
-  · rfl
+  simp_all
 
 theorem SignedUnfolding.identity {N : TraceHaarTransport R} {Q : AdmissibleFlatSources R}
     {T : Realization R Q} {P : Packet R Q} (U : SignedUnfolding R N Q T P)
@@ -92,7 +87,3 @@ def CertifiedPacket.toMomentSource (C : CertifiedPacket R) : SelectedMomentSourc
 theorem momentSource_of_certified_packet (C : CertifiedPacket R) :
     RootAligned R ∧ Nonempty (SelectedMomentSource R) :=
   ⟨C.aligned, ⟨C.toMomentSource R⟩⟩
-
-end DedekindZetaZeroFree.MomentSources
-
-end

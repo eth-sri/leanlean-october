@@ -17,7 +17,7 @@ def logRow {F : Type} [Field F] [NumberField F] (A : SArithmeticData F)
   ((Real.exp u) ^ (-(1 / 2 : ℝ)) : ℝ) * (W1 (Real.exp u) : ℂ) *
     W0 (y * (ProbeSheet.ell A (Real.exp u))⁻¹.val)
 
-private lemma uniform_slices {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+lemma uniform_slices {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     (H : ℝ × E → ℂ) (hs : ContDiff ℝ (⊤ : ℕ∞) H) (hc : HasCompactSupport H) :
     ∃ B : ℝ, 0 ≤ B ∧ ∀ u z,
       ‖H (u,z)‖ + ‖iteratedDeriv 2 (fun t => H (t,z)) u‖ ≤ B := by
@@ -53,7 +53,7 @@ private lemma uniform_slices {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ
   (Real.exp (-p.1 / 2) : ℂ) * (W (Real.exp p.1) : ℂ) *
     ∏ i, f i (p.2 i * (Real.exp (-p.1 / c) : ℂ))
 
-private lemma arch_smooth {I : Type*} [Fintype I] (W : ProbeRealAnnularWeight)
+lemma arch_smooth {I : Type*} [Fintype I] (W : ProbeRealAnnularWeight)
     (f : I → ℂ → ℂ) (hf : ∀ i, ContDiff ℝ (⊤ : ℕ∞) (f i)) (c : ℝ) :
     ContDiff ℝ (⊤ : ℕ∞) (archRow W f c) := by
   apply ContDiff.mul
@@ -64,7 +64,7 @@ private lemma arch_smooth {I : Type*} [Fintype I] (W : ProbeRealAnnularWeight)
     exact (hf i).comp (((contDiff_pi.mp contDiff_id i).comp contDiff_snd).mul
       (Complex.ofRealCLM.contDiff.comp (Real.contDiff_exp.comp (contDiff_fst.neg.div_const c))))
 
-private lemma arch_compact {I : Type*} [Fintype I] (W : ProbeRealAnnularWeight)
+lemma arch_compact {I : Type*} [Fintype I] (W : ProbeRealAnnularWeight)
     (f : I → ℂ → ℂ) (hf : ∀ i, HasCompactSupport (f i)) (c : ℝ) :
     HasCompactSupport (archRow W f c) := by
   let K : Set ℝ := Real.log '' tsupport W
@@ -97,7 +97,7 @@ private lemma arch_compact {I : Type*} [Fintype I] (W : ProbeRealAnnularWeight)
     rw [mul_assoc, ← Complex.ofReal_mul, ← Real.exp_add]
     simp [show -p.1 / c + p.1 / c = 0 by ring]
 
-private theorem row_coordinate {F : Type} [Field F] [NumberField F] (A : SArithmeticData F)
+theorem row_coordinate {F : Type} [Field F] [NumberField F] (A : SArithmeticData F)
     (u : ℝ) (y : SLocalProduct F A.Sf) (w : {v : InfinitePlace F // v.IsComplex}) :
     (InfiniteAdeleRing.ringEquiv_mixedSpace F
       (y * (ProbeSheet.ell A (Real.exp u))⁻¹.val).1).2 w =
@@ -155,7 +155,7 @@ theorem uniform_log_derivatives {F : Type} [Field F] [NumberField F]
     arch_smooth W1 fc (fun i => (hc i).1) c
   have hs (y : SLocalProduct F A.Sf) :
       ContDiff ℝ (⊤ : ℕ∞) (fun u => archRow W1 fc c (u,z y)) :=
-    has.comp (contDiff_id.prodMk contDiff_const)
+    by fun_prop
   refine ⟨fun y => ?_, ?_⟩
   · rw [hformula y]
     exact ((hs y).mul contDiff_const).of_le (by simp)
@@ -178,6 +178,3 @@ theorem uniform_log_derivatives {F : Type} [Field F] [NumberField F]
     rw [hformula y, congrFun (hformula y) u, iteratedDeriv_mul_const_field]
     rw [norm_mul, norm_mul, ← add_mul]
     exact mul_le_mul (hb u (z y)) (hm y) (norm_nonneg _) hB
-
-end
-end DedekindZetaZeroFree.ProbeLogarithmicRowCoefficients

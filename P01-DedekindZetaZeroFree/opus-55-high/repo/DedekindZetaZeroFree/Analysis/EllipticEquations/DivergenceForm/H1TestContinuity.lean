@@ -4,17 +4,16 @@ public import DedekindZetaZeroFree.Analysis.EllipticEquations.DivergenceForm.Wea
 
 @[expose] public section
 
-noncomputable section
 
 namespace DedekindZetaZeroFree.KPContLocalEnergy.SobolevEnergyEstimates
 
 open MeasureTheory KPContLocalNorm Raw Filter Topology
 
-private theorem norm_sq_integral {α : Type*} [MeasurableSpace α] {μ : Measure α}
+theorem norm_sq_integral {α : Type*} [MeasurableSpace α] {μ : Measure α}
     (v : Lp ℂ 2 μ) : ‖v‖ ^ 2 = ∫ x, ‖v x‖ ^ 2 ∂μ := by
   rw [← real_inner_self_eq_norm_sq, L2.inner_def]
-  simp only [real_inner_self_eq_norm_sq]
-private theorem lp_tendsto {α : Type*} [MeasurableSpace α] {μ : Measure α}
+  simp
+theorem lp_tendsto {α : Type*} [MeasurableSpace α] {μ : Measure α}
     (f : ℕ → α → ℂ) (hf : ∀ m, MemLp (f m) 2 μ) (w : Lp ℂ 2 μ)
     (ht : Tendsto (fun m => ∫ x, ‖f m x - w x‖ ^ 2 ∂μ) atTop (𝓝 0)) :
     Tendsto (fun m => (hf m).toLp (f m)) atTop (𝓝 w) := by
@@ -24,13 +23,12 @@ private theorem lp_tendsto {α : Type*} [MeasurableSpace α] {μ : Measure α}
     rw [norm_sq_integral]
     apply integral_congr_ae
     filter_upwards [Lp.coeFn_sub ((hf m).toLp (f m)) w, (hf m).coeFn_toLp] with x hs hf'
-    simp only [Pi.sub_apply] at hs
-    rw [hs, hf']
+    simp_all
   have ht' : Tendsto (fun m => ‖(hf m).toLp (f m) - w‖ ^ 2) atTop (𝓝 0) := by
     simpa only [he] using ht
   simpa only [Function.comp_def, Real.sqrt_sq_eq_abs, abs_norm, Real.sqrt_zero] using
     (Real.continuous_sqrt.tendsto 0).comp ht'
-private theorem integral_tendsto {α : Type*} [MeasurableSpace α] {μ : Measure α}
+theorem integral_tendsto {α : Type*} [MeasurableSpace α] {μ : Measure α}
     (f : ℕ → α → ℂ) (hf : ∀ m, MemLp (f m) 2 μ) (w : Lp ℂ 2 μ)
     (ht : Tendsto (fun m => ∫ x, ‖f m x - w x‖ ^ 2 ∂μ) atTop (𝓝 0))
     (g : α → ℂ) (hg : MemLp g 2 μ) :
@@ -41,7 +39,7 @@ private theorem integral_tendsto {α : Type*} [MeasurableSpace α] {μ : Measure
     rw [L2.inner_def]
     apply integral_congr_ae
     filter_upwards [(hf m).coeFn_toLp, hg.coeFn_toLp] with x hx hy
-    simp [RCLike.inner_apply, hx, hy]
+    simp_all
   have hw : (∫ x, g x * star (w x) ∂μ) = inner ℂ w (hg.toLp g) := by
     rw [L2.inner_def]
     apply integral_congr_ae
@@ -61,7 +59,7 @@ private theorem test_derivative_memLp {n : ℕ} (B : LocalBall n)
       exact (ih.2.fderiv ℝ).comp_left (g := fun f => f (EuclideanSpace.single i 1)) (by simp)
   exact (hs.1.continuous.memLp_of_hasCompactSupport hs.2).mono_measure Measure.restrict_le_self
 
-private theorem first_directions {n : ℕ} (i : Fin n) : (firstIndex i).directions = [i] := by
+theorem first_directions {n : ℕ} (i : Fin n) : (firstIndex i).directions = [i] := by
   classical
   have aux : ∀ (l : List (Fin n)), l.Nodup → i ∈ l →
       l.flatMap (fun j => if j = i then [j] else []) = [i] := by
@@ -91,38 +89,36 @@ private theorem first_directions {n : ℕ} (i : Fin n) : (firstIndex i).directio
   rw [he]
   exact aux (List.finRange n) (List.nodup_finRange _) (List.mem_finRange i)
 
-private theorem matrix_bound {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ} (D : Coefficients B cρ Cρ κ Λ)
+theorem matrix_bound {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ} (D : Coefficients B cρ Cρ κ Λ)
     (hκ : 0 < κ) (x : Space n) (hx : x ∈ B.carrier) (i j : Fin n) :
     |D.matrix x i j| ≤ |Λ| := by
   classical
   have hd (k : Fin n) : 0 ≤ D.matrix x k k := by
     have h := D.ellipticity x hx (EuclideanSpace.single k 1)
-    simp [EuclideanSpace.norm_single, EuclideanSpace.single_apply] at h
+    simp at h
     linarith
   have hu (k : Fin n) : D.matrix x k k ≤ Λ := by
     have h := D.upper_bound x hx (EuclideanSpace.single k 1)
-    simpa [EuclideanSpace.norm_single, EuclideanSpace.single_apply] using h
+    simp_all
   by_cases hij : i = j
   · subst j
     rw [abs_of_nonneg (hd i)]
     exact (hu i).trans (le_abs_self Λ)
   have hnorm (t : ℝ) :
       ‖(EuclideanSpace.single i 1 + EuclideanSpace.single j t : Space n)‖ ^ 2 = 1 + t ^ 2 := by
-    simp [EuclideanSpace.norm_sq_eq, PiLp.add_apply, EuclideanSpace.single_apply,
-      add_sq, Finset.sum_add_distrib, hij, Ne.symm hij]
+    simp [EuclideanSpace.norm_sq_eq, PiLp.add_apply, add_sq, Finset.sum_add_distrib, Ne.symm hij]
   have hquad (t : ℝ) := D.upper_bound x hx
     (EuclideanSpace.single i 1 + EuclideanSpace.single j t)
   simp only [hnorm] at hquad
   have hq (t : ℝ) :
       D.matrix x i i + 2 * D.matrix x i j * t + D.matrix x j j * t ^ 2 ≤ Λ * (1 + t ^ 2) := by
     have h := hquad t
-    simp [PiLp.add_apply, mul_add, add_mul, Finset.sum_add_distrib,
-      EuclideanSpace.single_apply, D.symmetric x hx j i] at h
+    simp [PiLp.add_apply, mul_add, add_mul, Finset.sum_add_distrib, D.symmetric x hx j i] at h
     nlinarith [h]
   apply abs_le.mpr
   constructor <;> nlinarith [hq 1, hq (-1), hd i, hd j, le_abs_self Λ]
 
-private theorem density_memLp {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}
+theorem density_memLp {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}
     (D : Coefficients B cρ Cρ κ Λ) (hcρ : 0 < cρ) :
     MemLp (fun x => (D.density x : ℂ)) ⊤ (volume.restrict B.carrier) := by
   apply memLp_top_of_bound
@@ -133,7 +129,7 @@ private theorem density_memLp {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}
   rw [abs_of_nonneg (le_trans hcρ.le (D.density_bounds x hx).1)]
   exact (D.density_bounds x hx).2
 
-private theorem matrix_memLp {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}
+theorem matrix_memLp {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}
     (D : Coefficients B cρ Cρ κ Λ) (hκ : 0 < κ) (i j : Fin n) :
     MemLp (fun x => (D.matrix x i j : ℂ)) ⊤ (volume.restrict B.carrier) := by
   apply memLp_top_of_bound
@@ -142,7 +138,7 @@ private theorem matrix_memLp {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}
   filter_upwards [ae_restrict_mem Metric.isOpen_ball.measurableSet] with x hx
   simpa using matrix_bound D hκ x hx i j
 
-private theorem zero_directions (n k : ℕ) : (zeroIndex n k).directions = [] := by
+theorem zero_directions (n k : ℕ) : (zeroIndex n k).directions = [] := by
   simp [MultiIndex.directions, zeroIndex]
 
 theorem weakEquation_of_test_limit {n : ℕ} (B : LocalBall n)
@@ -215,7 +211,3 @@ theorem weakEquation_of_test_limit {n : ℕ} (B : LocalBall n)
     exact tendsto_finset_sum _ (fun i hi => tendsto_finset_sum _ (fun j hj => hG i j))
   exact tendsto_nhds_unique (hE.sub (tendsto_const_nhds.mul hV))
     (hH.congr (fun m => (heq (φ m)).symm))
-
-end DedekindZetaZeroFree.KPContLocalEnergy.SobolevEnergyEstimates
-
-end

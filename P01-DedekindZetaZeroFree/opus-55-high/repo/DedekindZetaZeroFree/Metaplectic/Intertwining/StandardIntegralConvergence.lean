@@ -105,7 +105,7 @@ private theorem actual_upper_root_continuous : Continuous (KPGlobalTorusFunction
     exact hh
   exact hN
 
-private theorem rationalLift_eq (γ : Matrix.ProjGenLinGroup (Fin 2) F) :
+theorem rationalLift_eq (γ : Matrix.ProjGenLinGroup (Fin 2) F) :
     KPLiteralRaw.rationalLift F ζ hζ γ = rational F ζ hζ γ := by
   have hm : Matrix.ProjGenLinGroup.mk (Quotient.out γ) = γ := Quotient.out_eq' γ
   calc

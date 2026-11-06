@@ -37,11 +37,7 @@ private theorem finiteProjection_local_infinite (v : NumberField.InfinitePlace F
 
 theorem finiteProjection_archimedeanInsertion (a : KPSmoothActualFlowData.GInfinity F) :
     KPCuspGenuineMonodromy.finiteProjection F ζ hζ
-      (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a) = 1 := by
-  unfold KPSmoothActualFlowData.archimedeanInsertion
-  rw [map_list_prod]
-  simp only [List.map_map, Function.comp_def, finiteProjection_local_infinite]
-  simp
+      (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a) = 1 := by apply DedekindZetaZeroFree.KPMsActualCuspSource.finiteProjection_insertion <;> assumption
 
 theorem finiteProjection_rationalLift (σ : KPCuspArithmetic.PGL2 F) :
     KPCuspGenuineMonodromy.finiteProjection F ζ hζ
@@ -55,8 +51,6 @@ theorem finiteProjection_rationalLift (σ : KPCuspArithmetic.PGL2 F) :
       (projection_rationalSection F ζ hζ m)
 
 variable {F ζ hζ}
-local instance : MulAction (KPCuspArithmetic.PGL2 F) (KPArch.Space (KPCuspLogShape.dimension F)) :=
-  KPCuspSiegel.instMulActionPGL2SpaceDimension F
 open KPMsClearedTruncationL2
 open KPMsResidualTailRestoration.OutgoingTailL2.CoordinateDescent
 variable {C : ModelData F ζ hζ} {D : Iwasawa F ζ hζ}

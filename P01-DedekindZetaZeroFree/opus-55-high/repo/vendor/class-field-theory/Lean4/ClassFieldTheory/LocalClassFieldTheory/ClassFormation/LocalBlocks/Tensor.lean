@@ -15,13 +15,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # The tensor-product realization of a local induced block
 
@@ -59,7 +52,7 @@ abbrev LocalTensorAlgebra (vK : AbsoluteValue K ℝ) :=
   vK.Completion ⊗[K] L
 
 /-- Galois conjugation on the second factor of the local tensor algebra. -/
-noncomputable def localTensorConjugation
+def localTensorConjugation
     (vK : AbsoluteValue K ℝ) (σ : L ≃ₐ[K] L) :
     LocalTensorAlgebra (L := L) vK ≃ₐ[vK.Completion]
       LocalTensorAlgebra (L := L) vK := by
@@ -109,7 +102,7 @@ theorem localTensorConjugation_mul
 /-- The natural Galois action on the unit group of the local tensor
 algebra. -/
 @[reducible]
-noncomputable def localTensorUnitsAction
+def localTensorUnitsAction
     (vK : AbsoluteValue K ℝ) :
     MulDistribMulAction
       (L ≃ₐ[K] L) (LocalTensorAlgebra (L := L) vK)ˣ where
@@ -146,7 +139,7 @@ theorem localTensorUnitsAction_smul_coe
 
 /-- The isometric ring equivalence from the normed copy attached to
 `w ∘ σ` to the normed copy attached to `w`. -/
-noncomputable def conjugateWithAbsRingEquiv
+def conjugateWithAbsRingEquiv
     (w : AbsoluteValue L ℝ) (σ : L ≃ₐ[K] L) :
     WithAbs (absoluteValueConjugate w σ) ≃+* WithAbs w :=
   WithAbs.congr
@@ -158,7 +151,6 @@ theorem conjugateWithAbsRingEquiv_isometry
     Isometry (conjugateWithAbsRingEquiv w σ) := by
   apply AddMonoidHomClass.isometry_of_norm
   intro x
-  rw [WithAbs.norm_eq_apply_ofAbs, WithAbs.norm_eq_apply_ofAbs]
   rfl
 
 omit [FiniteDimensional K L] [IsGalois K L] in
@@ -169,11 +161,11 @@ theorem conjugateWithAbsRingEquiv_symm_isometry
   intro x
   rw [WithAbs.norm_eq_apply_ofAbs, WithAbs.norm_eq_apply_ofAbs]
   change w (σ (σ⁻¹ x.ofAbs)) = w x.ofAbs
-  exact congrArg w (σ.apply_symm_apply x.ofAbs)
+  simp
 
 /-- The canonical equivalence between the completions at `w ∘ σ` and
 `w`, induced by `σ : L → L`. -/
-noncomputable def conjugateCompletionRingEquiv
+def conjugateCompletionRingEquiv
     (w : AbsoluteValue L ℝ) (σ : L ≃ₐ[K] L) :
     (absoluteValueConjugate w σ).Completion ≃+*
       w.Completion :=
@@ -226,8 +218,7 @@ theorem conjugateCompletionRingEquiv_completionMap
   intro x
   have hx : (x : vK.Completion) =
       algebraMap K vK.Completion (WithAbs.equiv vK x) := by
-    rw [← AbsoluteValue.toCompletion_eq_algebraMap]
-    simp
+    rfl
   rw [hx]
   simp only [Function.comp_apply]
   rw [AbsoluteValue.completionMap_coe,
@@ -263,7 +254,7 @@ theorem conjugateCompletionRingEquiv_algebraMap
 /-- The conjugate-completion equivalence with its source indexed by the
 corresponding element of `AbsoluteValueExtension`.  This wrapper keeps
 dependent product components definitionally aligned. -/
-noncomputable def conjugateExtensionCompletionRingEquiv
+def conjugateExtensionCompletionRingEquiv
     (vK : AbsoluteValue K ℝ)
     (w : AbsoluteValueExtension vK L)
     (σ : L ≃ₐ[K] L) :
@@ -326,7 +317,7 @@ theorem conjugateExtensionCompletionRingEquiv_algebraMap
 /-- Evaluation of the local tensor algebra in the chosen completion,
 with codomain written in the algebraic-localization model used by
 `LocalPlaceBlock`. -/
-noncomputable def localTensorEvaluation
+def localTensorEvaluation
     (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
     (w : AbsoluteValueExtension vK L) :
     letI hK := AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
@@ -354,13 +345,6 @@ theorem localTensorEvaluation_tmul
       algebraMap vK.Completion (LocalizedCompletion vK w) b *
         AbsoluteValue.toAlgebraicLocalization
           vK w.1 w.2 x := by
-  let hK := AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
-  let _ : SMul K w.1.Completion := hK.toSMul
-  let _ := AbsoluteValue.completionAlgebra vK w.1 w.2
-  apply (localizedCompletionEquivCompletion vK hvK w).injective
-  rw [map_mul]
-  simp only [localTensorEvaluation, AlgHom.coe_comp, Function.comp_apply,
-    absoluteValueExtension_localizationTensorHom_tmul]
   rfl
 
 /-- Evaluation at the chosen extension is covariant for left
@@ -389,20 +373,12 @@ theorem localTensorEvaluation_conjugation_decomposition
   | add x y hx hy =>
       simpa only [map_add] using congrArg₂ (· + ·) hx hy
   | tmul b x =>
-      rw [localTensorConjugation_tmul,
-        localTensorConjugation_tmul,
-        localTensorEvaluation_tmul,
-        localTensorEvaluation_tmul,
-        map_mul,
-        (decompositionGroupEquivAlgebraicLocalizationAut
-          vK hvK w h).commutes,
-        localizationRamificationGroups_decompositionGroupEquiv_toLocalization]
-      rfl
+      simp
 
 /-- The canonical orbit-evaluation map from local tensor units to the
 induced local block.  Its covariance is exactly
 `localTensorEvaluation_conjugation_decomposition`. -/
-noncomputable def localTensorOrbitHom
+def localTensorOrbitHom
     (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
     (w : AbsoluteValueExtension vK L) :
     letI :=
@@ -442,13 +418,11 @@ noncomputable def localTensorOrbitHom
       map_one' := by
         apply Subtype.ext
         funext g
-        apply Units.ext
         simp
       map_mul' := by
         intro x y
         apply Subtype.ext
         funext g
-        apply Units.ext
         simp }
 
 /-- Orbit evaluation intertwines natural conjugation on the tensor
@@ -522,11 +496,6 @@ theorem conjugateExtensionCompletionRingEquiv_completionTensorDecomposition_left
       rw [conjugateExtensionCompletionRingEquiv_toCompletion,
         localTensorConjugation_tmul,
         absoluteValueExtension_localizationTensorHom_tmul]
-      change
-        algebraMap vK.Completion w.1.Completion b *
-            AbsoluteValue.toCompletion w.1 (g x) =
-          algebraMap vK.Completion w.1.Completion b *
-            AbsoluteValue.toCompletion w.1 (g x)
       rfl
 
 section RightCosetCoordinates
@@ -544,7 +513,7 @@ abbrev InducedRightCosets :=
 
 /-- The element carrying the chosen representative of the right coset of
 `g` to `g`. -/
-noncomputable def rightCosetCoefficient (g : G) : H := by
+def rightCosetCoefficient (g : G) : H := by
   let q : InducedRightCosets H := Quotient.mk'' g
   refine ⟨g * (Quotient.out q)⁻¹, ?_⟩
   exact QuotientGroup.rightRel_apply.mp
@@ -563,8 +532,7 @@ theorem rightCoset_mk_mul_left
       Quotient.mk'' g := by
   apply Quotient.sound'
   rw [QuotientGroup.rightRel_apply]
-  simpa only [mul_inv_rev, mul_assoc, mul_inv_cancel_left,
-    one_mul] using H.inv_mem h.2
+  simp
 
 theorem rightCosetCoefficient_mul_left
     (h : H) (g : G) :
@@ -578,7 +546,7 @@ theorem rightCosetCoefficient_mul_left
 /-- Restriction to one representative of each right coset identifies an
 induced module with a product indexed by `H \ G`.  No commutativity or
 cyclicity assumption on `G` is used. -/
-noncomputable def inducedRightCosetCoordinates :
+def inducedRightCosetCoordinates :
     InducedModule (B := B) H ≃*
       (InducedRightCosets H → B) where
   toFun f q := f.1 (Quotient.out q)
@@ -631,7 +599,6 @@ noncomputable def inducedRightCosetCoordinates :
       simp [rightCosetCoefficient, hq]
     rw [hc, one_smul]
   map_mul' f g := by
-    funext q
     rfl
 
 @[simp]
@@ -653,7 +620,7 @@ local notation "G" => L ≃ₐ[K] L
 
 /-- The chosen representative of a right coset sends `w` to a well-defined
 extension above `v`. -/
-noncomputable def rightCosetExtension
+def rightCosetExtension
     (q : InducedRightCosets
       (absoluteValueDecompositionGroup K w.1)) :
     AbsoluteValueExtension vK L :=
@@ -699,7 +666,7 @@ theorem rightCosetExtension_eq_of_mk
 
 /-- Transitivity of extensions, sharpened to the orbit equivalence
 `H \ G ≃ {w' | w' ∣ v}`. -/
-noncomputable def rightCosetExtensionEquiv :
+def rightCosetExtensionEquiv :
     InducedRightCosets (absoluteValueDecompositionGroup K w.1) ≃
       AbsoluteValueExtension vK L := by
   apply Equiv.ofBijective (rightCosetExtension vK w)
@@ -734,11 +701,7 @@ noncomputable def rightCosetExtensionEquiv :
           Quotient.mk'' (Quotient.out r) := by
       apply Quotient.sound'
       exact QuotientGroup.rightRel_apply.mpr hmem
-    calc
-      q = Quotient.mk'' (Quotient.out q) :=
-        (Quotient.out_eq' q).symm
-      _ = Quotient.mk'' (Quotient.out r) := hout
-      _ = r := Quotient.out_eq' r
+    simp_all
   · intro w'
     obtain ⟨g, hg⟩ := absoluteValueConjugacy vK hvK w w'
     refine ⟨Quotient.mk'' g, ?_⟩
@@ -763,7 +726,7 @@ variable (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
 
 /-- Reindex the product of all completion unit groups by the right cosets
 of the decomposition group. -/
-noncomputable def completionProductReindexRightCosets :
+def completionProductReindexRightCosets :
     (∀ w' : AbsoluteValueExtension vK L, w'.1.Completionˣ) ≃*
       (∀ q : InducedRightCosets
           (absoluteValueDecompositionGroup K w.1),
@@ -777,17 +740,16 @@ noncomputable def completionProductReindexRightCosets :
     { e with
       map_mul' := by
         intro x y
-        funext q
         rfl }
 
 /-- For a right coset, conjugation by its chosen representative identifies
 the corresponding completion with the fixed completion at `w`. -/
-noncomputable def rightCosetCompletionUnitsEquiv
+def rightCosetCompletionUnitsEquiv
     (q : InducedRightCosets
       (absoluteValueDecompositionGroup K w.1)) :
     ((rightCosetExtensionEquiv vK hvK w q).1.Completion)ˣ ≃*
-      w.1.Completionˣ := by
-  exact Units.mapEquiv
+      w.1.Completionˣ := 
+  Units.mapEquiv
     (conjugateExtensionCompletionRingEquiv
       vK w (Quotient.out q)).toMulEquiv
 
@@ -808,7 +770,7 @@ theorem rightCosetCompletionUnitsEquiv_apply_coe
 
 /-- The product supplied by the completion tensor-product decomposition, rewritten as one copy of the
 chosen local multiplicative group for every right coset. -/
-noncomputable def completionProductUnitsEquivRightCosets :
+def completionProductUnitsEquivRightCosets :
     letI hK := AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
     letI : SMul K w.1.Completion := hK.toSMul
     letI := AbsoluteValue.completionAlgebra vK w.1 w.2
@@ -853,7 +815,7 @@ theorem completionProductUnitsEquivRightCosets_apply_coe
 /-- The product of completions above `v` is the induced block from the
 decomposition group.  This form is valid for an arbitrary finite Galois
 extension; the decomposition group need not be normal. -/
-noncomputable def completionProductUnitsEquivLocalPlaceBlock :
+def completionProductUnitsEquivLocalPlaceBlock :
     letI :=
       decompositionGroupLocalUnitsAction vK hvK w
     letI hK := AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
@@ -874,7 +836,7 @@ noncomputable def completionProductUnitsEquivLocalPlaceBlock :
 /-- Concrete tensor realization of the induced local block: the actual local unit group
 `(K_v ⊗[K] L)ˣ` is multiplicatively equivalent to the induced block from
 the decomposition group at a chosen extension `w`. -/
-noncomputable def localTensorUnitsEquivLocalPlaceBlock :
+def localTensorUnitsEquivLocalPlaceBlock :
     letI :=
       decompositionGroupLocalUnitsAction vK hvK w
     letI hK := AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
@@ -1039,42 +1001,3 @@ theorem localTensorUnitsEquivLocalPlaceBlock_smul
   rw [localTensorUnitsEquivLocalPlaceBlock_eq_orbitHom_apply,
     localTensorUnitsEquivLocalPlaceBlock_eq_orbitHom_apply]
   exact localTensorOrbitHom_smul vK hvK w τ z
-
-/-- The inverse of the induced local-block equivalence is equivariant as well. -/
-theorem localTensorUnitsEquivLocalPlaceBlock_symm_smul
-    (τ : L ≃ₐ[K] L)
-    (f : LocalPlaceBlock vK hvK w) :
-    letI :=
-      decompositionGroupLocalUnitsAction vK hvK w
-    letI hK := AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
-    letI : SMul K w.1.Completion := hK.toSMul
-    letI := AbsoluteValue.completionAlgebra vK w.1 w.2
-    letI : ∀ w' : AbsoluteValueExtension vK L,
-        Algebra vK.Completion w'.1.Completion :=
-      fun w' ↦ AbsoluteValue.completionAlgebra vK w'.1 w'.2
-    letI := localTensorUnitsAction (K := K) (L := L) vK
-    (localTensorUnitsEquivLocalPlaceBlock vK hvK w).symm
-        (τ • f) =
-      τ •
-        (localTensorUnitsEquivLocalPlaceBlock vK hvK w).symm f := by
-  let _ :=
-    decompositionGroupLocalUnitsAction vK hvK w
-  let hK := AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
-  let _ : SMul K w.1.Completion := hK.toSMul
-  let _ := AbsoluteValue.completionAlgebra vK w.1 w.2
-  let _ : ∀ w' : AbsoluteValueExtension vK L,
-      Algebra vK.Completion w'.1.Completion :=
-    fun w' ↦ AbsoluteValue.completionAlgebra vK w'.1 w'.2
-  let _ := localTensorUnitsAction (K := K) (L := L) vK
-  apply
-    (localTensorUnitsEquivLocalPlaceBlock
-      vK hvK w).injective
-  rw [MulEquiv.apply_symm_apply,
-    localTensorUnitsEquivLocalPlaceBlock_smul,
-    MulEquiv.apply_symm_apply]
-
-end ProductEquivalences
-
-end LocalClassFieldTheory
-
-end

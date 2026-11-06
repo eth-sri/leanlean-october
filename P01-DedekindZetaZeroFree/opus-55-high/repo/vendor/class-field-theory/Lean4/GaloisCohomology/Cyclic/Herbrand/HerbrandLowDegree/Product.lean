@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Low-degree Tate cohomology of products
 
@@ -39,17 +36,14 @@ def piMulDistribMulAction
     MulDistribMulAction G (∀ i, A i) where
   smul g x i := g • x i
   one_smul x := by
-    funext i
-    exact one_smul G (x i)
+    simp
   mul_smul g h x := by
     funext i
     exact mul_smul g h (x i)
   smul_one g := by
-    funext i
-    exact MulDistribMulAction.smul_one g
+    simp
   smul_mul g x y := by
-    funext i
-    exact MulDistribMulAction.smul_mul g (x i) (y i)
+    simp
 
 /-- The pointwise product of a family of subgroups. -/
 def piSubgroup (ι : Type uι) (A : ι → Type uA)
@@ -61,30 +55,17 @@ def piSubgroup (ι : Type uι) (A : ι → Type uA)
   mul_mem' hx hy i := (N i).mul_mem (hx i) (hy i)
   inv_mem' hx i := (N i).inv_mem (hx i)
 
-@[simp]
-theorem mem_piSubgroup_iff
-    (ι : Type uι) (A : ι → Type uA)
-    [∀ i, CommGroup (A i)]
-    (N : ∀ i, Subgroup (A i))
-    (x : ∀ i, A i) :
-    x ∈ piSubgroup ι A N ↔
-      ∀ i, x i ∈ N i :=
-  Iff.rfl
-
 /-- The componentwise quotient map. -/
-noncomputable def piQuotientMap
+def piQuotientMap
     (ι : Type uι) (A : ι → Type uA)
     [∀ i, CommGroup (A i)]
     (N : ∀ i, Subgroup (A i)) :
     (∀ i, A i) →* ∀ i, A i ⧸ N i where
   toFun x i := QuotientGroup.mk' (N i) (x i)
   map_one' := by
-    ext i
-    exact (QuotientGroup.mk' (N i)).map_one
+    rfl
   map_mul' x y := by
-    ext i
-    exact (QuotientGroup.mk' (N i)).map_mul
-      (x i) (y i)
+    rfl
 
 @[simp]
 theorem piQuotientMap_apply
@@ -110,9 +91,7 @@ theorem ker_piQuotientMap
       MonoidHom.mem_ker.mp hx
     have hi : QuotientGroup.mk' (N i) (x i) = 1 :=
       (piQuotientMap_apply ι A N x i).symm.trans (congrFun hmap i)
-    exact
-      (QuotientGroup.eq_one_iff
-        (N := N i) (x := x i)).mp hi
+    simp_all
   · intro hx
     exact MonoidHom.mem_ker.mpr <| by
       ext i
@@ -134,7 +113,7 @@ theorem piQuotientMap_surjective
 
 /-- The quotient of a dependent product by the pointwise subgroup is the
 dependent product of the quotients. -/
-noncomputable def piQuotientEquiv
+def piQuotientEquiv
     (ι : Type uι) (A : ι → Type uA)
     [∀ i, CommGroup (A i)]
     (N : ∀ i, Subgroup (A i)) :
@@ -210,7 +189,7 @@ theorem normKernelPiEquiv_apply_coe
   rfl
 
 /-- Tate `H⁰` commutes with dependent products. -/
-noncomputable def herbrandH0PiEquiv :
+def herbrandH0PiEquiv :
     HerbrandH0 G (∀ i, A i) ≃*
       ∀ i, HerbrandH0 G (A i) := by
   let e :
@@ -259,11 +238,7 @@ noncomputable def herbrandH0PiEquiv :
         have hi := ha i
         simpa [tateNormHom_apply, e, fixedPiEquiv, tateNorm] using hi)
       (fun x hx ↦ by
-        have hx1 : x = 1 := by
-          apply e.injective
-          simpa [e] using hx
-        rw [hx1]
-        exact N.one_mem)
+        simp_all)
   exact q.trans
     (piQuotientEquiv ι
       (fun i ↦ fixedSubgroup G (A i))
@@ -272,7 +247,7 @@ noncomputable def herbrandH0PiEquiv :
           (fixedSubgroup G (A i))))
 
 /-- Tate `H⁻¹` commutes with dependent products. -/
-noncomputable def herbrandHMinusOnePiEquiv (σ : G) :
+def herbrandHMinusOnePiEquiv (σ : G) :
     HerbrandHMinusOne G (∀ i, A i) σ ≃*
       ∀ i, HerbrandHMinusOne G (A i) σ := by
   let e :
@@ -324,20 +299,10 @@ noncomputable def herbrandHMinusOnePiEquiv (σ : G) :
         simpa [sigmaMinusOneHom_apply, e, normKernelPiEquiv,
           sigmaMinusOne] using hi)
       (fun x hx ↦ by
-        have hx1 : x = 1 := by
-          apply e.injective
-          simpa [e] using hx
-        rw [hx1]
-        exact N.one_mem)
+        simp_all)
   exact q.trans
     (piQuotientEquiv ι
       (fun i ↦ normKernelSubgroup G (A i))
       (fun i ↦
         (augmentationSubgroup G (A i) σ).subgroupOf
           (normKernelSubgroup G (A i))))
-
-end TateProducts
-
-end CyclicCohomology
-
-end

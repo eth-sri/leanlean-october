@@ -84,7 +84,3 @@ theorem archimedeanLocalCompact_compact (w : InfinitePlace F) :
     convert KPCplxCharacterHaar.complexSU2_isCompact using 1
     exact Subtype.range_coe.symm
   exact isCompact_range (archSectionHom_continuous F ζ hζ w)
-
-end DedekindZetaZeroFree.PrincipalOfKP
-
-end

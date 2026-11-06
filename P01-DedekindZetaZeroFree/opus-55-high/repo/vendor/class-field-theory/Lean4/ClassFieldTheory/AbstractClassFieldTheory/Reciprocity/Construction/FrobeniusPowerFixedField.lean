@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 universe u
 
 namespace ClassFormation
@@ -70,11 +67,7 @@ theorem extensionInertia_commutes_of_mem_extensionSubgroup (D : DegreeData G)
         ((extensionSubgroup K.field L hLK).inv_mem hk) t⁻¹
     simpa [mul_assoc] using
       (extensionSubgroup K.field L hLK).mul_mem hconj hk
-  · change (k * t)⁻¹ * (t * k) ∈ D.fieldInertiaWithin K.field
-    have hconj : k⁻¹ * t * k ∈ D.fieldInertiaWithin K.field := by
-      simpa using (inferInstance : (D.fieldInertiaWithin K.field).Normal).conj_mem
-        t htI k⁻¹
-    simp [mul_assoc]
+  simp_all
 
 /-- Let `P/K` be a finite Galois subextension of `\widetilde L/K`
 containing `L`.  The `|G(P/K)|`-th power of every element of
@@ -230,8 +223,7 @@ theorem frobeniusPowerFixedField_le_finiteField (D : DegreeData G)
                 (D.extensionInertiaWithin K.field L hLK)) =
               QuotientGroup.mk'
                 (extensionSubgroup K.field P.field P.below) := by
-          funext k
-          exact QuotientGroup.map_mk' _ _ _ _ k
+          rfl
         rw [hcomp]
         exact continuous_quotient_mk' }
   let : Finite R := P.finite
@@ -285,7 +277,7 @@ theorem frobeniusExponent_powerOfDegreeOne (D : DegreeData G)
       _ = (Multiplicative.ofAdd (1 : ZHat)) ^ n :=
         D.extensionNormalizedDegree_pow_of_degreeOne K L hLK φ hφ n
 
-private theorem frobeniusClosure_power_mul_le (D : DegreeData G)
+theorem frobeniusClosure_power_mul_le (D : DegreeData G)
     [IsTopologicalGroup G]
     (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
     (hLK : L.toSubgroup ≤ K.field.toSubgroup)
@@ -312,9 +304,9 @@ private theorem frobeniusClosure_power_mul_le (D : DegreeData G)
     (closedSubgroupGenerated
       (Set.range (fun _ : Unit => φ.1 ^ n))).toSubgroup
   have hrangeLeft : Set.range (fun _ : Unit => φ.1 ^ (n * m)) =
-      ({φ.1 ^ (n * m)} : Set Q) := by ext q; simp
+      ({φ.1 ^ (n * m)} : Set Q) := by simp
   have hrangeRight : Set.range (fun _ : Unit => φ.1 ^ n) =
-      ({φ.1 ^ n} : Set Q) := by ext q; simp
+      ({φ.1 ^ n} : Set Q) := by simp
   rw [hrangeLeft, hrangeRight]
   apply Subgroup.topologicalClosure_minimal
   · rw [Subgroup.closure_le]
@@ -391,13 +383,13 @@ theorem frobeniusPowerFixedField_normal (D : DegreeData G)
       (QuotientGroup.mk sK :
           K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK) *
         QuotientGroup.mk tK * (QuotientGroup.mk sK)⁻¹ =
-          QuotientGroup.mk tK := by
-    exact congrArg Subtype.val (by
+          QuotientGroup.mk tK := 
+    congrArg Subtype.val (by
       change a * b * a⁻¹ = b
       simp)
   apply (mem_extensionSubgroup_iff S T hTS _).2
-  let cK : K.field.toSubgroup := ⟨s.1 * t.1 * s.1⁻¹, by
-    exact K.field.toSubgroup.mul_mem
+  let cK : K.field.toSubgroup := ⟨s.1 * t.1 * s.1⁻¹, 
+    K.field.toSubgroup.mul_mem
       (K.field.toSubgroup.mul_mem (hSK s.2) (hSK t.2))
       (K.field.toSubgroup.inv_mem (hSK s.2))⟩
   refine ⟨cK, ?_, rfl⟩
@@ -476,7 +468,7 @@ theorem frobeniusPowerFixedField_finite (D : DegreeData G)
 
 /-- The relative degree of the tower fixed by φⁿᵐ over the field fixed
 by φⁿ is exactly m. -/
-private theorem frobeniusPowerFixedField_relIndex (D : DegreeData G)
+theorem frobeniusPowerFixedField_relIndex (D : DegreeData G)
     [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
     [TotallyDisconnectedSpace G]
     (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
@@ -676,7 +668,7 @@ theorem frobeniusPowerFixedField_generator (D : DegreeData G)
         Multiplicative.ofAdd (1 : ZHat) := by
     rw [← D.frobeniusFixedField_normalizedDegree_compatibility
       K L hLK σ s, hsClosure]
-    exact D.fixedFieldNormalizedDegree_generator K L hLK σ
+    simp
   let hTSfinite : Finite
       (S.toSubgroup ⧸ extensionSubgroup S T hTS) :=
     D.frobeniusPowerFixedField_finite K L hLK φ hφ n m hn hm
@@ -698,10 +690,3 @@ theorem frobeniusPowerFixedField_generator (D : DegreeData G)
   refine ⟨s, hsClosure, hsDegree, ?_⟩
   exact D.quotient_generator_of_unramified_degree_one
     SR T hTS hTSunramifiedR s hsDegree
-
-end DegreeData
-end degreeOnePowerFields
-
-end
-
-end ClassFormation

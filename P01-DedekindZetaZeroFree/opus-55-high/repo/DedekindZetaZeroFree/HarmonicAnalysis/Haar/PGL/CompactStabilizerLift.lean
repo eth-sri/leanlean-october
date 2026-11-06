@@ -29,11 +29,7 @@ set_option maxHeartbeats 800000 in
         KPArithmeticAction.productProjectiveSection d x) := by
     have hs := KPArithmeticAction.productProjectiveSection_continuous d
     have ha : Continuous (fun x : X d => a • x) := continuous_const_smul a
-    have hb : Continuous (fun x : X d =>
-      (KPArithmeticAction.productProjectiveSection d (a • x))⁻¹) := (hs.comp ha).inv
-    have hm : Continuous (fun x : X d =>
-      (KPArithmeticAction.productProjectiveSection d (a • x))⁻¹ * a) := hb.mul_const a
-    exact hm.mul hs
+    fun_prop
   exact hc.subtype_mk (fun x => (cocycle d a x).property)
 
 set_option maxHeartbeats 800000 in
@@ -59,8 +55,8 @@ theorem compact_fiber_lift_isHaar (d : ℕ)
   have : (Measure.map e.symm (ν.prod dk)).IsOpenPosMeasure :=
     e.symm.continuous.isOpenPosMeasure_map e.symm.surjective
   refine { map_mul_left_eq_self := fun a => ?_ }
-  have hgm : Measurable (Function.uncurry (fun x k => cocycle d a x * k)) := by
-    exact (((cocycle_continuous d a).comp continuous_fst).mul continuous_snd).measurable
+  have hgm : Measurable (Function.uncurry (fun x k => cocycle d a x * k)) := 
+    (((cocycle_continuous d a).comp continuous_fst).mul continuous_snd).measurable
   have hp := (measurePreserving_smul a ν).skew_product hgm
     (Filter.Eventually.of_forall (fun x => map_mul_left_eq_self dk (cocycle d a x)))
   have hh : (fun p : X d × K d => e.symm (a • p.1, cocycle d a p.1 * p.2)) =
@@ -75,7 +71,3 @@ theorem compact_fiber_lift_isHaar (d : ℕ)
   have hh' := congrArg (Measure.map e.symm) hp.map_eq
   rw [Measure.map_map e.symm.measurable hp.measurable] at hh'
   simpa only [Function.comp_def, hh] using hh'
-
-end
-
-end DedekindZetaZeroFree.KPCompactStabilizerHaarSources

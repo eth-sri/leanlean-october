@@ -18,7 +18,7 @@ variable {F : Type} [Field F] [NumberField F]
     (A : Ideal (𝓞 F)) (hA : A ≠ ⊥) (hAcop : A ⊔ m = ⊤) : ℂˣ :=
   Units.mk0 (η A) ((RayOperations.ne_zero_iff η A).mpr ⟨hA, hAcop⟩)
 
-private theorem characterUnit_mul {m : Ideal (𝓞 F)}
+theorem characterUnit_mul {m : Ideal (𝓞 F)}
     (η : DedekindZetaZeroFree.RayClassCharacter F m)
     (A B : Ideal (𝓞 F)) (hA : A ≠ ⊥) (hB : B ≠ ⊥)
     (hAcop : A ⊔ m = ⊤) (hBcop : B ⊔ m = ⊤)
@@ -28,7 +28,7 @@ private theorem characterUnit_mul {m : Ideal (𝓞 F)}
   apply Units.ext
   exact η.map_mul' A B
 
-private theorem character_ratio_well_defined {m : Ideal (𝓞 F)}
+theorem character_ratio_well_defined {m : Ideal (𝓞 F)}
     (η : DedekindZetaZeroFree.RayClassCharacter F m)
     (A B C D : Ideal (𝓞 F))
     (hA : A ≠ ⊥) (hB : B ≠ ⊥) (hC : C ≠ ⊥) (hD : D ≠ ⊥)
@@ -75,7 +75,7 @@ private theorem character_ratio_well_defined {m : Ideal (𝓞 F)}
   let r := chooseCharacterRatio m hm J
   characterUnit η r.A r.hA r.hAcop * (characterUnit η r.B r.hB r.hBcop)⁻¹
 
-private theorem fractionalValue_ratio (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
+theorem fractionalValue_ratio (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
     (η : DedekindZetaZeroFree.RayClassCharacter F m)
     (A B : Ideal (𝓞 F)) (hA : A ≠ ⊥) (hB : B ≠ ⊥)
     (hAcop : A ⊔ m = ⊤) (hBcop : B ⊔ m = ⊤)
@@ -93,7 +93,7 @@ private theorem fractionalValue_ratio (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
     fractionalValue m hm η 1 = 1 := by
   apply (fractionalValue_ratio m hm η ⊤ ⊤ top_ne_bot top_ne_bot
     (by simp) (by simp) 1 (by simp)).trans
-  exact mul_inv_cancel _
+  simp
 
  theorem fractionalValue_mul (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
     (η : DedekindZetaZeroFree.RayClassCharacter F m)
@@ -150,7 +150,7 @@ theorem fractionalCharacter_apply_ratio (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
     (fractionalCharacter m hm η J : ℂ) = η A / η B := by
   change (fractionalValue m hm η J : ℂ) = η A / η B
   rw [fractionalValue_ratio m hm η A B hA hB hAcop hBcop J hJ]
-  simp [characterUnit, div_eq_mul_inv]
+  rfl
 
 theorem fractionalCharacter_unique (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
     (η : DedekindZetaZeroFree.RayClassCharacter F m)
@@ -163,12 +163,5 @@ theorem fractionalCharacter_unique (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
   have heq : J = idealToPrimeTo m hm A hA hAcop *
       (idealToPrimeTo m hm B hB hBcop)⁻¹ := by
     apply Subtype.ext
-    simpa only [Subgroup.coe_mul, Subgroup.coe_inv, idealToPrimeTo_coe] using hJ
-  rw [fractionalCharacter_apply_ratio m hm η A B hA hB hAcop hBcop J hJ]
-  rw [heq, map_mul, map_inv, Units.val_mul, Units.val_inv_eq_inv_val,
-    hχ A hA hAcop, hχ B hB hBcop]
-  rfl
-
-end DedekindZetaZeroFree.LargeSieve.RayBridge
-
-end
+    simp_all
+  simp_all

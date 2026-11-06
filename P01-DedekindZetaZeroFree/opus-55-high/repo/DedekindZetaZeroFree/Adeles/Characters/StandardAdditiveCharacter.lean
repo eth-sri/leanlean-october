@@ -33,7 +33,3 @@ theorem standardCharacter_nontrivial (F : Type) [Field F] [NumberField F] :
   apply hx
   apply Subtype.ext
   rw [h, Circle.coe_one]
-
-end DedekindZetaZeroFree.PrincipalOfKP
-
-end

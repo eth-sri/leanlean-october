@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Transitions between principal-unit quotients
 
@@ -42,48 +38,8 @@ def Internal.principalUnitQuotientCarrierTransitionAdd
   toFun x := Additive.ofMul
     (principalUnitQuotientCarrierTransition F hmn (Additive.toMul x))
   map_zero' := by
-    change Additive.ofMul
-        (principalUnitQuotientCarrierTransition F hmn 1) = Additive.ofMul 1
-    rw [map_one]
+    rfl
   map_add' x y := by
-    change Additive.ofMul
-        (principalUnitQuotientCarrierTransition F hmn
-          (Additive.toMul x * Additive.toMul y)) =
-      Additive.ofMul
-        (principalUnitQuotientCarrierTransition F hmn (Additive.toMul x) *
-          principalUnitQuotientCarrierTransition F hmn (Additive.toMul y))
-    rw [map_mul]
+    simp
 
 namespace DiscretePrincipalUnitQuotient
-
-/-- Reduction between two wrapped discrete quotient coordinates. -/
-def transition (F : CompleteDVF.{u, v} K) {m n : ℕ} (hmn : m ≤ n) :
-    DiscretePrincipalUnitQuotient F n →+
-      DiscretePrincipalUnitQuotient F m where
-  toFun x := of F m
-    (Internal.principalUnitQuotientCarrierTransitionAdd F hmn x.val)
-  map_zero' := by
-    apply (addEquiv F m).injective
-    change Internal.principalUnitQuotientCarrierTransitionAdd F hmn 0 = 0
-    exact (Internal.principalUnitQuotientCarrierTransitionAdd F hmn).map_zero
-  map_add' x y := by
-    apply (addEquiv F m).injective
-    change Internal.principalUnitQuotientCarrierTransitionAdd F hmn
-        (x.val + y.val) =
-      Internal.principalUnitQuotientCarrierTransitionAdd F hmn x.val +
-        Internal.principalUnitQuotientCarrierTransitionAdd F hmn y.val
-    exact (Internal.principalUnitQuotientCarrierTransitionAdd F hmn).map_add x.val y.val
-
-/-- The wrapped transition has the original additive transition as its value. -/
-@[simp] theorem val_transition
-    (F : CompleteDVF.{u, v} K) {m n : ℕ} (hmn : m ≤ n)
-    (x : DiscretePrincipalUnitQuotient F n) :
-    (transition F hmn x).val =
-      Internal.principalUnitQuotientCarrierTransitionAdd F hmn x.val :=
-  rfl
-
-end DiscretePrincipalUnitQuotient
-
-end LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup
-
-end

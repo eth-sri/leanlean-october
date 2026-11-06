@@ -64,14 +64,14 @@ theorem complexPeriod_eq_sum (h : A F → ℂ) (x : A F) :
   convert (Equiv.addRight s).tsum_eq (fun t : F => h (algebraMap F (A F) t + x)) using 1
   simp only [Equiv.coe_addRight, map_add, add_assoc]
 
-private theorem adele_polish : PolishSpace (A F) := by
+theorem adele_polish : PolishSpace (A F) := by
   letI := IsTopologicalAddGroup.rightUniformSpace (A F)
   letI := isUniformAddGroup_of_addCommGroup (G := A F)
   letI := IsRightUniformAddGroup.completeSpace_of_weaklyLocallyCompactSpace (A F)
   letI := IsUniformAddGroup.uniformity_countably_generated (α := A F)
   infer_instance
 
-private theorem measurable_nonnegativePeriod (h : A F → ℝ≥0∞) (hh : Measurable h) :
+theorem measurable_nonnegativePeriod (h : A F → ℝ≥0∞) (hh : Measurable h) :
     Measurable (nonnegativePeriod F h) := by
   letI : Countable F := Finsupp.Countable.of_moduleFinite (R := ℚ)
   letI := adele_polish F
@@ -81,9 +81,9 @@ private theorem measurable_nonnegativePeriod (h : A F → ℝ≥0∞) (hh : Meas
     (QuotientAddGroup.mk'_surjective _)).mp
   change Measurable (fun x : A F => nonnegativePeriod F h (QuotientAddGroup.mk x))
   simp_rw [nonnegativePeriod_eq_sum]
-  exact Measurable.ennreal_tsum fun t => hh.comp (measurable_const.add measurable_id)
+  fun_prop
 
-private theorem measurable_complexPeriod (h : A F → ℂ) (hh : Measurable h) :
+theorem measurable_complexPeriod (h : A F → ℂ) (hh : Measurable h) :
     Measurable (complexPeriod F h) := by
   letI : Countable F := Finsupp.Countable.of_moduleFinite (R := ℚ)
   letI := adele_polish F
@@ -93,7 +93,7 @@ private theorem measurable_complexPeriod (h : A F → ℂ) (hh : Measurable h) :
     (QuotientAddGroup.mk'_surjective _)).mp
   change Measurable (fun x : A F => complexPeriod F h (QuotientAddGroup.mk x))
   simp_rw [complexPeriod_eq_sum]
-  exact Measurable.tsum fun t => hh.comp (measurable_const.add measurable_id)
+  fun_prop
 
 theorem lintegral_nonnegativePeriod (dx : Measure (A F)) (dq : Measure (Q F))
     [dx.IsAddHaarMeasure] [dq.IsAddHaarMeasure] [IsProbabilityMeasure dq]
@@ -110,7 +110,7 @@ theorem lintegral_nonnegativePeriod (dx : Measure (A F)) (dq : Measure (Q F))
   change (∫⁻ x in domain, nonnegativePeriod F h (QuotientAddGroup.mk x) ∂dx) = _
   simp_rw [nonnegativePeriod_eq_sum]
   have ht : ∀ t : F, AEMeasurable (fun x : A F => h (algebraMap F (A F) t + x)) (dx.restrict domain) :=
-    fun t => (hh.comp (measurable_const.add measurable_id)).aemeasurable
+    by fun_prop
   rw [lintegral_tsum ht]
   rw [hfd.lintegral_eq_tsum'' h]
   exact e.toEquiv.tsum_eq (fun t => ∫⁻ x in domain, h (t +ᵥ x) ∂dx)
@@ -165,7 +165,3 @@ theorem integral_complexPeriod (dx : Measure (A F)) (dq : Measure (Q F))
         ∫⁻ x, ‖h x‖ₑ ∂dx := he.trans hid.symm
     rw [hn]
     exact hup.2.ne
-
-end DedekindZetaZeroFree.KPChamberAdditivePeriodization
-
-end

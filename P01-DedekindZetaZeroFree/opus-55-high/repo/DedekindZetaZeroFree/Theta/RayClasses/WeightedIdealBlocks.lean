@@ -4,7 +4,12 @@ public import DedekindZetaZeroFree.Theta.RayClasses.NormalizedCharacterAggregate
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Characters.ResidueUnitCharacters
 public import DedekindZetaZeroFree.Arithmetic.Ideals.FractionalResidues.CoprimeGeneratorLifts
 public import ClassFieldTheory.Theorems.ConductorsAndRayClassFields.RayClassIdealModulusProjectionSurjective
-public import ClassFieldTheory.Theorems.ConductorsAndRayClassFields.OrdinaryRayClassGroupEquivClassGroup
+public import ClassFieldTheory.Definitions.ConductorsAndRayClassFields.OrdinaryRayClassModulus
+public import ClassFieldTheory.Definitions.ConductorsAndRayClassFields.RayClassGroup
+public import ClassFieldTheory.Definitions.ConductorsAndRayClassFields.RayClassOfFinitePrime
+public import ClassFieldTheory.Definitions.FrobeniusAndHilbertClassFields.FinitePrimeFractionalIdeal
+public import ClassFieldTheory.AlgebraicNumberTheory.RayClass.OrdinaryClassGroupComparison
+public import Mathlib.RingTheory.ClassGroup.Basic
 
 @[expose] public section
 
@@ -41,8 +46,8 @@ theorem integralElementIdeal_coe (I : (FractionalIdeal (𝓞 F)⁰ F)ˣ)
     (x : {x : F // x ∈ (I : FractionalIdeal (𝓞 F)⁰ F)}) :
     (integralElementIdeal I x : FractionalIdeal (𝓞 F)⁰ F) =
       FractionalIdeal.spanSingleton (𝓞 F)⁰ x.val *
-        (I : FractionalIdeal (𝓞 F)⁰ F)⁻¹ := by
-  exact (Classical.choose_spec (existsUnique_integralElementIdeal I x)).1
+        (I : FractionalIdeal (𝓞 F)⁰ F)⁻¹ := 
+  (Classical.choose_spec (existsUnique_integralElementIdeal I x)).1
 
 theorem integralElementIdeal_integral_coe (a : Ideal (𝓞 F)) (ha : a ≠ ⊥)
     (x : 𝓞 F) (hx : x ∈ a) :
@@ -124,7 +129,3 @@ theorem rayToOrdinary_rayIdealClass {m : Ideal (𝓞 F)} (hm : m ≠ ⊥)
   rw [QuotientGroup.congr_mk]
   simp only [FractionalIdeal.canonicalEquiv_self, RingEquiv.coe_mulEquiv_refl]
   rfl
-
-end DedekindZetaZeroFree.Hecke.Theta
-
-end

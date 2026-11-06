@@ -25,6 +25,3 @@ lemma inv01 (A : GLTwo (R := R)) (h10 : A 1 0 = 0) (h01 : A 0 1 = 0) : A⁻¹ 0 
   have hh : A 0 0 * A⁻¹ 0 1 = 0 := by
     simpa [Matrix.mul_apply, Fin.sum_univ_two, h01] using h
   exact (diagonal_units A h10).1.mul_left_cancel (by simpa using hh)
-end DedekindZetaZeroFree.KPGlobalTorusMatrixCertificates
-
-end

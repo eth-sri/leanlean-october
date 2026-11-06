@@ -15,7 +15,6 @@ open KPLocalStoneVonNeumann KPLocalPrincipalSeries KPRankOneShellContinuation
 open KPRankOneOpenCellKernel KPRankOneCenterInducedDiagonalComparison
 
 noncomputable section
-set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
@@ -47,9 +46,3 @@ def doubleKernel (B : Binding F ζ hζ q A P)
         ((centerCoordinates T rep hrep).symm
           (φ (sourceTranslation F q a b u v) • Pi.single d (1 : ℂ))))).val h *
     normPower (LocalField F q) η lam
-
-end
-
-end DedekindZetaZeroFree.KPRankOneLiftedRegulatedDiagonalAlgebra
-
-end

@@ -26,7 +26,7 @@ private theorem smooth_arch (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (arch d) := 
   · exact Complex.equivRealProdCLM.symm.contDiff.comp
       ((EuclideanSpace.proj (𝕜 := ℝ) (i, (0 : Fin 3))).contDiff.prodMk
        (EuclideanSpace.proj (𝕜 := ℝ) (i, (1 : Fin 3))).contDiff)
-  · exact (EuclideanSpace.proj (𝕜 := ℝ) (i, (2 : Fin 3))).contDiff
+  fun_prop
 
 private theorem smooth_real (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (real d) := by
   apply (contDiff_piLp 2).mpr
@@ -42,14 +42,12 @@ private theorem smooth_real (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (real d) := 
 private theorem smooth_mean (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (KPCuspLogShape.meanHeight d) := by
   unfold KPCuspLogShape.meanHeight
   apply ContDiff.div_const
-  apply ContDiff.sum
-  intro i hi
-  exact contDiff_snd.comp (contDiff_apply ℝ KPArch.H3 i)
+  fun_prop
 
 private theorem derivative_smoothAt (d : ℕ) (g : Space d → ℂ) (x : Space d)
     (hg : ContDiffAt ℝ (⊤ : ℕ∞) g x) (i : Fin d) (k : Fin 3) :
-    ContDiffAt ℝ (⊤ : ℕ∞) (coordinateDerivative d i k g) x := by
-  exact (hg.fderiv_right (by simp)).clm_apply contDiffAt_const
+    ContDiffAt ℝ (⊤ : ℕ∞) (coordinateDerivative d i k g) x := 
+  (hg.fderiv_right (by simp)).clm_apply contDiffAt_const
 
 private theorem differential_smoothAt (d : ℕ) (g : Space d → ℂ) (x : Space d)
     (hg : ContDiffAt ℝ (⊤ : ℕ∞) g x) (i : Fin d) (k : Fin 3) :
@@ -101,7 +99,7 @@ private theorem gradientSq_continuousOn (G : KPCuspCharts.ChartOutput F hF S D)
  def archL (d : ℕ) : Space d →L[ℝ] KPArch.Space d :=
   LinearMap.toContinuousLinearMap {
     toFun := arch d
-    map_add' := by intro x y; ext i <;> simp [arch, Complex.add_re, Complex.add_im]; rfl
+    map_add' := by intro x y; rfl
     map_smul' := by intro a x; ext i : 1; apply Prod.ext <;> simp [arch, Complex.real_smul]; apply Complex.ext <;> simp }
  def realL (d : ℕ) : KPArch.Space d →L[ℝ] Space d :=
   LinearMap.toContinuousLinearMap {
@@ -127,7 +125,7 @@ private lemma scaleL_apply (d : ℕ) (w : Fin d × Fin 3 → ℝ) (z : Space d) 
 private lemma frame_unframe (d : ℕ) (x z : Space d) : frame d x (unframe d x z) = z := by
   ext j
   simp only [frame, unframe, scaleL_apply]
-  split_ifs <;> simp [Real.exp_ne_zero, ← mul_assoc]
+  simp_all
 private lemma metric_frame (d : ℕ) (x z : Space d) :
     KPArch.metric d (arch d x) (arch d (frame d x z)) = ‖z‖ ^ 2 := by
   rw [EuclideanSpace.real_norm_sq_eq, Fintype.sum_prod_type]
@@ -173,22 +171,15 @@ private lemma frame_basis (d : ℕ) (x : Space d) (i : Fin d) (k : Fin 3) :
     frame d x (EuclideanSpace.basisFun (Fin d × Fin 3) ℝ (i,k)) =
       (if k = 2 then 1 else Real.exp (x (i,2))) • coordinateVector d i k := by
   ext j
-  simp only [frame, scaleL_apply, EuclideanSpace.basisFun_apply,
-    EuclideanSpace.single_apply, coordinateVector, PiLp.smul_apply,
-    WithLp.ofLp_toLp, smul_eq_mul]
-  by_cases h : j = (i,k)
-  · subst j; simp
-  · simp [h, Ne.symm h]
+  simp only [frame, scaleL_apply, EuclideanSpace.basisFun_apply, EuclideanSpace.single_apply, coordinateVector, PiLp.smul_apply, smul_eq_mul]
+  simp_all
 private lemma differential_sum (d : ℕ) (g : Space d → ℂ) (x : Space d) :
     (∑ i, ∑ k, ‖differential d g x i k‖ ^ 2) =
       ∑ j, ‖fderiv ℝ g x (frame d x (EuclideanSpace.basisFun (Fin d × Fin 3) ℝ j))‖ ^ 2 := by
   rw [Fintype.sum_prod_type]
   apply Finset.sum_congr rfl
   intro i hi
-  simp only [Fin.sum_univ_three, differential, frame_basis, Fin.reduceEq,
-    ite_true, ite_false, one_smul, Matrix.cons_val_zero, Matrix.cons_val_one,
-    Matrix.cons_val_two, Matrix.vecHead, Matrix.vecTail, coordinateDerivative, map_smul,
-    Complex.real_smul, Complex.ofReal_one, one_mul]
+  simp only [Fin.sum_univ_three, differential, frame_basis, Fin.reduceEq, ite_true, ite_false, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_two, Matrix.vecHead, Matrix.vecTail, coordinateDerivative, map_smul, Complex.real_smul, Complex.ofReal_one, one_mul]
   simp
   ring
  def realAction (d : ℕ) (a : Fin d → Matrix.GeneralLinearGroup (Fin 2) ℂ)
@@ -196,8 +187,8 @@ private lemma differential_sum (d : ℕ) (g : Space d → ℂ) (x : Space d) :
 private lemma realAction_deriv (d : ℕ) (a : Fin d → Matrix.GeneralLinearGroup (Fin 2) ℂ)
     (x : Space d) :
     HasFDerivAt (realAction d a)
-      ((realL d).comp ((fderiv ℝ (KPArch.productAction d a) (arch d x)).comp (archL d))) x := by
-  exact (realL d).hasFDerivAt.comp x
+      ((realL d).comp ((fderiv ℝ (KPArch.productAction d a) (arch d x)).comp (archL d))) x := 
+  (realL d).hasFDerivAt.comp x
     (((KPArch.productAction_contDiff d a).differentiable (by simp) (arch d x)).hasFDerivAt.comp x
       (archL d).hasFDerivAt)
 private lemma realAction_metric (d : ℕ) (a : Fin d → Matrix.GeneralLinearGroup (Fin 2) ℂ)
@@ -255,10 +246,10 @@ theorem gradientSq_continuousOn_and_invariant
   have hy : realAction d a x = y := by
     change real d (KPArch.productAction d a (arch d (real d _))) = _
     rw [arch_real, ha, hs]
-  have hx : T < KPCuspLogShape.meanHeight d (arch d x) := by
-    exact (chart_height G q.val).symm ▸ q.property
-  have hyp : T < KPCuspLogShape.meanHeight d (arch d y) := by
-    exact (chart_height G p.val).symm ▸ p.property
+  have hx : T < KPCuspLogShape.meanHeight d (arch d x) := 
+    (chart_height G q.val).symm ▸ q.property
+  have hyp : T < KPCuspLogShape.meanHeight d (arch d y) := 
+    (chart_height G p.val).symm ▸ p.property
   have hg : DifferentiableAt ℝ g x :=
     (representative_smoothAt v x hx).differentiableAt (by simp)
   have hgy : DifferentiableAt ℝ g (realAction d a x) := by
@@ -285,7 +276,3 @@ theorem gradientSq_continuousOn_and_invariant
     (KPCuspGenuineMonodromy.chi F ζ hζ (ρ s) : ℂ) hg hgy heq hc
   rw [hy] at hh
   exact hh
-
-end DedekindZetaZeroFree.KPCompactGreenRadialIntegrability
-
-end

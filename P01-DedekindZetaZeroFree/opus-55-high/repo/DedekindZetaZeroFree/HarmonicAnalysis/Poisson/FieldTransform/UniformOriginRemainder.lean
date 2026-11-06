@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.HarmonicAnalysis.Poisson.FieldTransform.Origi
 
 @[expose] public section
 
-noncomputable section
 open MeasureTheory
 open scoped Classical ContDiff
 
@@ -39,9 +38,7 @@ theorem fieldTransform_origin_remainder_uniform_bound
         B D r h ((↑(-δ)) + (t : ℂ) * Complex.I)‖ := by
     intro t
     rw [norm_smul, Complex.norm_cpow_eq_rpow_re_of_pos hx]
-    congr 1
-    simp [Complex.neg_re, Complex.add_re, Complex.ofReal_re, Complex.ofReal_im,
-      Complex.mul_re, Complex.I_re, Complex.I_im]
+    simp
   have hIntEq : (∫ t : ℝ, ‖(x : ℂ) ^ (-((↑(-δ)) + (t : ℂ) * Complex.I)) •
       ((-((↑(-δ)) + (t : ℂ) * Complex.I)) ^ j *
         B D r h ((↑(-δ)) + (t : ℂ) * Complex.I))‖)
@@ -88,8 +85,7 @@ theorem originPolynomial_coeff_uniform_bound
     linarith [this.1]
   have hbound : ∀ s ∈ Metric.closedBall (0 : ℂ) (1 / 2 : ℝ),
       ‖A D r h s‖ ≤ C * Vendor.S b N h :=
-    fun s hs => hA h hh hhc hsupp s (by
-      simpa [Metric.mem_closedBall, dist_zero_right] using hs)
+    by simp_all
   have hres := Vendor.originLogResiduePolynomial_coeff_norm_le {s : ℂ | -1 < s.re}
     (isOpen_lt continuous_const Complex.continuous_re) (by simp) (A D r h)
     (A_analyticOnNhd D r h hD hr hh hhc) r n hr hn (C * Vendor.S b N h) hM hdisk hbound
@@ -105,7 +101,3 @@ theorem originPolynomial_coeff_uniform_bound
     _ ≤ (2 : ℝ) ^ (r - 1) * (C * Vendor.S b N h) :=
         mul_le_mul_of_nonneg_right h2 hM
     _ = (2 ^ (r - 1) * C) * Vendor.S b N h := by ring
-
-end DedekindZetaZeroFree.LargeSieve
-
-end

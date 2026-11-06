@@ -15,7 +15,7 @@ open MeasureTheory Set
 
 namespace DedekindZetaZeroFree
 
-private lemma beta_real_integral_eq (x y : ℝ) (hx : 0 < x) (hy : 0 < y) :
+lemma beta_real_integral_eq (x y : ℝ) (hx : 0 < x) (hy : 0 < y) :
     (∫ t : ℝ in (0:ℝ)..1, t^(x-1)*(1-t)^(y-1)) =
       Real.Gamma x*Real.Gamma y/Real.Gamma (x+y) := by
   apply Complex.ofReal_injective
@@ -31,7 +31,7 @@ private lemma beta_real_integral_eq (x y : ℝ) (hx : 0 < x) (hy : 0 < y) :
   rw [he,Complex.betaIntegral_eq_Gamma_mul_div _ _ (by simpa using hx) (by simpa using hy)]
   simp only [Complex.ofReal_div,Complex.ofReal_mul,← Complex.ofReal_add,Complex.Gamma_ofReal]
 
-private lemma beta_norm_le_real (s : ℂ) {d : ℝ} (hs : 0 < s.re) (hd : 0 < d) :
+lemma beta_norm_le_real (s : ℂ) {d : ℝ} (hs : 0 < s.re) (hd : 0 < d) :
     ‖Complex.betaIntegral s (d:ℂ)‖ ≤
       Real.Gamma s.re*Real.Gamma d/Real.Gamma (s.re+d) := by
   rw [← beta_real_integral_eq s.re d hs hd]
@@ -45,7 +45,7 @@ private lemma beta_norm_le_real (s : ℂ) {d : ℝ} (hs : 0 < s.re) (hd : 0 < d)
   dsimp only
   rw [norm_mul,Complex.norm_cpow_eq_rpow_re_of_pos ht.1]
   have hp : 0 < 1-t := sub_pos.mpr ht.2
-  rw [show (1:ℂ)-(t:ℂ) = ((1-t:ℝ):ℂ) by push_cast; rfl,
+  rw [show (1:ℂ)-(t:ℂ) = ((1-t:ℝ):ℂ) by simp,
     Complex.norm_cpow_eq_rpow_re_of_pos hp]
   simp
 
@@ -71,9 +71,9 @@ theorem gammaC_reflected_ratio_left_bound (δ : ℝ)
   have hy : 0 < 2 - δ := by linarith
   let A : ℝ := Real.Gamma (1 + δ) / Real.Gamma (2 - δ)
   let B : ℝ := (2 * Real.pi) ^ (- (1 + δ)) / (2 * Real.pi) ^ δ
-  have hA : 0 < A := div_pos (Real.Gamma_pos_of_pos hx) (Real.Gamma_pos_of_pos hy)
+  have hA : 0 < A := by positivity
   have hbase : 0 < 2 * Real.pi := by positivity
-  have hB : 0 < B := div_pos (Real.rpow_pos_of_pos hbase _) (Real.rpow_pos_of_pos hbase _)
+  have hB : 0 < B := by positivity
   refine ⟨B * A, mul_pos hB hA, ?_⟩
   intro s hs
   have hw : (1 - s).re = 1 + δ := by simp [hs]
@@ -113,12 +113,12 @@ theorem gammaC_reflected_ratio_left_bound (δ : ℝ)
       B * ‖Complex.Gamma (1 - s) * (Complex.Gamma s)⁻¹‖ := by
     simp only [Complex.Gammaℂ_def, norm_mul, norm_inv]
     have he1 : ‖(2 * (Real.pi : ℂ)) ^ (-(1 - s))‖ = (2 * Real.pi) ^ (-(1 + δ)) := by
-      rw [show 2 * (Real.pi : ℂ) = ((2 * Real.pi : ℝ) : ℂ) by push_cast; rfl,
+      rw [show 2 * (Real.pi : ℂ) = ((2 * Real.pi : ℝ) : ℂ) by simp,
         Complex.norm_cpow_eq_rpow_re_of_pos hbase]
       simp [hs]
-      congr 1 <;> ring
+      rfl
     have he2 : ‖(2 * (Real.pi : ℂ)) ^ (-s)‖ = (2 * Real.pi) ^ δ := by
-      rw [show 2 * (Real.pi : ℂ) = ((2 * Real.pi : ℝ) : ℂ) by push_cast; rfl,
+      rw [show 2 * (Real.pi : ℂ) = ((2 * Real.pi : ℝ) : ℂ) by simp,
         Complex.norm_cpow_eq_rpow_re_of_pos hbase]
       simp [hs]
     rw [he1, he2]
@@ -130,5 +130,3 @@ theorem gammaC_reflected_ratio_left_bound (δ : ℝ)
     B * ‖Complex.Gamma (1 - s) * (Complex.Gamma s)⁻¹‖ ≤
         B * (A * (2 + |s.im|) ^ 2) := mul_le_mul_of_nonneg_left hg hB.le
     _ = _ := by ring
-
-end DedekindZetaZeroFree

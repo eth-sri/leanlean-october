@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.HarmonicAnalysis.Poisson.GaussianLattice
 
 @[expose] public section
 
-noncomputable section
 
 namespace DedekindZetaZeroFree
 
@@ -32,9 +31,5 @@ theorem summable_shiftedGaussian_punctured
     [FiniteDimensional ℝ E] (L : Submodule ℤ E) [DiscreteTopology L]
     (z : E) {a : ℝ} (ha : 0 < a) :
     Summable (fun ℓ : {ℓ : L // z + (ℓ : E) ≠ 0} =>
-      Real.exp (-a * ‖z + ((ℓ : L) : E)‖ ^ 2)) := by
-  exact (summable_shiftedGaussian L z ha).comp_injective Subtype.val_injective
-
-end DedekindZetaZeroFree
-
-end
+      Real.exp (-a * ‖z + ((ℓ : L) : E)‖ ^ 2)) := 
+  (summable_shiftedGaussian L z ha).comp_injective Subtype.val_injective

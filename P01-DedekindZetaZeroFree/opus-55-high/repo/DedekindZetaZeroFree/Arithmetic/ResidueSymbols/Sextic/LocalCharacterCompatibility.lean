@@ -16,8 +16,8 @@ local instance (p : ExteriorPrime A) : ValuativeRel (LocalField p) :=
   ClassFieldTheory.finitePlaceCompletionValuativeRel F p.val
 
 theorem exterior_tame (p : ExteriorPrime A) :
-    ValuativeRel.valuation (LocalField p) (6 : LocalField p) = 1 := by
-  exact (KPHilbert.tame_place_iff F p.val).mpr
+    ValuativeRel.valuation (LocalField p) (6 : LocalField p) = 1 := 
+  (KPHilbert.tame_place_iff F p.val).mpr
     (fun h => exterior_notMem p (A.above_six p.val h))
 
 theorem chi_exact_order (p : ExteriorPrime A) : orderOf (chi (σ := σ) p) = 6 :=
@@ -52,7 +52,3 @@ theorem maskedPower_zero_depth (C : A.GeneralArithmeticContext σ η hS)
     (p : ExteriorPrime A) (a : ℤ) (x : Residue C p 0) :
     maskedPower C p 0 a x = 1 := by
   simp [maskedPower]
-
-end DedekindZetaZeroFree.LocalFiniteSumCompatibility
-
-end

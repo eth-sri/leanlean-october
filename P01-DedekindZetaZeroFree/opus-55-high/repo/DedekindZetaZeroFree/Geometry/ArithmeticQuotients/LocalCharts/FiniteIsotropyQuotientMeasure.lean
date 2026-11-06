@@ -4,30 +4,28 @@ public import DedekindZetaZeroFree.Geometry.ArithmeticQuotients.LocalCharts.Line
 
 @[expose] public section
 
-noncomputable section
 open scoped Classical ENNReal Pointwise
 open MeasureTheory Topology
 
 namespace DedekindZetaZeroFree.CoreChartLocalizers.CutoffConstruction
 
-private theorem coset_param_bijective {G : Type*} [Group G] (H : Subgroup G) :
+theorem coset_param_bijective {G : Type*} [Group G] (H : Subgroup G) :
  Function.Bijective (fun p : (G ⧸ H) × H => p.1.out * p.2.val) := by
  constructor
  · rintro ⟨q,h⟩ ⟨r,k⟩ he
    have hq : (q.out * h.val : G ⧸ H) = q := by
-     rw [← Quotient.out_eq' q]; exact QuotientGroup.eq.mpr (by simpa using h.property)
+     simp
    have hr : (r.out * k.val : G ⧸ H) = r := by
-     rw [← Quotient.out_eq' r]; exact QuotientGroup.eq.mpr (by simpa using k.property)
-   have hqr : q = r := hq.symm.trans ((congrArg (fun g : G => (g : G ⧸ H)) he).trans hr)
+     simp
+   have hqr : q = r := by simp_all
    subst r
-   have hhk : h = k := Subtype.ext (mul_left_cancel he)
-   subst k; rfl
+   simp_all
  · intro g
    let q : G ⧸ H := g
    have hg : q.out⁻¹ * g ∈ H := QuotientGroup.eq.mp (Quotient.out_eq' q)
    exact ⟨(q, ⟨q.out⁻¹ * g,hg⟩), by simp⟩
 
-private theorem local_measure_card {G X : Type*} [Group G] [Countable G]
+theorem local_measure_card {G X : Type*} [Group G] [Countable G]
  [MeasurableSpace X] [MulAction G X] [MeasurableConstSMul G X]
  (μ : Measure X) [SMulInvariantMeasure G X μ]
  (H : Subgroup G) [Fintype H] (D T : Set X)
@@ -74,7 +72,7 @@ private theorem local_measure_card {G X : Type*} [Group G] [Countable G]
   _ = (Fintype.card H : ℝ≥0∞) * μ ((⋃ g : G, g • T) ∩ D) := by
     rw [hi, Set.iUnion_inter, measure_iUnion hd (fun q => (hT.const_smul q.out).inter hD)]
 
-private theorem local_quotient_card {G X : Type*} [Group G] [Countable G]
+theorem local_quotient_card {G X : Type*} [Group G] [Countable G]
  [MeasurableSpace X] [MulAction G X] [MeasurableConstSMul G X]
  (μ : Measure X) [SMulInvariantMeasure G X μ]
  (H : Subgroup G) [Fintype H] (D S : Set X)
@@ -133,7 +131,7 @@ private theorem local_quotient_card {G X : Type*} [Group G] [Countable G]
    · intro hx
      refine ⟨h.val⁻¹ • x,?_,by simp⟩
      change π (h.val⁻¹ • x) ∈ V
-     have hq : π x = π (h.val⁻¹ • x) := Quotient.sound ⟨h.val, by change h.val • (h.val⁻¹ • x) = x; simp⟩
+     have hq : π x = π (h.val⁻¹ • x) := Quotient.sound ⟨h.val, by simp⟩
      rwa [← hq]
  rw [local_measure_card μ H D (π ⁻¹' V ∩ S) hD ((hp hV).inter hS) hFD hTinv
    (fun g x hx hg => hsep g x hx.2 hg.2)]
@@ -151,8 +149,8 @@ theorem finite_isotropy_quotient_measure {G X : Type*} [Group G] [Countable G]
  Measure.map (Quotient.mk (MulAction.orbitRel G X))
    ((Fintype.card H : ℝ≥0∞)⁻¹ • μ.restrict S) =
  (Measure.map (Quotient.mk (MulAction.orbitRel G X)) (μ.restrict D)).restrict
-   ((Quotient.mk (MulAction.orbitRel G X)) '' S) := by
-  exact local_quotient_card μ H D S hD hS hFD hinv hsep
+   ((Quotient.mk (MulAction.orbitRel G X)) '' S) := 
+  local_quotient_card μ H D S hD hS hFD hinv hsep
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 variable (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
@@ -181,8 +179,8 @@ theorem chart_quotient_measure (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     have hj : j = A.components ∘ Sigma.mk C.component := by
       funext x; exact (A.components_formula C.component x).symm
     rw [hj]; exact A.components.isOpenEmbedding.comp IsOpenEmbedding.sigmaMk
-  letI : OpensMeasurableSpace (KPCuspSiegel.OrbitQuotient F Γ) := ⟨by
-    exact MeasurableSpace.generateFrom_le (fun s hs =>
+  letI : OpensMeasurableSpace (KPCuspSiegel.OrbitQuotient F Γ) := ⟨
+    MeasurableSpace.generateFrom_le (fun s hs =>
       measurableSet_quotient.mpr ((hs.preimage (show Continuous π from continuous_quotient_mk')).measurableSet))⟩
   letI : BorelSpace (X F ζ hζ U) := ⟨rfl⟩
   have hjm : Measurable (j : _ → X F ζ hζ U) := hct.continuous.measurable
@@ -212,7 +210,7 @@ theorem chart_quotient_measure (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     rw [← Measure.map_apply hp.measurable hs, hp.map_eq]
   have hSinv (g : C.G F ζ hζ hF U) : (g.val : Γ) • S = S := by
     have hgball (x : E C.n) : C.orthogonal g x ∈ Metric.ball 0 C.radius ↔ x ∈ Metric.ball 0 C.radius := by
-      simp only [Metric.mem_ball, dist_zero_right, (C.orthogonal g).norm_map]
+      simp
     apply Set.Subset.antisymm
     · rintro z ⟨y,⟨x,hx,rfl⟩,he⟩
       exact ⟨C.orthogonal g x, (hgball x).mpr hx, (C.equivariance g x (hball hx)).trans he⟩
@@ -222,9 +220,7 @@ theorem chart_quotient_measure (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
       · change (g.val.val : KPCuspArithmetic.PGL2 F) • C.coordinates (C.orthogonal g⁻¹ x) = _
         rw [← C.equivariance g _ (hball (by simpa only [Metric.mem_ball, dist_zero_right,
             (C.orthogonal g⁻¹).norm_map] using hx))]
-        rw [map_inv]
-        change C.coordinates ((C.orthogonal g) ((C.orthogonal g).symm x)) = _
-        rw [LinearIsometryEquiv.apply_symm_apply]
+        simp
   have hsep (g : Γ) (z : KPFiniteCuspAtlas.SymmetricSpace F) (hz : z ∈ S)
      (hg : g • z ∈ S) : g ∈ C.G F ζ hζ hF U := by
     obtain ⟨x,hx,rfl⟩ := hz
@@ -288,7 +284,3 @@ theorem chart_quotient_measure (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
       exact hne (congrArg Sigma.fst h).symm
     rw [hempty, measure_empty]
   · simp
-
-end DedekindZetaZeroFree.CoreChartLocalizers.CutoffConstruction
-
-end

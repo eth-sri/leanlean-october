@@ -21,12 +21,12 @@ open KPCplxCharacterHaar KPCplxHarmonicIntertwinerSpectrum
 open KPCplxHarmonicExtraction
 open scoped BigOperators
 
-private theorem restriction_bridge : polynomialCompactRestriction =
+theorem restriction_bridge : polynomialCompactRestriction =
     KPCplxIntertwinerEigenvalues.polynomialCompactRestriction := rfl
 
 def eigenvalue (m : ℕ) : ℂ := 2 * (m : ℂ) * ((m : ℂ) + 1)
 
-private theorem eigenvalue_injective : Function.Injective eigenvalue := by
+theorem eigenvalue_injective : Function.Injective eigenvalue := by
   intro m n he
   have hr := congrArg Complex.re he
   norm_num [eigenvalue, Complex.mul_re, Complex.mul_im] at hr
@@ -67,7 +67,7 @@ def compactGeneratorEnd (j : Fin 3) : Module.End ℂ HarmonicVendor.Polynomial w
 def pauliCasimir : Module.End ℂ HarmonicVendor.Polynomial :=
   -(∑ j : Fin 3, compactGeneratorEnd j * compactGeneratorEnd j)
 
-private theorem pauliCasimir_apply (p : HarmonicVendor.Polynomial) :
+theorem pauliCasimir_apply (p : HarmonicVendor.Polynomial) :
     pauliCasimir p = -(∑ j : Fin 3, HarmonicVendor.A j (HarmonicVendor.A j p)) := by
   simp [pauliCasimir, compactGeneratorEnd, Module.End.mul_apply]
 
@@ -80,7 +80,7 @@ theorem projector_harmonic (N ℓ m : ℕ) (hm : m ≤ N)
     exact HarmonicVendor.A_casimir_harmonic m ⟨p, hp⟩
   rw [Module.End.aeval_apply_of_mem_apply_eq_smul he,
     projectorPolynomial_eval N ℓ m hm]
-  split <;> simp_all
+  simp
 
 theorem character_eq_interpolation_harmonic
     (μ : Measure ComplexSU2) [μ.IsHaarMeasure] [IsProbabilityMeasure μ]
@@ -108,7 +108,7 @@ variable {A : Type*} [Ring A] [Algebra ℂ A]
 def compactWord (D : Fin 3 → A) (u : List (Fin 3)) : A :=
   u.foldr (fun j T => D j * T) 1
 
-private theorem compactWord_append (D : Fin 3 → A)
+theorem compactWord_append (D : Fin 3 → A)
     (u v : List (Fin 3)) : compactWord D (u ++ v) = compactWord D u * compactWord D v := by
   induction u with
   | nil => simp [compactWord]
@@ -119,10 +119,10 @@ private theorem compactWord_append (D : Fin 3 → A)
  def wordSpan (D : Fin 3 → A) : Submodule ℂ (A) :=
   Submodule.span ℂ (Set.range (compactWord D))
 
-private theorem wordSpan_word (D : Fin 3 → A) (u : List (Fin 3)) :
+theorem wordSpan_word (D : Fin 3 → A) (u : List (Fin 3)) :
     compactWord D u ∈ wordSpan D := Submodule.subset_span ⟨u, rfl⟩
 
-private theorem wordSpan_mul (D : Fin 3 → A)
+theorem wordSpan_mul (D : Fin 3 → A)
     {x y : A} (hx : x ∈ wordSpan D) (hy : y ∈ wordSpan D) :
     x * y ∈ wordSpan D := by
   induction hx using Submodule.span_induction with
@@ -133,14 +133,14 @@ private theorem wordSpan_mul (D : Fin 3 → A)
           obtain ⟨v, rfl⟩ := hy
           rw [← compactWord_append]
           exact wordSpan_word D _
-      | zero => simpa using (wordSpan D).zero_mem
+      | zero => simp
       | add x y hx hy ihx ihy =>
           rw [mul_add]
           exact (wordSpan D).add_mem ihx ihy
       | smul c x hx ih =>
           rw [mul_smul_comm]
           exact (wordSpan D).smul_mem c ih
-  | zero => simpa using (wordSpan D).zero_mem
+  | zero => simp
   | add x y hx hy ihx ihy =>
       rw [add_mul]
       exact (wordSpan D).add_mem ihx ihy
@@ -148,7 +148,7 @@ private theorem wordSpan_mul (D : Fin 3 → A)
       rw [smul_mul_assoc]
       exact (wordSpan D).smul_mem c ih
 
-private theorem casimir_mem_wordSpan (D : Fin 3 → A) :
+theorem casimir_mem_wordSpan (D : Fin 3 → A) :
     -(∑ j : Fin 3, D j * D j) ∈ wordSpan D := by
   apply (wordSpan D).neg_mem
   apply (wordSpan D).sum_mem
@@ -196,11 +196,11 @@ theorem universal_polynomial_compact_words (p : Polynomial ℂ) :
     induction v with
     | nil => simp [compactWord]
     | cons j v ih =>
-        simp only [compactWord, List.foldr_cons, map_mul, FreeAlgebra.lift_ι_apply] at *
+        simp only [compactWord, List.foldr_cons, map_mul] at *
         rw [ih, hι]
   have hh := congrArg φ he
   rw [← Polynomial.aeval_algHom_apply] at hh
-  simpa only [map_neg, map_sum, map_mul, hι, map_smul, hword] using hh
+  simp_all
 
 variable {M : Type*} [AddCommGroup M] [Module ℂ M]
 
@@ -208,11 +208,6 @@ variable {α : Type*}
 
 end FixedWords
 
-section ActualRealWords
-
-open KPCplxPrincipalSeriesCharts KPContHolomorphicKGeneration
-
-end ActualRealWords
 
 end CompactInterpolation
 
@@ -222,7 +217,7 @@ open KPCplxIntertwinerEigenvalues
 open scoped BigOperators
 set_option backward.isDefEq.respectTransparency false
 
-private theorem entire_eq_of_real {f h : ℂ → ℂ}
+theorem entire_eq_of_real {f h : ℂ → ℂ}
     (hf : AnalyticOnNhd ℂ f Set.univ) (hh : AnalyticOnNhd ℂ h Set.univ)
     (he : ∀ t : ℝ, f t = h t) : f = h := by
   have hc : (0 : ℂ) ∈ closure ({z | f z = h z} \ {0}) := by
@@ -248,7 +243,7 @@ private theorem ratio_pos (g : ComplexGL2) : 0 < sphericalRatio g := by
       nlinarith [norm_nonneg ((g : Mat) 1 0), norm_nonneg ((g : Mat) 1 1)])
     have h11 : (g : Mat) 1 1 = 0 := norm_eq_zero.mp (by
       dsimp [bottomRowNormSq] at hn
-      nlinarith [norm_nonneg ((g : Mat) 1 0), norm_nonneg ((g : Mat) 1 1)])
+      simp_all)
     exact Matrix.GeneralLinearGroup.det_ne_zero g (by rw [Matrix.det_fin_two, h10, h11]; ring)
   exact div_pos (norm_pos_iff.mpr (Units.ne_zero _)) hb
 
@@ -296,7 +291,7 @@ private theorem word_factor (w : RealLieWord) (s : ℂ) (g : ComplexGL2)
   exact congrFun (entire_eq_of_real (complexSphericalWord_holomorphic w g)
     (hs.mul (complexSphericalWord_holomorphic w (complexSU2Embedding k))) hr) s
 
-private theorem band_polynomial (N : ℕ) (f : PrincipalSeries positiveParameter)
+theorem band_polynomial (N : ℕ) (f : PrincipalSeries positiveParameter)
     (hf : f ∈ (Finset.range (N + 1)).sup (harmonicKType positiveParameter)) :
     ∃ p : HarmonicVendor.Polynomial,
       p ∈ (Finset.range (N + 1)).sup KPCplxHarmonicIntertwinerSpectrum.harmonicPolynomials ∧
@@ -326,7 +321,7 @@ private theorem band_polynomial (N : ℕ) (f : PrincipalSeries positiveParameter
       exact funext he
   exact ha f hf
 
-private theorem interpolation_mem_band (μ : Measure ComplexSU2) [μ.IsHaarMeasure]
+theorem interpolation_mem_band (μ : Measure ComplexSU2) [μ.IsHaarMeasure]
     [IsProbabilityMeasure μ] (N ℓ : ℕ) (p : HarmonicVendor.Polynomial)
     (hp : p ∈ (Finset.range (N + 1)).sup KPCplxHarmonicIntertwinerSpectrum.harmonicPolynomials)
     (k : ComplexSU2) :
@@ -336,8 +331,8 @@ private theorem interpolation_mem_band (μ : Measure ComplexSU2) [μ.IsHaarMeasu
         ((Polynomial.aeval CompactInterpolation.pauliCasimir (CompactInterpolation.projectorPolynomial N ℓ)) p) k := by
   have hi (q : HarmonicVendor.Polynomial) : Integrable (fun t =>
       star (KPCplxHarmonicExtraction.su2HarmonicCharacter ℓ t) *
-      KPCplxHarmonicIntertwinerSpectrum.polynomialCompactRestriction q (k * t)) μ := by
-    exact KPCplxHarmonicExtraction.CompactPolynomial.polynomial_character_integrand_integrable
+      KPCplxHarmonicIntertwinerSpectrum.polynomialCompactRestriction q (k * t)) μ := 
+    KPCplxHarmonicExtraction.CompactPolynomial.polynomial_character_integrand_integrable
       μ inferInstance ℓ q k |>.congr (Filter.Eventually.of_forall (fun t => rfl))
   have hall : ∀ p ∈ (Finset.range (N + 1)).sup KPCplxHarmonicIntertwinerSpectrum.harmonicPolynomials,
       (2 * ℓ + 1 : ℂ) * (∫ t, star (KPCplxHarmonicExtraction.su2HarmonicCharacter ℓ t) *
@@ -349,10 +344,7 @@ private theorem interpolation_mem_band (μ : Measure ComplexSU2) [μ.IsHaarMeasu
         KPCplxHarmonicIntertwinerSpectrum.polynomialCompactRestriction p (k * t) ∂μ) =
       KPCplxHarmonicIntertwinerSpectrum.polynomialCompactRestriction
         ((Polynomial.aeval CompactInterpolation.pauliCasimir (CompactInterpolation.projectorPolynomial N ℓ)) p) k)
-    · intro p hp
-      have he : p = 0 := by simpa using hp
-      subst p
-      simp
+    · simp
     · intro S hS T hT p hp
       obtain ⟨x, hx, y, hy, rfl⟩ := Submodule.mem_sup.mp hp
       simp only [map_add, Pi.add_apply, mul_add]
@@ -362,7 +354,7 @@ private theorem interpolation_mem_band (μ : Measure ComplexSU2) [μ.IsHaarMeasu
         (by simpa only [Finset.mem_range] using Nat.le_of_lt_succ (Finset.mem_range.mp hm)) p hp k
   exact hall p hp
 
-private theorem compact_derivative_polynomial (r : ℝ) (j : Fin 3)
+theorem compact_derivative_polynomial (r : ℝ) (j : Fin 3)
     (f : PrincipalSeries r) (p : HarmonicVendor.Polynomial)
     (he : KPCplxHarmonicIntertwinerSpectrum.compactRestriction r f =
       KPCplxHarmonicIntertwinerSpectrum.polynomialCompactRestriction p) :
@@ -386,7 +378,7 @@ private theorem compact_derivative_polynomial (r : ℝ) (j : Fin 3)
   rw [hD]
   exact ht
 
-private theorem compact_word_polynomial (r : ℝ) (u : List (Fin 3))
+theorem compact_word_polynomial (r : ℝ) (u : List (Fin 3))
     (f : PrincipalSeries r) (p : HarmonicVendor.Polynomial)
     (he : KPCplxHarmonicIntertwinerSpectrum.compactRestriction r f =
       KPCplxHarmonicIntertwinerSpectrum.polynomialCompactRestriction p) :
@@ -425,8 +417,8 @@ private theorem compact_prefix_profile
     have ht := compact_word_polynomial (positiveParameter + t) u f _ hpf
     have hw : rightWord (positiveParameter + t) (u.map HarmonicVendor.compactMatrix ++ w)
         (sphericalSection (positiveParameter + t)) =
-        rightWord (positiveParameter + t) (u.map HarmonicVendor.compactMatrix) f := by
-      exact List.foldr_append
+        rightWord (positiveParameter + t) (u.map HarmonicVendor.compactMatrix) f := 
+      List.foldr_append
     rw [word_real, hw]
     exact congrFun ht k
   have hR : AnalyticOnNhd ℂ (fun z =>
@@ -439,7 +431,7 @@ private theorem compact_prefix_profile
     exact (AnalyticOnNhd.eval_polynomial (a j)).mul analyticOnNhd_const
   exact congrFun (entire_eq_of_real (complexSphericalWord_holomorphic _ _) hR hr) s
 
-private theorem band_profile (w : RealLieWord) :
+theorem band_profile (w : RealLieWord) :
     ∃ (N n : ℕ) (p : Fin n → HarmonicVendor.Polynomial) (a : Fin n → Polynomial ℂ),
       (∀ j, p j ∈ (Finset.range (N + 1)).sup KPCplxHarmonicIntertwinerSpectrum.harmonicPolynomials) ∧
       ∀ (s : ℂ) (k : ComplexSU2), complexSphericalWord w s (complexSU2Embedding k) =
@@ -527,7 +519,3 @@ theorem sphericalWord_character_projector_words
     CompactOrbitProof.compact_prefix_profile w (u j) m p a he]
   dsimp only [q]
   ring
-
-end DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualRaisingLocal
-
-end

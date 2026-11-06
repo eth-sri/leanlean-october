@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Analysis.CauchyCenterContinuity
 
 @[expose] public section
 
-noncomputable section
 open scoped Topology
 open Complex
 namespace DedekindZetaZeroFree.ResidueContinuity.ScalarSourceJointContinuity
@@ -56,16 +55,14 @@ theorem joint_on_ball_of_continuous_circle
         circleLift_eq c R (weighted p) ⟨z, hz⟩]
       have hzc : z - c ≠ 0 := by
         intro he
-        have hz' : z = c := sub_eq_zero.mp he
-        subst z
-        exact hR.ne' (by simpa using hz.symm)
+        simp_all
       simp only [weighted, pow_zero, one_mul, smul_eq_mul, ContinuousMap.coe_mk,
         div_eq_mul_inv]
       rw [← mul_assoc, ← mul_assoc, inv_mul_cancel₀ hzc, one_mul]
     rw [he, hC]
     simp only [smul_eq_mul]
-    exact inv_mul_cancel_left₀ (by
-      exact mul_ne_zero (mul_ne_zero (by norm_num)
+    exact inv_mul_cancel_left₀ (
+      mul_ne_zero (mul_ne_zero (by norm_num)
         (Complex.ofReal_ne_zero.mpr Real.pi_ne_zero)) Complex.I_ne_zero) _
   exact ((circleCoeffCLM c R hR 0).continuous.comp hweighted).congr heq
 
@@ -79,10 +76,5 @@ theorem joint_continuousOn_ball_of_continuous_circle
   let k : (Metric.ball c R ×ˢ (Set.univ : Set X)) → Metric.ball c R × X :=
     fun p => (⟨p.val.1, p.property.1⟩, p.val.2)
   have hk : Continuous k :=
-    ((continuous_fst.comp continuous_subtype_val).subtype_mk (fun p => p.property.1)).prodMk
-      (continuous_snd.comp continuous_subtype_val)
+    by fun_prop
   exact hj.comp hk
-
-end DedekindZetaZeroFree.ResidueContinuity.ScalarSourceJointContinuity
-
-end

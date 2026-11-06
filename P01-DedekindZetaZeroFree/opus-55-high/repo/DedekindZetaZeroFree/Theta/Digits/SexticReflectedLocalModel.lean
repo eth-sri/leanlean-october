@@ -48,9 +48,9 @@ private lemma reflected_pow_ne_one {k : Type*} [Field k] (χ : MulChar k ℂ)
     (hχ : orderOf χ = 6) (n : ℕ) (hn : ¬6 ∣ n) : χ ^ n ≠ 1 := by
   intro hp
   have hd := orderOf_dvd_iff_pow_eq_one.mpr hp
-  exact hn (by simpa [hχ] using hd)
+  simp_all
 
-private lemma reflected_twist {k : Type*} [Field k] (χ : MulChar k ℂ)
+lemma reflected_twist {k : Type*} [Field k] (χ : MulChar k ℂ)
     (hχ : orderOf χ = 6) (j : Fin 6) (v : k) (hv : v ≠ 0) :
     (χ⁻¹ ^ j.val) v * χ v ^ 4 = (χ ^ (10 - j.val)) v := by
   have h6 := reflected_pow_six χ hχ v hv
@@ -64,7 +64,7 @@ private lemma reflected_twist {k : Type*} [Field k] (χ : MulChar k ℂ)
   fin_cases j <;> norm_num <;> field_simp <;>
     linear_combination -h6
 
-private lemma reflected_positive_sum {k : Type*} [Field k] [Fintype k]
+lemma reflected_positive_sum {k : Type*} [Field k] [Fintype k]
     (χ : MulChar k ℂ) (ψ : AddChar k ℂ) (hχ : orderOf χ = 6)
     (j : Fin 6) :
     (∑ v ∈ Finset.univ.erase (0 : k),
@@ -106,8 +106,7 @@ private lemma reflected_positive_sum {k : Type*} [Field k] [Fintype k]
         exact Fintype.card_pos), Finset.card_erase_of_mem]
     · simp only [if_neg hj4]
       have hn : ¬6 ∣ (10 - j.val) := by
-        have hbound := j.isLt
-        interval_cases j.val <;> norm_num at *
+        omega
       have hzero : (χ ^ (10 - j.val)) (0 : k) = 0 := MulChar.map_zero _
       rw [Finset.sum_erase Finset.univ hzero,
         MulChar.sum_eq_zero_of_ne_one (reflected_pow_ne_one χ hχ _ hn)]
@@ -139,7 +138,7 @@ private lemma reflected_inverse_gauss {k : Type*} [Field k] [Fintype k]
     _ = φ t * gaussSum φ⁻¹ ψ := by
       simpa using gaussSum_mulShift_eq φ⁻¹ ψ (Units.mk0 t ht)
 
-private lemma reflected_inv_pow {k : Type*} [Field k] (χ : MulChar k ℂ)
+lemma reflected_inv_pow {k : Type*} [Field k] (χ : MulChar k ℂ)
     (hχ : orderOf χ = 6) (j : Fin 6) :
     (χ ^ (10 - j.val))⁻¹ = χ ^ ((j.val + 2) % 6) := by
   have h6 : χ ^ 6 = 1 := by simpa [hχ] using pow_orderOf_eq_one χ
@@ -147,19 +146,18 @@ private lemma reflected_inv_pow {k : Type*} [Field k] (χ : MulChar k ℂ)
   rw [← pow_add]
   have hn : (j.val + 2) % 6 + (10 - j.val) = 6 ∨
       (j.val + 2) % 6 + (10 - j.val) = 12 := by
-    have := j.isLt
-    interval_cases j.val <;> norm_num
+    omega
   rcases hn with hn | hn
   · rw [hn, h6]
   · rw [hn, show 12 = 6 * 2 by omega, pow_mul, h6, one_pow]
 
-private lemma reflected_phase {k : Type*} [Field k] (χ : MulChar k ℂ)
+lemma reflected_phase {k : Type*} [Field k] (χ : MulChar k ℂ)
     (hχ : orderOf χ = 6) (j : Fin 6) (t : k) (ht : t ≠ 0) :
     χ t ^ 4 * (χ ^ (10 - j.val)) t = χ t ^ (8 - j.val) := by
   have hp : (χ ^ (10 - j.val)) t = χ t ^ (10 - j.val) :=
     χ.pow_apply_coe _ (Units.mk0 t ht)
   rw [hp, ← pow_add]
-  have he : 4 + (10 - j.val) = (8 - j.val) + 6 := by have := j.isLt; omega
+  have he : 4 + (10 - j.val) = (8 - j.val) + 6 := by omega
   rw [he, pow_add, reflected_pow_six χ hχ t ht, mul_one]
 
 theorem sexticReflectedNonzeroDigits_depth_zero {k : Type*} [Field k] [Fintype k]
@@ -170,9 +168,8 @@ theorem sexticReflectedNonzeroDigits_depth_zero {k : Type*} [Field k] [Fintype k
     sexticReflectedNonzeroDigits χ ψ j 0 t =
       sexticReflectedDepthZeroScalar χ ψ j * (χ t) ^ (8 - j.val) := by
   have hs : sexticSphericalCoefficient χ ψ 0 = 1 := by
-    norm_num [sexticSphericalCoefficient]
-  simp only [sexticReflectedNonzeroDigits, hs, one_mul, mul_zero, add_zero,
-    zpow_ofNat, if_pos rfl, ite_true]
+    rfl
+  simp only [sexticReflectedNonzeroDigits, hs, one_mul, mul_zero, add_zero, zpow_ofNat, ite_true]
   by_cases hj0 : j.val = 0
   · have hm (v : k) (hv : v ∈ Finset.univ.erase (0 : k)) :
         sexticFourierMask χ ψ j v * χ v ^ 4 * ψ (t / v) =
@@ -185,7 +182,7 @@ theorem sexticReflectedNonzeroDigits_depth_zero {k : Type*} [Field k] [Fintype k
       apply inv_eq_of_mul_eq_one_left
       rw [← pow_add]
       exact h6
-    simp only [sexticReflectedDepthZeroScalar, if_pos hj0, h4inv, hj0, ite_true]
+    simp only [sexticReflectedDepthZeroScalar, h4inv, hj0, ite_true]
     rw [MulChar.pow_apply' χ (by norm_num : (4 : ℕ) ≠ 0)]
     ring
   · have hm (v : k) (hv : v ∈ Finset.univ.erase (0 : k)) :
@@ -212,8 +209,7 @@ theorem sexticReflectedNonzeroDigits_eq_zero {k : Type*} [Field k] [Fintype k]
     sexticReflectedNonzeroDigits χ ψ j e t = 0 := by
   rcases he with he | he | ⟨he, hj⟩
   · simp [sexticReflectedNonzeroDigits, sexticSphericalCoefficient, he]
-  · simp [sexticReflectedNonzeroDigits, sexticSphericalCoefficient,
-      he, show ¬e % 3 = 0 by omega, show ¬e % 3 = 1 by omega]
+  · simp [sexticReflectedNonzeroDigits, sexticSphericalCoefficient, he]
   · simp only [sexticReflectedNonzeroDigits, if_neg (show e ≠ 0 by omega), mul_one]
     rw [reflected_positive_sum χ ψ hχ j, if_neg hj, mul_zero]
 
@@ -235,15 +231,14 @@ theorem sexticReflectedDepthZeroScalar_norm_le {k : Type*} [Field k] [Fintype k]
     (hQ : Nat.Coprime (Fintype.card k) 6) (j : Fin 6) :
     ‖sexticReflectedDepthZeroScalar χ ψ j‖ ≤ 1 := by
   have hcard : (1 : ℝ) ≤ Fintype.card k := by exact_mod_cast Fintype.card_pos
-  have hpos : 0 < Real.sqrt (Fintype.card k : ℝ) := Real.sqrt_pos.mpr (by positivity)
+  have hpos : 0 < Real.sqrt (Fintype.card k : ℝ) := by positivity
   by_cases hj : j.val = 0
   · have hn := reflected_gauss_norm (χ ^ 2) ψ
       (reflected_pow_ne_one χ hχ 2 (by norm_num)) hψ
     simp only [sexticReflectedDepthZeroScalar, if_pos hj, norm_mul, norm_neg,
       norm_inv, Complex.norm_natCast, hn]
     rw [← div_eq_inv_mul, div_le_one (by positivity)]
-    have hs := Real.sq_sqrt (show 0 ≤ (Fintype.card k : ℝ) by positivity)
-    nlinarith [Real.sqrt_nonneg (Fintype.card k : ℝ)]
+    simp_all
   · have hd := sexticMaskGaussSum_norm χ ψ hχ hψ hQ j hj
     simp only [sexticReflectedDepthZeroScalar, if_neg hj, norm_div, hd]
     by_cases hj4 : j.val = 4
@@ -252,11 +247,9 @@ theorem sexticReflectedDepthZeroScalar_norm_le {k : Type*} [Field k] [Fintype k]
       rw [hn, pow_zero, gaussSum_one_left hψne]
       simp only [norm_neg, norm_one]
       rw [div_le_one hpos]
-      have hs := Real.sq_sqrt (show 0 ≤ (Fintype.card k : ℝ) by positivity)
-      nlinarith [Real.sqrt_nonneg (Fintype.card k : ℝ)]
+      simp_all
     · have hn : ¬6 ∣ ((j.val + 2) % 6) := by
-        have hbound := j.isLt
-        interval_cases j.val <;> norm_num at *
+        omega
       rw [reflected_gauss_norm (χ ^ _) ψ (reflected_pow_ne_one χ hχ _ hn) hψ,
         div_self (ne_of_gt hpos)]
 
@@ -266,6 +259,3 @@ theorem sexticReflectedDigitModel_nonzero_mask {k : Type*} [Field k] [Fintype k]
     sexticReflectedDigitModel χ ψ j e t =
       sexticReflectedNonzeroDigits χ ψ j e t := by
   simp [sexticReflectedDigitModel, sexticFourierMask, hj]
-
-end
-end DedekindZetaZeroFree

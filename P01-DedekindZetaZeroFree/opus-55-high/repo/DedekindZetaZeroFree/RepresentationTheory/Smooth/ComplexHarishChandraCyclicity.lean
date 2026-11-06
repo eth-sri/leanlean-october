@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.RepresentationTheory.RankOne.HarishChandra.Si
 
 @[expose] public section
 
-noncomputable section
 open scoped Classical
 namespace DedekindZetaZeroFree.RootDerivatives
 open KPGlobalResidualConstruction
@@ -27,8 +26,7 @@ theorem complexHC_algebra_cyclic
           exact Submodule.subset_span ⟨a * b, rfl⟩
         | zero =>
           change a.val 0 ∈ _
-          rw [map_zero]
-          exact Submodule.zero_mem _
+          simp
         | add x y hx hy ihx ihy =>
           change a.val (x + y) ∈ _
           rw [map_add]
@@ -40,9 +38,9 @@ theorem complexHC_algebra_cyclic
   letI := hs
   have hN : N ≠ ⊥ := by
     intro hN
-    have hm : v ∈ N := by
-      exact Submodule.subset_span ⟨1, rfl⟩
-    exact hv (by simpa only [hN, Submodule.mem_bot] using hm)
+    have hm : v ∈ N := 
+      Submodule.subset_span ⟨1, rfl⟩
+    simp_all
   have ht : N = ⊤ := (eq_bot_or_eq_top N).resolve_left hN
   apply Submodule.eq_top_iff'.mpr
   intro x
@@ -59,8 +57,8 @@ theorem complexHC_recovery {V : Type*} [AddCommGroup V] [Module ℂ V]
     ∀ z : complexCore, L z ∈ U := by
   let A : Subalgebra ℂ (Module.End ℂ complexCore) :=
     { carrier := {a | ∀ x, L x ∈ U → L (a x) ∈ U}
-      zero_mem' := by intros; simpa using U.zero_mem
-      one_mem' := by intros x hx; exact hx
+      zero_mem' := by simp
+      one_mem' := by simp
       add_mem' := by
         intro a b ha hb x hx
         simpa only [LinearMap.add_apply, map_add] using U.add_mem (ha x hx) (hb x hx)
@@ -84,10 +82,6 @@ theorem complexHC_recovery {V : Type*} [AddCommGroup V] [Module ℂ V]
   | mem x hx =>
     obtain ⟨a,rfl⟩ := hx
     exact hA a.property v hm
-  | zero => simpa using U.zero_mem
+  | zero => simp
   | add x y hx hy ihx ihy => simpa only [map_add] using U.add_mem ihx ihy
   | smul c x hx ih => simpa only [map_smul] using U.smul_mem c ih
-
-end DedekindZetaZeroFree.RootDerivatives
-
-end

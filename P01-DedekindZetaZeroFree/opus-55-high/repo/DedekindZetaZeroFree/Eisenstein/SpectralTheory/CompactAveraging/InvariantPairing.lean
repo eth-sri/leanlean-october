@@ -5,7 +5,6 @@ public import Mathlib.MeasureTheory.Function.L2Space
 
 @[expose] public section
 
-noncomputable section
 open MeasureTheory
 namespace DedekindZetaZeroFree.FourierContinuation.ResidualAveragePairing
 variable {K X : Type*} [MeasurableSpace K] [MeasurableSpace X]
@@ -39,7 +38,3 @@ theorem fixed_pairing_average
       have hh := (hm k).integral_comp (he k) (fun x => star (c x) * f x)
       simpa only [hc] using hh
     _ = _ := by simp
-
-end DedekindZetaZeroFree.FourierContinuation.ResidualAveragePairing
-
-end

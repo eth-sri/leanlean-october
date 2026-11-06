@@ -54,7 +54,7 @@ def finiteProjection : Cover F ζ hζ →* KPFiniteComponents.FinitePGL2 F :=
             (KPAdelicCoverRestrictedProduct.scalarHom F ζ hζ z))) = 1
       rw [KPAdelicCoverRestrictedProduct.projection_scalarHom]
       erw [Matrix.GeneralLinearGroup.map_scalar]
-      exact Matrix.ProjGenLinGroup.mk_scalar _)
+      simp)
 
 abbrev FiniteCover := (archProjection F ζ hζ).ker
 
@@ -69,13 +69,11 @@ def central : rootsOfUnity 3 F →* FiniteCover F ζ hζ :=
       have hmem : KPAdelicCoverRestrictedProduct.centralInjection F ζ hζ ε ∈
           (KPAdelicCoverRestrictedProduct.projection F ζ hζ).ker := by
         rw [← KPAdelicCoverRestrictedProduct.range_centralInjection_eq_ker F ζ hζ]
-        exact ⟨ε, rfl⟩
+        simp
       have hproj := MonoidHom.mem_ker.mp hmem
       rw [KPAdelicCoverRestrictedProduct.pglCentralInjection,
         KPAdelicCoverRestrictedProduct.scalarQuotient, archProjection]
-      simp only [MonoidHom.comp_apply, QuotientGroup.mk'_apply]
-      rw [QuotientGroup.lift_mk']
-      simp [hproj])
+      simp_all)
 
 def finiteRationalTuple (A : Matrix.GeneralLinearGroup (Fin 2) F) :
     KPAdelicCoverRestrictedProduct.RestrictedCover F ζ hζ :=
@@ -116,7 +114,7 @@ theorem infinite_section_mul (w : NumberField.InfinitePlace F)
       KPHilbert.B3, KPHilbert.B6_infinite]
   change KPLocalCover.CubicGL2Raw.mk (A * B) 1 =
     KPLocalCover.CubicGL2Raw.mk (A * B) (1 * 1 * KPLocalCover.sigmaTwo F ζ hζ (Sum.inl w) A B)
-  rw [one_mul, one_mul, hσ]
+  simp_all
 
 def finiteRationalGLHom : Matrix.GeneralLinearGroup (Fin 2) F →* Cover F ζ hζ where
   toFun A := KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
@@ -142,7 +140,7 @@ def finiteRationalGLHom : Matrix.GeneralLinearGroup (Fin 2) F →* Cover F ζ h�
         KPAdelicCoverRestrictedProduct.rationalSection F ζ hζ B *
           (KPAdelicCoverRestrictedProduct.rationalSection F ζ hζ (A * B))⁻¹ = 1
       rw [KPAdelicCoverRestrictedProduct.rationalSection_mul]
-      exact mul_inv_cancel _
+      simp
     have he : finiteErase F ζ hζ δ = δ := by
       ext v
       cases v with
@@ -166,7 +164,7 @@ def finiteRationalGLHom : Matrix.GeneralLinearGroup (Fin 2) F →* Cover F ζ h�
         dsimp [δ, T]
         rw [map_mul, map_mul, map_inv]
         rfl
-      rw [← hmap, he, hδ]
+      simp_all
     rw [← map_mul, hf]
 
 def finiteRationalLift : KPCuspArithmetic.PGL2 F →* FiniteCover F ζ hζ :=
@@ -183,12 +181,7 @@ def finiteRationalLift : KPCuspArithmetic.PGL2 F →* FiniteCover F ζ hζ :=
         funext v
         cases v with
         | inl w =>
-          change 1 = KPScalarSplitCentral.scalarHom F ζ hζ (Sum.inl w)
-            (Units.map (KPAdelicCoverRestrictedProduct.adeleEval F (Sum.inl w)).toMonoidHom zf)
-          have he : Units.map (KPAdelicCoverRestrictedProduct.adeleEval F (Sum.inl w)).toMonoidHom zf = 1 := by
-            apply Units.ext
-            rfl
-          rw [he, map_one]
+          rfl
         | inr q =>
           change KPLocalCover.sectionMap F ζ hζ (Sum.inr q) _ =
             KPLocalCover.sectionMap F ζ hζ (Sum.inr q) _
@@ -208,20 +201,7 @@ def finiteRationalLift : KPCuspArithmetic.PGL2 F →* FiniteCover F ζ hζ :=
       intro γ
       induction γ using Matrix.ProjGenLinGroup.induction_on with
       | mk A =>
-        change archProjection F ζ hζ
-          (KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
-            (KPAdelicCoverRestrictedProduct.amalgamation F ζ hζ
-              (finiteRationalTuple F ζ hζ A))) = 1
-        change (fun w => Matrix.ProjGenLinGroup.mk
-          (KPAdelicCoverRestrictedProduct.matrixEval F (Sum.inl w)
-            (KPAdelicCoverRestrictedProduct.projection F ζ hζ
-              (KPAdelicCoverRestrictedProduct.amalgamation F ζ hζ
-                (finiteRationalTuple F ζ hζ A))))) = 1
-        rw [KPAdelicCoverRestrictedProduct.projection_amalgamation]
-        funext w
-        rw [KPAdelicCoverRestrictedProduct.restrictedProjection_eval]
-        change Matrix.ProjGenLinGroup.mk (KPLocalCover.projection F ζ hζ (Sum.inl w) 1) = 1
-        simp)
+        rfl)
 
 end KPCuspGenuineMonodromy
 
@@ -247,8 +227,8 @@ theorem finiteProjection_continuous : Continuous (finiteProjection F ζ hζ) := 
 theorem finiteBase_continuous : Continuous (finiteBase F ζ hζ) :=
   (finiteProjection_continuous F ζ hζ).comp continuous_subtype_val
 theorem finiteBase_level_compact (U : CompactOpenLevel (FiniteCover F ζ hζ)) :
-    IsCompact (U.toOpenSubgroup.toSubgroup.map (finiteBase F ζ hζ) : Set (KPFiniteComponents.FinitePGL2 F)) := by
-  exact U.isCompact.image (finiteBase_continuous F ζ hζ)
+    IsCompact (U.toOpenSubgroup.toSubgroup.map (finiteBase F ζ hζ) : Set (KPFiniteComponents.FinitePGL2 F)) := 
+  U.isCompact.image (finiteBase_continuous F ζ hζ)
 
 theorem finiteRationalLift_formula (A : Matrix.GeneralLinearGroup (Fin 2) F) :
     (finiteRationalLift F ζ hζ (Matrix.ProjGenLinGroup.mk A) : Cover F ζ hζ) =
@@ -270,7 +250,7 @@ theorem projection_formulas (A : KPAdelicCoverRestrictedProduct.AdelicGL2 F)
   subst A
   exact ⟨rfl, fun _ => rfl⟩
 
-private theorem adelicMatrix_ext
+theorem adelicMatrix_ext
     (A B : KPAdelicCoverRestrictedProduct.AdelicGL2 F)
     (hf : Matrix.GeneralLinearGroup.map (RingHom.snd _ _) A =
       Matrix.GeneralLinearGroup.map (RingHom.snd _ _) B)
@@ -336,20 +316,14 @@ private theorem finiteBase_surjective : Function.Surjective (finiteBase F ζ hζ
   rw [(projection_formulas F ζ hζ _ c hc).1]
   congr 1
 
-private theorem finiteBase_diagonal : (finiteBase F ζ hζ).comp (finiteRationalLift F ζ hζ) =
+theorem finiteBase_diagonal : (finiteBase F ζ hζ).comp (finiteRationalLift F ζ hζ) =
     KPFiniteComponents.diagonal F := by
   ext γ
   induction γ using Matrix.ProjGenLinGroup.induction_on with
   | mk A =>
-    change Matrix.ProjGenLinGroup.mk
-      (Matrix.GeneralLinearGroup.map (RingHom.snd _ _)
-        (KPAdelicCoverRestrictedProduct.restrictedProjection F ζ hζ
-          (finiteRationalTuple F ζ hζ A))) =
-            Matrix.ProjGenLinGroup.mk (Matrix.GeneralLinearGroup.map
-              (algebraMap F (KPFiniteComponents.FiniteAdeles F)) A)
-    congr 1
+    rfl
 
-private theorem joint_projection_kernel (c : Cover F ζ hζ)
+theorem joint_projection_kernel (c : Cover F ζ hζ)
     (hf : finiteProjection F ζ hζ c = 1) (hi : archProjection F ζ hζ c = 1) :
     c ∈ (KPAdelicCoverRestrictedProduct.pglCentralInjection F ζ hζ).range := by
   obtain ⟨d, rfl⟩ := QuotientGroup.mk'_surjective
@@ -378,7 +352,7 @@ private theorem joint_projection_kernel (c : Cover F ζ hζ)
   simpa only [KPAdelicCoverRestrictedProduct.scalarSubgroup,
     Matrix.GeneralLinearGroup.center_eq_range_scalar] using hA
 
-private theorem finiteBase_kernel : (central F ζ hζ).range = (finiteBase F ζ hζ).ker := by
+theorem finiteBase_kernel : (central F ζ hζ).range = (finiteBase F ζ hζ).ker := by
   ext c
   constructor
   · rintro ⟨ε, rfl⟩
@@ -386,8 +360,8 @@ private theorem finiteBase_kernel : (central F ζ hζ).range = (finiteBase F ζ 
       (KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
         (KPAdelicCoverRestrictedProduct.centralInjection F ζ hζ ε)) = 1
     have hc : KPAdelicCoverRestrictedProduct.projection F ζ hζ
-        (KPAdelicCoverRestrictedProduct.centralInjection F ζ hζ ε) = 1 := by
-      exact (KPAdelicCoverRestrictedProduct.range_centralInjection_eq_ker F ζ hζ ▸
+        (KPAdelicCoverRestrictedProduct.centralInjection F ζ hζ ε) = 1 := 
+      (KPAdelicCoverRestrictedProduct.range_centralInjection_eq_ker F ζ hζ ▸
         ⟨ε, rfl⟩ : KPAdelicCoverRestrictedProduct.centralInjection F ζ hζ ε ∈
           (KPAdelicCoverRestrictedProduct.projection F ζ hζ).ker)
     change Matrix.ProjGenLinGroup.mk
@@ -397,7 +371,7 @@ private theorem finiteBase_kernel : (central F ζ hζ).range = (finiteBase F ζ 
             (KPAdelicCoverRestrictedProduct.centralInjection F ζ hζ ε))) = 1
     rw [hc]
     erw [map_one]
-    exact map_one _
+    rfl
   · intro hc
     obtain ⟨ε, he⟩ := joint_projection_kernel F ζ hζ c hc c.property
     refine ⟨ε, ?_⟩
@@ -435,7 +409,7 @@ def scalarFiber (U : CompactOpenLevel (FiniteCover F ζ hζ)) : Submodule ℂ �
     show (chi F ζ hζ ε : ℂ) * (c * a) = c * a
     rw [← mul_assoc, mul_comm (chi F ζ hζ ε : ℂ) c, mul_assoc, ha ε hε]
 
-private theorem scalarFiber_rank (U : CompactOpenLevel (FiniteCover F ζ hζ)) :
+theorem scalarFiber_rank (U : CompactOpenLevel (FiniteCover F ζ hζ)) :
     scalarFiber F ζ hζ U = ⊥ ∨ scalarFiber F ζ hζ U = ⊤ := by
   by_cases h : ∀ ε : rootsOfUnity 3 F,
       central F ζ hζ ε ∈ U.toOpenSubgroup → chi F ζ hζ ε = 1
@@ -444,9 +418,7 @@ private theorem scalarFiber_rank (U : CompactOpenLevel (FiniteCover F ζ hζ)) :
     intro a _
     change ∀ ε : rootsOfUnity 3 F,
       central F ζ hζ ε ∈ U.toOpenSubgroup → (chi F ζ hζ ε : ℂ) * a = a
-    intro ε hε
-    rw [h ε hε]
-    simp
+    simp_all
   · left
     push Not at h
     obtain ⟨ε, hε, hχ⟩ := h
@@ -461,7 +433,7 @@ private theorem scalarFiber_rank (U : CompactOpenLevel (FiniteCover F ζ hζ)) :
       linear_combination he
     exact (mul_eq_zero.mp hz).resolve_left (sub_ne_zero.mpr hn)
 
-private theorem scalarFiber_rank_zero (U : CompactOpenLevel (FiniteCover F ζ hζ))
+theorem scalarFiber_rank_zero (U : CompactOpenLevel (FiniteCover F ζ hζ))
     (h : ∃ ε : rootsOfUnity 3 F,
       central F ζ hζ ε ∈ U.toOpenSubgroup ∧ chi F ζ hζ ε ≠ 1) :
     scalarFiber F ζ hζ U = ⊥ := by
@@ -602,7 +574,7 @@ def sections (U : CompactOpenLevel (FiniteCover F ζ hζ))
   carrier := {f | (∀ x, f x ∈ scalarFiber F ζ hζ U) ∧
     ∀ (γ : Component F ζ hζ U g) x,
       f ((γ : KPCuspArithmetic.PGL2 F) • x) = (chi F ζ hζ (ρ γ) : ℂ) * f x}
-  zero_mem' := ⟨fun x => (scalarFiber F ζ hζ U).zero_mem, by intro γ x; simp⟩
+  zero_mem' := ⟨fun x => (scalarFiber F ζ hζ U).zero_mem, by simp⟩
   add_mem' := by
     rintro f g ⟨hf1, hf2⟩ ⟨hg1, hg2⟩
     refine ⟨fun x => (scalarFiber F ζ hζ U).add_mem (hf1 x) (hg1 x), ?_⟩
@@ -630,11 +602,7 @@ def flatLineRelation (U : CompactOpenLevel (FiniteCover F ζ hζ))
     · rintro p p' ⟨γ, h1, h2⟩
       refine ⟨γ⁻¹, ?_, ?_⟩
       · rw [h1, ← mul_smul, Subgroup.coe_inv, inv_mul_cancel, one_smul]
-      · have hz : (chi F ζ hζ (ρ (γ⁻¹)) : ℂˣ) * (chi F ζ hζ (ρ γ) : ℂˣ) = 1 := by
-          rw [map_inv, map_inv, inv_mul_cancel]
-        have hz' : (chi F ζ hζ (ρ (γ⁻¹)) : ℂ) * (chi F ζ hζ (ρ γ) : ℂ) = 1 := by
-          rw [← Units.val_mul, hz, Units.val_one]
-        rw [h2, ← mul_assoc, hz', one_mul]
+      simp_all
     · rintro p p' p'' ⟨γ, h1, h2⟩ ⟨δ, h3, h4⟩
       refine ⟨δ * γ, ?_, ?_⟩
       · rw [h3, h1, ← mul_smul, Subgroup.coe_mul]
@@ -698,8 +666,8 @@ def automorphicScalars (U : CompactOpenLevel (FiniteCover F ζ hζ))
     (∀ (γ : Component F ζ hζ U g) x c,
       H ((γ : KPCuspArithmetic.PGL2 F) • x,
         finiteRationalLift F ζ hζ γ * c) = H (x,c))}
-  zero_mem' := ⟨by intro x c _; simp, by intro x c ε; simp,
-    by intro x c u; simp, by intro γ x c; simp⟩
+  zero_mem' := ⟨by simp, by simp,
+    by simp, by simp⟩
   add_mem' := by
     rintro f g ⟨hf1, hf2, hf3, hf4⟩ ⟨hg1, hg2, hg3, hg4⟩
     refine ⟨?_, ?_, ?_, ?_⟩
@@ -732,7 +700,7 @@ def restriction (U : CompactOpenLevel (FiniteCover F ζ hζ)) (g : FiniteCover F
       have ha := H.property.2.2.2 γ x g
       rw [hu, H.property.2.2.1, H.property.2.1] at ha
       have hi : (chi F ζ hζ ((ρ γ)⁻¹) : ℂ) * (chi F ζ hζ (ρ γ) : ℂ) = 1 := by
-        simp [map_inv]
+        simp
       have he := congrArg (fun a : ℂ => (chi F ζ hζ (ρ γ) : ℂ) * a) ha
       simpa [map_inv, mul_assoc] using he⟩
   map_add' _ _ := rfl
@@ -789,7 +757,7 @@ private theorem extensionValue_formula (U : CompactOpenLevel (FiniteCover F ζ h
   exact orbit_scalar_independent F ζ hζ U g hc.choose ε hc.choose_spec.choose u
     hc.choose_spec.choose_spec.symm (f x)
 
-private theorem finiteOrbit_central_iff (U : CompactOpenLevel (FiniteCover F ζ hζ))
+theorem finiteOrbit_central_iff (U : CompactOpenLevel (FiniteCover F ζ hζ))
     (g c : FiniteCover F ζ hζ) (ε : rootsOfUnity 3 F) :
     central F ζ hζ ε * c ∈ finiteOrbit F ζ hζ U g ↔ c ∈ finiteOrbit F ζ hζ U g := by
   constructor
@@ -800,7 +768,7 @@ private theorem finiteOrbit_central_iff (U : CompactOpenLevel (FiniteCover F ζ 
   · rintro ⟨η, u, rfl⟩
     exact ⟨ε * η, u, by simp [map_mul, mul_assoc]⟩
 
-private theorem finiteOrbit_right_iff (U : CompactOpenLevel (FiniteCover F ζ hζ))
+theorem finiteOrbit_right_iff (U : CompactOpenLevel (FiniteCover F ζ hζ))
     (g c : FiniteCover F ζ hζ) (u : U.toOpenSubgroup) :
     c * u ∈ finiteOrbit F ζ hζ U g ↔ c ∈ finiteOrbit F ζ hζ U g := by
   constructor
@@ -977,9 +945,7 @@ def cuspInclusion (Γ : Subgroup (KPCuspArithmetic.PGL2 F))
         rw [← hk_eq]
         simp only [MulEquiv.toMonoidHom_eq_coe, MonoidHom.coe_coe, MulAut.conj_apply]
         group
-      change (MulAut.conj σ) (s : KPCuspArithmetic.PGL2 F) ∈ Γ
-      rw [hconj]
-      exact hk.1)
+      simp_all)
 
 theorem cuspInclusion_formula (Γ : Subgroup (KPCuspArithmetic.PGL2 F))
     (q : KPCuspArithmetic.Cusp F) (σ : KPCuspArithmetic.PGL2 F)
@@ -1015,16 +981,13 @@ def kernelLattice : AddSubgroup F where
     refine ⟨D.L.neg_mem hxL, ?_⟩
     intro h
     have hxy : (⟨-x, h⟩ : D.L) = -(⟨x, hxL⟩ : D.L) := Subtype.ext rfl
-    rw [hxy, ofAdd_neg, map_inv, map_inv, hx hxL, inv_one]
+    simp_all
 
 private def translationCharacter : D.L →+ Additive (rootsOfUnity 3 F) where
   toFun x := Additive.ofMul (ρ (D.inclusion (Multiplicative.ofAdd x)))
   map_zero' := by
-    change ρ (D.inclusion 1) = 1
     simp
   map_add' x y := by
-    change ρ (D.inclusion (Multiplicative.ofAdd x * Multiplicative.ofAdd y)) =
-      ρ (D.inclusion (Multiplicative.ofAdd x)) * ρ (D.inclusion (Multiplicative.ofAdd y))
     simp
 
 private theorem kernelLattice_subgroupOf :
@@ -1033,7 +996,7 @@ private theorem kernelLattice_subgroupOf :
   change (x.val ∈ D.L ∧ ∀ hx : x.val ∈ D.L,
     ρ (D.inclusion (Multiplicative.ofAdd (⟨x.val, hx⟩ : D.L))) = 1) ↔
       ρ (D.inclusion (Multiplicative.ofAdd x)) = 1
-  exact ⟨fun h => h.2 x.property, fun h => ⟨x.property, fun _ => h⟩⟩
+  simp
 
 private theorem kernelLattice_index : ((kernelLattice S D ρ).addSubgroupOf D.L).index ≤ 3 := by
   rw [kernelLattice_subgroupOf, AddSubgroup.index_ker]
@@ -1053,7 +1016,7 @@ def torusSections (V : Submodule ℂ ℂ) : Submodule ℂ (KernelTorus S D ρ �
     f (QuotientAddGroup.mk (y + KPCuspCharts.embedding F x)) =
       (chi F ζ hζ (ρ (D.inclusion (Multiplicative.ofAdd x))) : ℂ) *
         f (QuotientAddGroup.mk y)}
-  zero_mem' := ⟨fun z => V.zero_mem, by intro x y; simp⟩
+  zero_mem' := ⟨fun z => V.zero_mem, by simp⟩
   add_mem' := by
     rintro f g ⟨hf1, hf2⟩ ⟨hg1, hg2⟩
     refine ⟨fun z => V.add_mem (hf1 z) (hg1 z), ?_⟩
@@ -1073,7 +1036,7 @@ def horizontalSections (V : Submodule ℂ ℂ) :
   carrier := {f | (∀ y, f y ∈ V) ∧ ∀ (x : D.L) y,
     f (y + KPCuspCharts.embedding F x) =
       (chi F ζ hζ (ρ (D.inclusion (Multiplicative.ofAdd x))) : ℂ) * f y}
-  zero_mem' := ⟨fun y => V.zero_mem, by intro x y; simp⟩
+  zero_mem' := ⟨fun y => V.zero_mem, by simp⟩
   add_mem' := by
     rintro f g ⟨hf1, hf2⟩ ⟨hg1, hg2⟩
     refine ⟨fun y => V.add_mem (hf1 y) (hg1 y), ?_⟩
@@ -1104,7 +1067,7 @@ theorem kernelLattice_stable (s : S) (x : kernelLattice S D ρ) :
   have hri : D.ratio (D.inclusion (Multiplicative.ofAdd xi)) = 1 := by
     apply MonoidHom.mem_ker.mp
     rw [← D.exact]
-    exact ⟨Multiplicative.ofAdd xi, rfl⟩
+    simp
   have hker : s * D.inclusion (Multiplicative.ofAdd xi) * s⁻¹ ∈ D.inclusion.range := by
     rw [D.exact, MonoidHom.mem_ker, map_mul, map_mul, hri, mul_one, map_inv, mul_inv_cancel]
   obtain ⟨y, hy⟩ := hker
@@ -1128,7 +1091,7 @@ theorem kernelLattice_stable (s : S) (x : kernelLattice S D ρ) :
   intro h
   exact hr
 
-private theorem horizontal_kernel_invariant (V : Submodule ℂ ℂ)
+theorem horizontal_kernel_invariant (V : Submodule ℂ ℂ)
     (f : horizontalSections (ζ := ζ) (hζ := hζ) S D ρ V)
     (x : kernelLattice S D ρ) (y : KPCuspCharts.Horizontal F) :
     f.val (y + KPCuspCharts.embedding F x) = f.val y := by
@@ -1242,7 +1205,7 @@ private theorem conjugate_translation (s : S) (x : D.L) :
   have hri : D.ratio (D.inclusion (Multiplicative.ofAdd x)) = 1 := by
     apply MonoidHom.mem_ker.mp
     rw [← D.exact]
-    exact ⟨_, rfl⟩
+    simp
   have hk : s * D.inclusion (Multiplicative.ofAdd x) * s⁻¹ ∈ D.ratio.ker := by
     rw [MonoidHom.mem_ker, map_mul, map_mul, hri, mul_one, map_inv, mul_inv_cancel]
   rw [← D.exact] at hk
@@ -1256,7 +1219,7 @@ private theorem conjugate_translation (s : S) (x : D.L) :
   change ((D.ratio s : Fˣ) : F) * τ s⁻¹ +
     (((D.ratio s : Fˣ) : F) * (x : F) + τ s) = ((D.ratio s : Fˣ) : F) * (x : F)
   linear_combination hτinv
-private theorem kernel_stable (s : S) (x : kernelLattice S D ρ) :
+theorem kernel_stable (s : S) (x : kernelLattice S D ρ) :
     ((D.ratio s : Fˣ) : F) * x ∈ kernelLattice S D ρ := by
   obtain ⟨y, hy, hc⟩ := conjugate_translation S D s ⟨x, x.property.1⟩
   refine ⟨hy ▸ y.property, ?_⟩
@@ -1357,7 +1320,7 @@ private theorem pullback_surjective (V : Submodule ℂ ℂ) : Function.Surjectiv
     · intro x y
       exact f.property.2 x y
   exact ⟨⟨H, hH⟩, rfl⟩
-private theorem monodromy_preserves (V : Submodule ℂ ℂ)
+theorem monodromy_preserves (V : Submodule ℂ ℂ)
     (α : S →* (KernelTorus S D ρ ≃ₜ KernelTorus S D ρ))
     (hα : ∀ (s : S) (A : Matrix.GeneralLinearGroup (Fin 2) F) (y : KPCuspCharts.Horizontal F),
       Matrix.ProjGenLinGroup.mk A = (s : KPCuspArithmetic.PGL2 F) → A 1 0 = 0 →
@@ -1408,11 +1371,3 @@ theorem cuspOutput_exists (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
     preserves_sections := monodromy_preserves S D ρ V α hα
     realization := e
     realization_formula := fun f y => rfl }⟩
-
-end Cusp
-end KPCuspGenuineMonodromy
-
-end DedekindZetaZeroFree
-
-end
-end

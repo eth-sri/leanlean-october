@@ -8,7 +8,7 @@ noncomputable section
 set_option backward.isDefEq.respectTransparency false
 namespace DedekindZetaZeroFree.ThetaExpansion
 open MomentSources NumberField MeasureTheory
-open scoped NumberField Classical
+open scoped Classical
 variable {F : Type} [Field F] [NumberField F]
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
@@ -116,7 +116,3 @@ def firstRootMultiplier (R : PrincipalMellin.ActualRecipe S η)
 def firstRootRadialProfile (R : PrincipalMellin.ActualRecipe S η)
     (B : FirstRootCutoffs R) (y : R.A.G) : ℂ :=
   (if ∀ p : R.A.Sf, y.2 p ∈ B.cutoff p then 1 else 0) * firstRootSphericalProduct R y
-
-end DedekindZetaZeroFree.ThetaExpansion
-
-end

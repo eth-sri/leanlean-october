@@ -26,25 +26,3 @@ variable {R : Type u} {G : Type uG} {H : Type uH} {K : Type uK}
 instance isTrivial_comp (σ : Representation R H W) [σ.IsTrivial] (f : G →* H) :
     Representation.IsTrivial (σ.comp f) :=
   ⟨fun g ↦ IsTrivial.out (f g)⟩
-
-end Monoid
-
-section Norm
-
-variable {R : Type u} {G : Type uG} {H : Type uH} {V : Type uV} {W : Type uW}
-  [Semiring R] [Group G] [Group H] [Fintype G] [Fintype H]
-  [AddCommMonoid V] [Module R V] [AddCommMonoid W] [Module R W]
-
-theorem IsIntertwiningMap.comp_norm {ρ : Representation R G V} {σ : Representation R H W}
-    {e : G ≃* H} {φ : V →ₗ[R] W} (hφ : ρ.IsIntertwiningMap (σ.comp (e : G →* H)) φ) :
-    φ ∘ₗ ρ.norm = σ.norm ∘ₗ φ := by
-  ext x
-  simpa [Representation.norm] using
-    Fintype.sum_equiv e.toEquiv (fun g ↦ φ (ρ g x)) (fun h ↦ σ h (φ x))
-      fun g ↦ hφ.isIntertwining g x
-
-end Norm
-
-end Representation
-
-end

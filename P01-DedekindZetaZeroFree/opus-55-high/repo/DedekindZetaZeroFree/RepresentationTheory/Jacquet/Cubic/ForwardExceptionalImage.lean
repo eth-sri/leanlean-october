@@ -47,7 +47,7 @@ variable (F : Type) [Field F] [NumberField F]
   openCell := S.openCell
   openCell_ordinary := S.openCell_ordinary
 
-private theorem jacquet_minus_length_two :
+theorem jacquet_minus_length_two :
     Module.length (MonoidAlgebra ℂ (actualTorus F ζ hζ q))
       (KPLocalJacquetImage.jacquetRepresentation (V := sectionSpace S.borel P .minus 0)
         S.borel (IMinus S.borel P)).asModule = 2 := by
@@ -63,7 +63,7 @@ private theorem jacquet_minus_length_two :
     (KPJacquetExceptionalFactorSeparation.factorPlus S.borel P)
     (KPJacquetExceptionalFactorSeparation.factorMinus S.borel P) i p hi hp he
 
-private theorem simple_of_length_two {R M : Type*} [Ring R] [AddCommGroup M]
+theorem simple_of_length_two {R M : Type*} [Ring R] [AddCommGroup M]
     [Module R M] (h : Module.length R M = 2) (N : Submodule R M)
     [Nontrivial N] (hN : N ≠ ⊤) : IsSimpleModule R N := by
   have hf : IsFiniteLength R M := Module.length_ne_top_iff.mp (by rw [h]; norm_num)
@@ -76,7 +76,7 @@ private theorem simple_of_length_two {R M : Type*} [Ring R] [AddCommGroup M]
   have hp := Module.length_pos (R := R) (M := N)
   exact le_antisymm (by simpa using hl) (ENat.one_le_iff_ne_zero.mpr hp.ne')
 
-private theorem range_irreducible {G V W : Type*} [Group G] [AddCommGroup V]
+theorem range_irreducible {G V W : Type*} [Group G] [AddCommGroup V]
     [Module ℂ V] [AddCommGroup W] [Module ℂ W]
     {ρ : Representation ℂ G V} {σ : Representation ℂ G W}
     (f : ρ.IntertwiningMap σ) (g : σ.IntertwiningMap ρ)
@@ -113,7 +113,7 @@ private theorem range_irreducible {G V W : Type*} [Group G] [AddCommGroup V]
   apply (Representation.irreducible_iff_isSimpleModule_asModule _).mpr
   apply Module.length_eq_one_iff.mp
   rw [(LinearEquiv.ofInjective j hj).length_eq]
-  exact Module.length_eq_one_iff.mpr hs
+  simp
 
 theorem actual_forward_image_jacquet_factor :
     Nonempty ((KPLocalJacquetImage.jacquetRepresentation S.borel
@@ -143,9 +143,7 @@ theorem actual_forward_image_jacquet_factor :
     show (principalSeriesJacquetEvaluation S.borel P .minus).comp fJ = 0
     rw [hz]
     apply Representation.IntertwiningMap.ext
-    apply LinearMap.ext
-    intro v
-    simp
+    rfl
   have hgJ : gJ ≠ 0 := by
     intro hz
     apply jacquetEvaluation_comp_ne_zero S.borel P .plus
@@ -153,9 +151,7 @@ theorem actual_forward_image_jacquet_factor :
     show (principalSeriesJacquetEvaluation S.borel P .plus).comp gJ = 0
     rw [hz]
     apply Representation.IntertwiningMap.ext
-    apply LinearMap.ext
-    intro v
-    simp
+    rfl
   have hcJ : gJ.toLinearMap.comp fJ.toLinearMap = 0 := by
     apply Representation.Coinvariants.hom_ext
     apply LinearMap.ext
@@ -199,7 +195,3 @@ theorem actual_forward_image_jacquet_factor :
     (actualCanonicalForwardMap F ζ hζ q S P μ hμ)
     (principalSeries_smooth S.borel P .minus 0)
   exact ⟨e0.trans htarget.some⟩
-
-end DedekindZetaZeroFree.KPRankOneShellRepair
-
-end

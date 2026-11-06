@@ -58,16 +58,16 @@ theorem fractionalEigenvalue_product (ℓ : ℕ) :
     <;> ring
 
 private lemma sphere_ne_zero (x : Sphere) : (x : Ambient) ≠ 0 := by
-  have h : ‖(x : Ambient)‖ = 1 := by simpa [Metric.mem_sphere, dist_zero_right] using x.property
+  have h : ‖(x : Ambient)‖ = 1 := by simp
   intro h0
   simp [h0] at h
 
 private lemma smooth_diff (F : Sphere → ℂ) (hF : IsSphereSmooth F) (x : Sphere) :
-    DifferentiableAt ℝ (radialExtension F) (x : Ambient) := by
-  exact (hF.differentiableOn (by simp)).differentiableAt
+    DifferentiableAt ℝ (radialExtension F) (x : Ambient) := 
+  (hF.differentiableOn (by simp)).differentiableAt
     (isOpen_ne.mem_nhds (sphere_ne_zero x))
 
-private lemma harmonic_rotationVector_smooth (i : Fin 3) :
+lemma harmonic_rotationVector_smooth (i : Fin 3) :
     ContDiff ℝ (⊤ : ℕ∞) (rotationVector i) := by
   unfold rotationVector
   change ContDiff ℝ (⊤ : ℕ∞) (WithLp.toLp 2 ∘
@@ -78,12 +78,12 @@ private lemma harmonic_rotationVector_smooth (i : Fin 3) :
   split_ifs
   · exact (EuclideanSpace.proj (𝕜 := ℝ) (i + 2)).contDiff.neg
   · exact (EuclideanSpace.proj (𝕜 := ℝ) (i + 1)).contDiff
-  · exact contDiff_const
+  fun_prop
 
 private lemma normalize_smooth :
-    ContDiffOn ℝ (⊤ : ℕ∞) (fun x : Ambient => ‖x‖⁻¹ • x) {x | x ≠ 0} := by
-  exact ((contDiff_id.contDiffOn.norm ℝ (by intro x hx; exact hx)).inv
-    (by intro x hx; exact norm_ne_zero_iff.mpr hx)).smul contDiff_id.contDiffOn
+    ContDiffOn ℝ (⊤ : ℕ∞) (fun x : Ambient => ‖x‖⁻¹ • x) {x | x ≠ 0} := 
+  ((contDiff_id.contDiffOn.norm ℝ (by simp)).inv
+    (by simp)).smul contDiff_id.contDiffOn
 
 private lemma rotation_smooth (i : Fin 3) (F : Sphere → ℂ) (hF : IsSphereSmooth F) :
     IsSphereSmooth (rotationDeriv i F) := by
@@ -91,13 +91,13 @@ private lemma rotation_smooth (i : Fin 3) (F : Sphere → ℂ) (hF : IsSphereSmo
   have hg := hd.clm_apply (harmonic_rotationVector_smooth i).contDiffOn
   have hn : Set.MapsTo (fun x : Ambient => ‖x‖⁻¹ • x) {x | x ≠ 0} {x | x ≠ 0} := by
     intro x hx
-    exact smul_ne_zero (inv_ne_zero (norm_ne_zero_iff.mpr hx)) hx
+    simp_all
   apply (hg.comp normalize_smooth hn).congr
   intro x hx
   change x ≠ 0 at hx
   simp only [Function.comp_apply, radialExtension, dif_pos hx, rotationDeriv]
 
-private lemma radial_sum {ι : Type*} (I : Finset ι) (F : ι → Sphere → ℂ) :
+lemma radial_sum {ι : Type*} (I : Finset ι) (F : ι → Sphere → ℂ) :
     radialExtension (fun x => ∑ i ∈ I, F i x) = ∑ i ∈ I, radialExtension (F i) := by
   classical
   funext x
@@ -105,12 +105,12 @@ private lemma radial_sum {ι : Type*} (I : Finset ι) (F : ι → Sphere → ℂ
   · simp [radialExtension, hx]
   · simp [radialExtension, hx]
 
-private lemma radial_mul (c : ℂ) (F : Sphere → ℂ) :
+lemma radial_mul (c : ℂ) (F : Sphere → ℂ) :
     radialExtension (fun x => c * F x) = c • radialExtension F := by
   funext x
   by_cases hx : x = 0 <;> simp [radialExtension, hx]
 
-private lemma mul_smooth (c : ℂ) (F : Sphere → ℂ) (hF : IsSphereSmooth F) :
+lemma mul_smooth (c : ℂ) (F : Sphere → ℂ) (hF : IsSphereSmooth F) :
     IsSphereSmooth (fun x => c * F x) := by
   unfold IsSphereSmooth
   rw [radial_mul]
@@ -151,7 +151,7 @@ private lemma lap_mul (c : ℂ) (F : Sphere → ℂ) (hF : IsSphereSmooth F) :
   simp only [rotation_mul c (rotationDeriv _ F) (rotation_smooth _ _ hF)]
   simp [Finset.mul_sum]
 
-private lemma integral_sum {ι : Type*} (I : Finset ι) (F : ι → Sphere → ℂ)
+lemma integral_sum {ι : Type*} (I : Finset ι) (F : ι → Sphere → ℂ)
     (hF : ∀ i ∈ I, IsSphereSmooth (F i)) (α : ℝ) (hα : 0 < α) :
     fractionalIntegral α (fun x => ∑ i ∈ I, F i x) = fun x => ∑ i ∈ I, fractionalIntegral α (F i) x := by
   classical
@@ -160,7 +160,7 @@ private lemma integral_sum {ι : Type*} (I : Finset ι) (F : ι → Sphere → �
   exact MeasureTheory.integral_finset_sum I
     (by intro i hi; exact (fractionalIntegral_rotation α hα _ (hF i hi)).1 x)
 
-private lemma integral_mul (c : ℂ) (F : Sphere → ℂ) (α : ℝ) :
+lemma integral_mul (c : ℂ) (F : Sphere → ℂ) (α : ℝ) :
     fractionalIntegral α (fun x => c * F x) = fun x => c * fractionalIntegral α F x := by
   funext x
   simp only [fractionalIntegral]
@@ -210,5 +210,3 @@ theorem fractional_polynomial_identity (p : MvPolynomial (Fin 3) ℂ) :
     exact_mod_cast (show (3 : ℝ) * ℓ + 2 ≠ 0 by positivity)
   field_simp
   <;> ring
-
-end DedekindZetaZeroFree.ComplexFractionalInverse

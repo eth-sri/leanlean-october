@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Metaplectic.Intertwining.RankOne.TailInducing
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.KPRankOneShellRepair
 open scoped NumberField
 open NumberField IsDedekindDomain
@@ -50,7 +49,3 @@ theorem actual_level_tail_uniform (P : Polarization S.heisenberg)
     exact congrFun (congrArg Subtype.val hh) k
   have hb := actual_tail_inducing F ζ hζ q S P ε s f (Units.mk0 v hv) k
   simpa only [Units.val_mk0, Units.val_inv_eq_inv_val, he, hk] using hb
-
-end DedekindZetaZeroFree.KPRankOneShellRepair
-
-end

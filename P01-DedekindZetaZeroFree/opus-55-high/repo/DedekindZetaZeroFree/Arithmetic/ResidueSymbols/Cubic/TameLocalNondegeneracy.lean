@@ -11,15 +11,14 @@ open scoped NumberField Classical BigOperators
 open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.RepresentationTheory.KPGlobalCubicIdelePairingRaw
 noncomputable section
-set_option autoImplicit false
 set_option maxHeartbeats 1000000
  def charUnitsEquiv (G K : Type*) [CommGroup G] [Field K]
     (hp : ∀ x : G, x ^ 3 = 1) : (G →* rootsOfUnity 3 K) ≃ (G →* Kˣ) where
   toFun f := (rootsOfUnity 3 K).subtype.comp f
   invFun f := f.codRestrict _ (by intro x; change f x ^ 3 = 1; rw [← map_pow, hp, map_one])
-  left_inv f := by ext; rfl
-  right_inv f := by ext; rfl
-private theorem charCard (G K : Type*) [CommGroup G] [Finite G] [Field K]
+  left_inv f := by rfl
+  right_inv f := by rfl
+theorem charCard (G K : Type*) [CommGroup G] [Finite G] [Field K]
     (z : K) (hz : IsPrimitiveRoot z 3) (hp : ∀ x : G, x ^ 3 = 1) :
     Nat.card (G →* rootsOfUnity 3 K) = Nat.card G := by
   letI : HasEnoughRootsOfUnity K 3 := ⟨⟨z, hz⟩, inferInstance⟩
@@ -27,7 +26,7 @@ private theorem charCard (G K : Type*) [CommGroup G] [Finite G] [Field K]
     HasEnoughRootsOfUnity.of_dvd K (Monoid.exponent_dvd_of_forall_pow_eq_one hp)
   rw [Nat.card_congr (charUnitsEquiv G K hp)]
   exact CommGroup.card_monoidHom_of_hasEnoughRootsOfUnity G K
-private theorem charSeparate (G K : Type*) [CommGroup G] [Finite G] [Field K]
+theorem charSeparate (G K : Type*) [CommGroup G] [Finite G] [Field K]
     (z : K) (hz : IsPrimitiveRoot z 3) (hp : ∀ x : G, x ^ 3 = 1)
     (x y : G) (h : ∀ χ : G →* rootsOfUnity 3 K, χ x = χ y) : x = y := by
   letI : HasEnoughRootsOfUnity K 3 := ⟨⟨z, hz⟩, inferInstance⟩
@@ -36,7 +35,7 @@ private theorem charSeparate (G K : Type*) [CommGroup G] [Finite G] [Field K]
   apply (CommGroup.forall_apply_eq_apply_iff G (M := K)).mp
   intro χ
   exact congrArg Subtype.val (h ((charUnitsEquiv G K hp).symm χ))
-private theorem isotropicDuality (G K : Type*) [CommGroup G] [Finite G] [Field K]
+theorem isotropicDuality (G K : Type*) [CommGroup G] [Finite G] [Field K]
     (z : K) (hz : IsPrimitiveRoot z 3) (hp : ∀ x : G, x ^ 3 = 1)
     (B : G →* G →* rootsOfUnity 3 K)
     (hnd : ∀ x, (∀ y, B x y = 1) → x = 1)
@@ -76,7 +75,7 @@ private theorem isotropicDuality (G K : Type*) [CommGroup G] [Finite G] [Field K
   let R : (G ⧸ H) → (H →* rootsOfUnity 3 K) := fun a => {
     toFun x := L x a
     map_one' := by simp
-    map_mul' := by intro x y; simp }
+    map_mul' := by simp }
   have hRinj : Function.Injective R := by
     intro a b hab
     apply charSeparate _ K z hz hq a b
@@ -131,12 +130,11 @@ private theorem localData (q : HeightOneSpectrum (𝓞 F))
   have hidx : (KPCubicUnitIndices.cubeUnits K).index = 3 := by
     have hh := KPCubicHaarTransport.field_cube_index K
     change Nat.card (LocalD F (Sum.inr q)) = 3 * (KPCubicUnitIndices.cubeUnits K).index at hh
-    rw [h9] at hh
     omega
   let f : KPHilbert.LocalIntegerUnits F q →* LocalD F (Sum.inr q) :=
     (localClass F (Sum.inr q)).comp (KPHilbert.integerUnitInclusion F q)
-  have hr : f.range = U F (Sum.inr q) := by
-    exact MonoidHom.range_comp _ _
+  have hr : f.range = U F (Sum.inr q) := 
+    MonoidHom.range_comp _ _
   have hk : f.ker = KPCubicUnitIndices.cubeUnits K := by
     ext u
     change localClass F (Sum.inr q) (KPHilbert.integerUnitInclusion F q u) = 1 ↔ _
@@ -147,7 +145,7 @@ private theorem localData (q : HeightOneSpectrum (𝓞 F))
   have h3 : Nat.card (U F (Sum.inr q)) = 3 := by
     rw [← hr, ← Nat.card_congr (QuotientGroup.quotientKerEquivRange f).toEquiv, hk]
     exact hidx
-  exact ⟨hf, h3, h9⟩
+  simp_all
 
 theorem tame_arithmetic_unit_valuation_duality (q : HeightOneSpectrum (𝓞 F))
     (hgood : ¬ KPAdelicCoverRestrictedProduct.Bad F q) :
@@ -174,8 +172,8 @@ theorem tame_arithmetic_unit_valuation_duality (q : HeightOneSpectrum (𝓞 F))
       change (localClass F (Sum.inr q) a) ^ 3 = 1
       rw [← map_pow]
       exact (QuotientGroup.eq_one_iff _).mpr ⟨a, rfl⟩
-  have hnd : ∀ a, (∀ b, B a b = 1) → a = 1 := by
-    exact NormalizedSymbolTransport.inverseTransport_left_nondegenerate
+  have hnd : ∀ a, (∀ b, B a b = 1) → a = 1 := 
+    NormalizedSymbolTransport.inverseTransport_left_nondegenerate
       (KPHilbert.finiteRootsThree F ζ hζ q) _
       (ClassFieldTheory.finitePlaceAdicHilbertPairingFamily_isLocallyHilbert F 3
         (KPHilbert.rootsThree F ζ hζ) q).2.2.1.1
@@ -188,7 +186,6 @@ theorem tame_arithmetic_unit_valuation_duality (q : HeightOneSpectrum (𝓞 F))
     change Nat.card (LocalD F (Sum.inr q)) =
       Nat.card (LocalValuationClasses F (Sum.inr q)) * Nat.card (U F (Sum.inr q)) at hh
     rw [h3, h9] at hh
-    rw [h3]
     omega
   have hh := isotropicDuality _ F (ζ ^ 4) (KPHilbert.primitive_three F ζ hζ) hp B hnd
     (U F (Sum.inr q)) hi hc
@@ -199,7 +196,3 @@ theorem tame_arithmetic_unit_valuation_duality (q : HeightOneSpectrum (𝓞 F))
     induction a using QuotientGroup.induction_on with
     | H a => exact heq u.val a
   simpa only [heq'] using hh
-end
-end DedekindZetaZeroFree.RepresentationTheory.KPGlobalCubicIdelePairingRaw
-
-end

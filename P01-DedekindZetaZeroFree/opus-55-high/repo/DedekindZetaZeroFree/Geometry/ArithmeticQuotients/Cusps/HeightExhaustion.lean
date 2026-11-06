@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Geometry.ArithmeticQuotients.DifferentialOper
 
 @[expose] public section
 
-noncomputable section
 open scoped Classical NumberField
 open Filter
 namespace DedekindZetaZeroFree.KPCuspCutoffGraphApproximation.ExhaustionGeometry
@@ -18,9 +17,7 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
   intro x y h
   have he : a.components ⟨i,x⟩ = a.components ⟨i,y⟩ := by
     simpa only [a.components_formula] using h
-  have hh := a.components.injective he
-  cases hh
-  rfl
+  simp_all
 
  theorem end_height_bound (i : Fin a.componentCount) (c : Fin (a.cuspAtlas i).cuspCount)
     (z : KPFiniteCuspAtlas.rawXU F ζ hζ U) :
@@ -87,6 +84,3 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
   have hh' := Filter.eventually_all.mpr (fun i => Filter.eventually_all.mpr (hh i))
   filter_upwards [hh'] with n hn
   simpa only [highEnds, Set.mem_iUnion, not_exists] using hn
-end DedekindZetaZeroFree.KPCuspCutoffGraphApproximation.ExhaustionGeometry
-
-end

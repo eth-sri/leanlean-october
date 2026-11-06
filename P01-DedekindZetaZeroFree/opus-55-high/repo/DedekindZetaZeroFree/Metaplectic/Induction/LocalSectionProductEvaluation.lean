@@ -21,7 +21,3 @@ def complexMatrix (w : NumberField.InfinitePlace F)
   Matrix.GeneralLinearGroup.map
     (NumberField.InfinitePlace.Completion.ringEquivComplexOfIsComplex
       (KPHilbert.infinite_isComplex F A.zeta12 A.primitive_zeta12 w)).toRingHom g.g
-
-end DedekindZetaZeroFree.KPActualReflectionData.LiteralProductEvaluator
-
-end

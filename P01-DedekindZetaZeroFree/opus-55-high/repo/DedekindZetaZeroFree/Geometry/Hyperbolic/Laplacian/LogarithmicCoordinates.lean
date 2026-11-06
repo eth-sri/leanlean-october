@@ -23,7 +23,7 @@ variable (F : Type) [Field F] [NumberField F]
       apply Prod.ext <;> simp [KPCuspCutoffGraph.toArch, Complex.real_smul]
       apply Complex.ext <;> simp }
 
-private lemma toArch_coordinateVector (i : Fin (KPCuspLogShape.dimension F)) (k : Fin 3) :
+lemma toArch_coordinateVector (i : Fin (KPCuspLogShape.dimension F)) (k : Fin 3) :
     KPCuspCutoffGraph.toArch F (HyperbolicChart.coordinateVector (KPCuspLogShape.dimension F) i k)
       = KPContFlatCuspCasimirSpecialization.coordinateDirection
           (KPCuspLogShape.dimension F) i k := by
@@ -37,17 +37,17 @@ private lemma toArch_coordinateVector (i : Fin (KPCuspLogShape.dimension F)) (k 
   · rw [Pi.single_eq_of_ne hj]
     simp [hj, Prod.ext_iff, Complex.ext_iff, Prod.mk.injEq]
 
-private lemma archCLM_coordinateVector (i : Fin (KPCuspLogShape.dimension F)) (k : Fin 3) :
+lemma archCLM_coordinateVector (i : Fin (KPCuspLogShape.dimension F)) (k : Fin 3) :
     archCLM F (HyperbolicChart.coordinateVector (KPCuspLogShape.dimension F) i k)
       = KPContFlatCuspCasimirSpecialization.coordinateDirection
           (KPCuspLogShape.dimension F) i k :=
   toArch_coordinateVector F i k
 
-private lemma toArch_fromArch (x : KPCuspCutoffGraph.Arch F) :
+lemma toArch_fromArch (x : KPCuspCutoffGraph.Arch F) :
     KPCuspCutoffGraph.toArch F (KPCuspCutoffGraph.fromArch F x) = x := by
   funext j; simp [KPCuspCutoffGraph.fromArch, KPCuspCutoffGraph.toArch]
 
-private lemma first_deriv (f : KPCuspCutoffGraph.Arch F → ℂ) (hf : ContDiff ℝ 2 f)
+lemma first_deriv (f : KPCuspCutoffGraph.Arch F → ℂ) (hf : ContDiff ℝ 2 f)
     (i : Fin (KPCuspLogShape.dimension F)) (k : Fin 3)
     (p : KPCuspCutoffGraph.Coordinates F) :
     fderiv ℝ (f ∘ KPCuspCutoffGraph.toArch F) p
@@ -101,12 +101,12 @@ private lemma second_deriv (f : KPCuspCutoffGraph.Arch F → ℂ) (hf : ContDiff
   simp only [ContinuousLinearMap.comp_apply]
   rw [toArch_fromArch, archCLM_coordinateVector]
 
-private lemma fromArch_apply_two (i : Fin (KPCuspLogShape.dimension F))
+lemma fromArch_apply_two (i : Fin (KPCuspLogShape.dimension F))
     (x : KPCuspCutoffGraph.Arch F) :
     (KPCuspCutoffGraph.fromArch F x) (i, 2) = (x i).2 := by
   simp [KPCuspCutoffGraph.fromArch]
 
-private lemma heightCoeff (i : Fin (KPCuspLogShape.dimension F))
+lemma heightCoeff (i : Fin (KPCuspLogShape.dimension F))
     (x : KPCuspCutoffGraph.Arch F) :
     ((KPArch.height (x i) ^ 2 : ℝ) : ℂ)
       = (Real.exp (2 * (KPCuspCutoffGraph.fromArch F x) (i, 2)) : ℂ) := by
@@ -115,7 +115,7 @@ private lemma heightCoeff (i : Fin (KPCuspLogShape.dimension F))
   congr 1
   rw [show (2 : ℝ) * (x i).2 = (x i).2 + (x i).2 by ring, Real.exp_add, pow_two]
 
-private lemma first_deriv_cd (f : KPCuspCutoffGraph.Arch F → ℂ) (hf : ContDiff ℝ 2 f)
+lemma first_deriv_cd (f : KPCuspCutoffGraph.Arch F → ℂ) (hf : ContDiff ℝ 2 f)
     (i : Fin (KPCuspLogShape.dimension F)) (k : Fin 3)
     (p : KPCuspCutoffGraph.Coordinates F) :
     HyperbolicChart.coordinateDerivative (KPCuspLogShape.dimension F) i k

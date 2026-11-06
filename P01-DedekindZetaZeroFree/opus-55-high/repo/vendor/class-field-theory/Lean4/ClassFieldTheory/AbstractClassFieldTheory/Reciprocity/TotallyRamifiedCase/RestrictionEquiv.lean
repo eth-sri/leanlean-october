@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # The lower Galois group in the totally ramified auxiliary tower
 
@@ -37,7 +33,7 @@ namespace DegreeData
 
 /-- Restriction identifies the actual lower Galois group `G(M/M⁰)` with
 the original totally ramified group `G(L/K)`. -/
-noncomputable def abstractReciprocityTotallyRamifiedRestrictionEquiv
+def abstractReciprocityTotallyRamifiedRestrictionEquiv
     (D : DegreeData G)
     [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
     (K : FiniteResidueAbstractField D)
@@ -112,14 +108,11 @@ theorem abstractReciprocityTotallyRamifiedLowerDegree_eq
     _ = (extensionSubgroup K.field L.field L.below).index :=
       (Subgroup.index_eq_card (extensionSubgroup K.field L.field L.below)).symm
     _ = (E.degree : ℕ) := by
-      have h := E.extensionSubgroup_index_eq_degree
-      change (extensionSubgroup K.field L.field L.below).index =
-        (E.degree : ℕ) at h
-      exact h
+      rfl
 
 /-- The generator of `G(M/M⁰)` corresponding to the prescribed generator
 of `G(L/K)`. -/
-noncomputable def abstractReciprocityTotallyRamifiedLowerGenerator
+def abstractReciprocityTotallyRamifiedLowerGenerator
     (D : DegreeData G)
     [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
     (K : FiniteResidueAbstractField D)
@@ -133,8 +126,8 @@ noncomputable def abstractReciprocityTotallyRamifiedLowerGenerator
     letI : (extensionSubgroup
         (M.maximalUnramifiedSubextension D) M.field N.below).Normal :=
       N.normal
-    N.extensionQuotient := by
-  exact (D.abstractReciprocityTotallyRamifiedRestrictionEquiv
+    N.extensionQuotient := 
+  (D.abstractReciprocityTotallyRamifiedRestrictionEquiv
     K L hTot q).symm q
 
 /-- The restriction equivalence sends the constructed lower generator to the target generator. -/
@@ -148,8 +141,8 @@ theorem abstractReciprocityTotallyRamifiedRestrictionEquiv_lowerGenerator
     (q : L.extensionQuotient) :
     D.abstractReciprocityTotallyRamifiedRestrictionEquiv K L hTot q
       (D.abstractReciprocityTotallyRamifiedLowerGenerator
-        K L hTot q) = q := by
-  exact MulEquiv.apply_symm_apply _ q
+        K L hTot q) = q := 
+  MulEquiv.apply_symm_apply _ q
 
 /-- The constructed lower automorphism generates the relevant cyclic quotient. -/
 theorem abstractReciprocityTotallyRamifiedLowerGenerator_generates
@@ -174,9 +167,3 @@ theorem abstractReciprocityTotallyRamifiedLowerGenerator_generates
   apply e.injective
   rw [map_zpow,
     D.abstractReciprocityTotallyRamifiedRestrictionEquiv_lowerGenerator, hn]
-
-end DegreeData
-
-end ClassFormation
-
-end

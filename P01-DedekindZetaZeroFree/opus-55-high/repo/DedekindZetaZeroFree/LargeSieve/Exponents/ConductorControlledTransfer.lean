@@ -35,10 +35,10 @@ theorem hasSieveExponent_one_from_core
       simp only [Q1, rowSum, restrictFamily_χ] at h1
       have h2 : B1 F q (restrictFamily Q q hcq) S T ≤
           Ccore * (S * T) ^ ε * (S + T) := by
-        simpa [Real.rpow_one] using hBcore S T hS hT
+        simp_all
       have hE : 0 ≤ energy F q T μ := by
         rw [energy]
-        exact Finset.sum_nonneg (fun b _ => by positivity)
+        positivity
       calc (∑ v ∈ paperShell F q S, ‖∑ u ∈ paperShell F q T, μ u * (Q.χ u) v‖ ^ 2)
           ≤ B1 F q (restrictFamily Q q hcq) S T * energy F q T μ := h1
         _ ≤ (Ccore * (S * T) ^ ε * (S + T)) * energy F q T μ :=
@@ -52,17 +52,13 @@ theorem hasSieveExponent_one_from_core
       · exact ⟨0, Or.inl rfl⟩
       · rintro x (rfl | ⟨lam, hlam, rfl⟩)
         · have hP := peelingSharpConstant_nonneg Q q Ccore A hCcore hA1
-          have hMN : 0 ≤ (M * N) ^ ε :=
-            Real.rpow_nonneg (by nlinarith [hM, hN]) ε
-          exact mul_nonneg (mul_nonneg hP hMN) (by linarith)
+          positivity
         · have hp := peeling_sharp_domination_bound Q q hq hcq H ε Ccore A
             (le_of_lt hε) hCcore hA1 hAcard hcore M N hM hN lam
           have hfac : 0 ≤ peelingSharpConstant F c Q q Ccore A * (M * N) ^ ε *
               (M + N) := by
             have hP := peelingSharpConstant_nonneg Q q Ccore A hCcore hA1
-            have hMN : 0 ≤ (M * N) ^ ε :=
-              Real.rpow_nonneg (by nlinarith [hM, hN]) ε
-            exact mul_nonneg (mul_nonneg hP hMN) (by linarith)
+            positivity
           calc Q1 F c Q M N lam ≤
                 peelingSharpConstant F c Q q Ccore A * (M * N) ^ ε * (M + N) *
                   energy F c N lam := hp
@@ -87,5 +83,3 @@ theorem hasSieveExponent_one_of_core_transfer
   · obtain ⟨q, hq, hcq, H, hgood⟩ := exists_coreGood_restrictFamily hc Q
     exact hasSieveExponent_one_from_core F c hc Q q hq hcq H
       (hasSieveExponent_one_core F hF q hq (restrictFamily Q q hcq) hgood)
-
-end DedekindZetaZeroFree.LargeSieve.Sieve

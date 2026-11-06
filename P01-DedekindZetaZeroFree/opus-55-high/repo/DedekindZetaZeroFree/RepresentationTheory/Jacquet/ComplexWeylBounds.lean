@@ -24,15 +24,14 @@ public def standardWeylJacquet (κ : ℂˣ) (f : PrincipalSeries positiveParamet
   (κ : ℂ) * KPCplxJacquetFunctional.jacquetIntegral standardComplexParameter
     (KPCplxPrincipalSeriesCharts.pi positiveParameter (Matrix.ProjGenLinGroup.mk (diagonal y * weyl)) f)
 
-private lemma third_min_le_quarter_min (r A : ℝ) (hr : 0 < r) (hA : 0 < A) :
+lemma third_min_le_quarter_min (r A : ℝ) (hr : 0 < r) (hA : 0 < A) :
     min (r ^ (1 / 3 : ℝ)) (r ^ (-A)) ≤ min (r ^ (1 / 4 : ℝ)) (r ^ (-A)) := by
   by_cases h : r ≤ 1
   · exact min_le_min_right _ (Real.rpow_le_rpow_of_exponent_ge hr h (by norm_num))
   · have h1 : 1 ≤ r := le_of_lt (lt_of_not_ge h)
     have hp : r ^ (-A) ≤ r ^ (1 / 4 : ℝ) :=
       Real.rpow_le_rpow_of_exponent_le h1 (by linarith)
-    rw [min_eq_right hp]
-    exact min_le_right _ _
+    simp_all
 
 public theorem exists_norm_iterate_logarithmicDerivative_standardWeylJacquet_le (κ : ℂˣ)
     (f : PrincipalSeries positiveParameter) (A : ℝ) (hA : 0 < A) :
@@ -69,7 +68,3 @@ public theorem exists_norm_iterate_logarithmicDerivative_standardWeylJacquet_le 
     Finset.single_le_sum (fun k _ => hC k) (Finset.mem_univ i)
   exact (hb i y).trans (mul_le_mul_of_nonneg_right hle
     (archPowerMajorant_nonneg A _ (sq_nonneg _)))
-
-end DedekindZetaZeroFree.KPCplxJacquetFunctional
-
-end

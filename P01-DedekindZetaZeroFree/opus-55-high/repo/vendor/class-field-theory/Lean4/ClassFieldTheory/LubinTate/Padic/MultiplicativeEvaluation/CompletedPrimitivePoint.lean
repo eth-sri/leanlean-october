@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # The completed multiplicative primitive point
 
@@ -46,7 +42,7 @@ attribute [local instance]
 /-- The completed multiplicative division point obtained by evaluating the
 coefficient-extended comparison at the chosen completed standard primitive
 point. -/
-noncomputable def padicCompletedMultiplicativePrimitivePoint
+def padicCompletedMultiplicativePrimitivePoint
     (p : ℕ) [Fact p.Prime] (n : ℕ) :
     (padicCompletedLevelCompleteDVF p n).valuationSubring :=
   padicCompletedLevelPowerSeriesEval p n
@@ -176,8 +172,8 @@ theorem
   have hleftZero :
       padicCompletedLevelPowerSeriesEval p n lambdaN hlambdaN
           (padicCompletedStandardToMultiplicativeIntertwiner p) =
-        0 := by
-    exact hbridge.trans hzero
+        0 := 
+    hbridge.trans hzero
   have hlambdaNZero : lambdaN = 0 := by
     apply
       padicCompletedStandardToMultiplicativeIntertwiner_eval_injective
@@ -309,7 +305,7 @@ theorem
           (((u ^ n : (padicLocalField p).valuationSubringˣ) :
             (padicLocalField p).valuationSubring)) =
         0 := by
-    simpa only [Units.val_pow_eq_pow_val] using hunitZero
+    omega
   have hxπZero : xπ = 0 := by
     apply
       padicCompletedMultiplicativeScalarEndomorphismValue_unit_injective
@@ -326,7 +322,7 @@ theorem
 
 /-- The multiplicative scalar endomorphism attached to a `p`-adic unit,
 with coefficients extended to the completed unramified Witt ring. -/
-noncomputable def padicCompletedMultiplicativeUnitEndomorphism
+def padicCompletedMultiplicativeUnitEndomorphism
     (p : ℕ) [Fact p.Prime]
     (u : (padicLocalField p).valuationSubringˣ) :
     PowerSeries (padicCompletedUnramifiedWittRing p) :=
@@ -347,7 +343,7 @@ theorem padicCompletedMultiplicativeUnitEndomorphism_hasSubst
 
 /-- The action of a completed multiplicative unit endomorphism on the
 completed multiplicative primitive point. -/
-noncomputable def padicCompletedMultiplicativePrimitivePointUnitAction
+def padicCompletedMultiplicativePrimitivePointUnitAction
     (p : ℕ) [Fact p.Prime]
     (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
     (padicCompletedLevelCompleteDVF p n).valuationSubring :=
@@ -369,7 +365,3 @@ theorem padicCompletedMultiplicativePrimitivePointUnitAction_hasEval
       (padicCompletedMultiplicativePrimitivePoint_hasEval p n)
       (padicCompletedMultiplicativeUnitEndomorphism p u)
       (padicCompletedMultiplicativeUnitEndomorphism_hasSubst p u)
-
-end LubinTate
-
-end

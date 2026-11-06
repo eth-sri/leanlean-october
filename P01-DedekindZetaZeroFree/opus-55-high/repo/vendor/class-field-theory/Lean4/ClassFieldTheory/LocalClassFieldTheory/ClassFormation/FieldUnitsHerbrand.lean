@@ -15,13 +15,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-set_option autoImplicit false
-
 namespace LocalClassFieldTheory
 open CyclicCohomology
 
@@ -36,7 +29,6 @@ preceding normal-basis calculation `h(G, O_Lˣ) = 1` for the actual action on
 integer units.
 -/
 
-noncomputable section
 
 open scoped ValuativeRel
 open CyclicCohomology.ProfiniteCohomology.Herbrand
@@ -123,15 +115,14 @@ theorem fieldUnits_tate_card_of_integerUnits_herbrand_eq_one
       Nat.card (tateCohomology (Rep.ofAlgebraAutOnUnits K L) (-1)) = 1 :=
     unitsTateHminusOne_card_eq_one K L g hg
   have hm1_field :
-      Nat.card (HerbrandHMinusOne (Gal(L / K)) Lˣ g) = 1 := by
-    exact (Nat.card_congr
+      Nat.card (HerbrandHMinusOne (Gal(L / K)) Lˣ g) = 1 := 
+    (Nat.card_congr
       (herbrandHminusOneEquivUnitsTateHminusOne K L g hg)).trans hm1_actual
   have hField_quotient :
       @herbrandQuotient (Gal(L / K)) Lˣ _ _ _
           (galoisGroupFieldUnitsMulDistribMulAction K L)
           g hField.1 hField.2 = (Module.finrank K L : ℚ) := by
-    rw [hmult, hU_one, hZ_one]
-    simp
+    simp_all
   have h0_field_rat :
       (Nat.card (HerbrandH0 (Gal(L / K)) Lˣ) : ℚ) =
         (Module.finrank K L : ℚ) := by
@@ -143,7 +134,4 @@ theorem fieldUnits_tate_card_of_integerUnits_herbrand_eq_one
   constructor
   · exact
       (Nat.card_congr (herbrandH0EquivTateCohomologyZero K L)).symm.trans h0_field
-  · exact hm1_actual
-
-end
-end LocalClassFieldTheory
+  omega

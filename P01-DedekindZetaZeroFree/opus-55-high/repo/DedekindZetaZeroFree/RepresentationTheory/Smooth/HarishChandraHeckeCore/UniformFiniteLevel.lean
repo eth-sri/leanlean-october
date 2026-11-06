@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.RepresentationTheory.Smooth.ScalarRealization
 
 @[expose] public section
 
-noncomputable section
 open scoped Classical NumberField ENNReal NNReal Topology
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
@@ -47,7 +46,3 @@ theorem scalarSmooth_exists_right_level
   refine ⟨U, ?_⟩
   intro g u
   simp only [KPGlobalTorusBorelTwistCompatibility.scalarSection_formula, hU g u]
-
-end DedekindZetaZeroFree.KPGlobalResidualKernel.ScatteringResidue
-
-end

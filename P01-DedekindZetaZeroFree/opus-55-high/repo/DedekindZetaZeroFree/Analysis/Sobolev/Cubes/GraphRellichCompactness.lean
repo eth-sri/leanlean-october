@@ -17,8 +17,8 @@ noncomputable abbrev ProductSpace (n : ℕ) (a : ℝ) :=
 
 theorem smooth_coordinate_memLp (n : ℕ) (a : ℝ) (f : Space n → ℂ)
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) (j : Fin n) :
-    MeasureTheory.MemLp (coordinateDerivative n f j) 2 (cubeMeasure n a) := by
-  exact smooth_memLp n a (coordinateDerivative n f j)
+    MeasureTheory.MemLp (coordinateDerivative n f j) 2 (cubeMeasure n a) := 
+  smooth_memLp n a (coordinateDerivative n f j)
     ((hf.fderiv_right (by simp)).clm_apply contDiff_const)
 
 noncomputable def smoothJet (n : ℕ) (a : ℝ) (f : Space n → ℂ)
@@ -48,7 +48,7 @@ private theorem coordinateDerivative_smul (n : ℕ) (f : Space n → ℂ)
   simp only [coordinateDerivative, Pi.smul_apply]
   rw [fderiv_const_smul (hf.differentiable (by simp) x) c, ContinuousLinearMap.smul_apply]
 
-private theorem smoothJet_zero (n : ℕ) (a : ℝ)
+theorem smoothJet_zero (n : ℕ) (a : ℝ)
     (hf : ContDiff ℝ (⊤ : ℕ∞) (0 : Space n → ℂ)) :
     smoothJet n a (0 : Space n → ℂ) hf = 0 := by
   rw [smoothJet, WithLp.toLp_eq_zero, Prod.mk_eq_zero]
@@ -58,15 +58,13 @@ private theorem smoothJet_zero (n : ℕ) (a : ℝ)
   have h0 : coordinateDerivative n (0 : Space n → ℂ) j = 0 := by
     funext x
     simp [coordinateDerivative, fderiv_zero]
-  rw [MeasureTheory.MemLp.toLp_congr (smooth_coordinate_memLp n a 0 hf j)
-    (smooth_memLp n a 0 hf) (Filter.EventuallyEq.of_eq h0)]
-  exact MeasureTheory.MemLp.toLp_zero _
+  simp_all
 
 private theorem smoothJet_add (n : ℕ) (a : ℝ) (f g : Space n → ℂ)
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) (hg : ContDiff ℝ (⊤ : ℕ∞) g) :
     smoothJet n a (f + g) (hf.add hg) = smoothJet n a f hf + smoothJet n a g hg := by
   rw [smoothJet, smoothJet, smoothJet, WithLp.ext_iff]
-  simp only [WithLp.ofLp_toLp, WithLp.ofLp_add, Prod.mk_add_mk]
+  simp only [WithLp.ofLp_add, Prod.mk_add_mk]
   refine Prod.ext ?_ ?_
   · rw [← MeasureTheory.MemLp.toLp_add (smooth_memLp n a f hf) (smooth_memLp n a g hg)]
   · rw [← WithLp.toLp_add, WithLp.ext_iff, WithLp.ofLp_toLp]
@@ -81,7 +79,7 @@ private theorem smoothJet_smul (n : ℕ) (a : ℝ) (f : Space n → ℂ)
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) (c : ℂ) :
     smoothJet n a (c • f) (hf.const_smul c) = c • smoothJet n a f hf := by
   rw [smoothJet, smoothJet, WithLp.ext_iff]
-  simp only [WithLp.ofLp_toLp, WithLp.ofLp_smul, Prod.smul_mk]
+  simp only [WithLp.ofLp_smul, Prod.smul_mk]
   refine Prod.ext ?_ ?_
   · rw [← MeasureTheory.MemLp.toLp_const_smul c (smooth_memLp n a f hf)]
   · rw [← WithLp.toLp_smul, WithLp.ext_iff, WithLp.ofLp_toLp]
@@ -100,8 +98,7 @@ theorem mem_smoothSubspace_iff (n : ℕ) (a : ℝ) (u : ProductSpace n a) :
     refine Submodule.span_induction
       (p := fun x _ => ∃ (f : Space n → ℂ) (hf : ContDiff ℝ (⊤ : ℕ∞) f),
         x = smoothJet n a f hf) ?_ ?_ ?_ ?_ hu
-    · rintro v ⟨f, hf, rfl⟩
-      exact ⟨f, hf, rfl⟩
+    · simp
     · exact ⟨0, contDiff_zero_fun, (smoothJet_zero n a contDiff_zero_fun).symm⟩
     · rintro v w _ _ ⟨f, hf, rfl⟩ ⟨g, hg, rfl⟩
       exact ⟨f + g, hf.add hg, (smoothJet_add n a f g hf hg).symm⟩
@@ -157,7 +154,7 @@ theorem smoothJet_average_error_sq (n : ℕ) (hn : 1 ≤ n) (a : ℝ) (ha : 0 < 
   rw [← smoothJet_gradient_norm_sq n a f hf] at h
   have hp := WithLp.prod_norm_sq_eq_of_L2 (smoothJet n a f hf)
   have hg : ‖(smoothJet n a f hf).snd‖ ^ 2 ≤ ‖smoothJet n a f hf‖ ^ 2 := by
-    nlinarith [sq_nonneg ‖(smoothJet n a f hf).fst‖]
+    simp_all
   calc
     _ ≤ ((n : ℝ) + 1) ^ 2 * side a m ^ 2 * ‖(smoothJet n a f hf).snd‖ ^ 2 := h
     _ ≤ ((n : ℝ) + 1) ^ 2 * side a m ^ 2 * ‖smoothJet n a f hf‖ ^ 2 :=
@@ -169,7 +166,7 @@ theorem projection_average_error (n : ℕ) (hn : 1 ≤ n) (a : ℝ) (ha : 0 < a)
     ‖projection n a - (average n a m).comp (projection n a)‖ ≤
       ((n : ℝ) + 1) * (2 * a / (m : ℝ)) := by
   let C : ℝ := ((n : ℝ) + 1) * (2 * a / (m : ℝ))
-  have hC : 0 ≤ C := by dsimp [C]; positivity
+  have hC : 0 ≤ C := by positivity
   let T : ProductSpace n a →L[ℂ] CubeLp n a :=
     WithLp.fstL 2 ℂ (CubeLp n a) (GradientSpace n a) -
       (average n a m).comp (WithLp.fstL 2 ℂ (CubeLp n a) (GradientSpace n a))
@@ -212,13 +209,9 @@ theorem projection_isCompactOperator (n : ℕ) (hn : 1 ≤ n) (a : ℝ) (ha : 0 
     · have hrev : ‖(average n a m).comp (projection n a) - projection n a‖ =
           ‖projection n a - (average n a m).comp (projection n a)‖ := by
         rw [← ContinuousLinearMap.opNorm_neg]
-        congr 1
-        abel
+        simp
       rw [hrev]
       exact projection_average_error n hn a ha m hm
     · simpa using ((tendsto_const_div_atTop_nhds_zero_nat (2 * a)).const_mul ((n : ℝ) + 1))
   · exact Filter.Eventually.of_forall (fun m =>
       (hcompact m).comp_clm (projection n a))
-
-end KPCubeGraphRellich
-end DedekindZetaZeroFree

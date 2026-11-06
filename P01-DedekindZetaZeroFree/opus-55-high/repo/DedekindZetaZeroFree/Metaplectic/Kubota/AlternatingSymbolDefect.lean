@@ -15,9 +15,7 @@ theorem one_left
     (hL : ∀ a b c : Kˣ, B (a * b) c = B a c * B b c)
     (a : Kˣ) : B 1 a = 1 := by
   have h := hL 1 1 a
-  rw [one_mul] at h
-  have h2 : B 1 a * 1 = B 1 a * B 1 a := by rw [mul_one]; exact h
-  exact (mul_left_cancel h2).symm
+  simp_all
 
 theorem one_right
     (K : Type*) [Field K] (M : Type*) [CommGroup M]
@@ -25,9 +23,7 @@ theorem one_right
     (hR : ∀ a b c : Kˣ, B a (b * c) = B a b * B a c)
     (a : Kˣ) : B a 1 = 1 := by
   have h := hR a 1 1
-  rw [mul_one] at h
-  have h2 : B a 1 * 1 = B a 1 * B a 1 := by rw [mul_one]; exact h
-  exact (mul_left_cancel h2).symm
+  simp_all
 
 theorem inv_left
     (K : Type*) [Field K] (M : Type*) [CommGroup M]
@@ -97,8 +93,7 @@ theorem neg_one_right
     exact one_right K M B hR a
   have h3 : (B a (-1)) ^ 3 = 1 := hCub a (-1)
   rw [show (3:ℕ) = 2 + 1 from rfl, pow_succ] at h3
-  rw [h2, one_mul] at h3
-  exact h3
+  simp_all
 
 theorem neg_one_left
     (K : Type*) [Field K] (M : Type*) [CommGroup M]
@@ -111,8 +106,7 @@ theorem neg_one_left
     exact one_left K M B hL a
   have h3 : (B (-1) a) ^ 3 = 1 := hCub (-1) a
   rw [show (3:ℕ) = 2 + 1 from rfl, pow_succ] at h3
-  rw [h2, one_mul] at h3
-  exact h3
+  simp_all
 
 theorem neg_self
     (K : Type*) [Field K] (M : Type*) [CommGroup M]
@@ -164,17 +158,11 @@ theorem kp_kubota_defect_symbol_algebra
   have s_vp : B p v = (B v p)⁻¹ := KubotaDefectSymbolAlgebra.skew_symmetry K M B hL hR hAlt p v
   have s_vq : B q v = (B v q)⁻¹ := KubotaDefectSymbolAlgebra.skew_symmetry K M B hL hR hAlt q v
   have s_pq : B q p = (B p q)⁻¹ := KubotaDefectSymbolAlgebra.skew_symmetry K M B hL hR hAlt q p
-  simp only [
-    div_eq_mul_inv, hL, hR,
-    KubotaDefectSymbolAlgebra.one_left K M B hL, KubotaDefectSymbolAlgebra.one_right K M B hR,
-    KubotaDefectSymbolAlgebra.inv_left K M B hL, KubotaDefectSymbolAlgebra.inv_right K M B hR, hAlt,
-    s_rx, s_ry, s_rz, s_rt, s_rv, s_rp, s_rq, s_xy, s_xz, s_xt, s_xv, s_xp, s_xq, s_yz, s_yt, s_yv, s_yp, s_yq, s_zt, s_zv, s_zp, s_zq, s_tv, s_tp, s_tq, s_vp, s_vq, s_pq]
+  simp only [div_eq_mul_inv, hL, hR, KubotaDefectSymbolAlgebra.inv_left K M B hL, KubotaDefectSymbolAlgebra.inv_right K M B hR, hAlt, s_rx, s_ry, s_rz, s_rt, s_xz, s_yz, s_yt, s_zt]
   apply Additive.ofMul.injective
   have omul : ∀ p q : M, Additive.ofMul (p * q) = Additive.ofMul p + Additive.ofMul q :=
-    fun p q => rfl
-  have oinv : ∀ p : M, Additive.ofMul p⁻¹ = - Additive.ofMul p := fun p => rfl
+    by simp
+  have oinv : ∀ p : M, Additive.ofMul p⁻¹ = - Additive.ofMul p := by simp
   have oone : Additive.ofMul (1 : M) = 0 := rfl
-  simp only [div_eq_mul_inv, omul, oinv, oone, one_mul, mul_one, inv_one]
+  simp only [omul, oinv, one_mul, mul_one]
   abel
-
-end DedekindZetaZeroFree

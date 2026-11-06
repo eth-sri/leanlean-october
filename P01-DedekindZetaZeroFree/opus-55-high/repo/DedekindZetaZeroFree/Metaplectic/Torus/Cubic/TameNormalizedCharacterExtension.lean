@@ -25,7 +25,3 @@ def RawNormalizedExtension : Prop :=
         KPPGLLocalCover.A F ζ hζ (Sum.inr q) (y ^ 3) →
     (P.ωL h : ℂ) = (ordinaryIota F ζ hζ e : ℂ) *
       normPower (LocalField F q) (y ^ 3) (1 / 6)
-
-end DedekindZetaZeroFree.KPTameTransposeLiteral
-
-end

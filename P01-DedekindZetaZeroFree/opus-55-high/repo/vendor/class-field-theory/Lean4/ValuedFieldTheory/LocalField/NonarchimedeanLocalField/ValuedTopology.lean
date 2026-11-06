@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Valued-field topology and the induced valuative relation
 
@@ -22,7 +19,6 @@ turned into a `ValuativeRel`: the topology already carried by a nontrivially
 valued field is the valuative topology for that induced relation.
 -/
 
-noncomputable section
 
 namespace LocalFieldTheory
 
@@ -67,12 +63,6 @@ theorem isValuativeTopology_of_valued_ofValuation
     have hz' :
         v.restrict z <
           (ValuativeRel.ValueGroupWithZero.orderMonoidIso v)
-            γ.1 := by
-      exact hz
-    exact
-      (ValuativeRel.restrict_lt_orderMonoidIso
-        v γ.1 z).1 hz'
-
-end LocalFieldTheory
-
-end
+            γ.1 := 
+      hz
+    simp_all

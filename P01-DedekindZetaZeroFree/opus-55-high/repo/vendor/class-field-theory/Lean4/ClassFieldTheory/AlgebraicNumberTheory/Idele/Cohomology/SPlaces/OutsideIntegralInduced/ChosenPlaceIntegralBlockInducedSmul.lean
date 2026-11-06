@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Equivariance of the induced integral block
 
@@ -24,7 +21,6 @@ equivariant for the global Galois action.
 open scoped NumberField TensorProduct ValuativeRel NNReal
 open NumberField IsDedekindDomain
 
-noncomputable section
 
 open AlgebraicNumberTheory.Valuations
 open HilbertRamification
@@ -59,7 +55,3 @@ theorem chosenFinitePlaceIntegralInducedBlockToLocalPlaceBlock_smul
           (K := K) (L := L) w₀ f) := by
   intro f
   rfl
-
-end ChosenFinitePlace
-
-end

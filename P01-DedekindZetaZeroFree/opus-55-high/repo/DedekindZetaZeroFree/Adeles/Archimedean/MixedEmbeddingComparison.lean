@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.Adeles.Characters.TraceCharacterNondegeneracy
 
 @[expose] public section
 
-noncomputable section
 
 namespace DedekindZetaZeroFree
 
@@ -34,7 +33,3 @@ theorem sArchModel_comparison (F : Type*) [Field F] [NumberField F] :
   · exact e.symm.continuous
   · intro x
     exact (NumberField.InfiniteAdeleRing.mixedEmbedding_eq_algebraMap_comp F).symm
-
-end DedekindZetaZeroFree
-
-end

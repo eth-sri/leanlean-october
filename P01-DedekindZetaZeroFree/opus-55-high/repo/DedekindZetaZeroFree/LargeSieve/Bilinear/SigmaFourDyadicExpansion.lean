@@ -83,10 +83,5 @@ theorem primeToSquarefreeKernel_eq_of_coprime (c I : Ideal (𝓞 F)) (hI : I ≠
   rw [primeToSquarefreeKernel, Finset.filter_true_of_mem hfilter]
   have : (∏ p ∈ (normalizedFactors (DedekindZetaZeroFree.LargeSieve.Sieve.squarefreeKernel I)).toFinset, p)
       = radical (DedekindZetaZeroFree.LargeSieve.Sieve.squarefreeKernel I) := by
-    rw [radical, primeFactors]
     rfl
   rw [this, hrad]
-
-end DedekindZetaZeroFree.LargeSieve.Bilinear
-
-end

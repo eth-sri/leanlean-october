@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Degree-minus-one cohomology of finite local-block families
 -/
@@ -34,7 +31,7 @@ variable {K : Type u} {L : Type v}
     [FiniteDimensional K L] [IsGalois K L]
 
 /-- Degree-minus-one cohomology for a finite family of local blocks. -/
-noncomputable def localBlockFamilyHerbrandHMinusOneEquiv
+def localBlockFamilyHerbrandHMinusOneEquiv
     {ι : Type w} [Fintype ι]
     (d : ι → LocalPlaceDatum K L)
     (σ : L ≃ₐ[K] L)
@@ -94,7 +91,3 @@ noncomputable def localBlockFamilyHerbrandHMinusOneEquiv
         localPlaceBlockHerbrandHMinusOneEquiv
           (d i).base (d i).base_isNontrivial
           (d i).extension σ hgen)
-
-end LocalClassFieldTheory
-
-end

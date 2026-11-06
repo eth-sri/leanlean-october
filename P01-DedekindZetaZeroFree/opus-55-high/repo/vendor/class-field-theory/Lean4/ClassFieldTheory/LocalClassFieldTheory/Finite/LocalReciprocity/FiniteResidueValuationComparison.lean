@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 namespace LocalClassFieldTheory
 
 open ValuationTheory RamificationTheory
@@ -31,7 +27,6 @@ valuation-ring comparison used in the finite local reciprocity construction befo
 degrees.
 -/
 
-noncomputable section
 
 universe u v w
 
@@ -64,6 +59,3 @@ theorem ValuationSubring.restrictIntermediateField_eq_of_finite_separable
     DiscreteValuationField.ValuedExtension.target_valuationSubring_eq_of_finite_separable
       base target C
   exact hB.symm.trans hC
-
-end
-end LocalClassFieldTheory

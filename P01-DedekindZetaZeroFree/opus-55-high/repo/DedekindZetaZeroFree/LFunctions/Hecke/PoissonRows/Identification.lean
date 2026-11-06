@@ -169,7 +169,7 @@ theorem deletionSet_subset_rowPrimesWithS (u : D.Row) (v : IsDedekindDomain.Heig
       Ideal.mem_normalizedFactors_iff (DedekindZetaZeroFree.Quantitative.FixedData.Row.ideal u).property.1]
     exact ⟨v.isPrime, h'⟩
 
-private theorem rowPrimesWithS_ne_top (u : D.Row) (p : Ideal (𝓞 F))
+theorem rowPrimesWithS_ne_top (u : D.Row) (p : Ideal (𝓞 F))
     (hp : p ∈ EulerDeletion.rowPrimesWithS D u) : p ≠ ⊤ := by
   unfold EulerDeletion.rowPrimesWithS at hp
   rcases Finset.mem_union.mp hp with h | h
@@ -180,7 +180,7 @@ private theorem rowPrimesWithS_ne_top (u : D.Row) (p : Ideal (𝓞 F))
   · obtain ⟨v, _, rfl⟩ := Finset.mem_image.mp h
     exact v.isPrime.ne_top
 
-private theorem one_le_inv_one_sub_rpow (I : Ideal (𝓞 F)) (hI : I ≠ ⊤) (σ : ℝ) (hσ : 0 < σ) :
+theorem one_le_inv_one_sub_rpow (I : Ideal (𝓞 F)) (hI : I ≠ ⊤) (σ : ℝ) (hσ : 0 < σ) :
     1 ≤ (1 - (Ideal.absNorm I : ℝ) ^ (-σ))⁻¹ := by
   have hne : Ideal.absNorm I ≠ 1 := fun h => hI (Ideal.absNorm_eq_one_iff.mp h)
   rcases Nat.eq_zero_or_pos (Ideal.absNorm I) with h0 | hpos
@@ -194,7 +194,7 @@ private theorem one_le_inv_one_sub_rpow (I : Ideal (𝓞 F)) (hI : I ≠ ⊤) (�
     have h4 : 0 ≤ (Ideal.absNorm I : ℝ) ^ (-σ) := Real.rpow_nonneg (Nat.cast_nonneg _) _
     exact (one_le_inv₀ (by linarith)).mpr (by linarith)
 
-private theorem prod_subtype_le_prod (E : Set (IsDedekindDomain.HeightOneSpectrum (𝓞 F))) [Fintype E]
+theorem prod_subtype_le_prod (E : Set (IsDedekindDomain.HeightOneSpectrum (𝓞 F))) [Fintype E]
     (hE : E.Finite) (P : Finset (Ideal (𝓞 F))) (hP : ∀ v ∈ E, v.asIdeal ∈ P)
     (g : Ideal (𝓞 F) → ℝ) (hg1 : ∀ I ∈ P, 1 ≤ g I) :
     ∏ v : E, g v.1.asIdeal ≤ ∏ p ∈ P, g p := by
@@ -214,7 +214,7 @@ private theorem prod_subtype_le_prod (E : Set (IsDedekindDomain.HeightOneSpectru
         Finset.prod_le_prod_of_subset_of_one_le₀ hsub (fun p hp => by linarith [hg1 p (hsub hp)])
           (fun p hp _ => hg1 p hp)
 
-private theorem local_factor_upper (v : IsDedekindDomain.HeightOneSpectrum (𝓞 F)) (a s : ℂ) (σ : ℝ) (hσ : 0 < σ)
+theorem local_factor_upper (v : IsDedekindDomain.HeightOneSpectrum (𝓞 F)) (a s : ℂ) (σ : ℝ) (hσ : 0 < σ)
     (ha : ‖a‖ ≤ 1) (hs : σ ≤ s.re) :
     ‖1 - a * (Ideal.absNorm v.asIdeal : ℂ) ^ (-s)‖ ≤ 1 + (Ideal.absNorm v.asIdeal : ℝ) ^ (-σ) := by
   have hv : 1 < (Ideal.absNorm v.asIdeal : ℝ) := by

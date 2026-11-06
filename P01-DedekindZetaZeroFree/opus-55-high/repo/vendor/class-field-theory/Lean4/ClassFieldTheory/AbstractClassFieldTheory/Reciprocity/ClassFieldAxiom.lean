@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 namespace ClassFormation
 
 open CyclicCohomology
@@ -100,8 +97,3 @@ theorem tateHMinusOne_isZero
     simpa [H] using hcf.tateHMinusOne_card K E
   let : Subsingleton H := (Nat.card_eq_one_iff_unique.mp hcard).1
   exact ModuleCat.isZero_of_subsingleton H
-
-end SatisfiesClassFieldAxiom
-
-end
-end ClassFormation

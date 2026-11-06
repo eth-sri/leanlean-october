@@ -35,17 +35,6 @@ def fractionalIdealQuotientMk
     I.coeToSubmodule →ₗ[NumberField.RingOfIntegers F] fractionalIdealQuotient I J :=
   (J.coeToSubmodule.comap I.coeToSubmodule.subtype).mkQ
 
-@[simp] theorem fractionalIdealQuotientMk_zero
-    (I J : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) :
-    fractionalIdealQuotientMk I J 0 = 0 := by
-  simp [fractionalIdealQuotientMk]
-
-@[simp] theorem fractionalIdealQuotientMk_add
-    (I J : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) (x y : I.coeToSubmodule) :
-    fractionalIdealQuotientMk I J (x + y) =
-      fractionalIdealQuotientMk I J x + fractionalIdealQuotientMk I J y := by
-  simp [fractionalIdealQuotientMk]
-
 @[simp] theorem fractionalIdealQuotientMk_smul
     (I J : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F)
     (a : NumberField.RingOfIntegers F) (x : I.coeToSubmodule) :
@@ -64,7 +53,3 @@ theorem fractionalIdealQuotientMk_surjective
   rw [fractionalIdealQuotientMk, Submodule.mkQ_apply, Submodule.Quotient.mk_eq_zero,
     Submodule.mem_comap]
   rfl
-
-end DedekindZetaZeroFree.Hecke
-
-end

@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Moments.Probes.TraceHaarCoordinates
 
 @[expose] public section
 
-noncomputable section
 open scoped NumberField Classical
 open NumberField IsDedekindDomain MeasureTheory
 
@@ -77,7 +76,3 @@ theorem exists_shared_principal_probe (A : SArithmeticData F) (σ : F →+* ℂ)
     traceConductor := hconductor
     containsDifferent := containsDifferent
     sameMeasure := poisson_measure_coordinate_coherence A μ }, rfl⟩
-
-end DedekindZetaZeroFree.PrincipalProbeConstruction
-
-end

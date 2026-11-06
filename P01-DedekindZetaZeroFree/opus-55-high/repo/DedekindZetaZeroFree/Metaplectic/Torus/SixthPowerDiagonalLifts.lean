@@ -28,7 +28,7 @@ theorem local_A_pow_six_mul (w : KPHilbert.Place F)
     exact ((KPHilbert.B3_laws F R.A.zeta12 R.A.primitive_zeta12 w).2.2.2.2.1 _ _).1
   rw [hb, one_pow, map_one, one_mul]
 
-private theorem eval_localIdele_raw (v w : KPHilbert.Place F)
+theorem eval_localIdele_raw (v w : KPHilbert.Place F)
     (y : (KPHilbert.Completion F v)ˣ) :
     Units.map (KPAdelicCoverRestrictedProduct.adeleEval F w)
       (KPRationalAdelicSplitting.localIdele F v y) =
@@ -36,7 +36,7 @@ private theorem eval_localIdele_raw (v w : KPHilbert.Place F)
   apply Units.ext
   exact congrArg Units.val (eval_localIdele F v w y)
 
-private theorem eval_selected_localIdele (y : R.A.G) (v : KPHilbert.Place F) :
+theorem eval_selected_localIdele (y : R.A.G) (v : KPHilbert.Place F) :
     Units.map (KPAdelicCoverRestrictedProduct.adeleEval F v)
       (MomentSources.localIdele R y) =
     (∏ w : InfinitePlace F,

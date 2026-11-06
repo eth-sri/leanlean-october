@@ -63,7 +63,7 @@ theorem stereographic_measure_transport :
     rw [lintegral_mul_const' _ _ (by simp [Real.pi_pos])]
     have he : (ENNReal.ofReal (4 * Real.pi))⁻¹ * ↑(Module.finrank ℝ rawAmbient) *
         ENNReal.ofReal (4 / 3 : ℝ) = (ENNReal.ofReal Real.pi)⁻¹ := by
-      have hr : Module.finrank ℝ rawAmbient = 3 := by simp [rawAmbient]
+      have hr : Module.finrank ℝ rawAmbient = 3 := by simp
       rw [hr]
       norm_num only [Nat.cast_ofNat]
       rw [← ENNReal.ofReal_inv_of_pos (by positivity)]
@@ -80,5 +80,3 @@ theorem stereographic_measure_transport :
   · intro z
     rw [Real.rpow_neg (denominator_pos z).le, Real.rpow_two]
     field_simp
-
-end DedekindZetaZeroFree.ComplexLocal.StereographicTransport

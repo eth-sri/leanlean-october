@@ -9,7 +9,7 @@ open PrincipalMellin
 open Filter Asymptotics
 variable {F : Type} [Field F] [NumberField F]
 
-private theorem actual_allowed_section
+theorem actual_allowed_section
     (S : SArithmeticData F) (η : RayClassCharacter F S.modulus)
     (R : ActualRecipe S η) :
     ActualRowTransfer.AllowedSection R.A R.probe.coefficients R.probe.correction.B := by
@@ -25,7 +25,7 @@ private theorem actual_allowed_section
 noncomputable section
 open scoped Classical NumberField
 
-private theorem mask_reindex (A : SArithmeticData F) (P Q : ℝ)
+theorem mask_reindex (A : SArithmeticData F) (P Q : ℝ)
     (f : A.Exterior → A.Exterior → ℝ) :
     (∑' h : A.Exterior, ∑' d : A.Exterior,
       if Powerful h.val ∧ Squarefree d.val ∧ h.val ⊔ d.val = ⊤ ∧
@@ -76,7 +76,7 @@ private theorem mask_reindex (A : SArithmeticData F) (P Q : ℝ)
       · rfl
     simp only [hz, tsum_zero]
 
-private theorem dyadicBound_general
+theorem dyadicBound_general
     {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
     (R : ActualRecipe S η) (M : SelectedMomentSource R)
     (Mexp : ℝ) (hMexp : 1 < Mexp)

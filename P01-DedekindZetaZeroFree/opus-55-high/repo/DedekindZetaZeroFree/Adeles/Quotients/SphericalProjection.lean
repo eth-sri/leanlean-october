@@ -23,9 +23,6 @@ local instance : MulAction (KPCuspArithmetic.PGL2 F) (KPArch.Space (KPCuspLogSha
           (KPHilbert.infinite_isComplex F ζ hζ w)).toRingHom
         (KPCuspGenuineMonodromy.archProjection F ζ hζ g w) := by
   obtain ⟨g, rfl⟩ := QuotientGroup.mk'_surjective (splitScalarSubgroup F ζ hζ) g
-  change Matrix.ProjGenLinGroup.mk (Matrix.GeneralLinearGroup.map _ (projection F ζ hζ g)) =
-    Matrix.ProjGenLinGroup.map _ (Matrix.ProjGenLinGroup.mk (matrixEval F (Sum.inl w) (projection F ζ hζ g)))
-  rw [Matrix.ProjGenLinGroup.map_mk, Matrix.GeneralLinearGroup.map_comp]
   rfl
 
 private theorem insertion_commutes_cover (a : KPSmoothActualFlowData.GInfinity F)
@@ -38,7 +35,7 @@ private theorem insertion_commutes_cover (a : KPSmoothActualFlowData.GInfinity F
     have he := c.property
     rw [MonoidHom.mem_ker] at he
     rw [he]
-    exact map_one _
+    simp
   have hm := (PGLComplex.AdelicSlicesRaw.actualArchFiniteSplitting F ζ hζ).choose_spec.2.2.2.1
   rw [hm] at hc
   exact RepresentationTheory.ArchFiniteSplitting.insertion_commutes_finite F ζ hζ a ⟨c.val, hc⟩
@@ -59,7 +56,7 @@ private theorem complex_kernel_mem {g : KPCubicCoverConstruction.AdelicPGL2Cover
     (NumberField.InfinitePlace.Completion.ringEquivComplexOfIsComplex
       (KPHilbert.infinite_isComplex F ζ hζ w))
   rw [← archProjection_compare, hg]
-  exact (map_one _).symm
+  simp
 
  theorem projective_action_mk (g : Matrix.GeneralLinearGroup (Fin 2) ℂ)
     (q : KPArch.H3) :
@@ -117,11 +114,11 @@ private theorem finiteProjection_local_infinite (v : NumberField.InfinitePlace F
     funext q
     have h := restrictedProjection_eval F ζ hζ (localToRestricted F ζ hζ (Sum.inl v) g) (Sum.inr q)
     have hn : localToRestricted F ζ hζ (Sum.inl v) g (Sum.inr q) = 1 := by
-      exact RestrictedProduct.mulSingle_eq_of_ne' _ _ (by simp)
+      rfl
     rw [hn, map_one] at h
     convert congrArg (fun m => m i j) h using 1
     · rfl
-    · by_cases hij : i = j <;> subst_vars <;> simp [Matrix.one_apply, *] <;> rfl
+    · by_cases hij : i = j <;> subst_vars <;> simp [*] <;> rfl
   rw [he, map_one]
 
 private theorem finiteProjection_archimedeanInsertion (a : KPSmoothActualFlowData.GInfinity F) :
@@ -242,7 +239,7 @@ private theorem insertion_mul (a b : KPSmoothActualFlowData.GInfinity F) :
   change RepresentationTheory.ArchFiniteSplitting.insertion F ζ hζ (a * b) =
     RepresentationTheory.ArchFiniteSplitting.insertion F ζ hζ a * RepresentationTheory.ArchFiniteSplitting.insertion F ζ hζ b
   rw [← hi, ← hi, ← hi]
-  exact map_mul i a b
+  simp
 
 private theorem central_comm (ε : rootsOfUnity 3 F) (c : KPFiniteCuspAtlas.FiniteCover F ζ hζ) :
     KPCuspGenuineMonodromy.central F ζ hζ ε * c = c * KPCuspGenuineMonodromy.central F ζ hζ ε := by
@@ -255,7 +252,7 @@ private theorem archBasepoint_rational (γ : KPCuspArithmetic.PGL2 F) (a : KPSmo
   rw [archBasepoint_mul, archRational_action]
   rfl
 
-private theorem glOrbit_continuous (z : KPArch.H3) :
+theorem glOrbit_continuous (z : KPArch.H3) :
     Continuous (fun g : Matrix.GeneralLinearGroup (Fin 2) ℂ => KPArch.action g z) := by
   have hc (i j : Fin 2) : Continuous (fun g : Matrix.GeneralLinearGroup (Fin 2) ℂ => g i j) :=
     Units.continuous_val.matrix_elem i j
@@ -275,7 +272,7 @@ private theorem glOrbit_continuous (z : KPArch.H3) :
       intro g
       exact ne_of_gt (div_pos (mul_pos (norm_pos_iff.mpr g.det_ne_zero)
         (Real.exp_pos _)) (KPArch.actionDenominator_pos g z))
-    exact (((Units.continuous_val.matrix_det).norm.mul continuous_const).div hd hn).log hp
+    fun_prop
 
  theorem projectiveOrbit_continuous (z : KPArch.H3) :
     Continuous (fun g : Matrix.ProjGenLinGroup (Fin 2) ℂ => KPArch.action g.out z) := by
@@ -296,7 +293,7 @@ private theorem archBasepoint_continuous : Continuous (archBasepoint F) := by
     apply Quotient.sound
     exact ⟨γ, ε, ⟨u.val, h u.property⟩, hx, hc⟩)
 
-private theorem forgetMap_continuous (V U : Level F ζ hζ)
+theorem forgetMap_continuous (V U : Level F ζ hζ)
     (h : V.toOpenSubgroup.toSubgroup ≤ U.toOpenSubgroup.toSubgroup) : Continuous (forgetMap F ζ hζ V U h) := by
   apply isQuotientMap_quotient_mk'.continuous_iff.mpr
   exact continuous_quotient_mk'
@@ -306,7 +303,7 @@ private theorem forgetMap_continuous (V U : Level F ζ hζ)
     (g : Cover F ζ hζ) : Spherical F ζ hζ U :=
   Quotient.mk _ (archBasepoint F (e.symm g).1, (e.symm g).2)
 
-private theorem rawProjection_formula (U : Level F ζ hζ)
+theorem rawProjection_formula (U : Level F ζ hζ)
     (e : (KPSmoothActualFlowData.GInfinity F × KPFiniteCuspAtlas.FiniteCover F ζ hζ) ≃ₜ Cover F ζ hζ)
     (he : ∀ a c, e (a,c) = KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a * c.val)
     (a : KPSmoothActualFlowData.GInfinity F) (c : KPFiniteCuspAtlas.FiniteCover F ζ hζ) :
@@ -387,7 +384,3 @@ theorem spherical_transport_exists
   · intro V U h x
     induction x using Quotient.inductionOn with
     | h g => rfl
-
-end DedekindZetaZeroFree.KPMsFixedHaar
-
-end

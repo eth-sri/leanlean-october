@@ -9,7 +9,6 @@ open NumberField IsDedekindDomain
 
 namespace DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw
 noncomputable section
-set_option autoImplicit false
 set_option maxHeartbeats 800000
 set_option maxRecDepth 4000
 variable (F : Type) [Field F] [NumberField F]
@@ -43,11 +42,11 @@ lemma char_mem (q : HeightOneSpectrum (𝓞 F)) (n : ℕ)
   letI : ν.Compatible := Valuation.Compatible.ofValuation ν
   have hz : (n : KPTameCompact.O F q ⧸ KPTameCompact.p F q) = 0 := by
     rw [← hn]
-    exact CharP.cast_eq_zero _ (ringChar _)
-  have hp : (n : KPTameCompact.O F q) ∈ KPTameCompact.p F q := by
-    exact (Ideal.Quotient.eq_zero_iff_mem).mp (by simpa using hz)
-  have hnu : ¬ IsUnit (n : KPTameCompact.O F q) := by
-    exact (IsLocalRing.mem_maximalIdeal _).mp hp
+    simp
+  have hp : (n : KPTameCompact.O F q) ∈ KPTameCompact.p F q := 
+    (Ideal.Quotient.eq_zero_iff_mem).mp (by simpa using hz)
+  have hnu : ¬ IsUnit (n : KPTameCompact.O F q) := 
+    (IsLocalRing.mem_maximalIdeal _).mp hp
   have hlt := Valuation.Integer.not_isUnit_iff_valuation_lt_one.mp hnu
   have ht : ν (n : KPTameCompact.K F q) < 1 := by
     rw [← Valuation.vlt_one_iff, Valuation.vlt_one_iff (ValuativeRel.valuation _)]
@@ -82,7 +81,7 @@ theorem deepLift_mul (q : HeightOneSpectrum (𝓞 F))
       KPDeepRawSplitting.sigmaTwo_eq_one_on_Gamma F ζ hζ q (depth F ζ hζ q)
         (depth_admissible F ζ hζ q).2 g h hg hh)
   rw [← hs, ← hs, ← hs]
-  exact s.map_mul g h
+  simp
 
 def deepLift (q : HeightOneSpectrum (𝓞 F)) :
     KPLocalCube.Gamma F q (depth F ζ hζ q) →*
@@ -136,9 +135,7 @@ def centralTupleMap : CentralTuples F →* RestrictedCover F ζ hζ :=
   RestrictedProduct.mapAlongMonoidHom _ _ id Filter.tendsto_id
     (fun v => KPLocalCover.centralInjection F ζ hζ v)
     (Filter.Eventually.of_forall (fun v => by
-      intro ε hε
-      have : ε = 1 := hε
-      simpa [this] using (compact F ζ hζ v).one_mem))
+      simp))
 
 theorem finiteCompact_compact_open (q : HeightOneSpectrum (𝓞 F)) :
     IsCompact (finiteCompact F ζ hζ q : Set (KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr q))) ∧
@@ -188,6 +185,3 @@ theorem compact_inf_kernel (v : KPHilbert.Place F) :
       rw [map_one]
       exact hk)
     rw [hg, map_one]
-
-end
-end DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw

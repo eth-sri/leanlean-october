@@ -47,21 +47,21 @@ namespace DedekindZetaZeroFree.KPCplxHarmonicIntertwinerSpectrum
 open KPCplxCharacterHaar KPCplxPrincipalSeriesCharts MeasureTheory
 open scoped NNReal
 
-private theorem weyl_upper_weyl (u : ℂ) :
+theorem weyl_upper_weyl (u : ℂ) :
     weyl * upperUnipotent u * weyl = lowerUnipotent u := by
   apply Matrix.GeneralLinearGroup.ext
   intro i j
   fin_cases i <;> fin_cases j <;>
     simp [weyl, upperUnipotent, lowerUnipotent, Matrix.mul_apply, Fin.sum_univ_two]
 
-private theorem lower_weyl (u : ℂ) :
+theorem lower_weyl (u : ℂ) :
     lowerUnipotent u * weyl = weyl * upperUnipotent u := by
   apply Matrix.GeneralLinearGroup.ext
   intro i j
   fin_cases i <;> fin_cases j <;>
     simp [weyl, upperUnipotent, lowerUnipotent, Matrix.mul_apply, Fin.sum_univ_two]
 
-private theorem weyl_translate_chartSeminorm (s : ℝ) (n : ℕ)
+theorem weyl_translate_chartSeminorm (s : ℝ) (n : ℕ)
     (f : PrincipalSeries s) :
     chartSeminorm s n (rightTranslate s weyl f) = chartSeminorm s n f := by
   have hO : openCoordinate (rightTranslate s weyl f) = infinityCoordinate f := by
@@ -111,7 +111,7 @@ theorem positive_intertwiner_infinity_chart_bounds (β : ℂˣ)
       simp only [Finset.sup_insert, Seminorm.sup_apply, weyl_translate_chartSeminorm, ih]
   rw [hcharts]
   have h := hbound (rightTranslate positiveParameter weyl f) u hu
-  simpa only [Seminorm.smul_apply, hsup] using h
+  simp_all
 
 end DedekindZetaZeroFree.KPCplxHarmonicIntertwinerSpectrum
 
@@ -122,12 +122,11 @@ namespace DedekindZetaZeroFree.KPCplxHarmonicIntertwinerSpectrum
 open KPCplxPrincipalSeriesCharts
 open scoped NNReal
 
-private theorem sSup_closedBall_le {F : ℂ → ℝ} {M : ℝ}
+theorem sSup_closedBall_le {F : ℂ → ℝ} {M : ℝ}
     (h : ∀ x ∈ Metric.closedBall (0 : ℂ) 1, F x ≤ M) :
     sSup (F '' Metric.closedBall (0 : ℂ) 1) ≤ M := by
   refine csSup_le ⟨F 0, 0, Metric.mem_closedBall_self (by norm_num), rfl⟩ ?_
-  rintro y ⟨x, hx, rfl⟩
-  exact h x hx
+  simp_all
 
 theorem linearMap_isBounded_of_two_chart_derivative_bounds (s t : ℝ)
     (T : PrincipalSeries s →ₗ[ℂ] PrincipalSeries t)
@@ -151,8 +150,7 @@ theorem linearMap_isBounded_of_two_chart_derivative_bounds (s t : ℝ)
   intro f
   set S : ℝ := ((ordersO ∪ ordersI).sup (chartSeminorm s)) f with hS
   have hSnn : 0 ≤ S := by
-    rw [hS]
-    exact apply_nonneg _ _
+    positivity
   have hsupO : (ordersO.sup (chartSeminorm s)) f ≤ S := by
     rw [hS]
     exact (Seminorm.le_def.mp (Finset.sup_mono (f := chartSeminorm s)
@@ -162,9 +160,9 @@ theorem linearMap_isBounded_of_two_chart_derivative_bounds (s t : ℝ)
     exact (Seminorm.le_def.mp (Finset.sup_mono (f := chartSeminorm s)
       (Finset.subset_union_right : ordersI ⊆ ordersO ∪ ordersI))) f
   have hCO : (CO : ℝ) ≤ (max CO CI : ℝ) := by
-    exact_mod_cast le_max_left CO CI
+    simp
   have hCI : (CI : ℝ) ≤ (max CO CI : ℝ) := by
-    exact_mod_cast le_max_right CO CI
+    simp
   have hbound : ∀ x ∈ Metric.closedBall (0 : ℂ) 1,
       ‖iteratedFDeriv ℝ n (openCoordinate (T f)) x‖ ≤ (max CO CI : ℝ) * S := by
     intro x hx
@@ -201,11 +199,11 @@ namespace DedekindZetaZeroFree.KPCplxHarmonicIntertwinerSpectrum
 open KPCplxCharacterHaar KPCplxPrincipalSeriesCharts MeasureTheory
 open scoped BigOperators Matrix
 
-private lemma complex_integral_mul (F : ℂ → ℂ) (c : ℂ) (hc : c ≠ 0) :
+lemma complex_integral_mul (F : ℂ → ℂ) (c : ℂ) (hc : c ≠ 0) :
     (∫ x : ℂ, F (c * x)) = (‖c‖ ^ 2)⁻¹ • ∫ x : ℂ, F x := by
   let u : Circle := ⟨c / (‖c‖ : ℂ), by
     apply mem_sphere_zero_iff_norm.mpr
-    simp [norm_div, Complex.norm_real, abs_of_nonneg (norm_nonneg _), hc]⟩
+    simp_all⟩
   have hcx (x : ℂ) : c * x = ‖c‖ • (rotation u x) := by
     change c * x = (‖c‖ : ℂ) * ((c / (‖c‖ : ℂ)) * x)
     field_simp [Complex.ofReal_ne_zero.mpr (norm_ne_zero_iff.mpr hc)]
@@ -222,7 +220,7 @@ lemma character_integral_mul (β : ℂˣ) (F : ℂ → ℂ) (c : ℂ) (hc : c �
   rw [integral_smul_measure, integral_smul_measure]
   change _ • (∫ x : ℂ, F (c * x)) = (‖c‖ ^ 2)⁻¹ • _ • (∫ x : ℂ, F x)
   rw [complex_integral_mul F c hc, smul_comm]
-private lemma positive_intertwiner_triangular_identity (a d : ℂˣ) (b x : ℂ) :
+lemma positive_intertwiner_triangular_identity (a d : ℂˣ) (b x : ℂ) :
     weyl * upperUnipotent x * upperTriangular a d b =
       upperTriangular d a 0 * (weyl * upperUnipotent ((b + x * (d : ℂ)) / (a : ℂ))) := by
   apply Units.ext
@@ -232,14 +230,13 @@ private lemma positive_intertwiner_triangular_identity (a d : ℂˣ) (b x : ℂ)
       !![(d : ℂ), 0; 0, (a : ℂ)] := rfl
   ext i j
   fin_cases i <;> fin_cases j <;>
-    simp [weyl, upperUnipotent, Matrix.mul_apply, Fin.sum_univ_two, h1, h2,
-      mul_assoc, mul_comm, mul_left_comm, a.ne_zero]
+    simp [weyl, upperUnipotent, Matrix.mul_apply, Fin.sum_univ_two, h1, h2, mul_assoc, mul_comm]
   all_goals field_simp
-private lemma positive_intertwiner_weight (a d : ℂˣ) :
+lemma positive_intertwiner_weight (a d : ℂˣ) :
     inductionWeight positiveParameter d a * (‖(d : ℂ) / (a : ℂ)‖ ^ 2)⁻¹ =
       inductionWeight negativeParameter a d := by
   have hpos : 0 < ‖(d : ℂ) / (a : ℂ)‖ ^ 2 :=
-    pow_pos (norm_pos_iff.mpr (div_ne_zero d.ne_zero a.ne_zero)) 2
+    by simp
   have hinv : ‖(a : ℂ) / (d : ℂ)‖ ^ 2 = (‖(d : ℂ) / (a : ℂ)‖ ^ 2)⁻¹ := by
     rw [← inv_div, norm_inv, inv_pow]
   simp only [inductionWeight, complexAbs, positiveParameter, negativeParameter, hinv]
@@ -275,8 +272,8 @@ theorem positive_intertwiner_section (β : ℂˣ)
     (f : PrincipalSeries positiveParameter) :
     (fun g : ComplexGL2 =>
       ∫ x : ℂ, f (weyl * upperUnipotent x * g) ∂characterHaar β) ∈
-      principalSeriesSubmodule negativeParameter := by
-  exact ⟨positive_intertwiner_covariance β f,
+      principalSeriesSubmodule negativeParameter := 
+  ⟨positive_intertwiner_covariance β f,
     positive_intertwiner_openCoordinate_contDiff β f,
     positive_intertwiner_infinityCoordinate_contDiff β f⟩
 
@@ -294,8 +291,8 @@ theorem positive_intertwiner_seminorm_bounds (β : ℂˣ)
     (hT : ∀ (f : PrincipalSeries positiveParameter) (g : ComplexGL2),
       T f g = ∫ x : ℂ, f (weyl * upperUnipotent x * g) ∂characterHaar β) :
     Seminorm.IsBounded (chartSeminorm positiveParameter)
-      (chartSeminorm negativeParameter) T := by
-  exact linearMap_isBounded_of_two_chart_derivative_bounds
+      (chartSeminorm negativeParameter) T := 
+  linearMap_isBounded_of_two_chart_derivative_bounds
     positiveParameter negativeParameter T
     (positive_intertwiner_open_chart_bounds β T hT)
     (positive_intertwiner_infinity_chart_bounds β T hT)
@@ -376,8 +373,8 @@ noncomputable def intertwinerIntegral (β : ℂˣ) (f : PrincipalSeries positive
 theorem intertwinerIntegral_exists (β : ℂˣ) (f : PrincipalSeries positiveParameter) :
     (∀ g : ComplexGL2, Integrable
       (fun x : ℂ => f (weyl * upperUnipotent x * g)) (characterHaar β)) ∧
-    intertwinerIntegral β f ∈ principalSeriesSubmodule negativeParameter := by
-  exact ⟨fun g => KPCplxHarmonicIntertwinerSpectrum.positive_intertwiner_integrable β f g,
+    intertwinerIntegral β f ∈ principalSeriesSubmodule negativeParameter := 
+  ⟨fun g => KPCplxHarmonicIntertwinerSpectrum.positive_intertwiner_integrable β f g,
     KPCplxHarmonicIntertwinerSpectrum.positive_intertwiner_section β f⟩
 
 noncomputable def intertwinerLinearMap (β : ℂˣ) :
@@ -394,8 +391,8 @@ noncomputable def intertwinerLinearMap (β : ℂˣ) :
     exact integral_smul c (fun x : ℂ => f (weyl * upperUnipotent x * g))
 
 theorem intertwinerLinearMap_continuous (β : ℂˣ) :
-    Continuous (intertwinerLinearMap β) := by
-  exact KPCplxHarmonicIntertwinerSpectrum.positive_intertwiner_continuous β
+    Continuous (intertwinerLinearMap β) := 
+  KPCplxHarmonicIntertwinerSpectrum.positive_intertwiner_continuous β
     (intertwinerLinearMap β) (fun _ _ => rfl)
 
 noncomputable def standardIntertwiner (β : ℂˣ) :
@@ -427,30 +424,14 @@ noncomputable def eigenvalue (β : ℂˣ) (ℓ : ℕ) : ℝ :=
     ∏ j ∈ Finset.Icc 1 ℓ, (((j : ℝ) - 1 / 3) / ((j : ℝ) + 1 / 3))
 
 lemma su2_matrix (a b : ℂ) (h : Complex.normSq a + Complex.normSq b = 1) :
-    (!![star b, -star a; a, b] : Matrix (Fin 2) (Fin 2) ℂ) ∈ ComplexSU2 := by
-  have hc : a * star a + b * star b = 1 := by
-    rw [show a * star a = (Complex.normSq a : ℂ) from Complex.mul_conj a,
-      show b * star b = (Complex.normSq b : ℂ) from Complex.mul_conj b,
-      ← Complex.ofReal_add, h, Complex.ofReal_one]
-  change a * (starRingEnd ℂ) a + b * (starRingEnd ℂ) b = 1 at hc
-  rw [Matrix.mem_specialUnitaryGroup_iff, Matrix.mem_unitaryGroup_iff]
-  constructor
-  · ext i j
-    fin_cases i <;> fin_cases j <;>
-      simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.star_apply]
-    · convert hc using 1 <;> ring
-    · ring
-    · ring
-    · exact hc
-  · simp [Matrix.det_fin_two]
-    convert hc using 1 <;> ring
+    (!![star b, -star a; a, b] : Matrix (Fin 2) (Fin 2) ℂ) ∈ ComplexSU2 := by apply DedekindZetaZeroFree.KPCplxHarmonicIntertwinerSpectrum.su2_matrix <;> assumption
 noncomputable def openSU2 (x : ℂ) : ComplexSU2 := by
   let r : ℝ := Real.sqrt (1 + Complex.normSq x)
   have hn := Complex.normSq_nonneg x
   have hr : r ^ 2 = 1 + Complex.normSq x := Real.sq_sqrt (by linarith)
   refine ⟨!![(star x) / r, -(1 / r); 1 / r, x / r], ?_⟩
   convert su2_matrix (1 / (r : ℂ)) (x / (r : ℂ)) ?_ using 1
-  · simp [map_div₀]
+  · simp
   · simp only [Complex.normSq_div, Complex.normSq_one, Complex.normSq_ofReal]
     rw [← pow_two, hr]
     field_simp [show 1 + Complex.normSq x ≠ 0 by linarith]
@@ -460,7 +441,7 @@ private lemma openSU2_factor (x : ℂ) :
       upperTriangular a d b * complexSU2Embedding (openSU2 x) := by
   let r : ℝ := Real.sqrt (1 + Complex.normSq x)
   have hn := Complex.normSq_nonneg x
-  have hrpos : 0 < r := Real.sqrt_pos.mpr (by linarith)
+  have hrpos : 0 < r := by positivity
   have hn := Complex.normSq_nonneg x
   have hr : r ^ 2 = 1 + Complex.normSq x := Real.sq_sqrt (by linarith)
   have hrne : (r : ℂ) ≠ 0 := by exact_mod_cast ne_of_gt hrpos
@@ -481,8 +462,7 @@ private lemma openSU2_factor (x : ℂ) :
   · change (1 : ℂ) = (r : ℂ)⁻¹ * (r : ℂ)⁻¹ + (starRingEnd ℂ) x / r * (x / r)
     field_simp
     linear_combination hrc
-  · change (1 : ℂ) = (r : ℂ) * (r : ℂ)⁻¹
-    simp [hrne]
+  · simp_all
   · change x = (r : ℂ) * (x / r)
     field_simp
 
@@ -518,7 +498,7 @@ lemma inductionWeight_product (s u : ℝ) (a d : ℂˣ) :
     inductionWeight s a d * inductionWeight u a d = inductionWeight (s + u + 1 / 2) a d := by
   have hn : 0 < complexAbs ((a : ℂ) / (d : ℂ)) := by
     unfold complexAbs
-    exact pow_pos (norm_pos_iff.mpr (div_ne_zero a.ne_zero d.ne_zero)) _
+    simp
   unfold inductionWeight
   rw [show 1 / 2 + (s + u + 1 / 2) = (1 / 2 + s) + (1 / 2 + u) by ring]
   exact (Real.rpow_add hn (1 / 2 + s) (1 / 2 + u)).symm
@@ -534,7 +514,6 @@ noncomputable def changeParameter (s t : ℝ) (f : PrincipalSeries s) : Principa
     have hw := inductionWeight_product s (t - s - 1 / 2) a d
     have he : s + (t - s - 1 / 2) + 1 / 2 = t := by ring
     rw [he] at hw
-    push_cast
     rw [← hw]
     push_cast
     ring
@@ -590,11 +569,11 @@ theorem standardIntertwiner_harmonic_eigenvalue (β : ℂˣ) (ℓ : ℕ)
   rw [hscalar]
   exact Submodule.smul_mem _ _ hf
 
-private lemma characterScale_pos' (β : ℂˣ) : 0 < characterScale β := by
+lemma characterScale_pos' (β : ℂˣ) : 0 < characterScale β := by
   rw [characterScale]
-  exact norm_pos_iff.mpr (Units.ne_zero β)
+  simp
 
-private lemma eigenvalue_pos (β : ℂˣ) (ℓ : ℕ) : 0 < eigenvalue β ℓ := by
+lemma eigenvalue_pos (β : ℂˣ) (ℓ : ℕ) : 0 < eigenvalue β ℓ := by
   have hc := characterScale_pos' β
   rw [eigenvalue]
   apply mul_pos
@@ -613,7 +592,7 @@ theorem eigenvalue_zero (β : ℂˣ) :
 theorem eigenvalue_ne_zero (β : ℂˣ) (ℓ : ℕ) : eigenvalue β ℓ ≠ 0 :=
   ne_of_gt (eigenvalue_pos β ℓ)
 
-private lemma one_harmonic : (1 : MvPolynomial (Fin 3) ℂ) ∈ harmonicPolynomials 0 := by
+lemma one_harmonic : (1 : MvPolynomial (Fin 3) ℂ) ∈ harmonicPolynomials 0 := by
   constructor
   · exact MvPolynomial.isHomogeneous_one (Fin 3) ℂ
   · simp [LinearMap.mem_ker, polynomialLaplacian, LinearMap.sum_apply,
@@ -639,7 +618,7 @@ theorem standardIntertwiner_spherical (β : ℂˣ) :
   rw [(eigenvalue_zero β).1] at he
   rw [he]
   congr 1
-  · push_cast; rfl
+  · simp
   · funext k
     exact (spherical_compact positiveParameter k).trans (spherical_compact negativeParameter k).symm
 
@@ -693,7 +672,3 @@ theorem harmonicKType_zero_eq_span (s : ℝ) :
       change MvPolynomial.eval (compactSphereCoordinate k) 1 =
         sphericalSection s (complexSU2Embedding k)
       rw [spherical_compact]; simp
-
-end DedekindZetaZeroFree.KPCplxIntertwinerEigenvalues
-
-end

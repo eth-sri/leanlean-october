@@ -11,10 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-set_option autoImplicit false
 /-!
 Provides the public declarations in the
 `LocalClassFieldTheory.ClassFormation.Hilbert90` Lean module.
@@ -24,7 +20,6 @@ namespace LocalClassFieldTheory
 
 open CyclicCohomology
 
-noncomputable section
 
 /-- The `i = -1` half of the local class-field-axiom theorem on the actual field-unit
 representation.  This is Hilbert 90 transported through the cyclic
@@ -39,6 +34,3 @@ theorem unitsTateHminusOne_card_eq_one
       Nat.card_congr
         (unitsH1IsoTateHminusOne K L g hg).symm.toLinearEquiv.toEquiv
     _ = 1 := Nat.card_unique
-
-end
-end LocalClassFieldTheory

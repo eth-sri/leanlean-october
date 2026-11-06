@@ -123,7 +123,3 @@ theorem smoothInd_admissible_of_compact_quotient
     Admissible (G := G) (V := SmoothInd H τ d) (smoothIndRepresentation H τ d) := by
   intro J
   exact smoothInd_open_fixed_finite_of_compact_quotient H τ d hH hquotient J.toOpenSubgroup
-
-end Admissibility
-
-end DedekindZetaZeroFree

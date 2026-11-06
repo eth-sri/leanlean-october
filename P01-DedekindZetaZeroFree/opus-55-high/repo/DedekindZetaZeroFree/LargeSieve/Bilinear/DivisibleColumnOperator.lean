@@ -10,14 +10,13 @@ Revision: adc7f1241b42e322a6451854ab7e4b4c146bf78a.
 Goldmakher–Louvel, A quadratic large sieve inequality over number fields (arXiv:1112.1642).
 -/
 
-noncomputable section
 open scoped NumberField Classical BigOperators
 namespace DedekindZetaZeroFree.LargeSieve.Bilinear.DivisiblePrefix
 open ExplicitTerms
 variable {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
 variable {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
 
-private lemma column_admissible (C : Context Q) {u : Ideal (𝓞 F)}
+lemma column_admissible (C : Context Q) {u : Ideal (𝓞 F)}
     (hu : u ∈ C.columns) : u ∈ Sieve.idealAdmissibleFinset F c (2 * C.N / norm C.d) :=
   (Finset.mem_filter.mp hu).1
 
@@ -31,9 +30,7 @@ private lemma homogeneous_domination {ι : Type*} (E H : (ι → ℂ) → ℝ)
   have hS : BddAbove S := by
     refine ⟨C, ?_⟩
     rintro y (hy | ⟨z, hz, rfl⟩)
-    · have : y = 0 := hy
-      subst y
-      exact hC
+    · simp_all
     · exact (hbound z).trans (mul_le_of_le_one_right hC hz)
   by_cases he : E x = 0
   · simpa [he] using hbound x
@@ -41,7 +38,7 @@ private lemma homogeneous_domination {ι : Type*} (E H : (ι → ℂ) → ℝ)
   let t : ℝ := (Real.sqrt (E x))⁻¹
   have ht : t ^ 2 * E x = 1 := by
     dsimp [t]
-    rw [inv_pow, Real.sq_sqrt (hE x), inv_mul_cancel₀ he]
+    simp_all
   have hm : H (fun i => (t : ℂ) * x i) ≤ sSup S := by
     apply le_csSup hS
     exact Or.inr ⟨_, (hEs x t).trans_le (by rw [ht]), rfl⟩
@@ -92,23 +89,19 @@ private lemma restricted_prefix_bound (B X : ℝ) (R S : Finset (Ideal (𝓞 F))
     simp only [w, ite_mul, zero_mul]
     rw [← Finset.sum_filter]
     congr 1
-    ext b
-    simp only [Finset.mem_filter]
-    exact ⟨fun h => h.2, fun h => ⟨hS h, h⟩⟩
+    simp_all
   have he : (∑ b ∈ Sieve.idealAdmissibleFinset F c (2 * X), ‖w b‖ ^ 2) =
       ∑ b ∈ S, ‖z b‖ ^ 2 := by
     simp only [w, apply_ite (fun x : ℂ => ‖x‖ ^ 2), norm_zero,
       zero_pow (by decide : 2 ≠ 0)]
     rw [← Finset.sum_filter]
     congr 1
-    ext b
-    simp only [Finset.mem_filter]
-    exact ⟨fun h => h.2, fun h => ⟨hS h, h⟩⟩
+    simp_all
   calc
     _ ≤ ∑ a ∈ Sieve.idealAdmissibleFinset F c (2 * B),
         ‖∑ b ∈ Sieve.idealAdmissibleFinset F c (2 * X), w b * (Q.χ b) a‖ ^ 2 := by
       simp only [hs]
-      exact Finset.sum_le_sum_of_subset_of_nonneg hR (by intros; positivity)
+      exact Finset.sum_le_sum_of_subset_of_nonneg hR (by simp)
     _ ≤ _ := by
       simpa only [he, ErrorRectangles.U] using
         (finite_form_bound (Sieve.idealAdmissibleFinset F c (2 * X))
@@ -193,8 +186,7 @@ private lemma transport_prefix_bound
       exact hij (((Finset.mem_filter.mp hti).2).symm.trans (Finset.mem_filter.mp htj).2))
     (fun t a => (Q.χ (f*t)) a) (ErrorRectangles.U Q B X)
     (Real.sSup_nonneg' ⟨0, Or.inl rfl, le_rfl⟩) hloc w
-  simp only [I, J, Finset.card_univ, Fintype.card_unit, Nat.cast_one,
-    one_mul, Fintype.card_prod, Fintype.card_eq_nat_card, Nat.cast_mul] at hh
+  simp only [I, J, Finset.card_univ, Fintype.card_eq_nat_card] at hh
   have hunit : Nat.card Unit = 1 := by simp
   simpa only [hunit, Nat.cast_one, one_mul, pow_two, Nat.card_prod, Nat.cast_mul] using hh
 
@@ -233,7 +225,7 @@ theorem realized_divisible_column_U
     have hu0 := ((Sieve.mem_idealAdmissibleFinset _ _ _ _).mp
       (column_admissible C huC)).1.ne_zero
     obtain ⟨t, ht⟩ := hud
-    have htdiv : t ∣ u := by rw [ht]; exact dvd_mul_left _ _
+    have htdiv : t ∣ u := by simp_all
     obtain ⟨husf, huc, hunorm⟩ := (Sieve.mem_idealAdmissibleFinset _ _ _ _).mp
       (column_admissible C huC)
     have htsf : Squarefree t := husf.squarefree_of_dvd htdiv
@@ -265,14 +257,10 @@ theorem realized_divisible_column_U
     rw [← Finset.sum_filter]
     symm
     apply Finset.sum_bij (fun t ht => f*t)
-    · intro t ht
-      exact Finset.mem_filter.mpr ⟨hftV t ht, dvd_mul_right f t⟩
-    · intro t ht v hv he
-      exact hinj he
-    · intro u hu
-      obtain ⟨t, ht, he⟩ := honto u hu
-      exact ⟨t, ht, he⟩
-    · intros; rfl
+    · simp_all
+    · simp_all
+    · simp_all
+    simp
   let w : Ideal (𝓞 F) → ℂ := fun t => z (f*t) * v (f*t)
   have henergy : (∑ t ∈ T, ‖w t‖ ^ 2) ≤
       ∑ u ∈ V, if f ∣ u then ‖z u‖ ^ 2 else 0 := by
@@ -283,17 +271,13 @@ theorem realized_divisible_column_U
         dsimp [w]
         rw [norm_mul, mul_pow]
         exact mul_le_of_le_one_right (sq_nonneg _)
-          (by have hh := hv (f*t) (hftV t ht); nlinarith [norm_nonneg (v (f*t))])
+          (by simp_all)
       _ = ∑ u ∈ V.filter (fun u => f ∣ u), ‖z u‖ ^ 2 := by
         apply Finset.sum_bij (fun t ht => f*t)
-        · intro t ht
-          exact Finset.mem_filter.mpr ⟨hftV t ht, dvd_mul_right f t⟩
-        · intro t ht v hv he
-          exact hinj he
-        · intro u hu
-          obtain ⟨t, ht, he⟩ := honto u hu
-          exact ⟨t, ht, he⟩
-        · intros; rfl
+        · simp_all
+        · simp_all
+        · simp_all
+        simp
       _ = _ := Finset.sum_filter _ _
   have hrow : (∑ a ∈ R, ‖∑ u ∈ V,
       if f ∣ u then r a * (z u * (Q.χ u) a) * v u else 0‖ ^ 2) ≤
@@ -310,7 +294,7 @@ theorem realized_divisible_column_U
       ring
     rw [he, norm_mul, mul_pow]
     exact mul_le_of_le_one_left (sq_nonneg _)
-      (by have hh := hr a ha; nlinarith [norm_nonneg (r a)])
+      (by simp_all)
   have hU : 0 ≤ ErrorRectangles.U Q B X := Real.sSup_nonneg' ⟨0, Or.inl rfl, le_rfl⟩
   calc
     _ ≤ _ := hrow
@@ -320,7 +304,3 @@ theorem realized_divisible_column_U
       mul_le_mul_of_nonneg_left henergy (mul_nonneg (sq_nonneg _) hU)
     _ ≤ _ := mul_le_mul_of_nonneg_right
       (mul_le_mul_of_nonneg_right (by linarith : (Nat.card Q.G : ℝ)^2 ≤ (Nat.card Q.G : ℝ)^2 + 1) hU) (by positivity)
-
-end DedekindZetaZeroFree.LargeSieve.Bilinear.DivisiblePrefix
-
-end

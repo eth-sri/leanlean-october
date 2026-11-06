@@ -44,7 +44,7 @@ private theorem realGrad_duality (d : ℕ) (f : Space d → ℝ) (x u : Space d)
       (Real.exp (-2 * x (i,2)) * Real.exp (2 * x (i,2))) *
         (fderiv ℝ f x (coordinateVector d i 0) * u (i,0) + fderiv ℝ f x (coordinateVector d i 1) * u (i,1)) := by ring
        _ = _ := by rw [he]; ring
-private theorem realGrad_smooth (d : ℕ) (f : Space d → ℝ) (hf : ContDiff ℝ ∞ f) :
+theorem realGrad_smooth (d : ℕ) (f : Space d → ℝ) (hf : ContDiff ℝ ∞ f) :
     ContDiff ℝ 1 (realGrad d f) := by
   apply (contDiff_piLp 2).mpr
   intro k
@@ -175,7 +175,7 @@ private theorem real_isometry_laplacian (d : ℕ) (ψ : Space d → Space d) (h�
   have he := hquad (u+v)
   rw [map_add, hpol, hpol, hquad, hquad] at he
   linarith
-private theorem local_bridge (d : ℕ) (f : KPArch.Space d → ℂ) (hf : ContDiff ℝ ∞ f) (x : Space d) :
+theorem local_bridge (d : ℕ) (f : KPArch.Space d → ℂ) (hf : ContDiff ℝ ∞ f) (x : Space d) :
     KPContActualSphericalFlatStage.localLaplacian d f (CotangentLogCoframe.A d x) =
       laplacian d (f ∘ CotangentLogCoframe.A d) x := by
   have h := KPContArchLaplacianCoordinateBridge.bridge_equiv d d (Equiv.refl _) f hf x

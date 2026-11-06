@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 universe u
 
 namespace ClassFormation
@@ -159,8 +156,3 @@ theorem infiniteUnitNormSubgroup_le_normSubgroup
   intro M
   exact v.finiteIntermediateUnitNormRange_le_normRange E K M
     ((v.mem_infiniteUnitNormSubgroup_iff E K a).1 ha M)
-
-end ValuationData
-end
-
-end ClassFormation

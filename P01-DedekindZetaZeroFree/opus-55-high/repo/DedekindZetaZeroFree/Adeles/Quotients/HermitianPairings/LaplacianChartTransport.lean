@@ -24,7 +24,7 @@ namespace LaplacianReindex
 variable {d d' : ℕ}
  def reindex (e : Fin d ≃ Fin d') : HyperbolicChart.Space d ≃ₗᵢ[ℝ] HyperbolicChart.Space d' :=
   LinearIsometryEquiv.piLpCongrLeft 2 ℝ ℝ (e.prodCongr (Equiv.refl (Fin 3)))
-private theorem vector_reindex (e : Fin d ≃ Fin d') (i : Fin d) (k : Fin 3) :
+theorem vector_reindex (e : Fin d ≃ Fin d') (i : Fin d) (k : Fin 3) :
     reindex e (HyperbolicChart.coordinateVector d i k) =
       HyperbolicChart.coordinateVector d' (e i) k := by
   ext j
@@ -32,7 +32,7 @@ private theorem vector_reindex (e : Fin d ≃ Fin d') (i : Fin d) (k : Fin 3) :
   obtain ⟨j, rfl⟩ := e.surjective j
   simp [reindex, HyperbolicChart.coordinateVector, LinearIsometryEquiv.piLpCongrLeft,
     Equiv.prodCongr]
-private theorem deriv_reindex (e : Fin d ≃ Fin d') (g : HyperbolicChart.Space d' → ℂ)
+theorem deriv_reindex (e : Fin d ≃ Fin d') (g : HyperbolicChart.Space d' → ℂ)
     (i : Fin d) (k : Fin 3) (x : HyperbolicChart.Space d) :
     HyperbolicChart.coordinateDerivative d i k (g ∘ reindex e) x =
       HyperbolicChart.coordinateDerivative d' (e i) k g (reindex e x) := by
@@ -42,7 +42,7 @@ private theorem deriv_reindex (e : Fin d ≃ Fin d') (g : HyperbolicChart.Space 
   change fderiv ℝ g (reindex e x) (reindex e (HyperbolicChart.coordinateVector d i k)) = _
   rw [vector_reindex]
   rfl
-private theorem lap_reindex (e : Fin d ≃ Fin d') (g : HyperbolicChart.Space d' → ℂ)
+theorem lap_reindex (e : Fin d ≃ Fin d') (g : HyperbolicChart.Space d' → ℂ)
     (x : HyperbolicChart.Space d) :
     HyperbolicChart.laplacian d (g ∘ reindex e) x =
       HyperbolicChart.laplacian d' g (reindex e x) := by
@@ -58,13 +58,13 @@ private theorem lap_reindex (e : Fin d ≃ Fin d') (g : HyperbolicChart.Space d'
   rw [hcoord]
 end LaplacianReindex
 
-private theorem toArch_reindex (x : M F) :
+theorem toArch_reindex (x : M F) :
     KPCuspCutoffGraph.toArch F (LaplacianReindex.reindex (placeEquiv F ζ hζ) x) =
       labeledA (placeEquiv F ζ hζ) x := by
   funext k
   simp [KPCuspCutoffGraph.toArch, LaplacianReindex.reindex, labeledA, CotangentLogCoframe.A,
     Complex.ext_iff]
-private theorem fromArch_reindex (x : M F) :
+theorem fromArch_reindex (x : M F) :
     KPCuspCutoffGraph.fromArch F (labeledA (placeEquiv F ζ hζ) x) =
       LaplacianReindex.reindex (placeEquiv F ζ hζ) x := by
   ext j

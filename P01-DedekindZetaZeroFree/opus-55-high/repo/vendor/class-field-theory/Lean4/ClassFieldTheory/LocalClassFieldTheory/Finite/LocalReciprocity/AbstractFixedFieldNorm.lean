@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 namespace LocalClassFieldTheory
 open RamificationTheory CyclicCohomology KummerTheory ClassFormation
 
@@ -32,7 +27,6 @@ identifies the two presentations.  In particular, it does not assume that the
 finite fixed field is normal over the local ground field.
 -/
 
-noncomputable section
 
 open scoped ValuativeRel
 variable (K Ω : Type) [Field K] [Field Ω] [Algebra K Ω]
@@ -65,9 +59,7 @@ theorem relativeNorm_coe_eq_of_closedSubgroup_eq
   subst hC'B'
   have hfin : hfinite = hfinite' := Subsingleton.elim _ _
   subst hfinite'
-  have hxx' : x = x' := Subtype.ext hx
-  subst x'
-  rfl
+  simp_all
 
 /-- For an arbitrary finite separable abstract field, the abstract class-formation norm on
 fixed coefficients has the same underlying field element as the ordinary
@@ -236,8 +228,8 @@ theorem localBaseValuation_comp_normToBase_range_eq_residueFinrank
                 (Additive.toMul x))) =
           (f : Int) *
             LocalFieldTheory.IsNonarchimedeanLocalField.valuationMap
-              (abstractFixedField K (SeparableClosure K) H) x := by
-      exact hnorm
+              (abstractFixedField K (SeparableClosure K) H) x := 
+      hnorm
     rw [hnorm', mem_nsmulImage_iff]
     refine ⟨Int.castRingHom ZHat
         (LocalFieldTheory.IsNonarchimedeanLocalField.valuationMap
@@ -272,16 +264,12 @@ theorem localBaseValuation_comp_normToBase_range_eq_residueFinrank
                 (Additive.toMul x))) =
           (f : Int) *
             LocalFieldTheory.IsNonarchimedeanLocalField.valuationMap
-              (abstractFixedField K (SeparableClosure K) H) x := by
-      exact hnorm
+              (abstractFixedField K (SeparableClosure K) H) x := 
+      hnorm
     rw [hnorm', hx]
     calc
       Int.castRingHom ZHat
           ((f : Int) * m) =
           f • Int.castRingHom ZHat m := by
-        rw [← map_nsmul]
-        congr 1
+        simp
       _ = z := hwz
-
-end
-end LocalClassFieldTheory

@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Inclusion of the chosen integral induced block
 
@@ -43,7 +40,7 @@ section ChosenFinitePlace
 
 /-- Inclusion of the chosen integral block into the ordinary chosen
 local multiplicative block. -/
-noncomputable def chosenFinitePlaceIntegralInducedBlockToLocalPlaceBlock
+def chosenFinitePlaceIntegralInducedBlockToLocalPlaceBlock
     (w₀ : HeightOneSpectrum (𝓞 K)) :
     ChosenFinitePlaceInducedIntegerUnits
         (K := K) (L := L) w₀ →
@@ -88,6 +85,3 @@ theorem chosenFinitePlaceIntegralInducedBlockToLocalPlaceBlock_injective
   unfold chosenFinitePlaceIntegralInducedBlockToLocalPlaceBlock
   exact inducedIntegerUnitsToLocalPlaceBlock_injective
     vK hvK hvKna u
-end ChosenFinitePlace
-
-end

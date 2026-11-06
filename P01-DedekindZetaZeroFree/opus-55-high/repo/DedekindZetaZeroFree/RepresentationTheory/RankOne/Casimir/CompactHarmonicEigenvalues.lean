@@ -23,12 +23,12 @@ def compactPolynomialDerivative (j : Fin 3) (p : MvPolynomial (Fin 3) ℂ) :=
 open KPCplxPrincipalSeriesCharts KPCplxCharacterHaar
 
 open scoped Matrix.Norms.Operator in
-private theorem exp_path_components (g : ComplexGL2) (M : Matrix (Fin 2) (Fin 2) ℂ) :
+theorem exp_path_components (g : ComplexGL2) (M : Matrix (Fin 2) (Fin 2) ℂ) :
     ∀ i j, HasDerivAt (fun t : ℝ => ((g : Matrix (Fin 2) (Fin 2) ℂ) * NormedSpace.exp ((t : ℂ) • M)) i j)
       (((g : Matrix (Fin 2) (Fin 2) ℂ) * M) i j) 0 := by
   have h := ((hasDerivAt_exp_smul_const (𝕂 := ℂ) M ((0 : ℝ) : ℂ)).hasFDerivAt.restrictScalars ℝ).comp_hasDerivAt (f := fun t : ℝ => (t : ℂ)) 0 Complex.ofRealCLM.hasDerivAt
   have hmat := h.const_mul (g : Matrix (Fin 2) (Fin 2) ℂ)
-  simp only [Complex.ofRealCLM_apply, Complex.ofReal_one, ContinuousLinearMap.coe_restrictScalars, ContinuousLinearMap.toSpanSingleton_apply, one_smul, zero_smul, NormedSpace.exp_zero, mul_one, one_mul] at hmat
+  simp only [Complex.ofRealCLM_apply, Complex.ofReal_one] at hmat
   intro i j
   have hi := (ContinuousLinearMap.proj i : Matrix (Fin 2) (Fin 2) ℂ →L[ℝ] Fin 2 → ℂ).hasFDerivAt.comp_hasDerivAt 0 hmat
   have hj := (ContinuousLinearMap.proj j : (Fin 2 → ℂ) →L[ℝ] ℂ).hasFDerivAt.comp_hasDerivAt 0 hi
@@ -37,7 +37,7 @@ private theorem exp_path_components (g : ComplexGL2) (M : Matrix (Fin 2) (Fin 2)
   simpa using hj
 
 open scoped Matrix.Norms.Elementwise in
-private theorem curve_derivative (s : ℝ) (j : Fin 3) (f : PrincipalSeries s)
+theorem curve_derivative (s : ℝ) (j : Fin 3) (f : PrincipalSeries s)
     (k : ComplexSU2) (c : ℝ → ComplexSU2) (hc : c 0 = k)
     (hd : ∀ a b, HasDerivAt (fun t => (c t : Matrix (Fin 2) (Fin 2) ℂ) a b)
       (((k : Matrix (Fin 2) (Fin 2) ℂ) * compactMatrix j) a b) 0) :
@@ -73,11 +73,11 @@ private theorem curve_derivative (s : ℝ) (j : Fin 3) (f : PrincipalSeries s)
     apply Units.ext
     rfl
   change _ = deriv (fun t : ℝ => f (complexSU2Embedding k * KPSmoothActualFlowData.matrixExponential ((t : ℂ) • cartanMatrix (true, j)))) 0
-  simp only [cartanMatrix, Bool.true_eq, ↓reduceIte]
+  simp only [cartanMatrix, ↓reduceIte]
   rw [eq1, eq2, h1.deriv, h2.deriv]
   rfl
 
-private theorem polynomial_eval_curve (j : Fin 3) (p : MvPolynomial (Fin 3) ℂ)
+theorem polynomial_eval_curve (j : Fin 3) (p : MvPolynomial (Fin 3) ℂ)
     (k : ComplexSU2) (c : ℝ → ComplexSU2) (hc : c 0 = k)
     (hd : ∀ i, HasDerivAt (fun t => compactSphereCoordinate (c t) i)
       (MvPolynomial.eval (compactSphereCoordinate k) (compactPolynomialDerivative j (MvPolynomial.X i))) 0) :
@@ -88,7 +88,7 @@ private theorem polynomial_eval_curve (j : Fin 3) (p : MvPolynomial (Fin 3) ℂ)
   | add p q hp hq =>
     convert hp.add hq using 1
     · simp only [map_add]; rfl
-    · simp [compactPolynomialDerivative, polynomialRotation, mul_add, mul_sub, sub_mul, smul_add]
+    · simp [compactPolynomialDerivative, polynomialRotation, mul_add, mul_sub]
       ring
   | mul_X p i hp =>
     convert hp.mul (hd i) using 1
@@ -135,15 +135,14 @@ attribute [-simp] Complex.ofReal_cos Complex.ofReal_sin
   constructor
   · ext a b
     fin_cases j <;> fin_cases a <;> fin_cases b <;>
-      simp [trigMatrix, Matrix.mul_apply, Fin.sum_univ_two, Matrix.star_apply,
-        Complex.star_def, Matrix.one_apply] <;> ring_nf <;> (try simp only [Complex.I_sq]) <;> linear_combination hs
+      simp [trigMatrix, Matrix.mul_apply, Fin.sum_univ_two, Matrix.star_apply] <;> ring_nf <;> (try simp only [Complex.I_sq]) <;> linear_combination hs
   · fin_cases j <;> simp [trigMatrix, Matrix.det_fin_two] <;>
       ring_nf <;> (try simp only [Complex.I_sq]) <;> linear_combination hs
  def trigSU2 (j : Fin 3) (t : ℝ) : ComplexSU2 := ⟨trigMatrix j t, trig_mem j t⟩
-private theorem trig_zero (j : Fin 3) : trigSU2 j 0 = 1 := by
+theorem trig_zero (j : Fin 3) : trigSU2 j 0 = 1 := by
   apply Subtype.ext
-  fin_cases j <;> ext a b <;> fin_cases a <;> fin_cases b <;> simp [trigSU2, trigMatrix, Matrix.one_apply]
-private theorem trig_derivative (j : Fin 3) :
+  fin_cases j <;> ext a b <;> fin_cases a <;> fin_cases b <;> simp [trigSU2, trigMatrix]
+theorem trig_derivative (j : Fin 3) :
     ∀ a b, HasDerivAt (fun t => (trigSU2 j t : Matrix (Fin 2) (Fin 2) ℂ) a b)
       (compactMatrix j a b) 0 := by
   have h := (hasDerivAt_id (0 : ℝ)).div_const (Real.sqrt 2)
@@ -152,19 +151,18 @@ private theorem trig_derivative (j : Fin 3) :
   simp only [Function.comp_def, Complex.ofRealCLM_apply, id_eq, zero_div, Real.sin_zero, Real.cos_zero, neg_zero, zero_mul, one_mul] at hc hs
   intro a b
   fin_cases j <;> fin_cases a <;> fin_cases b
-  all_goals simp only [trigSU2, trigMatrix, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_two,
-    compactMatrix, noncompactMatrix, Matrix.smul_apply, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_two]
-  · convert hc.add (hs.const_mul Complex.I) using 1 <;> simp [Complex.I_sq, mul_assoc] <;> (first | rfl | (funext t; simp [mul_comm]) | (ring_nf; simp [Complex.I_sq]))
+  all_goals simp only [trigSU2, trigMatrix, compactMatrix, noncompactMatrix, Matrix.smul_apply]
+  · convert hc.add (hs.const_mul Complex.I) using 1 <;> simp <;> (first | rfl | (funext t; simp [mul_comm]) | (ring_nf; simp [Complex.I_sq]))
   · simpa using hasDerivAt_const (0 : ℝ) (0 : ℂ)
   · simpa using hasDerivAt_const (0 : ℝ) (0 : ℂ)
-  · convert hc.sub (hs.const_mul Complex.I) using 1 <;> simp [Complex.I_sq, mul_assoc] <;> (first | rfl | (funext t; simp [mul_comm]) | (ring_nf; simp [Complex.I_sq]))
+  · convert hc.sub (hs.const_mul Complex.I) using 1 <;> simp <;> (first | rfl | (funext t; simp [mul_comm]) | (ring_nf; simp [Complex.I_sq]))
   · simpa using hc
-  · convert hs.const_mul Complex.I using 1 <;> simp [Complex.I_sq, mul_assoc] <;> (first | rfl | (funext t; simp [mul_comm]) | (ring_nf; simp [Complex.I_sq]))
-  · convert hs.const_mul Complex.I using 1 <;> simp [Complex.I_sq, mul_assoc] <;> (first | rfl | (funext t; simp [mul_comm]) | (ring_nf; simp [Complex.I_sq]))
+  · convert hs.const_mul Complex.I using 1 <;> simp <;> (first | rfl | (funext t; simp [mul_comm]) | (ring_nf; simp [Complex.I_sq]))
+  · convert hs.const_mul Complex.I using 1 <;> simp <;> (first | rfl | (funext t; simp [mul_comm]) | (ring_nf; simp [Complex.I_sq]))
   · simpa using hc
   · simpa using hc
-  · convert hs.neg using 1 <;> simp [Complex.I_sq, mul_assoc] <;> (first | rfl | (funext t; simp [mul_comm]) | (ring_nf; simp [Complex.I_sq]))
-  · convert hs using 1 <;> simp [Complex.I_sq, mul_assoc] <;> (first | rfl | (funext t; simp [mul_comm]) | (ring_nf; simp [Complex.I_sq]))
+  · convert hs.neg using 1 <;> simp <;> (first | rfl | (funext t; simp [mul_comm]) | (ring_nf; simp))
+  · convert hs using 1 <;> simp <;> (first | rfl | (funext t; simp [mul_comm]) | (ring_nf; simp))
   · simpa using hc
 
 theorem compact_trig_curve_exists (j : Fin 3) (k : ComplexSU2) :
@@ -194,37 +192,22 @@ theorem hopf_derivative_of_matrix_tangent (j : Fin 3) (k : ComplexSU2)
   have hbbr := Complex.reCLM.hasFDerivAt.comp_hasDerivAt 0 (hb.mul hb.star)
   have hnorm : ∀ z : ℂ, ‖z‖ ^ 2 = (z * star z).re := by
     intro z
-    simp [Complex.mul_re, Complex.sq_norm, Complex.normSq_apply, Complex.star_def]
+    simp [Complex.mul_re, Complex.sq_norm, Complex.normSq_apply]
   intro i
   fin_cases i
   · convert Complex.ofRealCLM.hasFDerivAt.comp_hasDerivAt 0 (habr.const_mul 2) using 1
-    · funext t
-      simp [compactSphereCoordinate, Function.comp_def, Complex.ofReal_mul, Complex.ofReal_add]
+    · rfl
     · fin_cases j <;>
-        simp [hc, compactPolynomialDerivative, compactCoefficient, polynomialRotation,
-          compactAxis, compactMatrix, noncompactMatrix, Matrix.mul_apply, Fin.sum_univ_two,
-          compactSphereCoordinate, hnorm, MvPolynomial.smul_eq_C_mul,
-          Complex.star_def, Complex.mul_re, Complex.mul_im] <;>
+        simp [hc, compactPolynomialDerivative, compactCoefficient, polynomialRotation, compactAxis, compactMatrix, noncompactMatrix, Matrix.mul_apply, Fin.sum_univ_two, compactSphereCoordinate, hnorm, MvPolynomial.smul_eq_C_mul, Complex.mul_re, Complex.mul_im] <;>
         push_cast <;> ring
   · convert Complex.ofRealCLM.hasFDerivAt.comp_hasDerivAt 0 (habi.const_mul 2) using 1
-    · funext t
-      simp [compactSphereCoordinate, Function.comp_def, Complex.ofReal_mul, Complex.ofReal_add]
+    · rfl
     · fin_cases j <;>
-        simp [hc, compactPolynomialDerivative, compactCoefficient, polynomialRotation,
-          compactAxis, compactMatrix, noncompactMatrix, Matrix.mul_apply, Fin.sum_univ_two,
-          compactSphereCoordinate, hnorm, MvPolynomial.smul_eq_C_mul,
-          Complex.star_def, Complex.mul_re, Complex.mul_im] <;>
+        simp [hc, compactPolynomialDerivative, compactCoefficient, polynomialRotation, compactAxis, compactMatrix, noncompactMatrix, Matrix.mul_apply, Fin.sum_univ_two, compactSphereCoordinate, hnorm, MvPolynomial.smul_eq_C_mul, Complex.mul_re, Complex.mul_im] <;>
         push_cast <;> ring
   · convert Complex.ofRealCLM.hasFDerivAt.comp_hasDerivAt 0 (haar.sub hbbr) using 1
     · funext t
       simp [compactSphereCoordinate, hnorm, Function.comp_def]
     · fin_cases j <;>
-        simp [hc, compactPolynomialDerivative, compactCoefficient, polynomialRotation,
-          compactAxis, compactMatrix, noncompactMatrix, Matrix.mul_apply, Fin.sum_univ_two,
-          compactSphereCoordinate, hnorm, MvPolynomial.smul_eq_C_mul,
-          Complex.star_def, Complex.mul_re, Complex.mul_im] <;>
+        simp [hc, compactPolynomialDerivative, compactCoefficient, polynomialRotation, compactAxis, compactMatrix, noncompactMatrix, Matrix.mul_apply, Fin.sum_univ_two, compactSphereCoordinate, hnorm, MvPolynomial.smul_eq_C_mul, Complex.mul_re, Complex.mul_im] <;>
         push_cast <;> ring
-
-end DedekindZetaZeroFree.RepresentationTheory.KPSmoothCoreCasimirEnergy.CompactDerivativeTransport
-
-end

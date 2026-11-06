@@ -21,7 +21,7 @@ variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
 variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
 variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
 
-private lemma liftExtension_coordinates {F : Type} [Field F] [NumberField F] {ζ : F}
+lemma liftExtension_coordinates {F : Type} [Field F] [NumberField F] {ζ : F}
     {hζ : IsPrimitiveRoot ζ 12} {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
     {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
     {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}

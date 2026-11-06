@@ -87,9 +87,9 @@ lemma upper_signedArgument_rotation {Q : AdmissibleFlatSources R} {T : Realizati
     simp only [mul_assoc]
     have he : (KPRationalAdelicSplitting.localIdele F (Sum.inl w) z)⁻¹ =
         KPRationalAdelicSplitting.localIdele F (Sum.inl w) z⁻¹ := by
-      simp [KPRationalAdelicSplitting.localIdele]
+      rfl
     rw [he, C.radial]
-    simp [Units.val_inv_eq_inv_val, norm_inv, hz]
+    simp_all
   · simp only [signedArgument, if_true, one_mul, diagonal_insertion, mul_assoc]
     rw [C.radial]
     simp [hz]
@@ -140,8 +140,4 @@ lemma weightedUpper_neg_one {Q : AdmissibleFlatSources R} {T : Realization R Q}
   unfold weightedUpper
   rw [map_mul, insertion_class_eq_one,
     one_mul (QuotientGroup.mk' R.A.sixthPowers y), map_mul, branch_neg_one, upperDigits_rotation R C v m b w (-1) (by simp)]
-  simp only [neg_one_mul, inv_neg]
-  ring
-end DedekindZetaZeroFree.IdeleInsertion
-
-end
+  simp

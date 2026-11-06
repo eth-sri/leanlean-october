@@ -8,8 +8,6 @@ public import DedekindZetaZeroFree.CharacterSums.DavenportHasse.PrimeGaussIdenti
 open scoped NumberField Classical
 open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.SArithmeticData.GaussCorrection
-noncomputable section
-set_option autoImplicit false
 variable {F : Type} [Field F] [NumberField F]
 
 theorem corrected_primeGaussLaws
@@ -38,6 +36,3 @@ theorem corrected_primeGaussLaws
     obtain ⟨hcub, hdup⟩ := primeGaussIdentities A hS σ B I v hIv p hp a ha hap
     rw [hdup, hcub, W.prime I v hIv p hp a ha hap x hx]
     ring
-
-end
-end DedekindZetaZeroFree.SArithmeticData.GaussCorrection

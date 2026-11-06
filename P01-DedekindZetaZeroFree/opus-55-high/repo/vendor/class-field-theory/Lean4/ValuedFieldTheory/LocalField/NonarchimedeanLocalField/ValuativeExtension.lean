@@ -12,9 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 /-!
 # Valuative extensions
 
@@ -22,7 +19,6 @@ Records when the valuation ring of an extension field is integral over the
 base valuation ring, the hypothesis needed to restrict field norms integrally.
 -/
 
-set_option autoImplicit false
 
 namespace Valuation
 
@@ -85,6 +81,3 @@ instance valuativeExtensionOfIsIntegralClosure
     ValuativeExtension K L where
   integer_isIntegral x :=
     (IsIntegralClosure.isIntegral_iff (A := 𝒪[L]) (R := 𝒪[K]) (B := L)).2 ⟨x, rfl⟩
-
-end
-end LocalFieldTheory

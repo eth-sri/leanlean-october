@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Finite places in the compatible Galois realization
 
@@ -48,7 +45,7 @@ field to the common rational separable closure.
 Its restriction to `L` is definitionally the supplied exact extension,
 so the resulting decomposition-group restriction lands at the
 specified place rather than at an unrelated conjugate. -/
-noncomputable def
+def
     numberFieldTowerFinitePlaceExtensionToSeparableClosure
     (v : HeightOneSpectrum (𝓞 K))
     (w : AbsoluteValueExtension
@@ -138,11 +135,4 @@ theorem
   let : IsScalarTower K L (SeparableClosure ℚ) :=
     numberFieldTowerSeparableClosureScalarTower K L
   ext x
-  exact
-    numberFieldTowerFinitePlaceExtensionToSeparableClosure_algebraMap
-      K L v w x
-
-end Reciprocity
-end GlobalClassFieldTheory
-
-end
+  simp

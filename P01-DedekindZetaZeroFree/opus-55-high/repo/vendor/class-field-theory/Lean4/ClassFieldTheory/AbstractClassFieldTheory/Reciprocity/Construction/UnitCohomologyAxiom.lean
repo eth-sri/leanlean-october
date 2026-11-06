@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 namespace ClassFormation
 
 open KummerTheory
@@ -83,7 +79,7 @@ def IsTotallyRamified (E : FiniteCyclicSubextension K)
 /-- Retain the finite-over-base endpoint bundles as well as the relative
 finite quotient. -/
 @[implicit_reducible]
-noncomputable def toFiniteAbstractFieldExtension
+def toFiniteAbstractFieldExtension
     (E : FiniteCyclicSubextension K) : FiniteAbstractFieldExtension G := by
   letI : Finite
       (K.field.toSubgroup ⧸ extensionSubgroup K.field E.field E.below) :=
@@ -101,7 +97,7 @@ instance (E : FiniteCyclicSubextension K) :
   E.finite
 
 /-- The finite quotient of a cyclic subextension carries its canonical `Fintype`. -/
-noncomputable instance (E : FiniteCyclicSubextension K) :
+instance (E : FiniteCyclicSubextension K) :
     Fintype (K.field.toSubgroup ⧸ extensionSubgroup K.field E.field E.below) :=
   Fintype.ofFinite _
 
@@ -128,7 +124,7 @@ variable {K : FiniteAbstractField G}
 /-- Forget cyclic and unramified structure while retaining both finite
 endpoint fields and the relative finite quotient. -/
 @[implicit_reducible]
-noncomputable def toFiniteAbstractFieldExtension
+def toFiniteAbstractFieldExtension
     (E : FiniteUnramifiedCyclicExtension D K) :
     FiniteAbstractFieldExtension G :=
   E.toFiniteCyclicSubextension.toFiniteAbstractFieldExtension
@@ -137,8 +133,8 @@ noncomputable def toFiniteAbstractFieldExtension
 bundle. -/
 theorem toFiniteAbstractFieldExtension_isUnramified
     (E : FiniteUnramifiedCyclicExtension D K) :
-    E.toFiniteAbstractFieldExtension.IsUnramified D := by
-  exact E.unramified
+    E.toFiniteAbstractFieldExtension.IsUnramified D := 
+  E.unramified
 
 /-- A finite unramified cyclic extension supplies normality of its representing subgroup. -/
 instance (E : FiniteUnramifiedCyclicExtension D K) :
@@ -151,14 +147,14 @@ instance (E : FiniteUnramifiedCyclicExtension D K) :
   E.finite
 
 /-- The absolute quotient attached to a finite unramified cyclic extension is finite. -/
-noncomputable instance (E : FiniteUnramifiedCyclicExtension D K) :
+instance (E : FiniteUnramifiedCyclicExtension D K) :
     Finite ((baseField G).toSubgroup ⧸
       extensionSubgroup (baseField G) E.field (le_baseField E.field)) :=
   relativeTowerQuotientFinite (baseField G) K.field E.field E.below
     (le_baseField K.field)
 
 /-- The finite quotient over `K` carries the canonical `Fintype` structure. -/
-noncomputable instance (E : FiniteUnramifiedCyclicExtension D K) :
+instance (E : FiniteUnramifiedCyclicExtension D K) :
     Fintype (K.field.toSubgroup ⧸ extensionSubgroup K.field E.field E.below) :=
   Fintype.ofFinite _
 
@@ -170,7 +166,7 @@ variable {K : FiniteAbstractField G}
 
 /-- The fixed coefficient representation attached to a bundled cyclic
 extension. -/
-noncomputable def fixedRepresentation (E : FiniteCyclicSubextension K)
+def fixedRepresentation (E : FiniteCyclicSubextension K)
     (A : Rep ℤ G) :
     Rep ℤ (K.field.toSubgroup ⧸ extensionSubgroup K.field E.field E.below) :=
   extensionFixedRepresentation A K.field E.field E.below E.normal
@@ -187,8 +183,8 @@ theorem exists_norm_eq_of_tateHZero_isZero
   let : IsCyclic Q := isCyclic_of_generator g hg
   let : CommGroup Q := IsCyclic.commGroup (α := Q)
   let S := Rep.FiniteCyclicGroup.normHomCompSub M g
-  have hSzero : Limits.IsZero S.homology := by
-    exact Limits.IsZero.of_iso hzero
+  have hSzero : Limits.IsZero S.homology := 
+    Limits.IsZero.of_iso hzero
       (TateCohomology.isoFiniteCyclicZero M g hg).symm
   have hS : S.Exact := (S.exact_iff_isZero_homology).2 hSzero
   intro x hx
@@ -262,7 +258,7 @@ theorem valuationAt_normalExtensionAction
       (v.residueDegree_nsmul_dividedAt E.field a).symm
 
 /-- The action of `G_K` on the actual unit subgroup `U_L`. -/
-noncomputable def unitActionLinearMap
+def unitActionLinearMap
     (v : ValuationData D A) (E : FiniteAbstractFieldExtension G)
     (hnormal : (extensionSubgroup E.base.field E.field.field E.below).Normal)
     (k : E.base.field.toSubgroup) :
@@ -275,16 +271,14 @@ noncomputable def unitActionLinearMap
   map_add' u w := by
     apply Subtype.ext
     apply Subtype.ext
-    change A.ρ k.1 (u.1.1 + w.1.1) = A.ρ k.1 u.1.1 + A.ρ k.1 w.1.1
-    exact map_add (A.ρ k.1) _ _
+    simp
   map_smul' n u := by
     apply Subtype.ext
     apply Subtype.ext
-    change A.ρ k.1 (n • u.1.1) = n • A.ρ k.1 u.1.1
-    exact map_zsmul (A.ρ k.1) n u.1.1
+    simp
 
 /-- The `G_K`-representation on `U_L` before descending through `G_L`. -/
-noncomputable def unitRepresentationOverK
+def unitRepresentationOverK
     (v : ValuationData D A) (E : FiniteAbstractFieldExtension G)
     (hnormal : (extensionSubgroup E.base.field E.field.field E.below).Normal) :
     Rep ℤ E.base.field.toSubgroup :=
@@ -299,8 +293,7 @@ noncomputable def unitRepresentationOverK
         ext u
         change A.ρ (k₁.1 * k₂.1) u.1.1 =
           A.ρ k₁.1 (A.ρ k₂.1 u.1.1)
-        rw [map_mul]
-        rfl }
+        simp }
 
 theorem unitRepresentationOverK_isTrivialOnExtension
     (v : ValuationData D A) (E : FiniteAbstractFieldExtension G)
@@ -318,7 +311,7 @@ theorem unitRepresentationOverK_isTrivialOnExtension
     ⟨s.1.1, (mem_extensionSubgroup_iff E.base.field E.field.field E.below s.1).1 s.2⟩
 
 /-- The actual quotient representation on the unit group `U_L`. -/
-noncomputable def unitRepresentation
+def unitRepresentation
     (v : ValuationData D A) (E : FiniteAbstractFieldExtension G)
     (hnormal : (extensionSubgroup E.base.field E.field.field E.below).Normal) :
     Rep ℤ (E.base.field.toSubgroup ⧸
@@ -339,7 +332,7 @@ variable {K : FiniteAbstractField G}
 
 /-- The unit representation carried by a bundled finite unramified cyclic
 extension. -/
-noncomputable def unitRepresentation
+def unitRepresentation
     (E : FiniteUnramifiedCyclicExtension D K) (v : ValuationData D A) :
     Rep ℤ (K.field.toSubgroup ⧸ extensionSubgroup K.field E.field E.below) :=
   v.unitRepresentation E.toFiniteAbstractFieldExtension E.normal
@@ -370,10 +363,8 @@ def unitInclusion
     exact (v.valuationAt_fixedFieldInclusion_of_unramified E hUnramified u.1).trans
       u.2⟩
   map_zero' := by
-    apply Subtype.ext
     rfl
   map_add' _ _ := by
-    apply Subtype.ext
     rfl
 
 /-- On underlying coefficients, the quotient action on `U_L` is the same
@@ -389,7 +380,6 @@ theorem unitRepresentation_action_coe
       relativeCosetAction A E.base.field E.field.field E.below u.1 q := by
   refine Quotient.inductionOn' q ?_
   intro k
-  rw [relativeCosetAction_mk]
   rfl
 
 /-- The representation norm on `U_L` is the relative field norm on
@@ -511,8 +501,3 @@ def SatisfiesUnramifiedUnitCohomology
     (E : FiniteUnramifiedCyclicExtension D K),
     Limits.IsZero (tateCohomology (E.unitRepresentation v) 0) ∧
       Limits.IsZero (tateCohomology (E.unitRepresentation v) (-1))
-
-end ValuationData
-
-end
-end ClassFormation

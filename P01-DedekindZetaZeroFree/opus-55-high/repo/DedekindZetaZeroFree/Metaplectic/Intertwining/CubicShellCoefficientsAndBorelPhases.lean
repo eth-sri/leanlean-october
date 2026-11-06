@@ -32,7 +32,7 @@ theorem relative_borel_retract_actual
       refine ⟨KubotaRankTwo.d (LocalField F q) (u⁻¹ ^ (2 : ℕ)) 1, ?_, ?_, ?_⟩
       · rfl
       · simp [KubotaRankTwo.d]
-      · simp [KubotaRankTwo.d]⟩
+      rfl⟩
   let n := S.borel.upperRoot
     (Multiplicative.ofAdd (-(u⁻¹ : (LocalField F q)ˣ) : LocalField F q))
   have hn : (n : ActualCover F ζ hζ q) =
@@ -86,7 +86,7 @@ variable (F : Type) [Field F] [NumberField F]
   (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
   (hP : IsTamePolarization F ζ hζ q S P)
 
-private theorem relative_borel_cubic_radial_value
+theorem relative_borel_cubic_radial_value
     (hnormalized : RawNormalizedExtension F ζ hζ q S P)
     (v : (KPTameCompact.O F q)ˣ) (y u : (LocalField F q)ˣ)
     (hu : u = KPTameCompact.unitInclusion F q v * y^3)
@@ -121,8 +121,8 @@ private theorem relative_borel_cubic_radial_value
   have hn := hnormalized (weylHL F ζ hζ q S P hP (retractL F ζ hζ q S P b)) 1 (v^2) (y^2) he
   simp only [map_one, Units.val_one, one_mul] at hn
   rw [chi, chiH, hn]
-  have hc : S.borel.coordinate (retractL F ζ hζ q S P b).val = u⁻¹ ^ (2 : ℕ) := by
-    exact S.coordinate_lift _ _ (relative_borel_retract_actual F ζ hζ q S P u b hb)
+  have hc : S.borel.coordinate (retractL F ζ hζ q S P b).val = u⁻¹ ^ (2 : ℕ) := 
+    S.coordinate_lift _ _ (relative_borel_retract_actual F ζ hζ q S P u b hb)
   rw [hc]
   have hv : localAbs (LocalField F q) (KPTameCompact.unitInclusion F q v) = 1 := by
     have hv' : valuation (LocalField F q) (KPTameCompact.unitInclusion F q v : LocalField F q) = 1 :=
@@ -205,7 +205,7 @@ open _root_.DedekindZetaZeroFree.KPTameTransposeLiteralMassTransport.RelativeBor
 variable (F : Type) [Field F] [NumberField F]
  (q : HeightOneSpectrum (𝓞 F))
 
-private theorem negative_cubic_radial_weight (π : (LocalField F q)ˣ)
+theorem negative_cubic_radial_weight (π : (LocalField F q)ˣ)
  (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
    (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ))
  (k : ℕ) (v : (KPTameCompact.O F q)ˣ) (s : ℂ) :
@@ -298,8 +298,7 @@ theorem eventual_negative_cubic_shell_outer_mass_value
    rw [← Units.val_inv_eq_inv_val]
    rw [RootResidualGeometry.unit_mem_integer_iff_exponent_nonneg,
      ← zpow_neg_one u, KPCubicExpansion.valuationExponent_zpow, he]
-   have hk : (0 : ℤ) ≤ k := Int.natCast_nonneg k
-   omega
+   simp
  simp_rw [hM m ((le_max_left M D).trans hm) f hf k v u hu b hb s]
  rw [show normPower (LocalField F q) u (2*s-2/3) =
      (residueCardinality (LocalField F q) : ℂ)⁻¹^(2*k) *
@@ -344,7 +343,7 @@ open _root_.DedekindZetaZeroFree.KPTameValuationCoordinates renaming unit_of_exp
 open _root_.DedekindZetaZeroFree.NonarchimedeanHaarScaling renaming char_abs → char_abs
 open _root_.DedekindZetaZeroFree.KPTameTransposeLiteralMassTransport.RelativeBorelPhase renaming eventual_negative_cubic_shell_outer_mass_value → eventual_negative_cubic_shell_outer_mass_value
 variable (F : Type) [Field F] [NumberField F] (q : HeightOneSpectrum (𝓞 F))
-private theorem shell_units (π : (LocalField F q)ˣ)
+theorem shell_units (π : (LocalField F q)ˣ)
  (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
  (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ))
  (k : ℕ) (u : LocalField F q) (hu : u ∈ expandingReverseCubeShell F q k) :
@@ -372,7 +371,7 @@ private theorem shell_units (π : (LocalField F q)ˣ)
  change KPTameCompact.unitInclusion F q v = _ at hv
  rw [hv]
  group
-private theorem integer_units_set :
+theorem integer_units_set :
  (((valuation (LocalField F q)).integer : Set (LocalField F q)) \
   ((valuation (LocalField F q)).integer.subtype '' (IsLocalRing.maximalIdeal (valuation (LocalField F q)).integer : Set (valuation (LocalField F q)).integer))) =
  {x | valuation (LocalField F q) x = 1} := by
@@ -389,8 +388,8 @@ private theorem integer_units_set :
    refine ⟨hx.le, ?_⟩
    rintro ⟨a, ha, he⟩
    have hu : IsUnit a := (Valuation.Integers.isUnit_iff_valuation_eq_one (Valuation.integer.integers (valuation (LocalField F q)))).mpr (he ▸ hx)
-   exact (IsLocalRing.mem_maximalIdeal a).mp ha hu
-private theorem shell_smul (π : (LocalField F q)ˣ)
+   simp_all
+theorem shell_smul (π : (LocalField F q)ˣ)
  (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
  (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ)) (k : ℕ) :
  expandingReverseCubeShell F q k = ((π⁻¹ ^ k)^3) • {x | valuation (LocalField F q) x = 1} := by
@@ -406,8 +405,6 @@ private theorem shell_smul (π : (LocalField F q)ˣ)
    change IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q) (valuation (LocalField F q) (_ * x)) = _
    rw [map_mul, hx, mul_one]
    simp only [Units.val_pow_eq_pow_val, Units.val_inv_eq_inv_val, map_pow, map_inv₀, hπ]
-   rw [← WithZero.exp_neg, ← WithZero.exp_nsmul, ← WithZero.exp_nsmul]
-   congr 1
    simp
 private theorem shell_mass (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
  (π : (LocalField F q)ˣ)
@@ -426,15 +423,14 @@ private theorem shell_mass (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
   simp only [KPCubicHaar.abs, Units.val_pow_eq_pow_val, Units.val_inv_eq_inv_val, map_pow, map_inv₀, hπ, ← WithZero.exp_neg, ← WithZero.exp_nsmul, WithZero.log_exp]
   rw [ite_eq_right (pow_ne_zero 3 (pow_ne_zero k (inv_ne_zero π.ne_zero)))]
   simp only [neg_neg, nsmul_eq_mul, mul_one, Nat.cast_ofNat]
-  change (residueCardinality (LocalField F q) : ℝ) ^ (3*(k : ℤ)) = _
-  norm_cast
+  rfl
  rw [habs, integer_units_set F q]
  rfl
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
  (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
  (hP : IsTamePolarization F ζ hζ q S P)
 include hP in
-private theorem relative_exists (v : (KPTameCompact.O F q)ˣ) (y u : (LocalField F q)ˣ)
+theorem relative_exists (v : (KPTameCompact.O F q)ˣ) (y u : (LocalField F q)ˣ)
  (hu : u = KPTameCompact.unitInclusion F q v * y^3) :
  ∃ b : BL F ζ hζ q S P, (b : ActualCover F ζ hζ q) =
  KPPGLLocalCover.N F ζ hζ (Sum.inr q) (-(u⁻¹ : (LocalField F q)ˣ) : LocalField F q) *
@@ -450,8 +446,7 @@ private theorem relative_exists (v : (KPTameCompact.O F q)ˣ) (y u : (LocalField
    apply Subgroup.mul_mem
    · exact Subgroup.mem_sup_left ⟨v⁻¹^2, rfl⟩
    · exact Subgroup.mem_sup_right ⟨y⁻¹^2, by simp [← pow_mul]⟩
-  obtain ⟨d, hd, he⟩ := hc
-  exact S.cubeClassEquiv.injective he ▸ hd
+  simp_all
  let b := S.borel.upperRoot (Multiplicative.ofAdd (-(u⁻¹ : (LocalField F q)ˣ) : LocalField F q)) * S.borel.torus a
  have hb : b ∈ (HL F ζ hζ q S P).comap S.borel.retract := by
   change S.borel.retract b ∈ HL F ζ hζ q S P

@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Norm--restriction for finite-place Artin homomorphisms
 
@@ -40,7 +36,7 @@ variable {K L : Type}
     [Field L] [Algebra K L]
     [FiniteDimensional K L] [IsAbelianGalois K L]
 
-private theorem finitePlaceArtinNormUnits_map_ringEquiv
+theorem finitePlaceArtinNormUnits_map_ringEquiv
     {F M F' M' : Type}
     [Field F] [Field M] [Field F'] [Field M']
     [Algebra F M] [Algebra F' M']
@@ -58,7 +54,7 @@ private theorem finitePlaceArtinNormUnits_map_ringEquiv
     eF (Algebra.norm F (x : M)) =
       Algebra.norm F' (eM (x : M))
   rw [Algebra.norm_eq_of_equiv_equiv eF eM he]
-  exact eF.apply_symm_apply _
+  simp
 
  abbrev finitePlaceNormCompletion
     (F : Type) [Field F] [NumberField F]
@@ -74,7 +70,7 @@ private theorem finitePlaceArtinNormUnits_map_ringEquiv
   AlgebraicNumberTheory.Valuations.LocalizedCompletion
     (NumberField.HeightOneSpectrum.adicAbv F v) w
 
- noncomputable def finitePlaceRelativeNormUnits
+ def finitePlaceRelativeNormUnits
     {K' : Type}
     [Field K'] [NumberField K'] [Algebra K K']
     (v : HeightOneSpectrum (𝓞 K))
@@ -91,7 +87,7 @@ private theorem finitePlaceArtinNormUnits_map_ringEquiv
     (finitePlaceNormCompletion K v)
     (finitePlaceNormCompletion K' W)
 
- noncomputable def finitePlaceConcreteNormUnits
+ def finitePlaceConcreteNormUnits
     {K' : Type}
     [Field K'] [NumberField K'] [Algebra K K']
     (v : HeightOneSpectrum (𝓞 K))
@@ -104,7 +100,7 @@ private theorem finitePlaceArtinNormUnits_map_ringEquiv
   exact LocalFieldTheory.normUnits
     (v.adicCompletion K) (W.adicCompletion K')
 
-private theorem finitePlaceArtinConcreteNormUnits
+theorem finitePlaceArtinConcreteNormUnits
     {K' : Type}
     [Field K'] [NumberField K'] [Algebra K K']
     (v : HeightOneSpectrum (𝓞 K))
@@ -135,18 +131,10 @@ private theorem finitePlaceArtinConcreteNormUnits
     finitePlaceCompletionUnitsContinuousMulEquiv W
   have hCUnits :
       eCUnits = Units.mapEquiv eC.toMulEquiv := by
-    change
-      Units.mapEquiv
-          (finitePlaceCompletionRingEquiv v).toMulEquiv =
-        Units.mapEquiv eC.toMulEquiv
-    rw [finitePlaceCompletionRingEquiv_eq_relative]
+    rfl
   have hDUnits :
       eDUnits = Units.mapEquiv eD.toMulEquiv := by
-    change
-      Units.mapEquiv
-          (finitePlaceCompletionRingEquiv W).toMulEquiv =
-        Units.mapEquiv eD.toMulEquiv
-    rw [finitePlaceCompletionRingEquiv_eq_relative]
+    rfl
   let concreteBaseMap :
       v.adicCompletion K →+* W.adicCompletion K' :=
     finitePlaceAdicCompletionMap K K' v ⟨W, hW⟩
@@ -161,7 +149,7 @@ private theorem finitePlaceArtinConcreteNormUnits
     change
       eD (eD.symm (concreteBaseMap (eC y))) =
         concreteBaseMap (eC y)
-    rw [eD.apply_symm_apply]
+    simp
   have hBaseCompatible :
       RingHom.comp
           (algebraMap
@@ -198,7 +186,7 @@ private theorem finitePlaceArtinConcreteNormUnits
             ((Units.mapEquiv eD.toMulEquiv).symm x) = x
       exact (Units.mapEquiv eD.toMulEquiv).apply_symm_apply x
 
-private theorem finitePlaceArtinHasExtension_of_norm
+theorem finitePlaceArtinHasExtension_of_norm
     {A B C D : Type}
     [NormedField A] [NormedField B]
     [NormedField C] [NormedField D]
@@ -236,8 +224,7 @@ private theorem finitePlaceArtinHasExtension_of_norm
   have hTargetNorm :
       ‖algebraMap C D x‖ =
         ‖baseMap (eC x)‖ := by
-    rw [hAlgebraMap]
-    exact hDNorm (baseMap (eC x))
+    simp_all
   have hTargetNormNN :
       ‖algebraMap C D x‖₊ =
         ‖baseMap (eC x)‖₊ := by
@@ -250,7 +237,7 @@ private theorem finitePlaceArtinHasExtension_of_norm
   rw [hTargetNormNN, ← hSourceNormNN]
   exact_mod_cast hBaseNorm (eC x)
 
-private theorem finitePlaceArtinCompletionHasExtension
+theorem finitePlaceArtinCompletionHasExtension
     {K' : Type}
     [Field K'] [NumberField K'] [Algebra K K']
     (v : HeightOneSpectrum (𝓞 K))
@@ -342,7 +329,7 @@ private theorem finitePlaceArtinCompletionHasExtension
       (fun _ => rfl)
       (fun _ => rfl)
 
-private theorem finitePlaceLocalArtin_norm_restriction_apply
+theorem finitePlaceLocalArtin_norm_restriction_apply
     {C D E E' : Type}
     [Field C] [ValuativeRel C] [TopologicalSpace C]
     [IsNonarchimedeanLocalField C]
@@ -558,7 +545,7 @@ local instance finitePlaceNormUpperLocalField :
   finitePlaceArtinCompletionIsNonarchimedeanLocalField vKₙ'
     (NumberField.HeightOneSpectrum.isNonarchimedean_adicAbv K' W)
 
- noncomputable def finitePlaceNormRestrictedArtin
+ def finitePlaceNormRestrictedArtin
     [NumberField L]
     (hW : finitePlaceBelow (K := K) W = v)
     (hcentres :
@@ -577,7 +564,7 @@ local instance finitePlaceNormUpperLocalField :
         (K := K') (L := L') W w'
         (finitePlaceCompletionUnitsContinuousMulEquiv W y))
 
- noncomputable def finitePlaceNormLowerArtin
+ def finitePlaceNormLowerArtin
     (hW : finitePlaceBelow (K := K) W = v)
     (y : Dₙˣ) :
     finitePlaceNormLocalizedAut K L v w := by
@@ -588,13 +575,13 @@ local instance finitePlaceNormUpperLocalField :
       (finitePlaceRelativeNormUnits
           (K := K) (K' := K') v W hW y))
 
- noncomputable def finitePlaceNormUpperRawArtin
+ def finitePlaceNormUpperRawArtin
     (y : Dₙˣ) :
     finitePlaceNormLocalizedAut K' L' W w' :=
   LocalClassFieldTheory.abelianLocalArtinMonoidHom
     Dₙ Eₙ' y
 
- noncomputable def finitePlaceNormLowerRawArtin
+ def finitePlaceNormLowerRawArtin
     (hW : finitePlaceBelow (K := K) W = v)
     (y : Dₙˣ) :
     finitePlaceNormLocalizedAut K L v w :=
@@ -603,7 +590,7 @@ local instance finitePlaceNormUpperLocalField :
     (finitePlaceRelativeNormUnits
       (K := K) (K' := K') v W hW y)
 
-private theorem finitePlaceNormUpperArtin_eq_raw
+theorem finitePlaceNormUpperArtin_eq_raw
     (y : Dₙˣ) :
     finitePlaceLocalArtinMonoidHom
         (K := K') (L := L') W w'
@@ -619,11 +606,11 @@ private theorem finitePlaceNormUpperArtin_eq_raw
           Dₙˣ ≃* (W.adicCompletion K')ˣ).symm
           (finitePlaceCompletionUnitsContinuousMulEquiv W y) =
         y :=
-    (finitePlaceCompletionUnitsContinuousMulEquiv W).symm_apply_apply y
+    by simp
   rw [hy]
   rfl
 
-private theorem finitePlaceNormLowerArtin_eq_raw
+theorem finitePlaceNormLowerArtin_eq_raw
     (hW : finitePlaceBelow (K := K) W = v)
     (y : Dₙˣ) :
     finitePlaceNormLowerArtin
@@ -647,11 +634,11 @@ private theorem finitePlaceNormLowerArtin_eq_raw
               (K := K) (K' := K') v W hW y)) =
         finitePlaceRelativeNormUnits
           (K := K) (K' := K') v W hW y :=
-    (finitePlaceCompletionUnitsContinuousMulEquiv v).symm_apply_apply _
+    by simp
   rw [hy]
   rfl
 
-private theorem finitePlaceNormRawArtin_naturality
+theorem finitePlaceNormRawArtin_naturality
     [NumberField L]
     (hW : finitePlaceBelow (K := K) W = v)
     (hcentres :
@@ -724,7 +711,7 @@ private theorem finitePlaceNormRawArtin_naturality
         (LocalFieldTheory.normUnits C D y)
   exact finitePlaceLocalArtin_norm_restriction_apply y
 
-private theorem finitePlaceNormLocalizedArtin_naturality
+theorem finitePlaceNormLocalizedArtin_naturality
     [NumberField L]
     (hW : finitePlaceBelow (K := K) W = v)
     (hcentres :
@@ -769,7 +756,7 @@ private theorem finitePlaceNormLocalizedArtin_naturality
         (K := K) (L := L) (K' := K')
         v W w hW y).symm
 
-private theorem
+theorem
     finitePlaceLocalArtinMonoidHom_norm_restriction_localized
     {K' L' : Type}
     [Field K'] [NumberField K']
@@ -903,8 +890,7 @@ theorem finitePlaceLocalArtinMonoidHom_norm_restriction
                 (finitePlaceRelativeNormUnits
                   (K := K) (K' := K') v W hW
                   (eDUnits.symm x))) at h
-        rw [eDUnits.apply_symm_apply] at h
-        exact h
+        simp_all
     _ =
       finitePlaceLocalArtinMonoidHom
         (K := K) (L := L) v w
@@ -1086,10 +1072,7 @@ theorem chosenFinitePlaceArtinMonoidHom_norm_restriction
       _ =
           finitePlaceBelow (K := K)
             (finitePlaceBelow (K := K') U') := by
-        symm
-        exact
-          finitePlaceBelow_finitePlaceBelow
-            (K := K) (M := K') (L := L') U'
+        simp
       _ = finitePlaceBelow (K := K) W := by
         rw [
           finitePlaceBelow_finitePlaceExtensionCentre
@@ -1191,8 +1174,3 @@ theorem chosenFinitePlaceArtinMonoidHom_norm_restriction_of_below_eq
   exact
     chosenFinitePlaceArtinMonoidHom_norm_restriction
       (K := K) (L := L) (K' := K') (L' := L') W
-
-end Reciprocity
-end GlobalClassFieldTheory
-
-end

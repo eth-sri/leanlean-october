@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 universe u
 
 namespace ClassFormation
@@ -58,7 +54,7 @@ def chosenUnramifiedFrobeniusLift
       (D.normalizedDegree_surjective K
         (Multiplicative.ofAdd (1 : ZHat)))
   refine ⟨QuotientGroup.mk φ, 1, Nat.zero_lt_one, ?_⟩
-  rw [D.extensionNormalizedDegree_mk K L hLK φ, hφ, pow_one]
+  simp_all
 
 /--
 Establishes the identity `D.frobeniusExponent K L hLK (D.chosenUnramifiedFrobeniusLift K L hLK) =
@@ -141,7 +137,7 @@ theorem unramifiedFrobenius_zmultiples_eq_top
   ext x
   constructor
   · intro _
-    exact AddSubgroup.mem_top x
+    simp
   · intro _
     obtain ⟨m, hm⟩ := Subgroup.mem_zpowers_iff.mp
       (D.unramifiedFrobenius_generates K L hLK hUnramified x.toMul)
@@ -163,7 +159,7 @@ variable {D : DegreeData G} {A : Rep ℤ G}
 
 namespace ValuationData
 
-private theorem valueModulo_eq_zero_iff
+theorem valueModulo_eq_zero_iff
     (v : ValuationData D A) (n : ℕ) (hn : 0 < n)
     (z : v.valueGroup) :
     v.valueModulo n hn z = 0 ↔ ∃ w : v.valueGroup, z = n • w := by
@@ -184,7 +180,7 @@ private theorem valueModulo_eq_zero_iff
       exact ⟨w, rfl⟩
     change (v.cyclic_value_quotients n hn)
         ((QuotientAddGroup.mk' (nsmulWithin v.valueGroup n)) (n • w)) = 0
-    rw [hq, map_zero]
+    simp
 
  def unramifiedValuationHom
     (v : ValuationData D A) (K : FiniteAbstractField G)
@@ -222,9 +218,7 @@ theorem finiteNormSubgroup_le_unramifiedValuationHom_ker
     exact htower.symm
   change v.valueModulo n E.degree.property
       (v.valuationAt K (relativeNorm A K.field L hLK a)) = 0
-  rw [hval]
-  exact (v.valueModulo_eq_zero_iff n E.degree.property _).2
-    ⟨v.valuationAt E.field a, rfl⟩
+  simp_all
 
 /-- The valuation map induced on the finite norm quotient. -/
 def unramifiedNormQuotientValuation
@@ -372,8 +366,7 @@ theorem unramifiedNormQuotientValuation_injective
     abel
   intro x y hxy
   apply sub_eq_zero.mp
-  apply hkernel
-  rw [map_sub, hxy, sub_self]
+  simp_all
 
 /-- **the unramified norm-quotient equivalence (valuation part).**  For finite unramified `L / K`,
 valuation induces `A_K / N_{L/K}A_L ≃ ℤ/[L:K]ℤ`. -/
@@ -444,8 +437,8 @@ theorem primeClass_addOrderOf
               v.valueGroup) : ZHat) := htower
         _ = ((v.valuationAt K (m • π) : v.valueGroup) : ZHat) := by
           rw [hb]
-        _ = m • ((v.valuationAt K π : v.valueGroup) : ZHat) := by
-          exact congrArg Subtype.val (map_nsmul (v.valuationAt K) m π)
+        _ = m • ((v.valuationAt K π : v.valueGroup) : ZHat) := 
+          congrArg Subtype.val (map_nsmul (v.valuationAt K) m π)
         _ = m • (1 : ZHat) := by rw [hπ, v.oneValue_coe]
     have hred := congrArg (fun z : ZHat => zHatReduction n hn z) hval
     have hredOne : zHatReduction n hn (1 : ZHat) = 1 := rfl
@@ -455,10 +448,7 @@ theorem primeClass_addOrderOf
           m • (1 : ZMod n) := by
       simpa only [map_nsmul, hredOne] using hred
     have hmzero : (m : ZMod n) = 0 := by
-      have hmzero' : m • (1 : ZMod n) = 0 := by
-        rw [← hred']
-        simp [nsmul_eq_mul]
-      simpa using hmzero'
+      simp_all
     exact (ZMod.natCast_eq_zero_iff m n).1 hmzero
   apply Nat.dvd_antisymm
   · exact (addOrderOf_dvd_iff_nsmul_eq_zero).2 hng
@@ -488,10 +478,3 @@ theorem primeClass_zmultiples_eq_top
   rw [Nat.card_zmultiples,
     v.primeClass_addOrderOf K L hLK hUnramified π hπ]
   exact ((Nat.card_congr e.toEquiv).trans (Nat.card_zmod _)).symm
-
-end ValuationData
-
-end valuationQuotient
-
-end
-end ClassFormation

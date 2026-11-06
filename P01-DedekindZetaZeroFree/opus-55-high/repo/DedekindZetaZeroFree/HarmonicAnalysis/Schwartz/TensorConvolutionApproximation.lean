@@ -13,7 +13,7 @@ namespace DedekindZetaZeroFree.QuadraticRawProduct.ArchimedeanSteps.TensorDensit
 open scoped ContDiff Topology
 open Filter
 
-private theorem cutoff_derivative_bound {E : Type*}
+theorem cutoff_derivative_bound {E : Type*}
     [NormedAddCommGroup E] [NormedSpace ℝ E]
     (u : SchwartzMap E ℝ) (a : ℝ) (ha : 0 ≤ a) (ha' : a ≤ 1)
     (i : ℕ) (x : E) :
@@ -38,7 +38,7 @@ private theorem cutoff_derivative_bound {E : Type*}
       exact (mul_le_mul_of_nonneg_right (pow_le_one₀ ha ha') (norm_nonneg _)).trans
         (by simpa using SchwartzMap.norm_iteratedFDeriv_le_seminorm ℝ u i (a • x))
 
-private theorem cutoff_error_bound {E F : Type*}
+theorem cutoff_error_bound {E F : Type*}
     [NormedAddCommGroup E] [NormedSpace ℝ E]
     [NormedAddCommGroup F] [NormedSpace ℝ F]
     (u : SchwartzMap E ℝ)
@@ -68,8 +68,7 @@ private theorem cutoff_error_bound {E F : Type*}
       ((continuous_id.const_smul (R⁻¹)).tendsto x)
     have hz : (fun y => (u (R⁻¹ • y) - 1) • f y) =ᶠ[𝓝 x] (fun _ => 0) :=
       hv.mono (fun y hy => by
-        change u (R⁻¹ • y) = 1 at hy
-        simp [hy])
+        simp_all)
     rw [(hz.iteratedFDeriv (𝕜 := ℝ) n).eq_of_nhds]
     simp
     positivity
@@ -118,7 +117,7 @@ theorem compactSupport_dense (E F : Type*)
     exact b.hasCompactSupport.comp_homeomorph (Homeomorph.smulOfNeZero _ hm)
   have hs (m : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (fun x : E =>
       u (((m : ℝ) + 1)⁻¹ • x) • f x) :=
-    ((u.smooth ⊤).comp (contDiff_id.const_smul _)).smul (f.smooth ⊤)
+    by fun_prop
   let g (m : ℕ) : SchwartzMap E F := ((hc m).smul_right).toSchwartzMap (hs m)
   have hg (m : ℕ) (x : E) : g m x = u (((m : ℝ) + 1)⁻¹ • x) • f x := rfl
   have ht : Tendsto g atTop (𝓝 f) := by
@@ -133,7 +132,7 @@ theorem compactSupport_dense (E F : Type*)
           (tendsto_const_nhds (x := C)).mul
             (tendsto_one_div_add_atTop_nhds_zero_nat (𝕜 := ℝ))
     filter_upwards [hlim.eventually (gt_mem_nhds hε)] with m hm
-    exact (cutoff_error_bound u hu f (g m) ((m : ℝ) + 1) (by have := Nat.cast_nonneg (α := ℝ) m; linarith)
+    exact (cutoff_error_bound u hu f (g m) ((m : ℝ) + 1) (by simp)
       (hg m) k n).trans_lt hm
   exact mem_closure_of_tendsto ht (Eventually.of_forall fun m => (hc m).smul_right)
 
@@ -170,7 +169,7 @@ theorem mem_closure_of_fixedSupport_derivative_approximation
   have hRp : 0 < R := lt_of_lt_of_le zero_lt_one hR
   have hC : 0 < R ^ K := pow_pos hRp _
   let ε := δ / (2 * R ^ K)
-  have hε : 0 < ε := div_pos hδ (mul_pos (by norm_num) hC)
+  have hε : 0 < ε := by positivity
   obtain ⟨t, ht, htR, htapprox⟩ := happrox N ε hε
   refine ⟨t, ht, ?_⟩
   rw [Seminorm.ball_finset_sup_eq_iInter _ _ _ hδ]
@@ -201,7 +200,7 @@ theorem mem_closure_of_fixedSupport_derivative_approximation
     · have hd : iteratedFDeriv ℝ i.2 (fun z => t z - f z) x = 0 :=
         Function.notMem_support.mp (fun h => hx (hdsupp h))
       simp only [hd, norm_zero, mul_zero]
-      exact le_of_lt (mul_pos hC hε)
+      positivity
   have hsmall : R ^ K * ε < δ := by
     dsimp [ε]
     field_simp
@@ -241,10 +240,7 @@ theorem convolution_jet_integral
           (f y * k (x-y)) :=
         ((continuousMultilinearCurryFin0 ℝ (ι → ℂ) ℂ).symm.toLinearIsometry.integral_comp_comm _).symm
       _ = _ := by
-        apply integral_congr_ae
-        filter_upwards with y
-        ext m
-        simp
+        rfl
   | succ n ih =>
     let L : ℂ →L[ℝ] (ContinuousMultilinearMap ℝ (fun _ : Fin n => ι → ℂ) ℂ) →L[ℝ]
         (ContinuousMultilinearMap ℝ (fun _ : Fin n => ι → ℂ) ℂ) := lsmul ℝ ℂ
@@ -268,10 +264,7 @@ theorem convolution_jet_integral
             (μ := volume) (fun y : ι → ℂ => (L.precompR (ι → ℂ)) (f y)
               (fderiv ℝ (iteratedFDeriv ℝ n (k : (ι → ℂ) → ℂ)) (x-y)))).symm <;> rfl
       _ = _ := by
-        apply integral_congr_ae
-        filter_upwards with y
-        ext m
-        simp [iteratedFDeriv_succ_apply_left, L]
+        rfl
 
 end DedekindZetaZeroFree.QuadraticRawProduct.ArchimedeanSteps.TensorDensity.ProductConvolution.JetQuadrature
 
@@ -289,7 +282,7 @@ namespace DedekindZetaZeroFree.QuadraticRawProduct.ArchimedeanSteps.TensorDensit
 
 namespace JetQuadrature
 
-private theorem integral_approx_span {E V : Type*} [NormedAddCommGroup E]
+theorem integral_approx_span {E V : Type*} [NormedAddCommGroup E]
     [NormedSpace ℝ E] [MeasureSpace E] [BorelSpace E]
     [NormedAddCommGroup V] [NormedSpace ℂ V] [CompleteSpace V]
     {f : E → ℂ} (hfc : Continuous f) (hfs : HasCompactSupport f)
@@ -319,8 +312,7 @@ private theorem integral_approx_span {E V : Type*} [NormedAddCommGroup E]
   have hI : (∫ z, f z • T z) ∈ Q := by
     have he := Q.subtypeL.integral_comp_comm hgi
     change (∫ z, Q.subtypeL (g z)) ∈ Q
-    rw [he]
-    exact (∫ z, g z).property
+    simp_all
   have hc : (∫ z, f z • T z) ∈ closure (P : Set V) := hI
   obtain ⟨v, hv, hvε⟩ := Metric.mem_closure_iff.mp hc ε hε
   obtain ⟨a, ha⟩ := Finsupp.mem_span_range_iff_exists_finsupp.mp hv
@@ -344,7 +336,7 @@ private theorem integral_approx_span {E V : Type*} [NormedAddCommGroup E]
     (SchwartzMap.seminorm ℝ 0 n k)
     (fun x => SchwartzMap.norm_iteratedFDeriv_le_seminorm ℝ k n (x-y))
 
-private theorem translatedJet_continuous {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+theorem translatedJet_continuous {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     (k : SchwartzMap E ℂ) (hk : HasCompactSupport (k : E → ℂ)) (n : ℕ) :
     Continuous (translatedJet k n) := by
   have hu := (hk.iteratedFDeriv n).uniformContinuous_of_continuous
@@ -426,18 +418,13 @@ theorem finite_translate_sum_jet
         iteratedFDeriv ℝ n (s : (ι → ℂ) → ℂ) x := by
   have hfun : (fun z => t z - s z) =
       fun z => (∑ j, c j • k (z - y j)) - s z := by
-    funext z
-    rw [ht z]
-    simp [smul_eq_mul]
+    simp_all
   rw [hfun]
   change iteratedFDeriv ℝ n ((fun z => ∑ j, c j • (k : (ι → ℂ) → ℂ) (z - y j)) -
       (s : (ι → ℂ) → ℂ)) x = _
   have hsum_smooth : ContDiff ℝ (⊤ : ℕ∞)
       (fun z => ∑ j, c j • (k : (ι → ℂ) → ℂ) (z - y j)) := by
-    apply ContDiff.sum
-    intro j _
-    exact (contDiff_const_smul (c j)).comp
-      ((k.smooth (⊤ : ℕ∞)).comp (contDiff_id.sub contDiff_const))
+    fun_prop
   rw [iteratedFDeriv_sub_apply (hsum_smooth.of_le (by simp)).contDiffAt
     ((s.smooth (⊤ : ℕ∞)).of_le (by simp)).contDiffAt]
   congr 1
@@ -494,7 +481,7 @@ theorem product_mollification_uniform_derivative_approximation
       ((f.smooth ⊤).continuous_iteratedFDeriv (by simp)))
   obtain ⟨δ, hδ, hd⟩ := Metric.uniformContinuous_iff.mp hu (ε/2) (half_pos hε)
   let a := min 1 (δ/2)
-  have ha : 0 < a := lt_min zero_lt_one (half_pos hδ)
+  have ha : 0 < a := by positivity
   let b : ContDiffBump (0 : ℂ) := ⟨a/2, a, half_pos ha, half_lt_self ha⟩
   let q : ℂ → ℝ := b.normed volume
   have hqc : HasCompactSupport q := b.hasCompactSupport_normed
@@ -509,7 +496,7 @@ theorem product_mollification_uniform_derivative_approximation
     rfl
   let K : E → ℝ := fun x => ∏ i, q (x i)
   have hKs : ContDiff ℝ (⊤ : ℕ∞) K :=
-    contDiff_prod (fun i _ => hqs.comp (contDiff_apply ℝ ℂ i))
+    by fun_prop
   have hKR : Function.support K ⊆ Metric.closedBall 0 a := by
     intro x hx
     rw [Metric.mem_closedBall, dist_zero_right]
@@ -538,9 +525,9 @@ theorem product_mollification_uniform_derivative_approximation
     intro x hx
     obtain ⟨u, hu, v, hv, he⟩ := support_convolution_subset _ hx
     have hu' : ‖u‖ ≤ 1 := by
-      have : u ∈ Function.support K := by simpa [Function.mem_support, hk] using hu
+      have : u ∈ Function.support K := by simp_all
       exact (by simpa [Metric.mem_closedBall, dist_zero_right] using hKR this : ‖u‖ ≤ a).trans (min_le_left _ _)
-    have hv' : ‖v‖ ≤ r := by simpa [Metric.mem_closedBall, dist_zero_right] using hf hv
+    have hv' : ‖v‖ ≤ r := by simp_all
     rw [Metric.mem_closedBall, dist_zero_right, ← he]
     exact (norm_add_le _ _).trans (add_le_add hu' hv') |>.trans_eq (add_comm 1 r)
   let s := (HasCompactSupport.of_support_subset_isCompact (isCompact_closedBall 0 (r+1)) hSR).toSchwartzMap hSs
@@ -549,7 +536,7 @@ theorem product_mollification_uniform_derivative_approximation
   · intro i
     exact hqc.comp_left Complex.ofReal_zero
   · intro i z hz
-    have hz' : z ∈ Function.support q := by simpa [Function.mem_support, hg] using hz
+    have hz' : z ∈ Function.support q := by simp_all
     rw [b.support_normed_eq] at hz'
     rw [Metric.mem_closedBall, dist_zero_right]
     exact (by simpa [Metric.mem_ball, dist_zero_right] using hz' : ‖z‖ < a).le.trans (min_le_left _ _)
@@ -570,7 +557,7 @@ theorem product_mollification_uniform_derivative_approximation
     rw [JetQuadrature.convolution_jet_integral ι k f s hkc hfc hs n x]
     have hball : Function.support K ⊆ Metric.ball 0 δ := by
       intro z hz
-      have hz' : ‖z‖ ≤ a := by simpa [Metric.mem_closedBall, dist_zero_right] using hKR hz
+      have hz' : ‖z‖ ≤ a := by simp_all
       simpa [Metric.mem_ball, dist_zero_right] using hz'.trans_lt ((min_le_right _ _).trans_lt (half_lt_self hδ))
     have hmeas : AEStronglyMeasurable (iteratedFDeriv ℝ n (f : E → ℂ)) volume :=
       ((f.smooth ⊤).continuous_iteratedFDeriv (by simp)).aestronglyMeasurable
@@ -589,9 +576,7 @@ theorem product_mollification_uniform_derivative_approximation
       hmeas hclose
     have he : (∫ y : E, k y • iteratedFDeriv ℝ n (f : E → ℂ) (x-y)) =
         (K ⋆[lsmul ℝ ℝ] iteratedFDeriv ℝ n (f : E → ℂ)) x := by
-      apply integral_congr_ae
-      filter_upwards with y
-      simp [hk, Complex.real_smul]
+      rfl
     rw [he]
     exact (by simpa [dist_eq_norm] using hbound : ‖_ - _‖ ≤ ε/2).trans_lt (half_lt_self hε)
 
@@ -620,10 +605,10 @@ theorem translated_product_support (ι : Type*) [Fintype ι] (r : ℝ) (hr : 0 �
   have hxy : ‖x - y‖ ≤ 1 := by
     apply (pi_norm_le_iff_of_nonneg zero_le_one).2
     intro i
-    have hi : x i - y i ∈ Function.support (g i : ℂ → ℂ) := by
-      exact (Finset.prod_ne_zero_iff.mp hprod) i (Finset.mem_univ i)
+    have hi : x i - y i ∈ Function.support (g i : ℂ → ℂ) := 
+      (Finset.prod_ne_zero_iff.mp hprod) i (Finset.mem_univ i)
     simpa [Metric.mem_closedBall, dist_zero_right] using hgR i hi
-  have hy' : ‖y‖ ≤ r := by simpa [Metric.mem_closedBall, dist_zero_right] using hy
+  have hy' : ‖y‖ ≤ r := by simp_all
   have he : x = (x - y) + y := by simp
   rw [Metric.mem_closedBall, dist_zero_right, he]
   exact (norm_add_le _ _).trans (add_le_add hxy hy') |>.trans_eq (add_comm 1 r)
@@ -750,8 +735,8 @@ theorem product_convolution_finite_tensor_approximation
         ‖iteratedFDeriv ℝ n (fun z => t z - s z) x‖ < ε := by
   apply finite_tensor_approximation_of_quadrature ι r hr g hgR s N ε
   let k := translatedProduct ι g hgR 0
-  have hk : HasCompactSupport (k : (ι → ℂ) → ℂ) := by
-    exact KernelAux.translated_product_compact g hgR 0
+  have hk : HasCompactSupport (k : (ι → ℂ) → ℂ) := 
+    KernelAux.translated_product_compact g hgR 0
   have hfcompact : HasCompactSupport (f : (ι → ℂ) → ℂ) := by
     apply HasCompactSupport.intro (isCompact_closedBall (0 : ι → ℂ) r)
     intro x hx
@@ -767,7 +752,7 @@ theorem product_convolution_finite_tensor_approximation
   have ht : ∀ z, (∑ j, c j • translatedProduct ι g hgR (y j)) z =
       ∑ j, c j * k (z - y j) := by
     intro z
-    simp [k, SchwartzMap.sum_apply, SchwartzMap.smul_apply, translatedProduct_apply]
+    simp [k, translatedProduct_apply]
   rw [JetQuadrature.finite_translate_sum_jet ι k s
     (∑ j, c j • translatedProduct ι g hgR (y j)) m c y ht n x,
     JetQuadrature.convolution_jet_integral ι f k s hfcompact hk hs' n x]
@@ -873,9 +858,3 @@ theorem tensorCore_dense (ι : Type*) [Fintype ι] :
     exact TensorDensity.mem_closure_of_fixedSupport_derivative_approximation
       (tensorCore ι : Set (SchwartzMap (ι → ℂ) ℂ)) f R hR hsupport happrox
   exact ((TensorDensity.compactSupport_dense (ι → ℂ) ℂ).mono hcompact).of_closure
-
-end DedekindZetaZeroFree.QuadraticRawProduct.ArchimedeanSteps
-
-end
-
-end

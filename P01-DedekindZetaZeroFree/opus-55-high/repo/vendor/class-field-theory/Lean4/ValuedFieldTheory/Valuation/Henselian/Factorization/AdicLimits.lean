@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # coefficientwise limit preparation
 
@@ -48,7 +44,7 @@ theorem henselFactorization_coeff_adicCoeffCauchy_of_sub_coeff_mem
     (i : ℕ) :
     henselFactorization_adicCoeffCauchy I (fun N : ℕ => (Pseq N).coeff i) := by
   intro M N hMN
-  simpa [henselFactorization_adicCoeffCauchy, Polynomial.coeff_sub] using hsub hMN i
+  simp_all
 
 /-- the coefficientwise `I^(M+1)` estimate gives mathlib's
 `I`-adic Cauchy condition after weakening `I^(M+1) ≤ I^M`. -/
@@ -62,7 +58,7 @@ theorem henselFactorization_adicCoeffCauchy_isAdicCauchy
     Ideal.pow_le_pow_right (Nat.le_succ M) (hx hMN)
   have hsign : x M - x N ∈ I ^ M := by
     simpa [neg_sub] using (I ^ M).neg_mem hdeep
-  simpa [smul_eq_mul, Ideal.mul_top] using hsign
+  simp_all
 
 /-- precompleteness supplies a coefficient limit for every
 coefficient sequence satisfying the directed estimate. -/
@@ -76,7 +72,7 @@ theorem henselFactorization_exists_adicCoeffLimit
       (henselFactorization_adicCoeffCauchy_isAdicCauchy I hx)
   refine ⟨L, fun n => ?_⟩
   have hmem := SModEq.sub_mem.mp (hL n)
-  simpa [smul_eq_mul, Ideal.mul_top] using hmem
+  simp_all
 
 /-- assemble finitely many coefficient limits into the
 polynomial supported in degrees at most `N`. -/
@@ -96,8 +92,7 @@ theorem henselFactorization_polyOfLimitCoeffs_coeff_of_le
   · simp
   · intro b _hb hbn
     simp [Polynomial.coeff_monomial, hbn]
-  · intro hnot
-    exact False.elim (hnot (Finset.mem_range.mpr (Nat.lt_succ_of_le hn)))
+  simp_all
 
 /-- coefficients of the finite polynomial assembled from
 coefficient limits vanish above the cutoff. -/
@@ -111,8 +106,8 @@ theorem henselFactorization_polyOfLimitCoeffs_coeff_eq_zero_of_lt
   intro b hb
   have hbn : b ≠ n := by
     intro hbn
-    have hn_le : n ≤ N := Nat.lt_succ_iff.mp (by simpa [hbn] using hb)
-    exact (Nat.not_lt_of_ge hn_le) hn
+    have hn_le : n ≤ N := by simp_all
+    omega
   simp [Polynomial.coeff_monomial, hbn]
 
 /-- the polynomial assembled from finitely many coefficient
@@ -155,7 +150,7 @@ theorem henselFactorization_exists_limitPolynomial_of_bounded_coeffLimits
         (lt_of_le_of_lt (hdeg n) hlt)
     have hP : P.coeff i = 0 :=
       henselFactorization_polyOfLimitCoeffs_coeff_eq_zero_of_lt (c := L) hlt
-    simp [Polynomial.coeff_sub, hseq, hP]
+    simp_all
 
 /-- if all coefficients of the left factor lie in an ideal,
 then all coefficients of its product with any polynomial lie in the same
@@ -281,8 +276,3 @@ theorem henselFactorization_residue_map_eq_of_sub_coeff_mem_maximalIdeal
   intro i
   have hi := hcoeff i
   rwa [IsLocalRing.ker_residue]
-
-end Valuations
-end AlgebraicNumberTheory
-
-end

@@ -40,7 +40,3 @@ def actualRightWord : List (Fin (groupDimension F)) →
     (ActualCover F ζ hζ → ℂ) → ActualCover F ζ hζ → ℂ
   | [], f => f
   | b :: w, f => actualRight F ζ hζ b (actualRightWord w f)
-
-end DedekindZetaZeroFree.AdelicRightLieWords
-
-end

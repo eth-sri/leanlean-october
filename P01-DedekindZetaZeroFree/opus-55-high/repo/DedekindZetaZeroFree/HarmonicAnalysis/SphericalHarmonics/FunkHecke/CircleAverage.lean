@@ -11,15 +11,10 @@ open scoped RealInnerProductSpace
 
 instance angleMeasure_isProbabilityMeasure : IsProbabilityMeasure angleMeasure := by
   constructor
-  change angleMeasure Set.univ = 1
   rw [angleMeasure, Measure.smul_apply, Measure.restrict_apply_univ, Real.volume_Icc]
   simp only [sub_zero, smul_eq_mul]
   exact ENNReal.inv_mul_cancel (ne_of_gt (ENNReal.ofReal_pos.mpr
     (mul_pos (by norm_num) Real.pi_pos))) ENNReal.ofReal_ne_top
-
-@[simp] theorem shiftedLegendre_eval_zero (ℓ : ℕ) :
-    (Polynomial.shiftedLegendre ℓ).eval₂ (Int.castRingHom ℝ) 0 = 1 := by
-  simp [Polynomial.shiftedLegendre, Polynomial.eval₂_finset_sum, Finset.sum_range_succ']
 
 @[simp] theorem latitudePoint_zero_val (g : Ambient ≃ₗᵢ[ℝ] Ambient) (θ : ℝ) :
     (latitudePoint g 0 θ : Ambient) = g north := by
@@ -28,19 +23,6 @@ instance angleMeasure_isProbabilityMeasure : IsProbabilityMeasure angleMeasure :
   rw [WithLp.ext_iff]
   funext i
   fin_cases i <;> simp [latitudeAmbient, north, PiLp.single_apply]
-
-@[simp] theorem latitudePoint_one_val (g : Ambient ≃ₗᵢ[ℝ] Ambient) (θ : ℝ) :
-    (latitudePoint g 1 θ : Ambient) = -g north := by
-  rw [latitudePoint_val _ _ _ (by constructor <;> norm_num), latitudeAmbient, ← map_neg]
-  apply congrArg g
-  rw [WithLp.ext_iff]
-  funext i
-  fin_cases i <;> norm_num [north, PiLp.single_apply]
-
-@[simp] theorem shiftedLegendre_eval_one (ℓ : ℕ) :
-    (Polynomial.shiftedLegendre ℓ).eval₂ (Int.castRingHom ℝ) 1 = (-1 : ℝ) ^ ℓ := by
-  have h := Polynomial.shiftedLegendre_eval_symm ℓ (1 : ℝ)
-  simpa [Polynomial.aeval_def, Polynomial.coeff_shiftedLegendre] using h
 
 theorem harmonic_latitude_average_north (ℓ : ℕ) (p : MvPolynomial (Fin 3) ℂ)
     (g : Ambient ≃ₗᵢ[ℝ] Ambient) :
@@ -83,7 +65,7 @@ theorem polynomialLaplacian_linearSubstitution (A : Matrix (Fin 3) (Fin 3) ℂ)
   change (∑ j, MvPolynomial.pderiv j (MvPolynomial.pderiv j (linearSubstitution A p))) =
     ∑ j, linearSubstitution A (MvPolynomial.pderiv j (MvPolynomial.pderiv j p))
   simp only [pderiv_linearSubstitution, map_sum, MvPolynomial.pderiv_C_mul]
-  simp only [pderiv_linearSubstitution, Finset.mul_sum, ← mul_assoc, ← MvPolynomial.C_mul]
+  simp only [Finset.mul_sum, ← mul_assoc, ← MvPolynomial.C_mul]
   rw [Finset.sum_comm]
   apply Finset.sum_congr rfl
   intro i hi
@@ -133,7 +115,7 @@ theorem orthogonalSubstitutionMatrix_eval (g : Ambient ≃ₗᵢ[ℝ] Ambient) (
   simp only [orthogonalSubstitutionMatrix, ← Complex.ofReal_mul, ← Complex.ofReal_sum]
   congr 1
   have hh := g.symm.inner_map_map (EuclideanSpace.single i 1) (g v)
-  simp only [g.symm_apply_apply, EuclideanSpace.inner_single_left, mul_one] at hh
+  simp only [g.symm_apply_apply, EuclideanSpace.inner_single_left] at hh
   rw [PiLp.inner_apply] at hh
   simp only [RCLike.inner_apply, conj_trivial] at hh
   simpa [mul_comm] using hh
@@ -196,11 +178,8 @@ theorem harmonic_latitude_average (ℓ : ℕ) (p : MvPolynomial (Fin 3) ℂ)
   have hcast := Polynomial.hom_eval₂ (Polynomial.shiftedLegendre ℓ)
     (Int.castRingHom ℝ) Complex.ofRealHom v
   have hcomp : Complex.ofRealHom.comp (Int.castRingHom ℝ) = Int.castRingHom ℂ := by
-    ext n
-    simp
+    rfl
   rw [hcomp] at hcast
   change (((Polynomial.shiftedLegendre ℓ).eval₂ (Int.castRingHom ℝ) v : ℝ) : ℂ) =
     (Polynomial.shiftedLegendre ℓ).eval₂ (Int.castRingHom ℂ) (v : ℂ) at hcast
   rw [hcast, mul_comm]
-
-end DedekindZetaZeroFree.ComplexFractionalInverse.FunkHecke

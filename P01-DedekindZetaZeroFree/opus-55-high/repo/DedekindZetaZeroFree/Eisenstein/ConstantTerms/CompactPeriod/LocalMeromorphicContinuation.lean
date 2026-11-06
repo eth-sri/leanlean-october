@@ -14,32 +14,6 @@ variable {F : Type} [Field F] [NumberField F]
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 variable {R : PrincipalMellin.ActualRecipe S η} {Q : AdmissibleFlatSources R}
 
-def numeratorProfile (T : Realization R Q) (v : R.A.UnitQuotient)
-    (s : Metric.ball (0 : ℂ) T.radius) (g : Group R) : C(KPAdditiveQuotient F, ℂ) :=
-  ⟨fun q => T.cleared v s.val
-    (KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12 (Quotient.out q) * g),
-    cleared_integrand_continuous T v s.val s.property g⟩
-
-def upperCLM (Q : AdmissibleFlatSources R) : C(KPAdditiveQuotient F, ℂ) →L[ℂ] ℂ := by
-  letI : IsProbabilityMeasure Q.dq := ⟨Q.probability⟩
-  let L : C(KPAdditiveQuotient F, ℂ) →ₗ[ℂ] ℂ :=
-    { toFun := fun f => ∫ q, f q ∂Q.dq
-      map_add' := fun f h => integral_add
-        (by simpa using f.continuous.continuousOn.integrableOn_compact' isCompact_univ MeasurableSet.univ)
-        (by simpa using h.continuous.continuousOn.integrableOn_compact' isCompact_univ MeasurableSet.univ)
-      map_smul' := fun c f => by simpa using integral_smul c (fun q => f q) }
-  exact L.mkContinuous 1 (fun f => by
-    change ‖∫ q, f q ∂Q.dq‖ ≤ 1 * ‖f‖
-    simpa using norm_integral_le_of_norm_le_const (μ := Q.dq)
-      (Filter.Eventually.of_forall f.norm_coe_le_norm))
-
-@[simp] theorem upperCLM_apply (f : C(KPAdditiveQuotient F, ℂ)) :
-    upperCLM Q f = ∫ q, f q ∂Q.dq := rfl
-
-@[simp] theorem upperCLM_numeratorProfile (T : Realization R Q) (v : R.A.UnitQuotient)
-    (s : Metric.ball (0 : ℂ) T.radius) (g : Group R) :
-    upperCLM Q (numeratorProfile T v s g) = upper R Q.dq (T.cleared v s.val) g := rfl
-
 def localPeriod (T : Realization R Q) (v : R.A.UnitQuotient) (s : ℂ)
     (g : Group R) : ℂ := upper R Q.dq (T.cleared v s) g / s
 

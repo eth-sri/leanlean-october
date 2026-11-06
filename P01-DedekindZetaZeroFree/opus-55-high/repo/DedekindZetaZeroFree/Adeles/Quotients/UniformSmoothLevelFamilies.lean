@@ -48,7 +48,7 @@ def IsLevelTorusSmooth {F : Type*} [Field F] [NumberField F]
     (g : SmoothLevelTorus K → ℂ) : Prop :=
   ContDiff ℝ ∞ (fun x : mixedEmbedding.mixedSpace F => g (QuotientAddGroup.mk x))
 
-private theorem smoothArchInclusion_add {F : Type*} [Field F] [NumberField F]
+theorem smoothArchInclusion_add {F : Type*} [Field F] [NumberField F]
     (x y : mixedEmbedding.mixedSpace F) :
     smoothArchInclusion F (x + y) = smoothArchInclusion F x + smoothArchInclusion F y := by
   let i : mixedEmbedding.mixedSpace F →+ AdeleRing (𝓞 F) F :=
@@ -60,10 +60,10 @@ private theorem smoothArchInclusion_add {F : Type*} [Field F] [NumberField F]
           (0 : FiniteAdeleRing (𝓞 F) F)) =
           ((InfiniteAdeleRing.ringEquiv_mixedSpace F).symm a +
             (InfiniteAdeleRing.ringEquiv_mixedSpace F).symm b, 0 + 0)
-        simp only [map_add, add_zero] }
+        simp }
   exact (((QuotientAddGroup.mk' (AdeleRing.principalSubgroup (𝓞 F) F)).comp i).map_add x y)
 
-private theorem smoothArchInclusion_lattice {F : Type*} [Field F] [NumberField F]
+theorem smoothArchInclusion_lattice {F : Type*} [Field F] [NumberField F]
     (K : AddSubgroup (FiniteAdeleRing (𝓞 F) F))
     (x : mixedEmbedding.mixedSpace F) (hx : x ∈ finiteLevelLattice K) :
     smoothArchInclusion F x ∈ finiteLevelImage K := by
@@ -81,7 +81,7 @@ private theorem smoothArchInclusion_lattice {F : Type*} [Field F] [NumberField F
   rw [InfiniteAdeleRing.mixedEmbedding_eq_algebraMap_comp]
   simp only [map_neg, RingEquiv.symm_apply_apply, zero_sub, sub_zero]
 
-private theorem smoothLevel_periodic {F : Type*} [Field F] [NumberField F]
+theorem smoothLevel_periodic {F : Type*} [Field F] [NumberField F]
     (K : AddSubgroup (FiniteAdeleRing (𝓞 F) F))
     (f : SmoothAdeleQuotient F → ℂ) (hf : HasSmoothAdditiveLevel K f)
     (x y : mixedEmbedding.mixedSpace F)
@@ -96,10 +96,10 @@ theorem smoothLevelPullback_mk {F : Type*} [Field F] [NumberField F]
     (K : AddSubgroup (FiniteAdeleRing (𝓞 F) F))
     (f : SmoothAdeleQuotient F → ℂ) (hf : HasSmoothAdditiveLevel K f)
     (x : mixedEmbedding.mixedSpace F) :
-    smoothLevelPullback K f (QuotientAddGroup.mk x) = f (smoothArchInclusion F x) := by
-  exact smoothLevel_periodic K f hf _ x (Quotient.out_eq _)
+    smoothLevelPullback K f (QuotientAddGroup.mk x) = f (smoothArchInclusion F x) := 
+  smoothLevel_periodic K f hf _ x (Quotient.out_eq _)
 
-private theorem smooth_level_eq {F : Type*} [Field F] [NumberField F]
+theorem smooth_level_eq {F : Type*} [Field F] [NumberField F]
     (K : AddSubgroup (FiniteAdeleRing (𝓞 F) F)) {Y : Type*}
     (f : SmoothAdeleQuotient F → Y)
     (hf : ∀ q (h : finiteLevelImage K), f (q + h) = f q)
@@ -109,7 +109,7 @@ private theorem smooth_level_eq {F : Type*} [Field F] [NumberField F]
   have hm := QuotientAddGroup.eq_iff_sub_mem.mp hqr
   simpa only [add_sub_cancel] using hf r ⟨q - r, hm⟩
 
-private theorem smooth_level_representative {F : Type*} [Field F] [NumberField F]
+theorem smooth_level_representative {F : Type*} [Field F] [NumberField F]
     (K : AddSubgroup (FiniteAdeleRing (𝓞 F) F))
     (hcompact : IsCompact (K : Set (FiniteAdeleRing (𝓞 F) F)))
     (hopen : IsOpen (K : Set (FiniteAdeleRing (𝓞 F) F)))
@@ -122,7 +122,7 @@ private theorem smooth_level_representative {F : Type*} [Field F] [NumberField F
   induction t using QuotientAddGroup.induction_on with
   | H x => exact ⟨x, ht.symm.trans (he x)⟩
 
-private theorem smooth_archJet_level {F : Type*} [Field F] [NumberField F]
+theorem smooth_archJet_level {F : Type*} [Field F] [NumberField F]
     (K : AddSubgroup (FiniteAdeleRing (𝓞 F) F))
     (f : SmoothAdeleQuotient F → ℂ) (hf : HasSmoothAdditiveLevel K f) (n : ℕ) :
     ∀ q (h : finiteLevelImage K), smoothArchJet n f (q + h) = smoothArchJet n f q := by
@@ -133,7 +133,7 @@ private theorem smooth_archJet_level {F : Type*} [Field F] [NumberField F]
   simpa only [add_assoc, add_comm (h : SmoothAdeleQuotient F) (smoothArchInclusion F x)] using
     hf (q + smoothArchInclusion F x) h
 
-private theorem smooth_family_continuous_iff {F : Type*} [Field F] [NumberField F]
+theorem smooth_family_continuous_iff {F : Type*} [Field F] [NumberField F]
     (K : AddSubgroup (FiniteAdeleRing (𝓞 F) F))
     (hcompact : IsCompact (K : Set (FiniteAdeleRing (𝓞 F) F)))
     (hopen : IsOpen (K : Set (FiniteAdeleRing (𝓞 F) F)))
@@ -166,7 +166,7 @@ private theorem smooth_family_continuous_iff {F : Type*} [Field F] [NumberField 
     funext (fun z => hdE z.1 z.2)
   rw [h1, ← hE.continuous_comp_iff, heq]
 
-private theorem smooth_continuous_iff {F : Type*} [Field F] [NumberField F]
+theorem smooth_continuous_iff {F : Type*} [Field F] [NumberField F]
     (K : AddSubgroup (FiniteAdeleRing (𝓞 F) F))
     (hcompact : IsCompact (K : Set (FiniteAdeleRing (𝓞 F) F)))
     (hopen : IsOpen (K : Set (FiniteAdeleRing (𝓞 F) F)))
@@ -181,7 +181,7 @@ private theorem smooth_continuous_iff {F : Type*} [Field F] [NumberField F]
   · intro hc
     exact (h.mpr (hc.comp continuous_snd)).comp ((continuous_const (y := ())).prodMk continuous_id)
 
-private theorem smooth_archJet_inclusion {F : Type*} [Field F] [NumberField F]
+theorem smooth_archJet_inclusion {F : Type*} [Field F] [NumberField F]
     (f : SmoothAdeleQuotient F → ℂ) (n : ℕ) (x : mixedEmbedding.mixedSpace F) :
     smoothArchJet n f (smoothArchInclusion F x) =
       iteratedFDeriv ℝ n (fun x => f (smoothArchInclusion F x)) x := by
@@ -205,7 +205,7 @@ theorem finiteLevel_smooth_iff {F : Type*} [Field F] [NumberField F]
   constructor
   · intro hs
     have h := hs.2.1 0
-    simpa only [smoothArchInclusion, map_zero, zero_add] using h
+    simp_all
   · intro hs
     refine ⟨(smooth_continuous_iff K hcompact hopen f hf).mpr hs.continuous, ?_, ?_⟩
     · intro q
@@ -215,8 +215,7 @@ theorem finiteLevel_smooth_iff {F : Type*} [Field F] [NumberField F]
         funext x
         rw [smoothArchInclusion_add]
         apply smooth_level_eq K f hf
-        exact congrArg (fun t : finiteLevelAdditiveQuotient K =>
-          t + QuotientAddGroup.mk (smoothArchInclusion F x)) ha
+        simp_all
       rw [heq]
       exact hs.comp (contDiff_const.add contDiff_id)
     · intro n
@@ -236,6 +235,3 @@ def IsUniformArchSmoothFamily {F : Type*} [Field F] [NumberField F]
     ∀ (n : ℕ) (v : Fin n → mixedEmbedding.mixedSpace F)
       (p : P) (q : SmoothAdeleQuotient F),
       ‖smoothArchJet n (fun q' => f (p, q')) q v‖ ≤ B n v
-
-end
-end DedekindZetaZeroFree

@@ -46,7 +46,3 @@ def nonprincipalRayHeckeData
     (η : RayClassCharacter F 𝔪) (hprim : η.IsPrimitive) (hnp : ¬ η.IsPrincipal) :
     NonprincipalRayHeckeData F 𝔪 η :=
   Classical.choice (nonprincipalRayHeckeData_exists F hF 𝔪 hm η hprim hnp)
-
-end
-
-end DedekindZetaZeroFree

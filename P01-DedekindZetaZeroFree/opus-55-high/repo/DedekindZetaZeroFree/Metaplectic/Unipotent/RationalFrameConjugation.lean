@@ -18,33 +18,17 @@ theorem archProjection_compare (g : KPCubicCoverConstruction.AdelicPGL2Cover F �
       Matrix.ProjGenLinGroup.map
         (NumberField.InfinitePlace.Completion.ringEquivComplexOfIsComplex
           (KPHilbert.infinite_isComplex F ζ hζ w)).toRingHom
-        (KPCuspGenuineMonodromy.archProjection F ζ hζ g w) := by
-  obtain ⟨g, rfl⟩ := QuotientGroup.mk'_surjective (splitScalarSubgroup F ζ hζ) g
-  change Matrix.ProjGenLinGroup.mk (Matrix.GeneralLinearGroup.map _ (projection F ζ hζ g)) =
-    Matrix.ProjGenLinGroup.map _ (Matrix.ProjGenLinGroup.mk (matrixEval F (Sum.inl w) (projection F ζ hζ g)))
-  rw [Matrix.ProjGenLinGroup.map_mk, Matrix.GeneralLinearGroup.map_comp]
-  rfl
+        (KPCuspGenuineMonodromy.archProjection F ζ hζ g w) := by apply DedekindZetaZeroFree.KPMsFixedHaar.archProjection_compare <;> assumption
 
 theorem insertion_commutes_cover (a : KPSmoothActualFlowData.GInfinity F)
     (c : KPFiniteCuspAtlas.FiniteCover F ζ hζ) :
-    Commute (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a) c.val := by
-  have hc : c.val ∈ (PGLComplex.AdelicSlicesRaw.archProjection F ζ hζ).ker := by
-    rw [MonoidHom.mem_ker]
-    funext w
-    rw [archProjection_compare]
-    have he := c.property
-    rw [MonoidHom.mem_ker] at he
-    rw [he]
-    exact map_one _
-  have hm := (PGLComplex.AdelicSlicesRaw.actualArchFiniteSplitting F ζ hζ).choose_spec.2.2.2.1
-  rw [hm] at hc
-  exact RepresentationTheory.ArchFiniteSplitting.insertion_commutes_finite F ζ hζ a ⟨c.val, hc⟩
+    Commute (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a) c.val := by apply DedekindZetaZeroFree.KPMsActualCuspSource.insertion_commutes <;> assumption
 
 def complexParameter (a : NumberField.InfiniteAdeleRing F) : NumberField.InfinitePlace F → ℂ :=
   fun w => NumberField.InfinitePlace.Completion.ringEquivComplexOfIsComplex
     (KPHilbert.infinite_isComplex F ζ hζ w) (a w)
 
-private theorem map_upper {K L : Type} [Field K] [Field L] (f : K →+* L) (t : K) :
+theorem map_upper {K L : Type} [Field K] [Field L] (f : K →+* L) (t : K) :
     Matrix.GeneralLinearGroup.map f (KubotaRankTwo.n K t) = KubotaRankTwo.n L (f t) := by
   apply Matrix.GeneralLinearGroup.ext
   intro i j
@@ -159,7 +143,7 @@ theorem rationalLift_split (σ : KPCuspArithmetic.PGL2 F) :
       inv_mul_cancel]
   exact ⟨⟨i⁻¹ * r, hm⟩, by change r = i * (i⁻¹ * r); group⟩
 
-private theorem conjugation_split {G : Type} [Group G] (i s z n : G)
+theorem conjugation_split {G : Type} [Group G] (i s z n : G)
     (hsz : Commute s z) (his : Commute i s) (hin : Commute i n) :
     (i * s) * (z * n) * (i * s)⁻¹ =
       (i * z * i⁻¹) * (s * n * s⁻¹) := by

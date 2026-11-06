@@ -42,7 +42,3 @@ theorem finiteTraceHaar_eq_localNormalizedHaar_of_integerVolume
   rw [smul_smul, localNormalizedHaar, hvolume]
   congr 1
   rw [ENNReal.div_mul_cancel hp hf]
-
-end DedekindZetaZeroFree.FiniteOscillatoryStabilization
-
-end

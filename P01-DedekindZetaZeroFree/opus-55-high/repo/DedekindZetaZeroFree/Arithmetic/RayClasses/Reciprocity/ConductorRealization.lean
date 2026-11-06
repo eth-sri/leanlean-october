@@ -35,21 +35,18 @@ theorem conductorRayRealization
   · intro ρ
     change (F ρ).1 ≠ ⊥
     by_cases h : ρ = 1
-    · subst h
-      rw [hF1]
-      exact top_ne_bot
+    · simp_all
     · have hF : F ρ = ⟨Classical.choose (singleCharacterExactRayRealization K L ρ h),
           Classical.choose (Classical.choose_spec (singleCharacterExactRayRealization K L ρ h))⟩ :=
         dif_neg h
       rw [hF]
       exact (Classical.choose_spec
         (Classical.choose_spec (singleCharacterExactRayRealization K L ρ h))).1
-  · change (F 1).1 = ⊤
-    rw [hF1]
+  · simp_all
   · intro I
     change (F 1).2 I = if I = ⊥ then 0 else 1
     rw [hF1]
-    exact trivialRayCharacter_apply K I
+    rfl
   · intro ρ hρ
     change ¬ (F ρ).2.IsPrincipal
     have hF : F ρ = ⟨Classical.choose (singleCharacterExactRayRealization K L ρ hρ),
@@ -70,5 +67,3 @@ theorem conductorRayRealization
       rw [hF]
       exact (Classical.choose_spec
         (Classical.choose_spec (singleCharacterExactRayRealization K L ρ h))).2.2.2 p W hW
-
-end DedekindZetaZeroFree.AbelianQuotient

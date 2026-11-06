@@ -20,7 +20,7 @@ structure FixedData {F : Type} [Field F] [NumberField F]
   rootAligned : MomentSources.RootAligned recipe
   source : MomentSources.SelectedMomentSource recipe
 
-private theorem recipe_M_estimates {F : Type} [Field F] [NumberField F]
+theorem recipe_M_estimates {F : Type} [Field F] [NumberField F]
     {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
     (R : PrincipalMellin.ActualRecipe S η) :
     DifferentiableOn ℂ R.W.M {z : ℂ | 0 < z.re} ∧
@@ -70,7 +70,7 @@ abbrev generates (r : D.Row) := r.toFrequency.generates
 theorem ext {r r' : D.Row} (h : r.toFrequency = r'.toFrequency) : r = r' := by
   cases r; cases r'; cases h; rfl
 
-private theorem frequency_ext_of_u_ideal {f g : CorrectionFactors.Frequency D.context}
+theorem frequency_ext_of_u_ideal {f g : CorrectionFactors.Frequency D.context}
     (hu : f.u = g.u) (hI : f.ideal = g.ideal) : f = g := by
   obtain ⟨u, I, a, b, c⟩ := f
   obtain ⟨u', I', a', b', c'⟩ := g

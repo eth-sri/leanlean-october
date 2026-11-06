@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Continuous equivalences of quotient groups
 
@@ -38,7 +34,7 @@ variable [Group H] [TopologicalSpace H]
 
 /-- A continuous multiplicative equivalence descends to continuously
 equivalent quotients when it maps one normal subgroup onto the other. -/
-noncomputable def continuousCongr
+def continuousCongr
     (N : Subgroup G) (M : Subgroup H) [N.Normal] [M.Normal]
     (e : G ≃ₜ* H) (h : N.map e.toMulEquiv.toMonoidHom = M) :
     G ⧸ N ≃ₜ* H ⧸ M := by
@@ -66,7 +62,3 @@ equivalence. -/
     continuousCongr N M e h (QuotientGroup.mk' N g) =
       QuotientGroup.mk' M (e g) :=
   rfl
-
-end LocalFieldTheory.QuotientGroup
-
-end

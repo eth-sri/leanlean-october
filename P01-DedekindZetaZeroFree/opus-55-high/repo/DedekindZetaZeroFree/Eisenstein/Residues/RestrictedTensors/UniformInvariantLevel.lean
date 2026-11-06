@@ -65,7 +65,7 @@ set_option maxHeartbeats 2000000
       rw [hp,map_mul]
       exact hD q ⟨_,Subgroup.mem_iInf.mp hr.2 q⟩ _
 
-private theorem core_residue_right_fixed
+theorem core_residue_right_fixed
     (x : RestrictedTensorSimple.Core (Plus R.A P C) (plusReference R.A P C) (bad R.A P C))
     (u : Group R)
     (hf : ∀ z g, (coreFlatInsertion R P C x).val z (g*u) = (coreFlatInsertion R P C x).val z g)

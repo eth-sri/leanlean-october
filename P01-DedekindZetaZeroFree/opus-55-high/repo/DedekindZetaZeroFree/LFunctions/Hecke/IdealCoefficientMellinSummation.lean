@@ -60,7 +60,7 @@ theorem idealCoefficientLSeries_summable (a : Ideal (𝓞 F) → ℂ)
     have hpos : 0 < (Ideal.absNorm I.val : ℝ) := by
       have hne : Ideal.absNorm I.val ≠ 0 := by
         simpa [Ideal.absNorm_eq_zero_iff] using I.property
-      exact_mod_cast Nat.pos_of_ne_zero hne
+      positivity
     have hnorm : ‖(Ideal.absNorm I.val : ℂ) ^ (-s)‖ =
         (Ideal.absNorm I.val : ℝ) ^ (-s.re) := by
       rw [← Complex.ofReal_natCast]
@@ -75,22 +75,22 @@ theorem idealCoefficientLSeries_summable (a : Ideal (𝓞 F) → ℂ)
     Summable.of_nonneg_of_le (fun _ => norm_nonneg _) hbound hbase
   exact ⟨hnorm, hnorm.of_norm⟩
 
-private theorem countable_ideal (F : Type*) [Field F] [NumberField F] :
+theorem countable_ideal (F : Type*) [Field F] [NumberField F] :
     Countable (Ideal (𝓞 F)) := by
   have h : (Set.univ : Set (Ideal (𝓞 F))) =
       ⋃ n : ℕ, {I | (Ideal.absNorm I : ℝ) ≤ (n : ℝ)} := by
     ext I
     simp only [Set.mem_univ, Set.mem_iUnion, Set.mem_setOf_eq, true_iff]
-    exact ⟨Ideal.absNorm I, by push_cast; exact le_refl _⟩
+    exact ⟨Ideal.absNorm I, by rfl⟩
   rw [← Set.countable_univ_iff, h]
   exact Set.countable_iUnion fun n => (finite_ideals_absNorm_le F (n : ℝ)).countable
 
-private theorem norm_absNorm_cpow {I : Ideal (𝓞 F)} (hI : I ≠ ⊥) (w : ℂ) :
+theorem norm_absNorm_cpow {I : Ideal (𝓞 F)} (hI : I ≠ ⊥) (w : ℂ) :
     ‖(Ideal.absNorm I : ℂ) ^ w‖ = (Ideal.absNorm I : ℝ) ^ w.re := by
   have hpos : 0 < (Ideal.absNorm I : ℝ) := by
     have hne : Ideal.absNorm I ≠ 0 := by
       simpa [Ideal.absNorm_eq_zero_iff] using hI
-    exact_mod_cast Nat.pos_of_ne_zero hne
+    positivity
   rw [← Complex.ofReal_natCast, Complex.norm_cpow_eq_rpow_re_of_pos hpos]
 
 theorem idealMellin_verticalIntegrable (a : Ideal (𝓞 F) → ℂ)
@@ -106,7 +106,7 @@ theorem idealMellin_verticalIntegrable (a : Ideal (𝓞 F) → ℂ)
       ‖a I.val * (Ideal.absNorm I.val : ℂ) ^ (-(σ : ℂ))‖) :=
     (idealCoefficientLSeries_summable a ha0 ha hσ).1
   have hCLnn : 0 ≤ CL := by
-    rw [hCL]; exact tsum_nonneg fun _ => norm_nonneg _
+    positivity
 
   have hLcont : Continuous (fun t : ℝ => idealCoefficientLSeries a (σ + t * Complex.I)) := by
     refine continuous_tsum (f := fun (I : {I : Ideal (𝓞 F) // I ≠ ⊥}) (t : ℝ) =>
@@ -127,8 +127,7 @@ theorem idealMellin_verticalIntegrable (a : Ideal (𝓞 F) → ℂ)
           (Ideal.absNorm I.val : ℝ) ^ (-σ) := by
         rw [norm_absNorm_cpow I.property]
         simp
-      rw [norm_mul, h1]
-      rw [norm_mul, h2]
+      simp_all
   have hint : Integrable (fun t : ℝ => mellin h (σ + t * Complex.I)) :=
     (Vendor.mellin_inversion_positive_line h hh hcompact σ (lt_trans zero_lt_one hσ)).1
   have hcontX : Continuous (fun t : ℝ => (X : ℂ) ^ (σ + t * Complex.I)) := by
@@ -161,20 +160,20 @@ theorem idealMellin_verticalIntegrable (a : Ideal (𝓞 F) → ℂ)
       rw [norm_mul, norm_mul, h1, h2]
     rw [norm_mul, norm_mul, hnormX]
     have hnonneg : 0 ≤ ‖mellin h (σ + t * Complex.I)‖ * X ^ σ :=
-      mul_nonneg (norm_nonneg _) (Real.rpow_nonneg hX.le _)
+      by positivity
     calc ‖mellin h (σ + t * Complex.I)‖ * X ^ σ * ‖idealCoefficientLSeries a (σ + t * Complex.I)‖
         ≤ ‖mellin h (σ + t * Complex.I)‖ * X ^ σ * CL :=
           mul_le_mul_of_nonneg_left hle hnonneg
       _ = CL * X ^ σ * ‖mellin h (σ + t * Complex.I)‖ := by ring
 
-private theorem cpow_absNorm_div {I : Ideal (𝓞 F)} (hI : I ≠ ⊥) {X : ℝ} (hX : 0 < X)
+theorem cpow_absNorm_div {I : Ideal (𝓞 F)} (hI : I ≠ ⊥) {X : ℝ} (hX : 0 < X)
     (s : ℂ) :
     (Ideal.absNorm I : ℂ) ^ (-s) * (X : ℂ) ^ s =
       (((Ideal.absNorm I : ℝ) / X : ℝ) : ℂ) ^ (-s) := by
   have hpos : 0 < (Ideal.absNorm I : ℝ) := by
     have hne : Ideal.absNorm I ≠ 0 := by
       simpa [Ideal.absNorm_eq_zero_iff] using hI
-    exact_mod_cast Nat.pos_of_ne_zero hne
+    positivity
   have harg : (X : ℂ).arg ≠ Real.pi := by
     rw [Complex.arg_ofReal_of_nonneg hX.le]
     exact Real.pi_ne_zero.symm
@@ -256,7 +255,7 @@ theorem idealMellin_finsum_eq_verticalIntegral (a : Ideal (𝓞 F) → ℂ)
     intro I
     have hmaj : Integrable (fun t : ℝ =>
         (X ^ σ * (‖a I.val‖ * (Ideal.absNorm I.val : ℝ) ^ (-σ))) *
-          ‖mellin h (σ + t * Complex.I)‖) := (hint.norm).const_mul _
+          ‖mellin h (σ + t * Complex.I)‖) := by fun_prop
     calc ∫ t : ℝ, ‖G I t‖
         ≤ ∫ t : ℝ, (X ^ σ * (‖a I.val‖ * (Ideal.absNorm I.val : ℝ) ^ (-σ))) *
             ‖mellin h (σ + t * Complex.I)‖ :=
@@ -283,7 +282,7 @@ theorem idealMellin_finsum_eq_verticalIntegral (a : Ideal (𝓞 F) → ℂ)
     have hpos : 0 < (Ideal.absNorm I.val : ℝ) := by
       have hne : Ideal.absNorm I.val ≠ 0 := by
         simpa [Ideal.absNorm_eq_zero_iff] using I.property
-      exact_mod_cast Nat.pos_of_ne_zero hne
+      positivity
     have hxpos : 0 < (Ideal.absNorm I.val : ℝ) / X := div_pos hpos hX
     have hcongr : (∫ t : ℝ, G I t) = a I.val * ∫ t : ℝ,
         (((Ideal.absNorm I.val : ℝ) / X : ℝ) : ℂ) ^ (-(σ + t * Complex.I)) *
@@ -358,7 +357,7 @@ theorem idealMellin_dual_interchange (a : Ideal (𝓞 F) → ℂ)
     intro I
     have hne : Ideal.absNorm I.val ≠ 0 := by
       simpa [Ideal.absNorm_eq_zero_iff] using I.property
-    exact_mod_cast Nat.pos_of_ne_zero hne
+    positivity
   have hxI : ∀ I : {I : Ideal (𝓞 F) // I ≠ ⊥}, 0 < X * (Ideal.absNorm I.val : ℝ) / q :=
     fun I => div_pos (mul_pos hX (hposI I)) hq
   have hrpow : ∀ I : {I : Ideal (𝓞 F) // I ≠ ⊥},
@@ -476,7 +475,7 @@ theorem idealMellin_dual_interchange (a : Ideal (𝓞 F) → ℂ)
         idealCoefficientLSeries a (c + t * Complex.I)‖ ≤ _
       rw [norm_mul, norm_mul, hYnorm t]
       have hnn : 0 ≤ ‖B (c + t * Complex.I)‖ * (X / q) ^ (-c) :=
-        mul_nonneg (norm_nonneg _) (Real.rpow_nonneg hq0.le _)
+        by positivity
       calc ‖B (c + t * Complex.I)‖ * (X / q) ^ (-c) *
             ‖idealCoefficientLSeries a (c + t * Complex.I)‖
           ≤ ‖B (c + t * Complex.I)‖ * (X / q) ^ (-c) * CL :=
@@ -569,7 +568,7 @@ theorem idealMellin_dual_interchange (a : Ideal (𝓞 F) → ℂ)
           B (c + t * Complex.I) =
         Vendor.verticalIntegral c (fun s =>
           (((X * (Ideal.absNorm I.val : ℝ) / q : ℝ)) : ℂ) ^ (-s) * B s) := by
-      rw [Vendor.verticalIntegral]
+      rfl
     rw [hstep, hfold, ← Vendor.mellinInv_eq_verticalIntegral c B hxq, ← hT _ hxq]
   have hEq : Vendor.verticalIntegral c
       (fun s => B s * ((X / q : ℝ) : ℂ) ^ (-s) * idealCoefficientLSeries a s) =
@@ -584,7 +583,3 @@ theorem idealMellin_dual_interchange (a : Ideal (𝓞 F) → ℂ)
     rw [h1, ← hswap, ← tsum_mul_left]
     exact tsum_congr fun I => hper I
   exact ⟨hsumTnorm, hsumTnorm.of_norm, hVert, hEq⟩
-
-end DedekindZetaZeroFree.LargeSieve
-
-end

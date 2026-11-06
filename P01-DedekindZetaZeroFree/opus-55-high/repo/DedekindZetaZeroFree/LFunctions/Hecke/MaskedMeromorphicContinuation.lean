@@ -11,7 +11,6 @@ open IsDedekindDomain
 
 noncomputable section
 namespace DedekindZetaZeroFree.MaskedHeckeMeromorphic
-set_option autoImplicit false
 
 open LocalFiniteSums CorrectionFactors FrequencyCharacterMasks
 
@@ -73,10 +72,10 @@ structure RowContinuation (U : Frequency C) (P : PrimitiveInducers U) (i : Row) 
   meromorphic_germs : MeromorphicOn (quotientRepresentative U P i J)
     {s : ℂ | 0 < s.re}
 
-private lemma positive_open : IsOpen {s : ℂ | 0 < s.re} :=
+lemma positive_open : IsOpen {s : ℂ | 0 < s.re} :=
   isOpen_lt continuous_const Complex.continuous_re
 
-private lemma primitive_series_ne_zero (ν : Detector.PrimitiveFrequencyCharacter F)
+lemma primitive_series_ne_zero (ν : Detector.PrimitiveFrequencyCharacter F)
     (s : ℂ) (hs : 1 < s.re) :
     (∑' I : Ideal (𝓞 F), ν.character I * (Ideal.absNorm I : ℂ) ^ (-s)) ≠ 0 := by
   have hcoeff := ExteriorIdealEuler.zeroMaskedRay_isCoefficient
@@ -88,8 +87,7 @@ private lemma primitive_series_ne_zero (ν : Detector.PrimitiveFrequencyCharacte
     intro I hI
     refine ⟨?_, by simp⟩
     intro hzero
-    have hz : ν.character I = 0 := (ν.character.eq_zero_iff' I).mpr (Or.inl hzero)
-    exact hI (by simp [hz])
+    simp_all
   have he := tsum_subtype_eq_of_support_subset hsupp
   rw [← he]
   change (∑' I : ExteriorIdeal (⊤ : Ideal (𝓞 F)),
@@ -97,7 +95,7 @@ private lemma primitive_series_ne_zero (ν : Detector.PrimitiveFrequencyCharacte
   simpa only [ExteriorIdealEuler.summand, ExteriorIdealEuler.zeroMaskedRayCoefficient,
     sup_top_eq, if_true] using hn
 
-private lemma primitive_regularizer
+lemma primitive_regularizer
     (hF : NumberField.IsTotallyComplex F) (ν : Detector.PrimitiveFrequencyCharacter F) :
     ∃ J : ℂ → ℂ, AnalyticOnNhd ℂ J {s : ℂ | 0 < s.re} ∧
       (∃ s : ℂ, 0 < s.re ∧ J s ≠ 0) ∧
@@ -115,7 +113,7 @@ private lemma primitive_regularizer
         (by rw [← (H.series 2 h2).tsum_eq]; exact primitive_series_ne_zero ν 2 h2)
     refine ⟨H.R, H.R_holo.analyticOnNhd positive_open, ⟨2, by norm_num, hR⟩, ?_⟩
     intro s hs
-    have hs0 : 0 < s.re := lt_trans (by norm_num) hs
+    have hs0 : 0 < s.re := by positivity
     have hs1 : s ≠ 1 := by intro he; subst s; norm_num at hs
     have he : H.R s / (s - 1) ^ poleIndicator ν = H.L s := by
       rw [poleIndicator, if_pos hp, pow_one, H.regularized s hs0 hs1]
@@ -130,7 +128,7 @@ private lemma primitive_regularizer
     · intro s hs
       simpa [poleIndicator, hp] using H.series s hs
 
-private lemma row_deletion_finite (U : Frequency C) (i : Row) :
+lemma row_deletion_finite (U : Frequency C) (i : Row) :
     (deletionSet U i).Finite := by
   have hf : (frequencyMask U).Finite := by
     rw [frequencyMask_eq_principal_support]
@@ -142,7 +140,7 @@ private lemma row_deletion_finite (U : Frequency C) (i : Row) :
   · exact hf
   · exact hf
 
-private lemma row_coefficient_eq (U : Frequency C) (P : PrimitiveInducers U) (i : Row) :
+lemma row_coefficient_eq (U : Frequency C) (P : PrimitiveInducers U) (i : Row) :
     coefficient U i = Detector.deletedPrimitiveIdealCoefficient F
       (primitive U P i) (deletionSet U i) := by
   funext I
@@ -162,8 +160,7 @@ theorem masked_hecke_meromorphic
     (primitive12_totallyComplex F A.zeta12 A.primitive_zeta12) ν
   have hm : MeromorphicOn (fun s : ℂ => J s / (s - 1) ^ poleIndicator ν)
       {s : ℂ | 0 < s.re} := by
-    exact hJ.meromorphicOn.div
-      ((analyticOnNhd_id.sub analyticOnNhd_const).pow (poleIndicator ν)).meromorphicOn
+    fun_prop
   obtain ⟨hBdiff, hBmero, hBs⟩ := Detector.deleted_primitive_L_continuation F ν
     (deletionSet U i) hD {s : ℂ | 0 < s.re}
     (fun s : ℂ => J s / (s - 1) ^ poleIndicator ν) hm hseries
@@ -200,7 +197,3 @@ theorem masked_hecke_meromorphic
         ν.character p.val.asIdeal) le_rfl).2.2
   · exact (hJ.meromorphicOn.mul hB.meromorphicOn).div
       ((analyticOnNhd_id.sub analyticOnNhd_const).pow (poleIndicator ν)).meromorphicOn
-
-end DedekindZetaZeroFree.MaskedHeckeMeromorphic
-
-end

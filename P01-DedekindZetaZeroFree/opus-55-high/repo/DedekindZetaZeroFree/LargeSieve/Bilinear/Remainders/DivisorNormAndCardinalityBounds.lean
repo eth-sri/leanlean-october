@@ -29,8 +29,8 @@ lemma norm_le_of_dvd {u v : Ideal (𝓞 F)} (hv : v ≠ ⊥) (h : u ∣ v) :
     (Ideal.absNorm_dvd_absNorm_of_le (Ideal.dvd_iff_le.mp h))
 
 lemma unit_row_eq_top {m : Ideal (𝓞 F)} {K : ℝ} {r : Ideal (𝓞 F)}
-    (hr : r ∈ ReflectedSigma4.unitRows c m K) : r = ⊤ := by
-  exact Finset.mem_singleton.mp (Finset.mem_filter.mp hr).1
+    (hr : r ∈ ReflectedSigma4.unitRows c m K) : r = ⊤ := 
+  Finset.mem_singleton.mp (Finset.mem_filter.mp hr).1
 
 lemma core_row_norm (C : Context Q) (B : ℝ) (unit : Bool) (hB : 1 ≤ B)
     {r : Ideal (𝓞 F)} (hr : r ∈ C.reflectedCoreRows B unit) :
@@ -126,8 +126,8 @@ lemma mobius_divisor_norm (C : Context Q) {e : Ideal (𝓞 F)}
     (show (Ideal.absNorm e : ℝ) ≤ (Ideal.absNorm (c * C.d) : ℝ) by exact_mod_cast he'.trans hrad)
 
 lemma primitive_norm_le_one (C : Context Q) (p : Ideal (𝓞 F) × Ideal (𝓞 F))
-    (hp : C.ValidPair p) (e : Ideal (𝓞 F)) : ‖C.primitive p hp e‖ ≤ 1 := by
-  exact ((primitiveProductQuadratic Q hp.hu0 hp.hv0 hp.hu hp.hv hp.huc hp.hvc hp.huv
+    (hp : C.ValidPair p) (e : Ideal (𝓞 F)) : ‖C.primitive p hp e‖ ≤ 1 := 
+  ((primitiveProductQuadratic Q hp.hu0 hp.hv0 hp.hu hp.hv hp.huc hp.hvc hp.huv
     hp.hquotientClass (C.primitive p hp) (C.primitive_spec p hp).2.1).1 e).2.2.2
 
 lemma prefactor_norm_le (C : Context Q) (hM : 1 ≤ C.M)
@@ -211,8 +211,8 @@ lemma polynomial_card_bounds (F : Type) [Field F] [NumberField F]
   let sc := supportedNormBound c
   have hnc : 1 ≤ nc := le_max_left _ _
   have hsc : 1 ≤ sc := supportedNormBound_one_le c
-  have hAnc : 0 ≤ A * nc := mul_nonneg (by linarith) (by linarith)
-  have hAncsc : 0 ≤ A * nc * sc := mul_nonneg hAnc (by linarith)
+  have hAnc : 0 ≤ A * nc := by positivity
+  have hAncsc : 0 ≤ A * nc * sc := by positivity
   refine ⟨8 * A * nc * sc, by nlinarith [mul_le_mul hA hnc zero_le_one (by linarith : 0 ≤ A)], ?_⟩
   intro Q C hM hN hd hdN p hp
   have hpN := (pair_norm_bounds C hN hd hp).2
@@ -255,7 +255,3 @@ lemma polynomial_card_bounds (F : Type) [Field F] [NumberField F]
     have hcoef1 : 2 * A ≤ 8 * A * nc * sc := by nlinarith
     have hcoef2 : 2 * A * sc ≤ 8 * A * nc * sc := by nlinarith
     exact ⟨hr.1.trans (ho.trans (by nlinarith)), hr.2.trans (hre.trans (by nlinarith))⟩
-
-end DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitAssembly.LocalTailGeometry
-
-end

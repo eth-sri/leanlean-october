@@ -62,16 +62,6 @@ def transition (M : ComponentMatching AV AU) (j : CuspIndex AV) :
   ((AU.cuspAtlas (cuspLabel M j).1).representative (cuspLabel M j).2)⁻¹ *
     ((correction M j).val⁻¹ * M.rational j.1) * (AV.cuspAtlas j.1).representative j.2
 
-structure NormOneMatrix (M : ComponentMatching AV AU) (j : CuspIndex AV) where
-  matrix : Matrix.GeneralLinearGroup (Fin 2) F
-  ratio : Fˣ
-  upper : (matrix : Matrix (Fin 2) (Fin 2) F) 1 0 = 0
-  ratio_formula : (matrix : Matrix (Fin 2) (Fin 2) F) 0 0 =
-    (ratio : F) * (matrix : Matrix (Fin 2) (Fin 2) F) 1 1
-  projective_formula : Matrix.ProjGenLinGroup.mk matrix = transition M j
-  sum_log_zero : ∑ i : Fin (KPCuspLogShape.dimension F),
-    Real.log ((KPCusp.complexPlace F i) (ratio : F)) = 0
-
  theorem transition_properties
     (h : V.toOpenSubgroup.toSubgroup ≤ U.toOpenSubgroup.toSubgroup)
     (M : ComponentMatching AV AU) (j : CuspIndex AV) :
@@ -83,10 +73,10 @@ structure NormOneMatrix (M : ComponentMatching AV AU) (j : CuspIndex AV) where
       (KPCuspGenuineMonodromy.Component F ζ hζ U (AU.representative k.1))
       ((AU.cuspAtlas k.1).cusp k.2) ((AU.cuspAtlas k.1).representative k.2)
     S.map (MulAut.conj (transition M j)).toMonoidHom ≤ T ∧
-      ((S.map (MulAut.conj (transition M j)).toMonoidHom).subgroupOf T).FiniteIndex := by
-  exact (actual_label_transition h AV AU M.component M.rational M.central M.level M.formula j).2
+      ((S.map (MulAut.conj (transition M j)).toMonoidHom).subgroupOf T).FiniteIndex := 
+  (actual_label_transition h AV AU M.component M.rational M.central M.level M.formula j).2
 
-private theorem sum_sigma_fiber {I K : Type*} [Fintype I] [Fintype K] [DecidableEq K]
+theorem sum_sigma_fiber {I K : Type*} [Fintype I] [Fintype K] [DecidableEq K]
     {B : I → Type*} [∀ i, Fintype (B i)] {E : Type*} [AddCommMonoid E]
     (m : I → K) (k : K) (p : ∀ i, B i → Prop) [∀ i, DecidablePred (p i)]
     (f : (Σ i, B i) → E) :
@@ -104,7 +94,7 @@ private theorem sum_sigma_fiber {I K : Type*} [Fintype I] [Fintype K] [Decidable
     exact Finset.sum_subtype (Finset.univ.filter (p i)) (by simp) (fun b => f ⟨i,b⟩)
   · simp [hi]
 
-private theorem cuspLabel_eq_iff (M : ComponentMatching AV AU)
+theorem cuspLabel_eq_iff (M : ComponentMatching AV AU)
     (i : Fin AV.componentCount) (b : Fin (AV.cuspAtlas i).cuspCount)
     (k : Fin AU.componentCount) (a : Fin (AU.cuspAtlas k).cuspCount) :
     cuspLabel M ⟨i,b⟩ = ⟨k,a⟩ ↔ M.component i = k ∧
@@ -130,7 +120,7 @@ def degree (M : ComponentMatching AV AU) (j : CuspIndex AV) : ℕ :=
       ((AU.cuspAtlas (cuspLabel M j).1).cusp (cuspLabel M j).2)
       ((AU.cuspAtlas (cuspLabel M j).1).representative (cuspLabel M j).2))
 
-private theorem degree_eq_shifted (M : ComponentMatching AV AU) (j : CuspIndex AV) :
+theorem degree_eq_shifted (M : ComponentMatching AV AU) (j : CuspIndex AV) :
     degree M j =
       (((KPCuspGenuineMonodromy.Component F ζ hζ V (AV.representative j.1)).map
         (MulAut.conj (M.rational j.1)).toMonoidHom) ⊓
@@ -138,8 +128,8 @@ private theorem degree_eq_shifted (M : ComponentMatching AV AU) (j : CuspIndex A
             (M.rational j.1 • (AV.cuspAtlas j.1).cusp j.2)).relIndex
       ((KPCuspGenuineMonodromy.Component F ζ hζ U (AU.representative (M.component j.1))) ⊓
           MulAction.stabilizer (KPCuspArithmetic.PGL2 F)
-            (M.rational j.1 • (AV.cuspAtlas j.1).cusp j.2)) := by
-  exact actual_transition_degree _ _ _ _ _ _ _ (correction M j)
+            (M.rational j.1 • (AV.cuspAtlas j.1).cusp j.2)) := 
+  actual_transition_degree _ _ _ _ _ _ _ (correction M j)
     (cuspCorrection_formula _ _ _ _)
 
 theorem exists_matching_degree_balance
@@ -184,9 +174,4 @@ theorem exists_matching_degree_balance
   intro k _
   rw [← Finset.sum_filter, Finset.sum_smul]
   apply Finset.sum_congr rfl
-  intro j hj
-  rw [(Finset.mem_filter.mp hj).2]
-
-end DedekindZetaZeroFree.KPMsFixedHaar.WeightedSectionGlobalization
-
-end
+  simp_all

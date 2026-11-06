@@ -36,7 +36,7 @@ theorem real_evenGaussian_fourier :
     div_one, Complex.one_cpow, one_mul] using
     (fourier_gaussian_pi (b := (1 : ℂ)) (by simp))
 
-private theorem deriv_E (x : ℝ) : deriv E x = (-2 * (Real.pi : ℂ)) * O x := by
+theorem deriv_E (x : ℝ) : deriv E x = (-2 * (Real.pi : ℂ)) * O x := by
   have h : HasDerivAt (fun y : ℝ => -(Real.pi * y ^ 2))
       (-(Real.pi * (2 * x))) x := by
     convert (((hasDerivAt_id x).pow 2).const_mul Real.pi).neg using 1
@@ -75,12 +75,8 @@ theorem real_oddGaussian_fourier :
   change (-2 * (Real.pi : ℂ)) * O x =
     (-2 * (Real.pi : ℂ) * Complex.I) * FourierTransform.fourier O x at hx
   have hc : (-2 * (Real.pi : ℂ) * Complex.I) ≠ 0 := by
-    exact mul_ne_zero (mul_ne_zero (by norm_num) (by exact_mod_cast Real.pi_ne_zero)) Complex.I_ne_zero
+    simp
   apply mul_left_cancel₀ hc
   rw [← hx]
   ring_nf
-  simp [Complex.I_sq]
-
-end DedekindZetaZeroFree.AbelianQuotient
-
-end
+  simp

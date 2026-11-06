@@ -11,16 +11,12 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Finite-order local coordinates of profinite units
 -/
 
 open scoped Topology
 
-noncomputable section
 
 namespace KummerTheory
 
@@ -43,17 +39,13 @@ theorem zHatUnit_padicCoordinate_isOfFinOrder_of_freeCoordinate_eq_zero
   have hsecond :
       ((padicUnitDecomposition p.1).symm
         (zHatUnitsContinuousMulEquivPrimeProduct u p)).2 = 1 := by
-    apply Multiplicative.ext
-    simpa using
-      (zHatUnitsDecomposition_freeCoordinate u p).symm.trans hfree
+    simp_all
   have hpair :
       IsOfFinOrder
         (a, (1 : Multiplicative ℤ_[p.1])) := by
     apply isOfFinOrder_iff_pow_eq_one.mpr
     refine ⟨orderOf a, orderOf_pos a, ?_⟩
-    ext
-    · exact pow_orderOf_eq_one a
-    · simp
+    simp
   have hsource :
       (a, (1 : Multiplicative ℤ_[p.1])) =
         (padicUnitDecomposition p.1).symm
@@ -68,10 +60,4 @@ theorem zHatUnit_padicCoordinate_isOfFinOrder_of_freeCoordinate_eq_zero
     (Function.Injective.isOfFinOrder_iff
       (f := (padicUnitDecomposition p.1).toMonoidHom)
       (padicUnitDecomposition p.1).injective).2 hpair
-  rw [hsource,
-    (padicUnitDecomposition p.1).apply_symm_apply] at himage
-  exact himage
-
-end KummerTheory
-
-end
+  simp_all

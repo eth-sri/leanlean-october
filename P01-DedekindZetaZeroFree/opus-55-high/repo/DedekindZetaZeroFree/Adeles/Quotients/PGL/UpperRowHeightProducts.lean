@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Adeles.Quotients.PGL.UpperRowHeightModulus
 
 @[expose] public section
 
-noncomputable section
 open Matrix
 open scoped NumberField BigOperators
 namespace DedekindZetaZeroFree.KPGlobalResidualKernel.ChamberNorm
@@ -75,9 +74,7 @@ theorem infiniteFactor_upper_mul (B C : KPChamberHeight.AdelGL F)
           KPChamberHeight.infiniteDegree F v := by
     unfold KPChamberHeight.infiniteFactor
     dsimp only
-    simp only [KPChamberHeight.rowAction, Fin.sum_univ_two,
-      Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons,
-      map_zero, map_one, zero_mul, one_mul, zero_add]
+    simp only [KPChamberHeight.rowAction, Fin.sum_univ_two, Matrix.cons_val_zero, Matrix.cons_val_one, map_zero, map_one, zero_mul, one_mul, zero_add]
   rw [hrow, hrow, hrow, map_mul]
   change _ = (Real.sqrt (‖Bv 1 0‖ ^ 2 + ‖Bv 1 1‖ ^ 2) / _) ^ _ * _
   rw [hv, norm_zero, zero_pow (by decide : 2 ≠ 0), zero_add,
@@ -90,8 +87,7 @@ theorem rowHeight_upper_mul (B C : KPChamberHeight.AdelGL F)
         KPChamberHeight.rowHeight F ![0, 1] C := by
   have hr : (![0, 1] : Fin 2 → F) ≠ 0 := by
     intro h
-    have := congrFun h 1
-    simpa using this
+    simp_all
   have hf (A : KPChamberHeight.AdelGL F) :
       Function.HasFiniteMulSupport (KPChamberHeight.finiteFactor F ![0, 1] A) :=
     Filter.eventually_cofinite.mp
@@ -112,8 +108,7 @@ theorem rowHeight_upper_compact_bounds
             M * KPChamberHeight.rowHeight F ![0, 1] B := by
   have hr : (![0, 1] : Fin 2 → F) ≠ 0 := by
     intro h
-    have := congrFun h 1
-    simpa using this
+    simp_all
   let ℓ : KPChamberHeight.Line F := Projectivization.mk F ![0, 1] hr
   obtain ⟨m, M, hm, hmM, hb⟩ := KPChamberHeight.compact_uniform_height F S hS
   let z := KPChamberHeight.height F ℓ 1
@@ -130,7 +125,3 @@ theorem rowHeight_upper_compact_bounds
       mul_le_mul_of_nonneg_left hl hB
   · simpa only [z, mul_comm, mul_left_comm, mul_assoc] using
       mul_le_mul_of_nonneg_left hu hB
-
-end DedekindZetaZeroFree.KPGlobalResidualKernel.ChamberNorm
-
-end

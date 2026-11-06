@@ -9,7 +9,6 @@ open scoped NumberField Classical
 
 noncomputable section
 namespace DedekindZetaZeroFree.CorrectionFactors
-set_option autoImplicit false
 
 open LocalFiniteSums
 
@@ -32,7 +31,7 @@ theorem principalGap_pos (σ₀ : ℝ) (hσ₀ : (1 / 2 : ℝ) < σ₀) :
     Real.rpow_lt_one_of_one_lt_of_neg (by norm_num) (by linarith)
   exact sub_pos.mpr (max_lt h₁ h₂)
 
-private lemma model_moduli (σ₀ Q : ℝ) (hσ₀ : (1 / 2 : ℝ) < σ₀)
+lemma model_moduli (σ₀ Q : ℝ) (hσ₀ : (1 / 2 : ℝ) < σ₀)
     (hQ : 2 ≤ Q) (α β s : ℂ) (hα : ‖α‖ = 1) (hβ : ‖β‖ = 1)
     (hs : σ₀ ≤ s.re) :
     ‖α * Complex.exp (-s * (Real.log Q : ℂ))‖ ≤ 1 - principalGap σ₀ ∧
@@ -54,7 +53,7 @@ private lemma model_moduli (σ₀ Q : ℝ) (hσ₀ : (1 / 2 : ℝ) < σ₀)
   · simpa [principalGap] using hd.trans (le_max_left _ _)
   · simpa [principalGap] using he.trans (le_max_right _ _)
 
-private lemma rational_bounds (r M : ℝ) (D E : ℂ) (hr0 : 0 ≤ r)
+lemma rational_bounds (r M : ℝ) (D E : ℂ) (hr0 : 0 ≤ r)
     (hr : r ≤ 1 / 2) (hM : M < 1) (hD : ‖D‖ ≤ M) (hE : ‖E‖ ≤ M) :
     3 * (1 - M) / 16 ≤ ‖Audit.Euler.principalCorrection (r : ℂ) D E‖ ∧
       1 - M ≤ ‖1 - E‖ ∧ 1 - M ≤ ‖1 - D‖ := by
@@ -112,7 +111,3 @@ theorem principalModel_uniform_lower_bounds
     (α * Complex.exp (-s * (Real.log Q : ℂ)))
     (β * Complex.exp ((3 - 6 * s) * (Real.log Q : ℂ)))
     (inv_nonneg.mpr (by linarith)) hr (by linarith) hd he
-
-end DedekindZetaZeroFree.CorrectionFactors
-
-end

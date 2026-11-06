@@ -45,7 +45,7 @@ def conjugateUnitBorel (a : actualTorus F ζ hζ q) (u : (KPTameCompact.O F q)ˣ
       by
         change S.borel.retract (S.borel.torus _) ∈ HL F ζ hζ q S P
         rw [S.borel.retract_torus]
-        exact (conjugateUnitHL F ζ hζ q S P hP a u).property,
+        simp,
       rfl⟩⟩
 
 theorem conjugateUnitBorel_word (a : actualTorus F ζ hζ q) (u : (KPTameCompact.O F q)ˣ) :
@@ -121,7 +121,3 @@ theorem concrete_chi_ratio
   rw [map_zpow, map_pow, ← zpow_natCast, div_eq_mul_inv, ← zpow_sub, map_zpow,
     Units.val_zpow_eq_zpow_val]
   rfl
-
-end DedekindZetaZeroFree.KPTameLowShellConcreteCharts
-
-end

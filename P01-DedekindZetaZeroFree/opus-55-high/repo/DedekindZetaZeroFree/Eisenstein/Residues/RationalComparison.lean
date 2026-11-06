@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.Metaplectic.Intertwining.Residues.RationalVec
 
 @[expose] public section
 
-noncomputable section
 open scoped Classical NumberField TensorProduct BigOperators
 namespace DedekindZetaZeroFree.FourierContinuation.LiteralSource
 open NumberField KPGlobalTorusFiniteStages
@@ -37,7 +36,3 @@ theorem comparison_pure_rational
   simp only [map_smul]
   rw [finiteTensorMap_stage]
   rfl
-
-end DedekindZetaZeroFree.FourierContinuation.LiteralSource
-
-end

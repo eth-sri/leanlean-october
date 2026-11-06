@@ -35,7 +35,7 @@ open _root_.DedekindZetaZeroFree.KPLiteralExceptionalResidue.CanonicalParameterS
     simp only [Submodule.mem_bot] at hv ⊢
     rw [hv, map_zero]
 
-private theorem core_mem_compact_type {K Gfin V : Type*} [Group K] [Group Gfin]
+theorem core_mem_compact_type {K Gfin V : Type*} [Group K] [Group Gfin]
     [TopologicalSpace Gfin] [AddCommGroup V] [Module ℂ V]
     (ρK : Representation ℂ K V) (ρfin : Representation ℂ Gfin V)
     (smooth : Submodule ℂ V) {v : V}
@@ -62,7 +62,7 @@ private theorem core_mem_compact_type {K Gfin V : Type*} [Group K] [Group Gfin]
     obtain ⟨U, hU⟩ := hy
     exact ⟨compactSup T U, Submodule.add_mem_sup hT hU⟩
 
-private theorem finite_image_compact_type {K Gfin V S : Type*}
+theorem finite_image_compact_type {K Gfin V S : Type*}
     [Group K] [Group Gfin] [TopologicalSpace Gfin] [AddCommGroup V] [Module ℂ V]
     [AddCommGroup S] [Module ℂ S] [FiniteDimensional ℂ S]
     (ρK : Representation ℂ K V) (ρfin : Representation ℂ Gfin V)
@@ -98,7 +98,7 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
   (KPGlobalTorusFunctionData.borelRightTranslation F ζ hζ
     (KPMsRationalCompactCrossPairing.sourcePolarization F ζ hζ 0)).comp (D F ζ hζ).K.subtype
 
-private theorem canonical_stage_bounds {S : Type*}
+theorem canonical_stage_bounds {S : Type*}
     [NormedAddCommGroup S] [NormedSpace ℂ S] [FiniteDimensional ℂ S]
     (ι : S →ₗ[ℂ] Core F ζ hζ)
     (hSmooth : ∀ v, (ι v).val ∈ KPMsRationalCompactCrossPairing.scalarSmooth F ζ hζ

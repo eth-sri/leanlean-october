@@ -13,7 +13,6 @@ namespace DedekindZetaZeroFree.KPExceptionalRaw.FiniteSource.ImagesIrreducibilit
 open KPLocalPrincipalSeries KPLocalStoneVonNeumann KPLocalJacquetImage
 open KPJacquetExceptionalFactorSeparation
 noncomputable section
-set_option autoImplicit false
 set_option maxHeartbeats 4000000
 set_option backward.isDefEq.respectTransparency false
 
@@ -73,8 +72,7 @@ theorem raw_modulus_binding (h : Torus F ζ hζ w) :
  have hd := KPRankOneInduction.deltaB_eq F w (projection F ζ hζ w)
    (KPLocalInductionJacquetReciprocity.torusToBorel F ζ hζ w m hm h)
    (KubotaRankTwo.d (KPRankOneInduction.LocalField F w) (R.borel.coordinate h) 1) hp (by simp [KubotaRankTwo.coe_d])
- simp only [KubotaRankTwo.coe_d, Matrix.of_apply, Matrix.cons_val_zero, Matrix.cons_val_one,
-  Matrix.head_cons, Matrix.head_fin_const, div_one] at hd
+ simp only [KubotaRankTwo.coe_d, Matrix.of_apply, Matrix.cons_val_zero, Matrix.cons_val_one] at hd
  change (((KPRankOneInduction.halfModulus (deltaB F ζ hζ w)
   (KPLocalInductionJacquetReciprocity.torusToBorel F ζ hζ w m hm h) : ℝ≥0) : ℝ) : ℂ) = _
  rw [KPRankOneInduction.halfModulus_eq, hd]
@@ -199,16 +197,15 @@ theorem raw_principal_series_equiv_core (ε : Sign) :
         (hs f.val).mpr f.property⟩
       left_inv := by intro f; rfl
       right_inv := by intro f; rfl
-      map_add' := by intros; rfl
-      map_smul' := by intros; rfl }
+      map_add' := by simp
+      map_smul' := by simp }
   refine ⟨Representation.Equiv.mk e ?_⟩
   intro g
-  ext f x
   rfl
 
  theorem root_binding (x : Multiplicative (LocalField F w)) :
-    root R.borel x = upperRoot F ζ hζ w x := by
-  exact (R.openCell R.polarization).upper_eq (Multiplicative.toAdd x)
+    root R.borel x = upperRoot F ζ hζ w x := 
+  (R.openCell R.polarization).upper_eq (Multiplicative.toAdd x)
 
 def raw_jacquet_equiv {V W : Type*} [AddCommGroup V] [Module ℂ V]
     [AddCommGroup W] [Module ℂ W]
@@ -280,7 +277,7 @@ theorem raw_alpha_binding (h : actualTorus F ζ hζ w) :
   simp only [mul_assoc]
   rw [← mul_assoc (KPPGLLocalCover.A F ζ hζ (Sum.inr w) (-1))⁻¹ h.val,
     hc.inv_left.eq]
-  simp only [mul_assoc, inv_mul_cancel_left]
+  simp
 
 end ModelTransport
 
@@ -315,17 +312,11 @@ private theorem raw_smooth :
     simp only [map_mul, map_inv]
     rw [← projection_binding F ζ hζ w S S.borel.liftedW,
       S.borel.liftedW_projection]
-    dsimp [A]
-    rw [map_mul, map_inv, map_inv]
     rfl
   · dsimp [A]
-    simp [KubotaRankTwo.w, Matrix.inv_def,
-     Matrix.adjugate_fin_two, KPStandardLocalRootLifts.weylSwap, Units.val_mul,
-     Matrix.mul_apply, Fin.sum_univ_two]
+    simp [KubotaRankTwo.w, Matrix.inv_def, Matrix.adjugate_fin_two, KPStandardLocalRootLifts.weylSwap, Matrix.mul_apply, Fin.sum_univ_two]
   · dsimp [A]
-    simp [KubotaRankTwo.w, Matrix.inv_def,
-     Matrix.adjugate_fin_two, KPStandardLocalRootLifts.weylSwap, Units.val_mul,
-     Matrix.mul_apply, Fin.sum_univ_two]⟩
+    simp [KubotaRankTwo.w, Matrix.inv_def, Matrix.adjugate_fin_two, KPStandardLocalRootLifts.weylSwap, Matrix.mul_apply, Fin.sum_univ_two]⟩
 
 theorem weyl_comparison (h : Torus F ζ hζ w) :
  comparisonTorus F ζ hζ w S * KPJacquetOpenCell.alpha F ζ hζ w h =
@@ -453,6 +444,3 @@ theorem independent_plus_jacquet_short_exact (P : Polarization S.heisenberg) : b
         exact ⟨O.symm v, rfl⟩
       change p₀ (i₀ (O.symm v)) = 0 at hmem
       simp only [E.apply_symm_apply, hmem, map_zero]
-
-end
-end DedekindZetaZeroFree.KPExceptionalRaw.FiniteSource.ImagesIrreducibilitySteps.PlusLengthSteps

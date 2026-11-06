@@ -57,7 +57,7 @@ theorem deleted_primitive_inducers_eq
     unfold Detector.deletedPrimitiveIdealCoefficient
     rw [if_neg hnot]
   have hI := h ⟨v.asIdeal, v.ne_bot, hcop⟩
-  exact hv (hν.symm.trans (hI.trans hψ))
+  simp_all
 
 end
 end DedekindZetaZeroFree.PrincipalMellinComparison.NonprincipalContinuation.DetectorDyads.MinusArithmetic
@@ -81,7 +81,7 @@ private theorem exterior_mul_iff (A : SArithmeticData F) (I J : Ideal (𝓞 F)) 
       rw [← h.2]; exact sup_le_sup_right Ideal.mul_le_left _)
     have hJ : J ⊔ A.cS = ⊤ := top_unique (by
       rw [← h.2]; exact sup_le_sup_right Ideal.mul_le_right _)
-    exact ⟨⟨left_ne_zero_of_mul h.1, hI⟩, right_ne_zero_of_mul h.1, hJ⟩
+    simp_all
   · rintro ⟨hI, hJ⟩
     refine ⟨mul_ne_zero hI.1 hJ.1, ?_⟩
     rw [Ideal.mul_sup_eq_of_coprime_left hI.2]
@@ -92,7 +92,7 @@ private theorem exterior_mul_iff (A : SArithmeticData F) (I J : Ideal (𝓞 F)) 
   if hI : I ≠ ⊥ ∧ I ⊔ A.cS = ⊤ then
     AllRowEuler.InitialSeparation.plusExteriorCoefficient σ U ⟨I, hI⟩ else 0
 
-private theorem plusCoeff_ext_mul (A : SArithmeticData F) (σ : F →+* ℂ)
+theorem plusCoeff_ext_mul (A : SArithmeticData F) (σ : F →+* ℂ)
     (U : AllRowEuler.InitialSeparation.RawFrequency A) (I J : A.Exterior) :
     AllRowEuler.InitialSeparation.plusExteriorCoefficient σ U (ExteriorIdealEuler.mul I J) =
       AllRowEuler.InitialSeparation.plusExteriorCoefficient σ U I *
@@ -119,7 +119,7 @@ private theorem plusCoeff_mul (A : SArithmeticData F) (σ : F →+* ℂ)
     · rw [dif_neg (fun h => hJ (he.mp h).2), dif_pos hI, dif_neg hJ, mul_zero]
   · rw [dif_neg (fun h => hI (he.mp h).1), dif_neg hI, zero_mul]
 
-private theorem plusCoeff_one (A : SArithmeticData F) (σ : F →+* ℂ)
+theorem plusCoeff_one (A : SArithmeticData F) (σ : F →+* ℂ)
     (U : AllRowEuler.InitialSeparation.RawFrequency A) : plusCoeff A σ U ⊤ = 1 := by
   have h := (AllRowEuler.InitialSeparation.raw_plus_isCoefficient (σ := σ) U).map_one
   simpa [plusCoeff, ExteriorIdealEuler.one] using h
@@ -176,17 +176,14 @@ private theorem plusCoeff_mask (A : SArithmeticData F) (σ : F →+* ℂ)
           AllRowEuler.InitialSeparation.plusExteriorCoefficient σ U (primeIdeal p) := by
         unfold plusCoeff
         rw [dif_pos ⟨v.ne_bot, (hexterior v).mpr hv⟩]
-        exact congrArg (AllRowEuler.InitialSeparation.plusExteriorCoefficient σ U)
-          (Subtype.ext rfl)
+        rfl
       have hpv : p.val.asIdeal = v.asIdeal := rfl
       have hmem : v ∈ D ↔ U.ideal.val ≤ v.asIdeal := by
         unfold D
         rw [Set.mem_union]
         simp [hv]
       rw [hbridge, hprime p, hgprime]
-      by_cases hd : U.ideal.val ≤ v.asIdeal
-      · rw [if_pos (by rwa [hpv]), if_pos (hmem.mpr hd)]
-      · rw [if_neg (by rwa [hpv]), if_neg (fun h => hd (hmem.mp h))]
+      simp_all
   have hgmul (I J : Ideal (𝓞 F)) : g (I * J) = g I * g J := by
     have hd : (∃ v ∈ D, I * J ≤ v.asIdeal) ↔
         (∃ v ∈ D, I ≤ v.asIdeal) ∨ (∃ v ∈ D, J ≤ v.asIdeal) := by
@@ -205,7 +202,7 @@ private theorem plusCoeff_mask (A : SArithmeticData F) (σ : F →+* ℂ)
     I ?_ ?_ ?_
   · have hf0 : plusCoeff A σ U ⊥ = 0 := by
       unfold plusCoeff
-      exact dif_neg (by simp)
+      simp
     change plusCoeff A σ U ⊥ = g ⊥
     rw [hf0]
     simp [g, Detector.deletedPrimitiveIdealCoefficient,
@@ -243,8 +240,7 @@ theorem plus_coefficient_of_prime_values
       AllRowEuler.InitialSeparation.plusExteriorCoefficient σ U I := by
     unfold plusCoeff
     rw [dif_pos I.property]
-    exact congrArg (AllRowEuler.InitialSeparation.plusExteriorCoefficient σ U)
-      (Subtype.ext (rfl : (⟨I.val, I.property⟩ : A.Exterior).val = I.val))
+    rfl
   rw [← hbridge, hmask]
   unfold Detector.deletedPrimitiveIdealCoefficient
   rw [if_neg (by simpa [RawHeckeRows.rawDeletionSet] using hI)]
@@ -288,7 +284,7 @@ noncomputable section
 open scoped Classical NumberField
 variable {F : Type} [Field F] [NumberField F]
 
-private theorem coprime_of_avoiding_support
+theorem coprime_of_avoiding_support
     (D : Set (IsDedekindDomain.HeightOneSpectrum (𝓞 F)))
     (I m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
     (hsupport : ∀ v : IsDedekindDomain.HeightOneSpectrum (𝓞 F),
@@ -298,11 +294,11 @@ private theorem coprime_of_avoiding_support
   obtain ⟨p, hp, hpm⟩ := Ideal.exists_le_maximal (I ⊔ m) hn
   have hp0 : p ≠ ⊥ := by
     intro he
-    exact hm (le_bot_iff.mp (le_sup_right.trans (hpm.trans_eq he)))
+    simp_all
   let v : IsDedekindDomain.HeightOneSpectrum (𝓞 F) := ⟨p, hp.isPrime, hp0⟩
   exact havoid ⟨v, hsupport v (le_sup_right.trans hpm), le_sup_left.trans hpm⟩
 
-private theorem plus_zero_at_common_frequency_prime
+theorem plus_zero_at_common_frequency_prime
     (A : SArithmeticData F) (σ : F →+* ℂ)
     (U : AllRowEuler.InitialSeparation.RawFrequency A) (I : A.Exterior)
     (v : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
@@ -513,8 +509,3 @@ theorem actual_raw_minus_inducer_conductor_bound
       ν (T.denominator (e u)) (fun I => (hν I).symm.trans (hT u U hU I))
   rw [hEq, ← hnorm u]
   exact hbound V K T (e u)
-
-end
-end DedekindZetaZeroFree.PrincipalMellinComparison.NonprincipalContinuation.DetectorDyads
-
-end

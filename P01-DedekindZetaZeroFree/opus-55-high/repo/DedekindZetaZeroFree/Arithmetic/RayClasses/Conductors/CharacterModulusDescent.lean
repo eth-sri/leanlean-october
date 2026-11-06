@@ -66,10 +66,8 @@ theorem initial_ray_one_step_descent
     have hred : RayBridge.modulusReduction m hm f hf hmf
           (RayBridge.idealClass m hm I hI hcop) =
         RayBridge.idealClass f hf I hI hcopf := by
-      rw [RayBridge.modulusReduction_apply_idealClass m hm f hf hmf I hI hcop]
+      rfl
     have hχI : (χf (RayBridge.idealClass f hf I hI hcopf) : ℂ) = η I := by
       rw [← hred, hχf]
       exact RayBridge.descendedCharacter_apply_idealClass m hm η I hI hcop
     rw [hθ, hχI]
-
-end DedekindZetaZeroFree.LargeSieve

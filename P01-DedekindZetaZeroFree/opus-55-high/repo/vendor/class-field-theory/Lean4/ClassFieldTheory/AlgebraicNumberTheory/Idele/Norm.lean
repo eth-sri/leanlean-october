@@ -15,13 +15,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Absolute and relative norms of ideles
 
@@ -31,8 +24,6 @@ compatible local determinant-norm preimages into a global relative idele.
 
 open scoped NumberField TensorProduct RestrictedProduct
 open NumberField IsDedekindDomain
-
-noncomputable section
 
 
 variable
@@ -226,8 +217,7 @@ theorem mem_relativeIdeleNorm_range_iff_localTensorNorms
             (IdeleGroup.finiteComponent w a)
             (hFinite w) hwUnit
         exact ⟨z, hz, fun _ => hzIntegral⟩
-      · obtain ⟨z, hz⟩ := hFinite w
-        exact ⟨z, hz, fun h => (hwUnit h).elim⟩
+      simp_all
     choose zFinite hFiniteNorm hFiniteIntegral using hChoice
     have hEventuallyUnit :
         ∀ᶠ w : HeightOneSpectrum (𝓞 K) in Filter.cofinite,
@@ -252,4 +242,3 @@ theorem mem_relativeIdeleNorm_range_iff_localTensorNorms
       idele_mem_relativeNorm_range_of_localNorms_with_integralPreimages
         (K := K) (L := L) a hInfinite zFinite hFiniteNorm hIntegral
 
-end

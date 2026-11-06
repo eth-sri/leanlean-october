@@ -23,8 +23,7 @@ theorem compactDiagonalTorus_identity_invariant (s : ℝ)
   rw [mul_one] at hcov
   have hw : inductionWeight s a d = 1 := by
     unfold inductionWeight complexAbs
-    rw [norm_div, ha, hd]
-    norm_num
+    simp_all
   rw [hcov, hw]
   norm_num
 
@@ -64,7 +63,7 @@ theorem harmonicIdentityEvaluation_nonzero (s : ℝ) (ℓ : ℕ) :
         f (complexSU2Embedding h)
       rw [pi_mk]
       change f (1 * complexSU2Embedding h) = f (complexSU2Embedding h)
-      rw [one_mul]
+      simp
     rw [← heq]
     exact h1
   have hbot : harmonicKType s ℓ = ⊥ := (Submodule.eq_bot_iff (harmonicKType s ℓ)).mpr hvan
@@ -85,8 +84,7 @@ noncomputable def torusInvariantHarmonicDual (s : ℝ) (ℓ : ℕ) :
   carrier := {L | ∀ k ∈ compactDiagonalTorus, ∀ u v : harmonicKType s ℓ,
     (v : PrincipalSeries s) = pi s k u → L v = L u}
   zero_mem' := by
-    intro k hk u v hv
-    rfl
+    simp
   add_mem' := by
     intro L M hL hM k hk u v hv
     simp only [LinearMap.add_apply, hL k hk u v hv, hM k hk u v hv]
@@ -115,11 +113,11 @@ theorem torusInvariantHarmonicDual_finrank_pos (s : ℝ) (ℓ : ℕ) :
     ⟨⟨E, 0, hE⟩⟩
   exact Module.finrank_pos
 
-private theorem torus_lift_mem (z : Circle) :
+theorem torus_lift_mem (z : Circle) :
     (⟨Matrix.ProjGenLinGroup.mk (complexSU2Embedding (TauCeti.SU2.torusHom z)),
       ⟨TauCeti.SU2.torusHom z, rfl⟩⟩ : compactSubgroup) ∈ compactDiagonalTorus := by
   refine ⟨Circle.toUnits z, (Circle.toUnits z)⁻¹, ?_, ?_, ?_⟩
-  · simpa using Circle.norm_coe z
+  · simp
   · simp [Units.val_inv_eq_inv_val, norm_inv, Circle.norm_coe]
   · congr 1
     apply Units.ext
@@ -133,7 +131,7 @@ private theorem torus_lift_mem (z : Circle) :
         TauCeti.SU2.torusMatrix_apply_one_zero, TauCeti.SU2.torusMatrix_apply_one_one,
         Units.val_inv_eq_inv_val]
 
-private theorem generic_powers_injective :
+theorem generic_powers_injective :
     Function.Injective fun m : ℤ => (Circle.exp 1 : ℂ) ^ m := by
   intro m n hmn
   have h : (Circle.exp 1 ^ m : Circle) = Circle.exp 1 ^ n :=
@@ -141,8 +139,7 @@ private theorem generic_powers_injective :
   rw [← Circle.exp_intCast_mul, ← Circle.exp_intCast_mul, mul_one, mul_one] at h
   obtain ⟨k, hk⟩ := Circle.exp_eq_exp.1 h
   rcases eq_or_ne k 0 with rfl | hk0
-  · have hmn' : (m : ℝ) = (n : ℝ) := by simpa using hk
-    exact_mod_cast hmn'
+  · simp_all
   · refine absurd ?_ ((irrational_pi.intCast_mul (m := 2 * k) (by omega)).ne_int (m - n))
     push_cast
     linear_combination -hk
@@ -188,7 +185,7 @@ theorem torusInvariantHarmonicDual_finrank (s : ℝ) (ℓ : ℕ) :
       have hep : e.toLinearEquiv p = TauCeti.SU2.weightBasis (2 * ℓ) i :=
         e.toLinearEquiv.apply_symm_apply _
       rw [hep, TauCeti.SU2.symPower_torusHom_weightBasis] at hh
-      simpa only [map_smul, hep] using hh
+      simp_all
     have hbi : b i = t p := by rfl
     rw [hbi]
     apply compactRestriction_injective s
@@ -199,9 +196,7 @@ theorem torusInvariantHarmonicDual_finrank (s : ℝ) (ℓ : ℕ) :
     rw [← HarmonicVendor.harmonicRepresentation_restriction ℓ (TauCeti.SU2.torusHom z) k p, hp]
     change polynomialCompactRestriction (((z : ℂ) ^ TauCeti.SU2.weight (2 * ℓ) i) • (p : MvPolynomial (Fin 3) ℂ)) k = _
     rw [map_smul]
-    change _ = ((z : ℂ) ^ TauCeti.SU2.weight (2 * ℓ) i) * compactRestriction s (t p) k
-    rw [ht]
-    rfl
+    simp_all
   let i₀ : Fin (2 * ℓ + 1) := ⟨ℓ, by omega⟩
   have vanish (L : torusInvariantHarmonicDual s ℓ) (i : Fin (2 * ℓ + 1))
       (hi : i ≠ i₀) : L.val (b i) = 0 := by
@@ -228,8 +223,8 @@ theorem torusInvariantHarmonicDual_finrank (s : ℝ) (ℓ : ℕ) :
     exact (mul_eq_zero.mp hh').resolve_left (sub_ne_zero.mpr hc)
   let ev : torusInvariantHarmonicDual s ℓ →ₗ[ℂ] ℂ :=
     { toFun L := L.val (b i₀)
-      map_add' := by intros; rfl
-      map_smul' := by intros; rfl }
+      map_add' := by simp
+      map_smul' := by simp }
   have hevinj : Function.Injective ev := by
     intro L M h
     apply Subtype.ext
@@ -238,7 +233,7 @@ theorem torusInvariantHarmonicDual_finrank (s : ℝ) (ℓ : ℕ) :
     by_cases hi : i = i₀
     · subst i
       exact h
-    · rw [vanish L i hi, vanish M i hi]
+    simp_all
   have hle := LinearMap.finrank_le_finrank_of_injective hevinj
   rw [Module.finrank_self] at hle
   have hpos := torusInvariantHarmonicDual_finrank_pos s ℓ
@@ -282,7 +277,7 @@ theorem harmonicKType_zero_eq_span (s : ℝ) :
     have hn : harmonicKType s 0 ≠ ⊥ := by
       intro hn
       rw [hn, finrank_bot] at hdim
-      norm_num at hdim
+      omega
     obtain ⟨f, hf, hne⟩ := (harmonicKType s 0).ne_bot_iff.mp hn
     have he := sphericalSection_spans_fixed s f (harmonicKType_zero_fixed s f hf)
     have hc : f 1 ≠ 0 := by
@@ -313,8 +308,8 @@ theorem KEquivalent_symm (s : ℝ) (U V : Submodule ℂ (PrincipalSeries s))
   have hwv : e w = v := by
     apply Subtype.ext
     simpa only [e.apply_symm_apply] using hw.trans (by simpa only [e.apply_symm_apply] using hv.symm)
-  have hw' : w = e.symm v := by
-    exact e.injective (hwv.trans (e.apply_symm_apply v).symm)
+  have hw' : w = e.symm v := 
+    e.injective (hwv.trans (e.apply_symm_apply v).symm)
   exact (congrArg Subtype.val hw').symm
 
 theorem compactEquivariantMap_eq_smul_of_evaluation (s : ℝ) (ℓ : ℕ)

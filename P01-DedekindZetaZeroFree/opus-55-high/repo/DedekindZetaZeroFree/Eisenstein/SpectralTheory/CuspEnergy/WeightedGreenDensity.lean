@@ -21,7 +21,7 @@ private theorem smooth_arch (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (arch d) := 
   · exact Complex.equivRealProdCLM.symm.contDiff.comp
       ((EuclideanSpace.proj (𝕜 := ℝ) (i, (0 : Fin 3))).contDiff.prodMk
        (EuclideanSpace.proj (𝕜 := ℝ) (i, (1 : Fin 3))).contDiff)
-  · exact (EuclideanSpace.proj (𝕜 := ℝ) (i, (2 : Fin 3))).contDiff
+  fun_prop
 
 private theorem smooth_real (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (real d) := by
   apply (contDiff_piLp 2).mpr
@@ -35,14 +35,12 @@ private theorem smooth_real (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (real d) := 
 private theorem smooth_mean (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (KPCuspLogShape.meanHeight d) := by
   unfold KPCuspLogShape.meanHeight
   apply ContDiff.div_const
-  apply ContDiff.sum
-  intro i hi
-  exact contDiff_snd.comp (contDiff_apply ℝ KPArch.H3 i)
+  fun_prop
 
 private theorem derivative_smoothAt (d : ℕ) (g : Space d → ℂ) (x : Space d)
     (hg : ContDiffAt ℝ (⊤ : ℕ∞) g x) (i : Fin d) (k : Fin 3) :
-    ContDiffAt ℝ (⊤ : ℕ∞) (coordinateDerivative d i k g) x := by
-  exact (hg.fderiv_right (by simp)).clm_apply contDiffAt_const
+    ContDiffAt ℝ (⊤ : ℕ∞) (coordinateDerivative d i k g) x := 
+  (hg.fderiv_right (by simp)).clm_apply contDiffAt_const
 
 private theorem differential_smoothAt (d : ℕ) (g : Space d → ℂ) (x : Space d)
     (hg : ContDiffAt ℝ (⊤ : ℕ∞) g x) (i : Fin d) (k : Fin 3) :
@@ -87,8 +85,8 @@ private theorem cutoff_smoothAt (v : Representative ζ hζ S ρ V T)
     (x : Space (KPCuspLogShape.dimension F))
     (hx : T < KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F)
       (arch (KPCuspLogShape.dimension F) x)) :
-    ContDiffAt ℝ (⊤ : ℕ∞) (rawCutoffUpstairs v η) x := by
-  exact (Complex.ofRealCLM.contDiff.contDiffAt.comp x
+    ContDiffAt ℝ (⊤ : ℕ∞) (rawCutoffUpstairs v η) x := 
+  (Complex.ofRealCLM.contDiff.contDiffAt.comp x
     (hη.contDiffAt.comp x ((smooth_mean _).comp (smooth_arch _)).contDiffAt)).mul
       (representative_smoothAt v x hx)
 
@@ -167,7 +165,7 @@ private theorem lin_apply (d : ℕ) (a : Fin d → ℂ) (x : Space d) (i : Fin d
     arch d (lin d a x) i = (a i * (arch d x i).1, (arch d x i).2) := by
   apply Prod.ext
   · apply Complex.ext <;> simp [arch, lin, Complex.mul_re, Complex.mul_im, add_comm]
-  · simp [arch, lin]
+  rfl
 private theorem real_arch (d : ℕ) (x : Space d) : real d (arch d x) = x := by
   ext j
   rcases j with ⟨i,k⟩
@@ -193,7 +191,7 @@ private theorem real_arch (d : ℕ) (x : Space d) : real d (arch d x) = x := by
         change lin d a (lin d (fun i => (a i)⁻¹) x) = x
         rw [lin_mul]; simpa [ha] using lin_one d x
     } : Space d ≃ₗ[ℝ] Space d).toContinuousLinearEquiv
-private theorem lin_vector (d : ℕ) (a : Fin d → ℂ) (i : Fin d) (k : Fin 3) :
+theorem lin_vector (d : ℕ) (a : Fin d → ℂ) (i : Fin d) (k : Fin 3) :
     lin d a (coordinateVector d i k) = ![
       (a i).re • coordinateVector d i 0 + (a i).im • coordinateVector d i 1,
       -(a i).im • coordinateVector d i 0 + (a i).re • coordinateVector d i 1,
@@ -203,7 +201,7 @@ private theorem lin_vector (d : ℕ) (a : Fin d → ℂ) (i : Fin d) (k : Fin 3)
   fin_cases k <;> fin_cases l <;>
     simp [lin, coordinateVector, and_comm] <;>
     split_ifs <;> simp_all
-private theorem transform_deriv (d : ℕ) (a : Fin d → ℂ) (ha : ∀ i, a i ≠ 0)
+theorem transform_deriv (d : ℕ) (a : Fin d → ℂ) (ha : ∀ i, a i ≠ 0)
     (b x : Space d) (f : Space d → ℂ) (c : ℂ)
     (he : (fun z => f (lin d a z + b)) =ᶠ[nhds x] (fun z => c * f z)) :
     (fderiv ℝ f (lin d a x + b)).comp (lin d a) = c • fderiv ℝ f x := by
@@ -213,7 +211,7 @@ private theorem transform_deriv (d : ℕ) (a : Fin d → ℂ) (ha : ∀ i, a i �
   have hR : (fun z => c * f z) = c • f := rfl
   rw [hR, fderiv_const_smul_field] at h
   exact h
-private theorem cd_transform (d : ℕ) (a : Fin d → ℂ) (ha : ∀ i, a i ≠ 0)
+theorem cd_transform (d : ℕ) (a : Fin d → ℂ) (ha : ∀ i, a i ≠ 0)
     (b x : Space d) (f : Space d → ℂ) (c : ℂ)
     (he : (fun z => f (lin d a z + b)) =ᶠ[nhds x] (fun z => c * f z)) (i : Fin d) :
     ![(a i).re • coordinateDerivative d i 0 f (lin d a x + b) +
@@ -227,7 +225,7 @@ private theorem cd_transform (d : ℕ) (a : Fin d → ℂ) (ha : ∀ i, a i ≠ 
     (transform_deriv d a ha b x f c he)
   rw [ContinuousLinearMap.comp_apply, lin_vector] at h
   fin_cases k <;> simpa [coordinateDerivative] using h
-private theorem pair_rotation (a u v u' v' : ℂ) :
+theorem pair_rotation (a u v u' v' : ℂ) :
     star (a.re • u + a.im • v) * (a.re • u' + a.im • v') +
       star (-a.im • u + a.re • v) * (-a.im • u' + a.re • v') =
       (‖a‖ ^ 2 : ℝ) • (star u * u' + star v * v') := by
@@ -236,7 +234,7 @@ private theorem pair_rotation (a u v u' v' : ℂ) :
   rw [← Complex.normSq_eq_norm_sq, Complex.normSq_apply]
   push_cast
   ring
-private theorem unit_pair (c u v : ℂ) (hc : ‖c‖ = 1) :
+theorem unit_pair (c u v : ℂ) (hc : ‖c‖ = 1) :
     star (c * u) * (c * v) = star u * v := by
   have h : star c * c = 1 := by
     change (starRingEnd ℂ) c * c = 1
@@ -246,7 +244,7 @@ private theorem unit_pair (c u v : ℂ) (hc : ‖c‖ = 1) :
   calc
     star u * star c * (c * v) = (star c * c) * (star u * v) := by ring
     _ = _ := by rw [h, one_mul]
-private theorem pairing_transform (d : ℕ) (a : Fin d → ℂ) (ha : ∀ i, a i ≠ 0)
+theorem pairing_transform (d : ℕ) (a : Fin d → ℂ) (ha : ∀ i, a i ≠ 0)
     (b x : Space d) (hb : ∀ i, b (i,2) = Real.log ‖a i‖)
     (f g : Space d → ℂ) (c : ℂ) (hc : ‖c‖ = 1)
     (hf : (fun z => f (lin d a z + b)) =ᶠ[nhds x] (fun z => c * f z))
@@ -296,7 +294,7 @@ variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ
  def shift (s : S) (v : F) : Space (KPCuspLogShape.dimension F) :=
   real _ (fun i => (KPCuspCharts.embedding F v i,
     Real.log ‖KPCuspCharts.embedding F ((D.ratio s : Fˣ) : F) i‖))
-private theorem real_affine (s : S) (v : F) (p : KPCuspCharts.Coordinates F) :
+theorem real_affine (s : S) (v : F) (p : KPCuspCharts.Coordinates F) :
     real _ (KPCuspCharts.toArch F
       (KPCuspCharts.affine F hF D.E D.integralUnits (D.ratio s) v p)) =
       lin _ (KPCuspCharts.embedding F ((D.ratio s : Fˣ) : F))
@@ -365,7 +363,7 @@ theorem rawWeightedGreenDensity_high_orbit_invariant
       congrArg (fun u => (KPCuspGenuineMonodromy.chi F ζ hζ u : ℂ)) hp
   have hb : ∀ i, b (i,2) = Real.log ‖a i‖ := by
     intro i
-    simp [b, GreenTransport.shift, real, a]
+    rfl
   have hmean : Continuous (fun z : Space d => KPCuspLogShape.meanHeight d (arch d z)) :=
     ((smooth_mean d).comp (smooth_arch d)).continuous
   have hx : T < KPCuspLogShape.meanHeight d (arch d x) := by
@@ -408,7 +406,3 @@ theorem weightedGreenDensity_geometry
   ⟨rawWeightedGreenDensity_continuousOn G v η hη,
    rawWeightedGreenDensity_support G v η,
    fun p q hrel => rawWeightedGreenDensity_high_orbit_invariant G v η p q hrel⟩
-
-end DedekindZetaZeroFree.KPCompactGreenRadialIntegrability
-
-end

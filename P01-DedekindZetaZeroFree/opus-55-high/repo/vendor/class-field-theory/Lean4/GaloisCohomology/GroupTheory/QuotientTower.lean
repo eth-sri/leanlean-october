@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Quotients in subgroup towers
 
@@ -47,15 +44,11 @@ def quotientSubgroupOfEquiv {H K M : Subgroup G} (hHK : H ≤ K) :
   left_inv q := by
     refine Quotient.inductionOn' q ?_
     intro x
-    change Quotient.map' _ _ (Quotient.map' _ _ (Quotient.mk'' x)) = Quotient.mk'' x
-    simpa only [Quotient.map'_mk''] using
-      congrArg Quotient.mk'' ((subgroupOfEquivOfLe hHK).symm_apply_apply x)
+    rfl
   right_inv q := by
     refine Quotient.inductionOn' q ?_
     intro x
-    change Quotient.map' _ _ (Quotient.map' _ _ (Quotient.mk'' x)) = Quotient.mk'' x
-    simpa only [Quotient.map'_mk''] using
-      congrArg Quotient.mk'' ((subgroupOfEquivOfLe hHK).apply_symm_apply x)
+    rfl
 
 /-- A quotient by the bottom of a subgroup tower is equivalent to the product
 of the two successive quotient types. -/
@@ -64,7 +57,3 @@ def quotientTowerEquiv {M L K : Subgroup G} (hML : M ≤ L) (hLK : L ≤ K) :
       (K ⧸ L.subgroupOf K) × (L ⧸ M.subgroupOf L) :=
   (quotientEquivProdOfLE (subgroupOf_mono K hML)).trans
     (Equiv.prodCongr (Equiv.refl _) (quotientSubgroupOfEquiv hLK))
-
-end Subgroup
-
-end

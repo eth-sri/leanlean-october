@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Arithmetic.LocalFields.ResiduePhases.Definiti
 
 @[expose] public section
 
-noncomputable section
 open scoped NumberField Classical
 open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.CompatiblePrimeRawLocal.CongruenceBridgeRace
@@ -27,14 +26,13 @@ theorem completion_divisibility_iff (C : A.GeneralArithmeticContext σ η hS)
     change e (Ideal.Quotient.mk _ y) = res (i y) at he
     rw [← he, ← map_zero e, e.injective.eq_iff, Ideal.Quotient.eq_zero_iff_mem]
   have hπ : res (i (generator C p)) = 0 :=
-    (hres _).2 (Ideal.subset_span (Set.mem_singleton _))
+    by simp_all
   have core (n : ℕ) (y : A.R) :
       (∃ r : LocalIntegers p, i y = i (generator C p) ^ n * r) ↔
       ∃ z : A.R, y = generator C p ^ n * z := by
     induction n generalizing y with
     | zero =>
-      simp only [pow_zero, one_mul]
-      exact ⟨fun _ => ⟨y, rfl⟩, fun _ => ⟨i y, rfl⟩⟩
+      simp
     | succ n ih =>
       constructor
       · rintro ⟨r, hr⟩
@@ -59,7 +57,7 @@ theorem completion_divisibility_iff (C : A.GeneralArithmeticContext σ η hS)
         rw [← hz, hw, pow_succ']
         ring
       · rintro ⟨z, rfl⟩
-        exact ⟨i z, by rw [map_mul, map_pow]⟩
+        simp
   convert core k x using 1
   constructor
   · rintro ⟨r, hr⟩
@@ -84,7 +82,3 @@ theorem congruent_iff_residue (C : A.GeneralArithmeticContext σ η hS)
     exact ⟨z, by rw [hz, mul_comm]⟩
   · rintro ⟨z, hz⟩
     exact ⟨z, by rw [← hz, mul_comm]⟩
-
-end DedekindZetaZeroFree.CompatiblePrimeRawLocal.CongruenceBridgeRace
-
-end

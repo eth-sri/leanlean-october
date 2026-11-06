@@ -15,7 +15,7 @@ namespace DedekindZetaZeroFree.TraceBaseChange
 variable (F : Type) [Field F] [NumberField F]
 
  def placeAboveRaw (v : HeightOneSpectrum (𝓞 F)) : PlacesAbove F (PlaceTraceAdapter.prime F v) :=
- ⟨v, by simp [PlacesAbove, PlaceTraceAdapter.prime, PlaceTraceAdapter.rationalPlace]⟩
+ ⟨v, by simp [PlaceTraceAdapter.prime, PlaceTraceAdapter.rationalPlace]⟩
 theorem fieldScalarMap_eq_padicMap (v : HeightOneSpectrum (𝓞 F)) : fieldScalarMap F (PlaceTraceAdapter.prime F v) (placeAboveRaw F v) = PlaceTraceAdapter.padicMap F v := by
   apply DFunLike.coe_injective
   apply DenseRange.equalizer (Padic.denseRange_ratCast (PlaceTraceAdapter.prime F v))
@@ -57,8 +57,8 @@ private theorem raw_integerRing_eq (v : HeightOneSpectrum (𝓞 F)) :
       (PlaceTraceAdapter.rationalPlace F v) ⟨v, rfl⟩
       ((PlaceTraceAdapter.rationalCompletionEquiv F v).symm x)
     have hnorm' : (algebraMap ℚ_[PlaceTraceAdapter.prime F v] (v.adicCompletion F) x ∈ v.adicCompletionIntegers F) ↔
-        ‖(PlaceTraceAdapter.rationalCompletionEquiv F v).symm x‖ ≤ 1 := by
-      exact ⟨fun h => hnorm.mp (norm_le_one_of_mem_adicCompletionIntegers v h),
+        ‖(PlaceTraceAdapter.rationalCompletionEquiv F v).symm x‖ ≤ 1 := 
+      ⟨fun h => hnorm.mp (norm_le_one_of_mem_adicCompletionIntegers v h),
         fun h => mem_adicCompletionIntegers_of_norm_le_one v (hnorm.mpr h)⟩
     rw [hnorm']
     have hr := rational_ring F v ((PlaceTraceAdapter.rationalCompletionEquiv F v).symm x)
@@ -139,8 +139,7 @@ theorem codifferentRaw_eq_span_global_traceDual (v : HeightOneSpectrum (𝓞 F))
     _ = ((globalCodifferentIntegralSpan F p w : Set (w.val.adicCompletion F)) : Set (v.adicCompletion F)) := traceDual_localIntegralSpan F p w
     _ = (Submodule.span (targetRaw F v).valuationSubring (algebraMap F (v.adicCompletion F) '' (Submodule.traceDual ℤ ℚ (1 : Submodule (𝓞 F) F) : Set F)) : Set (v.adicCompletion F)) := by
       change (Submodule.span (v.adicCompletionIntegers F) (algebraMap F (v.adicCompletion F) '' (globalTraceDual F : Set F)) : Set (v.adicCompletion F)) = _
-      rw [hset]
-      exact (hs _).symm
+      simp_all
 
 theorem map_globalDifferent_eq_localDifferent (v : HeightOneSpectrum (𝓞 F)) :
     Ideal.map (integerMap F v) (differentIdeal ℤ (𝓞 F)) = differentRaw F v := by
@@ -165,7 +164,7 @@ theorem map_globalDifferent_eq_localDifferent (v : HeightOneSpectrum (𝓞 F)) :
     intro x
     change IsLocalization.map L (integerMap F v) hf (algebraMap (𝓞 F) F x) = algebraMap F L (x : F)
     rw [IsLocalization.map_eq]
-    exact integerMap_coe F v x
+    rfl
   have he (I : FractionalIdeal (𝓞 F)⁰ F) :
       (E I : Submodule R L) = Submodule.span R (algebraMap F L '' (I : Set F)) := by
     change (FractionalIdeal.extended L hf I : Submodule R L) = _
@@ -186,7 +185,3 @@ theorem map_globalDifferent_eq_localDifferent (v : HeightOneSpectrum (𝓞 F)) :
   have hset : (FractionalIdeal.dual ℤ ℚ (1 : FractionalIdeal (𝓞 F)⁰ F) : Set F) = (Submodule.traceDual ℤ ℚ (1 : Submodule (𝓞 F) F) : Set F) := congrArg (fun M : Submodule (𝓞 F) F => (M : Set F)) (FractionalIdeal.coe_dual_one ℤ ℚ F (𝓞 F))
   rw [hset]
   exact (codifferentRaw_eq_span_global_traceDual F v).symm
-
-end DedekindZetaZeroFree.TraceBaseChange
-
-end

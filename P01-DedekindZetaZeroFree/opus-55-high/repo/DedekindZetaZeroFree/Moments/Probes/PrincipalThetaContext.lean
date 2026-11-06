@@ -17,9 +17,7 @@ variable {F : Type} [Field F] [NumberField F]
   have hp0 : p ≠ ⊥ := by
     intro he
     apply I.property.1
-    apply bot_unique
-    have hh : I.val ≤ p := le_trans le_sup_left hle
-    simpa only [he] using hh
+    simp_all
   let v : HeightOneSpectrum (𝓞 F) := ⟨p, hp.isPrime, hp0⟩
   have hv : v ∈ A.Sf := A.modulus_support v (le_trans le_sup_right hle)
   have hi := (A.exterior_iff ⟨I.val, I.property.1⟩).mp I.property.2 v hv
@@ -79,7 +77,3 @@ def principalContext (A : SArithmeticData F) (σ : F →+* ℂ)
     (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
     (C : A.GeneralArithmeticContext σ η hS) (hη : η.IsPrincipal) :
     (principalContext A σ η hS C hη).correction.η_id = 1 := rfl
-
-end DedekindZetaZeroFree.PrincipalProbeConstruction.Inputs
-
-end

@@ -63,9 +63,7 @@ theorem frozenRayValue_of_not_primeTo (F : Type) [Field F] [NumberField F]
     frozenRayValue F m hm rho I = 0 := by
   unfold frozenRayValue
   split_ifs with h
-  · rcases hI with hI | hI
-    · exact (h.1 hI).elim
-    · exact (hI h.2).elim
+  · simp_all
   · rfl
 
 theorem frozenRayValue_eq_zero_iff (F : Type) [Field F] [NumberField F]
@@ -74,8 +72,7 @@ theorem frozenRayValue_eq_zero_iff (F : Type) [Field F] [NumberField F]
     frozenRayValue F m hm rho I = 0 ↔ I = ⊥ ∨ I ⊔ m ≠ ⊤ := by
   unfold frozenRayValue
   split_ifs with h
-  · simp only [Units.ne_zero, false_iff]
-    exact not_or.mpr ⟨h.1, not_not.mpr h.2⟩
+  · simp_all
   · simp only [true_iff]
     tauto
 
@@ -101,7 +98,7 @@ theorem frozenRayValue_mul (F : Type) [Field F] [NumberField F]
     simp only [← Ideal.isCoprime_iff_sup_eq, IsCoprime.mul_left_iff]
   by_cases hI : I ≠ ⊥ ∧ I ⊔ m = ⊤
   · by_cases hJ : J ≠ ⊥ ∧ J ⊔ m = ⊤
-    · have hIJ : I * J ≠ ⊥ := by simpa [Ideal.mul_eq_bot] using And.intro hI.1 hJ.1
+    · have hIJ : I * J ≠ ⊥ := by simp_all
       have hcIJ := hc.mpr ⟨hI.2, hJ.2⟩
       rw [frozenRayValue_of_primeTo F m hm rho (I * J) hIJ hcIJ,
         frozenRayValue_of_primeTo F m hm rho I hI.1 hI.2,
@@ -114,16 +111,14 @@ theorem frozenRayValue_mul (F : Type) [Field F] [NumberField F]
       simp only [frozenIntegralRayClass, hp, QuotientGroup.mk_mul, map_mul, Units.val_mul]
     · have hzJ : J = ⊥ ∨ J ⊔ m ≠ ⊤ := by tauto
       have hzIJ : I * J = ⊥ ∨ I * J ⊔ m ≠ ⊤ := by
-        rcases hzJ with hzJ | hzJ
-        · left; simp [hzJ]
-        · right; exact fun h => hzJ (hc.mp h).2
+        simp_all
       rw [frozenRayValue_of_not_primeTo F m hm rho (I * J) hzIJ,
         frozenRayValue_of_not_primeTo F m hm rho J hzJ, mul_zero]
   · have hzI : I = ⊥ ∨ I ⊔ m ≠ ⊤ := by tauto
     have hzIJ : I * J = ⊥ ∨ I * J ⊔ m ≠ ⊤ := by
       rcases hzI with hzI | hzI
       · left; simp [hzI]
-      · right; exact fun h => hzI (hc.mp h).1
+      simp_all
     rw [frozenRayValue_of_not_primeTo F m hm rho (I * J) hzIJ,
       frozenRayValue_of_not_primeTo F m hm rho I hzI, zero_mul]
 
@@ -142,7 +137,7 @@ theorem frozenIntegralRayClass_span (F : Type) [Field F] [NumberField F]
   · constructor
     · exact (RayClassBridge.integral_finite_ray_congruent_iff
         F m hm α hα x rfl).mpr hcα
-    · simp only [M_infinitePart, Finset.notMem_empty, false_implies, implies_true]
+    simp
   · apply Units.ext
     rw [coe_toPrincipalIdeal, RayClassBridge.integralUnit_val,
       FractionalIdeal.coeIdeal_span_singleton]
@@ -153,7 +148,7 @@ theorem frozenRayValue_span (F : Type) [Field F] [NumberField F]
     (rho : ClassFieldTheory.RayClassGroup (M F m hm) →* ℂˣ)
     (α : 𝓞 F) (hα : α ≠ 0) (hcα : α - 1 ∈ m) :
     frozenRayValue F m hm rho (Ideal.span {α}) = 1 := by
-  have hI : Ideal.span {α} ≠ ⊥ := fun h => hα (Ideal.span_singleton_eq_bot.mp h)
+  have hI : Ideal.span {α} ≠ ⊥ := by simp_all
   have hcop := RayClassBridge.span_add_modulus_eq_top_of_sub_one_mem F m α hcα
   rw [frozenRayValue_of_primeTo F m hm rho _ hI hcop,
     frozenIntegralRayClass_span F m hm α hα hcα hI hcop, map_one, Units.val_one]
@@ -197,6 +192,3 @@ theorem frozenRay_apply (F : Type) [Field F] [NumberField F]
       if h : I ≠ ⊥ ∧ I ⊔ m = ⊤ then
         (rho (frozenIntegralRayClass F m hm I h.1 h.2) : ℂ)
       else 0 := rfl
-
-end
-end DedekindZetaZeroFree

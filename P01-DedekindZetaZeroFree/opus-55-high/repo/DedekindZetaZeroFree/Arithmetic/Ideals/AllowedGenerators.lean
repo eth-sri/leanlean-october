@@ -29,16 +29,16 @@ def IsAllowedGenerator (A : SArithmeticData F) (B : Subgroup A.V)
 def sUnitSixthPowers (A : SArithmeticData F) : Subgroup Fˣ :=
   A.U.map (powMonoidHom 6)
 
-private lemma mem_E_iff (A : SArithmeticData F) (v : A.V) :
+lemma mem_E_iff (A : SArithmeticData F) (v : A.V) :
     v ∈ A.E ↔ ∃ u : A.U, A.sClass (u : Fˣ) = v := by
   have hE : A.E = Subgroup.map A.sClass A.U := by
     show (A.U.map A.diagonal).map (QuotientGroup.mk' A.sixthPowers) = _
     rw [Subgroup.map_map]
     rfl
   rw [hE, Subgroup.mem_map]
-  exact ⟨fun ⟨x, hx, hxe⟩ => ⟨⟨x, hx⟩, hxe⟩, fun ⟨u, hu⟩ => ⟨u.val, u.property, hu⟩⟩
+  simp
 
-private lemma spanSingleton_unit (A : SArithmeticData F) (u : A.U) :
+lemma spanSingleton_unit (A : SArithmeticData F) (u : A.U) :
     FractionalIdeal.spanSingleton A.R⁰ ((u : Fˣ) : F) = 1 := by
   have h : ((u : Fˣ) : F) = algebraMap A.R F ((A.unitEquiv u : A.Rˣ) : A.R) := rfl
   rw [h, ← FractionalIdeal.coeIdeal_span_singleton,
@@ -82,8 +82,8 @@ theorem exists_allowed_generator (A : SArithmeticData F)
   have hext : A.extendIdeal E = I.num := by
     rw [← A.exteriorIdealEquiv_apply]
     simp [E]
-  have hO : IsUnit (E.val : FractionalIdeal (𝓞 F)⁰ F) := by
-    exact isUnit_iff_ne_zero.mpr (FractionalIdeal.coeIdeal_ne_zero.mpr E.property.1)
+  have hO : IsUnit (E.val : FractionalIdeal (𝓞 F)⁰ F) := 
+    isUnit_iff_ne_zero.mpr (FractionalIdeal.coeIdeal_ne_zero.mpr E.property.1)
   have hnumunit : IsUnit (I.num : FractionalIdeal A.R⁰ F) := by
     rw [← hext]
     change IsUnit ((Ideal.map (algebraMap (𝓞 F) A.R) E.val : Ideal A.R) : FractionalIdeal A.R⁰ F)
@@ -107,14 +107,14 @@ theorem allowed_generator_unique_mod_sixth (A : SArithmeticData F)
   obtain ⟨z, hz⟩ := FractionalIdeal.spanSingleton_eq_spanSingleton.mp heq
   let ε : A.U := A.unitEquiv.symm z
   have hzval : (ε.val : F) = ((z : A.R) : F) := by
-    simp [ε, unitEquiv, Set.unitEquivUnitsInteger]
+    rfl
   have hratio : a / a' = ε.val := by
     apply Units.ext
     rw [Units.val_div_eq_div_val]
     rw [div_eq_iff a'.ne_zero, hzval]
     exact hz.symm
-  have hE : A.sClass ε.val ∈ A.E := by
-    exact ⟨A.diagonal ε.val, ⟨ε.val, ε.property, rfl⟩, rfl⟩
+  have hE : A.sClass ε.val ∈ A.E := 
+    ⟨A.diagonal ε.val, ⟨ε.val, ε.property, rfl⟩, rfl⟩
   have hmemB : A.sClass ε.val ∈ B := by
     rw [← hratio, map_div]
     exact B.div_mem ha.2 ha'.2
@@ -176,8 +176,3 @@ theorem exists_allowed_integral_generator (A : SArithmeticData F)
     A.exists_allowed_generator hCl H B hB (A.extendIdeal I : FractionalIdeal A.R⁰ F) hne
   obtain ⟨r, hr0, hra, hspan⟩ := A.allowed_generator_integral B (A.extendIdeal I) a ha
   exact ⟨r, a, ⟨hr0, hspan⟩, hra.symm, ha.2⟩
-
-end SArithmeticData
-end DedekindZetaZeroFree
-
-end

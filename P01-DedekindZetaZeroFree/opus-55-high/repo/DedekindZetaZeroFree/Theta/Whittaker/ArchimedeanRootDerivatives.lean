@@ -7,7 +7,7 @@ public import DedekindZetaZeroFree.Theta.Profiles.FirstRootSphericalRadialModel
 noncomputable section
 namespace DedekindZetaZeroFree.ThetaExpansion
 open MomentSources NumberField MeasureTheory
-open scoped NumberField Classical
+open scoped Classical
 variable {F : Type} [Field F] [NumberField F]
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
@@ -21,7 +21,3 @@ def firstRootDerivatives (R : PrincipalMellin.ActualRecipe S η)
     (B : FirstRootCutoffs R) (f : Functions R) : Functions R :=
   (Finset.univ : Finset (InfinitePlace F)).toList.foldr
     (fun w h => firstRootLocalDerivative R w (B.exponent w) h) f
-
-end DedekindZetaZeroFree.ThetaExpansion
-
-end

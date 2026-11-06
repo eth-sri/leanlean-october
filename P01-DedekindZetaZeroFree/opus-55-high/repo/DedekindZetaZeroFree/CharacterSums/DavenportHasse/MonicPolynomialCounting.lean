@@ -34,8 +34,7 @@ lemma divisors_reindex {M : Type*} [AddCommMonoid M] (n : ℕ) (H : ℕ → ℕ 
       have h1 : x ≤ x * y := Nat.le_mul_of_pos_right x (by omega)
       have h2 : y ≤ x * y := Nat.le_mul_of_pos_left y (by omega)
       omega
-    · intro h
-      omega
+    omega
   · intro x hx
     simp only [Finset.mem_filter, Finset.mem_product, Finset.mem_Icc] at hx ⊢
     refine ⟨Nat.mul_pos (by omega) (by omega), hx.2⟩
@@ -126,7 +125,7 @@ lemma core {f : k[X]} (hf : f.Monic) :
     ext j
     simp only [Finset.mem_filter, Finset.mem_Icc, pow_dvd_iff_le_count hf hP']
     constructor
-    · rintro ⟨⟨h1, -⟩, h2⟩; exact ⟨h1, h2⟩
+    · omega
     · rintro ⟨h1, h2⟩
       refine ⟨⟨h1, ?_⟩, h2⟩
       have hd := natDegree_le_of_dvd ((pow_dvd_iff_le_count hf hP' j).2 h2) hf.ne_zero
@@ -134,5 +133,3 @@ lemma core {f : k[X]} (hf : f.Monic) :
       have := (irreducible_of_normalized_factor P hP').natDegree_pos
       nlinarith
   rw [this, Nat.card_Icc, Nat.add_sub_cancel]
-
-end DavenportHasse.PolyPart

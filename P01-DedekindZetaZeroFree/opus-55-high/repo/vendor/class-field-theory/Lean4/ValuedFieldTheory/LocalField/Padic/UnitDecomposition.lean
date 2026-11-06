@@ -17,15 +17,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Unit decomposition of the p-adic integers
 
@@ -61,9 +52,7 @@ theorem padicDVRValuation_surjective
       (IsDiscreteValuationRing.maximalIdeal ℤ_[p]) |>.choose_spec
   refine ⟨π ^ (- WithZero.log y), ?_⟩
   rw [map_zpow₀ (padicDVRValuation p) π (- WithZero.log y)]
-  rw [hπ]
-  rw [← WithZero.exp_zsmul]
-  simpa using WithZero.exp_log hy
+  simp_all
 
 local instance padicDVRResidueFinite
     (p : ℕ) [Fact p.Prime] :
@@ -75,7 +64,7 @@ local instance padicDVRResidueFinite
 
 /-- The residue field of the valuation-theoretic presentation of `ℚ_[p]`
 is canonically `ZMod p`. -/
-noncomputable def padicResidueEquivZMod
+def padicResidueEquivZMod
     (p : ℕ) [Fact p.Prime] :
     (LocalField.ofWithZeroValuation
       (padicDVRValuation p)).residueField ≃+* ZMod p :=
@@ -112,9 +101,7 @@ theorem padicDVRValued_uniformSpace_eq_standard
     intro x
     change v x ≤ 1 ↔ ‖x‖₊ ≤ 1
     rw [LocalField.padicDVRValuation_le_one_iff_norm_le_one]
-    change
-      (↑‖x‖₊ : ℝ) ≤ (↑(1 : NNReal) : ℝ) ↔ ‖x‖₊ ≤ 1
-    exact NNReal.coe_le_coe
+    rfl
   have hmk :
       (Valued.mk' v).toUniformSpace =
         (Valued.mk' w).toUniformSpace := by
@@ -205,9 +192,7 @@ theorem padic_finrank_eq_one
             ((↑) : ℚ → ℚ_[F.residueCharacteristic]) =
           ((↑) : ℚ → ℚ_[p]) := by
       funext q
-      simpa only [Function.comp_apply] using
-        (map_ratCast
-          (algebraMap ℚ_[F.residueCharacteristic] ℚ_[p]) q)
+      simp
     rw [hcomp]
     exact hratDense
   rw [← Set.range_eq_univ]
@@ -215,7 +200,7 @@ theorem padic_finrank_eq_one
 
 /-- After identifying the residue characteristic with `p` and the relative
 degree with one, the free additive factor is canonically `ℤ_[p]`. -/
-noncomputable def padicFreeContinuousAddEquivOfEq
+def padicFreeContinuousAddEquivOfEq
     (p q d : ℕ) [Fact p.Prime] [Fact q.Prime]
     (hq : q = p) (hd : d = 1) :
     (Fin d → ℤ_[q]) ≃ₜ+ ℤ_[p] := by
@@ -228,7 +213,7 @@ noncomputable def padicFreeContinuousAddEquivOfEq
 
 /-- The free additive factor in the mixed-characteristic structure theorem
 for `ℚ_[p]` is continuously equivalent to `ℤ_[p]`. -/
-noncomputable def padicFreeContinuousAddEquiv
+def padicFreeContinuousAddEquiv
     (p : ℕ) [Fact p.Prime] :
     let v := padicDVRValuation p
     let F := LocalField.ofWithZeroValuation v
@@ -266,14 +251,13 @@ theorem padicIntEquivValuationSubring_symm_coe
         ((padicIntEquivValuationSubring p
           ((padicIntEquivValuationSubring p).symm z) :
             (padicDVRValuation p).valuationSubring) : ℚ_[p]) := by
-      symm
-      exact padicIntEquivValuationSubring_coe p _
+      rfl
     _ = (z : ℚ_[p]) := by
       rw [RingEquiv.apply_symm_apply]
 
 /-- The standard `p`-adic integers and the valuation subring of `ℚ_[p]`
 are continuously multiplicatively equivalent. -/
-noncomputable def padicIntValuationSubringContinuousMulEquiv
+def padicIntValuationSubringContinuousMulEquiv
     (p : ℕ) [Fact p.Prime] :
     let v := padicDVRValuation p
     ℤ_[p] ≃ₜ* v.valuationSubring := by
@@ -292,7 +276,7 @@ noncomputable def padicIntValuationSubringContinuousMulEquiv
 
 /-- Multiplicative tagging turns a continuous additive equivalence into a
 continuous multiplicative equivalence. -/
-noncomputable def continuousMultiplicativeEquivOfAddEquiv
+def continuousMultiplicativeEquivOfAddEquiv
     {A B : Type*} [AddZeroClass A] [AddZeroClass B]
     [TopologicalSpace A] [TopologicalSpace B]
     (e : A ≃ₜ+ B) :
@@ -302,7 +286,7 @@ noncomputable def continuousMultiplicativeEquivOfAddEquiv
     continuous_invFun := e.continuous_invFun }
 
 /-- Multiplicative tagging commutes continuously with binary products. -/
-noncomputable def prodMultiplicativeContinuousMulEquiv
+def prodMultiplicativeContinuousMulEquiv
     (A B : Type*) [AddZeroClass A] [AddZeroClass B]
     [TopologicalSpace A] [TopologicalSpace B] :
     Multiplicative (A × B) ≃ₜ*
@@ -312,7 +296,7 @@ noncomputable def prodMultiplicativeContinuousMulEquiv
     continuous_invFun := continuous_fst.prodMk continuous_snd }
 
 /-- The product of two continuous multiplicative equivalences. -/
-noncomputable def continuousMulEquivProdCongr
+def continuousMulEquivProdCongr
     {A B C D : Type*}
     [TopologicalSpace A] [TopologicalSpace B]
     [TopologicalSpace C] [TopologicalSpace D]
@@ -328,7 +312,7 @@ noncomputable def continuousMulEquivProdCongr
         (f.continuous_invFun.comp continuous_snd) }
 
 /-- Continuous multiplicative reassociation of a triple product. -/
-noncomputable def continuousMulEquivProdAssoc
+def continuousMulEquivProdAssoc
     (A B C : Type*) [TopologicalSpace A] [TopologicalSpace B]
     [TopologicalSpace C] [MulOneClass A] [MulOneClass B] [MulOneClass C] :
     (A × B) × C ≃ₜ* A × (B × C) :=
@@ -343,7 +327,7 @@ noncomputable def continuousMulEquivProdAssoc
 /-- The topology on the first principal-unit group induced directly from
 the valuation topology on `ℚ_[p]`. -/
 @[implicit_reducible]
-noncomputable def padicPrincipalUnitDirectTopology
+def padicPrincipalUnitDirectTopology
     (p : ℕ) [Fact p.Prime] :
     let v := padicDVRValuation p
     let F := LocalField.ofWithZeroValuation v
@@ -357,13 +341,13 @@ noncomputable def padicPrincipalUnitDirectTopology
 
 /-- The standard topology on the first principal-unit group of `ℚ_[p]`. -/
 @[implicit_reducible]
-noncomputable def padicPrincipalUnitStandardTopology
+def padicPrincipalUnitStandardTopology
     (p : ℕ) [Fact p.Prime] :
     let v := padicDVRValuation p
     let F := LocalField.ofWithZeroValuation v
     TopologicalSpace
-      (CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF 1) := by
-  exact inferInstance
+      (CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF 1) := 
+  inferInstance
 
 /-- The directly induced valuation topology agrees with the standard topology
 on the first principal-unit group of `ℚ_[p]`. -/
@@ -386,57 +370,9 @@ theorem padicPrincipalUnitDirectTopology_eq_standard
     (congrArg (fun U : UniformSpace ℚ_[p] => U.toTopologicalSpace)
       (padicDVRValued_uniformSpace_eq_standard p))
 
-/-- The mixed-characteristic structure data for the first principal units,
-using the valuation-induced topology directly. -/
-noncomputable def padicPrincipalDataDirect
-    (p : ℕ) [Fact p.Prime] :
-    let v := padicDVRValuation p
-    let F := LocalField.ofWithZeroValuation v
-    letI : LocalField.MixedWithZeroValuationContext v :=
-      LocalField.mixedWithZeroValuationContext v
-    letI : Valued ℚ_[p] (WithZero (Multiplicative ℤ)) :=
-      Valued.mk' v
-    let d := Module.finrank ℚ_[F.residueCharacteristic] ℚ_[p]
-    Σ a : ℕ,
-      Multiplicative
-          (ZMod (F.residueCharacteristic ^ a) ×
-            (Fin d → ℤ_[F.residueCharacteristic])) ≃ₜ*
-        CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF 1 := by
-  let v := padicDVRValuation p
-  let F := LocalField.ofWithZeroValuation v
-  letI : LocalField.MixedWithZeroValuationContext v :=
-    LocalField.mixedWithZeroValuationContext v
-  letI : Valued ℚ_[p] (WithZero (Multiplicative ℤ)) :=
-    Valued.mk' v
-  exact LocalField.chosenMixed_firstPrincipalUnitStructure_ofWithZeroValuation
-    v (padicDVRValuation_surjective p)
-
-/-- The multiplicative equivalence underlying the first-principal-unit
-structure data for `ℚ_[p]`. -/
-noncomputable def padicPrincipalMulData
-    (p : ℕ) [Fact p.Prime] :
-    let v := padicDVRValuation p
-    let F := LocalField.ofWithZeroValuation v
-    letI : LocalField.MixedWithZeroValuationContext v :=
-      LocalField.mixedWithZeroValuationContext v
-    let d := Module.finrank ℚ_[F.residueCharacteristic] ℚ_[p]
-    Σ a : ℕ,
-      Multiplicative
-          (ZMod (F.residueCharacteristic ^ a) ×
-            (Fin d → ℤ_[F.residueCharacteristic])) ≃*
-        CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF 1 := by
-  let v := padicDVRValuation p
-  let F := LocalField.ofWithZeroValuation v
-  letI : LocalField.MixedWithZeroValuationContext v :=
-    LocalField.mixedWithZeroValuationContext v
-  letI : Valued ℚ_[p] (WithZero (Multiplicative ℤ)) :=
-    Valued.mk' v
-  exact ⟨(padicPrincipalDataDirect p).1,
-    (padicPrincipalDataDirect p).2.toMulEquiv⟩
-
 /-- The first-principal-unit structure data transported to the standard
 `p`-adic topology. -/
-noncomputable def padicPrincipalData
+def padicPrincipalData
     (p : ℕ) [Fact p.Prime] :
     let v := padicDVRValuation p
     let F := LocalField.ofWithZeroValuation v
@@ -465,7 +401,6 @@ noncomputable def padicPrincipalData
     padicPrincipalUnitStandardTopology p
   have hdirect :
       directTopology = padicPrincipalUnitDirectTopology p := by
-    unfold directTopology padicPrincipalUnitDirectTopology
     rfl
   have htop : directTopology = standardTopology :=
     hdirect.trans (padicPrincipalUnitDirectTopology_eq_standard p)
@@ -481,7 +416,7 @@ noncomputable def padicPrincipalData
   exact hstandard
 
 /-- The finite factor in the topological decomposition of `ℤ_pˣ`. -/
-noncomputable abbrev padicUnitFiniteFactor
+abbrev padicUnitFiniteFactor
     (p : ℕ) [Fact p.Prime] : Type :=
   let v := padicDVRValuation p
   let F := LocalField.ofWithZeroValuation v
@@ -495,7 +430,7 @@ noncomputable abbrev padicUnitFiniteFactor
 
 /-- The standard topological decomposition
 `ℤ_pˣ ≃ finite × ℤ_p` used in the local reciprocity calculation. -/
-noncomputable def padicUnitDecomposition
+def padicUnitDecomposition
     (p : ℕ) [Fact p.Prime] :
     padicUnitFiniteFactor p × Multiplicative ℤ_[p] ≃ₜ*
       ℤ_[p]ˣ := by
@@ -542,8 +477,8 @@ noncomputable def padicUnitDecomposition
       continuous_toFun := continuous_of_discreteTopology
       continuous_invFun := continuous_of_discreteTopology }
   let principalRaw : Multiplicative (ZMod
-      (F.residueCharacteristic ^ a) × Free) ≃ₜ* U := by
-    exact (padicPrincipalData p).2
+      (F.residueCharacteristic ^ a) × Free) ≃ₜ* U := 
+    (padicPrincipalData p).2
   let principalSplit : FinCyc × Multiplicative Free ≃ₜ* U :=
     (prodMultiplicativeContinuousMulEquiv
       (ZMod (F.residueCharacteristic ^ a)) Free).symm.trans
@@ -574,13 +509,10 @@ noncomputable def padicUnitDecomposition
     have hmul : Continuous (fun z : RootGroup × U =>
         (z.1 : F.valuationSubringˣ) *
           (z.2 : F.valuationSubringˣ)) :=
-      (continuous_subtype_val.comp continuous_fst).mul
-        (continuous_subtype_val.comp continuous_snd)
+      by fun_prop
     refine hmul.congr ?_
     intro z
-    exact
-      (LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup.valuationSubringUnitsEquivRootsTimesPrincipalUnits_apply
-        F.toCompleteDVF z).symm
+    rfl
   have hTotal : Continuous totalAlg :=
     hUnitsAlg.comp factors.continuous_toFun
   let total :
@@ -589,12 +521,12 @@ noncomputable def padicUnitDecomposition
     LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup.continuousMulEquivOfCompactToT2
       totalAlg hTotal
   let integral :
-      ℤ_[p]ˣ ≃ₜ* F.valuationSubringˣ := by
-    exact Units.mapContinuousMulEquiv
+      ℤ_[p]ˣ ≃ₜ* F.valuationSubringˣ := 
+    Units.mapContinuousMulEquiv
       (padicIntValuationSubringContinuousMulEquiv p)
   exact total.trans integral.symm
 
-noncomputable instance padicUnitFiniteFactor_finite
+instance padicUnitFiniteFactor_finite
     (p : ℕ) [Fact p.Prime] :
     Finite (padicUnitFiniteFactor p) := by
   let v := padicDVRValuation p
@@ -615,8 +547,3 @@ noncomputable instance padicUnitFiniteFactor_finite
   let : NeZero (F.residueCharacteristic ^ a) :=
     ⟨pow_ne_zero _ F.residueCharacteristic_prime.ne_zero⟩
   infer_instance
-
-end Padic
-end LocalFieldTheory
-
-end

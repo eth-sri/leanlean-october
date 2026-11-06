@@ -35,7 +35,7 @@ theorem primitive_product_conductor_dvd {m f k q : Ideal (𝓞 F)}
     (hagree : ∀ I : Ideal (𝓞 F), I ≠ ⊥ → I ⊔ (m * f * k * q) = ⊤ →
       η I = θ I * ξ I) :
     m ∣ f * k := by
-  have hfk : f * k ≠ ⊥ := fun h => (Ideal.mul_eq_bot.mp h).elim hf hk
+  have hfk : f * k ≠ ⊥ := by simp_all
   refine Ideal.dvd_iff_le.mpr
     (DedekindZetaZeroFree.LargeSieve.rayCharacter_primitive_modulus_le hm hfk hq η hprim
       (DedekindZetaZeroFree.LargeSieve.RayOperations.mul θ ξ) ?_)
@@ -43,5 +43,3 @@ theorem primitive_product_conductor_dvd {m f k q : Ideal (𝓞 F)}
   rw [DedekindZetaZeroFree.LargeSieve.RayOperations.mul_apply]
   refine hagree I hI ?_
   simpa only [mul_assoc] using hcop
-
-end DedekindZetaZeroFree.LargeSieve.RayComparison

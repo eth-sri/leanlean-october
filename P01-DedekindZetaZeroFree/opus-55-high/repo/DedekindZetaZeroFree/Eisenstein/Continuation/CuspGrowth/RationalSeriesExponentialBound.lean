@@ -11,7 +11,7 @@ set_option maxHeartbeats 1600000
 
 namespace DedekindZetaZeroFree.KPContinuation.ChamberModerateGrowth
 
-private theorem norm_flat_between
+theorem norm_flat_between
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (K₀ : Subgroup (KPLiteralRaw.G F ζ hζ)) (hK₀ : KPLiteralRaw.IwasawaCompact F ζ hζ K₀)
     (φ : KPLiteralRaw.Flat F ζ hζ K₀) (s s₀ s₁ : ℂ)
@@ -32,7 +32,7 @@ private theorem norm_flat_between
         (by linarith : 2/3+s₀.re ≤ 2/3+s.re)) hp).trans
       (le_add_of_nonneg_right (mul_nonneg (Real.rpow_nonneg hδ.le _) hp))
 
-private theorem fixed_parameter_majorant
+theorem fixed_parameter_majorant
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (K₀ : Subgroup (KPLiteralRaw.G F ζ hζ)) (hK₀ : KPLiteralRaw.IwasawaCompact F ζ hζ K₀)
     (φ : KPLiteralRaw.Flat F ζ hζ K₀) (z : ℂ) (hz : (1 : ℝ)/3 < z.re)
@@ -75,7 +75,7 @@ private theorem fixed_parameter_majorant
       (2 * ↑(KPCuspLogShape.dimension F) * (2/3+z.re)) * t by ring]
     ring
 
-private theorem compact_parameter_majorant
+theorem compact_parameter_majorant
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (K₀ : Subgroup (KPLiteralRaw.G F ζ hζ)) (hK₀ : KPLiteralRaw.IwasawaCompact F ζ hζ K₀)
     (φ : KPLiteralRaw.Flat F ζ hζ K₀)

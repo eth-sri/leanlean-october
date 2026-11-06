@@ -23,7 +23,6 @@ variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
 
 abbrev level := KPContActualAllCuspSource.level F ζ hζ C R P H U
 abbrev Cusps := KPContActualAllCuspSource.Cusps F ζ hζ C R P H U
-abbrev atlas := H.atlas (level F ζ hζ C R P H U)
 abbrev d := KPCuspLogShape.dimension F
 abbrev V : Set ℂ := KPContActualChamberNormalSeries.V
 
@@ -47,13 +46,6 @@ variable (a : Cusps F ζ hζ C R P H U)
 abbrev geometry := KPContFlatCuspIncomingEvaluation.geometry F ζ hζ C R P H U a
 abbrev KernelTorus := KPContFlatCuspIncomingEvaluation.KernelTorus F ζ hζ C R P H U a
 abbrev ZeroFiber := KPContFlatCuspIncomingEvaluation.ZeroFiber F ζ hζ C R P H U a
-abbrev LocalZeroSections := KPContFlatCuspIncomingEvaluation.LocalZeroSections F ζ hζ C R P H U a
-abbrev Chart := Fin (geometry F ζ hζ C R P H U a).atlas.chartCount
-
-theorem unitary (u) (v : ZeroFiber F ζ hζ C R P H U a) :
-    ‖((KPContFlatCuspIncomingEvaluation.frequencies F ζ hζ C R P H U a).constantSystem.transport u v).val 0‖ =
-      ‖v.val 0‖ := by
-  exact (KPContFlatCuspIncomingEvaluation.frequencies F ζ hζ C R P H U a).constantSystem.unitary u v
 
 def endMeasure : Measure (KPCuspCharts.Coordinates F) :=
   (H.disintegration (level F ζ hζ C R P H U)).componentWeight a.1 •
@@ -150,7 +142,7 @@ def coefficient (s : ℂ) (b : KPCuspCharts.Shape F) : ZeroFiber F ζ hζ C R P 
     (fun ε => standardIntegral F ζ hζ U ι f s
       (KPContFlatCuspIncomingEvaluation.localGroup F ζ hζ C R P H U a 0 0 b ε))
 
-private theorem inverse_fixed {z c : ℂ} (hz : z ≠ 0) (h : z * c = c) : z⁻¹ * c = c := by
+theorem inverse_fixed {z c : ℂ} (hz : z ≠ 0) (h : z * c = c) : z⁻¹ * c = c := by
   calc z⁻¹ * c = z⁻¹ * (z * c) := congrArg (z⁻¹ * ·) h.symm
        _ = c := by rw [← mul_assoc, inv_mul_cancel₀ hz, one_mul]
 
@@ -608,7 +600,7 @@ theorem radialDerivativePolynomial_coeff_continuous (hι : Function.Injective ι
     exact ((by fun_prop : ContinuousOn (fun s : ℂ => (d F : ℂ)*((2/3 : ℂ)-2*s)) V).mul (ih m)).add
       ((ih (m+1)).mul_const _)
 
-private theorem polynomial_eval_bound (p : Polynomial ℂ) (k : ℕ) (hk : p.natDegree ≤ k)
+theorem polynomial_eval_bound (p : Polynomial ℂ) (k : ℕ) (hk : p.natDegree ≤ k)
     (c : ℝ) (hc : 0 ≤ c) (hcoeff : ∀ i ≤ k, ‖p.coeff i‖ ≤ c) (t : ℝ) (ht : 0 ≤ t) :
     ‖p.eval (t : ℂ)‖ ≤ ((k+1 : ℕ) : ℝ)*c*(1+t)^k := by
   rw [Polynomial.eval_eq_sum_range' (Nat.lt_succ_of_le hk)]
@@ -642,7 +634,7 @@ theorem radialDerivativePolynomial_compact_bound (hι : Function.Injective ι)
   exact (norm_le_pi_norm (g s) (a,⟨j,by omega⟩,⟨i,by omega⟩)).trans
     ((hc s hs).trans (le_max_left _ _))
 
-private theorem poly_radial_hasDeriv (q : ℂ) (p : Polynomial ℂ) (t : ℝ) :
+theorem poly_radial_hasDeriv (q : ℂ) (p : Polynomial ℂ) (t : ℝ) :
     HasDerivAt (fun t : ℝ => Complex.exp (q*(t : ℂ)) * p.eval (t : ℂ))
       (Complex.exp (q*(t : ℂ)) * (q*p.eval (t : ℂ) + p.derivative.eval (t : ℂ))) t := by
   have hp : HasDerivAt (fun t : ℝ => p.eval (t : ℂ)) (p.derivative.eval (t : ℂ)) t := by
@@ -654,13 +646,13 @@ private theorem poly_radial_hasDeriv (q : ℂ) (p : Polynomial ℂ) (t : ℝ) :
     convert h using 1 <;> simp [mul_comm]
 
   convert he.mul hp using 1 <;> ring
-private theorem poly_radial_deriv (q : ℂ) (p : Polynomial ℂ) :
+theorem poly_radial_deriv (q : ℂ) (p : Polynomial ℂ) :
     deriv (fun t : ℝ => Complex.exp (q*(t : ℂ)) * p.eval (t : ℂ)) =
       fun t : ℝ => Complex.exp (q*(t : ℂ)) * (Polynomial.C q * p + p.derivative).eval (t : ℂ) := by
   funext t
   rw [(poly_radial_hasDeriv q p t).deriv]
   simp
-private theorem poly_radial_second (q : ℂ) (p : Polynomial ℂ) :
+theorem poly_radial_second (q : ℂ) (p : Polynomial ℂ) :
     deriv (deriv (fun t : ℝ => Complex.exp (q*(t : ℂ)) * p.eval (t : ℂ))) =
       fun t : ℝ => Complex.exp (q*(t : ℂ)) *
         (Polynomial.C q * (Polynomial.C q * p + p.derivative) + (Polynomial.C q * p + p.derivative).derivative).eval (t : ℂ) := by
@@ -698,7 +690,7 @@ def hessian (n : ℕ) (g : KPArch.Space n → ℂ) (z : KPArch.Space n)
       frameDerivative n (v.1, 0) g z else 0) +
     (if v.1 = w.1 ∧ v.2 ≠ 0 ∧ w.2 = 0 then frameDerivative n v g z else 0)
 
-private theorem meanHeight_fderiv (n : ℕ) (z u : KPArch.Space n) :
+theorem meanHeight_fderiv (n : ℕ) (z u : KPArch.Space n) :
     fderiv ℝ (KPCuspLogShape.meanHeight n) z u = (n : ℝ)⁻¹ * ∑ i, (u i).2 := by
   have h : HasFDerivAt (KPCuspLogShape.meanHeight n)
       ((n : ℝ)⁻¹ • ∑ i : Fin n, (ContinuousLinearMap.snd ℝ ℂ ℝ).comp (ContinuousLinearMap.proj i)) z := by
@@ -710,7 +702,7 @@ private theorem meanHeight_fderiv (n : ℕ) (z u : KPArch.Space n) :
     exact hS.const_mul _
   rw [h.fderiv]
   simp
-private theorem meanHeight_differentiable (n : ℕ) : Differentiable ℝ (KPCuspLogShape.meanHeight n) := by
+theorem meanHeight_differentiable (n : ℕ) : Differentiable ℝ (KPCuspLogShape.meanHeight n) := by
   unfold KPCuspLogShape.meanHeight
   fun_prop
 
@@ -785,7 +777,7 @@ def covariantNorm (n : ℕ) (j : Fin 3) (g : KPArch.Space n → ℂ)
     Real.sqrt (∑ v : Fin n × Fin 3, ‖frameDerivative n v g z‖ ^ 2)
   else Real.sqrt (∑ v : Fin n × Fin 3, ∑ w : Fin n × Fin 3, ‖hessian n g z v w‖ ^ 2)
 
-private theorem sqrt_sum_norm_bound {I : Type*} [Fintype I]
+theorem sqrt_sum_norm_bound {I : Type*} [Fintype I]
     (u : I → ℂ) (B : ℝ) (hB : 0 ≤ B) (hu : ∀ i, ‖u i‖ ≤ B) :
     Real.sqrt (∑ i, ‖u i‖^2) ≤ (Fintype.card I + 1 : ℝ)*B := by
   apply Real.sqrt_le_iff.mpr
@@ -852,14 +844,14 @@ def jetNorm (k : ℕ) (j : Fin 3) (s : ℂ) (p : KPCuspCharts.Coordinates F) : �
   covariantNorm (d F) j
     (parameterScalar F ζ hζ C R P H U a ι B f χ source k s) (KPCuspCharts.toArch F p)
 
-private theorem frameDerivative_congr_germ (n : ℕ) (f g : KPArch.Space n → ℂ)
+theorem frameDerivative_congr_germ (n : ℕ) (f g : KPArch.Space n → ℂ)
     (z : KPArch.Space n) (h : f =ᶠ[𝓝 z] g) (v : Fin n × Fin 3) :
     frameDerivative n v f =ᶠ[𝓝 z] frameDerivative n v g := by
   filter_upwards [h.fderiv (𝕜 := ℝ)] with y hy
   unfold frameDerivative
   rw [hy]
 
-private theorem covariantNorm_congr_germ (n : ℕ) (j : Fin 3) (f g : KPArch.Space n → ℂ)
+theorem covariantNorm_congr_germ (n : ℕ) (j : Fin 3) (f g : KPArch.Space n → ℂ)
     (z : KPArch.Space n) (h : f =ᶠ[𝓝 z] g) : covariantNorm n j f z = covariantNorm n j g z := by
   have hf (v : Fin n × Fin 3) := frameDerivative_congr_germ n f g z h v
   have hh (v w : Fin n × Fin 3) : hessian n f z v w = hessian n g z v w := by
@@ -937,7 +929,7 @@ theorem uniform_covariant_jets (hι : Function.Injective ι)
     _ = ((M*c)*(1+p.2)^k)*(Real.exp (-(d F : ℝ)*p.2)*‖KPChamberOutgoingL2.outgoingFactor (d F) s p.2‖) := by ring
     _ ≤ _ := mul_le_mul_of_nonneg_left (exponent_margin F s (hKV hs) p.2 ht) (by positivity)
 
-private theorem radial_covariantNorm_continuous (n : ℕ) (j : Fin 3) (q : ℂ) (p : Polynomial ℂ) :
+theorem radial_covariantNorm_continuous (n : ℕ) (j : Fin 3) (q : ℂ) (p : Polynomial ℂ) :
     Continuous (fun z : KPArch.Space n => covariantNorm n j
       (fun y => Complex.exp (q*(KPCuspLogShape.meanHeight n y : ℂ))*p.eval (KPCuspLogShape.meanHeight n y : ℂ)) z) := by
   let g : ℝ → ℂ := fun t => Complex.exp (q*(t : ℂ))*p.eval (t : ℂ)
@@ -988,7 +980,7 @@ theorem jetNorm_high_aestronglyMeasurable (hι : Function.Injective ι)
   exact (jetNorm_radialModel F ζ hζ C R P H U a ι B f χ source hι hf k j s hs p
     (by change A < p.2 at hp; linarith) (by change A < p.2 at hp; linarith)).symm
 
-private theorem polynomial_square_exp_bound (k : ℕ) (r : ℝ) (hr : 0 < r) :
+theorem polynomial_square_exp_bound (k : ℕ) (r : ℝ) (hr : 0 < r) :
     ∃ M : ℝ, 0 ≤ M ∧ ∀ t : ℝ, 0 ≤ t → (1+t)^(2*k) ≤ M*Real.exp (r*t) := by
   let M : ℝ := ((2*k).factorial : ℝ)*r⁻¹^(2*k)*Real.exp r
   refine ⟨M, by dsimp [M]; positivity, ?_⟩
@@ -1083,7 +1075,7 @@ theorem jets_memLp_square_bound (hι : Function.Injective ι)
     apply ENNReal.ofReal_le_ofReal
     exact Finset.single_le_sum (fun b hb => ENNReal.toReal_nonneg) (Finset.mem_univ a)
 
-private theorem exponential_tail_tendsto (A₀ : ℝ) :
+theorem exponential_tail_tendsto (A₀ : ℝ) :
     Filter.Tendsto (fun A : ℝ => ∫⁻ p in tail F A,
       ENNReal.ofReal (Real.exp ((d F : ℝ)*p.2)) ∂endMeasure F ζ hζ C R P H U a)
       Filter.atTop (𝓝 0) := by
@@ -1151,66 +1143,6 @@ theorem squareTail_uniform_vanishing (hι : Function.Injective ι)
       exact Finset.single_le_sum (f := fun b : Cusps F ζ hζ C R P H U =>
         ∫⁻ p in tail F A', ENNReal.ofReal (Real.exp ((d F : ℝ)*p.2)) ∂endMeasure F ζ hζ C R P H U b)
         (fun b hb => zero_le) (Finset.mem_univ a)
-
-structure OutgoingConclusions : Prop where
-  fiber_probability : ∀ a, IsProbabilityMeasure (fiberMeasure F ζ hζ C R P H U a)
-
-  standard_integrable : ∀ s ∈ V, ∀ a b ε,
-    KPGlobalEisensteinData.IntertwinerIntegrable (KPAdditiveHaar.adelicMeasure F)
-      (KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
-        (KPCubicCoverConstruction.adelicW F ζ hζ))
-      (KPGlobalTorusFunctionData.N F ζ hζ)
-      (KPContActualSphericalFlatStage.L F ζ hζ U ι s (f s))
-      (KPContFlatCuspIncomingEvaluation.localGroup F ζ hζ C R P H U a 0 0 b ε)
-
-  local_system : ∀ s ∈ V, ∀ a,
-    coefficient F ζ hζ C R P H U a ι f s ∈ LocalZeroSections F ζ hζ C R P H U a
-  unitary : ∀ a u (v : ZeroFiber F ζ hζ C R P H U a),
-    ‖((KPContFlatCuspIncomingEvaluation.frequencies F ζ hζ C R P H U a).constantSystem.transport u v).val 0‖ =
-      ‖v.val 0‖
-
-  smooth_holomorphic : ∀ a (q : Chart F ζ hζ C R P H U a)
-      (n : ℕ) (A : KPContLocalNorm.LocalBall n) (b : KPCuspCharts.Shape F)
-      (e : KPContLocalNorm.Space n →L[ℝ] KPCuspCharts.Shape F),
-    (∀ x ∈ A.carrier, b + e x ∈ (geometry F ζ hζ C R P H U a).atlas.shapeLift q) →
-    KPCutoffSource.ChartSmoothHolomorphicOn A
-      (fun s x => (coefficient F ζ hζ C R P H U a ι f s (b + e x)).val 0) V
-
-  fiber_integrable : ∀ s ∈ V, ∀ a t b ε, T + 1 ≤ t → B.τ < t →
-    Integrable (fun z : KernelTorus F ζ hζ C R P H U a =>
-      correctionSheet F ζ hζ C R P H U a ι B f χ source s t (Quotient.out z) b ε)
-      (fiberMeasure F ζ hζ C R P H U a)
-  representative_independent : ∀ s ∈ V, ∀ a t b ε, T + 1 ≤ t → B.τ < t →
-    ∀ x y : KPCuspCharts.Horizontal F,
-      (QuotientAddGroup.mk x : KernelTorus F ζ hζ C R P H U a) = QuotientAddGroup.mk y →
-      correctionSheet F ζ hζ C R P H U a ι B f χ source s t x b ε =
-        correctionSheet F ζ hζ C R P H U a ι B f χ source s t y b ε
-
-  outgoing_formula : ∀ s ∈ V, ∀ a t b, T + 1 ≤ t → B.τ < t →
-    zeroMode F ζ hζ C R P H U a ι B f χ source s t b =
-      KPChamberOutgoingL2.outgoingFactor (d F) s t • coefficient F ζ hζ C R P H U a ι f s b
-
-  exponent_margin : ∀ s ∈ V, ∀ t : ℝ, 0 ≤ t →
-    Real.exp (-(d F : ℝ) * t) * ‖KPChamberOutgoingL2.outgoingFactor (d F) s t‖ ≤
-      Real.exp (-(d F : ℝ) * t)
-
-  uniform_jets : ∀ K : Set ℂ, IsCompact K → K ⊆ V → ∀ k : ℕ, ∀ j : Fin 3,
-    ∀ A : ∀ a, Chart F ζ hζ C R P H U a → Set (KPCuspCharts.Shape F),
-      (∀ a q, IsCompact (A a q) ∧ A a q ⊆ (geometry F ζ hζ C R P H U a).atlas.shapeLift q) →
-      ∃ t₀ c : ℝ, 0 ≤ t₀ ∧ T + 1 < t₀ ∧ B.τ < t₀ ∧ 0 ≤ c ∧
-        ∀ a q s, s ∈ K → ∀ b ∈ A a q, ∀ t : ℝ, t₀ ≤ t →
-          Real.exp (-(d F : ℝ) * t) *
-            jetNorm F ζ hζ C R P H U a ι B f χ source k j s ((0,b),t) ≤
-              c * (1 + t) ^ k * Real.exp (-(d F : ℝ) * t)
-
-  l2_tails : ∀ K : Set ℂ, IsCompact K → K ⊆ V → ∀ k : ℕ, ∀ j : Fin 3,
-    ∃ t₀ c : ℝ, 0 ≤ t₀ ∧ T + 1 < t₀ ∧ B.τ < t₀ ∧ 0 ≤ c ∧
-      (∀ a s, s ∈ K →
-        MemLp (jetNorm F ζ hζ C R P H U a ι B f χ source k j s) 2
-          ((endMeasure F ζ hζ C R P H U a).restrict (tail F t₀)) ∧
-        squareTail F ζ hζ C R P H U a ι B f χ source k j s t₀ ≤ ENNReal.ofReal c) ∧
-      ∀ ε : ℝ, 0 < ε → ∃ A : ℝ, t₀ ≤ A ∧ ∀ A' : ℝ, A ≤ A' → ∀ a s, s ∈ K →
-        squareTail F ζ hζ C R P H U a ι B f χ source k j s A' ≤ ENNReal.ofReal ε
 
 end DedekindZetaZeroFree.KPContActualChamberOutgoingAdapter
 

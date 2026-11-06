@@ -6,9 +6,7 @@ public import DedekindZetaZeroFree.Moments.Principal.Corrections.Definitions
 
 open scoped NumberField Classical
 
-noncomputable section
 namespace DedekindZetaZeroFree.CorrectionFactors
-set_option autoImplicit false
 
 open LocalFiniteSums
 
@@ -16,7 +14,7 @@ variable {F : Type} [Field F] [NumberField F]
 variable {A : SArithmeticData F} {σ : F →+* ℂ}
 variable {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
 
-private lemma separation_good_data (C : A.GeneralArithmeticContext σ η hS)
+lemma separation_good_data (C : A.GeneralArithmeticContext σ η hS)
     (U : Frequency C) (p : ExteriorPrime A) (hp : (U.j p).val = 0) :
     U.u = U.unitPart p ∧
       IsUnit (Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) U.u) ∧
@@ -29,7 +27,7 @@ private lemma separation_good_data (C : A.GeneralArithmeticContext σ η hS)
     exact (U.unitPart_spec p).2
   · simp only [Frequency.theta, hu]
 
-private lemma separation_qPower_norm_lt_one (p : ExteriorPrime A) (s : ℂ)
+lemma separation_qPower_norm_lt_one (p : ExteriorPrime A) (s : ℂ)
     (hs : s.re < 0) : ‖qPower p s‖ < 1 := by
   have hQ : 1 < Q p := by
     change 1 < (Ideal.absNorm p.val.asIdeal : ℝ)
@@ -39,12 +37,12 @@ private lemma separation_qPower_norm_lt_one (p : ExteriorPrime A) (s : ℂ)
   rw [hn, Real.exp_lt_one_iff]
   exact mul_neg_of_neg_of_pos hs (Real.log_pos hQ)
 
-private lemma separation_sub_ne_zero {a : ℂ} (ha : ‖a‖ < 1) : 1 - a ≠ 0 := by
+lemma separation_sub_ne_zero {a : ℂ} (ha : ‖a‖ < 1) : 1 - a ≠ 0 := by
   intro h
   have he : a = 1 := (sub_eq_zero.mp h).symm
   simpa [he] using ha
 
-private lemma separation_D_ne_zero (C : A.GeneralArithmeticContext σ η hS)
+lemma separation_D_ne_zero (C : A.GeneralArithmeticContext σ η hS)
     (U : Frequency C) (p : ExteriorPrime A) (ξ : ℂ) (hξ : 4 < ξ.re) :
     1 - D (σ := σ) (η := η) p U.u ξ ≠ 0 := by
   by_cases hp : (U.j p).val = 0
@@ -99,7 +97,3 @@ theorem prime_factor_separation_denominators_nonzero
       exact separation_qPower_norm_lt_one p (-w) (by simp; linarith)
     · rw [(primitive_variables_zero C U p hp ξ w).1]
       norm_num
-
-end DedekindZetaZeroFree.CorrectionFactors
-
-end

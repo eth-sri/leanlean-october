@@ -31,8 +31,8 @@ def cutoffGradient {n : ℕ} {B : LocalBall n} (η : TestFunction B.toOpens ℝ 
 namespace DifferenceTestAtoms
 
 theorem quotient_memLp {n : ℕ} (f : Space n → ℂ) (hf : MemLp f 2 volume)
-    (k : Fin n) (t : ℝ) : MemLp (differenceQuotient k t f) 2 volume := by
-  exact ((hf.comp_measurePreserving (measurePreserving_add_right volume _)).sub hf).const_mul _
+    (k : Fin n) (t : ℝ) : MemLp (differenceQuotient k t f) 2 volume := 
+  ((hf.comp_measurePreserving (measurePreserving_add_right volume _)).sub hf).const_mul _
 
 theorem exactIBP {n : ℕ} (f g : Space n → ℂ) (hf : MemLp f 2 volume)
     (hg : MemLp g 2 volume) (k : Fin n) (t : ℝ) :
@@ -51,7 +51,7 @@ theorem exactIBP {n : ℕ} (f g : Space n → ℂ) (hf : MemLp f 2 volume)
     have h := integral_add_right_eq_self
       (fun x => f x * g (x + (-t) • EuclideanSpace.single k 1))
       (t • EuclideanSpace.single k 1) (μ := volume)
-    simpa only [neg_smul, add_neg_cancel_right] using h.symm
+    simp_all
   simp only [differenceQuotient, Complex.ofReal_neg, inv_neg, neg_mul, neg_neg]
   have hleft : (∫ x, f x * ((t : ℂ)⁻¹ *
       (g (x + (-t) • EuclideanSpace.single k 1) - g x))) =
@@ -66,7 +66,7 @@ theorem exactIBP {n : ℕ} (f g : Space n → ℂ) (hf : MemLp f 2 volume)
       (t : ℂ)⁻¹ * ((∫ x, f (x + t • EuclideanSpace.single k 1) * g x) - ∫ x, f x * g x) := by
     simp_rw [mul_assoc, sub_mul]
     rw [integral_const_mul, integral_sub hftg hfg]
-  rw [hleft, hright, hshift]
+  simp_all
 
 theorem global_indicator_ae {n : ℕ} {B : LocalBall n}
     (K : Set (Space n)) (hKB : K ⊆ B.carrier) (f : BallL2 B) (g : Space n → ℂ)
@@ -102,7 +102,7 @@ theorem weighted_coefficient_difference_bound {n : ℕ} (mid outer : LocalBall n
       simpa only [LocalBall.carrier, Metric.mem_ball, hcenter] using hx
     change dist (x + (s * t) • e) outer.center < outer.radius
     have htri := dist_triangle (x + (s * t) • e) x outer.center
-    have heq : dist (x + (s * t) • e) x = ‖(s * t) • e‖ := by simp [dist_eq_norm]
+    have heq : dist (x + (s * t) • e) x = ‖(s * t) • e‖ := by simp
     rw [heq] at htri
     linarith
   have hda (s : ℝ) (hs : s ∈ Set.Icc (0 : ℝ) 1) :
@@ -116,7 +116,7 @@ theorem weighted_coefficient_difference_bound {n : ℕ} (mid outer : LocalBall n
     have hline := (((hasDerivAt_id s).mul_const t).smul_const e).const_add x
     convert ((hda s hs).hasFDerivAt.comp_hasDerivAt s hline).hasDerivWithinAt using 1
     · rfl
-    · simp only [one_mul, map_smul, smul_eq_mul]
+    simp
   have hb (s : ℝ) (hs : s ∈ Set.Ico (0 : ℝ) 1) :
       ‖t * fderiv ℝ a (x + (s * t) • e) e‖ ≤ |t| * L := by
     rw [norm_mul, Real.norm_eq_abs]
@@ -136,38 +136,36 @@ theorem quotient_star {n : ℕ} (f : Space n → ℂ) (k : Fin n) (t : ℝ) :
 
 end DifferenceTestAtoms
 
-private theorem flux_matrix_bound {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ} (D : Coefficients B cρ Cρ κ Λ)
+theorem flux_matrix_bound {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ} (D : Coefficients B cρ Cρ κ Λ)
     (hκ : 0 < κ) (x : Space n) (hx : x ∈ B.carrier) (i j : Fin n) :
     |D.matrix x i j| ≤ |Λ| := by
   classical
   have hd (k : Fin n) : 0 ≤ D.matrix x k k := by
     have h := D.ellipticity x hx (EuclideanSpace.single k 1)
-    simp [EuclideanSpace.norm_single, EuclideanSpace.single_apply] at h
+    simp at h
     linarith
   have hu (k : Fin n) : D.matrix x k k ≤ Λ := by
     have h := D.upper_bound x hx (EuclideanSpace.single k 1)
-    simpa [EuclideanSpace.norm_single, EuclideanSpace.single_apply] using h
+    simp_all
   by_cases hij : i = j
   · subst j
     rw [abs_of_nonneg (hd i)]
     exact (hu i).trans (le_abs_self Λ)
   have hnorm (t : ℝ) :
       ‖(EuclideanSpace.single i 1 + EuclideanSpace.single j t : Space n)‖ ^ 2 = 1 + t ^ 2 := by
-    simp [EuclideanSpace.norm_sq_eq, PiLp.add_apply, EuclideanSpace.single_apply,
-      add_sq, Finset.sum_add_distrib, hij, Ne.symm hij]
+    simp [EuclideanSpace.norm_sq_eq, PiLp.add_apply, add_sq, Finset.sum_add_distrib, Ne.symm hij]
   have hquad (t : ℝ) := D.upper_bound x hx
     (EuclideanSpace.single i 1 + EuclideanSpace.single j t)
   simp only [hnorm] at hquad
   have hq (t : ℝ) :
       D.matrix x i i + 2 * D.matrix x i j * t + D.matrix x j j * t ^ 2 ≤ Λ * (1 + t ^ 2) := by
     have h := hquad t
-    simp [PiLp.add_apply, mul_add, add_mul, Finset.sum_add_distrib,
-      EuclideanSpace.single_apply, D.symmetric x hx j i] at h
+    simp [PiLp.add_apply, mul_add, add_mul, Finset.sum_add_distrib, D.symmetric x hx j i] at h
     nlinarith [h]
   apply abs_le.mpr
   constructor <;> nlinarith [hq 1, hq (-1), hd i, hd j, le_abs_self Λ]
 
-private theorem flux_density_memLp {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}
+theorem flux_density_memLp {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}
     (D : Coefficients B cρ Cρ κ Λ) (hcρ : 0 < cρ) :
     MemLp (fun x => (D.density x : ℂ)) ⊤ (volume.restrict B.carrier) := by
   apply memLp_top_of_bound
@@ -178,7 +176,7 @@ private theorem flux_density_memLp {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : 
   rw [abs_of_nonneg (le_trans hcρ.le (D.density_bounds x hx).1)]
   exact (D.density_bounds x hx).2
 
-private theorem flux_matrix_memLp {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}
+theorem flux_matrix_memLp {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}
     (D : Coefficients B cρ Cρ κ Λ) (hκ : 0 < κ) (i j : Fin n) :
     MemLp (fun x => (D.matrix x i j : ℂ)) ⊤ (volume.restrict B.carrier) := by
   apply memLp_top_of_bound
@@ -187,14 +185,14 @@ private theorem flux_matrix_memLp {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : �
   filter_upwards [ae_restrict_mem Metric.isOpen_ball.measurableSet] with x hx
   simpa using flux_matrix_bound D hκ x hx i j
 
-private theorem flux_cutoffGradient_memLp {n : ℕ} {B : LocalBall n}
+theorem flux_cutoffGradient_memLp {n : ℕ} {B : LocalBall n}
     (η : TestFunction B.toOpens ℝ ⊤) (q : IntegerSobolev B 1) (i : Fin n) :
     MemLp (cutoffGradient η q i) 2 volume := by
   obtain ⟨v, hv, hg⟩ := KPContLocalEnergy.SobolevEnergyEstimates.multiply_smooth_compact B η q
   apply (memLp_indicator_iff_restrict (s := B.carrier) Metric.isOpen_ball.measurableSet.nullMeasurableSet).2
   exact (Lp.memLp (gradient v i)).ae_eq (hg i)
 
-private theorem flux_pairing {n : ℕ} (mid outer : LocalBall n)
+theorem flux_pairing {n : ℕ} (mid outer : LocalBall n)
     (f g : Space n → ℂ) (hf : MemLp f 2 (volume.restrict outer.carrier))
     (hg : MemLp g 2 volume) (hgs : ∀ x, x ∉ mid.carrier → g x = 0)
     (k : Fin n) (t : ℝ) :
@@ -327,7 +325,3 @@ theorem difference_flux_identity_of_tested {n : ℕ} (mid outer : LocalBall n)
   change (∫ x in mid.carrier, ∑ i, ∑ j, E i j x) = _
   rw [← henergy]
   exact sub_eq_iff_eq_add.mp hpde |>.trans (add_comm _ _)
-
-end DedekindZetaZeroFree.WeakH2.FluxRaw
-
-end

@@ -41,5 +41,3 @@ theorem hasProd_finsupp_euler {P : Type u} (w : (P →₀ ℕ) → ℂ)
   change Filter.Tendsto (fun S : Finset P => ∏ p ∈ S,
     (1 - w (Finsupp.single p 1))⁻¹) Filter.atTop (nhds (∑' e : P →₀ ℕ, w e))
   simpa only [heq] using hconv
-
-end DedekindZetaZeroFree.LargeSieve.IdealEuler

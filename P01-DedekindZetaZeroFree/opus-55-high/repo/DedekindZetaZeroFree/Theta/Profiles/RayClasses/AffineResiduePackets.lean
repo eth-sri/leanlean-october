@@ -120,7 +120,3 @@ def coprimeIdealResiduePacket (hF : NumberField.IsTotallyComplex F)
   exact ∑ q : coprimeIdealResidue F m a hm ha,
     coprimeIdealResidueCoefficient hF m a hm ha hcop hmt η E q *
       coprimeIdealResiduePhase m a hm ha q β
-
-end DedekindZetaZeroFree.Hecke.Theta
-
-end

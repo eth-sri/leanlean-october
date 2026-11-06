@@ -126,8 +126,3 @@ theorem hilbert_laplacian
       exact (closedGradientFriedrichsOperator_variational D hd hc ⟨u, hu⟩ h).mpr hform
   · exact (KPTestGreenTransfer.friedrichs_extends_test_laplacian
       ι hι j hj A B hscalar hcotangent hgreen).2
-
-end KPTestFriedrichs
-end DedekindZetaZeroFree
-
-end

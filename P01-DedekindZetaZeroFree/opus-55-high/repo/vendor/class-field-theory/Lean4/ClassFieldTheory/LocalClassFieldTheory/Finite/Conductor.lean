@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Conductors of finite abelian local extensions
 
@@ -149,7 +144,3 @@ theorem localConductorIdeal_eq_one_iff
       LocalFieldTheory.fieldPrincipalUnits K 0 ≤ localNormSubgroup K L :=
   (localConductorIdeal_eq_one_iff_exponent_eq_zero K L).trans
     (localConductorExponent_eq_zero_iff K L)
-
-end LocalClassFieldTheory
-
-end

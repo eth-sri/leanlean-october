@@ -242,13 +242,13 @@ private lemma mem_OmegaStar_line (p : EulerDomain.Coordinates) (h1 : p.1.re = 4)
   rw [h1, h2]
   refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> linarith
 
-private theorem re_facts (t : ℝ × ℝ × ℝ) :
+theorem re_facts (t : ℝ × ℝ × ℝ) :
     ((4 : ℂ) + (t.1 : ℂ) * I).re = 4 ∧ ((4 : ℂ) + (t.2.1 : ℂ) * I).re = 4 ∧
     (((Scales.tailShift : ℝ) : ℂ) + (t.2.2 : ℂ) * I).re = Scales.tailShift ∧
     (6 * (((Scales.tailShift : ℝ) : ℂ) + (t.2.2 : ℂ) * I)).re = 6 * Scales.tailShift := by
   refine ⟨?_, ?_, ?_, ?_⟩ <;> simp
 
-private theorem cont_M (u : D.Row) :
+theorem cont_M (u : D.Row) :
     Continuous fun t : ℝ × ℝ × ℝ => D.M (((Scales.tailShift : ℝ) : ℂ) + (t.2.2 : ℂ) * I) := by
   have hR0 : (0 : ℝ) < Scales.tailShift := by norm_num [Scales.tailShift]
   refine D.M_differentiableOn.continuousOn.comp_continuous (by fun_prop) (fun t => ?_)
@@ -256,12 +256,12 @@ private theorem cont_M (u : D.Row) :
   show 0 < (((Scales.tailShift : ℝ) : ℂ) + (t.2.2 : ℂ) * I).re
   rw [this]; exact hR0
 
-private theorem meas_W :
+theorem meas_W :
     Measurable fun t : ℝ × ℝ × ℝ => D.W1Hat ((4 : ℂ) + (t.2.1 : ℂ) * I) :=
   (PrincipalMellinComparison.principal_real_weight_measurable D.recipe).comp
     (Continuous.measurable (by fun_prop))
 
-private theorem cont_zeta :
+theorem cont_zeta :
     Continuous fun t : ℝ × ℝ × ℝ =>
       D.zetaSCont (6 * (((Scales.tailShift : ℝ) : ℂ) + (t.2.2 : ℂ) * I)) := by
   refine (RightHeckeBounds.zetaSCont_analyticOnNhd D).continuousOn.comp_continuous
@@ -276,7 +276,7 @@ private theorem cont_zeta :
     rw [h6] at h2
     norm_num [Scales.tailShift] at h2
 
-private theorem cont_Lpsi (u : D.Row) :
+theorem cont_Lpsi (u : D.Row) :
     Continuous fun t : ℝ × ℝ × ℝ => D.Lpsi u ((4 : ℂ) + (t.2.1 : ℂ) * I) := by
   refine (D.Lpsi_analyticOnNhd u).continuousOn.comp_continuous (by fun_prop) (fun t => ?_)
   have h4 := (re_facts t).2.1
@@ -289,7 +289,7 @@ private theorem cont_Lpsi (u : D.Row) :
     rw [h4] at h2
     norm_num at h2
 
-private theorem cont_Llam (u : D.Row) :
+theorem cont_Llam (u : D.Row) :
     Continuous fun t : ℝ × ℝ × ℝ => D.Llam u ((4 : ℂ) + (t.1 : ℂ) * I) := by
   refine (D.Llam_analyticOnNhd u).continuousOn.comp_continuous (by fun_prop) (fun t => ?_)
   have h4 := (re_facts t).1

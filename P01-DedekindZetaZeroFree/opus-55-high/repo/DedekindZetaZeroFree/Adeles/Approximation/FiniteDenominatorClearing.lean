@@ -68,4 +68,3 @@ theorem finiteAdele_exists_integral_denominator_mem_range
   refine ⟨d, hd, ?_⟩
   rw [RestrictedProduct.range_structureMap]
   exact hcoords
-end DedekindZetaZeroFree

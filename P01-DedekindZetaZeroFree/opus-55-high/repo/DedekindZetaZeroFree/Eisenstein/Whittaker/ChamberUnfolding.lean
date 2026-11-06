@@ -16,7 +16,7 @@ variable (F : Type) [Field F] [NumberField F]
  abbrev A := NumberField.AdeleRing (𝓞 F) F
  abbrev Q := A F ⧸ NumberField.AdeleRing.principalSubgroup (𝓞 F) F
 
-private theorem weighted_period (dx : Measure (A F)) (dq : Measure (Q F))
+theorem weighted_period (dx : Measure (A F)) (dq : Measure (Q F))
     [dx.IsAddHaarMeasure] [dq.IsAddHaarMeasure] [IsProbabilityMeasure dq]
     (hcompat : KPChamberAdditivePeriodization.CompatibleHaar F dx dq)
     (h : A F → ℂ) (hmeas : Measurable h) (hint : Integrable h dx)
@@ -58,7 +58,7 @@ private theorem weighted_period (dx : Measure (A F)) (dq : Measure (Q F))
       (fun q => KPChamberAdditivePeriodization.complexPeriod F h q * star (χ q : ℂ)) := funext hweq
   rw [heq] at hi
   exact hi
-private theorem two_cells_weighted
+theorem two_cells_weighted
     {G : Type*} [Group G]
     (r : Matrix.ProjGenLinGroup (Fin 2) F →* G)
     (n : Multiplicative (A F) →* G) (f : G → ℂ)

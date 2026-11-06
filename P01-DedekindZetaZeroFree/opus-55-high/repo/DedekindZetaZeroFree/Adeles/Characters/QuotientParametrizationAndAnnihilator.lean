@@ -58,7 +58,7 @@ open NumberField KPAdelicTopology KPAdelicDiagonal
 
 variable (F : Type) [Field F] [NumberField F]
 
-private theorem arch_pairing (x y : InfiniteAdeleRing F) :
+theorem arch_pairing (x y : InfiniteAdeleRing F) :
     adelicTraceCharacter F ((x * y, 0) : Adeles F) =
       Circle.exp (2 * Real.pi * KPArchTrace.infiniteTracePairing F x y) := by
   classical
@@ -93,7 +93,7 @@ private theorem arch_pairing (x y : InfiniteAdeleRing F) :
     | empty => intro f; simp
     | insert a s ha ih =>
         intro f
-        rw [Finset.sum_insert ha, Finset.prod_insert ha, Circle.exp_add, ih]
+        simp_all
   rw [hp, adelicTraceCharacter_apply, Finset.mul_sum, hprod]
   have hf : (∏ᶠ v : IsDedekindDomain.HeightOneSpectrum (𝓞 F),
       localFiniteCharacter F v ((0 : FiniteAdeles F) v)) = 1 := by
@@ -103,7 +103,7 @@ private theorem arch_pairing (x y : InfiniteAdeleRing F) :
   rw [hf, mul_one]
   rfl
 
-private theorem frequency_unique (s t : F)
+theorem frequency_unique (s t : F)
     (h : ∀ a : Adeles F, adelicTraceCharacter F (algebraMap F (Adeles F) s * a) =
       adelicTraceCharacter F (algebraMap F (Adeles F) t * a)) : s = t := by
   apply AdeleRing.algebraMap_injective (RingOfIntegers F) F
@@ -111,9 +111,7 @@ private theorem frequency_unique (s t : F)
   apply (adelicTraceCharacter_nondegenerate F _).mp
   intro a
   rw [sub_mul, (adelicTraceCharacter F).map_sub_eq_div]
-  change adelicTraceCharacter F (algebraMap F (Adeles F) s * a) /
-    adelicTraceCharacter F (algebraMap F (Adeles F) t * a) = 1
-  rw [h, div_self']
+  simp_all
 
 theorem character_parametrization (χ : AddChar (Adeles F) Circle)
     (hχ : Continuous (χ : Adeles F → Circle))
@@ -157,7 +155,7 @@ theorem character_parametrization (χ : AddChar (Adeles F) Circle)
           x * algebraMap F (InfiniteAdeleRing F) t
         exact mul_comm _ _
       · change algebraMap F (FiniteAdeles F) t * 0 = 0
-        exact mul_zero _
+        simp
     rw [hm, arch_pairing]
   let ψ := (adelicTraceCharacter F).mulShift (algebraMap F (Adeles F) t)
   have hψ : Continuous ψ := (continuous_adelicTraceCharacter F).comp
@@ -221,8 +219,3 @@ theorem quotient_character_parametrization
     intro a
     change χ (quotientMap F a) = _
     rw [hs, rationalTraceQuotientCharacter_mk]
-
-end DedekindZetaZeroFree.KPAdelicQuotient
-
-end
-end

@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Finiteness of localized-completion Herbrand groups
 -/
@@ -26,7 +23,6 @@ open CyclicCohomology
 open CyclicCohomology.ProfiniteCohomology.Herbrand
 open scoped TensorProduct
 
-noncomputable section
 
 namespace LocalClassFieldTheory
 
@@ -164,10 +160,3 @@ theorem localHerbrandHMinusOneFinite
         (LocalizedCompletion vK w)) (-1))
     (localHerbrandHMinusOneEquivUnitsTateHminusOne
       vK hvK w σ hgen).symm
-
-
-end LocalTateComparison
-
-end LocalClassFieldTheory
-
-end

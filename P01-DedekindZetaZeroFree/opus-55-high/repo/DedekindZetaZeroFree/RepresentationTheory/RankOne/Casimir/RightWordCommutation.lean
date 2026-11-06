@@ -40,11 +40,11 @@ local notation "R" => productRightDerivative (F := F)
     2 * (R (v,2) (R (v,4) f) m + R (v,4) (R (v,2) f) m -
       R (v,3) (R (v,5) f) m - R (v,5) (R (v,3) f) m))
 
-private theorem R_smooth (b : B) (f : MP → ℂ) (hf : ContDiffOn ℝ (⊤ : ℕ∞) f O) :
+theorem R_smooth (b : B) (f : MP → ℂ) (hf : ContDiffOn ℝ (⊤ : ℕ∞) f O) :
     ContDiffOn ℝ (⊤ : ℕ∞) (R b f) O :=
   productRightDerivative_smooth b f invertibleProducts_open hf
 
-private theorem slot_smooth (v : NumberField.InfinitePlace F) (f : MP → ℂ)
+theorem slot_smooth (v : NumberField.InfinitePlace F) (f : MP → ℂ)
     (hf : ContDiffOn ℝ (⊤ : ℕ∞) f O) : ContDiffOn ℝ (⊤ : ℕ∞) (slotCasimir v f) O := by
   unfold slotCasimir
   exact contDiffOn_const.mul (((R_smooth _ _ (R_smooth _ _ hf)).sub
@@ -52,7 +52,7 @@ private theorem slot_smooth (v : NumberField.InfinitePlace F) (f : MP → ℂ)
     ((((R_smooth _ _ (R_smooth _ _ hf)).add (R_smooth _ _ (R_smooth _ _ hf))).sub
       (R_smooth _ _ (R_smooth _ _ hf))).sub (R_smooth _ _ (R_smooth _ _ hf)))))
 
-private theorem R_congr (b : B) {f h : MP → ℂ} (he : Set.EqOn f h O)
+theorem R_congr (b : B) {f h : MP → ℂ} (he : Set.EqOn f h O)
     {m : MP} (hm : m ∈ O) : R b f m = R b h m := by
   unfold productRightDerivative
   apply Filter.EventuallyEq.deriv_eq
@@ -81,7 +81,7 @@ private theorem R_congr (b : B) {f h : MP → ℂ} (he : Set.EqOn f h O)
   · simpa [hw] using ha
   · simpa [hw] using hm w
 
-private theorem slice_R (v : NumberField.InfinitePlace F) (j : Fin 6) (f : MP → ℂ)
+theorem slice_R (v : NumberField.InfinitePlace F) (j : Fin 6) (f : MP → ℂ)
     (m : MP) (a : Matrix (Fin 2) (Fin 2) ℂ) :
     R (v,j) f (Function.update m v a) =
       matrixRightDerivative (KPSmoothActualFlowData.basisMatrix j)
@@ -89,7 +89,7 @@ private theorem slice_R (v : NumberField.InfinitePlace F) (j : Fin 6) (f : MP �
   unfold productRightDerivative matrixRightDerivative
   simp
 
-private theorem slice_slot (v : NumberField.InfinitePlace F) (f : MP → ℂ)
+theorem slice_slot (v : NumberField.InfinitePlace F) (f : MP → ℂ)
     (m : MP) (a : Matrix (Fin 2) (Fin 2) ℂ) :
     slotCasimir v f (Function.update m v a) =
       -((1 : ℂ)/4) *
@@ -108,7 +108,7 @@ private theorem slice_slot (v : NumberField.InfinitePlace F) (f : MP → ℂ)
   unfold slotCasimir
   simp_rw [slice_R]
 
-private theorem R_add (b : B) (f h : MP → ℂ)
+theorem R_add (b : B) (f h : MP → ℂ)
     (hf : ContDiffOn ℝ (⊤ : ℕ∞) f O) (hh : ContDiffOn ℝ (⊤ : ℕ∞) h O)
     (m : MP) (hm : m ∈ O) : R b (fun n => f n + h n) m = R b f m + R b h m := by
   have hd := (hf.differentiableOn (by simp)).differentiableAt (invertibleProducts_open.mem_nhds hm)
@@ -118,7 +118,7 @@ private theorem R_add (b : B) (f h : MP → ℂ)
     productRightDerivative_eq_fderiv _ _ _ hd, productRightDerivative_eq_fderiv _ _ _ he]
   rfl
 
-private theorem R_sub (b : B) (f h : MP → ℂ)
+theorem R_sub (b : B) (f h : MP → ℂ)
     (hf : ContDiffOn ℝ (⊤ : ℕ∞) f O) (hh : ContDiffOn ℝ (⊤ : ℕ∞) h O)
     (m : MP) (hm : m ∈ O) : R b (fun n => f n - h n) m = R b f m - R b h m := by
   have hd := (hf.differentiableOn (by simp)).differentiableAt (invertibleProducts_open.mem_nhds hm)
@@ -170,7 +170,7 @@ private theorem slot_commute_distinct (b : B) (v : NumberField.InfinitePlace F) 
   exact six_flow_pauli_normalization _ (isOpen_ne.preimage (by fun_prop))
     (slice_smooth v m hm f hf) a ha
 
-private theorem slot_commute_same (v : NumberField.InfinitePlace F) (j : Fin 6)
+theorem slot_commute_same (v : NumberField.InfinitePlace F) (j : Fin 6)
     (f : MP → ℂ) (hf : ContDiffOn ℝ (⊤ : ℕ∞) f O) (m : MP) (hm : m ∈ O) :
     slotCasimir v (R (v,j) f) m = R (v,j) (slotCasimir v f) m := by
   let phi := fun a => f (Function.update m v a)
@@ -199,7 +199,7 @@ private theorem slot_commute_same (v : NumberField.InfinitePlace F) (j : Fin 6)
 
  def productCasimir (f : MP → ℂ) : MP → ℂ := fun m => ∑ v, slotCasimir v f m
 
-private theorem R_sum {ι : Type} (u : Finset ι) (b : B) (f : ι → MP → ℂ)
+theorem R_sum {ι : Type} (u : Finset ι) (b : B) (f : ι → MP → ℂ)
     (hf : ∀ i ∈ u, ContDiffOn ℝ (⊤ : ℕ∞) (f i) O) (m : MP) (hm : m ∈ O) :
     R b (fun n => ∑ i ∈ u, f i n) m = ∑ i ∈ u, R b (f i) m := by
   have hd (i) (hi : i ∈ u) := (hf i hi).differentiableOn (by simp)
@@ -226,7 +226,7 @@ private theorem product_commute (b : B) (f : MP → ℂ)
   · subst v; exact slot_commute_same _ _ f hf m hm
   · exact slot_commute_distinct b v hv f hf m hm
 
-private theorem productWord_smooth (w : List B) (f : MP → ℂ)
+theorem productWord_smooth (w : List B) (f : MP → ℂ)
     (hf : ContDiffOn ℝ (⊤ : ℕ∞) f O) :
     ContDiffOn ℝ (⊤ : ℕ∞) (productRightWord w f) O := by
   induction w with
@@ -264,7 +264,7 @@ private theorem product_word_commute (w : List B) (f : MP → ℂ)
   simp only [matrixPullback_at_units] at he
   simp_rw [he]
 
-private theorem matrixPullback_casimir_eqOn (f : G → ℂ) (g : G) :
+theorem matrixPullback_casimir_eqOn (f : G → ℂ) (g : G) :
     Set.EqOn (matrixPullback (KPMsGreenFlux.casimir F ζ hζ f) g)
       (productCasimir (matrixPullback f g)) O := by
   intro m hm

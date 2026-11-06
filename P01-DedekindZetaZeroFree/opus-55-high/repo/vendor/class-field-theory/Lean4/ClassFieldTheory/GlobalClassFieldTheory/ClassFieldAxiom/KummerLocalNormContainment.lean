@@ -16,14 +16,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Local norm containment for Kummer extensions
 
@@ -38,7 +30,6 @@ open HilbertRamification
 open KummerTheory
 open LocalFieldTheory
 
-noncomputable section
 
 namespace GlobalClassFieldTheory.ClassFieldAxiom
 
@@ -58,15 +49,13 @@ theorem galois_pow_eq_one_of_field_equiv_pi_zmod
   apply eG.injective
   rw [map_pow, map_one]
   ext i
-  apply Multiplicative.toAdd.injective
-  change (n : ℕ) • Multiplicative.toAdd (eG sigma i) = 0
   simp
 
 /-- Local `n`-th powers are norms from the chosen finite-place
 completion when every global Galois automorphism has exponent dividing
 `n`.  This is the shared local-field core used by the coordinate and
 simple-Kummer wrappers below. -/
-private theorem
+theorem
     nthPowerSubgroup_le_chosenFinitePlaceLocalNormSubgroup_of_galois_pow_eq_one
     {K L : Type}
     [Field K] [NumberField K]
@@ -171,15 +160,9 @@ private theorem
         vK.Completion E).map e.toMonoidHom
   refine ⟨(e.symm y) ^ (n : ℕ), ?_, ?_⟩
   · rw [← LocalClassFieldTheory.localArtinMonoidHom_ker]
-    change
-      LocalClassFieldTheory.localArtinMonoidHom
-          vK.Completion E ((e.symm y) ^ (n : ℕ)) = 1
-    rw [map_pow]
-    exact hAbelianized
-      (LocalClassFieldTheory.localArtinMonoidHom
-        vK.Completion E (e.symm y))
+    simp_all
   · change e ((e.symm y) ^ (n : ℕ)) = y ^ (n : ℕ)
-    rw [map_pow, e.apply_symm_apply]
+    simp
 
 /-- Local `n`-th powers are norms from the chosen finite-place
 completion when the global Galois group has exponent dividing `n`. -/
@@ -240,8 +223,3 @@ theorem chosenSimpleKummerNthPowerSubgroup_le_chosenFinitePlaceLocalNormSubgroup
       (K := K) (L := E) n
       (KummerTheory.chosenSimpleKummerExtension_galois_pow_eq_one
         K n hnK hmu b) v
-
-
-end GlobalClassFieldTheory.ClassFieldAxiom
-
-end

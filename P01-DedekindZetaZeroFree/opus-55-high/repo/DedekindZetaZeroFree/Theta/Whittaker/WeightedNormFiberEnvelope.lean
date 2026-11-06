@@ -8,10 +8,8 @@ public import DedekindZetaZeroFree.Adeles.Quotients.NormSheets.RemainingCoordina
 @[expose] public section
 
 namespace DedekindZetaZeroFree.ThetaRawSheetEnvelope.WeightedWhittakerSheets
-noncomputable section
 open MeasureTheory NumberField
 open scoped Classical
-set_option autoImplicit false
 variable {F : Type} [Field F] [NumberField F]
 
 theorem archPowerMajorant_le_rpow_neg (B s r : ℝ) (hr : 0 < r)
@@ -49,7 +47,7 @@ theorem productPowerMajorant_le_sheet_bound (A : SArithmeticData F)
       (Finset.prod_pos fun w _ => pow_pos (norm_pos_iff.mpr (Units.ne_zero _)) 2)
       (Finset.prod_pos fun v _ => norm_pos_iff.mpr (Units.ne_zero _))
   have hrpos : 0 < ‖(y.1 v₀ : v₀.Completion)‖ ^ 2 :=
-    pow_pos (norm_pos_iff.mpr (Units.ne_zero _)) 2
+    by simp
   have hxpos : (0 : ℝ) < (x : ℝ) := x.property
   have hkey : ‖(y.1 v₀ : v₀.Completion)‖ ^ 2 * R = (x : ℝ) := by
     rw [hR, ← mul_assoc, ← hsplit]
@@ -230,7 +228,7 @@ theorem product_power_majorant_sheet_bound (A : SArithmeticData F)
       { toFun := fun v => ⟨v.val.val, fun h => v.property (Subtype.ext h)⟩
         invFun := fun v => ⟨⟨v.val, A.complex_place v.val⟩,
           fun h => v.property (congrArg Subtype.val h)⟩
-        left_inv := fun v => by apply Subtype.ext; apply Subtype.ext; rfl
+        left_inv := fun v => by rfl
         right_inv := fun v => by rfl }
     have hprod : (∏ v : NormSheetRemainingCoordinates.RemainingComplex w,
         ((‖((P t).1 v).val‖ ^ 2) ^ s) * archPowerMajorant B (‖((P t).1 v).val‖ ^ 2)) =
@@ -271,7 +269,7 @@ theorem product_power_majorant_sheet_bound (A : SArithmeticData F)
           ((show Continuous (fun y : ThetaProfileHaarSheets.Sheet A x =>
             ‖(y.val.2 v : v.val.adicCompletion F)‖) by fun_prop).rpow_const
               (fun _ => Or.inr (by norm_num)))).measurable
-      · exact measurable_const
+      simp
     · apply Finset.measurable_prod
       intro v hv
       apply Continuous.measurable
@@ -282,16 +280,16 @@ theorem product_power_majorant_sheet_bound (A : SArithmeticData F)
       · exact (show Continuous (fun y : ThetaProfileHaarSheets.Sheet A x =>
           ‖(y.val.1 v : v.Completion)‖ ^ 2) by fun_prop).rpow_const
           (fun y => Or.inl (ne_of_gt (pow_pos (norm_pos_iff.mpr (Units.ne_zero _)) 2)))
-  have hgT : AEStronglyMeasurable (g ∘ T) dt := by
-    exact hgmeas.comp_measurable T.measurable
+  have hgT : AEStronglyMeasurable (g ∘ T) dt := 
+    hgmeas.comp_measurable T.measurable
   have hiT : Integrable (g ∘ T) dt := by
     apply (hfi.const_mul ((x : ℝ) ^ (-s))).mono' hgT
     filter_upwards [] with t
     change ‖productPowerMajorant A M B (T t).val‖ ≤ (x : ℝ) ^ (-s) * f (P t)
     rw [Real.norm_eq_abs, abs_of_nonneg (productPowerMajorant_nonneg A M B _)]
     exact hbound t
-  have hi : Integrable g (ThetaProfileHaarSheets.sheetHaar A v₀ μG x) := by
-    exact (integrable_map_measure hgmeas T.measurable.aemeasurable).2 hiT
+  have hi : Integrable g (ThetaProfileHaarSheets.sheetHaar A v₀ μG x) := 
+    (integrable_map_measure hgmeas T.measurable.aemeasurable).2 hiT
   refine ⟨hi, ?_⟩
   have heq : (∫ y, g y ∂ThetaProfileHaarSheets.sheetHaar A v₀ μG x) =
       ∫ t, g (T t) ∂dt := integral_map T.measurable.aemeasurable hgmeas
@@ -303,6 +301,3 @@ theorem product_power_majorant_sheet_bound (A : SArithmeticData F)
     _ ≤ E * (x : ℝ) ^ (-s) := by
       have : (∫ t, f (P t) ∂dt) ≤ E := by dsimp [E]; linarith
       simpa [mul_comm] using mul_le_mul_of_nonneg_left this (Real.rpow_nonneg x.property.le _)
-
-end
-end DedekindZetaZeroFree.ThetaRawSheetEnvelope.WeightedWhittakerSheets

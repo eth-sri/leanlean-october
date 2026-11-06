@@ -12,7 +12,6 @@ open scoped NumberField Valued
 open NumberField IsDedekindDomain MeasureTheory ValuativeRel
 open KPLocalExceptionalConstruction KPLocalStoneVonNeumann KPLocalPrincipalSeries
 open KPRankOneShellContinuation KPRankOneShellRepair
-set_option autoImplicit false
 set_option maxHeartbeats 800000
 set_option backward.isDefEq.respectTransparency false
 
@@ -64,8 +63,8 @@ theorem actual_test_family_chamber
       ∫ u : LocalField F q,
         ((testDeformation F ζ hζ q S P f s).val
           (kernelW (LocalField F q) S.borel .minus *
-            S.borel.upperRoot (Multiplicative.ofAdd u) * g)).val h ∂μ := by
-  exact actualCanonicalContinued_chamber F q ζ hζ S P μ hμ .minus s hs
+            S.borel.upperRoot (Multiplicative.ofAdd u) * g)).val h ∂μ := 
+  actualCanonicalContinued_chamber F q ζ hζ S P μ hμ .minus s hs
     (testCompact F ζ hζ q S P f) g h
 
 end DedekindZetaZeroFree.ActualReverseMinorTestIntegral
@@ -87,7 +86,6 @@ open _root_.DedekindZetaZeroFree.ActualReverseMinorTestIntegral renaming testDef
 open _root_.DedekindZetaZeroFree.ActualReverseMinorTestIntegral renaming actualTestFamily → actualTestFamily
 open _root_.DedekindZetaZeroFree.ActualReverseMinorTestIntegral renaming actual_test_family_zero → actual_test_family_zero
 open _root_.DedekindZetaZeroFree.ActualReverseMinorTestIntegral renaming actual_test_family_chamber → actual_test_family_chamber
-set_option autoImplicit false
 set_option maxHeartbeats 1000000
 set_option backward.isDefEq.respectTransparency false
 variable (F : Type) [Field F] [NumberField F]
@@ -196,7 +194,7 @@ theorem numerator_family
         (inducingAction S.borel P .plus s (S.iwasawa.borelPart g)
           ((actualCanonicalContinued F q ζ hζ S P μ hμ .minus s φ₀).val
             (S.iwasawa.compactPart g))).val 1
-      rw [neg_neg]
+      simp
     rw [hr, he]
     have hv : ((continuedLevel (LocalField F q) S.borel P S.iwasawa J .minus p s φ).val :
         compactPicture S.borel P S.iwasawa .plus) =
@@ -243,14 +241,14 @@ private theorem outer_family
       change Continuous (fun x : LocalField F q =>
         (S.borel.upperRoot (Multiplicative.ofAdd x) : ActualCover F ζ hζ q)) at hc
       simpa only [he, KPRankOneOpenCellKernel.nLift] using hc
-    exact continuous_const.mul (hn.comp continuous_subtype_val)
+    fun_prop
   have hG : IsLocallyConstant (H ∘ g) := hH.comp_continuous hg
   let B : ℂ → ℂ := fun s => ∑ y ∈ hG.range_finite.toFinset, ν.real ((H ∘ g) ⁻¹' {y}) • y s
   refine ⟨B, ?_, ?_⟩
   · apply Differentiable.fun_sum
     intro y hy
     obtain ⟨x, rfl⟩ := hG.range_finite.mem_toFinset.mp hy
-    exact (hdH (g x)).const_smul (ν.real ((H ∘ g) ⁻¹' {(H ∘ g) x}))
+    simp_all
   · intro s hs
     dsimp only [B]
     rw [← finite_family_integral ν (H ∘ g) hG s]
@@ -315,9 +313,3 @@ theorem actual_lowShell_continuation_of_numerator
   rw [hQ0] at he
   simp_rw [actual_test_family_zero F ζ hζ q S P μ hμ f] at he
   rw [← he, ← mul_assoc, inv_mul_cancel₀ hd, one_mul]
-
-end DedekindZetaZeroFree.ActualReverseMinorLowShell
-
-end
-
-end

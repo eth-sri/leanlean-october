@@ -10,7 +10,6 @@ open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.KPEffectiveDiagonalMultiplier
 
 noncomputable section
-set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
@@ -50,14 +49,14 @@ theorem C_eq_B6_square (v : KPHilbert.Place F)
   rw [← Complex.inv_eq_conj (Complex.norm_eq_one_of_pow_eq_one hc (by decide)),
     hp, map_inv, Units.val_inv_eq_inv_val, inv_inv]
 
-private theorem B6_zpow_left (v : KPHilbert.Place F)
+theorem B6_zpow_left (v : KPHilbert.Place F)
     (a b : (KPHilbert.Completion F v)ˣ) (e : ℤ) :
     KPHilbert.B6 F ζ hζ v (a ^ e) b = KPHilbert.B6 F ζ hζ v a b ^ e := by
   let h := MonoidHom.mk' (fun a => KPHilbert.B6 F ζ hζ v a b)
     (fun a c => (KPHilbert.B6_laws F ζ hζ v).1 a c b)
   exact h.map_zpow a e
 
-private theorem B6_zpow_right (v : KPHilbert.Place F)
+theorem B6_zpow_right (v : KPHilbert.Place F)
     (a b : (KPHilbert.Completion F v)ˣ) (e : ℤ) :
     KPHilbert.B6 F ζ hζ v a (b ^ e) = KPHilbert.B6 F ζ hζ v a b ^ e := by
   let h := MonoidHom.mk' (fun b => KPHilbert.B6 F ζ hζ v a b)
@@ -100,8 +99,3 @@ theorem C_valuation_units
   simp only [← zpow_natCast, mul_zpow, inv_zpow, ← zpow_mul, ← zpow_neg]
   rw [mul_comm]
   congr 1 <;> congr 1 <;> ring
-
-end Tame
-
-end
-end DedekindZetaZeroFree.KPEffectiveDiagonalMultiplier

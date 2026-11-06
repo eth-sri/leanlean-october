@@ -134,8 +134,7 @@ lemma rectangle_limits (G : ℂ → ℂ) {a b : ℝ} (hab : a≤b)
     · intro z hz
       simpa [uIcc_of_le hab] using hz.1
   have hlim := ((hbot.sub htop).add (hb.const_mul I)).sub (ha.const_mul I)
-  have hz : (0:ℂ)-0+I*Vb-I*Va=0 := tendsto_nhds_unique hlim
-    (by simpa only [hrect] using (tendsto_const_nhds : Tendsto (fun _ : ℝ => (0:ℂ)) atTop (𝓝 0)))
+  have hz : (0:ℂ)-0+I*Vb-I*Va=0 := by simp_all
   exact (mul_left_cancel₀ I_ne_zero (show I*Vb=I*Va by simpa using sub_eq_zero.mp hz)).symm
 
 lemma horizontal_quotient_continuousOn (A : ℂ → ℂ) {a b p y : ℝ}
@@ -166,8 +165,8 @@ lemma dslope_horizontal_limit (A F : ℂ → ℂ) {a b p : ℝ} (hab : a≤b)
     intro h
     exact hy (by simpa using congrArg Complex.im h)
   have he (x : ℝ) (hx : x∈uIcc a b) := hF ((x:ℂ)+(ε*T)*I)
-    (by have := (uIcc_of_le hab ▸ hx).1; simpa using this)
-    (by have := (uIcc_of_le hab ▸ hx).2; simpa using this) (hn x)
+    (by simp_all)
+    (by simp_all) (hn x)
   have hfi : IntervalIntegrable (fun x : ℝ => F ((x:ℂ)+(ε*T)*I)) volume a b := by
     apply ((horizontal_quotient_continuousOn A (p:=p) hab hy hA).congr ?_).intervalIntegrable
     intro x hx
@@ -206,13 +205,13 @@ theorem simple_pole_of_boundary_control (A F : ℂ → ℂ) {a b p : ℝ}
       atTop (𝓝 ((∫ t : ℝ, F ((a:ℂ)+t*I)) - A p * (-(Real.pi:ℂ)))) := by
     simp_rw [dslope_vertical_truncated A F p a _ hap.ne
       (fun z hz => hF z (by simp [hz]) (by simpa [hz] using hab)
-        (by intro h; have := congrArg Complex.re h; simp [hz] at this; exact hap.ne this)) ha]
+        (by intro h; simp_all)) ha]
     exact haF.sub ((inverse_vertical_limit_neg (a-p) (sub_neg.mpr hap)).const_mul (A p))
   have hbG : Tendsto (fun T : ℝ => ∫ t : ℝ in -T..T, dslope A (p:ℂ) ((b:ℂ)+t*I))
       atTop (𝓝 ((∫ t : ℝ, F ((b:ℂ)+t*I)) - A p * (Real.pi:ℂ))) := by
     simp_rw [dslope_vertical_truncated A F p b _ hpb.ne'
       (fun z hz => hF z (by simpa [hz] using hab) (by simp [hz])
-        (by intro h; have := congrArg Complex.re h; simp [hz] at this; exact hpb.ne' this)) hb]
+        (by intro h; simp_all)) hb]
     exact hbF.sub ((inverse_vertical_limit_pos (b-p) (sub_pos.mpr hpb)).const_mul (A p))
   have hbotG := dslope_horizontal_limit A F hab hA hF (-1) (by norm_num)
     (by simpa using hbot)
@@ -225,7 +224,6 @@ theorem simple_pole_of_boundary_control (A F : ℂ → ℂ) {a b p : ℝ}
     linear_combination -he
   unfold comparisonVerticalIntegral
   rw [he']
-  push_cast
   have hpi : (Real.pi:ℂ)≠0 := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
   field_simp
   simp only [mul_comm]
@@ -310,6 +308,3 @@ theorem verticalIntegral_eq_of_strip_decay
     (intervalIntegral_tendsto_integral (hi b ⟨hab.le, le_rfl⟩) tendsto_neg_atTop_atBot tendsto_id)
     (by simpa using ComparisonShiftProof.horizontal_decay_limit f a b C (-1) hab.le (by norm_num) hbound)
     (by simpa using ComparisonShiftProof.horizontal_decay_limit f a b C 1 hab.le (by norm_num) hbound)
-
-end
-end DedekindZetaZeroFree

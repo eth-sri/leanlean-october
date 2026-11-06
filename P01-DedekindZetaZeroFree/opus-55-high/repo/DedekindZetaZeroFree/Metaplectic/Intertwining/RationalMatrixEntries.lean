@@ -11,7 +11,6 @@ namespace DedekindZetaZeroFree.KPActualResidueSources.UcProposal
 open KPLocalPrincipalSeries KPLocalStoneVonNeumann KPRankOneOpenCellKernel
 open KPRankOneLiftedRegulatedDiagonalAlgebra KPRankOneCenterInducedDiagonalComparison
 open KPActualScalarBinding
-set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
@@ -23,7 +22,3 @@ def actualUc (rep : S.D → KPExceptionalRaw.actualTorus F ζ hζ q)
     (c : (LocalField F q)ˣ) (s : ℂ) (h : KPExceptionalRaw.actualTorus F ζ hζ q) : ℂ :=
   doubleKernel F ζ hζ q S.heisenberg S.borel P (S.openCell P)
     rep hrep d (fun _ => 1) s 0 h 1 c 1 1
-
-end DedekindZetaZeroFree.KPActualResidueSources.UcProposal
-
-end

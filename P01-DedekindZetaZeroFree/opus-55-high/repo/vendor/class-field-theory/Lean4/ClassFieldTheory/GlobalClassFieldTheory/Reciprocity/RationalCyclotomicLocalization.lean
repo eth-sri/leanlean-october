@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Localized rational cyclotomic levels
 
@@ -39,7 +34,7 @@ namespace Reciprocity
 
 /-- A genuine primitive root in the actual `m`-th rational cyclotomic
 level. -/
-noncomputable def rationalCyclotomicLevelPrimitiveRoot
+def rationalCyclotomicLevelPrimitiveRoot
     (m : ℕ+) : KummerTheory.rationalCyclotomicLevel m :=
   Classical.choose
     (IsCyclotomicExtension.exists_isPrimitiveRoot
@@ -55,7 +50,7 @@ abbrev rationalCyclotomicAdicAbsoluteValue
 
 /-- The chosen extension of the rational finite-place absolute value to
 the actual `m`-th cyclotomic level. -/
-noncomputable def rationalCyclotomicChosenFinitePlaceExtension
+def rationalCyclotomicChosenFinitePlaceExtension
     (m : ℕ+) (v : HeightOneSpectrum (𝓞 ℚ)) :
     AbsoluteValueExtension
       (rationalCyclotomicAdicAbsoluteValue v)
@@ -65,7 +60,7 @@ noncomputable def rationalCyclotomicChosenFinitePlaceExtension
 
 /-- The canonical algebra structure on the selected extension completion
 over the rational finite completion. -/
-noncomputable instance rationalCyclotomicCompletionAlgebra
+instance rationalCyclotomicCompletionAlgebra
     (m : ℕ+) (v : HeightOneSpectrum (𝓞 ℚ)) :
     Algebra (rationalCyclotomicAdicAbsoluteValue v).Completion
       (rationalCyclotomicChosenFinitePlaceExtension m v).1.Completion :=
@@ -82,7 +77,7 @@ abbrev rationalCyclotomicLocalizedCompletion
     (rationalCyclotomicChosenFinitePlaceExtension m v)
 
 /-- The selected rational cyclotomic localization is finite over the finite completion. -/
-noncomputable instance rationalCyclotomicLocalizedCompletionFinite
+instance rationalCyclotomicLocalizedCompletionFinite
     (m : ℕ+) (v : HeightOneSpectrum (𝓞 ℚ)) :
     FiniteDimensional (rationalCyclotomicAdicAbsoluteValue v).Completion
       (rationalCyclotomicLocalizedCompletion m v) :=
@@ -92,7 +87,7 @@ noncomputable instance rationalCyclotomicLocalizedCompletionFinite
     (rationalCyclotomicChosenFinitePlaceExtension m v)
 
 /-- The selected rational cyclotomic localization is algebraic over the finite completion. -/
-noncomputable instance rationalCyclotomicLocalizedCompletionIsAlgebraic
+instance rationalCyclotomicLocalizedCompletionIsAlgebraic
     (m : ℕ+) (v : HeightOneSpectrum (𝓞 ℚ)) :
     Algebra.IsAlgebraic (rationalCyclotomicAdicAbsoluteValue v).Completion
       (rationalCyclotomicLocalizedCompletion m v) :=
@@ -130,7 +125,7 @@ attribute [local instance] rationalCyclotomicLocalizedCompletion_charZero
 
 /-- The actual global-to-local embedding of the selected rational
 cyclotomic level, regarded as a rational algebra homomorphism. -/
-noncomputable def rationalCyclotomicGlobalToLocalizedAlgHom
+def rationalCyclotomicGlobalToLocalizedAlgHom
     (m : ℕ+) (v : HeightOneSpectrum (𝓞 ℚ)) :
     KummerTheory.rationalCyclotomicLevel m →ₐ[ℚ]
       rationalCyclotomicLocalizedCompletion m v :=
@@ -154,7 +149,7 @@ theorem rationalCyclotomicGlobalToLocalizedAlgHom_apply
 
 /-- The image of the selected global primitive root in the algebraic
 localization at `v`. -/
-noncomputable def rationalCyclotomicLocalizedPrimitiveRoot
+def rationalCyclotomicLocalizedPrimitiveRoot
     (m : ℕ+) (v : HeightOneSpectrum (𝓞 ℚ)) :
     rationalCyclotomicLocalizedCompletion m v :=
   AbsoluteValue.toAlgebraicLocalization
@@ -274,8 +269,3 @@ theorem rationalCyclotomicLevel_localizedCompletion_isCyclotomicExtension
       (h := hζv.adjoin_isCyclotomicExtension
         (rationalCyclotomicAdicAbsoluteValue v).Completion)
       ((Subalgebra.equivOfEq _ _ hAdjoin).trans Subalgebra.topEquiv)
-
-end Reciprocity
-end GlobalClassFieldTheory
-
-end

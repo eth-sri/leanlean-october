@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Finite-stage unit differences of Frobenius primes
 
@@ -28,7 +25,6 @@ namespace ClassFormation
 open KummerTheory
 open CyclicCohomology
 
-noncomputable section
 
 open CategoryTheory
 
@@ -141,16 +137,15 @@ theorem frobeniusPrimeDifference_mem_infiniteUnitAddSubgroup
     exact P.above
   let πσP := fixedFieldInclusion A S P.field hPS πσ
   let πτP := fixedFieldInclusion A T P.field hPT πτ
-  have hπσP : v.IsPrimeElement Pi πσP := by
-    exact v.prime_of_unramified EPS hPSunramified πσ hπσ
-  have hπτP : v.IsPrimeElement Pi πτP := by
-    exact v.prime_of_unramified EPT hPTunramified πτ hπτ
+  have hπσP : v.IsPrimeElement Pi πσP := 
+    v.prime_of_unramified EPS hPSunramified πσ hπσ
+  have hπτP : v.IsPrimeElement Pi πτP := 
+    v.prime_of_unramified EPT hPTunramified πτ hπτ
   let uP : v.unitAddSubgroup Pi :=
     ⟨πσP - πτP,
       v.sub_mem_unitAddSubgroup_of_prime Pi hπτP hπσP⟩
   rw [v.mem_infiniteUnitAddSubgroup_iff]
   refine ⟨P, uP, ?_⟩
-  apply Subtype.ext
   rfl
 
 /-- The difference between a prime and any `G(\widetilde L/K)`-translate
@@ -211,8 +206,8 @@ theorem frobeniusPrime_actionDifference_mem_infiniteUnitAddSubgroup
   let hPSfinite : Finite
       (S.toSubgroup ⧸ extensionSubgroup S P.field hPS) :=
     FiniteIntermediateField.finite_extension_of_le P.below hSK hPS
-  let hPnormal : (extensionSubgroup K.field P.field P.below).Normal := by
-    exact FiniteIntermediateField.galoisRefinement_normal M
+  let hPnormal : (extensionSubgroup K.field P.field P.below).Normal := 
+    FiniteIntermediateField.galoisRefinement_normal M
   let EPS : FiniteAbstractFieldExtension G :=
     { field := Pi
       base := Sigma
@@ -232,8 +227,8 @@ theorem frobeniusPrime_actionDifference_mem_infiniteUnitAddSubgroup
     rw [hSI]
     exact P.above
   let πP := fixedFieldInclusion A S P.field hPS π
-  have hπP : v.IsPrimeElement Pi πP := by
-    exact v.prime_of_unramified EPS hPSunramified π hπ
+  have hπP : v.IsPrimeElement Pi πP := 
+    v.prime_of_unramified EPS hPSunramified π hπ
   let k : K.field.toSubgroup := Quotient.out q
   let πqP := normalExtensionAction A K.field P.field P.below hPnormal k πP
   have hπqP : v.IsPrimeElement Pi πqP := by
@@ -257,11 +252,4 @@ theorem frobeniusPrime_actionDifference_mem_infiniteUnitAddSubgroup
       K.field.toSubgroup ⧸ D.extensionInertiaWithin K.field L hLK) = q :=
     Quotient.out_eq' q
   rw [← hkq, D.frobeniusQuotientAction_mk]
-  apply Subtype.ext
   rfl
-
-end DegreeData
-
-end
-
-end ClassFormation

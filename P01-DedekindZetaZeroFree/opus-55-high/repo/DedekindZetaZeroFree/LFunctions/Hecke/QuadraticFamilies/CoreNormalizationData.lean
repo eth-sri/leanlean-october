@@ -15,5 +15,3 @@ structure NormalizedFamilyData {F : Type} [Field F] [NumberField F]
   original_dvd_bad : c ∣ bad
   index_dvd_conductor : ∀ a, Squarefree a → a ⊔ bad = ⊤ → a ∣ Q.cond a
   conductor_dvd_index_bad : ∀ a, Squarefree a → a ⊔ bad = ⊤ → Q.cond a ∣ a * bad
-
-end DedekindZetaZeroFree.LargeSieve.Sieve

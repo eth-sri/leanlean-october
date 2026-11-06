@@ -32,5 +32,3 @@ noncomputable def principalPrimitive : PrimitiveFrequencyCharacter F where
   conductor_ne_zero := top_ne_bot
   character := principalRay
   primitive := by intro 𝔣 hf; exact (not_lt_of_ge le_top hf).elim
-
-end DedekindZetaZeroFree.Detector.FrequencyPrincipal

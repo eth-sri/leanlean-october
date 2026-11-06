@@ -11,7 +11,7 @@ namespace DedekindZetaZeroFree.KPMsNativeWeightedShapeSource.FrameNorm
 open KPMsNativeOffsetMass KPMsActualAngularSource
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-private theorem central_right_norm
+theorem central_right_norm
     (g : KPMsAngularSourceRecipe.G F ζ hζ) (ε : rootsOfUnity 3 F) :
     KPGlobalTorusBorelTwistCompatibility.iwasawaNorm F ζ hζ
       (KPMsAngularSourceRecipe.D F ζ hζ)

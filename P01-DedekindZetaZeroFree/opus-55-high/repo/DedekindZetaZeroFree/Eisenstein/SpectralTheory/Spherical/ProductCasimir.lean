@@ -21,11 +21,11 @@ open _root_.DedekindZetaZeroFree.KPMsGreenFlux.FramedConormal.NativeShellStokes.
  abbrev Mat := Matrix (Fin 2) (Fin 2) ℂ
  def curve (i : Fin 6) (t : ℝ) : Mat := NormedSpace.exp ((t : ℂ) • basisMatrix i)
 
-private theorem curve_entries (i : Fin 6) (r s : Fin 2) :
+theorem curve_entries (i : Fin 6) (r s : Fin 2) :
     HasDerivAt (fun t : ℝ => curve i t r s) (basisMatrix i r s) 0 := by
   simpa [curve] using matrix_path_components (1 : Mat) (basisMatrix i) r s
 
-private theorem curve_mul_entries (i j : Fin 6) (r s : Fin 2) :
+theorem curve_mul_entries (i j : Fin 6) (r s : Fin 2) :
     HasDerivAt (fun t : ℝ => (curve i t * basisMatrix j) r s)
       ((basisMatrix i * basisMatrix j) r s) 0 := by
   convert ((curve_entries i r 0).mul_const (basisMatrix j 0 s)).add
@@ -40,7 +40,7 @@ private theorem curve_mul_entries (i j : Fin 6) (r s : Fin 2) :
     basisMatrix j 0 1 * star (basisMatrix i 1 1) +
     basisMatrix i 0 1 * star (basisMatrix j 1 1)
 
-private theorem numerator_second (i j : Fin 6) :
+theorem numerator_second (i j : Fin 6) :
     HasDerivAt (fun t => horizontalNumeratorJet (curve i t) j)
       (numeratorSecond i j) 0 := by
   have h := curve_entries i
@@ -56,7 +56,7 @@ private theorem numerator_second (i j : Fin 6) :
     2 * (basisMatrix i 1 0).re, -2 * (basisMatrix i 1 0).im,
     2 * (basisMatrix i 1 0).re, 2 * (basisMatrix i 1 0).im] j
 
-private theorem denominator_second (i j : Fin 6) :
+theorem denominator_second (i j : Fin 6) :
     HasDerivAt (fun t => bottomDenominatorJet (curve i t) j)
       (denominatorSecond i j) 0 := by
   have h := curve_entries i
@@ -79,7 +79,7 @@ private theorem denominator_second (i j : Fin 6) :
  def verticalSecond (i j : Fin 6) : ℝ :=
   -denominatorSecond i j + bottomDenominatorJet (1 : Mat) j * bottomDenominatorJet (1 : Mat) i
 
-private theorem horizontal_second (i j : Fin 6) :
+theorem horizontal_second (i j : Fin 6) :
     HasDerivAt (fun t => horizontalFieldJet (curve i t) j) (horizontalSecond i j) 0 := by
   have hN : HasDerivAt (fun t => horizontalNumerator (curve i t))
       (horizontalNumeratorJet (1 : Mat) i) 0 := by
@@ -94,7 +94,7 @@ private theorem horizontal_second (i j : Fin 6) :
   · rfl
   · simp [horizontalSecond, curve, bottomDenominator, horizontalNumerator]; ring
 
-private theorem vertical_second (i j : Fin 6) :
+theorem vertical_second (i j : Fin 6) :
     HasDerivAt (fun t => verticalFieldJet (curve i t) j) (verticalSecond i j) 0 := by
   have hD : HasDerivAt (fun t => bottomDenominator (curve i t))
       (bottomDenominatorJet (1 : Mat) i) 0 := by
@@ -128,7 +128,7 @@ def localD (i : Fin 6) (f : Matrix.GeneralLinearGroup (Fin 2) ℂ → ℂ)
         simpa only [hz] using h).comp_hasDerivAt 0 hb
   simpa only [localD, Function.comp_def, hz] using hd.deriv
 
-private theorem localD_second (φ : KPArch.H3 → ℂ) (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
+theorem localD_second (φ : KPArch.H3 → ℂ) (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
     (i j : Fin 6) :
     localD i (localD j (fun a => φ (KPArch.action a (0,0)))) 1 =
       fderiv ℝ (fderiv ℝ φ) (0,0) (tangent i) (tangent j) +
@@ -202,7 +202,7 @@ private theorem contraction
   simp_rw [localD_second φ hφ]
   exact contraction _ _
 
-private theorem second_apply {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+theorem second_apply {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     (f : E → ℂ) (hf : ContDiff ℝ (⊤ : ℕ∞) f) (x v w : E) :
     fderiv ℝ (fun y => fderiv ℝ f y w) x v =
       fderiv ℝ (fderiv ℝ f) x v w := by
@@ -219,7 +219,7 @@ private theorem second_apply {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ
   rw [fderiv_comp x ((hf.differentiable (by simp)) (L x)) L.differentiableAt]
   simp
 
-private theorem second_precomp {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+theorem second_precomp {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     (f : E → ℂ) (hf : ContDiff ℝ (⊤ : ℕ∞) f) (L : KPArch.H3 →L[ℝ] E)
     (x v w : KPArch.H3) :
     fderiv ℝ (fderiv ℝ (f ∘ L)) x v w = fderiv ℝ (fderiv ℝ f) (L x) (L v) (L w) := by
@@ -286,7 +286,7 @@ def productCasimir (d : ℕ) (f : KPArch.Space d → ℂ)
     localD i (fun x => f (a*x)) g = localD i f (a*g) := by
   simp only [localD, mul_assoc]
 
-private theorem localCasimir_left (f : Matrix.GeneralLinearGroup (Fin 2) ℂ → ℂ)
+theorem localCasimir_left (f : Matrix.GeneralLinearGroup (Fin 2) ℂ → ℂ)
     (a g : Matrix.GeneralLinearGroup (Fin 2) ℂ) :
     localCasimir (fun x => f (a*x)) g = localCasimir f (a*g) := by
   have h (i : Fin 6) : localD i (fun x => f (a*x)) = fun x => localD i f (a*x) :=
@@ -294,7 +294,7 @@ private theorem localCasimir_left (f : Matrix.GeneralLinearGroup (Fin 2) ℂ →
   unfold localCasimir
   simp only [h, localD_left]
 
-private theorem productCasimir_pullback (d : ℕ) (f : KPArch.Space d → ℂ)
+theorem productCasimir_pullback (d : ℕ) (f : KPArch.Space d → ℂ)
     (g : Fin d → Matrix.GeneralLinearGroup (Fin 2) ℂ) :
     productCasimir d (fun y => f (KPArch.productAction d g y)) (fun _ => 1) =
       productCasimir d f g := by

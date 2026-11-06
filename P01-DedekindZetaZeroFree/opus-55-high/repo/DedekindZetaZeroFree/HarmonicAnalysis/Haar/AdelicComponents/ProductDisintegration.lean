@@ -6,7 +6,6 @@ public import DedekindZetaZeroFree.MeasureTheory.Quotients.PartialFundamentalDom
 
 @[expose] public section
 
-noncomputable section
 open scoped Classical NumberField ENNReal NNReal Pointwise
 open MeasureTheory Function
 
@@ -28,10 +27,6 @@ private theorem actual_archProjection_compare
         (KPCuspGenuineMonodromy.archProjection F ζ hζ g w) := by
   open KPAdelicCoverRestrictedProduct in
   obtain ⟨g, rfl⟩ := QuotientGroup.mk'_surjective (splitScalarSubgroup F ζ hζ) g
-  change Matrix.ProjGenLinGroup.mk (Matrix.GeneralLinearGroup.map _ (projection F ζ hζ g)) =
-    Matrix.ProjGenLinGroup.map _ (Matrix.ProjGenLinGroup.mk
-      (matrixEval F (Sum.inl w) (projection F ζ hζ g)))
-  rw [Matrix.ProjGenLinGroup.map_mk, Matrix.GeneralLinearGroup.map_comp]
   rfl
 
 private theorem actual_finiteSubgroup_eq :
@@ -55,18 +50,12 @@ private theorem actual_finiteSubgroup_eq :
   · intro hg
     funext w
     rw [actual_archProjection_compare, hg]
-    exact map_one _
+    simp
 
  theorem archFiniteEquiv_for_productHaar :
     ∃ e : (KPSmoothActualFlowData.GInfinity F × KPFiniteCuspAtlas.FiniteCover F ζ hζ) ≃ₜ*
       KPCubicCoverConstruction.AdelicPGL2Cover F ζ hζ,
-      ∀ a c, e (a, c) = KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a * c.val := by
-  obtain ⟨e, he, hrest⟩ := PGLComplex.AdelicSlicesRaw.actualArchFiniteSplitting F ζ hζ
-  have hf := actual_finiteSubgroup_eq F ζ hζ
-  change ∃ e : (PGLComplex.AdelicSlicesRaw.ArchGroup F ×
-    KPFiniteCuspAtlas.FiniteCover F ζ hζ) ≃ₜ* _, _
-  rw [← hf]
-  exact ⟨e, he⟩
+      ∀ a c, e (a, c) = KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a * c.val := by apply DedekindZetaZeroFree.KPActualComponentHaarSources.actual_product_splitting <;> assumption
 
 private theorem actual_product_haar
     (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ) :
@@ -83,7 +72,7 @@ private theorem actual_product_haar
   rw [← hf]
   exact PGLComplex.AdelicSlicesRaw.productHaarTransport F ζ hζ R.adelicHaar R.archHaar
 
-private theorem actual_finiteOrbit_compact_open
+theorem actual_finiteOrbit_compact_open
     (U : Level F ζ hζ) (g : KPFiniteCuspAtlas.FiniteCover F ζ hζ) :
     IsCompact (KPCuspGenuineMonodromy.finiteOrbit F ζ hζ U g) ∧
       IsOpen (KPCuspGenuineMonodromy.finiteOrbit F ζ hζ U g) := by
@@ -158,7 +147,7 @@ theorem actual_component_product_disintegration
     intro γ y
     apply Quotient.sound
     apply QuotientGroup.rightRel_apply.mpr
-    simpa [Subgroup.smul_def, mul_assoc] using γ.property
+    simp [Subgroup.smul_def, mul_assoc]
   have hcompare := ProductDisintegration.quotient_restrict_of_partial_domain
     R.adelicHaar R.domain R.domain_measurable R.domain_fundamental
     (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ) hq hqi
@@ -195,7 +184,3 @@ theorem actual_component_product_disintegration
         ((R.archHaar.restrict D).prod (ν.restrict (B F ζ hζ hF U A i))) := by
     rw [← hproduct, hem.restrict_map, hem.injective.preimage_image, Measure.prod_restrict]
   rw [hrestrict, Measure.map_map hq hem.measurable]
-
-end DedekindZetaZeroFree.KPActualComponentHaarSources
-
-end

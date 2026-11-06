@@ -25,10 +25,10 @@ def cube {m : Ideal (𝓞 F)} (ψ : RayClassCharacter F m) :
   map_span' := fun α hα hmem hpos => by
     rw [ψ.map_span' α hα hmem hpos, one_pow]
 
-private lemma cube_apply {m : Ideal (𝓞 F)} (ψ : RayClassCharacter F m)
+lemma cube_apply {m : Ideal (𝓞 F)} (ψ : RayClassCharacter F m)
     (I : Ideal (𝓞 F)) : cube ψ I = (ψ I) ^ 3 := rfl
 
-private lemma cube_eq_self_mem {z : ℂ} (h : z ^ 3 = z) :
+lemma cube_eq_self_mem {z : ℂ} (h : z ^ 3 = z) :
     z ∈ ({0, 1, -1} : Set ℂ) := by
   have hfac : z * (z - 1) * (z + 1) = z ^ 3 - z := by ring
   have hzero : z * (z - 1) * (z + 1) = 0 := by rw [hfac, sub_eq_zero.mpr h]
@@ -51,7 +51,7 @@ theorem primitiveProductQuadratic
     (∀ I : Ideal (𝓞 F), starRingEnd ℂ (ψ I) = ψ I ∧
       ψ I ∈ ({0, 1, -1} : Set ℂ) ∧ (ψ I) ^ 3 = ψ I ∧ ‖ψ I‖ ≤ 1) ∧
       (∀ I : Ideal (𝓞 F), I ≠ ⊥ → I ⊔ (u * v) = ⊤ → (ψ I) ^ 2 = 1) := by
-  have huv0 : u * v ≠ ⊥ := fun h => (Ideal.mul_eq_bot.mp h).elim hu0 hv0
+  have huv0 : u * v ≠ ⊥ := by simp_all
   have hcu0 : Q.cond u ≠ ⊥ := (Q.primitive u hu huc).1
   have hcv0 : Q.cond v ≠ ⊥ := (Q.primitive v hv hvc).1
   have hcond0 : Q.cond u * Q.cond v ≠ ⊥ := fun h =>
@@ -85,7 +85,3 @@ theorem primitiveProductQuadratic
     · exact absurd h hne
     · rw [h]; norm_num
     · rw [h]; norm_num
-
-end
-
-end DedekindZetaZeroFree.LargeSieve.Bilinear

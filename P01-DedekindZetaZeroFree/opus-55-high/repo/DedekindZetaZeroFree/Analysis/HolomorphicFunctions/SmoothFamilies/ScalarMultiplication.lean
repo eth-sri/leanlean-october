@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Analysis.HolomorphicFunctions.SmoothFamilies.
 
 @[expose] public section
 
-noncomputable section
 
 namespace DedekindZetaZeroFree.KPContLocalHolomorphyUpgrade.CauchyAssembly
 
@@ -14,11 +13,7 @@ open scoped NNReal
 theorem finite_coordinate_derivative_smooth {n : ℕ} (B : LocalBall n)
     {f : Space n → ℂ} (hf : ContDiffOn ℝ (⊤ : ℕ∞) f B.carrier)
     (l : List (Fin n)) :
-    ContDiffOn ℝ (⊤ : ℕ∞) (coordinateDerivativeList l f) B.carrier := by
-  induction l with
-  | nil => exact hf
-  | cons i l ih =>
-    exact (ih.fderiv_of_isOpen Metric.isOpen_ball (by simp)).clm_apply contDiffOn_const
+    ContDiffOn ℝ (⊤ : ℕ∞) (coordinateDerivativeList l f) B.carrier := by apply DedekindZetaZeroFree.KPContLocalNorm.coordinateDerivativeList_smooth <;> assumption
 
 theorem finite_coordinate_derivative_const_mul {n : ℕ} (l : List (Fin n))
     (c : ℂ) (f : Space n → ℂ) :
@@ -82,8 +77,8 @@ theorem cauchy_product_coefficients_smooth {n : ℕ} (B : LocalBall n)
     (a : ℕ → ℂ) (b : ℕ → Space n → ℂ)
     (hb : ∀ j, ContDiffOn ℝ (⊤ : ℕ∞) (b j) B.carrier) (k : ℕ) :
     ContDiffOn ℝ (⊤ : ℕ∞)
-      (fun y => ∑ p ∈ Finset.HasAntidiagonal.antidiagonal k, a p.1 * b p.2 y) B.carrier := by
-  exact ContDiffOn.sum fun p _ => contDiffOn_const.mul (hb p.2)
+      (fun y => ∑ p ∈ Finset.HasAntidiagonal.antidiagonal k, a p.1 * b p.2 y) B.carrier := 
+  ContDiffOn.sum fun p _ => contDiffOn_const.mul (hb p.2)
 
 theorem coordinate_derivative_cauchy_product {n m : ℕ} (B : LocalBall n)
     (a : ℕ → ℂ) (b : ℕ → Space n → ℂ)
@@ -113,7 +108,7 @@ theorem coordinate_derivative_taylor_remainder {n m : ℕ} (B : LocalBall n)
   intro x hx
   have hsum : ContDiffOn ℝ (⊤ : ℕ∞)
       (fun y => ∑ j ∈ Finset.range M, w ^ j * b j y) B.carrier :=
-    ContDiffOn.sum fun j _ => contDiffOn_const.mul (hb j)
+    by fun_prop
   change coordinateDerivativeList α.directions _ x = _
   rw [finite_coordinate_derivative_sub B hsum hf α.directions hx]
   dsimp only
@@ -228,8 +223,7 @@ theorem uniform_cauchy_product_of_majorants {X : Type*}
     exact (tsum_mul_tsum_eq_tsum_sum_antidiagonal_of_summable_norm
       (hu.of_nonneg_of_le (fun j => norm_nonneg _) (fun j => ha j x))
       (hv.of_nonneg_of_le (fun j => norm_nonneg _) (fun j => hb j x))).symm
-  rw [heq] at hconv
-  exact hconv
+  simp_all
 
 theorem smooth_series_jet_majorant {n : ℕ} (B : LocalBall n)
     (z₀ : ℂ) (ρ : ℝ) (b : ℕ → Space n → ℂ) (f : ℂ → Space n → ℂ)
@@ -301,8 +295,7 @@ theorem scalar_series_majorant (q : ℂ → ℂ) (z₀ : ℂ) (R : ℝ≥0)
     fun j => mul_nonneg (norm_nonneg _) (pow_nonneg hr j), ?_⟩
   intro j z hz
   have hcoeff : ‖p.coeff j‖ ≤ ‖p j‖ := by
-    simpa only [FormalMultilinearSeries.coeff, Pi.one_def, norm_one, Finset.prod_const_one,
-      mul_one] using (p j).le_opNorm (fun _ => (1 : ℂ))
+    simp
   have hz' : ‖z - z₀‖ ≤ r := by simpa only [dist_eq_norm] using Metric.mem_closedBall.mp hz
   rw [norm_mul, norm_pow]
   exact (mul_le_mul (pow_le_pow_left₀ (norm_nonneg _) hz' j) hcoeff (norm_nonneg _)
@@ -316,8 +309,7 @@ theorem scalar_series_tsum (q : ℂ → ℂ) (z₀ : ℂ) (R : ℝ≥0)
     rw [Metric.eball_coe, Metric.mem_ball, dist_zero_right]
     simpa only [dist_eq_norm] using Metric.mem_ball.mp hz
   have hh := (hp.hasSum hz').tsum_eq
-  simpa only [FormalMultilinearSeries.apply_eq_pow_smul_coeff, smul_eq_mul,
-    add_sub_cancel] using hh
+  simp_all
 
 set_option maxHeartbeats 800000 in
 
@@ -377,7 +369,3 @@ theorem smooth_series_scalar_product {n : ℕ} (B : LocalBall n)
     Finset.sum_congr rfl (fun j _ => hprod j)
   rw [hsum, dist_eq_norm, norm_sub_rev] at hest
   exact hest
-
-end DedekindZetaZeroFree.KPContLocalHolomorphyUpgrade.CauchyAssembly
-
-end

@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Intertwining equations for Lubin--Tate series
 
@@ -39,15 +34,15 @@ variable {F : LocalField.{u, v} K} {π : F.valuationSubring}
 variable {σ : Type*}
 
 /-- Insert a one-variable Lubin--Tate series into the variable `X_i`. -/
-noncomputable def inVariable (e : LubinTateSeries F π) (i : σ) :
+def inVariable (e : LubinTateSeries F π) (i : σ) :
     MvPowerSeries σ F.valuationSubring :=
   PowerSeries.subst (MvPowerSeries.X i) e.toPowerSeries
 
 /-- States the theorem `constantCoeff_inVariable`. -/
 @[simp]
 theorem constantCoeff_inVariable (e : LubinTateSeries F π) (i : σ) :
-    MvPowerSeries.constantCoeff (inVariable e i) = 0 := by
-  exact PowerSeries.constantCoeff_subst_eq_zero
+    MvPowerSeries.constantCoeff (inVariable e i) = 0 := 
+  PowerSeries.constantCoeff_subst_eq_zero
     (MvPowerSeries.constantCoeff_X (R := F.valuationSubring) i)
     e.toPowerSeries e.constantCoeff_eq_zero
 
@@ -67,7 +62,7 @@ def Intertwines (e ebar : LubinTateSeries F π)
 
 /-- The coefficientwise defect whose vanishing is the intertwining
 equation. -/
-noncomputable def defect (e ebar : LubinTateSeries F π)
+def defect (e ebar : LubinTateSeries F π)
     (H : MvPowerSeries σ F.valuationSubring) :
     MvPowerSeries σ F.valuationSubring :=
   PowerSeries.subst H e.toPowerSeries -
@@ -87,8 +82,3 @@ theorem intertwines_X [Finite σ]
   rw [Intertwines,
     MvPowerSeries.subst_X (inVariable_hasSubst e)]
   rfl
-
-end SameUniformizer
-end LubinTate
-
-end

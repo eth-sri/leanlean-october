@@ -14,7 +14,7 @@ namespace DedekindZetaZeroFree.Detector
 
 noncomputable section
 
-private lemma absNorm_prime_ge_two (F : Type) [Field F] [NumberField F]
+lemma absNorm_prime_ge_two (F : Type) [Field F] [NumberField F]
     (v : HeightOneSpectrum (𝓞 F)) : 2 ≤ Ideal.absNorm v.asIdeal := by
   have h0 : Ideal.absNorm v.asIdeal ≠ 0 := by
     intro h; rw [Ideal.absNorm_eq_zero_iff] at h; exact v.ne_bot h
@@ -23,13 +23,13 @@ private lemma absNorm_prime_ge_two (F : Type) [Field F] [NumberField F]
     exact (Ideal.IsMaximal.ne_top v.isMaximal) h
   omega
 
-private lemma absNorm_prime_gt_one (F : Type) [Field F] [NumberField F]
+lemma absNorm_prime_gt_one (F : Type) [Field F] [NumberField F]
     (v : HeightOneSpectrum (𝓞 F)) : 1 < (Ideal.absNorm v.asIdeal : ℝ) := by
   have h : (2:ℝ) ≤ (Ideal.absNorm v.asIdeal : ℝ) := by
     exact_mod_cast absNorm_prime_ge_two F v
   linarith
 
-private lemma absNorm_prime_rpow_lt_one (F : Type) [Field F] [NumberField F]
+lemma absNorm_prime_rpow_lt_one (F : Type) [Field F] [NumberField F]
     (v : HeightOneSpectrum (𝓞 F)) {σ : ℝ} (hσ : 0 < σ) :
     (Ideal.absNorm v.asIdeal : ℝ) ^ (-σ) < 1 :=
   Real.rpow_lt_one_of_one_lt_of_neg (absNorm_prime_gt_one F v) (by linarith)
@@ -112,7 +112,7 @@ theorem finite_euler_local_factor_nonzero
           (norm_sub_norm_le (1 : ℂ) (a * (Ideal.absNorm v.asIdeal : ℂ) ^ (-s)))
   exact ⟨hp, hl, norm_pos_iff.mp (lt_of_lt_of_le hp hl)⟩
 
-private theorem exterior_prime_divides_comap
+theorem exterior_prime_divides_comap
     (F : Type) [Field F] [NumberField F]
     (S : Set (HeightOneSpectrum (𝓞 F))) (u : S.integer F)
     (v : HeightOneSpectrum (𝓞 F)) (hv : v ∈ exteriorFrequencyPrimeSupport F S u) :
@@ -134,7 +134,7 @@ private theorem exterior_prime_divides_comap
     by simpa [mul_comm] using mul_le_mul_left hvb (v.valuation F (u : F))
   exact hle.trans_lt hv.2
 
-private theorem exterior_comap_ne_bot
+theorem exterior_comap_ne_bot
     (F : Type) [Field F] [NumberField F]
     (S : Set (HeightOneSpectrum (𝓞 F))) (u : S.integer F) (hu : u ≠ 0) :
     Ideal.comap (algebraMap (𝓞 F) (S.integer F)) (Ideal.span {u}) ≠ ⊥ := by
@@ -143,33 +143,31 @@ private theorem exterior_comap_ne_bot
   have hn : n ≠ 0 := by
     intro hn
     have hdF : (d : F) ≠ 0 := by exact_mod_cast nonZeroDivisors.ne_zero hd
-    simp only [hn, map_zero] at h
-    exact (mul_ne_zero huF hdF) h
+    simp_all
   intro hbot
   have hnmem : n ∈ Ideal.comap (algebraMap (𝓞 F) (S.integer F)) (Ideal.span {u}) := by
     apply Ideal.mem_span_singleton.mpr
     refine ⟨algebraMap (𝓞 F) (S.integer F) d, ?_⟩
     apply Subtype.ext
-    simpa only [Subalgebra.coe_algebraMap, Subalgebra.coe_mul] using h.symm
-  rw [hbot] at hnmem
-  exact hn hnmem
+    simp_all
+  simp_all
 
-private theorem exterior_ideal_norm_le_frequencyNorm
+theorem exterior_ideal_norm_le_frequencyNorm
     (F : Type) [Field F] [NumberField F]
     (S : Set (HeightOneSpectrum (𝓞 F))) (hS : S.Finite) (u : S.integer F) (hu : u ≠ 0) :
     Ideal.absNorm (Ideal.comap (algebraMap (𝓞 F) (S.integer F)) (Ideal.span {u})) ≤
       frequencyNorm F S u := by
   classical
   let I : Ideal (𝓞 F) := Ideal.comap (algebraMap (𝓞 F) (S.integer F)) (Ideal.span {u})
-  have hR : Finite ((S.integer F) ⧸ Ideal.span {u}) := by
-    exact (exterior_frequency_support_finite_norm_pos F S hS u hu).2.1
+  have hR : Finite ((S.integer F) ⧸ Ideal.span {u}) := 
+    (exterior_frequency_support_finite_norm_pos F S hS u hu).2.1
   have hmap : Function.Injective (Ideal.quotientMap (Ideal.span {u})
       (algebraMap (𝓞 F) (S.integer F)) le_rfl) := Ideal.quotientMap_injective
   letI : Finite ((𝓞 F) ⧸ I) := Finite.of_injective _ hmap
   simpa [I, Ideal.absNorm_apply, frequencyNorm, Submodule.cardQuot_apply] using
     Nat.card_le_card_of_injective _ hmap
 
-private theorem finite_masks_comparison
+theorem finite_masks_comparison
     (F : Type) [Field F] [NumberField F]
     (D : Set (HeightOneSpectrum (𝓞 F))) (hD : D.Finite)
     (σ : ℝ) (hσ : 0 < σ) (a : HeightOneSpectrum (𝓞 F) → ℂ) (s : ℂ)
@@ -219,7 +217,7 @@ theorem frequency_finite_euler_masks_subpower
             C * (frequencyNorm F S u : ℝ) ^ ε := by
   classical
   let τ := min σ (1 / 2 : ℝ)
-  have hτ : 0 < τ := lt_min hσ (by norm_num)
+  have hτ : 0 < τ := by positivity
   have hτ1 : τ < 1 := (min_le_right _ _).trans_lt (by norm_num)
   obtain ⟨B, hB, hb⟩ := omitted_prime_euler_subpolynomial F τ hτ hτ1 ε hε
   let J : Ideal (𝓞 F) := ∏ v ∈ hS.toFinset, v.asIdeal
@@ -314,18 +312,18 @@ private theorem finite_prime_delete_hasSum
           rcases hprime.dvd_or_dvd hd with hd | hd
           · exact ⟨v, hv, Ideal.dvd_iff_le.mp hd⟩
           · have heq : v = p := HeightOneSpectrum.ext ((Ideal.IsMaximal.eq_of_le p.isMaximal (Ideal.IsMaximal.ne_top v.isMaximal) (Ideal.dvd_iff_le.mp hd)).symm)
-            exact (hp (heq ▸ hv)).elim
+            simp_all
         · rintro ⟨v, hv, h⟩
           exact ⟨v, hv, (Ideal.mul_le_left).trans h⟩
       simp only [G, he]
-      split_ifs <;> simp [Wmul]
+      simp_all
     let H : Ideal (𝓞 F) → ℂ := fun I => if I ≤ p.asIdeal then G I else 0
     have hH : HasSum H ((L * ∏ v ∈ V, (1 - W v.asIdeal)) * W p.asIdeal) := by
       have hi : Function.Injective (fun I : Ideal (𝓞 F) => I * p.asIdeal) := mul_left_injective₀ p.ne_bot
       apply (hi.hasSum_iff ?_).mp
       · have heq : H ∘ (fun I : Ideal (𝓞 F) => I * p.asIdeal) = fun I => G I * W p.asIdeal := by
           funext I
-          simp [H, Function.comp_def, Ideal.mul_le_right, Gmul]
+          simp [H, Ideal.mul_le_right, Gmul]
         rw [heq]
         exact ih.mul_right _
       · intro I hI
@@ -339,7 +337,7 @@ private theorem finite_prime_delete_hasSum
         (fun I => if ∃ v ∈ insert p V, I ≤ v.asIdeal then 0 else W I) := by
       funext I
       by_cases hI : I ≤ p.asIdeal <;> by_cases hV : ∃ v ∈ V, I ≤ v.asIdeal <;>
-        simp [H, G, hI, hV, Finset.exists_mem_insert]
+        simp [H, G, hI, hV]
     rw [heq] at hh
     convert hh using 1
     rw [Finset.prod_insert hp]
@@ -359,7 +357,7 @@ theorem deleted_primitive_L_euler_identity
   classical
   let W : Ideal (𝓞 F) → ℂ := fun I => ω.character I * (Ideal.absNorm I : ℂ) ^ (-s)
   have W0 : W ⊥ = 0 := by
-    have h0 : ω.character ⊥ = 0 := (ω.character.eq_zero_iff' ⊥).mpr (Or.inl rfl)
+    have h0 : ω.character ⊥ = 0 := by simp
     simp [W, h0]
   have Wmul (a b : Ideal (𝓞 F)) : W (a * b) = W a * W b := by
     dsimp [W]
@@ -427,21 +425,19 @@ theorem deleted_primitive_L_continuation
         Differentiable.const_cpow differentiable_neg (Or.inl hc)
       have hfe : (fun s : ℂ => finiteEulerLocalFactor F v.val (ω.character v.val.asIdeal) s) =
           fun s : ℂ => 1 - ω.character v.val.asIdeal * (Ideal.absNorm v.val.asIdeal : ℂ) ^ (-s) := by
-        funext s; rfl
-      rw [hfe]
-      exact (differentiable_const (c := (1:ℂ))).sub
-        ((differentiable_const (c := ω.character v.val.asIdeal)).mul hdc)
+        rfl
+      simp_all
     have hd' : (∏ v ∈ (Finset.univ : Finset D),
         fun s : ℂ => finiteEulerLocalFactor F v.val (ω.character v.val.asIdeal) s) =
         (fun s : ℂ => ∏ v : D, finiteEulerLocalFactor F v.val (ω.character v.val.asIdeal) s) := by
-      funext s; simp [Finset.prod_apply]
+      funext s; simp
     rwa [hd'] at hd
   refine ⟨hmaskdiff, ?_, ?_⟩
   · have hmaskmero : MeromorphicOn
         (finiteEulerDeletionMask F D (fun v => ω.character v.asIdeal)) Ω :=
       fun x _ => (Complex.analyticAt_iff_eventually_differentiableAt.mpr
         (Filter.Eventually.of_forall (fun z => hmaskdiff z))).meromorphicAt
-    exact hL.mul hmaskmero
+    fun_prop
   · intro s hs
     obtain ⟨hsum, htsum⟩ := deleted_primitive_L_euler_identity F ω D hD s hs
     have hLeq : (∑' I : Ideal (𝓞 F), ω.character I * (Ideal.absNorm I : ℂ) ^ (-s)) = L s :=
@@ -454,8 +450,8 @@ private theorem positive_representative (F : Type) [Field F] [NumberField F]
     (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) (a : 𝓞 F) :
     ∃ b : 𝓞 F, b - a ∈ m ∧ ∀ φ : F →+* ℝ, 0 < φ (b : F) := by
   have hn : 0 < Ideal.absNorm m := Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hm)
-  have hb : ∃ B : ℝ, ∀ φ : F →+* ℝ, -φ (a : F) < B := by
-    exact ⟨∑ φ : F →+* ℝ, |φ (a : F)| + 1, fun φ => by
+  have hb : ∃ B : ℝ, ∀ φ : F →+* ℝ, -φ (a : F) < B := 
+    ⟨∑ φ : F →+* ℝ, |φ (a : F)| + 1, fun φ => by
       have ht := Finset.single_le_sum (fun i (_ : i ∈ Finset.univ) => abs_nonneg ((i : F →+* ℝ) (a : F))) (Finset.mem_univ φ)
       linarith [neg_le_abs (φ (a : F))]⟩
   obtain ⟨B, hB⟩ := hb
@@ -536,7 +532,7 @@ theorem finite_mask_twist_conductor_le
   · simp [hf]
   by_contra hle
   have hlt : ψ.conductor < ψ.conductor ⊔ (η.conductor * χ.conductor) :=
-    lt_of_le_of_ne le_sup_left (fun heq => hle (le_sup_right.trans_eq heq.symm))
+    by simp_all
   obtain ⟨a, ha, ham, hpos, hcop, hne⟩ := ψ.primitive _ hlt
   obtain ⟨x, hx, y, hy, hxy⟩ := Submodule.mem_sup.mp ham
   obtain ⟨b, hby, hposb⟩ := positive_representative F
@@ -556,12 +552,10 @@ theorem finite_mask_twist_conductor_le
       simpa using (Ideal.span {b} ⊔ ψ.conductor).add_mem hb hd
     have hle' : Ideal.span {a} ⊔ ψ.conductor ≤ Ideal.span {b} ⊔ ψ.conductor :=
       sup_le ((Ideal.span_singleton_le_iff_mem _).mpr hba) le_sup_right
-    rw [hcop] at hle'
-    exact hle' (by trivial)
+    simp_all
   have hb0 : b ≠ 0 := by
     intro hb0
-    simp [hb0] at hbcop
-    exact hf hbcop
+    simp_all
   have hcopm := coprime_of_sub_one_mem (η.conductor * χ.conductor) b hbm
   have hcopall : Ideal.span {b} ⊔ (η.conductor * χ.conductor * ψ.conductor) = ⊤ := by
     apply IsCoprime.sup_eq
@@ -573,9 +567,4 @@ theorem finite_mask_twist_conductor_le
     χ.character.map_span' b hb0 (Ideal.mul_le_right hbm) hposb
   have hψ := hTwist (Ideal.span {b}) (by simpa using hb0) hcopall
   have heq := ray_congruent_positive F ψ.conductor ψ.conductor_ne_zero hf ψ.character a b ha hb0 hpos hposb hcop hab
-  apply hne
-  rw [heq, hψ, hη, hχ, map_one, mul_one]
-
-end
-
-end DedekindZetaZeroFree.Detector
+  simp_all

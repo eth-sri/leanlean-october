@@ -16,7 +16,7 @@ variable {F : Type} [Field F] [NumberField F]
 variable {m : Ideal (𝓞 F)} {hm : m ≠ ⊥}
 variable {η : DedekindZetaZeroFree.RayClassCharacter F m}
 
- noncomputable instance zeroCancellationRayClassFintype :
+ instance zeroCancellationRayClassFintype :
     Fintype (RayIdealClass F m hm) := Fintype.ofFinite _
 
 private theorem embedding_injective (D : RayCoset.Data F) :
@@ -42,14 +42,14 @@ private theorem origin_iff (D : RayCoset.Data F) :
       rw [RayCoset.mem_C_iff]
       simp [hm]
     simpa only [map_zero] using (RayCoset.normalizedEmbedding_bijOn D).1 hzero
-private theorem primal_common (D : RayThetaRepresentatives F m hm)
+theorem primal_common (D : RayThetaRepresentatives F m hm)
     (c : RayIdealClass F m hm) :
     RayTheta.f0δ (D.coset c) ∅ =
       if m = ⊤ then (RayCoset.rayUnitDomainVolume F m hm : ℂ) /
         (RayCoset.rayUnitTorsionCard F m : ℂ) else 0 := by
   simp [RayTheta.f0δ, origin_iff, D.modulus_eq]
 
-private theorem dual_common (D : RayThetaRepresentatives F m hm)
+theorem dual_common (D : RayThetaRepresentatives F m hm)
     (c : RayIdealClass F m hm) :
     RayTheta.g0δ (D.coset c) ∅ =
       (RayCoset.rayUnitDomainVolume F m hm : ℂ) /
@@ -57,12 +57,12 @@ private theorem dual_common (D : RayThetaRepresentatives F m hm)
           (RayCoset.modulusCovolume F m : ℂ)) := by
   simp [RayTheta.g0δ, D.modulus_eq]
 
-private theorem sum_coeff (χ : RayCharacterData F m hm η)
+theorem sum_coeff (χ : RayCharacterData F m hm η)
     (hη : ¬ η.IsPrincipal) : ∑ c : RayIdealClass F m hm, χ.ψ c = 0 := by
   classical
   exact sum_hom_units_eq_zero χ.ψ (fun h => hη (χ.principal_iff.mpr h))
 
-private theorem sum_conj_coeff (χ : RayCharacterData F m hm η)
+theorem sum_conj_coeff (χ : RayCharacterData F m hm η)
     (hη : ¬ η.IsPrincipal) :
     ∑ c : RayIdealClass F m hm, (starRingEnd ℂ) (χ.ψ c) = 0 := by
   classical
@@ -129,7 +129,3 @@ theorem normalizedRayConjugateTheta_eq_sub_zero_modes
   classical
   simp only [normalizedRayConjugateTheta, mul_sub, Finset.sum_sub_distrib,
     sum_conjugate_rayTheta_f0_eq_zero D χ hη, sub_zero]
-
-end DedekindZetaZeroFree.Hecke.Theta
-
-end

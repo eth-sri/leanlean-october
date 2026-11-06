@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.Eisenstein.Residues.FiniteLevelActionsAndDens
 
 @[expose] public section
 
-noncomputable section
 open scoped NumberField Classical
 set_option backward.isDefEq.respectTransparency false
 namespace DedekindZetaZeroFree.KPGlobalResidualConstruction.RawFiniteCompact
@@ -43,7 +42,3 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
     have h := hU (g * a.val) _ hbU
     change f (g * b.val * a.val) = f (g * a.val)
     simpa only [Subgroup.coe_mul, Subgroup.coe_inv, mul_assoc, mul_inv_cancel_left] using h
-
-end DedekindZetaZeroFree.KPGlobalResidualConstruction.RawFiniteCompact
-
-end

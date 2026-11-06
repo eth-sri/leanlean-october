@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Metaplectic.Intertwining.InverseRootSupportHa
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.TameInverseRootValueAudit
 
 open scoped NumberField Classical
@@ -33,15 +32,14 @@ theorem eventual_inverse_root_chart_ratio_cube
   obtain ⟨M, hM, hcubes⟩ := KPLocalCube.principal_units_eventually_cubes F q
   refine ⟨M, ?_⟩
   intro m hm u w t ht hw
-  have hmpos : 0 < m := lt_of_lt_of_le (by omega : 0 < M) hm
+  have hmpos : 0 < m := by omega
   rw [KPTameTransposeUnitNumeratorSteps.rootLevelSet_eq_congruence_ideal
     F q ζ hζ S P m hmpos] at ht
   obtain ⟨t₀, ht₀, rfl⟩ := ht
   have hp : valuation (LocalField F q) (π : LocalField F q) ≤ 1 := by
     apply (map_le_map_iff (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt
       (LocalField F q))).mp
-    rw [hπ, map_one, ← WithZero.exp_zero, WithZero.exp_le_exp]
-    norm_num
+    simp_all
   let p : KPLocalCube.LocalIntegers F q := ⟨(π : LocalField F q), hp⟩
   let x : KPLocalCube.LocalIntegers F q := p * t₀ * (↑u⁻¹)
   have hx : x ∈ KPLocalCube.maximalIdeal F q ^ m :=
@@ -63,7 +61,3 @@ theorem eventual_inverse_root_chart_ratio_cube
   rw [huinv, hw]
   field_simp
   rfl
-
-end DedekindZetaZeroFree.TameInverseRootValueAudit
-
-end

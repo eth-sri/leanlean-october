@@ -9,7 +9,6 @@ open NumberField IsDedekindDomain
 
 namespace DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw
 noncomputable section
-set_option autoImplicit false
 set_option maxHeartbeats 800000
 set_option maxRecDepth 4000
 variable (F : Type) [Field F] [NumberField F]
@@ -25,7 +24,7 @@ def rationalCoordinates (g : KubotaRankTwo.GL2 F) (v : KPHilbert.Place F) :
   KPLocalCover.sectionMap F ζ hζ v
     (Matrix.GeneralLinearGroup.map (algebraMap F (KPHilbert.Completion F v)) g)
 
-private theorem integers_eq (q : HeightOneSpectrum (𝓞 F)) :
+theorem integers_eq (q : HeightOneSpectrum (𝓞 F)) :
     KPLocalCube.LocalIntegers F q = (q.adicCompletionIntegers F).toSubring := by
   letI : ValuativeRel (q.adicCompletion F) := ClassFieldTheory.finitePlaceCompletionValuativeRel F q
   letI : (Valued.v : Valuation (q.adicCompletion F) (WithZero (Multiplicative ℤ))).Compatible :=
@@ -35,7 +34,7 @@ private theorem integers_eq (q : HeightOneSpectrum (𝓞 F)) :
   rw [← Valuation.vle_one_iff]
   exact Valuation.vle_one_iff (Valued.v : Valuation (q.adicCompletion F) (WithZero (Multiplicative ℤ)))
 
-private theorem rational_integral (a : F) :
+theorem rational_integral (a : F) :
     ∀ᶠ q : HeightOneSpectrum (𝓞 F) in Filter.cofinite,
       algebraMap F (q.adicCompletion F) a ∈ KPTameCompact.O F q := by
   have h := (algebraMap F (FiniteAdeleRing (𝓞 F) F) a).property
@@ -74,8 +73,6 @@ private theorem integralMatrix_inclusion (q : HeightOneSpectrum (𝓞 F))
     (g : KubotaRankTwo.GL2 F) (hg hi) :
     KPTameCompact.inclusion F q (integralMatrix F q g hg hi) =
       Matrix.GeneralLinearGroup.map (algebraMap F (q.adicCompletion F)) g := by
-  apply Matrix.GeneralLinearGroup.ext
-  intro i j
   rfl
 
 private theorem rational_compact_finite (g : KubotaRankTwo.GL2 F) :
@@ -149,14 +146,7 @@ def rationalSection (g : KubotaRankTwo.GL2 F) : CubicGL2Adelic F ζ hζ :=
 
 theorem projection_rationalSection (g : KubotaRankTwo.GL2 F) :
     projection F ζ hζ (rationalSection F ζ hζ g) = rationalBase F g := by
-  apply Matrix.GeneralLinearGroup.ext
-  intro i j
-  apply Prod.ext
-  · funext w
-    rfl
-  · apply Subtype.ext
-    funext q
-    rfl
+  rfl
 
 private theorem map_X (g : KubotaRankTwo.GL2 F) (v : KPHilbert.Place F) :
     KubotaRankTwo.X _ (Matrix.GeneralLinearGroup.map (algebraMap F (KPHilbert.Completion F v)) g) =
@@ -257,8 +247,7 @@ theorem rationalCoordinates_N (x : F) (v : KPHilbert.Place F) :
   unfold rationalCoordinates KPStandardLocalRootLifts.N
   congr 1
   apply Matrix.GeneralLinearGroup.ext
-  intro i j
-  fin_cases i <;> fin_cases j <;> simp [Matrix.GeneralLinearGroup.map_apply, KubotaRankTwo.n]
+  simp
 
 theorem rationalCoordinates_A (y : Fˣ) (v : KPHilbert.Place F) :
     rationalCoordinates F ζ hζ (KubotaRankTwo.d F y 1) v =
@@ -266,8 +255,7 @@ theorem rationalCoordinates_A (y : Fˣ) (v : KPHilbert.Place F) :
   unfold rationalCoordinates KPStandardLocalRootLifts.A
   congr 1
   apply Matrix.GeneralLinearGroup.ext
-  intro i j
-  fin_cases i <;> fin_cases j <;> simp [Matrix.GeneralLinearGroup.map_apply, KubotaRankTwo.d]
+  simp
 
 theorem rationalCoordinates_W (v : KPHilbert.Place F) :
     rationalCoordinates F ζ hζ (KPStandardLocalRootLifts.weylSwap F) v =
@@ -283,12 +271,9 @@ end DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw
 
 section
 
-open scoped NumberField Classical BigOperators
-open NumberField IsDedekindDomain
 
 namespace DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw
 noncomputable section
-set_option autoImplicit false
 set_option maxHeartbeats 800000
 set_option maxRecDepth 4000
 variable (F : Type) [Field F] [NumberField F]

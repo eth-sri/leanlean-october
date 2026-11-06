@@ -12,9 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
 /-!
 # Successive principal-unit quotients
 
@@ -22,7 +19,6 @@ Develops `U^n/U^(n+1)` and identifies it with the additive ideal quotient
 `𝓂^n/𝓂^(n+1)` through the first-order map `a ↦ 1 + a`.
 -/
 
-set_option autoImplicit false
 
 namespace LocalFieldTheory
 
@@ -118,8 +114,8 @@ ring of a nonarchimedean local field. -/
 theorem maximalIdeal_iInf_pow_eq_bot
     (K : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
     [IsNonarchimedeanLocalField K] :
-    (⨅ n : Nat, (𝓂[K] ^ n : Ideal 𝒪[K])) = ⊥ := by
-  exact Ideal.iInf_pow_eq_bot_of_isLocalRing
+    (⨅ n : Nat, (𝓂[K] ^ n : Ideal 𝒪[K])) = ⊥ := 
+  Ideal.iInf_pow_eq_bot_of_isLocalRing
     (I := (𝓂[K] : Ideal 𝒪[K])) Ideal.IsPrime.ne_top'
 
 /-- An element of the valuation integer ring lying in every power of the
@@ -307,7 +303,7 @@ theorem eventually_div_mem_principalUnits_of_tendsto_units
             simp
       _ = (((f d : 𝒪[K]ˣ) : 𝒪[K]) - ((x : 𝒪[K]ˣ) : 𝒪[K])) * ↑(x⁻¹) := by
             ring]
-  exact (𝓂[K] ^ n : Ideal 𝒪[K]).mul_mem_right _ hd
+  simp_all
 
 /-! ### Finite correction products for complete lifting -/
 
@@ -368,12 +364,11 @@ theorem principalUnitsCorrectionProduct_div_mem
           principalUnitsCorrectionProduct K n z (m + (d + 1)) =
             principalUnitsCorrectionProduct K n z (m + d) *
               (z (m + d) : 𝒪[K]ˣ) := by
-        rw [Nat.add_succ]
         rfl
       rw [hprod]
       have hz :
-          (z (m + d) : 𝒪[K]ˣ) ∈ principalUnits K (n + m) := by
-        exact principalUnits_antitone K
+          (z (m + d) : 𝒪[K]ˣ) ∈ principalUnits K (n + m) := 
+        principalUnits_antitone K
           (Nat.add_le_add_left (Nat.le_add_right m d) n) (z (m + d)).2
       have hEq :
           principalUnitsCorrectionProduct K n z (m + d) *
@@ -393,8 +388,8 @@ theorem principalUnitsCorrectionProduct_div_sub_one_mem
     (z : ∀ d : Nat, principalUnits K (n + d)) :
     ((principalUnitsCorrectionProduct K n z (m + d) /
           principalUnitsCorrectionProduct K n z m : 𝒪[K]ˣ) : 𝒪[K]) - 1 ∈
-      (𝓂[K] ^ (n + m) : Ideal 𝒪[K]) := by
-  exact (mem_principalUnits_iff K
+      (𝓂[K] ^ (n + m) : Ideal 𝒪[K]) := 
+  (mem_principalUnits_iff K
     (principalUnitsCorrectionProduct K n z (m + d) /
       principalUnitsCorrectionProduct K n z m) (n + m)).1
     (principalUnitsCorrectionProduct_div_mem K n m d z)
@@ -449,8 +444,8 @@ theorem principalUnitsCorrectionProduct_sub_mem_of_le
     have hdiff :
         ((principalUnitsCorrectionProduct K n z (i + d) : 𝒪[K]ˣ) : 𝒪[K]) -
             ((principalUnitsCorrectionProduct K n z i : 𝒪[K]ˣ) : 𝒪[K]) ∈
-          (𝓂[K] ^ (n + N) : Ideal 𝒪[K]) := by
-      exact Ideal.pow_le_pow_right (Nat.add_le_add_left hi n)
+          (𝓂[K] ^ (n + N) : Ideal 𝒪[K]) := 
+      Ideal.pow_le_pow_right (Nat.add_le_add_left hi n)
         (principalUnitsCorrectionProduct_sub_mem K n i d z)
     have hEq :
         ((principalUnitsCorrectionProduct K n z i : 𝒪[K]ˣ) : 𝒪[K]) -
@@ -540,124 +535,11 @@ theorem principalUnitsSuccQuotConcreteEquiv_mk
       QuotientGroup.mk u :=
   rfl
 
-/-- The actual inclusion `U^(n+1) → U^n` of principal units. -/
-def principalUnitsSuccIncl (K : Type u) [Field K] [ValuativeRel K] (n : Nat) :
-    principalUnits K (n + 1) →* principalUnits K n where
-  toFun u := ⟨u.1, principalUnits_succ_le K n u.2⟩
-  map_one' := rfl
-  map_mul' := by
-    intro a b
-    rfl
-
-/-- The inclusion `U^(n+1) → U^n` retains the underlying unit and its stronger filtration witness. -/
-theorem principalUnitsSuccIncl_apply
-    (K : Type u) [Field K] [ValuativeRel K] (n : Nat)
-    (u : principalUnits K (n + 1)) :
-    principalUnitsSuccIncl K n u =
-      ⟨u.1, principalUnits_succ_le K n u.2⟩ :=
-  rfl
-
-/-- The inclusion `U^(n+1) → U^n` does not change the underlying valuation-ring unit. -/
-theorem principalUnitsSuccIncl_val
-    (K : Type u) [Field K] [ValuativeRel K] (n : Nat)
-    (u : principalUnits K (n + 1)) :
-    ((principalUnitsSuccIncl K n u : principalUnits K n) : 𝒪[K]ˣ) =
-      (u : 𝒪[K]ˣ) :=
-  rfl
-
-/-- The inclusion `U^(n+1) → U^n` is injective. -/
-theorem principalUnitsSuccIncl_injective
-    (K : Type u) [Field K] [ValuativeRel K] (n : Nat) :
-    Function.Injective (principalUnitsSuccIncl K n) := by
-  intro a b h
-  have hval : (a : 𝒪[K]ˣ) = (b : 𝒪[K]ˣ) :=
-    congrArg (fun x : principalUnits K n => (x : 𝒪[K]ˣ)) h
-  exact Subtype.ext hval
-
-/-- The range of `U^(n+1) → U^n` is the subgroup used to form
-`U^n/U^(n+1)`. -/
-theorem principalUnitsSuccIncl_range
-    (K : Type u) [Field K] [ValuativeRel K] (n : Nat) :
-    MonoidHom.range (principalUnitsSuccIncl K n) =
-      (principalUnits K (n + 1)).subgroupOf (principalUnits K n) := by
-  ext u
-  constructor
-  · intro hu
-    rcases hu with ⟨v, hv⟩
-    rw [← hv]
-    exact v.2
-  · intro hu
-    exact ⟨⟨u.1, hu⟩, by ext; rfl⟩
-
-/-- A principal unit lies in the range of `U^(n+1) → U^n` exactly when it belongs to the next
-filtration subgroup. -/
-theorem principalUnitsSuccIncl_mem_range_iff
-    (K : Type u) [Field K] [ValuativeRel K] (n : Nat)
-    (u : principalUnits K n) :
-    u ∈ MonoidHom.range (principalUnitsSuccIncl K n) ↔
-      u ∈ (principalUnits K (n + 1)).subgroupOf (principalUnits K n) := by
-  rw [principalUnitsSuccIncl_range]
-
 /-- Every class in `U^n/U^(n+1)` has a representative in `U^n`. -/
 theorem principalUnitsSuccQuotMk_surjective
     (K : Type u) [Field K] [ValuativeRel K] (n : Nat) :
     Function.Surjective (principalUnitsSuccQuotMk K n) :=
   QuotientGroup.mk'_surjective ((principalUnits K (n + 1)).subgroupOf (principalUnits K n))
-
-/-- The kernel of the canonical map `U^n → U^n/U^(n+1)` is the subgroup `U^(n+1)`. -/
-theorem principalUnitsSuccQuotMk_ker (K : Type u) [Field K] [ValuativeRel K] (n : Nat) :
-    MonoidHom.ker (principalUnitsSuccQuotMk K n) =
-      (principalUnits K (n + 1)).subgroupOf (principalUnits K n) :=
-  QuotientGroup.ker_mk'
-    (N := (principalUnits K (n + 1)).subgroupOf (principalUnits K n))
-
-/-- A principal unit is killed by the canonical quotient map exactly when it lies in `U^(n+1)`. -/
-theorem principalUnitsSuccQuotMk_mem_ker_iff
-    (K : Type u) [Field K] [ValuativeRel K] (n : Nat)
-    (u : principalUnits K n) :
-    u ∈ MonoidHom.ker (principalUnitsSuccQuotMk K n) ↔
-      u ∈ (principalUnits K (n + 1)).subgroupOf (principalUnits K n) := by
-  rw [principalUnitsSuccQuotMk_ker]
-
-/-- The canonical map from `U^n` has the whole successive quotient as its range. -/
-theorem principalUnitsSuccQuotMk_range
-    (K : Type u) [Field K] [ValuativeRel K] (n : Nat) :
-    MonoidHom.range (principalUnitsSuccQuotMk K n) = ⊤ := by
-  ext x
-  constructor
-  · intro _
-    exact Subgroup.mem_top x
-  · intro _
-    rcases principalUnitsSuccQuotMk_surjective K n x with ⟨u, hu⟩
-    exact ⟨u, hu⟩
-
-/-- Every element of `U^n/U^(n+1)` belongs to the range of the canonical quotient map. -/
-theorem principalUnitsSuccQuotMk_mem_range
-    (K : Type u) [Field K] [ValuativeRel K] (n : Nat)
-    (x : PrincipalUnitsSuccQuot K n) :
-    x ∈ MonoidHom.range (principalUnitsSuccQuotMk K n) := by
-  rw [principalUnitsSuccQuotMk_range]
-  exact Subgroup.mem_top x
-
-/-- The range of the canonical quotient map has the same finite cardinality as `U^n/U^(n+1)`. -/
-theorem principalUnitsSuccQuotMk_range_card_eq
-    (K : Type u) [Field K] [ValuativeRel K] (n : Nat)
-    [Finite (PrincipalUnitsSuccQuot K n)] :
-    Nat.card (MonoidHom.range (principalUnitsSuccQuotMk K n)) =
-      Nat.card (PrincipalUnitsSuccQuot K n) := by
-  refine Nat.card_congr ?_
-  exact
-    { toFun := fun x => x.1
-      invFun := fun x =>
-        ⟨x, by
-          rcases principalUnitsSuccQuotMk_surjective K n x with ⟨u, hu⟩
-          exact ⟨u, hu⟩⟩
-      left_inv := by
-        intro x
-        rfl
-      right_inv := by
-        intro x
-        rfl }
 
 /-- The class of a principal unit is trivial exactly when the unit belongs to `U^(n+1)`. -/
 theorem principalUnitsSuccQuotMk_eq_one_iff
@@ -673,27 +555,7 @@ theorem principalUnitsSuccQuotMk_eq_one_iff
     simpa using h'
   · intro h
     apply (principalUnitsSuccQuotConcreteEquiv K n).injective
-    simpa using
-      (QuotientGroup.eq_one_iff
-        (N := (principalUnits K (n + 1)).subgroupOf (principalUnits K n)) u).mpr h
-
-/-- Two principal units define the same successive-quotient class exactly when one differs by a
-factor in `U^(n+1)`. -/
-theorem principalUnitsSuccQuotMk_mk_eq_mk_iff
-    (K : Type u) [Field K] [ValuativeRel K] (n : Nat)
-    (u v : principalUnits K n) :
-    principalUnitsSuccQuotMk K n u = principalUnitsSuccQuotMk K n v ↔
-      ∃ z ∈ (principalUnits K (n + 1)).subgroupOf (principalUnits K n),
-        u * z = v := by
-  constructor
-  · intro h
-    have h' := congrArg (principalUnitsSuccQuotConcreteEquiv K n) h
-    exact (QuotientGroup.mk'_eq_mk'
-      (N := (principalUnits K (n + 1)).subgroupOf (principalUnits K n))).mp h'
-  · intro h
-    apply (principalUnitsSuccQuotConcreteEquiv K n).injective
-    exact (QuotientGroup.mk'_eq_mk'
-      (N := (principalUnits K (n + 1)).subgroupOf (principalUnits K n))).mpr h
+    simp_all
 
 /-- Two principal units define the same successive-quotient class exactly when their quotient lies
 in `U^(n+1)`. -/
@@ -711,36 +573,6 @@ theorem principalUnitsSuccQuotMk_eq_iff_div_mem
     apply (principalUnitsSuccQuotConcreteEquiv K n).injective
     exact (QuotientGroup.eq_iff_div_mem
       (N := (principalUnits K (n + 1)).subgroupOf (principalUnits K n))).mpr h
-
-/-- Exactness of the concrete sequence `U^(n+1) → U^n → U^n/U^(n+1)`. -/
-theorem principalUnitsSuccIncl_exact
-    (K : Type u) [Field K] [ValuativeRel K] (n : Nat) :
-    MonoidHom.range (principalUnitsSuccIncl K n) =
-      MonoidHom.ker (principalUnitsSuccQuotMk K n) := by
-  rw [principalUnitsSuccIncl_range, principalUnitsSuccQuotMk_ker]
-
-/-- Every element included from `U^(n+1)` lies in the kernel of the quotient map from `U^n`. -/
-theorem principalUnitsSuccIncl_mem_ker
-    (K : Type u) [Field K] [ValuativeRel K] (n : Nat)
-    (u : principalUnits K (n + 1)) :
-    principalUnitsSuccIncl K n u ∈ MonoidHom.ker (principalUnitsSuccQuotMk K n) := by
-  rw [← principalUnitsSuccIncl_exact K n]
-  exact ⟨u, rfl⟩
-
-/-- Quotienting an element after including it from `U^(n+1)` produces the identity class. -/
-@[simp]
-theorem principalUnitsSuccQuotMk_comp_incl_apply
-    (K : Type u) [Field K] [ValuativeRel K] (n : Nat)
-    (u : principalUnits K (n + 1)) :
-    principalUnitsSuccQuotMk K n (principalUnitsSuccIncl K n u) = 1 := by
-  exact principalUnitsSuccIncl_mem_ker K n u
-
-/-- The composite `U^(n+1) → U^n → U^n/U^(n+1)` is the trivial homomorphism. -/
-theorem principalUnitsSuccQuotMk_comp_incl
-    (K : Type u) [Field K] [ValuativeRel K] (n : Nat) :
-    (principalUnitsSuccQuotMk K n).comp (principalUnitsSuccIncl K n) = 1 := by
-  ext u
-  exact principalUnitsSuccQuotMk_comp_incl_apply K n u
 
 /-- Membership in the embedded subgroup `U^(n+1)` is equivalent to congruence to one modulo
 `𝓂^(n+1)`. -/
@@ -782,19 +614,6 @@ instance maximalIdealPowSuccQuotModule
       maximalIdealPowSuccSubmodule K n)
   infer_instance
 
-/-- Explicit access to the concrete submodule-quotient representation. -/
-def maximalIdealPowSuccQuotConcreteLinearEquiv
-    (K : Type u) [Field K] [ValuativeRel K] (n : Nat) :
-    MaximalIdealPowSuccQuot K n ≃ₗ[𝒪[K]]
-      (((𝓂[K] ^ n : Ideal 𝒪[K]) : Type u) ⧸
-        maximalIdealPowSuccSubmodule K n) := by
-  change
-    (((𝓂[K] ^ n : Ideal 𝒪[K]) : Type u) ⧸
-        maximalIdealPowSuccSubmodule K n) ≃ₗ[𝒪[K]]
-      (((𝓂[K] ^ n : Ideal 𝒪[K]) : Type u) ⧸
-        maximalIdealPowSuccSubmodule K n)
-  exact LinearEquiv.refl 𝒪[K] _
-
 /-- The quotient map `𝓂^n → 𝓂^n/𝓂^(n+1)`. -/
 def maximalIdealPowSuccQuotMk
     (K : Type u) [Field K] [ValuativeRel K] (n : Nat) :
@@ -804,23 +623,6 @@ def maximalIdealPowSuccQuotMk
     (((𝓂[K] ^ n : Ideal 𝒪[K]) : Type u) ⧸
       maximalIdealPowSuccSubmodule K n)
   exact Submodule.mkQ (maximalIdealPowSuccSubmodule K n)
-
-/-- The concrete linear equivalence sends an ideal-power class to the corresponding
-submodule-quotient class. -/
-@[simp]
-theorem maximalIdealPowSuccQuotConcreteLinearEquiv_mk
-    (K : Type u) [Field K] [ValuativeRel K] (n : Nat)
-    (a : ((𝓂[K] ^ n : Ideal 𝒪[K]) : Type u)) :
-    maximalIdealPowSuccQuotConcreteLinearEquiv K n
-        (maximalIdealPowSuccQuotMk K n a) =
-      Submodule.Quotient.mk a :=
-  rfl
-
-/-- Every class in `𝓂^n/𝓂^(n+1)` has a representative in `𝓂^n`. -/
-theorem maximalIdealPowSuccQuotMk_surjective
-    (K : Type u) [Field K] [ValuativeRel K] (n : Nat) :
-    Function.Surjective (maximalIdealPowSuccQuotMk K n) :=
-  Submodule.mkQ_surjective (maximalIdealPowSuccSubmodule K n)
 
 /-- Eliminate an ideal-power quotient class through its canonical class map. -/
 protected theorem MaximalIdealPowSuccQuot.inductionOn
@@ -889,31 +691,6 @@ theorem maximalIdealPowSuccQuotLift_mk
         (maximalIdealPowSuccQuotMk K n a) = f a :=
   rfl
 
-/-- Descend a linear map that vanishes on `𝓂^(n+1)` inside `𝓂^n`. -/
-def maximalIdealPowSuccQuotLinearLift
-    {K : Type u} {M : Type*} [Field K] [ValuativeRel K]
-    [AddCommGroup M] [Module 𝒪[K] M] (n : Nat)
-    (f : ((𝓂[K] ^ n : Ideal 𝒪[K]) : Type u) →ₗ[𝒪[K]] M)
-    (h : maximalIdealPowSuccSubmodule K n ≤ f.ker) :
-    MaximalIdealPowSuccQuot K n →ₗ[𝒪[K]] M := by
-  change
-    (((𝓂[K] ^ n : Ideal 𝒪[K]) : Type u) ⧸
-      maximalIdealPowSuccSubmodule K n) →ₗ[𝒪[K]] M
-  exact (maximalIdealPowSuccSubmodule K n).liftQ f h
-
-/-- A linear map descended to `𝓂^n/𝓂^(n+1)` agrees with the original linear map on representatives.
-A linear map descended to `𝓂^n/𝓂^(n+1)` agrees with the original linear map on representatives. -/
-@[simp]
-theorem maximalIdealPowSuccQuotLinearLift_mk
-    {K : Type u} {M : Type*} [Field K] [ValuativeRel K]
-    [AddCommGroup M] [Module 𝒪[K] M] (n : Nat)
-    (f : ((𝓂[K] ^ n : Ideal 𝒪[K]) : Type u) →ₗ[𝒪[K]] M)
-    (h : maximalIdealPowSuccSubmodule K n ≤ f.ker)
-    (a : ((𝓂[K] ^ n : Ideal 𝒪[K]) : Type u)) :
-    maximalIdealPowSuccQuotLinearLift n f h
-        (maximalIdealPowSuccQuotMk K n a) = f a :=
-  rfl
-
 /-- An element of `𝓂^n` belongs to the defining submodule exactly when its value lies in `𝓂^(n+1)`.
 An element of `𝓂^n` belongs to the defining submodule exactly when its value lies in `𝓂^(n+1)`. -/
 theorem mem_maximalIdealPowSuccSubmodule_iff
@@ -932,23 +709,7 @@ theorem maximalIdealPowSuccQuotMk_eq_zero_iff
   change (Submodule.Quotient.mk a :
     ((𝓂[K] ^ n : Ideal 𝒪[K]) : Type u) ⧸
       maximalIdealPowSuccSubmodule K n) = 0 ↔ _
-  rw [Submodule.Quotient.mk_eq_zero]
-  rfl
-
-/-- Two elements of `𝓂^n` define the same quotient class exactly when their difference lies in
-`𝓂^(n+1)`. -/
-@[simp]
-theorem maximalIdealPowSuccQuotMk_eq_iff
-    (K : Type u) [Field K] [ValuativeRel K] (n : Nat)
-    (a b : ((𝓂[K] ^ n : Ideal 𝒪[K]) : Type u)) :
-    maximalIdealPowSuccQuotMk K n a =
-        maximalIdealPowSuccQuotMk K n b ↔
-      a - b ∈ maximalIdealPowSuccSubmodule K n := by
-  change (Submodule.Quotient.mk a :
-    ((𝓂[K] ^ n : Ideal 𝒪[K]) : Type u) ⧸
-      maximalIdealPowSuccSubmodule K n) =
-    Submodule.Quotient.mk b ↔ _
-  exact Submodule.Quotient.eq (maximalIdealPowSuccSubmodule K n)
+  simp
 
 /-- If `a ∈ 𝓂^n` with `n ≥ 1`, then `1 + a` is a unit of the valuation ring. -/
 theorem isUnit_one_add_of_mem_maximalIdeal_pow
@@ -959,14 +720,13 @@ theorem isUnit_one_add_of_mem_maximalIdeal_pow
       Ideal.pow_le_pow_right hn
     simpa using hle ha
   have hnon : (-a) ∈ nonunits 𝒪[K] := by
-    rw [← IsLocalRing.mem_maximalIdeal]
-    exact (𝓂[K] : Ideal 𝒪[K]).neg_mem ha1
+    simp_all
   have hunit : IsUnit (1 - (-a)) :=
     IsLocalRing.isUnit_one_sub_self_of_mem_nonunits (-a) hnon
   simpa [sub_neg_eq_add] using hunit
 
 /-- The unit `1 + a` attached to an element `a ∈ 𝓂^n`, for `n ≥ 1`. -/
-noncomputable def principalUnitOneAddOfMemPow
+def principalUnitOneAddOfMemPow
     (K : Type u) [Field K] [ValuativeRel K] {n : Nat} (hn : 1 ≤ n)
     (a : 𝒪[K]) (ha : a ∈ (𝓂[K] ^ n : Ideal 𝒪[K])) : 𝒪[K]ˣ :=
   (isUnit_one_add_of_mem_maximalIdeal_pow K hn a ha).unit
@@ -977,10 +737,10 @@ theorem principalUnitOneAddOfMemPow_val
     (K : Type u) [Field K] [ValuativeRel K] {n : Nat} (hn : 1 ≤ n)
     (a : 𝒪[K]) (ha : a ∈ (𝓂[K] ^ n : Ideal 𝒪[K])) :
     ((principalUnitOneAddOfMemPow K hn a ha : 𝒪[K]ˣ) : 𝒪[K]) = 1 + a :=
-  IsUnit.unit_spec (isUnit_one_add_of_mem_maximalIdeal_pow K hn a ha)
+  by rfl
 
 /-- The unit `1 + a`, viewed as an element of `U^n`. -/
-noncomputable def principalUnitOneAddOfMemPowSubgroup
+def principalUnitOneAddOfMemPowSubgroup
     (K : Type u) [Field K] [ValuativeRel K] {n : Nat} (hn : 1 ≤ n)
     (a : 𝒪[K]) (ha : a ∈ (𝓂[K] ^ n : Ideal 𝒪[K])) : principalUnits K n :=
   ⟨principalUnitOneAddOfMemPow K hn a ha, by
@@ -1013,12 +773,11 @@ theorem exists_tendsto_principalUnitsCorrectionProduct_principalUnit
   refine ⟨u, ?_⟩
   have huval : (((u : principalUnits K n) : 𝒪[K]ˣ) : 𝒪[K]) = x := by
     change ((principalUnitOneAddOfMemPow K hn (x - 1) hmem : 𝒪[K]ˣ) : 𝒪[K]) = x
-    rw [principalUnitOneAddOfMemPow_val]
-    ring
+    simp
   simpa [huval] using hx
 
 /-- The concrete map `𝓂^n → U^n/U^(n+1)` sending `a` to the class of `1 + a`. -/
-noncomputable def principalUnitsSuccQuotOfIdealPow
+def principalUnitsSuccQuotOfIdealPow
     (K : Type u) [Field K] [ValuativeRel K] (n : Nat) (hn : 1 ≤ n) :
     (𝓂[K] ^ n : Ideal 𝒪[K]) → PrincipalUnitsSuccQuot K n :=
   fun a =>
@@ -1071,7 +830,7 @@ theorem principalUnitsSuccQuotMk_eq_oneAdd_of_sub_one_sub_mem_succ
           ↑(principalUnitOneAddOfMemPow K hn (a : 𝒪[K]) a.2)⁻¹ := by
         rw [principalUnitOneAddOfMemPow_val K hn (a : 𝒪[K]) a.2]
         ring]
-  exact (𝓂[K] ^ (n + 1) : Ideal 𝒪[K]).mul_mem_right _ h
+  simp_all
 
 /-- Elements of `𝓂^(n+1)` map to the trivial class in `U^n/U^(n+1)`. -/
 theorem principalUnitsSuccQuotOfIdealPow_eq_one_of_mem_succ
@@ -1081,17 +840,7 @@ theorem principalUnitsSuccQuotOfIdealPow_eq_one_of_mem_succ
     principalUnitsSuccQuotOfIdealPow K n hn a = 1 := by
   apply (principalUnitsSuccQuotMk_eq_one_iff K n _).2
   rw [mem_principalUnits_succ_subgroupOf_iff]
-  simp [principalUnitOneAddOfMemPowSubgroup, principalUnitOneAddOfMemPow_val, ha]
-
-/-- A representative of the zero class in `𝓂^n/𝓂^(n+1)` maps to the identity class in `U^n/U^(n+1)`.
-A representative of the zero class in `𝓂^n/𝓂^(n+1)` maps to the identity class in `U^n/U^(n+1)`. -/
-theorem principalUnitsSuccQuotOfIdealPow_eq_one_of_idealQuot_mk_eq_zero
-    (K : Type u) [Field K] [ValuativeRel K] (n : Nat) (hn : 1 ≤ n)
-    (a : (𝓂[K] ^ n : Ideal 𝒪[K]))
-    (ha : maximalIdealPowSuccQuotMk K n a = 0) :
-    principalUnitsSuccQuotOfIdealPow K n hn a = 1 :=
-  principalUnitsSuccQuotOfIdealPow_eq_one_of_mem_succ K n hn a
-    ((maximalIdealPowSuccQuotMk_eq_zero_iff K n a).1 ha)
+  simp_all
 
 /-- The map `a ↦ 1 + a` is insensitive to changing `a` modulo `𝓂^(n+1)`. -/
 theorem principalUnitsSuccQuotOfIdealPow_eq_of_sub_mem_succ
@@ -1114,7 +863,7 @@ theorem principalUnitsSuccQuotOfIdealPow_eq_of_sub_mem_succ
     have hbval :
         ((principalUnitOneAddOfMemPow K hn (b : 𝒪[K]) b.2 : 𝒪[K]ˣ) : 𝒪[K]) =
           1 + (b : 𝒪[K]) :=
-      principalUnitOneAddOfMemPow_val K hn (b : 𝒪[K]) b.2
+      by rfl
     have hbinv :
         ((principalUnitOneAddOfMemPow K hn (b : 𝒪[K]) b.2 : 𝒪[K]ˣ) : 𝒪[K]) *
           ↑(principalUnitOneAddOfMemPow K hn (b : 𝒪[K]) b.2)⁻¹ = 1 := by
@@ -1128,23 +877,10 @@ theorem principalUnitsSuccQuotOfIdealPow_eq_of_sub_mem_succ
       _ = (↑a - ↑b) * ↑(principalUnitOneAddOfMemPow K hn ↑b b.2)⁻¹ := by
         rw [hbval]
         ring]
-  exact (𝓂[K] ^ (n + 1) : Ideal 𝒪[K]).mul_mem_right _ hab
-
-/-- Representatives of the same class in `𝓂^n/𝓂^(n+1)` yield the same class of `1 + a` in
-`U^n/U^(n+1)`. -/
-theorem principalUnitsSuccQuotOfIdealPow_eq_of_idealQuot_mk_eq
-    (K : Type u) [Field K] [ValuativeRel K] (n : Nat) (hn : 1 ≤ n)
-    (a b : (𝓂[K] ^ n : Ideal 𝒪[K]))
-    (hab : maximalIdealPowSuccQuotMk K n a = maximalIdealPowSuccQuotMk K n b) :
-    principalUnitsSuccQuotOfIdealPow K n hn a =
-      principalUnitsSuccQuotOfIdealPow K n hn b := by
-  have hsub : a - b ∈ maximalIdealPowSuccSubmodule K n :=
-    (maximalIdealPowSuccQuotMk_eq_iff K n a b).1 hab
-  exact principalUnitsSuccQuotOfIdealPow_eq_of_sub_mem_succ K n hn a b (by
-    simpa using (mem_maximalIdealPowSuccSubmodule_iff K n (a - b)).1 hsub)
+  simp_all
 
 /-- The descent of `a ↦ [1 + a]` to `𝓂^n/𝓂^(n+1)`. -/
-noncomputable def principalUnitsSuccQuotOfMaximalIdealPowSuccQuot
+def principalUnitsSuccQuotOfMaximalIdealPowSuccQuot
     (K : Type u) [Field K] [ValuativeRel K] (n : Nat) (hn : 1 ≤ n) :
     MaximalIdealPowSuccQuot K n → PrincipalUnitsSuccQuot K n :=
   maximalIdealPowSuccQuotLift n
@@ -1187,21 +923,19 @@ theorem finset_prod_one_add_sub_one_mem_maximalIdeal_of_mem_pow
   classical
   revert a
   refine Finset.induction_on s ?base ?step
-  · intro a ha
-    simp
+  · simp
   · intro i s hi ih a ha
-    have hai_pow : a i ∈ (𝓂[K] ^ n : Ideal 𝒪[K]) := ha i (by simp [hi])
+    have hai_pow : a i ∈ (𝓂[K] ^ n : Ideal 𝒪[K]) := by simp_all
     have hai : a i ∈ (𝓂[K] : Ideal 𝒪[K]) := by
       have hle : (𝓂[K] ^ n : Ideal 𝒪[K]) ≤ (𝓂[K] ^ 1 : Ideal 𝒪[K]) :=
         Ideal.pow_le_pow_right hn
       simpa using hle hai_pow
     have hs : ∀ j ∈ s, a j ∈ (𝓂[K] ^ n : Ideal 𝒪[K]) := by
-      intro j hj
-      exact ha j (by simp [hj])
+      simp_all
     have hprod : (s.prod fun j => 1 + a j) - 1 ∈ (𝓂[K] : Ideal 𝒪[K]) :=
       ih a hs
     have hterm : a i * (s.prod fun j => 1 + a j) ∈ (𝓂[K] : Ideal 𝒪[K]) :=
-      (𝓂[K] : Ideal 𝒪[K]).mul_mem_right _ hai
+      by simp_all
     rw [Finset.prod_insert hi]
     rw [show (1 + a i) * (s.prod fun j => 1 + a j) - 1 =
         ((s.prod fun j => 1 + a j) - 1) +
@@ -1221,13 +955,11 @@ theorem finset_prod_one_add_sub_one_sub_sum_mem_maximalIdeal_pow_succ
   classical
   revert a
   refine Finset.induction_on s ?base ?step
-  · intro a ha
-    simp
+  · simp
   · intro i s hi ih a ha
-    have hai : a i ∈ (𝓂[K] ^ n : Ideal 𝒪[K]) := ha i (by simp [hi])
+    have hai : a i ∈ (𝓂[K] ^ n : Ideal 𝒪[K]) := by simp_all
     have hs : ∀ j ∈ s, a j ∈ (𝓂[K] ^ n : Ideal 𝒪[K]) := by
-      intro j hj
-      exact ha j (by simp [hj])
+      simp_all
     have hind :
         (s.prod fun j => 1 + a j) - 1 - (s.sum fun j => a j) ∈
           (𝓂[K] ^ (n + 1) : Ideal 𝒪[K]) :=
@@ -1358,9 +1090,7 @@ theorem principalUnitsSuccQuotOfMaximalIdealPowSuccQuot_map_add
       principalUnitsSuccQuotOfMaximalIdealPowSuccQuot K n hn (qa + qb) =
         principalUnitsSuccQuotOfMaximalIdealPowSuccQuot K n hn
           (maximalIdealPowSuccQuotMk K n (a + b)) := by
-    have hadd : qa + qb = maximalIdealPowSuccQuotMk K n (a + b) := by
-      exact (map_add (maximalIdealPowSuccQuotMk K n) a b).symm
-    exact congrArg (principalUnitsSuccQuotOfMaximalIdealPowSuccQuot K n hn) hadd
+    rfl
   have hrep :
       principalUnitsSuccQuotOfMaximalIdealPowSuccQuot K n hn
           (maximalIdealPowSuccQuotMk K n (a + b)) =
@@ -1380,13 +1110,12 @@ theorem principalUnitsSuccQuotOfMaximalIdealPowSuccQuot_map_add
   exact hleft.trans hrep
 
 /-- Additive form of the descended map `𝓂^n/𝓂^(n+1) → U^n/U^(n+1)`. -/
-noncomputable def principalUnitsSuccQuotOfMaximalIdealPowSuccQuotAdd
+def principalUnitsSuccQuotOfMaximalIdealPowSuccQuotAdd
     (K : Type u) [Field K] [ValuativeRel K] (n : Nat) (hn : 1 ≤ n) :
     MaximalIdealPowSuccQuot K n →+ Additive (PrincipalUnitsSuccQuot K n) where
   toFun x := Additive.ofMul (principalUnitsSuccQuotOfMaximalIdealPowSuccQuot K n hn x)
   map_zero' := by
-    change Additive.ofMul (principalUnitsSuccQuotOfMaximalIdealPowSuccQuot K n hn 0) = 0
-    simp [principalUnitsSuccQuotOfMaximalIdealPowSuccQuot_map_zero]
+    simp
   map_add' x y := by
     change Additive.ofMul (principalUnitsSuccQuotOfMaximalIdealPowSuccQuot K n hn (x + y)) =
       Additive.ofMul (principalUnitsSuccQuotOfMaximalIdealPowSuccQuot K n hn x *
@@ -1413,8 +1142,7 @@ theorem principalUnitsSuccQuotOfIdealPow_eq_one_iff
   · intro h
     have hmem := (principalUnitsSuccQuotMk_eq_one_iff K n _).1 h
     rw [mem_principalUnits_succ_subgroupOf_iff] at hmem
-    simpa [principalUnitsSuccQuotOfIdealPow, principalUnitOneAddOfMemPowSubgroup,
-      principalUnitOneAddOfMemPow_val] using hmem
+    simp_all
   · intro ha
     exact principalUnitsSuccQuotOfIdealPow_eq_one_of_mem_succ K n hn a ha
 
@@ -1469,9 +1197,7 @@ theorem principalUnitsSuccQuotOfMaximalIdealPowSuccQuotAdd_surjective
   rcases principalUnitsSuccQuotOfMaximalIdealPowSuccQuot_surjective K n hn
       (Additive.toMul y) with ⟨x, hx⟩
   refine ⟨x, ?_⟩
-  change Additive.ofMul (principalUnitsSuccQuotOfMaximalIdealPowSuccQuot K n hn x) = y
-  rw [hx]
-  rfl
+  simp_all
 
 /-- The additive map induced by `a ↦ 1 + a` on successive quotients is injective. -/
 theorem principalUnitsSuccQuotOfMaximalIdealPowSuccQuotAdd_injective
@@ -1481,15 +1207,13 @@ theorem principalUnitsSuccQuotOfMaximalIdealPowSuccQuotAdd_injective
   have hzero : principalUnitsSuccQuotOfMaximalIdealPowSuccQuotAdd K n hn (x - y) = 0 := by
     rw [map_sub, hxy, sub_self]
   have hmul : principalUnitsSuccQuotOfMaximalIdealPowSuccQuot K n hn (x - y) = 1 := by
-    change Additive.ofMul (principalUnitsSuccQuotOfMaximalIdealPowSuccQuot K n hn (x - y)) =
-      Additive.ofMul (1 : PrincipalUnitsSuccQuot K n) at hzero
-    exact Additive.ofMul.injective hzero
+    simp_all
   have hxmy : x - y = 0 :=
     (principalUnitsSuccQuotOfMaximalIdealPowSuccQuot_eq_one_iff K n hn (x - y)).1 hmul
   exact sub_eq_zero.mp hxmy
 
 /-- The additive isomorphism `𝓂^n/𝓂^(n+1) ≃ U^n/U^(n+1)` induced by `a ↦ 1+a`. -/
-noncomputable def maximalIdealPowSuccQuotAddEquivPrincipalUnitsSuccQuot
+def maximalIdealPowSuccQuotAddEquivPrincipalUnitsSuccQuot
     (K : Type u) [Field K] [ValuativeRel K] (n : Nat) (hn : 1 ≤ n) :
     MaximalIdealPowSuccQuot K n ≃+ Additive (PrincipalUnitsSuccQuot K n) :=
   AddEquiv.ofBijective (principalUnitsSuccQuotOfMaximalIdealPowSuccQuotAdd K n hn)
@@ -1505,68 +1229,3 @@ theorem maximalIdealPowSuccQuotAddEquivPrincipalUnitsSuccQuot_apply
     maximalIdealPowSuccQuotAddEquivPrincipalUnitsSuccQuot K n hn x =
       principalUnitsSuccQuotOfMaximalIdealPowSuccQuotAdd K n hn x :=
   rfl
-
-/-- Multiplicative form of
-`𝓂^n/𝓂^(n+1) ≃+ Additive (U^n/U^(n+1))`, suitable for the multiplicative
-Herbrand quotient API. -/
-noncomputable def maximalIdealPowSuccQuotMulEquivPrincipalUnitsSuccQuot
-    (K : Type u) [Field K] [ValuativeRel K] (n : Nat) (hn : 1 ≤ n) :
-    Multiplicative (MaximalIdealPowSuccQuot K n) ≃*
-      PrincipalUnitsSuccQuot K n where
-  toFun x :=
-    Additive.toMul
-      (maximalIdealPowSuccQuotAddEquivPrincipalUnitsSuccQuot K n hn
-        (Multiplicative.toAdd x))
-  invFun x :=
-    Multiplicative.ofAdd
-      ((maximalIdealPowSuccQuotAddEquivPrincipalUnitsSuccQuot K n hn).symm
-        (Additive.ofMul x))
-  left_inv := by
-    intro x
-    change Multiplicative.ofAdd
-        ((maximalIdealPowSuccQuotAddEquivPrincipalUnitsSuccQuot K n hn).symm
-          (maximalIdealPowSuccQuotAddEquivPrincipalUnitsSuccQuot K n hn
-            (Multiplicative.toAdd x))) =
-      Multiplicative.ofAdd (Multiplicative.toAdd x)
-    exact congrArg Multiplicative.ofAdd
-      ((maximalIdealPowSuccQuotAddEquivPrincipalUnitsSuccQuot K n hn).left_inv
-        (Multiplicative.toAdd x))
-  right_inv := by
-    intro x
-    change Additive.toMul
-        (maximalIdealPowSuccQuotAddEquivPrincipalUnitsSuccQuot K n hn
-          ((maximalIdealPowSuccQuotAddEquivPrincipalUnitsSuccQuot K n hn).symm
-            (Additive.ofMul x))) =
-      Additive.toMul (Additive.ofMul x)
-    exact congrArg Additive.toMul
-      ((maximalIdealPowSuccQuotAddEquivPrincipalUnitsSuccQuot K n hn).right_inv
-        (Additive.ofMul x))
-  map_mul' := by
-    intro x y
-    rw [show Multiplicative.toAdd (x * y) =
-        Multiplicative.toAdd x + Multiplicative.toAdd y from rfl]
-    change Additive.toMul
-        (maximalIdealPowSuccQuotAddEquivPrincipalUnitsSuccQuot K n hn
-          (Multiplicative.toAdd x + Multiplicative.toAdd y)) =
-      Additive.toMul
-        (maximalIdealPowSuccQuotAddEquivPrincipalUnitsSuccQuot K n hn
-          (Multiplicative.toAdd x) +
-        maximalIdealPowSuccQuotAddEquivPrincipalUnitsSuccQuot K n hn
-          (Multiplicative.toAdd y))
-    exact congrArg Additive.toMul
-      ((maximalIdealPowSuccQuotAddEquivPrincipalUnitsSuccQuot K n hn).map_add
-        (Multiplicative.toAdd x) (Multiplicative.toAdd y))
-
-/-- The multiplicative recoding of the successive-quotient equivalence sends `a` to the
-principal-unit class represented by `1+a`. -/
-@[simp]
-theorem maximalIdealPowSuccQuotMulEquivPrincipalUnitsSuccQuot_apply
-    (K : Type u) [Field K] [ValuativeRel K] (n : Nat) (hn : 1 ≤ n)
-    (x : MaximalIdealPowSuccQuot K n) :
-    maximalIdealPowSuccQuotMulEquivPrincipalUnitsSuccQuot K n hn
-        (Multiplicative.ofAdd x) =
-      principalUnitsSuccQuotOfMaximalIdealPowSuccQuot K n hn x :=
-  rfl
-
-end
-end LocalFieldTheory

@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.Theta.Profiles.CenteredPoissonSummation
 
 @[expose] public section
 
-noncomputable section
 
 open scoped NumberField nonZeroDivisors
 open DedekindZetaZeroFree.AbelianQuotient
@@ -33,7 +32,3 @@ theorem topLogIdealAverage_poisson
   rw [← mul_assoc, mul_comm _ (t : ℂ), mul_assoc]
   congr 1
   exact topLogIdealAverage_reflection F htop _ t ht
-
-end DedekindZetaZeroFree.Hecke.Theta
-
-end

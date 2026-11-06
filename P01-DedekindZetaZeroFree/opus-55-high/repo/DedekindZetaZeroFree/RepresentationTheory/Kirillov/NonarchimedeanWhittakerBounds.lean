@@ -67,7 +67,7 @@ theorem ordinaryDifferences_vanish_near_zero
       rw [map_sub, map_sub]
       have heq : ell (ρ (a y) (ρ (n x) φ)) = (ψ ((y : K) * x) : ℂ) * ell (ρ (a y) φ) := by
         rw [← Module.End.mul_apply, ← map_mul, hconj, map_mul, Module.End.mul_apply, hWh]
-      rw [heq, hcxy, one_mul, sub_self]
+      simp_all
   | zero =>
       refine ⟨1, zero_lt_one, ?_⟩
       intros
@@ -183,8 +183,8 @@ theorem whittakerValue_locallyConstant
     (ρ : Representation ℂ G V)
     (hsmooth : ∀ φ : V, IsLocallyConstant (fun g : G => ρ g φ))
     (a : Kˣ → G) (ha : Continuous a) (ell : V →ₗ[ℂ] ℂ) (φ : V) :
-    IsLocallyConstant (whittakerValue ρ a ell φ) := by
-  exact ((hsmooth φ).comp ell).comp_continuous ha
+    IsLocallyConstant (whittakerValue ρ a ell φ) := 
+  ((hsmooth φ).comp ell).comp_continuous ha
 
 theorem whittakerValue_compact_bound
     {K G V : Type*} [Field K] [TopologicalSpace K] [Group G]
@@ -222,7 +222,7 @@ theorem generic_fixed_vector_support
     by_contra! h
     apply hψ
     ext t
-    simpa using congrArg (fun z : Circle => (z : ℂ)) (h t)
+    simp_all
   obtain ⟨t, ht⟩ := ht
   have he : ∀ᶠ x in 𝓝 (0 : v.adicCompletion F), ρ (n x) φ = φ := by
     simpa using hn.continuousAt.eventually ((hsmooth φ).eventually_eq (n 0))
@@ -259,8 +259,7 @@ private theorem norm_annulus_isCompact {K : Type*} [NormedField K] [ProperSpace 
       (Metric.closedBall (0 : K) u ×ˢ (MulOpposite.opHomeomorph.symm ⁻¹' Metric.closedBall (0 : K) l⁻¹)) =
       {y : Kˣ | l ≤ ‖(y : K)‖ ∧ ‖(y : K)‖ ≤ u} := by
     ext y
-    simp only [Set.mem_preimage, Set.mem_prod, Metric.mem_closedBall, dist_zero_right,
-      Units.embedProduct, MulOpposite.unop_op]
+    simp only [Set.mem_preimage, Set.mem_prod, Metric.mem_closedBall, dist_zero_right, Units.embedProduct]
     change (‖(y : K)‖ ≤ u ∧ ‖(↑y⁻¹ : K)‖ ≤ l⁻¹) ↔ (l ≤ ‖(y : K)‖ ∧ ‖(y : K)‖ ≤ u)
     rw [show ‖(↑y⁻¹ : K)‖ = ‖(y : K)‖⁻¹ by simp]
     have hy : 0 < ‖(y : K)‖ := norm_pos_iff.mpr y.ne_zero
@@ -268,7 +267,7 @@ private theorem norm_annulus_isCompact {K : Type*} [NormedField K] [ProperSpace 
     exact and_comm
   rwa [heq] at hpre
 
-private theorem recurrence_decay {K : Type*} [NormedField K] (f : Kˣ → ℂ)
+theorem recurrence_decay {K : Type*} [NormedField K] (f : Kˣ → ℂ)
     (p : Kˣ) (α β : ℂ) (hp : ‖(p : K)‖ < 1)
     (hne : α ≠ β) (hnorm : ‖β‖ ≤ ‖α‖)
     (δ : ℝ) (hd : 0 < δ) (hα : ‖α‖ ≤ Real.rpow ‖(p : K)‖ δ)
@@ -283,12 +282,12 @@ private theorem recurrence_decay {K : Type*} [NormedField K] (f : Kˣ → ℂ)
   let q := ‖(p : K)‖
   have hq : 0 < q := norm_pos_iff.mpr p.ne_zero
   let s := min (r / 2) 1
-  have hs : 0 < s := lt_min (by positivity) zero_lt_one
+  have hs : 0 < s := by positivity
   have hs1 : s ≤ 1 := min_le_right _ _
   have hsr : s < r := lt_of_le_of_lt (min_le_left _ _) (by linarith)
   let D := (2 + ‖α‖ + ‖β‖) * H / ‖α - β‖
   have hden : 0 < ‖α - β‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hne)
-  have hD : 0 < D := by dsimp [D]; positivity
+  have hD : 0 < D := by positivity
   let L := Real.rpow (s * q) δ
   have hL : 0 < L := Real.rpow_pos_of_pos (mul_pos hs hq) _
   refine ⟨max H D / L, div_pos (lt_of_lt_of_le hH (le_max_left _ _)) hL, ?_⟩
@@ -369,7 +368,7 @@ private theorem recurrence_decay {K : Type*} [NormedField K] (f : Kˣ → ℂ)
       _ = max H D / L * L := (div_mul_cancel₀ _ hL.ne').symm
       _ ≤ max H D / L * Real.rpow ‖(y : K)‖ δ := by gcongr
 
-private theorem jacquet_roots_bounds (Q : ℕ) (hQ : (1 : ℝ) < Q) (δ : ℝ) (hδ : δ < 1 / 3) :
+theorem jacquet_roots_bounds (Q : ℕ) (hQ : (1 : ℝ) < Q) (δ : ℝ) (hδ : δ < 1 / 3) :
     let α : ℂ := (Q : ℂ)⁻¹
     let β : ℂ := ((Q : ℂ) ^ 2)⁻¹
     α ≠ β ∧ ‖β‖ ≤ ‖α‖ ∧
@@ -441,7 +440,6 @@ theorem generic_fixed_vector_small_norm
   have hl : 0 < l := by
     have hh : 0 < ‖((π ^ 3 : (v.adicCompletion F)ˣ) : v.adicCompletion F)‖ :=
       norm_pos_iff.mpr (π ^ 3).ne_zero
-    dsimp [l]
     positivity
   obtain ⟨H, hH, hbound⟩ := whittakerValue_compact_bound ρ hsmooth a ha ell φ
     {y | l ≤ ‖(y : v.adicCompletion F)‖ ∧ ‖(y : v.adicCompletion F)‖ ≤ 1}
@@ -451,7 +449,3 @@ theorem generic_fixed_vector_small_norm
     hp hne hnorm δ hδ (by simpa only [Units.val_pow_eq_pow_val, norm_pow, hπ] using hroot)
     r hr hrec H hH (fun y hy hy1 => hbound y ⟨hy, hy1⟩)
   exact ⟨C, hC, fun y _ hy => hdec y hy⟩
-
-end DedekindZetaZeroFree.KPFiniteLocal
-
-end

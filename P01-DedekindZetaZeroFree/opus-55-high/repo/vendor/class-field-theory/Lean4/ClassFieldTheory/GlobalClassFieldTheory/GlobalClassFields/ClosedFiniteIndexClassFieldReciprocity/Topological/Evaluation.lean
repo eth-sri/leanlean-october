@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Evaluation of continuous closed finite-index reciprocity
 
@@ -23,7 +20,6 @@ the generic transported-reciprocity calculation.
 
 open scoped Classical IsMulCommutative NumberField
 
-noncomputable section
 
 namespace GlobalClassFieldTheory
 namespace GlobalClassFields
@@ -49,8 +45,3 @@ theorem
     (closedFiniteIndexClassField_ideleClassNorm_range
       (K := K) H hclosed)
     σ
-
-end GlobalClassFields
-end GlobalClassFieldTheory
-
-end

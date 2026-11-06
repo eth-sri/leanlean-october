@@ -52,8 +52,7 @@ theorem isClosed_specialUnitaryGroup [T1Space 𝕜] :
     IsClosed (Matrix.specialUnitaryGroup n 𝕜 : Set (Matrix n n 𝕜)) := by
   have hinter : (Matrix.specialUnitaryGroup n 𝕜 : Set (Matrix n n 𝕜))
       = (Matrix.unitaryGroup n 𝕜 : Set (Matrix n n 𝕜)) ∩ {A | A.det = 1} := by
-    ext A
-    simpa using Matrix.mem_specialUnitaryGroup_iff
+    rfl
   rw [hinter]
   exact isClosed_unitary.inter
     (isClosed_singleton.preimage (Continuous.matrix_det continuous_id))
@@ -80,9 +79,3 @@ theorem isCompact_specialUnitaryGroup :
 
 instance : CompactSpace (Matrix.specialUnitaryGroup n 𝕜) :=
   isCompact_iff_compactSpace.mp isCompact_specialUnitaryGroup
-
-end RCLike
-
-end Matrix
-
-end DedekindZetaZeroFree.TauCeti

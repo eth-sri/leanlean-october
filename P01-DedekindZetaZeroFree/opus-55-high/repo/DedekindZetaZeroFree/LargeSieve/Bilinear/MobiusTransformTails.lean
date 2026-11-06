@@ -82,10 +82,9 @@ theorem chooseOrder {F : Type} [Field F] [NumberField F]
   obtain ⟨A, hA3, horder⟩ := horder_exists
   have hA2 : 2 < A := by omega
   set δ : ℝ := min (ε / 2) 1 with hδdef
-  have hδpos : 0 < δ := lt_min (by positivity) one_pos
+  have hδpos : 0 < δ := by positivity
   have hδlt : δ < ε := by
-    have h1 : δ ≤ ε / 2 := min_le_left _ _
-    linarith
+    simp_all
   have hA3real : (3 : ℝ) ≤ (A : ℝ) := by exact_mod_cast hA3
   have hδA : δ ≤ (A : ℝ) := by
     have h1 : δ ≤ 1 := min_le_right _ _
@@ -103,10 +102,8 @@ theorem chooseOrder {F : Type} [Field F] [NumberField F]
       (DedekindZetaZeroFree.LargeSieve.principalComplexPlaces F) (fun x : ℝ => (W x : ℂ))
       hD hr hh hhc 0 A δ hδpos
   refine ⟨A, δ, C, hA2, hδpos, hδlt, hδA, horder, hCpos, ?_, ?_⟩
-  · intro x hx0 hx1
-    simpa using hsmall x hx0 hx1
-  · intro x hx1
-    simpa using hlarge x hx1
+  · simp_all
+  simp_all
 
 end DedekindZetaZeroFree.LargeSieve.Bilinear.TransformTail
 
@@ -121,7 +118,7 @@ open scoped NumberField Classical BigOperators
 
 namespace DedekindZetaZeroFree.LargeSieve.Bilinear.TransformTail
 
-private lemma sc_le_norm {F : Type} [Field F] [NumberField F]
+lemma sc_le_norm {F : Type} [Field F] [NumberField F]
     (q a : Ideal (𝓞 F)) (ha : a ≠ ⊥) : sc q a ≤ (Ideal.absNorm a : ℝ) := by
   have hk := DedekindZetaZeroFree.LargeSieve.Sieve.UniversalB2.canonical_kernel_extraction a ha
   have hd : primeToSquarefreeKernel q a ∣ DedekindZetaZeroFree.LargeSieve.Sieve.squarefreeKernel a := by
@@ -155,7 +152,7 @@ theorem idealTail {F : Type} [Field F] [NumberField F]
   have hw : ∀ a, 0 ≤ w a := by
     intro a
     dsimp [w]
-    split_ifs <;> positivity
+    positivity
   let S : ℝ := ∑' a, w a
   have hS : 0 ≤ S := tsum_nonneg hw
   obtain ⟨B0, hB0, htail⟩ := DedekindZetaZeroFree.LargeSieve.exists_ideal_inverse_power_tail_bound F (A : ℝ) hp
@@ -167,7 +164,7 @@ theorem idealTail {F : Type} [Field F] [NumberField F]
   have ht0 : ∀ a, 0 ≤ t a := by
     intro a
     dsimp [t]
-    split_ifs <;> positivity
+    positivity
   have htw : ∀ a, t a ≤ w a := by
     intro a
     dsimp [t, w]
@@ -261,7 +258,7 @@ theorem absorb (Q ε A0 B CW : ℝ) (hQ : 0 < Q) (hε : 0 < ε)
   have hP : 1 ≤ M * N := one_le_mul_of_one_le_of_one_le hM hN
   have hP0 : 0 < M * N := mul_pos hM0 hN0
   have hR0 : 0 < Real.rpow (M * N) ε := Real.rpow_pos_of_pos hP0 _
-  have hT0 : 0 < N ^ 2 / M := div_pos (pow_pos hN0 _) hM0
+  have hT0 : 0 < N ^ 2 / M := by positivity
   have hK0 : 0 < K := lt_of_lt_of_le (mul_pos hT0 hR0) hK
   have hDK : N ^ 2 / M * Real.rpow (M * N) ε ≤ D * K :=
     hK.trans (by nlinarith)
@@ -320,29 +317,29 @@ private lemma power_identity (X K a : ℝ) (hX : 0 < X) (hK : 0 < K) :
   rw [show 1 - (1+(a-1)) = -(a-1) by ring,
     show 1 + (a-1) - 1 = a-1 by ring, Real.rpow_neg hK.le]
   ring
-private lemma prefactor_identity (E U V M : ℝ) (hE : 0 < E) (hU : 0 < U)
+lemma prefactor_identity (E U V M : ℝ) (hE : 0 < E) (hU : 0 < U)
     (hV : 0 < V) (hM : 0 < M) :
     (M / (E * Real.sqrt (U*V))) * (E*U*V/M) = Real.sqrt (U*V) := by
-  have hs : 0 < Real.sqrt (U*V) := Real.sqrt_pos.2 (mul_pos hU hV)
+  have hs : 0 < Real.sqrt (U*V) := by positivity
   have hsq := Real.sq_sqrt (mul_pos hU hV).le
   field_simp
   nlinarith
-private lemma absnorm_one {F : Type} [Field F] [NumberField F] (I : Ideal (𝓞 F))
+lemma absnorm_one {F : Type} [Field F] [NumberField F] (I : Ideal (𝓞 F))
     (hI : I ≠ ⊥) : 1 ≤ (Ideal.absNorm I : ℝ) := by
   exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hI)
-private lemma divisor_bound {F : Type} [Field F] [NumberField F]
+lemma divisor_bound {F : Type} [Field F] [NumberField F]
     (q d : Ideal (𝓞 F)) (hq : q ≠ ⊥) (hd : d ≠ ⊥)
     (e : Ideal (𝓞 F)) (he : e ∈ DedekindZetaZeroFree.LargeSieve.idealDivisors (q*d).radical) :
     (Ideal.absNorm e : ℝ) ≤ (Ideal.absNorm q : ℝ)*(Ideal.absNorm d : ℝ) := by
   have h1 := DedekindZetaZeroFree.LargeSieve.absNorm_le_of_mem_idealDivisors he
-  have hqd : q*d ≠ ⊥ := by simpa only [← Ideal.zero_eq_bot] using mul_ne_zero (by simpa using hq) (by simpa using hd)
+  have hqd : q*d ≠ ⊥ := by simp_all
   have h2 : Ideal.absNorm (q*d).radical ≤ Ideal.absNorm (q*d) :=
     Nat.le_of_dvd (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hqd))
       (Ideal.absNorm_dvd_absNorm_of_le Ideal.le_radical)
   have h := h1.trans h2
   rw [map_mul] at h
   exact_mod_cast h
-private lemma coefficient_bound {F : Type} [Field F] [NumberField F]
+lemma coefficient_bound {F : Type} [Field F] [NumberField F]
     (M : ℝ) (hM : 0 < M) (e u v : Ideal (𝓞 F))
     (he : e ≠ ⊥) (hu : u ≠ ⊥) (hv : v ≠ ⊥)
     (η : DedekindZetaZeroFree.RayClassCharacter F (u*v)) :
@@ -355,16 +352,15 @@ private lemma coefficient_bound {F : Type} [Field F] [NumberField F]
     rw [UniqueFactorizationMonoid.moebius]
     split <;> simp
   have huv : u*v ≠ ⊥ := by
-    simpa only [← Ideal.zero_eq_bot] using mul_ne_zero (by simpa using hu) (by simpa using hv)
+    simp_all
   have hη := DedekindZetaZeroFree.LargeSieve.RayOperations.norm_le_one η e
   have hb : ‖(UniqueFactorizationMonoid.moebius e : ℂ) * η e‖ ≤ 1 := by
     rw [norm_mul]
     nlinarith [norm_nonneg (η e), norm_nonneg (UniqueFactorizationMonoid.moebius e : ℂ)]
   rw [norm_mul]
   apply (mul_le_mul_of_nonneg_right hb (norm_nonneg _)).trans_eq
-  simp [norm_div, norm_mul, Complex.norm_natCast, Complex.norm_real,
-    abs_of_nonneg hM.le, abs_of_nonneg (Real.sqrt_nonneg _), map_mul]
-private lemma pair_scale_bounds {F : Type} [Field F] [NumberField F]
+  simp [Complex.norm_real, abs_of_nonneg hM.le, abs_of_nonneg (Real.sqrt_nonneg _), map_mul]
+lemma pair_scale_bounds {F : Type} [Field F] [NumberField F]
     (q d e u v : Ideal (𝓞 F)) (hq : q ≠ ⊥) (hd : d ≠ ⊥)
     (M N : ℝ) (hM : 1 ≤ M) (hN : 1 ≤ N)
     (he : e ∈ DedekindZetaZeroFree.LargeSieve.idealDivisors (q*d).radical)
@@ -646,9 +642,3 @@ def primitiveMobiusTransformTail (q d : Ideal (𝓞 F)) (W : ℝ → ℝ)
         (Real.sqrt (Ideal.absNorm (u * v) : ℝ) : ℂ))) *
       ∑' a : Ideal (𝓞 F),
         reflectedKernelTailTerm q K dotW (primitiveDualScale M e u v) η a
-
-end DedekindZetaZeroFree.LargeSieve.Bilinear
-
-end
-
-end

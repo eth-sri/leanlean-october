@@ -30,7 +30,7 @@ theorem pairing_eq_compact (β : ℂˣ) (ν : Measure ComplexSU2) [IsProbability
   rw [integral_congr_ae (Filter.Eventually.of_forall (compact_open_average ν s f g)),integral_mul_const] at he
   exact he.symm
 
-private theorem spherical_open (s : ℝ) (z : ℂ) :
+theorem spherical_open (s : ℝ) (z : ℂ) :
     openCoordinate (sphericalSection s) z = ((1+‖z‖^2)^(-(1+2*s) : ℝ) : ℝ) := by
   change openCoordinate (sphericalFunction s) z = _
   simp [openCoordinate,sphericalFunction,bottomRowNormSq,weyl,upperUnipotent,

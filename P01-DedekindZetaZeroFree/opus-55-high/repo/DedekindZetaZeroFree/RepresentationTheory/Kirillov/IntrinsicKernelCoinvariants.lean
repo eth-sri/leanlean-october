@@ -61,8 +61,4 @@ theorem embedding_evaluation
     LinearEquiv.trans_apply]
   change quotientMap F ζ hζ v ρ 1 _ = _
   rw [KPKirillovOrbitMapSurjective.orbitEquiv_symm_quotient]
-  exact sectionsTensorEquiv_tmul F ζ hζ v m hm (ψ F v) hψ s e 1
-
-end DedekindZetaZeroFree.KPWildCompactProjectorKirillov.Intrinsic
-
-end
+  rfl

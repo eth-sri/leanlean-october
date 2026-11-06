@@ -4,12 +4,11 @@ public import ValuedFieldTheory.Valuation.AbsoluteValue.Completion
 public import ValuedFieldTheory.Valuation.AbsoluteValue.AlgebraicExtension.Core
 public import ValuedFieldTheory.Valuation.AbsoluteValue.AlgebraicExtension.FiniteNormExtension
 public import ValuedFieldTheory.Valuation.AbsoluteValue.AlgebraicExtension.NormFormula
-public import ValuedFieldTheory.Valuation.AbsoluteValue.AlgebraicExtension.NormFormulaAbsoluteValue
+public import ValuedFieldTheory.Valuation.AbsoluteValue.AlgebraicExtension.NormFormulaIntegralClosure
 public import ValuedFieldTheory.Valuation.AbsoluteValue.AlgebraicExtension.NormFormulaCoefficients
 public import ValuedFieldTheory.Valuation.AbsoluteValue.AlgebraicExtension.NormFormulaExtension
-public import ValuedFieldTheory.Valuation.AbsoluteValue.AlgebraicExtension.NormFormulaIntegralClosure
 public import ValuedFieldTheory.Valuation.AbsoluteValue.AlgebraicExtension.RamificationInvariants
-public import ValuedFieldTheory.Valuation.AbsoluteValue.AlgebraicExtension.UniqueExtensionCoefficients
+public import ValuedFieldTheory.Valuation.Henselian.IrreduciblePolynomialBounds
 public import ValuedFieldTheory.Valuation.AbsoluteValue.AlgebraicExtension.UniqueValuationSubring
 public import ValuedFieldTheory.Valuation.AbsoluteValue.AlgebraicLocalization
 public import ValuedFieldTheory.Valuation.AbsoluteValue.Completeness
@@ -31,30 +30,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-set_option autoImplicit false
 
 /-!
 # Valuation conjugacy
@@ -119,9 +94,7 @@ theorem equivalent_exactExtensions_eq
   have hs_one : s = 1 :=
     (Real.rpow_right_inj (vK.pos ha) hva).mp (by simpa using hbase)
   apply Subtype.ext
-  ext x
-  have hpoint := congrFun hpow x
-  simpa [hs_one] using hpoint
+  simp_all
 
 /-- Normality descent for the embeddings supplied by the valuation-extension theorem: two exact
 extensions differ by an actual `K`-automorphism of `L`, not merely by an
@@ -164,24 +137,3 @@ theorem absoluteValueConjugacy
   rcases absoluteValueConjugacy_exists_conjugatingAlgEquiv vK hvK w w' with
     ⟨σ, hσ⟩
   exact ⟨σ, Subtype.ext hσ⟩
-
-/-- Class-level form of the valuation-conjugacy theorem.  The exact-representative equality
-above in particular gives equality of the corresponding absolute value
-classes. -/
-theorem absoluteValueConjugacy_valuationClass
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
-    [IsGalois K L]
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
-    (w w' : AbsoluteValueExtension vK L) :
-    ∃ σ : L ≃ₐ[K] L,
-      LubinTate.Valuations.EquivalentAbsoluteValues w'.1
-        (absoluteValueExtensionConjugate vK w σ).1 := by
-  rcases absoluteValueConjugacy vK hvK w w' with ⟨σ, hσ⟩
-  refine ⟨σ, ?_⟩
-  rw [← hσ]
-  exact LubinTate.Valuations.equivalentAbsoluteValues_refl w'.1
-
-end Valuations
-end AlgebraicNumberTheory
-
-end

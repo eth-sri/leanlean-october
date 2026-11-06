@@ -34,12 +34,12 @@ theorem normBoundedIdeals_finite (F : Type) [Field F] [NumberField F] (X : ℝ) 
     hI.trans (Nat.le_ceil X))
 
 theorem normBoundedIdealSubset_finite (A : Set (NonzeroIdeal F)) (X : ℝ) :
-    (A ∩ normBoundedIdeals F X).Finite := by
-  exact (normBoundedIdeals_finite F X).subset Set.inter_subset_right
+    (A ∩ normBoundedIdeals F X).Finite := 
+  (normBoundedIdeals_finite F X).subset Set.inter_subset_right
 
 theorem normDyadicIdealSubset_finite (A : Set (NonzeroIdeal F)) (C : ℝ) :
-    (A ∩ normDyadicIdeals F C).Finite := by
-  exact (normBoundedIdeals_finite F (2 * C)).subset (fun I hI => hI.2.2.le)
+    (A ∩ normDyadicIdeals F C).Finite := 
+  (normBoundedIdeals_finite F (2 * C)).subset (fun I hI => hI.2.2.le)
 
 namespace CountsProof
 variable {F : Type} [Field F] [NumberField F]
@@ -56,9 +56,9 @@ private theorem linear : ∃ K : ℝ, 0 < K ∧ ∀ X : ℝ, 1 ≤ X →
     Set.ncard_le_ncard_of_injOn Subtype.val (fun I hI => by
       change Ideal.absNorm I.val ≤ ⌈X⌉₊
       exact_mod_cast (show (Ideal.absNorm I.val : ℝ) ≤ (⌈X⌉₊ : ℝ) from hI.trans (Nat.le_ceil X))) Subtype.val_injective.injOn hfin
-  have hceil : 0 < (⌈X⌉₊ : ℝ) := lt_of_lt_of_le (by norm_num) (hX.trans (Nat.le_ceil X))
+  have hceil : 0 < (⌈X⌉₊ : ℝ) := by positivity
   have hn := hB (Set.mem_range_self ⌈X⌉₊)
-  simp only [Function.comp_apply, Nat.card_coe_set_eq] at hn
+  simp only [Function.comp_apply] at hn
   have hn' : ({I : Ideal (𝓞 F) | Ideal.absNorm I ≤ ⌈X⌉₊}.ncard : ℝ) ≤
       B * (⌈X⌉₊ : ℝ) := by
     apply (div_le_iff₀ hceil).mp
@@ -87,8 +87,6 @@ private theorem weighted (K : ℝ)
       ((u.filter (fun I => Ideal.absNorm I.val - 1 < k)).card : ℝ) := by
     simp only [f, ← Finset.sum_boole]
     rw [Finset.sum_comm]
-    apply Finset.sum_congr rfl
-    intro I hI
     simp
   have hfc (k : ℕ) (hk : k ≤ N) : ∑ i ∈ Finset.range k, f i ≤
       ∑ i ∈ Finset.range k, K := by
@@ -114,8 +112,7 @@ private theorem weighted (K : ℝ)
     calc ∑ I ∈ u with Ideal.absNorm I.val - 1 = i, g (Ideal.absNorm I.val - 1)
         = ∑ I ∈ u with Ideal.absNorm I.val - 1 = i, g i := by
             apply Finset.sum_congr rfl
-            intro I hI
-            rw [(Finset.mem_filter.mp hI).2]
+            simp_all
          _ = f i * g i := by simp [f, nsmul_eq_mul]
   rw [he, Finset.mul_sum]
   exact Finset.sum_mul_le_sum_mul_of_sum_range_le hfc hg0 (hg.antitoneOn _)
@@ -127,8 +124,8 @@ private theorem summable_norm (s : ℝ) (hs : 1 < s) :
   have hg : Antitone g := by
     intro i j hij
     exact Real.rpow_le_rpow_of_nonpos (by positivity) (by exact_mod_cast Nat.succ_le_succ hij) (by linarith)
-  have hgs : Summable g := by
-    exact (Real.summable_nat_rpow.mpr (by linarith : -s < -1)).comp_injective (fun i j h => by omega)
+  have hgs : Summable g := 
+    (Real.summable_nat_rpow.mpr (by linarith : -s < -1)).comp_injective (fun i j h => by omega)
   apply summable_of_sum_le (c := K * ∑' i, g i)
     (fun I => Real.rpow_nonneg (Nat.cast_nonneg _) _)
   intro u
@@ -164,7 +161,7 @@ private theorem harmonic_bound (K : ℝ) (hK0 : 0 < K)
   rw [hsum] at hw
   exact hw.trans (mul_le_mul_of_nonneg_left (harmonic_floor_le_one_add_log X hX) hK0.le)
 
-private theorem dyadic_bound (K : ℝ) (hK0 : 0 < K)
+theorem dyadic_bound (K : ℝ) (hK0 : 0 < K)
     (hK : ∀ X : ℝ, 1 ≤ X → ((normBoundedIdeals F X).ncard : ℝ) ≤ K * X)
     (A : Set (NonzeroIdeal F)) (C : ℝ) (hC : 1 ≤ C) :
     idealDyadicHarmonicSum A C ≤ 2 * K := by
@@ -192,7 +189,7 @@ private theorem all_bounds :
       (∀ C : ℝ, 1 ≤ C → idealDyadicHarmonicSum A C ≤ 2 * K) ∧
       (∀ X : ℝ, 1 ≤ X → idealHarmonicSum A X ≤ K' * Real.log (2 * X)) := by
   obtain ⟨K, hK0, hK⟩ := linear (F := F)
-  have hl : 0 < Real.log 2 := Real.log_pos (by norm_num)
+  have hl : 0 < Real.log 2 := by positivity
   refine ⟨K, K * (1 + (Real.log 2)⁻¹), hK0, by positivity, ?_⟩
   intro A
   refine ⟨?_, dyadic_bound K hK0 hK A, ?_⟩
@@ -213,14 +210,10 @@ theorem ideal_counting_harmonic_bounds (F : Type) [Field F] [NumberField F] :
         (∀ X : ℝ, 1 ≤ X →
           ((A ∩ normBoundedIdeals F X).ncard : ℝ) ≤ K * X) ∧
         (∀ C : ℝ, 1 ≤ C → idealDyadicHarmonicSum A C ≤ 2 * K) ∧
-        (∀ X : ℝ, 1 ≤ X → idealHarmonicSum A X ≤ K' * Real.log (2 * X)) := by
-  exact CountsProof.all_bounds
+        (∀ X : ℝ, 1 ≤ X → idealHarmonicSum A X ≤ K' * Real.log (2 * X)) := 
+  CountsProof.all_bounds
 
 theorem ideal_norm_rpow_summable (F : Type) [Field F] [NumberField F]
     (s : ℝ) (hs : 1 < s) :
-    Summable (fun I : NonzeroIdeal F => Real.rpow (idealNorm I.val) (-s)) := by
-  exact CountsProof.summable_norm s hs
-
-end
-
-end DedekindZetaZeroFree
+    Summable (fun I : NonzeroIdeal F => Real.rpow (idealNorm I.val) (-s)) := 
+  CountsProof.summable_norm s hs

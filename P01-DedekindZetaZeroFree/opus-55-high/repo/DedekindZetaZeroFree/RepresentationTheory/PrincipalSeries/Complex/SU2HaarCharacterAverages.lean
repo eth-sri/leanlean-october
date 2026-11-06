@@ -34,14 +34,10 @@ theorem exists_su2_probability_haar :
     convert complexSU2_isCompact using 1
     exact Subtype.range_coe.symm)
   letI : ContinuousInv ComplexSU2 := ⟨by
-    apply continuous_induced_rng.mpr
-    change Continuous (fun k : ComplexSU2 => star (k : Matrix (Fin 2) (Fin 2) ℂ))
-    exact continuous_star.comp continuous_subtype_val⟩
+    fun_prop⟩
   letI : IsTopologicalGroup ComplexSU2 := {}
   let K : TopologicalSpace.PositiveCompacts ComplexSU2 := ⊤
   refine ⟨Measure.haarMeasure K, inferInstance, ?_⟩
   apply isProbabilityMeasure_iff.mpr
   simpa only [K, TopologicalSpace.PositiveCompacts.coe_top] using
     (Measure.haarMeasure_self (K₀ := K))
-
-end DedekindZetaZeroFree.KPCplxHarmonicExtraction

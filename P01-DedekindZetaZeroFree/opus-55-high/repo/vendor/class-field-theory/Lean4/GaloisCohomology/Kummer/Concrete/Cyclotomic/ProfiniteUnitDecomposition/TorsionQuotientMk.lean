@@ -11,16 +11,12 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Evaluation of the torsion-quotient equivalence
 -/
 
 open scoped Topology
 
-noncomputable section
 
 namespace KummerTheory
 
@@ -44,7 +40,3 @@ theorem torsionQuotientEquivOfZHatMulDecomposition_mk
         G T E hT (QuotientGroup.mk g) =
       (E g).1 := by
   rfl
-
-end KummerTheory
-
-end

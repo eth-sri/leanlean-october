@@ -24,5 +24,3 @@ def HasRecursiveEnvelope (B : ℝ → ℝ → ℝ) (α : ℝ) : Prop :=
     ∀ M N : ℝ, 1 ≤ M → 1 ≤ N →
       B M N ≤ C * (M * N) ^ ε *
         (M + N + N ^ (2 * α - 1) * M ^ (1 - α))
-
-end DedekindZetaZeroFree.LargeSieve

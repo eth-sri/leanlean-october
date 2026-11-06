@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Cyclotomic descent for maximal Kummer norm subgroups
 
@@ -28,7 +22,6 @@ applying maximal Kummer theory, and descending the norm inclusion produces a
 finite Galois extension whose norm subgroup is contained in `Kˣⁿ`.
 -/
 
-noncomputable section
 
 namespace LocalClassFieldTheory
 
@@ -160,19 +153,19 @@ theorem exists_finiteGalois_normSubgroup_le_powMonoidHom_range
   let eLin : L0 ≃ₗ[K] L1 :=
     { toFun := fun x => ⟨x.1, x.2⟩
       invFun := fun x => ⟨x.1, x.2⟩
-      left_inv := by intro x; ext; rfl
-      right_inv := by intro x; ext; rfl
-      map_add' := by intro x y; ext; rfl
-      map_smul' := by intro a x; ext; rfl }
+      left_inv := by intro x; rfl
+      right_inv := by intro x; rfl
+      map_add' := by intro x y; rfl
+      map_smul' := by intro a x; rfl }
   let : FiniteDimensional K L0 := Module.Finite.equiv eLin.symm
   let eL : L1 ≃ₐ[K] L0 :=
     { toFun := fun x => ⟨x.1, x.2⟩
       invFun := fun x => ⟨x.1, x.2⟩
-      left_inv := by intro x; ext; rfl
-      right_inv := by intro x; ext; rfl
-      map_add' := by intro x y; ext; rfl
-      map_mul' := by intro x y; ext; rfl
-      commutes' := by intro x; ext; rfl }
+      left_inv := by intro x; rfl
+      right_inv := by intro x; rfl
+      map_add' := by intro x y; rfl
+      map_mul' := by intro x y; rfl
+      commutes' := by intro x; rfl }
   have hnormL0 :
       localNormSubgroup K L0 ≤ (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range := by
     rw [LocalFieldTheory.normSubgroup_algEquiv K L1 L0 eL]
@@ -205,7 +198,3 @@ theorem exists_finiteGalois_normSubgroup_le_powMonoidHom_range
       finiteDimensional := inferInstance
       isGalois := inferInstance }
   exact ⟨E, by simpa [E] using hnormF⟩
-
-end LocalClassFieldTheory
-
-end

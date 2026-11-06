@@ -35,6 +35,3 @@ lemma shuffle_eq : (shuffle S J).toLinearMap = TensorProduct.lift (PiTensorProdu
  change (shuffle S J).toLinearMap _ = _
  rw [shuffle_eq]
  simp only [TensorProduct.lift.tmul, PiTensorProduct.map₂_tprod_tprod, TensorProduct.mk_apply]
-end DedekindZetaZeroFree.KPKirillovFiniteTensor.ShuffleHelpers
-
-end

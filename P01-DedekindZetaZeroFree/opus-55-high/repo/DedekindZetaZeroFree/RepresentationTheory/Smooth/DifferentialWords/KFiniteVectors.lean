@@ -23,7 +23,7 @@ def expLift (f : G → ℂ) (g : G) (a : LieCoordinates F) : ℂ :=
   f (g * archimedeanInsertion F ζ hζ (exponential F a))
 
 open scoped Matrix.Norms.Operator in
-private theorem matrixExpEntry_smooth (v : NumberField.InfinitePlace F) (i j : Fin 2) :
+theorem matrixExpEntry_smooth (v : NumberField.InfinitePlace F) (i j : Fin 2) :
     ContDiff ℝ (⊤ : ℕ∞) (fun a : LieCoordinates F =>
       NormedSpace.exp (sl2Matrix (fun j => a (v,j))) i j) := by
   letI : NormedAddCommGroup (Matrix (Fin 2) (Fin 2) ℂ) := Matrix.linftyOpNormedAddCommGroup

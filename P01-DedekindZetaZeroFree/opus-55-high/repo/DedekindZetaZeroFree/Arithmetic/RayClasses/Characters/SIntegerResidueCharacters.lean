@@ -78,8 +78,7 @@ theorem finiteComponent_norm (A : SArithmeticData F)
 theorem localInverseProduct_norm (A : SArithmeticData F)
     (σ : FullLocalCharacters A) (hσ : HasFiniteOrder A σ)
     (n : NonzeroSInteger A) : ‖localInverseProduct A σ n‖ = 1 := by
-  simp [localInverseProduct, norm_mul, norm_prod, norm_inv,
-    infiniteComponent_norm A σ hσ, finiteComponent_norm A σ hσ]
+  simp [localInverseProduct, norm_prod, norm_inv, infiniteComponent_norm A σ hσ, finiteComponent_norm A σ hσ]
 
 theorem conductorSplit_norm_le (A : SArithmeticData F)
     (f fS qO : Ideal (𝓞 F)) (hf : ConductorSplit A f fS qO) :
@@ -88,9 +87,7 @@ theorem conductorSplit_norm_le (A : SArithmeticData F)
   have hpos : 0 < Ideal.absNorm f :=
     Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hf0)
   apply Nat.le_of_dvd hpos
-  apply Ideal.absNorm_dvd_absNorm_of_le
-  rw [hfactor]
-  exact Ideal.mul_le_right
+  simp_all
 
 @[simp]
 theorem residueZeroExtension_unit (A : SArithmeticData F) (q : Ideal A.R)
@@ -103,6 +100,3 @@ theorem residueZeroExtension_top (A : SArithmeticData F)
     residueZeroExtension A ⊤ lam x = 1 := by
   have hx : x = 1 := Subsingleton.elim _ _
   rw [hx, map_one]
-
-end
-end DedekindZetaZeroFree.Detector.FixedSResidue

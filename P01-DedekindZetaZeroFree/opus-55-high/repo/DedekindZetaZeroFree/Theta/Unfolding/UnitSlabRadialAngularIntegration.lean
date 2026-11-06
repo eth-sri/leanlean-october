@@ -34,51 +34,6 @@ variable {K : Type*} [Field K] [NumberField K]
 
 open Classical in
 
-noncomputable def unitCoordinateShiftHom :
-    ({w : InfinitePlace K // w ≠ w₀} → ℤ) →+
-      mixedEmbedding.realSpace K where
-  toFun := unitCoordinateShift
-  map_zero' := by
-    ext w
-    by_cases hw : w = w₀ <;> simp [unitCoordinateShift, hw]
-  map_add' z z' := by
-    ext w
-    by_cases hw : w = w₀ <;> simp [unitCoordinateShift, hw]
-
-open Classical in
-@[simp]
-theorem unitCoordinateShiftHom_apply
-    (z : {w : InfinitePlace K // w ≠ w₀} → ℤ) :
-    unitCoordinateShiftHom (K := K) z = unitCoordinateShift z :=
-  rfl
-
-open Classical in
-
-noncomputable def unitCoordinateLattice :
-    AddSubgroup (mixedEmbedding.realSpace K) :=
-  (unitCoordinateShiftHom (K := K)).range
-
-open Classical in
-theorem unitCoordinateShift_mem_lattice
-    (z : {w : InfinitePlace K // w ≠ w₀} → ℤ) :
-    unitCoordinateShift z ∈ unitCoordinateLattice (K := K) :=
-  ⟨z, rfl⟩
-
-open Classical in
-noncomputable instance countable_unitCoordinateLattice :
-    Countable (unitCoordinateLattice (K := K)) :=
-  Function.Surjective.countable
-    (f := fun z : {w : InfinitePlace K // w ≠ w₀} → ℤ ↦
-      (⟨unitCoordinateShift z, unitCoordinateShift_mem_lattice z⟩ :
-        unitCoordinateLattice (K := K)))
-    (by
-      intro g
-      obtain ⟨z, hz⟩ := g.prop
-      refine ⟨z, Subtype.ext ?_⟩
-      simpa using hz)
-
-open Classical in
-
 def unitAngularParamSet (K : Type*) [Field K] [NumberField K] :
     Set ({w : InfinitePlace K // w ≠ w₀} → ℝ) :=
   Set.univ.pi fun _ ↦ Ico 0 1
@@ -97,7 +52,7 @@ def unitRadialAngularEquiv :
   invFun p w := if hw : w = w₀ then p.1 else p.2 ⟨w, hw⟩
   left_inv y := by
     ext w
-    by_cases hw : w = w₀ <;> simp [hw]
+    simp_all
   right_inv p := by
     rcases p with ⟨a, u⟩
     apply Prod.ext
@@ -111,12 +66,7 @@ def unitRadialAngularEquiv :
     intro w
     change Measurable (fun p : ℝ × ({w : InfinitePlace K // w ≠ w₀} → ℝ) ↦
       if hw : w = w₀ then p.1 else p.2 ⟨w, hw⟩)
-    by_cases hw : w = w₀
-    · simpa [hw] using
-        (measurable_fst : Measurable (fun p : ℝ × ({w : InfinitePlace K // w ≠ w₀} → ℝ) ↦ p.1))
-    · simpa only [dif_neg hw, Function.comp_def] using
-        ((measurable_pi_apply (⟨w, hw⟩ : {w : InfinitePlace K // w ≠ w₀})).comp
-          (measurable_snd : Measurable (fun p : ℝ × ({w : InfinitePlace K // w ≠ w₀} → ℝ) ↦ p.2)))
+    fun_prop
 
 open Classical in
 
@@ -155,7 +105,7 @@ theorem measurePreserving_unitRadialAngularEquiv :
         (volume : Measure ({w : InfinitePlace K // w ≠ w₀} → ℝ))) := by
     convert he using 1 <;> congr 4 <;> exact Subsingleton.elim _ _
   have hdefault : (default : {w : InfinitePlace K // w = w₀}).val = w₀ :=
-    (default : {w : InfinitePlace K // w = w₀}).prop
+    by rfl
   simpa [unitRadialAngularEquiv, e, Function.comp_def,
     MeasurableEquiv.piEquivPiSubtypeProd, MeasurableEquiv.funUnique,
     MeasurableEquiv.piUnique, Equiv.piEquivPiSubtypeProd, Prod.map, hdefault] using hf.comp he'
@@ -234,7 +184,3 @@ theorem setIntegral_unitFundamentalParamSet_eq_radialAngular
     (∫ y in unitFundamentalParamSet K, f y) =
       ∫ a : ℝ, ∫ u in unitAngularParamSet K, f (unitSlabCoordinates a u) := by
   simpa using setIntegral_radialSlab_eq_radialAngular f Set.univ (by simpa using hf)
-
-end DedekindZetaZeroFree.AbelianQuotient.Theta
-
-end

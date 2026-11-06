@@ -292,7 +292,3 @@ structure CertifiedPacket where
   absolute : ReverseAbsolute R transport sources realization packet
   upperZero : BothUpperZero R transport sources realization packet
   unfolding : SignedUnfolding R transport sources realization packet
-
-end DedekindZetaZeroFree.MomentSources
-
-end

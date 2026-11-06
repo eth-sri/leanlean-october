@@ -9,11 +9,9 @@ public import DedekindZetaZeroFree.Arithmetic.ResidueSymbols.Sextic.Reciprocity
 open scoped NumberField Classical
 open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.SArithmeticData.GaussCorrection.CorrectedWeilSource
-noncomputable section
-set_option autoImplicit false
 variable {F : Type} [Field F] [NumberField F]
 
-private lemma outside_prime_good (A : SArithmeticData F) (w : HeightOneSpectrum (𝓞 F))
+lemma outside_prime_good (A : SArithmeticData F) (w : HeightOneSpectrum (𝓞 F))
     (hw : w ∉ A.Sf) : ¬ (ResidueTrace.rationalPrimeBelow w).val ∣ 6 := by
   intro hd
   apply hw
@@ -22,7 +20,7 @@ private lemma outside_prime_good (A : SArithmeticData F) (w : HeightOneSpectrum 
   have hz := (CharP.cast_eq_zero_iff (𝓞 F ⧸ w.asIdeal)
     (ringChar (𝓞 F ⧸ w.asIdeal)) 6).mpr hd
   simpa only [map_ofNat, Nat.cast_ofNat] using hz
-private lemma outside_prime_ideal (A : SArithmeticData F) (w : HeightOneSpectrum (𝓞 F))
+lemma outside_prime_ideal (A : SArithmeticData F) (w : HeightOneSpectrum (𝓞 F))
     (hw : w ∉ A.Sf) : ∃ J : A.Exterior, J.val = w.asIdeal := by
   refine ⟨⟨w.asIdeal, w.ne_bot, ?_⟩, rfl⟩
   apply (A.exterior_iff ⟨w.asIdeal, w.ne_bot⟩).mpr
@@ -30,7 +28,7 @@ private lemma outside_prime_ideal (A : SArithmeticData F) (w : HeightOneSpectrum
   apply w.isMaximal.coprime_of_ne v.isMaximal
   intro he
   exact hw (HeightOneSpectrum.asIdeal_injective he ▸ hv)
-private lemma outside_unit_index (A : SArithmeticData F) (w : HeightOneSpectrum (𝓞 F))
+lemma outside_unit_index (A : SArithmeticData F) (w : HeightOneSpectrum (𝓞 F))
     (hw : w ∉ A.Sf) (hS : A.ContainsTraceBadPlaces)
     (b : (w.adicCompletion F)ˣ) (hb : Valued.v (b : w.adicCompletion F) = 1) :
     A.finiteWeilIndex w b = 1 := by
@@ -40,7 +38,6 @@ private lemma outside_unit_index (A : SArithmeticData F) (w : HeightOneSpectrum 
     ⟨⟨b, hmem.1⟩, ⟨(b⁻¹ : (w.adicCompletion F)ˣ), hmem.2⟩,
       Subtype.ext b.val_inv, Subtype.ext b.inv_val⟩
   have hu : Units.map (w.adicCompletionIntegers F).subtype.toMonoidHom u = b := by
-    apply Units.ext
     rfl
   rw [← hu]
   exact A.finiteWeilIndex_exterior_unit J w hJ (outside_prime_good A w hw) (hS w hw) u
@@ -66,13 +63,11 @@ theorem weilSCorrection_diagonal_prime (A : SArithmeticData F)
     rw [HeightOneSpectrum.algebraMap_adicCompletion]
     simp only [Function.comp_apply, Algebra.algebraMap_self]
     rw [HeightOneSpectrum.valuedAdicCompletion_eq_valuation']
-    simp only [Units.val_inv_eq_inv_val, map_inv₀, RingHom.id_apply, hval, inv_one]
+    simp_all
   have hsupp : Function.mulSupport f ⊆ (insert v A.Sf : Finset _) := by
     intro w hw
     by_contra hnot
-    have hnot' : w ≠ v ∧ w ∉ A.Sf := by
-      simpa only [Finset.mem_coe, Finset.mem_insert, not_or] using hnot
-    exact hw (hout w hnot'.2 hnot'.1)
+    simp_all
   have hglob := A.normalizedWeilIndex_product a⁻¹
   have hinf (w : InfinitePlace F) : A.infiniteWeilIndex w
       (Units.map (algebraMap F w.Completion).toMonoidHom a⁻¹) = 1 := by
@@ -96,13 +91,9 @@ theorem weilSCorrection_diagonal_prime (A : SArithmeticData F)
     rw [Circle.coe_inv]
     change _ = (Circle.coeHom (∏ w ∈ A.Sf, f w))⁻¹
     rw [map_prod, ← Finset.prod_coe_sort A.Sf (fun w => Circle.coeHom (f w))]
-    simp only [f, map_inv]
     rfl
   rw [hc, hcorr]
   change (A.finiteWeilIndex v
     (Units.map (algebraMap F (v.adicCompletion F)).toMonoidHom a⁻¹) : ℂ) = _
   rw [map_inv]
   exact heval.1.trans heval.2
-
-end
-end DedekindZetaZeroFree.SArithmeticData.GaussCorrection.CorrectedWeilSource

@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Restriction in a finite-place Artin tower
 
@@ -91,13 +88,7 @@ theorem absoluteValueCompletionMap_comp_of_isScalarTower
     have ha : (a : vK.Completion) =
         algebraMap K vK.Completion
           (WithAbs.equiv vK a) := by
-      change (a : vK.Completion) =
-        (((WithAbs.equiv vK).symm
-          (WithAbs.equiv vK a) : WithAbs vK) :
-            vK.Completion)
-      exact congrArg
-        (fun z : WithAbs vK => (z : vK.Completion))
-        ((WithAbs.equiv vK).symm_apply_apply a).symm
+      rfl
     rw [ha]
     change
       AbsoluteValue.completionMap vE vL hEL
@@ -115,7 +106,7 @@ theorem absoluteValueCompletionMap_comp_of_isScalarTower
 
 /-- The completion map in a number-field tower restricts to the
 corresponding algebraic localizations. -/
-noncomputable def finitePlaceRestrictedLocalizedCompletionAlgHom
+def finitePlaceRestrictedLocalizedCompletionAlgHom
     {E : Type}
     [Field E] [Algebra K E] [Algebra E L]
     [IsScalarTower K E L]
@@ -409,8 +400,8 @@ theorem decompositionGroupEquivAlgebraicLocalizationAut_restrict_of_commutes
             (rhoL.1 : L ≃ₐ[K] L)) z)) =
       AbsoluteValue.toAlgebraicLocalization vK wL.1 wL.2
         ((rhoL.1 : L ≃ₐ[K] L)
-          (algebraMap E L z)) := by
-            exact congrArg
+          (algebraMap E L z)) := 
+            congrArg
               (AbsoluteValue.toAlgebraicLocalization
                 vK wL.1 wL.2)
               (AlgEquiv.restrictNormal_commutes
@@ -431,8 +422,8 @@ theorem decompositionGroupEquivAlgebraicLocalizationAut_restrict_of_commutes
     _ = localizationEmbedding
         ((AlgEquiv.restrictNormalHom EL tauL)
           (AbsoluteValue.toAlgebraicLocalization
-            vK wE.1 wE.2 z)) := by
-            exact hcommutes
+            vK wE.1 wE.2 z)) := 
+            hcommutes
     _ = localizationEmbedding
         (tauE
           (AbsoluteValue.toAlgebraicLocalization
@@ -452,7 +443,7 @@ theorem decompositionGroupEquivAlgebraicLocalizationAut_restrict_of_commutes
           ((rhoE.1 : E ≃ₐ[K] E) z)) := by
             rw [hlocalization]
 
- noncomputable def finitePlaceLocalRestrictionMonoidHom
+ def finitePlaceLocalRestrictionMonoidHom
     {E : Type}
     [Field E] [Algebra K E] [Algebra E L]
     [IsScalarTower K E L]
@@ -709,7 +700,6 @@ theorem finitePlaceLocalArtinMonoidHom_restrict_tower
         vK.Completion EL LL)
       (eK.symm x)
 
-
 /-- Finite-place Artin homomorphisms attached to specified place
 extensions commute with restriction through an abelian tower. -/
 theorem finitePlaceArtinMonoidHomOfExtension_restrict_tower
@@ -820,8 +810,3 @@ theorem chosenFinitePlaceArtinMonoidHom_restrict_tower
         (K := K) (L := E) v wE
         (chosenFinitePlaceExtension
           (L := E) v)
-
-end Reciprocity
-end GlobalClassFieldTheory
-
-end

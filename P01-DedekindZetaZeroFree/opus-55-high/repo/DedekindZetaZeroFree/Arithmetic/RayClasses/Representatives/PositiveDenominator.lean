@@ -39,5 +39,3 @@ theorem positiveRayDenominator
     heq ▸ hdua
   obtain ⟨ham, hapos⟩ := (integralNarrowRayCongruence K m hm a haK).mp hau
   exact ⟨a, d, hane, hdne, haeq, ham, hdm, hapos, hdpos⟩
-
-end DedekindZetaZeroFree.AbelianQuotient

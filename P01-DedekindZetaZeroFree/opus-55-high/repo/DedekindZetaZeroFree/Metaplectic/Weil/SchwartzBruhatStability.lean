@@ -62,7 +62,7 @@ private theorem phase_eq_traceCharacter
   have hx2 : u.2 = x.2 := rfl
   have hy2 : v.2 = y.2 := rfl
   rw [sLocalTraceCharacter_apply]
-  simp only [Circle.coe_mul, map_prod, Prod.fst_mul, Prod.snd_mul, Pi.mul_apply]
+  simp only [Circle.coe_mul, Prod.fst_mul, Prod.snd_mul, Pi.mul_apply]
   unfold PoissonS.tracePhase
   rw [← hx, ← hy, harch]
   change _ = Circle.coeHom (∏ w : InfinitePlace F, archTraceCharacter w (u.1 w * v.1 w)) *
@@ -108,7 +108,7 @@ private theorem kernel_integrable (T : Finset (HeightOneSpectrum (𝓞 F)))
         ((-2 * Real.pi * PoissonArch.tracePairing F x.1 y.1 : ℝ) : ℂ) * Complex.I by
       push_cast; ring]
     rw [Complex.norm_exp_ofReal_mul_I, one_mul, norm_prod]
-    exact Finset.prod_eq_one fun v _ => Circle.norm_coe _
+    simp
   simpa only [mul_assoc] using hf.mul_bdd hc.aestronglyMeasurable
     (Filter.Eventually.of_forall (fun x => (hn x).le))
 
@@ -134,8 +134,7 @@ private theorem fourier_stable (T : Finset (HeightOneSpectrum (𝓞 F)))
     have heq : fourier F T 0 = 0 := by
       funext x
       simp [fourier, PoissonS.fourierIntegral]
-    rw [heq]
-    exact (testSpace F T).zero_mem
+    simp_all
   | add f g hf hg ihf ihg =>
     refine ⟨ihf.1.add ihg.1, ?_⟩
     have heq : fourier F T (f + g) = fourier F T f + fourier F T g := by
@@ -265,8 +264,7 @@ theorem testSpace_stability (A : SArithmeticData F)
       have heq : chirp F T b 0 = 0 := by
         funext x
         simp [chirp]
-      rw [heq]
-      exact (testSpace F T).zero_mem
+      simp_all
     | add f g hf hg ihf ihg =>
       have heq : chirp F T b (f + g) = chirp F T b f + chirp F T b g := by
         funext x
@@ -279,7 +277,3 @@ theorem testSpace_stability (A : SArithmeticData F)
         simp [chirp, smul_eq_mul, mul_left_comm]
       rw [heq]
       exact (testSpace F T).smul_mem a ih
-
-end DedekindZetaZeroFree.QuadraticRawProduct
-
-end

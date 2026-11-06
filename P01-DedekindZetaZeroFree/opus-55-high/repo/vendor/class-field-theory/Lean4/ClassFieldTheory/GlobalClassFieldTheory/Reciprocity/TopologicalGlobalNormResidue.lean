@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Topological global norm-residue reciprocity
 
@@ -44,7 +38,7 @@ namespace Reciprocity
 
 /-- Fix the canonical class-group dictionary before bundling norm-quotient maps. -/
 @[instance_reducible]
- noncomputable def topologicalNormResidueIdeleClassCommGroup
+ def topologicalNormResidueIdeleClassCommGroup
     (F : Type) [Field F] [NumberField F] :
     CommGroup (IdeleClassGroup F) :=
   QuotientGroup.Quotient.commGroup (IdeleGroup.principalSubgroup F)
@@ -53,8 +47,7 @@ attribute [local instance] topologicalNormResidueIdeleClassCommGroup
 
  theorem topologicalNormResidueIdeleClassIsMulCommutative
     (F : Type) [Field F] [NumberField F] :
-    IsMulCommutative (IdeleClassGroup F) :=
-  IsMulCommutative.of_comm (fun a b => mul_comm a b)
+    IsMulCommutative (IdeleClassGroup F) := by apply normIdeleClassGroup_isMulCommutative <;> assumption
 
 attribute [local instance] topologicalNormResidueIdeleClassIsMulCommutative
 
@@ -79,7 +72,7 @@ theorem ideleClassNormQuotient_discreteTopology :
 equivalence between the native norm quotient and the finite Krull
 Galois group.  Both directions are continuous in their genuine
 topologies. -/
-noncomputable def globalNormResidueContinuousMulEquiv :
+def globalNormResidueContinuousMulEquiv :
     (IdeleClassGroup K ⧸
         (_root_.ideleClassNorm K L).range) ≃ₜ*
       Gal(L / K) := by
@@ -98,19 +91,6 @@ noncomputable def globalNormResidueContinuousMulEquiv :
       continuous_toFun := continuous_of_discreteTopology
       continuous_invFun := continuous_of_discreteTopology }
 
-/-- Evaluation of the topological norm-residue equivalence is the
-existing actual norm-residue equivalence on the same quotient class. -/
-@[simp]
-theorem globalNormResidueContinuousMulEquiv_apply
-    (c :
-      IdeleClassGroup K ⧸
-        (_root_.ideleClassNorm K L).range) :
-    globalNormResidueContinuousMulEquiv K L c =
-      Additive.toMul
-        (globalNormResidueEquiv K L
-          (Additive.ofMul c)) := by
-  rfl
-
 /-- Global reciprocity in the direction used by the class-field
 correspondence,
 
@@ -120,7 +100,7 @@ This is the inverse of the norm-residue equivalence as a
 `ContinuousMulEquiv`, so the Krull topology on the finite Galois group
 and the native quotient topology on the idele-class quotient are part
 of the public statement. -/
-noncomputable def globalReciprocityContinuousMulEquiv :
+def globalReciprocityContinuousMulEquiv :
     Gal(L / K) ≃ₜ*
       (IdeleClassGroup K ⧸
         (_root_.ideleClassNorm K L).range) :=
@@ -141,7 +121,7 @@ theorem globalReciprocityContinuousMulEquiv_apply
 /-- The genuine quotient map
 `C_K → C_K / N_{L/K}(C_L)`, bundled with continuity for the native
 ordinary quotient topology. -/
-noncomputable def ideleClassNormQuotientContinuousMonoidHom :
+def ideleClassNormQuotientContinuousMonoidHom :
     IdeleClassGroup K →ₜ*
       (IdeleClassGroup K ⧸
         (_root_.ideleClassNorm K L).range) :=
@@ -151,30 +131,8 @@ noncomputable def ideleClassNormQuotientContinuousMonoidHom :
 
 /-- The actual global norm-residue map, bundled as a continuous
 homomorphism on the ordinary idele-class topology. -/
-noncomputable def globalNormResidueContinuousMonoidHom :
+def globalNormResidueContinuousMonoidHom :
     IdeleClassGroup K →ₜ* Gal(L / K) :=
   (ContinuousMonoidHom.toContinuousMonoidHom
       (globalNormResidueContinuousMulEquiv K L)).comp
     (ideleClassNormQuotientContinuousMonoidHom K L)
-
-/-- Evaluation of the continuous global norm-residue map agrees with
-the existing actual global norm-residue symbol. -/
-@[simp]
-theorem globalNormResidueContinuousMonoidHom_apply
-    (c : IdeleClassGroup K) :
-    globalNormResidueContinuousMonoidHom K L c =
-      globalNormResidueMonoidHom K L c := by
-  rfl
-
-/-- The existing actual global norm-residue homomorphism is continuous
-for the ordinary idele-class topology and the finite Krull topology. -/
-theorem globalNormResidueMonoidHom_continuous :
-    Continuous (globalNormResidueMonoidHom K L) :=
-  (globalNormResidueContinuousMonoidHom K L).continuous.congr
-    (fun c =>
-      globalNormResidueContinuousMonoidHom_apply K L c)
-
-end Reciprocity
-end GlobalClassFieldTheory
-
-end

@@ -35,5 +35,3 @@ theorem mixedThetaPair_global_g₀_eq_f₀ (F : Type) [Field F] [NumberField F] 
 theorem mixedThetaPair_global_ε_eq_one (F : Type) [Field F] [NumberField F] :
     (DedekindZetaZeroFree.AbelianQuotient.Theta.mixedThetaPair F).ε = 1 := by
   rfl
-
-end DedekindZetaZeroFree.Hecke

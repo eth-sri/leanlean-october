@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 namespace LocalClassFieldTheory
 
 open ClassFormation LocalFieldTheory
@@ -38,7 +33,7 @@ open scoped NNReal ValuativeRel
 /-- **Finite local reciprocity.**  The normalized valuation of a nonarchimedean local
 field, on the actual fixed coefficient group in its separable closure, is a
 Henselian valuation relative to the residue Frobenius degree datum. -/
-noncomputable def localHenselianValuation
+def localHenselianValuation
     (K : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
     [IsNonarchimedeanLocalField K] :
     ValuationData (localResidueDatum K)
@@ -145,18 +140,17 @@ noncomputable def localHenselianValuation
         rw [show algebraMap 𝒪[K] K =
           (ValuativeRel.valuation K).integer.subtype from rfl,
           Polynomial.map_toSubring]
-        exact minpoly.aeval K (y : E)
+        simp
       change (ValuativeRel.valuation E).integer.subtype
         (Polynomial.eval₂ (algebraMap 𝒪[K] 𝒪[E]) y p) = (0 : E)
       rw [Polynomial.hom_eval₂]
       change Polynomial.aeval (y : E) p = 0
-      rwa [Polynomial.aeval_map_algebraMap K (y : E) p] at hmaproot⟩
+      simp_all⟩
 
   let : Algebra.IsIntegral
       (ValuativeRel.valuation K).valuationSubring
       (ValuativeRel.valuation E).valuationSubring := by
-    change Algebra.IsIntegral 𝒪[K] 𝒪[E]
-    infer_instance
+    omega
   let hIntegralClosure : IsIntegralClosure
       (ValuativeRel.valuation E).valuationSubring
       (ValuativeRel.valuation K).valuationSubring E :=
@@ -170,6 +164,3 @@ noncomputable def localHenselianValuation
 
   rw [localResidueDatum_residueDegree_eq_residueFinrank K F]
   exact localBaseValuation_comp_normToBase_range_eq_residueFinrank K H
-
-end
-end LocalClassFieldTheory

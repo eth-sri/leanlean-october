@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Conjugation of finite-place Artin homomorphisms
 
@@ -44,7 +39,7 @@ variable {K L : Type}
 
 /-- The algebraic localizations belonging to conjugate extensions of a
 finite place are identified by the induced equivalence of completions. -/
-noncomputable def finitePlaceConjugateLocalizedCompletionAlgEquiv
+def finitePlaceConjugateLocalizedCompletionAlgEquiv
     (v : HeightOneSpectrum (𝓞 K))
     (w : AbsoluteValueExtension
       (NumberField.HeightOneSpectrum.adicAbv K v) L)
@@ -570,8 +565,3 @@ theorem finitePlaceArtinMonoidHomOfExtension_eq
   exact
     (finitePlaceArtinMonoidHomOfExtension_conjugate
       (K := K) (L := L) v w g⁻¹).symm
-
-end Reciprocity
-end GlobalClassFieldTheory
-
-end

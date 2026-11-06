@@ -1,5 +1,0 @@
-module
-public import DedekindZetaZeroFree.LFunctions.Hecke.UniformWeakConvexity
-public import DedekindZetaZeroFree.ZeroDetection.Smoothing.DetectorMellinIdentity
-public import DedekindZetaZeroFree.ZeroDetection.Smoothing.GammaWeightedZeroShift
-public import DedekindZetaZeroFree.ZeroDetection.Smoothing.TruncatedIdealInverseBounds

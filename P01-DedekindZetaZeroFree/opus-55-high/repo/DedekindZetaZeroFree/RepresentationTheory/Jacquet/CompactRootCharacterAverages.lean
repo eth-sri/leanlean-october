@@ -28,8 +28,8 @@ def representative (L J : AddSubgroup K) (q : LevelQuotient L J) : L :=
   Quotient.out q
 
 theorem representative_mk (L J : AddSubgroup K) (q : LevelQuotient L J) :
-    QuotientAddGroup.mk' (J.addSubgroupOf L) (representative L J q) = q := by
-  exact Quotient.out_eq q
+    QuotientAddGroup.mk' (J.addSubgroupOf L) (representative L J q) = q := 
+  Quotient.out_eq q
 
 theorem fixedSubmodule_stable (ρ : Representation ℂ (Multiplicative K) V)
     (J : AddSubgroup K) (t : Multiplicative K) :
@@ -58,8 +58,7 @@ theorem fixedRepresentation_eq (ρ : Representation ℂ (Multiplicative K) V)
   have hv := v.property ⟨Multiplicative.ofAdd ((a : K) - (b : K)), hab⟩
   have heq : Multiplicative.ofAdd (a : K) =
       Multiplicative.ofAdd (b : K) * Multiplicative.ofAdd ((a : K) - (b : K)) := by
-    change (a : K) = (b : K) + ((a : K) - (b : K))
-    abel
+    simp
   rw [heq, map_mul, Module.End.mul_apply, hv]
 
 def quotientRepresentation (ρ : Representation ℂ (Multiplicative K) V)
@@ -94,8 +93,7 @@ theorem character_eq (ψ : Multiplicative K →* ℂˣ)
   have hab : (a : K) - (b : K) ∈ J := hab'
   have heq : Multiplicative.ofAdd (a : K) =
       Multiplicative.ofAdd (b : K) * Multiplicative.ofAdd ((a : K) - (b : K)) := by
-    change (a : K) = (b : K) + ((a : K) - (b : K))
-    abel
+    simp
   rw [heq, map_mul, hψJ _ hab, mul_one]
 
 def quotientCharacter (ψ : Multiplicative K →* ℂˣ) (L J : AddSubgroup K)
@@ -123,8 +121,8 @@ theorem quotientCharacter_mk (ψ : Multiplicative K →* ℂˣ) (L J : AddSubgro
     (hψJ : ∀ j ∈ J, ψ (Multiplicative.ofAdd j) = 1) (t : L) :
     quotientCharacter ψ L J hψJ
         (Multiplicative.ofAdd (QuotientAddGroup.mk' (J.addSubgroupOf L) t)) =
-      ψ (Multiplicative.ofAdd (t : K)) := by
-  exact character_eq ψ L J hψJ (representative_mk L J _)
+      ψ (Multiplicative.ofAdd (t : K)) := 
+  character_eq ψ L J hψJ (representative_mk L J _)
 
 end AdditiveRoot
 
@@ -177,13 +175,13 @@ def eigenspace (ρ : Representation ℂ (Multiplicative K) V)
     (ψ : Multiplicative K →* ℂˣ) (L : AddSubgroup K) : Submodule ℂ V where
   carrier := {v | ∀ t ∈ L, ρ (Multiplicative.ofAdd t) v =
     (ψ (Multiplicative.ofAdd t) : ℂ) • v}
-  zero_mem' := by intro t ht; simp
-  add_mem' := by intro v w hv hw t ht; simp [hv t ht, hw t ht, smul_add]
+  zero_mem' := by simp
+  add_mem' := by simp_all
   smul_mem' := by
     intro a v hv t ht
     rw [map_smul, hv t ht, smul_comm]
 
-private theorem characterAverage_isProj (ρ : Representation ℂ (Multiplicative K) V)
+theorem characterAverage_isProj (ρ : Representation ℂ (Multiplicative K) V)
     (ψ : Multiplicative K →* ℂˣ) (L J : AddSubgroup K) (hJL : J ≤ L)
     (hLcompact : IsCompact (L : Set K)) (hJopen : IsOpen (J : Set K))
     (hψJ : ∀ j ∈ J, ψ (Multiplicative.ofAdd j) = 1) :
@@ -203,9 +201,7 @@ private theorem characterAverage_isProj (ρ : Representation ℂ (Multiplicative
       invOf_eq_inv]
     unfold characterAverage averageWithRepresentatives
     simp only [τ, rootTwistedRepresentation, MonoidHom.id_apply, Units.val_inv_eq_inv_val]
-    rw [Fintype.card_congr (Multiplicative.ofAdd : LevelQuotient L J ≃
-      Multiplicative (LevelQuotient L J))]
-    congr 1
+    rfl
   have hinv : τ.invariants =
       (eigenspace ρ ψ L).comap (fixedSubmodule ρ J.toSubgroup).subtype := by
     ext v
@@ -343,10 +339,3 @@ theorem characterAverage_refinement (ρ : Representation ℂ (Multiplicative K) 
   calc A v = B (A v) := (ambientAverage_eigen ρ ψ L J' hJ'L hLcompact hJ'open (A v) hA).symm
     _ = A (B v) := hc.symm
     _ = B v := ambientAverage_eigen ρ ψ L J hJL hLcompact hJopen (B v) hB
-
-end AdditiveRoot
-
-end DedekindZetaZeroFree.KPRootAverage
-
-end
-end

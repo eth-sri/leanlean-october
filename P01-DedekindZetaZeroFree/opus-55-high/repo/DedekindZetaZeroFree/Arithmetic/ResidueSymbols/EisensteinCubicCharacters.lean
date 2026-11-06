@@ -52,8 +52,7 @@ theorem redq_η_isPrimitiveRoot (E : Type) [Field E] [NumberField E]
   have hne : redq E q (η E ω hω) ≠ 1 := by
     intro h
     have hg := congrArg (redq E q) (hp.geom_sum_eq_zero (by decide : 1 < 3))
-    simp [Finset.sum_range_succ, map_add, map_pow, h] at hg
-    exact h3 (by linear_combination hg)
+    simp_all
   exact isPrimitiveRoot_of_mem_nthRootsFinset (by decide : Nat.Prime 3)
     ((Polynomial.mem_nthRootsFinset (by decide : 0 < 3) 1).mpr hpow) hne
 
@@ -80,7 +79,7 @@ theorem cubicResidueExponent_pos (E : Type) [Field E] [NumberField E]
   have hc : 1 < residueCard E q hq0 := Fintype.one_lt_card
   have hd := three_dvd_residueCard_sub_one E q hq0 hqp hq6
   unfold cubicResidueExponent
-  exact Nat.div_pos (Nat.le_of_dvd (by omega) hd) (by decide)
+  omega
 
 theorem twice_cubicResidueExponent_lt (E : Type) [Field E] [NumberField E]
     [IsCyclotomicExtension {3} ℚ E] (q : Ideal (R E))
@@ -138,7 +137,7 @@ theorem existsUnique_cubicResidueCharacter (E : Type) [Field E] [NumberField E]
         (three_dvd_residueCard_sub_one E q hq0 hqp hq6)]
       apply Units.ext
       exact FiniteField.pow_card_sub_one_eq_one (x : R E ⧸ q) x.ne_zero⟩
-    map_one' := by apply Subtype.ext; simp
+    map_one' := by simp
     map_mul' := by intros; apply Subtype.ext; simp [mul_pow] }
   let g : (R E ⧸ q)ˣ →* (R E)ˣ :=
     (rootsOfUnity 3 (R E)).subtype.comp (e.symm.toMonoidHom.comp f)
@@ -159,7 +158,7 @@ theorem existsUnique_cubicResidueCharacter (E : Type) [Field E] [NumberField E]
   refine ⟨ρ, ⟨MulChar.map_zero _, ?_⟩, ?_⟩
   · intro x hx
     lift x to (R E ⧸ q)ˣ using (isUnit_iff_ne_zero.mpr hx)
-    exact ⟨hmem x, hred x⟩
+    simp_all
   · intro χ hχ
     apply MulChar.ext
     intro x
@@ -187,15 +186,15 @@ noncomputable def ρq (E : Type) [Field E] [NumberField E]
     [IsCyclotomicExtension {3} ℚ E] (ω : E) (hω : IsPrimitiveRoot ω 3)
     (q : Ideal (R E)) (hq0 : q ≠ ⊥) (hqp : q.IsPrime)
     (hq6 : q ⊔ Ideal.span {(6 : R E)} = ⊤) :
-    ρq E ω hω q hq0 hqp hq6 0 = 0 := by
-  exact MulChar.map_zero _
+    ρq E ω hω q hq0 hqp hq6 0 = 0 := 
+  MulChar.map_zero _
 
 theorem ρq_mem (E : Type) [Field E] [NumberField E]
     [IsCyclotomicExtension {3} ℚ E] (ω : E) (hω : IsPrimitiveRoot ω 3)
     (q : Ideal (R E)) (hq0 : q ≠ ⊥) (hqp : q.IsPrime)
     (hq6 : q ⊔ Ideal.span {(6 : R E)} = ⊤) (x : R E ⧸ q) (hx : x ≠ 0) :
-    ρq E ω hω q hq0 hqp hq6 x ∈ ({1, η E ω hω, η E ω hω ^ 2} : Set (R E)) := by
-  exact (Classical.choose_spec (existsUnique_cubicResidueCharacter E ω hω q hq0 hqp hq6)).1.2 x hx |>.1
+    ρq E ω hω q hq0 hqp hq6 x ∈ ({1, η E ω hω, η E ω hω ^ 2} : Set (R E)) := 
+  (Classical.choose_spec (existsUnique_cubicResidueCharacter E ω hω q hq0 hqp hq6)).1.2 x hx |>.1
 
 theorem redq_ρq (E : Type) [Field E] [NumberField E]
     [IsCyclotomicExtension {3} ℚ E] (ω : E) (hω : IsPrimitiveRoot ω 3)
@@ -230,8 +229,7 @@ theorem orderOf_ρq (E : Type) [Field E] [NumberField E]
       intro x
       apply Units.ext
       have hr := redq_ρq E ω hω q hq0 hqp hq6 x
-      simpa only [he, MulChar.one_apply_coe, map_one, Units.val_pow_eq_pow_val,
-        Units.val_one] using hr.symm
+      simp_all
     have hd := (FiniteField.forall_pow_eq_one_iff (R E ⧸ q) _).mp ha
     have hp := cubicResidueExponent_pos E q hq0 hqp hq6
     have hl := twice_cubicResidueExponent_lt E q hq0 hqp hq6
@@ -255,14 +253,14 @@ theorem ρq_sq_ne_one (E : Type) [Field E] [NumberField E]
   intro h
   have := orderOf_dvd_of_pow_eq_one h
   rw [orderOf_ρq E ω hω q hq0 hqp hq6] at this
-  norm_num at this
+  omega
 
 @[simp] theorem ρq_neg_one (E : Type) [Field E] [NumberField E]
     [IsCyclotomicExtension {3} ℚ E] (ω : E) (hω : IsPrimitiveRoot ω 3)
     (q : Ideal (R E)) (hq0 : q ≠ ⊥) (hqp : q.IsPrime)
     (hq6 : q ⊔ Ideal.span {(6 : R E)} = ⊤) :
-    ρq E ω hω q hq0 hqp hq6 (-1) = 1 := by
-  exact MulChar.val_neg_one_eq_one_of_odd_order (by decide : Odd 3) (ρq_cube E ω hω q hq0 hqp hq6)
+    ρq E ω hω q hq0 hqp hq6 (-1) = 1 := 
+  MulChar.val_neg_one_eq_one_of_odd_order (by decide : Odd 3) (ρq_cube E ω hω q hq0 hqp hq6)
 
 noncomputable def ρqC (E : Type) [Field E] [NumberField E]
     [IsCyclotomicExtension {3} ℚ E] (ω : E) (hω : IsPrimitiveRoot ω 3)
@@ -286,5 +284,3 @@ theorem ρqC_facts (E : Type) [Field E] [NumberField E]
   · simpa only [ρqC, MulChar.ringHomComp_pow, MulChar.ringHomComp_ne_one_iff hi] using
       ρq_sq_ne_one E ω hω q hq0 hqp hq6
   · simp only [ρqC, MulChar.ringHomComp_apply, ρq_neg_one, map_one]
-
-end DedekindZetaZeroFree.Eisenstein

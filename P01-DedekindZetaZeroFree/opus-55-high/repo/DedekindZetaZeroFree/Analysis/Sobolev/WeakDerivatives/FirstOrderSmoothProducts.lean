@@ -12,8 +12,7 @@ private theorem zero_dirs (n k : ℕ) : (zeroIndex n k).directions = [] := by
   simp [MultiIndex.directions, zeroIndex]
 private theorem first_dirs {n : ℕ} (i : Fin n) : (firstIndex i).directions = [i] := by
   classical
-  simp only [MultiIndex.directions, firstIndex, apply_ite Fin.val, Fin.val_one,
-    Fin.val_zero, List.replicate_one, List.replicate_zero]
+  simp only [MultiIndex.directions, firstIndex, apply_ite Fin.val, Fin.val_one, Fin.val_zero]
   have h : ∀ l : List (Fin n), l.flatMap (fun j => if j = i then [j] else []) = l.filter (· = i) := by
     intro l; induction l with
     | nil => rfl
@@ -62,8 +61,6 @@ private theorem first_inj {n : ℕ} : Function.Injective (@firstIndex n) := by
 private theorem partialTest_eq {n : ℕ} {B : LocalBall n}
     (a : TestFunction B.toOpens ℂ ⊤) (i : Fin n) (x : Space n) :
     partialTest a i x = coordinateDerivativeList [i] (fun y => a y) x := by
-  rw [partialTest, TestFunction.lineDerivCLM_eq_fderivCLM]
-  rw [TestFunction.fderivCLM_apply_of_le _ (by simp)]
   rfl
 private theorem product_deriv {n : ℕ} {B : LocalBall n}
     (a φ : TestFunction B.toOpens ℂ ⊤) (i : Fin n) (x : Space n) :
@@ -75,14 +72,14 @@ private theorem product_deriv {n : ℕ} {B : LocalBall n}
   simp only [partialTest_eq, coordinateDerivativeList, ContinuousLinearMap.add_apply,
     ContinuousLinearMap.smul_apply, smul_eq_mul]
   ring
-private theorem test_mul_mem {n : ℕ} {B : LocalBall n}
+theorem test_mul_mem {n : ℕ} {B : LocalBall n}
     (a : TestFunction B.toOpens ℂ ⊤) (u : BallL2 B) :
-    MemLp (fun x => a x * u x) 2 (volume.restrict B.carrier) := by
-  exact a.memLp_top.fun_mul (Lp.memLp u)
+    MemLp (fun x => a x * u x) 2 (volume.restrict B.carrier) := 
+  a.memLp_top.fun_mul (Lp.memLp u)
 private theorem test_mul_integrable {n : ℕ} {B : LocalBall n}
     (a : TestFunction B.toOpens ℂ ⊤) (u : BallL2 B) :
-    Integrable (fun x => u x * a x) (volume.restrict B.carrier) := by
-  exact (Lp.memLp u).integrable_mul
+    Integrable (fun x => u x * a x) (volume.restrict B.carrier) := 
+  (Lp.memLp u).integrable_mul
     (a.continuous.memLp_of_hasCompactSupport (p := 2) a.hasCompactSupport)
 
 private theorem weak_product {n : ℕ} {B : LocalBall n}
@@ -160,7 +157,7 @@ private theorem multiply_test {n : ℕ} {B : LocalBall n}
     · rfl
   have di : ∀ i, d (firstIndex i) = g i := by
     intro i
-    have h : ∃ j, firstIndex i = firstIndex j := ⟨i, rfl⟩
+    have h : ∃ j, firstIndex i = firstIndex j := by simp
     simp only [d, dif_pos h]
     rw [← first_inj h.choose_spec]
   let w : IntegerSobolev B 1 := ⟨d, by
@@ -204,11 +201,6 @@ theorem multiply_smooth_compact {n : ℕ} (B : LocalBall n)
   · intro i
     filter_upwards [hg i] with x hx
     rw [partialTest_eq, product_deriv] at hx
-    simp only [productTest, TestFunction.coe_mk, a,
-      TestFunction.postcompCLM_apply, Function.comp_apply, Complex.ofRealCLM_apply,
-      partialTest_eq, pow_two] at hx
+    simp only [productTest, TestFunction.coe_mk, a, TestFunction.postcompCLM_apply, Function.comp_apply, Complex.ofRealCLM_apply, partialTest_eq] at hx
     rw [hx]
     ring
-end DedekindZetaZeroFree.KPContLocalEnergy.SobolevEnergyEstimates
-
-end

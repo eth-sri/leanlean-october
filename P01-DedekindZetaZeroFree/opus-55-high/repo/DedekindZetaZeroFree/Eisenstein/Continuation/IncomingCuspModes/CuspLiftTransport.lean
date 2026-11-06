@@ -22,7 +22,7 @@ variable {T : ℝ}
 variable (B : KPContActualCollarBuffer.CollarBuffer F ζ hζ
   (level F ζ hζ C R P H U) R P H T)
 
-private theorem transport_coveredPoint_base (a : Cusps F ζ hζ C R P H U)
+theorem transport_coveredPoint_base (a : Cusps F ζ hζ C R P H U)
     (ε : rootsOfUnity 3 F) (z : KPCuspCharts.Coordinates F) :
     KPContSectorCoveredQuotientVocabulary.q F ζ hζ (level F ζ hζ C R P H U)
       (coveredPoint F ζ hζ C R P H U a ε z) =
@@ -36,7 +36,7 @@ private theorem transport_coveredPoint_base (a : Cusps F ζ hζ C R P H U)
     KPContActualCollarBuffer.chartLift, KPContSectorSmoothFramesSupport.cuspPoint,
     KPContFlatCuspIncomingEvaluation.atlas]
 
-private theorem transport_lift_pins
+theorem transport_lift_pins
     (x : Covered F ζ hζ C R P H U) (l m : EndLift F ζ hζ C R P H U B x) :
     l.cusp = m.cusp ∧ l.coordinates.2 = m.coordinates.2 := by
   have hl : KPContActualCollarBuffer.chartLift F ζ hζ (level F ζ hζ C R P H U)
@@ -65,7 +65,7 @@ private theorem transport_lift_pins
   rw [hm, ← hab] at hh'
   exact hh.symm.trans hh'
 
-private theorem transport_incoming_formula (a : Cusps F ζ hζ C R P H U)
+theorem transport_incoming_formula (a : Cusps F ζ hζ C R P H U)
     (s : ℂ) (hs : s ∈ KPContinuation.spectralDomain) (v : S)
     (z : KPCuspCharts.Coordinates F) :
     incomingValue F ζ hζ C R P H U ι a s v z =
@@ -76,7 +76,7 @@ private theorem transport_incoming_formula (a : Cusps F ζ hζ C R P H U)
     KPContFlatCuspIncomingEvaluation.b_formula, Submodule.coe_smul, Pi.smul_apply,
     smul_eq_mul, KPContFlatCuspIncomingEvaluation.zeroProjection_formula]
 
-private theorem transport_central_comm (ε : rootsOfUnity 3 F)
+theorem transport_central_comm (ε : rootsOfUnity 3 F)
     (c : KPCuspGenuineMonodromy.FiniteCover F ζ hζ) :
     KPCuspGenuineMonodromy.central F ζ hζ ε * c =
       c * KPCuspGenuineMonodromy.central F ζ hζ ε := by
@@ -84,7 +84,7 @@ private theorem transport_central_comm (ε : rootsOfUnity 3 F)
   exact (Subgroup.mem_center_iff.mp
     (KPAdelicCoverRestrictedProduct.pglCentralInjection_central F ζ hζ ⟨ε, rfl⟩) c).symm
 
-private theorem transport_component_mem (γ : KPCuspArithmetic.PGL2 F)
+theorem transport_component_mem (γ : KPCuspArithmetic.PGL2 F)
     (c : KPCuspGenuineMonodromy.FiniteCover F ζ hζ)
     (ε η : rootsOfUnity 3 F) (u : (level F ζ hζ C R P H U).toOpenSubgroup)
     (he : KPCuspGenuineMonodromy.central F ζ hζ η * c =
@@ -121,7 +121,7 @@ private theorem transport_component_mem (γ : KPCuspArithmetic.PGL2 F)
       (KPCuspGenuineMonodromy.finiteBase F ζ hζ c)⁻¹) he'
   simpa [mul_assoc] using h
 
-private theorem transport_sheet_pin (a : Cusps F ζ hζ C R P H U)
+theorem transport_sheet_pin (a : Cusps F ζ hζ C R P H U)
     (ε η : rootsOfUnity 3 F) (z w : KPCuspCharts.Coordinates F)
     (hz : B.τ < z.2) (hw : B.τ < w.2)
     (he : coveredPoint F ζ hζ C R P H U a ε z =

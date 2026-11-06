@@ -56,13 +56,13 @@ noncomputable def map {N : Type*} [AddCommMonoid N] [Module R N] (f : M →ₗ[R
         (PiTensorProduct.map fun _ : ι => f).toAddMonoidHom)
       (map_rel f)
   map_add' := map_add _
-  map_smul' r x := AddCon.induction_on x fun x => by
-    exact congrArg (mk R ι N) ((PiTensorProduct.map fun _ : ι => f).map_smul r x)
+  map_smul' r x := AddCon.induction_on x fun x => 
+    congrArg (mk R ι N) ((PiTensorProduct.map fun _ : ι => f).map_smul r x)
 
 @[simp]
 theorem map_mk {N : Type*} [AddCommMonoid N] [Module R N] (f : M →ₗ[R] N) (x : ⨂[R] (_ : ι), M) :
     map f (mk R ι M x) = mk R ι N (PiTensorProduct.map (fun _ : ι => f) x) :=
-  AddCon.lift_mk' (map_rel f) x
+  by rfl
 
 @[simp]
 theorem map_tprod {N : Type*} [AddCommMonoid N] [Module R N] (f : M →ₗ[R] N) (m : ι → M) :
@@ -98,7 +98,3 @@ variable [Finite ι] [Module.Finite R M]
 noncomputable instance finite : Module.Finite R (Sym[R] ι M) :=
   Module.Finite.of_surjective (mk R ι M)
     (LinearMap.range_eq_top.mp (range_mk R ι M))
-
-end CommRing
-
-end SymmetricPower

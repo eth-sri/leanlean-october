@@ -33,7 +33,7 @@ def canonicalProfile : compactPicture (C.canonical q).borel (C.polarization q) (
   (compactTrivialization (C.canonical q).borel (C.polarization q) (C.canonical q).iwasawa .plus 0).symm
     (CanonicalPlusReferences.normalized_canonical_section A₀ P C q hq).choose
 
-private theorem canonical_reference_spec :
+theorem canonical_reference_spec :
     let f := (CanonicalPlusReferences.normalized_canonical_section A₀ P C q hq).choose
     f ∈ fixedSubmodule (IPlus (C.canonical q).borel (C.polarization q)) (C.canonical q).iwasawa.compact.toOpenSubgroup ∧
       (f.val 1).val 1 = 1 := by
@@ -98,7 +98,7 @@ theorem canonical_exterior_vector_integral
   rw [he, hmval] at hv
   exact hv
 
-private theorem completion_residue_card : residueCardinality (LocalField F q) = q.asIdeal.absNorm := by
+theorem completion_residue_card : residueCardinality (LocalField F q) = q.asIdeal.absNorm := by
   let e : q.adicCompletionIntegers F ≃+* (valuation (LocalField F q)).integer := by
     letI : (Valued.v : Valuation (LocalField F q) (WithZero (Multiplicative ℤ))).Compatible :=
       Valuation.Compatible.ofValuation _

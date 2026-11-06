@@ -11,14 +11,14 @@ open MeasureTheory
 
 def unitMulCLE (u : ℂ) (hu : ‖u‖ = 1) : ℂ ≃L[ℝ] ℂ :=
   ContinuousLinearEquiv.smulLeft
-    (Units.mk0 u (norm_ne_zero_iff.mp (by rw [hu]; norm_num)))
+    (Units.mk0 u (norm_ne_zero_iff.mp (by positivity)))
 
 theorem unitMulCLE_apply (u : ℂ) (hu : ‖u‖ = 1) (z : ℂ) :
     unitMulCLE u hu z = u * z := rfl
 
 theorem quadratic_radius_pos (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0) :
-    0 < ‖β * a‖ := by
-  exact norm_pos_iff.mpr (mul_ne_zero hβ ha)
+    0 < ‖β * a‖ := 
+  norm_pos_iff.mpr (mul_ne_zero hβ ha)
 
 theorem exists_quadratic_unit (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0) :
     ∃ u : ℂ, ‖u‖ = 1 ∧ β * a * u ^ 2 = (‖β * a‖ : ℂ) := by
@@ -27,9 +27,7 @@ theorem exists_quadratic_unit (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0) :
 
   set d := (‖β * a‖ : ℂ) / (β * a) with hdd
   have hdnorm : ‖d‖ = 1 := by
-    rw [hdd, norm_div]
-    have h1 : ‖((‖β * a‖ : ℝ) : ℂ)‖ = ‖β * a‖ := by simp
-    rw [h1, div_self (norm_ne_zero_iff.mpr hba)]
+    simp_all
   have hdexp : Complex.exp (d.arg * Complex.I) = d := by
     simpa [hdnorm] using Complex.norm_mul_exp_arg_mul_I d
   refine ⟨Complex.exp ((d.arg / 2 : ℝ) * Complex.I), ?_, ?_⟩
@@ -46,15 +44,14 @@ theorem unitMulCLE_measurePreserving (u : ℂ) (hu : ‖u‖ = 1) :
     MeasurePreserving (unitMulCLE u hu) (volume : Measure ℂ) volume := by
 
   have hfun : (unitMulCLE u hu : ℂ → ℂ) = fun z : ℂ => u * z := by
-    funext z; rw [unitMulCLE_apply]
+    rfl
   rw [hfun]
   let c : Circle := ⟨u, by
     show u ∈ Metric.sphere (0 : ℂ) 1
     rw [mem_sphere_zero_iff_norm]
     exact hu⟩
   have hrot : (fun z : ℂ => u * z) = (rotation c : ℂ → ℂ) := by
-    funext z
-    rw [rotation_apply]
+    rfl
   rw [hrot]
   exact LinearIsometryEquiv.measurePreserving _
 
@@ -78,9 +75,7 @@ theorem linear_re_unit_coordinates (β u ξ : ℂ) (s t : ℝ) :
   have : β * u * ((s : ℂ) + (t : ℂ) * Complex.I) * ξ
       = (β * u * ξ) * ((s : ℂ) + (t : ℂ) * Complex.I) := by ring
   rw [this, Complex.mul_re]
-  have hXre : ((s : ℂ) + (t : ℂ) * Complex.I).re = s := by simp
-  have hXim : ((s : ℂ) + (t : ℂ) * Complex.I).im = t := by simp
-  rw [hXre, hXim]
+  simp
 
 theorem norm_sq_unit_coordinates (u : ℂ) (hu : ‖u‖ = 1) (s t : ℝ) :
     ‖u * ((s : ℂ) + (t : ℂ) * Complex.I)‖ ^ 2 = s ^ 2 + t ^ 2 := by
@@ -110,6 +105,3 @@ theorem frequency_square_difference (β a u ξ : ℂ) (hβ : β ≠ 0) (ha : a �
     rw [sq, sq]; exact hre
   rw [hsq2]
   field_simp
-
-end
-end DedekindZetaZeroFree.ComplexWeil

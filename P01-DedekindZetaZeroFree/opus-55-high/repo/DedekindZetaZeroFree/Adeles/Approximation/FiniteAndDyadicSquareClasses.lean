@@ -28,8 +28,7 @@ theorem weil_finite_squareclass_approximation
   rw [IdeleGroup.ideleOfFiniteLocalFamily_finiteComponent] at hv
   have he : ((IdeleGroup.principalIdele F a).2 v.val) =
       Units.map (algebraMap F (v.val.adicCompletion F)).toMonoidHom a := by
-    apply Units.ext
-    exact IdeleGroup.finiteComponent_principalIdele a v.val
+    rfl
   rw [he] at hv
   obtain ⟨r, hr⟩ := hv
   have hs : IsSquare (aLocal v *
@@ -63,5 +62,3 @@ theorem weil_dyadic_squareclass_approximation
   · intro v hv hne
     have h := ha ⟨v, (hT v).mpr hv⟩
     simpa [aLocal, hne] using h
-
-end DedekindZetaZeroFree

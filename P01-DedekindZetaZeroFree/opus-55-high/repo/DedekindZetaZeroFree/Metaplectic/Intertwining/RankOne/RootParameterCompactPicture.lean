@@ -8,7 +8,6 @@ namespace DedekindZetaZeroFree.KPRankOneRootParameter
 
 open scoped Valued
 open ValuativeRel KPLocalStoneVonNeumann KPLocalPrincipalSeries
-open KPLocalPrincipalSeries KPLocalStoneVonNeumann
 
 noncomputable section
 
@@ -112,6 +111,3 @@ theorem rootCharacter_weyl_inversion
   simp only [rootCharacter, A.weyl_cube, map_inv, Units.val_inv_eq_inv_val,
     neg_mul, normPower, Complex.exp_neg, mul_inv_rev]
   rw [mul_comm]
-
-end
-end DedekindZetaZeroFree.KPRankOneRootParameter

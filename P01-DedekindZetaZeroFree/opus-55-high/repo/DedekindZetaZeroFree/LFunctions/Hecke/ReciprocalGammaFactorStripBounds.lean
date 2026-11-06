@@ -8,7 +8,7 @@ public import DedekindZetaZeroFree.Analysis.Gamma.ElementaryNormBounds
 
 namespace DedekindZetaZeroFree
 
-private lemma gamma_inv_reflection {s : ℂ} (hs : s.im ≠ 0) :
+lemma gamma_inv_reflection {s : ℂ} (hs : s.im ≠ 0) :
     (Complex.Gamma s)⁻¹ = Complex.Gamma (1 - s) * Complex.sin (Real.pi * s) / Real.pi := by
   have hGam : Complex.Gamma s ≠ 0 :=
     Complex.Gamma_ne_zero (fun m hm => hs (by rw [hm]; simp))
@@ -20,8 +20,7 @@ private lemma gamma_inv_reflection {s : ℂ} (hs : s.im ≠ 0) :
   have h := Complex.Gamma_mul_Gamma_one_sub s
   have hsin : Complex.sin ((Real.pi : ℂ) * s) ≠ 0 := by
     intro h0
-    rw [h0, div_zero] at h
-    exact mul_ne_zero hGam hGam1 h
+    simp_all
   have h2 : Complex.Gamma (1 - s) =
       (Complex.Gamma s)⁻¹ * ((Real.pi : ℂ) / Complex.sin ((Real.pi : ℂ) * s)) := by
     have := congrArg (fun x => (Complex.Gamma s)⁻¹ * x) h
@@ -55,8 +54,7 @@ theorem gamma_inverse_strip_exp_bound (a b : ℝ) (hab : a ≤ b) :
       have him : s.im ≠ 0 := by
         intro h0; rw [h0, abs_zero] at hbig; norm_num at hbig
       have him1 : 1 ≤ |(1 - s).im| := by
-        have : (1 - s).im = -s.im := by simp
-        rw [this, abs_neg]; exact hbig
+        simp_all
       have hre : (1 - s + (n : ℂ)).re = 1 - s.re + (n : ℝ) := by simp
       have hpos : 0 < (1 - s + (n : ℂ)).re := by
         rw [hre]; linarith
@@ -69,11 +67,9 @@ theorem gamma_inverse_strip_exp_bound (a b : ℝ) (hab : a ≤ b) :
           _ ≤ M := hM _ hmem
       have hSbound : ‖Complex.sin ((Real.pi : ℂ) * s)‖ ≤ Real.exp (Real.pi * |s.im|) := by
         have h := complex_sin_norm_le_exp_im ((Real.pi : ℂ) * s)
-        rw [Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im, zero_mul, add_zero,
-          abs_mul, abs_of_pos Real.pi_pos] at h
-        exact h
+        simp_all
       rw [gamma_inv_reflection him, norm_div, norm_mul]
-      have hnorm : ‖(Real.pi : ℂ)‖ = Real.pi := by simp [abs_of_pos Real.pi_pos]
+      have hnorm : ‖(Real.pi : ℂ)‖ = Real.pi := by simp
       rw [hnorm]
       calc ‖Complex.Gamma (1 - s)‖ * ‖Complex.sin ((Real.pi : ℂ) * s)‖ / Real.pi
           ≤ M * Real.exp (Real.pi * |s.im|) / Real.pi := by
@@ -84,7 +80,7 @@ theorem gamma_inverse_strip_exp_bound (a b : ℝ) (hab : a ≤ b) :
             mul_le_mul_of_nonneg_right (le_max_left _ _) (Real.exp_pos _).le
     ·
       have hGpos : 0 < max (M / Real.pi) (max C 1) :=
-        lt_of_lt_of_le zero_lt_one (le_trans (le_max_right _ _) (le_max_right _ _))
+        by simp
       have hmemK : (s.re, s.im) ∈ Set.Icc a b ×ˢ Set.Icc (-1 : ℝ) 1 :=
         ⟨⟨hsa, hsb⟩,
           ⟨by linarith [neg_abs_le s.im, hsmall], by linarith [le_abs_self s.im, hsmall]⟩⟩
@@ -104,7 +100,7 @@ theorem gammaC_inverse_strip_exp_bound (a b : ℝ) (hab : a ≤ b) :
   · exact lt_of_lt_of_le zero_lt_one (le_max_right _ _)
   · intro s hs
     obtain ⟨hsa, hsb⟩ := hs
-    have hbase : (2 * (Real.pi : ℂ)) = ((2 * Real.pi : ℝ) : ℂ) := by push_cast; ring
+    have hbase : (2 * (Real.pi : ℂ)) = ((2 * Real.pi : ℝ) : ℂ) := by simp
 
     have hpow : ‖(2 * (2 * (Real.pi : ℂ)) ^ (-s))⁻¹‖ = (2 * Real.pi) ^ s.re / 2 := by
       rw [norm_inv, norm_mul, hbase, Complex.norm_cpow_eq_rpow_re_of_pos (by positivity),
@@ -128,5 +124,3 @@ theorem gammaC_inverse_strip_exp_bound (a b : ℝ) (hab : a ≤ b) :
       _ = G * (2 * Real.pi) ^ b / 2 * Real.exp (Real.pi * |s.im|) := by ring
       _ ≤ max (G * (2 * Real.pi) ^ b / 2) 1 * Real.exp (Real.pi * |s.im|) :=
           mul_le_mul_of_nonneg_right (le_max_left _ _) (Real.exp_pos _).le
-
-end DedekindZetaZeroFree

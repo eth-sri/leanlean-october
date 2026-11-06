@@ -63,9 +63,7 @@ theorem exists_maximal_cyclic_quotient {G U : Type*} [Group G]
         rintro _ ⟨g, rfl⟩
         exact ⟨τ g v, hL g hv, rfl⟩
       exact hspan x.property
-    obtain ⟨y, hy, he⟩ := hx
-    have : y = x := Subtype.ext he
-    simpa [this] using hy
+    simp_all
   let P : Set (Submodule ℂ C) :=
     {L | (∀ g : G, L ≤ L.comap (τ g)) ∧ v ∉ L}
   obtain ⟨M, hMmax⟩ := zorn_le₀ P (by
@@ -79,9 +77,7 @@ theorem exists_maximal_cyclic_quotient {G U : Type*} [Group G]
         obtain ⟨L, hL, hvL⟩ := (Submodule.mem_sSup_of_directed hne hchain.directedOn).mp hv
         exact (hc hL).2 hvL
     · refine ⟨⊥, ⟨?_, ?_⟩, ?_⟩
-      · intro g x hx
-        change x = 0 at hx
-        simpa [hx]
+      · simp
       · simpa [v, Submodule.mem_bot, Subtype.ext_iff] using hu
       · intro L hL
         exact False.elim (hne ⟨L, hL⟩))
@@ -190,8 +186,8 @@ def preimageMap {G V : Type*} [Group G]
       ((subquotientRepresentation ρ A B hA hB).subrepresentation C hC) where
   toLinearMap :=
     { toFun := fun d => ⟨(inside A B).mkQ d.val, d.property⟩
-      map_add' := by intros; apply Subtype.ext; exact map_add _ _ _
-      map_smul' := by intros; apply Subtype.ext; exact map_smul _ _ _ }
+      map_add' := by simp
+      map_smul' := by simp }
   isIntertwining' _ := rfl
 
 abbrev ordinaryJacquet {K G U : Type*} [Field K] [Group G]
@@ -199,7 +195,7 @@ abbrev ordinaryJacquet {K G U : Type*} [Field K] [Group G]
     (n : Multiplicative K →* G) := Representation.Coinvariants (ρ.comp n)
 
 open scoped Topology
-private theorem orbit_locallyConstant {G V : Type*} [Group G] [TopologicalSpace G]
+theorem orbit_locallyConstant {G V : Type*} [Group G] [TopologicalSpace G]
     [IsTopologicalGroup G] [AddCommGroup V] [Module ℂ V]
     (ρ : Representation ℂ G V) {v : V} (hv : SmoothVector ρ v) :
     IsLocallyConstant (fun g : G => ρ g v) := by
@@ -207,12 +203,12 @@ private theorem orbit_locallyConstant {G V : Type*} [Group G] [TopologicalSpace 
   apply (IsLocallyConstant.iff_exists_open _).mpr
   intro g
   refine ⟨{h : G | g⁻¹ * h ∈ J}, J.isOpen.preimage (continuous_const.mul continuous_id), ?_, ?_⟩
-  · simpa using J.one_mem
+  · simp
   · intro h hh
     have he := hJ (g⁻¹ * h) hh
     have := congrArg (ρ g) he
     simpa [← Module.End.mul_apply, ← map_mul] using this
-private theorem fixed_surjective {G V W : Type*} [Group G] [TopologicalSpace G]
+theorem fixed_surjective {G V W : Type*} [Group G] [TopologicalSpace G]
     [IsTopologicalGroup G] [AddCommGroup V] [Module ℂ V] [AddCommGroup W] [Module ℂ W]
     (ρ : Representation ℂ G V) (σ : Representation ℂ G W)
     (hρ : SmoothRepresentation ρ) (q : Representation.IntertwiningMap ρ σ)
@@ -246,8 +242,8 @@ private theorem fixed_surjective {G V W : Type*} [Group G] [TopologicalSpace G]
       exact hi g he
     · intro y hy
       refine ⟨ρ ((g⁻¹ : J.toOpenSubgroup) : G) y, ha g⁻¹ y hy, ?_⟩
-      simp [← Module.End.mul_apply, ← map_mul]
-    · intros; rfl
+      simp
+    simp
   have hne : S.Nonempty := ⟨v, (hS v).mpr ⟨1, by simp⟩⟩
   have hc : (S.card : ℂ) ≠ 0 := by exact_mod_cast hne.card_ne_zero
   refine ⟨⟨(S.card : ℂ)⁻¹ • ∑ x ∈ S, x, ?_⟩, ?_⟩
@@ -261,7 +257,7 @@ private theorem fixed_surjective {G V W : Type*} [Group G] [TopologicalSpace G]
       exact w.property g
     simp only [map_smul, map_sum, Finset.sum_congr rfl hqx, Finset.sum_const,
       ← Nat.cast_smul_eq_nsmul ℂ, smul_smul, inv_mul_cancel₀ hc, one_smul]
-private theorem admissible_sub {G V : Type*} [Group G] [TopologicalSpace G]
+theorem admissible_sub {G V : Type*} [Group G] [TopologicalSpace G]
     [AddCommGroup V] [Module ℂ V] (ρ : Representation ℂ G V) (ha : Admissible ρ)
     (A : Submodule ℂ V) (hA : ∀ g, A ≤ A.comap (ρ g)) :
     Admissible (ρ.subrepresentation A hA) := by
@@ -276,7 +272,7 @@ private theorem admissible_sub {G V : Type*} [Group G] [TopologicalSpace G]
   apply Subtype.ext
   apply Subtype.ext
   exact congrArg (fun z : fixedSubmodule ρ J.toOpenSubgroup.toSubgroup => z.val) he
-private theorem admissible_quot {G V : Type*} [Group G] [TopologicalSpace G]
+theorem admissible_quot {G V : Type*} [Group G] [TopologicalSpace G]
     [IsTopologicalGroup G] [AddCommGroup V] [Module ℂ V]
     (ρ : Representation ℂ G V) (hs : SmoothRepresentation ρ) (ha : Admissible ρ)
     (M : Submodule ℂ V) (hM : ∀ g, M ≤ M.comap (ρ g)) :
@@ -295,19 +291,19 @@ private theorem admissible_quot {G V : Type*} [Group G] [TopologicalSpace G]
   intro w
   obtain ⟨v, hv⟩ := fixed_surjective ρ _ hs q M.mkQ_surjective J w
   exact ⟨v, Subtype.ext hv⟩
-private theorem root_smooth {K G V : Type*} [Field K] [TopologicalSpace K]
+theorem root_smooth {K G V : Type*} [Field K] [TopologicalSpace K]
     [Group G] [TopologicalSpace G] [IsTopologicalGroup G] [AddCommGroup V] [Module ℂ V]
     (ρ : Representation ℂ G V) (hs : SmoothRepresentation ρ)
     (n : Multiplicative K →* G) (hn : Continuous n) : KPCoinvariants.IsSmooth (ρ.comp n) := by
   intro v
   exact ((orbit_locallyConstant ρ (hs v)).isOpen_fiber v).preimage (hn.comp continuous_ofAdd)
 
-private theorem twisted_one {K V : Type*} [Field K] [AddCommGroup V] [Module ℂ V]
+theorem twisted_one {K V : Type*} [Field K] [AddCommGroup V] [Module ℂ V]
     (ρ : Representation ℂ (Multiplicative K) V) :
     KPCoinvariants.twistedRepresentation ρ 1 = ρ := by
   ext g v
   simp [KPCoinvariants.twistedRepresentation]
-private theorem jacquet_sub_zero {K G V : Type*} [Field K] [ValuativeRel K] [TopologicalSpace K]
+theorem jacquet_sub_zero {K G V : Type*} [Field K] [ValuativeRel K] [TopologicalSpace K]
     [IsNonarchimedeanLocalField K] [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
     [AddCommGroup V] [Module ℂ V] (n : Multiplicative K →* G) (hn : Continuous n)
     (ρ : Representation ℂ G V) (hs : SmoothRepresentation ρ)
@@ -327,7 +323,7 @@ private theorem jacquet_sub_zero {K G V : Type*} [Field K] [ValuativeRel K] [Top
   have hsr := root_smooth ρ hs n hn
   have hss := root_smooth σ (smoothRepresentation_quotient ρ hs A hA) n hn
   have hi := (KPCoinvariants.exact (τ.comp n) (ρ.comp n) (σ.comp n)
-    hst hsr hss 1 (by fun_prop) (IsLocallyConstant.of_constant _ (by intros; rfl))
+    hst hsr hss 1 (by fun_prop) (IsLocallyConstant.of_constant _ (by simp))
     i p Subtype.val_injective A.mkQ_surjective he).1
   have hz' : Subsingleton (KPCoinvariants.Coinvariants (ρ.comp n) 1) := by
     simpa only [KPCoinvariants.Coinvariants, twisted_one] using hz
@@ -335,7 +331,7 @@ private theorem jacquet_sub_zero {K G V : Type*} [Field K] [ValuativeRel K] [Top
     letI := hz'
     exact Function.Injective.subsingleton hi
   simpa only [KPCoinvariants.Coinvariants, twisted_one] using hz''
-private theorem jacquet_quot_zero {K G V : Type*} [Field K] [Group G]
+theorem jacquet_quot_zero {K G V : Type*} [Field K] [Group G]
     [AddCommGroup V] [Module ℂ V] (n : Multiplicative K →* G)
     (ρ : Representation ℂ G V) (A : Submodule ℂ V) (hA : ∀ g, A ≤ A.comap (ρ g))
     (hz : Subsingleton (ordinaryJacquet ρ n)) :
@@ -425,5 +421,3 @@ theorem jacquet_zero_subquotient_cyclic_quotient
     · exact Subtype.ext ha
   exact ⟨u, hu, M, hM, hQs, hQa, hCs, hCa, hCj, hnon, hirr,
     hSs, hSa, hSj, hsurj, hDs, hps, hsurj.comp hps⟩
-
-end DedekindZetaZeroFree.KPCyclicQuotient

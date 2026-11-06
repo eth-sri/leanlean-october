@@ -57,5 +57,3 @@ theorem rayUnitPeriodicLogHaarIntegral_translation
     _ = ∫ h in e '' D, f h ∂μ :=
       (he.setIntegral_image_emb e.measurableEmbedding f D).symm
     _ = ∫ h in D, f h ∂μ := hT.setIntegral_eq hD hp
-
-end DedekindZetaZeroFree.Hecke

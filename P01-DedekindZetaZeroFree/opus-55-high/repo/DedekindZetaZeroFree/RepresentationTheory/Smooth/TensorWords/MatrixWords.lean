@@ -21,7 +21,3 @@ def tupleWord : List (MatrixLetter ι) → ((ι → ComplexGL2) → ℂ) → (ι
   | [],f => f
   | b::w,f => fun a => deriv (fun t : ℝ => tupleWord w f
       (Function.update a b.1 (a b.1 * KPSmoothActualFlowData.matrixExponential ((t : ℂ) • b.2)))) 0
-
-end DedekindZetaZeroFree.FourierContinuation.ResidualPrincipalSlices
-
-end

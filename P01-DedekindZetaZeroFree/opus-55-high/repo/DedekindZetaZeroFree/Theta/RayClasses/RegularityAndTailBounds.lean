@@ -6,7 +6,6 @@ public import DedekindZetaZeroFree.Theta.RayClasses.ZeroModeTail
 
 @[expose] public section
 
-noncomputable section
 
 open scoped NumberField
 open MeasureTheory
@@ -53,22 +52,22 @@ theorem normalizedRayTheta_locallyIntegrableOn
     (D : RayThetaRepresentatives F m hm)
     {η : DedekindZetaZeroFree.RayClassCharacter F m}
     (χ : RayCharacterData F m hm η) :
-    LocallyIntegrableOn (normalizedRayTheta D χ.ψ) (Set.Ioi (0 : ℝ)) := by
-  exact (normalizedRayTheta_continuousOn D χ).locallyIntegrableOn measurableSet_Ioi
+    LocallyIntegrableOn (normalizedRayTheta D χ.ψ) (Set.Ioi (0 : ℝ)) := 
+  (normalizedRayTheta_continuousOn D χ).locallyIntegrableOn measurableSet_Ioi
 
 theorem normalizedRayConjugateTheta_locallyIntegrableOn
     (D : RayThetaRepresentatives F m hm)
     {η : DedekindZetaZeroFree.RayClassCharacter F m}
     (χ : RayCharacterData F m hm η) :
-    LocallyIntegrableOn (normalizedRayConjugateTheta D χ.ψ) (Set.Ioi (0 : ℝ)) := by
-  exact (normalizedRayConjugateTheta_continuousOn D χ).locallyIntegrableOn measurableSet_Ioi
+    LocallyIntegrableOn (normalizedRayConjugateTheta D χ.ψ) (Set.Ioi (0 : ℝ)) := 
+  (normalizedRayConjugateTheta_continuousOn D χ).locallyIntegrableOn measurableSet_Ioi
 
-private theorem tail_rate_mono (a b p t : ℝ) (hab : a ≤ b) (ht : 0 ≤ t) :
+theorem tail_rate_mono (a b p t : ℝ) (hab : a ≤ b) (ht : 0 ≤ t) :
     Real.exp (-b * t ^ p) ≤ Real.exp (-a * t ^ p) := by
   apply Real.exp_le_exp.mpr
   exact mul_le_mul_of_nonneg_right (neg_le_neg hab) (Real.rpow_nonneg ht p)
 
-private theorem tail_rescale (f : ℝ → ℂ) (p q : ℝ) (hp : 0 < p) (hq : 0 < q)
+theorem tail_rescale (f : ℝ → ℂ) (p q : ℝ) (hp : 0 < p) (hq : 0 < q)
     (hf : ContinuousOn f (Set.Ioi 0))
     (h : ∃ A B : ℝ, 0 < A ∧ 0 < B ∧ ∀ t, 1 ≤ t →
       ‖f t‖ ≤ A * Real.exp (-B * t ^ p)) :
@@ -76,13 +75,13 @@ private theorem tail_rescale (f : ℝ → ℂ) (p q : ℝ) (hp : 0 < p) (hq : 0 
       ‖f (q * t)‖ ≤ A * Real.exp (-B * t ^ p) := by
   obtain ⟨A, B, hA, hB, hb⟩ := h
   let b := B * q ^ p
-  have hbpos : 0 < b := mul_pos hB (Real.rpow_pos_of_pos hq p)
+  have hbpos : 0 < b := by positivity
   let T := max 1 (1 / q)
   have hfc : ContinuousOn (fun t => f (q * t)) (Set.Ioi 0) :=
     hf.comp (continuous_const.mul continuous_id).continuousOn
       (fun t ht => mul_pos hq ht)
   have hec : Continuous (fun t : ℝ => Real.exp (b * t ^ p)) :=
-    Real.continuous_exp.comp (continuous_const.mul (Real.continuous_rpow_const hp.le))
+    by fun_prop
   obtain ⟨M, hM⟩ := isCompact_Icc.exists_bound_of_continuousOn
     ((hfc.norm.mul hec.continuousOn).mono
       (show Set.Icc 1 T ⊆ Set.Ioi 0 from fun t ht => lt_of_lt_of_le zero_lt_one ht.1))
@@ -211,8 +210,8 @@ theorem normalizedRayTheta_tail_bound
       (tail_sum Finset.univ _ p (fun c _ => tail_mul _ p (χ.ψ c) (hg c)))
   let C := A1 + A2 + A3
   let b := min B1 (min B2 B3)
-  have hb : 0 < b := lt_min hB1 (lt_min hB2 hB3)
-  refine ⟨C, b, by dsimp [C]; positivity, hb, ?_⟩
+  have hb : 0 < b := by positivity
+  refine ⟨C, b, by positivity, hb, ?_⟩
   intro t ht
   have htpos : 0 < t := lt_of_lt_of_le zero_lt_one ht
   have H : ∀ A B : ℝ, 0 < A → A ≤ C → b ≤ B →
@@ -227,7 +226,3 @@ theorem normalizedRayTheta_tail_bound
     (hb2 t ht).trans (H A2 B2 hA2 ?_ ((min_le_right _ _).trans (min_le_left _ _))),
     (hb3 t ht).trans (H A3 B3 hA3 ?_ ((min_le_right _ _).trans (min_le_right _ _)))⟩
   all_goals dsimp [C]; linarith
-
-end DedekindZetaZeroFree.Hecke.Theta
-
-end

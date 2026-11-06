@@ -7,7 +7,6 @@ public import DedekindZetaZeroFree.RepresentationTheory.Jacquet.SphericalTruncat
 namespace DedekindZetaZeroFree.KPExteriorActualJacquetShells
 
 open MeasureTheory
-noncomputable section
 
 theorem linearMap_of_eventual_values
     {U V : Type*} [AddCommGroup U] [Module ℂ U] [AddCommGroup V] [Module ℂ V]
@@ -27,14 +26,14 @@ theorem linearMap_of_eventual_values
       map_add' := by
         intro f g
         let R := max (bound (f + g)) (max (bound f) (bound g))
-        rw [← hvalue (f + g) R (by dsimp [R]; omega), hadd,
-          hvalue f R (by dsimp [R]; omega), hvalue g R (by dsimp [R]; omega)]
+        rw [← hvalue (f + g) R (by omega), hadd,
+          hvalue f R (by omega), hvalue g R (by omega)]
       map_smul' := by
         intro c f
         let R := max (bound (c • f)) (bound f)
         change value (c • f) = c • value f
-        rw [← hvalue (c • f) R (by dsimp [R]; omega), hsmul,
-          hvalue f R (by dsimp [R]; omega)] }
+        rw [← hvalue (c • f) R (by omega), hsmul,
+          hvalue f R (by omega)] }
   refine ⟨J, ?_, ?_⟩
   · intro f
     exact ⟨bound f, hvalue f⟩
@@ -60,7 +59,4 @@ theorem linearMap_of_eventual_integrals
     exact integral_add (hint R f) (hint R h)
   · intro R c f
     simp only [map_smul, Pi.smul_apply, integral_smul]
-  · exact hstable
-
-end
-end DedekindZetaZeroFree.KPExteriorActualJacquetShells
+  omega

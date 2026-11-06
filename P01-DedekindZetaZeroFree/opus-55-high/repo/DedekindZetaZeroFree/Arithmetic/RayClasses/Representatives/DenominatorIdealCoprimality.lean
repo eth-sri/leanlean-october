@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Arithmetic.RayClasses.Moduli.IntegralNarrowCo
 
 @[expose] public section
 
-noncomputable section
 
 open scoped NumberField Classical
 open IsDedekindDomain
@@ -29,7 +28,3 @@ theorem rayDenominatorIdealCoprime
     v.exists_primeCompl_mul_eq_of_integer (x : K)
       (narrowRayCongruent_valuation_le_one K m hm x hx v hv)
   exact d.property (hDP ((hD (d : 𝓞 K)).mpr ⟨n, by simpa [mul_comm] using hnd.symm⟩))
-
-end DedekindZetaZeroFree.AbelianQuotient
-
-end

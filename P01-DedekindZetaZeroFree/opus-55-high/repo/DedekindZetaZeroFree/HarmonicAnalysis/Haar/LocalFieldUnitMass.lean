@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.ResidueFieldScaling
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.KPTameTransposeBaseMassSteps
 open MeasureTheory ValuativeRel
 open scoped Classical ENNReal
@@ -37,7 +36,4 @@ theorem normalized_unit_complement_mass (μ : Measure K) [μ.IsAddHaarMeasure]
   rw [measureReal_sdiff hp hclosed.measurableSet (by simpa [R, hμ]), measureReal_def,
     show μ (R : Set K) = 1 from hμ, ENNReal.toReal_one]
   change 1 - (μ p).toReal = _
-  rw [hpvol, ENNReal.toReal_inv, ENNReal.toReal_natCast]
-end DedekindZetaZeroFree.KPTameTransposeBaseMassSteps
-
-end
+  simp_all

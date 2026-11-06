@@ -160,7 +160,7 @@ theorem fixed_iwasawa_laws (B : Subgroup G) (L : OpenSubgroup G)
       funext l
       exact congrFun (hj (j : G) hmem) (l : G)
   refine ⟨?_, ?_, ?_, hext, hrest, hres, ?_, ?_⟩
-  · exact ⟨by intros; simp, ⟨⊤, by intros; simp⟩⟩
+  · exact ⟨by simp, ⟨⊤, by simp⟩⟩
   · intro φ ψ hφ hψ
     constructor
     · intro b l l' heq
@@ -192,8 +192,8 @@ def compactFixedSpace (B : Subgroup G) (L J : OpenSubgroup G)
   carrier := {φ | CompactCovariant B L σ₀ φ ∧ CompactFixed L J φ}
   zero_mem' := by
     constructor
-    · exact ⟨by intros; simp, by
-        exact ⟨⊤, by intros; simp⟩⟩
+    · exact ⟨by simp, 
+        ⟨⊤, by simp⟩⟩
     · intro j l l' hh; rfl
   add_mem' := by
     rintro φ ψ ⟨hφ, fφ⟩ ⟨hψ, fψ⟩
@@ -204,9 +204,7 @@ def compactFixedSpace (B : Subgroup G) (L J : OpenSubgroup G)
       · obtain ⟨Jφ, hjφ⟩ := hφ.2
         obtain ⟨Jψ, hjψ⟩ := hψ.2
         refine ⟨Jφ ⊓ Jψ, ?_⟩
-        intro j hj
-        change rightTranslation j (φ + ψ) = φ + ψ
-        rw [map_add, hjφ j hj.1, hjψ j hj.2]
+        simp_all
     · intro j l l' hh
       simp only [Pi.add_apply, fφ j l l' hh, fψ j l l' hh]
   smul_mem' := by
@@ -217,9 +215,7 @@ def compactFixedSpace (B : Subgroup G) (L J : OpenSubgroup G)
         simp only [Pi.smul_apply, hφ.1 b l l' hh, map_smul]
       · obtain ⟨Jφ, hjφ⟩ := hφ.2
         refine ⟨Jφ, ?_⟩
-        intro j hj
-        change rightTranslation j (c • φ) = c • φ
-        rw [map_smul, hjφ j hj]
+        simp_all
     · intro j l l' hh
       simp only [Pi.smul_apply, fφ j l l' hh]
 
@@ -268,5 +264,3 @@ theorem finite_level_and_holomorphic [IsTopologicalGroup G]
     exact Module.Finite.of_injective ev hev
   · intro φ g x
     exact hentire (r (x * g)) (φ.val (k (x * g)))
-end
-end DedekindZetaZeroFree.KPLocalPrincipalSeriesRaw

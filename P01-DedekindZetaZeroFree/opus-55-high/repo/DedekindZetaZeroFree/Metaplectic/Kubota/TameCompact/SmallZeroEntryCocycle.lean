@@ -9,21 +9,19 @@ open NumberField IsDedekindDomain
 
 namespace DedekindZetaZeroFree.KPTameCompact
 
-noncomputable section
-set_option autoImplicit false
 set_option maxHeartbeats 2000000
 
-private lemma entry_c (F : Type) [Field F] [NumberField F]
+lemma entry_c (F : Type) [Field F] [NumberField F]
     (v : HeightOneSpectrum (𝓞 F)) (g h : K0 F v) :
     c F v (g * h) = c F v g * a F v h + d F v g * c F v h := by
   simp [c, a, d, Matrix.mul_apply, Fin.sum_univ_two]
 
-private lemma entry_a (F : Type) [Field F] [NumberField F]
+lemma entry_a (F : Type) [Field F] [NumberField F]
     (v : HeightOneSpectrum (𝓞 F)) (g h : K0 F v) :
     a F v (g * h) = a F v g * a F v h + b F v g * c F v h := by
   simp [c, a, b, Matrix.mul_apply, Fin.sum_univ_two]
 
-private lemma entry_d (F : Type) [Field F] [NumberField F]
+lemma entry_d (F : Type) [Field F] [NumberField F]
     (v : HeightOneSpectrum (𝓞 F)) (g h : K0 F v) :
     d F v (g * h) = c F v g * b F v h + d F v g * d F v h := by
   simp [c, b, d, Matrix.mul_apply, Fin.sum_univ_two]
@@ -36,7 +34,7 @@ private lemma X_zero (F : Type) [Field F] [NumberField F]
   simpa [KubotaRankTwo.X, KubotaRankTwo.x, inclusion,
     KPLocalCube.integerInclusion, hc] using hD.symm
 
-private lemma X_nonzero (F : Type) [Field F] [NumberField F]
+lemma X_nonzero (F : Type) [Field F] [NumberField F]
     (v : HeightOneSpectrum (𝓞 F)) (g : K0 F v) (hc : c F v g ≠ 0)
     (C : (K F v)ˣ) (hC : (C : K F v) = c F v g) :
     KubotaRankTwo.X (K F v) (inclusion F v g) = C := by
@@ -44,7 +42,7 @@ private lemma X_nonzero (F : Type) [Field F] [NumberField F]
   simpa [KubotaRankTwo.X, KubotaRankTwo.x, inclusion,
     KPLocalCube.integerInclusion, hc] using hC.symm
 
-private lemma kappa_raw (F : Type) [Field F] [NumberField F]
+lemma kappa_raw (F : Type) [Field F] [NumberField F]
     (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (v : HeightOneSpectrum (𝓞 F))
     (g : K0 F v) (hc : c F v g ≠ 0) (hn : ‖c F v g‖ < 1)
     (C D : (K F v)ˣ) (hC : (C : K F v) = c F v g)
@@ -92,7 +90,7 @@ theorem kappa_mul_small_zero
   have hQ : Matrix.GeneralLinearGroup.det (inclusion F v h) = Q :=
     Matrix.GeneralLinearGroup.map_det _ _
   have hPQ : Matrix.GeneralLinearGroup.det (inclusion F v (g * h)) = P * Q := by
-    rw [map_mul, map_mul, hP, hQ]
+    simp_all
   have hL : ∀ x y z, B (x*y) z = B x z * B y z :=
     (KPHilbert.B3_laws F ζ hζ (Sum.inr v)).1
   have hR : ∀ x y z, B x (y*z) = B x y * B x z :=
@@ -111,7 +109,7 @@ theorem kappa_mul_small_zero
     unfold KPLocalCover.sigmaTwo
     rw [det_twist_trivial F v ζ hζ hv g h, mul_one]
     unfold KubotaElementaryLastArgument.tau
-    rw [← map_mul, hP]
+    rfl
   rcases hzero with hcg | hch
   · have hzg : c F v (g * h) = d F v g * c F v h := by
       rw [entry_c, hcg, zero_mul, zero_add]
@@ -129,7 +127,7 @@ theorem kappa_mul_small_zero
         simp [entry_d, hcg, hD, hV]
       rw [hSigma, X_zero F v (g*h) hz (D*V) hdprod,
         X_zero F v g hcg D hD, X_zero F v h hch V hV]
-      have eq1 : D * V / D = V := by apply Units.ext; simp only [Units.val_div_eq_div_val, Units.val_mul]; field_simp
+      have eq1 : D * V / D = V := by simp
       have eq2 : D * V / (V * P) = D / P := by apply Units.ext; simp only [Units.val_div_eq_div_val, Units.val_mul]; field_simp
       rw [eq1, eq2]
       exact (hUU dh (dg / pg)).symm.trans (by simp [i, D, P, V])
@@ -144,7 +142,7 @@ theorem kappa_mul_small_zero
         hSigma, X_nonzero F v (g*h) hz (D*E) hDE,
         X_zero F v g hcg D hD, X_nonzero F v h hch E rfl]
       change B (D*E) ((D*V)/(P*Q)) = B E (V/Q) * B (D*E/D) (D*E/(E*P))
-      have eq1 : D*E/D = E := by apply Units.ext; simp only [Units.val_div_eq_div_val, Units.val_mul]; field_simp
+      have eq1 : D*E/D = E := by simp
       have eq2 : D*E/(E*P) = D/P := by apply Units.ext; simp only [Units.val_div_eq_div_val, Units.val_mul]; field_simp
       have eq3 : (D*V)/(P*Q) = (D/P)*(V/Q) := by apply Units.ext; simp only [Units.val_div_eq_div_val, Units.val_mul]; field_simp
       rw [eq1, eq2, eq3, hL, hR, hR]
@@ -168,7 +166,7 @@ theorem kappa_mul_small_zero
       rw [hSigma, X_zero F v (g*h) hz (D*V) hdprod,
         X_zero F v g hcg D hD, X_zero F v h hch V hV]
       have eq1 : D * V / D = V := by
-        apply Units.ext; simp only [Units.val_div_eq_div_val, Units.val_mul]; field_simp
+        simp
       have eq2 : D * V / (V * P) = D / P := by
         apply Units.ext; simp only [Units.val_div_eq_div_val, Units.val_mul]; field_simp
       rw [eq1, eq2]
@@ -192,7 +190,7 @@ theorem kappa_mul_small_zero
         X_nonzero F v g hcg C rfl, X_zero F v h hch V hV]
       change B (C*U) (A*U)⁻¹ = B C A⁻¹ * B (C*U/C) (C*U/(V*P))
       have eq1 : C*U/C = U := by
-        apply Units.ext; simp only [Units.val_div_eq_div_val, Units.val_mul]; field_simp
+        simp
       have eq2 : C*U/(V*P) = C * (U/(V*P)) := by
         apply Units.ext; simp only [Units.val_div_eq_div_val, Units.val_mul]; field_simp
       have eq3 : (A*U)⁻¹ = A⁻¹ * U⁻¹ := by
@@ -203,6 +201,3 @@ theorem kappa_mul_small_zero
         simpa only [U, V, P, ← map_mul, ← map_div] using hUU ah (ah/(dh*pg))
       rw [eq1, eq2, eq3, hL, hR, hR, hR, uu1, uu2, uu3,
         one_mul, mul_one, mul_one, hSk U C, ← hInv C U]
-
-end
-end DedekindZetaZeroFree.KPTameCompact

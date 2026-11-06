@@ -38,8 +38,7 @@ def torusPeriodisation
           B.equivFun.symm x + (v : V) := by
         simp only [AddCircle.coe_equivIco_mk_apply, div_one, mul_one,
           Basis.equivFun_symm_apply, Int.fract]
-        simp only [v, Submodule.coe_sum, Submodule.coe_smul_of_tower,
-          Int.cast_neg, zsmul_eq_mul]
+        simp only [v, Submodule.coe_sum, Submodule.coe_smul_of_tower]
         simp only [B, Basis.ofZLatticeBasis_apply, sub_smul, Finset.sum_sub_distrib]
         rw [sub_eq_add_neg, ← Finset.sum_neg_distrib]
         congr 1
@@ -76,8 +75,7 @@ theorem torusPeriodisation_coe
       B.equivFun.symm x + (v : V) := by
     simp only [AddCircle.coe_equivIco_mk_apply, div_one, mul_one,
       Basis.equivFun_symm_apply, Int.fract]
-    simp only [v, Submodule.coe_sum, Submodule.coe_smul_of_tower,
-      Int.cast_neg, zsmul_eq_mul]
+    simp only [v, Submodule.coe_sum, Submodule.coe_smul_of_tower]
     simp only [B, Basis.ofZLatticeBasis_apply, sub_smul, Finset.sum_sub_distrib]
     rw [sub_eq_add_neg, ← Finset.sum_neg_distrib]
     congr 1
@@ -85,7 +83,3 @@ theorem torusPeriodisation_coe
     intro i _
     simp [neg_smul, Int.cast_smul_eq_zsmul]
   rw [heq, periodisation_add_lattice]
-
-end DedekindZetaZeroFree.PoissonArch
-
-end

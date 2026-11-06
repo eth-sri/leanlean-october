@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 universe u v
 
 namespace ClassFormation
@@ -43,7 +40,7 @@ namespace FiniteIntermediateField
 intermediate field.  Recording the supplied `Finite` instance in the
 definition lets later fixed-field constructions use the cardinality without
 adding a second finiteness parameter. -/
-noncomputable def quotientCard {E K : ClosedSubgroup G}
+def quotientCard {E K : ClosedSubgroup G}
     (M : FiniteIntermediateField E K) : ℕ := by
   letI : Finite
       (K.toSubgroup ⧸ extensionSubgroup K M.field M.below) := M.finite
@@ -79,11 +76,3 @@ theorem exists_common_compositum {E K : ClosedSubgroup G} {ι : Type v}
       rcases hj with hji | hj
       · simpa [hji] using P.compositum_le_right (F i)
       · exact (P.compositum_le_left (F i)).trans (hPF j hj)
-
-end FiniteIntermediateField
-
-end finiteIntermediateFields
-
-end
-
-end ClassFormation

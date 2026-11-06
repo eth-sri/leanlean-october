@@ -34,8 +34,8 @@ def inducedRepresentation :
 
 def ev1 : Induced F ζ hζ w m τB →ₗ[ℂ] E where
   toFun f := f.val.val 1
-  map_add' := by intros; rfl
-  map_smul' := by intros; rfl
+  map_add' := by simp
+  map_smul' := by simp
 
 include hm
 
@@ -64,8 +64,7 @@ theorem inducingRepresentation_smooth (hm : KPLocalChartTopology.MatrixChartDept
   intro b hb
   have hbD : dB F ζ hζ w b = 1 := hb.2
   change (((dB F ζ hζ w b : ℝ≥0) : ℝ) : ℂ) • τB b e = e
-  rw [hbD, hJ b hb.1]
-  simp
+  simp_all
 
 theorem ev1_borel (b : Borel F ζ hζ w) (f : Induced F ζ hζ w m τB) :
     ev1 F ζ hζ w m τB
@@ -87,7 +86,7 @@ theorem ev1_smooth_borel (hτB : letI := finiteCoverTopology F ζ hζ w m; Smoot
   exact ⟨smoothIndRepresentation_smooth _ _ _,
     inducingRepresentation_smooth F ζ hζ w m hm τB hm hτB⟩
 
-private theorem exists_compact_open_in (U : Set (FiniteCover F ζ hζ w))
+theorem exists_compact_open_in (U : Set (FiniteCover F ζ hζ w))
     (hU : letI := finiteCoverTopology F ζ hζ w m; U ∈ nhds 1) :
     letI := finiteCoverTopology F ζ hζ w m
     ∃ L : compactOpenLevel F ζ hζ w m, (L.toOpenSubgroup : Set _) ⊆ U := by
@@ -133,7 +132,7 @@ private theorem exists_compact_open_in (U : Set (FiniteCover F ζ hζ w))
   let Lgroup := (q.comp t).range
   have hLrange : (Lgroup : Set (FiniteCover F ζ hζ w)) = q '' Set.range t := by
     ext x
-    simp [Lgroup, MonoidHom.mem_range, Set.mem_image, Function.comp_def]
+    simp [Lgroup, Set.mem_image, Function.comp_def]
   have hLo : IsOpen (Lgroup : Set (FiniteCover F ζ hζ w)) := by
     rw [hLrange]
     exact QuotientGroup.isOpenMap_coe _ hto
@@ -192,7 +191,7 @@ theorem bump_well_defined (b b' : Borel F ζ hζ w)
     rw [heq]
     exact L.toOpenSubgroup.mul_mem l'.property (L.toOpenSubgroup.inv_mem l.property)
   have hb : b = b' * c := by dsimp [c]; group
-  rw [hb, map_mul, Module.End.mul_apply, hL c hc]
+  simp_all
 
 theorem bumpFunction_on (b : Borel F ζ hζ w) (l : letI := finiteCoverTopology F ζ hζ w m; L.toOpenSubgroup) :
     bumpFunction F ζ hζ w m τB e L (b.val * l.val) =
@@ -205,8 +204,8 @@ theorem bumpFunction_on (b : Borel F ζ hζ w) (l : letI := finiteCoverTopology 
 
 theorem bumpFunction_off (g : FiniteCover F ζ hζ w)
     (hg : ¬ InBorelLevel F ζ hζ w m L g) :
-    bumpFunction F ζ hζ w m τB e L g = 0 := by
-  exact dif_neg hg
+    bumpFunction F ζ hζ w m τB e L g = 0 := 
+  dif_neg hg
 
 theorem bumpFunction_right_fixed (g : FiniteCover F ζ hζ w)
     (l : letI := finiteCoverTopology F ζ hζ w m; L.toOpenSubgroup) :
@@ -291,8 +290,6 @@ theorem upperRoot_mem_borel (x : Multiplicative (KPRankOneInduction.LocalField F
   change projection F ζ hζ w (upperRoot F ζ hζ w x) ∈ KPRankOneInduction.upperBorel F w
   have hn : projection F ζ hζ w (upperRoot F ζ hζ w x) =
       KPRankOneInduction.upperRootElement F w (Multiplicative.toAdd x) := by
-    change Matrix.ProjGenLinGroup.mk (KubotaRankTwo.n _ _) =
-      Matrix.ProjGenLinGroup.mk (KPRankOneInduction.upperRootMatrix F w _)
     rfl
   rw [hn]
   exact KPRankOneInduction.upperRootElement_mem F w _
@@ -342,8 +339,6 @@ theorem ev1_upperRoot
   rw [hev]
   have hn : projection F ζ hζ w (upperRoot F ζ hζ w x) =
       KPRankOneInduction.upperRootElement F w (Multiplicative.toAdd x) := by
-    change Matrix.ProjGenLinGroup.mk (KubotaRankTwo.n _ _) =
-      Matrix.ProjGenLinGroup.mk (KPRankOneInduction.upperRootMatrix F w _)
     rfl
   have hd := KPRankOneInduction.deltaB_upperRoot F w (projection F ζ hζ w)
     (Multiplicative.toAdd x) (rootInBorel F ζ hζ w x) hn
@@ -373,9 +368,3 @@ theorem ev1_torus
   rw [hqH]
   unfold KPLocalSmoothRepresentation.dB KPRankOneInduction.dB
   rw [KPRankOneInduction.halfModulus_eq]
-
-end TorusInduction
-
-end DedekindZetaZeroFree.KPJacquetClosedCellBump
-
-end

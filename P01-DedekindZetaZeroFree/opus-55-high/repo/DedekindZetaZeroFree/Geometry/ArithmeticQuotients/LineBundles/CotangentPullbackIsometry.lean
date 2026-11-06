@@ -16,7 +16,3 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
 def coframeEvaluation (W : Cotangent F ζ hζ U) (x v : Arch F) : ℂ :=
   ∑ i, ((W (i,0) : ℂ) * (v i).2 + (Real.exp (-(x i).2) : ℂ) *
     ((W (i,1) : ℂ) * (v i).1.re + (W (i,2) : ℂ) * (v i).1.im))
-
-end DedekindZetaZeroFree.KPCuspCutoffGraphApproximation
-
-end

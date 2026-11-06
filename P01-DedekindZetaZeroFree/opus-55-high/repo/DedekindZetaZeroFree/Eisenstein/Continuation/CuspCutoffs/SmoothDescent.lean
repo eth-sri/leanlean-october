@@ -108,7 +108,7 @@ theorem cutoffScalar_tail
   exact KPCutoffSource.cutoffSum_at_every_cusp _
     (ends_pairwise_disjoint F ζ hζ C R P H U B) _ χ _ f a s x hx ht
 
-private theorem multiplier_zero_off_collar (d : ℕ) (χ : KPCutoffSource.SmoothCuspCutoff T)
+theorem multiplier_zero_off_collar (d : ℕ) (χ : KPCutoffSource.SmoothCuspCutoff T)
     (s : ℂ) (t : ℝ) (ht : t ∉ Set.Icc T (T + 1)) :
     KPCutoffSource.incomingCommutatorMultiplier d χ.toFun s t = 0 := by
   have hw := Function.support_subset_iff'.mp
@@ -352,7 +352,7 @@ def LiftCovariance (w : SmoothSections F ζ hζ C R P H U) : Prop :=
       (g * KPSmoothActualFlowData.archimedeanInsertion F ζ hζ k.val)) =
         lift F ζ hζ C R P H U w (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ g))
 
-private theorem split_cover (g : KPSmoothLocalQuotientCharts.ActualCover F ζ hζ) :
+theorem split_cover (g : KPSmoothLocalQuotientCharts.ActualCover F ζ hζ) :
     ∃ (a : KPSmoothActualFlowData.GInfinity F)
       (c : KPContSectorCoveredQuotientVocabulary.FiniteCover F ζ hζ),
       g = KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a * c := by
@@ -366,7 +366,7 @@ private theorem split_cover (g : KPSmoothLocalQuotientCharts.ActualCover F ζ h�
   rw [← KPMsResidualTailRestoration.OutgoingTailL2.CoordinateDescent.fullCusp_finiteSubgroup_eq]
   exact c.property
 
-private theorem central_comm_cover (ε : rootsOfUnity 3 F)
+theorem central_comm_cover (ε : rootsOfUnity 3 F)
     (g : KPSmoothLocalQuotientCharts.ActualCover F ζ hζ) :
     KPSmoothLocalQuotientCharts.centreMap F ζ hζ ε * g =
       g * KPSmoothLocalQuotientCharts.centreMap F ζ hζ ε := by
@@ -425,14 +425,14 @@ theorem lift_covariance (w : SmoothSections F ζ hζ C R P H U) :
       apply Subgroup.subset_closure
       exact Set.mem_union_left _ ⟨k.val, k.property, rfl⟩
 
-private theorem deriv_zero_below {A : ℝ} (φ : ℝ → ℝ)
+theorem deriv_zero_below {A : ℝ} (φ : ℝ → ℝ)
     (hzero : ∀ t, t ≤ A → φ t = 0) (t : ℝ) (ht : t ≤ A) : deriv φ t = 0 := by
   have hc : HasDerivWithinAt φ 0 (Set.Iic t) t :=
     (hasDerivWithinAt_const t (Set.Iic t) (0 : ℝ)).congr
       (fun x hx => hzero x (le_trans hx ht)) (hzero t ht)
   exact hc.deriv_eq_zero (uniqueDiffWithinAt_Iic t)
 
-private theorem incoming_multiplier_smooth (d : ℕ)
+theorem incoming_multiplier_smooth (d : ℕ)
     (χ : KPCutoffSource.SmoothCuspCutoff T) (s : ℂ) :
     ContDiff ℝ (⊤ : ℕ∞) (KPCutoffSource.incomingCommutatorMultiplier d χ.toFun s) := by
   have h₁ := (contDiff_infty_iff_deriv.mp χ.smooth).2
@@ -442,7 +442,7 @@ private theorem incoming_multiplier_smooth (d : ℕ)
   exact ((contDiff_const.mul hc₂).add (contDiff_const.mul hc₁)).sub
     (contDiff_const.mul hc₁)
 
-private theorem incoming_multiplier_zero_below (d : ℕ)
+theorem incoming_multiplier_zero_below (d : ℕ)
     (χ : KPCutoffSource.SmoothCuspCutoff T) (s : ℂ) (t : ℝ) (ht : t ≤ T) :
     KPCutoffSource.incomingCommutatorMultiplier d χ.toFun s t = 0 := by
   have h₁ := deriv_zero_below χ.toFun χ.zero_below t ht
@@ -450,7 +450,7 @@ private theorem incoming_multiplier_zero_below (d : ℕ)
     (deriv_zero_below χ.toFun χ.zero_below) t ht
   simp [KPCutoffSource.incomingCommutatorMultiplier, h₁, h₂]
 
-private theorem incoming_sum_smooth_section (s : ℂ)
+theorem incoming_sum_smooth_section (s : ℂ)
     (hs : s ∈ KPContinuation.spectralDomain) (v : S)
     (φ : Cusps F ζ hζ C R P H U → ℝ → ℂ)
     (hφ : ∀ a, ContDiff ℝ (⊤ : ℕ∞) (φ a))
@@ -470,7 +470,7 @@ private theorem incoming_sum_smooth_section (s : ℂ)
   simp only [Submodule.coe_sum, Finset.sum_apply]
   exact Finset.sum_congr rfl (fun a _ => congrFun (hg a) x)
 
-private theorem cutoff_commutator_sections_exist
+theorem cutoff_commutator_sections_exist
     (χ : Cusps F ζ hζ C R P H U → KPCutoffSource.SmoothCuspCutoff T)
     (f : ℂ → S) (s : ℂ) (hs : s ∈ KPContinuation.spectralDomain) :
     (∃ w : SmoothSections F ζ hζ C R P H U,

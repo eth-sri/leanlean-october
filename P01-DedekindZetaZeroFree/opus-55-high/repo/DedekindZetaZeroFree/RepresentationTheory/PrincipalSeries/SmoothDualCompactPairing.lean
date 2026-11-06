@@ -20,8 +20,8 @@ def bidualMap {G V : Type*} [Group G] [TopologicalSpace G]
   let j : V →ₗ[ℂ] Module.Dual ℂ (smoothSubmodule ρ.dual) :=
     { toFun := fun v =>
         { toFun := fun ℓ => ℓ.val v
-          map_add' := by intros; rfl
-          map_smul' := by intros; rfl }
+          map_add' := by simp
+          map_smul' := by simp }
       map_add' := by intros; ext; simp
       map_smul' := by intros; ext; simp }
   refine j.codRestrict _ ?_
@@ -88,19 +88,7 @@ theorem smooth_orbit_locallyConstant (ρ : Representation ℂ G V) (v : V)
   intro g
   refine ⟨(fun y => g⁻¹ * y) ⁻¹' (J : Set G),
     J.isOpen.preimage (continuous_const.mul continuous_id), ?_, ?_⟩
-  · simpa using J.one_mem
+  · simp
   · intro y hy
     have heq : y = g * (g⁻¹ * y) := by simp
     rw [heq, map_mul, Module.End.mul_apply, hJ _ hy]
-
-end AlgebraicAveraging
-
-variable (F : Type) [Field F] [NumberField F]
-  (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-  (w : HeightOneSpectrum (RingOfIntegers F)) (m : ℕ)
-  (hm : KPLocalChartTopology.MatrixChartDepth F w m)
-
-end DedekindZetaZeroFree.KPLocalInducedCompactPairing
-
-end
-end

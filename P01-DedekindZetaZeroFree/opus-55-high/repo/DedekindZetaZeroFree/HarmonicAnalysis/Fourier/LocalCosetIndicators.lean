@@ -74,7 +74,7 @@ theorem localFourierIntegral_localCosetIndicator
       simpa [χ] using ht
     · intro h u hu
       have ht := h (-u) (U.neg_mem hu)
-      simpa [χ] using ht
+      omega
   have htranslate :
       (fun x : v.adicCompletion F =>
         localCosetIndicator F v b U (b + x) *
@@ -83,10 +83,9 @@ theorem localFourierIntegral_localCosetIndicator
         (U : Set (v.adicCompletion F)).indicator (fun u => (χ u : ℂ)) x) := by
     funext x
     by_cases hx : x ∈ U
-    · simp [localCosetIndicator_apply, hx, Set.indicator_of_mem, χ,
-        neg_add, add_mul, AddChar.map_add_eq_mul]
+    · simp [localCosetIndicator_apply, hx, Set.indicator_of_mem, χ, add_mul, AddChar.map_add_eq_mul]
       exact mul_comm _ _
-    · simp [localCosetIndicator_apply, hx, Set.indicator_of_notMem]
+    simp_all
   rw [localFourierIntegral_apply]
   rw [← integral_add_left_eq_self (μ := localNormalizedHaar F v)
     (fun x => localCosetIndicator F v b U x *
@@ -109,7 +108,3 @@ theorem localFourierIntegral_localCosetIndicator_ball
     (isCompact_finiteCompletionBall F v n) (isOpen_finiteCompletionBall F v n),
     localNormalizedHaar_finiteCompletionBall_toReal,
     localFiniteAnnihilator_finiteCompletionBall]
-
-end DedekindZetaZeroFree
-
-end

@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 universe u
 
 namespace ClassFormation
@@ -61,12 +57,7 @@ def base (E K : ClosedSubgroup G) (hEK : E.toSubgroup ≤ K.toSubgroup) :
   below := le_rfl
   finite := by
     have htop : extensionSubgroup K K le_rfl = ⊤ := by
-      ext x
-      constructor
-      · intro _
-        trivial
-      · intro _
-        exact x.2
+      simp
     rw [htop]
     infer_instance
 
@@ -122,14 +113,6 @@ instance infiniteNormQuotientAddCommGroup
   unfold InfiniteNormQuotient
   infer_instance
 
-/-- The explicit boundary to the concrete quotient implementation. -/
-def infiniteNormQuotientConcreteEquiv
-    (A : Rep ℤ G) (E K : ClosedSubgroup G) :
-    InfiniteNormQuotient A E K ≃+
-      ambientFixedAddSubgroup A K ⧸ infiniteNormSubgroup A E K := by
-  unfold InfiniteNormQuotient
-  exact AddEquiv.refl _
-
 /-- The canonical class map into the infinite norm quotient. -/
 def infiniteNormClass
     (A : Rep ℤ G) (E K : ClosedSubgroup G) :
@@ -137,16 +120,6 @@ def infiniteNormClass
       InfiniteNormQuotient A E K := by
   unfold InfiniteNormQuotient
   exact QuotientAddGroup.mk' (infiniteNormSubgroup A E K)
-
-/-- The concrete infinite-norm quotient equivalence sends a class to its
-canonical quotient class. -/
-@[simp]
-theorem infiniteNormQuotientConcreteEquiv_infiniteNormClass
-    (A : Rep ℤ G) (E K : ClosedSubgroup G)
-    (a : ambientFixedAddSubgroup A K) :
-    infiniteNormQuotientConcreteEquiv A E K (infiniteNormClass A E K a) =
-      QuotientAddGroup.mk' (infiniteNormSubgroup A E K) a := by
-  rfl
 
 /-- An infinite norm class vanishes exactly when its representative lies in the norm subgroup. -/
 @[simp]
@@ -157,26 +130,6 @@ theorem infiniteNormClass_eq_zero_iff
       a ∈ infiniteNormSubgroup A E K := by
   unfold infiniteNormClass InfiniteNormQuotient
   exact QuotientAddGroup.eq_zero_iff a
-
-/-- Every infinite norm-quotient class has an ambient representative. -/
-theorem infiniteNormClass_surjective
-    (A : Rep ℤ G) (E K : ClosedSubgroup G) :
-    Function.Surjective (infiniteNormClass A E K) := by
-  intro q
-  change ambientFixedAddSubgroup A K ⧸ infiniteNormSubgroup A E K at q
-  obtain ⟨a, rfl⟩ :=
-    QuotientAddGroup.mk'_surjective (infiniteNormSubgroup A E K) q
-  exact ⟨a, rfl⟩
-
-/-- Eliminate an infinite norm-quotient class through an ambient representative. -/
-@[elab_as_elim]
-theorem InfiniteNormQuotient.induction_on
-    (A : Rep ℤ G) (E K : ClosedSubgroup G)
-    {motive : InfiniteNormQuotient A E K → Prop}
-    (q : InfiniteNormQuotient A E K)
-    (h : ∀ a, motive (infiniteNormClass A E K a)) : motive q := by
-  obtain ⟨a, rfl⟩ := infiniteNormClass_surjective A E K q
-  exact h a
 
 /-- Descend an additive homomorphism that kills the infinite norm subgroup. -/
 def infiniteNormQuotientLift
@@ -228,8 +181,7 @@ condition. -/
 theorem mem_maximalUnramifiedField_iff
     (D : DegreeData G) (L : ClosedSubgroup G) (g : G) :
     g ∈ D.maximalUnramifiedField L ↔ g ∈ L ∧ D.degree g = 1 := by
-  rw [D.maximalUnramifiedField_eq_fieldInertia]
-  exact D.mem_fieldInertia_iff L g
+  rfl
 
 /-- Every finite unramified field lies below the maximal unramified field. -/
 theorem maximalUnramifiedField_le (D : DegreeData G) (L : ClosedSubgroup G) :
@@ -260,21 +212,7 @@ theorem extensionSubgroup_maximalUnramifiedField (D : DegreeData G)
     extensionSubgroup K (D.maximalUnramifiedField L)
         (D.maximalUnramifiedField_le_of_le hLK) =
       D.extensionInertiaWithin K L hLK := by
-  ext k
-  constructor
-  · intro hk
-    have hkMax : k.1 ∈ D.maximalUnramifiedField L :=
-      (mem_extensionSubgroup_iff K (D.maximalUnramifiedField L)
-        (D.maximalUnramifiedField_le_of_le hLK) k).1 hk
-    have hkData := (D.mem_maximalUnramifiedField_iff L k.1).1 hkMax
-    exact ⟨(mem_extensionSubgroup_iff K L hLK k).2 hkData.1,
-      (D.mem_fieldInertiaWithin_iff K k).2 hkData.2⟩
-  · intro hk
-    apply (mem_extensionSubgroup_iff K (D.maximalUnramifiedField L)
-      (D.maximalUnramifiedField_le_of_le hLK) k).2
-    apply (D.mem_maximalUnramifiedField_iff L k.1).2
-    exact ⟨(mem_extensionSubgroup_iff K L hLK k).1 hk.1,
-      (D.mem_fieldInertiaWithin_iff K k).1 hk.2⟩
+  rfl
 
 /-- The subgroup representing the maximal unramified field is normal in the base subgroup. -/
 theorem extensionSubgroup_maximalUnramifiedField_normal (D : DegreeData G)
@@ -334,14 +272,6 @@ instance maximalUnramifiedNormQuotientAddCommGroup
   unfold MaximalUnramifiedNormQuotient
   infer_instance
 
-/-- The explicit boundary to the corresponding infinite norm quotient. -/
-def maximalUnramifiedNormQuotientInfiniteEquiv
-    (D : DegreeData G) (A : Rep ℤ G) (K L : ClosedSubgroup G) :
-    D.MaximalUnramifiedNormQuotient A K L ≃+
-      InfiniteNormQuotient A (D.maximalUnramifiedField L) K := by
-  unfold MaximalUnramifiedNormQuotient
-  exact AddEquiv.refl _
-
 /-- The canonical class map into the maximal-unramified norm quotient. -/
 def maximalUnramifiedNormClass
     (D : DegreeData G) (A : Rep ℤ G) (K L : ClosedSubgroup G) :
@@ -349,16 +279,6 @@ def maximalUnramifiedNormClass
       D.MaximalUnramifiedNormQuotient A K L := by
   unfold MaximalUnramifiedNormQuotient
   exact infiniteNormClass A (D.maximalUnramifiedField L) K
-
-/-- The infinite quotient equivalence preserves the canonical maximal-unramified norm class. -/
-@[simp]
-theorem maximalUnramifiedNormQuotientInfiniteEquiv_maximalUnramifiedNormClass
-    (D : DegreeData G) (A : Rep ℤ G) (K L : ClosedSubgroup G)
-    (a : ambientFixedAddSubgroup A K) :
-    D.maximalUnramifiedNormQuotientInfiniteEquiv A K L
-        (D.maximalUnramifiedNormClass A K L a) =
-      infiniteNormClass A (D.maximalUnramifiedField L) K a := by
-  rfl
 
 /-- A maximal-unramified norm class vanishes exactly on its defining norm subgroup. -/
 @[simp]
@@ -369,26 +289,6 @@ theorem maximalUnramifiedNormClass_eq_zero_iff
       a ∈ D.maximalUnramifiedNormSubgroup A K L := by
   unfold maximalUnramifiedNormClass MaximalUnramifiedNormQuotient
   exact infiniteNormClass_eq_zero_iff A (D.maximalUnramifiedField L) K a
-
-/-- Every maximal-unramified norm class has an ambient representative. -/
-theorem maximalUnramifiedNormClass_surjective
-    (D : DegreeData G) (A : Rep ℤ G) (K L : ClosedSubgroup G) :
-    Function.Surjective (D.maximalUnramifiedNormClass A K L) := by
-  intro q
-  change InfiniteNormQuotient A (D.maximalUnramifiedField L) K at q
-  obtain ⟨a, ha⟩ :=
-    infiniteNormClass_surjective A (D.maximalUnramifiedField L) K q
-  exact ⟨a, ha⟩
-
-/-- Eliminate a maximal-unramified norm class through an ambient representative. -/
-@[elab_as_elim]
-theorem MaximalUnramifiedNormQuotient.induction_on
-    (D : DegreeData G) (A : Rep ℤ G) (K L : ClosedSubgroup G)
-    {motive : D.MaximalUnramifiedNormQuotient A K L → Prop}
-    (q : D.MaximalUnramifiedNormQuotient A K L)
-    (h : ∀ a, motive (D.maximalUnramifiedNormClass A K L a)) : motive q := by
-  obtain ⟨a, rfl⟩ := D.maximalUnramifiedNormClass_surjective A K L q
-  exact h a
 
 /-- Descend an additive homomorphism that kills the maximal-unramified norm subgroup. -/
 def maximalUnramifiedNormQuotientLift
@@ -412,16 +312,4 @@ theorem maximalUnramifiedNormQuotientLift_maximalUnramifiedNormClass
     (a : ambientFixedAddSubgroup A K) :
     D.maximalUnramifiedNormQuotientLift A K L f hf
         (D.maximalUnramifiedNormClass A K L a) = f a := by
-  unfold maximalUnramifiedNormQuotientLift maximalUnramifiedNormClass
-    MaximalUnramifiedNormQuotient
-  exact infiniteNormQuotientLift_infiniteNormClass
-    A (D.maximalUnramifiedField L) K f (by
-      intro b hb
-      exact hf ((D.mem_maximalUnramifiedNormSubgroup_iff A K L b).2 hb)) a
-
-end DegreeData
-
-end maximalUnramifiedNorms
-
-end
-end ClassFormation
+  rfl

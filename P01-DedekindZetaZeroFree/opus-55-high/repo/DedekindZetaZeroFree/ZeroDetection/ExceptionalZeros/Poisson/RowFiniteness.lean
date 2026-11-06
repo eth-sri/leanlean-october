@@ -16,7 +16,7 @@ variable {F : Type} [Field F] [NumberField F]
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 variable (D : FixedData S η)
 
-private theorem heightMax_nonneg (b ω : Ideal (𝓞 F) → ℂ) (N T : ℝ) :
+theorem heightMax_nonneg (b ω : Ideal (𝓞 F) → ℂ) (N T : ℝ) :
     0 ≤ detectorHeightPrefixMaximum F b ω N T := by
   unfold detectorHeightPrefixMaximum
   apply Real.sSup_nonneg

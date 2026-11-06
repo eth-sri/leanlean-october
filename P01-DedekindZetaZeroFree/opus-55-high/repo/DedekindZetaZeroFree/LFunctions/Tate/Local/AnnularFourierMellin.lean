@@ -80,8 +80,7 @@ theorem mem_unitShell_iff (v : HeightOneSpectrum (𝓞 F)) (x : v.adicCompletion
   induction g using WithZero.expRecOn with
   | zero => simp
   | exp i =>
-    simp only [neg_zero, WithZero.exp_zero, ← WithZero.exp_zero,
-      WithZero.exp_le_exp, WithZero.exp_inj]
+    simp only [neg_zero, ← WithZero.exp_zero, WithZero.exp_le_exp, WithZero.exp_inj]
     omega
 
 theorem annularTest_mem_localSchwartz (v : HeightOneSpectrum (𝓞 F)) :
@@ -100,8 +99,8 @@ theorem annularTest_mem_localSchwartz (v : HeightOneSpectrum (𝓞 F)) :
 
 theorem rescaledCharacter_continuous (v : HeightOneSpectrum (𝓞 F))
     (ψ : AddChar (v.adicCompletion F) Circle) (hψ : Continuous ψ)
-    (a : v.adicCompletion F) : Continuous (rescaledCharacter F v ψ a) := by
-  exact hψ.comp (continuous_const.mul continuous_id)
+    (a : v.adicCompletion F) : Continuous (rescaledCharacter F v ψ a) := 
+  hψ.comp (continuous_const.mul continuous_id)
 
 theorem rescaledCharacter_conductorZero (v : HeightOneSpectrum (𝓞 F))
     (ψ : AddChar (v.adicCompletion F) Circle) (m : ℤ)
@@ -112,10 +111,7 @@ theorem rescaledCharacter_conductorZero (v : HeightOneSpectrum (𝓞 F))
   change (∀ x ∈ finiteCompletionBall F v 0, ψ (a * (x * y)) = 1) ↔ _
   simp_rw [show ∀ x, a * (x * y) = x * (a * y) from fun x => by ring]
   rw [hc]
-  simp only [mem_finiteCompletionBall, map_mul, ha, neg_zero, WithZero.exp_zero]
-  simpa only [mul_one] using
-    (mul_le_mul_iff_right₀ (WithZero.exp_pos (a := -m)) :
-      WithZero.exp (-m) * Valued.v y ≤ WithZero.exp (-m) * 1 ↔ Valued.v y ≤ 1)
+  simp_all
 
 theorem fourier_rescaledCharacter (v : HeightOneSpectrum (𝓞 F))
     (ψ : AddChar (v.adicCompletion F) Circle) (μ : Measure (v.adicCompletion F))
@@ -200,7 +196,7 @@ theorem fourier_ballTest (v : HeightOneSpectrum (𝓞 F))
       ← WithZero.exp_zsmul, Valuation.map_neg]
     simp only [zsmul_eq_mul, mul_neg, mul_one, neg_zero, WithZero.exp_zero]
     rw [← le_inv_mul_iff₀ WithZero.exp_pos, ← WithZero.exp_neg]
-    simp [mem_finiteCompletionBall]
+    simp
   have hint : fourier F v ψ μ (ballTest F v n) y =
       ∫ x in (finiteCompletionBall F v n : Set _), (χ x : ℂ) ∂μ := by
     unfold fourier ballTest
@@ -208,7 +204,7 @@ theorem fourier_ballTest (v : HeightOneSpectrum (𝓞 F))
     apply integral_congr_ae
     filter_upwards with x
     by_cases hx : x ∈ finiteCompletionBall F v n
-    · simp [Set.indicator_of_mem hx, χ, mul_comm, neg_mul, mul_neg]
+    · simp [Set.indicator_of_mem hx, χ, mul_comm, mul_neg]
     · simp [Set.indicator_of_notMem hx]
   rw [hint, ho.2, ← Measure.real, finiteCompletionBall_mass F v μ hμ n]
   by_cases hy : y ∈ finiteCompletionBall F v (-n)
@@ -230,7 +226,7 @@ theorem fourier_ballTestIntegrand_integrable (v : HeightOneSpectrum (𝓞 F))
     intro x hx
     exact Set.indicator_of_notMem hx _
   have hphase : Continuous (fun x : v.adicCompletion F => (ψ (-x * y) : ℂ)) :=
-    continuous_subtype_val.comp (hψ.comp (continuous_id.neg.mul continuous_const))
+    by fun_prop
   exact (hcont.mul hphase).integrable_of_hasCompactSupport hsupp.mul_right
 
 theorem annularTest_eq_sub (v : HeightOneSpectrum (𝓞 F)) :
@@ -349,9 +345,9 @@ theorem multiplicativeHaar_map_mul (v : HeightOneSpectrum (𝓞 F))
       (fun x => ENNReal.ofReal (((1 - (q F v : ℝ)⁻¹) * ‖x‖)⁻¹)) x
   have hD : Measurable D := by
     apply Measurable.indicator _ (MeasurableSet.singleton 0).compl
-    exact ENNReal.measurable_ofReal.comp ((measurable_const.mul measurable_norm).inv)
-  have hν : multiplicativeHaar F v μ = μ.withDensity D := by
-    exact (withDensity_indicator (MeasurableSet.singleton 0).compl _).symm
+    fun_prop
+  have hν : multiplicativeHaar F v μ = μ.withDensity D := 
+    (withDensity_indicator (MeasurableSet.singleton 0).compl _).symm
   have hq : 1 < (q F v : ℝ) := by exact_mod_cast finiteCompletion_residueCard_gt_one F v
   have hp : 0 < ‖a‖ := norm_pos_iff.mpr ha
   have hh : 0 < 1 - (q F v : ℝ)⁻¹ := sub_pos.mpr (inv_lt_one_of_one_lt₀ hq)
@@ -366,7 +362,7 @@ theorem multiplicativeHaar_map_mul (v : HeightOneSpectrum (𝓞 F))
           ‖a‖⁻¹ * (((1 - (q F v : ℝ)⁻¹) * ‖x‖)⁻¹) := by
         rw [show (1 - (q F v : ℝ)⁻¹) * (‖a‖ * ‖x‖) =
           ‖a‖ * ((1 - (q F v : ℝ)⁻¹) * ‖x‖) by ring, mul_inv]
-      rw [he, ENNReal.ofReal_mul (inv_nonneg.mpr hp.le), ENNReal.ofReal_inv_of_pos hp]
+      simp_all
   rw [hν]
   ext s hs
   rw [Measure.map_apply (by fun_prop) hs, withDensity_apply _ (hs.preimage (by fun_prop)),
@@ -375,10 +371,10 @@ theorem multiplicativeHaar_map_mul (v : HeightOneSpectrum (𝓞 F))
   have hscale : Measure.map (fun x => a * x) μ = (ENNReal.ofReal ‖a‖)⁻¹ • μ := by
     simpa only [Units.val_mk0] using CompletionHaarModule.map_mul F v μ (Units.mk0 a ha)
   rw [hscale, Measure.restrict_smul, lintegral_smul_measure] at hm
-  simp only [ENNReal.smul_def, smul_eq_mul, Units.val_mk0] at hm
+  simp only [smul_eq_mul] at hm
   simp_rw [hmul] at hm
   rw [lintegral_const_mul _ hD] at hm
-  exact (ENNReal.mul_right_inj (by simp [ha]) (by simp [ha])).mp hm.symm
+  exact (ENNReal.mul_right_inj (by simp) (by simp [ha])).mp hm.symm
 
 theorem multiplicativeHaar_eq_smul (v : HeightOneSpectrum (𝓞 F)) (μ : Measure (v.adicCompletion F)) :
     multiplicativeHaar F v μ = ENNReal.ofReal ((1 - (q F v : ℝ)⁻¹)⁻¹) •
@@ -498,7 +494,7 @@ theorem mellin_fourier_annularTest (v : HeightOneSpectrum (𝓞 F))
       rw [← Real.rpow_neg_one, ← Real.rpow_neg hq.le, neg_neg, ← Real.rpow_add hq]
       congr 1
       ring
-    have hQ : ((q F v : ℝ) ^ (-s)) ≠ 0 := (Real.rpow_pos_of_pos hq _).ne'
+    have hQ : ((q F v : ℝ) ^ (-s)) ≠ 0 := by positivity
     unfold tateRatio
     push_cast
     rw [← hpow]
@@ -522,7 +518,7 @@ theorem exists_conductorZero_rescaling (v : HeightOneSpectrum (𝓞 F))
     rw [FinitePlace.norm_def, finiteCompletionUniformizer_valuation,
       WithZeroMulInt.toNNReal_neg_apply (HeightOneSpectrum.absNorm_ne_zero v) WithZero.exp_ne_zero,
       WithZero.log_exp, NNReal.coe_zpow]
-    simp [q]
+    simp
   have hq : 1 < (q F v : ℝ) := by exact_mod_cast finiteCompletion_residueCard_gt_one F v
   let P : ℕ → Prop := fun n => ∀ u ∈ finiteCompletionBall F v 0, ψ (x * π ^ n * u) = 1
   have hP : ∃ n, P n := by
@@ -538,13 +534,12 @@ theorem exists_conductorZero_rescaling (v : HeightOneSpectrum (𝓞 F))
   have hn0 : n ≠ 0 := by
     intro he
     have ht := hnP 1 (by simp [mem_finiteCompletionBall])
-    simp [he] at ht
-    exact hx ht
+    simp_all
   have hprev : ¬ P (n - 1) := Nat.find_min hP (by omega)
   obtain ⟨u, hu⟩ := not_forall.mp hprev
   obtain ⟨huO, hu⟩ := not_imp.mp hu
   let a := x * π ^ n
-  have ha : a ≠ 0 := mul_ne_zero hx0 (pow_ne_zero _ hπ0)
+  have ha : a ≠ 0 := by positivity
   have hnt : ψ (a * (u / π)) ≠ 1 := by
     have he : a * (u / π) = x * π ^ (n - 1) * u := by
       dsimp [a]
@@ -557,11 +552,10 @@ theorem exists_conductorZero_rescaling (v : HeightOneSpectrum (𝓞 F))
   constructor
   · intro hy
     by_contra hyO
-    have hy0 : y ≠ 0 := by intro he; simp [he, mem_finiteCompletionBall] at hyO
+    have hy0 : y ≠ 0 := by intro he; simp_all
     have hval : 1 ≤ Valued.v (π * y) := by
       rw [map_mul, finiteCompletionUniformizer_valuation]
-      change 1 ≤ WithZero.exp (-1) * Valued.v y
-      have hv0 : Valued.v y ≠ 0 := (Valuation.ne_zero_iff (Valued.v : Valuation (v.adicCompletion F) ℤᵐ⁰)).mpr hy0
+      have hv0 : Valued.v y ≠ 0 := by simp_all
       rw [← WithZero.exp_log hv0]
       rw [← WithZero.exp_add, ← WithZero.exp_zero, WithZero.exp_le_exp]
       have : ¬ Valued.v y ≤ WithZero.exp (-(0 : ℤ)) := hyO
@@ -617,10 +611,6 @@ theorem canonicalTrace_adapter (v : HeightOneSpectrum (𝓞 F)) :
     have hy := SetLike.ext_iff.mp h y
     simpa only [mem_localFiniteAnnihilator, neg_zero, zero_sub] using hy
   · unfold conductorHaar localNormalizedHaar localHalfDifferentFactor q
-    simp only [Int.cast_neg, Int.cast_natCast]
+    simp
   · intro f y
     exact (localFourierIntegral_apply F v f y).symm
-
-end DedekindZetaZeroFree.TateFiniteShell
-
-end

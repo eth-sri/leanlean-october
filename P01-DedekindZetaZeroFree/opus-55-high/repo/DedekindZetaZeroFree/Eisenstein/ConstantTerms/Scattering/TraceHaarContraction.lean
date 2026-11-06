@@ -28,7 +28,3 @@ theorem traceHaar_eq_smul_unit (q : KPFinitePlace F)
     (hμ : μ ((valuation (q.adicCompletion F)).integer : Set _) = 1) :
     N.finiteHaar q = ENNReal.ofReal (PoissonS.integerVolume F q) • μ :=
   FourierContinuation.finiteHaar_transport N q ⟨C.canonical q, μ, hμ⟩
-
-end DedekindZetaZeroFree.FourierContinuation.LiteralSource
-
-end

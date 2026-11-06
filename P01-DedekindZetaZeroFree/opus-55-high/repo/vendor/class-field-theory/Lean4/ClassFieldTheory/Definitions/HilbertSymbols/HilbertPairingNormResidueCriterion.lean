@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # The norm-residue criterion
 -/
@@ -30,5 +26,3 @@ def SatisfiesNormResidueCriterion
     {K : Type u} [Field K] {n : ℕ+}
     (B : HilbertPairing K n) : Prop :=
   ∀ a b : Kˣ, B.symbol a b = 1 ↔ IsKummerNorm K n a b
-
-end ClassFieldTheory.HilbertPairing

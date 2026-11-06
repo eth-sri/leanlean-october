@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Standard Lubin--Tate division polynomials
 
@@ -55,7 +51,7 @@ variable {K : Type u} [Field K]
 
 /-- The polynomial `X ^ q + π * X` underlying the standard Lubin--Tate
 series. -/
-noncomputable def standardLubinTatePolynomial
+def standardLubinTatePolynomial
     (F : LocalField.{u, v} K) (π : F.valuationSubring) :
     Polynomial F.valuationSubring :=
   Polynomial.X ^ Nat.card F.residueField +
@@ -68,16 +64,6 @@ theorem standardLubinTatePolynomial_formula
       Polynomial.X ^ Nat.card F.residueField +
         Polynomial.C π * Polynomial.X :=
   rfl
-
-/-- Evaluation of the standard polynomial has the expected two-term
-formula. -/
-@[simp]
-theorem standardLubinTatePolynomial_eval
-    (F : LocalField.{u, v} K) (π : F.valuationSubring)
-    (x : F.valuationSubring) :
-    (standardLubinTatePolynomial F π).eval x =
-      x ^ Nat.card F.residueField + π * x := by
-  simp [standardLubinTatePolynomial]
 
 /-- Coercing the standard polynomial to a power series gives the standard
 Lubin--Tate power series. -/
@@ -136,7 +122,7 @@ theorem standardLubinTatePolynomial_monic
 
 /-- The `n`-fold compositional iterate of the standard polynomial, starting
 from `X`. -/
-noncomputable def standardLubinTatePolynomialIterate
+def standardLubinTatePolynomialIterate
     (F : LocalField.{u, v} K) (π : F.valuationSubring) (n : ℕ) :
     Polynomial F.valuationSubring :=
   (standardLubinTatePolynomial F π).comp^[n] Polynomial.X
@@ -203,21 +189,12 @@ theorem standardLubinTatePolynomialIterate_eval_zero
             (Finite.one_lt_card : 1 < Nat.card F.residueField))]
 
 /-- The primitive quotient polynomial at level `n + 1`. -/
-noncomputable def standardLubinTatePrimitivePolynomial
+def standardLubinTatePrimitivePolynomial
     (F : LocalField.{u, v} K) (π : F.valuationSubring) (n : ℕ) :
     Polynomial F.valuationSubring :=
   standardLubinTatePolynomialIterate F π n ^
       (Nat.card F.residueField - 1) +
     Polynomial.C π
-
-/-- The defining formula for the primitive quotient polynomial. -/
-theorem standardLubinTatePrimitivePolynomial_formula
-    (F : LocalField.{u, v} K) (π : F.valuationSubring) (n : ℕ) :
-    standardLubinTatePrimitivePolynomial F π n =
-      standardLubinTatePolynomialIterate F π n ^
-          (Nat.card F.residueField - 1) +
-        Polynomial.C π :=
-  rfl
 
 /-- The primitive quotient polynomial has degree `(q - 1) * q ^ n`. -/
 theorem standardLubinTatePrimitivePolynomial_natDegree
@@ -295,7 +272,3 @@ theorem standardLubinTatePolynomialIterate_succ_factor
     Polynomial.X_comp, Polynomial.mul_comp, Polynomial.C_comp]
   rw [← pow_sub_one_mul hq]
   ring
-
-end LubinTate
-
-end

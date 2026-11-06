@@ -29,8 +29,7 @@ theorem away_span_eq_of_not_mem
   have hspan : Ideal.span {a} ≠ ⊥ := by simpa [Ideal.span_singleton_eq_bot] using ha
   have hv : v.asIdeal ∉ normalizedFactors (Ideal.span {a}) := by
     rw [mem_normalizedFactors_iff hspan]
-    rintro ⟨_, hd⟩
-    exact hav (Ideal.dvd_iff_le.mp hd (Ideal.mem_span_singleton_self a))
+    simp_all
   unfold idealAwayPrimePart
   rw [Multiset.filter_eq_self.mpr (fun p hp => by intro he; subst p; exact hv hp)]
   simpa only [normalize_eq] using prod_normalizedFactors_eq hspan
@@ -49,8 +48,6 @@ theorem integral_unit_mem_higherUnits
       (v.valuation_eq_one_iff_notMem.mpr hav)
   refine ⟨hb.unit, ?_, ?_⟩
   · apply Units.ext
-    change ((hb.unit : v.adicCompletionIntegers F) : v.adicCompletion F) = _
-    rw [hb.unit_spec]
     rfl
   · rw [hb.unit_spec]
     simpa only [b, map_sub, map_one] using
@@ -106,8 +103,8 @@ private theorem positive_representative (F : Type) [Field F] [NumberField F]
     (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) (a : 𝓞 F) :
     ∃ b : 𝓞 F, b - a ∈ m ∧ ∀ φ : F →+* ℝ, 0 < φ (b : F) := by
   have hn : 0 < Ideal.absNorm m := Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hm)
-  have hb : ∃ B : ℝ, ∀ φ : F →+* ℝ, -φ (a : F) < B := by
-    exact ⟨∑ φ : F →+* ℝ, |φ (a : F)| + 1, fun φ => by
+  have hb : ∃ B : ℝ, ∀ φ : F →+* ℝ, -φ (a : F) < B := 
+    ⟨∑ φ : F →+* ℝ, |φ (a : F)| + 1, fun φ => by
       have ht := Finset.single_le_sum (fun i (_ : i ∈ Finset.univ) =>
         abs_nonneg ((i : F →+* ℝ) (a : F))) (Finset.mem_univ φ)
       linarith [neg_le_abs (φ (a : F))]⟩
@@ -127,7 +124,7 @@ private theorem positive_representative (F : Type) [Field F] [NumberField F]
     simpa only [Nat.cast_mul] using m.mul_mem_left (n : 𝓞 F) m.absNorm_mem
   simpa [b] using hh
 
-private theorem completed_power_criterion
+theorem completed_power_criterion
     (F : Type) [Field F] [NumberField F]
     (v : HeightOneSpectrum (𝓞 F)) (b : v.adicCompletionIntegers F) (n : ℕ) :
     b ∈ IsLocalRing.maximalIdeal (v.adicCompletionIntegers F) ^ n ↔
@@ -145,9 +142,7 @@ private theorem completed_power_criterion
   have heq := (HeightOneSpectrum.adicCompletionIntegers.integers F v).maximalIdeal_pow_eq_setOf_le_v_algebraMap_pow hπirr n
   change b ∈ (↑(IsLocalRing.maximalIdeal (v.adicCompletionIntegers F) ^ n) : Set _) ↔ _
   rw [heq]
-  change Valued.v (b : v.adicCompletion F) ≤ Valued.v (π : v.adicCompletion F) ^ n ↔ _
-  rw [hπval, ← WithZero.exp_nsmul]
-  simp
+  simp_all
 
 set_option maxHeartbeats 800000 in
 
@@ -183,14 +178,12 @@ theorem higherUnits_mem_closure_positive_congruence
   obtain ⟨N, hN⟩ := Valued.exists_pow_lt_of_le_exp_neg_one hp'.le γ'
   let n := max N (e + 1)
   have hnN : N ≤ n := le_max_left _ _
-  have hen : e ≤ n := by dsimp [n]; omega
-  have hn0 : n ≠ 0 := by dsimp [n]; omega
+  have hen : e ≤ n := by omega
+  have hn0 : n ≠ 0 := by omega
   have hsmall : WithZero.exp (-(n : ℤ)) < (γ' : WithZero (Multiplicative ℤ)) := by
     apply lt_of_le_of_lt _ hN
     rw [hp', ← WithZero.exp_nsmul]
-    simp only [nsmul_eq_mul, mul_neg, mul_one]
-    rw [WithZero.exp_le_exp]
-    omega
+    simp_all
   obtain ⟨c, hc⟩ := CRT_completed_residue_representative F v (b : v.adicCompletionIntegers F) n
   obtain ⟨d, hdc, hdq⟩ := Conductor.LocalCertification.exists_integral_away_congruent F v f n c
   have hmod0 : v.asIdeal ^ n * q ≠ ⊥ := mul_ne_zero (pow_ne_zero _ v.ne_bot) hq0
@@ -252,7 +245,7 @@ theorem frequency_local_component_trivial_on_conductor
   exact heq.closure delta.continuous continuous_const
     (higherUnits_mem_closure_positive_congruence F v omega.conductor omega.conductor_ne_zero x hx)
 
-private theorem exponent_zero_of_coprime
+theorem exponent_zero_of_coprime
     (F : Type) [Field F] [NumberField F]
     (v : HeightOneSpectrum (𝓞 F)) (f : Ideal (𝓞 F)) (hf : f ≠ ⊥)
     (hcop : v.asIdeal ⊔ f = ⊤) : idealPrimeExponent v.asIdeal f = 0 := by
@@ -262,7 +255,7 @@ private theorem exponent_zero_of_coprime
   have heq : v.asIdeal ⊔ f = v.asIdeal := sup_eq_left.mpr (Ideal.dvd_iff_le.mp hd)
   exact v.isPrime.ne_top (heq.symm.trans hcop)
 
-private theorem higherUnits_zero_of_norm_one
+theorem higherUnits_zero_of_norm_one
     (F : Type) [Field F] [NumberField F]
     (v : HeightOneSpectrum (𝓞 F)) (x : (v.adicCompletion F)ˣ)
     (hx : ‖(x : v.adicCompletion F)‖ = 1) : CRTLocalHigherUnits F v 0 x := by
@@ -276,8 +269,7 @@ private theorem higherUnits_zero_of_norm_one
   rw [CRTLocalHigherUnits_zero_iff]
   refine ⟨ha.unit, ?_⟩
   apply Units.ext
-  change ((ha.unit : v.adicCompletionIntegers F) : v.adicCompletion F) = _
-  rw [ha.unit_spec]
+  rfl
 
 theorem frequency_local_component_uniformizer
     (F : Type) [Field F] [NumberField F]
@@ -313,7 +305,7 @@ theorem frequency_local_component_uniformizer
   have ha : a ≠ 0 := by
     intro hz
     have hn : WithZero.exp (-1) ≠ (0 : WithZero (Multiplicative ℤ)) := WithZero.coe_ne_zero
-    exact hn (by simpa only [hz, map_zero] using haVal.symm)
+    simp_all
   have hspan0 : Ideal.span {a} ≠ ⊥ := by simpa [Ideal.span_singleton_eq_bot] using ha
   have hae : idealPrimeExponent v.asIdeal (Ideal.span {a}) = 1 := by
     have hval := v.intValuation_eq_exp_neg_multiplicity ha
@@ -375,5 +367,3 @@ theorem sprime_compatibility_of_frequency_local_components
   · intro hcop pi hpi
     rw [← hdelta]
     exact frequency_local_component_uniformizer F omega v.val delta hcomp hcop pi hpi
-
-end DedekindZetaZeroFree.Detector.ExteriorDyadic.ResidueFiberAdapter

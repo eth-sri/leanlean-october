@@ -9,8 +9,6 @@ open NumberField IsDedekindDomain MeasureTheory ValuativeRel
 namespace DedekindZetaZeroFree.KPExceptionalRaw.FiniteSource.ImagesIrreducibilitySteps.MinusLengthSteps
 open KPLocalPrincipalSeries KPLocalStoneVonNeumann KPLocalJacquetImage
 open KPJacquetExceptionalFactorSeparation
-noncomputable section
-set_option autoImplicit false
 set_option maxHeartbeats 4000000
 set_option backward.isDefEq.respectTransparency false
 open KPLocalSmoothRepresentation
@@ -22,7 +20,7 @@ variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 variable (q : HeightOneSpectrum (𝓞 F))
 variable (S : RawFiniteInducingData F ζ hζ q)
 
-private theorem minus_smooth (m : ℕ)
+theorem minus_smooth (m : ℕ)
     (hm : KPLocalChartTopology.MatrixChartDepth F q m) (P : Polarization S.heisenberg) :
     let ρ := weylConjugate P S.borel.weyl
     letI := finiteCoverTopology F ζ hζ q m
@@ -36,7 +34,7 @@ private theorem minus_smooth (m : ℕ)
   exact (weyl_conjugate_properties S.heisenberg P S.borel.weyl
     S.borel.weylCenter S.borel.weylCenter_coe).2.1
 
-private theorem minus_scalar_weight (m : ℕ)
+theorem minus_scalar_weight (m : ℕ)
     (hm : KPLocalChartTopology.MatrixChartDepth F q m) (h : Torus F ζ hζ q) :
     (Real.sqrt (KPJacquetOpenCell.d F ζ hζ q m hm h) : ℂ) =
       inducingScalar S.borel 0 (S.borel.torus h) := by
@@ -47,7 +45,7 @@ private theorem minus_scalar_weight (m : ℕ)
   rw [KPRankOneInduction.halfModulus_eq]
   rfl
 
-private theorem minus_weyl_twice (h : Torus F ζ hζ q) :
+theorem minus_weyl_twice (h : Torus F ζ hζ q) :
     S.borel.weyl (KPJacquetOpenCell.alpha F ζ hζ q h) = h := by
   rw [← raw_alpha_binding F ζ hζ q S]
   apply Subtype.ext
@@ -146,6 +144,3 @@ theorem independent_minus_jacquet_short_exact (P : Polarization S.heisenberg) : 
         exact ⟨O.symm v, rfl⟩
       change p₀ (i₀ (O.symm v)) = 0 at hmem
       simp only [E.apply_symm_apply, hmem, map_zero]
-
-end
-end DedekindZetaZeroFree.KPExceptionalRaw.FiniteSource.ImagesIrreducibilitySteps.MinusLengthSteps

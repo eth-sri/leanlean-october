@@ -6,7 +6,6 @@ public import DedekindZetaZeroFree.Theta.Profiles.AngularAverageRegularityAndDec
 
 @[expose] public section
 
-noncomputable section
 
 open MeasureTheory NumberField NumberField.InfinitePlace
 open NumberField.Units.dirichletUnitTheorem NumberField.mixedEmbedding
@@ -55,7 +54,7 @@ private theorem log_mellin (f : ℝ → ℂ) (s : ℂ) {c n : ℝ} (hc : 0 < c) 
   simp only [abs_of_pos hn, Complex.real_smul]
   dsimp [h]
   ring
-private theorem slab_coords (K : Type*) [Field K] [NumberField K]
+theorem slab_coords (K : Type*) [Field K] [NumberField K]
     (a : ℝ) (u : Angular K) :
     unitSlabCoordinates (K := K) a u = angularLift K u + radialLift K a := by
   classical
@@ -63,7 +62,7 @@ private theorem slab_coords (K : Type*) [Field K] [NumberField K]
   by_cases hw : w = w₀ <;> simp [unitSlabCoordinates, unitRadialAngularEquiv,
     angularLift, radialLift, hw]
 
-private theorem cov_pos (K : Type*) [Field K] [NumberField K]
+theorem cov_pos (K : Type*) [Field K] [NumberField K]
     (J : (Ideal (𝓞 K))⁰) : 0 < mixedThetaCovolume K (FractionalIdeal.mk0 K J) := by
   unfold mixedThetaCovolume
   rw [FractionalIdeal.coe_mk0, FractionalIdeal.coeIdeal_absNorm]
@@ -114,7 +113,7 @@ private theorem class_centered_mellin (K : Type) [Field K] [NumberField K]
     rw [ht, slab_coords]
   have hinner (a : ℝ) : (∫ u in angularCube K, F (unitSlabCoordinates a u)) =
       Complex.exp ((n : ℂ) * s * a) * (mixedAngularAverage K I (c * Real.exp (n * a)) - 1) := by
-    have ht : 0 < c * Real.exp (n * a) := mul_pos hc (Real.exp_pos _)
+    have ht : 0 < c * Real.exp (n * a) := by positivity
     rw [mixedAngularAverage_sub_one K I _ ht, ← integral_const_mul]
     apply setIntegral_congr_fun (measurableSet_unitAngularParamSet (K := K))
     intro u hu
@@ -134,7 +133,7 @@ private theorem class_centered_mellin (K : Type) [Field K] [NumberField K]
   change (∫ y in DedekindZetaZeroFree.Theta.unitFundamentalParamSet K, F y) = _ at hcone
   rw [hcone] at hm
   exact hm
-private theorem cov_cpow (K : Type) [Field K] [NumberField K]
+theorem cov_cpow (K : Type) [Field K] [NumberField K]
     (J : (Ideal (𝓞 K))⁰) (s : ℂ) :
     (mixedThetaCovolume K (FractionalIdeal.mk0 K J) : ℂ) ^ s =
       (Ideal.absNorm (J : Ideal (𝓞 K)) : ℂ) ^ s *
@@ -158,7 +157,7 @@ private theorem cov_cpow (K : Type) [Field K] [NumberField K]
   push_cast
   ring
 
-private theorem normalized_calibration (K : Type) [Field K] [NumberField K]
+theorem normalized_calibration (K : Type) [Field K] [NumberField K]
     (C : ClassGroup (𝓞 K)) {s : ℂ} (hs : 1 < s.re) :
     (alpha K : ℂ) *
       ((Module.finrank ℚ K : ℂ) *
@@ -194,7 +193,3 @@ theorem hasMellin_classTheta (K : Type) [Field K] [NumberField K]
   change HasMellin _ s ((alpha K : ℂ) * _) at hscalar
   rw [hm.2, normalized_calibration K C hs] at hscalar
   exact hscalar
-
-end DedekindZetaZeroFree.AbelianQuotient.Theta
-
-end

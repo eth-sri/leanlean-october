@@ -6,15 +6,14 @@ public import DedekindZetaZeroFree.LFunctions.Tate.ArchimedeanAdditiveHaarScalin
 
 @[expose] public section
 
-noncomputable section
 open MeasureTheory NumberField
-open scoped Classical NumberField ENNReal NNReal Topology
+open scoped Classical ENNReal NNReal Topology
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 namespace DedekindZetaZeroFree.CompactPeriodAnalyticity.ArchHaar
 variable {F : Type} [Field F] [NumberField F]
 
-private theorem map_arch_mul_full (a : (KPGlobalTorusFunctionData.Adeles F)ˣ)
+theorem map_arch_mul_full (a : (KPGlobalTorusFunctionData.Adeles F)ˣ)
     (ha : a.val.2 = 1) :
     Measure.map (fun x : KPGlobalTorusFunctionData.Adeles F => a.val * x)
       (KPAdditiveHaar.adelicMeasure F) =
@@ -27,18 +26,13 @@ private theorem map_arch_mul_full (a : (KPGlobalTorusFunctionData.Adeles F)ˣ)
   let cast : InfiniteAdeleRing F × IsDedekindDomain.FiniteAdeleRing (𝓞 F) F →
     KPGlobalTorusFunctionData.Adeles F := fun x => x
   have hc : Measurable cast := by
-    have heq : (MeasurableSpace.prod inferInstance inferInstance :
-      MeasurableSpace (InfiniteAdeleRing F × IsDedekindDomain.FiniteAdeleRing (𝓞 F) F)) =
-      borel (KPGlobalTorusFunctionData.Adeles F) := BorelSpace.measurable_eq
-    change @Measurable _ _ (MeasurableSpace.prod inferInstance inferInstance) (borel _) _
-    rw [heq]
-    exact measurable_id
+    fun_prop
   let : SigmaCompactSpace (InfiniteAdeleRing F) :=
     (PoissonArch.infiniteAdeleToSpace F).toHomeomorph.isClosedEmbedding.sigmaCompactSpace
   have hm : Measurable (fun x : KPGlobalTorusFunctionData.Adeles F => a.val * x) := by fun_prop
   have hp : Measurable (Prod.map (fun x : InfiniteAdeleRing F => d.val * x)
       (id : IsDedekindDomain.FiniteAdeleRing (𝓞 F) F → _)) :=
-    (continuous_const.mul continuous_id).measurable.prodMap measurable_id
+    by fun_prop
   have harch : Measure.map (fun x : InfiniteAdeleRing F => d.val * x) μa =
       (ENNReal.ofReal ‖d.val‖)⁻¹ • μa := TateSLocalMeasurability.archimedean_map_mul F d
   have hprod : Measure.map (Prod.map (fun x : InfiniteAdeleRing F => d.val * x)
@@ -118,6 +112,3 @@ theorem arch_idele_integral_mul_inv
   rw [← hh, hmap, integral_smul_nnreal_measure]
   change ((addEquivAddHaarChar (ContinuousAddEquiv.mulLeft a) : ℝ) : ℂ) * _ = _
   rw [arch_idele_intrinsicHaarChar a ha]
-end DedekindZetaZeroFree.CompactPeriodAnalyticity.ArchHaar
-
-end

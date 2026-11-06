@@ -101,8 +101,7 @@ theorem closed_relations_eq_top
       _ = (1 - (ψ y : ℂ)) • ((1 - (ψ y : ℂ))⁻¹ • e) := by
         rw [sub_smul, one_smul]
       _ = e := by rw [smul_smul, mul_inv_cancel₀ hc, one_smul]
-  rw [he] at hmem
-  exact hmem
+  simp_all
 
 theorem closed_coinvariants_subsingleton
     (ψ : Multiplicative (KPRankOneInduction.LocalField F w) →* ℂˣ)
@@ -126,8 +125,8 @@ include hm in
 
 theorem coefficient_smooth :
     letI := finiteCoverTopology F ζ hζ w m
-    SmoothRepresentation (coefficientRepresentation F ζ hζ w τ) := by
-  exact inflatedRepresentation_smooth F ζ hζ w m hm
+    SmoothRepresentation (coefficientRepresentation F ζ hζ w τ) := 
+  inflatedRepresentation_smooth F ζ hζ w m hm
     (KPLocalInductionJacquetReciprocity.borelRetraction F ζ hζ w) τ hm
     (KPLocalInductionJacquetReciprocity.borelRetraction_continuous F ζ hζ w m hm) hτ
 
@@ -135,13 +134,13 @@ omit hE in
 include hm in
  theorem coefficient_smooth_without_dimension :
     letI := finiteCoverTopology F ζ hζ w m
-    SmoothRepresentation (coefficientRepresentation F ζ hζ w τ) := by
-  exact inflatedRepresentation_smooth F ζ hζ w m hm
+    SmoothRepresentation (coefficientRepresentation F ζ hζ w τ) := 
+  inflatedRepresentation_smooth F ζ hζ w m hm
     (KPLocalInductionJacquetReciprocity.borelRetraction F ζ hζ w) τ hm
     (KPLocalInductionJacquetReciprocity.borelRetraction_continuous F ζ hζ w m hm) hτ
 
 omit hE in
-private theorem coefficient_root_one
+theorem coefficient_root_one
     (y : Multiplicative (KPRankOneInduction.LocalField F w)) :
     coefficientRepresentation F ζ hζ w τ (rootInBorel F ζ hζ w y) = 1 := by
   change τ (KPLocalInductionJacquetReciprocity.borelRetraction F ζ hζ w
@@ -149,9 +148,9 @@ private theorem coefficient_root_one
   rw [show KPLocalInductionJacquetReciprocity.borelRetraction F ζ hζ w
     (rootInBorel F ζ hζ w y) = 1 from
     KPLocalInductionJacquetReciprocity.borelRetraction_upperRoot F ζ hζ w y]
-  exact map_one τ
+  simp
 
-private theorem open_root_translation
+theorem open_root_translation
     (y : Multiplicative (KPRankOneInduction.LocalField F w))
     (φ : KPJacquetOpenCell.TestFunctions F w (E := E)) :
     KPJacquetOpenCell.openCellRepresentation F ζ hζ w m hm
@@ -167,7 +166,7 @@ private theorem open_root_translation
     (coefficient_root_one F ζ hζ w m τ hτ) (Multiplicative.toAdd y) x φ
 
 omit hE in
-private theorem omega_shift (b : Borel F ζ hζ w)
+theorem omega_shift (b : Borel F ζ hζ w)
     (x y : KPRankOneInduction.LocalField F w) :
     (KPJacquetBruhatCharts.omegaMap F ζ hζ w (b, x)).val *
       upperRoot F ζ hζ w (Multiplicative.ofAdd y) =
@@ -230,9 +229,7 @@ include hm in
           g * upperRoot F ζ hζ w (Multiplicative.ofAdd y) :=
         congrArg Subtype.val (H.apply_symm_apply ⟨_, hn⟩)
       have hh := omega_shift F ζ hζ w m τ hτ p.1 p.2 (-y)
-      rw [he, mul_assoc, ← map_mul, ← ofAdd_add] at hh
-      simp only [add_neg_cancel, ofAdd_zero, map_one, mul_one] at hh
-      exact hg (hh ▸ (KPJacquetBruhatCharts.omegaMap F ζ hζ w (p.1, p.2 + -y)).property)
+      simp_all
     simp [KPJacquetOpenCell.extensionFunction, hg, hgn]
 
 omit hE in
@@ -260,8 +257,8 @@ def openCellMap
     (hτ : letI := finiteCoverTopology F ζ hζ w m; SmoothRepresentation τ)
     (ψ : Multiplicative (KPRankOneInduction.LocalField F w) →* ℂˣ) :
     KPJacquetOpenTestFunction.TranslationCoinvariants (E := E) ψ →ₗ[ℂ]
-      InducedCoinvariants F ζ hζ w m hm τ ψ := by
-  exact Representation.Coinvariants.map _ _ {
+      InducedCoinvariants F ζ hζ w m hm τ ψ := 
+  Representation.Coinvariants.map _ _ {
     toLinearMap := (openIntertwiner F ζ hζ w m hm τ hτ).toLinearMap
     isIntertwining' y := by
       apply LinearMap.ext
@@ -287,7 +284,7 @@ theorem openCellMap_mk
   rfl
 
 omit hτ hE in
-private theorem smooth_restrict {G U : Type*} [Group G] [TopologicalSpace G]
+theorem smooth_restrict {G U : Type*} [Group G] [TopologicalSpace G]
     [IsTopologicalGroup G] [AddCommGroup U] [Module ℂ U]
     (ρ : Representation ℂ G U) (hs : SmoothRepresentation ρ)
     (n : Multiplicative (KPRankOneInduction.LocalField F w) →* G)
@@ -471,11 +468,4 @@ theorem coefficientEquiv_openCell_mk
     ((openCellEquiv F ζ hζ w m hm τV hτV ψ hψ hψne).symm
       ((openCellEquiv F ζ hζ w m hm τV hτV ψ hψ hψne)
         (KPJacquetOpenTestFunction.coinvariantsMk ψ φ))) = _
-  rw [LinearEquiv.symm_apply_apply]
-  exact KPJacquetOpenTestFunction.coinvariantsEquiv_mk ψ hψ μ φ
-
-end Integral
-
-end DedekindZetaZeroFree.KPJacquetTwistedCell
-
-end
+  simp

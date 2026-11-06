@@ -249,23 +249,7 @@ private theorem slice_covariance
   norm_num [KPCplxPrincipalSeriesCharts.positiveParameter]
 
  theorem su2_fixes (u : KPCplxCharacterHaar.ComplexSU2) :
-    KPArch.action (KPCplxCharacterHaar.complexSU2Embedding u) (0, 0) = (0, 0) := by
-  have hu := Matrix.mem_unitaryGroup_iff.mp (Matrix.mem_specialUnitaryGroup_iff.mp u.property).1
-  have hb := congrArg (fun A : Matrix (Fin 2) (Fin 2) ℂ => A 1 1) hu
-  have hz := congrArg (fun A : Matrix (Fin 2) (Fin 2) ℂ => A 0 1) hu
-  have hd := (Matrix.mem_specialUnitaryGroup_iff.mp u.property).2
-  simp only [Matrix.mul_apply, Fin.sum_univ_two, Matrix.star_apply,
-    Matrix.one_apply, ite_true, show (0 : Fin 2) ≠ 1 by decide, ite_false] at hb hz
-  have hn : ‖(u : Matrix (Fin 2) (Fin 2) ℂ) 1 0‖ ^ 2 +
-      ‖(u : Matrix (Fin 2) (Fin 2) ℂ) 1 1‖ ^ 2 = 1 := by
-    simpa [Complex.mul_conj, Complex.normSq_eq_norm_sq, ← Complex.ofReal_pow] using congrArg Complex.re hb
-  have hn' : ‖(u : Matrix (Fin 2) (Fin 2) ℂ) 1 1‖ ^ 2 +
-      ‖(u : Matrix (Fin 2) (Fin 2) ℂ) 1 0‖ ^ 2 = 1 := by simpa [add_comm] using hn
-  ext
-  · simpa [KPArch.action, KPArch.actionDenominator, KPArch.height,
-      KPCplxCharacterHaar.complexSU2Embedding, hn', add_comm] using hz
-  · simp [KPArch.action, KPArch.actionDenominator, KPArch.height,
-      KPCplxCharacterHaar.complexSU2Embedding, hn', hd]
+    KPArch.action (KPCplxCharacterHaar.complexSU2Embedding u) (0, 0) = (0, 0) := by apply DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualRaisingLocal.SphericalReseeding.UniformCompactSeparation.su2_fixes <;> assumption
 
  def compactTuple (F : Type) [Field F] [NumberField F]
     (u : InfinitePlace F → KPCplxCharacterHaar.ComplexSU2) :
@@ -290,7 +274,7 @@ private theorem section_mk_eq (s : ℝ)
  abbrev band (N : ℕ) := (Finset.range (N + 1)).sup
   (KPCplxIntertwinerEigenvalues.harmonicKType KPCplxPrincipalSeriesCharts.positiveParameter)
 
-private theorem band_finite (N : ℕ) : FiniteDimensional ℂ (band N) := by
+theorem band_finite (N : ℕ) : FiniteDimensional ℂ (band N) := by
   haveI (i : ℕ) : FiniteDimensional ℂ (KPCplxIntertwinerEigenvalues.harmonicKType KPCplxPrincipalSeriesCharts.positiveParameter i) := by
     haveI : Module.Finite ℂ (MvPolynomial.homogeneousSubmodule (Fin 3) ℂ i) :=
       Module.Finite.of_fg (MvPolynomial.homogeneousSubmodule_fg (Fin 3) ℂ i)
@@ -306,7 +290,7 @@ private theorem band_finite (N : ℕ) : FiniteDimensional ℂ (band N) := by
       ((KPCplxIntertwinerEigenvalues.harmonicKType KPCplxPrincipalSeriesCharts.positiveParameter i).equivMapOfInjective _ hi).injective
   infer_instance
 
-private theorem band_kfinite (N : ℕ) (f : band N) :
+theorem band_kfinite (N : ℕ) (f : band N) :
     KPContHolomorphicKGeneration.IsKFinite KPCplxPrincipalSeriesCharts.positiveParameter f.val := by
   letI := band_finite N
   let R : KPCplxPrincipalSeriesCharts.PrincipalSeries KPCplxPrincipalSeriesCharts.positiveParameter →ₗ[ℂ]
@@ -331,7 +315,7 @@ private theorem band_kfinite (N : ℕ) (f : band N) :
     exact (Finset.le_sup (f := KPCplxIntertwinerEigenvalues.harmonicKType KPCplxPrincipalSeriesCharts.positiveParameter) hi) ((KPCplxIntertwinerEigenvalues.harmonicKType_multiplicity_one _ i).1 k g hg)
   exact hs (Submodule.mem_map.mpr ⟨f.val, f.property, rfl⟩)
 
-private theorem extend_covariant_identity
+theorem extend_covariant_identity
     {ι : Type*} [Fintype ι] [DecidableEq ι]
     (U V : (ι → KPCplxCharacterHaar.ComplexGL2) → ℂ)
     (hU : ∀ w a, KPCplxPrincipalSeriesCharts.HasCovariance KPCplxPrincipalSeriesCharts.positiveParameter
@@ -366,7 +350,7 @@ private theorem extend_covariant_identity
   intro a
   exact hp Finset.univ a (by simp)
 
-private theorem span_finite_expansion {X M : Type*} [AddCommGroup M] [Module ℂ M]
+theorem span_finite_expansion {X M : Type*} [AddCommGroup M] [Module ℂ M]
     (v : X → M) (h : M) (hh : h ∈ Submodule.span ℂ (Set.range v)) :
     ∃ (n : ℕ) (x : Fin n → X) (c : Fin n → ℂ), ∑ i, c i • v (x i) = h := by
   obtain ⟨d, hd⟩ := Finsupp.mem_span_range_iff_exists_finsupp.mp hh
@@ -379,7 +363,7 @@ private theorem span_finite_expansion {X M : Type*} [AddCommGroup M] [Module ℂ
   rw [he]
   exact hd
 
-private theorem product_covariance {ι : Type*} [Fintype ι] [DecidableEq ι]
+theorem product_covariance {ι : Type*} [Fintype ι] [DecidableEq ι]
     (f : ι → KPCplxPrincipalSeriesCharts.PrincipalSeries KPCplxPrincipalSeriesCharts.positiveParameter)
     (w : ι) (a : ι → KPCplxCharacterHaar.ComplexGL2) :
     KPCplxPrincipalSeriesCharts.HasCovariance KPCplxPrincipalSeriesCharts.positiveParameter
@@ -397,7 +381,7 @@ private theorem product_covariance {ι : Type*} [Fintype ι] [DecidableEq ι]
   have hvw : v ≠ w := by simpa using (Finset.mem_sdiff.mp hv).2
   simp [Function.update_of_ne hvw]
 
-private theorem compact_uniform_pure
+theorem compact_uniform_pure
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (t : KPMsRationalCompactCrossPairing.Vplus F ζ hζ (KPContFlatSourceRecipe.D F ζ hζ)) :
     ∃ (n m : ℕ) (k : Fin m → KPContSectorArchSphericalFibers.KInfinity F)

@@ -70,16 +70,13 @@ theorem mean_zero_real_test_has_primitive
       (fun p : ℝ × ℝ => ∫ t : ℝ, u t • F (p.1-t,p.2)) := by
   let g : (ℝ × ℝ) → ℝ → ℂ := fun p t => F (t,p.2)
   have hg : ContDiff ℝ (⊤ : ℕ∞) (fun q : (ℝ × ℝ) × ℝ => g q.1 q.2) :=
-    hF.comp (contDiff_snd.prodMk (contDiff_snd.comp contDiff_fst))
+    by fun_prop
   have hc := contDiffOn_convolution_right_with_param_comp
     (ContinuousLinearMap.lsmul ℝ ℝ : ℝ →L[ℝ] ℂ →L[ℝ] ℂ)
     (s := (univ : Set (ℝ × ℝ))) (v := fun p : ℝ × ℝ => p.1)
     contDiff_fst.contDiffOn isOpen_univ isCompact_Icc
     (g := g) (k := Icc (-R) R) (fun p t _ ht => hzero t p.2 ht) hu
-    (by convert hg.contDiffOn using 1
-        · funext q
-          rcases q with ⟨p,t⟩
-          rfl)
+    (by fun_prop)
   simpa [convolution_def, g, contDiffOn_univ] using hc
 
  theorem smooth_fiber_integral (F : ℝ × ℝ → ℂ)
@@ -117,7 +114,7 @@ theorem mean_zero_real_test_has_primitive
     filter_upwards [] with t
     by_cases ht : 0 < t
     · simp [ht, show p.1 - t < p.1 by linarith]
-    · simp [ht, show ¬ p.1 - t < p.1 by linarith]
+    simp_all
   rw [← heq]
   exact hc
 
@@ -160,9 +157,7 @@ theorem mean_zero_real_test_has_primitive
         simp only [mem_Iio, not_lt] at ht
         simp only [mem_Icc, not_and_or, not_le]
         exact Or.inr (by linarith)
-  · apply setIntegral_eq_zero_of_forall_eq_zero
-    intro t _
-    exact hzero t p.2 (Or.inr hy)
+  simp_all
 
  theorem horizontal_mean_zero_has_primitive (F : ℝ × ℝ → ℂ)
     (hF : ContDiff ℝ (⊤ : ℕ∞) F) (R : ℝ)
@@ -189,7 +184,7 @@ theorem mean_zero_real_test_has_primitive
     intro t ht
     exact hzero t y (Or.inl ht)
   have hc (y : ℝ) : Continuous (fun t : ℝ => F (t,y)) :=
-    hF.continuous.comp (continuous_id.prodMk continuous_const)
+    by fun_prop
   have hd := hasDerivAt_lower_integral (fun t => F (t,z.im)) (hc z.im)
     ((hc z.im).integrable_of_hasCompactSupport (hs z.im)) z.re
   have hd' := (by simpa using hd :
@@ -252,7 +247,7 @@ theorem mean_zero_is_divergence
   have hmzero (y : ℝ) (hy : y ∉ Icc (-R) R) : m y = 0 := by
     apply integral_eq_zero_of_ae
     filter_upwards [] with t
-    exact hzero t y (Or.inr hy)
+    simp_all
   have hmc : HasCompactSupport m := HasCompactSupport.intro isCompact_Icc hmzero
   have hFi : Integrable F (volume.prod volume) :=
     hF.continuous.integrable_of_hasCompactSupport hFc
@@ -265,19 +260,18 @@ theorem mean_zero_is_divergence
   let mt : 𝓓((⊤ : TopologicalSpace.Opens ℝ), ℂ) := ⟨m, hm, hmc, subset_univ _⟩
   obtain ⟨k, hk⟩ := mean_zero_real_test_has_primitive mt hmint
   let A : ℝ × ℝ → ℂ := fun p => F p - ρ p.1 * m p.2
-  have hA : ContDiff ℝ (⊤ : ℕ∞) A := hF.sub
-    ((hρ.comp contDiff_fst).mul (hm.comp contDiff_snd))
+  have hA : ContDiff ℝ (⊤ : ℕ∞) A := by fun_prop
   have hAzero (x y : ℝ) (h : x ∉ Icc (-R) R ∨ y ∉ Icc (-R) R) : A (x,y) = 0 := by
     dsimp [A]
     rw [hzero x y h]
     rcases h with hx | hy
-    · rw [hρzero x hx]; simp
-    · rw [hmzero y hy]; simp
+    · simp_all
+    simp_all
   have hAmean (y : ℝ) : ∫ t : ℝ, A (t,y) = 0 := by
     have hslice : HasCompactSupport (fun t : ℝ => F (t,y)) :=
       HasCompactSupport.intro isCompact_Icc (fun t ht => hzero t y (Or.inl ht))
     have hcont : Continuous (fun t : ℝ => F (t,y)) :=
-      hF.continuous.comp (continuous_id.prodMk continuous_const)
+      by fun_prop
     have hi : Integrable (fun t : ℝ => ρ t * m y) :=
       (hρ.continuous.integrable_of_hasCompactSupport hρc).mul_const _
     dsimp [A]
@@ -364,7 +358,7 @@ namespace DedekindZetaZeroFree.KPCplxOpenCellTranslationInvariance
 open KPCplxPrincipalSeriesCharts Set Filter TopologicalSpace
 open scoped Distributions Topology ContDiff
 
-private theorem compact_derivative_bound (f : ℂ → ℂ) (U A : Set ℂ)
+theorem compact_derivative_bound (f : ℂ → ℂ) (U A : Set ℂ)
     (hU : IsOpen U) (hA : IsCompact A) (hAU : A ⊆ U)
     (hf : ContDiffOn ℝ (⊤ : ℕ∞) f U) (n : ℕ) :
     ∃ C : ℝ, 1 ≤ C ∧ ∀ i ≤ n, ∀ x ∈ A, ‖iteratedFDeriv ℝ i f x‖ ≤ C := by
@@ -381,7 +375,7 @@ private theorem compact_derivative_bound (f : ℂ → ℂ) (U A : Set ℂ)
     _ ≤ C := (Real.le_norm_self _).trans (hC x hx)
     _ ≤ max 1 C := le_max_right _ _
 
-private theorem infinity_zero_near (s : ℝ)
+theorem infinity_zero_near (s : ℝ)
     (E : 𝓓((⊤ : TopologicalSpace.Opens ℂ), ℂ) →ₗ[ℂ] PrincipalSeries s)
     (hE : ∀ φ, openCoordinate (E φ) = φ)
     (K : Compacts ℂ) (R : ℝ) (hR : 0 < R)
@@ -406,12 +400,12 @@ private theorem infinity_zero_near (s : ℝ)
     have heq : infinityCoordinate (E ψ) =ᶠ[𝓝[≠] (0 : ℂ)] fun _ => (0 : ℂ) := by
       filter_upwards [self_mem_nhdsWithin,
         nhdsWithin_le_nhds (Metric.ball_mem_nhds (0 : ℂ) (inv_pos.mpr hR))] with u hu huR
-      exact hz u (by simpa using hu) (by simpa [Metric.mem_ball, dist_zero_right] using huR)
+      simp_all
     exact tendsto_nhds_unique ((E ψ).2.2.2.continuous.continuousAt.tendsto.mono_left nhdsWithin_le_nhds)
       (Filter.Tendsto.congr' heq.symm tendsto_const_nhds)
   · exact hz u h hu
 
-private theorem weighted_comp_bound (s : ℝ) (K : Compacts ℂ) (r : ℝ) (hr : 0 < r)
+theorem weighted_comp_bound (s : ℝ) (K : Compacts ℂ) (r : ℝ) (hr : 0 < r)
     (n : ℕ) : ∃ C : ℝ, 0 ≤ C ∧ ∀ φ : 𝓓_{K}(ℂ, ℂ), ∀ u : ℂ,
       u ∈ Metric.closedBall 0 1 → r ≤ ‖u‖ →
       ‖iteratedFDeriv ℝ n (fun v => (transitionWeight s v : ℂ) * φ v⁻¹) u‖ ≤
@@ -435,8 +429,7 @@ private theorem weighted_comp_bound (s : ℝ) (K : Compacts ℂ) (r : ℝ) (hr :
     exact (Complex.ofRealCLM.contDiff.contDiffAt.comp u
       ((contDiffAt_norm ℂ hu0).rpow_const_of_ne (norm_ne_zero_iff.mpr hu0))).contDiffWithinAt
   have hv : ContDiffOn ℝ (⊤ : ℕ∞) (fun v : ℂ => v⁻¹) U := by
-    intro u hu
-    exact (contDiffAt_inv ℝ (by simpa [U] using hu)).contDiffWithinAt
+    fun_prop
   obtain ⟨B, hB, hb⟩ := compact_derivative_bound _ U A hU hA hAU hw n
   obtain ⟨D, hD, hd⟩ := compact_derivative_bound _ U A hU hA hAU hv n
   refine ⟨∑ i ∈ Finset.range (n+1), (n.choose i : ℝ) * B * ((n-i).factorial * D ^ (n-i)),
@@ -478,7 +471,7 @@ private theorem weighted_comp_bound (s : ℝ) (K : Compacts ℂ) (r : ℝ) (hr :
       exact hb i hin u huA
     _ = _ := by rw [Finset.sum_mul]; apply Finset.sum_congr rfl; intros; ring
 
-private theorem fixed_support_bound (s : ℝ)
+theorem fixed_support_bound (s : ℝ)
     (E : 𝓓((⊤ : TopologicalSpace.Opens ℂ), ℂ) →ₗ[ℂ] PrincipalSeries s)
     (hE : ∀ φ, openCoordinate (E φ) = φ)
     (K : Compacts ℂ) (n : ℕ) : ∃ C : ℝ, 0 ≤ C ∧ ∀ φ : 𝓓_{K}(ℂ, ℂ),
@@ -508,8 +501,8 @@ private theorem fixed_support_bound (s : ℝ)
         filter_upwards [((isOpen_lt continuous_norm continuous_const).mem_nhds hur)] with v hv
         exact hz v hv
       rw [(heq.iteratedFDeriv (𝕜 := ℝ) n).eq_of_nhds, iteratedFDeriv_fun_zero, Pi.zero_apply, norm_zero]
-      exact mul_nonneg (le_trans zero_le_one (le_max_left _ _)) hP
-    · have hu0 : u ≠ 0 := by intro h; simp [h] at hur; linarith [inv_pos.mpr hR]
+      simp_all
+    · have hu0 : u ≠ 0 := by intro h; simp_all
       have heq : infinityCoordinate (E ψ) =ᶠ[𝓝 u]
           fun v => (transitionWeight s v : ℂ) * φ v⁻¹ := by
         filter_upwards [eventually_ne_nhds hu0] with v hv
@@ -579,10 +572,10 @@ theorem supportedAwayInfinity_iff_hasCompactSupport (s : ℝ) (f : PrincipalSeri
   · rintro ⟨ε, hε, hf⟩
     apply HasCompactSupport.intro (isCompact_closedBall (0 : ℂ) ε⁻¹)
     intro x hx
-    have hnorm : ε⁻¹ < ‖x‖ := by simpa [Metric.mem_closedBall, dist_zero_right] using hx
+    have hnorm : ε⁻¹ < ‖x‖ := by simp_all
     have hx0 : x ≠ 0 := by
       intro h
-      have : ε⁻¹ < 0 := by simpa only [h, norm_zero] using hnorm
+      have : ε⁻¹ < 0 := by simp_all
       exact (not_lt_of_ge (le_of_lt (inv_pos.mpr hε))) this
     have hinv : ‖x⁻¹‖ < ε := by
       rw [norm_inv]
@@ -606,7 +599,7 @@ theorem supportedAwayInfinity_iff_hasCompactSupport (s : ℝ) (f : PrincipalSeri
       have heq : infinityCoordinate f =ᶠ[𝓝[≠] (0 : ℂ)] fun _ => (0 : ℂ) := by
         filter_upwards [self_mem_nhdsWithin,
           nhdsWithin_le_nhds (Metric.ball_mem_nhds (0 : ℂ) (inv_pos.mpr hR))] with u hu huR
-        exact hz u (by simpa using hu) (by simpa [Metric.mem_ball, dist_zero_right] using huR)
+        simp_all
       exact tendsto_nhds_unique (f.2.2.2.continuous.continuousAt.tendsto.mono_left nhdsWithin_le_nhds)
         (Filter.Tendsto.congr' heq.symm tendsto_const_nhds)
     · exact hz u hu0 hu
@@ -632,8 +625,8 @@ theorem testFunction_extendsSmoothly (s : ℝ) (φ : OpenCellTestFunction) :
     apply Metric.eventually_nhds_iff.mpr
     refine ⟨R⁻¹, inv_pos.mpr hR, fun u hu => ?_⟩
     exact hzero u (by simpa only [dist_zero_right] using hu)
-  · have hw : ContDiffAt ℝ ∞ (fun u : ℂ => (transitionWeight s u : ℂ)) u := by
-      exact Complex.ofRealCLM.contDiff.contDiffAt.comp u
+  · have hw : ContDiffAt ℝ ∞ (fun u : ℂ => (transitionWeight s u : ℂ)) u := 
+      Complex.ofRealCLM.contDiff.contDiffAt.comp u
         ((contDiffAt_norm ℂ hu).rpow_const_of_ne (norm_ne_zero_iff.mpr hu))
     apply (hw.mul (φ.contDiff.contDiffAt.comp u (contDiffAt_inv ℝ hu))).congr_of_eventuallyEq
     filter_upwards [eventually_ne_nhds hu] with v hv
@@ -654,17 +647,15 @@ noncomputable def testFunctionSectionLinear (s : ℝ) :
     funext x
     change openCoordinate (testFunctionSection s (φ + χ)) x =
       openCoordinate (testFunctionSection s φ) x + openCoordinate (testFunctionSection s χ) x
-    simp only [testFunctionSection_coordinate]
-    rfl
+    simp
   map_smul' c φ := by
     apply openCoordinate_injective s
     funext x
     change openCoordinate (testFunctionSection s (c • φ)) x =
       c * openCoordinate (testFunctionSection s φ) x
-    simp only [testFunctionSection_coordinate]
-    rfl
+    simp
 
-private theorem upperUnipotent_add (x t : ℂ) :
+theorem upperUnipotent_add (x t : ℂ) :
     upperUnipotent x * upperUnipotent t = upperUnipotent (x + t) := by
   ext i j
   fin_cases i <;> fin_cases j <;> simp [upperUnipotent] <;> ring
@@ -692,8 +683,7 @@ theorem translation_invariant_distribution (D : OpenCellTestFunction →L[ℂ] �
       apply TestFunction.ext
       intro x
       exact hχ x
-    rw [heq]
-    exact hD t φ
+    simp_all
   obtain ⟨ρ, hρ⟩ := KPCplxOpenCellTranslationInvariance.exists_integral_one_test
   refine ⟨D ρ, fun φ => ?_⟩
   have hintφ : Integrable (fun x : ℂ => φ x) euclideanArea := by
@@ -716,12 +706,11 @@ theorem translation_invariant_distribution (D : OpenCellTestFunction →L[ℂ] �
         D hpoint Complex.I h, add_zero]
   have hψD : D ψ = D φ - (∫ x : ℂ, φ x ∂euclideanArea) * D ρ := by
     change D (φ - (∫ x : ℂ, φ x ∂euclideanArea) • ρ) = _
-    rw [map_sub, map_smul]
-    rfl
+    simp
   rw [hψD] at hDψ
   simpa only [mul_comm] using sub_eq_zero.mp hDψ
 
-private theorem character_contDiff (β : ℂ) :
+theorem character_contDiff (β : ℂ) :
     ContDiff ℝ ∞ (fun x : ℂ => (character β x : ℂ)) := by
   simp only [character, AddChar.coe_mk, Circle.coe_exp]
   exact Complex.contDiff_exp.comp ((Complex.ofRealCLM.contDiff.comp
@@ -819,7 +808,3 @@ theorem equivariant_functional_open_cell (β : ℂˣ)
   intro f hf
   change L f - a * jacquetFunctional β f = 0
   rw [hprescribed f hf, sub_self]
-
-end DedekindZetaZeroFree.KPCplxOpenCellDistributions
-
-end

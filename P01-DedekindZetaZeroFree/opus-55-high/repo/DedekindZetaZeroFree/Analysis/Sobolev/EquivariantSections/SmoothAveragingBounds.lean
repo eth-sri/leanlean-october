@@ -13,14 +13,14 @@ namespace DedekindZetaZeroFree
 
 open KPCompactInteriorH1
 
-private theorem act_inv_act {n r : ℕ} {Γ : Type*} [Group Γ]
+theorem act_inv_act {n r : ℕ} {Γ : Type*} [Group Γ]
     (D : KPChartL2.Data n r Γ) (γ : Γ) {x : E n} (hx : x ∈ D.chart) :
     D.act γ⁻¹ (D.act γ x) = x := by
   have h := D.act_mul γ⁻¹ γ x hx
   rw [inv_mul_cancel, D.act_one x hx] at h
   exact h.symm
 
-private theorem average_eq_zero_off {n r : ℕ} {Γ : Type*} [Group Γ] [Fintype Γ]
+theorem average_eq_zero_off {n r : ℕ} {Γ : Type*} [Group Γ] [Fintype Γ]
     (D : KPChartL2.Data n r Γ) (u : E n → V r) (hu : tsupport u ⊆ D.chart)
     {x : E n} (hx : x ∉ ⋃ γ : Γ, D.act γ⁻¹ '' tsupport u) :
     KPChartL2.average n r Γ D.chart D.act D.cocycle u x = 0 := by
@@ -47,7 +47,7 @@ private theorem tsupport_average_subset {n r : ℕ} {Γ : Type*} [Group Γ] [Fin
   by_contra hxK
   exact hx (average_eq_zero_off D u hu hxK)
 
-private theorem contDiff_average {n r : ℕ} (hn : 1 ≤ n) (hr : 1 ≤ r)
+theorem contDiff_average {n r : ℕ} (hn : 1 ≤ n) (hr : 1 ≤ r)
     {Γ : Type*} [Group Γ] [Fintype Γ]
     (D : KPChartL2.Data n r Γ) (u : E n → V r)
     (hu : ContDiff ℝ ∞ u) (hcomp : HasCompactSupport u) (hsup : tsupport u ⊆ D.chart) :
@@ -84,13 +84,13 @@ private theorem tsupport_average_subset_invariant {n r : ℕ} {Γ : Type*} [Grou
   obtain ⟨γ, y, hy, rfl⟩ := Set.mem_iUnion.mp hx
   exact hOinv γ⁻¹ y (hsupO hy)
 
-private theorem inverse_cocycle' {n r : ℕ} {Γ : Type*} [Group Γ]
+theorem inverse_cocycle' {n r : ℕ} {Γ : Type*} [Group Γ]
     (D : KPChartL2.Data n r Γ) (γ : Γ) {x : E n} (hx : x ∈ D.chart) (v : V r) :
     (D.cocycle γ x).symm v = D.cocycle γ⁻¹ (D.act γ x) v := by
   have hc := D.cocycle_mul γ⁻¹ γ x hx ((D.cocycle γ x).symm v)
   simpa [D.cocycle_one x hx] using hc
 
-private theorem contDiffOn_inverse_cocycle_apply {n r : ℕ} {Γ : Type*} [Group Γ]
+theorem contDiffOn_inverse_cocycle_apply {n r : ℕ} {Γ : Type*} [Group Γ]
     (D : KPChartL2.Data n r Γ) (γ : Γ) :
     ContDiffOn ℝ ∞ (fun p : E n × V r => (D.cocycle γ p.1).symm p.2)
       (D.chart ×ˢ Set.univ) := by
@@ -104,7 +104,7 @@ private theorem contDiffOn_inverse_cocycle_apply {n r : ℕ} {Γ : Type*} [Group
   exact (hcc.comp hpair (fun p hp => ⟨D.act_mem γ p.1 hp.1, Set.mem_univ _⟩)).congr
     (fun p hp => inverse_cocycle' D γ hp.1 p.2)
 
-private theorem hasFDerivAt_average_term {n r : ℕ} {Γ : Type*} [Group Γ]
+theorem hasFDerivAt_average_term {n r : ℕ} {Γ : Type*} [Group Γ]
     (D : KPChartL2.Data n r Γ) (γ : Γ) (u : E n → V r) (hu : ContDiff ℝ ∞ u)
     {x : E n} (hx : x ∈ D.chart) :
     HasFDerivAt (fun y => (D.cocycle γ y).symm (u (D.act γ y)))
@@ -134,7 +134,7 @@ private theorem hasFDerivAt_average_term {n r : ℕ} {Γ : Type*} [Group Γ]
   rw [hg.fderiv]
   exact h
 
-private theorem norm_average_le {n r : ℕ} {Γ : Type*} [Group Γ] [Fintype Γ]
+theorem norm_average_le {n r : ℕ} {Γ : Type*} [Group Γ] [Fintype Γ]
     (D : KPChartL2.Data n r Γ) (u : E n → V r) {x : E n} (hx : x ∈ D.chart) :
     ‖KPChartL2.average n r Γ D.chart D.act D.cocycle u x‖ ≤
       (Fintype.card Γ : ℝ)⁻¹ * ∑ γ : Γ, ‖u (D.act γ x)‖ := by
@@ -144,8 +144,7 @@ private theorem norm_average_le {n r : ℕ} {Γ : Type*} [Group Γ] [Fintype Γ]
   calc ‖∑ γ : Γ, (D.cocycle γ x).symm (u (D.act γ x))‖
       ≤ ∑ γ : Γ, ‖(D.cocycle γ x).symm (u (D.act γ x))‖ := norm_sum_le _ _
     _ = ∑ γ : Γ, ‖u (D.act γ x)‖ := by
-        refine Finset.sum_congr rfl fun γ _ => ?_
-        rw [LinearIsometryEquiv.norm_map]
+        simp
 
 private theorem fderiv_average {n r : ℕ} {Γ : Type*} [Group Γ] [Fintype Γ]
     (D : KPChartL2.Data n r Γ) (u : E n → V r) (hu : ContDiff ℝ ∞ u)
@@ -175,7 +174,7 @@ private theorem norm_average_sq_le {n r : ℕ} {Γ : Type*} [Group Γ] [Fintype 
   have hcard : (0 : ℝ) < Fintype.card Γ := by exact_mod_cast Fintype.card_pos
   have h := norm_average_le D u hx
   have hR : 0 ≤ (Fintype.card Γ : ℝ)⁻¹ * ∑ γ : Γ, ‖u (D.act γ x)‖ :=
-    mul_nonneg (by positivity) (Finset.sum_nonneg fun γ _ => norm_nonneg _)
+    by positivity
   refine (pow_le_pow_left₀ (norm_nonneg _) h 2).trans ?_
   have hsq : (∑ γ : Γ, ‖u (D.act γ x)‖) ^ 2 ≤
       (Fintype.card Γ : ℝ) * ∑ γ : Γ, ‖u (D.act γ x)‖ ^ 2 := by
@@ -190,7 +189,7 @@ private theorem norm_average_sq_le {n r : ℕ} {Γ : Type*} [Group Γ] [Fintype 
     _ = (Fintype.card Γ : ℝ)⁻¹ * ∑ γ : Γ, ‖u (D.act γ x)‖ ^ 2 := by
         field_simp
 
-private theorem norm_fderiv_average_le {n r : ℕ} {Γ : Type*} [Group Γ] [Fintype Γ]
+theorem norm_fderiv_average_le {n r : ℕ} {Γ : Type*} [Group Γ] [Fintype Γ]
     (D : KPChartL2.Data n r Γ) (u : E n → V r) (hu : ContDiff ℝ ∞ u)
     {x : E n} (hx : x ∈ D.chart) (j : Fin n) :
     ‖fderiv ℝ (KPChartL2.average n r Γ D.chart D.act D.cocycle u) x
@@ -204,11 +203,11 @@ private theorem norm_fderiv_average_le {n r : ℕ} {Γ : Type*} [Group Γ] [Fint
   rw [ContinuousLinearMap.sum_apply]
   exact norm_sum_le _ _
 
- noncomputable def inverseOperator {n r : ℕ} {Γ : Type*} [Group Γ]
+ def inverseOperator {n r : ℕ} {Γ : Type*} [Group Γ]
     (D : KPChartL2.Data n r Γ) (γ : Γ) (x : E n) : V r →L[ℝ] V r :=
   (D.cocycle γ x).symm.toContinuousLinearEquiv.toContinuousLinearMap.restrictScalars ℝ
 
-private theorem contDiffOn_inverseOperator {n r : ℕ} {Γ : Type*} [Group Γ]
+theorem contDiffOn_inverseOperator {n r : ℕ} {Γ : Type*} [Group Γ]
     (D : KPChartL2.Data n r Γ) (γ : Γ) :
     ContDiffOn ℝ ∞ (inverseOperator D γ) D.chart := by
   apply contDiffOn_clm_apply.mpr
@@ -274,7 +273,7 @@ private theorem norm_fderiv_operator_term_le {n r : ℕ} {Γ : Type*} [Group Γ]
           mul_le_mul_of_nonneg_right (ContinuousLinearMap.le_opNorm _ _) (norm_nonneg _)
       _ = _ := by ring
 
-private theorem finiteH0_smooth_compact {n r : ℕ} (u : E n → V r)
+theorem finiteH0_smooth_compact {n r : ℕ} (u : E n → V r)
     (hu : ContDiff ℝ ∞ u) (hc : HasCompactSupport u) :
     FiniteH0 Set.univ u (fun j x => fderiv ℝ u x (coordinateDirection j)) := by
   simp only [FiniteH0, Measure.restrict_univ]
@@ -285,7 +284,7 @@ private theorem finiteH0_smooth_compact {n r : ℕ} (u : E n → V r)
     (hc.fderiv ℝ).comp_left (g := fun T : E n →L[ℝ] V r => T (coordinateDirection j)) rfl
   exact hcont.memLp_of_hasCompactSupport hcc
 
-private theorem opNorm_le_coordinate_sum {n r : ℕ} (T : E n →L[ℝ] V r) :
+theorem opNorm_le_coordinate_sum {n r : ℕ} (T : E n →L[ℝ] V r) :
     ‖T‖ ≤ ∑ j : Fin n, ‖T (coordinateDirection j)‖ := by
   classical
   apply T.opNorm_le_bound (Finset.sum_nonneg fun j _ => norm_nonneg _)
@@ -296,7 +295,7 @@ private theorem opNorm_le_coordinate_sum {n r : ℕ} (T : E n →L[ℝ] V r) :
       coordinateDirection] using h
   calc ‖T z‖ = ‖∑ j : Fin n, (z j) • T (coordinateDirection j)‖ := by
           conv_lhs => rw [← hz, map_sum]
-          simp only [map_smul]
+          simp
     _ ≤ ∑ j : Fin n, ‖(z j) • T (coordinateDirection j)‖ := norm_sum_le _ _
     _ ≤ ∑ j : Fin n, ‖T (coordinateDirection j)‖ * ‖z‖ := by
           refine Finset.sum_le_sum fun j _ => ?_
@@ -304,7 +303,7 @@ private theorem opNorm_le_coordinate_sum {n r : ℕ} (T : E n →L[ℝ] V r) :
           exact mul_le_mul_of_nonneg_left (PiLp.norm_apply_le z j) (norm_nonneg _)
     _ = _ := by rw [Finset.sum_mul]
 
-private theorem compact_weighted_finite {n r : ℕ} {Γ : Type*} [Group Γ]
+theorem compact_weighted_finite {n r : ℕ} {Γ : Type*} [Group Γ]
     (D : KPChartL2.Data n r Γ) {K : Set (E n)} (hK : IsCompact K) (hKD : K ⊆ D.chart) :
     KPChartL2.weightedMeasure n D.chart D.weight K < ⊤ := by
   rw [KPChartL2.weightedMeasure, withDensity_apply _ hK.measurableSet,
@@ -317,7 +316,7 @@ private theorem compact_weighted_finite {n r : ℕ} {Γ : Type*} [Group Γ]
   rw [Real.enorm_eq_ofReal_abs]
   exact ENNReal.ofReal_le_ofReal (le_abs_self _)
 
-private theorem smooth_compact_weighted_memLp {n r : ℕ} {Γ : Type*} [Group Γ]
+theorem smooth_compact_weighted_memLp {n r : ℕ} {Γ : Type*} [Group Γ]
     (D : KPChartL2.Data n r Γ) (u : E n → V r) (hu : Continuous u)
     (hc : HasCompactSupport u) (hs : tsupport u ⊆ D.chart) :
     MemLp u 2 (KPChartL2.weightedMeasure n D.chart D.weight) := by
@@ -366,7 +365,7 @@ private theorem average_toLp_eq {n r : ℕ} {Γ : Type*} [Group Γ] [Fintype Γ]
   exact (MemLp.coeFn_toLp hv).trans
     ((average_congr_ae D _ _ (MemLp.coeFn_toLp hu).symm).trans hp.symm)
 
-private theorem norm_fderiv_average_coordinate_le {n r : ℕ} {Γ : Type*}
+theorem norm_fderiv_average_coordinate_le {n r : ℕ} {Γ : Type*}
     [Group Γ] [Fintype Γ] (D : KPChartL2.Data n r Γ)
     (C : Set (E n)) (hCchart : C ⊆ D.chart) (A K : ℝ) (hA : 0 ≤ A) (hK : 0 ≤ K)
     (hb : ∀ γ x, x ∈ C → ‖fderiv ℝ (D.act γ) x‖ ≤ A ∧
@@ -381,7 +380,7 @@ private theorem norm_fderiv_average_coordinate_le {n r : ℕ} {Γ : Type*}
   apply mul_le_mul_of_nonneg_left _ (by positivity)
   refine Finset.sum_le_sum fun γ _ => ?_
   have ht := norm_fderiv_operator_term_le D γ u hu (hCchart hx) (coordinateDirection j)
-  have hz : ‖coordinateDirection j‖ = 1 := by simp [coordinateDirection, EuclideanSpace.norm_single]
+  have hz : ‖coordinateDirection j‖ = 1 := by simp [coordinateDirection]
   rw [hz, mul_one, mul_one] at ht
   refine ht.trans (add_le_add ?_ ?_)
   · calc ‖fderiv ℝ u (D.act γ x)‖ * ‖fderiv ℝ (D.act γ) x‖
@@ -392,7 +391,7 @@ private theorem norm_fderiv_average_coordinate_le {n r : ℕ} {Γ : Type*}
       _ = _ := mul_comm _ _
   · exact mul_le_mul_of_nonneg_right (hb γ x hx).2 (norm_nonneg _)
 
-private theorem sq_average_le {Γ : Type*} [Group Γ] [Fintype Γ] (t : Γ → ℝ) :
+theorem sq_average_le {Γ : Type*} [Group Γ] [Fintype Γ] (t : Γ → ℝ) :
     ((Fintype.card Γ : ℝ)⁻¹ * ∑ γ : Γ, t γ) ^ 2 ≤
       (Fintype.card Γ : ℝ)⁻¹ * ∑ γ : Γ, (t γ) ^ 2 := by
   classical
@@ -407,7 +406,7 @@ private theorem sq_average_le {Γ : Type*} [Group Γ] [Fintype Γ] (t : Γ → �
       have hc : (Fintype.card Γ : ℝ) ≠ 0 := by exact_mod_cast Fintype.card_ne_zero
       field_simp
 
-private theorem coordinate_derivative_square_bound {n r : ℕ} {Γ : Type*}
+theorem coordinate_derivative_square_bound {n r : ℕ} {Γ : Type*}
     [Group Γ] [Fintype Γ] (D : KPChartL2.Data n r Γ)
     (C : Set (E n)) (hCchart : C ⊆ D.chart) (A K : ℝ) (hA : 0 ≤ A) (hK : 0 ≤ K)
     (hb : ∀ γ x, x ∈ C → ‖fderiv ℝ (D.act γ) x‖ ≤ A ∧
@@ -460,16 +459,16 @@ private theorem averaged_projection_and_contraction {n r : ℕ} (hn : 1 ≤ n) (
   rw [average_toLp_eq D P hP u hum hvm, average_toLp_eq D P hP u' hu'm hv'm, ← map_sub]
   exact hPnorm _
 
-private theorem H0_bound_of_energy {n r : ℕ} (u v : E n → V r)
+theorem H0_bound_of_energy {n r : ℕ} (u v : E n → V r)
     (g h : Fin n → E n → V r) (hu : FiniteH0 Set.univ u g) (hv : FiniteH0 Set.univ v h)
     (T : ℝ) (hT : 0 ≤ T)
     (hb : (∫ x, ‖v x‖ ^ 2) + (∑ j : Fin n, ∫ x, ‖h j x‖ ^ 2) ≤
       T * ((∫ x, ‖u x‖ ^ 2) + (∑ j : Fin n, ∫ x, ‖g j x‖ ^ 2))) :
     H0 Set.univ v h hv ≤ (2 * Real.sqrt T) * H0 Set.univ u g hu := by
-  have hF : 0 ≤ ∫ x, ‖u x‖ ^ 2 := integral_nonneg fun _ => sq_nonneg _
+  have hF : 0 ≤ ∫ x, ‖u x‖ ^ 2 := by positivity
   have hG : 0 ≤ ∑ j : Fin n, ∫ x, ‖g j x‖ ^ 2 :=
     Finset.sum_nonneg fun _ _ => integral_nonneg fun _ => sq_nonneg _
-  have hV : 0 ≤ ∫ x, ‖v x‖ ^ 2 := integral_nonneg fun _ => sq_nonneg _
+  have hV : 0 ≤ ∫ x, ‖v x‖ ^ 2 := by positivity
   have hH : 0 ≤ ∑ j : Fin n, ∫ x, ‖h j x‖ ^ 2 :=
     Finset.sum_nonneg fun _ _ => integral_nonneg fun _ => sq_nonneg _
   have heq : ∀ (f : E n → V r) (a : Fin n → E n → V r) (hf : FiniteH0 Set.univ f a),
@@ -498,7 +497,7 @@ private theorem H0_bound_of_energy {n r : ℕ} (u v : E n → V r)
   have hh := mul_le_mul_of_nonneg_left hlow (Real.sqrt_nonneg T)
   nlinarith only [hupp, hs, hh]
 
-private theorem averaged_energy_bound {n r : ℕ} (hn : 1 ≤ n) (hr : 1 ≤ r)
+theorem averaged_energy_bound {n r : ℕ} (hn : 1 ≤ n) (hr : 1 ≤ r)
     {Γ : Type*} [Group Γ] [Fintype Γ] (D : KPChartL2.Data n r Γ)
     (C : Set (E n)) (hC : IsCompact C) (hCchart : C ⊆ D.chart)
     (A K L : ℝ) (hA : 0 ≤ A) (hK : 0 ≤ K) (hL : 0 ≤ L)
@@ -556,8 +555,7 @@ private theorem averaged_energy_bound {n r : ℕ} (hn : 1 ≤ n) (hr : 1 ≤ r)
     calc (Fintype.card Γ : ℝ)⁻¹ * ∑ γ : Γ, ∫ x in C, ‖u (D.act γ x)‖ ^ 2
         ≤ (Fintype.card Γ : ℝ)⁻¹ * ∑ γ : Γ, L * (∫ x, ‖u x‖ ^ 2) :=
           mul_le_mul_of_nonneg_left (Finset.sum_le_sum fun γ _ => htransport γ) (by positivity)
-      _ = _ := by simp [Finset.sum_const, nsmul_eq_mul, ← mul_assoc,
-          inv_mul_cancel₀ (show (Fintype.card Γ : ℝ) ≠ 0 by exact_mod_cast Fintype.card_ne_zero)]
+      _ = _ := by simp [Finset.sum_const, nsmul_eq_mul, ← mul_assoc]
   have hder : ∀ j : Fin n, (∫ x, ‖fderiv ℝ v x (coordinateDirection j)‖ ^ 2) ≤
       2 * A ^ 2 * n * L * (∑ k : Fin n, ∫ x, ‖fderiv ℝ u x (coordinateDirection k)‖ ^ 2) +
       2 * K ^ 2 * L * (∫ x, ‖u x‖ ^ 2) := by
@@ -593,11 +591,10 @@ private theorem averaged_energy_bound {n r : ℕ} (hn : 1 ≤ n) (hr : 1 ≤ r)
     exact (mul_le_mul_of_nonneg_left (Finset.sum_le_sum (fun γ _ => hterm γ)) (by positivity)).trans_eq
       (by
         simp only [Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
-        have hcΓ : (Fintype.card Γ : ℝ) ≠ 0 := by exact_mod_cast Fintype.card_ne_zero
-        field_simp)
+        simp)
   have hd := Finset.sum_le_sum (s := Finset.univ) (fun j _ => hder j)
   simp only [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul] at hd
-  have hF : 0 ≤ ∫ x, ‖u x‖ ^ 2 := integral_nonneg fun _ => sq_nonneg _
+  have hF : 0 ≤ ∫ x, ‖u x‖ ^ 2 := by positivity
   have hG : 0 ≤ ∑ j : Fin n, ∫ x, ‖fderiv ℝ u x (coordinateDirection j)‖ ^ 2 :=
     Finset.sum_nonneg fun _ _ => integral_nonneg fun _ => sq_nonneg _
   dsimp only
@@ -656,7 +653,7 @@ theorem kp_cont_compact_h1_smooth_average_bound
     intro hz
     exact hx (by simp [hz])
   let T := L + 2 * K ^ 2 * n * L + 2 * A ^ 2 * n ^ 2 * L
-  have hT : 0 ≤ T := by dsimp [T]; positivity
+  have hT : 0 ≤ T := by positivity
   obtain ⟨P, hPn, hPid, hPr, hPf⟩ :=
     (kp_cont_chart_equivariant_l2_projection n r hn hr Γ D).2
   refine ⟨max 1 (2 * Real.sqrt T), P, le_max_left _ _, hPn, hPid, hPr, hPf, ?_⟩
@@ -681,7 +678,7 @@ theorem kp_cont_compact_h1_smooth_average_bound
     · exact (H0_bound_of_energy u v _ _ h0u h0v T hT hen).trans
         (mul_le_mul_of_nonneg_right (le_max_right _ _) (by
           unfold H0 l2Norm
-          exact add_nonneg (Real.sqrt_nonneg _) (Real.sqrt_nonneg _)))
+          positivity))
     · have hder : Continuous (fun x => fderiv ℝ u x (coordinateDirection j)) :=
         (hu.continuous_fderiv (by simp)).clm_apply continuous_const
       have hcder : HasCompactSupport (fun x => fderiv ℝ u x (coordinateDirection j)) :=
@@ -694,7 +691,3 @@ theorem kp_cont_compact_h1_smooth_average_bound
   · intro u u' hu hc hs hu' hc' hs'
     exact averaged_projection_and_contraction hn hr D P hPn hPf u u' hu hc (hs.trans hOchart)
       hu' hc' (hs'.trans hOchart)
-
-end DedekindZetaZeroFree
-
-end

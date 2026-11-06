@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Finiteness of local power-class groups
 
@@ -27,7 +22,6 @@ for maximal Kummer extensions and the characteristic-zero local existence
 theorem.
 -/
 
-noncomputable section
 
 namespace LocalFieldTheory
 
@@ -119,7 +113,3 @@ theorem finite_nthPowerQuotient_of_natCast_ne_zero
     exact
       LocalFieldTheory.DiscreteValuationField.finite_fieldUnits_nthPowerQuotient_of_finite_principalUnits
         F.toCompleteDVF hπ n
-
-end LocalFieldTheory
-
-end

@@ -17,11 +17,11 @@ noncomputable def exceptionalDivisors (F : Type) [Field F] [NumberField F]
 variable {F : Type} [Field F] [NumberField F]
 variable {c q b t u : Ideal (𝓞 F)}
 
-private theorem isRelPrime_iff_sup_eq_top {I J : Ideal (𝓞 F)} :
+theorem isRelPrime_iff_sup_eq_top {I J : Ideal (𝓞 F)} :
     IsRelPrime I J ↔ I ⊔ J = ⊤ := by
   rw [← gcd_isUnit_iff_isRelPrime, Ideal.gcd_eq_sup, Ideal.isUnit_iff]
 
-private theorem prime_dvd_radical_iff (hq : q ≠ ⊥) {d : Ideal (𝓞 F)} (hd : Prime d) :
+theorem prime_dvd_radical_iff (hq : q ≠ ⊥) {d : Ideal (𝓞 F)} (hd : Prime d) :
     d ∣ UniqueFactorizationMonoid.radical q ↔ d ∣ q :=
   UniqueFactorizationMonoid.dvd_radical_iff_of_irreducible hd.irreducible hq
 
@@ -78,7 +78,7 @@ theorem exceptional_decomposition_fixedPart (hq : q ≠ ⊥) (hcq : c ∣ q)
   have hrel : IsRelPrime u (UniqueFactorizationMonoid.radical q) :=
     isRelPrime_iff_sup_eq_top.mpr ((sup_exceptional_radical_eq_top_iff hq u).mpr huq)
   obtain ⟨R', hR'⟩ := htR
-  have hR'dvd : R' ∣ UniqueFactorizationMonoid.radical q := ⟨t, by rw [hR', mul_comm]⟩
+  have hR'dvd : R' ∣ UniqueFactorizationMonoid.radical q := by simp_all
   have hsup : u ⊔ R' = ⊤ := isRelPrime_iff_sup_eq_top.mp (hrel.of_dvd_right hR'dvd)
   calc t = t * ⊤ := (Ideal.mul_top t).symm
     _ = t * (u ⊔ R') := by rw [hsup]
@@ -148,5 +148,3 @@ theorem exceptional_decomposition_converse (hq : q ≠ ⊥) (hcq : c ∣ q)
   refine ⟨?_, isRelPrime_iff_sup_eq_top.mp hrel_tuc⟩
   rw [squarefree_mul_iff]
   exact ⟨hrel_tu, (exceptional_radical_squarefree hq).squarefree_of_dvd htR, hu⟩
-
-end DedekindZetaZeroFree.LargeSieve.Sieve

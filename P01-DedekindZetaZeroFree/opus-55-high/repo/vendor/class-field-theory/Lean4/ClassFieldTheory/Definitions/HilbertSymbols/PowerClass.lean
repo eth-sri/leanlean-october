@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Canonical power classes
 -/
@@ -26,5 +23,3 @@ universe u
 def powerClass (K : Type u) [Field K] (n : ℕ+) : Kˣ →* PowerClassGroup K n := by
   unfold PowerClassGroup
   exact QuotientGroup.mk' (powMonoidHom (n : ℕ) : Kˣ →* Kˣ).range
-
-end ClassFieldTheory

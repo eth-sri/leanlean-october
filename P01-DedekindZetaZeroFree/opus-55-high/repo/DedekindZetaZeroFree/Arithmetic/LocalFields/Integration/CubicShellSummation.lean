@@ -9,7 +9,6 @@ open MeasureTheory ValuativeRel
 namespace DedekindZetaZeroFree.KPExceptionalRaw.FiniteSource.GoodSphericalVector
 open KPLocalPrincipalSeries
 noncomputable section
-set_option autoImplicit false
 
 def negativeValuationShell
     (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K]
@@ -79,8 +78,7 @@ theorem integral_eq_integer_ball_of_cubic_shells
       refine ⟨z.toNat - 1, ?_⟩
       change e (valuation K x) = WithZero.exp (((z.toNat - 1) + 1 : ℕ) : ℤ)
       have hzn : (((z.toNat - 1) + 1 : ℕ) : ℤ) = z := by
-        have := Int.toNat_of_nonneg (le_of_lt hz)
-        omega
+        simp_all
       rw [hzn]
       exact (WithZero.exp_log hne).symm
   let r : ℂ := (residueCardinality K : ℂ)⁻¹
@@ -111,8 +109,8 @@ theorem integral_eq_integer_ball_of_cubic_shells
     dsimp [j]
     omega
   have hfj (k : ℕ) : f (j k) = (1 - r) * r ^ (k + 1) * a := by
-    have h1 : j k + 1 = 3 * (k + 1) := by dsimp [j]; omega
-    have h2 : 3 ∣ j k + 1 := by rw [h1]; exact dvd_mul_right 3 (k + 1)
+    have h1 : j k + 1 = 3 * (k + 1) := by rfl
+    have h2 : 3 ∣ j k + 1 := by simp_all
     simp only [f, if_pos h2, h1, Nat.mul_div_right _ (by decide : 0 < 3)]
   have hg : HasSum (fun k : ℕ => (1 - r) * r ^ (k + 1) * a) (r * a) := by
     have hh := ((hasSum_geometric_of_norm_lt_one hr).mul_left ((1 - r) * r)).mul_right a
@@ -131,6 +129,3 @@ theorem integral_eq_integer_ball_of_cubic_shells
   rw [← integral_add_compl ((valuation K).isOpen_integer.measurableSet) hInt, hBall, ht]
   change a + r * a = (1 + r) * a
   ring
-
-end
-end DedekindZetaZeroFree.KPExceptionalRaw.FiniteSource.GoodSphericalVector

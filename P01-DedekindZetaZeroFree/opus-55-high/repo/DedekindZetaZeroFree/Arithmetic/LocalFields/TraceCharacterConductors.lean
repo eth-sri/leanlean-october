@@ -11,12 +11,10 @@ open ValuationTheory.DiscreteValuationField
 open scoped ValuativeRel nonZeroDivisors
 
 namespace DedekindZetaZeroFree.ArithmeticContext
-noncomputable section
-set_option autoImplicit false
 
 variable {F : Type} [Field F] [NumberField F]
 
-private theorem primeBelow_eq_adapter (v : HeightOneSpectrum (𝓞 F)) :
+theorem primeBelow_eq_adapter (v : HeightOneSpectrum (𝓞 F)) :
     ResidueTrace.rationalPrimeBelow v = PlaceTraceAdapter.prime F v := by
   apply Subtype.ext
   change ringChar (𝓞 F ⧸ v.asIdeal) = _
@@ -35,7 +33,7 @@ private theorem primeBelow_eq_adapter (v : HeightOneSpectrum (𝓞 F)) :
   have h' : (algebraMap (𝓞 ℚ) (𝓞 F) ((PlaceTraceAdapter.prime F v).1 : 𝓞 ℚ)) ∈ v.asIdeal := h
   simpa using h'
 
-private theorem character_eq_adapter (v : HeightOneSpectrum (𝓞 F)) :
+theorem character_eq_adapter (v : HeightOneSpectrum (𝓞 F)) :
     ResidueTrace.localTraceCharacter v = localFiniteCharacter F v := by
   letI (p : Nat.Primes) : Fact p.1.Prime := ⟨p.2⟩
   have hp := primeBelow_eq_adapter v
@@ -56,13 +54,13 @@ private theorem character_eq_adapter (v : HeightOneSpectrum (𝓞 F)) :
         exact (finitePlaceAdicCompletionMap_continuous ℚ F _ _).comp
           (Rat.HeightOneSpectrum.adicCompletion.padicEquiv (PlaceTraceAdapter.rationalPlace F v)).symm.continuous
       · funext q
-        exact (hmq q).trans (by simp [PlaceTraceAdapter.padicMap, map_ratCast])
+        simp
     subst m
     rfl
   exact hgeneral _ _ (ResidueTrace.baseEmbedding_spec v).1
     (ResidueTrace.baseEmbedding_spec v).2 hp
 
-private theorem codifferent_eq_integers_of_good (v : HeightOneSpectrum (𝓞 F))
+theorem codifferent_eq_integers_of_good (v : HeightOneSpectrum (𝓞 F))
     (hv : ¬ v.asIdeal ∣ differentIdeal ℤ (𝓞 F)) :
     (localCodifferent F v : Set (v.adicCompletion F)) =
       (v.adicCompletionIntegers F : Set (v.adicCompletion F)) := by
@@ -82,13 +80,12 @@ private theorem codifferent_eq_integers_of_good (v : HeightOneSpectrum (𝓞 F))
   rw [Submodule.mem_one]
   change (∃ z : (LocalConductor.target F v).valuationSubring, (z : v.adicCompletion F) = x) ↔ _
   rw [← LocalConductor.target_integerRing_eq F v]
-  exact ⟨fun ⟨z, hz⟩ => hz ▸ z.property, fun h => ⟨⟨x,h⟩,rfl⟩⟩
+  simp
 
-private theorem actual_selfDual_of_good (v : HeightOneSpectrum (𝓞 F))
+theorem actual_selfDual_of_good (v : HeightOneSpectrum (𝓞 F))
     (hv : ¬ v.asIdeal ∣ differentIdeal ℤ (𝓞 F)) : ResidueTrace.IsSelfDual v := by
   intro x
   rw [character_eq_adapter]
-  change (∀ o : v.adicCompletionIntegers F, localFiniteCharacter F v (x * o) = 1) ↔ _
   have hcod := codifferent_eq_integers_of_good v hv
   change (∀ o : v.adicCompletionIntegers F, localFiniteCharacter F v (x * o) = 1) ↔ x ∈ (v.adicCompletionIntegers F : Set (v.adicCompletion F))
   rw [← hcod]
@@ -100,7 +97,7 @@ private theorem actual_selfDual_of_good (v : HeightOneSpectrum (𝓞 F))
     rw [Submodule.mem_one]
     change (∃ z : (LocalConductor.target F v).valuationSubring, (z : v.adicCompletion F) = a) ↔ a ∈ (v.adicCompletionIntegers F : Set (v.adicCompletion F))
     rw [← LocalConductor.target_integerRing_eq F v]
-    exact ⟨fun ⟨z, hz⟩ => hz ▸ z.property, fun h => ⟨⟨a,h⟩,rfl⟩⟩
+    simp
   have hb (t : ℚ_[PlaceTraceAdapter.prime F v]) :
       IsIntegral (LocalConductor.base F v).valuationSubring t ↔
         rationalPadicCharacter (PlaceTraceAdapter.prime F v) t = 1 := by
@@ -128,6 +125,3 @@ theorem exists_trace_exclusion_set (F : Type) [Field F] [NumberField F] :
   refine ⟨hfin.toFinset, ?_⟩
   intro v hv
   exact actual_selfDual_of_good v (by simpa only [Set.Finite.mem_toFinset, Set.mem_setOf_eq] using hv)
-
-end
-end DedekindZetaZeroFree.ArithmeticContext

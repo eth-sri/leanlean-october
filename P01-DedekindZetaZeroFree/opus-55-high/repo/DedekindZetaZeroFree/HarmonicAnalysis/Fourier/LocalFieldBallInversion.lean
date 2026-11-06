@@ -12,7 +12,7 @@ namespace DedekindZetaZeroFree.PoissonS.Covolume
 
 attribute [local instance] completionMeasurable completionBorel
 
-private theorem integral_character_subgroup_eq_zero
+theorem integral_character_subgroup_eq_zero
     {G : Type*} [AddGroup G] [MeasurableSpace G] [MeasurableAdd G]
     (μ : Measure G) [μ.IsAddLeftInvariant]
     (H : AddSubgroup G) (χ : G → ℂ)
@@ -73,7 +73,7 @@ theorem finite_scaled_ball_conductor
   constructor
   · intro h z hz
     rw [← mul_assoc]
-    exact h (z * a) (by rw [norm_mul]; nlinarith [norm_nonneg a])
+    exact h (z * a) (by simp_all)
   · intro h z hz
     have hza : ‖z / a‖ ≤ 1 := by
       rw [norm_div]
@@ -94,7 +94,7 @@ theorem finite_scaled_ball_fourier
         ((μ {z | ‖z‖ ≤ ‖a‖}).toReal : ℂ) else 0 := by
   let H : AddSubgroup (v.adicCompletion F) :=
     { carrier := {z | ‖z‖ ≤ ‖a‖}
-      zero_mem' := by simpa using norm_nonneg a
+      zero_mem' := by simp
       add_mem' := fun hx hz => (IsUltrametricDist.norm_add_le_max _ _).trans (max_le hx hz)
       neg_mem' := fun hx => by simpa using hx }
   let χ : v.adicCompletion F → ℂ := fun z => (e (-z * y) : ℂ)
@@ -112,7 +112,7 @@ theorem finite_scaled_ball_fourier
       (if ‖z‖ ≤ ‖a‖ then (1 : ℂ) else 0) * (e (-z * y) : ℂ) =
       if z ∈ H then χ z else 0 := by
     change _ = if ‖z‖ ≤ ‖a‖ then (e (-z * y) : ℂ) else 0
-    simp only [ite_mul, one_mul, zero_mul]
+    simp
   simp_rw [hf]
   rw [integral_character_subgroup μ H hH χ hχ, hc]
   split_ifs <;> simp [H]
@@ -141,7 +141,3 @@ theorem finite_translated_ball_fourier
   rw [← hi]
   simp_rw [hf]
   rw [integral_const_mul, finite_scaled_ball_fourier F v e μ hconductor a ha y]
-
-end DedekindZetaZeroFree.PoissonS.Covolume
-
-end

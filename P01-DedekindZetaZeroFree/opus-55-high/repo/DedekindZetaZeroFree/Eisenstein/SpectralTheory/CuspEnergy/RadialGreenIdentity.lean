@@ -111,27 +111,12 @@ theorem codifferential_star_mul (d : ℕ) (f : Space d → ℂ)
     (hf : DifferentiableAt ℝ f x)
     (hW : ∀ i k, DifferentiableAt ℝ (fun q => W q i k) x) :
     codifferential d (fun q i k => star (f q) * W q i k) x =
-      star (f x) * codifferential d W x - pairing d (differential d f x) (W x) := by
-  have hm (i : Fin d) (j k : Fin 3) :
-      coordinateDerivative d i j (fun q => star (f q) * W q i k) x =
-        star (coordinateDerivative d i j f x) * W x i k +
-          star (f x) * coordinateDerivative d i j (fun q => W q i k) x := by
-    simpa [coordinateDerivative, ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply,
-      ContinuousLinearMap.comp_apply, Pi.mul_def, mul_comm, mul_left_comm, add_comm] using
-      congrArg (fun A : Space d →L[ℝ] ℂ => A (coordinateVector d i j))
-        ((hf.hasFDerivAt.star).mul (hW i k).hasFDerivAt).fderiv
-  simp only [codifferential, pairing, Finset.mul_sum, ← Finset.sum_sub_distrib]
-  apply Finset.sum_congr rfl
-  intro i hi
-  simp only [hm, differential, Fin.sum_univ_three]
-  simp only [Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_two,
-    Matrix.vecHead, Matrix.vecTail, Function.comp_def, Fin.succ_zero_eq_one, star_mul, Complex.star_def, Complex.conj_ofReal]
-  ring
+      star (f x) * codifferential d W x - pairing d (differential d f x) (W x) := by apply DedekindZetaZeroFree.KPCompactGreen.ScalarFluxDisintegration.codifferential_star_mul <;> assumption
 
 private theorem derivative_smoothAt (d : ℕ) (g : Space d → ℂ) (x : Space d)
     (hg : ContDiffAt ℝ (⊤ : ℕ∞) g x) (i : Fin d) (k : Fin 3) :
-    ContDiffAt ℝ (⊤ : ℕ∞) (coordinateDerivative d i k g) x := by
-  exact (hg.fderiv_right (by simp)).clm_apply contDiffAt_const
+    ContDiffAt ℝ (⊤ : ℕ∞) (coordinateDerivative d i k g) x := 
+  (hg.fderiv_right (by simp)).clm_apply contDiffAt_const
 
 private theorem exp_mul_derivative (d : ℕ) (g : Space d → ℂ) (x : Space d)
     (hg : DifferentiableAt ℝ g x) (i : Fin d) (k : Fin 3) (hk : k ≠ 2) :
@@ -145,19 +130,7 @@ private theorem exp_mul_derivative (d : ℕ) (g : Space d → ℂ) (x : Space d)
 
 theorem codifferential_differential_at (d : ℕ) (g : Space d → ℂ) (x : Space d)
     (hg : ContDiffAt ℝ (⊤ : ℕ∞) g x) :
-    codifferential d (differential d g) x = laplacian d g x := by
-  unfold codifferential laplacian
-  apply Finset.sum_congr rfl
-  intro i hi
-  simp only [differential, Matrix.cons_val_zero, Matrix.cons_val_one,
-    Matrix.cons_val_two, Matrix.vecHead, Matrix.vecTail, Function.comp_def,
-    Fin.succ_zero_eq_one]
-  rw [exp_mul_derivative d _ x ((derivative_smoothAt d g x hg i 0).differentiableAt (by simp)) i 0 (by decide),
-      exp_mul_derivative d _ x ((derivative_smoothAt d g x hg i 1).differentiableAt (by simp)) i 1 (by decide)]
-  rw [show (Real.exp (2 * x (i, 2)) : ℂ) =
-      (Real.exp (x (i, 2)) : ℂ) * (Real.exp (x (i, 2)) : ℂ) by
-    rw [two_mul, Real.exp_add, Complex.ofReal_mul]]
-  ring
+    codifferential d (differential d g) x = laplacian d g x := by apply DedekindZetaZeroFree.KPCompactGreen.ScalarFluxDisintegration.codifferential_differential_at <;> assumption
 
 private theorem differential_smoothAt (d : ℕ) (g : Space d → ℂ) (x : Space d)
     (hg : ContDiffAt ℝ (⊤ : ℕ∞) g x) (i : Fin d) (k : Fin 3) :
@@ -180,19 +153,17 @@ private theorem smooth_arch (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (arch d) := 
   · exact Complex.equivRealProdCLM.symm.contDiff.comp
       ((EuclideanSpace.proj (𝕜 := ℝ) (i, (0 : Fin 3))).contDiff.prodMk
        (EuclideanSpace.proj (𝕜 := ℝ) (i, (1 : Fin 3))).contDiff)
-  · exact (EuclideanSpace.proj (𝕜 := ℝ) (i, (2 : Fin 3))).contDiff
+  fun_prop
 
 private theorem smooth_height (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞)
     (fun x : Space d => KPCuspLogShape.meanHeight d (arch d x)) := by
   unfold KPCuspLogShape.meanHeight arch
   apply ContDiff.div_const
-  apply ContDiff.sum
-  intro i hi
-  exact (EuclideanSpace.proj (𝕜 := ℝ) (i, (2 : Fin 3))).contDiff
+  fun_prop
 
 private theorem continuous_height (d : ℕ) : Continuous (KPCuspLogShape.meanHeight d) := by
   unfold KPCuspLogShape.meanHeight
-  exact (continuous_finset_sum _ (fun i _ => (continuous_apply i).snd)).div_const _
+  fun_prop
 
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
     {S : Subgroup (KPCuspArithmetic.PGL2 F)} {ρ : S →* rootsOfUnity 3 F}
@@ -286,8 +257,7 @@ theorem compact_radial_green_defect
     have hstar : star ((η p.2 ^ 2 : ℝ) : ℂ) = ((η p.2 ^ 2 : ℝ) : ℂ) := by simp
     rw [hstar, mul_assoc] at hf
     have hf_re := congrArg Complex.re hf
-    simp only [Complex.sub_re, Complex.mul_re, Complex.mul_im, Complex.ofReal_re,
-      Complex.ofReal_im, zero_mul, mul_zero, sub_zero, add_zero] at hf_re
+    simp only [Complex.sub_re, Complex.mul_re, Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im, zero_mul, sub_zero, add_zero] at hf_re
     change _ = -(codifferential d (radialFlux v η) x).re
     dsimp only [weightedGreenDensity, Representative.laplacian]
     simp only [Complex.mul_re]
@@ -361,8 +331,7 @@ theorem differential_half_norm_sq (d : ℕ) (g : Space d → ℂ) (x : Space d)
         (fun q => ((‖g q‖ ^ 2 / 2 : ℝ) : ℂ)) x =
       ((star (g x) * ((Real.exp (x (i,2)) : ℂ) * coordinateDerivative d i j g x)).re : ℂ) := by
     rw [coordinateDerivative_half_norm_sq d g x hg]
-    simp only [Complex.mul_re, Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im,
-      zero_mul, mul_zero, sub_zero, add_zero, ← Complex.ofReal_mul]
+    simp only [Complex.mul_re, Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im, zero_mul, sub_zero, add_zero, ← Complex.ofReal_mul]
     congr 1
     ring
   fin_cases k
@@ -418,11 +387,9 @@ theorem scalarRadialFlux_eq_realPart (v : Representative ζ hζ S ρ V T) (η : 
     change ((η t ^ 2 : ℝ) : ℂ) * differential d
         (fun q => ((‖(v.val ∘ arch d) q‖ ^ 2 / 2 : ℝ) : ℂ)) x i k = _
     rw [differential_half_norm_sq d _ x hg]
-    simp only [radialFlux, cutoffUpstairs, star_mul, Complex.star_def, Complex.conj_ofReal,
-      Complex.mul_re, Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im,
-      zero_mul, mul_zero, sub_zero, add_zero]
+    simp only [radialFlux, cutoffUpstairs, star_mul, Complex.star_def, Complex.conj_ofReal, Complex.mul_re, Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im, mul_zero, sub_zero]
     dsimp only [d, t, Function.comp_def]
-    simp only [Complex.star_def, Complex.mul_re, Complex.conj_re, Complex.conj_im]
+    simp only [Complex.conj_re, Complex.conj_im]
     push_cast
     ring
 
@@ -464,8 +431,7 @@ theorem compact_radial_scalar_flux_criterion
   rw [hf]
   constructor
   · intro h
-    rw [h, sub_self] at he
-    exact neg_eq_zero.mp he.symm
+    simp_all
   · intro h
     rw [h, neg_zero] at he
     exact sub_eq_zero.mp he
@@ -513,9 +479,3 @@ theorem compact_radial_green_descent
         (fun q => ((‖v.val (arch (KPCuspLogShape.dimension F) q)‖ ^ 2 / 2 : ℝ) : ℂ)) x i k))
     hJ hcJ
   simpa only [KPCuspCharts.radialMeasure, neg_mul] using hz
-
-end DedekindZetaZeroFree.KPCompactGreen
-
-end
-
-end

@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Moments.Principal.EulerProducts.LocalSeriesDe
 
 @[expose] public section
 
-noncomputable section
 open scoped NumberField Classical
 open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.CompatiblePrimeRawLocal
@@ -34,7 +33,3 @@ theorem negativeTrace_integer_source (C : A.GeneralArithmeticContext σ η hS)
   have htrace : ResidueTrace.localTraceCharacter p.val (x : LocalField p) = 1 := by
     simpa using hx (1 : LocalIntegers p)
   simp only [negativeTrace, AddChar.neg_apply', htrace, inv_one]
-
-end DedekindZetaZeroFree.CompatiblePrimeRawLocal
-
-end

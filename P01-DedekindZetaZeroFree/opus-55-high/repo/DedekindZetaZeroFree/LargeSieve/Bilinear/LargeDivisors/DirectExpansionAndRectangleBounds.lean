@@ -39,9 +39,7 @@ private lemma pairSum_mul (C : Context Q) (z : ℂ)
     C.pairSum (fun p hp => z * f p hp) = z * C.pairSum f := by
   unfold Context.pairSum
   rw [Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro p hp
-  split_ifs <;> simp
+  simp
 
 private lemma pairSum_sum {α : Type*} (C : Context Q) (s : Finset α)
     (f : α → (p : Ideal (𝓞 F) × Ideal (𝓞 F)) → C.ValidPair p → ℂ) :
@@ -49,9 +47,7 @@ private lemma pairSum_sum {α : Type*} (C : Context Q) (s : Finset α)
       ∑ i ∈ s, C.pairSum (f i) := by
   unfold Context.pairSum
   conv_rhs => rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro p hp
-  split_ifs <;> simp
+  simp
 
 theorem assembly (C : Context Q) (B : ℝ) (unit : Bool)
     (hunit : unit = true → B = 1) (hM : 1 ≤ C.M) (hB : 1 ≤ B)
@@ -111,7 +107,7 @@ theorem assembly (C : Context Q) (B : ℝ) (unit : Bool)
     unfold Context.pairSum
     apply Finset.sum_congr rfl
     intro p hp
-    split_ifs <;> simp [v, mul_assoc] <;> ring
+    split_ifs <;> simp [mul_assoc] <;> ring
   rw [heq]
   apply le_trans (norm_sum_le _ _)
   calc
@@ -141,7 +137,7 @@ theorem assembly (C : Context Q) (B : ℝ) (unit : Bool)
         _ ≤ ‖C.kappa * C.mass‖ * Real.sqrt (C.M / B) *
             ((1 / norm e) / (P.1 * P.2)) * ‖v f₁ f₂ a‖ := by
           gcongr
-          simp only [norm_mul]; exact le_rfl
+          simp
         _ = _ := by simp only [norm_mul]; ring
     _ = _ := by
       simp only [div_eq_mul_inv, Finset.mul_sum, Finset.sum_mul,
@@ -187,7 +183,7 @@ private lemma bin_exists (X : ℝ) (hX : 1 ≤ 2 * X) (f : Ideal (𝓞 F))
   have hfn : 1 ≤ norm f := by
     unfold norm
     exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hf0)
-  have hXX : 2 * X ≤ 2 * max 1 X := by gcongr; exact le_max_right _ _
+  have hXX : 2 * X ≤ 2 * max 1 X := by simp
   have hcover : ∃ j : ℕ, norm f ≤ (2 : ℝ) ^ j :=
     ⟨Vendor.dyadicLength (2 * max 1 X), hf.trans (hXX.trans (Vendor.dyadicLength_cover _))⟩
   let j := Nat.find hcover
@@ -200,11 +196,11 @@ private lemma bin_exists (X : ℝ) (hX : 1 ≤ 2 * X) (f : Ideal (𝓞 F))
     · have hh : norm f ≤ 1 := by simpa [hj0] using hj
       linarith
   · have hk : k < Vendor.dyadicLength (2 * max 1 X) := by omega
-    have hlow : (2 : ℝ) ^ k < norm f := by
-      exact lt_of_not_ge (Nat.find_min hcover (by omega))
+    have hlow : (2 : ℝ) ^ k < norm f := 
+      lt_of_not_ge (Nat.find_min hcover (by omega))
     refine ⟨(2 : ℝ) ^ k, ?_, one_le_pow₀ (by norm_num), hlow.le.trans hf, hf0, ?_, ?_⟩
     · apply Finset.mem_insert_of_mem
-      exact Finset.mem_image.mpr ⟨k, Finset.mem_range.mpr hk, rfl⟩
+      simp_all
     · split_ifs <;> linarith
     · simpa [hj0, pow_succ'] using hj
 
@@ -266,8 +262,8 @@ private lemma bin_admissible (C : Context Q) (B : ℝ)
       _ ≤ (norm c * norm C.d) * ((2*P.1)*(2*P.2)) :=
         mul_le_mul hen hab (mul_nonneg (norm_nonneg a) (norm_nonneg b))
           (mul_nonneg (norm_nonneg c) (norm_nonneg C.d))
-      _ ≤ (max 1 (norm c) * norm C.d) * ((2*P.1)*(2*P.2)) := by
-        exact mul_le_mul_of_nonneg_right
+      _ ≤ (max 1 (norm c) * norm C.d) * ((2*P.1)*(2*P.2)) := 
+        mul_le_mul_of_nonneg_right
           (mul_le_mul_of_nonneg_right (le_max_right 1 (norm c)) (norm_nonneg C.d))
           (by nlinarith [hP.1, hP.2.1])
       _ = _ := by ring
@@ -341,23 +337,21 @@ private lemma density_bins (C : Context Q) (B : ℝ)
           exact (hne (Prod.ext h1 h2)).elim
         · simp [hRb]
       · simp [hRa]
-    · intro hnmem
-      exact (hnmem hAdm).elim
+    simp_all
   · simp [weight, hl]
 
 private lemma sum_bin (u : Ideal (𝓞 F)) (hu : u ≠ ⊥) (P : ℝ) (H : Ideal (𝓞 F) → ℂ) :
     (∑ a ∈ idealDivisors u, if ErrorRectangles.InBin P a then H a else 0) =
       ∑ a ∈ LargeDirectAssembly.divisorBin (F := F) P, if a ∣ u then H a else 0 := by
   rw [← Finset.sum_filter, ← Finset.sum_filter]
-  apply Finset.sum_congr _ (by intros; rfl)
+  apply Finset.sum_congr _ (by simp)
   ext a
   simp only [Finset.mem_filter, mem_idealDivisors hu, LargeDirectAssembly.divisorBin,
     mem_boundedNormIdeals]
   constructor
   · rintro ⟨had, hbin⟩
     exact ⟨⟨hbin.2.2, hbin⟩, had⟩
-  · rintro ⟨⟨_, hbin⟩, had⟩
-    exact ⟨had, hbin⟩
+  simp_all
 
 theorem density_expansion (C : Context Q) (B : ℝ)
     (hn : 1 ≤ norm C.d) (hnN : norm C.d ≤ 2*C.N)
@@ -493,9 +487,3 @@ theorem large_divisor_expansion (C : Context Q) (B : ℝ) (unit : Bool)
       (LargeDirectGeometry.weight (C.Z2 B))
       (fun p hp => LargeDirectGeometry.density_expansion C B hn hnN hp)
       (fun e he P hP a ha b hb => LargeDirectGeometry.weight_bound C B he hP ha hb)
-
-end DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms.LargeDirect
-
-end
-
-end

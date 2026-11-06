@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Named value of closed finite-index reciprocity
 
@@ -35,8 +32,7 @@ open Reciprocity
 /-- Canonical class-group commutativity supplies normality for norm-range transport. -/
 theorem closedFiniteIndexEvaluationValueClassGroupIsMulCommutative
     (F : Type) [Field F] [NumberField F] :
-    IsMulCommutative (IdeleClassGroup F) :=
-  IsMulCommutative.of_comm (fun a b => mul_comm a b)
+    IsMulCommutative (IdeleClassGroup F) := by apply normIdeleClassGroup_isMulCommutative <;> assumption
 
 attribute [local instance] closedFiniteIndexEvaluationValueClassGroupIsMulCommutative
 
@@ -44,7 +40,7 @@ variable {K : Type} [Field K] [NumberField K]
 
 /-- The quotient value prescribed by inverse global norm-residue reciprocity
 for a Galois element of the selected closed finite-index class field. -/
-noncomputable abbrev closedFiniteIndexClassFieldReciprocityValue
+abbrev closedFiniteIndexClassFieldReciprocityValue
     (H : Subgroup (IdeleClassGroup K))
     (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
     [H.FiniteIndex]
@@ -59,8 +55,3 @@ noncomputable abbrev closedFiniteIndexClassFieldReciprocityValue
           (closedFiniteIndexClassField
             (K := K) H hclosed)).symm
         (Additive.ofMul σ)))
-
-end GlobalClassFields
-end GlobalClassFieldTheory
-
-end

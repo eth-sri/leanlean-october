@@ -11,12 +11,12 @@ open KPCplxCharacterHaar KPCplxPrincipalSeriesCharts
 open DedekindZetaZeroFree.KPComplexIntertwinerParameterMajorant MeasureTheory Set
 open scoped ContDiff Matrix.Norms.Elementwise
 
-private lemma line_open (x : ℂ) :
+lemma line_open (x : ℂ) :
     bottomRowLine (weyl * upperUnipotent x) = projectiveOpen x := by
   unfold bottomRowLine weyl upperUnipotent
-  simp [Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two]
+  simp
 
-private lemma line_infinity (u : ℂ) :
+lemma line_infinity (u : ℂ) :
     bottomRowLine (lowerUnipotent u) = projectiveInfinity u := by
   by_cases hu : u = 0
   · subst u
@@ -40,8 +40,7 @@ private lemma ratio_pos (g : ComplexGL2) : 0 < rowRatio g := by
       apply norm_eq_zero.mp
       nlinarith [sq_nonneg ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 1‖]
     have h1 : (g : Matrix (Fin 2) (Fin 2) ℂ) 1 1 = 0 := by
-      apply norm_eq_zero.mp
-      nlinarith [sq_nonneg ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 0‖]
+      simp_all
     apply hdet
     simp [Matrix.det_fin_two, h0, h1]
   exact div_pos (norm_pos_iff.mpr (Matrix.GeneralLinearGroup.det g).ne_zero) hr
@@ -57,27 +56,25 @@ private lemma exp_eq_sphere (t : ℝ) (g : ComplexGL2) :
 
  lemma sphere_ne (t : ℝ) (g : ComplexGL2) : sphericalSection t g ≠ 0 := by
   rw [← exp_eq_sphere]
-  exact Complex.exp_ne_zero _
+  simp
 
-private lemma open_injective : Function.Injective projectiveOpen := by
+lemma open_injective : Function.Injective projectiveOpen := by
   intro x y h
   change Projectivization.mk ℂ ![1, x] (by intro he; simpa using congrFun he 0) =
     Projectivization.mk ℂ ![1, y] (by intro he; simpa using congrFun he 0) at h
   obtain ⟨a, ha⟩ := (Projectivization.mk_eq_mk_iff' ℂ _ _ _ _).mp h
   have h0 := congrFun ha 0
   have h1 := congrFun ha 1
-  simp at h0 h1
-  simpa [h0] using h1.symm
+  simp_all
 
-private lemma infinity_not_open (x : ℂ) : projectiveInfinity 0 ≠ projectiveOpen x := by
+lemma infinity_not_open (x : ℂ) : projectiveInfinity 0 ≠ projectiveOpen x := by
   intro h
   change Projectivization.mk ℂ ![0, 1] (by intro he; simpa using congrFun he 1) =
     Projectivization.mk ℂ ![1, x] (by intro he; simpa using congrFun he 0) at h
   obtain ⟨a, ha⟩ := (Projectivization.mk_eq_mk_iff' ℂ _ _ _ _).mp h
   have h0 := congrFun ha 0
   have h1 := congrFun ha 1
-  simp at h0 h1
-  simp [h0] at h1
+  simp_all
 
  noncomputable def glue (F H : ℂ → ℂ) (p : ComplexProjectiveLine) : ℂ :=
   by
@@ -133,7 +130,7 @@ private lemma infinity_not_open (x : ℂ) : projectiveInfinity 0 ≠ projectiveO
     simpa only [div_eq_mul_inv] using! f.property.2.2.mul
       ((sphericalSection t).property.2.2.inv (fun u => sphere_ne t (lowerUnipotent u)))
 
-private lemma multiplier_bound (n : ℕ) (w : ℂ → ℂ)
+lemma multiplier_bound (n : ℕ) (w : ℂ → ℂ)
     (hw : ContDiff ℝ (⊤ : ℕ∞) w) : ∃ C : ℝ, 0 ≤ C ∧
       ∀ (φ : CompactPicture) (chart : ℂ → ComplexProjectiveLine),
       (chart = projectiveOpen ∨ chart = projectiveInfinity) →
@@ -162,8 +159,8 @@ private lemma multiplier_bound (n : ℕ) (w : ℂ → ℂ)
     · exact norm_iteratedFDeriv_infinity_le_sourceSeminorm n (n-i) (Nat.sub_le _ _) φ z hz
   calc
     _ ≤ ∑ i ∈ Finset.range (n+1), (n.choose i : ℝ) *
-        ‖iteratedFDeriv ℝ i w z‖ * ‖iteratedFDeriv ℝ (n-i) (φ ∘ chart) z‖ := by
-      exact norm_iteratedFDeriv_mul_le hw hsmooth z (by simp)
+        ‖iteratedFDeriv ℝ i w z‖ * ‖iteratedFDeriv ℝ (n-i) (φ ∘ chart) z‖ := 
+      norm_iteratedFDeriv_mul_le hw hsmooth z (by simp)
     _ ≤ ∑ i ∈ Finset.range (n+1), (n.choose i : ℝ) * B i * sourceSeminorm n φ := by
       apply Finset.sum_le_sum
       intro i hi
@@ -265,4 +262,3 @@ theorem real_reconstruction_identification
         rw [hinf]
         exact (hd φ projectiveInfinity (Or.inr rfl) u hu).trans
           (mul_le_mul_of_nonneg_right (le_max_right C D) (sourceSeminorm_nonneg n φ))
-end DedekindZetaZeroFree.RepresentationTheory.KPComplexStandardIntertwinerGermProve

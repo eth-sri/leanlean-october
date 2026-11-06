@@ -204,14 +204,14 @@ theorem compact_coordinate_hasDeriv {n : ℕ} {U : Set (Space n)} (hU : IsOpen U
   exact differentiable_pi.mpr (fun α s => (H α s).differentiableAt)
 
 end Coordinates
-private theorem spatial_coordinate_smooth {n : ℕ} {U : Set (Space n)} (hU : IsOpen U)
+theorem spatial_coordinate_smooth {n : ℕ} {U : Set (Space n)} (hU : IsOpen U)
     (u : Space n → ℂ) (hu : ContDiffOn ℝ (⊤ : ℕ∞) u U) (l : List (Fin n)) :
     ContDiffOn ℝ (⊤ : ℕ∞) (coordinateDerivativeList l u) U := by
   induction l with
   | nil => exact hu
   | cons i l ih => exact (ih.fderiv_of_isOpen hU (by simp)).clm_apply contDiffOn_const
 
-private theorem coordinate_const_mul {n : ℕ} {U : Set (Space n)} (hU : IsOpen U)
+theorem coordinate_const_mul {n : ℕ} {U : Set (Space n)} (hU : IsOpen U)
     (u : Space n → ℂ) (hu : ContDiffOn ℝ (⊤ : ℕ∞) u U) (c : ℂ)
     (l : List (Fin n)) : Set.EqOn (coordinateDerivativeList l (fun x => c * u x))
       (fun x => c * coordinateDerivativeList l u x) U := by
@@ -230,7 +230,7 @@ private theorem coordinate_const_mul {n : ℕ} {U : Set (Space n)} (hU : IsOpen 
       using congrArg (fun L : Space n →L[ℝ] ℂ => L (EuclideanSpace.single i 1))
         (fderiv_const_mul hd c)
 
-private theorem coordinate_congr_on {n : ℕ} {U : Set (Space n)} (hU : IsOpen U)
+theorem coordinate_congr_on {n : ℕ} {U : Set (Space n)} (hU : IsOpen U)
     {u v : Space n → ℂ} (he : Set.EqOn u v U) (l : List (Fin n)) :
     Set.EqOn (coordinateDerivativeList l u) (coordinateDerivativeList l v) U := by
   induction l with
@@ -241,7 +241,7 @@ private theorem coordinate_congr_on {n : ℕ} {U : Set (Space n)} (hU : IsOpen U
       (hU.eventually_mem hx).mono (fun y hy => ih hy)
     exact congrArg (fun L : Space n →L[ℝ] ℂ => L (EuclideanSpace.single i 1)) hlocal.fderiv_eq
 
-private theorem affine_exponential_compactJets {n : ℕ} {U : Set (Space n)}
+theorem affine_exponential_compactJets {n : ℕ} {U : Set (Space n)}
     (hU : IsOpen U) (t ψ₀ ψ₁ : Space n → ℂ)
     (ht : ContDiffOn ℝ (⊤ : ℕ∞) t U)
     (hψ₀ : ContDiffOn ℝ (⊤ : ℕ∞) ψ₀ U) (hψ₁ : ContDiffOn ℝ (⊤ : ℕ∞) ψ₁ U)
@@ -499,7 +499,7 @@ theorem incomingRealization_endLift_formula {T : ℝ}
   rw [dif_pos hx]
   exact actual_endLift_incoming_transport F ζ hζ C R P H U ι buffer s hs v x _ l
 
-private theorem height_of_coveredPoint {T : ℝ}
+theorem height_of_coveredPoint {T : ℝ}
     (buffer : KPContActualCollarBuffer.CollarBuffer F ζ hζ
       (level F ζ hζ C R P H U) R P H T)
     (ε : rootsOfUnity 3 F) (z : KPCuspCharts.Coordinates F) (hz : buffer.τ < z.2) :
@@ -517,7 +517,7 @@ private theorem height_of_coveredPoint {T : ℝ}
   rw [hbase]
   exact buffer.height_coordinates a z hz
 
-private theorem physical_incoming_local_formula {T : ℝ}
+theorem physical_incoming_local_formula {T : ℝ}
     (buffer : KPContActualCollarBuffer.CollarBuffer F ζ hζ
       (level F ζ hζ C R P H U) R P H T)
     (i : Fin (H.atlas (level F ζ hζ C R P H U)).componentCount)
@@ -570,7 +570,7 @@ private theorem physical_incoming_local_formula {T : ℝ}
     (⟨a,ε,z y',hhigh,hpoint⟩ : EndLift F ζ hζ C R P H U buffer _)]
   rw [incomingValue_scalar_formula F ζ hζ C R P H U ι a s hs]
 
-private theorem cutoff_multiplier_zero_below {T : ℝ} (χ : KPCutoffSource.SmoothCuspCutoff T)
+theorem cutoff_multiplier_zero_below {T : ℝ} (χ : KPCutoffSource.SmoothCuspCutoff T)
     (d : ℕ) (b : Bool) (s : ℂ) (t : ℝ) (ht : t < T) :
     (if b then KPCutoffSource.incomingCommutatorMultiplier d χ.toFun s t
       else (χ.toFun t : ℂ)) = 0 := by

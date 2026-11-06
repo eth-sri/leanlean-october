@@ -7,7 +7,6 @@ public import DedekindZetaZeroFree.Theta.Unfolding.RayParityProductMellin
 
 @[expose] public section
 
-noncomputable section
 
 open Classical NumberField NumberField.InfinitePlace MeasureTheory
 open NumberField.mixedEmbedding
@@ -25,7 +24,3 @@ theorem mellinFactor_mul_reciprocalGamma (δ : Finset (RayCoset.RealPlaces K))
     (s : ℂ) (hs : 1 < s.re) :
     κδ K δ s * hδ K δ s = 1 :=
   κδ_mul_hδ K δ s hs
-
-end DedekindZetaZeroFree.AbelianQuotient.RayParity.FourierMellin
-
-end

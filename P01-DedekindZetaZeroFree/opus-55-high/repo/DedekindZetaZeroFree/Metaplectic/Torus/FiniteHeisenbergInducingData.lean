@@ -12,7 +12,6 @@ open NumberField IsDedekindDomain MeasureTheory ValuativeRel
 namespace DedekindZetaZeroFree.KPLocalExceptionalConstruction
 open KPLocalPrincipalSeries KPLocalStoneVonNeumann
 noncomputable section
-set_option autoImplicit false
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 variable (q : HeightOneSpectrum (𝓞 F))
@@ -77,6 +76,3 @@ structure CanonicalFiniteInducingData where
     (openCell P).eta = ordinaryIota F ζ hζ
 
 attribute [instance] CanonicalFiniteInducingData.groupD CanonicalFiniteInducingData.finiteD
-
-end
-end DedekindZetaZeroFree.KPLocalExceptionalConstruction

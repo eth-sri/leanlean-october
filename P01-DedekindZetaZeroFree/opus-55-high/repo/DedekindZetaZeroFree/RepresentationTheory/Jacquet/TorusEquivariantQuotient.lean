@@ -26,7 +26,7 @@ abbrev Jacquet (A : LocalBorelData (K := K) (G := G) T)
 abbrev jacquetRelations (A : LocalBorelData (K := K) (G := G) T)
     (ρ : Representation ℂ G V) := Representation.Coinvariants.ker (ρ.comp (root A))
 
-private theorem conjugate_root (A : LocalBorelData (K := K) (G := G) T)
+theorem conjugate_root (A : LocalBorelData (K := K) (G := G) T)
     (h : H) (x : Multiplicative K) :
     ∃ y : Multiplicative K,
       (A.torus h : G) * root A x * (A.torus h : G)⁻¹ = root A y := by
@@ -47,7 +47,7 @@ private theorem conjugate_root (A : LocalBorelData (K := K) (G := G) T)
   change ρ (root A y) (ρ (A.torus h : G) v) - ρ (A.torus h : G) v =
     ρ (A.torus h : G) ((ρ.comp (root A)) x v - v)
   rw [← hy]
-  simp [← Module.End.mul_apply, ← map_mul, mul_assoc]
+  simp
 
 def jacquetRepresentation (A : LocalBorelData (K := K) (G := G) T)
     (ρ : Representation ℂ G V) : Representation ℂ H (Jacquet A ρ) :=
@@ -72,6 +72,3 @@ def jacquetMap (A : LocalBorelData (K := K) (G := G) T)
     change Representation.Coinvariants.mk (σ.comp (root A)) (f (ρ (A.torus h : G) v)) =
       Representation.Coinvariants.mk (σ.comp (root A)) (σ (A.torus h : G) (f v))
     rw [f.isIntertwining]
-
-end
-end DedekindZetaZeroFree.KPLocalJacquetImage

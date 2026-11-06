@@ -16,7 +16,7 @@ open MomentSources ThetaProfileHaarSheets
  def castMeasure {X : Type*} {m n : MeasurableSpace X} (h : m = n)
     (μ : @Measure X m) : @Measure X n := h ▸ μ
 
-private theorem castMeasure_haar {X : Type*} [Group X] [TopologicalSpace X]
+theorem castMeasure_haar {X : Type*} [Group X] [TopologicalSpace X]
     {m n : MeasurableSpace X} (h : m = n) (μ : @Measure X m)
     (hμ : @Measure.IsHaarMeasure X _ _ m μ) :
     @Measure.IsHaarMeasure X _ _ n (castMeasure h μ) := by
@@ -30,7 +30,7 @@ theorem probeHaar_isHaar (R : PrincipalMellin.ActualRecipe S η) :
     (probeHaar R).IsHaarMeasure :=
   castMeasure_haar _ _ R.probe.domain.haar
 
-private theorem map_prod_cast {X Y Z : Type*} [MeasurableSpace X] [MeasurableSpace Z]
+theorem map_prod_cast {X Y Z : Type*} [MeasurableSpace X] [MeasurableSpace Z]
     {m n : MeasurableSpace Y} (h : m = n) (μ : Measure X) (ν : @Measure Y m)
     (e : X × Y → Z) :
     @Measure.map _ _ (@Prod.instMeasurableSpace _ _ _ n) _ e
@@ -40,13 +40,13 @@ private theorem map_prod_cast {X Y Z : Type*} [MeasurableSpace X] [MeasurableSpa
   subst n
   rfl
 
-private theorem integral_cast {X E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+theorem integral_cast {X E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     {m n : MeasurableSpace X} (h : m = n) (μ : @Measure X m) (f : X → E) :
     @integral X E _ _ n (castMeasure h μ) f = @integral X E _ _ m μ f := by
   subst n
   rfl
 
-private theorem integrable_cast {X E : Type*} [NormedAddCommGroup E]
+theorem integrable_cast {X E : Type*} [NormedAddCommGroup E]
     {m n : MeasurableSpace X} (h : m = n) (μ : @Measure X m) (f : X → E) :
     @Integrable E _ _ X n f (castMeasure h μ) ↔ @Integrable E _ _ X m f μ := by
   subst n
@@ -91,7 +91,7 @@ theorem integrable_uniform_iff (N : TraceHaarTransport R) (w : InfinitePlace F)
   have h (z : R.A.G1) : normSection R.A w x * z.val =
       (q * z).val * R.A.radialSection x.val x.property := by
     change _ = (normSection R.A w x / R.A.radialSection x.val x.property * z.val) * _
-    simp [div_eq_mul_inv, mul_assoc, mul_comm, mul_left_comm]
+    simp [div_eq_mul_inv, mul_comm, mul_left_comm]
   simp_rw [h]
   exact (measurePreserving_mul_left (probeHaar R) q).integrable_comp_emb
     (Homeomorph.mulLeft q).measurableEmbedding
@@ -107,10 +107,7 @@ theorem integral_uniform_eq (N : TraceHaarTransport R) (w : InfinitePlace F)
   have h (z : R.A.G1) : normSection R.A w x * z.val =
       (q * z).val * R.A.radialSection x.val x.property := by
     change _ = (normSection R.A w x / R.A.radialSection x.val x.property * z.val) * _
-    simp [div_eq_mul_inv, mul_assoc, mul_comm, mul_left_comm]
+    simp [div_eq_mul_inv, mul_comm, mul_left_comm]
   simp_rw [h]
   exact integral_mul_left_eq_self (μ := probeHaar R)
     (fun z : R.A.G1 => f (z.val * R.A.radialSection x.val x.property)) q
-end DedekindZetaZeroFree.GaussianSmoothing
-
-end

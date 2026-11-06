@@ -35,7 +35,7 @@ lemma moc_coeff (d : ℕ) (c : Fin d → k) (i : Fin d) :
   · simp [i.2.ne]
   · intro j hj
     simp only [coeff_C_mul_X_pow, ite_eq_right_iff]
-    exact fun h => absurd (Fin.ext h.symm) hj
+    omega
 
 lemma moc_of_monic {P : k[X]} (hP : P.Monic) :
     monicOfCoeffs P.natDegree (fun i => P.coeff i) = P := by
@@ -127,6 +127,4 @@ lemma a_eq_zero (hψ : ∃ x : k, ψ x ≠ 1) {d : ℕ} (hd : 2 ≤ d) : a χ ψ
   have h1 : (1 - ψ t) * S = 0 := by rw [sub_mul, one_mul, ← hS, sub_self]
   rcases mul_eq_zero.1 h1 with h | h
   · exact absurd (sub_eq_zero.1 h).symm ht
-  · exact h
-
-end DavenportHasse.PolyPart
+  omega

@@ -10,7 +10,7 @@ open scoped NumberField Classical NNReal
 namespace DedekindZetaZeroFree.KPLiteralChamber
 open KPLiteralRaw
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
-private theorem sqrt_eq_halfPower (r : ℝ) (hr : 0 < r) :
+theorem sqrt_eq_halfPower (r : ℝ) (hr : 0 < r) :
     (Real.sqrt r : ℂ) = KPGlobalExceptionalParameter.realLogPower r (1 / 2) := by
   rw [Real.sqrt_eq_rpow, Real.rpow_def_of_pos hr, Complex.ofReal_exp]
   unfold KPGlobalExceptionalParameter.realLogPower
@@ -23,7 +23,7 @@ private theorem sqrt_eq_halfPower (r : ℝ) (hr : 0 < r) :
     KPGlobalTorusFunctionData.deltaHalf F ζ hζ t *
       KPGlobalTorusBorelTwistCompatibility.normPower F ζ hζ s t := by
   have hr : 0 < (((KPGlobalTorusFunctionData.delta F ζ hζ t : ℝ≥0) : ℝ)) := by
-    exact_mod_cast (pos_iff_ne_zero.mpr (Units.ne_zero _))
+    simp
   unfold KPGlobalTorusFunctionData.deltaHalf
   rw [sqrt_eq_halfPower _ hr]
   unfold KPGlobalExceptionalParameter.realLogPower KPGlobalTorusBorelTwistCompatibility.normPower
@@ -46,6 +46,3 @@ theorem literal_unipotent_invariance (K : Subgroup (G F ζ hζ)) (f : Flat F ζ 
     f.val s (KPGlobalTorusFunctionData.N F ζ hζ x * g) = f.val s g := by
   have h := (f.property.1 s).2 1 x g
   simpa [KPGlobalExceptionalParameter.realLogPower] using h
-end DedekindZetaZeroFree.KPLiteralChamber
-
-end

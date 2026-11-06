@@ -25,7 +25,7 @@ private theorem smooth_arch (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (arch d) := 
   · exact Complex.equivRealProdCLM.symm.contDiff.comp
       ((EuclideanSpace.proj (𝕜 := ℝ) (i, (0 : Fin 3))).contDiff.prodMk
        (EuclideanSpace.proj (𝕜 := ℝ) (i, (1 : Fin 3))).contDiff)
-  · exact (EuclideanSpace.proj (𝕜 := ℝ) (i, (2 : Fin 3))).contDiff
+  fun_prop
 
 private theorem smooth_real (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (real d) := by
   apply (contDiff_piLp 2).mpr
@@ -42,9 +42,7 @@ private theorem smooth_real (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (real d) := 
 private theorem smooth_mean (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (KPCuspLogShape.meanHeight d) := by
   unfold KPCuspLogShape.meanHeight
   apply ContDiff.div_const
-  apply ContDiff.sum
-  intro i hi
-  exact contDiff_snd.comp (contDiff_apply ℝ KPArch.H3 i)
+  fun_prop
 
 private theorem derivative_smoothAt (d : ℕ) (g : HyperbolicChart.Space d → ℂ)
     (x : HyperbolicChart.Space d)
@@ -64,8 +62,7 @@ private theorem laplacian_smoothAt (d : ℕ) (g : HyperbolicChart.Space d → �
       (Real.exp (2 * q (i, 2)) : ℂ)) x :=
     Complex.ofRealCLM.contDiff.contDiffAt.comp x
       ((contDiffAt_const.mul (EuclideanSpace.proj (𝕜 := ℝ) (i, (2 : Fin 3))).contDiff.contDiffAt).exp)
-  exact ((hh 2).neg.add (contDiffAt_const.mul (h 2))).sub
-    (he.mul ((hh 0).add (hh 1)))
+  fun_prop
 
 private theorem representative_smoothAt (v : Representative ζ hζ S ρ V T)
     (x : HyperbolicChart.Space (KPCuspLogShape.dimension F))
@@ -166,8 +163,7 @@ private theorem second_horizontal (d : ℕ) (u : Fin d → ℂ) (h : Space d →
         (second d h x (coordinateVector d i 0) (coordinateVector d i 0) +
          second d h x (coordinateVector d i 1) (coordinateVector d i 1)) := by
   rw [lin_zero, lin_one]
-  simp only [second, map_add, map_smul, ContinuousLinearMap.add_apply,
-    ContinuousLinearMap.smul_apply, smul_add, smul_smul, Complex.real_smul]
+  simp only [second, map_add, map_smul, ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply, smul_add, Complex.real_smul]
   rw [Complex.sq_norm, Complex.normSq_apply]
   push_cast
   ring
@@ -212,7 +208,7 @@ private theorem laplacian_congr (d : ℕ) (h f : Space d → ℂ) (x : Space d)
   apply Finset.sum_congr rfl
   intro i hi
   simp only [coordinateDerivative] at hd0 hdd ⊢
-  rw [hdd, hdd, hdd, hd0]
+  simp_all
 private theorem laplacian_mul (d : ℕ) (h : Space d → ℂ) (x : Space d) (c : ℂ)
     (hh : ContDiffAt ℝ (⊤ : ℕ∞) h x) :
     laplacian d (fun y => c * h y) x = c * laplacian d h x := by
@@ -246,10 +242,9 @@ private theorem upper_fst (A : Matrix.GeneralLinearGroup (Fin 2) ℂ)
     intro hz
     exact A.det_ne_zero (by simp [Matrix.det_fin_two, ha, hz])
   have hn : (‖A 1 1‖ ^ 2 : ℂ) = A 1 1 * star (A 1 1) := by
-    simp [Complex.star_def, Complex.mul_conj, Complex.normSq_eq_norm_sq]
+    simp [Complex.mul_conj, Complex.normSq_eq_norm_sq]
   change _ / _ = _
-  simp only [KPArch.actionDenominator, ha, zero_mul, zero_add, norm_zero, zero_pow,
-    add_zero, hr, star_zero, mul_zero, zero_mul]
+  simp only [KPArch.actionDenominator, ha, zero_mul, zero_add, norm_zero, add_zero, hr, star_zero, mul_zero, zero_mul]
   simp only [zero_pow (by decide : (2 : ℕ) ≠ 0), zero_mul, add_zero, Complex.ofReal_pow]
   rw [hn]
   have hs : star (A 1 1) ≠ 0 := star_ne_zero.mpr hd
@@ -354,7 +349,7 @@ theorem scalar_laplacian_continuousOn_and_invariant
         (KPCuspCharts.toArch F q.val) = KPCuspCharts.toArch F p.val := by
       have h1 := hs
       rw [← hA, KPCuspSiegel.action_mk] at h1
-      simp only [KPCuspSiegel.glAction, hg] at h1
+      simp only [KPCuspSiegel.glAction] at h1
       exact h1
     have hcont_p : ContDiffAt ℝ (⊤ : ℕ∞)
         (v.val ∘ arch (KPCuspLogShape.dimension F))
@@ -447,7 +442,3 @@ theorem scalar_laplacian_continuousOn_and_invariant
                 rw [star_mul]
                 ring
             _ = star (v.scalar q.val) * v.laplacian q.val := by rw [hcc, one_mul]
-
-end DedekindZetaZeroFree.KPCompactGreenRadialIntegrability
-
-end

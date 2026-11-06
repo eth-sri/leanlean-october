@@ -18,16 +18,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Local-field structure on a finite adic completion
 
@@ -138,7 +128,7 @@ def finitePlaceAdicHilbertPairingFamily
   letI : CharZero C :=
     charZero_of_injective_algebraMap (algebraMap F C).injective
   have hnC : ((n : ℕ) : C) ≠ 0 := by
-    exact Nat.cast_ne_zero.mpr n.ne_zero
+    simp
   have hmuC : (primitiveRoots (n : ℕ) C).Nonempty := by
     obtain ⟨ζ, hζ⟩ := hmu
     exact ⟨algebraMap F C ζ,
@@ -179,7 +169,3 @@ theorem finitePlaceAdicHilbertPairingFamily_isLocallyHilbert
         (relativeFinitePlaceCompletionAlgEquiv v).toRingEquiv n hmuC
         (localHilbertPairing C n hnC hmuC)
         (localHilbertPairing_isLocalHilbertPairing C n hnC hmuC)
-
-end ClassFieldTheory
-
-end

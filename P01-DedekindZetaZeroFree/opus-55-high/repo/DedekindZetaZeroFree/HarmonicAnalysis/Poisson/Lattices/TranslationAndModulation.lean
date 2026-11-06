@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.HarmonicAnalysis.Poisson.Lattices.ShiftedSumm
 
 @[expose] public section
 
-noncomputable section
 open scoped FourierTransform SchwartzMap
 open MeasureTheory
 
@@ -18,9 +17,7 @@ theorem temperateGrowth_fourierChar_inner
     Complex.hasTemperateGrowth_exp_mul_I
   have h2 : (fun x : V => (2 * Real.pi * inner ℝ x b : ℝ)).HasTemperateGrowth := by fun_prop
   have h3 := h1.comp h2
-  convert h3 using 1
-  ext x
-  rw [Function.comp_apply, Real.fourierChar_apply]
+  fun_prop
 
 theorem fourier_smul_fourierChar
     {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
@@ -81,7 +78,3 @@ theorem poisson_shift_modulation
     apply tsum_congr
     intro w
     rw [fourier_smul_fourierChar f b (w : V)]
-
-end DedekindZetaZeroFree.PoissonArch
-
-end

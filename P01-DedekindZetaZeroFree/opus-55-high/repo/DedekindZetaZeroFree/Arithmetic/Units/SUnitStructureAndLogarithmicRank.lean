@@ -86,9 +86,3 @@ theorem torsion_finite : Finite (NumberField.Units.torsion F) := inferInstance
 def ordinaryTorsionInclusion : NumberField.Units.torsion F →* A.Rˣ :=
   (Units.map (algebraMap (𝓞 F) A.R)).comp
     (NumberField.Units.torsion F).subtype
-
-end
-end SArithmeticData
-end DedekindZetaZeroFree
-
-end

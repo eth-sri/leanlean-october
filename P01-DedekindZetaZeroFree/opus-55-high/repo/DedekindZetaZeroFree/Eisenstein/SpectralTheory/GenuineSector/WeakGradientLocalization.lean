@@ -158,7 +158,7 @@ def IsActualWeakGradient (u : KPContSectorClosedLpSubspace.H F ζ hζ R U)
  def firstIndex {n : ℕ} (j : Fin n) : MultiIndex n 1 :=
   ⟨Pi.single j 1, by simp [Pi.single_apply, apply_ite Fin.val]⟩
 
-private theorem firstIndex_eq_raw {n : ℕ} (j : Fin n) :
+theorem firstIndex_eq_raw {n : ℕ} (j : Fin n) :
     firstIndex j = KPContLocalEnergy.SobolevEnergyEstimates.Raw.firstIndex j := by
   apply Subtype.ext
   funext k
@@ -168,7 +168,7 @@ private theorem firstIndex_directions {n : ℕ} (j : Fin n) : (firstIndex j).dir
   rw [firstIndex_eq_raw]
   exact KPContLocalEnergy.SobolevEnergyEstimates.firstIndex_directions j
 
-private theorem index_one_eq_first {n : ℕ} (α : MultiIndex n 1) (j : Fin n)
+theorem index_one_eq_first {n : ℕ} (α : MultiIndex n 1) (j : Fin n)
     (hj : (α.val j).val = 1) : α = firstIndex j := by
   have hs := Finset.sum_le_one_iff.mp α.property
   apply Subtype.ext
@@ -219,7 +219,7 @@ private theorem test_smooth_local_data (f : S_U F ζ hζ U R P H)
     simp only [liftExtension, dif_pos hxomega]
     exact hdecoder.symm
 
-private theorem scalarBall_test (a : ActualChart (U := U) (H := H))
+theorem scalarBall_test (a : ActualChart (U := U) (H := H))
     (B : LocalBall (3 * d F)) (hB : InteriorBall a B) (f : S_U F ζ hζ U R P H) :
     (fun x => KPContActualSectorBallRestriction.scalarBall a B hB
       (KPContActualSectorTestEmbeddings.iota f) x) =ᵐ[volume.restrict B.carrier]
@@ -260,7 +260,7 @@ private theorem first_ne_zero {n : ℕ} (j : Fin n) : firstIndex j ≠ zeroIndex
   have h := congrArg (fun α : MultiIndex n 1 => (α.val j).val) he
   simp [firstIndex, zeroIndex] at h
 
-private theorem first_injective {n : ℕ} : Function.Injective (firstIndex (n := n)) := by
+theorem first_injective {n : ℕ} : Function.Injective (firstIndex (n := n)) := by
   intro i j hij
   by_contra h
   have he := congrArg (fun α : MultiIndex n 1 => (α.val i).val) hij
@@ -286,7 +286,7 @@ private theorem ballDerivative_zero (a : ActualChart (U := U) (H := H)) (B : Loc
     exact first_ne_zero j hj.symm
   simp [ballDerivative, hn]
 
-private theorem ballDerivative_first (a : ActualChart (U := U) (H := H)) (B : LocalBall (3 * d F))
+theorem ballDerivative_first (a : ActualChart (U := U) (H := H)) (B : LocalBall (3 * d F))
     (hB : InteriorBall a B) (u : KPContSectorClosedLpSubspace.H F ζ hζ R U)
     (v : KPContActualSectorCotangentL2.V F ζ hζ U R P H) (j : Fin (3 * d F)) :
     ballDerivative a B hB (firstIndex j) (u,v) =
@@ -338,7 +338,7 @@ private theorem base_point (x : KPFiniteCuspAtlas.rawXU F ζ hζ U) :
   simp only [q, coordinates, ShrunkChart.toBase]
   rw [hi]
 
-private theorem masked_norm_sq (W W' : Family (U := U) (H := H)) (i : Fin (d F))
+theorem masked_norm_sq (W W' : Family (U := U) (H := H)) (i : Fin (d F))
     (hW : ∀ (a : ActualChart (U := U) (H := H)) (x : omega a) (j : Fin (d F)) (k : Fin 3),
       coefficient W' a x (j,k) = if j=i then coefficient W a x (j,k) else 0)
     (a : ActualChart (U := U) (H := H)) (x : omega a) :
@@ -423,7 +423,7 @@ private theorem iteratedDerivativeTest_apply {n : ℕ} {B : LocalBall n}
     BallL2 B →L[ℂ] ℂ :=
   ((ContinuousLinearMap.mul ℂ ℂ).lpPairing (volume.restrict B.carrier) 2 2).flip
     ((φ.continuous.memLp_of_hasCompactSupport (p := 2) φ.hasCompactSupport).toLp φ)
-private theorem pairTest_eq {n : ℕ} (B : LocalBall n) (φ : TestFunction B.toOpens ℂ ⊤)
+theorem pairTest_eq {n : ℕ} (B : LocalBall n) (φ : TestFunction B.toOpens ℂ ⊤)
     (u : BallL2 B) : pairTest B φ u = ∫ x in B.carrier, u x * φ x := by
   rw [pairTest, ContinuousLinearMap.flip_apply, ContinuousLinearMap.lpPairing_eq_integral]
   apply integral_congr_ae
@@ -690,7 +690,7 @@ private theorem closedGradient_isActualWeak (u : Q) :
   · exact ((ballDerivative a B hB α).continuous.tendsto _).comp (hfs.prodMk_nhds hgrad)
   · exact fun m => ballDerivative_test_weak a B hB (fs m) α
 
-private theorem graph_tests_tendsto (w : ClosedGradientSpace A) :
+theorem graph_tests_tendsto (w : ClosedGradientSpace A) :
     ∃ fs : ℕ → S_U F ζ hζ U R P H,
       Filter.Tendsto (fun n => KPContActualFormCutoffClosedProduct.graphTestLift
         F ζ hζ U R P H μG hμG hR realization (fs n)) Filter.atTop (𝓝 w) := by
@@ -978,7 +978,7 @@ private theorem ae_of_interior_balls
   rw [← hcover, ← hT]
   exact (ae_restrict_biUnion_iff _ hTc _).mpr (fun i _ => hp i.val i.property)
 
-private theorem decode_injective (x : Space (3*d F)) :
+theorem decode_injective (x : Space (3*d F)) :
     Function.Injective (fun v : KPContCotangentActualGenuineTwistIsotropy.E F => fun j => decode F x j v) := by
   intro v w h
   apply PiLp.ext

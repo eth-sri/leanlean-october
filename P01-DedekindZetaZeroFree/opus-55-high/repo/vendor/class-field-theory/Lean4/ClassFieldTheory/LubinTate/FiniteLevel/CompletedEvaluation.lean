@@ -15,13 +15,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Analytic evaluation in standard Lubin--Tate level fields
 
@@ -88,7 +81,7 @@ variable {K : Type u} [Field K]
 
 /-- The canonical coefficient map from the base valuation ring to the
 valuation ring of a standard Lubin--Tate level. -/
-noncomputable def standardLubinTateLevelCoefficientHom
+def standardLubinTateLevelCoefficientHom
     {F : LocalField.{u, v} K} {π : F.valuationSubring}
     (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ) :
     F.valuationSubring →+*
@@ -104,8 +97,8 @@ theorem standardLubinTateLevelCoefficientHom_apply
     (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
     (n : ℕ) (a : F.valuationSubring) :
     (standardLubinTateLevelCoefficientHom hπ n a).1 =
-        algebraMap K (standardLubinTateLevelField hπ n) (a : K) := by
-  exact integerMap_apply F.toCompleteDVF.toDVF
+        algebraMap K (standardLubinTateLevelField hπ n) (a : K) := 
+  integerMap_apply F.toCompleteDVF.toDVF
     (standardLubinTateLevelCompleteDVF hπ n).toDVF a
 
 /-- The primitive point is topologically nilpotent for the maximal-ideal
@@ -122,7 +115,7 @@ theorem standardLubinTatePrimitivePointInteger_hasEval
 
 /-- Analytic evaluation of power series at a topologically nilpotent
 integer of a standard Lubin--Tate level. -/
-noncomputable def standardLubinTateLevelPowerSeriesEval
+def standardLubinTateLevelPowerSeriesEval
     {F : LocalField.{u, v} K} {π : F.valuationSubring}
     (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ)
     (x : (standardLubinTateLevelCompleteDVF hπ n).valuationSubring)
@@ -143,20 +136,6 @@ theorem standardLubinTateLevelPowerSeriesEval_X
     standardLubinTateLevelPowerSeriesEval hπ n x hx PowerSeries.X = x := by
   rw [standardLubinTateLevelPowerSeriesEval,
     PowerSeries.coe_eval₂Hom, PowerSeries.eval₂_X]
-
-/-- Evaluation sends a constant power series through the canonical
-coefficient map. -/
-@[simp]
-theorem standardLubinTateLevelPowerSeriesEval_C
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ)
-    (x : (standardLubinTateLevelCompleteDVF hπ n).valuationSubring)
-    (hx : PowerSeries.HasEval x) (a : F.valuationSubring) :
-    standardLubinTateLevelPowerSeriesEval hπ n x hx
-        (PowerSeries.C a) =
-      standardLubinTateLevelCoefficientHom hπ n a := by
-  rw [standardLubinTateLevelPowerSeriesEval,
-    PowerSeries.coe_eval₂Hom, PowerSeries.eval₂_C]
 
 /-- On polynomial power series, analytic evaluation agrees with ordinary
 polynomial evaluation. -/
@@ -198,8 +177,8 @@ theorem standardLubinTateLevelPowerSeriesEval_hasEval
     (f : PowerSeries F.valuationSubring)
     (hf : PowerSeries.HasSubst f) :
     PowerSeries.HasEval
-      (standardLubinTateLevelPowerSeriesEval hπ n x hx f) := by
-  exact hf.hasEval.map
+      (standardLubinTateLevelPowerSeriesEval hπ n x hx f) := 
+  hf.hasEval.map
     (standardLubinTateLevelPowerSeriesEval_continuous hπ n x hx)
 
 /-- Analytic evaluation commutes with one-variable formal substitution. -/
@@ -234,7 +213,7 @@ theorem standardLubinTateLevelPowerSeriesEval_subst
         (PowerSeries.hasEval hx) f)
 
 /-- The canonical evaluation homomorphism at the primitive point. -/
-noncomputable def standardLubinTatePrimitivePointEvaluation
+def standardLubinTatePrimitivePointEvaluation
     {F : LocalField.{u, v} K} {π : F.valuationSubring}
     (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ) :
     F.valuationSubring⟦X⟧ →+*
@@ -245,7 +224,7 @@ noncomputable def standardLubinTatePrimitivePointEvaluation
 
 /-- The value of the standard scalar endomorphism `[a]` at an arbitrary
 topologically nilpotent integer of a finite level. -/
-noncomputable def standardLubinTateEndomorphismEvalAt
+def standardLubinTateEndomorphismEvalAt
     {F : LocalField.{u, v} K} {π : F.valuationSubring}
     (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ)
     (x : (standardLubinTateLevelCompleteDVF hπ n).valuationSubring)
@@ -261,13 +240,13 @@ theorem standardLubinTateEndomorphismEvalAt_hasEval
     (x : (standardLubinTateLevelCompleteDVF hπ n).valuationSubring)
     (hx : PowerSeries.HasEval x) (a : F.valuationSubring) :
     PowerSeries.HasEval
-      (standardLubinTateEndomorphismEvalAt hπ n x hx a) := by
-  exact standardLubinTateLevelPowerSeriesEval_hasEval hπ n x hx
+      (standardLubinTateEndomorphismEvalAt hπ n x hx a) := 
+  standardLubinTateLevelPowerSeriesEval_hasEval hπ n x hx
     (standardLubinTateEndomorphism hπ a)
     (standardLubinTateEndomorphism_hasLinearTerm hπ a).hasSubst
 
 /-- The value `[a](lambda_(n+1))` at the chosen primitive division point. -/
-noncomputable def standardLubinTateEndomorphismValue
+def standardLubinTateEndomorphismValue
     {F : LocalField.{u, v} K} {π : F.valuationSubring}
     (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
     (n : ℕ) (a : F.valuationSubring) :
@@ -364,7 +343,3 @@ theorem standardLubinTateEndomorphismValue_zero
   standardLubinTateEndomorphismEvalAt_zero hπ n
     (standardLubinTatePrimitivePointInteger hπ n)
     (standardLubinTatePrimitivePointInteger_hasEval hπ n)
-
-end LubinTate
-
-end

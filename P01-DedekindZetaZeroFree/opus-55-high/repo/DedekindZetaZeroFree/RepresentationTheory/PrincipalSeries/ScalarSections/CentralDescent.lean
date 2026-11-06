@@ -102,13 +102,11 @@ theorem localValue_central (v : Places F) (f : Plus A P C v) (e : rootsOfUnity 3
  | inl w =>
    change (KPSourceConvention.ordinaryGenuineCharacter F ζ hζ _ : ℂ) * f.val _ = _
    have he : (KPLocalCover.centralInjection F ζ hζ (Sum.inl w) e * g).epsilon = e * g.epsilon := by
-     change e * g.epsilon * KPLocalCover.sigmaTwo F ζ hζ (Sum.inl w) 1 g.g = _
-     rw [KPLocalChartTopology.complex_sigmaTwo_eq_one, mul_one]
+     simp
    have hm : complexMatrix A w (KPLocalCover.centralInjection F ζ hζ (Sum.inl w) e * g) =
      complexMatrix A w g := by
      unfold complexMatrix
-     congr 1
-     exact one_mul g.g
+     simp
    rw [he, hm, map_mul, Units.val_mul]
    exact mul_assoc _ _ _
  | inr q =>
@@ -224,8 +222,7 @@ theorem rawCoreValue_amalgamation_eq (x : Core) (g h : Raw A)
    change (g⁻¹ * h) * g = h
    rw [← Subgroup.mem_center_iff.mp hc g, ← mul_assoc, mul_inv_cancel, one_mul]
  have hi := rawCoreValue_amalgamation_invariant A P C x ⟨_,hm⟩ g
- rw [hh] at hi
- exact hi.symm
+ simp_all
 
 def amalgamatedCoreValue (x : Core) : GL → ℂ :=
  Quotient.lift (fun g : Raw A => rawCoreValue A P C g x)
@@ -256,8 +253,7 @@ theorem amalgamatedCoreValue_quotient_eq (x : Core) (g h : GL)
  have hh : KPAdelicCoverRestrictedProduct.scalarHom F ζ hζ z * g = h := by
    rw [← Subgroup.mem_center_iff.mp hc g, hz, ← mul_assoc, mul_inv_cancel, one_mul]
  have hi := amalgamatedCoreValue_scalar A P C x z g
- rw [hh] at hi
- exact hi.symm
+ simp_all
 
 def quotientCoreValue (x : Core) : G F ζ hζ → ℂ :=
  Quotient.lift (fun g : GL => amalgamatedCoreValue A P C x g)
@@ -280,7 +276,3 @@ def quotientCoreEvaluator : Core →ₗ[ℂ] (G F ζ hζ → ℂ) where
    | H g =>
      induction g using QuotientGroup.induction_on with
      | H g => exact map_smul (rawCoreValue A P C g) c x
-
-end DedekindZetaZeroFree.FourierContinuation.LiteralSource
-
-end

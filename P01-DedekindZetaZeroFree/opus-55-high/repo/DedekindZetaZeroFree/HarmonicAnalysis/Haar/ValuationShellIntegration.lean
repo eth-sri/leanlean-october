@@ -22,15 +22,13 @@ theorem shell_reassembly {X : Type*} [MeasurableSpace X]
       (∫ y in {y | e y = nmin + (k : ℤ)}, g y ∂ν) * r ^ (nmin + (k : ℤ)))
       (∫ y, g y * r ^ e y ∂ν) := by
   set s : ℕ → Set X := fun k => {y | e y = nmin + (k : ℤ)} with hs
-  have hmeas' : ∀ k : ℕ, MeasurableSet (s k) := fun k => hmeas k
+  have hmeas' : ∀ k : ℕ, MeasurableSet (s k) := by omega
 
   have hdisj : Pairwise fun k k' => Disjoint (s k) (s k') := by
     intro k k' hkk'
     rw [Set.disjoint_left]
     intro y hk hk'
-    simp only [s, Set.mem_setOf_eq] at hk hk'
-    have hcast : (k : ℤ) = (k' : ℤ) := by omega
-    exact hkk' (Nat.cast_injective hcast)
+    simp_all
 
   have hIntOn : IntegrableOn (fun y => g y * r ^ e y) (⋃ k, s k) ν :=
     integrableOn_iUnion_of_summable_integral_norm (s := s) (fun k => hint k)
@@ -43,10 +41,8 @@ theorem shell_reassembly {X : Type*} [MeasurableSpace X]
       by_contra h
       push Not at h
       refine hx (Set.mem_iUnion.2 ⟨(e x - nmin).toNat, ?_⟩)
-      simp only [s, Set.mem_setOf_eq]
-      have : ((e x - nmin).toNat : ℤ) = e x - nmin := Int.toNat_of_nonneg (by omega)
-      omega
-    rw [hlower x he, zero_mul]
+      simp_all
+    simp_all
   have hInt : Integrable (fun y => g y * r ^ e y) ν := by
     have hind : Integrable ((⋃ k, s k).indicator (fun y => g y * r ^ e y)) ν :=
       (integrable_indicator_iff hU).2 hIntOn
@@ -72,7 +68,5 @@ theorem shell_reassembly {X : Type*} [MeasurableSpace X]
       ∫ x, g x * r ^ e x ∂ν :=
     setIntegral_eq_integral_of_forall_compl_eq_zero fun x hx => by
       refine hzero x ?_
-      simpa only [hs] using hx
+      omega
   simpa only [hterm, hlim] using hHS
-
-end DedekindZetaZeroFree.KPRankOneMellinShellReassembly

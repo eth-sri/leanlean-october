@@ -14,13 +14,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-set_option autoImplicit false
 /-! Provides the public declarations in the `LocalClassFieldTheory.Finite.Unramified.ResidueNorm` Lean module. -/
 
 noncomputable section
@@ -36,7 +29,7 @@ open LocalFieldTheory.IsNonarchimedeanLocalField
 /-- The integral-closure quotient norm on first
 principal-unit quotients in an unramified valuation extension.  This is the
 the unramified norm calculation residue-unit quotient before the later `U^1` lifting. -/
-noncomputable def integerUnitsModPrincipalUnitsNormOfGaloisOfIsIntegralClosure
+def integerUnitsModPrincipalUnitsNormOfGaloisOfIsIntegralClosure
     (K L : Type u)
     [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
     [Field L] [ValuativeRel L] [TopologicalSpace L] [IsNonarchimedeanLocalField L]
@@ -70,8 +63,7 @@ theorem integerUnitsModPrincipalUnitsNormOfGaloisOfIsIntegralClosure_mk
     integerUnitsModPrincipalUnitsNormOfGaloisOfIsIntegralClosure K L
         (integerUnitsModPrincipalUnitsMk L u) =
       integerUnitsModPrincipalUnitsMk K (normIntegerUnits K L u) :=
-  integerUnitsModPrincipalUnitsLift_mk
-    ((integerUnitsModPrincipalUnitsMk K).comp (normIntegerUnits K L)) _ u
+  by rfl
 
 /-- After extending the residue of the integer-unit norm back to `𝓀[L]`, it
 is the product of the integral-closure residue actions. -/
@@ -92,11 +84,7 @@ theorem residueUnitsMap_normIntegerUnits_eq_galoisGroup_residue_prod_of_isIntegr
   rw [residueUnitsMap_integerUnitsToResidueUnits K L (normIntegerUnits K L u)]
   rw [integerUnitsMap_normIntegerUnits_eq_galoisGroup_prod_of_isIntegralClosure K L u]
   rw [map_prod]
-  apply Finset.prod_congr rfl
-  intro σ _
-  exact
-    (galoisGroupResidueFieldEquivOfIsIntegralClosure_integerUnitsToResidueUnits
-      K L σ u).symm
+  rfl
 
 /-- AlgEquiv-typed form of
 `residueUnitsMap_normIntegerUnits_eq_galoisGroup_residue_prod_of_isIntegralClosure`. -/
@@ -118,7 +106,6 @@ theorem residueUnitsMap_normIntegerUnits_eq_galoisGroup_residue_algEquiv_prod_of
     K L u]
   apply Finset.prod_congr rfl
   intro σ _
-  apply Units.ext
   rfl
 
 /-- Quotient-level form of the residue product formula for the
@@ -219,7 +206,3 @@ theorem integerUnitsModPrincipalUnitsNormOfGaloisOfIsIntegralClosure_surjective_
   rw [integerUnitsModPrincipalUnitsNormOfGaloisOfIsIntegralClosure_eq_residueNorm_of_unramifiedValuation
     K L]
   exact integerUnitsModPrincipalUnitsResidueNorm_surjective_of_valuationExtension K L
-
-end LocalClassFieldTheory
-
-end

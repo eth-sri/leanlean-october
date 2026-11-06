@@ -48,17 +48,14 @@ private theorem norm_mul' (A : SArithmeticData F) (x y : A.G) :
     norm_mul, mul_pow, Finset.prod_mul_distrib]
   ring
 
-private theorem norm_pos_diagonal (A : SArithmeticData F) (ν : Fˣ) :
+theorem norm_pos_diagonal (A : SArithmeticData F) (ν : Fˣ) :
     0 < A.norm (A.diagonal ν) := by
   simp only [SArithmeticData.norm]
   apply mul_pos
   · apply Finset.prod_pos
-    intro w _
-    apply pow_pos
-    exact norm_pos_iff.mpr (Units.ne_zero ((A.diagonal ν).1 w))
+    simp
   · apply Finset.prod_pos
-    intro v _
-    exact norm_pos_iff.mpr (Units.ne_zero ((A.diagonal ν).2 v))
+    simp
 
 theorem rationalGamma_le_class_ker (A : SArithmeticData F) :
     rationalGamma A ≤ (rationalClass A).ker := by
@@ -67,7 +64,7 @@ theorem rationalGamma_le_class_ker (A : SArithmeticData F) :
   show QuotientGroup.mk' A.sixthPowers (A.diagonal x) = 1
   rw [QuotientGroup.mk'_apply, QuotientGroup.eq_one_iff]
   obtain ⟨u, hu, rfl⟩ := Subgroup.mem_map.mp hx
-  exact ⟨A.diagonal u, by simp only [powMonoidHom_apply]; rw [map_pow]⟩
+  exact ⟨A.diagonal u, by simp⟩
 
 def frequencyClass (A : SArithmeticData F) : Frequency A →* A.V :=
   QuotientGroup.lift (rationalGamma A) (rationalClass A)
@@ -88,7 +85,7 @@ theorem rationalNorm_eq_of_rel (A : SArithmeticData F) (ν ν' : Fˣ)
       (Subgroup.mem_map_of_mem (powMonoidHom 6) hu)
   have h1 : A.norm (A.diagonal (ν⁻¹ * ν')) = 1 := SArithmeticData.Gamma_le_G1 A hmem
   have hd : A.diagonal ν' = A.diagonal ν * A.diagonal (ν⁻¹ * ν') := by
-    rw [← map_mul, mul_inv_cancel_left]
+    simp
   rw [rationalNorm, rationalNorm, hd, norm_mul', h1, mul_one]
 
 def frequencyNorm (A : SArithmeticData F) : Frequency A → ℝ :=
@@ -172,7 +169,3 @@ theorem forwardB_sixthTranslate (A : SArithmeticData F)
   apply tsum_congr
   intro i
   exact forwardSummand_sixthTranslate A D hD u m Z i.1 i.2
-
-end ThetaReflectionData
-end
-end DedekindZetaZeroFree

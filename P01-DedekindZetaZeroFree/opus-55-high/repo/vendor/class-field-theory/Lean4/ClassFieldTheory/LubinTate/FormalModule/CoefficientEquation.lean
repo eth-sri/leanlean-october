@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Coefficient equations for a fixed uniformizer
 
@@ -22,7 +19,6 @@ is a uniformizer. Consequently the corresponding scalar coefficient equation
 has a unique solution in the valuation ring.
 -/
 
-noncomputable section
 
 universe u v
 
@@ -68,7 +64,7 @@ theorem isUnit_one_sub_uniformizer_pow
   apply IsLocalRing.isUnit_one_sub_self_of_mem_nonunits
   intro hunit
   have hresidue_ne : F.residueMap (π ^ r) ≠ 0 :=
-    (F.toCompleteDVF.residue_ne_zero_iff_isUnit (π ^ r)).2 hunit
+    by simp_all
   exact hresidue_ne (residueMap_uniformizer_pow_eq_zero hπ hr)
 
 /-- Left multiplication by a unit has a unique preimage for every
@@ -92,8 +88,3 @@ theorem existsUnique_one_sub_uniformizer_pow_mul_eq
     ∃! x : F.valuationSubring, (1 - π ^ r) * x = b :=
   existsUnique_mul_eq_of_isUnit
     (isUnit_one_sub_uniformizer_pow hπ hr) b
-
-end SameUniformizer
-end LubinTate
-
-end

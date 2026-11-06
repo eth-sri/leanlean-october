@@ -27,14 +27,13 @@ variable {A : SArithmeticData F} {σ : F →+* ℂ}
 theorem intrinsic_chi_order (p : ExteriorPrime A) : orderOf (chi (σ := σ) p) = 6 := by
   have hchi (u : (A.R ⧸ A.extendIdeal (primeIdeal p))ˣ) :
       chi (σ := σ) p u = σ (A.sexticResidueFamily (primeIdeal p) u : F) := by
-    simp [chi, SArithmeticData.sexticResiduePowerChar, SArithmeticData.sexticExponent,
-      MulChar.ofUnitHom_coe]
+    simp [chi, SArithmeticData.sexticResiduePowerChar, SArithmeticData.sexticExponent]
   have h6 : chi (σ := σ) p ^ 6 = 1 := by
     apply MulChar.ext
     intro u
     rw [MulChar.pow_apply_coe, MulChar.one_apply_coe, hchi, ← map_pow]
     have h := congrArg Units.val (A.sexticResidueFamily_normalized.1 (primeIdeal p) u)
-    exact (congrArg σ h).trans (map_one σ)
+    simp_all
   have hd : 6 ∣ Nat.card (A.R ⧸ A.extendIdeal (primeIdeal p)) - 1 := by
     rw [A.exteriorResidue_card]
     have hm := A.exterior_norm_mod_twelve p.val (exterior_notMem p)
@@ -50,7 +49,7 @@ theorem intrinsic_chi_order (p : ExteriorPrime A) : orderOf (chi (σ := σ) p) =
     · rw [hgc]
       have hn := Finite.one_lt_card (α := A.R ⧸ A.extendIdeal (primeIdeal p))
       omega
-    · rwa [hgc]
+    omega
   have hdiv : 6 ∣ orderOf (chi (σ := σ) p) := by
     obtain ⟨j, hj, he, hr⟩ := A.sexticResidueFamily_normalized.2.1
       (primeIdeal p) p.val rfl g
@@ -58,7 +57,7 @@ theorem intrinsic_chi_order (p : ExteriorPrime A) : orderOf (chi (σ := σ) p) =
         orderOf (chi (σ := σ) p) = 1 := by
       apply σ.injective
       rw [map_pow, map_one, ← hchi, ← MulChar.pow_apply_coe]
-      rw [pow_orderOf_eq_one, MulChar.one_apply_coe]
+      simp
     rw [he] at hv
     have hz : (A.primitive_zeta12.toInteger ^ (2 * j)) ^
         orderOf (chi (σ := σ) p) = (1 : 𝓞 F) := by
@@ -77,6 +76,3 @@ theorem intrinsic_chi_order (p : ExteriorPrime A) : orderOf (chi (σ := σ) p) =
     rw [← hk]
     exact orderOf_dvd_of_pow_eq_one hp
   exact Nat.dvd_antisymm (orderOf_dvd_of_pow_eq_one h6) hdiv
-end DedekindZetaZeroFree.LocalFiniteSumCompatibility
-
-end

@@ -15,13 +15,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Supported principal ideles and the idele-class quotient
 
@@ -55,7 +48,7 @@ def supportedPrincipalIdeleSubgroup
 
 /-- The diagonal map identifies the `(S ∪ T)`-units with the principal
 ideles lying in `I_K^{S ∪ T}`. -/
-noncomputable def sUnitEquivSupportedPrincipalIdeleSubgroup
+def sUnitEquivSupportedPrincipalIdeleSubgroup
     (S T : Finset (HeightOneSpectrum (𝓞 K))) :
     SUnitGroup (K := K) (S ∪ T) ≃*
       supportedPrincipalIdeleSubgroup (K := K) S T := by
@@ -74,12 +67,9 @@ noncomputable def sUnitEquivSupportedPrincipalIdeleSubgroup
         refine ⟨⟨IdeleGroup.principalIdele K (x : Kˣ), hsupp⟩, ?_⟩
         exact ⟨(x : Kˣ), rfl⟩
       map_one' := by
-        apply Subtype.ext
-        apply Subtype.ext
-        simp
+        rfl
       map_mul' := by
         intro x y
-        apply Subtype.ext
         apply Subtype.ext
         simp }
   apply MulEquiv.ofBijective f
@@ -159,8 +149,8 @@ theorem sUnitPrincipalIdelePowerSubgroup_map
   · rintro ⟨y, hy, rfl⟩
     have hy' :
       IdeleGroup.principalIdele K (y : Kˣ) ∈
-        idelePowerLocalUnitSubgroup (K := K) n S T := by
-      exact hy
+        idelePowerLocalUnitSubgroup (K := K) n S T := 
+      hy
     show
       (((sUnitEquivSupportedPrincipalIdeleSubgroup
             (K := K) S T y :
@@ -194,15 +184,15 @@ theorem sUnitPrincipalIdelePowerSubgroup_map
               (K := K)
               (S ∪ T : Set (HeightOneSpectrum (𝓞 K)))) :
           IdeleGroup K) ∈
-            idelePowerLocalUnitSubgroup (K := K) n S T := by
-      exact hx'
+            idelePowerLocalUnitSubgroup (K := K) n S T := 
+      hx'
     rw [sUnitEquivSupportedPrincipalIdeleSubgroup_coe] at hxIdele
     exact hxIdele
 
 /-- The left term in the supported exact sequence, expressed as the
 actual quotient of `(S ∪ T)`-units satisfying the principal
 `h(S,T)`-condition. -/
-noncomputable def
+def
     sUnitPrincipalIdelePowerQuotientEquivSupportedPrincipalQuotient
     (n : ℕ+)
     (S T : Finset (HeightOneSpectrum (𝓞 K))) :
@@ -318,8 +308,8 @@ theorem supportedIdeleToClassPowerQuotient_ker
       simpa [div_eq_mul_inv, mul_comm] using
         (IdeleGroup.principalSubgroup K).inv_mem hpInv
     let pU : U := x / hU
-    have hpU : pU ∈ P := by
-      exact hpDiv
+    have hpU : pU ∈ P := 
+      hpDiv
     apply Subgroup.mem_sup.mpr
     refine ⟨hU, hh, pU, hpU, ?_⟩
     simp [pU]
@@ -331,29 +321,14 @@ theorem supportedIdeleToClassPowerQuotient_ker
         QuotientGroup.mk'
             (IdeleGroup.principalSubgroup K)
             (h : IdeleGroup K) ∈
-          ideleClassPowerLocalUnitSubgroup (K := K) n S T := by
-      exact ⟨(h : IdeleGroup K), hh, rfl⟩
+          ideleClassPowerLocalUnitSubgroup (K := K) n S T := 
+      ⟨(h : IdeleGroup K), hh, rfl⟩
     have hpOne :
         QuotientGroup.mk'
             (IdeleGroup.principalSubgroup K)
             (p : IdeleGroup K) = 1 :=
       (QuotientGroup.eq_one_iff _).mpr hp
-    have hmul :
-        QuotientGroup.mk'
-            (IdeleGroup.principalSubgroup K)
-            ((h * p : U) : IdeleGroup K) =
-          QuotientGroup.mk'
-              (IdeleGroup.principalSubgroup K)
-              (h : IdeleGroup K) *
-            QuotientGroup.mk'
-              (IdeleGroup.principalSubgroup K)
-              (p : IdeleGroup K) := by
-      simp
-    rw [hmul, hpOne]
-    exact
-      (ideleClassPowerLocalUnitSubgroup (K := K) n S T).mul_mem
-        hhClass
-        (ideleClassPowerLocalUnitSubgroup (K := K) n S T).one_mem
+    simp_all
 
 /-- If `S ∪ T` is sufficiently large, every class modulo `C_K(S,T)`
 has a supported representative. -/
@@ -380,7 +355,7 @@ theorem supportedIdeleToClassPowerQuotient_surjective
                 Set (HeightOneSpectrum (𝓞 K))) ⊔
             IdeleGroup.principalSubgroup K := by
     rw [hLarge]
-    exact Subgroup.mem_top a
+    simp
   rcases Subgroup.mem_sup.mp ha with
     ⟨u, hu, p, hp, hup⟩
   refine ⟨⟨u, hu⟩, ?_⟩
@@ -402,7 +377,7 @@ theorem supportedIdeleToClassPowerQuotient_surjective
   simp
 
 /-- Supported realization of the idele-class index quotient. -/
-noncomputable def
+def
     supportedIdeleClassPowerQuotientEquiv
     (n : ℕ+)
     (S T : Finset (HeightOneSpectrum (𝓞 K)))
@@ -539,8 +514,3 @@ theorem card_sUnitPrincipalQuotient_mul_card_ideleClassQuotient
   exact
     card_supportedPrincipalQuotient_mul_card_ideleClassQuotient
       (K := K) n S T hLarge
-
-
-end GlobalClassFieldTheory.ClassFieldAxiom
-
-end

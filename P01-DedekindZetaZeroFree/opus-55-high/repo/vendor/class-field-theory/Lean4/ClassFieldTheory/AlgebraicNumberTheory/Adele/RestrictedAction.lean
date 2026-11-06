@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Galois action on the restricted local product
 
@@ -28,7 +25,6 @@ open NumberField IsDedekindDomain
 
 noncomputable section
 
-
 universe u v w
 
 variable
@@ -40,7 +36,7 @@ variable
 /-- The natural action on relative ideles, upgraded to an action by
 group automorphisms for the restricted-product comparison. -/
 @[reducible]
-noncomputable def relativeIdeleRestrictedMulDistribMulAction :
+def relativeIdeleRestrictedMulDistribMulAction :
     MulDistribMulAction
       (L ≃ₐ[K] L) (RelativeIdeleGroup K L) where
   __ := RelativeIdeleGroup.relativeIdeleMulAction K L
@@ -58,7 +54,7 @@ variable
 
 /-- Conjugation on the second factor of an arbitrary scalar extension
 `A ⊗[K] L`. -/
-noncomputable def scalarTensorConjugation
+def scalarTensorConjugation
     (σ : L ≃ₐ[K] L) :
     A ⊗[K] L ≃ₐ[A] A ⊗[K] L := by
   let f : A ⊗[K] L →ₐ[A] A ⊗[K] L :=
@@ -110,7 +106,7 @@ theorem scalarTensorConjugation_mul
 
 /-- The action by tensor conjugation on local tensor units. -/
 @[reducible]
-noncomputable def scalarTensorUnitsAction :
+def scalarTensorUnitsAction :
     MulDistribMulAction
       (L ≃ₐ[K] L) (A ⊗[K] L)ˣ where
   smul σ z :=
@@ -231,149 +227,3 @@ theorem RelativeIdeleGroup.finiteComponent_smul
   exact relativeAdeleFiniteComponent_conjugation
     (K := K) (L := L) w σ
       (z : RelativeAdeleRing K L)
-
-/-- The Galois action on the restricted local product transported
-through the exact relative-idele equivalence. -/
-@[reducible]
-noncomputable def relativeLocalIdeleDataMulDistribMulAction :
-    MulDistribMulAction
-      (L ≃ₐ[K] L)
-      (RelativeLocalIdeleData
-        (K := K) (L := L)) := by
-  letI : MulDistribMulAction
-      (L ≃ₐ[K] L) (RelativeIdeleGroup K L) :=
-    relativeIdeleRestrictedMulDistribMulAction
-      (K := K) (L := L)
-  let e :=
-    relativeIdeleMulEquivLocalData
-      (K := K) (L := L)
-  exact
-    { smul := fun σ a => e (σ • e.symm a)
-      one_smul := by
-        intro a
-        change e (1 • e.symm a) = a
-        rw [one_smul, e.apply_symm_apply]
-      mul_smul := by
-        intro σ τ a
-        change
-          e ((σ * τ) • e.symm a) =
-            e (σ • e.symm (e (τ • e.symm a)))
-        rw [e.symm_apply_apply, mul_smul]
-      smul_one := by
-        intro σ
-        change e (σ • e.symm 1) = 1
-        rw [e.symm.map_one, smul_one, e.map_one]
-      smul_mul := by
-        intro σ a b
-        change
-          e (σ • e.symm (a * b)) =
-            e (σ • e.symm a) *
-              e (σ • e.symm b)
-        rw [e.symm.map_mul,
-          MulDistribMulAction.smul_mul, e.map_mul] }
-
-omit [NumberField L] in
-/-- Equivariance of the exact restricted-product equivalence. -/
-theorem relativeIdeleMulEquivLocalData_smul
-    (σ : L ≃ₐ[K] L)
-    (z : RelativeIdeleGroup K L) :
-    letI :=
-      relativeIdeleRestrictedMulDistribMulAction
-        (K := K) (L := L)
-    letI :=
-      relativeLocalIdeleDataMulDistribMulAction
-        (K := K) (L := L)
-    relativeIdeleMulEquivLocalData
-        (K := K) (L := L) (σ • z) =
-      σ • relativeIdeleMulEquivLocalData
-        (K := K) (L := L) z := by
-  let _ :=
-    relativeIdeleRestrictedMulDistribMulAction
-      (K := K) (L := L)
-  let _ :=
-    relativeLocalIdeleDataMulDistribMulAction
-      (K := K) (L := L)
-  change
-    relativeIdeleMulEquivLocalData
-        (K := K) (L := L) (σ • z) =
-      relativeIdeleMulEquivLocalData
-        (K := K) (L := L)
-        (σ •
-          (relativeIdeleMulEquivLocalData
-            (K := K) (L := L)).symm
-            (relativeIdeleMulEquivLocalData
-              (K := K) (L := L) z))
-  rw [(relativeIdeleMulEquivLocalData
-    (K := K) (L := L)).symm_apply_apply]
-
-omit [NumberField L] in
-/-- The transported action is coordinatewise tensor conjugation at
-infinite places. -/
-theorem RelativeLocalIdeleData.infinite_smul
-    (σ : L ≃ₐ[K] L)
-    (a : RelativeLocalIdeleData (K := K) (L := L))
-    (w : InfinitePlace K) :
-    letI :=
-      relativeIdeleRestrictedMulDistribMulAction
-        (K := K) (L := L)
-    letI :=
-      relativeLocalIdeleDataMulDistribMulAction
-        (K := K) (L := L)
-    letI := scalarTensorUnitsAction
-      (K := K) (L := L) (A := w.Completion)
-    (σ • a).infinite w =
-      σ • a.infinite w := by
-  let _ :=
-    relativeIdeleRestrictedMulDistribMulAction
-      (K := K) (L := L)
-  let _ :=
-    relativeLocalIdeleDataMulDistribMulAction
-      (K := K) (L := L)
-  let _ := scalarTensorUnitsAction
-    (K := K) (L := L) (A := w.Completion)
-  change
-    RelativeIdeleGroup.infiniteComponent
-        (K := K) (L := L) w
-        (σ • relativeIdeleOfLocalData
-          (K := K) (L := L) a) =
-      σ • a.infinite w
-  rw [RelativeIdeleGroup.infiniteComponent_smul,
-    relativeIdeleOfLocalData_infiniteComponent]
-
-omit [NumberField L] in
-/-- The transported action is coordinatewise tensor conjugation at
-finite places. -/
-theorem RelativeLocalIdeleData.finite_smul
-    (σ : L ≃ₐ[K] L)
-    (a : RelativeLocalIdeleData (K := K) (L := L))
-    (w : HeightOneSpectrum (𝓞 K)) :
-    letI :=
-      relativeIdeleRestrictedMulDistribMulAction
-        (K := K) (L := L)
-    letI :=
-      relativeLocalIdeleDataMulDistribMulAction
-        (K := K) (L := L)
-    letI := scalarTensorUnitsAction
-      (K := K) (L := L)
-      (A := w.adicCompletion K)
-    (σ • a).finite w =
-      σ • a.finite w := by
-  let _ :=
-    relativeIdeleRestrictedMulDistribMulAction
-      (K := K) (L := L)
-  let _ :=
-    relativeLocalIdeleDataMulDistribMulAction
-      (K := K) (L := L)
-  let _ := scalarTensorUnitsAction
-    (K := K) (L := L)
-    (A := w.adicCompletion K)
-  change
-    RelativeIdeleGroup.finiteComponent
-        (K := K) (L := L) w
-        (σ • relativeIdeleOfLocalData
-          (K := K) (L := L) a) =
-      σ • a.finite w
-  rw [RelativeIdeleGroup.finiteComponent_smul,
-    relativeIdeleOfLocalData_finiteComponent]
-
-end

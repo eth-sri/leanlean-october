@@ -28,9 +28,7 @@ abbrev ProjectiveGroup (d : ℕ) := Fin d → PGL(2, ℂ)
 instance productProjectiveAction (d : ℕ) : MulAction (ProjectiveGroup d) (KPArch.Space d) where
   smul g z := fun i => g i • z i
   one_smul z := by
-    funext i
-    change (1 : PGL(2, ℂ)) • z i = z i
-    exact one_smul _ _
+    simp
   mul_smul g h z := by
     funext i
     change (g i * h i) • z i = g i • (h i • z i)
@@ -57,8 +55,7 @@ instance productContinuousConstSMul (d : ℕ) :
     classical
     choose h hh using fun i => Matrix.ProjGenLinGroup.mk_surjective (g i)
     have hg : g = fun i => Matrix.ProjGenLinGroup.mk (h i) := by
-      funext i
-      exact (hh i).symm
+      simp_all
     rw [hg]
     exact (KPArch.productAction_contDiff d h).continuous
 
@@ -78,13 +75,12 @@ theorem hyperbolicGLSection_action (z : KPArch.H3) :
     KPArch.action (hyperbolicGLSection z) (0, 0) = z := by
   ext
   · simp [KPArch.action, KPArch.actionDenominator, KPArch.height, hyperbolicGLSection]
-  · simp [KPArch.action, KPArch.actionDenominator, KPArch.height, hyperbolicGLSection,
-      Matrix.det_fin_two, abs_of_pos (Real.exp_pos _)]
+  · simp [KPArch.action, KPArch.actionDenominator, KPArch.height, hyperbolicGLSection, Matrix.det_fin_two]
 
 theorem hyperbolicGLAction_continuous :
     Continuous (fun p : GL (Fin 2) ℂ × KPArch.H3 => KPArch.action p.1 p.2) := by
   have hc (i j : Fin 2) : Continuous (fun p : GL (Fin 2) ℂ × KPArch.H3 => p.1 i j) :=
-    (Units.continuous_val.comp continuous_fst).matrix_elem i j
+    by fun_prop
   have hh : Continuous (fun p : GL (Fin 2) ℂ × KPArch.H3 => KPArch.height p.2) := by
     unfold KPArch.height
     fun_prop
@@ -106,7 +102,7 @@ theorem hyperbolicGLAction_continuous :
       intro p
       exact ne_of_gt (div_pos (mul_pos (norm_pos_iff.mpr p.1.det_ne_zero)
         (Real.exp_pos _)) (KPArch.actionDenominator_pos p.1 p.2))
-    exact ((((Units.continuous_val.comp continuous_fst).matrix_det).norm.mul hh).div hd hn).log hp
+    fun_prop
 
 instance hyperbolicContinuousSMul : @ContinuousSMul PGL(2, ℂ) KPArch.H3
     hyperbolicProjectiveAction.toSMul projectiveTopology inferInstance where
@@ -129,10 +125,7 @@ instance hyperbolicPretransitive : MulAction.IsPretransitive PGL(2, ℂ) KPArch.
 
 instance productContinuousSMul (d : ℕ) : ContinuousSMul (ProjectiveGroup d) (KPArch.Space d) where
   continuous_smul := by
-    apply continuous_pi
-    intro i
-    exact continuous_smul.comp ((continuous_apply i |>.comp continuous_fst).prodMk
-      (continuous_apply i |>.comp continuous_snd))
+    fun_prop
 
 private theorem row_det_identity (a b c d : ℂ) :
     ‖a * d - b * c‖ ^ 2 = (‖a‖ ^ 2 + ‖b‖ ^ 2) * (‖c‖ ^ 2 + ‖d‖ ^ 2) -
@@ -154,8 +147,7 @@ private theorem row_det_identity (a b c d : ℂ) :
     have hx := KPArch.action_height g (0, 0)
     change KPArch.height (KPArch.action g (0, 0)) = Real.exp 0 at hh
     rw [hx, Real.exp_zero] at hh
-    simp only [KPArch.height, Real.exp_zero, mul_one, mul_zero, zero_add, norm_zero,
-      zero_pow (by decide : 2 ≠ 0), zero_mul, add_zero] at hh
+    simp only [KPArch.height, Real.exp_zero, mul_one, mul_zero, zero_add] at hh
     have he := (div_eq_one_iff_eq (by nlinarith : ‖g 1 1‖ ^ 2 + ‖g 1 0‖ ^ 2 * 1 ^ 2 ≠ 0)).mp hh
     nlinarith
   have hn := congrArg Prod.fst h
@@ -174,7 +166,7 @@ private theorem row_det_identity (a b c d : ℂ) :
 def normalizedMatrixSet : Set (Matrix (Fin 2) (Fin 2) ℂ) :=
   {A | ‖A.det‖ = 1 ∧ ∀ i j, ‖A i j‖ ≤ 1}
 
-private theorem normalizedMatrixSet_compact : IsCompact normalizedMatrixSet := by
+theorem normalizedMatrixSet_compact : IsCompact normalizedMatrixSet := by
   have hc : IsClosed normalizedMatrixSet := by
     unfold normalizedMatrixSet
     apply IsClosed.inter
@@ -196,9 +188,9 @@ private theorem normalizedMatrixSet_compact : IsCompact normalizedMatrixSet := b
 def normalizedMatrixGL (A : normalizedMatrixSet) : GL (Fin 2) ℂ :=
   Matrix.GeneralLinearGroup.mkOfDetNeZero A (by
     have h := A.property.1
-    exact norm_ne_zero_iff.mp (by rw [h]; exact one_ne_zero))
+    exact norm_ne_zero_iff.mp (by positivity))
 
-private theorem normalizedMatrixGL_continuous : Continuous normalizedMatrixGL := by
+theorem normalizedMatrixGL_continuous : Continuous normalizedMatrixGL := by
   apply Units.isOpenEmbedding_val.isEmbedding.isInducing.continuous_iff.mpr
   exact continuous_subtype_val
 
@@ -260,7 +252,7 @@ theorem product_origin_stabilizer_compact (d : ℕ) :
       {g | ∀ i : Fin d, g i ∈
         (MulAction.stabilizer PGL(2, ℂ) ((0, 0) : KPArch.H3) : Set PGL(2, ℂ))} := by
     ext g
-    simp only [MulAction.mem_stabilizer_iff, Set.mem_setOf_eq]
+    simp only [Set.mem_setOf_eq]
     exact funext_iff
   rw [he]
   exact isCompact_pi_infinite fun _ : Fin d => hyperbolic_origin_stabilizer_compact
@@ -329,8 +321,8 @@ theorem hyperbolicProjectiveSection_continuous : Continuous hyperbolicProjective
 def productProjectiveSection (d : ℕ) (z : KPArch.Space d) : ProjectiveGroup d :=
   fun i => hyperbolicProjectiveSection (z i)
 
-theorem productProjectiveSection_continuous (d : ℕ) : Continuous (productProjectiveSection d) := by
-  exact continuous_pi fun i => hyperbolicProjectiveSection_continuous.comp (continuous_apply i)
+theorem productProjectiveSection_continuous (d : ℕ) : Continuous (productProjectiveSection d) := 
+  continuous_pi fun i => hyperbolicProjectiveSection_continuous.comp (continuous_apply i)
 
 theorem productProjectiveSection_action (d : ℕ) (z : KPArch.Space d) :
     productProjectiveSection d z • (fun _ => (0, 0)) = z := by
@@ -362,8 +354,8 @@ theorem compact_transporter_of_section {G X : Type*} [Group G] [TopologicalSpace
         (by simpa only [Set.mem_inv, inv_inv] using mem_image_of_mem s hx)
     · rintro ⟨a, ⟨b, ⟨y, hy, rfl⟩, h, hh, rfl⟩, c, hc, rfl⟩
       obtain ⟨x, hx, hxc⟩ := hc
-      have he : c = (s x)⁻¹ := by
-        exact inv_eq_iff_eq_inv.mp hxc.symm
+      have he : c = (s x)⁻¹ := 
+        inv_eq_iff_eq_inv.mp hxc.symm
       subst c
       refine ⟨y, ⟨x, hx, ?_⟩, hy⟩
       have hh' : h • o = o := hh
@@ -386,14 +378,7 @@ theorem properlyDiscontinuous_of_section {G X : Type*} [Group G] [TopologicalSpa
   let T : Set G := {g : G | ((fun x => g • x) '' K ∩ L).Nonempty}
   have hT : IsCompact T := compact_transporter_of_section o s hs ho hH hK hL
   have hΓ : IsClosed (Γ : Set G) := Subgroup.isClosed_of_discreteTopology
-  have hf : (Subtype.val ⁻¹' T : Set Γ).Finite := by
-    exact (Topology.IsClosedEmbedding.isCompact_preimage
+  have hf : (Subtype.val ⁻¹' T : Set Γ).Finite := 
+    (Topology.IsClosedEmbedding.isCompact_preimage
       (show Topology.IsClosedEmbedding (Subtype.val : Γ → G) from hΓ.isClosedEmbedding_subtypeVal) hT).finite (isDiscrete_iff_discreteTopology.mpr inferInstance)
   exact hf
-
-end HyperbolicProperAction
-
-end
-end DedekindZetaZeroFree.KPArithmeticAction
-
-end

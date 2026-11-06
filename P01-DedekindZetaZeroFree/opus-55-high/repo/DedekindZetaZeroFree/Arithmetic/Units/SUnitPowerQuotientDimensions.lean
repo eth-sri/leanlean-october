@@ -6,7 +6,6 @@ public import DedekindZetaZeroFree.Arithmetic.Units.SUnitPowerQuotientCoordinate
 
 namespace DedekindZetaZeroFree.SArithmeticData
 
-noncomputable section
 
 variable {F : Type} [Field F] [NumberField F] (A : SArithmeticData F)
 
@@ -16,7 +15,7 @@ theorem finrank_torsionPowerQuotient (ℓ : ℕ) (hℓ : ℓ = 2 ∨ ℓ = 3)
     [Fact (Nat.Prime ℓ)] :
     Module.finrank (ZMod ℓ)
       (Additive (PowerQuotient (NumberField.Units.torsion F) ℓ)) = 1 := by
-  have hpos : 0 < ℓ := by rcases hℓ with h | h <;> simp [h]
+  have hpos : 0 < ℓ := by omega
   have hdvd : ℓ ∣ 12 := by rcases hℓ with h | h <;> simp [h]
   let n : ℕ+ := ⟨ℓ, hpos⟩
   have em : PowerQuotient (NumberField.Units.torsion F) ℓ ≃*
@@ -40,13 +39,10 @@ theorem sunit_structure_and_power_quotients :
       (Additive (PowerQuotient (NumberField.Units.torsion F) 3)) = 1 ∧
       Module.finrank (ZMod 3) (Additive (PowerQuotient A.Rˣ 3)) =
         NumberField.InfinitePlace.nrComplexPlaces F + A.Sf.card) ∧
-    Finite (PowerQuotient A.Rˣ 6) := by
-  exact ⟨⟨A.unitStructure⟩, (torsion_finite (F := F)),
+    Finite (PowerQuotient A.Rˣ 6) := 
+  ⟨⟨A.unitStructure⟩, (torsion_finite (F := F)),
     ⟨A.finrank_torsionPowerQuotient 2 (Or.inl rfl),
       finrank_sunitPowerQuotient F A 2 (Or.inl rfl)⟩,
     ⟨A.finrank_torsionPowerQuotient 3 (Or.inr rfl),
       finrank_sunitPowerQuotient F A 3 (Or.inr rfl)⟩,
     sunitSixthPowerQuotient_finite F A⟩
-
-end
-end DedekindZetaZeroFree.SArithmeticData

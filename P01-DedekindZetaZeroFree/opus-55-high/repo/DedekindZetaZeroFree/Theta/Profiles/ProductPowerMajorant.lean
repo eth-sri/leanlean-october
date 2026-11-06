@@ -20,6 +20,3 @@ theorem productPowerMajorant_nonneg (A : SArithmeticData F) (M B : ℝ) (y : A.G
   apply mul_nonneg
   · exact Finset.prod_nonneg fun v _ => finitePowerMajorant_nonneg M _ (norm_nonneg _)
   · exact Finset.prod_nonneg fun w _ => archPowerMajorant_nonneg B _ (sq_nonneg _)
-
-end
-end DedekindZetaZeroFree.ThetaRawSheetEnvelope.WeightedWhittakerSheets

@@ -31,10 +31,9 @@ private lemma differentiableAt_Gammaℂ {s : ℂ} (hs : 0 < s.re) :
 private lemma Gammaℂ_ne_zero_of_re_pos {s : ℂ} (hs : 0 < s.re) : Complex.Gammaℂ s ≠ 0 := by
   rw [Complex.Gammaℂ_def]
   refine mul_ne_zero (mul_ne_zero two_ne_zero ?_) (Complex.Gamma_ne_zero_of_re_pos hs)
-  exact Complex.cpow_ne_zero_iff.mpr
-    (Or.inl (mul_ne_zero two_ne_zero (Complex.ofReal_ne_zero.mpr Real.pi_ne_zero)))
+  simp
 
-private lemma heckeCompletionFactor_base_ne_zero (F : Type*) [Field F] [NumberField F]
+lemma heckeCompletionFactor_base_ne_zero (F : Type*) [Field F] [NumberField F]
     (𝔪 : Ideal (𝓞 F)) (h𝔪 : 𝔪 ≠ ⊥) :
     (((|NumberField.discr F| : ℤ) : ℂ) * (Ideal.absNorm 𝔪 : ℂ)) ≠ 0 := by
   apply mul_ne_zero
@@ -65,8 +64,8 @@ theorem differentiableOn_heckeCompletionFactor (F : Type*) [Field F] [NumberFiel
 theorem differentiableOn_inv_heckeCompletionFactor (F : Type*) [Field F] [NumberField F]
     (𝔪 : Ideal (𝓞 F)) (h𝔪 : 𝔪 ≠ ⊥) :
     DifferentiableOn ℂ (fun s => (heckeCompletionFactor F 𝔪 s)⁻¹)
-      {s : ℂ | 0 < s.re} := by
-  exact (differentiableOn_heckeCompletionFactor F 𝔪 h𝔪).inv
+      {s : ℂ | 0 < s.re} := 
+  (differentiableOn_heckeCompletionFactor F 𝔪 h𝔪).inv
     (fun s hs => heckeCompletionFactor_ne_zero F 𝔪 h𝔪 s hs)
 
 theorem hasSum_div_heckeCompletionFactor (F : Type*) [Field F] [NumberField F]
@@ -77,7 +76,3 @@ theorem hasSum_div_heckeCompletionFactor (F : Type*) [Field F] [NumberField F]
   have hA := heckeCompletionFactor_ne_zero F 𝔪 h𝔪 s hs
   have h' := h.mul_left (heckeCompletionFactor F 𝔪 s)⁻¹
   simpa [div_eq_mul_inv, ← mul_assoc, hA, mul_comm] using h'
-
-end
-
-end DedekindZetaZeroFree

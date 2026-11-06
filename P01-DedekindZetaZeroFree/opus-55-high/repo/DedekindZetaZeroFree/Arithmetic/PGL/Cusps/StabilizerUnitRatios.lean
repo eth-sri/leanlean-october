@@ -30,7 +30,7 @@ namespace DedekindZetaZeroFree.KPCuspParabolicLattices.RatioUnits
       Matrix.one_mulVec] at h
     exact h.symm
 
-private theorem genuine_representative {F : Type*} [Field F] [NumberField F]
+theorem genuine_representative {F : Type*} [Field F] [NumberField F]
     (M : Submodule (IntegralOrder F) (Plane F)) (g : ProjectiveGroup F)
     (hg : g ∈ LatticeAutomorphisms F M) :
     ∃ C : Matrix.GeneralLinearGroup (Fin 2) F,
@@ -41,7 +41,7 @@ private theorem genuine_representative {F : Type*} [Field F] [NumberField F]
         (A : Matrix (Fin 2) (Fin 2) F) *ᵥ v ∈ M} =
       ((preservingMatrices M).map Matrix.ProjGenLinGroup.mk : Set (ProjectiveGroup F)) := by
     ext g
-    simp only [Set.mem_setOf_eq, Subgroup.mem_map]
+    simp only [Set.mem_setOf_eq]
     constructor
     · rintro ⟨A, rfl, hA⟩; exact ⟨A, hA, rfl⟩
     · rintro ⟨A, hA, rfl⟩; exact ⟨A, rfl, hA⟩
@@ -70,12 +70,10 @@ theorem conjugated_ratio_has_lattice_representative
   let N := M.map (f.restrictScalars (IntegralOrder F))
   have hinv (v : Plane F) :
       (↑B : Matrix (Fin 2) (Fin 2) F) *ᵥ ((↑B⁻¹ : Matrix (Fin 2) (Fin 2) F) *ᵥ v) = v := by
-    rw [Matrix.mulVec_mulVec, ← Units.val_mul, mul_inv_cancel, Units.val_one,
-      Matrix.one_mulVec]
+    simp
   have hinv' (v : Plane F) :
       (↑B⁻¹ : Matrix (Fin 2) (Fin 2) F) *ᵥ ((↑B : Matrix (Fin 2) (Fin 2) F) *ᵥ v) = v := by
-    rw [Matrix.mulVec_mulVec, ← Units.val_mul, inv_mul_cancel, Units.val_one,
-      Matrix.one_mulVec]
+    simp
   have hN (v : Plane F) : v ∈ N ↔ (↑B : Matrix (Fin 2) (Fin 2) F) *ᵥ v ∈ M := by
     constructor
     · rintro ⟨w, hw, rfl⟩
@@ -101,8 +99,7 @@ theorem conjugated_ratio_has_lattice_representative
   obtain ⟨z, hz⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp hp
   have entries (i j : Fin 2) : A i j = D i j * (z : F) := by
     rw [← hz]
-    simp [Units.val_mul, Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_apply,
-      Fin.sum_univ_two, Matrix.scalar, Matrix.diagonal_apply]
+    simp
   refine ⟨N, D, hNfull, ?_, ?_, ?_⟩
   · apply (mul_eq_zero.mp (by simpa only [entries] using h10)).resolve_right (Units.ne_zero z)
   · intro v
@@ -131,15 +128,13 @@ namespace DedekindZetaZeroFree.KPCuspParabolicLattices.RatioUnits
 
  theorem diagonal_ne_zero {F : Type*} [Field F]
     (A : Matrix.GeneralLinearGroup (Fin 2) F) (h : A 1 0 = 0) :
-    A 0 0 ≠ 0 ∧ A 1 1 ≠ 0 := by
-  constructor <;> intro hz <;> exact A.det_ne_zero (by simp [Matrix.det_fin_two, h, hz])
+    A 0 0 ≠ 0 ∧ A 1 1 ≠ 0 := by apply DedekindZetaZeroFree.KPCuspParabolicLattices.diagonal_ne_zero <;> assumption
 private theorem ratio_eq {F : Type*} [Field F]
     (A B : Matrix.GeneralLinearGroup (Fin 2) F)
     (h : Matrix.ProjGenLinGroup.mk A = Matrix.ProjGenLinGroup.mk B) :
     A 0 0 / A 1 1 = B 0 0 / B 1 1 := by
   obtain ⟨u, rfl⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp h
-  simp only [Units.val_mul, Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_apply,
-    Fin.sum_univ_two, Matrix.scalar, Matrix.diagonal_apply]
+  simp only [Units.val_mul, Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_apply, Fin.sum_univ_two, Matrix.scalar]
   simp
   rw [mul_div_mul_right _ _ (Units.ne_zero u)]
  def representative {F : Type*} [Field F]
@@ -190,8 +185,8 @@ private theorem ratioValue_formula {F : Type*} [Field F]
  def upperRatio {F : Type*} [Field F]
     (S : Subgroup (ProjectiveGroup F))
     (hS : ∀ g ∈ S, Upper g) : S →* Fˣ where
-  toFun g := Units.mk0 (ratioValue S hS g) (by
-    exact div_ne_zero (diagonal_ne_zero _ (representative_upper S hS g)).1
+  toFun g := Units.mk0 (ratioValue S hS g) (
+    div_ne_zero (diagonal_ne_zero _ (representative_upper S hS g)).1
       (diagonal_ne_zero _ (representative_upper S hS g)).2)
   map_one' := by apply Units.ext; exact ratioValue_one S hS
   map_mul' g h := by apply Units.ext; exact ratioValue_mul S hS g h
@@ -232,8 +227,7 @@ private theorem mem_range_iff {F : Type*} [Field F]
     apply Units.ext
     have hzero : A 1 1 ≠ 0 := (diagonal_ne_zero A hupper).2
     have hf := upperRatio_formula S hS ⟨Matrix.ProjGenLinGroup.mk A, hA⟩ A rfl hupper
-    apply mul_right_cancel₀ hzero
-    rw [← hf, hratio]
+    simp_all
 
 theorem ratio_image_finite_relIndex
     {F : Type*} [Field F]
@@ -283,7 +277,7 @@ open scoped Classical Matrix MatrixGroups LinearAlgebra.Projectivization
 
 namespace DedekindZetaZeroFree.KPCuspParabolicLattices.RatioUnits
 
-private theorem plane_splitting
+theorem plane_splitting
     {F : Type*} [Field F] [NumberField F]
     (M : Submodule (IntegralOrder F) (Plane F)) (hM : FullLattice F M)
     (v : Plane F) (hv : v ≠ 0) :
@@ -295,13 +289,11 @@ private theorem plane_splitting
   have hfg : N.FG := (Module.Finite.iff_fg.mp hM.1).map _
   have hspan : Submodule.span F (N : Set (F × F)) = ⊤ := by
     have hc : (N : Set (F × F)) = e '' (M : Set (Plane F)) := by
-      ext x
-      simp only [N, Submodule.mem_map, Set.mem_image]
       rfl
     rw [hc]
     change Submodule.span F (e.toLinearMap '' (M : Set (Plane F))) = ⊤
     rw [← Submodule.map_span, hM.2, Submodule.map_top]
-    exact LinearMap.range_eq_top.mpr e.surjective
+    simp
   let L : DedekindZetaZeroFree.FullLattice (IntegralOrder F) F := ⟨N, ⟨hfg, hspan⟩⟩
   obtain ⟨I, J, w, _, _, _, hd, hm, _⟩ :=
     kp_cusp_line_adapted_ideal_splitting (IntegralOrder F) F L (e v)
@@ -311,7 +303,7 @@ private theorem plane_splitting
   · intro x
     have hmem : e x ∈ N ↔ x ∈ M := by
       simp only [N, Submodule.mem_map]
-      exact ⟨fun ⟨y, hy, he⟩ => e.injective he ▸ hy, fun hx => ⟨x, hx, rfl⟩⟩
+      simp
     rw [← hmem, hm]
     constructor
     · rintro ⟨s, hs, t, ht, hx⟩
@@ -334,7 +326,7 @@ theorem integral_unit_is_full_cusp_ratio
   obtain ⟨B, hB⟩ := Matrix.ProjGenLinGroup.mk_surjective σ
   let e₀ : Plane F := ![1, 0]
   let e₁ : Plane F := ![0, 1]
-  have he₀ : e₀ ≠ 0 := by simp [e₀, Matrix.cons_val_zero]
+  have he₀ : e₀ ≠ 0 := by simp [e₀]
   let v : Plane F := B • e₀
   obtain ⟨I, J, w, hd, hm⟩ := plane_splitting M hM v
     ((smul_ne_zero_iff_ne B).mpr he₀)
@@ -386,13 +378,12 @@ theorem integral_unit_is_full_cusp_ratio
       have hz : ((↑u⁻¹ : F) * s) • v + t • w ∈ M :=
         (hm _).mpr ⟨_, hii s hs, t, ht, rfl⟩
       have he' : A • (((↑u⁻¹ : F) * s) • v + t • w) = A • x := by
-        rw [haf, he]
-        simp [← mul_assoc]
+        simp_all
       exact (MulAction.injective A he') ▸ hz
   have haq : Matrix.ProjGenLinGroup.mk A • q = q := by
     have hq : q = Projectivization.mk F v ((smul_ne_zero_iff_ne B).mpr he₀) := by
       rw [← hσ, ← hB]
-      exact Projectivization.PGL.mk_smul_mk B he₀
+      rfl
     rw [hq, Projectivization.PGL.mk_smul_mk]
     apply (Projectivization.mk_eq_mk_iff F _ _ _ _).mpr
     exact ⟨u, hav.symm⟩
@@ -410,14 +401,7 @@ theorem integral_unit_is_full_cusp_ratio
   have hdet : (↑C : Matrix (Fin 2) (Fin 2) F).det = (u : F) := by
     have hh : Matrix.GeneralLinearGroup.det C = Matrix.GeneralLinearGroup.det D := by
       simp only [C, A, map_mul, map_inv]
-      exact by
-        let b := Matrix.GeneralLinearGroup.det B
-        let t := Matrix.GeneralLinearGroup.det T
-        let d := Matrix.GeneralLinearGroup.det D
-        change b⁻¹ * (t * d * t⁻¹) * b = d
-        calc
-          _ = d * (b⁻¹ * b) * (t * t⁻¹) := by ac_rfl
-          _ = d := by rw [inv_mul_cancel, mul_inv_cancel, mul_one, mul_one]
+      simp
     have hh' := congrArg Units.val hh
     simpa [Matrix.GeneralLinearGroup.det, D, Matrix.det_fin_two] using hh'
   have hc11 : C 1 1 = 1 := by
@@ -429,7 +413,7 @@ theorem integral_unit_is_full_cusp_ratio
     refine ⟨Matrix.ProjGenLinGroup.mk A, ⟨?_, haq⟩, ?_⟩
     · apply Subgroup.subset_closure
       exact ⟨A, rfl, hpres⟩
-    · simp [C, ← hB, MulAut.conj_apply]
+    · simp [C, ← hB]
   · rw [hc00, hc11, mul_one]
 
 end DedekindZetaZeroFree.KPCuspParabolicLattices.RatioUnits
@@ -445,29 +429,27 @@ open scoped Classical Matrix MatrixGroups LinearAlgebra.Projectivization
 
 namespace DedekindZetaZeroFree.KPCuspParabolicLattices.RatioUnits
 
-private theorem upper_of_fixes_standardCusp
+theorem upper_of_fixes_standardCusp
     (F : Type*) [Field F] [NumberField F] (g : ProjectiveGroup F)
     (hg : g • StandardCusp F = StandardCusp F) : Upper g := by
   obtain ⟨A, rfl⟩ := Matrix.ProjGenLinGroup.mk_surjective g
   refine ⟨A, rfl, ?_⟩
-  have hv : (![1,0] : Plane F) ≠ 0 := by simp [Matrix.cons_val_zero]
+  have hv : (![1,0] : Plane F) ≠ 0 := by simp
   have hg' : (Matrix.ProjGenLinGroup.mk A : ProjectiveGroup F) •
       Projectivization.mk F (![1,0] : Plane F) hv =
       Projectivization.mk F (![1,0] : Plane F) hv := by
     simpa [StandardCusp] using hg
   have h : Projectivization.mk F (A • (![1,0] : Plane F)) (smul_ne_zero_iff_ne A |>.2 hv) =
       Projectivization.mk F (![1,0] : Plane F) hv := by
-    rw [← Projectivization.PGL.mk_smul_mk (g := A) hv]
-    exact hg'
+    simp_all
   obtain ⟨a, ha⟩ := (Projectivization.mk_eq_mk_iff F _ _ _ _).mp h
   have h1 : (A • (![1,0] : Plane F)) 1 = (A : Matrix (Fin 2) (Fin 2) F) 1 0 := by
     rw [show A • (![1,0] : Plane F) = (A : Matrix (Fin 2) (Fin 2) F) *ᵥ ![1,0] from rfl]
     simp [Matrix.mulVec, dotProduct, Fin.sum_univ_two]
   have h2 : (a • (![1,0] : Plane F)) 1 = 0 := by
-    simp [Matrix.cons_val_one, Matrix.cons_val_zero]
+    simp
   have := congrFun ha 1
-  rw [h1, h2] at this
-  exact this.symm
+  simp_all
 
 theorem cusp_subgroup_upper
     (F : Type*) [Field F] [NumberField F]
@@ -480,7 +462,7 @@ theorem cusp_subgroup_upper
   obtain ⟨h, hh, rfl⟩ := hg
   have hq : h • q = q := hh.2
   refine upper_of_fixes_standardCusp F _ ?_
-  rw [show (MulAut.conj σ⁻¹).toMonoidHom h = σ⁻¹ * h * σ by simp [MulAut.conj_apply]]
+  rw [show (MulAut.conj σ⁻¹).toMonoidHom h = σ⁻¹ * h * σ by simp]
   rw [mul_smul, mul_smul, hσ, hq, ← hσ, ← mul_smul, inv_mul_cancel, one_smul]
 
 end DedekindZetaZeroFree.KPCuspParabolicLattices.RatioUnits
@@ -511,7 +493,7 @@ theorem scalar_integral_unit
   obtain ⟨y, hy⟩ := IsIntegrallyClosed.isIntegral_iff.mp hiint
   have hxy : x * y = 1 := by
     apply NumberField.RingOfIntegers.coe_injective
-    simp only [map_mul, map_one, hx, hy, Units.mul_inv]
+    simp_all
   have hyx : y * x = 1 := by simpa only [mul_comm] using hxy
   refine ⟨⟨x, y, hxy, hyx⟩, ?_⟩
   apply Units.ext
@@ -541,7 +523,7 @@ theorem upper_diagonal_integral
     intro hn
     have hx : algebraMap (IntegralOrder F) F r ∈ N := hm
     rw [hn, Submodule.mem_bot] at hx
-    exact hr (NumberField.RingOfIntegers.coe_injective (by simpa using hx))
+    simp_all
   let p : Plane F →ₗ[IntegralOrder F] F := LinearMap.proj 1
   let P := M.map p
   have hPfg : P.FG := hfg.map p
@@ -552,9 +534,9 @@ theorem upper_diagonal_integral
     have hx : algebraMap (IntegralOrder F) F r ∈ P := by
       refine ⟨_, hm, ?_⟩
       change algebraMap (IntegralOrder F) F r * 1 = _
-      exact mul_one _
+      simp
     rw [hp, Submodule.mem_bot] at hx
-    exact hr (NumberField.RingOfIntegers.coe_injective (by simpa using hx))
+    simp_all
   constructor
   · apply isIntegral_of_smul_mem_submodule N hN hNfg
     intro x hx
@@ -628,8 +610,8 @@ theorem cuspSubgroup_mono
     {F : Type*} [Field F] [NumberField F]
     {Γ Δ : Subgroup (ProjectiveGroup F)} (h : Γ ≤ Δ)
     (q : Projectivization F (Plane F)) (σ : ProjectiveGroup F) :
-    CuspSubgroup F Γ q σ ≤ CuspSubgroup F Δ q σ := by
-  exact Subgroup.map_mono (inf_le_inf_right _ h)
+    CuspSubgroup F Γ q σ ≤ CuspSubgroup F Δ q σ := 
+  Subgroup.map_mono (inf_le_inf_right _ h)
 
 theorem cuspSubgroup_commensurable
     {F : Type*} [Field F] [NumberField F]
@@ -661,7 +643,7 @@ theorem mem_integralUnits_iff
         inv := ⟨(↑u⁻¹ : F), hi⟩
         val_inv := by apply NumberField.RingOfIntegers.ext; change (u : F) * (↑u⁻¹ : F) = 1; simp
         inv_val := by apply NumberField.RingOfIntegers.ext; change (↑u⁻¹ : F) * (u : F) = 1; simp }
-    exact ⟨v, by ext; rfl⟩
+    exact ⟨v, by rfl⟩
 
 theorem eigenvalue_integral_of_fullLattice
     {F : Type*} [Field F] [NumberField F]
@@ -686,7 +668,7 @@ theorem eigenvalue_integral_of_fullLattice
     have ht0 : (t : IntegralOrder F) ≠ 0 := nonZeroDivisors.ne_zero t.property
     have htF : algebraMap (IntegralOrder F) F t ≠ 0 := by
       intro htF
-      exact ht0 ((IsFractionRing.injective (IntegralOrder F) F) (by simpa using htF))
+      simp_all
     exact (smul_ne_zero htF hv.2) hz
   apply isIntegral_trans (A := IntegralOrder F)
   apply isIntegral_of_smul_mem_submodule N hN hNfg μ
@@ -712,23 +694,16 @@ theorem eigen_unit_integral_of_fullLattice
   apply f.injective
   change f (f.symm v) = f ((↑u⁻¹ : F) • v)
   have he : f v = (u : F) • v := Module.End.mem_eigenspace_iff.mp hv.1
-  rw [f.apply_symm_apply, map_smul, he, smul_smul]
-  simp
+  simp_all
 
 end DedekindZetaZeroFree.KPCuspParabolicLattices
 
 namespace DedekindZetaZeroFree.KPCuspParabolicLattices.CuspRatios
-variable {F : Type*} [Field F] [NumberField F]
-
 end DedekindZetaZeroFree.KPCuspParabolicLattices.CuspRatios
 namespace DedekindZetaZeroFree.KPCuspParabolicLattices.CuspRatios
-variable {F : Type*} [Field F] [NumberField F]
-
 end DedekindZetaZeroFree.KPCuspParabolicLattices.CuspRatios
 
 namespace DedekindZetaZeroFree.KPCuspParabolicLattices.CuspRatios
-variable {F : Type*} [Field F]
-
 end DedekindZetaZeroFree.KPCuspParabolicLattices.CuspRatios
 
 namespace DedekindZetaZeroFree.KPCuspParabolicLattices
@@ -765,9 +740,3 @@ theorem ratio_integral_units
       (RatioUnits.integral_unit_is_full_cusp_ratio F M hM q σ hσ)
   letI := hindex
   exact ⟨hle, inferInstance⟩
-
-end DedekindZetaZeroFree.KPCuspParabolicLattices
-
-end
-
-end

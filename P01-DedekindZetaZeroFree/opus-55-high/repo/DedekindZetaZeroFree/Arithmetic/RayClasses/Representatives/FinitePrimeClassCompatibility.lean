@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Arithmetic.RayClasses.Characters.CharacterDes
 
 @[expose] public section
 
-noncomputable section
 
 namespace DedekindZetaZeroFree.LargeSieve.RayBridge
 
@@ -21,11 +20,10 @@ theorem prime_not_mem_fullModulus_support_iff
   constructor
   · intro h
     apply (Ideal.isMaximal_def.mp (p.isPrime.isMaximal p.ne_bot)).lt_iff.mp
-    exact lt_of_le_of_ne le_sup_left (fun he => h (he ▸ le_sup_right))
+    simp_all
   · intro h hle
     have ht : (⊤ : Ideal (𝓞 F)) ≤ p.asIdeal := by
-      rw [← h]
-      exact sup_le le_rfl hle
+      simp_all
     exact p.isPrime.ne_top (top_le_iff.mp ht)
 
 theorem idealClass_eq_rayClassOfFinitePrime
@@ -35,8 +33,7 @@ theorem idealClass_eq_rayClassOfFinitePrime
     idealClass f hf p.asIdeal p.ne_bot hp =
       ClassFieldTheory.rayClassOfFinitePrime (fullModulus f hf) p
         ((prime_not_mem_fullModulus_support_iff f hf p).2 hp) := by
-  unfold idealClass ClassFieldTheory.rayClassOfFinitePrime
-  congr 1
+  rfl
 
 @[simp] theorem descendedCharacter_apply_finitePrime
     (f : Ideal (𝓞 F)) (hf : f ≠ ⊥)
@@ -49,7 +46,3 @@ theorem idealClass_eq_rayClassOfFinitePrime
       η p.asIdeal := by
   rw [← idealClass_eq_rayClassOfFinitePrime f hf p hp]
   exact descendedCharacter_apply_idealClass f hf η p.asIdeal p.ne_bot hp
-
-end DedekindZetaZeroFree.LargeSieve.RayBridge
-
-end

@@ -130,9 +130,3 @@ end DedekindZetaZeroFree.KPContLocalDifference.WeakRecovery
 
 noncomputable section
 namespace DedekindZetaZeroFree.KPContLocalDifference.WeakRecovery
-open MeasureTheory KPContLocalNorm Filter Topology
-end DedekindZetaZeroFree.KPContLocalDifference.WeakRecovery
-
-end
-end
-end

@@ -11,10 +11,9 @@ open scoped NumberField Classical nonZeroDivisors
 open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.SArithmeticData.ClassCharacterSteps
 noncomputable section
-set_option autoImplicit false
 variable {F : Type} [Field F] [NumberField F]
 
-private theorem finite_open (v : HeightOneSpectrum (𝓞 F)) :
+theorem finite_open (v : HeightOneSpectrum (𝓞 F)) :
     IsOpen ((powMonoidHom 6 : (v.adicCompletion F)ˣ →* (v.adicCompletion F)ˣ).range : Set (v.adicCompletion F)ˣ) := by
   letI : ValuativeRel (v.adicCompletion F) :=
     ClassFieldTheory.finitePlaceCompletionValuativeRel F v
@@ -23,7 +22,7 @@ private theorem finite_open (v : HeightOneSpectrum (𝓞 F)) :
   letI : CharZero (v.adicCompletion F) :=
     charZero_of_injective_algebraMap (algebraMap F (v.adicCompletion F)).injective
   have h6 : (6 : v.adicCompletion F) ≠ 0 := by
-    exact Nat.cast_ne_zero.mpr (by decide : 6 ≠ 0)
+    simp
   obtain ⟨E, hE⟩ :=
     LocalClassFieldTheory.exists_finiteGalois_normSubgroup_le_powMonoidHom_range
       (v.adicCompletion F) 6 h6
@@ -77,7 +76,6 @@ open scoped NumberField Classical nonZeroDivisors
 open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.SArithmeticData.ClassCharacterSteps
 noncomputable section
-set_option autoImplicit false
 variable {F : Type} [Field F] [NumberField F]
 
 def sRestriction (A : SArithmeticData F) : NumberField.IdeleGroup (𝓞 F) F →* A.G :=
@@ -124,7 +122,7 @@ theorem glue_on_idele_classes (A : SArithmeticData F) (χ : A.G →* Circle)
       (∀ z : NumberField.IdeleClassGroup (𝓞 F) F, Φ z ^ n = 1) := by
   have hs (a : Fˣ) :
       sRestriction A (NumberField.IdeleGroup.unitEmbedding (𝓞 F) F a) = A.diagonal a := by
-    ext <;> rfl
+    rfl
   have hi (a : Fˣ) :
       exteriorIdealMap A (NumberField.IdeleGroup.unitEmbedding (𝓞 F) F a) =
         principalIdealMap A a := by
@@ -132,7 +130,7 @@ theorem glue_on_idele_classes (A : SArithmeticData F) (χ : A.G →* Circle)
       (_root_.IdeleGroup.fractionalIdeal (_root_.IdeleGroup.principalIdele F a)) = _
     rw [_root_.IdeleGroup.fractionalIdeal_principalIdele]
     apply Units.ext
-    simp only [Units.coe_map, MonoidHom.coe_coe, coe_toPrincipalIdeal]
+    simp only [Units.coe_map, coe_toPrincipalIdeal]
     change (FractionalIdeal.extendedHom F A.R)
       (FractionalIdeal.spanSingleton (𝓞 F)⁰ (a : F)) =
         FractionalIdeal.spanSingleton A.R⁰ (a : F)
@@ -144,15 +142,14 @@ theorem glue_on_idele_classes (A : SArithmeticData F) (χ : A.G →* Circle)
       ext x
       simp only [RingHom.comp_apply, RingHom.id_apply, IsFractionRing.map,
         IsLocalization.map_eq]
-      exact (IsScalarTower.algebraMap_apply (𝓞 F) A.R F x).symm
+      rfl
     rw [hm]
     rfl
   have hker : NumberField.IdeleGroup.principalSubgroup (𝓞 F) F ≤
       (rawCharacter A χ κ).ker := by
     rintro x ⟨a, rfl⟩
     change κ (exteriorIdealMap A _) * (χ (sRestriction A _))⁻¹ = 1
-    rw [hi, hs, hprincipal]
-    exact mul_inv_cancel _
+    simp_all
   refine ⟨QuotientGroup.lift _ (rawCharacter A χ κ) hker, ?_, ?_⟩
   · intro x
     rfl
@@ -174,10 +171,9 @@ open scoped NumberField Classical nonZeroDivisors Topology
 open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.SArithmeticData.ClassCharacterSteps
 noncomputable section
-set_option autoImplicit false
 variable {F : Type} [Field F] [NumberField F]
 
-private theorem finite_char_cont (A : SArithmeticData F)
+theorem finite_char_cont (A : SArithmeticData F)
     (κ : (FractionalIdeal A.R⁰ F)ˣ →* Circle) :
     Continuous ((κ.comp (Units.map (FractionalIdeal.extendedHom (K := F) F A.R).toMonoidHom)).comp
       (FiniteIdeleGroup.fractionalIdeal (K := F))) := by
@@ -188,14 +184,14 @@ private theorem finite_char_cont (A : SArithmeticData F)
     RestrictedProduct.isOpen_forall_mem (_root_.isOpen_finiteLocalUnits F)
   have heq : (fun x : FiniteIdeleGroup F => f x) =ᶠ[𝓝 1] (fun _ => (1 : Circle)) := by
     filter_upwards [hopen.mem_nhds (FiniteIdeleGroup.integralSubgroup.one_mem)] with x hx
-    have hi : FiniteIdeleGroup.fractionalIdeal x = 1 := by
-      exact MonoidHom.mem_ker.mp (by rwa [FiniteIdeleGroup.fractionalIdeal_ker])
+    have hi : FiniteIdeleGroup.fractionalIdeal x = 1 := 
+      MonoidHom.mem_ker.mp (by rwa [FiniteIdeleGroup.fractionalIdeal_ker])
     change κ (Units.map (FractionalIdeal.extendedHom (K := F) F A.R).toMonoidHom
       (FiniteIdeleGroup.fractionalIdeal x)) = 1
     simp [hi]
   exact continuousAt_const.congr_of_eventuallyEq heq
 
-private theorem sRestr_cont (A : SArithmeticData F) : Continuous (sRestriction A) := by
+theorem sRestr_cont (A : SArithmeticData F) : Continuous (sRestriction A) := by
   apply Continuous.prodMk
   · apply continuous_pi
     intro w
@@ -215,8 +211,8 @@ theorem glued_character_continuous (A : SArithmeticData F) (χ : A.G →* Circle
   apply (QuotientGroup.isQuotientMap_mk
     (NumberField.IdeleGroup.principalSubgroup (𝓞 F) F)).continuous_iff.mpr
   have hext : Continuous (fun x : NumberField.IdeleGroup (𝓞 F) F =>
-      κ (exteriorIdealMap A x)) := by
-    exact ((finite_char_cont A κ).comp continuous_snd).comp
+      κ (exteriorIdealMap A x)) := 
+    ((finite_char_cont A κ).comp continuous_snd).comp
       (_root_.IdeleGroup.equivAdeleRingUnitsContinuousMulEquiv F).symm.continuous
   have hraw : Continuous (rawCharacter A χ κ) :=
     hext.mul (hχ.comp (sRestr_cont A)).inv
@@ -233,12 +229,11 @@ open scoped NumberField Classical nonZeroDivisors
 open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.SArithmeticData.ClassCharacterSteps
 noncomputable section
-set_option autoImplicit false
 variable {F : Type} [Field F] [NumberField F]
 
 set_option maxHeartbeats 800000
 set_option backward.isDefEq.respectTransparency false
-private theorem inv_prime_integer (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F))
+theorem inv_prime_integer (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F))
     (hv : v ∈ A.Sf) {x : F} (hx : x ∈ (v.asIdeal : FractionalIdeal (𝓞 F)⁰ F)⁻¹) :
     x ∈ A.R := by
   intro w hw
@@ -255,7 +250,7 @@ private theorem inv_prime_integer (A : SArithmeticData F) (v : HeightOneSpectrum
   rw [ha, map_mul, (w.valuation_eq_one_iff_notMem (K := F)).mpr hwr, mul_one] at hh
   exact hh
 
-private theorem ext_prime (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F))
+theorem ext_prime (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F))
     (hv : v ∈ A.Sf) :
     (Units.map (FractionalIdeal.extendedHom (K := F) F A.R).toMonoidHom)
       (FractionalIdealGroup.prime v) = 1 := by
@@ -282,13 +277,13 @@ private theorem ext_prime (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F
   · have hh := mul_le_mul_of_nonneg_left hi (show (0 : FractionalIdeal A.R⁰ F) ≤ E (v.asIdeal : FractionalIdeal (𝓞 F)⁰ F) from bot_le)
     simpa only [← map_mul, FractionalIdeal.coe_ideal_mul_inv v.asIdeal v.ne_bot, map_one, mul_one] using hh
 
-private theorem finite_component_val (x : NumberField.IdeleGroup (𝓞 F) F)
+theorem finite_component_val (x : NumberField.IdeleGroup (𝓞 F) F)
     (v : HeightOneSpectrum (𝓞 F)) :
     ((((_root_.IdeleGroup.equivAdeleRingUnits (K := F)).symm x).2 v) : v.adicCompletion F) =
       (x : NumberField.AdeleRing (𝓞 F) F).2 v := by
   rfl
 
-private theorem ext_supported (A : SArithmeticData F) (x : NumberField.IdeleGroup (𝓞 F) F)
+theorem ext_supported (A : SArithmeticData F) (x : NumberField.IdeleGroup (𝓞 F) F)
     (hx : ∀ v : HeightOneSpectrum (𝓞 F), v ∉ A.Sf →
       Valued.v ((x : NumberField.AdeleRing (𝓞 F) F).2 v) = 1) : exteriorIdealMap A x = 1 := by
   let a := ((_root_.IdeleGroup.equivAdeleRingUnits (K := F)).symm x).2
@@ -307,19 +302,17 @@ private theorem ext_supported (A : SArithmeticData F) (x : NumberField.IdeleGrou
       rfl
     simp [ho]
 
-private theorem adic_val (v u : HeightOneSpectrum (𝓞 F)) (z : (v.adicCompletion F)ˣ) :
+theorem adic_val (v u : HeightOneSpectrum (𝓞 F)) (z : (v.adicCompletion F)ˣ) :
     ((NumberField.IdeleGroup.ofAdicCompletion (𝓞 F) F v z : NumberField.AdeleRing (𝓞 F) F).2 u) = Pi.mulSingle v (z : v.adicCompletion F) u := by
-  change ((Units.map (NumberField.AdeleRing.ofAdicCompletion (𝓞 F) F v)) z : NumberField.AdeleRing (𝓞 F) F).2 u = _
-  rw [Units.coe_map]
   rfl
-private theorem inf_finite_val (w : InfinitePlace F) (z : w.Completionˣ) (v : HeightOneSpectrum (𝓞 F)) :
+theorem inf_finite_val (w : InfinitePlace F) (z : w.Completionˣ) (v : HeightOneSpectrum (𝓞 F)) :
     ((NumberField.IdeleGroup.ofCompletion (𝓞 F) F w z : NumberField.AdeleRing (𝓞 F) F).2 v) = 1 := rfl
 private theorem ext_inf (A : SArithmeticData F) (w : InfinitePlace F) (z : w.Completionˣ) :
     exteriorIdealMap A (NumberField.IdeleGroup.ofCompletion (𝓞 F) F w z) = 1 := by
   apply ext_supported A
   intro v hv
   rw [inf_finite_val, map_one]
-private theorem ext_fin (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F)) (z : (v.adicCompletion F)ˣ)
+theorem ext_fin (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F)) (z : (v.adicCompletion F)ˣ)
     (hz : v ∈ A.Sf ∨ Valued.v (z : v.adicCompletion F) = 1) :
     exteriorIdealMap A (NumberField.IdeleGroup.ofAdicCompletion (𝓞 F) F v z) = 1 := by
   apply ext_supported A
@@ -329,14 +322,14 @@ private theorem ext_fin (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F))
   · subst u
     rw [Pi.mulSingle_eq_same]
     exact hz.resolve_left hu
-  · rw [Pi.mulSingle_eq_of_ne h, map_one]
+  simp_all
 
-private theorem sr_inf_val (A : SArithmeticData F) (x : NumberField.IdeleGroup (𝓞 F) F)
+theorem sr_inf_val (A : SArithmeticData F) (x : NumberField.IdeleGroup (𝓞 F) F)
     (w : InfinitePlace F) : ((sRestriction A x).1 w : w.Completion) = (x : NumberField.AdeleRing (𝓞 F) F).1 w := rfl
-private theorem sr_fin_val (A : SArithmeticData F) (x : NumberField.IdeleGroup (𝓞 F) F)
+theorem sr_fin_val (A : SArithmeticData F) (x : NumberField.IdeleGroup (𝓞 F) F)
     (v : {v // v ∈ A.Sf}) : ((sRestriction A x).2 v : v.val.adicCompletion F) = (x : NumberField.AdeleRing (𝓞 F) F).2 v.val := rfl
 
-private theorem sr_inf (A : SArithmeticData F) (w : InfinitePlace F) (z : w.Completionˣ) :
+theorem sr_inf (A : SArithmeticData F) (w : InfinitePlace F) (z : w.Completionˣ) :
     sRestriction A (NumberField.IdeleGroup.ofCompletion (𝓞 F) F w z) = (Pi.mulSingle w z, 1) := by
   apply Prod.ext
   · funext u
@@ -347,18 +340,12 @@ private theorem sr_inf (A : SArithmeticData F) (w : InfinitePlace F) (z : w.Comp
     change Pi.mulSingle w (z : w.Completion) u = ((Pi.mulSingle (M := fun w : InfinitePlace F => w.Completionˣ) w z u) : u.Completion)
     by_cases h : w = u
     · subst u; simp
-    · simp [Pi.mulSingle_eq_of_ne (Ne.symm h)]
-  · funext v
-    apply Units.ext
-    rw [sr_fin_val]
-    rfl
-private theorem sr_fin (A : SArithmeticData F) (v : {v // v ∈ A.Sf}) (z : (v.val.adicCompletion F)ˣ) :
+    simp_all
+  rfl
+theorem sr_fin (A : SArithmeticData F) (v : {v // v ∈ A.Sf}) (z : (v.val.adicCompletion F)ˣ) :
     sRestriction A (NumberField.IdeleGroup.ofAdicCompletion (𝓞 F) F v.val z) = (1, Pi.mulSingle v z) := by
   apply Prod.ext
-  · funext u
-    apply Units.ext
-    rw [sr_inf_val]
-    rfl
+  · rfl
   · funext u
     apply Units.ext
     rw [sr_fin_val]
@@ -367,21 +354,16 @@ private theorem sr_fin (A : SArithmeticData F) (v : {v // v ∈ A.Sf}) (z : (v.v
     change (RestrictedProduct.mulSingle (fun w => w.adicCompletionIntegers F) v.val (z : v.val.adicCompletion F)) u.val = ((Pi.mulSingle (M := fun v : {v // v ∈ A.Sf} => (v.val.adicCompletion F)ˣ) v z u) : u.val.adicCompletion F)
     by_cases h : v = u
     · subst u; simp
-    · have h' : v.val ≠ u.val := fun e => h (Subtype.ext e)
-      simp [Pi.mulSingle_eq_of_ne (Ne.symm h), RestrictedProduct.coe_mulSingle_apply, Pi.mulSingle_eq_of_ne (Ne.symm h')]
-private theorem sr_product (A : SArithmeticData F) (y : A.G) :
+    simp_all
+theorem sr_product (A : SArithmeticData F) (y : A.G) :
     sRestriction A ((∏ w : InfinitePlace F, NumberField.IdeleGroup.ofCompletion (𝓞 F) F w (y.1 w)) *
       (∏ v : {v // v ∈ A.Sf}, NumberField.IdeleGroup.ofAdicCompletion (𝓞 F) F v.val (y.2 v))) = y := by
   simp only [map_mul, map_prod, sr_inf, sr_fin]
-  apply Prod.ext <;> simp only [Prod.fst_mul, Prod.snd_mul, Prod.fst_prod, Prod.snd_prod, Finset.attach_eq_univ,
-    Finset.prod_const_one, mul_one, one_mul, Finset.univ_prod_mulSingle]
-private theorem sr_outside (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F)) (hv : v ∉ A.Sf)
+  apply Prod.ext <;> simp only [Prod.fst_mul, Prod.snd_mul, Prod.fst_prod, Prod.snd_prod, Finset.prod_const_one, mul_one, one_mul, Finset.univ_prod_mulSingle]
+theorem sr_outside (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F)) (hv : v ∉ A.Sf)
     (z : (v.adicCompletion F)ˣ) : sRestriction A (NumberField.IdeleGroup.ofAdicCompletion (𝓞 F) F v z) = 1 := by
   apply Prod.ext
-  · funext w
-    apply Units.ext
-    rw [sr_inf_val]
-    rfl
+  · rfl
   · funext u
     apply Units.ext
     rw [sr_fin_val, adic_val]
@@ -413,7 +395,7 @@ theorem glued_character_local_components (A : SArithmeticData F) (χ : A.G →* 
     have hh := heval x
     have hf : Φ (QuotientGroup.mk x) = (χ y)⁻¹ := by
       change Φ (QuotientGroup.mk x) = κ (exteriorIdealMap A x) * (χ (sRestriction A x))⁻¹ at hh
-      simpa only [he, map_one, hs, one_mul] using hh
+      simp_all
     have hi := congrArg Inv.inv hf
     rw [inv_inv] at hi
     rw [← hi]
@@ -441,7 +423,6 @@ open scoped NumberField Classical nonZeroDivisors
 open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.SArithmeticData.ClassCharacterSteps
 noncomputable section
-set_option autoImplicit false
 variable {F : Type} [Field F] [NumberField F]
 
 theorem exterior_representative_maps (A : SArithmeticData F) (I : A.Exterior)
@@ -486,8 +467,8 @@ theorem exterior_representative_maps (A : SArithmeticData F) (I : A.Exterior)
     rw [show FractionalIdeal.count F v
         ((Units.mk0 (I.val : FractionalIdeal (𝓞 F)⁰ F)
             (FractionalIdeal.coeIdeal_ne_zero.mpr I.property.1) : FractionalIdealGroup F) :
-          FractionalIdeal (𝓞 F)⁰ F) = (idealPrimeExponent v.asIdeal I.val : ℤ) from by
-            exact (show FractionalIdeal.count F v (I.val : FractionalIdeal (𝓞 F)⁰ F) = _ from by
+          FractionalIdeal (𝓞 F)⁰ F) = (idealPrimeExponent v.asIdeal I.val : ℤ) from 
+            (show FractionalIdeal.count F v (I.val : FractionalIdeal (𝓞 F)⁰ F) = _ from by
               rw [FractionalIdeal.count_coe F v I.property.1]
               unfold idealPrimeExponent
               congr 1
@@ -515,7 +496,7 @@ theorem exterior_representative_maps (A : SArithmeticData F) (I : A.Exterior)
     · have hx : (((_root_.IdeleGroup.equivAdeleRingUnits (K := F)).symm x).2 v).val = x.val.2 v := rfl
       rw [hx, hv v h]
       change -(-(idealPrimeExponent v.asIdeal I.val : ℤ)) = _
-      exact neg_neg _
+      simp
   constructor
   · exact hr
   · exact congrArg (Units.map (FractionalIdeal.extendedHom (K := F) F A.R).toMonoidHom) hi
@@ -533,7 +514,6 @@ open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.SArithmeticData
 
 noncomputable section
-set_option autoImplicit false
 
 variable {F : Type} [Field F] [NumberField F]
 
@@ -672,7 +652,7 @@ def projection : A.V →* B :=
 lemma projection_split (p : A.E × B) :
     projection A B hFactor ((p.1 : A.V) * (p.2 : A.V)) = p.2 := by
   change ((splitting A B hFactor).symm ((splitting A B hFactor) p)).2 = p.2
-  rw [MulEquiv.symm_apply_apply]
+  simp
 
 lemma sixth_power (v : A.V) : v ^ 6 = 1 := by
   induction v using QuotientGroup.induction_on with
@@ -691,13 +671,13 @@ lemma character_norm (φ : B →* ℂˣ) (b : B) : ‖(φ b : ℂ)‖ = 1 := by
   apply (pow_eq_one_iff_of_nonneg (norm_nonneg _) (by decide : (6 : ℕ) ≠ 0)).mp
   rw [← Complex.norm_pow]
   have h := congrArg (fun u : ℂˣ => (u : ℂ)) (character_sixth A B φ b)
-  simpa only [Units.val_pow_eq_pow_val, Units.val_one, norm_one] using congrArg (fun z : ℂ => ‖z‖) h
+  simp_all
 
 def circleCharacter (φ : B →* ℂˣ) : B →* Circle where
   toFun b := ⟨φ b, by
     change (φ b : ℂ) ∈ Metric.sphere 0 1
     simpa using character_norm A B φ b⟩
-  map_one' := by apply Subtype.ext; exact congrArg (fun u : ℂˣ => (u : ℂ)) φ.map_one
+  map_one' := by apply Subtype.ext; simp
   map_mul' x y := by apply Subtype.ext; exact congrArg (fun u : ℂˣ => (u : ℂ)) (φ.map_mul x y)
 
 lemma circleCharacter_toUnits (φ : B →* ℂˣ) (b : B) :
@@ -751,8 +731,7 @@ lemma principalMap_surjective (hCl : Subsingleton (ClassGroup A.R)) :
     FractionalIdeal.eq_spanSingleton_of_principal _
   have hx0 : x ≠ 0 := by
     intro hz
-    apply I.ne_zero
-    simpa [hz] using hx
+    simp_all
   refine ⟨Units.mk0 x hx0, ?_⟩
   apply Units.ext
   exact hx.symm
@@ -769,7 +748,7 @@ lemma principalMap_ker (φ : B →* ℂˣ) :
   obtain ⟨u, hu⟩ := FractionalIdeal.spanSingleton_eq_spanSingleton.mp hs
   let ε : A.U := A.unitEquiv.symm u
   have huval : (ε.val : F) = ((u : A.R) : F) := by
-    simp [ε, unitEquiv, Set.unitEquivUnitsInteger]
+    rfl
   have hae : a = ε.val := by
     apply Units.ext
     rw [huval]
@@ -786,8 +765,8 @@ def fractionalIdealCharacter (hCl : Subsingleton (ClassGroup A.R)) (φ : B →* 
 lemma fractionalIdealCharacter_principal (hCl : Subsingleton (ClassGroup A.R))
     (φ : B →* ℂˣ) (a : Fˣ) :
     fractionalIdealCharacter A B hFactor hCl φ (principalMap A a) =
-      localCharacter A B hFactor φ (A.diagonal a) := by
-  exact MonoidHom.liftOfRightInverse_comp_apply _ _ _ _ _
+      localCharacter A B hFactor φ (A.diagonal a) := 
+  MonoidHom.liftOfRightInverse_comp_apply _ _ _ _ _
 
 lemma fractionalIdealCharacter_sixth (hCl : Subsingleton (ClassGroup A.R))
     (φ : B →* ℂˣ) (I : (FractionalIdeal A.R⁰ F)ˣ) :
@@ -846,9 +825,7 @@ lemma exteriorFractionalUnit_generator (I : A.Exterior) (a : Fˣ) (r : A.R)
   rw [exteriorFractionalUnit_val, ← hr.2]
   change (Ideal.span {r} : FractionalIdeal A.R⁰ F) =
     FractionalIdeal.spanSingleton A.R⁰ (a : F)
-  rw [FractionalIdeal.coeIdeal_span_singleton]
-  congr 1
-  exact har.symm
+  simp_all
 
 lemma exteriorIdealValue_local (hCl : Subsingleton (ClassGroup A.R)) (φ : B →* ℂˣ)
     (I : A.Exterior) (a : Fˣ) (r : A.R)
@@ -921,8 +898,3 @@ theorem exists_class_character_extension (A : SArithmeticData F)
   · intro ε
     rw [hlocal']
     exact ClassCharacterGluing.localCharacter_unit A B hFactor φ ε
-
-end
-end DedekindZetaZeroFree.SArithmeticData
-
-end

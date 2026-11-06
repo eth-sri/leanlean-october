@@ -6,7 +6,6 @@ public import DedekindZetaZeroFree.Metaplectic.Intertwining.RankOne.TailAbsolute
 
 set_option maxHeartbeats 4000000
 
-noncomputable section
 
 namespace DedekindZetaZeroFree.KPRankOneShellRepair
 
@@ -19,7 +18,7 @@ variable (F : Type) [Field F] [NumberField F]
   (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
   (S : CanonicalFiniteInducingData F ζ hζ q)
 
-private theorem actualShell_disjoint (m m' : ℤ) (h : m ≠ m') :
+theorem actualShell_disjoint (m m' : ℤ) (h : m ≠ m') :
     Disjoint (actualShell F q m) (actualShell F q m') := by
   have hQ : (1 : ℝ) < (residueCardinality (LocalField F q) : ℝ) := by
     have hnat := KPJacquetExceptionalFactorSeparation.residue_cardinality_gt_one
@@ -61,8 +60,8 @@ theorem actual_tail_geometric_sum (P : Polarization S.heisenberg)
   obtain ⟨M₂, hM₂⟩ := actual_tail_absolute_convergence F ζ hζ q S P J hJ μ hμ π hπ ε
   refine ⟨max M₁ M₂, ?_⟩
   set M : ℕ := max M₁ M₂ with hM
-  have hM₁M : M₁ ≤ M := by rw [hM]; exact le_max_left _ _
-  have hM₂M : M₂ ≤ M := by rw [hM]; exact le_max_right _ _
+  have hM₁M : M₁ ≤ M := by omega
+  have hM₂M : M₂ ≤ M := by omega
   intro s hs φ k h
   have habs : Measurable (KPCubicHaar.abs (LocalField F q)) :=
     KPRamifiedBetaConductorSeries.normalizedAbs_measurable (LocalField F q)
@@ -94,9 +93,9 @@ theorem actual_tail_geometric_sum (P : Polarization S.heisenberg)
   have hsumA : Summable A := by rw [hA]; exact hsum.summable
   have hrec : ∀ n : ℕ, A (n + 3) = actualShellRatio F q ε s * A n := by
     intro n
-    have hmn : M₁ ≤ M + n := le_trans hM₁M (Nat.le_add_right M n)
+    have hmn : M₁ ≤ M + n := by omega
     have hstep := hM₁ (M + n) hmn s φ k h
-    have hidx : ((M + (n + 3) : ℕ) : ℤ) = ((M + n : ℕ) : ℤ) + 3 := by push_cast; ring
+    have hidx : ((M + (n + 3) : ℕ) : ℤ) = ((M + n : ℕ) : ℤ) + 3 := by rfl
     simp only [hA]
     rw [hidx]
     exact hstep
@@ -126,7 +125,3 @@ theorem actual_tail_geometric_sum (P : Polarization S.heisenberg)
   have hfin : (∑ i : Fin 3, A i.val) = A 0 + A 1 + A 2 := by
     simp [Fin.sum_univ_three]
   simpa only [hA] using hgoal.trans hfin.symm
-
-end DedekindZetaZeroFree.KPRankOneShellRepair
-
-end

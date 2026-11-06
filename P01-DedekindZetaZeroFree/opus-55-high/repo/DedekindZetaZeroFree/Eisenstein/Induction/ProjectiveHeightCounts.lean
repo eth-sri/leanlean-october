@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.Arithmetic.Ideals.FractionalIdealPairBoxCount
 
 @[expose] public section
 
-noncomputable section
 
 namespace DedekindZetaZeroFree.KPChamberProjectiveCount
 
@@ -105,7 +104,3 @@ theorem relativeHeight_count :
           exact_mod_cast Set.ncard_image_le (hbfin j)
         _ ≤ D j * R ^ (2 * d) := (hbox j R hR).2
     _ = K * B ^ 2 := by rw [← Finset.sum_mul, hpow]; dsimp [K]; ring
-
-end DedekindZetaZeroFree.KPChamberProjectiveCount
-
-end

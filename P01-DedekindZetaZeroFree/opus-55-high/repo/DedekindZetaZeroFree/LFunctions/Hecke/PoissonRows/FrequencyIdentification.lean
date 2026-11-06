@@ -27,12 +27,6 @@ abbrev delSet {D : FixedData S η} (U : Raw D) : Set (IsDedekindDomain.HeightOne
 theorem context_correction (D : FixedData S η) :
     D.recipe.probe.correction = D.context.correction := rfl
 
-def Row.toFreq {D : FixedData S η} (r : D.Row) : Freq D :=
-  ⟨⟨r.u, r.isRep.choose⟩, r.isRep.choose_spec⟩
-
-@[simp] theorem Row.toFreq_val {D : FixedData S η} (r : D.Row) : (Row.toFreq r).val.val = r.u :=
-  rfl
-
 structure Bridge (D : FixedData S η) (U : Freq D → Raw D)
     (P M : Freq D → Detector.PrimitiveFrequencyCharacter F) (plus minus : Freq D → ℂ → ℂ) :
     Prop where

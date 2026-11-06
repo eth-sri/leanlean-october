@@ -21,11 +21,11 @@ theorem HasRecursiveEnvelope.improve_of_band {B : ℝ → ℝ → ℝ}
     HasExponent B (2 - 1 / α) := by
   intro ε hε
   let δ : ℝ := min 1 (ε / 2)
-  have hδ : 0 < δ := lt_min (by norm_num) (by positivity)
+  have hδ : 0 < δ := by positivity
   have hδ1 : δ ≤ 1 := min_le_left _ _
   have hδε : δ ≤ ε / 2 := min_le_right _ _
   let η : ℝ := ε / (2 * (3 + δ))
-  have hη : 0 < η := by dsimp [η]; positivity
+  have hη : 0 < η := by positivity
   have hloss : δ + (3 + δ) * η ≤ ε := by
     have he : (3 + δ) * η = ε / 2 := by
       dsimp [η]
@@ -36,7 +36,7 @@ theorem HasRecursiveEnvelope.improve_of_band {B : ℝ → ℝ → ℝ}
   obtain ⟨A, J, D, hA, hD, hband⟩ := hBand δ hδ hδ1
   obtain ⟨C, hC, henv⟩ := hEnvelope η hη
   let K : ℝ := (2 : ℝ) ^ J * A * (2 : ℝ) ^ δ
-  have hK : 0 < K := by dsimp [K]; positivity
+  have hK : 0 < K := by positivity
   refine ⟨D * (J + 1) * (3 * C * K ^ η * K), by positivity, ?_⟩
   intro M N hM hN
   let β : ℝ := 2 - 1 / α
@@ -45,7 +45,7 @@ theorem HasRecursiveEnvelope.improve_of_band {B : ℝ → ℝ → ℝ}
   have hM0 : 0 < M := by linarith
   have hN0 : 0 < N := by linarith
   have hT : 1 ≤ T := one_le_mul_of_one_le_of_one_le hM hN
-  have hT0 : 0 < T := by dsimp [T]; positivity
+  have hT0 : 0 < T := by positivity
   obtain ⟨hβ, hNb, hNNb, hprod⟩ := crossover_large_scale_bound α M N hα hα₂ hM hN
   change 1 ≤ N ^ β at hNb
   change N ≤ N ^ β at hNNb
@@ -59,7 +59,7 @@ theorem HasRecursiveEnvelope.improve_of_band {B : ℝ → ℝ → ℝ}
     apply max_le
     · exact (by simpa only [Real.rpow_one] using
         Real.rpow_le_rpow_of_exponent_le hT (by norm_num : (1 : ℝ) ≤ 3))
-    · exact hprod
+    omega
   have hVsum : V ≤ M + N ^ β := max_le (by linarith [Real.rpow_nonneg hN0.le β]) (by linarith)
   have hterm : ∀ j ∈ Finset.range (J + 1),
       B ((2 : ℝ) ^ j * A * V * (2 * M * N) ^ δ) N ≤
@@ -105,8 +105,8 @@ theorem HasRecursiveEnvelope.improve_of_band {B : ℝ → ℝ → ℝ}
       calc
         (R * N) ^ η ≤ (K * T ^ (3 + δ)) ^ η := Real.rpow_le_rpow (by positivity) hRN hη.le
         _ = _ := by rw [Real.mul_rpow hK.le (Real.rpow_nonneg hT0.le _), ← Real.rpow_mul hT0.le]
-    have hRsum : R ≤ K * (M + N ^ β) * T ^ δ := by
-      exact hRup.trans (by gcongr)
+    have hRsum : R ≤ K * (M + N ^ β) * T ^ δ := 
+      hRup.trans (by gcongr)
     calc
       B R N ≤ C * (R * N) ^ η * (R + N + N ^ (2 * α - 1) * R ^ (1 - α)) := henv R N hR1 hN
       _ ≤ C * (K ^ η * T ^ ((3 + δ) * η)) * (3 * (K * (M + N ^ β) * T ^ δ)) := by
@@ -125,5 +125,3 @@ theorem HasRecursiveEnvelope.improve_of_band {B : ℝ → ℝ → ℝ}
     _ = D * (J + 1) * (3 * C * K ^ η * K) * T ^ ε * (M + N ^ β) := by
       simp only [Finset.sum_const, Finset.card_range, nsmul_eq_mul, Nat.cast_add, Nat.cast_one]
       ring
-
-end DedekindZetaZeroFree.LargeSieve

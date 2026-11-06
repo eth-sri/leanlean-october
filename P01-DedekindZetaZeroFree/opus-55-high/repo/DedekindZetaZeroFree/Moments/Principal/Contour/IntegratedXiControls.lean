@@ -18,7 +18,7 @@ variable {F : Type} [Field F] [NumberField F]
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 variable (D : FixedData S η)
 
-private lemma nested_norm_le (K : ℝ → ℝ → ℂ) (f : ℝ × ℝ → ℝ) (c : ℝ) (hc : 0 ≤ c)
+lemma nested_norm_le (K : ℝ → ℝ → ℂ) (f : ℝ × ℝ → ℝ) (c : ℝ) (hc : 0 ≤ c)
     (hf : Integrable f) (hK : ∀ s t, ‖K s t‖ ≤ c * f (s, t)) :
     ‖(2 * (Real.pi : ℂ))⁻¹ * ∫ t : ℝ, (2 * (Real.pi : ℂ))⁻¹ * ∫ s : ℝ, K s t‖ ≤
       ‖(2 * (Real.pi : ℂ))⁻¹‖ * (‖(2 * (Real.pi : ℂ))⁻¹‖ * c) * ∫ p, f p := by

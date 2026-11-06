@@ -19,7 +19,8 @@ public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Cohomology.SPlaces.Ou
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Cohomology.SPlaces.OutsideIntegralInduced.LocalInduction.Action
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Cohomology.SPlaces.OutsideIntegralInduced.LocalInduction.Equiv
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Cohomology.SPlaces.OutsideIntegralInduced.LocalInduction.Inclusion
-public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Cohomology.HerbrandExactSequence
+public import GaloisCohomology.Cyclic.Herbrand.HerbrandLowDegree.Index
+public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Cohomology.Herbrand
 public import ClassFieldTheory.AlgebraicNumberTheory.Completion.UnramifiedComparison.CompletionToIdeal
 public import ClassFieldTheory.AlgebraicNumberTheory.Completion.UnramifiedComparison.IdealToCompletion
 public import ClassFieldTheory.AlgebraicNumberTheory.Completion.UnramifiedComparison.LocalNorm
@@ -33,32 +34,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-set_option autoImplicit false
 
 /-!
 # Supported ideles and the idele-class norm index
@@ -103,10 +78,7 @@ theorem
     (K := K) (L := L) v
   apply isUnramifiedAt_of_notMem_ideleClassHerbrandSupport
     (K := K) (L := L) v hv
-  exact
-    finitePlaceBelow_finitePlaceExtensionCentre
-      (K := K) (L := L) v
-      (chosenFinitePlaceExtension (L := L) v)
+  simp
 
 omit [NumberField L] in
 /-- If every chosen finite extension outside `S` is unramified, both
@@ -409,7 +381,7 @@ theorem
 
 /-- The diagonal map from extension-field `S`-units directly into the
 supported relative ideles. -/
-noncomputable def sUnitToRelativeIdeleSupported
+def sUnitToRelativeIdeleSupported
     (S : Finset (HeightOneSpectrum (𝓞 K))) :
     SUnitGroup (K := L)
         (finitePlacesAbove (K := K) (L := L) S) →*
@@ -423,7 +395,7 @@ noncomputable def sUnitToRelativeIdeleSupported
 
 /-- The restriction of the idele-class quotient map to the supported
 relative ideles. -/
-noncomputable def relativeIdeleSupportedToClass
+def relativeIdeleSupportedToClass
     (S : Finset (HeightOneSpectrum (𝓞 K))) :
     relativeIdeleLocalTensorDecompositionSupportedSubgroup
         (K := K) (L := L) S →*
@@ -455,27 +427,7 @@ theorem sUnitToRelativeIdeleSupported_equivariant
         σ •
           sUnitToRelativeIdeleSupported
             (K := K) (L := L) S x := by
-  let sUnitAction :=
-    sUnitMulDistribMulAction K L
-      (finitePlacesAbove (K := K) (L := L) S)
-      (finitePlacesAbove_isGaloisStable
-        (K := K) (L := L) S)
-  let supportedAction :=
-    relativeIdeleLocalTensorDecompositionSupportedSubgroupAction
-      (K := K) (L := L) S
-  intro σ x
-  apply Subtype.ext
-  change
-    RelativeIdeleGroup.principalIdele K L
-        (((σ • x :
-          SUnitGroup (K := L)
-            (finitePlacesAbove (K := K) (L := L) S)) :
-          Lˣ)) =
-      σ • RelativeIdeleGroup.principalIdele K L (x : Lˣ)
-  rw [sUnit_smul_coe]
-  exact
-    (RelativeIdeleGroup.smul_principalIdele
-      K L σ (x : Lˣ)).symm
+  aesop
 
 omit [NumberField L] [IsGalois K L] in
 /-- Equivariance of the supported-idele quotient map. -/
@@ -494,25 +446,7 @@ theorem relativeIdeleSupportedToClass_equivariant
         σ •
           relativeIdeleSupportedToClass
             (K := K) (L := L) S z := by
-  let supportedAction :=
-    relativeIdeleLocalTensorDecompositionSupportedSubgroupAction
-      (K := K) (L := L) S
-  let classAction := ideleClassMulDistribMulAction K L
-  intro σ z
-  change
-    QuotientGroup.mk'
-        (RelativeIdeleGroup.principalSubgroup K L)
-        ((σ • z :
-          relativeIdeleLocalTensorDecompositionSupportedSubgroup
-            (K := K) (L := L) S) :
-          RelativeIdeleGroup K L) =
-      σ •
-        QuotientGroup.mk'
-          (RelativeIdeleGroup.principalSubgroup K L)
-          (z : RelativeIdeleGroup K L)
-  rw [
-    relativeIdeleLocalTensorDecompositionSupportedSubgroupAction_coe]
-  exact ideleClassQuotientMap_equivariant K L σ z
+  aesop
 
 omit [IsGalois K L] in
 /-- The diagonal `S`-unit map into supported relative ideles is
@@ -553,29 +487,10 @@ theorem relativeIdeleSupportedToClass_surjective
         relativeIdeleLocalTensorDecompositionSupportedSubgroup
               (K := K) (L := L) S ⊔
             RelativeIdeleGroup.principalSubgroup K L := by
-    rw [hSP]
-    exact Subgroup.mem_top g
+    simp_all
   rw [Subgroup.mem_sup] at hg
   obtain ⟨s, hs, p, hp, hsp⟩ := hg
-  refine ⟨⟨s, hs⟩, ?_⟩
-  change
-    QuotientGroup.mk'
-        (RelativeIdeleGroup.principalSubgroup K L) s =
-      QuotientGroup.mk'
-        (RelativeIdeleGroup.principalSubgroup K L) g
-  rw [← hsp, map_mul]
-  have hpone :
-      QuotientGroup.mk'
-          (RelativeIdeleGroup.principalSubgroup K L) p =
-        1 :=
-    (QuotientGroup.eq_one_iff
-      (N := RelativeIdeleGroup.principalSubgroup K L)
-      (x := p)).2 hp
-  rw [hpone]
-  exact
-    (mul_one
-      (QuotientGroup.mk'
-        (RelativeIdeleGroup.principalSubgroup K L) s)).symm
+  aesop
 
 omit [IsGalois K L] in
 /-- Exactness at the supported relative ideles of
@@ -669,7 +584,7 @@ def RelativeIdeleSupportedHerbrandQuotientDefined
 logarithmic places above a base support.  This is the presentation used
 by the `S`-unit Herbrand theorem. -/
 @[reducible]
-noncomputable def aboveSLogPlaceMulAction
+def aboveSLogPlaceMulAction
     (S : Finset (HeightOneSpectrum (𝓞 K))) :
     MulAction (L ≃ₐ[K] L)
       (SUnitGroup.LogPlace
@@ -683,7 +598,7 @@ noncomputable def aboveSLogPlaceMulAction
 
 /-- Send a logarithmic place of `L` lying over the pulled-back support
 to its underlying unrestricted place of `K`. -/
-noncomputable def logPlaceBelowRelativeUnrestrictedIndex
+def logPlaceBelowRelativeUnrestrictedIndex
     (S : Finset (HeightOneSpectrum (𝓞 K))) :
     SUnitGroup.LogPlace
         (K := L)
@@ -732,11 +647,7 @@ theorem logPlaceBelowRelativeUnrestrictedIndex_smul
       change
         Sum.inl ((σ • W).comap (algebraMap K L)) =
           Sum.inl (W.comap (algebraMap K L))
-      congr 1
-      rw [NumberField.InfinitePlace.comap_smul]
-      congr 1
-      ext x
-      exact σ.symm.commutes x
+      aesop
   | inr W =>
       change
         logPlaceBelowRelativeUnrestrictedIndex
@@ -756,14 +667,10 @@ theorem logPlaceBelowRelativeUnrestrictedIndex_smul
           Sum.inr
             (⟨finitePlaceBelow (K := K) W.1, _⟩ :
               {v : HeightOneSpectrum (𝓞 K) // v ∈ S})
-      congr 1
-      apply Subtype.ext
-      exact
-        finitePlaceBelow_finitePlaceEquiv
-          (K := K) (L := L) σ W.1
+      simp
 
 /-- The map on Galois orbits induced by taking the place below. -/
-noncomputable def logPlaceOrbitBelowRelativeUnrestrictedIndex
+def logPlaceOrbitBelowRelativeUnrestrictedIndex
     (S : Finset (HeightOneSpectrum (𝓞 K))) :
     letI :=
       aboveSLogPlaceMulAction
@@ -811,7 +718,7 @@ theorem logPlaceOrbitBelowRelativeUnrestrictedIndex_mk
 /-- Galois orbits of logarithmic places of `L` above `S` are
 canonically indexed by all infinite places of `K` and the finite
 places in `S`. -/
-noncomputable def
+def
     logPlaceOrbitEquivRelativeUnrestrictedSPlaceIndex
     (S : Finset (HeightOneSpectrum (𝓞 K))) :
     letI :=
@@ -849,8 +756,8 @@ noncomputable def
             | inl W₂ =>
                 have hbelow :
                     W₁.comap (algebraMap K L) =
-                      W₂.comap (algebraMap K L) := by
-                  exact Sum.inl.inj hxy
+                      W₂.comap (algebraMap K L) := 
+                  Sum.inl.inj hxy
                 obtain ⟨σ, hσ⟩ :=
                   NumberField.InfinitePlace.exists_smul_eq_of_comap_eq
                     hbelow
@@ -872,7 +779,7 @@ noncomputable def
                       (⟨finitePlaceBelow (K := K) W₂.1, _⟩ :
                         {v : HeightOneSpectrum (𝓞 K) // v ∈ S})
                   at hxy
-                exact (Sum.inl_ne_inr hxy).elim
+                simp_all
         | inr W₁ =>
             cases b with
             | inl W₂ =>
@@ -882,12 +789,12 @@ noncomputable def
                         {v : HeightOneSpectrum (𝓞 K) // v ∈ S}) =
                     Sum.inl (W₂.comap (algebraMap K L))
                   at hxy
-                exact (Sum.inr_ne_inl hxy).elim
+                simp_all
             | inr W₂ =>
                 have hbelow :
                     finitePlaceBelow (K := K) W₁.1 =
-                      finitePlaceBelow (K := K) W₂.1 := by
-                  exact congrArg Subtype.val (Sum.inr.inj hxy)
+                      finitePlaceBelow (K := K) W₂.1 := 
+                  congrArg Subtype.val (Sum.inr.inj hxy)
                 let v :=
                   finitePlaceBelow (K := K) W₁.1
                 let : Finite (L ≃ₐ[K] L) :=
@@ -902,10 +809,7 @@ noncomputable def
                     simp only [v, finitePlaceBelow_asIdeal]⟩
                 let : W₂.1.asIdeal.LiesOver v.asIdeal :=
                   ⟨by
-                    have h :=
-                      congrArg HeightOneSpectrum.asIdeal hbelow
-                    simpa only [v, finitePlaceBelow_asIdeal]
-                      using h⟩
+                    aesop⟩
                 obtain ⟨σ, hσ⟩ :=
                   HilbertRamification.Dedekind.exists_smul_eq_of_isGaloisGroup
                     v.asIdeal W₁.1.asIdeal W₂.1.asIdeal
@@ -948,14 +852,11 @@ noncomputable def
             (K := K) (L := L) v.1 w
         have hWbelow :
             finitePlaceBelow (K := K) W = v.1 :=
-          finitePlaceBelow_finitePlaceExtensionCentre
-            (K := K) (L := L) v.1 w
+          by aesop
         have hWmem :
             W ∈ finitePlacesAbove
               (K := K) (L := L) S :=
-          (mem_finitePlacesAbove_iff
-            (K := K) (L := L) S W).2
-            (hWbelow ▸ v.2)
+          by simp_all
         refine
           ⟨Quotient.mk''
               (Sum.inr
@@ -963,8 +864,7 @@ noncomputable def
                   finitePlacesAbove
                     (K := K) (L := L) S)), ?_⟩
         apply congrArg Sum.inr
-        apply Subtype.ext
-        exact hWbelow
+        simp_all
 
 /-- The local degree attached to a logarithmic place agrees with the
 local degree attached to its place below. -/
@@ -996,8 +896,7 @@ theorem
       have hcomap :
           W₀.comap (algebraMap K L) =
             W.comap (algebraMap K L) :=
-        chosenInfinitePlaceAbove_comap
-          (L := L) (W.comap (algebraMap K L))
+        by aesop
       obtain ⟨τ, hτ⟩ :=
         NumberField.InfinitePlace.exists_smul_eq_of_comap_eq
           hcomap
@@ -1263,18 +1162,14 @@ theorem
           SUnitGroup (K := L)
             (finitePlacesAbove (K := K) (L := L) S)),
         i (τ • x) = τ • i x := by
-    simpa [i] using
-      (sUnitToRelativeIdeleSupported_equivariant
-        (K := K) (L := L) S)
+    aesop
   have hj :
       ∀ (τ : L ≃ₐ[K] L)
         (z :
           relativeIdeleLocalTensorDecompositionSupportedSubgroup
             (K := K) (L := L) S),
         j (τ • z) = τ • j z := by
-    simpa [j] using
-      (relativeIdeleSupportedToClass_equivariant
-        (K := K) (L := L) S)
+    aesop
   have hker :
       ∀ z :
         relativeIdeleLocalTensorDecompositionSupportedSubgroup
@@ -1344,96 +1239,7 @@ theorem
     div_ne_zero hq hcard
   refine ⟨hC, ?_⟩
   apply mul_left_cancel₀ hfactor
-  calc
-    (q / (Fintype.card (L ≃ₐ[K] L) : ℚ)) *
-          @herbrandQuotient
-            (L ≃ₐ[K] L)
-            (RelativeIdeleGroup.ClassGroup K L)
-            _ _ _ _ σ hC.1 hC.2 =
-        q := by
-      rw [← hUnit, ← hmul, hSupported]
-    _ =
-        (q / (Fintype.card (L ≃ₐ[K] L) : ℚ)) *
-          (Fintype.card (L ≃ₐ[K] L) : ℚ) := by
-      rw [div_mul_cancel₀ q hcard]
-
-/-- The norm-index lower bound obtained from the supported short exact
-sequence. -/
-theorem
-    card_le_ideleClassNorm_index_of_sUnit_supported_values
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
-    (σ : L ≃ₐ[K] L)
-    (hgen : ∀ τ : L ≃ₐ[K] L,
-      τ ∈ Subgroup.zpowers σ)
-    (hSP :
-      relativeIdeleLocalTensorDecompositionSupportedSubgroup
-            (K := K) (L := L) S ⊔
-          RelativeIdeleGroup.principalSubgroup K L =
-        ⊤)
-    (hUnitDefined :
-      AboveSUnitHerbrandQuotientDefined
-        (K := K) (L := L) S σ)
-    (hSupportedDefined :
-      RelativeIdeleSupportedHerbrandQuotientDefined
-        (K := K) (L := L) S σ)
-    (q : ℚ) (hq : q ≠ 0)
-    (hSupported :
-      letI :=
-        relativeIdeleLocalTensorDecompositionSupportedSubgroupAction
-          (K := K) (L := L) S
-      letI : Finite
-          (HerbrandH0 (L ≃ₐ[K] L)
-            (relativeIdeleLocalTensorDecompositionSupportedSubgroup
-              (K := K) (L := L) S)) :=
-        hSupportedDefined.1
-      letI : Finite
-          (HerbrandHMinusOne (L ≃ₐ[K] L)
-            (relativeIdeleLocalTensorDecompositionSupportedSubgroup
-              (K := K) (L := L) S) σ) :=
-        hSupportedDefined.2
-      herbrandQuotient
-          (G := L ≃ₐ[K] L)
-          (A := relativeIdeleLocalTensorDecompositionSupportedSubgroup
-            (K := K) (L := L) S) σ = q)
-    (hUnit :
-      letI :=
-        sUnitMulDistribMulAction K L
-          (finitePlacesAbove (K := K) (L := L) S)
-          (finitePlacesAbove_isGaloisStable
-            (K := K) (L := L) S)
-      letI : Finite
-          (HerbrandH0 (L ≃ₐ[K] L)
-            (SUnitGroup (K := L)
-              (finitePlacesAbove
-                (K := K) (L := L) S))) :=
-        hUnitDefined.1
-      letI : Finite
-          (HerbrandHMinusOne (L ≃ₐ[K] L)
-            (SUnitGroup (K := L)
-              (finitePlacesAbove
-                (K := K) (L := L) S)) σ) :=
-        hUnitDefined.2
-      herbrandQuotient
-          (G := L ≃ₐ[K] L)
-          (A := SUnitGroup (K := L)
-            (finitePlacesAbove (K := K) (L := L) S)) σ =
-        q / (Fintype.card (L ≃ₐ[K] L) : ℚ)) :
-    Fintype.card (L ≃ₐ[K] L) ≤
-      (RelativeIdeleGroup.Cohomology.ideleClassNorm K L).range.index := by
-  let classAction := ideleClassMulDistribMulAction K L
-  obtain ⟨hC, hCvalue⟩ :=
-    ideleClass_herbrandQuotient_eq_card_of_sUnit_supported_values
-      (K := K) (L := L) S σ hgen hSP
-      hUnitDefined hSupportedDefined q hq hSupported hUnit
-  let hC0 := hC.1
-  let hCm := hC.2
-  rw [ideleClassNorm_index_eq_herbrandH0_card K L]
-  apply
-    le_herbrandH0_card_of_herbrandQuotient_eq_nat
-      (G := L ≃ₐ[K] L)
-      (A := RelativeIdeleGroup.ClassGroup K L)
-      σ (Fintype.card (L ≃ₐ[K] L))
-  simpa using hCvalue
+  simp_all
 
 /-- With all local and `S`-unit calculations substituted, an unramified
 sufficiently large support gives an idele-class Herbrand quotient equal
@@ -1531,16 +1337,15 @@ theorem
           (SUnitGroup (K := L) T)
           _ _ _ _ σ hUnit.1 hUnit.2 =
         q / (Fintype.card (L ≃ₐ[K] L) : ℚ) := by
-    rw [hProducts]
-    simpa only [indexAction, ρ, T, hT] using hUnitValue
+    simp_all
   have hSupportedValue' :
       @herbrandQuotient
           (L ≃ₐ[K] L)
           (relativeIdeleLocalTensorDecompositionSupportedSubgroup
             (K := K) (L := L) S)
           _ _ _ _ σ hSupported.1 hSupported.2 =
-        q := by
-    exact hSupportedValue
+        q := 
+    hSupportedValue
   exact
     ideleClass_herbrandQuotient_eq_card_of_sUnit_supported_values
       (K := K) (L := L) S σ hgen hSP
@@ -1578,7 +1383,7 @@ theorem
       (G := L ≃ₐ[K] L)
       (A := RelativeIdeleGroup.ClassGroup K L)
       σ (Fintype.card (L ≃ₐ[K] L))
-  simpa using hCvalue
+  simp_all
 
 /-- Unconditional norm-index lower bound for a cyclic extension, in
 Galois-group-order form. -/
@@ -1608,8 +1413,3 @@ theorem finrank_le_ideleClassNorm_index
     IsGalois.card_aut_eq_finrank K L] using
     card_le_ideleClassNorm_index
       (K := K) (L := L) σ hgen
-
-end Cohomology
-end GlobalClassFieldTheory
-
-end

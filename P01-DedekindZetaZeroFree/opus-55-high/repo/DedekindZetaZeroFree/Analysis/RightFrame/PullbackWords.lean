@@ -28,7 +28,7 @@ section TransportProof
 open Topology
 variable [FiniteDimensional ℝ E] [FiniteDimensional ℝ P] [Fintype B]
 
-private lemma inverse_coefficients (U : Set E) (O : Set P) (hU : IsOpen U) (hO : IsOpen O)
+lemma inverse_coefficients (U : Set E) (O : Set P) (hU : IsOpen U) (hO : IsOpen O)
     (fields : B → E → E) (hfields : ∀ b, ContDiffOn ℝ (⊤ : ℕ∞) (fields b) U)
     (hframe : ∀ x ∈ U, ∃ e : Module.Basis B ℝ E, ∀ b, e b = fields b x)
     (ψ : P → E) (hψ : ContDiffOn ℝ (⊤ : ℕ∞) ψ O) (hψU : Set.MapsTo ψ O U)
@@ -38,9 +38,7 @@ private lemma inverse_coefficients (U : Set E) (O : Set P) (hU : IsOpen U) (hO :
   let A : E → (B → ℝ) →L[ℝ] E := fun x =>
     ∑ b, (ContinuousLinearMap.proj b).smulRight (fields b x)
   have hA : ContDiffOn ℝ (⊤ : ℕ∞) A U := by
-    apply ContDiffOn.sum
-    intro b _
-    exact contDiffOn_const.smulRight (hfields b)
+    fun_prop
   have hAe (x : E) (hx : x ∈ U) : ∃ e : (B → ℝ) ≃L[ℝ] E, A x = e := by
     obtain ⟨e, he⟩ := hframe x hx
     refine ⟨e.equivFunL.symm, ?_⟩
@@ -58,7 +56,7 @@ private lemma inverse_coefficients (U : Set E) (O : Set P) (hU : IsOpen U) (hO :
     obtain ⟨e, he⟩ := hAe x hx
     have hInv : ContDiffAt ℝ (⊤ : ℕ∞) ContinuousLinearMap.inverse (A x) := by
       rw [he]
-      exact contDiffAt_map_inverse e
+      fun_prop
     exact hInv.comp_contDiffWithinAt x (hA x hx)
   let a : B → P → ℝ := fun b x => ContinuousLinearMap.inverse (A (ψ x)) (fderiv ℝ ψ x v) b
   refine ⟨a, ?_, ?_⟩
@@ -68,7 +66,7 @@ private lemma inverse_coefficients (U : Set E) (O : Set P) (hU : IsOpen U) (hO :
   · intro x hx
     obtain ⟨e, he⟩ := hAe (ψ x) (hψU hx)
     have hh : A (ψ x) (ContinuousLinearMap.inverse (A (ψ x)) (fderiv ℝ ψ x v)) = fderiv ℝ ψ x v := by
-      exact (show (A (ψ x)).IsInvertible from ⟨e, he.symm⟩).self_apply_inverse _
+      simp_all
     simpa only [A, a, ContinuousLinearMap.sum_apply, ContinuousLinearMap.smulRight_apply,
       ContinuousLinearMap.proj_apply] using hh.symm
  lemma word_smooth (U : Set E) (hU : IsOpen U)
@@ -80,7 +78,7 @@ private lemma inverse_coefficients (U : Set E) (O : Set P) (hU : IsOpen U) (hO :
   | cons b r ih =>
     exact (ih.fderiv_of_isOpen hU (by simp)).clm_apply (hfields b)
 
-private lemma term_derivative (U : Set E) (O : Set P) (hU : IsOpen U) (hO : IsOpen O)
+lemma term_derivative (U : Set E) (O : Set P) (hU : IsOpen U) (hO : IsOpen O)
     (fields : B → E → E) (hfields : ∀ b, ContDiffOn ℝ (⊤ : ℕ∞) (fields b) U)
     (ψ : P → E) (hψ : ContDiffOn ℝ (⊤ : ℕ∞) ψ O) (hψU : Set.MapsTo ψ O U)
     (v : P) (a : B → P → ℝ)
@@ -169,10 +167,8 @@ private lemma list_transport (U : Set E) (O : Set P) (hU : IsOpen U) (hO : IsOpe
       apply List.map_congr_left
       intro t htmem
       rw [term_derivative U O hU hO fields hfields ψ hψ hψU v a ha t.1 (hts t htmem).1 t.2 u hu x hx]
-      simp only [expand, List.map_cons, List.sum_cons, List.map_map, Function.comp_def,
-        Finset.sum_toList]
-      congr 1
-      exact (Finset.sum_map_toList _ _).symm
+      simp only [expand, List.map_cons, List.sum_cons, List.map_map, Function.comp_def]
+      simp
 
 end TransportProof
 
@@ -199,7 +195,3 @@ theorem transport [FiniteDimensional ℝ E] [FiniteDimensional ℝ P] [Fintype B
     rw [heq u hu x hx]
     conv_lhs => rw [← List.ofFn_get ts, List.map_ofFn, List.sum_ofFn]
     rfl
-
-end DedekindZetaZeroFree.RightFrame.PullbackWords
-
-end

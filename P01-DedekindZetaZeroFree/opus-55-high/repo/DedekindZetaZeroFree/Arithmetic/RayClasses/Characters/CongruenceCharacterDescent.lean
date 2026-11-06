@@ -7,12 +7,11 @@ public import DedekindZetaZeroFree.Arithmetic.RayClasses.Conductors.ModulusIdeal
 open scoped NumberField Classical
 open NumberField IsDedekindDomain
 
-noncomputable section
 namespace DedekindZetaZeroFree.PrimitiveRay
 
 variable {F : Type} [Field F] [NumberField F]
 
-private theorem cast_ray_mk
+theorem cast_ray_mk
     {a b : ClassFieldTheory.RayClassModulus F} (h : a = b)
     (x : ClassFieldTheory.NumberFieldFractionalIdealGroup F)
     (ha : x ∈ ClassFieldTheory.rayClassPrimeToIdeals a)
@@ -64,8 +63,8 @@ theorem rayDescent (hc : NumberField.IsTotallyComplex F)
   let χ := frozenRay F hc m hm ρ₀
   have ht (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) (hcop : I ⊔ m = ⊤) :
       t (frozenIntegralRayClass F m hm I hI hcop) =
-        RayClassBridge.integralRayClass F m hm I hI hcop := by
-    exact cast_ray_mk hMN (RayClassBridge.integralUnit F I hI) _ _
+        RayClassBridge.integralRayClass F m hm I hI hcop := 
+    cast_ray_mk hMN (RayClassBridge.integralUnit F I hI) _ _
   have heval (I : Ideal (𝓞 F)) : χ I =
       if h : I ≠ ⊥ ∧ I ⊔ m = ⊤ then
         (ρ (RayClassBridge.integralRayClass F m hm I h.1 h.2) : ℂ) else 0 := by
@@ -76,15 +75,14 @@ theorem rayDescent (hc : NumberField.IsTotallyComplex F)
     · rfl
   have hρ (c : IdeleClassGroup F) : ρ (e.symm (QuotientGroup.mk' H c)) = Φ c := by
     change (QuotientGroup.lift H Φ hdefining) (e (e.symm (QuotientGroup.mk' H c))) = _
-    rw [e.apply_symm_apply]
-    exact QuotientGroup.lift_mk' H hdefining c
+    simp
   have hfrac : ρ.comp (QuotientGroup.mk'
       (ClassFieldTheory.rayPrincipalIdealSubgroupInPrimeTo N)) =
       RayClassBridge.fractionalCharacter F m hm χ := by
     apply RayClassBridge.fractionalCharacter_unique F m hm χ
     intro I hI hcop
     change (ρ (RayClassBridge.integralRayClass F m hm I hI hcop) : ℂ) = χ I
-    rw [heval, dif_pos ⟨hI, hcop⟩]
+    simp_all
   have hray : ρ = RayClassBridge.rayCharacter F hc m hm χ := by
     apply MonoidHom.ext
     intro c
@@ -98,7 +96,3 @@ theorem rayDescent (hc : NumberField.IsTotallyComplex F)
   change RayClassBridge.rayCharacter F hc m hm χ (e.symm (QuotientGroup.mk' H c)) = Φ c
   rw [← hray]
   exact hρ c
-
-end DedekindZetaZeroFree.PrimitiveRay
-
-end

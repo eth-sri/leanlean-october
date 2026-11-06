@@ -27,7 +27,7 @@ variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
 variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
 variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
-private theorem scalarCovered_continuous (f : S_U F ζ hζ U R P H) :
+theorem scalarCovered_continuous (f : S_U F ζ hζ U R P H) :
     Continuous (scalarCovered f).val := by
   have hspec := Classical.choose_spec
     (scalar_gluing (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) f)
@@ -38,7 +38,7 @@ private theorem scalarCovered_continuous (f : S_U F ζ hζ U R P H) :
   exact (KPContSectorLineL2Isometry.continuous_iff F ζ hζ U R P H (scalarSections f)).mp
     (fun i => (hsmooth i).continuous)
 
-private theorem scalarCovered_hasCompactSupport (f : S_U F ζ hζ U R P H) :
+theorem scalarCovered_hasCompactSupport (f : S_U F ζ hζ U R P H) :
     HasCompactSupport (scalarCovered f).val := by
   have hspec := Classical.choose_spec
     (scalar_gluing (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) f)
@@ -203,14 +203,14 @@ def cotangentSquareFamily : T_U F ζ hζ U R P H →ₗ[ℂ]
 def j : T_U F ζ hζ U R P H →ₗ[ℂ] KPContActualSectorCotangentL2.V F ζ hζ U R P H :=
   (KPContActualSectorCotangentL2.ofFamily F ζ hζ U R P H).comp cotangentSquareFamily
 
-private theorem chi_unit (i : Fin (H.atlas U).componentCount) (ε : rootsOfUnity 3 F) :
+theorem chi_unit (i : Fin (H.atlas U).componentCount) (ε : rootsOfUnity 3 F) :
     ‖(KPCuspGenuineMonodromy.chi F ζ hζ ε : ℂ)‖ = 1 :=
   ((H.atlas U).line i).unitary ε
 
-private theorem chi_unit' (i : Fin (H.atlas U).componentCount) (ε : rootsOfUnity 3 F) :
+theorem chi_unit' (i : Fin (H.atlas U).componentCount) (ε : rootsOfUnity 3 F) :
     ‖(chi F ζ hζ ε : ℂ)‖ = 1 := chi_norm F ζ hζ ε
 
-private theorem inner_mul_mul_of_norm_one (c a b : ℂ) (hc : ‖c‖ = 1) :
+theorem inner_mul_mul_of_norm_one (c a b : ℂ) (hc : ‖c‖ = 1) :
     inner ℂ (c * a) (c * b) = inner ℂ a b := by
   rw [← smul_eq_mul, ← smul_eq_mul, inner_smul_left, inner_smul_right, ← mul_assoc]
   have h : (starRingEnd ℂ) c * c = 1 := by
@@ -218,7 +218,7 @@ private theorem inner_mul_mul_of_norm_one (c a b : ℂ) (hc : ‖c‖ = 1) :
     simp
   rw [h, one_mul]
 
-private theorem scalarPair_covariant (s t : Sections F ζ hζ U R P H)
+theorem scalarPair_covariant (s t : Sections F ζ hζ U R P H)
     (i : Fin (H.atlas U).componentCount)
     (γ : KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative i))
     (x : SymmetricSpace F) :
@@ -249,7 +249,7 @@ private theorem scalarPair_covariant (s t : Sections F ζ hζ U R P H)
     KPFiniteCuspAtlas.rawXU F ζ hζ U → ℂ :=
   fun b => pairOnSigma s t ((H.atlas U).components.symm b)
 
-private theorem scalarPairSections_components (s t : Sections F ζ hζ U R P H)
+theorem scalarPairSections_components (s t : Sections F ζ hζ U R P H)
     (i : Fin (H.atlas U).componentCount) (z : SymmetricSpace F) :
     scalarPairSections s t ((H.atlas U).components ⟨i, Quotient.mk _ z⟩) =
       inner ℂ ((s i).val z) ((t i).val z) := by
@@ -646,7 +646,7 @@ theorem scalar_base_memLp (f : S_U F ζ hζ U R P H) :
     KPContSectorLineL2Isometry.normIntegral, KPContSectorLineL2Isometry.squaredNorm]
     using s.property.2
 
-private theorem scalar_chart_norm_aux (a : ActualChart (U := U) (H := H))
+theorem scalar_chart_norm_aux (a : ActualChart (U := U) (H := H))
     (s : Sections F ζ hζ U R P H) (y : a.domain) :
     sectionNorm F ζ hζ U R P H s (a.toBase y) = ‖(a.coefficient s y : ℂ)‖ := by
   change sectionNorm F ζ hζ U R P H s
@@ -655,7 +655,7 @@ private theorem scalar_chart_norm_aux (a : ActualChart (U := U) (H := H))
   rw [← (H.atlas U).components_formula]
   exact sectionNorm_component F ζ hζ U R P H s a.component y.val
 
-private theorem scalarCoefficient_memLp (a : ActualChart (U := U) (H := H))
+theorem scalarCoefficient_memLp (a : ActualChart (U := U) (H := H))
     (s : KPContSectorLineL2Isometry.BorelL2Sections F ζ hζ U R P H) :
     MemLp (fun y : a.domain => (a.coefficient s.val y : ℂ)) 2 a.liftedMeasure := by
   have hmeas : Measurable (fun y : a.domain => (a.coefficient s.val y : ℂ)) :=
@@ -684,7 +684,7 @@ private theorem scalarCoefficient_memLp (a : ActualChart (U := U) (H := H))
       setLIntegral_le_lintegral _ _
     _ < ⊤ := s.property.2
 
-private theorem scalar_field_coefficient_aux (a : ActualChart (U := U) (H := H))
+theorem scalar_field_coefficient_aux (a : ActualChart (U := U) (H := H))
     (s : Sections F ζ hζ U R P H) (y : a.domain) :
     sectionFields s a (coordinates a y) = (a.coefficient s y : ℂ) := by
   have hi : ∀ v : KPCuspGenuineMonodromy.SymmetricSpace F,
@@ -742,7 +742,7 @@ private theorem continuous_normSquare_of_continuous (v : Family (U := U) (H := H
     rw [continuousOn_iff_continuous_domRestrict]
     exact hF'
 
-private theorem normSquare_self_sub (v : Family (U := U) (H := H)) :
+theorem normSquare_self_sub (v : Family (U := U) (H := H)) :
     normSquare (v - v) = 0 := by
   refine ((Classical.choose_spec (normSquare_descends (v - v))).2
     (fun _ => (0 : NNReal))

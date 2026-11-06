@@ -12,7 +12,6 @@ open NumberField IsDedekindDomain MeasureTheory
 namespace DedekindZetaZeroFree.KPGlobalTorusBorelTwistCompatibilityBorelInduction.UniformFiberLevel
 open KPGlobalTorusBorelNormTwistTransport
 noncomputable section
-set_option autoImplicit false
 set_option maxHeartbeats 800000
 set_option maxRecDepth 2000
 
@@ -45,8 +44,7 @@ theorem exists_conjugate_finite_level
   obtain ⟨u, hu, he⟩ := t.property
   refine ⟨e u, hu, ?_⟩
   change g⁻¹ * u.val * g = g⁻¹ * t.val * g
-  change u.val = t.val at he
-  rw [he]
+  simp_all
 
 end
 end DedekindZetaZeroFree.KPGlobalTorusBorelTwistCompatibilityBorelInduction.UniformFiberLevel
@@ -61,14 +59,13 @@ open NumberField IsDedekindDomain MeasureTheory
 namespace DedekindZetaZeroFree.KPGlobalTorusBorelTwistCompatibilityBorelInduction.UniformFiberLevel
 open KPGlobalTorusBorelNormTwistTransport
 noncomputable section
-set_option autoImplicit false
 set_option maxHeartbeats 800000
 set_option maxRecDepth 2000
 
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-private theorem ordinaryTorus_isClosed :
+theorem ordinaryTorus_isClosed :
     IsClosed (KPGlobalTorusFunctionData.ordinaryTorus F :
       Set (KPAdelicCoverRestrictedProduct.AdelicPGL2 F)) := by
   let q := QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F)
@@ -84,17 +81,14 @@ private theorem ordinaryTorus_isClosed :
       obtain ⟨z, hz, he⟩ := hB
       obtain ⟨u, rfl⟩ := hz
       rw [← he]
-      simp [Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
-        Matrix.mul_apply, Matrix.scalar, Fin.sum_univ_two, h01, h10]
+      simp [Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_apply, Matrix.scalar, Fin.sum_univ_two, h01, h10]
     · intro h
       exact ⟨A, rfl, h⟩
   change IsClosed (q ⁻¹' (KPGlobalTorusFunctionData.ordinaryTorus F : Set _))
   rw [he]
   have hc (i j : Fin 2) : Continuous
       (fun A : KPGlobalTorusFunctionData.AdelicMatrixGroup F => A i j) :=
-    (continuous_apply j).comp ((continuous_apply i).comp
-      (Units.continuous_val : Continuous
-        (fun A : KPGlobalTorusFunctionData.AdelicMatrixGroup F => A.val)))
+    by fun_prop
   exact (isClosed_eq (hc 1 0) continuous_const).inter
     (isClosed_eq (hc 0 1) continuous_const)
 
@@ -131,7 +125,6 @@ open NumberField IsDedekindDomain MeasureTheory
 namespace DedekindZetaZeroFree.KPGlobalTorusBorelTwistCompatibilityBorelInduction.UniformFiberLevel
 open KPGlobalTorusBorelNormTwistTransport
 noncomputable section
-set_option autoImplicit false
 set_option maxHeartbeats 800000
 set_option maxRecDepth 2000
 
@@ -223,8 +216,3 @@ theorem exists_uniform_chart_fiber_level
   obtain ⟨U, hc, hconj⟩ := exists_compact_conjugate_torus_level F ζ hζ J g
   exact ⟨U, fun P f z =>
     chart_fiber_mem_torusSmoothLevel F ζ hζ P J U g hc hconj f z⟩
-
-end
-end DedekindZetaZeroFree.KPGlobalTorusBorelTwistCompatibilityBorelInduction.UniformFiberLevel
-
-end

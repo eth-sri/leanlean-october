@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Supported idele power quotient
 
@@ -32,7 +27,6 @@ open KummerTheory
 open LocalFieldTheory
 open LocalFieldTheory.IsNonarchimedeanLocalField
 
-noncomputable section
 
 namespace GlobalClassFieldTheory.ClassFieldAxiom
 
@@ -192,18 +186,8 @@ theorem prod_infinitePlace_nthPowerIndex
             if w.1.IsReal then 2 else 1) =
           ∏ _w : {w : InfinitePlace K // w.IsReal}, 2 := by
       apply Finset.prod_congr rfl
-      intro w _
-      rw [ite_eq_left w.2]
-    have hc :
-        (∏ w : {w : InfinitePlace K // w.IsComplex},
-            if w.1.IsReal then 2 else 1) =
-          ∏ _w : {w : InfinitePlace K // w.IsComplex}, 1 := by
-      apply Finset.prod_congr rfl
-      intro w _
-      rw [ite_eq_right
-        (InfinitePlace.not_isReal_iff_isComplex.mpr w.2)]
-    rw [hr, hc]
-    simp [InfinitePlace.nrRealPlaces]
+      simp
+    simp_all
   · simp [hn]
 
 /-- The archimedean signature calculation used together with the finite
@@ -246,10 +230,7 @@ theorem prod_infinitePlace_nthPowerIndex_mul_natDegree
         (n : ℕ) = 1 ∨ (n : ℕ) = 2 := by
       omega
     rcases hone_or_two with hone | htwo
-    · have hn : n = (1 : ℕ+) := Subtype.ext hone
-      subst n
-      rw [harch]
-      simp
+    · simp_all
     · have hn : n = (2 : ℕ+) := Subtype.ext htwo
       subst n
       rw [harch]
@@ -344,8 +325,3 @@ theorem card_supportedIdeleQuotient_eq_power_two_totalPlaceCard
       congr 1
       unfold totalPlaceCard
       omega
-
-
-end GlobalClassFieldTheory.ClassFieldAxiom
-
-end

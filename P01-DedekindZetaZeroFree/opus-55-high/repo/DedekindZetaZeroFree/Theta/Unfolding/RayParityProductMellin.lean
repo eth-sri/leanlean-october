@@ -23,7 +23,7 @@ instance sigmaFinite_positiveHaar : SigmaFinite «μ₊» := by
   unfold «μ₊»
   exact (withDensity_absolutelyContinuous _ _).ae_le
     (ae_restrict_mem measurableSet_Ioi)
-private theorem multiplicative_density_kernel (f : ℝ → ℂ) (s : ℂ)
+theorem multiplicative_density_kernel (f : ℝ → ℂ) (s : ℂ)
     (q : ℝ) (hq : 0 < q) :
     (ENNReal.ofReal q⁻¹).toReal • (f q * (q : ℂ) ^ s) =
       f q * (q : ℂ) ^ (s - 1) := by
@@ -176,7 +176,7 @@ theorem gδ_Q_eq_prod (δ : Finset (RayCoset.RealPlaces K))
     simp only [traceRealCoordinateCLM_eq_traceToMixed, Q,
       ContinuousLinearEquiv.apply_symm_apply, mixedSpaceOfRealSpace_apply,
       Prod.fst_mul, Pi.mul_apply]
-    rw [Fintype.prod_ite_mem]
+    simp
   rw [gδ, hp, Theta.latticeGaussian, ← Complex.ofReal_pow,
     ← Complex.ofReal_neg, ← Complex.ofReal_mul, norm_sq_Q,
     Finset.prod_mul_distrib]
@@ -341,7 +341,3 @@ theorem integral_gδ_mellin (δ : Finset (RayCoset.RealPlaces K))
           integral_complex_multiplicative_mellin s hs
             (‖(Theta.traceToMixed K x).2 v‖ ^ 2)
             (sq_pos_of_pos (norm_pos_iff.mpr (hxComplex v)))
-
-end DedekindZetaZeroFree.AbelianQuotient.RayParity
-
-end

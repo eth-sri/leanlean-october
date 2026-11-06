@@ -47,9 +47,5 @@ def testSpace (T : Finset (HeightOneSpectrum (𝓞 F))) :
 
 theorem theta_const_mul (T : Finset (HeightOneSpectrum (𝓞 F)))
     (c : ℂ) (f : PoissonS.Space F T → ℂ) :
-    theta F T (fun x => c * f x) = c * theta F T f := by
-  exact tsum_mul_left
-
-end DedekindZetaZeroFree.QuadraticRawProduct
-
-end
+    theta F T (fun x => c * f x) = c * theta F T f := 
+  tsum_mul_left

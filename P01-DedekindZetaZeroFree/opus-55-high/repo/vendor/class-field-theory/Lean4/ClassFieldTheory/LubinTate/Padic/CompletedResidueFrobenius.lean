@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Residue Frobenius on completed p-adic Lubin--Tate levels
 
@@ -106,7 +102,7 @@ theorem padicCompletedLevel_residueMap_surjective
 
 /-- The canonical residue-field equivalence from the completed-unramified
 coefficient field to a completed multiplicative level. -/
-noncomputable def padicCompletedLevelResidueFieldEquiv
+def padicCompletedLevelResidueFieldEquiv
     (p : ℕ) [Fact p.Prime] (n : ℕ) :
     (padicCompletedUnramifiedCompleteDVF p).residueField ≃+*
       (padicCompletedLevelCompleteDVF p n).residueField :=
@@ -127,25 +123,7 @@ theorem padicCompletedLevelResidueFieldEquiv_apply
         (padicCompletedLevelCompleteDVF p n).toDVF x :=
   rfl
 
-/-- On integral representatives, the completed-level residue equivalence is
-the residue of the canonical valuation-ring inclusion. -/
-@[simp]
-theorem padicCompletedLevelResidueFieldEquiv_apply_residue
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (a : (padicCompletedUnramifiedCompleteDVF p).valuationSubring) :
-    padicCompletedLevelResidueFieldEquiv p n
-        ((padicCompletedUnramifiedCompleteDVF p).residueMap a) =
-      (padicCompletedLevelCompleteDVF p n).residueMap
-        (integerMap
-          (padicCompletedUnramifiedCompleteDVF p).toDVF
-          (padicCompletedLevelCompleteDVF p n).toDVF a) := by
-  exact
-    residueFieldEquivOfSurjective_apply_residue
-      (padicCompletedUnramifiedCompleteDVF p).toDVF
-      (padicCompletedLevelCompleteDVF p n).toDVF
-      (padicCompletedLevel_residueMap_surjective p n) a
-
-private theorem
+theorem
     padicCompletedUnramifiedWitt_residue_frobenius_eq_pow
     (p : ℕ) [Fact p.Prime]
     (a : padicCompletedUnramifiedWittRing p) :
@@ -165,7 +143,7 @@ private theorem
           (WittVector.frobenius a - a ^ p) = 0
       rw [map_sub, map_pow, WittVector.constantCoeff_apply,
         WittVector.coeff_frobenius_charP]
-      exact sub_self _
+      simp
     _ =
         IsLocalRing.residue (padicCompletedUnramifiedWittRing p) a ^ p := by
       rw [map_pow]
@@ -194,8 +172,6 @@ theorem
       coefficientResidueEquiv (IsLocalRing.residue W a) =
         target.residueMap
           (padicCompletedLevelWittCoefficientHom p n a) := by
-    simp only [coefficientResidueEquiv, RingEquiv.trans_apply,
-      IsLocalRing.ResidueField.mapEquiv_apply]
     rfl
   obtain ⟨z, rfl⟩ := coefficientResidueEquiv.surjective x
   obtain ⟨a, rfl⟩ := IsLocalRing.residue_surjective z
@@ -206,7 +182,6 @@ theorem
         target.residueMap
           (padicCompletedUnitFrobeniusIntegerEquiv p n u
             (padicCompletedLevelWittCoefficientHom p n a)) := by
-      rw [hcoefficient]
       rfl
     _ =
         target.residueMap
@@ -223,7 +198,3 @@ theorem
       rw [padicCompletedUnramifiedWitt_residue_frobenius_eq_pow]
     _ = coefficientResidueEquiv (IsLocalRing.residue W a) ^ p := by
       rw [map_pow]
-
-end LubinTate
-
-end

@@ -10,7 +10,7 @@ namespace DedekindZetaZeroFree.LargeSieve.Sieve
 
 open scoped NumberField Classical
 
-private lemma paperShell_subset_boundedNormIdeals (F : Type) [Field F] [NumberField F]
+lemma paperShell_subset_boundedNormIdeals (F : Type) [Field F] [NumberField F]
     (c : Ideal (𝓞 F)) (T : ℝ) :
     paperShell F c T ⊆ DedekindZetaZeroFree.LargeSieve.boundedNormIdeals F (2 * T) := by
   intro I hI
@@ -18,7 +18,7 @@ private lemma paperShell_subset_boundedNormIdeals (F : Type) [Field F] [NumberFi
   rw [DedekindZetaZeroFree.LargeSieve.mem_boundedNormIdeals]
   exact hI.2.2.2
 
-private lemma card_paperShell_le (F : Type) [Field F] [NumberField F]
+lemma card_paperShell_le (F : Type) [Field F] [NumberField F]
     (c : Ideal (𝓞 F)) (T : ℝ) {A : ℝ}
     (count : ∀ X : ℝ, 1 ≤ X → ((DedekindZetaZeroFree.LargeSieve.boundedNormIdeals F X).card : ℝ) ≤ A * X)
     (hT : 1 ≤ 2 * T) :
@@ -28,7 +28,7 @@ private lemma card_paperShell_le (F : Type) [Field F] [NumberField F]
   have h2 : ((DedekindZetaZeroFree.LargeSieve.boundedNormIdeals F (2 * T)).card : ℝ) ≤ A * (2 * T) := count (2 * T) hT
   exact le_trans (by exact_mod_cast h1) h2
 
-private lemma paperShell_subset_singleton_top (F : Type) [Field F] [NumberField F]
+lemma paperShell_subset_singleton_top (F : Type) [Field F] [NumberField F]
     (c : Ideal (𝓞 F)) (T : ℝ) (hT : T < 1) :
     paperShell F c T ⊆ {⊤} := by
   intro I hI
@@ -46,12 +46,12 @@ private lemma paperShell_subset_singleton_top (F : Type) [Field F] [NumberField 
     exact_mod_cast h
   exact Ideal.absNorm_eq_one_iff.mp (le_antisymm (by omega) hpos)
 
-private lemma card_paperShell_le_one (F : Type) [Field F] [NumberField F]
+lemma card_paperShell_le_one (F : Type) [Field F] [NumberField F]
     (c : Ideal (𝓞 F)) (T : ℝ) (hT : T < 1) : (paperShell F c T).card ≤ 1 := by
   have := Finset.card_le_card (paperShell_subset_singleton_top F c T hT)
   simpa using this
 
-private lemma paperShell_chi_norm_le_one
+lemma paperShell_chi_norm_le_one
     {F : Type} [Field F] [NumberField F]
     {c : Ideal (𝓞 F)} (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
     {q : Ideal (𝓞 F)} (hcq : c ∣ q) {T : ℝ}
@@ -66,7 +66,7 @@ private lemma paperShell_chi_norm_le_one
     top_le_iff.mp (le_trans (le_of_eq hcop.symm) (sup_le_sup_left hqc u))
   exact DedekindZetaZeroFree.LargeSieve.quadraticFamily_norm_le_one Q hsf hc v
 
-private lemma inner_paperShell_sq_le
+lemma inner_paperShell_sq_le
     {F : Type} [Field F] [NumberField F]
     {c : Ideal (𝓞 F)} (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
     {q : Ideal (𝓞 F)} (hcq : c ∣ q) (T : ℝ)
@@ -91,7 +91,7 @@ private lemma inner_paperShell_sq_le
       (fun u => ‖μ u‖) (fun _ => (1 : ℝ))
   have hCS' : (∑ u ∈ paperShell F q T, ‖μ u‖) ^ 2 ≤
       (∑ u ∈ paperShell F q T, ‖μ u‖ ^ 2) * ((paperShell F q T).card : ℝ) := by
-    simpa [Finset.sum_const, nsmul_eq_mul] using hCS
+    simp_all
   calc ‖∑ u ∈ paperShell F q T, μ u * α u * (Q.χ u) v‖ ^ 2
       ≤ (∑ u ∈ paperShell F q T, ‖μ u‖) ^ 2 := by
         nlinarith [hsum, norm_nonneg (∑ u ∈ paperShell F q T, μ u * α u * (Q.χ u) v),
@@ -99,7 +99,7 @@ private lemma inner_paperShell_sq_le
     _ ≤ (∑ u ∈ paperShell F q T, ‖μ u‖ ^ 2) * ((paperShell F q T).card : ℝ) := hCS'
     _ = ((paperShell F q T).card : ℝ) * ∑ u ∈ paperShell F q T, ‖μ u‖ ^ 2 := by ring
 
-private lemma masked_sum_le_card_mul
+lemma masked_sum_le_card_mul
     {F : Type} [Field F] [NumberField F]
     {c : Ideal (𝓞 F)} (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
     {q : Ideal (𝓞 F)} (hcq : c ∣ q) (S T : ℝ)
@@ -134,7 +134,7 @@ private lemma masked_sum_le_card_mul
           (((paperShell F q T).card : ℝ) * ∑ u ∈ paperShell F q T, ‖μ u‖ ^ 2) := by
         rw [Finset.sum_const, nsmul_eq_mul]
 
-private lemma two_A_scale_le {A C ε x E : ℝ} (hA : 1 ≤ A) (hC : 0 ≤ C) (hε : 0 ≤ ε)
+lemma two_A_scale_le {A C ε x E : ℝ} (hA : 1 ≤ A) (hC : 0 ≤ C) (hε : 0 ≤ ε)
     (hx : 1 ≤ x) (hE : 0 ≤ E) :
     2 * A * x * E ≤ (C + 2 * A + 1) * x ^ ε * (x + 1) * E := by
   have hr : 1 ≤ x ^ ε := Real.one_le_rpow hx hε
@@ -172,7 +172,7 @@ theorem peeling_masked_small_shells
       (C + 2 * A + 1) * (max 1 S * max 1 T) ^ ε * (max 1 S + max 1 T) *
         ∑ u ∈ paperShell F q T, ‖μ u‖ ^ 2 := by
   set E := ∑ u ∈ paperShell F q T, ‖μ u‖ ^ 2 with hE
-  have hE0 : 0 ≤ E := by rw [hE]; exact Finset.sum_nonneg (fun u _ => sq_nonneg _)
+  have hE0 : 0 ≤ E := by positivity
   rcases le_or_gt 1 S with hS1 | hS1
   · rcases le_or_gt 1 T with hT1 | hT1
     ·
@@ -208,12 +208,10 @@ theorem peeling_masked_small_shells
         _ ≤ C * (S * T) ^ ε * (S + T) * ∑ u ∈ paperShell F q T, ‖μ u * α u‖ ^ 2 := hcore'
         _ ≤ C * (S * T) ^ ε * (S + T) * E :=
               mul_le_mul_of_nonneg_left hinner (by
-                have h1 : 0 ≤ (S * T) ^ ε := Real.rpow_nonneg (by positivity) ε
                 positivity)
         _ ≤ (C + 2 * A + 1) * (max 1 S * max 1 T) ^ ε * (max 1 S + max 1 T) * E := by
               rw [max_eq_right hS1, max_eq_right hT1]
               have hP : 0 ≤ (S * T) ^ ε * (S + T) * E := by
-                have h1 : 0 ≤ (S * T) ^ ε := Real.rpow_nonneg (by positivity) ε
                 positivity
               nlinarith [hP, hA, hC, hE0]
     ·
@@ -284,7 +282,7 @@ theorem peeling_masked_small_shells
           (C + 2 * A + 1) * (max 1 S * max 1 T) ^ ε * (max 1 S + max 1 T) * E := by
         rw [max_eq_left (le_of_lt hS1), max_eq_left (le_of_lt hT1)]
         have hr : (1 : ℝ) ≤ ((1 : ℝ) * 1) ^ ε := by
-          rw [mul_one]; exact Real.one_le_rpow le_rfl hε
+          simp
         have hK0 : 0 ≤ C + 2 * A + 1 := by linarith
         have h1 : (1 : ℝ) ≤ C + 2 * A + 1 := by linarith
         have h2 : (1 : ℝ) ≤ (1 + 1 : ℝ) := by norm_num
@@ -294,9 +292,7 @@ theorem peeling_masked_small_shells
           have houter : ((1 : ℝ) * 1) * 1 ≤
               ((C + 2 * A + 1) * ((1 : ℝ) * 1) ^ ε) * (1 + 1) :=
             mul_le_mul hinner h2 (by norm_num) (by positivity)
-          calc (1 : ℝ) = (1 * 1) * 1 := by ring
-            _ ≤ ((C + 2 * A + 1) * ((1 : ℝ) * 1) ^ ε) * (1 + 1) := houter
-            _ = (C + 2 * A + 1) * ((1 : ℝ) * 1) ^ ε * (1 + 1) := by ring
+          simp_all
         calc E = 1 * E := by ring
           _ ≤ (C + 2 * A + 1) * ((1 : ℝ) * 1) ^ ε * (1 + 1) * E :=
               mul_le_mul_of_nonneg_right hmain hE0
@@ -326,8 +322,8 @@ theorem peeling_masked_small_shells_rescaled
         ∑ u ∈ paperShell F q (N / T0), ‖μ u‖ ^ 2 := by
   have hRpos : (0 : ℝ) < R := by linarith
   have hT0pos : (0 : ℝ) < T0 := by linarith
-  have hMpos : 0 < M / R := div_pos (by linarith) hRpos
-  have hNpos : 0 < N / T0 := div_pos (by linarith) hT0pos
+  have hMpos : 0 < M / R := by positivity
+  have hNpos : 0 < N / T0 := by positivity
   have hmain := peeling_masked_small_shells F c Q q hq hcq ε C A hε hC hA count core
       (M / R) (N / T0) hMpos hNpos μ α β hα hβ
   have hSle : max 1 (M / R) ≤ M := by
@@ -338,11 +334,11 @@ theorem peeling_masked_small_shells_rescaled
     apply max_le (by linarith)
     rw [div_le_iff₀ hT0pos]
     nlinarith
-  have hS0 : 0 ≤ max 1 (M / R) := le_trans zero_le_one (le_max_left _ _)
-  have hT0' : 0 ≤ max 1 (N / T0) := le_trans zero_le_one (le_max_left _ _)
+  have hS0 : 0 ≤ max 1 (M / R) := by simp
+  have hT0' : 0 ≤ max 1 (N / T0) := by simp
   have hK : 0 ≤ C + 2 * A + 1 := by linarith
   have hE : 0 ≤ ∑ u ∈ paperShell F q (N / T0), ‖μ u‖ ^ 2 :=
-    Finset.sum_nonneg (fun u _ => sq_nonneg _)
+    by positivity
   have hprod : max 1 (M / R) * max 1 (N / T0) ≤ M * N :=
     mul_le_mul hSle hTle hT0' (by linarith)
   have hrpow : (max 1 (M / R) * max 1 (N / T0)) ^ ε ≤ (M * N) ^ ε :=
@@ -355,5 +351,3 @@ theorem peeling_masked_small_shells_rescaled
     _ ≤ (C + 2 * A + 1) * (M * N) ^ ε * (M + N) *
           ∑ u ∈ paperShell F q (N / T0), ‖μ u‖ ^ 2 := by
         gcongr
-
-end DedekindZetaZeroFree.LargeSieve.Sieve

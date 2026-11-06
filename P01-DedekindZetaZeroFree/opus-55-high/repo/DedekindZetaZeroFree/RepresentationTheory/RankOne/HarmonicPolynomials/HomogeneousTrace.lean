@@ -22,16 +22,15 @@ def sphereMatrix (g : ComplexSU2) : Matrix (Fin 3) (Fin 3) ℂ :=
     2*a.re*b.re-2*a.im*b.im, 2*a.re*b.im+2*a.im*b.re, b.re^2+b.im^2-a.re^2-a.im^2]
       : Matrix (Fin 3) (Fin 3) ℝ) i j) : ℂ)
 
-private lemma top_entries (g : ComplexSU2) :
+lemma top_entries (g : ComplexSU2) :
     (g : Matrix (Fin 2) (Fin 2) ℂ) 0 0 = star ((g : Matrix (Fin 2) (Fin 2) ℂ) 1 1) ∧
     (g : Matrix (Fin 2) (Fin 2) ℂ) 0 1 = -star ((g : Matrix (Fin 2) (Fin 2) ℂ) 1 0) := by
   have hg := Matrix.specialUnitaryGroup.star_eq_adjugate g
   have h00 := congrArg (fun M : Matrix (Fin 2) (Fin 2) ℂ => M 1 1) hg
   have h01 := congrArg (fun M : Matrix (Fin 2) (Fin 2) ℂ => M 1 0) hg
-  simp [Matrix.star_eq_conjTranspose, Matrix.adjugate_fin_two, Matrix.trace_fin_two] at h00
+  simp [Matrix.trace_fin_two] at h00
   have h10 := congrArg (fun M : Matrix (Fin 2) (Fin 2) ℂ => M 0 1) hg
-  simp [Matrix.star_eq_conjTranspose, Matrix.adjugate_fin_two] at h10
-  exact ⟨h00.symm, by simpa using (neg_eq_iff_eq_neg.mpr h10).symm⟩
+  simp_all
 
 theorem sphereMatrix_mul (g h : ComplexSU2) :
     sphereMatrix (g * h) = sphereMatrix h * sphereMatrix g := by
@@ -53,7 +52,7 @@ theorem coefficientAction_one (p : Polynomial) : coefficientAction 1 p = p := by
   have h : coefficientAction 1 = AlgHom.id ℂ Polynomial := by
     ext i
     simp [coefficientAction, sphereMatrix_one, Matrix.one_apply]
-  exact congrArg (fun f : Polynomial →ₐ[ℂ] Polynomial => f p) h
+  simp_all
 
 theorem coefficientAction_mul (g h : ComplexSU2) (p : Polynomial) :
     coefficientAction (g * h) p = coefficientAction g (coefficientAction h p) := by
@@ -62,11 +61,10 @@ theorem coefficientAction_mul (g h : ComplexSU2) (p : Polynomial) :
     intro i
     simp only [coefficientAction, AlgHom.comp_apply, MvPolynomial.aeval_X, map_sum,
       map_mul, MvPolynomial.aeval_C, sphereMatrix_mul, Matrix.mul_apply]
-    simp only [Finset.mul_sum, Finset.sum_mul, ← mul_assoc, ← MvPolynomial.C_mul,
-      ← map_sum]
+    simp only [Finset.mul_sum, ← mul_assoc, ← MvPolynomial.C_mul, ← map_sum]
     simp only [MvPolynomial.algebraMap_eq, map_sum, Finset.sum_mul, ← MvPolynomial.C_mul]
     rw [Finset.sum_comm]
-  exact congrArg (fun f : Polynomial →ₐ[ℂ] Polynomial => f p) hh
+  simp_all
 
 def u : Polynomial := MvPolynomial.X 0 + MvPolynomial.C Complex.I * MvPolynomial.X 1
 def v : Polynomial := MvPolynomial.X 0 - MvPolynomial.C Complex.I * MvPolynomial.X 1
@@ -76,8 +74,8 @@ theorem torus_weights (z : Circle) :
     coefficientAction (TauCeti.SU2.torusHom z) u = (z : ℂ)^2 • u ∧
     coefficientAction (TauCeti.SU2.torusHom z) v = (z : ℂ)^(-2 : ℤ) • v ∧
     coefficientAction (TauCeti.SU2.torusHom z) w = w := by
-  have hz : (z : ℂ) = ((z : ℂ).re : ℂ) + Complex.I * ((z : ℂ).im : ℂ) := by
-    exact (Complex.re_add_im _).symm.trans (by ring)
+  have hz : (z : ℂ) = ((z : ℂ).re : ℂ) + Complex.I * ((z : ℂ).im : ℂ) := 
+    (Complex.re_add_im _).symm.trans (by ring)
   have hinv : ((z : ℂ)^2)⁻¹ = (starRingEnd ℂ (z : ℂ)) ^ 2 := by
     rw [← Circle.coe_inv_eq_conj, Circle.coe_inv, inv_pow]
   have hn : (((z : ℂ).re : ℂ)^2 + ((z : ℂ).im : ℂ)^2) = 1 := by
@@ -86,8 +84,7 @@ theorem torus_weights (z : Circle) :
     exact_mod_cast h
   simp only [coefficientAction, u, v, w, map_add, map_sub, map_mul,
     MvPolynomial.aeval_X, MvPolynomial.aeval_C]
-  simp only [sphereMatrix, TauCeti.SU2.coe_torusHom, TauCeti.SU2.torusMatrix,
-    Fin.sum_univ_succ, Circle.coe_inv, Complex.inv_re, Complex.inv_im]
+  simp only [sphereMatrix, TauCeti.SU2.coe_torusHom, TauCeti.SU2.torusMatrix, Fin.sum_univ_succ]
   simp
   rw [hinv]
   constructor
@@ -207,7 +204,7 @@ theorem homogeneous_uvw_basis (n : ℕ) :
   rw [uvwSub, aeval_monomial]
   simp [Finsupp.prod_fintype, Fin.prod_univ_three]
 
-private lemma uvw_eigen (n : ℕ) (z : Circle) (d : HomogeneousExponent n) :
+lemma uvw_eigen (n : ℕ) (z : Circle) (d : HomogeneousExponent n) :
     coefficientAction (TauCeti.SU2.torusHom z) (u ^ d.val 0 * v ^ d.val 1 * w ^ d.val 2) =
     (z : ℂ) ^ (2 * ((d.val 0 : ℤ) - (d.val 1 : ℤ))) •
       (u ^ d.val 0 * v ^ d.val 1 * w ^ d.val 2) := by
@@ -277,9 +274,4 @@ theorem homogeneous_torus_trace (n : ℕ) (z : Circle) :
       omega
     refine ⟨⟨d,hd⟩, Finset.mem_univ _, ?_⟩
     rfl
-  · intro d hd
-    rfl
-
-end DedekindZetaZeroFree.HarmonicVendor.HomogeneousRaw
-
-end
+  simp

@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # The local blocks occurring in a relative `S`-idele
 
@@ -45,7 +40,7 @@ variable {K L : Type}
 
 /-- A fixed infinite place of `L` above the given infinite place of
 `K`. -/
-noncomputable def chosenInfinitePlaceAbove
+def chosenInfinitePlaceAbove
     (v : InfinitePlace K) : InfinitePlace L :=
   Classical.choose
     (InfinitePlace.comap_surjective (K := L) v)
@@ -68,7 +63,7 @@ abbrev RelativeUnrestrictedSPlaceIndex
     {v : HeightOneSpectrum (𝓞 K) // v ∈ S}
 
 /-- The chosen local-place data at every unrestricted place. -/
-noncomputable def relativeUnrestrictedSPlaceDatum
+def relativeUnrestrictedSPlaceDatum
     (S : Finset (HeightOneSpectrum (𝓞 K))) :
     RelativeUnrestrictedSPlaceIndex (K := K) S →
       LocalPlaceDatum K L
@@ -96,7 +91,7 @@ abbrev RelativeUnrestrictedSPlaceFactor
   | Sum.inr v => (v.1.adicCompletion K ⊗[K] L)ˣ
 
 /-- Each unrestricted local tensor-unit factor is a commutative group. -/
-noncomputable instance relativeUnrestrictedSPlaceFactorCommGroup
+instance relativeUnrestrictedSPlaceFactorCommGroup
     (S : Finset (HeightOneSpectrum (𝓞 K)))
     (i : RelativeUnrestrictedSPlaceIndex (K := K) S) :
     CommGroup
@@ -114,7 +109,7 @@ abbrev RelativeUnrestrictedSPlaceFactors
 /-- The componentwise scalar-conjugation action on the unrestricted
 tensor factors. -/
 @[reducible]
-noncomputable def relativeUnrestrictedSPlaceFactorsAction
+def relativeUnrestrictedSPlaceFactorsAction
     (S : Finset (HeightOneSpectrum (𝓞 K))) :
     MulDistribMulAction (L ≃ₐ[K] L)
       (RelativeUnrestrictedSPlaceFactors
@@ -142,7 +137,7 @@ noncomputable def relativeUnrestrictedSPlaceFactorsAction
         (K := K) (L := L) S)
 
 /-- The componentwise local tensor equivalence for every unrestricted place in `S`. -/
-noncomputable def
+def
     relativeUnrestrictedSPlaceFactorsEquivLocalBlockFamily
     (S : Finset (HeightOneSpectrum (𝓞 K))) :
     RelativeUnrestrictedSPlaceFactors
@@ -241,28 +236,3 @@ theorem
         finitePlaceTensorUnitsEquivLocalPlaceBlock_smul
           (K := K) (L := L) v.1 u
           σ (z (Sum.inr v))
-
-/-- Reassociate the displayed unrestricted factors of
-`RelativeIdeleSPlaceFactors` as the finite dependent family above. -/
-noncomputable def relativeUnrestrictedSPlaceFactorsEquivProd
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
-    RelativeUnrestrictedSPlaceFactors
-        (K := K) (L := L) S ≃*
-      (∀ v : InfinitePlace K,
-          (v.Completion ⊗[K] L)ˣ) ×
-        (∀ v :
-          {v : HeightOneSpectrum (𝓞 K) // v ∈ S},
-          (v.1.adicCompletion K ⊗[K] L)ˣ) where
-  toFun z :=
-    ⟨fun v => z (Sum.inl v),
-      fun v => z (Sum.inr v)⟩
-  invFun z
-    | Sum.inl v => z.1 v
-    | Sum.inr v => z.2 v
-  left_inv z := by
-    funext i
-    cases i <;> rfl
-  right_inv _ := rfl
-  map_mul' _ _ := rfl
-
-end

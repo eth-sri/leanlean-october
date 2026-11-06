@@ -42,10 +42,7 @@ theorem pow_lt_of_lt_dyadicLength {X : ℝ} (hX : 1 ≤ X) {k : ℕ}
 
 theorem dyadicLength_small_power_constant_pos {η : ℝ} (hη : 0 < η) :
     0 < 2 + 1 / (η * Real.log 2) := by
-  have hlog2 : 0 < Real.log 2 := Real.log_pos one_lt_two
-  have h : 0 < η * Real.log 2 := mul_pos hη hlog2
-  have := one_div_pos.2 h
-  linarith
+  positivity
 
 theorem dyadicLength_small_power {η X : ℝ} (hη : 0 < η) (hX : 1 ≤ X) :
     (dyadicLength X + 1 : ℝ) ≤ (2 + 1 / (η * Real.log 2)) * X ^ η := by
@@ -62,11 +59,9 @@ theorem dyadicLength_small_power {η X : ℝ} (hη : 0 < η) (hX : 1 ≤ X) :
     rwa [div_div] at this
   have hfinal : X ^ η / (η * Real.log 2) + 2 * X ^ η
       = (2 + 1 / (η * Real.log 2)) * X ^ η := by
-    have hne : η * Real.log 2 ≠ 0 := ne_of_gt (mul_pos hη hlog2)
+    have hne : η * Real.log 2 ≠ 0 := by positivity
     field_simp
     ring
-  calc (dyadicLength X + 1 : ℝ) = (dyadicLength X : ℝ) + 1 := by push_cast; ring
+  calc (dyadicLength X + 1 : ℝ) = (dyadicLength X : ℝ) + 1 := by rfl
     _ ≤ X ^ η / (η * Real.log 2) + 2 * X ^ η := by linarith
     _ = (2 + 1 / (η * Real.log 2)) * X ^ η := hfinal
-
-end DedekindZetaZeroFree.LargeSieve.Vendor

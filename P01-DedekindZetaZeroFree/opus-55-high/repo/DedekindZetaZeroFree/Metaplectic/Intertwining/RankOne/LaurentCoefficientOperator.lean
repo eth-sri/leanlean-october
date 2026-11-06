@@ -69,7 +69,3 @@ theorem actualCoefficientOperator_coordinate
     ((actualCoefficientOperator F ζ hζ q S P J hJ μ hμ π hπ ε n φ).val.val k).val h =
       actualScalarNumerator F ζ hζ q S P J hJ μ hμ π hπ ε φ k h n :=
   coefficientSection_coordinate F ζ hζ q S P J hJ μ hμ π hπ ε n φ k h
-
-end DedekindZetaZeroFree.KPRankOneShellRepair
-
-end

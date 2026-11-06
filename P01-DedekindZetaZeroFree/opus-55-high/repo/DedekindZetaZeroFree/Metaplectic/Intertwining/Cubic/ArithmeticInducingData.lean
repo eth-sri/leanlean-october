@@ -16,6 +16,3 @@ variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 variable (q : HeightOneSpectrum (𝓞 F))
 
 abbrev ActualKPBinding := KPExceptionalRaw.RawFiniteInducingData F ζ hζ q
-
-end
-end DedekindZetaZeroFree.KPActualScalarBinding

@@ -35,13 +35,12 @@ def C (d : ℕ) (p : HyperbolicChart.Space d) :
         intro a u
         ext ik
         obtain ⟨i, k⟩ := ik
-        fin_cases k <;> simp [mul_assoc, mul_comm, mul_left_comm]
+        fin_cases k <;> simp [mul_left_comm]
       left_inv := by
         intro v
         ext ik
         obtain ⟨i, k⟩ := ik
-        fin_cases k <;> simp [← mul_assoc, ← Real.exp_add, neg_add_cancel, Real.exp_zero,
-          one_mul]
+        fin_cases k <;> simp [← mul_assoc, ← Real.exp_add, Real.exp_zero, one_mul]
       right_inv := by
         intro u
         ext ik
@@ -94,7 +93,7 @@ theorem contDiff_H (d : ℕ) :
   obtain ⟨i, k⟩ := ik
   fin_cases k <;> simp <;> fun_prop
 
-private lemma exp_mul_exp (t a b : ℝ) :
+lemma exp_mul_exp (t a b : ℝ) :
     (Real.exp (-t) * a) * (Real.exp (-t) * b) = Real.exp (-2 * t) * (a * b) := by
   have h : Real.exp (-t) * Real.exp (-t) = Real.exp (-2 * t) := by
     rw [← Real.exp_add]
@@ -152,8 +151,7 @@ theorem metric_A (d : ℕ) (p u : HyperbolicChart.Space d) :
   rw [A_apply d p i, A_apply d u i]
   have he : ((Real.exp (p (i, 2)))⁻¹) ^ 2 = Real.exp (-2 * p (i, 2)) := by
     rw [← Real.exp_neg, ← Real.exp_nat_mul]
-    congr 1
-    ring
+    simp
   simp only [KPArch.height, he, Complex.sq_norm, Complex.normSq_apply, Complex.add_re,
     Complex.add_im, Complex.mul_re, Complex.mul_im, Complex.I_re, Complex.I_im,
     Complex.ofReal_re, Complex.ofReal_im]
@@ -164,20 +162,16 @@ def j (d : ℕ) : HyperbolicChart.Cotangent d ≃ₗ[ℂ] ComplexCoefficients d 
   invFun v := fun i k => v (i, k)
   map_add' := by
     intro U W
-    ext ik
-    simp
+    rfl
   map_smul' := by
     intro a W
-    ext ik
-    simp
+    rfl
   left_inv := by
     intro W
-    ext i k
-    simp
+    rfl
   right_inv := by
     intro v
-    ext ik
-    simp
+    rfl
 
 theorem j_apply (d : ℕ) (W : HyperbolicChart.Cotangent d)
     (i : Fin d) (k : Fin 3) :
@@ -193,7 +187,3 @@ theorem inner_j (d : ℕ) (U W : HyperbolicChart.Cotangent d) :
   intro k _
   rw [j_apply, j_apply, RCLike.inner_apply']
   rfl
-
-end DedekindZetaZeroFree.CotangentLogCoframe
-
-end

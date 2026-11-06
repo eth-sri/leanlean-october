@@ -192,6 +192,3 @@ structure MellinGaussian (N : TraceHaarTransport R) (Q : AdmissibleFlatSources R
     (∫ t : ThetaProfileHaarSheets.PositiveAxis, P.kernel t.val *
       (P.positiveSheet ⟨x.val * t.val, mul_pos x.property t.property⟩ : ℂ)
       ∂ThetaProfileHaarSheets.positiveHaar) = (thetaReflectionGaussian x.val : ℂ)
-end DedekindZetaZeroFree.MomentSources
-
-end

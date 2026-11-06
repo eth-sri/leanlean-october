@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.Analysis.Complex.LogarithmicRadialDerivatives
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.SArithmeticData
 
 open NumberField
@@ -42,7 +41,3 @@ lemma radialSection_complex_flow (A : SArithmeticData F) (w : InfinitePlace F)
   have ht : t / (2 * (InfinitePlace.nrComplexPlaces F : ℝ)) =
       t / (InfinitePlace.nrComplexPlaces F : ℝ) / 2 := by ring
   rw [ht, mul_comm]
-
-end DedekindZetaZeroFree.SArithmeticData
-
-end

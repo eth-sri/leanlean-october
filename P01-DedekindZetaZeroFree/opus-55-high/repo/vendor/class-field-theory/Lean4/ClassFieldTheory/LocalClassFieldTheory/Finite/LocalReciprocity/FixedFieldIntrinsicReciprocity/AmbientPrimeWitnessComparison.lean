@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Local and ambient comparison for prime witnesses
 
@@ -28,7 +22,6 @@ Galois element both under the concrete local Artin map and under the
 ambient fixed-field norm-residue construction.
 -/
 
-noncomputable section
 
 namespace LocalClassFieldTheory
 
@@ -101,8 +94,8 @@ theorem
         Gal(SeparableClosure K / K)).toSubgroup ⧸
         extensionSubgroup
           (baseField Gal(SeparableClosure K / K))
-          H₀ (le_baseField H₀)) := by
-    exact ambientEmbeddedAbsoluteQuotientFinite K F i
+          H₀ (le_baseField H₀)) := 
+    ambientEmbeddedAbsoluteQuotientFinite K F i
   let H : FiniteAbstractField
       Gal(SeparableClosure K / K) :=
     ⟨H₀, ambientEmbeddedAbsoluteQuotientFinite K F i⟩
@@ -185,8 +178,7 @@ theorem
       change rho (i x) = i x
       change
         rho ∈ (AlgHom.fieldRange i).fixingSubgroup at hrhoH
-      rw [IntermediateField.mem_fixingSubgroup_iff] at hrhoH
-      exact hrhoH (i x) ⟨x, rfl⟩)
+      simp_all)
   let phi : LF ≃+* LH := by
     letI : Algebra F LH := iLH.toRingHom.toAlgebra
     exact
@@ -195,9 +187,7 @@ theorem
   have hphi (x : LF) :
       ((phi x : LH) : SeparableClosure K) =
         e (x : SeparableClosure F) := by
-    exact
-      intrinsicFrobeniusFixedFieldEquivAmbientEmbeddedField_apply_val
-        K F E j e sigma x
+    rfl
   let : FiniteDimensional F
       (abstractFixedField F (SeparableClosure F) SF) :=
     abstractFixedField_finiteDimensional
@@ -228,9 +218,7 @@ theorem
   let : Algebra.IsSeparable K LH := by
     let : IsScalarTower K LH (SeparableClosure K) :=
       IsScalarTower.of_algebraMap_eq' (by
-        apply RingHom.ext
-        intro x
-        exact (iH.commutes x).symm)
+        rfl)
     exact
       Algebra.isSeparable_tower_bot_of_isSeparable
         K LH (SeparableClosure K)
@@ -321,7 +309,7 @@ theorem
           (localHenselianValuation F)
           (separableClosureUnits_isClassFormation F) xPrime = z := by
     rw [hconcretePrime, ← hqz]
-    exact (abelianizationCongr_of qF q).symm
+    rfl
   have hxWitness :
       ambientEmbeddedPrimeWitness K F E j e z = xPrime := by
     rfl
@@ -394,8 +382,8 @@ theorem
         Gal(SeparableClosure K / K)).toSubgroup ⧸
         extensionSubgroup
           (baseField Gal(SeparableClosure K / K))
-          H₀ (le_baseField H₀)) := by
-    exact ambientEmbeddedAbsoluteQuotientFinite K F i
+          H₀ (le_baseField H₀)) := 
+    ambientEmbeddedAbsoluteQuotientFinite K F i
   let H : FiniteAbstractField
       Gal(SeparableClosure K / K) :=
     ⟨H₀, ambientEmbeddedAbsoluteQuotientFinite K F i⟩
@@ -480,8 +468,7 @@ theorem
       change rho (i x) = i x
       change
         rho ∈ (AlgHom.fieldRange i).fixingSubgroup at hrhoH
-      rw [IntermediateField.mem_fixingSubgroup_iff] at hrhoH
-      exact hrhoH (i x) ⟨x, rfl⟩)
+      simp_all)
   let phi : LF ≃+* LH := by
     letI : Algebra F LH := iLH.toRingHom.toAlgebra
     exact
@@ -490,9 +477,7 @@ theorem
   have hphi (x : LF) :
       ((phi x : LH) : SeparableClosure K) =
         e (x : SeparableClosure F) := by
-    exact
-      intrinsicFrobeniusFixedFieldEquivAmbientEmbeddedField_apply_val
-        K F E j e sigma x
+    rfl
   have hphiComm :
       RingHom.comp (algebraMap F₀ LH) phiF.toRingEquiv.toRingHom =
         RingHom.comp phi.toRingHom
@@ -509,7 +494,6 @@ theorem
     calc
       algebraMap F₀ LH (phiF x) =
           algebraMap F LH x := by
-        apply LH.val.injective
         rfl
       _ = phiAlg (algebraMap F LF x) :=
         (phiAlg.commutes x).symm
@@ -539,9 +523,7 @@ theorem
   let : Algebra.IsSeparable K LH := by
     let : IsScalarTower K LH (SeparableClosure K) :=
       IsScalarTower.of_algebraMap_eq' (by
-        apply RingHom.ext
-        intro x
-        exact (iH.commutes x).symm)
+        rfl)
     exact
       Algebra.isSeparable_tower_bot_of_isSeparable
         K LH (SeparableClosure K)
@@ -615,8 +597,7 @@ theorem
       Units.mapEquiv phiF.toMulEquiv
           (ambientEmbeddedPrimeWitness K F E j e z) =
         xPrime0 := by
-    exact congrArg
-      (Units.mapEquiv phiF.toMulEquiv) hxWitness
+    rfl
   have hsymbolWitness :
       abstractFixedFieldNormResidueSymbol
           K (SeparableClosure K)
@@ -733,8 +714,8 @@ theorem
         Gal(SeparableClosure K / K)).toSubgroup ⧸
         extensionSubgroup
           (baseField Gal(SeparableClosure K / K))
-          H₀ (le_baseField H₀)) := by
-    exact ambientEmbeddedAbsoluteQuotientFinite K F i
+          H₀ (le_baseField H₀)) := 
+    ambientEmbeddedAbsoluteQuotientFinite K F i
   let H : FiniteAbstractField
       Gal(SeparableClosure K / K) :=
     ⟨H₀, ambientEmbeddedAbsoluteQuotientFinite K F i⟩
@@ -841,7 +822,3 @@ theorem
       ambientEmbeddedPrimeTransportValue_eq_target K F E j e z
     _ = z :=
       ambientEmbeddedPrimeTarget_eq K F E j e z
-
-end LocalClassFieldTheory
-
-end

@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # The big Hilbert class field
 
@@ -58,69 +54,3 @@ theorem bigHilbertClassFieldNormSubgroup_isClosed :
   RayClass.isClosed_congruenceSubgroup
     (RayClass.Modulus.narrowOfFinite
       (0 : RayClass.FiniteModulus K))
-
-/-- The reciprocity quotient for the big Hilbert class field is the narrow
-ideal class group. -/
-def bigHilbertClassFieldQuotientEquivNarrowClassGroup :
-    IdeleClassGroup K ⧸
-        bigHilbertClassFieldNormSubgroup (K := K) ≃*
-      RayClass.NarrowClassGroup K :=
-  RayClass.rayClassGroupNarrowZeroEquivNarrowClassGroup
-
-/-- The narrow modulus with zero finite part is a defining modulus for the
-big-Hilbert norm subgroup. -/
-theorem bigHilbertClassFieldNormSubgroup_isDefiningModulus :
-    IsDefiningModulus
-      (bigHilbertClassFieldNormSubgroup (K := K))
-      (RayClass.Modulus.narrowOfFinite
-        (0 : RayClass.FiniteModulus K)) := by
-  exact le_rfl
-
-/-- The conductorial subgroup supplied by the intrinsic big-Hilbert norm
-subgroup and its narrow zero-finite defining modulus. -/
-noncomputable def bigHilbertClassFieldConductorialSubgroup :
-    ConductorialSubgroup K :=
-  ⟨bigHilbertClassFieldNormSubgroup (K := K),
-    ⟨RayClass.Modulus.narrowOfFinite (0 : RayClass.FiniteModulus K),
-      bigHilbertClassFieldNormSubgroup_isDefiningModulus (K := K)⟩⟩
-
-/-- Among conductorial idèle-class subgroups, containing the big-Hilbert
-norm subgroup is equivalent to having narrow finite conductor zero. -/
-theorem
-    bigHilbertClassFieldNormSubgroup_le_iff_narrowFiniteConductor_eq_zero
-    (H : ConductorialSubgroup K) :
-    bigHilbertClassFieldNormSubgroup (K := K) ≤ H.1 ↔
-      H.narrowFiniteConductor = 0 := by
-  constructor
-  · intro hH
-    have hdef :
-        IsDefiningModulus H.1
-          (RayClass.Modulus.narrowOfFinite
-            (0 : RayClass.FiniteModulus K)) := by
-      simpa only [IsDefiningModulus,
-        bigHilbertClassFieldNormSubgroup] using hH
-    apply le_antisymm
-    · exact H.narrowFiniteConductor_le hdef
-    · exact bot_le
-  · intro hconductor
-    have hdef := H.narrowFiniteConductor_isDefiningModulus
-    rw [hconductor] at hdef
-    simpa only [IsDefiningModulus,
-      bigHilbertClassFieldNormSubgroup] using hdef
-
-/-- The narrow finite conductor of the big-Hilbert norm subgroup is zero. -/
-@[simp]
-theorem bigHilbertClassField_narrowFiniteConductor :
-    (bigHilbertClassFieldConductorialSubgroup
-      (K := K)).narrowFiniteConductor = 0 := by
-  apply le_antisymm
-  · exact
-      (bigHilbertClassFieldConductorialSubgroup
-        (K := K)).narrowFiniteConductor_le
-        (bigHilbertClassFieldNormSubgroup_isDefiningModulus (K := K))
-  · exact bot_le
-
-end GlobalClassFields
-end GlobalClassFieldTheory
-
-end

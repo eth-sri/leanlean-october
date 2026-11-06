@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 namespace ClassFormation
 
 open KummerTheory
@@ -63,8 +59,8 @@ theorem abstractReciprocity_sylow_lowerQuotient_isPGroup
         extensionSubgroup
           (L.intermediateField (P : Subgroup L.extensionQuotient)) L.field
           (L.field_le_intermediateField
-            (P : Subgroup L.extensionQuotient))) := by
-  exact P.isPGroup'.of_equiv
+            (P : Subgroup L.extensionQuotient))) := 
+  P.isPGroup'.of_equiv
     (L.lowerQuotientEquiv (P : Subgroup L.extensionQuotient)).symm
 
 section SylowSolvability
@@ -177,11 +173,6 @@ theorem abstractReciprocity_sylowAddSubgroup_le_intermediateDegree_nsmul_range
         (S : Subgroup (Multiplicative B)) ≤
       (nsmulAddMonoidHom (α := B)
         (L.intermediateFiniteAbstractExtension
-          (P : Subgroup L.extensionQuotient)).degree).range := by
-  exact sylowAddSubgroup_le_nsmul_range_of_coprime S
+          (P : Subgroup L.extensionQuotient)).degree).range := 
+  sylowAddSubgroup_le_nsmul_range_of_coprime S
     (L.abstractReciprocity_sylow_intermediateDegree_coprime P)
-
-end FiniteGaloisSubextension
-
-end
-end ClassFormation

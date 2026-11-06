@@ -33,17 +33,17 @@ def dB : coveredBorel F v π →* (ℝ≥0)ˣ := halfModulus (deltaB F v π)
 
 theorem deltaB_eq (b : coveredBorel F v π) (A : GL2 F v)
     (hA : Matrix.ProjGenLinGroup.mk A = π b.val) (hupper : A 1 0 = 0) :
-    ((deltaB F v π b : ℝ≥0) : ℝ) = ‖A 0 0 / A 1 1‖ := by
-  exact ordinaryDelta_eq F v (borelProjection F v π b) A hA hupper
+    ((deltaB F v π b : ℝ≥0) : ℝ) = ‖A 0 0 / A 1 1‖ := 
+  ordinaryDelta_eq F v (borelProjection F v π b) A hA hupper
 
 theorem deltaB_locallyConstant (hπ : Continuous π) :
-    IsLocallyConstant (deltaB F v π) := by
-  exact (ordinaryDelta_locallyConstant F v).comp_continuous
+    IsLocallyConstant (deltaB F v π) := 
+  (ordinaryDelta_locallyConstant F v).comp_continuous
     ((hπ.comp continuous_subtype_val).subtype_mk (fun b => b.property))
 
 theorem dB_locallyConstant (hπ : Continuous π) :
-    IsLocallyConstant (dB F v π) := by
-  exact halfModulus_locallyConstant _ (deltaB_locallyConstant F v π hπ)
+    IsLocallyConstant (dB F v π) := 
+  halfModulus_locallyConstant _ (deltaB_locallyConstant F v π hπ)
 
 theorem deltaB_upperRoot (x : LocalField F v) (b : coveredBorel F v π)
     (hb : π b.val = upperRootElement F v x) : deltaB F v π b = 1 := by
@@ -54,8 +54,8 @@ theorem deltaB_upperRoot (x : LocalField F v) (b : coveredBorel F v π)
   exact ordinaryDelta_upperRoot F v x
 
 theorem coveredBorel_closed (hπ : Continuous π) :
-    IsClosed (coveredBorel F v π : Set G) := by
-  exact (upperBorel_closed F v).preimage hπ
+    IsClosed (coveredBorel F v π : Set G) := 
+  (upperBorel_closed F v).preimage hπ
 
  def coveredFlagMap : SectionCosetSpace (coveredBorel F v π) → SectionCosetSpace (upperBorel F v) :=
   Quotient.map π (by
@@ -63,7 +63,7 @@ theorem coveredBorel_closed (hπ : Continuous π) :
     apply (QuotientGroup.rightRel_apply).mpr
     have h := (QuotientGroup.rightRel_apply).mp hab
     change π (b * a⁻¹) ∈ upperBorel F v at h
-    simpa only [map_mul, map_inv] using h)
+    simp_all)
 
 omit [TopologicalSpace G] [IsTopologicalGroup G] in
  theorem coveredFlagMap_bijective (hsurj : Function.Surjective π) : Function.Bijective (coveredFlagMap F v π) := by
@@ -76,7 +76,7 @@ omit [TopologicalSpace G] [IsTopologicalGroup G] in
     apply (QuotientGroup.rightRel_apply).mpr
     have h := (QuotientGroup.rightRel_apply).mp (Quotient.eq.mp hab)
     change π (b * a⁻¹) ∈ upperBorel F v
-    simpa only [map_mul, map_inv] using h
+    simp_all
   · intro a
     induction a using Quotient.inductionOn with | h a =>
     obtain ⟨b, rfl⟩ := hsurj a
@@ -86,8 +86,8 @@ omit [IsTopologicalGroup G] in
  theorem coveredFlagMap_quotient (hπ : Continuous π) (hopen : IsOpenMap π)
     (hsurj : Function.Surjective π) : Topology.IsQuotientMap (coveredFlagMap F v π) := by
   have hq : Topology.IsQuotientMap
-      (Quotient.mk (QuotientGroup.rightRel (upperBorel F v))) := by
-    exact MulAction.isOpenQuotientMap_quotientMk.isQuotientMap
+      (Quotient.mk (QuotientGroup.rightRel (upperBorel F v))) := 
+    MulAction.isOpenQuotientMap_quotientMk.isQuotientMap
   have hc : Topology.IsQuotientMap (coveredFlagMap F v π ∘
       Quotient.mk (QuotientGroup.rightRel (coveredBorel F v π))) :=
     hq.comp (hopen.isQuotientMap hπ hsurj)
@@ -146,7 +146,7 @@ theorem rootLift_mem_Borel (n : Multiplicative (LocalField F v) →* G)
     (b : coveredBorel F v π) : coveredTorus F v π :=
   Classical.choose (uniqueTorusFactor F v π n hn b)
 
-private theorem torusFactor_spec
+theorem torusFactor_spec
     (n : Multiplicative (LocalField F v) →* G)
     (hn : ∀ x, π (n x) = ordinaryUpperRootHom F v x)
     (b : coveredBorel F v π) :
@@ -193,8 +193,8 @@ theorem exists_canonicalBorelRetraction [Finite π.ker]
           (t b).val (t b).property
           (coveredTorus_le_Borel F v π (t b).property) d
         have hmove : (t b).val * n (Multiplicative.ofAdd d) =
-            n (Multiplicative.ofAdd (r * d)) * (t b).val := by
-          exact (mul_inv_eq_iff_eq_mul).mp hc
+            n (Multiplicative.ofAdd (r * d)) * (t b).val := 
+          (mul_inv_eq_iff_eq_mul).mp hc
         refine ⟨a + r * d, ?_⟩
         change b.val * c.val = n (Multiplicative.ofAdd (a + r * d)) *
           ((t b).val * (t c).val)
@@ -221,13 +221,4 @@ theorem exists_canonicalBorelRetraction [Finite π.ker]
     obtain ⟨a, ha⟩ := hfac b
     refine ⟨Multiplicative.ofAdd a, ?_⟩
     change n (Multiplicative.ofAdd a) = b.val * (t b).val⁻¹
-    rw [ha]
-    simp [mul_assoc]
-
-end CoverProjection
-
-end DedekindZetaZeroFree.KPRankOneInductionRaw
-
-end
-
-end
+    simp_all

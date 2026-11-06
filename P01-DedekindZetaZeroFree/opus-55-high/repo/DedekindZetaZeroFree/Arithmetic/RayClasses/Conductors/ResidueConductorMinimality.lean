@@ -34,7 +34,7 @@ def SLocalConductorTrivial (A : SArithmeticData F)
     (n.val : F) = (alpha : F) → alpha - 1 ∈ fS →
       Ideal.span {alpha} ⊔ A.cS = ⊤ → localInverseProduct A sigma n = 1
 
-private theorem unit_mk_of_coprime {R : Type*} [CommRing R]
+theorem unit_mk_of_coprime {R : Type*} [CommRing R]
     (q : Ideal R) (x : R) (hc : Ideal.span {x} ⊔ q = ⊤) :
     IsUnit (Ideal.Quotient.mk q x) := by
   have h : Ideal.map (Ideal.Quotient.mk q) (Ideal.span {x}) = ⊤ := by
@@ -57,8 +57,8 @@ theorem exterior_principal_value_one_of_factorization
     (haq : Ideal.span {alpha} ⊔ qO = ⊤)
     (haq' : algebraMap (𝓞 F) A.R (alpha - 1) ∈ q') :
     omega (Ideal.span {alpha}) = 1 := by
-  let n : NonzeroSInteger A := ⟨algebraMap (𝓞 F) A.R alpha, by
-    exact (FaithfulSMul.algebraMap_injective (𝓞 F) A.R).ne ha⟩
+  let n : NonzeroSInteger A := ⟨algebraMap (𝓞 F) A.R alpha, 
+    (FaithfulSMul.algebraMap_injective (𝓞 F) A.R).ne ha⟩
   let a : A.Exterior := ⟨Ideal.span {alpha}, Ideal.span_singleton_eq_bot.not.mpr ha, haS⟩
   have he : Ideal.span {n.val} = A.extendIdeal a := by
     simp [SArithmeticData.extendIdeal, a, n, Ideal.map_span]
@@ -79,9 +79,9 @@ theorem exterior_principal_value_one_of_factorization
   have hlu : lam u = 1 := by rw [hlam', hr, map_one]
   change omega (Ideal.span {alpha}) = _ at hv
   rw [hl, one_mul, ← hu, residueZeroExtension_unit, hlu] at hv
-  exact hv.trans (by simp)
+  omega
 
-private theorem lift_divisor (A : SArithmeticData F) (qO : Ideal (𝓞 F))
+theorem lift_divisor (A : SArithmeticData F) (qO : Ideal (𝓞 F))
     (hq0 : qO ≠ ⊥) (hq : qO ⊔ A.cS = ⊤) (q' : Ideal A.R)
     (hlt : residueModulus A qO < q') :
     ∃ Q : Ideal (𝓞 F), qO < Q ∧ residueModulus A Q = q' := by
@@ -148,11 +148,10 @@ private theorem exterior_representative (A : SArithmeticData F)
       simpa using (Ideal.span {b} ⊔ f).sub_mem h1 h2
     have hle : Ideal.span {a} ⊔ f ≤ Ideal.span {b} ⊔ f :=
       sup_le ((Ideal.span_singleton_le_iff_mem _).mpr hab) le_sup_right
-    exact hle (by rw [hc]; trivial)
+    simp_all
   have hb0 : b ≠ 0 := by
     intro hb
-    apply hf
-    simpa [hb] using hbc
+    simp_all
   refine ⟨b, hb0, hba, ?_⟩
   apply Ideal.sup_prod_eq_top
   intro v hv
@@ -257,8 +256,8 @@ theorem nonunit_stabilizer_witness (A : SArithmeticData F) (q : Ideal A.R)
     ∃ u : (A.R ⧸ q)ˣ, (u : A.R ⧸ q) * x = x ∧ lam u ≠ 1 := by
   let J : Ideal (A.R ⧸ q) :=
     (Submodule.span (A.R ⧸ q) {x}).annihilator
-  have hJ (y : A.R ⧸ q) : y ∈ J ↔ y * x = 0 := by
-    exact Submodule.mem_annihilator_span_singleton x y
+  have hJ (y : A.R ⧸ q) : y ∈ J ↔ y * x = 0 := 
+    Submodule.mem_annihilator_span_singleton x y
   let q' : Ideal A.R := Ideal.comap (Ideal.Quotient.mk q) J
   have hle : q ≤ q' := by
     intro y hy
@@ -313,7 +312,7 @@ theorem nonunit_stabilizer_witness (A : SArithmeticData F) (q : Ideal A.R)
     rr.liftOfRightInverse_comp_apply _ _ _ _
   exact hlc.symm.trans he.symm
 
-private theorem finite_residueModulus (A : SArithmeticData F)
+theorem finite_residueModulus (A : SArithmeticData F)
     (qO : Ideal (NumberField.RingOfIntegers F)) (hqO : qO ≠ ⊥) :
     Finite (A.R ⧸ residueModulus A qO) := by
   obtain ⟨a, ha, ha0⟩ := Submodule.exists_mem_ne_zero_of_ne_bot hqO
@@ -365,6 +364,3 @@ theorem hecke_zeroExtension_isPrimitiveResidueCharacter
     apply hlu
     exact Units.ext h
   · rw [mul_sub, mul_one, mul_comm x (u : A.R ⧸ residueModulus A qO), hu, sub_self]
-
-end
-end DedekindZetaZeroFree.Detector.FixedSResidue

@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.LargeSieve.Exponents.LocalErrorBounds
 
 @[expose] public section
 
-noncomputable section
 open scoped NumberField Classical BigOperators
 
 namespace DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms
@@ -44,11 +43,9 @@ theorem error_dyadic_sum_of_card_bound
   let η := ε / 4
   let q := 8 * (ε / 64) + (C0 + 2) * (ε / (8 * (C0 + 2)))
   let L := 3 + 1 / (η * Real.log 2)
-  have hη : 0 < η := by dsimp [η]; positivity
+  have hη : 0 < η := by positivity
   have hL : 0 ≤ L := by
-    have := Vendor.dyadicLength_small_power_constant_pos hη
-    dsimp [L]
-    linarith
+    positivity
   refine ⟨L * A, mul_nonneg hL hA, ?_⟩
   intro M N K n E hM hN hK hn hKM hnN hE ι J B e hcard hB he heBound
   have hM0 : 0 ≤ M := by linarith
@@ -70,7 +67,6 @@ theorem error_dyadic_sum_of_card_bound
       Real.rpow_le_rpow hK0 hKMN hη.le
     have hfirst : (J.card : ℝ) ≤ L * Real.rpow K η := by
       dsimp [L]
-      push_cast at hl
       change (Vendor.dyadicLength K : ℝ) + 1 ≤
         (2 + 1 / (η * Real.log 2)) * Real.rpow K η at hl
       rw [Real.rpow_eq_pow] at hkpow hl
@@ -205,11 +201,6 @@ theorem bilinear_error_dyadic_sum
     dsimp [J]
     rw [Finset.sum_insert (by simp), Finset.sum_image]
     · rfl
-    · intro a ha b hb hab
-      exact Option.some.inj hab
+    simp
   rw [heq] at hs
   exact hs
-
-end DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms
-
-end

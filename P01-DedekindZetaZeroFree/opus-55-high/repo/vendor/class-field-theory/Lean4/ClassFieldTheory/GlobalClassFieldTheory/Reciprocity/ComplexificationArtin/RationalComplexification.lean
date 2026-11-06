@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # The rational cyclotomic complexification
 
@@ -61,7 +55,7 @@ abbrev rationalComplexificationCyclotomicField :
   KummerTheory.rationalCyclotomicLevel
     rationalComplexificationCyclotomicOrder
 
-noncomputable instance
+instance
     rationalComplexificationCyclotomicField_isCyclotomicFour :
     IsCyclotomicExtension {4} ℚ
       rationalComplexificationCyclotomicField := by
@@ -73,14 +67,13 @@ noncomputable instance
     KummerTheory.rationalCyclotomicLevel_isCyclotomicExtension
       rationalComplexificationCyclotomicOrder
 
-noncomputable instance
+instance
     rationalComplexificationCyclotomicField_isCMField :
     NumberField.IsCMField rationalComplexificationCyclotomicField := by
   apply IsCyclotomicExtension.Rat.isCMField
     rationalComplexificationCyclotomicField
     (S := {4})
-  exact
-    ⟨4, Set.mem_singleton 4, by norm_num⟩
+  simp
 
 noncomputable local instance
     rationalComplexificationCyclotomicField_finiteDimensional :
@@ -102,16 +95,7 @@ noncomputable local instance
 
 /-- The complex number `I` is a primitive fourth root of unity. -/
 theorem complexI_isPrimitiveRoot_four :
-    IsPrimitiveRoot Complex.I 4 := by
-  convert Complex.isPrimitiveRoot_exp 4 (by norm_num) using 1
-  calc
-    Complex.I =
-        Complex.exp ((Real.pi : ℂ) / 2 * Complex.I) :=
-      Complex.exp_pi_div_two_mul_I.symm
-    _ = Complex.exp
-        (2 * (Real.pi : ℂ) * Complex.I / (4 : ℂ)) := by
-      congr 1
-      ring
+    IsPrimitiveRoot Complex.I 4 := by apply Complex.isPrimitiveRoot_I <;> assumption
 
 /-- The concrete fourth-root cyclotomic field inside `ℂ`.
 
@@ -124,7 +108,7 @@ def complexFourthRootField :
     {z : ℂ |
       ∃ n ∈ ({4} : Set ℕ), n ≠ 0 ∧ z ^ n = 1}
 
-noncomputable instance complexFourthRootField_isCyclotomic :
+instance complexFourthRootField_isCyclotomic :
     IsCyclotomicExtension {4} ℚ complexFourthRootField := by
   apply
     IntermediateField.isCyclotomicExtension_adjoin_of_exists_isPrimitiveRoot
@@ -134,12 +118,12 @@ noncomputable instance complexFourthRootField_isCyclotomic :
   subst n
   exact ⟨Complex.I, complexI_isPrimitiveRoot_four⟩
 
-noncomputable instance complexFourthRootField_finiteDimensional :
+instance complexFourthRootField_finiteDimensional :
     FiniteDimensional ℚ complexFourthRootField :=
   IsCyclotomicExtension.finiteDimensional
     ({4} : Set ℕ) ℚ complexFourthRootField
 
-noncomputable instance complexFourthRootField_numberField :
+instance complexFourthRootField_numberField :
     NumberField complexFourthRootField :=
   IsCyclotomicExtension.numberField
     ({4} : Set ℕ) ℚ complexFourthRootField
@@ -147,7 +131,7 @@ noncomputable instance complexFourthRootField_numberField :
 /-- Identification of the abstract rational fourth-root cyclotomic
 field used by the rational product formula with its concrete copy in
 `ℂ`. -/
-noncomputable def rationalComplexificationComplexEquiv :
+def rationalComplexificationComplexEquiv :
     rationalComplexificationCyclotomicField ≃ₐ[ℚ]
       complexFourthRootField :=
   IsCyclotomicExtension.algEquiv
@@ -173,8 +157,7 @@ theorem complexFourthRootField_map_complexConjugation :
     rcases hz with ⟨n, hn, hn0, hz⟩
     refine ⟨n, hn, hn0, ?_⟩
     rw [← star_pow, hz, star_one]
-    change star (star z) = z
-    exact star_star z
+    simp
 
 /-- The chosen infinite place of the rational complexification is
 ramified over the unique real place of `ℚ`. -/
@@ -209,12 +192,9 @@ theorem
         IsCyclotomicExtension.finrank
           rationalComplexificationCyclotomicField
           (Polynomial.cyclotomic.irreducible_rat (by
-            change 0 < 2 ^ 2
-            norm_num))
+            positivity))
     _ = 2 := by
-      change (2 ^ 2).totient = 2
-      rw [Nat.totient_prime_pow Nat.prime_two (by norm_num : 0 < 2)]
-      norm_num
+      rfl
 
 /-- The real coordinate of the infinite component of a rational principal
 idele is the original rational number. -/
@@ -231,8 +211,7 @@ theorem
       (x : ℚ) := by
   rw [InfinitePlace.Completion.ringEquivRealOfIsReal_apply]
   rw [IdeleGroup.infiniteComponent_principalIdele]
-  rw [InfinitePlace.Completion.extensionEmbeddingOfIsReal_coe]
-  simp only [WithAbs.equiv_apply, eq_ratCast]
+  simp
 
 /-- A rational principal idele with positive numerator has trivial
 infinite Artin factor in the rational complexification. -/
@@ -301,7 +280,7 @@ theorem
   exact (not_lt_of_ge hxReal) hpositive
 
 /-- The cyclotomic character of the rational fourth-root field. -/
- noncomputable def rationalComplexificationCharacter :
+ def rationalComplexificationCharacter :
     (rationalComplexificationCyclotomicField ≃ₐ[ℚ]
         rationalComplexificationCyclotomicField) ≃*
       (ZMod (rationalComplexificationPrime.1 ^ 2))ˣ :=
@@ -312,7 +291,7 @@ theorem
       KummerTheory.rationalCyclotomicLevel_isCyclotomicExtension
         rationalComplexificationCyclotomicOrder)
 
-private theorem rationalComplexificationCharacter_apply
+theorem rationalComplexificationCharacter_apply
     (σ : rationalComplexificationCyclotomicField ≃ₐ[ℚ]
       rationalComplexificationCyclotomicField) :
     rationalComplexificationCharacter σ =
@@ -326,7 +305,7 @@ private theorem rationalComplexificationCharacter_apply
 
 /-- The finite-place Artin product of a rational principal idele in
 the fourth-root character is its rational sign unit. -/
-private theorem rationalComplexificationFiniteArtin_character
+theorem rationalComplexificationFiniteArtin_character
     (x : ℚˣ) :
     rationalComplexificationCharacter
         (∏ᶠ v : HeightOneSpectrum (𝓞 ℚ),
@@ -371,7 +350,7 @@ private theorem rationalComplexificationFiniteArtin_character
       rw [rationalComplexificationCharacter_apply]
 
 /-- A group of order two has a unique nonidentity automorphism. -/
-private theorem rationalComplexification_existsUnique_nontrivial :
+theorem rationalComplexification_existsUnique_nontrivial :
     ∃! σ :
       rationalComplexificationCyclotomicField ≃ₐ[ℚ]
         rationalComplexificationCyclotomicField,
@@ -381,7 +360,7 @@ private theorem rationalComplexification_existsUnique_nontrivial :
       rationalComplexificationCyclotomicField)]
   exact rationalComplexification_galoisGroup_card
 
-private theorem rationalComplexification_signCharacter_ne_one_of_num_neg
+theorem rationalComplexification_signCharacter_ne_one_of_num_neg
     (x : ℚˣ) (hx : (x : ℚ).num < 0) :
     Units.map (PadicInt.toZModPow 2).toMonoidHom
         (rationalSignPadicUnit x rationalComplexificationPrime) ≠
@@ -393,7 +372,7 @@ private theorem rationalComplexification_signCharacter_ne_one_of_num_neg
   norm_num [rationalComplexificationPrime] at hval
   exact (by decide : (-1 : ZMod (2 ^ 2)) ≠ 1) hval
 
-private theorem rationalComplexification_signCharacter_eq_one_of_num_pos
+theorem rationalComplexification_signCharacter_eq_one_of_num_pos
     (x : ℚˣ) (hx : 0 < (x : ℚ).num) :
     Units.map (PadicInt.toZModPow 2).toMonoidHom
         (rationalSignPadicUnit x rationalComplexificationPrime) =
@@ -484,8 +463,3 @@ theorem rationalComplexificationGlobalArtin_principalIdele
       apply character.injective
       rw [hfiniteCharacter, hsign, map_one]
     rw [hinfinite, hfinite, mul_one]
-
-end Reciprocity
-end GlobalClassFieldTheory
-
-end

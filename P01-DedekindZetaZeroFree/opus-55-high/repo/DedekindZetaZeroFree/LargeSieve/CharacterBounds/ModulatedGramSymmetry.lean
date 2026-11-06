@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.LargeSieve.CharacterBounds.BandlimitedPoisson
 @[expose] public section
 
 namespace DedekindZetaZeroFree.ProbeAdditiveGramBounds
-noncomputable section
 open scoped Classical NumberField ComplexConjugate
 open IsDedekindDomain NumberField
 
@@ -32,6 +31,3 @@ theorem trace_phase_continuous
     (InfinitePlace.Completion.isometry_extensionEmbedding v).continuous.comp
       ((continuous_apply v).comp continuous_fst)
   fun_prop
-
-end
-end DedekindZetaZeroFree.ProbeAdditiveGramBounds

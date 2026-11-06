@@ -12,11 +12,10 @@ open scoped NumberField Valued
 open NumberField IsDedekindDomain MeasureTheory ValuativeRel
 open KPLocalExceptionalConstruction KPLocalStoneVonNeumann KPLocalPrincipalSeries
 open KPRankOneShellContinuation KPRankOneShellRepair
-set_option autoImplicit false
 set_option maxHeartbeats 2000000
 set_option backward.isDefEq.respectTransparency false
 
-private theorem finite_evaluation_coordinates
+theorem finite_evaluation_coordinates
     {H D : Type*} [Group H] [TopologicalSpace H] [IsTopologicalGroup H]
     [CommGroup D] [Fintype D] (T : LocalHeisenbergData H D)
     (P : Polarization T) (l : InducedModule P →ₗ[ℂ] ℂ) :
@@ -88,7 +87,7 @@ theorem inducing_action_naturality (ε : Sign) (s : ℂ)
   map_add' := by intros; ext k; simp
   map_smul' := by intros; ext k; simp
 
-private theorem compact_extension_naturality (ε : Sign) (s : ℂ)
+theorem compact_extension_naturality (ε : Sign) (s : ℂ)
     (φ : compactPicture S.borel P S.iwasawa ε) (g : ActualCover F ζ hζ q) :
     e ((compactTrivialization S.borel P S.iwasawa ε s φ).val g) =
       (compactTrivialization S.borel Q S.iwasawa ε s
@@ -101,7 +100,7 @@ open _root_.DedekindZetaZeroFree.KPRankOneTranslatedMeromorphy renaming actual_c
 variable (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
   (hμ : μ ((valuation (LocalField F q)).integer : Set (LocalField F q)) = 1)
 
-private theorem canonical_compact_regular (ε : Sign)
+theorem canonical_compact_regular (ε : Sign)
     (φ : compactPicture S.borel P S.iwasawa (sourceSign ε))
     (k : S.iwasawa.compact.toOpenSubgroup) (h : actualTorus F ζ hζ q) :
     Meromorphic (fun s : ℂ => ((actualCanonicalContinued F q ζ hζ S P μ hμ ε s φ).val k).val h) ∧
@@ -111,7 +110,7 @@ private theorem canonical_compact_regular (ε : Sign)
   actual_coordinate_regular F ζ hζ q S P μ hμ (actualFamilyUniformizer F q)
     (actualFamilyUniformizer_spec F q) ε φ k h
 
-private theorem canonical_compact_chamber (ε : Sign) (s : ℂ)
+theorem canonical_compact_chamber (ε : Sign) (s : ℂ)
     (hs : convergenceHalfPlane ε s)
     (φ : compactPicture S.borel P S.iwasawa (sourceSign ε))
     (k : S.iwasawa.compact.toOpenSubgroup) (h : actualTorus F ζ hζ q) :
@@ -129,7 +128,7 @@ private theorem canonical_compact_chamber (ε : Sign) (s : ℂ)
   simpa only [S.iwasawa.borelPart_compact, S.iwasawa.compactPart_compact,
     map_one, Module.End.one_apply] using he
 
-private theorem actual_compact_svn_naturality (ε : Sign) (s₀ : ℂ)
+theorem actual_compact_svn_naturality (ε : Sign) (s₀ : ℂ)
     (hs₀ : denominator (LocalField F q) ε s₀ ≠ 0)
     (φ : compactPicture S.borel P S.iwasawa (sourceSign ε))
     (k : S.iwasawa.compact.toOpenSubgroup) :
@@ -142,8 +141,8 @@ private theorem actual_compact_svn_naturality (ε : Sign) (s₀ : ℂ)
   funext h
   let l : InducedModule P →ₗ[ℂ] ℂ :=
     { toFun := fun v => (e v).val h
-      map_add' := by intros; simp
-      map_smul' := by intros; simp }
+      map_add' := by simp
+      map_smul' := by simp }
   obtain ⟨r, c, hc⟩ := finite_evaluation_coordinates S.heisenberg P l
   let φQ := compact_svn_map F ζ hζ q S P Q e (sourceSign ε) φ
   let f := fun s : ℂ => ∑ d : S.D, c d *
@@ -222,8 +221,7 @@ theorem actual_reverse_svn_naturality
     (S.iwasawa.compactPart g)) =
     (actualCanonicalContinued F q ζ hζ S Q μ hμ .minus 0
       (compact_svn_map F ζ hζ q S P Q e .minus φ)).val (S.iwasawa.compactPart g) at H
-  rw [hφ] at H
-  exact H
+  simp_all
 
 end DedekindZetaZeroFree.ActualReverseMinorSvN
 
@@ -241,7 +239,6 @@ open KPLocalExceptionalConstruction KPLocalStoneVonNeumann KPLocalPrincipalSerie
 open KPRankOneShellContinuation KPRankOneShellRepair
 open _root_.DedekindZetaZeroFree.ActualReverseMinorSvN renaming inducing_action_naturality → inducing_action_naturality
 open _root_.DedekindZetaZeroFree.ActualReverseMinorSvN renaming actual_reverse_svn_naturality → actual_reverse_svn_naturality
-set_option autoImplicit false
 set_option maxHeartbeats 2000000
 set_option backward.isDefEq.respectTransparency false
 
@@ -277,13 +274,9 @@ def section_svn_equiv (ε : Sign) (s : ℂ) :
     (principalSeries S.borel P ε s).Equiv (principalSeries S.borel Q ε s) where
   toLinearEquiv := section_svn_equiv F ζ hζ q S P Q e ε s
   isIntertwining' g := by
-    apply LinearMap.ext
-    intro f
-    apply Subtype.ext
-    funext x
     rfl
 
-private theorem actual_reverse_square
+theorem actual_reverse_square
     (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
     (hμ : μ ((valuation (LocalField F q)).integer : Set (LocalField F q)) = 1) :
     (section_svn_equiv F ζ hζ q S P Q e .plus 0).toLinearMap.comp
@@ -313,12 +306,12 @@ private theorem actual_reverse_square
     intro x
     obtain ⟨v, rfl⟩ := rootCoinvariantsMk_surjective ρ n ψ x
     change rootCoinvariantsMk ρ n ψ (u.symm (u v)) = _
-    rw [u.symm_apply_apply]
+    simp
   right_inv := by
     intro x
     obtain ⟨v, rfl⟩ := rootCoinvariantsMk_surjective σ n ψ x
     change rootCoinvariantsMk σ n ψ (u (u.symm v)) = _
-    rw [u.apply_symm_apply]
+    simp
 
  def section_root_equiv (ε : Sign) (s : ℂ)
     {N : Type*} [Group N] (n : N →* ActualCover F ζ hζ q) (ψ : N →* ℂˣ) :
@@ -370,9 +363,3 @@ theorem actual_reverse_pair_transport
     funext i
     fin_cases i <;> exact he _
   exact hv ▸ H
-
-end DedekindZetaZeroFree.ActualReverseMinorPolarization
-
-end
-
-end

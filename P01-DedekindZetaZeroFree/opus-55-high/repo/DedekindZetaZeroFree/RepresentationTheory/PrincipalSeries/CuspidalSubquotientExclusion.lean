@@ -87,7 +87,3 @@ theorem actual_cover_compact_open_basis :
   refine ⟨⟨J, ?_⟩, ?_⟩
   · exact (IsClosed.isCompact U.isClosed).image (hq.comp he.continuous)
   · exact Set.image_subset_iff.mpr hU
-
-end DedekindZetaZeroFree.KPLocalPrincipalSeriesCuspidalExclusion
-
-end

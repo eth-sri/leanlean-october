@@ -19,7 +19,7 @@ def tupleOperator (a : ∀ i, A i) : Module.End ℂ (PiTensorProduct ℂ V) :=
 def tupleOrbitSpan (v : ∀ i, V i) : Submodule ℂ (PiTensorProduct ℂ V) :=
   Submodule.span ℂ (Set.range (fun a => tupleOperator op a (PiTensorProduct.tprod ℂ v)))
 
-private theorem tprod_mem_of_slot_spans (v x : ∀ i, V i)
+theorem tprod_mem_of_slot_spans (v x : ∀ i, V i)
     (hx : ∀ i, x i ∈ Submodule.span ℂ (Set.range (fun a => op i a (v i)))) :
     PiTensorProduct.tprod ℂ x ∈ tupleOrbitSpan op v := by
   let P (s : Finset ι) : Prop := ∀ y : ∀ i, V i,

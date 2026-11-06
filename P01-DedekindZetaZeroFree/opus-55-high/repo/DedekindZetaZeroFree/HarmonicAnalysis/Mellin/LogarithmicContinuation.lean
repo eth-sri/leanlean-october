@@ -27,14 +27,14 @@ def logMellinContinuation (f : ℝ → ℂ) (P : Polynomial ℂ) (s : ℂ) : ℂ
 
 section Helpers
 
-private lemma continuousOn_eval_log_polynomial (P : Polynomial ℂ) :
+lemma continuousOn_eval_log_polynomial (P : Polynomial ℂ) :
     ContinuousOn (fun x : ℝ => Polynomial.eval (Real.log x : ℂ) P) (Set.Ioi 0) := by
   have hlog : ContinuousOn (fun x : ℝ => (Real.log x : ℂ)) (Set.Ioi 0) :=
     Complex.continuous_ofReal.comp_continuousOn
       (Real.continuousOn_log.mono fun x hx => ne_of_gt hx)
-  exact (Polynomial.continuous P).comp_continuousOn hlog
+  fun_prop
 
-private lemma locallyIntegrableOn_truncatedLogPolynomial (P : Polynomial ℂ) :
+lemma locallyIntegrableOn_truncatedLogPolynomial (P : Polynomial ℂ) :
     LocallyIntegrableOn (truncatedLogPolynomial P) (Set.Ioi 0) := by
   have heq : truncatedLogPolynomial P = Set.indicator (Set.Ioo (0 : ℝ) 1)
       (fun x : ℝ => Polynomial.eval (Real.log x : ℂ) P) := by
@@ -46,7 +46,7 @@ private lemma locallyIntegrableOn_truncatedLogPolynomial (P : Polynomial ℂ) :
     ((continuousOn_eval_log_polynomial P).mono hk).integrableOn_compact hkcomp
   exact hint.indicator measurableSet_Ioo
 
-private lemma locallyIntegrableOn_logMellinRemainder {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ}
+lemma locallyIntegrableOn_logMellinRemainder {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ}
     (h : LogMellinPhysical f δ P) :
     LocallyIntegrableOn (logMellinRemainder f P) (Set.Ioi 0) := by
   have hf : LocallyIntegrableOn f (Set.Ioi 0) :=
@@ -55,7 +55,7 @@ private lemma locallyIntegrableOn_logMellinRemainder {f : ℝ → ℂ} {δ : ℝ
   change LocallyIntegrableOn (f - truncatedLogPolynomial P) (Set.Ioi 0)
   exact hf.sub ht
 
-private lemma logMellinRemainder_isBigO_origin {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ}
+lemma logMellinRemainder_isBigO_origin {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ}
     (h : LogMellinPhysical f δ P) :
     logMellinRemainder f P =O[𝓝[>] (0 : ℝ)] (fun x : ℝ => x ^ δ) := by
   obtain ⟨C, hC0, hC⟩ := h.origin_remainder 0
@@ -64,20 +64,20 @@ private lemma logMellinRemainder_isBigO_origin {f : ℝ → ℂ} {δ : ℝ} {P :
     nhdsWithin_le_nhds (Iio_mem_nhds (by norm_num : (0 : ℝ) < 1))
   filter_upwards [self_mem_nhdsWithin, hlt] with x hx0 hx1
   have hx : logMellinRemainder f P x = f x - Polynomial.eval (Real.log x : ℂ) P := by
-    simp only [logMellinRemainder, truncatedLogPolynomial, Set.mem_Ioo]
-    rw [if_pos ⟨hx0, hx1⟩]
+    simp only [logMellinRemainder, truncatedLogPolynomial]
+    simp_all
   rw [hx, Real.norm_of_nonneg (Real.rpow_nonneg hx0.le δ)]
   exact hC x hx0 hx1.le
 
-private lemma logMellinRemainder_isBigO_top {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ}
+lemma logMellinRemainder_isBigO_top {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ}
     (h : LogMellinPhysical f δ P) (a : ℝ) :
     logMellinRemainder f P =O[atTop] (fun x : ℝ => x ^ (-a)) := by
   obtain ⟨C, hC0, hC⟩ := h.rapid_decay 0 (Nat.ceil a + 1)
   refine Asymptotics.IsBigO.of_bound C ?_
   filter_upwards [eventually_ge_atTop (1 : ℝ)] with x hx
   have hzero : truncatedLogPolynomial P x = 0 := by
-    simp only [truncatedLogPolynomial, Set.mem_Ioo]
-    rw [if_neg (by push Not; intro h1; linarith)]
+    simp only [truncatedLogPolynomial]
+    simp_all
   rw [logMellinRemainder, hzero, sub_zero,
     Real.norm_of_nonneg (Real.rpow_nonneg (by linarith : (0 : ℝ) ≤ x) _)]
   refine le_trans (hC x hx) (mul_le_mul_of_nonneg_left ?_ hC0)
@@ -86,7 +86,7 @@ private lemma logMellinRemainder_isBigO_top {f : ℝ → ℂ} {δ : ℝ} {P : Po
   have := Nat.le_ceil a
   linarith
 
-private lemma punctured_halfPlane_preconnected {δ : ℝ} (hδ : 0 < δ) :
+lemma punctured_halfPlane_preconnected {δ : ℝ} (hδ : 0 < δ) :
     IsPreconnected {s : ℂ | -δ < s.re ∧ s ≠ 0} := by
   let A : Set ℂ := {s | 0 < s.re}
   let B : Set ℂ := {s | -δ < s.re ∧ 0 < s.im}
@@ -118,15 +118,15 @@ private lemma punctured_halfPlane_preconnected {δ : ℝ} (hδ : 0 < δ) :
       · exact (hn he).elim
       · rcases lt_or_gt_of_ne hn with hi | hi
         · exact Or.inl (Or.inr ⟨hr, hi⟩)
-        · exact Or.inl (Or.inl (Or.inr ⟨hr, hi⟩))
-    · exact Or.inl (Or.inl (Or.inl hg))
+        simp_all
+    simp_all
   · rintro (((hr | ⟨hr, hi⟩) | ⟨hr, hi⟩) | ⟨hr, hi⟩)
     · exact ⟨by linarith, Or.inl (ne_of_gt hr)⟩
     · exact ⟨hr, Or.inr (ne_of_gt hi)⟩
     · exact ⟨hr, Or.inr (ne_of_lt hi)⟩
     · exact ⟨hr, Or.inl (ne_of_lt hi)⟩
 
-private lemma halfPlane_identity {δ : ℝ} (hδ : 0 < δ) {F G : ℂ → ℂ}
+lemma halfPlane_identity {δ : ℝ} (hδ : 0 < δ) {F G : ℂ → ℂ}
     (hF : ∀ z, -δ < z.re → z ≠ 0 → DifferentiableAt ℂ F z)
     (hG : ∀ z, -δ < z.re → z ≠ 0 → DifferentiableAt ℂ G z)
     (heq : ∀ z, 0 < z.re → F z = G z)
@@ -166,7 +166,7 @@ private lemma eulerIter_add_of_pos {a b : ℝ → ℂ}
     ∀ x : ℝ, 0 < x →
       EulerIter j (fun y => a y + b y) x = EulerIter j a x + EulerIter j b x := by
   induction j with
-  | zero => intro x hx; simp
+  | zero => simp
   | succ j ih =>
     intro x hx
     have hda : DifferentiableAt ℝ (EulerIter j a) x :=
@@ -197,7 +197,7 @@ private lemma contDiffOn_eval_log (P : Polynomial ℂ) :
         simp only [Set.mem_compl_iff, Set.mem_singleton_iff]
         exact ne_of_gt hx)
     exact Complex.ofRealCLM.contDiff.comp_contDiffOn hlog
-  exact h1.comp_contDiffOn h2
+  fun_prop
 
 private lemma eulerIter_sub_originPolynomial_eq {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ} (h : LogMellinPhysical f δ P) (j : ℕ) :
     ∀ x : ℝ, 0 < x →
@@ -211,7 +211,7 @@ private lemma eulerIter_sub_originPolynomial_eq {f : ℝ → ℂ} {δ : ℝ} {P 
     contDiffOn_eval_log P
   have hsplit := eulerIter_add_of_pos hf' hp' j x hx
   have hfun : (fun y : ℝ => (f y - P.eval (Real.log y : ℂ)) + P.eval (Real.log y : ℂ)) = f := by
-    funext y; ring
+    simp
   rw [hfun] at hsplit
   rw [hsplit, EulerIter_eval_log_polynomial P j x hx]
 
@@ -241,7 +241,7 @@ private lemma high_euler_mellin_differentiableAt {f : ℝ → ℂ} {δ : ℝ} {P
     rw [neg_neg, Real.norm_eq_abs, abs_of_nonneg (Real.rpow_nonneg hx.1.le _),
       eulerIter_eq_remainder_of_degree_lt h n hn x hx.1]
     exact hbound₁ x hx.1 hx.2
-  · exact hs
+  omega
 
 end Helpers
 
@@ -296,7 +296,3 @@ theorem logMellinContinuation_unique {f : ℝ → ℂ} {δ : ℝ} {P : Polynomia
       (logPrincipalPart_differentiableAt P z hz0)
   · intro z hz
     exact (hM z hz).trans (logMellinContinuation_eq_mellin h z hz).symm
-
-end DedekindZetaZeroFree.LargeSieve.Vendor
-
-end

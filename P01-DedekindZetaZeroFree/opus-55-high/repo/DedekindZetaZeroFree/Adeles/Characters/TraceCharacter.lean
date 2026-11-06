@@ -60,8 +60,7 @@ theorem adelicTraceCharacter_arch_single (v : InfinitePlace F)
   simp only [AddChar.map_zero_eq_one, finprod_one, mul_one]
   rw [Finset.prod_eq_single v]
   · simp
-  · intro w hw hwv
-    simp [Pi.single_eq_of_ne hwv]
+  · simp_all
   · simp
 
 theorem adelicTraceCharacter_finite_single (v : HeightOneSpectrum (𝓞 F))
@@ -79,12 +78,11 @@ theorem adelicTraceCharacter_finite_single (v : HeightOneSpectrum (𝓞 F))
   simp only [AddChar.map_zero_eq_one, Finset.prod_const_one, one_mul]
   rw [finprod_eq_single _ v]
   · simp
-  · intro w hw
-    simp [RestrictedProduct.single_eq_of_ne _ _ hw]
+  simp_all
 
 theorem adelicTraceCharacter_diagonal (t : F) :
-    adelicTraceCharacter F (algebraMap F (AdeleRing (𝓞 F) F) t) = 1 := by
-  exact traceCharacter_diagonal_product_formula F t
+    adelicTraceCharacter F (algebraMap F (AdeleRing (𝓞 F) F) t) = 1 := 
+  traceCharacter_diagonal_product_formula F t
 
 def adelicTraceQuotientCharacter :
     AddChar (AdeleRing (𝓞 F) F ⧸ AdeleRing.principalSubgroup (𝓞 F) F) Circle :=
@@ -109,7 +107,3 @@ theorem continuous_adelicTraceQuotientCharacter :
     (AdeleRing.principalSubgroup (𝓞 F) F)).continuous_iff.mpr
   change Continuous (adelicTraceCharacter F : AdeleRing (𝓞 F) F → Circle)
   exact continuous_adelicTraceCharacter F
-
-end DedekindZetaZeroFree
-
-end

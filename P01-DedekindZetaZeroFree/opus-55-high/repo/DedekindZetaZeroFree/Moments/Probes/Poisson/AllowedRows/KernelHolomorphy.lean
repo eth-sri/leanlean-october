@@ -19,7 +19,7 @@ variable {F : Type} [Field F] [NumberField F]
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 variable (D : FixedData S η)
 
-private lemma exp_shift (x₀ δ r : ℝ) (h : |δ| ≤ r) :
+lemma exp_shift (x₀ δ r : ℝ) (h : |δ| ≤ r) :
     Real.exp (-(x₀ + δ) ^ 2) ≤
       Real.exp (r ^ 2) * (Real.exp (-(x₀ - r) ^ 2) + Real.exp (-(x₀ + r) ^ 2)) := by
   have h1 := abs_le.1 h
@@ -37,7 +37,7 @@ private lemma exp_shift (x₀ δ r : ℝ) (h : |δ| ≤ r) :
       _ ≤ _ := mul_le_mul_of_nonneg_left
           (le_add_of_nonneg_left (Real.exp_pos _).le) (Real.exp_pos _).le
 
-private lemma pt_env (X X₀ a a₀ r' v s t1 t2 k : ℝ) (m w : ℂ) (hk : 0 ≤ k) (hr0 : 0 < r')
+lemma pt_env (X X₀ a a₀ r' v s t1 t2 k : ℝ) (m w : ℂ) (hk : 0 ≤ k) (hr0 : 0 < r')
     (hr1 : r' ≤ 1) (hX : |X - X₀| ≤ 1) (ha : |a - a₀| ≤ r') :
     Real.exp ((X + v - 1) ^ 2 - (a + s) ^ 2) * ‖m‖ * ‖w‖ * (2 + |t1| + |t2| + |a|) ^ k ≤
       Real.exp ((|X₀| + |v| + 2) ^ 2 + 1) * 2 ^ k *
@@ -129,7 +129,7 @@ private lemma pt_env (X X₀ a a₀ r' v s t1 t2 k : ℝ) (m w : ℂ) (hk : 0 �
           linarith [a1, a2]
     _ = _ := by ring
 
-private lemma wM_eq (η : ℂ) (v y : ℝ) (p : ℝ × ℝ) :
+lemma wM_eq (η : ℂ) (v y : ℝ) (p : ℝ × ℝ) :
     WeightConvolution.weightModulus D η v y p =
       Real.exp ((η.re + v - 1) ^ 2 - (η.im + p.1) ^ 2) *
         ‖D.M ((v : ℂ) + (p.1 : ℂ) * Complex.I)‖ *
@@ -246,7 +246,7 @@ private lemma zpow_bound (Z : ℝ) (hZ : 0 < Z) (c x x₀ : ℝ) (hx : |x - x₀
         have h2 := abs_sub_abs_le_abs_sub x x₀
         linarith
 
-private lemma K_norm_eq' (u : D.Row) (hq : 0 < D.q u) (ξ : ℂ) (v y : ℝ) (p : ℝ × ℝ) (Z : ℝ)
+lemma K_norm_eq' (u : D.Row) (hq : 0 < D.q u) (ξ : ℂ) (v y : ℝ) (p : ℝ × ℝ) (Z : ℝ)
     (hZ : 0 < Z) :
     ‖K D u ξ ((y : ℂ) + (p.2 : ℂ) * Complex.I) ((v : ℂ) + (p.1 : ℂ) * Complex.I) Z‖ =
       Z ^ (Scales.xExponent / 2 + ξ.re - 1 + Scales.smoothingExponent * v + Scales.yExponent * (y - 1)) * D.q u ^ (-v) *

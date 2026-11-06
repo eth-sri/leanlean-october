@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Equivariance facade for the integral induced block
 
@@ -28,7 +23,6 @@ lemmas into the transport used by the cohomology layer.
 open scoped NumberField TensorProduct ValuativeRel NNReal
 open NumberField IsDedekindDomain
 
-noncomputable section
 
 open AlgebraicNumberTheory.Valuations
 open HilbertRamification
@@ -131,7 +125,3 @@ theorem
         (K := K) (L := L) w₀ τ
         (relativeLocalTensorDecompositionIntegralUnitSubgroupEquivInducedIntegerUnits
           (K := K) (L := L) w₀ x)).symm
-
-end ChosenFinitePlace
-
-end

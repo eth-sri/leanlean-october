@@ -11,7 +11,7 @@ set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
 namespace DedekindZetaZeroFree.KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue.ActualCofactor
 
-private theorem finite_coordinate_multilinear_integral
+theorem finite_coordinate_multilinear_integral
     {ι : Type} [Fintype ι] [DecidableEq ι]
     {J : ι → Type} [∀ i, Fintype (J i)] [∀ i, DecidableEq (J i)]
     {V : ι → Type} [∀ i, AddCommGroup (V i)] [∀ i, Module ℂ (V i)]
@@ -50,7 +50,7 @@ private theorem finite_coordinate_multilinear_integral
     funext (fun x => he (fun i => f i (x i)))
   constructor
   · rw [hef]
-    exact integrable_finsetSum _ (fun r _ => hi r)
+    fun_prop
   · rw [hef, he v]
     rw [integral_finsetSum _ (fun r _ => hi r)]
     apply Finset.sum_congr rfl
@@ -177,7 +177,3 @@ theorem rational_finite_chamber_integral
     change _ = ∫ x, _ ∂(ENNReal.ofReal (localHalfDifferentFactor F q.val) • μ q)
     rw [integral_smul_measure, ENNReal.toReal_ofReal (localHalfDifferentFactor_pos F q.val).le]
     rfl
-
-end DedekindZetaZeroFree.KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue.ActualCofactor
-
-end

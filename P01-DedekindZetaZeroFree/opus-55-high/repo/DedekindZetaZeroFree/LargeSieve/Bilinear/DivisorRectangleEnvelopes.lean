@@ -48,7 +48,7 @@ theorem U_le_of_exponent
       min (B + Real.rpow (max 1 X) α) (max 1 X + Real.rpow B α) := by
     have ha : 0 ≤ A := by linarith
     have hb : 0 ≤ B := by linarith
-    have hx : 0 ≤ max 1 X := le_trans (by norm_num) (le_max_left _ _)
+    have hx : 0 ≤ max 1 X := by simp
     exact mul_nonneg (mul_nonneg ha (Real.rpow_nonneg (mul_nonneg hb hx) _))
       (le_min (add_nonneg hb (Real.rpow_nonneg hx _))
         (add_nonneg hx (Real.rpow_nonneg hb _)))
@@ -104,10 +104,4 @@ theorem rectangle_endpoints (C : Context Q) (P : ℝ × ℝ)
     1 ≤ P.1 ∧ 1 ≤ P.2 ∧ P.1 ≤ 2 * C.N / norm C.d ∧
       P.2 ≤ 2 * C.N / norm C.d := by
   have h := (Finset.mem_filter.mp hP).2
-  exact ⟨h.1, h.2.1, h.2.2.1, h.2.2.2.1⟩
-
-end ErrorRectangles
-
-end DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms
-
-end
+  simp_all

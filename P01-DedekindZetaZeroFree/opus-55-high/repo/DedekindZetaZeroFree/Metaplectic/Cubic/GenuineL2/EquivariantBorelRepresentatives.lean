@@ -24,7 +24,7 @@ def average (g : CoveredSpherical F ζ hζ U → ℂ) :
   fun v => (3 : ℂ)⁻¹ * ∑ ε : rootsOfUnity 3 F,
     (chi F ζ hζ ε : ℂ)⁻¹ * g (z F ζ hζ U ε v)
 
-private lemma z_mul (ε ε' : rootsOfUnity 3 F) (v : CoveredSpherical F ζ hζ U) :
+lemma z_mul (ε ε' : rootsOfUnity 3 F) (v : CoveredSpherical F ζ hζ U) :
     z F ζ hζ U (ε * ε') v = z F ζ hζ U ε (z F ζ hζ U ε' v) := by
   change (ε * ε') • v = ε • (ε' • v)
   exact mul_smul ε ε' v

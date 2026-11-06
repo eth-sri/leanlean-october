@@ -1,7 +1,8 @@
 module
 
 public import ValuedFieldTheory.LocalField.DiscreteValuationField.ValuationSubringUnits.CompleteRangeRestriction
-public import ValuedFieldTheory.LocalField.DiscreteValuationField.ValueGroup
+public import ValuedFieldTheory.LocalField.DiscreteValuationField.Norm.Quotients
+public import Mathlib.Data.Int.ModEq
 
 @[expose] public section
 
@@ -11,10 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-set_option autoImplicit false
 
 /-!
 # Integer valuations from complete-DVF uniformizers
@@ -28,7 +25,7 @@ noncomputable section
 universe u v
 
 open WithZero
-open scoped NNReal Valued WithZero
+open scoped NNReal Valued
 
 namespace LocalFieldTheory.DiscreteValuationField
 open ValuationTheory.DiscreteValuationField
@@ -39,7 +36,7 @@ variable {K : Type u} [Field K]
 
 /-- The nonzero value of a field unit, regarded as a unit of the ambient value
 group. -/
-noncomputable def fieldUnitValueUnit
+def fieldUnitValueUnit
     (F : CompleteDVF.{u, v} K) (x : Kˣ) : F.ValueGroupˣ :=
   Units.mk0 (F.valuation (x : K))
     ((_root_.Valuation.ne_zero_iff F.valuation).2 x.ne_zero)
@@ -65,7 +62,7 @@ theorem fieldUnitValueUnit_mul
 
 /-- The value of a chosen uniformizer, regarded as a unit of the ambient value
 group. -/
-noncomputable def uniformizerValueUnit
+def uniformizerValueUnit
     (F : CompleteDVF.{u, v} K)
     {π : F.valuationSubring} (hπ : F.valuation.IsUniformizer (π : K)) :
     F.ValueGroupˣ :=
@@ -114,7 +111,7 @@ theorem uniformizerValueUnit_zpow_inj
 
 /-- The integer exponent of the value of a field unit with respect to a chosen
 uniformizer. -/
-noncomputable def uniformizerValueExponent
+def uniformizerValueExponent
     (F : CompleteDVF.{u, v} K)
     {π : F.valuationSubring} (hπ : F.valuation.IsUniformizer (π : K))
     (x : Kˣ) : ℤ :=
@@ -135,7 +132,7 @@ theorem uniformizerValueUnit_zpow_uniformizerValueExponent_eq_fieldUnitValueUnit
 /-- The integer-valued multiplicative valuation on `Kˣ` attached to a chosen
 uniformizer of an arbitrary complete DVF.  Its value is the exponent of the
 field-unit value as a power of the uniformizer value. -/
-noncomputable def multiplicativeIntegerValuationOfUniformizer
+def multiplicativeIntegerValuationOfUniformizer
     (F : CompleteDVF.{u, v} K)
     {π : F.valuationSubring} (hπ : F.valuation.IsUniformizer (π : K)) :
     MultiplicativeIntegerValuation Kˣ where
@@ -214,8 +211,3 @@ theorem multiplicativeIntegerValuationOfUniformizer_zeroSubgroup_eq_unitGroup
     rw [(LocalFieldTheory.DiscreteValuationField.CompleteDVF.uniformizerValueUnit_zpow_uniformizerValueExponent_eq_fieldUnitValueUnit F)]
     ext
     simp [fieldUnitValueUnit, hx]
-
-end CompleteDVF
-end LocalFieldTheory.DiscreteValuationField
-
-end

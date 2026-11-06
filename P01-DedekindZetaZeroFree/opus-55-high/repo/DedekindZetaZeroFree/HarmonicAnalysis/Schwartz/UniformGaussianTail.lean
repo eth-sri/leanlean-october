@@ -19,8 +19,8 @@ theorem thetaUniformGaussianTail
       Summable (F t h) ∧
         ‖∑' i, F t h i‖ ≤ A * Real.exp (-(c * η ^ 2 / 2) * t ^ p) := by
   set G : ι → ℝ := fun i => Real.exp (-(c / 2) * ‖x i‖ ^ 2) with hG
-  have hGsum : Summable G := by simpa only [hG] using hsum
-  have hGnonneg : ∀ i, 0 ≤ G i := fun i => by rw [hG]; exact Real.exp_nonneg _
+  have hGsum : Summable G := by omega
+  have hGnonneg : ∀ i, 0 ≤ G i := fun i => by positivity
   have hGtsum : 0 ≤ ∑' i, G i := tsum_nonneg hGnonneg
   have hc2 : 0 ≤ c / 2 := by positivity
   refine ⟨P * (1 + ∑' i, G i), mul_pos hP (by linarith), ?_⟩
@@ -46,9 +46,9 @@ theorem thetaUniformGaussianTail
       linarith [hmul, heq]
     have hle2 : Real.exp (-(c / 2) * t ^ p * ‖x i‖ ^ 2) ≤ G i := by
       rw [hG, Real.exp_le_exp]
-      have hA : 0 ≤ (c / 2) * ‖x i‖ ^ 2 := mul_nonneg hc2 (sq_nonneg _)
+      have hA : 0 ≤ (c / 2) * ‖x i‖ ^ 2 := by positivity
       have h1 : (c / 2) * ‖x i‖ ^ 2 * (t ^ p - 1) ≥ 0 :=
-        mul_nonneg hA (by linarith)
+        by positivity
       nlinarith [h1]
     have hprod : Real.exp (-c * t ^ p * ‖x i‖ ^ 2) ≤ E' * G i := by
       rw [hexp_eq]
@@ -73,5 +73,3 @@ theorem thetaUniformGaussianTail
     _ = (P * E') * ∑' i, G i := step3
     _ ≤ (P * (1 + ∑' i, G i)) * E' := step4
     _ = (P * (1 + ∑' i, G i)) * Real.exp (-(c * η ^ 2 / 2) * t ^ p) := by rw [hE']
-
-end DedekindZetaZeroFree

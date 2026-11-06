@@ -21,7 +21,3 @@ def normalRadialJet (c : Cover F ζ hζ) (w : NumberField.InfinitePlace F)
   deriv (fun t : ℝ => normalRadial c
     (g * KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
       (KPSmoothActualFlowData.flow F (w,l) t))) 0
-
-end DedekindZetaZeroFree.KPMsGreenFlux.NormalCoefficient
-
-end

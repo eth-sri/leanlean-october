@@ -42,5 +42,3 @@ noncomputable def lineClass
     intro h
     apply kp_cusp_coefficientSubmodule_ne_bot R K M q.rep q.rep_nonzero
     exact (congrArg Subtype.val h).trans FractionalIdeal.coe_zero))
-
-end DedekindZetaZeroFree

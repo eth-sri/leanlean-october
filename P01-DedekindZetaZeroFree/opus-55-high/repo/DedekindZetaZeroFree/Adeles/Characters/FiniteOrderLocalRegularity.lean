@@ -7,7 +7,6 @@ public import DedekindZetaZeroFree.Adeles.Characters.RayCharacterCorrectionFacto
 open scoped NumberField Classical
 open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.SArithmeticData.CorrectionTopology
-noncomputable section
 variable {X Y : Type*} [TopologicalSpace X] [TopologicalSpace Y] [T1Space Y]
 
 variable {F : Type} [Field F] [NumberField F]
@@ -42,6 +41,3 @@ lemma finite_embedding_continuous (v : HeightOneSpectrum (𝓞 F)) :
   have hi : Filter.cofinite ≤ Filter.principal ({v}ᶜ : Set (HeightOneSpectrum (𝓞 F))) := by
     simp
   exact (RestrictedProduct.continuous_inclusion hi).comp hf
-
-end
-end DedekindZetaZeroFree.SArithmeticData.CorrectionTopology

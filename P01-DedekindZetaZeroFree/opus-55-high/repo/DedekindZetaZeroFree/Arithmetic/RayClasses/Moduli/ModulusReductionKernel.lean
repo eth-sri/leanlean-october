@@ -7,7 +7,6 @@ public import ClassFieldTheory.Theorems.ConductorsAndRayClassFields.RayPrincipal
 
 @[expose] public section
 
-noncomputable section
 
 namespace DedekindZetaZeroFree.LargeSieve.RayBridge
 
@@ -15,13 +14,13 @@ open scoped NumberField Classical
 
 variable {F : Type*} [Field F] [NumberField F]
 
-private lemma rayPrimeToIdeals_antitone' {m n : ClassFieldTheory.RayClassModulus F}
+lemma rayPrimeToIdeals_antitone' {m n : ClassFieldTheory.RayClassModulus F}
     (hmn : m ≤ n) :
     ClassFieldTheory.rayClassPrimeToIdeals n ≤ ClassFieldTheory.rayClassPrimeToIdeals m := by
   intro I hI v hv
   exact hI v (Finsupp.support_mono hmn.1 hv)
 
-private lemma modulusReduction_mk'_apply (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
+lemma modulusReduction_mk'_apply (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
     (f : Ideal (𝓞 F)) (hf : f ≠ ⊥) (hmf : m ≤ f)
     (J : ClassFieldTheory.rayClassPrimeToIdeals (fullModulus m hm)) :
     modulusReduction m hm f hf hmf
@@ -31,10 +30,7 @@ private lemma modulusReduction_mk'_apply (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
         (fullModulus f hf))
       (⟨(J : ClassFieldTheory.NumberFieldFractionalIdealGroup F),
         rayPrimeToIdeals_antitone' (fullModulus_le_of_le m hm f hf hmf) J.2⟩) := by
-  simp only [modulusReduction, ClassFieldTheory.rayClassIdealModulusProjection,
-    QuotientGroup.map_mk']
-  refine congrArg _ (Subtype.ext ?_)
-  exact Subgroup.coe_inclusion _ J
+  rfl
 
 theorem modulusReduction_kernel (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
     (f : Ideal (𝓞 F)) (hf : f ≠ ⊥) (hmf : m ≤ f)
@@ -78,9 +74,7 @@ theorem modulusReduction_kernel (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
   refine ⟨a, b, ha, hb, hcam, hcbm, ha1, hb1, hposa, hposb, ?_⟩
   have hxa : Units.mk0 (a : F) (by exact_mod_cast ha) =
       x * Units.mk0 (b : F) (by exact_mod_cast hb) := by
-    apply Units.ext
-    simp only [Units.val_mk0, Units.val_mul]
-    exact hab
+    simp_all
   have hunit : integralIdealUnit (Ideal.span {a})
         (mt Ideal.span_singleton_eq_bot.mp ha) =
       (J : ClassFieldTheory.NumberFieldFractionalIdealGroup F) *
@@ -95,11 +89,7 @@ theorem modulusReduction_kernel (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
         J * idealToPrimeTo m hm (Ideal.span {b})
           (mt Ideal.span_singleton_eq_bot.mp hb) hcbm := by
       apply Subtype.ext
-      simpa only [Subgroup.coe_mul, idealToPrimeTo_coe] using hunit
+      simp_all
     rw [idealClass, idealClass, helem, map_mul, hJ]
   rw [hrep]
   group
-
-end DedekindZetaZeroFree.LargeSieve.RayBridge
-
-end

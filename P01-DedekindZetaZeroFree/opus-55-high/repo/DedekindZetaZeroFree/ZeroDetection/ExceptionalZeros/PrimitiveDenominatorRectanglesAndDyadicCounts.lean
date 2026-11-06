@@ -1,8 +1,32 @@
 module
 
 public import DedekindZetaZeroFree.LFunctions.Hecke.NonprincipalMaskedRowInducers
-public import DedekindZetaZeroFree.ZeroDetection.ExceptionalZeros.BlockEnergyCounts
-public import DedekindZetaZeroFree.ZeroDetection.ExceptionalZeros.ZeroFreeDiskReciprocalBounds
+public import DedekindZetaZeroFree.LargeSieve.CharacterBounds.HeightPrefixMaximalBounds
+public import DedekindZetaZeroFree.LFunctions.Hecke.EulerLogarithm
+public import Mathlib
+public import DedekindZetaZeroFree.Arithmetic.Ideals.DivisorBoundsAndDampedTails
+public import DedekindZetaZeroFree.LFunctions.Hecke.UniformWeakConvexity
+public import DedekindZetaZeroFree.LFunctions.Hecke.UniformRegularizationBoundaryBounds
+public import DedekindZetaZeroFree.LFunctions.Hecke.RegularizationStripGrowth
+public import DedekindZetaZeroFree.Analysis.PhragmenLindelof.PolynomialBoundaryBounds
+public import DedekindZetaZeroFree.LFunctions.Hecke.OmittedEulerProductBounds
+public import Mathlib.Analysis.Complex.BranchLogRoot
+public import Mathlib.Analysis.Complex.BorelCaratheodory
+public import Mathlib.Analysis.Complex.Hadamard
+public import Mathlib.Analysis.Complex.Liouville
+public import Mathlib.Analysis.Calculus.InverseFunctionTheorem.Deriv
+public import Mathlib.Analysis.Normed.Module.Connected
+public import Mathlib.Analysis.Complex.ExponentialBounds
+public import DedekindZetaZeroFree.Analysis.Gamma.ReflectionAndReciprocalStripBounds
+public import DedekindZetaZeroFree.Nonvanishing.Mellin.NormOneFourierSheetEstimates
+public import DedekindZetaZeroFree.ZeroDetection.Smoothing.IdealMoebiusInverse
+public import Mathlib.Analysis.MellinInversion
+public import DedekindZetaZeroFree.Analysis.GammaStripDecay
+public import Mathlib.Analysis.Complex.RemovableSingularity
+public import DedekindZetaZeroFree.ZeroDetection.Conductors.FrequencyDyadCounts
+public import DedekindZetaZeroFree.Arithmetic.Units.PrincipalizingRayCharacterContext
+public import DedekindZetaZeroFree.LargeSieve.CharacterBounds.ExteriorDyadicConductorBounds
+public import DedekindZetaZeroFree.Adeles.Quotients.SixthPowerCompactCover
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Conductors.TwistedDeletedCoefficientInduction
 
 @[expose] public section
@@ -46,11 +70,11 @@ private theorem freqOrbit_injective (R : PrincipalMellin.ActualRecipe S η) :
     have huu := congrArg (fun x : ThetaReflectionData.Row R.A => (x.val : F)) heq
     have hδF := congrArg (fun x : R.A.U => (x.val : F)) hδ
     apply Units.ext
-    simp only [m, ThetaReflectionData.rowUnit, Units.val_mk0, map_mul, map_pow]
+    simp only [m, ThetaReflectionData.rowUnit, Units.val_mk0]
     change (u.val.val : F) * (r : F) ^ 6 = (v.val.val : F) * (r : F) ^ 6 * (δ.val : F) ^ 6
     change ((R.A.unitEquiv γ.val : R.A.R) : F) * (v.val.val : F) = (u.val.val : F) at huu
     have hcoe : ((R.A.unitEquiv γ.val : R.A.R) : F) = (γ.val.val : F) := by
-      simp [SArithmeticData.unitEquiv, Set.unitEquivUnitsInteger]
+      rfl
     rw [hcoe, ← hδF] at huu
     change (δ.val : F) ^ 6 * (v.val.val : F) = (u.val.val : F) at huu
     rw [← huu]
@@ -200,9 +224,9 @@ theorem actual_complete_frequency_dyads
       · rw [h] at hn
         simp only [pow_zero] at hn
         linarith
-      · exact h
-    have hle : (2 : ℝ) ^ (n - 1) ≤ frequencyNorm R u := by
-      exact not_lt.mp (hnmin (n - 1) (Nat.sub_lt hnpos (by norm_num)))
+      omega
+    have hle : (2 : ℝ) ^ (n - 1) ≤ frequencyNorm R u := 
+      not_lt.mp (hnmin (n - 1) (Nat.sub_lt hnpos (by norm_num)))
     refine ⟨n - 1, (hmem (n - 1) u).mpr ⟨?_, hu, hle⟩⟩
     rw [Nat.sub_add_cancel hnpos]
     exact hn
@@ -326,12 +350,3 @@ end
 section
 
 namespace DedekindZetaZeroFree.PrincipalMellinComparison.NonprincipalContinuation
-noncomputable section
-open scoped Classical
-variable {F : Type} [Field F] [NumberField F]
-variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
-
-end
-end DedekindZetaZeroFree.PrincipalMellinComparison.NonprincipalContinuation
-
-end

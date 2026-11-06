@@ -28,11 +28,11 @@ private lemma numerator_diff {F : Type} [Field F] [NumberField F]
   exact (differentiable_id.const_cpow (by simp [hX.ne'])).mul
     ((differentiable_neg.div_const _).const_cpow
       (by simp [ne_of_gt (principalDiscriminant_pos F)]))
-private lemma dslope_diff (f : ℂ → ℂ) (hf : Differentiable ℂ f) (c : ℂ) :
+lemma dslope_diff (f : ℂ → ℂ) (hf : Differentiable ℂ f) (c : ℂ) :
     Differentiable ℂ (dslope f c) := by
   rw [← differentiableOn_univ] at *
   exact (Complex.differentiableOn_dslope (by simp)).mpr hf
-private lemma regular_algebra (f : ℂ → ℂ) (s : ℂ) (hs0 : s ≠ 0) (hs1 : s ≠ 1) :
+lemma regular_algebra (f : ℂ → ℂ) (s : ℂ) (hs0 : s ≠ 0) (hs1 : s ≠ 1) :
     dslope (dslope f 0) 1 s = f s / (s * (s - 1)) - (f 1 / (s - 1) + (-f 0) / s) := by
   rw [dslope_of_ne _ hs1, slope_def_field, dslope_of_ne _ hs0,
     slope_def_field, dslope_of_ne _ (by norm_num : (1 : ℂ) ≠ 0), slope_def_field]
@@ -71,7 +71,7 @@ private lemma residues_numerator {F : Type} [Field F] [NumberField F]
       (principalMellinIntegrand_residue_one hF data Q hQ X hX)),
     (tendsto_nhds_unique (ht0.congr' he0.symm)
       (principalMellinIntegrand_residue_zero hF data h Q hQ hQ0 X hX))⟩
-private lemma integrand_growth {F : Type} [Field F] [NumberField F]
+lemma integrand_growth {F : Type} [Field F] [NumberField F]
     (hF : NumberField.IsTotallyComplex F) (data : PrincipalHeckeData F)
     (h : ℝ → ℂ) (hh : ContDiff ℝ ∞ h) (hc : HasCompactSupport h)
     (X : ℝ) (hX : 0 < X) (a b : ℝ) (hab : a ≤ b) :
@@ -89,10 +89,10 @@ private lemma integrand_growth {F : Type} [Field F] [NumberField F]
     exact (norm_nonneg _).trans this
   have hD := (principalDiscriminant_pos F).le
   let B := 1 + max |a| |b|
-  have hB : 0 ≤ B := by dsimp [B]; positivity
+  have hB : 0 ≤ B := by positivity
   have hpowcont : ContinuousOn (fun σ : ℝ =>
-      X ^ σ * (principalDiscriminant F) ^ (-σ / 2)) (Set.Icc a b) := by
-    exact ((Real.continuous_const_rpow hX.ne').mul
+      X ^ σ * (principalDiscriminant F) ^ (-σ / 2)) (Set.Icc a b) := 
+    ((Real.continuous_const_rpow hX.ne').mul
       ((Real.continuous_const_rpow (principalDiscriminant_pos F).ne').comp
         (by fun_prop))).continuousOn
   obtain ⟨CP, hCP⟩ := isCompact_Icc.exists_bound_of_continuousOn hpowcont
@@ -109,9 +109,7 @@ private lemma integrand_growth {F : Type} [Field F] [NumberField F]
     apply mul_ne_zero (mul_ne_zero (by norm_num) (by simp [Real.pi_ne_zero]))
     apply Complex.Gamma_ne_zero
     intro n hn
-    apply ht0
-    have := congrArg Complex.im hn
-    simpa [hsim] using this
+    simp_all
   have hidentity : principalMellinIntegrand data (Vendor.originMellinQ h) X s =
       (X : ℂ) ^ s * (principalDiscriminant F : ℂ) ^ (-s / 2) *
       (Complex.Gammaℂ s)⁻¹ ^ principalComplexPlaces F *
@@ -256,10 +254,10 @@ theorem principalMellinIntegrand_one_sub_eq_dual
   have hs0 : s ≠ 0 := by
     intro h0; rw [h0] at hs; norm_num at hs
   have hs1 : s ≠ 1 := by
-    intro h1; rw [h1] at hs; norm_num at hs
-  have h1s0 : 1 - s ≠ 0 := sub_ne_zero.mpr (Ne.symm hs1)
+    intro h1; simp_all
+  have h1s0 : 1 - s ≠ 0 := by positivity
   have h1s1 : 1 - s ≠ 1 := by
-    intro hh; exact hs0 (by linear_combination -hh)
+    intro hh; simp_all
 
   have hE : data.E (1 - s) = s * (s - 1) * data.Lambda s := by
     rw [data.E_eq_mul_Lambda (1 - s) h1s0 h1s1,
@@ -281,7 +279,7 @@ theorem principalMellinIntegrand_one_sub_eq_dual
     intro I
     by_cases hI : I = ⊥
     · simp [Set.indicator, hI]
-    · simp [Set.indicator, hI, principalCharacter_apply]
+    simp_all
   have hLam := data.Lambda_dirichlet s hs
   have hXne : (X : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hX.ne'
   have hDne : (principalDiscriminant F : ℂ) ≠ 0 :=
@@ -298,8 +296,7 @@ theorem principalMellinIntegrand_one_sub_eq_dual
     ring
   have hden : (1 - s) * ((1 - s) - 1) = s * (s - 1) := by ring
   have hdenne : (1 - s) * ((1 - s) - 1) ≠ 0 := by
-    rw [hden]
-    exact mul_ne_zero hs0 (sub_ne_zero.mpr hs1)
+    positivity
   rw [principalMellinIntegrand, B]
   rw [hE, hLam, hL]
   rw [div_eq_iff hdenne]
@@ -327,17 +324,14 @@ theorem principalMellinIntegrand_eq_primal
     principalMellinIntegrand data (Vendor.originMellinQ h) X s =
       mellin h s * (X : ℂ) ^ s * idealCoefficientLSeries (principalCharacter F) s := by
   have hs0 : s ≠ 0 := by intro hc; rw [hc] at hs; norm_num at hs
-  have hs1 : s ≠ 1 := by intro hc; rw [hc] at hs; norm_num at hs
+  have hs1 : s ≠ 1 := by intro hc; simp_all
   have hD : (principalDiscriminant F : ℂ) ≠ 0 := by
     exact_mod_cast ne_of_gt (principalDiscriminant_pos F)
   have hG : Complex.Gammaℂ s ≠ 0 := by
     rw [Complex.Gammaℂ_def]
     refine mul_ne_zero (mul_ne_zero two_ne_zero ?_)
       (Complex.Gamma_ne_zero_of_re_pos (by linarith))
-    rw [Complex.cpow_ne_zero_iff]
-    exact Or.inl (by
-      simp only [ne_eq, mul_eq_zero, OfNat.ofNat_ne_zero, false_or]
-      exact Complex.ofReal_ne_zero.mpr Real.pi_ne_zero)
+    simp
   have hr : 1 ≤ principalComplexPlaces F := principalComplexPlaces_pos F hF
   have hAD : (principalDiscriminant F : ℂ) ^ (-s / 2) *
       (principalDiscriminant F : ℂ) ^ (s / 2) = 1 := by
@@ -357,19 +351,13 @@ theorem principalMellinIntegrand_eq_primal
     have hsupp : Function.support (fun I : Ideal (𝓞 F) =>
         if I = ⊥ then 0 else (Ideal.absNorm I : ℂ) ^ (-s)) ⊆
         {I : Ideal (𝓞 F) | I ≠ ⊥} := by
-      intro I hI
-      by_contra heq
-      simp only [Set.mem_setOf_eq, not_not] at heq
-      subst I
-      simpa [Function.mem_support] using hI
+      simp_all
     calc
       (∑' I : {I : Ideal (𝓞 F) // I ≠ ⊥},
           principalCharacter F I.val * (Ideal.absNorm I.val : ℂ) ^ (-s))
           = ∑' I : {I : Ideal (𝓞 F) // I ≠ ⊥},
               (if I.val = ⊥ then 0 else (Ideal.absNorm I.val : ℂ) ^ (-s)) := by
-            apply tsum_congr
-            intro I
-            simp [I.property]
+            simp
       _ = ∑' I : Ideal (𝓞 F), if I = ⊥ then 0 else (Ideal.absNorm I : ℂ) ^ (-s) :=
             tsum_subtype_eq_of_support_subset hsupp
   rw [principalMellinIntegrand]
@@ -476,7 +464,7 @@ theorem principalPoisson
       hnorm.congr fun I => by simp [I.property]
     have hi := (summable_subtype_iff_indicator).mp hn
     exact hi.congr fun I => by
-      by_cases hI : I = ⊥ <;> simp [Set.indicator_apply, hI]
+      by_cases hI : I = ⊥ <;> simp [hI]
   have hsum' : Summable (fun I : Ideal (𝓞 F) =>
       if I = ⊥ then (0 : ℂ) else T₀ (X * (Ideal.absNorm I : ℝ))) := by
     have hn : Summable ((fun I : Ideal (𝓞 F) => T₀ (X * (Ideal.absNorm I : ℝ))) ∘
@@ -484,7 +472,7 @@ theorem principalPoisson
       hsum.congr fun I => by simp [I.property]
     have hi := (summable_subtype_iff_indicator).mp hn
     exact hi.congr fun I => by
-      by_cases hI : I = ⊥ <;> simp [Set.indicator_apply, hI]
+      by_cases hI : I = ⊥ <;> simp [hI]
   have htsum : (∑' I : {I : Ideal (𝓞 F) // I ≠ ⊥},
       principalCharacter F I.val * T₀ (X * (Ideal.absNorm I.val : ℝ))) =
       ∑' I : Ideal (𝓞 F), if I = ⊥ then 0 else T₀ (X * (Ideal.absNorm I : ℝ)) := by
@@ -499,9 +487,7 @@ theorem principalPoisson
     calc
       _ = ∑' I : {I : Ideal (𝓞 F) // I ≠ ⊥},
           if I.val = ⊥ then 0 else T₀ (X * (Ideal.absNorm I.val : ℝ)) := by
-        apply tsum_congr
-        intro I
-        simp [I.property]
+        simp
       _ = _ := tsum_subtype_eq_of_support_subset hs
   have hprimalLine : ∀ t : ℝ, J (2 + t * Complex.I) = P (2 + t * Complex.I) := by
     intro t
@@ -513,8 +499,8 @@ theorem principalPoisson
     intro t
     exact PrincipalPoisson.principalMellinIntegrand_one_sub_eq_dual data h X hX
       _ (by norm_num)
-  have hright : Complex.VerticalIntegrable J 2 := by
-    exact (idealMellin_verticalIntegrable (principalCharacter F) ha0 ha hh hcompact
+  have hright : Complex.VerticalIntegrable J 2 := 
+    (idealMellin_verticalIntegrable (principalCharacter F) ha0 ha hh hcompact
       hX (by norm_num : (1 : ℝ) < 2)).congr
       (Filter.Eventually.of_forall fun t => (hprimalLine t).symm)
   have hleft : Complex.VerticalIntegrable J (-1 / 2) := by
@@ -578,7 +564,6 @@ theorem principalPoisson
       if I = ⊥ then (0 : ℂ) else T₀ (X * (Ideal.absNorm I : ℝ))) ∧ _
   refine ⟨hnorm', hsum', ?_⟩
   rw [hsource]
-  change Vendor.verticalIntegral 2 J = _
   change Vendor.verticalIntegral 2 J =
     (principalPoleCoefficient F hF /
         ((Real.sqrt (principalDiscriminant F) : ℂ) *
@@ -591,9 +576,3 @@ theorem principalPoisson
   rw [← hres]
   rw [htarget] at hshift
   exact (sub_eq_iff_eq_add).mp hshift
-
-end DedekindZetaZeroFree.LargeSieve
-
-end
-
-end

@@ -39,7 +39,7 @@ structure Localization (φ : Tests F ζ hζ C R P H U) where
   test_compact : ∀ i, HasCompactSupport (liftExtension (chart i) (test i).val)
   test_interior : ∀ i, tsupport (liftExtension (chart i) (test i).val) ⊆ omega (chart i)
 
-private theorem testLaplacian_sum {n : ℕ} (ψ : Fin n → Tests F ζ hζ C R P H U) :
+theorem testLaplacian_sum {n : ℕ} (ψ : Fin n → Tests F ζ hζ C R P H U) :
     testLaplacian F ζ hζ C R P H U (∑ i, ψ i) =
       fun x => ∑ i, testLaplacian F ζ hζ C R P H U (ψ i) x := by
   unfold testLaplacian
@@ -48,7 +48,7 @@ private theorem testLaplacian_sum {n : ℕ} (ψ : Fin n → Tests F ζ hζ C R P
   funext x
   simp only [Submodule.coe_sum, Finset.sum_apply]
 
-private theorem testScalar_sum {n : ℕ} (ψ : Fin n → Tests F ζ hζ C R P H U) :
+theorem testScalar_sum {n : ℕ} (ψ : Fin n → Tests F ζ hζ C R P H U) :
     testScalar F ζ hζ C R P H U (∑ i, ψ i) =
       fun x => ∑ i, testScalar F ζ hζ C R P H U (ψ i) x := by
   have he (φ : Tests F ζ hζ C R P H U) : testScalar F ζ hζ C R P H U φ =

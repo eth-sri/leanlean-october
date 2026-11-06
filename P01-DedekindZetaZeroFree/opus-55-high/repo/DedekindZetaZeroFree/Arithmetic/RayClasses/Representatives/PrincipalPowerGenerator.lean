@@ -49,5 +49,3 @@ theorem integral_ideal_pow_card_rayClassGroup_generator
   have hcong :=
     (RayClassBridge.isRayCongruent_iff_integral F 𝔪 h𝔪 α hα0 x hαx.symm).mp hxray
   exact ⟨hN, α, hα0, hcong.1, hcong.2, hαI.symm⟩
-
-end DedekindZetaZeroFree.RayUnitary

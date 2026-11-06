@@ -30,7 +30,3 @@ def exteriorCoordinates (a : (SupportedChartDefinitions.H A)) : (SupportedChartD
   fun v => ⟨a.1.1.2 v.val,
     (IdeleGroup.mem_supportedAt_iff
       (A.Sf : Set (HeightOneSpectrum (𝓞 F))) a.1.1).mp a.2 v.val v.prop⟩
-
-end
-end SupportedChartDefinitions
-end DedekindZetaZeroFree

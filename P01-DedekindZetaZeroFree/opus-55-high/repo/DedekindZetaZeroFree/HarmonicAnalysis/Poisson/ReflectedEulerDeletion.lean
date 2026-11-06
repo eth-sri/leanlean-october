@@ -25,18 +25,18 @@ variable {F : Type} [Field F] [NumberField F]
 
 open UniqueFactorizationMonoid
 
-private lemma subset_prod_factors (m : Ideal (𝓞 F)) (t : Finset (Ideal (𝓞 F)))
+lemma subset_prod_factors (m : Ideal (𝓞 F)) (t : Finset (Ideal (𝓞 F)))
     (ht : t ⊆ (UniqueFactorizationMonoid.normalizedFactors m).toFinset) :
     UniqueFactorizationMonoid.normalizedFactors (∏ p ∈ t, p) = t.val := by
   rw [Finset.prod_eq_multiset_prod, Multiset.map_id']
   exact UniqueFactorizationMonoid.normalizedFactors_prod_eq_self_of_subset (fun p hp =>
     Multiset.mem_toFinset.mp (ht (Finset.mem_val.mp hp)))
-private lemma subset_prod_ne_zero (m : Ideal (𝓞 F)) (t : Finset (Ideal (𝓞 F)))
+lemma subset_prod_ne_zero (m : Ideal (𝓞 F)) (t : Finset (Ideal (𝓞 F)))
     (ht : t ⊆ (UniqueFactorizationMonoid.normalizedFactors m).toFinset) : (∏ p ∈ t, p) ≠ ⊥ := by
   rw [Finset.prod_eq_multiset_prod, Multiset.map_id']
   exact prod_ne_zero_of_subset_normalizedFactors (fun p hp =>
     Multiset.mem_toFinset.mp (ht (Finset.mem_val.mp hp)))
-private lemma norm_prod_cpow (t : Finset (Ideal (𝓞 F))) (z : ℂ) :
+lemma norm_prod_cpow (t : Finset (Ideal (𝓞 F))) (z : ℂ) :
     (Ideal.absNorm (∏ p ∈ t, p) : ℂ) ^ z =
       ∏ p ∈ t, (Ideal.absNorm p : ℂ) ^ z := by
   induction t using Finset.induction_on with
@@ -63,9 +63,7 @@ theorem idealEulerDeletion_eq_prod (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) (s : �
       (moebius d : ℂ) * (Ideal.absNorm d : ℂ) ^ (-s)) =
       ∑ d ∈ idealDivisors m, (moebius d : ℂ) * (Ideal.absNorm d : ℂ) ^ (-s) := by
     apply Finset.sum_subset (Finset.filter_subset _ _)
-    intro d hd hn
-    have hns : ¬ Squarefree d := by simpa [hd] using hn
-    simp [moebius_of_not_squarefree hns]
+    simp_all
   rw [← hrestrict]
   symm
   apply Finset.sum_bij (fun t _ => ∏ p ∈ t, p)
@@ -82,8 +80,7 @@ theorem idealEulerDeletion_eq_prod (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) (s : �
   · intro t ht u hu heq
     have ht' := subset_prod_factors m t (Finset.mem_powerset.mp ht)
     have hu' := subset_prod_factors m u (Finset.mem_powerset.mp hu)
-    apply Finset.val_injective
-    rw [← ht', ← hu', heq]
+    simp_all
   · intro d hd
     obtain ⟨hd, hsf⟩ := Finset.mem_filter.mp hd
     have hd0 := ne_bot_of_mem_idealDivisors hd
@@ -108,7 +105,3 @@ theorem idealEulerDeletion_eq_prod (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) (s : �
     rw [hsf.moebius_eq, factors_eq_normalizedFactors, hfac, Int.cast_pow,
       Int.cast_neg, Int.cast_one, norm_prod_cpow]
     rfl
-
-end DedekindZetaZeroFree.LargeSieve
-
-end

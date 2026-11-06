@@ -10,12 +10,11 @@ namespace DedekindZetaZeroFree.ProbeAdditiveGramBounds
 noncomputable section
 open scoped Classical ComplexConjugate
 
-private lemma schur_square_expand {κ : Type*} [Fintype κ]
+lemma schur_square_expand {κ : Type*} [Fintype κ]
     (w : ℝ) (a b : κ → ℂ) :
     (w * ‖∑ j, b j * a j‖ ^ 2 : ℂ) =
       ∑ j, ∑ k, (b j * conj (b k)) * ((w : ℂ) * a j * conj (a k)) := by
   classical
-  push_cast
   rw [← Complex.mul_conj', map_sum]
   simp only [Finset.mul_sum, Finset.sum_mul, map_mul]
   rw [Finset.sum_comm]
@@ -83,11 +82,7 @@ theorem weighted_schur_bound {ι κ : Type*} [Fintype κ]
       rw [hnormsymm]
     calc
       _ = ∑ j, ∑ k, (b j * conj (b k) * G j k).re := by
-        change Complex.reCLM (∑ j, ∑ k, b j * conj (b k) * G j k) = _
-        rw [map_sum]
-        apply Finset.sum_congr rfl
-        intro j hj
-        exact map_sum Complex.reCLM _ _
+        simp
       _ ≤ ∑ j, ∑ k,
           (‖b j‖ ^ 2 * ‖G j k‖ + ‖b k‖ ^ 2 * ‖G j k‖) / 2 := by
         apply Finset.sum_le_sum
@@ -176,7 +171,6 @@ lemma phase_neg (F : Type) [Field F] [NumberField F]
   congr 1
   apply Finset.prod_congr rfl
   intro v hv
-  change ((e v (-(x.2 v)) : Circle) : ℂ) = _
   rw [AddChar.map_neg_eq_inv, Circle.coe_inv_eq_conj]
 
 lemma matrix_dual {ι κ : Type*} [Fintype ι] [Fintype κ]
@@ -239,11 +233,11 @@ end ProbeAdditive
  def localSize (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (𝓞 F))) (x : SLocalProduct F S) : ℝ :=
   (∏ v : InfinitePlace F, ‖x.1 v‖ ^ v.mult) * ∏ v : S, ‖x.2 v‖
-private lemma localSize_continuous (F : Type) [Field F] [NumberField F]
+lemma localSize_continuous (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (𝓞 F))) : Continuous (localSize F S) := by
   unfold localSize
   fun_prop
-private lemma localSize_diagonal (F : Type) [Field F] [NumberField F]
+lemma localSize_diagonal (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (𝓞 F))) (m : F) :
     localSize F S (sLocalDiagonal F S m) = ProbeSeparation.productNorm F S m := by
   unfold localSize ProbeSeparation.productNorm
@@ -256,19 +250,19 @@ private lemma localSize_diagonal (F : Type) [Field F] [NumberField F]
     rfl
   · simp only [sLocalDiagonal_finite, FinitePlace.mk_apply]
     exact Finset.prod_coe_sort S (fun v => ‖algebraMap F (v.adicCompletion F) m‖)
-private lemma localSize_zero (F : Type) [Field F] [NumberField F]
+lemma localSize_zero (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (𝓞 F))) : localSize F S 0 = 0 := by
   unfold localSize
   have : ∀ v : InfinitePlace F, (0:ℝ) ^ v.mult = 0 := by
     intro v
-    exact zero_pow (by have := v.mult_pos; omega)
+    simp
   change (∏ v : InfinitePlace F, ‖(0 : v.Completion)‖ ^ v.mult) * _ = 0
-  simp [this]
+  simp
 private lemma diagonal_injective (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (𝓞 F))) :
-    Function.Injective (sIntegerDiagonal F S) := by
-  exact (RingHom.injective (sLocalDiagonal F S)).comp Subtype.val_injective
-private lemma diagonal_discrete (F : Type) [Field F] [NumberField F]
+    Function.Injective (sIntegerDiagonal F S) := 
+  (RingHom.injective (sLocalDiagonal F S)).comp Subtype.val_injective
+lemma diagonal_discrete (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (𝓞 F))) :
     IsDiscrete ((sIntegerDiagonal F S).toAddMonoidHom.range : Set (SLocalProduct F S)) := by
   let G := (sIntegerDiagonal F S).toAddMonoidHom.range
@@ -349,7 +343,7 @@ theorem probe_additive_row_box_sieve (F : Type) [Field F] [NumberField F]
     let A : Matrix (↥rows) (↥P) ℂ :=
       fun m α => ProbeAdditive.phase F S e
         (sLocalDiagonal F S ((m.val : F) * ProbeSeparation.value F p α.val))
-    have hB : 0 ≤ C * (N + V ^ 2) := mul_nonneg hC (by nlinarith [sq_nonneg V])
+    have hB : 0 ≤ C * (N + V ^ 2) := by positivity
     have hrow : ∀ b : ↥P → ℂ,
         (∑ m : ↥rows, ‖∑ α : ↥P, b α * A m α‖ ^ 2) ≤
           C * (N + V ^ 2) * ∑ α : ↥P, ‖b α‖ ^ 2 := by
@@ -383,7 +377,7 @@ theorem probe_additive_row_box_sieve (F : Type) [Field F] [NumberField F]
   let w : ProbeSeparation.Integers F S → ℝ := fun m =>
     Φ (sLocalDiagonal F S (m : F))
   have hB : 0 ≤ C * (N + V ^ 2) :=
-    mul_nonneg hC (by nlinarith [sq_nonneg V])
+    by positivity
   dsimp only
   intro b
   have hh := ProbeAdditiveGramBounds.weighted_schur_bound rows A w G
@@ -394,8 +388,3 @@ theorem probe_additive_row_box_sieve (F : Type) [Field F] [NumberField F]
     hGram hkernel b
   rw [← Finset.sum_coe_sort rows] at hh
   exact hh
-
-end
-end DedekindZetaZeroFree
-
-end

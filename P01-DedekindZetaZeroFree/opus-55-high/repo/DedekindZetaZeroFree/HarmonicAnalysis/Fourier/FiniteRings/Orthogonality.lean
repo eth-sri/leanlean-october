@@ -78,7 +78,3 @@ theorem finiteRingFourier_parseval (e : AddChar R ℂ)
       simp_rw [← Finset.mul_sum, finiteRingFourier_orthogonality e he]
     _ = (Fintype.card R : ℂ) * ∑ x : R, f x * starRingEnd ℂ (f x) := by
       simp [sub_eq_zero, Finset.mul_sum, mul_comm]
-
-end
-
-end DedekindZetaZeroFree.Hecke

@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.LFunctions.Dedekind.IdealClassConeSeries
 
 @[expose] public section
 
-noncomputable section
 
 open NumberField NumberField.InfinitePlace MeasureTheory
 open NumberField.mixedEmbedding.fundamentalCone
@@ -58,7 +57,3 @@ theorem hasSum_integral_mixedMellinGaussian_idealSet
     (lt_trans zero_lt_one hs)]
   congr 2
   exact_mod_cast absNorm_idealSetElement K J a
-
-end DedekindZetaZeroFree.AbelianQuotient.Theta
-
-end

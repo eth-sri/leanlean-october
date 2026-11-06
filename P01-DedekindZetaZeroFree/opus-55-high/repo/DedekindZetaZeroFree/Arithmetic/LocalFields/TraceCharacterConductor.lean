@@ -57,8 +57,8 @@ theorem target_integerRing_eq (v : HeightOneSpectrum (𝓞 F)) :
       (PlaceTraceAdapter.rationalPlace F v) ⟨v, rfl⟩
       ((PlaceTraceAdapter.rationalCompletionEquiv F v).symm x)
     have hnorm' : (algebraMap ℚ_[PlaceTraceAdapter.prime F v] (v.adicCompletion F) x ∈ v.adicCompletionIntegers F) ↔
-        ‖(PlaceTraceAdapter.rationalCompletionEquiv F v).symm x‖ ≤ 1 := by
-      exact ⟨fun h => hnorm.mp (norm_le_one_of_mem_adicCompletionIntegers v h),
+        ‖(PlaceTraceAdapter.rationalCompletionEquiv F v).symm x‖ ≤ 1 := 
+      ⟨fun h => hnorm.mp (norm_le_one_of_mem_adicCompletionIntegers v h),
         fun h => mem_adicCompletionIntegers_of_norm_le_one v (hnorm.mpr h)⟩
     rw [hnorm']
     have hr := rational_ring F v ((PlaceTraceAdapter.rationalCompletionEquiv F v).symm x)
@@ -107,7 +107,7 @@ theorem localIntegerAnnihilator_eq_codifferent (v : HeightOneSpectrum (𝓞 F)) 
     change (∃ z : (LocalConductor.target F v).valuationSubring, (z : v.adicCompletion F) = a) ↔ _
     change (∃ z : (LocalConductor.target F v).valuationSubring, (z : v.adicCompletion F) = a) ↔ a ∈ (v.adicCompletionIntegers F : Set (v.adicCompletion F))
     rw [← LocalConductor.target_integerRing_eq F v]
-    exact ⟨fun ⟨z, hz⟩ => hz ▸ z.property, fun h => ⟨⟨a,h⟩,rfl⟩⟩
+    simp
   have hb (x : ℚ_[PlaceTraceAdapter.prime F v]) :
       IsIntegral (LocalConductor.base F v).valuationSubring x ↔
         x ∈ Set.range (fun z : ℤ_[PlaceTraceAdapter.prime F v] => (z : ℚ_[PlaceTraceAdapter.prime F v])) := by
@@ -126,8 +126,8 @@ theorem localIntegerAnnihilator_eq_codifferent (v : HeightOneSpectrum (𝓞 F)) 
 
 theorem localDifferent_eq_one_div_codifferent (v : HeightOneSpectrum (𝓞 F)) :
     IsLocalization.coeSubmodule (v.adicCompletion F) (localDifferent F v) =
-      1 / localCodifferent F v := by
-  exact RamificationTheory.DiscreteValuationField.ValuedExtension.coeSubmodule_differentIdealOfFiniteSeparable_eq_one_div_codifferent
+      1 / localCodifferent F v := 
+  RamificationTheory.DiscreteValuationField.ValuedExtension.coeSubmodule_differentIdealOfFiniteSeparable_eq_one_div_codifferent
       (LocalConductor.base F v) (LocalConductor.target F v)
 
 theorem localCodifferent_eq_inverse_different (v : HeightOneSpectrum (𝓞 F)) :
@@ -160,14 +160,14 @@ theorem localIntegerAnnihilator_eq_inverse_different
 def localDifferentSupport : Set (HeightOneSpectrum (𝓞 F)) :=
   {v | v.asIdeal ∣ differentIdeal ℤ (𝓞 F)}
 
-theorem finite_localDifferentSupport : (localDifferentSupport F).Finite := by
-  exact Ideal.finite_factors differentIdeal_ne_bot
+theorem finite_localDifferentSupport : (localDifferentSupport F).Finite := 
+  Ideal.finite_factors differentIdeal_ne_bot
 
 namespace LocalConductorProof
 
 variable (v : HeightOneSpectrum (𝓞 F))
 
-private theorem val_prime (hv : ¬ v.asIdeal ∣ differentIdeal ℤ (𝓞 F)) :
+theorem val_prime (hv : ¬ v.asIdeal ∣ differentIdeal ℤ (𝓞 F)) :
     (Valued.v : Valuation (v.adicCompletion F) ℤᵐ⁰) ((PlaceTraceAdapter.prime F v).1 : v.adicCompletion F) = exp (-1) := by
   let p : ℕ := (PlaceTraceAdapter.prime F v).1
   change (Valued.v : Valuation (v.adicCompletion F) ℤᵐ⁰) (p : v.adicCompletion F) = _
@@ -200,7 +200,7 @@ private theorem val_prime (hv : ¬ v.asIdeal ∣ differentIdeal ℤ (𝓞 F)) :
     change _ = (UniformSpace.Completion.coeRingHom.comp
       (WithVal.equiv (v.valuation F)).symm.toRingHom) (p : F)
     rw [map_natCast]
-    exact map_natCast (HeightOneSpectrum.adicCompletion.equiv F v) p
+    rfl
   rw [hcoe, HeightOneSpectrum.adicCompletion.valued_coe]
   simpa using (v.valuation_of_algebraMap (K := F)
     (p : 𝓞 F)).trans hval.symm
@@ -214,7 +214,7 @@ private theorem val_prime (hv : ¬ v.asIdeal ∣ differentIdeal ℤ (𝓞 F)) :
       simp only [LocalConductor.base, localCompleteDVF_valuation_eq]
       exact (LocalFieldTheory.Padic.integer_mem_iff_norm_le_one _ x).symm)
 
-private theorem target_span (hv : ¬ v.asIdeal ∣ differentIdeal ℤ (𝓞 F)) :
+theorem target_span (hv : ¬ v.asIdeal ∣ differentIdeal ℤ (𝓞 F)) :
     (LocalConductor.target F v).maximalIdeal = Ideal.span {algebraMap ℤ _ (PlaceTraceAdapter.prime F v).1} := by
   let e : (LocalConductor.target F v).valuationSubring ≃+* v.adicCompletionIntegers F :=
     RingEquiv.restrict (RingEquiv.refl (v.adicCompletion F)) _ _ (by
@@ -222,21 +222,18 @@ private theorem target_span (hv : ¬ v.asIdeal ∣ differentIdeal ℤ (𝓞 F)) 
       exact Set.ext_iff.mp (LocalConductor.target_integerRing_eq F v) x)
   have hmem : ((PlaceTraceAdapter.prime F v).1 : v.adicCompletion F) ∈
       v.adicCompletionIntegers F := by
-    change (Valued.v : Valuation (v.adicCompletion F) ℤᵐ⁰)
-      ((PlaceTraceAdapter.prime F v).1 : v.adicCompletion F) ≤ 1
-    rw [val_prime F v hv]
     simp
   have hu := LocalFieldTheory.DiscreteValuationField.WithZeroValuation.isUniformizer_of_valuation_eq_exp_neg_one
     (Valued.v : Valuation (v.adicCompletion F) ℤᵐ⁰)
     ((PlaceTraceAdapter.prime F v).1 : v.adicCompletion F) (val_prime F v hv)
   have hg : IsLocalRing.maximalIdeal (v.adicCompletionIntegers F) =
-      Ideal.span {((PlaceTraceAdapter.prime F v).1 : v.adicCompletionIntegers F)} := by
-    exact hu.is_generator
+      Ideal.span {((PlaceTraceAdapter.prime F v).1 : v.adicCompletionIntegers F)} := 
+    hu.is_generator
   have hm := IsLocalRing.map_maximalIdeal_of_surjective e.symm.toRingHom e.symm.surjective
   rw [hg, Ideal.map_span, Set.image_singleton] at hm
-  simpa only [map_natCast, map_intCast, Int.cast_natCast] using hm.symm
+  simp_all
 
-private theorem base_span : (LocalConductor.base F v).maximalIdeal =
+theorem base_span : (LocalConductor.base F v).maximalIdeal =
     Ideal.span {((PlaceTraceAdapter.prime F v).1 : (LocalConductor.base F v).valuationSubring)} := by
   have h := IsLocalRing.map_maximalIdeal_of_surjective (baseEquiv F v).toRingHom
     (baseEquiv F v).surjective
@@ -254,21 +251,17 @@ theorem localDifferent_eq_top_of_not_dvd_different
   letI : Module.Finite A B :=
     ValuedExtension.moduleFinite_target_valuationSubring_of_finite_separable
       (LocalConductor.base F v) (LocalConductor.target F v)
-  haveI : Finite (IsLocalRing.ResidueField A) := by
-    exact Finite.of_equiv (IsLocalRing.ResidueField ℤ_[PlaceTraceAdapter.prime F v])
+  haveI : Finite (IsLocalRing.ResidueField A) := 
+    Finite.of_equiv (IsLocalRing.ResidueField ℤ_[PlaceTraceAdapter.prime F v])
       (IsLocalRing.ResidueField.mapEquiv (LocalConductorProof.baseEquiv F v)).toEquiv
   haveI : PerfectField (IsLocalRing.ResidueField A) := inferInstance
   have hmap : (IsLocalRing.maximalIdeal A).map (algebraMap A B) = IsLocalRing.maximalIdeal B := by
     change (LocalConductor.base F v).maximalIdeal.map (algebraMap A B) =
       (LocalConductor.target F v).maximalIdeal
     rw [LocalConductorProof.base_span F v, Ideal.map_span, Set.image_singleton, LocalConductorProof.target_span F v hv]
-    simp only [map_natCast, map_intCast, Int.cast_natCast]
+    simp only [map_natCast]
     rfl
   haveI : Algebra.FormallyUnramified A B := Algebra.FormallyUnramified.of_map_maximalIdeal hmap
   haveI : Algebra.IsUnramifiedAt A (IsLocalRing.maximalIdeal B) := inferInstance
   exact (RamificationTheory.DiscreteValuationField.ValuedExtension.differentIdealOfFiniteSeparable_eq_top_iff_isUnramifiedAt
     (LocalConductor.base F v) (LocalConductor.target F v)).mpr inferInstance
-
-end DedekindZetaZeroFree
-
-end

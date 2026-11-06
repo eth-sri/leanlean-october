@@ -11,7 +11,6 @@ open scoped NumberField Classical
 
 noncomputable section
 namespace DedekindZetaZeroFree.InitialSeparatedEuler
-set_option autoImplicit false
 set_option backward.isDefEq.respectTransparency false
 
 open CorrectionFactors FrequencyCharacterMasks
@@ -50,7 +49,7 @@ theorem correction_multipliable_initial (U : Frequency C)
   left_inv p := by rfl
   right_inv p := by rfl
 
-private lemma normPower_eq (p : LocalFiniteSums.ExteriorPrime A) (s : ℂ) :
+lemma normPower_eq (p : LocalFiniteSums.ExteriorPrime A) (s : ℂ) :
     (Ideal.absNorm p.val.asIdeal : ℂ) ^ s = LocalFiniteSums.qPower p s := by
   have hn : (0 : ℝ) < (Ideal.absNorm p.val.asIdeal : ℝ) := by
     exact_mod_cast (lt_trans Nat.zero_lt_one
@@ -60,7 +59,7 @@ private lemma normPower_eq (p : LocalFiniteSums.ExteriorPrime A) (s : ℂ) :
   rw [Complex.cpow_def_of_ne_zero hne]
   have hl : Complex.log (Ideal.absNorm p.val.asIdeal : ℂ) =
       (Real.log (Ideal.absNorm p.val.asIdeal : ℝ) : ℂ) := by
-    simpa only [Complex.ofReal_natCast] using (Complex.ofReal_log hn.le).symm
+    simp
   rw [hl]
   change Complex.exp _ = Complex.exp (s * _)
   congr 1
@@ -68,7 +67,7 @@ private lemma normPower_eq (p : LocalFiniteSums.ExteriorPrime A) (s : ℂ) :
     LocalFiniteSums.primeIdeal]
   ring
 
-private lemma term_plus (U : Frequency C) (p : LocalFiniteSums.ExteriorPrime A)
+lemma term_plus (U : Frequency C) (p : LocalFiniteSums.ExteriorPrime A)
     (s : ℂ) :
     ExteriorIdealEuler.primeTerm (plusExteriorCoefficient U) s (primeEquiv A p) =
       W (σ := σ) p U.u s := by
@@ -77,7 +76,7 @@ private lemma term_plus (U : Frequency C) (p : LocalFiniteSums.ExteriorPrime A)
   rw [normPower_eq]
   rfl
 
-private lemma term_minus (U : Frequency C) (p : LocalFiniteSums.ExteriorPrime A)
+lemma term_minus (U : Frequency C) (p : LocalFiniteSums.ExteriorPrime A)
     (s : ℂ) :
     ExteriorIdealEuler.primeTerm (minusExteriorCoefficient U) s (primeEquiv A p) =
       CorrectionFactors.D (σ := σ) (η := η) p U.u s := by
@@ -86,14 +85,13 @@ private lemma term_minus (U : Frequency C) (p : LocalFiniteSums.ExteriorPrime A)
   rw [normPower_eq]
   rfl
 
-private lemma term_zeta (p : LocalFiniteSums.ExteriorPrime A) (z : ℂ) :
+lemma term_zeta (p : LocalFiniteSums.ExteriorPrime A) (z : ℂ) :
     ExteriorIdealEuler.primeTerm (fun _ : A.Exterior => (1 : ℂ)) (6 * z)
       (primeEquiv A p) = V p z := by
   change 1 * (Ideal.absNorm p.val.asIdeal : ℂ) ^ (-(6 * z)) = _
   rw [one_mul, normPower_eq]
   unfold V
-  congr 1
-  ring
+  simp
 
 theorem initial_separated_euler (U : Frequency C)
     (D : ComparisonPoissonCoefficientData F A)
@@ -163,7 +161,3 @@ theorem initial_separated_euler_quotient (U : Frequency C)
           minusL U ξ := by
   obtain ⟨hne, heq⟩ := initial_separated_euler U D hD ξ w z hξ hw hz
   exact (eq_div_iff hne).mpr heq
-
-end DedekindZetaZeroFree.InitialSeparatedEuler
-
-end

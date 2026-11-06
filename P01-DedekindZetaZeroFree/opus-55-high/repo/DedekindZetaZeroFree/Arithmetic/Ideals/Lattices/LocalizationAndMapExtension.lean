@@ -35,7 +35,7 @@ theorem kp_cusp_full_lattice_clear_denominators
       obtain ⟨a, b, hb, hc⟩ := IsFractionRing.div_surjective R c
       have hb' : b ≠ 0 := nonZeroDivisors.ne_zero hb
       refine ⟨b * r, mul_ne_zero hb' hr, ?_⟩
-      have hbK : algebraMap R K b ≠ 0 := by simpa using (IsFractionRing.injective R K).ne hb'
+      have hbK : algebraMap R K b ≠ 0 := by simp_all
       have hs : (algebraMap R K (b * r)) * c =
           algebraMap R K (a * r) := by
         rw [map_mul, map_mul, ← hc]
@@ -46,7 +46,7 @@ theorem kp_cusp_full_lattice_clear_denominators
   rw [Submodule.IsLattice.span_eq_top]
   trivial
 
-private theorem localizedSubmodule
+theorem localizedSubmodule
     {R : Type*} [CommRing R] [IsDomain R]
     {K : Type*} [Field K] [Algebra R K] [IsFractionRing R K]
     {V : Type*} [AddCommGroup V] [Module R V] [Module K V]
@@ -83,22 +83,18 @@ theorem kp_cusp_full_lattice_equiv_extension
   · ext w
     constructor
     · rintro ⟨v, hv, rfl⟩
-      change F v ∈ N
-      rw [hF ⟨v, hv⟩]
-      exact (f ⟨v, hv⟩).property
+      simp_all
     · intro hw
       refine ⟨(f.symm ⟨w, hw⟩ : V), (f.symm ⟨w, hw⟩).property, ?_⟩
-      change F (f.symm ⟨w, hw⟩ : V) = w
-      rw [hF]
-      simp
+      simp_all
   · intro G hG
     apply LinearEquiv.toLinearMap_injective
     apply LinearMap.restrictScalars_injective R
     apply IsLocalizedModule.linearMap_ext R⁰ M.subtype N.subtype
     ext m
-    exact (hG.1 m).trans (hF m).symm
+    simp_all
 
-private theorem fractionalIdealNonzero
+theorem fractionalIdealNonzero
     {R : Type*} [CommRing R] [IsDomain R]
     {K : Type*} [Field K] [Algebra R K] [IsFractionRing R K]
     (I : FractionalIdeal R⁰ K) (hI : I ≠ 0) :
@@ -110,7 +106,7 @@ private theorem fractionalIdealNonzero
   by_contra ht0
   exact h ⟨t, ht, ht0⟩
 
-private theorem fractionalIdealClear
+theorem fractionalIdealClear
     {R : Type*} [CommRing R] [IsDomain R]
     {K : Type*} [Field K] [Algebra R K] [IsFractionRing R K]
     (I : FractionalIdeal R⁰ K) (hI : I ≠ 0) (x : K) :
@@ -118,7 +114,7 @@ private theorem fractionalIdealClear
   obtain ⟨t, ht, ht0⟩ := fractionalIdealNonzero I hI
   obtain ⟨a, b, hb, heq⟩ := IsFractionRing.div_surjective R (x / t)
   have hb0 : b ≠ 0 := nonZeroDivisors.ne_zero hb
-  have hbK : algebraMap R K b ≠ 0 := by simpa using (IsFractionRing.injective R K).ne hb0
+  have hbK : algebraMap R K b ≠ 0 := by simp_all
   refine ⟨b, hb0, ?_⟩
   have hbt : (algebraMap R K b) * x = (algebraMap R K a) * t := by
     have := (div_eq_div_iff hbK ht0).mp heq
@@ -139,8 +135,7 @@ theorem kp_cusp_fractional_ideal_map_scalar
     IsLocalizedModule.map_apply R⁰ (I : Submodule R K).subtype
       (LinearMap.id : K →ₗ[R] K) f t
   have scalar (x : K) : F x = F 1 * x := by
-    have := F.map_smul x (1 : K)
-    simpa only [smul_eq_mul, mul_one, mul_comm] using this
+    simp
   refine ⟨F 1, fun t => by rw [← hF, scalar], ?_⟩
   intro c hc
   obtain ⟨t, ht, ht0⟩ := fractionalIdealNonzero I hI
@@ -172,7 +167,7 @@ theorem kp_cusp_fractional_ideal_equiv_iff
     constructor
     · rintro ⟨t, ht, rfl⟩
       rw [← hcf ⟨t, ht⟩]
-      exact (f ⟨t, ht⟩).property
+      simp
     · intro hx
       refine ⟨(f.symm ⟨x, hx⟩ : K), (f.symm ⟨x, hx⟩).property, ?_⟩
       rw [← hcf]
@@ -184,8 +179,7 @@ theorem kp_cusp_fractional_ideal_equiv_iff
           exact FractionalIdeal.mem_singleton_mul.mpr ⟨t, t.property, rfl⟩⟩
         map_add' := fun x y => Subtype.ext (by simp [mul_add])
         map_smul' := fun r x => Subtype.ext (by
-          simp only [Submodule.coe_smul, Algebra.smul_def, RingHom.id_apply]
-          ring) }
+          simp) }
     refine ⟨LinearEquiv.ofBijective g ⟨?_, ?_⟩⟩
     · intro x y hxy
       apply Subtype.ext
@@ -196,5 +190,3 @@ theorem kp_cusp_fractional_ideal_equiv_iff
         exact y.property
       obtain ⟨t, ht, heq⟩ := FractionalIdeal.mem_singleton_mul.mp hy
       exact ⟨⟨t, ht⟩, Subtype.ext heq.symm⟩
-
-end DedekindZetaZeroFree

@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.HarmonicAnalysis.Mellin.NormSheetContinuityAn
 @[expose] public section
 
 namespace DedekindZetaZeroFree.ProbeSheetFourierMellinBounds
-noncomputable section
 open scoped Classical NumberField
 open NumberField IsDedekindDomain MeasureTheory
 variable {F : Type} [Field F] [NumberField F]
@@ -69,6 +68,3 @@ theorem sheet_log_derivative_bounds
       integral_const_mul _ _
     _ ≤ M * (C * T ^ (-σ)) := mul_le_mul_of_nonneg_left hBbound hM
     _ = (M * C) * T ^ (-σ) := (mul_assoc _ _ _).symm
-
-end
-end DedekindZetaZeroFree.ProbeSheetFourierMellinBounds

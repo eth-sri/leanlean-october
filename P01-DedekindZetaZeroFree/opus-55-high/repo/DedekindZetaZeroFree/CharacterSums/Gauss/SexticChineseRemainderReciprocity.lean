@@ -11,7 +11,6 @@ open NumberField
 namespace DedekindZetaZeroFree.SArithmeticData
 
 noncomputable section
-set_option autoImplicit false
 
 variable {F : Type} [Field F] [NumberField F]
 
@@ -25,7 +24,7 @@ def sexticResiduePowerChar (A : SArithmeticData F) (σ : F →+* ℂ)
 theorem exteriorResidue_card (A : SArithmeticData F) (I : A.Exterior) :
     Nat.card (A.R ⧸ A.extendIdeal I) = Ideal.absNorm I.val := by
   rw [← Nat.card_congr (ArithGaussCRT.exteriorQuotientEquiv A I).toEquiv]
-  exact (Submodule.cardQuot_apply I.val).symm
+  rfl
 
 theorem exteriorResidue_finite (A : SArithmeticData F) (I : A.Exterior) :
     Finite (A.R ⧸ A.extendIdeal I) := by
@@ -45,8 +44,8 @@ def idealGauss (A : SArithmeticData F) (σ : F →+* ℂ)
 
 theorem sexticResiduePowerChar_nonunit (A : SArithmeticData F) (σ : F →+* ℂ)
     (I : A.Exterior) (j : ℤ) (x : A.R ⧸ A.extendIdeal I) (hx : ¬ IsUnit x) :
-    A.sexticResiduePowerChar σ I j x = 0 := by
-  exact MulChar.map_nonunit _ hx
+    A.sexticResiduePowerChar σ I j x = 0 := 
+  MulChar.map_nonunit _ hx
 
 theorem idealGauss_top (A : SArithmeticData F) (σ : F →+* ℂ)
     (hS : A.ContainsTraceBadPlaces) (I : A.Exterior) (hI : I.val = ⊤)
@@ -78,10 +77,7 @@ theorem idealGauss_sixth_unit_translate (A : SArithmeticData F) (σ : F →+* �
     unfold sexticResiduePowerChar
     rw [MulChar.pow_apply_coe, MulChar.ofUnitHom_coe]
     have h6 := congrArg (Units.map σ.toMonoidHom) (A.sexticResidueFamily_normalized.1 I v)
-    simp only [map_pow, map_one] at h6
-    have hval := congrArg Units.val h6
-    simpa only [map_pow, MonoidHom.comp_apply, Units.val_pow_eq_pow_val, Units.val_one,
-      one_pow] using congrArg (fun z : ℂˣ => (z : ℂ) ^ sexticExponent j) h6
+    simp_all
   have hphase : ∀ x : A.R ⧸ A.extendIdeal I,
       A.residueTraceCharacter hS I (a * (A.unitEquiv u : A.R) ^ 6) ha'
         (x * ↑(v ^ 6)) = A.residueTraceCharacter hS I a ha x := by
@@ -92,7 +88,7 @@ theorem idealGauss_sixth_unit_translate (A : SArithmeticData F) (σ : F →+* �
     rw [A.residueTraceCharacter_apply, A.residueTraceCharacter_apply]
     congr 1
     have huF : ((A.unitEquiv u : A.R) : F) ≠ 0 := by
-      exact_mod_cast (A.unitEquiv u).ne_zero
+      simp
     push_cast
     field_simp
   unfold idealGauss
@@ -139,7 +135,7 @@ theorem idealGauss_allowed_generator_independent (A : SArithmeticData F)
   apply Subtype.ext
   have hval := congrArg Units.val hratio
   have hunit : ((A.unitEquiv u : A.R) : F) = (u.val : F) := by
-    simp [unitEquiv, Set.unitEquivUnitsInteger]
+    rfl
   change (a' : F) = (a : F) * ((A.unitEquiv u : A.R) : F) ^ 6
   rw [hunit]
   simp only [Units.val_div_eq_div_val, Units.val_pow_eq_pow_val, hua, hua'] at hval
@@ -212,20 +208,17 @@ theorem idealGauss_squarefree_crt (A : SArithmeticData F) (σ : F →+* ℂ)
   have haz : Ideal.Quotient.mk (A.extendIdeal I) a = 0 := by
     apply Ideal.Quotient.eq_zero_iff_mem.mpr
     rw [← ha.2]
-    exact Ideal.subset_span (by simp)
+    simp
   have hbz : Ideal.Quotient.mk (A.extendIdeal J) b = 0 := by
     apply Ideal.Quotient.eq_zero_iff_mem.mpr
     rw [← hb.2]
-    exact Ideal.subset_span (by simp)
+    simp
   have hu (x : A.R) : IsUnit (Ideal.Quotient.mk (A.extendIdeal K) x) ↔
       IsUnit (Ideal.Quotient.mk (A.extendIdeal I) x) ∧
       IsUnit (Ideal.Quotient.mk (A.extendIdeal J) x) := by
     rw [← @Prod.isUnit_iff _ _ _ _ (Ideal.Quotient.mk (A.extendIdeal I) x, Ideal.Quotient.mk (A.extendIdeal J) x)]
     rw [← hE]
-    constructor
-    · exact fun h => h.map E.toMonoidHom
-    · intro h
-      simpa using h.map E.symm.toMonoidHom
+    simp
   have habcop : IsCoprime a b := by
     apply (Ideal.sup_eq_top_iff_isCoprime a b).mp
     rw [ha.2, hb.2]
@@ -248,8 +241,7 @@ theorem idealGauss_squarefree_crt (A : SArithmeticData F) (σ : F →+* ℂ)
     apply E.injective
     change E (E.symm _) = E _
     rw [E.apply_symm_apply, hE]
-    simp only [Equiv.prodCongr_apply, Units.mulLeft_apply, hub.unit_spec, hua.unit_spec,
-      map_add, map_mul, haz, hbz, zero_mul, mul_zero, add_zero, zero_add]
+    simp only [Equiv.prodCongr_apply, Units.mulLeft_apply, hub.unit_spec, hua.unit_spec, map_add, map_mul, haz, hbz, zero_mul, add_zero, zero_add]
     rfl
   have hphase (x y : A.R) :
       A.residueTraceCharacter hS K (a * b) hab
@@ -272,7 +264,7 @@ theorem idealGauss_squarefree_crt (A : SArithmeticData F) (σ : F →+* ℂ)
       (σ (A.sexticResidue J a) ^ sexticExponent j *
         A.sexticResiduePowerChar σ J j (Ideal.Quotient.mk (A.extendIdeal J) y)) := by
     rw [gaussCRT_char_mul_modulus A σ I J K hK _ (hu _) j]
-    simp only [map_add, map_mul, haz, hbz, zero_mul, mul_zero, add_zero, zero_add]
+    simp only [map_add, map_mul, haz, hbz, zero_mul, add_zero, zero_add]
     rw [gaussCRT_char_unit A σ I b hub j, gaussCRT_char_unit A σ J a hua j]
   letI : Finite (A.R ⧸ A.extendIdeal I) := A.exteriorResidue_finite I
   letI : Finite (A.R ⧸ A.extendIdeal J) := A.exteriorResidue_finite J
@@ -310,6 +302,3 @@ theorem idealGauss_squarefree_crt (A : SArithmeticData F) (σ : F →+* ℂ)
   unfold idealGauss
   rw [hsum, hnorm, mul_inv]
   ring
-
-end
-end DedekindZetaZeroFree.SArithmeticData

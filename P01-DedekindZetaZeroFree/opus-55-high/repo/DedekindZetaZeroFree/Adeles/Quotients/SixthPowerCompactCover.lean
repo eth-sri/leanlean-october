@@ -24,7 +24,7 @@ instance finiteIndex_Gamma1_subgroupOf_L :
     change (∃ v : A.U, v ^ 6 = u) ↔ ∃ v : A.Rˣ, v ^ 6 = A.unitEquiv u
     constructor
     · rintro ⟨v, rfl⟩
-      exact ⟨A.unitEquiv v, (map_pow A.unitEquiv v 6).symm⟩
+      simp
     · rintro ⟨v, hv⟩
       refine ⟨A.unitEquiv.symm v, ?_⟩
       apply A.unitEquiv.injective
@@ -69,7 +69,7 @@ theorem exists_compact_balanced_cover :
   let γ : A.Gamma1 := ⟨(l / r q : A.L).val, hd⟩
   refine ⟨γ, Set.mem_iUnion.mpr ⟨q, l.val * y, hl, ?_⟩⟩
   dsimp [γ]
-  simp only [div_eq_mul_inv, mul_comm, mul_left_comm, mul_assoc]
+  simp only [div_eq_mul_inv, mul_comm, mul_assoc]
 
 instance compactSpace_Gamma1Quotient : CompactSpace (A.G1 ⧸ A.Gamma1) := by
   obtain ⟨K, hK, hcover⟩ := A.exists_compact_balanced_cover
@@ -80,12 +80,5 @@ instance compactSpace_Gamma1Quotient : CompactSpace (A.G1 ⧸ A.Gamma1) := by
     obtain ⟨γ, hγ⟩ := hcover y
     refine ⟨γ.val * y, hγ, ?_⟩
     change QuotientGroup.mk' A.Gamma1 (γ.val * y) = QuotientGroup.mk' A.Gamma1 y
-    rw [map_mul]
-    have hγone : QuotientGroup.mk' A.Gamma1 γ.val = 1 :=
-      (QuotientGroup.eq_one_iff γ.val).mpr γ.prop
-    rw [hγone, one_mul]
+    simp
   exact isCompact_univ_iff.mp (heq ▸ hK.image QuotientGroup.continuous_mk)
-
-end
-end SArithmeticData
-end DedekindZetaZeroFree

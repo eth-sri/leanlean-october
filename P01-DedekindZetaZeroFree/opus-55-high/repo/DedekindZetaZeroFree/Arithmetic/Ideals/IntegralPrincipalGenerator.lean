@@ -27,5 +27,3 @@ theorem integral_generator_of_spanSingleton_eq_coeIdeal
     show ((Ideal.span {α} : Ideal (𝓞 F)) : FractionalIdeal (nonZeroDivisors (𝓞 F)) F)
       = (I : FractionalIdeal (nonZeroDivisors (𝓞 F)) F)
     rw [FractionalIdeal.coeIdeal_span_singleton, hαx, ← hx]
-
-end DedekindZetaZeroFree.RayUnitary

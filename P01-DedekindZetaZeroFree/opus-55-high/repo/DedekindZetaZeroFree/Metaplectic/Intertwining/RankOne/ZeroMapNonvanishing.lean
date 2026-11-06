@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.Metaplectic.Intertwining.RankOne.ForwardInteg
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.KPRankOneShellRepair
 
 open scoped NumberField Valued
@@ -13,7 +12,6 @@ open NumberField IsDedekindDomain MeasureTheory ValuativeRel
 open KPLocalExceptionalConstruction KPLocalStoneVonNeumann KPLocalPrincipalSeries
 open KPRankOneShellContinuation KPRankOneRootParameter
 
-set_option autoImplicit false
 
 namespace OpenCellNonzero
 
@@ -23,27 +21,27 @@ variable (F : Type) [Field F] [NumberField F]
   (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
   (hμ : μ ((valuation (LocalField F q)).integer : Set (LocalField F q)) = 1)
 
-private theorem evaluation_entire (ε : Sign) :
+theorem evaluation_entire (ε : Sign) :
     Differentiable ℂ (fun s => (evaluationUnit (LocalField F q) ε s : ℂ)) := by
   have hr : Differentiable ℂ (r (LocalField F q)) := by unfold r; fun_prop
   cases ε with
   | plus => exact hr
   | minus => exact hr.inv (fun s => Complex.exp_ne_zero _)
 
-private theorem denominator_entire (ε : Sign) :
+theorem denominator_entire (ε : Sign) :
     Differentiable ℂ (denominator (LocalField F q) ε) := by
   cases ε with
   | plus =>
     unfold denominator t r
-    simp only [if_pos rfl, if_true]
+    simp only [if_true]
     fun_prop
   | minus =>
     unfold denominator
-    simp only [Sign.noConfusion, reduceCtorEq, if_false]
+    simp only [reduceCtorEq, if_false]
     exact differentiable_const 1 |>.sub ((differentiable_const _).mul
       ((evaluation_entire F q .minus).pow 6))
 
-private theorem numerator_coordinate_entire
+theorem numerator_coordinate_entire
     (J : CompactOpenLevel (ActualCover F ζ hζ q)) (ε : Sign)
     (p : LevelLaurentOperator (LocalField F q) S.borel P S.iwasawa J ε)
     (φ : compactLevel S.borel P S.iwasawa (sourceSign ε) J)
@@ -311,12 +309,11 @@ open scoped NumberField Valued Classical
 open NumberField IsDedekindDomain MeasureTheory ValuativeRel
 open KPLocalExceptionalConstruction KPLocalStoneVonNeumann KPLocalPrincipalSeries
 open KPRankOneShellContinuation KPRankOneRootParameter
-set_option autoImplicit false
 variable (F : Type) [Field F] [NumberField F]
   (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
   (S : CanonicalFiniteInducingData F ζ hζ q)
 
-private theorem small_subgroup : ∃ U : OpenAddSubgroup (LocalField F q),
+theorem small_subgroup : ∃ U : OpenAddSubgroup (LocalField F q),
     IsCompact (U : Set (LocalField F q)) ∧
     ∀ x ∈ U, (S.borel.upperRoot (Multiplicative.ofAdd x) : ActualCover F ζ hζ q) ∈ S.iwasawa.compact.toOpenSubgroup := by
   let n : LocalField F q → ActualCover F ζ hζ q := fun x => (S.borel.upperRoot (Multiplicative.ofAdd x) : ActualCover F ζ hζ q)
@@ -331,7 +328,7 @@ private theorem small_subgroup : ∃ U : OpenAddSubgroup (LocalField F q),
   refine ⟨U, ?_, fun x hx => (hU hx).1⟩
   exact (IsNonarchimedeanLocalField.isCompact_closedBall (LocalField F q) 1).of_isClosed_subset U.isClosed (fun x hx => (hU hx).2)
 
-private theorem norm_right_compact (g : ActualCover F ζ hζ q)
+theorem norm_right_compact (g : ActualCover F ζ hζ q)
     (k : S.iwasawa.compact.toOpenSubgroup) :
     localAbs (LocalField F q) (S.borel.coordinate (S.borel.retract (S.iwasawa.borelPart (g * k)))) =
       localAbs (LocalField F q) (S.borel.coordinate (S.borel.retract (S.iwasawa.borelPart g))) := by
@@ -388,7 +385,7 @@ private theorem weyl_inverse (P : Polarization S.heisenberg) : S.borel.liftedW�
       KPPGLLocalCover.signedW_sq F ζ hζ (Sum.inr q)
   exact inv_eq_of_mul_eq_one_left (by simpa [pow_two] using hs)
 
-private theorem section_common_level (P : Polarization S.heisenberg) (ε : Sign)
+theorem section_common_level (P : Polarization S.heisenberg) (ε : Sign)
     (f : sectionSpace S.borel P ε 0) :
     ∃ J : CompactOpenLevel (ActualCover F ζ hζ q),
       (J.toOpenSubgroup : Subgroup (ActualCover F ζ hζ q)) ≤ S.iwasawa.compact.toOpenSubgroup ∧
@@ -402,7 +399,7 @@ private theorem section_common_level (P : Polarization S.heisenberg) (ε : Sign)
   intro j
   exact Subtype.ext (hU j j.property.1)
 
-private theorem test_section (P : Polarization S.heisenberg) (ε : Sign) (v : InducedModule P)
+theorem test_section (P : Polarization S.heisenberg) (ε : Sign) (v : InducedModule P)
     (U : OpenAddSubgroup (LocalField F q)) (hUc : IsCompact (U : Set (LocalField F q))) :
     ∃ f : sectionSpace S.borel P ε 0,
       ∀ x, f.val (S.borel.liftedW * (S.borel.upperRoot (Multiplicative.ofAdd x) : ActualCover F ζ hζ q)) =
@@ -429,7 +426,7 @@ private theorem test_section (P : Polarization S.heisenberg) (ε : Sign) (v : In
 variable (P : Polarization S.heisenberg)
   (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
 
-private theorem corrected_test
+theorem corrected_test
     (ε : Sign) (v : InducedModule P)
     (U : OpenAddSubgroup (LocalField F q))
     (hU : ∀ x ∈ U, (S.borel.upperRoot (Multiplicative.ofAdd x) : ActualCover F ζ hζ q) ∈ S.iwasawa.compact.toOpenSubgroup)
@@ -452,7 +449,7 @@ private theorem corrected_test
     simp
   · simp [hx]
 
-private theorem bruhat_families (ε : Sign) (v : InducedModule P) :
+theorem bruhat_families (ε : Sign) (v : InducedModule P) :
     ∃ (J : CompactOpenLevel (ActualCover F ζ hζ q))
       (hJ : (J.toOpenSubgroup : Subgroup (ActualCover F ζ hζ q)) ≤ S.iwasawa.compact.toOpenSubgroup)
       (n : ℕ) (φ : Fin n → compactLevel S.borel P S.iwasawa (sourceSign ε) J)
@@ -491,11 +488,7 @@ theorem actual_zero_maps_nonzero
     (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
     (hμ : μ ((valuation (LocalField F q)).integer : Set (LocalField F q)) = 1) :
     actualCanonicalForwardMap F ζ hζ q S P μ hμ ≠ 0 ∧
-      actualCanonicalReverseMap F ζ hζ q S P μ hμ ≠ 0 := by
-  exact OpenCellNonzero.both_actual_maps_nonzero_of_bruhat_families
+      actualCanonicalReverseMap F ζ hζ q S P μ hμ ≠ 0 := 
+  OpenCellNonzero.both_actual_maps_nonzero_of_bruhat_families
     F ζ hζ q S P μ hμ
     (OpenCellNonzero.BruhatConstruction.bruhat_families F ζ hζ q S P μ)
-
-end DedekindZetaZeroFree.KPRankOneShellRepair
-
-end

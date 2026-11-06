@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Theta.Unfolding.ParityThetaMellinIntegral
 
 @[expose] public section
 
-noncomputable section
 
 namespace DedekindZetaZeroFree.AbelianQuotient.RayParity.SeriesMellin
 
@@ -26,7 +25,3 @@ theorem uncompleted_eq (D : RayCoset.Data K)
   rw [completed_eq D δ s hs, ← mul_assoc,
     mul_comm (hδ K δ s) (κδ K δ s),
     FourierMellin.mellinFactor_mul_reciprocalGamma K δ s hs, one_mul]
-
-end DedekindZetaZeroFree.AbelianQuotient.RayParity.SeriesMellin
-
-end

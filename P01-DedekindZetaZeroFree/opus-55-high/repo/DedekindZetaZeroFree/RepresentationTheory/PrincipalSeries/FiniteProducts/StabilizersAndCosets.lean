@@ -25,7 +25,7 @@ variable (S : Finset (IsDedekindDomain.HeightOneSpectrum (𝓞 F)))
   toSubgroup := J.toSubgroup.comap (MonoidHom.mulSingle (Cover F ζ hζ S) q)
   isOpen' := J.isOpen.preimage (continuous_mulSingle q)
 
-private theorem product_slotStabilizer_le
+theorem product_slotStabilizer_le
     (J : OpenSubgroup (ProductCover F ζ hζ S)) :
     Subgroup.pi Set.univ (fun q => (slotStabilizer F ζ hζ S J q).toSubgroup) ≤
       J.toSubgroup := by
@@ -93,7 +93,3 @@ private theorem product_slotStabilizer_le
   funext q
   exact congrArg (fun a : (M q.val).iwasawa.compact.toOpenSubgroup =>
     (a : Cover F ζ hζ S q)) (hj q)
-
-end DedekindZetaZeroFree.NativeScalarFiniteProductStabilizer
-
-end

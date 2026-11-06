@@ -16,7 +16,7 @@ def thirdBesselSchlafliIntegrand (z u : ℝ) : ℝ :=
 def KThird (z : ℝ) : ℝ :=
   if 0 < z then ∫ u in Set.Ioi (0 : ℝ), thirdBesselSchlafliIntegrand z u else 0
 
-private lemma thirdBesselSchlafliIntegrand_le (z : ℝ) (hz : 0 < z) (u : ℝ) (hu : 0 ≤ u) :
+lemma thirdBesselSchlafliIntegrand_le (z : ℝ) (hz : 0 < z) (u : ℝ) (hu : 0 ≤ u) :
     Real.exp (-z * Real.cosh u) * Real.cosh (u / 3)
       ≤ (Real.exp (-1) / (z / 2)) * Real.exp (-(2 / 3) * u) := by
   have hcosh_ge : (z / 2) * Real.exp u ≤ z * Real.cosh u := by
@@ -117,7 +117,3 @@ theorem KThird_continuousOn : ContinuousOn KThird (Set.Ioi (0 : ℝ)) := by
       fun_prop
   exact hmain.congr
     (eventually_of_mem (Ioi_mem_nhds hz₀') (fun z hz => (KThird_eq_integral z hz).symm))
-
-end
-
-end DedekindZetaZeroFree

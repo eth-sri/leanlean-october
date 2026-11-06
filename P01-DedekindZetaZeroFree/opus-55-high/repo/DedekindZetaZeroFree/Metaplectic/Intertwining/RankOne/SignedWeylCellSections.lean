@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.Metaplectic.Intertwining.ChamberIntegrals.Fin
 
 @[expose] public section
 
-noncomputable section
 open scoped NumberField Classical BigOperators
 open NumberField MeasureTheory
 namespace DedekindZetaZeroFree.KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue.LocalSignedChamber
@@ -43,9 +42,9 @@ theorem signedW_eq_diagonal_unsigned :
         apply Subtype.ext
         exact (KPHilbert.B3 F ζ hζ (Sum.inr q) a b).property) (-1)]
     simp
-  rw [hs, map_one, one_mul]
+  simp_all
 
-private theorem localAbs_neg_one : localAbs (LocalField F q) (-1) = 1 := by
+theorem localAbs_neg_one : localAbs (LocalField F q) (-1) = 1 := by
   have hm := localAbs_mul (LocalField F q) (-1) (-1)
   have hp := localAbs_pos (LocalField F q) (-1)
   simp only [neg_mul_neg, one_mul, localAbs_one] at hm
@@ -91,6 +90,3 @@ theorem section_unsigned_eq_signed (S : CanonicalFiniteInducingData F ζ hζ q)
     rfl
   rw [hw, hws, ← hd, mul_assoc]
   exact (f.property.1 _ _).trans (cube_diagonal_trivial F ζ hζ q S P s _ ) |>.symm
-end DedekindZetaZeroFree.KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue.LocalSignedChamber
-
-end

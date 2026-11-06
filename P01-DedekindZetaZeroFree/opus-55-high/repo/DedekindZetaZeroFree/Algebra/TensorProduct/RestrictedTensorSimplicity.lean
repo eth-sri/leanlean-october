@@ -18,7 +18,7 @@ abbrev Stage (s : Finset J) := ⨂[ℂ] j : s, V j
 noncomputable def extend (e : ∀ j, V j) (s t : Finset J) (x : ∀ j : s, V j) :
     ∀ j : t, V j := fun j => if h : (j : J) ∈ s then x ⟨j, h⟩ else e j
 
-private theorem extend_update (e : ∀ j, V j) (s t : Finset J) (hst : s ⊆ t)
+theorem extend_update (e : ∀ j, V j) (s t : Finset J) (hst : s ⊆ t)
     [DecidableEq s] [DecidableEq t] (x : ∀ j : s, V j) (i : s) (z : V i) :
     extend V e s t (Function.update x i z) =
       Function.update (extend V e s t x) ⟨i, hst i.property⟩ z := by
@@ -50,10 +50,10 @@ theorem exists_insert (e : ∀ j, V j) (s t : Finset J) (hst : s ⊆ t) :
     { toFun := fun x => PiTensorProduct.tprod ℂ (extend V e s t x)
       map_update_add' := fun x i z w => by
         simp only [extend_update V e s t hst]
-        exact (PiTensorProduct.tprod ℂ).map_update_add _ _ _ _
+        simp
       map_update_smul' := fun x i c z => by
         simp only [extend_update V e s t hst]
-        exact (PiTensorProduct.tprod ℂ).map_update_smul _ _ _ _ }
+        simp }
   exact ⟨PiTensorProduct.lift m, fun x => PiTensorProduct.lift.tprod x⟩
 
 noncomputable def insert (e : ∀ j, V j) (s t : Finset J) (hst : s ⊆ t) :
@@ -73,9 +73,7 @@ theorem insert_refl (e : ∀ j, V j) (s : Finset J) :
   apply PiTensorProduct.ext
   ext y
   simp only [LinearMap.compMultilinearMap_apply, insert_pure, LinearMap.id_apply]
-  congr 1
-  funext j
-  simp [j.property]
+  simp
 
 theorem insert_comp (e : ∀ j, V j) (s t u : Finset J)
     (hst : s ⊆ t) (htu : t ⊆ u) :
@@ -89,7 +87,7 @@ theorem insert_comp (e : ∀ j, V j) (s t u : Finset J)
   funext j
   by_cases hs : (j : J) ∈ s
   · simp [hs, hst hs]
-  · by_cases ht : (j : J) ∈ t <;> simp [hs, ht]
+  simp_all
 
 noncomputable def restrict (s t : Finset J) (hst : s ⊆ t)
     (x : ∀ j : t, V j) : ∀ j : s, V j := fun j => x ⟨j, hst j.property⟩
@@ -135,7 +133,7 @@ noncomputable def contract (s t : Finset J) (hst : s ⊆ t)
         by_cases hi : (i : J) ∈ s
         · have hp' (q : V i) : p (Function.update x i q) = p x := by
             rw [hp]
-            simp [hi, p, Function.update_eq_self]
+            simp [hi, p]
           simp only [hp', restrict_update_mem V s t hst _ _ hi,
             MultilinearMap.map_update_add, smul_add]
         · simp only [hp, Finset.prod_update_of_mem (Finset.mem_univ i), if_neg hi,
@@ -144,7 +142,7 @@ noncomputable def contract (s t : Finset J) (hst : s ⊆ t)
         by_cases hi : (i : J) ∈ s
         · have hp' (q : V i) : p (Function.update x i q) = p x := by
             rw [hp]
-            simp [hi, p, Function.update_eq_self]
+            simp [hi, p]
           simp only [hp', restrict_update_mem V s t hst _ _ hi,
             MultilinearMap.map_update_smul, smul_comm c]
         · simp only [hp, Finset.prod_update_of_mem (Finset.mem_univ i), if_neg hi,
@@ -152,7 +150,7 @@ noncomputable def contract (s t : Finset J) (hst : s ⊆ t)
             mul_assoc, mul_smul] }
   exact PiTensorProduct.lift m
 
-private theorem contract_insert (e : ∀ j, V j) (s t : Finset J) (hst : s ⊆ t)
+theorem contract_insert (e : ∀ j, V j) (s t : Finset J) (hst : s ⊆ t)
     (φ : ∀ j : t, Module.Dual ℂ (V j))
     (hφ : ∀ j : t, (j : J) ∉ s → φ j (e j) = 1) :
     (contract V s t hst φ).comp (insert V e s t hst) = LinearMap.id := by
@@ -164,11 +162,7 @@ private theorem contract_insert (e : ∀ j, V j) (s t : Finset J) (hst : s ⊆ t
   have hprod : (∏ j : t,
       if (j : J) ∈ s then (1 : ℂ) else φ j
         (if h : (j : J) ∈ s then x ⟨j, h⟩ else e j)) = 1 := by
-    apply Finset.prod_eq_one
-    intro j hj
-    split_ifs with h
-    · rfl
-    · exact hφ j h
+    simp_all
   change (∏ j : t, if (j : J) ∈ s then (1 : ℂ) else φ j
     (if h : (j : J) ∈ s then x ⟨j, h⟩ else e j)) •
       PiTensorProduct.tprod ℂ (restrict V s t hst
@@ -253,7 +247,7 @@ noncomputable def stageOperator (s : Finset J) (j : J) (hj : j ∈ s)
   PiTensorProduct.map (Function.update (fun k : s => (LinearMap.id : V k →ₗ[ℂ] V k))
     ⟨j, hj⟩ (localOperator V A j a))
 
-private theorem stageOperator_pure (s : Finset J) (j : J) (hj : j ∈ s)
+theorem stageOperator_pure (s : Finset J) (j : J) (hj : j ∈ s)
     (a : A j) (x : ∀ k : s, V k) :
     stageOperator V A s j hj a (PiTensorProduct.tprod ℂ x) =
       PiTensorProduct.tprod ℂ (Function.update x ⟨j, hj⟩ (a • x ⟨j, hj⟩)) := by
@@ -265,7 +259,7 @@ private theorem stageOperator_pure (s : Finset J) (j : J) (hj : j ∈ s)
   · subst k; simp [localOperator]
   · simp [Function.update_of_ne h]
 
-private theorem stageOperator_insert (e : ∀ j, V j) (s t : Finset J)
+theorem stageOperator_insert (e : ∀ j, V j) (s t : Finset J)
     (hst : s ⊆ t) (j : J) (hj : j ∈ s) (a : A j) :
     (stageOperator V A t j (hst hj) a).comp (insert V e s t hst) =
       (insert V e s t hst).comp (stageOperator V A s j hj a) := by
@@ -370,8 +364,7 @@ theorem core_nontrivial (e : ∀ j, V j) (E : Finset J)
     simp [f, PiTensorProduct.dualDistrib_apply, hφ]
   have hne : PiTensorProduct.tprod ℂ x ≠ 0 := by
     intro h
-    rw [h, map_zero] at hfx
-    exact zero_ne_one hfx
+    simp_all
   let s : Level E := ⟨E, le_rfl⟩
   refine ⟨⟨stageInclusion V e E s (PiTensorProduct.tprod ℂ x), 0, ?_⟩⟩
   intro h
@@ -394,7 +387,7 @@ theorem slotAction_pure (e : ∀ j, V j) (E : Finset J) (j : J) (a : A j)
         (Function.update x ⟨j, hj⟩ (a • x ⟨j, hj⟩))) :=
   Classical.choose_spec (exists_slotAction V A e E j a) s hj x
 
-private theorem density_complex [∀ j, IsSimpleModule (A j) (V j)]
+theorem density_complex [∀ j, IsSimpleModule (A j) (V j)]
     (hcommutant : ScalarCommutant V A) (j : J) (f : Module.End ℂ (V j))
     (s : Finset (V j)) : ∃ a : A j, ∀ x ∈ s, f x = a • x := by
   let g : Module.End (Module.End (A j) (V j)) (V j) :=
@@ -402,8 +395,7 @@ private theorem density_complex [∀ j, IsSimpleModule (A j) (V j)]
       map_add' := f.map_add
       map_smul' := fun d x => by
         obtain ⟨c, hc⟩ := hcommutant j d
-        change f (d x) = d (f x)
-        rw [hc, hc, f.map_smul] }
+        simp_all }
   exact jacobson_density g s
 
 private noncomputable def linearSlot (s : Finset J) (i : s) (f : Module.End ℂ (V i)) :
@@ -485,7 +477,7 @@ private theorem tensorMap_mem [∀ j, IsSimpleModule (A j) (V j)]
         funext k
         by_cases hk : k = i
         · subst k; simp [hi]
-        · simp [hk, Function.update_of_ne hk]
+        simp_all
       rw [hmap, LinearMap.comp_apply]
       exact linearSlot_mem V A hcommutant e E N s i (f i) _ ih
   simpa using h Finset.univ
@@ -496,8 +488,8 @@ private theorem stage_cyclic [∀ j, IsSimpleModule (A j) (V j)]
     (x : Stage V s.1) (hzero : x ≠ 0) (hx : stageInclusion V e E s x ∈ N) :
     ∀ z : Stage V s.1, stageInclusion V e E s z ∈ N := by
   classical
-  have scalar_mem (c : ℂ) (z : Core V e E) (hz : z ∈ N) : c • z ∈ N := by
-    exact N.smul_mem (algebraMap ℂ (actionAlgebra V A e E) c) hz
+  have scalar_mem (c : ℂ) (z : Core V e E) (hz : z ∈ N) : c • z ∈ N := 
+    N.smul_mem (algebraMap ℂ (actionAlgebra V A e E) c) hz
   let b (i : s.1) := Module.Free.chooseBasis ℂ (V i)
   let B := Basis.piTensorProduct b
   obtain ⟨p, hp⟩ : ∃ p, B.repr x p ≠ 0 := by
@@ -521,12 +513,11 @@ private theorem stage_cyclic [∀ j, IsSimpleModule (A j) (V j)]
     have hm := tensorMap_mem V A hcommutant e E N s f x hx
     rw [hmap, LinearMap.smulRight_apply, map_smul] at hm
     have hm' := scalar_mem ((B.repr x p)⁻¹) _ hm
-    simpa [smul_smul, hp] using hm'
+    simp_all
   intro z
   induction z using PiTensorProduct.induction_on with
   | smul_tprod c y =>
-    rw [map_smul]
-    exact scalar_mem c _ (hpure y)
+    simp_all
   | add z w hz hw => simpa using N.add_mem hz hw
 
 theorem core_simple (e : ∀ j, V j) (E : Finset J)
@@ -545,17 +536,17 @@ theorem core_simple (e : ∀ j, V j) (E : Finset J)
   obtain ⟨s, x, hx⟩ := Module.DirectLimit.exists_of z
   change stageInclusion V e E s x = z at hx
   have hxn : x ≠ 0 := by
-    intro h; apply hzero; rw [← hx, h, map_zero]
+    intro h; simp_all
   apply Submodule.eq_top_iff'.mpr
   intro w
   obtain ⟨t, y, hy⟩ := Module.DirectLimit.exists_of w
   change stageInclusion V e E t y = w at hy
   obtain ⟨r, hsr, htr⟩ := exists_ge_ge s t
   let xr := transition V e E s r hsr x
-  have hxr : stageInclusion V e E r xr = z := by
-    exact (LinearMap.congr_fun (inclusion_insert V e E s r hsr) x).trans hx
+  have hxr : stageInclusion V e E r xr = z := 
+    (LinearMap.congr_fun (inclusion_insert V e E s r hsr) x).trans hx
   have hxrn : xr ≠ 0 := by
-    intro h; apply hzero; rw [← hxr, h, map_zero]
+    intro h; simp_all
   have hm := stage_cyclic V A hcommutant e E N r xr hxrn (hxr.symm ▸ hz)
     (transition V e E t r htr y)
   have hyr := (LinearMap.congr_fun (inclusion_insert V e E t r htr) y).trans hy

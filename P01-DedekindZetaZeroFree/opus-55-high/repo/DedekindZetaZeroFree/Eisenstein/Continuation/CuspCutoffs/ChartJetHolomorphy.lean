@@ -177,7 +177,7 @@ theorem parameter_derivatives_bounded {E : Type*} [NormedAddCommGroup E]
   fun α => ⟨fun x => coordinateDerivative α g x,
     ((coordinateDerivativeList_contDiffOn hU g hg α.directions).continuousOn.mono hLU).restrict⟩
 
-private theorem coordinateDerivativeList_add_on {n : ℕ} {U : Set (Space n)} (hU : IsOpen U)
+theorem coordinateDerivativeList_add_on {n : ℕ} {U : Set (Space n)} (hU : IsOpen U)
     (u v : Space n → ℂ) (hu : ContDiffOn ℝ (⊤ : ℕ∞) u U)
     (hv : ContDiffOn ℝ (⊤ : ℕ∞) v U) (l : List (Fin n)) :
     Set.EqOn (coordinateDerivativeList l (fun x => u x + v x))
@@ -199,7 +199,7 @@ private theorem coordinateDerivativeList_add_on {n : ℕ} {U : Set (Space n)} (h
       using congrArg (fun L : Space n →L[ℝ] ℂ => L (EuclideanSpace.single i 1))
         (fderiv_add hu' hv')
 
-private theorem coordinateDerivativeList_sum_on {n : ℕ} {U : Set (Space n)} (hU : IsOpen U)
+theorem coordinateDerivativeList_sum_on {n : ℕ} {U : Set (Space n)} (hU : IsOpen U)
     {J : Type*} (I : Finset J) (u : J → Space n → ℂ)
     (hu : ∀ j ∈ I, ContDiffOn ℝ (⊤ : ℕ∞) (u j) U) (l : List (Fin n)) :
     Set.EqOn (coordinateDerivativeList l (fun x => ∑ j ∈ I, u j x))
@@ -324,7 +324,7 @@ theorem chartSmoothHolomorphic_finset_sum {n : ℕ} (B : LocalBall n)
 section BallwiseSeries
 open KPContLocalHolomorphyUpgrade.CauchyAssembly
 
-private theorem ballJet_continuous {n : ℕ} (A : LocalBall n)
+theorem ballJet_continuous {n : ℕ} (A : LocalBall n)
     (Ω : Set ℂ) (h : ℂ → Space n → ℂ)
     (hh : KPCutoffSource.ChartSmoothHolomorphicOn A h Ω) : Raw.JetContinuousOn A h Ω := by
   intro z₀ hz₀ K hK hKA m ε hε
@@ -345,7 +345,7 @@ private theorem ballJet_continuous {n : ℕ} (A : LocalBall n)
     α.directions (hKA x.property), ← coordinateDerivative, ← coordinateDerivative]
   exact hp.trans_lt hb
 
-private theorem ballScalarJet_holomorphic {n : ℕ} (A : LocalBall n) (Ω : Set ℂ)
+theorem ballScalarJet_holomorphic {n : ℕ} (A : LocalBall n) (Ω : Set ℂ)
     (f : ℂ → Space n → ℂ) (hf : KPCutoffSource.ChartSmoothHolomorphicOn A f Ω)
     (m : ℕ) (α : MultiIndex n m) (x : Space n) (hx : x ∈ A.carrier) :
     DifferentiableOn ℂ (fun s => coordinateDerivative α (f s) x) Ω := by
@@ -357,7 +357,7 @@ private theorem ballScalarJet_holomorphic {n : ℕ} (A : LocalBall n) (Ω : Set 
     (ContinuousMap.evalCLM ℂ (⟨x, rfl⟩ : K)).comp (ContinuousLinearMap.proj α)
   exact (L.differentiable.comp_differentiableOn hj).congr (fun s hs => (hv s hs α ⟨x, rfl⟩).symm)
 
-private theorem closedContainedBall_at {n : ℕ} (hn : 0 < n) {U : Set (Space n)} (hU : IsOpen U)
+theorem closedContainedBall_at {n : ℕ} (hn : 0 < n) {U : Set (Space n)} (hU : IsOpen U)
     {x : Space n} (hx : x ∈ U) :
     ∃ B : LocalBall n, B.center = x ∧ Metric.closedBall B.center B.radius ⊆ U := by
   obtain ⟨r, hr, hrU⟩ := Metric.mem_nhds_iff.mp (hU.mem_nhds hx)
@@ -430,7 +430,7 @@ theorem chartPowerSeries_of_ballwise {n : ℕ} (hn : 0 < n) {U : Set (Space n)} 
 
 end BallwiseSeries
 
-private theorem chartSmoothHolomorphicOn_congr {n : ℕ} (B : LocalBall n) {O : Set ℂ}
+theorem chartSmoothHolomorphicOn_congr {n : ℕ} (B : LocalBall n) {O : Set ℂ}
     {g g' : ℂ → Space n → ℂ} (h : ∀ s ∈ O, ∀ x, g s x = g' s x)
     (hg : KPCutoffSource.ChartSmoothHolomorphicOn B g' O) :
     KPCutoffSource.ChartSmoothHolomorphicOn B g O := by

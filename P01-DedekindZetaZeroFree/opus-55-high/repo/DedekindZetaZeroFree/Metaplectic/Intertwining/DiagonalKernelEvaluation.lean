@@ -16,11 +16,11 @@ local notation "N" => KPPGLLocalCover.N F ζ hζ (Sum.inr q)
 local notation "L" => KPPGLLocalCover.LowerN F ζ hζ (Sum.inr q)
 local notation "A" => KPPGLLocalCover.A F ζ hζ (Sum.inr q)
 
-private theorem w_upper (t : LocalField F q) : W * N t = L t * W := by
-  exact (mul_inv_eq_iff_eq_mul).mp
+theorem w_upper (t : LocalField F q) : W * N t = L t * W := 
+  (mul_inv_eq_iff_eq_mul).mp
     (KPRankOneJacquetZeroCompactCoefficients.weyl_conjugates_upper F ζ hζ q t)
 
-private theorem lower_diagonal (t : LocalField F q) (p : (LocalField F q)ˣ) :
+theorem lower_diagonal (t : LocalField F q) (p : (LocalField F q)ˣ) :
     L t * A p = A p * L ((p : LocalField F q) * t) := by
   have hw : W * W = 1 := by simpa only [pow_two] using KPPGLLocalCover.W_sq F ζ hζ (Sum.inr q)
   have hl (z : LocalField F q) : L z = W * N z * W := by
@@ -38,10 +38,9 @@ private theorem lower_diagonal (t : LocalField F q) (p : (LocalField F q)ˣ) :
 private theorem diagonal_upper (p : (LocalField F q)ˣ) (t : LocalField F q) :
     A p * N t = N ((p : LocalField F q) * t) * A p := by
   rw [KPCorrectedBruhatLifts.quotient_upper_diagonal]
-  congr 2
-  field_simp
+  simp
 
-private theorem minus_diagonal (z : (LocalField F q)ˣ) :
+theorem minus_diagonal (z : (LocalField F q)ˣ) :
     A (-1) * A (-z) = A z := by
   have hc (a b : (LocalField F q)ˣ) : (KPHilbert.B3 F ζ hζ (Sum.inr q) a b)^3 = 1 := by
     apply Subtype.ext
@@ -72,7 +71,7 @@ theorem signed_double_kernel_same_diagonal
   simp only [mul_assoc]
   rw [w_upper]
   rw [← mul_assoc (L _) (L _), ← KPPGLLocalCover.LowerN_add]
-  simp only [div_eq_mul_inv, Units.val_inv_eq_inv_val, add_comm, mul_assoc]
+  simp only [div_eq_mul_inv, Units.val_inv_eq_inv_val, add_comm]
 
 theorem diagonalLift_index_zero_eq_eta (π : (LocalField F q)ˣ) (i : Fin 3) :
     KPTameTransposeKernelUnfolding.diagonalLift F ζ hζ q π ((i.val : ℤ), 0) =
@@ -91,7 +90,3 @@ theorem signed_double_kernel_diagonal_index
       L (x + (π ^ i.val : (LocalField F q)ˣ) / u) * W := by
   rw [diagonalLift_index_zero_eq_eta]
   exact signed_double_kernel_same_diagonal F ζ hζ q S (π ^ i.val) u x
-
-end DedekindZetaZeroFree.KPTameTransposeLiteralMassTransport.DiagonalLiftGeometry
-
-end

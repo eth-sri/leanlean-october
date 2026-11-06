@@ -96,7 +96,7 @@ end DedekindZetaZeroFree.KPContActualSectorResolventSpecialization
 
 namespace DedekindZetaZeroFree
 
-private theorem eigen_not_resolvent_aux
+theorem eigen_not_resolvent_aux
     {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
     (Δ : H →ₗ.[ℂ] H) (μ : ℝ)
     (he : KPBelowThreshold.eigenspace Δ μ ≠ ⊥) :

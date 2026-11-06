@@ -196,7 +196,7 @@ private theorem phase_rel_backward (i : Fin (H.atlas U).componentCount)
       apply phase_rel_forward F ζ hζ U R P H i
       simpa only [out_class] using h)
 
-private theorem forward_mk (i : Fin (H.atlas U).componentCount) (ε : rootsOfUnity 3 F)
+theorem forward_mk (i : Fin (H.atlas U).componentCount) (ε : rootsOfUnity 3 F)
     (x : SymmetricSpace F) :
     forward F ζ hζ U R P H i (Quotient.mk _ (phaseClass F ζ hζ U ε,x)) =
       Quotient.mk (coveredRelation F ζ hζ U)
@@ -267,7 +267,7 @@ private theorem forget_continuous (i : Fin (H.atlas U).componentCount) :
     apply Continuous.quotient_lift
     exact continuous_quot_mk.comp continuous_snd
 
-private theorem forget_closed (i : Fin (H.atlas U).componentCount) :
+theorem forget_closed (i : Fin (H.atlas U).componentCount) :
     IsClosedMap (forgetPhase F ζ hζ U R P H i) := by
   intro s hs
   letI := MulAction.orbitRel (Component F ζ hζ U R P H i) (SymmetricSpace F)
@@ -296,7 +296,7 @@ private theorem forget_closed (i : Fin (H.atlas U).componentCount) :
   rw [he]
   exact isClosedMap_snd_of_compactSpace _ (hs.preimage continuous_quot_mk)
 
-private theorem forget_fiber_finite (i : Fin (H.atlas U).componentCount)
+theorem forget_fiber_finite (i : Fin (H.atlas U).componentCount)
     (v : KPCuspSiegel.OrbitQuotient F (Component F ζ hζ U R P H i)) :
     (forgetPhase F ζ hζ U R P H i ⁻¹' {v}).Finite := by
   induction v using Quotient.inductionOn with
@@ -416,7 +416,7 @@ theorem complexProjectiveEmbedding_smul (γ : KPCuspArithmetic.PGL2 F)
   rw [KPCuspSiegel.action_mk, KPCuspSiegel.glAction, KPArch.productAction]
   rfl
 
-private theorem pglmap_inj (f : F →+* ℂ) :
+theorem pglmap_inj (f : F →+* ℂ) :
     Function.Injective (Matrix.ProjGenLinGroup.map (n := Fin 2) f) := by
   have hi : Function.Injective (Matrix.GeneralLinearGroup.map (n := Fin 2) f) := by
     intro a b h
@@ -456,7 +456,7 @@ abbrev OrbifoldChart (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
   KPArithmeticAction.OrbifoldChart (KPCuspLogShape.dimension F)
     (ArchComponent F ζ hζ U R P H i) x
 
-private theorem archproper (i : Fin (H.atlas U).componentCount) :
+theorem archproper (i : Fin (H.atlas U).componentCount) :
     ProperlyDiscontinuousSMul (ArchComponent F ζ hζ U R P H i) (SymmetricSpace F) := by
   letI : ProperlyDiscontinuousSMul (Component F ζ hζ U R P H i) (SymmetricSpace F) :=
     KPFiniteAdelicCuspEnds.FundamentalDomainGeometry.arithmeticStabilizer_properlyDiscontinuous_of_compact
@@ -480,7 +480,7 @@ private theorem archproper (i : Fin (H.atlas U).componentCount) :
   change ((fun y => (e.symm γ : KPCuspArithmetic.PGL2 F) • y) '' K ∩ L).Nonempty
   rw [ha]
   exact hγ
-private theorem chart_from_proper (d : ℕ) (Γ : Subgroup (KPArithmeticAction.ProjectiveGroup d))
+theorem chart_from_proper (d : ℕ) (Γ : Subgroup (KPArithmeticAction.ProjectiveGroup d))
     [ProperlyDiscontinuousSMul Γ (KPArch.Space d)] (z : KPArch.Space d) :
     Nonempty (KPArithmeticAction.OrbifoldChart d Γ z) := by
   letI : Finite (MulAction.stabilizer Γ z) := ProperlyDiscontinuousSMul.finite_stabilizer z
@@ -734,7 +734,7 @@ abbrev CoveredChartDomain (i : Fin (H.atlas U).componentCount) (x : SymmetricSpa
       ((localMap_open F ζ hζ U R P H i x O).isQuotientMap
         (localMap_cont F ζ hζ U R P H i x O) (localMap_surj F ζ hζ U R P H i x O)))
 
-private theorem actualChart_mk (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
+theorem actualChart_mk (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
     (O : OrbifoldChart F ζ hζ U R P H i x) (ε : rootsOfUnity 3 F) (y : O.neighborhood) :
     (actualChart F ζ hζ U R P H i x O (Quotient.mk _ (phaseClass F ζ hζ U ε,y))).val =
       Quotient.mk (coveredRelation F ζ hζ U)

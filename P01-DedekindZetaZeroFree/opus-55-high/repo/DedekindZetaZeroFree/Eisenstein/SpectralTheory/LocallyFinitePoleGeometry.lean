@@ -31,7 +31,3 @@ theorem IsolatedPoles.union {O P Q : Set ℂ}
   rcases hp with hp | hp
   · exact hi s (Metric.ball_subset_ball (min_le_left _ _) hs) hp
   · exact hj s (Metric.ball_subset_ball (min_le_right _ _) hs) hp
-
-end DedekindZetaZeroFree.ResidueContinuity.ScalarSourcePoleGeometry
-
-end

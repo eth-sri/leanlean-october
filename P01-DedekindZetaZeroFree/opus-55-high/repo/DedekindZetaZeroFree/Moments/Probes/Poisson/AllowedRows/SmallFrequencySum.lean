@@ -16,7 +16,7 @@ noncomputable def smallDyadSum (Z : ℝ) : ℂ :=
   ∑ k ∈ Finset.range (⌊Real.logb 2 (Z ^ Scales.smallCutoffExponent)⌋₊ + 1),
     J D (dyadRows D ((2 : ℝ) ^ k) \ principalRows D) 4 4 2 Z
 
-private lemma count_bound (ε : ℝ) (hε : 0 < ε) (Z : ℝ) (hZ : 2 ≤ Z) :
+lemma count_bound (ε : ℝ) (hε : 0 < ε) (Z : ℝ) (hZ : 2 ≤ Z) :
     ((⌊Real.logb 2 (Z ^ Scales.smallCutoffExponent)⌋₊ + 1 : ℕ) : ℝ) ≤
       (Scales.smallCutoffExponent / (Real.log 2 * (ε / 2)) + 1) * Z ^ (ε / 2) := by
   have hZ0 : (0:ℝ) < Z := by linarith

@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # The ordinary class-group modulus
 -/
@@ -38,5 +35,3 @@ theorem ordinaryRayClassModulus_le
   · change ∀ v, 0 ≤ m.finitePart v
     exact fun _ => Nat.zero_le _
   · exact Finset.empty_subset _
-
-end ClassFieldTheory

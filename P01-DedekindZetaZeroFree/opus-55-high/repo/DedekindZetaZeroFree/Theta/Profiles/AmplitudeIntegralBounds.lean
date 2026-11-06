@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Theta.Profiles.InducedAmplitudeDerivativeBoun
 
 @[expose] public section
 
-noncomputable section
 
 namespace DedekindZetaZeroFree.ThetaArchInducedMajorant
 
@@ -77,7 +76,3 @@ lemma exists_norm_integral_exp_mul_amplitudeDerivative_le
       ext x
       simp [Complex.norm_exp, Complex.mul_re]
     _ ≤ _ := (hb u ρ hu hρ).2
-
-end DedekindZetaZeroFree.ThetaArchInducedMajorant
-
-end

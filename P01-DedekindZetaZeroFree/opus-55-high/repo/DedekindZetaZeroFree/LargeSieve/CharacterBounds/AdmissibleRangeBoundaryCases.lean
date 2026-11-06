@@ -19,12 +19,7 @@ theorem top_mem_idealAdmissibleFinset_iff (F : Type) [Field F] [NumberField F]
     (c : Ideal (𝓞 F)) (X : ℝ) :
     (⊤ : Ideal (𝓞 F)) ∈ idealAdmissibleFinset F c X ↔ 1 ≤ X := by
   rw [mem_idealAdmissibleFinset]
-  constructor
-  · rintro ⟨-, -, h⟩
-    simpa using h
-  · intro h
-    exact ⟨by simpa [Ideal.one_eq_top] using squarefree_one (R := Ideal (𝓞 F)),
-      top_sup_eq c, by simpa using h⟩
+  simp
 
 theorem one_le_absNorm_of_mem_idealAdmissibleFinset
     (F : Type) [Field F] [NumberField F] (c : Ideal (𝓞 F)) (X : ℝ)
@@ -85,6 +80,4 @@ theorem paperShell_bot_eq_empty (F : Type) [Field F] [NumberField F]
     (T : ℝ) (hT : 1 ≤ T) : paperShell F ⊥ T = ∅ := by
   rw [paperShell, idealAdmissibleFinset_bot, if_pos (by linarith : (1 : ℝ) ≤ 2 * T),
     Finset.filter_singleton]
-  simp only [Ideal.absNorm_top, Nat.cast_one, if_neg (not_lt.mpr hT)]
-
-end DedekindZetaZeroFree.LargeSieve.Sieve
+  simp_all

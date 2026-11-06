@@ -20,6 +20,3 @@ def haar (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K]
     (dx : Measure K) : Measure Kˣ :=
   Measure.comap (fun x : Kˣ => (x : K))
     (dx.withDensity (fun x => ENNReal.ofReal ((abs K x)⁻¹)))
-
-end
-end DedekindZetaZeroFree.KPCubicHaarTransport

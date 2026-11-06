@@ -85,15 +85,13 @@ theorem exists_smul_convolutionCLM_eq_star_matrixCoeff (k : C(G, 𝕜)) {μ : �
         ((convolutionCLM k).comp
           (Module.End.eigenspace (convolutionOperator (G := G) k).toLinearMap μ).subtypeL))),
       fun h => ?_⟩
-    rw [InnerProductSpace.toDual_symm_apply]
-    simp only [smul_apply, ContinuousLinearMap.comp_apply,
-      Submodule.coe_subtypeL, Submodule.subtype_apply, ContinuousMap.evalCLM_apply, smul_eq_mul]
+    simp
   refine ⟨y, fun f hf => ?_⟩
   ext g
   have hg : ⟪y, convolutionEigenspaceRepresentation k μ g ⟨f, hf⟩⟫_𝕜
       = μ⁻¹ * convolutionCLM k f g := by
     rw [hy, coe_convolutionEigenspaceRepresentation_apply, convolutionCLM_rightRegularLp]
-    simp only [ContinuousMap.comp_apply, ContinuousMap.coe_mulRight, one_mul]
+    simp
   rw [ContinuousMap.star_apply, ContinuousMap.smul_apply, smul_eq_mul,
     ContRepresentation.matrixCoeff_apply, RCLike.star_def, inner_conj_symm, hg]
 
@@ -114,13 +112,13 @@ theorem convolutionCLM_mem_representativeSubmodule_of_mem_iSup_eigenspace (k : C
     (hf : f ∈ ⨆ μ : 𝕜, Module.End.eigenspace (convolutionOperator (G := G) k).toLinearMap μ) :
     convolutionCLM k f ∈ representativeSubmodule 𝕜 G := by
   refine Submodule.iSup_induction (motive := fun x => convolutionCLM k x ∈
-    representativeSubmodule 𝕜 G) _ hf (fun μ x hx => ?_) (by rw [map_zero]; exact zero_mem _)
+    representativeSubmodule 𝕜 G) _ hf (fun μ x hx => ?_) (by simp)
     fun x y hx hy => ?_
   · rcases eq_or_ne μ 0 with rfl | hμ
     · rw [convolutionCLM_eq_zero_of_mem_eigenspace_zero k hx]
-      exact zero_mem _
+      simp
     · have hsmul : convolutionCLM k x = μ • (μ⁻¹ • convolutionCLM k x) := by
-        rw [smul_smul, mul_inv_cancel₀ hμ, one_smul]
+        simp_all
       rw [hsmul]
       exact Submodule.smul_mem _ _ (mem_representativeSubmodule_of_isRepresentative
         (isRepresentative_smul_convolutionCLM_of_mem_eigenspace k hx))
@@ -141,7 +139,3 @@ theorem convolutionCLM_mem_closure_representativeSubmodule (k : C(G, 𝕜))
     (image_closure_subset_closure_image (convolutionCLM (G := G) k).continuous ⟨f, hf, rfl⟩)
   rintro - ⟨h, hh, rfl⟩
   exact convolutionCLM_mem_representativeSubmodule_of_mem_iSup_eigenspace k hh
-
-end CompactGroup
-
-end DedekindZetaZeroFree.TauCeti

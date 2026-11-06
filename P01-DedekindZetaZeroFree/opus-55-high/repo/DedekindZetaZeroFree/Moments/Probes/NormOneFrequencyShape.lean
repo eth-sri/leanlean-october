@@ -49,8 +49,3 @@ theorem principalNorm_eq_modulus (A : SArithmeticData F) (h : A.R) (hh : h ≠ 0
   rw [hnorm]
   exact ⟨(A.generator_norm I h hgen (fieldUnit A h hh) (by rfl)).symm,
     A.exteriorNorm_pos I⟩
-
-end ProbePoissonSheet
-
-end
-end DedekindZetaZeroFree

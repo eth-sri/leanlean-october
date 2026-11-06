@@ -92,7 +92,7 @@ theorem endMap_embedding (j : CuspIndex A) (T : ℝ) (hT : A.threshold ≤ T) :
   have hfinal := hcomp.comp (G.highPresentation T).symm.isEmbedding
   have heq' : (eT ∘ G.highPresentation T) ∘ (G.highPresentation T).symm = eT := by
     funext x
-    simp only [Function.comp_apply, Homeomorph.apply_symm_apply]
+    simp
   rw [heq'] at hfinal
   exact hfinal
 
@@ -109,8 +109,8 @@ theorem end_volume_at_cutoff (j : CuspIndex A) (T : ℝ) (hT : A.threshold ≤ T
       (A.cuspAtlas j.1).fundamentalDomain).restrict
         (KPFiniteCuspAtlas.endSet F
           (KPCuspGenuineMonodromy.Component F ζ hζ U (A.representative j.1))
-          ((A.cuspAtlas j.1).representative j.2) T) := by
-  exact KPFiniteAdelicCuspEnds.embedded_cusp_end_volume F hF _ _ _
+          ((A.cuspAtlas j.1).representative j.2) T) := 
+  KPFiniteAdelicCuspEnds.embedded_cusp_end_volume F hF _ _ _
     ((A.cuspAtlas j.1).representative_formula j.2) T (Parabolic A j) (Geometry A j) _
     (fun _ => rfl) (endMap_embedding A j T hT) _
     (A.cuspAtlas j.1).measurable_fundamentalDomain (A.cuspAtlas j.1).isFundamentalDomain
@@ -140,8 +140,8 @@ theorem spherical_open_positive : (sphericalMeasure F ζ hζ R P U).IsOpenPosMea
     change KPArch.action (g (KPCusp.complexPlace F i)).out (0,0) = x i
     have hc : (KPCusp.complexPlace F i).IsComplex := (e.symm i).property
     simp only [g, dif_pos hc]
-    have hi : e ⟨KPCusp.complexPlace F i, hc⟩ = i := by
-      exact e.apply_symm_apply i
+    have hi : e ⟨KPCusp.complexPlace F i, hc⟩ = i := 
+      e.apply_symm_apply i
     rw [hi]
     have he : KPArch.action (Quotient.out (Matrix.ProjGenLinGroup.mk
         (KPArithmeticAction.hyperbolicGLSection (x i)))) (0,0) =
@@ -224,7 +224,7 @@ theorem end_section_lintegral (j : CuspIndex A) (T : ℝ) (hT : A.threshold ≤ 
       Measure.prod_restrict]
     congr 1
     ext p
-    simp [μ, Set.mem_prod, and_comm]
+    simp [Set.mem_prod, and_comm]
   rw [heq, lintegral_prod_symm' _ hf]
   rw [← lintegral_subtype_comap measurableSet_Ioi]
   apply lintegral_congr
@@ -241,7 +241,7 @@ theorem end_section_lintegral (j : CuspIndex A) (T : ℝ) (hT : A.threshold ≤ 
     simp only [Function.comp_apply]
     rw [(Geometry A j).highPresentation_formula]
     rfl
-  · exact measurable_quotient_mk''
+  fun_prop
 
 theorem shape_shift_fundamental_lintegral (j : CuspIndex A) (b : KPCuspCharts.Shape F)
     (f : KPCuspCharts.Cross F → ℝ≥0∞)
@@ -296,7 +296,7 @@ theorem radial_log_substitution (d : ℕ) (hd : 0 < d) (Y : ℝ) (hY : 0 < Y)
     ENNReal.ofReal (2*(d:ℝ)) * ∫⁻ t in Set.Ioi (Real.log Y/(2*(d:ℝ))),
       f (Real.exp (2*(d:ℝ)*t)) ∂KPCuspCharts.radialMeasure d := by
   let c : ℝ := 2 * d
-  have hc : 0 < c := mul_pos (by norm_num) (by exact_mod_cast hd)
+  have hc : 0 < c := by positivity
   have hi : Set.InjOn (fun t : ℝ => Real.exp (c*t)) (Set.Ioi (Real.log Y/c)) := by
     intro x hx y hy he
     exact mul_left_cancel₀ hc.ne' (Real.exp_injective he)
@@ -321,18 +321,18 @@ theorem radial_log_substitution (d : ℕ) (hd : 0 < d) (Y : ℝ) (hY : 0 < Y)
     (fun r => ENNReal.ofReal (r^2)⁻¹ * f r)
   rw [himage] at hj
   have hfinite : ∀ᵐ x ∂volume.restrict (Set.Ioi Y), ENNReal.ofReal (x^2)⁻¹ < ∞ :=
-    Filter.Eventually.of_forall fun x => ENNReal.ofReal_lt_top
+    by simp
   have hm : Measurable (fun x : ℝ => ENNReal.ofReal (x^2)⁻¹) :=
-    (measurable_id.pow_const 2).inv.ennreal_ofReal
+    by fun_prop
   rw [radialMeasure, setLIntegral_withDensity_eq_setLIntegral_mul_non_measurable
     volume hm f (s := Set.Ioi Y) measurableSet_Ioi hfinite]
   change (∫⁻ r in Set.Ioi Y, ENNReal.ofReal (r^2)⁻¹ * f r) = _
   rw [hj]
   have hfinite' : ∀ᵐ x ∂volume.restrict (Set.Ioi (Real.log Y/c)),
       ENNReal.ofReal (Real.exp (-2*(d:ℝ)*x)) < ∞ :=
-    Filter.Eventually.of_forall fun x => ENNReal.ofReal_lt_top
+    by simp
   have hm' : Measurable (fun x : ℝ => ENNReal.ofReal (Real.exp (-2*(d:ℝ)*x))) :=
-    (Real.continuous_exp.comp (continuous_const.mul continuous_id)).measurable.ennreal_ofReal
+    by fun_prop
   rw [KPCuspCharts.radialMeasure, setLIntegral_withDensity_eq_setLIntegral_mul_non_measurable
     volume hm' _ (s := Set.Ioi (Real.log Y/(2*(d:ℝ)))) measurableSet_Ioi hfinite']
   simp only [Pi.mul_apply, show (-2*(d:ℝ)) = -c by dsimp [c]; ring]
@@ -397,8 +397,8 @@ private theorem component_injective (i : Fin A.componentCount) : Function.Inject
   intro x y h
   have h' : A.components ⟨i,x⟩ = A.components ⟨i,y⟩ := by
     simpa only [A.components_formula] using h
-  exact eq_of_heq (Sigma.mk.inj_iff.mp (A.components.injective h')).2
-private theorem ends_subset (j : CuspIndex A) {T₀ T : ℝ} (hT : T₀ ≤ T) :
+  simp_all
+theorem ends_subset (j : CuspIndex A) {T₀ T : ℝ} (hT : T₀ ≤ T) :
     ends A j T ⊆ ends A j T₀ := by
   apply Set.image_mono
   apply Set.image_mono
@@ -408,8 +408,8 @@ private theorem ends_subset (j : CuspIndex A) {T₀ T : ℝ} (hT : T₀ ≤ T) :
     component A j.1 ⁻¹' (component A j.1 '' ends A j T) = ends A j T :=
   Set.preimage_image_eq _ (component_injective A j.1)
  theorem end_measurable (j : CuspIndex A) (T : ℝ) :
-    MeasurableSet (component A j.1 '' ends A j T) := by
-  exact ((component_open A j.1) _
+    MeasurableSet (component A j.1 '' ends A j T) := 
+  ((component_open A j.1) _
     (KPFiniteAdelicCuspEnds.component_open_end F _ _ T)).measurableSet
 private theorem end_disjoint (T : ℝ) (hT : A.threshold ≤ T) :
     Pairwise (fun j k : CuspIndex A => Disjoint
@@ -419,7 +419,7 @@ private theorem end_disjoint (T : ℝ) (hT : A.threshold ≤ T) :
   rintro z ⟨x,hx,rfl⟩ ⟨y,hy,he⟩
   have he' : A.components ⟨k.1,y⟩ = A.components ⟨j.1,x⟩ := by
     simpa only [A.components_formula] using he
-  have hij : k.1 = j.1 := (Sigma.mk.inj_iff.mp (A.components.injective he')).1
+  have hij : k.1 = j.1 := by simp_all
   rcases j with ⟨i,a⟩
   rcases k with ⟨l,b⟩
   dsimp at hij
@@ -513,7 +513,7 @@ theorem pinned_section (j : CuspIndex A) (Y : ℝ) (hY : AdmissibleCutoff A Y)
 def expRadius (d : ℕ) (hd : 0 < d) (Y : ℝ) (hY : 0 < Y)
     (t : Set.Ioi (Real.log Y/(2*(d:ℝ)))) : Set.Ioi Y :=
   ⟨Real.exp (2*(d:ℝ)*t.val), by
-    have hc : 0 < 2*(d:ℝ) := mul_pos (by norm_num) (by exact_mod_cast hd)
+    have hc : 0 < 2*(d:ℝ) := by simp_all
     have hh : Real.log Y < 2*(d:ℝ)*t.val := by
       simpa only [mul_comm] using (div_lt_iff₀ hc).mp t.property
     simpa only [Real.exp_log hY, Set.mem_Ioi] using Real.exp_lt_exp.mpr hh⟩
@@ -556,7 +556,7 @@ theorem pinned_end (j : CuspIndex A) (Y : ℝ) (hY : AdmissibleCutoff A Y)
     intro t
     dsimp [expRadius, logHeight, d]
     rw [Real.log_exp, mul_div_cancel_left₀]
-    exact mul_ne_zero (by norm_num) (by exact_mod_cast hd.ne')
+    positivity
   have hh := end_section_lintegral A j _ hY.2 _ (hφ.comp (component_continuous A j.1).measurable)
   simp only [Function.comp_apply] at hh
   rw [hh]
@@ -597,8 +597,7 @@ theorem cusp_integration (Y : ℝ) (hY : AdmissibleCutoff A Y)
   · apply Finset.sum_congr rfl
     intro j hj
     exact (lintegral_const_mul _ (hg j)).symm
-  · intro j hj
-    exact measurable_const.mul (hg j)
+  fun_prop
 
 theorem radial_shell (Y : ℝ) (hY : 0 < Y) :
     radialMeasure (Set.Ioc Y (2*Y)) = ENNReal.ofReal (2*Y)⁻¹ := by
@@ -611,8 +610,6 @@ theorem radial_shell (Y : ℝ) (hY : 0 < Y) :
     ← ofReal_integral_eq_lintegral_ofReal hi (Filter.Eventually.of_forall (fun r => inv_nonneg.mpr (sq_nonneg r)))]
   rw [← intervalIntegral.integral_of_le hab]
   have heq : (fun r : ℝ => (r^2)⁻¹) = fun r => r ^ (-2 : ℝ) := by
-    funext r
-    rw [Real.rpow_neg_ofNat]
     simp
   rw [heq, integral_rpow (Or.inr ⟨by norm_num, ?_⟩)]
   · norm_num
@@ -620,9 +617,7 @@ theorem radial_shell (Y : ℝ) (hY : 0 < Y) :
     congr 1
     field_simp
     ring
-  · rw [Set.uIcc_of_le hab]
-    intro h
-    exact (not_le_of_gt hY) h.1
+  simp_all
 
 theorem shell_eval (Y : ℝ) (hY : AdmissibleCutoff A Y)
     (hrad : radialMeasure (Set.Ioc Y (2*Y)) = ENNReal.ofReal (2*Y)⁻¹) :
@@ -685,8 +680,3 @@ theorem fixed_haar_radial_integration
   intro Y hY
   exact RadialIntegrationSteps.shell_eval A R P D Y hY
     (RadialIntegrationSteps.radial_shell Y hY.1)
-
-end DedekindZetaZeroFree.KPMsFixedHaar
-
-end
-end

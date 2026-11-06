@@ -38,11 +38,7 @@ abbrev fourier (S : Finset (HeightOneSpectrum (RingOfIntegers F))) :=
 
 private theorem norm_le_one_iff (v : HeightOneSpectrum (RingOfIntegers F))
     (x : v.adicCompletion F) : ‖x‖ ≤ 1 ↔ Valued.v x ≤ 1 := by
-  rw [FinitePlace.norm_def]
-  change (WithZeroMulInt.toNNReal (HeightOneSpectrum.absNorm_ne_zero v) (Valued.v x) : ℝ) ≤ 1 ↔ _
-  rw [← NNReal.coe_one, NNReal.coe_le_coe]
-  apply WithZeroMulInt.toNNReal_le_one_iff
-  exact_mod_cast RingOfIntegers.HeightOneSpectrum.one_lt_absNorm v
+  simp
 
 private theorem localNormalization_finiteHaar
     (S : Finset (HeightOneSpectrum (RingOfIntegers F))) :
@@ -52,8 +48,7 @@ private theorem localNormalization_finiteHaar
       (v.val.adicCompletionIntegers F : Set (v.val.adicCompletion F)) := by
     ext x
     rw [Set.mem_setOf_eq, norm_le_one_iff F v.val x]
-    exact (IsDedekindDomain.HeightOneSpectrum.mem_adicCompletionIntegers (K := F)
-      (v := v.val)).symm
+    rfl
   rw [hset, localNormalizedHaar_integerRing]
   congr 1
   rw [PoissonS.integerVolume,
@@ -61,7 +56,7 @@ private theorem localNormalization_finiteHaar
     zpow_natCast, localHalfDifferentFactor_eq_inv_sqrt F v.val, localDifferentNorm,
     Nat.cast_pow, one_div]
 
-private theorem productHaar_isAddHaarMeasure
+theorem productHaar_isAddHaarMeasure
     (S : Finset (HeightOneSpectrum (RingOfIntegers F))) :
     (productHaar F S).IsAddHaarMeasure := by
   haveI : (PoissonArch.traceMeasure F).IsAddHaarMeasure :=
@@ -120,7 +115,7 @@ theorem phase_eq_traceCharacter
   have hx2 : u.2 = x.2 := rfl
   have hy2 : v.2 = y.2 := rfl
   rw [sLocalTraceCharacter_apply]
-  simp only [Circle.coe_mul, map_prod, Prod.fst_mul, Prod.snd_mul, Pi.mul_apply]
+  simp only [Circle.coe_mul, Prod.fst_mul, Prod.snd_mul, Pi.mul_apply]
   unfold phase PoissonS.tracePhase
   rw [← hx, ← hy, harch]
   change _ = Circle.coeHom (∏ w : InfinitePlace F, archTraceCharacter w (u.1 w * v.1 w)) *
@@ -151,7 +146,3 @@ theorem productHaar_normalization
   congr 2
   congr 1
   ring
-
-end DedekindZetaZeroFree.ProbeFourierPoissonFoundation
-
-end

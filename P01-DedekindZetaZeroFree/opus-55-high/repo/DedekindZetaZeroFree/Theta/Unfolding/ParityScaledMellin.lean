@@ -26,13 +26,13 @@ def integrand (D : RayCoset.Data K)
       (RayParity.J K q : ℂ) ^ s
   else 0
 
-private theorem representative_ne_zero (D : RayCoset.Data K) (α : RayCoset.Cx D) :
+theorem representative_ne_zero (D : RayCoset.Data K) (α : RayCoset.Cx D) :
     (α.val : K) ≠ 0 := by
   intro h
   have := (RayCoset.mem_Cnonzero_iff D α.val).mp α.property
   exact this.2 (RingOfIntegers.coe_injective h)
 
-private theorem normalized_real_coordinate (D : RayCoset.Data K) (α : RayCoset.Cx D)
+theorem normalized_real_coordinate (D : RayCoset.Data K) (α : RayCoset.Cx D)
     (v : RayCoset.RealPlaces K) :
     (Theta.traceToMixed K (RayCoset.normalizedEmbedding D α.val)).1 v =
       RayCoset.normalizationScale D * RayCoset.realEmbedding K v (α.val : K) := by
@@ -40,7 +40,7 @@ private theorem normalized_real_coordinate (D : RayCoset.Data K) (α : RayCoset.
     ContinuousLinearEquiv.apply_symm_apply, Prod.smul_fst, Pi.smul_apply,
     smul_eq_mul, mixedEmbedding_apply_isReal, RayCoset.realEmbedding]
 
-private theorem normalized_real_ne_zero (D : RayCoset.Data K) (α : RayCoset.Cx D) :
+theorem normalized_real_ne_zero (D : RayCoset.Data K) (α : RayCoset.Cx D) :
     ∀ v : RayCoset.RealPlaces K,
       (Theta.traceToMixed K (RayCoset.normalizedEmbedding D α.val)).1 v ≠ 0 := by
   intro v
@@ -48,7 +48,7 @@ private theorem normalized_real_ne_zero (D : RayCoset.Data K) (α : RayCoset.Cx 
   exact mul_ne_zero (RayCoset.normalizationScale_pos D).ne'
     ((map_ne_zero _).mpr (representative_ne_zero D α))
 
-private theorem normalized_complex_ne_zero (D : RayCoset.Data K) (α : RayCoset.Cx D) :
+theorem normalized_complex_ne_zero (D : RayCoset.Data K) (α : RayCoset.Cx D) :
     ∀ v : {w : InfinitePlace K // IsComplex w},
       (Theta.traceToMixed K (RayCoset.normalizedEmbedding D α.val)).2 v ≠ 0 := by
   intro v
@@ -58,14 +58,14 @@ private theorem normalized_complex_ne_zero (D : RayCoset.Data K) (α : RayCoset.
   exact smul_ne_zero (RayCoset.normalizationScale_pos D).ne'
     ((map_ne_zero _).mpr (representative_ne_zero D α))
 
-private theorem sign_pos_mul (r a : ℝ) (hr : 0 < r) :
+theorem sign_pos_mul (r a : ℝ) (hr : 0 < r) :
     Real.sign (r * a) = Real.sign a := by
   rcases lt_trichotomy a 0 with hn | hz | hp
   · rw [Real.sign_of_neg hn, Real.sign_of_neg (mul_neg_of_pos_of_neg hr hn)]
   · simp [hz]
   · rw [Real.sign_of_pos hp, Real.sign_of_pos (mul_pos hr hp)]
 
-private theorem integrand_ae (D : RayCoset.Data K)
+theorem integrand_ae (D : RayCoset.Data K)
     (δ : Finset (RayCoset.RealPlaces K)) (α : RayCoset.Cx D) (s : ℂ) :
     integrand D δ α s =ᵐ[μ K] fun q =>
       gδ K δ (Q K q (RayCoset.normalizedEmbedding D α.val)) * (J K q : ℂ) ^ s := by
@@ -75,8 +75,8 @@ private theorem integrand_ae (D : RayCoset.Data K)
 theorem integrable (D : RayCoset.Data K)
     (δ : Finset (RayCoset.RealPlaces K)) (α : RayCoset.Cx D)
     (s : ℂ) (hs : 0 < s.re) :
-    Integrable (integrand D δ α s) (RayParity.μ K) := by
-  exact (integrable_gδ_mellin K δ _ (normalized_real_ne_zero D α)
+    Integrable (integrand D δ α s) (RayParity.μ K) := 
+  (integrable_gδ_mellin K δ _ (normalized_real_ne_zero D α)
     (normalized_complex_ne_zero D α) s hs).congr (integrand_ae D δ α s).symm
 
 theorem integral (D : RayCoset.Data K)
@@ -99,8 +99,8 @@ theorem integral (D : RayCoset.Data K)
 theorem integrable_norm (D : RayCoset.Data K)
     (δ : Finset (RayCoset.RealPlaces K)) (α : RayCoset.Cx D)
     (s : ℂ) (hs : 0 < s.re) :
-    Integrable (fun q => ‖integrand D δ α s q‖) (RayParity.μ K) := by
-  exact (integrable D δ α s hs).norm
+    Integrable (fun q => ‖integrand D δ α s q‖) (RayParity.μ K) := 
+  (integrable D δ α s hs).norm
 
 private theorem normWeight_pos (D : RayCoset.Data K) (α : RayCoset.Cx D) :
     0 < RayCoset.normWeight D (RayCoset.orbitMk D α) := by
@@ -111,12 +111,12 @@ private theorem normWeight_pos (D : RayCoset.Data K) (α : RayCoset.Cx D) :
     exact_mod_cast (Algebra.norm_eq_zero_iff.not.mpr (representative_ne_zero D α))
   · exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr D.ideal_ne_bot)
 
-private theorem abs_sign_one (a : ℝ) (ha : a ≠ 0) : |Real.sign a| = 1 := by
+theorem abs_sign_one (a : ℝ) (ha : a ≠ 0) : |Real.sign a| = 1 := by
   rcases lt_or_gt_of_ne ha with hn | hp
   · simp [Real.sign_of_neg hn]
   · simp [Real.sign_of_pos hp]
 
-private theorem sign_norm_one (D : RayCoset.Data K)
+theorem sign_norm_one (D : RayCoset.Data K)
     (δ : Finset (RayCoset.RealPlaces K)) (α : RayCoset.Cx D) :
     ‖(RayCoset.signδ D δ (RayCoset.orbitMk D α) : ℂ)‖ = 1 := by
   simp only [RayCoset.signδ_orbitMk, RayCoset.representativeSign,
@@ -125,13 +125,11 @@ private theorem sign_norm_one (D : RayCoset.Data K)
   intro v hv
   exact abs_sign_one _ ((map_ne_zero _).mpr (representative_ne_zero D α))
 
-private theorem scaled_coordinate (D : RayCoset.Data K) (α : RayCoset.Cx D)
+theorem scaled_coordinate (D : RayCoset.Data K) (α : RayCoset.Cx D)
     (q : InfinitePlace K → ℝ) (v : RayCoset.RealPlaces K) :
     Theta.traceRealCoordinateCLM K v (Q K q (RayCoset.normalizedEmbedding D α.val)) =
       q v * (RayCoset.normalizationScale D * RayCoset.realEmbedding K v (α.val : K)) := by
-  rw [traceRealCoordinateCLM_eq_traceToMixed]
-  simp only [Q, ContinuousLinearEquiv.apply_symm_apply, mixedSpaceOfRealSpace_apply,
-    Prod.fst_mul, Pi.mul_apply, normalized_real_coordinate]
+  rfl
 
 private theorem sign_mul_abs (r a : ℝ) (hr : 0 < r) :
     Real.sign a * |r * a| = r * a := by
@@ -141,7 +139,7 @@ private theorem sign_mul_abs (r a : ℝ) (hr : 0 < r) :
   · simp [hz]
   · rw [Real.sign_of_pos hp, abs_of_pos (mul_pos hr hp), one_mul]
 
-private theorem gaussian_norm (x : euclidean.mixedSpace K) :
+theorem gaussian_norm (x : euclidean.mixedSpace K) :
     (‖Theta.latticeGaussian Real.pi x‖ : ℂ) = Theta.latticeGaussian Real.pi x := by
   have he : -(Real.pi : ℂ) * (‖x‖ : ℂ) ^ 2 =
       ((-Real.pi * ‖x‖ ^ 2 : ℝ) : ℂ) := by norm_cast
@@ -192,8 +190,4 @@ theorem integral_norm (D : RayCoset.Data K)
     Complex.norm_of_nonneg (MeasureTheory.integral_nonneg (fun _ => norm_nonneg _)),
     norm_mul, norm_mul, sign_norm_one D δ α, mul_one,
     Complex.norm_cpow_eq_rpow_re_of_pos (normWeight_pos D α)] at hn
-  simpa only [Complex.neg_re, Complex.ofReal_re] using hn
-
-end DedekindZetaZeroFree.AbelianQuotient.RayParity.ScaledMellin
-
-end
+  simp_all

@@ -7,7 +7,6 @@ public import DedekindZetaZeroFree.Theta.Unfolding.NarrowRayParityProjection
 
 @[expose] public section
 
-noncomputable section
 
 open scoped NumberField Classical
 open DedekindZetaZeroFree.AbelianQuotient
@@ -18,7 +17,7 @@ variable {F : Type} [Field F] [NumberField F]
 variable {m : Ideal (𝓞 F)} {hm : m ≠ ⊥}
 variable {η : DedekindZetaZeroFree.RayClassCharacter F m}
 
-private theorem partial_hasSum (hF : NumberField.IsTotallyComplex F)
+theorem partial_hasSum (hF : NumberField.IsTotallyComplex F)
     (E : RayCoset.Data F) (hEm : E.m = m) (c : RayIdealClass F m hm)
     (hc : rayIdealClass F m hm E.a = some c⁻¹) (s : ℂ) (hs : 1 < s.re) :
     HasSum (fun I : Ideal (𝓞 F) =>
@@ -33,7 +32,7 @@ private theorem partial_hasSum (hF : NumberField.IsTotallyComplex F)
   simpa [hr, Finset.univ_eq_empty] using
     DedekindZetaZeroFree.rayParityProjection E c hc s hs
 
-private theorem sum_hasMellin {ι : Type*} (S : Finset ι)
+theorem sum_hasMellin {ι : Type*} (S : Finset ι)
     (f : ι → ℝ → ℂ) (M : ι → ℂ) (s : ℂ)
     (h : ∀ i ∈ S, HasMellin (f i) s (M i)) :
     HasMellin (fun t => ∑ i ∈ S, f i t) s (∑ i ∈ S, M i) := by
@@ -45,7 +44,7 @@ private theorem sum_hasMellin {ι : Type*} (S : Finset ι)
     have ha' := h a (Finset.mem_insert_self a S)
     simpa only [Finset.sum_insert ha, ha'.2, hS.2] using hasMellin_add ha'.1 hS.1
 
-private theorem scale_hasMellin {f : ℝ → ℂ} {s M : ℂ} {a : ℝ}
+theorem scale_hasMellin {f : ℝ → ℂ} {s M : ℂ} {a : ℝ}
     (ha : 0 < a) (h : HasMellin f s M) :
     HasMellin (fun t => f (t / a)) s ((a : ℂ) ^ s * M) := by
   have he : ((a⁻¹ : ℝ) : ℂ) ^ (-s) = (a : ℂ) ^ s := by
@@ -56,7 +55,7 @@ private theorem scale_hasMellin {f : ℝ → ℂ} {s M : ℂ} {a : ℝ}
   · simpa only [div_eq_mul_inv, mul_comm, smul_eq_mul, he, h.2] using
       mellin_comp_mul_left f s (inv_pos.mpr ha)
 
-private theorem scale_cpow (hm : m ≠ ⊥) (s : ℂ) :
+theorem scale_cpow (hm : m ≠ ⊥) (s : ℂ) :
     (conductorScale F m : ℂ) ^ s =
       (((|NumberField.discr F| : ℤ) : ℂ) * (Ideal.absNorm m : ℂ)) ^ (s / 2) := by
   have ha := conductorScale_pos (F := F) hm
@@ -71,7 +70,7 @@ private theorem scale_cpow (hm : m ≠ ⊥) (s : ℂ) :
   rw [hsq] at hpow
   convert hpow using 1 <;> ring
 
-private theorem aggregate_calibration
+theorem aggregate_calibration
     (hF : NumberField.IsTotallyComplex F) (D : RayThetaRepresentatives F m hm)
     (w : RayIdealClass F m hm → ℂ) (v : Ideal (𝓞 F) → ℂ)
     (hdescent : ∀ I, v I = match rayIdealClass F m hm I with
@@ -130,8 +129,8 @@ private theorem aggregate_calibration
     intro I
     rw [hdescent I]
     cases hI : rayIdealClass F m hm I with
-    | none => simp [hI]
-    | some c => simp [hI, eq_comm]
+    | none => simp
+    | some c => simp
   refine ⟨hconv, ?_⟩
   rw [hmel]
   exact hseries.mul_left _
@@ -145,8 +144,8 @@ theorem normalizedRayTheta_mellin_calibration
         (((|NumberField.discr F| : ℤ) : ℂ) * (Ideal.absNorm m : ℂ)) ^ (s / 2) *
           Complex.Gammaℂ s ^ NumberField.InfinitePlace.nrComplexPlaces F *
           (η I * (Ideal.absNorm I : ℂ) ^ (-s)))
-        (mellin (normalizedRayTheta D χ.ψ) s) := by
-  exact aggregate_calibration hF D χ.ψ η χ.descent
+        (mellin (normalizedRayTheta D χ.ψ) s) := 
+  aggregate_calibration hF D χ.ψ η χ.descent
     (normalizedRayTheta D χ.ψ)
     (normalizedRayTheta_eq_sub_zero_modes D χ hη) s hs
 
@@ -167,7 +166,3 @@ theorem normalizedRayConjugateTheta_mellin_calibration
   intro I
   rw [χ.descent I]
   cases rayIdealClass F m hm I <;> simp
-
-end DedekindZetaZeroFree.Hecke.Theta
-
-end

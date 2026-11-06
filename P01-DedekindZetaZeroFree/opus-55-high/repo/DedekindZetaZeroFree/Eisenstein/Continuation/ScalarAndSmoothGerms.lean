@@ -63,7 +63,7 @@ theorem finite_positive_lower_bound {ι : Type*} [Finite ι] (r : ι → ℝ)
       intro i hi
       rcases Finset.mem_insert.mp hi with rfl | hi
       · exact min_le_right _ _
-      · exact (min_le_left _ _).trans (hb i hi)
+      simp_all
   obtain ⟨ε, hε, hb⟩ := h Finset.univ
   exact ⟨ε, hε, fun i => hb i (Finset.mem_univ i)⟩
 
@@ -78,8 +78,4 @@ theorem common_radius {R : PrincipalMellin.ActualRecipe S η}
   refine ⟨min ε (1 / 6), lt_min hε (by norm_num), ?_, ?_⟩
   · exact (Metric.ball_subset_ball (min_le_right _ _)).trans
       KPContinuation.exceptionalBall_subset_spectralDomain
-  · intro v
-    exact (min_le_left _ _).trans (hb v)
-end DedekindZetaZeroFree.EisensteinSmoothGerms
-
-end
+  simp_all

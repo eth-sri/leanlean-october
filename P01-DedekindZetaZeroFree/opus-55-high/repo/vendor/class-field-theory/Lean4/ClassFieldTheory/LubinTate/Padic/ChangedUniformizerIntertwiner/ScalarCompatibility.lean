@@ -11,16 +11,12 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Changed-uniformizer scalar compatibility
 
 This module proves that the changed-uniformizer intertwiner commutes with every scalar endomorphism and identifies its coefficientwise Frobenius twist.
 -/
 
-noncomputable section
 
 namespace LubinTate
 
@@ -260,7 +256,7 @@ theorem padicChangedUniformizerIntertwiner_frobenius
       (fun _ : Unit =>
         padicValuationSubringToCompletedUnramifiedWittRing p
           (u : (padicLocalField p).valuationSubring))
-    simpa only [U] using h
+    omega
   have hHsubst : PowerSeries.HasSubst H :=
     hHlinear.hasSubst
   have hUsubst : PowerSeries.HasSubst U :=
@@ -305,7 +301,7 @@ theorem padicChangedUniformizerIntertwiner_frobenius
     rw [
       padicCompletedChangedStandardSeries_frobenius,
       padicCompletedMultiplicativeSeries_frobenius] at h
-    simpa only [Phi, Phi2] using h
+    omega
   have hAfunctional :
       PowerSeries.subst A Ebar =
         PowerSeries.subst E
@@ -362,7 +358,7 @@ theorem padicChangedUniformizerIntertwiner_frobenius
       PowerSeries.subst Phi Ebar =
         PowerSeries.subst E
           (PowerSeries.map WittVector.frobenius Phi) := by
-    simpa only [Phi2] using hPhiFunctional
+    omega
   have hAfunctional' :
       PowerSeries.subst A Ebar =
         PowerSeries.subst E
@@ -374,7 +370,3 @@ theorem padicChangedUniformizerIntertwiner_frobenius
       hAlinear.constantCoeff_eq_zero
       (hPhiLinear.trans (hAlinear.coeff_single ()).symm)
       hPhiFunctional' hAfunctional'
-
-end LubinTate
-
-end

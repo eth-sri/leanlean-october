@@ -27,7 +27,3 @@ variable {F : Type} [Field F] [NumberField F]
 def kappa (data : PrincipalHeckeData F) : ℂ :=
   data.E 1 / ((Real.sqrt (principalDiscriminant F) : ℂ) *
     Complex.Gammaℂ 1 ^ principalComplexPlaces F)
-
-end DedekindZetaZeroFree.LargeSieve.SquarePoisson
-
-end

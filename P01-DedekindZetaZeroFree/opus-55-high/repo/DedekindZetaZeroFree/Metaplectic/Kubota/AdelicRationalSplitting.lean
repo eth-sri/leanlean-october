@@ -11,7 +11,6 @@ open scoped NumberField Classical BigOperators
 namespace DedekindZetaZeroFree.KPRationalAdelicSplitting
 
 noncomputable section
-set_option autoImplicit false
 
 open KPAdelicCoverRestrictedProduct
 
@@ -64,13 +63,13 @@ theorem integral_iff (q : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
   letI : Valued.v.Compatible := Valuation.Compatible.ofValuation (Valued.v : Valuation (q.adicCompletion F) (WithZero (Multiplicative ℤ)))
   exact Valuation.vle_one_iff Valued.v
 
-private theorem finite_eventually {P : KPHilbert.Place F → Prop}
+theorem finite_eventually {P : KPHilbert.Place F → Prop}
     (h : ∀ᶠ q in Filter.cofinite, P (Sum.inr q)) : ∀ᶠ v in Filter.cofinite, P v := by
   simp only [Filter.eventually_cofinite] at h ⊢
   apply Set.finite_preimage_inl_and_inr.mp
   exact ⟨Set.toFinite _, h⟩
 
-private theorem good_N (q : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
+theorem good_N (q : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
     (hq : ¬ Bad F q) (t : KPTameCompact.O F q) :
     KPStandardLocalRootLifts.N F ζ hζ (Sum.inr q) t ∈ compact F ζ hζ (Sum.inr q) := by
   simp only [compact, finiteCompact, dif_neg hq]
@@ -107,7 +106,6 @@ theorem ACoordinates_restricted (y : Ideles F) :
       val_inv := by apply Subtype.ext; exact congrArg (fun z : Adeles F => z.2 q) y.val_inv
       inv_val := by apply Subtype.ext; exact congrArg (fun z : Adeles F => z.2 q) y.inv_val }
   have he : Units.map (KPTameCompact.O F q).subtype u = Units.map (adeleEval F (Sum.inr q)).toMonoidHom y := by
-    apply Units.ext
     rfl
   have hh := good_A F ζ hζ q hq u
   rw [he] at hh
@@ -156,16 +154,16 @@ theorem eval_localAdele (v w : KPHilbert.Place F) (x : KPHilbert.Completion F v)
       change Pi.single v x w = Pi.single (Sum.inl v) x (Sum.inl w)
       by_cases h : w = v
       · subst w; simp
-      · simp [Pi.single_eq_of_ne h, Pi.single_eq_of_ne (Sum.inl_injective.ne h)]
-    | inr w => change 0 = _; simp
+      simp_all
+    | inr w => rfl
   | inr v =>
     cases w with
-    | inl w => change 0 = _; simp
+    | inl w => rfl
     | inr w =>
       change Pi.single v x w = Pi.single (Sum.inr v) x (Sum.inr w)
       by_cases h : w = v
       · subst w; simp
-      · simp [Pi.single_eq_of_ne h, Pi.single_eq_of_ne (Sum.inr_injective.ne h)]
+      simp_all
 
 theorem eval_localIdele (v w : KPHilbert.Place F) (y : (KPHilbert.Completion F v)ˣ) :
     Units.map (adeleEval F w).toMonoidHom (localIdele F v y) =
@@ -179,17 +177,17 @@ theorem eval_localIdele (v w : KPHilbert.Place F) (y : (KPHilbert.Completion F v
         ↑(Pi.mulSingle (M := fun v => (KPHilbert.Completion F v)ˣ) (Sum.inl v) y (Sum.inl w))
       by_cases h : w = v
       · subst w; simp
-      · simp [Pi.mulSingle_eq_of_ne h, Pi.mulSingle_eq_of_ne (Sum.inl_injective.ne h)]
-    | inr w => change (1 : KPHilbert.Completion F (Sum.inr w)) = _; simp
+      simp_all
+    | inr w => rfl
   | inr v =>
     cases w with
-    | inl w => change (1 : KPHilbert.Completion F (Sum.inl w)) = _; simp
+    | inl w => rfl
     | inr w =>
       change Pi.mulSingle v (↑y : KPHilbert.Completion F (Sum.inr v)) w =
         ↑(Pi.mulSingle (M := fun v => (KPHilbert.Completion F v)ˣ) (Sum.inr v) y (Sum.inr w))
       by_cases h : w = v
       · subst w; simp
-      · simp [Pi.mulSingle_eq_of_ne h, Pi.mulSingle_eq_of_ne (Sum.inr_injective.ne h)]
+      simp_all
 
 theorem N_local (v : KPHilbert.Place F) (x : KPHilbert.Completion F v) :
     N F ζ hζ (localAdele F v x) =
@@ -204,7 +202,7 @@ theorem N_local (v : KPHilbert.Place F) (x : KPHilbert.Completion F v) :
   rw [eval_localAdele]
   by_cases h : w = v
   · subst w; simp
-  · simp [Pi.single_eq_of_ne h, Pi.mulSingle_eq_of_ne h]
+  simp_all
 
 theorem A_local (v : KPHilbert.Place F) (y : (KPHilbert.Completion F v)ˣ) :
     A F ζ hζ (localIdele F v y) =
@@ -366,12 +364,10 @@ end DedekindZetaZeroFree.KPRationalAdelicSplitting
 
 section
 
-open scoped NumberField Classical BigOperators
 
 namespace DedekindZetaZeroFree.KPRationalAdelicSplitting
 
 noncomputable section
-set_option autoImplicit false
 
 open KPAdelicCoverRestrictedProduct
 
@@ -382,9 +378,7 @@ theorem rational_splitting :
     Function.Injective (rationalHom F ζ hζ) ∧
       (projection F ζ hζ).comp (rationalHom F ζ hζ) = rationalBase F := by
   refine ⟨rationalHom_injective F ζ hζ, ?_⟩
-  apply MonoidHom.ext
-  intro g
-  exact projection_rationalSection F ζ hζ g
+  rfl
 
 def rationalPGLQuotient : KubotaRankTwo.GL2 F →* RationalPGL2 F :=
   QuotientGroup.mk' (rationalScalars F)
@@ -407,13 +401,13 @@ def rationalPGLBase : RationalPGL2 F →* AdelicPGL2 F :=
     ((QuotientGroup.mk' (scalarSubgroup F)).comp (rationalBase F))
     (rationalScalars_le_base_ker F)
 
-private theorem rationalBase_scalar (g : KubotaRankTwo.GL2 F)
+theorem rationalBase_scalar (g : KubotaRankTwo.GL2 F)
     (hg : rationalBase F g ∈ scalarSubgroup F) : g ∈ rationalScalars F := by
   obtain ⟨y, hy⟩ := hg
   have hinj := NumberField.AdeleRing.algebraMap_injective (𝓞 F) F
   have hentry (i j : Fin 2) : algebraMap F (Adeles F) (g i j) =
-      (Matrix.GeneralLinearGroup.scalar (Fin 2) y) i j := by
-    exact congrArg (fun m : AdelicGL2 F => m i j) hy.symm
+      (Matrix.GeneralLinearGroup.scalar (Fin 2) y) i j := 
+    congrArg (fun m : AdelicGL2 F => m i j) hy.symm
   have he : algebraMap F (Adeles F) (g 0 0) = (y : Adeles F) := by
     simpa using hentry 0 0
   have hn : g 0 0 ≠ 0 := by
@@ -431,7 +425,7 @@ private theorem rationalBase_scalar (g : KubotaRankTwo.GL2 F)
   · simpa [Matrix.GeneralLinearGroup.coe_scalar, Matrix.scalar, Matrix.diagonal, hij] using
       (hentry i j).symm
 
-private theorem rationalPGLBase_injective : Function.Injective (rationalPGLBase F) := by
+theorem rationalPGLBase_injective : Function.Injective (rationalPGLBase F) := by
   apply (rationalPGLBase F).ker_eq_bot_iff.mp
   apply le_antisymm _ bot_le
   intro x hx
@@ -450,9 +444,7 @@ theorem rationalPGL_splitting :
     intro x
     induction x using QuotientGroup.induction_on with
     | H g =>
-      change QuotientGroup.mk (projection F ζ hζ (rationalSection F ζ hζ g)) =
-        QuotientGroup.mk (rationalBase F g)
-      rw [projection_rationalSection]
+      rfl
   refine ⟨?_, he⟩
   intro x y h
   apply rationalPGLBase_injective F
@@ -463,7 +455,7 @@ def LowerNCoordinates (x : Adeles F) (v : KPHilbert.Place F) :
     KPLocalCover.CubicGL2Raw F ζ hζ v :=
   KPStandardLocalRootLifts.LowerN F ζ hζ v (adeleEval F v x)
 
-private theorem good_LowerN (q : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
+theorem good_LowerN (q : IsDedekindDomain.HeightOneSpectrum (𝓞 F))
     (hq : ¬ Bad F q) (t : KPTameCompact.O F q) :
     KPStandardLocalRootLifts.LowerN F ζ hζ (Sum.inr q) t ∈ compact F ζ hζ (Sum.inr q) := by
   simp only [compact, finiteCompact, dif_neg hq]
@@ -498,21 +490,7 @@ theorem LowerN_local (v : KPHilbert.Place F) (x : KPHilbert.Completion F v) :
   rw [eval_localAdele]
   by_cases h : w = v
   · subst w; simp
-  · simp [Pi.single_eq_of_ne h, Pi.mulSingle_eq_of_ne h]
-
-@[simp] theorem LowerN_zero : LowerN F ζ hζ 0 = 1 := by
-  change amalgamation F ζ hζ (LowerNTuple F ζ hζ 0) = 1
-  have h : LowerNTuple F ζ hζ 0 = 1 := by
-    apply RestrictedProduct.ext
-    intro v
-    change KPStandardLocalRootLifts.LowerN F ζ hζ v (adeleEval F v 0) = 1
-    simp
-  rw [h, map_one]
+  simp_all
 
 def pglLowerN (x : Adeles F) : CubicPGL2Adelic F ζ hζ :=
   scalarQuotient F ζ hζ (LowerN F ζ hζ x)
-
-end
-end DedekindZetaZeroFree.KPRationalAdelicSplitting
-
-end

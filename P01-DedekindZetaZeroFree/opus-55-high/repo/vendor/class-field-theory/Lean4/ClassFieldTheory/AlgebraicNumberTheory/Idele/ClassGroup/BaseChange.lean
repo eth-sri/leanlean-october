@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Base change of idele-class norms along a pushout square
 
@@ -334,7 +329,7 @@ theorem ideleClassNorm_classInclusion
       (QuotientGroup.mk'
         (IdeleGroup.principalSubgroup K) a) ^
           Module.finrank K M
-  rw [RelativeIdeleGroup.norm_inclusion, map_pow]
+  simp
 
 /-- Change the chosen intermediate field in the tower presentation of
 the relative idele class group of `N`, keeping the bottom field `K`
@@ -431,5 +426,3 @@ theorem pushoutNormQuotientMap_injective_of_pow_injective
   rw [← pushoutNormQuotientNormBack_comp_map K M L N x,
     ← pushoutNormQuotientNormBack_comp_map K M L N y,
     hxy]
-
-end

@@ -13,7 +13,7 @@ namespace DedekindZetaZeroFree.KPActualCollarBuffer
 
  def rowDen (r : ℂ × ℂ) (z : KPArch.H3) : ℝ :=
   ‖r.1 * z.1 + r.2‖ ^ 2 + ‖r.1‖ ^ 2 * (Real.exp z.2) ^ 2
-private lemma rowDen_pos (r : ℂ × ℂ) (hr : r ≠ 0) (z : KPArch.H3) :
+lemma rowDen_pos (r : ℂ × ℂ) (hr : r ≠ 0) (z : KPArch.H3) :
     0 < rowDen r z := by
   by_cases hc : r.1 = 0
   · have hd : r.2 ≠ 0 := by
@@ -22,16 +22,16 @@ private lemma rowDen_pos (r : ℂ × ℂ) (hr : r ≠ 0) (z : KPArch.H3) :
     simpa [rowDen, hc] using sq_pos_of_pos (norm_pos_iff.mpr hd)
   · exact add_pos_of_nonneg_of_pos (sq_nonneg _)
       (mul_pos (sq_pos_of_pos (norm_pos_iff.mpr hc)) (sq_pos_of_pos (Real.exp_pos _)))
-private lemma rowDen_cont : Continuous (fun p : KPArch.H3 × (ℂ × ℂ) => rowDen p.2 p.1) := by
+lemma rowDen_cont : Continuous (fun p : KPArch.H3 × (ℂ × ℂ) => rowDen p.2 p.1) := by
   unfold rowDen
   fun_prop
-private lemma rowDen_smul (s : ℝ) (r : ℂ × ℂ) (z : KPArch.H3) :
+lemma rowDen_smul (s : ℝ) (r : ℂ × ℂ) (z : KPArch.H3) :
     rowDen (s • r) z = ‖s‖ ^ 2 * rowDen r z := by
   simp only [rowDen, Prod.smul_fst, Prod.smul_snd, smul_mul_assoc, ← smul_add,
     norm_smul, Real.norm_eq_abs]
   ring
  def rowBusemann (z : KPArch.H3) (r : ℂ × ℂ) : ℝ := z.2 - Real.log (rowDen r z)
-private lemma uniform_local_busemann (z : KPArch.H3) (ε : ℝ) (hε : 0 < ε) :
+lemma uniform_local_busemann (z : KPArch.H3) (ε : ℝ) (hε : 0 < ε) :
     ∃ V ∈ 𝓝 z, ∀ w ∈ V, ∀ r : ℂ × ℂ, ‖r‖ = 1 →
       |rowBusemann w r - rowBusemann z r| < ε := by
   have hc : IsCompact (Metric.sphere (0 : ℂ × ℂ) 1) := isCompact_sphere _ _
@@ -49,9 +49,8 @@ private lemma uniform_local_busemann (z : KPArch.H3) (ε : ℝ) (hε : 0 < ε) :
     convert Metric.dist_mem_uniformity (α := ℝ) hε using 1
   obtain ⟨V, hV, hv⟩ := hc.mem_uniformity_of_prod hf (Set.mem_univ z) hu
   refine ⟨V, by simpa using hV, ?_⟩
-  intro w hw r hr
-  exact hv w hw r (by simpa using hr)
-private lemma uniform_local_action_height (z : KPArch.H3) (ε : ℝ) (hε : 0 < ε) :
+  simp_all
+lemma uniform_local_action_height (z : KPArch.H3) (ε : ℝ) (hε : 0 < ε) :
     ∃ V ∈ 𝓝 z, ∀ w ∈ V, ∀ g : Matrix.GeneralLinearGroup (Fin 2) ℂ,
       |(KPArch.action g w).2 - (KPArch.action g z).2| < ε := by
   obtain ⟨V, hV, hv⟩ := uniform_local_busemann z ε hε
@@ -83,10 +82,8 @@ private lemma uniform_local_action_height (z : KPArch.H3) (ε : ℝ) (hε : 0 < 
       (Real.exp_ne_zero _), Real.log_exp]
     unfold rowBusemann
     ring
-  rw [hlog w, hlog z] at he
-  rw [hact w, hact z]
-  convert he using 1 <;> congr 1 <;> ring
-private lemma uniform_local_mean_height (F : Type*) [Field F] [NumberField F]
+  simp_all
+lemma uniform_local_mean_height (F : Type*) [Field F] [NumberField F]
     (z : KPArch.Space (KPCuspLogShape.dimension F)) (ε : ℝ) (hε : 0 < ε) :
     ∃ V ∈ 𝓝 z, ∀ w ∈ V, ∀ g : KPCuspArithmetic.PGL2 F,
       |KPCuspLogShape.meanHeight _ (g • w) - KPCuspLogShape.meanHeight _ (g • z)| < ε := by
@@ -94,8 +91,8 @@ private lemma uniform_local_mean_height (F : Type*) [Field F] [NumberField F]
   have hp (i : Fin d) := uniform_local_action_height (z i) (ε / (d + 1)) (by positivity)
   choose V hV hv using hp
   let W : Set (KPArch.Space d) := {w | ∀ i, w i ∈ V i}
-  have hW : W ∈ 𝓝 z := by
-    exact Filter.mem_of_superset (Filter.iInter_mem.mpr (fun i => (continuous_apply i).continuousAt.preimage_mem_nhds (hV i)))
+  have hW : W ∈ 𝓝 z := 
+    Filter.mem_of_superset (Filter.iInter_mem.mpr (fun i => (continuous_apply i).continuousAt.preimage_mem_nhds (hV i)))
       (by intro w hw; exact Set.mem_iInter.mp hw)
   refine ⟨W, hW, ?_⟩
   intro w hw g
@@ -105,7 +102,7 @@ private lemma uniform_local_mean_height (F : Type*) [Field F] [NumberField F]
   change |(∑ i, (KPArch.action _ (w i)).2) / d - (∑ i, (KPArch.action _ (z i)).2) / d| < ε
   by_cases hd : d = 0
   · simp [hd, hε]
-  have hdpos : (0 : ℝ) < d := by exact_mod_cast Nat.pos_of_ne_zero hd
+  have hdpos : (0 : ℝ) < d := by positivity
   rw [← sub_div, abs_div, abs_of_pos hdpos]
   apply (div_lt_iff₀ hdpos).mpr
   calc
@@ -118,7 +115,7 @@ private lemma uniform_local_mean_height (F : Type*) [Field F] [NumberField F]
       have : ε / ((d : ℝ) + 1) < ε := (div_lt_iff₀ (by positivity)).mpr (by nlinarith)
       nlinarith
 
-private theorem cutoff_two_jets_zero {T r : ℝ}
+theorem cutoff_two_jets_zero {T r : ℝ}
     (χ : KPCutoffSource.SmoothCuspCutoff T) (hr : r < T) :
     χ.toFun r = 0 ∧ deriv χ.toFun r = 0 ∧ deriv (deriv χ.toFun) r = 0 := by
   have heq : χ.toFun =ᶠ[𝓝 r] (fun _ : ℝ => (0 : ℝ)) := by
@@ -257,7 +254,3 @@ theorem actual_boundary_zero_buffer
   · obtain ⟨h0, h1, h2⟩ := cutoff_two_jets_zero χ (hbelow y hy hE)
     simpa only [Set.indicator_of_mem hE] using And.intro h0 (And.intro h1 h2)
   · simp only [Set.indicator_of_notMem hE, and_self]
-
-end DedekindZetaZeroFree.KPActualCollarBuffer
-
-end

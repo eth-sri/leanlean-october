@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Finiteness of ramified primes in Dedekind extensions
 
@@ -77,7 +73,3 @@ theorem finite_ramified_base_heightOne_primes :
   dsimp [f, heightOnePrimeBelow]
   let : w.asIdeal.LiesOver v.asIdeal := hlie
   exact (Ideal.over_def w.asIdeal v.asIdeal).symm
-
-end AlgebraicNumberTheory.Ramification
-
-end

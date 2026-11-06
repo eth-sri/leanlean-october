@@ -80,5 +80,3 @@ theorem bilinear_error_optimization
       (mul_le_mul
         (mul_le_mul_of_nonneg_left hpow' (by positivity))
         (le_add_of_nonneg_right hextra) hbase (by positivity)) hE)
-
-end DedekindZetaZeroFree.LargeSieve.Sieve

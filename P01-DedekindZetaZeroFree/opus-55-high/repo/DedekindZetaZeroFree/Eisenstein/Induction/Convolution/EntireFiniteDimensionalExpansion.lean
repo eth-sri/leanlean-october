@@ -237,7 +237,7 @@ lemma actual_finite_parameter_stage
     sourceStage_covariant F ζ hζ K hK μ f a W,
     fun v hv g j => sourceStage_right_fixed F ζ hζ K hK μ f a _ hJ W v hv g j⟩
 
-private lemma functional_mem_evaluations {X : Type*} (V : Submodule ℂ (X → ℂ))
+lemma functional_mem_evaluations {X : Type*} (V : Submodule ℂ (X → ℂ))
     [FiniteDimensional ℂ V] (L : V →ₗ[ℂ] ℂ) :
     L ∈ Submodule.span ℂ (Set.range (fun x : X => (LinearMap.proj x).domRestrict V)) := by
   apply FiniteDimensional.mem_span_of_iInf_ker_le_ker
@@ -249,7 +249,7 @@ private lemma functional_mem_evaluations {X : Type*} (V : Submodule ℂ (X → �
   rw [hz]
   exact LinearMap.mem_ker.mpr (map_zero L)
 
-private lemma functional_entire {X : Type*} (V : Submodule ℂ (X → ℂ))
+lemma functional_entire {X : Type*} (V : Submodule ℂ (X → ℂ))
     [FiniteDimensional ℂ V] (v : ℂ → V) (L : V →ₗ[ℂ] ℂ)
     (hv : ∀ x : X, Differentiable ℂ (fun s => (v s).val x)) :
     Differentiable ℂ (fun s => L (v s)) := by

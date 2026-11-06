@@ -18,16 +18,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Prime-power Kummer norm index
 
@@ -42,7 +32,6 @@ open KummerTheory
 open LocalFieldTheory
 open LocalFieldTheory.IsNonarchimedeanLocalField
 
-noncomputable section
 
 namespace GlobalClassFieldTheory.ClassFieldAxiom
 
@@ -170,8 +159,7 @@ theorem
       2 * totalPlaceCard (K := K) S' - r =
         totalPlaceCard (K := K) S' +
           (totalPlaceCard (K := K) S' - r) := by
-    rw [two_mul]
-    exact Nat.add_sub_assoc hr _
+    omega
   have hTotal :
       totalPlaceCard (K := K) (S' ∪ T) =
         2 * totalPlaceCard (K := K) S' - r := by
@@ -180,7 +168,7 @@ theorem
         2 * totalPlaceCard (K := K) S' - r
     rw [Finset.card_union_of_disjoint hST, hTcard, hDoubleSub]
     unfold totalPlaceCard
-    simp only [Nat.add_assoc]
+    omega
   have hPrincipal :=
     principalIdelePowerLocalUnitSubgroup_eq_sUnitNthPowersInField_sUnitKummerPrimeSet
       (K := K) (Omega := Omega) E n hmu
@@ -287,8 +275,7 @@ theorem
       sup_le_sup
           (IdeleGroup.supportedAt_mono
             (K := K) (by
-              intro w hw
-              exact Or.inl hw))
+              simp))
         le_rfl
   have hProduct :=
     card_sUnitPrincipalQuotient_mul_card_ideleClassQuotient_eq_power_two_totalPlaceCard
@@ -395,7 +382,7 @@ theorem
       finitePlaceSplitsCompletely_of_mem_sUnitKummerPrimeSet
         (K := K) (Omega := Omega) E n hmu
         p v hp hv hn 1 eG S₀ w
-    simpa only [T] using hw
+    omega
   have hAway :
       ∀ w, w ∉ S' ∪ T →
         _root_.ChosenFinitePlaceIsUnramified
@@ -405,7 +392,7 @@ theorem
       _root_.GlobalClassFieldTheory.Cohomology.chosenFinitePlaceIsUnramified_of_notMem_ideleClassHerbrandSupport
     intro hwSupport
     have hwS : w ∈ S := by
-      simpa only [S] using hwSupport
+      omega
     have hwS₀ : w ∈ S₀ :=
       Finset.mem_union_left _
         (Finset.mem_union_left _ hwS)
@@ -458,12 +445,7 @@ theorem
           (K := K) n S' T).index =
         Module.finrank K E := by
     rw [Subgroup.index_eq_card]
-    change
-      Nat.card
-          (IdeleClassPowerLocalUnitQuotient
-            (K := K) n S' T) =
-        Module.finrank K E
-    exact hClassCard
+    simp_all
   have hIndexDvd :
       (RelativeIdeleGroup.Cohomology.ideleClassNorm K E).range.index ∣
         (ideleClassPowerLocalUnitSubgroup
@@ -484,7 +466,7 @@ theorem
         (RelativeIdeleGroup.Cohomology.ideleClassNorm K E).range.index :=
     Cohomology.finrank_le_ideleClassNorm_index
       (K := K) (L := E) sigma hsigma
-  exact le_antisymm hUpper hLower
+  omega
 
 /-- The norm subgroup has index `[E : K]` for an arbitrary prime-power
 Kummer extension.  The proof realizes `E` as its field range in a fixed
@@ -522,9 +504,7 @@ theorem ideleClassNorm_index_eq_finrank_primePowerKummer
     NumberField.of_module_finite K R
   let _ : (RelativeIdeleGroup.principalSubgroup K R).Normal :=
     ⟨fun n hn g => by
-      have hconj : g * n * g⁻¹ = n := by
-        rw [mul_comm g n, mul_assoc, mul_inv_cancel, mul_one]
-      rwa [hconj]⟩
+      simp_all⟩
   let _ : Group (RelativeIdeleGroup.ClassGroup K R) :=
     QuotientGroup.Quotient.group
       (RelativeIdeleGroup.principalSubgroup K R)
@@ -544,8 +524,3 @@ theorem ideleClassNorm_index_eq_finrank_primePowerKummer
     _ = Module.finrank K R := hR
     _ = Module.finrank K E :=
       e.toLinearEquiv.finrank_eq.symm
-
-
-end GlobalClassFieldTheory.ClassFieldAxiom
-
-end

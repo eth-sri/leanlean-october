@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # The torsion fixed field in the rational cyclotomic extension
 
@@ -55,7 +50,7 @@ def rationalCyclotomicTorsionFixedField :
 
 /-- The torsion fixed field is integral over `ℚ`, since it is an
 intermediate field of the rational cyclotomic extension. -/
-noncomputable instance
+instance
     rationalCyclotomicTorsionFixedField_isIntegral :
     Algebra.IsIntegral ℚ rationalCyclotomicTorsionFixedField := by
   rw [Algebra.isIntegral_def]
@@ -66,7 +61,7 @@ noncomputable instance
 
 /-- The torsion fixed field is normal over `ℚ`: its defining closed subgroup
 is normal in the abelian cyclotomic Galois group. -/
-noncomputable instance
+instance
     rationalCyclotomicTorsionFixedField_normal :
     Normal ℚ rationalCyclotomicTorsionFixedField := by
   let : Subgroup.Normal rationalCyclotomicTorsionClosure.toSubgroup :=
@@ -82,19 +77,15 @@ noncomputable instance
             inferInstance τ.1 τ.2 σ⟩)
 
 /-- The torsion-fixed cyclotomic field is Galois over `ℚ`. -/
-noncomputable instance
+instance
     rationalCyclotomicTorsionFixedField_isGalois :
     IsGalois ℚ rationalCyclotomicTorsionFixedField :=
   isGalois_iff.mpr ⟨inferInstance, inferInstance⟩
 
 /-- The torsion-fixed subextension of the abelian rational cyclotomic
 extension is itself abelian Galois. -/
-noncomputable instance
+instance
     rationalCyclotomicTorsionFixedField_isAbelianGalois :
     IsAbelianGalois ℚ rationalCyclotomicTorsionFixedField :=
   IsAbelianGalois.tower_bot ℚ rationalCyclotomicTorsionFixedField
     rationalCyclotomicField
-
-end KummerTheory
-
-end

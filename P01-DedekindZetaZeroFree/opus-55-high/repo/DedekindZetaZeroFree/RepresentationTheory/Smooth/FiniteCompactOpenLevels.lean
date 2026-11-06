@@ -54,10 +54,6 @@ theorem raw_local_fixed (u : RestrictedCover F ζ hζ)
     (g : KPLocalExceptionalConstruction.ActualCover F ζ hζ q) :
     (LocalSeed.finite F ζ hζ P C q).val
       (g * KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q) (u (Sum.inr q))) =
-        (LocalSeed.finite F ζ hζ P C q).val g := by
-  exact local_fixed F ζ hζ P C q
+        (LocalSeed.finite F ζ hζ P C q).val g := 
+  local_fixed F ζ hζ P C q
     ⟨_, (Subgroup.mem_iInf.mp hu.2) q⟩ g
-
-end DedekindZetaZeroFree.EisensteinReferenceSections.FiniteLevels
-
-end

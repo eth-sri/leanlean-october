@@ -9,7 +9,6 @@ public import DedekindZetaZeroFree.Arithmetic.RayClasses.Conductors.PrimitiveLoc
 open scoped NumberField Classical
 open NumberField IsDedekindDomain
 
-noncomputable section
 namespace DedekindZetaZeroFree.PrimitiveRay
 
 variable {F : Type} [Field F] [NumberField F]
@@ -65,8 +64,7 @@ theorem primitiveRay_support (hc : NumberField.IsTotallyComplex F)
           (IdeleGroup.finitePlaceIdeleClass v t) = 1} := by
     intro t ht
     rw [ClassFieldTheory.rayLocalHigherUnitGroup_zero] at ht
-    rw [hχ]
-    exact hunram t ht
+    simp_all
   have he := Nat.eq_zero_of_le_zero (hleast.2 hzero)
   intro hdiv
   have hsupport : v ∈ (RayClassBridge.narrowIdealModulus F m hm).finitePart.support := by
@@ -75,7 +73,3 @@ theorem primitiveRay_support (hc : NumberField.IsTotallyComplex F)
     rw [RayClassBridge.narrowIdealModulus_support]
     exact hdiv
   exact (Finsupp.mem_support_iff.mp hsupport) he
-
-end DedekindZetaZeroFree.PrimitiveRay
-
-end

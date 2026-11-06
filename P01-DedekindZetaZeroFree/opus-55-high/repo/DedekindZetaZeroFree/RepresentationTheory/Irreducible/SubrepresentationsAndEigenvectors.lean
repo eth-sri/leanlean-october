@@ -7,7 +7,9 @@ public import Mathlib.RingTheory.FiniteLength
 public import DedekindZetaZeroFree.Algebra.LocalRings.IdempotentsAndUnits
 public import DedekindZetaZeroFree.Algebra.SemisimpleModules.AnnihilatorsAndEndomorphisms
 public import Mathlib.LinearAlgebra.Matrix.FiniteDimensional
-public import DedekindZetaZeroFree.Algebra.TensorProduct.SeparatingFunctionals
+public import Mathlib.LinearAlgebra.Matrix.Basis
+public import Mathlib.LinearAlgebra.TensorProduct.Associator
+public import Mathlib.Algebra.BigOperators.Group.Finset.Sigma
 
 @[expose] public section
 
@@ -52,17 +54,6 @@ theorem IsIrreducible.natCast_finrank_ne_zero [CharZero k]
     (Module.finrank k V : k) ≠ 0 :=
   Nat.cast_ne_zero.mpr h.finrank_pos.ne'
 
-theorem isIrreducible_of_finrank_eq_one (ρ : Representation k G V)
-    (h : Module.finrank k V = 1) : ρ.IsIrreducible := by
-  have : IsSimpleModule k V := isSimpleModule_iff_finrank_eq_one.mpr h
-  have : Nontrivial V := IsSimpleModule.nontrivial k V
-  refine ⟨fun σ => (eq_bot_or_eq_top σ.toSubmodule).imp (fun hσ => ?_) fun hσ => ?_⟩
-  · exact Subrepresentation.toSubmodule_injective (hσ.trans Subrepresentation.toSubmodule_bot.symm)
-  · exact Subrepresentation.toSubmodule_injective (hσ.trans Subrepresentation.toSubmodule_top.symm)
-
-instance isIrreducible_trivial_self : (trivial k G k).IsIrreducible :=
-  isIrreducible_of_finrank_eq_one _ (Module.finrank_self k)
-
 theorem isIrreducible_of_linearEquiv {W : Type*} [AddCommGroup W] [Module k W]
     {ρ : Representation k G V} {σ : Representation k G W} (e : V ≃ₗ[k] W)
     (he : ∀ g v, e (ρ g v) = σ g (e v)) (h : ρ.IsIrreducible) : σ.IsIrreducible := by
@@ -80,10 +71,6 @@ theorem isIrreducible_of_linearEquiv {W : Type*} [AddCommGroup W] [Module k W]
     Submodule.map_comap_eq_of_surjective e.surjective _
   refine (eq_bot_or_eq_top τ').imp (fun hτ => ?_) fun hτ => ?_
   · refine Subrepresentation.toSubmodule_injective ?_
-    rw [← hmap, hτ, Subrepresentation.toSubmodule_bot, Submodule.map_bot,
-      Subrepresentation.toSubmodule_bot]
+    simp_all
   · refine Subrepresentation.toSubmodule_injective ?_
-    rw [← hmap, hτ, Subrepresentation.toSubmodule_top, Submodule.map_top, LinearEquiv.range,
-      Subrepresentation.toSubmodule_top]
-
-end Representation
+    simp_all

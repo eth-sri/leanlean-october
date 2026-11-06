@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Finite local families of ideles
 
@@ -29,7 +25,6 @@ open scoped NumberField Classical BigOperators
 open NumberField IsDedekindDomain
 open IdeleGroup RelativeIdeleGroup
 
-noncomputable section
 
 namespace GlobalClassFieldTheory
 namespace Reciprocity
@@ -56,14 +51,12 @@ theorem prod_finitePlaceIdele_eq_ideleOfFiniteLocalFamily
           IdeleGroup.infiniteComponent w
               (finitePlaceIdele v.1 (a v)) = 1 := by
       intro v
-      exact finitePlaceIdele_infiniteComponent v.1 w (a v)
+      rfl
     have hright :
         IdeleGroup.infiniteComponent w
             (IdeleGroup.ideleOfFiniteLocalFamily S a) = 1 :=
       rfl
-    rw [hright]
-    simp_rw [hfactor]
-    simp
+    simp_all
   · apply RestrictedProduct.ext
     intro w
     change
@@ -90,8 +83,7 @@ theorem prod_finitePlaceIdele_eq_ideleOfFiniteLocalFamily
         apply hbw
         apply Subtype.ext
         exact h.symm
-      · intro hvw
-        exact (hvw (Finset.mem_univ vw)).elim
+      simp
     · calc
         ∏ v : ↥S,
             IdeleGroup.finiteComponent w
@@ -101,57 +93,7 @@ theorem prod_finitePlaceIdele_eq_ideleOfFiniteLocalFamily
               intro v _
               apply finitePlaceIdele_finiteComponent_of_ne
               intro h
-              apply hw
-              rw [h]
-              exact v.2
+              simp_all
         _ = (IdeleGroup.ideleOfFiniteLocalFamily S a).2 w :=
           (IdeleGroup.finiteIdeleOfFinset_apply_notMem
             S a w hw).symm
-
-/-- Applying any multiplicative global symbol to a finite local family
-gives the product of the one-place symbols. -/
-theorem map_ideleOfFiniteLocalFamily_eq_prod_local
-    {A : Type*} [CommGroup A]
-    (f : IdeleGroup K →* A)
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
-    (a : ∀ v : ↥S, (v.1.adicCompletion K)ˣ) :
-    f (IdeleGroup.ideleOfFiniteLocalFamily S a) =
-      ∏ v : ↥S, f (finitePlaceIdele v.1 (a v)) := by
-  rw [← map_prod,
-    prod_finitePlaceIdele_eq_ideleOfFiniteLocalFamily]
-
-section NormQuotient
-
-variable
-    (L : Type*) [Field L] [NumberField L] [Algebra K L]
-    [FiniteDimensional K L]
-
-local instance finiteLocalFamilyIdeleClassGroupIsMulCommutative :
-    IsMulCommutative (IdeleClassGroup K) :=
-  ⟨⟨fun a b => mul_comm a b⟩⟩
-
-local instance finiteLocalFamilyIdeleClassGroupCommGroup :
-    CommGroup (IdeleClassGroup K) :=
-  open scoped IsMulCommutative in
-  inferInstance
-
-omit [FiniteDimensional K L] in
-/-- The finite-support product formula for the global
-norm-quotient symbol. -/
-theorem globalNormClass_finiteLocalFamily
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
-    (a : ∀ v : ↥S, (v.1.adicCompletion K)ˣ) :
-    globalNormClassFromIdele K L
-        (IdeleGroup.ideleOfFiniteLocalFamily S a) =
-      ∏ v : ↥S,
-        globalNormClassFromIdele K L
-          (finitePlaceIdele v.1 (a v)) :=
-  map_ideleOfFiniteLocalFamily_eq_prod_local
-    (globalNormClassFromIdele K L) S a
-
-end NormQuotient
-
-end Reciprocity
-end GlobalClassFieldTheory
-
-end

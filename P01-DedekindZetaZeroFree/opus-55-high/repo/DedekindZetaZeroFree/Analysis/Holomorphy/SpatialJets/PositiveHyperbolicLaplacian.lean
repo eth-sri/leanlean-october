@@ -6,7 +6,6 @@ public import Mathlib.Analysis.Complex.CauchyIntegral
 
 @[expose] public section
 
-noncomputable section
 
 open scoped ContDiff
 open Topology
@@ -34,7 +33,7 @@ private theorem jet_word {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     simp only [List.ofFn_succ, constantDirectionWord, directionalWord]
     rfl
 
-private theorem coefficient_deriv (O : Set ℂ) (hO : IsOpen O) (f : ℂ → ℂ)
+theorem coefficient_deriv (O : Set ℂ) (hO : IsOpen O) (f : ℂ → ℂ)
     (hf : DifferentiableOn ℂ f O) (s : ℂ) (hs : s ∈ O) (r : ℝ) (hr : 0 < r)
     (hd : Metric.closedBall s r ⊆ O) (k : ℕ) :
     iteratedDerivWithin k f O s = (k.factorial : ℂ) * cauchyCoefficient (fun z (_ : Unit) => f z) s r k () := by
@@ -45,20 +44,20 @@ private theorem coefficient_deriv (O : Set ℂ) (hO : IsOpen O) (f : ℂ → ℂ
       (fun z => (1 / (z-s)^(k+1)) • f z) := by
     funext z
     rw [show -((k:ℤ)+1) = -((k+1:ℕ):ℤ) by omega, zpow_neg, zpow_natCast]
-    simp [smul_eq_mul]
+    simp
   rw [cauchyCoefficient, he, hc, smul_eq_mul]
   have hn : (k.factorial : ℂ) ≠ 0 := by exact_mod_cast k.factorial_ne_zero
   have hp : 2 * (Real.pi : ℂ) * Complex.I ≠ 0 := Complex.two_pi_I_ne_zero
   field_simp
 
-private theorem fields_word {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+theorem fields_word {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     {B : Type*} (a : B → E) (w : List B) (f : E → ℂ) :
     directionalWord (fun b (_ : E) => a b) w f = constantDirectionWord (w.map a) f := by
   induction w with
   | nil => rfl
   | cons b w ih => simp only [directionalWord, constantDirectionWord, List.map_cons] at *; rw [ih]
 
-private theorem compact_joint {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+theorem compact_joint {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     (K : Set E) [CompactSpace K] (O : Set ℂ) (j : ℂ → ContinuousMap K ℂ)
     (hj : ContinuousOn j O) (F : ℂ → E → ℂ)
     (he : ∀ z ∈ O, ∀ x : K, F z x.val = j z x) :
@@ -161,7 +160,7 @@ theorem parameter_jets_positive_laplacian (d : ℕ) (W : Set (HyperbolicChart.Sp
     obtain ⟨j,hj,he⟩ := hjword K hK hKW w
     exact (compact_joint K O j hj.continuousOn _ (fun z hz x => (he z hz x).symm)).mono
       (Set.prod_mono hd Set.Subset.rfl)
-  have hfields : ∀ b, ContDiffOn ℝ (⊤ : ℕ∞) (fields b) W := fun b => contDiffOn_const
+  have hfields : ∀ b, ContDiffOn ℝ (⊤ : ℕ∞) (fields b) W := by fun_prop
   have hframe : ∀ x ∈ W, ∃ e : Module.Basis B ℝ (HyperbolicChart.Space d),
       ∀ b, e b = fields b x := by
     intro x hx
@@ -170,7 +169,7 @@ theorem parameter_jets_positive_laplacian (d : ℕ) (W : Set (HyperbolicChart.Sp
     change EuclideanSpace.basisFun B ℝ b = HyperbolicChart.coordinateVector d b.1 b.2
     rw [EuclideanSpace.basisFun_apply]
     ext j
-    simp [HyperbolicChart.coordinateVector, EuclideanSpace.single_apply]
+    simp [HyperbolicChart.coordinateVector]
   have hhol0 : ∀ x ∈ W, DifferentiableOn ℂ (fun z => u z x) O := hhol []
   let c := cauchyCoefficient u s r k
   let p := fun y => iteratedDerivWithin k (fun z => u z y) O s
@@ -203,8 +202,7 @@ theorem parameter_jets_positive_laplacian (d : ℕ) (W : Set (HyperbolicChart.Sp
         (Real.exp (2 * x (i,2)) : ℂ) *
           (directionalWord fields [(i,0),(i,0)] (u z) x +
            directionalWord fields [(i,1),(i,1)] (u z) x)) O s :=
-    ((hreg [(i,2),(i,2)]).neg.add (contDiffWithinAt_const.mul (hreg [(i,2)]))).sub
-      (contDiffWithinAt_const.mul ((hreg [(i,0),(i,0)]).add (hreg [(i,1),(i,1)])))
+    by fun_prop
   change HyperbolicChart.laplacian d p x = _
   simp only [HyperbolicChart.laplacian]
   simp only [hcdd]
@@ -223,7 +221,3 @@ theorem parameter_jets_positive_laplacian (d : ℕ) (W : Set (HyperbolicChart.Sp
   simp only [iteratedDerivWithin_fun_neg, iteratedDerivWithin_const_mul_field]
   rw [iteratedDerivWithin_fun_add hs hO.uniqueDiffOn
     (hreg [(i,0),(i,0)]) (hreg [(i,1),(i,1)])]
-
-end DedekindZetaZeroFree.KPContSpatialParameterPositiveLaplacian
-
-end

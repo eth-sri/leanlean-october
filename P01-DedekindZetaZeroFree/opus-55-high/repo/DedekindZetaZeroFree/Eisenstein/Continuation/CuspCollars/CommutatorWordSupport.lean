@@ -211,7 +211,7 @@ open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.CanonicalNativeChambe
   exact productRightDerivative_eq_fderiv b f m
     ((hf.differentiableOn (by simp)).differentiableAt (hO.mem_nhds hm))
 
-private theorem productRightDerivative_twice (b c : KPSmoothActualFlowData.B F)
+theorem productRightDerivative_twice (b c : KPSmoothActualFlowData.B F)
     (f : MatrixProduct F → ℂ) {O : Set (MatrixProduct F)} (hO : IsOpen O)
     (hf : ContDiffOn ℝ (⊤ : ℕ∞) f O) (m : MatrixProduct F) (hm : m ∈ O) :
     productRightDerivative b (productRightDerivative c f) m =

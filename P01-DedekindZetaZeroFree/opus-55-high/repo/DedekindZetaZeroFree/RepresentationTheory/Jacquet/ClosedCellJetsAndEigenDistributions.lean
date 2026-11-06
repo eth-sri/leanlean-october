@@ -55,8 +55,8 @@ theorem seminorm_bound_annihilates_approximable (s : ℝ)
     (happrox : ∀ ε : ℝ, 0 < ε → ∃ g : PrincipalSeries s,
       (∃ δ : ℝ, 0 < δ ∧ ∀ u : ℂ, ‖u‖ < δ → infinityCoordinate g u = 0) ∧
       (F.sup (chartSeminorm s)) (f - g) < ε) :
-    T f = 0 := by
-  exact KPCplxClosedCellJets.CutoffAnnihilation.functional_zero_of_cutoff_approximation
+    T f = 0 := 
+  KPCplxClosedCellJets.CutoffAnnihilation.functional_zero_of_cutoff_approximation
     s T hsupport F C hbound f happrox
 
 end DedekindZetaZeroFree.KPCplxClosedCellCutoffApproximation
@@ -105,7 +105,6 @@ theorem jetAtInfinity_add (s : ℝ) (n : ℕ) (f g : PrincipalSeries s) :
   simp only [jetAtInfinity, Pi.add_apply]
   have h : infinityCoordinate ((f + g : PrincipalSeries s) : ComplexGL2 → ℂ) =
       infinityCoordinate (f : ComplexGL2 → ℂ) + infinityCoordinate (g : ComplexGL2 → ℂ) := by
-    funext u
     rfl
   rw [h, iteratedFDeriv_add_apply]
   · rfl
@@ -118,7 +117,6 @@ theorem jetAtInfinity_smul (s : ℝ) (n : ℕ) (c : ℂ) (f : PrincipalSeries s)
   simp only [jetAtInfinity, Pi.smul_apply]
   have h : infinityCoordinate ((c • f : PrincipalSeries s) : ComplexGL2 → ℂ) =
       c • infinityCoordinate (f : ComplexGL2 → ℂ) := by
-    funext u
     rfl
   rw [h, iteratedFDeriv_const_smul_apply]
   · rfl
@@ -135,8 +133,7 @@ theorem sectionJet_surjective (s : ℝ) (n : ℕ) :
   have hle : jetSubspace s n ≤ LinearMap.range (jetLinear s n) := by
     rw [jetSubspace]
     apply Submodule.span_le.mpr
-    rintro y ⟨f, rfl⟩
-    exact ⟨f, rfl⟩
+    rfl
   obtain ⟨f, hf⟩ := hle j.2
   exact ⟨f, Subtype.ext hf⟩
 
@@ -207,14 +204,13 @@ theorem factors_jet_iff_annihilates_kernel (s : ℝ) (n : ℕ)
     intro f
     change T f = J.ker.liftQ T.toLinearMap hker (e.symm (J f))
     dsimp only [e]
-    rw [LinearMap.quotKerEquivOfSurjective_symm_apply]
-    rfl
+    simp
 
 theorem factors_finite_jet_iff (s : ℝ) (T : PrincipalSeries s →L[ℂ] ℂ) :
     (∃ n : ℕ, ∃ L : JetSpace s n →ₗ[ℂ] ℂ,
       ∀ f : PrincipalSeries s, T f = L (sectionJet s n f)) ↔
-    ∃ n : ℕ, ∀ f : PrincipalSeries s, jetAtInfinity s n f = 0 → T f = 0 := by
-  exact exists_congr (fun n => factors_jet_iff_annihilates_kernel s n T)
+    ∃ n : ℕ, ∀ f : PrincipalSeries s, jetAtInfinity s n f = 0 → T f = 0 := 
+  exists_congr (fun n => factors_jet_iff_annihilates_kernel s n T)
 
 theorem supportedAtInfinity_factors_finite_jet (s : ℝ)
     (T : PrincipalSeries s →L[ℂ] ℂ) (hT : SupportedAtInfinity s T) :
@@ -230,16 +226,15 @@ theorem supportedAtInfinity_factors_finite_jet (s : ℝ)
   exact KPCplxClosedCellCutoffApproximation.seminorm_bound_annihilates_approximable
     s T F C hC hbound hT f (hn f hflat)
 
-private theorem upperTriangular_one_one (t : ℂ) :
+theorem upperTriangular_one_one (t : ℂ) :
     upperTriangular 1 1 t = upperUnipotent t := by
-  apply Matrix.GeneralLinearGroup.ext
-  simp [upperTriangular, upperUnipotent]
+  rfl
 
-private theorem lowerUnipotent_zero : lowerUnipotent 0 = 1 := by
+theorem lowerUnipotent_zero : lowerUnipotent 0 = 1 := by
   apply Matrix.GeneralLinearGroup.ext
   simp [lowerUnipotent]
 
-private theorem inductionWeight_one_one (s : ℝ) : inductionWeight s 1 1 = 1 := by
+theorem inductionWeight_one_one (s : ℝ) : inductionWeight s 1 1 = 1 := by
   simp [inductionWeight, complexAbs]
 
 theorem infinityCoordinate_zero_unipotent_fixed (s : ℝ) (t : ℂ) (f : PrincipalSeries s) :
@@ -252,7 +247,7 @@ theorem infinityCoordinate_zero_unipotent_fixed (s : ℝ) (t : ℂ) (f : Princip
   rw [f.2.1 1 1 t 1]
   simp [inductionWeight_one_one]
 
-private theorem closedCell_matrix_factor (u t : ℂ) (h : 1 + u * t ≠ 0) :
+theorem closedCell_matrix_factor (u t : ℂ) (h : 1 + u * t ≠ 0) :
     lowerUnipotent u * upperUnipotent t =
       upperTriangular (Units.mk0 (1 + u * t) h)⁻¹ (Units.mk0 (1 + u * t) h) t *
         lowerUnipotent (u / (1 + u * t)) := by
@@ -275,11 +270,11 @@ theorem infinityCoordinate_unipotent_formula (s : ℝ) (u t : ℂ) (h : 1 + u * 
 
 noncomputable def weight (s : ℝ) (t u : ℂ) : ℂ :=
   Real.rpow (Complex.normSq ((1 + u * t)⁻¹ / (1 + u * t))) (1 / 2 + s)
-private theorem weight_eq (s : ℝ) (u t : ℂ) (h : 1 + u * t ≠ 0) :
+theorem weight_eq (s : ℝ) (u t : ℂ) (h : 1 + u * t ≠ 0) :
     (inductionWeight s (Units.mk0 (1 + u * t) h)⁻¹
         (Units.mk0 (1 + u * t) h) : ℂ) = weight s t u := by
   simp [inductionWeight, complexAbs, weight, Complex.normSq_eq_norm_sq, div_pow]
-private theorem weight_diff (s : ℝ) (t : ℂ) :
+theorem weight_diff (s : ℝ) (t : ℂ) :
     DifferentiableAt ℝ (weight s t) 0 := by
   unfold weight
   have h : DifferentiableAt ℝ (fun u : ℂ =>
@@ -292,8 +287,8 @@ private theorem weight_diff (s : ℝ) (t : ℂ) :
       have hi := Complex.imCLM.differentiableAt.comp 0 hd
       exact (hr.mul hr).add (hi.mul hi)
     · simp
-  exact Complex.ofRealCLM.differentiableAt.comp 0 h
-private theorem coord_deriv (t : ℂ) : HasFDerivAt (fun u : ℂ => u / (1 + u * t))
+  fun_prop
+theorem coord_deriv (t : ℂ) : HasFDerivAt (fun u : ℂ => u / (1 + u * t))
     (ContinuousLinearMap.id ℝ ℂ) 0 := by
   have h : HasDerivAt (fun u : ℂ => u / (1 + u * t)) 1 0 := by
     convert (hasDerivAt_id (0 : ℂ)).div
@@ -303,9 +298,9 @@ private theorem coord_deriv (t : ℂ) : HasFDerivAt (fun u : ℂ => u / (1 + u *
   ext u
   simp
 
-private theorem weight_zero (s : ℝ) (t : ℂ) : weight s t 0 = 1 := by
+theorem weight_zero (s : ℝ) (t : ℂ) : weight s t 0 = 1 := by
   simp [weight]
-private theorem coord_formula_eventually (s : ℝ) (t : ℂ) (f : PrincipalSeries s) :
+theorem coord_formula_eventually (s : ℝ) (t : ℂ) (f : PrincipalSeries s) :
     infinityCoordinate (pi s (Matrix.ProjGenLinGroup.mk (upperUnipotent t)) f) =ᶠ[nhds 0]
       fun u => weight s t u * infinityCoordinate f (u / (1 + u * t)) := by
   have h : ∀ᶠ u : ℂ in nhds 0, 1 + u * t ≠ 0 :=
@@ -338,8 +333,7 @@ theorem sectionJet_one_unipotent_fixed_of_zero (s : ℝ) (t : ℂ) (f : Principa
   fin_cases k
   · simp [sectionJet, jetAtInfinity, iteratedFDeriv_zero_apply,
       infinityCoordinate_zero_unipotent_fixed]
-  · simp only [sectionJet, jetAtInfinity, Fin.val_one,
-      iteratedFDeriv_one_apply]
+  · simp only [sectionJet, jetAtInfinity, iteratedFDeriv_one_apply]
     rw [infinityCoordinate_fderiv_unipotent_fixed_of_zero s t f hf]
 theorem sectionJet_one_zero_value (s : ℝ) (f : PrincipalSeries s) (hf : sectionJet s 1 f = 0) :
     infinityCoordinate f 0 = 0 := by
@@ -349,13 +343,9 @@ noncomputable def closedCell_action (s : ℝ) (t : ℂ) : PrincipalSeries s →�
   toFun := pi s (Matrix.ProjGenLinGroup.mk (upperUnipotent t))
   map_add' := by
     intro f g
-    apply Subtype.ext
-    funext h
     rfl
   map_smul' := by
     intro c f
-    apply Subtype.ext
-    funext h
     rfl
 noncomputable def rhoOne (s : ℝ) (t : ℂ) : Module.End ℂ (JetSpace s 1) :=
   let J := sectionJetLinear s 1
@@ -368,15 +358,15 @@ noncomputable def rhoOne (s : ℝ) (t : ℂ) : Module.End ℂ (JetSpace s 1) :=
     rw [sectionJet_one_unipotent_fixed_of_zero s t f (sectionJet_one_zero_value s f hf'), hf']
   (J.ker.liftQ A hker).comp (J.quotKerEquivOfSurjective (sectionJet_surjective s 1)).symm.toLinearMap
 
-private theorem closedCell_upper_zero : upperUnipotent 0 = 1 := by
+theorem closedCell_upper_zero : upperUnipotent 0 = 1 := by
   apply Matrix.GeneralLinearGroup.ext
   simp [upperUnipotent]
-private theorem closedCell_upper_add (t u : ℂ) : upperUnipotent (t + u) = upperUnipotent t * upperUnipotent u := by
+theorem closedCell_upper_add (t u : ℂ) : upperUnipotent (t + u) = upperUnipotent t * upperUnipotent u := by
   apply Matrix.GeneralLinearGroup.ext
   intro i j
   fin_cases i <;> fin_cases j <;> simp [upperUnipotent, Matrix.mul_apply, Fin.sum_univ_two, add_comm]
 
-private theorem closedCell_comp_zero (F g : ℂ → ℂ) (n : ℕ)
+theorem closedCell_comp_zero (F g : ℂ → ℂ) (n : ℕ)
     (hF : ContDiffAt ℝ n F (g 0)) (hg : ContDiffAt ℝ n g 0)
     (h : ∀ k ≤ n, iteratedFDeriv ℝ k F (g 0) = 0) :
     iteratedFDeriv ℝ n (F ∘ g) 0 = 0 := by
@@ -387,7 +377,7 @@ private theorem closedCell_comp_zero (F g : ℂ → ℂ) (n : ℕ)
   ext v
   simp [FormalMultilinearSeries.compAlongOrderedFinpartition_apply,
     ftaylorSeries, h c.length c.length_le]
-private theorem closedCell_product_jet_zero (F g : ℂ → ℂ) (n : ℕ)
+theorem closedCell_product_jet_zero (F g : ℂ → ℂ) (n : ℕ)
     (hF : ContDiffAt ℝ n F 0) (hg : ContDiffAt ℝ n g 0)
     (h : ∀ k ≤ n, iteratedFDeriv ℝ k g 0 = 0) :
     iteratedFDeriv ℝ n (fun u => F u * g u) 0 = 0 := by
@@ -404,10 +394,8 @@ private theorem closedCell_product_jet_zero (F g : ℂ → ℂ) (n : ℕ)
   rw [heq] at hb
   have hz (k : ℕ) (hk : k ≤ n) : iteratedFDerivWithin ℝ k g W 0 = 0 := by
     rw [iteratedFDerivWithin_of_isOpen k hWopen hW0, h k hk]
-  have hb' : ‖iteratedFDeriv ℝ n (fun u => F u * g u) 0‖ ≤ 0 := by
-    simpa only [hz _ (Nat.sub_le n _), norm_zero, mul_zero, Finset.sum_const_zero] using hb
-  exact norm_eq_zero.mp (le_antisymm hb' (norm_nonneg _))
-private theorem closedCell_weight_smooth (s : ℝ) (t : ℂ) (n : ℕ) :
+  simp_all
+theorem closedCell_weight_smooth (s : ℝ) (t : ℂ) (n : ℕ) :
     ContDiffAt ℝ n (fun u : ℂ => (Real.rpow
       (Complex.normSq ((1 + u * t)⁻¹ / (1 + u * t))) (1 / 2 + s) : ℂ)) 0 := by
   have hd : ContDiffAt ℝ n (fun x : ℂ => (1 + x * t)⁻¹ / (1 + x * t)) 0 := by
@@ -418,7 +406,7 @@ private theorem closedCell_weight_smooth (s : ℝ) (t : ℂ) (n : ℕ) :
   have hn : ContDiffAt ℝ n (fun x : ℂ => Complex.normSq ((1 + x * t)⁻¹ / (1 + x * t))) 0 :=
     (hr.mul hr).add (hi.mul hi)
   exact Complex.ofRealCLM.contDiff.contDiffAt.comp 0 (hn.rpow_const_of_ne (by simp))
-private theorem closedCell_coord_smooth (t : ℂ) (n : ℕ) :
+theorem closedCell_coord_smooth (t : ℂ) (n : ℕ) :
     ContDiffAt ℝ n (fun u : ℂ => u / (1 + u * t)) 0 := by
   have hd : ContDiffAt ℂ n (fun u : ℂ => u / (1 + u * t)) 0 := by
     apply contDiffAt_id.div
@@ -466,7 +454,7 @@ noncomputable def closedCell_jetAction (s : ℝ) (n : ℕ) (t : ℂ) :
   (J.ker.liftQ A hker).comp
     (J.quotKerEquivOfSurjective (sectionJet_surjective s n)).symm.toLinearMap
 
-private theorem closedCell_jetAction_act (s : ℝ) (n : ℕ) :
+theorem closedCell_jetAction_act (s : ℝ) (n : ℕ) :
     IsJetAction s n (closedCell_jetAction s n) := by
   intro t f
   change closedCell_jetAction s n t ((sectionJetLinear s n) f) = _
@@ -492,7 +480,7 @@ theorem finite_jet_action_exists (s : ℝ) (n : ℕ) :
       closedCell_jetAction_act s n, closedCell_jetAction_act s n,
       closedCell_upper_add, map_mul, pi_mul]
 
-private theorem closedCell_part_size_one {n : ℕ} (c : OrderedFinpartition n) (hc : c.length = n)
+theorem closedCell_part_size_one {n : ℕ} (c : OrderedFinpartition n) (hc : c.length = n)
     (i : Fin c.length) : c.partSize i = 1 := by
   have hsum : ∑ i : Fin c.length, c.partSize i = n := by
     simpa [Fintype.card_sigma] using Fintype.card_congr c.equivSigma
@@ -502,7 +490,7 @@ private theorem closedCell_part_size_one {n : ℕ} (c : OrderedFinpartition n) (
     (f := fun _ : Fin c.length => (1 : ℕ)) (g := c.partSize)
     (by intros j hj; exact c.partSize_pos j)).mp hsum' i (Finset.mem_univ _)).symm
 
-private theorem closedCell_atomic_of_length {n : ℕ} (c : OrderedFinpartition n) (hc : c.length = n) :
+theorem closedCell_atomic_of_length {n : ℕ} (c : OrderedFinpartition n) (hc : c.length = n) :
     c = OrderedFinpartition.atomic n := by
   have hp := closedCell_part_size_one c hc
   rcases c with ⟨length, partSize, hpos, emb, hemb, hparts, hdisj, hcover⟩
@@ -519,7 +507,7 @@ private theorem closedCell_atomic_of_length {n : ℕ} (c : OrderedFinpartition n
   · rfl
   · exact ⟨HEq.rfl, heq_of_eq (funext fun i => funext fun j => he i j)⟩
 
-private theorem closedCell_comp_flat_top (n : ℕ) (F C : ℂ → ℂ)
+theorem closedCell_comp_flat_top (n : ℕ) (F C : ℂ → ℂ)
     (hF : ContDiffAt ℝ n F 0) (hC : ContDiffAt ℝ n C 0) (h0 : C 0 = 0)
     (h1 : fderiv ℝ C 0 = ContinuousLinearMap.id ℝ ℂ)
     (hf : ∀ k < n, iteratedFDeriv ℝ k F 0 = 0) :
@@ -529,8 +517,7 @@ private theorem closedCell_comp_flat_top (n : ℕ) (F C : ℂ → ℂ)
   simp only [FormalMultilinearSeries.taylorComp]
   rw [Finset.sum_eq_single (OrderedFinpartition.atomic n)]
   · ext v
-    simp only [FormalMultilinearSeries.compAlongOrderedFinpartition_apply,
-      OrderedFinpartition.atomic_length, ftaylorSeries, h0]
+    simp only [FormalMultilinearSeries.compAlongOrderedFinpartition_apply, ftaylorSeries, h0]
     congr 1
     funext i
     change (iteratedFDeriv ℝ 1 C 0) (fun _ => v i) = v i
@@ -542,7 +529,7 @@ private theorem closedCell_comp_flat_top (n : ℕ) (F C : ℂ → ℂ)
       h0, hf c.length hlt]
   · simp
 
-private theorem closedCell_mul_flat_top (n : ℕ) (W F : ℂ → ℂ)
+theorem closedCell_mul_flat_top (n : ℕ) (W F : ℂ → ℂ)
     (hW : ContDiffAt ℝ n W 0) (hF : ContDiffAt ℝ n F 0) (h0 : W 0 = 0)
     (hf : ∀ k < n, iteratedFDeriv ℝ k F 0 = 0) :
     iteratedFDeriv ℝ n (fun x => W x * F x) 0 = 0 := by
@@ -597,7 +584,7 @@ theorem infinityCoordinate_iteratedFDeriv_unipotent_fixed_of_lower_zero
   change iteratedFDeriv ℝ n (fun u => weight s t u * G u) 0 = _
   rw [he, iteratedFDeriv_add_apply ((hW.sub contDiffAt_const).mul hG) hG, hzero, zero_add, htop]
 
-private theorem closedCell_difference_flat (s : ℝ) (t : ℂ) (m : ℕ)
+theorem closedCell_difference_flat (s : ℝ) (t : ℂ) (m : ℕ)
     (f : PrincipalSeries s)
     (hf : ∀ k < m, iteratedFDeriv ℝ k (infinityCoordinate f) 0 = 0) :
     ∀ k ≤ m, iteratedFDeriv ℝ k
@@ -644,7 +631,7 @@ theorem finite_jet_unipotent_action (s : ℝ) (n : ℕ) :
       ∀ k < m, iteratedFDeriv ℝ k (infinityCoordinate ((D ^ m) f)) 0 = 0 := by
     intro m
     induction m with
-    | zero => intro f k hk; omega
+    | zero => simp
     | succ m ih =>
       intro f k hk
       rw [pow_succ', Module.End.mul_apply]
@@ -689,7 +676,7 @@ theorem finite_jet_only_trivial_character (s : ℝ) (n : ℕ)
         rw [pow_succ, Module.End.mul_apply, ih]
         have h1 : L ((ρ t - 1) j) = ((ψ t : ℂ) - 1) * L j := by
           have hsub : (ρ t - 1) j = ρ t j - j := by
-            rw [LinearMap.sub_apply, Module.End.one_apply]
+            rfl
           rw [hsub, map_sub, heigen]
           ring
         rw [h1]; ring
@@ -722,7 +709,3 @@ theorem closed_cell_no_nontrivial_eigen_distribution
   intro f
   rw [hL f, hLzero]
   rfl
-
-end DedekindZetaZeroFree.KPCplxClosedCellJets
-
-end

@@ -98,10 +98,7 @@ theorem lift_arch_smooth (u : smoothSections F ζ hζ U R P H) (g : G F ζ hζ) 
   exact hf.contDiffAt (hVo.mem_nhds hxV)
 
  theorem finitePart_eq : KPGlobalTorusFunctionData.finitePart F ζ hζ =
-    KPFiniteCuspAtlas.FiniteCover F ζ hζ := by
-  rw [KPGlobalTorusFiniteStagesCofinality.finitePart_eq_closure,
-    ActualFiniteFactor.finiteSubgroup_eq_tupleFactor]
-  exact KPMsResidualTailRestoration.OutgoingTailL2.CoordinateDescent.fullCusp_finiteSubgroup_eq F ζ hζ
+    KPFiniteCuspAtlas.FiniteCover F ζ hζ := by apply DedekindZetaZeroFree.KPMsAngularSourceRecipe.finitePart_eq_finiteCover <;> assumption
 
  def finiteEquiv : KPGlobalTorusFunctionData.finitePart F ζ hζ ≃ₜ*
     KPFiniteCuspAtlas.FiniteCover F ζ hζ where

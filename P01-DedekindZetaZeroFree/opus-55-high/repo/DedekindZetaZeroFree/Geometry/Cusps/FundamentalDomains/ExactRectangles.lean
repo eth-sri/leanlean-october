@@ -94,7 +94,7 @@ variable {F : Type} [Field F] [NumberField F]
  {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
  {S : Subgroup (KPCuspArithmetic.PGL2 F)} {D : KPCuspCharts.ParabolicData F S}
 
-private theorem actual_translation_action
+theorem actual_translation_action
     (G : KPCuspCharts.ChartOutput F hF S D)
     (l : D.L) (x : KPCuspCharts.Cross F) :
     G.crossAction (D.inclusion (Multiplicative.ofAdd l)) x =
@@ -121,7 +121,7 @@ theorem existsUnique_ratio_horizontal_representative
     · have hk : D.ratio (D.inclusion (Multiplicative.ofAdd l)) = 1 := by
         apply MonoidHom.mem_ker.mp
         rw [← D.exact]
-        exact ⟨_, rfl⟩
+        simp
       simp [hk, ht]
     · rw [map_mul, Homeomorph.mul_apply, actual_translation_action]
       exact hl
@@ -210,11 +210,9 @@ def shapeUnitEquivKernel
    rw [map_add, show L (Additive.ofMul k.val) = 0 from k.property, zero_add, ht]
    exact hv
  · intro u
-   apply Subtype.ext
-   exact inv_mul_cancel_right _ _
+   simp
  · intro k
-   apply Subtype.ext
-   exact mul_inv_cancel_right _ _
+   simp
 
 theorem rectangle_orbit_multiplicity (G : KPCuspCharts.ChartOutput F hF S D)
  (A : Set (KPCuspCharts.Horizontal F))
@@ -238,7 +236,7 @@ theorem rectangle_orbit_multiplicity (G : KPCuspCharts.ChartOutput F hF S D)
    simp only [Set.indicator, Equiv.inv_apply]
    have hm' : x ∈ s⁻¹ • (A ×ˢ B) ↔ s ∈ T := hm
    rw [hm']
-   split <;> simp_all
+   simp
  rw [hi, ← tsum_subtype]
  let e := (orbitRatioEquiv G A hA B x).trans (shapeUnitEquivKernel B hB x.2)
  change (∑' _ : T, (1 : ℝ≥0∞)) = _
@@ -308,8 +306,3 @@ theorem actual_exact_comparison_rectangle (G : KPCuspCharts.ChartOutput F hF S D
      congrArg Subtype.val (hzu ⟨_, ⟨l.val, l.property, rfl⟩⟩ hl)
    apply Subtype.ext
    exact hinj (he.trans haz.symm)
-end DedekindZetaZeroFree.KPMeanZeroWeightedEnergy.GapCoercivity.CrossSection
-
-end
-
-end

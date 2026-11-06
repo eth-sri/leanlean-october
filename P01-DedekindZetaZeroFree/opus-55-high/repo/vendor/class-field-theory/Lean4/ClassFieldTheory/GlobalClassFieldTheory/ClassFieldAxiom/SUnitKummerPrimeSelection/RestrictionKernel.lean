@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Restriction kernels of S-unit Kummer extensions
 
@@ -51,7 +48,7 @@ def sUnitKummerPrimeCount
 
 /-- The `i`-th standard generator of the actual restriction kernel
 `Gal(N/E)`. -/
-noncomputable def sUnitKummerKernelGenerator
+def sUnitKummerKernelGenerator
     {Omega : Type*} [Field Omega] [Algebra K Omega]
     [IsSepClosure K Omega]
     (E : IntermediateField K Omega)
@@ -166,11 +163,9 @@ theorem iSup_zpowers_sUnitKummerKernelGenerator_eq_top
     refine
       ⟨e.symm (Pi.mulSingle i (e sigma i)),
         hsingle i (e sigma i), ?_⟩
-    exact e.apply_symm_apply _
+    simp
   obtain ⟨tau, htau, htauSigma⟩ := hesigma
-  have htauEq : tau = sigma :=
-    e.injective htauSigma
-  exact show sigma ∈ (P : Set _) from htauEq ▸ htau
+  simp_all
 
 /-- Every standard restriction-kernel generator has exact order `n`. -/
 theorem orderOf_sUnitKummerKernelGenerator
@@ -208,8 +203,7 @@ theorem orderOf_sUnitKummerKernelGenerator
     Pi.mulSingle j (Multiplicative.ofAdd (1 : ZMod (n : ℕ)))
   change orderOf (e.symm c) = (n : ℕ)
   have hone : orderOf (Multiplicative.ofAdd (1 : ZMod (n : ℕ))) = (n : ℕ) :=
-    (orderOf_ofAdd_eq_addOrderOf (1 : ZMod (n : ℕ))).trans
-      (ZMod.addOrderOf_one (n : ℕ))
+    by simp
   have hc : orderOf c = (n : ℕ) :=
     (orderOf_piMulSingle
       (M := fun _ : I => Multiplicative (ZMod (n : ℕ)))
@@ -218,7 +212,7 @@ theorem orderOf_sUnitKummerKernelGenerator
 
 /-- The cyclic fixed field attached to the `i`-th coordinate of the
 actual relative Galois group `Gal(N/E)`. -/
-noncomputable def sUnitKummerCoordinateFixedField
+def sUnitKummerCoordinateFixedField
     {Omega : Type*} [Field Omega] [Algebra K Omega]
     [IsSepClosure K Omega]
     (E : IntermediateField K Omega)
@@ -285,9 +279,3 @@ theorem sUnitKummerCoordinateFixedField_finrank
     orderOf_sUnitKummerKernelGenerator
       (K := K) (Omega := Omega) E n hmu
       p v hp hv hn r eG S i]
-
-end GeneralKummer
-
-end GlobalClassFieldTheory.ClassFieldAxiom
-
-end

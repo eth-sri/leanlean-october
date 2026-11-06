@@ -11,16 +11,12 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Density of torsion in the finite profinite-unit factor
 -/
 
 open scoped Topology
 
-noncomputable section
 
 namespace KummerTheory
 
@@ -47,8 +43,7 @@ theorem dense_torsion_pi_of_finite
   · intro i hi
     have hiS : i ∈ S := hi
     change (if _ : i ∈ S then x i else 1) ∈ u i
-    simp only [hiS, ↓reduceDIte]
-    exact (hu i hi).2
+    simp_all
   · change IsOfFinOrder y
     let N := ∏ i ∈ S, orderOf (x i)
     have hN : 0 < N := by
@@ -73,7 +68,3 @@ theorem dense_torsion_cyclotomicFinitePart :
         Set CyclotomicFinitePart) :=
   dense_torsion_pi_of_finite
     (fun p : Nat.Primes => padicUnitFiniteFactor p.1)
-
-end KummerTheory
-
-end

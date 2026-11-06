@@ -147,7 +147,7 @@ theorem stageVector_transition (s t : RestrictedTensorSimple.Level (bad R P C))
     s.property.trans Finset.subset_union_left⟩
  theorem expanded_ge (s : RestrictedTensorSimple.Level (bad R P C)) (g : Raw R) :
     s ≤ expanded R N P C s g := Finset.subset_union_left
-private theorem expanded_tail (s : RestrictedTensorSimple.Level (bad R P C)) (g : Raw R) :
+theorem expanded_tail (s : RestrictedTensorSimple.Level (bad R P C)) (g : Raw R) :
     ∀ p, p ∉ (expanded R N P C s g).val → localValue R N P C p (g p)
       (plusReference R N P C p) = reference R P C p := by
   intro p hp

@@ -4,7 +4,7 @@ public import ClassFieldTheory.LocalClassFieldTheory.Finite.LocalReciprocity.Loc
 public import ClassFieldTheory.LocalClassFieldTheory.Finite.LocalReciprocity.UnramifiedComparison
 public import ValuedFieldTheory.LocalField.NonarchimedeanLocalField.FiniteExtensionTopology
 public import ValuedFieldTheory.LocalField.NonarchimedeanLocalField.NormalizedIntegerValuation
-public import ValuedFieldTheory.Valuation.DiscreteValuationField.ValuationTransport
+public import ValuedFieldTheory.Valuation.DiscreteValuationField.Basic
 
 @[expose] public section
 
@@ -13,12 +13,6 @@ Copyright (c) 2026 Naganori Yamaguchi (https://github.com/n-yamaguchi-0729). All
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
-
-
-
-
-
-
 
 set_option autoImplicit false
 
@@ -1409,7 +1403,6 @@ theorem
         ((abstractSubgroupEquivGaloisGroup
           K (SeparableClosure K) H₀).symm rho)
   exact hdegree.symm.trans hfixedDegree
-
 
 end LocalClassFieldTheory
 

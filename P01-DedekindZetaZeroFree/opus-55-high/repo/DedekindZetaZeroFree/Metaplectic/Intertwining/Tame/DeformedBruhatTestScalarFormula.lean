@@ -63,7 +63,3 @@ theorem eventual_minusTest_eq_chartDeformedScalar
     exact hv'
   · rw [chartDeformedScalar, dif_neg hg]
     exact hz g hg
-
-end DedekindZetaZeroFree.KPTameTransposeBaseChart
-
-end

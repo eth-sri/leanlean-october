@@ -13,13 +13,11 @@ open NumberField IsDedekindDomain
 
 namespace DedekindZetaZeroFree
 
-private theorem mem_sIntegerRing_iff_valuation' (F : Type) [Field F] [NumberField F]
+theorem mem_sIntegerRing_iff_valuation' (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (RingOfIntegers F))) (t : F) :
     t ∈ sIntegerRing F S ↔
       ∀ v : HeightOneSpectrum (RingOfIntegers F), v ∉ S → v.valuation F t ≤ 1 := by
-  rw [sIntegerRing, Set.integer_eq]
-  simp only [Subring.mem_iInf, ValuationSubring.mem_toSubring,
-    Valuation.mem_valuationSubring_iff, Finset.mem_coe]
+  rfl
 
 def sGlobalBoundedIdealSet (F : Type) [Field F] [NumberField F]
     (P : Finset (HeightOneSpectrum (RingOfIntegers F))) (k : P → ℤ) : Set F :=
@@ -35,7 +33,7 @@ theorem mem_sGlobalBoundedIdealSet_iff (F : Type) [Field F] [NumberField F]
   constructor
   · rintro ⟨hx, hb⟩ w
     by_cases hw : w ∈ P
-    · rw [dif_pos hw]; exact hb ⟨w, hw⟩
+    · simp_all
     · rw [dif_neg hw]
       have := (mem_sIntegerRing_iff_valuation' F P x).mp hx w hw
       simpa using this
@@ -44,8 +42,7 @@ theorem mem_sGlobalBoundedIdealSet_iff (F : Type) [Field F] [NumberField F]
     · rw [mem_sIntegerRing_iff_valuation']
       intro w hw
       have hw' := h w
-      rw [dif_neg hw] at hw'
-      simpa using hw'
+      simp_all
     · intro v
       have hv := h v.val
       rwa [dif_pos v.property] at hv
@@ -59,7 +56,3 @@ theorem sGlobalBoundedIdealSet_eq_ballFractionalIdeal
     PoissonS.ScaleShift.fractionalIdeal_mem_iff_valuations F _
       (PoissonS.ballFractionalIdeal_ne_zero F P k) x]
   simp only [PoissonS.ScaleShift.count_ballFractionalIdeal]
-
-end DedekindZetaZeroFree
-
-end

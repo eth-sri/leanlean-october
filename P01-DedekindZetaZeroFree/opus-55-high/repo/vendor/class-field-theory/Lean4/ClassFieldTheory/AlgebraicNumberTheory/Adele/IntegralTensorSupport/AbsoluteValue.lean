@@ -24,22 +24,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Integral lattices for the relative tensor basis
 
@@ -67,7 +51,6 @@ open NumberField IsDedekindDomain
 
 noncomputable section
 
-
 open AlgebraicNumberTheory.Valuations
 
 universe u v
@@ -80,7 +63,7 @@ variable
 
 /-- A nonarchimedean real absolute value, regarded as a valuation with
 values in the nonnegative reals. -/
-noncomputable def realAbsoluteValueValuation
+def realAbsoluteValueValuation
     {F : Type*} [Field F]
     (vF : AbsoluteValue F ℝ)
     (hvF : IsNonarchimedean (vF : F → ℝ)) :
@@ -160,7 +143,7 @@ theorem absoluteValue_le_one_of_isIntegral
 
 /-- The valuation ring in the completion of a nonarchimedean
 real-absolute-valued field. -/
-noncomputable def absoluteValueCompletionIntegers
+def absoluteValueCompletionIntegers
     {F : Type*} [Field F]
     (vF : AbsoluteValue F ℝ)
     (hvF : IsNonarchimedean (vF : F → ℝ)) :
@@ -234,17 +217,11 @@ theorem isIntegral_over_baseCompletionIntegers_of_mem
       LubinTate.Valuations.exponentialValuationSubringAsValuationSubring va =
         absoluteValueCompletionIntegers vK hvK := by
     rw [hVaAbs]
-    ext y
-    rw [mem_absoluteValueValuationSubring_iff,
-      mem_absoluteValueCompletionIntegers_iff]
     rfl
   have hVb :
       LubinTate.Valuations.exponentialValuationSubringAsValuationSubring vb =
         absoluteValueCompletionIntegers w.1 hw := by
     rw [hVbAbs]
-    ext y
-    rw [mem_absoluteValueValuationSubring_iff,
-      mem_absoluteValueCompletionIntegers_iff]
     rfl
   have hhensAbs :
       ValuationTheory.DiscreteValuationField.HenselianValuationByFactorization
@@ -276,5 +253,3 @@ theorem isIntegral_over_baseCompletionIntegers_of_mem
       (absoluteValueCompletionIntegers vK hvK) w.1.Completion).toSubring
   rw [← hclosure]
   exact hx
-
-end

@@ -19,7 +19,7 @@ section Helpers
     Lp (V r) 2 (volume : Measure (E n)) :=
   Lp.compMeasurePreserving (fun x => x - t) (measurePreserving_sub_right volume t) f
 
-private theorem translateL2V_continuous {n r : ℕ}
+theorem translateL2V_continuous {n r : ℕ}
     (f : Lp (V r) 2 (volume : Measure (E n))) : Continuous (translateL2V f) := by
   let g : E n → C(E n, E n) := fun t => ⟨fun x => x - t, by fun_prop⟩
   have hg : Continuous g := by
@@ -29,21 +29,21 @@ private theorem translateL2V_continuous {n r : ℕ}
   exact continuous_const.compMeasurePreservingLp hg
     (fun t => measurePreserving_sub_right volume t) (by norm_num)
 
-private theorem translateL2V_zero {n r : ℕ}
+theorem translateL2V_zero {n r : ℕ}
     (f : Lp (V r) 2 (volume : Measure (E n))) : translateL2V f 0 = f := by
   apply Lp.ext
   filter_upwards [Lp.coeFn_compMeasurePreserving f (measurePreserving_sub_right volume (0 : E n))]
     with x hx
   simpa [translateL2V] using hx
 
-private theorem averaged_translateL2V_integrable {n r : ℕ}
+theorem averaged_translateL2V_integrable {n r : ℕ}
     (f : Lp (V r) 2 (volume : Measure (E n))) (φ : ContDiffBump (0 : E n)) :
     Integrable (fun t => φ.normed volume t • translateL2V f t) volume := by
   apply Continuous.integrable_of_hasCompactSupport
   · exact (φ.contDiff_normed (n := (⊤ : ℕ∞))).continuous.smul (translateL2V_continuous f)
   · exact φ.hasCompactSupport_normed.smul_right
 
-private theorem averaged_translateL2V_tendsto {n r : ℕ}
+theorem averaged_translateL2V_tendsto {n r : ℕ}
     (f : Lp (V r) 2 (volume : Measure (E n)))
     (φ : ℕ → ContDiffBump (0 : E n))
     (hφ : Tendsto (fun m => (φ m).rOut) atTop (𝓝 0)) :
@@ -53,7 +53,7 @@ private theorem averaged_translateL2V_tendsto {n r : ℕ}
     ((translateL2V_continuous f).comp continuous_neg) (0 : E n)
   simpa [convolution_def, ContinuousLinearMap.lsmul_apply, translateL2V_zero] using h
 
-private theorem averaged_translateL2V_ae {n r : ℕ} (F : E n → V r)
+theorem averaged_translateL2V_ae {n r : ℕ} (F : E n → V r)
     (hF : MemLp F 2 volume) (hF1 : Integrable F volume)
     (φ : ContDiffBump (0 : E n)) :
     (∫ t, φ.normed volume t • translateL2V (hF.toLp F) t) =ᵐ[volume]
@@ -83,8 +83,8 @@ private theorem averaged_translateL2V_ae {n r : ℕ} (F : E n → V r)
   obtain ⟨C, hC⟩ := (hqc.isCompact_range hq.continuous).isBounded.exists_norm_le
   have hC' (x : E n) : ‖q x‖ ≤ C := hC _ (Set.mem_range_self x)
   have htriple : Integrable (fun p : E n × E n =>
-      q p.1 • (φ.normed volume p.2 • F (p.1 - p.2))) (volume.prod volume) := by
-    exact hbase.bdd_smul C (hq.continuous.comp continuous_fst).aestronglyMeasurable
+      q p.1 • (φ.normed volume p.2 • F (p.1 - p.2))) (volume.prod volume) := 
+    hbase.bdd_smul C (hq.continuous.comp continuous_fst).aestronglyMeasurable
       (Eventually.of_forall (fun p => hC' p.1))
   have ht (t : E n) : L Q (translateL2V f t) = ∫ x, q x • F (x - t) := by
     rw [hpair]
@@ -118,7 +118,7 @@ private theorem averaged_translateL2V_ae {n r : ℕ} (F : E n → V r)
     apply integral_congr_ae
     exact Eventually.of_forall fun t => smul_comm _ _ _
 
-private theorem integrable_of_memLp_two_of_support_subset_compact {n r : ℕ}
+theorem integrable_of_memLp_two_of_support_subset_compact {n r : ℕ}
     {C : Set (E n)} (hC : IsCompact C) {F : E n → V r}
     (hF : MemLp F 2 volume) (hFC : ∀ x, x ∉ C → F x = 0) : Integrable F volume := by
   have hsupp : Function.support F ⊆ C := fun x hx => by
@@ -131,23 +131,19 @@ private theorem integrable_of_memLp_two_of_support_subset_compact {n r : ℕ}
   exact (integrableOn_iff_integrable_of_support_subset hsupp).mp
     (memLp_one_iff_integrable.mp h1)
 
-private theorem l2Norm_eq_norm_toLp {n r : ℕ} {g : E n → V r} (hg : MemLp g 2 volume) :
+theorem l2Norm_eq_norm_toLp {n r : ℕ} {g : E n → V r} (hg : MemLp g 2 volume) :
     l2Norm volume g hg = ‖hg.toLp g‖ := by
   have h := lpNorm_eq_integral_norm_rpow_toReal (μ := (volume : Measure (E n))) (f := g)
     (p := 2) (by norm_num) (by norm_num) hg.aestronglyMeasurable
   have hsqrt : Real.sqrt (∫ x, ‖g x‖ ^ (2 : ℕ) ∂volume)
       = Real.sqrt (∫ x, ‖g x‖ ^ (2 : ℝ) ∂volume) := by
-    congr 1
-    apply integral_congr_ae
-    refine Eventually.of_forall fun x => ?_
-    change ‖g x‖ ^ (2 : ℕ) = ‖g x‖ ^ (2 : ℝ)
-    simp only [Real.rpow_ofNat]
+    simp
   rw [l2Norm, Lp.norm_toLp, toReal_eLpNorm, h]
   rw [show (2 : ENNReal).toReal = 2 by norm_num]
   rw [show ((2 : ℝ)⁻¹) = 1 / 2 by norm_num, ← Real.sqrt_eq_rpow]
   exact hsqrt
 
-private theorem l2Norm_congr {n r : ℕ} {g g' : E n → V r} (hg : MemLp g 2 volume)
+theorem l2Norm_congr {n r : ℕ} {g g' : E n → V r} (hg : MemLp g 2 volume)
     (hg' : MemLp g' 2 volume) (h : g =ᵐ[volume] g') :
     l2Norm volume g hg = l2Norm volume g' hg' := by
   rw [l2Norm, l2Norm]
@@ -197,11 +193,7 @@ theorem mollification_l2_tendsto {n r : ℕ} (hn : 0 < n) (hr : 0 < r)
     show mollifyVector (φ m) F x - F x =
       (⇑((∫ t, (φ m).normed volume t • translateL2V (hF.toLp F) t) - hF.toLp F)) x
     rw [hsub, Pi.sub_apply, hx, hFc]
-    simp [mollifyVector]
+    rfl
   rw [l2Norm_congr ((mollification_memLp hn hr C hC F hF hFC (φ m)).sub hF)
       (Lp.memLp ((∫ t, (φ m).normed volume t • translateL2V (hF.toLp F) t) - hF.toLp F)) hae']
   rw [l2Norm_eq_norm_toLp, Lp.toLp_coeFn]
-
-end DedekindZetaZeroFree.KPCompactInteriorH1
-
-end

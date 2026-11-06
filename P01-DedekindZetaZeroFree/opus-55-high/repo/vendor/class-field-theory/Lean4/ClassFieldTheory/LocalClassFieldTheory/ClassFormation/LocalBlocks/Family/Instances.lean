@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Finite families of local idele blocks
 
@@ -57,11 +53,10 @@ abbrev LocalBlockFamily {ι : Type w}
     (d i).base (d i).base_isNontrivial
     (d i).extension
 
-
 /-- Canonical componentwise decomposition-group action for a local-block
 family. -/
 @[reducible]
-noncomputable def localBlockFamilyLocalAction
+def localBlockFamilyLocalAction
     {ι : Type w} (d : ι → LocalPlaceDatum K L) :
     ∀ i, MulDistribMulAction
       (absoluteValueDecompositionGroup K (d i).extension.1)
@@ -74,7 +69,7 @@ noncomputable def localBlockFamilyLocalAction
 
 /-- Canonical induced action on every local block in a family. -/
 @[reducible]
-noncomputable def localBlockFamilyBlockAction
+def localBlockFamilyBlockAction
     {ι : Type w} (d : ι → LocalPlaceDatum K L) :
     ∀ i, MulDistribMulAction (L ≃ₐ[K] L)
       (LocalPlaceBlock
@@ -88,7 +83,7 @@ noncomputable def localBlockFamilyBlockAction
 
 /-- Canonical componentwise action on the product of a local-block family. -/
 @[reducible]
-noncomputable def localBlockFamilyCohomologyAction
+def localBlockFamilyCohomologyAction
     {ι : Type w} (d : ι → LocalPlaceDatum K L) :
     MulDistribMulAction (L ≃ₐ[K] L)
       (LocalBlockFamily d) := by
@@ -103,13 +98,9 @@ noncomputable def localBlockFamilyCohomologyAction
 /-- Canonical finite structures on the decomposition groups in a local-block
 family. -/
 @[reducible]
-noncomputable def localBlockFamilyDecompositionFintype
+def localBlockFamilyDecompositionFintype
     {ι : Type w} (d : ι → LocalPlaceDatum K L) :
     ∀ i, Fintype
       (absoluteValueDecompositionGroup K
         (d i).extension.1) :=
   fun _ => Fintype.ofFinite _
-
-end LocalClassFieldTheory
-
-end

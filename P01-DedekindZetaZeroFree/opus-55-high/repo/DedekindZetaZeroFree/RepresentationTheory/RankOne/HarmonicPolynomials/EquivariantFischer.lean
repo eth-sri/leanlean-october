@@ -12,16 +12,16 @@ open KPCplxHarmonicIntertwinerSpectrum KPCplxCharacterHaar
 open scoped BigOperators
 open MvPolynomial
 
-noncomputable def radiusQuadratic : MvPolynomial (Fin 3) ℂ :=
+def radiusQuadratic : MvPolynomial (Fin 3) ℂ :=
   ∑ i : Fin 3, MvPolynomial.X i ^ 2
 
 private lemma deriv_radius (i : Fin 3) :
     pderiv i radiusQuadratic = 2 * X i := by
   classical
-  simp only [radiusQuadratic, map_sum, pderiv_pow, pderiv_X, pow_one]
+  simp only [radiusQuadratic, map_sum, pderiv_pow, pderiv_X]
   rw [Finset.sum_eq_single i]
   · simp
-  · intro j hj hji; simp [Pi.single_eq_of_ne hji]
+  · simp_all
   · simp
 lemma radius_homogeneous : radiusQuadratic.IsHomogeneous 2 := by
   apply IsHomogeneous.sum
@@ -44,7 +44,7 @@ private lemma lap_radius_hom {q : MvPolynomial (Fin 3) ℂ} {d : ℕ}
       radiusQuadratic * polynomialLaplacian q +
         (2 * (2 * (d : ℂ) + 3)) • q := by
   rw [lap_radius_mul, hq.sum_X_mul_pderiv]
-  simp only [nsmul_eq_mul, smul_eq_C_mul, map_mul, map_add, map_ofNat, map_one, C_eq_coe_nat]
+  simp only [nsmul_eq_mul, smul_eq_C_mul, map_mul, map_add, map_ofNat, C_eq_coe_nat]
   ring
 
 theorem laplacian_radius_pow {q : MvPolynomial (Fin 3) ℂ} {degree : ℕ}
@@ -62,8 +62,7 @@ theorem laplacian_radius_pow {q : MvPolynomial (Fin 3) ℂ} {degree : ℕ}
     simp only [Nat.cast_add, Nat.cast_mul, Nat.cast_ofNat, Nat.cast_succ,
       Nat.add_sub_cancel, smul_eq_C_mul, map_mul, map_add, map_ofNat, map_one, C_eq_coe_nat]
     cases k with
-    | zero => simp only [pow_zero, one_mul, Nat.cast_zero, mul_zero, zero_mul,
-        zero_add, add_zero, map_zero, pow_one]; ring
+    | zero => simp only [pow_zero, one_mul, Nat.cast_zero, mul_zero, zero_mul, zero_add, add_zero]; ring
     | succ k =>
       simp only [Nat.add_sub_cancel, Nat.cast_add, Nat.cast_one, pow_succ]
       ring
@@ -102,9 +101,7 @@ private lemma radial_inverse {p : MvPolynomial (Fin 3) ℂ} {n : ℕ}
   have hz : polynomialLaplacian (c⁻¹ • p) = 0 := hh.2
   change polynomialLaplacian (c⁻¹ • p) = 0 at hz
   change _ + c • (radiusQuadratic ^ (k + 1 - 1) * (c⁻¹ • p)) = _
-  rw [hz]
-  simp only [mul_zero, zero_add, Nat.add_sub_cancel, mul_smul_comm,
-    smul_smul, mul_inv_cancel₀ hc, one_smul]
+  simp_all
 
 theorem homogeneous_fischer {p : MvPolynomial (Fin 3) ℂ} {degree : ℕ}
     (hp : p.IsHomogeneous degree) :
@@ -154,7 +151,7 @@ theorem homogeneous_fischer {p : MvPolynomial (Fin 3) ℂ} {degree : ℕ}
         by_cases hk0 : k = 0
         · subst k
           simp only [ite_true, mul_zero, Nat.sub_zero]
-          exact ⟨hp.sub hr, by change polynomialLaplacian (p - r) = 0; rw [map_sub, hrl, sub_self]⟩
+          exact ⟨hp.sub hr, by simp_all⟩
         · simp only [hk0, ite_false]
           convert hg (k - 1) (by omega) using 1
           congr 1
@@ -232,7 +229,7 @@ private theorem polynomialLaplacian_linearSubstitution (A : Matrix (Fin 3) (Fin 
   change (∑ j, MvPolynomial.pderiv j (MvPolynomial.pderiv j (linearSubstitution A p))) =
     ∑ j, linearSubstitution A (MvPolynomial.pderiv j (MvPolynomial.pderiv j p))
   simp only [pderiv_linearSubstitution, map_sum, MvPolynomial.pderiv_C_mul]
-  simp only [pderiv_linearSubstitution, Finset.mul_sum, ← mul_assoc, ← MvPolynomial.C_mul]
+  simp only [Finset.mul_sum, ← mul_assoc, ← MvPolynomial.C_mul]
   rw [Finset.sum_comm]
   apply Finset.sum_congr rfl
   intro i hi
@@ -268,8 +265,7 @@ instance harmonicFiniteDimensional (n : ℕ) : FiniteDimensional ℂ (Harmonic n
 
 theorem coefficientAction_radius (g : ComplexSU2) :
     coefficientAction g radiusQuadratic = radiusQuadratic := by
-  simp only [radiusQuadratic, map_sum, map_pow, coefficientAction, pow_two, map_mul, aeval_X,
-    Finset.sum_mul, Finset.mul_sum]
+  simp only [radiusQuadratic, map_sum, coefficientAction, pow_two, map_mul, aeval_X, Finset.sum_mul, Finset.mul_sum]
   conv_lhs =>
     arg 2
     intro j
@@ -289,8 +285,8 @@ def radialLap (n : ℕ) : Homogeneous n →ₗ[ℂ] Homogeneous n where
   toFun p := ⟨polynomialLaplacian (radiusQuadratic * p.val), by
     simpa using lap_hom (radius_homogeneous.mul p.property)⟩
   map_add' p q := by apply Subtype.ext; simp [mul_add]
-  map_smul' c p := by apply Subtype.ext; simp [mul_smul_comm]
-private lemma radialLap_surj (n : ℕ) : Function.Surjective (radialLap n) := by
+  map_smul' c p := by simp
+lemma radialLap_surj (n : ℕ) : Function.Surjective (radialLap n) := by
   intro q
   obtain ⟨h,hh,he⟩ := homogeneous_fischer q.property
   let c (k : ℕ) : ℂ :=
@@ -321,10 +317,8 @@ private lemma radialLap_surj (n : ℕ) : Function.Surjective (radialLap n) := by
   rw [← mul_assoc, ← pow_succ', laplacian_radius_pow hg.1]
   have hz : polynomialLaplacian ((c k)⁻¹ • h k) = 0 := hg.2
   change _ + c k • (radiusQuadratic ^ (k+1-1) * ((c k)⁻¹ • h k)) = _
-  rw [hz]
-  simp only [mul_zero, zero_add, Nat.add_sub_cancel, mul_smul_comm, smul_smul,
-    mul_inv_cancel₀ hc, one_smul]
-private lemma radialLap_inj (n : ℕ) : Function.Injective (radialLap n) :=
+  simp_all
+lemma radialLap_inj (n : ℕ) : Function.Injective (radialLap n) :=
   (LinearMap.injective_iff_surjective).mpr (radialLap_surj n)
 
 theorem equivariant_fischer_split (n : ℕ) :
@@ -336,7 +330,7 @@ theorem equivariant_fischer_split (n : ℕ) :
     { toFun hp := ⟨hp.1.val + radiusQuadratic * hp.2.val,
         hp.1.property.1.add (by simpa [Nat.add_comm] using radius_homogeneous.mul hp.2.property)⟩
       map_add' p q := by apply Subtype.ext; simp; ring
-      map_smul' c p := by apply Subtype.ext; simp [mul_smul_comm]
+      map_smul' c p := by apply Subtype.ext; simp
       isIntertwining' g := by
         apply LinearMap.ext
         intro hp
@@ -355,9 +349,7 @@ theorem equivariant_fischer_split (n : ℕ) :
       simp only [map_add, hxl, hyl, zero_add] at hl
       have hp : x.2 = y.2 := radialLap_inj n (Subtype.ext hl)
       have hhp : x.1 = y.1 := by
-        apply Subtype.ext
-        rw [hp] at hxy'
-        exact add_right_cancel hxy'
+        simp_all
       exact Prod.ext hhp hp
     · intro q
       let l : Homogeneous n := ⟨polynomialLaplacian q.val, by simpa using lap_hom q.property⟩
@@ -366,8 +358,7 @@ theorem equivariant_fischer_split (n : ℕ) :
         congrArg (fun z : Homogeneous n => z.val) hp
       let h : Harmonic (n+2) := ⟨q.val - radiusQuadratic * p.val,
         q.property.sub (by simpa [Nat.add_comm] using radius_homogeneous.mul p.property), by
-          change polynomialLaplacian (q.val - radiusQuadratic * p.val) = 0
-          rw [map_sub, hp', sub_self]⟩
+          simp_all⟩
       refine ⟨(h,p), ?_⟩
       apply Subtype.ext
       change q.val - radiusQuadratic * p.val + radiusQuadratic * p.val = q.val
@@ -381,7 +372,7 @@ theorem equivariant_fischer_low (n : ℕ) (hn : n ≤ 1) :
     { toFun p := ⟨p.val,p.property.1⟩
       map_add' p q := rfl
       map_smul' c p := rfl
-      isIntertwining' g := by ext p; rfl }
+      isIntertwining' g := by rfl }
   have hf : Function.Bijective f := by
     constructor
     · intro p q h
@@ -407,7 +398,7 @@ theorem homogeneous_character_recurrence (n : ℕ) (g : ComplexSU2) :
       (harmonicRepresentation (n + 2)).character g + (homogeneousRepresentation n).character g := by
   obtain ⟨e, he⟩ := equivariant_fischer_split n
   rw [← Representation.char_iso e]
-  exact Representation.char_prod _ _ g
+  simp
 
 theorem homogeneous_character_zero (g : ComplexSU2) :
     (homogeneousRepresentation 0).character g = (harmonicRepresentation 0).character g := by
@@ -418,7 +409,3 @@ theorem homogeneous_character_one (g : ComplexSU2) :
     (homogeneousRepresentation 1).character g = (harmonicRepresentation 1).character g := by
   obtain ⟨e, he⟩ := equivariant_fischer_low 1 (by omega)
   exact congrFun (Representation.char_iso e).symm g
-
-end DedekindZetaZeroFree.HarmonicVendor.HomogeneousRaw
-
-end

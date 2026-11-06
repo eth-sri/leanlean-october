@@ -30,7 +30,7 @@ structure ReferenceCharacter (u u₀ : Ideal (𝓞 F)) where
   agree : ∀ z, z ≠ ⊥ → z ⊔ comparison = ⊤ →
     character z = (Q.χ u) z * (Q.χ u₀) z
 
-private theorem reference_character_exists (hc : c ≠ ⊥)
+theorem reference_character_exists (hc : c ≠ ⊥)
     {u u₀ : Ideal (𝓞 F)} (hu : Squarefree u) (hu₀ : Squarefree u₀)
     (huc : u ⊔ c = ⊤) (hu₀c : u₀ ⊔ c = ⊤)
     (hclass : Q.cls u = Q.cls u₀) : Nonempty (ReferenceCharacter Q u u₀) := by
@@ -118,8 +118,8 @@ theorem primitive_pair_phase_separation
     let θ := RayOperations.mul (Γ ⟨u, hu⟩).character (Γ ⟨v, hv⟩).character
     let R := (Γ ⟨u, hu⟩).comparison * (Γ ⟨v, hv⟩).comparison *
       (Q.cond u * Q.cond v) * Q.cond u₀
-    have hR : R ≠ ⊥ := by
-      exact mul_ne_zero (mul_ne_zero
+    have hR : R ≠ ⊥ := 
+      mul_ne_zero (mul_ne_zero
         (mul_ne_zero (Γ ⟨u, hu⟩).comparison_ne (Γ ⟨v, hv⟩).comparison_ne)
         (mul_ne_zero (Q.primitive u (hS u hu).1 (hS u hu).2).1
           (Q.primitive v (hS v hv).1 (hS v hv).2).1))
@@ -172,8 +172,4 @@ theorem primitive_pair_phase_separation
       Sieve.Initial.liftCharacter_apply_of_coprime hdivΓ θ z hzmod,
       RayOperations.mul_apply] at hzEq
     simpa only [← starRingEnd_apply, (Γ ⟨v, hv⟩).self_conj z] using hzEq
-  · refine ⟨fun _ _ => 0, ?_, ?_⟩ <;>
-      intro u hu <;> exact False.elim (hS0 ⟨u, hu⟩)
-end DedekindZetaZeroFree.LargeSieve.Bilinear.PrimitivePhases
-
-end
+  simp_all

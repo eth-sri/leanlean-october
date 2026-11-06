@@ -145,7 +145,7 @@ theorem aInfinity_delta (u : InfinitePlace F → ℝ) :
         (Real.exp_sum Finset.univ (fun w => 2 * u w)).symm
     _ = Real.exp (2 * ∑ w : InfinitePlace F, u w) := by rw [← Finset.mul_sum]
 
-private theorem nu_arch (u : InfinitePlace F → ℝ) :
+theorem nu_arch (u : InfinitePlace F → ℝ) :
     ((KPGlobalCenterRationalCharacter.nu F ζ hζ (aInfinity F ζ hζ u) : ℝ≥0) : ℝ) =
       Real.exp ((1 / 6 : ℝ) * (2 * ∑ v, u v)) := by
   have hδ := aInfinity_delta F ζ hζ u

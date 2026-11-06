@@ -27,11 +27,11 @@ theorem complexJacquet_mem :
   rw [complexRootAction_apply, complexRawPsi_trace, trace_character]
   exact KPCplxJacquetFunctional.thetaJacquetFunctional_covariance frequency _ _
 
-private theorem scalar_of_line {V : Type*} [AddCommGroup V] [Module ℂ V]
+theorem scalar_of_line {V : Type*} [AddCommGroup V] [Module ℂ V]
     (W : Submodule ℂ V) (hW : Module.finrank ℂ W = 1) (J : V) (hJ : J ∈ W)
     (hJne : J ≠ 0) (ell : V) (hell : ell ∈ W) (hne : ell ≠ 0) :
     ∃ t : ℂ, t ≠ 0 ∧ ell = t • J := by
-  have hjne : (⟨J, hJ⟩ : W) ≠ 0 := fun hz => hJne (congrArg (fun z : W => (z : V)) hz)
+  have hjne : (⟨J, hJ⟩ : W) ≠ 0 := by simp_all
   obtain ⟨t, ht⟩ := exists_smul_eq_of_finrank_eq_one hW hjne (⟨ell, hell⟩ : W)
   have he := congrArg (fun z : W => (z : V)) ht
   refine ⟨t, ?_, he.symm⟩
@@ -62,10 +62,6 @@ theorem complexJacquet_actualDiagonal (h : Theta frequency) (y : ℂˣ) :
   have hu : Units.map (coordinate A w).toMonoidHom
       (Units.map (coordinate A w).symm.toRingHom.toMonoidHom y) = y := by
     apply Units.ext
-    exact (coordinate A w).apply_symm_apply _
+    simp
   rw [hu]
   rfl
-
-end DedekindZetaZeroFree.KPActualReflectionData.StandardLocalSource
-
-end

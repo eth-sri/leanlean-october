@@ -38,7 +38,7 @@ def ax : P := e.symm (1,0)
 def ay : P := e.symm (0,1)
 def dx (f : 𝓢(P,ℂ)) := ∂_{ax} f
 def dy (f : 𝓢(P,ℂ)) := ∂_{ay} f
-private lemma dx_eval (f : 𝓢(P,ℂ)) (x y : ℝ) : dx f (e.symm (x,y)) = deriv (fun u => f (e.symm (u,y))) x := by
+lemma dx_eval (f : 𝓢(P,ℂ)) (x y : ℝ) : dx f (e.symm (x,y)) = deriv (fun u => f (e.symm (u,y))) x := by
   rw [dx, SchwartzMap.lineDerivOp_apply]
   unfold lineDeriv
   have hh : (fun t : ℝ => f (e.symm (x,y) + t • ax)) = (fun t => f (e.symm (t+x,y))) := by
@@ -49,7 +49,7 @@ private lemma dx_eval (f : 𝓢(P,ℂ)) (x y : ℝ) : dx f (e.symm (x,y)) = deri
     ring
   rw [hh]
   simpa only [zero_add] using deriv_comp_add_const (fun u => f (e.symm (u,y))) x 0
-private lemma dy_eval (f : 𝓢(P,ℂ)) (x y : ℝ) : dy f (e.symm (x,y)) = deriv (fun u => f (e.symm (x,u))) y := by
+lemma dy_eval (f : 𝓢(P,ℂ)) (x y : ℝ) : dy f (e.symm (x,y)) = deriv (fun u => f (e.symm (x,u))) y := by
   rw [dy, SchwartzMap.lineDerivOp_apply]
   unfold lineDeriv
   have hh : (fun t : ℝ => f (e.symm (x,y) + t • ay)) = (fun t => f (e.symm (x,t+y))) := by
@@ -61,7 +61,7 @@ private lemma dy_eval (f : 𝓢(P,ℂ)) (x y : ℝ) : dy f (e.symm (x,y)) = deri
   rw [hh]
   simpa only [zero_add] using deriv_comp_add_const (fun u => f (e.symm (x,u))) y 0
 def md (i j : ℕ) (f : 𝓢(P,ℂ)) : 𝓢(P,ℂ) := dx^[i] (dy^[j] f)
-private lemma dxn_eval (i : ℕ) (f : 𝓢(P,ℂ)) (x y : ℝ) : (dx^[i] f) (e.symm (x,y)) = iteratedDeriv i (fun u => f (e.symm (u,y))) x := by
+lemma dxn_eval (i : ℕ) (f : 𝓢(P,ℂ)) (x y : ℝ) : (dx^[i] f) (e.symm (x,y)) = iteratedDeriv i (fun u => f (e.symm (u,y))) x := by
   induction i generalizing x with
   | zero => rfl
   | succ i ih =>
@@ -69,7 +69,7 @@ private lemma dxn_eval (i : ℕ) (f : 𝓢(P,ℂ)) (x y : ℝ) : (dx^[i] f) (e.s
     congr 1
     ext u
     exact ih u
-private lemma dyn_eval (j : ℕ) (f : 𝓢(P,ℂ)) (x y : ℝ) : (dy^[j] f) (e.symm (x,y)) = iteratedDeriv j (fun u => f (e.symm (x,u))) y := by
+lemma dyn_eval (j : ℕ) (f : 𝓢(P,ℂ)) (x y : ℝ) : (dy^[j] f) (e.symm (x,y)) = iteratedDeriv j (fun u => f (e.symm (x,u))) y := by
   induction j generalizing y with
   | zero => rfl
   | succ j ih =>
@@ -77,38 +77,38 @@ private lemma dyn_eval (j : ℕ) (f : 𝓢(P,ℂ)) (x y : ℝ) : (dy^[j] f) (e.s
     congr 1
     ext u
     exact ih u
-private lemma md_eval (i j : ℕ) (f : 𝓢(P,ℂ)) (x y : ℝ) : md i j f (e.symm (x,y)) = mixedDeriv i j (fun p => f (e.symm p)) x y := by
+lemma md_eval (i j : ℕ) (f : 𝓢(P,ℂ)) (x y : ℝ) : md i j f (e.symm (x,y)) = mixedDeriv i j (fun p => f (e.symm p)) x y := by
   rw [md, dxn_eval]
   unfold mixedDeriv
   congr 2
   ext u
   exact dyn_eval j f u y
-private lemma fourier_dx (f : 𝓢(P,ℂ)) (t s : ℝ) : 𝓕 (dx f) (e.symm (t,s)) = (2 * Real.pi * Complex.I * (t : ℂ)) * 𝓕 f (e.symm (t,s)) := by
+lemma fourier_dx (f : 𝓢(P,ℂ)) (t s : ℝ) : 𝓕 (dx f) (e.symm (t,s)) = (2 * Real.pi * Complex.I * (t : ℂ)) * 𝓕 f (e.symm (t,s)) := by
   rw [dx, SchwartzMap.fourier_lineDerivOp_eq]
   have hh : (inner ℝ · ax).HasTemperateGrowth := by fun_prop
   change (2 * Real.pi * Complex.I) • (SchwartzMap.smulLeftCLM ℂ (inner ℝ · ax) (𝓕 f) (e.symm (t,s))) = _
   rw [SchwartzMap.smulLeftCLM_apply_apply hh]
-  simp [ax, e, WithLp.prod_inner_apply, Real.inner_apply, smul_eq_mul]
+  simp [ax, e, WithLp.prod_inner_apply, smul_eq_mul]
   ring
-private lemma fourier_dy (f : 𝓢(P,ℂ)) (t s : ℝ) : 𝓕 (dy f) (e.symm (t,s)) = (2 * Real.pi * Complex.I * (s : ℂ)) * 𝓕 f (e.symm (t,s)) := by
+lemma fourier_dy (f : 𝓢(P,ℂ)) (t s : ℝ) : 𝓕 (dy f) (e.symm (t,s)) = (2 * Real.pi * Complex.I * (s : ℂ)) * 𝓕 f (e.symm (t,s)) := by
   rw [dy, SchwartzMap.fourier_lineDerivOp_eq]
   have hh : (inner ℝ · ay).HasTemperateGrowth := by fun_prop
   change (2 * Real.pi * Complex.I) • (SchwartzMap.smulLeftCLM ℂ (inner ℝ · ay) (𝓕 f) (e.symm (t,s))) = _
   rw [SchwartzMap.smulLeftCLM_apply_apply hh]
-  simp [ay, e, WithLp.prod_inner_apply, Real.inner_apply, smul_eq_mul]
+  simp [ay, e, WithLp.prod_inner_apply, smul_eq_mul]
   ring
-private lemma fourier_dxn (i : ℕ) (f : 𝓢(P,ℂ)) (t s : ℝ) : 𝓕 (dx^[i] f) (e.symm (t,s)) = (2 * Real.pi * Complex.I * (t : ℂ))^i * 𝓕 f (e.symm (t,s)) := by
+lemma fourier_dxn (i : ℕ) (f : 𝓢(P,ℂ)) (t s : ℝ) : 𝓕 (dx^[i] f) (e.symm (t,s)) = (2 * Real.pi * Complex.I * (t : ℂ))^i * 𝓕 f (e.symm (t,s)) := by
   induction i with
   | zero => simp
   | succ i ih => rw [Function.iterate_succ_apply', fourier_dx, ih]; ring
-private lemma fourier_dyn (j : ℕ) (f : 𝓢(P,ℂ)) (t s : ℝ) : 𝓕 (dy^[j] f) (e.symm (t,s)) = (2 * Real.pi * Complex.I * (s : ℂ))^j * 𝓕 f (e.symm (t,s)) := by
+lemma fourier_dyn (j : ℕ) (f : 𝓢(P,ℂ)) (t s : ℝ) : 𝓕 (dy^[j] f) (e.symm (t,s)) = (2 * Real.pi * Complex.I * (s : ℂ))^j * 𝓕 f (e.symm (t,s)) := by
   induction j with
   | zero => simp
   | succ j ih => rw [Function.iterate_succ_apply', fourier_dy, ih]; ring
-private lemma fourier_md (i j : ℕ) (f : 𝓢(P,ℂ)) (t s : ℝ) : 𝓕 (md i j f) (e.symm (t,s)) = (2 * Real.pi * Complex.I * (t : ℂ))^i * (2 * Real.pi * Complex.I * (s : ℂ))^j * 𝓕 f (e.symm (t,s)) := by
+lemma fourier_md (i j : ℕ) (f : 𝓢(P,ℂ)) (t s : ℝ) : 𝓕 (md i j f) (e.symm (t,s)) = (2 * Real.pi * Complex.I * (t : ℂ))^i * (2 * Real.pi * Complex.I * (s : ℂ))^j * 𝓕 f (e.symm (t,s)) := by
   rw [md, fourier_dxn, fourier_dyn]
   ring
-private lemma md_support (i j : ℕ) (f : 𝓢(P,ℂ)) : tsupport (md i j f) ⊆ tsupport f := by
+lemma md_support (i j : ℕ) (f : 𝓢(P,ℂ)) : tsupport (md i j f) ⊆ tsupport f := by
   have hx (i : ℕ) (g : 𝓢(P,ℂ)) : tsupport (dx^[i] g) ⊆ tsupport g := by
     induction i with
     | zero => exact Set.Subset.rfl
@@ -124,16 +124,16 @@ private lemma md_support (i j : ℕ) (f : 𝓢(P,ℂ)) : tsupport (md i j f) ⊆
   exact (hx i _).trans (hy j)
 def box (R : ℝ) : Set (ℝ × ℝ) := Set.Icc (-R) R ×ˢ Set.Icc (-R) R
 def supjet (R : ℝ) (i j : ℕ) (f : 𝓢(P,ℂ)) : ℝ := sSup ((fun p : ℝ × ℝ => ‖md i j f (e.symm p)‖) '' box R)
-private lemma sj_nonneg (R : ℝ) (hR : 0 < R) (i j : ℕ) (f : 𝓢(P,ℂ)) : 0 ≤ supjet R i j f := by
+lemma sj_nonneg (R : ℝ) (hR : 0 < R) (i j : ℕ) (f : 𝓢(P,ℂ)) : 0 ≤ supjet R i j f := by
   have hc : IsCompact ((fun p : ℝ × ℝ => ‖md i j f (e.symm p)‖) '' box R) := by
     apply (isCompact_Icc.prod isCompact_Icc).image
-    exact ((md i j f).continuous.comp e.symm.continuous).norm
+    fun_prop
   have hm : (0,0) ∈ box R := by dsimp [box]; constructor <;> constructor <;> linarith
   exact (norm_nonneg _).trans (le_csSup hc.bddAbove ⟨(0,0), hm, rfl⟩)
-private lemma sj_le (R : ℝ) (i j : ℕ) (f : 𝓢(P,ℂ)) (x y : ℝ) (hp : (x,y) ∈ box R) : ‖md i j f (e.symm (x,y))‖ ≤ supjet R i j f := by
+lemma sj_le (R : ℝ) (i j : ℕ) (f : 𝓢(P,ℂ)) (x y : ℝ) (hp : (x,y) ∈ box R) : ‖md i j f (e.symm (x,y))‖ ≤ supjet R i j f := by
   apply le_csSup (s := (fun p : ℝ × ℝ => ‖md i j f (e.symm p)‖) '' box R) _ ⟨(x,y), hp, rfl⟩
   exact ((isCompact_Icc.prod isCompact_Icc).image (((md i j f).continuous.comp e.symm.continuous).norm)).bddAbove
-private lemma fourier_sup_bound (R : ℝ) (hR : 0 < R) (f : 𝓢(P,ℂ))
+lemma fourier_sup_bound (R : ℝ) (hR : 0 < R) (f : 𝓢(P,ℂ))
     (hs : tsupport f ⊆ e ⁻¹' box R) (i j : ℕ) (t s : ℝ) :
     ‖𝓕 (md i j f) (e.symm (t,s))‖ ≤ supjet R i j f * (2 * R)^2 := by
   let g := md i j f
@@ -154,7 +154,7 @@ private lemma fourier_sup_bound (R : ℝ) (hR : 0 < R) (f : 𝓢(P,ℂ))
     ext p
     by_cases hp : p ∈ e ⁻¹' box R
     · simp [hp]
-    · simp [hp, hzero p hp]
+    simp_all
   calc
     ‖𝓕 g (e.symm (t,s))‖ ≤ ∫ p : P, ‖g p‖ := VectorFourier.norm_fourierIntegral_le_integral_norm _ _ _ _ _
     _ = ∫ p in e ⁻¹' box R, ‖g p‖ := hnorm
@@ -167,12 +167,12 @@ private lemma fourier_sup_bound (R : ℝ) (hR : 0 < R) (f : 𝓢(P,ℂ))
         simpa only [Prod.eta, e.symm_apply_apply] using hn
       rw [hmassr, Real.norm_eq_abs, abs_of_nonneg (integral_nonneg (fun _ => norm_nonneg _))] at hb
       exact hb
-private lemma weighted_sup_bound (R : ℝ) (hR : 0 < R) (f : 𝓢(P,ℂ))
+lemma weighted_sup_bound (R : ℝ) (hR : 0 < R) (f : 𝓢(P,ℂ))
     (hs : tsupport f ⊆ e ⁻¹' box R) (i j : ℕ) (t s : ℝ) :
     |t|^i * |s|^j * ‖𝓕 f (e.symm (t,s))‖ ≤ supjet R i j f * (2 * R)^2 := by
   have ha : 1 ≤ 2 * Real.pi := by have := Real.two_le_pi; linarith
   have hnorm (u : ℝ) : ‖(2 * Real.pi * Complex.I * (u : ℂ))‖ = (2 * Real.pi) * |u| := by
-    simp [norm_mul, Complex.norm_real, abs_of_pos Real.pi_pos]
+    simp
   have hn := fourier_sup_bound R hR f hs i j t s
   rw [fourier_md, norm_mul, norm_mul, norm_pow, norm_pow, hnorm, hnorm] at hn
   calc
@@ -181,7 +181,7 @@ private lemma weighted_sup_bound (R : ℝ) (hR : 0 < R) (f : 𝓢(P,ℂ))
       · exact le_mul_of_one_le_left (abs_nonneg t) ha
       · exact le_mul_of_one_le_left (abs_nonneg s) ha
     _ ≤ _ := hn
-private lemma supjet_le_sum (R : ℝ) (hR : 0 < R) (f : 𝓢(P,ℂ)) (i j : ℕ) (hi : i < 3) (hj : j < 3) :
+lemma supjet_le_sum (R : ℝ) (hR : 0 < R) (f : 𝓢(P,ℂ)) (i j : ℕ) (hi : i < 3) (hj : j < 3) :
     supjet R i j f ≤ ∑ i ∈ Finset.range 3, ∑ j ∈ Finset.range 3, supjet R i j f := by
   apply (Finset.single_le_sum (fun j _ => sj_nonneg R hR i j f) (Finset.mem_range.mpr hj)).trans
   apply Finset.single_le_sum _ (Finset.mem_range.mpr hi)
@@ -266,14 +266,12 @@ private lemma finish (R : ℝ) (hR : 0 < R) (H : ℝ × ℝ → ℂ)
       refine ⟨x, hxy.1, y, hxy.2, ?_⟩
       dsimp only
       rw [md_eval]
-      have heq : (fun p => f (e.symm p)) = H := by ext p; rw [hf, e.apply_symm_apply]
-      rw [heq]
+      rfl
     · rintro ⟨x,hx,y,hy,rfl⟩
       refine ⟨(x,y), ⟨hx,hy⟩, ?_⟩
       dsimp only
       rw [md_eval]
-      have heq : (fun p => f (e.symm p)) = H := by ext p; rw [hf, e.apply_symm_apply]
-      rw [heq]
+      rfl
   have hh := weighted_bound R hR f hsf t s
   rw [hjet] at hh
   rw [coef H hH hc]
@@ -288,7 +286,3 @@ theorem coefficient_box_bound (R : ℝ) (hR : 0 < R) :
   refine ⟨4 * (2 * R)^2, by positivity, ?_⟩
   intro H hH hs t s
   exact finish R hR H hH hs t s
-
-end DedekindZetaZeroFree.LargeSieve.Vendor.BoxFourier
-
-end

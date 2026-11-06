@@ -34,7 +34,7 @@ theorem exterior_trace_detects_nonintegral_diagonal (R : PrincipalMellin.ActualR
   push Not at h
   exact hy ((R.traceBad p.val p.property _).mp h)
 
-private theorem residueChar_mem (q : KPFinitePlace F) (n : ℕ)
+theorem residueChar_mem (q : KPFinitePlace F) (n : ℕ)
     (hn : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) = n) :
     (n : 𝓞 F) ∈ q.asIdeal := by
   let ν : Valuation (KPTameCompact.K F q) ℤᵐ⁰ := Valued.v

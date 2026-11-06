@@ -12,7 +12,7 @@ open scoped NumberField Classical
 
 namespace DedekindZetaZeroFree.LargeSieve.Sieve
 
-private theorem core_band_hypothesis
+theorem core_band_hypothesis
     (F : Type) [Field F] [NumberField F]
     (c : Ideal (𝓞 F)) (hc : c ≠ ⊥)
     (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c) (hCore : CoreGood Q) :
@@ -63,5 +63,3 @@ theorem hasSieveExponent_one_core
   intro ε hε
   obtain ⟨C, hC, hbound⟩ := hOne ε hε
   exact ⟨C, le_of_lt hC, hbound⟩
-
-end DedekindZetaZeroFree.LargeSieve.Sieve

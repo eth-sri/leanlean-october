@@ -15,7 +15,7 @@ local instance (S : Finset (HeightOneSpectrum (RingOfIntegers F))) : MeasurableS
 local instance (S : Finset (HeightOneSpectrum (RingOfIntegers F))) : BorelSpace (SLocalProduct F S) := ⟨rfl⟩
 local instance (v : HeightOneSpectrum (RingOfIntegers F)) : BorelSpace (v.adicCompletion F) := ⟨rfl⟩
 
-private theorem annular_tensor (A : SArithmeticData F) (W : SLocalProduct F A.Sf → ℂ)
+theorem annular_tensor (A : SArithmeticData F) (W : SLocalProduct F A.Sf → ℂ)
     (hw : ProbeWeight.IsAnnularTensor F A.Sf W) :
     ∃ (f : 𝓢(PoissonArch.Space F, ℂ)) (φ : (v : A.Sf) → v.val.adicCompletion F → ℂ),
       (∀ v, IsLocallyConstant (φ v)) ∧ (∀ v, HasCompactSupport (φ v)) ∧
@@ -54,7 +54,7 @@ private theorem annular_tensor (A : SArithmeticData F) (W : SLocalProduct F A.Sf
   rw [he]
   rfl
 
-private theorem trace_pair (A : SArithmeticData F) (u v : InfiniteAdeleRing F) :
+theorem trace_pair (A : SArithmeticData F) (u v : InfiniteAdeleRing F) :
     PoissonArch.tracePairing F (PoissonArch.infiniteAdeleToSpace F u) (PoissonArch.infiniteAdeleToSpace F v) =
       ∑ w : InfinitePlace F, 2 * (InfinitePlace.Completion.extensionEmbedding w (u w * v w)).re := by
   letI : IsEmpty {w : InfinitePlace F // w.IsReal} := ⟨fun w => (InfinitePlace.not_isReal_iff_isComplex.mpr (A.complex_place w)) w.property⟩
@@ -65,7 +65,7 @@ private theorem trace_pair (A : SArithmeticData F) (u v : InfiniteAdeleRing F) :
   intro w
   rfl
 
-private theorem fourier_transport (A : SArithmeticData F)
+theorem fourier_transport (A : SArithmeticData F)
     (e : (v : A.Sf) → AddChar (v.val.adicCompletion F) Circle)
     (μ : (v : A.Sf) → Measure (v.val.adicCompletion F))
     (W : SLocalProduct F A.Sf → ℂ) (y : SLocalProduct F A.Sf) :
@@ -83,8 +83,8 @@ private theorem fourier_transport (A : SArithmeticData F)
   filter_upwards [] with x
   unfold ProbeAdditive.phase ProbeAdditive.archPhase
   have ht := trace_pair A (- (E.symm x).1) y.1
-  have hx : PoissonArch.infiniteAdeleToSpace F (E.symm x).1 = x.1 := by
-    exact congrArg Prod.fst (E.apply_symm_apply x)
+  have hx : PoissonArch.infiniteAdeleToSpace F (E.symm x).1 = x.1 := 
+    congrArg Prod.fst (E.apply_symm_apply x)
   have hy : (PoissonS.localProductToSpace F A.Sf y).1 = PoissonArch.infiniteAdeleToSpace F y.1 := rfl
   rw [map_neg, hx, PoissonArch.tracePairing_eq_inner, inner_neg_left, ← PoissonArch.tracePairing_eq_inner] at ht
   simp only [show (2 : ℂ) = ((2 : ℝ) : ℂ) from rfl, ← Complex.ofReal_mul, ← Complex.ofReal_sum]
@@ -96,9 +96,7 @@ private theorem fourier_transport (A : SArithmeticData F)
   rw [← mul_assoc]
   congr 1
   congr 1
-  congr 1
-  push_cast
-  ring
+  simp
 
 theorem raw_fourier_norm_summable
     (A : SArithmeticData F) (σ : F →+* ℂ)
@@ -125,8 +123,8 @@ theorem raw_fourier_norm_summable
     (PoissonS.ScaleShift.traceConductor_nontrivial F A.Sf P.finiteTrace N.traceConductor)
     g ψ hψl hψc ((s : F) * (a : F)) hp
   let i : A.R → PoissonS.lattice F A.Sf ((s : F) * (a : F))⁻¹ := fun h =>
-    ⟨PoissonS.diagonalHom F A.Sf (((s : F) * (a : F))⁻¹ * (h : F)), by
-      exact AddSubgroup.mem_map.mpr ⟨(h : F), h.property, rfl⟩⟩
+    ⟨PoissonS.diagonalHom F A.Sf (((s : F) * (a : F))⁻¹ * (h : F)), 
+      AddSubgroup.mem_map.mpr ⟨(h : F), h.property, rfl⟩⟩
   have hi : Function.Injective i := by
     intro x y hxy
     have he := congrArg (fun z : PoissonS.lattice F A.Sf ((s : F) * (a : F))⁻¹ =>
@@ -184,6 +182,3 @@ theorem raw_fourier_norm_summable
       exact norm_pos_iff.mpr (show (d.val.2 v) ≠ 0 from Units.ne_zero dv)
   simp only [Function.comp_def, hscale, norm_mul] at hsum'
   exact (summable_mul_left_iff (norm_ne_zero_iff.mpr (Complex.ofReal_ne_zero.mpr hpos.ne'))).mp hsum'
-
-end
-end DedekindZetaZeroFree.ProbeCoset

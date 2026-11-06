@@ -36,7 +36,7 @@ namespace DedekindZetaZeroFree.KPCplxHarmonicIntertwinerSpectrum
 open KPCplxCharacterHaar KPCplxPrincipalSeriesCharts MeasureTheory Set
 open scoped NNReal
 
-private lemma positive_transition_norm (f : PrincipalSeries positiveParameter) (x : ℂ)
+lemma positive_transition_norm (f : PrincipalSeries positiveParameter) (x : ℂ)
     (hx : 1 ≤ ‖x‖) :
     ‖openCoordinate f x‖ = ‖x‖ ^ (-(8 / 3 : ℝ)) * ‖infinityCoordinate f x⁻¹‖ := by
   have hx0 : x ≠ 0 := by intro h; simp [h] at hx; norm_num at hx
@@ -111,8 +111,7 @@ lemma positive_openCoordinate_integral_bound (β : ℂˣ) :
     simp only [Complex.finrank_real_complex]
     norm_num
   let C : ℝ := (2 : ℝ) ^ (8 / 3 : ℝ) * ∫ x : ℂ, w x ∂characterHaar β
-  have hC : 0 ≤ C := mul_nonneg (Real.rpow_nonneg (by norm_num) _)
-    (integral_nonneg (fun x => Real.rpow_nonneg (by positivity) _))
+  have hC : 0 ≤ C := by positivity
   refine ⟨⟨C, hC⟩, ?_⟩
   intro f
   have hb := norm_integral_le_of_norm_le
@@ -198,7 +197,7 @@ lemma principalSeries_barrelled (s : ℝ) : BarrelledSpace ℝ (PrincipalSeries 
     have hh := (Complex.continuous_ofReal.comp continuous_fst).smul (continuous_snd :
       Continuous (fun p : ℝ × PrincipalSeries s => p.2))
     change Continuous (fun p : ℝ × PrincipalSeries s => (algebraMap ℝ ℂ) p.1 • p.2) at hh
-    simpa only [IsScalarTower.algebraMap_smul] using hh⟩
+    omega⟩
   letI : IsUniformAddGroup (PrincipalSeries s) := isUniformAddGroup_of_addCommGroup
   letI := IsUniformAddGroup.uniformity_countably_generated (α := PrincipalSeries s)
   infer_instance
@@ -260,74 +259,16 @@ end DedekindZetaZeroFree.KPCplxHarmonicIntertwinerSpectrum
 namespace DedekindZetaZeroFree.KPCplxHarmonicIntertwinerSpectrum
 open KPCplxCharacterHaar KPCplxPrincipalSeriesCharts Set
 
-lemma principalSeries_barrelled_complex (s : ℝ) : BarrelledSpace ℂ (PrincipalSeries s) := by
-  letI := principalSeries_t2 s
-  letI := principalSeries_metrizable s
-  letI := principalSeries_complete s
-  have htop : WithSeminorms (chartSeminorm s) := ⟨rfl⟩
-  letI : ContinuousSMul ℂ (PrincipalSeries s) := htop.continuousSMul
-  letI : IsUniformAddGroup (PrincipalSeries s) := isUniformAddGroup_of_addCommGroup
-  letI := IsUniformAddGroup.uniformity_countably_generated (α := PrincipalSeries s)
-  infer_instance
+lemma principalSeries_barrelled_complex (s : ℝ) : BarrelledSpace ℂ (PrincipalSeries s) := by apply DedekindZetaZeroFree.KPCplxPrincipalSeriesCharts.evaluation_principalSeries_barrelled_complex <;> assumption
 
 lemma closedDiscSup_lowerSemicontinuous {E : Type*} [TopologicalSpace E]
     (F : E → ℂ → ℝ) (hF : ∀ x : ℂ, Continuous (fun f => F f x))
     (hcont : ∀ f, Continuous (F f)) :
-    LowerSemicontinuous (fun f => sSup (F f '' Metric.closedBall (0 : ℂ) 1)) := by
-  let B := Metric.closedBall (0 : ℂ) 1
-  letI : Nonempty B := ⟨⟨0, Metric.mem_closedBall_self (by norm_num)⟩⟩
-  have he : (fun f => sSup (F f '' B)) = fun f => ⨆ x : B, F f x := by
-    funext f
-    rw [iSup]
-    congr 1
-    ext r
-    simp [Set.mem_range]
-  rw [he]
-  apply lowerSemicontinuous_ciSup
-  · intro f
-    have hb := ((isCompact_closedBall (0 : ℂ) 1).image (hcont f)).bddAbove
-    exact hb.mono (by rintro r ⟨x, rfl⟩; exact ⟨x, x.property, rfl⟩)
-  · intro x
-    exact (hF x).lowerSemicontinuous
+    LowerSemicontinuous (fun f => sSup (F f '' Metric.closedBall (0 : ℂ) 1)) := by apply DedekindZetaZeroFree.KPCplxPrincipalSeriesEvaluationContinuity.closedDiscSup_lowerSemicontinuous <;> assumption
 
 lemma linearMap_continuous_of_point_evaluations (s t : ℝ)
     (T : PrincipalSeries s →ₗ[ℂ] PrincipalSeries t)
-    (hT : ∀ g : ComplexGL2, Continuous (fun f => T f g)) : Continuous T := by
-  letI : BarrelledSpace ℝ (PrincipalSeries s) := principalSeries_barrelled s
-  letI : BarrelledSpace ℂ (PrincipalSeries s) := principalSeries_barrelled_complex s
-  have htop : WithSeminorms (chartSeminorm s) := ⟨rfl⟩
-  letI : ContinuousSMul ℂ (PrincipalSeries s) := htop.continuousSMul
-  letI : ContinuousSMul ℝ (PrincipalSeries s) := ⟨by
-    have hh := (Complex.continuous_ofReal.comp continuous_fst).smul (continuous_snd :
-      Continuous (fun p : ℝ × PrincipalSeries s => p.2))
-    change Continuous (fun p : ℝ × PrincipalSeries s => (algebraMap ℝ ℂ) p.1 • p.2) at hh
-    simpa only [IsScalarTower.algebraMap_smul] using hh⟩
-  letI : IsUniformAddGroup (PrincipalSeries s) := isUniformAddGroup_of_addCommGroup
-  let O : PrincipalSeries s →ₗ[ℝ] (ℂ → ℂ) :=
-    { toFun := fun f => openCoordinate (T f)
-      map_add' := by intros; ext; simp [openCoordinate]
-      map_smul' := by intros; ext; simp [openCoordinate] }
-  let I : PrincipalSeries s →ₗ[ℝ] (ℂ → ℂ) :=
-    { toFun := fun f => infinityCoordinate (T f)
-      map_add' := by intros; ext; simp [infinityCoordinate]
-      map_smul' := by intros; ext; simp [infinityCoordinate] }
-  have ho := derivativeEvaluation_continuous O (fun f => (T f).property.2.1)
-    (fun x => hT (weyl * upperUnipotent x))
-  have hi := derivativeEvaluation_continuous I (fun f => (T f).property.2.2)
-    (fun x => hT (lowerUnipotent x))
-  have ht : WithSeminorms (chartSeminorm t) := ⟨rfl⟩
-  apply ht.continuous_of_continuous_comp T
-  intro n
-  apply Seminorm.continuous_of_lowerSemicontinuous
-  change LowerSemicontinuous (fun f => chartSeminormValue t n (T f))
-  unfold chartSeminormValue
-  apply LowerSemicontinuous.sup
-  · apply closedDiscSup_lowerSemicontinuous
-    · intro x; exact (ho n x).norm
-    · intro f; exact ((T f).property.2.1.continuous_iteratedFDeriv (by simp)).norm
-  · apply closedDiscSup_lowerSemicontinuous
-    · intro x; exact (hi n x).norm
-    · intro f; exact ((T f).property.2.2.continuous_iteratedFDeriv (by simp)).norm
+    (hT : ∀ g : ComplexGL2, Continuous (fun f => T f g)) : Continuous T := by apply DedekindZetaZeroFree.KPCplxPrincipalSeriesCharts.evaluation_linearMap_continuous_of_point_evaluations <;> assumption
 
 end DedekindZetaZeroFree.KPCplxHarmonicIntertwinerSpectrum
 
@@ -370,5 +311,3 @@ theorem positive_intertwiner_open_chart_bounds (β : ℂˣ)
   intro f x hx
   exact (openCoordinate_derivative_le_chartSeminorm negativeParameter n (T f) x hx).trans
     (Seminorm.le_def.mp hb f)
-
-end DedekindZetaZeroFree.KPCplxHarmonicIntertwinerSpectrum

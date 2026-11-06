@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 namespace ClassFormation
 
 open CyclicCohomology
@@ -55,7 +52,7 @@ theorem exists_positive_nsmul_one_sub_mem_of_index_ne_zero
   have : NeZero m := ⟨Nat.ne_of_gt hm⟩
   have hn : (n : ZMod m) = r := by
     change ((r.val + m : ℕ) : ZMod m) = r
-    rw [Nat.cast_add, ZMod.natCast_zmod_val, ZMod.natCast_self, add_zero]
+    simp
   rw [hn, sub_self]
 
 namespace DegreeData
@@ -158,7 +155,7 @@ def frobeniusRestriction (D : DegreeData G)
     ((extensionSubgroup K.field L hLK).map
       (D.normalizedDegree K).toMonoidHom)
 
-private theorem normalizedExtensionImageAdd_index_ne_zero
+theorem normalizedExtensionImageAdd_index_ne_zero
     (D : DegreeData G) (K : FiniteResidueAbstractField D)
     (L : ClosedSubgroup G)
     (hLK : L.toSubgroup ≤ K.field.toSubgroup)
@@ -176,8 +173,7 @@ private theorem normalizedExtensionImageAdd_index_ne_zero
   have hE0 : E.index ≠ 0 := E.index_ne_zero_of_finite
   have hH0 : H.index ≠ 0 := by
     intro hzero
-    rw [hzero] at hHdvd
-    exact hE0 (zero_dvd_iff.mp hHdvd)
+    simp_all
   exact hH0
 
 /-- **the finite degree-quotient decomposition.** For a finite Galois extension `L | K`, restriction
@@ -216,19 +212,8 @@ theorem frobeniusRestriction_surjective (D : DegreeData G)
     change (D.normalizedDegree K s).toAdd +
         (D.normalizedDegree K l).toAdd = n • (1 : ZHat)
     have hdl' := congrArg Multiplicative.toAdd hdl
-    change (D.normalizedDegree K l).toAdd =
-      n • (1 : ZHat) - (D.normalizedDegree K s).toAdd at hdl'
-    rw [hdl']
-    abel
+    simp_all
   let qF : D.FrobeniusElements K L hLK := ⟨q, n, hn, hdq⟩
   refine ⟨qF, ?_⟩
   change QuotientGroup.mk (s * l) = QuotientGroup.mk s
-  apply QuotientGroup.eq.mpr
-  change (s * l)⁻¹ * s ∈ extensionSubgroup K.field L hLK
-  simpa [mul_inv_rev, mul_assoc] using
-    (extensionSubgroup K.field L hLK).inv_mem hlE
-
-end DegreeData
-
-end
-end ClassFormation
+  simp_all

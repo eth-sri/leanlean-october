@@ -1,6 +1,7 @@
 module
 
-public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Extension.NormProperties
+public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Extension.BaseChange
+public import Mathlib.RingTheory.Norm.Transitivity
 public import Mathlib.Algebra.Module.LinearMap.Polynomial
 public import Mathlib.Algebra.MvPolynomial.Funext
 public import Mathlib.LinearAlgebra.Charpoly.BaseChange
@@ -15,12 +16,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # The Galois product formula for the relative idele norm
 
@@ -33,7 +28,6 @@ open scoped BigOperators TensorProduct
 open NumberField
 
 noncomputable section
-
 
 namespace RelativeIdeleGroup
 
@@ -356,7 +350,3 @@ theorem inclusion_norm_eq_prod_conjugates
     smul_def, conjugationIdele_coe]
   exact adeleInclusion_norm_eq_prod_conjugates
     (K := K) (L := L) (a : RelativeAdeleRing K L)
-
-end RelativeIdeleGroup
-
-end

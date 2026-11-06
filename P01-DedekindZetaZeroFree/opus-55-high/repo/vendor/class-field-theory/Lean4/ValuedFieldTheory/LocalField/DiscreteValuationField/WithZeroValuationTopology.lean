@@ -4,13 +4,14 @@ public import ValuedFieldTheory.LocalField.DiscreteValuationField.ValuationSubri
 public import ValuedFieldTheory.LocalField.DiscreteValuationField.ValuationSubringUnits.CyclicValueGroup
 public import ValuedFieldTheory.LocalField.DiscreteValuationField.ValuationSubringUnits.IntegerValuation
 public import ValuedFieldTheory.LocalField.DiscreteValuationField.ValuationSubringUnits.SeriesValuationEstimates
-public import ValuedFieldTheory.LocalField.DiscreteValuationField.ValuationSubringUnits.IntegerValuationUniformizer
+public import ValuedFieldTheory.LocalField.DiscreteValuationField.FieldNorm
+public import Mathlib.RingTheory.Valuation.Extension
 public import ValuedFieldTheory.LocalField.DiscreteValuationField.ValuationSubringUnits.CompleteRangeRestriction
 public import ValuedFieldTheory.LocalField.DiscreteValuationField.ValuationSubringUnits.UniformizerIntegerValuation
 public import ValuedFieldTheory.LocalField.DiscreteValuationField.ValuationSubringUnits.RangeRestrictedTopology
 public import ValuedFieldTheory.LocalField.DiscreteValuationField.ValuationSubringUnits.ValuationSubringUnitMap
 public import ValuedFieldTheory.LocalField.DiscreteValuationField.ValuationSubringUnits.LocalFieldRangeRestriction
-public import ValuedFieldTheory.LocalField.DiscreteValuationField.ValuationSubringUnits.ValuedExtensionUnitMap
+public import ValuedFieldTheory.LocalField.DiscreteValuationField.RamificationIdeal
 
 @[expose] public section
 
@@ -20,19 +21,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
-
-
-
-
-
-set_option autoImplicit false
 
 /-!
 # The direct topology of a standard multiplicative integer valuation
@@ -77,7 +65,6 @@ theorem valuedMk_uniformSpace_eq_mrangeRestrict
       (completeDVF v)
   have hequiv : v.IsEquiv w := by
     intro x y
-    rw [← Subtype.coe_le_coe]
     rfl
   change (Valued.mk' v).toUniformSpace = (Valued.mk' w).toUniformSpace
   apply le_antisymm
@@ -101,8 +88,8 @@ theorem completeSpace_ofWithZeroValuation
   have : Finite F.residueField := by
     change Finite (IsLocalRing.ResidueField v.valuationSubring)
     infer_instance
-  have hcomplete : @CompleteSpace K restrictedNormed.toUniformSpace := by
-    exact _root_.LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrict_completeSpace_of_residueField_finite F
+  have hcomplete : @CompleteSpace K restrictedNormed.toUniformSpace := 
+    _root_.LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrict_completeSpace_of_residueField_finite F
   have huniform : direct.toUniformSpace = restrictedNormed.toUniformSpace := by
     change
       (Valued.mk' v).toUniformSpace =
@@ -121,8 +108,3 @@ theorem completeSpace_ofWithZeroValuation
   change @CompleteSpace K direct.toUniformSpace
   rw [huniform]
   exact hcomplete
-
-end WithZeroValuationTopology
-end LocalFieldTheory.DiscreteValuationField
-
-end

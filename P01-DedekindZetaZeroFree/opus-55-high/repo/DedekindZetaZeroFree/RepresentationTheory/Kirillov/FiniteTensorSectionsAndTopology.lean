@@ -29,8 +29,8 @@ theorem diagonalLift_slope (t : (K F w)ˣ) :
   apply Units.ext
   change (KPRankOneInduction.borelRatio F w _ : K F w) = t
   rw [KPRankOneInduction.borelRatio_eq F w _ (KPRankOneInduction.diagonalMatrix F w t)
-    rfl (by simp [KPRankOneInduction.diagonalMatrix, KubotaRankTwo.d])]
-  simp [KPRankOneInduction.diagonalMatrix, KubotaRankTwo.d]
+    rfl (by simp [KPRankOneInduction.diagonalMatrix])]
+  simp [KPRankOneInduction.diagonalMatrix]
 
 variable (lift : (K F w)ˣ → P F ζ hζ w)
   (hslope : ∀ t, slope F ζ hζ w (lift t) = t)
@@ -68,7 +68,7 @@ open NumberField IsDedekindDomain KPKirillovGenuineSectionCharts
 variable (F : Type) [Field F] [NumberField F]
   (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-noncomputable instance scalarSectionAddCommGroup
+instance scalarSectionAddCommGroup
     (w : HeightOneSpectrum (RingOfIntegers F)) (m : ℕ)
     (ψ : Multiplicative (K F w) →* ℂˣ) :
     AddCommGroup (Sections F ζ hζ w m ψ ℂ) := by
@@ -93,8 +93,8 @@ abbrev ScalarSections (v : W) := Sections F ζ hζ v.val (m v) (ψ v) ℂ
 
 def localEvaluation (v : W) :
     ScalarSections F ζ hζ W m ψ v ⊗[ℂ] Jacquet F ζ hζ W ψ V ρ v →ₗ[ℂ]
-      Jacquet F ζ hζ W ψ V ρ v := by
-  exact TensorProduct.lift
+      Jacquet F ζ hζ W ψ V ρ v := 
+  TensorProduct.lift
     { toFun := fun f => sectionValue F ζ hζ v.val (m v) (ψ v) f 1 •
         (LinearMap.id : Jacquet F ζ hζ W ψ V ρ v →ₗ[ℂ] _)
       map_add' := by intros; ext; simp [sectionValue, add_smul]
@@ -154,7 +154,7 @@ structure LocalEmbeddingData where
 
 abbrev JacquetTensor := ⨂[ℂ] v : W, Jacquet F ζ hζ W ψ V ρ v
 
-noncomputable instance tensorSectionAddCommGroup
+instance tensorSectionAddCommGroup
     (E : Type*) [AddCommGroup E] [Module ℂ E] :
     AddCommGroup (SectionTensor F ζ hζ W m ψ ⊗[ℂ] E) :=
   Module.addCommMonoidToAddCommGroup ℂ
@@ -181,8 +181,8 @@ def tensorShuffle :
     (e : ∀ v, Jacquet F ζ hζ W ψ V ρ v) :
     tensorShuffle F ζ hζ W m ψ V ρ
       (PiTensorProduct.tprod ℂ f ⊗ₜ[ℂ] PiTensorProduct.tprod ℂ e) =
-      PiTensorProduct.tprod ℂ (fun v => f v ⊗ₜ[ℂ] e v) := by
-  exact ShuffleHelpers.shuffle_tmul _ _ f e
+      PiTensorProduct.tprod ℂ (fun v => f v ⊗ₜ[ℂ] e v) := 
+  ShuffleHelpers.shuffle_tmul _ _ f e
 
 variable (D : LocalEmbeddingData F ζ hζ W m hm ψ V ρ)
 
@@ -243,9 +243,7 @@ theorem tensorEmbedding_equivariant (a : ProductAffine F ζ hζ W) x :
       | smul_tprod d e =>
         simp only [TensorProduct.smul_tmul, TensorProduct.tmul_smul, map_smul]
         congr 2
-        simp only [tensorEmbedding, inducedAction, ambientAction,
-          LinearMap.comp_apply, TensorProduct.map_tmul, PiTensorProduct.map_tprod,
-          LinearMap.id_apply, tensorShuffle_tmul]
+        simp only [tensorEmbedding, inducedAction, ambientAction, LinearMap.comp_apply]
         dsimp only [MonoidHom.coe_mk, OneHom.coe_mk]
         simp only [TensorProduct.map_tmul, PiTensorProduct.map_tprod,
           LinearMap.id_apply, LinearEquiv.coe_coe, tensorShuffle_tmul]
@@ -262,7 +260,7 @@ theorem tensor_evaluation_square :
   funext v
   exact D.evaluation v
 
-private theorem coefficientInclusion_action
+theorem coefficientInclusion_action
     (E : Submodule ℂ (JacquetTensor F ζ hζ W ψ V ρ))
     (a : ProductAffine F ζ hζ W) x :
     coefficientInclusion F ζ hζ W m ψ V ρ E
@@ -304,8 +302,7 @@ theorem subspaceEmbedding_equivariant
     have hn : n F ζ hζ v.val 0 = 1 := by
       apply Subtype.ext
       exact (KPLocalSmoothRepresentation.upperRoot F ζ hζ v.val).map_one
-    simp only [toAdd_one, hn]
-    exact Function.update_eq_self v (1 : ProductAffine F ζ hζ W)
+    simp_all
   map_mul' := by
     intro a b
     have hn : n F ζ hζ v.val (a.toAdd + b.toAdd) =
@@ -315,13 +312,13 @@ theorem subspaceEmbedding_equivariant
     funext w
     by_cases h : w = v
     · subst w
-      simp only [toAdd_mul, hn, Function.update_self, Pi.mul_apply]
+      simp_all
     · simp [Function.update_of_ne h]
 
 def slotRootAction (v : W) (E : Type*) [AddCommGroup E] [Module ℂ E] :
     Representation ℂ (Multiplicative (K F v.val))
-      (SectionTensor F ζ hζ W m ψ ⊗[ℂ] E) := by
-  exact (inducedAction F ζ hζ W m hm ψ E).comp (rootSlot F ζ hζ W v)
+      (SectionTensor F ζ hζ W m ψ ⊗[ℂ] E) := 
+  (inducedAction F ζ hζ W m hm ψ E).comp (rootSlot F ζ hζ W v)
 
 include D in
 
@@ -381,11 +378,3 @@ theorem image_slot_coinvariants_vanish (v : W)
     exact subspaceEmbedding_equivariant F ζ hζ W m hm ψ V ρ D E
       (rootSlot F ζ hζ W v b) x
   · exact slot_relationSpan_eq_top F ζ hζ W m hm ψ V ρ D v E
-
-variable (τ : ∀ v : W,
-  Representation ℂ (KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr v.val)) (V v))
-
-end DedekindZetaZeroFree.KPKirillovFiniteTensor
-
-end
-end

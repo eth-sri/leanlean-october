@@ -26,8 +26,7 @@ theorem local_power_injection (F : Type) [Field F] [NumberField F]
   let n : ℕ+ := ⟨ℓ, hℓpos⟩
   have hn : (n : ℕ) ∈ ({2, 3, 6} : Finset ℕ) := hℓ
   have hnF : ((n : ℕ) : F) ≠ 0 := by
-    simp only [Finset.mem_insert, Finset.mem_singleton] at hℓ
-    rcases hℓ with h | h | h <;> (subst h; norm_num)
+    simp
   have hlocal' : ∀ v : A.Place,
       match v with
       | Sum.inl w =>
@@ -44,6 +43,3 @@ theorem local_power_injection (F : Type) [Field F] [NumberField F]
         exact ⟨b, hb⟩
   have hdeg := arith_sunit_kummer_degree_one F A hCl n hn ε hlocal' hnF
   exact sunit_root_of_simpleKummerExtension_finrank_one F A n ε hnF hdeg
-
-end SArithmeticData
-end DedekindZetaZeroFree

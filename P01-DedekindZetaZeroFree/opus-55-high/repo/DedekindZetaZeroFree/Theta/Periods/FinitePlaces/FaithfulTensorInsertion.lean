@@ -25,19 +25,6 @@ local instance : DecidableEq (KPHilbert.Place F) := Classical.decEq _
 
 namespace TensorHC
 
-def slotFunction (D : TensorHC R N) (s : RestrictedTensorSimple.Level D.bad)
-    (x : ∀ p : s.val, actualLocal R D.finiteData p) (i : s.val) :
-    actualLocal R D.finiteData i →ₗ[ℂ] Functions R :=
-  D.coreMap.comp ((RestrictedTensorSimple.stageInclusion _ D.references D.bad s).comp
-    ((PiTensorProduct.tprod ℂ).toLinearMap x i))
-
-@[simp] theorem slotFunction_apply (D : TensorHC R N)
-    (s : RestrictedTensorSimple.Level D.bad)
-    (x : ∀ p : s.val, actualLocal R D.finiteData p) (i : s.val)
-    (b : actualLocal R D.finiteData i) :
-    D.slotFunction s x i b = D.coreMap (RestrictedTensorSimple.stageInclusion _
-      D.references D.bad s (PiTensorProduct.tprod ℂ (Function.update x i b))) := rfl
-
 end TensorHC
 
 namespace TensorDetected

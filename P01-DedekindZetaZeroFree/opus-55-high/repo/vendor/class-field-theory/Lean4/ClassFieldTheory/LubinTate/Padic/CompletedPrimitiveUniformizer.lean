@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # The completed p-adic primitive point is a uniformizer
 
@@ -65,7 +60,7 @@ open ValuationTheory.DiscreteValuationField.ValuedExtension
   have hadic : IsAdic target.maximalIdeal := rfl
   exact (hadic.isAdicComplete_iff.mp target.isAdicComplete).2
 
-private theorem completedPolynomial_eval₂_mem_ideal_of_coeff_mem
+theorem completedPolynomial_eval₂_mem_ideal_of_coeff_mem
     {R S : Type*} [CommSemiring R] [CommSemiring S]
     (f : R →+* S) (I : Ideal S) (P : Polynomial R) (z : S)
     (hcoeff : ∀ i, f (P.coeff i) ∈ I) :
@@ -74,7 +69,7 @@ private theorem completedPolynomial_eval₂_mem_ideal_of_coeff_mem
   exact Ideal.sum_mem _ fun i _ =>
     Ideal.mul_mem_right (z ^ i) I (hcoeff i)
 
-private theorem
+theorem
     padicCompletedPrimitiveRootInteger_addVal_and_ramificationIndex
     (p : ℕ) [Fact p.Prime] (n : ℕ) :
     IsDiscreteValuationRing.addVal
@@ -147,12 +142,10 @@ private theorem
             base target
   have he_ne : e ≠ 0 := by
     intro he
-    apply hdne
-    rw [hfund, he, zero_mul]
+    simp_all
   have hf_ne : f ≠ 0 := by
     intro hf
-    apply hdne
-    rw [hfund, hf, mul_zero]
+    simp_all
   have hele : e ≤ d := by
     rw [hfund]
     exact Nat.le_mul_of_pos_right e (Nat.pos_of_ne_zero hf_ne)
@@ -160,7 +153,7 @@ private theorem
     rcases lt_trichotomy i d with hi | hi | hi
     · have hQi : Q.coeff i ∈ 𝔭 := by
         apply hQeisenstein.mem
-        rwa [hQnatDegree]
+        omega
       change (Q - Polynomial.X ^ d).coeff i ∈ 𝔭
       rw [Polynomial.coeff_sub, Polynomial.coeff_X_pow,
         ite_eq_right (ne_of_lt hi), sub_zero]
@@ -170,12 +163,10 @@ private theorem
         rw [← hQnatDegree]
         exact hQmonic.coeff_natDegree
       change (Q - Polynomial.X ^ d).coeff d ∈ 𝔭
-      rw [Polynomial.coeff_sub, hQd, Polynomial.coeff_X_pow,
-        ite_eq_left rfl, sub_self]
-      exact 𝔭.zero_mem
+      simp_all
     · have hQi : Q.coeff i = 0 := by
         apply Polynomial.coeff_eq_zero_of_natDegree_lt
-        rwa [hQnatDegree]
+        omega
       change (Q - Polynomial.X ^ d).coeff i ∈ 𝔭
       rw [Polynomial.coeff_sub, hQi, Polynomial.coeff_X_pow,
         ite_eq_right (ne_of_gt hi), sub_zero]
@@ -203,9 +194,7 @@ private theorem
         (sub_add_cancel Q (Polynomial.X ^ d)).symm
       _ = Polynomial.X ^ d + R := by rw [add_comm]
   have hrootDecomp : root ^ d + R.eval₂ j root = 0 := by
-    rw [hQdecomp, Polynomial.eval₂_add, Polynomial.eval₂_pow,
-      Polynomial.eval₂_X] at hroot
-    exact hroot
+    simp_all
   have hrootMem : root ∈ 𝔓 := by
     simpa only [root, 𝔓, target] using
       padicCompletedPrimitiveRootInteger_mem_maximalIdeal p n
@@ -302,8 +291,7 @@ private theorem
             target.valuationSubring root := by rw [nsmul_eq_mul]
       _ = IsDiscreteValuationRing.addVal target.valuationSubring
           (root ^ d) := by
-        symm
-        exact IsDiscreteValuationRing.addVal_pow root d
+        simp
       _ = IsDiscreteValuationRing.addVal target.valuationSubring
           (-(R.eval₂ j root)) := by rw [hpowEq]
       _ = IsDiscreteValuationRing.addVal target.valuationSubring
@@ -346,16 +334,6 @@ private theorem
     simpa only [base, target, e] using hed.trans hdegree.symm
   exact ⟨hrootVal, heramDegree⟩
 
-/-- The chosen completed primitive point has normalized additive valuation
-one in the completed-level valuation ring. -/
-theorem padicCompletedPrimitiveRootInteger_addVal
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
-    IsDiscreteValuationRing.addVal
-        (padicCompletedLevelCompleteDVF p n).valuationSubring
-        (padicCompletedPrimitiveRootInteger p n) = 1 :=
-  (padicCompletedPrimitiveRootInteger_addVal_and_ramificationIndex
-    p n).1
-
 /-- The completed multiplicative Lubin--Tate level is totally ramified over
 the completed-unramified coefficient field. -/
 theorem padicCompletedLevel_ramificationIndex_eq_degree
@@ -369,36 +347,7 @@ theorem padicCompletedLevel_ramificationIndex_eq_degree
   (padicCompletedPrimitiveRootInteger_addVal_and_ramificationIndex
     p n).2
 
-/-- The completed primitive point is irreducible in the completed-level
-valuation ring. -/
-  theorem padicCompletedPrimitiveRootInteger_irreducible
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
-    Irreducible (padicCompletedPrimitiveRootInteger p n) := by
-  let target := padicCompletedLevelCompleteDVF p n
-  let root := padicCompletedPrimitiveRootInteger p n
-  obtain ⟨ϖ, hϖ⟩ :=
-    IsDiscreteValuationRing.exists_irreducible target.valuationSubring
-  have hval :
-      IsDiscreteValuationRing.addVal target.valuationSubring root =
-        IsDiscreteValuationRing.addVal target.valuationSubring ϖ := by
-    rw [padicCompletedPrimitiveRootInteger_addVal,
-      IsDiscreteValuationRing.addVal_uniformizer hϖ]
-  exact
-    ((IsDiscreteValuationRing.addVal_eq_iff_associated root ϖ).1
-      hval).symm.irreducible hϖ
-
-/-- The chosen completed primitive point is a genuine uniformizer of the
-completed level. -/
-theorem padicCompletedPrimitiveRoot_isUniformizer
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
-    (padicCompletedLevelCompleteDVF p n).valuation.IsUniformizer
-      (padicCompletedPrimitiveRootInteger p n :
-        padicCompletedLevelField p n) := by
-  exact Valuation.isUniformizer_of_maximalIdeal_eq_span
-    (v := (padicCompletedLevelCompleteDVF p n).valuation)
-    (padicCompletedPrimitiveRootInteger_irreducible p n).maximalIdeal_eq
-
-private theorem
+theorem
     padicChangedUniformizerThetaValue_addVal_and_ramificationIndex
     (p : ℕ) [Fact p.Prime]
     (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
@@ -479,7 +428,7 @@ private theorem
     rcases lt_trichotomy i d with hi | hi | hi
     · have hQi : Q.coeff i ∈ 𝔭 := by
         apply hQeisenstein.mem
-        rwa [hQnatDegree]
+        omega
       change (Q - Polynomial.X ^ d).coeff i ∈ 𝔭
       rw [Polynomial.coeff_sub, Polynomial.coeff_X_pow,
         ite_eq_right (ne_of_lt hi), sub_zero]
@@ -489,12 +438,10 @@ private theorem
         rw [← hQnatDegree]
         exact hQmonic.coeff_natDegree
       change (Q - Polynomial.X ^ d).coeff d ∈ 𝔭
-      rw [Polynomial.coeff_sub, hQd, Polynomial.coeff_X_pow,
-        ite_eq_left rfl, sub_self]
-      exact 𝔭.zero_mem
+      simp_all
     · have hQi : Q.coeff i = 0 := by
         apply Polynomial.coeff_eq_zero_of_natDegree_lt
-        rwa [hQnatDegree]
+        omega
       change (Q - Polynomial.X ^ d).coeff i ∈ 𝔭
       rw [Polynomial.coeff_sub, hQi, Polynomial.coeff_X_pow,
         ite_eq_right (ne_of_gt hi), sub_zero]
@@ -522,10 +469,6 @@ private theorem
   have hcomp :
       j.comp (padicCompletedUnramifiedIntegerMap p) =
         padicCompletedLevelPadicIntegerCoefficientHom p n := by
-    ext z
-    rw [RingHom.comp_apply, integerMap_apply,
-      padicCompletedUnramifiedIntegerMap_coe,
-      padicCompletedLevelPadicIntegerCoefficientHom_coe]
     rfl
   have hroot : Q.eval₂ j θ = 0 := by
     have h :=
@@ -538,16 +481,14 @@ private theorem
               (padicCompletedUnramifiedIntegerMap p)) =
         0
     rw [Polynomial.eval₂_map, hcomp]
-    simpa only [πu] using h
+    omega
   have hQdecomp : Q = Polynomial.X ^ d + R := by
     calc
       Q = (Q - Polynomial.X ^ d) + Polynomial.X ^ d :=
         (sub_add_cancel Q (Polynomial.X ^ d)).symm
       _ = Polynomial.X ^ d + R := by rw [add_comm]
   have hrootDecomp : θ ^ d + R.eval₂ j θ = 0 := by
-    rw [hQdecomp, Polynomial.eval₂_add, Polynomial.eval₂_pow,
-      Polynomial.eval₂_X] at hroot
-    exact hroot
+    simp_all
   have hdivCoeff (i : ℕ) : R.divX.coeff i ∈ 𝔭 := by
     rw [Polynomial.coeff_divX]
     exact hRcoeff (i + 1)
@@ -642,8 +583,7 @@ private theorem
             target.valuationSubring θ := by rw [nsmul_eq_mul]
       _ = IsDiscreteValuationRing.addVal target.valuationSubring
           (θ ^ d) := by
-        symm
-        exact IsDiscreteValuationRing.addVal_pow θ d
+        simp
       _ = IsDiscreteValuationRing.addVal target.valuationSubring
           (-(R.eval₂ j θ)) := by rw [hpowEq]
       _ = IsDiscreteValuationRing.addVal target.valuationSubring
@@ -706,7 +646,3 @@ theorem padicChangedUniformizerThetaValue_isUniformizer
       hval).symm.irreducible hϖ
   exact Valuation.isUniformizer_of_maximalIdeal_eq_span
     (v := target.valuation) hθirreducible.maximalIdeal_eq
-
-end LubinTate
-
-end

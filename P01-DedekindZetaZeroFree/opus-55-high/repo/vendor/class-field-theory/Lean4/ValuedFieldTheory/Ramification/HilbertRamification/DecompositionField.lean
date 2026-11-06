@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Decomposition field
 
@@ -32,18 +28,6 @@ namespace HilbertRamification
 open scoped Pointwise Topology
 
 variable (K : Type u) {L : Type v} [Field K] [Field L] [Algebra K L]
-
-/-- The decomposition-field definition: the decomposition field `Z_w` of a
-absolute value `w` over `K`. -/
-abbrev absoluteValueDecompositionField (w : AbsoluteValue L ℝ) :
-    IntermediateField K L :=
-  IntermediateField.fixedField (absoluteValueDecompositionGroup K w)
-
-@[simp] theorem mem_absoluteValueDecompositionField_iff
-    (w : AbsoluteValue L ℝ) (x : L) :
-    x ∈ absoluteValueDecompositionField K w ↔
-      ∀ σ ∈ absoluteValueDecompositionGroup K w, σ x = x :=
-  IntermediateField.mem_fixedField_iff (H := absoluteValueDecompositionGroup K w) x
 
 /-- The decomposition group is closed in the Krull topology.  A failure to
 preserve the valuation class is witnessed by one element `x`; the coset of
@@ -73,17 +57,3 @@ theorem absoluteValueDecompositionGroup_isClosed
       simpa [AlgEquiv.mul_apply, hgx] using hmem x
     · exact E.fixingSubgroup_isOpen.smul σ
     · exact ⟨1, E.fixingSubgroup.one_mem, by simp⟩
-
-/-- For a finite or infinite Galois extension, the decomposition group is the
-subgroup fixing its decomposition field. -/
-theorem absoluteValueDecompositionField_fixingSubgroup_eq
-    [IsGalois K L] (w : AbsoluteValue L ℝ) :
-    (absoluteValueDecompositionField K w).fixingSubgroup =
-      absoluteValueDecompositionGroup K w := by
-  let H : ClosedSubgroup (L ≃ₐ[K] L) :=
-    ⟨absoluteValueDecompositionGroup K w, absoluteValueDecompositionGroup_isClosed K w⟩
-  exact InfiniteGalois.fixingSubgroup_fixedField H
-
-end HilbertRamification
-
-end

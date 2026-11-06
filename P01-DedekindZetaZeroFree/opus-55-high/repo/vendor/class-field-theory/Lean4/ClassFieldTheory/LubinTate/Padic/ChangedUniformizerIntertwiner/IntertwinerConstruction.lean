@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Changed-uniformizer intertwiner construction
 
@@ -39,7 +36,7 @@ open SameUniformizer
       (padicChangedUniformizerLinearCoefficient p u :
         padicCompletedUnramifiedWittRing p)
 
- noncomputable def padicChangedUniformizerApproximation
+ def padicChangedUniformizerApproximation
     (p : ℕ) [Fact p.Prime]
     (u : (padicLocalField p).valuationSubringˣ) :
     ℕ → PadicChangedUniformizerApproximation p u
@@ -64,7 +61,7 @@ open SameUniformizer
           rw [map_add, A.constantCoeff_eq_zero,
             ← PowerSeries.coeff_zero_eq_constantCoeff,
             PowerSeries.coeff_monomial]
-          simp [m]
+          simp
         coeff_one_eq := by
           rw [map_add, A.coeff_one_eq,
             PowerSeries.coeff_monomial]
@@ -94,7 +91,7 @@ private theorem
         (padicChangedUniformizerApproximation p u n).series := by
   rw [padicChangedUniformizerApproximation_succ, map_add,
     PowerSeries.coeff_monomial, ite_eq_right (Nat.ne_of_lt hq)]
-  exact add_zero _
+  simp
 
 private theorem padicChangedUniformizerApproximation_coeff_eq_of_le
     (p : ℕ) [Fact p.Prime]
@@ -131,7 +128,7 @@ private theorem
 
 /-- The actual semilinear changed-uniformizer series over the completed
 unramified Witt ring. -/
-noncomputable def padicChangedUniformizerIntertwiner
+def padicChangedUniformizerIntertwiner
     (p : ℕ) [Fact p.Prime]
     (u : (padicLocalField p).valuationSubringˣ) :
     PowerSeries (padicCompletedUnramifiedWittRing p) :=
@@ -198,7 +195,7 @@ private theorem padicChangedUniformizerIntertwiner_coeff_eq_approximation
     rw [padicChangedUniformizerApproximation_coeff_succ_eq_of_lt
       p u a (a + 1) (by omega)]
 
-private theorem padicChangedUniformizerDefect_coeff_zero
+theorem padicChangedUniformizerDefect_coeff_zero
     (p : ℕ) [Fact p.Prime]
     (u : (padicLocalField p).valuationSubringˣ) :
     PowerSeries.coeff 0
@@ -228,7 +225,7 @@ private theorem padicChangedUniformizerDefect_coeff_zero
       (padicCompletedChangedStandardSeries p u) hE,
     sub_zero]
 
-private theorem padicChangedUniformizerDefect_coeff_one
+theorem padicChangedUniformizerDefect_coeff_one
     (p : ℕ) [Fact p.Prime]
     (u : (padicLocalField p).valuationSubringˣ) :
     PowerSeries.coeff 1
@@ -317,7 +314,7 @@ private theorem padicChangedUniformizerDefect_coeff_one
     rw [PowerSeries.coeff_C_mul]
     have hpOne : 1 ≠ p := (Fact.out : p.Prime).one_lt.ne
     have hpOneMul : 1 ≠ p * 1 := by
-      simpa only [mul_one] using hpOne
+      omega
     rw [show P = PowerSeries.monomial 1 ε from rfl,
       PowerSeries.coeff_monomial, ite_eq_left rfl,
       PowerSeries.monomial_pow, PowerSeries.coeff_monomial,
@@ -401,8 +398,7 @@ theorem padicChangedUniformizerIntertwiner_functionalEquation
           (padicChangedUniformizerDefect p u
             (padicChangedUniformizerIntertwiner p u)) := by
     unfold padicChangedUniformizerDefect
-    rw [map_sub]
-    ring
+    simp
   rw [hrewrite]
   cases m with
   | zero =>
@@ -449,9 +445,7 @@ theorem padicChangedUniformizerIntertwiner_unique
   induction m using Nat.strongRecOn with
   | ind m ih =>
       by_cases hm0 : m = 0
-      · subst m
-        simp only [PowerSeries.coeff_zero_eq_constantCoeff_apply,
-          hHconstant, hH'constant]
+      · simp_all
       by_cases hm1 : m = 1
       · subst m
         exact hlinear
@@ -484,8 +478,7 @@ theorem padicChangedUniformizerIntertwiner_unique
             PowerSeries.coeff q H' +
               PowerSeries.coeff q (PowerSeries.monomial m c)
           rw [PowerSeries.coeff_monomial, ite_eq_right hq]
-          simp only [add_zero]
-          exact ih q hqLt
+          simp_all
       have hdefectA :
           PowerSeries.coeff m
               (padicChangedUniformizerDefect p u A) =
@@ -520,9 +513,7 @@ theorem padicChangedUniformizerIntertwiner_unique
               ((padicValuationUnitToCompletedUnramifiedWittUnit p u) :
                   padicCompletedUnramifiedWittRing p) *
                 (p : padicCompletedUnramifiedWittRing p) * c at hformula
-        rw [hdefectA, hH'defect, map_zero,
-          zero_add] at hformula
-        exact hformula.symm
+        simp_all
       let V : (padicCompletedUnramifiedWittRing p)ˣ :=
         padicValuationUnitToCompletedUnramifiedWittUnit p u
       have hpne : (p : padicCompletedUnramifiedWittRing p) ≠ 0 :=
@@ -612,7 +603,3 @@ theorem padicChangedUniformizerIntertwiner_unique
       have hcZero : c = 0 :=
         hunique.unique hcSolution hzeroSolution
       exact sub_eq_zero.mp (by simpa only [c] using hcZero)
-
-end LubinTate
-
-end

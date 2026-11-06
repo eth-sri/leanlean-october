@@ -22,7 +22,3 @@ def kernel (Z : ℝ) (M W ζ L : ℂ → ℂ) (H : ℂ → ℂ → ℂ → ℂ)
 def J (Z : ℝ) (M W ζ L : ℂ → ℂ) (H : ℂ → ℂ → ℂ → ℂ)
     (σξ σw σz : ℝ) : ℂ :=
   comparisonTripleVerticalIntegral σξ σw σz (kernel Z M W ζ L H)
-
-end PrincipalWShift
-end
-end DedekindZetaZeroFree

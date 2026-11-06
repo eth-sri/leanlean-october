@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Ambient prime comparison
 
@@ -25,7 +20,6 @@ The local Artin map and the ambient embedded norm-residue construction
 agree on norm classes and therefore agree pointwise.
 -/
 
-noncomputable section
 
 namespace LocalClassFieldTheory
 
@@ -110,8 +104,8 @@ theorem
         Gal(SeparableClosure K / K)).toSubgroup ⧸
         extensionSubgroup
           (baseField Gal(SeparableClosure K / K))
-          H₀ (le_baseField H₀)) := by
-    exact ambientEmbeddedAbsoluteQuotientFinite K F i
+          H₀ (le_baseField H₀)) := 
+    ambientEmbeddedAbsoluteQuotientFinite K F i
   let F₀ :=
     abstractFixedField K (SeparableClosure K) H₀
   have hfixed :
@@ -152,8 +146,6 @@ theorem
       normClass_mapEquiv F E F₀ E₀
         phiF.toRingEquiv phiE
         (by
-          apply RingHom.ext
-          intro y
           rfl)
         a x h
   have hambientSame :
@@ -253,8 +245,7 @@ theorem
     have hx :=
       DFunLike.congr_fun
         (localArtinMonoidHom_eq_of_embedding F E jI) x
-    rw [← ha, ← hx]
-    exact hxLocal.symm
+    simp_all
   have hxNormResidue :=
     ambientEmbeddedNormResidueAbelianElement_eq_of_normClass_eq
       K F E j e a x hnormClass
@@ -263,14 +254,4 @@ theorem
         (localArtinMonoidHom F E a) =
       (Abelianization.equivOfComm (H := Gal(E / F))).symm
         (ambientEmbeddedNormResidueAbelianElement K F E j e a)
-  apply congrArg (Abelianization.equivOfComm (H := Gal(E / F))).symm
-  calc
-    localArtinMonoidHom F E a =
-        ambientEmbeddedNormResidueAbelianElement K F E j e x :=
-      hxAmbient.symm
-    _ = ambientEmbeddedNormResidueAbelianElement K F E j e a :=
-      hxNormResidue.symm
-
-end LocalClassFieldTheory
-
-end
+  simp_all

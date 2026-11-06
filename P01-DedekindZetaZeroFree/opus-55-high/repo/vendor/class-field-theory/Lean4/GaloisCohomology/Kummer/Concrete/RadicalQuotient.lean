@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Ambient radical quotients
 
@@ -51,7 +47,7 @@ theorem rootCharacter_mul_withoutSection
   rw [← D.rootQuotient_eq_rootCocycle_of_same_pow hfixed (a * b) (u := D.root a * D.root b)]
   · exact rootQuotient_mul_root (K := K) (L := L) (D.root a) (D.root b) σ
   · rw [mul_pow, D.root_pow_eq_map, D.root_pow_eq_map]
-    exact (map_mul (Units.map (algebraMap K L).toMonoidHom) a.1 b.1).symm
+    simp
 
 /-- The root character of `1` is trivial, without choosing roots multiplicatively. -/
 theorem rootCharacter_one_withoutSection
@@ -72,8 +68,7 @@ def rootCharacterToMuWithoutSection (a : D.carrier)
   toFun := fun σ =>
     ⟨D.rootCharacter a hfixed σ, D.rootCharacter_mem_nthRootsSubgroup a hfixed σ⟩
   map_one' := by
-    apply Subtype.ext
-    exact map_one (D.rootCharacter a hfixed)
+    simp
   map_mul' := by
     intro σ τ
     apply Subtype.ext
@@ -158,8 +153,8 @@ theorem ker_kummerCharacterWithoutSection_eq_ambientNthPowers
         have happ := congrArg
           (fun χ : Gal(L/K) →* nthRootsSubgroup L (n : ℕ) ↦ χ σ) ha
         simpa [kummerCharacterWithoutSection] using happ
-      have hquot : rootQuotient (K := K) (L := L) (D.root a) σ = 1 := by
-        exact congrArg Subtype.val hvalue
+      have hquot : rootQuotient (K := K) (L := L) (D.root a) σ = 1 := 
+        congrArg Subtype.val hvalue
       exact (rootQuotient_eq_one_iff (K := K) (L := L) (D.root a) σ).1 hquot
     have hfixedVal : ∀ σ : Gal(L/K), σ (D.root a : L) = D.root a := by
       intro σ
@@ -210,16 +205,6 @@ theorem radicalQuotientMk_apply (a : D.carrier) :
       (QuotientGroup.mk a : D.carrier ⧸ D.ambientNthPowersSubgroup) :=
   rfl
 
-/-- A radical quotient class is trivial exactly when its representative is an
-ambient `n`th power. -/
-@[simp]
-theorem radicalQuotientMk_eq_one_iff (a : D.carrier) :
-    D.radicalQuotientMk a = 1 ↔ a ∈ D.ambientNthPowersSubgroup := by
-  change
-    (QuotientGroup.mk' D.ambientNthPowersSubgroup) a = 1 ↔
-      a ∈ D.ambientNthPowersSubgroup
-  exact QuotientGroup.eq_one_iff a
-
 /-- Two radical quotient representatives agree exactly when their ratio is an
 ambient `n`th power. -/
 @[simp]
@@ -244,8 +229,8 @@ representatives. -/
 protected theorem radicalQuotient_inductionOn
     {motive : D.RadicalQuotient → Prop} (q : D.RadicalQuotient)
     (mk : ∀ a : D.carrier, motive (D.radicalQuotientMk a)) :
-    motive q := by
-  exact QuotientGroup.induction_on' q mk
+    motive q := 
+  QuotientGroup.induction_on' q mk
 
 /-- Descend a homomorphism through the named ambient radical quotient. -/
 def radicalQuotientLift {M : Type*} [Group M]
@@ -303,13 +288,4 @@ theorem quotientKummerCharacterWithoutSection_injective
   intro b hab
   apply (D.radicalQuotientMk_eq_iff a b).2
   rw [← D.ker_kummerCharacterWithoutSection_eq_ambientNthPowers hfixed]
-  have hab' : D.kummerCharacterWithoutSection hfixed a =
-      D.kummerCharacterWithoutSection hfixed b := by
-    simpa using hab
-  rw [MonoidHom.mem_ker, map_div, hab']
-  exact div_self' (D.kummerCharacterWithoutSection hfixed b)
-
-end RadicalDatum
-end RadicalQuotient
-
-end KummerTheory
+  simp_all

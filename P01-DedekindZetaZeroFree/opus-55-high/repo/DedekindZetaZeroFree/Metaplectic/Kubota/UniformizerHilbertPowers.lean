@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Metaplectic.Torus.NormalizedResidueCharacterE
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.KPTameLiteralNormalizationAtomic.DiagonalArithmetic
 open scoped NumberField Classical
 open NumberField IsDedekindDomain MeasureTheory ValuativeRel
@@ -44,34 +43,31 @@ theorem diagonal_lift_scalar (π : (LocalField F q)ˣ) (a b : ℤ) :
     change (Matrix.scalar (Fin 2) ((π ^ b : (LocalField F q)ˣ) : LocalField F q) *
       !![((π ^ (a-b) : (LocalField F q)ˣ) : LocalField F q), 0; 0, 1]) i j = _
     fin_cases i <;> fin_cases j <;>
-      simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.scalar, Matrix.diagonal_apply]
+      simp [Matrix.mul_apply, Matrix.scalar, Matrix.diagonal_apply]
     rw [← zpow_add₀ (Units.ne_zero π)]
-    congr 1
-    omega
+    simp
   have hs : KPLocalCover.sigmaTwo F ζ hζ (Sum.inr q)
       (KPScalarSplitCentral.scalarMatrix F (Sum.inr q) (π ^ b))
       (KubotaRankTwo.d (LocalField F q) (π ^ (a-b)) 1) = 1 := by
     have hX (x y : (LocalField F q)ˣ) : KubotaRankTwo.X (LocalField F q)
         (KubotaRankTwo.d (LocalField F q) x y) = y := by
-      apply Units.ext
-      simp [KubotaRankTwo.X, KubotaRankTwo.x]
+      simp
     have hXs (x : (LocalField F q)ˣ) : KubotaRankTwo.X (LocalField F q)
         (KPScalarSplitCentral.scalarMatrix F (Sum.inr q) x) = x := by
       apply Units.ext
       change (if (Matrix.scalar (Fin 2) (x : LocalField F q)) 1 0 = 0 then
         (Matrix.scalar (Fin 2) (x : LocalField F q)) 1 1 else
         (Matrix.scalar (Fin 2) (x : LocalField F q)) 1 0) = _
-      simp [Matrix.scalar, Matrix.diagonal_apply]
+      simp
     have hd (x y : (LocalField F q)ˣ) : KubotaRankTwo.det (LocalField F q)
         (KubotaRankTwo.d (LocalField F q) x y) = x*y := by
-      apply Units.ext
-      simp [KubotaRankTwo.det]
+      simp
     simp only [KPLocalCover.sigmaTwo, KubotaElementaryLastArgument.tau, hm, hX, hXs,
       KubotaRankTwo.det, Matrix.GeneralLinearGroup.det_scalar, Fintype.card_fin]
     rw [show (π ^ b / π ^ b : (LocalField F q)ˣ) = 1 by simp,
       show (π ^ b / (1 * (π ^ b) ^ 2) : (LocalField F q)ˣ) = π ^ (-b) by
         rw [one_mul, div_eq_mul_inv, ← zpow_natCast, ← zpow_mul, ← zpow_neg, ← zpow_add];
-        congr 1; norm_num; ring,
+        congr 1; omega,
       show (π ^ b : (LocalField F q)ˣ) ^ 2 = π ^ (b*2) by
         rw [← zpow_natCast, ← zpow_mul]; norm_num]
     simp [uniformizer_hilbert_powers, KubotaDefectSymbolAlgebra.one_left _ _ _
@@ -87,7 +83,3 @@ theorem diagonal_lift_scalar (π : (LocalField F q)ˣ) (a b : ℤ) :
     S.split_scalars (π ^ b)
   rw [hone, one_mul] at he
   exact he.symm
-
-end DedekindZetaZeroFree.KPTameLiteralNormalizationAtomic.DiagonalArithmetic
-
-end

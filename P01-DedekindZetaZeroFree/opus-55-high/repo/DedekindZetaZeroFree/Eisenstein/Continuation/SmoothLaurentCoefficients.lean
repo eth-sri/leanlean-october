@@ -1,8 +1,9 @@
 module
 
 public import DedekindZetaZeroFree.Eisenstein.Continuation.ScalarMeromorphicFamilies
-public import DedekindZetaZeroFree.Eisenstein.Continuation.SmoothGermRestrictionAndTransport
-public import DedekindZetaZeroFree.Eisenstein.Continuation.LaurentNumeratorCovariance
+public import DedekindZetaZeroFree.Eisenstein.Continuation.ScalarAndSmoothGerms
+public import DedekindZetaZeroFree.Eisenstein.Continuation.ChamberRationalInvariance
+public import DedekindZetaZeroFree.Eisenstein.Induction.Genuineness
 public import DedekindZetaZeroFree.Eisenstein.Continuation.LaurentCoefficientIdentificationAndSmoothness
 
 @[expose] public section

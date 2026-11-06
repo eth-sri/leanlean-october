@@ -21,60 +21,60 @@ variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
 variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
 variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
-private theorem eqRec_places {i j : Fin (H.atlas U).componentCount} (h : i = j)
+theorem eqRec_places {i j : Fin (H.atlas U).componentCount} (h : i = j)
     (s : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) i) :
     (h ▸ s).places = s.places := by
   cases h; rfl
 
-private theorem eqRec_rep {i j : Fin (H.atlas U).componentCount} (h : i = j)
+theorem eqRec_rep {i j : Fin (H.atlas U).componentCount} (h : i = j)
     (s : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) i) :
     (h ▸ s).kind.representative = s.kind.representative := by
   cases h; rfl
 
-private theorem eqRec_splitting {i j : Fin (H.atlas U).componentCount} (h : i = j)
+theorem eqRec_splitting {i j : Fin (H.atlas U).componentCount} (h : i = j)
     (s : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) i) :
     (h ▸ s).splitting = s.splitting := by
   cases h; rfl
 
-private theorem eqRec_cast_symm {i j : Fin (H.atlas U).componentCount} (h : i = j)
+theorem eqRec_cast_symm {i j : Fin (H.atlas U).componentCount} (h : i = j)
     (y : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) j) :
     h ▸ (h.symm ▸ y) = y := by
   cases h; rfl
 
-private theorem eqRec_trans_symm {i j k : Fin (H.atlas U).componentCount}
+theorem eqRec_trans_symm {i j k : Fin (H.atlas U).componentCount}
     (h₁ : i = j) (h₂ : j = k)
     (X : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) k) :
     h₁.symm ▸ (h₂.symm ▸ X) = (h₁.trans h₂).symm ▸ X := by
   cases h₁; cases h₂; rfl
 
-private theorem targetChart_places (a b : ShrunkChart F ζ hζ U R P H)
+theorem targetChart_places (a b : ShrunkChart F ζ hζ U R P H)
     (h : a.component = b.component) :
     (targetChart a b h).places = placeEquiv F ζ hζ := by
   unfold targetChart
   rw [eqRec_places]
   rfl
 
-private theorem targetChart_rep (a b : ShrunkChart F ζ hζ U R P H)
+theorem targetChart_rep (a b : ShrunkChart F ζ hζ U R P H)
     (h : a.component = b.component) :
     (targetChart a b h).kind.representative = 1 := by
   unfold targetChart
   rw [eqRec_rep]
   rfl
 
-private theorem targetChart_splitting (a b : ShrunkChart F ζ hζ U R P H)
+theorem targetChart_splitting (a b : ShrunkChart F ζ hζ U R P H)
     (h : a.component = b.component) :
     (targetChart a b h).splitting = fun _ => 1 := by
   unfold targetChart
   rw [eqRec_splitting]
   rfl
 
-private theorem targetChart_cast (a b : ShrunkChart F ζ hζ U R P H)
+theorem targetChart_cast (a b : ShrunkChart F ζ hζ U R P H)
     (h : a.component = b.component) :
     h ▸ targetChart a b h = isotropyChart b := by
   unfold targetChart
   exact eqRec_cast_symm h (isotropyChart b)
 
-private theorem shrunkChart_separated (C : ShrunkChart F ζ hζ U R P H)
+theorem shrunkChart_separated (C : ShrunkChart F ζ hζ U R P H)
     (g : KPContSectorPhaseComponentCharts.Component F ζ hζ U R P H C.component)
     (x : KPCuspGenuineMonodromy.SymmetricSpace F)
     (hx : x ∈ C.domain) (hg : g • x ∈ C.domain) : g ∈ C.Isotropy := by
@@ -107,7 +107,7 @@ private theorem Phi_mul (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     Phi ζ hζ (γ * δ) x = Phi ζ hζ γ (Phi ζ hζ δ x) := by
   simp only [Phi, mul_smul, labeledA_labeledAInv']
 
-private theorem arrow_psi_eq_Phi {i : Fin (H.atlas U).componentCount}
+theorem arrow_psi_eq_Phi {i : Fin (H.atlas U).componentCount}
     {A B : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) i}
     (hA : A.places = placeEquiv F ζ hζ) (hAr : A.kind.representative = 1)
     (hB : B.places = placeEquiv F ζ hζ) (hBr : B.kind.representative = 1)
@@ -126,7 +126,7 @@ private theorem arrow_psi_eq_Phi {i : Fin (H.atlas U).componentCount}
         ((fderiv ℝ (Phi ζ hζ γ) x).comp
           (CotangentLogCoframe.H (d F) x).toContinuousLinearMap))
 
-private theorem twistedOperator_eq_Op {i : Fin (H.atlas U).componentCount}
+theorem twistedOperator_eq_Op {i : Fin (H.atlas U).componentCount}
     {A B : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) i}
     (hA : A.places = placeEquiv F ζ hζ) (hAr : A.kind.representative = 1)
     (hAs : A.splitting = fun _ => 1)
@@ -148,48 +148,48 @@ private theorem twistedOperator_eq_Op {i : Fin (H.atlas U).componentCount}
     (e : Arrow A B) : Arrow (h ▸ A) (h ▸ B) :=
   cast (by cases h; rfl) e
 
-private theorem arrow_gamma_index_cast {i j : Fin (H.atlas U).componentCount} (h : i = j)
+theorem arrow_gamma_index_cast {i j : Fin (H.atlas U).componentCount} (h : i = j)
     {A B : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) i}
     (e : Arrow A B) :
     ((castArrow h e).gamma : KPCuspArithmetic.PGL2 F) = (e.gamma : KPCuspArithmetic.PGL2 F) := by
   cases h; rfl
 
-private theorem arrow_gamma_chart_cast {i : Fin (H.atlas U).componentCount}
+theorem arrow_gamma_chart_cast {i : Fin (H.atlas U).componentCount}
     {A B B' : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) i}
     (h : B = B') (e : Arrow A B) : (h ▸ e).gamma = e.gamma := by
   cases h; rfl
 
-private theorem arrow_root_index_cast {i j : Fin (H.atlas U).componentCount} (h : i = j)
+theorem arrow_root_index_cast {i j : Fin (H.atlas U).componentCount} (h : i = j)
     {A B : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) i}
     (e : Arrow A B) : (castArrow h e).root = e.root := by
   cases h; rfl
 
-private theorem arrow_root_chart_cast {i : Fin (H.atlas U).componentCount}
+theorem arrow_root_chart_cast {i : Fin (H.atlas U).componentCount}
     {A B B' : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) i}
     (h : B = B') (e : Arrow A B) : (h ▸ e).root = e.root := by
   cases h; rfl
 
-private theorem arrow_psi_index_cast {i j : Fin (H.atlas U).componentCount} (h : i = j)
+theorem arrow_psi_index_cast {i j : Fin (H.atlas U).componentCount} (h : i = j)
     {A B : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) i}
     (e : Arrow A B) : (castArrow h e).psi = e.psi := by
   cases h; rfl
 
-private theorem arrow_psi_chart_cast {i : Fin (H.atlas U).componentCount}
+theorem arrow_psi_chart_cast {i : Fin (H.atlas U).componentCount}
     {A B B' : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) i}
     (h : B = B') (e : Arrow A B) : (h ▸ e).psi = e.psi := by
   cases h; rfl
 
-private theorem arrow_domain_index_cast {i j : Fin (H.atlas U).componentCount} (h : i = j)
+theorem arrow_domain_index_cast {i j : Fin (H.atlas U).componentCount} (h : i = j)
     {A B : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) i}
     (e : Arrow A B) : (castArrow h e).domain = e.domain := by
   cases h; rfl
 
-private theorem arrow_domain_chart_cast {i : Fin (H.atlas U).componentCount}
+theorem arrow_domain_chart_cast {i : Fin (H.atlas U).componentCount}
     {A B B' : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) i}
     (h : B = B') (e : Arrow A B) : (h ▸ e).domain = e.domain := by
   cases h; rfl
 
-private theorem arrow_finite_comparison_index_cast {i j : Fin (H.atlas U).componentCount}
+theorem arrow_finite_comparison_index_cast {i j : Fin (H.atlas U).componentCount}
     (h : i = j)
     {A B : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) i}
     (e : Arrow A B) :
@@ -199,7 +199,7 @@ private theorem arrow_finite_comparison_index_cast {i j : Fin (H.atlas U).compon
         (H.atlas U).representative j * (castArrow h e).levelLift.val := by
   cases h; exact e.finite_comparison
 
-private theorem T_eq_of_twistedOperator {i j : Fin (H.atlas U).componentCount}
+theorem T_eq_of_twistedOperator {i j : Fin (H.atlas U).componentCount}
     {A B : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) i}
     {A' B' : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) j}
     (e : Arrow A B) (e' : Arrow A' B') (x x' : M F)
@@ -210,7 +210,7 @@ private theorem T_eq_of_twistedOperator {i j : Fin (H.atlas U).componentCount}
   change twistedOperator e x v = twistedOperator e' x' v
   rw [h]
 
-private theorem T_domain_irrel {i : Fin (H.atlas U).componentCount}
+theorem T_domain_irrel {i : Fin (H.atlas U).componentCount}
     {A B : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) i}
     (e : Arrow A B) (x : M F) (h1 h2 : x ∈ e.domain) : T e x h1 = T e x h2 := by
   apply LinearIsometryEquiv.ext
@@ -292,28 +292,26 @@ private theorem comparison_inv {i : Fin (H.atlas U).componentCount}
             ((u : KPCuspGenuineMonodromy.FiniteCover F ζ hζ)⁻¹)]
     _ = R₀ * KPCuspGenuineMonodromy.central F ζ hζ c⁻¹ * (↑u)⁻¹ := by group
 
-private theorem cast_lifted_places {i j : Fin (H.atlas U).componentCount} (h : i = j)
+theorem cast_lifted_places {i j : Fin (H.atlas U).componentCount} (h : i = j)
     (s : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) i)
     (hs : s.places = placeEquiv F ζ hζ) :
     (h ▸ s).places = placeEquiv F ζ hζ := by
   rw [eqRec_places, hs]
 
-private theorem cast_lifted_rep {i j : Fin (H.atlas U).componentCount} (h : i = j)
+theorem cast_lifted_rep {i j : Fin (H.atlas U).componentCount} (h : i = j)
     (s : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) i)
     (hs : s.kind.representative = 1) :
     (h ▸ s).kind.representative = 1 := by
   rw [eqRec_rep, hs]
 
-private theorem cast_lifted_splitting {i j : Fin (H.atlas U).componentCount} (h : i = j)
+theorem cast_lifted_splitting {i j : Fin (H.atlas U).componentCount} (h : i = j)
     (s : LiftedChart (F := F) (ζ := ζ) (hζ := hζ) (U := U) (R := R) (P := P) (H := H) i)
     (hs : s.splitting = fun _ => 1) :
     (h ▸ s).splitting = fun _ => 1 := by
   rw [eqRec_splitting, hs]
 
 theorem omega_subset_larger (a : ShrunkChart F ζ hζ U R P H) :
-    omega a ⊆ (isotropyChart a).omega := by
-  intro x hx
-  exact a.closure_subset (subset_closure hx)
+    omega a ⊆ (isotropyChart a).omega := by apply DedekindZetaZeroFree.KPContCotangentOverlapRationalBranches.omega_subset <;> assumption
 
 def EquivariantSequence (cover : CountableCover F ζ hζ U R P H)
     (f : ℕ → M F → E F) : Prop :=

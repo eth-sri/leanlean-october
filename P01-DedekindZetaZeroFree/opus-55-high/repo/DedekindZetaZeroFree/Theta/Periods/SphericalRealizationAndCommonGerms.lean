@@ -13,7 +13,7 @@ open MomentSources NumberField MeasureTheory RootDerivatives
 variable {F : Type} [Field F] [NumberField F]
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
-private theorem spherical_word_smul
+theorem spherical_word_smul
     (R : PrincipalMellin.ActualRecipe S η) (c : ℂ) (f : Functions R)
     (w : List (Fin (KPContActualSphericalRightFieldIdentification.groupDimension F))) :
     KPContActualSphericalRightFieldIdentification.actualRightWord F R.A.zeta12 R.A.primitive_zeta12 w (c • f) =

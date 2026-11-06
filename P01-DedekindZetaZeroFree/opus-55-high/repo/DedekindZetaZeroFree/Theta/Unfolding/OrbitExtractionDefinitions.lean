@@ -54,7 +54,3 @@ def AbsoluteExtraction {N : TraceHaarTransport R} (C : JointUpperVanishingSource
     Integrable (fun t : PositiveAxis => C.packet.kernel t.val *
       thetaAverage R C.transport C.sources C.realization C.packet v m b
         ⟨t.val / Z, div_pos t.property hZ⟩) positiveHaar
-
-end DedekindZetaZeroFree.ThetaExpansion.SignedExpansion
-
-end

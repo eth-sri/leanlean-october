@@ -9,7 +9,7 @@ open scoped FourierTransform Convolution
 
 namespace DedekindZetaZeroFree
 
-private lemma fourier_fourier_apply_neg {W : Type*} [NormedAddCommGroup W] [InnerProductSpace ℝ W]
+lemma fourier_fourier_apply_neg {W : Type*} [NormedAddCommGroup W] [InnerProductSpace ℝ W]
     [FiniteDimensional ℝ W] [MeasurableSpace W] [BorelSpace W]
     (f : SchwartzMap W ℂ) (x : W) :
     ((𝓕 (𝓕 f) : SchwartzMap W ℂ) : W → ℂ) x = f (-x) := by
@@ -60,5 +60,3 @@ theorem schwartz_product_fourier_tsupport_subset_closedBall
     simp only [mem_closedBall, dist_eq_norm, sub_zero] at ha hb ⊢
     exact (norm_add_le a b).trans (add_le_add ha hb)
   exact closure_minimal hsupp isClosed_closedBall
-
-end DedekindZetaZeroFree

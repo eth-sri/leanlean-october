@@ -48,7 +48,3 @@ theorem finite_local_subspace (f : KPLiteralTensor.harmonicPlus) :
   · intro k v hv
     obtain ⟨w, rfl⟩ := hv
     exact ⟨⟨KPCplxPrincipalSeriesCharts.pi positiveParameter k w.val, hinv k w.val w.property⟩, Subtype.ext rfl⟩
-
-end DedekindZetaZeroFree.KPLiteralScalarArchTensor
-
-end

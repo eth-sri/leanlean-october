@@ -15,7 +15,6 @@ open KPRankOneCenterInducedDiagonalComparison KPRankOneReverseRegulatorShells
 open KPActualScalarBinding
 
 noncomputable section
-set_option autoImplicit false
 set_option maxHeartbeats 1500000
 set_option synthInstance.maxHeartbeats 100000
 
@@ -89,8 +88,7 @@ theorem center_translated_common_level_fixed
   intro i j k k' hk
   let jg : (J₀ i).toOpenSubgroup := ⟨(g i)⁻¹ * j.val * (g i), by
     have hj := center_conjugate_common_level_le_conjugate F ζ hζ q J J₀ g i j.property
-    change (g i)⁻¹ * j.val * ((g i)⁻¹)⁻¹ ∈ (J₀ i).toOpenSubgroup at hj
-    simpa only [inv_inv] using hj⟩
+    simp_all⟩
   have h := center_compact_level_global_fixed F ζ hζ q S (J₀ i) (hJ₀ i) z
     (a i) (ha i) jg (k.val * g i)
   change (a i).val (k'.val * g i) = (a i).val (k.val * g i)
@@ -132,7 +130,7 @@ theorem actual_pure_sections_individual_and_translated_levels
       centerCompactLevel F ζ hζ q S.heisenberg S.borel S.iwasawa .plus (J₀ i) := by
     intro i
     rw [← hv i, LinearEquiv.symm_apply_apply]
-    exact (v i).property
+    simp
   exact ⟨J₀, center_conjugate_common_level F ζ hζ q J J₀ g,
     center_conjugate_common_level_le F ζ hζ q J J₀ g, hJ₀,
     center_conjugate_common_level_le_conjugate F ζ hζ q J J₀ g,
@@ -166,7 +164,7 @@ theorem actual_cell_finite_center_coordinate_expansion
   have hcφ : ∀ d, HasCompactSupport (φ d) := fun d =>
     hc.comp_left (g := fun v => centerCoordinates S.heisenberg rep hrep v d) (by simp)
   refine ⟨φ, hφ, hcφ, ?_⟩
-  have hsum : (Set.toFinite (Set.univ : Set S.D)).toFinset = Finset.univ := by ext; simp
+  have hsum : (Set.toFinite (Set.univ : Set S.D)).toFinset = Finset.univ := by simp
   rw [hsum]
   refine centerSection_open_cell_ext F ζ hζ q S.heisenberg S.borel .plus
     (additiveParameter F q r) a _ ?_ hzero ?_
@@ -190,7 +188,7 @@ theorem actual_cell_finite_center_coordinate_expansion
 open scoped Topology
 
 omit [DecidableEq S.D] in
-private theorem center_scalar_lc (z : ℂ)
+theorem center_scalar_lc (z : ℂ)
     (a : centerSectionSpace F ζ hζ q S.heisenberg S.borel .plus z) :
     IsLocallyConstant a.val := by
   obtain ⟨U,hU⟩ := a.property.2
@@ -204,7 +202,7 @@ private theorem center_scalar_lc (z : ℂ)
   simpa [vectorRightTranslation, mul_assoc] using he
 
 omit [DecidableEq S.D] in
-private theorem cell_cut_section (z : ℂ)
+theorem cell_cut_section (z : ℂ)
     (a : centerSectionSpace F ζ hζ q S.heisenberg S.borel .plus z)
     (g : Cover F ζ hζ q) (E : Set (Cover F ζ hζ q)) (hE : IsClopen E)
     (hB : ∀ (b : S.borel.B) x, b.val*x ∈ E ↔ x ∈ E)
@@ -235,8 +233,7 @@ private theorem cell_cut_section (z : ℂ)
       (⟨fun x : Cover F ζ hζ q => a.val (x*g⁻¹),ha⟩ :
         LocallyConstant (Cover F ζ hζ q) (CenterModule S.heisenberg)) he).isLocallyConstant
     convert hl using 1
-    funext x
-    simp [LocallyConstant.indicator, Set.indicator_apply, v]
+    rfl
   have hz : ∀ x : Cover F ζ hζ q,
       (¬ ∃ (b : S.borel.B) (s : LocalField F q), x = b.val*openCoordinate F ζ hζ q s) → v x = 0 := by
     intro x hx
@@ -313,7 +310,7 @@ theorem actual_center_compact_translated_pure_spanning
   have hex := fun i : Fin m => actual_cell_finite_center_coordinate_expansion F ζ hζ q S P
     rep hrep r (v i) (hvc i) (hvzero i)
   choose φ hφ hcφ hφv using hex
-  have hsum : (Set.toFinite (Set.univ : Set S.D)).toFinset = Finset.univ := by ext; simp
+  have hsum : (Set.toFinite (Set.univ : Set S.D)).toFinset = Finset.univ := by simp
   simp only [hsum] at hφv
   let N := Fintype.card (Fin m × S.D)
   let e : Fin N ≃ Fin m × S.D := (Fintype.equivFin _).symm
@@ -362,7 +359,3 @@ theorem actual_center_compact_translated_pure_spanning
     have hjx : x ∉ E j := fun h => Set.disjoint_left.mp (hdis hji) h hi
     simp [hjx]
   · simp
-
-end
-
-end DedekindZetaZeroFree.KPActualResidueSources

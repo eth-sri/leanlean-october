@@ -13,7 +13,6 @@ open NumberField IsDedekindDomain MeasureTheory ValuativeRel
 namespace DedekindZetaZeroFree.KPExceptionalRaw.FiniteSource.TameWhittakerSteps.Uniqueness
 open KPLocalPrincipalSeries KPLocalStoneVonNeumann
 noncomputable section
-set_option autoImplicit false
 set_option maxHeartbeats 2400000
 set_option synthInstance.maxHeartbeats 400000
 variable (F : Type) [Field F] [NumberField F]
@@ -37,7 +36,7 @@ variable (P : Polarization S.heisenberg)
  def invHalf : Borel F ζ hζ q →* ℂˣ where
   toFun b := Units.mk0 ((((dB F ζ hζ q b : ℝ≥0) : ℝ) : ℂ)⁻¹)
     (inv_ne_zero (Complex.ofReal_ne_zero.mpr (NNReal.coe_ne_zero.mpr (Units.ne_zero _))))
-  map_one' := by apply Units.ext; simp only [map_one, Units.val_one, NNReal.coe_one, Complex.ofReal_one, inv_one, Units.val_mk0]
+  map_one' := by simp
   map_mul' a b := by
     apply Units.ext
     simp only [Units.val_mk0, map_mul, Units.val_mul, NNReal.coe_mul, Complex.ofReal_mul, mul_inv]
@@ -53,7 +52,7 @@ variable (P : Polarization S.heisenberg)
  def torusAction := (unnormalized F ζ hζ q S P).comp
   (KPLocalInductionJacquetReciprocity.torusToBorel F ζ hζ q
     (depth F ζ hζ q) (hm F ζ hζ q))
-private theorem raw_root (x : Multiplicative (LocalField F q)) :
+theorem raw_root (x : Multiplicative (LocalField F q)) :
     rawAction F ζ hζ q S P (KPJacquetTwistedCell.rootToBorel F ζ hζ q x) = 1 := by
   have hx : (bEq F ζ hζ q S).symm (KPJacquetTwistedCell.rootToBorel F ζ hζ q x) =
       S.borel.upperRoot x := by
@@ -86,7 +85,7 @@ private theorem raw_root (x : Multiplicative (LocalField F q)) :
     rw [show dB F ζ hζ q t = dB F ζ hζ q b from hd]
   rw [hi, mul_inv_cancel₀ (Complex.ofReal_ne_zero.mpr
     (NNReal.coe_ne_zero.mpr (Units.ne_zero _))), one_smul]
-private theorem scalar_lc : IsLocallyConstant (fun b : S.borel.B =>
+theorem scalar_lc : IsLocallyConstant (fun b : S.borel.B =>
     inducingScalar S.borel 0 b) := by
   apply (IsLocallyConstant.iff_eventually_eq _).mpr
   intro b
@@ -112,9 +111,9 @@ private theorem raw_smooth : SmoothRepresentation (rawAction F ζ hζ q S P) := 
         have h1 : inducingScalar S.borel 0 (1 : S.borel.B) = 1 := by
           simp [inducingScalar, deltaHalf, normPower, localAbs_one]
         exact Filter.Eventually.and (hscalar.mem_nhds h1)
-          ((J.isOpen.preimage S.borel.retract_continuous).mem_nhds (by simp [r]))
+          ((J.isOpen.preimage S.borel.retract_continuous).mem_nhds (by simp))
       have ht : ContinuousAt (fun a : S.borel.B => b⁻¹ * a) b :=
-        (continuous_const.mul continuous_id).continuousAt
+        by fun_prop
       have hz : (fun a : S.borel.B => b⁻¹ * a) b = 1 := inv_mul_cancel b
       have he := ht.tendsto.eventually (hz ▸ hnear)
       filter_upwards [he] with a ha
@@ -128,8 +127,8 @@ private theorem raw_smooth : SmoothRepresentation (rawAction F ζ hζ q S P) := 
     exact ⟨⟨K, hopen⟩, fun a ha => ha⟩
   intro v
   obtain ⟨J, hJ⟩ := hs v
-  have hc : Continuous (bEq F ζ hζ q S).symm := by
-    exact continuous_subtype_val.subtype_mk _
+  have hc : Continuous (bEq F ζ hζ q S).symm := 
+    continuous_subtype_val.subtype_mk _
   exact ⟨J.comap (bEq F ζ hζ q S).symm.toMonoidHom hc, fun a ha => hJ _ ha⟩
 private theorem torus_smooth : SmoothRepresentation (torusAction F ζ hζ q S P) := by
   have hu : SmoothRepresentation (unnormalized F ζ hζ q S P) := by
@@ -150,8 +149,8 @@ private theorem torus_smooth : SmoothRepresentation (torusAction F ζ hζ q S P)
     have hi : (invHalf F ζ hζ q b : ℂ) = 1 := by
       change ((((dB F ζ hζ q b : ℝ≥0) : ℝ) : ℂ)⁻¹) = 1
       rw [show dB F ζ hζ q b = 1 from hb.2]
-      simp only [Units.val_one, NNReal.coe_one, Complex.ofReal_one, inv_one]
-    rw [hi, hJ _ hb.1, one_smul]
+      simp
+    simp_all
   intro v
   obtain ⟨J, hJ⟩ := hu v
   exact ⟨J.comap _ (continuous_subtype_val.subtype_mk _), fun a ha => hJ _ ha⟩
@@ -177,9 +176,9 @@ local instance actualAdd : AddCommGroup (actualInd F ζ hζ q S P) := by
       intro a ha
       funext g
       exact congrArg (fun f => f.val g) (hJ a ha)⟩
-  map_add' := by intros; rfl
-  map_smul' := by intros; rfl
-private theorem toRaw_surjective : Function.Surjective (toRaw F ζ hζ q S P) := by
+  map_add' := by simp
+  map_smul' := by simp
+theorem toRaw_surjective : Function.Surjective (toRaw F ζ hζ q S P) := by
   intro f
   let f₀ : EqSections (Borel F ζ hζ q)
       (KPJacquetTwistedCell.coefficientRepresentation F ζ hζ q (torusAction F ζ hζ q S P))
@@ -202,27 +201,24 @@ private theorem toRaw_surjective : Function.Surjective (toRaw F ζ hζ q S P) :=
       (KPJacquetTwistedCell.coefficientRepresentation F ζ hζ q (torusAction F ζ hζ q S P))).IntertwiningMap
     (IPlus S.borel P) where
   toLinearMap := toRaw F ζ hζ q S P
-  isIntertwining' g := by ext f x; rfl
+  isIntertwining' g := by rfl
 end StandardPlusAux
 
-private theorem continuous_circleToUnits : Continuous (Circle.toUnits : Circle → ℂˣ) := by
+theorem continuous_circleToUnits : Continuous (Circle.toUnits : Circle → ℂˣ) := by
   rw [Units.continuous_iff]
   constructor
-  · show Continuous (fun z : Circle => (z : ℂ))
-    exact continuous_subtype_val
+  · fun_prop
   · have : (fun z : Circle => (((Circle.toUnits z)⁻¹ : ℂˣ) : ℂ)) =
         fun z : Circle => ((z : ℂ))⁻¹ := by
-      funext z
-      rw [Units.val_inv_eq_inv_val]
       rfl
     rw [this]
     exact continuous_subtype_val.inv₀ (fun z => Circle.coe_ne_zero z)
 
-private theorem circleToUnits_injective : Function.Injective (Circle.toUnits : Circle → ℂˣ) :=
+theorem circleToUnits_injective : Function.Injective (Circle.toUnits : Circle → ℂˣ) :=
   fun a b hab => Subtype.ext (by
     simpa [Circle.toUnits_apply] using congrArg (fun u : ℂˣ => (u : ℂ)) hab)
 
-private theorem frequencyCharacter_continuous_nontrivial :
+theorem frequencyCharacter_continuous_nontrivial :
     Continuous ⇑(KPKirillovProjectorGerms.frequencyCharacter F q 1) ∧
       KPKirillovProjectorGerms.frequencyCharacter F q 1 ≠ 1 := by
   refine ⟨?_, ?_⟩
@@ -280,7 +276,7 @@ theorem standard_plus_coinvariant_rank_le_three
     let ζ3 : LocalField F q := ξ ^ 4
     have hζ3 : IsPrimitiveRoot ζ3 3 := by
       have h := hξ.pow_of_dvd (p := 4) (by norm_num) (by norm_num)
-      simpa [ζ3] using h
+      omega
     have htame : (3 : (valuation (LocalField F q)).integer) ∉
         IsLocalRing.maximalIdeal ((valuation (LocalField F q)).integer) := by
       intro hmem
@@ -323,6 +319,3 @@ theorem standard_plus_coinvariant_rank_le_three
         (KPKirillovProjectorGerms.frequencyCharacter F q 1)) :=
         LinearMap.rank_le_of_surjective _ hsurj
     _ = (3 : Cardinal) := hY
-
-end
-end DedekindZetaZeroFree.KPExceptionalRaw.FiniteSource.TameWhittakerSteps.Uniqueness

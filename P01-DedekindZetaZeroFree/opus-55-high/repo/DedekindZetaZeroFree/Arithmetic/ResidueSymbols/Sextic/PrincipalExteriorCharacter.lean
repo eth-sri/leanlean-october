@@ -28,11 +28,10 @@ theorem principal_row_unitResidue_transport (A : SArithmeticData F) (p : ThetaBr
   change (t : F) * (d : 𝓞 F) = (n : F) at hd
   have hnval : p.val.valuation F (n : F) = p.val.valuation F (t : F) := by
     rw [← hd, map_mul, hdv, mul_one]
-  have hdiv : (t : F) = (n : F) / (d : 𝓞 F) := by
-    exact (eq_div_iff (by
+  have hdiv : (t : F) = (n : F) / (d : 𝓞 F) := 
+    (eq_div_iff (by
       intro hz
-      have : (d : 𝓞 F) = 0 := RingOfIntegers.ext hz
-      exact d.property (this ▸ p.val.asIdeal.zero_mem))).mpr hd
+      simp_all)).mpr hd
   have heq : Ideal.Quotient.mk (A.extendIdeal I) t *
       E (Ideal.Quotient.mk I.val (d : 𝓞 F)) = E (Ideal.Quotient.mk I.val n) := by
     rw [ArithGaussCRT.exteriorQuotientEquiv_mk,
@@ -40,8 +39,8 @@ theorem principal_row_unitResidue_transport (A : SArithmeticData F) (p : ThetaBr
     congr 1
     apply Subtype.ext
     exact hd
-  have hdq : Ideal.Quotient.mk I.val (d : 𝓞 F) ≠ 0 := by
-    exact fun h => d.property (Ideal.Quotient.eq_zero_iff_mem.mp h)
+  have hdq : Ideal.Quotient.mk I.val (d : 𝓞 F) ≠ 0 := 
+    fun h => d.property (Ideal.Quotient.eq_zero_iff_mem.mp h)
   letI : I.val.IsMaximal := p.val.isMaximal
   letI : Field (𝓞 F ⧸ I.val) := Ideal.Quotient.field I.val
   have hred : E (Ideal.Quotient.mk I.val n / Ideal.Quotient.mk I.val (d : 𝓞 F)) =
@@ -124,7 +123,7 @@ theorem principal_prime_residueCharacter_transport
     rw [← hu, MulChar.ofUnitHom_coe]
     change σ (algebraMap (𝓞 F) F (χ y)) = σ ((A.sexticResidueFamily I u : F))
     rw [hej, hek, hjk, map_pow]
-    exact congrArg (fun z : F => σ (z ^ (2 * k))) A.primitive_zeta12.coe_toInteger
+    rfl
 
 theorem principal_prime_symbol_eq_sexticResiduePowerChar
     (A : SArithmeticData F) (σ : F →+* ℂ) (p : ThetaBranch.ExteriorPrime A)
@@ -202,7 +201,7 @@ theorem exteriorSexticRowCharacter_eq_sexticResiduePowerChar
       A.sexticResiduePowerChar σ I 1 (Ideal.Quotient.mk (A.extendIdeal I) t) := by
   by_cases ht : t = 0
   · subst t
-    simp only [exteriorSexticRowCharacter, dif_pos rfl]
+    simp only [exteriorSexticRowCharacter]
     by_cases hI : I.val = ⊤
     · rw [if_pos hI, char_one,
         show A.sexticResidue I 0 = 1 from A.residueValue_top _ I hI 0, map_one]
@@ -244,6 +243,3 @@ theorem PrincipalData.character_eq_sexticResiduePowerChar
   obtain ⟨t, rfl⟩ := Ideal.Quotient.mk_surjective x
   exact (P.exteriorCharacters I a t ha).trans
     (exteriorSexticRowCharacter_eq_sexticResiduePowerChar A σ I t)
-
-end
-end DedekindZetaZeroFree.NormalizedProbe

@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.Metaplectic.Intertwining.RankOne.ConditionalC
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.KPActualResidueSources
 
 theorem scaled_root_polynomial_ne_zero (α : ℂ) (hα : α ≠ 0)
@@ -23,7 +22,3 @@ theorem scaled_root_polynomial_ne_zero (α : ℂ) (hα : α ≠ 0)
 theorem scaled_root_rational_denom_ne_zero (α : ℂ) (hα : α ≠ 0) (R : RatFunc ℂ) :
     R.denom.eval₂ (RatFunc.C : ℂ →+* RatFunc ℂ) (RatFunc.C α * RatFunc.X) ≠ 0 :=
   scaled_root_polynomial_ne_zero α hα R.denom (RatFunc.denom_ne_zero R)
-
-end DedekindZetaZeroFree.KPActualResidueSources
-
-end

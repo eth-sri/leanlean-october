@@ -38,8 +38,3 @@ def LocalWhittakerLine {N V : Type*} [Group N] [AddCommGroup V]
     [Module ℂ V] [TopologicalSpace V]
     (ρ : Representation ℂ N V) (ψ : N →* ℂ) : Prop :=
   Module.finrank ℂ (localWhittakerSpace N V ρ ψ) = 1
-
-end KPReflectionSpec
-end DedekindZetaZeroFree
-
-end

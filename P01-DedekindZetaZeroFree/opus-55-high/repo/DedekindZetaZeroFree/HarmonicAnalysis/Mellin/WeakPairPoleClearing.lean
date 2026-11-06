@@ -27,7 +27,7 @@ theorem poleCleared_eq (P : WeakFEPair ℂ) (hk : P.k = 1) :
     ∀ s : ℂ, s ≠ 0 → s ≠ 1 → poleCleared P s = s * (s - 1) * P.Λ s := by
   intro s hs₀ hs₁
   simp only [poleCleared, WeakFEPair.Λ, hk, Complex.ofReal_one, smul_eq_mul]
-  have hs : 1 - s ≠ 0 := sub_ne_zero.mpr (Ne.symm hs₁)
+  have hs : 1 - s ≠ 0 := by positivity
   field_simp
   <;> ring
 
@@ -36,12 +36,7 @@ theorem weakFEPair_selfDual_reflection (P : WeakFEPair ℂ) (hk : P.k = 1)
     ∀ s : ℂ, s ≠ 0 → s ≠ 1 → P.Λ s = P.Λ (1 - s) := by
   have hsymm : P.symm.Λ = P.Λ := by
     unfold WeakFEPair.Λ WeakFEPair.Λ₀ WeakFEPair.f_modif
-    simp only [WeakFEPair.symm_f, WeakFEPair.symm_g, WeakFEPair.symm_f₀,
-      WeakFEPair.symm_g₀, WeakFEPair.symm_k, WeakFEPair.symm_ε, hg, hg₀, hε, inv_one]
+    simp_all
   intro s _ _
   have h := P.functional_equation (1 - s)
-  simpa [hk, hε, hsymm] using h
-
-end
-
-end DedekindZetaZeroFree.Hecke
+  simp_all

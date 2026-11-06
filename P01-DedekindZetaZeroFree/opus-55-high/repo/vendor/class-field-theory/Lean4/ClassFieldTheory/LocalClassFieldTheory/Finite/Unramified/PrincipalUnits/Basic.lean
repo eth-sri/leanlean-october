@@ -12,11 +12,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-set_option autoImplicit false
 /-! Provides the public declarations in the `LocalClassFieldTheory.Finite.Unramified.PrincipalUnits.Basic` Lean module. -/
 
 noncomputable section
@@ -48,7 +43,7 @@ theorem normIntegerUnits_mem_principalUnits_of_unramifiedValuation_of_isIntegral
 
 /-- Actual integral-closure version of the integer-unit norm restricted to
 principal units in an actual unramified valuation extension. -/
-noncomputable def principalUnitsNormOfUnramifiedValuationOfIsIntegralClosure
+def principalUnitsNormOfUnramifiedValuationOfIsIntegralClosure
     (K L : Type u)
     [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
     [Field L] [ValuativeRel L] [TopologicalSpace L] [IsNonarchimedeanLocalField L]
@@ -66,8 +61,6 @@ noncomputable def principalUnitsNormOfUnramifiedValuationOfIsIntegralClosure
     ext
     simp
   map_mul' := by
-    intro u v
-    ext
     simp
 
 /-- States the theorem `principalUnitsNormOfUnramifiedValuationOfIsIntegralClosure_apply`. -/
@@ -138,7 +131,7 @@ end UnramifiedPrincipalUnits
 /-- The integral-closure norm on successive principal-unit
 quotients.  This is the quotient map used in the unramified norm calculation before
 identifying the associated graded map with residue trace. -/
-noncomputable def principalUnitsSuccQuotNormOfUnramifiedValuationOfIsIntegralClosure
+def principalUnitsSuccQuotNormOfUnramifiedValuationOfIsIntegralClosure
     (K L : Type u)
     [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
     [Field L] [ValuativeRel L] [TopologicalSpace L] [IsNonarchimedeanLocalField L]
@@ -219,8 +212,3 @@ theorem principalUnitsSuccQuotMap_normOfUnramifiedValuationOfIsIntegralClosure_o
       simpa [b] using
     UnramifiedPrincipalUnits.norm_oneAdd_sub_galoisSum_mem_next
           K L n hn a)
-
-
-end LocalClassFieldTheory
-
-end

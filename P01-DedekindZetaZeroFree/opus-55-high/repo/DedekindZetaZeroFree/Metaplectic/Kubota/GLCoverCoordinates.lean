@@ -26,15 +26,3 @@ abbrev topG : TopologicalSpace (G F ζ hζ v) := inferInstance
 attribute [local instance] topG
 
 abbrev w := KPPGLLocalCover.W F ζ hζ (actualPlace v)
-
-instance topGroupG : IsTopologicalGroup (G F ζ hζ v) := by
-  cases v with
-  | inl p =>
-    let m := KPAdelicCoverRestrictedProduct.depth F ζ hζ p
-    have hm := KPAdelicCoverRestrictedProduct.depth_admissible F ζ hζ p
-    exact (KPPGLLocalCover.finite_topological_cover F ζ hζ p m hm).2.2.1
-  | inr w => exact (KPPGLLocalCover.complex_topological_cover F ζ hζ w).2.2.1
-
-end DedekindZetaZeroFree.KPReferenceChange.StandardCover
-
-end

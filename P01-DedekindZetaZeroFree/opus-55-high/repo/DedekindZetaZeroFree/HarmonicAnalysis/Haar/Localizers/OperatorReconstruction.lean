@@ -1,7 +1,7 @@
 module
 
 public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.HaarLocalizers.LineRestriction
-public import DedekindZetaZeroFree.Adeles.Quotients.Cusps.SphericalChartModulus
+public import DedekindZetaZeroFree.Eisenstein.ConstantTerms.CuspCoordinatesAndTruncation
 
 @[expose] public section
 
@@ -426,7 +426,7 @@ private theorem zero_difference (s t : Sections F ζ hζ U R P H) (b : X_U F ζ 
     (squaredNorm_zero_iff F ζ hζ U R P H t b).mp ht, zero_add] at h
   exact le_antisymm h (sectionNorm_nonneg F ζ hζ U R P H _ b)
 
-private theorem local_null_global
+theorem local_null_global
     (K : Set (X_U F ζ hζ U)) (hK : MeasurableSet K)
     (C : Chart F ζ hζ U R P H)
     (hchart : Measure.map (C.toBase F ζ hζ H.totallyComplex U)

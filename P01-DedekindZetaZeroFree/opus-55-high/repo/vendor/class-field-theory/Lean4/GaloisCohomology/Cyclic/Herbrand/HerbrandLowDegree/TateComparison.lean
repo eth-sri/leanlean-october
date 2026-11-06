@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-! Comparisons between arithmetic Herbrand quotient presentations and mathlib Tate cohomology. -/
 
 open CategoryTheory
@@ -26,7 +22,7 @@ noncomputable section
 
 universe u w
 
-private theorem repExact_of_hom_exact {k G : Type u} [CommRing k] [Group G]
+theorem repExact_of_hom_exact {k G : Type u} [CommRing k] [Group G]
     (S : ShortComplex (Rep.{w} k G))
     (h : ∀ b : S.X₂, S.g.hom b = 0 → ∃ a : S.X₁, S.f.hom a = b) :
     S.Exact :=
@@ -113,7 +109,7 @@ theorem equivariantShortComplex_shortExact
   change Additive.toMul
       ((Representation.ofMulDistribMulAction G A).norm a) =
     ∏ g : G, g • a.toMul
-  exact Representation.norm_ofMulDistribMulAction_eq a
+  simp
 
  theorem repSigmaMinusOne_toMul
     {G A : Type} [CommGroup G] [CommGroup A]
@@ -172,20 +168,15 @@ theorem equivariantShortComplex_shortExact
       apply Additive.ofMul.injective
       exact x.toMul.2 g⟩
   left_inv x := by
-    apply Subtype.ext
     rfl
   right_inv x := by
-    apply Additive.ofMul.injective
-    apply Subtype.ext
     rfl
   map_add' x y := by
-    apply Additive.ofMul.injective
-    apply Subtype.ext
     rfl
 
 /-- Mathlib's degree-zero Tate cohomology is the arithmetic fixed-point
 quotient by the norm image used by `HerbrandH0`. -/
-noncomputable def tateH0IsoHerbrandH0 :
+def tateH0IsoHerbrandH0 :
     tateCohomology (Rep.ofMulDistribMulAction G A) 0 ≅
       ModuleCat.of ℤ (Additive (HerbrandH0 G A)) := by
   let M := Rep.ofMulDistribMulAction G A
@@ -282,18 +273,13 @@ noncomputable def tateH0IsoHerbrandH0 :
           (G := G) (M := A) a).trans <| by
             simpa [tateNorm] using hx⟩
   left_inv x := by
-    apply Subtype.ext
     rfl
   right_inv x := by
-    apply Additive.ofMul.injective
-    apply Subtype.ext
     rfl
   map_add' x y := by
-    apply Additive.ofMul.injective
-    apply Subtype.ext
     rfl
 
- noncomputable def tateHMinusOneIsoHerbrandHMinusOne_of_commGroup
+ def tateHMinusOneIsoHerbrandHMinusOne_of_commGroup
     {G A : Type} [CommGroup G] [Fintype G] [CommGroup A]
     [MulDistribMulAction G A]
     (σ : G) (hgen : ∀ g : G, g ∈ Subgroup.zpowers σ) :
@@ -358,14 +344,10 @@ noncomputable def tateH0IsoHerbrandH0 :
 
 /-- For a chosen generator `σ`, mathlib's degree-minus-one Tate cohomology is
 the arithmetic quotient `ker N / im (σ - 1)` used by `HerbrandHMinusOne`. -/
-noncomputable def tateHMinusOneIsoHerbrandHMinusOne
+def tateHMinusOneIsoHerbrandHMinusOne
     (σ : G) (hgen : ∀ g : G, g ∈ Subgroup.zpowers σ) :
     tateCohomology (Rep.ofMulDistribMulAction G A) (-1) ≅
       ModuleCat.of ℤ (Additive (HerbrandHMinusOne G A σ)) := by
   letI : IsCyclic G := ⟨⟨σ, hgen⟩⟩
   letI : CommGroup G := IsCyclic.commGroup
   exact tateHMinusOneIsoHerbrandHMinusOne_of_commGroup σ hgen
-
-end
-
-end CyclicCohomology.ProfiniteCohomology.Herbrand

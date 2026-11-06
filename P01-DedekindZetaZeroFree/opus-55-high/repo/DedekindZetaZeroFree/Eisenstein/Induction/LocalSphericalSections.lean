@@ -109,10 +109,6 @@ def finite (q : HeightOneSpectrum (𝓞 F)) :
   · rw [finite, dif_neg hq]
     exact (exists_section_one F ζ hζ P C q (localReference F ζ hζ P C q)).choose_spec
 
-@[simp] theorem finite_one_one (q : HeightOneSpectrum (𝓞 F)) :
-    ((finite F ζ hζ P C q).val 1).val 1 = 1 := by
-  rw [finite_one, TorusReference.localReference_one]
-
 theorem finite_right_fixed (q : HeightOneSpectrum (𝓞 F)) (hq : q ∉ C.exceptional)
     (k : (C.canonical q).iwasawa.compact.toOpenSubgroup)
     (g : KPLocalExceptionalConstruction.ActualCover F ζ hζ q) :
@@ -130,7 +126,3 @@ theorem finite_has_level (q : HeightOneSpectrum (𝓞 F)) :
     ⟨(C.canonical q).iwasawa.compact.toOpenSubgroup ⊓ U,
       (C.canonical q).iwasawa.compact.isCompact.inter_right U.isClosed⟩
   exact ⟨J, inf_le_left, fun k g => congrFun (hU k.val k.property.2) g⟩
-
-end DedekindZetaZeroFree.EisensteinReferenceSections.LocalSeed
-
-end

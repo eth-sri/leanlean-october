@@ -28,7 +28,7 @@ theorem arch_fixed (w : InfinitePlace F)
     LocalCovariance.arch F ζ hζ w (g * k) = LocalCovariance.arch F ζ hζ w g := by
   let J : Subgroup (KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inl w)) := {
     carrier := {k | ∀ g, LocalCovariance.arch F ζ hζ w (g * k) = LocalCovariance.arch F ζ hζ w g}
-    one_mem' := by intro g; rw [mul_one]
+    one_mem' := by intro g; simp
     mul_mem' := by intro k l hk hl g; rw [← mul_assoc, hl, hk]
     inv_mem' := by
       intro k hk g
@@ -48,9 +48,7 @@ theorem value_right_arch (g u : RestrictedCover F ζ hζ)
       SourceTensor.evaluatedTensor F ζ hζ P C g := by
     apply SourceTensor.evaluatedTensor_congr
     intro q
-    change (LocalSeed.finite F ζ hζ P C q).val
-      (KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q) (g (Sum.inr q) * u (Sum.inr q))) = _
-    rw [hu, mul_one]
+    simp_all
   rw [RawSource.value, RawSource.value, ht]
   congr 1
   apply Finset.prod_congr rfl
@@ -71,7 +69,3 @@ theorem sourceLevel_le :
       ThetaExpansion.fullProductCompact R := by
   rw [SourceLevels.globalLevel_eq]
   exact SourceLevels.refined_compact_le R P C
-
-end DedekindZetaZeroFree.EisensteinReferenceSections.CompactSource
-
-end

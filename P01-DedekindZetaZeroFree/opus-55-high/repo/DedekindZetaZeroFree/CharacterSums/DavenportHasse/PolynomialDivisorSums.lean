@@ -36,5 +36,3 @@ theorem convolution_reindexed (χ : MulChar k ℂ) (ψ : AddChar k ℂ) (n : ℕ
     _ = _ := divisors_reindex n (fun d j =>
       ∑ P ∈ Mon k d, if Irreducible P then
         (d : ℂ) * wt χ ψ P ^ j * a χ ψ (n - d * j) else 0)
-
-end DavenportHasse.PolyPart

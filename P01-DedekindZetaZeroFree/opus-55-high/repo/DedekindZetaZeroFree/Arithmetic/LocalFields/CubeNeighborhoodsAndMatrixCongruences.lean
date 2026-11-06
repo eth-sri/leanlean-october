@@ -10,7 +10,6 @@ open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.KPLocalCube
 
 noncomputable section
-set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
 variable (v : HeightOneSpectrum (𝓞 F))
@@ -64,7 +63,7 @@ theorem mem_integerCongruence_iff (r : ℕ) (g : IntegerGL2 F v) :
     simpa [Matrix.one_apply] using hi
 
 open Polynomial in
-private theorem cube_of_nine_times_maximalIdeal (c : LocalIntegers F v) (hc : c ∈ maximalIdeal F v) :
+theorem cube_of_nine_times_maximalIdeal (c : LocalIntegers F v) (hc : c ∈ maximalIdeal F v) :
     ∃ t : (LocalField F v)ˣ, (t ^ 3 : (LocalField F v)ˣ).val = 1 + 9 * (c : LocalField F v) := by
   letI : HenselianRing (LocalIntegers F v) (maximalIdeal F v) :=
     (LocalFieldTheory.localCompleteDVF (LocalField F v)).henselianRing
@@ -90,7 +89,7 @@ private theorem cube_of_nine_times_maximalIdeal (c : LocalIntegers F v) (hc : c 
     intro h
     have hw0 : w = 0 := Subtype.val_injective h
     have h1 : (1 : LocalIntegers F v) ∈ maximalIdeal F v := by
-      simpa [hw0] using (maximalIdeal F v).neg_mem hwp
+      simp_all
     exact (IsLocalRing.maximalIdeal.isMaximal (LocalIntegers F v)).ne_top ((Ideal.eq_top_iff_one _).mpr h1)
   have hwf : (w : LocalField F v)^3 - (w : LocalField F v)^2 - 3*(c : LocalField F v)*(w : LocalField F v) - 3*(c : LocalField F v)^2 = 0 := by
     have heq : w^3 - w^2 - 3*c*w - 3*c^2 = 0 := by
@@ -106,7 +105,7 @@ private theorem cube_of_nine_times_maximalIdeal (c : LocalIntegers F v) (hc : c 
     have ha : (1 : LocalIntegers F v) + 9*c = 0 := by
       apply Subtype.val_injective
       have hn : ((9 : LocalIntegers F v) : LocalField F v) = 9 := by norm_cast
-      simpa only [Subring.coe_add, Subring.coe_one, Subring.coe_mul, Subring.coe_zero, hn, ht0, zero_pow (by decide : (3 : ℕ) ≠ 0)] using ht.symm
+      simp_all
     have h1 : (1 : LocalIntegers F v) ∈ maximalIdeal F v := by
       have h9 := (maximalIdeal F v).mul_mem_left 9 hc
       have heq : -(9*c) = (1 : LocalIntegers F v) := by linear_combination -ha
@@ -121,8 +120,7 @@ theorem principal_units_eventually_cubes :
         ((t ^ 3 : (LocalField F v)ˣ) : LocalField F v) = a := by
   obtain ⟨π, hπ⟩ := IsDiscreteValuationRing.exists_irreducible (LocalIntegers F v)
   have h9 : Ideal.span ({(9 : LocalIntegers F v)} : Set (LocalIntegers F v)) ≠ ⊥ := by
-    rw [ne_eq, Ideal.span_singleton_eq_bot]
-    exact by norm_num
+    simp
   obtain ⟨n, hn⟩ := IsDiscreteValuationRing.ideal_eq_span_pow_irreducible h9 hπ
   have hp : maximalIdeal F v ^ n = Ideal.span {(9 : LocalIntegers F v)} := by
     rw [maximalIdeal, hπ.maximalIdeal_eq, Ideal.span_singleton_pow, hn]
@@ -175,13 +173,13 @@ theorem Gamma_compact_open (r : ℕ) (hr : 1 ≤ r) :
     Units.isOpenMap_map hi.matrix_map.injective hi.matrix_map.isOpenMap
   exact ⟨hclosed.isCompact.image hc, ho _ hopen⟩
 
-private theorem cube_inclusion_injective : Function.Injective (integerInclusion F v) := by
+theorem cube_inclusion_injective : Function.Injective (integerInclusion F v) := by
   intro g h he
   apply Matrix.GeneralLinearGroup.ext
   intro i j
   apply Subtype.val_injective
   exact congrArg (fun A : LocalGL2 F v => A i j) he
-private theorem cube_Gamma_antitone {r s : ℕ} (hrs : r ≤ s) : Gamma F v s ≤ Gamma F v r := by
+theorem cube_Gamma_antitone {r s : ℕ} (hrs : r ≤ s) : Gamma F v s ≤ Gamma F v r := by
   rintro _ ⟨g, hg, rfl⟩
   refine ⟨g, ?_, rfl⟩
   apply (mem_integerCongruence_iff F v r g).mpr
@@ -214,9 +212,7 @@ theorem Gamma_nhds_basis (m : ℕ) (hm : 1 ≤ m) :
           (IsLocalRing.maximalIdeal.isMaximal (LocalIntegers F v)).ne_top] at hz
         exact sub_eq_zero.mp (Ideal.mem_bot.mp hz)
       simp [← h₀, he]
-    · intro g hg
-      have : g = 1 := Set.mem_singleton_iff.mp hg
-      simp [this]
+    simp
   apply Filter.hasBasis_iff.mpr
   intro U
   constructor
@@ -277,6 +273,3 @@ theorem deep_principal_units_and_matrix_charts :
       (Matrix.GeneralLinearGroup.det g₀ : LocalIntegers F v) - 1, hd, by
         simp [integerInclusion, Matrix.GeneralLinearGroup.map_det]⟩
     exact ⟨t, Units.ext ht⟩
-
-end
-end DedekindZetaZeroFree.KPLocalCube

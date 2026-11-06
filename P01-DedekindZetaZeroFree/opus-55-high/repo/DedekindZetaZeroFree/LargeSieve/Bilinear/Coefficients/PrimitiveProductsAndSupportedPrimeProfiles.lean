@@ -33,7 +33,7 @@ private lemma rel_of_sup {a b : Ideal (𝓞 F)} (h : a ⊔ b = ⊤) : IsRelPrime
   rw [← h]
   exact sup_le (Ideal.dvd_iff_le.mp hz) (Ideal.dvd_iff_le.mp hz')
 
-private lemma sup_of_rel {a b : Ideal (𝓞 F)} (h : IsRelPrime a b) : a ⊔ b = ⊤ :=
+lemma sup_of_rel {a b : Ideal (𝓞 F)} (h : IsRelPrime a b) : a ⊔ b = ⊤ :=
   Ideal.isUnit_iff.mp (h (Ideal.dvd_iff_le.mpr le_sup_left)
     (Ideal.dvd_iff_le.mpr le_sup_right))
 
@@ -45,7 +45,7 @@ private lemma column_spec (C : Context Q) {u : Ideal (𝓞 F)} (hu : u ∈ C.col
   exact ⟨hus.1, hus.2.1, by simpa only [sup_comm] using
     (sup_of_rel (squarefree_mul_iff.mp hdus.1).1), hcl⟩
 
-private lemma core_spec (C : Context Q) {B : ℝ} {unit : Bool} {r : Ideal (𝓞 F)}
+lemma core_spec (C : Context Q) {B : ℝ} {unit : Bool} {r : Ideal (𝓞 F)}
     (hr : r ∈ C.reflectedCoreRows B unit) : r ⊔ c = ⊤ := by
   cases unit with
   | false => exact ((Sieve.mem_paperShell F c B r).mp (Finset.mem_filter.mp hr).1).2.1
@@ -57,7 +57,7 @@ private lemma primitive_core (C : Context Q)
     C.primitive p hp a = (Q.χ p.1) a * star ((Q.χ p.2) a) := by
   by_cases ha0 : a = ⊥
   · subst a
-    simp [RayOperations.map_bot]
+    simp
   have hupper : ∀ u, Squarefree u → u ⊔ c = ⊤ → a ⊔ u = ⊤ →
       a ⊔ Q.cond u = ⊤ := by
     intro u hu huc hau
@@ -157,7 +157,3 @@ theorem primitive_supported_transport (D : Sieve.AllIndexNormalizedFamilyData Q)
   rw [hmul, hz, hcore]
   simp only [Fin.sum_univ_one, f, if_pos hpc.1, if_pos hpc.2]
   ring
-
-end DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms.Origin
-
-end

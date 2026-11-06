@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # degree bounds for the error factors
 
@@ -21,7 +18,6 @@ This file supplies the degree estimates for the polynomials `f_n` appearing in
 the coefficientwise Hensel iteration.
 -/
 
-noncomputable section
 
 open scoped Polynomial
 
@@ -77,7 +73,7 @@ theorem henselFactorization_residual_right_natDegree_le
       simpa [hfbar] using hf
     have hsum : m + hbar.natDegree ≤ d := by
       simpa [hgbar_nat, Polynomial.natDegree_mul hg hh] using hprod
-    exact Nat.le_sub_of_add_le (by simpa [Nat.add_comm] using hsum)
+    omega
 
 /-- if `deg f ≤ d`, `deg g ≤ m`, and `deg h ≤ d-m`, then
 `deg(f-gh)≤d`. -/
@@ -89,11 +85,9 @@ theorem henselFactorization_error_natDegree_le
   have hmul : (g * h).natDegree ≤ d := by
     have hmul' : (g * h).natDegree ≤ m + (d - m) :=
       Polynomial.natDegree_mul_le_of_le hg hh
-    have hsum : m + (d - m) = d := by
-      rw [Nat.add_comm, Nat.sub_add_cancel hmd]
-    simpa [hsum] using hmul'
+    simp_all
   have hsub := Polynomial.natDegree_sub_le_of_le hf hmul
-  simpa using hsub
+  omega
 
 /-- if `P=C(a)Q` with `a≠0`, then a degree bound on `P`
 is a degree bound on `Q`. -/
@@ -121,22 +115,3 @@ theorem henselFactorization_error_factor_natDegree_le
     (P := f - g * h) (Q := fn)
     (henselFactorization_error_natDegree_le hf hg hh hmd)
     hfactor
-
-/-- residue-degree bound for the next error factor `f_n`. -/
-theorem henselFactorization_error_factor_residue_natDegree_le
-    {R : Type*} [CommRing R] [IsLocalRing R] [NoZeroDivisors R]
-    {π : R} {n : ℕ} (hπn : π ^ n ≠ 0)
-    {f g h fn : R[X]} {d m : ℕ}
-    (hf : f.natDegree ≤ d) (hg : g.natDegree ≤ m)
-    (hh : h.natDegree ≤ d - m) (hmd : m ≤ d)
-    (hfactor : f - g * h = Polynomial.C (π ^ n) * fn) :
-    (fn.map (IsLocalRing.residue R)).natDegree ≤ d :=
-  henselFactorization_map_natDegree_le_of_natDegree_le
-    (IsLocalRing.residue R)
-    (henselFactorization_error_factor_natDegree_le
-      (π := π) hπn hf hg hh hmd hfactor)
-
-end Valuations
-end AlgebraicNumberTheory
-
-end

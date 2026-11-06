@@ -44,7 +44,7 @@ def finiteProjection : Cover F ζ hζ →* KPFiniteComponents.FinitePGL2 F :=
             (KPAdelicCoverRestrictedProduct.scalarHom F ζ hζ z))) = 1
       rw [KPAdelicCoverRestrictedProduct.projection_scalarHom]
       erw [Matrix.GeneralLinearGroup.map_scalar]
-      exact Matrix.ProjGenLinGroup.mk_scalar _)
+      simp)
 
 abbrev FiniteCover := (archProjection F ζ hζ).ker
 
@@ -81,15 +81,11 @@ def finiteBase : FiniteCover F ζ hζ →* KPFiniteComponents.FinitePGL2 F :=
     KPAdelicCoverRestrictedProduct.AdelicGL2 F :=
   pairGL (1 : Matrix.GeneralLinearGroup (Fin 2) (NumberField.InfiniteAdeleRing F)) A
 
-private theorem finiteMatrix_continuous : Continuous (finiteMatrix F) := by
+theorem finiteMatrix_continuous : Continuous (finiteMatrix F) := by
   apply Units.continuous_iff.mpr
   constructor
-  · apply continuous_matrix
-    intro i j
-    exact continuous_const.prodMk (by fun_prop)
-  · apply continuous_matrix
-    intro i j
-    exact continuous_const.prodMk (by fun_prop)
+  · fun_prop
+  fun_prop
 
 theorem projected_finite_level_compact_open
     (U : CompactOpenLevel (FiniteCover F ζ hζ)) :
@@ -117,7 +113,7 @@ theorem projected_finite_level_compact_open
     simpa using h1V
   obtain ⟨e, he, heq⟩ :=
     (KPAdelicCoverRestrictedProduct.adelic_topological_cover F ζ hζ).2.2.2 1
-  have he1 : e 1 = 1 := by rw [← heq]; exact map_one _
+  have he1 : e 1 = 1 := by rw [← heq]; simp
   have hm1 : finiteMatrix F 1 = 1 := by
     apply Matrix.GeneralLinearGroup.ext
     intro i j
@@ -170,7 +166,3 @@ theorem projected_finite_level_compact_open
         (KPAdelicCoverRestrictedProduct.projection F ζ hζ c)) = _
     rw [hp]
     rfl
-
-end DedekindZetaZeroFree.KPCuspMonodromy
-
-end

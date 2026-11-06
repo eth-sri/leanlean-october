@@ -15,13 +15,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Cyclic closures detected by a p-adic degree
 
@@ -96,8 +89,8 @@ theorem padicCyclicClosure_isOpen_of_degree_ne_one
     let γ : Γ :=
       padicCyclicClosureGenerator τ
     have hdegreeMem :
-        degree τ ∈ R := by
-      exact ⟨γ, rfl⟩
+        degree τ ∈ R := 
+      ⟨γ, rfl⟩
     have hdegreeAddMem :
         Multiplicative.toAdd (degree τ) ∈ H := by
       rw [Subgroup.mem_toAddSubgroup']
@@ -107,9 +100,7 @@ theorem padicCyclicClosure_isOpen_of_degree_ne_one
         Multiplicative.toAdd (degree τ) = 0 := by
       simpa only [AddSubgroup.mem_bot] using hdegreeAddMem
     apply hτ
-    apply Multiplicative.ext
-    change Multiplicative.toAdd (degree τ) = 0
-    exact hdegreeAddZero
+    simp_all
   have hHopen :
       IsOpen (H : Set ℤ_[p]) :=
     PadicInt.addSubgroup_isOpen_of_isClosed_of_ne_bot
@@ -156,11 +147,7 @@ theorem padicCyclicClosure_isOpen_of_degree_ne_one
       (⊤ : Subgroup G).map degree.toMonoidHom =
         degree.toMonoidHom.range := by
     ext z
-    constructor
-    · rintro ⟨g, _, rfl⟩
-      exact ⟨g, rfl⟩
-    · rintro ⟨g, rfl⟩
-      exact ⟨g, Subgroup.mem_top g, rfl⟩
+    simp
   have himage :
       (Γ.toSubgroup.map degree.toMonoidHom).relIndex
           ((⊤ : Subgroup G).map degree.toMonoidHom) ≠ 0 := by
@@ -188,7 +175,7 @@ theorem padicCyclicClosure_isOpen_of_degree_ne_one
     rw [
       relIndex_eq_map_relIndex_mul_inf_ker_relIndex
         degree.toMonoidHom le_top]
-    exact Nat.mul_ne_zero himage hkernel
+    positivity
   have hindex : Γ.toSubgroup.index ≠ 0 := by
     simpa only [Subgroup.relIndex_top_right] using hrel
   let : Γ.toSubgroup.FiniteIndex :=
@@ -265,7 +252,7 @@ theorem padicCyclicClosure_degree_injective_of_primePower_finiteCoordinate
           a * (c : ℤ_[p]) ∈
             Ideal.span ({(c : ℤ_[p])} : Set ℤ_[p])
         rw [Ideal.mem_span_singleton]
-        exact ⟨a, mul_comm _ _⟩
+        simp
     have hJclosed : IsClosed (J : Set ℤ_[p]) := by
       rw [hJrange]
       exact
@@ -277,13 +264,9 @@ theorem padicCyclicClosure_degree_injective_of_primePower_finiteCoordinate
         change
           (c : ℤ_[p]) ∈
             Ideal.span ({(c : ℤ_[p])} : Set ℤ_[p])
-        exact Ideal.subset_span (by simp)
+        simp
       rw [hbot] at hcMem
-      have hc0 : (c : ℤ_[p]) = 0 := by
-        simpa only [AddSubgroup.mem_bot] using hcMem
-      have hc0' : c = 0 := by
-        exact_mod_cast hc0
-      exact hcne hc0'
+      simp_all
     have hJopen : IsOpen (J : Set ℤ_[p]) :=
       PadicInt.addSubgroup_isOpen_of_isClosed_of_ne_bot
         p J hJclosed hJne
@@ -312,20 +295,14 @@ theorem padicCyclicClosure_degree_injective_of_primePower_finiteCoordinate
             (((Subgroup.closure
               (Set.range (fun _ : Unit => γ))) :
                 Subgroup G) :
-              Set G) := by
-      exact z.2
+              Set G) := 
+      z.2
     obtain ⟨y, hyO, hyGenerated⟩ :=
       mem_closure_iff.mp hzclosure O hOopen hzO
     have hrange :
         Set.range (fun _ : Unit => γ) =
           ({γ} : Set G) := by
-      ext x
-      constructor
-      · rintro ⟨u, rfl⟩
-        simp
-      · intro hx
-        rw [Set.mem_singleton_iff] at hx
-        exact ⟨(), hx.symm⟩
+      simp
     have hyZPowers :
         y ∈ Subgroup.zpowers γ := by
       rw [Subgroup.zpowers_eq_closure, ← hrange]
@@ -390,8 +367,8 @@ theorem padicCyclicClosure_degree_injective_of_primePower_finiteCoordinate
         _ = 1 := by
           rw [zpow_natCast, hfinite, one_zpow]
     have hzfinite :
-        finiteCoordinate z.1 = 1 := by
-      exact hyO.1.symm.trans hfinitePower
+        finiteCoordinate z.1 = 1 := 
+      hyO.1.symm.trans hfinitePower
     have hzG : z.1 = (1 : G) := by
       apply hjoint
       apply Prod.ext
@@ -404,16 +381,11 @@ theorem padicCyclicClosure_degree_injective_of_primePower_finiteCoordinate
   intro x y hxy
   have hxy' : restrictedDegree x = restrictedDegree y := by
     change degree (x : G) = degree (y : G)
-    change degree (x : G) = degree (y : G) at hxy
-    exact hxy
+    simp_all
   have hquotient :
       restrictedDegree (x * y⁻¹) = 1 := by
-    rw [map_mul, map_inv, hxy', mul_inv_cancel]
+    simp_all
   have hunit :
       x * y⁻¹ = 1 :=
     hkernel (x * y⁻¹) hquotient
   exact mul_inv_eq_one.mp hunit
-
-end
-
-end ClassFormation

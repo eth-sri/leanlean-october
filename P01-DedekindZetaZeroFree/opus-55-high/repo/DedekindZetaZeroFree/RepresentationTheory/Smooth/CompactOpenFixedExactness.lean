@@ -65,7 +65,7 @@ noncomputable def finiteQuotientAverage (ρ : Representation ℂ G V)
   exact (Nat.card (U.toOpenSubgroup ⧸ K) : ℂ)⁻¹ •
     ∑ x : U.toOpenSubgroup ⧸ K, ρ (r x : G) v
 
-private theorem orbit_eq_of_coset_eq (ρ : Representation ℂ G V)
+theorem orbit_eq_of_coset_eq (ρ : Representation ℂ G V)
     (U : CompactOpenLevel G) (v : V) (K : Subgroup U.toOpenSubgroup)
     (hfix : ∀ h : K, ρ (h.val.val : G) v = v)
     (a b : U.toOpenSubgroup) (hab : (QuotientGroup.mk a : U.toOpenSubgroup ⧸ K) = QuotientGroup.mk b) :
@@ -82,7 +82,7 @@ noncomputable def finiteAverageMap (ρ : Representation ℂ G V)
   letI := Fintype.ofFinite (U.toOpenSubgroup ⧸ K)
   exact (Nat.card (U.toOpenSubgroup ⧸ K) : ℂ)⁻¹ • ∑ x, ρ (r x : G)
 
-private theorem finiteAverageMap_apply (ρ : Representation ℂ G V)
+theorem finiteAverageMap_apply (ρ : Representation ℂ G V)
     (U : CompactOpenLevel G) (K : Subgroup U.toOpenSubgroup)
     [Finite (U.toOpenSubgroup ⧸ K)]
     (r : (U.toOpenSubgroup ⧸ K) → U.toOpenSubgroup) (v : V) :
@@ -101,9 +101,7 @@ private theorem finiteAverageMap_apply (ρ : Representation ℂ G V)
   unfold finiteQuotientAverage
   simp only [hv, Finset.sum_const, Finset.card_univ]
   rw [← Nat.card_eq_fintype_card, ← Nat.cast_smul_eq_nsmul ℂ, smul_smul]
-  have hn : (Nat.card (U.toOpenSubgroup ⧸ K) : ℂ) ≠ 0 := by
-    exact_mod_cast Nat.card_pos.ne'
-  rw [inv_mul_cancel₀ hn, one_smul]
+  simp
 
  theorem finiteAverage_left (ρ : Representation ℂ G V)
     (U : CompactOpenLevel G) (v : V) (K : FiniteAveragingLevel ρ U v)
@@ -130,7 +128,7 @@ private theorem finiteAverageMap_apply (ρ : Representation ℂ G V)
       rfl
     _ = ∑ x, ρ (r x : G) v := Equiv.sum_comp e (fun x => ρ (r x : G) v)
 
-private theorem finiteAverage_right (ρ : Representation ℂ G V)
+theorem finiteAverage_right (ρ : Representation ℂ G V)
     (U : CompactOpenLevel G) (v : V) (K : FiniteAveragingLevel ρ U v)
     (r : (U.toOpenSubgroup ⧸ K.subgroup) → U.toOpenSubgroup)
     (hr : ∀ x, QuotientGroup.mk (r x) = x) (g : U.toOpenSubgroup) :
@@ -197,7 +195,7 @@ noncomputable def compactOpenAverageFun (ρ : Representation ℂ G V)
   letI := K.finite
   exact finiteQuotientAverage ρ U K.subgroup Quotient.out v
 
-private theorem averageFun_eq_level (ρ : Representation ℂ G V)
+theorem averageFun_eq_level (ρ : Representation ℂ G V)
     (hρ : SmoothRepresentation ρ) (U : CompactOpenLevel G) (v : V)
     (K : FiniteAveragingLevel ρ U v) :
     letI := K.finite
@@ -291,11 +289,9 @@ theorem compactOpenAverage_fixed (ρ : Representation ℂ G V)
   have hf : ∀ x : U.toOpenSubgroup ⧸ K.subgroup,
       ρ ((Quotient.out x : U.toOpenSubgroup) : G) v = v :=
     fun x => hv (Quotient.out x)
-  simp only [hf, Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
+  simp only [hf, Finset.sum_const, Finset.card_univ]
   rw [← Nat.card_eq_fintype_card, ← Nat.cast_smul_eq_nsmul ℂ, smul_smul]
-  have hn : (Nat.card (U.toOpenSubgroup ⧸ K.subgroup) : ℂ) ≠ 0 := by
-    exact_mod_cast Nat.card_pos.ne'
-  rw [inv_mul_cancel₀ hn, one_smul]
+  simp
 
 theorem compactOpenAverage_range (ρ : Representation ℂ G V)
     (hρ : SmoothRepresentation ρ) (U : CompactOpenLevel G) :
@@ -376,7 +372,7 @@ theorem fixedSpaceMap_surjective (ρ : Representation ℂ G V)
   obtain ⟨v, hv⟩ := hq w.val
   have hav : compactOpenAverage ρ hρ U v ∈ fixedSubmodule ρ U.toOpenSubgroup.toSubgroup := by
     rw [← compactOpenAverage_range ρ hρ U]
-    exact LinearMap.mem_range_self _ v
+    simp
   refine ⟨⟨compactOpenAverage ρ hρ U v, hav⟩, ?_⟩
   apply Subtype.ext
   change q (compactOpenAverage ρ hρ U v) = w.val
@@ -384,7 +380,3 @@ theorem fixedSpaceMap_surjective (ρ : Representation ℂ G V)
   change q (compactOpenAverage ρ hρ U v) = compactOpenAverage σ hσ U (q v) at hn
   rw [hn, hv]
   exact compactOpenAverage_fixed σ hσ U w.val w.property
-
-end Averaging
-
-end DedekindZetaZeroFree

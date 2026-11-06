@@ -37,13 +37,11 @@ theorem height_upperTriangular (a d : ℂˣ) (b : ℂ) (g : ComplexGL2) :
     height (upperTriangular a d b * g) = complexAbs ((a : ℂ) / (d : ℂ)) * height g := by
   have hb : bottomRowNormSq (upperTriangular a d b * g) =
       ‖(d : ℂ)‖ ^ 2 * bottomRowNormSq g := by
-    simp [bottomRowNormSq, upperTriangular, Matrix.mul_apply, Fin.sum_univ_two,
-      norm_mul, mul_pow]
+    simp [bottomRowNormSq, upperTriangular, Matrix.mul_apply, Fin.sum_univ_two, mul_pow]
     ring
   have hd : ‖((Matrix.GeneralLinearGroup.det (upperTriangular a d b * g) : ℂˣ) : ℂ)‖ =
       ‖(a : ℂ)‖ * ‖(d : ℂ)‖ * ‖((Matrix.GeneralLinearGroup.det g : ℂˣ) : ℂ)‖ := by
-    simp [Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_mul, upperTriangular,
-      Matrix.det_fin_two, norm_mul]
+    simp [Matrix.GeneralLinearGroup.val_det_apply, upperTriangular, Matrix.det_fin_two]
   have hdn : ‖(d : ℂ)‖ ≠ 0 := norm_ne_zero_iff.mpr d.ne_zero
   simp only [height, hb, hd, complexAbs, norm_div]
   field_simp [hdn, (bottom_pos g).ne']
@@ -54,7 +52,7 @@ theorem twist_upperTriangular (s : ℂ) (a d : ℂˣ) (b : ℂ) (g : ComplexGL2)
       Complex.exp (s * (Real.log (complexAbs ((a : ℂ) / (d : ℂ))) : ℂ)) * twist s g := by
   have ha : 0 < complexAbs ((a : ℂ) / (d : ℂ)) := by
     unfold complexAbs
-    exact pow_pos (norm_pos_iff.mpr (div_ne_zero a.ne_zero d.ne_zero)) _
+    simp
   rw [twist, height_upperTriangular, Real.log_mul ha.ne' (height_pos g).ne']
   simp only [Complex.ofReal_add, mul_add, Complex.exp_add, twist]
 
@@ -70,9 +68,7 @@ theorem plusValue_covariance (f : PrincipalSeries positiveParameter) (s : ℂ)
 
 theorem height_open (z : ℂ) :
     height (weyl * upperUnipotent z) = (1 + ‖z‖ ^ 2)⁻¹ ^ 2 := by
-  simp [height, bottomRowNormSq, weyl, upperUnipotent,
-    Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_mul, Matrix.det_fin_two,
-    Matrix.mul_apply, Fin.sum_univ_two]
+  simp [height, bottomRowNormSq, weyl, upperUnipotent, Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two, Matrix.mul_apply, Fin.sum_univ_two]
 
 theorem height_infinity (z : ℂ) :
     height (lowerUnipotent z) = (1 + ‖z‖ ^ 2)⁻¹ ^ 2 := by
@@ -114,8 +110,8 @@ def realTwisted (f : PrincipalSeries positiveParameter) (r : ℝ) :
   intro a d b g
   rw [plusValue_covariance]
   congr 1
-  have hp : 0 < complexAbs ((a : ℂ) / (d : ℂ)) := by
-    exact pow_pos (norm_pos_iff.mpr (div_ne_zero a.ne_zero d.ne_zero)) _
+  have hp : 0 < complexAbs ((a : ℂ) / (d : ℂ)) := 
+    pow_pos (norm_pos_iff.mpr (div_ne_zero a.ne_zero d.ne_zero)) _
   change (((complexAbs ((a : ℂ) / (d : ℂ))) ^ (1 / 2 + positiveParameter) : ℝ) : ℂ) *
     Complex.exp ((r : ℂ) * (Real.log (complexAbs ((a : ℂ) / (d : ℂ))) : ℂ)) =
     (((complexAbs ((a : ℂ) / (d : ℂ))) ^ (1 / 2 + (positiveParameter + r)) : ℝ) : ℂ)
@@ -140,8 +136,7 @@ private theorem transition_norm (r : ℝ) (f : PrincipalSeries r) (x : ℂ)
   have hw : transitionWeight r x⁻¹ = ‖x‖ ^ (2 * (1 + 2 * r)) := by
     simp only [transitionWeight, norm_inv, Real.rpow_eq_pow]
     rw [Real.inv_rpow (norm_nonneg _), ← Real.rpow_neg (norm_nonneg _)]
-    congr 1
-    ring
+    simp
   rw [inv_inv, hw] at h
   have hn := congrArg norm h
   rw [norm_mul, Complex.norm_real, Real.norm_eq_abs,
@@ -211,16 +206,14 @@ theorem real_intertwiner_integrable (β : ℂˣ) (r : ℝ) (hr : 0 < r)
     F.property.2.1.continuous.aestronglyMeasurable
     (Eventually.of_forall (openCoordinate_envelope r hr F))
 
-private theorem height_orbit_continuous (g : ComplexGL2) :
+theorem height_orbit_continuous (g : ComplexGL2) :
     Continuous (fun x : ℂ => height (weyl * upperUnipotent x * g)) := by
   have he : (fun x : ℂ => height (weyl * upperUnipotent x * g)) = fun x =>
       (‖((Matrix.GeneralLinearGroup.det g : ℂˣ) : ℂ)‖ /
         (‖(g : Matrix (Fin 2) (Fin 2) ℂ) 0 0 + x * (g : Matrix (Fin 2) (Fin 2) ℂ) 1 0‖ ^ 2 +
          ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 0 1 + x * (g : Matrix (Fin 2) (Fin 2) ℂ) 1 1‖ ^ 2)) ^ 2 := by
     funext x
-    simp [height, bottomRowNormSq, weyl, upperUnipotent,
-      Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_mul, Matrix.det_fin_two,
-      Matrix.mul_apply, Fin.sum_univ_two, norm_sub_rev]
+    simp [height, bottomRowNormSq, weyl, upperUnipotent, Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two, Matrix.mul_apply, Fin.sum_univ_two, norm_sub_rev]
   rw [he]
   apply Continuous.pow
   apply Continuous.div continuous_const
@@ -230,7 +223,7 @@ private theorem height_orbit_continuous (g : ComplexGL2) :
     simpa [bottomRowNormSq, weyl, upperUnipotent, Matrix.mul_apply, Fin.sum_univ_two]
       using hb.ne'
 
-private theorem plusValue_orbit_continuous (f : PrincipalSeries positiveParameter)
+theorem plusValue_orbit_continuous (f : PrincipalSeries positiveParameter)
     (s : ℂ) (g : ComplexGL2) :
     Continuous (fun x : ℂ => plusValue f s (weyl * upperUnipotent x * g)) := by
   unfold plusValue twist
@@ -249,5 +242,3 @@ theorem chamber_integrable (β : ℂˣ) (s : ℂ) (hs : s ∈ chamber)
   exact ((real_intertwiner_integrable β _ hr (realTwisted f s.re) g).norm).mono'
     (plusValue_orbit_continuous f s g).aestronglyMeasurable
     (Eventually.of_forall (fun x => (norm_plusValue f s _).le))
-
-end DedekindZetaZeroFree.KPReferenceChange.StandardComplexImage.FamilyCorrect

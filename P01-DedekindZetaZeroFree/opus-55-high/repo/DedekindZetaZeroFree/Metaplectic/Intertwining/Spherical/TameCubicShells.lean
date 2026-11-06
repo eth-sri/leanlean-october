@@ -8,7 +8,6 @@ public import DedekindZetaZeroFree.Metaplectic.Intertwining.Spherical.Meromorphi
 
 section
 
-set_option autoImplicit false
 noncomputable section
 namespace DedekindZetaZeroFree.KPLocalTameIntertwiningBlock
 open scoped NumberField Classical Valued
@@ -21,7 +20,7 @@ open KPExceptionalRaw.FiniteSource.GoodSphericalVector
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
   (q : HeightOneSpectrum (𝓞 F)) (S : KPExceptionalRaw.RawFiniteInducingData F ζ hζ q)
 
-private theorem tame_invmask (P : Polarization S.heisenberg) (V : InducedModule P)
+theorem tame_invmask (P : Polarization S.heisenberg) (V : InducedModule P)
     (hu : ∀ u : (KPTameCompact.O F q)ˣ,
       tau P ((S.openCell P).rootTorus (KPTameCompact.unitInclusion F q u)) V = V)
     (u : (KPTameCompact.O F q)ˣ) (v : (LocalField F q)ˣ) :
@@ -38,7 +37,7 @@ private theorem tame_invmask (P : Polarization S.heisenberg) (V : InducedModule 
   have hr : r⁻¹ = b⁻¹ * a⁻¹ * z := by
     apply inv_eq_of_mul_eq_one_left
     rw [mul_assoc, ← he]
-    simp [mul_assoc]
+    simp
   have ha : tau P a⁻¹ V = V := by
     have hh := congrArg (tau P a⁻¹) (hu u)
     rw [← Module.End.mul_apply, ← map_mul] at hh
@@ -47,7 +46,7 @@ private theorem tame_invmask (P : Polarization S.heisenberg) (V : InducedModule 
   rw [hr, map_mul, map_mul, Module.End.mul_apply, Module.End.mul_apply,
     actual_centralTorus_action F ζ hζ q S, map_smul, ha, map_smul]
   rfl
-private theorem tame_phase (ht : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3)
+theorem tame_phase (ht : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3)
     (π : (LocalField F q)ˣ) (hπ : valuationMap (LocalField F q) (Additive.ofMul π) = -1)
     (u : (KPTameCompact.O F q)ˣ) (v : (LocalField F q)ˣ) :
     KPHilbert.B3 F ζ hζ (Sum.inr q)
@@ -63,19 +62,18 @@ private theorem tame_phase (ht : ringChar (KPTameCompact.O F q ⧸ KPTameCompact
   simp only [KPHilbert.B3_canonical] at hwB ha ⊢
   simp only [map_pow, MonoidHom.pow_apply]
   conv_lhs => rw [← hw]
-  simp only [map_mul, MonoidHom.mul_apply, map_zpow, MonoidHom.zpow_apply,
-    map_inv, MonoidHom.inv_apply]
+  simp only [map_mul, map_zpow, map_inv]
   change KPHilbert.finiteThreePairing F ζ hζ q
     (ClassFieldTheory.powerClass (LocalField F q) 3 (KPTameCompact.unitInclusion F q u))
     (ClassFieldTheory.powerClass (LocalField F q) 3 ((integerUnitsToFieldUnits (LocalField F q)) w)) = 1 at hwB
   rw [hwB, one_mul, ← ha]
-  simp only [inv_zpow, inv_inv, ← zpow_natCast, ← zpow_mul]
+  simp only [← zpow_natCast, ← zpow_mul]
   congr 1
   ring
 
-private theorem tame_valunit (u : (KPTameCompact.O F q)ˣ) :
-    valuation (LocalField F q) (KPTameCompact.unitInclusion F q u : LocalField F q) = 1 := by
-  exact (Valuation.Integers.isUnit_iff_valuation_eq_one
+theorem tame_valunit (u : (KPTameCompact.O F q)ˣ) :
+    valuation (LocalField F q) (KPTameCompact.unitInclusion F q u : LocalField F q) = 1 := 
+  (Valuation.Integers.isUnit_iff_valuation_eq_one
     (Valuation.integer.integers (valuation (LocalField F q)))).mp u.isUnit
 
 theorem tame_noncubic_shell_unit_eigenvalue
@@ -113,8 +111,7 @@ theorem tame_noncubic_shell_unit_eigenvalue
   have he : ((8 * ((n + 1 : ℕ) : ℤ) : ℤ) : ZMod 3) ≠ 0 := by
     intro he
     have hd := (ZMod.intCast_zmod_eq_zero_iff_dvd _ 3).mp he
-    have hn' : (3 : ℤ) ∣ ((n + 1 : ℕ) : ℤ) := by omega
-    exact hn (by exact_mod_cast hn')
+    omega
   obtain ⟨u, hu⟩ := KPTameTransposeLowShellSupport.exists_tame_cubic_unit_detecting_exponent
     F ζ hζ q ht π hπ (8 * ((n + 1 : ℕ) : ℤ)) he
   let c : ℂ := (ordinaryIota F ζ hζ
@@ -218,7 +215,6 @@ end
 
 section
 
-set_option autoImplicit false
 noncomputable section
 namespace DedekindZetaZeroFree.KPLocalTameIntertwiningBlock
 open scoped NumberField Classical
@@ -258,8 +254,7 @@ theorem tame_spherical_zero_shells_of_actual_compact
     intro k
     have hk : actualGoodCompactSplit F ζ hζ q ht k ∈ S.iwasawa.compact.toOpenSubgroup := by
       change _ ∈ (S.iwasawa.compact.toOpenSubgroup : Subgroup (ActualCover F ζ hζ q))
-      rw [hcompact]
-      exact ⟨k, rfl⟩
+      simp_all
     exact hφ.2 0 ⟨_, hk⟩
   have hs := tame_actual_compact_spherical_negative_shell_coordinate
     F ζ hζ q (rawInducingAlias F ζ hζ q S) μ hμ ht P
@@ -268,10 +263,4 @@ theorem tame_spherical_zero_shells_of_actual_compact
     simp [haarMass, hμ]
   simp only [rawInducingAlias, hφ.1 0, mul_one] at hs
   simp only [hmass, Complex.ofReal_one, one_mul]
-  convert hs using 1
-
-end DedekindZetaZeroFree.KPLocalTameIntertwiningBlock
-
-end
-
-end
+  omega

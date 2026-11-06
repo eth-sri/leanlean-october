@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Prime decomposition of the profinite integers
 
@@ -168,8 +163,7 @@ theorem continuous_zHatToPadicInt (p : Nat.Primes) :
     exact (isOpen_discrete ({0} : Set (ZMod (p.1 ^ n)))).preimage
       (zHatReduction (p.1 ^ n) (pow_pos p.2.pos n)).continuous
   have hKzero : (0 : ZHat) ∈ K := by
-    change zHatPadicReduction p n 0 = 0
-    exact map_zero _
+    rfl
   apply Filter.mem_of_superset (hKopen.mem_nhds hKzero)
   intro z hz
   change zHatPadicReduction p n z = 0 at hz
@@ -330,7 +324,7 @@ theorem zHatToProfiniteIntegerPrimeProduct_surjective :
 
 /-- The Chinese-remainder ring equivalence
 `ℤ̂ ≃ ∏ p : Nat.Primes, ℤ_p`. -/
-noncomputable def zHatRingEquivProfiniteIntegerPrimeProduct :
+def zHatRingEquivProfiniteIntegerPrimeProduct :
     ZHat ≃+* ProfiniteIntegerPrimeProduct :=
   RingEquiv.ofBijective zHatToProfiniteIntegerPrimeProduct
     ⟨zHatToProfiniteIntegerPrimeProduct_injective,
@@ -342,16 +336,3 @@ theorem zHatRingEquivProfiniteIntegerPrimeProduct_apply
     zHatRingEquivProfiniteIntegerPrimeProduct z =
       zHatToProfiniteIntegerPrimeProduct z :=
   rfl
-
-/-- The Chinese-remainder ring equivalence is a homeomorphism. -/
-theorem isHomeomorph_zHatRingEquivProfiniteIntegerPrimeProduct :
-    IsHomeomorph zHatRingEquivProfiniteIntegerPrimeProduct := by
-  rw [isHomeomorph_iff_continuous_bijective]
-  exact
-    ⟨continuous_zHatToProfiniteIntegerPrimeProduct,
-      (zHatRingEquivProfiniteIntegerPrimeProduct :
-        ZHat ≃ ProfiniteIntegerPrimeProduct).bijective⟩
-
-end ClassFormation
-
-end

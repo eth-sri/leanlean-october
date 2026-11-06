@@ -24,10 +24,10 @@ private theorem joint_spatial_jets {E V : Type*} [NormedAddCommGroup E] [NormedS
   | succ n ih =>
     simp only [iteratedFDeriv_succ_eq_comp_left, Function.comp_apply]
     have hd : ContDiff ℝ (⊤ : ℕ∞) (fun p : ℝ × E =>
-        fderiv ℝ (iteratedFDeriv ℝ n (fun x => F (p.1, x))) p.2) := by
-      exact (ih.comp (contDiff_fst.fst.prodMk contDiff_snd)).fderiv
+        fderiv ℝ (iteratedFDeriv ℝ n (fun x => F (p.1, x))) p.2) := 
+      (ih.comp (contDiff_fst.fst.prodMk contDiff_snd)).fderiv
         contDiff_snd (by simp)
-    exact (continuousMultilinearCurryLeftEquiv ℝ (fun _ : Fin (n+1) => E) V).symm.toContinuousLinearEquiv.toContinuousLinearMap.contDiff.comp hd
+    fun_prop
 
 namespace SmoothQuotient
 variable {E V : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
@@ -38,11 +38,11 @@ lemma partialT_smooth (F : ℝ × E → V) (hF : ContDiff ℝ (⊤ : ℕ∞) F) 
     ContDiff ℝ (⊤ : ℕ∞) (partialT F) := by
   have h : ContDiff ℝ (⊤ : ℕ∞) (fun p : ℝ × E =>
       fderiv ℝ (fun t => F (t,p.2)) p.1) :=
-    (hF.comp (contDiff_snd.prodMk contDiff_fst.snd)).fderiv contDiff_fst (by simp)
+    by fun_prop
   exact h.clm_apply contDiff_const
 lemma partialT_deriv (F : ℝ × E → V) (hF : ContDiff ℝ (⊤ : ℕ∞) F) (t : ℝ) (x : E) :
-    HasDerivAt (fun s => F (s,x)) (partialT F (t,x)) t := by
-  exact ((hF.comp (contDiff_id.prodMk contDiff_const)).differentiable (by simp) t).hasDerivAt
+    HasDerivAt (fun s => F (s,x)) (partialT F (t,x)) t := 
+  ((hF.comp (contDiff_id.prodMk contDiff_const)).differentiable (by simp) t).hasDerivAt
 noncomputable def extSlope (F : ℝ × E → V) (p : ℝ × E) : V :=
   ∫ s : ℝ in 0..1, partialT F (s * p.1, p.2)
 lemma extSlope_continuous (F : ℝ × E → V) (hF : ContDiff ℝ (⊤ : ℕ∞) F) :
@@ -63,7 +63,7 @@ lemma extSlope_ne (F : ℝ × E → V) (hF : ContDiff ℝ (⊤ : ℕ∞) F)
       (partialT_deriv F hF (s*t) x).scomp s ((hasDerivAt_id s).mul_const t))
     (((partialT_smooth F hF).continuous.comp
       ((continuous_id.mul continuous_const).prodMk continuous_const)).const_smul t |>.intervalIntegrable 0 1)
-  simp only [one_mul, zero_mul, intervalIntegral.integral_smul_const] at h
+  simp only [one_mul, zero_mul] at h
   change extSlope F (t,x) = _
   rw [← h, intervalIntegral.integral_smul, smul_smul, inv_mul_cancel₀ ht, one_smul]
   rfl
@@ -87,7 +87,7 @@ lemma slope_locally_uniform (F : ℝ × E → V) (hF : ContDiff ℝ (⊤ : ℕ�
   simpa only [G, ContinuousMap.coe_mk, extSlope_zero] using h'
 lemma slice_smooth (F : ℝ × E → V) (hF : ContDiff ℝ (⊤ : ℕ∞) F) (t : ℝ) :
     ContDiff ℝ (⊤ : ℕ∞) (fun x => F (t,x)) :=
-  hF.comp (contDiff_const.prodMk contDiff_id)
+  by fun_prop
 
 lemma jets_partialT (F : ℝ × E → V) (hF : ContDiff ℝ (⊤ : ℕ∞) F)
     [WeaklyLocallyCompactSpace E] (n : ℕ) :
@@ -150,7 +150,7 @@ lemma sup_jet_error_tendsto (F : ℝ × E → V) (hF : ContDiff ℝ (⊤ : ℕ�
   let P := fun x => partialT F (0,x)
   have hP : ContDiff ℝ (⊤ : ℕ∞) P := slice_smooth (partialT F) (partialT_smooth F hF) 0
   have hQ (t : ℝ) : ContDiff ℝ (⊤ : ℕ∞) (Q t) :=
-    ((slice_smooth F hF t).sub (slice_smooth F hF 0)).const_smul _
+    by fun_prop
   have hj := quotient_jets_uniform F hF n S hS
   have heq (t : ℝ) (x : E) : iteratedFDeriv ℝ n (fun x => Q t x - P x) x =
       iteratedFDeriv ℝ n (Q t) x - iteratedFDeriv ℝ n P x :=
@@ -190,13 +190,12 @@ theorem transverse_homogeneous (ℓ : ℕ) :
 theorem lap_mul_transverse (p : MvPolynomial (Fin 3) ℂ) :
     polynomialLaplacian (transverse * p) = transverse * polynomialLaplacian p +
       2 * (pderiv 0 p + C Complex.I * pderiv 1 p) := by
-  simp [polynomialLaplacian, LinearMap.sum_apply, LinearMap.comp_apply,
-    Fin.sum_univ_succ, transverse, pderiv_mul, pderiv_C_mul]
+  simp [polynomialLaplacian, LinearMap.comp_apply, Fin.sum_univ_succ, transverse]
   ring
 theorem transverse_direction (ℓ : ℕ) :
     pderiv 0 (transverse ^ ℓ) + C Complex.I * pderiv 1 (transverse ^ ℓ) = 0 := by
   simp only [pderiv_pow]
-  simp [transverse, pderiv_C_mul, Pi.single_apply]
+  simp [transverse]
   have hI : (C Complex.I : MvPolynomial (Fin 3) ℂ) ^ 2 = -1 := by
     rw [← map_pow]; norm_num
   linear_combination (ℓ : MvPolynomial (Fin 3) ℂ) *
@@ -211,8 +210,7 @@ theorem transverse_harmonic (ℓ : ℕ) : transverse ^ ℓ ∈ harmonicPolynomia
     simp
 theorem lap_mul_height (p : MvPolynomial (Fin 3) ℂ) :
     polynomialLaplacian (X 2 * p) = X 2 * polynomialLaplacian p + 2 * pderiv 2 p := by
-  simp [polynomialLaplacian, LinearMap.sum_apply, LinearMap.comp_apply,
-    Fin.sum_univ_succ, pderiv_mul]
+  simp [polynomialLaplacian, LinearMap.comp_apply, Fin.sum_univ_succ]
   ring
 theorem height_transverse_harmonic (ℓ : ℕ) :
     X 2 * transverse ^ ℓ ∈ harmonicPolynomials (ℓ + 1) := by
@@ -220,7 +218,7 @@ theorem height_transverse_harmonic (ℓ : ℕ) :
   · simpa [Nat.add_comm] using (isHomogeneous_X ℂ (2 : Fin 3)).mul (transverse_homogeneous ℓ)
   · change polynomialLaplacian (X 2 * transverse ^ ℓ) = 0
     rw [lap_mul_height, (transverse_harmonic ℓ).2]
-    simp [pderiv_pow, transverse, pderiv_C_mul, Pi.single_apply]
+    simp [transverse]
 
 noncomputable def rowB (m : Matrix (Fin 2) (Fin 2) ℂ) : ℝ := ‖m 1 0‖ ^ 2 + ‖m 1 1‖ ^ 2
 noncomputable def rowW (m : Matrix (Fin 2) (Fin 2) ℂ) : ℂ := 2 * m 1 0 * star (m 1 1) / (rowB m : ℂ)
@@ -243,7 +241,7 @@ theorem rowW_left (a d : ℂˣ) (b : ℂ) (g : ComplexGL2) :
   have he : rowB (upperTriangular a d b * g) = ‖(d : ℂ)‖ ^ 2 * rowB g := by
     change rowB ((upperTriangular a d b : Matrix (Fin 2) (Fin 2) ℂ) * (g : Matrix (Fin 2) (Fin 2) ℂ)) = _
     rw [hup]
-    simp [rowB, Matrix.mul_apply, Fin.sum_univ_two, norm_mul, mul_pow, mul_add]
+    simp [rowB, Matrix.mul_apply, Fin.sum_univ_two, mul_pow, mul_add]
   unfold rowW
   rw [he]
   change 2 * ((!![(a : ℂ), b; 0, (d : ℂ)] * (g : Matrix (Fin 2) (Fin 2) ℂ)) 1 0) *
@@ -315,8 +313,8 @@ theorem harmonicSection_compact (s : ℝ) (ℓ : ℕ) :
   simp [transverse]
 
 theorem harmonicSection_harmonic (s : ℝ) (ℓ : ℕ) :
-    harmonicSection s ℓ ∈ harmonicKType s ℓ := by
-  exact ⟨transverse ^ ℓ, transverse_harmonic ℓ, (harmonicSection_compact s ℓ).symm⟩
+    harmonicSection s ℓ ∈ harmonicKType s ℓ := 
+  ⟨transverse ^ ℓ, transverse_harmonic ℓ, (harmonicSection_compact s ℓ).symm⟩
 
 theorem height_harmonic_of_formula (s : ℝ) (ℓ : ℕ) (c : ℂ)
     (v : PrincipalSeries s)
@@ -364,13 +362,13 @@ noncomputable def boost (t : ℝ) : ComplexGL2 := diagonal (boostUnit t)
 theorem boost_zero : boost 0 = 1 := by
   apply Units.ext
   ext i j
-  fin_cases i <;> fin_cases j <;> simp [boost, diagonal, boostUnit, Matrix.one_apply]
+  fin_cases i <;> fin_cases j <;> simp [boost, diagonal, boostUnit]
 theorem boost_bottom (g : ComplexGL2) (t : ℝ) :
     rowB (g * boost t) = ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 0‖ ^ 2 * Real.exp t ^ 2 + ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 1‖ ^ 2 := by
   have hb : (boost t : Matrix (Fin 2) (Fin 2) ℂ) = !![(Real.exp t : ℂ), 0; 0, 1] := rfl
   change rowB ((g : Matrix (Fin 2) (Fin 2) ℂ) * (boost t : Matrix (Fin 2) (Fin 2) ℂ)) = _
   rw [hb]
-  simp [rowB, Matrix.mul_apply, Fin.sum_univ_two, norm_mul, mul_pow, le_of_lt (Real.exp_pos t)]
+  simp [rowB, Matrix.mul_apply, Fin.sum_univ_two, mul_pow]
 theorem boost_transverse (g : ComplexGL2) (t : ℝ) :
     rowW (g * boost t) =
       (2 * (g : Matrix (Fin 2) (Fin 2) ℂ) 1 0 * star ((g : Matrix (Fin 2) (Fin 2) ℂ) 1 1)) * (Real.exp t : ℂ) / (rowB (g * boost t) : ℂ) := by
@@ -383,7 +381,7 @@ theorem boost_transverse (g : ComplexGL2) (t : ℝ) :
 theorem boost_det_norm (g : ComplexGL2) (t : ℝ) :
     ‖((Matrix.GeneralLinearGroup.det (g * boost t) : ℂˣ) : ℂ)‖ =
       ‖((Matrix.GeneralLinearGroup.det g : ℂˣ) : ℂ)‖ * Real.exp t := by
-  simp [map_mul, boost, diagonal, boostUnit, Matrix.det_fin_two, norm_mul, le_of_lt (Real.exp_pos t)]
+  simp [map_mul, boost, diagonal, boostUnit, Matrix.det_fin_two]
 theorem boost_bottom_hasDerivAt (g : ComplexGL2) :
     HasDerivAt (fun t : ℝ => rowB (g * boost t)) (2 * ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 0‖ ^ 2) 0 := by
   simp_rw [boost_bottom]
@@ -432,7 +430,7 @@ theorem boost_spherical_hasDerivAt (s : ℝ) (g : ComplexGL2) :
   have hepow : (a / B) ^ e = (a / B) ^ (e - 1) * (a / B) := by
     conv_rhs => rhs; rw [← Real.rpow_one (a / B)]
     rw [← Real.rpow_add (div_pos ha hB)]
-    congr 1; ring
+    simp
   rw [hepow]
   dsimp [rowZ, B, A, rowB]
   push_cast
@@ -472,10 +470,9 @@ theorem rowZ_left (a d : ℂˣ) (b : ℂ) (g : ComplexGL2) :
   have hup : (upperTriangular a d b : Matrix (Fin 2) (Fin 2) ℂ) = !![(a : ℂ), b; 0, (d : ℂ)] := rfl
   change rowZ ((upperTriangular a d b : Matrix (Fin 2) (Fin 2) ℂ) * (g : Matrix (Fin 2) (Fin 2) ℂ)) = _
   rw [hup]
-  simp [rowZ, rowB, Matrix.mul_apply, Fin.sum_univ_two, norm_mul, mul_pow]
-  push_cast
+  simp [rowZ, rowB, Matrix.mul_apply, Fin.sum_univ_two, mul_pow]
   have hd : (‖(d : ℂ)‖ ^ 2 : ℂ) ≠ 0 := by
-    exact pow_ne_zero 2 (Complex.ofReal_ne_zero.mpr (norm_ne_zero_iff.mpr d.ne_zero))
+    simp
   rw [← mul_sub, ← mul_add, mul_div_mul_left _ _ hd]
 
 noncomputable def raisedSection (s : ℝ) (ℓ : ℕ) : PrincipalSeries s :=
@@ -524,8 +521,7 @@ private theorem boost_quotient_tendsto (s : ℝ) (u D : PrincipalSeries s)
       apply contDiff_pi.mpr
       intro j
       fin_cases i <;> fin_cases j <;>
-        simp [-Complex.ofReal_exp, M, RaisingCalculation.boost, RaisingCalculation.boostUnit, diagonal,
-          weyl, upperUnipotent, Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two] <;> fun_prop (disch := assumption)
+        simp [-Complex.ofReal_exp, M, RaisingCalculation.boost, RaisingCalculation.boostUnit, diagonal, weyl, upperUnipotent] <;> fun_prop (disch := assumption)
     have h := hs.comp_contDiff hM (fun p => Matrix.GeneralLinearGroup.det_ne_zero _)
     convert h using 1
     funext p
@@ -541,8 +537,7 @@ private theorem boost_quotient_tendsto (s : ℝ) (u D : PrincipalSeries s)
       apply contDiff_pi.mpr
       intro j
       fin_cases i <;> fin_cases j <;>
-        simp [-Complex.ofReal_exp, M, RaisingCalculation.boost, RaisingCalculation.boostUnit, diagonal,
-          lowerUnipotent, Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two] <;> fun_prop (disch := assumption)
+        simp [-Complex.ofReal_exp, M, RaisingCalculation.boost, RaisingCalculation.boostUnit, diagonal, lowerUnipotent] <;> fun_prop (disch := assumption)
     have h := hs.comp_contDiff hM (fun p => Matrix.GeneralLinearGroup.det_ne_zero _)
     convert h using 1
     funext p
@@ -560,7 +555,7 @@ private theorem boost_quotient_tendsto (s : ℝ) (u D : PrincipalSeries s)
   rw [ht.tendsto_nhds]
   intro n ε hε
   have hS : IsCompact (Metric.closedBall (0 : ℂ) 1) := isCompact_closedBall _ _
-  have hne : (Metric.closedBall (0 : ℂ) 1).Nonempty := ⟨0, by simp⟩
+  have hne : (Metric.closedBall (0 : ℂ) 1).Nonempty := by simp
   have hf := RaisingTopology.SmoothQuotient.sup_jet_error_tendsto F hF n _ hS hne
   have hh := RaisingTopology.SmoothQuotient.sup_jet_error_tendsto H hH n _ hS hne
   simp only [show ∀ x, RaisingTopology.SmoothQuotient.partialT F (0,x) = openCoordinate D x
@@ -570,13 +565,13 @@ private theorem boost_quotient_tendsto (s : ℝ) (u D : PrincipalSeries s)
   have heF (t : ℝ) : openCoordinate ((t⁻¹ : ℂ) • (rightTranslate s (RaisingCalculation.boost t) u - u) - D) =
       fun x => t⁻¹ • (F (t,x) - F (0,x)) - openCoordinate D x := by
     funext x
-    simp only [openCoordinate, Submodule.coe_sub, Submodule.coe_smul_of_tower, Pi.sub_apply, Pi.smul_apply]
+    simp only [openCoordinate, Pi.sub_apply, Pi.smul_apply]
     rw [(hzero x).1]
     simp [F, rightTranslate, openCoordinate, Complex.real_smul, Complex.ofReal_inv]
   have heH (t : ℝ) : infinityCoordinate ((t⁻¹ : ℂ) • (rightTranslate s (RaisingCalculation.boost t) u - u) - D) =
       fun x => t⁻¹ • (H (t,x) - H (0,x)) - infinityCoordinate D x := by
     funext x
-    simp only [infinityCoordinate, Submodule.coe_sub, Submodule.coe_smul_of_tower, Pi.sub_apply, Pi.smul_apply]
+    simp only [infinityCoordinate, Pi.sub_apply, Pi.smul_apply]
     rw [(hzero x).2]
     simp [H, rightTranslate, infinityCoordinate, Complex.real_smul, Complex.ofReal_inv]
   have hlim : Tendsto (fun t : ℝ => chartSeminorm s n
@@ -613,5 +608,3 @@ theorem nonzero_adjacent_raising (s : ℝ) (n : ℕ)
   have hvU : v ∈ U := hclosed.mem_of_tendsto hlim (Filter.Eventually.of_forall hmem)
   exact ⟨v, hvU, RaisingCalculation.height_harmonic_of_formula s n _ v hv,
     RaisingCalculation.height_ne_zero_of_formula s n _ (neg_ne_zero.mpr hcoeff) v hv⟩
-
-end DedekindZetaZeroFree.KPCplxHarmonicPropagation

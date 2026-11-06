@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 namespace RamificationTheory
 
 /-!
@@ -82,8 +78,6 @@ theorem normal_of_profinite
           p.map ((algebraMap (A ⧸ P) (B ⧸ Q)).comp
             (Ideal.Quotient.mk P)) := by
       rw [Polynomial.map_map]
-      apply congrArg (fun f : A →+* B ⧸ Q ↦ p.map f)
-      ext a
       rfl
     calc
       Polynomial.eval (Ideal.Quotient.mk Q x)
@@ -101,12 +95,5 @@ theorem normal_of_profinite
   · rw [Polynomial.map_map, ← IsScalarTower.algebraMap_eq,
       IsScalarTower.algebraMap_eq A B', ← Polynomial.map_map, hp,
       MulSemiringAction.charpoly_eq, Polynomial.map_prod]
-    exact Polynomial.Splits.prod
-      (fun _ _ ↦ (Polynomial.Splits.X_sub_C _).map _)
+    simp
   · exact ((hpmonic.map _).map _).ne_zero
-
-end Ideal.Quotient
-
-end
-
-end RamificationTheory

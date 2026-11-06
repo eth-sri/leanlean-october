@@ -21,8 +21,7 @@ theorem exists_maximal_isotropic {D : Type*} [CommGroup D] [Finite D]
     refine ⟨⊥, ?_⟩
     intro x hx y hy
     simp only [Subgroup.mem_bot] at hx hy
-    subst x; subst y
-    simp
+    subst x; simp
   obtain ⟨L, hL, hmax⟩ := Set.Finite.exists_maximal
     (Set.toFinite {L : Subgroup D | IsIsotropic b L}) hne
   exact ⟨L, hL, fun M hLM hM => le_antisymm (hmax hM hLM) hLM⟩
@@ -43,7 +42,7 @@ theorem preimage_maximal_abelian {H D : Type*} [Group H] [CommGroup D]
     · intro x hx y hy
       obtain ⟨u, hu, rfl⟩ := Subgroup.mem_map.mp hx
       obtain ⟨v, hv, rfl⟩ := Subgroup.mem_map.mp hy
-      exact (hcommute u v).1 (hB u hu v hv)
+      simp_all
   apply le_antisymm _ hLB
   intro x hx
   show π x ∈ L
@@ -109,7 +108,7 @@ theorem continuous_character_extension {H : Type*} [Group H]
       rw [heq]
       exact ω.continuous
     have hcat := (hiind.continuousAt_iff' hmem).mp (hc.continuousAt (x := (1 : C)))
-    simpa only [map_one] using hcat
+    fun_prop
   refine ⟨⟨fM, hfcont⟩, ?_⟩
   intro a ha
   exact hext ⟨(a : H), ha⟩
@@ -136,5 +135,3 @@ theorem exists_continuous_maximal_polarization {H D : Type*}
   rw [MonoidHom.mem_ker] at hxker
   rw [hxker]
   exact L.one_mem
-
-end DedekindZetaZeroFree.KPLocalPolarization

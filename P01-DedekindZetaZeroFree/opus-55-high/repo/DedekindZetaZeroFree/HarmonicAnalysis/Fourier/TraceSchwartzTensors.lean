@@ -100,16 +100,10 @@ private theorem local_fourier (F : Type) [Field F] [NumberField F]
     have h : w = v := Finset.mem_singleton.mp hwm
     subst w
     exact hne
-  have hl : IsLocallyConstant φ' := by dsimp [φ']; cases hw default; exact hlocal
-  have hs : HasCompactSupport φ' := by dsimp [φ']; cases hw default; exact hsupport
+  have hl : IsLocallyConstant φ' := by omega
+  have hs : HasCompactSupport φ' := by omega
   have h := unique_fourier F S e' μ' he' hne' φ' hl hs
-  have hv : (default : S).val = v := rfl
-  change IsLocallyConstant (fun y : v.adicCompletion F =>
-    ∫ x, φ x * (e (-x*y) : ℂ) ∂μ) ∧
-    HasCompactSupport (fun y : v.adicCompletion F =>
-    ∫ x, φ x * (e (-x*y) : ℂ) ∂μ)
-  at h
-  exact h
+  omega
 
 private lemma archPhase_coordinates {F : Type} [Field F] [NumberField F]
     (x : InfiniteAdeleRing F) :
@@ -126,9 +120,7 @@ private lemma archPhase_coordinates {F : Type} [Field F] [NumberField F]
   congr 1
   · apply Finset.prod_congr rfl
     intro v _
-    simp only [InfiniteAdeleRing.ringEquiv_mixedSpace_apply,
-      ← InfinitePlace.Completion.extensionEmbeddingOfIsReal_apply v.2,
-      Complex.ofReal_re, Complex.ofReal_mul, Complex.ofReal_ofNat]
+    simp only [InfiniteAdeleRing.ringEquiv_mixedSpace_apply, ← InfinitePlace.Completion.extensionEmbeddingOfIsReal_apply v.2, Complex.ofReal_re]
   · apply Fintype.prod_equiv
       (Equiv.subtypeEquivRight (fun _ => InfinitePlace.not_isReal_iff_isComplex))
     intro v
@@ -146,9 +138,7 @@ private lemma local_schwartz_transforms
   · refine ⟨SchwartzMap.compCLMOfContinuousLinearEquiv ℂ
       ((LinearEquiv.smulOfNeZero ℝ ℝ 2 (by norm_num)).toContinuousLinearEquiv) gR, ?_⟩
     intro y
-    simp only [SchwartzMap.compCLMOfContinuousLinearEquiv_apply, Function.comp_apply,
-      LinearEquiv.coe_toContinuousLinearEquiv, LinearEquiv.smulOfNeZero_apply, smul_eq_mul,
-      hgR, ArchSelfDual.realFourier, ArchSelfDual.realMeasure]
+    simp only [SchwartzMap.compCLMOfContinuousLinearEquiv_apply, Function.comp_apply, hgR, ArchSelfDual.realFourier, ArchSelfDual.realMeasure]
     apply integral_congr_ae
     filter_upwards with x
     congr 2
@@ -248,8 +238,8 @@ theorem fourier_isSchwartzTensor
           (2 * (-x.1.2 v * (E y).1.2 v).re)))) *
          ∏ v : S, fF v (x.2 v) * (e v (-x.2 v * y.2 v) : ℂ) := by
       rw [hW, ProbeAdditive.phase, archPhase_coordinates]
-      have hx : InfiniteAdeleRing.ringEquiv_mixedSpace F (E.symm x).1 = x.1 := by
-        exact (InfiniteAdeleRing.ringEquiv_mixedSpace F).apply_symm_apply x.1
+      have hx : InfiniteAdeleRing.ringEquiv_mixedSpace F (E.symm x).1 = x.1 := 
+        (InfiniteAdeleRing.ringEquiv_mixedSpace F).apply_symm_apply x.1
       have hxy : InfiniteAdeleRing.ringEquiv_mixedSpace F (-E.symm x * y).1 =
           -x.1 * (E y).1 := by
         change InfiniteAdeleRing.ringEquiv_mixedSpace F (-(E.symm x).1 * y.1) = _
@@ -285,6 +275,3 @@ theorem fourier_isSchwartzTensor
     rw [hpR, hpC, hpF]
     simp only [hgR, hgC, gF, kR, kC, kF]
     rfl
-
-end
-end DedekindZetaZeroFree.ProbeSheetVerticalDecay

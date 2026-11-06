@@ -16,14 +16,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Norm containment for idele power-local-unit subgroups
 
@@ -58,83 +50,6 @@ def finitePlaceLocalNormCondition
     (_root_.chosenFinitePlaceLocalNormSubgroup
       (K := K) (L := L) v.1).comap
         (IdeleGroup.finiteComponent v.1)
-
-/-- Elementwise form of the finite family of local norm conditions. -/
-theorem mem_finitePlaceLocalNormCondition_iff
-    {K L : Type}
-    [Field K] [NumberField K]
-    [Field L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L]
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
-    (a : IdeleGroup K) :
-    a ∈ finitePlaceLocalNormCondition
-        (K := K) (L := L) S ↔
-      ∀ v : ↥S,
-        IdeleGroup.finiteComponent v.1 a ∈
-          _root_.chosenFinitePlaceLocalNormSubgroup
-            (K := K) (L := L) v.1 := by
-  simp [finitePlaceLocalNormCondition]
-
-/-- At every finite place in `S`, the `n`-power condition defining
-`h(S,T)` implies the actual local norm condition for an exponent-`n`
-Kummer extension. -/
-theorem idelePowerLocalUnitSubgroup_le_finitePlaceLocalNormCondition
-    {K L : Type}
-    [Field K] [NumberField K]
-    [Field L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L]
-    (n : ℕ+) (r : ℕ)
-    (eG :
-      (L ≃ₐ[K] L) ≃*
-        (Fin r → Multiplicative (ZMod (n : ℕ))))
-    (S T : Finset (HeightOneSpectrum (𝓞 K))) :
-    idelePowerLocalUnitSubgroup (K := K) n S T ≤
-      finitePlaceLocalNormCondition
-        (K := K) (L := L) S := by
-  intro a ha
-  rw [mem_finitePlaceLocalNormCondition_iff]
-  intro v
-  apply
-    nthPowerSubgroup_le_chosenFinitePlaceLocalNormSubgroup
-      (K := K) (L := L) n r eG v.1
-  exact
-    ((mem_idelePowerLocalUnitSubgroup_iff
-      (K := K) n S T a).mp ha).2.1 v.1 v.2
-
-/-- The finite components of `h(S,T)` at `S ∪ T` are actual local norms:
-at `S` this follows from the exponent-`n` Galois structure, while at `T`
-it follows from complete splitting. -/
-theorem idelePowerLocalUnitSubgroup_le_unionLocalNormCondition
-    {K L : Type}
-    [Field K] [NumberField K]
-    [Field L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L]
-    (n : ℕ+) (r : ℕ)
-    (eG :
-      (L ≃ₐ[K] L) ≃*
-        (Fin r → Multiplicative (ZMod (n : ℕ))))
-    (S T : Finset (HeightOneSpectrum (𝓞 K)))
-    (hT :
-      ∀ v, v ∈ T →
-        _root_.FinitePlaceSplitsCompletely
-          (K := K) (L := L) v) :
-    idelePowerLocalUnitSubgroup (K := K) n S T ≤
-      finitePlaceLocalNormCondition
-        (K := K) (L := L) (S ∪ T) := by
-  intro a ha
-  rw [mem_finitePlaceLocalNormCondition_iff]
-  intro v
-  rcases Finset.mem_union.mp v.2 with hvS | hvT
-  · apply
-      nthPowerSubgroup_le_chosenFinitePlaceLocalNormSubgroup
-        (K := K) (L := L) n r eG v.1
-    exact
-      ((mem_idelePowerLocalUnitSubgroup_iff
-        (K := K) n S T a).mp ha).2.1 v.1 hvS
-  · rw [
-      _root_.chosenFinitePlaceLocalNormSubgroup_eq_top_of_splitsCompletely
-        (K := K) (L := L) v.1 (hT v.1 hvT)]
-    exact Subgroup.mem_top _
 
 /-- The simultaneous local norm condition at every finite place. -/
 def allFinitePlaceLocalNormCondition
@@ -186,7 +101,7 @@ theorem idelePowerLocalUnitSubgroup_le_allFinitePlaceLocalNormCondition
     · rw [
         _root_.chosenFinitePlaceLocalNormSubgroup_eq_top_of_splitsCompletely
           (K := K) (L := L) v (hT v hvT)]
-      exact Subgroup.mem_top _
+      simp
   · apply
       _root_.adicCompletionIntegerUnits_le_chosenFinitePlaceLocalNormSubgroup
         (K := K) (L := L) v (hAway v hv)
@@ -332,9 +247,7 @@ theorem
       NumberField.of_module_finite K M
     let : (RelativeIdeleGroup.principalSubgroup K M).Normal :=
       ⟨fun n hn g => by
-        have hconj : g * n * g⁻¹ = n := by
-          rw [mul_comm g n, mul_assoc, mul_inv_cancel, mul_one]
-        rwa [hconj]⟩
+        simp_all⟩
     have hSplitS :
         ∀ w : HeightOneSpectrum (𝓞 K), w ∈ S' →
           _root_.FinitePlaceSplitsCompletely
@@ -346,7 +259,6 @@ theorem
               (IdeleGroup.principalIdele K b) =
             Units.map
               (algebraMap K (w.adicCompletion K)).toMonoidHom b := by
-        apply Units.ext
         rfl
       rw [hprincipal] at hbLocal
       simpa only [M] using
@@ -363,7 +275,6 @@ theorem
               (IdeleGroup.principalIdele K b) =
             Units.map
               (algebraMap K w.Completion).toMonoidHom b := by
-        apply Units.ext
         rfl
       rw [hprincipal] at hbLocal
       simpa only [M] using
@@ -418,7 +329,7 @@ theorem
                 (S' : Set (HeightOneSpectrum (𝓞 K))) ⊔
               IdeleGroup.principalSubgroup K := by
         rw [hLarge]
-        exact Subgroup.mem_top a
+        simp
       rcases Subgroup.mem_sup.mp ha with
         ⟨u, hu, q, hq, huq⟩
       have hT_not_mem_S (w : T) : w.1 ∉ S' := by
@@ -522,13 +433,11 @@ theorem
         have huToField :
             toField (uLocalUnit w) =
               IdeleGroup.finiteComponent w.1 u := by
-          apply Units.ext
           rfl
         have hsToField :
             toField (sLocalUnit w) =
               IdeleGroup.finiteComponent w.1
                 (IdeleGroup.principalIdele K (s : Kˣ)) := by
-          apply Units.ext
           rfl
         simpa only [d, div_eq_mul_inv, map_mul, map_inv,
           huToField, hsToField] using hFieldPower
@@ -539,7 +448,7 @@ theorem
                 (K := K) (L := M) w := by
         intro w
         rw [hInfiniteTop w]
-        exact Subgroup.mem_top _
+        simp
       have hFinite :
           ∀ w : HeightOneSpectrum (𝓞 K),
             IdeleGroup.finiteComponent w d ∈
@@ -553,7 +462,7 @@ theorem
         · rw [
             _root_.chosenFinitePlaceLocalNormSubgroup_eq_top_of_splitsCompletely
               (K := K) (L := M) w (hSplitS w hwS)]
-          exact Subgroup.mem_top _
+          simp
         · by_cases hwT : w ∈ T
           · have hle :
                 (powMonoidHom (n : ℕ) :
@@ -676,8 +585,3 @@ theorem
   · exact
       sUnitNthPowersInField_le_principalIdelePowerLocalUnitSubgroup
         (K := K) n S' T
-
-
-end GlobalClassFieldTheory.ClassFieldAxiom
-
-end

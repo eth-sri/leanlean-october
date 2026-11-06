@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Ray-principal ideals
 -/
@@ -47,5 +42,3 @@ def rayPrincipalIdealSubgroupInPrimeTo
     Subgroup (rayClassPrimeToIdeals m) :=
   Subgroup.comap (rayClassPrimeToIdeals m).subtype
     (rayPrincipalIdealSubgroup m)
-
-end ClassFieldTheory

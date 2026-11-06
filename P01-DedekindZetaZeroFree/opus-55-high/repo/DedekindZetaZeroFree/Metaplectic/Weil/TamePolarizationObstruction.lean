@@ -60,11 +60,10 @@ theorem eventual_all_tests
  obtain ⟨K, hK, _hc, hw, hd, _⟩ := hM m hm
  obtain ⟨f, hf⟩ := KPTameJacquetBruhatTests.BruhatScalarTests.scalar_characteristic_sections F ζ hζ q S P hP .minus π m K hK hw hd
  have heta (i : Fin 3) : KPTameJacquetBruhatTests.Raw.eta F ζ hζ q π i = diagonalLift F ζ hζ q π ((i.val : ℤ),0) := by
-  simp [KPTameJacquetBruhatTests.Raw.eta, diagonalLift, KPPGLLocalCover.A, KPStandardLocalRootLifts.A]
+  rfl
  have h1 : (1 : ActualCover F ζ hζ q) ∈ splitCongruenceSet F ζ hζ q m := by
   refine ⟨1, ?_⟩
-  change KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q) (KPLocalCover.sectionMap F ζ hζ (Sum.inr q) (1 : KPLocalCube.LocalGL2 F q)) = 1
-  rw [show KPLocalCover.sectionMap F ζ hζ (Sum.inr q) (1 : KPLocalCube.LocalGL2 F q) = 1 from rfl, map_one]
+  rfl
  refine ⟨f, fun i => ⟨(hf.1 i).1, ?_, ?_⟩⟩
  · intro g hg
    obtain ⟨b, k, hk, rfl⟩ := (hf.1 i).2 hg
@@ -115,6 +114,3 @@ theorem eventual_cleared_base_value
    simp_rw [← mul_assoc]
    exact CubeShell.geometric_denominator_tsum z (a s * c) hnorm
  exact hchamber
-end DedekindZetaZeroFree.TameQiConditionalObstruction
-
-end

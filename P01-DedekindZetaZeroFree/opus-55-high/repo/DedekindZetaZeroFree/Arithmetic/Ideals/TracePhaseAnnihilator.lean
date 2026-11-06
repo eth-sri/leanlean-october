@@ -10,7 +10,6 @@ https://github.com/LeanPool/lean-pool
 Revision: 68aa6ee63d20ad76bcc15f595adfc72949991f06.
 -/
 
-noncomputable section
 
 open scoped nonZeroDivisors
 
@@ -30,19 +29,15 @@ theorem mem_traceDualFractionalIdeal_iff_tracePhase_eq_one
 theorem tracePhase_eq_one_of_mem_dual
     (I : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) (hI : I ≠ 0)
     {x z : F} (hx : x ∈ I) (hz : z ∈ traceDualFractionalIdeal I) :
-    rationalTracePhase (Algebra.trace ℚ F (x * z)) = 1 := by
-  exact (mem_traceDualFractionalIdeal_iff_tracePhase_eq_one I hI z).mp hz x hx
+    rationalTracePhase (Algebra.trace ℚ F (x * z)) = 1 := 
+  (mem_traceDualFractionalIdeal_iff_tracePhase_eq_one I hI z).mp hz x hx
 
 @[simp] theorem traceDualFractionalIdeal_traceDualFractionalIdeal
     (I : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) (hI : I ≠ 0) :
-    traceDualFractionalIdeal (traceDualFractionalIdeal I) = I := by
-  exact FractionalIdeal.dual_dual ℤ ℚ I
+    traceDualFractionalIdeal (traceDualFractionalIdeal I) = I := 
+  FractionalIdeal.dual_dual ℤ ℚ I
 
 theorem traceDualFractionalIdeal_ne_zero
     (I : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) (hI : I ≠ 0) :
-    traceDualFractionalIdeal I ≠ 0 := by
-  exact FractionalIdeal.dual_ne_zero ℤ ℚ hI
-
-end DedekindZetaZeroFree.Hecke
-
-end
+    traceDualFractionalIdeal I ≠ 0 := 
+  FractionalIdeal.dual_ne_zero ℤ ℚ hI

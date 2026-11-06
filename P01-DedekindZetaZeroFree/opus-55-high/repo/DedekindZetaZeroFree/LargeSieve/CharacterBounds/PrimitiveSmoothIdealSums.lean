@@ -30,5 +30,3 @@ theorem initial_primitive_smooth_sum
         refine mul_le_mul_of_nonneg_left ?_ hA
         rw [Real.sqrt_eq_rpow]
         exact Real.rpow_le_rpow_of_exponent_le hN (by linarith)
-
-end DedekindZetaZeroFree.LargeSieve.Sieve

@@ -34,7 +34,7 @@ include hS in
   rw [Lp.norm_toLp, one_mul, Lp.norm_def]
   exact ENNReal.toReal_mono (Lp.eLpNorm_lt_top f).ne (eLpNorm_indicator_le f hS.nullMeasurableSet)
  def cutLp : Lp ℂ 2 μ →L[ℂ] Lp ℂ 2 μ := (cutLinear μ S hS).mkContinuous 1 (cut_bound μ S hS)
-private lemma cutLp_ae (f : Lp ℂ 2 μ) : (cutLp μ S hS f : X → ℂ) =ᵐ[μ] S.indicator (f : X → ℂ) := by
+lemma cutLp_ae (f : Lp ℂ 2 μ) : (cutLp μ S hS f : X → ℂ) =ᵐ[μ] S.indicator (f : X → ℂ) := by
   change (((Lp.memLp f).indicator hS.nullMeasurableSet).toLp (S.indicator (f : X → ℂ)) : X → ℂ) =ᵐ[μ] _
   exact @MemLp.coeFn_toLp X ℂ _ 2 μ _ (S.indicator (f : X → ℂ)) ((Lp.memLp f).indicator hS.nullMeasurableSet)
 
@@ -97,7 +97,7 @@ variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
     apply (CotangentLogCoframe.A (d F)).symm.continuous.comp
     exact continuous_pi (fun k => continuous_apply _)
 
-private theorem chart_q_open (a : ActualChart (U := U) (H := H)) :
+theorem chart_q_open (a : ActualChart (U := U) (H := H)) :
     IsOpenMap (q a) := by
   have he : KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative a.component) =
       fun x => (H.atlas U).components ⟨a.component, x⟩ := by
@@ -141,7 +141,7 @@ theorem finite_actual_compact_lifts
       (labeledHomeomorph (ζ := ζ) (hζ := hζ)).continuous) (fun i => chart_q_open (charts i)) hc
   exact ⟨C, hC, hD, hcov⟩
 
-private theorem gamma_continuous (a : ActualChart (U := U) (H := H))
+theorem gamma_continuous (a : ActualChart (U := U) (H := H))
     (g : Gamma a) : Continuous ((isotropyArrow a g).psi) := by
   have hA : Continuous (labeledA (placeEquiv F ζ hζ)) := by
     apply continuous_pi
@@ -158,7 +158,7 @@ private theorem gamma_continuous (a : ActualChart (U := U) (H := H))
   rw [he]
   exact hAi.comp ((KPCuspSiegel.continuous_action F _).comp hA)
 
-private theorem finite_invariant_compact_lift
+theorem finite_invariant_compact_lift
     (a : ActualChart (U := U) (H := H)) (C : Set (M F)) (hC : IsCompact C)
     (hD : C ⊆ omega a) :
     ∃ D : Set (M F), IsCompact D ∧ D ⊆ omega a ∧ C ⊆ D ∧
@@ -202,7 +202,7 @@ theorem finite_actual_invariant_compact_lifts
   obtain ⟨i, x, hx, hxy⟩ := Set.mem_iUnion.mp (hcov hy)
   exact Set.mem_iUnion.mpr ⟨i, x, hDC i hx, hxy⟩
 
-private lemma continuous_chartQ (a : ActualChart (U := U) (H := H)) : Continuous (q a) := by
+lemma continuous_chartQ (a : ActualChart (U := U) (H := H)) : Continuous (q a) := by
   have he : KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative a.component) =
       fun x => (H.atlas U).components ⟨a.component,x⟩ := by
     funext x; exact ((H.atlas U).components_formula a.component x).symm
@@ -213,7 +213,7 @@ private lemma continuous_chartQ (a : ActualChart (U := U) (H := H)) : Continuous
     exact (continuous_apply _).comp (CotangentLogCoframe.A (d F)).continuous
   exact hc.comp (continuous_quotient_mk'.comp hA)
 
-private lemma lp_finsetSum_ae {X : Type*} [MeasurableSpace X] (μ : Measure X)
+lemma lp_finsetSum_ae {X : Type*} [MeasurableSpace X] (μ : Measure X)
     {I : Type*} (t : Finset I) (f : I → Lp ℂ 2 μ) :
     (∑ i ∈ t, f i : Lp ℂ 2 μ) =ᵐ[μ] (fun x => ∑ i ∈ t, f i x) := by
   classical
@@ -225,7 +225,7 @@ private lemma lp_finsetSum_ae {X : Type*} [MeasurableSpace X] (μ : Measure X)
     simp only [Finset.sum_insert hi]
     exact (Lp.coeFn_add _ _).trans ((Filter.EventuallyEq.refl _ _).add ih)
 
-private lemma partition_sum {X : Type*} (m : ℕ) (A : Fin m → Set X) (u : X → ℂ) (x : X) :
+lemma partition_sum {X : Type*} (m : ℕ) (A : Fin m → Set X) (u : X → ℂ) (x : X) :
     ∑ i : Fin m, (disjointed A i).indicator u x = (⋃ i, A i).indicator u x := by
   classical
   by_cases hx : x ∈ ⋃ i, A i

@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Local components of the idele norm
 
@@ -28,8 +23,6 @@ this calculation to the canonical completion decomposition.
 -/
 
 open scoped BigOperators TensorProduct
-
-noncomputable section
 
 
 namespace RelativeIdeleGroup
@@ -116,9 +109,5 @@ theorem localNorm_units_eq_prod
       ∏ w : AbsoluteValueExtension vK L,
         _root_.Algebra.norm vK.Completion
           (completionTensorDecomposition_left
-            (K := K) (L := L) vK hvK (z : _) w) := by
-  exact localNorm_eq_prod vK hvK (z : vK.Completion ⊗[K] L)
-
-end RelativeIdeleGroup
-
-end
+            (K := K) (L := L) vK hvK (z : _) w) := 
+  localNorm_eq_prod vK hvK (z : vK.Completion ⊗[K] L)

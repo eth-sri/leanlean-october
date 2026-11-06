@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Comparing finite-place completion models
 
@@ -162,7 +158,7 @@ theorem finitePlaceExtension_isEquiv_adicAbv
 
 /-- The positive exponent relating an exact extension to the standard
 absolute value at its centre. -/
-noncomputable def finitePlaceExtensionExponent
+def finitePlaceExtensionExponent
     (v : HeightOneSpectrum (𝓞 K))
     (w : AbsoluteValueExtension
       (HeightOneSpectrum.adicAbv K v) L) : ℝ :=
@@ -199,7 +195,7 @@ theorem finitePlaceExtension_adicAbv_eq_rpow
 
 /-- The identity on `L`, regarded as a ring equivalence between the two
 normed copies determined by the equivalent absolute values. -/
-noncomputable def finitePlaceExtensionWithAbsRingEquiv
+def finitePlaceExtensionWithAbsRingEquiv
     (v : HeightOneSpectrum (𝓞 K))
     (w : AbsoluteValueExtension
       (HeightOneSpectrum.adicAbv K v) L) :
@@ -242,7 +238,7 @@ theorem finitePlaceExtensionWithAbsRingEquiv_symm_continuous
         (K := K) (L := L) v w).symm).continuous
 
 /-- The completion comparison induced by the identity on `L`. -/
-noncomputable def finitePlaceExtensionCompletionRingEquiv
+def finitePlaceExtensionCompletionRingEquiv
     (v : HeightOneSpectrum (𝓞 K))
     (w : AbsoluteValueExtension
       (HeightOneSpectrum.adicAbv K v) L) :
@@ -355,7 +351,7 @@ theorem relativeFinitePlaceCompletionRingEquiv_norm
 
 /-- The local factor comparison from an exact-extension completion to
 the concrete completion at its centre. -/
-noncomputable def finitePlaceExtensionAdicCompletionRingEquiv
+def finitePlaceExtensionAdicCompletionRingEquiv
     (v : HeightOneSpectrum (𝓞 K))
     (w : AbsoluteValueExtension
       (HeightOneSpectrum.adicAbv K v) L) :
@@ -414,8 +410,7 @@ theorem finitePlaceExtensionAdicCompletionRingEquiv_toCompletion
           (HeightOneSpectrum.adicAbv L
             (finitePlaceExtensionCentre
               (K := K) (L := L) v w)).Completion) = _
-  rw [relativeFinitePlaceCompletionRingHom_coe]
-  rfl
+  simp
 
 omit [FiniteDimensional K L] in
 /-- The local factor comparison identifies the valuation ring in the
@@ -456,5 +451,3 @@ theorem finitePlaceExtensionAdicCompletionRingEquiv_mem_integers_iff
         (K := K) (L := L) v w)
     rw [finitePlaceExtensionAdicCompletionRingEquiv_norm]
     exact hrpow.mpr hx
-
-end

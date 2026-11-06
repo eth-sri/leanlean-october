@@ -12,7 +12,6 @@ open NumberField IsDedekindDomain MeasureTheory
 namespace DedekindZetaZeroFree.TorusChartTransport
 open KPGlobalTorusBorelNormTwistTransport KPGlobalTorusFiniteStagesCofinality
 noncomputable section
-set_option autoImplicit false
 set_option maxRecDepth 2000
 set_option maxHeartbeats 800000
 
@@ -51,8 +50,7 @@ theorem groupArchChart_commutes_finite (a : G F ζ hζ)
     intro v
     cases v with
     | inl w =>
-      have hw : b (Sum.inl w) = 1 := (Subgroup.mem_iInf.mp hb) w
-      simp [hw]
+      simp_all
     | inr q =>
       change 1 * b (Sum.inr q) = b (Sum.inr q) * 1
       simp
@@ -95,12 +93,12 @@ theorem groupArchDiagonalTransport_contDiff (a : InfinitePlace F → ℂˣ) :
   intro i
   by_cases hi0 : i = 0
   · simp only [groupArchDiagonalTransport, hi0, ↓reduceIte]
-    exact ((contDiff_apply ℝ _ 0).comp (contDiff_apply ℝ _ w)).div_const _
+    fun_prop
   · by_cases hi1 : i = 1
-    · simp only [groupArchDiagonalTransport, hi0, hi1, ↓reduceIte]
+    · simp only [groupArchDiagonalTransport, hi1, ↓reduceIte]
       exact contDiff_const.mul ((contDiff_apply ℝ _ 1).comp (contDiff_apply ℝ _ w))
     · simp only [groupArchDiagonalTransport, hi0, hi1, ↓reduceIte]
-      exact (contDiff_apply ℝ _ i).comp (contDiff_apply ℝ _ w)
+      fun_prop
 
 theorem groupArchDiagonalTransport_domain (a : InfinitePlace F → ℂˣ)
     (z : GroupArch F) :
@@ -151,12 +149,7 @@ theorem groupArchDiagonalTransport_absorption (a : InfinitePlace F → ℂˣ)
         KPStandardLocalRootLifts.N F ζ hζ (Sum.inl w) (e.symm (z w 2))
     simp only [hz0, haz0, Units.ne_zero, ↓reduceDIte]
     rw [complex_diagonal_chart_absorption F ζ hζ]
-    congr 2
-    · apply congrArg
-      simp only [map_div₀, Units.val_mk0]
-    · apply congrArg
-      apply Units.ext
-      simp only [Units.val_mul, Units.val_mk0, map_mul]
+    simp
 
 def groupArchDiagonalTransportCLM (a : InfinitePlace F → ℂˣ) :
     GroupArch F →L[ℝ] GroupArch F where
@@ -274,8 +267,8 @@ theorem inducedJet_le_finite_sup (P : Polarization F ζ hζ) (J : KPGlobalTorusF
  (A : Finset (G F ζ hζ)) (n : ℕ) (K : KPGlobalTorusFunctionData.JetCompact (groupArchDomain F))
  (a : G F ζ hζ) (ha : a ∈ A) (f : InducedLevel F ζ hζ P J) :
  inducedJet F ζ hζ P J a n K f ≤
- ((A.image (fun a => (a,n,K))).sup (fun i => inducedJet F ζ hζ P J i.1 i.2.1 i.2.2)) f := by
-  exact Finset.le_sup (s := A.image (fun a => (a,n,K))) (f := fun i => inducedJet F ζ hζ P J i.1 i.2.1 i.2.2)
+ ((A.image (fun a => (a,n,K))).sup (fun i => inducedJet F ζ hζ P J i.1 i.2.1 i.2.2)) f := 
+  Finset.le_sup (s := A.image (fun a => (a,n,K))) (f := fun i => inducedJet F ζ hζ P J i.1 i.2.1 i.2.2)
     (Finset.mem_image.mpr ⟨a,ha,rfl⟩) f
 theorem finite_representative_jet_estimate (C : ModelData F ζ hζ) (s : ℂ)
     (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
@@ -344,7 +337,7 @@ theorem compact_finite_conjugated_level_partition
   let q : T → KPGlobalTorusFunctionData.finitePart F ζ hζ :=
     fun b => ⟨b.val.val.val, hfin b.val b.property⟩
   have hq : Continuous q := by
-    exact (continuous_subtype_val.comp (continuous_subtype_val.comp continuous_subtype_val)).subtype_mk _
+    fun_prop
   let U : T → Set T := fun b =>
     {c | e ((q b)⁻¹ * q c) ∈ J.toOpenSubgroup}
   have hU (b : T) : IsOpen (U b) :=
@@ -408,7 +401,7 @@ theorem weightedChart_source_jet_bound (C : ModelData F ζ hζ) (s : ℂ)
   intro f z hz x
   have hx : x ∈ KPGlobalTorusPeriodizationInverse.averagingClass F ζ hζ C '' T := by
     rw [hTx]
-    exact Set.mem_univ x
+    simp
   obtain ⟨b, hb, hbx⟩ := hx
   have hAa : ∃ a : G F ζ hζ, a ∈ A ∧
       ∃ j : KPGlobalTorusFunctionData.globalLevel F ζ hζ J,
@@ -424,6 +417,3 @@ theorem weightedChart_source_jet_bound (C : ModelData F ζ hζ) (s : ℂ)
       (twist F ζ hζ (rationalModel F ζ hζ) s) J a n K f :=
     (norm_nonneg _).trans hp
   exact hjb.trans (mul_le_mul (hBw b hb) hjs hnonneg hB)
-
-end
-end DedekindZetaZeroFree.TorusChartTransport

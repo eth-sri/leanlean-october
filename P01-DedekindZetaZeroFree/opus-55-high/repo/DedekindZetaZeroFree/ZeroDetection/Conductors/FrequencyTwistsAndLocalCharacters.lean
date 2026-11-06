@@ -28,8 +28,7 @@ theorem numerator_exterior_ramified_valuation_lt_one
   intro heq
   have hcop := (K.kummer u v hv heq).1
   have htop : (⊤ : Ideal (𝓞 F)) ≤ v.asIdeal := by
-    rw [← hcop]
-    exact sup_le le_rfl hRam
+    simp_all
   exact v.isPrime.ne_top (top_unique htop)
 
 theorem numerator_radical_estimate
@@ -111,8 +110,8 @@ theorem primitive_twist_idelic_restriction
         (IdeleGroup.finitePlaceIdeleClass v u) /
       RayClassBridge.ideleClassCharacter F hc
         χ.conductor χ.conductor_ne_zero χ.character
-        (IdeleGroup.finitePlaceIdeleClass v u) := by
-  exact Conductor.canonical_idelic_primitive_twist F hc η χ ψ htw
+        (IdeleGroup.finitePlaceIdeleClass v u) := 
+  Conductor.canonical_idelic_primitive_twist F hc η χ ψ htw
     (IdeleGroup.finitePlaceIdeleClass v u)
 
 end DedekindZetaZeroFree.Detector.Conductor.LocalTwistSteps
@@ -158,8 +157,8 @@ theorem canonicalFrequencyLocalCharacter_pow_card
     (u : (v.adicCompletion F)ˣ) :
     canonicalFrequencyLocalCharacter F hc χ v u ^
       Nat.card (ClassFieldTheory.RayClassGroup
-        (RayClassBridge.narrowIdealModulus F χ.conductor χ.conductor_ne_zero)) = 1 := by
-  exact RayClassBridge.ideleClassCharacter_pow_card F hc χ.conductor
+        (RayClassBridge.narrowIdealModulus F χ.conductor χ.conductor_ne_zero)) = 1 := 
+  RayClassBridge.ideleClassCharacter_pow_card F hc χ.conductor
     χ.conductor_ne_zero χ.character (IdeleGroup.finitePlaceIdeleClass v u)
 
 theorem primitive_twist_local_range_finite_of_local_compatibility
@@ -211,8 +210,7 @@ theorem primitive_twist_local_range_finite
     ext u
     exact congrArg (fun z : ℂˣ => (z : ℂ))
       (LocalTwistSteps.primitive_twist_idelic_restriction F hc η χ ψ htw v u)
-  rw [hδ, ← htw']
-  exact hψ
+  simp_all
 
 end DedekindZetaZeroFree.Detector.Conductor
 
@@ -309,14 +307,14 @@ theorem fractional_character_power
     intro I hI hcop
     change ((RayClassBridge.fractionalCharacter F m hm η
       (RayClassBridge.integralPrimeTo F m hm I hI hcop)) ^ n : ℂˣ).val = η I ^ n
-    rw [Units.val_pow_eq_pow_val, RayClassBridge.fractionalCharacter_integral]
+    simp
   have hone : (1 : ClassFieldTheory.rayClassPrimeToIdeals
         (RayClassBridge.narrowIdealModulus F m hm) →* ℂˣ) =
       RayClassBridge.fractionalCharacter F m hm ηn := by
     apply RayClassBridge.fractionalCharacter_unique
     intro I hI hcop
     change (1 : ℂ) = η I ^ n
-    exact (hη I hI hcop).symm
+    simp_all
   intro c
   have hc := DFunLike.congr_fun (hpow.trans hone.symm) c
   exact hc
@@ -466,7 +464,7 @@ theorem frequency_numerator_conductor_bound
       (by exact_mod_cast (frequency_S_norms_finite F S hS U u).2.2.2) hC.le
   exact Conductor.numerator_radical_estimate F ζ12 hζ12 ι S hS hSix
 
-private theorem no_real_of_mu12 (F : Type) [Field F] [NumberField F]
+theorem no_real_of_mu12 (F : Type) [Field F] [NumberField F]
     (ζ : F) (hζ : IsPrimitiveRoot ζ 12) : IsEmpty (F →+* ℝ) := by
   constructor
   intro φ
@@ -476,7 +474,7 @@ private theorem no_real_of_mu12 (F : Type) [Field F] [NumberField F]
     have he' : ((φ ζ)^2)^6 = 1^6 := by simpa [← pow_mul] using he
     exact (pow_left_inj₀ (sq_nonneg _) (by norm_num) (by norm_num : (6:ℕ) ≠ 0)).mp he'
   have hd := h.dvd_of_pow_eq_one 2 hs
-  norm_num at hd
+  omega
 
 private theorem coprime_of_sub_one_mem {R : Type*} [CommRing R]
     (m : Ideal R) (a : R) (h : a - 1 ∈ m) : Ideal.span {a} ⊔ m = ⊤ := by
@@ -531,7 +529,7 @@ private theorem primitive_twist_conductor_le
   · simp [hf]
   by_contra hle
   have hlt : ψ.conductor < ψ.conductor ⊔ (η.conductor * χ.conductor) :=
-    lt_of_le_of_ne le_sup_left (fun heq => hle (le_sup_right.trans_eq heq.symm))
+    by simp_all
   obtain ⟨a, ha, ham, hpos, hcop, hne⟩ := ψ.primitive _ hlt
   obtain ⟨x, hx, y, hy, hxy⟩ := Submodule.mem_sup.mp ham
   let b : 𝓞 F := 1 + y
@@ -547,12 +545,10 @@ private theorem primitive_twist_conductor_le
       simpa using (Ideal.span {b} ⊔ ψ.conductor).add_mem hb hd
     have hle' : Ideal.span {a} ⊔ ψ.conductor ≤ Ideal.span {b} ⊔ ψ.conductor :=
       sup_le ((Ideal.span_singleton_le_iff_mem _).mpr hba) le_sup_right
-    rw [hcop] at hle'
-    exact hle' (by trivial)
+    simp_all
   have hb0 : b ≠ 0 := by
     intro hb0
-    simp [hb0] at hbcop
-    exact hf hbcop
+    simp_all
   have hcopm := coprime_of_sub_one_mem (η.conductor * χ.conductor) b hbm
   have hcopall : Ideal.span {b} ⊔ (η.conductor * χ.conductor * ψ.conductor) = ⊤ := by
     apply IsCoprime.sup_eq
@@ -564,8 +560,7 @@ private theorem primitive_twist_conductor_le
     χ.character.map_span' b hb0 (Ideal.mul_le_right hbm) (fun φ => isEmptyElim φ)
   have hψ := hTwist (Ideal.span {b}) (by simpa using hb0) hcopall
   have heq := ray_congruent F ψ.conductor hf ψ.character a b ha hb0 hcop hab
-  apply hne
-  rw [heq, hψ, hη, hχ, map_one, mul_one]
+  simp_all
 
 theorem frequency_denominator_conductor_bound
     (F : Type) [Field F] [NumberField F]
@@ -628,9 +623,3 @@ theorem frequency_rows_finite_ramified_local_types
     F ζ12 hζ12 ι S hS u.val (K.numerator u) (K.kummer u)
   have hlocal := hAlocal v (K.numerator u) hnum
   exact ⟨hlocal, hBlocal v (K.numerator u) (T.denominator u) (T.induces u) hlocal⟩
-
-end
-
-end DedekindZetaZeroFree.Detector
-
-end

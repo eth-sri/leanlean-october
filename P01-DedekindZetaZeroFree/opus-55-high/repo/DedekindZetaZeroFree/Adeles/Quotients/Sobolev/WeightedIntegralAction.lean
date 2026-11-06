@@ -4,12 +4,11 @@ public import DedekindZetaZeroFree.Analysis.Sobolev.WeightedCovariant.CompactMet
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.KPCompactInteriorH1
 open MeasureTheory Filter TopologicalSpace
 open scoped ENNReal Topology
 
-private lemma weight_integral {n r : ℕ} {Γ : Type*} [Group Γ]
+lemma weight_integral {n r : ℕ} {Γ : Type*} [Group Γ]
     (D : KPChartL2.Data n r Γ) (g : E n → ℝ) :
     (∫ x, g x ∂KPChartL2.weightedMeasure n D.chart D.weight) =
       ∫ x in D.chart, D.weight x * g x := by
@@ -20,7 +19,7 @@ private lemma weight_integral {n r : ℕ} {Γ : Type*} [Group Γ]
   filter_upwards [ae_restrict_mem D.open_chart.measurableSet] with x hx
   simp [ENNReal.toReal_ofReal (D.positive_weight x hx).le, smul_eq_mul]
 
-private lemma weight_integrable {n r : ℕ} {Γ : Type*} [Group Γ]
+lemma weight_integrable {n r : ℕ} {Γ : Type*} [Group Γ]
     (D : KPChartL2.Data n r Γ) (g : E n → ℝ)
     (hg : Integrable (fun x => D.weight x * g x) (volume.restrict D.chart)) :
     Integrable g (KPChartL2.weightedMeasure n D.chart D.weight) := by
@@ -42,7 +41,7 @@ theorem integral_action_le_compact_weight {n r : ℕ} {Γ : Type*} [Group Γ]
     (fun x hx => D.positive_weight x (hCchart hx))
   obtain ⟨b, hb⟩ := hC.bddAbove_image hwC
   let Cw := max b 1
-  have hCw : 0 < Cw := lt_of_lt_of_le zero_lt_one (le_max_right _ _)
+  have hCw : 0 < Cw := by positivity
   have hupp : ∀ x ∈ C, D.weight x ≤ Cw := fun x hx =>
     (hb (Set.mem_image_of_mem _ hx)).trans (le_max_left _ _)
   refine ⟨Cw / cw, div_pos hCw hcw, ?_⟩
@@ -59,9 +58,7 @@ theorem integral_action_le_compact_weight {n r : ℕ} {Γ : Type*} [Group Γ]
     have heq : C.indicator (fun x => D.weight x * f x) =
         (fun x => D.weight x * f x) := by
       ext x
-      by_cases hx : x ∈ C
-      · simp [hx]
-      · simp [hx, hzero x hx]
+      simp_all
     rw [heq] at hi
     exact hi.restrict
   have hfw := weight_integrable D f hwf
@@ -99,7 +96,7 @@ theorem integral_action_le_compact_weight {n r : ℕ} {Γ : Type*} [Group Γ]
         have hm := integral_map (D.invariant_measure γ).measurable.aemeasurable
           (show AEStronglyMeasurable f (Measure.map (D.act γ)
             (KPChartL2.weightedMeasure n D.chart D.weight)) by
-            rw [(D.invariant_measure γ).map_eq]; exact hfw.aestronglyMeasurable)
+            fun_prop)
         simpa only [(D.invariant_measure γ).map_eq] using hm.symm
   have huppint : (∫ x, f x ∂KPChartL2.weightedMeasure n D.chart D.weight) ≤
       Cw * (∫ x, f x) := by
@@ -117,7 +114,3 @@ theorem integral_action_le_compact_weight {n r : ℕ} {Γ : Type*} [Group Γ]
     (∫ x in C, f (D.act γ x)) * cw ≤ Cw * (∫ x, f x) by
     simpa only [mul_comm] using hh)
   simpa only [div_mul_eq_mul_div] using hfinal
-
-end DedekindZetaZeroFree.KPCompactInteriorH1
-
-end

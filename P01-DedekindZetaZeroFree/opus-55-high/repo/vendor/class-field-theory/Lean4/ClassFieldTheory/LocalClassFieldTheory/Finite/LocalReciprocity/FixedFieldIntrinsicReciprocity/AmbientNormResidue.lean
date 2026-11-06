@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Ambient embedded norm-residue values
 
@@ -113,7 +109,7 @@ namespace AmbientEmbeddedFixedFieldPresentation
 
 /-- The canonical quotient equivalence from an ambient finite fixed-field
 extension to the Galois group of its relative fixed field. -/
-noncomputable def fixedFieldQuotientEquiv
+def fixedFieldQuotientEquiv
     {K F E : Type}
     [Field K] [ValuativeRel K] [TopologicalSpace K]
     [IsNonarchimedeanLocalField K]
@@ -139,7 +135,7 @@ noncomputable def fixedFieldQuotientEquiv
 /-- The actual additive equivalence obtained by transporting abelianized
 relative fixed-field Galois elements through an ambient fixed-field
 presentation. -/
-noncomputable def abelianizedTransport
+def abelianizedTransport
     {K F E : Type}
     [Field K] [ValuativeRel K] [TopologicalSpace K]
     [IsNonarchimedeanLocalField K]
@@ -164,7 +160,7 @@ noncomputable def abelianizedTransport
 
 /-- Evaluate the ambient fixed-field norm-residue construction using this
 presentation's actual finite quotient and base-field realization. -/
-noncomputable def normResidueAbelianElement
+def normResidueAbelianElement
     {K F E : Type}
     [Field K] [ValuativeRel K] [TopologicalSpace K]
     [IsNonarchimedeanLocalField K]
@@ -257,7 +253,7 @@ end AmbientEmbeddedFixedFieldPresentation
 
 /-- The canonical ambient fixed-field presentation of an embedded finite
 Galois local extension. -/
-noncomputable def ambientEmbeddedFixedFieldPresentation
+def ambientEmbeddedFixedFieldPresentation
     (K F E : Type)
     [Field K] [ValuativeRel K] [TopologicalSpace K]
     [IsNonarchimedeanLocalField K]
@@ -303,8 +299,8 @@ noncomputable def ambientEmbeddedFixedFieldPresentation
         Gal(SeparableClosure K / K)).toSubgroup ⧸
         extensionSubgroup
           (baseField Gal(SeparableClosure K / K))
-        H₀ (le_baseField H₀)) := by
-    exact ambientEmbeddedAbsoluteQuotientFinite K F i
+        H₀ (le_baseField H₀)) := 
+    ambientEmbeddedAbsoluteQuotientFinite K F i
   let H : FiniteAbstractField
       Gal(SeparableClosure K / K) :=
     ⟨H₀, _hHabsolute⟩
@@ -348,7 +344,7 @@ noncomputable def ambientEmbeddedFixedFieldPresentation
 
 /-- The abelianized ambient fixed-field norm-residue value attached to a unit
 of the intrinsically presented base field. -/
-noncomputable def ambientEmbeddedNormResidueAbelianElement
+def ambientEmbeddedNormResidueAbelianElement
     (K F E : Type)
     [Field K] [ValuativeRel K] [TopologicalSpace K]
     [IsNonarchimedeanLocalField K]
@@ -367,7 +363,7 @@ noncomputable def ambientEmbeddedNormResidueAbelianElement
 
 /-- The ambient fixed-field norm-residue value in `Gal(E/F)`, obtained
 from its abelianized value using the canonical equivalence for an abelian extension. -/
-noncomputable def ambientEmbeddedNormResidueElement
+def ambientEmbeddedNormResidueElement
     (K F E : Type)
     [Field K] [ValuativeRel K] [TopologicalSpace K]
     [IsNonarchimedeanLocalField K]
@@ -384,7 +380,3 @@ noncomputable def ambientEmbeddedNormResidueElement
     (a : Fˣ) : Gal(E / F) :=
   (Abelianization.equivOfComm (H := Gal(E / F))).symm
     (ambientEmbeddedNormResidueAbelianElement K F E j e a)
-
-end LocalClassFieldTheory
-
-end

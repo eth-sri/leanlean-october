@@ -185,11 +185,7 @@ def isotropyChart : LiftedChart (F := F) (ζ := ζ) (hζ := hζ)
  theorem central_comm (ε : rootsOfUnity 3 F)
     (c : KPCuspGenuineMonodromy.FiniteCover F ζ hζ) :
     KPCuspGenuineMonodromy.central F ζ hζ ε * c =
-      c * KPCuspGenuineMonodromy.central F ζ hζ ε := by
-  apply Subtype.ext
-  exact (Subgroup.mem_center_iff.mp
-    (KPAdelicCoverRestrictedProduct.pglCentralInjection_central F ζ hζ
-      ⟨ε, rfl⟩) c).symm
+      c * KPCuspGenuineMonodromy.central F ζ hζ ε := by apply DedekindZetaZeroFree.KPContCotangentActualOverlap.central_commute <;> assumption
 
 def liftedIsotropy : Subgroup (A.Isotropy × rootsOfUnity 3 F) where
   carrier := {p | ∃ u : U.toOpenSubgroup,

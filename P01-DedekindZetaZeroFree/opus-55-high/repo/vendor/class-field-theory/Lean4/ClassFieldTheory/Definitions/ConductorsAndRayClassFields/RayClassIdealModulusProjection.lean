@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Projection between ideal-theoretic ray class groups
 
@@ -45,7 +39,7 @@ universe u
   ((v.adicCompletionIntegers K).toSubmonoid.unitsEquivUnitsType y :
     (v.adicCompletionIntegers K)ˣ).1
 
-private theorem rayLocalHigherUnitMap_eq_one_iff
+theorem rayLocalHigherUnitMap_eq_one_iff
     {K : Type u} [Field K] [NumberField K]
     (v : HeightOneSpectrum (𝓞 K)) (n : ℕ)
     (y : (v.adicCompletionIntegers K).units) :
@@ -134,7 +128,3 @@ def rayClassIdealModulusProjection
   change (I : NumberFieldFractionalIdealGroup K) ∈
     rayPrincipalIdealSubgroup m
   exact rayPrincipalIdeals_antitone hmn hI'
-
-end ClassFieldTheory
-
-end

@@ -10,9 +10,8 @@ namespace DedekindZetaZeroFree.LargeSieve.Sieve
 
 open scoped NumberField Classical ContDiff
 
-noncomputable section
 
-private lemma finsum_subtype_ne_bot {F : Type} [Field F] [NumberField F]
+lemma finsum_subtype_ne_bot {F : Type} [Field F] [NumberField F]
     (g : Ideal (𝓞 F) → ℂ) :
     (∑ᶠ I : {I : Ideal (𝓞 F) // I ≠ ⊥}, g I.val)
       = ∑ᶠ I : Ideal (𝓞 F), if I = ⊥ then 0 else g I := by
@@ -20,7 +19,7 @@ private lemma finsum_subtype_ne_bot {F : Type} [Field F] [NumberField F]
   apply finsum_congr
   intro I
   rw [finsum_eq_if]
-  by_cases hI : I = ⊥ <;> simp [hI]
+  simp
 
 theorem initial_primitive_sqrt_bound (F : Type) [Field F] [NumberField F]
     (hTC : NumberField.IsTotallyComplex F)
@@ -37,7 +36,7 @@ theorem initial_primitive_sqrt_bound (F : Type) [Field F] [NumberField F]
   have hq : 0 < (Ideal.absNorm f : ℝ) := by
     have hne : Ideal.absNorm f ≠ 0 := by
       simpa [Ideal.absNorm_eq_zero_iff] using hf
-    exact_mod_cast Nat.pos_of_ne_zero hne
+    positivity
   set h : ℝ → ℂ := fun x => (DedekindZetaZeroFree.LargeSieve.Vendor.annularWeight x : ℂ) with hh
   have hh_cd : ContDiff ℝ ∞ h := by
     rw [hh]
@@ -58,7 +57,7 @@ theorem initial_primitive_sqrt_bound (F : Type) [Field F] [NumberField F]
     intro I
     by_cases hI : I = ⊥
     · simp [DedekindZetaZeroFree.LargeSieve.idealMellinWeight, hI]
-    · simp only [hI, ↓reduceIte, DedekindZetaZeroFree.LargeSieve.idealMellinWeight, if_false, hh]
+    · simp only [hI, ↓reduceIte, DedekindZetaZeroFree.LargeSieve.idealMellinWeight, hh]
       ring
   have harg : ∀ I : Ideal (𝓞 F),
       X * (Ideal.absNorm I : ℝ) / (Ideal.absNorm f : ℝ)
@@ -96,7 +95,7 @@ theorem initial_primitive_sqrt_bound (F : Type) [Field F] [NumberField F]
   have hcoef : ‖W * (X : ℂ) / (Real.sqrt (Ideal.absNorm f : ℝ) : ℂ)‖
       = X / Real.sqrt (Ideal.absNorm f : ℝ) := by
     rw [norm_div, norm_mul, hW, one_mul]
-    simp [RCLike.norm_ofReal, abs_of_nonneg hX.le, abs_of_nonneg (Real.sqrt_nonneg _)]
+    simp [abs_of_nonneg hX.le, abs_of_nonneg (Real.sqrt_nonneg _)]
   calc ‖initialTheta F (fun I => η I) X‖
       = ‖(W * (X : ℂ) / (Real.sqrt (Ideal.absNorm f : ℝ) : ℂ)) *
           ∑' I : Ideal (𝓞 F), (if I = ⊥ then 0
@@ -125,7 +124,3 @@ theorem initial_primitive_sqrt_bound (F : Type) [Field F] [NumberField F]
         have hsne : Real.sqrt (Ideal.absNorm f : ℝ) ≠ 0 := by positivity
         field_simp
         nlinarith [hs]
-
-end
-
-end DedekindZetaZeroFree.LargeSieve.Sieve

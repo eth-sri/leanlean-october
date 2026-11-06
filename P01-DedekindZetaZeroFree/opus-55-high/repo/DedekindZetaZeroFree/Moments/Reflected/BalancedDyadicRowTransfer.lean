@@ -15,8 +15,8 @@ namespace ActualRowTransfer
 variable {F : Type} [Field F] [NumberField F]
 
 def rowIdeal (A : SArithmeticData F) (m : ThetaReflectionData.Row A) : A.Exterior :=
-  A.exteriorIdealEquiv.symm ⟨Ideal.span {m.val}, by
-    exact fun h => m.property (Ideal.span_singleton_eq_bot.mp h)⟩
+  A.exteriorIdealEquiv.symm ⟨Ideal.span {m.val}, 
+    fun h => m.property (Ideal.span_singleton_eq_bot.mp h)⟩
 
 def canonicalRow (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
     (u : A.Rˣ) (I : A.Exterior) : ThetaReflectionData.Row A :=
@@ -27,7 +27,7 @@ theorem span_rowIdeal (A : SArithmeticData F) (m : ThetaReflectionData.Row A) :
   have h : A.exteriorIdealEquiv (rowIdeal A m) =
       ⟨Ideal.span {m.val}, fun hh => m.property (Ideal.span_singleton_eq_bot.mp hh)⟩ := by
     rw [rowIdeal]
-    exact Equiv.apply_symm_apply A.exteriorIdealEquiv _
+    simp
   have h' : A.extendIdeal (rowIdeal A m) = Ideal.span {m.val} := by
     rw [← A.exteriorIdealEquiv_apply (rowIdeal A m)]
     exact congrArg Subtype.val h
@@ -79,17 +79,13 @@ def rowShape (A : SArithmeticData F) (m : ThetaReflectionData.Row A) : A.G :=
     A.radialSection (A.exteriorNorm (rowIdeal A m))
       (A.exteriorNorm_pos (rowIdeal A m))
 
-private theorem additive_continuous (A : SArithmeticData F) : Continuous A.localToAdditive := by
+theorem additive_continuous (A : SArithmeticData F) : Continuous A.localToAdditive := by
   unfold SArithmeticData.localToAdditive
-  apply Continuous.prodMk <;> apply continuous_pi
-  · intro w
-    exact Units.continuous_val.comp ((continuous_apply w).comp continuous_fst)
-  · intro v
-    exact Units.continuous_val.comp ((continuous_apply v).comp continuous_snd)
-private theorem additive_diag (A : SArithmeticData F) (u : Fˣ) :
+  fun_prop
+theorem additive_diag (A : SArithmeticData F) (u : Fˣ) :
     A.localToAdditive (A.diagonal u) = sLocalDiagonal F A.Sf (u : F) := by
   ext w <;> rfl
-private theorem same_ideal_unit (A : SArithmeticData F) (m n : ThetaReflectionData.Row A)
+theorem same_ideal_unit (A : SArithmeticData F) (m n : ThetaReflectionData.Row A)
     (he : rowIdeal A m = rowIdeal A n) : ∃ v : A.Rˣ, m.val = v * n.val := by
   have hspan : Ideal.span {m.val} = Ideal.span {n.val} := by
     have h := congrArg (fun I => (A.exteriorIdealEquiv I).val) he
@@ -134,7 +130,7 @@ theorem compactShape_idealFiber_bound (A : SArithmeticData F)
             A.diagonal (ThetaReflectionData.rowUnit A n) := by
         unfold rowShape
         simp only [hnorm]
-        exact div_div_div_cancel_right _ _ _
+        simp
       rw [← he]
       exact Set.div_mem_div (hrows _ (Finset.mem_filter.mp m.property).1)
         (hrows _ (Finset.mem_filter.mp hn).1)
@@ -144,8 +140,7 @@ theorem compactShape_idealFiber_bound (A : SArithmeticData F)
       have he : ThetaReflectionData.rowUnit A m.val /
           ThetaReflectionData.rowUnit A n = Units.map (algebraMap A.R F).toMonoidHom (v m) := by
         apply Units.ext
-        simp only [Units.val_div_eq_div_val, Units.coe_map, MonoidHom.coe_coe,
-          ThetaReflectionData.rowUnit, Units.val_mk0]
+        simp only [Units.val_div_eq_div_val, Units.coe_map, ThetaReflectionData.rowUnit, Units.val_mk0]
         change (m.val.val : F) / (n.val : F) = (((v m : A.R) : F))
         have h := congrArg (fun r : A.R => (r : F)) (hv m)
         change (m.val.val : F) = (((v m : A.R) : F)) * (n.val : F) at h
@@ -164,14 +159,13 @@ theorem compactShape_idealFiber_bound (A : SArithmeticData F)
       rw [hv m₁, hv m₂, he']
     simpa only [Fintype.card_coe] using Fintype.card_le_of_injective f hinj
   · change fs.card ≤ candidates.card
-    rw [Finset.not_nonempty_iff_eq_empty.mp hn]
-    exact Nat.zero_le _
+    simp_all
 
 def InCanonicalFiber (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
     (u : A.Rˣ) (I : A.Exterior) (m : ThetaReflectionData.Row A) : Prop :=
   ∃ w : A.Rˣ, m = ThetaReflectionData.sixthTranslate A w (canonicalRow A D u I)
 
-private theorem rowIdeal_canonical (A : SArithmeticData F)
+theorem rowIdeal_canonical (A : SArithmeticData F)
     (D : ComparisonPoissonCoefficientData F A) (u : A.Rˣ) (I : A.Exterior) :
     rowIdeal A (canonicalRow A D u I) = I := by
   apply A.exteriorIdealEquiv.injective
@@ -180,7 +174,7 @@ private theorem rowIdeal_canonical (A : SArithmeticData F)
   rw [Ideal.span_singleton_mul_left_unit u.isUnit, A.exteriorIdealEquiv_apply]
   exact (D.generates I).2
 
-private theorem rowIdeal_sixth (A : SArithmeticData F) (w : A.Rˣ)
+theorem rowIdeal_sixth (A : SArithmeticData F) (w : A.Rˣ)
     (m : ThetaReflectionData.Row A) :
     rowIdeal A (ThetaReflectionData.sixthTranslate A w m) = rowIdeal A m := by
   unfold rowIdeal
@@ -188,14 +182,14 @@ private theorem rowIdeal_sixth (A : SArithmeticData F) (w : A.Rˣ)
   apply Subtype.ext
   exact Ideal.span_singleton_mul_left_unit (w.isUnit.pow 6) m.val
 
-private theorem fiber_ideal (A : SArithmeticData F)
+theorem fiber_ideal (A : SArithmeticData F)
     (D : ComparisonPoissonCoefficientData F A) (u : A.Rˣ) (I : A.Exterior)
     (m : ThetaReflectionData.Row A) (hm : InCanonicalFiber A D u I m) :
     rowIdeal A m = I := by
   obtain ⟨w, rfl⟩ := hm
   rw [rowIdeal_sixth, rowIdeal_canonical]
 
-private theorem exists_fiber (A : SArithmeticData F)
+theorem exists_fiber (A : SArithmeticData F)
     (D : ComparisonPoissonCoefficientData F A) (U : Finset A.Rˣ)
     (hU : UnitRepresentatives A U) (m : ThetaReflectionData.Row A) :
     ∃ u ∈ U, InCanonicalFiber A D u (rowIdeal A m) m := by
@@ -211,12 +205,12 @@ private theorem exists_fiber (A : SArithmeticData F)
   simp only [Units.val_mul, Units.val_pow_eq_pow_val]
   ring
 
-private theorem boundedIdeals_finite (A : SArithmeticData F) (X : ℝ) :
-    {I : A.Exterior | A.exteriorNorm I ≤ X}.Finite := by
-  exact ((normBoundedIdeals_finite F X).preimage
+theorem boundedIdeals_finite (A : SArithmeticData F) (X : ℝ) :
+    {I : A.Exterior | A.exteriorNorm I ≤ X}.Finite := 
+  ((normBoundedIdeals_finite F X).preimage
     (f := fun I : A.Exterior => (⟨I.val, I.property.1⟩ : NonzeroIdeal F))
-    (by intro I _ J _ h; apply Subtype.ext; exact congrArg (fun x : NonzeroIdeal F => x.val) h)).subset
-    (by intro I hI; exact hI)
+    (by intro I _ J _ h; apply Subtype.ext; simp_all)).subset
+    (by rfl)
 
 theorem multisetMass_le_idealUnitMass
     (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
@@ -333,7 +327,7 @@ theorem idealUnitMass_bound_of_dyadic
       ring
     _ ≤ ((U.card : ℝ) + 1) * B * T * C * Z ^ (2 * M - 1 + ε) := by
       gcongr
-      exact le_add_of_nonneg_right zero_le_one
+      simp
 
 theorem balancedRowMass_bound_of_dyadic
     (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
@@ -379,7 +373,3 @@ theorem balancedRowMass_bound_of_dyadic
     _ = ((k₀ : ℝ) + 1) * C * Z ^ (2 * M - 1 + ε) := by
       push_cast
       ring
-
-end ActualRowTransfer
-end
-end DedekindZetaZeroFree

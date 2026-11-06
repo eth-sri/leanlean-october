@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Positive archimedean section of the idele norm
 
@@ -42,7 +36,7 @@ variable {K : Type u} [Field K] [NumberField K]
 
 /-- A positive real unit placed in an archimedean completion.  At a complex
 place it is first regarded as a complex unit. -/
- noncomputable def positiveArchimedeanLocalComponent
+ def positiveArchimedeanLocalComponent
     (v : InfinitePlace K) :
     ℝ≥0ˣ →* v.Completionˣ := by
   by_cases hv : v.IsReal
@@ -61,7 +55,7 @@ place it is first regarded as a complex unit. -/
           (Units.map NNReal.toRealHom.toMonoidHom))
 
 /-- The positive local archimedean component, with its natural continuity. -/
- noncomputable def positiveArchimedeanLocalComponentContinuous
+ def positiveArchimedeanLocalComponentContinuous
     (v : InfinitePlace K) :
     ℝ≥0ˣ →ₜ* v.Completionˣ where
   __ := positiveArchimedeanLocalComponent v
@@ -115,7 +109,7 @@ private theorem positiveArchimedeanLocalComponentContinuous_apply
   rfl
 
 omit [NumberField K] in
-private theorem positiveArchimedeanLocalComponent_nnnorm
+theorem positiveArchimedeanLocalComponent_nnnorm
     (v : InfinitePlace K) (r : ℝ≥0ˣ) :
     ‖((positiveArchimedeanLocalComponent v r :
         v.Completionˣ) : v.Completion)‖₊ =
@@ -201,53 +195,16 @@ private theorem positiveArchimedeanLocalComponent_nnnorm
       _ = ((r : ℝ≥0ˣ) : ℝ) :=
         Real.norm_of_nonneg (r : ℝ≥0).coe_nonneg
 
-omit [NumberField K] in
-private theorem positiveArchimedeanLocalComponent_mem_positive
-    (v : InfinitePlace K) (r : ℝ≥0ˣ) :
-    positiveArchimedeanLocalComponent v r ∈
-      RayClass.infinitePositiveSubgroup v := by
-  rw [RayClass.mem_infinitePositiveSubgroup_iff]
-  intro hv
-  let e : v.Completion ≃+* ℝ :=
-    InfinitePlace.Completion.ringEquivRealOfIsReal hv
-  have hcomponent :
-      Units.mapEquiv e.toMulEquiv
-          (positiveArchimedeanLocalComponent v r) =
-        Units.map NNReal.toRealHom.toMonoidHom r := by
-    simp only [positiveArchimedeanLocalComponent,
-      dite_eq_left hv, MonoidHom.comp_apply]
-    change
-      Units.mapEquiv e.toMulEquiv
-          (Units.mapEquiv e.symm.toMulEquiv
-            (Units.map NNReal.toRealHom.toMonoidHom r)) =
-        Units.map NNReal.toRealHom.toMonoidHom r
-    exact
-      (Units.mapEquiv e.toMulEquiv).apply_symm_apply
-        (Units.map NNReal.toRealHom.toMonoidHom r)
-  have hvalue :
-      e
-          ((positiveArchimedeanLocalComponent v r :
-            v.Completionˣ) : v.Completion) =
-        ((r : ℝ≥0ˣ) : ℝ) := by
-    simpa [e] using congrArg Units.val hcomponent
-  change
-    0 < e
-      ((positiveArchimedeanLocalComponent v r :
-        v.Completionˣ) : v.Completion)
-  rw [hvalue]
-  exact NNReal.coe_pos.mpr
-    (pos_iff_ne_zero.mpr r.ne_zero)
-
 /-- The positive root needed to compensate for the multiplicity of the
 chosen infinite place. -/
- noncomputable def positiveArchimedeanRoot :
+ def positiveArchimedeanRoot :
     ℝ≥0ˣ →* ℝ≥0ˣ :=
   Units.map
     (NNReal.rpowMonoidHom
       (((w₀ (K := K)).mult : ℝ)⁻¹))
 
 /-- The positive root map used in the archimedean section is continuous. -/
- noncomputable def positiveArchimedeanRootContinuous :
+ def positiveArchimedeanRootContinuous :
     ℝ≥0ˣ →ₜ* ℝ≥0ˣ where
   __ := positiveArchimedeanRoot (K := K)
   continuous_toFun :=
@@ -259,7 +216,7 @@ chosen infinite place. -/
 /-- The positive archimedean idele over a number field.  Its finite part is
 one, and its sole nontrivial infinite component has been normalized so that
 the total archimedean norm is the input. -/
-noncomputable def positiveArchimedeanSection
+def positiveArchimedeanSection
     (K : Type u) [Field K] [NumberField K] :
     ℝ≥0ˣ →* IdeleGroup K :=
   (IdeleGroup.infinitePlaceIdele
@@ -269,7 +226,7 @@ noncomputable def positiveArchimedeanSection
       (positiveArchimedeanRoot (K := K)))
 
 /-- The positive archimedean section as a continuous homomorphism. -/
-noncomputable def positiveArchimedeanSectionContinuous
+def positiveArchimedeanSectionContinuous
     (K : Type u) [Field K] [NumberField K] :
     ℝ≥0ˣ →ₜ* IdeleGroup K :=
   (IdeleGroup.infinitePlaceIdeleContinuous
@@ -284,11 +241,6 @@ theorem positiveArchimedeanSectionContinuous_apply
     positiveArchimedeanSectionContinuous K r =
       positiveArchimedeanSection K r :=
   rfl
-
-/-- The positive archimedean section is continuous. -/
-theorem continuous_positiveArchimedeanSection :
-    Continuous (positiveArchimedeanSection K) :=
-  (positiveArchimedeanSectionContinuous K).continuous_toFun
 
 @[simp]
 private theorem positiveArchimedeanSection_infiniteComponent_same
@@ -324,41 +276,6 @@ private theorem positiveArchimedeanSection_infiniteComponent_of_ne
   exact
     IdeleGroup.infinitePlaceIdele_infiniteComponent_of_ne
       (w₀ (K := K)) v _ hv
-
-/-- Every finite component of the positive archimedean idele is one. -/
-@[simp]
-theorem positiveArchimedeanSection_finiteComponent
-    (r : ℝ≥0ˣ)
-    (v : HeightOneSpectrum (𝓞 K)) :
-    IdeleGroup.finiteComponent v
-        (positiveArchimedeanSection K r) =
-      1 := by
-  change
-    IdeleGroup.finiteComponent v
-        (IdeleGroup.infinitePlaceIdele
-          (w₀ (K := K))
-          (positiveArchimedeanLocalComponent
-            (w₀ (K := K))
-            (positiveArchimedeanRoot (K := K) r))) = 1
-  rw [IdeleGroup.infinitePlaceIdele_finiteComponent]
-
-/-- Every infinite component of the positive archimedean idele lies in the
-standard positive subgroup. -/
-theorem positiveArchimedeanSection_infiniteComponent_mem_positive
-    (r : ℝ≥0ˣ) (v : InfinitePlace K) :
-    IdeleGroup.infiniteComponent v
-        (positiveArchimedeanSection K r) ∈
-      RayClass.infinitePositiveSubgroup v := by
-  by_cases hv : v = w₀ (K := K)
-  · subst v
-    rw [positiveArchimedeanSection_infiniteComponent_same]
-    exact
-      positiveArchimedeanLocalComponent_mem_positive
-        (w₀ (K := K))
-        (positiveArchimedeanRoot (K := K) r)
-  · rw [positiveArchimedeanSection_infiniteComponent_of_ne
-      r v hv]
-    exact Subgroup.one_mem _
 
 /-- The positive archimedean idele has absolute idele norm `r⁻¹`. -/
 @[simp]
@@ -411,20 +328,19 @@ theorem positiveArchimedeanSection_absoluteNorm
         exact
           positiveArchimedeanSection_infiniteComponent_of_ne
             r v hv
-      rw [hcomponent, map_one, one_pow]
-    · intro h
-      exact (h (Finset.mem_univ _)).elim
+      simp_all
+    simp
   rw [IdeleGroup.absoluteNorm_apply]
   change
     FiniteIdeleGroup.absoluteNorm (1 : FiniteIdeleGroup K) *
         (InfiniteIdeleGroup.archimedeanNorm
           (positiveArchimedeanSection K r).1)⁻¹ =
       r⁻¹
-  rw [map_one, hinfinite, one_mul]
+  simp_all
 
 /-- Multiplying an idele by its positive archimedean correction produces an
 idele of absolute norm one. -/
-noncomputable def positiveArchimedeanNormOneCorrection
+def positiveArchimedeanNormOneCorrection
     (K : Type u) [Field K] [NumberField K]
     (a : IdeleGroup K) :
     IdeleGroup.normOneSubgroup (K := K) :=
@@ -435,7 +351,7 @@ noncomputable def positiveArchimedeanNormOneCorrection
             (IdeleGroup.absoluteNorm a)) =
         1
     rw [map_mul, positiveArchimedeanSection_absoluteNorm]
-    exact mul_inv_cancel (IdeleGroup.absoluteNorm a)⟩
+    simp⟩
 
 /-- The underlying idele of the norm-one correction is its defining product. -/
 @[simp]
@@ -457,8 +373,3 @@ theorem eq_positiveArchimedeanNormOneCorrection_mul_section_inv
   exact (mul_inv_cancel_right a
     (positiveArchimedeanSection K
       (IdeleGroup.absoluteNorm a))).symm
-
-
-end IdeleGroup
-
-end

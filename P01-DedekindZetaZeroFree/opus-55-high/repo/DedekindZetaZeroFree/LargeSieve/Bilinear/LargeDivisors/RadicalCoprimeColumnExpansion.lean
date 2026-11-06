@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.LargeSieve.Bilinear.SevenTermApproximation
 
 @[expose] public section
 
-noncomputable section
 open scoped NumberField Classical BigOperators
 namespace DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms.LargeDirectDictionary
 variable {F : Type} [Field F] [NumberField F]
@@ -24,7 +23,7 @@ private lemma ideal_radical_eq (q : Ideal (𝓞 F)) (hq : q ≠ ⊥) :
   let P := (factors r).toFinset
   have heq : P.inf (fun p => p) = r := by
     have h := IsDedekindDomain.inf_prime_pow_eq_prod P (fun p => p) (fun _ => 1)
-      hp (by intro i hi j hj hij; exact hij)
+      hp (by simp)
     calc
       P.inf (fun p => p) = ∏ p ∈ P, p := by simpa only [pow_one] using h
       _ = r := hprod
@@ -38,7 +37,7 @@ private lemma ideal_radical_eq (q : Ideal (𝓞 F)) (hq : q ≠ ⊥) :
       rw [Finset.inf_insert]
       apply Ideal.IsRadical.inf
       · exact (Ideal.isPrime_of_prime (hpr p (by simp))).isRadical
-      · exact ih (by intro t ht; exact hpr t (by simp [ht]))
+      simp_all
   have hR : r.IsRadical := heq ▸ hgen P hp
   apply le_antisymm
   · exact (hR.radical_le_iff).mpr (Ideal.dvd_iff_le.mp radical_dvd_self)
@@ -150,7 +149,7 @@ lemma largeDensity_triple {c : Ideal (𝓞 F)}
     intro f₁ hf₁
     apply Finset.sum_congr rfl
     intro f₂ hf₂
-    split_ifs <;> simp [hfrel f₀ hf₀ f₁ hf₁ f₂ hf₂, ExplicitTerms.norm, map_mul, mul_inv_rev] <;> ring
+    split_ifs <;> simp [hfrel f₀ hf₀ f₁ hf₁ f₂ hf₂, ExplicitTerms.norm, map_mul] <;> ring
   rw [Finset.sum_congr rfl hterm, sum_moebius_radical _ hcd0]
   unfold Context.mobiusDivisors
   apply Finset.sum_congr rfl
@@ -161,7 +160,3 @@ lemma largeDensity_triple {c : Ideal (𝓞 F)}
   apply Finset.sum_congr rfl
   intro f₂ hf₂
   split_ifs <;> ring
-
-end DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms.LargeDirectDictionary
-
-end

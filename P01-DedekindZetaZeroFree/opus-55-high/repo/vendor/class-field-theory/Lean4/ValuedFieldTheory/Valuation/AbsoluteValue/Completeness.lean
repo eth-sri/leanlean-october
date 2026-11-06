@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Minimal absolute-value norm API
 
@@ -66,8 +60,6 @@ theorem absoluteValueCompleteness_completeSpace_withAbs_iff_complete
       isometry_toFun := by
         rw [isometry_iff_dist_eq]
         intro x y
-        simp only [dist_eq_norm_sub,
-          WithAbs.norm_eq_apply_ofAbs, WithAbs.ofAbs_sub]
         rfl }
   rw [e.completeSpace_iff]
   change @CompleteSpace K (AbsoluteValue.toNormedField v).toUniformSpace ↔
@@ -98,36 +90,9 @@ theorem absoluteValueCompleteness_complete_iff_cauchySeq_converges
     exact (absoluteValueCompleteness_completeSpace_withAbs_iff_complete v).1
       (Metric.complete_of_cauchySeq_tendsto hseq)
 
-/-- The nontrivial-valuation convention excludes the trivial valuation; this supplies the
-corresponding mathlib `NontriviallyNormedField` instance for `WithAbs v`. -/
-@[reducible]
-def withAbsNontriviallyNormedField
-    {K : Type*} [Field K] (v : AbsoluteValue K ℝ) (hv : v.IsNontrivial) :
-    NontriviallyNormedField (WithAbs v) :=
-  NontriviallyNormedField.ofNormNeOne
-    (by
-      rcases hv with ⟨x, hx0, hx1⟩
-      refine ⟨(WithAbs.equiv v).symm x, ?_, ?_⟩
-      · intro hx
-        apply hx0
-        simpa using congrArg (WithAbs.equiv v) hx
-      · simpa [WithAbs.norm_eq_apply_ofAbs] using hx1)
-
 /-- The finite-degree norm-formula candidate:
 `x ↦ |N_{L/K}(x)|^{1/[L:K]}`. -/
 def finiteExtensionNormFormulaValue
     {K L : Type*} [Field K] [Field L] [Algebra K L] [FiniteDimensional K L]
     (v : AbsoluteValue K ℝ) (x : L) : ℝ :=
   Real.rpow (v (Algebra.norm K x)) (1 / (Module.finrank K L : ℝ))
-
-/-- The finite-degree norm formula candidate is nonnegative. -/
-theorem finiteExtensionNormFormulaValue_nonneg
-    {K L : Type*} [Field K] [Field L] [Algebra K L] [FiniteDimensional K L]
-    (v : AbsoluteValue K ℝ) (x : L) :
-    0 ≤ finiteExtensionNormFormulaValue v x :=
-  Real.rpow_nonneg (v.nonneg _) _
-
-end Valuations
-end AlgebraicNumberTheory
-
-end

@@ -16,8 +16,8 @@ namespace DedekindZetaZeroFree
 variable (F : Type) [Field F] [NumberField F]
 
 theorem localDifferent_ne_bot (v : HeightOneSpectrum (𝓞 F)) :
-    localDifferent F v ≠ ⊥ := by
-  exact RamificationTheory.DiscreteValuationField.ValuedExtension.differentIdealOfFiniteSeparable_ne_bot
+    localDifferent F v ≠ ⊥ := 
+  RamificationTheory.DiscreteValuationField.ValuedExtension.differentIdealOfFiniteSeparable_ne_bot
     (LocalConductor.base F v) (LocalConductor.target F v)
 
 theorem exists_localDifferentExponent (v : HeightOneSpectrum (𝓞 F)) :
@@ -32,8 +32,8 @@ def localDifferentExponent (v : HeightOneSpectrum (𝓞 F)) : ℕ :=
 theorem localDifferent_eq_maximalIdeal_pow (v : HeightOneSpectrum (𝓞 F)) :
     localDifferent F v =
       IsLocalRing.maximalIdeal (LocalConductor.target F v).valuationSubring ^
-        localDifferentExponent F v := by
-  exact Classical.choose_spec (exists_localDifferentExponent F v)
+        localDifferentExponent F v := 
+  Classical.choose_spec (exists_localDifferentExponent F v)
 
 def localDifferentNorm (v : HeightOneSpectrum (𝓞 F)) : ℕ :=
   Ideal.absNorm v.asIdeal ^ localDifferentExponent F v
@@ -46,7 +46,7 @@ def localDifferentNorm (v : HeightOneSpectrum (𝓞 F)) : ℕ :=
   right_inv _ := rfl
   map_mul' _ _ := rfl
   map_add' _ _ := rfl
-private theorem inte (v : HeightOneSpectrum (𝓞 F)) :
+theorem inte (v : HeightOneSpectrum (𝓞 F)) :
     (Valued.v : Valuation (v.adicCompletion F) ℤᵐ⁰).Integers (LocalConductor.target F v).valuationSubring where
   hom_inj := Subtype.val_injective
   map_le_one x := (re F v x).property
@@ -55,7 +55,7 @@ private theorem inte (v : HeightOneSpectrum (𝓞 F)) :
   (re F v).symm ⟨finiteCompletionUniformizer F v, by
     change Valued.v (finiteCompletionUniformizer F v) ≤ 1
     simp [finiteCompletionUniformizer_valuation]⟩
-private theorem pi_irr (v : HeightOneSpectrum (𝓞 F)) : Irreducible (pi F v) := by
+theorem pi_irr (v : HeightOneSpectrum (𝓞 F)) : Irreducible (pi F v) := by
   apply IsDiscreteValuationRing.irreducible_of_span_eq_maximalIdeal (pi F v)
   · exact fun h => finiteCompletionUniformizer_ne_zero F v (congrArg Subtype.val h)
   · ext a
@@ -185,8 +185,7 @@ theorem localFiniteAnnihilator_localFiniteAnnihilator_finiteCompletionBall
         (localFiniteAnnihilator F v (finiteCompletionBall F v n)) =
       finiteCompletionBall F v n := by
   rw [localFiniteAnnihilator_finiteCompletionBall, localFiniteAnnihilator_finiteCompletionBall]
-  congr 1
-  omega
+  simp
 
 theorem isLocallyConstant_localFiniteCharacter (v : HeightOneSpectrum (𝓞 F)) :
     IsLocallyConstant (localFiniteCharacter F v : v.adicCompletion F → Circle) := by
@@ -205,8 +204,8 @@ theorem isLocallyConstant_localFiniteCharacter (v : HeightOneSpectrum (𝓞 F)) 
 theorem isLocallyConstant_localFiniteCharacter_neg_mul
     (v : HeightOneSpectrum (𝓞 F)) (b : v.adicCompletion F) :
     IsLocallyConstant (fun y : v.adicCompletion F =>
-      (localFiniteCharacter F v (-b * y) : ℂ)) := by
-  exact ((isLocallyConstant_localFiniteCharacter F v).comp_continuous
+      (localFiniteCharacter F v (-b * y) : ℂ)) := 
+  ((isLocallyConstant_localFiniteCharacter F v).comp_continuous
     (by fun_prop : Continuous (fun y : v.adicCompletion F => -b * y))).comp
     (fun z : Circle => (z : ℂ))
 
@@ -223,8 +222,4 @@ theorem localDifferentExponent_eq_zero_of_not_mem
   have h := (Ideal.pow_eq_top_iff.mp heq.symm)
   rcases h with hh | hh
   · exact False.elim ((IsLocalRing.maximalIdeal.isMaximal _).ne_top hh)
-  · exact hh
-
-end DedekindZetaZeroFree
-
-end
+  omega

@@ -6,14 +6,13 @@ public import DedekindZetaZeroFree.Arithmetic.LocalFields.Residues.GlobalQuotien
 
 open scoped NumberField Classical
 open NumberField IsDedekindDomain
-noncomputable section
 namespace DedekindZetaZeroFree.LocalFiniteSumCompatibility
 open LocalFiniteSums
 variable {F : Type} [Field F] [NumberField F]
 variable {A : SArithmeticData F} {σ : F →+* ℂ}
 variable {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
 
-private theorem cast_character_mk {R : Type} [CommRing R]
+theorem cast_character_mk {R : Type} [CommRing R]
     (I J : Ideal R) (h : I = J) (f : AddChar (R ⧸ I) Circle) (x : R) :
     (cast (congrArg (fun L : Ideal R => AddChar (R ⧸ L) Circle) h) f)
       (Ideal.Quotient.mk J x) = f (Ideal.Quotient.mk I x) := by
@@ -49,8 +48,8 @@ theorem fieldTrace_eq_negative_localTrace
       rw [(generator_generates C p).2]
       exact Ideal.mem_map_of_mem _ ht
     obtain ⟨y, hy⟩ := Ideal.mem_span_singleton'.mp htR
-    have hmul : (t : F) = (y : F) * (generator C p : F) := by
-      exact (congrArg (fun z : A.R => (z : F)) hy).symm
+    have hmul : (t : F) = (y : F) * (generator C p : F) := 
+      (congrArg (fun z : A.R => (z : F)) hy).symm
     have htval := (w.valuation_eq_one_iff_notMem (K := F)).2 htw
     have hyp := Set.integer_valuation_le_one _ F y hw
     have hpp := Set.integer_valuation_le_one _ F (generator C p) hw
@@ -81,8 +80,7 @@ theorem fieldTrace_eq_negative_localTrace
       have hw' : w ∉ A.Sf := fun h => hn (Finset.mem_insert_of_mem h)
       have hwp : w ≠ p.val := by
         intro h
-        subst w
-        exact hn (Finset.mem_insert_self p.val A.Sf)
+        simp_all
       exact hw (hout w hw' hwp)
   have hglobal := ResidueTrace.diagonal_product_formula ((x : F) / (generator C p : F) ^ n)
   rw [hprod] at hglobal
@@ -127,7 +125,3 @@ theorem quotientTrace_primitive (C : A.GeneralArithmeticContext σ η hS)
   change quotientTrace C p n (residueMap C p n x * residueMap C p n y) ≠ 1
   rw [← map_mul, quotientTrace_mk, ← fieldTrace_eq_negative_localTrace]
   exact hy
-
-end DedekindZetaZeroFree.LocalFiniteSumCompatibility
-
-end

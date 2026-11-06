@@ -5,7 +5,7 @@ public import DedekindZetaZeroFree.LFunctions.Hecke.RayContinuationData
 public import DedekindZetaZeroFree.CharacterSums.Gauss.ResidueRowFourierTransform
 public import DedekindZetaZeroFree.ZeroDetection.Conductors.FrequencyDyadCounts
 public import DedekindZetaZeroFree.Moments.Probes.AnnularWeightsAndCancellingProfiles
-public import DedekindZetaZeroFree.Moments.Principal.MellinContourDecomposition
+public import DedekindZetaZeroFree.Moments.Principal.NumeratorPoleExtraction
 
 @[expose] public section
 
@@ -81,6 +81,3 @@ def comparisonMellinWeightsFromProbe
     ComparisonMellinWeights :=
   { M := @ProbeWeight.fourierMellin F _ _ A.Sf e μ ν W0
     W1Hat := probeRealWeightMellin W1 }
-
-end
-end DedekindZetaZeroFree

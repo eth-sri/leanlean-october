@@ -383,7 +383,7 @@ theorem test_chart_ims {T : ℝ} (partition : SquareEndPartition F ζ hζ U R P 
     simp_rw [differentialNormSquared_chart]
   rw [he, mul_comm]
 
-private theorem q_coordinates_actual
+theorem q_coordinates_actual
     (a : KPContActualCotangentCountableShrinking.ShrunkChart F ζ hζ U R P H)
     (y : a.domain) :
     KPContCotangentOverlapRationalBranches.q a
@@ -471,7 +471,7 @@ private theorem sectionFields_apply_actual
   simp [KPContCotangentActualGenuineTwistIsotropy.isotropyChart,
     KPContCotangentActualOverlap.ChartKind.representative]
 
-private theorem measurable_sectionNorm (s : BorelL2Sections F ζ hζ U R P H) :
+theorem measurable_sectionNorm (s : BorelL2Sections F ζ hζ U R P H) :
     Measurable (KPContSectorSmoothFramesSupport.sectionNorm F ζ hζ U R P H s.val) := by
   have hme : Measurable (fun x =>
       KPContSectorSmoothFramesSupport.sectionNorm F ζ hζ U R P H s.val x ^ 2) := by
@@ -750,7 +750,7 @@ private theorem continuous_weighted_l2 {α : Type*} [MeasurableSpace α] (μ : M
       = fun w => ‖(fL • w : Lp ℂ 2 μ)‖ ^ 2 from funext hkey]
   exact hMcont.norm.pow 2
 
-private theorem weighted_integral_eq {T : ℝ}
+theorem weighted_integral_eq {T : ℝ}
     (partition : SquareEndPartition F ζ hζ U R P H T)
     (w : Q_U F ζ hζ U R P H μG hμG hR realization)
     (s : BorelL2Sections F ζ hζ U R P H)

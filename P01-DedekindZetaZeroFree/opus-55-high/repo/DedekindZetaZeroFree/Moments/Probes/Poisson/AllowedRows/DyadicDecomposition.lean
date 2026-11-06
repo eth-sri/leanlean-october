@@ -55,7 +55,7 @@ theorem J_dyadNP_split (ρ U Z : ℝ) :
   exact finsum_mem_union (exceptional_disjoint_good D ρ U) (exceptionalSet_finite D ρ U)
     (goodRows_finite D ρ U)
 
-private theorem J_norm_le_finset (A : Set D.Row) (hA : A.Finite) (s : Finset D.Row)
+theorem J_norm_le_finset (A : Set D.Row) (hA : A.Finite) (s : Finset D.Row)
     (hs : A ⊆ ↑s) (Z : ℝ) (hZ : 0 < Z) :
     ‖J D A 4 4 2 Z‖ ≤ ‖(2 * (Real.pi : ℂ))⁻¹ ^ 3‖ *
       ∑ u ∈ s, ∫ t : ℝ × ℝ × ℝ, ‖PoissonIdentity.rowIntegrand D u Z t‖ := by
@@ -99,7 +99,7 @@ private theorem mem_intermediate_iff {Z : ℝ} (hZ : 1 ≤ Z) (k : ℕ) :
   rw [Finset.mem_filter, Finset.mem_range, lt_floor_iff h1]
   exact and_comm
 
-private theorem dyad_disjoint (k l : ℕ) (hkl : k ≠ l) :
+theorem dyad_disjoint (k l : ℕ) (hkl : k ≠ l) :
     Disjoint (dyadRows D ((2 : ℝ) ^ k)) (dyadRows D ((2 : ℝ) ^ l)) := by
   rw [Set.disjoint_left]
   intro u hk hl
@@ -115,7 +115,7 @@ private theorem dyad_disjoint (k l : ℕ) (hkl : k ≠ l) :
     have h4 : (2 : ℝ) ^ k ≤ D.q u := hk.1
     linarith
 
-private theorem dyad_bound_summable (Z : ℝ) (hZ : 0 < Z) :
+theorem dyad_bound_summable (Z : ℝ) (hZ : 0 < Z) :
     Summable (fun k : ℕ => ∑ u ∈ (ActualRowCount.dyadRows_finite D ((2 : ℝ) ^ k)).toFinset,
       ∫ t : ℝ × ℝ × ℝ, ‖PoissonIdentity.rowIntegrand D u Z t‖) := by
   have hsum := PoissonInitialBridge.rowIntegrand_norm_summable D Z hZ
@@ -134,7 +134,7 @@ private theorem dyad_bound_summable (Z : ℝ) (hZ : 0 < Z) :
     (f := fun u => ∫ t : ℝ × ℝ × ℝ, ‖PoissonIdentity.rowIntegrand D u Z t‖) hd).symm ?_
   exact hsum.sum_le_tsum _ (fun u _ => integral_nonneg fun t => norm_nonneg _)
 
-private theorem dyad_norm_le (Z : ℝ) (hZ : 0 < Z) (k : ℕ) :
+theorem dyad_norm_le (Z : ℝ) (hZ : 0 < Z) (k : ℕ) :
     ‖J D (dyadRows D ((2 : ℝ) ^ k) \ principalRows D) 4 4 2 Z‖ ≤
       ‖(2 * (Real.pi : ℂ))⁻¹ ^ 3‖ *
         ∑ u ∈ (ActualRowCount.dyadRows_finite D ((2 : ℝ) ^ k)).toFinset,
@@ -143,7 +143,7 @@ private theorem dyad_norm_le (Z : ℝ) (hZ : 0 < Z) (k : ℕ) :
   exact J_norm_le_finset D _ (hfin.subset Set.diff_subset) hfin.toFinset
     (fun u hu => hfin.mem_toFinset.mpr hu.1) Z hZ
 
-private theorem dyad_summable (Z : ℝ) (hZ : 0 < Z) :
+theorem dyad_summable (Z : ℝ) (hZ : 0 < Z) :
     Summable (fun k : ℕ => J D (dyadRows D ((2 : ℝ) ^ k) \ principalRows D) 4 4 2 Z) :=
   Summable.of_norm_bounded
     ((dyad_bound_summable D Z hZ).mul_left ‖(2 * (Real.pi : ℂ))⁻¹ ^ 3‖)

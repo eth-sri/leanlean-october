@@ -34,13 +34,9 @@ theorem exists_compatible (V : Type*) [AddCommGroup V] [Module ℂ V] [Module.Fi
     add_le' := by intro x y; simp only [map_add]; exact norm_add_le _ _
     neg' := by intro x; simp
     eq_zero_of_map_eq_zero' := by
-      intro x hx
-      exact E.injective (by simpa using norm_eq_zero.mp hx)
+      simp
   }
   refine ⟨N, ?_⟩
   intro c v
   change ‖E (c • v)‖ = ‖c‖ * ‖E v‖
   rw [map_smul, norm_smul]
-
-end
-end DedekindZetaZeroFree.CompatibleFiniteNorm

@@ -33,15 +33,14 @@ theorem eulerCorrectionFactor_ne_zero
       (by simpa using hpow)
   intro heq
   have hval := (sub_eq_zero.mp heq).symm
-  rw [hval, norm_one] at hlt
-  exact (lt_irrefl 1 hlt)
+  simp_all
 
 theorem finiteEulerCorrection_ne_zero
     (K : Type) [Field K] [NumberField K]
     (w : Ideal (𝓞 K) → ℂ) (hnorm : ∀ I, ‖w I‖ ≤ 1)
     (S : Finset (HeightOneSpectrum (𝓞 K))) (s : ℂ) (hs : 0 < s.re) :
-    finiteEulerCorrection K w S s ≠ 0 := by
-  exact Finset.prod_ne_zero_iff.mpr (fun P _ ↦ eulerCorrectionFactor_ne_zero K w hnorm P s hs)
+    finiteEulerCorrection K w S s ≠ 0 := 
+  Finset.prod_ne_zero_iff.mpr (fun P _ ↦ eulerCorrectionFactor_ne_zero K w hnorm P s hs)
 
 theorem finiteEulerCorrection_differentiable
     (K : Type) [Field K] [NumberField K]
@@ -85,5 +84,3 @@ theorem rayCharacter_eulerCorrection
     exact (inv_mul_cancel₀ (eulerCorrectionFactor_ne_zero K χ₀
       (rayCharacter_norm_le_one K m₀ hm₀ χ₀) P s (by linarith))).symm
   · simp [c, hP, hagree P hP]
-
-end DedekindZetaZeroFree.HeckeCorollary

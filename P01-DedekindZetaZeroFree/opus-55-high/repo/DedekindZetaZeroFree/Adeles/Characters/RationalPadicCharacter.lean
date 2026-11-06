@@ -30,15 +30,15 @@ theorem padicFractionalPart_spec (p : Nat.Primes) (z : ℚ_[p]) :
     padicFractionalPart p z ∈ rationalPInverted p ∧
       (0 : ℚ) ≤ padicFractionalPart p z ∧ padicFractionalPart p z < 1 ∧
       z - (padicFractionalPart p z : ℚ_[p]) ∈
-        Set.range (fun x : ℤ_[p] => (x : ℚ_[p])) := by
-  exact (Classical.choose_spec (existsUnique_padicFractionalPart p z)).1
+        Set.range (fun x : ℤ_[p] => (x : ℚ_[p])) := 
+  (Classical.choose_spec (existsUnique_padicFractionalPart p z)).1
 
 lemma fractionalPart_zero (p : Nat.Primes) : padicFractionalPart p 0 = 0 := by
   symm
   apply (Classical.choose_spec (existsUnique_padicFractionalPart p 0)).2
-  exact ⟨(rationalPInverted p).zero_mem, le_rfl, zero_lt_one, ⟨0, by simp⟩⟩
+  simp
 
-private lemma fractionalPart_integral_difference (p : Nat.Primes) (x y : ℚ_[p])
+lemma fractionalPart_integral_difference (p : Nat.Primes) (x y : ℚ_[p])
     (hxy : ‖x-y‖ ≤ 1) : padicFractionalPart p x = padicFractionalPart p y := by
   have hx := padicFractionalPart_spec p x
   have hy := padicFractionalPart_spec p y
@@ -52,7 +52,7 @@ private lemma fractionalPart_integral_difference (p : Nat.Primes) (x y : ℚ_[p]
   exact (Padic.nonarchimedean _ _).trans (max_le hxy
     ((RationalPadicArithmetic.range_iff_norm p _).mp hy.2.2.2))
 
-private lemma negative_exp_int (a : ℤ) :
+lemma negative_exp_int (a : ℤ) :
     Circle.exp (-(2 * Real.pi * (a : ℝ))) = 1 := by
   have he : -(2 * Real.pi * (a:ℝ)) = ((-a:ℤ):ℝ) * (2 * Real.pi) := by push_cast; ring
   rw [he, Circle.exp_int_mul_two_pi]
@@ -103,8 +103,8 @@ theorem continuous_rationalPadicCharacter (p : Nat.Primes) :
       (fun _ => rationalPadicCharacter p z) := by
     filter_upwards [Metric.ball_mem_nhds z (show (0:ℝ) < 1 by norm_num)] with w hw
     change Circle.exp _ = Circle.exp _
-    rw [fractionalPart_integral_difference p w z (by
-      exact le_of_lt (by simpa only [Metric.mem_ball, dist_eq_norm] using hw))]
+    rw [fractionalPart_integral_difference p w z (
+      le_of_lt (by simpa only [Metric.mem_ball, dist_eq_norm] using hw))]
   exact continuousAt_const.congr_of_eventuallyEq he
 
 theorem rationalPadicCharacter_eq_one_iff (p : Nat.Primes) (z : ℚ_[p]) :
@@ -118,11 +118,10 @@ theorem rationalPadicCharacter_eq_one_iff (p : Nat.Primes) (z : ℚ_[p]) :
     have har : (padicFractionalPart p z : ℝ) = -(a:ℝ) := by
       nlinarith [Real.pi_pos]
     have haq : padicFractionalPart p z = -(a:ℚ) := by exact_mod_cast har
-    have ha0 : a ≤ 0 := by exact_mod_cast (show (a:ℚ) ≤ 0 by linarith [hp.2.1])
+    have ha0 : a ≤ 0 := by simp_all
     have ha1 : (-1:ℤ) < a := by exact_mod_cast (show (-1:ℚ) < a by linarith [hp.2.2.1])
     have haz : a = 0 := by omega
-    have hf : padicFractionalPart p z = 0 := by simpa [haz] using haq
-    simpa [hf] using hp.2.2.2
+    simp_all
   · intro hz
     have hf : padicFractionalPart p z = 0 := by
       rw [← fractionalPart_zero p]
@@ -138,8 +137,7 @@ theorem rationalPadicCharacter_inv_prime_ne_one (p : Nat.Primes) :
     ((rationalPadicCharacter_eq_one_iff p _).mp h)
   have hp : (1:ℝ) < p.1 := by exact_mod_cast p.2.one_lt
   have he : ‖(((p.1:ℚ)⁻¹ : ℚ_[p]))‖ = (p.1:ℝ) := by
-    push_cast
-    rw [norm_inv, Padic.norm_p, inv_inv]
+    simp
   rw [he] at hn
   exact (not_le.mpr hp) hn
 
@@ -152,8 +150,3 @@ section
 noncomputable section
 
 namespace DedekindZetaZeroFree
-
-end DedekindZetaZeroFree
-
-end
-end

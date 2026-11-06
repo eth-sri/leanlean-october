@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # The uniformizer norm identity: primitive equal-characteristic division points
 
@@ -41,7 +37,7 @@ variable {K : Type u} [Field K]
 
 /-- A chosen root of the primitive level-`n+1` division polynomial in the
 fixed separable closure of `κ((T))`. -/
-noncomputable def chosenEqualCharacteristicLubinTatePrimitiveRoot
+def chosenEqualCharacteristicLubinTatePrimitiveRoot
     (F : LocalField.{u, v} K)
     [CharP K F.residueCharacteristic]
     (n : ℕ) : SeparableClosure F.residueField⸨X⸩ :=
@@ -137,21 +133,3 @@ theorem chosenEqualCharacteristicLubinTatePrimitiveRoot_not_torsion_pred
     simpa [equalCharacteristicSeparableUniformizer] using heq
   · exact Nat.sub_ne_zero_of_lt
       (Finite.one_lt_card : 1 < Nat.card F.residueField)
-
-/-- In particular, a primitive division point is nonzero. -/
-theorem chosenEqualCharacteristicLubinTatePrimitiveRoot_ne_zero
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (n : ℕ) :
-    chosenEqualCharacteristicLubinTatePrimitiveRoot F n ≠ 0 := by
-  intro hzero
-  apply chosenEqualCharacteristicLubinTatePrimitiveRoot_not_torsion_pred F n
-  change equalCharacteristicLubinTateAmbientPiIterate F
-      (equalCharacteristicSeparableUniformizer F) n
-      (chosenEqualCharacteristicLubinTatePrimitiveRoot F n) = 0
-  rw [hzero, map_zero]
-
-end EqualCharacteristic
-end LubinTate
-
-end

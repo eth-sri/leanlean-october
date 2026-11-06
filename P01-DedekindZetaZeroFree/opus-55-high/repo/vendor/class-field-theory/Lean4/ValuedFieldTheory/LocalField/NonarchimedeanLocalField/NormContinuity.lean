@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Continuity of finite field norms
 
@@ -29,7 +23,6 @@ determinant and is therefore continuous.  It also bundles the corresponding
 statements for field units and valuation-ring units.
 -/
 
-noncomputable section
 
 universe u v
 
@@ -72,9 +65,4 @@ theorem integerUnitsToFieldUnits_continuous
     (K : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K] :
     Continuous (integerUnitsToFieldUnits K) := by
   unfold IsNonarchimedeanLocalField.integerUnitsToFieldUnits
-  exact Continuous.units_map
-    ((algebraMap 𝒪[K] K).toMonoidHom) continuous_subtype_val
-
-end LocalFieldTheory
-
-end
+  fun_prop

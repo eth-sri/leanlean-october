@@ -1,10 +1,10 @@
 module
 
-public import DedekindZetaZeroFree.Theta.Periods.MeromorphicContinuationAndResidues
+public import DedekindZetaZeroFree.Theta.Profiles.ResidualCoreAndUnitRotations
+public import DedekindZetaZeroFree.Theta.Periods.TranslatedStandardPeriodNonvanishing
 
 @[expose] public section
 
-noncomputable section
 open scoped Topology
 open Filter
 
@@ -19,12 +19,12 @@ theorem compact_family_holomorphic {X : Type*} [TopologicalSpace X] [CompactSpac
     apply continuousOn_iff_continuous_restrict.mpr
     apply ContinuousMap.continuous_of_continuous_uncurry
     let a : O × X → ℂ × X := fun p => (p.1.val,p.2)
-    have ha : Continuous a := (continuous_subtype_val.comp continuous_fst).prodMk continuous_snd
+    have ha : Continuous a := by fun_prop
     exact hc.comp_continuous ha (fun p => ⟨p.1.property, Set.mem_univ _⟩)
   intro s hs
   obtain ⟨r, hr, hrO⟩ := Metric.mem_nhds_iff.mp (hO.mem_nhds hs)
   let R := r/2
-  have hR : 0 < R := by dsimp [R]; positivity
+  have hR : 0 < R := by positivity
   have hclosed : Metric.closedBall s R ⊆ O :=
     (Metric.closedBall_subset_ball (by dsimp [R]; linarith)).trans hrO
   have hcircle : CircleIntegrable j s R :=
@@ -43,7 +43,6 @@ theorem compact_family_holomorphic {X : Type*} [TopologicalSpace X] [CompactSpac
     have hL : L (circleIntegral (fun z => (z-w)⁻¹ • j z) s R) =
         circleIntegral (fun z => (z-w)⁻¹ • j z x) s R := by
       rw [circleIntegral, circleIntegral, ← L.intervalIntegral_comp_comm (by simpa using hi.out)]
-      simp only [map_smul]
       rfl
     change L ((2 * Real.pi * Complex.I : ℂ)⁻¹ • _) = _
     rw [map_smul, hL]
@@ -131,9 +130,8 @@ theorem normalized_division_eq_chamber
   have hqne : ∀ᶠ s in codiscreteWithin Ω, q s ≠ 0 := by
     rcases hq.eqOn_zero_or_eventually_ne_zero_of_preconnected hΩ with hz | hn
     · have h := hz h0Ω
-      simp only [hq0, Pi.zero_apply] at h
-      exact (one_ne_zero h).elim
-    · exact hn
+      simp_all
+    omega
   have hm : MeromorphicOn (fun s => N s / q s) Ω := hN.div hq.meromorphicOn
   intro z hz
   have he : (fun s => N s / q s) =ᶠ[𝓝[≠] z] A := by
@@ -148,10 +146,3 @@ theorem normalized_division_eq_chamber
 end DedekindZetaZeroFree.ResidueContinuity
 
 namespace DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualPeriodContinuation
-
-variable {G₀ H J : Type*} [TopologicalSpace G₀] [AddCommGroup H] [Module ℂ H]
-variable (D₀ : J → H →ₗ[ℂ] C(G₀, ℂ))
-
-end DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualPeriodContinuation
-
-end

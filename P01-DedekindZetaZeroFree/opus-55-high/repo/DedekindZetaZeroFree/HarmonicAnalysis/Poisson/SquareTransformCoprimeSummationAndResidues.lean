@@ -13,7 +13,7 @@ noncomputable section
 open scoped NumberField Classical BigOperators
 namespace DedekindZetaZeroFree.LargeSieve.SquarePoisson
 
-private lemma mobius_indicator {F : Type*} [Field F] [NumberField F] (m I : Ideal (𝓞 F)) (hm : m ≠ ⊥) (hI : I ≠ ⊥) :
+lemma mobius_indicator {F : Type*} [Field F] [NumberField F] (m I : Ideal (𝓞 F)) (hm : m ≠ ⊥) (hI : I ≠ ⊥) :
     (∑ d ∈ idealDivisors m, if d ∣ I then (UniqueFactorizationMonoid.moebius d : ℂ) else 0) =
       if I ⊔ m = ⊤ then 1 else 0 := by
   let f : Ideal (𝓞 F) → ℂ := fun J => if J = I then 1 else 0
@@ -23,7 +23,7 @@ private lemma mobius_indicator {F : Type*} [Field F] [NumberField F] (m I : Idea
     have hJI : J = I := by
       by_contra h
       have : f J = 0 := by simp [f, h]
-      simp [Function.mem_support, this] at hJ
+      simp_all
     exact hJI
   have h := DedekindZetaZeroFree.LargeSieve.PoissonCoprimeExact.coprimeFinsum_eq_moebiusMultiples f hg m hm
   have hc : (∑ᶠ J : Ideal (𝓞 F), if J ≠ ⊥ ∧ J ⊔ m = ⊤ then f J else 0) =
@@ -39,7 +39,7 @@ private lemma mobius_indicator {F : Type*} [Field F] [NumberField F] (m I : Idea
   simp_rw [hd] at h
   simpa [mul_ite] using h.symm
 
-private lemma multiples_tsum {F : Type} [Field F] [NumberField F]
+lemma multiples_tsum {F : Type} [Field F] [NumberField F]
     (g : ℝ → ℂ) (X : ℝ) (hX : 0 < X) (d : Ideal (𝓞 F)) (hd : d ≠ ⊥) :
     (∑' I : Ideal (𝓞 F), if I ≠ ⊥ ∧ d ∣ I then
       g ((Ideal.absNorm I : ℝ) / X) else 0) =
@@ -101,8 +101,7 @@ theorem finite_mobius_poisson
     simp only [sup_idem] at h
     rw [← h]
     apply Finset.sum_congr rfl
-    intro d hd
-    rw [if_pos ((mem_idealDivisors hm).mp hd)]
+    simp_all
   refine ⟨?_, hmass⟩
   let f : Ideal (𝓞 F) → ℂ := fun I => g ((Ideal.absNorm I : ℝ) / X)
   have hdSum (d : Ideal (𝓞 F)) : Summable (fun I =>
@@ -236,7 +235,7 @@ theorem reflected_and_ideal_estimates (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
       (s := {I : Ideal (𝓞 F) | I ≠ ⊥})
       (f := fun I => ‖reflectedTransform D r h (X * (Ideal.absNorm I : ℝ))‖)).mp hs'
     exact hi.congr (fun I => by
-      by_cases hI : I = ⊥ <;> simp [Set.indicator_apply, hI])
+      by_cases hI : I = ⊥ <;> simp [hI])
 end DedekindZetaZeroFree.LargeSieve.SquarePoisson
 
 end
@@ -249,7 +248,7 @@ noncomputable section
 open scoped NumberField Classical ContDiff Topology
 open Filter
 namespace DedekindZetaZeroFree.LargeSieve.SquarePoisson
-private lemma deriv_pow_mul {V : ℂ → ℂ} {n j : ℕ} (hjn : j ≤ n)
+lemma deriv_pow_mul {V : ℂ → ℂ} {n j : ℕ} (hjn : j ≤ n)
     (hV : AnalyticAt ℂ V 0) :
     iteratedDeriv j (fun s : ℂ => s ^ n * V s) 0 =
       if j = n then (n.factorial : ℂ) * V 0 else 0 := by
@@ -258,8 +257,7 @@ private lemma deriv_pow_mul {V : ℂ → ℂ} {n j : ℕ} (hjn : j ≤ n)
   by_cases hj : j = n
   · subst j
     rw [if_pos rfl, Finset.sum_eq_single n]
-    · simp only [iteratedDeriv_fun_pow_zero, if_pos rfl, Nat.choose_self,
-        Nat.cast_one, one_mul, Nat.sub_self, iteratedDeriv_zero, ite_true]
+    · simp only [iteratedDeriv_fun_pow_zero, Nat.choose_self, Nat.cast_one, one_mul, Nat.sub_self, iteratedDeriv_zero, ite_true]
     · intro i hi hin
       rw [iteratedDeriv_fun_pow_zero, if_neg hin]
       ring
@@ -271,7 +269,7 @@ private lemma deriv_pow_mul {V : ℂ → ℂ} {n j : ℕ} (hjn : j ≤ n)
     rw [iteratedDeriv_fun_pow_zero, if_neg hin]
     ring
 
-private lemma origin_residue_eval
+lemma origin_residue_eval
     (F : Type) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F)
     (h : ℝ → ℂ) (hh : ContDiff ℝ ∞ h) (hc : HasCompactSupport h)
     (X : ℝ) (hX : 0 < X) :
@@ -341,10 +339,8 @@ private lemma origin_residue_eval
   · intro j hj hjn
     rw [deriv_pow_mul ((Polynomial.le_natDegree_of_mem_supp j hj).trans hP) hV, if_neg hjn]
     ring
-  · intro hn
-    rw [Polynomial.notMem_support_iff.mp hn]
-    ring
-private lemma tsum_nonzero {F : Type} [Field F] [NumberField F]
+  simp_all
+lemma tsum_nonzero {F : Type} [Field F] [NumberField F]
     (f : Ideal (𝓞 F) → ℂ) :
     (∑' I : Ideal (𝓞 F), if I = ⊥ then 0 else f I) =
       ∑' I : {I : Ideal (𝓞 F) // I ≠ ⊥}, f I := by
@@ -447,8 +443,8 @@ theorem principal_summable (data : PrincipalHeckeData F)
         ((Ideal.absNorm I : ℝ) / X)‖) ∧
     Summable (fun I : Ideal (𝓞 F) => if I = ⊥ then (0 : ℝ) else
       ‖reflectedTransform (principalDiscriminant F) (principalComplexPlaces F) h
-        (X * (Ideal.absNorm I : ℝ))‖) := by
-  exact (SquarePoisson.reflected_and_ideal_estimates
+        (X * (Ideal.absNorm I : ℝ))‖) := 
+  (SquarePoisson.reflected_and_ideal_estimates
     (principalDiscriminant F) (principalComplexPlaces F) h
     (principalDiscriminant_pos F) (principalComplexPlaces_pos F hF) hh hc).2 F X hX
 
@@ -464,8 +460,8 @@ theorem principal_poisson
         (2 : ℂ) ^ (principalComplexPlaces F - 1) * kappa data * mellin h 1 +
       (X : ℂ) * ∑' I : Ideal (𝓞 F), if I = ⊥ then 0 else
         reflectedTransform (principalDiscriminant F) (principalComplexPlaces F) h
-          (X * (Ideal.absNorm I : ℝ)) := by
-  exact SquarePoisson.square_log_poisson F hF h hh hc X hX
+          (X * (Ideal.absNorm I : ℝ)) := 
+  SquarePoisson.square_log_poisson F hF h hh hc X hX
 
 def coprimeOrigin (data : PrincipalHeckeData F) (h : ℝ → ℂ) (m : Ideal (𝓞 F)) : ℂ :=
   -(2 : ℂ) ^ (principalComplexPlaces F - 1) * kappa data * mellin h 1 *
@@ -508,9 +504,3 @@ theorem coprime_poisson
     F g k A R hsums hp X hX m hm).1
   dsimp [A, R, g, k, data] at hmob
   convert hmob using 1 <;> simp only [coprimeOrigin] <;> ring
-
-end DedekindZetaZeroFree.LargeSieve.SquareSecondPass
-
-end
-
-end

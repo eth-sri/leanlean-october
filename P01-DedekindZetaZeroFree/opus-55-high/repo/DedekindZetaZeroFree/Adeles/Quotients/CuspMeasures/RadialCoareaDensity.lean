@@ -31,7 +31,7 @@ open _root_.DedekindZetaZeroFree.KPContFlatArchProjectionNorm renaming archDiago
 open _root_.DedekindZetaZeroFree.KPContFlatArchProjectionNorm renaming N_eq_insertion → N_eq_insertion
 open _root_.DedekindZetaZeroFree.KPContFlatArchProjectionNorm renaming adeleOfArch → adeleOfArch
 
-private theorem sqrt_exp_double (q : ℝ) :
+theorem sqrt_exp_double (q : ℝ) :
     Real.sqrt (Real.exp (2*q)) = Real.exp q := by
   rw [show 2*q = q+q by ring, Real.exp_add, ← pow_two,
     Real.sqrt_sq_eq_abs, abs_of_pos (Real.exp_pos q)]
@@ -40,7 +40,7 @@ private theorem sqrt_exp_double (q : ℝ) :
     NumberField.InfinitePlace F → ℝ := fun v =>
   if v = w then (KPCuspLogShape.dimension F : ℝ)*t else 0
 
-private theorem radialSection_exponential_insertion
+theorem radialSection_exponential_insertion
     (w : NumberField.InfinitePlace F) (t : ℝ) :
     KPMsFixedHaarDisintegration.radialSection F ζ hζ w
       ⟨Real.exp (2*(KPCuspLogShape.dimension F : ℝ)*t),Real.exp_pos _⟩ =
@@ -64,7 +64,7 @@ private theorem radialSection_exponential_insertion
   rw [h]
   exact archDiagonalLift_eq_insertion F ζ hζ _
 
-private theorem section_diagonal_inverse (q : ℝ) (z : ℂ) (t : ℝ) :
+theorem section_diagonal_inverse (q : ℝ) (z : ℂ) (t : ℝ) :
     (Matrix.ProjGenLinGroup.mk (KubotaRankTwo.d ℂ
       (Units.mk0 (Real.exp q : ℂ) (by exact_mod_cast Real.exp_ne_zero q)) 1))⁻¹ *
         KPArithmeticAction.hyperbolicProjectiveSection (z,t) =

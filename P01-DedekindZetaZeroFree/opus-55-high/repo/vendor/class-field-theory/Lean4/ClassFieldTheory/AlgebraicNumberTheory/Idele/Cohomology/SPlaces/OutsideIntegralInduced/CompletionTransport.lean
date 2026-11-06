@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Transporting integer rings across finite-place cosets
 
@@ -46,7 +42,7 @@ variable (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
 
 /-- A completion belonging to a right coset, transported first by
 Galois conjugation and then into the chosen algebraic localization. -/
-noncomputable def rightCosetCompletionRingEquivLocalized
+def rightCosetCompletionRingEquivLocalized
     (q : InducedRightCosets (absoluteValueDecompositionGroup K w.1)) :
     letI hK := AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
     letI : SMul K w.1.Completion := hK.toSMul
@@ -85,12 +81,7 @@ theorem rightCosetCompletionRingEquivLocalized_norm_eq
   have hcoe :
       (((localizedCompletionEquivCompletion vK hvK w).symm z :
           LocalizedCompletion vK w) : w.1.Completion) = z := by
-    have h :=
-      localizedCompletionEquivCompletion_coe
-        vK hvK w
-          ((localizedCompletionEquivCompletion vK hvK w).symm z)
-    rw [AlgEquiv.apply_symm_apply] at h
-    exact h.symm
+    rfl
   change
     ‖(((localizedCompletionEquivCompletion vK hvK w).symm z :
         LocalizedCompletion vK w) : w.1.Completion)‖ = ‖x‖
@@ -100,7 +91,7 @@ theorem rightCosetCompletionRingEquivLocalized_norm_eq
       vK w (Quotient.out q) x
 
 /-- The same transport restricted to the two valuation integer rings. -/
-noncomputable def rightCosetCompletionIntegersRingEquivLocalized
+def rightCosetCompletionIntegersRingEquivLocalized
     (hvKna : IsNonarchimedean (vK : K → ℝ))
     (q : InducedRightCosets (absoluteValueDecompositionGroup K w.1)) :
     letI hK := AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
@@ -139,7 +130,3 @@ noncomputable def rightCosetCompletionIntegersRingEquivLocalized
       vK hvK w q x
   change ‖e x‖ = ‖x‖ at hnorm
   rw [hnorm]
-
-end CompletionTransport
-
-end

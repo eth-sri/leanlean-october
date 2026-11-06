@@ -16,14 +16,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Rank and kernel coordinates for S-unit preparation
 
@@ -287,7 +279,7 @@ theorem
 
 /-- A chosen coordinate equivalence for the actual relative Galois
 group in the finite S-unit preparation argument. -/
-noncomputable def
+def
     chosenEnlargedSUnitKummerRestrictionKernelEquivPiZMod
     {Omega : Type*} [Field Omega] [Algebra K Omega]
     [IsSepClosure K Omega]
@@ -316,7 +308,3 @@ noncomputable def
     (exists_enlargedSUnitKummerRestrictionKernelEquivPiZMod
       (K := K) (Omega := Omega) E n hmu
       p v hp hv hn r eG S)
-
-end KummerTheory
-
-end

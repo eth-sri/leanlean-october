@@ -7,23 +7,22 @@ public import DedekindZetaZeroFree.Adeles.Characters.PrincipalFiniteTrace
 
 namespace DedekindZetaZeroFree.NormalizedProbe.PrincipalData
 
-noncomputable section
 open scoped NumberField Classical
 
 variable {F : Type} [Field F] [NumberField F]
 
-private lemma norm_mulChar_unit {R : Type*} [CommRing R] [Fintype R]
+lemma norm_mulChar_unit {R : Type*} [CommRing R] [Fintype R]
     (χ : MulChar R ℂ) (u : Rˣ) : ‖χ u‖ = 1 := by
   change ‖((MulChar.equivToUnitHom χ) u : ℂ)‖ = 1
   exact Complex.norm_eq_one_of_mem_rootsOfUnity (χ.apply_mem_rootsOfUnity u)
 
-private lemma norm_mulChar {R : Type*} [CommRing R] [Fintype R]
+lemma norm_mulChar {R : Type*} [CommRing R] [Fintype R]
     (χ : MulChar R ℂ) (x : R) : ‖χ x‖ ^ 2 = if IsUnit x then 1 else 0 := by
   split_ifs with hx
   · rw [← hx.unit_spec, norm_mulChar_unit]; norm_num
   · rw [χ.map_nonunit hx]; norm_num
 
-private lemma gauss_parseval {R : Type*} [CommRing R] [Fintype R]
+lemma gauss_parseval {R : Type*} [CommRing R] [Fintype R]
     (χ : MulChar R ℂ) (ψ : AddChar R ℂ) (hψ : ψ.IsPrimitive) :
     ∑ a : R, ‖gaussSum χ (ψ.mulShift a)‖ ^ 2 =
       (Fintype.card R : ℝ) * ∑ x : R, ‖χ x‖ ^ 2 := by
@@ -48,8 +47,7 @@ private lemma gauss_parseval {R : Type*} [CommRing R] [Fintype R]
     rw [show a * (x - y) = a * x + -(a * y) by ring, ψ.map_add_eq_mul]
     ring
   simp_rw [hterm, ← Finset.mul_sum, AddChar.sum_mulShift _ hψ]
-  simp only [sub_eq_zero, Nat.cast_ite, Nat.cast_zero, mul_ite, mul_zero,
-    Finset.sum_ite_eq', Finset.mem_univ, if_true]
+  simp only [sub_eq_zero, Nat.cast_ite, Nat.cast_zero, mul_ite, mul_zero]
   rw [Finset.sum_ite_eq]
   simp only [Finset.mem_univ, if_true]
   ring
@@ -66,7 +64,7 @@ theorem norm_gauss_le_sqrt_card {R : Type*} [CommRing R] [Fintype R]
     rw [← Finset.sum_image (f := fun a : R => ‖gaussSum χ (ψ.mulShift a)‖ ^ 2)
       (g := fun u : Rˣ => (u : R)) (by intro a _ b _ h; exact Units.ext h)]
     exact Finset.sum_le_sum_of_subset_of_nonneg (Finset.subset_univ _)
-      (by intros; positivity)
+      (by simp)
   have hmask : (∑ x : R, ‖χ x‖ ^ 2) = (Fintype.card Rˣ : ℝ) := by
     simp_rw [norm_mulChar]
     have h := MulChar.sum_one_eq_card_units (R := R) (R' := ℝ)
@@ -133,7 +131,7 @@ private lemma additiveCharacter_eq_fieldTrace (A : SArithmeticData F) (ι : F �
       NumberField.InfinitePlace.Completion.ringEquivComplexOfIsComplex_apply]
     rw [ProbeAdditive.archPhase, ← Complex.exp_sum]
     congr 1
-    simp only [Complex.ofReal_sum, Finset.mul_sum, Complex.ofReal_mul, Complex.ofReal_ofNat]
+    simp only [Finset.mul_sum, Complex.ofReal_mul, Complex.ofReal_ofNat]
     apply Finset.sum_congr rfl
     intro w hw
     ring
@@ -191,6 +189,3 @@ theorem norm_gammaTwo_le_one (A : SArithmeticData F) (ι : F →+* ℂ)
   rw [gammaTwo_eq_idealGauss A ι η hS P c]
   exact norm_idealGauss_le_one A ι hS c.val
     (P.coefficients.generator c.val) (P.coefficients.generates c.val) 2
-
-end
-end DedekindZetaZeroFree.NormalizedProbe.PrincipalData

@@ -120,7 +120,7 @@ theorem ordinary_cell_quotient_exact
     exact (hi φ).symm
   refine ⟨?_, ?_, ?_⟩
   · intro a b hab
-    have hh : I (L.symm a) = I (L.symm b) := by simpa only [hI, L.apply_symm_apply] using hab
+    have hh : I (L.symm a) = I (L.symm b) := by simp_all
     exact L.symm.injective (hinj hh)
   · apply le_antisymm
     · rintro a ⟨e, rfl⟩
@@ -342,8 +342,8 @@ include hm hτ in
 
 theorem coefficientAction_smooth :
     letI := finiteCoverTopology F ζ hζ w m
-    SmoothRepresentation (coefficientAction F ζ hζ w τ) := by
-  exact inflatedRepresentation_smooth F ζ hζ w m hm
+    SmoothRepresentation (coefficientAction F ζ hζ w τ) := 
+  inflatedRepresentation_smooth F ζ hζ w m hm
     (KPLocalInductionJacquetReciprocity.borelRetraction F ζ hζ w) τ hm
     (KPLocalInductionJacquetReciprocity.borelRetraction_continuous F ζ hζ w m hm) hτ
 
@@ -402,8 +402,7 @@ def closedWeight : Representation ℂ (Torus F ζ hζ w) E where
     change τ (KPLocalInductionJacquetReciprocity.borelRetraction F ζ hζ w
       (rootInBorel F ζ hζ w y)) = 1
     dsimp only [rootInBorel]
-    rw [KPLocalInductionJacquetReciprocity.borelRetraction_upperRoot]
-    exact τ.map_one
+    simp
   have he : KPJacquetOpenTestFunction.translationRepresentation x φ =
       KPJacquetOpenCell.openCellRepresentation F ζ hζ w m hm (coefficientAction F ζ hζ w τ)
         (coefficientAction_smooth F ζ hζ w m hm τ hτ) (rootInBorel F ζ hζ w x) φ := by
@@ -471,13 +470,13 @@ theorem openInjection_integral (φ : KPJacquetOpenCell.TestFunctions F w (E := E
   let e := KPJacquetOpenTestFunction.coinvariantsEquiv
     (V := E) (1 : Multiplicative (KPRankOneInduction.LocalField F w) →* ℂˣ) (by fun_prop) μ
   have he : e.symm (KPJacquetOpenTestFunction.ordinaryIntegral μ φ) =
-      KPJacquetOpenTestFunction.coinvariantsMk 1 φ := by
-    exact e.symm_apply_eq.mpr (KPJacquetOpenTestFunction.coinvariantsEquiv_mk 1 (by fun_prop) μ φ).symm
+      KPJacquetOpenTestFunction.coinvariantsMk 1 φ := 
+    e.symm_apply_eq.mpr (KPJacquetOpenTestFunction.coinvariantsEquiv_mk 1 (by fun_prop) μ φ).symm
   change openCoinvariantMap F ζ hζ w m hm τ hτ (e.symm _) = _
   rw [he]
   rfl
 
-private theorem intrinsicAbs_eq_norm (a : (KPRankOneInduction.LocalField F w)ˣ) :
+theorem intrinsicAbs_eq_norm (a : (KPRankOneInduction.LocalField F w)ˣ) :
     KPJacquetOpenTestFunction.localAbs a = ‖(a : KPRankOneInduction.LocalField F w)‖ := by
   let μ : Measure (KPRankOneInduction.LocalField F w) := Measure.addHaar
   have hmap : μ.map (ContinuousAddEquiv.mulLeft a) = ‖(a : KPRankOneInduction.LocalField F w)‖₊⁻¹ • μ := by
@@ -526,10 +525,10 @@ theorem openIntegral_torus (h : Torus F ζ hζ w)
     exact hh
   rw [he, KPJacquetOpenTestFunction.ordinaryIntegral_dilateWith, intrinsicAbs_eq_norm]
   have hd : KPJacquetOpenCell.d F ζ hζ w m hm h = ‖(a : KPRankOneInduction.LocalField F w)‖ :=
-    KPJacquetOpenCell.d_eq_abs_r F ζ hζ w m hm h
+    by rfl
   have hp : 0 < KPJacquetOpenCell.d F ζ hζ w m hm h := by
     rw [hd]
-    exact norm_pos_iff.mpr a.ne_zero
+    simp
   change (‖(a : KPRankOneInduction.LocalField F w)‖ : ℂ) •
     (((Real.sqrt (KPJacquetOpenCell.d F ζ hζ w m hm h))⁻¹ : ℂ) •
       τ (KPJacquetOpenCell.alpha F ζ hζ w h) (KPJacquetOpenTestFunction.ordinaryIntegral μ φ)) = _
@@ -555,8 +554,7 @@ theorem ordinary_cell_short_exact :
     change τ (KPLocalInductionJacquetReciprocity.borelRetraction F ζ hζ w
       (rootInBorel F ζ hζ w x)) = 1
     dsimp only [rootInBorel]
-    rw [KPLocalInductionJacquetReciprocity.borelRetraction_upperRoot]
-    exact τ.map_one
+    simp
   obtain ⟨hi, hex, hp⟩ := KPJacquetOrdinaryCellExactness.QuotientExactness.ordinary_cell_quotient_exact
     F ζ hζ w m hm (coefficientAction F ζ hζ w τ)
     (coefficientAction_smooth F ζ hζ w m hm τ hτ) μ hn
@@ -582,9 +580,3 @@ theorem ordinary_cell_short_exact :
     exact ev1_torus F ζ hζ w m hm
       (KPLocalInductionJacquetReciprocity.borelRetraction F ζ hζ w) τ
       (fun h => KPLocalInductionJacquetReciprocity.borelRetraction_torus F ζ hζ w m hm h) h f
-
-end DedekindZetaZeroFree.KPJacquetOrdinaryCell
-
-end
-
-end

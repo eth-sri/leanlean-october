@@ -14,14 +14,12 @@ open KPLocalStoneVonNeumann KPLocalPrincipalSeries
 open KPRankOneOpenCellKernel KPRankOneLiftedRegulatedDiagonalAlgebra
 open KPRankOneCenterInducedDiagonalComparison KPActualScalarBinding
 
-noncomputable section
-set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 variable (q : HeightOneSpectrum (𝓞 F))
 
-private lemma shifted_roots_null_generic
+lemma shifted_roots_null_generic
     (L : Type*) [Field L] [CharZero L] [ValuativeRel L] [TopologicalSpace L]
     [IsNonarchimedeanLocalField L] [MeasurableSpace L] [BorelSpace L]
     (dx : Measure L) [dx.IsAddHaarMeasure] (c : Lˣ) :
@@ -39,21 +37,21 @@ private lemma shifted_roots_null_generic
     simp at h0
   have hf : {x : L | x^3+(c:L)=0}.Finite := by
     convert Polynomial.finite_setOfPred_isRoot hp using 1
-    ext x; simp [Polynomial.IsRoot]
+    simp
   have hfin : {y : Lˣ | (y:L)^3+(c:L)=0}.Finite :=
     hf.preimage (Set.injOn_of_injective Units.val_injective)
   have hz : dx {(0:L)} = 0 := by
     by_contra h
-    have hi : (KPCubicUnitIndices.Integers L : Set L).Infinite := by
-      exact Set.infinite_coe_iff.mp (inferInstance : Infinite (KPCubicUnitIndices.Integers L))
+    have hi : (KPCubicUnitIndices.Integers L : Set L).Infinite := 
+      Set.infinite_coe_iff.mp (inferInstance : Infinite (KPCubicUnitIndices.Integers L))
     have hc : IsCompact (KPCubicUnitIndices.Integers L : Set L) :=
       IsNonarchimedeanLocalField.isCompact_closedBall L 1
     have ht : dx (KPCubicUnitIndices.Integers L : Set L) = ⊤ :=
       hi.meas_eq_top ⟨dx {0}, h, fun x _ => (Measure.addHaar_singleton dx x).ge⟩
     exact hc.measure_lt_top.ne ht
   let _ : NullSingletonClass dx := ⟨fun x => (Measure.addHaar_singleton dx x).trans hz⟩
-  have hs : MeasurableSet {y : Lˣ | (y:L)^3+(c:L)=0} := by
-    exact (isClosed_eq (Units.continuous_val.pow 3 |>.add continuous_const)
+  have hs : MeasurableSet {y : Lˣ | (y:L)^3+(c:L)=0} := 
+    (isClosed_eq (Units.continuous_val.pow 3 |>.add continuous_const)
       continuous_const).measurableSet
   unfold KPCubicHaar.multiplicativeHaar
   apply le_antisymm _ zero_le
@@ -63,7 +61,7 @@ private lemma shifted_roots_null_generic
       Measure.comap_apply_le _ _ hs.nullMeasurableSet
     _ = 0 := (hfin.image _).measure_zero _
 
-private lemma ordinary_hilbert_norm (c x : (LocalField F q)ˣ) :
+lemma ordinary_hilbert_norm (c x : (LocalField F q)ˣ) :
     ‖(KPExceptionalRaw.ordinaryIota F ζ hζ (KPHilbert.B3 F ζ hζ (Sum.inr q) c x) : ℂ)‖ = 1 := by
   let w := KPExceptionalRaw.ordinaryIota F ζ hζ (KPHilbert.B3 F ζ hζ (Sum.inr q) c x)
   have hpow : w^3=1 := by
@@ -77,7 +75,7 @@ private lemma ordinary_hilbert_norm (c x : (LocalField F q)ˣ) :
   change ‖(w:ℂ)‖=1
   exact (pow_eq_one_iff_of_nonneg (norm_nonneg (w:ℂ)) (by norm_num : (3:ℕ)≠0)).mp hn
 
-private lemma twisted_mellin_generic
+lemma twisted_mellin_generic
     (L : Type*) [Field L] [CharZero L] [ValuativeRel L] [TopologicalSpace L]
     [IsNonarchimedeanLocalField L] [MeasurableSpace L] [BorelSpace L]
     (dx : Measure L) [dx.IsAddHaarMeasure] (χ : Lˣ → ℂ)
@@ -103,7 +101,7 @@ private lemma twisted_mellin_generic
     congr 1
     rw [normPower, hab]
 
-private lemma actual_twisted_mellin_integrable
+lemma actual_twisted_mellin_integrable
     (dx : Measure (LocalField F q)) [dx.IsAddHaarMeasure]
     (c : (LocalField F q)ˣ) (φ : LocalField F q → ℂ)
     (hφ : IsLocallyConstant φ) (hcφ : HasCompactSupport φ)
@@ -118,12 +116,10 @@ private lemma actual_twisted_mellin_integrable
       (KPExceptionalRaw.ordinaryIota F ζ hζ (KPHilbert.B3 F ζ hζ (Sum.inr q) c x) : ℂ)) := by
     have he := (KPHilbert.B3_continuous F ζ hζ (Sum.inr q)).comp
       ((continuous_const : Continuous (fun _ : (LocalField F q)ˣ => c)).prodMk continuous_id)
-    have hι : Continuous (fun e : rootsOfUnity 3 F =>
-        (KPExceptionalRaw.ordinaryIota F ζ hζ e : ℂ)) := continuous_of_discreteTopology
-    exact hι.comp he
+    fun_prop
   exact twisted_mellin_generic (LocalField F q) dx _ hc
     (ordinary_hilbert_norm F ζ hζ q c) φ hφ hcφ ρ hρ
-private lemma shifted_tensor_skew
+lemma shifted_tensor_skew
     (L : Type*) [Field L] [CharZero L] [ValuativeRel L] [TopologicalSpace L]
     [IsNonarchimedeanLocalField L] [MeasurableSpace L] [BorelSpace L]
     (dx : Measure L) [dx.IsAddHaarMeasure]
@@ -175,7 +171,7 @@ private lemma shifted_tensor_skew
   exact integral_const_mul _ _
 
 open scoped Classical in
-private lemma shifted_unit_measurable
+lemma shifted_unit_measurable
     (L : Type*) [Field L] [MeasurableSpace L] [MeasurableSingletonClass L] [MeasurableAdd₂ L]
     [MeasurableMul₂ L] (c : Lˣ) :
     Measurable (fun y : Lˣ => if h : (y:L)^3+(c:L)=0 then (1:Lˣ) else
@@ -189,7 +185,7 @@ private lemma shifted_unit_measurable
     have he : (fun y : Lˣ => ((if h : (y:L)^3+(c:L)=0 then (1:Lˣ) else
       Units.mk0 ((y:L)^3+(c:L)) h):L)) =
       (fun y : Lˣ => if (y:L)^3+(c:L)=0 then 1 else (y:L)^3+(c:L)) := by
-      funext y; split_ifs <;> rfl
+      rfl
     rw [he]
     exact Measurable.ite (hg (measurableSet_singleton 0)) measurable_const hg
   rw [measurable_iff_comap_le] at hi ⊢
@@ -201,7 +197,7 @@ private lemma shifted_unit_measurable
   dsimp [Function.comp_def]
   split_ifs <;> rfl
 
-private lemma shifted_fiber_formula
+lemma shifted_fiber_formula
     (L : Type*) [Field L] [ValuativeRel L] [TopologicalSpace L]
     [IsNonarchimedeanLocalField L]
     (χ : Lˣ →* ℂˣ) (φ : L → ℂ) (t : ℂˣ) (ρ : ℂ)
@@ -232,7 +228,7 @@ private lemma shifted_fiber_formula
     KPCubicExpansion.omega L t y * normPower L x ρ) * he
 
 open scoped Classical in
-private lemma shifted_product_of_scalar_estimates
+lemma shifted_product_of_scalar_estimates
     (L : Type*) [Field L] [CharZero L] [ValuativeRel L] [TopologicalSpace L]
     [IsNonarchimedeanLocalField L] [MeasurableSpace L] [BorelSpace L]
     (dx : Measure L) [dx.IsAddHaarMeasure]
@@ -292,11 +288,10 @@ private lemma shifted_product_of_scalar_estimates
     apply integral_congr_ae
     filter_upwards [hr] with y hy
     apply integral_congr_ae
-    filter_upwards [] with x
-    exact hform x y hy
+    simp_all
 
 open scoped Classical in
-private lemma actual_shifted_product
+lemma actual_shifted_product
     (dx : Measure (LocalField F q)) [dx.IsAddHaarMeasure]
     (c : (LocalField F q)ˣ) (φ : LocalField F q → ℂ)
     (hφ : IsLocallyConstant φ) (hcφ : HasCompactSupport φ)
@@ -329,14 +324,14 @@ private lemma actual_shifted_product
     (actual_twisted_mellin_integrable F ζ hζ q dx c φ hφ hcφ ρ hcone.1)
     (actual_shifted_beta_integrable F q dx c t ρ hcone)
 
-private lemma units_borel_generic (L : Type*) [Field L] [TopologicalSpace L]
+lemma units_borel_generic (L : Type*) [Field L] [TopologicalSpace L]
     [MeasurableSpace L] [BorelSpace L] [ContinuousInv₀ L] : BorelSpace Lˣ := by
   constructor
   unfold Units.instMeasurableSpace
   rw [@BorelSpace.measurable_eq L _ _ _, ← borel_comap,
     ← Units.isEmbedding_val₀.isInducing.eq_induced]
 
-private lemma cube_shear_integrable
+lemma cube_shear_integrable
     (L : Type*) [Field L] [CharZero L] [ValuativeRel L] [TopologicalSpace L]
     [IsNonarchimedeanLocalField L] [MeasurableSpace L] [BorelSpace L]
     (dx : Measure L) [dx.IsAddHaarMeasure]
@@ -425,9 +420,7 @@ private lemma sigww : KPLocalCover.sigmaTwo F ζ hζ (Sum.inr q)
 private lemma sigwnw (v : (LocalField F q)ˣ) : KPLocalCover.sigmaTwo F ζ hζ (Sum.inr q)
     ((KubotaRankTwo.w (LocalField F q))⁻¹ * KubotaRankTwo.n (LocalField F q) (-((v⁻¹ : (LocalField F q)ˣ) : LocalField F q)))
     (KubotaRankTwo.w (LocalField F q))⁻¹ = 1 := by
-  simp only [KPLocalCover.sigmaTwo, KubotaElementaryLastArgument.tau, Xwnw, KubotaRankTwo.X_mul_n,
-    Xwinv, map_mul, map_inv, KubotaRankTwo.det_n, KubotaRankTwo.det_w, inv_one, one_mul,
-    mul_one, one_pow]
+  simp only [KPLocalCover.sigmaTwo, KubotaElementaryLastArgument.tau, Xwnw, KubotaRankTwo.X_mul_n, Xwinv, map_mul, map_inv, KubotaRankTwo.det_n, KubotaRankTwo.det_w, inv_one, mul_one]
   have hr : (-v⁻¹) / (-1) = v⁻¹ := by simp
   rw [hr, (KPHilbert.B3_laws F ζ hζ (Sum.inr q)).2.2.2.2.2 v⁻¹ |>.1, BoneL]
   simp
@@ -460,9 +453,7 @@ private lemma sigdnw (v : (LocalField F q)ˣ) (s : LocalField F q) :
     KPLocalCover.sigmaTwo F ζ hζ (Sum.inr q)
       (KubotaRankTwo.d (LocalField F q) (v ^ 2) 1 * KubotaRankTwo.n (LocalField F q) s)
       (KubotaRankTwo.w (LocalField F q))⁻¹ = 1 := by
-  simp only [KPLocalCover.sigmaTwo, KubotaElementaryLastArgument.tau, Xdnw, KubotaRankTwo.X_mul_n,
-    KubotaRankTwo.X_d, Xwinv, map_mul, map_inv, KubotaRankTwo.det_n, KubotaRankTwo.det_w,
-    KubotaRankTwo.det_d, inv_one, mul_one, div_one, one_mul, one_pow]
+  simp only [KPLocalCover.sigmaTwo, KubotaElementaryLastArgument.tau, Xdnw, KubotaRankTwo.X_mul_n, KubotaRankTwo.X_d, Xwinv, map_mul, map_inv, KubotaRankTwo.det_n, KubotaRankTwo.det_w, KubotaRankTwo.det_d, inv_one, mul_one, div_one]
   rw [BnegL, BoneR]
   simp
 private lemma Xscalar (K : Type*) [Field K] (v : Kˣ) :
@@ -476,10 +467,8 @@ private lemma Xscalar_mul (K : Type*) [Field K] (v : Kˣ) (g : KubotaRankTwo.GL2
   simp only [KubotaRankTwo.X, Units.val_mk0, Units.val_mul]
   unfold KubotaRankTwo.x
   have he (i j : Fin 2) : (Matrix.GeneralLinearGroup.scalar (Fin 2) v * g) i j = (v : K) * g i j := by
-    fin_cases i <;> fin_cases j <;> simp [Matrix.mul_apply, Matrix.scalar]
-  rw [he 1 0, he 1 1]
-  simp only [mul_eq_zero, v.ne_zero, false_or]
-  split_ifs <;> rfl
+    simp
+  simp
 private lemma sigscalar (v : (LocalField F q)ˣ) (s : LocalField F q) :
     KPLocalCover.sigmaTwo F ζ hζ (Sum.inr q)
       (Matrix.GeneralLinearGroup.scalar (Fin 2) v⁻¹)
@@ -488,16 +477,12 @@ private lemma sigscalar (v : (LocalField F q)ˣ) (s : LocalField F q) :
   change KPLocalCover.sigmaTwo F ζ hζ (Sum.inr q)
     ((Matrix.GeneralLinearGroup.scalar (Fin 2)) v⁻¹) _ = 1
   unfold KPLocalCover.sigmaTwo KubotaElementaryLastArgument.tau
-  simp only [Xscalar_mul, Xscalar,
-    KubotaRankTwo.X_mul_n, Xdnw,
-    KubotaRankTwo.det,
-    Matrix.GeneralLinearGroup.det_scalar, Fintype.card_fin, inv_one, mul_one]
+  simp only [Xscalar_mul, Xscalar, KubotaRankTwo.X_mul_n, Xdnw, KubotaRankTwo.det, Matrix.GeneralLinearGroup.det_scalar, Fintype.card_fin]
   have h1 : v⁻¹ * (-1) / v⁻¹ = -1 := by simp
   rw [h1, BnegL]
   have hB : KPHilbert.B3 F ζ hζ (Sum.inr q) (v⁻¹ ^ 2) (v ^ 2) = 1 := by
     convert Bselfpow F ζ hζ q v (-2) 2 using 1 <;> simp
-  simp only [map_mul, map_inv, KubotaRankTwo.det_n, KubotaRankTwo.det_w,
-    KubotaRankTwo.det_d, inv_one, mul_one, ← inv_pow, hB, one_pow]
+  simp only [map_mul, map_inv, KubotaRankTwo.det_n, KubotaRankTwo.det_w, KubotaRankTwo.det_d, inv_one, mul_one, hB, one_pow]
 private lemma kappa_eq_one (v : (LocalField F q)ˣ) (s : LocalField F q) : kappa F ζ hζ q v s = 1 := by
   rw [kappa, bruhatLeft, bruhatRight, signedWeyl_eq_prescribed_signed]
   have he : ∀ x : (LocalField F q)ˣ,
@@ -508,15 +493,13 @@ private lemma kappa_eq_one (v : (LocalField F q)ˣ) (s : LocalField F q) : kappa
     KPLocalCover.inv_g, KPStandardLocalRootLifts.signedW, KPStandardLocalRootLifts.N,
     KPStandardLocalRootLifts.A, he, hg,
     KPLocalCover.sectionMap_epsilon, KPLocalCover.sectionMap_g]
-  simp only [sigww F ζ hζ q, sigmanR F ζ hζ q, sigwnw F ζ hζ q,
-    sigdnw F ζ hζ q, sigscalar F ζ hζ q, one_mul, mul_one,
-    inv_one, div_one]
+  simp only [sigww F ζ hζ q, sigmanR F ζ hζ q, sigwnw F ζ hζ q, sigdnw F ζ hζ q, sigscalar F ζ hζ q, mul_one, inv_one, div_one]
 
 private lemma center_lc {H₀ D : Type} [Group H₀] [TopologicalSpace H₀] [IsTopologicalGroup H₀]
     [CommGroup D] [Finite D] (T : LocalHeisenbergData H₀ D) (f : CenterModule T) : IsLocallyConstant f.val := by
  let J : Subgroup H₀ := T.ω.toMonoidHom.ker.map T.C.subtype
- have hJ : IsOpen (J : Set H₀) := by
-   exact T.center_open.isOpenMap_subtype_val _ T.character_kernel_open
+ have hJ : IsOpen (J : Set H₀) := 
+   T.center_open.isOpenMap_subtype_val _ T.character_kernel_open
  rw [IsLocallyConstant.iff_eventually_eq]
  intro h
  have hc : Continuous (fun y : H₀ => y * h⁻¹) := continuous_id.mul continuous_const
@@ -526,9 +509,7 @@ private lemma center_lc {H₀ D : Type} [Group H₀] [TopologicalSpace H₀] [Is
  obtain ⟨c, hc, he⟩ := hy
  have hw : T.ω c = 1 := hc
  have hf := f.property c h
- change (c : H₀) = y * h⁻¹ at he
- have hey : (c : H₀) * h = y := by rw [he]; group
- simpa [hey, hw] using hf
+ simp_all
 
 private lemma root_cont {H₀ D : Type} [Group H₀] [TopologicalSpace H₀] [IsTopologicalGroup H₀]
     [CommGroup D] [Finite D] (T : LocalHeisenbergData H₀ D)
@@ -545,7 +526,7 @@ private lemma root_cont {H₀ D : Type} [Group H₀] [TopologicalSpace H₀] [Is
    funext v; exact (A.retract_torus _).symm
  rw [he]
  exact A.retract_continuous.comp ht
-private lemma normPower_cont_units
+lemma normPower_cont_units
     (L : Type*) [Field L] [CharZero L] [ValuativeRel L] [TopologicalSpace L]
     [IsNonarchimedeanLocalField L] [MeasurableSpace L] [BorelSpace L] (ρ : ℂ) : Continuous (fun x : Lˣ => normPower L x ρ) := by
   have hab (x : Lˣ) : KPCubicHaar.abs L (x:L) = localAbs L x := by
@@ -588,7 +569,7 @@ private lemma raw_kernel_continuous
   rw [he]
   exact (hn1.mul hn2).mul (hf.mul hc) |>.mul hn3
 
-private theorem actual_iterated_kernel
+theorem actual_iterated_kernel
     (S : ActualKPBinding F ζ hζ q) (P : Polarization S.heisenberg)
     [DecidableEq S.D]
     (dx : Measure (LocalField F q)) [dx.IsAddHaarMeasure]
@@ -613,7 +594,7 @@ private theorem actual_iterated_kernel
     apply Subtype.val_injective
     rw [← S.torus_full, (S.openCell P).central_eq, S.central_actual]
   have hm : ∀ e, (S.openCell P).centralTorus e ∈ S.heisenberg.C := by
-    intro e; rw [he]; exact (S.central e).property
+    intro e; rw [he]; simp
   have hc : ∀ e, S.heisenberg.ω ⟨(S.openCell P).centralTorus e, hm e⟩ =
       (S.openCell P).eta e := by
     intro e
@@ -730,7 +711,7 @@ theorem actual_full_H_joint_factorization
     let T := fun (c : (LocalField F q)ˣ) (xy : (LocalField F q)ˣ×(LocalField F q)ˣ) =>
       (xy.1*xy.2^3,c*xy.1)
     have hT (c : (LocalField F q)ˣ) : Measurable (T c) := by
-      dsimp [T]; fun_prop
+      fun_prop
     have hcomp (c : (LocalField F q)ˣ) :
         (fun xy => f (T c xy)) = (fun xy => normPower (LocalField F q) c ρ * U c h * g c xy) := by
       funext xy
@@ -738,14 +719,13 @@ theorem actual_full_H_joint_factorization
         rep hrep d φ s ρ h xy.1 (c*xy.1) xy.2 1 := by
         dsimp [f,T,doubleKernel,reverseIncrement,sourceTranslation]
         simp
-      rw [he,hpoint]
-      simp [U,g,div_eq_mul_inv,mul_assoc]
+      simp_all
     have hc : Continuous f := raw_kernel_continuous F ζ hζ q S P rep hrep d φ hφ s ρ h
     have hmapint (c : (LocalField F q)ˣ) : Integrable f (Measure.map (T c) (μ.prod μ)) := by
       apply (integrable_map_measure hc.aestronglyMeasurable (hT c).aemeasurable).mpr
       change Integrable (fun xy => f (T c xy)) _
       rw [hcomp]
-      exact (hg c).const_mul _
+      fun_prop
     have hpush := actual_cube_ratio_pushforward F q dx κ hκ cRep hcRep
     change μ.prod μ = ENNReal.ofReal (KPCubicHaar.abs (LocalField F q) 3/3) •
       ∑ k, Measure.map (T (cRep k)) (μ.prod μ) at hpush
@@ -767,8 +747,4 @@ theorem actual_full_H_joint_factorization
       rw [(actual_shifted_product F ζ hζ q dx (cRep k) φ hφ hcφ t ρ hcone).2]
       dsimp [U]
       ring
-    · intro k hk
-      exact hmapint (cRep k)
-
-end
-end DedekindZetaZeroFree.KPActualFullKernelArithmetic
+    fun_prop

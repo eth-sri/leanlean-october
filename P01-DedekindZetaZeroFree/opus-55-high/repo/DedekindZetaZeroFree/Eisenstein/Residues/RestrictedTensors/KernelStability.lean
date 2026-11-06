@@ -27,7 +27,7 @@ local notation "A" => actualLocalAlgebra R H
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1200000
 
-private theorem tensorSlot_add {ι : Type*} [Fintype ι] [DecidableEq ι]
+theorem tensorSlot_add {ι : Type*} [Fintype ι] [DecidableEq ι]
     {V : ι → Type*} [∀ i, AddCommGroup (V i)] [∀ i, Module ℂ (V i)]
     (i : ι) (a b : Module.End ℂ (V i)) :
     tensorSlot i (a+b) = tensorSlot i a + tensorSlot i b := by
@@ -37,7 +37,7 @@ private theorem tensorSlot_add {ι : Type*} [Fintype ι] [DecidableEq ι]
   simp only [LinearMap.compMultilinearMap_apply, LinearMap.add_apply, tensorSlot_tprod]
   exact (PiTensorProduct.tprod ℂ).map_update_add x i (a (x i)) (b (x i))
 
-private theorem tensorSlot_smul_id {ι : Type*} [Fintype ι] [DecidableEq ι]
+theorem tensorSlot_smul_id {ι : Type*} [Fintype ι] [DecidableEq ι]
     {V : ι → Type*} [∀ i, AddCommGroup (V i)] [∀ i, Module ℂ (V i)]
     (i : ι) (c : ℂ) :
     tensorSlot i (c • (LinearMap.id : Module.End ℂ (V i))) = c • LinearMap.id := by
@@ -58,7 +58,7 @@ theorem actualCoreResidue_generator_zero (N : TraceHaarTransport R)
   rw [actualCoreResidue_stage_generator, hx]
   cases b <;> funext g <;> simp [stageScalarGenerator, KPLiteralRaw.rightAction, actualRight]
 
-private theorem stage_kernel_algebra (N : TraceHaarTransport R)
+theorem stage_kernel_algebra (N : TraceHaarTransport R)
     (s : RestrictedTensorSimple.Level E) (j : s.val) (a : A j.val)
     (x : RestrictedTensorSimple.Stage W s.val)
     (hx : actualCoreResidue R P C μ hμ N (RestrictedTensorSimple.stageInclusion W e E s x) = 0) :

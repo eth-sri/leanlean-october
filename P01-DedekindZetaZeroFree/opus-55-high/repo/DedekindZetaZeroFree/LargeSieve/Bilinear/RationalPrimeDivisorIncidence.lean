@@ -8,14 +8,13 @@ namespace DedekindZetaZeroFree.LargeSieve.Sieve
 
 open scoped NumberField Classical
 
-private theorem prod_dvd_of_pairwise_coprime {ι : Type*} (t : Finset ι) (f : ι → ℕ) (n : ℕ)
+theorem prod_dvd_of_pairwise_coprime {ι : Type*} (t : Finset ι) (f : ι → ℕ) (n : ℕ)
     (hcop : ∀ i ∈ t, ∀ j ∈ t, i ≠ j → Nat.Coprime (f i) (f j))
     (hdvd : ∀ i ∈ t, f i ∣ n) : (∏ i ∈ t, f i) ∣ n := by
   classical
   revert hcop hdvd
   refine Finset.induction_on t ?_ ?_
-  · intro _ _
-    simp
+  · simp
   · intro a s ha ih hcop hdvd
     rw [Finset.prod_insert ha]
     refine Nat.Coprime.mul_dvd_of_dvd_of_dvd ?_ (hdvd a (Finset.mem_insert_self a s)) ?_
@@ -43,9 +42,7 @@ theorem exists_rationalBertrand_sequence (x : ℝ) (hx : 2 ≤ x)
       have hx1 : (1 : ℝ) ≤ x := by linarith
       nlinarith
     have hfloor : ⌊(2 : ℝ) ^ (i : ℕ) * x⌋₊ ≠ 0 := by
-      have : 1 ≤ ⌊(2 : ℝ) ^ (i : ℕ) * x⌋₊ :=
-          Nat.le_floor (show ((1 : ℕ) : ℝ) ≤ (2 : ℝ) ^ (i : ℕ) * x by exact_mod_cast hge)
-      omega
+      simp_all
     obtain ⟨q, hqp, hqgt, hqle⟩ :=
       Nat.exists_prime_lt_and_le_two_mul ⌊(2 : ℝ) ^ (i : ℕ) * x⌋₊ hfloor
     refine ⟨q, hqp, ?_, ?_⟩
@@ -90,10 +87,10 @@ theorem rationalPrime_divisor_incidence {ι : Type*} (S : Finset ι)
     ((S.filter (fun i => p i ∣ n)).card : ℝ) ≤ d / δ := by
   classical
   set T : Finset ι := S.filter (fun i => p i ∣ n) with hT
-  have hTS : T ⊆ S := by rw [hT]; exact Finset.filter_subset _ _
-  have hprime : ∀ i ∈ T, (p i).Prime := fun i hi => (hp i (hTS hi)).1
-  have hlarge : ∀ i ∈ T, Z ^ (δ / d) < (p i : ℝ) := fun i hi => (hp i (hTS hi)).2
-  have hdvd : ∀ i ∈ T, p i ∣ n := fun i hi => (Finset.mem_filter.mp hi).2
+  have hTS : T ⊆ S := by simp_all
+  have hprime : ∀ i ∈ T, (p i).Prime := by simp_all
+  have hlarge : ∀ i ∈ T, Z ^ (δ / d) < (p i : ℝ) := by simp_all
+  have hdvd : ∀ i ∈ T, p i ∣ n := by simp_all
 
   have hprod_dvd : (∏ i ∈ T, p i) ∣ n := by
     refine prod_dvd_of_pairwise_coprime T p n ?_ hdvd
@@ -134,5 +131,3 @@ theorem rationalPrime_divisor_incidence {ι : Type*} (S : Finset ι)
   calc (T.card : ℝ) = (δ / d) * (T.card : ℝ) * (d / δ) := hcard_eq
     _ ≤ 1 * (d / δ) := mul_le_mul_of_nonneg_right hle (by positivity)
     _ = d / δ := one_mul _
-
-end DedekindZetaZeroFree.LargeSieve.Sieve

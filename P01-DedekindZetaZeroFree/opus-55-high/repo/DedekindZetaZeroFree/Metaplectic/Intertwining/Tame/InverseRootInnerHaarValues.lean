@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.RootLevelMassPositivity
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.TameInverseRootValueAudit
 
 open scoped NumberField Classical
@@ -53,7 +52,7 @@ theorem eventual_inverse_root_inner_haar_value
   refine ⟨max M 1, ?_⟩
   intro m hm i f hf u
   have hmM : M ≤ m := (le_max_left _ _).trans hm
-  have hmpos : 0 < m := lt_of_lt_of_le Nat.zero_lt_one ((le_max_right _ _).trans hm)
+  have hmpos : 0 < m := by omega
   dsimp only
   let A : Set (LocalField F q) := (fun t : LocalField F q =>
     ((π ^ ((i.val : ℤ) + 1) : (LocalField F q)ˣ) : LocalField F q) /
@@ -98,8 +97,7 @@ theorem eventual_inverse_root_inner_haar_value
     have hr := isCompact_range (continuous_subtype_val :
       Continuous (fun x : ↥(valuation (LocalField F q)).integer => (x : LocalField F q)))
     convert hr using 1
-    ext x
-    exact ⟨fun hx => ⟨⟨x, hx⟩, rfl⟩, fun ⟨y, hy⟩ => hy ▸ y.property⟩
+    simp
   have hrootfin : μ (rootLevelSet F ζ hζ q m) ≠ ⊤ := by
     apply ne_of_lt
     apply lt_of_le_of_lt (b := μ ((valuation (LocalField F q)).integer : Set (LocalField F q)))
@@ -121,7 +119,3 @@ theorem eventual_inverse_root_inner_haar_value
     rw [show μ.real A = (μ A).toReal from rfl, hmass]
     simp only [Complex.real_smul, Complex.ofReal_mul, Complex.ofReal_zpow, Complex.ofReal_natCast]
     ring
-
-end DedekindZetaZeroFree.TameInverseRootValueAudit
-
-end

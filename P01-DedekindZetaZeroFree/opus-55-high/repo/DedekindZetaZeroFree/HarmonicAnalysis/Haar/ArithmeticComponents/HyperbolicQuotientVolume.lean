@@ -43,7 +43,7 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
     change Fintype.equivFin {v : NumberField.InfinitePlace F // v.IsComplex}
       ⟨KPCusp.complexPlace F i, _⟩ = i
     unfold KPCusp.complexPlace
-    convert (Fintype.equivFin {v : NumberField.InfinitePlace F // v.IsComplex}).apply_symm_apply i
+    simp
 
  def archEquiv : KPSmoothActualFlowData.GInfinity F ≃ₜ*
     KPCompactStabilizerHaarSources.G (KPCuspLogShape.dimension F) where
@@ -63,10 +63,6 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
   show KPArch.action (g (KPCusp.complexPlace F i)).out (0, 0) =
     (g (KPCusp.complexPlace F i)) • ((0, 0) : KPArch.H3)
   conv_rhs => rw [← Quotient.out_eq (g (KPCusp.complexPlace F i))]
-  change KPArch.action (Quotient.out (g (KPCusp.complexPlace F i))) (0, 0) =
-    Matrix.ProjGenLinGroup.mk (Quotient.out (g (KPCusp.complexPlace F i))) •
-      ((0, 0) : KPArch.H3)
-  rw [Matrix.ProjGenLinGroup.mk_smul KPArch.scalar_action]
   rfl
 
 include ζ hζ in
@@ -74,9 +70,9 @@ include ζ hζ in
   have he : archBasepoint F = fun g => archEquiv F ζ hζ g •
       KPCompactStabilizerHaarSources.o (KPCuspLogShape.dimension F) := funext (basepoint_eq F ζ hζ)
   rw [he]
-  exact (archEquiv F ζ hζ).continuous.smul continuous_const
+  fun_prop
 
-private lemma arch_pushforward (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ) :
+lemma arch_pushforward (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ) :
     ∃ c : ℝ≥0, 0 < c ∧ Measure.map (archBasepoint F) R.archHaar =
       (c : ℝ≥0∞) • KPArch.hyperbolicVolume (KPCuspLogShape.dimension F) := by
   letI := R.arch_isHaar
@@ -87,7 +83,7 @@ private lemma arch_pushforward (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ 
   refine ⟨c, hc, ?_⟩
   have hm : Measurable (fun g : KPCompactStabilizerHaarSources.G (KPCuspLogShape.dimension F) =>
       g • KPCompactStabilizerHaarSources.o (KPCuspLogShape.dimension F)) :=
-    (continuous_id.smul continuous_const).measurable
+    by fun_prop
   rw [Measure.map_map hm (show Measurable (fun g => e g) from e.continuous.measurable)] at hmap
   convert hmap using 1
   exact congrArg (fun f => Measure.map f R.archHaar) (funext (basepoint_eq F ζ hζ))
@@ -96,7 +92,7 @@ private lemma arch_pushforward (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ 
   (KPSmoothLocalQuotientCharts.archProjection F ζ hζ).comp
     ((KPRationalAdelicSplitting.rationalPGLHom F ζ hζ).comp (rationalEquiv F).toMonoidHom)
 
-private lemma rationalArch_mk (m : Matrix.GeneralLinearGroup (Fin 2) F)
+lemma rationalArch_mk (m : Matrix.GeneralLinearGroup (Fin 2) F)
     (w : NumberField.InfinitePlace F) :
     rationalArch F ζ hζ (Matrix.ProjGenLinGroup.mk m) w =
       Matrix.ProjGenLinGroup.mk (Matrix.GeneralLinearGroup.map w.embedding m) := by
@@ -180,8 +176,8 @@ theorem arch_group_domain_quotient_volume
   have hqmp : Measure.QuasiMeasurePreserving (archBasepoint F) R.archHaar
       (KPArch.hyperbolicVolume (KPCuspLogShape.dimension F)) :=
     ⟨hb, by rw [hpush]; exact Measure.smul_absolutelyContinuous⟩
-  have hD₀ : IsFundamentalDomain (Ga F ζ hζ hF U A i) D₀ R.archHaar := by
-    exact (A.cuspAtlas i).isFundamentalDomain.preimage_of_equiv hqmp
+  have hD₀ : IsFundamentalDomain (Ga F ζ hζ hF U A i) D₀ R.archHaar := 
+    (A.cuspAtlas i).isFundamentalDomain.preimage_of_equiv hqmp
       (subgroupEquiv F ζ hζ hF U A i).bijective
       (fun γ g => rationalArch_equivariant F ζ hζ γ g)
   have hp : Measurable (KPCuspSiegel.projection F (Gi F ζ hζ hF U A i)) :=
@@ -219,8 +215,3 @@ theorem arch_group_domain_quotient_volume
   rw [← Measure.restrict_map hb hE, hpush,
     Measure.restrict_smul, Measure.map_smul _ hp.aemeasurable]
   rfl
-
-end DedekindZetaZeroFree.KPActualComponentHaarSources
-
-end
-end

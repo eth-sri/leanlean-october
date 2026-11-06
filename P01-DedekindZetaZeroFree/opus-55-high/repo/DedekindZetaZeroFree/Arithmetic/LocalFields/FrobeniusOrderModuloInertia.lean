@@ -45,8 +45,7 @@ theorem frobeniusQuotientOrder
       Ideal.Quotient.mk Q a ^ Fintype.card ((𝓞 K) ⧸ P)
     have hQP : Q.under (𝓞 K) = P := hw.over.symm
     have h := hg.mk_apply a
-    rw [hQP, Nat.card_eq_fintype_card] at h
-    exact h
+    simp_all
   have horder : orderOf ((QuotientGroup.mk' (Ideal.inertia G Q)) g) =
       orderOf (φ d) := by
     apply orderOf_eq_orderOf_iff.mpr
@@ -56,7 +55,7 @@ theorem frobeniusQuotientOrder
     rw [QuotientGroup.eq_one_iff]
     change g ^ n ∈ Ideal.inertia G Q ↔ d ^ n ∈ φ.ker
     rw [Ideal.Quotient.ker_stabilizerHom]
-    exact Ideal.coe_mem_inertia (I := Q) (σ := d ^ n)
+    rfl
   constructor
   · change orderOf ((QuotientGroup.mk' (Ideal.inertia G Q)) g) = Q.inertiaDeg (𝓞 K)
     rw [horder, hφ, FiniteField.orderOf_frobeniusAlgEquivOfAlgebraic]
@@ -76,5 +75,3 @@ theorem frobeniusQuotientOrder
       _ = Nat.card (Ideal.inertia G Q) *
           ((IsDedekindDomain.primesOverFinset P (𝓞 L)).card * Q.inertiaDeg (𝓞 K)) := by
         simpa only [mul_assoc, mul_comm, mul_left_comm] using hcount.symm
-
-end DedekindZetaZeroFree.AbelianQuotient

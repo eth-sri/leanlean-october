@@ -9,7 +9,6 @@ open scoped NumberField Classical nonZeroDivisors
 open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree
 noncomputable section
-set_option autoImplicit false
 namespace SArithmeticData
 variable {F : Type} [Field F] [NumberField F]
 
@@ -18,8 +17,8 @@ abbrev FiniteSquareClasses (A : SArithmeticData F) :=
 
 def finiteSquareClass (A : SArithmeticData F) : A.G →* A.FiniteSquareClasses where
   toFun x v := ClassFieldTheory.powerClass (v.val.adicCompletion F) 2 (x.2 v)
-  map_one' := by ext v; exact map_one _
-  map_mul' := by intros; ext v; exact map_mul _ _ _
+  map_one' := by rfl
+  map_mul' := by intros; rfl
 
 def pi₂ (A : SArithmeticData F) : A.V →* A.FiniteSquareClasses :=
   QuotientGroup.lift A.sixthPowers A.finiteSquareClass (by
@@ -73,8 +72,8 @@ def exteriorFractional (A : SArithmeticData F) (I : A.Exterior) : A.ExteriorFrac
     exact hO.map (FractionalIdeal.extendedHom F A.R)).unit
 
 theorem exteriorFractional_val (A : SArithmeticData F) (I : A.Exterior) :
-    (A.exteriorFractional I : FractionalIdeal A.R⁰ F) = A.extendIdeal I := by
-  exact IsUnit.unit_spec _
+    (A.exteriorFractional I : FractionalIdeal A.R⁰ F) = A.extendIdeal I := 
+  IsUnit.unit_spec _
 
 namespace GeneralArithmeticContext
 variable {A : SArithmeticData F} {σ : F →+* ℂ}
@@ -96,7 +95,7 @@ def cls (C : A.GeneralArithmeticContext σ η hS)
   ⟨A.pi₂ (A.sClass (C.squareClsGenerator I)),
     ⟨A.sClass (C.squareClsGenerator I), (C.squareClsGenerator_spec I).2, rfl⟩⟩
 
-private theorem generator_class_independent (C : A.GeneralArithmeticContext σ η hS)
+theorem generator_class_independent (C : A.GeneralArithmeticContext σ η hS)
     (I : A.ExteriorFractional) (x : Fˣ)
     (hx : A.IsAllowedGenerator C.correction.B I.val x) :
     A.finiteSquareClass (A.diagonal (C.squareClsGenerator I)) =
@@ -128,8 +127,8 @@ theorem cls_mul (C : A.GeneralArithmeticContext σ η hS)
 theorem cls_allowed_generator (C : A.GeneralArithmeticContext σ η hS)
     (I : A.ExteriorFractional) (x : Fˣ)
     (hx : A.IsAllowedGenerator C.correction.B I.val x) :
-    (C.cls I).val = A.finiteSquareClass (A.diagonal x) := by
-  exact generator_class_independent C I x hx
+    (C.cls I).val = A.finiteSquareClass (A.diagonal x) := 
+  generator_class_independent C I x hx
 
 def integralCls (C : A.GeneralArithmeticContext σ η hS)
     (a : Ideal (𝓞 F)) : A.B₂ C.correction.B :=
@@ -152,7 +151,7 @@ theorem integralCls_top (C : A.GeneralArithmeticContext σ η hS) :
     rw [Ideal.map_top, FractionalIdeal.coeIdeal_top]
   rw [show (⊤ : Ideal (𝓞 F)) = T.val from rfl, C.integralCls_exterior, hT, C.cls_top]
 
-private theorem supported_coprime_exterior (A : SArithmeticData F)
+theorem supported_coprime_exterior (A : SArithmeticData F)
     (qS : Ideal (𝓞 F)) (hqS : qS ≠ ⊥)
     (hsupport : ∀ v : HeightOneSpectrum (𝓞 F), qS ≤ v.asIdeal ↔ v ∈ A.Sf)
     (a : Ideal (𝓞 F)) (ha : a ⊔ qS = ⊤) : a ≠ ⊥ ∧ a ⊔ A.cS = ⊤ := by
@@ -165,9 +164,7 @@ private theorem supported_coprime_exterior (A : SArithmeticData F)
   obtain ⟨p, hp, hle⟩ := Ideal.exists_le_maximal _ hsix
   have hp0 : p ≠ ⊥ := by
     intro hz
-    have h6 : (6 : 𝓞 F) ∈ p := hle (Ideal.mem_span_singleton_self _)
-    rw [hz, Ideal.mem_bot] at h6
-    norm_num at h6
+    simp_all
   let v : HeightOneSpectrum (𝓞 F) := ⟨p, hp.isPrime, hp0⟩
   have hv : v ∈ A.Sf := A.above_six v (hle (Ideal.mem_span_singleton_self _))
   have hqnot : qS ≠ ⊤ := by
@@ -177,8 +174,7 @@ private theorem supported_coprime_exterior (A : SArithmeticData F)
     exact hp.ne_top (top_unique hqv)
   have ha0 : a ≠ ⊥ := by
     intro he
-    rw [he, bot_sup_eq] at ha
-    exact hqnot ha
+    simp_all
   refine ⟨ha0, (A.exterior_iff ⟨a, ha0⟩).mpr ?_⟩
   intro w hw
   apply top_unique
@@ -215,11 +211,6 @@ theorem integralCls_mul_uniform (C : A.GeneralArithmeticContext σ η hS)
     (a b : Ideal (𝓞 F))
     (ha : a ⊔ uniformSquareUnitModulus A.Sf = ⊤)
     (hb : b ⊔ uniformSquareUnitModulus A.Sf = ⊤) :
-    C.integralCls (a * b) = C.integralCls a * C.integralCls b := by
-  exact C.integralCls_mul _ (uniformSquareUnitModulus_spec A.Sf).1
+    C.integralCls (a * b) = C.integralCls a * C.integralCls b := 
+  C.integralCls_mul _ (uniformSquareUnitModulus_spec A.Sf).1
     (uniformSquareUnitModulus_spec A.Sf).2.1 a b ha hb
-
-end GeneralArithmeticContext
-end SArithmeticData
-end
-end DedekindZetaZeroFree

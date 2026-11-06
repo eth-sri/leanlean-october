@@ -38,8 +38,7 @@ theorem rlogrBound_Λ₀ (P : _root_.WeakFEPair ℂ) (hk : P.k = 1)
   have hsecond := hg (1 - s) ‖s‖ (norm_nonneg _) (by
     simp only [Complex.sub_re, Complex.one_re]
     have := Complex.re_le_norm (-s)
-    simp only [Complex.neg_re, norm_neg] at this
-    linarith)
+    simp_all)
   simp only [sub_sub_cancel_left] at hsecond
   have hlog : 0 ≤ Real.log (2 + ‖s‖) := Real.log_nonneg (by
     have := norm_nonneg s
@@ -75,5 +74,3 @@ theorem orderOneBound_Λ₀ (P : _root_.WeakFEPair ℂ) (hk : P.k = 1)
       ‖P.Λ₀ s‖ ≤ C * Real.exp (Real.rpow ‖s‖ (1 + ε)) := by
   obtain ⟨C, K, hC, hK, hbound⟩ := rlogrBound_Λ₀ P hk hdecay
   exact orderOneBound_of_rlogr P.Λ₀ C K hC hK hbound
-
-end DedekindZetaZeroFree.Hecke.WeakFEPair

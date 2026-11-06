@@ -63,7 +63,3 @@ local instance (K : Subgroup (G F ζ hζ)) : BorelSpace K := ⟨rfl⟩
       simpa only [mul_assoc] using (hcoef j).mul_const ((b j).val g)
   rw [heq]
   exact Submodule.sum_mem _ (fun j _ => T.space.smul_mem _ (b j).property)
-
-end DedekindZetaZeroFree.KPLiteralTensor.KernelAndHCRange.CoreGeneration.ExactStageGeneration
-
-end

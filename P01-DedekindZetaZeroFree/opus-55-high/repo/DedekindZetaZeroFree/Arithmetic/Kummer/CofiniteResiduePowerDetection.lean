@@ -128,7 +128,6 @@ open LocalFieldTheory LocalFieldTheory.IsNonarchimedeanLocalField
 
 namespace DedekindZetaZeroFree.Detector.FrequencyCompletionResidue
 
-noncomputable section
 
 variable (F : Type) [Field F] [NumberField F]
 
@@ -147,8 +146,8 @@ theorem local_power_of_valuation_residue (n : ℕ+)
   letI : IsNonarchimedeanLocalField C := finitePlaceLocalArtinCompletionIsNonarchimedeanLocalField v
   let ν : Valuation C ℝ≥0 := Valued.v
   letI : ν.Compatible := Valuation.Compatible.ofValuation ν
-  have hnorm (x : F) : ‖algebraMap F C x‖ = a x := by
-    exact AbsoluteValue.completionAbsoluteValue_coe a x
+  have hnorm (x : F) : ‖algebraMap F C x‖ = a x := 
+    AbsoluteValue.completionAbsoluteValue_coe a x
   have hbnorm : ‖algebraMap F C (b : F)‖ = 1 := by
     rw [hnorm, HeightOneSpectrum.adicAbv_def, hb]
     simp
@@ -175,8 +174,8 @@ theorem local_power_of_valuation_residue (n : ℕ+)
     obtain ⟨ζ, hζ⟩ := hmu
     exact ⟨algebraMap F C ζ, (mem_primitiveRoots n.pos).mpr
       (((mem_primitiveRoots n.pos).mp hζ).map_of_injective (algebraMap F C).injective)⟩
-  have hcard : Nat.card 𝓀[C] = Ideal.absNorm v.asIdeal := by
-    exact finitePlaceCompletion_residueField_card v
+  have hcard : Nat.card 𝓀[C] = Ideal.absNorm v.asIdeal := 
+    finitePlaceCompletion_residueField_card v
   let k := (Ideal.absNorm v.asIdeal - 1) / (n : ℕ)
   have hu : integerUnitsToResidueUnits C u ^ k = 1 := by
     rw [← map_pow, integerUnitsToResidueUnits_eq_one_iff_mem_principalUnits_one, mem_principalUnits_iff, pow_one]
@@ -201,7 +200,6 @@ theorem local_power_of_valuation_residue (n : ℕ+)
   rw [h]
   exact e.commutes (b : F)
 
-end
 end DedekindZetaZeroFree.Detector.FrequencyCompletionResidue
 
 end
@@ -223,7 +221,7 @@ theorem valuation_unit_cofinite (x : Fˣ) :
   have ha0 : a ≠ 0 := by
     intro ha
     apply x.ne_zero
-    rw [← hab, ha, map_zero, zero_div]
+    simp_all
   have hA : Ideal.span {a} ≠ (0 : Ideal (𝓞 F)) := by
     intro h
     exact ha0 (Ideal.span_singleton_eq_bot.mp h)
@@ -239,13 +237,9 @@ theorem valuation_unit_cofinite (x : Fˣ) :
   apply hv
   rw [← hab, map_div₀]
   have hav : v.intValuation a = 1 := by
-    apply HeightOneSpectrum.intValuation_eq_one_iff.mpr
-    intro ha
-    exact h.1 ((Ideal.dvd_span_singleton).mpr ha)
+    simp_all
   have hbv : v.intValuation b = 1 := by
-    apply HeightOneSpectrum.intValuation_eq_one_iff.mpr
-    intro hb
-    exact h.2 ((Ideal.dvd_span_singleton).mpr hb)
+    simp_all
   rw [v.valuation_of_algebraMap, v.valuation_of_algebraMap, hav, hbv, div_one]
 
 theorem global_power_of_cofinite_residue (n : ℕ+)
@@ -262,7 +256,3 @@ theorem global_power_of_cofinite_residue (n : ℕ+)
     exact FrequencyCompletionResidue.local_power_of_valuation_residue F n hmu v b hbv hnv hrv
   exact FrequencyLocalPower.global_power_of_cofinite_local_power F n hn hmu b
     (Filter.eventually_cofinite.mp hp)
-
-end DedekindZetaZeroFree.Detector.FrequencyDetection
-
-end

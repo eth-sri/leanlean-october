@@ -94,7 +94,3 @@ def comparisonSmooth :
       KPGlobalResidualConstruction.smoothRationalFiber F R.A.zeta12 R.A.primitive_zeta12 :=
   (productUnitaryToRational F R.A.zeta12 R.A.primitive_zeta12 P).comp
     ((finiteTensorMap R P C).comp (finiteCoreEquiv R P C).toLinearMap)
-
-end DedekindZetaZeroFree.FourierContinuation.FaithfulSource.RepairedInducing
-
-end

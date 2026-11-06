@@ -31,7 +31,7 @@ private theorem sum_symm (x : realSpace F) :
   simp
  def weighted (h : RayCoset.logHyperplane F) : realSpace F :=
   fun v => (v.mult : ℝ) * h.val v
-private theorem sum_weighted (h : RayCoset.logHyperplane F) : ∑ v, weighted F h v = 0 := by
+theorem sum_weighted (h : RayCoset.logHyperplane F) : ∑ v, weighted F h v = 0 := by
   simpa [weighted, RayCoset.logHyperplane, RayCoset.weightedLogSum] using h.property
 private theorem coord_zero (h : RayCoset.logHyperplane F) :
     (completeBasis F).equivFun (weighted F h) w₀ = 0 := by
@@ -43,11 +43,11 @@ private theorem coord_zero (h : RayCoset.logHyperplane F) :
   map_add' h g := by
     have he : weighted F (h+g) = weighted F h + weighted F g := by ext v; simp [weighted, mul_add]
     ext v
-    simp only [he, map_add, Pi.add_apply]
+    simp_all
   map_smul' r h := by
     have he : weighted F (r • h) = r • weighted F h := by ext v; simp [weighted, mul_left_comm]
     ext v
-    simp only [he, map_smul, Pi.smul_apply, RingHom.id_apply]
+    simp_all
 private theorem lift_coordMap (h : RayCoset.logHyperplane F) :
     Theta.angularLift F (coordMap F h) = (completeBasis F).equivFun (weighted F h) := by
   classical
@@ -74,7 +74,7 @@ private theorem lift_coordMap (h : RayCoset.logHyperplane F) :
     refine ⟨⟨h, hm⟩, ?_⟩
     have hw : weighted F ⟨h, hm⟩ = (completeBasis F).equivFun.symm (Theta.angularLift F u) := by
       ext v
-      simp [weighted, h, mul_div_cancel₀, mult_coe_ne_zero]
+      simp [weighted, h, mul_div_cancel₀]
     ext v
     change (completeBasis F).equivFun (weighted F ⟨h, hm⟩) v = u v
     rw [hw, LinearEquiv.apply_symm_apply]
@@ -143,24 +143,20 @@ namespace DedekindZetaZeroFree.Hecke.Theta
 variable (F : Type) [Field F] [NumberField F]
 
 def logAngularEquiv : RayCoset.logHyperplane F ≃L[ℝ]
-    DedekindZetaZeroFree.AbelianQuotient.Theta.Angular F := by
-  exact Bridge.equiv F
+    DedekindZetaZeroFree.AbelianQuotient.Theta.Angular F := 
+  Bridge.equiv F
 
 theorem centeredLogIdealTheta_eq_mixedRadialTheta
     (I : (FractionalIdeal (𝓞 F)⁰ F)ˣ) (t : ℝ) (ht : 0 < t)
     (h : RayCoset.logHyperplane F) :
     centeredLogIdealTheta F I t h =
       DedekindZetaZeroFree.AbelianQuotient.Theta.mixedRadialTheta F I t
-        (logAngularEquiv F h) := by
-  exact Bridge.theta_eq F I t ht h
+        (logAngularEquiv F h) := 
+  Bridge.theta_eq F I t ht h
 
 theorem centeredLogIdealTheta_rayUnit_periodic
     (I : (FractionalIdeal (𝓞 F)⁰ F)ˣ) (t : ℝ) (ht : 0 < t)
     (γ : RayCoset.rayUnitLogLattice F ⊤) (h : RayCoset.logHyperplane F) :
     centeredLogIdealTheta F I t (h + (γ : RayCoset.logHyperplane F)) =
-      centeredLogIdealTheta F I t h := by
-  exact Bridge.periodic F I t ht γ h
-
-end DedekindZetaZeroFree.Hecke.Theta
-
-end
+      centeredLogIdealTheta F I t h := 
+  Bridge.periodic F I t ht γ h

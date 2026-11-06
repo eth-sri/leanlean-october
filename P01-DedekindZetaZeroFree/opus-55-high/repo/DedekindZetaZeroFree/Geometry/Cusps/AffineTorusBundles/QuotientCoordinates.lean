@@ -67,8 +67,8 @@ abbrev HighQuotient (F : Type*) [Field F] [NumberField F]
 @[instance_reducible] def homeomorphAction {G X : Type*} [Group G] [TopologicalSpace X]
     (β : G →* (X ≃ₜ X)) : MulAction G X where
   smul g x := β g x
-  one_smul x := by change (β 1) x = x; rw [map_one]; rfl
-  mul_smul g h x := by change (β (g * h)) x = (β g) ((β h) x); rw [map_mul]; rfl
+  one_smul x := by change (β 1) x = x; simp
+  mul_smul g h x := by change (β (g * h)) x = (β g) ((β h) x); simp
 
 abbrev AffineOrbit {G X : Type*} [Group G] [TopologicalSpace X]
     (β : G →* (X ≃ₜ X)) :=
@@ -81,14 +81,9 @@ def kernelUnits (F : Type*) [Field F] [NumberField F]
   carrier := {u | KPCuspLogShape.logarithm F hF E hE (Additive.ofMul u) = 0}
   one_mem' := by simp
   mul_mem' := by
-    intro a b ha hb
-    change KPCuspLogShape.logarithm F hF E hE
-      (Additive.ofMul a + Additive.ofMul b) = 0
-    rw [map_add, ha, hb, add_zero]
+    simp_all
   inv_mem' := by
-    intro a ha
-    change KPCuspLogShape.logarithm F hF E hE (-Additive.ofMul a) = 0
-    rw [map_neg, ha, neg_zero]
+    simp
 
 abbrev CoarseFiber (F : Type*) [Field F] [NumberField F]
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
@@ -256,8 +251,3 @@ structure RadialData (F : Type*) [Field F] [NumberField F]
       (Measure.comap (Subtype.val : {p : Coordinates F // T < p.2} → Coordinates F)
         (((volume.prod V.shapeMeasure).prod (radialMeasure (KPCuspLogShape.dimension F))).restrict
           {p : Coordinates F | p.1 ∈ V.fundamentalDomain}))
-
-end KPCuspChart
-end DedekindZetaZeroFree
-
-end

@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Positive global units are local squares at real places
 
@@ -26,7 +22,6 @@ infinite-place Hilbert-symbol comparison.
 open scoped Classical NumberField
 open NumberField
 
-noncomputable section
 
 namespace GlobalClassFieldTheory
 namespace Reciprocity
@@ -42,14 +37,7 @@ theorem realInfinitePlace_globalUnit_realCoordinate
         (Units.map (algebraMap K v.Completion).toMonoidHom b :
           v.Completionˣ) =
       InfinitePlace.embedding_of_isReal hv (b : K) := by
-  change
-    InfinitePlace.Completion.ringEquivRealOfIsReal hv
-        (algebraMap K v.Completion (b : K)) =
-      InfinitePlace.embedding_of_isReal hv (b : K)
-  rw [InfinitePlace.Completion.ringEquivRealOfIsReal_apply]
-  rw [InfinitePlace.Completion.algebraMap_apply]
-  rw [InfinitePlace.Completion.extensionEmbeddingOfIsReal_coe]
-  simp only [WithAbs.equiv_apply]
+  simp
 
 omit [NumberField K] in
 /-- A global unit whose image at a real infinite place is positive becomes a
@@ -66,8 +54,8 @@ theorem realInfinitePlace_globalUnit_mem_squareSubgroup_of_pos
   let b_v : v.Completionˣ :=
     Units.map (algebraMap K v.Completion).toMonoidHom b
   have hcoord :
-      (eU b_v : ℝ) = InfinitePlace.embedding_of_isReal hv (b : K) := by
-    exact realInfinitePlace_globalUnit_realCoordinate K v hv b
+      (eU b_v : ℝ) = InfinitePlace.embedding_of_isReal hv (b : K) := 
+    realInfinitePlace_globalUnit_realCoordinate K v hv b
   have hpos : 0 < (eU b_v : ℝ) := by
     rw [hcoord]
     exact hb
@@ -85,8 +73,3 @@ theorem realInfinitePlace_globalUnit_mem_squareSubgroup_of_pos
       apply Units.ext
       change Real.sqrt (eU b_v : ℝ) ^ 2 = (eU b_v : ℝ)
       exact Real.sq_sqrt hpos.le
-
-end Reciprocity
-end GlobalClassFieldTheory
-
-end

@@ -467,32 +467,9 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
 open KPAdelicCoverRestrictedProduct
 
 theorem fullCusp_isClosed_ordinaryBorel :
-    IsClosed (KPGlobalTorusFunctionData.ordinaryBorel F : Set (AdelicPGL2 F)) := by
-  letI : IsTopologicalGroup (AdelicGL2 F) := inferInstance
-  rw [← (QuotientGroup.isQuotientMap_mk (scalarSubgroup F)).isClosed_preimage]
-  have he : (QuotientGroup.mk (s := scalarSubgroup F)) ⁻¹'
-      (KPGlobalTorusFunctionData.ordinaryBorel F : Set (AdelicPGL2 F)) =
-      {A : AdelicGL2 F | A 1 0 = 0} := by
-    ext A
-    constructor
-    · rintro ⟨B,hB,h10⟩
-      have hm := QuotientGroup.eq.mp hB
-      obtain ⟨z,hz⟩ := hm
-      have he : A = B * Matrix.GeneralLinearGroup.scalar (Fin 2) z := by
-        change Matrix.GeneralLinearGroup.scalar (Fin 2) z = B⁻¹ * A at hz
-        rw [hz]
-        group
-      rw [he]
-      simp [Units.val_mul, Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_apply,
-        Fin.sum_univ_two, Matrix.scalar, h10]
-    · intro h
-      exact ⟨A,rfl,h⟩
-  rw [he]
-  exact isClosed_eq (by fun_prop) continuous_const
+    IsClosed (KPGlobalTorusFunctionData.ordinaryBorel F : Set (AdelicPGL2 F)) := by apply DedekindZetaZeroFree.KPMsResidualTailRestoration.OutgoingTailL2.CoordinateDescent.fullCusp_isClosed_ordinaryBorel <;> assumption
 theorem fullCusp_isClosed_borel :
-    IsClosed (KPGlobalTorusFunctionData.borel F ζ hζ : Set (KPGlobalTorusFunctionData.G F ζ hζ)) := by
-  exact (fullCusp_isClosed_ordinaryBorel F).preimage
-    (KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover F ζ hζ).2.2.2.continuous
+    IsClosed (KPGlobalTorusFunctionData.borel F ζ hζ : Set (KPGlobalTorusFunctionData.G F ζ hζ)) := by apply DedekindZetaZeroFree.KPMsResidualTailRestoration.OutgoingTailL2.CoordinateDescent.fullCusp_isClosed_borel <;> assumption
 
 theorem fullCusp_iwasawaNorm_continuous_of_borel
     (D : KPGlobalTorusBorelNormTwistTransport.IwasawaData F ζ hζ)
@@ -676,8 +653,8 @@ theorem fullCusp_iwasawaNorm_continuous
     (fullCusp_iwasawaNorm_continuousOn_borel F ζ hζ D)
 
 end DedekindZetaZeroFree.KPGlobalTorusBorelNormTwistTransport.IwasawaTransport.NormContinuity
-open scoped NumberField Classical NNReal BigOperators
 open NumberField MeasureTheory
+open scoped NumberField Classical NNReal BigOperators
 namespace DedekindZetaZeroFree.KPGlobalTorusBorelNormTwistTransport.IwasawaTransport.DoubleAverage
 noncomputable section
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)

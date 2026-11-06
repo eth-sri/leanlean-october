@@ -16,8 +16,8 @@ variable {F : Type} [Field F] [NumberField F] (A : SArithmeticData F)
 variable (p : KPFinitePlace F) (hp : p ∉ A.Sf)
 local instance : ValuativeRel (p.adicCompletion F) := ClassFieldTheory.finitePlaceCompletionValuativeRel F p
 local instance : (Valued.v : Valuation (p.adicCompletion F) (WithZero (Multiplicative ℤ))).Compatible := Valuation.Compatible.ofValuation _
- lemma vmap (x : F) : Valued.v (algebraMap F (p.adicCompletion F) x) = p.valuation F x := by
-  exact p.valuedAdicCompletion_eq_valuation' x
+ lemma vmap (x : F) : Valued.v (algebraMap F (p.adicCompletion F) x) = p.valuation F x := 
+  p.valuedAdicCompletion_eq_valuation' x
  lemma memO (x : p.adicCompletion F) : x ∈ KPTameCompact.O F p ↔ Valued.v x ≤ 1 := by
   change ValuativeRel.valuation (p.adicCompletion F) x ≤ 1 ↔ _
   exact (ValuativeRel.isEquiv _ _).le_one_iff_le_one
@@ -28,9 +28,8 @@ lemma loc_val (x : A.R) : ((loc A p hp x : KPTameCompact.O F p) : p.adicCompleti
     algebraMap F (p.adicCompletion F) (x : F) := rfl
 lemma loc_int (x : 𝓞 F) : ((loc A p hp (algebraMap (𝓞 F) A.R x) : KPTameCompact.O F p) : p.adicCompletion F) =
     algebraMap (𝓞 F) (p.adicCompletion F) x := by
-  change algebraMap F _ (algebraMap (𝓞 F) F x) = _
-  exact (IsScalarTower.algebraMap_apply _ _ _ x).symm
-private lemma loc_prime (x : 𝓞 F) (hx : x ∈ p.asIdeal) :
+  rfl
+lemma loc_prime (x : 𝓞 F) (hx : x ∈ p.asIdeal) :
     loc A p hp (algebraMap (𝓞 F) A.R x) ∈ KPTameCompact.p F p := by
   rw [KPTameCompact.p, KPLocalCube.maximalIdeal, IsLocalRing.mem_maximalIdeal]
   change ¬ IsUnit _
@@ -65,9 +64,3 @@ lemma digit_diff (u : A.U) (P : Finset (KPFinitePlace F)) (hP : ∀ q ∈ P, q �
     (↑(ThetaDigitDescent.residueSixthUnit A q.val (hP _ q.property) u) * v q) - _ = 0
   rw [map_mul]
   simp [ThetaDigitDescent.residueSixthUnit]
-
-end ArithmeticCongruence
-
-end DedekindZetaZeroFree.ThetaForwardQuotientMeasurability.MatrixConstruction
-
-end

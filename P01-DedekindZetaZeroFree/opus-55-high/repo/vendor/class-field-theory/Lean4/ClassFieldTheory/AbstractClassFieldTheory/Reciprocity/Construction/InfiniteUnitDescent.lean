@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 universe u v
 
 namespace ClassFormation
@@ -42,7 +38,7 @@ namespace FiniteIntermediateField
 
 /-- The canonical finite-field extension bundle carried by a finite
 intermediate field over a bundled finite base. -/
-noncomputable def toFiniteAbstractFieldExtension
+def toFiniteAbstractFieldExtension
     {E : ClosedSubgroup G} (K : FiniteAbstractField G)
     (M : FiniteIntermediateField E K.field) :
     FiniteAbstractFieldExtension G := by
@@ -52,7 +48,7 @@ noncomputable def toFiniteAbstractFieldExtension
   exact FiniteAbstractFieldExtension.ofInclusion M.field K M.below
 
 /-- The upper endpoint of the canonical finite-field extension bundle. -/
-noncomputable def toFiniteAbstractField
+def toFiniteAbstractField
     {E : ClosedSubgroup G} (K : FiniteAbstractField G)
     (M : FiniteIntermediateField E K.field) : FiniteAbstractField G :=
   (M.toFiniteAbstractFieldExtension K).field
@@ -157,7 +153,7 @@ def IsFiniteStageUnit
       fixedFieldInclusion A M.field E M.above u.1 = a
 
 /-- The actual finite-stage unit group `U_E` inside `A_E`. -/
-noncomputable def infiniteUnitAddSubgroup
+def infiniteUnitAddSubgroup
     (v : ValuationData D A) (E : ClosedSubgroup G)
     (K : FiniteAbstractField G)
     (hEK : E.toSubgroup ≤ K.field.toSubgroup) :
@@ -219,12 +215,10 @@ noncomputable def infiniteUnitAddSubgroup
       congrArg (fun x : ambientFixedAddSubgroup A E => x.1) hw
     change uP.1.1 + wP.1.1 = a.1 + b.1
     have huP : uP.1.1 = u.1.1 :=
-      v.finiteUnitInclusion_transport_coe EMP
-        (P.toFiniteAbstractField K) hEMPfield u
+      by rfl
     have hwP : wP.1.1 = w.1.1 :=
-      v.finiteUnitInclusion_transport_coe ENP
-        (P.toFiniteAbstractField K) hENPfield w
-    rw [huP, hwP, huval, hwval]
+      by rfl
+    simp_all
   neg_mem' := by
     intro a ha
     rcases ha with ⟨M, u, hu⟩
@@ -305,8 +299,7 @@ theorem frobeniusQuotientAction_mem_infiniteUnitAddSubgroup
     congrArg (fun z : ambientFixedAddSubgroup A E => z.1) hu
   change A.ρ k.1 uR.1.1 = A.ρ k.1 a.1
   have huR : uR.1.1 = u.1.1 :=
-    v.finiteUnitInclusion_transport_coe EMR
-      (R.toFiniteAbstractField K) hEMRfield u
+    by rfl
   rw [huR, huval]
 
 /-- The Frobenius power sum used preserves the finite-stage unit
@@ -503,14 +496,8 @@ theorem descend_maximalUnramifiedNorm_unit
     apply Subtype.ext
     change aR.1.1 = (J (N a)).1
     have haRcoe : aR.1.1 = aQ.1.1 :=
-      v.finiteUnitInclusion_transport_coe EQR
-        (R.toFiniteAbstractField K) hEQRfield aQ
+      by rfl
     rw [haRcoe]
     exact congrArg Subtype.val haQ
   exact v.descend_maximalUnramified_fixed_unit_of_finiteSupport
     K L hLK φ hφ R (N a) aR haR hfixed
-
-end ValuationData
-end
-
-end ClassFormation

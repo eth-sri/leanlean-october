@@ -37,7 +37,7 @@ theorem scalarRepresentative_eq_symm (s : Sections F ζ hζ U R P H) :
     scalarRepresentative F ζ hζ U R P H s = (S F ζ hζ U R P H).symm s := by
   rfl
 
-private lemma recovery_phase (s : Sections F ζ hζ U R P H)
+lemma recovery_phase (s : Sections F ζ hζ U R P H)
     (i : Fin (H.atlas U).componentCount) (m : PhaseSheets F ζ hζ U) (x : SymmetricSpace F) :
     (scalarRepresentative F ζ hζ U R P H s).val
       (componentHomeomorph F ζ hζ U R P H ⟨i, Quotient.mk _ (m,x)⟩) =
@@ -868,17 +868,7 @@ theorem smoothCompactSectionEmbedding_injective :
 
 theorem squaredNorm_measurable (s : Sections F ζ hζ U R P H)
     (hs : ∀ i, Measurable (s i).val) :
-    Measurable (squaredNorm F ζ hζ U R P H s) := by
-  have hn := (DedekindZetaZeroFree.kp_cont_sector_fixed_line_norm_integrals
-    F ζ hζ U R P H (scalarRepresentative F ζ hζ U R P H s)
-      ((borel_iff F ζ hζ U R P H s).mp hs)).borel
-  have heq : S F ζ hζ U R P H (scalarRepresentative F ζ hζ U R P H s) = s :=
-    (S F ζ hζ U R P H).apply_symm_apply s
-  change Measurable (fun b => ENNReal.ofReal
-    (sectionNorm F ζ hζ U R P H (S F ζ hζ U R P H
-      (scalarRepresentative F ζ hζ U R P H s)) b ^ 2)) at hn
-  rw [heq] at hn
-  exact hn
+    Measurable (squaredNorm F ζ hζ U R P H s) := by apply DedekindZetaZeroFree.KPContSectorLineL2Isometry.squaredNorm_measurable_aux <;> assumption
 
 theorem squaredNorm_pullback (s : Sections F ζ hζ U R P H)
     (v : CoveredSpherical F ζ hζ U) :

@@ -8,7 +8,6 @@ public import Mathlib.MeasureTheory.Function.L2Space
 
 @[expose] public section
 
-noncomputable section
 open MeasureTheory Set
 namespace DedekindZetaZeroFree.FourierContinuation.ResidualGlobalFlowIBP
 variable {X : Type*} [TopologicalSpace X] [MeasurableSpace X] [BorelSpace X]
@@ -31,7 +30,7 @@ theorem integral_stationary_derivative_zero
   have hpoint (x : X) : (∫ t in Ioc (0 : ℝ) 1, df (a t x)) = f (a 1 x) - f x := by
     rw [← intervalIntegral.integral_of_le (by norm_num : (0 : ℝ) ≤ 1)]
     have hcont : Continuous (fun t : ℝ => df (a t x)) :=
-      hdf.comp (ha.comp (continuous_id.prodMk continuous_const))
+      by fun_prop
     simpa only [ha0] using intervalIntegral.integral_eq_sub_of_hasDerivAt
       (fun t _ => hderiv t x) (hcont.intervalIntegrable 0 1)
   have hint : (∫ t in Ioc (0 : ℝ) 1, ∫ x, df (a t x) ∂μ) = 0 := by
@@ -42,8 +41,7 @@ theorem integral_stationary_derivative_zero
     exact sub_eq_zero.mpr ((hμ 1).integral_comp (a 1).measurableEmbedding f)
   have heq (t : ℝ) : (∫ x, df (a t x) ∂μ) = ∫ x, df x ∂μ :=
     (hμ t).integral_comp (a t).measurableEmbedding df
-  simp_rw [heq] at hint
-  simpa using hint
+  simp_all
 
 theorem invariant_flow_l2_ibp
     (a : ℝ → X ≃ₜ X) (ha : Continuous (Function.uncurry (fun t x => a t x)))
@@ -65,7 +63,3 @@ theorem invariant_flow_l2_ibp
     (fun t x => (hud t x).star.mul (hvd t x))
   rw [integral_add hi1 hi2] at hz
   exact eq_neg_of_add_eq_zero_left hz
-
-end DedekindZetaZeroFree.FourierContinuation.ResidualGlobalFlowIBP
-
-end

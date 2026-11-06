@@ -16,42 +16,39 @@ namespace DedekindZetaZeroFree.LargeSieve
 def originPolynomial (D : ℝ) (r : ℕ) (h : ℝ → ℂ) : Polynomial ℂ :=
   Vendor.originLogResiduePolynomial (A D r h) r
 
-private lemma exists_support_bound {h : ℝ → ℂ} (hhc : HasCompactSupport h) :
+lemma exists_support_bound {h : ℝ → ℂ} (hhc : HasCompactSupport h) :
     ∃ b : ℝ, 0 < b ∧ ∀ x : ℝ, b < x → h x = 0 := by
   obtain ⟨b, hb⟩ := hhc.bddAbove
   refine ⟨max b 1, lt_of_lt_of_le zero_lt_one (le_max_right _ _), fun x hx => ?_⟩
   refine Function.notMem_support.mp fun hmem =>
     absurd (hb (subset_tsupport h hmem)) (not_le.mpr (lt_of_le_of_lt (le_max_left _ _) hx))
 
-private lemma neg_vertical_re (σ t : ℝ) :
+lemma neg_vertical_re (σ t : ℝ) :
     (-((σ : ℂ) + (t : ℂ) * Complex.I)).re = -σ := by
-  simp only [Complex.neg_re, Complex.add_re, Complex.mul_re, Complex.ofReal_re,
-    Complex.ofReal_im, Complex.I_re, Complex.I_im]
-  ring
+  simp
 
-private lemma contDiffOn_polynomial_eval_log (P : Polynomial ℂ) :
+lemma contDiffOn_polynomial_eval_log (P : Polynomial ℂ) :
     ContDiffOn ℝ ∞ (fun y : ℝ => Polynomial.eval (Real.log y : ℂ) P) (Set.Ioi 0) := by
   have hlog : ContDiffOn ℝ ∞ Real.log {0}ᶜ := Real.contDiffOn_log
   have h1 : ContDiffOn ℝ ∞ (fun y : ℝ => (Real.log y : ℂ)) (Set.Ioi 0) :=
     (Complex.ofRealCLM.contDiff.comp_contDiffOn hlog).mono
-      (by intro x hx; simp only [Set.mem_compl_iff, Set.mem_singleton_iff]; exact ne_of_gt hx)
+      (by simp)
   have h2 : ContDiffOn ℝ ∞ (fun z : ℂ => Polynomial.eval z P) Set.univ :=
     ((Polynomial.contDiff_aeval (𝕜 := ℂ) P ∞).restrict_scalars ℝ).contDiffOn
   exact h2.comp h1 (Set.mapsTo_univ _ _)
 
-private lemma differentiableOn_twisted (A : ℂ → ℂ) (U : Set ℂ) (hA : AnalyticOnNhd ℂ A U)
+lemma differentiableOn_twisted (A : ℂ → ℂ) (U : Set ℂ) (hA : AnalyticOnNhd ℂ A U)
     (L : ℝ) (j r : ℕ) :
     DifferentiableOn ℂ
       (fun s : ℂ => Complex.exp (-s * (L : ℂ)) * ((-s) ^ j * (A s / s ^ r))) (U \ {0}) := by
   have hexp : DifferentiableOn ℂ (fun s : ℂ => Complex.exp (-s * (L : ℂ))) (U \ {0}) :=
-    (Complex.differentiable_exp (𝕜 := ℂ)).differentiableOn.comp
-      ((differentiable_id.neg.mul_const (L : ℂ)).differentiableOn) (Set.mapsTo_univ _ _)
+    by fun_prop
   have hpow : DifferentiableOn ℂ (fun s : ℂ => (-s) ^ j) (U \ {0}) :=
-    (differentiable_id.neg.differentiableOn).pow j
+    by fun_prop
   have hdiv : DifferentiableOn ℂ (fun s : ℂ => A s / s ^ r) (U \ {0}) :=
     (hA.differentiableOn.mono Set.diff_subset).div
       ((differentiable_id.differentiableOn).pow r) (fun s hs => pow_ne_zero _ hs.2)
-  exact hexp.mul (hpow.mul hdiv)
+  fun_prop
 
 private lemma eulerIter_contDiffOn (j : ℕ) {g : ℝ → ℂ}
     (hg : ContDiffOn ℝ ∞ g (Set.Ioi 0)) :
@@ -76,7 +73,7 @@ private lemma eulerIter_sub (j : ℕ) {g₁ g₂ : ℝ → ℂ}
     ∀ x : ℝ, 0 < x → Vendor.EulerIter j (fun y : ℝ => g₁ y - g₂ y) x =
       Vendor.EulerIter j g₁ x - Vendor.EulerIter j g₂ x := by
   induction j with
-  | zero => intro x hx; rfl
+  | zero => simp
   | succ j ih =>
     intro x hx
     rw [Vendor.EulerIter_succ_of_pos j (fun y : ℝ => g₁ y - g₂ y) x hx,
@@ -96,8 +93,8 @@ private lemma eulerIter_sub (j : ℕ) {g₁ g₂ : ℝ → ℂ}
 theorem originPolynomial_natDegree_le (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
     (hD : 0 < D) (hr : 1 ≤ r) (hh : ContDiff ℝ ∞ h)
     (hhc : HasCompactSupport h) :
-    (originPolynomial D r h).natDegree ≤ r - 1 := by
-  exact Vendor.originLogResiduePolynomial_natDegree_le (A D r h) r hr
+    (originPolynomial D r h).natDegree ≤ r - 1 := 
+  Vendor.originLogResiduePolynomial_natDegree_le (A D r h) r hr
 
 theorem originPolynomial_coeff_top (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
     (hD : 0 < D) (hr : 1 ≤ r) (hh : ContDiff ℝ ∞ h)
@@ -127,7 +124,7 @@ theorem B_euler_negative_inverse_integrable
   have hint : MeasureTheory.Integrable (fun t : ℝ =>
       (-((-δ : ℂ) + (t : ℂ) * Complex.I)) ^ j *
         B D r h ((-δ : ℂ) + (t : ℂ) * Complex.I)) MeasureTheory.volume :=
-    (hbd h hh hhc hsupp).1
+    by simp_all
   have hmeas : AEStronglyMeasurable
       (fun t : ℝ => (x : ℂ) ^ (-((-δ : ℂ) + (t : ℂ) * Complex.I))) MeasureTheory.volume :=
     ((continuous_iff_continuousAt.mpr fun z =>
@@ -140,12 +137,10 @@ theorem B_euler_negative_inverse_integrable
       exact (mul_assoc _ _ _).symm) ?_
   filter_upwards with t
   have hre : (-((-δ : ℂ) + (t : ℂ) * Complex.I)).re = δ := by
-    simp only [Complex.neg_re, Complex.add_re, Complex.mul_re, Complex.ofReal_re,
-      Complex.ofReal_im, Complex.I_re, Complex.I_im]
-    ring
+    simp
   simp only [norm_mul, norm_pow, norm_neg, mul_assoc,
     Complex.norm_cpow_eq_rpow_re_of_pos hx, hre]
-  exact le_refl _
+  rfl
 
 theorem EulerIter_fieldTransform_sub_originPolynomial_eq_mellinInv
     (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
@@ -190,7 +185,7 @@ theorem EulerIter_fieldTransform_sub_originPolynomial_eq_mellinInv
     refine ⟨G, {s : ℂ | -1 < s.re}, hUopen, hstrip, hGan.differentiableOn, ?_⟩
     intro s hs1 hs2 hs0
     have hsre : -1 < s.re := by linarith
-    have hid := hGid s (by simp only [Set.mem_setOf_eq]; exact hsre) hs0
+    have hid := hGid s (by simp_all) hs0
     show (x : ℂ) ^ (-s) * ((-s) ^ j * B D r h s) =
       G s + ∑ m ∈ Finset.Icc 1 r, cc m / (s - (0 : ℂ)) ^ m
     have hcpow : (x : ℂ) ^ (-s) = Complex.exp (-s * (Real.log x : ℂ)) := by
@@ -201,7 +196,7 @@ theorem EulerIter_fieldTransform_sub_originPolynomial_eq_mellinInv
         (-s) ^ j * Complex.exp (-s * (Real.log x : ℂ)) * A D r h s / s ^ r := by
       ring
     rw [hgoal, hid]
-    simp only [sub_zero]
+    simp
 
   have ha : Complex.VerticalIntegrable F (-δ) := by
     simpa only [Complex.VerticalIntegrable, hFdef, mul_assoc, Complex.ofReal_neg] using
@@ -218,7 +213,7 @@ theorem EulerIter_fieldTransform_sub_originPolynomial_eq_mellinInv
       B_uniform_rapid_bound_negative_strip D r b (-δ) 1 j hD hr hb0 (by linarith) (by linarith)
     have hS : 0 ≤ Vendor.S b N h := Vendor.S_nonneg b hb0 N h hh
     have hXnn : 0 ≤ max (x ^ (-1 : ℝ)) (x ^ δ) :=
-      le_max_iff.mpr (Or.inl (Real.rpow_nonneg (le_of_lt hx) _))
+      by positivity
     refine ⟨max (x ^ (-1 : ℝ)) (x ^ δ) * (C₀ * Vendor.S b N h), j,
       mul_nonneg hXnn (mul_nonneg (le_of_lt hC₀) hS), ?_⟩
     intro σ hσ t ht
@@ -274,7 +269,7 @@ theorem EulerIter_fieldTransform_sub_originPolynomial_eq_mellinInv
   have hcc1 : cc 1 = Polynomial.eval (Real.log x : ℂ)
       ((Polynomial.derivative^[j]) (originPolynomial D r h)) := by
     rw [hc1]
-    simp only [originPolynomial]
+    rfl
   have hEulerF := EulerIter_fieldTransform_eq_mellinInv D r h hD hr hh hhc j 1 x (by norm_num) hx
   have hEulerP := Vendor.EulerIter_eval_log_polynomial (originPolynomial D r h) j x hx
   have hsub := eulerIter_sub j (fieldTransform_contDiffOn D r h hD hr hh hhc)
@@ -290,7 +285,3 @@ theorem EulerIter_fieldTransform_sub_originPolynomial_eq_mellinInv
     _ = Vendor.verticalIntegral 1 F - cc 1 := by rw [hV1, hcc1]
     _ = Vendor.verticalIntegral (-δ) F := by rw [sub_eq_iff_eq_add]; exact hcontour
     _ = mellinInv (-δ) (fun s : ℂ => (-s) ^ j * B D r h s) x := hVδ
-
-end DedekindZetaZeroFree.LargeSieve
-
-end

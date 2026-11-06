@@ -37,5 +37,3 @@ theorem compact_cross_representatives
   refine ⟨γ, ?_⟩
   rw [G.crossAction_formula γ A hA hc p, hp]
   exact ⟨hx, hb⟩
-
-end DedekindZetaZeroFree.KPContinuation.ChamberModerateGrowth

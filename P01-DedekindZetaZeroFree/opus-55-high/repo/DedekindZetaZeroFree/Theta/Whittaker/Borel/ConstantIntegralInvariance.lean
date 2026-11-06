@@ -1,7 +1,9 @@
 module
 
 public import DedekindZetaZeroFree.Theta.Whittaker.Borel.RootFibersAndHaar
-public import DedekindZetaZeroFree.Theta.Periods.PartialPeriodSourcesAndRootCoinvariants
+public import DedekindZetaZeroFree.Theta.Periods.ScalarQuotientsAndFourierDescent
+public import DedekindZetaZeroFree.Theta.Periods.CompactKernelOrbitData
+public import DedekindZetaZeroFree.RepresentationTheory.RankOne.Borel.TorusRetraction
 
 @[expose] public section
 
@@ -41,7 +43,7 @@ private theorem fiber_mk
   change θ (N F ζ hζ (Quotient.out (QuotientAddGroup.mk z)) * b.val) = _
   rw [hr, ← hs, add_comm, N_add, mul_assoc, rational_root_invariant F ζ hζ θ hθ]
 
-private theorem borel_root_commutes (b : borel F ζ hζ) (y : Adeles F) :
+theorem borel_root_commutes (b : borel F ζ hζ) (y : Adeles F) :
     ∃ z : Adeles F, b.val * N F ζ hζ y = N F ζ hζ z * b.val := by
   obtain ⟨t, a, hb⟩ := KPGlobalTorusBorelTwistCompatibility.actual_borel_factorization F ζ hζ b
   refine ⟨(p F ζ hζ t : Adeles F) * y, ?_⟩

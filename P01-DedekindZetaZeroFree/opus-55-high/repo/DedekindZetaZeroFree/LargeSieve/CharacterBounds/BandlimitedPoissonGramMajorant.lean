@@ -15,7 +15,7 @@ namespace DedekindZetaZeroFree.ProbeAdditiveGramBounds.ArchMajorant
 variable (W : Type*) [NormedAddCommGroup W] [InnerProductSpace ℝ W]
   [FiniteDimensional ℝ W] [MeasurableSpace W] [BorelSpace W]
 
-private theorem inv_real_even (b : SchwartzMap W ℂ)
+theorem inv_real_even (b : SchwartzMap W ℂ)
     (hr : ∀ z, (starRingEnd ℂ) (b z) = b z) (he : ∀ z, b (-z) = b z) :
     ∀ w, ((𝓕⁻ b : SchwartzMap W ℂ) w).im = 0 := by
   intro w
@@ -28,7 +28,7 @@ private theorem inv_real_even (b : SchwartzMap W ℂ)
       filter_upwards [] with v
       simp only [smul_eq_mul, map_mul, hr, he, ← Complex.exp_conj,
         inner_neg_left, mul_neg, Complex.ofReal_neg, Complex.conj_ofReal, Complex.conj_I]
-      congr 2 <;> ring
+      simp
     _ = _ := integral_neg_eq_self
       (fun v : W => Complex.exp ((↑(2 * Real.pi * inner ℝ v w) * Complex.I)) • b v) volume
 
@@ -40,7 +40,7 @@ private theorem build :
   obtain ⟨f, hf, hc, hd, hn, h0⟩ :=
     exists_contDiff_tsupport_subset (n := (⊤ : ℕ∞)) (ball_mem_nhds (0 : W) (by norm_num : (0 : ℝ) < 1))
   let g : W → ℝ := fun z => (f z + f (-z)) / 2
-  have gd : ContDiff ℝ (⊤ : ℕ∞) g := (hd.add (hd.comp contDiff_neg)).div_const 2
+  have gd : ContDiff ℝ (⊤ : ℕ∞) g := by fun_prop
   have gc : HasCompactSupport g := by
     have h := (hc.add (hc.comp_homeomorph (Homeomorph.neg W))).comp_left
       (g := fun x : ℝ => x / 2) (by simp)
@@ -49,7 +49,7 @@ private theorem build :
     intro z
     have h1 := (hn (Set.mem_range_self z)).1
     have h2 := (hn (Set.mem_range_self (-z))).1
-    dsimp [g]; positivity
+    positivity
   have g0 : g 0 = 1 := by simp [g, h0]
   have gi : 0 < ∫ z, g z := gd.continuous.integral_pos_of_hasCompactSupport_nonneg_nonzero
     gc gn (x := 0) (by simp [g0])
@@ -61,7 +61,7 @@ private theorem build :
     intro z hz
     by_contra hnz
     have hz1 : z ∉ ball (0 : W) 1 := fun h => hnz (ball_subset_closedBall h)
-    have hz2 : -z ∉ ball (0 : W) 1 := by simpa [mem_ball, dist_zero_right] using hz1
+    have hz2 : -z ∉ ball (0 : W) 1 := by simp_all
     have h1 : f z = 0 := not_ne_iff.mp (fun h => hz1 (hf (subset_tsupport f (by exact h))))
     have h2 : f (-z) = 0 := not_ne_iff.mp (fun h => hz2 (hf (subset_tsupport f (by exact h))))
     simpa [Function.mem_support, hb, g, h1, h2] using hz
@@ -101,7 +101,7 @@ theorem exists_euclidean_space_positive_bandlimited_bump :
     exact (han (by simpa [mem_closedBall, dist_zero_right] using hz)).le
   let φ : SchwartzMap W ℂ := SchwartzMap.pairing (ContinuousLinearMap.mul ℂ ℂ) χ χ
   have hφ : ∀ z, φ z = χ z * χ z := fun z => rfl
-  have hφi : ∀ z, (φ z).im = 0 := by intro z; simp [hφ, Complex.mul_im, hχ]
+  have hφi : ∀ z, (φ z).im = 0 := by intro z; simp_all
   have hφre : ∀ z, (φ z).re = ((χ z).re)^2 := by
     intro z; simp [hφ, Complex.mul_re, hχ, pow_two]
   have hφn : ∀ z, 0 ≤ (φ z).re := by intro z; rw [hφre]; positivity
@@ -322,7 +322,7 @@ theorem tensor_gram_assembly
         (B / N ^ (1 / (Module.finrank ℚ F : ℝ))) ^ Module.finrank ℚ F * V ^ 2) ≤
         (1 + B ^ Module.finrank ℚ F) * (N + V ^ 2) := by
       rw [div_pow, hpow]
-      have hbpow : 0 ≤ B ^ Module.finrank ℚ F := le_of_lt (pow_pos hB _)
+      have hbpow : 0 ≤ B ^ Module.finrank ℚ F := by positivity
       have hidentity : N * (1 + B ^ Module.finrank ℚ F / N * V ^ 2) =
           N + B ^ Module.finrank ℚ F * V ^ 2 := by
         field_simp
@@ -359,16 +359,16 @@ open scoped Classical FourierTransform SchwartzMap
 
 open MeasureTheory
 
-private theorem scale_fourier {W : Type*} [NormedAddCommGroup W] [InnerProductSpace ℝ W]
+theorem scale_fourier {W : Type*} [NormedAddCommGroup W] [InnerProductSpace ℝ W]
     [FiniteDimensional ℝ W] [MeasurableSpace W] [BorelSpace W]
     (φ : SchwartzMap W ℂ) (t : ℝ) (ht : 0 < t) (w : W) :
     𝓕 (fun x => φ (t⁻¹ • x)) w = t ^ Module.finrank ℝ W • (𝓕 φ : SchwartzMap W ℂ) (t • w) := by
   rw [Real.fourier_eq', SchwartzMap.fourier_coe, Real.fourier_eq']
   have hp (x : W) : inner ℝ (t⁻¹ • x) (t • w) = inner ℝ x w := by
-    simp [inner_smul_left, inner_smul_right, ht.ne', mul_assoc]
+    simp [inner_smul_left, inner_smul_right, ht.ne']
   have h := Measure.integral_comp_smul (volume : Measure W)
     (fun x => Complex.exp (-(↑(2 * Real.pi * inner ℝ x (t • w)) * Complex.I)) • φ x) t⁻¹
-  simp only [hp, inv_inv, abs_of_pos ht, abs_pow] at h
+  simp only [hp] at h
   simpa only [inv_pow, inv_inv, abs_pow, abs_of_pos ht, neg_mul, Complex.ofReal_neg, neg_mul] using h
 
 theorem balanced_bandlimited_majorant
@@ -405,11 +405,10 @@ theorem balanced_bandlimited_majorant
     SchwartzMap.compCLMOfContinuousLinearEquiv ℂ
       (Units.mk0 t⁻¹ (inv_ne_zero ht.ne') • ContinuousLinearEquiv.refl ℝ _) φ
   have hf (x : PoissonArch.Space F) : f x = φ (t⁻¹ • x) := by
-    simp [f, SchwartzMap.compCLMOfContinuousLinearEquiv_apply,
-      ContinuousLinearEquiv.smul_apply]
+    rfl
   have hfour (w : PoissonArch.Space F) : (𝓕 f) w = t ^ d • (𝓕 φ) (t • w) := by
     rw [SchwartzMap.fourier_coe]
-    simp only [show (f : PoissonArch.Space F → ℂ) = fun x => φ (t⁻¹ • x) by funext x; exact hf x]
+    simp only [show (f : PoissonArch.Space F → ℂ) = fun x => φ (t⁻¹ • x) by rfl]
     simpa only [PoissonArch.Space, mixedEmbedding.euclidean.finrank] using scale_fourier φ t ht w
   have htd : t ^ d = c ^ d * N := by dsimp [t]; rw [mul_pow, hsd]
   refine ⟨f, ?_, ?_, ?_, ?_⟩
@@ -557,9 +556,4 @@ lemma trace_phase_norm
         (InfinitePlace.Completion.extensionEmbedding v (x.1 v)).re : ℝ) : ℂ) *
         Complex.I := by push_cast; ring
   rw [hphase, Complex.norm_exp_ofReal_mul_I]
-  simp [norm_prod]
-
-end
-end DedekindZetaZeroFree.ProbeAdditiveGramBounds
-
-end
+  simp

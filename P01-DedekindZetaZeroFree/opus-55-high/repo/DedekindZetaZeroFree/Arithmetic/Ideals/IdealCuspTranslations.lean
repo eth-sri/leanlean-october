@@ -47,7 +47,7 @@ theorem entries_of_preserves (I : FI) (hI : I ≠ 0)
       change _ ∧ (A • !![0; y]) 1 0 ∈ I at h
       simpa [Matrix.GeneralLinearGroup.smul_def, Matrix.mul_apply, Fin.sum_univ_two] using h.2
     simpa [div_self hI] using hd
-private theorem det_mem_one_of_preserves (I : FI) (hI : I ≠ 0)
+theorem det_mem_one_of_preserves (I : FI) (hI : I ≠ 0)
     (A : Matrix.GeneralLinearGroup (Fin 2) F)
     (hA : ∀ V : Matrix (Fin 2) (Fin 1) F, V ∈ KPFiniteAdelicLatticeStabilizers.idealVectors F I →
       A • V ∈ KPFiniteAdelicLatticeStabilizers.idealVectors F I) :
@@ -67,7 +67,7 @@ theorem scalar_unit_of_square_integral (u : Fˣ)
     (by norm_num : 0 < 2) (hs ▸ isIntegral_algebraMap)
   have hxy : x * y = 1 := by
     apply NumberField.RingOfIntegers.coe_injective
-    simp only [map_mul, map_one, hx, hy, Units.mul_inv]
+    simp_all
   refine ⟨⟨x, y, hxy, by simpa [mul_comm] using hxy⟩, ?_⟩
   apply Units.ext
   exact hx
@@ -87,8 +87,7 @@ private theorem scalar_preserves (I : FI) (v : Rˣ) :
       (scalar w • V) 1 0 ∈ I
     have he : ∀ i, (scalar w • V) i 0 = algebraMap R F (w : R) * V i 0 := by
       intro i
-      simp [scalar, Matrix.GeneralLinearGroup.smul_def, Matrix.GeneralLinearGroup.coe_scalar,
-        Matrix.mul_apply, Fin.sum_univ_two, Matrix.scalar, Matrix.diagonal_apply]
+      simp [scalar, Matrix.GeneralLinearGroup.smul_def, Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_apply, Matrix.scalar, Matrix.diagonal_apply]
     rw [he 0, he 1]
     refine ⟨⟨(w : R) * r, by rw [map_mul, hr]⟩, ?_⟩
     exact I.val.smul_mem (w : R) hV
@@ -98,7 +97,7 @@ private theorem scalar_preserves (I : FI) (v : Rˣ) :
   · exact hf v V
   · intro h
     have hh := hf v⁻¹ (scalar v • V) h
-    have he : scalar v⁻¹ = (scalar v)⁻¹ := by simp [scalar]
+    have he : scalar v⁻¹ = (scalar v)⁻¹ := by rfl
     simpa [he] using hh
 
 theorem determinant_one_projective_iff (I : FI) (hI : I ≠ 0)
@@ -118,12 +117,9 @@ theorem determinant_one_projective_iff (I : FI) (hI : I ≠ 0)
         ((MulAction.stabilizer _ _).inv_mem hC) V).mp hV)
     have hdC : (C : Matrix (Fin 2) (Fin 2) F).det = (u : F)^2 := by
       rw [← hu]
-      simp [Matrix.det_mul, Matrix.GeneralLinearGroup.coe_scalar, Matrix.det_fin_two, hd]
+      simp [Matrix.det_mul, Matrix.GeneralLinearGroup.coe_scalar, hd]
     have hdCi : (↑(C⁻¹) : Matrix (Fin 2) (Fin 2) F).det = ((u⁻¹ : Fˣ) : F)^2 := by
-      have hh := congrArg (fun X : Matrix.GeneralLinearGroup (Fin 2) F =>
-        ((Matrix.GeneralLinearGroup.det X) : F)) (congrArg Inv.inv hu)
-      simpa [map_mul, map_inv, Matrix.GeneralLinearGroup.det_scalar,
-        Matrix.GeneralLinearGroup.val_det_apply, hd, Fintype.card_fin] using hh.symm
+      simp_all
     obtain ⟨v, hv⟩ := scalar_unit_of_square_integral F u
       (hdC ▸ hdet) (hdCi ▸ (show (↑(C⁻¹) : Matrix (Fin 2) (Fin 2) F).det ∈ (1 : FI) from hdeti))
     have hs := scalar_preserves F I v
@@ -198,14 +194,14 @@ theorem determinant_one_stabilizer_iff_entries (I : FI) (hI : I ≠ 0)
   zero_mem' := by simpa using K.zero_mem
   add_mem' := by intro x y hx hy; simpa [add_mul] using K.val.add_mem hx hy
   smul_mem' := by intro r x hx; simpa [Algebra.smul_def, mul_assoc] using K.val.smul_mem r hx
-private theorem coeff_fractional (K : FI) (c : F) (hc : c ≠ 0) :
+theorem coeff_fractional (K : FI) (c : F) (hc : c ≠ 0) :
     IsFractional (nonZeroDivisors R) (coeffModule F K c) := by
   apply FractionalIdeal.isFractional_of_le (J := FractionalIdeal.spanSingleton (nonZeroDivisors R) c⁻¹ * K)
   intro x hx
   apply FractionalIdeal.mem_singleton_mul.mpr
   refine ⟨x*c, hx, ?_⟩
   field_simp
-private theorem coeff_integer (K : FI) (hK : K ≠ 0) (c : F) :
+theorem coeff_integer (K : FI) (hK : K ≠ 0) (c : F) :
     ∃ r : R, r ≠ 0 ∧ algebraMap R F r * c ∈ K := by
   obtain ⟨y, hy, hyK⟩ := FractionalIdeal.exists_ne_zero_mem_isInteger hK
   obtain ⟨d, r, hr⟩ := IsLocalization.exists_integer_multiple (nonZeroDivisors R) (c / algebraMap R F y)
@@ -216,13 +212,13 @@ private theorem coeff_integer (K : FI) (hK : K ≠ 0) (c : F) :
     field_simp
   rw [he, ← Algebra.smul_def]
   exact K.val.smul_mem r hyK
-private theorem constraints_fractional (K : Fin 4 → FI) (c : Fin 4 → F)
+theorem constraints_fractional (K : Fin 4 → FI) (c : Fin 4 → F)
     (hc : ∃ i, c i ≠ 0) : IsFractional (nonZeroDivisors R) (constraints F K c) := by
   obtain ⟨i, hi⟩ := hc
   apply FractionalIdeal.isFractional_of_le (J := ⟨coeffModule F (K i) (c i), coeff_fractional F (K i) (c i) hi⟩)
   intro x hx
   exact hx i
-private theorem constraints_nonzero (K : Fin 4 → FI) (hK : ∀ i, K i ≠ 0) (c : Fin 4 → F) :
+theorem constraints_nonzero (K : Fin 4 → FI) (hK : ∀ i, K i ≠ 0) (c : Fin 4 → F) :
     constraints F K c ≠ ⊥ := by
   classical
   choose r hr hm using fun i => coeff_integer F (K i) (hK i) (c i)
@@ -230,14 +226,12 @@ private theorem constraints_nonzero (K : Fin 4 → FI) (hK : ∀ i, K i ≠ 0) (
   have hp : p ≠ 0 := Finset.prod_ne_zero_iff.mpr (fun i _ => hr i)
   have hpm : algebraMap R F p ∈ constraints F K c := by
     intro i
-    have he : p = (∏ j ∈ Finset.univ.erase i, r j) * r i := by
-      exact (Finset.prod_erase_mul _ _ (Finset.mem_univ i)).symm
+    have he : p = (∏ j ∈ Finset.univ.erase i, r j) * r i := 
+      (Finset.prod_erase_mul _ _ (Finset.mem_univ i)).symm
     rw [he, map_mul, mul_assoc, ← Algebra.smul_def]
     exact (K i).val.smul_mem _ (hm i)
   intro hb
-  rw [hb] at hpm
-  have hz : algebraMap R F p = 0 := hpm
-  exact hp (NumberField.RingOfIntegers.coe_injective (by simpa using hz))
+  simp_all
  def unipotent (x : F) : Matrix.GeneralLinearGroup (Fin 2) F :=
   Matrix.GeneralLinearGroup.mkOfDetNeZero !![1, x; 0, 1] (by simp [Matrix.det_fin_two])
 private theorem unipotent_fixes (x : F) :
@@ -245,14 +239,14 @@ private theorem unipotent_fixes (x : F) :
   unfold KPCuspArithmetic.infinity
   rw [Projectivization.PGL.mk_smul_mk]
   congr 1
-  simp [unipotent, Matrix.mulVec, dotProduct, Fin.sum_univ_two]
+  simp [unipotent]
 private theorem conjugated_membership (Γ : Subgroup (KPCuspArithmetic.PGL2 F))
     (q : KPCuspArithmetic.Cusp F) (σ : KPCuspArithmetic.PGL2 F)
     (hσ : σ • KPCuspArithmetic.infinity F = q) (x : F) :
     Matrix.ProjGenLinGroup.mk (unipotent F x) ∈ KPCuspArithmetic.conjugatedStabilizer F Γ q σ ↔
     σ * Matrix.ProjGenLinGroup.mk (unipotent F x) * σ⁻¹ ∈ Γ := by
   rw [KPCuspArithmetic.conjugatedStabilizer, Subgroup.mem_map_equiv]
-  simp only [MulAut.conj_symm_apply, inv_inv, MulAut.conj_apply, Subgroup.mem_inf]
+  simp only [MulAut.conj_symm_apply, inv_inv, Subgroup.mem_inf]
   have hf : σ * Matrix.ProjGenLinGroup.mk (unipotent F x) * σ⁻¹ ∈
       MulAction.stabilizer (KPCuspArithmetic.PGL2 F) q := by
     rw [MulAction.mem_stabilizer_iff]
@@ -280,14 +274,14 @@ private theorem conjugate_formula (B : Matrix.GeneralLinearGroup (Fin 2) F) (x :
     ext i j
     fin_cases i <;> fin_cases j <;> simp [unipotent, rootMatrix]
   rw [Units.val_mul, Units.val_mul, hn, Matrix.mul_add, Matrix.add_mul]
-  simp [coefficient, Matrix.mul_smul, Matrix.smul_mul]
-private theorem one_add_mem (z : F) : 1 + z ∈ (1 : FI) ↔ z ∈ (1 : FI) := by
+  simp [coefficient]
+theorem one_add_mem (z : F) : 1 + z ∈ (1 : FI) ↔ z ∈ (1 : FI) := by
   constructor
   · intro h
     simpa using (1 : FI).val.sub_mem h (FractionalIdeal.one_mem_one (S := nonZeroDivisors R) (P := F))
   · intro h
     exact (1 : FI).val.add_mem (FractionalIdeal.one_mem_one (S := nonZeroDivisors R) (P := F)) h
-private theorem conjugate_membership (I : FI) (hI : I ≠ 0)
+theorem conjugate_membership (I : FI) (hI : I ≠ 0)
     (B : Matrix.GeneralLinearGroup (Fin 2) F) (x : F) :
     Matrix.ProjGenLinGroup.mk (B * unipotent F x * B⁻¹) ∈ KPFiniteAdelicLatticeStabilizers.idealProjectiveAut F I ↔
     x ∈ constraints F ![1, I⁻¹, I, 1]
@@ -296,8 +290,7 @@ private theorem conjugate_membership (I : FI) (hI : I ≠ 0)
     simp [Matrix.det_mul, unipotent, Matrix.det_fin_two, ← Matrix.GeneralLinearGroup.val_det_apply]
   rw [determinant_one_projective_iff F I hI _ hd, determinant_one_stabilizer_iff_entries F I hI _ hd]
   rw [conjugate_formula]
-  simp only [Matrix.add_apply, Matrix.one_apply, Matrix.smul_apply, smul_eq_mul,
-    Fin.zero_eta, Fin.isValue, ↓reduceIte, zero_add]
+  simp only [Matrix.add_apply, Matrix.one_apply, Matrix.smul_apply, smul_eq_mul, Fin.isValue, ↓reduceIte]
   rw [one_add_mem, one_add_mem]
   change _ ↔ ∀ i : Fin 4, _
   simp [Fin.forall_fin_succ]
@@ -360,7 +353,3 @@ theorem ideal_cusp_translation_fractionalIdeal
     simp [map_mul, map_inv, hB, mul_assoc]
   rw [he]
   exact hm x
-
-end DedekindZetaZeroFree.FiniteAdelicParabolicExtension
-
-end

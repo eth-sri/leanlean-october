@@ -21,7 +21,7 @@ variable {G₀ V J S : Type*} [TopologicalSpace G₀] [AddCommGroup V] [Module �
   map_add' := by intros; ext; simp
   map_smul' := by intros; ext; simp
 
-private theorem compactJet_bound (D : J → V →ₗ[ℂ] C(G₀, ℂ))
+theorem compactJet_bound (D : J → V →ₗ[ℂ] C(G₀, ℂ))
     (ι : S →ₗ[ℂ] V) (i : KPGlobalEisensteinData.DifferentialCompact G₀ J) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ v, KPGlobalEisensteinData.smoothSeminorm D i (ι v) ≤ C * ‖v‖ := by
   letI : CompactSpace i.compact := isCompact_iff_compactSpace.mp i.isCompact
@@ -53,7 +53,7 @@ theorem powerSeries_into_smooth (D : J → V →ₗ[ℂ] C(G₀, ℂ))
   have hn := hN M hM z hzR
   have heq : (∑ q ∈ Finset.range M, (z - z₀) ^ q • ι (p.coeff q)) - ι (f z) =
       ι (p.partialSum M (z - z₀) - f z) := by
-    simp [FormalMultilinearSeries.partialSum, FormalMultilinearSeries.apply_eq_pow_smul_coeff]
+    simp [FormalMultilinearSeries.partialSum]
   rw [heq]
   apply lt_of_le_of_lt (hb _)
   have hsmall : (C + 1) * ‖p.partialSum M (z - z₀) - f z‖ < ε := by
@@ -70,7 +70,7 @@ theorem holomorphic_into_smooth (D : J → V →ₗ[ℂ] C(G₀, ℂ))
   intro z hz
   obtain ⟨t, ht, htb⟩ := Metric.isOpen_iff.mp hO z hz
   let ρ := t / 2
-  have hρ : 0 < ρ := by dsimp [ρ]; positivity
+  have hρ : 0 < ρ := by positivity
   have hc : Metric.closedBall z ρ ⊆ O := by
     intro w hw
     apply htb
@@ -87,7 +87,3 @@ theorem holomorphic_into_smooth (D : J → V →ₗ[ℂ] C(G₀, ℂ))
   exact ⟨ρ, hρ, Metric.ball_subset_closedBall.trans hc,
     (fun n => ι ((cauchyPowerSeries f z ρ).coeff n)),
     powerSeries_into_smooth D ι hρ hp'⟩
-
-end DedekindZetaZeroFree.KPGlobalResidualConstruction.FiniteStageAnalytic
-
-end

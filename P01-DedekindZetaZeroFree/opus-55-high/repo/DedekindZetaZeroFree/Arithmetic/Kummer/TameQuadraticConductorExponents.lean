@@ -93,7 +93,7 @@ private theorem lambda_tame (x : Fˣ)
   rw [zpow_neg]
   rfl
 
-private theorem local_residue_odd
+theorem local_residue_odd
     (hodd : ringChar (IsLocalRing.ResidueField (q.adicCompletionIntegers F)) ≠ 2) :
     ringChar (IsLocalRing.ResidueField (valuation (q.adicCompletion F)).integer) ≠ 2 := by
   have hn : (2 : IsLocalRing.ResidueField (valuation (q.adicCompletion F)).integer) ≠ 0 := by
@@ -117,7 +117,7 @@ private theorem even_units (x : Fˣ)
     (KummerTheory.nthRootsSubgroupEquivRootsOfUnity (q.adicCompletion F) 2
       (LocalClassFieldTheory.Kummer.localTamePowerResidueSymbol (q.adicCompletion F) 2
         (tame F q hodd) (RMKummerLocalHilbertComparison.localPrimitiveTwo F h12 q) u))
-  rw [zpow_ofNat, hz, one_zpow]
+  simp_all
 
 private theorem detecting_unit
     (hodd : ringChar (IsLocalRing.ResidueField (q.adicCompletionIntegers F)) ≠ 2) :
@@ -164,18 +164,18 @@ private theorem odd_unit_nontrivial (x : Fˣ)
     (hh.trans (map_one _).symm)
   exact hu ((KummerTheory.nthRootsSubgroupEquivRootsOfUnity (q.adicCompletion F) 2).injective
     (hz.trans (map_one _).symm))
-private theorem inclusion_mem (u : (valuation (q.adicCompletion F)).integerˣ) :
+theorem inclusion_mem (u : (valuation (q.adicCompletion F)).integerˣ) :
     integerUnitsToFieldUnits (q.adicCompletion F) u ∈ (q.adicCompletionIntegers F).units := by
   change (↑(integerUnitsToFieldUnits (q.adicCompletion F) u) : q.adicCompletion F) ∈ q.adicCompletionIntegers F ∧
     (↑((integerUnitsToFieldUnits (q.adicCompletion F) u)⁻¹) : q.adicCompletion F) ∈ q.adicCompletionIntegers F
   constructor
   · change (↑u : (valuation (q.adicCompletion F)).integer).val ∈ (q.adicCompletionIntegers F).toSubring
     rw [← ints_eq F q]
-    exact (u : (valuation (q.adicCompletion F)).integer).property
+    simp
   · change (↑(u⁻¹) : (valuation (q.adicCompletion F)).integer).val ∈ (q.adicCompletionIntegers F).toSubring
     rw [← ints_eq F q]
-    exact ((u⁻¹ : (valuation (q.adicCompletion F)).integerˣ) : (valuation (q.adicCompletion F)).integer).property
-private theorem exists_intunit (t : (q.adicCompletion F)ˣ) (ht : t ∈ (q.adicCompletionIntegers F).units) :
+    simp
+theorem exists_intunit (t : (q.adicCompletion F)ˣ) (ht : t ∈ (q.adicCompletionIntegers F).units) :
     ∃ u : (valuation (q.adicCompletion F)).integerˣ, integerUnitsToFieldUnits (q.adicCompletion F) u = t := by
   let w : (q.adicCompletionIntegers F).units := ⟨t, ht⟩
   let u := Units.map (intEquiv F q).symm.toRingHom.toMonoidHom
@@ -190,8 +190,8 @@ private theorem principal_trivial (x : Fˣ)
   have hu : integerUnitsToFieldUnits (q.adicCompletion F) u = t := by
     apply Units.ext
     exact congrArg Units.val hw
-  have hc' : IsLocalRing.residue (q.adicCompletionIntegers F) (w : q.adicCompletionIntegers F) = 1 := by
-    exact (Ideal.Quotient.mk_eq_one_iff_sub_mem (w : q.adicCompletionIntegers F)).mpr (by simpa only [pow_one] using hc)
+  have hc' : IsLocalRing.residue (q.adicCompletionIntegers F) (w : q.adicCompletionIntegers F) = 1 := 
+    (Ideal.Quotient.mk_eq_one_iff_sub_mem (w : q.adicCompletionIntegers F)).mpr (by simpa only [pow_one] using hc)
   have hu' : integerUnitsToResidueUnits (q.adicCompletion F) u = 1 := by
     apply Units.ext
     change IsLocalRing.residue (valuation (q.adicCompletion F)).integer (u : (valuation (q.adicCompletion F)).integer) = 1
@@ -200,10 +200,7 @@ private theorem principal_trivial (x : Fˣ)
     change IsLocalRing.ResidueField.map (intEquiv F q).toRingHom
       (IsLocalRing.residue (valuation (q.adicCompletion F)).integer ((intEquiv F q).symm (w : q.adicCompletionIntegers F))) = _
     rw [IsLocalRing.ResidueField.map_residue]
-    change IsLocalRing.residue (q.adicCompletionIntegers F)
-      ((intEquiv F q) ((intEquiv F q).symm (w : q.adicCompletionIntegers F))) = _
-    rw [RingEquiv.apply_symm_apply, map_one]
-    exact hc'
+    simp_all
   rw [← hu, lambda_tame F q h12 x hodd u]
   have hs : LocalClassFieldTheory.Kummer.localTamePowerResidueSymbol (q.adicCompletion F) 2
       (tame F q hodd) (RMKummerLocalHilbertComparison.localPrimitiveTwo F h12 q) u = 1 := by
@@ -217,7 +214,7 @@ private theorem principal_trivial (x : Fˣ)
     exact hr
   rw [hs]
   erw [map_one]
-  simp only [one_zpow]
+  simp
 private theorem conductor_proof (x : Fˣ)
     (hodd : ringChar (IsLocalRing.ResidueField (q.adicCompletionIntegers F)) ≠ 2) :
     idealPrimeExponent q.asIdeal (RMKummerCharacterAPI.m F h12 x) =
@@ -252,8 +249,8 @@ private theorem conductor_proof (x : Fˣ)
 theorem conductor_exponent_eq_parity (x : Fˣ) (v : HeightOneSpectrum (𝓞 F))
     (hodd : ringChar (IsLocalRing.ResidueField (v.adicCompletionIntegers F)) ≠ 2) :
     idealPrimeExponent v.asIdeal (RMKummerCharacterAPI.m F h12 x) =
-      if Odd (radicalOrder F v x) then (1 : ℕ) else 0 := by
-  exact conductor_proof F v h12 x hodd
+      if Odd (radicalOrder F v x) then (1 : ℕ) else 0 := 
+  conductor_proof F v h12 x hodd
 
 theorem lambda_eq_one_of_local_square (x : Fˣ) (v : HeightOneSpectrum (𝓞 F))
     (hx : IsSquare (algebraMap F (v.adicCompletion F) (x : F)))
@@ -270,12 +267,11 @@ theorem lambda_eq_one_of_local_square (x : Fˣ) (v : HeightOneSpectrum (𝓞 F))
   obtain ⟨y, hy⟩ := hx
   have hyne : y ≠ 0 := by
     intro h
-    have h0 : (algebraMap F K) (x : F) = 0 := by rw [hy, h, mul_zero]
-    exact x.ne_zero ((algebraMap F K).injective (by simpa using h0))
+    simp_all
   let c : Kˣ := Units.mk0 y hyne
   have hb : Units.map (algebraMap F K).toMonoidHom x = c * c := by
     apply Units.ext
-    simp only [Units.val_mul, Units.coe_map, MonoidHom.coe_coe, Units.val_mk0]
+    simp only [Units.val_mul, Units.coe_map]
     exact hy
   have h1 : ClassFieldTheory.localHilbertSymbol K (2 : ℕ+) h2 hmu t
       (Units.map (algebraMap F K).toMonoidHom x) = 1 := by
@@ -288,6 +284,3 @@ theorem lambda_eq_one_of_local_square (x : Fˣ) (v : HeightOneSpectrum (𝓞 F))
   rw [show (rmKummerQuadraticRootsComplexMap F h12 K) (1 : rootsOfUnity (((2 : ℕ+) : ℕ)) K) = 1
       from map_one (rmKummerQuadraticRootsComplexMap F h12 K)]
   exact inv_one
-
-end
-end DedekindZetaZeroFree.RMTameQuadraticExponent

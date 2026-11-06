@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # The rational cyclotomic character equivalence
 
@@ -123,8 +119,7 @@ theorem rationalCyclotomicCharacterPrimeProduct_toZModPow_of_dvd
               (y ^ b.val.val) := by
           rw [hb]
         _ = x ^ b.val.val := by
-          rw [map_pow]
-          congr 1
+          rfl
 
 /-- The product of the `p`-adic cyclotomic characters separates
 automorphisms of the actual rational cyclotomic field. -/
@@ -180,10 +175,7 @@ theorem rationalCyclotomicCharacterPrimeProduct_injective :
   let E : IntermediateField ℚ rationalCyclotomicField :=
     { AlgHom.equalizer σ.toAlgHom τ.toAlgHom with
       inv_mem' := by
-        intro x hx
-        change σ x = τ x at hx
-        change σ x⁻¹ = τ x⁻¹
-        simpa only [map_inv₀] using congrArg Inv.inv hx }
+        simp }
   have hlevel (n : ℕ+) :
       rationalCyclotomicLevel n ≤ E := by
     intro x hx
@@ -215,7 +207,7 @@ theorem rationalCyclotomicCharacterPrimeProduct_injective :
     rw [hE]
     trivial
   change x ∈ AlgHom.equalizer σ.toAlgHom τ.toAlgHom at hx
-  exact (AlgHom.mem_equalizer σ.toAlgHom τ.toAlgHom x).mp hx
+  simp_all
 
 /-- The canonical rational cyclotomic character is injective. -/
 theorem rationalCyclotomicCharacter_injective :
@@ -266,7 +258,7 @@ theorem rationalCyclotomicCharacter_surjective :
         InfiniteGalois.restrictNormalHom_continuous
           (k := ℚ) (K := rationalCyclotomicField)
           (rationalCyclotomicLevel n)
-    · exact continuous_const
+    fun_prop
   have hfip (s : Finset ℕ+) :
       (⋂ n ∈ s, C n).Nonempty := by
     let N : ℕ+ :=
@@ -336,7 +328,7 @@ theorem rationalCyclotomicCharacter_surjective :
       _ = (AlgEquiv.restrictNormalHom F) (τ N) := by
         have hσN' :
             (AlgEquiv.restrictNormalHom K) σ = τ N := by
-          simpa only [K] using hσN
+          omega
         exact congrArg
           (AlgEquiv.restrictNormalHom F)
           hσN'
@@ -405,7 +397,7 @@ theorem rationalCyclotomicCharacter_surjective :
 
 /-- The canonical topological equivalence
 `Gal(ℚ(μ∞)/ℚ) ≃ ℤ̂ˣ`. -/
-noncomputable def rationalCyclotomicCharacterContinuousMulEquiv :
+def rationalCyclotomicCharacterContinuousMulEquiv :
     (rationalCyclotomicField ≃ₐ[ℚ]
       rationalCyclotomicField) ≃ₜ* ZHatˣ :=
   let e :=

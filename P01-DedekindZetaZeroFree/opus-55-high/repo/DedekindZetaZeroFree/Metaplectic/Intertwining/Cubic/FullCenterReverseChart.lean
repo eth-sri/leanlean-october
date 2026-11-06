@@ -35,8 +35,8 @@ private theorem center_sheet (ε : Sign) (e : rootsOfUnity 3 F)
       (KPExceptionalRaw.ordinaryIota F ζ hζ e : ℂ) • V := by
   apply Subtype.ext
   funext h
-  have hc : (h * (S.central e : H₀)) = (S.central e : H₀) * h := by
-    exact Subgroup.mem_center_iff.mp (S.heisenberg.central (S.central e).property) h
+  have hc : (h * (S.central e : H₀)) = (S.central e : H₀) * h := 
+    Subgroup.mem_center_iff.mp (S.heisenberg.central (S.central e).property) h
   cases ε
   · change V.val (h * (S.central e : H₀)) = _
     rw [hc, V.property]
@@ -50,7 +50,7 @@ private theorem center_sheet (ε : Sign) (e : rootsOfUnity 3 F)
     rfl
 
 variable (P : Polarization S.heisenberg)
-private theorem centralTorus_eq (e : rootsOfUnity 3 F) :
+theorem centralTorus_eq (e : rootsOfUnity 3 F) :
     (S.openCell P).centralTorus e = (S.central e : H₀) := by
   apply Subtype.ext
   rw [← S.torus_full, (S.openCell P).central_eq, S.central_actual]
@@ -62,17 +62,17 @@ private theorem center_genuine (ε : Sign) (e : rootsOfUnity 3 F)
   rw [centralTorus_eq, S.openCell_ordinary]
   exact center_sheet F ζ hζ q S ε e V
 
-private theorem modulus_sq (v : (LocalField F q)ˣ) :
+theorem modulus_sq (v : (LocalField F q)ˣ) :
     normPower (LocalField F q) (v ^ 2) (1 / 2) =
       (localAbs (LocalField F q) v : ℂ) := by
   rw [normPower, show localAbs (LocalField F q) (v ^ 2) =
     localAbs (LocalField F q) v ^ 2 by simp [pow_two, localAbs_mul], Real.log_pow]
   norm_num only [Nat.cast_ofNat]
   rw [show (1 / 2 : ℂ) * ((2 : ℝ) * Real.log (localAbs (LocalField F q) v) : ℝ) =
-    (Real.log (localAbs (LocalField F q) v) : ℂ) by push_cast; ring]
+    (Real.log (localAbs (LocalField F q) v) : ℂ) by simp]
   rw [← Complex.ofReal_exp, Real.exp_log (localAbs_pos _ _)]
 
-private theorem weyl_inv : (signedWeyl F ζ hζ q)⁻¹ = signedWeyl F ζ hζ q := by
+theorem weyl_inv : (signedWeyl F ζ hζ q)⁻¹ = signedWeyl F ζ hζ q := by
   have hs : signedWeyl F ζ hζ q ^ 2 = 1 := by
     simpa only [signedWeyl, signedWeyl_eq_prescribed_signed, KPPGLLocalCover.signedW]
       using KPPGLLocalCover.signedW_sq F ζ hζ (Sum.inr q)
@@ -118,6 +118,3 @@ theorem actual_reverse_chart (r : ℂˣ)
   simp only [reverseRoot, smul_smul]
   rw [mul_left_comm]
   simp only [LinearMap.smul_apply, smul_smul, mul_assoc]
-
-end
-end DedekindZetaZeroFree.KPActualResidueSources

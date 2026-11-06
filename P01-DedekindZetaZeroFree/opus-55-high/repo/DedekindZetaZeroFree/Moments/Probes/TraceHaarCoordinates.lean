@@ -68,8 +68,7 @@ theorem exists_domain_with_disintegration (A : SArithmeticData F)
     · simpa [pick, he, hq] using hq.choose_spec
   refine ⟨{u | ∃ q, P q ∧ pick q = u}, ?_, ?_, ?_⟩
   · exact ⟨1, ⟨1, h1, by simp⟩, by simp [pick]⟩
-  · rintro u ⟨q, hq, rfl⟩
-    exact (hpick q hq).1
+  · simp_all
   · intro x hx
     let q : Fˣ ⧸ H := QuotientGroup.mk x
     have hq : P q := ⟨x, hx, rfl⟩
@@ -129,10 +128,7 @@ private theorem presentation (A : SArithmeticData F) (G : ThetaBranch.AllowedRec
     have he : hu = q.1.val * rF ^ 6 * a ^ 6 := by
       change a ^ 6 = hu / (q.1.val * rF ^ 6) at ha
       rw [ha]
-      simp only [div_eq_mul_inv]
-      calc
-        hu = hu * ((q.1.val * rF ^ 6) * (q.1.val * rF ^ 6)⁻¹) := by simp
-        _ = _ := by ac_rfl
+      simp
     change hu = q.1.val * G.generator (A.exteriorIdealEquiv.symm q.2) ^ 6 * (a * bU.val) ^ 6
     rw [he, hrU, mul_pow, mul_pow]
     simp only [← mul_assoc]
@@ -149,7 +145,7 @@ private theorem presentation (A : SArithmeticData F) (G : ThetaBranch.AllowedRec
     · change γ.val ^ 6 = hu / (x.1.val * G.generator x.2 ^ 6)
       dsimp [hu]
       rw [hγ]
-      exact (mul_div_cancel_left _ _).symm
+      simp
   have he := huniq (x.1, A.exteriorIdealEquiv x.2) hx'
   have hfst := congrArg Prod.fst he
   have hsnd := congrArg Prod.snd he
@@ -162,9 +158,6 @@ private theorem presentation (A : SArithmeticData F) (G : ThetaBranch.AllowedRec
   invFun u := ⟨rowOf A u.val (U.power_free u.val u.property).1, by
     rw [rowOf_unit]; exact u.property⟩
   left_inv h := by
-    apply Subtype.ext
-    apply Subtype.ext
-    apply Subtype.ext
     rfl
   right_inv u := by apply Subtype.ext; exact rowOf_unit _ _ _
 
@@ -208,9 +201,7 @@ theorem exists_frequency_representatives (A : SArithmeticData F)
       rw [rowOf_unit]; exact v.property
     · rw [rowOf_unit]
       change v.val = u.val * (γ⁻¹) ^ 6
-      change γ ^ 6 = u.val / v.val at he
-      rw [inv_pow, he]
-      simp
+      simp_all
   · intro h
     let e := (rowRepsEquiv A U).prodCongr (Equiv.refl A.Exterior)
     obtain ⟨x, hx, huniq⟩ := presentation A G U h
@@ -237,7 +228,7 @@ theorem canonical_trace_compatible (A : SArithmeticData F)
       InfinitePlace.Completion.ringEquivComplexOfIsComplex_apply]
     rw [ProbeAdditive.archPhase, ← Complex.exp_sum]
     congr 1
-    simp only [Complex.ofReal_sum, Finset.mul_sum, Complex.ofReal_mul, Complex.ofReal_ofNat]
+    simp only [Finset.mul_sum, Complex.ofReal_mul, Complex.ofReal_ofNat]
     apply Finset.sum_congr rfl
     intro w hw
     ring
@@ -310,7 +301,3 @@ theorem poisson_measure_coordinate_coherence (A : SArithmeticData F)
       Measure.map (PoissonS.localProductToSpace F A.Sf).symm
         (PoissonS.productMeasure F A.Sf μ) := by
   rfl
-
-end DedekindZetaZeroFree.PrincipalProbeConstruction
-
-end

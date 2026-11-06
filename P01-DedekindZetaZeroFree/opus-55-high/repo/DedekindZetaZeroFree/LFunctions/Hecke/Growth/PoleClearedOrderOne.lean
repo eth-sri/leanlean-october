@@ -24,5 +24,3 @@ theorem orderOneBound_poleClear (P : _root_.WeakFEPair ℂ) (hk : P.k = 1)
   intro s
   rw [hE s]
   exact hbound s
-
-end DedekindZetaZeroFree.Hecke.WeakFEPair

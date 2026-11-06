@@ -45,7 +45,7 @@ theorem rootTwistedRepresentation_ker (ρ : Representation ℂ G V)
       Submodule.span ℂ (Set.range fun tv : N × V =>
         ρ (n tv.1) tv.2 - (ψ tv.1 : ℂ) • tv.2)
     have h1 : (↑(ψ tv.1)⁻¹ : ℂ) * (ψ tv.1 : ℂ) = 1 := by
-      rw [Units.val_inv_eq_inv_val, inv_mul_cancel₀ (Units.ne_zero _)]
+      simp
     rw [show (↑(ψ tv.1)⁻¹ : ℂ) • ρ (n tv.1) tv.2 - tv.2 =
         (↑(ψ tv.1)⁻¹ : ℂ) • (ρ (n tv.1) tv.2 - (ψ tv.1 : ℂ) • tv.2) from by
       rw [smul_sub, smul_smul, h1, one_smul]]
@@ -55,7 +55,7 @@ theorem rootTwistedRepresentation_ker (ρ : Representation ℂ G V)
       Submodule.span ℂ (Set.range fun gv : N × V =>
         (↑(ψ gv.1)⁻¹ : ℂ) • ρ (n gv.1) gv.2 - gv.2)
     have h1 : (ψ tv.1 : ℂ) * (↑(ψ tv.1)⁻¹ : ℂ) = 1 := by
-      rw [Units.val_inv_eq_inv_val, mul_inv_cancel₀ (Units.ne_zero _)]
+      simp
     rw [show ρ (n tv.1) tv.2 - (ψ tv.1 : ℂ) • tv.2 =
         (ψ tv.1 : ℂ) • ((↑(ψ tv.1)⁻¹ : ℂ) • ρ (n tv.1) tv.2 - tv.2) from by
       rw [smul_sub, smul_smul, h1, one_smul]]
@@ -70,9 +70,9 @@ theorem rootCoinvariantsMk_equivariant (ρ : Representation ℂ G V)
     rootCoinvariantsMk ρ n ψ (ρ (n t) v) =
       (ψ t : ℂ) • rootCoinvariantsMk ρ n ψ v := by
   have h1 : (ψ t : ℂ) * (↑(ψ t)⁻¹ : ℂ) = 1 := by
-    rw [Units.val_inv_eq_inv_val, mul_inv_cancel₀ (Units.ne_zero _)]
+    simp
   have h : ρ (n t) v = (ψ t : ℂ) • rootTwistedRepresentation ρ n ψ t v := by
-    rw [rootTwistedRepresentation_apply, smul_smul, h1, one_smul]
+    simp
   rw [rootCoinvariantsMk, h, map_smul, Representation.Coinvariants.mk_self_apply]
 
 theorem rootCoinvariantsMk_surjective (ρ : Representation ℂ G V)
@@ -91,16 +91,10 @@ def RootEquivariantMaps (ρ : Representation ℂ G V) (n : N →* G) (ψ : N →
   carrier := {L | ∀ t v, L (ρ (n t) v) = (ψ t : ℂ) • L v}
   zero_mem' := by simp
   add_mem' := by
-    intro L M hL hM t v
-    simp only [LinearMap.add_apply, hL t v, hM t v, smul_add]
+    simp_all
   smul_mem' := by
     intro c L hL t v
     simp only [LinearMap.smul_apply, hL t v, smul_comm c (ψ t : ℂ)]
-
-@[simp] theorem mem_RootEquivariantMaps (ρ : Representation ℂ G V)
-    (n : N →* G) (ψ : N →* ℂˣ) (L : V →ₗ[ℂ] E) :
-    L ∈ RootEquivariantMaps ρ n ψ E ↔
-      ∀ t v, L (ρ (n t) v) = (ψ t : ℂ) • L v := Iff.rfl
 
 theorem rootRelationSpan_le_ker (ρ : Representation ℂ G V)
     (n : N →* G) (ψ : N →* ℂˣ) (L : RootEquivariantMaps ρ n ψ E) :
@@ -133,7 +127,6 @@ def rootCoinvariantsUniversalEquiv (ρ : Representation ℂ G V) (n : N →* G)
     rfl
   right_inv := by
     intro L
-    apply Subtype.ext
     rfl
   map_add' := by intros; rfl
   map_smul' := by intros; rfl
@@ -162,24 +155,6 @@ def rootCoinvariantsMap (ρ : Representation ℂ G V) (σ : Representation ℂ G
     (rootCoinvariantsMap ρ σ n ψ f).comp (rootCoinvariantsMk ρ n ψ) =
       (rootCoinvariantsMk σ n ψ).comp f.toLinearMap := rfl
 
-@[simp] theorem rootCoinvariantsMap_id (ρ : Representation ℂ G V)
-    (n : N →* G) (ψ : N →* ℂˣ) :
-    rootCoinvariantsMap ρ ρ n ψ (Representation.IntertwiningMap.id ρ) = LinearMap.id := by
-  have h : rootTwistedIntertwiner ρ ρ n ψ (Representation.IntertwiningMap.id ρ) =
-      Representation.IntertwiningMap.id (rootTwistedRepresentation ρ n ψ) :=
-    Representation.IntertwiningMap.ext rfl
-  rw [rootCoinvariantsMap, h, Representation.Coinvariants.map_id]
-
-@[simp] theorem rootCoinvariantsMap_comp (ρ : Representation ℂ G V)
-    (σ : Representation ℂ G W) (τ : Representation ℂ G X)
-    (n : N →* G) (ψ : N →* ℂˣ) (f : ρ.IntertwiningMap σ) (g : σ.IntertwiningMap τ) :
-    (rootCoinvariantsMap σ τ n ψ g).comp (rootCoinvariantsMap ρ σ n ψ f) =
-      rootCoinvariantsMap ρ τ n ψ (g.comp f) := by
-  have h : (rootTwistedIntertwiner σ τ n ψ g).comp (rootTwistedIntertwiner ρ σ n ψ f) =
-      rootTwistedIntertwiner ρ τ n ψ (g.comp f) :=
-    Representation.IntertwiningMap.ext rfl
-  simp only [rootCoinvariantsMap, h, Representation.Coinvariants.map_comp]
-
 @[simp] theorem rootTwistedRepresentation_trivial (ρ : Representation ℂ G V) (n : N →* G) :
     rootTwistedRepresentation ρ n 1 = ρ.comp n := by
   ext t v
@@ -202,9 +177,3 @@ instance rootCoinvariantsTopology (ρ : Representation ℂ G V) (n : N →* G)
     (ψ : N →* ℂˣ) : TopologicalSpace (RootCoinvariants ρ n ψ) :=
   inferInstanceAs (TopologicalSpace
     (V ⧸ Representation.Coinvariants.ker (rootTwistedRepresentation ρ n ψ)))
-
-end Topological
-
-end DedekindZetaZeroFree
-
-end

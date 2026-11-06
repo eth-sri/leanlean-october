@@ -6,7 +6,6 @@ public import ClassFieldTheory.Theorems.ConductorsAndRayClassFields.RayClassGrou
 
 @[expose] public section
 
-noncomputable section
 
 open scoped NumberField Classical
 
@@ -30,7 +29,7 @@ theorem exists_integral_inverse_rayIdealClass
     have hmem : (ClassFieldTheory.rayClassOfFinitePrime μ v.val v.property) ^ e v ∈
         Submonoid.powers (ClassFieldTheory.rayClassOfFinitePrime μ v.val v.property) := by
       rw [mem_powers_iff_mem_zpowers]
-      exact ⟨e v, rfl⟩
+      simp
     obtain ⟨n, hn⟩ := hmem
     exact ⟨n, hn⟩
   choose n hn using key
@@ -49,7 +48,3 @@ theorem exists_ray_congruence_basepoint
   have h : b - 1 = -d := by rw [← hbd]; ring
   rw [h]
   exact m.neg_mem hd
-
-end DedekindZetaZeroFree.AbelianQuotient
-
-end

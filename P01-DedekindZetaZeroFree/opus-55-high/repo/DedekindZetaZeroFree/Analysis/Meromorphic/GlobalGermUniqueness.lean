@@ -5,7 +5,6 @@ public import Mathlib.Analysis.Complex.Basic
 
 @[expose] public section
 
-noncomputable section
 open scoped Topology
 namespace DedekindZetaZeroFree.KPLiteralPeriod.ConstantTermCovariance.GlobalScalarPin
 
@@ -27,7 +26,3 @@ namespace DedekindZetaZeroFree.KPLiteralPeriod.ConstantTermCovariance.GlobalScal
     hU (hVU hw) hz hwtop
   filter_upwards [meromorphicOrderAt_eq_top_iff.mp hztop] with s hs
   exact sub_eq_zero.mp hs
-
-end DedekindZetaZeroFree.KPLiteralPeriod.ConstantTermCovariance.GlobalScalarPin
-
-end

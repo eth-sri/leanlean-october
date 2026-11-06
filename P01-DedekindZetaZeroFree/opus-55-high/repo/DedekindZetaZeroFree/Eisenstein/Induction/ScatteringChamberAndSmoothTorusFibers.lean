@@ -22,8 +22,7 @@ theorem literal_raw_group_chart_contDiffOn (h : Functions F ζ hζ) (hh : Smooth
     (g : G F ζ hζ) :
     ContDiffOn ℝ (⊤ : ℕ∞)
       (fun z => h (KPGlobalTorusBorelTwistCompatibility.groupArchChart F ζ hζ z * g))
-      (KPGlobalTorusBorelTwistCompatibility.groupArchDomain F) := by
-  exact literal_raw_group_chart_contDiffOn_source F ζ hζ h hh g
+      (KPGlobalTorusBorelTwistCompatibility.groupArchDomain F) := by apply DedekindZetaZeroFree.KPLiteralChamber.literal_raw_group_chart_contDiffOn_source <;> assumption
 
 end DedekindZetaZeroFree.KPLiteralChamber
 
@@ -69,7 +68,7 @@ private theorem diagonal_chart (z : KPGlobalTorusFunctionData.TorusArch F) :
     simp [KPGlobalTorusBorelTwistCompatibility.groupArchTuple,
       KPGlobalTorusFunctionData.archDiagonalTuple, diagonalCoordinates]
 
-private theorem half_smooth : ContDiffOn ℝ (⊤ : ℕ∞)
+theorem half_smooth : ContDiffOn ℝ (⊤ : ℕ∞)
     (fun z => KPGlobalTorusFunctionData.deltaHalf F ζ hζ
       (KPGlobalTorusFunctionData.torusArchChart F ζ hζ z))
     (KPGlobalTorusFunctionData.torusArchDomain F) := by
@@ -212,8 +211,7 @@ theorem literal_raw_torus_fiber_contDiffOn (h : Functions F ζ hζ) (hh : Smooth
       (fun z => (KPGlobalTorusFunctionData.deltaHalf F ζ hζ
           (KPGlobalTorusFunctionData.torusArchChart F ζ hζ z * t))⁻¹ *
         h ((KPGlobalTorusFunctionData.torusArchChart F ζ hζ z * t).val * g))
-      (KPGlobalTorusFunctionData.torusArchDomain F) := by
-  exact literal_raw_torus_fiber_contDiffOn_source F ζ hζ h hh g t
+      (KPGlobalTorusFunctionData.torusArchDomain F) := by apply DedekindZetaZeroFree.KPLiteralChamber.literal_raw_torus_fiber_contDiffOn_source <;> assumption
 
 theorem literal_zero_induced_lift (K : Subgroup (G F ζ hζ))
     (hK : IwasawaCompact F ζ hζ K) (f : Flat F ζ hζ K) :

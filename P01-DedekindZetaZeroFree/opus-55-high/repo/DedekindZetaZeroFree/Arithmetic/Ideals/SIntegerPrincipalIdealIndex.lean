@@ -7,13 +7,12 @@ public import Mathlib.NumberTheory.NumberField.ProductFormula
 
 @[expose] public section
 
-noncomputable section
 
 namespace DedekindZetaZeroFree
 
 open NumberField IsDedekindDomain WithZero
 
-private theorem simultaneous_integer_approximation
+theorem simultaneous_integer_approximation
     (F : Type) [Field F] [NumberField F]
     (T : Finset (HeightOneSpectrum (RingOfIntegers F))) (x : F)
     (hx : ∀ v ∈ T, v.valuation F x ≤ 1)
@@ -39,7 +38,7 @@ private theorem simultaneous_integer_approximation
   rw [sub_add_sub_cancel] at hadd
   exact hadd.trans (max_le hbr (hr ⟨v, hv⟩).le)
 
-private theorem span_singleton_mem_iff_valuations
+theorem span_singleton_mem_iff_valuations
     (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
     (a y : (S : Set (HeightOneSpectrum (RingOfIntegers F))).integer F)
@@ -61,7 +60,7 @@ private theorem span_singleton_mem_iff_valuations
     apply Subtype.ext
     exact (mul_div_cancel₀ _ haF).symm
 
-private theorem valuation_eq_exp_neg_toNat
+theorem valuation_eq_exp_neg_toNat
     (F : Type) [Field F] [NumberField F]
     (v : HeightOneSpectrum (RingOfIntegers F)) (a : F) (ha : a ≠ 0)
     (hv : v.valuation F a ≤ 1) :
@@ -70,9 +69,9 @@ private theorem valuation_eq_exp_neg_toNat
   have hlog : WithZero.log (v.valuation F a) ≤ 0 := by
     have h := (WithZero.exp_le_exp).mp (show WithZero.exp (WithZero.log (v.valuation F a)) ≤ WithZero.exp (0 : ℤ) by simpa [WithZero.exp_log hn] using hv)
     exact h
-  rw [Int.toNat_of_nonneg (neg_nonneg.mpr hlog), neg_neg, WithZero.exp_log hn]
+  simp_all
 
-private theorem finite_valuation_mulSupport
+theorem finite_valuation_mulSupport
     (F : Type) [Field F] [NumberField F] (a : F) (ha : a ≠ 0) :
     Function.HasFiniteMulSupport (fun v : HeightOneSpectrum (RingOfIntegers F) => v.valuation F a) := by
   have hfin := (FinitePlace.hasFiniteMulSupport ha).comp_of_injective
@@ -86,7 +85,7 @@ private theorem finite_valuation_mulSupport
   have h' : (WithZeroMulInt.toNNReal (e := (Ideal.absNorm v.asIdeal : NNReal)) (ne_of_gt (zero_lt_one.trans (NumberField.HeightOneSpectrum.one_lt_absNorm_nnreal v)))) (v.valuation F a) = 1 := by exact_mod_cast h
   exact (WithZeroMulInt.toNNReal_eq_one_iff _ _ (ne_of_gt ((NumberField.HeightOneSpectrum.one_lt_absNorm_nnreal v)))).mp h'
 
-private theorem principal_quotient_comap_surjective
+theorem principal_quotient_comap_surjective
     (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
     (a : (S : Set (HeightOneSpectrum (RingOfIntegers F))).integer F)
@@ -114,7 +113,7 @@ private theorem principal_quotient_comap_surjective
     rw [valuation_eq_exp_neg_toNat F v (a : F) haF (a.property v hv)]
     exact hr v hvT
 
-private theorem comap_principal_eq_product
+theorem comap_principal_eq_product
     (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
     (a : (S : Set (HeightOneSpectrum (RingOfIntegers F))).integer F)
@@ -156,7 +155,7 @@ private theorem comap_principal_eq_product
       rw [v.valuation_of_algebraMap]
       exact hr'
 
-private theorem place_mul_norm_power
+theorem place_mul_norm_power
     (F : Type) [Field F] [NumberField F]
     (v : HeightOneSpectrum (RingOfIntegers F)) (a : F) (ha : a ≠ 0)
     (hv : v.valuation F a ≤ 1) :
@@ -167,12 +166,12 @@ private theorem place_mul_norm_power
   have hlog : WithZero.log (v.valuation F a) = -((-WithZero.log (v.valuation F a)).toNat : ℤ) := by
     conv_lhs => rw [valuation_eq_exp_neg_toNat F v a ha hv, WithZero.log_exp]
   conv_lhs => lhs; rw [hlog]
-  simp only [NNReal.coe_zpow, NNReal.coe_natCast, zpow_neg, zpow_natCast]
+  simp only [zpow_neg, zpow_natCast]
   have hn : (Ideal.absNorm v.asIdeal : ℝ) ≠ 0 := by exact_mod_cast
     (ne_of_gt (zero_lt_one.trans (NumberField.HeightOneSpectrum.one_lt_absNorm_nnreal v)))
   exact inv_mul_cancel₀ (pow_ne_zero _ hn)
 
-private theorem quotient_card_eq_comap_norm
+theorem quotient_card_eq_comap_norm
     (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
     (a : (S : Set (HeightOneSpectrum (RingOfIntegers F))).integer F)
@@ -242,7 +241,3 @@ theorem sProductModulus_eq_principalIdeal_index
   rw [hfull, ← mul_assoc] at hprod
   apply mul_right_cancel₀ (left_ne_zero_of_mul (hTN.trans_ne one_ne_zero))
   rw [hprod, mul_comm N, hTN]
-
-end DedekindZetaZeroFree
-
-end

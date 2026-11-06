@@ -26,26 +26,21 @@ lemma Measure.pi_update_smul {ι : Type*} [Fintype ι] [DecidableEq ι]
         (if i = i₀ then c else 1) * μ i (s i) := by
       intro i
       by_cases h : i = i₀
-      · subst h; rw [Function.update_self, Measure.smul_apply, smul_eq_mul]; simp
-      · rw [Function.update_of_ne h]; simp [h]
+      · subst h; simp
+      simp_all
     have h1 : (∏ i, (if i = i₀ then c else 1)) = c := by
-      rw [Finset.prod_eq_single (s := Finset.univ)
-        (f := fun i => (if i = i₀ then c else 1)) (a := i₀)]
-      · simp
-      · intro b _ hb; simp [hb]
-      · intro h; exact absurd (Finset.mem_univ i₀) h
+      simp
     rw [Finset.prod_congr rfl (fun i _ => hstep i), Finset.prod_mul_distrib, h1]
-  rw [Measure.smul_apply, Measure.pi_pi, hbox, smul_eq_mul]
+  simp_all
 
-private lemma polarUnit_continuous (A : SArithmeticData F) (w : InfinitePlace F) :
+lemma polarUnit_continuous (A : SArithmeticData F) (w : InfinitePlace F) :
     Continuous (ThetaPositiveSheetMellin.polarUnit A w) := by
   unfold ThetaPositiveSheetMellin.polarUnit ThetaProfileHaarSheets.sqrtUnit
   apply Continuous.mul
   · apply (Units.continuous_map
       (InfinitePlace.Completion.isometryEquivComplexOfIsComplex (A.complex_place w)).symm.continuous).comp
     apply Units.isEmbedding_val₀.continuous_iff.mpr
-    exact Complex.continuous_ofReal.comp (Real.continuous_sqrt.comp
-      (continuous_subtype_val.comp continuous_fst))
+    fun_prop
   · exact (Units.continuous_map
       (InfinitePlace.Completion.isometryEquivComplexOfIsComplex (A.complex_place w)).symm.continuous).comp
       (show Continuous (fun p : ThetaProfileHaarSheets.PositiveAxis × Circle => p.2.toUnits) from
@@ -153,7 +148,3 @@ theorem exists_productHaar_localUnits_eq (A : SArithmeticData F)
     (ProbeSheet.localUnitsContinuous A).continuous.measurable
   rw [he, Measure.map_smul c hm.aemeasurable]
   exact (Measure.isMulLeftInvariant_eq_smul M M₀).symm
-
-end DedekindZetaZeroFree.ProbeHaarFactorization
-
-end

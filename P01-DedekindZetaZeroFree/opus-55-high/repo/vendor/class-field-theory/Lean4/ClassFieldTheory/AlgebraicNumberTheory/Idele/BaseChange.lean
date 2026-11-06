@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Scalar extension from relative to ordinary ideles
 
@@ -32,7 +27,6 @@ open scoped NumberField TensorProduct RestrictedProduct
 open NumberField IsDedekindDomain
 
 noncomputable section
-
 
 open AlgebraicNumberTheory.Valuations
 
@@ -230,12 +224,11 @@ theorem
     exact congrArg (fun v : InfinitePlace K => v x) hW₀
   refine ⟨⟨Wσ, hWσ⟩, ?_⟩
   rw [hσ]
-  apply Subtype.ext
   rfl
 
 /-- Infinite places of `L` above `w` are exactly the exact extensions of
 the absolute value represented by `w`. -/
-noncomputable def infinitePlaceAboveEquivExtension
+def infinitePlaceAboveEquivExtension
     (w : InfinitePlace K) :
     {W : InfinitePlace L //
       infinitePlaceBelow (K := K) W = w} ≃
@@ -313,7 +306,7 @@ theorem infinitePlaceAboveEquivExtension_apply_val
 
 /-- Reindex the relative completion product by actual infinite
 places above `w`. -/
-noncomputable def infiniteCompletionProductReindexAbove
+def infiniteCompletionProductReindexAbove
     (w : InfinitePlace K) :
     (∀ u : AbsoluteValueExtension w.1 L,
       u.1.Completionˣ) ≃*
@@ -330,12 +323,11 @@ noncomputable def infiniteCompletionProductReindexAbove
     { e with
       map_mul' := by
         intro x y
-        funext W
         rfl }
 
 /-- Replace the absolute-value completion in every factor by mathlib's
 concrete infinite-place completion. -/
-noncomputable def infiniteCompletionProductEquivAbove
+def infiniteCompletionProductEquivAbove
     (w : InfinitePlace K) :
     (∀ u : AbsoluteValueExtension w.1 L,
       u.1.Completionˣ) ≃*
@@ -350,7 +342,7 @@ noncomputable def infiniteCompletionProductEquivAbove
 
 /-- The canonical local tensor decomposition for the actual archimedean tensor component, with
 codomain indexed by concrete infinite places above the base place. -/
-noncomputable def infinitePlaceTensorUnitsEquivAbove
+def infinitePlaceTensorUnitsEquivAbove
     (w : InfinitePlace K) :
     (w.Completion ⊗[K] L)ˣ ≃*
       ∀ W : {W : InfinitePlace L //
@@ -388,22 +380,6 @@ theorem infinitePlaceTensorUnitsEquivAbove_apply
           (K := K) (L := L) w W)) :=
   rfl
 
-omit [NumberField K] [NumberField L] [FiniteDimensional K L] in
-/-- After replacing the concrete completion by the underlying
-absolute-value completion, scalar extension of a local unit is the pure
-tensor with right factor one. -/
-@[simp]
-theorem infinitePlaceLocalTensorUnitsEquiv_infiniteLocalIdeleInclusion_coe
-    (w : InfinitePlace K) (x : w.Completionˣ) :
-    (infinitePlaceLocalTensorUnitsEquiv
-        (K := K) (L := L) w
-        (infiniteLocalIdeleInclusion
-          (K := K) (L := L) w x) :
-      LocalClassFieldTheory.LocalTensorAlgebra (L := L) w.1) =
-      infinitePlaceCompletionAlgEquiv w
-          (x : w.Completion) ⊗ₜ[K] (1 : L) := by
-  rfl
-
 /-- On a diagonal extension-field unit, the infinite local
 relative-to-ordinary comparison is the ordinary diagonal embedding. -/
 theorem infinitePlaceTensorUnitsEquivAbove_localFieldIdeleInclusion
@@ -431,12 +407,11 @@ theorem infinitePlaceTensorUnitsEquivAbove_localFieldIdeleInclusion
       algebraMap L W.1.Completion (x : L)
   rw [completionTensorDecomposition_left_tmul_apply]
   simp only [map_one, one_mul]
-  apply InfinitePlace.Completion.ext
   rfl
 
 /-- Flatten the products over base infinite places and places above them
 to the product over all infinite places of `L`. -/
-noncomputable def infinitePlaceAbovePiMulEquiv :
+def infinitePlaceAbovePiMulEquiv :
     (∀ w : InfinitePlace K,
       ∀ W : {W : InfinitePlace L //
           infinitePlaceBelow (K := K) W = w},
@@ -451,15 +426,13 @@ noncomputable def infinitePlaceAbovePiMulEquiv :
     subst w
     rfl
   right_inv f := by
-    funext W
     rfl
   map_mul' f g := by
-    funext W
     rfl
 
 /-- The unrestricted product of all archimedean tensor-unit factors is
 the product of the concrete archimedean local unit groups of `L`. -/
-noncomputable def relativeInfiniteTensorPiMulEquiv :
+def relativeInfiniteTensorPiMulEquiv :
     (∀ w : InfinitePlace K,
       (w.Completion ⊗[K] L)ˣ) ≃*
       ∀ W : InfinitePlace L, W.Completionˣ :=
@@ -484,7 +457,7 @@ theorem relativeInfiniteTensorPiMulEquiv_apply
 
 /-- The archimedean relative tensor factors form the ordinary infinite
 idele group of `L`. -/
-noncomputable def relativeInfiniteIdeleMulEquiv :
+def relativeInfiniteIdeleMulEquiv :
     (∀ w : InfinitePlace K,
       (w.Completion ⊗[K] L)ˣ) ≃*
       InfiniteIdeleGroup L :=
@@ -513,7 +486,7 @@ theorem RelativeFiniteIdeleData.finite_mul
   rfl
 
 /-- Forget the infinite component of restricted local idele data. -/
-noncomputable def RelativeLocalIdeleData.toFiniteData
+def RelativeLocalIdeleData.toFiniteData
     (a : RelativeLocalIdeleData (K := K) (L := L)) :
     RelativeFiniteIdeleData (K := K) (L := L) where
   finite := a.finite
@@ -537,7 +510,7 @@ theorem RelativeLocalIdeleData.toFiniteData_mul
 
 /-- Split restricted local idele data into its unrestricted infinite part
 and finite restricted part. -/
-noncomputable def relativeLocalIdeleDataSplitMulEquiv :
+def relativeLocalIdeleDataSplitMulEquiv :
     RelativeLocalIdeleData (K := K) (L := L) ≃*
       ((∀ w : InfinitePlace K,
           (w.Completion ⊗[K] L)ˣ) ×
@@ -553,19 +526,16 @@ noncomputable def relativeLocalIdeleDataSplitMulEquiv :
   left_inv a := by
     apply RelativeLocalIdeleData.ext <;> rfl
   right_inv a := by
-    rcases a with ⟨a, b⟩
     rfl
   map_mul' a b := by
     apply Prod.ext
     · funext w
-      exact RelativeLocalIdeleData.infinite_mul
-        (K := K) (L := L) a b w
-    · exact RelativeLocalIdeleData.toFiniteData_mul
-        (K := K) (L := L) a b
+      simp
+    simp
 
 /-- Scalar extension identifies the actual relative
 idele group `I_K ⊗_K L` with the ordinary idele group `I_L`. -/
-noncomputable def relativeIdeleBaseChangeMulEquiv :
+def relativeIdeleBaseChangeMulEquiv :
     RelativeIdeleGroup K L ≃* IdeleGroup L :=
   (relativeIdeleMulEquivLocalData
     (K := K) (L := L)).trans
@@ -601,5 +571,3 @@ theorem relativeIdeleBaseChangeMulEquiv_finite
         (relativeIdeleToLocalData
           (K := K) (L := L) z).toFiniteData :=
   rfl
-
-end

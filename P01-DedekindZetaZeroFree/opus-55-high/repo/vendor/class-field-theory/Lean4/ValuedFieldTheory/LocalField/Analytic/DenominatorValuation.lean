@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Valuations of natural-number denominators
 
@@ -61,8 +57,7 @@ def ofWithZeroValuation
       valuation := v
       instCompleteDiscrete := inferInstance }
   residueFinite := by
-    change Finite (IsLocalRing.ResidueField v.valuationSubring)
-    infer_instance
+    omega
 
 /-- The ramification index `e = v_K(p)` of a standard mixed-characteristic
 local field, obtained from the exponent of the value of its residue
@@ -91,8 +86,8 @@ theorem ramificationIndexOfWithZeroValuation_intCast
     (_root_.Valuation.ne_zero_iff v).2 hpK
   have hpv_lt :
       v (F.residueCharacteristic : K) <
-        (1 : WithZero (Multiplicative ℤ)) := by
-    exact F.valuation_natCast_residueCharacteristic_lt_one
+        (1 : WithZero (Multiplicative ℤ)) := 
+    F.valuation_natCast_residueCharacteristic_lt_one
   have hlogneg :
       WithZero.log (v (F.residueCharacteristic : K)) < (0 : ℤ) := by
     have hloglt :
@@ -103,7 +98,7 @@ theorem ramificationIndexOfWithZeroValuation_intCast
     simpa using hloglt
   have hnonneg :
       0 ≤ -WithZero.log (v (F.residueCharacteristic : K)) :=
-    (neg_pos.mpr hlogneg).le
+    by omega
   simpa [ramificationIndexOfWithZeroValuation, F] using
     Int.toNat_of_nonneg hnonneg
 
@@ -120,8 +115,8 @@ theorem ramificationIndexOfWithZeroValuation_pos
     (_root_.Valuation.ne_zero_iff v).2 hpK
   have hpv_lt :
       v (F.residueCharacteristic : K) <
-        (1 : WithZero (Multiplicative ℤ)) := by
-    exact F.valuation_natCast_residueCharacteristic_lt_one
+        (1 : WithZero (Multiplicative ℤ)) := 
+    F.valuation_natCast_residueCharacteristic_lt_one
   have hlogneg :
       WithZero.log (v (F.residueCharacteristic : K)) < (0 : ℤ) := by
     have hloglt :
@@ -151,7 +146,7 @@ theorem valuation_residueCharacteristic_eq_exp_neg_ramificationIndex
     (_root_.Valuation.ne_zero_iff v).2 hpK
   have hpv_ne' :
       v ((ofWithZeroValuation v).residueCharacteristic : K) ≠ 0 := by
-    simpa [F] using hpv_ne
+    omega
   calc
     v ((ofWithZeroValuation v).residueCharacteristic : K) =
         WithZero.exp
@@ -182,10 +177,10 @@ theorem valuation_natCast_eq_exp_neg_ramificationIndex_mul_padicValNat
   let : Fact p.Prime := by
     dsimp [p]
     infer_instance
-  have hpow : p ^ k ∣ m := by
-    exact pow_padicValNat_dvd
-  have hmfac : p ^ k * a = m := by
-    exact Nat.mul_div_cancel' hpow
+  have hpow : p ^ k ∣ m := 
+    pow_padicValNat_dvd
+  have hmfac : p ^ k * a = m := 
+    Nat.mul_div_cancel' hpow
   have ha : ¬ p ∣ a := by
     intro hpa
     have hnot : ¬ p ^ (k + 1) ∣ m := by
@@ -250,8 +245,3 @@ theorem valuation_natCast_factorial_eq_exp_neg_ramificationIndex_mul_padicValNat
             (ofWithZeroValuation v).residueCharacteristic m.factorial : ℤ))) :=
   valuation_natCast_eq_exp_neg_ramificationIndex_mul_padicValNat
     v m.factorial (Nat.factorial_ne_zero m)
-
-end LocalField
-end LocalFieldTheory.DiscreteValuationField
-
-end

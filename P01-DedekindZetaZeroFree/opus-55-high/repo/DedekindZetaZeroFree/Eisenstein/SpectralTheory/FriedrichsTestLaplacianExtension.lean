@@ -6,10 +6,9 @@ public import DedekindZetaZeroFree.Analysis.QuadraticForms.FriedrichsVariational
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree
 
-private theorem closedGradient_test_inner_eq
+theorem closedGradient_test_inner_eq
     {H V : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
     [NormedAddCommGroup V] [InnerProductSpace ℂ V] [CompleteSpace V]
     (D : H →ₗ.[ℂ] V) (δ : V →ₗ.[ℂ] H)
@@ -117,8 +116,3 @@ theorem friedrichs_extends_test_laplacian
         (KPTestOperator.descend ι hι j A) (KPTestOperator.descend j hj ι B)
         hdense hclosable hδ hformal himage f,
       KPTestOperator.laplacian_eq_divergence_differential ι hι j hj A B f]
-
-end KPTestGreenTransfer
-end DedekindZetaZeroFree
-
-end

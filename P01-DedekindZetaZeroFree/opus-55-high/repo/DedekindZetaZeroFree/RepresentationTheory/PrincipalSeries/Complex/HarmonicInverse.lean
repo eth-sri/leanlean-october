@@ -14,7 +14,7 @@ local instance : AddCommGroup complexCore := Submodule.addCommGroup complexCore
 local instance : Module ℂ complexCore := Submodule.module complexCore
 local instance : TopologicalSpace complexCore := instTopologicalSpaceSubtype
 
-private theorem harmonic_preimage (ℓ : ℕ) (h : PrincipalSeries negativeParameter)
+theorem harmonic_preimage (ℓ : ℕ) (h : PrincipalSeries negativeParameter)
     (hh : h ∈ harmonicKType negativeParameter ℓ) :
     ∃ f : PrincipalSeries positiveParameter,
       f ∈ harmonicKType positiveParameter ℓ ∧ standardIntertwiner (1 : ℂˣ) f = h := by

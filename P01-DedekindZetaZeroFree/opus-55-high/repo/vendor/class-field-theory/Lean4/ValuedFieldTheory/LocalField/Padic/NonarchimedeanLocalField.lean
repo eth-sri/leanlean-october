@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # The p-adic field as a nonarchimedean local field
 
@@ -42,9 +37,7 @@ theorem mulValuation_le_one_iff_norm_le_one
   by_cases hx : x = 0
   · simp [hx]
   · rw [Padic.norm_le_one_iff_val_nonneg]
-    change (if x = 0 then 0 else WithZero.exp (-x.valuation)) ≤ 1 ↔
-      0 ≤ x.valuation
-    rw [ite_eq_right hx, ← WithZero.exp_zero, WithZero.exp_le_exp, neg_nonpos]
+    simp_all
 
 /-- The integer ring defined by the canonical valuative relation on `ℚ_p`
 consists exactly of the elements of norm at most one. -/
@@ -81,22 +74,12 @@ theorem normedFieldValuation_compatible_padic :
   exact (zpow_right_strictMono₀ hpone).le_iff_le.symm
 
 /-- The usual topology on `ℚ_p` is induced by its canonical valuation. -/
-theorem padicIsValuativeTopology : IsValuativeTopology ℚ_[p] := by
-  let v : Valuation ℚ_[p] NNReal := NormedField.valuation
-  let : Valued ℚ_[p] NNReal := NormedField.toValued
-  let : v.Compatible := normedFieldValuation_compatible_padic p
-  apply IsValuativeTopology.of_mem_nhds_zero_iff_vle v
-  intro s
-  exact Valued.mem_nhds_zero
+theorem padicIsValuativeTopology : IsValuativeTopology ℚ_[p] := by apply Padic.instIsValuativeTopology <;> assumption
 
 /-- Mathlib's p-adic field is a nonarchimedean local field for the
 topology-first interface used by local class field theory. -/
-noncomputable instance padicIsNonarchimedeanLocalField :
+instance padicIsNonarchimedeanLocalField :
     IsNonarchimedeanLocalField ℚ_[p] where
   toIsValuativeTopology := padicIsValuativeTopology p
   toLocallyCompactSpace := inferInstance
   toIsNontrivial := inferInstance
-
-end LocalFieldTheory.Padic
-
-end

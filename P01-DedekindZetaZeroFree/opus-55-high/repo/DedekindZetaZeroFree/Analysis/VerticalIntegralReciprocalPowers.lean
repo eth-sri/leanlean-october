@@ -4,19 +4,18 @@ public import DedekindZetaZeroFree.Analysis.MellinVerticalIntegral
 
 @[expose] public section
 
-noncomputable section
 open MeasureTheory Filter
 open scoped Classical Topology
 
 namespace DedekindZetaZeroFree.LargeSieve.Vendor
 
-private lemma re_shift (a : ℝ) (t : ℝ) : (((a : ℂ) + (t : ℂ) * Complex.I).re) = a := by
+lemma re_shift (a : ℝ) (t : ℝ) : (((a : ℂ) + (t : ℂ) * Complex.I).re) = a := by
   simp [Complex.add_re, Complex.mul_re]
 
-private lemma im_shift (a : ℝ) (t : ℝ) : (((a : ℂ) + (t : ℂ) * Complex.I).im) = t := by
+lemma im_shift (a : ℝ) (t : ℝ) : (((a : ℂ) + (t : ℂ) * Complex.I).im) = t := by
   simp [Complex.add_im, Complex.mul_im]
 
-private lemma norm_lower (a : ℝ) (t : ℝ) :
+lemma norm_lower (a : ℝ) (t : ℝ) :
     (1 + |t|) * |a| ≤ (1 + |a|) * ‖(a : ℂ) + (t : ℂ) * Complex.I‖ := by
   have ha : |a| ≤ ‖(a : ℂ) + (t : ℂ) * Complex.I‖ := by
     have h := Complex.abs_re_le_norm ((a : ℂ) + (t : ℂ) * Complex.I)
@@ -37,7 +36,7 @@ private lemma norm_lower (a : ℝ) (t : ℝ) :
       mul_le_mul_of_nonneg_left ht (by linarith [abs_nonneg a])
     linarith
 
-private lemma norm_zpow_bound (a : ℝ) (ha : a ≠ 0) {m : ℕ} (hm : 2 ≤ m) (t : ℝ) :
+lemma norm_zpow_bound (a : ℝ) (ha : a ≠ 0) {m : ℕ} (hm : 2 ≤ m) (t : ℝ) :
     ‖((a : ℂ) + (t : ℂ) * Complex.I) ^ (-(m : ℤ))‖ ≤
       ((1 + |a|) / |a|) ^ m * (1 + t ^ 2)⁻¹ := by
   set r : ℝ := ‖(a : ℂ) + (t : ℂ) * Complex.I‖ with hr
@@ -76,14 +75,12 @@ private lemma norm_zpow_bound (a : ℝ) (ha : a ≠ 0) {m : ℕ} (hm : 2 ≤ m) 
     _ ≤ ((1 + |a|) / |a|) ^ m * (1 + t ^ 2)⁻¹ :=
         mul_le_mul_of_nonneg_left h3 (by positivity)
 
-private lemma integrable_shift_zpow (a : ℝ) (ha : a ≠ 0) {m : ℕ} (hm : 2 ≤ m) :
+lemma integrable_shift_zpow (a : ℝ) (ha : a ≠ 0) {m : ℕ} (hm : 2 ≤ m) :
     Integrable (fun t : ℝ => ((a : ℂ) + (t : ℂ) * Complex.I) ^ (-(m : ℤ))) volume := by
   have hne : ∀ t : ℝ, (a : ℂ) + (t : ℂ) * Complex.I ≠ 0 := by
     intro t h
     have h2 := re_shift a t
-    rw [h] at h2
-    simp at h2
-    exact ha h2.symm
+    simp_all
   have hcont : Continuous (fun t : ℝ => ((a : ℂ) + (t : ℂ) * Complex.I) ^ (-(m : ℤ))) :=
     ((by fun_prop : Continuous fun t : ℝ => (a : ℂ) + (t : ℂ) * Complex.I)).zpow₀ _
       (fun t => Or.inl (hne t))
@@ -91,7 +88,7 @@ private lemma integrable_shift_zpow (a : ℝ) (ha : a ≠ 0) {m : ℕ} (hm : 2 �
     hcont.aestronglyMeasurable ?_
   exact Eventually.of_forall fun t => norm_zpow_bound a ha hm t
 
-private lemma hasDerivAt_prim (a : ℝ) (ha : a ≠ 0) {m : ℕ} (hm : 2 ≤ m) (t : ℝ) :
+lemma hasDerivAt_prim (a : ℝ) (ha : a ≠ 0) {m : ℕ} (hm : 2 ≤ m) (t : ℝ) :
     HasDerivAt (fun t : ℝ =>
         ((a : ℂ) + (t : ℂ) * Complex.I) ^ (1 - (m : ℤ)) *
           (Complex.I * ((1 - (m : ℤ) : ℤ) : ℂ))⁻¹)
@@ -99,9 +96,7 @@ private lemma hasDerivAt_prim (a : ℝ) (ha : a ≠ 0) {m : ℕ} (hm : 2 ≤ m) 
   have hne : (a : ℂ) + (t : ℂ) * Complex.I ≠ 0 := by
     intro h
     have h2 := re_shift a t
-    rw [h] at h2
-    simp at h2
-    exact ha h2.symm
+    simp_all
   have hu : HasDerivAt (fun t : ℝ => (a : ℂ) + (t : ℂ) * Complex.I) Complex.I t := by
     have h : HasDerivAt (fun w : ℂ => (a : ℂ) + w * Complex.I) (1 * Complex.I) (t : ℂ) :=
       ((hasDerivAt_id (t : ℂ)).mul_const Complex.I).const_add (a : ℂ)
@@ -120,9 +115,9 @@ private lemma hasDerivAt_prim (a : ℝ) (ha : a ≠ 0) {m : ℕ} (hm : 2 ≤ m) 
         ((Complex.I * ((1 - (m : ℤ) : ℤ) : ℂ)) * (Complex.I * ((1 - (m : ℤ) : ℤ) : ℂ))⁻¹) := by
     ring
   rw [h1, mul_inv_cancel₀ hIn, mul_one]
-  rw [show (1 - (m : ℤ)) - 1 = -(m : ℤ) by omega]
+  simp
 
-private lemma tendsto_prim_of (a : ℝ) {m : ℕ} {l : Filter ℝ}
+lemma tendsto_prim_of (a : ℝ) {m : ℕ} {l : Filter ℝ}
     (hR : Tendsto (fun t : ℝ => ‖(a : ℂ) + (t : ℂ) * Complex.I‖) l atTop)
     (hn : (1 - (m : ℤ)) < 0) :
     Tendsto (fun t : ℝ => ((a : ℂ) + (t : ℂ) * Complex.I) ^ (1 - (m : ℤ)) *
@@ -133,10 +128,9 @@ private lemma tendsto_prim_of (a : ℝ) {m : ℕ} {l : Filter ℝ}
       ‖(Complex.I * ((1 - (m : ℤ) : ℤ) : ℂ))⁻¹‖) l (𝓝 0) := by
     simpa using hpow.mul_const ‖(Complex.I * ((1 - (m : ℤ) : ℤ) : ℂ))⁻¹‖
   refine tendsto_zero_iff_norm_tendsto_zero.mpr (h2.congr' ?_)
-  filter_upwards with t
-  rw [norm_mul, norm_zpow]
+  simp
 
-private lemma tendsto_prim_atTop (a : ℝ) (ha : a ≠ 0) {m : ℕ} (hm : 2 ≤ m) :
+lemma tendsto_prim_atTop (a : ℝ) (ha : a ≠ 0) {m : ℕ} (hm : 2 ≤ m) :
     Tendsto (fun t : ℝ => ((a : ℂ) + (t : ℂ) * Complex.I) ^ (1 - (m : ℤ)) *
         (Complex.I * ((1 - (m : ℤ) : ℤ) : ℂ))⁻¹) atTop (𝓝 0) := by
   refine tendsto_prim_of a ?_ (by omega)
@@ -144,7 +138,7 @@ private lemma tendsto_prim_atTop (a : ℝ) (ha : a ≠ 0) {m : ℕ} (hm : 2 ≤ 
   have h := Complex.abs_im_le_norm ((a : ℂ) + (t : ℂ) * Complex.I)
   rwa [im_shift] at h
 
-private lemma tendsto_prim_atBot (a : ℝ) (ha : a ≠ 0) {m : ℕ} (hm : 2 ≤ m) :
+lemma tendsto_prim_atBot (a : ℝ) (ha : a ≠ 0) {m : ℕ} (hm : 2 ≤ m) :
     Tendsto (fun t : ℝ => ((a : ℂ) + (t : ℂ) * Complex.I) ^ (1 - (m : ℤ)) *
         (Complex.I * ((1 - (m : ℤ) : ℤ) : ℂ))⁻¹) atBot (𝓝 0) := by
   refine tendsto_prim_of a ?_ (by omega)
@@ -152,26 +146,25 @@ private lemma tendsto_prim_atBot (a : ℝ) (ha : a ≠ 0) {m : ℕ} (hm : 2 ≤ 
   have h := Complex.abs_im_le_norm ((a : ℂ) + (t : ℂ) * Complex.I)
   rwa [im_shift] at h
 
-private lemma integral_shift_zpow_eq_zero (a : ℝ) (ha : a ≠ 0) {m : ℕ} (hm : 2 ≤ m) :
+lemma integral_shift_zpow_eq_zero (a : ℝ) (ha : a ≠ 0) {m : ℕ} (hm : 2 ≤ m) :
     ∫ t : ℝ, ((a : ℂ) + (t : ℂ) * Complex.I) ^ (-(m : ℤ)) = 0 := by
   have h := integral_of_hasDerivAt_of_tendsto (hasDerivAt_prim a ha hm)
     (integrable_shift_zpow a ha hm) (tendsto_prim_atBot a ha hm) (tendsto_prim_atTop a ha hm)
   simpa using h
 
-private lemma shift_sub_eq (c p t : ℝ) :
+lemma shift_sub_eq (c p t : ℝ) :
     (c : ℂ) + (t : ℂ) * Complex.I - (p : ℂ) = ((c - p : ℝ) : ℂ) + (t : ℂ) * Complex.I := by
   push_cast
   ring
 
-private lemma one_div_pow_eq_zpow (z : ℂ) (m : ℕ) : 1 / z ^ m = z ^ (-(m : ℤ)) := by
+lemma one_div_pow_eq_zpow (z : ℂ) (m : ℕ) : 1 / z ^ m = z ^ (-(m : ℤ)) := by
   rw [one_div, zpow_neg, zpow_natCast]
 
-private lemma integral_one_div_shift_eq_zero (a : ℝ) (ha : a ≠ 0) {m : ℕ} (hm : 2 ≤ m) :
+lemma integral_one_div_shift_eq_zero (a : ℝ) (ha : a ≠ 0) {m : ℕ} (hm : 2 ≤ m) :
     ∫ t : ℝ, 1 / (((a : ℝ) : ℂ) + (t : ℂ) * Complex.I) ^ m = 0 := by
   rw [show (fun t : ℝ => 1 / (((a : ℝ) : ℂ) + (t : ℂ) * Complex.I) ^ m) =
       (fun t : ℝ => (((a : ℝ) : ℂ) + (t : ℂ) * Complex.I) ^ (-(m : ℤ))) from by
-    funext t
-    exact one_div_pow_eq_zpow _ m]
+    simp]
   exact integral_shift_zpow_eq_zero a ha hm
 
 theorem verticalIntegrable_one_div_pow {c p : ℝ} (hcp : c ≠ p)
@@ -202,7 +195,3 @@ theorem verticalIntegral_const_mul_one_div_pow_eq_zero (z : ℂ)
     filter_upwards with t
     rw [shift_sub_eq]
   rw [integral_congr_ae hcongr, h0, mul_zero, mul_zero]
-
-end DedekindZetaZeroFree.LargeSieve.Vendor
-
-end

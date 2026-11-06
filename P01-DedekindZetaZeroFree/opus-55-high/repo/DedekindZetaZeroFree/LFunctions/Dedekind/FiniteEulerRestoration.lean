@@ -10,7 +10,6 @@ public import DedekindZetaZeroFree.Nonvanishing.Mellin.HolomorphicZeroTransfer
 namespace DedekindZetaZeroFree
 namespace PrincipalPointwise
 
-noncomputable section
 open scoped NumberField Classical Topology
 open Filter
 
@@ -31,7 +30,7 @@ theorem principal_top_series_eq_dedekindZeta
       have hz (I : {I : Ideal (𝓞 F) // Ideal.absNorm I = 0}) :
           η I.val * (Ideal.absNorm I.val : ℂ) ^ (-s) = 0 := by
         have hI : I.val = ⊥ := Ideal.absNorm_eq_zero_iff.mp I.property
-        rw [hI, (η.eq_zero_iff' ⊥).mpr (Or.inl rfl), zero_mul]
+        simp_all
       simp [hz, LSeries.term]
     · have hterm (I : {I : Ideal (𝓞 F) // Ideal.absNorm I = n}) :
           η I.val * (Ideal.absNorm I.val : ℂ) ^ (-s) = (n : ℂ) ^ (-s) := by
@@ -65,9 +64,7 @@ theorem continuation_eq_of_right_match
   have hfreq : ∃ᶠ z in 𝓝[≠] (2 : ℂ), L z = f z := by
     have hacc := mellin_punctured_halfplane_two_accPt
     apply (accPt_iff_frequently_nhdsNE.mp hacc).mono
-    rintro z ⟨t, ht, rfl⟩
-    apply hmatch
-    simp
+    simp_all
   have heq := hLa.eqOn_of_preconnected_of_frequently_eq hfa
     (mellin_punctured_halfplane_isPreconnected 0 (by norm_num))
     (mellin_punctured_halfplane_two_mem 0 (by norm_num)) hfreq
@@ -85,7 +82,3 @@ theorem principal_top_continuation_eq
   intro s hs
   rw [← (P.series s hs).tsum_eq,
     principal_top_series_eq_dedekindZeta F η hη s hs, hmatch s hs]
-
-end
-end PrincipalPointwise
-end DedekindZetaZeroFree

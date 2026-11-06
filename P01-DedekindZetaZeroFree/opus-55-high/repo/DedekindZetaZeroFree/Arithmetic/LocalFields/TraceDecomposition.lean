@@ -11,7 +11,6 @@ noncomputable section
 namespace DedekindZetaZeroFree
 
 open NumberField IsDedekindDomain
-open scoped NumberField
 
 namespace PlaceTraceAdapter
 
@@ -21,7 +20,7 @@ theorem prime_eq_of_above (F : Type) [Field F] [NumberField F]
     prime F v.val = p := by
   change Rat.HeightOneSpectrum.primesEquiv (finitePlaceBelow (K := ℚ) v.val) = p
   rw [v.property]
-  exact Rat.HeightOneSpectrum.primesEquiv.apply_symm_apply p
+  simp
 
 def traceAbove (F : Type) [Field F] [NumberField F] (p : Nat.Primes)
     (v : FinitePlacesAbove ℚ F (Rat.HeightOneSpectrum.primesEquiv.symm p))
@@ -29,7 +28,7 @@ def traceAbove (F : Type) [Field F] [NumberField F] (p : Nat.Primes)
   cast (congrArg (fun q : Nat.Primes => ℚ_[q]) (prime_eq_of_above F p v))
     (trace F v.val x)
 
-private theorem trace_cast_eq (F : Type) [Field F] [NumberField F]
+theorem trace_cast_eq (F : Type) [Field F] [NumberField F]
     (w : HeightOneSpectrum (𝓞 ℚ)) (p : Nat.Primes)
     (hp : Rat.HeightOneSpectrum.primesEquiv w = p)
     (v : FinitePlacesAbove ℚ F w) (t : F) :
@@ -49,12 +48,11 @@ private theorem trace_cast_eq (F : Type) [Field F] [NumberField F]
   rw [trace_algebraMap]
   dsimp only [rationalPlace, localTrace, rationalCompletionEquiv, completionMap]
   cases hv
-  subst p
   rfl
 
 end PlaceTraceAdapter
 
-private theorem trace_eq_sum_transported (F : Type) [Field F] [NumberField F]
+theorem trace_eq_sum_transported (F : Type) [Field F] [NumberField F]
     (t : F) (w : HeightOneSpectrum (𝓞 ℚ)) (p : Nat.Primes)
     (hp : Rat.HeightOneSpectrum.primesEquiv w = p) :
     letI : Fintype (FinitePlacesAbove ℚ F w) := finitePlacesAboveFintype ℚ F w
@@ -100,9 +98,5 @@ theorem trace_eq_sum_localTrace_padic (F : Type) [Field F] [NumberField F]
 theorem trace_eq_sum_localTrace_infinite (F : Type) [Field F] [NumberField F]
     (t : F) :
     (Algebra.trace ℚ F t : ℝ) =
-      ∑ v : InfinitePlace F, archTrace v (algebraMap F v.Completion t) := by
-  exact trace_eq_sum_archTrace t
-
-end DedekindZetaZeroFree
-
-end
+      ∑ v : InfinitePlace F, archTrace v (algebraMap F v.Completion t) := 
+  trace_eq_sum_archTrace t

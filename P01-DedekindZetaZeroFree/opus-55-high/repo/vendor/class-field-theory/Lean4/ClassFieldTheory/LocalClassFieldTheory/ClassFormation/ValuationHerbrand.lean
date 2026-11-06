@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 namespace LocalClassFieldTheory
 
 open LocalFieldTheory
@@ -32,7 +28,6 @@ All three actions are the concrete actions from `ValuationReal`: the Galois
 action on integer and field units, and the trivial action on the value group.
 -/
 
-noncomputable section
 
 open scoped ValuativeRel
 open CyclicCohomology.ProfiniteCohomology.Herbrand
@@ -83,8 +78,8 @@ trivial. -/
 theorem galoisGroupValueGroup_herbrandQuotientDefined
     (g : Gal(L / K)) :
     letI := galoisGroupValueGroupMulDistribMulAction K L
-    HerbrandQuotientDefined (Gal(L / K)) (Multiplicative Int) g := by
-  exact ⟨galoisGroupValueGroupHerbrandH0Finite K L,
+    HerbrandQuotientDefined (Gal(L / K)) (Multiplicative Int) g := 
+  ⟨galoisGroupValueGroupHerbrandH0Finite K L,
     galoisGroupValueGroupHerbrandHMinusOneFinite K L g⟩
 
 /-- Herbrand-quotient multiplicativity for the actual valuation sequence.  Once the
@@ -149,6 +144,3 @@ theorem valuationHerbrand_multiplicativity_of_integerUnits_defined
     (integerUnitsToFieldUnits L) (valuationUnitsMulHom L)
     hseq.1 hseq.2.1 hseq.2.2.1 hseq.2.2.2.1 hseq.2.2.2.2
     g hg
-
-end
-end LocalClassFieldTheory

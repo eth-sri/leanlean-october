@@ -29,10 +29,7 @@ theorem sampleMap_injective
   have hu := congrArg (fun f : V_J C J chi => f.val (r i))
     (Representation.IntertwiningMap.isIntertwining tau
       (rho_J C K J chi hnormalize) U k w)
-  simp only [rho_J_apply] at ht hu
-  change chi c * (T w).val (r i * k.val) =
-    chi c * (U w).val (r i * k.val)
-  rw [← ht, ← hu, hs]
+  simp_all
 
 theorem intertwiningMap_finiteDimensional
     (C K J : Subgroup G) (chi : C →* ℂ) (n : ℕ) (r : Fin n → G)
@@ -41,9 +38,7 @@ theorem intertwiningMap_finiteDimensional
     (hnormalize : ∀ (k : K) (j : J), k.val⁻¹ * j.val * k.val ∈ J)
     {W : Type*} [AddCommGroup W] [Module ℂ W] [FiniteDimensional ℂ W]
     (tau : Representation ℂ K W) :
-    FiniteDimensional ℂ (tau.IntertwiningMap (rho_J C K J chi hnormalize)) := by
-  exact FiniteDimensional.of_injective
+    FiniteDimensional ℂ (tau.IntertwiningMap (rho_J C K J chi hnormalize)) := 
+  FiniteDimensional.of_injective
     (sampleMap C K J chi hnormalize tau n r)
     (sampleMap_injective C K J chi n r hcover hnormalize tau)
-
-end DedekindZetaZeroFree.CovariantSampling

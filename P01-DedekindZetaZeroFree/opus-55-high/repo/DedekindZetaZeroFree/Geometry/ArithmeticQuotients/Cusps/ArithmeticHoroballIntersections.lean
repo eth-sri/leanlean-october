@@ -4,12 +4,11 @@ public import DedekindZetaZeroFree.Geometry.ArithmeticQuotients.Cusps.SiegelCove
 
 @[expose] public section
 
-noncomputable section
 open scoped Classical NumberField
 
 namespace DedekindZetaZeroFree.KPFiniteCuspAtlasReduction
 
-private theorem intersection_meanHeight_upper_frame
+theorem intersection_meanHeight_upper_frame
     (F : Type) [Field F] [NumberField F]
     (A : Matrix.GeneralLinearGroup (Fin 2) F) (hA : A 1 0 = 0)
     (z : KPArch.Space (KPCuspLogShape.dimension F)) :
@@ -34,14 +33,12 @@ private theorem intersection_meanHeight_upper_frame
     intro i
     let ρ := (KPCusp.complexPlace F i).embedding
     apply KPCuspLogShape.upper_action_snd
-    · change ρ (A 1 0) = 0
-      simp [hA]
+    · simp_all
     · exact (map_ne_zero ρ).mpr (div_ne_zero h00 h11)
-    · change ρ (A 0 0) = ρ (A 0 0 / A 1 1) * ρ (A 1 1)
-      rw [← map_mul, div_mul_cancel₀ _ h11]
+    simp_all
   simp only [KPCuspLogShape.meanHeight, hs, Finset.sum_add_distrib, add_div]
 
-private theorem intersection_highCusp_upper_frame
+theorem intersection_highCusp_upper_frame
     (F : Type) [Field F] [NumberField F]
     (σ : KPCuspArithmetic.PGL2 F)
     (A : Matrix.GeneralLinearGroup (Fin 2) F) (hA : A 1 0 = 0) (T : ℝ) :
@@ -62,8 +59,7 @@ private theorem intersection_highCusp_upper_frame
   · rintro ⟨w, hw, rfl⟩
     refine ⟨u • w, ?_, ?_⟩
     · change T + c < KPCuspLogShape.meanHeight _ (u • w)
-      rw [hh]
-      simpa only [add_comm] using add_lt_add_right hw c
+      simp_all
     · exact (mul_smul σ u w).symm
   · rintro ⟨w, hw, rfl⟩
     refine ⟨u⁻¹ • w, ?_, ?_⟩
@@ -75,7 +71,7 @@ private theorem intersection_highCusp_upper_frame
     · change (σ * u) • (u⁻¹ • w) = σ • w
       rw [mul_smul, smul_inv_smul]
 
-private theorem intersection_highCusp_same_cusp_shift
+theorem intersection_highCusp_same_cusp_shift
     (F : Type) [Field F] [NumberField F]
     (σ τ : KPCuspArithmetic.PGL2 F)
     (h : σ • KPCuspArithmetic.infinity F = τ • KPCuspArithmetic.infinity F) :
@@ -91,9 +87,7 @@ private theorem intersection_highCusp_same_cusp_shift
     obtain ⟨a, ha⟩ := hf
     have hh := congrFun ha 1
     have he : (a • ![1, 0]) 1 = (0 : F) := by simp
-    rw [he] at hh
-    change 0 = (Matrix.mulVec (A : Matrix (Fin 2) (Fin 2) F) ![1, 0]) 1 at hh
-    simpa [Matrix.mulVec, dotProduct, Fin.sum_univ_two] using hh.symm
+    simp_all
   refine ⟨(∑ i : Fin (KPCuspLogShape.dimension F),
     Real.log ‖(KPCusp.complexPlace F i).embedding (A 0 0 / A 1 1)‖) /
       KPCuspLogShape.dimension F, fun T => ?_⟩
@@ -223,7 +217,3 @@ theorem commensurable_uniform_high_cusp_intersection
   refine ⟨hab, γ.property, ?_⟩
   apply MulAction.mem_stabilizer_iff.mpr
   simpa [hab] using hγq
-
-end DedekindZetaZeroFree.KPFiniteCuspAtlasReduction
-
-end

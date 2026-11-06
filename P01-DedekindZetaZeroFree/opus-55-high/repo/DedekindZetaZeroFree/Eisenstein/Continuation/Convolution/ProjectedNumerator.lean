@@ -64,11 +64,6 @@ end Integration
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
-local instance : IsTopologicalGroup (G F ζ hζ) :=
-  (KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover F ζ hζ).2.2.1
-local instance (K : Subgroup (G F ζ hζ)) : MeasurableSpace K := borel K
-local instance (K : Subgroup (G F ζ hζ)) : BorelSpace K := ⟨rfl⟩
-
 end DedekindZetaZeroFree.KPLiteralTensor.KernelAndHCRange.CoreGeneration.NativeProjectedNumerator
 
 end

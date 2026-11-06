@@ -4,14 +4,12 @@ public import DedekindZetaZeroFree.Arithmetic.LocalFields.FinitePlacesAbovePrime
 
 @[expose] public section
 
-set_option autoImplicit false
 
-noncomputable section
 
 namespace DedekindZetaZeroFree
 
 open NumberField IsDedekindDomain
-open scoped NumberField TensorProduct
+open scoped TensorProduct
 
 theorem adicCompletion_trace_eq_sum
     (K : Type*) (L : Type*)
@@ -40,7 +38,7 @@ theorem adicCompletion_trace_eq_sum
       rw [Algebra.TensorProduct.algebraMap_apply,
         finitePlaceTensorRingEquivAboveAdic_tmul, map_one, mul_one,
         Pi.algebraMap_apply, Algebra.algebraMap_self_apply]
-      rw [RingHom.algebraMap_toAlgebra]
+      rfl
   have h := ValuationTheory.Completion.baseChange_pi_trace_eq_sum
     (K := K) (A := w.adicCompletion K) (L := L)
     (fun W : FinitePlacesAbove K L w => W.val.adicCompletion L) e x
@@ -48,7 +46,3 @@ theorem adicCompletion_trace_eq_sum
   refine Finset.sum_congr rfl fun W _ => ?_
   rw [show e (1 ⊗ₜ[K] x) W = algebraMap L (W.val.adicCompletion L) x from
     finitePlaceTensorRingEquivAboveAdic_tmul_one (K := K) (L := L) w W x]
-
-end DedekindZetaZeroFree
-
-end

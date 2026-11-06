@@ -26,7 +26,7 @@ variable (Q : X → Y) (hQ : Continuous Q)
   else 0
 
 include hQ horbit hact in
-private lemma globalAvg_meas (f : ContinuousMap X ℂ) : Measurable (globalAvg (G := G) Q f) := by
+lemma globalAvg_meas (f : ContinuousMap X ℂ) : Measurable (globalAvg (G := G) Q f) := by
   have hc : IsCompact (Set.range Q) := by simpa using isCompact_univ.image hQ
   have hd : Measurable (fun y : Set.range Q =>
       (Fintype.card G : ℂ)⁻¹ * ∑ g : G, f (g • Function.surjInv (Set.rangeFactorization_surjective (f := Q)) y)) := by
@@ -48,7 +48,7 @@ private lemma globalAvg_meas (f : ContinuousMap X ℂ) : Measurable (globalAvg (
     exact Fintype.sum_equiv (Equiv.mulRight g) _ _ (fun h => rfl)
   exact hd.dite measurable_const hc.isClosed.measurableSet
 
-private lemma globalAvg_bound (f : ContinuousMap X ℂ) (y : Y) :
+lemma globalAvg_bound (f : ContinuousMap X ℂ) (y : Y) :
     ‖globalAvg (G := G) Q f y‖ ≤ ‖f‖ * ‖((Set.range Q).indicator (fun _ : Y => (1 : ℂ))) y‖ := by
   by_cases hy : y ∈ Set.range Q
   · simp only [globalAvg, dite_eq_left hy, Set.indicator_of_mem hy, norm_one, mul_one]
@@ -113,7 +113,7 @@ include hQ horbit hact in
   (globalAvgLinear Q hQ horbit hact μ).mkContinuous ‖(indicator_mem Q hQ μ).toLp _‖
     (globalAvgLinear_bound Q hQ horbit hact μ)
 
-private lemma globalAvgCLM_matches (f : ContinuousMap X ℂ) (u : Y → ℂ)
+lemma globalAvgCLM_matches (f : ContinuousMap X ℂ) (u : Y → ℂ)
     (hf : ∀ x, f x = u (Q x)) :
     (globalAvgCLM Q hQ horbit hact μ f : Y → ℂ) =ᵐ[μ] (Set.range Q).indicator u := by
   filter_upwards [MemLp.coeFn_toLp (globalAvg_memLp Q hQ horbit hact μ f)] with y hy
@@ -202,7 +202,7 @@ local instance : BorelSpace (rootsOfUnity 3 F) := ⟨(borel_eq_top_of_discrete).
     · apply Subtype.ext
       exact (gammaMulAction a).mul_smul g h p.2.val
 
-private lemma psi_cont (a : ActualChart (U := U) (H := H)) (g : Gamma a) :
+lemma psi_cont (a : ActualChart (U := U) (H := H)) (g : Gamma a) :
     Continuous (isotropyArrow a g).psi := by
   have hA : Continuous (labeledA (placeEquiv F ζ hζ)) := by
     apply continuous_pi
@@ -215,7 +215,7 @@ private lemma psi_cont (a : ActualChart (U := U) (H := H)) (g : Gamma a) :
     ((1⁻¹ * g.val.1.val.val * 1) • labeledA (placeEquiv F ζ hζ) x))
   exact hAi.comp ((KPCuspSiegel.continuous_action F _).comp hA)
 
-private lemma rootAction_cont (a : ActualChart (U := U) (H := H))
+lemma rootAction_cont (a : ActualChart (U := U) (H := H))
     (C : Set (M F)) (hI : ∀ g : Gamma a, (isotropyArrow a g).psi '' C = C) (g : Gamma a) :
     Continuous ((rootAction a C hI).smul g) := by
   apply Continuous.prodMk
@@ -228,7 +228,7 @@ private lemma rootAction_cont (a : ActualChart (U := U) (H := H))
     (labeledA (placeEquiv F ζ hζ) p.2.val,
      KPCuspGenuineMonodromy.central F ζ hζ p.1 * (H.atlas U).representative a.component)
 
-private lemma rawRootMap_cont (a : ActualChart (U := U) (H := H)) (C : Set (M F)) :
+lemma rawRootMap_cont (a : ActualChart (U := U) (H := H)) (C : Set (M F)) :
     Continuous (rawRootMap a C) := by
   apply continuous_quotient_mk'.comp
   apply Continuous.prodMk

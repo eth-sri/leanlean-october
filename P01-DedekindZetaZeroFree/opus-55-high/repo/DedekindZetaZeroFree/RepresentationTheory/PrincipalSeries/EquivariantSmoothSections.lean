@@ -15,7 +15,7 @@ variable {G E : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
 
 def normalizedSectionRepresentation : Representation ℂ H E where
   toFun h := (((d h : ℝ≥0) : ℝ) : ℂ) • τ h
-  map_one' := by ext v; simp
+  map_one' := by simp
   map_mul' := by
     intro h k
     ext v
@@ -30,13 +30,9 @@ def normalizedSectionRepresentation : Representation ℂ H E where
 def EqSections : Submodule ℂ (G → E) where
   carrier := {f | ∀ (h : H) (g : G),
     f ((h : G) * g) = normalizedSectionRepresentation H τ d h (f g)}
-  zero_mem' := by intro h g; simp
-  add_mem' := by intro f k hf hk h g; simp [hf h g, hk h g]
+  zero_mem' := by simp
+  add_mem' := by simp_all
   smul_mem' := by intro a f hf h g; simp [hf h g]
-
-@[simp] theorem mem_EqSections (f : G → E) : f ∈ EqSections H τ d ↔
-    ∀ (h : H) (g : G), f ((h : G) * g) =
-      (((d h : ℝ≥0) : ℝ) : ℂ) • τ h (f g) := Iff.rfl
 
 def eqSectionsRepresentation : Representation ℂ G (EqSections H τ d) where
   toFun a :=
@@ -97,16 +93,15 @@ def cosetRightMap (a : G) :
     (fun x y (h : (QuotientGroup.rightRel H).r x y) =>
       (by
         rw [QuotientGroup.rightRel_apply] at h ⊢
-        have : (y * a) * (x * a)⁻¹ = y * x⁻¹ := by group
-        rwa [this] : (QuotientGroup.rightRel H).r (x * a) (y * a)))
+        simp_all : (QuotientGroup.rightRel H).r (x * a) (y * a)))
 
-private theorem cosetRightMap_mk (a x : G) :
+theorem cosetRightMap_mk (a x : G) :
     cosetRightMap H a (Quotient.mk (QuotientGroup.rightRel H) x) =
       Quotient.mk (QuotientGroup.rightRel H) (x * a) := rfl
 
 theorem continuous_cosetRightMap (a : G) : Continuous (cosetRightMap H a) := by
   unfold cosetRightMap
-  exact continuous_quot_map _ (continuous_mul_const a)
+  fun_prop
 
 theorem cosetRightMap_left_inv (a : G) (q : Quotient (QuotientGroup.rightRel H)) :
     cosetRightMap H a⁻¹ (cosetRightMap H a q) = q := by
@@ -115,9 +110,7 @@ theorem cosetRightMap_left_inv (a : G) (q : Quotient (QuotientGroup.rightRel H))
     rw [cosetRightMap_mk, cosetRightMap_mk]
     refine Quot.sound ?_
     rw [QuotientGroup.rightRel_apply]
-    have : x * ((x * a) * a⁻¹)⁻¹ = 1 := by group
-    rw [this]
-    exact H.one_mem
+    simp
 
 def cosetRightHomeomorph (a : G) :
     Quotient (QuotientGroup.rightRel H) ≃ₜ Quotient (QuotientGroup.rightRel H) where
@@ -141,8 +134,7 @@ def CompactSmoothInd : Submodule ℂ (SmoothInd H τ d) where
       intro g hg
       simp only [Set.mem_union, Function.mem_support]
       by_contra h
-      simp only [not_or, not_not] at h
-      exact hg (by simp [Submodule.coe_add, h.1, h.2])
+      simp_all
     have himg : Quotient.mk (QuotientGroup.rightRel H) '' Function.support ((f + k).val : G → E) ⊆
         Quotient.mk (QuotientGroup.rightRel H) '' Function.support (f.val : G → E) ∪
         Quotient.mk (QuotientGroup.rightRel H) '' Function.support (k.val : G → E) :=
@@ -158,17 +150,14 @@ def CompactSmoothInd : Submodule ℂ (SmoothInd H τ d) where
   smul_mem' := by
     intro c f hf
     have hsub : Function.support ((c • f).val : G → E) ⊆ Function.support (f.val : G → E) := by
-      intro g hg
-      simp only [Function.mem_support]
-      intro h
-      exact hg (by simp [Submodule.coe_smul, h])
+      simp
     change IsCompact (closure (Quotient.mk (QuotientGroup.rightRel H) ''
       Function.support ((c • f).val : G → E)))
     change IsCompact (closure (Quotient.mk (QuotientGroup.rightRel H) ''
       Function.support (f.val : G → E))) at hf
     exact hf.of_isClosed_subset isClosed_closure (closure_mono (Set.image_mono hsub))
 
-private theorem smoothIndRepresentation_val (a : G) (f : SmoothInd H τ d) (g : G) :
+theorem smoothIndRepresentation_val (a : G) (f : SmoothInd H τ d) (g : G) :
     ((smoothIndRepresentation H τ d a f).val : G → E) g = (f.val : G → E) (g * a) := rfl
 
 theorem CompactSmoothInd_stable (a : G) :
@@ -192,8 +181,7 @@ theorem CompactSmoothInd_stable (a : G) :
   rw [hsupp]
   have hcomp : (Quotient.mk (QuotientGroup.rightRel H)) ∘ (· * a⁻¹) =
       cosetRightMap H a⁻¹ ∘ (Quotient.mk (QuotientGroup.rightRel H)) := by
-    funext x
-    exact (cosetRightMap_mk H a⁻¹ x).symm
+    rfl
   have himg : Quotient.mk (QuotientGroup.rightRel H) ''
         ((· * a⁻¹) '' Function.support (f.val : G → E)) =
       cosetRightMap H a⁻¹ '' (Quotient.mk (QuotientGroup.rightRel H) ''
@@ -218,7 +206,3 @@ def compactSmoothIndRepresentation :
     Representation ℂ G (CompactSmoothInd H τ d) :=
   (smoothIndRepresentation H τ d).subrepresentation
     (CompactSmoothInd H τ d) (CompactSmoothInd_stable H τ d)
-
-end Sections
-
-end DedekindZetaZeroFree

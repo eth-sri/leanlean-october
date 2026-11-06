@@ -10,7 +10,7 @@ namespace DedekindZetaZeroFree.LargeSieve
 
 open scoped NumberField Classical
 
-private lemma one_le_absNorm_coe {F : Type*} [Field F] [NumberField F] {I : Ideal (𝓞 F)}
+lemma one_le_absNorm_coe {F : Type*} [Field F] [NumberField F] {I : Ideal (𝓞 F)}
     (hI : I ≠ ⊥) : (1 : ℝ) ≤ (Ideal.absNorm I : ℝ) := by
   have h0 : Ideal.absNorm I ≠ 0 := fun h => hI (Ideal.absNorm_eq_zero_iff.mp h)
   exact_mod_cast (Nat.one_le_iff_ne_zero.mpr h0)
@@ -18,16 +18,16 @@ private lemma one_le_absNorm_coe {F : Type*} [Field F] [NumberField F] {I : Idea
 noncomputable def idealW (F : Type*) [Field F] [NumberField F] (I : Ideal (𝓞 F)) : ℝ :=
   max 1 (Ideal.absNorm I : ℝ)
 
-private lemma one_le_idealW {F : Type*} [Field F] [NumberField F] (I : Ideal (𝓞 F)) :
+lemma one_le_idealW {F : Type*} [Field F] [NumberField F] (I : Ideal (𝓞 F)) :
     1 ≤ idealW F I := le_max_left _ _
 
-private lemma absNorm_le_idealW {F : Type*} [Field F] [NumberField F] (I : Ideal (𝓞 F)) :
+lemma absNorm_le_idealW {F : Type*} [Field F] [NumberField F] (I : Ideal (𝓞 F)) :
     (Ideal.absNorm I : ℝ) ≤ idealW F I := le_max_right _ _
 
-private lemma idealW_eq {F : Type*} [Field F] [NumberField F] {I : Ideal (𝓞 F)} (hI : I ≠ ⊥) :
+lemma idealW_eq {F : Type*} [Field F] [NumberField F] {I : Ideal (𝓞 F)} (hI : I ≠ ⊥) :
     idealW F I = (Ideal.absNorm I : ℝ) := max_eq_right (one_le_absNorm_coe hI)
 
-private lemma idealW_lt_imp {F : Type*} [Field F] [NumberField F] {X : ℝ} (hX : 1 ≤ X)
+lemma idealW_lt_imp {F : Type*} [Field F] [NumberField F] {X : ℝ} (hX : 1 ≤ X)
     {I : Ideal (𝓞 F)} (h : X < idealW F I) :
     I ≠ ⊥ ∧ X < (Ideal.absNorm I : ℝ) ∧ idealW F I = (Ideal.absNorm I : ℝ) := by
   have hgt : 1 < idealW F I := lt_of_le_of_lt hX h
@@ -41,19 +41,19 @@ private lemma idealW_lt_imp {F : Type*} [Field F] [NumberField F] {X : ℝ} (hX 
     intro hb
     rw [hb, Ideal.absNorm_bot] at ha
     norm_num at ha
-  exact ⟨hne, by rw [hw] at h; exact h, hw⟩
+  simp_all
 
-private lemma ite_absNorm_eq_ite_idealW {F : Type*} [Field F] [NumberField F] (p X : ℝ)
+lemma ite_absNorm_eq_ite_idealW {F : Type*} [Field F] [NumberField F] (p X : ℝ)
     (hX : 1 ≤ X) (I : Ideal (𝓞 F)) :
     (if I ≠ ⊥ ∧ X < (Ideal.absNorm I : ℝ) then (Ideal.absNorm I : ℝ) ^ (-p) else 0)
       = (if X < idealW F I then idealW F I ^ (-p) else 0) := by
   by_cases h : X < idealW F I
   · obtain ⟨hne, hlt, hw⟩ := idealW_lt_imp hX h
-    rw [if_pos h, if_pos ⟨hne, hlt⟩, hw]
+    simp_all
   · rw [if_neg h]
     exact if_neg (fun hc => h (by rw [idealW_eq hc.1]; exact hc.2))
 
-private lemma ite_absNorm_le_ite_idealW {F : Type*} [Field F] [NumberField F] (p X : ℝ)
+lemma ite_absNorm_le_ite_idealW {F : Type*} [Field F] [NumberField F] (p X : ℝ)
     (hX : 1 ≤ X) (P : Ideal (𝓞 F) → Prop) (I : Ideal (𝓞 F)) :
     (if I ≠ ⊥ ∧ P I ∧ X < (Ideal.absNorm I : ℝ) then (Ideal.absNorm I : ℝ) ^ (-p) else 0)
       ≤ (if X < idealW F I then idealW F I ^ (-p) else 0) := by
@@ -62,17 +62,17 @@ private lemma ite_absNorm_le_ite_idealW {F : Type*} [Field F] [NumberField F] (p
     rw [if_pos h, hw]
     split_ifs with hc
     · exact le_rfl
-    · exact Real.rpow_nonneg (Nat.cast_nonneg _) _
+    positivity
   · rw [if_neg h]
     rw [if_neg (fun hc => h (by rw [idealW_eq hc.1]; exact hc.2.2))]
 
-private lemma exists_count_bound_idealW {F : Type*} [Field F] [NumberField F] :
+lemma exists_count_bound_idealW {F : Type*} [Field F] [NumberField F] :
     ∃ C : ℝ, 1 ≤ C ∧ ∀ Y : ℝ, 1 ≤ Y → ∀ s : Finset (Ideal (𝓞 F)),
       (∀ I ∈ s, idealW F I ≤ Y) → (s.card : ℝ) ≤ C * Y := by
   obtain ⟨C, hC, -, hfin⟩ := exists_ideal_count_bound_finset F
   exact ⟨C, hC, fun Y hY s hs => hfin Y hY s fun I hI => le_trans (absNorm_le_idealW I) (hs I hI)⟩
 
-private lemma tail_finset_sum_le {F : Type*} [Field F] [NumberField F] (p : ℝ) (hp : 1 < p) :
+lemma tail_finset_sum_le {F : Type*} [Field F] [NumberField F] (p : ℝ) (hp : 1 < p) :
     ∃ B : ℝ, 0 ≤ B ∧ ∀ X : ℝ, 1 ≤ X → ∀ u : Finset (Ideal (𝓞 F)),
       ∑ I ∈ u, (if X < idealW F I then idealW F I ^ (-p) else 0) ≤ B * X ^ (1 - p) := by
   obtain ⟨C, hC1, hcount⟩ := exists_count_bound_idealW (F := F)
@@ -109,26 +109,22 @@ theorem summable_ideal_inverse_power (F : Type*) [Field F] [NumberField F]
         + (fun I => if 1 < idealW F I then (Ideal.absNorm I : ℝ) ^ (-p) else 0) := by
     funext I
     by_cases hI : idealW F I ≤ 1
-    · have h2 : ¬ 1 < idealW F I := not_lt.mpr hI
-      simp only [Pi.add_apply, if_pos hI, if_neg h2, add_zero]
-    · have h2 : 1 < idealW F I := lt_of_not_ge hI
-      simp only [Pi.add_apply, if_neg hI, if_pos h2, zero_add]
+    · simp_all
+    simp_all
   rw [hsplit]
   have hterm : ∀ I : Ideal (𝓞 F), (Ideal.absNorm I : ℝ) ^ (-p) ≤ 1 := by
     intro I
     rcases Nat.eq_zero_or_pos (Ideal.absNorm I) with h0 | hpos
     · rw [h0, Nat.cast_zero, Real.zero_rpow (neg_ne_zero.mpr (ne_of_gt hp0))]
       norm_num
-    · have h1 : (1 : ℕ) ≤ Ideal.absNorm I := Nat.one_le_iff_ne_zero.mpr (ne_of_gt hpos)
+    · have h1 : (1 : ℕ) ≤ Ideal.absNorm I := by omega
       exact Real.rpow_le_one_of_one_le_of_nonpos (by exact_mod_cast h1) (by linarith)
   refine Summable.add ?hg1 ?hg2
   ·
     have hnonneg : 0 ≤ (fun I => if idealW F I ≤ 1 then (Ideal.absNorm I : ℝ) ^ (-p) else 0) := by
       intro I
       change (0 : ℝ) ≤ (if idealW F I ≤ 1 then (Ideal.absNorm I : ℝ) ^ (-p) else 0)
-      split_ifs with h
-      · exact Real.rpow_nonneg (Nat.cast_nonneg _) _
-      · exact le_rfl
+      positivity
     have hbound : ∀ u : Finset (Ideal (𝓞 F)),
         ∑ I ∈ u, (if idealW F I ≤ 1 then (Ideal.absNorm I : ℝ) ^ (-p) else 0) ≤ C := by
       intro u
@@ -147,9 +143,7 @@ theorem summable_ideal_inverse_power (F : Type*) [Field F] [NumberField F]
     have hnonneg : 0 ≤ (fun I => if 1 < idealW F I then (Ideal.absNorm I : ℝ) ^ (-p) else 0) := by
       intro I
       change (0 : ℝ) ≤ (if 1 < idealW F I then (Ideal.absNorm I : ℝ) ^ (-p) else 0)
-      split_ifs with h
-      · exact Real.rpow_nonneg (Nat.cast_nonneg _) _
-      · exact le_rfl
+      positivity
     have hbound : ∀ u : Finset (Ideal (𝓞 F)),
         ∑ I ∈ u, (if 1 < idealW F I then (Ideal.absNorm I : ℝ) ^ (-p) else 0) ≤ B := by
       intro u
@@ -175,9 +169,7 @@ theorem exists_ideal_inverse_power_tail_bound (F : Type*) [Field F] [NumberField
   · intro I
     change (0 : ℝ) ≤ (if I ≠ ⊥ ∧ X < (Ideal.absNorm I : ℝ)
       then (Ideal.absNorm I : ℝ) ^ (-p) else 0)
-    split_ifs with h
-    · exact Real.rpow_nonneg (Nat.cast_nonneg _) _
-    · exact le_rfl
+    positivity
   · refine le_trans (Finset.sum_le_sum (fun I _ => ?_)) (hB X hX u)
     exact le_of_eq (ite_absNorm_eq_ite_idealW p X hX I)
 
@@ -217,10 +209,6 @@ theorem exists_filtered_ideal_inverse_power_tail_bound
   · intro I
     change (0 : ℝ) ≤ (if I ≠ ⊥ ∧ P I ∧ X < (Ideal.absNorm I : ℝ)
       then (Ideal.absNorm I : ℝ) ^ (-p) else 0)
-    split_ifs with h
-    · exact Real.rpow_nonneg (Nat.cast_nonneg _) _
-    · exact le_rfl
+    positivity
   · refine le_trans (Finset.sum_le_sum (fun I _ => ite_absNorm_le_ite_idealW p X hX P I))
       (hB X hX u)
-
-end DedekindZetaZeroFree.LargeSieve

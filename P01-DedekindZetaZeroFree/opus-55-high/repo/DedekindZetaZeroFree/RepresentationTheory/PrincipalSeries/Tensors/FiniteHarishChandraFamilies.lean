@@ -126,7 +126,7 @@ theorem productHCFamily_slot_borel
   rw [mul_assoc]
   exact scalar_canonical_borel A P C K hK f j.val b hb _
 
-private theorem independent_slot_covariance
+theorem independent_slot_covariance
     {ι : Type*} [Fintype ι] [DecidableEq ι] {G : ι → Type*} [∀ i, Group (G i)]
     (φ : (∀ i, G i) → ℂ) (b : ∀ i, G i) (c : ι → ℂ)
     (h : ∀ i g, φ (Function.update g i (b i * g i)) = c i * φ g) (g : ∀ i, G i) :
@@ -155,7 +155,7 @@ open _root_.DedekindZetaZeroFree.NativeScalarFiniteProductScalarInverse renaming
 open _root_.DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation renaming Source → Source
 open _root_.DedekindZetaZeroFree.NativeScalarFiniteTensorEvaluation renaming ProductCover → ProductCover
 
-private theorem productHCFamily_slot_borel_transport
+theorem productHCFamily_slot_borel_transport
     (d : outsideStage F ζ hζ T) (j : T)
     (R : KPLocalExceptionalConstruction.CanonicalFiniteInducingData F ζ hζ j.val)
     (hR : R = { C.canonical j.val with polarization := C.polarization j.val })
@@ -184,8 +184,8 @@ theorem productHCFamily_mem_scalarSections
     (fun j g => productHCFamily_slot_borel_transport A P C K hK f T d j _
       rfl (b j) (hb j) g m) a
 
-open NativeScalarMixedTensorGeneration
 open KPLiteralScalarArchIndependentSlices
+open NativeScalarMixedTensorGeneration
 
 local instance (j : InfinitePlace F ⊕ T) :
     AddCommGroup (mixedSource F ζ hζ (nativeInducingData A P C) T j) := by

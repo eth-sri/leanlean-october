@@ -58,7 +58,7 @@ theorem frozenNorm_ge_one (A : SArithmeticData F) (T : Frozen A)
     (1 : ℝ) = 1 * 1 * 1 ^ 3 := by norm_num
     _ ≤ idealNorm T.a.val * idealNorm c.val.val * idealNorm T.n.val ^ 3 := by gcongr
 
-private theorem profileArgument_cutoff (A : SArithmeticData F) (T : Frozen A)
+theorem profileArgument_cutoff (A : SArithmeticData F) (T : Frozen A)
     (c : ExteriorSquarefreeIdeal A.cS) (h : A.Exterior) (d : ExteriorSquarefreeIdeal A.cS)
     (Z P D θ : ℝ) (hZ : 2 ≤ Z) (hP : 1 ≤ P) (hD : 1 ≤ D)
     (hT : T.h = h) (hh : h ∈ exteriorPowerfulDyad A.cS P)
@@ -83,9 +83,9 @@ private theorem profileArgument_cutoff (A : SArithmeticData F) (T : Frozen A)
     have := mul_le_mul hd2 hfp.le (sq_nonneg _) (sq_nonneg _)
     nlinarith
   let t := (A.exteriorNorm d.val ^ 2 * A.exteriorNorm T.f ^ 2) / Z
-  have ht : 0 < t := by dsimp [t]; positivity
-  have htL : t ≤ length Z P D := by
-    exact div_le_div_of_nonneg_right hnum hZ0.le
+  have ht : 0 < t := by positivity
+  have htL : t ≤ length Z P D := 
+    div_le_div_of_nonneg_right hnum hZ0.le
   have hx : profileArgument A T d.val c.val Z = frozenNorm A T c / t := by
     dsimp [profileArgument, frozenNorm, rowNorm, t]
     field_simp
@@ -106,7 +106,7 @@ private theorem profileArgument_cutoff (A : SArithmeticData F) (T : Frozen A)
           _ = 1 := inv_mul_cancel₀ hl.ne'
       exact hi.trans hQ
 
-private theorem profileFamily_decay (A : SArithmeticData F)
+theorem profileFamily_decay (A : SArithmeticData F)
     (H : A.UnitQuotient → A.V → ℝ → ℂ) (hH : FiniteProfileFamily A H)
     (B : ℝ) (hB : 0 < B) :
     ∃ K : ℝ, 0 < K ∧ ∀ u v x, 0 < x → ‖H u v x‖ ≤ K * x ^ (-B) := by
@@ -120,7 +120,7 @@ private theorem profileFamily_decay (A : SArithmeticData F)
   simp only [iteratedDeriv_zero, logProfile, Real.exp_log hx] at hh
   exact hh.trans (mul_le_mul_of_nonneg_left (min_le_right _ _) hK.le)
 
-private theorem profile_tail_decay (A : SArithmeticData F) (T : Frozen A)
+theorem profile_tail_decay (A : SArithmeticData F) (T : Frozen A)
     (c : ExteriorSquarefreeIdeal A.cS) (h : A.Exterior) (d : ExteriorSquarefreeIdeal A.cS)
     (Z P D θ B : ℝ) (hZ : 2 ≤ Z) (hP : 1 ≤ P) (hD : 1 ≤ D) (hB : 1 < B)
     (hT : T.h = h) (hh : h ∈ exteriorPowerfulDyad A.cS P)
@@ -138,7 +138,7 @@ private theorem profile_tail_decay (A : SArithmeticData F) (T : Frozen A)
   have hl : 0 < length Z P D := by unfold length; positivity
   exact div_nonneg hl.le (zero_le_one.trans (frozenNorm_ge_one A T c))
 
-private theorem mulChar_norm_le_one {k : Type*} [Field k] [Fintype k]
+theorem mulChar_norm_le_one {k : Type*} [Field k] [Fintype k]
     (χ : MulChar k ℂ) (x : k) : ‖χ x‖ ≤ 1 := by
   by_cases hx : x = 0
   · simp [hx, MulChar.map_zero]
@@ -148,7 +148,7 @@ private theorem mulChar_norm_le_one {k : Type*} [Field k] [Fintype k]
       simpa [MulChar.coe_equivToUnitHom, u] using hn
     exact hn'.le
 
-private theorem summand_norm_le (A : SArithmeticData F) (G : AllowedRecipe A)
+theorem summand_norm_le (A : SArithmeticData F) (G : AllowedRecipe A)
     (U : UnitRepresentatives A) (σ : F →+* ℂ)
     (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
     (hψ : ∀ p : ExteriorPrime A, (ψ p).IsPrimitive)
@@ -175,8 +175,7 @@ private theorem summand_norm_le (A : SArithmeticData F) (G : AllowedRecipe A)
   apply mul_le_mul_of_nonneg_right _ (norm_nonneg _)
   rw [separatedCoefficient_support]
   split_ifs
-  · simp only [norm_div, norm_mul, norm_pow, Complex.norm_real, Real.norm_eq_abs,
-      abs_of_nonneg hc, abs_of_nonneg hn, abs_of_nonneg (Real.sqrt_nonneg _)]
+  · simp only [norm_div, norm_mul, norm_pow, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hn, abs_of_nonneg (Real.sqrt_nonneg _)]
     apply div_le_div_of_nonneg_right _ (mul_nonneg (Real.sqrt_nonneg _) hn)
     calc
       _ ≤ betaIdeal (activeSupport A T) T.a.val * 1 * 1 * 1 ^ 3 := by gcongr
@@ -184,7 +183,7 @@ private theorem summand_norm_le (A : SArithmeticData F) (G : AllowedRecipe A)
   · simp only [norm_zero]
     positivity
 
-private theorem tail_summand_majorant (A : SArithmeticData F) (G : AllowedRecipe A)
+theorem tail_summand_majorant (A : SArithmeticData F) (G : AllowedRecipe A)
     (U : UnitRepresentatives A) (σ : F →+* ℂ)
     (ψ : ∀ p : ExteriorPrime A, AddChar (DHCubic.Residue F p.val) ℂ)
     (hψ : ∀ p : ExteriorPrime A, (ψ p).IsPrimitive)
@@ -283,7 +282,7 @@ theorem numerical_tail_from_joint_majorant (A : SArithmeticData F)
   have hl : 0 < length Z P D := by unfold length; positivity
   have hg : 0 < gain Z P D θ :=
     lt_of_lt_of_le (Real.rpow_pos_of_pos hZ0 θ) (le_max_left _ _)
-  have hk : 0 ≤ k := by dsimp [k]; positivity
+  have hk : 0 ≤ k := by positivity
   have hkn : Summable (fun i => k * W i) := hs.mul_left k
   have ht : ∀ i : Index A h,
       ‖(if threshold Z P D θ < frozenNorm A i.1.val i.2 then
@@ -354,7 +353,7 @@ def weight (A : SArithmeticData F) (h : A.Exterior) (i : MajorantIndex A h) : �
 theorem rowWeight_nonneg {cS : Ideal (𝓞 F)} (f : ExteriorSquarefreeIdeal cS)
     (x : PositiveRowIndex f) : 0 ≤ positiveRowWeight f 1 x := by
   have hb := betaIdealTerm_nonneg f 0 (by norm_num) x.1
-  simp only [betaIdealTerm, neg_zero, Real.rpow_zero, mul_one] at hb
+  simp only [betaIdealTerm, neg_zero] at hb
   change 0 ≤ betaIdeal f x.1.val.val * (idealNorm x.1.val.val) ^ (0 : ℝ) at hb
   rw [Real.rpow_zero, mul_one] at hb
   unfold positiveRowWeight
@@ -371,7 +370,7 @@ theorem weight_summable (A : SArithmeticData F) (h : A.Exterior) : Summable (wei
   intro f
   apply (summable_prod_of_nonneg (fun x => rowWeight_nonneg f.val x.1)).mpr
   refine ⟨fun _ => Summable.of_finite, ?_⟩
-  simp only [weight, tsum_const, nsmul_eq_mul]
+  simp only [tsum_const, nsmul_eq_mul]
   exact (positiveRowWeight_summable_le f.val 1 (by norm_num)).1.mul_left _
 
 theorem weight_tsum_le (A : SArithmeticData F) (h : A.Exterior) :
@@ -468,8 +467,3 @@ theorem jointWeight_subpower (A : SArithmeticData F) (b : ℝ) (hb : 0 < b) :
     _ ≤ (C + 1) * (Ka * A.exteriorNorm h ^ b) :=
       mul_le_mul_of_nonneg_right (by linarith) (mul_nonneg hKa.le (Real.rpow_nonneg (zero_le_one.trans (idealNorm_ge_one h.val h.property.1)) _))
     _ = _ := by ring
-
-end Reindex
-
-end
-end DedekindZetaZeroFree.RMTailCutoff

@@ -10,7 +10,7 @@ section
 open Complex MeasureTheory Set
 open scoped Real
 
-private theorem weighted_strip (G : ℂ → ℂ) (x a b : ℝ) (hx : 0 < x) (ha : 1 < a) (hab : a < b)
+theorem weighted_strip (G : ℂ → ℂ) (x a b : ℝ) (hx : 0 < x) (ha : 1 < a) (hab : a < b)
     (hG : DifferentiableOn ℂ G {s : ℂ | 1 < s.re})
     (hdecay : ∃ C : ℝ, 0 ≤ C ∧ ∀ r ∈ Icc a b, ∀ t : ℝ,
       ‖G ((r : ℂ) + t * I)‖ ≤ C / (1 + t ^ 2)) :
@@ -53,12 +53,12 @@ private theorem weighted_strip (G : ℂ → ℂ) (x a b : ℝ) (hx : 0 < x) (ha 
       hopen hstrip hhol hbound,
     verticalIntegral_integrable_of_strip_decay a b (B * (2 * C)) _ _ hab (by positivity)
       hopen hstrip hhol hbound⟩
-private theorem reflected_line (c t : ℝ) :
+theorem reflected_line (c t : ℝ) :
     -(((-c : ℝ) : ℂ) + t * I) = (c : ℂ) + (-t : ℝ) * I := by
   push_cast
   ring
 
-private theorem reflected_mellin (G : ℂ → ℂ) (c x : ℝ) :
+theorem reflected_mellin (G : ℂ → ℂ) (c x : ℝ) :
     mellinInv (-c) (fun z : ℂ => G (-z)) x =
       (1 / (2 * Real.pi)) • ∫ t : ℝ, (x : ℂ) ^ ((c : ℂ) + t * I) * G ((c : ℂ) + t * I) := by
   unfold mellinInv
@@ -95,5 +95,3 @@ theorem mellin_gaussian_contour_shift
     change mellinInv (-(2 : ℝ)) (fun z : ℂ => G (-z)) x = _
     rw [reflected_mellin, reflected_mellin, ← heq2, heqc]
   · simpa only [reflected_line, smul_eq_mul] using (hi c ⟨hac.le, le_rfl⟩).comp_neg
-
-end DedekindZetaZeroFree

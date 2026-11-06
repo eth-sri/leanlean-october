@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 namespace LocalClassFieldTheory
 open RamificationTheory KummerTheory
 
@@ -70,7 +64,7 @@ section FiniteGaloisIntermediate
 variable (E : IntermediateField K Ω) [FiniteDimensional K E] [IsGalois K E]
 
 /-- Provides the instance `baseFixingExtensionQuotient_finite`. -/
-noncomputable instance baseFixingExtensionQuotient_finite :
+instance baseFixingExtensionQuotient_finite :
     Finite ((closedFixingSubgroup K Ω
         (⊥ : IntermediateField K Ω)).toSubgroup ⧸
       extensionSubgroup
@@ -168,8 +162,8 @@ theorem relativeNorm_intermediateFieldUnit_val (x : Eˣ) :
           (intermediateFieldUnitsEquivGaloisFixed K Ω E
             (Additive.ofMul x)) q) : Ωˣ) : Ω)) = _
   calc
-    _ = ∏ σ : Gal(E / K), E.val (σ (x : E)) := by
-      exact Fintype.prod_equiv
+    _ = ∏ σ : Gal(E / K), E.val (σ (x : E)) := 
+      Fintype.prod_equiv
         (baseFixingExtensionQuotientEquivGaloisGroup K Ω E).toEquiv
         (fun q : Q => ((Additive.toMul (action q) : Ωˣ) : Ω))
         (fun σ : Gal(E / K) => E.val (σ (x : E)))
@@ -212,7 +206,7 @@ theorem map_finiteNormSubgroup_eq_additiveNormSubgroup :
             (Additive.ofMul u) = b := by
       change intermediateFieldUnitsEquivGaloisFixed K Ω E
           ((intermediateFieldUnitsEquivGaloisFixed K Ω E).symm b) = b
-      exact (intermediateFieldUnitsEquivGaloisFixed K Ω E).apply_symm_apply b
+      simp
     rw [← hb, relativeNorm_intermediateFieldUnit]
     change (baseUnitsEquivGaloisAmbientFixed K Ω).symm
       (baseUnitsEquivGaloisAmbientFixed K Ω
@@ -227,11 +221,7 @@ theorem map_finiteNormSubgroup_eq_additiveNormSubgroup :
     · refine ⟨intermediateFieldUnitsEquivGaloisFixed K Ω E
         (Additive.ofMul u), ?_⟩
       exact relativeNorm_intermediateFieldUnit K Ω E u
-    · change (baseUnitsEquivGaloisAmbientFixed K Ω).symm
-        (baseUnitsEquivGaloisAmbientFixed K Ω
-          (Additive.ofMul (normUnits K E u))) = y
-      rw [(baseUnitsEquivGaloisAmbientFixed K Ω).symm_apply_apply]
-      exact congrArg Additive.ofMul hu
+    simp_all
 
 /-- The abstract finite norm quotient is the actual multiplicative field
 norm quotient, written additively for the abstract class-formation API. -/
@@ -289,13 +279,13 @@ def finiteNormQuotientEquivNormQuotient :
         change ↑(e (e.symm x)) = (↑x :
           ambientFixedAddSubgroup (galoisAmbientUnitsRep K Ω)
             (closedFixingSubgroup K Ω (⊥ : IntermediateField K Ω)) ⧸ S)
-        rw [e.apply_symm_apply]
+        simp
       right_inv := by
         intro q
         refine QuotientAddGroup.induction_on q ?_
         intro x
         change ↑(e.symm (e x)) = (↑x : Additive Kˣ ⧸ T)
-        rw [e.symm_apply_apply]
+        simp
       map_add' := f.map_add }
   let firstIso : (Additive Kˣ ⧸ T) ≃+ Additive (NormQuotient K E) :=
     QuotientAddGroup.quotientKerEquivOfSurjective normAdd
@@ -318,31 +308,6 @@ theorem finiteNormQuotientEquivNormQuotient_finiteNormClass
           (closedFixingSubgroup K Ω E) (fixingSubgroupLeBase K Ω E) a) =
       (MonoidHom.toAdditive (normClass K E))
         ((baseUnitsEquivGaloisAmbientFixed K Ω).symm a) := by
-  let S := finiteNormSubgroup (galoisAmbientUnitsRep K Ω)
-    (closedFixingSubgroup K Ω (⊥ : IntermediateField K Ω))
-    (closedFixingSubgroup K Ω E) (fixingSubgroupLeBase K Ω E)
-  let normAdd : Additive Kˣ →+ Additive (NormQuotient K E) :=
-    MonoidHom.toAdditive (normClass K E)
-  let T := normAdd.ker
-  let e := baseUnitsEquivGaloisAmbientFixed K Ω
-  have hmap : S.map e.symm.toAddMonoidHom = T := by
-    simpa [S, T, normAdd, e] using
-      (map_finiteNormSubgroup_eq_additiveNormSubgroup K Ω E).trans
-        (additiveNormSubgroup_eq_ker_quotient_map K E)
-  have hforward : S ≤ AddSubgroup.comap e.symm.toAddMonoidHom T := by
-    intro x hx
-    change e.symm x ∈ T
-    rw [← hmap]
-    exact ⟨x, hx, rfl⟩
-  simp only [finiteNormQuotientEquivNormQuotient,
-    finiteNormQuotientConcreteEquiv_finiteNormClass,
-    AddEquiv.trans_apply,
-    QuotientAddGroup.quotientKerEquivOfSurjective,
-    QuotientAddGroup.quotientKerEquivOfRightInverse]
-  change QuotientAddGroup.kerLift normAdd
-      (QuotientAddGroup.map S T e.symm.toAddMonoidHom hforward
-        (QuotientAddGroup.mk' S a)) = normAdd (e.symm a)
-  rw [QuotientAddGroup.map_mk', QuotientAddGroup.kerLift_mk]
   rfl
 
 end FiniteGaloisIntermediate
@@ -385,31 +350,14 @@ theorem localNormSubgroup_fieldRange_eq :
       (AlgEquiv.ofInjectiveField i).symm.toMulEquiv y
     refine ⟨z, ?_⟩
     have hz : Units.mapEquiv
-        (AlgEquiv.ofInjectiveField i).toMulEquiv z = y := by
-      exact (Units.mapEquiv
+        (AlgEquiv.ofInjectiveField i).toMulEquiv z = y := 
+      (Units.mapEquiv
         (AlgEquiv.ofInjectiveField i).toMulEquiv).apply_symm_apply y
     rw [← hz, normUnits_embeddedExtensionAlgEquiv]
   · rintro ⟨x, rfl⟩
     refine ⟨Units.mapEquiv
       (AlgEquiv.ofInjectiveField i).toMulEquiv x, ?_⟩
     exact normUnits_embeddedExtensionAlgEquiv K Ω L i x
-
-/-- The abstract relative norm attached to an embedded finite Galois
-extension is the actual field norm on its unit group. -/
-theorem relativeNorm_embeddedExtensionUnit (x : Lˣ) :
-    relativeNorm (galoisAmbientUnitsRep K Ω)
-        (closedFixingSubgroup K Ω (⊥ : IntermediateField K Ω))
-        (closedFixingSubgroup K Ω (AlgHom.fieldRange i))
-        (fixingSubgroupLeBase K Ω (AlgHom.fieldRange i))
-        (embeddedFieldUnitsEquivGaloisFixed K Ω L i (Additive.ofMul x)) =
-      baseUnitsEquivGaloisAmbientFixed K Ω
-        (Additive.ofMul (normUnits K L x)) := by
-  let e : L ≃ₐ[K] i.fieldRange := AlgEquiv.ofInjectiveField i
-  let y : i.fieldRangeˣ := Units.mapEquiv e.toMulEquiv x
-  exact (relativeNorm_intermediateFieldUnit K Ω i.fieldRange y).trans
-    (congrArg (fun u : Kˣ =>
-      baseUnitsEquivGaloisAmbientFixed K Ω (Additive.ofMul u))
-      (normUnits_embeddedExtensionAlgEquiv K Ω L i x))
 
 /-- For an embedded finite Galois extension `L/K`, the finite norm quotient
 in the abstract class formation is the actual quotient `Kˣ/N_{L/K}Lˣ`. -/
@@ -441,17 +389,4 @@ theorem finiteNormQuotientEquivEmbeddedNormQuotient_finiteNormClass
           (localNormSubgroup_fieldRange_eq K Ω L i)))
         ((MonoidHom.toAdditive (normClass K (AlgHom.fieldRange i)))
           ((baseUnitsEquivGaloisAmbientFixed K Ω).symm a)) := by
-  change (MulEquiv.toAdditive
-      (normQuotientEquivOfNormSubgroupEq K (AlgHom.fieldRange i) L
-        (localNormSubgroup_fieldRange_eq K Ω L i)))
-      (finiteNormQuotientEquivNormQuotient K Ω (AlgHom.fieldRange i)
-        (finiteNormClass (galoisAmbientUnitsRep K Ω)
-          (closedFixingSubgroup K Ω (⊥ : IntermediateField K Ω))
-          (closedFixingSubgroup K Ω (AlgHom.fieldRange i))
-          (fixingSubgroupLeBase K Ω (AlgHom.fieldRange i)) a)) = _
-  rw [finiteNormQuotientEquivNormQuotient_finiteNormClass]
-
-end EmbeddedFiniteGaloisExtension
-
-end
-end LocalClassFieldTheory
+  rfl

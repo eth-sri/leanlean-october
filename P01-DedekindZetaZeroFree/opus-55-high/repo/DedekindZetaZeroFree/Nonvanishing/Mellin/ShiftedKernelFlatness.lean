@@ -12,13 +12,13 @@ namespace DedekindZetaZeroFree
 open MeasureTheory
 open scoped FourierTransform
 
-private lemma reflected_norm (G : ℂ → ℂ) (c t : ℝ) :
+lemma reflected_norm (G : ℂ → ℂ) (c t : ℝ) :
     G (-(((-c : ℝ) : ℂ) + t * Complex.I)) = G ((c : ℂ) + (-t) * Complex.I) := by
   congr 1
   push_cast
   ring
 
-private lemma line_integrable (G : ℂ → ℂ)
+lemma line_integrable (G : ℂ → ℂ)
     (hG : DifferentiableOn ℂ G {s : ℂ | 1 < s.re})
     (hdecay : ∀ a b : ℝ, 1 < a → a ≤ b →
       ∃ C : ℝ, 0 ≤ C ∧ ∀ r ∈ Set.Icc a b, ∀ t : ℝ,
@@ -117,5 +117,3 @@ theorem mellin_right_shift_flat
   rw [Real.norm_of_nonneg (Real.rpow_nonneg (le_of_lt hx) b)]
   exact (hb x hx hx1).trans (mul_le_mul_of_nonneg_left
     (Real.rpow_le_rpow_of_exponent_ge hx hx1 (by have := le_max_right 2 b; linarith)) hC)
-
-end DedekindZetaZeroFree

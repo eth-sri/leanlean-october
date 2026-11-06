@@ -10,7 +10,6 @@ open scoped NumberField Valued
 open NumberField IsDedekindDomain MeasureTheory
 
 noncomputable section
-set_option autoImplicit false
 set_option linter.style.haveILetI false
 set_option linter.unusedSectionVars false
 
@@ -21,7 +20,7 @@ variable (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
   [TopologicalSpace K] [IsNonarchimedeanLocalField K]
   [MeasurableSpace K] [BorelSpace K]
 
-private theorem shifted_cube_proper : IsProperMap (fun x : Kˣ => x^3) := by
+theorem shifted_cube_proper : IsProperMap (fun x : Kˣ => x^3) := by
  letI := IsTopologicalAddGroup.rightUniformSpace K
  haveI := isUniformAddGroup_of_addCommGroup (G := K)
  letI : (Valued.v (R := K)).RankOne :=
@@ -31,18 +30,17 @@ private theorem shifted_cube_proper : IsProperMap (fun x : Kˣ => x^3) := by
  haveI : ProperSpace K := .of_nontriviallyNormedField_of_weaklyLocallyCompactSpace K
  have hp : IsProperMap (fun x : K => x^3) := by
    convert (Polynomial.X ^ 3 : Polynomial K).isProperMap_eval (by simp) using 1
-   funext x
    simp
  have hprod : IsProperMap (fun p : K × Kᵐᵒᵖ => (p.1^3, p.2^3)) := hp.prodMap (by
    simpa only [MulOpposite.op_pow] using
      (MulOpposite.opHomeomorph.isProperMap.comp hp).comp MulOpposite.opHomeomorph.symm.isProperMap)
  have hcomm : (fun p : K × Kᵐᵒᵖ => (p.1^3, p.2^3)) ∘ Units.embedProduct K =
-     Units.embedProduct K ∘ (fun x : Kˣ => x^3) := by funext x; ext <;> simp [Units.embedProduct]
+     Units.embedProduct K ∘ (fun x : Kˣ => x^3) := by rfl
  apply isProperMap_of_comp_of_inj (by fun_prop) Units.continuous_embedProduct
    (by rw [← hcomm]; exact hprod.comp Units.isClosedEmbedding_embedProduct.isProperMap)
  exact Units.embedProduct_injective K
 
-private theorem integrable_comp_cube
+theorem integrable_comp_cube
     (dx : Measure K) [dx.IsAddHaarMeasure] (f : Kˣ → ℂ)
     (hf : Integrable f (KPCubicHaar.multiplicativeHaar K dx)) :
     Integrable (fun y : Kˣ => f (y^3)) (KPCubicHaar.multiplicativeHaar K dx) := by
@@ -89,7 +87,7 @@ private theorem integrable_comp_cube
   rw [Measure.map_map hi.continuous.measurable hg.measurable,
     Measure.map_smul _ hi.continuous.measurable.aemeasurable,
     hi.measurableEmbedding.map_comap] at hmap
-  have hr : Set.range H.subtype = (H : Set Kˣ) := by ext x; simp
+  have hr : Set.range H.subtype = (H : Set Kˣ) := by simp
   rw [hr] at hmap
   have hfi : Integrable f (μ.map p) := by
     rw [show μ.map p = c • μ.restrict (H : Set Kˣ) from hmap]
@@ -97,7 +95,7 @@ private theorem integrable_comp_cube
   exact hfi.comp_measurable hp.measurable
 
 open scoped Classical in
-private theorem shifted_linear_integrable
+theorem shifted_linear_integrable
     (dx : Measure K) [dx.IsAddHaarMeasure] (c : Kˣ) (b : ℂˣ)
     (s : ℂ) (hs0 : 0 < s.re) (hs1 : s.re < 1)
     (hbs : (CubicUnitCharacters.residueCard K : ℝ).rpow (-s.re) < ‖(b : ℂ)‖)
@@ -162,7 +160,7 @@ private theorem shifted_linear_integrable
     simp [betaFunction, h]
   · have hn : 1 - (u : K) ≠ 0 := by
       intro he
-      exact h (Units.ext (sub_eq_zero.mp he).symm)
+      simp_all
     have hp := KPCubicHaar.abs_pos K hn
     have hcp := KPCubicHaar.abs_pos K c.ne_zero
     have he : (KPCubicHaar.abs K (1 - (u : K)) : ℂ) ^ (-s) =
@@ -207,8 +205,7 @@ theorem actual_shifted_beta_integrable
   have hb0 : b₀ ≠ 0 := by
     intro h
     apply t.ne_zero
-    rw [← hb₀, h]
-    simp
+    simp_all
   let b : ℂˣ := Units.mk0 b₀ hb0
   have hb : b ^ 3 = t := Units.ext hb₀
   have hnorm : ‖(b : ℂ)‖ ^ 3 = ‖(t : ℂ)‖ := by
@@ -237,6 +234,3 @@ theorem actual_shifted_beta_integrable
   filter_upwards [] with y
   rw [omega_cube K t b hb]
   rfl
-
-end
-end DedekindZetaZeroFree.KPActualFullKernelArithmetic

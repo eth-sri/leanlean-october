@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Adeles.Characters.TraceProductFormula
 
 @[expose] public section
 
-noncomputable section
 open scoped NumberField BigOperators Classical
 open NumberField IsDedekindDomain
 
@@ -36,7 +35,3 @@ theorem finiteCharacter_product_continuous :
   apply continuous_finset_prod
   intro v hv
   exact (continuous_localFiniteCharacter F v).comp (RestrictedProduct.continuous_eval v)
-
-end DedekindZetaZeroFree.RepresentationTheory.AdelicTraceCharacterHelpers
-
-end

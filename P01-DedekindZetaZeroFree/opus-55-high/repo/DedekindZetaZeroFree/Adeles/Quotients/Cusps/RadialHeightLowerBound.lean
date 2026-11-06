@@ -16,7 +16,7 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
  def radialGL (t : ℝ) : KPChamberHeight.AdelGL F :=
   KPAdelicCoverRestrictedProduct.restrictedProjection F ζ hζ
     (KPGlobalTorusFunctionData.archDiagonalTuple F ζ hζ (fun _ => (Real.exp t : ℂ)))
-private lemma radial_infinite (t : ℝ) (w : InfinitePlace F) :
+lemma radial_infinite (t : ℝ) (w : InfinitePlace F) :
     GeneralLinearGroup.map (KPChamberHeight.infiniteEval F w) (radialGL F ζ hζ t) =
       KubotaRankTwo.d w.Completion
         (Units.mk0 ((InfinitePlace.Completion.ringEquivComplexOfIsComplex
@@ -30,14 +30,14 @@ private lemma radial_infinite (t : ℝ) (w : InfinitePlace F) :
   simp only [show (Real.exp t : ℂ) ≠ 0 by exact_mod_cast Real.exp_ne_zero t, ↓reduceDIte] at H
   exact H
 
-private lemma radial_finite (t : ℝ) (v : IsDedekindDomain.HeightOneSpectrum (𝓞 F)) :
+lemma radial_finite (t : ℝ) (v : IsDedekindDomain.HeightOneSpectrum (𝓞 F)) :
     GeneralLinearGroup.map (KPChamberHeight.finiteEval F v) (radialGL F ζ hζ t) = 1 := by
   have H := KPAdelicCoverRestrictedProduct.restrictedProjection_eval F ζ hζ
     (KPGlobalTorusFunctionData.archDiagonalTuple F ζ hζ (fun _ => (Real.exp t : ℂ))) (Sum.inr v)
   simpa [KPGlobalTorusFunctionData.archDiagonalTuple, KPAdelicCoverRestrictedProduct.matrixEval,
     KPAdelicCoverRestrictedProduct.adeleEval, KPChamberHeight.finiteEval, radialGL] using H
 
-private lemma radial_local_lower {K : Type*} [NormedField K]
+lemma radial_local_lower {K : Type*} [NormedField K]
     (r : Fin 2 → K) (A : GL (Fin 2) K) (y : Kˣ)
     (t : ℝ) (hy : ‖(y : K)‖ = Real.exp t) (ht : 0 ≤ t) :
     Real.exp (-t) *
@@ -67,7 +67,7 @@ private lemma radial_local_lower {K : Type*} [NormedField K]
   have H := mul_le_mul_of_nonneg_right he2 (sq_nonneg ‖KPChamberHeight.rowAction r A 0‖)
   nlinarith
 
-private lemma infinite_lower (r : Fin 2 → F) (A : KPChamberHeight.AdelGL F)
+lemma infinite_lower (r : Fin 2 → F) (A : KPChamberHeight.AdelGL F)
     (t : ℝ) (ht : 0 ≤ t) (w : InfinitePlace F) :
     Real.exp (-t) * KPChamberHeight.infiniteFactor F r A w ≤
       KPChamberHeight.infiniteFactor F r (A * radialGL F ζ hζ t) w := by
@@ -86,7 +86,7 @@ private lemma infinite_lower (r : Fin 2 → F) (A : KPChamberHeight.AdelGL F)
     (GeneralLinearGroup.map (KPChamberHeight.infiniteEval F w) A)
     (Units.mk0 _ (by simpa using Real.exp_ne_zero t)) t hy ht
 
-private lemma row_radial_lower (r : Fin 2 → F) (hr : r ≠ 0) (A : KPChamberHeight.AdelGL F)
+lemma row_radial_lower (r : Fin 2 → F) (hr : r ≠ 0) (A : KPChamberHeight.AdelGL F)
     (t : ℝ) (ht : 0 ≤ t) :
     Real.exp (-(KPCuspLogShape.dimension F : ℝ) * t) * KPChamberHeight.rowHeight F r A ≤
       KPChamberHeight.rowHeight F r (A * radialGL F ζ hζ t) := by
@@ -114,7 +114,7 @@ private lemma row_radial_lower (r : Fin 2 → F) (hr : r ≠ 0) (A : KPChamberHe
     positivity
   simpa only [mul_assoc] using mul_le_mul_of_nonneg_right H hp
 
-private lemma radial_projection (t : ℝ) :
+lemma radial_projection (t : ℝ) :
     KPLiteralExceptionalResidue.coveredHeightProjection F ζ hζ
       (KPGlobalTorusFunctionData.archDiagonalLift F ζ hζ (fun _ => (Real.exp t : ℂ))) =
       ProjGenLinGroup.mk (radialGL F ζ hζ t) := by
@@ -123,7 +123,7 @@ private lemma radial_projection (t : ℝ) :
  def radialSection (t : ℝ) : KPSmoothActualFlowData.GInfinity F := fun w =>
   ProjGenLinGroup.mk (KubotaRankTwo.d ℂ (Units.mk0 (Real.exp t : ℂ)
     (by exact_mod_cast Real.exp_ne_zero t)) 1)
-private lemma section_radial (xb : KPCuspCharts.Cross F) (t : ℝ) :
+lemma section_radial (xb : KPCuspCharts.Cross F) (t : ℝ) :
     KPContSectorArchSphericalFibers.iwasawaSection F ζ hζ (KPCuspCharts.toArch F (xb,t)) =
       KPContSectorArchSphericalFibers.iwasawaSection F ζ hζ (KPCuspCharts.toArch F (xb,0)) *
         radialSection F t := by
@@ -141,7 +141,7 @@ private lemma section_radial (xb : KPCuspCharts.Cross F) (t : ℝ) :
     simp [KPCuspCharts.toArch, radialSection, KubotaRankTwo.d, Matrix.mul_apply,
       Fin.sum_univ_two, Real.exp_add, mul_comm]
 
-private lemma height_radial_lower (ℓ : KPChamberHeight.Line F) (g : KPChamberHeight.AdelPGL F)
+lemma height_radial_lower (ℓ : KPChamberHeight.Line F) (g : KPChamberHeight.AdelPGL F)
     (t : ℝ) (ht : 0 ≤ t) :
     Real.exp (-(KPCuspLogShape.dimension F : ℝ) * t) * KPChamberHeight.height F ℓ g ≤
       KPChamberHeight.height F ℓ (g * ProjGenLinGroup.mk (radialGL F ζ hζ t)) := by
@@ -152,7 +152,7 @@ private lemma height_radial_lower (ℓ : KPChamberHeight.Line F) (g : KPChamberH
  def zeroHeight (xb : KPCuspCharts.Cross F) : KPSmoothActualFlowData.G F ζ hζ :=
   KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
     (KPContSectorArchSphericalFibers.iwasawaSection F ζ hζ (KPCuspCharts.toArch F (xb,0)))
-private lemma zeroHeight_continuous : Continuous (zeroHeight F ζ hζ) := by
+lemma zeroHeight_continuous : Continuous (zeroHeight F ζ hζ) := by
   apply (KPSmoothActualFlowData.archimedean_insertion_properties F ζ hζ).2.2.1.comp
   apply (KPContSectorArchSphericalFibers.section_continuous F ζ hζ).comp
   exact (KPCuspCharts.toArch_contDiff F).continuous.comp (continuous_id.prodMk continuous_const)

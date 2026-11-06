@@ -50,18 +50,9 @@ noncomputable def lift (hf : ∀ e : Equiv.Perm ι, f.domDomCongr e = f) : Sym[R
 @[simp]
 theorem lift_mk (hf : ∀ e : Equiv.Perm ι, f.domDomCongr e = f) (x : ⨂[R] (_ : ι), M) :
     lift f hf (mk R ι M x) = PiTensorProduct.lift f x :=
-  AddCon.lift_mk' (lift_rel f hf) x
+  by rfl
 
 @[simp]
 theorem lift_tprod (hf : ∀ e : Equiv.Perm ι, f.domDomCongr e = f) (m : ι → M) :
     lift f hf (⨂ₛ[R] i, m i) = f m := by
   rw [tprod, LinearMap.compMultilinearMap_apply, lift_mk, PiTensorProduct.lift.tprod]
-
-@[ext]
-theorem ext {g h : Sym[R] ι M →ₗ[R] N}
-    (hgh : ∀ m : ι → M, g (⨂ₛ[R] i, m i) = h (⨂ₛ[R] i, m i)) : g = h := by
-  refine LinearMap.ext_on (span_tprod_eq_top R ι M) ?_
-  rintro _ ⟨m, rfl⟩
-  exact hgh m
-
-end SymmetricPower

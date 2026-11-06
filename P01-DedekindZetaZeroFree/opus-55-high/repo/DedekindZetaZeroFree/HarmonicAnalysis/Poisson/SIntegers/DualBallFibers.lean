@@ -32,10 +32,7 @@ theorem finiteBallTraceCharacter_apply (x : PoissonFinite.Space F S) :
     intro v _
     change archTraceCharacter v (0 : v.Completion) = 1
     simp
-  show (∏ v : InfinitePlace F, archTraceCharacter v ((0 : InfiniteAdeleRing F) v)) *
-      (∏ v : S, localFiniteCharacter F v.val (x v)) =
-        ∏ v : S, localFiniteCharacter F v.val (x v)
-  rw [hz, one_mul]
+  simp_all
 
 def finiteBallAnnihilator (k : (v : S) → ℤ) :
     Set (PoissonFinite.Space F S) :=
@@ -47,7 +44,7 @@ def dualBallFractionalIdeal (k : (v : S) → ℤ) :
   (PoissonArch.codifferentIdeal F : FractionalIdeal (𝓞 F)⁰ F) *
     (ballFractionalIdeal F S k)⁻¹
 
-private theorem finiteBallAnnihilator_coordinate_iff (k : (v : S) → ℤ)
+theorem finiteBallAnnihilator_coordinate_iff (k : (v : S) → ℤ)
     (y : PoissonFinite.Space F S) :
     y ∈ finiteBallAnnihilator F S k ↔
       ∀ v : S, ∀ a : v.val.adicCompletion F,
@@ -63,8 +60,7 @@ private theorem finiteBallAnnihilator_coordinate_iff (k : (v : S) → ℤ)
         simpa [u] using ha
       · have hz : u w = 0 := by simp [u, Pi.single_eq_of_ne hw]
         rw [hz, norm_zero]
-        exact (zpow_pos (lt_trans zero_lt_one (by exact_mod_cast
-          (HeightOneSpectrum.one_lt_absNorm w.val))) _).le
+        positivity
     have he := hy u hu
     rw [finiteBallTraceCharacter_apply] at he
     have hp : (∏ w : S, localFiniteCharacter F w.val ((u * y) w)) =
@@ -108,7 +104,3 @@ theorem dualBallFractionalIdeal_subset_sIntegerRing
   rw [ScaleShift.dual_ballFractionalIdeal F S hS k] at hx'
   exact ScaleShift.ballFractionalIdeal_le_sIntegers F S
     (fun v : S => -k v - differentExponent F v.val) hx'
-
-end DedekindZetaZeroFree.PoissonS
-
-end

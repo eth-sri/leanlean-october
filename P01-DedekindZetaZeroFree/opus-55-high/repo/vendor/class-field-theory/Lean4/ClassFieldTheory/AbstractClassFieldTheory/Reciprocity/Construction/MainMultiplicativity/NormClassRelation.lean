@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Norm-class relations for reciprocity multiplicativity
 
@@ -30,7 +26,6 @@ namespace ClassFormation
 open KummerTheory
 open CyclicCohomology
 
-noncomputable section
 
 open CategoryTheory
 
@@ -280,9 +275,3 @@ theorem reciprocityMap_mul_of_primeNormClass_eq
   rw [← h₃, ← h₁, ← h₂]
   simpa only [reciprocityValueOfPrime, KR,
     FiniteAbstractField.toFiniteResidueAbstractField] using hclasses.symm
-
-end DegreeData
-
-end
-
-end ClassFormation

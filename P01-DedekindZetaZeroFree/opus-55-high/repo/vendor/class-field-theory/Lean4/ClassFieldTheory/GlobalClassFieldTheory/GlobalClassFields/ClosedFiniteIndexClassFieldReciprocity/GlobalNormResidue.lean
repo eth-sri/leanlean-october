@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Norm-residue evaluation for a closed finite-index class field
 
@@ -35,14 +31,13 @@ open Reciprocity
 /-- Canonical class-group commutativity supplies normality for quotient evaluation. -/
 theorem closedFiniteIndexNormResidueClassGroupIsMulCommutative
     (F : Type) [Field F] [NumberField F] :
-    IsMulCommutative (IdeleClassGroup F) :=
-  IsMulCommutative.of_comm (fun a b => mul_comm a b)
+    IsMulCommutative (IdeleClassGroup F) := by apply normIdeleClassGroup_isMulCommutative <;> assumption
 
 attribute [local instance] closedFiniteIndexNormResidueClassGroupIsMulCommutative
 
 variable {K : Type} [Field K] [NumberField K]
 
-private theorem quotientTransport_inverse_apply
+theorem quotientTransport_inverse_apply
     {G A : Type*} [Group G] [Group A]
     (N H : Subgroup G) [N.Normal] [H.Normal]
     (e : Additive (G ⧸ N) ≃+ Additive A)
@@ -92,10 +87,7 @@ theorem
               (_root_.ideleClassNorm K
                 (closedFiniteIndexClassField
                   (K := K) H hclosed)).range c)) :=
-    congrArg (fun σ => Additive.ofMul σ)
-      (globalNormResidueMonoidHom_apply K
-        (closedFiniteIndexClassField
-          (K := K) H hclosed) c)
+    by rfl
   calc
     _ = QuotientGroup.quotientMulEquivOfEq
           (closedFiniteIndexClassField_ideleClassNorm_range
@@ -147,8 +139,3 @@ theorem
       (closedFiniteIndexClassField_ideleClassNorm_range
         (K := K) H hclosed)
       c
-
-end GlobalClassFields
-end GlobalClassFieldTheory
-
-end

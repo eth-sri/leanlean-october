@@ -14,12 +14,12 @@ open Classical NumberField.InfinitePlace NumberField.Units.dirichletUnitTheorem
 open NumberField.mixedEmbedding.fundamentalCone
 open DedekindZetaZeroFree.AbelianQuotient.Theta
 
-private theorem covariance_exp_add {F : Type} [Field F] [NumberField F]
+theorem covariance_exp_add {F : Type} [Field F] [NumberField F]
     (x y : mixedEmbedding.realSpace F) :
     expMapBasis (x + y) = expMapBasis x * expMapBasis y := by
   simp only [expMapBasis_apply, map_add, expMap_add]
 
-private theorem covariance_covolume_pos {F : Type} [Field F] [NumberField F]
+theorem covariance_covolume_pos {F : Type} [Field F] [NumberField F]
     (I : (FractionalIdeal (𝓞 F)⁰ F)ˣ) : 0 < mixedThetaCovolume F I := by
   apply mul_pos
   · exact_mod_cast lt_of_le_of_ne (FractionalIdeal.absNorm_nonneg _)
@@ -27,7 +27,7 @@ private theorem covariance_covolume_pos {F : Type} [Field F] [NumberField F]
   · apply Real.sqrt_pos.mpr
     exact abs_pos.mpr (by exact_mod_cast discr_ne_zero F)
 
-private theorem covariance_reindex {F : Type} [Field F] [NumberField F]
+theorem covariance_reindex {F : Type} [Field F] [NumberField F]
     (I J : (FractionalIdeal (𝓞 F)⁰ F)ˣ) (a : Fˣ)
     (hJ : (J : FractionalIdeal (𝓞 F)⁰ F) =
       FractionalIdeal.spanSingleton (𝓞 F)⁰ (a : F) * (I : FractionalIdeal (𝓞 F)⁰ F))
@@ -72,8 +72,7 @@ theorem principalCenteredShapeCovariance (F : Type) [Field F] [NumberField F]
   let N : ℝ := (|(Algebra.norm ℚ) (a : F)| : ℚ)
   have hN : 0 < N := by
     dsimp [N]
-    exact_mod_cast (abs_pos.mpr
-      (show (Algebra.norm ℚ) (a : F) ≠ 0 from Algebra.norm_ne_zero_iff.mpr (Units.ne_zero a)))
+    simp
   have hrad : L w₀ = Real.log N / (Module.finrank ℚ F : ℝ) := by
     have hp := prod_expMapBasis_pow L
     rw [hL, prod_eq_abs_norm] at hp
@@ -124,5 +123,3 @@ theorem principalCenteredShapeCovariance (F : Type) [Field F] [NumberField F]
   intro v _
   rw [map_mul, hs]
   ring
-
-end DedekindZetaZeroFree.Hecke

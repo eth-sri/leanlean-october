@@ -145,7 +145,7 @@ def unitDilation (F : Type) [Field F] [NumberField F]
     continuous_toFun := continuous_const.mul continuous_id
     continuous_invFun := continuous_const.mul continuous_id }
 
-private theorem unitDilation_preimage_lowShell
+theorem unitDilation_preimage_lowShell
     (F : Type) [Field F] [NumberField F]
     (q : HeightOneSpectrum (𝓞 F)) (u : (KPTameCompact.O F q)ˣ) :
     unitDilation F q u ⁻¹' lowShell F q = lowShell F q := by
@@ -156,9 +156,9 @@ private theorem unitDilation_preimage_lowShell
   have hu : valuation (LocalField F q)
       (KPTameCompact.unitInclusion F q u : LocalField F q) = 1 :=
     (Valuation.integer.integers (valuation (LocalField F q))).valuation_unit u
-  rw [map_mul, hu, one_mul]
+  simp_all
 
-private theorem unitDilation_preservesHaar
+theorem unitDilation_preservesHaar
     (F : Type) [Field F] [NumberField F]
     (q : HeightOneSpectrum (𝓞 F))
     (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
@@ -197,7 +197,7 @@ theorem unitDilation_preservesLowShellHaar
   rwa [unitDilation_preimage_lowShell] at h
 
 set_option backward.isDefEq.respectTransparency false in
-private theorem actual_compact_normalizers
+theorem actual_compact_normalizers
     (F : Type) [Field F] [NumberField F]
     (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
     (ht : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3)
@@ -248,7 +248,3 @@ theorem eventual_actual_compact_normalizers
             splitCongruenceSet F ζ hζ q m := by
   obtain ⟨M, hM⟩ := KPTameJacquetBruhatTests.TestConstruction.eventually_matrixChartDepth F q
   exact ⟨M, fun m hm => actual_compact_normalizers F ζ hζ q ht m (hM m hm)⟩
-
-end DedekindZetaZeroFree.KPTameTransposeLowShellSupport
-
-end

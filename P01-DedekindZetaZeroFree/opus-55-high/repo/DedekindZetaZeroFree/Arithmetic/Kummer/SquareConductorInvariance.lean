@@ -7,11 +7,10 @@ public import DedekindZetaZeroFree.Arithmetic.Kummer.LocalQuadraticCharacterLaws
 
 namespace DedekindZetaZeroFree.RMKummerSquareConductor
 
-noncomputable section
 open scoped NumberField Classical
 open IsDedekindDomain
 
-private theorem ideal_eq_of_exponents (F : Type) [Field F] [NumberField F]
+theorem ideal_eq_of_exponents (F : Type) [Field F] [NumberField F]
     (I J : Ideal (𝓞 F)) (hI : I ≠ ⊥) (hJ : J ≠ ⊥)
     (h : ∀ v : HeightOneSpectrum (𝓞 F),
       idealPrimeExponent v.asIdeal I = idealPrimeExponent v.asIdeal J) : I = J := by
@@ -44,8 +43,8 @@ theorem finiteExponent_mul_sq (F : Type) [Field F] [NumberField F]
     (M F (RMKummerConductor.m F h12 (x * y ^ 2))
       (RMKummerConductor.m_ne_bot F h12 (x * y ^ 2))).finitePart v =
     (M F (RMKummerConductor.m F h12 x)
-      (RMKummerConductor.m_ne_bot F h12 x)).finitePart v := by
-  exact ((isLeast_mul_sq_iff F h12 x y v _).mp
+      (RMKummerConductor.m_ne_bot F h12 x)).finitePart v := 
+  ((isLeast_mul_sq_iff F h12 x y v _).mp
     (RMKummerLeastLocalExponent.finiteExponent_isLeast F h12 (x * y ^ 2) v)).unique
       (RMKummerLeastLocalExponent.finiteExponent_isLeast F h12 x v)
 
@@ -73,8 +72,4 @@ theorem m_one (F : Type) [Field F] [NumberField F]
   have heq := Nat.eq_zero_of_le_zero hle
   rw [heq]
   unfold idealPrimeExponent
-  rw [← Ideal.one_eq_top, UniqueFactorizationMonoid.normalizedFactors_one,
-    Multiset.count_zero]
-
-end
-end DedekindZetaZeroFree.RMKummerSquareConductor
+  simp

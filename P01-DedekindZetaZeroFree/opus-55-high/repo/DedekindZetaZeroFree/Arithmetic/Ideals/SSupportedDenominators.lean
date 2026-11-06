@@ -5,14 +5,13 @@ public import Mathlib.NumberTheory.NumberField.Completion.FinitePlace
 
 @[expose] public section
 
-noncomputable section
 
 namespace DedekindZetaZeroFree
 
 open NumberField IsDedekindDomain
 open scoped nonZeroDivisors
 
-private theorem denominator_prime_generator
+theorem denominator_prime_generator
     (F : Type*) [Field F] [NumberField F]
     (v : HeightOneSpectrum (RingOfIntegers F)) :
     ∃ d : RingOfIntegers F, d ≠ 0 ∧
@@ -29,10 +28,9 @@ private theorem denominator_prime_generator
   obtain ⟨d, hd⟩ := (Submodule.isPrincipal_iff _).mp hp
   refine ⟨d, ?_, hd.symm⟩
   intro hz
-  simp [hz] at hd
-  exact hn hd
+  simp_all
 
-private theorem denominator_prime_order
+theorem denominator_prime_order
     {F : Type*} [Field F] [NumberField F]
     (v w : HeightOneSpectrum (RingOfIntegers F)) (h : ℕ) [DecidableEq (HeightOneSpectrum (RingOfIntegers F))] :
     multiplicity w.asIdeal (v.asIdeal ^ h) = if w = v then h else 0 := by
@@ -47,7 +45,7 @@ private theorem denominator_prime_order
         (w.prime.dvd_of_dvd_pow hd))
     exact hw (HeightOneSpectrum.asIdeal_injective he)
 
-private theorem denominator_product_order
+theorem denominator_product_order
     {F : Type*} [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
     (a : HeightOneSpectrum (RingOfIntegers F) → RingOfIntegers F)
@@ -56,7 +54,7 @@ private theorem denominator_product_order
       ∑ v ∈ S, multiplicity w.asIdeal (Ideal.span ({a v} : Set (RingOfIntegers F))) := by
   classical
   induction S using Finset.induction_on with
-  | empty => simpa using (multiplicity_one_right (a := w.asIdeal))
+  | empty => simp
   | @insert v S hv ih =>
     rw [Finset.prod_insert hv, ← Ideal.span_singleton_mul_span_singleton,
       multiplicity_mul w.prime, Finset.sum_insert hv, ih]
@@ -65,7 +63,7 @@ private theorem denominator_product_order
     exact fun hz => (mul_ne_zero (ha v) (Finset.prod_ne_zero_iff.mpr fun x _ => ha x))
       (Ideal.span_singleton_eq_bot.mp hz)
 
-private theorem denominator_clears
+theorem denominator_clears
     {F : Type*} [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
     (d : RingOfIntegers F) (hd : d ≠ 0)
@@ -86,9 +84,7 @@ private theorem denominator_clears
     Int.le_natAbs.trans (by exact_mod_cast (Nat.le_add_right _ _).trans hbt)
   have hk : -(k v) ≤ (t : ℤ) := by
     have habs : (k v).natAbs ≤ t := (Nat.le_add_left _ _).trans hbt
-    have hneg : -(k v) ≤ ((k v).natAbs : ℤ) := by
-      simpa using (Int.le_natAbs (a := -(k v)))
-    exact hneg.trans (by exact_mod_cast habs)
+    omega
   have hm : (1 : ℤ) ≤ multiplicity v.val.asIdeal (Ideal.span ({d} : Set (RingOfIntegers F))) :=
     by exact_mod_cast hp v.val v.property
   have ht : (0 : ℤ) ≤ t := Nat.cast_nonneg _
@@ -145,7 +141,3 @@ theorem sSupported_denominator
     simp [d, hs]
   · intro w hw
     rw [horder, if_neg hw]
-
-end DedekindZetaZeroFree
-
-end

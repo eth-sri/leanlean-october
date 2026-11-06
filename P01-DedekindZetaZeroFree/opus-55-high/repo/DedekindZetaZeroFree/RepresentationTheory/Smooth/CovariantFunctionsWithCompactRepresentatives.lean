@@ -7,8 +7,6 @@ public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.LocalCom
 open scoped Topology
 namespace DedekindZetaZeroFree.KPRankOneBruhatKernelTransport.OpenCellSmoothnessSteps
 open KPLocalPrincipalSeries
-noncomputable section
-set_option autoImplicit false
 
 theorem covariant_smooth_of_compact_representatives
     {G V : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
@@ -28,8 +26,8 @@ theorem covariant_smooth_of_compact_representatives
       simp only [Set.mem_setOf_eq, Set.mem_iUnion, Set.mem_prod, Set.mem_preimage,
         Set.mem_singleton_iff]
       constructor
-      · intro h; exact ⟨f p.1, rfl, h.symm⟩
-      · rintro ⟨v, h1, h2⟩; rw [h1, h2]
+      · intro h; simp_all
+      simp_all
     rw [heq]
     exact isOpen_iUnion fun v => (hlc {v}).prod (hlc {v})
 
@@ -91,6 +89,3 @@ theorem covariant_smooth_of_compact_representatives
     Subgroup.isOpen_of_mem_nhds _ hJmem
   exact ⟨⟨Representation.stabilizer vectorRightTranslation f, hJopen⟩,
     fun j hj => Representation.mem_stabilizer.mp hj⟩
-
-end
-end DedekindZetaZeroFree.KPRankOneBruhatKernelTransport.OpenCellSmoothnessSteps

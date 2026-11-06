@@ -10,8 +10,6 @@ open NumberField IsDedekindDomain MeasureTheory ValuativeRel
 namespace DedekindZetaZeroFree.KPExceptionalRaw
 open KPLocalPrincipalSeries KPLocalStoneVonNeumann
 open KPRankOneShellContinuation KPRankOneForwardTestVector
-noncomputable section
-set_option autoImplicit false
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 variable (q : HeightOneSpectrum (𝓞 F))
@@ -29,6 +27,3 @@ include hζ in
     by rw [Valuation.mem_integer_iff, hv]⟩
   refine ⟨ξ, rfl, ?_⟩
   exact (show IsPrimitiveRoot (((valuation (LocalField F q)).integer.subtype) ξ) 3 from hp).of_map_of_injective Subtype.val_injective
-
-end
-end DedekindZetaZeroFree.KPExceptionalRaw

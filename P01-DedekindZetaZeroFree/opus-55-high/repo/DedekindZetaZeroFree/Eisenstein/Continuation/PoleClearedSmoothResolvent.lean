@@ -40,7 +40,7 @@ def RightSmoothHolomorphicOn {m b : ℕ} (T : LocalBall m)
 
 end KPClearedResolvent
 
-private lemma cleared_graph_projection {H : Type*} [NormedAddCommGroup H]
+lemma cleared_graph_projection {H : Type*} [NormedAddCommGroup H]
     [InnerProductSpace ℂ H] [CompleteSpace H]
     (Δ : H →ₗ.[ℂ] H) (hc : Δ.IsClosed) :
     ∃ P : (H × H) →L[ℂ] Δ.graph, ∀ x : Δ.graph, P x = x := by
@@ -55,12 +55,11 @@ private lemma cleared_graph_projection {H : Type*} [NormedAddCommGroup H]
   intro x
   have hx : e.symm (x : H × H) ∈ K := by
     change e (e.symm (x : H × H)) ∈ Δ.graph
-    simpa using x.property
+    simp
   have hp := K.orthogonalProjectionOnto_mem_subspace_eq_self ⟨e.symm x, hx⟩
   change L (K.orthogonalProjectionOnto (e.symm x)) = x
   rw [hp]
-  apply Subtype.ext
-  exact e.apply_symm_apply x
+  rfl
 
 theorem kp_cont_local_cleared_resolvent
     {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
@@ -95,7 +94,7 @@ theorem kp_cont_local_cleared_resolvent
   have ha : Differentiable ℂ a := by
     change Differentiable ℂ (fun s : ℂ => (d : ℂ) * (1 - ((1 : ℂ) / 3 + 2 * s) ^ 2))
     fun_prop
-  have hF : DifferentiableOn ℂ F O := (ha.differentiableOn.smul hw).add (hq.smul hh)
+  have hF : DifferentiableOn ℂ F O := by fun_prop
   have hp : DifferentiableOn ℂ p O := hw.prodMk hF
   have hoff : Set.MapsTo p (O \ S) Δ.graph := by
     intro s hs
@@ -145,7 +144,3 @@ theorem kp_cont_local_cleared_resolvent
     intro s hs
     have he := hP ⟨p s, hmem s hs⟩
     exact congrArg Subtype.val he
-
-end DedekindZetaZeroFree
-
-end

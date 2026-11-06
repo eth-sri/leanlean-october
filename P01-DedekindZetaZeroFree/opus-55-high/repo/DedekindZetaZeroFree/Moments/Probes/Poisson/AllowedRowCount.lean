@@ -33,10 +33,7 @@ theorem ideal_eq_of_u_eq {r r' : D.Row} (h : r.u = r'.u) :
     ← r.toFrequency.generates.2, ← r'.toFrequency.generates.2]
   exact congrArg (fun x : D.recipe.A.R => Ideal.span {x}) h
 
-theorem row_u_injective : Function.Injective (FixedData.Row.u (D := D)) := by
-  intro r r' h
-  apply FixedData.Row.ext
-  exact frequency_ext D _ _ h (ideal_eq_of_u_eq D h)
+theorem row_u_injective : Function.Injective (FixedData.Row.u (D := D)) := by apply DedekindZetaZeroFree.Quantitative.FixedData.Row.u_injective <;> assumption
 
 theorem q_eq (r : D.Row) : D.q r = D.recipe.A.exteriorNorm r.toFrequency.ideal := by
   unfold FixedData.q

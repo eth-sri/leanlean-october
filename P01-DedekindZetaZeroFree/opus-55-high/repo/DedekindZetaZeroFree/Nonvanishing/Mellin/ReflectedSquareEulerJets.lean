@@ -83,7 +83,7 @@ noncomputable section
 open scoped Classical ContDiff
 namespace DedekindZetaZeroFree.LargeSieve.ReflectedSquareDerivatives
 
-private lemma rapid (D : ℝ) (r : ℕ) (W : ℝ → ℂ) (a b : ℝ)
+lemma rapid (D : ℝ) (r : ℕ) (W : ℝ → ℂ) (a b : ℝ)
     (hD : 0 < D) (hr : 1 ≤ r) (hW : ContDiff ℝ ∞ W)
     (hsupp : Function.support W ⊆ Set.Icc a b) (ha : 0 < a) (hab : a < b)
     (u v : ℝ) (hu : 0 < u) (huv : u ≤ v) (n : ℕ) :
@@ -258,11 +258,10 @@ private lemma uniform_norm_mellinInv_le (c x A : ℝ) (g : ℂ → ℂ) (hx : 0 
   have hFn : ∀ t, ‖F t‖ = x ^ (-c) * ‖g (c + (t : ℂ) * Complex.I)‖ := by
     intro t
     rw [hF, norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos hx]
-    congr 1
-    simp [Complex.neg_re, Complex.add_re, Complex.mul_re, Complex.I_re, Complex.ofReal_re]
+    simp
   have hmaj_int : Integrable (fun t : ℝ => x ^ (-c) * A * (1 + |t|) ^ (-2 : ℝ)) := by
     have h := (uniform_integrable_one_add_abs_rpow_neg_two.const_mul (x ^ (-c) * A))
-    simpa [mul_assoc] using h
+    omega
   have hle : ∫ t, ‖F t‖ ≤ ∫ t, x ^ (-c) * A * (1 + |t|) ^ (-2 : ℝ) := by
     apply integral_mono_of_nonneg (Filter.Eventually.of_forall (fun t => norm_nonneg (F t))) hmaj_int
     apply Filter.Eventually.of_forall
@@ -277,17 +276,16 @@ private lemma uniform_norm_mellinInv_le (c x A : ℝ) (g : ℂ → ℂ) (hx : 0 
       = x ^ (-c) * A * ∫ t, (1 + |t|) ^ (-2 : ℝ) := by
     rw [← integral_const_mul]
   have hscal : ‖(1 / (2 * Real.pi) : ℝ)‖ = 1 / (2 * Real.pi) := by
-    rw [Real.norm_eq_abs, abs_of_pos (by positivity)]
+    simp
   have hInv : mellinInv c g x = (1 / (2 * Real.pi)) • ∫ t, F t := by
-    rw [mellinInv]
-    congr 1
+    rfl
   rw [hInv, norm_smul, hscal]
   calc (1 / (2 * Real.pi)) * ‖∫ t, F t‖
-      ≤ (1 / (2 * Real.pi)) * ∫ t, ‖F t‖ := by
-        exact mul_le_mul_of_nonneg_left (norm_integral_le_integral_norm F) (by positivity)
+      ≤ (1 / (2 * Real.pi)) * ∫ t, ‖F t‖ := 
+        mul_le_mul_of_nonneg_left (norm_integral_le_integral_norm F) (by positivity)
     _ ≤ (1 / (2 * Real.pi)) * (x ^ (-c) * A * ∫ t, (1 + |t|) ^ (-2 : ℝ)) := by
         apply mul_le_mul_of_nonneg_left _ (by positivity)
-        rw [← hIeq]; exact hle
+        simp_all
     _ ≤ (1 / (2 * Real.pi)) * (x ^ (-c) * A * (2 * Real.pi)) := by
         apply mul_le_mul_of_nonneg_left
         · exact mul_le_mul_of_nonneg_left uniform_integral_one_add_abs_rpow_neg_two_le
@@ -309,20 +307,20 @@ theorem inverseWeight_uniform_euler_jet
               C * Vendor.S b N W * Real.rpow x (-(n : ℝ))) := by
   set u : ℝ := min δ ((n : ℝ) + 1) with hu_def
   set v : ℝ := max δ ((n : ℝ) + 1) with hv_def
-  have hu : 0 < u := by rw [hu_def]; exact lt_min hδ (by positivity)
-  have huv : u ≤ v := by rw [hu_def, hv_def]; exact min_le_max
-  have hv0 : 0 ≤ v := le_of_lt (lt_of_lt_of_le hu huv)
+  have hu : 0 < u := by positivity
+  have huv : u ≤ v := by simp_all
+  have hv0 : 0 ≤ v := by positivity
   obtain ⟨N, C0, hC0, hrap⟩ :=
     reflectedSquareSpectrum_uniform_rapid_bound D r a b u v (j + 2) hD hr ha hab hu huv
   refine ⟨N, C0 * (v + 1) ^ j, by positivity, ?_⟩
   intro W hW hsupp q hq
   have hS : 0 ≤ Vendor.S b N W := Vendor.S_nonneg b (by linarith) N W hW
   have hδmem : δ ∈ Set.Icc u v :=
-    ⟨by rw [hu_def]; exact min_le_left _ _, by rw [hv_def]; exact le_max_left _ _⟩
+    ⟨by rw [hu_def]; simp, by rw [hv_def]; simp⟩
   have hmem : ((n : ℝ) + 1) ∈ Set.Icc u v :=
-    ⟨by rw [hu_def]; exact min_le_right _ _, by rw [hv_def]; exact le_max_right _ _⟩
+    ⟨by rw [hu_def]; simp, by rw [hv_def]; simp⟩
   have hA : 0 ≤ C0 * Vendor.S b N W * (v + 1) ^ j :=
-    mul_nonneg (mul_nonneg (le_of_lt hC0) hS) (by positivity)
+    by positivity
   have step : ∀ c ∈ Set.Icc u v, ∀ x : ℝ, 0 < x →
       ‖Vendor.EulerIter q (inverseWeight D r W) x‖
         ≤ C0 * (v + 1) ^ j * Vendor.S b N W * x ^ (-c) := by

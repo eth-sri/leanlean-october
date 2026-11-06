@@ -36,10 +36,10 @@ open scoped NumberField Classical ContDiff
 namespace DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms.MiddleDirectKernelUniformity
 variable {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
 variable {Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c}
-private lemma square_source_smooth (W : ℝ → ℝ) (hW : Sieve.SieveWeight W) :
+lemma square_source_smooth (W : ℝ → ℝ) (hW : Sieve.SieveWeight W) :
     ContDiff ℝ ∞ (fun x : ℝ => (W (x ^ 2) : ℂ)) :=
   Complex.ofRealCLM.contDiff.comp (hW.smooth.comp (contDiff_id.pow 2))
-private lemma square_source_support (W : ℝ → ℝ) (hW : Sieve.SieveWeight W) :
+lemma square_source_support (W : ℝ → ℝ) (hW : Sieve.SieveWeight W) :
     Function.support (fun x : ℝ => (W (x ^ 2) : ℂ)) ⊆ Set.Icc (-2 : ℝ) 2 := by
   intro x hx
   have hs : x ^ 2 ∈ Set.Icc (1 / 2 : ℝ) (5 / 2) := by
@@ -67,7 +67,7 @@ theorem originalKernelUniform
     (by norm_num) (by norm_num)
   have hS : 0 ≤ Vendor.S 2 N h := Vendor.S_nonneg 2 (by norm_num) N h hh
   let A := A₀ * Vendor.S 2 N h + 1
-  have hA : 0 < A := by dsimp [A]; positivity
+  have hA : 0 < A := by positivity
   refine ⟨A, hA, ?_⟩
   intro C hCW R x hR hx hxR
   have hk : C.originalKernel = fieldTransform (principalDiscriminant F)
@@ -108,7 +108,7 @@ theorem originalKernel_middle_uniform
   have hp : 1 ≤ p := Real.one_le_rpow hMN hδ.le
   have hp0 : 0 < p := by linarith
   let T := Real.sqrt (C.M / norm a)
-  have hT0 : 0 < T := Real.sqrt_pos.mpr (div_pos hM0 ha0)
+  have hT0 : 0 < T := by positivity
   have hrad : C.M / B ≤ 4 * (C.M / norm a) := by
     rw [div_le_iff₀ hB0]
     have heq : 4 * (C.M / norm a) * B = (4 * C.M * B) / norm a := by ring
@@ -122,7 +122,7 @@ theorem originalKernel_middle_uniform
   have hfT : norm f ≤ 2 * T * p := by
     change norm f ≤ Real.sqrt (C.M / B) * p at hf
     exact hf.trans (mul_le_mul_of_nonneg_right hT hp0.le)
-  have hx : 0 < norm b * T / norm f := div_pos (mul_pos hb0 hT0) hf0
+  have hx : 0 < norm b * T / norm f := by positivity
   have hxR : (2 * p)⁻¹ ≤ norm b * T / norm f := by
     rw [← one_div]
     apply (div_le_div_iff₀ (by positivity : 0 < 2 * p) hf0).mpr
@@ -169,8 +169,8 @@ theorem finiteDualKernel_uniform
     change 1 ≤ 8 * Real.rpow (C.M * C.N) (2 * C.δ)
     linarith
   let S := (boundedNormIdeals F C.L2).filter (fun b => b ≠ ⊥)
-  have hcard : (S.card : ℝ) ≤ I * C.L2 := by
-    exact (Nat.cast_le.mpr (Finset.card_filter_le _ _)).trans (hc C.L2 hL)
+  have hcard : (S.card : ℝ) ≤ I * C.L2 := 
+    (Nat.cast_le.mpr (Finset.card_filter_le _ _)).trans (hc C.L2 hL)
   have hterm : ∀ b ∈ S,
       ‖C.originalKernel (norm b * Real.sqrt (C.M / norm a) / norm f)‖ ≤
         A * Real.rpow (C.M * C.N) C.δ := by
@@ -230,8 +230,8 @@ theorem prefactored_finiteDualKernel_uniform
     apply Real.sqrt_le_sqrt
     exact div_le_div_of_nonneg_left hM0 hB0 hBa
   have hkernel := hbound C hCW B hM hN hδ hB a f ha0 ha hf0 hf
-  have hscale : 0 ≤ J * Real.rpow (C.M * C.N) (3 * C.δ) := by
-    exact mul_nonneg hJ.le (Real.rpow_nonneg (by positivity) _)
+  have hscale : 0 ≤ J * Real.rpow (C.M * C.N) (3 * C.δ) := 
+    mul_nonneg hJ.le (Real.rpow_nonneg (by positivity) _)
   have hleft : 0 ≤ Real.sqrt (C.M / norm a) / norm f := by positivity
   calc
     _ ≤ (Real.sqrt (C.M / norm a) / norm f) *
@@ -426,8 +426,8 @@ private lemma bin_admissible (C : Context Q) (B : ℝ)
       _ ≤ (norm c * norm C.d) * ((2*P.1)*(2*P.2)) :=
         mul_le_mul hen hab (mul_nonneg (norm_nonneg a) (norm_nonneg b))
           (mul_nonneg (norm_nonneg c) (norm_nonneg C.d))
-      _ ≤ (max 1 (norm c) * norm C.d) * ((2*P.1)*(2*P.2)) := by
-        exact mul_le_mul_of_nonneg_right
+      _ ≤ (max 1 (norm c) * norm C.d) * ((2*P.1)*(2*P.2)) := 
+        mul_le_mul_of_nonneg_right
           (mul_le_mul_of_nonneg_right (le_max_right 1 (norm c)) (norm_nonneg C.d))
           (by nlinarith [hP.1, hP.2.1])
       _ = _ := by ring
@@ -508,9 +508,8 @@ private lemma bucket_bins (C : Context Q) (B : ℝ)
           exact (hne (Prod.ext h1 h2)).elim
         · simp [hRb]
       · simp [hRa]
-    · intro hnmem
-      exact (hnmem hAdm).elim
-  · simp [hk e a b hl]
+    simp_all
+  simp_all
 
 theorem window_bucket_partition (C : Context Q) (B : ℝ)
     (hN : 1 ≤ C.N) (hn : 1 ≤ norm C.d) (hnN : norm C.d ≤ 2 * C.N)
@@ -569,9 +568,7 @@ private lemma pairSum_mul (C : Context Q) (z : ℂ)
     C.pairSum (fun p hp => z * f p hp) = z * C.pairSum f := by
   unfold Context.pairSum
   rw [Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro p hp
-  split_ifs <;> simp
+  simp
 
 private lemma pairSum_sum {α : Type*} (C : Context Q) (s : Finset α)
     (f : α → (p : Ideal (𝓞 F) × Ideal (𝓞 F)) → C.ValidPair p → ℂ) :
@@ -579,9 +576,7 @@ private lemma pairSum_sum {α : Type*} (C : Context Q) (s : Finset α)
       ∑ i ∈ s, C.pairSum (f i) := by
   unfold Context.pairSum
   conv_rhs => rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro p hp
-  split_ifs <;> simp
+  simp
 
 theorem middle_window_assembly (C : Context Q) (B : ℝ) (unit : Bool)
     (H : ℝ) (hH : 0 ≤ H)
@@ -651,7 +646,7 @@ theorem middle_window_assembly (C : Context Q) (B : ℝ) (unit : Bool)
     unfold Context.pairSum
     apply Finset.sum_congr rfl
     intro p hp
-    split_ifs <;> simp [v, mul_assoc] <;> ring
+    split_ifs <;> simp <;> ring
   rw [heq]
   apply le_trans (norm_sum_le _ _)
   calc
@@ -757,8 +752,8 @@ theorem middle_divisor_expansion (C : Context Q) (B : ℝ) (unit : Bool)
         by_cases hh : P.2 = 1
         · simpa [hh] using hf₂b.2.1
         · exact (by simpa [hh] using hf₂b.2.1 : P.2 < norm f₂).le
-      have hPpos : 0 < P.1 * P.2 := by
-        exact mul_pos (by linarith [hPe.1]) (by linarith [hPe.2.1])
+      have hPpos : 0 < P.1 * P.2 := 
+        mul_pos (by linarith [hPe.1]) (by linarith [hPe.2.1])
       have hprod : P.1 * P.2 ≤ norm f₁ * norm f₂ :=
         mul_le_mul hPl hPr (by linarith [hPe.2.1]) hf₁pos.le
       calc
@@ -798,8 +793,7 @@ private theorem fixed_mass_le (C : Context Q) : fixedDivisorMass C ≤ (idealDiv
     have hr : (c * C.d).radical ≠ ⊥ := by
       intro h
       have := Ideal.le_radical (I := c * C.d)
-      rw [h] at this
-      exact hcd (le_bot_iff.mp this)
+      simp_all
     exact ((mem_idealDivisors hr).mp hf).trans (Ideal.dvd_iff_le.mpr Ideal.le_radical)
   calc
     fixedDivisorMass C ≤ ∑ f ∈ C.mobiusDivisors, (1 : ℝ) := by
@@ -824,12 +818,12 @@ private theorem rectangle_card_le (C : Context Q) (B : ℝ) :
     intro P hP
     exact (Finset.mem_filter.mp (Finset.mem_filter.mp hP).1).1
   have hs : (ErrorRectangles.scales (C.N / norm C.d)).card ≤
-      Vendor.dyadicLength (2 * max 1 (C.N / norm C.d)) + 1 := by
-    exact (Finset.card_insert_le _ _).trans (Nat.add_le_add_right
+      Vendor.dyadicLength (2 * max 1 (C.N / norm C.d)) + 1 := 
+    (Finset.card_insert_le _ _).trans (Nat.add_le_add_right
       ((Finset.card_image_le).trans (by rw [Finset.card_range])) 1)
   have hd : (middleDivisorRectangles C B).card ≤
-      (Vendor.dyadicLength (2 * max 1 (C.N / norm C.d)) + 1) ^ 2 := by
-    exact h12.trans (by
+      (Vendor.dyadicLength (2 * max 1 (C.N / norm C.d)) + 1) ^ 2 := 
+    h12.trans (by
       rw [Finset.card_product, pow_two]
       exact Nat.mul_le_mul hs hs)
   exact_mod_cast hd
@@ -949,7 +943,7 @@ theorem bilinear_error_middle_direct
   refine ⟨3, by norm_num, ?_⟩
   intro ε hε
   let η := ε / 3
-  have hη : 0 < η := by dsimp [η]; positivity
+  have hη : 0 < η := by positivity
   obtain ⟨A₀, hA₀, hrect⟩ :=
     LargeDirect.actual_prefix_rectangle_estimate D η hη
   obtain ⟨I, hI, hinc⟩ :=
@@ -960,11 +954,8 @@ theorem bilinear_error_middle_direct
   intro δ hδ
   intro C hCD hCW hCδ B unit hunit hM hN hB hBK hKM hn hnN
   have hδC : 0 < C.δ := by simpa [hCδ] using hδ
-  have hMN0 : 0 ≤ C.M * C.N := mul_nonneg (by linarith) (by linarith)
+  have hMN0 : 0 ≤ C.M * C.N := by positivity
   have hX : 0 < C.M * C.N * norm C.d := by
-    have hM0 : 0 < C.M := by linarith
-    have hN0 : 0 < C.N := by linarith
-    have hn0 : 0 < norm C.d := by linarith
     positivity
   let X := C.M * C.N * norm C.d
   change 0 < X at hX
@@ -975,7 +966,7 @@ theorem bilinear_error_middle_direct
   let V := ErrorRectangles.middleEnvelope C B
   have hE : 0 ≤ E := by
     dsimp [E, Sieve.energy]
-    exact Finset.sum_nonneg fun _ _ => sq_nonneg _
+    positivity
   have hsupbdd : BddAbove ({0} ∪ {x : ℝ | ∃ P ∈ T,
       x = ErrorRectangles.largeScore C B P}) := by
     have hf : ({x : ℝ | ∃ P ∈ T,
@@ -990,8 +981,8 @@ theorem bilinear_error_middle_direct
         exact ⟨P, hP, rfl⟩
     rw [hf]
     exact ((Set.finite_singleton 0).union (T.finite_toSet.image _)).bddAbove
-  have hV : 0 ≤ V := by
-    exact le_csSup hsupbdd (Or.inl rfl)
+  have hV : 0 ≤ V := 
+    le_csSup hsupbdd (Or.inl rfl)
   have hscore : ∀ P ∈ T, ErrorRectangles.largeScore C B P ≤ V := by
     intro P hP
     exact le_csSup hsupbdd (Or.inr ⟨P, hP, rfl⟩)
@@ -1040,7 +1031,7 @@ theorem bilinear_error_middle_direct
     hkernel C hCW B unit hunit hM hN hδC hB
   have hpMN : 0 ≤ Real.rpow (C.M * C.N) (3 * C.δ) := Real.rpow_nonneg hMN0 _
   have hscale : 0 ≤ H * Real.rpow (C.M * C.N) (3 * C.δ) * Real.sqrt (C.M / B) :=
-    mul_nonneg (mul_nonneg hH.le hpMN) (Real.sqrt_nonneg _)
+    by positivity
   have hExp := MiddleDirectKernelUniformity.middle_divisor_expansion C B unit
     hunit hM hN hδC hB hBK hKM hn hnN
     (H * Real.rpow (C.M * C.N) (3 * C.δ) * Real.sqrt (C.M / B))
@@ -1069,9 +1060,3 @@ theorem bilinear_error_middle_direct
         Real.rpow (C.M * C.N) (3 * δ) * Real.sqrt (C.M / B) * V * E
       rw [← hpows, hCδ]
       ring
-
-end DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms
-
-end
-
-end

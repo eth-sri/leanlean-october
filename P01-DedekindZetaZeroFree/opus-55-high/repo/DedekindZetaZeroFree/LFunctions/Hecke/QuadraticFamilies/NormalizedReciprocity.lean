@@ -44,16 +44,14 @@ theorem algebra_normalized_reciprocity
 
     have h1 : n ⊔ (a * q) = ⊤ := (hcop_mul n a q).mpr ⟨h, hnq⟩
     obtain ⟨k, hk⟩ := hca
-    rw [hk] at h1
-    exact ((hcop_mul n (Q.cond a) k).mp h1).1
+    simp_all
 
   have h1 : ∀ a : Ideal (𝓞 F), Squarefree a → a ⊔ q = ⊤ →
       ∀ n : Ideal (𝓞 F), n ⊔ q = ⊤ →
         ((Q.χ a) n = 0 ↔ n = ⊥ ∨ n ⊔ a ≠ ⊤) := by
     intro a ha haq n hnq
     rw [quadraticFamily_eq_zero_iff Q ha (hsupc a haq) n]
-    simp only [ne_eq]
-    rw [not_congr (hcond_coprime a ha haq n hnq)]
+    simp_all
 
   have h2 : ∀ a b : Ideal (𝓞 F), Squarefree a → a ⊔ q = ⊤ →
       Squarefree b → b ⊔ q = ⊤ →
@@ -91,5 +89,3 @@ theorem algebra_normalized_reciprocity
       · rw [(h1 a ha haq n hnq).mpr (Or.inr h), zero_mul]
       · rw [(h1 b hb hbq n hnq).mpr (Or.inr h), mul_zero]
     rw [hψ0, hprod0]
-
-end DedekindZetaZeroFree.LargeSieve

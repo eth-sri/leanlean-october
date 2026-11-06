@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 namespace LocalClassFieldTheory
 
 open ClassFormation
@@ -59,7 +53,7 @@ variable (k : Type u) (L : Type v)
   change (FiniteField.frobeniusAlgEquivOfAlgebraic k L) ^
       (Module.finrank k L : ℤ) = 1
   rw [← FiniteField.orderOf_frobeniusAlgEquivOfAlgebraic (K := k) (L := L)]
-  rw [zpow_natCast, pow_orderOf_eq_one]
+  simp
 
 /-- The canonical finite-level exponent homomorphism
 `Z/[L:k]Z → Gal(L/k)`, sending `1` to arithmetic Frobenius. -/
@@ -131,14 +125,6 @@ theorem finiteResidueFrobeniusExponentEquiv_apply (z) :
       finiteResidueFrobeniusExponentHom k L z :=
   rfl
 
-/-- The Frobenius exponent equivalence sends one to arithmetic Frobenius. -/
-@[simp]
-theorem finiteResidueFrobeniusExponentEquiv_one :
-    finiteResidueFrobeniusExponentEquiv k L
-        (Multiplicative.ofAdd (1 : ZMod (Module.finrank k L))) =
-      FiniteField.frobeniusAlgEquivOfAlgebraic k L :=
-  finiteResidueFrobeniusExponentHom_one k L
-
 /-- A profinite exponent acts on a finite residue extension through reduction
 modulo its degree. -/
 def finiteResidueFrobeniusFromZHat :
@@ -171,43 +157,7 @@ theorem finiteResidueFrobeniusFromZHat_one :
     finiteResidueFrobeniusFromZHat k L
         (Multiplicative.ofAdd (1 : ZHat)) =
       FiniteField.frobeniusAlgEquivOfAlgebraic k L := by
-  rw [finiteResidueFrobeniusFromZHat_apply]
-  exact finiteResidueFrobeniusExponentHom_one k L
-
-/-- Every automorphism of a finite residue extension is induced by a
-profinite Frobenius exponent. -/
-theorem finiteResidueFrobeniusFromZHat_surjective :
-    Function.Surjective (finiteResidueFrobeniusFromZHat k L) := by
-  intro sigma
-  obtain ⟨a, ha⟩ := finiteResidueFrobeniusExponentHom_surjective k L sigma
-  obtain ⟨z, hz⟩ := zHatReduction_surjective
-    (Module.finrank k L) Module.finrank_pos a.toAdd
-  refine ⟨Multiplicative.ofAdd z, ?_⟩
-  rw [finiteResidueFrobeniusFromZHat_apply]
-  change finiteResidueFrobeniusExponentHom k L
-      (Multiplicative.ofAdd
-        (zHatReduction (Module.finrank k L) Module.finrank_pos z)) = sigma
-  rw [hz]
-  exact ha
-
-/-- A profinite exponent acts trivially on a finite residue extension exactly
-when it is zero modulo the extension degree. -/
-theorem finiteResidueFrobeniusFromZHat_eq_one_iff (z : ZHatMul) :
-    finiteResidueFrobeniusFromZHat k L z = 1 ↔
-      zHatReduction (Module.finrank k L) Module.finrank_pos z.toAdd = 0 := by
-  rw [finiteResidueFrobeniusFromZHat_apply]
-  constructor
-  · intro h
-    have h' :
-        Multiplicative.ofAdd
-            (zHatReduction (Module.finrank k L) Module.finrank_pos z.toAdd) =
-          1 := by
-      apply finiteResidueFrobeniusExponentHom_injective k L
-      simpa using h
-    exact congrArg Multiplicative.toAdd h'
-  · intro h
-    rw [h]
-    exact (finiteResidueFrobeniusExponentHom k L).map_one
+  simp
 
 section Tower
 
@@ -235,8 +185,7 @@ theorem restrictNormalHom_finiteResidueFrobenius :
         (FiniteField.frobeniusAlgEquivOfAlgebraic k F) E x
     _ = (algebraMap E F
         ((FiniteField.frobeniusAlgEquivOfAlgebraic k E) x) : F) := by
-      simp only [FiniteField.coe_frobeniusAlgEquivOfAlgebraic]
-      exact (map_pow (algebraMap E F) x (Fintype.card k)).symm
+      simp
 
 /-- The finite Frobenius exponent coordinates commute with restriction.  The
 exponent on the smaller field is obtained by the canonical reduction
@@ -270,13 +219,11 @@ theorem restrictNormalHom_finiteResidueFrobeniusExponentHom
           (ZMod (Module.finrank k E))
           (m : ZMod (Module.finrank k F)) =
         (m : ZMod (Module.finrank k E)) := by
-    exact map_intCast _ m
+    simp
   rw [hred, finiteResidueFrobeniusExponentHom_intCast]
   have hfrob := restrictNormalHom_finiteResidueFrobenius
     (k := k) (E := E) (F := F)
-  have hpow := congrArg (fun sigma : E ≃ₐ[k] E => sigma ^ m) hfrob
-  rw [map_zpow]
-  exact DFunLike.congr_fun hpow x
+  simp_all
 
 /-- The actions of `ℤ̂` on finite residue extensions commute with restriction
 in finite towers. -/
@@ -296,8 +243,3 @@ theorem restrictNormalHom_finiteResidueFrobeniusFromZHat (z : ZHatMul) :
       ⟨Module.finrank E F,
         (Module.finrank_mul_finrank k E F).symm⟩)
     z.toAdd
-
-end Tower
-
-end
-end LocalClassFieldTheory

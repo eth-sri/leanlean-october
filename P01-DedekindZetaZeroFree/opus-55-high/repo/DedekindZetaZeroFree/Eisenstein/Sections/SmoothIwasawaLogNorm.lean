@@ -19,7 +19,7 @@ def finiteComponent (g : KPGlobalTorusFunctionData.G F ζ hζ) :
   (PGLComplex.AdelicSlicesRaw.archimedeanInsertion F ζ hζ
     (PGLComplex.AdelicSlicesRaw.archProjection F ζ hζ g))⁻¹ * g
 
-private theorem finiteSubgroup_le_finitePart :
+theorem finiteSubgroup_le_finitePart :
     PGLComplex.AdelicSlicesRaw.finiteSubgroup F ζ hζ ≤
       KPGlobalTorusFunctionData.finitePart F ζ hζ := by
   intro x hx
@@ -61,7 +61,7 @@ private def ratio (A : Matrix (Fin 2) (Fin 2) ℂ) : ℝ :=
 private lemma complexMatrixLogNorm_eq_ratio (A : Matrix (Fin 2) (Fin 2) ℂ) :
     complexMatrixLogNorm A = Real.log ((ratio A) ^ 2) := rfl
 
-private lemma bottomRow_ne_zero_of_det_ne_zero (A : Matrix (Fin 2) (Fin 2) ℂ) (h : A.det ≠ 0) :
+lemma bottomRow_ne_zero_of_det_ne_zero (A : Matrix (Fin 2) (Fin 2) ℂ) (h : A.det ≠ 0) :
     A 1 0 ≠ 0 ∨ A 1 1 ≠ 0 := by
   by_contra hc
   push Not at hc
@@ -335,7 +335,7 @@ def finiteLogNorm (g : KPGlobalTorusFunctionData.G F ζ hζ) : ℝ :=
   intro k hk
   obtain ⟨w, hw, rfl⟩ := List.mem_map.mp hk
   exact KPContFlatFullProductIwasawa.complexCompactLift_mem F ζ hζ w (u w)
-private lemma finite_component_raw (g : KPGlobalTorusFunctionData.G F ζ hζ) :
+lemma finite_component_raw (g : KPGlobalTorusFunctionData.G F ζ hζ) :
   finiteComponent F ζ hζ g ∈ PGLComplex.AdelicSlicesRaw.finiteSubgroup F ζ hζ := by
   apply RepresentationTheory.ArchFiniteSplitting.arch_kernel_le_finite F ζ hζ
   change PGLComplex.AdelicSlicesRaw.archProjection F ζ hζ (finiteComponent F ζ hζ g) = 1

@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Finite-level and direct-limit fixed-point descent endpoints
 
@@ -22,7 +19,6 @@ descent witnesses first at one finite Galois level and then in the rational
 idèle-class direct limit.
 -/
 
-noncomputable section
 
 namespace GlobalClassFieldTheory
 namespace Reciprocity
@@ -57,7 +53,7 @@ theorem rationalRelativeIdeleClass_descent_square
   let : Algebra K U :=
     (IntermediateField.inclusion hKU).toRingHom.toAlgebra
   let : IsScalarTower ℚ K U :=
-    IsScalarTower.of_algebraMap_eq' (RingHom.ext_rat _ _)
+    by omega
   let : FiniteDimensional K U :=
     FiniteDimensional.right ℚ K U
   let : IsGalois K U :=
@@ -134,8 +130,8 @@ theorem rationalRelativeIdeleClass_exists_descent_of_tower_fixed
       ((TowerRelativeIdeleGroup.classGroupEquiv ℚ K U).symm d)
   have hdK_fixed :
       dK ∈
-        RelativeIdeleGroup.galoisFixedClassSubgroup K U := by
-    exact hd_fixed
+        RelativeIdeleGroup.galoisFixedClassSubgroup K U := 
+    hd_fixed
   let dFixed :
       RelativeIdeleGroup.galoisFixedClassSubgroup K U :=
     ⟨dK, hdK_fixed⟩
@@ -150,8 +146,8 @@ theorem rationalRelativeIdeleClass_exists_descent_of_tower_fixed
             RelativeIdeleGroup.ClassGroup K U) :=
         (rationalIntermediateIdeleClassEquivGaloisFixed_coe
           K U q).symm
-      _ = dK := by
-        exact congrArg Subtype.val
+      _ = dK := 
+        congrArg Subtype.val
           ((rationalIntermediateIdeleClassEquivGaloisFixed
             K U).apply_symm_apply dFixed)
   refine ⟨q, e.injective ?_⟩
@@ -197,8 +193,8 @@ theorem rationalDirectLimit_fixed_exists_ideleClass
     RelativeIdeleGroup.classEmbedding (K := ℚ) (L := E) (M := U)
       (IntermediateField.inclusion hEU) c
   have hzU :
-      z = (⟦⟨U, d⟩⟧ : rationalIdeleClassDirectLimit) := by
-    exact hzc.trans
+      z = (⟦⟨U, d⟩⟧ : rationalIdeleClassDirectLimit) := 
+    hzc.trans
       (rationalIdeleClassDirectLimit_mk_apply c hEU).symm
   let : Algebra K U :=
     (IntermediateField.inclusion hKU).toRingHom.toAlgebra
@@ -262,8 +258,3 @@ theorem rationalDirectLimit_fixed_exists_ideleClass
             (K := ℚ) (L := K)).symm q)
     _ = ⟦⟨U, d⟩⟧ := by rw [hq]
     _ = z := hzU.symm
-
-end Reciprocity
-end GlobalClassFieldTheory
-
-end

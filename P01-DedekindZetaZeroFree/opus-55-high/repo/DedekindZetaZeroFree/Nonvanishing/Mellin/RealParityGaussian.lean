@@ -4,21 +4,19 @@ public import DedekindZetaZeroFree.HarmonicAnalysis.Schwartz.ArchimedeanGaussian
 
 @[expose] public section
 
-noncomputable section
 
 open MeasureTheory
 
 namespace DedekindZetaZeroFree.AbelianQuotient
 
-private theorem parity_square_cpow (a : ℝ) (s : ℂ) :
+theorem parity_square_cpow (a : ℝ) (s : ℂ) :
     ((a ^ 2 : ℝ) : ℂ) ^ (-s / 2) = ((|a| : ℝ) : ℂ) ^ (-s) := by
   rw [← sq_abs a, pow_two, Complex.ofReal_mul,
     Complex.mul_cpow_ofReal_nonneg (abs_nonneg a) (abs_nonneg a),
     ← pow_two, ← Complex.cpow_mul_nat]
-  congr 1
-  ring
+  simp
 
-private theorem parity_odd_kernel (s : ℂ) (q a : ℝ) (hq : 0 < q) :
+theorem parity_odd_kernel (s : ℂ) (q a : ℝ) (hq : 0 < q) :
     ((q * a : ℝ) : ℂ) * (q : ℂ) ^ (s - 1) =
       (a : ℂ) * (q : ℂ) ^ ((s + 1) - 1) := by
   rw [show (s + 1) - 1 = 1 + (s - 1) by ring,
@@ -26,14 +24,14 @@ private theorem parity_odd_kernel (s : ℂ) (q a : ℝ) (hq : 0 < q) :
     Complex.cpow_one, Complex.ofReal_mul]
   ring
 
-private theorem parity_sign_abs (a : ℝ) (ha : a ≠ 0) :
+theorem parity_sign_abs (a : ℝ) (ha : a ≠ 0) :
     Real.sign a * |a| = a := by
   rcases ha.lt_or_gt with h | h
   · rw [Real.sign_of_neg h, abs_of_neg h]
     ring
   · rw [Real.sign_of_pos h, abs_of_pos h, one_mul]
 
-private theorem parity_odd_cpow (a : ℝ) (ha : a ≠ 0) (s : ℂ) :
+theorem parity_odd_cpow (a : ℝ) (ha : a ≠ 0) (s : ℂ) :
     (a : ℂ) * ((a ^ 2 : ℝ) : ℂ) ^ (-(s + 1) / 2) =
       (Real.sign a : ℂ) * ((|a| : ℝ) : ℂ) ^ (-s) := by
   have habs : ((|a| : ℝ) : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (abs_ne_zero.mpr ha)
@@ -59,7 +57,7 @@ theorem real_parityGaussian_integrableOn
     apply IntegrableOn.congr_fun h _ measurableSet_Ioi
     intro q hq
     dsimp only
-    simp only [Bool.true_eq, ↓reduceIte]
+    simp only [↓reduceIte]
     rw [parity_odd_kernel s q a hq]
     ring
 
@@ -77,7 +75,7 @@ theorem real_parityGaussian_mellin
     rw [gaussian_real_place_mellin s (a ^ 2) hs (sq_pos_of_ne_zero ha), parity_square_cpow]
     ring
   | true =>
-    simp only [Bool.true_eq, ↓reduceIte]
+    simp only [↓reduceIte]
     have hs' : 0 < (s + 1).re := by simpa using (by linarith : 0 < s.re + 1)
     have hk : (∫ q : ℝ in Set.Ioi 0,
         ((q * a : ℝ) : ℂ) * (q : ℂ) ^ (s - 1) *
@@ -96,7 +94,3 @@ theorem real_parityGaussian_mellin
       _ = (2 : ℂ)⁻¹ * Complex.Gammaℝ (s + 1) *
           ((a : ℂ) * ((a ^ 2 : ℝ) : ℂ) ^ (-(s + 1) / 2)) := by ring
       _ = _ := by rw [parity_odd_cpow a ha s]; ring
-
-end DedekindZetaZeroFree.AbelianQuotient
-
-end

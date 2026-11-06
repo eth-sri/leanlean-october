@@ -34,8 +34,8 @@ def narrowIdealModulus
     (K : Type) [Field K] [NumberField K]
     (m : Ideal (𝓞 K)) (hm : m ≠ ⊥) (v : HeightOneSpectrum (𝓞 K)) :
     (narrowIdealModulus K m hm).finitePart v =
-      Multiset.count v.asIdeal (normalizedFactors m) := by
-  exact congrFun Finsupp.ofSupportFinite_coe v
+      Multiset.count v.asIdeal (normalizedFactors m) := 
+  congrFun Finsupp.ofSupportFinite_coe v
 
 @[simp] theorem narrowIdealModulus_infinitePart
     (K : Type) [Field K] [NumberField K]
@@ -143,7 +143,3 @@ theorem rayIdealClass_of_finitePrime
     exact hnot (heq ▸ le_sup_right)
   rw [rayIdealClass_eq_some K m hm v.asIdeal v.ne_bot hcoprime]
   rfl
-
-end DedekindZetaZeroFree.AbelianQuotient
-
-end

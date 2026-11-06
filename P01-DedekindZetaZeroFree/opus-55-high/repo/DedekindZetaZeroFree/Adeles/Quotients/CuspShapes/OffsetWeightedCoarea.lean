@@ -42,7 +42,7 @@ open _root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.CoordinateProof renaming n
       (nativeDisintegration F ζ hζ R P S V).radial.slot
       (cuspOffset F ζ hζ R P S V ω.1))⟩
 
-private theorem offsetTranslation_measurable (S : NativeRecipe F ζ hζ R P)
+theorem offsetTranslation_measurable (S : NativeRecipe F ζ hζ R P)
     (V : Level F ζ hζ) : Measurable (offsetTranslation F ζ hζ R P S V) := by
   apply Continuous.measurable
   apply continuous_sigma
@@ -54,7 +54,7 @@ private theorem offsetTranslation_measurable (S : NativeRecipe F ζ hζ R P)
   apply continuous_sigmaMk.comp
   exact continuous_id.sub (continuous_const (y := QuotientAddGroup.mk _))
 
-private theorem offsetTranslation_section (S : NativeRecipe F ζ hζ R P)
+theorem offsetTranslation_section (S : NativeRecipe F ζ hζ R P)
     (V : Level F ζ hζ) (j : NativeCusp F ζ hζ R P S V)
     (φ : KPMsFixedHaarDisintegration.Omega (nativeAtlas F ζ hζ R P S V) → ℝ≥0∞)
     (hφ : Measurable φ) :
@@ -81,7 +81,7 @@ private theorem offsetTranslation_section (S : NativeRecipe F ζ hζ R P)
     (KPMsFixedHaarDisintegration.Geometry A j).atlas.projection_formula,
     QuotientAddGroup.mk_sub, QuotientAddGroup.mk_add, QuotientAddGroup.mk_neg, sub_eq_add_neg, b] using ht
 
-private theorem spherical_cusp_test (S : NativeRecipe F ζ hζ R P) (V : Level F ζ hζ)
+theorem spherical_cusp_test (S : NativeRecipe F ζ hζ R P) (V : Level F ζ hζ)
     (j : NativeCusp F ζ hζ R P S V) (Y : ℝ)
     (hY : OffsetAdmissible F ζ hζ R P S V Y)
     (s : KPMsFixedHaarDisintegration.Spherical F ζ hζ

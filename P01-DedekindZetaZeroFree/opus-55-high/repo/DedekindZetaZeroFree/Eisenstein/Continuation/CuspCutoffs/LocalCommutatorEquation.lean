@@ -32,7 +32,7 @@ private theorem smooth_density (d : ℕ) :
   apply contDiff_prod
   intro i _
   exact ((smooth_height d i).inv (fun z => Real.exp_ne_zero _)).pow 2
-private theorem density_ne_zero (d : ℕ) (z : KPArch.Space d) :
+theorem density_ne_zero (d : ℕ) (z : KPArch.Space d) :
     KPArch.volumeDensity d z ≠ 0 := by
   apply Finset.prod_ne_zero_iff.mpr
   intro i _
@@ -153,7 +153,7 @@ private theorem localLaplacian_congr (d : ℕ) (f g : KPArch.Space d → ℂ)
   exact congrArg (fun A : KPArch.Space d →L[ℝ] ℂ =>
     A (KPContActualSphericalFlatStage.coordinateDirection d i j)) hc.fderiv_eq
 
-private theorem localLaplacian_zero (n : ℕ) :
+theorem localLaplacian_zero (n : ℕ) :
     KPContActualSphericalFlatStage.localLaplacian n 0 = 0 := by
   funext z
   unfold KPContActualSphericalFlatStage.localLaplacian
@@ -205,7 +205,7 @@ def Δloc (w : SmoothSections F ζ hζ C R P H U) :
         exact he⟩,
       fun i => smooth_laplacian _ _ (w.property i)⟩
 
-private theorem rational_laplacian (γ : KPCuspArithmetic.PGL2 F)
+theorem rational_laplacian (γ : KPCuspArithmetic.PGL2 F)
     (f : KPArch.Space (KPCuspLogShape.dimension F) → ℂ)
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) (z : KPArch.Space (KPCuspLogShape.dimension F)) :
     KPContActualSphericalFlatStage.localLaplacian _ (fun y => f (γ • y)) z =
@@ -264,7 +264,7 @@ variable (f : ℂ → S)
 variable (χ : Cusps F ζ hζ C R P H U → KPCutoffSource.SmoothCuspCutoff T)
 variable (D : Descent F ζ hζ C R P H U ι B Ω f χ)
 
-private theorem cutoff_zero_nhds (a : Cusps F ζ hζ C R P H U)
+theorem cutoff_zero_nhds (a : Cusps F ζ hζ C R P H U)
     (χ : KPCutoffSource.SmoothCuspCutoff T)
     (x : Covered F ζ hζ C R P H U) (hx : x ∉ ends F ζ hζ C R P H U B a) :
     ∀ᶠ y in nhds x, y ∈ ends F ζ hζ C R P H U B a →
@@ -287,7 +287,7 @@ private theorem cutoff_zero_nhds (a : Cusps F ζ hζ C R P H U)
       using hz χ (q y) hy
   · filter_upwards [hc.continuousAt.preimage_mem_nhds (isClosed_closure.isOpen_compl.mem_nhds hxcl)] with y hy he
     exact False.elim (hy (subset_closure he))
-private theorem cutoff_commutator_zero_nhds (s : ℂ) (hs : s ∈ Ω)
+theorem cutoff_commutator_zero_nhds (s : ℂ) (hs : s ∈ Ω)
     (x : Covered F ζ hζ C R P H U) (hx : ∀ a, x ∉ ends F ζ hζ C R P H U B a) :
     ∀ᶠ y in nhds x,
       scalar F ζ hζ C R P H U (D.cutoff s) y = 0 ∧
@@ -315,7 +315,7 @@ private theorem cutoff_commutator_zero_nhds (s : ℂ) (hs : s ∈ Ω)
         (hy a he).2.1, (hy a he).2.2, Complex.ofReal_zero, mul_zero, add_zero, sub_self, zero_mul]
     · rfl
 
-private theorem scalar_phase_value (w : SmoothSections F ζ hζ C R P H U)
+theorem scalar_phase_value (w : SmoothSections F ζ hζ C R P H U)
     (i : Fin (H.atlas (level F ζ hζ C R P H U)).componentCount)
     (ε : rootsOfUnity 3 F) (z : KPCuspGenuineMonodromy.SymmetricSpace F) :
     scalar F ζ hζ C R P H U w
@@ -393,7 +393,7 @@ private theorem cutoff_laplacian_commutator_zero_nhds (s : ℂ) (hs : s ∈ Ω)
   filter_upwards [hV.mem_nhds hy] with z hzV
   exact (hz hzV).1
 
-private theorem incomingValue_radial (a : Cusps F ζ hζ C R P H U)
+theorem incomingValue_radial (a : Cusps F ζ hζ C R P H U)
     (s : ℂ) (hs : s ∈ KPContinuation.spectralDomain) (v : S)
     (z : KPCuspCharts.Coordinates F) :
     incomingValue F ζ hζ C R P H U ι a s v z =
@@ -471,7 +471,7 @@ private theorem cutoff_cusp_laplacian (s : ℂ) (hs : s ∈ Ω)
   rw [ht] at hx
   simpa only [KPCutoffSource.radialCutoff, b, mul_assoc] using hx
 
-private theorem scalar_cusp_value (w : SmoothSections F ζ hζ C R P H U)
+theorem scalar_cusp_value (w : SmoothSections F ζ hζ C R P H U)
     (a : Cusps F ζ hζ C R P H U) (ε : rootsOfUnity 3 F)
     (p : KPCuspCharts.Coordinates F) :
     scalar F ζ hζ C R P H U w (coveredPoint F ζ hζ C R P H U a ε p) =

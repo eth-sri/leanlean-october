@@ -2,7 +2,13 @@ module
 
 public import DedekindZetaZeroFree.Theta.Whittaker.SelectedJacquet.OpenCellIntegration
 public import DedekindZetaZeroFree.Theta.Whittaker.SelectedJacquet.SelectedFourierContinuation
-public import DedekindZetaZeroFree.Analysis.Complex.AnalyticFunctionImages
+public import Mathlib.Analysis.Complex.Basic
+public import Mathlib.Analysis.Meromorphic.Basic
+public import Mathlib.LinearAlgebra.FiniteDimensional.Defs
+public import DedekindZetaZeroFree.Algebra.LinearAlgebra.FunctionInterpolation
+public import Mathlib.Analysis.Meromorphic.Order
+public import Mathlib.LinearAlgebra.Matrix.NonsingularInverse
+public import Mathlib.LinearAlgebra.FreeModule.StrongRankCondition
 public import DedekindZetaZeroFree.RepresentationTheory.Jacquet.ComplexEvaluation
 public import DedekindZetaZeroFree.Eisenstein.Residues.FiniteAnalyticSourceImage
 public import DedekindZetaZeroFree.RepresentationTheory.Jacquet.FiniteEvaluationSeparation
@@ -211,7 +217,6 @@ variable {F : Type} [Field F] [NumberField F]
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
-local instance : BorelSpace (InfiniteAdeleRing F) := ⟨rfl⟩
 
 end DedekindZetaZeroFree.SheetRescaling
 

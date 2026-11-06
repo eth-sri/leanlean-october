@@ -10,7 +10,6 @@ https://github.com/LeanPool/lean-pool
 Revision: 68aa6ee63d20ad76bcc15f595adfc72949991f06.
 -/
 
-noncomputable section
 
 open scoped nonZeroDivisors
 
@@ -21,8 +20,8 @@ variable {F : Type} [Field F] [NumberField F]
 theorem conductorScaledIdeal_ne_zero
     (m : Ideal (NumberField.RingOfIntegers F)) (hm : m ≠ ⊥)
     (a : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) (ha : a ≠ 0) :
-    a * (m : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) ≠ 0 := by
-  exact mul_ne_zero ha (FractionalIdeal.coeIdeal_ne_zero.mpr hm)
+    a * (m : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) ≠ 0 := 
+  mul_ne_zero ha (FractionalIdeal.coeIdeal_ne_zero.mpr hm)
 
 theorem conductorScaledIdeal_le
     (m : Ideal (NumberField.RingOfIntegers F)) (hm : m ≠ ⊥)
@@ -35,8 +34,8 @@ theorem traceDualFractionalIdeal_le_conductorScaled
     (m : Ideal (NumberField.RingOfIntegers F)) (hm : m ≠ ⊥)
     (a : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) (ha : a ≠ 0) :
     traceDualFractionalIdeal a ≤
-      traceDualFractionalIdeal (a * (m : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F)) := by
-  exact (FractionalIdeal.dual_le_dual ℤ ℚ ha
+      traceDualFractionalIdeal (a * (m : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F)) := 
+  (FractionalIdeal.dual_le_dual ℤ ℚ ha
     (conductorScaledIdeal_ne_zero m hm a ha)).mpr (conductorScaledIdeal_le m hm a ha)
 
 theorem traceDualFractionalIdeal_conductorScaled_mul
@@ -54,8 +53,8 @@ theorem conductorIdealQuotient_finite
     (m : Ideal (NumberField.RingOfIntegers F)) (hm : m ≠ ⊥)
     (a : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) (ha : a ≠ 0) :
     Finite (fractionalIdealQuotient a
-      (a * (m : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F))) := by
-  exact fractionalIdealQuotient_finite_of_ratio m hm a _ ha
+      (a * (m : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F))) := 
+  fractionalIdealQuotient_finite_of_ratio m hm a _ ha
     (conductorScaledIdeal_le m hm a ha) rfl
 
 theorem conductorTraceQuotient_finite
@@ -63,8 +62,8 @@ theorem conductorTraceQuotient_finite
     (a : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) (ha : a ≠ 0) :
     Finite (fractionalIdealQuotient
       (traceDualFractionalIdeal (a * (m : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F)))
-      (traceDualFractionalIdeal a)) := by
-  exact fractionalIdealQuotient_finite_of_ratio m hm _ _
+      (traceDualFractionalIdeal a)) := 
+  fractionalIdealQuotient_finite_of_ratio m hm _ _
     (traceDualFractionalIdeal_ne_zero _ (conductorScaledIdeal_ne_zero m hm a ha))
     (traceDualFractionalIdeal_le_conductorScaled m hm a ha)
     (traceDualFractionalIdeal_conductorScaled_mul m hm a ha)
@@ -73,8 +72,8 @@ theorem conductorIdealQuotient_card
     (m : Ideal (NumberField.RingOfIntegers F)) (hm : m ≠ ⊥)
     (a : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) (ha : a ≠ 0) :
     Nat.card (fractionalIdealQuotient a
-      (a * (m : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F))) = Ideal.absNorm m := by
-  exact fractionalIdealQuotient_card_of_ratio m hm a _ ha
+      (a * (m : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F))) = Ideal.absNorm m := 
+  fractionalIdealQuotient_card_of_ratio m hm a _ ha
     (conductorScaledIdeal_le m hm a ha) rfl
 
 theorem conductorTraceQuotient_card
@@ -82,8 +81,8 @@ theorem conductorTraceQuotient_card
     (a : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) (ha : a ≠ 0) :
     Nat.card (fractionalIdealQuotient
       (traceDualFractionalIdeal (a * (m : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F)))
-      (traceDualFractionalIdeal a)) = Ideal.absNorm m := by
-  exact fractionalIdealQuotient_card_of_ratio m hm _ _
+      (traceDualFractionalIdeal a)) = Ideal.absNorm m := 
+  fractionalIdealQuotient_card_of_ratio m hm _ _
     (traceDualFractionalIdeal_ne_zero _ (conductorScaledIdeal_ne_zero m hm a ha))
     (traceDualFractionalIdeal_le_conductorScaled m hm a ha)
     (traceDualFractionalIdeal_conductorScaled_mul m hm a ha)
@@ -96,7 +95,3 @@ theorem traceDualFractionalIdeal_coeIdeal_eq_inv_mul_codifferent
   unfold traceDualFractionalIdeal codifferentFractionalIdeal
   rw [FractionalIdeal.dual_eq_mul_inv, mul_comm]
   rfl
-
-end DedekindZetaZeroFree.Hecke
-
-end

@@ -1,6 +1,8 @@
 module
 
-public import DedekindZetaZeroFree.Eisenstein.Continuation.LaurentNumeratorCovariance
+public import DedekindZetaZeroFree.Eisenstein.Continuation.ScalarAndSmoothGerms
+public import DedekindZetaZeroFree.Eisenstein.Continuation.ChamberRationalInvariance
+public import DedekindZetaZeroFree.Eisenstein.Induction.Genuineness
 public import DedekindZetaZeroFree.Eisenstein.Residues.SourceResidueLinearMap
 
 @[expose] public section

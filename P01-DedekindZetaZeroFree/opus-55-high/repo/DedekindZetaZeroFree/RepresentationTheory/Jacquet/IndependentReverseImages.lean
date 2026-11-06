@@ -19,7 +19,6 @@ open _root_.DedekindZetaZeroFree.ActualReverseMinorFrequencyNormalization renami
 open _root_.DedekindZetaZeroFree.ActualReverseMinorTwoColumns renaming exists_actual_tame_two_columns → exists_actual_tame_two_columns
 open _root_.DedekindZetaZeroFree.ActualReverseMinorFrequency renaming actual_reverse_frequency_pair_transport → actual_reverse_frequency_pair_transport
 open _root_.DedekindZetaZeroFree.ActualReverseMinorPolarization renaming actual_reverse_pair_transport → actual_reverse_pair_transport
-set_option autoImplicit false
 set_option maxHeartbeats 2000000
 set_option backward.isDefEq.respectTransparency false
 
@@ -33,7 +32,7 @@ variable (F : Type) [Field F] [NumberField F]
 
 local instance independentReverseImagesMinusSectionAddCommGroup : AddCommGroup (sectionSpace S.borel P .minus 0) := inferInstance
 
-private theorem pair_of_arithmetic_inputs
+theorem pair_of_arithmetic_inputs
     (htame : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3)
     (π : (LocalField F q)ˣ)
     (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
@@ -59,8 +58,6 @@ private theorem pair_of_arithmetic_inputs
     · exact continuous_subtype_val
     · have he : (fun z : Circle => (((Circle.toUnits z)⁻¹ : ℂˣ) : ℂ)) =
           fun z : Circle => ((z : ℂ))⁻¹ := by
-        funext z
-        rw [Units.val_inv_eq_inv_val]
         rfl
       rw [he]
       exact continuous_subtype_val.inv₀ (fun z => Circle.coe_ne_zero z)
@@ -75,7 +72,7 @@ private theorem pair_of_arithmetic_inputs
     (KPKirillovProjectorGerms.frequencyCharacter F q a) hψ hunitary hconductor κ hκ ψbar hbar
   let t : actualTorus F ζ hζ q := ActualFiniteTorus.torusLift F ζ hζ q a
   have ht : S.borel.coordinate t = a := S.coordinate_lift t a (by
-    simp [t, ActualFiniteTorus.torusLift, ActualFiniteTorus.normalWord, ActualFiniteTorus.central])
+    simp [t, ActualFiniteTorus.torusLift, ActualFiniteTorus.normalWord])
   have hfreq := actual_reverse_frequency_pair_transport F ζ hζ q S P₀
     μ hμ t a 1 (by rw [ht]; simp) v₀ v₂ hi
   obtain ⟨e⟩ := independence_of_polarization S.heisenberg P₀ P
@@ -105,8 +102,6 @@ theorem exists_reverse_independent_columns
     · exact continuous_subtype_val
     · have he : (fun z : Circle => (((Circle.toUnits z)⁻¹ : ℂˣ) : ℂ)) =
           fun z : Circle => ((z : ℂ))⁻¹ := by
-        funext z
-        rw [Units.val_inv_eq_inv_val]
         rfl
       rw [he]
       exact continuous_subtype_val.inv₀ (fun z => Circle.coe_ne_zero z)
@@ -117,7 +112,3 @@ theorem exists_reverse_independent_columns
   obtain ⟨ψbar, hbar, _⟩ := KPLocalTameIntertwiningBlock.actual_conductor_one_residue
     F q π hπ (KPKirillovProjectorGerms.frequencyCharacter F q a) hψ hconductor
   exact pair_of_arithmetic_inputs F ζ hζ q S P μ hμ htame π hπ a hconductor κ hκ ψbar hbar
-
-end DedekindZetaZeroFree.ExteriorWhittakerValues.ActualWhittaker
-
-end

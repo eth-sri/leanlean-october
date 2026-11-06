@@ -1,7 +1,18 @@
 module
 
 public import DedekindZetaZeroFree.LFunctions.Dedekind.FiniteEulerRestoration
-public import DedekindZetaZeroFree.Nonvanishing.Mellin.PrincipalIncompleteLFunction
+public import DedekindZetaZeroFree.Arithmetic.ResidueSymbols.SixthRootAlignment
+public import Mathlib.Analysis.MellinTransform
+public import Mathlib.Analysis.Complex.CauchyIntegral
+public import DedekindZetaZeroFree.HarmonicAnalysis.Fourier.MellinConverseAxisInversion
+public import DedekindZetaZeroFree.Nonvanishing.Mellin.HolomorphicZeroTransfer
+public import DedekindZetaZeroFree.Moments.Comparison.FarDyadSummability
+public import DedekindZetaZeroFree.Moments.Comparison.TripleMellinKernel
+public import DedekindZetaZeroFree.Moments.Comparison.PoissonMellinKernelData
+public import DedekindZetaZeroFree.Nonvanishing.Mellin.ShiftedKernelFlatness
+public import DedekindZetaZeroFree.Nonvanishing.Mellin.TripleMellinInitialEstimates
+public import DedekindZetaZeroFree.LFunctions.Hecke.FiniteEulerFactorNonvanishing
+public import DedekindZetaZeroFree.Theta.Unfolding.AbsolutelyConvergentExpansion
 
 @[expose] public section
 

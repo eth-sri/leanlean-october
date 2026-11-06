@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.HarmonicAnalysis.Mellin.RegularizedGammaProdu
 
 @[expose] public section
 
-noncomputable section
 open scoped NumberField Classical ContDiff
 
 namespace DedekindZetaZeroFree.LargeSieve.Vendor
@@ -22,7 +21,7 @@ theorem Gammaℂ_mul_originMellinQ_rapid_decay (h : ℝ → ℂ)
   set n : ℕ := max k n₀ with hn
   have hkn : k ≤ n := le_max_left k n₀
   have hn₀n : (n₀ : ℝ) ≤ (n : ℝ) := by
-    rw [hn]; exact_mod_cast le_max_right k n₀
+    simp_all
   have hnu : -((n : ℝ)) < u := by
     have : -u < (n : ℝ) := lt_of_lt_of_le hn₀ hn₀n
     linarith
@@ -35,7 +34,7 @@ theorem Gammaℂ_mul_originMellinQ_rapid_decay (h : ℝ → ℂ)
   have ht1 : (1 : ℝ) ≤ |t| := ht
   have htpos : 0 < |t| := lt_of_lt_of_le zero_lt_one ht1
   have htne : t ≠ 0 := by
-    intro h0; rw [h0, abs_zero] at ht1; linarith
+    intro h0; simp_all
   have hre : (((σ : ℂ) + (t : ℂ) * Complex.I)).re = σ := by simp
   have him : (((σ : ℂ) + (t : ℂ) * Complex.I)).im = t := by simp
   have hsre : -((n : ℝ)) < (((σ : ℂ) + (t : ℂ) * Complex.I)).re := by
@@ -45,9 +44,7 @@ theorem Gammaℂ_mul_originMellinQ_rapid_decay (h : ℝ → ℂ)
 
   have hnum :
       ‖mellin (iteratedDeriv n h) (((σ : ℂ) + (t : ℂ) * Complex.I) + (n : ℂ))‖ ≤ C₀ := by
-    have hre2 : (((σ : ℂ) + (t : ℂ) * Complex.I) + (n : ℂ)).re = σ + n := by
-      rw [Complex.add_re, hre, Complex.natCast_re]
-    exact hC₀ _ (by rw [hre2]; linarith) (by rw [hre2]; linarith)
+    simp_all
 
   have hden :
       |t| ^ n ≤ ‖∏ j ∈ Finset.range n,
@@ -93,7 +90,3 @@ theorem Gammaℂ_mul_originMellinQ_rapid_decay (h : ℝ → ℂ)
           _ ≤ 2 ^ k * C₀ * |t| ^ n :=
               mul_le_mul_of_nonneg_left hmono (by positivity)
     _ ≤ 2 ^ k * C₀ + 1 := by linarith
-
-end DedekindZetaZeroFree.LargeSieve.Vendor
-
-end

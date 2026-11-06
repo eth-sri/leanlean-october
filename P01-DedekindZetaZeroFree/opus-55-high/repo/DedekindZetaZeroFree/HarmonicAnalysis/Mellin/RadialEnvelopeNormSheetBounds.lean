@@ -14,9 +14,7 @@ variable {F : Type} [Field F] [NumberField F]
 lemma raw_radial_envelope_nonneg (A : SArithmeticData F) (N : ℕ) (R : ℝ)
     (x : SLocalProduct F A.Sf) : 0 ≤ radialFiniteEnvelopeRaw A N R x := by
   unfold radialFiniteEnvelopeRaw
-  apply mul_nonneg
-  · exact Finset.prod_nonneg fun _ _ => Real.rpow_nonneg (by positivity) _
-  · split_ifs <;> norm_num
+  positivity
 
 namespace EnvelopeSheetPrivate
 open Set
@@ -88,7 +86,7 @@ private lemma complex_integrable (σ : ℝ) (N : ℕ) (hs : 0 < σ) (hN : σ < N
 
  def cutoff (v : HeightOneSpectrum (𝓞 F)) (R : ℝ) (z : v.adicCompletion F) : ℝ :=
   if ‖z‖ ≤ R then 1 else 0
-private lemma cutoff_lc (v : HeightOneSpectrum (𝓞 F)) (R : ℝ) (hR : 0 < R) :
+lemma cutoff_lc (v : HeightOneSpectrum (𝓞 F)) (R : ℝ) (hR : 0 < R) :
     IsLocallyConstant (cutoff v R) := by
   have hc := IsUltrametricDist.isClopen_closedBall (0 : v.adicCompletion F) hR.ne'
   have hl := ((LocallyConstant.const (v.adicCompletion F) (1 : ℝ)).indicator hc).isLocallyConstant
@@ -97,12 +95,12 @@ private lemma cutoff_lc (v : HeightOneSpectrum (𝓞 F)) (R : ℝ) (hR : 0 < R) 
   change cutoff v R z = (Metric.closedBall (0 : v.adicCompletion F) R).indicator (fun _ => (1 : ℝ)) z
   simp [Set.indicator, Metric.mem_closedBall, dist_zero_right, cutoff]
 set_option maxHeartbeats 800000 in
-private lemma cutoff_integrable (v : HeightOneSpectrum (𝓞 F)) (R σ : ℝ) (hR : 0 < R) (hσ : 0 < σ)
+lemma cutoff_integrable (v : HeightOneSpectrum (𝓞 F)) (R σ : ℝ) (hR : 0 < R) (hσ : 0 < σ)
     (ν : Measure (v.adicCompletion F)ˣ) [ν.IsHaarMeasure] :
     Integrable (fun z : (v.adicCompletion F)ˣ => cutoff v R z.val * ‖z.val‖ ^ σ) ν := by
   let g : v.adicCompletion F → ℂ := fun z => (cutoff v R z : ℂ)
-  have hl : IsLocallyConstant g := by
-    exact (cutoff_lc v R hR).comp Complex.ofReal
+  have hl : IsLocallyConstant g := 
+    (cutoff_lc v R hR).comp Complex.ofReal
   have hc : HasCompactSupport g := by
     apply HasCompactSupport.intro (isCompact_closedBall (0 : v.adicCompletion F) R)
     intro z hz
@@ -113,7 +111,7 @@ private lemma cutoff_integrable (v : HeightOneSpectrum (𝓞 F)) (R σ : ℝ) (h
   funext z
   rw [norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos (norm_pos_iff.mpr z.ne_zero)]
   simp only [Complex.ofReal_re, g, Complex.norm_real, Real.norm_eq_abs]
-  rw [abs_of_nonneg (by dsimp [cutoff]; split_ifs <;> norm_num)]
+  rw [abs_of_nonneg (by dsimp [cutoff]; positivity)]
 
 private lemma complex_units_integrable (σ : ℝ) (N : ℕ) (hs : 0 < σ) (hN : σ < N)
     (ν : Measure ℂˣ) [ν.IsHaarMeasure] :
@@ -146,7 +144,7 @@ private lemma weighted_bound (σ : ℝ) (N : ℕ) (hs : 0 < σ) (hN : σ < N) (r
       _ = r^(-(N:ℝ)+σ) := (Real.rpow_add hr0 _ _).symm
       _ ≤ 1 := Real.rpow_le_one_of_one_le_of_nonpos (le_of_lt (lt_of_not_ge hr1)) (by linarith)
 
-private lemma weighted_identity (A : SArithmeticData F) (N : ℕ) (R σ : ℝ)
+lemma weighted_identity (A : SArithmeticData F) (N : ℕ) (R σ : ℝ)
     (y : (SLocalProduct F A.Sf)ˣ) :
     radialFiniteEnvelopeRaw A N R y.val * (ProbeWeight.modulus F A.Sf y)^σ =
       (∏ v : {v : InfinitePlace F // v.IsComplex},
@@ -166,11 +164,7 @@ private lemma weighted_identity (A : SArithmeticData F) (N : ℕ) (R σ : ℝ)
     apply Fintype.prod_equiv (Equiv.subtypeUnivEquiv A.complex_place).symm
     intro v
     have hn := (InfinitePlace.Completion.isometry_extensionEmbedding v).dist_eq (y.val.1 v) 0
-    change (1+‖y.val.1 v‖^2)^(-(N:ℝ)) =
-      (1+‖InfinitePlace.Completion.extensionEmbedding v (y.val.1 v)‖^2)^(-(N:ℝ))
-    have hn' : ‖InfinitePlace.Completion.extensionEmbedding v (y.val.1 v)‖ = ‖y.val.1 v‖ := by
-      simpa only [map_zero, dist_zero_right] using hn
-    rw [hn']
+    simp_all
   unfold radialFiniteEnvelopeRaw
   rw [hc, he, SchwartzNormSheetEnvelope.complex_product_modulus,
     Real.mul_rpow (Finset.prod_nonneg (fun _ _ => sq_nonneg _))
@@ -221,7 +215,7 @@ theorem raw_radial_envelope_sheet_bounds
   have hfpos : ∀ v z, 0 ≤ af v z := by
     intro v z
     dsimp [af, EnvelopeSheetPrivate.cutoff]
-    split_ifs <;> positivity
+    positivity
   obtain ⟨B, hB, hmass⟩ := NormSheetRemainingCoordinates.raw_remaining_tensor_integral_bound
     A w dt hdt ac af hcc hfc hcpos hfpos
     (fun _ => Measure.haar) (by intro v; infer_instance)
@@ -286,6 +280,3 @@ theorem raw_radial_envelope_sheet_bounds
     _ = T^(-σ) * ∫ t, M T t ∂dt := integral_const_mul _ _
     _ ≤ T^(-σ) * B := mul_le_mul_of_nonneg_left (hmass T hT).2 (Real.rpow_nonneg hT.le _)
     _ = _ := mul_comm _ _
-
-end
-end DedekindZetaZeroFree.ProbeSheetFourierMellinBounds

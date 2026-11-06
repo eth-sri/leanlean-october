@@ -73,9 +73,5 @@ instance stabilizerHaar_isHaarMeasure (d : ℕ) : (stabilizerHaar d).IsHaarMeasu
 
 instance stabilizerHaar_isProbabilityMeasure (d : ℕ) :
     IsProbabilityMeasure (stabilizerHaar d) where
-  measure_univ := by
-    exact haarMeasure_self (K₀ := (⊤ : TopologicalSpace.PositiveCompacts (K d)))
-
-end
-
-end DedekindZetaZeroFree.KPCompactStabilizerHaarSources
+  measure_univ := 
+    haarMeasure_self (K₀ := (⊤ : TopologicalSpace.PositiveCompacts (K d)))

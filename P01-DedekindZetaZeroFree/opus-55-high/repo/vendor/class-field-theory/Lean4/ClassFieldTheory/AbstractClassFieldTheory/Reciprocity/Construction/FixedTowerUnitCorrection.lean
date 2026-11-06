@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 universe u v
 
 namespace ClassFormation
@@ -41,7 +38,7 @@ variable {D : DegreeData G} {A : Rep ℤ G}
 
 /-- The unit-valued correction term on the upper Frobenius fixed field.
 This is the additive form of the right-hand side of the corrected equation. -/
-noncomputable def fixedTowerCorrection
+def fixedTowerCorrection
     (v : ValuationData D A)
     [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
     [TotallyDisconnectedSpace G]
@@ -180,59 +177,38 @@ theorem fixedTowerCorrection_relativeNorm_eq_zero
   have hsumBar (f : ι →
       v.unitAddSubgroup (D.frobeniusFixedAbstractField K L hLK σn)) :
       ((∑ i ∈ s, f i).1.1 : A.V) = ∑ i ∈ s, (f i).1.1 := by
-    calc
-      ((∑ i ∈ s, f i).1.1 : A.V) =
-          (ambientFixedAddSubgroup A
-            (D.frobeniusFixedField K L hLK σn)).subtype
-              (∑ i ∈ s, (v.unitAddSubgroup
-                (D.frobeniusFixedAbstractField K L hLK σn)).subtype (f i)) := by
-        exact congrArg (ambientFixedAddSubgroup A
-          (D.frobeniusFixedField K L hLK σn)).subtype
-          (map_sum (v.unitAddSubgroup
-            (D.frobeniusFixedAbstractField K L hLK σn)).subtype f s)
-      _ = _ := map_sum
-        (ambientFixedAddSubgroup A
-          (D.frobeniusFixedField K L hLK σn)).subtype
-        (fun i => (v.unitAddSubgroup
-          (D.frobeniusFixedAbstractField K L hLK σn)).subtype (f i)) s
+    simp
   have hsumBar' (f : ι → ambientFixedAddSubgroup A
       (D.frobeniusFixedField K L hLK σn)) :
       ((∑ i ∈ s, f i).1 : A.V) = ∑ i ∈ s, (f i).1 :=
-    map_sum (ambientFixedAddSubgroup A
-      (D.frobeniusFixedField K L hLK σn)).subtype f s
+    by simp
   have hφVal :
       ((D.frobeniusFixedFieldAction A K L hLK σn φ hφσn uBar').1 : A.V) =
         A.ρ (Quotient.out φ).1 uBar.1.1 := by
-    simp [uBar']
+    rfl
   have hτVal (i : ι) :
       ((D.frobeniusFixedFieldAction A K L hLK σn
         (τ i) (hτσn i) (uBarᵢ' i)).1 : A.V) =
         A.ρ (Quotient.out (τ i)).1 (uBarᵢ i).1.1 := by
-    simp [uBarᵢ']
+    rfl
   have hunitφVal :
       ((v.frobeniusFixedFieldUnitAction K L hLK σn
         φ hφσn uBar).1.1 : A.V) =
         A.ρ (Quotient.out φ).1 uBar.1.1 := by
-    change ((D.frobeniusFixedFieldAction A K L hLK σn
-      φ hφσn uBar.1).1 : A.V) = _
-    exact hφVal
+    rfl
   have hunitτVal (i : ι) :
       ((v.frobeniusFixedFieldUnitAction K L hLK σn
         (τ i) (hτσn i) (uBarᵢ i)).1.1 : A.V) =
         A.ρ (Quotient.out (τ i)).1 (uBarᵢ i).1.1 := by
-    change ((D.frobeniusFixedFieldAction A K L hLK σn
-      (τ i) (hτσn i) (uBarᵢ i).1).1 : A.V) = _
-    exact hτVal i
+    rfl
   have hsubAmbient (x y : ambientFixedAddSubgroup A
       (D.frobeniusFixedField K L hLK σn)) :
       ((x - y).1 : A.V) = x.1 - y.1 :=
-    map_sub (ambientFixedAddSubgroup A
-      (D.frobeniusFixedField K L hLK σn)).subtype x y
+    by rfl
   have hsumAmbient (f : ι → ambientFixedAddSubgroup A
       (D.frobeniusFixedField K L hLK σn)) :
       ((∑ i ∈ s, f i).1 : A.V) = ∑ i ∈ s, (f i).1 :=
-    map_sum (ambientFixedAddSubgroup A
-      (D.frobeniusFixedField K L hLK σn)).subtype f s
+    by simp
   have hcorrection :
       (v.fixedTowerCorrection K L hLK σn s φ hφσn
           τ hτσn uBar uBarᵢ).1 =
@@ -255,8 +231,8 @@ theorem fixedTowerCorrection_relativeNorm_eq_zero
         D.frobeniusFixedFieldAction A K L hLK σ
           φ hφσ
             (relativeNorm A (D.frobeniusFixedField K L hLK σ)
-              (D.frobeniusFixedField K L hLK σn) hTS uBar') := by
-    exact D.relativeNorm_frobeniusFixedFieldAction
+              (D.frobeniusFixedField K L hLK σn) hTS uBar') := 
+    D.relativeNorm_frobeniusFixedFieldAction
       A K L hLK σ σn hTS φ hφσ hφσn uBar'
   rw [hφEquiv]
   have hτEquiv (i : ι) :
@@ -267,48 +243,28 @@ theorem fixedTowerCorrection_relativeNorm_eq_zero
         D.frobeniusFixedFieldAction A K L hLK σ
           (τ i) (hτσ i)
             (relativeNorm A (D.frobeniusFixedField K L hLK σ)
-              (D.frobeniusFixedField K L hLK σn) hTS (uBarᵢ' i)) := by
-    exact D.relativeNorm_frobeniusFixedFieldAction
+              (D.frobeniusFixedField K L hLK σn) hTS (uBarᵢ' i)) := 
+    D.relativeNorm_frobeniusFixedFieldAction
       A K L hLK σ σn hTS (τ i) (hτσ i) (hτσn i) (uBarᵢ' i)
   simp_rw [hτEquiv]
   have huBar' :
       relativeNorm A (D.frobeniusFixedField K L hLK σ)
-        (D.frobeniusFixedField K L hLK σn) hTS uBar' = u' := by
-    exact huBar
+        (D.frobeniusFixedField K L hLK σn) hTS uBar' = u' := 
+    huBar
   have huBarᵢ' (i : ι) :
       relativeNorm A (D.frobeniusFixedField K L hLK σ)
-        (D.frobeniusFixedField K L hLK σn) hTS (uBarᵢ' i) = uᵢ' i := by
-    exact huBarᵢ i
+        (D.frobeniusFixedField K L hLK σn) hTS (uBarᵢ' i) = uᵢ' i := 
+    huBarᵢ i
   rw [huBar']
   simp_rw [huBarᵢ']
   apply Subtype.ext
   have hsum : ((∑ i ∈ s, uᵢ i).1.1 : A.V) =
       ∑ i ∈ s, (uᵢ i).1.1 := by
-    calc
-      ((∑ i ∈ s, uᵢ i).1.1 : A.V) =
-          (ambientFixedAddSubgroup A
-            (D.frobeniusFixedField K L hLK σ)).subtype
-              (∑ i ∈ s, (v.unitAddSubgroup
-                (D.frobeniusFixedAbstractField K L hLK σ)).subtype (uᵢ i)) := by
-        exact congrArg (ambientFixedAddSubgroup A
-          (D.frobeniusFixedField K L hLK σ)).subtype
-          (map_sum (v.unitAddSubgroup
-            (D.frobeniusFixedAbstractField K L hLK σ)).subtype uᵢ s)
-      _ = _ := map_sum
-        (ambientFixedAddSubgroup A
-          (D.frobeniusFixedField K L hLK σ)).subtype
-        (fun i => (v.unitAddSubgroup
-          (D.frobeniusFixedAbstractField K L hLK σ)).subtype (uᵢ i)) s
+    simp
   have hsum' (f : ι → ambientFixedAddSubgroup A
       (D.frobeniusFixedField K L hLK σ)) :
       ((∑ i ∈ s, f i).1 : A.V) = ∑ i ∈ s, (f i).1 :=
-    map_sum (ambientFixedAddSubgroup A
-      (D.frobeniusFixedField K L hLK σ)).subtype f s
+    by simp
   simpa [u', uᵢ', D.frobeniusFixedFieldAction_coe,
     hsum, hsum', Finset.sum_sub_distrib] using
     sub_eq_zero.mpr hstar
-
-end ValuationData
-end
-
-end ClassFormation

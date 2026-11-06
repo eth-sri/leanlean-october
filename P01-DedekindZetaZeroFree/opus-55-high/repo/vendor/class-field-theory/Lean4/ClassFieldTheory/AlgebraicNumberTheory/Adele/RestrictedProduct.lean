@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # The restricted local product of a relative adele algebra
 
@@ -33,7 +29,6 @@ open scoped NumberField TensorProduct
 open NumberField IsDedekindDomain
 
 noncomputable section
-
 
 universe u v
 
@@ -66,20 +61,9 @@ structure RelativeLocalAdeleData where
             (finite w) i ∈
           w.adicCompletionIntegers K
 
-omit [NumberField L] in
-@[ext]
-theorem RelativeLocalAdeleData.ext
-    {a b : RelativeLocalAdeleData (K := K) (L := L)}
-    (hinfinite : a.infinite = b.infinite)
-    (hfinite : a.finite = b.finite) :
-    a = b := by
-  cases a
-  cases b
-  simp_all
-
 /-- The `i`-th base-adele coefficient assembled from local tensor
 coordinates. -/
-noncomputable def relativeLocalAdeleCoefficient
+def relativeLocalAdeleCoefficient
     (a : RelativeLocalAdeleData (K := K) (L := L))
     (i : RelativeAdeleBasisIndex (K := K) (L := L)) :
     NumberField.AdeleRing (𝓞 K) K :=
@@ -129,7 +113,7 @@ theorem relativeLocalAdeleCoefficient_finite
 
 /-- Assemble a restricted family of local tensor elements into a
 relative adele. -/
-noncomputable def relativeAdeleOfLocalData
+def relativeAdeleOfLocalData
     (a : RelativeLocalAdeleData (K := K) (L := L)) :
     RelativeAdeleRing K L :=
   relativeAdeleOfCoefficients
@@ -191,92 +175,6 @@ theorem relativeAdeleOfLocalData_finiteComponent
     (fun q : NumberField.AdeleRing (𝓞 K) K =>
       q.2.1 w) h
 
-/-- Extract every local tensor component of a relative adele, together
-with the restrictedness supplied by its base-adele coefficients. -/
-noncomputable def relativeAdeleToLocalData
-    (z : RelativeAdeleRing K L) :
-    RelativeLocalAdeleData (K := K) (L := L) where
-  infinite w :=
-    relativeAdeleInfiniteComponent
-      (K := K) (L := L) w z
-  finite w :=
-    relativeAdeleFiniteComponent
-      (K := K) (L := L) w z
-  eventually_integral i := by
-    filter_upwards [
-      (relativeAdeleCoefficient
-        (K := K) (L := L) z i).2.2] with w hw
-    rw [relativeAdeleFiniteComponent_basis_repr]
-    change
-      (relativeAdeleCoefficient
-        (K := K) (L := L) z i).2.1 w ∈
-          w.adicCompletionIntegers K at hw ⊢
-    exact hw
-
-omit [NumberField L] in
-@[simp]
-theorem relativeAdeleOfLocalData_toLocalData
-    (z : RelativeAdeleRing K L) :
-    relativeAdeleOfLocalData
-        (K := K) (L := L)
-        (relativeAdeleToLocalData
-          (K := K) (L := L) z) =
-      z := by
-  apply relativeAdele_ext_of_components
-  · intro w
-    rw [relativeAdeleOfLocalData_infiniteComponent
-      (K := K) (L := L)]
-    rfl
-  · intro w
-    rw [relativeAdeleOfLocalData_finiteComponent
-      (K := K) (L := L)]
-    rfl
-
-omit [NumberField L] in
-@[simp]
-theorem relativeAdeleToLocalData_ofLocalData
-    (a : RelativeLocalAdeleData (K := K) (L := L)) :
-    relativeAdeleToLocalData
-        (K := K) (L := L)
-        (relativeAdeleOfLocalData
-          (K := K) (L := L) a) =
-      a := by
-  apply RelativeLocalAdeleData.ext
-  · funext w
-    change
-      relativeAdeleInfiniteComponent
-          (K := K) (L := L) w
-          (relativeAdeleOfLocalData
-            (K := K) (L := L) a) =
-        a.infinite w
-    rw [relativeAdeleOfLocalData_infiniteComponent
-      (K := K) (L := L)]
-  · funext w
-    change
-      relativeAdeleFiniteComponent
-          (K := K) (L := L) w
-          (relativeAdeleOfLocalData
-            (K := K) (L := L) a) =
-        a.finite w
-    rw [relativeAdeleOfLocalData_finiteComponent
-      (K := K) (L := L)]
-
-/-- Coordinatewise restricted local tensor families are exactly
-relative adeles. -/
-noncomputable def relativeAdeleEquivLocalData :
-    RelativeAdeleRing K L ≃
-      RelativeLocalAdeleData (K := K) (L := L) where
-  toFun :=
-    relativeAdeleToLocalData (K := K) (L := L)
-  invFun :=
-    relativeAdeleOfLocalData (K := K) (L := L)
-  left_inv :=
-    relativeAdeleOfLocalData_toLocalData
-      (K := K) (L := L)
-  right_inv :=
-    relativeAdeleToLocalData_ofLocalData
-      (K := K) (L := L)
-
 /-- A restricted family of local tensor units.  Restrictedness is
 required both for the family and for its pointwise inverse. -/
 structure RelativeLocalIdeleData where
@@ -324,7 +222,7 @@ theorem RelativeLocalIdeleData.ext
   simp_all
 
 /-- Forget local invertibility while retaining the value family. -/
-noncomputable def RelativeLocalIdeleData.value
+def RelativeLocalIdeleData.value
     (a : RelativeLocalIdeleData (K := K) (L := L)) :
     RelativeLocalAdeleData (K := K) (L := L) where
   infinite w := a.infinite w
@@ -332,7 +230,7 @@ noncomputable def RelativeLocalIdeleData.value
   eventually_integral := a.eventually_integral
 
 /-- The pointwise inverse family as restricted local adele data. -/
-noncomputable def RelativeLocalIdeleData.inverse
+def RelativeLocalIdeleData.inverse
     (a : RelativeLocalIdeleData (K := K) (L := L)) :
     RelativeLocalAdeleData (K := K) (L := L) where
   infinite w :=
@@ -345,7 +243,7 @@ noncomputable def RelativeLocalIdeleData.inverse
 
 /-- Extract the complete restricted local-unit family of a relative
 idele. -/
-noncomputable def relativeIdeleToLocalData
+def relativeIdeleToLocalData
     (z : RelativeIdeleGroup K L) :
     RelativeLocalIdeleData (K := K) (L := L) where
   infinite w :=
@@ -361,12 +259,7 @@ noncomputable def relativeIdeleToLocalData
       (z : RelativeAdeleRing K L) i).2.2] with w hw
     rw [RelativeIdeleGroup.finiteComponent_coe,
       relativeAdeleFiniteComponent_basis_repr]
-    change
-      (relativeAdeleCoefficient
-        (K := K) (L := L)
-        (z : RelativeAdeleRing K L) i).2.1 w ∈
-          w.adicCompletionIntegers K at hw ⊢
-    exact hw
+    omega
   eventually_inverse_integral i := by
     filter_upwards [
       (relativeAdeleCoefficient
@@ -378,16 +271,10 @@ noncomputable def relativeIdeleToLocalData
         (K := K) (L := L) w) z,
       RelativeIdeleGroup.finiteComponent_coe,
       relativeAdeleFiniteComponent_basis_repr]
-    change
-      (relativeAdeleCoefficient
-        (K := K) (L := L)
-        ((z⁻¹ : RelativeIdeleGroup K L) :
-          RelativeAdeleRing K L) i).2.1 w ∈
-          w.adicCompletionIntegers K at hw ⊢
-    exact hw
+    omega
 
 /-- Assemble a restricted local-unit family into a relative idele. -/
-noncomputable def relativeIdeleOfLocalData
+def relativeIdeleOfLocalData
     (a : RelativeLocalIdeleData (K := K) (L := L)) :
     RelativeIdeleGroup K L := by
   let x :=
@@ -541,7 +428,7 @@ theorem relativeIdeleToLocalData_ofLocalData
 
 /-- The relative idele group is exactly the coordinate-restricted
 product of all local tensor unit groups. -/
-noncomputable def relativeIdeleEquivLocalData :
+def relativeIdeleEquivLocalData :
     RelativeIdeleGroup K L ≃
       RelativeLocalIdeleData (K := K) (L := L) where
   toFun :=
@@ -557,7 +444,7 @@ noncomputable def relativeIdeleEquivLocalData :
 
 /-- The group structure on the restricted local product, transported
 through its proved equivalence with the relative idele group. -/
-noncomputable instance relativeLocalIdeleDataGroup :
+instance relativeLocalIdeleDataGroup :
     Group
       (RelativeLocalIdeleData
         (K := K) (L := L)) :=
@@ -566,7 +453,7 @@ noncomputable instance relativeLocalIdeleDataGroup :
 
 /-- The restricted local-product equivalence as a multiplicative
 equivalence. -/
-noncomputable def relativeIdeleMulEquivLocalData :
+def relativeIdeleMulEquivLocalData :
     RelativeIdeleGroup K L ≃*
       RelativeLocalIdeleData (K := K) (L := L) :=
   ((relativeIdeleEquivLocalData
@@ -635,5 +522,3 @@ theorem RelativeLocalIdeleData.finite_mul
   rw [map_mul,
     relativeIdeleOfLocalData_finiteComponent,
     relativeIdeleOfLocalData_finiteComponent]
-
-end

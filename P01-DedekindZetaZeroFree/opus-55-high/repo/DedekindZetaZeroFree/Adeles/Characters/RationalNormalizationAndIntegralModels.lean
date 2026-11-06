@@ -33,9 +33,3 @@ open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree
 
 instance instFactPrimeRationalNormalizationNatPrimes (p : Nat.Primes) : Fact p.1.Prime := ⟨p.2⟩
-
-end DedekindZetaZeroFree
-
-end
-
-end

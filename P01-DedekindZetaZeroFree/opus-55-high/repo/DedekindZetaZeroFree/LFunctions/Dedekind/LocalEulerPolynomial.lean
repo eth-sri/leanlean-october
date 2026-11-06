@@ -47,5 +47,3 @@ theorem localEulerPolynomial
       letI : Q.LiesOver p.asIdeal := hQ'.2
       rw [Ideal.inertiaDeg_eq_of_isGaloisGroup p.asIdeal Q W.asIdeal (L ≃ₐ[K] L)]
     _ = _ := by rw [Finset.prod_const]
-
-end DedekindZetaZeroFree.AbelianQuotient

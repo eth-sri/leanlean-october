@@ -45,8 +45,8 @@ theorem exists_coordinates_and_characters
   let a := c.symm.trans B.equivFun
   let q : (Fin (Module.finrank ℝ E) → ℝ) →+ UnitAddTorus (Fin (Module.finrank ℝ E)) :=
     { toFun := fun x i => (x i : UnitAddCircle)
-      map_zero' := by ext i; simp
-      map_add' := by intro x y; ext i; exact AddCircle.coe_add _ _ _ }
+      map_zero' := by rfl
+      map_add' := by intro x y; rfl }
   let f : H →+ UnitAddTorus (Fin (Module.finrank ℝ E)) := q.comp a.toAddHom
   have hq : Function.Surjective q := by
     intro t
@@ -60,15 +60,10 @@ theorem exists_coordinates_and_characters
       simp only [L, Submodule.mem_map, LinearMap.coe_restrictScalars,
         LinearEquiv.coe_coe]
       change (∃ x, x ∈ K ∧ c.symm x = c.symm y) ↔ y ∈ K
-      constructor
-      · rintro ⟨x, hx, he⟩
-        exact c.symm.injective he ▸ hx
-      · intro hy
-        exact ⟨y, hy, rfl⟩
+      simp
     rw [← hL, ← b.ofZLatticeBasis_span ℝ]
     rw [B.mem_span_iff_repr_mem ℤ]
-    simp only [funext_iff, Pi.zero_apply, AddCircle.coe_eq_zero_iff,
-      Set.mem_range, Int.smul_one_eq_cast, Int.cast_eq, Int.cast_one]
+    simp only [funext_iff, Pi.zero_apply, AddCircle.coe_eq_zero_iff, Set.mem_range, Int.smul_one_eq_cast]
     rfl
   let e₀ := QuotientAddGroup.liftEquiv K hf hker
   have hcont : Continuous e₀ := by
@@ -226,9 +221,3 @@ theorem kernel_torus_parseval
   have hs := FullRealLatticeTorus.hasSum_sq_coefficients_of_coordinates
     e n (KPCuspFrequencyGap.torusMode S D ρ) hmode μ hμ hprob f hf
   exact ⟨hs.summable, hs.tsum_eq.symm⟩
-
-end DedekindZetaZeroFree.KPMeanZeroWeightedEnergy.GapCoercivity.Fourier
-
-end
-
-end

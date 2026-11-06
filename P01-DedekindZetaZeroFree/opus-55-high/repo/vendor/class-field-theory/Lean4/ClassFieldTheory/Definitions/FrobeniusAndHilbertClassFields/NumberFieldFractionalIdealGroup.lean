@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Fractional-ideal group of a number field
 -/
@@ -31,5 +27,3 @@ universe u
 abbrev NumberFieldFractionalIdealGroup
     (K : Type u) [Field K] [NumberField K] :=
   (FractionalIdeal (nonZeroDivisors (𝓞 K)) K)ˣ
-
-end ClassFieldTheory

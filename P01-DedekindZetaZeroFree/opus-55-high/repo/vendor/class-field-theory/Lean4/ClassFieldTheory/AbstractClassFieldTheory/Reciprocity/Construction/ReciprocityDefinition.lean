@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 universe u
 
 namespace ClassFormation
@@ -193,10 +187,3 @@ theorem reciprocityMap_eq_chosenPrime (D : DegreeData G) (A : Rep ℤ G)
         (D.reciprocityValueOfPrime A KR L hLK σ
           (v.chosenPrimeElement Sigma)) :=
   rfl
-
-end DegreeData
-
-end reciprocityValues
-
-end
-end ClassFormation

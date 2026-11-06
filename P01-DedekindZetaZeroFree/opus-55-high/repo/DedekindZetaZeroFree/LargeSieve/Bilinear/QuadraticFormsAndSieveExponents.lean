@@ -95,7 +95,3 @@ def HasSieveExponent (F : Type) [Field F] [NumberField F] (c : Ideal (𝓞 F))
   ∀ ε : ℝ, 0 < ε → ∃ C : ℝ, 0 ≤ C ∧
     ∀ M N : ℝ, 1 ≤ M → 1 ≤ N →
       B1 F c Q M N ≤ C * Real.rpow (M * N) ε * (M + Real.rpow N α)
-
-end DedekindZetaZeroFree.LargeSieve.Sieve
-
-end

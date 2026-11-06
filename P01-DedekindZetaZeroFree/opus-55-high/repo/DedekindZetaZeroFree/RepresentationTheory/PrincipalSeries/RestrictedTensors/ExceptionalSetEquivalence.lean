@@ -18,6 +18,3 @@ theorem equalBadEquiv_stage (s : Level B) (x : Stage V s.val) :
       stageInclusion V e D ⟨s.val, h ▸ s.property⟩ x := by
   subst D
   rfl
-end DedekindZetaZeroFree.RestrictedTensorSimple
-
-end

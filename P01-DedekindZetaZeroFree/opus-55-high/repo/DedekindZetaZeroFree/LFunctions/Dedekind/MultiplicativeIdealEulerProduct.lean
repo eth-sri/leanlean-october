@@ -8,7 +8,7 @@ namespace DedekindZetaZeroFree.AbelianQuotient
 
 open scoped NumberField BigOperators
 
-private lemma norm_extendByZero {α β E : Type*} [SeminormedAddCommGroup E] (e : α → β)
+lemma norm_extendByZero {α β E : Type*} [SeminormedAddCommGroup E] (e : α → β)
     (he : Function.Injective e) (f : α → E) (b : β) :
     ‖Odlyzko.extendByZero e f b‖ = Odlyzko.extendByZero e (fun a => ‖f a‖) b := by
   by_cases hb : b ∈ Set.range e
@@ -75,5 +75,3 @@ theorem genericIdealEulerProduct
   rw [hF2 (Odlyzko.primeIdealCodeEmbedding K P), hval,
     Odlyzko.primeIdealAtCode_primeIdealCode]
   simp
-
-end DedekindZetaZeroFree.AbelianQuotient

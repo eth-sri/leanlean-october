@@ -1,6 +1,6 @@
 module
 
-public import DedekindZetaZeroFree.RepresentationTheory.Smooth.FiniteFactorAveraging
+public import DedekindZetaZeroFree.Metaplectic.Torus.BorelTwistCompatibility
 public import DedekindZetaZeroFree.Eisenstein.Induction.BorelModulusAndIwasawaContinuity
 public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.AngularHaarDisintegration
 public import DedekindZetaZeroFree.Eisenstein.Induction.ExceptionalParameterExponents
@@ -31,7 +31,7 @@ def targetExponentPolarization (s : ℂ) :=
   KPGlobalTorusBorelTwistCompatibility.twist F ζ hζ
     (KPGlobalTorusBorelTwistCompatibility.rationalModel F ζ hζ) (-1 / 3 - s)
 
-private theorem projW :
+theorem projW :
     KPAdelicCoverRestrictedProduct.pglProjection F ζ hζ
       (KPCubicCoverConstruction.adelicW F ζ hζ : G F ζ hζ) =
     QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F)
@@ -40,8 +40,7 @@ private theorem projW :
     (KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ _) = _
   unfold KPCubicCoverConstruction.adelicW
   rw [KPRationalAdelicSplitting.W_rational]
-  exact congrArg (QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F))
-    (KPAdelicCoverRestrictedProduct.projection_rationalSection F ζ hζ _)
+  rfl
  theorem wSq :
     (KPCubicCoverConstruction.adelicW F ζ hζ : G F ζ hζ) *
       (KPCubicCoverConstruction.adelicW F ζ hζ : G F ζ hζ) = 1 := by
@@ -92,14 +91,7 @@ def weylTorusConjugation : E F ζ hζ ≃* E F ζ hζ where
     simp only [← mul_assoc, wSq, one_mul]
     rw [mul_assoc, wSq, mul_one]
   map_mul' t u := by
-    apply Subtype.ext
-    change (KPCubicCoverConstruction.adelicW F ζ hζ : G F ζ hζ) * (t.val * u.val) *
-        (KPCubicCoverConstruction.adelicW F ζ hζ : G F ζ hζ)⁻¹ =
-      ((KPCubicCoverConstruction.adelicW F ζ hζ : G F ζ hζ) * t.val *
-          (KPCubicCoverConstruction.adelicW F ζ hζ : G F ζ hζ)⁻¹) *
-          ((KPCubicCoverConstruction.adelicW F ζ hζ : G F ζ hζ) * u.val *
-          (KPCubicCoverConstruction.adelicW F ζ hζ : G F ζ hζ)⁻¹)
-    group
+    simp
 
 theorem weylTorusConjugation_formula (t : E F ζ hζ) :
     (weylTorusConjugation F ζ hζ t).val =
@@ -111,8 +103,6 @@ def weylPolarization (s : ℂ) : KPGlobalTorusFunctionData.Polarization F ζ hζ
   closed := by
     apply (sourcePolarization F ζ hζ s).closed.preimage
     apply Continuous.subtype_mk
-    change Continuous (fun t : E F ζ hζ => (weylTorusConjugation F ζ hζ t).val)
-    simp_rw [weylTorusConjugation_formula]
     fun_prop
   abelian := by
     intro h k
@@ -143,7 +133,6 @@ def weylPolarization (s : ℂ) : KPGlobalTorusFunctionData.Polarization F ζ hζ
           change Continuous (fun t : (sourcePolarization F ζ hζ s).H.comap
             (weylTorusConjugation F ζ hζ).toMonoidHom =>
               (weylTorusConjugation F ζ hζ t.val).val)
-          simp_rw [weylTorusConjugation_formula]
           fun_prop⟩
 
 namespace ActualWeylFibreProof
@@ -189,11 +178,9 @@ theorem torusRatio_weylConjugation_inv_rationalPeriodizationPairingData (t : E F
     simp only [map_mul, projW]
     rw [hA]
   have h10' : (W * A * W) 1 0 = 0 := by
-    simp [W, KPAdelicCoverRestrictedProduct.rationalBase, KPStandardLocalRootLifts.weylSwap,
-      Matrix.mul_apply, Fin.sum_univ_two, h10, h01]
+    simp [W, KPAdelicCoverRestrictedProduct.rationalBase, KPStandardLocalRootLifts.weylSwap, Matrix.mul_apply, Fin.sum_univ_two, h01]
   have h01' : (W * A * W) 0 1 = 0 := by
-    simp [W, KPAdelicCoverRestrictedProduct.rationalBase, KPStandardLocalRootLifts.weylSwap,
-      Matrix.mul_apply, Fin.sum_univ_two, h10, h01]
+    simp [W, KPAdelicCoverRestrictedProduct.rationalBase, KPStandardLocalRootLifts.weylSwap, Matrix.mul_apply, Fin.sum_univ_two, h10]
   have h1 := KPGlobalTorusFunctionData.ratio_formula F
     ⟨_, (weylTorusConjugation F ζ hζ t).property⟩ (W * A * W) hW.symm h10' h01'
   have h0 := KPGlobalTorusFunctionData.ratio_formula F ⟨_, t.property⟩ A hA h10 h01
@@ -216,7 +203,7 @@ theorem torusRatio_weylConjugation_inv_rationalPeriodizationPairingData (t : E F
       (KPGlobalTorusFunctionData.diagonal_entries_units F A h10 h01).1.unit *
       (KPGlobalTorusFunctionData.diagonal_entries_units F A h10 h01).2.unit⁻¹ := Units.ext h0
   rw [hu]
-  simp [mul_comm]
+  rfl
 theorem weylConjugation_diagonalLift_inv_rationalPeriodizationPairingData (y : KPGlobalTorusFunctionData.Ideles F)
     (t : E F ζ hζ) (ht : t.val = KPGlobalCenterRationalCharacter.diagonalLift F ζ hζ y) :
     (weylTorusConjugation F ζ hζ t).val =
@@ -236,9 +223,7 @@ private theorem weyl_root (ε : rootsOfUnity 3 F) :
     (show KPAdelicCoverRestrictedProduct.pglCentralInjection F ζ hζ ε ∈
       (KPAdelicCoverRestrictedProduct.pglCentralInjection F ζ hζ).range from ⟨ε, rfl⟩)
   rw [(Subgroup.mem_center_iff.mp hc _), mul_assoc]
-  change _ * ((KPCubicCoverConstruction.adelicW F ζ hζ : G F ζ hζ) *
-    (KPCubicCoverConstruction.adelicW F ζ hζ : G F ζ hζ)⁻¹) = _
-  rw [mul_inv_cancel, mul_one]
+  simp
 private theorem center_decomp (z : KPGlobalTorusFunctionData.Z F ζ hζ) :
     ∃ (ε : rootsOfUnity 3 F) (y : CubicCharacters.cubes (KPGlobalTorusFunctionData.Ideles F)),
       z = KPGlobalCenterRationalCharacter.centralRoot F ζ hζ ε *
@@ -257,7 +242,7 @@ private theorem center_decomp (z : KPGlobalTorusFunctionData.Z F ζ hζ) :
       ⟨KPAdelicCoverRestrictedProduct.pglProjection F ζ hζ z.val.val, z.val.property⟩).symm
   have hk : z.val.val * c.val.val⁻¹ ∈
       (KPAdelicCoverRestrictedProduct.pglProjection F ζ hζ).ker := by
-    rw [MonoidHom.mem_ker, map_mul, map_inv, he, mul_inv_cancel]
+    simp_all
   rw [← KPAdelicCoverRestrictedProduct.pglCentralInjection_kernel] at hk
   obtain ⟨ε, hε⟩ := hk
   refine ⟨ε, y, ?_⟩
@@ -266,7 +251,7 @@ private theorem center_decomp (z : KPGlobalTorusFunctionData.Z F ζ hζ) :
   change z.val.val = _ * c.val.val
   rw [KPGlobalCenterRationalCharacter.centralRoot_formula, hε]
   group
-private theorem weyl_rational (a : Fˣ) :
+theorem weyl_rational (a : Fˣ) :
     weylTorusConjugation F ζ hζ (KPGlobalTorusFunctionData.s F ζ hζ a) =
       KPGlobalTorusFunctionData.s F ζ hζ a⁻¹ := by
   apply Subtype.ext
@@ -279,8 +264,8 @@ private theorem weyl_rational (a : Fˣ) :
       (KPRationalAdelicSplitting.W F ζ hζ))⁻¹ = _
   have hs (a : Fˣ) : (KPGlobalTorusFunctionData.s F ζ hζ a).val =
       KPRationalAdelicSplitting.pglA F ζ hζ
-        (Units.map (algebraMap F (KPGlobalTorusFunctionData.Adeles F)).toMonoidHom a) := by
-    exact (congrArg (KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ)
+        (Units.map (algebraMap F (KPGlobalTorusFunctionData.Adeles F)).toMonoidHom a) := 
+    (congrArg (KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ)
       (KPRationalAdelicSplitting.A_rational F ζ hζ a)).symm
   change (KPCubicCoverConstruction.adelicW F ζ hζ : G F ζ hζ) *
     (KPGlobalTorusFunctionData.s F ζ hζ a).val *
@@ -305,9 +290,9 @@ theorem weylConjugation_mem_rationalCenter_iff_rationalPeriodizationPairingData 
     obtain ⟨u, rfl⟩ := (weylTorusConjugation F ζ hζ).surjective t
     exact (map_mul _ _ _).symm.trans ((congrArg (weylTorusConjugation F ζ hζ)
       ((Subgroup.mem_center_iff.mp z.property) u)).trans (map_mul _ _ _))⟩
-private theorem weylCenter_mul (z c : KPGlobalTorusFunctionData.Z F ζ hζ) :
+theorem weylCenter_mul (z c : KPGlobalTorusFunctionData.Z F ζ hζ) :
     weylCenter (z * c) = weylCenter z * weylCenter c := Subtype.ext (map_mul _ _ _)
-private theorem weylCenter_cube (y : CubicCharacters.cubes (KPGlobalTorusFunctionData.Ideles F)) :
+theorem weylCenter_cube (y : CubicCharacters.cubes (KPGlobalTorusFunctionData.Ideles F)) :
     weylCenter (KPGlobalCenterRationalCharacter.cubeLift F ζ hζ y) =
       KPGlobalCenterRationalCharacter.cubeLift F ζ hζ y⁻¹ := by
   apply Subtype.ext
@@ -319,14 +304,14 @@ theorem positiveComplex_sixthPower_eq_normPower_rationalPeriodizationPairingData
       (KPGlobalCenterRationalCharacter.sixthPower (KPGlobalTorusFunctionData.delta F ζ hζ t)) : ℂ) =
       KPGlobalTorusBorelTwistCompatibility.normPower F ζ hζ (1 / 6) t := by
   have hp : 0 < (((KPGlobalTorusFunctionData.delta F ζ hζ t : ℝ≥0) : ℝ)) := by
-    exact NNReal.coe_pos.mpr (pos_iff_ne_zero.mpr (Units.ne_zero _))
+    simp
   change (((((KPGlobalTorusFunctionData.delta F ζ hζ t : ℝ≥0) : ℝ)) ^ (1 / 6 : ℝ) : ℝ) : ℂ) = _
   rw [Real.rpow_def_of_pos hp, Complex.ofReal_exp]
   unfold KPGlobalTorusBorelTwistCompatibility.normPower
   congr 1
   push_cast
   ring
-private theorem normPower_weyl (s : ℂ) (t : E F ζ hζ) :
+theorem normPower_weyl (s : ℂ) (t : E F ζ hζ) :
     KPGlobalTorusBorelTwistCompatibility.normPower F ζ hζ s (weylTorusConjugation F ζ hζ t) =
       KPGlobalTorusBorelTwistCompatibility.normPower F ζ hζ (-s) t := by
   unfold KPGlobalTorusBorelTwistCompatibility.normPower KPGlobalTorusFunctionData.delta
@@ -334,9 +319,7 @@ private theorem normPower_weyl (s : ℂ) (t : E F ζ hζ) :
     (KPGlobalTorusFunctionData.p F ζ hζ (weylTorusConjugation F ζ hζ t)) : ℝ≥0) : ℝ)) : ℂ)) = _
   rw [torusRatio_weylConjugation_inv_rationalPeriodizationPairingData, map_inv]
   simp only [Units.val_inv_eq_inv_val, NNReal.coe_inv, Real.log_inv, Complex.ofReal_neg]
-  simp only [MonoidHom.comp_apply]
-  congr 1
-  ring
+  simp
 private theorem omega_weyl (z : KPGlobalTorusFunctionData.Z F ζ hζ) :
     (KPGlobalCenterRationalCharacter.omegaA F ζ hζ (weylCenter z) : ℂ) =
       (KPGlobalCenterRationalCharacter.omegaA F ζ hζ z : ℂ) *
@@ -518,48 +501,7 @@ set_option backward.isDefEq.respectTransparency false
 
  theorem p_weyl (t : E F ζ hζ) :
     KPGlobalTorusFunctionData.p F ζ hζ (weylTorusConjugation F ζ hζ t) =
-      (KPGlobalTorusFunctionData.p F ζ hζ t)⁻¹ := by
-  obtain ⟨A, hA, h10, h01⟩ := t.property
-  let W := KPAdelicCoverRestrictedProduct.rationalBase F (KPStandardLocalRootLifts.weylSwap F)
-  have hW : KPAdelicCoverRestrictedProduct.pglProjection F ζ hζ
-      (weylTorusConjugation F ζ hζ t).val =
-      QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F) (W * A * W) := by
-    rw [weylTorusConjugation_formula]
-    change KPAdelicCoverRestrictedProduct.pglProjection F ζ hζ
-      ((KPCubicCoverConstruction.adelicW F ζ hζ : G F ζ hζ) * t.val *
-        (KPCubicCoverConstruction.adelicW F ζ hζ : G F ζ hζ)⁻¹) = _
-    rw [wInv]
-    simp only [map_mul, projW]
-    rw [hA]
-  have h10' : (W * A * W) 1 0 = 0 := by
-    simp [W, KPAdelicCoverRestrictedProduct.rationalBase, KPStandardLocalRootLifts.weylSwap,
-      Matrix.mul_apply, Fin.sum_univ_two, h10, h01]
-  have h01' : (W * A * W) 0 1 = 0 := by
-    simp [W, KPAdelicCoverRestrictedProduct.rationalBase, KPStandardLocalRootLifts.weylSwap,
-      Matrix.mul_apply, Fin.sum_univ_two, h10, h01]
-  have h1 := KPGlobalTorusFunctionData.ratio_formula F
-    ⟨_, (weylTorusConjugation F ζ hζ t).property⟩ (W * A * W) hW.symm h10' h01'
-  have h0 := KPGlobalTorusFunctionData.ratio_formula F ⟨_, t.property⟩ A hA h10 h01
-  have he0 : (KPGlobalTorusFunctionData.diagonal_entries_units F (W * A * W) h10' h01').1.unit =
-      (KPGlobalTorusFunctionData.diagonal_entries_units F A h10 h01).2.unit := by
-    apply Units.ext
-    simp only [IsUnit.unit_spec]
-    simp [W, KPAdelicCoverRestrictedProduct.rationalBase, KPStandardLocalRootLifts.weylSwap,
-      Matrix.mul_apply, Fin.sum_univ_two]
-  have he1 : (KPGlobalTorusFunctionData.diagonal_entries_units F (W * A * W) h10' h01').2.unit =
-      (KPGlobalTorusFunctionData.diagonal_entries_units F A h10 h01).1.unit := by
-    apply Units.ext
-    simp only [IsUnit.unit_spec]
-    simp [W, KPAdelicCoverRestrictedProduct.rationalBase, KPStandardLocalRootLifts.weylSwap,
-      Matrix.mul_apply, Fin.sum_univ_two]
-  change (((KPGlobalTorusFunctionData.p F ζ hζ (weylTorusConjugation F ζ hζ t)) : KPGlobalTorusFunctionData.Adeles F)) = (KPGlobalTorusFunctionData.diagonal_entries_units F (W * A * W) h10' h01').1.unit.val * (KPGlobalTorusFunctionData.diagonal_entries_units F (W * A * W) h10' h01').2.unit⁻¹.val at h1
-  apply Units.ext
-  rw [h1, he0, he1]
-  have hu : KPGlobalTorusFunctionData.p F ζ hζ t =
-      (KPGlobalTorusFunctionData.diagonal_entries_units F A h10 h01).1.unit *
-      (KPGlobalTorusFunctionData.diagonal_entries_units F A h10 h01).2.unit⁻¹ := Units.ext h0
-  rw [hu]
-  simp [mul_comm]
+      (KPGlobalTorusFunctionData.p F ζ hζ t)⁻¹ := by apply DedekindZetaZeroFree.KPMsRationalCompactCrossPairing.ActualWeylFibreProof.torusRatio_weylConjugation_inv_rationalPeriodizationPairingData <;> assumption
 
 end ActualWeylFibreProof
 
@@ -597,7 +539,7 @@ def fixedPlus (D : Iwasawa F ζ hζ) (U : Level F ζ hζ) :
     f.val.val (g * u.val) = f.val.val g}
   zero_mem' := by simp
   add_mem' := by intro f g hf hg x u; simp [hf x u, hg x u]
-  smul_mem' := by intro c f hf x u; simp [hf x u]
+  smul_mem' := by simp_all
 
 def fixedMinus (D : Iwasawa F ζ hζ) (U : Level F ζ hζ) :
     Submodule ℂ (Vminus F ζ hζ D) where
@@ -605,7 +547,7 @@ def fixedMinus (D : Iwasawa F ζ hζ) (U : Level F ζ hζ) :
     v.val.val (g * u.val) = v.val.val g}
   zero_mem' := by simp
   add_mem' := by intro f g hf hg x u; simp [hf x u, hg x u]
-  smul_mem' := by intro c f hf x u; simp [hf x u]
+  smul_mem' := by simp_all
 
 def fullToLevel (D : Iwasawa F ζ hζ) (U : Level F ζ hζ) :
     FullOmega F ζ hζ D → Omega F ζ hζ D U := by
@@ -638,18 +580,6 @@ def sourceStage (D : Iwasawa F ζ hζ) (U : Level F ζ hζ)
       (sourcePolarization F ζ hζ 0)).comp
         (KPGlobalTorusFunctionData.finitePart F ζ hζ).subtype)
     (scalarSmooth F ζ hζ (sourcePolarization F ζ hζ 0)) U T
-
-def scalarLevel (P : KPGlobalTorusFunctionData.Polarization F ζ hζ)
-    (U : Level F ζ hζ) :
-    KPGlobalTorusBorelTwistCompatibility.InducedLevel F ζ hζ P U →ₗ[ℂ]
-      KPGlobalTorusFunctionData.BorelFunctions F ζ hζ P :=
-  (KPGlobalTorusBorelTwistCompatibility.scalarSection F ζ hζ P).comp
-    (KPGlobalTorusBorelTwistCompatibility.inducedStageInclusion F ζ hζ P U)
-
-def scalarLevelTopology (P : KPGlobalTorusFunctionData.Polarization F ζ hζ)
-    (U : Level F ζ hζ) : TopologicalSpace (KPGlobalTorusFunctionData.BorelFunctions F ζ hζ P) :=
-  TopologicalSpace.coinduced (scalarLevel F ζ hζ P U)
-    (KPGlobalTorusBorelTwistCompatibility.inducedLevelTopology F ζ hζ P U)
 
 structure RawCompactComparison (C : ModelData F ζ hζ) (D : Iwasawa F ζ hζ)
     (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
@@ -714,7 +644,7 @@ structure RawCompactComparison (C : ModelData F ζ hζ) (D : Iwasawa F ζ hζ)
 section Detection
 variable {F ζ hζ}
 
-private theorem compact_radialSection_eq_diagonalLift (B : KPMsFixedHaarDisintegration.RadialData F ζ hζ)
+theorem compact_radialSection_eq_diagonalLift (B : KPMsFixedHaarDisintegration.RadialData F ζ hζ)
     (r : KPMsFixedHaarDisintegration.Radius) :
     KPMsFixedHaarDisintegration.radialSection F ζ hζ B.slot r =
       KPGlobalCenterRationalCharacter.diagonalLift F ζ hζ (B.ell r) := by
@@ -731,7 +661,7 @@ private theorem compact_radialSection_eq_diagonalLift (B : KPMsFixedHaarDisinteg
       unfold KPMsFixedHaarDisintegration.positiveSlots
       split_ifs
       · exact_mod_cast (Real.sqrt_pos.2 r.property).ne'
-      · exact one_ne_zero
+      simp
     simp only [dif_neg hz]
     congr 1
     apply Units.ext
@@ -747,7 +677,7 @@ private theorem compact_radialSection_eq_diagonalLift (B : KPMsFixedHaarDisinteg
     rw [he]
     simp
 
-private theorem compact_radialSection_mem_center (B : KPMsFixedHaarDisintegration.RadialData F ζ hζ)
+theorem compact_radialSection_mem_center (B : KPMsFixedHaarDisintegration.RadialData F ζ hζ)
     (r : KPMsFixedHaarDisintegration.Radius) :
     ∃ t : KPGlobalTorusFunctionData.Z F ζ hζ,
       t.val.val = KPMsFixedHaarDisintegration.radialSection F ζ hζ B.slot r := by
@@ -767,7 +697,7 @@ private theorem compact_radialSection_mem_center (B : KPMsFixedHaarDisintegratio
         (KPMsFixedHaarDisintegration.positiveSlots F B.slot r))) : ℝ≥0) : ℝ)) = r.val
   rw [B.lift_ratio, B.ell_norm]
 
-private theorem compact_radial_lambdaR (B : KPMsFixedHaarDisintegration.RadialData F ζ hζ)
+theorem compact_radial_lambdaR (B : KPMsFixedHaarDisintegration.RadialData F ζ hζ)
     (r : KPMsFixedHaarDisintegration.Radius)
     (t : KPGlobalCenterRationalCharacter.R F ζ hζ)
     (ht : t.val.val = KPMsFixedHaarDisintegration.radialSection F ζ hζ B.slot r) :
@@ -790,7 +720,7 @@ private theorem compact_radial_lambdaR (B : KPMsFixedHaarDisintegration.RadialDa
   push_cast
   ring
 
-private theorem compact_source_radial_covariance (B : KPMsFixedHaarDisintegration.RadialData F ζ hζ)
+theorem compact_source_radial_covariance (B : KPMsFixedHaarDisintegration.RadialData F ζ hζ)
     (s : ℂ) (r : KPMsFixedHaarDisintegration.Radius)
     (f : Source F ζ hζ s) (g : G F ζ hζ) :
     f.val (KPMsFixedHaarDisintegration.radialSection F ζ hζ B.slot r * g) =
@@ -828,7 +758,7 @@ private theorem compact_source_radial_covariance (B : KPMsFixedHaarDisintegratio
     KPGlobalExceptionalParameter.source_multiplier r.val r.property s] at he
   exact he
 
-private theorem compact_target_radial_covariance (B : KPMsFixedHaarDisintegration.RadialData F ζ hζ)
+theorem compact_target_radial_covariance (B : KPMsFixedHaarDisintegration.RadialData F ζ hζ)
     (s : ℂ) (r : KPMsFixedHaarDisintegration.Radius)
     (f : Target F ζ hζ s) (g : G F ζ hζ) :
     f.val (KPMsFixedHaarDisintegration.radialSection F ζ hζ B.slot r * g) =
@@ -903,21 +833,6 @@ variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
 variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 variable (A : RawCompactComparison F ζ hζ C D R P H)
 
-private theorem scalar_pair_integrable {X : Type*} [MeasurableSpace X]
-    {μ : Measure X} {f g : X → ℂ} (hf : MemLp f 2 μ) (hg : MemLp g 2 μ) :
-    Integrable (fun x => star (f x) * g x) μ := by
-  apply (L2.integrable_inner (𝕜 := ℂ) (hf.toLp f) (hg.toLp g)).congr
-  filter_upwards [MemLp.coeFn_toLp hf, MemLp.coeFn_toLp hg] with x hx hy
-  simp [hx, hy, RCLike.inner_apply, mul_comm]
-
-def nu (U : Level F ζ hζ) : Measure (Omega F ζ hζ D U) :=
-  (A.beta U Set.univ)⁻¹ • A.beta U
-
-theorem nu_probability (U : Level F ζ hζ) : IsProbabilityMeasure (nu A U) := by
-  letI := A.beta_finite U
-  letI : NeZero (A.beta U) := ⟨fun h => by simpa [h] using A.beta_positive U⟩
-  exact MeasureTheory.isProbabilityMeasureSMul
-
  theorem compact_core_scalar_continuous
     (Q : KPGlobalTorusFunctionData.Polarization F ζ hζ)
     (f : KPGlobalTorusFunctionData.BorelFunctions F ζ hζ Q)
@@ -945,40 +860,6 @@ theorem nu_probability (U : Level F ζ hζ) : IsProbabilityMeasure (nu A U) := b
   intro T
   exact le_trans inf_le_left inf_le_left
 
-private theorem actual_source_angular_continuous (U : Level F ζ hζ)
-    (f : fixedPlus F ζ hζ D U) : Continuous (A.sourceAngular U f) := by
-  apply isQuotientMap_quotient_mk'.continuous_iff.mpr
-  simpa only [Function.comp_def, Quotient.mk', A.source_formula] using
-    (compact_core_scalar_continuous _ _ (compact_source_core_smooth f.val.property)).comp
-      continuous_subtype_val
-
-private theorem actual_target_angular_continuous (U : Level F ζ hζ)
-    (v : fixedMinus F ζ hζ D U) : Continuous (A.targetAngular U v) := by
-  apply isQuotientMap_quotient_mk'.continuous_iff.mpr
-  simpa only [Function.comp_def, Quotient.mk', A.target_formula] using
-    (compact_core_scalar_continuous _ _ (compact_target_core_smooth v.val.property)).comp
-      continuous_subtype_val
-
-theorem angular_memLp (U : Level F ζ hζ) :
-    (∀ f : fixedPlus F ζ hζ D U, MemLp (A.sourceAngular U f) 2 (nu A U)) ∧
-    (∀ v : fixedMinus F ζ hζ D U, MemLp (A.targetAngular U v) 2 (nu A U)) := by
-  letI := A.compact U
-  letI : BorelSpace (Omega F ζ hζ D U) := ⟨rfl⟩
-  letI := nu_probability A U
-  exact ⟨fun f => (actual_source_angular_continuous A U f).memLp_of_hasCompactSupport
-      (HasCompactSupport.of_compactSpace _),
-    fun v => (actual_target_angular_continuous A U v).memLp_of_hasCompactSupport
-      (HasCompactSupport.of_compactSpace _)⟩
-
-theorem pairing_integrable (U : Level F ζ hζ)
-    (f g : fixedPlus F ζ hζ D U) (v w : fixedMinus F ζ hζ D U) :
-    Integrable (fun ω => star (A.sourceAngular U f ω) * A.targetAngular U v ω) (nu A U) ∧
-    Integrable (fun ω => star (A.sourceAngular U f ω) * A.sourceAngular U g ω) (nu A U) ∧
-    Integrable (fun ω => star (A.targetAngular U v ω) * A.targetAngular U w ω) (nu A U) := by
-  obtain ⟨hp, hm⟩ := angular_memLp A U
-  exact ⟨scalar_pair_integrable (hp f) (hm v), scalar_pair_integrable (hp f) (hp g),
-    scalar_pair_integrable (hm v) (hm w)⟩
-
 section ArbitraryUProof
 set_option maxHeartbeats 1800000
 set_option maxRecDepth 3000
@@ -998,16 +879,6 @@ variable (A : RawCompactComparison F ζ hζ C D R P H)
 end ArbitraryCorePairing
 
 end ArbitraryUProof
-
-local instance plusTopology (U : Level F ζ hζ) :
-    TopologicalSpace (fixedPlus F ζ hζ D U) :=
-  TopologicalSpace.induced (fun f : fixedPlus F ζ hζ D U => f.val.val)
-    (scalarLevelTopology F ζ hζ (sourcePolarization F ζ hζ 0) U)
-
-local instance minusTopology (U : Level F ζ hζ) :
-    TopologicalSpace (fixedMinus F ζ hζ D U) :=
-  TopologicalSpace.induced (fun v : fixedMinus F ζ hζ D U => v.val.val)
-    (scalarLevelTopology F ζ hζ (targetPolarization F ζ hζ 0) U)
 
 theorem radial_angular_decomposition (U : Level F ζ hζ)
     (s : ℂ) (r : KPMsFixedHaarDisintegration.Radius)
@@ -1080,9 +951,3 @@ theorem full_radial_angular_decomposition
     rfl
   · rw [compact_target_radial_covariance, hv]
     rfl
-
-end Pairing
-end DedekindZetaZeroFree.KPMsRationalCompactCrossPairing
-
-end
-end

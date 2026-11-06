@@ -128,14 +128,14 @@ private theorem borel_closed : IsClosed (borel F ζ hζ : Set (G F ζ hζ)) := b
  def matrixX (A : AdelicMatrixGroup F) (h : A 1 0 = 0) : Adeles F :=
   ↑((KPGlobalTorusMatrixCertificates.diagonal_units A h).1.unit⁻¹) * A 0 1
 
-private theorem matrixX_spec (A : AdelicMatrixGroup F) (h : A 1 0 = 0) :
+theorem matrixX_spec (A : AdelicMatrixGroup F) (h : A 1 0 = 0) :
     A 0 0 * matrixX F A h = A 0 1 := by
   let u := (KPGlobalTorusMatrixCertificates.diagonal_units A h).1.unit
   have hu : (u : Adeles F) = A 0 0 := (KPGlobalTorusMatrixCertificates.diagonal_units A h).1.unit_spec
   change A 0 0 * (↑u⁻¹ * A 0 1) = _
   rw [← hu, ← mul_assoc, Units.mul_inv, one_mul]
 
-private theorem matrixX_formula (A : AdelicMatrixGroup F) (h : A 1 0 = 0) :
+theorem matrixX_formula (A : AdelicMatrixGroup F) (h : A 1 0 = 0) :
     matrixX F A h = A 1 1 * ((Matrix.GeneralLinearGroup.det A)⁻¹ : (Adeles F)ˣ).val * A 0 1 := by
   let u := (KPGlobalTorusMatrixCertificates.diagonal_units A h).1.unit
   let v := (KPGlobalTorusMatrixCertificates.diagonal_units A h).2.unit
@@ -148,7 +148,7 @@ private theorem matrixX_formula (A : AdelicMatrixGroup F) (h : A 1 0 = 0) :
   change _ = v.val * ((u * v)⁻¹).val * A 0 1
   simp [mul_inv_rev, ← mul_assoc]
 
-private theorem matrixX_continuous :
+theorem matrixX_continuous :
     Continuous (fun A : {A : AdelicMatrixGroup F | A 1 0 = 0} => matrixX F A.val A.property) := by
   simp_rw [matrixX_formula]
   have hc (i j : Fin 2) : Continuous (fun A : {A : AdelicMatrixGroup F | A 1 0 = 0} => A.val i j) :=
@@ -156,7 +156,7 @@ private theorem matrixX_continuous :
   exact ((hc 1 1).mul (Units.continuous_coe_inv.comp
     (Matrix.GeneralLinearGroup.continuous_det.comp continuous_subtype_val))).mul (hc 0 1)
 
-private theorem matrixX_same (A B : AdelicMatrixGroup F) (hA : A 1 0 = 0) (hB : B 1 0 = 0)
+theorem matrixX_same (A B : AdelicMatrixGroup F) (hA : A 1 0 = 0) (hB : B 1 0 = 0)
     (he : QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F) A =
       QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F) B) :
     matrixX F A hA = matrixX F B hB := by
@@ -176,7 +176,7 @@ private theorem matrixX_same (A B : AdelicMatrixGroup F) (hA : A 1 0 = 0) (hB : 
  def ordinaryX (b : ordinaryBorel F) : Adeles F :=
   matrixX F (Classical.choose b.property) (Classical.choose_spec b.property).2
 
-private theorem ordinaryX_formula (b : ordinaryBorel F) (A : AdelicMatrixGroup F)
+theorem ordinaryX_formula (b : ordinaryBorel F) (A : AdelicMatrixGroup F)
     (he : QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F) A = b.val)
     (h : A 1 0 = 0) : ordinaryX F b = matrixX F A h :=
   matrixX_same F _ A _ h ((Classical.choose_spec b.property).1.trans he.symm)
@@ -205,7 +205,7 @@ private theorem coveredX_continuous : Continuous (coveredX F ζ hζ) :=
     (((KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover F ζ hζ).2.2.2.continuous.comp
       continuous_subtype_val).subtype_mk _)
 
-private theorem retraction_formula (b : borel F ζ hζ) :
+theorem retraction_formula (b : borel F ζ hζ) :
     (ActualBorelRetraction.retraction F ζ hζ b).val = b.val * N F ζ hζ (-coveredX F ζ hζ b) := by
   obtain ⟨A, hA, h10⟩ := b.property
   have hx : coveredX F ζ hζ b = matrixX F A h10 :=

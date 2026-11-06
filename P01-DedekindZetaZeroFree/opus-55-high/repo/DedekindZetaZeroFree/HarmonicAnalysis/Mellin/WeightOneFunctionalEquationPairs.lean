@@ -32,8 +32,7 @@ theorem existsWeakFEPair_weight_one
       hk := by norm_num
       hε := hw
       h_feq := by
-        intro t ht
-        simpa only [Real.rpow_one, smul_eq_mul] using hfe t ht
+        simp_all
       hf_top := DedekindZetaZeroFree.thetaStretchedExponentialPower_bound
         p B hp hB (fun t => f t - a) C hC (fun t ht => (hdecay t ht).1)
       hg_top := DedekindZetaZeroFree.thetaStretchedExponentialPower_bound
@@ -56,5 +55,3 @@ theorem existsStrongFEPair_weight_one
     existsWeakFEPair_weight_one f g 0 0 w C B p hf hg hw hC hB hp hfe
       (by simpa only [sub_zero] using hdecay)
   exact ⟨P, hfP, hgP, hkP, hwP, haP, hbP, ⟨haP, hbP⟩⟩
-
-end DedekindZetaZeroFree.Hecke

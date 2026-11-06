@@ -23,7 +23,7 @@ theorem idealAwayPrimePart_coprime (F : Type) [Field F] [NumberField F]
   exact v.isMaximal.coprime_of_ne
     ((Ideal.isPrime_of_prime hpprime).isMaximal hpprime.ne_zero) hpv.symm
 
-private theorem exists_sub_mem_pair {R : Type*} [CommRing R] (I J : Ideal R) (h : I ⊔ J = ⊤) (b : R) :
+theorem exists_sub_mem_pair {R : Type*} [CommRing R] (I J : Ideal R) (h : I ⊔ J = ⊤) (b : R) :
     ∃ a : R, a - b ∈ I ∧ a - 1 ∈ J := by
   obtain ⟨i, hi, j, hj, hij⟩ := (Ideal.isCoprime_iff_sup_eq.mpr h).exists
   refine ⟨b * j + i, ?_, ?_⟩
@@ -45,7 +45,7 @@ theorem exists_integral_away_congruent
 
 end LocalCertification
 
-private theorem idelic_hom_ext_at_modulus
+theorem idelic_hom_ext_at_modulus
     {F : Type} [Field F] [NumberField F] (m : RayClass.Modulus F)
     (f g : IdeleClassGroup F →* ℂˣ)
     (hf : m.congruenceSubgroup ≤ f.ker) (hg : m.congruenceSubgroup ≤ g.ker)
@@ -145,5 +145,3 @@ theorem canonical_idelic_primitive_twist
     rw [htw v.asIdeal v.ne_bot hcommon, div_eq_mul_inv,
       Complex.inv_eq_conj (RayClassBridge.rayClassCharacter_norm_of_primeTo F hc χ.conductor χ.conductor_ne_zero χ.character v.asIdeal v.ne_bot hcx)]
   exact DFunLike.congr_fun hall c
-
-end DedekindZetaZeroFree.Detector.Conductor

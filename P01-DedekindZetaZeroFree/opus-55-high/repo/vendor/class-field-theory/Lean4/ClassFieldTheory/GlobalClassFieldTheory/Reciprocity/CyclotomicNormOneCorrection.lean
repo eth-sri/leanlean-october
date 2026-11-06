@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Norm-one correction for the normalized cyclotomic idele value
 
@@ -31,7 +26,6 @@ value is trivial, so the normalized value is unchanged.
 open scoped NNReal NumberField
 open NumberField
 
-noncomputable section
 
 namespace GlobalClassFieldTheory
 namespace Reciprocity
@@ -55,7 +49,7 @@ theorem
     pos_iff_ne_zero.mpr r.ne_zero
   let s0 : ℝ≥0 := (r : ℝ≥0) ^ ((d : ℝ)⁻¹)
   have hs0pos : 0 < s0 := by
-    exact NNReal.rpow_pos hrpos
+    positivity
   let s : ℝ≥0ˣ := Units.mk0 s0 hs0pos.ne'
   have hs_pow : s ^ d = r := by
     apply Units.ext
@@ -84,9 +78,7 @@ theorem
       rationalCyclotomicZHatIdeleValue
           (rationalPositiveArchimedeanIdele s) =
         1 := by
-    rw [rationalCyclotomicZHatIdeleValue_apply,
-      rationalCyclotomicZHatGlobalArtin_rationalPositiveArchimedeanIdele,
-      map_one]
+    simp
   have hc_value :
       normalizedCyclotomicZHatIdeleValue K
           (Additive.ofMul c) =
@@ -106,14 +98,4 @@ theorem
   · change IdeleGroup.absoluteNorm (a * c) = 1
     rw [map_mul, hc_absoluteNorm]
     simp [r]
-  · change
-      normalizedCyclotomicZHatIdeleValue K
-          (Additive.ofMul a + Additive.ofMul c) =
-        normalizedCyclotomicZHatIdeleValue K
-          (Additive.ofMul a)
-    rw [map_add, hc_value, add_zero]
-
-end Reciprocity
-end GlobalClassFieldTheory
-
-end
+  simp_all

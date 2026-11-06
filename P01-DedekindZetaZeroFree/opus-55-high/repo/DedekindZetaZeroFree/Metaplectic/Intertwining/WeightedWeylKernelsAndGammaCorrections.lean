@@ -13,7 +13,6 @@ open KPLocalPrincipalSeries KPRankOneCenterInducedDiagonalComparison
 open KPRankOneShellContinuation KPActualScalarBinding
 
 noncomputable section
-set_option autoImplicit false
 set_option maxHeartbeats 1200000
 set_option backward.isDefEq.respectTransparency false
 
@@ -138,6 +137,3 @@ theorem actual_weighted_numerator_chamber
               (centerCompactTrivialization F ζ hζ q S.heisenberg S.borel I
                 (sourceSign ε) (sourceParameter ε s) φ.val) k (S.borel.weyl h))) := by ring
     _ = _ := by rw [hi]
-
-end
-end DedekindZetaZeroFree.KPActualResidueSources

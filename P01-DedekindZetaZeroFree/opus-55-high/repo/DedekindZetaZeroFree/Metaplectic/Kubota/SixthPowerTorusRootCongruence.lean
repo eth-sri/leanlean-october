@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Metaplectic.Kubota.AdelicRationalSplitting
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.ThetaForwardQuotientMeasurability.MatrixConstruction
 open NumberField IsDedekindDomain
 
@@ -71,7 +70,3 @@ theorem root_torus_sixth_mem_kStar
     rfl
   rw [hmain, hN, hA, ← map_mul]
   exact ⟨KPStandardLocalRootLifts.integralN F p (-s) * KPStandardLocalRootLifts.integralA F p (u ^ 6), rfl⟩
-
-end DedekindZetaZeroFree.ThetaForwardQuotientMeasurability.MatrixConstruction
-
-end

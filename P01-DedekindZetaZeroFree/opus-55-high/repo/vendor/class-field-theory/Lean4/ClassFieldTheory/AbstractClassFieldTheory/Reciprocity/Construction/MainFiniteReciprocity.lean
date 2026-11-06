@@ -18,16 +18,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-
-
-
-set_option autoImplicit false
-
 universe u
 
 namespace ClassFormation
@@ -38,7 +28,6 @@ open CyclicCohomology
 
 open CategoryTheory
 open scoped BigOperators
-
 
 /-!
 # The abstract reciprocity construction, the finite reciprocity equivalence
@@ -93,8 +82,7 @@ theorem finiteReciprocityValue_mul
         D.finiteReciprocityValue A v K L hLK β := by
   unfold finiteReciprocityValue
   rw [D.reciprocityMap_mul A v hAxiom K L hLK α β]
-  exact map_add
-    (D.maximalUnramifiedToFiniteNormQuotient A K.field L hLK) _ _
+  rfl
 
 /-- Formula for the finite Frobenius value using the chosen prime element
 of its fixed field. -/
@@ -120,11 +108,7 @@ theorem finiteReciprocityValue_eq_primeNormClass
     D.finiteReciprocityValue A v K L hLK σ =
       finiteNormClass A K.field L hLK
         (relativeNorm A K.field S hSK (v.chosenPrimeElement Sigma)) := by
-  dsimp only
-  rw [finiteReciprocityValue,
-    D.reciprocityMap_eq_chosenPrime A v K L hLK σ]
-  exact D.maximalUnramifiedToFiniteNormQuotient_maximalUnramifiedNormClass
-    A K.field L hLK _
+  rfl
 
 /-- The same formula for any prime element of the fixed field.  Prime-choice
 independence is exactly the reciprocity construction's consequence of the unit-cohomology axiom. -/
@@ -160,8 +144,7 @@ theorem finiteReciprocityValue_eq_primeNormClass_of_isPrime
   rw [finiteReciprocityValue,
     ← D.reciprocityValueOfPrime_eq_reciprocityMap
       A v hAxiom K L hLK σ π hπ]
-  exact D.maximalUnramifiedToFiniteNormQuotient_maximalUnramifiedNormClass
-    A K.field L hLK _
+  rfl
 
 end DegreeData
 
@@ -221,7 +204,6 @@ theorem mul_frobeniusLiftDifference (D : DegreeData G)
       D.frobeniusExponent K L hLK τ) :
     σ * D.frobeniusLiftDifference K L hLK σ τ hdegree = τ := by
   apply Subtype.ext
-  rw [frobeniusMul_coe, frobeniusLiftDifference_coe]
   simp
 
 /-- If the two lifts have the same restriction, their quotient restricts
@@ -518,11 +500,7 @@ theorem finiteReciprocityCandidate_eq_primeNormClass
     D.finiteReciprocityCandidate A v K L hLK q =
       finiteNormClass A K.field L hLK
         (relativeNorm A K.field S hSK (v.chosenPrimeElement Sigma)) := by
-  dsimp only
-  exact D.finiteReciprocityValue_eq_primeNormClass
-    A v K L hLK
-      (D.chosenFiniteReciprocityFrobeniusLift
-        (K.toFiniteResidueAbstractField D) L hLK q.toMul)
+  rfl
 
 /-- The finite reciprocity candidate sends the zero norm class to the identity. -/
 @[simp]
@@ -536,51 +514,12 @@ theorem finiteReciprocityCandidate_zero (D : DegreeData G) (A : Rep ℤ G)
       (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)] :
     D.finiteReciprocityCandidate A v K L hLK 0 = 0 := by
   apply D.finiteReciprocityValue_eq_zero_of_restriction_eq_one
-  exact D.frobeniusRestriction_chosenFiniteReciprocityFrobeniusLift
-    (K.toFiniteResidueAbstractField D) L hLK
-      (1 : K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)
-
-/-- For two finite automorphisms, the chosen lift of their product and the
-product of their chosen lifts have the same restriction.  Applying the
-degree comparison gives exactly the remaining lift-independence obligation
-in the additivity proof of the finite reciprocity equivalence. -/
-theorem finiteReciprocityHom_product_lift_comparison
-    (D : DegreeData G) (A : Rep ℤ G) (v : ValuationData D A)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    (K : FiniteAbstractField G) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    [hLfinite : Finite
-      (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)]
-    (q r : Additive
-      (K.field.toSubgroup ⧸ extensionSubgroup K.field L hLK)) :
-    let KR := K.toFiniteResidueAbstractField D
-    letI hLnormalKR : (extensionSubgroup KR.field L hLK).Normal := by
-      simpa only [KR, FiniteAbstractField.toFiniteResidueAbstractField] using hLnormal
-    let σ₁ := D.chosenFiniteReciprocityFrobeniusLift KR L hLK q.toMul
-    let σ₂ := D.chosenFiniteReciprocityFrobeniusLift KR L hLK r.toMul
-    let σ₃ := D.chosenFiniteReciprocityFrobeniusLift KR L hLK (q + r).toMul
-    σ₃ = σ₁ * σ₂ ∨
-      (∃ ι : D.FrobeniusElements KR L hLK,
-        σ₁ * σ₂ = σ₃ * ι ∧
-        D.frobeniusRestriction KR L hLK ι = 1 ∧
-        D.finiteReciprocityValue A v K L hLK ι = 0) ∨
-      (∃ ι : D.FrobeniusElements KR L hLK,
-        σ₃ = (σ₁ * σ₂) * ι ∧
-        D.frobeniusRestriction KR L hLK ι = 1 ∧
-        D.finiteReciprocityValue A v K L hLK ι = 0) := by
-  dsimp only
-  apply D.finiteReciprocityHom_lift_comparison A v K L hLK
-  rw [D.frobeniusRestriction_chosenFiniteReciprocityFrobeniusLift,
-    D.frobeniusRestriction_mul,
-    D.frobeniusRestriction_chosenFiniteReciprocityFrobeniusLift,
-    D.frobeniusRestriction_chosenFiniteReciprocityFrobeniusLift]
-  rfl
+  simp
 
 /-- Once reciprocity multiplicativity supplies additivity on the Frobenius semigroup,
 the degree comparison proves that the finite reciprocity value is
 independent of the chosen lift.  This is the full three-case argument. -/
-private theorem finiteReciprocityValue_eq_of_same_restriction_of_mul
+theorem finiteReciprocityValue_eq_of_same_restriction_of_mul
     (D : DegreeData G) (A : Rep ℤ G) (v : ValuationData D A)
     [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
     (K : FiniteAbstractField G) (L : ClosedSubgroup G)
@@ -604,9 +543,9 @@ private theorem finiteReciprocityValue_eq_of_same_restriction_of_mul
       σ τ hRestriction with h | h | h
   · rw [h]
   · rcases h with ⟨ι, hτ, _, hι⟩
-    rw [hτ, hmul, hι, add_zero]
+    simp_all
   · rcases h with ⟨ι, hσ, _, hι⟩
-    rw [hσ, hmul, hι, add_zero]
+    simp_all
 
 /-- The finite degree-quotient decomposition candidate is additive as soon as reciprocity multiplicativity
 is available.  Lift-independence is invoked for the chosen lift of a
@@ -642,10 +581,7 @@ theorem finiteReciprocityCandidate_add_of_mul
       D.frobeniusRestriction KR L hLK σ₃ =
         D.frobeniusRestriction KR L hLK (σ₁ * σ₂) := by
     dsimp [σ₁, σ₂, σ₃]
-    rw [D.frobeniusRestriction_chosenFiniteReciprocityFrobeniusLift,
-      D.frobeniusRestriction_mul,
-      D.frobeniusRestriction_chosenFiniteReciprocityFrobeniusLift,
-      D.frobeniusRestriction_chosenFiniteReciprocityFrobeniusLift]
+    simp
   calc
     D.finiteReciprocityValue A v K L hLK σ₃ =
         D.finiteReciprocityValue A v K L hLK (σ₁ * σ₂) :=
@@ -678,7 +614,7 @@ final theorem discharges this input directly from reciprocity multiplicativity. 
 
 /-- Evaluation of the conditional finite reciprocity homomorphism using any
 Frobenius lift of the specified finite automorphism. -/
-private theorem finiteReciprocityHom_of_mul_apply_of_frobeniusLift
+theorem finiteReciprocityHom_of_mul_apply_of_frobeniusLift
     (D : DegreeData G) (A : Rep ℤ G) (v : ValuationData D A)
     [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
     (K : FiniteAbstractField G) (L : ClosedSubgroup G)
@@ -708,7 +644,7 @@ private theorem finiteReciprocityHom_of_mul_apply_of_frobeniusLift
 
 /-- Prime-norm formula for the conditional finite reciprocity equivalence map, using
 an arbitrary Frobenius lift and an arbitrary prime of its fixed field. -/
-private theorem finiteReciprocityHom_of_mul_apply_eq_primeNormClass
+theorem finiteReciprocityHom_of_mul_apply_eq_primeNormClass
     (D : DegreeData G) (A : Rep ℤ G) (v : ValuationData D A)
     [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
     [TotallyDisconnectedSpace G]
@@ -802,8 +738,8 @@ theorem finiteReciprocityHom_apply_eq_primeNormClass
       D.frobeniusFixedField_finite KR L hLK σ
     D.finiteReciprocityHom A v hAxiom K L hLK q =
       finiteNormClass A K.field L hLK
-        (relativeNorm A K.field S hSK π) := by
-  exact D.finiteReciprocityHom_of_mul_apply_eq_primeNormClass
+        (relativeNorm A K.field S hSK π) := 
+  D.finiteReciprocityHom_of_mul_apply_eq_primeNormClass
     A v hAxiom K L hLK
       (D.finiteReciprocityValue_mul A v hAxiom K L hLK)
       q σ hσ π hπ
@@ -1069,8 +1005,8 @@ theorem unramifiedReciprocity_bijective_of_generator
       Nat.card_congr Additive.toMul
     _ = (extensionSubgroup K.field L hLK).index :=
       (Subgroup.index_eq_card _).symm
-    _ = (E.degree : ℕ) := by
-      exact E.toFiniteAbstractExtension.extensionSubgroup_index_eq_degree
+    _ = (E.degree : ℕ) := 
+      E.toFiniteAbstractExtension.extensionSubgroup_index_eq_degree
     _ = Nat.card (ZMod (E.degree : ℕ)) :=
       (Nat.card_zmod _).symm
     _ = Nat.card (FiniteNormQuotient A K.field L hLK) :=
@@ -1079,7 +1015,7 @@ theorem unramifiedReciprocity_bijective_of_generator
 /-- Additive-equivalence form of the generator criterion for the unramified norm-quotient equivalence.  This is useful independently of the particular construction of the
 reciprocity homomorphism: a homomorphism with the required Frobenius value
 is canonically promoted to an equivalence. -/
-noncomputable def unramifiedReciprocity_equiv_of_generator
+def unramifiedReciprocity_equiv_of_generator
     (v : ValuationData D A) (hAxiom : SatisfiesUnramifiedUnitCohomology D v)
     [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
     (K : FiniteAbstractField G) (L : ClosedSubgroup G)
@@ -1168,7 +1104,7 @@ theorem unramifiedReciprocity_frobenius_image
 
 /-- **the unramified norm-quotient equivalence.** For a finite unramified Galois extension, the
 reciprocity homomorphism of the finite reciprocity equivalence is an additive equivalence. -/
-noncomputable def unramifiedReciprocityEquiv
+def unramifiedReciprocityEquiv
     (v : ValuationData D A) (hAxiom : SatisfiesUnramifiedUnitCohomology D v)
     [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
     [TotallyDisconnectedSpace G]
@@ -1202,10 +1138,3 @@ theorem unramifiedReciprocityEquiv_apply
     v.unramifiedReciprocityEquiv hAxiom K L hLK hUnramified q =
       D.finiteReciprocityHom A v hAxiom K L hLK q :=
   rfl
-
-end ValuationData
-end unramifiedReciprocity
-end
-end
-
-end ClassFormation

@@ -13,7 +13,6 @@ open NumberField IsDedekindDomain
 
 namespace DedekindZetaZeroFree.RepresentationTheory.KPPrincipalCubic
 noncomputable section
-set_option autoImplicit false
 variable (F : Type) [Field F] [NumberField F]
 
 def rawPrincipalClass : Fˣ →* KPGlobalCubicIdelePairing.D F :=
@@ -54,7 +53,6 @@ namespace DedekindZetaZeroFree.RepresentationTheory.KPPrincipalCubic
 noncomputable section
 open scoped NumberField
 open NumberField
-set_option autoImplicit false
 
 theorem principal_pairing_trivial (F : Type) [Field F] [NumberField F]
     (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (a b : Fˣ) :
@@ -79,19 +77,13 @@ open scoped NumberField Classical BigOperators
 open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.RepresentationTheory.KPPrincipalCubic
 noncomputable section
-set_option autoImplicit false
 set_option maxHeartbeats 800000
 set_option backward.isDefEq.respectTransparency false
  theorem mem_fp (F : Type) [Field F] [NumberField F]
     (S : Finset (KPHilbert.Place F)) (q : HeightOneSpectrum (𝓞 F)) :
     q ∈ rawFinitePrimes F S ↔ Sum.inr q ∈ S := by
   simp only [rawFinitePrimes, Finset.mem_biUnion]
-  constructor
-  · rintro ⟨v, hv, h⟩
-    cases v with
-    | inl w => simp at h
-    | inr r => simp only [Finset.mem_singleton] at h; subst r; exact hv
-  · intro h; exact ⟨Sum.inr q, h, by simp⟩
+  simp
  def data (F : Type) [Field F] [NumberField F] (ζ : F)
     (hζ : IsPrimitiveRoot ζ 12) (S : Finset (KPHilbert.Place F))
     (hS : rawClassKillingS F S) : SArithmeticData F where
@@ -122,13 +114,13 @@ set_option backward.isDefEq.respectTransparency false
   left_inv x := by ext ⟨v,hv⟩; cases v <;> rfl
   right_inv y := by ext v; cases v <;> rfl
   map_mul' x y := by ext v; cases v <;> rfl
-private theorem classes_unit (F : Type) [Field F] [NumberField F] (ζ : F)
+theorem classes_unit (F : Type) [Field F] [NumberField F] (ζ : F)
     (hζ : IsPrimitiveRoot ζ 12) (S : Finset (KPHilbert.Place F))
     (hS : rawClassKillingS F S) (u : rawSUnits F S) :
     classesEquiv F ζ hζ S hS (rawFiniteClass F S u.val) =
       SArithmeticData.GaussCorrection.unitPrimeHom (data F ζ hζ S hS) 3 u := by
   ext v; cases v <;> rfl
-private theorem local_compare (F : Type) [Field F] [NumberField F] (ζ : F)
+theorem local_compare (F : Type) [Field F] [NumberField F] (ζ : F)
     (hζ : IsPrimitiveRoot ζ 12) (S : Finset (KPHilbert.Place F))
     (hS : rawClassKillingS F S) (q : HeightOneSpectrum (𝓞 F))
     (a b : KPGlobalCubicIdelePairing.LocalD F (Sum.inr q)) :
@@ -141,7 +133,7 @@ private theorem local_compare (F : Type) [Field F] [NumberField F] (ζ : F)
       change KPHilbert.B3 F ζ hζ (Sum.inr q) a b = _
       rw [KPHilbert.B3_canonical]
       rfl
-private theorem pairing_compare (F : Type) [Field F] [NumberField F] (ζ : F)
+theorem pairing_compare (F : Type) [Field F] [NumberField F] (ζ : F)
     (hζ : IsPrimitiveRoot ζ 12) (S : Finset (KPHilbert.Place F))
     (hS : rawClassKillingS F S) (x y : KPGlobalCubicIdelePairing.FiniteSClasses F S) :
     rawBetaS F ζ hζ S x y =
@@ -153,7 +145,7 @@ private theorem pairing_compare (F : Type) [Field F] [NumberField F] (ζ : F)
   symm
   let i (q : ↥A.Sf) : ↥S := ⟨Sum.inr q.val, (mem_fp F S q.val).mp q.property⟩
   apply Finset.prod_bij_ne_one (fun q _ _ => i q)
-  · intros; exact Finset.mem_attach _ _
+  · simp
   · intro a ha hna b hb hnb hab
     apply Subtype.ext
     exact Sum.inr_injective (congrArg Subtype.val hab)
@@ -176,7 +168,7 @@ private theorem pairing_compare (F : Type) [Field F] [NumberField F] (ζ : F)
       exact ⟨a, Finset.mem_univ _, hna, rfl⟩
   · intro a ha hna
     exact (local_compare F ζ hζ S hS a.val (x (i a)) (y (i a))).symm
-private theorem prime_criterion {F : Type} [Field F] [NumberField F]
+theorem prime_criterion {F : Type} [Field F] [NumberField F]
     (A : SArithmeticData F) (hCl : Subsingleton (ClassGroup A.R))
     (x : SArithmeticData.Vn F A 3) :
     (∀ u : A.U, A.H_Sn 3 (Or.inr (Or.inl rfl)) x
@@ -247,21 +239,15 @@ open scoped NumberField Classical BigOperators nonZeroDivisors
 open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.RepresentationTheory.KPPrincipalCubic
 noncomputable section
-set_option autoImplicit false
 set_option maxHeartbeats 800000
 variable (F : Type) [Field F] [NumberField F]
 
 private lemma finite_mem (S : Finset (KPHilbert.Place F)) (q : HeightOneSpectrum (𝓞 F)) :
     q ∈ rawFinitePrimes F S ↔ Sum.inr q ∈ S := by
   simp only [rawFinitePrimes, Finset.mem_biUnion]
-  constructor
-  · rintro ⟨v, hv, hq⟩
-    cases v with
-    | inl w => simp at hq
-    | inr p => simpa using (Finset.mem_singleton.mp hq) ▸ hv
-  · intro h; exact ⟨Sum.inr q, h, by simp⟩
+  simp
 
-private lemma principal_unit (S : Finset (KPHilbert.Place F)) (u : rawSUnits F S)
+lemma principal_unit (S : Finset (KPHilbert.Place F)) (u : rawSUnits F S)
     (v : KPHilbert.Place F) (hv : v ∉ S) :
     KPGlobalCubicIdelePairing.classComparison F (rawPrincipalClass F u.val) v ∈
       KPGlobalCubicIdelePairing.U F v := by
@@ -302,8 +288,7 @@ private lemma exists_classkill (T : Finset (KPHilbert.Place F)) :
       obtain ⟨a, ha⟩ := hp _ I.isUnit
       apply ClassGroup.mk_eq_one_iff.mpr
       rw [show (I : Submodule ((Sf : Set (HeightOneSpectrum (𝓞 F))).integer F) F) = Submodule.span _ {(a : F)} by
-        change ((I : FractionalIdeal ((Sf : Set (HeightOneSpectrum (𝓞 F))).integer F)⁰ F) : Submodule ((Sf : Set (HeightOneSpectrum (𝓞 F))).integer F) F) = _
-        rw [ha, FractionalIdeal.coe_spanSingleton]]
+        simp_all]
       exact ⟨⟨(a : F), rfl⟩⟩
     exact ⟨fun C D => (hOne C).trans (hOne D).symm⟩
   refine ⟨S, ?_, ⟨⟨?_, ?_⟩, ?_, ?_⟩⟩
@@ -321,7 +306,7 @@ private lemma exists_classkill (T : Finset (KPHilbert.Place F)) :
   · change Subsingleton (ClassGroup ((rawFinitePrimes F S : Set (HeightOneSpectrum (𝓞 F))).integer F))
     rw [hfin]; exact hCl
 
-private lemma principal_closed :
+lemma principal_closed :
     IsClosed ((rawPrincipalClass F).range : Set (KPGlobalCubicIdelePairing.D F)) := by
   apply (QuotientGroup.isQuotientMap_mk (CubicCharacters.cubes (KPGlobalCubicIdelePairing.Ideles F))).isClosed_preimage.mp
   have heq : (QuotientGroup.mk ⁻¹' ((rawPrincipalClass F).range : Set (KPGlobalCubicIdelePairing.D F))) =
@@ -334,8 +319,7 @@ private lemma principal_closed :
       have hmem : x / IdeleGroup.unitEmbedding (𝓞 F) F a ∈ CubicCharacters.cubes (KPGlobalCubicIdelePairing.Ideles F) := QuotientGroup.eq_iff_div_mem.mp ha.symm
       obtain ⟨b, hb⟩ := hmem
       refine ⟨a, b, ?_⟩
-      change b ^ 3 = x / IdeleGroup.unitEmbedding (𝓞 F) F a at hb
-      rw [hb]; simp
+      simp_all
     · rintro ⟨a, b, rfl⟩
       refine ⟨a, ?_⟩
       change QuotientGroup.mk' _ _ = QuotientGroup.mk' _ _
@@ -451,7 +435,6 @@ open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.KPGlobalPrincipalCubicLagrangian
 
 noncomputable section
-set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
@@ -488,9 +471,7 @@ theorem principal_discrete : DiscreteTopology (A F) := by
           QuotientGroup.eq_iff_div_mem.mp ha.symm
         obtain ⟨b, hb⟩ := hmem
         refine ⟨a, b, ?_⟩
-        change b ^ 3 = x / IdeleGroup.unitEmbedding (𝓞 F) F a at hb
-        rw [hb]
-        simp
+        simp_all
       · rintro ⟨a, b, rfl⟩
         refine ⟨a, ?_⟩
         change QuotientGroup.mk' _ _ = QuotientGroup.mk' _ _
@@ -517,7 +498,6 @@ theorem principal_discrete : DiscreteTopology (A F) := by
   exact discreteTopology_iff_isOpen_singleton_one.mpr (by
     have h := ha.preimage (continuous_const_mul a)
     have heq : (fun x : A F => a * x) ⁻¹' {a} = {1} := by
-      ext x
       simp
     rwa [heq] at h)
 
@@ -570,7 +550,6 @@ open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.KPGlobalPrincipalCubicLagrangian
 
 noncomputable section
-set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
@@ -580,8 +559,3 @@ include ζ hζ
 omit ζ hζ
 
 include ζ hζ
-
-end
-end DedekindZetaZeroFree.KPGlobalPrincipalCubicLagrangian
-
-end

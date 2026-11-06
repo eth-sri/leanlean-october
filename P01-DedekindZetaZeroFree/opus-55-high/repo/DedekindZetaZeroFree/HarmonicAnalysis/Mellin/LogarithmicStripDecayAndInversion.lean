@@ -9,7 +9,6 @@ Repository: openai/math.
 Revision: adc7f1241b42e322a6451854ab7e4b4c146bf78a.
 -/
 
-noncomputable section
 open MeasureTheory
 open scoped Classical
 
@@ -42,9 +41,9 @@ theorem logMellinContinuation_rapid_vertical_decay {f : ℝ → ℂ} {δ : ℝ}
   have hmellin : ‖mellin (EulerIter n f) s‖ ≤ C0 := by
     rw [mellin]
     refine (norm_integral_le_integral_norm _).trans ?_
-    simpa only [smul_eq_mul] using (hbound s (by rw [hsr]; exact hσu) (by rw [hsr]; exact hσv)).2
+    simp_all
   have hnormz : ‖(-s) ^ (-(n : ℤ))‖ = ‖s‖ ^ (-(n : ℤ)) := by
-    rw [norm_zpow, norm_neg]
+    simp
   have hprod : ‖(-s) ^ (-(n : ℤ)) * mellin (EulerIter n f) s‖ ≤
       ‖s‖ ^ (-(n : ℤ)) * C0 := by
     rw [norm_mul, hnormz]
@@ -53,7 +52,7 @@ theorem logMellinContinuation_rapid_vertical_decay {f : ℝ → ℂ} {δ : ℝ}
     have h := Complex.abs_im_le_norm s
     rw [hsi] at h
     linarith
-  have hB : 0 < ‖s‖ ^ n := pow_pos (lt_of_lt_of_le one_pos hsnorm) n
+  have hB : 0 < ‖s‖ ^ n := by positivity
   have hA : (1 + |t|) ^ N ≤ (2 : ℝ) ^ N * ‖s‖ ^ n := by
     have hle : 1 + |t| ≤ 2 * ‖s‖ := by
       have h := Complex.abs_im_le_norm s
@@ -101,17 +100,15 @@ theorem verticalIntegrable (h : LogMellinAdmissible f δ P H) (c : ℝ) (hc : 0 
     have hre : ((c : ℂ) + (t : ℂ) * Complex.I).re = c := by simp
     have hne : ((c : ℂ) + (t : ℂ) * Complex.I) ≠ 0 := by
       intro hz
-      have h1 : ((c : ℂ) + (t : ℂ) * Complex.I).re = 0 := by rw [hz]; simp
-      have h2 : c = 0 := by simpa [hre] using h1
-      linarith
+      simp_all
     have hlin : ContinuousAt (fun t : ℝ => (c : ℂ) + (t : ℂ) * Complex.I) t :=
-      continuousAt_const.add (Complex.continuous_ofReal.continuousAt.mul continuousAt_const)
+      by fun_prop
     exact ContinuousAt.comp (g := H) (f := fun t : ℝ => (c : ℂ) + (t : ℂ) * Complex.I) (x := t)
       ((h.differentiableAt _ (by rw [hre]; exact hcd) hne).continuousAt) hlin
   obtain ⟨C1, hC1⟩ :=
     isCompact_Icc.exists_bound_of_continuousOn (hcont.continuousOn (s := Set.Icc (-1) 1))
   set K : ℝ := 4 * (C + max C1 0) with hK
-  have hK0 : 0 ≤ K := by rw [hK]; positivity
+  have hK0 : 0 ≤ K := by positivity
   have hstep : ∀ t : ℝ, ((1 + |t|) ^ 2)⁻¹ ≤ (1 + t ^ 2)⁻¹ := by
     intro t
     have hle : 1 + t ^ 2 ≤ (1 + |t|) ^ 2 := by
@@ -151,8 +148,3 @@ theorem verticalIntegrable (h : LogMellinAdmissible f δ P H) (c : ℝ) (hc : 0 
   show Integrable (fun y : ℝ => H ((c : ℂ) + (y : ℂ) * Complex.I)) volume
   exact Integrable.mono' (integrable_inv_one_add_sq.const_mul K) hcont.aestronglyMeasurable
     (Filter.Eventually.of_forall hbound_all)
-
-end LogMellinAdmissible
-end DedekindZetaZeroFree.LargeSieve.Vendor
-
-end

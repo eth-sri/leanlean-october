@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # The uniformizer norm identity: irreducibility of the equal-characteristic primitive polynomial
 
@@ -44,7 +38,7 @@ variable {K : Type u} [Field K]
 
 /-- The integral lift `Y ^ q + T * Y` of the equal-characteristic
 Lubin--Tate polynomial. -/
-noncomputable def equalCharacteristicLubinTateIntegralPiPolynomial
+def equalCharacteristicLubinTateIntegralPiPolynomial
     (F : LocalField.{u, v} K) :
     Polynomial F.residueField⟦X⟧ :=
   Polynomial.X ^ Nat.card F.residueField +
@@ -73,7 +67,7 @@ theorem equalCharacteristicLubinTateIntegralPiPolynomial_natDegree
     exact (Finite.one_lt_card : 1 < Nat.card F.residueField)
 
 /-- The compositional division polynomial over `κ[[T]]`. -/
-noncomputable def equalCharacteristicLubinTateIntegralPiPolynomialIterate
+def equalCharacteristicLubinTateIntegralPiPolynomialIterate
     (F : LocalField.{u, v} K) (n : ℕ) :
     Polynomial F.residueField⟦X⟧ :=
   (equalCharacteristicLubinTateIntegralPiPolynomial F).comp^[n] Polynomial.X
@@ -178,7 +172,7 @@ theorem equalCharacteristicLubinTateIntegralPiPolynomialIterate_eval_zero
           (Finite.one_lt_card : 1 < Nat.card F.residueField))]
 
 /-- The integral lift of the primitive level-`n+1` polynomial. -/
-noncomputable def equalCharacteristicLubinTateIntegralPrimitivePolynomial
+def equalCharacteristicLubinTateIntegralPrimitivePolynomial
     (F : LocalField.{u, v} K) (n : ℕ) :
     Polynomial F.residueField⟦X⟧ :=
   equalCharacteristicLubinTateIntegralPiPolynomialIterate F n ^
@@ -331,8 +325,3 @@ theorem equalCharacteristicLubinTatePrimitivePolynomial_irreducible
     (equalCharacteristicLubinTateIntegralPrimitivePolynomial_monic F n).irreducible_iff_irreducible_map_fraction_map.mp
       (equalCharacteristicLubinTateIntegralPrimitivePolynomial_irreducible F n)
   simpa [equalCharacteristicLubinTateIntegralPrimitivePolynomial_map] using hmap
-
-end EqualCharacteristic
-end LubinTate
-
-end

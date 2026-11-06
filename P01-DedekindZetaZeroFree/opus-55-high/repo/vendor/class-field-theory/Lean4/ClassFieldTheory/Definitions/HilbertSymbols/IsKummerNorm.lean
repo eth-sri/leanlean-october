@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Norms from Kummer algebras
 -/
@@ -30,5 +26,3 @@ def IsKummerNorm
     (K : Type u) [Field K] (n : ℕ+) (a b : Kˣ) : Prop :=
   ∃ y : (KummerAlgebra K n a)ˣ,
     Algebra.norm K (y : KummerAlgebra K n a) = (b : K)
-
-end ClassFieldTheory

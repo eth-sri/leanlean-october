@@ -9,7 +9,7 @@ open IsDedekindDomain HeightOneSpectrum WithZero
 
 namespace DedekindZetaZeroFree.AbelianQuotient
 
-private theorem irreducibleValuedAdicCompletion_eq
+theorem irreducibleValuedAdicCompletion_eq
     (K : Type) [Field K] [NumberField K]
     (v : IsDedekindDomain.HeightOneSpectrum (𝓞 K)) (ϖ : v.adicCompletionIntegers K)
     (h : Irreducible ϖ) :
@@ -35,7 +35,7 @@ private theorem irreducibleValuedAdicCompletion_eq
           from rfl] at h1
     rw [hy_val'] at h1
     have h2 : (-1 : ℤ) = 0 := exp_inj.mp (h1.trans exp_zero.symm)
-    norm_num at h2
+    omega
   have hmax := hv.maximalIdeal_eq_setOfPred_le_v_algebraMap h
   have hle1 : exp (-1 : ℤ) ≤ Valued.v (ϖ : v.adicCompletion K) := by
     have : algebraMap (𝓞 K) (v.adicCompletionIntegers K) π ∈
@@ -67,8 +67,6 @@ theorem completionIdealPowerPullback
   have hval : Valued.v (ϖ : v.adicCompletion K) = exp (-1 : ℤ) :=
     irreducibleValuedAdicCompletion_eq K v ϖ hϖ
   have hexp : exp (-1 : ℤ) ^ n = exp (-(n : ℤ)) := by
-    rw [← exp_nsmul]
-    congr 1
     simp
   have hL : Valued.v (algebraMap (v.adicCompletionIntegers K) (v.adicCompletion K)
         (algebraMap (𝓞 K) (v.adicCompletionIntegers K) r)) = v.intValuation r := by
@@ -85,5 +83,3 @@ theorem completionIdealPowerPullback
   rw [← SetLike.mem_coe, hv.maximalIdeal_pow_eq_setOfPred_le_v_algebraMap_pow hϖ n]
   simp only [Set.mem_setOf_eq, hL, hR, hexp]
   exact intValuation_le_pow_iff_mem v r n
-
-end DedekindZetaZeroFree.AbelianQuotient

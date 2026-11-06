@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Theta.Profiles.ArchimedeanRescaling
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.SheetRescaling
 open MomentSources NumberField MeasureTheory ThetaProfileHaarSheets
 open ThetaRawSheetEnvelope.WeightedWhittakerSheets
@@ -53,7 +52,3 @@ theorem product_sheet_integrals (R : PrincipalMellin.ActualRecipe S η)
       (hC ⟨t, ht', rfl⟩).trans (le_max_left _ _)
     exact (product_rescale R.A M A u t y.val).trans
       (mul_le_mul_of_nonneg_right hc (productPowerMajorant_nonneg R.A M A _))
-
-end DedekindZetaZeroFree.SheetRescaling
-
-end

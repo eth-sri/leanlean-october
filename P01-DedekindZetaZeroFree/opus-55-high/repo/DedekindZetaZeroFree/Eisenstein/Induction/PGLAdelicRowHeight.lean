@@ -49,20 +49,20 @@ def rowProduct (r : Fin 2 → F)
  def en {K : Type*} [NormedField K] (r : Fin 2 → K) : ℝ := Real.sqrt (‖r 0‖ ^ 2 + ‖r 1‖ ^ 2)
  def eb {K : Type*} [NormedField K] (A : GL (Fin 2) K) : ℝ :=
   max 1 (max (max ‖A 0 0‖ ‖A 0 1‖) (max ‖A 1 0‖ ‖A 1 1‖))
-private lemma eb_one {K : Type*} [NormedField K] (A : GL (Fin 2) K) : 1 ≤ eb A := le_max_left _ _
-private lemma eb_entry {K : Type*} [NormedField K] (A : GL (Fin 2) K) (i j : Fin 2) : ‖A i j‖ ≤ eb A := by
+lemma eb_one {K : Type*} [NormedField K] (A : GL (Fin 2) K) : 1 ≤ eb A := le_max_left _ _
+lemma eb_entry {K : Type*} [NormedField K] (A : GL (Fin 2) K) (i j : Fin 2) : ‖A i j‖ ≤ eb A := by
   fin_cases i <;> fin_cases j <;> unfold eb <;> bound
-private lemma mx_nonneg {K : Type*} [NormedField K] (r : Fin 2 → K) : 0 ≤ mx r := (norm_nonneg _).trans (le_max_left _ _)
-private lemma mx_le_en {K : Type*} [NormedField K] (r : Fin 2 → K) : mx r ≤ en r := by
+lemma mx_nonneg {K : Type*} [NormedField K] (r : Fin 2 → K) : 0 ≤ mx r := (norm_nonneg _).trans (le_max_left _ _)
+lemma mx_le_en {K : Type*} [NormedField K] (r : Fin 2 → K) : mx r ≤ en r := by
   apply max_le <;> apply Real.le_sqrt_of_sq_le <;> nlinarith [sq_nonneg ‖r 0‖, sq_nonneg ‖r 1‖]
-private lemma en_le_two_mx {K : Type*} [NormedField K] (r : Fin 2 → K) : en r ≤ 2 * mx r := by
+lemma en_le_two_mx {K : Type*} [NormedField K] (r : Fin 2 → K) : en r ≤ 2 * mx r := by
   have h0 : ‖r 0‖ ≤ mx r := le_max_left _ _
   have h1 : ‖r 1‖ ≤ mx r := le_max_right _ _
   apply Real.sqrt_le_iff.mpr
   constructor
   · exact mul_nonneg (by norm_num) (mx_nonneg r)
   · nlinarith [norm_nonneg (r 0), norm_nonneg (r 1), mx_nonneg r]
-private lemma mx_mul {K : Type*} [NormedField K] (r : Fin 2 → K) (A : GL (Fin 2) K) :
+lemma mx_mul {K : Type*} [NormedField K] (r : Fin 2 → K) (A : GL (Fin 2) K) :
     mx (r ᵥ* (A : Matrix (Fin 2) (Fin 2) K)) ≤ 2 * eb A * mx r := by
   suffices h : ∀ j : Fin 2, ‖(r ᵥ* (A : Matrix (Fin 2) (Fin 2) K)) j‖ ≤ 2 * eb A * mx r from max_le (h 0) (h 1)
   intro j
@@ -77,7 +77,7 @@ private lemma mx_mul {K : Type*} [NormedField K] (r : Fin 2 → K) (A : GL (Fin 
     have he1 := eb_entry A 1 j
     have hb : 0 ≤ eb A := (by norm_num : (0:ℝ) ≤ 1).trans (eb_one A)
     nlinarith [mul_le_mul h0 he0 (norm_nonneg _) (mx_nonneg r), mul_le_mul h1 he1 (norm_nonneg _) (mx_nonneg r)]
-private lemma mx_mul_ultra {K : Type*} [NormedField K] [IsUltrametricDist K]
+lemma mx_mul_ultra {K : Type*} [NormedField K] [IsUltrametricDist K]
     (r : Fin 2 → K) (A : GL (Fin 2) K) :
     mx (r ᵥ* (A : Matrix (Fin 2) (Fin 2) K)) ≤ eb A * mx r := by
   apply max_le <;> dsimp [vecMul, dotProduct] <;> rw [Fin.sum_univ_two]
@@ -86,17 +86,17 @@ private lemma mx_mul_ultra {K : Type*} [NormedField K] [IsUltrametricDist K]
     apply max_le <;> rw [norm_mul]
     · exact (mul_le_mul (show ‖r 0‖ ≤ mx r from le_max_left _ _) (eb_entry A 0 _) (norm_nonneg _) (mx_nonneg r)).trans_eq (mul_comm _ _)
     · exact (mul_le_mul (show ‖r 1‖ ≤ mx r from le_max_right _ _) (eb_entry A 1 _) (norm_nonneg _) (mx_nonneg r)).trans_eq (mul_comm _ _)
-private lemma en_mul {K : Type*} [NormedField K] (r : Fin 2 → K) (A : GL (Fin 2) K) :
+lemma en_mul {K : Type*} [NormedField K] (r : Fin 2 → K) (A : GL (Fin 2) K) :
     en (r ᵥ* (A : Matrix (Fin 2) (Fin 2) K)) ≤ 4 * eb A * en r := by
   calc
     _ ≤ 2 * mx (r ᵥ* (A : Matrix (Fin 2) (Fin 2) K)) := en_le_two_mx _
     _ ≤ 2 * (2 * eb A * mx r) := mul_le_mul_of_nonneg_left (mx_mul r A) (by norm_num)
     _ ≤ 4 * eb A * en r := by nlinarith [mul_le_mul_of_nonneg_left (mx_le_en r) (show 0 ≤ eb A by linarith [eb_one A])]
  def dn {K : Type*} [NormedField K] (A : GL (Fin 2) K) : ℝ := Real.sqrt ‖(GeneralLinearGroup.det A : K)‖
-private lemma dn_pos {K : Type*} [NormedField K] (A : GL (Fin 2) K) : 0 < dn A := Real.sqrt_pos.mpr (norm_pos_iff.mpr (Units.ne_zero _))
+lemma dn_pos {K : Type*} [NormedField K] (A : GL (Fin 2) K) : 0 < dn A := Real.sqrt_pos.mpr (norm_pos_iff.mpr (Units.ne_zero _))
  def cc {K : Type*} [NormedField K] (A : GL (Fin 2) K) : ℝ := max 1 (max (eb A / dn A) (eb A⁻¹ * dn A))
-private lemma cc_one {K : Type*} [NormedField K] (A : GL (Fin 2) K) : 1 ≤ cc A := le_max_left _ _
-private lemma mx_bounds {K : Type*} [NormedField K] [IsUltrametricDist K]
+lemma cc_one {K : Type*} [NormedField K] (A : GL (Fin 2) K) : 1 ≤ cc A := le_max_left _ _
+lemma mx_bounds {K : Type*} [NormedField K] [IsUltrametricDist K]
     (r : Fin 2 → K) (A : GL (Fin 2) K) :
     mx r ≤ cc A * (mx (r ᵥ* (A : Matrix (Fin 2) (Fin 2) K)) / dn A) ∧
     mx (r ᵥ* (A : Matrix (Fin 2) (Fin 2) K)) / dn A ≤ cc A * mx r := by
@@ -114,8 +114,8 @@ private lemma mx_bounds {K : Type*} [NormedField K] [IsUltrametricDist K]
       _ ≤ eb A * mx r / dn A := div_le_div_of_nonneg_right (mx_mul_ultra r A) hp.le
       _ = (eb A / dn A) * mx r := by ring
       _ ≤ _ := mul_le_mul_of_nonneg_right h1 (mx_nonneg r)
-private lemma en_nonneg {K : Type*} [NormedField K] (r : Fin 2 → K) : 0 ≤ en r := Real.sqrt_nonneg _
-private lemma en_bounds {K : Type*} [NormedField K]
+lemma en_nonneg {K : Type*} [NormedField K] (r : Fin 2 → K) : 0 ≤ en r := Real.sqrt_nonneg _
+lemma en_bounds {K : Type*} [NormedField K]
     (r : Fin 2 → K) (A : GL (Fin 2) K) :
     en r ≤ (4 * cc A) * (en (r ᵥ* (A : Matrix (Fin 2) (Fin 2) K)) / dn A) ∧
     en (r ᵥ* (A : Matrix (Fin 2) (Fin 2) K)) / dn A ≤ (4 * cc A) * en r := by
@@ -133,14 +133,14 @@ private lemma en_bounds {K : Type*} [NormedField K]
       _ ≤ 4 * eb A * en r / dn A := div_le_div_of_nonneg_right (en_mul r A) hp.le
       _ = (4 * (eb A / dn A)) * en r := by ring
       _ ≤ _ := mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left h1 (by norm_num)) (en_nonneg r)
-private lemma cc_good {K : Type*} [NormedField K] (A : GL (Fin 2) K)
+lemma cc_good {K : Type*} [NormedField K] (A : GL (Fin 2) K)
     (h : ∀ i j, ‖A i j‖ ≤ 1) (hi : ∀ i j, ‖A⁻¹ i j‖ ≤ 1)
     (hd : ‖(GeneralLinearGroup.det A : K)‖ = 1) : cc A = 1 := by
   have he : eb A = 1 := max_eq_left (max_le (max_le (h 0 0) (h 0 1)) (max_le (h 1 0) (h 1 1)))
   have hei : eb A⁻¹ = 1 := max_eq_left (max_le (max_le (hi 0 0) (hi 0 1)) (max_le (hi 1 0) (hi 1 1)))
-  have hdn : dn A = 1 := by unfold dn; rw [hd, Real.sqrt_one]
+  have hdn : dn A = 1 := by unfold dn; simp_all
   simp only [cc, he, hei, hdn, div_one, mul_one, max_self]
-private lemma continuous_cc {K : Type*} [NormedField K] : Continuous (cc (K := K)) := by
+lemma continuous_cc {K : Type*} [NormedField K] : Continuous (cc (K := K)) := by
   have hentry (i j : Fin 2) : Continuous (fun A : GL (Fin 2) K => ‖A i j‖) :=
     (Units.continuous_val.matrix_elem i j).norm
   have he : Continuous (eb (K := K)) := continuous_const.max (((hentry 0 0).max (hentry 0 1)).max ((hentry 1 0).max (hentry 1 1)))
@@ -158,14 +158,14 @@ private lemma continuous_cc {K : Type*} [NormedField K] : Continuous (cc (K := K
   (4 * cc (GeneralLinearGroup.map (ae F v) A)) ^ (if v.IsReal then 1 else 2)
 private lemma finite_one (r : Fin 2 → F) (v : V F) :
     finiteRowFactor F r 1 v = mx (fun i => algebraMap F (v.adicCompletion F) (r i)) := by
-  simp [finiteRowFactor, mx, Fin.sum_univ_two, Matrix.one_apply]
+  simp [finiteRowFactor, mx, Matrix.one_apply]
 private lemma infinite_one (r : Fin 2 → F) (v : InfinitePlace F) :
     infiniteRowFactor F r 1 v = en (fun i => algebraMap F v.Completion (r i)) ^ (if v.IsReal then 1 else 2) := by
-  simp [infiniteRowFactor, en, Fin.sum_univ_two, Matrix.one_apply]
-private lemma finite_nonneg (r : Fin 2 → F) (A : AG F) (v : V F) : 0 ≤ finiteRowFactor F r A v := by
-  exact div_nonneg ((norm_nonneg _).trans (le_max_left _ _)) (Real.sqrt_nonneg _)
-private lemma infinite_nonneg (r : Fin 2 → F) (A : AG F) (v : InfinitePlace F) : 0 ≤ infiniteRowFactor F r A v := by
-  exact pow_nonneg (div_nonneg (Real.sqrt_nonneg _) (Real.sqrt_nonneg _)) _
+  simp [infiniteRowFactor, en, Matrix.one_apply]
+lemma finite_nonneg (r : Fin 2 → F) (A : AG F) (v : V F) : 0 ≤ finiteRowFactor F r A v := 
+  div_nonneg ((norm_nonneg _).trans (le_max_left _ _)) (Real.sqrt_nonneg _)
+lemma infinite_nonneg (r : Fin 2 → F) (A : AG F) (v : InfinitePlace F) : 0 ≤ infiniteRowFactor F r A v := 
+  pow_nonneg (div_nonneg (Real.sqrt_nonneg _) (Real.sqrt_nonneg _)) _
 private lemma finite_bounds (r : Fin 2 → F) (A : AG F) (v : V F) :
     finiteRowFactor F r 1 v ≤ fc F A v * finiteRowFactor F r A v ∧
     finiteRowFactor F r A v ≤ fc F A v * finiteRowFactor F r 1 v := by
@@ -183,8 +183,8 @@ private lemma infinite_bounds (r : Fin 2 → F) (A : AG F) (v : InfinitePlace F)
 private lemma finite_baseline_support (r : Fin 2 → F) (hr : r ≠ 0) :
     ∀ᶠ v : V F in Filter.cofinite, finiteRowFactor F r 1 v = 1 := by
   have hn (a : F) (ha : a ≠ 0) : ∀ᶠ v : V F in Filter.cofinite,
-      ‖algebraMap F (v.adicCompletion F) a‖ = 1 := by
-    exact Filter.eventually_cofinite.mpr
+      ‖algebraMap F (v.adicCompletion F) a‖ = 1 := 
+    Filter.eventually_cofinite.mpr
       (Function.HasFiniteMulSupport.fun_comp_of_injective
         FinitePlace.equivHeightOneSpectrum.symm.injective
         (FinitePlace.hasFiniteMulSupport ha))
@@ -198,13 +198,11 @@ private lemma finite_baseline_support (r : Fin 2 → F) (hr : r ≠ 0) :
   rw [finite_one]
   apply le_antisymm (max_le h0 h1)
   fin_cases i
-  · rw [← hi]; exact le_max_left _ _
-  · rw [← hi]; exact le_max_right _ _
+  · simp_all
+  simp_all
 private lemma integral_norm (v : V F) (x : v.adicCompletion F)
     (h : x ∈ v.adicCompletionIntegers F) : ‖x‖ ≤ 1 := by
-  rw [FinitePlace.norm_def]
-  rw [HeightOneSpectrum.mem_adicCompletionIntegers] at h
-  exact_mod_cast (WithZeroMulInt.toNNReal_le_one_iff (by exact_mod_cast HeightOneSpectrum.one_lt_absNorm v)).mpr h
+  aesop
  def gd (S : Finset (V F)) (B : AG F) : Prop :=
   (∀ i j v, v ∉ S → (B i j).2 v ∈ v.adicCompletionIntegers F) ∧
   (∀ i j v, v ∉ S → (B⁻¹ i j).2 v ∈ v.adicCompletionIntegers F) ∧
@@ -220,17 +218,17 @@ private lemma gd_cc (S : Finset (V F)) (B : AG F) (h : gd F S B) (v : V F) (hv :
         ‖(GeneralLinearGroup.det (GeneralLinearGroup.map (fe F v) B⁻¹) : v.adicCompletion F)‖ = 1 := by
       rw [← norm_mul]
       have hh := (GeneralLinearGroup.det (GeneralLinearGroup.map (fe F v) B)).mul_inv
-      simpa [← Units.val_mul, ← map_mul] using congrArg (fun x : v.adicCompletion F => ‖x‖) hh
+      simp_all
     change ‖(GeneralLinearGroup.det (GeneralLinearGroup.map (fe F v) B) : v.adicCompletion F)‖ ≤ 1 at hd
     change ‖(GeneralLinearGroup.det (GeneralLinearGroup.map (fe F v) B⁻¹) : v.adicCompletion F)‖ ≤ 1 at hi
     nlinarith [norm_nonneg (GeneralLinearGroup.det (GeneralLinearGroup.map (fe F v) B) : v.adicCompletion F)]
-private lemma exists_gd (A : AG F) : ∃ S, gd F S A := by
+lemma exists_gd (A : AG F) : ∃ S, gd F S A := by
   have h : ∀ᶠ v : V F in Filter.cofinite,
       (∀ i j, (A i j).2 v ∈ v.adicCompletionIntegers F) ∧
       (∀ i j, (A⁻¹ i j).2 v ∈ v.adicCompletionIntegers F) ∧
       (GeneralLinearGroup.det A : AdeleRing (RingOfIntegers F) F).2 v ∈ v.adicCompletionIntegers F ∧
-      (GeneralLinearGroup.det A⁻¹ : AdeleRing (RingOfIntegers F) F).2 v ∈ v.adicCompletionIntegers F := by
-    exact (Filter.eventually_all.mpr (fun i => Filter.eventually_all.mpr (fun j => (A i j).2.property))).and
+      (GeneralLinearGroup.det A⁻¹ : AdeleRing (RingOfIntegers F) F).2 v ∈ v.adicCompletionIntegers F := 
+    (Filter.eventually_all.mpr (fun i => Filter.eventually_all.mpr (fun j => (A i j).2.property))).and
       ((Filter.eventually_all.mpr (fun i => Filter.eventually_all.mpr (fun j => (A⁻¹ i j).2.property))).and
         ((GeneralLinearGroup.det A : AdeleRing (RingOfIntegers F) F).2.property.and
           (GeneralLinearGroup.det A⁻¹ : AdeleRing (RingOfIntegers F) F).2.property))
@@ -247,8 +245,8 @@ private lemma finite_support (r : Fin 2 → F) (hr : r ≠ 0) (A : AG F) :
   filter_upwards [finite_baseline_support F r hr, (S.finite_toSet.compl_mem_cofinite)] with v hv hvS
   have h := finite_bounds F r A v
   rw [gd_cc F S A hS v hvS, hv, one_mul, one_mul] at h
-  exact le_antisymm h.2 h.1
-private lemma continuous_fc (v : V F) : Continuous (fun B : AG F => fc F B v) := by
+  linarith
+lemma continuous_fc (v : V F) : Continuous (fun B : AG F => fc F B v) := by
   apply continuous_cc.comp
   apply Units.continuous_iff.mpr
   constructor
@@ -258,7 +256,7 @@ private lemma continuous_fc (v : V F) : Continuous (fun B : AG F => fc F B v) :=
   · apply continuous_matrix
     intro i j
     exact (RestrictedProduct.continuous_eval v).comp (continuous_snd.comp (Units.continuous_coe_inv.matrix_elem i j))
-private lemma continuous_ac (v : InfinitePlace F) : Continuous (fun B : AG F => ac F B v) := by
+lemma continuous_ac (v : InfinitePlace F) : Continuous (fun B : AG F => ac F B v) := by
   have h : Continuous (fun B : AG F => GeneralLinearGroup.map (ae F v) B) := by
     apply Units.continuous_iff.mpr
     constructor
@@ -269,7 +267,7 @@ private lemma continuous_ac (v : InfinitePlace F) : Continuous (fun B : AG F => 
       intro i j
       exact (continuous_apply v).comp (continuous_fst.comp (Units.continuous_coe_inv.matrix_elem i j))
   exact (continuous_const.mul (continuous_cc.comp h)).pow _
-private lemma gd_open (S : Finset (V F)) : IsOpen {B : AG F | gd F S B} := by
+lemma gd_open (S : Finset (V F)) : IsOpen {B : AG F | gd F S B} := by
   have hopen : IsOpen {a : FiniteAdeleRing (RingOfIntegers F) F |
       ∀ v, v ∉ S → a v ∈ v.adicCompletionIntegers F} :=
     RestrictedProduct.isOpen_forall_imp_mem (KPAdelicTopology.completionIntegers_isOpen F)
@@ -278,8 +276,7 @@ private lemma gd_open (S : Finset (V F)) : IsOpen {B : AG F | gd F S B} := by
   have hei (i j : Fin 2) : IsOpen {B : AG F | ∀ v, v ∉ S → (B⁻¹ i j).2 v ∈ v.adicCompletionIntegers F} :=
     hopen.preimage (continuous_snd.comp (Units.continuous_coe_inv.matrix_elem i j))
   have hd : Continuous (fun B : AG F => (GeneralLinearGroup.det B : AdeleRing (RingOfIntegers F) F)) := by
-    simp_rw [GeneralLinearGroup.val_det_apply]
-    exact Units.continuous_val.matrix_det
+    fun_prop
   have ho := hopen.preimage (continuous_snd.comp hd)
   have hoi := hopen.preimage (continuous_snd.comp (hd.comp continuous_inv))
   unfold gd
@@ -288,12 +285,12 @@ private lemma gd_open (S : Finset (V F)) : IsOpen {B : AG F | gd F S B} := by
     (isOpen_iInter_of_finite fun i => isOpen_iInter_of_finite (he i)).inter
       ((isOpen_iInter_of_finite fun i => isOpen_iInter_of_finite (hei i)).inter (ho.inter hoi))
  def gc (S : Finset (V F)) (B : AG F) : ℝ := (∏ v : InfinitePlace F, ac F B v) * ∏ v ∈ S, fc F B v
-private lemma gc_one (S : Finset (V F)) (B : AG F) : 1 ≤ gc F S B := by
+lemma gc_one (S : Finset (V F)) (B : AG F) : 1 ≤ gc F S B := by
   have hf (v : V F) : 1 ≤ fc F B v := cc_one _
   have ha (v : InfinitePlace F) : 1 ≤ ac F B v := one_le_pow₀ (by linarith [cc_one (GeneralLinearGroup.map (ae F v) B)])
   exact one_le_mul_of_one_le_of_one_le
     (Finset.one_le_prod₀ (fun v _ => ha v)) (Finset.one_le_prod₀ (fun v _ => hf v))
-private lemma continuous_gc (S : Finset (V F)) : Continuous (gc F S) :=
+lemma continuous_gc (S : Finset (V F)) : Continuous (gc F S) :=
   (continuous_finsetProd _ (fun v _ => continuous_ac F v)).mul
     (continuous_finsetProd _ (fun v _ => continuous_fc F v))
 private lemma global_bounds (S : Finset (V F)) (B : AG F) (hB : gd F S B)
@@ -343,7 +340,7 @@ theorem local_rowProduct_bounds
   obtain ⟨S, hS⟩ := exists_gd F A
   let C := gc F S A + 1
   have hC : 1 ≤ C := by dsimp [C]; linarith [gc_one F S A]
-  have hCp : 0 < C := lt_of_lt_of_le (by norm_num) hC
+  have hCp : 0 < C := by linarith
   let U : Set (AG F) := {B | gd F S B} ∩ {B | gc F S B < C}
   refine ⟨U, (gd_open F S).inter (isOpen_lt (continuous_gc F S) continuous_const),
     ⟨hS, by dsimp [C]; linarith⟩, C⁻¹, C, inv_pos.mpr hCp, ?_, ?_⟩
@@ -457,7 +454,7 @@ abbrev AdelGL := GL (Fin 2) (Adele F)
 abbrev AdelPGL := ProjGenLinGroup (Fin 2) (Adele F)
 abbrev Line := Projectivization F (Fin 2 → F)
 
-noncomputable instance adelPGLTopology : TopologicalSpace (AdelPGL F) := by
+instance adelPGLTopology : TopologicalSpace (AdelPGL F) := by
   unfold AdelPGL ProjGenLinGroup
   infer_instance
 
@@ -513,17 +510,17 @@ private theorem upperTri_mul_row (A G : RatGL F)
         (fun j => (G : Matrix (Fin 2) (Fin 2) F) 1 j) := by
   funext j
   fin_cases j <;>
-    simp [GeneralLinearGroup.coe_mul, Matrix.mul_apply, hA, Fin.sum_univ_two]
+    simp [Matrix.mul_apply, hA, Fin.sum_univ_two]
 
-private theorem upperTri_11_ne_zero (A : RatGL F)
+theorem upperTri_11_ne_zero (A : RatGL F)
     (hA : (A : Matrix (Fin 2) (Fin 2) F) 1 0 = 0) :
     (A : Matrix (Fin 2) (Fin 2) F) 1 1 ≠ 0 := by
   have hd := GeneralLinearGroup.det_ne_zero A
   rw [Matrix.det_fin_two] at hd
   intro h
-  exact hd (by rw [hA, h]; ring)
+  simp_all
 
-private theorem bottomRow_borel_mul (b x : RatPGL F) (hb : b ∈ borel F) :
+theorem bottomRow_borel_mul (b x : RatPGL F) (hb : b ∈ borel F) :
     bottomRow F (b * x) = bottomRow F x := by
   refine Subgroup.closure_induction
     (k := {g | ∃ A : RatGL F, ProjGenLinGroup.mk A = g ∧
@@ -536,14 +533,13 @@ private theorem bottomRow_borel_mul (b x : RatPGL F) (hb : b ∈ borel F) :
     refine (Projectivization.mk_eq_mk_iff F _ _ _ _).2
       ⟨Units.mk0 _ (upperTri_11_ne_zero F A hA), (upperTri_mul_row F A (liftRat F y) hA).symm⟩
   · intro y; simp
-  · intro p q _ _ hp hq y
-    rw [mul_assoc, hp (q * y), hq y]
+  · grind
   · intro p _ hp y
     have h := hp (p⁻¹ * y)
     rw [← mul_assoc, mul_inv_cancel, one_mul] at h
     exact h.symm
 
-private theorem bottomRow_respect (x y : RatPGL F)
+theorem bottomRow_respect (x y : RatPGL F)
     (h : QuotientGroup.rightRel (borel F) x y) :
     bottomRow F x = bottomRow F y := by
   have hb : y * x⁻¹ ∈ borel F := (QuotientGroup.rightRel_apply).1 h
@@ -556,7 +552,7 @@ theorem rational_bruhat_index :
   let f : BruhatIndex F → Line F :=
     Quotient.lift (fun g => bottomRow F g) (fun a b h => bottomRow_respect F a b h)
   have hf : ∀ g, f (Quotient.mk (QuotientGroup.rightRel (borel F)) g) = bottomRow F g :=
-    fun g => Quotient.lift_mk _ _ g
+    by aesop
   have hinj : Function.Injective f := by
     intro x y hxy
     rw [← Quotient.out_eq x, ← Quotient.out_eq y] at hxy
@@ -567,17 +563,7 @@ theorem rational_bruhat_index :
         Projectivization.mk F
         (fun i => (liftRat F (Quotient.out y) : Matrix (Fin 2) (Fin 2) F) 1 i)
         (row_ne_zero F (liftRat F (Quotient.out y))) := by
-      have hx' : ProjGenLinGroup.mk (liftRat F (Quotient.out x)) = Quotient.out x := Quotient.out_eq _
-      have hy' : ProjGenLinGroup.mk (liftRat F (Quotient.out y)) = Quotient.out y := Quotient.out_eq _
-      have e1 : Projectivization.mk F
-          (fun i => (liftRat F (Quotient.out x) : Matrix (Fin 2) (Fin 2) F) 1 i)
-          (row_ne_zero F (liftRat F (Quotient.out x))) = bottomRow F (Quotient.out x) :=
-        (bottomRow_mk F (liftRat F (Quotient.out x))).symm.trans (congrArg (bottomRow F) hx')
-      have e2 : Projectivization.mk F
-          (fun i => (liftRat F (Quotient.out y) : Matrix (Fin 2) (Fin 2) F) 1 i)
-          (row_ne_zero F (liftRat F (Quotient.out y))) = bottomRow F (Quotient.out y) :=
-        (bottomRow_mk F (liftRat F (Quotient.out y))).symm.trans (congrArg (bottomRow F) hy')
-      exact e1.trans (hxy.trans e2.symm)
+      aesop
     obtain ⟨a, ha⟩ := (Projectivization.mk_eq_mk_iff F _ _ _ _).1 hrow
     have hmem : Quotient.out y * (Quotient.out x)⁻¹ ∈ borel F := by
       let G : RatGL F := liftRat F (Quotient.out x)
@@ -585,7 +571,7 @@ theorem rational_bruhat_index :
       have hG : ProjGenLinGroup.mk G = Quotient.out x := Quotient.out_eq _
       have hG' : ProjGenLinGroup.mk G' = Quotient.out y := Quotient.out_eq _
       have hB : ProjGenLinGroup.mk (G' * G⁻¹) = Quotient.out y * (Quotient.out x)⁻¹ := by
-        rw [map_mul, map_inv, hG, hG']
+        simp_all
       rw [← hB]
       apply Subgroup.subset_closure
       refine ⟨G' * G⁻¹, rfl, ?_⟩
@@ -603,10 +589,9 @@ theorem rational_bruhat_index :
           (mul_inv_cancel G)
         rw [GeneralLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two,
           GeneralLinearGroup.coe_one, Matrix.one_apply] at hh2
-        norm_num at hh2
-        exact hh2
+        simp_all
       rw [GeneralLinearGroup.coe_inv]
-      linear_combination (a : F)⁻¹ * hgg
+      grind
     rw [← Quotient.out_eq x, ← Quotient.out_eq y]
     exact Quotient.sound ((QuotientGroup.rightRel_apply).2 hmem)
   have hsurj : Function.Surjective f := by
@@ -619,7 +604,7 @@ theorem rational_bruhat_index :
       · have h0 : r 0 ≠ 0 := by
           intro h0
           exact hr (by funext i; fin_cases i <;> simp [h1, h0])
-        simpa [Matrix.det_fin_two, h1] using h0
+        simp_all
       · rw [hf, bottomRow_mk]
         refine (Projectivization.mk_eq_mk_iff F _ _ _ _).2 ⟨1, ?_⟩
         funext i
@@ -632,8 +617,7 @@ theorem rational_bruhat_index :
         funext i
         fin_cases i <;> simp
   refine ⟨Equiv.ofBijective f ⟨hinj, hsurj⟩, fun g => ?_⟩
-  change f (Quotient.mk (QuotientGroup.rightRel (borel F)) g) = bottomRow F g
-  exact hf g
+  rfl
 
 def rowAction {R : Type*} [CommRing R]
     (r : Fin 2 → R) (A : GL (Fin 2) R) (j : Fin 2) : R :=
@@ -646,17 +630,17 @@ def finiteEval (v : HeightOneSpectrum (RingOfIntegers F)) :
     Adele F →+* v.adicCompletion F :=
   (RestrictedProduct.evalRingHom _ v).comp (RingHom.snd _ _)
 
-noncomputable def finiteFactor (r : Fin 2 → F) (A : AdelGL F)
+def finiteFactor (r : Fin 2 → F) (A : AdelGL F)
     (v : HeightOneSpectrum (RingOfIntegers F)) : ℝ :=
   let A_v := GeneralLinearGroup.map (finiteEval F v) A
   let r_v := fun i => (algebraMap F (v.adicCompletion F)) (r i)
   (max (‖rowAction r_v A_v 0‖) (‖rowAction r_v A_v 1‖)) /
     Real.sqrt (‖((GeneralLinearGroup.det A_v : (v.adicCompletion F)ˣ) : v.adicCompletion F)‖)
 
-noncomputable def infiniteDegree (v : InfinitePlace F) : ℕ :=
+def infiniteDegree (v : InfinitePlace F) : ℕ :=
   if NumberField.InfinitePlace.IsReal v then 1 else 2
 
-noncomputable def infiniteFactor (r : Fin 2 → F) (A : AdelGL F)
+def infiniteFactor (r : Fin 2 → F) (A : AdelGL F)
     (v : InfinitePlace F) : ℝ :=
   let A_v := GeneralLinearGroup.map (infiniteEval F v) A
   let r_v := fun i => (algebraMap F v.Completion) (r i)
@@ -664,21 +648,18 @@ noncomputable def infiniteFactor (r : Fin 2 → F) (A : AdelGL F)
     Real.sqrt (‖((GeneralLinearGroup.det A_v : v.Completionˣ) : v.Completion)‖)) ^
       infiniteDegree F v
 
-private theorem eventual_entry (x : Adele F) : ∀ᶠ v : HeightOneSpectrum (RingOfIntegers F) in Filter.cofinite,
+theorem eventual_entry (x : Adele F) : ∀ᶠ v : HeightOneSpectrum (RingOfIntegers F) in Filter.cofinite,
     ‖finiteEval F v x‖ ≤ 1 := by
   filter_upwards [FiniteAdeleRing.cofinite_mem_adicCompletionIntegers x.2] with v hv
-  rw [FinitePlace.norm_def]
-  rw [HeightOneSpectrum.mem_adicCompletionIntegers] at hv
-  exact_mod_cast (WithZeroMulInt.toNNReal_le_one_iff (by exact_mod_cast HeightOneSpectrum.one_lt_absNorm v)).mpr hv
-private theorem eventual_unit (x : (Adele F)ˣ) : ∀ᶠ v : HeightOneSpectrum (RingOfIntegers F) in Filter.cofinite,
+  aesop
+theorem eventual_unit (x : (Adele F)ˣ) : ∀ᶠ v : HeightOneSpectrum (RingOfIntegers F) in Filter.cofinite,
     ‖finiteEval F v x‖ = 1 := by
   have h := (FiniteAdeleRing.isUnit_iff.mp ((RingHom.snd _ _).isUnit_map x.isUnit)).2
   filter_upwards [h] with v hv
   rw [FinitePlace.norm_def]
   change Valued.v (finiteEval F v (x : Adele F)) = 1 at hv
-  rw [hv]
-  simp
-private theorem row_le {K : Type*} [NormedField K] [IsUltrametricDist K]
+  simp_all
+theorem row_le {K : Type*} [NormedField K] [IsUltrametricDist K]
     (r : Fin 2 → K) (A : GL (Fin 2) K) (hA : ∀ i j, ‖(A : Matrix (Fin 2) (Fin 2) K) i j‖ ≤ 1) :
     ∀ j, ‖rowAction r A j‖ ≤ max ‖r 0‖ ‖r 1‖ := by
   intro j
@@ -689,7 +670,7 @@ private theorem row_le {K : Type*} [NormedField K] [IsUltrametricDist K]
     exact (mul_le_of_le_one_right (norm_nonneg _) (hA 0 j)).trans (le_max_left _ _)
   · rw [norm_mul]
     exact (mul_le_of_le_one_right (norm_nonneg _) (hA 1 j)).trans (le_max_right _ _)
-private theorem row_norm_eq {K : Type*} [NormedField K] [IsUltrametricDist K]
+theorem row_norm_eq {K : Type*} [NormedField K] [IsUltrametricDist K]
     (r : Fin 2 → K) (A : GL (Fin 2) K)
     (hA : ∀ i j, ‖(A : Matrix (Fin 2) (Fin 2) K) i j‖ ≤ 1)
     (hiA : ∀ i j, ‖((A⁻¹ : GL (Fin 2) K) : Matrix (Fin 2) (Fin 2) K) i j‖ ≤ 1) :
@@ -697,7 +678,7 @@ private theorem row_norm_eq {K : Type*} [NormedField K] [IsUltrametricDist K]
   apply le_antisymm (max_le (row_le r A hA 0) (row_le r A hA 1))
   have he : rowAction (rowAction r A) A⁻¹ = r := by
     change ((r ᵥ* (A : Matrix (Fin 2) (Fin 2) K)) ᵥ* ((A⁻¹ : GL (Fin 2) K) : Matrix (Fin 2) (Fin 2) K)) = r
-    rw [Matrix.vecMul_vecMul, A.mul_inv, Matrix.vecMul_one]
+    simp
   have h0 := row_le (rowAction r A) A⁻¹ hiA 0
   have h1 := row_le (rowAction r A) A⁻¹ hiA 1
   rw [he] at h0 h1
@@ -708,8 +689,8 @@ theorem finiteFactor_eventually_one (r : Fin 2 → F) (hr : r ≠ 0)
     ∀ᶠ v : HeightOneSpectrum (RingOfIntegers F) in Filter.cofinite,
       finiteFactor F r A v = 1 := by
   have hn (a : F) (ha : a ≠ 0) : ∀ᶠ v : HeightOneSpectrum (RingOfIntegers F) in Filter.cofinite,
-      ‖algebraMap F (v.adicCompletion F) a‖ = 1 := by
-    exact Filter.eventually_cofinite.mpr
+      ‖algebraMap F (v.adicCompletion F) a‖ = 1 := 
+    Filter.eventually_cofinite.mpr
       (Function.HasFiniteMulSupport.fun_comp_of_injective
         FinitePlace.equivHeightOneSpectrum.symm.injective
         (FinitePlace.hasFiniteMulSupport ha))
@@ -725,15 +706,15 @@ theorem finiteFactor_eventually_one (r : Fin 2 → F) (hr : r ≠ 0)
     filter_upwards [hb (r 0), hb (r 1), hn (r i) hi] with v h0 h1 hi
     apply le_antisymm (max_le h0 h1)
     fin_cases i
-    · rw [← hi]; exact le_max_left _ _
-    · rw [← hi]; exact le_max_right _ _
+    · simp_all
+    simp_all
   have hA : ∀ᶠ v : HeightOneSpectrum (RingOfIntegers F) in Filter.cofinite,
-      ∀ i j, ‖finiteEval F v ((A : Matrix (Fin 2) (Fin 2) (Adele F)) i j)‖ ≤ 1 := by
-    exact Filter.eventually_all.mpr (fun i => Filter.eventually_all.mpr (fun j =>
+      ∀ i j, ‖finiteEval F v ((A : Matrix (Fin 2) (Fin 2) (Adele F)) i j)‖ ≤ 1 := 
+    Filter.eventually_all.mpr (fun i => Filter.eventually_all.mpr (fun j =>
       eventual_entry F ((A : Matrix (Fin 2) (Fin 2) (Adele F)) i j)))
   have hiA : ∀ᶠ v : HeightOneSpectrum (RingOfIntegers F) in Filter.cofinite,
-      ∀ i j, ‖finiteEval F v (((A⁻¹ : AdelGL F) : Matrix (Fin 2) (Fin 2) (Adele F)) i j)‖ ≤ 1 := by
-    exact Filter.eventually_all.mpr (fun i => Filter.eventually_all.mpr (fun j =>
+      ∀ i j, ‖finiteEval F v (((A⁻¹ : AdelGL F) : Matrix (Fin 2) (Fin 2) (Adele F)) i j)‖ ≤ 1 := 
+    Filter.eventually_all.mpr (fun i => Filter.eventually_all.mpr (fun j =>
       eventual_entry F (((A⁻¹ : AdelGL F) : Matrix (Fin 2) (Fin 2) (Adele F)) i j)))
   filter_upwards [hm, hA, hiA, eventual_unit F (GeneralLinearGroup.det A)] with v hm hA hiA hd
   unfold finiteFactor
@@ -746,22 +727,22 @@ theorem finiteFactor_eventually_one (r : Fin 2 → F) (hr : r ≠ 0)
     change ‖((finiteEval F v).mapMatrix (A : Matrix (Fin 2) (Fin 2) (Adele F))).det‖ = 1
     rw [← RingHom.map_det]
     exact hd
-  rw [hdv, Real.sqrt_one, div_one]
+  simp_all
 
-noncomputable def rowHeight (r : Fin 2 → F) (A : AdelGL F) : ℝ :=
+def rowHeight (r : Fin 2 → F) (A : AdelGL F) : ℝ :=
   (∏ v : InfinitePlace F, infiniteFactor F r A v) *
     ∏ᶠ v : HeightOneSpectrum (RingOfIntegers F), finiteFactor F r A v
 
-noncomputable def height (ℓ : Line F) (g : AdelPGL F) : ℝ :=
+def height (ℓ : Line F) (g : AdelPGL F) : ℝ :=
   rowHeight F ℓ.rep (liftAdel F g)
 
-private theorem row_smul {K : Type*} [Field K] (f : F →+* K)
+theorem row_smul {K : Type*} [Field K] (f : F →+* K)
     (r : Fin 2 → F) (a : F) (A : GL (Fin 2) K) (i : Fin 2) :
     rowAction (fun j => f ((a • r) j)) A i = f a * rowAction (fun j => f (r j)) A i := by
-  simp [rowAction, Pi.smul_apply, smul_eq_mul, map_mul, Finset.mul_sum, mul_assoc]
+  simp [rowAction, Pi.smul_apply, smul_eq_mul, map_mul, mul_assoc]
   ring
 
-private theorem finiteFactor_smul (r : Fin 2 → F) (a : F) (A : AdelGL F)
+theorem finiteFactor_smul (r : Fin 2 → F) (a : F) (A : AdelGL F)
     (v : HeightOneSpectrum (RingOfIntegers F)) :
     finiteFactor F (a • r) A v =
       ‖algebraMap F (v.adicCompletion F) a‖ * finiteFactor F r A v := by
@@ -770,7 +751,7 @@ private theorem finiteFactor_smul (r : Fin 2 → F) (a : F) (A : AdelGL F)
   rw [row_smul, row_smul, norm_mul, norm_mul, ← mul_max_of_nonneg _ _ (norm_nonneg _)]
   ring
 
-private theorem infiniteFactor_smul (r : Fin 2 → F) (a : F) (A : AdelGL F)
+theorem infiniteFactor_smul (r : Fin 2 → F) (a : F) (A : AdelGL F)
     (v : InfinitePlace F) :
     infiniteFactor F (a • r) A v =
       (v a) ^ v.mult * infiniteFactor F r A v := by
@@ -780,10 +761,7 @@ private theorem infiniteFactor_smul (r : Fin 2 → F) (a : F) (A : AdelGL F)
   have he : ∀ b c d : ℝ, (b*c)^2+(b*d)^2 = b^2*(c^2+d^2) := by intros; ring
   rw [he, Real.sqrt_mul (sq_nonneg _), Real.sqrt_sq (norm_nonneg _)]
   rw [mul_div_assoc, mul_pow]
-  have hn : ‖algebraMap F v.Completion a‖ = v a :=
-    InfinitePlace.Completion.norm_coe v ((WithAbs.equiv v.1).symm a)
-  rw [hn]
-  rfl
+  aesop
 
 theorem rowHeight_smul (r : Fin 2 → F) (hr : r ≠ 0)
     (a : F) (ha : a ≠ 0) (A : AdelGL F) :
@@ -810,22 +788,15 @@ theorem rowHeight_smul (r : Fin 2 → F) (hr : r ≠ 0)
   unfold rowHeight
   simp_rw [finiteFactor_smul, infiniteFactor_smul]
   rw [Finset.prod_mul_distrib, finprod_mul_distrib ha' hf]
-  calc
-    _ = ((∏ v : InfinitePlace F, v a ^ v.mult) *
-        (∏ᶠ v : HeightOneSpectrum (RingOfIntegers F),
-          ‖algebraMap F (v.adicCompletion F) a‖)) *
-        ((∏ v : InfinitePlace F, infiniteFactor F r A v) *
-          ∏ᶠ v : HeightOneSpectrum (RingOfIntegers F), finiteFactor F r A v) := by ring
-    _ = _ := by rw [hp, one_mul]
+  grind
 
-private theorem row_scalar {K : Type*} [CommRing K]
+theorem row_scalar {K : Type*} [CommRing K]
     (r : Fin 2 → K) (A : GL (Fin 2) K) (u : Kˣ) (i : Fin 2) :
     rowAction r (A * GeneralLinearGroup.scalar (Fin 2) u) i =
       (u : K) * rowAction r A i := by
-  simp [rowAction, GeneralLinearGroup.coe_scalar, Matrix.scalar, Matrix.mul_diagonal,
-    Finset.mul_sum, mul_comm, mul_left_comm, mul_assoc]
+  simp [rowAction, GeneralLinearGroup.coe_scalar, Matrix.scalar, Matrix.mul_diagonal, mul_comm, mul_left_comm]
   ring
-private theorem det_scalar_norm {K : Type*} [NormedField K]
+theorem det_scalar_norm {K : Type*} [NormedField K]
     (A : GL (Fin 2) K) (u : Kˣ) :
     Real.sqrt ‖((GeneralLinearGroup.det (A * GeneralLinearGroup.scalar (Fin 2) u)) : K)‖ =
       ‖(u : K)‖ * Real.sqrt ‖((GeneralLinearGroup.det A) : K)‖ := by
@@ -844,7 +815,7 @@ private theorem finite_scalar {F : Type} [Field F] [NumberField F]
   rw [row_scalar, row_scalar, det_scalar_norm, norm_mul, norm_mul,
     ← mul_max_of_nonneg _ _ (norm_nonneg _)]
   exact mul_div_mul_left _ _ (norm_ne_zero_iff.mpr (Units.ne_zero _))
-private theorem infinite_scalar {F : Type} [Field F] [NumberField F]
+theorem infinite_scalar {F : Type} [Field F] [NumberField F]
     (r : Fin 2 → F) (A : AdelGL F) (u : (Adele F)ˣ)
     (v : NumberField.InfinitePlace F) :
     infiniteFactor F r (A * GeneralLinearGroup.scalar (Fin 2) u) v =
@@ -875,13 +846,13 @@ theorem height_mk (r : Fin 2 → F) (hr : r ≠ 0) (A : AdelGL F) :
   obtain ⟨hfin, hinf⟩ := rowHeight_scalar_invariant F r _ A hA
   have h₁ : rowHeight F r (liftAdel F (ProjGenLinGroup.mk A)) = rowHeight F r A := by
     unfold rowHeight
-    rw [Finset.prod_congr rfl (fun i _ => hinf i), finprod_congr hfin]
+    simp_all
   unfold height
   rw [← hu]
   change rowHeight F ((u : F) • r) _ = _
   rw [rowHeight_smul F r hr (u : F) u.ne_zero, h₁]
 
-private theorem local_row_ne_zero {K : Type*} [Field K]
+theorem local_row_ne_zero {K : Type*} [Field K]
     (f : F →+* K) (r : Fin 2 → F) (hr : r ≠ 0) (A : GL (Fin 2) K) :
     rowAction (fun i => f (r i)) A ≠ 0 := by
   intro h
@@ -891,7 +862,7 @@ private theorem local_row_ne_zero {K : Type*} [Field K]
   funext i
   exact f.injective (by simpa using congrFun he i)
 
-private theorem norm_max_pos {K : Type*} [NormedField K]
+theorem norm_max_pos {K : Type*} [NormedField K]
     (r : Fin 2 → K) (hr : r ≠ 0) : 0 < max ‖r 0‖ ‖r 1‖ := by
   have hn : r 0 ≠ 0 ∨ r 1 ≠ 0 := by
     by_contra h
@@ -899,18 +870,16 @@ private theorem norm_max_pos {K : Type*} [NormedField K]
     apply hr
     funext i
     fin_cases i <;> simp [h]
-  rcases hn with hn | hn
-  · exact lt_of_lt_of_le (norm_pos_iff.mpr hn) (le_max_left _ _)
-  · exact lt_of_lt_of_le (norm_pos_iff.mpr hn) (le_max_right _ _)
+  simp_all
 
-private theorem finiteFactor_pos (r : Fin 2 → F) (hr : r ≠ 0) (A : AdelGL F)
+theorem finiteFactor_pos (r : Fin 2 → F) (hr : r ≠ 0) (A : AdelGL F)
     (v : HeightOneSpectrum (RingOfIntegers F)) : 0 < finiteFactor F r A v := by
   unfold finiteFactor
   exact div_pos
     (norm_max_pos _ (local_row_ne_zero F (algebraMap F _) r hr _))
     (Real.sqrt_pos.mpr (norm_pos_iff.mpr (Units.ne_zero _)))
 
-private theorem infiniteFactor_pos (r : Fin 2 → F) (hr : r ≠ 0) (A : AdelGL F)
+theorem infiniteFactor_pos (r : Fin 2 → F) (hr : r ≠ 0) (A : AdelGL F)
     (v : InfinitePlace F) : 0 < infiniteFactor F r A v := by
   unfold infiniteFactor
   apply pow_pos
@@ -935,20 +904,20 @@ theorem rowHeight_pos (r : Fin 2 → F) (hr : r ≠ 0) (A : AdelGL F) :
     (finprod_induction (fun x : ℝ => 0 < x) zero_lt_one
       (fun _ _ => mul_pos) (fun v => finiteFactor_pos F r hr A v))
 
-theorem height_pos (ℓ : Line F) (g : AdelPGL F) : 0 < height F ℓ g := by
-  exact rowHeight_pos F ℓ.rep ℓ.rep_nonzero (liftAdel F g)
+theorem height_pos (ℓ : Line F) (g : AdelPGL F) : 0 < height F ℓ g := 
+  rowHeight_pos F ℓ.rep ℓ.rep_nonzero (liftAdel F g)
 
-private theorem fin_one (r : Fin 2 → F) (v : HeightOneSpectrum (RingOfIntegers F)) :
+theorem fin_one (r : Fin 2 → F) (v : HeightOneSpectrum (RingOfIntegers F)) :
   finiteFactor F r 1 v = max ((FinitePlace.equivHeightOneSpectrum.symm v) (r 0)) ((FinitePlace.equivHeightOneSpectrum.symm v) (r 1)) := by
-  simp [finiteFactor, rowAction, GeneralLinearGroup.coe_one, Matrix.one_apply]
+  simp [finiteFactor, rowAction, Matrix.one_apply]
   rfl
 private theorem inf_one (r : Fin 2 → F) (v : InfinitePlace F) :
   infiniteFactor F r 1 v = (Real.sqrt ((v (r 0))^2 + (v (r 1))^2)) ^ v.mult := by
   have hn (a : F) : ‖algebraMap F v.Completion a‖ = v a :=
-    InfinitePlace.Completion.norm_coe v ((WithAbs.equiv v.1).symm a)
-  simp [infiniteFactor, rowAction, GeneralLinearGroup.coe_one, Matrix.one_apply, hn]
+    by aesop
+  simp [infiniteFactor, rowAction, Matrix.one_apply]
   rfl
-private theorem mulHeight_formula (r : Fin 2 → F) (hr : r ≠ 0) :
+theorem mulHeight_formula (r : Fin 2 → F) (hr : r ≠ 0) :
     Height.mulHeight r = (∏ v : InfinitePlace F, (max (v (r 0)) (v (r 1))) ^ v.mult) *
       ∏ᶠ v : HeightOneSpectrum (RingOfIntegers F), max ((FinitePlace.equivHeightOneSpectrum.symm v) (r 0)) ((FinitePlace.equivHeightOneSpectrum.symm v) (r 1)) := by
   rw [NumberField.mulHeight_eq hr]
@@ -956,14 +925,11 @@ private theorem mulHeight_formula (r : Fin 2 → F) (hr : r ≠ 0) :
     apply le_antisymm
     · apply ciSup_le; intro i; fin_cases i
       · exact le_max_left _ _
-      · exact le_max_right _ _
+      simp
     · exact max_le (le_ciSup (Set.finite_range f).bddAbove 0) (le_ciSup (Set.finite_range f).bddAbove 1)
   simp only [hs]
   rw [← finprod_comp_equiv (FinitePlace.equivHeightOneSpectrum (K := F))]
-  congr 1
-  apply finprod_congr
-  intro v
-  rw [Equiv.symm_apply_apply]
+  grind
 private theorem euclidean_bounds (a b : ℝ) (ha : 0 ≤ a) (hb : 0 ≤ b) :
     max a b ≤ Real.sqrt (a^2 + b^2) ∧
     Real.sqrt (a^2 + b^2) ≤ 2 * max a b := by
@@ -990,15 +956,15 @@ theorem height_one_compare :
       Projectivization.mulHeight_mk]
     have hp : 0 ≤ ∏ᶠ v : HeightOneSpectrum (RingOfIntegers F),
         max ((FinitePlace.equivHeightOneSpectrum.symm v) (r 0))
-          ((FinitePlace.equivHeightOneSpectrum.symm v) (r 1)) := by
-      exact finprod_nonneg (fun v => (AbsoluteValue.nonneg _ _).trans (le_max_left _ _))
+          ((FinitePlace.equivHeightOneSpectrum.symm v) (r 1)) := 
+      finprod_nonneg (fun v => (AbsoluteValue.nonneg _ _).trans (le_max_left _ _))
     have hl : Height.mulHeight r ≤ rowHeight F r 1 := by
       rw [mulHeight_formula F r hr]
       unfold rowHeight
       simp_rw [fin_one, inf_one]
       apply mul_le_mul_of_nonneg_right _ hp
       apply Finset.prod_le_prod₀
-      · intro v _; positivity
+      · simp
       · intro v _
         exact pow_le_pow_left₀ (by positivity)
           (euclidean_bounds _ _ (AbsoluteValue.nonneg _ _) (AbsoluteValue.nonneg _ _)).1 _
@@ -1011,7 +977,7 @@ theorem height_one_compare :
       change _ ≤ (∏ v : InfinitePlace F, (2 : ℝ)^v.mult) * _
       rw [← Finset.prod_mul_distrib]
       apply Finset.prod_le_prod₀
-      · intro v _; positivity
+      · simp
       · intro v _
         rw [← mul_pow]
         exact pow_le_pow_left₀ (Real.sqrt_nonneg _)
@@ -1046,9 +1012,3 @@ theorem compact_uniform_height (C : Set (AdelPGL F)) (hC : IsCompact C) :
       rw [height_mk,
         ← ProjGenLinGroup.mk_one (n := Fin 2) (R := Adele F), height_mk]
       exact h
-
-end DedekindZetaZeroFree.KPChamberHeight
-
-end
-
-end

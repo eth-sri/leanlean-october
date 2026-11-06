@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.Metaplectic.Torus.PeriodizationAndAveraging
 
 @[expose] public section
 
-noncomputable section
 open scoped Classical NumberField NNReal BigOperators
 open NumberField IsDedekindDomain
 set_option backward.isDefEq.respectTransparency false
@@ -59,7 +58,7 @@ theorem reference_local_mem (q : HeightOneSpectrum (𝓞 F))
     simp [KPGlobalTorusFiniteStages.localUntwistedEvaluation,
       KPGlobalTorusFiniteStages.localReference, hm]
   rw [← C.subgroup_matches q]
-  exact Subgroup.mem_map.mpr ⟨t, hm, rfl⟩
+  simp_all
 
 theorem finiteReference_support (T : Finset (HeightOneSpectrum (𝓞 F)))
     (hT : C.exceptional ⊆ T) (e : KPGlobalTorusFunctionData.E F ζ hζ)
@@ -71,8 +70,8 @@ theorem finiteReference_support (T : Finset (HeightOneSpectrum (𝓞 F)))
   obtain ⟨raw, he⟩ := hsur e.val
   have hd := FullTorusFormula.raw_diagonal F ζ hζ e raw he
   let t (q : HeightOneSpectrum (𝓞 F)) : KPLocalExceptionalConstruction.actualTorus F ζ hζ q :=
-    ⟨KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q) (raw (Sum.inr q)), by
-      exact ⟨(raw (Sum.inr q)).g, rfl, (hd (Sum.inr q)).1, (hd (Sum.inr q)).2⟩⟩
+    ⟨KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q) (raw (Sum.inr q)), 
+      ⟨(raw (Sum.inr q)).g, rfl, (hd (Sum.inr q)).1, (hd (Sum.inr q)).2⟩⟩
   have hf := FullTorusFormula.finiteTensorRealization_full_raw_formula F ζ hζ P C T hT
     (fun q => KPGlobalTorusFiniteStages.localReference F ζ hζ P C q.val) raw t e
     (fun _ => rfl) he
@@ -81,7 +80,7 @@ theorem finiteReference_support (T : Finset (HeightOneSpectrum (𝓞 F)))
   have hprod : (∏ᶠ q, KPGlobalTorusFiniteStages.localUntwistedEvaluation F ζ hζ P C q
       (KPGlobalTorusFiniteStages.localReference F ζ hζ P C q) (t q)) ≠ 0 := by
     intro hh
-    exact hne (by rw [hf, hh, mul_zero])
+    simp_all
   have hs := KPGlobalTorusFiniteStages.local_evaluation_finiteSupport F ζ hζ P C T hT
     (fun q => KPGlobalTorusFiniteStages.localReference F ζ hζ P C q.val) raw t (fun _ => rfl)
   simp only [dite_eq_ite, ite_self] at hs
@@ -143,7 +142,3 @@ theorem reference_periodization_one (T : Finset (HeightOneSpectrum (𝓞 F)))
   rw [mul_one, TorusReference.finiteReference_one F ζ hζ P C T hT, mul_one, hc] at hv
   rw [show f.val.val (s.lift 1).val = _ from hv]
   simp
-
-end DedekindZetaZeroFree.EisensteinReferenceSections.ReferencePeriodization
-
-end

@@ -36,8 +36,7 @@ theorem traceQuotientPairing_left_radical
     simpa only [traceQuotientPairing_mk, mul_comm] using
       hx (fractionalIdealQuotientMk
         (traceDualFractionalIdeal J) (traceDualFractionalIdeal I) ⟨b, hb⟩)
-  · rintro rfl y
-    exact traceQuotientPairing_zero_left I J hI hJ hJI y
+  simp_all
 
 theorem traceQuotientPairing_right_radical
     (y : fractionalIdealQuotient
@@ -54,8 +53,7 @@ theorem traceQuotientPairing_right_radical
     intro a ha
     simpa only [traceQuotientPairing_mk] using
       hy (fractionalIdealQuotientMk I J ⟨a, ha⟩)
-  · rintro rfl x
-    exact traceQuotientPairing_zero_right I J hI hJ hJI x
+  simp_all
 
 theorem traceQuotientPairing_injective :
     Function.Injective (traceQuotientPairing I J hI hJ hJI) := by
@@ -64,8 +62,7 @@ theorem traceQuotientPairing_injective :
   intro x hx
   apply (traceQuotientPairing_left_radical I J hI hJ hJI x).mp
   intro y
-  have h : traceQuotientPairing I J hI hJ hJI x = 0 := hx
-  simpa only [h, AddChar.zero_apply]
+  simp_all
 
 def traceQuotientPairingTranspose :
     fractionalIdealQuotient
@@ -77,19 +74,11 @@ def traceQuotientPairingTranspose :
       map_add_eq_mul' := fun x x' => traceQuotientPairing_add_left I J hI hJ hJI x x' y }
   map_zero' := by
     ext x
-    exact traceQuotientPairing_zero_right I J hI hJ hJI x
+    simp
   map_add' := by
     intro y y'
     ext x
-    exact traceQuotientPairing_add_right I J hI hJ hJI x y y'
-
-@[simp] theorem traceQuotientPairingTranspose_apply
-    (y : fractionalIdealQuotient
-      (traceDualFractionalIdeal J) (traceDualFractionalIdeal I))
-    (x : fractionalIdealQuotient I J) :
-    traceQuotientPairingTranspose I J hI hJ hJI y x =
-      traceQuotientPairing I J hI hJ hJI x y := by
-  rfl
+    simp
 
 theorem traceQuotientPairingTranspose_injective :
     Function.Injective (traceQuotientPairingTranspose I J hI hJ hJI) := by
@@ -101,7 +90,3 @@ theorem traceQuotientPairingTranspose_injective :
   have h : traceQuotientPairingTranspose I J hI hJ hJI y = 0 := hy
   change traceQuotientPairingTranspose I J hI hJ hJI y x = 1
   simpa only [h, AddChar.zero_apply]
-
-end DedekindZetaZeroFree.Hecke
-
-end

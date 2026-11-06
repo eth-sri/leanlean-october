@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Topology of the principal-unit inverse limit
 
@@ -42,7 +39,7 @@ variable {K : Type u} [Field K]
 open Internal
 
 /-- Embed `U^1/U^(n+1)` as its class inside `O^*/U^(n+1)`. -/
-noncomputable def Internal.principalUnitQuotientCarrierToFull
+def Internal.principalUnitQuotientCarrierToFull
     (F : CompleteDVF.{u, v} K) (n : ℕ) :
     Internal.principalUnitQuotientCarrier F n →*
       F.valuationSubringˣ ⧸ (LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) (n + 1) :=
@@ -74,8 +71,8 @@ The specified map is injective: `Function.Injective (principalUnitQuotientCarrie
 -/
 theorem Internal.principalUnitQuotientCarrierToFull_injective
     (F : CompleteDVF.{u, v} K) (n : ℕ) :
-    Function.Injective (principalUnitQuotientCarrierToFull F n) := by
-  exact Subtype.val_injective.comp
+    Function.Injective (principalUnitQuotientCarrierToFull F n) := 
+  Subtype.val_injective.comp
     ((higherPrincipalUnitGroup.toPrincipalUnitFiltration F).principalUnitSubquotientEquivClassInQuotientOfLe
         (Nat.le_add_left 1 n)).injective
 
@@ -90,29 +87,8 @@ def Internal.principalUnitToClassInFullQuotient
     ⟨QuotientGroup.mk (x : F.valuationSubringˣ),
       (higherPrincipalUnitGroup.toPrincipalUnitFiltration F).principalUnitSubgroupClassInQuotient_mk_mem
         x.property⟩
-  map_one' := by ext; rfl
-  map_mul' x y := by ext; rfl
-
-/--
-Establishes the identity `((higherPrincipalUnitGroup.toPrincipalUnitFiltration
-F).principalUnitSubquotientEquivClassInQuotientOfLe (Nat.le_add_left 1 n)).symm
-(principalUnitToClassInFullQuotient F n x) = (higherPrincipalUnitGroup.toPrincipalUnitFiltration
-F).principalUnitSubquotientMk 1 (n + 1) x`.
--/
-@[simp] theorem Internal.principalUnitQuotientCarrierEquivClass_symm_toClass
-    (F : CompleteDVF.{u, v} K) (n : ℕ)
-    (x : (LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) 1) :
-    ((higherPrincipalUnitGroup.toPrincipalUnitFiltration F).principalUnitSubquotientEquivClassInQuotientOfLe
-          (Nat.le_add_left 1 n)).symm
-        (principalUnitToClassInFullQuotient F n x) =
-      (higherPrincipalUnitGroup.toPrincipalUnitFiltration F).principalUnitSubquotientMk
-        1 (n + 1) x := by
-  apply ((higherPrincipalUnitGroup.toPrincipalUnitFiltration F).principalUnitSubquotientEquivClassInQuotientOfLe
-      (Nat.le_add_left 1 n)).injective
-  rw [MulEquiv.apply_symm_apply]
-  apply Subtype.ext
-  exact ((higherPrincipalUnitGroup.toPrincipalUnitFiltration F).coe_principalUnitSubquotientEquivClassInQuotientOfLe_mk
-      (Nat.le_add_left 1 n) x).symm
+  map_one' := by rfl
+  map_mul' x y := by rfl
 
 /--
 Establishes the identity `higherUnitQuotientTransition F hmn (principalUnitQuotientCarrierToFull F
@@ -134,12 +110,10 @@ theorem Internal.principalUnitQuotientCarrierToFull_transition
             (principalUnitQuotientCarrierTransition F hmn q))
       (higherPrincipalUnitGroup.toPrincipalUnitFiltration F) 1 (n + 1) q ?_
   intro x
-  exact (congrArg (higherUnitQuotientTransition F hmn)
-    (principalUnitQuotientCarrierToFull_mk F n x)).trans
-      (principalUnitQuotientCarrierToFull_mk F m x).symm
+  rfl
 
 /-- Forget that every coordinate is represented by a first principal unit. -/
-noncomputable def Internal.principalUnitInverseLimitCarrierToFull
+def Internal.principalUnitInverseLimitCarrierToFull
     (F : CompleteDVF.{u, v} K) :
     Internal.principalUnitInverseLimitCarrier F →*
       Internal.higherUnitInverseLimitCarrier F where
@@ -148,17 +122,14 @@ noncomputable def Internal.principalUnitInverseLimitCarrierToFull
       intro m n hmn
       rw [principalUnitQuotientCarrierToFull_transition, q.2 hmn]⟩
   map_one' := by
-    apply Subtype.ext
-    funext n
-    change principalUnitQuotientCarrierToFull F n 1 = 1
-    exact map_one _
+    rfl
   map_mul' q r := by
     apply Subtype.ext
     funext n
     change principalUnitQuotientCarrierToFull F n (q.1 n * r.1 n) =
       principalUnitQuotientCarrierToFull F n (q.1 n) *
         principalUnitQuotientCarrierToFull F n (r.1 n)
-    exact map_mul _ _ _
+    simp
 
 /-- Canonical carrier map from `U^1` to its level-quotient limit. -/
 def Internal.principalUnitToInverseLimitCarrier
@@ -170,9 +141,9 @@ def Internal.principalUnitToInverseLimitCarrier
         (higherPrincipalUnitGroup.toPrincipalUnitFiltration F).principalUnitSubquotientMk
           1 (n + 1) x, by
       intro m n hmn
-      exact principalUnitQuotientCarrierTransition_mk F hmn x⟩
-  map_one' := by ext n; rfl
-  map_mul' x y := by ext n; rfl
+      rfl⟩
+  map_one' := by rfl
+  map_mul' x y := by rfl
 
 /--
 Establishes the identity `principalUnitInverseLimitCarrierToFull F
@@ -188,7 +159,7 @@ theorem Internal.principalUnitInverseLimitCarrierToFull_to
   ext n
   simp only [compatibleGroupFamiliesEval_apply]
   rw [unitsEquivHigherUnitQuotientInverseLimit_apply]
-  exact principalUnitQuotientCarrierToFull_mk F n x
+  rfl
 
 /-- Establishes the identity `principalUnitQuotientCarrierToFull F 0 q = 1`. -/
 theorem Internal.principalUnitQuotientCarrierToFull_zero_eq_one
@@ -205,7 +176,7 @@ theorem Internal.principalUnitQuotientCarrierToFull_zero_eq_one
 
 /-- Recover a first principal unit from a compatible family of its finite
 classes, by applying the adic inverse-limit equivalence to the underlying full unit family. -/
-noncomputable def Internal.principalUnitInverseLimitCarrierInv
+def Internal.principalUnitInverseLimitCarrierInv
     (F : CompleteDVF.{u, v} K)
     (q : Internal.principalUnitInverseLimitCarrier F) :
     (LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) 1 := by
@@ -231,12 +202,12 @@ theorem Internal.unitsEquiv_principalUnitInverseLimitCarrierInv
     (q : Internal.principalUnitInverseLimitCarrier F) :
     unitsEquivHigherUnitQuotientInverseLimit F
         (principalUnitInverseLimitCarrierInv F q : F.valuationSubringˣ) =
-      principalUnitInverseLimitCarrierToFull F q := by
-  exact (unitsEquivHigherUnitQuotientInverseLimit F).apply_symm_apply _
+      principalUnitInverseLimitCarrierToFull F q := 
+  (unitsEquivHigherUnitQuotientInverseLimit F).apply_symm_apply _
 
 /-- Algebraic restriction of the adic inverse-limit equivalence:
 `U^1` is the inverse limit of `U^1/U^(n+1)`. -/
-noncomputable def Internal.principalUnitMulEquivInverseLimitCarrier
+def Internal.principalUnitMulEquivInverseLimitCarrier
     (F : CompleteDVF.{u, v} K) :
     (LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) 1 ≃*
       Internal.principalUnitInverseLimitCarrier F where
@@ -250,7 +221,7 @@ noncomputable def Internal.principalUnitMulEquivInverseLimitCarrier
             (principalUnitToInverseLimitCarrier F x)) =
         (x : F.valuationSubringˣ)
     rw [principalUnitInverseLimitCarrierToFull_to]
-    exact (unitsEquivHigherUnitQuotientInverseLimit F).symm_apply_apply _
+    simp
   right_inv q := by
     ext n
     apply principalUnitQuotientCarrierToFull_injective F n
@@ -271,13 +242,13 @@ noncomputable def Internal.principalUnitMulEquivInverseLimitCarrier
       _ = (principalUnitInverseLimitCarrierToFull F q).1 n := by
         rw [unitsEquiv_principalUnitInverseLimitCarrierInv]
       _ = principalUnitQuotientCarrierToFull F n (q.1 n) := rfl
-  map_mul' x y := by
-    exact (principalUnitToInverseLimitCarrier F).map_mul x y
+  map_mul' x y := 
+    (principalUnitToInverseLimitCarrier F).map_mul x y
 
 /-- Topological restriction of the adic inverse-limit equivalence: with the adic topology on `U^1` and
 the product topology of the discrete quotient coordinates,
 `U^1` is homeomorphic to `lim U^1/U^(n+1)`. -/
-noncomputable def Internal.principalUnitHomeomorphInverseLimitCarrier
+def Internal.principalUnitHomeomorphInverseLimitCarrier
     (F : CompleteDVF.{u, v} K) :
     letI : TopologicalSpace F.valuationSubring :=
       (uniformizerPowerIdeal (chosenPrincipalUnitPadicUniformizer F) 1).adicTopology
@@ -333,11 +304,7 @@ noncomputable def Internal.principalUnitHomeomorphInverseLimitCarrier
             (continuous_apply n).comp continuous_subtype_val
           have h := hcoord.comp (hfull.continuous.comp hsub)
           convert h using 1
-          funext x
-          have hx :=
-            Internal.unitsHomeomorphHigherUnitQuotientInverseLimit_apply
-              F (x : F.valuationSubringˣ) n
-          simpa only [hfull, Function.comp_apply] using hx.symm
+          rfl
         let f := principalUnitQuotientCarrierToFull F n
         let decode :
             (F.valuationSubringˣ ⧸
@@ -369,10 +336,10 @@ noncomputable def Internal.principalUnitHomeomorphInverseLimitCarrier
           (principalUnitQuotientCarrierToFull_injective F n) _)
       (fun x : (LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) 1 => by
         intro i j hij
-        exact (e x).2 hij)
+        rfl)
   · have hToFull : Continuous fun q : Internal.principalUnitInverseLimitCarrier F =>
-        principalUnitInverseLimitCarrierToFull F q := by
-      exact Continuous.subtype_mk
+        principalUnitInverseLimitCarrierToFull F q := 
+      Continuous.subtype_mk
         (continuous_pi fun n => by
           change Continuous fun q : Internal.principalUnitInverseLimitCarrier F =>
             principalUnitQuotientCarrierToFull F n (q.1 n)
@@ -437,10 +404,8 @@ The defining evaluation formula for `Internal.principalUnitMulEquivInverseLimitC
         1 (n + 1) x :=
   rfl
 
-
-
 /-- Additive form of the algebraic restriction `U^1 ≃ lim U^1/U^(n+1)`. -/
-noncomputable def Internal.principalUnitAddEquivInverseLimitCarrier
+def Internal.principalUnitAddEquivInverseLimitCarrier
     (F : CompleteDVF.{u, v} K) :
     Additive ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) 1) ≃+
       Additive (Internal.principalUnitInverseLimitCarrier F) where
@@ -449,29 +414,14 @@ noncomputable def Internal.principalUnitAddEquivInverseLimitCarrier
   invFun x := Additive.ofMul
     ((principalUnitMulEquivInverseLimitCarrier F).symm (Additive.toMul x))
   left_inv x := by
-    change Additive.ofMul
-        ((principalUnitMulEquivInverseLimitCarrier F).symm
-          (principalUnitMulEquivInverseLimitCarrier F (Additive.toMul x))) = x
-    rw [(principalUnitMulEquivInverseLimitCarrier F).symm_apply_apply]
-    rfl
+    simp
   right_inv x := by
-    change Additive.ofMul
-        (principalUnitMulEquivInverseLimitCarrier F
-          ((principalUnitMulEquivInverseLimitCarrier F).symm
-            (Additive.toMul x))) = x
-    rw [(principalUnitMulEquivInverseLimitCarrier F).apply_symm_apply]
-    rfl
+    simp
   map_add' x y := by
-    change Additive.ofMul
-        (principalUnitMulEquivInverseLimitCarrier F
-          (Additive.toMul x * Additive.toMul y)) =
-      Additive.ofMul
-        (principalUnitMulEquivInverseLimitCarrier F (Additive.toMul x) *
-          principalUnitMulEquivInverseLimitCarrier F (Additive.toMul y))
-    rw [map_mul]
+    rfl
 
 /-- Additive form of the topological inverse-limit equivalence. -/
-noncomputable def Internal.principalUnitAddHomeomorphInverseLimitCarrier
+def Internal.principalUnitAddHomeomorphInverseLimitCarrier
     (F : CompleteDVF.{u, v} K) :
     letI : TopologicalSpace F.valuationSubring :=
       (uniformizerPowerIdeal (chosenPrincipalUnitPadicUniformizer F) 1).adicTopology
@@ -497,9 +447,3 @@ theorem Internal.principalUnitAddHomeomorphInverseLimitCarrier_apply
     Internal.principalUnitAddHomeomorphInverseLimitCarrier F x =
       Internal.principalUnitAddEquivInverseLimitCarrier F x :=
   rfl
-
-end higherPrincipalUnitGroup
-end CompleteDVF
-end LocalFieldTheory.DiscreteValuationField
-
-end

@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # The `n`-fold multiple quotient of `Z_p`
 
@@ -36,21 +31,6 @@ namespace LocalFieldTheory.DiscreteValuationField
 
 variable {p : ℕ} [Fact p.Prime]
 
-/-- The normalized local absolute value of a natural number in a degree-`d`
-mixed-characteristic local field.  Since `d = ef` and `q = p^f`, this is
-exactly `q^(-e v_p(n))`, the normalized factor `|n|_𝔭`. -/
-def normalizedLocalNatAbs (p d n : ℕ) : ℚ :=
-  (p : ℚ) ^ (-(d * padicValNat p n : ℕ) : ℤ)
-
-omit [Fact p.Prime] in
-/-- The reciprocal of the normalized local absolute value is the integral
-defect factor occurring in the local-field power-index formula. -/
-theorem one_div_normalizedLocalNatAbs (d n : ℕ) :
-    1 / normalizedLocalNatAbs p d n =
-      (p ^ (d * padicValNat p n) : ℕ) := by
-  simp [normalizedLocalNatAbs, div_eq_mul_inv]
-  norm_cast
-
 /-- Additive `n`-fold multiples in `Z_p` are the principal ideal generated
 by the natural number `n`. -/
 theorem nsmulAddSubgroup_padicInt_eq_span (n : ℕ) :
@@ -63,19 +43,16 @@ theorem nsmulAddSubgroup_padicInt_eq_span (n : ℕ) :
   rw [Ideal.mem_span_singleton]
   constructor
   · rintro ⟨y, rfl⟩
-    refine ⟨y, ?_⟩
-    simp [nsmul_eq_mul]
+    simp
   · rintro ⟨y, rfl⟩
-    refine ⟨y, ?_⟩
-    simp [nsmul_eq_mul]
+    simp
 
 /-- The valuation of a nonzero natural number in `Z_p` is `v_p(n)`. -/
 theorem padicInt_valuation_natCast (n : ℕ) :
     (n : ℤ_[p]).valuation = padicValNat p n := by
   have h : (((n : ℤ_[p]) : ℚ_[p])).valuation =
       (padicValNat p n : ℤ) := by
-    simpa only [PadicInt.coe_natCast] using
-      Padic.valuation_natCast (p := p) n
+    simp
   rw [PadicInt.valuation_coe] at h
   exact_mod_cast h
 
@@ -90,7 +67,7 @@ theorem padicInt_span_natCast_eq_span_p_pow_padicValNat
   have hfactor := PadicInt.unitCoeff_spec hnZ
   rw [padicInt_valuation_natCast] at hfactor
   rw [hfactor]
-  exact associated_unit_mul_left _ _ (PadicInt.unitCoeff hnZ).isUnit
+  simp
 
 /-- The subgroup of `n`-fold multiples is the kernel of reduction modulo
 `p ^ v_p(n)`. -/
@@ -105,7 +82,7 @@ theorem nsmulAddSubgroup_padicInt_eq_ker_toZModPow
 
 /-- The additive quotient `Z_p / n Z_p` is the expected finite cyclic
 group of order `p ^ v_p(n)`. -/
-noncomputable def padicIntNsmulQuotientEquivZMod
+def padicIntNsmulQuotientEquivZMod
     (n : ℕ) (hn : n ≠ 0) :
     ℤ_[p] ⧸ LocalFieldTheory.nsmulAddSubgroup ℤ_[p] n ≃+
       ZMod (p ^ padicValNat p n) := by
@@ -122,24 +99,16 @@ noncomputable def padicIntNsmulQuotientEquivZMod
 
 /-- The quotient `Z_p / n Z_p` is finite for nonzero `n`, transported from
 its canonical `ZMod` model. -/
-noncomputable instance finite_padicInt_nsmulQuotient
+instance finite_padicInt_nsmulQuotient
     (n : ℕ) [NeZero n] :
     Finite (ℤ_[p] ⧸ LocalFieldTheory.nsmulAddSubgroup ℤ_[p] n) :=
   Finite.of_equiv (ZMod (p ^ padicValNat p n))
     (padicIntNsmulQuotientEquivZMod (p := p) n (NeZero.ne n)).symm.toEquiv
 
-/-- Cardinality of the one-dimensional p-adic free-factor quotient. -/
-theorem card_padicInt_nsmulQuotient
-    (n : ℕ) [NeZero n] :
-    Nat.card (ℤ_[p] ⧸ LocalFieldTheory.nsmulAddSubgroup ℤ_[p] n) =
-      p ^ padicValNat p n := by
-  rw [Nat.card_congr (padicIntNsmulQuotientEquivZMod
-    (p := p) n (NeZero.ne n)).toEquiv, Nat.card_zmod]
-
 /-- Coordinatewise reduction identifies the quotient of an arbitrary product
 of copies of `Z_p` by `n`-fold multiples with a product of finite cyclic
 groups. -/
-noncomputable def padicIntPiNsmulQuotientEquiv
+def padicIntPiNsmulQuotientEquiv
     {ι : Type u} (n : ℕ) (hn : n ≠ 0) :
     (ι → ℤ_[p]) ⧸ LocalFieldTheory.nsmulAddSubgroup (ι → ℤ_[p]) n ≃+
       (ι → ZMod (p ^ padicValNat p n)) := by
@@ -171,7 +140,7 @@ noncomputable def padicIntPiNsmulQuotientEquiv
       change f (n • y) = 0
       ext i
       have hi : n • y i ∈ LocalFieldTheory.nsmulAddSubgroup ℤ_[p] n :=
-        (LocalFieldTheory.mem_nsmulAddSubgroup_iff (A := ℤ_[p])).2 ⟨y i, rfl⟩
+        by simp
       rw [hkerOne] at hi
       exact hi
     · intro hx
@@ -191,7 +160,7 @@ noncomputable def padicIntPiNsmulQuotientEquiv
     (QuotientAddGroup.quotientKerEquivOfSurjective f hf)
 
 /-- A finite product of nonzero scalar quotients of `Z_p` is finite. -/
-noncomputable instance finite_padicInt_finPi_nsmulQuotient
+instance finite_padicInt_finPi_nsmulQuotient
     (d n : ℕ) [NeZero n] :
     Finite ((Fin d → ℤ_[p]) ⧸
       LocalFieldTheory.nsmulAddSubgroup (Fin d → ℤ_[p]) n) :=
@@ -217,7 +186,7 @@ theorem card_padicInt_finPi_nsmulQuotient
 
 /-- If `n` is nonzero and prime to `p`, the quotient of an arbitrary product
 of copies of `Z_p` is finite (indeed, a singleton). -/
-noncomputable instance finite_padicInt_pi_nsmulQuotient_of_coprime
+instance finite_padicInt_pi_nsmulQuotient_of_coprime
     {ι : Type u} (n : ℕ) [NeZero n] [Fact (Nat.Coprime n p)] :
     Finite ((ι → ℤ_[p]) ⧸ LocalFieldTheory.nsmulAddSubgroup (ι → ℤ_[p]) n) := by
   have hpnd : ¬ p ∣ n :=
@@ -237,22 +206,6 @@ noncomputable instance finite_padicInt_pi_nsmulQuotient_of_coprime
     (padicIntPiNsmulQuotientEquiv
       (p := p) (ι := ι) n (NeZero.ne n)).symm.toEquiv
 
-/-- If `n` is prime to `p`, multiplication by `n` is surjective on an
-arbitrary product of copies of `Z_p`; hence the quotient is trivial. -/
-theorem card_padicInt_pi_nsmulQuotient_of_coprime
-    {ι : Type u} (n : ℕ) [NeZero n] [Fact (Nat.Coprime n p)] :
-    Nat.card ((ι → ℤ_[p]) ⧸
-        LocalFieldTheory.nsmulAddSubgroup (ι → ℤ_[p]) n) = 1 := by
-  rw [Nat.card_congr
-    (padicIntPiNsmulQuotientEquiv (p := p) (ι := ι) n (NeZero.ne n)).toEquiv]
-  have hpnd : ¬ p ∣ n :=
-    (Fact.out : Nat.Prime p).coprime_iff_not_dvd.mp
-      (Fact.out : Nat.Coprime n p).symm
-  have hv : padicValNat p n = 0 :=
-    padicValNat.eq_zero_of_not_dvd hpnd
-  rw [hv, pow_zero]
-  exact Nat.card_unique
-
 /-- A nonzero natural scalar has trivial kernel on any product of `Z_p`. -/
 theorem nsmulAddKernel_padicInt_pi_eq_bot
     {ι : Type u} (n : ℕ) (hn : n ≠ 0) :
@@ -265,15 +218,13 @@ theorem nsmulAddKernel_padicInt_pi_eq_bot
   · intro hx
     funext i
     have hi := congrFun hx i
-    change n • x i = 0 at hi
-    rw [nsmul_eq_mul] at hi
-    exact (mul_eq_zero.mp hi).resolve_left hnZ
+    simp_all
   · rintro rfl
     simp
 
 /-- Nonzero scalar multiplication has a finite (trivial) kernel on any
 product of copies of `Z_p`. -/
-noncomputable instance finite_nsmulAddKernel_padicInt_pi
+instance finite_nsmulAddKernel_padicInt_pi
     {ι : Type u} (n : ℕ) [NeZero n] :
     Finite (LocalFieldTheory.nsmulAddKernel (ι → ℤ_[p]) n) := by
   rw [nsmulAddKernel_padicInt_pi_eq_bot (p := p) n (NeZero.ne n)]
@@ -359,20 +310,6 @@ theorem card_finite_prod_padicInt_finPi_nsmulQuotient_eq_kernel_mul
     card_nsmulAddKernel_padicInt_pi (p := p) n]
   simp
 
-/-- Equal-characteristic free-factor calculation: when `p ∤ n`, an arbitrary
-product of copies of `Z_p` contributes neither kernel nor cokernel. -/
-theorem card_finite_prod_padicInt_pi_nsmulQuotient_eq_kernel_of_coprime
-    {ι : Type u} (T : Type*) [AddCommGroup T] [Finite T]
-    (n : ℕ) [NeZero n] [Fact (Nat.Coprime n p)] :
-    Nat.card ((T × (ι → ℤ_[p])) ⧸
-        LocalFieldTheory.nsmulAddSubgroup (T × (ι → ℤ_[p])) n) =
-      Nat.card (LocalFieldTheory.nsmulAddKernel (T × (ι → ℤ_[p])) n) := by
-  rw [card_nsmulAddQuotient_product,
-    LocalFieldTheory.card_additive_nsmulQuotient_eq_nsmulKernel,
-    card_padicInt_pi_nsmulQuotient_of_coprime (p := p) n,
-    card_nsmulAddKernel_product,
-    card_nsmulAddKernel_padicInt_pi (p := p) n]
-
 section LocalFieldIndex
 
 variable {K : Type u} [Field K]
@@ -392,41 +329,11 @@ theorem card_fieldUnits_nthPowerQuotient_of_mixedPrincipalUnitStructure
       Multiplicative (T × (Fin d → ℤ_[p]))) :
     Nat.card (Kˣ ⧸ (powMonoidHom n : Kˣ →* Kˣ).range) =
       n * (Nat.card ((powMonoidHom n : Kˣ →* Kˣ).ker) *
-        p ^ (d * padicValNat p n)) := by
-  exact card_fieldUnits_nthPowerQuotient_eq_mul_fieldKernel_of_logEquiv
+        p ^ (d * padicValNat p n)) := 
+  card_fieldUnits_nthPowerQuotient_eq_mul_fieldKernel_of_logEquiv
     (F := F) hπ (A := T × (Fin d → ℤ_[p])) e
       (card_finite_prod_padicInt_finPi_nsmulQuotient_eq_kernel_mul
         (p := p) T d n)
-
-/-- Literal rational form of the mixed-characteristic field formula:
-`(Kˣ : Kˣⁿ) = n #μ_n(K) / |n|_𝔭`. -/
-theorem card_fieldUnits_nthPowerQuotient_of_mixedPrincipalUnitStructure_rationalFormula
-    (F : CompleteDVF.{u, 0} K) [Finite F.residueField]
-    {π : F.valuationSubring} (hπ : F.valuation.IsUniformizer (π : K))
-    (T : Type*) [AddCommGroup T] [Finite T]
-    (d : ℕ) {n : ℕ} [NeZero n]
-    [Finite (Kˣ ⧸ (powMonoidHom n : Kˣ →* Kˣ).range)]
-    [Finite
-      ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) 1 ⧸
-        (powMonoidHom n : ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) 1) →* ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) 1)).range)]
-    (e : (LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) 1 ≃*
-      Multiplicative (T × (Fin d → ℤ_[p]))) :
-    (Nat.card (Kˣ ⧸ (powMonoidHom n : Kˣ →* Kˣ).range) : ℚ) =
-      (n * Nat.card ((powMonoidHom n : Kˣ →* Kˣ).ker) : ℕ) /
-        normalizedLocalNatAbs p d n := by
-  rw [card_fieldUnits_nthPowerQuotient_of_mixedPrincipalUnitStructure
-    (p := p) (F := F) hπ T d e]
-  push_cast
-  have hdefect :
-      (p : ℚ) ^ (d * padicValNat p n) =
-        1 / normalizedLocalNatAbs p d n := by
-    calc
-      (p : ℚ) ^ (d * padicValNat p n) =
-          ((p ^ (d * padicValNat p n) : ℕ) : ℚ) := by norm_cast
-      _ = 1 / normalizedLocalNatAbs p d n :=
-        (one_div_normalizedLocalNatAbs (p := p) d n).symm
-  rw [hdefect]
-  ring
 
 /-- The local-field power-index formula, mixed-characteristic unit-index formula from the same
 principal-unit structure theorem. -/
@@ -442,8 +349,8 @@ theorem card_units_nthPowerQuotient_of_mixedPrincipalUnitStructure
     Nat.card (F.valuationSubringˣ ⧸
         (powMonoidHom n : F.valuationSubringˣ →* F.valuationSubringˣ).range) =
       Nat.card ((powMonoidHom n : F.valuationSubringˣ →* F.valuationSubringˣ).ker) *
-        p ^ (d * padicValNat p n) := by
-  exact card_unit_nthPowerQuotient_eq_mul_unitKernel_of_logEquiv
+        p ^ (d * padicValNat p n) := 
+  card_unit_nthPowerQuotient_eq_mul_unitKernel_of_logEquiv
     (F := F) (A := T × (Fin d → ℤ_[p])) e
       (card_finite_prod_padicInt_finPi_nsmulQuotient_eq_kernel_mul
         (p := p) T d n)
@@ -468,236 +375,3 @@ theorem card_units_nthPowerQuotient_of_mixedPrincipalUnitStructure_fieldKernel
     (p := p) (F := F) T d e]
   rw [card_fieldUnits_nthPowerKernel_eq_unit_nthPowerKernel
     (F := F) hπ n]
-
-/-- Literal rational form of the mixed-characteristic unit formula:
-`(U : Uⁿ) = #μ_n(K) / |n|_𝔭`. -/
-theorem card_units_nthPowerQuotient_of_mixedPrincipalUnitStructure_rationalFormula
-    (F : CompleteDVF.{u, 0} K) [Finite F.residueField]
-    {π : F.valuationSubring} (hπ : F.valuation.IsUniformizer (π : K))
-    (T : Type*) [AddCommGroup T] [Finite T]
-    (d : ℕ) {n : ℕ} [NeZero n]
-    [Finite
-      ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) 1 ⧸
-        (powMonoidHom n : ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) 1) →* ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) 1)).range)]
-    (e : (LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) 1 ≃*
-      Multiplicative (T × (Fin d → ℤ_[p]))) :
-    (Nat.card (F.valuationSubringˣ ⧸
-        (powMonoidHom n : F.valuationSubringˣ →* F.valuationSubringˣ).range) : ℚ) =
-      Nat.card ((powMonoidHom n : Kˣ →* Kˣ).ker) /
-        normalizedLocalNatAbs p d n := by
-  rw [card_units_nthPowerQuotient_of_mixedPrincipalUnitStructure_fieldKernel
-    (p := p) (F := F) hπ T d e]
-  push_cast
-  have hdefect :
-      (p : ℚ) ^ (d * padicValNat p n) =
-        1 / normalizedLocalNatAbs p d n := by
-    calc
-      (p : ℚ) ^ (d * padicValNat p n) =
-          ((p ^ (d * padicValNat p n) : ℕ) : ℚ) := by norm_cast
-      _ = 1 / normalizedLocalNatAbs p d n :=
-        (one_div_normalizedLocalNatAbs (p := p) d n).symm
-  rw [hdefect]
-  ring
-
-/-- The local-field power-index formula obtained in equal characteristic from the
-field-unit structure theorem, the principal-unit product, and the hypothesis `p ∤ n`. -/
-theorem card_fieldUnits_nthPowerQuotient_of_equalPrincipalUnitStructure
-    (F : CompleteDVF.{u, 0} K) [Finite F.residueField]
-    {π : F.valuationSubring} (hπ : F.valuation.IsUniformizer (π : K))
-    {ι : Type u} (T : Type*) [AddCommGroup T] [Finite T]
-    {n : ℕ} [NeZero n] [Fact (Nat.Coprime n p)]
-    [Finite (Kˣ ⧸ (powMonoidHom n : Kˣ →* Kˣ).range)]
-    [Finite
-      ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) 1 ⧸
-        (powMonoidHom n : ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) 1) →* ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) 1)).range)]
-    (e : (LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) 1 ≃*
-      Multiplicative (T × (ι → ℤ_[p]))) :
-    Nat.card (Kˣ ⧸ (powMonoidHom n : Kˣ →* Kˣ).range) =
-      n * Nat.card ((powMonoidHom n : Kˣ →* Kˣ).ker) := by
-  simpa only [Nat.mul_one] using
-    card_fieldUnits_nthPowerQuotient_eq_mul_fieldKernel_of_logEquiv
-      (F := F) hπ (A := T × (ι → ℤ_[p])) (c := 1) e
-        (by
-          rw [Nat.mul_one]
-          exact
-            card_finite_prod_padicInt_pi_nsmulQuotient_eq_kernel_of_coprime
-              (p := p) (ι := ι) T n)
-
-/-- Literal rational form of the equal-characteristic field formula.  Here
-the permitted hypothesis `(n,p)=1` makes the local absolute value equal to
-one, represented uniformly as `normalizedLocalNatAbs p 0 n`. -/
-theorem card_fieldUnits_nthPowerQuotient_of_equalPrincipalUnitStructure_rationalFormula
-    (F : CompleteDVF.{u, 0} K) [Finite F.residueField]
-    {π : F.valuationSubring} (hπ : F.valuation.IsUniformizer (π : K))
-    {ι : Type u} (T : Type*) [AddCommGroup T] [Finite T]
-    {n : ℕ} [NeZero n] [Fact (Nat.Coprime n p)]
-    [Finite (Kˣ ⧸ (powMonoidHom n : Kˣ →* Kˣ).range)]
-    [Finite
-      ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) 1 ⧸
-        (powMonoidHom n : ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) 1) →* ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) 1)).range)]
-    (e : (LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) 1 ≃*
-      Multiplicative (T × (ι → ℤ_[p]))) :
-    (Nat.card (Kˣ ⧸ (powMonoidHom n : Kˣ →* Kˣ).range) : ℚ) =
-      (n * Nat.card ((powMonoidHom n : Kˣ →* Kˣ).ker) : ℕ) /
-        normalizedLocalNatAbs p 0 n := by
-  rw [card_fieldUnits_nthPowerQuotient_of_equalPrincipalUnitStructure
-    (p := p) (F := F) hπ T e]
-  simp [normalizedLocalNatAbs]
-
-/-- The local-field power-index formula, equal-characteristic unit-index formula. -/
-theorem card_units_nthPowerQuotient_of_equalPrincipalUnitStructure
-    (F : CompleteDVF.{u, 0} K) [Finite F.residueField]
-    {ι : Type u} (T : Type*) [AddCommGroup T] [Finite T]
-    {n : ℕ} [NeZero n] [Fact (Nat.Coprime n p)]
-    [Finite
-      ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) 1 ⧸
-        (powMonoidHom n : ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) 1) →* ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) 1)).range)]
-    (e : (LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) 1 ≃*
-      Multiplicative (T × (ι → ℤ_[p]))) :
-    Nat.card (F.valuationSubringˣ ⧸
-        (powMonoidHom n : F.valuationSubringˣ →* F.valuationSubringˣ).range) =
-      Nat.card ((powMonoidHom n : F.valuationSubringˣ →* F.valuationSubringˣ).ker) := by
-  simpa only [Nat.mul_one] using
-    card_unit_nthPowerQuotient_eq_mul_unitKernel_of_logEquiv
-      (F := F) (A := T × (ι → ℤ_[p])) (c := 1) e
-        (by
-          rw [Nat.mul_one]
-          exact
-            card_finite_prod_padicInt_pi_nsmulQuotient_eq_kernel_of_coprime
-              (p := p) (ι := ι) T n)
-
-/-- The equal-characteristic unit formula with its kernel written as
-`μ_n(K)`. -/
-theorem card_units_nthPowerQuotient_of_equalPrincipalUnitStructure_fieldKernel
-    (F : CompleteDVF.{u, 0} K) [Finite F.residueField]
-    {π : F.valuationSubring} (hπ : F.valuation.IsUniformizer (π : K))
-    {ι : Type u} (T : Type*) [AddCommGroup T] [Finite T]
-    {n : ℕ} [NeZero n] [Fact (Nat.Coprime n p)]
-    [Finite
-      ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) 1 ⧸
-        (powMonoidHom n : ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) 1) →* ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) 1)).range)]
-    (e : (LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) 1 ≃*
-      Multiplicative (T × (ι → ℤ_[p]))) :
-    Nat.card (F.valuationSubringˣ ⧸
-        (powMonoidHom n : F.valuationSubringˣ →* F.valuationSubringˣ).range) =
-      Nat.card ((powMonoidHom n : Kˣ →* Kˣ).ker) := by
-  rw [card_units_nthPowerQuotient_of_equalPrincipalUnitStructure
-    (p := p) (F := F) T e]
-  rw [card_fieldUnits_nthPowerKernel_eq_unit_nthPowerKernel
-    (F := F) hπ n]
-
-/-- Literal rational form of the equal-characteristic unit formula. -/
-theorem card_units_nthPowerQuotient_of_equalPrincipalUnitStructure_rationalFormula
-    (F : CompleteDVF.{u, 0} K) [Finite F.residueField]
-    {π : F.valuationSubring} (hπ : F.valuation.IsUniformizer (π : K))
-    {ι : Type u} (T : Type*) [AddCommGroup T] [Finite T]
-    {n : ℕ} [NeZero n] [Fact (Nat.Coprime n p)]
-    [Finite
-      ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) 1 ⧸
-        (powMonoidHom n : ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) 1) →* ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) 1)).range)]
-    (e : (LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) 1 ≃*
-      Multiplicative (T × (ι → ℤ_[p]))) :
-    (Nat.card (F.valuationSubringˣ ⧸
-        (powMonoidHom n : F.valuationSubringˣ →* F.valuationSubringˣ).range) : ℚ) =
-      Nat.card ((powMonoidHom n : Kˣ →* Kˣ).ker) /
-        normalizedLocalNatAbs p 0 n := by
-  rw [card_units_nthPowerQuotient_of_equalPrincipalUnitStructure_fieldKernel
-    (p := p) (F := F) hπ T e]
-  simp [normalizedLocalNatAbs]
-
-/-! The exact equal-characteristic specialization, with no artificial finite
-factor in the principal-unit product. -/
-
-/-- Equal-characteristic field index from the literal the field-unit structure theorem
-product `U^1 ≃ Z_p^ι`. -/
-theorem card_fieldUnits_nthPowerQuotient_of_equalPrincipalUnitProduct
-    (F : CompleteDVF.{u, 0} K) [Finite F.residueField]
-    {π : F.valuationSubring} (hπ : F.valuation.IsUniformizer (π : K))
-    {ι : Type u} {n : ℕ} [NeZero n] [Fact (Nat.Coprime n p)]
-    [Finite (Kˣ ⧸ (powMonoidHom n : Kˣ →* Kˣ).range)]
-    [Finite
-      ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) 1 ⧸
-        (powMonoidHom n : ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) 1) →* ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) 1)).range)]
-    (e : (LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) 1 ≃*
-      Multiplicative (ι → ℤ_[p])) :
-    Nat.card (Kˣ ⧸ (powMonoidHom n : Kˣ →* Kˣ).range) =
-      n * Nat.card ((powMonoidHom n : Kˣ →* Kˣ).ker) := by
-  simpa only [Nat.mul_one] using
-    card_fieldUnits_nthPowerQuotient_eq_mul_fieldKernel_of_logEquiv
-      (F := F) hπ (A := ι → ℤ_[p]) (c := 1) e
-        (by
-          rw [card_padicInt_pi_nsmulQuotient_of_coprime
-              (p := p) n,
-            card_nsmulAddKernel_padicInt_pi (p := p) n])
-
-/-- Equal-characteristic unit index from the literal principal-unit product,
-with its torsion kernel written as the field root group `μ_n(K)`. -/
-theorem card_units_nthPowerQuotient_of_equalPrincipalUnitProduct
-    (F : CompleteDVF.{u, 0} K) [Finite F.residueField]
-    {π : F.valuationSubring} (hπ : F.valuation.IsUniformizer (π : K))
-    {ι : Type u} {n : ℕ} [NeZero n] [Fact (Nat.Coprime n p)]
-    [Finite
-      ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) 1 ⧸
-        (powMonoidHom n : ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) 1) →* ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) 1)).range)]
-    (e : (LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) 1 ≃*
-      Multiplicative (ι → ℤ_[p])) :
-    Nat.card (F.valuationSubringˣ ⧸
-        (powMonoidHom n : F.valuationSubringˣ →* F.valuationSubringˣ).range) =
-      Nat.card ((powMonoidHom n : Kˣ →* Kˣ).ker) := by
-  have hunit :
-      Nat.card (F.valuationSubringˣ ⧸
-          (powMonoidHom n : F.valuationSubringˣ →* F.valuationSubringˣ).range) =
-        Nat.card
-          ((powMonoidHom n : F.valuationSubringˣ →* F.valuationSubringˣ).ker) := by
-    simpa only [Nat.mul_one] using
-      card_unit_nthPowerQuotient_eq_mul_unitKernel_of_logEquiv
-        (F := F) (A := ι → ℤ_[p]) (c := 1) e
-          (by
-            rw [card_padicInt_pi_nsmulQuotient_of_coprime
-                (p := p) n,
-              card_nsmulAddKernel_padicInt_pi (p := p) n])
-  rw [hunit]
-  exact (card_fieldUnits_nthPowerKernel_eq_unit_nthPowerKernel
-    (F := F) hπ n).symm
-
-/-- Literal rational field formula in equal characteristic. -/
-theorem card_fieldUnits_nthPowerQuotient_of_equalPrincipalUnitProduct_rationalFormula
-    (F : CompleteDVF.{u, 0} K) [Finite F.residueField]
-    {π : F.valuationSubring} (hπ : F.valuation.IsUniformizer (π : K))
-    {ι : Type u} {n : ℕ} [NeZero n] [Fact (Nat.Coprime n p)]
-    [Finite (Kˣ ⧸ (powMonoidHom n : Kˣ →* Kˣ).range)]
-    [Finite
-      ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) 1 ⧸
-        (powMonoidHom n : ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) 1) →* ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) 1)).range)]
-    (e : (LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) 1 ≃*
-      Multiplicative (ι → ℤ_[p])) :
-    (Nat.card (Kˣ ⧸ (powMonoidHom n : Kˣ →* Kˣ).range) : ℚ) =
-      (n * Nat.card ((powMonoidHom n : Kˣ →* Kˣ).ker) : ℕ) /
-        normalizedLocalNatAbs p 0 n := by
-  rw [card_fieldUnits_nthPowerQuotient_of_equalPrincipalUnitProduct
-    (p := p) (F := F) hπ e]
-  simp [normalizedLocalNatAbs]
-
-/-- Literal rational unit formula in equal characteristic. -/
-theorem card_units_nthPowerQuotient_of_equalPrincipalUnitProduct_rationalFormula
-    (F : CompleteDVF.{u, 0} K) [Finite F.residueField]
-    {π : F.valuationSubring} (hπ : F.valuation.IsUniformizer (π : K))
-    {ι : Type u} {n : ℕ} [NeZero n] [Fact (Nat.Coprime n p)]
-    [Finite
-      ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) 1 ⧸
-        (powMonoidHom n : ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) 1) →* ((LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) 1)).range)]
-    (e : (LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) 1 ≃*
-      Multiplicative (ι → ℤ_[p])) :
-    (Nat.card (F.valuationSubringˣ ⧸
-        (powMonoidHom n : F.valuationSubringˣ →* F.valuationSubringˣ).range) : ℚ) =
-      Nat.card ((powMonoidHom n : Kˣ →* Kˣ).ker) /
-        normalizedLocalNatAbs p 0 n := by
-  rw [card_units_nthPowerQuotient_of_equalPrincipalUnitProduct
-    (p := p) (F := F) hπ e]
-  simp [normalizedLocalNatAbs]
-
-end LocalFieldIndex
-
-end LocalFieldTheory.DiscreteValuationField
-
-end

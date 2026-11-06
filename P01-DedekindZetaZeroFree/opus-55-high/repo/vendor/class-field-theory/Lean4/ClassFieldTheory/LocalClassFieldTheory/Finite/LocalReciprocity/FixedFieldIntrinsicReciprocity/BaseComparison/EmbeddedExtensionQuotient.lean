@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Embedded extension quotients
 
@@ -127,7 +123,7 @@ theorem
     rw [e.apply_symm_apply]
     rw [← intrinsicBaseEquivAmbientEmbeddedField_apply_val
       K F i e tau]
-    exact hpsi (j y) ⟨y, rfl⟩
+    simp_all
 
 /-- The embedded-field base equivalence maps the intrinsic extension subgroup
 for `E / F` onto the ambient subgroup fixing the field range of `E`. -/
@@ -398,7 +394,7 @@ theorem ambientEmbeddedExtensionQuotient_finite
 
 /-- The quotient of ambient fixing subgroups attached to an embedded
 finite Galois extension is canonically its actual Galois group. -/
-noncomputable def
+def
     ambientEmbeddedExtensionQuotientEquivGaloisGroup
     (K F E : Type) [Field K] [Field F] [Field E]
     [Algebra K F] [Algebra F E] [Algebra K E]
@@ -598,7 +594,7 @@ theorem
     QuotientGroup.mk
         (psi.symm (psi tau)) =
       QuotientGroup.mk tau
-  rw [psi.symm_apply_apply]
+  simp
 
 /-- Evaluating the ambient embedded quotient class on an element of `E`
 agrees, after applying the embedding, with the original ambient automorphism. -/
@@ -689,10 +685,7 @@ theorem
           K F E j e (QuotientGroup.mk rho) =
         finiteGaloisAbstractQuotientEquivGaloisGroupOfEmbedding
           F E jI (QuotientGroup.mk tau) := by
-    rw [← hpsi]
-    exact
-      ambientEmbeddedExtensionQuotientEquivGaloisGroup_mk
-        K F E j e tau
+    rfl
   rw [hquotient]
   have haction :=
     finiteGaloisAbstractQuotientEquivGaloisGroupOfEmbedding_mk_apply
@@ -719,14 +712,10 @@ theorem
                 (j
                   (finiteGaloisAbstractQuotientEquivGaloisGroupOfEmbedding
                     F E jI (QuotientGroup.mk tau) x)))
-        rw [e.apply_symm_apply]]
-      exact congrArg e haction
+        simp]
+      simp
     _ = (psi tau).1.1 (j x) := by
       rw [intrinsicBaseEquivAmbientEmbeddedField_apply_val]
       rfl
     _ = rho.1.1 (j x) := by
       rw [hpsi]
-
-end LocalClassFieldTheory
-
-end

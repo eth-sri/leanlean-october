@@ -27,10 +27,6 @@ private theorem actual_archProjection_compare
         (KPCuspGenuineMonodromy.archProjection F ζ hζ g w) := by
   open KPAdelicCoverRestrictedProduct in
   obtain ⟨g, rfl⟩ := QuotientGroup.mk'_surjective (splitScalarSubgroup F ζ hζ) g
-  change Matrix.ProjGenLinGroup.mk (Matrix.GeneralLinearGroup.map _ (projection F ζ hζ g)) =
-    Matrix.ProjGenLinGroup.map _ (Matrix.ProjGenLinGroup.mk
-      (matrixEval F (Sum.inl w) (projection F ζ hζ g)))
-  rw [Matrix.ProjGenLinGroup.map_mk, Matrix.GeneralLinearGroup.map_comp]
   rfl
 
 private theorem actual_finiteSubgroup_eq :
@@ -54,7 +50,7 @@ private theorem actual_finiteSubgroup_eq :
   · intro hg
     funext w
     rw [actual_archProjection_compare, hg]
-    exact map_one _
+    simp
 
  theorem actual_product_splitting :
     ∃ e : (KPSmoothActualFlowData.GInfinity F × KPFiniteCuspAtlas.FiniteCover F ζ hζ) ≃ₜ*
@@ -84,11 +80,11 @@ private theorem finiteProjection_local_infinite (v : NumberField.InfinitePlace F
     funext q
     have h := restrictedProjection_eval F ζ hζ (localToRestricted F ζ hζ (Sum.inl v) g) (Sum.inr q)
     have hn : localToRestricted F ζ hζ (Sum.inl v) g (Sum.inr q) = 1 := by
-      exact RestrictedProduct.mulSingle_eq_of_ne' _ _ (by simp)
+      rfl
     rw [hn, map_one] at h
     convert congrArg (fun m => m i j) h using 1
     · rfl
-    · by_cases hij : i = j <;> subst_vars <;> simp [Matrix.one_apply, *] <;> rfl
+    · by_cases hij : i = j <;> subst_vars <;> simp [*] <;> rfl
   rw [he, map_one]
 
 private theorem finiteProjection_archimedeanInsertion (a : KPSmoothActualFlowData.GInfinity F) :

@@ -7,7 +7,6 @@ public import DedekindZetaZeroFree.Metaplectic.Kubota.PGL.LocalCover
 namespace DedekindZetaZeroFree.KPCorrectedBruhatLifts
 
 noncomputable section
-set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
@@ -29,21 +28,21 @@ private theorem sigma_n_right (x : K F v) (g : KPLocalCover.LocalGL2 F v) :
 
  abbrev L := KPHilbert.Completion F v
  abbrev symb := KPHilbert.B3 F ζ hζ v
-private theorem symb_cub (a b : (L F v)ˣ) : symb F ζ hζ v a b ^ 3 = 1 := by
+theorem symb_cub (a b : (L F v)ˣ) : symb F ζ hζ v a b ^ 3 = 1 := by
  apply Subtype.ext
  exact (KPHilbert.B3 F ζ hζ v a b).property
-private theorem symb_negL (a : (L F v)ˣ) : symb F ζ hζ v (-1) a = 1 :=
+theorem symb_negL (a : (L F v)ˣ) : symb F ζ hζ v (-1) a = 1 :=
  KubotaDefectSymbolAlgebra.neg_one_left _ _ _ (KPHilbert.B3_laws F ζ hζ v).1 (symb_cub F ζ hζ v) a
-private theorem symb_negR (a : (L F v)ˣ) : symb F ζ hζ v a (-1) = 1 :=
+theorem symb_negR (a : (L F v)ˣ) : symb F ζ hζ v a (-1) = 1 :=
  KubotaDefectSymbolAlgebra.neg_one_right _ _ _ (KPHilbert.B3_laws F ζ hζ v).2.1 (symb_cub F ζ hζ v) a
 private theorem X_scalar (z : (L F v)ˣ) :
  KubotaRankTwo.X (L F v) (KPScalarSplitCentral.scalarMatrix F v z) = z := by
  apply Units.ext
  simp [KubotaRankTwo.X, KubotaRankTwo.x, KPScalarSplitCentral.scalarMatrix, Matrix.scalar]
-private theorem X_swap : KubotaRankTwo.X (L F v) (KPStandardLocalRootLifts.weylSwap (L F v)) = 1 := by
+theorem X_swap : KubotaRankTwo.X (L F v) (KPStandardLocalRootLifts.weylSwap (L F v)) = 1 := by
  apply Units.ext
  simp [KubotaRankTwo.X, KubotaRankTwo.x, KPStandardLocalRootLifts.weylSwap]
-private theorem det_swap : KubotaRankTwo.det (L F v) (KPStandardLocalRootLifts.weylSwap (L F v)) = -1 := by
+theorem det_swap : KubotaRankTwo.det (L F v) (KPStandardLocalRootLifts.weylSwap (L F v)) = -1 := by
  apply Units.ext
  simp [KubotaRankTwo.det, KPStandardLocalRootLifts.weylSwap, Matrix.det_fin_two]
 
@@ -56,7 +55,7 @@ theorem upper_diagonal (x : K F v) (y : (K F v)ˣ) :
  congr 1
  · apply Units.ext
    ext i j
-   fin_cases i <;> fin_cases j <;> simp [KubotaRankTwo.n, KubotaRankTwo.d, Matrix.mul_apply, Matrix.GeneralLinearGroup.coe_mul, mul_comm, div_mul_cancel₀ _ y.ne_zero, KPLocalCover.sectionMap] <;> field_simp
+   fin_cases i <;> fin_cases j <;> simp [KubotaRankTwo.n, KubotaRankTwo.d, Matrix.mul_apply, mul_comm, KPLocalCover.sectionMap] <;> field_simp
  · simp only [KPLocalCover.sectionMap_g, KPLocalCover.sectionMap_epsilon, one_mul, sigma_n_left, sigma_n_right]
 
 theorem weyl_diagonal (y : (K F v)ˣ) :
@@ -85,7 +84,7 @@ theorem weyl_diagonal (y : (K F v)ˣ) :
  congr 1
  · apply Units.ext
    ext i j
-   fin_cases i <;> fin_cases j <;> simp [S, D, W, KPScalarSplitCentral.scalarMatrix, Matrix.scalar, KPStandardLocalRootLifts.weylSwap, KubotaRankTwo.d, Matrix.mul_apply, KPLocalCover.sectionMap, MonoidHom.coe_mk] <;> try field_simp
+   fin_cases i <;> fin_cases j <;> simp [S, D, W, KPScalarSplitCentral.scalarMatrix, Matrix.scalar, KPStandardLocalRootLifts.weylSwap, KubotaRankTwo.d, Matrix.mul_apply, KPLocalCover.sectionMap] <;> try field_simp
  · dsimp [KPLocalCover.rawMul, KPLocalCover.sectionMap]
    simp only [one_mul, mul_one]
    change KPLocalCover.sigmaTwo F ζ hζ v (W) (KubotaRankTwo.d (L F v) y 1) =
@@ -98,9 +97,7 @@ theorem weyl_diagonal (y : (K F v)ˣ) :
     show KubotaRankTwo.det (L F v) S = y^2 from by simp [S, KPScalarSplitCentral.scalarMatrix, KubotaRankTwo.det],
     show KubotaRankTwo.det (L F v) D = y⁻¹ from by simp [D],
     KubotaRankTwo.X_d, KubotaRankTwo.det_d, map_mul, mul_one, one_mul]
-   simp only [div_eq_mul_inv, pow_two, hL, hR, hiL, hiR, hAlt,
-     B_one_left, B_one_right, symb_negL, symb_negR, mul_inv_cancel, inv_mul_cancel,
-     inv_one, one_mul, mul_one, one_pow]
+   simp only [div_eq_mul_inv, pow_two, hL, hR, hiL, hiR, hAlt, B_one_left, symb_negL, symb_negR, mul_inv_cancel, inv_one, mul_one]
 
 theorem weyl_upper (H : (K F v)ˣ) :
     KPStandardLocalRootLifts.W F ζ hζ v *
@@ -151,12 +148,10 @@ theorem weyl_upper (H : (K F v)ˣ) :
     show KubotaRankTwo.det (L F v) U = 1 from KubotaRankTwo.det_n _ _,
     show KubotaRankTwo.det (L F v) D = -(H⁻¹^2) from by simp [D],
     hdT, map_mul, mul_one, one_mul]
-   simp only [div_eq_mul_inv, pow_two, neg_mul, inv_neg, inv_inv, hL, hR, hiL, hiR, hAlt,
-     B_one_left, B_one_right, symb_negL, symb_negR, mul_inv_cancel, inv_mul_cancel,
-     inv_one, one_mul, mul_one, one_pow]
-   simp only [show -(H⁻¹ * H⁻¹) = (-1) * (H⁻¹ * H⁻¹) from by simp, hR, symb_negR, hiR, hAlt, one_mul, mul_one, inv_one]
+   simp only [div_eq_mul_inv, pow_two, inv_inv, hL, hR, hiL, hiR, hAlt, B_one_left, B_one_right, mul_inv_cancel, inv_one, one_mul, mul_one]
+   simp only [show -(H⁻¹ * H⁻¹) = (-1) * (H⁻¹ * H⁻¹) from by simp, hR, symb_negR, hiR, hAlt, mul_one, inv_one]
 
-private theorem quotient_scalar (z : (K F v)ˣ) :
+theorem quotient_scalar (z : (K F v)ˣ) :
     KPPGLLocalCover.coverQuotient F ζ hζ v (KPScalarSplitCentral.scalarHom F ζ hζ v z) = 1 := by
   apply (QuotientGroup.eq_one_iff _).mpr
   exact ⟨z, rfl⟩
@@ -182,6 +177,3 @@ theorem quotient_weyl_upper (H : (K F v)ˣ) :
   simpa only [KPPGLLocalCover.W, KPPGLLocalCover.N, KPPGLLocalCover.A,
     KPPGLLocalCover.LowerN, map_mul, quotient_scalar, one_mul] using
     congrArg (KPPGLLocalCover.coverQuotient F ζ hζ v) (weyl_upper F ζ hζ v H)
-
-end
-end DedekindZetaZeroFree.KPCorrectedBruhatLifts

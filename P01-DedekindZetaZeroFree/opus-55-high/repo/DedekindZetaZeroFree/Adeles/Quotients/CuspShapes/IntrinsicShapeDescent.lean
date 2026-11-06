@@ -13,8 +13,8 @@ open MeasureTheory
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 2000000
 set_option synthInstance.maxHeartbeats 100000
-open scoped Classical NumberField Topology ENNReal NNReal
 open MeasureTheory
+open scoped Classical NumberField Topology ENNReal NNReal
 namespace DedekindZetaZeroFree.KPMsNativeWeightedShapeSource.OffsetShapeDescent
 open KPMsActualAngularSource KPMsNativeOffsetMass
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
@@ -109,7 +109,7 @@ private theorem chart_projection (S : NativeRecipe F ζ hζ R P) (V : Level F ζ
   rw [← mul_assoc (KPCuspGenuineMonodromy.central F ζ hζ ε⁻¹), hc]
   simp [map_inv, mul_assoc]
 
-private theorem spherical_projection_right_level
+theorem spherical_projection_right_level
     (S : NativeRecipe F ζ hζ R P)
     (V : KPMsActualAngularSource.Level F ζ hζ)
     (g : KPMsActualAngularSource.G F ζ hζ)
@@ -130,14 +130,14 @@ private theorem spherical_projection_right_level
   · simp
   · simp
 
-private theorem angularProjection_continuous (S : NativeRecipe F ζ hζ R P) (V : Level F ζ hζ) :
+theorem angularProjection_continuous (S : NativeRecipe F ζ hζ R P) (V : Level F ζ hζ) :
     Continuous (KPMsFixedHaarDisintegration.angularProjection (nativeAtlas F ζ hζ R P S V)) := by
   apply continuous_sigma
   intro j
   exact continuous_sigmaMk.comp
     (KPMsFixedHaarDisintegration.Geometry (nativeAtlas F ζ hζ R P S V) j).atlas.continuous_projection
 
-private theorem pinned_chart_shape (S : NativeRecipe F ζ hζ R P) (V : Level F ζ hζ)
+theorem pinned_chart_shape (S : NativeRecipe F ζ hζ R P) (V : Level F ζ hζ)
     (Y : ℝ) (hY : KPMsFixedHaarDisintegration.AdmissibleCutoff (nativeAtlas F ζ hζ R P S V) Y) :
     ∃ s : KPMsFixedHaarDisintegration.Spherical F ζ hζ (S.atlasLevel (cofinalLevel F ζ hζ V)) →
         KPMsFixedHaarDisintegration.Omega (nativeAtlas F ζ hζ R P S V),
@@ -224,7 +224,7 @@ private theorem pinned_shapeCoordinate_on_actual_frame (S : NativeRecipe F ζ h�
   dsimp only [KPMsFixedHaarDisintegration.angularProjection]
   rw [(KPMsFixedHaarDisintegration.Geometry (nativeAtlas F ζ hζ R P S V) j).atlas.projection_formula]
 
-private theorem actual_frame_radial_rescale
+theorem actual_frame_radial_rescale
     (S : NativeRecipe F ζ hζ R P)
     (V : KPMsActualAngularSource.Level F ζ hζ)
     (j : NativeCusp F ζ hζ R P S V)
@@ -339,7 +339,7 @@ private theorem pinned_shape_under_reduced_root
     pinned_shapeCoordinate_on_actual_frame S V j Y hY a p r ε u s hsc ha]
   rfl
 
-private theorem unipotent_fiber_principal_shift
+theorem unipotent_fiber_principal_shift
     (S : NativeRecipe F ζ hζ R P) (V : Level F ζ hζ) (j : NativeCusp F ζ hζ R P S V)
     (g : G F ζ hζ) (a : KPGlobalTorusFunctionData.Adeles F) (b : F) :
     KPSmoothLocalQuotientCharts.quotientMap F ζ hζ
@@ -453,7 +453,7 @@ private theorem pinned_shape_unipotent_actual_domain
       KPMsFixedHaarDisintegration.radialSection F ζ hζ
         (nativeDisintegration F ζ hζ R P S V).radial.slot r₀ * g.val ∈ fullDomain S V j Y}
 
-private theorem fixedRadiusDomain_isOpen
+theorem fixedRadiusDomain_isOpen
     (S : NativeRecipe F ζ hζ R P)
     (V : KPMsActualAngularSource.Level F ζ hζ) (Y : ℝ)
     (r₀ : KPMsFixedHaarDisintegration.Radius) : IsOpen (fixedRadiusDomain S V Y r₀) := by
@@ -519,7 +519,7 @@ private theorem fixedRadiusDomain_isOpen
     continuous_toFun := hcont u
     continuous_invFun := hcont u⁻¹ }
 
-private theorem fixedRadius_right_homeomorph_val
+theorem fixedRadius_right_homeomorph_val
     (S : NativeRecipe F ζ hζ R P)
     (V : KPMsActualAngularSource.Level F ζ hζ) (Y : ℝ)
     (r₀ : KPMsFixedHaarDisintegration.Radius)
@@ -543,7 +543,7 @@ private theorem fixedRadius_right_homeomorph_val
       rw [KPGlobalTorusBorelTwistCompatibility.iwasawaNorm_borel_mul,
         KPGlobalTorusBorelTwistCompatibility.delta_rational,one_mul])
 
-private theorem fixedRadius_angular_quotient_open
+theorem fixedRadius_angular_quotient_open
     (S : NativeRecipe F ζ hζ R P)
     (V : KPMsActualAngularSource.Level F ζ hζ) (Y : ℝ)
     (r₀ : KPMsFixedHaarDisintegration.Radius) :
@@ -663,7 +663,7 @@ private theorem fixed_radius_shape_angular_relation
     (KPMsFixedHaarDisintegration.sectionShape F (nativeFamily F ζ hζ R P).totallyComplex
       (nativeDisintegration F ζ hζ R P S V).radial.slot (cuspOffset F ζ hζ R P S V ω.1))⟩
 
-private theorem correctShape_continuous (S : NativeRecipe F ζ hζ R P) (V : Level F ζ hζ) :
+theorem correctShape_continuous (S : NativeRecipe F ζ hζ R P) (V : Level F ζ hζ) :
     Continuous (correctShape S V) := by
   apply continuous_sigma
   intro j
@@ -825,7 +825,7 @@ private theorem source_recovery
     rw [hh]
     abel
 
-private theorem fixed_shape_continuous
+theorem fixed_shape_continuous
     (S : NativeRecipe F ζ hζ R P) (V : Level F ζ hζ)
     (Y : ℝ) (hY : KPMsFixedHaarDisintegration.AdmissibleCutoff (nativeAtlas F ζ hζ R P S V) Y)
     (rb : KPMsFixedHaarDisintegration.Radius)

@@ -69,16 +69,10 @@ theorem exists_compact_infinite_cover :
     rw [map_add, ← sub_sub]
     exact (integralAdeles F).sub_mem hr hsfin
   · change QuotientAddGroup.mk (a - algebraMap F (Adeles F) z) = QuotientAddGroup.mk a
-    apply QuotientAddGroup.eq_iff_sub_mem.mpr
-    have hz : algebraMap F (Adeles F) z ∈ principalSubgroup F := ⟨z, rfl⟩
-    simpa only [sub_sub_cancel_left] using (principalSubgroup F).neg_mem hz
+    simp
 
 instance quotient_compactSpace : CompactSpace (Adeles F ⧸ principalSubgroup F) := by
   obtain ⟨C, hC, hcover⟩ := exists_compact_infinite_cover F
   apply isCompact_univ_iff.mp
   rw [← hcover]
   exact (hC.prod (integralAdeles_isCompact F)).image QuotientAddGroup.continuous_mk
-
-end DedekindZetaZeroFree.KPAdelicQuotient
-
-end

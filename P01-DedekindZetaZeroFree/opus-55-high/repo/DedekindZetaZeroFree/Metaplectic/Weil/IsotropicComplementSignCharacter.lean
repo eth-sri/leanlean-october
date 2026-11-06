@@ -41,14 +41,14 @@ def WeilSStructuralLaws (A : SArithmeticData F)
         (QuotientGroup.mk' A.sixthPowers y) : Fˣ) : F) ^ 3 *
         A.weilSProduct wInf wFin (x * y))
 
-private theorem weilSProduct_one (A : SArithmeticData F)
+theorem weilSProduct_one (A : SArithmeticData F)
     (wInf : (v : InfinitePlace F) → v.Completionˣ → ℂ)
     (wFin : (v : {v // v ∈ A.Sf}) → (v.val.adicCompletion F)ˣ → ℂ)
     (hInf : ∀ v, wInf v 1 = 1) (hFin : ∀ v, wFin v 1 = 1) :
     A.weilSProduct wInf wFin 1 = 1 := by
   simp [weilSProduct, hInf, hFin]
 
-private theorem weilSProduct_mul_sq (A : SArithmeticData F)
+theorem weilSProduct_mul_sq (A : SArithmeticData F)
     (wInf : (v : InfinitePlace F) → v.Completionˣ → ℂ)
     (wFin : (v : {v // v ∈ A.Sf}) → (v.val.adicCompletion F)ˣ → ℂ)
     (hInf : ∀ v a t, wInf v (a * t ^ 2) = wInf v a)
@@ -71,7 +71,7 @@ theorem weilSProduct_sign_of_structural_laws (A : SArithmeticData F)
   simpa [pow_two, hAlt, hSq] using hMul x x
 
 set_option maxHeartbeats 1000000 in
-private theorem weilSProduct_eq_of_mk_eq (A : SArithmeticData F)
+theorem weilSProduct_eq_of_mk_eq (A : SArithmeticData F)
     (H : A.V → A.V → Fˣ) (σ : F →+* ℂ)
     (wInf : (v : InfinitePlace F) → v.Completionˣ → ℂ)
     (wFin : (v : {v // v ∈ A.Sf}) → (v.val.adicCompletion F)ˣ → ℂ)
@@ -122,7 +122,7 @@ theorem exists_weilBCharacter_of_structural_laws (A : SArithmeticData F)
       change (W (((b * d)⁻¹ : B) : A.V))⁻¹ =
         (W ((b⁻¹ : B) : A.V))⁻¹ * (W ((d⁻¹ : B) : A.V))⁻¹
       rw [mul_inv_rev, Subgroup.coe_mul, hWmul]
-      exact mul_inv_rev (W (d⁻¹ : B)) (W (b⁻¹ : B)) }
+      simp }
   refine ⟨c, ?_, ?_⟩
   · intro b
     rcases weilSProduct_sign_of_structural_laws A H σ wInf wFin h (r ((b⁻¹ : B) : A.V))
@@ -132,13 +132,8 @@ theorem exists_weilBCharacter_of_structural_laws (A : SArithmeticData F)
         rw [hb, inv_one])
     · exact Or.inr (by
         change (A.weilSProduct wInf wFin (r ((b⁻¹ : B) : A.V)))⁻¹ = -1
-        rw [hb, inv_neg, inv_one])
+        simp_all)
   · intro x hx
     change (W ((QuotientGroup.mk' A.sixthPowers x)⁻¹))⁻¹ =
       (A.weilSProduct wInf wFin x⁻¹)⁻¹
     rw [← map_inv, hW]
-
-end SArithmeticData
-end DedekindZetaZeroFree
-
-end

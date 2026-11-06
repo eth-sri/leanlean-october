@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Adeles.Quotients.Cusps.AngularCoordinates
 
 @[expose] public section
 
-noncomputable section
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1000000
 open scoped Classical NumberField Topology NNReal ENNReal
@@ -26,7 +25,3 @@ theorem fullToLevel_measurable (D : Iwasawa F ζ hζ) (V : Level F ζ hζ) :
   letI : BorelSpace (FullOmega F ζ hζ D) := ⟨rfl⟩
   letI : BorelSpace (Omega F ζ hζ D V) := ⟨rfl⟩
   exact (fullToLevel_continuous D V).measurable
-
-end DedekindZetaZeroFree.KPMsActualAngularShellSource
-
-end

@@ -93,7 +93,7 @@ private theorem coveredPoint_mem_end (a : Cusps F ζ hζ C R P H U) (ε : rootsO
     EndLift F ζ hζ C R P H U B x :=
   z_inv_z F ζ hζ C R P H U ε x ▸ endLift_z F ζ hζ C R P H U B l ε⁻¹
 
-private theorem incomingRealization_of_lift (s : ℂ) (hs : s ∈ KPContinuation.spectralDomain)
+theorem incomingRealization_of_lift (s : ℂ) (hs : s ∈ KPContinuation.spectralDomain)
     (v : S) {x : Covered F ζ hζ C R P H U} (l : EndLift F ζ hζ C R P H U B x) :
     incomingRealization F ζ hζ C R P H U ι B s v x =
       (KPContSectorCoveredQuotientVocabulary.chi F ζ hζ l.sheet : ℂ) *
@@ -104,7 +104,7 @@ private theorem incomingRealization_of_lift (s : ℂ) (hs : s ∈ KPContinuation
   exact actual_endLift_incoming_transport F ζ hζ C R P H U ι B s hs v x
     (Classical.choice hne) l
 
-private theorem incomingRealization_z (s : ℂ) (hs : s ∈ KPContinuation.spectralDomain)
+theorem incomingRealization_z (s : ℂ) (hs : s ∈ KPContinuation.spectralDomain)
     (v : S) (x : Covered F ζ hζ C R P H U) (ε : rootsOfUnity 3 F) :
     incomingRealization F ζ hζ C R P H U ι B s v
         (KPContSectorCoveredQuotientVocabulary.z F ζ hζ (level F ζ hζ C R P H U) ε x) =

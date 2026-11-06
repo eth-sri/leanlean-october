@@ -73,7 +73,3 @@ def complexSL2 (w : InfinitePlace F) : SL(2, ℂ) →* KPGlobalTorusFunctionData
     KPRationalAdelicSplitting.rationalScalars_le_ker F ζ hζ ⟨z, rfl⟩
   change φ n = φ m
   rw [← hz, map_mul, hs, mul_one]
-
-end DedekindZetaZeroFree.KPLiteralPeriod
-
-end

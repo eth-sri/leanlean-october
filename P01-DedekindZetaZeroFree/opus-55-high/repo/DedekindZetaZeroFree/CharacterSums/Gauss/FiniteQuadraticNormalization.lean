@@ -40,8 +40,8 @@ theorem weil_finite_quadratic_gauss_modulus
             ∑ y : G, (finiteQuadraticPolarization Q h y : ℂ) =
             ∑ y : G, (finiteQuadraticPolarization Q h y : ℂ) := by
         rw [Finset.mul_sum]
-        exact Fintype.sum_equiv (Equiv.addLeft y₀) _ _ fun y ↦ by
-          exact (congrArg (fun z : Circle ↦ (z : ℂ)) (hBright h y₀ y)).symm
+        exact Fintype.sum_equiv (Equiv.addLeft y₀) _ _ fun y ↦ 
+          (congrArg (fun z : Circle ↦ (z : ℂ)) (hBright h y₀ y)).symm
       simpa [hh] using eq_zero_of_mul_eq_self_left hc htranslate
   have hterm (h y : G) : (Q (h + y) : ℂ) * star (Q y : ℂ) =
       (Q h : ℂ) * (finiteQuadraticPolarization Q h y : ℂ) := by
@@ -72,5 +72,3 @@ theorem weil_finite_quadratic_gauss_modulus
         simp_rw [Finset.mul_sum]
       _ = (Fintype.card G : ℂ) := by simp [hsum, hQzero]
   exact_mod_cast hc
-
-end DedekindZetaZeroFree

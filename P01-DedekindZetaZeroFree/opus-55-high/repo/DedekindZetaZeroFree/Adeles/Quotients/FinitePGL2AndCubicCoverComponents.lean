@@ -27,7 +27,6 @@ end DedekindZetaZeroFree
 
 section
 
-open scoped Pointwise
 
 namespace DedekindZetaZeroFree
 namespace KPFiniteComponents
@@ -101,12 +100,3 @@ theorem kp_cusp_finite_adelic_arithmetic_stabilizers
   exact ⟨I, a, hI, hlevel.trans hstandard, hintersection.trans hstandard⟩
 
 namespace KPFiniteComponentCover
-variable {C G R : Type*} [Group C] [Group G] [Group R]
-variable (π : C →* G) (s : R →* C) (d : R →* G) (hs : π.comp s = d)
-variable (U : Subgroup C)
-
-end KPFiniteComponentCover
-
-end DedekindZetaZeroFree
-
-end

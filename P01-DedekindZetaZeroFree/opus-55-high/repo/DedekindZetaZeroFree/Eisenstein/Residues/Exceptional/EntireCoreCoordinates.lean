@@ -77,7 +77,7 @@ private theorem inclusion_injective (K : Subgroup (G F ζ hζ))
   ∑ a : C, Complex.exp (s * (a.val : ℂ)) •
     coordinates F ζ hζ K hK f C (coefficient F ζ hζ K hK f C a)
 
-private theorem family_entire (K : Subgroup (G F ζ hζ))
+theorem family_entire (K : Subgroup (G F ζ hζ))
     (hK : IwasawaCompact F ζ hζ K) (f : Flat F ζ hζ K) (C : Finset ℝ) :
     Differentiable ℂ (family F ζ hζ K hK f C) := by
   classical
@@ -92,13 +92,13 @@ private theorem family_entire (K : Subgroup (G F ζ hζ))
     coordinates F ζ hζ K hK f C (coefficient F ζ hζ K hK f C a)) = _
   simp only [Finset.sum_apply]
 
-private theorem inclusion_family_formula (K : Subgroup (G F ζ hζ))
+theorem inclusion_family_formula (K : Subgroup (G F ζ hζ))
     (hK : IwasawaCompact F ζ hζ K) (f : Flat F ζ hζ K) (C : Finset ℝ) (s : ℂ) :
     inclusion F ζ hζ K hK f C (family F ζ hζ K hK f C s) =
       ∑ a : C, Complex.exp (s * (a.val : ℂ)) • canonicalCutCore F ζ hζ K hK a.val f := by
   simp [family, inclusion, coefficient]
 
-private theorem literal_parameter_stage (K : Subgroup (G F ζ hζ))
+theorem literal_parameter_stage (K : Subgroup (G F ζ hζ))
     (hK : IwasawaCompact F ζ hζ K) (f : Flat F ζ hζ K) :
     ∃ C : Finset ℝ, ∀ (s : ℂ) (g : G F ζ hζ),
       KPContFlatStageJetHolomorphy.parameterSection F ζ hζ
@@ -119,7 +119,7 @@ private theorem literal_parameter_stage (K : Subgroup (G F ζ hζ))
   rw [← mul_assoc, ← Complex.exp_add]
   simp
 
-private theorem inclusion_smooth (K : Subgroup (G F ζ hζ))
+theorem inclusion_smooth (K : Subgroup (G F ζ hζ))
     (hK : IwasawaCompact F ζ hζ K) (f : Flat F ζ hζ K) (C : Finset ℝ)
     (v : Coordinates F ζ hζ K hK f C) :
     (inclusion F ζ hζ K hK f C v).val ∈

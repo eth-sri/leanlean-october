@@ -47,8 +47,7 @@ private theorem finite_matching
     MonoidHom.mk' (fun d => (pairingHom F ζ hζ d).comp
       ((S).subtype.comp H.subtype))
       (fun d e => MonoidHom.ext (fun a => by
-        change pairingHom F ζ hζ (d * e) a.val.val = _
-        exact DFunLike.congr_fun (map_mul (pairingHom F ζ hζ) d e) a.val.val))
+        simp))
   let Φ := K.map r
   let E := CommGroup.subgroupOrderIsoSubgroupMonoidHom H F
   have hr : r x ∈ (E (E.symm (OrderDual.toDual Φ))).ofDual := by
@@ -79,11 +78,11 @@ private theorem finite_matching
  def ann (S : Subgroup (KPGlobalCubicIdelePairing.D F)) :
     Subgroup (KPGlobalCubicIdelePairing.D F) where
   carrier := {x | ∀ y ∈ S, pairingHom F ζ hζ x y = 1}
-  one_mem' := by intro y hy; simp
-  mul_mem' := by intro x z hx hz y hy; simp [map_mul, hx y hy, hz y hy]
-  inv_mem' := by intro x hx y hy; simp [map_inv, hx y hy]
+  one_mem' := by simp
+  mul_mem' := by simp_all
+  inv_mem' := by simp
 
-private theorem mem_ann (S : Subgroup (KPGlobalCubicIdelePairing.D F))
+theorem mem_ann (S : Subgroup (KPGlobalCubicIdelePairing.D F))
     (x : KPGlobalCubicIdelePairing.D F) :
     x ∈ ann F ζ hζ S ↔ ∀ y ∈ S, KPGlobalCubicIdelePairing.beta3 F ζ hζ x y = 1 := by
   constructor
@@ -95,8 +94,7 @@ private theorem swap_one (x y : KPGlobalCubicIdelePairing.D F)
     KPGlobalCubicIdelePairing.beta3 F ζ hζ y x = 1 := by
   have hb := KPGlobalCubicIdelePairing.beta3_bilinear F ζ hζ
   have hh := hb.2.2 (x * y)
-  rw [hb.1, hb.2.1, hb.2.1, hb.2.2, hb.2.2, h] at hh
-  simpa using hh
+  simp_all
 
 private theorem compact_matching
     (S T : Subgroup (KPGlobalCubicIdelePairing.D F))
@@ -147,8 +145,7 @@ private theorem maximal_mem_of_annihilates {G : Type*} [CommGroup G]
     obtain ⟨m, hm, v', hv', rfl⟩ := Subgroup.mem_sup.mp hv
     obtain ⟨n, rfl⟩ := Subgroup.mem_zpowers_iff.mp hu'
     obtain ⟨p, rfl⟩ := Subgroup.mem_zpowers_iff.mp hv'
-    simp only [map_mul, MonoidHom.mul_apply, hL.1 l hl m hm,
-      hlx l hl p, hxl m hm n, hxx n p, mul_one, one_mul]
+    simp only [map_mul, MonoidHom.mul_apply, hL.1 l hl m hm, hlx l hl p, hxl m hm n, hxx n p, mul_one]
   have heq := hL.2 _ le_sup_left hiso
   rw [← heq]
   exact Subgroup.mem_sup_right (Subgroup.mem_zpowers x)
@@ -171,7 +168,7 @@ private theorem product_ann (P : KPGlobalProductPolarizationCharacter.Compatible
     exact (mem_ann F ζ hζ _ x).mpr (fun y hy =>
       (KPGlobalProductPolarizationCharacter.M_maximal_isotropic F ζ hζ P).1 x hx y hy)
 
-private theorem ann_closed (S : Subgroup (KPGlobalCubicIdelePairing.D F)) :
+theorem ann_closed (S : Subgroup (KPGlobalCubicIdelePairing.D F)) :
     IsClosed (ann F ζ hζ S : Set (KPGlobalCubicIdelePairing.D F)) := by
   letI : TopologicalSpace (rootsOfUnity 3 F) := ⊥
   letI : DiscreteTopology (rootsOfUnity 3 F) := ⟨rfl⟩
@@ -180,8 +177,7 @@ private theorem ann_closed (S : Subgroup (KPGlobalCubicIdelePairing.D F)) :
     ext x
     change x ∈ ann F ζ hζ S ↔ _
     rw [mem_ann]
-    simp only [Set.mem_iInter, Set.mem_setOf_eq]
-    exact ⟨fun h s => h s.val s.property, fun h s hs => h ⟨s, hs⟩⟩
+    simp
   rw [he]
   exact isClosed_iInter (fun s => isClosed_singleton.preimage
     ((KPGlobalCubicIdelePairing.beta3_continuous F ζ hζ).comp
@@ -219,8 +215,8 @@ private theorem ann_compact
     { toFun x z := ⟨φ x z, by
         induction z using QuotientGroup.induction_on with
         | H m => exact (KPGlobalCubicIdelePairing.beta3 F ζ hζ x.val m.val).property⟩
-      map_one' := by funext z; apply Subtype.ext; exact congrFun φ.map_one z
-      map_mul' := by intro x y; funext z; apply Subtype.ext; exact congrFun (φ.map_mul x y) z }
+      map_one' := by funext z; simp
+      map_mul' := by intro x y; funext z; simp }
   have hker : H ≤ φ3.ker := by
     intro x hx
     funext z
@@ -361,7 +357,7 @@ theorem compact_intersection_annihilator_saturation
         (KPGlobalProductPolarizationCharacter.pD F ζ hζ y.val) = 1 := by
       apply (mem_ann F ζ hζ S _).mp
       · rwa [hself]
-      · exact hyS
+      omega
     rw [map_mul, (KPGlobalCubicIdelePairing.beta3_bilinear F ζ hζ).1, hhorth, hx _ hy, one_mul]
 
 end
@@ -378,34 +374,12 @@ noncomputable section
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
  theorem diagonal_formula (t : KPGlobalTorusFunctionData.ordinaryTorus F) :
-    KPGlobalCubicIdelePairing.diagonalPGL F (KPGlobalTorusFunctionData.torusRatio F t) = t.val := by
-  let A := Classical.choose t.property
-  have hA : QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F) A = t.val ∧
-      A 1 0 = 0 ∧ A 0 1 = 0 := Classical.choose_spec t.property
-  let u := (KPGlobalTorusFunctionData.diagonal_entries_units F A hA.2.1 hA.2.2).1.unit
-  let w := (KPGlobalTorusFunctionData.diagonal_entries_units F A hA.2.1 hA.2.2).2.unit
-  have hu : (u : KPAdelicCoverRestrictedProduct.Adeles F) = A 0 0 := IsUnit.unit_spec _
-  have hw : (w : KPAdelicCoverRestrictedProduct.Adeles F) = A 1 1 := IsUnit.unit_spec _
-  have heq : A = KPGlobalCubicIdelePairing.diagonalHom F (u * w⁻¹) *
-      Matrix.GeneralLinearGroup.scalar (Fin 2) w := by
-    apply Units.ext
-    ext i j
-    fin_cases i <;> fin_cases j <;>
-      simp [KPGlobalCubicIdelePairing.diagonalHom, KPGlobalCubicIdelePairing.diagonalMatrix,
-        Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
-        Matrix.mul_apply, Fin.sum_univ_two, Matrix.scalar, hu, hA.2.1, hA.2.2]
-    exact hw.symm
-  change QuotientGroup.mk' _ (KPGlobalCubicIdelePairing.diagonalHom F (u * w⁻¹)) = t.val
-  rw [← hA.1, heq]
-  have hs : QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F)
-      (Matrix.GeneralLinearGroup.scalar (Fin 2) w) = 1 :=
-    (QuotientGroup.eq_one_iff _).mpr ⟨w, rfl⟩
-  rw [(QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F)).map_mul, hs, mul_one]
+    KPGlobalCubicIdelePairing.diagonalPGL F (KPGlobalTorusFunctionData.torusRatio F t) = t.val := by apply DedekindZetaZeroFree.KPGlobalCenterRationalCharacterExtension.CubeDiagonalProduct.diagonalPGL_torusRatio <;> assumption
  def torusPullbackBridge : KPGlobalTorusFunctionData.E F ζ hζ →* KPGlobalCubicIdelePairing.E F ζ hζ where
   toFun e := ⟨(e.val, KPGlobalTorusFunctionData.p F ζ hζ e),
     (diagonal_formula F ⟨_, e.property⟩).symm⟩
-  map_one' := by apply Subtype.ext; exact Prod.ext rfl (map_one _)
-  map_mul' x y := by apply Subtype.ext; exact Prod.ext rfl (map_mul _ _ _)
+  map_one' := by simp
+  map_mul' x y := by apply Subtype.ext; simp
 
 private theorem torusPullbackBridge_injective :
     Function.Injective (torusPullbackBridge F ζ hζ) := by
@@ -837,7 +811,3 @@ theorem scalar_phase_levels_cofinal
     refine ⟨K, hKM, hcompact, hopen, hdisjoint, ?_⟩
     intro f hf
     exact (hS K f).mpr (hconditions f hf)
-end
-end DedekindZetaZeroFree.KPGlobalTorusTensorFibers
-
-end

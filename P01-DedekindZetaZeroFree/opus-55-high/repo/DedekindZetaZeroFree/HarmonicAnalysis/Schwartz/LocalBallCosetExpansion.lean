@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Arithmetic.LocalFields.BallQuotients
 
 @[expose] public section
 
-noncomputable section
 
 open scoped NumberField Classical BigOperators
 open NumberField IsDedekindDomain
@@ -13,13 +12,13 @@ namespace DedekindZetaZeroFree
 
 variable (F : Type) [Field F] [NumberField F]
 
-private theorem containing_ball (v : HeightOneSpectrum (𝓞 F))
+theorem containing_ball (v : HeightOneSpectrum (𝓞 F))
     (f : v.adicCompletion F → ℂ) (hf : HasCompactSupport f) :
     ∃ r : ℤ, tsupport f ⊆ (finiteCompletionBall F v r : Set (v.adicCompletion F)) := by
   obtain ⟨k, hk⟩ := hf.elim_directed_cover
     (fun k : ℕ => (finiteCompletionBall F v (-(k : ℤ)) : Set (v.adicCompletion F)))
     (fun k => isOpen_finiteCompletionBall F v _)
-    (by rw [iUnion_finiteCompletionBall_neg_nat F v]; exact Set.subset_univ _)
+    (by rw [iUnion_finiteCompletionBall_neg_nat F v]; simp)
     (by
       intro i j
       refine ⟨max i j, ?_, ?_⟩
@@ -27,7 +26,7 @@ private theorem containing_ball (v : HeightOneSpectrum (𝓞 F))
       · exact (finiteCompletionBall_le_iff F v _ _).2 (by omega))
   exact ⟨_, hk⟩
 
-private theorem uniform_ball (v : HeightOneSpectrum (𝓞 F))
+theorem uniform_ball (v : HeightOneSpectrum (𝓞 F))
     (f : v.adicCompletion F → ℂ) (hf : IsLocallyConstant f)
     (r : ℤ) (hr : tsupport f ⊆ (finiteCompletionBall F v r : Set (v.adicCompletion F))) :
     ∃ n : ℤ, r ≤ n ∧ ∀ x u, u ∈ finiteCompletionBall F v n → f (x + u) = f x := by
@@ -50,7 +49,6 @@ private theorem uniform_ball (v : HeightOneSpectrum (𝓞 F))
   have hdn : ∀ b ∈ T, d b ≤ n := by
     intro b hb
     have := Finset.le_sup (f := fun b : B => (d b).toNat) hb
-    dsimp [n]
     omega
   refine ⟨n, hrn, ?_⟩
   intro x u hu
@@ -70,7 +68,7 @@ private theorem uniform_ball (v : HeightOneSpectrum (𝓞 F))
     rw [image_eq_zero_of_notMem_tsupport (fun h => hxu (hr h)),
       image_eq_zero_of_notMem_tsupport (fun h => hx (hr h))]
 
-private theorem transversal (v : HeightOneSpectrum (𝓞 F)) (r n : ℤ) (hrn : r ≤ n) :
+theorem transversal (v : HeightOneSpectrum (𝓞 F)) (r n : ℤ) (hrn : r ≤ n) :
     ∃ T : Finset (v.adicCompletion F),
       (↑T : Set (v.adicCompletion F)) ⊆ (finiteCompletionBall F v r : Set (v.adicCompletion F)) ∧
       (∀ t ∈ T, ∀ s ∈ T, t ≠ s → Disjoint
@@ -85,7 +83,7 @@ private theorem transversal (v : HeightOneSpectrum (𝓞 F)) (r n : ℤ) (hrn : 
   letI : Finite Q := finite_finiteCompletionBallQuotient F v r n hrn
   letI : Fintype Q := Fintype.ofFinite Q
   let rep : Q → v.adicCompletion F := fun q => q.out.val
-  have hrep : ∀ q : Q, (QuotientAddGroup.mk q.out : Q) = q := fun q => Quotient.out_eq' q
+  have hrep : ∀ q : Q, (QuotientAddGroup.mk q.out : Q) = q := by simp
   let T := Finset.univ.image rep
   have hT : ∀ t ∈ T, ∃ q : Q, rep q = t := by
     intro t ht
@@ -191,7 +189,3 @@ theorem localCosetIndicator_ball_mem_localSchwartz
     intro x hx
     by_contra hn
     exact hx (by simp [localCosetIndicator, S] at hn ⊢; exact hn)
-
-end DedekindZetaZeroFree
-
-end

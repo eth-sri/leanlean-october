@@ -51,7 +51,7 @@ namespace DedekindZetaZeroFree.KPMsNativeOffsetMass
   rw [KPMsFixedHaar.RadialIntegrationSteps.pinned_end A R P D j Z hZ φ hφ]
   simp only [div_eq_mul_inv, mul_assoc, smul_eq_mul]
 
-private theorem pinned_cusp_shell_mass
+theorem pinned_cusp_shell_mass
     {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
     {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
     {U : KPMsFixedHaar.Level F ζ hζ}
@@ -101,7 +101,7 @@ variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
 variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
 variable (S : NativeRecipe F ζ hζ R P) (V : KPMsActualAngularSource.Level F ζ hζ)
 
-private theorem actual_cusp_shell_mass
+theorem actual_cusp_shell_mass
     (j : NativeCusp F ζ hζ R P S V) (Y : ℝ)
     (hY : OffsetAdmissible F ζ hζ R P S V Y) :
     R.quotientHaar (cuspShell F ζ hζ R P S V j Y) =

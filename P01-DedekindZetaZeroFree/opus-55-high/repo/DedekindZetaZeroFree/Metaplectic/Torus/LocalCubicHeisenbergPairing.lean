@@ -19,16 +19,16 @@ noncomputable def inverseThreeModule (K : Type*) [Field K] [ValuativeRel K]
 
 theorem finite_cubeClasses (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
     [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    (ζ : K) (hζ : IsPrimitiveRoot ζ 3) : Finite (CubeClasses Kˣ) := by
-  exact ClassFieldTheory.powerClassGroup_finite K 3 (by norm_num)
+    (ζ : K) (hζ : IsPrimitiveRoot ζ 3) : Finite (CubeClasses Kˣ) := 
+  ClassFieldTheory.powerClassGroup_finite K 3 (by norm_num)
 
-private theorem integral_root (K : Type*) [Field K] [ValuativeRel K]
+theorem integral_root (K : Type*) [Field K] [ValuativeRel K]
     [TopologicalSpace K] [IsNonarchimedeanLocalField K]
     (ζ : K) (hζ : IsPrimitiveRoot ζ 3) :
     ∃ z : 𝒪[K], IsPrimitiveRoot z 3 := by
   have hv : valuation K ζ = 1 := by
     have hp : (valuation K ζ) ^ 3 = 1 := by rw [← map_pow, hζ.pow_eq_one, map_one]
-    exact (pow_eq_one_iff_of_nonneg zero_le (by decide)).mp hp
+    simp_all
   let z : 𝒪[K] := ⟨ζ, hv.le⟩
   exact ⟨z, hζ.of_map_of_injective (f := (valuation K).integer.subtype)
     Subtype.val_injective⟩
@@ -45,9 +45,7 @@ private theorem log_integer (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
   have hep : e (valuation K p) = WithZero.exp (-1 : ℤ) := by rw [hp, e.apply_symm_apply]
   have hpint : valuation K p ≤ 1 := by
     apply (map_le_map_iff e).mp
-    rw [map_one, hep]
-    change WithZero.exp (-1 : ℤ) ≤ WithZero.exp 0
-    exact WithZero.exp_le_exp.mpr (by omega)
+    simp_all
   let π : Integers K := ⟨p, hpint⟩
   have hm : IsLocalRing.maximalIdeal (Integers K) = Ideal.span {π} := by
     ext b
@@ -77,9 +75,7 @@ private theorem log_integer (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
     (Valuation.integer.integers (valuation K)).one_of_isUnit u.isUnit
   change WithZero.log (e (valuation K
     (((u : Integers K) : K) * p^n))) = -(n : ℤ)
-  rw [map_mul, map_pow, hvu, map_mul, map_pow, map_one, one_mul, hep]
-  rw [← WithZero.exp_nsmul, WithZero.log_exp]
-  simp [nsmul_eq_mul]
+  simp_all
 
 theorem card_cubeClasses (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
     [TopologicalSpace K] [IsNonarchimedeanLocalField K]
@@ -104,8 +100,7 @@ theorem inverseThreeModule_eq_one_of_tame (K : Type*) [Field K] [ValuativeRel K]
     [TopologicalSpace K] [IsNonarchimedeanLocalField K]
     (htame : (3 : 𝒪[K]) ∉ 𝓂[K]) : inverseThreeModule K = 1 := by
   have hunit : IsUnit (3 : 𝒪[K]) := by
-    by_contra h
-    exact htame ((IsLocalRing.mem_maximalIdeal (3 : 𝒪[K])).mpr (mem_nonunits_iff.mpr h))
+    simp_all
   have hval : IsDiscreteValuationRing.addVal 𝒪[K] (3 : 𝒪[K]) = 0 :=
     IsDiscreteValuationRing.addVal_eq_zero_iff.mpr hunit
   simp [inverseThreeModule, hval]
@@ -115,5 +110,3 @@ theorem card_cubeClasses_tame (K : Type*) [Field K] [CharZero K] [ValuativeRel K
     (ζ : K) (hζ : IsPrimitiveRoot ζ 3) (htame : (3 : 𝒪[K]) ∉ 𝓂[K]) :
     Nat.card (CubeClasses Kˣ) = 9 := by
   rw [card_cubeClasses K ζ hζ, inverseThreeModule_eq_one_of_tame K htame, mul_one]
-
-end DedekindZetaZeroFree.KPLocalTorus

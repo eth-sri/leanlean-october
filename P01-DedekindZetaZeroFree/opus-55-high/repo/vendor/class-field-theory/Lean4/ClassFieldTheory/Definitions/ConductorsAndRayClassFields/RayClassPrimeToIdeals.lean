@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Fractional ideals prime to a ray modulus
 -/
@@ -46,5 +41,3 @@ def rayClassPrimeToIdeals
   inv_mem' {I} hI v hv := by
     rw [Units.val_inv_eq_inv_val, FractionalIdeal.count_inv K v,
       hI v hv, neg_zero]
-
-end ClassFieldTheory

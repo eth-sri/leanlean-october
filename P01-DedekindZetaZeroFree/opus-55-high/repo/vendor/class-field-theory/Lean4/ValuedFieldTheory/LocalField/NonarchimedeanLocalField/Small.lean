@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # The carrier of a nonarchimedean local field is universe-small
 
@@ -26,7 +21,6 @@ of the maximal ideal.  Its fraction field is therefore also small enough to
 be represented in `Type 0`.  No countability of the field itself is asserted.
 -/
 
-noncomputable section
 
 namespace LocalFieldTheory
 
@@ -63,7 +57,3 @@ theorem nonarchimedeanLocalField_small
   intro x
   obtain ⟨a, b, _, hab⟩ := IsFractionRing.div_surjective O x
   exact ⟨(a, b), hab⟩
-
-end LocalFieldTheory
-
-end

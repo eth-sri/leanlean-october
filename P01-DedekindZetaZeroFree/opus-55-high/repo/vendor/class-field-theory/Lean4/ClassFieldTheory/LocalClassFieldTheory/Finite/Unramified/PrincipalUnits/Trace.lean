@@ -11,10 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-set_option autoImplicit false
 /-! Provides the public declarations in the `LocalClassFieldTheory.Finite.Unramified.PrincipalUnits.Trace` Lean module. -/
 
 noncomputable section
@@ -60,8 +56,8 @@ theorem quotientNorm_oneAdd_uniformizerPow_eq_trace
   let b : (𝓂[L] ^ n : Ideal 𝒪[L]) :=
     ⟨Finset.univ.sum fun σ : Gal(L / K) =>
         galoisGroupIntegerRingEquivOfIsIntegralClosure K L σ (a : 𝒪[L]),
-      by
-        exact Ideal.sum_mem _ fun σ _ =>
+      
+        Ideal.sum_mem _ fun σ _ =>
           (integerRingEquiv_mem_maximalIdeal_pow L
             (galoisGroupIntegerRingEquivOfIsIntegralClosure K L σ) n
             (a : 𝒪[L])).2 a.2⟩
@@ -173,11 +169,7 @@ theorem principalUnitsSuccQuotNormOfUnramifiedValuationOfIsIntegralClosure_oneAd
         (Algebra.trace 𝓀[K] 𝓀[L] (IsLocalRing.residue 𝒪[L] r))
   have hmul : x = Additive.toMul y := by
     apply principalUnitsSuccQuotMapOfUnramifiedValuation_injective K L n hn
-    apply Additive.ofMul.injective
-    change MonoidHom.toAdditive (principalUnitsSuccQuotMapOfUnramifiedValuation K L n)
-        (Additive.ofMul x) =
-      MonoidHom.toAdditive (principalUnitsSuccQuotMapOfUnramifiedValuation K L n) y
-    exact hxmap.trans hymap.symm
+    simp_all
   change Additive.ofMul x = y
   simpa using congrArg Additive.ofMul hmul
 
@@ -215,7 +207,7 @@ theorem principalUnitsSuccQuotNormOfUnramifiedValuationOfIsIntegralClosure_trace
 
 /-- The residue-trace model for the actual unramified norm on
 `U^n/U^(n+1)`, written in the base-uniformizer coordinates. -/
-noncomputable def principalUnitsSuccQuotTraceOfUnramifiedValuation (K L : Type u)
+def principalUnitsSuccQuotTraceOfUnramifiedValuation (K L : Type u)
     [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
     [Field L] [ValuativeRel L] [TopologicalSpace L] [IsNonarchimedeanLocalField L]
     [Algebra K L] [FiniteDimensional K L]
@@ -349,12 +341,4 @@ theorem principalUnitsSuccQuotNormOfUnramifiedValuationOfIsIntegralClosure_surje
     principalUnitsSuccQuotNormOfUnramifiedValuationOfIsIntegralClosure_toAdditive_surjective
       K L n hn (Additive.ofMul y)
   refine ⟨Additive.toMul x, ?_⟩
-  apply Additive.ofMul.injective
-  change MonoidHom.toAdditive
-      (principalUnitsSuccQuotNormOfUnramifiedValuationOfIsIntegralClosure K L n)
-      (Additive.ofMul (Additive.toMul x)) = Additive.ofMul y
-  simpa using hx
-
-end LocalClassFieldTheory
-
-end
+  simp_all

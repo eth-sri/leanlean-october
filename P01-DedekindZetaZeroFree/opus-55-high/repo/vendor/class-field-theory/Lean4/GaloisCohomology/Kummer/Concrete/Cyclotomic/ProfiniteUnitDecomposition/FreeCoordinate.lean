@@ -1,6 +1,6 @@
 module
 
-public import GaloisCohomology.Kummer.Concrete.Cyclotomic.ProfiniteUnitDecomposition.CyclotomicQuotient
+public import GaloisCohomology.Kummer.Concrete.Cyclotomic.ProfiniteUnitDecomposition.TorsionQuotientMk
 
 @[expose] public section
 
@@ -11,16 +11,12 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Local coordinates of the profinite-unit decomposition
 -/
 
 open scoped Topology
 
-noncomputable section
 
 namespace KummerTheory
 
@@ -51,7 +47,3 @@ theorem zHatUnitsDecomposition_freeCoordinate
   exact
     congrFun
       (zHatContinuousAddEquivPrimeProduct.apply_symm_apply y) p
-
-end KummerTheory
-
-end

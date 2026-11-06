@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Extensions of absolute values
 
@@ -28,5 +23,3 @@ namespace AbsoluteValue
 def Extends {K L : Type*} [Field K] [Field L] [Algebra K L]
     (v : AbsoluteValue K ℝ) (w : AbsoluteValue L ℝ) : Prop :=
   ∀ x : K, w (algebraMap K L x) = v x
-
-end AbsoluteValue

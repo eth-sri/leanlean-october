@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.LargeSieve.CharacterBounds.ConductorControlle
 
 @[expose] public section
 
-noncomputable section
 
 namespace DedekindZetaZeroFree.LargeSieve.Sieve
 
@@ -30,10 +29,7 @@ theorem T3_eq_normalizedMasked_core
   unfold T3 NormalizedKernelProfiles.T3normalizedMasked
   refine Finset.sum_congr rfl fun u hu => ?_
   refine Finset.sum_congr rfl fun v hv => ?_
-  by_cases h0 : u ⊔ v = d ∧ Q.cls u = g ∧ Q.cls v = g
-  · rw [if_pos h0, if_pos h0, if_pos hu, if_pos hv, hrows]
-    simp only [one_mul, map_one, map_mul]
-  · rw [if_neg h0, if_neg h0]
+  simp_all
 
 theorem B3_eq_normalizedMasked_core
     (F : Type) [Field F] [NumberField F]
@@ -54,13 +50,7 @@ theorem B3_eq_normalizedMasked_core
   congr 1
   ext x
   simp only [Set.mem_union, Set.mem_singleton_iff, Set.mem_setOf_eq]
-  constructor
-  · rintro (rfl | ⟨g, lam, he, rfl⟩)
-    · exact Or.inl rfl
-    · exact Or.inr ⟨g, lam, he, by rw [hT g lam]⟩
-  · rintro (rfl | ⟨g, lam, he, rfl⟩)
-    · exact Or.inl rfl
-    · exact Or.inr ⟨g, lam, he, by rw [hT g lam]⟩
+  simp_all
 
 theorem bilinear_prop51_core
     {F : Type} [Field F] [NumberField F]
@@ -87,7 +77,3 @@ theorem bilinear_prop51_core
   rw [B3_eq_normalizedMasked_core F c hc Q hGood W M N K d]
   exact H M N K hM hN hK hK1 hK2 d (paperShell F c N) (fun _ => 1)
     (fun _ hx => hx) (fun _ => by simp)
-
-end DedekindZetaZeroFree.LargeSieve.Sieve
-
-end

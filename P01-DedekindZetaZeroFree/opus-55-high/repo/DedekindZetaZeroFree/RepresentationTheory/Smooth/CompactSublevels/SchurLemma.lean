@@ -106,9 +106,3 @@ theorem scalar_commutant_of_compact_sublevels
   refine ⟨v, ?_, hv⟩
   intro u
   exact hU u.val u.property.1
-
-end DedekindZetaZeroFree.KPGlobalResidualConstruction.NativeRepresentationAlgebra
-
-end
-
-end

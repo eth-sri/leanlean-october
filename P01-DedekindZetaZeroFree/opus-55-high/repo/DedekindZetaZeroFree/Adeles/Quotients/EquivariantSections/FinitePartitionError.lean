@@ -222,7 +222,7 @@ private theorem tensor_local_enorm (a : Chart (U := U) (H := H))
       Real.sqrt_sq_eq_abs, abs_of_nonneg (norm_nonneg _), Real.norm_of_nonneg (norm_nonneg _)]
     rfl
 
-private theorem scalar_chart_norm (a : Chart (U := U) (H := H))
+theorem scalar_chart_norm (a : Chart (U := U) (H := H))
     (s : Sections F ζ hζ U R P H) (y : a.domain) :
     sectionNorm F ζ hζ U R P H s (a.toBase y) = ‖(a.coefficient s y : ℂ)‖ := by
   change sectionNorm F ζ hζ U R P H s
@@ -231,7 +231,7 @@ private theorem scalar_chart_norm (a : Chart (U := U) (H := H))
   rw [← (H.atlas U).components_formula]
   exact sectionNorm_component F ζ hζ U R P H s a.component y.val
 
-private theorem scalar_section_memLp (s : BorelL2Sections F ζ hζ U R P H) :
+theorem scalar_section_memLp (s : BorelL2Sections F ζ hζ U R P H) :
     MemLp (sectionNorm F ζ hζ U R P H s.val) 2
       (baseMeasure (R := R) (P := P) (U := U)) := by
   have hme : Measurable (sectionNorm F ζ hζ U R P H s.val) := by
@@ -311,7 +311,7 @@ private theorem scalar_enorm (s : BorelL2Sections F ζ hζ U R P H) :
     exact mul_le_of_le_one_left (norm_nonneg _) (hη1 _)
   exact KPContSectorLineL2Isometry.borelS F ζ hζ U R P H ⟨f, hf, hlp⟩
 
-private theorem scalarMultiplyBorel_coefficient
+theorem scalarMultiplyBorel_coefficient
     (η : KPFiniteCuspAtlas.rawXU F ζ hζ U → ℝ)
     (hη : Measurable η) (hη0 : ∀ b, 0 ≤ η b) (hη1 : ∀ b, η b ≤ 1)
     (s : BorelL2Sections F ζ hζ U R P H) (a : Chart (U := U) (H := H)) (y : a.domain) :
@@ -366,7 +366,7 @@ private theorem scalar_local_enorm (a : Chart (U := U) (H := H))
     change ‖sectionNorm F ζ hζ U R P H s.val (a.toBase y)‖ = _
     rw [scalar_chart_norm, Real.norm_of_nonneg (norm_nonneg _)]
 
-private theorem scalar_field_coefficient (a : Chart (U := U) (H := H))
+theorem scalar_field_coefficient (a : Chart (U := U) (H := H))
     (s : Sections F ζ hζ U R P H) (y : a.domain) :
     sectionFields s a (coordinates a y) = (a.coefficient s y : ℂ) := by
   have hi : ∀ v : KPCuspGenuineMonodromy.SymmetricSpace F,

@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Valuation estimates for logarithm and exponential series
 
@@ -23,12 +19,11 @@ This file proves lower bounds and divergence-to-infinity statements for the
 integer valuations of the logarithm and exponential series terms.
 -/
 
-noncomputable section
 
 universe u
 
 open Filter WithZero
-open scoped NNReal Filter WithZero
+open scoped NNReal
 
 namespace LocalFieldTheory.DiscreteValuationField
 namespace MultiplicativeIntegerValuation
@@ -56,7 +51,7 @@ theorem ofWithZeroValuation_val_pow_div_natCast_factorial_pos_of_one_lt
   have hxge : (2 : ℤ) ≤ (ofWithZeroValuation v).val x := by
     omega
   have hnnonneg : (0 : ℤ) ≤ (n : ℤ) := by
-    exact_mod_cast Nat.zero_le n
+    simp
   have hlin :
       (n : ℤ) * 2 ≤
         (n : ℤ) * (ofWithZeroValuation v).val x :=
@@ -64,10 +59,7 @@ theorem ofWithZeroValuation_val_pow_div_natCast_factorial_pos_of_one_lt
   have hden :
       (padicValNat p n.factorial : ℤ) ≤ (n : ℤ) := by
     exact_mod_cast padicValNat_factorial_le (p := p) n
-  have hnpos : (0 : ℤ) < (n : ℤ) := by
-    exact_mod_cast Nat.pos_of_ne_zero hn
-  rw [hterm]
-  linarith
+  omega
 
 /-- Real lower bound for the valuation of the exponential-series term
 `x^n / n!`. -/
@@ -90,17 +82,7 @@ theorem ofWithZeroValuation_val_pow_div_natCast_factorial_real_lower_bound
       (n : ℝ) * c ≤
         (n : ℝ) * ((ofWithZeroValuation v).val x : ℝ) :=
     mul_le_mul_of_nonneg_left hc (Nat.cast_nonneg n)
-  calc
-    (n : ℝ) * c - (padicValNat p n.factorial : ℝ) ≤
-        (n : ℝ) * ((ofWithZeroValuation v).val x : ℝ) -
-          (padicValNat p n.factorial : ℝ) := by
-      linarith
-    _ =
-        ((ofWithZeroValuation v).val
-          (x ^ n /
-            Units.mk0 (((n.factorial : ℕ) : K)) hnK) : ℝ) := by
-      rw [hterm]
-      norm_num [Int.cast_sub, Int.cast_mul]
+  simp_all
 
 /-- Real lower bound for the valuation of the exponential-series term
 `x^n / n!`, with a ramification-index scale in the denominator valuation. -/
@@ -123,17 +105,7 @@ theorem ofWithZeroValuation_val_pow_div_natCast_factorial_scaled_real_lower_boun
       (n : ℝ) * c ≤
         (n : ℝ) * ((ofWithZeroValuation v).val x : ℝ) :=
     mul_le_mul_of_nonneg_left hc (Nat.cast_nonneg n)
-  calc
-    (n : ℝ) * c - (e : ℝ) * (padicValNat p n.factorial : ℝ) ≤
-        (n : ℝ) * ((ofWithZeroValuation v).val x : ℝ) -
-          (e : ℝ) * (padicValNat p n.factorial : ℝ) := by
-      linarith
-    _ =
-        ((ofWithZeroValuation v).val
-          (x ^ n /
-            Units.mk0 (((n.factorial : ℕ) : K)) hnK) : ℝ) := by
-      rw [hterm]
-      norm_num [Int.cast_sub, Int.cast_mul]
+  simp_all
 
 /-- The valuations of the exponential-series terms `x^n / n!` tend to `+∞`
 when the value of `x` is strictly larger than one.  This is the convergence
@@ -166,8 +138,8 @@ theorem ofWithZeroValuation_val_pow_div_natCast_factorial_tendsto_atTop
       (fun n : ℕ =>
         ((ofWithZeroValuation v).val
           (x ^ n /
-            Units.mk0 (((n.factorial : ℕ) : K)) (hnK n)) : ℝ)) := by
-    exact Eventually.of_forall fun n =>
+            Units.mk0 (((n.factorial : ℕ) : K)) (hnK n)) : ℝ)) := 
+    Eventually.of_forall fun n =>
       ofWithZeroValuation_val_pow_div_natCast_factorial_real_lower_bound
         (v := v) (p := p) (n := n) x (hnK n) (hnval n) hc
   exact tendsto_atTop_mono' atTop hle hsource
@@ -207,46 +179,11 @@ theorem ofWithZeroValuation_val_pow_div_natCast_factorial_scaled_tendsto_atTop
       (fun n : ℕ =>
         ((ofWithZeroValuation v).val
           (x ^ n /
-            Units.mk0 (((n.factorial : ℕ) : K)) (hnK n)) : ℝ)) := by
-    exact Eventually.of_forall fun n =>
+            Units.mk0 (((n.factorial : ℕ) : K)) (hnK n)) : ℝ)) := 
+    Eventually.of_forall fun n =>
       ofWithZeroValuation_val_pow_div_natCast_factorial_scaled_real_lower_bound
         (v := v) (p := p) (n := n) e x (hnK n) (hnval n) hc
   exact tendsto_atTop_mono' atTop hle hsource
-
-/-- Real lower bound for the valuation of `x^n / n`, in the form used to prove
-that the logarithm-series terms tend to zero. -/
-theorem ofWithZeroValuation_val_pow_div_natCast_real_lower_bound
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    {p n : ℕ} [Fact p.Prime] (x : Kˣ) (hnK : (n : K) ≠ 0)
-    (hnval : v (n : K) = WithZero.exp (-(padicValNat p n : ℤ)))
-    {c : ℝ} (hc : c ≤ ((ofWithZeroValuation v).val x : ℝ)) :
-    (n : ℝ) * c - Real.logb p n ≤
-      ((ofWithZeroValuation v).val
-        (x ^ n / Units.mk0 (n : K) hnK) : ℝ) := by
-  have hterm :=
-    ofWithZeroValuation_val_pow_div_natCast
-      (v := v) (p := p) (n := n) x hnK hnval
-  have hlin :
-      (n : ℝ) * c ≤
-        (n : ℝ) * ((ofWithZeroValuation v).val x : ℝ) :=
-    mul_le_mul_of_nonneg_left hc (Nat.cast_nonneg n)
-  have hden :
-      (padicValNat p n : ℝ) ≤ Real.logb p n :=
-    padicValNat_le_real_logb (p := p) n
-  have hmain :
-      (n : ℝ) * c - Real.logb p n ≤
-        (n : ℝ) * ((ofWithZeroValuation v).val x : ℝ) -
-          (padicValNat p n : ℝ) := by
-    linarith
-  calc
-    (n : ℝ) * c - Real.logb p n ≤
-        (n : ℝ) * ((ofWithZeroValuation v).val x : ℝ) -
-          (padicValNat p n : ℝ) := hmain
-    _ =
-        ((ofWithZeroValuation v).val
-          (x ^ n / Units.mk0 (n : K) hnK) : ℝ) := by
-      rw [hterm]
-      norm_num [Int.cast_sub, Int.cast_mul]
 
 /-- Real lower bound for the valuation of `x^n / n`, with a fixed
 ramification-index scale in the denominator valuation. -/
@@ -280,52 +217,7 @@ theorem ofWithZeroValuation_val_pow_div_natCast_scaled_real_lower_bound
         (n : ℝ) * ((ofWithZeroValuation v).val x : ℝ) -
           (e : ℝ) * (padicValNat p n : ℝ) := by
     linarith
-  calc
-    (n : ℝ) * c - (e : ℝ) * Real.logb (p : ℝ) (n : ℝ) ≤
-        (n : ℝ) * ((ofWithZeroValuation v).val x : ℝ) -
-          (e : ℝ) * (padicValNat p n : ℝ) := hmain
-    _ =
-        ((ofWithZeroValuation v).val
-          (x ^ n / Units.mk0 (n : K) hnK) : ℝ) := by
-      rw [hterm]
-      norm_num [Int.cast_sub, Int.cast_mul]
-
-/-- The valuations of the logarithm-series terms `x^(n+1)/(n+1)` tend to
-`+∞`, assuming the natural-number denominators have their expected `p`-adic
-values and `x` has positive valuation. -/
-theorem ofWithZeroValuation_val_pow_succ_div_natCast_tendsto_atTop
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    {p : ℕ} [Fact p.Prime] (x : Kˣ)
-    (hnK : ∀ n : ℕ, (((n + 1 : ℕ) : K) ≠ 0))
-    (hnval : ∀ n : ℕ,
-      v (((n + 1 : ℕ) : K)) =
-        WithZero.exp (-(padicValNat p (n + 1) : ℤ)))
-    {c : ℝ} (hcpos : 0 < c)
-    (hc : c ≤ ((ofWithZeroValuation v).val x : ℝ)) :
-    Tendsto
-      (fun n : ℕ =>
-        ((ofWithZeroValuation v).val
-          (x ^ (n + 1) /
-            Units.mk0 (((n + 1 : ℕ) : K)) (hnK n)) : ℝ))
-      atTop atTop := by
-  have hsource :
-      Tendsto
-        (fun n : ℕ =>
-          ((n + 1 : ℕ) : ℝ) * c - Real.logb p (n + 1))
-        atTop atTop :=
-    tendsto_nat_succ_mul_const_sub_logb_atTop (p := p) hcpos
-  have hle :
-      (fun n : ℕ =>
-        ((n + 1 : ℕ) : ℝ) * c - Real.logb p (n + 1)) ≤ᶠ[atTop]
-      (fun n : ℕ =>
-        ((ofWithZeroValuation v).val
-          (x ^ (n + 1) /
-            Units.mk0 (((n + 1 : ℕ) : K)) (hnK n)) : ℝ)) := by
-    exact Eventually.of_forall fun n => by
-      simpa [Nat.cast_add, Nat.cast_one] using
-        ofWithZeroValuation_val_pow_div_natCast_real_lower_bound
-          (v := v) (p := p) (n := n + 1) x (hnK n) (hnval n) hc
-  exact tendsto_atTop_mono' atTop hle hsource
+  simp_all
 
 /-- The valuations of the logarithm-series terms `x^(n+1)/(n+1)` tend to
 `+∞` when the natural-number denominators have a fixed ramification-index
@@ -360,15 +252,10 @@ theorem ofWithZeroValuation_val_pow_succ_div_natCast_scaled_tendsto_atTop
       (fun n : ℕ =>
         ((ofWithZeroValuation v).val
           (x ^ (n + 1) /
-            Units.mk0 (((n + 1 : ℕ) : K)) (hnK n)) : ℝ)) := by
-    exact Eventually.of_forall fun n => by
+            Units.mk0 (((n + 1 : ℕ) : K)) (hnK n)) : ℝ)) := 
+    Eventually.of_forall fun n => by
       simpa [Nat.cast_add, Nat.cast_one] using
         ofWithZeroValuation_val_pow_div_natCast_scaled_real_lower_bound
           (v := v) (p := p) (e := e) (n := n + 1) x
           (hnK n) (hnval n) hc
   exact tendsto_atTop_mono' atTop hle hsource
-
-end MultiplicativeIntegerValuation
-end LocalFieldTheory.DiscreteValuationField
-
-end

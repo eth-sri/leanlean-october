@@ -9,13 +9,13 @@ namespace DedekindZetaZeroFree.LargeSieve
 open scoped NumberField Classical
 open DedekindZetaZeroFree
 
-private theorem mul_dvd_of_sup_eq_top {R : Type*} [CommRing R] [IsDedekindDomain R]
+theorem mul_dvd_of_sup_eq_top {R : Type*} [CommRing R] [IsDedekindDomain R]
     {d u m : Ideal R} (h : d ⊔ u = ⊤) (hd : d ∣ m) (hu : u ∣ m) : d * u ∣ m := by
   rw [Ideal.dvd_iff_le]
   rw [Ideal.mul_eq_inf_of_coprime h]
   exact le_inf (Ideal.le_of_dvd hd) (Ideal.le_of_dvd hu)
 
-private theorem dvd_of_dvd_mul_of_sup_eq_top {R : Type*} [CommRing R] [IsDedekindDomain R]
+theorem dvd_of_dvd_mul_of_sup_eq_top {R : Type*} [CommRing R] [IsDedekindDomain R]
     {a q m : Ideal R} (h : a ⊔ q = ⊤) (hm : a ∣ m * q) : a ∣ m := by
   rw [Ideal.dvd_iff_le] at hm ⊢
   calc m = m * ⊤ := by rw [Ideal.mul_top]
@@ -23,7 +23,7 @@ private theorem dvd_of_dvd_mul_of_sup_eq_top {R : Type*} [CommRing R] [IsDedekin
     _ = m * a ⊔ m * q := Ideal.mul_sup m a q
     _ ≤ a := sup_le (Ideal.mul_le_right (I := m) (J := a)) hm
 
-private theorem dvd_or_dvd_of_isPrime {R : Type*} [CommRing R] [IsDedekindDomain R]
+theorem dvd_or_dvd_of_isPrime {R : Type*} [CommRing R] [IsDedekindDomain R]
     {p m q : Ideal R} (hp : p.IsPrime) (h : p ∣ m * q) : p ∣ m ∨ p ∣ q := by
   by_cases hpm : p ∣ m
   · exact Or.inl hpm
@@ -79,18 +79,11 @@ theorem allIndexConductorControl
     induction s using Finset.induction_on with
     | empty => simp
     | insert a s ha ih =>
-        rw [Finset.prod_insert ha]
-        intro hcon
-        rw [Ideal.mul_eq_bot] at hcon
-        exact hcon.elim (hfac_ne a) ih
+        simp_all
   have hq_ne : q ≠ ⊥ := by
-    rw [hq_eq]
-    intro hcon
-    rw [Ideal.mul_eq_bot] at hcon
-    exact hcon.elim hc (hprod_ne Finset.univ)
+    simp_all
   have hc_dvd_q : c ∣ q := by
-    rw [hq_eq]
-    exact dvd_mul_right c _
+    simp_all
 
   have hpart1 : ∀ a : Ideal (𝓞 F), Squarefree a → a ⊔ c = ⊤ →
       Q.cond a ∣ a * q ∧ a ∣ Q.cond a * q := by
@@ -133,7 +126,7 @@ theorem allIndexConductorControl
       ring
     ·
       have hd_dvd : d ∣ Q.cond a * q :=
-        dvd_mul_of_dvd_right (dvd_trans (by rw [hrv']; exact dvd_mul_right d v) hr_dvd_q)
+        dvd_mul_of_dvd_right (dvd_trans (by rw [hrv']; simp) hr_dvd_q)
           (Q.cond a)
       have hu_dvd : u ∣ Q.cond a * q :=
         dvd_trans (dvd_trans (dvd_mul_right u v) huv) (mul_dvd_mul_left (Q.cond a) hcondr_dvd_q)
@@ -153,5 +146,3 @@ theorem allIndexConductorControl
     intro a ha hac p hp hpa hpq
     exact (dvd_or_dvd_of_isPrime hp (dvd_trans hpa (hpart1 a ha hac).2)).resolve_right hpq
   exact ⟨q, hq_ne, hc_dvd_q, hpart1, hpart2, hpart3⟩
-
-end DedekindZetaZeroFree.LargeSieve

@@ -172,9 +172,7 @@ theorem section_signed_weyl (s : ℂ)
     apply Matrix.GeneralLinearGroup.ext
     intro i j
     fin_cases i <;> fin_cases j <;>
-      simp [KPChamberBruhatTwoCells.rationalWeyl,
-        KPGlobalTorusFunctionData.rationalDiagonal, KPStandardLocalRootLifts.weylSwap,
-        Matrix.mul_apply, Fin.sum_univ_two]
+      simp [KPGlobalTorusFunctionData.rationalDiagonal, KPStandardLocalRootLifts.weylSwap, Matrix.mul_apply, Fin.sum_univ_two]
   rw [hmatrix, map_mul, unsigned_weyl, mul_assoc]
   change v.val ((KPGlobalTorusFunctionData.s F ζ hζ (-1)).val * _) = _
   exact section_rational_diagonal_invariant F ζ hζ s v (-1) _
@@ -206,9 +204,7 @@ private theorem upper_matrix_factorization
   apply Matrix.GeneralLinearGroup.ext
   intro i j
   fin_cases i <;> fin_cases j <;>
-    simp [KPGlobalTorusFunctionData.rationalDiagonal, y,
-      Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
-      Matrix.mul_apply, Fin.sum_univ_two, hb] <;> field_simp <;> ring
+    simp [KPGlobalTorusFunctionData.rationalDiagonal, y, Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_apply, Fin.sum_univ_two, hb] <;> field_simp <;> ring
 
 theorem scalar_rational_borel_invariant (s : ℂ)
     (v : KPMsRationalCompactCrossPairing.Source F ζ hζ s) :
@@ -262,10 +258,3 @@ theorem integral_two_cells (s : ℂ)
     dx dq hcompat g hsum (heq.symm ▸ hmeas) (heq.symm ▸ hint)
   rw [heq] at h
   exact h
-
-end ActualBruhat
-end DedekindZetaZeroFree.KPGlobalResidualKernel.RawStageL2.Outgoing
-
-end
-
-end

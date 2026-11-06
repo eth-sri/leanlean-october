@@ -45,5 +45,3 @@ def KEquivalent (s : ℝ) (U V : Submodule ℂ (PrincipalSeries s)) : Prop :=
   ∃ e : U ≃ₗ[ℂ] V, ∀ (k : compactSubgroup) (u v : U),
     (v : PrincipalSeries s) = pi s k u →
       (e v : PrincipalSeries s) = pi s k (e u)
-
-end DedekindZetaZeroFree.KPCplxHarmonicIntertwinerSpectrum

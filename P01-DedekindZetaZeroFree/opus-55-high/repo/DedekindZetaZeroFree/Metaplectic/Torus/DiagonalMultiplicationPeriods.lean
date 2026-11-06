@@ -31,14 +31,14 @@ variable (R : PrincipalMellin.ActualRecipe S η)
         · exact ⟨p, hp, rfl⟩
         · exact False.elim (hw (dif_neg hp))⟩
 
-private lemma sDefect_arch (x y : R.A.G) (w : InfinitePlace F) :
+lemma sDefect_arch (x y : R.A.G) (w : InfinitePlace F) :
     sDefect R x y (Sum.inl w) = 1 := rfl
-private lemma sDefect_finite (x y : R.A.G) (p : KPFinitePlace F) (hp : p ∈ R.A.Sf) :
+lemma sDefect_finite (x y : R.A.G) (p : KPFinitePlace F) (hp : p ∈ R.A.Sf) :
     sDefect R x y (Sum.inr p) =
       KPHilbert.B3 F R.A.zeta12 R.A.primitive_zeta12 (.inr p) (x.2 ⟨p, hp⟩) (y.2 ⟨p, hp⟩) ^ 2 := by
   change (if h : p ∈ R.A.Sf then _ else _) = _
   exact dif_pos hp
-private lemma sDefect_exterior (x y : R.A.G) (p : KPFinitePlace F) (hp : p ∉ R.A.Sf) :
+lemma sDefect_exterior (x y : R.A.G) (p : KPFinitePlace F) (hp : p ∉ R.A.Sf) :
     sDefect R x y (Sum.inr p) = 1 := by
   change (if h : p ∈ R.A.Sf then _ else _) = _
   exact dif_neg hp

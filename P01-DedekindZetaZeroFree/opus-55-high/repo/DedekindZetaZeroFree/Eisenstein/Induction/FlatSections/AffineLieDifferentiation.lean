@@ -97,7 +97,7 @@ open _root_.DedekindZetaZeroFree.KPMsClearedTruncationL2.NativeStageJets renamin
 open _root_.DedekindZetaZeroFree.KPMsClearedTruncationL2.NativeStageJets renaming theta_zero → theta_zero
 open _root_.DedekindZetaZeroFree.KPMsClearedTruncationL2.NativeStageJets renaming theta_smooth → theta_smooth
 
-private theorem generic_weight_induced (s t : ℂ) (f : Functions F ζ hζ)
+theorem generic_weight_induced (s t : ℂ) (f : Functions F ζ hζ)
     (hf : Induced F ζ hζ t f) : Induced F ζ hζ (s+t) (scalarWeight F ζ hζ s f) := by
   refine ⟨scalarWeight_smooth F ζ hζ s f hf.1, ?_⟩
   intro r x g
@@ -109,13 +109,13 @@ private theorem generic_weight_induced (s t : ℂ) (f : Functions F ζ hζ)
   simp only [add_mul, mul_add, Complex.exp_add]
   ring
 
-private theorem generic_induced_add (s : ℂ) (f h : Functions F ζ hζ)
+theorem generic_induced_add (s : ℂ) (f h : Functions F ζ hζ)
     (hf : Induced F ζ hζ s f) (hh : Induced F ζ hζ s h) : Induced F ζ hζ s (f+h) := by
   refine ⟨(nativeSmoothSpace F ζ hζ).add_mem hf.1 hh.1, ?_⟩
   intro r x g
   simp only [Pi.add_apply, hf.2, hh.2, mul_add]
 
-private theorem generic_induced_smul (s c : ℂ) (f : Functions F ζ hζ)
+theorem generic_induced_smul (s c : ℂ) (f : Functions F ζ hζ)
     (hf : Induced F ζ hζ s f) : Induced F ζ hζ s (c • f) := by
   refine ⟨(nativeSmoothSpace F ζ hζ).smul_mem c hf.1, ?_⟩
   intro r x g

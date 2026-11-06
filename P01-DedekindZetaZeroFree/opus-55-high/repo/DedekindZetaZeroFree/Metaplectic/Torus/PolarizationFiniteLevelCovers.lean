@@ -127,7 +127,7 @@ namespace DedekindZetaZeroFree.KPSpatialSmoothing
 open KPGlobalTorusFunctionData
 open _root_.DedekindZetaZeroFree.KPSpatialSmoothing renaming inBorel → inBorel
 
-private theorem compact_parameter_multiplication
+theorem compact_parameter_multiplication
     {G A : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
     [TopologicalSpace A] [CompactSpace A]
     (C : Subgroup G) (hC : IsClosed (C : Set G))
@@ -144,7 +144,7 @@ private theorem compact_parameter_multiplication
     hC.isProperMap_subtypeVal.prodMap isProperMap_id
   exact isProperMap_fst_of_compactSpace.comp (e.isProperMap.comp he)
 
-private theorem finite_compact_multiplication
+theorem finite_compact_multiplication
     {G : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
     (C K J : Subgroup G) (hC : IsClosed (C : Set G))
     (hK : IsCompact (K : Set G)) (hJ : IsCompact (J : Set G))
@@ -169,7 +169,7 @@ private theorem finite_compact_multiplication
     p.2.1.val * (r p.1 * p.2.2.1.val * p.2.2.2.val)) at hp
   simpa only [mul_assoc] using hp
 
-private theorem actual_globalLevel_compact
+theorem actual_globalLevel_compact
     (F : Type) [Field F] [NumberField F]
     (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (J : FiniteLevel F ζ hζ) :
     IsCompact (globalLevel F ζ hζ J : Set (G F ζ hζ)) := by
@@ -177,7 +177,7 @@ private theorem actual_globalLevel_compact
   rw [Subgroup.coe_map]
   exact J.isCompact.image continuous_subtype_val
 
-private theorem actual_multiplication_geometry
+theorem actual_multiplication_geometry
     (F : Type) [Field F] [NumberField F]
     (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (D : KPMsRationalCompactCrossPairing.Iwasawa F ζ hζ)

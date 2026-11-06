@@ -76,5 +76,3 @@ theorem finite_partition_quadratic_bound
     _ = (J.card : ℝ) * ((I.card : ℝ) * (L * ∑ b ∈ S, ‖lam b‖ ^ 2)) := by
         rw [hcollapse]
     _ = (I.card : ℝ) * (J.card : ℝ) * L * (∑ b ∈ S, ‖lam b‖ ^ 2) := by ring
-
-end DedekindZetaZeroFree.LargeSieve.Sieve.SplitPrefixEnvelope

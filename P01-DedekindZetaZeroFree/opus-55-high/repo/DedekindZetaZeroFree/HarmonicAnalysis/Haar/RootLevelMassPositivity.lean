@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Metaplectic.Intertwining.InverseRootSupportHa
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.KPTameTransposeUnitNumeratorSteps
 open scoped NumberField Classical
 open NumberField IsDedekindDomain MeasureTheory ValuativeRel
@@ -27,7 +26,7 @@ theorem rootLevelSet_isOpen (m : ℕ) (hm : 0 < m) :
 theorem zero_mem_rootLevelSet (m : ℕ) (hm : 0 < m) :
     (0 : LocalField F q) ∈ rootLevelSet F ζ hζ q m := by
   rw [rootLevelSet_eq_congruence_ideal F q ζ hζ S P m hm]
-  exact ⟨0, Ideal.zero_mem _, by simp⟩
+  simp
 
 theorem rootMass_pos (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
     (hμ : μ ((valuation (LocalField F q)).integer : Set (LocalField F q)) = 1)
@@ -45,7 +44,3 @@ theorem rootMass_pos (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
     · rw [hμ]
       simp
   exact ENNReal.toReal_pos hpos.ne' hfin.ne
-
-end DedekindZetaZeroFree.KPTameTransposeUnitNumeratorSteps
-
-end

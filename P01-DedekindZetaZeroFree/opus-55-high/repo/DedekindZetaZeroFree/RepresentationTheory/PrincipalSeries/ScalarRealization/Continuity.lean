@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Metaplectic.Torus.BorelTwistCompatibility
 
 @[expose] public section
 
-noncomputable section
 open scoped Classical NumberField Topology
 
 namespace DedekindZetaZeroFree.KPMsResidualTailRestoration.OutgoingTailL2.AngularBound
@@ -22,8 +21,7 @@ theorem scalarSection_continuous_of_levels
     Continuous (KPGlobalTorusBorelTwistCompatibility.scalarSection F ζ hζ P f).val := by
   have hval : (KPGlobalTorusBorelTwistCompatibility.scalarSection F ζ hζ P f).val =
       fun g : KPGlobalTorusFunctionData.G F ζ hζ => (f.val.val g).val.val 1 := by
-    funext g
-    exact KPGlobalTorusBorelTwistCompatibility.scalarSection_formula F ζ hζ P f g
+    rfl
   rw [hval]
   have hmem : f.val ∈ ⨆ J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ,
       KPGlobalTorusBorelTwistCompatibility.InducedLevel F ζ hζ P J := f.property
@@ -35,7 +33,3 @@ theorem scalarSection_continuous_of_levels
     (by simpa using continuous_const)
     (fun x y hx hy => by
       convert hx.add hy using 1)
-
-end DedekindZetaZeroFree.KPMsResidualTailRestoration.OutgoingTailL2.AngularBound
-
-end

@@ -13,7 +13,6 @@ open KPRankOneOpenCellKernel KPRankOneCenterInducedDiagonalComparison
 open KPRankOneReverseRegulatorShells
 
 noncomputable section
-set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
@@ -149,7 +148,7 @@ theorem restriction_regular (p : ShellNumerator) (r : ℂˣ)
     exact_mod_cast (one_lt_pow₀ hq (by decide : (3 : ℕ) ≠ 0)).ne'
   have ht : t F q (r : ℂ) ≠ 1 := by
     intro he
-    exact hr (by rw [he]; exact sub_self 1)
+    exact hr (by simp_all)
   have hd : shellDenominator F q r 1 ≠ 0 := by
     simp only [shellDenominator, one_pow, one_zpow, mul_one]
     apply mul_ne_zero (mul_ne_zero hr _) _
@@ -157,6 +156,3 @@ theorem restriction_regular (p : ShellNumerator) (r : ℂˣ)
     · simp only [zpow_neg, zpow_ofNat]
       exact sub_ne_zero.mpr (fun he => hq3 (inv_eq_one.mp he.symm))
   exact (good_restriction F q p r hd).1
-
-end
-end DedekindZetaZeroFree.KPRankOneReverseRegulatorSpecialization

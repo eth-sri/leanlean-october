@@ -12,7 +12,6 @@ open KPLocalStoneVonNeumann KPLocalPrincipalSeries KPRankOneShellContinuation
 open KPRankOneOpenCellKernel KPRankOneCenterInducedDiagonalComparison
 
 noncomputable section
-set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
@@ -48,9 +47,7 @@ private lemma sigww : KPLocalCover.sigmaTwo F ζ hζ (Sum.inr q)
 private lemma sigwnw (v : (LocalField F q)ˣ) : KPLocalCover.sigmaTwo F ζ hζ (Sum.inr q)
     ((KubotaRankTwo.w (LocalField F q))⁻¹ * KubotaRankTwo.n (LocalField F q) (-((v⁻¹ : (LocalField F q)ˣ) : LocalField F q)))
     (KubotaRankTwo.w (LocalField F q))⁻¹ = 1 := by
-  simp only [KPLocalCover.sigmaTwo, KubotaElementaryLastArgument.tau, Xwnw, KubotaRankTwo.X_mul_n,
-    Xwinv, map_mul, map_inv, KubotaRankTwo.det_n, KubotaRankTwo.det_w, inv_one, one_mul,
-    mul_one, one_pow]
+  simp only [KPLocalCover.sigmaTwo, KubotaElementaryLastArgument.tau, Xwnw, KubotaRankTwo.X_mul_n, Xwinv, map_mul, map_inv, KubotaRankTwo.det_n, KubotaRankTwo.det_w, inv_one, mul_one]
   have hr : (-v⁻¹) / (-1) = v⁻¹ := by simp
   rw [hr, (KPHilbert.B3_laws F ζ hζ (Sum.inr q)).2.2.2.2.2 v⁻¹ |>.1, BoneL]
   simp
@@ -83,9 +80,7 @@ private lemma sigdnw (v : (LocalField F q)ˣ) (s : LocalField F q) :
     KPLocalCover.sigmaTwo F ζ hζ (Sum.inr q)
       (KubotaRankTwo.d (LocalField F q) (v ^ 2) 1 * KubotaRankTwo.n (LocalField F q) s)
       (KubotaRankTwo.w (LocalField F q))⁻¹ = 1 := by
-  simp only [KPLocalCover.sigmaTwo, KubotaElementaryLastArgument.tau, Xdnw, KubotaRankTwo.X_mul_n,
-    KubotaRankTwo.X_d, Xwinv, map_mul, map_inv, KubotaRankTwo.det_n, KubotaRankTwo.det_w,
-    KubotaRankTwo.det_d, inv_one, mul_one, div_one, one_mul, one_pow]
+  simp only [KPLocalCover.sigmaTwo, KubotaElementaryLastArgument.tau, Xdnw, KubotaRankTwo.X_mul_n, KubotaRankTwo.X_d, Xwinv, map_mul, map_inv, KubotaRankTwo.det_n, KubotaRankTwo.det_w, KubotaRankTwo.det_d, inv_one, mul_one, div_one]
   rw [BnegL, BoneR]
   simp
 private lemma Xscalar (K : Type*) [Field K] (v : Kˣ) :
@@ -99,10 +94,8 @@ private lemma Xscalar_mul (K : Type*) [Field K] (v : Kˣ) (g : KubotaRankTwo.GL2
   simp only [KubotaRankTwo.X, Units.val_mk0, Units.val_mul]
   unfold KubotaRankTwo.x
   have he (i j : Fin 2) : (Matrix.GeneralLinearGroup.scalar (Fin 2) v * g) i j = (v : K) * g i j := by
-    fin_cases i <;> fin_cases j <;> simp [Matrix.mul_apply, Matrix.scalar]
-  rw [he 1 0, he 1 1]
-  simp only [mul_eq_zero, v.ne_zero, false_or]
-  split_ifs <;> rfl
+    simp
+  simp
 private lemma sigscalar (v : (LocalField F q)ˣ) (s : LocalField F q) :
     KPLocalCover.sigmaTwo F ζ hζ (Sum.inr q)
       (Matrix.GeneralLinearGroup.scalar (Fin 2) v⁻¹)
@@ -111,16 +104,12 @@ private lemma sigscalar (v : (LocalField F q)ˣ) (s : LocalField F q) :
   change KPLocalCover.sigmaTwo F ζ hζ (Sum.inr q)
     ((Matrix.GeneralLinearGroup.scalar (Fin 2)) v⁻¹) _ = 1
   unfold KPLocalCover.sigmaTwo KubotaElementaryLastArgument.tau
-  simp only [Xscalar_mul, Xscalar,
-    KubotaRankTwo.X_mul_n, Xdnw,
-    KubotaRankTwo.det,
-    Matrix.GeneralLinearGroup.det_scalar, Fintype.card_fin, inv_one, mul_one]
+  simp only [Xscalar_mul, Xscalar, KubotaRankTwo.X_mul_n, Xdnw, KubotaRankTwo.det, Matrix.GeneralLinearGroup.det_scalar, Fintype.card_fin]
   have h1 : v⁻¹ * (-1) / v⁻¹ = -1 := by simp
   rw [h1, BnegL]
   have hB : KPHilbert.B3 F ζ hζ (Sum.inr q) (v⁻¹ ^ 2) (v ^ 2) = 1 := by
     convert Bselfpow F ζ hζ q v (-2) 2 using 1 <;> simp
-  simp only [map_mul, map_inv, KubotaRankTwo.det_n, KubotaRankTwo.det_w,
-    KubotaRankTwo.det_d, inv_one, mul_one, ← inv_pow, hB, one_pow]
+  simp only [map_mul, map_inv, KubotaRankTwo.det_n, KubotaRankTwo.det_w, KubotaRankTwo.det_d, inv_one, mul_one, hB, one_pow]
 private lemma kappa_eq_one (v : (LocalField F q)ˣ) (s : LocalField F q) : kappa F ζ hζ q v s = 1 := by
   rw [kappa, bruhatLeft, bruhatRight, signedWeyl_eq_prescribed_signed]
   have he : ∀ x : (LocalField F q)ˣ,
@@ -131,9 +120,7 @@ private lemma kappa_eq_one (v : (LocalField F q)ˣ) (s : LocalField F q) : kappa
     KPLocalCover.inv_g, KPStandardLocalRootLifts.signedW, KPStandardLocalRootLifts.N,
     KPStandardLocalRootLifts.A, he, hg,
     KPLocalCover.sectionMap_epsilon, KPLocalCover.sectionMap_g]
-  simp only [sigww F ζ hζ q, sigmanR F ζ hζ q, sigwnw F ζ hζ q,
-    sigdnw F ζ hζ q, sigscalar F ζ hζ q, one_mul, mul_one,
-    inv_one, div_one]
+  simp only [sigww F ζ hζ q, sigmanR F ζ hζ q, sigwnw F ζ hζ q, sigdnw F ζ hζ q, sigscalar F ζ hζ q, mul_one, inv_one, div_one]
 
 namespace WeylAux
 local notation "K" => LocalField F q
@@ -163,8 +150,7 @@ private lemma B2 (y : Kˣ) : KPHilbert.B3 F ζ hζ v y 1 = 1 :=
   KubotaDefectSymbolAlgebra.one_right _ _ _ (KPHilbert.B3_laws F ζ hζ v).2.1 y
 private lemma sigma_wd (y : Kˣ) :
     KPLocalCover.sigmaTwo F ζ hζ v (KubotaRankTwo.w K) (KubotaRankTwo.d K y 1) = 1 := by
-  simp [KPLocalCover.sigmaTwo, KubotaElementaryLastArgument.tau, X_wd,
-    B1, B2, (KPHilbert.B3_laws F ζ hζ v).2.2.2.2.2]
+  simp [KPLocalCover.sigmaTwo, KubotaElementaryLastArgument.tau, X_wd, B1, (KPHilbert.B3_laws F ζ hζ v).2.2.2.2.2]
 private lemma sigma_dw (y : Kˣ) :
     KPLocalCover.sigmaTwo F ζ hζ v (KubotaRankTwo.d K y 1) (KubotaRankTwo.w K) = 1 := by
   simp [KPLocalCover.sigmaTwo, KubotaElementaryLastArgument.tau, X_dw,
@@ -174,14 +160,12 @@ private lemma sigma_scalar_dw (y : Kˣ) :
       (KubotaRankTwo.d K y⁻¹ 1 * KubotaRankTwo.w K) = 1 := by
   have hx : KubotaRankTwo.X K (KPScalarSplitCentral.scalarMatrix F v y) = y := by
     apply Units.ext
-    simp [KubotaRankTwo.X, KubotaRankTwo.x, KPScalarSplitCentral.scalarMatrix,
-      Matrix.scalar, Matrix.diagonal_apply]
+    simp [KubotaRankTwo.X, KubotaRankTwo.x, KPScalarSplitCentral.scalarMatrix, Matrix.scalar]
   have hb : KPHilbert.B3 F ζ hζ v (y ^ 2) y⁻¹ = 1 := by
     rw [KubotaDefectSymbolAlgebra.inv_right _ _ _ (KPHilbert.B3_laws F ζ hζ v).2.1]
     simp only [pow_two, (KPHilbert.B3_laws F ζ hζ v).1,
       (KPHilbert.B3_laws F ζ hζ v).2.2.2.2.2, one_mul, inv_one]
-  simp [KPLocalCover.sigmaTwo, KubotaElementaryLastArgument.tau, X_dw,
-    ← w_d F q y, X_wd, hx, B1, B2, hb]
+  simp [KPLocalCover.sigmaTwo, KubotaElementaryLastArgument.tau, X_dw, ← w_d F q y, X_wd, hx, B1, hb]
 private lemma raw_w_A (y : Kˣ) :
     KPStandardLocalRootLifts.signedW F ζ hζ v * KPStandardLocalRootLifts.A F ζ hζ v y =
       KPScalarSplitCentral.scalarHom F ζ hζ v y *
@@ -220,7 +204,7 @@ variable (A : LocalBorelData (K := LocalField F q) (G := Cover F ζ hζ q) T)
 variable (P : Polarization T) (B : Binding F ζ hζ q A P)
 local instance : (KPPGLLocalCover.scalarSubgroup F (Sum.inr q)).Normal :=
   KPPGLLocalCover.scalarSubgroup_normal F (Sum.inr q)
-private lemma torus_inj {x y : H} (h : (A.torus x : Cover F ζ hζ q) = A.torus y) : x = y :=
+lemma torus_inj {x y : H} (h : (A.torus x : Cover F ζ hζ q) = A.torus y) : x = y :=
   A.torus_injective (Subtype.ext h)
 include P B in
 private lemma proj_eq (g : Cover F ζ hζ q) : A.projection g = KPLocalSmoothRepresentation.projection F ζ hζ q g := by
@@ -285,7 +269,7 @@ private lemma cube_sheet (y : (LocalField F q)ˣ) :
     simp only [hB, one_pow, map_one, one_mul]
     rw [← mul_pow, mul_inv_cancel, one_pow]
     change KPPGLLocalCover.coverQuotient F ζ hζ (Sum.inr q) (KPStandardLocalRootLifts.A F ζ hζ (Sum.inr q) 1) = 1
-    rw [KPStandardLocalRootLifts.A_one, map_one]
+    simp
   have hw : A.liftedW = KPPGLLocalCover.signedW F ζ hζ (Sum.inr q) := by
     rw [B.weyl_eq]
     unfold signedWeyl
@@ -313,7 +297,7 @@ private lemma cube_sheet (y : (LocalField F q)ˣ) :
     change z ^ 2 = 1
     rw [pow_two]
     conv_lhs => lhs; rw [he2]
-    exact inv_mul_cancel _
+    simp
   have h3 : e ^ 3 = 1 := Subtype.ext e.property
   have he1 : e = 1 := by
     simpa [pow_succ, h2] using h3
@@ -324,7 +308,7 @@ private lemma BcubeL (x y : (LocalField F q)ˣ) : KPHilbert.B3 F ζ hζ (Sum.inr
   simp only [pow_one]
   rw [← pow_two, ← pow_succ]
   exact Subtype.ext (KPHilbert.B3 F ζ hζ (Sum.inr q) x y).property
-private lemma Bself (x : (LocalField F q)ˣ) : KPHilbert.B3 F ζ hζ (Sum.inr q) x⁻¹ x = 1 := by
+lemma Bself (x : (LocalField F q)ˣ) : KPHilbert.B3 F ζ hζ (Sum.inr q) x⁻¹ x = 1 := by
   rw [KubotaDefectSymbolAlgebra.inv_left _ _ _ (KPHilbert.B3_laws F ζ hζ (Sum.inr q)).1]
   rw [(KPHilbert.B3_laws F ζ hζ (Sum.inr q)).2.2.2.2.2 x |>.1, inv_one]
 private lemma Bdiag (a u v : (LocalField F q)ˣ) :
@@ -347,7 +331,7 @@ private lemma diagonal_word (a u v : (LocalField F q)ˣ) :
   rw [weyl_root F ζ hζ q T A P B, B.torus_eq, B.torus_eq, cube_sheet F ζ hζ q T A P B]
   rw [hLift, hLift, KPPGLLocalCover.A_mul, Bdiag, one_pow, map_one, one_mul]
   congr 1
-  simp only [mul_pow, inv_pow, Even.neg_pow (show Even 2 from by decide), div_pow, div_eq_mul_inv]
+  simp only [mul_pow, inv_pow, Even.neg_pow (show Even 2 from by decide), div_eq_mul_inv]
   simp only [← pow_mul]
   group
   ac_rfl
@@ -389,7 +373,7 @@ private lemma norm_inv (x : (LocalField F q)ˣ) (z : ℂ) :
 private lemma norm_add (x : (LocalField F q)ˣ) (z w : ℂ) :
     normPower (LocalField F q) x (z + w) = normPower (LocalField F q) x z * normPower (LocalField F q) x w := by
   simp [normPower, add_mul, Complex.exp_add]
-private lemma norm_unram (r t₀ : ℂˣ)
+lemma norm_unram (r t₀ : ℂˣ)
     (ht₀ : (t₀ : ℂ) = KPRankOneReverseRegulatorShells.t F q (r : ℂ)) (x : (LocalField F q)ˣ) :
     normPower (LocalField F q) x (1 + 6 * KPRankOneReverseRegulatorShells.additiveParameter F q r) =
       KPCubicExpansion.omega (LocalField F q) t₀ x := by
@@ -481,6 +465,3 @@ theorem diagonal_center_action (F : Type) [Field F] [NumberField F]
         normPower (LocalField F q) ((a * u ^ 3) ^ 2) z *
         normPower (LocalField F q) (((u / v) ^ 2) ^ 3) (1 / 6)) * V.val h := by ring
     _ = _ := by rw [hs]
-
-end
-end DedekindZetaZeroFree.KPRankOneLiftedDiagonal

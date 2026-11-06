@@ -14,7 +14,7 @@ def BorelDescends {Ω B S : Type*} [MeasurableSpace B] [MeasurableSpace S]
     (q : Ω → B) (f : Ω → S) : Prop :=
   ∃! fbar : B → S, Measurable fbar ∧ ∀ x, fbar (q x) = f x
 
-private theorem borelDescends_of_continuous_surjective
+theorem borelDescends_of_continuous_surjective
     {Ω B S : Type*} [TopologicalSpace Ω] [PolishSpace Ω] [MeasurableSpace Ω] [BorelSpace Ω]
     [TopologicalSpace B] [T0Space B] [SecondCountableTopology B]
     [MeasurableSpace B] [BorelSpace B] [MeasurableSpace S]
@@ -51,7 +51,7 @@ variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
 variable (P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ)
 variable (H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P)
 
-private lemma projection_orbit {i : Fin (H.atlas U).componentCount}
+lemma projection_orbit {i : Fin (H.atlas U).componentCount}
     {y z : SymmetricSpace F}
     (h : KPCuspSiegel.projection F (Component F ζ hζ U R P H i) y =
       KPCuspSiegel.projection F (Component F ζ hζ U R P H i) z) :
@@ -60,7 +60,7 @@ private lemma projection_orbit {i : Fin (H.atlas U).componentCount}
     Quotient.exact h
   exact MulAction.mem_orbit_iff.mp (MulAction.orbitRel_apply.mp hrel)
 
-private lemma exists_stabilizer_smul_of_projection_eq
+lemma exists_stabilizer_smul_of_projection_eq
     (i : Fin (H.atlas U).componentCount) (x : SymmetricSpace F)
     (O : OrbifoldChart F ζ hζ U R P H i x)
     {y z : SymmetricSpace F} (hy : y ∈ O.neighborhood) (hz : z ∈ O.neighborhood)

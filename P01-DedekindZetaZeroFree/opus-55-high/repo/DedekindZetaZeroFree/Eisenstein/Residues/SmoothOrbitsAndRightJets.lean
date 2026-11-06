@@ -120,10 +120,10 @@ variable {E V K : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
   intro k
   exact (q k).le_opNorm v |>.trans (mul_le_mul_of_nonneg_right (q.norm_coe_le_norm k) (norm_nonneg _))
 
-private lemma compactDerivativeMap_apply (q : C(K,E →L[ℝ] V)) :
+lemma compactDerivativeMap_apply (q : C(K,E →L[ℝ] V)) :
     compactDerivativeMap q = compactDerivative q := rfl
 
-private theorem compact_family_hasFDerivAt
+theorem compact_family_hasFDerivAt
     (f : E → C(K,V)) (q : E → C(K,E →L[ℝ] V)) (U : Set E)
     (hU : IsOpen U) (hq : ContinuousOn q U)
     (hf : ∀ x ∈ U, ∀ k, HasFDerivAt (fun y => f y k) (q x k) x)

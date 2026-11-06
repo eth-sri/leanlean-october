@@ -31,8 +31,8 @@ def ordinaryRoots : rootsOfUnity 3 F →* rootsOfUnity 3 ℂ where
     rw [← map_pow]
     have hp : ε ^ 3 = 1 := by apply Subtype.ext; exact ε.property
     rw [hp, map_one]⟩
-  map_one' := by apply Subtype.ext; exact map_one _
-  map_mul' x y := by apply Subtype.ext; exact map_mul _ x y
+  map_one' := by simp
+  map_mul' x y := by simp
 
 theorem ordinaryRoots_injective : Function.Injective (ordinaryRoots F ζ hζ) := by
   intro ε δ he
@@ -87,8 +87,6 @@ end DedekindZetaZeroFree.TorusFiniteCenterQuotient
 
 section
 
-open scoped NumberField Classical
-open NumberField IsDedekindDomain
 
 namespace DedekindZetaZeroFree.TorusFiniteCenterQuotient
 noncomputable section
@@ -98,7 +96,6 @@ variable (C : CompatibleModelData F ζ hζ) (L : Level F ζ hζ C)
 
 theorem centerEquiv_apply (ε : rootsOfUnity 3 F) :
     centerEquiv F ζ hζ C L ε = phaseToCenter F ζ hζ C L (rootPhase F ζ hζ C L ε) := by
-  apply Subtype.ext
   rfl
 
 theorem centerEquiv_character (ε : rootsOfUnity 3 F) :
@@ -129,8 +126,3 @@ theorem H_commutator_character (x y : H F ζ hζ C L) :
         (projection F ζ hζ C L x) (projection F ζ hζ C L y) ^ 4) :=
     Subtype.ext (H_commutator_formula F ζ hζ C L x y)
   rw [he, centerEquiv_character]
-
-end
-end DedekindZetaZeroFree.TorusFiniteCenterQuotient
-
-end

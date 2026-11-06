@@ -21,5 +21,3 @@ theorem strongPair_orderOneBound (P : _root_.WeakFEPair ℂ) (hk : P.k = 1)
     simp [_root_.WeakFEPair.Λ, hP.hf₀, hP.hg₀]
   rw [hΛ]
   exact hC s
-
-end DedekindZetaZeroFree.Hecke

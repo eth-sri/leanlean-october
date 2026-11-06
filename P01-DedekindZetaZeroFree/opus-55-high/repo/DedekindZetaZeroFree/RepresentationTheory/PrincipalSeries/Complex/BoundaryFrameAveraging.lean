@@ -16,7 +16,7 @@ open KPMsActualAngularSource KPMsNativeOffsetMass
 open _root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.CoordinateProof renaming nativeFullDomain → nativeFullDomain
 open _root_.DedekindZetaZeroFree.KPMsNativeOffsetMass.CoordinateProof renaming actualFrame_spec → actualFrame_spec
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-private theorem actual_ray_right_compact
+theorem actual_ray_right_compact
     {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
     {U₀ : KPMsFixedHaarDisintegration.Level F ζ hζ}
     (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U₀)

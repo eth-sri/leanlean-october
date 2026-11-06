@@ -16,7 +16,7 @@ variable (v : HeightOneSpectrum (𝓞 F))
 
 abbrev AdditiveCharacter := AddChar (v.adicCompletion F) ℂˣ
 
-private theorem character_norm_le_one (ψ : AdditiveCharacter F v)
+theorem character_norm_le_one (ψ : AdditiveCharacter F v)
     (hψ : Continuous ψ) (x : v.adicCompletion F) : ‖(ψ x : ℂ)‖ ≤ 1 := by
   have hc := (isCompact_closedBall (0 : v.adicCompletion F) ‖x‖).image
     (Units.continuous_val.comp hψ)
@@ -38,13 +38,13 @@ theorem character_unitary (ψ : AdditiveCharacter F v) (hψ : Continuous ψ)
   apply le_antisymm (character_norm_le_one F v ψ hψ x)
   have hi := character_norm_le_one F v ψ hψ (-x)
   rw [AddChar.map_neg_eq_inv, Units.val_inv_eq_inv_val, norm_inv] at hi
-  have hp : 0 < ‖(ψ x : ℂ)‖ := norm_pos_iff.mpr (ψ x).ne_zero
+  have hp : 0 < ‖(ψ x : ℂ)‖ := by simp
   exact (inv_le_one₀ hp).mp hi
 
 def circleCharacter (ψ : AdditiveCharacter F v) (hψ : Continuous ψ) :
     AddChar (v.adicCompletion F) Circle where
-  toFun x := ⟨(ψ x : ℂ), by
-    exact mem_sphere_zero_iff_norm.2 (character_unitary F v ψ hψ x)⟩
+  toFun x := ⟨(ψ x : ℂ), 
+    mem_sphere_zero_iff_norm.2 (character_unitary F v ψ hψ x)⟩
   map_zero_eq_one' := by
     apply Circle.ext
     simp
@@ -57,8 +57,8 @@ def circleCharacter (ψ : AdditiveCharacter F v) (hψ : Continuous ψ) :
     (x : v.adicCompletion F) : (circleCharacter F v ψ hψ x : ℂ) = (ψ x : ℂ) := rfl
 
 theorem continuous_circleCharacter (ψ : AdditiveCharacter F v) (hψ : Continuous ψ) :
-    Continuous (circleCharacter F v ψ hψ) := by
-  exact (Units.continuous_val.comp hψ).subtype_mk _
+    Continuous (circleCharacter F v ψ hψ) := 
+  (Units.continuous_val.comp hψ).subtype_mk _
 
 theorem character_trivial_near_zero (ψ : AdditiveCharacter F v) (hψ : Continuous ψ) :
     ∃ r : ℝ, 0 < r ∧ ∀ x : v.adicCompletion F, ‖x‖ < r → ψ x = 1 := by
@@ -78,7 +78,3 @@ theorem character_locallyConstant (ψ : AdditiveCharacter F v) (hψ : Continuous
     simpa only [Metric.mem_ball, dist_eq_norm] using hy)
   rw [AddChar.map_sub_eq_div, div_eq_one] at hsub
   exact hsub
-
-end DedekindZetaZeroFree.KPJacquetCharacter
-
-end

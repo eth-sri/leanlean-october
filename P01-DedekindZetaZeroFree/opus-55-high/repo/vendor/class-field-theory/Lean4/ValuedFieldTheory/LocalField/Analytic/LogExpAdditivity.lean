@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 open Filter
 open Polynomial
 open scoped Topology
@@ -256,8 +252,7 @@ theorem valuation_natCast_le_one_ofWithZeroValuation_scaled
             WithZero.exp (0 : ℤ) :=
           WithZero.exp_le_exp.mpr (by
             apply neg_nonpos.mpr
-            exact mul_nonneg (Int.natCast_nonneg e)
-              (Int.natCast_nonneg (padicValNat p (n + 1))))
+            positivity)
         _ = 1 := WithZero.exp_zero
 
 /-- Evaluation of a two-variable monomial at `(x,y)`. -/
@@ -267,10 +262,8 @@ theorem mvPowerSeriesMonomialValue_pair
         (fun i : Fin 2 => if i = 0 then x else y) d =
       x ^ d 0 * y ^ d 1 := by
   rw [mvPowerSeriesMonomialValue, Finsupp.prod_fintype]
-  · rw [Fin.prod_univ_two]
-    simp
-  · intro i
-    simp
+  · simp
+  simp
 
 /-- If the `d`-coefficient of `(X + Y + XY)^q` is nonzero, then its total
 degree is at least `q`. -/
@@ -589,8 +582,8 @@ theorem hasSum_formalLogOnePlusProductArgument_logSubst_monomialValue_pair_ofWit
         (Sigma fun _ : ℕ => Fin 2 →₀ ℕ) :=
     { toFun := fun dq => ⟨dq.2, dq.1⟩
       invFun := fun qd => ⟨qd.2, qd.1⟩
-      left_inv := by intro dq; cases dq; rfl
-      right_inv := by intro qd; cases qd; rfl }
+      left_inv := by intro dq; rfl
+      right_inv := by intro qd; rfl }
   have hswapped :
       HasSum (sigmaTerm ∘ swap)
         (logOnePlusSeriesFieldOfWithZeroValuation v
@@ -618,7 +611,7 @@ theorem hasSum_formalLogOnePlusProductArgument_logSubst_monomialValue_pair_ofWit
       apply hasSum_sum_of_ne_finset_zero
       intro q hq
       have hqge : Finsupp.degree d + 1 ≤ q := by
-        simpa only [Finset.mem_range, not_lt] using hq
+        simp_all
       have hdegree : Finsupp.degree d < q := Nat.lt_of_succ_le hqge
       have hzero :=
         formalLogOnePlusProductArgument_pow_coeff_eq_zero_of_degree_lt
@@ -699,7 +692,7 @@ theorem principalUnitLogSeries_mul_eq_add_ofWithZeroValuation_scaled
 
 /-- The scaled logarithm series as a genuine homomorphism on first principal
 units, with no supplied additivity or defect theorem. -/
-noncomputable def principalUnitLogSeriesHomOfWithZeroValuationScaled
+def principalUnitLogSeriesHomOfWithZeroValuationScaled
     [Algebra ℚ K]
     (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
     [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
@@ -748,8 +741,3 @@ Establishes the identity `Multiplicative.toAdd (principalUnitLogSeriesHomOfWithZ
           (v := v) (p := p) e hnK hnval hcomplete u) =
       principalUnitLogSeriesOfWithZeroValuation v u hnK := by
   rfl
-
-end MultiplicativeIntegerValuation
-end LocalFieldTheory.DiscreteValuationField
-
-end

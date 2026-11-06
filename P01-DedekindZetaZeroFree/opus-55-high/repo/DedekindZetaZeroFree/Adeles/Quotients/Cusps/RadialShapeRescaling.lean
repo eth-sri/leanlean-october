@@ -21,7 +21,7 @@ variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
 open KPMsActualAngularFixedRadiusRelationSource KPMsActualAngularDescentSource
 
-private theorem positive_diagonal_action (c : ℝ) (hc : 0 < c) (q : KPArch.H3) :
+theorem positive_diagonal_action (c : ℝ) (hc : 0 < c) (q : KPArch.H3) :
     KPArch.action (KubotaRankTwo.d ℂ (Units.mk0 (c : ℂ) (by exact_mod_cast hc.ne')) 1) q =
       ((c : ℂ) * q.1, q.2 + Real.log c) := by
   apply Prod.ext

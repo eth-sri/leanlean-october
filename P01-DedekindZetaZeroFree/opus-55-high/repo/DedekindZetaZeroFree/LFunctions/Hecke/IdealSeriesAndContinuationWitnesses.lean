@@ -69,7 +69,3 @@ theorem exists_principalHeckeWitness
   exact ⟨{ Λ := Λ, U := U, differentiableOn := hdiffOn, differentiable_U := hdiffU,
            hasSum := hsum, functionalEquation := hfe, poleClearing := hpole,
            growth := hgrowth }⟩
-
-end
-
-end DedekindZetaZeroFree.LargeSieve

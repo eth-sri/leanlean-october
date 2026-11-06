@@ -104,8 +104,8 @@ def Generates (A : SArithmeticData F) (I : A.Exterior) (r : A.R) : Prop :=
 abbrev exteriorNorm (A : SArithmeticData F) (I : A.Exterior) : ℝ := idealNorm I.val
 
 theorem primitive_sixth_root (A : SArithmeticData F) :
-    (primitiveRoots 6 F).Nonempty := by
-  exact ⟨A.zeta12 ^ 2, (mem_primitiveRoots (by decide)).2
+    (primitiveRoots 6 F).Nonempty := 
+  ⟨A.zeta12 ^ 2, (mem_primitiveRoots (by decide)).2
     (A.primitive_zeta12.pow (by decide) (by decide : 12 = 2 * 6))⟩
 
 theorem complex_place (A : SArithmeticData F) (w : InfinitePlace F) : w.IsComplex := by
@@ -171,11 +171,11 @@ theorem norm_diagonal_unit (A : SArithmeticData F) (u : A.U) :
   have hp := NumberField.prod_abs_eq_one (Units.ne_zero u.val)
   rw [SUnitGroup.finprod_finitePlace_eq_prod_adicAbv A.Sf u] at hp
   have hinf (w : InfinitePlace F) (x : F) :
-      ‖algebraMap F w.Completion x‖ = w x := by
-    exact InfinitePlace.Completion.norm_coe w ((WithAbs.equiv w.1).symm x)
+      ‖algebraMap F w.Completion x‖ = w x := 
+    InfinitePlace.Completion.norm_coe w ((WithAbs.equiv w.1).symm x)
   have hfin (v : HeightOneSpectrum (𝓞 F)) (x : F) :
-      ‖algebraMap F (v.adicCompletion F) x‖ = HeightOneSpectrum.adicAbv F v x := by
-    exact FinitePlace.norm_embedding _ _
+      ‖algebraMap F (v.adicCompletion F) x‖ = HeightOneSpectrum.adicAbv F v x := 
+    FinitePlace.norm_embedding _ _
   change (∏ w : InfinitePlace F, ‖algebraMap F w.Completion (u.val : F)‖ ^ 2) *
     (∏ v : {v // v ∈ A.Sf}, ‖algebraMap F (v.val.adicCompletion F) (u.val : F)‖) = 1
   simp_rw [hinf, hfin]
@@ -193,11 +193,11 @@ theorem generator_norm (A : SArithmeticData F) (I : A.Exterior) (r : A.R)
     A.norm (A.diagonal u) = A.exteriorNorm I := by
   have hp := SIntegerLocalization.generator_norm A.Sf I.val I.property.1 I.property.2 r hr.1 hr.2
   have hinf (w : InfinitePlace F) (x : F) :
-      ‖algebraMap F w.Completion x‖ = w x := by
-    exact InfinitePlace.Completion.norm_coe w ((WithAbs.equiv w.1).symm x)
+      ‖algebraMap F w.Completion x‖ = w x := 
+    InfinitePlace.Completion.norm_coe w ((WithAbs.equiv w.1).symm x)
   have hfin (v : HeightOneSpectrum (𝓞 F)) (x : F) :
-      ‖algebraMap F (v.adicCompletion F) x‖ = HeightOneSpectrum.adicAbv F v x := by
-    exact FinitePlace.norm_embedding _ _
+      ‖algebraMap F (v.adicCompletion F) x‖ = HeightOneSpectrum.adicAbv F v x := 
+    FinitePlace.norm_embedding _ _
   change (∏ w : InfinitePlace F, ‖algebraMap F w.Completion (u : F)‖ ^ 2) *
     (∏ v : {v // v ∈ A.Sf}, ‖algebraMap F (v.val.adicCompletion F) (u : F)‖) = _
   simp_rw [hinf, hfin, hu]
@@ -217,8 +217,7 @@ theorem exterior_norm_mod_twelve (A : SArithmeticData F)
     have hmem : (p : 𝓞 F) ∈ v.asIdeal := by
       rw [← heq]
       have : (p : ℤ) ∈ P.under ℤ := by
-        rw [hunder]
-        exact Ideal.subset_span (Set.mem_singleton _)
+        simp_all
       change algebraMap ℤ (𝓞 F) (p : ℤ) ∈ P at this
       simpa using this
     apply h6
@@ -235,9 +234,4 @@ theorem exterior_norm_mod_twelve (A : SArithmeticData F)
     F v ⟨12, by decide⟩ ⟨A.zeta12, (mem_primitiveRoots (by decide)).mpr A.primitive_zeta12⟩ hc
   have hn := NumberField.HeightOneSpectrum.one_lt_absNorm v
   change 12 ∣ Ideal.absNorm v.asIdeal - 1 at hd
-  have hmod := Nat.mod_eq_zero_of_dvd hd
   omega
-
-end SArithmeticData
-end
-end DedekindZetaZeroFree

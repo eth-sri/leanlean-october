@@ -9,7 +9,7 @@ section
 namespace DedekindZetaZeroFree.ComplexFractionalInverse.CompactCharts
 open scoped BigOperators
 
-private lemma radial_pos_smul (F : Sphere → ℂ) (t : ℝ) (ht : 0 < t) (x : Ambient) :
+lemma radial_pos_smul (F : Sphere → ℂ) (t : ℝ) (ht : 0 < t) (x : Ambient) :
     radialExtension F (t • x) = radialExtension F x := by
   by_cases hx : x = 0
   · simp [hx, radialExtension]
@@ -18,13 +18,13 @@ private lemma radial_pos_smul (F : Sphere → ℂ) (t : ℝ) (ht : 0 < t) (x : A
   congr 1
   apply Subtype.ext
   simp only [norm_smul, Real.norm_eq_abs, abs_of_pos ht, mul_inv_rev, smul_smul]
-  rw [mul_assoc, inv_mul_cancel₀ (ne_of_gt ht), mul_one]
+  simp_all
 
-private lemma radial_diff {F : Sphere → ℂ} (hF : IsSphereSmooth F)
+lemma radial_diff {F : Sphere → ℂ} (hF : IsSphereSmooth F)
     {x : Ambient} (hx : x ≠ 0) : DifferentiableAt ℝ (radialExtension F) x :=
   (hF.contDiffAt (isOpen_ne.mem_nhds hx)).differentiableAt (by simp)
 
-private lemma radial_diff_smul (F : Sphere → ℂ) (hF : IsSphereSmooth F)
+lemma radial_diff_smul (F : Sphere → ℂ) (hF : IsSphereSmooth F)
     (t : ℝ) (ht : 0 < t) (x : Ambient) (hx : x ≠ 0) (v : Ambient) :
     fderiv ℝ (radialExtension F) (t • x) (t • v) =
       fderiv ℝ (radialExtension F) x v := by
@@ -35,10 +35,9 @@ private lemma radial_diff_smul (F : Sphere → ℂ) (hF : IsSphereSmooth F)
   change HasFDerivAt (fun y : Ambient => radialExtension F (t • y)) _ x at h
   rw [he] at h
   have hh := congrArg (fun L : Ambient →L[ℝ] ℂ => L v) h.fderiv
-  simpa only [ContinuousLinearMap.comp_apply, ContinuousLinearMap.smul_apply,
-    ContinuousLinearMap.id_apply] using hh.symm
+  simp_all
 
-private lemma radial_diff_self (F : Sphere → ℂ) (hF : IsSphereSmooth F)
+lemma radial_diff_self (F : Sphere → ℂ) (hF : IsSphereSmooth F)
     (x : Ambient) (hx : x ≠ 0) : fderiv ℝ (radialExtension F) x x = 0 := by
   have hx' : HasFDerivAt (radialExtension F) (fderiv ℝ (radialExtension F) x)
       ((1 : ℝ) • x) := by simpa using (radial_diff hF hx).hasFDerivAt
@@ -50,14 +49,14 @@ private lemma radial_diff_self (F : Sphere → ℂ) (hF : IsSphereSmooth F)
   have hz := (hasDerivAt_const (1 : ℝ) (radialExtension F x)).congr_of_eventuallyEq he
   simpa only [one_smul] using h.unique hz
 
-private lemma rotation_scale (i : Fin 3) (t : ℝ) (x : Ambient) :
+lemma rotation_scale (i : Fin 3) (t : ℝ) (x : Ambient) :
     rotationVector i (t • x) = t • rotationVector i x := by
   apply PiLp.ext
   intro j
-  simp only [rotationVector, PiLp.smul_apply, WithLp.toLp]
-  split_ifs <;> simp
+  simp only [rotationVector, PiLp.smul_apply]
+  simp
 
-private lemma radial_rotation (F : Sphere → ℂ) (hF : IsSphereSmooth F)
+lemma radial_rotation (F : Sphere → ℂ) (hF : IsSphereSmooth F)
     (x : Ambient) (hx : x ≠ 0) (i : Fin 3) :
     radialExtension (rotationDeriv i F) x =
       fderiv ℝ (radialExtension F) x (rotationVector i x) := by
@@ -66,7 +65,7 @@ private lemma radial_rotation (F : Sphere → ℂ) (hF : IsSphereSmooth F)
   rw [rotation_scale]
   exact radial_diff_smul F hF _ (inv_pos.mpr hn) x hx _
 
-private lemma frame_sum (x v : Ambient) :
+lemma frame_sum (x v : Ambient) :
     ∑ i : Fin 3, (inner ℝ (rotationVector i x) v) • rotationVector i x =
       ‖x‖ ^ 2 • v - (inner ℝ x v) • x := by
   apply PiLp.ext
@@ -87,8 +86,7 @@ theorem radial_fderiv_rotation_frame (F : Sphere → ℂ) (hF : IsSphereSmooth F
   rw [← map_sum]
   rw [← Finset.smul_sum, frame_sum, map_smul, map_sub, map_smul, map_smul,
     radial_diff_self F hF x hx]
-  simp only [smul_zero, sub_zero, smul_smul]
-  rw [inv_mul_cancel₀ (pow_ne_zero 2 (norm_ne_zero_iff.mpr hx)), one_smul]
+  simp_all
 
 end DedekindZetaZeroFree.ComplexFractionalInverse.CompactCharts
 
@@ -101,7 +99,7 @@ open scoped BigOperators
 noncomputable def frameCoeff (i : Fin 3) (x : Ambient) : Ambient →L[ℝ] ℂ :=
   (‖x‖ ^ 2)⁻¹ • Complex.ofRealCLM.comp (innerSL ℝ (rotationVector i x))
 
-private lemma frameCoeff_smooth (i : Fin 3) :
+lemma frameCoeff_smooth (i : Fin 3) :
     ContDiffOn ℝ (⊤ : ℕ∞) (frameCoeff i) {x : Ambient | x ≠ 0} := by
   have hs : ContDiff ℝ (⊤ : ℕ∞) (fun x : Ambient =>
       Complex.ofRealCLM.comp (innerSL ℝ (rotationVector i x))) :=
@@ -111,11 +109,11 @@ private lemma frameCoeff_smooth (i : Fin 3) :
 
 private lemma sphere_ne (p : Sphere) : (p : Ambient) ≠ 0 := by
   have hn : ‖(p : Ambient)‖ = 1 := by
-    simpa only [Metric.mem_sphere, dist_zero_right] using p.property
+    simp
   intro hz
   simp [hz] at hn
 
-private lemma toWithin {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+lemma toWithin {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     {f : Ambient → E} (hf : ContDiffOn ℝ (⊤ : ℕ∞) f {x : Ambient | x ≠ 0})
     (n : ℕ) {x : Ambient} (hx : x ≠ 0) :
     iteratedFDerivWithin ℝ n f {x : Ambient | x ≠ 0} x = iteratedFDeriv ℝ n f x :=
@@ -146,7 +144,7 @@ private lemma frameCoeff_bound (n : ℕ) :
   let ij : Fin 3 × Fin (n + 1) := ⟨i, ⟨j, by omega⟩⟩
   exact (hD ij p).trans (Finset.single_le_sum (fun k _ => hD0 k) (Finset.mem_univ ij))
 
-private lemma fderiv_frame (F : Sphere → ℂ) (hF : IsSphereSmooth F)
+lemma fderiv_frame (F : Sphere → ℂ) (hF : IsSphereSmooth F)
     (x : Ambient) (hx : x ≠ 0) :
     fderiv ℝ (radialExtension F) x =
       ∑ i : Fin 3, radialExtension (rotationDeriv i F) x • frameCoeff i x := by
@@ -157,10 +155,10 @@ private lemma fderiv_frame (F : Sphere → ℂ) (hF : IsSphereSmooth F)
   rw [radial_fderiv_rotation_frame F hF x hx v]
   apply Finset.sum_congr rfl
   intro i _
-  simp [smul_eq_mul, div_eq_mul_inv, Complex.ofReal_mul]
+  simp [div_eq_mul_inv, Complex.ofReal_mul]
   ring
 
-private lemma rotationSup_deriv (i : Fin 3) (n : ℕ) (F : Sphere → ℂ)
+lemma rotationSup_deriv (i : Fin 3) (n : ℕ) (F : Sphere → ℂ)
     (hF : IsSphereSmooth F) : rotationSup n (rotationDeriv i F) ≤ rotationSup (n + 1) F := by
   apply Real.sSup_le _ (rotationSup_nonneg _ _)
   rintro r ⟨w, hw, p, rfl⟩
@@ -192,7 +190,7 @@ theorem radial_jet_bound_direct (n : ℕ) :
       have hBj (j : Fin (n + 1)) : A j ≤ B :=
         Finset.single_le_sum (fun k _ => hA0 k) (Finset.mem_univ j)
       let C := ∑ j ∈ Finset.range (n + 1), (n.choose j : ℝ) * B * D
-      have hC0 : 0 ≤ C := Finset.sum_nonneg (fun j _ => by positivity)
+      have hC0 : 0 ≤ C := by positivity
       refine ⟨3 * C, by positivity, ?_⟩
       intro F hF p
       have hne := sphere_ne p
@@ -262,18 +260,15 @@ noncomputable def chartToRotationSU2OfUnitRow (a b : ℂ) (h : ‖a‖ ^ 2 + ‖
     constructor
     · ext i j
       fin_cases i <;> fin_cases j <;>
-        simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.star_apply,
-          Complex.star_def, Complex.mul_conj', ← Complex.ofReal_pow,
-          ← Complex.ofReal_add, h, h', mul_comm]
-    · simp [Matrix.det_fin_two, Complex.star_def, Complex.mul_conj',
-        mul_comm, ← Complex.ofReal_pow, ← Complex.ofReal_add, h, h']⟩
+        simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.star_apply, Complex.mul_conj', ← Complex.ofReal_pow, ← Complex.ofReal_add, h, h', mul_comm]
+    · simp [Matrix.det_fin_two, Complex.mul_conj', mul_comm, ← Complex.ofReal_pow, ← Complex.ofReal_add, h']⟩
 noncomputable def rowScale (x : ℂ) : ℝ := (Real.sqrt (1 + Complex.normSq x))⁻¹
 lemma rowScale_pos (x : ℂ) : 0 < rowScale x := by
   apply inv_pos.mpr
   apply Real.sqrt_pos.mpr
   have := Complex.normSq_nonneg x
   linarith
-private lemma rowScale_sq (x : ℂ) : rowScale x ^ 2 * (1 + ‖x‖ ^ 2) = 1 := by
+lemma rowScale_sq (x : ℂ) : rowScale x ^ 2 * (1 + ‖x‖ ^ 2) = 1 := by
   have hp : 0 < 1 + Complex.normSq x := by have := Complex.normSq_nonneg x; linarith
   simp only [rowScale, Complex.normSq_eq_norm_sq, inv_pow, Real.sq_sqrt (show 0 ≤ 1 + ‖x‖ ^ 2 by positivity)]
   exact inv_mul_cancel₀ (ne_of_gt (show 0 < 1 + ‖x‖ ^ 2 by positivity))
@@ -289,7 +284,7 @@ noncomputable def infinitySU2 (x : ℂ) : ComplexSU2 :=
 noncomputable def rowUnit (x : ℂ) : ℂˣ := Units.mk0 (rowScale x : ℂ)
   (by exact_mod_cast ne_of_gt (rowScale_pos x))
 
-private lemma upperTriangular_matrix (a d : ℂˣ) (b : ℂ) :
+lemma upperTriangular_matrix (a d : ℂˣ) (b : ℂ) :
     ((upperTriangular a d b : ComplexGL2) : Matrix (Fin 2) (Fin 2) ℂ) =
       !![(a : ℂ), b; 0, (d : ℂ)] := by
   rfl
@@ -300,13 +295,12 @@ private lemma open_decomposition (x : ℂ) :
   have hr : (rowScale x : ℂ) ^ 2 * (1 + (‖x‖ ^ 2 : ℂ)) = 1 := by
     exact_mod_cast rowScale_sq x
   have hx : x * star x = (‖x‖ ^ 2 : ℂ) := by
-    simp [Complex.star_def, Complex.mul_conj', ← Complex.ofReal_pow]
+    simp [Complex.mul_conj', ← Complex.ofReal_pow]
   have hn : (rowScale x : ℂ) ≠ 0 := by exact_mod_cast ne_of_gt (rowScale_pos x)
   apply Matrix.GeneralLinearGroup.ext
   intro i j
   fin_cases i <;> fin_cases j <;>
-    simp [weyl, upperUnipotent, Matrix.GeneralLinearGroup.coe_mul, upperTriangular_matrix, complexSU2Embedding, openSU2, chartToRotationSU2OfUnitRow,
-      rowUnit, Matrix.mul_apply, Fin.sum_univ_two, star_mul, Complex.star_def, hn]
+    simp [weyl, upperUnipotent, upperTriangular_matrix, complexSU2Embedding, openSU2, chartToRotationSU2OfUnitRow, rowUnit, Matrix.mul_apply, Fin.sum_univ_two, star_mul, hn]
   · ring
   · rw [← hx] at hr
     simp only [Complex.star_def] at hr
@@ -318,22 +312,21 @@ private lemma infinity_decomposition (x : ℂ) :
   have hr : (rowScale x : ℂ) ^ 2 * (1 + (‖x‖ ^ 2 : ℂ)) = 1 := by
     exact_mod_cast rowScale_sq x
   have hx : x * star x = (‖x‖ ^ 2 : ℂ) := by
-    simp [Complex.star_def, Complex.mul_conj', ← Complex.ofReal_pow]
+    simp [Complex.mul_conj', ← Complex.ofReal_pow]
   have hn : (rowScale x : ℂ) ≠ 0 := by exact_mod_cast ne_of_gt (rowScale_pos x)
   apply Matrix.GeneralLinearGroup.ext
   intro i j
   fin_cases i <;> fin_cases j <;>
-    simp [lowerUnipotent, Matrix.GeneralLinearGroup.coe_mul, upperTriangular_matrix, complexSU2Embedding, infinitySU2, chartToRotationSU2OfUnitRow,
-      rowUnit, Matrix.mul_apply, Fin.sum_univ_two, star_mul, Complex.star_def, hn]
+    simp [lowerUnipotent, upperTriangular_matrix, complexSU2Embedding, infinitySU2, chartToRotationSU2OfUnitRow, rowUnit, Matrix.mul_apply, Fin.sum_univ_two, star_mul, hn]
   · rw [← hx] at hr
     simp only [Complex.star_def] at hr
     linear_combination -hr
   · ring
 
-private lemma open_weight (s : ℝ) (x : ℂ) :
+lemma open_weight (s : ℝ) (x : ℂ) :
     inductionWeight s (-(rowUnit x)) (rowUnit x)⁻¹ =
       inductionWeight s (rowUnit x) (rowUnit x)⁻¹ := by
-  simp [inductionWeight, complexAbs, rowUnit, norm_div]
+  simp [inductionWeight, complexAbs, rowUnit]
 
 noncomputable def openHopfChart (z : ℂ) : Ambient :=
   WithLp.toLp 2 ![2 * rowScale z ^ 2 * z.re,
@@ -399,8 +392,7 @@ theorem chartInductionMultiplier_smooth (s : ℝ) :
   have he : chartInductionMultiplier s = fun z : ℂ =>
       (Real.rpow ((rowScale z * rowScale z) ^ 2) (1/2+s) : ℂ) := by
     funext z
-    simp [chartInductionMultiplier, inductionWeight, complexAbs, rowUnit, norm_mul,
-      Complex.norm_real, Real.norm_eq_abs, abs_of_pos (rowScale_pos z), div_inv_eq_mul]
+    simp [chartInductionMultiplier, inductionWeight, complexAbs, rowUnit, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (rowScale_pos z), div_inv_eq_mul]
   rw [he]
   apply Complex.ofRealCLM.contDiff.comp
   exact ((rowScale_smooth.mul rowScale_smooth).pow 2).rpow_const_of_ne
@@ -469,7 +461,7 @@ private lemma weighted_pullback_bound (H : ComplexSU2 → Sphere) (hH : HasHopfC
     obtain ⟨p, hp⟩ := hφs z
     rw [hp]
     have hn : ‖(p : Ambient)‖ = 1 := by
-      simpa only [Metric.mem_sphere, dist_zero_right] using p.property
+      simp
     intro hzero
     simp [hzero] at hn
   have hpull : ContDiff ℝ (⊤ : ℕ∞) (radialExtension F ∘ φ) :=
@@ -542,7 +534,7 @@ theorem chart_le_rotation_of_radial_jet_bounds (H : ComplexSU2 → Sphere)
     exact (hD F hF (hrad F hF) z hz).trans
       (mul_le_mul_of_nonneg_right (by change D ≤ 1 + B + D; linarith) hR)
 
-private theorem radial_all_orders_bound (n : ℕ) :
+theorem radial_all_orders_bound (n : ℕ) :
     ∃ A : ℝ, 0 ≤ A ∧ ∀ F : Sphere → ℂ, IsSphereSmooth F →
       ∀ i ≤ n, ∀ p : Sphere,
         ‖iteratedFDeriv ℝ i (radialExtension F) p‖ ≤ A * rotationSup n F := by
@@ -569,7 +561,3 @@ theorem chart_le_rotation_raw (H : ComplexSU2 → Sphere) (hH : HasHopfCoordinat
         chartSeminorm s n f ≤ (C : ℝ) * rotationSup n F := by
   obtain ⟨A, hA, hrad⟩ := radial_all_orders_bound n
   exact chart_le_rotation_of_radial_jet_bounds H hH s n A hA hrad
-
-end DedekindZetaZeroFree.ComplexFractionalInverse.CompactCharts
-
-end

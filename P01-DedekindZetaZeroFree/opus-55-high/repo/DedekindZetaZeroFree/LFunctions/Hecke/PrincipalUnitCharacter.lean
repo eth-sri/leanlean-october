@@ -15,16 +15,14 @@ def principalUnitRayCharacter (F : Type) [Field F] [NumberField F] :
   map_mul' := by
     intro I J
     by_cases hI : I = ⊥ <;> by_cases hJ : J = ⊥ <;>
-      simp [hI, hJ, Ideal.mul_eq_bot]
+      simp [hI, hJ]
   map_top' := by
-    have h : (⊤ : Ideal (𝓞 F)) ≠ ⊥ := bot_lt_top.ne'
-    simp [h]
+    simp
   eq_zero_iff' := by
     intro I
-    by_cases hI : I = ⊥ <;> simp [hI]
+    simp
   map_span' := by
-    intro α hα _ _
-    simp [Ideal.span_singleton_eq_bot, hα]
+    simp_all
 
 theorem principalUnitRayCharacter_apply (F : Type) [Field F] [NumberField F]
     (I : Ideal (𝓞 F)) :
@@ -33,13 +31,7 @@ theorem principalUnitRayCharacter_apply (F : Type) [Field F] [NumberField F]
 
 @[simp] theorem principalUnitRayCharacter_bot (F : Type) [Field F] [NumberField F] :
     principalUnitRayCharacter F ⊥ = 0 := by
-  rw [principalUnitRayCharacter_apply]
   simp
-
-@[simp] theorem principalUnitRayCharacter_top (F : Type) [Field F] [NumberField F] :
-    principalUnitRayCharacter F ⊤ = 1 := by
-  rw [principalUnitRayCharacter_apply]
-  simp [bot_lt_top.ne']
 
 theorem principalUnitRayCharacter_isPrincipal (F : Type) [Field F] [NumberField F] :
     (principalUnitRayCharacter F).IsPrincipal := by
@@ -58,7 +50,3 @@ theorem exists_principalUnitHeckeWitness
   exists_principalHeckeWitness hF (f := ⊤) bot_lt_top.ne'
     (principalUnitRayCharacter F) (principalUnitRayCharacter_isPrimitive F)
     (principalUnitRayCharacter_isPrincipal F)
-
-end
-
-end DedekindZetaZeroFree.LargeSieve

@@ -11,7 +11,7 @@ noncomputable section
 open scoped Classical NumberField
 open NumberField IsDedekindDomain MeasureTheory
 
-private theorem hasCompactSupport_iteratedDeriv_realLogMellinTest {f : ℝ → ℝ} (hf : HasCompactSupport f) :
+theorem hasCompactSupport_iteratedDeriv_realLogMellinTest {f : ℝ → ℝ} (hf : HasCompactSupport f) :
     ∀ n : ℕ, HasCompactSupport (iteratedDeriv n f) := by
   intro n
   induction n with
@@ -54,7 +54,7 @@ namespace DedekindZetaZeroFree.ProbeSheetLogDensity
 noncomputable section
 open MeasureTheory
 
-private theorem hasCompactSupport_iteratedDeriv_realTest {φ : ℝ → ℝ}
+theorem hasCompactSupport_iteratedDeriv_realTest {φ : ℝ → ℝ}
     (h : HasCompactSupport φ) (n : ℕ) : HasCompactSupport (iteratedDeriv n φ) := by
   induction n with
   | zero => simpa using h
@@ -69,11 +69,10 @@ theorem integral_iteratedDeriv_test_mul
   revert hf f
   induction n with
   | zero =>
-    intro f hf
-    simp [Complex.real_smul]
+    simp
   | succ n ih =>
     intro f hf
-    have hf' : ContDiff ℝ (⊤ : ℕ∞) (deriv f) := (contDiff_infty_iff_deriv.mp hf).2
+    have hf' : ContDiff ℝ (⊤ : ℕ∞) (deriv f) := by fun_prop
     have hcs : HasCompactSupport (fun t => ((iteratedDeriv n φ t : ℝ) : ℂ)) := by
       simpa only [Function.comp_def] using
         (hasCompactSupport_iteratedDeriv_realTest hφc n).comp_left
@@ -136,7 +135,7 @@ open scoped Classical NumberField
 open NumberField IsDedekindDomain MeasureTheory Filter
 open scoped Topology
 
-private theorem schwartz_iteratedDeriv (k : SchwartzMap ℝ ℂ) (n : ℕ) :
+theorem schwartz_iteratedDeriv (k : SchwartzMap ℝ ℂ) (n : ℕ) :
     ∃ K : SchwartzMap ℝ ℂ, (K : ℝ → ℂ) = iteratedDeriv n k := by
   induction n with
   | zero => exact ⟨k, by simp⟩
@@ -146,7 +145,7 @@ private theorem schwartz_iteratedDeriv (k : SchwartzMap ℝ ℂ) (n : ℕ) :
     ext t
     rw [SchwartzMap.derivCLM_apply, iteratedDeriv_succ, ← hK]
 
-private theorem weighted_translates_integrable
+theorem weighted_translates_integrable
     (μ : Measure ℝ) [IsFiniteMeasure μ] (w k : ℝ → ℂ)
     (hw : Integrable w μ) (hk : Integrable k) :
     Integrable (fun p : ℝ × ℝ => w p.1 * k (p.2 - p.1)) (μ.prod volume) := by
@@ -159,7 +158,7 @@ private theorem weighted_translates_integrable
     simpa only [id_eq, sub_eq_add_neg] using h
   exact hT.integrable_comp_of_integrable (hw.mul_prod hk)
 
-private theorem weighted_translates_pairing
+theorem weighted_translates_pairing
     (μ : Measure ℝ) [IsFiniteMeasure μ] (w k : ℝ → ℂ)
     (hw : Integrable w μ) (hk : Integrable k)
     (φ : ℝ → ℂ) (hφ : Continuous φ) (hb : ∃ C : ℝ, ∀ t, ‖φ t‖ ≤ C) :
@@ -231,7 +230,7 @@ theorem schwartzTensor_log_pushforward_integrable_weak_derivative
   apply integral_congr_ae
   exact Filter.Eventually.of_forall fun s => by
     have hks : ContDiff ℝ (⊤ : ℕ∞) (fun t : ℝ => K (t - s)) :=
-      (K.smooth (⊤ : ℕ∞)).comp (contDiff_id.sub contDiff_const)
+      by fun_prop
     have hibp := integral_iteratedDeriv_test_mul (fun t => K (t - s)) hks n φ hφ hφc
     rw [iteratedDeriv_comp_sub_const, ← hKn] at hibp
     simp only [Complex.real_smul] at hibp
@@ -296,9 +295,4 @@ theorem schwartzTensor_log_density_iteratedDeriv_integrable
               ((iteratedDeriv n φ (Real.log (ProbeWeight.modulus F S y)) : ℝ) : ℂ) ∂ν :=
           (hp.iteratedDeriv_test_identity σ hσ n φ hφ hφc).symm
         _ = _ := hweak φ hφ hφc
-    exact mul_left_cancel₀ (pow_ne_zero n (by norm_num : (-1 : ℂ) ≠ 0)) hpair
-
-end
-end DedekindZetaZeroFree.ProbeSheetLogDensity
-
-end
+    simp_all

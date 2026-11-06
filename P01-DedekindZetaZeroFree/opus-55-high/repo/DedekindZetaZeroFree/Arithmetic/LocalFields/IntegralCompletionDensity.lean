@@ -20,7 +20,7 @@ theorem exists_ringOfIntegers_adicCompletion_approximation
   obtain ⟨t, ht⟩ := v.valuedAdicCompletion_surjective F δ
   let ε := Units.mk0 (Valued.v.restrict t) (by
     intro hz
-    exact hδ (ht ▸ (Valued.v.restrict_eq_zero_iff.mp hz)))
+    simp_all)
   have hball : {y : v.adicCompletion F | Valued.v (y - x) < δ} ∈ nhds x := by
     apply Valued.mem_nhds.mpr
     refine ⟨ε, ?_⟩
@@ -69,4 +69,3 @@ theorem denseRange_ringOfIntegers_adicCompletionIntegers
     ((algebraMap (NumberField.RingOfIntegers F) (v.adicCompletionIntegers F) a :
       v.adicCompletion F) - x) < _
   exact ha
-end DedekindZetaZeroFree

@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Prescribed linear terms for multivariable power series
 
@@ -32,7 +28,7 @@ variable {R : Type*} [CommRing R]
 variable {σ : Type*} [Fintype σ]
 
 /-- The multivariable linear form `sum_i L_i X_i`. -/
-noncomputable def linearForm (L : σ → R) : MvPowerSeries σ R :=
+def linearForm (L : σ → R) : MvPowerSeries σ R :=
   ∑ i, MvPowerSeries.C (L i) * MvPowerSeries.X i
 
 /-- States the theorem `constantCoeff_linearForm`. -/
@@ -65,10 +61,3 @@ one-variable power series. -/
 theorem hasSubst (h : HasLinearTerm H L) :
     PowerSeries.HasSubst H :=
   PowerSeries.HasSubst.of_constantCoeff_zero h.constantCoeff_eq_zero
-
-end HasLinearTerm
-
-end SameUniformizer
-end LubinTate
-
-end

@@ -76,7 +76,3 @@ variable (P : CompatibleModelData F ζ hζ) (C : LocalFiberData F ζ hζ P)
   exact (archProduct_continuous F ζ hζ).mul
     ((FiniteSourceTopology.finite_scalar_continuous F ζ hζ P C).comp
       (FiniteSourceTopology.finiteQuotient_continuous F ζ hζ))
-
-end DedekindZetaZeroFree.EisensteinReferenceSections.SourceContinuity
-
-end

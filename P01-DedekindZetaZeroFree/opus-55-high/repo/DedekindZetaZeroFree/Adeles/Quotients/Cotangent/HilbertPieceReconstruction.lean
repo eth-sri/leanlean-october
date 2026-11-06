@@ -45,7 +45,7 @@ def selectedFields (u : PieceHilbert cover) : SequenceFields cover := fun n x =>
   apply Subtype.ext
   simp [originalPoint, coordinates, labeledA, labeledAInv]
 
-private theorem selectedFields_zero_off (u : PieceHilbert cover) (n : ℕ)
+theorem selectedFields_zero_off (u : PieceHilbert cover) (n : ℕ)
     (y : omega (cover.chart n)) (hy : q (cover.chart n) y.val ∉ basePiece cover n) :
     selectedFields cover u n y = 0 := by
   have hspec := (KPMeasurableLocalL2.representative_spec (localData (cover.chart n))
@@ -70,12 +70,12 @@ private theorem continuous_labeledA :
     Continuous (originalPoint a) :=
   Continuous.subtype_mk (continuous_labeledA.comp continuous_subtype_val) fun x => x.property
 
-private theorem selectedFields_measurable (u : PieceHilbert cover) (n : ℕ) :
+theorem selectedFields_measurable (u : PieceHilbert cover) (n : ℕ) :
     Measurable (selectedFields cover u n) :=
   ((KPMeasurableLocalL2.representative_spec (localData (cover.chart n))
     (supportedPiece cover n) (u n)).1).comp (continuous_originalPoint (cover.chart n)).measurable
 
-private theorem labeledA_psi (a : ShrunkChart F ζ hζ U R P H) (γ : Gamma a)
+theorem labeledA_psi (a : ShrunkChart F ζ hζ U R P H) (γ : Gamma a)
     (y : M F) (hy : y ∈ omega a) :
     labeledA (placeEquiv F ζ hζ) ((isotropyArrow a γ).psi y) =
       (actualActionEquiv a γ (originalPoint a ⟨y, hy⟩)).val := by
@@ -90,18 +90,18 @@ private theorem labeledA_psi (a : ShrunkChart F ζ hζ U R P H) (γ : Gamma a)
     _ = (actualActionEquiv a γ (originalPoint a ⟨y, hy⟩)).val := by
         funext k; simp [labeledA, labeledAInv]
 
-private theorem actualTensor_originalPoint (a : ShrunkChart F ζ hζ U R P H) (γ : Gamma a)
+theorem actualTensor_originalPoint (a : ShrunkChart F ζ hζ U R P H) (γ : Gamma a)
     (y : M F) (hy : y ∈ omega a) :
     actualTensor a γ (originalPoint a ⟨y, hy⟩) =
       T (isotropyArrow a γ) y
         (KPContActualCotangentMeasurableFamilies.omega_subset_larger a hy) := by
   simp only [actualTensor, coordinates_originalPoint a ⟨y, hy⟩]
 
-private theorem ambientSequence_of_mem (f : SequenceFields cover) (n : ℕ)
+theorem ambientSequence_of_mem (f : SequenceFields cover) (n : ℕ)
     (x : M F) (hx : x ∈ omega (cover.chart n)) :
     ambientSequence cover f n x = f n ⟨x, hx⟩ := dif_pos hx
 
-private theorem selectedFields_equivariant (u : PieceHilbert cover) (n : ℕ)
+theorem selectedFields_equivariant (u : PieceHilbert cover) (n : ℕ)
     (γ : Gamma (cover.chart n)) (y : M F) (hy : y ∈ omega (cover.chart n)) :
     ambientSequence cover (selectedFields cover u) n
         ((isotropyArrow (cover.chart n) γ).psi y) =
@@ -181,7 +181,7 @@ private theorem chartMeasure_eq_map_coordinates (a : ShrunkChart F ζ hζ U R P 
     Set.eq_univ_of_forall (fun x => x.property)]
   rw [Measure.restrict_univ, hf.comap_map]
 
-private theorem q_coordinates' (C : ShrunkChart F ζ hζ U R P H) (y : C.domain) :
+theorem q_coordinates' (C : ShrunkChart F ζ hζ U R P H) (y : C.domain) :
     q C (coordinates C y).val = C.toBase y := by
   rw [KPContCotangentOverlapRationalBranches.q, ShrunkChart.toBase,
     KPContActualCotangentPieceHilbertSum.coordinates]
@@ -190,7 +190,7 @@ private theorem q_coordinates' (C : ShrunkChart F ζ hζ U R P H) (y : C.domain)
     funext k; simp [labeledA, labeledAInv]
   rw [h]
 
-private theorem coordinates_preimage_coordinatePiece (cover : CountableCover F ζ hζ U R P H)
+theorem coordinates_preimage_coordinatePiece (cover : CountableCover F ζ hζ U R P H)
     (n : ℕ) :
     coordinates (cover.chart n) ⁻¹' coordinatePiece cover n = liftedPiece cover n := by
   ext y

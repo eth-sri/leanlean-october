@@ -30,8 +30,7 @@ theorem principalSeries_compact_continuous_fiberInvariant (s : ℝ)
       intro k
       rw [matrixFunction, dif_pos (Matrix.GeneralLinearGroup.det_ne_zero
         (complexSU2Embedding k))]
-      change f _ = f (complexSU2Embedding k)
-      congr 1
+      rfl
     simpa only [Function.comp_def, he] using hc
   · intro k t h
     apply ComplexFractionalInverse.compactRestriction_hopf_fiber s f k t
@@ -68,7 +67,7 @@ lemma coord_cont : Continuous compactSphereCoordinate := by
       ‖(k : Matrix (Fin 2) (Fin 2) ℂ) 1 1‖ ^ 2 : ℝ) : ℂ))
     exact Complex.continuous_ofReal.comp ((h0.norm.pow 2).sub (h1.norm.pow 2))
 
-private lemma coord_star (k : ComplexSU2) (i : Fin 3) :
+lemma coord_star (k : ComplexSU2) (i : Fin 3) :
     star (compactSphereCoordinate k i) = compactSphereCoordinate k i := by
   fin_cases i <;> simp [compactSphereCoordinate]
 
@@ -92,7 +91,7 @@ private lemma ev_apply (p : MvPolynomial (Fin 3) ℂ) (x : S) :
 lemma star_ev (p : MvPolynomial (Fin 3) ℂ) :
     ∃ r : MvPolynomial (Fin 3) ℂ, ev r = star (ev p) := by
   induction p using MvPolynomial.induction_on with
-  | C a => exact ⟨MvPolynomial.C (star a), by ext x; simp [ev]⟩
+  | C a => exact ⟨MvPolynomial.C (star a), by ext x; simp⟩
   | add p r hp hr =>
     obtain ⟨p', hp'⟩ := hp
     obtain ⟨r', hr'⟩ := hr
@@ -105,7 +104,7 @@ lemma star_ev (p : MvPolynomial (Fin 3) ℂ) :
       ext x
       obtain ⟨k, hk⟩ := x.property
       simpa [ev_apply, ← hk] using coord_star k i
-    rw [star_mul, hv, mul_comm]
+    simp_all
 
 noncomputable def A : StarSubalgebra ℂ C(S, ℂ) where
   toSubalgebra := ev.range
@@ -185,11 +184,11 @@ private lemma compactSphereCoordinate_continuous :
       (k : Matrix (Fin 2) (Fin 2) ℂ) 1 0 * star ((k : Matrix (Fin 2) (Fin 2) ℂ) 1 1)) :=
     (entry_continuous 1 0).mul (entry_continuous 1 1).star
   fin_cases i
-  · simp only [compactSphereCoordinate, Matrix.cons_val_zero]
+  · simp only [compactSphereCoordinate]
     exact RCLike.continuous_ofReal.comp ((Complex.continuous_re.comp h).const_mul 2)
-  · simp only [compactSphereCoordinate, Matrix.cons_val_one, Matrix.head_cons]
+  · simp only [compactSphereCoordinate]
     exact RCLike.continuous_ofReal.comp ((Complex.continuous_im.comp h).const_mul 2)
-  · simp only [compactSphereCoordinate, Matrix.cons_val_two, Matrix.tail_cons]
+  · simp only [compactSphereCoordinate]
     exact RCLike.continuous_ofReal.comp
       (((entry_continuous 1 0).norm.pow 2).sub ((entry_continuous 1 1).norm.pow 2))
 
@@ -211,13 +210,10 @@ private lemma su2HarmonicCharacter_continuous' (ℓ : ℕ) :
     | one => simp only [KPCompactHarmonic.symmetricPowerTrace]; fun_prop
     | more n hn hn1 =>
         simp only [KPCompactHarmonic.symmetricPowerTrace]
-        exact ((by fun_prop : Continuous (fun k : ComplexSU2 =>
-            Matrix.trace (k : Matrix (Fin 2) (Fin 2) ℂ))).mul hn1).sub
-          ((by fun_prop : Continuous (fun k : ComplexSU2 =>
-            Matrix.det (k : Matrix (Fin 2) (Fin 2) ℂ))).mul hn)
+        fun_prop
   unfold su2HarmonicCharacter KPCompactHarmonic.rankOneCharacter
   simp only [(Matrix.mem_specialUnitaryGroup_iff.mp (Subtype.prop _)).2, one_pow, div_one]
-  exact htrace (2 * ℓ)
+  fun_prop
 
 theorem character_convolution_tendsto_of_uniform (μ : Measure ComplexSU2)
     (hfinite : IsFiniteMeasure μ) (ℓ : ℕ) (F : ComplexSU2 → ℂ)
@@ -339,7 +335,3 @@ theorem characterAverage_compact_polynomial (s : ℝ) (μ : Measure ComplexSU2)
         Submodule.mem_map.mpr ⟨p n, hp n, rfl⟩))
   obtain ⟨r, hr, heq⟩ := Submodule.mem_map.mp hmem
   exact ⟨r, hr, fun k => congrFun heq k⟩
-
-end DedekindZetaZeroFree.KPCplxHarmonicExtraction
-
-end

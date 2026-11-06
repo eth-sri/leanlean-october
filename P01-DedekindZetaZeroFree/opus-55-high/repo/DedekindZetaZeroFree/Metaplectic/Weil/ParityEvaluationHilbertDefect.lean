@@ -16,7 +16,7 @@ namespace DedekindZetaZeroFree.OddEvaluation
 noncomputable section
 variable {F : Type} [Field F] [NumberField F]
 attribute [local instance] residueFintype
-private theorem raw_presentation (v : HeightOneSpectrum (𝓞 F))
+theorem raw_presentation (v : HeightOneSpectrum (𝓞 F))
     (π : v.adicCompletionIntegers F) (hπ : Irreducible π)
     (x : (v.adicCompletion F)ˣ) :
     ∃ (n : ℤ) (u : (v.adicCompletionIntegers F)ˣ),
@@ -48,7 +48,7 @@ private theorem conductor_exists (v : HeightOneSpectrum (𝓞 F))
       ResidueTrace.localTraceCharacter v
         (((uniformizer v π hπ ^ c : (v.adicCompletion F)ˣ) : v.adicCompletion F) * x) = 1 := by
     intro x
-    have hh := (hc 1).mpr (by change Valued.v (1 : v.adicCompletion F) ≤ 1; simp)
+    have hh := (hc 1).mpr (by simp)
     have hmem : (((u⁻¹ : (v.adicCompletionIntegers F)ˣ) * x : v.adicCompletionIntegers F) : v.adicCompletion F) ∈
         finiteCompletionBall F v 0 := by
       change Valued.v (((u⁻¹ : (v.adicCompletionIntegers F)ˣ) * x : v.adicCompletionIntegers F) : v.adicCompletion F) ≤ 1
@@ -91,7 +91,7 @@ local instance (v : HeightOneSpectrum (𝓞 F)) : IsNonarchimedeanLocalField (v.
  def intEquiv (v : HeightOneSpectrum (𝓞 F)) :
     (ValuativeRel.valuation (v.adicCompletion F)).integer ≃+* v.adicCompletionIntegers F :=
   RingEquiv.subringCongr (ints_eq v)
-private theorem tame_two (v : HeightOneSpectrum (𝓞 F)) (hodd : ringChar (Residue v) ≠ 2) :
+theorem tame_two (v : HeightOneSpectrum (𝓞 F)) (hodd : ringChar (Residue v) ≠ 2) :
     ValuativeRel.valuation (v.adicCompletion F) (2 : v.adicCompletion F) = 1 := by
   have hu : IsUnit (2 : v.adicCompletionIntegers F) := by
     apply isUnit_of_map_unit (IsLocalRing.residue (v.adicCompletionIntegers F))
@@ -100,7 +100,7 @@ private theorem tame_two (v : HeightOneSpectrum (𝓞 F)) (hodd : ringChar (Resi
   have hu' : IsUnit (2 : (ValuativeRel.valuation (v.adicCompletion F)).integer) := by
     simpa only [map_ofNat] using hu.map (intEquiv v).symm.toRingHom
   exact (Valuation.integer.integers (ValuativeRel.valuation (v.adicCompletion F))).isUnit_iff_valuation_eq_one.mp hu'
-private theorem tame_symbol_one_iff (v : HeightOneSpectrum (𝓞 F))
+theorem tame_symbol_one_iff (v : HeightOneSpectrum (𝓞 F))
     (hodd : ringChar (Residue v) ≠ 2)
     (hm : (primitiveRoots 2 (v.adicCompletion F)).Nonempty)
     (u : (v.adicCompletionIntegers F)ˣ) :
@@ -118,7 +118,7 @@ private theorem tame_symbol_one_iff (v : HeightOneSpectrum (𝓞 F))
     intro a
     constructor
     · rintro ⟨b, rfl⟩
-      exact ⟨(IsLocalRing.ResidueField.mapEquiv (intEquiv v)) b, by simp⟩
+      simp
     · rintro ⟨b, hb⟩
       refine ⟨(IsLocalRing.ResidueField.mapEquiv (intEquiv v)).symm b, ?_⟩
       apply (IsLocalRing.ResidueField.mapEquiv (intEquiv v)).injective
@@ -128,10 +128,7 @@ private theorem tame_symbol_one_iff (v : HeightOneSpectrum (𝓞 F))
       (↑(LocalFieldTheory.residueUnitsConcreteEquiv (v.adicCompletion F) (LocalFieldTheory.integerUnitsToResidueUnits (v.adicCompletion F) u')) :
         IsLocalRing.ResidueField (ValuativeRel.valuation (v.adicCompletion F)).integer) =
       IsLocalRing.residue _ (u : v.adicCompletionIntegers F) := by
-    change IsLocalRing.ResidueField.map (intEquiv v).toRingHom
-      (IsLocalRing.residue _ ((intEquiv v).symm (u : v.adicCompletionIntegers F))) = _
-    rw [IsLocalRing.ResidueField.map_residue]
-    simp
+    rfl
   rw [← hred, ← he]
   constructor
   · rintro ⟨b, hb⟩
@@ -154,18 +151,16 @@ private theorem tame_symbol_one_iff (v : HeightOneSpectrum (𝓞 F))
     · simp [hw]
     have root_neg (t : rootsOfUnity 2 K) (ht : t ≠ 1) : ((t : Kˣ) : K) = -1 := by
       have hp : (((t : Kˣ) : K)) ^ 2 = 1 := congrArg Units.val t.property
-      rcases sq_eq_one_iff.mp hp with hp | hp
-      · exact False.elim (ht (Subtype.ext (Units.ext hp)))
-      · exact hp
+      simp_all
     have hzw : z*w=1 := Subtype.ext (Units.ext (by
       change (((z : Kˣ) : K) * ((w : Kˣ) : K)) = 1
       rw [root_neg z hz, root_neg w hw]; simp))
-    simp [hz,hw,hzw]
-private theorem sign_equiv {K L : Type*} [Field K] [Field L]
+    simp_all
+theorem sign_equiv {K L : Type*} [Field K] [Field L]
     (e : rootsOfUnity 2 K ≃* rootsOfUnity 2 L) (z : rootsOfUnity 2 K) :
     signHom L (e z) = signHom K z := by
   simp only [signHom, MonoidHom.coe_mk, OneHom.coe_mk, e.map_eq_one_iff]
-private theorem sign_tame (v : HeightOneSpectrum (𝓞 F)) (hodd : ringChar (Residue v) ≠ 2)
+theorem sign_tame (v : HeightOneSpectrum (𝓞 F)) (hodd : ringChar (Residue v) ≠ 2)
     (hm : (primitiveRoots 2 (v.adicCompletion F)).Nonempty)
     (u : (v.adicCompletionIntegers F)ˣ) :
     signHom (v.adicCompletion F)
@@ -175,11 +170,11 @@ private theorem sign_tame (v : HeightOneSpectrum (𝓞 F)) (hodd : ringChar (Res
     quadratic v (IsLocalRing.residue _ (u : v.adicCompletionIntegers F)) := by
   letI := residueFintype v
   have hn : IsLocalRing.residue _ (u : v.adicCompletionIntegers F) ≠ 0 :=
-    (u.isUnit.map (IsLocalRing.residue _)).ne_zero
+    by simp
   have hs := tame_symbol_one_iff v hodd hm u
   have hq := quadraticChar_dichotomy hn
   have hqi := quadraticChar_one_iff_isSquare hn
-  simp only [signHom, MonoidHom.coe_mk, OneHom.coe_mk, MulEquiv.map_eq_one_iff]
+  simp only [signHom, MonoidHom.coe_mk, OneHom.coe_mk]
   split_ifs with h
   · have h := (KummerTheory.nthRootsSubgroupEquivRootsOfUnity (v.adicCompletion F) 2).map_eq_one_iff.mp h
     have h := hs.mp h
@@ -187,7 +182,7 @@ private theorem sign_tame (v : HeightOneSpectrum (𝓞 F)) (hodd : ringChar (Res
   · have hnq : quadraticChar (Residue v) (IsLocalRing.residue _ (u : v.adicCompletionIntegers F)) = -1 :=
       hq.resolve_left (fun hq => h ((KummerTheory.nthRootsSubgroupEquivRootsOfUnity (v.adicCompletion F) 2).map_eq_one_iff.mpr (hs.mpr (hqi.mp hq))))
     simp [quadratic, hnq]
-private theorem sign_actual_unit (A : SArithmeticData F)
+theorem sign_actual_unit (A : SArithmeticData F)
     (v : HeightOneSpectrum (𝓞 F)) (hodd : ringChar (Residue v) ≠ 2)
     (π : v.adicCompletionIntegers F) (hπ : Irreducible π)
     (u : (v.adicCompletionIntegers F)ˣ) :
@@ -227,7 +222,7 @@ private theorem sign_actual_unit (A : SArithmeticData F)
   rw [inv_eq_of_mul_eq_one_left (by simpa [pow_two] using hq)] at hh'
   simpa only [hu] using hh'
 
-private theorem actual_integral_integral (A : SArithmeticData F)
+theorem actual_integral_integral (A : SArithmeticData F)
     (v : HeightOneSpectrum (𝓞 F)) (hodd : ringChar (Residue v) ≠ 2)
     (u w : (v.adicCompletionIntegers F)ˣ) :
     A.actualLocalSymbol v 2 (Or.inl rfl) (localUnit v u) (localUnit v w) = 1 := by
@@ -252,7 +247,7 @@ private theorem actual_integral_integral (A : SArithmeticData F)
   unfold ClassFieldTheory.localHilbertSymbol at hh
   erw [LocalClassFieldTheory.Kummer.localHilbertSymbol_integerUnit_integerUnit_eq_one K 2 (tame_two v hodd) hm u' w', map_one, inv_one] at hh
   exact hh
-private theorem actual_alternating (A : SArithmeticData F)
+theorem actual_alternating (A : SArithmeticData F)
     (v : HeightOneSpectrum (𝓞 F)) (a : (v.adicCompletion F)ˣ) :
     A.actualLocalSymbol v 2 (Or.inl rfl) a a = 1 := by
   let K := v.adicCompletion F
@@ -290,13 +285,13 @@ private theorem actual_alternating (A : SArithmeticData F)
     ((A.actualLocalHilbert v 2 (Or.inl rfl)).comp (ClassFieldTheory.powerClass _ 2)) |>.flip |>.comp
       (ClassFieldTheory.powerClass _ 2) |>.flip
 
-private theorem signedPair_apply (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F))
+theorem signedPair_apply (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F))
     (a b : (v.adicCompletion F)ˣ) :
     signedPair A v a b = signHom F (A.actualLocalSymbol v 2 (Or.inl rfl) a b) := rfl
-private theorem sign_sq (K : Type*) [Field K] (z : rootsOfUnity 2 K) : signHom K z ^ 2 = 1 := by
+theorem sign_sq (K : Type*) [Field K] (z : rootsOfUnity 2 K) : signHom K z ^ 2 = 1 := by
   simp only [signHom, MonoidHom.coe_mk, OneHom.coe_mk]
-  split_ifs <;> norm_num
-private theorem even_zpow (x : ℂ) (hx : x^2=1) (n : ℤ) :
+  simp
+theorem even_zpow (x : ℂ) (hx : x^2=1) (n : ℤ) :
     x ^ n = if Even n then 1 else x := by
   have hx0 : x ≠ 0 := by intro h; simp [h] at hx
   by_cases hn : Even n
@@ -305,7 +300,7 @@ private theorem even_zpow (x : ℂ) (hx : x^2=1) (n : ℤ) :
   · rw [if_neg hn]
     obtain ⟨k, hk⟩ := Int.not_even_iff_odd.mp hn
     rw [hk, zpow_add₀ hx0, zpow_mul, zpow_ofNat, hx, one_zpow, zpow_one, one_mul]
-private theorem signed_formula (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F))
+theorem signed_formula (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F))
     (hodd : ringChar (Residue v) ≠ 2)
     (π : v.adicCompletionIntegers F) (hπ : Irreducible π)
     (u w : (v.adicCompletionIntegers F)ˣ) (n m : ℤ) :
@@ -316,7 +311,7 @@ private theorem signed_formula (A : SArithmeticData F) (v : HeightOneSpectrum (�
       (if Even n then 1 else quadratic v (IsLocalRing.residue _ (w : v.adicCompletionIntegers F))) := by
   let B := signedPair A v
   change B _ _ = _
-  simp only [map_mul, MonoidHom.mul_apply, map_zpow, MonoidHom.zpow_apply]
+  simp only [map_mul, MonoidHom.mul_apply, map_zpow]
   have huu : B (localUnit v u) (localUnit v w) = 1 := by
     rw [signedPair_apply,actual_integral_integral A v hodd]
     exact map_one _
@@ -348,7 +343,7 @@ private theorem signed_formula (A : SArithmeticData F) (v : HeightOneSpectrum (�
   rw [even_zpow _ hqu,even_zpow _ hqw]
   exact mul_comm _ _
 
-private theorem parity_identity (r s e : ℂ) (hr : r^2=1) (hs : s^2=1) (he : e^2=1)
+theorem parity_identity (r s e : ℂ) (hr : r^2=1) (hs : s^2=1) (he : e^2=1)
     (n m c : ℤ) :
     ((if Even (n-c) then 1 else r*e) / (if Even (-c) then 1 else e)) *
     ((if Even (m-c) then 1 else s*e) / (if Even (-c) then 1 else e)) =
@@ -402,6 +397,3 @@ theorem hilbert_defect_of_parity_evaluation (A : SArithmeticData F)
   have hw : (quadraticChar (Residue v) (IsLocalRing.residue _ (w : v.adicCompletionIntegers F)) : ℂ) ^ 2 = 1 := by
     exact_mod_cast quadraticChar_sq_one ((w.isUnit.map (IsLocalRing.residue _)).ne_zero)
   exact parity_identity _ _ _ hu hw (he π hπ c hc) n m c
-
-end
-end DedekindZetaZeroFree.OddEvaluation

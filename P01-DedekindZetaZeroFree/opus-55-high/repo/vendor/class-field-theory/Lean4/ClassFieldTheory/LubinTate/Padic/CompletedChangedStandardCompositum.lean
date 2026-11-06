@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # The finite standard/changed compositum in the completed p-adic level
 
@@ -50,7 +45,7 @@ def padicCompletedStandardLevelField
 
 /-- The ordinary standard level is equivalent to its image in the completed
 level. -/
-noncomputable def padicStandardLevelEquivCompletedStandardLevelField
+def padicStandardLevelEquivCompletedStandardLevelField
     (p : ℕ) [Fact p.Prime] (n : ℕ) :
     standardLubinTateLevelField
         (padicMultiplicativeLubinTateSeries_isUniformizer p) n
@@ -58,7 +53,7 @@ noncomputable def padicStandardLevelEquivCompletedStandardLevelField
         padicCompletedStandardLevelField p n :=
   AlgEquiv.ofInjectiveField (padicStandardLevelEmbedding p n)
 
-noncomputable instance
+instance
     padicCompletedStandardLevelField_finiteDimensional
     (p : ℕ) [Fact p.Prime] (n : ℕ) :
     FiniteDimensional ℚ_[p]
@@ -70,7 +65,7 @@ noncomputable instance
   let e := padicStandardLevelEquivCompletedStandardLevelField p n
   exact e.toLinearEquiv.finiteDimensional
 
-noncomputable instance
+instance
     padicCompletedStandardLevelField_isAbelianGalois
     (p : ℕ) [Fact p.Prime] (n : ℕ) :
     IsAbelianGalois ℚ_[p]
@@ -82,7 +77,7 @@ noncomputable instance
   exact IsAbelianGalois.of_algHom
     (padicStandardLevelEquivCompletedStandardLevelField p n).symm.toAlgHom
 
-noncomputable instance
+instance
     padicCompletedChangedUniformizerFixedField_finiteDimensional
     (p : ℕ) [Fact p.Prime]
     (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
@@ -97,7 +92,7 @@ noncomputable instance
   let e := padicChangedUniformizerLevelEquivCompletedFixedField p u n
   exact e.toLinearEquiv.finiteDimensional
 
-noncomputable instance
+instance
     padicCompletedChangedUniformizerFixedField_isAbelianGalois
     (p : ℕ) [Fact p.Prime]
     (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
@@ -115,7 +110,7 @@ def padicCompletedStandardChangedCompositum
   padicCompletedStandardLevelField p n ⊔
     padicCompletedChangedUniformizerFixedField p u n
 
-noncomputable instance
+instance
     padicCompletedStandardChangedCompositum_finiteDimensional
     (p : ℕ) [Fact p.Prime]
     (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
@@ -125,7 +120,7 @@ noncomputable instance
     (padicCompletedStandardLevelField p n)
     (padicCompletedChangedUniformizerFixedField p u n)
 
-noncomputable instance
+instance
     padicCompletedStandardChangedCompositum_isAbelianGalois
     (p : ℕ) [Fact p.Prime]
     (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
@@ -135,7 +130,7 @@ noncomputable instance
     (padicCompletedStandardLevelField p n)
     (padicCompletedChangedUniformizerFixedField p u n)
 
-noncomputable instance
+instance
     padicCompletedStandardChangedCompositum_changedFieldAlgebra
     (p : ℕ) [Fact p.Prime]
     (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
@@ -154,7 +149,7 @@ instance padicCompletedStandardChangedCompositum_changedFieldScalarTower
 /-- The standard/changed compositum is also abelian Galois over its
 changed-uniformizer factor.  Relative automorphisms embed faithfully into
 the already commutative Galois group over `ℚ_p`. -/
-noncomputable instance
+instance
     padicCompletedStandardChangedCompositum_relative_isAbelianGalois
     (p : ℕ) [Fact p.Prime]
     (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
@@ -167,7 +162,7 @@ noncomputable instance
 
 /-- The standard finite level embedded into the finite standard/changed
 compositum. -/
-noncomputable def padicStandardLevelToCompletedChangedCompositum
+def padicStandardLevelToCompletedChangedCompositum
     (p : ℕ) [Fact p.Prime]
     (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
     standardLubinTateLevelField
@@ -185,7 +180,7 @@ noncomputable def padicStandardLevelToCompletedChangedCompositum
 
 /-- The changed fixed field included into the finite standard/changed
 compositum. -/
-noncomputable def
+def
     padicCompletedChangedFixedFieldToStandardChangedCompositum
     (p : ℕ) [Fact p.Prime]
     (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
@@ -300,7 +295,7 @@ theorem
 
 /-- The inverse defining Frobenius restricted to the genuine finite
 standard/changed compositum. -/
-noncomputable def padicCompletedChangedUniformizerArtinCandidateAlgHom
+def padicCompletedChangedUniformizerArtinCandidateAlgHom
     (p : ℕ) [Fact p.Prime]
     (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
     padicCompletedStandardChangedCompositum p u n
@@ -313,11 +308,10 @@ noncomputable def padicCompletedChangedUniformizerArtinCandidateAlgHom
       apply
         padicCompletedChangedUniformizerFrobenius_symm_map_compositum_le
           p u n
-      rw [IntermediateField.mem_map]
-      exact ⟨x, x.property, rfl⟩)
+      simp)
 
 /-- The finite Artin candidate is an automorphism. -/
-noncomputable def padicCompletedChangedUniformizerArtinCandidate
+def padicCompletedChangedUniformizerArtinCandidate
     (p : ℕ) [Fact p.Prime]
     (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
     padicCompletedStandardChangedCompositum p u n
@@ -372,7 +366,7 @@ theorem
 
 /-- The finite Artin candidate as an automorphism over the changed fixed
 field that it fixes pointwise. -/
-noncomputable def
+def
     padicCompletedChangedUniformizerRelativeArtinCandidate
     (p : ℕ) [Fact p.Prime]
     (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
@@ -394,7 +388,3 @@ theorem padicCompletedChangedUniformizerRelativeArtinCandidate_apply
     padicCompletedChangedUniformizerRelativeArtinCandidate p u n x =
       padicCompletedChangedUniformizerArtinCandidate p u n x :=
   rfl
-
-end LubinTate
-
-end

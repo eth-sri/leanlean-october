@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.LargeSieve.Bilinear.QuadraticFormsAndSieveExp
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.LargeSieve.Sieve.GcdReduction
 open scoped NumberField Classical
 
@@ -23,7 +22,3 @@ theorem unit_ball_lift
     · calc Q2 F c Q W M N K lam ≤ A * energy F c N lam := hform lam
         _ ≤ A * 1 := mul_le_mul_of_nonneg_left hlam hA
         _ = A := mul_one A
-
-end DedekindZetaZeroFree.LargeSieve.Sieve.GcdReduction
-
-end

@@ -30,5 +30,3 @@ theorem continuousOn_section_of_fiber_invariance
       (hs (q a) (mem_image_of_mem q a.property)).2
   rw [he]
   exact continuousOn_iff_continuous_restrict.mp hf
-
-end DedekindZetaZeroFree.KPMsResidualTailRestoration.OutgoingTailL2.CoordinateDescent

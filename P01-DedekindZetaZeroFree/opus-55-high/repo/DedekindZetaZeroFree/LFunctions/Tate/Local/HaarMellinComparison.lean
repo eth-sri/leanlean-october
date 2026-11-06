@@ -24,12 +24,12 @@ local instance completionBorel (v : HeightOneSpectrum (𝓞 F)) :
 theorem units_val_isEmbedding : Topology.IsEmbedding (Units.val : (SLocalProduct F S)ˣ → SLocalProduct F S) := by
   let e : (SLocalProduct F S)ˣ ≃ₜ
       ((InfiniteAdeleRing F)ˣ × ((v : S) → v.val.adicCompletion F)ˣ) := Homeomorph.prodUnits
-  have ha : Topology.IsEmbedding (Units.val : (InfiniteAdeleRing F)ˣ → InfiniteAdeleRing F) := by
-    exact (Topology.IsEmbedding.piMap (fun _ => Units.isEmbedding_val₀)).comp
+  have ha : Topology.IsEmbedding (Units.val : (InfiniteAdeleRing F)ˣ → InfiniteAdeleRing F) := 
+    (Topology.IsEmbedding.piMap (fun _ => Units.isEmbedding_val₀)).comp
       ContinuousMulEquiv.piUnits.toHomeomorph.isEmbedding
   have hb : Topology.IsEmbedding
-      (Units.val : ((v : S) → v.val.adicCompletion F)ˣ → ((v : S) → v.val.adicCompletion F)) := by
-    exact (Topology.IsEmbedding.piMap (fun _ => Units.isEmbedding_val₀)).comp
+      (Units.val : ((v : S) → v.val.adicCompletion F)ˣ → ((v : S) → v.val.adicCompletion F)) := 
+    (Topology.IsEmbedding.piMap (fun _ => Units.isEmbedding_val₀)).comp
       ContinuousMulEquiv.piUnits.toHomeomorph.isEmbedding
   exact (ha.prodMap hb).comp e.isEmbedding
 local instance unitsBorel : BorelSpace (SLocalProduct F S)ˣ := by
@@ -43,8 +43,8 @@ theorem modulus_continuous [NumberField.IsTotallyComplex F] :
   unfold TateTensorProfile.modulus
   apply Continuous.mul
   · simp only [InfiniteAdeleRing.norm_def]
-    exact continuous_finset_prod _ (fun v _ => ((continuous_apply v).comp continuous_fst).norm.pow _)
-  · exact continuous_finset_prod _ (fun v _ => ((continuous_apply v).comp continuous_snd).norm)
+    fun_prop
+  fun_prop
 
 theorem units_val_isOpenEmbedding [NumberField.IsTotallyComplex F] :
     Topology.IsOpenEmbedding (Units.val : (SLocalProduct F S)ˣ → SLocalProduct F S) := by
@@ -68,7 +68,7 @@ theorem modulus_mul [NumberField.IsTotallyComplex F] (x y : SLocalProduct F S) :
   simp only [Prod.fst_mul, Prod.snd_mul, Pi.mul_apply, norm_mul, Finset.prod_mul_distrib, ha]
   ring
 
-private theorem canonical_additive_haar (S : Finset (HeightOneSpectrum (𝓞 F)))
+theorem canonical_additive_haar (S : Finset (HeightOneSpectrum (𝓞 F)))
     [NumberField.IsTotallyComplex F] :
     (TateTensorProfile.additiveMeasure F S).IsAddHaarMeasure := by
   letI := PoissonArch.traceMeasure_isAddHaarMeasure F
@@ -103,7 +103,7 @@ theorem additive_fourier_comparison (S : Finset (HeightOneSpectrum (𝓞 F)))
   · intro W y
     rw [Measure.isAddLeftInvariant_eq_smul μ (TateTensorProfile.additiveMeasure F S),
       integral_smul_nnreal_measure]
-    simp only [TateTensorProfile.fourier, neg_mul, Complex.real_smul]
+    simp only [TateTensorProfile.fourier, neg_mul]
     rfl
 
 def canonicalUnitsMeasure (S : Finset (HeightOneSpectrum (𝓞 F)))
@@ -156,9 +156,7 @@ theorem canonicalUnitsMeasure_left (S : Finset (HeightOneSpectrum (𝓞 F)))
     · rintro ⟨u, hu, he⟩
       refine ⟨g⁻¹ * u, ?_, ?_⟩
       · simpa using hu
-      · change (g⁻¹ * u).val = x
-        simp only [Units.val_mul]
-        rw [he]; simp
+      simp_all
   rw [hpre, withDensity_apply _ (by exact (ev.measurableSet_image.mpr hs).preimage (by fun_prop)),
     withDensity_apply _ (ev.measurableSet_image.mpr hs)]
   have hmul (x : SLocalProduct F S) : D (g.val * x) =
@@ -176,7 +174,7 @@ theorem canonicalUnitsMeasure_left (S : Finset (HeightOneSpectrum (𝓞 F)))
     (g := fun x : SLocalProduct F S => g.val * x)
     (s := Units.val '' s) (ev.measurableSet_image.mpr hs) hD (by fun_prop)
   rw [hscale, Measure.restrict_smul, lintegral_smul_measure] at hm
-  simp only [ENNReal.smul_def, smul_eq_mul] at hm
+  simp only [smul_eq_mul] at hm
   simp_rw [hmul] at hm
   rw [lintegral_const_mul _ hD] at hm
   exact (ENNReal.mul_right_inj
@@ -254,7 +252,6 @@ theorem units_normMellin_comparison_of_canonicalHaar
       canonicalUnitsMeasure_integral F S
         (fun x => TateTensorProfile.fourier F S W x *
           (TateTensorProfile.modulus F S x : ℂ) ^ (s : ℂ))]
-    simp only [TateTensorProfile.normMellin]
     rfl
 
 theorem haar_fourierMellin_comparison_of_canonicalHaar
@@ -337,6 +334,3 @@ theorem haar_fourierMellin_comparison (S : Finset (HeightOneSpectrum (𝓞 F)))
     canonicalUnitsMeasure_left F S (additiveMeasure_map_mul F S)
   letI := canonicalUnitsMeasure_isHaar F S
   exact haar_fourierMellin_comparison_of_canonicalHaar F S μ ν hμ hν
-
-end
-end DedekindZetaZeroFree.TateSLocalComparison

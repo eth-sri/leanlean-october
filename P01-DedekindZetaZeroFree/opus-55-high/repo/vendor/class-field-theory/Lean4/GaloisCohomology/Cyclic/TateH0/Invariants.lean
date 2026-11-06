@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Invariant units
 
@@ -32,7 +28,7 @@ def unitsInvariantSubmodule (K L : Type) [Field K] [Field L] [Algebra K L] :
     Submodule ℤ (Additive Lˣ) :=
   (Rep.ofAlgebraAutOnUnits K L).ρ.invariants
 
- noncomputable def invariantUnitToBaseUnit (K L : Type)
+ def invariantUnitToBaseUnit (K L : Type)
     [Field K] [Field L] [Algebra K L] [IsGalois K L] [FiniteDimensional K L]
     (x : unitsInvariantSubmodule K L) : Kˣ := by
   classical
@@ -80,7 +76,7 @@ def unitsInvariantSubmodule (K L : Type) [Field K] [Field L] [Algebra K L] :
   change algebraMap K L (Classical.choose hmem) = (y : L)
   exact Classical.choose_spec hmem
 
- noncomputable def baseUnitToInvariantUnit (K L : Type)
+ def baseUnitToInvariantUnit (K L : Type)
     [Field K] [Field L] [Algebra K L] (x : Kˣ) : unitsInvariantSubmodule K L where
   val := Additive.ofMul (Units.map (algebraMap K L).toMonoidHom x)
   property := by
@@ -112,7 +108,7 @@ def unitsInvariantSubmodule (K L : Type) [Field K] [Field L] [Algebra K L] :
   exact invariantUnitToBaseUnit_spec K L x
 
 /-- The canonical additive equivalence `(Lˣ)^Gal(L/K) ≃ Kˣ` for finite Galois extensions. -/
-noncomputable def invariantsUnitsAddEquivBaseUnits (K L : Type)
+def invariantsUnitsAddEquivBaseUnits (K L : Type)
     [Field K] [Field L] [Algebra K L] [IsGalois K L] [FiniteDimensional K L] :
     unitsInvariantSubmodule K L ≃+ Additive Kˣ where
   toFun := fun x => Additive.ofMul (invariantUnitToBaseUnit K L x)
@@ -140,7 +136,7 @@ noncomputable def invariantsUnitsAddEquivBaseUnits (K L : Type)
     rfl
 
 /-- The canonical linear equivalence `(Lˣ)^Gal(L/K) ≃ Kˣ` for finite Galois extensions. -/
-noncomputable def invariantsUnitsEquivBaseUnits (K L : Type)
+def invariantsUnitsEquivBaseUnits (K L : Type)
     [Field K] [Field L] [Algebra K L] [IsGalois K L] [FiniteDimensional K L] :
     unitsInvariantSubmodule K L ≃ₗ[ℤ] Additive Kˣ :=
   (invariantsUnitsAddEquivBaseUnits K L).toIntLinearEquiv
@@ -152,8 +148,5 @@ lemma invariantsUnitsAddEquivBaseUnits_spec (K L : Type)
     (x : unitsInvariantSubmodule K L) :
     algebraMap K L
         ((Additive.toMul (invariantsUnitsAddEquivBaseUnits K L x) : Kˣ) : K) =
-      ((Additive.toMul (x : Additive Lˣ) : Lˣ) : L) := by
-  exact invariantUnitToBaseUnit_spec K L x
-
-end
-end CyclicCohomology
+      ((Additive.toMul (x : Additive Lˣ) : Lˣ) : L) := 
+  invariantUnitToBaseUnit_spec K L x

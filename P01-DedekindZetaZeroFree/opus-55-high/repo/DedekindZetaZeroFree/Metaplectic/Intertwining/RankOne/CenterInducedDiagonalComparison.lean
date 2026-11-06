@@ -12,7 +12,6 @@ open KPLocalStoneVonNeumann KPLocalPrincipalSeries KPRankOneShellContinuation
 open KPRankOneOpenCellKernel
 
 noncomputable section
-set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
@@ -69,14 +68,12 @@ def centerSectionSpace (ε : Sign) (z : ℂ) :
     SmoothVector vectorRightTranslation f}
   zero_mem' := by
     constructor
-    · intros; simp
-    · exact ⟨⊤, by intros; simp⟩
+    · simp
+    · exact ⟨⊤, by simp⟩
   add_mem' := by
     intro f g hf hg
     constructor
-    · intro b x
-      change f _ + g _ = centerInducingAction F ζ hζ q T A ε z b (f x + g x)
-      rw [hf.1 b x, hg.1 b x, map_add]
+    · simp_all
     · obtain ⟨J, hJ⟩ := hf.2
       obtain ⟨L, hL⟩ := hg.2
       refine ⟨J ⊓ L, ?_⟩
@@ -117,8 +114,8 @@ def centerCompactPicture (I : IwasawaData A) (ε : Sign) :
     SmoothVector (vectorRightTranslation (G := I.compact.toOpenSubgroup)) φ}
   zero_mem' := by
     constructor
-    · intros; simp
-    · exact ⟨⊤, by intros; simp⟩
+    · simp
+    · exact ⟨⊤, by simp⟩
   add_mem' := by
     intro f g hf hg
     constructor
@@ -128,8 +125,7 @@ def centerCompactPicture (I : IwasawaData A) (ε : Sign) :
     · obtain ⟨J, hJ⟩ := hf.2
       obtain ⟨L, hL⟩ := hg.2
       refine ⟨J ⊓ L, ?_⟩
-      intro j hj
-      simp [hJ j hj.1, hL j hj.2]
+      simp_all
   smul_mem' := by
     intro c f hf
     constructor
@@ -190,8 +186,7 @@ def centerCompactLevel (I : IwasawaData A) (ε : Sign)
     (k' : Cover F ζ hζ q) = (k : Cover F ζ hζ q) * (j : Cover F ζ hζ q) →
     φ.val k' = φ.val k}
   zero_mem' := by
-    change ∀ j k k', _ → _
-    intros; rfl
+    simp
   add_mem' := by
     intro f g hf hg j k k' he
     change f.val k' + g.val k' = f.val k + g.val k
@@ -325,8 +320,8 @@ def centerCoefficientMap : InducedModule P ⊗[ℂ] Multiplicity T P →ₗ[ℂ]
   TensorProduct.lift (LinearMap.mk₂ ℂ (centerMatrixCoefficient T P)
     (by intro v w ℓ; apply Subtype.ext; funext h; simp [centerMatrixCoefficient])
     (by intro c v ℓ; apply Subtype.ext; funext h; simp [centerMatrixCoefficient])
-    (by intro v ℓ m; apply Subtype.ext; funext h; rfl)
-    (by intro c v ℓ; apply Subtype.ext; funext h; rfl))
+    (by aesop)
+    (by aesop))
 
 @[simp] theorem centerCoefficientMap_tmul (v : InducedModule P) (ℓ : Multiplicity T P) (h : H) :
     (centerCoefficientMap T P (v ⊗ₜ[ℂ] ℓ)).val h = ℓ (tau P h v) := rfl
@@ -351,8 +346,8 @@ omit [DecidableEq D] in
 def tauEvaluation (ε : Sign) (z : ℂ) (g : Cover F ζ hζ q) :
     sectionSpace A P ε z →ₗ[ℂ] InducedModule P where
   toFun f := f.val g
-  map_add' := by intros; rfl
-  map_smul' := by intros; rfl
+  map_add' := by simp
+  map_smul' := by simp
 
 theorem tauSection_has_compact_level (I : IwasawaData A) (ε : Sign) (z : ℂ)
     (f : sectionSpace A P ε z) :
@@ -364,7 +359,7 @@ theorem tauSection_has_compact_level (I : IwasawaData A) (ε : Sign) (z : ℂ)
   let J : CompactOpenLevel (Cover F ζ hζ q) :=
     ⟨I.compact.toOpenSubgroup ⊓ U, I.compact.isCompact.inter_right U.isClosed⟩
   have hJ : (J.toOpenSubgroup : Subgroup (Cover F ζ hζ q)) ≤
-      I.compact.toOpenSubgroup := fun _ h => h.1
+      I.compact.toOpenSubgroup := by aesop
   let φ := (compactTrivialization A P I ε z).symm f
   have hφ : φ ∈ compactLevel A P I ε J := by
     apply (compact_level_identification A P I ε J hJ z φ).mpr
@@ -395,7 +390,7 @@ theorem centerSection_has_compact_level (I : IwasawaData A) (ε : Sign) (z : ℂ
   exact ⟨J, fun _ h => h.1, ⟨φ, hφ⟩,
     (centerCompactTrivialization F ζ hζ q T A I ε z).apply_symm_apply f⟩
 
-private theorem isotropic_square {D : Type*} [CommGroup D] [Finite D]
+theorem isotropic_square {D : Type*} [CommGroup D] [Finite D]
     (b : D →* (D →* rootsOfUnity 3 ℂ))
     (halt : ∀ d : D, b d d = 1) (hperfect : Function.Bijective b)
     (L : Subgroup D) (hL : FinitePolarization.IsMaximalIsotropic b L) :
@@ -424,9 +419,7 @@ private theorem isotropic_square {D : Type*} [CommGroup D] [Finite D]
         rw [mem_rootsOfUnity, ← map_pow, hexp, map_one])
       obtain ⟨x, hx⟩ := hperfect.2 f'
       refine ⟨x, ?_⟩
-      apply MonoidHom.ext
-      intro z
-      exact congrArg (fun g : D →* rootsOfUnity 3 ℂ => (g z : ℂˣ)) hx
+      aesop
   have horth := FinitePolarization.orthogonal_eq_of_isMaximalIsotropic b halt hL
   let k := (MonoidHom.domRestrictHom L ℂˣ).ker
   have hmem : ∀ x : D, p x ∈ k ↔ x ∈ L := by
@@ -464,8 +457,7 @@ private theorem isotropic_square {D : Type*} [CommGroup D] [Finite D]
  def displacement (rep : D → H) (hrep : ∀ d, T.π (rep d) = d) (x : H) : T.C :=
   ⟨x * (rep (T.π x))⁻¹, by
     rw [← T.quotient_kernel]
-    change T.π (x * (rep (T.π x))⁻¹) = 1
-    simp [hrep]⟩
+    simp_all⟩
 
 omit [DecidableEq D] in
 
@@ -499,9 +491,7 @@ def centerCoordinates (rep : D → H) (hrep : ∀ d, T.π (rep d) = d) :
     have he : displacement T rep hrep (rep d) = 1 := by
       apply Subtype.ext
       simp [displacement, hrep]
-    change (T.ω (displacement T rep hrep (rep d)) : ℂ) * v (T.π (rep d)) = v d
-    rw [he, map_one, hrep]
-    simp
+    simp_all
 
 theorem center_quotient_dimension :
     Module.finrank ℂ (CenterModule T) = Nat.card D ∧
@@ -512,7 +502,7 @@ theorem center_quotient_dimension :
   constructor
   · rw [(centerCoordinates T rep hrep).finrank_eq]
     letI := Fintype.ofFinite D
-    simp [Module.finrank_pi, Nat.card_eq_fintype_card]
+    simp
   · rw [tau_finrank_eq_index T P, P.L.index_comap_of_surjective T.quotient_surjective]
     exact isotropic_square T.pairing T.alternating T.perfect P.L P.maximal
 
@@ -530,10 +520,10 @@ theorem centerCoefficientMap_conjugate (a : H)
     | zero => simp [u]
     | tmul v ℓ =>
       change ℓ (tau P a (tau P h (tau P a⁻¹ v))) = ℓ (tau P (a * h * a⁻¹) v)
-      rw [map_mul, map_mul]; rfl
+      simp
     | add t s ht hs =>
       change (centerCoefficientMap T P (TensorProduct.map _ _ (t + s))).val h = _
-      simpa only [map_add, Submodule.coe_add, Pi.add_apply] using congrArg₂ (· + ·) ht hs
+      simp_all
   rw [hu]
   have he : a * h * a⁻¹ = ⁅a, h⁆ * h := by
     simp [commutatorElement_def, mul_assoc]
@@ -548,7 +538,7 @@ theorem centerCoefficientMap_surjective : Function.Surjective (centerCoefficient
   letI : (tau P).IsIrreducible := tau_irreducible T P
   letI : Nontrivial (tau P).asModule := IsSimpleModule.nontrivial (MonoidAlgebra ℂ H) (tau P).asModule
   letI : Nontrivial (InducedModule P) :=
-    (tau P).asModuleEquiv.toEquiv.symm.nontrivial
+    by aesop
   let rep := Function.surjInv T.quotient_surjective
   have hrep : ∀ d, T.π (rep d) = d := Function.surjInv_eq T.quotient_surjective
   let e := centerCoordinates T rep hrep
@@ -593,7 +583,7 @@ theorem centerCoefficientMap_surjective : Function.Surjective (centerCoefficient
     intro f
     have heq : f = ∑ i : D, Pi.single i (f i) := by
       funext i
-      simp [Fintype.sum_pi_single]
+      simp
     rw [heq]
     apply S.sum_mem
     intro i _
@@ -638,7 +628,7 @@ theorem centerCoefficientEquiv_natural (ε : Sign) (h : H) (v : CenterModule T) 
         (centerCoefficientEquiv T P v) := by
   apply (centerCoefficientMap_bijective T P).1
   rw [← centerCoefficientMap_natural]
-  simp [centerCoefficientEquiv, LinearEquiv.ofBijective_apply]
+  simp [centerCoefficientEquiv]
 
 set_option maxHeartbeats 800000 in
 
@@ -675,12 +665,8 @@ def centerSectionTensorMap (ε : Sign) (z : ℂ) :
     (by intro c f ℓ; apply Subtype.ext; funext x
         change centerCoefficientMap T P ((c • f.val x) ⊗ₜ[ℂ] ℓ) = _
         rw [← TensorProduct.smul_tmul', map_smul]; rfl)
-    (by intro f ℓ m; apply Subtype.ext; funext x
-        change centerCoefficientMap T P (f.val x ⊗ₜ[ℂ] (ℓ + m)) = _
-        rw [TensorProduct.tmul_add, map_add]; rfl)
-    (by intro c f ℓ; apply Subtype.ext; funext x
-        change centerCoefficientMap T P (f.val x ⊗ₜ[ℂ] (c • ℓ)) = _
-        rw [TensorProduct.tmul_smul, map_smul]; rfl))
+    (by aesop)
+    (by aesop))
 
 @[simp] theorem centerSectionTensorMap_tmul (ε : Sign) (z : ℂ)
     (f : sectionSpace A P ε z) (ℓ : Multiplicity T P) (g : Cover F ζ hζ q) :
@@ -696,8 +682,7 @@ theorem centerSectionTensorMap_value (ε : Sign) (z : ℂ)
   | zero => simp
   | tmul f ℓ => rfl
   | add t u ht hu =>
-    change ((centerSectionTensorMap F ζ hζ q T A P ε z) (t + u)).val g = _
-    simpa only [map_add, Submodule.coe_add, Pi.add_apply] using congrArg₂ (· + ·) ht hu
+    simp_all
 
 theorem centerSectionTensorMap_natural (ε : Sign) (z : ℂ)
     (g : Cover F ζ hζ q) (t : sectionSpace A P ε z ⊗[ℂ] Multiplicity T P) :
@@ -831,7 +816,7 @@ theorem centerFiberEquiv_natural (ε : Sign) (z : ℂ) (g : Cover F ζ hζ q)
       centerSectionTensorMap_surjective F ζ hζ q T A P ε z⟩
   change e (e.symm (centerPrincipalSeries F ζ hζ q T A ε z g f)) =
     centerPrincipalSeries F ζ hζ q T A ε z g (e (e.symm f))
-  rw [e.apply_symm_apply, e.apply_symm_apply]
+  simp
 
 theorem tauDual_finite_coordinates [Fintype D] (ℓ : Multiplicity T P) :
     ∃ (rep : D → H) (c : D → ℂ), ∀ v : InducedModule P,
@@ -848,8 +833,7 @@ theorem tauDual_finite_coordinates [Fintype D] (ℓ : Multiplicity T P) :
     apply Subtype.ext
     funext h
     let a : P.L.comap T.π := ⟨h * (rep (T.π h))⁻¹, by
-      change T.π (h * (rep (T.π h))⁻¹) ∈ P.L
-      simp [hrep]⟩
+      simp_all⟩
     have ha : (a : H) * rep (T.π h) = h := by dsimp [a]; simp
     rw [← ha, v.property a, w.property a]
     exact congrArg ((P.ωL a : ℂ) * ·) (congrFun hvw (T.π h))
@@ -859,7 +843,7 @@ theorem tauDual_finite_coordinates [Fintype D] (ℓ : Multiplicity T P) :
   intro v
   have hv : (ev v : D → ℂ) = ∑ d : D, ev v d • Pi.single d (1 : ℂ) := by
     funext d
-    simp [← Pi.single_smul, Fintype.sum_pi_single]
+    simp [← Pi.single_smul]
   have he : L (ev v) = ℓ v := by
     have hh := LinearMap.congr_fun hL (e v)
     simpa [e] using hh
@@ -886,7 +870,7 @@ theorem tauStandard_integral_dual (I : IwasawaData A) (μ : Measure (LocalField 
     (Jτ.integral_eq ε z hz f g (rep d)).1.const_mul (c d)
   constructor
   · simp_rw [hc]
-    exact integrable_finset_sum _ (fun d _ => hi d)
+    fun_prop
   · rw [hc]
     simp_rw [hc]
     rw [integral_finset_sum _ (fun d _ => hi d)]
@@ -939,7 +923,7 @@ theorem centerTransportedOperator_integral (I : IwasawaData A) (μ : Measure (Lo
     · simp only [map_add, Submodule.coe_add, Pi.add_apply]
       rw [ht.2, hu.2]
       unfold centerIntegralCoordinate
-      simp only [map_add, Submodule.coe_add, Pi.add_apply]
+      simp only [Submodule.coe_add, Pi.add_apply]
       exact (integral_add ht.1 hu.1).symm
 
 theorem centerTransportedOperator_intertwining (I : IwasawaData A) (μ : Measure (LocalField F q))
@@ -964,7 +948,7 @@ theorem centerTransportedOperator_intertwining (I : IwasawaData A) (μ : Measure
 
 open ValuativeRel
 
-private theorem center_laurent_zero (p : LaurentPolynomial ℂ)
+theorem center_laurent_zero (p : LaurentPolynomial ℂ)
     (U : Set ℂˣ) (hU : U.Infinite)
     (hp : ∀ u ∈ U, LaurentPolynomial.eval₂ (RingHom.id ℂ) u p = 0) : p = 0 := by
   obtain ⟨n, f, hf⟩ := LaurentPolynomial.exists_T_pow p
@@ -983,7 +967,7 @@ private theorem center_laurent_zero (p : LaurentPolynomial ℂ)
     (p : ℤ →₀ V) (l : V →ₗ[ℂ] ℂ) : LaurentPolynomial ℂ :=
   p.sum (fun n v => LaurentPolynomial.C (l v) * LaurentPolynomial.T n)
 
-private theorem center_scalarLaurent_coeff {V : Type*} [AddCommMonoid V] [Module ℂ V]
+theorem center_scalarLaurent_coeff {V : Type*} [AddCommMonoid V] [Module ℂ V]
     (p : ℤ →₀ V) (l : V →ₗ[ℂ] ℂ) (n : ℤ) :
     (center_scalarLaurent p l).coeff n = l (p n) := by
   classical
@@ -992,12 +976,11 @@ private theorem center_scalarLaurent_coeff {V : Type*} [AddCommMonoid V] [Module
     AddMonoidAlgebra.coeff_single]
   rw [Finset.sum_eq_single n]
   · simp
-  · intro b hb hbn
-    simp [hbn]
+  · simp_all
   · intro hn
     simp [Finsupp.notMem_support_iff.mp hn]
 
-private theorem center_scalarLaurent_eval {V : Type*} [AddCommMonoid V] [Module ℂ V]
+theorem center_scalarLaurent_eval {V : Type*} [AddCommMonoid V] [Module ℂ V]
     (p : ℤ →₀ V) (l : V →ₗ[ℂ] ℂ) (u : ℂˣ) :
     LaurentPolynomial.eval₂ (RingHom.id ℂ) u (center_scalarLaurent p l) =
       l (p.sum (fun n v => (u : ℂ) ^ n • v)) := by
@@ -1008,31 +991,23 @@ private theorem center_scalarLaurent_eval {V : Type*} [AddCommMonoid V] [Module 
   apply Finset.sum_congr rfl
   intro n hn
   exact mul_comm _ _
-private theorem center_evaluation_norm (ε : Sign) (x : ℝ) :
+theorem center_evaluation_norm (ε : Sign) (x : ℝ) :
     ‖(evaluationUnit (LocalField F q) ε (x : ℂ) : ℂ)‖ =
       Real.exp ((if ε = .plus then -x else x) * Real.log (residueCardinality (LocalField F q) : ℝ)) := by
   cases ε with
   | plus =>
     change ‖KPRankOneRootParameter.r (LocalField F q) (x : ℂ)‖ = _
-    simp only [KPRankOneRootParameter.r, Complex.norm_exp, Complex.mul_re, Complex.neg_re,
-      Complex.ofReal_re, Complex.neg_im, Complex.ofReal_im, mul_zero, sub_zero,
-      evaluationUnit, if_true]
+    simp only [KPRankOneRootParameter.r, Complex.norm_exp, Complex.mul_re, Complex.neg_re, Complex.ofReal_re, Complex.neg_im, Complex.ofReal_im, mul_zero, sub_zero, if_true]
   | minus =>
     change ‖(KPRankOneRootParameter.r (LocalField F q) (x : ℂ))⁻¹‖ = _
-    simp only [KPRankOneRootParameter.r, norm_inv, Complex.norm_exp, Complex.mul_re, Complex.neg_re,
-      Complex.ofReal_re, Complex.neg_im, Complex.ofReal_im, mul_zero, sub_zero,
-      ← Real.exp_neg, neg_mul, neg_neg, reduceCtorEq, if_false]
+    simp only [KPRankOneRootParameter.r, norm_inv, Complex.norm_exp, Complex.mul_re, Complex.neg_re, Complex.ofReal_re, Complex.ofReal_im, mul_zero, sub_zero, ← Real.exp_neg, neg_mul, neg_neg, reduceCtorEq, if_false]
 
-private theorem center_evaluation_infinite (ε : Sign) :
+theorem center_evaluation_infinite (ε : Sign) :
     {u : ℂˣ | ∃ s : ℂ, convergenceHalfPlane ε s ∧ evaluationUnit (LocalField F q) ε s = u}.Infinite := by
   let a : ℕ → ℝ := fun n => if ε = .plus then (n : ℝ) else -(n : ℝ) - 1
   have ha : Function.Injective a := by
     intro m n h
-    dsimp [a] at h
-    cases ε <;> simp only [if_true, if_false, reduceCtorEq] at h
-    · exact_mod_cast h
-    · have : (m : ℝ) = (n : ℝ) := by linarith
-      exact_mod_cast this
+    aesop
   have hl : Real.log (residueCardinality (LocalField F q) : ℝ) ≠ 0 := by
     apply ne_of_gt
     apply Real.log_pos
@@ -1069,8 +1044,8 @@ theorem center_level_numerator_unique (I : IwasawaData A)
   let l : (centerCompactLevel F ζ hζ q T A I (sourceSign ε) J →ₗ[ℂ]
       centerCompactLevel F ζ hζ q T A I (targetSign ε) J) →ₗ[ℂ] ℂ :=
     { toFun := fun M => ((M φ : centerCompactPicture F ζ hζ q T A I (targetSign ε)).val k).val h
-      map_add' := by intros; rfl
-      map_smul' := by intros; rfl }
+      map_add' := by simp
+      map_smul' := by simp }
   have hz : center_scalarLaurent p l - center_scalarLaurent p' l = 0 := by
     apply center_laurent_zero _ _ (center_evaluation_infinite F q ε)
     rintro u ⟨z, hz, rfl⟩
@@ -1103,13 +1078,13 @@ theorem center_level_numerator_compatible (I : IwasawaData A)
   let l : (centerCompactLevel F ζ hζ q T A I (sourceSign ε) J →ₗ[ℂ]
       centerCompactLevel F ζ hζ q T A I (targetSign ε) J) →ₗ[ℂ] ℂ :=
     { toFun := fun M => ((M φ : centerCompactPicture F ζ hζ q T A I (targetSign ε)).val k).val h
-      map_add' := by intros; rfl
-      map_smul' := by intros; rfl }
+      map_add' := by simp
+      map_smul' := by simp }
   let l' : (centerCompactLevel F ζ hζ q T A I (sourceSign ε) J' →ₗ[ℂ]
       centerCompactLevel F ζ hζ q T A I (targetSign ε) J') →ₗ[ℂ] ℂ :=
     { toFun := fun M => ((M φ' : centerCompactPicture F ζ hζ q T A I (targetSign ε)).val k).val h
-      map_add' := by intros; rfl
-      map_smul' := by intros; rfl }
+      map_add' := by simp
+      map_smul' := by simp }
   have hz : center_scalarLaurent p l - center_scalarLaurent p' l' = 0 := by
     apply center_laurent_zero _ _ (center_evaluation_infinite F q ε)
     rintro u ⟨z, hz, rfl⟩
@@ -1181,8 +1156,8 @@ theorem centerCompactTensorMap_value (I : IwasawaData A) (ε : Sign)
     (centerCompactTensorMap F ζ hζ q T A P I ε t).val k =
       centerCoefficientMap T P (TensorProduct.map
         ({ toFun := fun φ : compactPicture A P I ε => φ.val k
-           map_add' := by intros; rfl
-           map_smul' := by intros; rfl } : compactPicture A P I ε →ₗ[ℂ] InducedModule P)
+           map_add' := by simp
+           map_smul' := by simp } : compactPicture A P I ε →ₗ[ℂ] InducedModule P)
         (LinearMap.id : Multiplicity T P →ₗ[ℂ] Multiplicity T P) t) := by
   induction t using TensorProduct.induction_on with
   | zero => simp
@@ -1324,8 +1299,8 @@ theorem centerLevelTensorMap_bijective (I : IwasawaData A) (ε : Sign)
   rw [centerCompactTensorMap_value]
   have ht : TensorProduct.map
       ({ toFun := fun ψ : compactPicture A P I ε => ψ.val k
-         map_add' := by intros; rfl
-         map_smul' := by intros; rfl } : compactPicture A P I ε →ₗ[ℂ] InducedModule P)
+         map_add' := by simp
+         map_smul' := by simp } : compactPicture A P I ε →ₗ[ℂ] InducedModule P)
       (LinearMap.id : Multiplicity T P →ₗ[ℂ] Multiplicity T P)
       (TensorProduct.map (compactLevel A P I ε J).subtype
         (LinearMap.id : Multiplicity T P →ₗ[ℂ] Multiplicity T P) t) =
@@ -1376,7 +1351,7 @@ theorem centerLevelLaurentTransport_evaluate (I : IwasawaData A)
     centerLevelOperatorTransport F ζ hζ q T A P I J ε
       (evaluate (LocalField F q) A P I J ε p u) := by
   unfold centerEvaluate centerLevelLaurentTransport evaluate
-  rw [Finsupp.mapRange.linearMap_apply, Finsupp.sum_mapRange_index (by intro; simp)]
+  rw [Finsupp.mapRange.linearMap_apply, Finsupp.sum_mapRange_index (by simp)]
   simp only [Finsupp.sum, map_sum, map_smul]
 
 theorem centerLevelLaurentTransport_continued (I : IwasawaData A)
@@ -1428,8 +1403,8 @@ theorem centerLevelLaurentTransport_shell (I : IwasawaData A)
       (centerLevelTensorMap F ζ hζ q T A P I (sourceSign ε) J t) =
     centerLevelTensorMap F ζ hζ q T A P I (targetSign ε) J
       (TensorProduct.map (continuedLevel (LocalField F q) A P I J ε p z)
-        (LinearMap.id : Multiplicity T P →ₗ[ℂ] Multiplicity T P) t) := by
-    exact congrArg (centerLevelTensorEquiv F ζ hζ q T A P I (targetSign ε) J)
+        (LinearMap.id : Multiplicity T P →ₗ[ℂ] Multiplicity T P) t) := 
+    congrArg (centerLevelTensorEquiv F ζ hζ q T A P I (targetSign ε) J)
       (congrArg (TensorProduct.map (continuedLevel (LocalField F q) A P I J ε p z)
         (LinearMap.id : Multiplicity T P →ₗ[ℂ] Multiplicity T P))
         ((centerLevelTensorEquiv F ζ hζ q T A P I (sourceSign ε) J).symm_apply_apply t))
@@ -1437,8 +1412,8 @@ theorem centerLevelLaurentTransport_shell (I : IwasawaData A)
   clear he
   have hf (t : sectionSpace A P (sourceSign ε) (sourceParameter ε z) ⊗[ℂ] Multiplicity T P) :
       centerFiberEquiv F ζ hζ q T A P (sourceSign ε) (sourceParameter ε z)
-        (centerSectionTensorMap F ζ hζ q T A P (sourceSign ε) (sourceParameter ε z) t) = t := by
-    exact (LinearEquiv.ofBijective (centerSectionTensorMap F ζ hζ q T A P _ _)
+        (centerSectionTensorMap F ζ hζ q T A P (sourceSign ε) (sourceParameter ε z) t) = t := 
+    (LinearEquiv.ofBijective (centerSectionTensorMap F ζ hζ q T A P _ _)
       ⟨centerSectionTensorMap_injective F ζ hζ q T A P _ _,
        centerSectionTensorMap_surjective F ζ hζ q T A P _ _⟩).symm_apply_apply t
   simp only [centerTransportedOperator, LinearMap.comp_apply, LinearEquiv.coe_coe, hf]
@@ -1469,8 +1444,8 @@ theorem centerLevelLaurentTransport_isNumerator (I : IwasawaData A)
         (centerLevelLaurentTransport F ζ hζ q T A P I J ε p) z φ).val).val
         (k : Cover F ζ hζ q) =
       (centerContinuedLevel F ζ hζ q T A I J ε
-        (centerLevelLaurentTransport F ζ hζ q T A P I J ε p) z φ).val.val k := by
-    exact congrArg (fun ψ : centerCompactPicture F ζ hζ q T A I (targetSign ε) => ψ.val k)
+        (centerLevelLaurentTransport F ζ hζ q T A P I J ε p) z φ).val.val k := 
+    congrArg (fun ψ : centerCompactPicture F ζ hζ q T A I (targetSign ε) => ψ.val k)
       ((centerCompactTrivialization F ζ hζ q T A I (targetSign ε)
         (targetParameter ε z)).symm_apply_apply _)
   rw [hc, (centerTransportedOperator_integral F ζ hζ q T A P I μ Jτ ε z hz
@@ -1480,7 +1455,7 @@ theorem centerLevelLaurentTransport_isNumerator (I : IwasawaData A)
   rw [hs]
   change _ = denominator (LocalField F q) ε z *
     ((denominator (LocalField F q) ε z)⁻¹ * _)
-  rw [← mul_assoc, mul_inv_cancel₀ hd, one_mul]
+  simp_all
 
 def centerStandardFamilyFromTau (I : IwasawaData A) (μ : Measure (LocalField F q))
     (Jτ : TauStandardFamily F ζ hζ q T A P I μ) :
@@ -1501,8 +1476,7 @@ def centerStandardFamilyFromTau (I : IwasawaData A) (μ : Measure (LocalField F 
       (centerCompactTrivialization F ζ hζ q T A I (sourceSign ε) (sourceParameter ε z) φ.val)
     obtain ⟨pτ, hpτ, _⟩ := Jτ.numerators J' hJ' ε
     have hφ : φ'.val = φ.val := by
-      exact (centerCompactTrivialization F ζ hζ q T A I
-        (sourceSign ε) (sourceParameter ε z)).injective hφ'
+      simp_all
     rw [← hφ', centerLevelLaurentTransport_shell F ζ hζ q T A P I J' μ Jτ ε pτ hpτ z hz φ']
     congr 1
     exact centerContinuedLevel_compatible F ζ hζ q T A I J' J μ ε _ p
@@ -1601,8 +1575,7 @@ def tauStandardFamily_smul_measure (I : IwasawaData A) (μ : Measure (LocalField
       (sourceSign ε) (sourceParameter ε z)
       (compactTrivialization A P I (sourceSign ε) (sourceParameter ε z) φ.val)
     obtain ⟨p', hp', _⟩ := Jτ.numerators J' hJ' ε
-    have hv : ψ.val = φ.val := (compactTrivialization A P I
-      (sourceSign ε) (sourceParameter ε z)).injective hψ
+    have hv : ψ.val = φ.val := by simp_all
     rw [LinearMap.smul_apply, ← hψ, Jτ.shell_eq J' ε p' hp' z hz ψ]
     have he := tauContinuedLevel_compatible_any F ζ hζ q T A P I J' J (c • μ) ε
       ((c.toReal : ℂ) • p') p (tauLevelNumerator_smul_measure F ζ hζ q T A P I J' μ ε p' hp' c)
@@ -1656,9 +1629,7 @@ theorem center_profile_section_raw (B : Binding F ζ hζ q A P) (z : ℂ)
       · intro x
         change f.val _ + g.val _ = _
         rw [hf, hg, map_add, smul_add]
-      · intro x hx
-        change f.val x + g.val x = 0
-        rw [hf0 x hx, hg0 x hx, add_zero]
+      simp_all
   obtain ⟨t, rfl⟩ := centerCoefficientMap_surjective T P v
   exact ht t
 
@@ -1679,7 +1650,7 @@ theorem centerSection_open_cell_ext (ε : Sign) (z : ℂ)
       g = (b : Cover F ζ hζ q) * openCoordinate F ζ hζ q x
   · obtain ⟨b, x, rfl⟩ := hg
     rw [f.property.1, f'.property.1, hval]
-  · rw [hf g hg, hf' g hg]
+  simp_all
 
 theorem center_pure_coordinate_section (B : Binding F ζ hζ q A P)
     (rep : D → H) (hrep : ∀ d, T.π (rep d) = d) (d : D) (z : ℂ)
@@ -1702,7 +1673,4 @@ theorem center_pure_coordinate_section (B : Binding F ζ hζ q A P)
       apply e.injective
       exact (hg.1 x).trans (by rw [hf x, map_smul, LinearEquiv.apply_symm_apply])
     · exact hg.2
-    · exact hf0
-
-end
-end DedekindZetaZeroFree.KPRankOneCenterInducedDiagonalComparison
+    simp_all

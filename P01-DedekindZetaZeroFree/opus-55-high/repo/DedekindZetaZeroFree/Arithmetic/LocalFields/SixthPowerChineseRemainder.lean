@@ -7,7 +7,6 @@ public import DedekindZetaZeroFree.Algebra.PowerQuotientModules
 
 namespace DedekindZetaZeroFree
 
-set_option autoImplicit false
 set_option maxHeartbeats 1000000
 
 noncomputable section
@@ -15,8 +14,8 @@ noncomputable section
  theorem cls_self (G : Type*) [CommGroup G] (n : ℕ) (g : G) :
     QuotientGroup.mk' (powMonoidHom (α := G) n).range (g ^ n) = 1 := by
   apply (QuotientGroup.eq_one_iff _).2
-  exact ⟨g, rfl⟩
-private theorem cls_congr (G : Type*) [CommGroup G] (n m k l : ℕ) (h : n*m=l*k)
+  simp
+theorem cls_congr (G : Type*) [CommGroup G] (n m k l : ℕ) (h : n*m=l*k)
     (a b : G) (hab : QuotientGroup.mk' (powMonoidHom (α := G) n).range a =
       QuotientGroup.mk' (powMonoidHom (α := G) n).range b) :
     QuotientGroup.mk' (powMonoidHom (α := G) k).range (a^m) =
@@ -29,17 +28,13 @@ private theorem cls_congr (G : Type*) [CommGroup G] (n m k l : ℕ) (h : n*m=l*k
       ((Quotient.out (QuotientGroup.mk' (powMonoidHom (α := G) n).range a))^m) =
     QuotientGroup.mk' (powMonoidHom (α := G) k).range (a^m) := by
   apply cls_congr G n m k l h
-  exact Quotient.out_eq _
+  simp
  theorem cls_out_eq (G : Type*) [CommGroup G] (n : ℕ) (q : PowerQuotient G n) :
     QuotientGroup.mk' (powMonoidHom (α := G) n).range (Quotient.out q) = q :=
   Quotient.out_eq q
 
  theorem cls_ann (G : Type*) [CommGroup G] (n : ℕ)
-    (q : PowerQuotient G n) : q ^ n = 1 := by
-  induction q using Quotient.inductionOn with
-  | h g =>
-    change (QuotientGroup.mk' (powMonoidHom (α := G) n).range g)^n = 1
-    rw [← map_pow]; exact cls_self G n g
+    (q : PowerQuotient G n) : q ^ n = 1 := by apply DedekindZetaZeroFree.powerQuotient_pow_eq_one <;> assumption
 
  theorem crt_kernel (G : Type*) [CommGroup G] :
     (powMonoidHom (α := G) 6).range ≤
@@ -70,7 +65,7 @@ def sixthPowerCRT (G : Type*) [CommGroup G] :
       calc
         _ = QuotientGroup.mk' (powMonoidHom (α := G) 6).range (g * g^6) := by
           rw [← map_mul]; congr 1; group
-        _ = _ := by rw [map_mul, cls_self, mul_one]; rfl
+        _ = _ := by simp
   right_inv := by
     rintro ⟨a, b⟩
     induction a using Quotient.inductionOn with
@@ -94,10 +89,7 @@ def sixthPowerCRT (G : Type*) [CommGroup G] :
           rw [show (4 : ℕ) = 1+3 from rfl, pow_add, cls_ann, mul_one, pow_one]
           rfl
   map_mul' := by
-    intro a b
-    exact map_mul (QuotientGroup.lift (powMonoidHom (α := G) 6).range
-      ((QuotientGroup.mk' (powMonoidHom (α := G) 2).range).prod
-        (QuotientGroup.mk' (powMonoidHom (α := G) 3).range)) (crt_kernel G)) a b
+    simp
 
  theorem pair_power_range (G H : Type*) [CommGroup G] [CommGroup H] (n : ℕ) :
     (powMonoidHom (α := G × H) n).range =
@@ -143,7 +135,7 @@ def localPowerQuotientEquiv (A : SArithmeticData F) (n : ℕ) :
          (fun v => QuotientGroup.mk'
            (powMonoidHom (α := (v.val.adicCompletion F)ˣ) n).range (g.2 v)))
       map_one' := by ext <;> simp
-      map_mul' := by intros; ext <;> simp }
+      map_mul' := by intros; rfl }
     (by
       rintro g ⟨x, rfl⟩
       apply Prod.ext <;> funext i
@@ -170,29 +162,12 @@ def localPowerQuotientEquiv (A : SArithmeticData F) (n : ℕ) :
           (Quotient.out (QuotientGroup.mk' (powMonoidHom (α := (v.val.adicCompletion F)ˣ) n).range (g.2 v)))) =
         (fun w => QuotientGroup.mk' (powMonoidHom (α := w.Completionˣ) n).range (g.1 w),
          fun v => QuotientGroup.mk' (powMonoidHom (α := (v.val.adicCompletion F)ˣ) n).range (g.2 v))
-      apply Prod.ext <;> funext i <;> exact cls_out_eq _ n _
+      simp
   right_inv := by
     intro q
-    change (fun w => QuotientGroup.mk' (powMonoidHom (α := w.Completionˣ) n).range (Quotient.out (q.1 w)),
-      fun v => QuotientGroup.mk' (powMonoidHom (α := (v.val.adicCompletion F)ˣ) n).range (Quotient.out (q.2 v))) = q
-    apply Prod.ext <;> funext i <;> exact cls_out_eq _ n _
+    simp
   map_mul' := by
-    intro a b
-    induction a using Quotient.inductionOn with
-    | h a =>
-      induction b using Quotient.inductionOn with
-      | h b =>
-        change (fun w => QuotientGroup.mk' (powMonoidHom (α := w.Completionˣ) n).range ((a*b).1 w),
-          fun v => QuotientGroup.mk' (powMonoidHom (α := (v.val.adicCompletion F)ˣ) n).range ((a*b).2 v)) = _
-        apply Prod.ext <;> funext i
-        · change QuotientGroup.mk' (powMonoidHom (α := i.Completionˣ) n).range ((a.1 i)*(b.1 i)) =
-            QuotientGroup.mk' (powMonoidHom (α := i.Completionˣ) n).range (a.1 i) *
-            QuotientGroup.mk' (powMonoidHom (α := i.Completionˣ) n).range (b.1 i)
-          exact map_mul _ _ _
-        · change QuotientGroup.mk' (powMonoidHom (α := (i.val.adicCompletion F)ˣ) n).range ((a.2 i)*(b.2 i)) =
-            QuotientGroup.mk' (powMonoidHom (α := (i.val.adicCompletion F)ˣ) n).range (a.2 i) *
-            QuotientGroup.mk' (powMonoidHom (α := (i.val.adicCompletion F)ˣ) n).range (b.2 i)
-          exact map_mul _ _ _
+    simp
 
 def localSixthPowerCRT (A : SArithmeticData F) : A.V ≃* A.V₂ × A.V₃ :=
   (sixthPowerCRT A.G).trans
@@ -207,7 +182,3 @@ theorem localSixthPowerCRT_apply (A : SArithmeticData F) (g : A.G) :
         (fun v => QuotientGroup.mk'
           (powMonoidHom (α := (v.val.adicCompletion F)ˣ) 3).range (g.2 v)))) := by
   rfl
-
-end SArithmeticData
-end
-end DedekindZetaZeroFree

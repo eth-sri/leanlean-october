@@ -7,7 +7,7 @@ public import DedekindZetaZeroFree.Theta.Profiles.IdelicDilation
 noncomputable section
 namespace DedekindZetaZeroFree.ThetaExpansion
 open MomentSources NumberField
-open scoped Classical NumberField Topology
+open scoped Classical Topology
 variable {F : Type} [Field F] [NumberField F]
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 
@@ -42,14 +42,14 @@ theorem finite_compact_le_iwasawa_compact_factor (R : PrincipalMellin.ActualReci
     obtain ⟨g, rfl⟩ := hr
     obtain ⟨k, hk, hkg⟩ := g.property
     exact ⟨k, hkg⟩
-  · exact hr
+  omega
 
 def fullProductCompactPreimage (R : PrincipalMellin.ActualRecipe S η) :
     Subgroup (KPAdelicCoverRestrictedProduct.RestrictedCover F R.A.zeta12 R.A.primitive_zeta12) where
   carrier := {x | ∀ v, x v ∈ iwasawaCompactFactor R v}
-  one_mem' := by intro v; exact (iwasawaCompactFactor R v).one_mem
+  one_mem' := by intro v; simp
   mul_mem' := by intro x y hx hy v; exact (iwasawaCompactFactor R v).mul_mem (hx v) (hy v)
-  inv_mem' := by intro x hx v; exact (iwasawaCompactFactor R v).inv_mem (hx v)
+  inv_mem' := by simp
 
 def fullProductCompact (R : PrincipalMellin.ActualRecipe S η) : Subgroup (Group R) :=
   (fullProductCompactPreimage R).map
@@ -72,14 +72,13 @@ theorem complex_compact_lift_mem_full_product_compact (R : PrincipalMellin.Actua
   rcases eq_or_ne v (Sum.inl w) with rfl | hne
   · rw [Pi.mulSingle_eq_same]
     exact Subgroup.subset_closure ⟨k, rfl⟩
-  · rw [Pi.mulSingle_eq_of_ne hne]
-    exact (iwasawaCompactFactor R v).one_mem
+  simp_all
 
 theorem iwasawa_compact_factor_eq_arithmetic_compact_eventually (R : PrincipalMellin.ActualRecipe S η) :
     ∀ᶠ v in Filter.cofinite, iwasawaCompactFactor R v =
       KPAdelicCoverRestrictedProduct.compact F R.A.zeta12 R.A.primitive_zeta12 v := by
-  have hf : {v : KPHilbert.Place F | ∃ w : InfinitePlace F, v = Sum.inl w}.Finite := by
-    exact (Set.finite_range Sum.inl).subset (by rintro v ⟨w,rfl⟩; exact ⟨w,rfl⟩)
+  have hf : {v : KPHilbert.Place F | ∃ w : InfinitePlace F, v = Sum.inl w}.Finite := 
+    (Set.finite_range Sum.inl).subset (by rintro v ⟨w,rfl⟩; simp)
   have hb := (KPAdelicCoverRestrictedProduct.bad_finite F).image
     (Sum.inr : KPFinitePlace F → KPHilbert.Place F)
   have hfi : ∀ᶠ v : KPHilbert.Place F in Filter.cofinite,
@@ -95,9 +94,5 @@ theorem iwasawa_compact_factor_eq_arithmetic_compact_eventually (R : PrincipalMe
   | inr q =>
     have hn : ¬ KPAdelicCoverRestrictedProduct.Bad F q := by
       intro h
-      exact hvb ⟨q,h,rfl⟩
+      simp_all
     simp [iwasawaCompactFactor, hn, KPAdelicCoverRestrictedProduct.compact]
-
-end DedekindZetaZeroFree.ThetaExpansion
-
-end

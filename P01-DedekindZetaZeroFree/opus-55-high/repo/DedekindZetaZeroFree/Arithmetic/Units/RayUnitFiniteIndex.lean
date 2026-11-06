@@ -37,8 +37,7 @@ theorem rayUnitRealSign_mul (u w : (𝓞 K)ˣ) (v : RealPlaces K) :
     · simp [hp, hq, not_lt_of_gt (mul_neg_of_neg_of_pos hn hq)]
     · have hn' := lt_of_le_of_ne (le_of_not_gt hq) hw
       simp only [hp, hq, mul_pos_of_neg_of_neg hn hn', if_true, if_false]
-      change (0 : ZMod 2) = 1 + 1
-      decide
+      rfl
 
 def rayUnitSigns : (𝓞 K)ˣ →* (RealPlaces K → Multiplicative (ZMod 2)) where
   toFun := rayUnitRealSign K
@@ -49,7 +48,7 @@ def rayUnitResidueSign (m : Ideal (𝓞 K)) :
     (𝓞 K)ˣ →* (𝓞 K ⧸ m)ˣ × (RealPlaces K → Multiplicative (ZMod 2)) :=
   (Units.map (Ideal.Quotient.mk m).toMonoidHom).prod (rayUnitSigns K)
 
-private theorem realPlaces_totallyPositive (α : 𝓞 K) :
+theorem realPlaces_totallyPositive (α : 𝓞 K) :
     (∀ v : RealPlaces K, 0 < realEmbedding K v (α : K)) ↔ TotallyPositive K α := by
   constructor
   · intro h φ
@@ -80,11 +79,7 @@ theorem rayUnitResidueSign_ker (m : Ideal (𝓞 K)) :
     apply forall_congr'
     intro v
     unfold rayUnitRealSign
-    by_cases h : 0 < realEmbedding K v ((u : 𝓞 K) : K)
-    · simp [h]
-    · simp only [h, if_false]
-      change (1 : ZMod 2) = 0 ↔ False
-      decide
+    simp
   have hres : Units.map (Ideal.Quotient.mk m).toMonoidHom u = 1 ↔
       (u : 𝓞 K) - 1 ∈ m := by
     rw [← Units.val_inj]
@@ -112,7 +107,3 @@ theorem exists_pos_pow_mem_positiveRayUnits
   obtain ⟨k, hk, _, hmem⟩ := (positiveRayUnits K m).exists_pow_mem_of_index_ne_zero
     (positiveRayUnits_finiteIndex K m hm).index_ne_zero u
   exact ⟨k, hk, hmem⟩
-
-end DedekindZetaZeroFree.AbelianQuotient.RayCoset
-
-end

@@ -73,8 +73,8 @@ def ordinaryKernel : Submodule ℂ V :=
 
 theorem ordinaryKernel_eq_ker_ordinaryQuotientMap :
     ordinaryKernel F ζ hζ w ρ =
-      LinearMap.ker (ordinaryQuotientMap F ζ hζ w ρ) := by
-  exact congrArg (fun ψ => LinearMap.ker (rootCoinvariantsMk ρ
+      LinearMap.ker (ordinaryQuotientMap F ζ hζ w ρ) := 
+  congrArg (fun ψ => LinearMap.ker (rootCoinvariantsMk ρ
     (KPLocalSmoothRepresentation.upperRoot F ζ hζ w) ψ)) (frequencyCharacter_zero F w)
 
 theorem ordinaryKernel_eq_span :
@@ -126,7 +126,7 @@ theorem ordinaryKernel_borel_stable
     rw [map_sub, he]
     apply Submodule.subset_span
     exact ⟨(Multiplicative.toAdd y, ρ p.val v), rfl⟩
-  | zero => simpa using (Submodule.zero_mem _)
+  | zero => simp
   | add x y hx hy ihx ihy =>
     rw [map_add]
     exact Submodule.add_mem _ ihx ihy
@@ -153,7 +153,7 @@ theorem quotientMap_projector (u : ℤ) (t : w.adicCompletion F) (v : V) :
     change _ • rootCoinvariantsMk ρ (KPLocalSmoothRepresentation.upperRoot F ζ hζ w)
       (frequencyCharacter F w t) (ρ _ v) = _
     rw [rootCoinvariantsMk_equivariant]
-    simp only [frequencyCharacter_apply, ← neg_mul, smul_smul]
+    simp only [frequencyCharacter_apply, smul_smul]
     rw [← Circle.coe_mul, ← AddChar.map_add_eq_mul]
     simp [neg_mul, quotientMap]
   change quotientMap F ζ hζ w ρ t
@@ -168,9 +168,9 @@ theorem quotientMap_projector (u : ℤ) (t : w.adicCompletion F) (v : V) :
           ((Quotient.out q : finiteCompletionBall F w u) : w.adicCompletion F)) v) = _
   simp only [hterm, Finset.sum_const]
   rw [← Nat.cast_smul_eq_nsmul ℂ, smul_smul]
-  simp [Nat.card_eq_fintype_card]
+  simp
 
-private theorem projector_root_commutes (u : ℤ) (t x : w.adicCompletion F) (v : V) :
+theorem projector_root_commutes (u : ℤ) (t x : w.adicCompletion F) (v : V) :
     projector F ζ hζ w ρ m hm hρ u t
         (rootRepresentation F ζ hζ w ρ (Multiplicative.ofAdd x) v) =
       rootRepresentation F ζ hζ w ρ (Multiplicative.ofAdd x)
@@ -198,7 +198,7 @@ private theorem projector_root_commutes (u : ℤ) (t x : w.adicCompletion F) (v 
   simp only [levelAverage, levelAverageWithRepresentatives, LinearMap.smul_apply,
     LinearMap.sum_apply, map_smul, map_sum, hc]
 
-private theorem projector_commutes (u u' : ℤ) (t : w.adicCompletion F) :
+theorem projector_commutes (u u' : ℤ) (t : w.adicCompletion F) :
     Commute (projector F ζ hζ w ρ m hm hρ u t)
       (projector F ζ hζ w ρ m hm hρ u' t) := by
   apply LinearMap.ext
@@ -393,8 +393,3 @@ theorem ordinaryKernel_support_compact_away_zero (v : V)
       have he := projector_eq_of_sub_mem_annihilator F ζ hζ w ρ m hm hρ u t 0 (by rw [sub_zero]; exact htB')
       exact ht u (by rw [he, hu])
     refine ⟨lift ⟨t, htD⟩, Set.mem_range_self _, rfl⟩
-
-end DedekindZetaZeroFree.KPKirillovProjectorGerms
-
-end
-end

@@ -17,7 +17,7 @@ open KPContActualSectorTestDifferentialDescent
 open KPContActualCotangentMeasurableFamilies
 open KPContActualCotangentIntrinsicHilbertIntegral
 
-private theorem dense_linear_extension {S V : Type*} [AddCommGroup S] [Module ℂ S]
+theorem dense_linear_extension {S V : Type*} [AddCommGroup S] [Module ℂ S]
     [NormedAddCommGroup V] [NormedSpace ℂ V] [CompleteSpace V]
     (e f : S →ₗ[ℂ] V) (hd : DenseRange e) (B : ℝ) (hB : 0 ≤ B)
     (hn : ∀ x, ‖f x‖ ≤ B * ‖e x‖) :

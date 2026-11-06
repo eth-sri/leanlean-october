@@ -10,7 +10,7 @@ open MeasureTheory Filter
 
 namespace DedekindZetaZeroFree.LargeSieve.Vendor
 
-private lemma verticalIntegrable_finset_sum {ι : Type*} (s : Finset ι) {c₀ : ℝ} {f : ι → ℂ → ℂ}
+lemma verticalIntegrable_finset_sum {ι : Type*} (s : Finset ι) {c₀ : ℝ} {f : ι → ℂ → ℂ}
     (hf : ∀ i ∈ s, Complex.VerticalIntegrable (f i) c₀) :
     Complex.VerticalIntegrable (fun z => ∑ i ∈ s, f i z) c₀ := by
   have hf' : ∀ i ∈ s, Integrable (fun t : ℝ => f i (c₀ + t * Complex.I)) volume := hf
@@ -21,7 +21,7 @@ private lemma verticalIntegrable_finset_sum {ι : Type*} (s : Finset ι) {c₀ :
   show Integrable (fun t : ℝ => (fun z => ∑ i ∈ s, f i z) (c₀ + t * Complex.I)) volume
   convert h using 1
   ext t
-  simp only [Finset.sum_apply]
+  simp
 
 private lemma verticalIntegral_finset_sum {ι : Type*} (s : Finset ι) (c₀ : ℝ) (f : ι → ℂ → ℂ)
     (hf : ∀ i ∈ s, Complex.VerticalIntegrable (f i) c₀) :
@@ -84,12 +84,9 @@ theorem verticalIntegral_sub_eq_of_finite_order_pole
       exact pow_ne_zero m (sub_ne_zero.mpr fun h => hz.2 (by simpa using h))
     have h := DifferentiableOn.sum (u := Finset.Icc 2 r)
       (A := fun m => fun z : ℂ => c m / (z - (p : ℂ)) ^ m) hterm
-    convert h using 1
-    ext z
-    simp only [Finset.sum_apply]
+    fun_prop
   have hF₁diff : DifferentiableOn ℂ F₁ (UF \ {(p : ℂ)}) := by
-    rw [hF₁def]
-    exact hFdiff.sub hHdiff
+    fun_prop
 
   have hHint : ∀ c₀ : ℝ, c₀ ≠ p → Complex.VerticalIntegrable H c₀ := by
     intro c₀ hc₀
@@ -98,7 +95,7 @@ theorem verticalIntegral_sub_eq_of_finite_order_pole
         = fun z : ℂ => ∑ m ∈ Finset.Icc 2 r,
             (fun w : ℂ => c m * (1 / (w - (p : ℂ)) ^ m)) z := by
       funext z
-      simp only [div_eq_mul_inv, one_div, one_mul]
+      simp only [div_eq_mul_inv, one_mul]
     rw [hfun]
     exact verticalIntegrable_finset_sum _ fun m hm =>
       verticalIntegrable_const_mul_one_div_pow (c m) hc₀ (Finset.mem_Icc.mp hm).1
@@ -118,7 +115,7 @@ theorem verticalIntegral_sub_eq_of_finite_order_pole
         = fun z : ℂ => ∑ m ∈ Finset.Icc 2 r,
             (fun w : ℂ => c m * (1 / (w - (p : ℂ)) ^ m)) z := by
       funext z
-      simp only [div_eq_mul_inv, one_div, one_mul]
+      simp only [div_eq_mul_inv, one_mul]
     rw [hfun, verticalIntegral_finset_sum (Finset.Icc 2 r) c₀
       (fun m w => c m * (1 / (w - (p : ℂ)) ^ m)) (fun m hm =>
         verticalIntegrable_const_mul_one_div_pow (c m) hc₀ (Finset.mem_Icc.mp hm).1)]
@@ -128,15 +125,13 @@ theorem verticalIntegral_sub_eq_of_finite_order_pole
     have h1 : F = fun z => F₁ z + H z := by
       funext z
       rw [hF₁def]
-      simp only [Pi.sub_apply]
-      ring
+      simp
     rw [h1, verticalIntegral_add a F₁ H hF₁_a hH_a, hHzero a (ne_of_lt hap), add_zero]
   have hF_eq_b : verticalIntegral b F = verticalIntegral b F₁ := by
     have h1 : F = fun z => F₁ z + H z := by
       funext z
       rw [hF₁def]
-      simp only [Pi.sub_apply]
-      ring
+      simp
     rw [h1, verticalIntegral_add b F₁ H hF₁_b hH_b, hHzero b (ne_of_gt hpb), add_zero]
 
   have hgrowth₁ : ∃ (C : ℝ) (k : ℕ), 0 ≤ C ∧
@@ -147,7 +142,7 @@ theorem verticalIntegral_sub_eq_of_finite_order_pole
     · positivity
     · intro σ t hσ ht
       have hA1 : 1 ≤ (1 + |t|) ^ k := one_le_pow₀ (by linarith [abs_nonneg t])
-      have hS : 0 ≤ ∑ m ∈ Finset.Icc 2 r, ‖c m‖ := Finset.sum_nonneg fun m _ => norm_nonneg _
+      have hS : 0 ≤ ∑ m ∈ Finset.Icc 2 r, ‖c m‖ := by positivity
       have hHle : ‖H ((σ : ℂ) + (t : ℂ) * Complex.I)‖ ≤ ∑ m ∈ Finset.Icc 2 r, ‖c m‖ := by
         rw [hHdef]
         refine (norm_sum_le _ _).trans (Finset.sum_le_sum fun m hm => ?_)
@@ -173,7 +168,7 @@ theorem verticalIntegral_sub_eq_of_finite_order_pole
     have h2 : DifferentiableOn ℂ (fun z : ℂ => c 1 / (z - (p : ℂ))) (UF \ {(p : ℂ)}) :=
       DifferentiableOn.div (differentiableOn_const (c 1)) (differentiableOn_id.sub_const _) fun z hz =>
         sub_ne_zero.mpr fun h => hz.2 (by simpa using h)
-    exact hF₁diff.sub h2
+    fun_prop
   have hGcont : ContinuousAt G (p : ℂ) :=
     (hGdiff.differentiableAt (hUGopen.mem_nhds (hUGstrip ⟨le_of_lt hap, le_of_lt hpb⟩))).continuousAt
   obtain ⟨δ, hδpos, hδ⟩ := Metric.continuousAt_iff.mp hGcont 1 one_pos
@@ -218,7 +213,7 @@ theorem verticalIntegral_sub_eq_of_finite_order_pole
     intro s _ hsne
     have hsne' : s ≠ (p : ℂ) := fun h => hsne 0 h
     rw [hgdef, Function.update_of_ne hsne', hg₀def]
-    simp only [Pi.sub_apply, Fin.sum_univ_one]
+    simp
 
   have hres : verticalIntegral b F₁ - verticalIntegral a F₁ = c 1 := by
     have h := verticalIntegral_sub_eq_sum_residues (a := a) (b := b) (by linarith) 1
@@ -231,5 +226,3 @@ theorem verticalIntegral_sub_eq_of_finite_order_pole
     simpa only [Fin.sum_univ_one] using h
   rw [hF_eq_b, hF_eq_a]
   exact hres
-
-end DedekindZetaZeroFree.LargeSieve.Vendor

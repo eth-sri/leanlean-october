@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Realizing formal-product choices by position sets
 
@@ -29,17 +26,17 @@ namespace LocalFieldTheory.DiscreteValuationField
 namespace MultiplicativeIntegerValuation
 
 /-- The left basic exponent vector. -/
-noncomputable def formalLogOnePlusProductArgumentBasicFactorLeft :
+def formalLogOnePlusProductArgumentBasicFactorLeft :
     Fin 2 →₀ ℕ :=
   Finsupp.single (0 : Fin 2) 1
 
 /-- The right basic exponent vector. -/
-noncomputable def formalLogOnePlusProductArgumentBasicFactorRight :
+def formalLogOnePlusProductArgumentBasicFactorRight :
     Fin 2 →₀ ℕ :=
   Finsupp.single (1 : Fin 2) 1
 
 /-- The mixed basic exponent vector. -/
-noncomputable def formalLogOnePlusProductArgumentBasicFactorMixed :
+def formalLogOnePlusProductArgumentBasicFactorMixed :
     Fin 2 →₀ ℕ :=
   Finsupp.single (0 : Fin 2) 1 + Finsupp.single (1 : Fin 2) 1
 
@@ -63,7 +60,7 @@ theorem formalLogOnePlusProductArgumentBasicFactorLabel_eq_two_iff_of_basic
 
 /-- The basic-factor sequence with mixed positions `M`, left positions `L`,
 and right factors in every remaining position below `q`. -/
-noncomputable def formalLogOnePlusProductArgumentChoiceFromMixedLeft
+def formalLogOnePlusProductArgumentChoiceFromMixedLeft
     (q : ℕ) (M L : Finset ℕ) : ℕ →₀ (Fin 2 →₀ ℕ) :=
   Finsupp.onFinset (Finset.range q)
     (fun i =>
@@ -73,10 +70,7 @@ noncomputable def formalLogOnePlusProductArgumentChoiceFromMixedLeft
         else formalLogOnePlusProductArgumentBasicFactorRight
       else 0)
     (by
-      intro i hi
-      by_cases hq : i ∈ Finset.range q
-      · exact hq
-      · simp [hq] at hi)
+      simp_all)
 
 /--
 Establishes the identity `formalLogOnePlusProductArgumentChoiceFromMixedLeft q M L i = if i ∈ M
@@ -101,19 +95,19 @@ formalLogOnePlusProductArgumentBasicFactorRight`.
   simp [formalLogOnePlusProductArgumentChoiceFromMixedLeft, hle]
 
 /-- Positions below `q` at which `l` has the mixed-factor label. -/
-noncomputable def formalLogOnePlusProductArgumentMixedPositions
+def formalLogOnePlusProductArgumentMixedPositions
     (q : ℕ) (l : ℕ →₀ (Fin 2 →₀ ℕ)) : Finset ℕ :=
   (Finset.range q).filter fun i =>
     formalLogOnePlusProductArgumentBasicFactorLabel (l i) = (2 : Fin 3)
 
 /-- Positions below `q` at which `l` has the left-factor label. -/
-noncomputable def formalLogOnePlusProductArgumentLeftPositions
+def formalLogOnePlusProductArgumentLeftPositions
     (q : ℕ) (l : ℕ →₀ (Fin 2 →₀ ℕ)) : Finset ℕ :=
   (Finset.range q).filter fun i =>
     formalLogOnePlusProductArgumentBasicFactorLabel (l i) = (0 : Fin 3)
 
 /-- Positions below `q` at which `l` has the right-factor label. -/
-noncomputable def formalLogOnePlusProductArgumentRightPositions
+def formalLogOnePlusProductArgumentRightPositions
     (q : ℕ) (l : ℕ →₀ (Fin 2 →₀ ℕ)) : Finset ℕ :=
   (Finset.range q).filter fun i =>
     formalLogOnePlusProductArgumentBasicFactorLabel (l i) = (1 : Fin 3)
@@ -277,9 +271,3 @@ theorem formalLogOnePlusProductArgumentRightPositions_choiceFromMixedLeft_card
   rw [Finset.card_sdiff_of_subset hunionSub, Finset.card_range]
   rw [Finset.card_union_of_disjoint hdisj, hMcard, hLcard]
   omega
-
-
-end MultiplicativeIntegerValuation
-end LocalFieldTheory.DiscreteValuationField
-
-end

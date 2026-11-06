@@ -61,9 +61,7 @@ lemma radial_section_le (P : Packet R Q) (w : InfinitePlace F)
     ∏ v ∈ Finset.univ \ {w}, thirdBesselRadialProfile (P.scale v)
       ((if v = w then x.val else 1) * ‖(z.1 v : v.Completion)‖ ^ 2) := by
     apply Finset.prod_congr rfl
-    intro v hv
-    have hne : v ≠ w := (Finset.mem_sdiff.mp hv).2 ∘ Finset.mem_singleton.mpr
-    simp [hne]
+    simp_all
   rw [heq]
   have hrest : 0 ≤ ∏ v ∈ Finset.univ \ {w}, thirdBesselRadialProfile (P.scale v)
       ((if v = w then x.val else 1) * ‖(z.1 v : v.Completion)‖ ^ 2) := by
@@ -79,7 +77,7 @@ lemma radial_section_le (P : Packet R Q) (w : InfinitePlace F)
   have hb := profile_scale_le (P.scale w) x.val y.val (‖(z.1 w : w.Completion)‖ ^ 2)
     (P.scale_pos w) x.property hxy (sq_pos_of_pos (norm_pos_iff.mpr (z.1 w).ne_zero))
   have hi : 0 ≤ (if ∀ p : R.A.Sf, z.2 p ∈ P.cutoff p then (1 : ℝ) else 0) := by
-    split_ifs <;> norm_num
+    positivity
   calc
     _ ≤ (if ∀ p : R.A.Sf, z.2 p ∈ P.cutoff p then (1 : ℝ) else 0) *
       (((y.val/x.val) * thirdBesselRadialProfile (P.scale w)
@@ -129,12 +127,12 @@ theorem sheet_pos (N : TraceHaarTransport R) (P : Packet R Q) (x : PositiveAxis)
     have hcut : ∀ p : R.A.Sf, (normSection R.A P.v₀ x).2 p ∈ P.cutoff p := by
       intro p
       rw [normSection_at_finite_place]
-      exact (P.cutoff p).one_mem
+      simp
     rw [if_pos hcut, one_mul]
     apply Finset.prod_pos
     intro w _
     have ht : 0 < ‖((normSection R.A P.v₀ x).1 w : w.Completion)‖ ^ 2 :=
-      sq_pos_of_pos (norm_pos_iff.mpr ((normSection R.A P.v₀ x).1 w).ne_zero)
+      by simp
     exact mul_pos ht (KThird_pos _ (mul_pos (P.scale_pos w) (Real.sqrt_pos.mpr ht)))
   exact integral_pos_of_integrable_nonneg_nonzero hc (sheet_integrable N P x)
     (fun z => radial_nonneg P _) hpos.ne'
@@ -152,8 +150,8 @@ theorem positive_sheet_integrable (N : TraceHaarTransport R) (P : Packet R Q) (x
       let y := z.val * R.A.radialSection x.val x.property
       (if ∀ p : R.A.Sf, y.2 p ∈ P.cutoff p then 1 else 0) *
         ∏ w : InfinitePlace F, ‖(y.1 w : w.Completion)‖ ^ 2 *
-          KThird (P.scale w * Real.sqrt (‖(y.1 w : w.Completion)‖ ^ 2))) R.probe.domain.measure := by
-  exact (probeHaar_integrable _).mp
+          KThird (P.scale w * Real.sqrt (‖(y.1 w : w.Completion)‖ ^ 2))) R.probe.domain.measure := 
+  (probeHaar_integrable _).mp
     ((integrable_uniform_iff N P.v₀ x (radial P)).mp (sheet_integrable N P x))
 
 theorem continuous_sheet (N : TraceHaarTransport R) (P : Packet R Q) : Continuous (sheet N P) := by
@@ -207,24 +205,19 @@ theorem sheet_mellin (N : TraceHaarTransport R) (P : Packet R Q)
       _ = P.positiveSheet x := by
         rw [kernelHaar_eq_probe N P.v₀, positiveSheet_eq N P]
         rfl
-  simp_rw [heq] at hd
-  exact ⟨hd.2.1, hd.2.2.symm.trans h.2⟩
+  simp_all
 
 theorem C0_exact (N : TraceHaarTransport R) (P : Packet R Q) : P.C₀ = polarC0 N P := by
   have h := congrArg Complex.re ((sheet_mellin N P 0 (by norm_num)).2)
   simp only [Complex.cpow_zero, mul_one, zero_add] at h
   rw [integral_complex_ofReal (f := P.positiveSheet), Complex.ofReal_re] at h
   have hg1 : Complex.Gamma (5/6) = (Real.Gamma (5/6) : ℂ) := by
-    rw [← Complex.Gamma_ofReal]; congr 1; norm_num
+    rw [← Complex.Gamma_ofReal]; simp
   have hg2 : Complex.Gamma (7/6) = (Real.Gamma (7/6) : ℂ) := by
-    rw [← Complex.Gamma_ofReal]; congr 1; norm_num
+    rw [← Complex.Gamma_ofReal]; simp
   rw [hg1, hg2, ← Complex.ofReal_mul, ← Complex.ofReal_pow, ← Complex.ofReal_mul,
     Complex.ofReal_re] at h
   have hn : (Real.Gamma (5/6) * Real.Gamma (7/6))^Fintype.card (InfinitePlace F) ≠ 0 := by
-    exact (pow_pos (mul_pos (Real.Gamma_pos_of_pos (by norm_num))
-      (Real.Gamma_pos_of_pos (by norm_num))) _).ne'
+    positivity
   unfold Packet.C₀
-  rw [h, mul_div_cancel_right₀ _ hn]
-end DedekindZetaZeroFree.GaussianSmoothing
-
-end
+  simp_all

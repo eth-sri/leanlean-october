@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Analysis.EllipticEquations.HolomorphicFamilie
 
 @[expose] public section
 
-noncomputable section
 
 namespace DedekindZetaZeroFree.KPContLocalHolomorphyUpgrade
 
@@ -16,7 +15,3 @@ theorem smooth_forcing_at {n : ℕ} {B : LocalBall n} {O : Set ℂ} {h : ℂ →
     ContDiffOn ℝ (⊤ : ℕ∞) (h z) B.carrier := by
   obtain ⟨ρ, hρ, _, coeff, hc⟩ := hh z hz
   exact hc.2.1 z (by simp [Metric.mem_ball, hρ])
-
-end DedekindZetaZeroFree.KPContLocalHolomorphyUpgrade
-
-end

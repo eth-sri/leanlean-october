@@ -41,7 +41,7 @@ def projection {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
     [CompleteSpace H] (B : H →L[ℂ] H) (β : ℝ) : H →L[ℂ] H :=
   (eigenspace B β).starProjection
 
-private theorem continuousOn_isolated_ite
+theorem continuousOn_isolated_ite
     {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
     (B : H →L[ℂ] H) (β : ℝ) (hiso : IsIsolatedSpectralPoint B β)
     (a : ℂ) (F : ℂ → ℂ)
@@ -70,7 +70,7 @@ theorem projection_eq_cfc
   let g : ℂ → ℂ := fun w => if w = (β : ℂ) then 0 else (w - (β : ℂ))⁻¹
   have hn : IsStarNormal B := hB.isStarNormal
   have hf : ContinuousOn f (spectrum ℂ B) :=
-    continuousOn_isolated_ite B β hiso 1 (fun _ => 0) (by intros; fun_prop)
+    continuousOn_isolated_ite B β hiso 1 (fun _ => 0) (by fun_prop)
   have hg : ContinuousOn g (spectrum ℂ B) :=
     continuousOn_isolated_ite B β hiso 0 _ (by
       intro w hw he
@@ -91,7 +91,7 @@ theorem projection_eq_cfc
     have hd : cfc (fun w : ℂ => w - (β : ℂ)) B = B - (β : ℂ) • 1 := by
       rw [cfc_sub (fun w : ℂ => w) (fun _ : ℂ => (β : ℂ)) B
         continuousOn_id continuousOn_const, cfc_id' ℂ B hn, cfc_const (β : ℂ) B hn]
-      simp [Algebra.algebraMap_eq_smul_one]
+      rfl
     rw [← hd, ← cfc_mul _ f B (by fun_prop) hf, ← cfc_const_zero ℂ B]
     apply cfc_congr
     intro w hw
@@ -100,7 +100,7 @@ theorem projection_eq_cfc
     have hd : cfc (fun w : ℂ => w - (β : ℂ)) B = B - (β : ℂ) • 1 := by
       rw [cfc_sub (fun w : ℂ => w) (fun _ : ℂ => (β : ℂ)) B
         continuousOn_id continuousOn_const, cfc_id' ℂ B hn, cfc_const (β : ℂ) B hn]
-      simp [Algebra.algebraMap_eq_smul_one]
+      rfl
     rw [← hd, ← cfc_mul g _ B hg (by fun_prop), ← cfc_const_one ℂ B,
       ← cfc_sub _ f B continuousOn_const hf]
     apply cfc_congr
@@ -146,7 +146,7 @@ theorem projection_spec
     intro hz
     have hf : ContinuousOn (fun w : ℂ => if w = (β : ℂ) then (1 : ℂ) else 0)
         (spectrum ℂ B) :=
-      continuousOn_isolated_ite B β hiso 1 (fun _ => 0) (by intros; fun_prop)
+      continuousOn_isolated_ite B β hiso 1 (fun _ => 0) (by fun_prop)
     have he := eqOn_of_cfc_eq_cfc (hz.trans (cfc_const_zero ℂ B).symm)
       hf continuousOn_const hB.isStarNormal hiso.1
     simpa using he
@@ -170,7 +170,7 @@ theorem isUnit_gap_add_projection
   let f : ℂ → ℂ := fun w => if w = (β : ℂ) then 1 else 0
   have hn : IsStarNormal B := hB.isStarNormal
   have hf : ContinuousOn f (spectrum ℂ B) :=
-    continuousOn_isolated_ite B β hiso 1 (fun _ => 0) (by intros; fun_prop)
+    continuousOn_isolated_ite B β hiso 1 (fun _ => 0) (by fun_prop)
   have he : cfc (fun w => 1 - (β : ℂ)⁻¹ * w + f w) B =
       1 - (β : ℂ)⁻¹ • B + projection B β := by
     rw [cfc_add B (fun w : ℂ => 1 - (β : ℂ)⁻¹ * w) f (by fun_prop) hf,
@@ -193,8 +193,3 @@ theorem isUnit_gap_add_projection
     have hz' : (β : ℂ)⁻¹ * w = 1 := (sub_eq_zero.mp hz).symm
     have := congrArg (fun z : ℂ => (β : ℂ) * z) hz'
     simpa [← mul_assoc, hb] using this
-
-end
-end DedekindZetaZeroFree.KPIsolatedProjection
-
-end

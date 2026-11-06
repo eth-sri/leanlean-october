@@ -89,5 +89,3 @@ theorem primitiveNonprincipalThetaPair
     obtain ⟨hf, hsumf⟩ := Theta.normalizedRayTheta_mellin_calibration hF D χ hnon s hs
     obtain ⟨hg, hsumg⟩ := Theta.normalizedRayConjugateTheta_mellin_calibration hF D χ hnon s hs
     exact ⟨hf, hg, hsumf, hsumg⟩
-
-end DedekindZetaZeroFree.Hecke

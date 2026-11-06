@@ -112,7 +112,7 @@ variable (a : ActualChart (U := U) (H := H))
   have hm : Measure.map (emb a) a.liftedMeasure = measure a :=
     lifted_measure_transport (a := a)
   exact hm ▸ CoordinateConstruction.extendCLM (emb_meas a)
-private theorem flatLp_pull (f : Lp (E F) 2 a.liftedMeasure) :
+theorem flatLp_pull (f : Lp (E F) 2 a.liftedMeasure) :
     (fun y => flatLp a f (emb a y)) =ᵐ[a.liftedMeasure] f := by
   have hm := lifted_measure_transport (a := a)
   have hp : ∀ (ν : Measure (Space (3*d F))) (hm : Measure.map (emb a) a.liftedMeasure = ν),
@@ -128,7 +128,7 @@ private theorem flatLp_pull (f : Lp (E F) 2 a.liftedMeasure) :
     Lp (E F) 2 (measure a) :=
   (flatLp a).comp ((Q a).subtypeL.comp
     (res (KPContActualSectorCotangentL2.chosenCover F ζ hζ U R P H) a))
-private theorem cotangentFlat_pull (v : KPContActualSectorCotangentL2.V F ζ hζ U R P H)
+theorem cotangentFlat_pull (v : KPContActualSectorCotangentL2.V F ζ hζ U R P H)
     (r : SquareFiniteFamily (U := U) (H := H))
     (hr : KPContActualSectorCotangentL2.ofFamily F ζ hζ U R P H r = v) :
     (fun y => cotangentFlat a v (emb a y)) =ᵐ[a.liftedMeasure] localCoefficient a r.val := by
@@ -146,11 +146,11 @@ private theorem cotangentFlat_pull (v : KPContActualSectorCotangentL2.V F ζ hζ
  def decodeFactor (j : Fin (3*d F)) (x : Space (3*d F)) : ℂ :=
   let ik := (coefficientIndex (F := F)).symm j
   if ik.2 = 2 then 1 else (Real.exp (-((baseReindex (F := F)).symm x) (ik.1,2)) : ℂ)
-private theorem decode_cont (j : Fin (3*d F)) : Continuous (decodeFactor (F := F) j) := by
+theorem decode_cont (j : Fin (3*d F)) : Continuous (decodeFactor (F := F) j) := by
   unfold decodeFactor
   dsimp only
   split_ifs <;> fun_prop
-private theorem decoder_eq (W : Family (U := U) (H := H)) (x : Space (3*d F)) (j : Fin (3*d F)) :
+theorem decoder_eq (W : Family (U := U) (H := H)) (x : Space (3*d F)) (j : Fin (3*d F)) :
     coordinateW W a x j = decodeFactor j x *
       (liftExtension a (coefficient W a) ((baseReindex (F := F)).symm x)) (decodeIndex j) := by
   generalize hk : (coefficientIndex (F := F)).symm j = ik
@@ -159,7 +159,7 @@ private theorem decoder_eq (W : Family (U := U) (H := H)) (x : Space (3*d F)) (j
  def coordFlat (j : Fin (3*d F)) : KPContActualSectorCotangentL2.V F ζ hζ U R P H →L[ℂ]
     Lp ℂ 2 (measure a) :=
   ((PiLp.proj 2 (fun _ : Fin (d F) × Fin 3 => ℂ) (decodeIndex (F := F) j)).compLpL 2 (measure a)).comp (cotangentFlat a)
-private theorem coordFlat_ae (j : Fin (3*d F)) (v : KPContActualSectorCotangentL2.V F ζ hζ U R P H)
+theorem coordFlat_ae (j : Fin (3*d F)) (v : KPContActualSectorCotangentL2.V F ζ hζ U R P H)
     (r : SquareFiniteFamily (U := U) (H := H))
     (hr : KPContActualSectorCotangentL2.ofFamily F ζ hζ U R P H r = v) :
     (fun y => coordFlat a j v (emb a y)) =ᵐ[a.liftedMeasure]
@@ -229,7 +229,7 @@ private theorem coordFlat_ae (j : Fin (3*d F)) (v : KPContActualSectorCotangentL
   have hr := ENNReal.toReal_mono hfin hh
   rw [ENNReal.toReal_mul, ENNReal.toReal_ofReal (show 0 ≤ C from hC)] at hr
   exact hr
-private theorem factorCLM_ae (B : LocalBall (3*d F)) (hB : BallInside a B) (j : Fin (3*d F))
+theorem factorCLM_ae (B : LocalBall (3*d F)) (hB : BallInside a B) (j : Fin (3*d F))
     (f : BallL2 B) : factorCLM a B hB j f =ᵐ[volume.restrict B.carrier]
       (fun x => decodeFactor j x * f x) := by
   exact (factorMem a B hB j f).coeFn_toLp
@@ -237,7 +237,7 @@ private theorem factorCLM_ae (B : LocalBall (3*d F)) (hB : BallInside a B) (j : 
  def completeBall (B : LocalBall (3*d F)) (hB : BallInside a B) (j : Fin (3*d F)) :
     KPContActualSectorCotangentL2.V F ζ hζ U R P H →L[ℂ] BallL2 B :=
   (factorCLM a B hB j).comp ((weightedBall a B hB).comp (coordFlat a j))
-private theorem completeBall_ae (B : LocalBall (3*d F)) (hB : BallInside a B) (j : Fin (3*d F))
+theorem completeBall_ae (B : LocalBall (3*d F)) (hB : BallInside a B) (j : Fin (3*d F))
     (v : KPContActualSectorCotangentL2.V F ζ hζ U R P H)
     (r : SquareFiniteFamily (U := U) (H := H))
     (hr : KPContActualSectorCotangentL2.ofFamily F ζ hζ U R P H r = v) :

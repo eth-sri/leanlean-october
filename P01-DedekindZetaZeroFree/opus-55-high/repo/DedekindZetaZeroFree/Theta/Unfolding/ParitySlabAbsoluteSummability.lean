@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.Theta.Unfolding.ParityOrbitSummability
 
 @[expose] public section
 
-noncomputable section
 
 open Classical NumberField MeasureTheory
 
@@ -31,14 +30,14 @@ theorem summable_integral_norm (D : RayCoset.Data K)
     ((RayCoset.rayUnitTorsionCard K D.m : ℝ) * ‖κδ K δ (s.re : ℂ)‖)).congr
   exact fun x => (hrow x).tsum_eq.symm
 
-private theorem integrable_kernel (D : RayCoset.Data K)
+theorem integrable_kernel (D : RayCoset.Data K)
     (δ : Finset (RayCoset.RealPlaces K)) (s : ℂ) (hs : 1 < s.re)
     (α : RayCoset.Cx D) :
     Integrable (OrbitSlabMellin.integrand D δ α s) (OrbitSlabMellin.μB D) := by
   simpa only [one_smul] using OrbitSlabMellin.integrable D δ α s
     (lt_trans zero_lt_one hs) (1 : RayCoset.U K D.m)
 
-private theorem l1_integrable_tsum {A I E : Type*} [MeasurableSpace A]
+theorem l1_integrable_tsum {A I E : Type*} [MeasurableSpace A]
     {μ : Measure A} [Countable I] [NormedAddCommGroup E] [NormedSpace ℝ E]
     [CompleteSpace E] {F : I → A → E}
     (hF_int : ∀ i, Integrable (F i) μ)
@@ -49,8 +48,8 @@ private theorem l1_integrable_tsum {A I E : Type*} [MeasurableSpace A]
     rw [show G i = (hF_int i).toL1 (F i) by rfl,
       Integrable.norm_toL1, integral_norm_eq_lintegral_enorm
         (hF_int i).aestronglyMeasurable]
-    simp only [edist_zero_right]
-  have hG_norm : Summable fun i ↦ ‖G i‖ := hF_sum.congr fun i ↦ (hnorm i).symm
+    simp
+  have hG_norm : Summable fun i ↦ ‖G i‖ := by simp_all
   have hG_enorm : ∑' i, ‖G i‖ₑ ≠ ⊤ := tsum_enorm_ne_top_iff_summable_norm.mpr hG_norm
   have hcoe : (⇑(∑' i, G i) : A → E) =ᵐ[μ] fun a ↦ ∑' i, F i a := by
     filter_upwards [Lp.coeFn_tsum hG_enorm,
@@ -100,7 +99,3 @@ theorem integral_tsum (D : RayCoset.Data K)
   exact (MeasureTheory.hasSum_integral_of_summable_integral_norm
     (integrable_kernel D δ s hs) (summable_integral_norm D δ s hs)).unique
       (hasSum_integral D δ s hs)
-
-end DedekindZetaZeroFree.AbelianQuotient.RayParity.SlabAbsoluteSummability
-
-end

@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.Eisenstein.Residues.MetaplecticRealizations
 
 @[expose] public section
 
-noncomputable section
 open scoped NumberField Classical
 open NumberField
 namespace DedekindZetaZeroFree.KPLiteralTensorEquivariance.FiniteClearedCovariance
@@ -23,7 +22,3 @@ theorem flat_finite_combination_of_zero
     KPLiteralChamber.compactExtension]
   simp_rw [mul_left_comm (d _)]
   rw [← Finset.mul_sum, hzero]
-
-end DedekindZetaZeroFree.KPLiteralTensorEquivariance.FiniteClearedCovariance
-
-end

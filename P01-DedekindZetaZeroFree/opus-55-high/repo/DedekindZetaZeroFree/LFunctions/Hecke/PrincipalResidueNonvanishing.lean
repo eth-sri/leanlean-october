@@ -10,7 +10,7 @@ namespace DedekindZetaZeroFree.PrincipalMellinComparison
 open scoped NumberField Topology
 open Filter ExteriorIdealEuler
 
-private theorem full_sum_eq_zeta
+theorem full_sum_eq_zeta
     (F : Type) [Field F] [NumberField F] (s : ℂ) (hs : 1 < s.re) :
     (∑' I : ExteriorIdeal (⊤ : Ideal (𝓞 F)), summand (fun _ => 1) s I) =
       NumberField.dedekindZeta F s := by
@@ -26,8 +26,7 @@ private theorem full_sum_eq_zeta
     · subst n
       have hnone : IsEmpty {I : ExteriorIdeal (⊤ : Ideal (𝓞 F)) // Ideal.absNorm I.val = 0} :=
         ⟨fun I => I.val.property.1 (Ideal.absNorm_eq_zero_iff.mp I.property)⟩
-      letI := hnone
-      simp [LSeries.term]
+      simp
     · let e : {I : ExteriorIdeal (⊤ : Ideal (𝓞 F)) // Ideal.absNorm I.val = n} ≃
           {I : Ideal (𝓞 F) // Ideal.absNorm I = n} :=
         { toFun := fun I => ⟨I.val.val, I.property⟩
@@ -79,8 +78,7 @@ theorem principal_regularization_ne_zero
         (fun I => η I.val) := by
       funext I
       simp [zeroMaskedRayCoefficient]
-    rw [hf] at hc'
-    exact hc'
+    simp_all
   have hseries (s : ℂ) (hs : 1 < s.re) :
       (∑' I : ExteriorIdeal (⊤ : Ideal (𝓞 F)), summand (fun I => η I.val) s I) = P.L s := by
     rw [show (∑' I : ExteriorIdeal (⊤ : Ideal (𝓞 F)), summand (fun I => η I.val) s I) =
@@ -149,15 +147,15 @@ theorem principal_regularization_ne_zero
     filter_upwards [self_mem_nhdsWithin] with x hx
     have hx' : 1 < (x : ℂ).re := by simpa using hx
     rw [P.regularized _ (zero_lt_one.trans hx') (by
-      intro h; rw [h] at hx'; norm_num at hx'), heq _ hx']
+      intro h; simp_all), heq _ hx']
     ring
   rw [hv]
   apply mul_ne_zero
   · exact_mod_cast NumberField.dedekindZeta_residue_ne_zero F
   · apply Finset.prod_ne_zero_iff.mpr
     intro p hp
-    have hnorm : (1 : ℝ) < Ideal.absNorm p.val.val := by
-      exact lt_of_lt_of_le (by norm_num : (1 : ℝ) < 2)
+    have hnorm : (1 : ℝ) < Ideal.absNorm p.val.val := 
+      lt_of_lt_of_le (by norm_num : (1 : ℝ) < 2)
         (idealNorm_prime_ge_two p.val.val p.property)
     have hn : (Ideal.absNorm p.val.val : ℂ) ≠ 1 := by
       exact_mod_cast hnorm.ne'
@@ -166,5 +164,3 @@ theorem principal_regularization_ne_zero
     apply hn
     have hh := congrArg Inv.inv h
     simpa using hh.symm
-
-end DedekindZetaZeroFree.PrincipalMellinComparison

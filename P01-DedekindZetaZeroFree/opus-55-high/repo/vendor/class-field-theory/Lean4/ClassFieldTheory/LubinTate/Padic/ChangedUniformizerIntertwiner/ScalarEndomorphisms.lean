@@ -15,13 +15,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Completed scalar endomorphisms
 
@@ -38,7 +31,7 @@ open SameUniformizer
 
 /-- The multiplicative Lubin--Tate scalar endomorphism with coefficient
 `a`, after extending coefficients to the completed unramified Witt ring. -/
-noncomputable def padicCompletedMultiplicativeScalarEndomorphism
+def padicCompletedMultiplicativeScalarEndomorphism
     (p : ℕ) [Fact p.Prime]
     (a : (padicLocalField p).valuationSubring) :
     PowerSeries (padicCompletedUnramifiedWittRing p) :=
@@ -50,7 +43,7 @@ noncomputable def padicCompletedMultiplicativeScalarEndomorphism
       (padicMultiplicativeLubinTateSeries p)
       (fun _ : Unit => a))
 
-private theorem padicMultiplicativeScalarEndomorphism_mul
+theorem padicMultiplicativeScalarEndomorphism_mul
     (p : ℕ) [Fact p.Prime]
     (a b : (padicLocalField p).valuationSubring) :
     recursiveIntertwiner
@@ -109,7 +102,7 @@ private theorem padicMultiplicativeScalarEndomorphism_mul
 
 /-- The standard scalar endomorphism for the changed uniformizer `u p`,
 after extending coefficients to the completed unramified Witt ring. -/
-noncomputable def padicCompletedChangedStandardScalarEndomorphism
+def padicCompletedChangedStandardScalarEndomorphism
     (p : ℕ) [Fact p.Prime]
     (u : (padicLocalField p).valuationSubringˣ)
     (a : (padicLocalField p).valuationSubring) :
@@ -140,8 +133,7 @@ theorem powerSeries_hasLinearTerm_of_constantCoeff_coeff_one
   · have hdeq : d = 0 := by
       apply Finsupp.ext
       intro i
-      cases i
-      simp [hd0]
+      omega
     subst d
     simp only [map_sub,
       MvPowerSeries.coeff_zero_eq_constantCoeff_apply,
@@ -237,7 +229,7 @@ theorem
     PowerSeries.coeff_map,
     standardLubinTateEndomorphism_coeff_one]
 
-private theorem padicMultiplicativeScalarEndomorphism_commutes
+theorem padicMultiplicativeScalarEndomorphism_commutes
     (p : ℕ) [Fact p.Prime]
     (a : (padicLocalField p).valuationSubring) :
     PowerSeries.subst
@@ -280,7 +272,7 @@ private theorem padicMultiplicativeScalarEndomorphism_commutes
         PowerSeries.X_subst
           (padicMultiplicativeLubinTateSeries p).toPowerSeries
 
-private theorem padicChangedStandardScalarEndomorphism_commutes
+theorem padicChangedStandardScalarEndomorphism_commutes
     (p : ℕ) [Fact p.Prime]
     (u : (padicLocalField p).valuationSubringˣ)
     (a : (padicLocalField p).valuationSubring) :
@@ -576,7 +568,3 @@ theorem padicCompletedChangedStandardScalarEndomorphism_one
       PowerSeries.X := by
   rw [padicCompletedChangedStandardScalarEndomorphism,
     standardLubinTateEndomorphism_one, PowerSeries.map_X]
-
-end LubinTate
-
-end

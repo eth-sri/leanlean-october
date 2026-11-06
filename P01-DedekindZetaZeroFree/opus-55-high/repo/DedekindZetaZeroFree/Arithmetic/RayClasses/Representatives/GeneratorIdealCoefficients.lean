@@ -8,7 +8,6 @@ public import DedekindZetaZeroFree.Algebra.RankOneModules.GeneratorTorsor
 
 @[expose] public section
 
-noncomputable section
 
 open scoped NumberField nonZeroDivisors
 
@@ -83,20 +82,19 @@ theorem integralElementIdeal_generator_coprime
     integralElementIdeal_coe L ξ₀
   refine ⟨hξ, ?_, ?_⟩
   · intro hz
-    apply hb
-    rw [← hcoe, hz, FractionalIdeal.coeIdeal_bot]
+    simp_all
   · apply FractionalIdeal.coeIdeal_injective (K := F)
     simpa only [FractionalIdeal.coeIdeal_sup, FractionalIdeal.coeIdeal_top, hcoe,
       add_comm] using hsum
 
-private theorem coefficient_mul_numerator
+theorem coefficient_mul_numerator
     (L : (FractionalIdeal (𝓞 F)⁰ F)ˣ)
     (ξ : {x : F // x ∈ (L : FractionalIdeal (𝓞 F)⁰ F)}) :
     (integralElementIdeal L ξ : FractionalIdeal (𝓞 F)⁰ F) *
       (L : FractionalIdeal (𝓞 F)⁰ F) = FractionalIdeal.spanSingleton (𝓞 F)⁰ ξ.val := by
   rw [integralElementIdeal_coe, mul_assoc, inv_mul_cancel₀ (Units.ne_zero L), mul_one]
 
-private theorem coefficient_scalar_comparison
+theorem coefficient_scalar_comparison
     {m : Ideal (𝓞 F)} (hmt : m ≠ ⊤)
     (L : (FractionalIdeal (𝓞 F)⁰ F)ˣ)
     (ξ₀ ξ : {x : F // x ∈ (L : FractionalIdeal (𝓞 F)⁰ F)})
@@ -152,7 +150,7 @@ private theorem coefficient_scalar_comparison
   congr 2
   simpa only [Algebra.smul_def] using hγ.symm
 
-private theorem scalar_coprime_iff (m : Ideal (𝓞 F)) (a : 𝓞 F) :
+theorem scalar_coprime_iff (m : Ideal (𝓞 F)) (a : 𝓞 F) :
     Ideal.span {a} ⊔ m = ⊤ ↔ IsUnit (Ideal.Quotient.mk m a) := by
   constructor
   · intro hc
@@ -167,14 +165,14 @@ private theorem scalar_coprime_iff (m : Ideal (𝓞 F)) (a : 𝓞 F) :
     exact ⟨⟨Ideal.Quotient.mk m a, Ideal.Quotient.mk m r, hh, by simpa [mul_comm] using hh⟩, rfl⟩
   · rintro ⟨u, hu⟩
     obtain ⟨r, hr⟩ := Ideal.Quotient.mk_surjective ((u⁻¹ : (𝓞 F ⧸ m)ˣ) : 𝓞 F ⧸ m)
-    have hh : Ideal.Quotient.mk m (a * r) = 1 := by rw [map_mul, ← hu, hr]; exact u.val_inv
+    have hh : Ideal.Quotient.mk m (a * r) = 1 := by simp_all
     have hm := (Ideal.Quotient.mk_eq_one_iff_sub_mem _).mp hh
     apply (Ideal.eq_top_iff_one _).mpr
     have ha : a * r ∈ Ideal.span {a} ⊔ m :=
       Ideal.mem_sup_left (Ideal.mul_mem_right r _ (Ideal.mem_span_singleton_self a))
     simpa using (Ideal.span {a} ⊔ m).sub_mem ha (Ideal.mem_sup_right hm)
 
-private theorem scalar_character_extend
+theorem scalar_character_extend
     (hF : NumberField.IsTotallyComplex F) {m : Ideal (𝓞 F)}
     (hm : m ≠ ⊥) (hmt : m ≠ ⊤)
     (η : DedekindZetaZeroFree.RayClassCharacter F m) (a : 𝓞 F) :
@@ -186,15 +184,14 @@ private theorem scalar_character_extend
   · obtain ⟨u, hu⟩ := hu
     have ha : a ≠ 0 := by
       intro hz
-      letI : Nontrivial (𝓞 F ⧸ m) := Ideal.Quotient.nontrivial_iff.mpr hmt
-      exact u.ne_zero (by simpa [hz] using hu)
+      simp_all
     rw [← hu, unitCharExtend_coe]
     exact (residueRayCharacter_apply hF hm hmt η a ha
       ((scalar_coprime_iff m a).mpr ⟨u, hu⟩) u hu).symm
   · rw [unitCharExtend_nonunit _ hu]
     exact (η.eq_zero_iff' _).mpr (Or.inr (fun hc => hu ((scalar_coprime_iff m a).mp hc)))
 
-private theorem scalar_positive (hF : NumberField.IsTotallyComplex F)
+theorem scalar_positive (hF : NumberField.IsTotallyComplex F)
     (a : 𝓞 F) : ∀ φ : F →+* ℝ, 0 < φ (a : F) := by
   letI := hF
   intro φ
@@ -348,8 +345,7 @@ theorem integralElementIdeal_trace_residue_coefficient
         Submodule.Quotient.mk
           (p := fractionalResidueDenominator m (L : FractionalIdeal (𝓞 F)⁰ F)) y
     rw [fractionalResidueModule_mk_smul_mk]
-    simp only [fractionalIdealQuotientMk, Submodule.mkQ_apply, Submodule.Quotient.eq,
-      Submodule.mem_comap, Submodule.coe_sub, Submodule.coe_smul]
+    simp only [fractionalIdealQuotientMk, Submodule.mkQ_apply, Submodule.Quotient.eq, Submodule.mem_comap]
     rw [hden]
     rfl
   have hgen' : Function.Surjective (fun r : 𝓞 F ⧸ m => r •
@@ -370,7 +366,3 @@ theorem integralElementIdeal_trace_residue_coefficient
   obtain ⟨_, hb, hc⟩ := integralElementIdeal_generator_coprime hm hmt L β₀ hgen'
   exact ⟨hb, hc, integralElementIdeal_residue_coefficient hF hm hmt η L β₀ hgen' β k hcong',
     integralElementIdeal_residue_coprime_iff hm hmt L β₀ hgen' β k hcong'⟩
-
-end DedekindZetaZeroFree.Hecke.Theta
-
-end

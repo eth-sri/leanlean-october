@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Continuity of the comparison with Mathlib's idèle class group
 
@@ -47,7 +42,7 @@ theorem continuous_ideleClassGroupEquivMathlib :
 
 /-- The restricted-product and adele-unit presentations of the idèle class
 group are canonically isomorphic as topological groups. -/
-noncomputable def ideleClassGroupContinuousMulEquivMathlib :
+def ideleClassGroupContinuousMulEquivMathlib :
     IdeleClassGroup K ≃ₜ* NumberField.IdeleClassGroup (𝓞 K) K := by
   refine
     { toMulEquiv := ideleClassGroupEquivMathlib K
@@ -61,7 +56,3 @@ noncomputable def ideleClassGroupContinuousMulEquivMathlib :
     QuotientGroup.continuous_mk.comp
       (equivAdeleRingUnitsContinuousMulEquiv K).symm.continuous
   exact h.congr (fun _ => rfl)
-
-end IdeleGroup
-
-end

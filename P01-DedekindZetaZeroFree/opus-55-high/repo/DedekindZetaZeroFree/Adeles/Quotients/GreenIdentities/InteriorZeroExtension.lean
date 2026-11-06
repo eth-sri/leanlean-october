@@ -25,17 +25,7 @@ variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
 variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
 theorem continuous_labeledA_actual :
-    Continuous (labeledA (placeEquiv F ζ hζ) : M F → KPCuspGenuineMonodromy.SymmetricSpace F) := by
-  apply continuous_pi
-  intro k
-  have h : (fun x : M F => labeledA (placeEquiv F ζ hζ) x k)
-      = fun x => ((((x ((placeEquiv F ζ hζ).symm k, 0)) : ℂ) + Complex.I *
-          ((x ((placeEquiv F ζ hζ).symm k, 1)) : ℂ), x ((placeEquiv F ζ hζ).symm k, 2)) :
-            ℂ × ℝ) := by
-    funext x
-    simp only [labeledA, CotangentLogCoframe.A_apply]
-  rw [h]
-  fun_prop
+    Continuous (labeledA (placeEquiv F ζ hζ) : M F → KPCuspGenuineMonodromy.SymmetricSpace F) := by apply DedekindZetaZeroFree.KPContActualCotangentExactMeasurableGluing.continuous_labeledA_placeEquiv <;> assumption
 
 theorem isOpen_omega_actual (a : ShrunkChart F ζ hζ U R P H) : IsOpen (omega a) :=
   a.domain_open.preimage continuous_labeledA_actual

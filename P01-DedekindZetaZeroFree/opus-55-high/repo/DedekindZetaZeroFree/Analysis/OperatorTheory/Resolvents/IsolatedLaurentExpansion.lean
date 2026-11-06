@@ -29,7 +29,7 @@ def holomorphicComplement
   B * complementProjection B β * Ring.inverse (correctedPencil B β z) *
     complementProjection B β
 
-private lemma pencil_decomposition
+lemma pencil_decomposition
     {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
     (B : H →L[ℂ] H) (β : ℝ) (hβ : β ≠ 0) (z : ℂ)
     (hz : z ≠ (poleLocation β : ℂ))
@@ -58,7 +58,7 @@ private lemma pencil_decomposition
     <;> ring
   have ha : a ≠ 0 := by
     rw [haform]
-    exact mul_ne_zero hβc (sub_ne_zero.mpr hz.symm)
+    positivity
   have hQQ : Q * Q = Q := by
     dsimp [Q, complementProjection]
     noncomm_ring [hPP]
@@ -159,8 +159,7 @@ theorem exists_laurent_disk
   · intro z hz
     have hT : AnalyticAt ℂ (correctedPencil B β) z := by
       unfold correctedPencil KPResolventPencil.shiftedPencil
-      exact (analyticAt_const.sub
-        ((analyticAt_id.add analyticAt_const).smul analyticAt_const)).add analyticAt_const
+      fun_prop
     have hi := analyticOnNhd_inverse (𝕜 := ℂ) _ (hball hz)
     exact (analyticAt_const.mul (hi.comp hT)).mul analyticAt_const
   · intro z hz hzr
@@ -234,6 +233,3 @@ theorem simplePole
   · intro hfin
     letI := hfin
     exact KPIsolatedProjection.projection_finiteRank B β
-
-end
-end DedekindZetaZeroFree.KPIsolatedLaurent

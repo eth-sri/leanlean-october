@@ -6,7 +6,6 @@ public import DedekindZetaZeroFree.Metaplectic.Intertwining.Spherical.Meromorphi
 
 section
 
-set_option autoImplicit false
 noncomputable section
 namespace DedekindZetaZeroFree.KPLocalTameIntertwiningBlock
 open scoped Valued Classical
@@ -20,7 +19,7 @@ variable (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
   [Group H] [TopologicalSpace H] [IsTopologicalGroup H] [CommGroup D] [Finite D]
   {T : LocalHeisenbergData H D}
 
-private theorem compact_action
+theorem compact_action
     (A : LocalBorelData (K := K) (G := G) T) (P : Polarization T)
     (I : IwasawaData A) (ε : Sign) (b : A.B)
     (hb : (b : G) ∈ I.compact.toOpenSubgroup) (v : InducedModule P) :
@@ -89,7 +88,7 @@ theorem exists_minus_spherical_vector
     constructor
     · intro b k k' he
       have hb : (b : G) ∈ I.compact.toOpenSubgroup := by
-        have hb' : (b : G) = (k' : G) * (k : G)⁻¹ := by rw [he]; simp [mul_assoc]
+        have hb' : (b : G) = (k' : G) * (k : G)⁻¹ := by rw [he]; simp
         rw [hb']; exact I.compact.toOpenSubgroup.mul_mem k'.property
           (I.compact.toOpenSubgroup.inv_mem k.property)
       rw [compact_action K A P I .minus b hb]
@@ -131,7 +130,6 @@ end
 
 section
 
-set_option autoImplicit false
 noncomputable section
 namespace DedekindZetaZeroFree.KPLocalTameIntertwiningBlock
 open scoped Valued Classical
@@ -170,7 +168,7 @@ theorem compact_torus_weyl_stable
     refine ⟨A.weyl.symm h, ?_, ?_⟩
     swap
     · change A.weyl (A.weyl.symm h) = h
-      exact A.weyl.apply_symm_apply h
+      simp
     change (A.torus (A.weyl.symm h) : G) ∈ I.compact.toOpenSubgroup
     have he : (A.torus (A.weyl.symm h) : G) =
         A.liftedW * (A.torus h : G) * A.liftedW⁻¹ := by
@@ -180,9 +178,3 @@ theorem compact_torus_weyl_stable
     rw [he]
     exact I.compact.toOpenSubgroup.mul_mem
       (I.compact.toOpenSubgroup.mul_mem hw hh) (I.compact.toOpenSubgroup.inv_mem hw)
-
-end DedekindZetaZeroFree.KPLocalTameIntertwiningBlock
-
-end
-
-end

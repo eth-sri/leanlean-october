@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Norm range over the canonical fixed-field base
 
@@ -35,18 +32,18 @@ variable {K : Type} [Field K] [NumberField K]
 /-- Opaque bridge from multiplicative subgroup transport to its additive
 presentation.  Keeping this generic prevents concrete fixed-field endpoints
 from being unfolded by `rw` while comparing the two presentations. -/
-private theorem subgroup_map_toAddSubgroup_mulEquiv
+theorem subgroup_map_toAddSubgroup_mulEquiv
     {G G₂ : Type*} [Group G] [Group G₂]
     (S : Subgroup G) (e : G ≃* G₂) :
     (S.map e.toMonoidHom).toAddSubgroup =
       S.toAddSubgroup.map
-        (MulEquiv.toAdditive e).toAddMonoidHom := by
-  exact (MonoidHom.coe_toAdditive_map e.toMonoidHom S).symm
+        (MulEquiv.toAdditive e).toAddMonoidHom := 
+  (MonoidHom.coe_toAdditive_map e.toMonoidHom S).symm
 
 /-- The idèle-class transport attached to the selected base equivalence.
 Naming this endpoint once keeps the fixed-field instance tower out of
 downstream definitional-equality checks. -/
- noncomputable def closedFiniteIndexClassFieldIdeleClassEquiv
+ def closedFiniteIndexClassFieldIdeleClassEquiv
     (H : Subgroup (IdeleClassGroup K))
     (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
     [H.FiniteIndex] :
@@ -60,7 +57,7 @@ downstream definitional-equality checks. -/
 
 /-- Additive form of the selected class-field norm-range computation, with
 the concrete idèle-class endpoint hidden behind one typed definition. -/
-private theorem closedFiniteIndexClassField_ideleClassNorm_range_toAddSubgroup
+theorem closedFiniteIndexClassField_ideleClassNorm_range_toAddSubgroup
     (H : Subgroup (IdeleClassGroup K))
     (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
     [H.FiniteIndex] :
@@ -86,7 +83,7 @@ private theorem closedFiniteIndexClassField_ideleClassNorm_range_toAddSubgroup
 /-- The represented abstract norm subgroup as the same named actual norm
 range.  This wrapper uses the lightweight named-field API, avoiding the
 dependent `letI` tower in the raw fixed-field comparison theorem. -/
-private theorem
+theorem
     ordinaryIdeleClassNormSubgroup_closedFiniteIndexClassField_eq_range
     (H : Subgroup (IdeleClassGroup K))
     (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
@@ -213,7 +210,3 @@ theorem
               (K := K) H hclosed)).toAddMonoidHom :=
       closedFiniteIndexClassField_ideleClassNorm_range_toAddSubgroup
         (K := K) H hclosed
-end GlobalClassFields
-end GlobalClassFieldTheory
-
-end

@@ -6,7 +6,6 @@ public import DedekindZetaZeroFree.Metaplectic.Intertwining.RankOne.LaurentCoeff
 
 set_option maxHeartbeats 8000000
 
-noncomputable section
 namespace DedekindZetaZeroFree.KPRankOneShellRepair
 open scoped NumberField Valued
 open NumberField IsDedekindDomain MeasureTheory ValuativeRel
@@ -69,7 +68,3 @@ theorem actual_scalar_coefficients_target_level
   · exact hvJ
   · intro k h
     rfl
-
-end DedekindZetaZeroFree.KPRankOneShellRepair
-
-end

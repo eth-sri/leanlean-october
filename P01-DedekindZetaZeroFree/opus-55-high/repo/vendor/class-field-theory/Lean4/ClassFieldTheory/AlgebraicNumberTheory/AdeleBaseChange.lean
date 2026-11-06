@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Scalar extension from relative to ordinary adeles
 
@@ -29,7 +25,6 @@ open NumberField IsDedekindDomain
 
 noncomputable section
 
-
 open AlgebraicNumberTheory.Valuations
 
 universe u v
@@ -42,7 +37,7 @@ variable
 
 /-- The finite local tensor algebra, decomposed into the concrete adic
 completions above the chosen base place. -/
-noncomputable def finitePlaceTensorRingEquivAboveAdic
+def finitePlaceTensorRingEquivAboveAdic
     (w : HeightOneSpectrum (𝓞 K)) :
     (w.adicCompletion K ⊗[K] L) ≃+*
       ∀ W : {W : HeightOneSpectrum (𝓞 L) //
@@ -147,7 +142,7 @@ theorem finitePlaceTensorRingEquivAboveAdic_tmul
 
 /-- Reindex the archimedean relative-tensor product by concrete places
 above `w`, before replacing the completion wrappers. -/
-noncomputable def infiniteCompletionRingProductReindexAbove
+def infiniteCompletionRingProductReindexAbove
     (w : InfinitePlace K) :
     (∀ u : AbsoluteValueExtension w.1 L,
       u.1.Completion) ≃+*
@@ -164,16 +159,14 @@ noncomputable def infiniteCompletionRingProductReindexAbove
     { e with
       map_add' := by
         intro x y
-        funext W
         rfl
       map_mul' := by
         intro x y
-        funext W
         rfl }
 
 /-- The archimedean local tensor algebra, decomposed into the concrete
 infinite completions above the chosen base place. -/
-noncomputable def infinitePlaceTensorRingEquivAbove
+def infinitePlaceTensorRingEquivAbove
     (w : InfinitePlace K) :
     (w.Completion ⊗[K] L) ≃+*
       ∀ W : {W : InfinitePlace L //
@@ -255,7 +248,7 @@ theorem infinitePlaceTensorRingEquivAbove_tmul
 
 /-- Flatten the products over finite base places and places above them
 to the product over all finite places of the extension field. -/
-noncomputable def finitePlaceAbovePiRingEquiv :
+def finitePlaceAbovePiRingEquiv :
     (∀ w : HeightOneSpectrum (𝓞 K),
       ∀ W : {W : HeightOneSpectrum (𝓞 L) //
           finitePlaceBelow (K := K) W = w},
@@ -271,18 +264,15 @@ noncomputable def finitePlaceAbovePiRingEquiv :
     subst w
     rfl
   right_inv f := by
-    funext W
     rfl
   map_add' f g := by
-    funext W
     rfl
   map_mul' f g := by
-    funext W
     rfl
 
 /-- All finite local tensor rings, flattened to the concrete finite
 completion family of the extension field. -/
-noncomputable def relativeFiniteTensorPiRingEquiv :
+def relativeFiniteTensorPiRingEquiv :
     (∀ w : HeightOneSpectrum (𝓞 K),
       w.adicCompletion K ⊗[K] L) ≃+*
       ∀ W : HeightOneSpectrum (𝓞 L),
@@ -323,7 +313,7 @@ theorem relativeFiniteTensorPiRingEquiv_symm_apply
 
 /-- Flatten the products over infinite base places and places above
 them to the product over all infinite places of the extension field. -/
-noncomputable def infinitePlaceAbovePiRingEquiv :
+def infinitePlaceAbovePiRingEquiv :
     (∀ w : InfinitePlace K,
       ∀ W : {W : InfinitePlace L //
           infinitePlaceBelow (K := K) W = w},
@@ -338,18 +328,15 @@ noncomputable def infinitePlaceAbovePiRingEquiv :
     subst w
     rfl
   right_inv f := by
-    funext W
     rfl
   map_add' f g := by
-    funext W
     rfl
   map_mul' f g := by
-    funext W
     rfl
 
 /-- All infinite local tensor rings, flattened to the concrete infinite
 completion family of the extension field. -/
-noncomputable def relativeInfiniteTensorPiRingEquiv :
+def relativeInfiniteTensorPiRingEquiv :
     (∀ w : InfinitePlace K,
       w.Completion ⊗[K] L) ≃+*
       ∀ W : InfinitePlace L, W.Completion :=
@@ -440,11 +427,7 @@ theorem relativeAdele_finiteComponent_basisIntegral_of_notMem
     fun i =>
       ⟨(relativeAdeleCoefficient
           (K := K) (L := L) z i).2 w, by
-        by_contra hi
-        apply hw
-        exact
-          (mem_relativeAdeleCoefficientSupport_iff
-            (K := K) (L := L) z w).2 ⟨i, hi⟩⟩
+        simp_all⟩
   refine ⟨c, ?_⟩
   simpa only [c, Subtype.coe_mk] using
     relativeAdeleFiniteComponent_eq_sum_tmul_coefficients
@@ -478,7 +461,7 @@ theorem relativeAdele_eventually_aboveAdicIntegral
     (K := K) (L := L) z w hs
 
 /-- The forward ring-level scalar-extension map on adeles. -/
-noncomputable def relativeAdeleToAdele
+def relativeAdeleToAdele
     (z : RelativeAdeleRing K L) :
     NumberField.AdeleRing (𝓞 L) L :=
   ⟨relativeInfiniteTensorPiRingEquiv
@@ -540,7 +523,7 @@ theorem relativeAdeleToAdele_finite
 
 /-- Pull the finite coordinates of an ordinary adele back to the
 relative local tensor family. -/
-noncomputable def finiteAdeleRelativeTensorFamily
+def finiteAdeleRelativeTensorFamily
     (y : IsDedekindDomain.FiniteAdeleRing (𝓞 L) L) :
     ∀ w : HeightOneSpectrum (𝓞 K),
       w.adicCompletion K ⊗[K] L :=
@@ -586,7 +569,7 @@ theorem finiteAdeleRelativeTensorFamily_eventually_basisIntegral
   exact hw W
 
 /-- Pull an ordinary adele back to restricted relative local data. -/
-noncomputable def adeleToRelativeLocalAdeleData
+def adeleToRelativeLocalAdeleData
     (y : NumberField.AdeleRing (𝓞 L) L) :
     RelativeLocalAdeleData (K := K) (L := L) where
   infinite :=
@@ -602,7 +585,7 @@ noncomputable def adeleToRelativeLocalAdeleData
           (K := K) (L := L) w _ hw i
 
 /-- The inverse ring-level scalar-extension map on adeles. -/
-noncomputable def adeleToRelativeAdele
+def adeleToRelativeAdele
     (y : NumberField.AdeleRing (𝓞 L) L) :
     RelativeAdeleRing K L :=
   relativeAdeleOfLocalData
@@ -646,7 +629,7 @@ theorem adeleToRelativeAdele_finiteComponent
 
 /-- Scalar extension identifies the relative adele ring over `K` with
 the ordinary adele ring of `L`. -/
-noncomputable def relativeAdeleBaseChangeRingEquiv :
+def relativeAdeleBaseChangeRingEquiv :
     RelativeAdeleRing K L ≃+*
       NumberField.AdeleRing (𝓞 L) L where
   toFun :=
@@ -699,29 +682,7 @@ noncomputable def relativeAdeleBaseChangeRingEquiv :
         (K := K) (L := L)).apply_symm_apply]
     · apply DFunLike.coe_injective
       funext W
-      change
-        relativeFiniteTensorPiRingEquiv
-            (K := K) (L := L)
-            (fun w =>
-              relativeAdeleFiniteComponent
-                (K := K) (L := L) w
-                (adeleToRelativeAdele
-                  (K := K) (L := L) y)) W =
-          y.2 W
-      rw [show
-        (fun w =>
-          relativeAdeleFiniteComponent
-            (K := K) (L := L) w
-            (adeleToRelativeAdele
-              (K := K) (L := L) y)) =
-          (relativeFiniteTensorPiRingEquiv
-            (K := K) (L := L)).symm
-            (fun W => y.2 W) by
-          funext w
-          exact adeleToRelativeAdele_finiteComponent
-            (K := K) (L := L) y w]
-      rw [(relativeFiniteTensorPiRingEquiv
-        (K := K) (L := L)).apply_symm_apply]
+      simp
   map_add' x y := by
     apply Prod.ext
     · funext W
@@ -752,7 +713,7 @@ noncomputable def relativeAdeleBaseChangeRingEquiv :
             relativeAdeleInfiniteComponent
               (K := K) (L := L) w y) by
           funext w
-          exact map_add _ _ _,
+          simp,
         map_add]
       rfl
     · apply Subtype.ext
@@ -773,20 +734,7 @@ noncomputable def relativeAdeleBaseChangeRingEquiv :
               (fun w =>
                 relativeAdeleFiniteComponent
                   (K := K) (L := L) w y) W
-      rw [show
-        (fun w =>
-          relativeAdeleFiniteComponent
-            (K := K) (L := L) w (x + y)) =
-          (fun w =>
-            relativeAdeleFiniteComponent
-              (K := K) (L := L) w x) +
-          (fun w =>
-            relativeAdeleFiniteComponent
-              (K := K) (L := L) w y) by
-          funext w
-          exact map_add _ _ _,
-        map_add]
-      rfl
+      simp
   map_mul' x y := by
     apply Prod.ext
     · funext W
@@ -817,7 +765,7 @@ noncomputable def relativeAdeleBaseChangeRingEquiv :
             relativeAdeleInfiniteComponent
               (K := K) (L := L) w y) by
           funext w
-          exact map_mul _ _ _,
+          simp,
         map_mul]
       rfl
     · apply Subtype.ext
@@ -838,20 +786,7 @@ noncomputable def relativeAdeleBaseChangeRingEquiv :
               (fun w =>
                 relativeAdeleFiniteComponent
                   (K := K) (L := L) w y) W
-      rw [show
-        (fun w =>
-          relativeAdeleFiniteComponent
-            (K := K) (L := L) w (x * y)) =
-          (fun w =>
-            relativeAdeleFiniteComponent
-              (K := K) (L := L) w x) *
-          (fun w =>
-            relativeAdeleFiniteComponent
-              (K := K) (L := L) w y) by
-          funext w
-          exact map_mul _ _ _,
-        map_mul]
-      rfl
+      simp
 
 /-- Finite-coordinate formula for scalar extension of a pure relative
 adele tensor. -/
@@ -948,7 +883,6 @@ theorem infinitePlaceTensorRingEquivAbove_tmul_one
       algebraMap L W.1.Completion x
   rw [completionTensorDecomposition_left_tmul_apply]
   simp only [map_one, one_mul]
-  apply InfinitePlace.Completion.ext
   rfl
 
 /-- The ring comparison carries the diagonal copy of `L` to the
@@ -1012,9 +946,7 @@ theorem finitePlaceTensorUnitsEquivAboveAdic_coe
   obtain ⟨u, rfl⟩ :=
     (finitePlaceExtensionEquivAbove
       (K := K) (L := L) w).surjective W
-  rw [finitePlaceTensorUnitsEquivAboveAdic_apply_extension,
-    finitePlaceTensorRingEquivAboveAdic_apply_extension]
-  rfl
+  simp
 
 /-- The flattened finite unit comparison is induced by the flattened
 finite ring comparison. -/
@@ -1049,16 +981,7 @@ theorem relativeIdeleBaseChangeMulEquiv_eq_ringUnits
           (K := K) (L := L)).toMulEquiv z := by
   apply Units.ext
   apply Prod.ext
-  · funext W
-    change
-      ((IdeleGroup.infiniteComponent W
-          (relativeIdeleBaseChangeMulEquiv
-            (K := K) (L := L) z) :
-          W.Completionˣ) : W.Completion) =
-        (relativeAdeleToAdele
-          (K := K) (L := L)
-          (z : RelativeAdeleRing K L)).1 W
-    rfl
+  · rfl
   · apply DFunLike.coe_injective
     funext W
     change
@@ -1124,5 +1047,3 @@ theorem relativeIdeleBaseChangeMulEquiv_principalIdele
     simp only [relativeIdeleToLocalData]
     rw [RelativeIdeleGroup.finiteComponent_principalIdele,
       finitePlaceTensorUnitsEquivAboveAdic_localFieldIdeleInclusion]
-
-end

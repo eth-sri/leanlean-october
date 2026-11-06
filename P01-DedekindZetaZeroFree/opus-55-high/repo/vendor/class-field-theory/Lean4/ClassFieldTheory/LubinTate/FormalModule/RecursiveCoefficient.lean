@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Recursive coefficients for Lubin--Tate intertwiners
 
@@ -39,7 +36,7 @@ variable {σ : Type w} [Fintype σ]
 
 /-- The coefficient of an intertwining defect after removing one factor of
 the chosen uniformizer. -/
-noncomputable def normalizedDefectCoefficient
+def normalizedDefectCoefficient
     (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
     (e ebar : LubinTateSeries F π)
     {H : MvPowerSeries σ F.valuationSubring}
@@ -68,7 +65,7 @@ same-uniformizer intertwiner construction.
 Its defining equation is the one which cancels the normalized defect in that
 degree.  The hypothesis `2 ≤ d.degree` ensures that the exponent
 `d.degree - 1` is positive. -/
-noncomputable def correctionCoefficient
+def correctionCoefficient
     (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
     (e ebar : LubinTateSeries F π)
     {H : MvPowerSeries σ F.valuationSubring}
@@ -96,27 +93,3 @@ theorem correctionCoefficient_spec
       (existsUnique_one_sub_uniformizer_pow_mul_eq hπ
         (by omega : d.degree - 1 ≠ 0)
         (-normalizedDefectCoefficient hπ e ebar hH d))).1
-
-/-- The defining scalar equation determines the recursive correction
-coefficient uniquely. -/
-theorem correctionCoefficient_unique
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (e ebar : LubinTateSeries F π)
-    {H : MvPowerSeries σ F.valuationSubring}
-    {L : σ → F.valuationSubring} (hH : HasLinearTerm H L)
-    (d : σ →₀ ℕ) (hd : 2 ≤ d.degree)
-    {c : F.valuationSubring}
-    (hc :
-      (1 - π ^ (d.degree - 1)) * c =
-        -normalizedDefectCoefficient hπ e ebar hH d) :
-    c = correctionCoefficient hπ e ebar hH d hd := by
-  exact
-    (Classical.choose_spec
-      (existsUnique_one_sub_uniformizer_pow_mul_eq hπ
-        (by omega : d.degree - 1 ≠ 0)
-        (-normalizedDefectCoefficient hπ e ebar hH d))).2 c hc
-
-end SameUniformizer
-end LubinTate
-
-end

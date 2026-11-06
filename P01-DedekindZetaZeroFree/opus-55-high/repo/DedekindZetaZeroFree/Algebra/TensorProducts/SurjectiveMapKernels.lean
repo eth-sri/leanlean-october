@@ -6,7 +6,6 @@ public import Mathlib.Algebra.Module.Projective
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.KPLiteralResidueKernelTests
 
  theorem tensor_kernel_le_span
@@ -21,8 +20,8 @@ namespace DedekindZetaZeroFree.KPLiteralResidueKernelTests
   let S := Submodule.span 𝕜 {t | ∃ a : ∀ i, V i,
     (∃ i, f i (a i) = 0) ∧ PiTensorProduct.tprod 𝕜 a = t}
   let T := S.mkQ.compMultilinearMap (PiTensorProduct.tprod 𝕜)
-  have hzero (a : ∀ i, V i) (i : ι) (ha : f i (a i) = 0) : T a = 0 := by
-    exact (Submodule.Quotient.mk_eq_zero S).mpr
+  have hzero (a : ∀ i, V i) (i : ι) (ha : f i (a i) = 0) : T a = 0 := 
+    (Submodule.Quotient.mk_eq_zero S).mpr
       (Submodule.subset_span ⟨a, ⟨i, ha⟩, rfl⟩)
   have hupdate (a : ∀ i, V i) (i : ι) (b : V i) (hab : f i (a i) = f i b) :
       T (Function.update a i b) = T a := by
@@ -36,8 +35,7 @@ namespace DedekindZetaZeroFree.KPLiteralResidueKernelTests
       | empty => simp
       | @insert i s hi ih =>
         rw [Finset.piecewise_insert]
-        rw [hupdate, ih]
-        simpa [Finset.piecewise_eq_of_notMem, hi] using hab i
+        simp_all
     simpa using (haux Finset.univ).symm
   have hr : ∀ i, ∃ g : W i →ₗ[𝕜] V i, (f i).comp g = LinearMap.id := by
     intro i
@@ -58,7 +56,3 @@ namespace DedekindZetaZeroFree.KPLiteralResidueKernelTests
   apply (Submodule.Quotient.mk_eq_zero S).mp
   change S.mkQ x = 0
   rw [heq, LinearMap.comp_apply, LinearMap.mem_ker.mp hx, map_zero]
-
-end DedekindZetaZeroFree.KPLiteralResidueKernelTests
-
-end

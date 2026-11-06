@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Unramified finite places of rational cyclotomic levels
 
@@ -123,8 +117,3 @@ theorem rationalCyclotomicLevel_chosenFinitePlaceIsUnramified
   exact
     rationalCyclotomicLevel_isUnramifiedAt_chosenFinitePlaceCentre
       m q hq
-
-end Reciprocity
-end GlobalClassFieldTheory
-
-end

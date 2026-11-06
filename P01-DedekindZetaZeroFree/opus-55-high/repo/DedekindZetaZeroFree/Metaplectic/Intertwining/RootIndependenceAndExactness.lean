@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.RepresentationTheory.RankOne.FiniteExceptiona
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 namespace DedekindZetaZeroFree.KPLocalTameIntertwiningBlock
 open scoped NumberField Classical
@@ -15,14 +14,6 @@ open KPRankOneShellContinuation KPRankOneForwardTestVector KPRankOneOppositeZero
 variable (F : Type) [Field F] [NumberField F]
   (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
 
-section LegacyRootCompatibility
-variable (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
-  (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
-  (hμ : μ ((valuation (LocalField F q)).integer : Set (LocalField F q)) = 1)
-  (ξ ξ' : (valuation (LocalField F q)).integer)
-  (hξ : IsPrimitiveRoot ξ 3) (hξ' : IsPrimitiveRoot ξ' 3)
-
-end LegacyRootCompatibility
 
 def rawInducingAlias (S : CanonicalFiniteInducingData F ζ hζ q) :
     KPExceptionalRaw.RawFiniteInducingData F ζ hζ q where
@@ -48,7 +39,3 @@ def rawInducingAlias (S : CanonicalFiniteInducingData F ζ hζ q) :
   iwasawa := S.iwasawa
   openCell := S.openCell
   openCell_ordinary := S.openCell_ordinary
-
-end DedekindZetaZeroFree.KPLocalTameIntertwiningBlock
-
-end

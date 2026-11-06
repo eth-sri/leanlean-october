@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Adeles.Approximation.SIntegerFiniteStrongAppr
 
 @[expose] public section
 
-noncomputable section
 
 namespace DedekindZetaZeroFree.KPAdelicTopology
 
@@ -23,8 +22,7 @@ theorem finiteAdeles_diagonal_denseRange (F : Type) [Field F] [NumberField F] :
   have hs : {v | a v ∉ v.adicCompletionIntegers F}.Finite := a.2
   let s := hs.toFinset
   have hsc : Filter.cofinite ≤ Filter.principal (↑s : Set (HeightOneSpectrum (𝓞 F)))ᶜ := by
-    rw [Filter.le_principal_iff]
-    exact s.finite_toSet.compl_mem_cofinite
+    simp
   let inc := RestrictedProduct.inclusion X C hsc
   let a' : RestrictedProduct X C (Filter.principal (↑s : Set _)ᶜ) :=
     ⟨a.1, by
@@ -59,7 +57,7 @@ theorem finiteAdeles_diagonal_denseRange (F : Type) [Field F] [NumberField F] :
     constructor
     · by_cases hv : v.val ∈ t
       · change a.1 v.val ∈ (if v.val ∈ t then u v.val else Set.univ)
-        simpa only [if_pos hv] using (hu v.val hv).2
+        simp_all
       · simp [hv]
     · by_cases hv : v.val ∈ s
       · simp [hv]
@@ -101,11 +99,6 @@ theorem exists_integral_remainder (F : Type) [Field F] [NumberField F]
   have hU : IsOpen U := (integralAdeles_isOpen F).preimage (continuous_const.sub continuous_id)
   have ha : a ∈ U := by
     change a - a ∈ integralAdeles F
-    rw [sub_self]
-    exact (integralAdeles F).zero_mem
+    simp
   obtain ⟨r, hr⟩ := (finiteAdeles_diagonal_denseRange F).exists_mem_open hU ⟨a, ha⟩
   exact ⟨r, hr⟩
-
-end DedekindZetaZeroFree.KPAdelicTopology
-
-end

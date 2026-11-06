@@ -18,7 +18,7 @@ theorem rootsEulerPolynomial (f : ℕ) (hf : 0 < f) (x : ℂ) :
   obtain ⟨ζ, hζ⟩ := HasEnoughRootsOfUnity.exists_primitiveRoot ℂ f
   let g : Fin f → rootsOfUnity f ℂ := fun i => hζ.toRootsOfUnity ^ (i : ℕ)
   have hg (i : Fin f) : ((g i).val : ℂ) = ζ ^ (i : ℕ) := by
-    simp [g, IsPrimitiveRoot.toRootsOfUnity]
+    rfl
   have hbij : Function.Bijective g := by
     constructor
     · intro i j hij
@@ -43,8 +43,6 @@ theorem rootsEulerPolynomial (f : ℕ) (hf : 0 < f) (x : ℂ) :
       symm
       apply Fintype.prod_equiv e
       intro i
-      simp only [e, Equiv.ofBijective_apply, hg]
+      rfl
     _ = ∏ i ∈ Finset.range f, (1 - ζ ^ i * x) := Fin.prod_univ_eq_prod_range (fun i => 1 - ζ ^ i * x) f
     _ = 1 - x ^ f := hp.symm
-
-end DedekindZetaZeroFree.AbelianQuotient

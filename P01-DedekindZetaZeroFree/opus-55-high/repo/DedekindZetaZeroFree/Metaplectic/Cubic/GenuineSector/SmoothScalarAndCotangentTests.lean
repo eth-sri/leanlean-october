@@ -491,17 +491,8 @@ open KPContSectorPhaseComponentCharts in
   simp [coordinateMap, isotropyChart, targetChart, ChartKind.representative, coord]
  theorem chart_omega (a b : ShrunkChart F ζ hζ U R P H)
     (h : a.component = b.component) :
-    (targetChart a b h).omega = (isotropyChart b).omega := by
-  rcases a with ⟨i,ca,oa,da,dao,dac,das,dai⟩
-  rcases b with ⟨j,cb,ob,db,dbo,dbc,dbs,dbi⟩
-  dsimp at h
-  subst j
-  rfl
- theorem omega_open (a : ShrunkChart F ζ hζ U R P H) : IsOpen (omega a) := by
-  apply a.domain_open.preimage
-  apply continuous_pi
-  intro k
-  exact (continuous_apply _).comp (CotangentLogCoframe.A (d F)).continuous
+    (targetChart a b h).omega = (isotropyChart b).omega := by apply DedekindZetaZeroFree.KPContCotangentOverlapRationalBranches.chart_omega <;> assumption
+ theorem omega_open (a : ShrunkChart F ζ hζ U R P H) : IsOpen (omega a) := by apply DedekindZetaZeroFree.KPContActualCotangentMeasurableMeasure.omega_open <;> assumption
  def make (a b : ShrunkChart F ζ hζ U R P H) (h : a.component = b.component)
     (g : KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative a.component)) :
     ActualBranch a b := by
@@ -530,7 +521,7 @@ open KPContSectorPhaseComponentCharts in
       exact fun _ hx => hx.2
     target_larger := ht }
 
-private theorem scalarCompatible_transform (f : ScalarFields F ζ hζ U R P H)
+theorem scalarCompatible_transform (f : ScalarFields F ζ hζ U R P H)
     (hf : ScalarCompatible f) (a b : ActualChart (U := U) (H := H))
     (hc : a.component = b.component)
     (g : KPCuspGenuineMonodromy.Component F ζ hζ U ((H.atlas U).representative a.component))
@@ -564,7 +555,7 @@ private theorem scalarCompatible_transform (f : ScalarFields F ζ hζ U R P H)
  def pointChart (i : Fin (H.atlas U).componentCount) (y : SymmetricSpace F) :
     ActualChart (U := U) (H := H) :=
   (shrink_exists (H := H) i y).choose
-private theorem pointChart_component (i : Fin (H.atlas U).componentCount) (y : SymmetricSpace F) :
+theorem pointChart_component (i : Fin (H.atlas U).componentCount) (y : SymmetricSpace F) :
     (pointChart (H := H) i y).component = i :=
   (shrink_exists (H := H) i y).choose_spec.1
  theorem pointChart_mem (i : Fin (H.atlas U).componentCount) (y : SymmetricSpace F) :
@@ -579,7 +570,7 @@ private theorem pointChart_component (i : Fin (H.atlas U).componentCount) (y : S
     rw [he]; exact pointChart_mem i y⟩
  def gluedScalar (f : S_U F ζ hζ U R P H) (i : Fin (H.atlas U).componentCount)
     (y : SymmetricSpace F) : ℂ := f.val (pointChart i y) (pointLift i y)
-private theorem gluedScalar_chart (f : S_U F ζ hζ U R P H)
+theorem gluedScalar_chart (f : S_U F ζ hζ U R P H)
     (a : ActualChart (U := U) (H := H)) (x : omega a) :
     gluedScalar f a.component (labeledA (placeEquiv F ζ hζ) x.val) = f.val a x := by
   unfold gluedScalar
@@ -1096,7 +1087,7 @@ private theorem extended_source (f : localScalarTests a) (z : a.domain) :
   (H.atlas U).components ⟨a.component, Quotient.mk _ z⟩
 private theorem base_continuous : Continuous (base a) :=
   (H.atlas U).components.continuous.comp (continuous_sigmaMk.comp continuous_quotient_mk')
-private theorem base_action (g : G a) (z : SymmetricSpace F) : base a (g.val • z) = base a z := by
+theorem base_action (g : G a) (z : SymmetricSpace F) : base a (g.val • z) = base a z := by
   apply congrArg (fun t => (H.atlas U).components ⟨a.component, t⟩)
   exact Quotient.sound ⟨g, rfl⟩
 private theorem extended_off_support (f : localScalarTests a) (z : SymmetricSpace F)
@@ -1428,12 +1419,12 @@ theorem cotangentRestriction_support_subset (a : ActualChart (U := U) (H := H))
   apply closure_mono
   rintro z ⟨x, ⟨hx, hn⟩, rfl⟩
   exact ⟨a, ⟨x, hx⟩, rfl, hn⟩
-private theorem scalar_zero_off_support (f : S_U F ζ hζ U R P H)
+theorem scalar_zero_off_support (f : S_U F ζ hζ U R P H)
     (a : ActualChart (U := U) (H := H)) (x : omega a)
     (hx : q a x.val ∉ scalarSupport f.val) : f.val a x = 0 := by
   by_contra hn
   exact hx (subset_closure ⟨a, x, rfl, hn⟩)
-private theorem tensor_zero_off_support (v : T_U F ζ hζ U R P H)
+theorem tensor_zero_off_support (v : T_U F ζ hζ U R P H)
     (a : ActualChart (U := U) (H := H)) (x : omega a)
     (hx : q a x.val ∉ tsupport (normSquare v.val)) : coefficient v.val a x = 0 := by
   rw [← cotangentSupport_eq] at hx

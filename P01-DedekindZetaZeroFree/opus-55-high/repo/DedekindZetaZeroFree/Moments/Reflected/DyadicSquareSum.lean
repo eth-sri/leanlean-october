@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.Moments.Reflected.PowerfulSquarefreeTailBound
 @[expose] public section
 
 namespace DedekindZetaZeroFree.RepresentationTheory.RMParameterAbsorption
-noncomputable section
 open scoped NumberField BigOperators Classical
 
 variable {F : Type} [Field F] [NumberField F]
@@ -23,7 +22,7 @@ private theorem rowDyad_finite (A : SArithmeticData F) (h : A.Exterior) (D : ℝ
     exact congrArg (fun x : NonzeroIdeal F => x.val) he
   · exact normBoundedIdeals_finite F (2 * D)
 
-private theorem rowDyad_count (A : SArithmeticData F) (h : A.Exterior) (D C : ℝ)
+theorem rowDyad_count (A : SArithmeticData F) (h : A.Exterior) (D C : ℝ)
     (hc : ∀ X : ℝ, 1 ≤ X → ((normBoundedIdeals F X).ncard : ℝ) ≤ C * X)
     (hD : 1 ≤ D) : ((RMTailCutoff.rowDyad A h D).ncard : ℝ) ≤ 2 * C * D := by
   let f : ExteriorSquarefreeIdeal A.cS → NonzeroIdeal F :=
@@ -86,6 +85,3 @@ theorem bounded_dyad_square_sum (A : SArithmeticData F) :
       mul_le_mul_of_nonneg_right (hp A.cS A.cS_ne_zero P hP)
         (mul_nonneg (by positivity) hV)
     _ = _ := by ring
-
-end
-end DedekindZetaZeroFree.RepresentationTheory.RMParameterAbsorption

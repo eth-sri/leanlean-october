@@ -11,7 +11,7 @@ namespace DedekindZetaZeroFree.KPFiniteWindowPencil
 
 variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
 
-private lemma eigenvector_spectral_parameter (B : H →L[ℂ] H) (hB : IsSelfAdjoint B)
+lemma eigenvector_spectral_parameter (B : H →L[ℂ] H) (hB : IsSelfAdjoint B)
  (μ : ℝ) (hμ : ¬ IsUnit (1 - (μ + 1) • B)) :
  μ + 1 ≠ 0 ∧ 1 / (1 + μ) ∈ spectrum ℝ B := by
  have hn : μ + 1 ≠ 0 := by
@@ -28,13 +28,13 @@ private lemma eigenvector_spectral_parameter (B : H →L[ℂ] H) (hB : IsSelfAdj
  rw [he, Algebra.smul_def]
  exact ((isUnit_iff_ne_zero.mpr hn).map (algebraMap ℝ (H →L[ℂ] H))).mul hu
 
-private lemma eigenvector_local_radius (μ : ℝ) (hn : μ + 1 ≠ 0) (J : Set ℝ) (hμJ : μ ∈ interior J) :
+lemma eigenvector_local_radius (μ : ℝ) (hn : μ + 1 ≠ 0) (J : Set ℝ) (hμJ : μ ∈ interior J) :
  ∃ ε : ℝ, 0 < ε ∧ ∀ x : ℝ, |x - 1 / (1 + μ)| < ε → x ≠ 0 ∧ x⁻¹ - 1 ∈ J := by
  let t := 1 / (1 + μ)
  have ht : t ≠ 0 := by simpa [t, add_comm] using inv_ne_zero hn
- have he : t⁻¹ - 1 = μ := by simp [t, add_comm, hn]
+ have he : t⁻¹ - 1 = μ := by simp [t, add_comm]
  have hc : ContinuousAt (fun x : ℝ => x⁻¹ - 1) t :=
-  (continuousAt_id.inv₀ ht).sub continuousAt_const
+  by fun_prop
  have hj : (fun x : ℝ => x⁻¹ - 1) ⁻¹' J ∈ nhds t :=
   hc.preimage_mem_nhds (he.symm ▸ mem_interior_iff_mem_nhds.mp hμJ)
  have hz : ({0}ᶜ : Set ℝ) ∈ nhds t := isClosed_singleton.isOpen_compl.mem_nhds ht
@@ -43,7 +43,7 @@ private lemma eigenvector_local_radius (μ : ℝ) (hn : μ + 1 ≠ 0) (J : Set �
  have hh := hs (show x ∈ Metric.ball t ε by simpa [Real.dist_eq, t] using hx)
  exact hh
 
-private lemma eigenvector_bump_identity (ε y : ℝ) (hε : ε ≠ 0) :
+lemma eigenvector_bump_identity (ε y : ℝ) (hε : ε ≠ 0) :
  (1 - max 0 (1 - y ^ 2 / ε ^ 2)) * max (ε ^ 2) (y ^ 2) = y ^ 2 := by
  have hp : 0 < ε ^ 2 := sq_pos_of_ne_zero hε
  by_cases h : y ^ 2 ≤ ε ^ 2
@@ -128,8 +128,7 @@ lemma pencil_eigenvector_of_finite_window
    have hgg := cfc_commute_cfc g k B
    exact (Commute.one_left _).sub_left hgg
   rw [hcomm.eq, ContinuousLinearMap.mul_apply]
-  have he : (1 - G) u = 0 := by simpa using sub_eq_zero.mpr hGu.symm
-  rw [he, map_zero]
+  simp_all
  have hAu : A u = 0 := by
   have hm : u ∈ (ContinuousLinearMap.adjoint A ∘L A).toLinearMap.ker := by
    change (ContinuousLinearMap.adjoint A) (A u) = 0
@@ -143,5 +142,3 @@ lemma pencil_eigenvector_of_finite_window
  rw [he, smul_smul]
  have hh : (μ + 1) * t = 1 := by simp [t, add_comm 1 μ, hn]
  rw [hh, one_smul]
-
-end DedekindZetaZeroFree.KPFiniteWindowPencil

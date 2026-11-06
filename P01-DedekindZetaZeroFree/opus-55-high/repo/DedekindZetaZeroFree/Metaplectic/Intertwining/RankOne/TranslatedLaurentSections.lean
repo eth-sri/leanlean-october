@@ -119,8 +119,7 @@ private theorem exponent_invariant
   change g⁻¹ * (j : ActualCover F ζ hζ q) * (g⁻¹)⁻¹ ∈ J.toOpenSubgroup at hj
   have hjg : g⁻¹ * (j : ActualCover F ζ hζ q) * g ∈ S.iwasawa.compact.toOpenSubgroup :=
     hJ (by
-      change g⁻¹ * (j : ActualCover F ζ hζ q) * g ∈ J.toOpenSubgroup
-      simpa only [inv_inv] using hj)
+      simp_all)
   have he := exponent_invariant F ζ hζ q S 1 (by simp [localAbs_one])
     ((k : ActualCover F ζ hζ q) * g) ((k' : ActualCover F ζ hζ q) * g)
     ⟨g⁻¹ * (j : ActualCover F ζ hζ q) * g, hjg⟩ (by simp [hk, mul_assoc])
@@ -147,7 +146,7 @@ private theorem exponent_invariant
   rw [he]
   split_ifs
   · exact (translatedCompact F ζ hζ q S P δ 0 g φ).property.1 b k k' hk
-  · exact (map_zero _).symm
+  simp
 
  def spectralVector (δ : Sign)
     (J : CompactOpenLevel (ActualCover F ζ hζ q))
@@ -164,7 +163,7 @@ private theorem exponent_invariant
     exact hlev ⟨j, hj⟩ k (k * j) rfl
   exact ⟨⟨v, spectralValue_borel F ζ hζ q S P δ g φ.val n, hsm⟩, hlev⟩
 
-private theorem translated_monomial (ε : Sign) (g : ActualCover F ζ hζ q)
+theorem translated_monomial (ε : Sign) (g : ActualCover F ζ hζ q)
     (φ : compactPicture S.borel P S.iwasawa (sourceSign ε))
     (s : ℂ) (k : S.iwasawa.compact.toOpenSubgroup) :
     (translatedCompact F ζ hζ q S P (sourceSign ε) (sourceParameter ε s) g φ).val k =
@@ -221,7 +220,7 @@ theorem actual_translate_finite_laurent
   · simp [spectralVector, spectralValue]
   · intro n hn hne
     simp [spectralVector, spectralValue, Ne.symm hne]
-  · exact fun h => (h hn).elim
+  simp_all
 
 end DedekindZetaZeroFree.KPRankOneTranslatedLevel
 
@@ -239,7 +238,7 @@ open KPLocalExceptionalConstruction KPLocalStoneVonNeumann KPLocalPrincipalSerie
 open KPRankOneShellContinuation KPRankOneRootParameter KPRankOneShellRepair
 open KPRankOneTranslatedLevel
 
-private theorem unit_diff (K : Type*) [Field K] [ValuativeRel K]
+theorem unit_diff (K : Type*) [Field K] [ValuativeRel K]
     [TopologicalSpace K] [IsNonarchimedeanLocalField K] (ε : Sign) :
     Differentiable ℂ (fun s => (evaluationUnit K ε s : ℂ)) := by
   have hr : Differentiable ℂ (r K) := by unfold r; fun_prop
@@ -247,11 +246,11 @@ private theorem unit_diff (K : Type*) [Field K] [ValuativeRel K]
   | plus => exact hr
   | minus => exact hr.inv (fun s => Complex.exp_ne_zero _)
 
-private theorem denominator_diff (K : Type*) [Field K] [ValuativeRel K]
+theorem denominator_diff (K : Type*) [Field K] [ValuativeRel K]
     [TopologicalSpace K] [IsNonarchimedeanLocalField K] (ε : Sign) :
     Differentiable ℂ (denominator K ε) := by
   cases ε with
-  | plus => unfold denominator t r; simp only [if_pos rfl, if_true]; fun_prop
+  | plus => unfold denominator t r; simp only [if_true]; fun_prop
   | minus =>
     unfold denominator
     simp only [reduceCtorEq, if_false]
@@ -270,7 +269,7 @@ variable (F : Type) [Field F] [NumberField F]
   (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
     (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ))
 
-private theorem level_coordinate_formula (J : CompactOpenLevel (ActualCover F ζ hζ q))
+theorem level_coordinate_formula (J : CompactOpenLevel (ActualCover F ζ hζ q))
     (ε : Sign) (p : LevelLaurentOperator (LocalField F q) S.borel P S.iwasawa J ε)
     (φ : compactLevel S.borel P S.iwasawa (sourceSign ε) J)
     (k : S.iwasawa.compact.toOpenSubgroup) (h : actualTorus F ζ hζ q) (s : ℂ) :
@@ -282,7 +281,7 @@ private theorem level_coordinate_formula (J : CompactOpenLevel (ActualCover F ζ
     Submodule.coe_smul, Submodule.coe_sum, LinearMap.sum_apply,
     Finset.sum_apply, Pi.smul_apply, smul_eq_mul]
 
-private theorem level_numerator_diff (J : CompactOpenLevel (ActualCover F ζ hζ q))
+theorem level_numerator_diff (J : CompactOpenLevel (ActualCover F ζ hζ q))
     (ε : Sign) (p : LevelLaurentOperator (LocalField F q) S.borel P S.iwasawa J ε)
     (φ : compactLevel S.borel P S.iwasawa (sourceSign ε) J)
     (k : S.iwasawa.compact.toOpenSubgroup) (h : actualTorus F ζ hζ q) :
@@ -316,7 +315,7 @@ theorem actual_coordinate_regular (ε : Sign)
   · intro s₀ hs₀
     exact ((hd.differentiableAt).inv hs₀).mul hn.differentiableAt
 
-private theorem translated_continued_compact_regular (ε : Sign) (g : ActualCover F ζ hζ q)
+theorem translated_continued_compact_regular (ε : Sign) (g : ActualCover F ζ hζ q)
     (φ : compactPicture S.borel P S.iwasawa (sourceSign ε))
     (k : S.iwasawa.compact.toOpenSubgroup) (h : actualTorus F ζ hζ q) :
     (Meromorphic (fun s : ℂ => ((actualContinued F ζ hζ q S P μ hμ π hπ ε s
@@ -334,12 +333,9 @@ private theorem translated_continued_compact_regular (ε : Sign) (g : ActualCove
     rw [hp]
     let l : compactPicture S.borel P S.iwasawa (targetSign ε) →ₗ[ℂ] ℂ :=
       { toFun := fun v => (v.val k).val h
-        map_add' := by intros; rfl
-        map_smul' := by intros; rfl }
-    change l (actualContinued F ζ hζ q S P μ hμ π hπ ε s
-      (∑ n ∈ N, (evaluationUnit (LocalField F q) ε s : ℂ) ^ n • (v n).val)) = _
-    simp only [Finsupp.sum, map_sum, map_smul, smul_eq_mul]
-    rfl
+        map_add' := by simp
+        map_smul' := by simp }
+    simp
   simp_rw [he]
   constructor
   · intro s₀
@@ -347,7 +343,7 @@ private theorem translated_continued_compact_regular (ε : Sign) (g : ActualCove
         ((actualContinued F ζ hζ q S P μ hμ π hπ ε s (v n).val).val k).val h) =
       ∑ n ∈ N, (fun s : ℂ => (evaluationUnit (LocalField F q) ε s : ℂ) ^ n *
         ((actualContinued F ζ hζ q S P μ hμ π hπ ε s (v n).val).val k).val h) by
-      funext s; simp only [Finset.sum_apply]]
+      funext s; simp]
     apply MeromorphicAt.sum
     intro n hn
     have hu := ((unit_diff (LocalField F q) ε).zpow (m := n)
@@ -438,9 +434,3 @@ theorem translated_continued_section_regular (ε : Sign)
   have hd := target_scalar_diff F ζ hζ q S ε (S.iwasawa.borelPart x)
   exact ⟨fun s₀ => (hd.analyticAt s₀).meromorphicAt.mul (hc.1 s₀),
     fun s₀ hs₀ => (hd.differentiableAt.mul (hc.2 s₀ hs₀)).continuousAt⟩
-
-end DedekindZetaZeroFree.KPRankOneTranslatedMeromorphy
-
-end
-
-end

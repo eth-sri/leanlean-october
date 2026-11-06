@@ -39,8 +39,7 @@ lemma norm_insertion_one (w : InfinitePlace F) (z : w.Completionˣ)
     by_cases hu : u = w
     · subst u; simpa using hz
     · simp [Function.update_of_ne hu]
-  simp only [hi, one_pow, Finset.prod_const_one, Pi.one_apply, Units.val_one, norm_one,
-    one_mul]
+  simp_all
 
 theorem quotient_integral_zero_of_odd (A : SArithmeticData F) (w : InfinitePlace F)
     (μG : Measure A.G) [μG.IsHaarMeasure] (l : PositiveAxis)
@@ -78,8 +77,7 @@ theorem quotient_integral_zero_of_odd (A : SArithmeticData F) (w : InfinitePlace
     apply congrArg f
     apply Quotient.sound
     apply MulAction.orbitRel_apply.mpr
-    apply MulAction.mem_orbit_iff.mpr
-    exact ⟨γ, rfl⟩
+    simp
   have hneg (y : Sheet A l) : g (e y) = -g y := hodd y (e y) (he y)
   have hmap : (∫ q, f q ∂sheetQuotientHaar A w μG l) = ∫ y in Ω, g y ∂μ := by
     rw [sheetQuotientHaar_eq A w μG l Ω hΩ]
@@ -119,7 +117,3 @@ theorem bothUpperZero {N : TraceHaarTransport R} {Q : AdmissibleFlatSources R}
   intro y y' hy'
   rw [quotientUpper_projection R D, quotientUpper_projection R D, hy']
   exact weightedUpper_neg_one R P C v m b P.v₀ y.val
-
-end DedekindZetaZeroFree.IdeleInsertion
-
-end

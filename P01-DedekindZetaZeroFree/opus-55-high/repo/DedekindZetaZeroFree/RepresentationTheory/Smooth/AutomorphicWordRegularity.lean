@@ -22,7 +22,7 @@ private theorem finitePart_eq : KPGlobalTorusFunctionData.finitePart F ζ hζ =
   ext x
   simp [ActualQuotient.finiteTuples, Subgroup.mem_iInf, MonoidHom.mem_ker]
 
-private theorem word_smoothAutomorphic (v : smoothSpace F ζ hζ U)
+theorem word_smoothAutomorphic (v : smoothSpace F ζ hζ U)
     (w : List (KPSmoothActualFlowData.B F)) :
     KPSmoothActualFlowData.SmoothAutomorphic F ζ hζ
       (KPSmoothActualFlowData.wordDerivative F ζ hζ w v.val) := by
@@ -30,7 +30,7 @@ private theorem word_smoothAutomorphic (v : smoothSpace F ζ hζ U)
     v.property.2.1 w,
     ActualWordLinearity.word_orbit_contDiff F ζ hζ v.val v.property.1 w⟩
 
-private theorem word_centre_covariant
+theorem word_centre_covariant
     (v : smoothSpace F ζ hζ U) (w : List (KPSmoothActualFlowData.B F))
     (g : G F ζ hζ) (ε : rootsOfUnity 3 F) :
     KPSmoothActualFlowData.wordDerivative F ζ hζ w v.val

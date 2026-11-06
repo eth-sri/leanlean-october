@@ -27,8 +27,8 @@ def mixedGaussian (x : K) (q : InfinitePlace K → ℝ) : ℂ :=
 theorem norm_sq_traceRadialScale_traceEmbedding
     (q : InfinitePlace K → ℝ) (hq : ∀ v, q v ≠ 0) (x : K) :
     ‖traceRadialScale K q hq (traceEmbedding K x)‖ ^ 2 =
-      ∑ v : InfinitePlace K, (v.mult : ℝ) * (q v) ^ 2 * (v x) ^ 2 := by
-  exact GaussianSchwartz.mixed_norm_sq K q hq x
+      ∑ v : InfinitePlace K, (v.mult : ℝ) * (q v) ^ 2 * (v x) ^ 2 := 
+  GaussianSchwartz.mixed_norm_sq K q hq x
 
 theorem mixedGaussian_eq_latticeGaussian
     (x : K) (q : InfinitePlace K → ℝ) (hq : ∀ v, q v ≠ 0) :
@@ -118,8 +118,8 @@ def traceRealCoordinateCLM (w : {v : InfinitePlace K // IsReal v}) :
 theorem exists_latticeGaussianSchwartz
     {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
     [FiniteDimensional ℝ E] (a : ℝ) (ha : 0 < a) :
-    ∃ f : SchwartzMap E ℂ, ∀ x, f x = latticeGaussian a x := by
-  exact GaussianSchwartz.exists_gaussian a ha
+    ∃ f : SchwartzMap E ℂ, ∀ x, f x = latticeGaussian a x := 
+  GaussianSchwartz.exists_gaussian a ha
 
 theorem exists_traceGaussianSchwartz :
     ∃ f : SchwartzMap (euclidean.mixedSpace K) ℂ,
@@ -132,7 +132,3 @@ def traceGaussianSchwartz : SchwartzMap (euclidean.mixedSpace K) ℂ :=
 @[simp] theorem traceGaussianSchwartz_apply (x : euclidean.mixedSpace K) :
     traceGaussianSchwartz K x = latticeGaussian Real.pi x :=
   Classical.choose_spec (exists_traceGaussianSchwartz K) x
-
-end DedekindZetaZeroFree.AbelianQuotient.Theta
-
-end

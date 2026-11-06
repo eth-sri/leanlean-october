@@ -43,16 +43,7 @@ variable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ)
 theorem insertion_commutes_finiteRepresentative
     (r : KPSmoothActualFlowData.GInfinity F)
     (a : KPFiniteCuspAtlas.FiniteCover F ζ hζ) :
-    Commute (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ r) a.val := by
-  have ha : a.val ∈ ActualFiniteFactor.finiteSubgroup F ζ hζ := by
-    rw [ActualFiniteFactor.finiteSubgroup_eq_ker]
-    change ActualFiniteFactor.archProjection F ζ hζ a.val = 1
-    funext w
-    rw [KPMsResidualTailRestoration.SharpConstantTerm.FiberStability.archProjection_compare]
-    have hp := congrFun (show KPCuspGenuineMonodromy.archProjection F ζ hζ a.val = 1 from a.property) w
-    rw [hp]
-    exact map_one _
-  exact ActualFiniteFactor.archInsertion_commutes F ζ hζ r ⟨a.val, ha⟩
+    Commute (KPSmoothActualFlowData.archimedeanInsertion F ζ hζ r) a.val := by apply DedekindZetaZeroFree.KPMsActualCuspSource.insertion_commutes <;> assumption
 
 end DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualScalarCasimirTransport
 

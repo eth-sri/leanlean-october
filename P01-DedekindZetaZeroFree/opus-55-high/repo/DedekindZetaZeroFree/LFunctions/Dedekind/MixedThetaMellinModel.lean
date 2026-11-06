@@ -14,5 +14,3 @@ theorem zeta_mixedThetaModel (K : Type) [Field K] [NumberField K] :
   refine ⟨Theta.mixedThetaPair K, Theta.mixedThetaPair_k K, ?_⟩
   intro s hs
   exact Theta.hasMellin_mixedThetaPair K hs
-
-end DedekindZetaZeroFree.AbelianQuotient

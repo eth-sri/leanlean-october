@@ -24,7 +24,7 @@ theorem bin_exists (X : ℝ) (hX : 1 ≤ 2 * X) (f : Ideal (𝓞 F))
   have hfn : 1 ≤ norm f := by
     unfold norm
     exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hf0)
-  have hXX : 2 * X ≤ 2 * max 1 X := by gcongr; exact le_max_right _ _
+  have hXX : 2 * X ≤ 2 * max 1 X := by simp
   have hcover : ∃ j : ℕ, norm f ≤ (2 : ℝ) ^ j :=
     ⟨Vendor.dyadicLength (2 * max 1 X), hf.trans (hXX.trans (Vendor.dyadicLength_cover _))⟩
   let j := Nat.find hcover
@@ -37,11 +37,11 @@ theorem bin_exists (X : ℝ) (hX : 1 ≤ 2 * X) (f : Ideal (𝓞 F))
     · have hh : norm f ≤ 1 := by simpa [hj0] using hj
       linarith
   · have hk : k < Vendor.dyadicLength (2 * max 1 X) := by omega
-    have hlow : (2 : ℝ) ^ k < norm f := by
-      exact lt_of_not_ge (Nat.find_min hcover (by omega))
+    have hlow : (2 : ℝ) ^ k < norm f := 
+      lt_of_not_ge (Nat.find_min hcover (by omega))
     refine ⟨(2 : ℝ) ^ k, ?_, one_le_pow₀ (by norm_num), hlow.le.trans hf, hf0, ?_, ?_⟩
     · apply Finset.mem_insert_of_mem
-      exact Finset.mem_image.mpr ⟨k, Finset.mem_range.mpr hk, rfl⟩
+      simp_all
     · split_ifs <;> linarith
     · simpa [hj0, pow_succ'] using hj
 
@@ -78,16 +78,11 @@ theorem sum_bin (u : Ideal (𝓞 F)) (hu : u ≠ ⊥) (P : ℝ) (H : Ideal (𝓞
     (∑ a ∈ idealDivisors u, if ErrorRectangles.InBin P a then H a else 0) =
       ∑ a ∈ divisorBin (F := F) P, if a ∣ u then H a else 0 := by
   rw [← Finset.sum_filter, ← Finset.sum_filter]
-  apply Finset.sum_congr _ (by intros; rfl)
+  apply Finset.sum_congr _ (by simp)
   ext a
   simp only [Finset.mem_filter, mem_idealDivisors hu, divisorBin,
     mem_boundedNormIdeals]
   constructor
   · rintro ⟨had, hbin⟩
     exact ⟨⟨hbin.2.2, hbin⟩, had⟩
-  · rintro ⟨⟨_, hbin⟩, had⟩
-    exact ⟨had, hbin⟩
-
-end DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms.DivisorBins
-
-end
+  simp_all

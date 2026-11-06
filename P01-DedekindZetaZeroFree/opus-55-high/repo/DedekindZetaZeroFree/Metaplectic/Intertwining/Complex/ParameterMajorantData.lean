@@ -34,5 +34,3 @@ noncomputable def operatorApply {n j : ℕ}
 
 noncomputable def envelope (p : ℝ) (x : ℂ) : ℝ :=
   Real.rpow (1 + ‖x‖ ^ 2) (-p)
-
-end DedekindZetaZeroFree.RepresentationTheory.KPComplexIntertwinerParameterMajorant

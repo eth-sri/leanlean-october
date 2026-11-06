@@ -1,6 +1,6 @@
 module
 
-public import ClassFieldTheory.LubinTate.EqualCharacteristic.CompletedLevel.CompletedFrobeniusContinuity
+public import ClassFieldTheory.LubinTate.EqualCharacteristic.CompletedLevel.CompletedFrobeniusLift
 
 @[expose] public section
 
@@ -10,9 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-set_option autoImplicit false
 
 /-!
 # The completed theta-intertwining theorem: the completed Frobenius lift over the Laurent base
@@ -82,7 +79,7 @@ theorem equalCharacteristicCompletedFrobeniusLiftEquiv_fixesLaurentBase
 
 /-- The prescribed the completed theta-intertwining theorem lift, regarded as an automorphism over the original
 Laurent field `k((T))`. -/
-noncomputable def equalCharacteristicCompletedFrobeniusAlgEquiv
+def equalCharacteristicCompletedFrobeniusAlgEquiv
     (F : LocalField.{u, v} K)
     [CharP K F.residueCharacteristic]
     (u : F.residueField⟦X⟧ˣ) (n : ℕ) :
@@ -101,8 +98,3 @@ theorem equalCharacteristicCompletedFrobeniusAlgEquiv_apply
     equalCharacteristicCompletedFrobeniusAlgEquiv F u n x =
       equalCharacteristicCompletedFrobeniusLiftEquiv F n u⁻¹ x :=
   rfl
-
-end EqualCharacteristic
-end LubinTate
-
-end

@@ -13,8 +13,8 @@ open _root_.DedekindZetaZeroFree.KPMsGreenFlux.ActualSharpStokes.CutoffApproxima
 open _root_.DedekindZetaZeroFree.KPMsGreenFlux.ActualSharpStokes.CutoffApproximation renaming modulus_gt_of_not_core → modulus_gt_of_not_core
 open _root_.DedekindZetaZeroFree.KPMsGreenFlux.ActualSharpStokes.CutoffApproximation renaming admissible_mono → admissible_mono
 open _root_.DedekindZetaZeroFree.KPMsGreenFlux.ActualSharpStokes renaming continuous_core_integrable → continuous_core_integrable
-open scoped NumberField Topology BigOperators
 open MeasureTheory Filter
+open scoped NumberField Topology BigOperators
 open _root_.DedekindZetaZeroFree.KPMsGreenFlux.NormalCoefficient renaming bottomRowJet → bottomRowJet
 open _root_.DedekindZetaZeroFree.KPMsGreenFlux.NormalCoefficient renaming normalRadialJet_eq_bottomRowJet → normalRadialJet_eq_bottomRowJet
 namespace DedekindZetaZeroFree.KPMsGreenFlux.ActualSharpStokes.WeakCutoffSources
@@ -31,7 +31,7 @@ variable {hF : NumberField.InfinitePlace.nrRealPlaces F = 0}
 variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
 variable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
 
-private theorem compact_weighted_flow_bound
+theorem compact_weighted_flow_bound
     {X : Type*} [TopologicalSpace X] [T2Space X] [MeasurableSpace X] [BorelSpace X]
     (μ : Measure X) [IsFiniteMeasureOnCompacts μ]
     (q : ℝ → X → X) (hq : Continuous (Function.uncurry q))
@@ -105,7 +105,7 @@ private theorem compact_weighted_flow_bound
       rw [← ha, add_neg_cancel, hz]
     simp [hχx, hχt]
 
-private theorem weak_flow_integral_zero
+theorem weak_flow_integral_zero
     {X : Type*} [MeasurableSpace X] (μ : Measure X)
     (q : ℝ → X → X) (hq : ∀ t, MeasurePreserving (q t) μ μ)
     (hz : ∀ x, q 0 x = x)
@@ -139,7 +139,7 @@ private theorem weak_flow_integral_zero
     rw [integral_smul, integral_sub hqi hf, ← hv, sub_self, smul_zero]
   exact tendsto_nhds_unique (ht.congr' (Eventually.of_forall heq)) tendsto_const_nhds
 
-private theorem weak_ibp_of_integrated_product_derivative
+theorem weak_ibp_of_integrated_product_derivative
     {X : Type*} [MeasurableSpace X] (μ : Measure X)
     (χ J dχ dJ : X → ℂ)
     (hf : Integrable (fun x => dχ x * J x + χ x * dJ x) μ)

@@ -5,19 +5,18 @@ public import DedekindZetaZeroFree.Geometry.Orbifolds.EllipticRegularity.Equivar
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.KPContSmoothPromotion.LocalSolutionEstimates.LocalFamily
 open MeasureTheory KPContLocalNorm KPContLocalOrbifold
 open KPContLocalEnergy
 open KPContLocalHolomorphyUpgrade.CauchyAssembly
 
-private lemma pair_integrable {n : ℕ} {B : LocalBall n}
+lemma pair_integrable {n : ℕ} {B : LocalBall n}
     {a : Space n → ℂ} (ha : ContDiffOn ℝ (⊤ : ℕ∞) a B.carrier)
     (q : BallL2 B) (φ : TestFunction B.toOpens ℂ ⊤) :
     Integrable (fun x => a x * q x * star (φ x)) (volume.restrict B.carrier) :=
   WeakJets.Raw.jet_localTest_integrable ha (WeakJets.Raw.conjugateTest φ) q
 
-private lemma pair_sub {n : ℕ} {B : LocalBall n}
+lemma pair_sub {n : ℕ} {B : LocalBall n}
     {a : Space n → ℂ} (ha : ContDiffOn ℝ (⊤ : ℕ∞) a B.carrier)
     (q r : BallL2 B) (φ : TestFunction B.toOpens ℂ ⊤) :
     (∫ x in B.carrier, a x * (q-r) x * star (φ x)) =
@@ -28,7 +27,7 @@ private lemma pair_sub {n : ℕ} {B : LocalBall n}
   filter_upwards [Lp.coeFn_sub q r] with x hx
   simp only [hx, Pi.sub_apply, mul_sub, sub_mul]
 
-private lemma difference_equation {n k : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}
+lemma difference_equation {n k : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}
     (D : Coefficients B cρ Cρ κ Λ) (a₁ a₀ : ℂ)
     (u₁ u₀ : IntegerSobolev B 1) (g₁ g₀ : BallL2 B)
     (h₁ : WeakEquation D a₁ u₁ g₁) (h₀ : WeakEquation D a₀ u₀ g₀)
@@ -49,8 +48,8 @@ private lemma difference_equation {n k : ℕ} {B : LocalBall n} {cρ Cρ κ Λ :
     have hterm (i j : Fin n) : Integrable (fun x =>
         (D.density x : ℂ) * (D.matrix x i j : ℂ) * gradient u j x *
           star (coordinateDerivativeList [i] (fun y => φ y) x))
-        (volume.restrict B.carrier) := by
-      exact pair_integrable (hρa i j) (gradient u j)
+        (volume.restrict B.carrier) := 
+      pair_integrable (hρa i j) (gradient u j)
         (WeakJets.Raw.coordinateDerivativeTest (firstIndex i) φ) |>.congr
         (Filter.Eventually.of_forall (fun x => by
           change (D.density x : ℂ) * (D.matrix x i j : ℂ) * gradient u j x *
@@ -231,7 +230,3 @@ theorem chart_solution_difference_jet_estimate {n : ℕ} (D : LineChart n)
   exact (hjet v' (fun y => f₁ y-f₀ y) ((hf₁.sub hf₀).mono hBD)
     hv'ae.symm β x (Metric.ball_subset_closedBall (hKr x.property))).trans
     (by simpa only [mul_assoc] using mul_le_mul_of_nonneg_left hb' hE.le)
-
-end DedekindZetaZeroFree.KPContSmoothPromotion.LocalSolutionEstimates.LocalFamily
-
-end

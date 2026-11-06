@@ -18,9 +18,7 @@ theorem thetaInversionScalar_norm_eq_one (f : ℝ → ℂ) (w : ℂ)
 
   have h2' : f t⁻¹ = w * (t : ℂ) * (starRingEnd ℂ) (f t) := by
     rw [h2]
-    have hc : ((t⁻¹ : ℝ) : ℂ)⁻¹ = (t : ℂ) := by
-      rw [Complex.ofReal_inv, inv_inv]
-    rw [hc, inv_inv]
+    simp
 
   have h3 : (starRingEnd ℂ) (f t⁻¹) = (starRingEnd ℂ) w * (t : ℂ) * f t := by
     rw [h2']
@@ -47,5 +45,3 @@ theorem thetaInversionScalar_norm_eq_one (f : ℝ → ℂ) (w : ℂ)
     have := norm_nonneg w
     rw [h] at this
     norm_num at this
-
-end DedekindZetaZeroFree.Hecke

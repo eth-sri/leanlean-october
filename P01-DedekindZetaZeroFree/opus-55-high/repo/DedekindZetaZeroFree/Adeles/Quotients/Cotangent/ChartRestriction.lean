@@ -53,7 +53,7 @@ private lemma q_coordinates (y : a.domain) :
   simp only [ShrunkChart.toBase, KPContCotangentOverlapRationalBranches.q, coordinates]
   rw [hi]
 
-private theorem localCoefficient_covariant (r : Family (U := U) (H := H))
+theorem localCoefficient_covariant (r : Family (U := U) (H := H))
     (γ : Gamma a) (y : a.domain) :
     localCoefficient a r (actualActionEquiv a γ y) =
       actualTensor a γ y (localCoefficient a r y) := by

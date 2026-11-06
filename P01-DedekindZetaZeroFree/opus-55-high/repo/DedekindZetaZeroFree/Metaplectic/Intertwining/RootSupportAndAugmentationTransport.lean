@@ -162,7 +162,7 @@ theorem diagonal_actual_support_lower_row
   have hk11 : k.val 1 1 ≠ 0 := by
     obtain ⟨r, hr⟩ := (hm.2 k.val k.property).1 1
     rw [← hr]
-    exact pow_ne_zero _ r.ne_zero
+    simp
   obtain ⟨hu, he⟩ := KPTameTransposeUnitNumeratorSteps.fullDiagonal_lower_row_constraint
     B k.val (π ^ i.val) (π ^ i.val) 1 u x hB10 hB11 hk11 hp'
   exact ⟨hu, k, he⟩
@@ -280,7 +280,7 @@ theorem diagonalDoubleKernel_locallyConstant
     intro g
     refine ⟨{z | g⁻¹ * z ∈ J},
       J.isOpen.preimage (continuous_const.mul continuous_id), ?_, ?_⟩
-    · simpa using J.one_mem
+    · simp
     · intro z hz
       have he := congrFun (hJ (g⁻¹ * z) hz) g
       have he' := congrArg (fun v : InducedModule P => v.val 1) he
@@ -298,8 +298,7 @@ theorem diagonalDoubleKernel_locallyConstant
         KPPGLLocalCover.N F ζ hζ (Sum.inr q) z.2 *
         (eta F ζ hζ q π i * KPPGLLocalCover.W F ζ hζ (Sum.inr q) *
           KPPGLLocalCover.N F ζ hζ (Sum.inr q) z.1)) :=
-    (continuous_const.mul (hn.comp continuous_snd)).mul
-      (continuous_const.mul (hn.comp continuous_fst))
+    by fun_prop
   exact hlc.comp_continuous hc
 
 theorem diagonal_actual_support_exponent_dvd
@@ -362,15 +361,12 @@ theorem diagonal_actual_support_exponent_dvd
   simp only [map_mul, Matrix.GeneralLinearGroup.det_scalar, Fintype.card_fin] at hd
   have detd (v : (LocalField F q)ˣ) : Matrix.GeneralLinearGroup.det
       (KubotaRankTwo.d (LocalField F q) v 1) = v := by
-    apply Units.ext
-    simp [Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two]
+    simp
   have detn (v : LocalField F q) : Matrix.GeneralLinearGroup.det
       (KubotaRankTwo.n (LocalField F q) v) = 1 := by
-    apply Units.ext
-    simp [Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two]
+    simp
   have detw : Matrix.GeneralLinearGroup.det (KubotaRankTwo.w (LocalField F q)) = 1 := by
-    apply Units.ext
-    simp [Matrix.GeneralLinearGroup.val_det_apply, KubotaRankTwo.w, Matrix.det_fin_two]
+    simp
   have detswap : Matrix.GeneralLinearGroup.det
       (KPStandardLocalRootLifts.weylSwap (LocalField F q)) = -1 := by
     apply Units.ext
@@ -395,10 +391,9 @@ theorem diagonal_actual_support_exponent_dvd
   obtain ⟨a, ha⟩ := RootResidualGeometry.tame_borel_coordinate_exponent_dvd
     F ζ hζ q S P hP b
   change KPCubicExpansion.valuationExponent (LocalField F q) z = 3 * a at ha
-  apply (Int.dvd_iff_emod_eq_zero).mpr
   omega
 
-private theorem unitCubeClasses_of_exponent_dvd
+theorem unitCubeClasses_of_exponent_dvd
     (π : (LocalField F q)ˣ)
     (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
       (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ))
@@ -418,7 +413,7 @@ private theorem unitCubeClasses_of_exponent_dvd
   have hvv : valuation (LocalField F q) (v : LocalField F q) = 1 := by
     let e := IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
     have hnz : e (valuation (LocalField F q) (v : LocalField F q)) ≠ 0 := by
-      simp [e, v.ne_zero]
+      simp
     have hl : WithZero.log (e (valuation (LocalField F q) (v : LocalField F q))) = 0 := by
       change -WithZero.log (e (valuation (LocalField F q) (v : LocalField F q))) = 0 at hv
       omega
@@ -436,15 +431,14 @@ private theorem unitCubeClasses_of_exponent_dvd
   have hu' : u = KPRamifiedBeta.unitsInclusion (LocalField F q) w * (π ^ n) ^ 3 := by
     rw [he]
     dsimp [v]
-    simp only [zpow_neg, zpow_ofNat]
-    group
+    simp
   change QuotientGroup.mk' (CubicCharacters.cubes (LocalField F q)ˣ) u ∈
     ((KPRamifiedBeta.unitsInclusion (LocalField F q)).range ⊔
     CubicCharacters.cubes (LocalField F q)ˣ).map
     (QuotientGroup.mk' (CubicCharacters.cubes (LocalField F q)ˣ))
   exact ⟨u, hu' ▸ Subgroup.mul_mem_sup ⟨w, rfl⟩ ⟨π ^ n, rfl⟩, rfl⟩
 
-private theorem relativeBorelRootChart_of_exponent_dvd
+theorem relativeBorelRootChart_of_exponent_dvd
     (hP : IsTamePolarization F ζ hζ q S P)
     (π : (LocalField F q)ˣ)
     (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
@@ -456,7 +450,7 @@ private theorem relativeBorelRootChart_of_exponent_dvd
       refine ⟨KubotaRankTwo.d (LocalField F q) (u⁻¹ ^ (2 : ℕ)) 1, ?_, ?_, ?_⟩
       · rfl
       · simp [KubotaRankTwo.d]
-      · simp [KubotaRankTwo.d]⟩
+      rfl⟩
   have ha : S.borel.coordinate a = u⁻¹ ^ (2 : ℕ) := S.coordinate_lift a _ rfl
   have hc : S.cubeClassEquiv (S.heisenberg.π a) ∈ unitCubeClasses (LocalField F q) := by
     rw [S.cube_class, ha]
@@ -467,9 +461,7 @@ private theorem relativeBorelRootChart_of_exponent_dvd
         ((unitCubeClasses (LocalField F q)).inv_mem hcu) 2
   have hL : a ∈ HL F ζ hζ q S P := by
     rw [← hP] at hc
-    obtain ⟨d, hd, he⟩ := hc
-    change S.heisenberg.π a ∈ P.L
-    exact S.cubeClassEquiv.injective he ▸ hd
+    simp_all
   let b₀ : S.borel.B :=
     S.borel.upperRoot (Multiplicative.ofAdd (-(u⁻¹ : (LocalField F q)ˣ) : LocalField F q)) *
       S.borel.torus a
@@ -544,9 +536,3 @@ theorem eventual_u_first_transport_of_integrable
   · by_contra h
     exact hu (diagonalDoubleKernel_ne_zero_mem_relativeBorelRootChart F ζ hζ q S P hP
       π hπ i m hdepth fᵢ hfᵢ s x u h)
-
-end DedekindZetaZeroFree.KPTameTransposeLiteralMassTransport.DiagonalLiftGeometry
-
-end
-
-end

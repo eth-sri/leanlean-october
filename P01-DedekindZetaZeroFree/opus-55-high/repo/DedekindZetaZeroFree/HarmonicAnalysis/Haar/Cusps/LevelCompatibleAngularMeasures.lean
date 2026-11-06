@@ -40,7 +40,3 @@ def family : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P where
       ((rawFamily F ζ hζ R P).atlas V) ((rawFamily F ζ hζ R P).atlas U)
       ((rawFamily F ζ hζ R P).disintegration V)
       ((rawFamily F ζ hζ R P).disintegration U) C⟩
-
-end DedekindZetaZeroFree.KPMsActualNativeHaarFamily
-
-end

@@ -11,7 +11,6 @@ Revision: adc7f1241b42e322a6451854ab7e4b4c146bf78a.
 Goldmakher–Louvel, A quadratic large sieve inequality over number fields (arXiv:1112.1642).
 -/
 
-noncomputable section
 open scoped NumberField Classical BigOperators
 
 namespace DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms
@@ -63,14 +62,10 @@ theorem bilinear_error_middle_dual
   obtain ⟨Cε, hCε, hbound⟩ := h ε hε
   refine ⟨Cε, hCε, ?_⟩
   intro M N K δ hM hN hδ hK hKM d hd0 hd hdc hn hnN g lam hlam B unit hB hBK hu
-  have hMN : 0 ≤ M * N := mul_nonneg (by linarith) (by linarith)
+  have hMN : 0 ≤ M * N := by positivity
   have hpow : Real.rpow (Real.rpow (M * N) δ) C0 =
       Real.rpow (M * N) (C0 * δ) := by
     change ((M * N) ^ δ) ^ C0 = (M * N) ^ (C0 * δ)
     rw [← Real.rpow_mul hMN, mul_comm δ C0]
   simpa only [hpow] using
     hbound M N K δ hM hN hδ hK hKM d hd0 hd hdc hnN g lam hlam B unit hB hBK hu
-
-end DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms
-
-end

@@ -5,9 +5,8 @@ public import DedekindZetaZeroFree.Moments.Reflected.PowerfulSquarefreeIdealDyad
 @[expose] public section
 
 namespace DedekindZetaZeroFree.RepresentationTheory.ActualRowTransfer
-noncomputable section
 
-private lemma dyad_card_bound (X Y : ℝ) (hY : 1 ≤ Y) (hXY : X ≤ Y) :
+lemma dyad_card_bound (X Y : ℝ) (hY : 1 ≤ Y) (hXY : X ≤ Y) :
     ((dyadIndices X).card : ℝ) ≤ (1 + Real.log Y / Real.log 2) ^ 2 := by
   classical
   have hlog : 0 ≤ Real.log Y / Real.log 2 :=
@@ -38,7 +37,7 @@ private lemma dyad_card_bound (X Y : ℝ) (hY : 1 ≤ Y) (hXY : X ≤ Y) :
       push_cast
       linarith
 
-private lemma dyad_weight_bound (M D Z : ℝ) (hM : 1 ≤ M) (hD : 0 ≤ D)
+lemma dyad_weight_bound (M D Z : ℝ) (hM : 1 ≤ M) (hD : 0 ≤ D)
     (hZ : 1 ≤ Z) (pq : ℕ × ℕ) (hpq : pq ∈ dyadIndices (D * Z ^ M)) :
     Real.sqrt ((2 : ℝ) ^ pq.1) *
       ((2 : ℝ) ^ pq.2 + ((2 : ℝ) ^ pq.2) ^ 2 * (2 : ℝ) ^ pq.1 / Z) ≤
@@ -48,8 +47,7 @@ private lemma dyad_weight_bound (M D Z : ℝ) (hM : 1 ≤ M) (hD : 0 ≤ D)
   have hQ : 1 ≤ (2 : ℝ) ^ pq.2 := one_le_pow₀ (by norm_num)
   have hp := (Finset.mem_filter.mp hpq).2
   have hs : Real.sqrt ((2 : ℝ) ^ pq.1) ≤ (2 : ℝ) ^ pq.1 := by
-    nlinarith [Real.sq_sqrt (show 0 ≤ (2 : ℝ) ^ pq.1 by positivity),
-      Real.sqrt_nonneg ((2 : ℝ) ^ pq.1)]
+    simp_all
   have he : Z ^ M ≤ Z ^ (2 * M - 1) :=
     Real.rpow_le_rpow_of_exponent_le hZ (by linarith)
   have hsq : ((2 : ℝ) ^ pq.1 * (2 : ℝ) ^ pq.2) ^ 2 ≤ (D * Z ^ M) ^ 2 :=
@@ -86,10 +84,10 @@ theorem sum_dyad_weights_bound
   have hD : 1 ≤ D := le_max_right _ _
   have hCD : Cstar ≤ D := le_max_left _ _
   have hDpos : 0 < D := by linarith
-  have hl2 : 0 < Real.log 2 := Real.log_pos (by norm_num)
+  have hl2 : 0 < Real.log 2 := by positivity
   have hlD : 0 ≤ Real.log D / Real.log 2 := div_nonneg (Real.log_nonneg hD) hl2.le
-  have hMK : 0 < M / Real.log 2 := div_pos (by linarith) hl2
-  have hK : 0 < K := by dsimp [K]; linarith
+  have hMK : 0 < M / Real.log 2 := by positivity
+  have hK : 0 < K := by positivity
   refine ⟨(Cstar + Cstar ^ 2) * K ^ 2, by positivity, ?_⟩
   intro Z hZ
   have hz : 0 < Z := by linarith
@@ -124,6 +122,3 @@ theorem sum_dyad_weights_bound
         ((Cstar + Cstar ^ 2) * Z ^ (2 * M - 1)) :=
       mul_le_mul_of_nonneg_right hc (by positivity)
     _ = _ := by ring
-
-end
-end DedekindZetaZeroFree.RepresentationTheory.ActualRowTransfer

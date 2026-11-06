@@ -5,16 +5,14 @@ public import DedekindZetaZeroFree.RepresentationTheory.Kirillov.ProjectorGermsA
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.ActualReverseMinorFrequencyNormalization
 open scoped NumberField Topology
 open NumberField IsDedekindDomain MeasureTheory ValuativeRel
 open KPLocalExceptionalConstruction KPTameJacquetTestDuality
-set_option autoImplicit false
 set_option backward.isDefEq.respectTransparency false
 variable (F : Type) [Field F] [NumberField F] (q : HeightOneSpectrum (𝓞 F))
 
-private theorem valuation_integer_eq_finite_ball_zero :
+theorem valuation_integer_eq_finite_ball_zero :
     ((valuation (LocalField F q)).integer : Set (LocalField F q)) = finiteCompletionBall F q 0 := by
   letI : (Valued.v : Valuation (LocalField F q) (WithZero (Multiplicative ℤ))).Compatible := Valuation.Compatible.ofValuation _
   ext x
@@ -33,7 +31,6 @@ theorem exists_actual_conductor_frequency :
   have ha : Valued.v (a : LocalField F q) = WithZero.exp d := by
     dsimp [a]
     rw [map_zpow₀, finiteCompletionUniformizer_valuation, ← WithZero.exp_zsmul]
-    congr 1
     simp
   refine ⟨a, ?_⟩
   intro y
@@ -63,8 +60,4 @@ theorem exists_actual_conductor_frequency :
     valuation (LocalField F q) y ≤ 1
   have hi := (ValuativeRel.isEquiv (Valued.v : Valuation (LocalField F q) (WithZero (Multiplicative ℤ)))
     (valuation (LocalField F q))).le_one_iff_le_one (x := y)
-  rw [← hi]
-  simpa only [mul_one] using (mul_le_mul_iff_right₀ (b := Valued.v y) (c := (1 : WithZero (Multiplicative ℤ))) (show (0 : WithZero (Multiplicative ℤ)) < WithZero.exp d from WithZero.exp_pos))
-end DedekindZetaZeroFree.ActualReverseMinorFrequencyNormalization
-
-end
+  simp_all

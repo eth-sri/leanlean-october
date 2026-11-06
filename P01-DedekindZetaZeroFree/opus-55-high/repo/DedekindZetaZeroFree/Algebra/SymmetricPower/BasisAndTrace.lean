@@ -109,7 +109,7 @@ noncomputable def linearEquivFinsupp : Sym[R]^n M ≃ₗ[R] (Sym κ n →₀ R) 
       refine (Basis.piTensorProduct fun _ : Fin n => b).ext fun f => ?_
 
       have hmk : mk R (Fin n) M (⨂ₜ[R] i, b (f i)) = ⨂ₛ[R] i, b (f i) := by
-        rw [tprod, LinearMap.compMultilinearMap_apply]
+        rfl
       simp [hmk, toFinsupp_tprod_basis, tprodOfSym_ofFn])
 
 private theorem linearEquivFinsupp_symm_single (s : Sym κ n) :
@@ -153,7 +153,3 @@ theorem _root_.Module.Basis.trace_map_symmetricPower_of_apply [Fintype κ] [Deci
     Basis.map_symmetricPower_of_apply b f a hf]
   simp only [map_smul, Finsupp.smul_apply, Basis.repr_self, Finsupp.single_eq_same,
     smul_eq_mul, mul_one]
-
-end CommSemiring
-
-end SymmetricPower

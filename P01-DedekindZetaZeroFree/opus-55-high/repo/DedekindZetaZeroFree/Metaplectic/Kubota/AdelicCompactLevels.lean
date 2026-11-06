@@ -33,12 +33,10 @@ private theorem local_secondCountable (v : KPHilbert.Place F) :
       change SecondCountableTopology (Fin 2 → Fin 2 → w.Completion)
       infer_instance
     letI : SecondCountableTopology (KPHilbert.Completion F (Sum.inl w)) := by
-      change SecondCountableTopology w.Completion
-      infer_instance
+      omega
     letI : SecondCountableTopology (KPLocalCover.LocalGL2 F (Sum.inl w)) := by
       haveI : SecondCountableTopology (Matrix (Fin 2) (Fin 2) (KPHilbert.Completion F (Sum.inl w))) := by
-        change SecondCountableTopology (Fin 2 → Fin 2 → KPHilbert.Completion F (Sum.inl w))
-        infer_instance
+        simp_all
       letI : SecondCountableTopology (Matrix (Fin 2) (Fin 2) (KPHilbert.Completion F (Sum.inl w)))ᵐᵒᵖ :=
         MulOpposite.opHomeomorph.symm.secondCountableTopology
       exact Units.isEmbedding_embedProduct.secondCountableTopology
@@ -53,8 +51,7 @@ private theorem local_secondCountable (v : KPHilbert.Place F) :
         HeightOneSpectrum.denseRange_algebraMap F q⟩⟩
     letI : SecondCountableTopology (q.adicCompletion F) := inferInstance
     letI : SecondCountableTopology (KPHilbert.Completion F (Sum.inr q)) := by
-      change SecondCountableTopology (q.adicCompletion F)
-      infer_instance
+      omega
     letI : SecondCountableTopology (Matrix (Fin 2) (Fin 2) (KPHilbert.Completion F (Sum.inr q))) := by
       change SecondCountableTopology (Fin 2 → Fin 2 → KPHilbert.Completion F (Sum.inr q))
       infer_instance
@@ -63,12 +60,7 @@ private theorem local_secondCountable (v : KPHilbert.Place F) :
     letI : SecondCountableTopology (KPLocalCover.LocalGL2 F (Sum.inr q)) :=
       Units.isEmbedding_embedProduct.secondCountableTopology
     letI : SecondCountableTopology (KPLocalCube.LocalGL2 F q) := by
-      letI : SecondCountableTopology (Matrix (Fin 2) (Fin 2) (KPLocalCube.LocalField F q)) := by
-        change SecondCountableTopology (Fin 2 → Fin 2 → q.adicCompletion F)
-        infer_instance
-      letI : SecondCountableTopology (Matrix (Fin 2) (Fin 2) (KPLocalCube.LocalField F q))ᵐᵒᵖ :=
-        MulOpposite.opHomeomorph.symm.secondCountableTopology
-      exact Units.isEmbedding_embedProduct.secondCountableTopology
+      simp_all
     let m := depth F ζ hζ q
     have hm := depth_admissible F ζ hζ q
     let U (g : KPLocalCover.LocalGL2 F (Sum.inr q)) : Set (KPLocalCover.LocalGL2 F (Sum.inr q)) :=
@@ -160,7 +152,3 @@ theorem rawCover_secondCountable : SecondCountableTopology (RawCover F ζ hζ) :
   haveI : IsTopologicalGroup (RestrictedCover F ζ hζ) := inferInstance
   haveI : SecondCountableTopology (CubicGL2Adelic F ζ hζ) := inferInstance
   infer_instance
-
-end DedekindZetaZeroFree.ActualQuotientTopology.Cover
-
-end

@@ -64,7 +64,7 @@ open scoped Manifold
  def archParam (y : ArchCoordinates F) : KPSmoothLocalQuotientCharts.ArchGroup F :=
   fun w => Matrix.ProjGenLinGroup.mk (KPLiteralChamber.rightMatrix (y w))
 
-private lemma param_split
+lemma param_split
     (e : (KPSmoothLocalQuotientCharts.ArchGroup F × KPFiniteCuspAtlas.FiniteCover F ζ hζ) ≃ₜ* G F ζ hζ)
     (he : ∀ a c, e (a,c) = KPSmoothActualFlowData.archimedeanInsertion F ζ hζ a * c)
     (y : ArchCoordinates F) : e.symm (archChart F ζ hζ y) = (archParam F y,1) := by

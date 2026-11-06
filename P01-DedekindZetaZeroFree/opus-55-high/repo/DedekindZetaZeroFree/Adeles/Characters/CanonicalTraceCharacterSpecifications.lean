@@ -17,7 +17,3 @@ open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree
 
 instance instFactPrimeTraceCharacterSpecNatPrimes (p : Nat.Primes) : Fact p.1.Prime := ⟨p.2⟩
-
-end DedekindZetaZeroFree
-
-end

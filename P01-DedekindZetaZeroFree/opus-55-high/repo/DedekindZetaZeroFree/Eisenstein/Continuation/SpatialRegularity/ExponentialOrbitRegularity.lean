@@ -16,7 +16,7 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
     (v : NumberField.InfinitePlace F) : Matrix.GeneralLinearGroup (Fin 2) ℂ :=
   KPSmoothActualFlowData.matrixExponential (KPSmoothActualFlowData.sl2Matrix (fun j => a (v,j)))
 
-private theorem expMatrix_smooth (v : NumberField.InfinitePlace F) :
+theorem expMatrix_smooth (v : NumberField.InfinitePlace F) :
     ContDiff ℝ (⊤ : ℕ∞) (fun a => (expMatrix F a v).val) := by
   letI : NormedAddCommGroup (Matrix (Fin 2) (Fin 2) ℂ) := Matrix.linftyOpNormedAddCommGroup
   letI : NormedSpace ℝ (Matrix (Fin 2) (Fin 2) ℂ) := Matrix.linftyOpNormedSpace
@@ -49,12 +49,12 @@ theorem exponential_native_local_transition
         KPSmoothActualFlowData.archimedeanInsertion F ζ hζ
           (KPSmoothActualFlowData.exponential F a₀) * archChart F ζ hζ (q a) := by
   let m := relativeMatrix F a₀
-  have hm (v : NumberField.InfinitePlace F) : ContDiff ℝ (⊤ : ℕ∞) (fun a => (m a v).val) := by
-    exact contDiff_const.mul (expMatrix_smooth F v)
+  have hm (v : NumberField.InfinitePlace F) : ContDiff ℝ (⊤ : ℕ∞) (fun a => (m a v).val) := 
+    contDiff_const.mul (expMatrix_smooth F v)
   have hentry (v : NumberField.InfinitePlace F) (i j : Fin 2) :
       ContDiff ℝ (⊤ : ℕ∞) (fun a => (m a v).val i j) := by
     let ev : Matrix (Fin 2) (Fin 2) ℂ →ₗ[ℝ] ℂ :=
-      { toFun := fun M => M i j, map_add' := by intros; rfl, map_smul' := by intros; rfl }
+      { toFun := fun M => M i j, map_add' := by simp, map_smul' := by simp }
     exact ev.toContinuousLinearMap.contDiff.comp (hm v)
   let O : Set (KPSmoothActualFlowData.LieCoordinates F) := {a | ∀ v, (m a v).val 1 1 ≠ 0}
   let q : KPSmoothActualFlowData.LieCoordinates F → ArchCoordinates F := fun a v =>
@@ -72,8 +72,8 @@ theorem exponential_native_local_transition
     have hn : ∀ a ∈ O, (m a v).val 1 1 ≠ 0 := fun a ha => ha v
     have hd : ContDiffOn ℝ (⊤ : ℕ∞) (fun a => (m a v).val.det) O := by
       simp only [Matrix.det_fin_two]
-      exact ((hc 0 0).mul (hc 1 1)).sub ((hc 0 1).mul (hc 1 0))
-    fin_cases i <;> simp only [q,rightCoordinates,Matrix.cons_val_zero,Matrix.cons_val_one,Matrix.cons_val_two]
+      fun_prop
+    fin_cases i <;> simp only [q, rightCoordinates]
     · simpa only [div_eq_mul_inv] using! (hc 0 1).mul ((hc 1 1).inv hn)
     · simpa only [div_eq_mul_inv] using! hd.mul
         (((hc 1 1).pow 2).inv (fun a ha => pow_ne_zero _ (hn a ha)))
@@ -107,7 +107,3 @@ theorem native_exponential_contDiff (u : G F ζ hζ → ℂ)
   filter_upwards [hO.mem_nhds ha₀] with a ha
   dsimp only [Function.comp_def]
   rw [he a ha, mul_assoc]
-
-end DedekindZetaZeroFree.KPSpatialNativeExponentialOrbit
-
-end

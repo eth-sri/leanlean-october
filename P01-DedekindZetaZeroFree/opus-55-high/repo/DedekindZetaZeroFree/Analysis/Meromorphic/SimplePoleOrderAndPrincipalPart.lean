@@ -5,7 +5,6 @@ public import Mathlib.Analysis.Complex.Basic
 
 @[expose] public section
 
-noncomputable section
 open Filter
 open scoped Topology
 namespace DedekindZetaZeroFree.ResidueContinuity
@@ -29,7 +28,3 @@ theorem order_ge_neg_one_of_clearing {f N : ℂ → E} {c : ℂ}
     rw [h] at ho
     have hn : (0 : ℤ) ≤ 1 + n := by exact_mod_cast ho
     exact WithTop.coe_le_coe.mpr (show (-1 : ℤ) ≤ n by omega)
-
-end DedekindZetaZeroFree.ResidueContinuity
-
-end

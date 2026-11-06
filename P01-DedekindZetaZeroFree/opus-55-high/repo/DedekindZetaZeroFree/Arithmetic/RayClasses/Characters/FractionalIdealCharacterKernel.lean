@@ -62,10 +62,10 @@ theorem rayFractionalCharacterKernel
       rayIdealFractionalIdeal K (Ideal.span {d}) hId := rfl
   have hJa_val : (((Ja : ClassFieldTheory.NumberFieldFractionalIdealGroup K) : F)) =
       ((Ideal.span {a} : Ideal (𝓞 K)) : F) := by
-    rw [hJa_coe, rayIdealFractionalIdeal_coe]
+    rfl
   have hJd_val : (((Jd : ClassFieldTheory.NumberFieldFractionalIdealGroup K) : F)) =
       ((Ideal.span {d} : Ideal (𝓞 K)) : F) := by
-    rw [hJd_coe, rayIdealFractionalIdeal_coe]
+    rfl
 
   have hfa : f Ja = 1 := by
     have h := hf (Ideal.span {a}) hIa hca Ja hJa_val
@@ -94,5 +94,3 @@ theorem rayFractionalCharacterKernel
     exact hunit
   rw [hJeq, map_mul, map_inv, hfa, hfd]
   simp
-
-end DedekindZetaZeroFree.AbelianQuotient

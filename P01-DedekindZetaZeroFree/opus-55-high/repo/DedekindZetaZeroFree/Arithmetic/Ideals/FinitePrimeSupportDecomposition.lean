@@ -31,14 +31,14 @@ theorem mem_badPrimes {q p : Ideal (𝓞 F)} (hq : q ≠ ⊥) :
     (UniqueFactorizationMonoid.mem_normalizedFactors_iff hq :
       p ∈ UniqueFactorizationMonoid.normalizedFactors q ↔ Prime p ∧ p ∣ q)
 
-private theorem factors_bad (q I : Ideal (𝓞 F)) :
+theorem factors_bad (q I : Ideal (𝓞 F)) :
     UniqueFactorizationMonoid.normalizedFactors (badPart q I) =
       (UniqueFactorizationMonoid.normalizedFactors I).filter (fun p => p ∈ badPrimes q) := by
   apply UniqueFactorizationMonoid.normalizedFactors_prod_eq_self_of_subset
   intro p hp
   exact (Multiset.mem_filter.mp hp).1
 
-private theorem factors_good (q I : Ideal (𝓞 F)) :
+theorem factors_good (q I : Ideal (𝓞 F)) :
     UniqueFactorizationMonoid.normalizedFactors (goodPart q I) =
       (UniqueFactorizationMonoid.normalizedFactors I).filter (fun p => p ∉ badPrimes q) := by
   apply UniqueFactorizationMonoid.normalizedFactors_prod_eq_self_of_subset
@@ -118,7 +118,7 @@ theorem squarefree_bad_good {q I : Ideal (𝓞 F)}
   rw [(bad_good_factorization hq hI).2.2.1] at hsf
   exact ⟨hsf.of_mul_left, hsf.of_mul_right⟩
 
-private theorem factors_prod_subset {q : Ideal (𝓞 F)} (hq : q ≠ ⊥)
+theorem factors_prod_subset {q : Ideal (𝓞 F)} (hq : q ≠ ⊥)
     {s : Finset (Ideal (𝓞 F))} (hs : s ⊆ badPrimes q) :
     UniqueFactorizationMonoid.normalizedFactors (∏ p ∈ s, p) = s.val := by
   rw [Finset.prod_eq_multiset_prod]
@@ -127,13 +127,13 @@ private theorem factors_prod_subset {q : Ideal (𝓞 F)} (hq : q ≠ ⊥)
   intro p hp
   exact ((mem_badPrimes hq).mp (hs (Finset.mem_def.mpr hp))).1
 
-private theorem supported_subset {q e : Ideal (𝓞 F)} (hq : q ≠ ⊥) (he : e ≠ ⊥)
+theorem supported_subset {q e : Ideal (𝓞 F)} (hq : q ≠ ⊥) (he : e ≠ ⊥)
     (hsf : Squarefree e) (hsup : ∀ p : Ideal (𝓞 F), Prime p → p ∣ e → p ∣ q) :
     ∃! s : Finset (Ideal (𝓞 F)), s ⊆ badPrimes q ∧ e = ∏ p ∈ s, p := by
   let s := (UniqueFactorizationMonoid.normalizedFactors e).toFinset
   have hn := (UniqueFactorizationMonoid.squarefree_iff_nodup_normalizedFactors he).mp hsf
-  have hv : s.val = UniqueFactorizationMonoid.normalizedFactors e := by
-    exact (Multiset.toFinset_val _).trans (Multiset.dedup_eq_self.mpr hn)
+  have hv : s.val = UniqueFactorizationMonoid.normalizedFactors e := 
+    (Multiset.toFinset_val _).trans (Multiset.dedup_eq_self.mpr hn)
   have hs : s ⊆ badPrimes q := by
     intro p hp
     have hp' : p ∈ UniqueFactorizationMonoid.normalizedFactors e := Multiset.mem_toFinset.mp hp
@@ -173,10 +173,6 @@ theorem mem_squarefreeBadPool {q e : Ideal (𝓞 F)} (hq : q ≠ ⊥) :
 
 theorem badPart_mem_squarefreeBadPool {q I : Ideal (𝓞 F)}
     (hq : q ≠ ⊥) (hI : I ≠ ⊥) (hsf : Squarefree I) :
-    badPart q I ∈ squarefreeBadPool q := by
-  exact (mem_squarefreeBadPool hq).mpr ⟨(bad_good_factorization hq hI).1,
+    badPart q I ∈ squarefreeBadPool q := 
+  (mem_squarefreeBadPool hq).mpr ⟨(bad_good_factorization hq hI).1,
     (squarefree_bad_good hq hI hsf).1, (bad_good_factorization hq hI).2.2.2.2⟩
-
-end DedekindZetaZeroFree.LargeSieve.Bilinear
-
-end

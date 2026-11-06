@@ -40,12 +40,9 @@ def fullCompactPreimage :
     exact (localCompactFactor F ζ hζ v).mul_mem (hx v) (hy v)
   one_mem' := by
     intro v
-    rw [RestrictedProduct.one_apply]
-    exact (localCompactFactor F ζ hζ v).one_mem
+    simp
   inv_mem' := by
-    intro x hx v
-    rw [RestrictedProduct.inv_apply]
-    exact (localCompactFactor F ζ hζ v).inv_mem (hx v)
+    simp
 
 def iwasawaCompactSubgroupFull : Subgroup (KPLiteralRaw.G F ζ hζ) :=
   (fullCompactPreimage F ζ hζ).map
@@ -70,10 +67,5 @@ theorem complexCompactLift_mem_iwasawaCompactSubgroupFull (w : InfinitePlace F)
     rcases eq_or_ne v (Sum.inl w) with rfl | hne
     · rw [Pi.mulSingle_eq_same]
       exact Subgroup.subset_closure ⟨k, rfl⟩
-    · rw [Pi.mulSingle_eq_of_ne hne]
-      exact (localCompactFactor F ζ hζ v).one_mem
+    simp_all
   · rfl
-
-end DedekindZetaZeroFree.PrincipalOfKP
-
-end

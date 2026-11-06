@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Cross-base restriction of finite-place Artin homomorphisms
 
@@ -40,7 +36,7 @@ variable {K L : Type}
     [Field L] [Algebra K L]
     [FiniteDimensional K L] [IsAbelianGalois K L]
 
-private theorem finitePlaceArtinLocalizedCompletion_algebraMap
+theorem finitePlaceArtinLocalizedCompletion_algebraMap
     {F M : Type}
     [Field F] [NumberField F]
     [Field M] [NumberField M]
@@ -117,12 +113,10 @@ private theorem finitePlaceArtinLocalizedCompletion_algebraMap
         (AbsoluteValue.completionMap vF w.1 w.2
           ((relativeFinitePlaceCompletionAlgEquiv v).symm
             (relativeFinitePlaceCompletionAlgEquiv v x)))
-  rw [
-    (relativeFinitePlaceCompletionAlgEquiv v).symm_apply_apply,
-    AbsoluteValue.completionAlgebra_algebraMap]
+  simp
 
 /-- The continuous ring homomorphism between base completions attached to a finite place lying above another. -/
-noncomputable def finitePlaceArtinRelativeCompletionRingHom
+def finitePlaceArtinRelativeCompletionRingHom
     {K' : Type} [Field K'] [NumberField K']
     [Algebra K K']
     (v : HeightOneSpectrum (𝓞 K))
@@ -161,7 +155,7 @@ theorem finitePlaceArtinRelativeCompletionRingHom_continuous
 
 /-- The localized completion at a finite place, with its completion-algebra
 tower hidden behind one named type. -/
-noncomputable abbrev finitePlaceArtinLocalizedCompletion
+abbrev finitePlaceArtinLocalizedCompletion
     (F M : Type) [Field F] [NumberField F]
     [Field M] [NumberField M] [Algebra F M]
     (v : HeightOneSpectrum (𝓞 F))
@@ -175,7 +169,7 @@ noncomputable abbrev finitePlaceArtinLocalizedCompletion
 
 /-- The canonical map from the base completion into the localized completion,
 with its construction tower confined to the definition body. -/
-noncomputable def finitePlaceArtinLocalizedCompletionBaseRingHom
+def finitePlaceArtinLocalizedCompletionBaseRingHom
     (F M : Type) [Field F] [NumberField F]
     [Field M] [NumberField M] [Algebra F M]
     (v : HeightOneSpectrum (𝓞 F))
@@ -194,7 +188,7 @@ noncomputable def finitePlaceArtinLocalizedCompletionBaseRingHom
     (AlgebraicNumberTheory.Valuations.LocalizedCompletion vF w)
 
 /-- The ring homomorphism between localized completions in a finite-place scalar tower. -/
-noncomputable def finitePlaceArtinLocalizedCompletionRingHom
+def finitePlaceArtinLocalizedCompletionRingHom
     {K' L' : Type}
     [Field K'] [NumberField K']
     [Field L'] [NumberField L']
@@ -393,7 +387,7 @@ theorem finitePlaceArtinLocalizedCompletion_towerPoint
           K K' v ⟨W, hW⟩ (eC y))) =
         finitePlaceAdicCompletionMap
           K K' v ⟨W, hW⟩ (eC y)
-    rw [eD.apply_symm_apply]
+    simp
   apply eE'.injective
   calc
     eE' (algebraMap C E' x) =
@@ -428,7 +422,7 @@ theorem finitePlaceArtinLocalizedCompletion_towerPoint
       rw [eE'.apply_symm_apply, hLowerBase]
 
 omit [IsAbelianGalois K L] in
-private theorem finitePlaceArtinLocalizedCompletion_globalEmbedding
+theorem finitePlaceArtinLocalizedCompletion_globalEmbedding
     {K' L' : Type}
     [Field K'] [NumberField K']
     [Field L'] [NumberField L']
@@ -596,7 +590,7 @@ private theorem finitePlaceArtinLocalizedCompletion_globalEmbedding
 
 /-- Localized automorphisms with the completion tower hidden behind one named
 type. -/
-noncomputable abbrev finitePlaceArtinLocalizedAutomorphism
+abbrev finitePlaceArtinLocalizedAutomorphism
     (F M : Type) [Field F] [NumberField F]
     [Field M] [NumberField M] [Algebra F M]
     (v : HeightOneSpectrum (𝓞 F))
@@ -610,7 +604,7 @@ noncomputable abbrev finitePlaceArtinLocalizedAutomorphism
 
 /-- Restriction of localized automorphisms across a finite-place square with
 different base fields. -/
-noncomputable def finitePlaceCrossLocalRestrictionMonoidHom
+def finitePlaceCrossLocalRestrictionMonoidHom
     {K' L' : Type}
     [Field K'] [NumberField K']
     [Field L'] [NumberField L']
@@ -687,7 +681,7 @@ noncomputable def finitePlaceCrossLocalRestrictionMonoidHom
     (AlgEquiv.restrictNormalHom E).comp
       (AlgEquiv.restrictScalarsHom C)
 
-private theorem finitePlaceDecompositionEquiv_symm_action
+theorem finitePlaceDecompositionEquiv_symm_action
     {F M : Type}
     [Field F] [Field M] [Algebra F M] [IsGalois F M]
     (vF : AbsoluteValue F ℝ)
@@ -744,7 +738,7 @@ private theorem finitePlaceDecompositionEquiv_symm_action
     _ = tau (embedding z) := by
       rw [e.apply_symm_apply]
 
-private theorem finitePlaceCrossDecompositionTransport_core
+theorem finitePlaceCrossDecompositionTransport_core
     {K K' L L' C D E E' : Type}
     [Field K] [Field K'] [Field L] [Field L']
     [Field C] [Field D] [Field E] [Field E']
@@ -789,8 +783,8 @@ private theorem finitePlaceCrossDecompositionTransport_core
             (AlgEquiv.restrictScalarsHom K
               (phiUpper tauUpper))) z)) =
       upperEmbedding
-        (phiUpper tauUpper (algebraMap L L' z)) := by
-      exact congrArg upperEmbedding
+        (phiUpper tauUpper (algebraMap L L' z)) := 
+      congrArg upperEmbedding
         (AlgEquiv.restrictNormal_commutes
           (AlgEquiv.restrictScalarsHom K
             (phiUpper tauUpper)) L z)
@@ -943,8 +937,3 @@ theorem finitePlaceCrossDecompositionTransport
         (fun tau => ((eUpper.symm tau).1 : L' ≃ₐ[K'] L'))
         lowerEmbedding upperEmbedding hEmbedding
         hUpperAction hLowerAction tauUpper
-
-end Reciprocity
-end GlobalClassFieldTheory
-
-end

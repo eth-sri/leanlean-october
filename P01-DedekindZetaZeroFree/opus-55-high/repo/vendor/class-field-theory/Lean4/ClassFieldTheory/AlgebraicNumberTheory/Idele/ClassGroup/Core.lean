@@ -1,7 +1,10 @@
 module
 
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.IdealMap
-public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Principal
+public import ClassFieldTheory.AlgebraicNumberTheory.Idele.PrincipalCore
+public import GaloisCohomology.Cyclic.Herbrand.HerbrandLowDegree.EquivariantEquiv
+public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Cohomology.Herbrand
+public import ClassFieldTheory.LocalClassFieldTheory.ClassFormation.Valuation
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.ClassGroup.BaseChange
 
 @[expose] public section
@@ -12,11 +15,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-set_option autoImplicit false
 
 /-!
 # The ordinary ideal class group as an idele quotient
@@ -30,7 +28,6 @@ open scoped NumberField RestrictedProduct WithZero
 open NumberField IsDedekindDomain
 
 noncomputable section
-
 
 variable {K : Type*} [Field K] [NumberField K]
 
@@ -52,9 +49,7 @@ theorem count_toPrincipalIdeal (x : Kˣ)
     IsLocalization.eq_mk'_iff_mul_eq.mpr hnd
   have hn : n ≠ 0 := by
     intro hn
-    have : (x : K) = 0 := by
-      rw [hx, hn, IsFractionRing.mk'_eq_div, map_zero, zero_div]
-    exact x.ne_zero this
+    simp_all
   have hspan :
       (toPrincipalIdeal (𝓞 K) K x :
           FractionalIdeal (nonZeroDivisors (𝓞 K)) K) =
@@ -174,7 +169,3 @@ def quotientIntegralSupPrincipalEquiv :
       (idealClass (K := K)).ker (MulEquiv.refl (IdeleGroup K))
       (by simpa using h)).trans
         (quotientIdealClassKernelEquiv (K := K))
-
-end IdeleGroup
-
-end

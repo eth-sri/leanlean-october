@@ -57,7 +57,7 @@ structure Properties
     ∫ x, quotientPair F ζ hζ C R P H U (D.commutator s)
       (testScalar F ζ hζ C R P H U φ) x ∂ R.quotientHaar
 
-private lemma scalar_add (w₁ w₂ : SmoothSections F ζ hζ C R P H U) :
+lemma scalar_add (w₁ w₂ : SmoothSections F ζ hζ C R P H U) :
     scalar F ζ hζ C R P H U (w₁ + w₂) =
       scalar F ζ hζ C R P H U w₁ + scalar F ζ hζ C R P H U w₂ := by
   funext x; simp [scalar, map_add]

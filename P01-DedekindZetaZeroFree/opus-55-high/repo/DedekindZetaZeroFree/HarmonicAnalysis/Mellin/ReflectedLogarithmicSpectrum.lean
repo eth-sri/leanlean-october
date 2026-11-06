@@ -100,8 +100,8 @@ theorem reflection_regularity {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ}
     calc
       (1 + |t|) ^ N *
           (‖(D : ℂ) ^ (s - 1 / 2)‖ * ‖gammaQuotient r s‖ * ‖H (1 - s)‖)
-          ≤ (1 + |t|) ^ N * (B * (Cq * (1 + |t|) ^ k) * ‖H (1 - s)‖) := by
-            exact mul_le_mul_of_nonneg_left
+          ≤ (1 + |t|) ^ N * (B * (Cq * (1 + |t|) ^ k) * ‖H (1 - s)‖) := 
+            mul_le_mul_of_nonneg_left
               (mul_le_mul_of_nonneg_right
                 (mul_le_mul hp hg (norm_nonneg _) hB) (norm_nonneg _)) (by positivity)
       _ = B * Cq * ((1 + |t|) ^ (N + k) * ‖H (1 - s)‖) := by
@@ -139,15 +139,15 @@ def reflectedLogDual (D : ℝ) (r : ℕ) (H : ℂ → ℂ) (δ x : ℝ) : ℂ :=
 
 variable {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ} {H : ℂ → ℂ}
 
-private theorem reflected_regularity (D : ℝ) (r : ℕ)
+theorem reflected_regularity (D : ℝ) (r : ℕ)
     (hD : 0 < D) (hr : 1 ≤ r) (h : LogMellinAdmissible f δ P H) :
     (∀ s : ℂ, 1 < s.re → s.re < 1 + δ →
       DifferentiableAt ℂ (reflectedLogSpectrum D r H) s) ∧
     (∀ u v : ℝ, 1 < u → u ≤ v → v < 1 + δ → ∀ N : ℕ,
       ∃ C : ℝ, 0 ≤ C ∧ ∀ σ t : ℝ, u ≤ σ → σ ≤ v → 1 ≤ |t| →
         (1 + |t|) ^ N *
-          ‖reflectedLogSpectrum D r H ((σ : ℂ) + (t : ℂ) * Complex.I)‖ ≤ C) := by
-  exact LogReflection.reflection_regularity D r hD hr h
+          ‖reflectedLogSpectrum D r H ((σ : ℂ) + (t : ℂ) * Complex.I)‖ ≤ C) := 
+  LogReflection.reflection_regularity D r hD hr h
 
 theorem reflectedLogSpectrum_differentiableOn (D : ℝ) (r : ℕ)
     (hD : 0 < D) (hr : 1 ≤ r) (h : LogMellinAdmissible f δ P H) :
@@ -174,9 +174,3 @@ theorem reflectedLogDual_eq_mellinInv (D : ℝ) (r : ℕ)
   exact (LogReflection.strip_inverse_api (reflectedLogSpectrum D r H)
     1 (1 + δ) hhol hrapid).1 (1 + δ / 2) c x
     (by linarith) (by linarith) hc hcδ hx
-
-end DedekindZetaZeroFree.LargeSieve.Vendor
-
-end
-
-end

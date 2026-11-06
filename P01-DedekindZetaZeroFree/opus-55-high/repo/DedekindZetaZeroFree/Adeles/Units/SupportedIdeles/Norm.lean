@@ -8,7 +8,6 @@ open scoped NumberField NNReal
 open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.SupportedChartNorm
 open SupportedChartDefinitions
-noncomputable section
 variable {F : Type} [Field F] [NumberField F]
 
 theorem local_norm (v : HeightOneSpectrum (𝓞 F)) (x : (v.adicCompletion F)ˣ) :
@@ -38,8 +37,7 @@ theorem finite_norm (S : Finset (HeightOneSpectrum (𝓞 F))) (a : FiniteIdeleGr
   congr 1
   symm
   apply Finset.prod_subset hs
-  intro v hv hvs
-  simp [Finsupp.notMem_support_iff.mp hvs, FiniteIdeleGroup.valuationVector_apply]
+  simp_all
 
 theorem archimedean_norm (A : SArithmeticData F) (a : InfiniteIdeleGroup F) :
     (∏ w : InfinitePlace F, ‖(ContinuousMulEquiv.piUnits a w : w.Completion)‖ ^ 2) =
@@ -57,6 +55,4 @@ theorem supported_norm (A : SArithmeticData F) (a : IdeleGroup F)
   change (∏ w : InfinitePlace F, ‖(ContinuousMulEquiv.piUnits a.1 w : w.Completion)‖ ^ 2) *
     (∏ v : {v // v ∈ A.Sf}, ‖(a.2 v.val : v.val.adicCompletion F)‖) = _
   rw [archimedean_norm A, finite_norm A.Sf a.2 ha, IdeleGroup.absoluteNorm_apply]
-  simp [mul_comm]
-end
-end DedekindZetaZeroFree.SupportedChartNorm
+  simp

@@ -32,7 +32,7 @@ def rawExponent {cS : Ideal (𝓞 F)} (I : ExteriorIdeal cS) :
     exteriorPrimeRawIndex cS →₀ ℕ :=
   Finsupp.comapDomain primeEmbedding (factorization I.val) primeEmbedding.injective.injOn
 
-private theorem factor_support {cS : Ideal (𝓞 F)} (I : ExteriorIdeal cS) :
+theorem factor_support {cS : Ideal (𝓞 F)} (I : ExteriorIdeal cS) :
     ↑(factorization I.val).support ⊆ Set.range (primeEmbedding (cS := cS)) := by
   intro p hp
   have hm : p ∈ UniqueFactorizationMonoid.normalizedFactors I.val := by
@@ -58,7 +58,7 @@ def fromExponent {cS : Ideal (𝓞 F)}
       obtain ⟨q, _, rfl⟩ := Multiset.mem_map.mp hp
       exact sup_comm q.val.val cS ▸ q.val.property.2⟩
 
-private theorem factorization_fromExponent {cS : Ideal (𝓞 F)}
+theorem factorization_fromExponent {cS : Ideal (𝓞 F)}
     (v : exteriorPrimeRawIndex cS →₀ ℕ) :
     factorization (fromExponent v).val = v.embDomain primeEmbedding := by
   unfold factorization fromExponent
@@ -89,12 +89,12 @@ def exponentEquiv (cS : Ideal (𝓞 F)) :
     ExteriorIdeal cS ≃ (exteriorPrimeRawIndex cS →₀ ℕ) :=
   Equiv.ofBijective rawExponent (rawExponent_bijective cS)
 
-private theorem fromExponent_zero {cS : Ideal (𝓞 F)} :
+theorem fromExponent_zero {cS : Ideal (𝓞 F)} :
     fromExponent (0 : exteriorPrimeRawIndex cS →₀ ℕ) = rawOne cS := by
   apply Subtype.ext
   simp [fromExponent, rawOne]
 
-private theorem fromExponent_single {cS : Ideal (𝓞 F)}
+theorem fromExponent_single {cS : Ideal (𝓞 F)}
     (p : exteriorPrimeRawIndex cS) (k : ℕ) :
     fromExponent (Finsupp.single p k) = rawPow p.val k := by
   apply Subtype.ext
@@ -102,13 +102,13 @@ private theorem fromExponent_single {cS : Ideal (𝓞 F)}
     Multiset.map_singleton, Multiset.prod_nsmul, Multiset.prod_singleton]
   rfl
 
-private theorem fromExponent_add {cS : Ideal (𝓞 F)}
+theorem fromExponent_add {cS : Ideal (𝓞 F)}
     (v w : exteriorPrimeRawIndex cS →₀ ℕ) :
     fromExponent (v + w) = rawMul (fromExponent v) (fromExponent w) := by
   apply Subtype.ext
   simp [fromExponent, rawMul, Finsupp.toMultiset_add]
 
-private theorem fromExponent_coprime {cS : Ideal (𝓞 F)}
+theorem fromExponent_coprime {cS : Ideal (𝓞 F)}
     (p : exteriorPrimeRawIndex cS) (v : exteriorPrimeRawIndex cS →₀ ℕ)
     (hp : p ∉ v.support) (k : ℕ) :
     (rawPow p.val k).val ⊔ (fromExponent v).val = ⊤ := by
@@ -119,7 +119,7 @@ private theorem fromExponent_coprime {cS : Ideal (𝓞 F)}
   have hne : p.val.val ≠ q'.val.val := by
     intro h
     have he : p = q' := primeEmbedding.injective h
-    exact hp (he ▸ (Finsupp.mem_toMultiset v q').mp hq')
+    simp_all
   exact (Ideal.isPrime_of_prime p.property).isMaximal p.property.ne_zero |>.coprime_of_ne
     ((Ideal.isPrime_of_prime q'.property).isMaximal q'.property.ne_zero) hne
 
@@ -142,7 +142,7 @@ theorem coefficient_factorization {cS : Ideal (𝓞 F)}
       rw [Finsupp.prod_add_index' (fun (p : exteriorPrimeRawIndex cS) => pow_zero (f p.val))
         (fun (p : exteriorPrimeRawIndex cS) m n => pow_add (f p.val) m n),
         Finsupp.prod_single_index]
-      exact pow_zero _
+      rfl
   have he : fromExponent (rawExponent I) = I := by
     apply Subtype.ext
     apply associated_iff_eq.mp
@@ -150,6 +150,3 @@ theorem coefficient_factorization {cS : Ideal (𝓞 F)}
     rw [factorization_fromExponent]
     exact Finsupp.embDomain_comapDomain (factor_support I)
   simpa only [he] using hv (rawExponent I)
-
-end
-end DedekindZetaZeroFree.ExteriorEulerPrimeIndex

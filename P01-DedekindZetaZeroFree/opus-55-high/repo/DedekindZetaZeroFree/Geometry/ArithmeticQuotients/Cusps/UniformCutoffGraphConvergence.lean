@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Geometry.ArithmeticQuotients.Cusps.CutoffGrap
 
 @[expose] public section
 
-noncomputable section
 open scoped Classical NumberField
 open MeasureTheory Filter
 namespace DedekindZetaZeroFree.KPCuspCutoffGraphApproximation
@@ -54,7 +53,3 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
   intro i hi
   have h2 (k : Fin 3) := (hd i k).fderiv_eq (𝕜 := ℝ)
   simp only [HyperbolicChart.coordinateDerivative, h2, h.fderiv_eq (𝕜 := ℝ)]
-
-end DedekindZetaZeroFree.KPCuspCutoffGraphApproximation
-
-end

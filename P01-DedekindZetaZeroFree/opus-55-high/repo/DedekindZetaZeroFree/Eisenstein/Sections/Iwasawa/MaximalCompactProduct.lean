@@ -24,8 +24,7 @@ def fullCompactPreimageMax :
     Subgroup (KPAdelicCoverRestrictedProduct.RestrictedCover F ζ hζ) where
   carrier := {x | ∀ v, x v ∈ localCompactFactorMax F ζ hζ v}
   one_mem' v := by
-    rw [RestrictedProduct.one_apply]
-    exact (localCompactFactorMax F ζ hζ v).one_mem
+    simp
   mul_mem' hx hy v := by
     rw [RestrictedProduct.mul_apply]
     exact (localCompactFactorMax F ζ hζ v).mul_mem (hx v) (hy v)
@@ -46,13 +45,13 @@ theorem localCompactFactor_le_max (v : KPHilbert.Place F) :
     dsimp [localCompactFactorMax, localCompactFactor]
     split_ifs
     · exact finiteCompact_le_integralRawCompact F ζ hζ q
-    · exact le_rfl
+    rfl
 
 theorem localCompactFactorMax_eq_compact_eventually :
     ∀ᶠ v in Filter.cofinite, localCompactFactorMax F ζ hζ v =
       KPAdelicCoverRestrictedProduct.compact F ζ hζ v := by
-  have hf : {v : KPHilbert.Place F | ∃ w : InfinitePlace F, v = Sum.inl w}.Finite := by
-    exact (Set.finite_range Sum.inl).subset (by rintro v ⟨w,rfl⟩; exact ⟨w,rfl⟩)
+  have hf : {v : KPHilbert.Place F | ∃ w : InfinitePlace F, v = Sum.inl w}.Finite := 
+    (Set.finite_range Sum.inl).subset (by rintro v ⟨w,rfl⟩; simp)
   have hb := (KPAdelicCoverRestrictedProduct.bad_finite F).image
     (Sum.inr : HeightOneSpectrum (𝓞 F) → KPHilbert.Place F)
   have hfi : ∀ᶠ v : KPHilbert.Place F in Filter.cofinite,
@@ -68,7 +67,7 @@ theorem localCompactFactorMax_eq_compact_eventually :
   | inr q =>
     have hn : ¬ KPAdelicCoverRestrictedProduct.Bad F q := by
       intro h
-      exact hvb ⟨q,h,rfl⟩
+      simp_all
     simp [localCompactFactorMax, hn, KPAdelicCoverRestrictedProduct.compact]
 
 theorem fullCompactPreimage_le_max :
@@ -85,7 +84,3 @@ theorem complexCompactLift_mem_iwasawaCompactSubgroupMax (w : InfinitePlace F)
       iwasawaCompactSubgroupMax F ζ hζ :=
   iwasawaCompactSubgroupFull_le_max F ζ hζ
     (complexCompactLift_mem_iwasawaCompactSubgroupFull F ζ hζ w k)
-
-end DedekindZetaZeroFree.PrincipalOfKP
-
-end

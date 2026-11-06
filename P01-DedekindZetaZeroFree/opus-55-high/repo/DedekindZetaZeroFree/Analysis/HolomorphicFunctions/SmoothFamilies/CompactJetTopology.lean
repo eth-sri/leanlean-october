@@ -32,7 +32,3 @@ def JetContinuousOn {n : ℕ} (B : LocalBall n)
     ∀ m : ℕ, ∀ ε : ℝ, 0 < ε → ∃ δ : ℝ, 0 < δ ∧
       ∀ z ∈ O, dist z z₀ < δ → ∀ α : MultiIndex n m, ∀ x : K,
         ‖coordinateDerivative α (fun y => f z y - f z₀ y) x‖ < ε
-
-end DedekindZetaZeroFree.KPContLocalHolomorphyUpgrade.CauchyAssembly.Raw
-
-end

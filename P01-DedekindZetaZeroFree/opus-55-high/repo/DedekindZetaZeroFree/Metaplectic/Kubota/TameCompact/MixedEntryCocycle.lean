@@ -11,15 +11,15 @@ noncomputable section
 variable (F : Type) [Field F] [NumberField F] (v : HeightOneSpectrum (𝓞 F))
 local instance : ValuativeRel (K F v) := ClassFieldTheory.finitePlaceCompletionValuativeRel F v
 local instance : (Valued.v : Valuation (K F v) (WithZero (Multiplicative ℤ))).Compatible := Valuation.Compatible.ofValuation _
-private lemma vle_norm (x : K F v) :
+lemma vle_norm (x : K F v) :
  ‖x‖ ≤ 1 ↔ (ValuativeRel.valuation (K F v)) x ≤ 1 := by
  rw [Valued.toNormedField.norm_le_one_iff]
  exact (ValuativeRel.isEquiv _ _).le_one_iff_le_one
-private lemma vlt_norm (x : K F v) :
+lemma vlt_norm (x : K F v) :
  ‖x‖ < 1 ↔ (ValuativeRel.valuation (K F v)) x < 1 := by
  rw [Valued.toNormedField.norm_lt_one_iff]
  exact (ValuativeRel.isEquiv _ _).lt_one_iff_lt_one
-private lemma unit_of_norm (x : (K F v)ˣ) (hx : ‖(x : K F v)‖ = 1) :
+lemma unit_of_norm (x : (K F v)ˣ) (hx : ‖(x : K F v)‖ = 1) :
  ∃ u : (O F v)ˣ, unitInclusion F v u = x := by
  let y : O F v := ⟨(x : K F v), (vle_norm F v _).mp hx.le⟩
  have hy : IsUnit y := by
@@ -35,12 +35,12 @@ private lemma unit_of_norm (x : (K F v)ˣ) (hx : ‖(x : K F v)‖ = 1) :
  exact congrArg (fun y : O F v => (y : K F v)) hu
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (hv : ringChar (O F v ⧸ p F v) ≠ 3)
 include hv
-private lemma symbol_units (x y : (K F v)ˣ) (hx : ‖(x : K F v)‖ = 1) (hy : ‖(y : K F v)‖ = 1) :
+lemma symbol_units (x y : (K F v)ˣ) (hx : ‖(x : K F v)‖ = 1) (hy : ‖(y : K F v)‖ = 1) :
  KPHilbert.B3 F ζ hζ (Sum.inr v) x y = 1 := by
  obtain ⟨u, rfl⟩ := unit_of_norm F v x hx
  obtain ⟨u', rfl⟩ := unit_of_norm F v y hy
  exact B3_units F v ζ hζ hv u u'
-private lemma symbol_congr_right (x y z : (K F v)ˣ)
+lemma symbol_congr_right (x y z : (K F v)ˣ)
  (hy : ‖(y : K F v)‖ = 1) (hz : ‖(z : K F v)‖ = 1)
  (he : ‖(y : K F v) - z‖ < 1) :
  KPHilbert.B3 F ζ hζ (Sum.inr v) x y = KPHilbert.B3 F ζ hζ (Sum.inr v) x z := by
@@ -54,24 +54,24 @@ private lemma symbol_congr_right (x y z : (K F v)ˣ)
  apply Valuation.Integer.not_isUnit_iff_valuation_lt_one.mpr
  exact (vlt_norm F v _).mp he
 omit hv
-private lemma c_mul (g h : K0 F v) : c F v (g*h) = c F v g * a F v h + d F v g * c F v h := by
- simp [c, a, d, Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two]
-private lemma X_c (g : K0 F v) (hc : c F v g ≠ 0) :
+lemma c_mul (g h : K0 F v) : c F v (g*h) = c F v g * a F v h + d F v g * c F v h := by
+ simp [c, a, d, Matrix.mul_apply, Fin.sum_univ_two]
+lemma X_c (g : K0 F v) (hc : c F v g ≠ 0) :
  KubotaRankTwo.X (K F v) (inclusion F v g) = Units.mk0 (c F v g) hc := by
  apply Units.ext
  simp [KubotaRankTwo.X, KubotaRankTwo.x, inclusion, KPLocalCube.integerInclusion, Matrix.GeneralLinearGroup.map_apply, hc]
 private lemma X_d (g : K0 F v) (hc : c F v g = 0) :
  (KubotaRankTwo.X (K F v) (inclusion F v g) : K F v) = d F v g := by
  simp [KubotaRankTwo.X, KubotaRankTwo.x, inclusion, KPLocalCube.integerInclusion, Matrix.GeneralLinearGroup.map_apply, hc]
-private lemma norm_of_unit (x : O F v) (hx : IsUnit x) : ‖(x : K F v)‖ = 1 := by
+lemma norm_of_unit (x : O F v) (hx : IsUnit x) : ‖(x : K F v)‖ = 1 := by
  have he := (Valuation.integer.integers (ValuativeRel.valuation (K F v))).isUnit_iff_valuation_eq_one.mp hx
  apply le_antisymm ((vle_norm F v _).mpr x.property)
  exact le_of_not_gt (fun hn => (he.not_lt ((vlt_norm F v _).mp hn)))
-private lemma norm_D (g : K0 F v) :
+lemma norm_D (g : K0 F v) :
  ‖(KubotaRankTwo.det (K F v) (inclusion F v g) : K F v)‖ = 1 :=
  (det_norm_and_entries F v g).1
 include hv
-private lemma sigma_raw (g h : K0 F v) :
+lemma sigma_raw (g h : K0 F v) :
  KPLocalCover.sigmaTwo F ζ hζ (Sum.inr v) (inclusion F v g) (inclusion F v h) =
  KPHilbert.B3 F ζ hζ (Sum.inr v)
  (KubotaRankTwo.X (K F v) (inclusion F v (g*h)) / KubotaRankTwo.X (K F v) (inclusion F v g))
@@ -80,28 +80,28 @@ private lemma sigma_raw (g h : K0 F v) :
  unfold KPLocalCover.sigmaTwo KubotaElementaryLastArgument.tau
  rw [det_twist_trivial F v ζ hζ hv, mul_one, ← map_mul]
 omit hv
-private lemma product_small_unit (g h : K0 F v) (hc : ‖c F v g‖ < 1) (he : ‖c F v h‖ = 1) :
+lemma product_small_unit (g h : K0 F v) (hc : ‖c F v g‖ < 1) (he : ‖c F v h‖ = 1) :
  ‖c F v (g*h)‖ = 1 := by
  rw [c_mul F v]
  have hd := norm_of_unit F v (g 1 1) (diagonal_units F v g hc).2.1
  have hca : ‖c F v g * a F v h‖ < 1 := by
    rw [norm_mul]
    exact lt_of_le_of_lt (mul_le_of_le_one_right (norm_nonneg _) ((det_norm_and_entries F v h).2 0 0)) hc
- have hde : ‖d F v g * c F v h‖ = 1 := by rw [norm_mul, hd, he, one_mul]
+ have hde : ‖d F v g * c F v h‖ = 1 := by simp_all
  rw [IsUltrametricDist.norm_add_eq_max_of_norm_ne_norm (by rw [hde]; exact hca.ne), hde, max_eq_right hca.le]
-private lemma product_unit_small (g h : K0 F v) (hc : ‖c F v g‖ = 1) (he : ‖c F v h‖ < 1) :
+lemma product_unit_small (g h : K0 F v) (hc : ‖c F v g‖ = 1) (he : ‖c F v h‖ < 1) :
  ‖c F v (g*h)‖ = 1 := by
  rw [c_mul F v]
  have ha := norm_of_unit F v (h 0 0) (diagonal_units F v h he).1
  have hde : ‖d F v g * c F v h‖ < 1 := by
    rw [norm_mul]
    exact lt_of_le_of_lt (mul_le_of_le_one_left (norm_nonneg _) ((det_norm_and_entries F v g).2 1 1)) he
- have hca : ‖c F v g * a F v h‖ = 1 := by rw [norm_mul, hc, ha, one_mul]
+ have hca : ‖c F v g * a F v h‖ = 1 := by simp_all
  rw [IsUltrametricDist.norm_add_eq_max_of_norm_ne_norm (by rw [hca]; exact hde.ne.symm), hca, max_eq_left hde.le]
-private lemma nz_norm (x : K F v) (hx : ‖x‖ = 1) : x ≠ 0 := by
+lemma nz_norm (x : K F v) (hx : ‖x‖ = 1) : x ≠ 0 := by
  intro h; simpa [h] using hx
 include hv
-private lemma symbol_congr_left (x y z : (K F v)ˣ)
+lemma symbol_congr_left (x y z : (K F v)ˣ)
  (hy : ‖(y : K F v)‖ = 1) (hz : ‖(z : K F v)‖ = 1)
  (he : ‖(y : K F v) - z‖ < 1) :
  KPHilbert.B3 F ζ hζ (Sum.inr v) y x = KPHilbert.B3 F ζ hζ (Sum.inr v) z x := by
@@ -196,7 +196,7 @@ private lemma unit_small (g h : K0 F v)
    have hk : kappa F v ζ hζ h = (KPHilbert.B3 F ζ hζ (Sum.inr v) A E) := by
      rw [kappa_active F v ζ hζ hv h hen he]
      have hi : Units.mk0 (a F v h)⁻¹ (inv_ne_zero han) = A⁻¹ := by
-       apply Units.ext; simp [A]
+       apply Units.ext; rfl
      rw [hi, KubotaDefectSymbolAlgebra.inv_right _ _ _ (KPHilbert.B3_laws F ζ hζ (Sum.inr v)).2.1,
        (KPHilbert.B3_laws F ζ hζ (Sum.inr v)).2.2.1 E A, inv_inv]
    rw [KubotaDefectSymbolAlgebra.div_right _ _ _ (KPHilbert.B3_laws F ζ hζ (Sum.inr v)).2.1,
@@ -208,7 +208,6 @@ private lemma unit_small (g h : K0 F v)
 end
 
 noncomputable section
-set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
@@ -234,7 +233,3 @@ theorem kappa_mul_unit_small (g h : K0 F v) :
             (inclusion F v g) (inclusion F v h) := by
   rintro ⟨hc, he⟩
   exact unit_small F v ζ hζ hv g h hc he
-
-end
-
-end DedekindZetaZeroFree.KPTameCompact

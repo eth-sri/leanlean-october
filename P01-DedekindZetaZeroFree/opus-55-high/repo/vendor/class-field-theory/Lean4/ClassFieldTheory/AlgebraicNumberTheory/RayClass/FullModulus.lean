@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Ray moduli with selected real places
 
@@ -53,7 +50,7 @@ def ofFinite (m : FiniteModulus K) : Modulus K where
 
 /-- The full modulus with a prescribed finite part and positivity at every
 real place. -/
-noncomputable def narrowOfFinite (m : FiniteModulus K) : Modulus K where
+def narrowOfFinite (m : FiniteModulus K) : Modulus K where
   finitePart := m
   infinitePart := Finset.univ
 
@@ -104,12 +101,6 @@ instance : LE (Modulus K) where
   le m n :=
     m.finitePart ≤ n.finitePart ∧ m.infinitePart ⊆ n.infinitePart
 
-@[simp]
-theorem le_iff {m n : Modulus K} :
-    m ≤ n ↔
-      m.finitePart ≤ n.finitePart ∧ m.infinitePart ⊆ n.infinitePart :=
-  Iff.rfl
-
 instance : PartialOrder (Modulus K) where
   le_refl m := ⟨le_rfl, fun _ hx => hx⟩
   le_trans m n p hmn hnp :=
@@ -119,7 +110,7 @@ instance : PartialOrder (Modulus K) where
       apply Finset.ext
       intro x
       exact ⟨fun hx => hmn.2 hx, fun hx => hnm.2 hx⟩)
-noncomputable instance : SemilatticeInf (Modulus K) where
+instance : SemilatticeInf (Modulus K) where
   inf m n :=
     { finitePart := m.finitePart ⊓ n.finitePart
       infinitePart := m.infinitePart ∩ n.infinitePart }
@@ -131,7 +122,7 @@ noncomputable instance : SemilatticeInf (Modulus K) where
     ⟨le_inf hmn.1 hmp.1,
       fun _ hx => Finset.mem_inter.mpr ⟨hmn.2 hx, hmp.2 hx⟩⟩
 
-noncomputable instance : SemilatticeSup (Modulus K) where
+instance : SemilatticeSup (Modulus K) where
   sup m n :=
     { finitePart := m.finitePart ⊔ n.finitePart
       infinitePart := m.infinitePart ∪ n.infinitePart }
@@ -171,7 +162,7 @@ theorem infinitePart_replaceFinitePart
   rfl
 
 /-- Remove the positivity condition at one real place. -/
-noncomputable def eraseRealPlace
+def eraseRealPlace
     (m : Modulus K) (v : RealPlace K) : Modulus K where
   finitePart := m.finitePart
   infinitePart := m.infinitePart.erase v
@@ -189,7 +180,7 @@ theorem infinitePart_eraseRealPlace
   rfl
 
 /-- Remove the positivity conditions at a finite set of real places. -/
-noncomputable def eraseRealPlaces
+def eraseRealPlaces
     (m : Modulus K) (s : Finset (RealPlace K)) : Modulus K where
   finitePart := m.finitePart
   infinitePart := m.infinitePart \ s
@@ -225,7 +216,7 @@ theorem eraseRealPlaces_insert
 /-- The local infinite congruence condition at an infinite place.  It is the
 positive subgroup exactly at a real place selected by the modulus, and the
 whole local group otherwise. -/
-noncomputable def localInfiniteCongruenceSubgroup (m : Modulus K)
+def localInfiniteCongruenceSubgroup (m : Modulus K)
     (w : InfinitePlace K) : Subgroup w.Completionˣ := by
   classical
   exact if hw : w.IsReal then
@@ -245,12 +236,6 @@ theorem localInfiniteCongruenceSubgroup_replaceFinitePart
 theorem localInfiniteCongruenceSubgroup_of_mem
     (m : Modulus K) (v : RealPlace K) (hv : v ∈ m.infinitePart) :
     m.localInfiniteCongruenceSubgroup v.1 = infinitePositiveSubgroup v.1 := by
-  simp [localInfiniteCongruenceSubgroup, v.property, hv]
-
-@[simp]
-theorem localInfiniteCongruenceSubgroup_of_not_mem
-    (m : Modulus K) (v : RealPlace K) (hv : v ∉ m.infinitePart) :
-    m.localInfiniteCongruenceSubgroup v.1 = ⊤ := by
   simp [localInfiniteCongruenceSubgroup, v.property, hv]
 
 @[simp]
@@ -287,8 +272,7 @@ theorem mem_infiniteCongruenceSubgroup_iff
     constructor
     · intro ha v hv
       have hlocal := ha v.1
-      rw [localInfiniteCongruenceSubgroup_of_mem m v hv] at hlocal
-      exact hlocal
+      simp_all
     · intro ha w
       by_cases hw : w.IsReal
       · by_cases hmem : (⟨w, hw⟩ : RealPlace K) ∈ m.infinitePart
@@ -306,14 +290,7 @@ theorem infiniteCongruenceSubgroup_narrowOfFinite (f : FiniteModulus K) :
   rw [mem_infiniteCongruenceSubgroup_iff,
     mem_narrowInfiniteCongruenceSubgroup_iff]
   simp only [infinitePart_narrowOfFinite, Finset.mem_univ, true_implies]
-  constructor
-  · intro ha w
-    by_cases hw : w.IsReal
-    · exact ha ⟨w, hw⟩
-    · rw [mem_infinitePositiveSubgroup_iff]
-      exact fun hreal => (hw hreal).elim
-  · intro ha v
-    exact ha v.1
+  simp
 
 /-- The idèle congruence subgroup attached to a full ray modulus. -/
 def ideleCongruenceSubgroup (m : Modulus K) :
@@ -367,7 +344,3 @@ def rayClassGroupEquivIdeleQuotient (m : Modulus K) :
     (IdeleGroup.principalSubgroup K)
     (m.ideleCongruenceSubgroup ⊔ IdeleGroup.principalSubgroup K)
     le_sup_right
-
-end RayClass
-
-end

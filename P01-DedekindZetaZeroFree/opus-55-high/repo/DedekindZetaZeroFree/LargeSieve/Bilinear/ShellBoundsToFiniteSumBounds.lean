@@ -16,7 +16,7 @@ private lemma card_boundedNormIdeals_eq_natCard (F : Type*) [Field F] [NumberFie
       {I | (Ideal.absNorm I : ℝ) ≤ X} := by
     ext I; exact DedekindZetaZeroFree.LargeSieve.mem_boundedNormIdeals
   rw [(Set.ncard_coe_finset (DedekindZetaZeroFree.LargeSieve.boundedNormIdeals F X)).symm, hset]
-  exact (Nat.card_coe_set_eq ({I : Ideal (𝓞 F) | (Ideal.absNorm I : ℝ) ≤ X})).symm
+  rfl
 
 private lemma exists_ideal_count_bound (F : Type*) [Field F] [NumberField F] :
     ∃ C : ℝ, 1 ≤ C ∧ ∀ X : ℝ, 1 ≤ X →
@@ -37,7 +37,7 @@ private lemma exists_ideal_count_bound (F : Type*) [Field F] [NumberField F] :
   set B : ℝ := (Nat.card {I : Ideal (𝓞 F) // (Ideal.absNorm I : ℝ) ≤ N₀} : ℝ) / N₀ + 2
     with hB
   set C : ℝ := max 1 (max B ((DedekindZetaZeroFree.LargeSieve.boundedNormIdeals F T').card : ℝ)) with hC
-  have hC1 : 1 ≤ C := by rw [hC]; exact le_max_left _ _
+  have hC1 : 1 ≤ C := by rw [hC]; simp
   refine ⟨C, hC1, ?_⟩
   intro X hX
   have hC0 : 0 ≤ C := le_trans zero_le_one hC1
@@ -47,7 +47,7 @@ private lemma exists_ideal_count_bound (F : Type*) [Field F] [NumberField F] :
       have hh := hT X (le_trans (le_max_left T 1) hTX)
       rw [hB] at hh ⊢
       rw [div_le_iff₀ (by linarith : (0:ℝ) < X)] at hh
-      linarith [hh]
+      omega
     have h2 : ((DedekindZetaZeroFree.LargeSieve.boundedNormIdeals F X).card : ℝ) ≤ B * X := by
       rw [hcard]; exact hf
     refine le_trans h2 ?_
@@ -92,5 +92,3 @@ theorem shell_bound_to_target_finsum
   intro M N lam hM hN
   rw [finsum_energy_eq_sum, finsum_coeff_norm_sq_eq_sum]
   exact hD M N hM hN lam
-
-end DedekindZetaZeroFree.LargeSieve.Sieve

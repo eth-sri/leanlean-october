@@ -28,10 +28,6 @@ theorem transport_primitive {m n : Ideal (𝓞 F)} (h : m = n)
   subst n
   exact hχ
 
-@[simp] theorem character_bottom {m : Ideal (𝓞 F)} (χ : RayClassCharacter F m) :
-    χ ⊥ = 0 :=
-  (χ.eq_zero_iff' ⊥).2 (Or.inl rfl)
-
 def quotientRadical (A : SArithmeticData F) (σ : F →+* ℂ)
     (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
     (C : A.GeneralArithmeticContext σ η hS)
@@ -57,7 +53,3 @@ def ExactProductOutput (A : SArithmeticData F) (σ : F →+* ℂ)
         transport hcond (Xi (quotientRadical A σ η hS C a b ha hb hqa hqb)) n =
           Xi (KummerSquarefreeMembers.generator A σ η hS C a ha hqa) n *
             (starRingEnd ℂ) (Xi (KummerSquarefreeMembers.generator A σ η hS C b hb hqb) n)
-
-end KummerProductPrimitive
-end
-end DedekindZetaZeroFree

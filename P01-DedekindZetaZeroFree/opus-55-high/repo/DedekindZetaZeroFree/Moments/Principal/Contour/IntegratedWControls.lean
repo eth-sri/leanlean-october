@@ -21,7 +21,7 @@ variable {F : Type} [Field F] [NumberField F]
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 variable (D : FixedData S η)
 
-private lemma dom_mem (ξ w z : ℂ) (hξ : Scales.rightLine ≤ ξ.re) (hw : 1 < w.re)
+lemma dom_mem (ξ w z : ℂ) (hξ : Scales.rightLine ≤ ξ.re) (hw : 1 < w.re)
     (hz : z.re = 1 / 6 + Scales.contourOffset) :
     ((ξ, w, z) : Coordinates) ∈ (paddedBox₂ ∩ {p : Coordinates | Scales.rightLine - Scales.contourOffset / 2 < p.1.re} ∩
         {p : Coordinates | 1 / 6 + Scales.contourOffset / 2 < p.2.2.re}) \ {p : Coordinates | p.2.1 = 1} := by
@@ -43,7 +43,7 @@ private lemma dom_mem (ξ w z : ℂ) (hξ : Scales.rightLine ≤ ξ.re) (hw : 1 
 
 set_option maxHeartbeats 4000000 in
 
-private lemma kern_w_diff (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 0 < Z) (ξ z : ℂ)
+lemma kern_w_diff (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 0 < Z) (ξ z : ℂ)
     (hξ : Scales.rightLine ≤ ξ.re) (hz : z.re = 1 / 6 + Scales.contourOffset) :
     DifferentiableOn ℂ (fun w => kern D u Z ξ w z) {w : ℂ | 1 < w.re} := by
   have hk := kern_differentiableOn D u hu Z hZ
@@ -60,7 +60,7 @@ private lemma kern_w_diff (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 0 < Z) (ξ 
 
 set_option maxHeartbeats 4000000 in
 
-private lemma kern_t_cont (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 0 < Z) (ξ w a : ℂ)
+lemma kern_t_cont (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 0 < Z) (ξ w a : ℂ)
     (hξ : Scales.rightLine ≤ ξ.re) (hw : 1 < w.re) (ha : a.re = 1 / 6 + Scales.contourOffset) :
     Continuous (fun t : ℝ => kern D u Z ξ w (a + (t : ℂ) * I)) := by
   have hk := kern_differentiableOn D u hu Z hZ
@@ -76,7 +76,7 @@ private lemma kern_t_cont (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 0 < Z) (ξ 
     (f := fun t : ℝ => ((ξ, w, a + (t : ℂ) * I) : Coordinates)) hk.continuousOn hc hmem
   exact key
 
-private lemma hgauss (c : ℝ) : Integrable (fun t : ℝ => Real.exp (-(c + t) ^ 2)) := by
+lemma hgauss (c : ℝ) : Integrable (fun t : ℝ => Real.exp (-(c + t) ^ 2)) := by
   have := (integrable_exp_neg_mul_sq one_pos).comp_add_right c
   refine this.congr (Eventually.of_forall fun t => ?_)
   show Real.exp _ = Real.exp _

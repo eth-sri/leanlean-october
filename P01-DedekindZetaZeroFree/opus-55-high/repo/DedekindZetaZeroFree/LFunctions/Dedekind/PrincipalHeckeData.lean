@@ -18,11 +18,7 @@ namespace DedekindZetaZeroFree.LargeSieve
  lemma top_ne_bot_ringOfIntegers (F : Type) [Field F] [NumberField F] :
     (⊤ : Ideal (𝓞 F)) ≠ ⊥ := by
   intro h
-  have h1 : (1 : 𝓞 F) = 0 := by
-    have hm : (1 : 𝓞 F) ∈ (⊥ : Ideal (𝓞 F)) :=
-      h ▸ (show (1 : 𝓞 F) ∈ (⊤ : Ideal (𝓞 F)) from Submodule.mem_top)
-    simpa using hm
-  exact one_ne_zero h1
+  simp_all
 
 def principalCharacter (F : Type) [Field F] [NumberField F] :
     DedekindZetaZeroFree.RayClassCharacter F ⊤ where
@@ -32,25 +28,14 @@ def principalCharacter (F : Type) [Field F] [NumberField F] :
     rcases eq_or_ne I ⊥ with hI | hI
     · subst hI
       simp
-    rcases eq_or_ne J ⊥ with hJ | hJ
-    · subst hJ
-      simp
-    · have h : I * J ≠ ⊥ := fun h => (Ideal.mul_eq_bot.mp h).elim hI hJ
-      simp [h, hI, hJ]
+    simp_all
   map_top' := by
     simp [top_ne_bot_ringOfIntegers F]
   eq_zero_iff' := by
     intro I
-    by_cases hI : I = ⊥ <;> simp [hI]
+    simp
   map_span' := by
-    intro α hα _ _
-    have h : Ideal.span {α} ≠ ⊥ := by
-      intro hbot
-      have hmem : α ∈ (⊥ : Ideal (𝓞 F)) := by
-        rw [← hbot]
-        exact Ideal.subset_span (Set.mem_singleton α)
-      exact hα (by simpa using hmem)
-    simp [h]
+    simp_all
 
 @[simp] theorem principalCharacter_apply (F : Type) [Field F] [NumberField F]
     (I : Ideal (𝓞 F)) :
@@ -131,11 +116,10 @@ theorem exists_principalHeckeData
       · rw [Complex.analyticOnNhd_univ_iff_differentiable]
         exact hE_entire
       · rw [Complex.analyticOnNhd_univ_iff_differentiable]
-        have h1s : Differentiable ℂ (fun s : ℂ => 1 - s) := by fun_prop
-        exact hE_entire.comp h1s
+        fun_prop
       · filter_upwards [eventually_ne_nhds (show (2 : ℂ) ≠ 0 by norm_num),
           eventually_ne_nhds (show (2 : ℂ) ≠ 1 by norm_num)] with s hs0 hs1
-        have h1s0 : (1 : ℂ) - s ≠ 0 := fun h => hs1 (sub_eq_zero.mp h).symm
+        have h1s0 : (1 : ℂ) - s ≠ 0 := by positivity
         have h1s1 : (1 : ℂ) - s ≠ 1 := by
           intro h
           refine hs0 ?_
@@ -204,7 +188,7 @@ theorem exists_principalHeckeData
         principalCharacter F I * (Ideal.absNorm I : ℂ) ^ (-s) =
           (if I = ⊥ then 0 else (Ideal.absNorm I : ℂ) ^ (-s)) := by
       intro I
-      by_cases hI : I = ⊥ <;> simp [principalCharacter_apply, hI]
+      simp
     have hseries' : HasSum (fun I : Ideal (𝓞 F) =>
         ((((|NumberField.discr F| : ℤ) : ℂ) *
           (Ideal.absNorm (⊤ : Ideal (𝓞 F)) : ℂ)) ^ (s / 2) *
@@ -228,7 +212,3 @@ def principalHeckeData
 def principalPoleCoefficient
     (F : Type) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F) : ℂ :=
   (principalHeckeData F hF).E 1
-
-end DedekindZetaZeroFree.LargeSieve
-
-end

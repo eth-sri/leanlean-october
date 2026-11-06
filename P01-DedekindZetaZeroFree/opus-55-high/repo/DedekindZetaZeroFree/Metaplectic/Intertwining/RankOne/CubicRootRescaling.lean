@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Metaplectic.Intertwining.RankOne.TailInducing
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.KPRankOneShellRepair
 open scoped NumberField
 open NumberField IsDedekindDomain
@@ -34,7 +33,3 @@ theorem actualRootAction_cube_rescale (P : Polarization S.heisenberg)
   change actualRootAction F ζ hζ q S P ε s (u ^ 3)
     (actualRootAction F ζ hζ q S P ε s v V) = _
   exact actualRootAction_cube F ζ hζ q S P ε s u _
-
-end DedekindZetaZeroFree.KPRankOneShellRepair
-
-end

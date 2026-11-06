@@ -18,7 +18,7 @@ variable (ha : ∀ (u : NumberField.InfinitePlace F → ℝ) g,
     Complex.exp ((2:ℂ) * ((∑v, u v : ℝ):ℂ)) * φ g)
 variable (hn : ∀ n g, φ (KPGlobalTorusFunctionData.N F ζ hζ n * g) = φ g)
 
-private theorem radialSection_eq (w : NumberField.InfinitePlace F)
+theorem radialSection_eq (w : NumberField.InfinitePlace F)
     (r : KPMsFixedHaarDisintegration.Radius) :
     KPMsFixedHaarDisintegration.radialSection F ζ hζ w r =
       (aInfinity F ζ hζ (fun v => if v = w then Real.log r.val / 2 else 0)).val := by

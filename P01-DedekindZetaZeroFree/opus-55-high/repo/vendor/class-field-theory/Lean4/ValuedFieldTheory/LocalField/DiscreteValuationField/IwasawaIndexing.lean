@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Topological structure of local-field units: reindexing the Iwasawa product
 
@@ -41,14 +36,12 @@ positive degrees prime to `p`. -/
 def iwasawaDegreeEmbedding (p : ℕ) (hp : 0 < p) : ℕ ↪ IwasawaDegree p where
   toFun k :=
     ⟨1 + p * k, by
-      constructor
-      · omega
-      · exact (Nat.coprime_add_mul_left_left 1 p k).2 (by simp)⟩
+      simp⟩
   inj' := by
     intro a b h
     have hv : 1 + p * a = 1 + p * b := congrArg Subtype.val h
     apply Nat.mul_left_cancel hp
-    exact Nat.add_left_cancel hv
+    omega
 
 /-- The Iwasawa index is infinite as soon as the finite basis has a vector. -/
 theorem infinite_iwasawaIndex (p f : ℕ) (hp : 0 < p) (hf : 0 < f) :
@@ -57,12 +50,11 @@ theorem infinite_iwasawaIndex (p f : ℕ) (hp : 0 < p) (hf : 0 < f) :
     { toFun := fun k => (iwasawaDegreeEmbedding p hp k, ⟨0, hf⟩)
       inj' := by
         intro a b h
-        exact (iwasawaDegreeEmbedding p hp).injective
-          (congrArg (fun z : IwasawaIndex p f => z.1) h) }
+        simp_all }
   exact Infinite.of_injective j j.injective
 
 /-- The index used in the equal-characteristic proof is denumerable. -/
-noncomputable def chosenIwasawaIndexEquivNat (p f : ℕ) (hp : 0 < p) (hf : 0 < f) :
+def chosenIwasawaIndexEquivNat (p f : ℕ) (hp : 0 < p) (hf : 0 < f) :
     IwasawaIndex p f ≃ ℕ := by
   letI : Infinite (IwasawaIndex p f) := infinite_iwasawaIndex p f hp hf
   letI : Countable (IwasawaDegree p) := by
@@ -77,7 +69,7 @@ noncomputable def chosenIwasawaIndexEquivNat (p f : ℕ) (hp : 0 < p) (hf : 0 < 
 
 /-- Reindexing the Iwasawa product gives the canonical
 `ℤ_[p]^ℕ`, both algebraically and topologically. -/
-noncomputable def iwasawaPadicIntProductContinuousAddEquivNat
+def iwasawaPadicIntProductContinuousAddEquivNat
     (p f : ℕ) [Fact p.Prime] (hp : 0 < p) (hf : 0 < f) :
     (IwasawaIndex p f → ℤ_[p]) ≃ₜ+ (ℕ → ℤ_[p]) := by
   let e := chosenIwasawaIndexEquivNat p f hp hf
@@ -89,7 +81,3 @@ noncomputable def iwasawaPadicIntProductContinuousAddEquivNat
       intro j
       obtain ⟨i, rfl⟩ := e.surjective j
       simp)
-
-end LocalFieldTheory.DiscreteValuationField
-
-end

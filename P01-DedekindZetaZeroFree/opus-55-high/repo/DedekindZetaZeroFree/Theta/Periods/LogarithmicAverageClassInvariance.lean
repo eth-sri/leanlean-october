@@ -6,7 +6,6 @@ public import DedekindZetaZeroFree.Theta.Profiles.PrincipalIdealCenteredShapeCov
 
 @[expose] public section
 
-noncomputable section
 
 open scoped NumberField nonZeroDivisors
 open MeasureTheory
@@ -16,14 +15,13 @@ namespace DedekindZetaZeroFree.Hecke.Theta
 
 variable (F : Type) [Field F] [NumberField F]
 
-private theorem principal_of_class_top
+theorem principal_of_class_top
     (I J : (FractionalIdeal (𝓞 F)⁰ F)ˣ)
     (hclass : ClassGroup.mk F I = ClassGroup.mk F J) :
     ∃ a : Fˣ, (J : FractionalIdeal (𝓞 F)⁰ F) =
       FractionalIdeal.spanSingleton (𝓞 F)⁰ (a : F) * (I : FractionalIdeal (𝓞 F)⁰ F) := by
   have hq := congrArg (ClassGroup.equiv F) hclass
-  simp only [ClassGroup.equiv_mk, FractionalIdeal.canonicalEquiv_self,
-    RingEquiv.toMulEquiv_eq_coe, RingEquiv.coe_monoidHom_refl] at hq
+  simp only [ClassGroup.equiv_mk, FractionalIdeal.canonicalEquiv_self] at hq
   have hq' : QuotientGroup.mk' (toPrincipalIdeal (𝓞 F) F).range I =
       QuotientGroup.mk' (toPrincipalIdeal (𝓞 F) F).range J := hq
   rw [QuotientGroup.mk'_eq_mk'] at hq'
@@ -48,8 +46,7 @@ theorem topLogIdealAverage_class_invariant
       centeredLogIdealTheta_eq_mixedRadialTheta F I t ht
         (h + (logAngularEquiv F).symm d),
       hd t ht (logAngularEquiv F h)]
-    congr 1
-    simp [map_add]
+    simp
   have hint :
       (∫ h in RayCoset.rayUnitHalfOpenDomain F ⊤ htop, centeredLogIdealTheta F J t h
         ∂DedekindZetaZeroFree.AbelianQuotient.Theta.normalizedLogHaar F) =
@@ -80,7 +77,3 @@ theorem topLogIdealAverage_reflection
   rw [topLogDomainIntegral_reflection F htop
     (fun h => centeredLogIdealTheta F I t h)
     (fun γ h => centeredLogIdealTheta_rayUnit_periodic F I t ht γ h)]
-
-end DedekindZetaZeroFree.Hecke.Theta
-
-end

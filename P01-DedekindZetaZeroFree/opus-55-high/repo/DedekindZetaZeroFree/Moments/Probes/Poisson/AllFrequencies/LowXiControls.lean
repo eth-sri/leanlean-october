@@ -22,25 +22,25 @@ variable (D : DedekindZetaZeroFree.Quantitative.FixedData S η)
 
 private theorem z₀_pos' : 0 < Scales.zLine := by unfold Scales.zLine; norm_num
 
-private theorem xg_pad_le (ξ : ℂ) (hξ : 1 + Scales.contourOffset / 2 ≤ ξ.re) :
+theorem xg_pad_le (ξ : ℂ) (hξ : 1 + Scales.contourOffset / 2 ≤ ξ.re) :
     Scales.goodLine - EulerDomain.pad ≤ ξ.re := by
   have e1 : Scales.goodLine = 8801 / 10000 := rfl
   have e2 : EulerDomain.pad = 1 / 1000000 := rfl
   have e3 : Scales.contourOffset = 1 / 10000000 := rfl
   linarith
 
-private theorem x1_ge (ξ : ℂ) (h : Scales.rightLine ≤ ξ.re) : 1 + Scales.contourOffset / 2 ≤ ξ.re := by
+theorem x1_ge (ξ : ℂ) (h : Scales.rightLine ≤ ξ.re) : 1 + Scales.contourOffset / 2 ≤ ξ.re := by
   have e1 : Scales.rightLine = 1 + Scales.contourOffset := rfl
   have e3 : Scales.contourOffset = 1 / 10000000 := rfl
   linarith
 
-private theorem minus_ne (u : Frequency D.recipe) (ξ : ℂ) (hξ : 1 + Scales.contourOffset / 2 ≤ ξ.re) :
+theorem minus_ne (u : Frequency D.recipe) (ξ : ℂ) (hξ : 1 + Scales.contourOffset / 2 ≤ ξ.re) :
     (pkg D).minus u ξ ≠ 0 := by
   obtain ⟨C, hC, h⟩ := RawRightHecke31.minus_right D (1 + Scales.contourOffset / 2)
     (by unfold Scales.contourOffset; norm_num)
   exact (h u ξ hξ).1
 
-private theorem rawKernel_norm_eq_gen (u : Frequency D.recipe)
+theorem rawKernel_norm_eq_gen (u : Frequency D.recipe)
     (hq : 0 < frequencyNorm D.recipe u) (ξ w z : ℂ) (Z : ℝ) (hZ : 0 < Z) :
     ‖rawKernel D u ξ w z Z‖ =
       Z ^ (Scales.xExponent / 2 + ξ.re - 1 + Scales.smoothingExponent * z.re + Scales.yExponent * (w.re - 1)) *
@@ -189,7 +189,7 @@ theorem rawKernel_weight_bound (u : Frequency D.recipe) (hu : u ≠ principalFre
       _ = _ := by rw [hCc]; ring
   exact ⟨Cc, max A 0, hCc0, le_max_right _ _, fun ξ h1 h5 s t => hbd ξ h1 h5 (s, t)⟩
 
-private theorem rawKernel_diffAt_xi (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe)
+theorem rawKernel_diffAt_xi (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe)
     (Z : ℝ) (hZ : 0 < Z) (ξ : ℂ) (hξ : 1 + Scales.contourOffset / 2 ≤ ξ.re) (w z : ℂ)
     (hw : w.re = Scales.wLine) (hz : z.re = Scales.zLine) :
     DifferentiableAt ℂ (fun x : ℂ => rawKernel D u x w z Z) ξ := by
@@ -202,7 +202,7 @@ private theorem rawKernel_diffAt_xi (u : Frequency D.recipe) (hu : u ≠ princip
   have hc : DifferentiableAt ℂ (fun x : ℂ => ((x, w, z) : ℂ × ℂ × ℂ)) ξ := by fun_prop
   exact h.comp ξ hc
 
-private theorem rawKernel_continuous_heights (u : Frequency D.recipe)
+theorem rawKernel_continuous_heights (u : Frequency D.recipe)
     (hu : u ≠ principalFrequency D.recipe) (Z : ℝ) (hZ : 0 < Z) (ξ : ℂ)
     (hξ : 1 + Scales.contourOffset / 2 ≤ ξ.re) :
     Continuous (fun p : ℝ × ℝ => rawKernel D u ξ ((Scales.wLine : ℂ) + (p.2 : ℂ) * Complex.I)

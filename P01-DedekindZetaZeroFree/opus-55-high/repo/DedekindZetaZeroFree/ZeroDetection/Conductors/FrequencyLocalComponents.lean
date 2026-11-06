@@ -36,6 +36,3 @@ def IsFrequencyLocalComponent (F : Type) [Field F] [NumberField F]
   ∀ (a : 𝓞 F) (ha : a ≠ 0), a - 1 ∈ idealAwayPrimePart F v χ.conductor →
     (δ (integralElementLocalUnit F v a ha) : ℂ) =
       (χ.character (idealAwayPrimePart F v (Ideal.span {a})))⁻¹
-
-end
-end DedekindZetaZeroFree.Detector.Conductor.Raw

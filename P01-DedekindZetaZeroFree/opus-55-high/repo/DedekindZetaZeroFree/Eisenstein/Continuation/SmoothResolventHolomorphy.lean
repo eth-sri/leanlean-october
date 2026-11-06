@@ -45,8 +45,7 @@ private theorem polynomial_limit_holomorphic {E : Type*} [NormedAddCommGroup E]
   apply ht.tendstoLocallyUniformlyOn.differentiableOn _ Metric.isOpen_ball
   apply Filter.Eventually.of_forall
   intro M
-  exact DifferentiableOn.fun_sum (fun q _ =>
-    ((differentiableOn_id.sub_const z₀).pow q).smul_const (a q))
+  fun_prop
 
 theorem power_series_jet_holomorphy {n : ℕ} (B : LocalBall n)
     (O : Set ℂ) (hO : IsOpen O) (u : ℂ → Space n → ℂ)
@@ -96,7 +95,3 @@ theorem power_series_jet_holomorphy {n : ℕ} (B : LocalBall n)
     exact hb.le
   exact (polynomial_limit_holomorphic z₀ (ρ / 2) aj j hconv).differentiableAt
     (Metric.isOpen_ball.mem_nhds (by simpa [Metric.mem_ball] using hhalf)) |>.differentiableWithinAt
-
-end DedekindZetaZeroFree.KPContSmoothPromotion
-
-end

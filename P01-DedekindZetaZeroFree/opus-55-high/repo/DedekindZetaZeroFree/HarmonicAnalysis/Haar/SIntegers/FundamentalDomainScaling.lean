@@ -48,17 +48,13 @@ def fieldDilation (F : Type) [Field F] [NumberField F]
     · simp only [PoissonArch.fieldMul, ContinuousLinearEquiv.apply_symm_apply,
         ← mul_assoc, ← map_mul, Units.inv_mul, map_one, one_mul,
         ContinuousLinearEquiv.symm_apply_apply]
-    · funext v
-      simp only [← mul_assoc, ← map_mul, Units.inv_mul, map_one, one_mul,
-        ContinuousLinearEquiv.symm_apply_apply]
+    simp
   right_inv x := by
     apply Prod.ext
     · simp only [PoissonArch.fieldMul, ContinuousLinearEquiv.apply_symm_apply,
         ← mul_assoc, ← map_mul, Units.mul_inv, map_one, one_mul,
         ContinuousLinearEquiv.symm_apply_apply]
-    · funext v
-      simp only [← mul_assoc, ← map_mul, Units.mul_inv, map_one, one_mul,
-        ContinuousLinearEquiv.symm_apply_apply]
+    simp
   map_add' x y := by
     apply Prod.ext
     · simp [PoissonArch.fieldMul, mul_add]
@@ -68,16 +64,12 @@ def fieldDilation (F : Type) [Field F] [NumberField F]
     apply Continuous.prodMk
     · exact (mixedEmbedding.euclidean.toMixed F).symm.continuous.comp
         (continuous_const.mul ((mixedEmbedding.euclidean.toMixed F).continuous.comp continuous_fst))
-    · apply continuous_pi
-      intro v
-      exact continuous_const.mul ((continuous_apply v).comp continuous_snd)
+    fun_prop
   continuous_invFun := by
     apply Continuous.prodMk
     · exact (mixedEmbedding.euclidean.toMixed F).symm.continuous.comp
         (continuous_const.mul ((mixedEmbedding.euclidean.toMixed F).continuous.comp continuous_fst))
-    · apply continuous_pi
-      intro v
-      exact continuous_const.mul ((continuous_apply v).comp continuous_snd)
+    fun_prop
 
 theorem fieldDilation_diagonal (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (RingOfIntegers F))) (a : Fˣ) (x : F) :
@@ -151,8 +143,7 @@ def diagonalHom (S : Finset (HeightOneSpectrum (RingOfIntegers F))) : F →+ Spa
   map_zero' := by
     apply Prod.ext
     · simp
-    · funext v
-      exact map_zero (NumberField.FinitePlace.embedding v.val)
+    rfl
   map_add' m n := by
     ext
     · simp
@@ -257,10 +248,3 @@ def TraceConductor (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
     (e : (v : S) → AddChar (v.val.adicCompletion F) Circle) : Prop :=
   ∀ v y, (∀ x : v.val.adicCompletion F, ‖x‖ ≤ 1 → e v (x * y) = 1) ↔
     ‖y‖ ≤ (v.val.asIdeal.absNorm : ℝ) ^ differentExponent F v.val
-
-end PoissonS
-end DedekindZetaZeroFree
-
-end
-
-end

@@ -31,8 +31,7 @@ theorem ne_bot_of_mem_idealDivisors {F : Type*} [Field F] [NumberField F]
   · simp [idealDivisors, hA] at hD
   · intro hDb
     have hle : A ≤ D := Ideal.dvd_iff_le.mp ((mem_idealDivisors hA).mp hD)
-    rw [hDb] at hle
-    exact hA (le_bot_iff.mp hle)
+    simp_all
 
 theorem absNorm_le_of_mem_idealDivisors {F : Type*} [Field F] [NumberField F]
     {A D : Ideal (𝓞 F)} (hD : D ∈ idealDivisors A) :
@@ -49,24 +48,6 @@ theorem idealDivisors_bot {F : Type*} [Field F] [NumberField F] :
     idealDivisors (⊥ : Ideal (𝓞 F)) = ∅ := by
   simp [idealDivisors]
 
-@[simp]
-theorem idealDivisors_top {F : Type*} [Field F] [NumberField F] :
-    idealDivisors (⊤ : Ideal (𝓞 F)) = {⊤} := by
-  rw [idealDivisors, if_neg (top_ne_bot), Ideal.absNorm_top, Nat.cast_one,
-    boundedNormIdeals_one]
-  ext D
-  simp only [Finset.mem_filter, Finset.mem_insert, Finset.mem_singleton,
-    Ideal.dvd_iff_le]
-  constructor
-  · rintro ⟨hD, hle⟩
-    rcases hD with rfl | rfl
-    · exact le_antisymm bot_le hle
-    · rfl
-  · rintro rfl
-    exact ⟨Or.inr rfl, le_top⟩
-
 noncomputable def idealDivisorCount {F : Type*} [Field F] [NumberField F]
     (A : Ideal (𝓞 F)) : ℕ :=
   (idealDivisors A).card
-
-end DedekindZetaZeroFree.LargeSieve

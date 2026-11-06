@@ -21,7 +21,7 @@ def logIncrement (g u : KPMsRationalCompactCrossPairing.G F ζ hζ) : ℝ :=
     KPGlobalTorusBorelNormTwistTransport.IwasawaData F ζ hζ :=
   { K := D.K, compact := D.compact, decomposition := D.decomposition, overlap := D.overlap }
 
-private theorem norm_borel_mul
+theorem norm_borel_mul
     (t : KPMsRationalCompactCrossPairing.E F ζ hζ)
     (x : KPGlobalTorusFunctionData.Adeles F)
     (g : KPMsRationalCompactCrossPairing.G F ζ hζ) :
@@ -41,7 +41,7 @@ theorem logIncrement_borel_mul
   rw [mul_assoc, norm_borel_mul, norm_borel_mul]
   simp only [Units.val_mul, NNReal.coe_mul]
   have hn (v : (ℝ≥0)ˣ) : ((v : ℝ≥0) : ℝ) ≠ 0 :=
-    NNReal.coe_ne_zero.mpr (Units.ne_zero v)
+    by simp
   rw [Real.log_mul (hn _) (hn _), Real.log_mul (hn _) (hn _)]
   ring
 
@@ -57,7 +57,7 @@ theorem logIncrement_range_eq
     change logIncrement (D := D) k.val u = logIncrement (D := D) g u
     rw [hg, logIncrement_borel_mul]
   · rintro ⟨k, rfl⟩
-    exact ⟨k.val, rfl⟩
+    simp
 
 theorem logIncrement_range_finite
     (u : KPMsRationalCompactCrossPairing.G F ζ hζ)
@@ -66,7 +66,3 @@ theorem logIncrement_range_finite
   letI : CompactSpace D.K := isCompact_iff_compactSpace.mp D.compact
   rw [logIncrement_range_eq]
   exact hlc.range_finite
-
-end DedekindZetaZeroFree.KPGlobalResidualKernelSplit.RawStageL2.OutgoingSplit.ZeroProfileSteps.FiniteNormPartition
-
-end

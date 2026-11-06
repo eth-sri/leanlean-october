@@ -35,12 +35,9 @@ local instance (q : S) : Module ℂ (Source F ζ hζ M S q) :=
     Submodule ℂ (Source F ζ hζ M S q) where
   carrier := { f | ∀ j ∈ U q, ∀ g, f.val (g * j) = f.val g }
   zero_mem' := by
-    change ∀ j ∈ U q, ∀ g, (0 : Source F ζ hζ M S q).val (g * j) = 0
-    intros
-    rfl
+    simp
   add_mem' := by
-    intro f h hf hh j hj g
-    exact congrArg₂ (· + ·) (hf j hj g) (hh j hj g)
+    simp_all
   smul_mem' := by
     intro c f hf j hj g
     exact congrArg (c • ·) (hf j hj g)
@@ -68,7 +65,7 @@ local instance (q : S) : Module ℂ (Source F ζ hζ M S q) :=
   map_add' _ _ := rfl
   map_smul' _ _ := rfl
 
-private theorem localSampling_representative
+theorem localSampling_representative
     (U : ∀ q : S, OpenSubgroup (Cover F ζ hζ S q)) (q : S)
     (f : localFixedLevel F ζ hζ M S U q)
     (k : (M q.val).iwasawa.compact.toOpenSubgroup) :
@@ -107,7 +104,7 @@ local instance (U : ∀ q : S, OpenSubgroup (Cover F ζ hζ S q)) (q : S) :
     (LocalCosets F ζ hζ M S U q)).symm.toLinearMap.comp
       (localSampling F ζ hζ M S U q)
 
-private theorem localSamplingFinsupp_injective
+theorem localSamplingFinsupp_injective
     (U : ∀ q : S, OpenSubgroup (Cover F ζ hζ S q)) (q : S) :
     Function.Injective (localSamplingFinsupp F ζ hζ M S U q) :=
   (Finsupp.linearEquivFunOnFinite ℂ (Fiber F ζ hζ M S q)
@@ -123,7 +120,7 @@ private theorem localSamplingFinsupp_injective
       (PiTensorProduct.ofFinsuppEquiv.toLinearMap.comp
         (PiTensorProduct.map (fun q => localSamplingFinsupp F ζ hζ M S U q)))
 
-private theorem tensorCosetSampling_injective
+theorem tensorCosetSampling_injective
     (U : ∀ q : S, OpenSubgroup (Cover F ζ hζ S q)) :
     Function.Injective (tensorCosetSampling F ζ hζ M S U) := by
   have hmap : Function.Injective
@@ -140,8 +137,8 @@ private theorem tensorCosetSampling_injective
       have hh : (fun q => (retract q).comp
         (localSamplingFinsupp F ζ hζ M S U q)) = fun q => LinearMap.id := by
         funext q
-        have hk : (localSamplingFinsupp F ζ hζ M S U q).ker = ⊥ := by
-          exact (LinearMap.ker_eq_bot (R := ℂ) (R₂ := ℂ)
+        have hk : (localSamplingFinsupp F ζ hζ M S U q).ker = ⊥ := 
+          (LinearMap.ker_eq_bot (R := ℂ) (R₂ := ℂ)
             (M := localFixedLevel F ζ hζ M S U q)
             (M₂ := LocalCosets F ζ hζ M S U q →₀ Fiber F ζ hζ M S q)).mpr
               (localSamplingFinsupp_injective F ζ hζ M S U q)
@@ -220,7 +217,7 @@ private theorem tensorCosetSampling_injective
     fixedTensorInclusion, PiTensorProduct.mapIncl, PiTensorProduct.map_tprod,
     Submodule.inclusion_apply, Submodule.subtype_apply]
 
-private theorem tensor_mem_local_fixed_level
+theorem tensor_mem_local_fixed_level
     (x : PiTensorProduct ℂ (Source F ζ hζ M S)) :
     ∃ (U : ∀ q : S, OpenSubgroup (Cover F ζ hζ S q))
       (y : PiTensorProduct ℂ (fun q => localFixedLevel F ζ hζ M S U q)),
@@ -232,8 +229,7 @@ private theorem tensor_mem_local_fixed_level
       intro j hj g
       exact congrFun (hU q j hj) g
     refine ⟨U, c • PiTensorProduct.tprod ℂ (fun q => ⟨x q, hx q⟩), ?_⟩
-    simp only [map_smul, PiTensorProduct.mapIncl, PiTensorProduct.map_tprod,
-      Submodule.subtype_apply]
+    simp
   | add x y hx hy =>
     obtain ⟨U, x', hx'⟩ := hx
     obtain ⟨V, y', hy'⟩ := hy
@@ -257,12 +253,8 @@ private theorem tensor_mem_local_fixed_level
       (PiTensorProduct.mapIncl (fun q => localFixedLevel F ζ hζ M S U q))) z = 0 := by
     rw [LinearMap.comp_apply, hz, map_sub, he]
     funext g
-    exact sub_self ((tensorEvaluation F ζ hζ M S) y g)
+    simp
   have hz0 : z = 0 := fixedTensorEvaluation_injective F ζ hζ M S U (by
     rw [hzero, map_zero])
   rw [hz0, map_zero] at hz
   exact sub_eq_zero.mp hz.symm
-
-end DedekindZetaZeroFree.NativeScalarFiniteProductLocalFixedLevel
-
-end

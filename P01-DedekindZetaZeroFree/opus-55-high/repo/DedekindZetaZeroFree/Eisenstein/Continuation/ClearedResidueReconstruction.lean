@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.SpectralCoordinateA
 
 @[expose] public section
 
-noncomputable section
 open scoped Topology Classical
 open Filter
 
@@ -30,11 +29,7 @@ theorem cleared_identity_on_open {f k a d : ℂ → ℂ} {O V C : Set ℂ}
     · exact nhdsWithin_le_nhds (continuousAt_id.eventually_ne h)
   have had : a =ᶠ[𝓝[≠] s] d := by
     filter_upwards [heq, hn, nhdsWithin_le_nhds (hC.mem_nhds hs)] with z hz hn hc
-    rw [hfa z hc hn, hkd z hc hn, hz]
+    simp_all
   exact tendsto_nhds_unique
     (((ha.continuousAt (hC.mem_nhds hs)).tendsto.mono_left nhdsWithin_le_nhds).congr' had)
     ((hd.continuousAt (hC.mem_nhds hs)).tendsto.mono_left nhdsWithin_le_nhds)
-
-end DedekindZetaZeroFree.KPMsClearedTruncationL2.ActualRaisingContinuationPin
-
-end

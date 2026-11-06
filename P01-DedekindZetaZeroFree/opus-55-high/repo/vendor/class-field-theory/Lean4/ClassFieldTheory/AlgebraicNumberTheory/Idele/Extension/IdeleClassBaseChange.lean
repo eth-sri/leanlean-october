@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Relative and ordinary idele classes
 
@@ -59,13 +54,11 @@ theorem relativeIdelePrincipalSubgroup_map_baseChange :
     refine
       ⟨RelativeIdeleGroup.principalIdele K L x,
         ⟨x, rfl⟩, ?_⟩
-    exact
-      relativeIdeleBaseChangeMulEquiv_principalIdele
-        (K := K) (L := L) x
+    simp
 
 /-- Scalar extension identifies the relative presentation of the idele
 class group with the ordinary idele class group of the extension field. -/
-noncomputable def relativeIdeleClassBaseChangeMulEquiv :
+def relativeIdeleClassBaseChangeMulEquiv :
     RelativeIdeleGroup.ClassGroup K L ≃*
       IdeleClassGroup L :=
   QuotientGroup.congr
@@ -101,17 +94,3 @@ theorem relativeIdeleClassBaseChangeMulEquiv_classInclusion
   refine QuotientGroup.induction_on c ?_
   intro a
   rfl
-
-/-- Homomorphism form of the compatibility between relative class
-inclusion and ordinary idele-class extension. -/
-theorem relativeIdeleClassBaseChange_comp_classInclusion :
-    (relativeIdeleClassBaseChangeMulEquiv
-        (K := K) (L := L)).toMonoidHom.comp
-      (RelativeIdeleGroup.classInclusion K L) =
-        ideleClassExtension K L := by
-  ext c
-  exact
-    relativeIdeleClassBaseChangeMulEquiv_classInclusion
-      (K := K) (L := L) c
-
-end

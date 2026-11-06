@@ -40,7 +40,7 @@ private lemma scalar_regular (c : ℂ) (R : RatFunc ℂ) (w : ℂ)
   refine ⟨?_, by rw [RatFunc.eval_mul _ _ (by simp) hR, RatFunc.eval_C]; rfl⟩
   intro h
   have hh := Polynomial.eval_eq_zero_of_dvd_of_eval_eq_zero (RatFunc.denom_mul_dvd (RatFunc.C c) R) h
-  exact hR (by simpa using hh)
+  simp_all
 
 private lemma sum_regular {ι : Type*} (s : Finset ι) (a : ι → RatFunc ℂ) (w : ℂ)
     (ha : ∀ i ∈ s, (a i).denom.eval w ≠ 0) :
@@ -253,9 +253,7 @@ private theorem both_standard_denominators_regular
     change (α*w)^6 = _
     rw [mul_pow,hα]
   have h6ne : (r₀ : ℂ)^6 ≠ (residueCardinality (KPExceptionalRaw.LocalField F q) : ℂ) := by
-    rw [h6]
-    intro he
-    exact hw6 ((mul_left_cancel₀ hq0) (by simpa using he))
+    simp_all
   refine ⟨r₀,rfl,?_,?_⟩
   · simp only [denominator,ite_true, KPRankOneRootParameter.t,hroot]
     apply sub_ne_zero.mpr
@@ -270,7 +268,7 @@ private theorem both_standard_denominators_regular
       simpa only [inv_pow] using he.symm
     exact ((mul_inv_eq_one₀ (pow_ne_zero _ r₀.ne_zero)).mp he').symm
 
-private theorem scalar_regular_locus_infinite
+theorem scalar_regular_locus_infinite
     (C : RatFunc ℂ) :
     {w : ℂ | w ≠ 0 ∧ w^6 ≠ 1 ∧ C.denom.eval w ≠ 0}.Infinite := by
   let bad : Set ℂ := {0} ∪ {w | w^6=1} ∪ {w | C.denom.IsRoot w}
@@ -421,6 +419,3 @@ theorem rational_composition_of_regular_values
     simp only [show Sign.minus ≠ Sign.plus from by decide, ite_false]
     simpa only [rationalStandard,Finsupp.sum,Finset.smul_sum,smul_smul,
       ite_true,ite_eq_right (show Sign.minus ≠ Sign.plus from by decide)] using hh
-
-end
-end DedekindZetaZeroFree.KPActualScalarBinding.ResidueSteps.Reverse

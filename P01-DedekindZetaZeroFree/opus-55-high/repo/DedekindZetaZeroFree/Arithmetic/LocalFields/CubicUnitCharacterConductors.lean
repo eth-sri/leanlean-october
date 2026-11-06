@@ -34,39 +34,30 @@ variable (K : Type*) [Field K] [CharZero K] [ValuativeRel K] [TopologicalSpace K
   [IsNonarchimedeanLocalField K]
 local instance : UniformSpace K := IsTopologicalAddGroup.rightUniformSpace K
 local instance : IsUniformAddGroup K := isUniformAddGroup_of_addCommGroup
-private lemma filtration_eq (j : ℕ) : unitFiltration K j = KPCubicUnitIndices.principalUnits K j := by
+lemma filtration_eq (j : ℕ) : unitFiltration K j = KPCubicUnitIndices.principalUnits K j := by
   unfold unitFiltration
   split_ifs with h
-  · subst j
-    unfold KPCubicUnitIndices.principalUnits
-    symm
-    apply top_unique
-    intro u hu
-    change Units.map _ u = 1
-    rw [Units.ext_iff]
-    change Ideal.Quotient.mk _ (u : 𝒪[K]) = 1
-    rw [← map_one (Ideal.Quotient.mk _), Ideal.Quotient.eq]
-    simp
+  · simp_all
   · rfl
-private lemma filtration_mem (j : ℕ) (u : (𝒪[K])ˣ) :
+lemma filtration_mem (j : ℕ) (u : (𝒪[K])ˣ) :
     u ∈ unitFiltration K j ↔ (u : 𝒪[K]) - 1 ∈ 𝓂[K] ^ j := by
   rw [filtration_eq]
   change Units.map _ u = 1 ↔ _
   rw [Units.ext_iff]
   change Ideal.Quotient.mk _ (u : 𝒪[K]) = 1 ↔ _
   rw [← map_one (Ideal.Quotient.mk (𝓂[K] ^ j)), Ideal.Quotient.eq]
-private lemma filtration_anti : Antitone (unitFiltration K) := by
+lemma filtration_anti : Antitone (unitFiltration K) := by
   intro i j hij u hu
   rw [filtration_mem] at hu ⊢
   exact Ideal.pow_le_pow_right hij hu
-private lemma filtration_open (j : ℕ) : IsOpen (unitFiltration K j : Set (𝒪[K])ˣ) := by
+lemma filtration_open (j : ℕ) : IsOpen (unitFiltration K j : Set (𝒪[K])ˣ) := by
   have he : (unitFiltration K j : Set (𝒪[K])ˣ) =
       (fun u : (𝒪[K])ˣ => (u : 𝒪[K]) - 1) ⁻¹' ((𝓂[K] ^ j : Ideal (𝒪[K])) : Set (𝒪[K])) := by
     ext u
     exact filtration_mem K j u
   rw [he]
   exact (IsLocalRing.isOpen_maximalIdeal_pow (𝒪[K]) j).preimage (by fun_prop)
-private lemma filtration_basis : ∀ W ∈ 𝓝 (1 : (𝒪[K])ˣ),
+lemma filtration_basis : ∀ W ∈ 𝓝 (1 : (𝒪[K])ˣ),
     ∃ j, (unitFiltration K j : Set (𝒪[K])ˣ) ⊆ W := by
   intro W hW
   have hi : (⋂ j, (unitFiltration K j : Set (𝒪[K])ˣ)) ⊆ {1} := by
@@ -84,19 +75,18 @@ private lemma filtration_basis : ∀ W ∈ 𝓝 (1 : (𝒪[K])ˣ),
       intro x hx
       have : x = 1 := Set.mem_singleton_iff.mp (hi hx)
       simpa [this] using hW)
-private lemma filtration_finite (j : ℕ) : (unitFiltration K j).FiniteIndex := by
+lemma filtration_finite (j : ℕ) : (unitFiltration K j).FiniteIndex := by
   letI := (unitFiltration K j).quotient_finite_of_isOpen (filtration_open K j)
   exact Subgroup.finiteIndex_of_finite_quotient
-private lemma root_lift (ζ : K) (hζ : IsPrimitiveRoot ζ 3) :
+lemma root_lift (ζ : K) (hζ : IsPrimitiveRoot ζ 3) :
     ∃ z : KPCubicUnitIndices.Integers K, IsPrimitiveRoot z 3 := by
   have hv : (ValuativeRel.valuation K) ζ = 1 := by
     have hp := congrArg (ValuativeRel.valuation K) hζ.pow_eq_one
-    rw [map_pow, map_one] at hp
-    exact (pow_eq_one_iff_of_nonneg zero_le (by decide : 3 ≠ 0)).mp hp
+    simp_all
   let z : KPCubicUnitIndices.Integers K := ⟨ζ, hv.le⟩
   exact ⟨z, hζ.of_map_of_injective (f := (KPCubicUnitIndices.Integers K).subtype)
     Subtype.val_injective⟩
-private lemma local_counts (ζ : K) (hζ : IsPrimitiveRoot ζ 3) :
+lemma local_counts (ζ : K) (hζ : IsPrimitiveRoot ζ 3) :
     ∃ r : ℕ, 2 ≤ residueCard K ∧
       Finite (Character K) ∧
       (∀ χ : Character K, ∃ j, unitFiltration K j ≤ χ.toMonoidHom.ker) ∧
@@ -135,7 +125,7 @@ private lemma local_counts (ζ : K) (hζ : IsPrimitiveRoot ζ 3) :
   · simpa only [he] using hi.2.1
   · simpa only [he, hq] using hi.2.2.1
   · simpa only [he, hq] using hi.2.2.2
-private lemma sum_by_conductor {X : Type*} [Finite X] (c : X → ℕ) (N : ℕ)
+lemma sum_by_conductor {X : Type*} [Finite X] (c : X → ℕ) (N : ℕ)
     (hb : ∀ x, c x ≤ N) (t : ℝ) :
     (∑ᶠ x : X, t ^ c x) = ∑ j ∈ Finset.range (N + 1),
       (Nat.card {x : X // c x = j} : ℝ) * t ^ j := by
@@ -149,11 +139,10 @@ private lemma sum_by_conductor {X : Type*} [Finite X] (c : X → ℕ) (N : ℕ)
   have he : ∑ x ∈ Finset.univ.filter (fun x : X => c x = j), t ^ c x =
       ∑ x ∈ Finset.univ.filter (fun x : X => c x = j), t ^ j := by
     apply Finset.sum_congr rfl
-    intro x hx
-    rw [(Finset.mem_filter.mp hx).2]
+    simp_all
   rw [he, Finset.sum_const, nsmul_eq_mul, Nat.card_eq_fintype_card,
     Fintype.card_subtype]
-private lemma sum_triples (g : ℕ → ℝ) (r : ℕ) :
+lemma sum_triples (g : ℕ → ℝ) (r : ℕ) :
     (∑ j ∈ Finset.range (3*r), g (j+1)) =
       ∑ i ∈ Finset.range r, (g (3*i+1) + g (3*i+2) + g (3*i+3)) := by
   induction r with
@@ -162,7 +151,7 @@ private lemma sum_triples (g : ℕ → ℝ) (r : ℕ) :
     rw [show 3 * (r+1) = 3*r+3 by omega, Finset.sum_range_add, ih,
       Finset.sum_range_succ]
     simp [Finset.sum_range_succ, Nat.add_assoc]
-private lemma sum_from_indices {X : Type*} [Finite X] (c : X → ℕ) (q r : ℕ)
+lemma sum_from_indices {X : Type*} [Finite X] (c : X → ℕ) (q r : ℕ)
     (hq : 2 ≤ q) (A : ℕ → ℕ)
     (hb : ∀ x, c x ≤ 3*r+1)
     (hzero : Nat.card {x : X // c x = 0} = 1)
@@ -234,8 +223,7 @@ theorem t2Space_of_isValuativeTopology [IsValuativeTopology K] [ValuativeRel.IsN
   refine ⟨{z : K | valuation K z < valuation K x}, ?_, by simp⟩
   rw [IsValuativeTopology.mem_nhds_iff]
   refine ⟨Units.mk0 (valuation K x) (by simpa using hx), ?_⟩
-  intro z hz
-  simpa using hz
+  simp
 
 theorem unitFiltration_mem_iff (j : ℕ) (u : (𝒪[K])ˣ) :
     u ∈ unitFiltration K j ↔ ((u : 𝒪[K]) - 1) ∈ 𝓂[K] ^ j := by
@@ -294,5 +282,3 @@ theorem kp_local_unramified_character_count
     (CubicUnitCharacters.residueCard K) r hq
     (CubicCharacters.levelIndex (CubicUnitCharacters.unitFiltration K))
     hb hzcard hd ha0 has hat
-
-end DedekindZetaZeroFree

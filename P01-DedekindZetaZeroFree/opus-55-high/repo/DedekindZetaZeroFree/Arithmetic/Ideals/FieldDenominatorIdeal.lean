@@ -35,5 +35,3 @@ theorem fieldDenominatorIdeal
     simp [hy]
   · obtain ⟨⟨n, d⟩, hd⟩ := IsLocalization.surj (nonZeroDivisors (𝓞 K)) y
     exact ⟨d, ⟨n, by linear_combination -hd⟩, mem_nonZeroDivisors_iff_ne_zero.mp d.2⟩
-
-end DedekindZetaZeroFree.AbelianQuotient

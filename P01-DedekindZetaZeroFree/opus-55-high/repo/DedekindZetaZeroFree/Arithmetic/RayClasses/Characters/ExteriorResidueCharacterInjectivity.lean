@@ -51,7 +51,7 @@ private theorem exponent_zero_iff (v : HeightOneSpectrum (𝓞 F))
     have : v.asIdeal ⊔ f = v.asIdeal := sup_eq_left.mpr hle
     exact v.isPrime.ne_top (this.symm.trans h)
 
-private theorem exponent_eq (A : SArithmeticData F) (sigma : FixedSResidue.FullLocalCharacters A)
+theorem exponent_eq (A : SArithmeticData F) (sigma : FixedSResidue.FullLocalCharacters A)
     (f₁ f₂ : Ideal (𝓞 F)) (o₁ : RayClassCharacter F f₁) (o₂ : RayClassCharacter F f₂)
     (h₁ : SPrimeCompatibility A f₁ o₁ sigma) (h₂ : SPrimeCompatibility A f₂ o₂ sigma)
     (v : {v // v ∈ A.Sf}) :
@@ -97,7 +97,7 @@ private theorem s_prime_eq (A : SArithmeticData F) (sigma : FixedSResidue.FullLo
   by_cases hv : v.val.asIdeal ⊔ f₁ = ⊤
   · obtain ⟨pi, hpi⟩ := uniformizer_exists v.val
     rw [(h₁ v).2.2 hv pi hpi, (h₂ v).2.2 (hc.mp hv) pi hpi]
-  · have hv₂ : v.val.asIdeal ⊔ f₂ ≠ ⊤ := fun h => hv (hc.mpr h)
+  · have hv₂ : v.val.asIdeal ⊔ f₂ ≠ ⊤ := by simp_all
     rw [(o₁.eq_zero_iff' _).mpr (Or.inr hv), (o₂.eq_zero_iff' _).mpr (Or.inr hv₂)]
 
  def charHom (f : Ideal (𝓞 F)) (o : RayClassCharacter F f) :
@@ -143,6 +143,3 @@ theorem ideal_character_eq (A : SArithmeticData F)
     apply Multiset.map_congr rfl
     intro p hpI
     exact hp p (prime_of_normalized_factor p hpI)
-
-end
-end DedekindZetaZeroFree.Detector.FixedSInjectivity

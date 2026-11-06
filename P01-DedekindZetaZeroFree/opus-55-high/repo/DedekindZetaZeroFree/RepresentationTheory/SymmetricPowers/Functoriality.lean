@@ -52,7 +52,3 @@ theorem symmetricPower_apply (ρ : Representation R G M) (d : ℕ) (g : G) :
 theorem symmetricPower_apply_tprod (ρ : Representation R G M) (d : ℕ) (g : G) (m : Fin d → M) :
     ρ.symmetricPower d g (⨂ₛ[R] i, m i) = ⨂ₛ[R] i, ρ g (m i) := by
   rw [symmetricPower_apply, SymmetricPower.map_tprod]
-
-end CommSemiring
-
-end Representation

@@ -32,5 +32,3 @@ theorem length_two_of_short_exact
     Module.length_eq_one (MonoidAlgebra k G) τ.asModule] at h
   rw [h]
   norm_num
-
-end DedekindZetaZeroFree.KPExceptionalRaw.FiniteSource.ImagesIrreducibilitySteps.PlusLengthSteps

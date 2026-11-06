@@ -7,7 +7,6 @@ public import DedekindZetaZeroFree.LFunctions.Hecke.ReciprocalGammaFactorStripBo
 
 namespace DedekindZetaZeroFree
 
-noncomputable section
 open scoped NumberField
 
 theorem heckeNonprincipalRegularization_quadratic_strip_growth
@@ -22,10 +21,10 @@ theorem heckeNonprincipalRegularization_quadratic_strip_growth
   obtain ⟨GC, _hGCpos, hGC⟩ := gammaC_inverse_strip_exp_bound a b hab
   set m : ℝ := max |a| |b| with hm
   have hm0 : 0 ≤ m := by
-    rw [hm]; exact le_trans (abs_nonneg a) (le_max_left _ _)
+    simp_all
   set Qb : ℝ := max (Q ^ (-a / 2)) (Q ^ (-b / 2)) with hQb
   have hQb0 : 0 ≤ Qb := by
-    rw [hQb]; exact le_trans (Real.rpow_nonneg hQ.le _) (le_max_left _ _)
+    positivity
   refine ⟨Qb * GC ^ r * max C 1, 2 * (m ^ 2 + 1) + r * Real.pi, ?_, ?_, ?_⟩
   · positivity
   · positivity
@@ -56,7 +55,7 @@ theorem heckeNonprincipalRegularization_quadratic_strip_growth
       rw [hm]
       refine abs_le.mpr ⟨?_, ?_⟩
       · have h1 : -|a| ≤ s.re := le_trans (neg_abs_le a) ha
-        have h2 : -(max |a| |b|) ≤ -|a| := neg_le_neg (le_max_left _ _)
+        have h2 : -(max |a| |b|) ≤ -|a| := by simp
         linarith
       · exact le_trans hb (le_trans (le_abs_self b) (le_max_right _ _))
 
@@ -104,10 +103,10 @@ theorem heckePrincipalRegularization_quadratic_strip_growth
     gammaC_inverse_strip_exp_bound (a + 1) (b + 1) (by linarith)
   set m : ℝ := max |a| |b| with hm
   have hm0 : 0 ≤ m := by
-    rw [hm]; exact le_trans (abs_nonneg a) (le_max_left _ _)
+    simp_all
   set Qb : ℝ := max (Q ^ (-a / 2)) (Q ^ (-b / 2)) with hQb
   have hQb0 : 0 ≤ Qb := by
-    rw [hQb]; exact le_trans (Real.rpow_nonneg hQ.le _) (le_max_left _ _)
+    positivity
   refine ⟨Qb * (2 * Real.pi)⁻¹ * GC1 * GC ^ (r - 1) * max C 1,
     2 * (m ^ 2 + 1) + r * Real.pi, ?_, ?_, ?_⟩
   · positivity
@@ -126,12 +125,11 @@ theorem heckePrincipalRegularization_quadratic_strip_growth
       · exact le_trans (Real.rpow_le_rpow_of_exponent_ge hQ h1.le (by linarith))
           (le_max_right _ _)
     have hconst : ‖(((2 * Real.pi : ℝ) : ℂ))⁻¹‖ = (2 * Real.pi)⁻¹ := by
-      rw [norm_inv, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (by positivity)]
+      simp
 
     have hG1norm : ‖(Complex.Gammaℂ (s + 1))⁻¹‖ ≤ GC1 * eA := by
       have hs1 : a + 1 ≤ (s + 1).re ∧ (s + 1).re ≤ b + 1 := by
-        simp only [Complex.add_re, Complex.one_re]
-        constructor <;> linarith
+        simp_all
       have h := hGC1 (s + 1) hs1
       rw [heA]
       simpa using h
@@ -151,7 +149,7 @@ theorem heckePrincipalRegularization_quadratic_strip_growth
       rw [hm]
       refine abs_le.mpr ⟨?_, ?_⟩
       · have h1 : -|a| ≤ s.re := le_trans (neg_abs_le a) ha
-        have h2 : -(max |a| |b|) ≤ -|a| := neg_le_neg (le_max_left _ _)
+        have h2 : -(max |a| |b|) ≤ -|a| := by simp
         linarith
       · exact le_trans hb (le_trans (le_abs_self b) (le_max_right _ _))
     have hsq : ‖s‖ ^ 2 ≤ 2 * (m ^ 2 + 1) * (1 + |s.im|) ^ 2 := by
@@ -233,6 +231,3 @@ theorem principalHeckeEntireRegularization_quadratic_strip_growth
   simpa only [principalHeckeEntireRegularization]
     using heckePrincipalRegularization_quadratic_strip_growth (heckeConductorScale F 𝔪) hQ
       (NumberField.InfinitePlace.nrComplexPlaces F) hr a b hab D.E hE
-
-end
-end DedekindZetaZeroFree

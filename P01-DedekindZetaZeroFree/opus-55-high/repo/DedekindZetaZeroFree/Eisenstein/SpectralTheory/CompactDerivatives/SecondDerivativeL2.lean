@@ -17,7 +17,7 @@ open KPMsClearedTruncationL2
 
 open _root_.DedekindZetaZeroFree.KPMsSameContinuationGreen.NativeBoundaryH1.CompactOrbitL2 renaming span_memLp → span_memLp
 
-private theorem compact_second_memLp
+theorem compact_second_memLp
     {X K : Type*} [MeasurableSpace X] [Group K]
     (μ : Measure X) (a : K → X → X)
     (ha : ∀ k, MeasurePreserving (a k) μ μ)
@@ -76,7 +76,7 @@ open _root_.DedekindZetaZeroFree.FourierContinuation.ResidualCompactHaar renamin
  def compactAction (k : KPMsGreenFlux.K F) : X F ζ hζ → X F ζ hζ :=
   KPSmoothActualFlowData.rightTranslate F ζ hζ (KPMsGreenFlux.compactInsertion F ζ hζ k)
 
-private theorem compactAction_mul (k l : KPMsGreenFlux.K F) (x : X F ζ hζ) :
+theorem compactAction_mul (k l : KPMsGreenFlux.K F) (x : X F ζ hζ) :
     compactAction l (compactAction k x) = compactAction (k*l) x := by
   induction x using Quotient.inductionOn with
   | h g =>
@@ -87,7 +87,7 @@ private theorem compactAction_mul (k l : KPMsGreenFlux.K F) (x : X F ζ hζ) :
     exact congrArg (fun a => g*a)
       ((KPSmoothActualFlowData.archimedean_insertion_properties F ζ hζ).2.1 _ _).symm
 
-private theorem smooth_word_compact_hasDerivAt
+theorem smooth_word_compact_hasDerivAt
     (u : smoothSpace F ζ hζ U) (word : List (KPSmoothActualFlowData.B F))
     (w : NumberField.InfinitePlace F) (c : Fin 3) (x : X F ζ hζ) (t : ℝ) :
     HasDerivAt (fun r => WD word u.val (compactAction (compactDirectionCurve w c r) x))
@@ -106,7 +106,7 @@ private theorem smooth_word_compact_hasDerivAt
     simp only [← compact_direction_curve_insertion, compact_directionJet] at hh
     fin_cases c <;> exact hh
 
-private theorem smooth_compact_second_differentiable
+theorem smooth_compact_second_differentiable
     (u : smoothSpace F ζ hζ U) (w : NumberField.InfinitePlace F) (c : Fin 3)
     (x : X F ζ hζ) :
     DifferentiableAt ℝ (fun t => deriv (fun r => u.val
@@ -129,7 +129,7 @@ private theorem smooth_compact_second_differentiable
   · exact h2.sub h4
   · exact h3.add h5
 
-private theorem smooth_compact_curve_second_memLp
+theorem smooth_compact_curve_second_memLp
     (u : smoothSpace F ζ hζ U) (hu : MemLp u.val 2 R.quotientHaar)
     [FiniteDimensional ℂ (Submodule.span ℂ
       (Set.range (fun k : KPMsGreenFlux.K F => u.val ∘ compactAction k)))]

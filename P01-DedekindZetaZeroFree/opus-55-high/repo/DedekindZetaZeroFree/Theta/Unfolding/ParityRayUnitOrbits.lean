@@ -70,17 +70,15 @@ private theorem Q_smul (q : InfinitePlace K → ℝ) (r : ℝ)
     RayParity.Q K q (r • x) = r • RayParity.Q K q x := by
   apply (Theta.traceToMixed K).injective
   simp only [RayParity.Q, ContinuousLinearEquiv.apply_symm_apply, map_smul]
-  ext v <;> simp [NumberField.mixedEmbedding.mixedSpaceOfRealSpace, mul_smul_comm]
+  simp
 
-private theorem Q_realCoordinate (q : InfinitePlace K → ℝ)
+theorem Q_realCoordinate (q : InfinitePlace K → ℝ)
     (x : NumberField.mixedEmbedding.euclidean.mixedSpace K) (v : RealPlaces K) :
     Theta.traceRealCoordinateCLM K v (RayParity.Q K q x) =
       q v * Theta.traceRealCoordinateCLM K v x := by
-  rw [RayParity.traceRealCoordinateCLM_eq_traceToMixed,
-    RayParity.traceRealCoordinateCLM_eq_traceToMixed]
-  simp [RayParity.Q, NumberField.mixedEmbedding.mixedSpaceOfRealSpace]
+  rfl
 
-private theorem absEmbedding_real (m : Ideal (𝓞 K)) (u : U K m)
+theorem absEmbedding_real (m : Ideal (𝓞 K)) (u : U K m)
     (v : RealPlaces K) :
     absEmbedding m u v = realEmbedding K v (u.val : K) := by
   change v.val (u.val : K) = _
@@ -104,8 +102,8 @@ theorem gδ_normalizedEmbedding_smul (D : Data K)
     RayParity.gδ K δ
       (RayParity.Q K (fun v => q v * absEmbedding D.m u v)
         (normalizedEmbedding D α.val)) := by
-  have habs (v : InfinitePlace K) : 0 < absEmbedding D.m u v := by
-    exact v.pos_iff.mpr (RingOfIntegers.coe_ne_zero_iff.mpr u.val.ne_zero)
+  have habs (v : InfinitePlace K) : 0 < absEmbedding D.m u v := 
+    v.pos_iff.mpr (RingOfIntegers.coe_ne_zero_iff.mpr u.val.ne_zero)
   have hq' : ∀ v, q v * absEmbedding D.m u v ≠ 0 :=
     fun v => ne_of_gt (mul_pos (hq v) (habs v))
   have hn : ‖RayParity.Q K q (normalizedEmbedding D (u • α).val)‖ ^ 2 =
@@ -146,7 +144,3 @@ theorem countable_rayUnitLogLattice (m : Ideal (𝓞 K)) :
   have hc : Countable (Multiplicative (rayUnitLogLattice K m)) :=
     (rayUnitLogMap_surjective (K := K) m).countable
   exact Multiplicative.ofAdd.injective.countable
-
-end DedekindZetaZeroFree.AbelianQuotient.RayCoset
-
-end

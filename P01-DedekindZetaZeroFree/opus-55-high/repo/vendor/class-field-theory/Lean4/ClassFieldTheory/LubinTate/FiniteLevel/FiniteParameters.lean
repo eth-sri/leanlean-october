@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Finite unit parameters for standard Lubin--Tate levels
 
@@ -72,7 +67,7 @@ def standardLubinTateUnitParameterClass
     (CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF (n + 1))
 
 /-- The finite-level unit parameter space is finite. -/
-noncomputable instance standardLubinTateUnitParameter_finite
+instance standardLubinTateUnitParameter_finite
     (F : LocalField.{u, v} K) (n : ℕ) :
     Finite (standardLubinTateUnitParameter F n) := by
   change Finite
@@ -83,7 +78,7 @@ noncomputable instance standardLubinTateUnitParameter_finite
       F.toCompleteDVF (n + 1)
 
 /-- A chosen valuation-ring unit representing a finite unit parameter. -/
-noncomputable def standardLubinTateUnitParameterChosenRepresentative
+def standardLubinTateUnitParameterChosenRepresentative
     (F : LocalField.{u, v} K) (n : ℕ)
     (a : standardLubinTateUnitParameter F n) :
     F.valuationSubringˣ :=
@@ -141,12 +136,12 @@ theorem standardLubinTateUnitParameter_natCard
       Nat.card (Q ⧸ H) =
           Nat.card
             (F.valuationSubringˣ ⧸
-              CompleteDVF.higherPrincipalUnitGroup D 1) := by
-        exact Nat.card_congr
+              CompleteDVF.higherPrincipalUnitGroup D 1) := 
+        Nat.card_congr
           (U.quotientModuloPrincipalUnitClassEquivQuotientOfLe
             hlevel).toEquiv
-      _ = Nat.card F.residueFieldˣ := by
-        exact Nat.card_congr
+      _ = Nat.card F.residueFieldˣ := 
+        Nat.card_congr
           (higherPrincipalUnitGroup.unitsModOneEquivResidueFieldUnits D).toEquiv
       _ = Nat.card F.residueField - 1 := Nat.card_units F.residueField
   have hsubquotient :
@@ -162,8 +157,8 @@ theorem standardLubinTateUnitParameter_natCard
           Nat.card
             (CompleteDVF.higherPrincipalUnitGroup D 1 ⧸
               (CompleteDVF.higherPrincipalUnitGroup D (n + 1)).subgroupOf
-                (CompleteDVF.higherPrincipalUnitGroup D 1)) := by
-        exact Nat.card_congr
+                (CompleteDVF.higherPrincipalUnitGroup D 1)) := 
+        Nat.card_congr
           (U.principalUnitSubquotientConcreteEquiv 1 (n + 1)).toEquiv
       _ = Nat.card F.residueField ^ n := by
         simpa [D] using
@@ -177,7 +172,7 @@ theorem standardLubinTateUnitParameter_natCard
 /-- The primitive root attached to a finite unit parameter.  A representative
 is chosen only to evaluate the primitive action; the theorem below shows that
 the value depends only on its quotient class. -/
-noncomputable def standardLubinTateUnitParameterRoot
+def standardLubinTateUnitParameterRoot
     (F : LocalField.{u, v} K) {π : F.valuationSubring}
     (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
     (n : ℕ) (a : standardLubinTateUnitParameter F n) :
@@ -229,7 +224,3 @@ theorem standardLubinTateUnitParameterRoot_isRoot
   simpa [standardLubinTateUnitParameterRoot] using
     standardLubinTatePrimitiveRootAction_isRoot hπ n
       (standardLubinTateUnitParameterChosenRepresentative F n a)
-
-end LubinTate
-
-end

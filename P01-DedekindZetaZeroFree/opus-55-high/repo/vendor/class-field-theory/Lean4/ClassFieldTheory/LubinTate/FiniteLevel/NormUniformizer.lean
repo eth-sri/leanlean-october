@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Norm of a primitive standard Lubin--Tate point
 
@@ -25,7 +21,6 @@ uniformizer.  The power-basis norm formula therefore gives
 `N(-lambda) = pi`.
 -/
 
-noncomputable section
 
 open scoped Polynomial
 
@@ -37,7 +32,7 @@ open LocalFieldTheory.DiscreteValuationField
 
 variable {K : Type u} [Field K]
 
-private theorem algebraNorm_neg
+theorem algebraNorm_neg
     {R S : Type*} [Field R] [Field S] [Algebra R S] (x : S) :
     Algebra.norm R (-x) =
       (-1) ^ Module.finrank R S * Algebra.norm R x := by
@@ -71,7 +66,3 @@ theorem standardLubinTate_norm_neg_levelGenerator
   rw [hfinrank]
   rw [← mul_assoc, ← pow_add, ← two_mul, pow_mul]
   simp
-
-end LubinTate
-
-end

@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Metaplectic.Intertwining.Residues.Archimedean
 
 @[expose] public section
 
-noncomputable section
 open scoped NumberField Classical BigOperators
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1600000
@@ -29,7 +28,3 @@ theorem compact_extension_displacement
       (borelAction S.borel P .plus (S.iwasawa.borelPart g)) (φ.val (S.iwasawa.compactPart g)))
   simp only [inducingScalar, normPower, zero_mul, Complex.exp_zero, mul_one, smul_smul]
   rw [mul_comm]
-
-end DedekindZetaZeroFree.KPGlobalResidualConstruction.StandardIntertwinerProducers.NonzeroResidue.FiniteDisplacement
-
-end

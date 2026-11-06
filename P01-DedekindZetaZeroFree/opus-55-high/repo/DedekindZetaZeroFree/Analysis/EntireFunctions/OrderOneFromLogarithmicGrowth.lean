@@ -80,5 +80,3 @@ theorem orderOneBound_of_rlogr (H : ℂ → ℂ) (C K : ℝ) (hC : 0 ≤ C) (hK 
     _ = (C * Real.exp B) * Real.exp (‖s‖ ^ (1 + ε)) := by
       rw [Real.exp_add]
       ring
-
-end DedekindZetaZeroFree.Hecke

@@ -26,10 +26,7 @@ private lemma A_N (y : Kˣ) (x : K) :
   have hm : KubotaRankTwo.d K y 1 * KubotaRankTwo.n K x =
       KubotaRankTwo.n K ((y : K) * x) * KubotaRankTwo.d K y 1 := by
     apply Units.ext
-    ext i j
-    fin_cases i <;> fin_cases j <;>
-      simp [KubotaRankTwo.d, KubotaRankTwo.n, Matrix.GeneralLinearGroup.mkOfDetNeZero,
-        Matrix.mul_apply, Fin.sum_univ_two]
+    simp
   have hs1 : KPLocalCover.sigmaTwo F ζ hζ v (KubotaRankTwo.d K y 1) (KubotaRankTwo.n K x) = 1 := by
     simp [KPLocalCover.sigmaTwo, KubotaElementaryLastArgument.tau, B1, B2]
   have hs2 : KPLocalCover.sigmaTwo F ζ hζ v (KubotaRankTwo.n K ((y : K) * x)) (KubotaRankTwo.d K y 1) = 1 := by
@@ -66,33 +63,28 @@ private lemma swap_det : KubotaRankTwo.det K (KPStandardLocalRootLifts.weylSwap 
 private lemma swap_X : KubotaRankTwo.X K (KPStandardLocalRootLifts.weylSwap K) = 1 := by
   apply Units.ext
   simp [KubotaRankTwo.X, KubotaRankTwo.x, KPStandardLocalRootLifts.weylSwap]
-private lemma Bminus (y : Kˣ) : KPHilbert.B3 F ζ hζ v (-1) y = 1 := by
+lemma Bminus (y : Kˣ) : KPHilbert.B3 F ζ hζ v (-1) y = 1 := by
   rw [(KPHilbert.B3_laws F ζ hζ v).2.2.1]
   simp [(KPHilbert.B3_laws F ζ hζ v).2.2.2.2.2]
 private lemma sigma_wd (y : Kˣ) :
       KPLocalCover.sigmaTwo F ζ hζ v (KPStandardLocalRootLifts.weylSwap K) (KubotaRankTwo.d K y 1) = 1 := by
-    simp [KPLocalCover.sigmaTwo, KubotaElementaryLastArgument.tau, X_wd,
-      B1, B2, swap_X, swap_det]
+    simp [KPLocalCover.sigmaTwo, KubotaElementaryLastArgument.tau, X_wd, swap_X, swap_det]
     have hn : y / (-1 : Kˣ) = -y := by
       apply Units.ext
-      simp only [Units.val_div_eq_div_val, Units.val_neg, Units.val_one, div_neg, div_one]
+      simp only [Units.val_neg, div_neg, div_one]
     rw [Bminus F ζ hζ q y, hn, ((KPHilbert.B3_laws F ζ hζ v).2.2.2.2.2 y).2.2]
     simp
 private lemma sigma_dw (y : Kˣ) :
       KPLocalCover.sigmaTwo F ζ hζ v (KubotaRankTwo.d K y 1) (KPStandardLocalRootLifts.weylSwap K) = 1 := by
-    simp [KPLocalCover.sigmaTwo, KubotaElementaryLastArgument.tau, X_dw,
-      B1, B2, swap_det, (KPHilbert.B3_laws F ζ hζ v).2.2.2.2.2]
+    simp [KPLocalCover.sigmaTwo, KubotaElementaryLastArgument.tau, X_dw, B1, swap_det, (KPHilbert.B3_laws F ζ hζ v).2.2.2.2.2]
 private lemma sigma_scalar_dw (y : Kˣ) :
       KPLocalCover.sigmaTwo F ζ hζ v (KPScalarSplitCentral.scalarMatrix F v y)
         (KubotaRankTwo.d K y⁻¹ 1 * KPStandardLocalRootLifts.weylSwap K) = 1 := by
     have hx : KubotaRankTwo.X K (KPScalarSplitCentral.scalarMatrix F v y) = y := by
       apply Units.ext
-      simp [KubotaRankTwo.X, KubotaRankTwo.x, KPScalarSplitCentral.scalarMatrix,
-        Matrix.scalar, Matrix.diagonal_apply]
+      simp [KubotaRankTwo.X, KubotaRankTwo.x, KPScalarSplitCentral.scalarMatrix, Matrix.scalar]
     have hd : KubotaRankTwo.det K (KPScalarSplitCentral.scalarMatrix F v y) = y^2 := by
-      apply Units.ext
-      simp [KubotaRankTwo.det, KPScalarSplitCentral.scalarMatrix,
-        Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two, pow_two]
+      simp
     have hb : KPHilbert.B3 F ζ hζ v (y ^ 2) y⁻¹ = 1 := by
       rw [KubotaDefectSymbolAlgebra.inv_right _ _ _ (KPHilbert.B3_laws F ζ hζ v).2.1]
       simp only [pow_two, (KPHilbert.B3_laws F ζ hζ v).1,
@@ -101,11 +93,9 @@ private lemma sigma_scalar_dw (y : Kˣ) :
       rw [(KPHilbert.B3_laws F ζ hζ v).2.1, hb,
         ((KPHilbert.B3_laws F ζ hζ v).2.2.2.2.2 (y ^ 2)).2.1, one_mul]
     have hn : y⁻¹ * (-1 : Kˣ) = -y⁻¹ := by
-      apply Units.ext
-      simp only [Units.val_mul, Units.val_neg, Units.val_one, mul_neg, mul_one]
+      simp
     rw [hn] at hb'
-    simp [KPLocalCover.sigmaTwo, KubotaElementaryLastArgument.tau, X_dw,
-      ← w_d F q y, X_wd, hx, hd, B1, B2, hb, hb', swap_det]
+    simp [KPLocalCover.sigmaTwo, KubotaElementaryLastArgument.tau, X_dw, ← w_d F q y, X_wd, hx, hd, B1, hb', swap_det]
 private lemma W_A (y : Kˣ) :
       KPPGLLocalCover.W F ζ hζ v * KPPGLLocalCover.A F ζ hζ v y =
         KPPGLLocalCover.A F ζ hζ v y⁻¹ * KPPGLLocalCover.W F ζ hζ v := by
@@ -130,11 +120,11 @@ private lemma cube_A_comm (c a : Kˣ) :
     ((KPHilbert.B3_laws F ζ hζ v).2.2.2.2.1 c a).1,
     ((KPHilbert.B3_laws F ζ hζ v).2.2.2.2.1 a c).2]
   simp [mul_comm]
-private lemma cube_A_inv (S : CanonicalFiniteInducingData F ζ hζ q) (c : Kˣ) :
+lemma cube_A_inv (S : CanonicalFiniteInducingData F ζ hζ q) (c : Kˣ) :
     (KPPGLLocalCover.A F ζ hζ v (c^3))⁻¹ = KPPGLLocalCover.A F ζ hζ v (c⁻¹^3) := by
   rw [← S.cube_actual c, ← S.cube_actual c⁻¹, map_inv]
   rfl
-private lemma cube_A_kernelW (S : CanonicalFiniteInducingData F ζ hζ q) (c : Kˣ) :
+lemma cube_A_kernelW (S : CanonicalFiniteInducingData F ζ hζ q) (c : Kˣ) :
     KPPGLLocalCover.A F ζ hζ v (c^3) * kernelW K S.borel .minus =
       kernelW K S.borel .minus * KPPGLLocalCover.A F ζ hζ v (c⁻¹^3) := by
   have he := congrArg (fun h : actualTorus F ζ hζ q => (S.borel.torus h : ActualCover F ζ hζ q))
@@ -219,7 +209,7 @@ theorem reverse_integral_cubic_unit_change_variable
     simpa only [mul_inv_cancel, localAbs_one, hc, one_mul] using h.symm
   have hd : localAbs K d = 1 := by
     dsimp only [d]
-    simp only [pow_succ, pow_zero, localAbs_mul, localAbs_one, hci, one_mul]
+    simp only [pow_succ, pow_zero, localAbs_mul, hci, one_mul]
   have habs : KPCubicHaar.abs K (d : K) = 1 := by
     have he : localAbs K d = KPCubicHaar.abs K (d : K) := by
       simp only [localAbs, KPCubicHaar.abs, if_neg d.ne_zero, Real.rpow_intCast]
@@ -229,8 +219,8 @@ theorem reverse_integral_cubic_unit_change_variable
     { toEquiv :=
         { toFun := fun u => (d : K) * u
           invFun := fun u => (d⁻¹ : Kˣ) * u
-          left_inv := by intro u; simp [mul_assoc]
-          right_inv := by intro u; simp [mul_assoc] }
+          left_inv := by intro u; simp
+          right_inv := by intro u; simp }
       measurable_toFun := (continuous_const.mul continuous_id).measurable
       measurable_invFun := (continuous_const.mul continuous_id).measurable }
   have hmap : Measure.map e μ = μ := by
@@ -281,7 +271,7 @@ private theorem valuation_norm_le (x y : LocalField F q) :
     valuation (LocalField F q) x ≤ valuation (LocalField F q) y ↔ ‖x‖ ≤ ‖y‖ := by
   rw [← Valuation.Compatible.vle_iff_le]
   change Valued.v x ≤ Valued.v y ↔ _
-  exact (Valued.toNormedField.norm_le_iff).symm
+  simp
 private theorem ball_norm (π : (LocalField F q)ˣ) (r : ℕ) (x : LocalField F q) :
     x ∈ expandingBall F q π r ↔ ‖x‖ ≤ ‖(π : LocalField F q)‖⁻¹ ^ r := by
   let a : LocalField F q := ((π ^ r : (LocalField F q)ˣ) : LocalField F q)⁻¹
@@ -295,9 +285,7 @@ private theorem ball_norm (π : (LocalField F q)ˣ) (r : ℕ) (x : LocalField F 
   change (∃ u : (valuation (LocalField F q)).integer, x = a * (u : LocalField F q)) ↔ _
   rw [← hn]
   constructor
-  · rintro ⟨u, rfl⟩
-    rw [norm_mul]
-    exact mul_le_of_le_one_right (norm_nonneg _) ((hm _).mp u.property)
+  · simp_all
   · intro hx
     refine ⟨⟨x / a, (hm _).mpr ?_⟩, (mul_div_cancel₀ x ha).symm⟩
     rw [norm_div, div_le_one (norm_pos_iff.mpr ha)]
@@ -360,8 +348,8 @@ theorem high_shell_translation_is_cubic_unit_multiple
     have h := Ideal.Quotient.eq_zero_iff_mem.mpr hm
     exact sub_eq_zero.mp (by simpa [map_sub, Q] using h)
   let P : Polynomial (KPTameCompact.O F q) := Polynomial.X ^ 3 - Polynomial.C z
-  have hm : P.Monic := by
-    exact Polynomial.monic_X_pow_sub_C z (by decide)
+  have hm : P.Monic := 
+    Polynomial.monic_X_pow_sub_C z (by decide)
   have he : P.eval 1 ∈ KPTameCompact.p F q := by
     apply Ideal.Quotient.eq_zero_iff_mem.mp
     change Q (P.eval 1) = 0
@@ -465,8 +453,7 @@ theorem deformedTest_scalar_value
   rw [deformedTest_vector_value]
   change _ * (((coordinates .minus).symm f).val g).val 1 = _
   have hc := hcoordinates .minus ((coordinates .minus).symm f) g
-  rw [LinearEquiv.apply_symm_apply] at hc
-  rw [← hc]
+  simp_all
 
 include hcoordinates in
 
@@ -481,7 +468,7 @@ theorem deformedTest_scalar_support
   have hn : normPower (LocalField F q)
       (S.borel.coordinate (S.borel.retract (S.iwasawa.borelPart g)))
       (sourceParameter .minus s) ≠ 0 := Complex.exp_ne_zero _
-  simp only [ne_eq, mul_eq_zero, hn, false_or]
+  simp_all
 
 include hcoordinates in
 
@@ -632,9 +619,3 @@ theorem deformedTest_scalar_borel_covariance
   push_cast
   rw [mul_add, Complex.exp_add]
   ring
-
-end DedekindZetaZeroFree.KPTameTransposeKernelUnfoldingRaw.HigherShellCubicUnitConjugation
-
-end
-
-end

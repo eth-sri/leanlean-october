@@ -5,7 +5,6 @@ public import DedekindZetaZeroFree.Eisenstein.ConstantTerms.Residual.RadialCommu
 
 @[expose] public section
 
-noncomputable section
 open MeasureTheory Filter
 open scoped Topology
 namespace DedekindZetaZeroFree.KPCutoffSource
@@ -37,7 +36,7 @@ theorem incoming_commutator_radial (d : ℕ) (hd : 0 < d) {T : ℝ}
       (2*(d : ℂ)) * (-(2:ℂ)/3-4*s) := by
   rw [radial_log_integral (2*(d:ℝ)) (by positivity),
     incoming_commutator_integral_full]
-  simp [Complex.real_smul]
+  simp
 
 theorem incoming_commutator_zero_below (d : ℕ) {T : ℝ} (χ : SmoothCuspCutoff T)
     (s : ℂ) (t : ℝ) (ht : t < T) :
@@ -75,10 +74,7 @@ theorem incoming_outgoing_height_product (d : ℕ) (t : ℝ) :
   unfold KPIncomingCasimir.heightFactor
   have he : Complex.exp ((d:ℂ)*(2/3)*(t:ℂ)) =
       (Real.exp ((d:ℝ)*(2/3)*t) : ℂ) := by
-    rw [Complex.ofReal_exp]
-    congr 1
-    push_cast
-    ring
+    simp
   rw [he, Complex.star_def, Complex.conj_ofReal, Complex.ofReal_exp, ← Complex.exp_add]
   congr 1
   push_cast
@@ -92,7 +88,3 @@ theorem incoming_outgoing_radial_density (d : ℕ) (hd : 0 < d) (r : ℝ) (hr : 
     push_cast
     field_simp
   rw [he, ← Complex.ofReal_exp, Real.exp_log hr]
-
-end DedekindZetaZeroFree.KPCutoffSource
-
-end

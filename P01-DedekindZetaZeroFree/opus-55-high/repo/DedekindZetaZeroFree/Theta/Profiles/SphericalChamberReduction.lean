@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Metaplectic.Intertwining.Spherical.ScalarCham
 
 @[expose] public section
 
-noncomputable section
 open scoped NumberField Classical
 namespace DedekindZetaZeroFree.FourierContinuation.CurrentSphericalReduction
 open MeasureTheory ValuativeRel KPLocalPrincipalSeries KPLocalStoneVonNeumann
@@ -35,8 +34,7 @@ theorem actual_spherical_chamber
     ⟨φp, spherical_vector_mem_level (LocalField F q) S.borel P S.iwasawa .plus φp hp⟩
   have hlevel : B φp ∈ compactLevel S.borel P S.iwasawa .minus S.iwasawa.compact := by
     rw [show B φp = _ from actualCanonicalContinued_eq_level F q ζ hζ S P μ hμ .plus s S.iwasawa.compact le_rfl vp]
-    exact (continuedLevel (LocalField F q) S.borel P S.iwasawa S.iwasawa.compact .plus
-      (actualCanonicalLevelNumerator F ζ hζ q S P S.iwasawa.compact le_rfl μ hμ .plus) s vp).property
+    simp
   have hf := minus_compact_level_formula (LocalField F q) S.borel P S.iwasawa hu hW φm (B φp) hm hlevel
   have he := actualCanonicalContinued_chamber F q ζ hζ S P μ hμ .plus s hs φp 1 1
   simp only [transportToSections, LinearMap.comp_apply, LinearEquiv.coe_coe, LinearEquiv.symm_apply_apply] at he
@@ -50,6 +48,3 @@ theorem actual_spherical_chamber
   change ((compactTrivialization S.borel P S.iwasawa .minus (-s) (B φp)).val g).val h = _
   rw [hf, map_smul]
   rfl
-end DedekindZetaZeroFree.FourierContinuation.CurrentSphericalReduction
-
-end

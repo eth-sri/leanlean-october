@@ -18,7 +18,7 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
     (literalIwasawa F ζ hζ K hK) g : NNReal) : ℝ)) -
   KPContFlatFullProductIwasawa.alpha F ζ hζ g
 
-private theorem log_borel (D : KPGlobalTorusBorelTwistCompatibility.IwasawaData F ζ hζ)
+theorem log_borel (D : KPGlobalTorusBorelTwistCompatibility.IwasawaData F ζ hζ)
     (t : KPGlobalTorusFunctionData.E F ζ hζ) (x : KPAdeles F) (g : G F ζ hζ) :
     Real.log (((KPGlobalTorusBorelTwistCompatibility.iwasawaNorm F ζ hζ D
       ((t.val * KPGlobalTorusFunctionData.N F ζ hζ x) * g) : NNReal) : ℝ)) =
@@ -37,7 +37,7 @@ private theorem log_borel (D : KPGlobalTorusBorelTwistCompatibility.IwasawaData 
   rw [log_borel, log_borel]
   ring
 
-private theorem insertion_mem (K : Subgroup (G F ζ hζ))
+theorem insertion_mem (K : Subgroup (G F ζ hζ))
     (h : ∀ (w : InfinitePlace F) (k : KPCplxCharacterHaar.ComplexSU2),
       KPGlobalResidualConstruction.complexCompactLift F ζ hζ w k ∈ K)
     (u : InfinitePlace F → KPCplxCharacterHaar.ComplexSU2) :
@@ -51,7 +51,7 @@ private theorem insertion_mem (K : Subgroup (G F ζ hζ))
   obtain ⟨w, hw, rfl⟩ := List.mem_map.mp hk
   exact h w (u w)
 
-private theorem discrepancy_eq_finiteComponent (K : Subgroup (G F ζ hζ))
+theorem discrepancy_eq_finiteComponent (K : Subgroup (G F ζ hζ))
     (hK : IwasawaCompact F ζ hζ K) (g : G F ζ hζ) :
     discrepancy F ζ hζ K hK g = discrepancy F ζ hζ K hK
       (KPContFlatLogNormSmooth.finiteComponent F ζ hζ g) := by

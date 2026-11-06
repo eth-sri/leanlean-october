@@ -26,24 +26,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Norm containment for idele power-local-unit subgroups
 
@@ -58,7 +40,6 @@ open KummerTheory
 open LocalFieldTheory
 open LocalFieldTheory.IsNonarchimedeanLocalField
 
-noncomputable section
 
 namespace GlobalClassFieldTheory.ClassFieldAxiom
 
@@ -136,8 +117,3 @@ theorem ideleClassPowerLocalUnitSubgroup_le_ideleClassNorm_range
     ⟨QuotientGroup.mk'
         (RelativeIdeleGroup.principalSubgroup K L) b, ?_⟩
   rw [RelativeIdeleGroup.Cohomology.ideleClassNorm_mk, hb]
-
-
-end GlobalClassFieldTheory.ClassFieldAxiom
-
-end

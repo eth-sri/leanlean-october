@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Local blocks of the idele group
 
@@ -50,7 +46,7 @@ variable {K : Type u} {L : Type v}
 /-- The decomposition group acts on the units of the chosen local field,
 through the canonical global-to-local Galois equivalence. -/
 @[reducible]
-noncomputable def decompositionGroupLocalUnitsAction
+def decompositionGroupLocalUnitsAction
     (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
     (w : AbsoluteValueExtension vK L) :
     MulDistribMulAction
@@ -90,27 +86,8 @@ abbrev LocalPlaceBlock
     inferInstance
     (decompositionGroupLocalUnitsAction vK hvK w)
 
-/-- In cyclic coordinates, the local block is a finite product
-of conjugate copies of the chosen completion. -/
-noncomputable def localPlaceBlockEquivProduct
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
-    (w : AbsoluteValueExtension vK L)
-    (σ : L ≃ₐ[K] L)
-    (hgen : ∀ τ : L ≃ₐ[K] L,
-      τ ∈ Subgroup.zpowers σ) :
-    letI :=
-      decompositionGroupLocalUnitsAction vK hvK w
-    LocalPlaceBlock vK hvK w ≃*
-      (Fin (absoluteValueDecompositionGroup K w.1).index →
-        (LocalizedCompletion vK w)ˣ) :=
-  by
-    letI :=
-      decompositionGroupLocalUnitsAction vK hvK w
-    exact inducedCoordinatesOfFiniteCyclic
-      (absoluteValueDecompositionGroup K w.1) σ hgen
-
 /-- Degree-zero cohomology for one local block. -/
-noncomputable def localPlaceBlockHerbrandH0Equiv
+def localPlaceBlockHerbrandH0Equiv
     (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
     (w : AbsoluteValueExtension vK L)
     (σ : L ≃ₐ[K] L)
@@ -133,7 +110,7 @@ noncomputable def localPlaceBlockHerbrandH0Equiv
       (absoluteValueDecompositionGroup K w.1) σ hgen
 
 /-- Degree-minus-one cohomology for one local block. -/
-noncomputable def localPlaceBlockHerbrandHMinusOneEquiv
+def localPlaceBlockHerbrandHMinusOneEquiv
     (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
     (w : AbsoluteValueExtension vK L)
     (σ : L ≃ₐ[K] L)
@@ -157,7 +134,3 @@ noncomputable def localPlaceBlockHerbrandHMinusOneEquiv
       Fintype.ofFinite _
     exact inducedHerbrandHMinusOneEquivOfFiniteCyclic
       (absoluteValueDecompositionGroup K w.1) σ hgen
-
-end LocalClassFieldTheory
-
-end

@@ -20,17 +20,17 @@ def unitAnnulus (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K]
     u ∈ CubicUnitCharacters.unitFiltration K j ∧
     u ∉ CubicUnitCharacters.unitFiltration K (j + 1)}
 
-private lemma unit_coe_injective
+lemma unit_coe_injective
     (K : Type*) [Field K] [ValuativeRel K] :
     Function.Injective (fun u : (𝒪[K])ˣ => (u : K)) := by
   intro u v h
   apply Units.ext
   exact Subtype.ext h
 
-private lemma unit_value_one
+lemma unit_value_one
     (K : Type*) [Field K] [ValuativeRel K] (u : (𝒪[K])ˣ) :
-    ValuativeRel.valuation K (u : K) = 1 := by
-  exact (Valuation.integer.integers (ValuativeRel.valuation K)).one_of_isUnit u.isUnit
+    ValuativeRel.valuation K (u : K) = 1 := 
+  (Valuation.integer.integers (ValuativeRel.valuation K)).one_of_isUnit u.isUnit
 
 private lemma exists_unit
     (K : Type*) [Field K] [ValuativeRel K] {x : K}
@@ -40,7 +40,7 @@ private lemma exists_unit
     ((Valuation.integer.integers (ValuativeRel.valuation K)).isUnit_iff_valuation_eq_one).mpr hx
   exact ⟨ha.unit, congrArg (fun z : 𝒪[K] => (z : K)) ha.unit_spec⟩
 
-private lemma filtration_separates
+lemma filtration_separates
     (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K]
     [IsNonarchimedeanLocalField K] (u : (𝒪[K])ˣ) (hu : u ≠ 1) :
     ∃ j, u ∉ CubicUnitCharacters.unitFiltration K j := by
@@ -66,8 +66,8 @@ theorem unit_annuli_partition
   let f : (𝒪[K])ˣ → K := fun u => (u : K)
   have hf : Function.Injective f := unit_coe_injective K
   have hc : Continuous f := by fun_prop
-  have hm (j : ℕ) : MeasurableSet (f '' (CubicUnitCharacters.unitFiltration K j : Set (𝒪[K])ˣ)) := by
-    exact ((((CubicUnitCharacters.unitFiltration K j).isClosed_of_isOpen
+  have hm (j : ℕ) : MeasurableSet (f '' (CubicUnitCharacters.unitFiltration K j : Set (𝒪[K])ˣ)) := 
+    ((((CubicUnitCharacters.unitFiltration K j).isClosed_of_isOpen
       (CubicUnitCharacters.isOpen_unitFiltration K j)).isCompact).image hc).measurableSet
   have he (j : ℕ) : unitAnnulus K j =
       f '' (CubicUnitCharacters.unitFiltration K j : Set (𝒪[K])ˣ) \
@@ -82,8 +82,7 @@ theorem unit_annuli_partition
     · rintro ⟨u, ⟨hu, hnu⟩, hux⟩
       exact ⟨u, hux, hu, hnu⟩
   have hmeas (j : ℕ) : MeasurableSet (unitAnnulus K j) := by
-    rw [he]
-    exact (hm j).diff (hm (j + 1))
+    simp_all
   have hcover : (⋃ j : ℕ, unitAnnulus K j) = puncturedUnitRegion K := by
     ext x
     constructor
@@ -93,14 +92,12 @@ theorem unit_annuli_partition
       · rw [← hux]
         exact unit_value_one K u
       · intro hx1
-        have hu1 : u = 1 := hf (by simpa [f, hux] using hx1)
-        exact hnu (hu1 ▸ (CubicUnitCharacters.unitFiltration K (j + 1)).one_mem)
+        simp_all
     · rintro ⟨hx, hx1⟩
       obtain ⟨u, hux⟩ := exists_unit K hx
       have hu1 : u ≠ 1 := by
         intro hu
-        apply hx1
-        simpa [hu] using hux.symm
+        simp_all
       have hn := filtration_separates K u hu1
       obtain ⟨j, hj⟩ := Nat.exists_eq_succ_of_ne_zero (show Nat.find hn ≠ 0 from by
         intro hz
@@ -178,25 +175,22 @@ private lemma units_invariant (μ : Measure K) [μ.IsAddHaarMeasure] :
        have hinv : (↑↑u⁻¹ : K) = (u : K)⁻¹ := by
          apply eq_inv_of_mul_eq_one_left
          rw [← Subring.coe_mul]
-         change (↑((u⁻¹ * u : (𝒪[K])ˣ) : 𝒪[K]) : K) = 1
          simp
        rw [hinv]
        have hu : (u : K) ≠ 0 := by
-         have := unit_abs K u
-         intro h; simp [h, KPCubicHaar.abs] at this
+         simp
        change (v : K) = (u : K) * x at heq
-       simpa [heq, ← mul_assoc, hu]
+       simp_all
  rw [hset, ← Measure.map_apply (by fun_prop) (he.measurableSet_image.mpr hs)]
  rw [NonarchimedeanHaarScaling.map_mul K μ _ (by
-   have := unit_abs K u
-   intro h; simp [h, KPCubicHaar.abs] at this), unit_abs K u]
+   simp), unit_abs K u]
  simp
 private lemma units_finite (μ : Measure K) [μ.IsAddHaarMeasure] :
  IsFiniteMeasure (μ.comap (fun u : (𝒪[K])ˣ => (u : K))) := by
  constructor
  rw [(emb K).measurableEmbedding.comap_apply]
  exact ((isCompact_univ : IsCompact (Set.univ : Set (𝒪[K])ˣ)).image (by fun_prop)).measure_lt_top
-private lemma ideal_mass (μ : Measure K) [μ.IsAddHaarMeasure] (n : ℕ) :
+lemma ideal_mass (μ : Measure K) [μ.IsAddHaarMeasure] (n : ℕ) :
  μ ((𝒪[K]).subtype '' ((𝓂[K] ^ n : Ideal 𝒪[K]) : Set 𝒪[K])) =
    μ (𝒪[K] : Set K) / (CubicUnitCharacters.residueCard K : ℝ≥0∞) ^ n := by
  letI := IsTopologicalAddGroup.rightUniformSpace K
@@ -211,7 +205,7 @@ private lemma ideal_mass (μ : Measure K) [μ.IsAddHaarMeasure] (n : ℕ) :
    rfl
  have hq : CubicUnitCharacters.residueCard K ≠ 0 := Nat.card_pos.ne'
  haveI : (𝓂[K] ^ n).toAddSubgroup.FiniteIndex := AddSubgroup.finiteIndex_iff.mpr (by
-   rw [hi]; exact pow_ne_zero _ hq)
+   simp_all)
  have h := AddSubgroup.index_mul_measure (𝓂[K] ^ n).toAddSubgroup
    (IsNoetherianRing.isClosed_ideal _).measurableSet ν
  rw [hi] at h
@@ -221,14 +215,14 @@ private lemma ideal_mass (μ : Measure K) [μ.IsAddHaarMeasure] (n : ℕ) :
    calc
      ν Set.univ = μ (Subtype.val '' (Set.univ : Set 𝒪[K])) :=
        comap_subtype_coe_apply hR μ Set.univ
-     _ = μ (𝒪[K] : Set K) := by congr 1; ext x; simp
+     _ = μ (𝒪[K] : Set K) := by simp
  rw [Nat.cast_pow] at h
  change (CubicUnitCharacters.residueCard K : ℝ≥0∞) ^ n *
    ν ((𝓂[K] ^ n : Ideal 𝒪[K]) : Set 𝒪[K]) = ν Set.univ at h
  rw [hm, hu] at h
  apply (ENNReal.eq_div_iff (pow_ne_zero _ (by exact_mod_cast hq)) (by simp)).mpr
  exact h
-private lemma filtration_image_pos (n : ℕ) (hn : 1 ≤ n) :
+lemma filtration_image_pos (n : ℕ) (hn : 1 ≤ n) :
  (fun u : (𝒪[K])ˣ => (u : K)) '' (CubicUnitCharacters.unitFiltration K n : Set (𝒪[K])ˣ) =
  (fun x : K => 1 + x) '' ((𝒪[K]).subtype '' ((𝓂[K] ^ n : Ideal 𝒪[K]) : Set 𝒪[K])) := by
  ext x
@@ -248,7 +242,7 @@ private lemma filtration_image_pos (n : ℕ) (hn : 1 ≤ n) :
    · change hunit.unit ∈ CubicUnitCharacters.unitFiltration K n
      rw [CubicUnitCharacters.unitFiltration_mem_iff, hunit.unit_spec]
      simpa using ha
-   · simp [hunit.unit_spec]
+   rfl
 private lemma filtration_mass_pos (μ : Measure K) [μ.IsAddHaarMeasure] (n : ℕ) (hn : 1 ≤ n) :
  ((μ.comap (fun u : (𝒪[K])ˣ => (u : K)))
    (CubicUnitCharacters.unitFiltration K n : Set (𝒪[K])ˣ)).toReal =
@@ -256,13 +250,11 @@ private lemma filtration_mass_pos (μ : Measure K) [μ.IsAddHaarMeasure] (n : �
  rw [(emb K).measurableEmbedding.comap_apply, filtration_image_pos K n hn]
  have hs : (fun x : K => 1 + x) '' ((𝒪[K]).subtype '' ((𝓂[K] ^ n : Ideal 𝒪[K]) : Set 𝒪[K])) =
    (fun x : K => -1 + x) ⁻¹' ((𝒪[K]).subtype '' ((𝓂[K] ^ n : Ideal 𝒪[K]) : Set 𝒪[K])) := by
-   ext x; constructor
-   · rintro ⟨y, hy, rfl⟩; simpa using hy
-   · intro hx; exact ⟨-1 + x, hx, by simp⟩
+   simp
  rw [hs, measure_preimage_add, ideal_mass K μ, ENNReal.toReal_div, ENNReal.toReal_pow, ENNReal.toReal_natCast,
    div_eq_mul_inv, inv_pow]
 
-private theorem compact_character_integral
+theorem compact_character_integral
     {G : Type*} [CommGroup G] [TopologicalSpace G]
     [IsTopologicalGroup G] [T2Space G] [MeasurableSpace G] [BorelSpace G]
     (ν : Measure G) [ν.IsMulLeftInvariant] [IsFiniteMeasure ν]
@@ -273,7 +265,7 @@ private theorem compact_character_integral
         if U ≤ χ.toMonoidHom.ker then ((ν (U : Set G)).toReal : ℂ) else 0 := by
   classical
   have hf : Continuous (fun x : G => ((χ x : ℂˣ) : ℂ)) :=
-    Units.continuous_val.comp (continuous_subtype_val.comp χ.continuous)
+    by fun_prop
   refine ⟨hf.continuousOn.integrableOn_compact hU, ?_⟩
   by_cases ht : U ≤ χ.toMonoidHom.ker
   · rw [if_pos ht]
@@ -283,14 +275,13 @@ private theorem compact_character_integral
           have h : χ x = 1 := ht hx
           simp [h])
       _ = ((ν (U : Set G)).toReal : ℂ) := by
-        simp [setIntegral_const, Measure.real, Complex.real_smul]
+        simp [Measure.real, Complex.real_smul]
   · rw [if_neg ht]
     obtain ⟨u, hu, hne⟩ : ∃ u ∈ U, χ u ≠ 1 := by
       by_contra h
       apply ht
       intro u hu
-      change χ u = 1
-      exact not_ne_iff.mp (fun hn => h ⟨u, hu, hn⟩)
+      simp_all
     have hmem (x : G) : u * x ∈ U ↔ x ∈ U :=
       ⟨fun hx => by simpa using U.mul_mem (U.inv_mem hu) hx,
         fun hx => U.mul_mem hu hx⟩
@@ -300,7 +291,7 @@ private theorem compact_character_integral
       funext x
       by_cases hx : x ∈ U
       · simp [Set.indicator_of_mem hx, Set.indicator_of_mem ((hmem x).mpr hx), map_mul]
-      · simp [Set.indicator_of_notMem hx, Set.indicator_of_notMem (mt (hmem x).mp hx)]
+      simp_all
     have heq : ((χ u : ℂˣ) : ℂ) * (∫ x in (U : Set G), ((χ x : ℂˣ) : ℂ) ∂ν) =
         ∫ x in (U : Set G), ((χ x : ℂˣ) : ℂ) ∂ν := by
       have h := integral_mul_left_eq_self (μ := ν)
@@ -313,7 +304,7 @@ private theorem compact_character_integral
       apply Subtype.ext
       exact Units.ext h
     by_contra hI
-    exact hc ((mul_eq_right₀ hI).mp heq)
+    simp_all
 
 private lemma filtration_integral_exact (μ : Measure K) [μ.IsAddHaarMeasure]
  (ξ : CubicUnitCharacters.Character K) (f : ℕ) (hfpos : 1 ≤ f)
@@ -363,9 +354,8 @@ private lemma annulus_transport (μ : Measure K) [μ.IsAddHaarMeasure]
  apply integral_congr_ae
  filter_upwards [] with u
  have hu : (u : K) ≠ 0 := by
-   have := unit_abs K u
-   intro h; simp [h, KPCubicHaar.abs] at this
- simp only [e, dif_neg hu]
+   simp
+ simp only [dif_neg hu]
  have hm0 : Units.mk0 (u : K) hu = Units.map (𝒪[K]).subtype.toMonoidHom u := by
    apply Units.ext; rfl
  rw [hm0, hχ]
@@ -394,7 +384,7 @@ theorem additive_character_annulus_integral
   letI := units_invariant K μ
   letI := units_finite K μ
   have hf : Continuous (fun u : (𝒪[K])ˣ => ((ξ u : ℂˣ) : ℂ)) :=
-    Units.continuous_val.comp (continuous_subtype_val.comp ξ.continuous)
+    by fun_prop
   have hint : Integrable (fun u : (𝒪[K])ˣ => ((ξ u : ℂˣ) : ℂ)) ν :=
     hf.integrable_of_hasCompactSupport (HasCompactSupport.of_compactSpace _)
   rw [annulus_transport K μ ξ χ hχ j]
@@ -410,7 +400,7 @@ theorem additive_character_annulus_integral
     push_cast
     rfl
   split_ifs with h1 h2 h3 h4 <;> try omega
-  all_goals try simp only [sub_zero, sub_self, zero_sub]
+  all_goals try simp only [sub_self, zero_sub]
   all_goals try {rw [hmass (j+1) (by omega)]; ring}
   all_goals try {rw [hmass j (by omega), hmass (j+1) (by omega), pow_succ]; ring}
 
@@ -430,7 +420,7 @@ open MeasureTheory
 
 variable (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K]
   [IsNonarchimedeanLocalField K]
-private lemma pi_log {π : 𝒪[K]} (hp : Irreducible π) :
+lemma pi_log {π : 𝒪[K]} (hp : Irreducible π) :
     log (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K (valuation K π)) = -1 := by
   let e := IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K
   have h0 : e (valuation K π) ≠ 0 := by
@@ -443,7 +433,7 @@ private lemma pi_log {π : 𝒪[K]} (hp : Irreducible π) :
   have hylt : valuation K y < 1 := by
     rw [hy, ← map_one e.symm]
     apply e.symm.strictMono
-    simpa using (exp_lt_exp (a := (-1 : ℤ)) (b := 0)).mpr (by omega)
+    simp
   let z : 𝒪[K] := ⟨y, hylt.le⟩
   have hz : z ∈ 𝓂[K] := by
     rw [IsLocalRing.mem_maximalIdeal]
@@ -462,7 +452,7 @@ private lemma pi_log {π : 𝒪[K]} (hp : Irreducible π) :
   change log (e (valuation K π)) = -1
   omega
 
-private lemma annulus_values (j : ℕ) {x : K} (hx : x ∈ unitAnnulus K j) :
+lemma annulus_values (j : ℕ) {x : K} (hx : x ∈ unitAnnulus K j) :
     x ≠ 0 ∧ valuation K x = 1 ∧ 1-x ≠ 0 ∧
     log (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K (valuation K (1-x))) = -(j : ℤ) := by
   obtain ⟨u, rfl, hu, hn⟩ := hx
@@ -474,7 +464,7 @@ private lemma annulus_values (j : ℕ) {x : K} (hx : x ∈ unitAnnulus K j) :
     have he : (u : 𝒪[K]) = 1 := by
       apply Subtype.ext
       simpa using (sub_eq_zero.mp h).symm
-    exact hn (by rw [CubicUnitCharacters.unitFiltration_mem_iff K, he]; simp)
+    simp_all
   refine ⟨hzero, hv, hd, ?_⟩
   obtain ⟨π, hp⟩ := IsDiscreteValuationRing.exists_irreducible 𝒪[K]
   rw [CubicUnitCharacters.unitFiltration_mem_iff K] at hu hn
@@ -485,8 +475,8 @@ private lemma annulus_values (j : ℕ) {x : K} (hx : x ∈ unitAnnulus K j) :
   change ¬ valuation K ((u : K) - 1) ≤ valuation K (π : K) ^ (j+1) at hn
   let e := IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K
   have h0 : e (valuation K ((u : K) - 1)) ≠ 0 := by
-    have hnz : valuation K ((u : K) - 1) ≠ 0 := by
-      exact (valuation K).ne_zero_iff.mpr (sub_ne_zero.mpr (sub_ne_zero.mp hd).symm)
+    have hnz : valuation K ((u : K) - 1) ≠ 0 := 
+      (valuation K).ne_zero_iff.mpr (sub_ne_zero.mpr (sub_ne_zero.mp hd).symm)
     simpa using e.toMulEquiv.injective.ne hnz
   have hπ0 : e (valuation K (π : K)) ≠ 0 := by
     simpa using (Valuation.integer.integers (valuation K)).valuation_irreducible_pos hp |>.ne'
@@ -502,11 +492,11 @@ private lemma annulus_values (j : ℕ) {x : K} (hx : x ∈ unitAnnulus K j) :
   rw [(valuation K).map_sub_swap]
   exact heq
 
-private lemma weight_power (q : ℝ) (hq : 0 ≤ q) (s : ℂ) (j : ℕ) :
+lemma weight_power (q : ℝ) (hq : 0 ≤ q) (s : ℂ) (j : ℕ) :
     ((q ^ (-(j : ℤ)) : ℝ) : ℂ) ^ (-s) = ((q : ℂ) ^ s) ^ j := by
   rw [Complex.ofReal_zpow]
   rw [← Complex.cpow_int_mul' (x := (q : ℂ)) (n := -(j : ℤ))]
-  · rw [show ((-(j : ℤ) : ℤ) : ℂ) * (-s) = (j : ℂ) * s by push_cast; ring]
+  · rw [show ((-(j : ℤ) : ℤ) : ℂ) * (-s) = (j : ℂ) * s by simp]
     exact Complex.cpow_nat_mul _ _ _
   · simp [Complex.arg_ofReal_of_nonneg hq, Real.pi_pos]
   · simp [Complex.arg_ofReal_of_nonneg hq, Real.pi_pos.le]
@@ -576,8 +566,8 @@ variable (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K]
   [IsNonarchimedeanLocalField K] [MeasurableSpace K] [BorelSpace K]
 local instance : UniformSpace K := IsTopologicalAddGroup.rightUniformSpace K
 local instance : IsUniformAddGroup K := isUniformAddGroup_of_addCommGroup
-private lemma unit_val (u : (𝒪[K])ˣ) : ValuativeRel.valuation K (u : K) = 1 := by
-  exact (Valuation.integer.integers (ValuativeRel.valuation K)).one_of_isUnit u.isUnit
+private lemma unit_val (u : (𝒪[K])ˣ) : ValuativeRel.valuation K (u : K) = 1 := 
+  (Valuation.integer.integers (ValuativeRel.valuation K)).one_of_isUnit u.isUnit
  noncomputable def mulEquiv (u : (𝒪[K])ˣ) : K ≃ₜ+ K :=
   { DistribMulAction.toAddEquiv K (Units.map (𝒪[K]).subtype.toMonoidHom u) with
     continuous_toFun := by change Continuous (fun x : K => (u : K) * x); fun_prop
@@ -608,7 +598,7 @@ private lemma unit_preserving (μ : Measure K) [μ.IsAddHaarMeasure] (u : (𝒪[
   rw [hm]
   have : Measure.addHaarScalarFactor (μ.map e) μ = 1 := by exact_mod_cast heq
   rw [this, one_smul]
-private lemma density_preserving {X : Type*} [MeasurableSpace X]
+lemma density_preserving {X : Type*} [MeasurableSpace X]
     (μ : Measure X) (e : X ≃ᵐ X) (he : MeasurePreserving e μ μ)
     (w : X → ENNReal) (hw : ∀ x, w (e x) = w x) :
     MeasurePreserving e (μ.withDensity w) (μ.withDensity w) := by
@@ -622,7 +612,7 @@ private lemma density_preserving {X : Type*} [MeasurableSpace X]
   rw [hi]
   exact (e.measurableEmbedding.lintegral_map (μ := μ) (s.indicator w)).symm.trans
     (by rw [he.map_eq])
-private lemma singleton_null (μ : Measure K) [μ.IsAddHaarMeasure] : NullSingletonClass μ := by
+lemma singleton_null (μ : Measure K) [μ.IsAddHaarMeasure] : NullSingletonClass μ := by
   have hzero : μ {(0 : K)} = 0 := by
     by_contra h
     have hi : (𝒪[K] : Set K).Infinite := by
@@ -641,7 +631,7 @@ private lemma singleton_null (μ : Measure K) [μ.IsAddHaarMeasure] : NullSingle
       hi.meas_eq_top ⟨μ {0}, h, fun x _ => (Measure.addHaar_singleton μ x).ge⟩
     exact (IsNonarchimedeanLocalField.isCompact_closedBall K 1).measure_ne_top ht
   exact ⟨fun x => (Measure.addHaar_singleton μ x).trans hzero⟩
-private lemma sphere_measurable : MeasurableSet {x : K | ValuativeRel.valuation K x = 1} := by
+lemma sphere_measurable : MeasurableSet {x : K | ValuativeRel.valuation K x = 1} := by
   have hh := (Valued.isOpen_sphere K (r := (Valued.v.restrict (1 : K))) (by simp)).measurableSet
   convert hh using 1
   ext x
@@ -688,8 +678,7 @@ theorem integral_complement_units_eq_zero
     · simp [A, e, mulEquiv_apply, hx]
     · have he : e x ≠ 0 := by
         intro hh
-        apply hx
-        exact e.toEquiv.injective (hh.trans (by simp [e, mulEquiv_apply]))
+        simp_all
       simp only [A, if_neg hx, if_neg he]
       simp only [e, mulEquiv_apply, map_mul, unit_val, one_mul]
   have heν : MeasurePreserving e.toHomeomorph.toMeasurableEquiv ν ν :=
@@ -708,8 +697,7 @@ theorem integral_complement_units_eq_zero
     · simp [I, e, mulEquiv_apply, hx]
     have he : e x ≠ 0 := by
       intro hh
-      apply hx
-      exact e.toEquiv.injective (hh.trans (by simp [e, mulEquiv_apply]))
+      simp_all
     have hv : ValuativeRel.valuation K (1 - e x) = ValuativeRel.valuation K (1 - x) := by
       have hval : ValuativeRel.valuation K (e x) = ValuativeRel.valuation K x := by
         simp [e, mulEquiv_apply, map_mul, unit_val]
@@ -725,8 +713,8 @@ theorem integral_complement_units_eq_zero
       exact hxS (by simp [this])
     have hne : 1 - e x ≠ 0 := by
       intro hh
-      have hv0 : ValuativeRel.valuation K (1 - x) = 0 := by rw [← hv, hh, map_zero]
-      exact hnx (by simpa only [map_eq_zero] using hv0)
+      have hv0 : ValuativeRel.valuation K (1 - x) = 0 := by simp_all
+      simp_all
     have hAA : A (1 - e x) = A (1 - x) := by simp only [A, if_neg hne, if_neg hnx, hv]
     have hunit : Units.mk0 (e x) he =
         Units.map (𝒪[K]).subtype.toMonoidHom u * Units.mk0 x hx := by
@@ -812,10 +800,10 @@ theorem conductor_annulus_series_hasSum (a m L : ℂ) (f : ℕ) (hf : 1 ≤ f)
       simp only [Finset.mem_range] at hj
       simp [c, show j + 1 < f by omega]
     · intro hnot
-      exact (hnot (Finset.mem_range.mpr (by omega))).elim
+      simp_all
   have h := (hasSum_nat_add_iff f).mp htail
   rw [hsum] at h
-  convert h using 1 <;> abel
+  omega
 
 theorem integral_eq_conductor_series_of_shell_integrals
     {X : Type*} [MeasurableSpace X] (ν : Measure X) (I : X → ℂ)
@@ -904,7 +892,3 @@ theorem integral_eq_shell_series
     (KPRamifiedBetaShell.puncturedUnitRegion K) hS
     (KPRamifiedBetaShell.unitAnnulus K) hmeas hdisj hcover
     hI hrest a m L f hfpos hratio hshell
-
-end DedekindZetaZeroFree.KPRamifiedBetaConductorSeries
-
-end

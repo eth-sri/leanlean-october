@@ -29,7 +29,7 @@ variable (F : Type) [Field F] [NumberField F]
     (kernelW (LocalField F q) S.borel .minus *
       (S.borel.upperRoot (Multiplicative.ofAdd v) : ActualCover F ζ hζ q) * g)).val 1
 
-private theorem compact_reverse_endpoint
+theorem compact_reverse_endpoint
     (J : CompactOpenLevel (ActualCover F ζ hζ q))
     (hJ : (J.toOpenSubgroup : Subgroup (ActualCover F ζ hζ q)) ≤ S.iwasawa.compact.toOpenSubgroup)
     (φ : compactLevel S.borel P S.iwasawa .minus J)
@@ -55,7 +55,7 @@ private theorem compact_reverse_endpoint
     filter_upwards [] with v
     by_cases hv : v ∈ C
     · rw [Set.indicator_of_mem hv]
-    · rw [Set.indicator_of_notMem hv, hsupp s v hv]
+    simp_all
   obtain ⟨l, hl⟩ := actual_initial_cutoff_laurent F ζ hζ q S P μ .minus φ.val g 1 C hC hmC
   let L : ℂ → ℂ := fun s => l.sum (fun n c => (evaluationUnit (LocalField F q) .minus s : ℂ)^n * c)
   have hL (s : ℂ) : (∫ v, reverseIntegrand F ζ hζ q S P φ.val g s v ∂μ) = L s :=
@@ -175,7 +175,7 @@ theorem eventual_actual_inverse_root_endpoint
   refine ⟨max M 1, ?_⟩
   intro m hm i f hf u
   have hmM : M ≤ m := (le_max_left _ _).trans hm
-  have hmpos : 0 < m := lt_of_lt_of_le Nat.zero_lt_one ((le_max_right _ _).trans hm)
+  have hmpos : 0 < m := by omega
   let g := eta F ζ hζ q π i * KPPGLLocalCover.W F ζ hζ (Sum.inr q) *
     KPPGLLocalCover.N F ζ hζ (Sum.inr q)
       (-(KPTameCompact.unitInclusion F q u : LocalField F q) / π)
@@ -195,8 +195,7 @@ theorem eventual_actual_inverse_root_endpoint
     have hr := isCompact_range (continuous_subtype_val :
       Continuous (fun x : ↥(valuation (LocalField F q)).integer => (x : LocalField F q)))
     convert hr using 1
-    ext x
-    exact ⟨fun hx => ⟨⟨x, hx⟩, rfl⟩, fun ⟨y, hy⟩ => hy ▸ y.property⟩
+    simp
   have hC : IsCompact C := hI.image (continuous_const.sub (continuous_const.mul continuous_id))
   have hmC : MeasurableSet C := hC.measurableSet
   have hAC : A ⊆ C := by
@@ -241,7 +240,3 @@ theorem eventual_actual_inverse_root_endpoint
     (compactTrivialization S.borel P S.iwasawa .minus 0).apply_symm_apply f₀
   rw [hback] at hend
   exact hend.2.trans ((integral_congr_ae (Filter.Eventually.of_forall hz)).trans hvalue)
-
-end DedekindZetaZeroFree.TameInverseRootValueAudit
-
-end

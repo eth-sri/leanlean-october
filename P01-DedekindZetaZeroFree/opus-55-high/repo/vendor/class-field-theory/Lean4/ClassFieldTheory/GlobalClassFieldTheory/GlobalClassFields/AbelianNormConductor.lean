@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Unramified finite places and abelian norm conductors
 
@@ -35,7 +30,6 @@ unramifiedness.
 
 open scoped NumberField Classical NNReal ValuativeRel
 
-noncomputable section
 
 namespace GlobalClassFieldTheory
 namespace GlobalClassFields
@@ -275,8 +269,3 @@ theorem
           (K := K) (L := L) v).symm.trans
         (ideleClassNormLocalHigherUnitExponent_eq_zero_iff_chosenFinitePlaceIsUnramified
           (K := K) (L := L) v))
-
-end GlobalClassFields
-end GlobalClassFieldTheory
-
-end

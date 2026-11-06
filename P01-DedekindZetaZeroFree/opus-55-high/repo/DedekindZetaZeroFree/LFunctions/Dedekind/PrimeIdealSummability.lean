@@ -19,7 +19,6 @@ Port to Lean 4.35.0-rc2: local imports and namespace renamed; module visibility 
 The full upstream Apache-2.0 license is included in LICENSE.
 -/
 
-noncomputable section
 
 open Ideal IsDedekindDomain
 
@@ -63,8 +62,4 @@ theorem summable_ideal_absNorm_rpow {σ : ℝ} (hσ : 1 < σ) :
       rw [hconst, tsum_const]
       simp only [idealNormCount, nsmul_eq_mul, norm_natCast]
       rw [Real.rpow_neg (Nat.cast_nonneg n)]
-      simp [div_eq_mul_inv]
-
-end DedekindZetaZeroFree.Odlyzko
-
-end
+      rfl

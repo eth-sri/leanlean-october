@@ -18,7 +18,7 @@ def finiteSquareSubgroup (v : HeightOneSpectrum (𝓞 F)) :
     Subgroup (v.adicCompletion F)ˣ := (powMonoidHom 2).range
 
 open Polynomial in
-private theorem finite_square_hensel (v : HeightOneSpectrum (𝓞 F))
+theorem finite_square_hensel (v : HeightOneSpectrum (𝓞 F))
     (z : (v.adicCompletion F)ˣ)
     (hz : Valued.v ((z : v.adicCompletion F)-1) < Valued.v (2 : v.adicCompletion F)^2) :
     ∃ t : (v.adicCompletion F)ˣ, t^2 = z := by
@@ -46,8 +46,7 @@ private theorem finite_square_hensel (v : HeightOneSpectrum (𝓞 F))
     simpa [P] using m.neg_mem hcm
   have hd : IsUnit ((Ideal.Quotient.mk m) (P.derivative.eval 1)) := by
     have h : P.derivative.eval 1 = 1 := by simp [P]
-    rw [h, map_one]
-    exact isUnit_one
+    simp_all
   obtain ⟨b, hb, _⟩ := HenselianRing.is_henselian P hm 1 he hd
   have hb' : (b : K)^2 - (b : K) - ((z : K)-1)/4 = 0 := by
     have h : b^2 - b - c = 0 := by simpa [Polynomial.IsRoot, P] using hb
@@ -65,11 +64,11 @@ theorem finiteSquareSubgroup_isOpen (v : HeightOneSpectrum (𝓞 F)) :
   have h : ∀ᶠ z : (v.adicCompletion F)ˣ in nhds 1,
       Valued.v ((z : v.adicCompletion F)-1) < Valued.v (2 : v.adicCompletion F)^2 := by
     have h0 : Valued.v (2 : v.adicCompletion F)^2 ≠ 0 := by
-      exact pow_ne_zero _ ((Valued.v.map_eq_zero_iff).not.mpr (by norm_num : (2 : v.adicCompletion F) ≠ 0))
+      simp
     have hball : {x : v.adicCompletion F | Valued.v x < Valued.v (2 : v.adicCompletion F)^2} ∈ nhds 0 := by
       apply Valued.mem_nhds_zero.mpr
       refine ⟨Units.mk0 (Valued.v.restrict (2 : v.adicCompletion F) ^ 2) ?_, ?_⟩
-      · simpa using h0
+      · simp
       · intro x hx
         simpa only [Units.val_mk0, ← map_pow, Valuation.restrict_lt_iff] using hx
     have ht : Filter.Tendsto (fun z : (v.adicCompletion F)ˣ => (z : v.adicCompletion F)-1)
@@ -81,6 +80,3 @@ theorem finiteSquareSubgroup_isOpen (v : HeightOneSpectrum (𝓞 F)) :
   apply Filter.mem_of_superset h
   intro z hz
   exact finite_square_hensel v z hz
-
-end
-end DedekindZetaZeroFree

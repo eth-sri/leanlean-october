@@ -180,8 +180,8 @@ def Chart.rho {A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U}
 
 theorem Chart.rho_unitary {A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U}
     (C : Chart F ζ hζ hF U A) (g : C.G F ζ hζ hF U) :
-    ‖(C.rho F ζ hζ hF U g : ℂ)‖ = 1 := by
-  exact (A.line C.component).unitary _
+    ‖(C.rho F ζ hζ hF U g : ℂ)‖ = 1 := 
+  (A.line C.component).unitary _
 
 theorem Chart.section_equivariance {A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U}
     (C : Chart F ζ hζ hF U A)
@@ -254,12 +254,12 @@ theorem Chart.average_eq_self (f : E C.n → ℂ)
   have hs : (∑ g : C.G F ζ hζ hF U,
       (((C.rho F ζ hζ hF U g)⁻¹ : ℂˣ) : ℂ) * f (C.orthogonal g x)) =
       (Fintype.card (C.G F ζ hζ hF U) : ℂ) * f x := by
-    simp [heq _ _ hx, ← mul_assoc]
+    simp [heq _ _ hx]
   rw [hs, ← mul_assoc, inv_mul_cancel₀ (Nat.cast_ne_zero.mpr Fintype.card_ne_zero), one_mul]
 theorem Chart.average_zero_outside (f : E C.n → ℂ)
     {x : E C.n} (hx : x ∉ Metric.ball 0 C.radius) :
-    C.average F ζ hζ hF U f x = 0 := by
-  exact Set.indicator_of_notMem hx _
+    C.average F ζ hζ hF U f x = 0 := 
+  Set.indicator_of_notMem hx _
 
 theorem Chart.average_equivariant (f : E C.n → ℂ)
     (h : C.G F ζ hζ hF U) (x : E C.n) :
@@ -296,13 +296,7 @@ theorem Chart.invariant_ball :
       C.orthogonal g '' Metric.ball 0 C.radius = Metric.ball 0 C.radius := by
   intro g
   ext x
-  constructor
-  · rintro ⟨y, hy, rfl⟩
-    exact (C.orthogonal_mem_ball F ζ hζ hF U g y).mpr hy
-  · intro hx
-    refine ⟨(C.orthogonal g).symm x, ?_, (C.orthogonal g).apply_symm_apply x⟩
-    simpa only [Metric.mem_ball, dist_zero_right, LinearIsometryEquiv.norm_map]
-      using hx
+  simp
 
 theorem Chart.toBase_invariant (g : C.G F ζ hζ hF U) (x : E C.n)
     (hx : x ∈ C.extendedDomain) :
@@ -346,7 +340,7 @@ theorem Chart.orbit_relation (x y : Metric.ball (0 : E C.n) C.radius) :
     let g : C.G F ζ hζ hF U := ⟨γ⁻¹, hstab⟩
     have hgx : C.orthogonal g x.val ∈ C.extendedDomain := by
       rw [← C.invariant_extension g]
-      exact ⟨x.val, hx, rfl⟩
+      simp_all
     refine ⟨g, ?_⟩
     apply congrArg Subtype.val
       (C.coordinates_embedding.injective (a₁ := ⟨C.orthogonal g x.val, hgx⟩)
@@ -392,7 +386,7 @@ theorem Chart.line_orbit_relation (x y : Metric.ball (0 : E C.n) C.radius)
     refine ⟨g, ?_, hab⟩
     have hgx : C.orthogonal g x.val ∈ C.extendedDomain := by
       rw [← C.invariant_extension g]
-      exact ⟨x.val, hx, rfl⟩
+      simp_all
     apply congrArg Subtype.val
       (C.coordinates_embedding.injective (a₁ := ⟨C.orthogonal g x.val, hgx⟩)
         (a₂ := ⟨y.val, hy⟩) ?_)
@@ -444,8 +438,8 @@ theorem Chart.coordinates_ball_open_map :
     IsOpenMap (Set.restrict (Metric.ball (0 : E C.n) C.radius) C.coordinates) := by
   let inc : Metric.ball (0 : E C.n) C.radius → C.extendedDomain := fun x =>
     ⟨x.val, C.closed_ball_in_extension (subset_closure x.property)⟩
-  have ho : IsOpenMap inc := by
-    exact (Metric.isOpen_ball.isOpenMap_subtype_val).subtype_mk _
+  have ho : IsOpenMap inc := 
+    (Metric.isOpen_ball.isOpenMap_subtype_val).subtype_mk _
   exact (Chart.coordinates_open_embedding F ζ hζ hF U C).isOpenMap.comp ho
 theorem Chart.toBase_ball_open_map :
     IsOpenMap (Set.restrict (Metric.ball (0 : E C.n) C.radius) (C.toBase F ζ hζ hF U)) := by
@@ -498,14 +492,12 @@ theorem Chart.measurePreserving_ball (g : C.G F ζ hζ hF U) :
       (volume.restrict (Metric.ball (0 : E C.n) C.radius)) := by
   have he : (C.orthogonal g) ⁻¹' Metric.ball (0 : E C.n) C.radius =
       Metric.ball (0 : E C.n) C.radius := by
-    ext x
-    exact C.orthogonal_mem_ball F ζ hζ hF U g x
+    simp
   have hm : MeasurePreserving (C.orthogonal g) (volume : Measure (E C.n)) volume :=
     LinearIsometryEquiv.measurePreserving (C.orthogonal g)
   have hr := hm.restrict_preimage (s := Metric.ball (0 : E C.n) C.radius)
     Metric.isOpen_ball.measurableSet
-  rw [he] at hr
-  exact hr
+  simp_all
 
 def Chart.orthogonalPullback (g : C.G F ζ hζ hF U) :
     Lp ℂ 2 (volume.restrict (Metric.ball (0 : E C.n) C.radius)) →ₗᵢ[ℂ]
@@ -826,9 +818,3 @@ theorem actual_realization_and_localizers
   obtain ⟨B⟩ := CoreChartLocalizers.bounded_local_operators F ζ hζ hF U A M
     hK.measurableSet C P
   exact ⟨ofRawLocalizers F ζ hζ hF U A M hK.measurableSet C P B⟩
-
-end KPCoreChartLocalizers
-
-end DedekindZetaZeroFree
-
-end

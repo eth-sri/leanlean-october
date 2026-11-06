@@ -1,7 +1,8 @@
 module
 
 public import DedekindZetaZeroFree.Eisenstein.Continuation.SmoothSections.CompactJetHolomorphy
-public import DedekindZetaZeroFree.Theta.Periods.MeromorphicContinuationAndResidues
+public import DedekindZetaZeroFree.Theta.Profiles.ResidualCoreAndUnitRotations
+public import DedekindZetaZeroFree.Theta.Periods.TranslatedStandardPeriodNonvanishing
 
 @[expose] public section
 
@@ -68,28 +69,6 @@ theorem holomorphic_sum {ι : Type*} (S : Finset ι) {O : Set ℂ}
       (hf j (Finset.mem_insert_self j S))
       (ih (fun k hk => hf k (Finset.mem_insert_of_mem hk)))
 
-theorem powerSeries_const_smul {z : ℂ} {r : ℝ} {a : ℕ → V} {f : ℂ → V}
-    (c : ℂ) (hf : SmoothPowerSeriesOn D z r a f) :
-    SmoothPowerSeriesOn D z r (fun n => c • a n) (fun s => c • f s) := by
-  intro i t ht htr ε hε
-  obtain ⟨N,hN⟩ := hf i t ht htr (ε / (‖c‖ + 1)) (by positivity)
-  refine ⟨N, ?_⟩
-  intro M hM s hs
-  have heq : (∑ n ∈ Finset.range M, (s-z)^n • (c • a n)) - c • f s =
-      c • ((∑ n ∈ Finset.range M, (s-z)^n • a n) - f s) := by
-    simp only [smul_sub, Finset.smul_sum, smul_comm c]
-  rw [heq, map_smul_eq_mul]
-  have hb := (lt_div_iff₀ (by positivity : 0 < ‖c‖ + 1)).mp (hN M hM s hs)
-  have hn : 0 ≤ (smoothSeminorm D i)
-    ((∑ n ∈ Finset.range M, (s-z)^n • a n) - f s) := by positivity
-  nlinarith
-
-theorem holomorphic_const_smul {O : Set ℂ} {f : ℂ → V} (c : ℂ)
-    (hf : SmoothHolomorphicOn D f O) : SmoothHolomorphicOn D (fun s => c • f s) O := by
-  intro z hz
-  obtain ⟨r,hr,hO,a,ha⟩ := hf z hz
-  exact ⟨r,hr,hO,(fun n => c • a n),powerSeries_const_smul D c ha⟩
-
 def addGerm {f g : ℂ → V} (hf : SimplePoleGerm D f) (hg : SimplePoleGerm D g) :
     SimplePoleGerm D (fun s => f s + g s) where
   radius := min hf.radius hg.radius
@@ -115,22 +94,6 @@ def addGerm {f g : ℂ → V} (hf : SimplePoleGerm D f) (hg : SimplePoleGerm D g
     rw [hf.clears s ((Metric.ball_subset_ball (min_le_left hf.radius hg.radius)) hs) hne,
       hg.clears s ((Metric.ball_subset_ball (min_le_right hf.radius hg.radius)) hs) hne,
       smul_add]
-
-@[simp] theorem addGerm_residue {f g : ℂ → V}
-    (hf : SimplePoleGerm D f) (hg : SimplePoleGerm D g) :
-    residue (addGerm D hf hg) = residue hf + residue hg := rfl
-
-def constSmulGerm {f : ℂ → V} (c : ℂ) (hf : SimplePoleGerm D f) :
-    SimplePoleGerm D (fun s => c • f s) where
-  radius := hf.radius
-  radius_pos := hf.radius_pos
-  cleared s := c • hf.cleared s
-  holomorphic := holomorphic_const_smul D c hf.holomorphic
-  clears s hs hn := by rw [hf.clears s hs hn, smul_comm]
-
-@[simp] theorem constSmulGerm_residue {f : ℂ → V}
-    (c : ℂ) (hf : SimplePoleGerm D f) :
-    residue (constSmulGerm D c hf) = c • residue hf := rfl
 
 end DedekindZetaZeroFree.KPGlobalResidualConstruction.SmoothSeriesAlgebra
 
@@ -172,7 +135,7 @@ variable (D : J → V →ₗ[ℂ] C(G, ℂ))
     intro ε hε
     obtain ⟨N,hN⟩ := hf i ‖x‖ (norm_nonneg _) hx ε hε
     refine ⟨N, fun M hM => ?_⟩
-    have hz : z+x ∈ Metric.closedBall z ‖x‖ := by simp [Metric.mem_closedBall, dist_eq_norm]
+    have hz : z+x ∈ Metric.closedBall z ‖x‖ := by simp
     have hn := hN M hM (z+x) hz
     have hn' : ‖T ((∑ n ∈ Finset.range M, x^n • a n) - f (z+x))‖ < ε := by
       convert hn using 1 <;> simp [T, compactJet, smoothSeminorm, derivativeRestriction]
@@ -201,7 +164,7 @@ def coefficientConvolution {W : Type*} [AddCommGroup W] [Module ℂ W]
     (b : ℕ → ℂ) (a : ℕ → W) (n : ℕ) : W :=
   ∑ ij ∈ Finset.HasAntidiagonal.antidiagonal n, b ij.1 • a ij.2
 
-private theorem ring_product_series {R : Type*} [NormedCommRing R] [NormedAlgebra ℂ R]
+theorem ring_product_series {R : Type*} [NormedCommRing R] [NormedAlgebra ℂ R]
     [CompleteSpace R] {z : ℂ} {ρ : ℝ} (hρ : 0 < ρ)
     {p q : FormalMultilinearSeries ℂ ℂ R} {f g : ℂ → R}
     (hf : HasFPowerSeriesOnBall f p z (ENNReal.ofReal ρ))
@@ -295,7 +258,6 @@ theorem powerSeries_smul {z : ℂ} {ρ : ℝ} (hρ : 0 < ρ)
     apply Finset.sum_congr rfl
     intro ij hij
     rw [hpc, hac, map_smul, hS]
-    ext x
     rfl
   have heq : (∑ q ∈ Finset.range M, (s-z)^q • T (coefficientConvolution p.coeff a q)) -
       (S (b s) * T (f s)) =
@@ -303,7 +265,6 @@ theorem powerSeries_smul {z : ℂ} {ρ : ℝ} (hρ : 0 < ρ)
     simp only [map_sub, map_sum, map_smul]
     congr 1
     rw [hS]
-    ext x
     rfl
   have hn' : ‖T ((∑ q ∈ Finset.range M, (s-z)^q • coefficientConvolution p.coeff a q) -
       b s • f s)‖ < ε := by
@@ -330,7 +291,7 @@ theorem holomorphic_smul {O : Set ℂ} (hO : IsOpen O) {b : ℂ → ℂ} {f : �
   obtain ⟨r,hr,hball,a,ha⟩ := hf z hz
   obtain ⟨t,ht,htO⟩ := Metric.isOpen_iff.mp hO z hz
   let ρ : ℝ := min r t / 2
-  have hρ : 0 < ρ := by dsimp [ρ]; positivity
+  have hρ : 0 < ρ := by positivity
   have hρr : ρ ≤ r := by dsimp [ρ]; linarith [min_le_left r t]
   have hρt : ρ < t := by dsimp [ρ]; linarith [min_le_right r t]
   have hclosed : Metric.closedBall z ρ ⊆ O := by
@@ -345,22 +306,3 @@ theorem holomorphic_smul {O : Set ℂ} (hO : IsOpen O) {b : ℂ → ℂ} {f : �
   exact ⟨ρ,hρ,(Metric.ball_subset_ball hρr).trans hball,
     coefficientConvolution (cauchyPowerSeries b z ρ).coeff a,
     powerSeries_smul D hρ hp' (SmoothSeriesAlgebra.powerSeries_mono D ha hρr)⟩
-
-def smulGerm {b : ℂ → ℂ} {f : ℂ → V} (germ : SimplePoleGerm D f)
-    (hb : AnalyticOnNhd ℂ b (Metric.ball 0 germ.radius)) :
-    SimplePoleGerm D (fun s => b s • f s) where
-  radius := germ.radius
-  radius_pos := germ.radius_pos
-  cleared s := b s • germ.cleared s
-  holomorphic := holomorphic_smul D Metric.isOpen_ball hb germ.holomorphic
-  clears s hs hn := by rw [germ.clears s hs hn, smul_comm]
-
-@[simp] theorem smulGerm_residue {b : ℂ → ℂ} {f : ℂ → V}
-    (germ : SimplePoleGerm D f) (hb : AnalyticOnNhd ℂ b (Metric.ball 0 germ.radius)) :
-    residue (smulGerm D germ hb) = b 0 • residue germ := rfl
-
-end DedekindZetaZeroFree.KPGlobalResidualConstruction.AnalyticScalarMultiplication
-
-end
-
-end

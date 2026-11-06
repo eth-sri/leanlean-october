@@ -34,7 +34,7 @@ def rawStageFiber (s : RestrictedTensorSimple.Level (bad A P C)) (g : Raw A) :
     (RestrictedTensorSimple.stageInclusion (Fiber A P C) (reference A P C) (bad A P C) s)).comp
       (PiTensorProduct.map (fun j => localValueMap A P C j.val (g j.val)))
 
-private theorem rawStageFiber_transition (s t : RestrictedTensorSimple.Level (bad A P C))
+theorem rawStageFiber_transition (s t : RestrictedTensorSimple.Level (bad A P C))
     (hst : s ≤ t) (g : Raw A)
     (hnew : ∀ v ∈ t.val, v ∉ s.val →
       localValue A P C v (g v) (plusReference A P C v) = reference A P C v)

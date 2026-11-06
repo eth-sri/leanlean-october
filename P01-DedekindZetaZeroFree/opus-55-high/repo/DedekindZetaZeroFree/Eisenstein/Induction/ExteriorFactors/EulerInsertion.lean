@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Algebra.TensorProduct.RestrictedTensorSimplic
 
 @[expose] public section
 
-noncomputable section
 open scoped Classical TensorProduct BigOperators
 namespace DedekindZetaZeroFree.FourierContinuation.FaithfulSource
 universe u v w
@@ -31,16 +30,13 @@ theorem euler_insertion (s t : Finset I) (hst : s ⊆ t)
     change (∏ i : t, (fun j : I => if j ∈ s then (1 : ℂ) else b j) i) = _
     rw [← Finset.prod_subtype t (by simp) (fun j : I => if j ∈ s then (1 : ℂ) else b j)]
     simp only [Finset.sdiff_eq_filter, Finset.prod_filter]
-    apply Finset.prod_congr rfl
-    intro i hi
-    split_ifs <;> simp_all
+    simp
   rw [← hp, ← MultilinearMap.map_smul_univ]
   congr 1
   funext i
   by_cases hi : (i : I) ∈ s
   · simp only [dite_eq_left hi, ite_eq_left hi, one_smul]
-  · simp only [dite_eq_right hi, ite_eq_right hi]
-    exact hA i i.property hi
+  simp_all
 
 theorem euler_core_insertion (E : Finset I)
     (s t : RestrictedTensorSimple.Level E) (hst : s ≤ t)
@@ -61,7 +57,3 @@ theorem euler_core_insertion (E : Finset I)
   rw [hm, map_smul]
   congr 1
   exact Module.DirectLimit.of_f
-
-end DedekindZetaZeroFree.FourierContinuation.FaithfulSource
-
-end

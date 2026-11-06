@@ -7,7 +7,6 @@ public import DedekindZetaZeroFree.CharacterSums.Cubic.UniformizerFirstResiduePh
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.TameInverseRootValueAudit
 open scoped NumberField Classical
 open NumberField IsDedekindDomain MeasureTheory ValuativeRel
@@ -21,7 +20,7 @@ open _root_.DedekindZetaZeroFree.KPTameTransposeLiteralShell renaming measurable
 set_option maxHeartbeats 1000000
 set_option backward.isDefEq.respectTransparency false
 
-private theorem ordinary_plus_phase_power
+theorem ordinary_plus_phase_power
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (e : rootsOfUnity 3 F) (i : Fin 3) :
     (ordinaryIota F ζ hζ (e ^ ((i.val : ℤ) + 1)) : ℂ) =
@@ -32,7 +31,7 @@ private theorem ordinary_plus_phase_power
   have he : e ^ ((i.val : ℤ) + 1) = e ^ (((i.val : ZMod 3) + 1).val) := by
     rw [zpow_eq_zpow_emod' _ h3]
     fin_cases i <;> norm_num [ZMod.val]
-  rw [he, map_pow, Units.val_pow_eq_pow_val]
+  simp_all
 
 theorem eventual_actual_inverse_root_outer_gauss
     (F : Type) [Field F] [NumberField F]
@@ -81,8 +80,8 @@ theorem eventual_actual_inverse_root_outer_gauss
           ((i.val : ZMod 3) + 1) u := by
     rintro x ⟨u, hu, hunit⟩
     obtain ⟨U, hU⟩ := hunit
-    have hx : x = (KPTameCompact.unitInclusion F q U : LocalField F q) := by
-      exact hu.symm.trans (congrArg (fun z : KPTameCompact.O F q => (z : LocalField F q)) hU.symm)
+    have hx : x = (KPTameCompact.unitInclusion F q U : LocalField F q) := 
+      hu.symm.trans (congrArg (fun z : KPTameCompact.O F q => (z : LocalField F q)) hU.symm)
     rw [hx, (hM m hm i f hf U).2]
     rw [KPTameTransposeLiteralShell.residueShellIntegrand_eq_tame_phase
       F ζ hζ q π ψ κ hκ p hp ((i.val : ZMod 3) + 1) U,
@@ -98,7 +97,3 @@ theorem eventual_actual_inverse_root_outer_gauss
   rw [hexp, zpow_add₀ hQ, zpow_neg_one]
   dsimp [c, g]
   ring
-
-end DedekindZetaZeroFree.TameInverseRootValueAudit
-
-end

@@ -58,7 +58,3 @@ abbrev epsilon (v : HeightOneSpectrum (𝓞 F))
     (π : v.adicCompletionIntegers F) (hπ : Irreducible π) (c : ℤ) : ℂ :=
   (∑ x : Residue v, (theta v π hπ c (x^2) : ℂ)) /
     (Real.sqrt (Fintype.card (Residue v)) : ℂ)
-
-end DedekindZetaZeroFree.OddEvaluation
-
-end

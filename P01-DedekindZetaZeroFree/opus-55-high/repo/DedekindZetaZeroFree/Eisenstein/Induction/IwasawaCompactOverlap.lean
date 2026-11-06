@@ -96,7 +96,7 @@ private lemma borelRatio_formula (b : ordinaryBorel F) (A : AdelicMatrixGroup F)
   exact upperRatio_same F _ A (Classical.choose_spec b.property).2 h10
     ((Classical.choose_spec b.property).1.trans hA.symm)
 
-private lemma preimage_upper (A : AdelicMatrixGroup F)
+lemma preimage_upper (A : AdelicMatrixGroup F)
     (hA : QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F) A ∈
       ordinaryBorel F) : A 1 0 = 0 := by
   obtain ⟨B, hB, h10⟩ := hA
@@ -107,7 +107,7 @@ private lemma preimage_upper (A : AdelicMatrixGroup F)
   simp [Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
     Matrix.mul_apply, Matrix.scalar, Fin.sum_univ_two, h10]
 
-private lemma ordinaryBorel_closed : IsClosed (ordinaryBorel F :
+lemma ordinaryBorel_closed : IsClosed (ordinaryBorel F :
     Set (KPAdelicCoverRestrictedProduct.AdelicPGL2 F)) := by
   apply (QuotientGroup.isQuotientMap_mk (N := KPAdelicCoverRestrictedProduct.scalarSubgroup F)).isClosed_preimage.mp
   have he : (QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F)) ⁻¹'
@@ -120,7 +120,7 @@ private lemma ordinaryBorel_closed : IsClosed (ordinaryBorel F :
   exact isClosed_eq ((continuous_apply 0).comp ((continuous_apply 1).comp
     (Units.continuous_val : Continuous (fun A : AdelicMatrixGroup F => A.val)))) continuous_const
 
-private lemma upper_inverse00 (A : AdelicMatrixGroup F) (h10 : A 1 0 = 0) :
+lemma upper_inverse00 (A : AdelicMatrixGroup F) (h10 : A 1 0 = 0) :
     (KPGlobalTorusMatrixCertificates.diagonal_units A h10).1.unit⁻¹.val = A⁻¹ 0 0 := by
   have h := congrArg (fun B : Matrix (Fin 2) (Fin 2) (KPGlobalTorusFunctionData.Adeles F) => B 0 0) A.inv_mul
   have hi := KPGlobalTorusMatrixCertificates.inv10 A h10
@@ -135,7 +135,7 @@ private lemma upper_inverse00 (A : AdelicMatrixGroup F) (h10 : A 1 0 = 0) :
     _ = (u⁻¹ : Ideles F).val * (A⁻¹ 0 0 * A 0 0) := by rw [h]
     _ = A⁻¹ 0 0 := by rw [← hu]; simp [← mul_assoc, mul_comm]
 
-private lemma upper_inverse11 (A : AdelicMatrixGroup F) (h10 : A 1 0 = 0) :
+lemma upper_inverse11 (A : AdelicMatrixGroup F) (h10 : A 1 0 = 0) :
     (KPGlobalTorusMatrixCertificates.diagonal_units A h10).2.unit⁻¹.val = A⁻¹ 1 1 := by
   have h := congrArg (fun B : Matrix (Fin 2) (Fin 2) (KPGlobalTorusFunctionData.Adeles F) => B 1 1) A.mul_inv
   simp only [Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two,
@@ -209,7 +209,7 @@ private lemma ideleAbs_continuous : Continuous (KPGlobalTorusFunctionData.ideleA
       ((InfiniteIdeleGroup.continuous_archimedeanNorm.comp continuous_fst).inv)
   exact (hidele.comp (IdeleGroup.equivAdeleRingUnitsContinuousMulEquiv F).symm.continuous).inv
 
-private lemma compact_positive_hom {H : Type*} [Group H] [TopologicalSpace H]
+lemma compact_positive_hom {H : Type*} [Group H] [TopologicalSpace H]
     [CompactSpace H] (f : H →* (ℝ≥0)ˣ) (hf : Continuous f) (a : H) : f a = 1 := by
   have hb := (isCompact_univ.image (Units.continuous_val.comp hf)).bddAbove
   obtain ⟨M, hM⟩ := hb
@@ -226,7 +226,7 @@ private lemma compact_positive_hom {H : Type*} [Group H] [TopologicalSpace H]
   have h := mul_le_mul_of_nonneg_left (hle a⁻¹) (show (0 : ℝ≥0) ≤ (f a : ℝ≥0) from zero_le)
   simpa only [map_inv, ← Units.val_mul, mul_inv_cancel, Units.val_one, mul_one] using h
 
-private lemma root_matrix_entries (x : KPGlobalTorusFunctionData.Adeles F) :
+lemma root_matrix_entries (x : KPGlobalTorusFunctionData.Adeles F) :
     let A := KPAdelicCoverRestrictedProduct.restrictedProjection F ζ hζ (KPGlobalTorusFunctionData.rootTuple F ζ hζ x)
     A 1 0 = 0 ∧ A 0 0 = 1 ∧ A 1 1 = 1 := by
   constructor
@@ -250,7 +250,7 @@ private lemma coveredRatio_continuous : Continuous (coveredRatio F ζ hζ) := by
     (((KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover F ζ hζ).2.2.2.continuous.comp
       continuous_subtype_val).subtype_mk (fun b => b.property))
 
-private lemma torus_mem_borel (t : KPGlobalTorusFunctionData.E F ζ hζ) :
+lemma torus_mem_borel (t : KPGlobalTorusFunctionData.E F ζ hζ) :
     t.val ∈ KPGlobalTorusFunctionData.borel F ζ hζ := by
   obtain ⟨A, he, h10, h01⟩ := t.property
   exact ⟨A, he, h10⟩

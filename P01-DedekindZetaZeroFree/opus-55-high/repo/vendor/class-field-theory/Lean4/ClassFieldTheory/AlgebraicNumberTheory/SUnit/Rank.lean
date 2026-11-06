@@ -18,15 +18,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Torsion and rank sources for `S`-units
 
@@ -40,13 +31,12 @@ noncomputable section
 open IsDedekindDomain
 open scoped NumberField nonZeroDivisors
 
-
 variable {K : Type*} [Field K] [NumberField K]
 
 namespace SUnitGroup
 
 /-- The group of ordinary units, expressed as `S`-units for the empty set. -/
-noncomputable def emptyEquivNumberFieldUnits :
+def emptyEquivNumberFieldUnits :
     ((∅ : Set (HeightOneSpectrum (𝓞 K))).unit K) ≃* (𝓞 K)ˣ :=
   let eInteger :
       ((∅ : Set (HeightOneSpectrum (𝓞 K))).integer K)ˣ ≃*
@@ -66,7 +56,7 @@ noncomputable def emptyEquivNumberFieldUnits :
       (eInteger.trans eBot)
 
 /-- The canonical embedding of ordinary units into the `S`-unit group. -/
-noncomputable def fromNumberFieldUnits
+def fromNumberFieldUnits
     (S : Finset (HeightOneSpectrum (𝓞 K))) :
     (𝓞 K)ˣ →* SUnitGroup (K := K) S where
   toFun u :=
@@ -115,8 +105,8 @@ theorem torsion_eq_rootsOfUnity_range
           (a := v.valuation K ((x : Kˣ) : K))
           (Nat.ne_of_gt hnpos)).mp hvpow⟩
     let u : (𝓞 K)ˣ := emptyEquivNumberFieldUnits y
-    have hufin : IsOfFinOrder u := by
-      exact (emptyEquivNumberFieldUnits (K := K)).toMonoidHom.isOfFinOrder
+    have hufin : IsOfFinOrder u := 
+      (emptyEquivNumberFieldUnits (K := K)).toMonoidHom.isOfFinOrder
         ((show IsOfFinOrder y from by
           refine isOfFinOrder_iff_pow_eq_one.mpr ⟨n, hnpos, ?_⟩
           ext
@@ -142,7 +132,7 @@ variable (S : Finset (HeightOneSpectrum (𝓞 K)))
 
 /-- The exponent of the principal fractional ideal of an `S`-unit at a
 finite place in `S`. -/
-noncomputable def divisorCoordinate
+def divisorCoordinate
     (x : SUnitGroup (K := K) S) (v : S) : ℤ :=
   FractionalIdeal.count K (v : HeightOneSpectrum (𝓞 K))
     (FractionalIdeal.spanSingleton (𝓞 K)⁰ ((x : Kˣ) : K))
@@ -172,11 +162,7 @@ theorem valuation_mk'_eq_exp_neg_count
           (IsLocalization.mk' K n d) ≠ 0 := by
     rw [FractionalIdeal.spanSingleton_ne_zero_iff,
       IsFractionRing.mk'_eq_div, ne_eq, div_eq_zero_iff, not_or]
-    exact
-      ⟨(map_ne_zero_iff (algebraMap (𝓞 K) K)
-          (IsFractionRing.injective (𝓞 K) K)).mpr hn,
-        map_ne_zero_of_mem_nonZeroDivisors _
-          (IsFractionRing.injective (𝓞 K) K) d.property⟩
+    simp_all
   have hcount :
       FractionalIdeal.count K v
           (FractionalIdeal.spanSingleton (𝓞 K)⁰
@@ -185,13 +171,13 @@ theorem valuation_mk'_eq_exp_neg_count
             (Associates.mk (Ideal.span {n} : Ideal (𝓞 K))).factors -
           (Associates.mk v.asIdeal).count
             (Associates.mk
-              (Ideal.span {(d : 𝓞 K)} : Ideal (𝓞 K))).factors : ℤ) := by
-    exact FractionalIdeal.count_well_defined (K := K) v hx hI
+              (Ideal.span {(d : 𝓞 K)} : Ideal (𝓞 K))).factors : ℤ) := 
+    FractionalIdeal.count_well_defined (K := K) v hx hI
   rw [v.valuation_of_mk', v.intValuation_if_neg hn,
     v.intValuation_if_neg (nonZeroDivisors.coe_ne_zero d), hcount]
   rw [div_eq_mul_inv, ← WithZero.exp_neg, ← WithZero.exp_add]
   congr
-  simp [sub_eq_add_neg, add_comm]
+  omega
 
 /-- The adic valuation of a field unit is the exponential of the
 negative exponent of its principal fractional ideal. -/
@@ -206,7 +192,7 @@ theorem valuation_eq_exp_neg_count
   have hn : n ≠ 0 := by
     intro hn0
     apply Units.ne_zero x
-    rw [← hnd, hn0, IsFractionRing.mk'_eq_div, map_zero, zero_div]
+    simp_all
   rw [← hnd]
   exact valuation_mk'_eq_exp_neg_count (K := K) v hn d
 
@@ -218,17 +204,13 @@ theorem valuation_eq_one_iff_count_eq_zero
       FractionalIdeal.count K v
         (FractionalIdeal.spanSingleton (𝓞 K)⁰ (x : K)) = 0 := by
   rw [valuation_eq_exp_neg_count (K := K) x v]
-  constructor
-  · intro h
-    exact neg_eq_zero.mp (WithZero.exp_eq_one.mp h)
-  · intro h
-    simp [h]
+  simp
 
 theorem divisorCoordinate_eq_zero_iff
     (x : SUnitGroup (K := K) S) (v : S) :
     divisorCoordinate (K := K) S x v = 0 ↔
-      (v : HeightOneSpectrum (𝓞 K)).valuation K ((x : Kˣ) : K) = 1 := by
-  exact (valuation_eq_one_iff_count_eq_zero
+      (v : HeightOneSpectrum (𝓞 K)).valuation K ((x : Kˣ) : K) = 1 := 
+  (valuation_eq_one_iff_count_eq_zero
     (K := K) (x : Kˣ) (v : HeightOneSpectrum (𝓞 K))).symm
 
 theorem divisorCoordinate_mul
@@ -256,7 +238,7 @@ theorem divisorCoordinate_one (v : S) :
   simp [divisorCoordinate, FractionalIdeal.count_one]
 
 /-- The additive principal-divisor map on `S`-units. -/
-noncomputable def divisor :
+def divisor :
     Additive (SUnitGroup (K := K) S) →+
       (S → ℤ) where
   toFun x v := divisorCoordinate (K := K) S (Additive.toMul x) v
@@ -269,12 +251,12 @@ noncomputable def divisor :
       (Additive.toMul x) (Additive.toMul y) v
 
 /-- The `ℤ`-linear principal-divisor map on `S`-units. -/
-noncomputable def divisorLinearMap :
+def divisorLinearMap :
     Additive (SUnitGroup (K := K) S) →ₗ[ℤ] (S → ℤ) :=
   (divisor (K := K) S).toIntLinearMap
 
 /-- The additive linearization of the ordinary-unit embedding. -/
-noncomputable def fromNumberFieldUnitsLinearMap :
+def fromNumberFieldUnitsLinearMap :
     Additive (𝓞 K)ˣ →ₗ[ℤ]
       Additive (SUnitGroup (K := K) S) :=
   (MonoidHom.toAdditive
@@ -309,7 +291,7 @@ theorem valuation_eq_one_of_mem_ker_divisorLinearMap
 
 /-- An `S`-unit in the divisor kernel, regarded as an `S`-unit for the
 empty set. -/
-noncomputable def kerDivisorToEmptySUnits
+def kerDivisorToEmptySUnits
     (x : LinearMap.ker (divisorLinearMap (K := K) S)) :
     ((∅ : Set (HeightOneSpectrum (𝓞 K))).unit K) :=
   ⟨((Additive.toMul (x : Additive (SUnitGroup (K := K) S)) :
@@ -370,11 +352,7 @@ theorem primeIdealPower_classNumber_isPrincipal (v : S) :
           mem_nonZeroDivisors_iff_ne_zero.mpr
             (v : HeightOneSpectrum (𝓞 K)).ne_bot⟩) ^
           Fintype.card (ClassGroup (𝓞 K)) = 1 :=
-    pow_card_eq_one
-      (x := ClassGroup.mk0
-        ⟨(v : HeightOneSpectrum (𝓞 K)).asIdeal,
-          mem_nonZeroDivisors_iff_ne_zero.mpr
-            (v : HeightOneSpectrum (𝓞 K)).ne_bot⟩)
+    by simp
   let I : (Ideal (𝓞 K))⁰ :=
     ⟨(v : HeightOneSpectrum (𝓞 K)).asIdeal,
       mem_nonZeroDivisors_iff_ne_zero.mpr
@@ -390,7 +368,7 @@ theorem primeIdealPower_classNumber_isPrincipal (v : S) :
   exact hpow
 
 /-- A generator of the principal `classNumber K`-th power of a prime ideal. -/
- noncomputable def primePowerGenerator (v : S) : 𝓞 K :=
+ def primePowerGenerator (v : S) : 𝓞 K :=
   let I :=
     (v : HeightOneSpectrum (𝓞 K)).asIdeal ^
       NumberField.classNumber K
@@ -398,7 +376,7 @@ theorem primeIdealPower_classNumber_isPrincipal (v : S) :
     primeIdealPower_classNumber_isPrincipal (K := K) S v
   Submodule.IsPrincipal.generator I
 
-private theorem span_primePowerGenerator (v : S) :
+theorem span_primePowerGenerator (v : S) :
     Ideal.span {primePowerGenerator (K := K) S v} =
       (v : HeightOneSpectrum (𝓞 K)).asIdeal ^
         NumberField.classNumber K := by
@@ -431,7 +409,7 @@ private theorem span_primePowerGenerator (v : S) :
 
 /-- An `S`-unit whose divisor is `classNumber K` times the basis divisor at
 `v`. -/
- noncomputable def primePowerSUnit (v : S) :
+ def primePowerSUnit (v : S) :
     SUnitGroup (K := K) S :=
   ⟨Units.mk0
       (algebraMap (𝓞 K) K (primePowerGenerator (K := K) S v))
@@ -459,7 +437,7 @@ private theorem span_primePowerGenerator (v : S) :
       rw [FractionalIdeal.count_maximal_coprime K w hwv]
       simp⟩
 
- noncomputable def classNumberBasisVector (v : S) : S → ℤ := by
+ def classNumberBasisVector (v : S) : S → ℤ := by
   classical
   exact fun w =>
     if w = v then (NumberField.classNumber K : ℤ) else 0
@@ -499,7 +477,7 @@ section Rank
 
 variable (S : Finset (HeightOneSpectrum (𝓞 K)))
 
- noncomputable def divisorRangeVector (v : S) :
+ def divisorRangeVector (v : S) :
     LinearMap.range (divisorLinearMap (K := K) S) :=
   ⟨classNumberBasisVector (K := K) S v,
     ⟨Additive.ofMul (primePowerSUnit (K := K) S v), by
@@ -558,8 +536,7 @@ theorem moduleFinite :
   · rw [inf_of_le_right le_top,
       ← range_fromNumberFieldUnitsLinearMap_eq_ker_divisorLinearMap
         (K := K) S]
-    exact Submodule.fg_range
-      (fromNumberFieldUnitsLinearMap (K := K) S)
+    simp
 
 /-- The kernel of the `S`-unit divisor map has the ordinary unit rank. -/
 theorem finrank_divisor_ker :
@@ -638,42 +615,3 @@ theorem finrank :
         finrank_divisor_ker (K := K) S]
     _ = (NumberField.Units.rank K : Cardinal) +
         (S.card : Cardinal) := by rw [add_comm]
-
-/-- The `S`-unit rank in quotient-by-torsion form. -/
-theorem finrank_modTorsion :
-    Module.finrank ℤ
-        (Additive
-          (SUnitGroup (K := K) S ⧸
-            CommGroup.torsion (SUnitGroup (K := K) S))) =
-      NumberField.Units.rank K + S.card := by
-  calc
-    Module.finrank ℤ
-        (Additive
-          (SUnitGroup (K := K) S ⧸
-            CommGroup.torsion (SUnitGroup (K := K) S))) =
-        Module.finrank ℤ (Additive (SUnitGroup (K := K) S)) := by
-      simpa using!
-        (finrank_quotient_torsion_eq
-          (M := Additive (SUnitGroup (K := K) S)))
-    _ = NumberField.Units.rank K + S.card :=
-      finrank (K := K) S
-
-/-- Cardinality form of the `S`-unit rank:
-`#S_infinite + #S_finite - 1`. -/
-theorem finrank_modTorsion_eq_card_infinitePlaces_add_card_sub_one :
-    Module.finrank ℤ
-        (Additive
-          (SUnitGroup (K := K) S ⧸
-            CommGroup.torsion (SUnitGroup (K := K) S))) =
-      Fintype.card (NumberField.InfinitePlace K) + S.card - 1 := by
-  rw [finrank_modTorsion (K := K) S, NumberField.Units.rank]
-  have hpos :
-      0 < Fintype.card (NumberField.InfinitePlace K) :=
-    Fintype.card_pos
-  omega
-
-end Rank
-
-end SUnitGroup
-
-end

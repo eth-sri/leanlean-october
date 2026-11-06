@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Closed fixing subgroups
 
@@ -29,11 +25,7 @@ namespace RamificationTheory
 
 /-- The closed fixing subgroup attached to an intermediate field. -/
 @[implicit_reducible]
-noncomputable def closedFixingSubgroup
+def closedFixingSubgroup
     (k Ω : Type*) [Field k] [Field Ω] [Algebra k Ω] [IsGalois k Ω]
     (K : IntermediateField k Ω) : ClosedSubgroup Gal(Ω/k) :=
   ⟨K.fixingSubgroup, InfiniteGalois.fixingSubgroup_isClosed K⟩
-
-end RamificationTheory
-
-end

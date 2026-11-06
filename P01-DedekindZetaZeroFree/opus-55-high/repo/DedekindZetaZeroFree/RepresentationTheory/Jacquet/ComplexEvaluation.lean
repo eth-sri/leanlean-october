@@ -20,11 +20,9 @@ set_option maxHeartbeats 1600000 in
   toFun := KPCplxPrincipalSeriesCharts.pi positiveParameter g
   map_add' x y := by
     induction g using Quotient.inductionOn with | _ g =>
-    apply Subtype.ext
     rfl
   map_smul' c x := by
     induction g using Quotient.inductionOn with | _ g =>
-    apply Subtype.ext
     rfl
   cont := (pi_continuous positiveParameter).comp
     (continuous_const.prodMk continuous_id)
@@ -100,7 +98,3 @@ public theorem jacquetEvaluation_injective : Function.Injective jacquetEvaluatio
   apply jacquet_evaluations_separate
   intro g
   exact congrFun hf g
-
-end DedekindZetaZeroFree.KPCplxJacquetFunctional
-
-end

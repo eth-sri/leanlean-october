@@ -25,9 +25,7 @@ theorem continuous_of_closed_compact_factor
     · intro hg
       obtain ⟨b, hb, k, hk, rfl⟩ := hfactor g
       refine Set.mem_mul.mpr ⟨b, ⟨hb, ?_⟩, k, hk, rfl⟩
-      change f b ∈ s
-      change f (b * k) ∈ s at hg
-      rwa [hinvariant b hb k hk] at hg
+      simp_all
     · intro hg
       obtain ⟨b, ⟨hb, hbs⟩, k, hk, rfl⟩ := Set.mem_mul.mp hg
       change f (b * k) ∈ s
@@ -60,9 +58,7 @@ theorem fullCusp_isClosed_ordinaryBorel :
       have hm := QuotientGroup.eq.mp hB
       obtain ⟨z,hz⟩ := hm
       have he : A = B * Matrix.GeneralLinearGroup.scalar (Fin 2) z := by
-        change Matrix.GeneralLinearGroup.scalar (Fin 2) z = B⁻¹ * A at hz
-        rw [hz]
-        group
+        simp_all
       rw [he]
       simp [Units.val_mul, Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_apply,
         Fin.sum_univ_two, Matrix.scalar, h10]
@@ -71,8 +67,8 @@ theorem fullCusp_isClosed_ordinaryBorel :
   rw [he]
   exact isClosed_eq (by fun_prop) continuous_const
 theorem fullCusp_isClosed_borel :
-    IsClosed (KPGlobalTorusFunctionData.borel F ζ hζ : Set (KPGlobalTorusFunctionData.G F ζ hζ)) := by
-  exact (fullCusp_isClosed_ordinaryBorel F).preimage
+    IsClosed (KPGlobalTorusFunctionData.borel F ζ hζ : Set (KPGlobalTorusFunctionData.G F ζ hζ)) := 
+  (fullCusp_isClosed_ordinaryBorel F).preimage
     (KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover F ζ hζ).2.2.2.continuous
 
 theorem fullCusp_iwasawaNorm_continuous_of_borel
@@ -96,18 +92,7 @@ theorem fullCusp_iwasawaNorm_continuous_of_borel
     apply Subgroup.mul_mem _ ht
     refine ⟨KPAdelicCoverRestrictedProduct.restrictedProjection F ζ hζ
       (KPGlobalTorusFunctionData.rootTuple F ζ hζ x), rfl, ?_⟩
-    apply Prod.ext
-    · funext w
-      simp [KPAdelicCoverRestrictedProduct.restrictedProjection,
-        KPAdelicCoverRestrictedProduct.matrixValue, KPAdelicCoverRestrictedProduct.matrixEntry,
-        KPGlobalTorusFunctionData.rootTuple, KPStandardLocalRootLifts.N]
-      rfl
-    · apply RestrictedProduct.ext
-      intro q
-      simp [KPAdelicCoverRestrictedProduct.restrictedProjection,
-        KPAdelicCoverRestrictedProduct.matrixValue, KPAdelicCoverRestrictedProduct.matrixEntry,
-        KPGlobalTorusFunctionData.rootTuple, KPStandardLocalRootLifts.N]
-      rfl
+    rfl
   · intro b hb k hk
     obtain ⟨t,x,hb⟩ := KPGlobalTorusBorelNormTwistTransport.actual_borel_factorization F ζ hζ ⟨b,hb⟩
     change b = t.val * KPGlobalTorusFunctionData.N F ζ hζ x at hb
@@ -120,7 +105,7 @@ theorem fullCusp_iwasawaNorm_continuous_of_borel
     change KPGlobalTorusBorelTwistCompatibility.iwasawaNorm F ζ hζ D
       (t.val * KPGlobalTorusFunctionData.N F ζ hζ x) = _ at h1
     rw [hk',h1]
-  · exact hcont
+  omega
 
 end DedekindZetaZeroFree.KPMsResidualTailRestoration.OutgoingTailL2.CoordinateDescent
 
@@ -155,28 +140,28 @@ private theorem upperRatio_continuous :
     Continuous (fun A : {A : AdelicGL2 F | A 1 0 = 0} => iwasawaUpperRatio F A.val A.property) := by
   apply Units.continuous_iff.mpr
   have hc (i j : Fin 2) : Continuous (fun A : {A : AdelicGL2 F | A 1 0 = 0} => A.val i j) :=
-    (Units.continuous_val.comp continuous_subtype_val).matrix_elem i j
+    by fun_prop
   have hd : Continuous (fun A : {A : AdelicGL2 F | A 1 0 = 0} =>
       ((Matrix.GeneralLinearGroup.det A.val)⁻¹ : (Adeles F)ˣ).val) := by
-    exact Units.continuous_coe_inv.comp (Matrix.GeneralLinearGroup.continuous_det.comp continuous_subtype_val)
+    fun_prop
   constructor
   · have he : (fun A : {A : AdelicGL2 F | A 1 0 = 0} =>
         (iwasawaUpperRatio F A.val A.property).val) =
         fun A => (A.val 0 0)^2 * ((Matrix.GeneralLinearGroup.det A.val)⁻¹ : (Adeles F)ˣ).val := by
       funext A
       rw [(upperRatio_det F A.val A.property).1]
-      simp only [Units.val_mul, Units.val_pow_eq_pow_val, IsUnit.unit_spec]
+      rfl
     change Continuous (fun A : {A : AdelicGL2 F | A 1 0 = 0} => (iwasawaUpperRatio F A.val A.property).val)
     rw [he]
-    exact (hc 0 0).pow 2 |>.mul hd
+    fun_prop
   · have he : (fun A : {A : AdelicGL2 F | A 1 0 = 0} =>
         ((iwasawaUpperRatio F A.val A.property)⁻¹).val) =
         fun A => (A.val 1 1)^2 * ((Matrix.GeneralLinearGroup.det A.val)⁻¹ : (Adeles F)ˣ).val := by
       funext A
       rw [(upperRatio_det F A.val A.property).2]
-      simp only [Units.val_mul, Units.val_pow_eq_pow_val, IsUnit.unit_spec]
+      rfl
     rw [he]
-    exact (hc 1 1).pow 2 |>.mul hd
+    fun_prop
 
  def ordinaryUpperRatio (b : KPGlobalTorusFunctionData.ordinaryBorel F) : (Adeles F)ˣ :=
   iwasawaUpperRatio F (Classical.choose b.property) (Classical.choose_spec b.property).2
@@ -194,8 +179,7 @@ private theorem upper_preimage_zero (A : AdelicGL2 F)
   have hm := QuotientGroup.eq.mp hB
   obtain ⟨z,hz⟩ := hm
   have he : A = B * Matrix.GeneralLinearGroup.scalar (Fin 2) z := by
-    change Matrix.GeneralLinearGroup.scalar (Fin 2) z = B⁻¹ * A at hz
-    rw [hz]; group
+    simp_all
   rw [he]
   simp [Units.val_mul, Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_apply,
     Fin.sum_univ_two, Matrix.scalar, h10]
@@ -261,9 +245,3 @@ theorem fullCusp_iwasawaNorm_continuous
       (((KPGlobalTorusBorelTwistCompatibility.iwasawaNorm F ζ hζ D g : ℝ≥0) : ℝ))) :=
   fullCusp_iwasawaNorm_continuous_of_borel F ζ hζ D
     (fullCusp_iwasawaNorm_continuousOn_borel F ζ hζ D)
-
-end DedekindZetaZeroFree.KPMsResidualTailRestoration.OutgoingTailL2.CoordinateDescent
-
-end
-
-end

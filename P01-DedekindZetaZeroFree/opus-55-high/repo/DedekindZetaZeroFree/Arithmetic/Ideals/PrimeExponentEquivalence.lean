@@ -17,7 +17,7 @@ open UniqueFactorizationMonoid
 
 variable {R : Type u} [CommRing R] [IsDedekindDomain R]
 
-private theorem product_eq (e : HeightOneSpectrum R →₀ ℕ) :
+theorem product_eq (e : HeightOneSpectrum R →₀ ℕ) :
     e.prod (fun p n => p.asIdeal ^ n) =
       (e.toMultiset.map HeightOneSpectrum.asIdeal).prod := by
   classical
@@ -38,7 +38,7 @@ theorem product_nonzero (e : HeightOneSpectrum R →₀ ℕ) :
   obtain ⟨q, _, rfl⟩ := Multiset.mem_map.mp hp
   exact q.prime
 
-private theorem factors_product (e : HeightOneSpectrum R →₀ ℕ) :
+theorem factors_product (e : HeightOneSpectrum R →₀ ℕ) :
     normalizedFactors (e.prod (fun p n => p.asIdeal ^ n)) =
       e.toMultiset.map HeightOneSpectrum.asIdeal := by
   rw [product_eq]
@@ -63,7 +63,7 @@ theorem exponentProduct_bijective : Function.Bijective (@exponentProduct R _ _) 
     let m := (normalizedFactors I.val).attach.map
       (fun p => HeightOneSpectrum.ofPrime (prime_of_normalized_factor p.val p.property))
     have hm : m.map HeightOneSpectrum.asIdeal = normalizedFactors I.val := by
-      simp [m, Multiset.map_map, Function.comp_def]
+      simp [m, Multiset.map_map]
     refine ⟨m.toFinsupp, Subtype.ext ?_⟩
     change (m.toFinsupp.prod (fun p n => p.asIdeal ^ n)) = I.val
     rw [product_eq, Multiset.toFinsupp_toMultiset, hm]
@@ -72,8 +72,8 @@ theorem exponentProduct_bijective : Function.Bijective (@exponentProduct R _ _) 
 end Helpers
 
 noncomputable def primeExponentEquiv (R : Type u) [CommRing R] [IsDedekindDomain R] :
-    (HeightOneSpectrum R →₀ ℕ) ≃ {I : Ideal R // I ≠ ⊥} := by
-  exact Equiv.ofBijective exponentProduct exponentProduct_bijective
+    (HeightOneSpectrum R →₀ ℕ) ≃ {I : Ideal R // I ≠ ⊥} := 
+  Equiv.ofBijective exponentProduct exponentProduct_bijective
 
 theorem primeExponentEquiv_apply (R : Type u) [CommRing R] [IsDedekindDomain R]
     (e : HeightOneSpectrum R →₀ ℕ) :
@@ -98,5 +98,3 @@ theorem primeExponentEquiv_add (R : Type u) [CommRing R] [IsDedekindDomain R]
   simp only [primeExponentEquiv_apply]
   exact Finsupp.prod_add_index' (fun p : HeightOneSpectrum R => pow_zero p.asIdeal)
     (fun p : HeightOneSpectrum R => pow_add p.asIdeal)
-
-end DedekindZetaZeroFree.LargeSieve.IdealEuler

@@ -67,8 +67,8 @@ def IntegerSobolev.sobolevNorm {n : ℕ} {B : LocalBall n} {k : ℕ}
   Real.sqrt u.normSq
 
 theorem IntegerSobolev.sobolevNorm_sq {n : ℕ} {B : LocalBall n} {k : ℕ}
-    (u : IntegerSobolev B k) : u.sobolevNorm ^ 2 = u.normSq := by
-  exact Real.sq_sqrt (Finset.sum_nonneg fun α _ => sq_nonneg _)
+    (u : IntegerSobolev B k) : u.sobolevNorm ^ 2 = u.normSq := 
+  Real.sq_sqrt (Finset.sum_nonneg fun α _ => sq_nonneg _)
 
 theorem IntegerSobolev.sobolevNorm_sq_eq_integral {n : ℕ}
     {B : LocalBall n} {k : ℕ} (u : IntegerSobolev B k) :
@@ -80,7 +80,7 @@ theorem IntegerSobolev.sobolevNorm_sq_eq_integral {n : ℕ}
   apply Finset.sum_congr rfl
   intro α _
   rw [← real_inner_self_eq_norm_sq, L2.inner_def]
-  simp only [real_inner_self_eq_norm_sq]
+  simp
 
 private theorem list_smooth {n : ℕ} (B : LocalBall n)
     (u : Space n → ℂ) (hu : ContDiffOn ℝ (⊤ : ℕ∞) u B.carrier)
@@ -90,7 +90,7 @@ private theorem list_smooth {n : ℕ} (B : LocalBall n)
   | cons i is ih =>
     exact (ih.fderiv_of_isOpen Metric.isOpen_ball (by simp)).clm_apply contDiffOn_const
 
-private theorem list_global_smooth {n : ℕ} (u : Space n → ℂ)
+theorem list_global_smooth {n : ℕ} (u : Space n → ℂ)
     (hu : ContDiff ℝ (⊤ : ℕ∞) u) (l : List (Fin n)) :
     ContDiff ℝ (⊤ : ℕ∞) (coordinateDerivativeList l u) := by
   induction l with
@@ -113,10 +113,7 @@ private theorem list_swap {n : ℕ} (B : LocalBall n) (u : Space n → ℂ)
   have hs := (list_smooth B u hu l).contDiffAt (Metric.isOpen_ball.mem_nhds hx)
   have hd : DifferentiableAt ℝ (fderiv ℝ (coordinateDerivativeList l u)) x :=
     (hs.fderiv_right (m := (⊤ : ℕ∞)) (by simp)).differentiableAt (by simp)
-  simp only [coordinateDerivativeList, fderiv_clm_apply hd (differentiableAt_const _),
-    fderiv_const_apply, ContinuousLinearMap.comp_zero, ContinuousLinearMap.add_apply,
-    ContinuousLinearMap.flip_apply,
-    ContinuousLinearMap.zero_apply, zero_add]
+  simp only [coordinateDerivativeList, fderiv_clm_apply hd (differentiableAt_const _), fderiv_const_apply, ContinuousLinearMap.comp_zero, ContinuousLinearMap.flip_apply, zero_add]
   exact (hs.isSymmSndFDerivAt (by simp)).eq _ _
 
 private theorem list_perm {n : ℕ} (B : LocalBall n) (u : Space n → ℂ)
@@ -207,7 +204,7 @@ private theorem list_ibp {n : ℕ} (B : LocalBall n) (u g : Space n → ℂ)
     rw [hint, List.length_cons, pow_succ]
     ring
 
-private theorem directions_length {n k : ℕ} (α : MultiIndex n k) :
+theorem directions_length {n k : ℕ} (α : MultiIndex n k) :
     α.directions.length = α.degree := by
   simp [MultiIndex.directions, MultiIndex.degree, List.length_flatMap,
     ← List.ofFn_eq_map, List.sum_ofFn]
@@ -226,9 +223,7 @@ theorem smooth_has_integerSobolev_data {n k : ℕ} (B : LocalBall n)
     have hzero : coordinateDerivative (⟨fun _ => 0, by simp⟩ : MultiIndex n k) u = u := by
       have hnil : ∀ l : List (Fin n), l.flatMap (fun _ => ([] : List (Fin n))) = [] := by
         intro l
-        induction l with
-        | nil => rfl
-        | cons i l ih => simpa using ih
+        simp
       simp [coordinateDerivative, MultiIndex.directions, coordinateDerivativeList, hnil]
     have h0 : (fun x => d (⟨fun _ => 0, by simp⟩ : MultiIndex n k) x) =ᵐ[volume.restrict B.carrier] u := by
       simpa only [d, hzero] using (hL2 (⟨fun _ => 0, by simp⟩ : MultiIndex n k)).coeFn_toLp
@@ -293,7 +288,3 @@ def SmoothCompactOpenHolomorphicOn {n : ℕ} (B : LocalBall n)
     (f : ℂ → Space n → ℂ) (U : Set ℂ) : Prop :=
   ∀ z₀ ∈ U, ∃ ρ : ℝ, 0 < ρ ∧ Metric.ball z₀ ρ ⊆ U ∧
     ∃ coeff : ℕ → Space n → ℂ, SmoothPowerSeriesOn B z₀ ρ coeff f
-
-end DedekindZetaZeroFree.KPContLocalNorm
-
-end

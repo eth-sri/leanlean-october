@@ -69,7 +69,7 @@ theorem coordinateDerivative_mul2 (d : ℕ) (i : Fin d) (k : Fin 3)
       (fun q => f q * HyperbolicChart.coordinateDerivative d i k g q)
       (fun q => g q * HyperbolicChart.coordinateDerivative d i k f q)
       (hfm.mul hdg) (hgm.mul hdf)]
-  simp only [Pi.add_apply]
+  simp only
   rw [coordinateDerivative_mul d i k f (HyperbolicChart.coordinateDerivative d i k g) hfm hdg p,
     coordinateDerivative_mul d i k g (HyperbolicChart.coordinateDerivative d i k f) hgm hdf p]
   ring
@@ -85,9 +85,7 @@ theorem laplacian_mul (d : ℕ) (f g : HyperbolicChart.Space d → ℂ)
         (HyperbolicChart.differential d g p) := by
   have hfm : Differentiable ℝ f := hf.differentiable (by simp)
   have hgm : Differentiable ℝ g := hg.differentiable (by simp)
-  simp only [HyperbolicChart.laplacian, HyperbolicChart.differential, rawPairing,
-    Fin.sum_univ_three, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_two,
-    Matrix.vecHead, Matrix.vecTail, Matrix.empty_eq, Fin.zero_eta]
+  simp only [HyperbolicChart.laplacian, HyperbolicChart.differential, rawPairing, Fin.sum_univ_three, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_two, Matrix.vecHead, Matrix.vecTail]
   rw [Finset.mul_sum, Finset.mul_sum]
   rw [← Finset.sum_add_distrib]
   rw [Finset.mul_sum]
@@ -102,8 +100,7 @@ theorem laplacian_mul (d : ℕ) (f g : HyperbolicChart.Space d → ℂ)
     rw [show (2 : ℝ) * p.ofLp (i, 2) = p.ofLp (i, 2) + p.ofLp (i, 2) by ring, Real.exp_add]
     push_cast; ring
   rw [hexp]
-  simp only [Function.comp_apply, Fin.succ_zero_eq_one, Matrix.cons_val_one, Matrix.cons_val_zero,
-    Matrix.head_cons]
+  simp only [Function.comp_apply, Fin.succ_zero_eq_one, Matrix.cons_val_one, Matrix.cons_val_zero]
   ring
 
 theorem cutoff_hyperbolic_laplacian_error_bound (d : ℕ)
@@ -147,7 +144,7 @@ theorem cutoff_hyperbolic_laplacian_error_bound (d : ℕ)
     _ = ‖g p‖ * ‖HyperbolicChart.laplacian d f p‖ +
       2 * ‖∑ i : Fin d, ∑ k : Fin 3,
         HyperbolicChart.differential d f p i k * HyperbolicChart.differential d g p i k‖ := by
-      simp [norm_mul]
+      simp
     _ ≤ _ := by nlinarith [hn.trans hcs]
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
@@ -166,11 +163,4 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
     rw [h]; fun_prop
   · fun_prop
  theorem cutoff_toArch_fromArch (x : Arch F) : toArch F (fromArch F x) = x := by
-  funext i
-  apply Prod.ext
-  · apply Complex.ext <;> simp [fromArch, toArch]
-  · simp [fromArch, toArch]
-
-end DedekindZetaZeroFree.KPCuspCutoffGraphApproximation
-
-end
+  rfl

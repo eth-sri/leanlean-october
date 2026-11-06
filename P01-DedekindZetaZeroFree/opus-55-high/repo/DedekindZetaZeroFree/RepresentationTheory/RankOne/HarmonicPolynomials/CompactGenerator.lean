@@ -17,7 +17,7 @@ def L (i : Fin 3) (p : Polynomial) : Polynomial :=
 
 def polynomialCasimir (p : Polynomial) : Polynomial := -(∑ i : Fin 3, L i (L i p))
 
-private theorem polynomialCasimir_eq (p : Polynomial) :
+theorem polynomialCasimir_eq (p : Polynomial) :
     polynomialCasimir p = E (E p) + E p -
       (∑ i : Fin 3, X i ^ 2) * polynomialLaplacian p := by
   simp only [polynomialCasimir, L, E, polynomialLaplacian, Fin.sum_univ_three,
@@ -44,7 +44,7 @@ theorem polynomialCasimir_harmonic (ℓ : ℕ) (p : Polynomial)
   simp only [nsmul_eq_mul, smul_eq_C_mul, map_mul, map_add, map_natCast, map_one]
   ring
 
-private theorem L_smul (i : Fin 3) (c : ℂ) (p : Polynomial) :
+theorem L_smul (i : Fin 3) (c : ℂ) (p : Polynomial) :
     L i (c • p) = c • L i p := by
   simp only [L, smul_eq_C_mul, pderiv_C_mul]
   ring
@@ -72,7 +72,3 @@ theorem A_casimir_harmonic (ℓ : ℕ) (p : Harmonic ℓ) :
   rw [A_casimir, polynomialCasimir_harmonic ℓ p p.property, smul_smul]
   congr 1
   ring
-
-end DedekindZetaZeroFree.HarmonicVendor
-
-end

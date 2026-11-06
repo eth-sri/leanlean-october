@@ -24,5 +24,3 @@ theorem crossover_identity (α M N : ℝ) (hα : 1 ≤ α) (hα₂ : α ≤ 2)
   have hβ : 2 * α - 1 + (2 - 1 / α) * (1 - α) = 2 - 1 / α := by
     field_simp; ring
   rw [hβ]
-
-end DedekindZetaZeroFree.LargeSieve

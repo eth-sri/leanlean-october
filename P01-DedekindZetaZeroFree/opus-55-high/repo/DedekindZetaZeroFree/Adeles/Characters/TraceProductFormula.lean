@@ -6,7 +6,6 @@ public import DedekindZetaZeroFree.Adeles.Characters.RationalPadicProductFormula
 
 @[expose] public section
 
-noncomputable section
 
 open scoped NumberField BigOperators
 open NumberField IsDedekindDomain
@@ -15,7 +14,7 @@ namespace DedekindZetaZeroFree
 
 variable (F : Type) [Field F] [NumberField F]
 
-private theorem finiteCharacter_support (a : FiniteAdeleRing (𝓞 F) F) :
+theorem finiteCharacter_support (a : FiniteAdeleRing (𝓞 F) F) :
     Function.HasFiniteMulSupport (fun v => localFiniteCharacter F v (a v)) := by
   change {v | ¬localFiniteCharacter F v (a v) = 1}.Finite
   rw [← Filter.eventually_cofinite]
@@ -25,14 +24,14 @@ private theorem finiteCharacter_support (a : FiniteAdeleRing (𝓞 F) F) :
 theorem localFiniteCharacter_diagonal_hasFiniteMulSupport (t : F) :
     Function.HasFiniteMulSupport
       (fun v : HeightOneSpectrum (𝓞 F) =>
-        localFiniteCharacter F v (algebraMap F (v.adicCompletion F) t)) := by
-  exact finiteCharacter_support F (algebraMap F (FiniteAdeleRing (𝓞 F) F) t)
+        localFiniteCharacter F v (algebraMap F (v.adicCompletion F) t)) := 
+  finiteCharacter_support F (algebraMap F (FiniteAdeleRing (𝓞 F) F) t)
 
 theorem localFiniteCharacter_adele_hasFiniteMulSupport
     (x : AdeleRing (𝓞 F) F) :
     Function.HasFiniteMulSupport
-      (fun v : HeightOneSpectrum (𝓞 F) => localFiniteCharacter F v (x.2 v)) := by
-  exact finiteCharacter_support F x.2
+      (fun v : HeightOneSpectrum (𝓞 F) => localFiniteCharacter F v (x.2 v)) := 
+  finiteCharacter_support F x.2
 
 private theorem character_sum {A ι : Type*} [AddCommMonoid A]
     (χ : AddChar A Circle) (s : Finset ι) (f : ι → A) :
@@ -90,7 +89,7 @@ private theorem finite_character_product (t : F) :
     Rat.HeightOneSpectrum.primesEquiv (finitePlaceBelow (K := ℚ) v) = p
   exact Rat.HeightOneSpectrum.primesEquiv.apply_eq_iff_eq_symm_apply.symm
 
-private theorem arch_character_product (t : F) :
+theorem arch_character_product (t : F) :
     (∏ v : InfinitePlace F, archTraceCharacter v (algebraMap F v.Completion t)) =
       Circle.exp (2 * Real.pi * (Algebra.trace ℚ F t : ℝ)) := by
   classical
@@ -113,7 +112,3 @@ theorem traceCharacter_diagonal_product_formula (t : F) :
         localFiniteCharacter F v (algebraMap F (v.adicCompletion F) t)) = 1 := by
   rw [arch_character_product F t, finite_character_product F t]
   exact rational_diagonal_additive_product (Algebra.trace ℚ F t)
-
-end DedekindZetaZeroFree
-
-end

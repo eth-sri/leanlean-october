@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # The standard Lubin--Tate series
 
@@ -39,14 +36,14 @@ variable {F : LocalField.{u, v} K} {π : F.valuationSubring}
 
 /-- The polynomial power series `π X + X ^ q`, where `q` is the residue
 field cardinality. -/
-noncomputable def standardLubinTatePowerSeries
+def standardLubinTatePowerSeries
     (F : LocalField.{u, v} K) (π : F.valuationSubring) :
     PowerSeries F.valuationSubring :=
   PowerSeries.C π * PowerSeries.X +
     PowerSeries.X ^ Nat.card F.residueField
 
 /-- A uniformizer makes `π X + X ^ q` into a Lubin--Tate series. -/
-noncomputable def standardLubinTateSeries
+def standardLubinTateSeries
     (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) :
     LubinTateSeries F π where
   toPowerSeries := standardLubinTatePowerSeries F π
@@ -73,8 +70,3 @@ theorem standardLubinTateSeries_toPowerSeries
     (standardLubinTateSeries hπ).toPowerSeries =
       standardLubinTatePowerSeries F π :=
   rfl
-
-end LubinTateSeries
-end LubinTate
-
-end

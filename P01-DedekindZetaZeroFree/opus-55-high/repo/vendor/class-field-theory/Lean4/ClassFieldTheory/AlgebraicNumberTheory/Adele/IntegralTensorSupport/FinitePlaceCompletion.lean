@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Finite-place completion maps for relative tensor factors
 
@@ -39,7 +36,7 @@ variable
 /-- The canonical dense map from the absolute-value model at a finite
 place to mathlib's adic-completion model, universe-polymorphic in the
 number field. -/
-noncomputable def relativeFinitePlaceCompletionBaseMap
+def relativeFinitePlaceCompletionBaseMap
     (w : HeightOneSpectrum (𝓞 K)) :
     WithAbs (NumberField.HeightOneSpectrum.adicAbv K w) →+*
       w.adicCompletion K :=
@@ -78,7 +75,7 @@ theorem relativeFinitePlaceCompletionBaseMap_isometry
     (relativeFinitePlaceCompletionBaseMap_norm w)
 
 /-- Extension of the preceding dense map to the completion. -/
-noncomputable def relativeFinitePlaceCompletionRingHom
+def relativeFinitePlaceCompletionRingHom
     (w : HeightOneSpectrum (𝓞 K)) :
     (NumberField.HeightOneSpectrum.adicAbv K w).Completion →+*
       w.adicCompletion K :=
@@ -141,7 +138,7 @@ theorem relativeFinitePlaceCompletionRingHom_surjective
   exact closure_minimal hrange hrangeClosed hx
 
 /-- Canonical ring equivalence between the two models of `K_w`. -/
-noncomputable def relativeFinitePlaceCompletionRingEquiv
+def relativeFinitePlaceCompletionRingEquiv
     (w : HeightOneSpectrum (𝓞 K)) :
     (NumberField.HeightOneSpectrum.adicAbv K w).Completion ≃+*
       w.adicCompletion K :=
@@ -151,7 +148,7 @@ noncomputable def relativeFinitePlaceCompletionRingEquiv
       relativeFinitePlaceCompletionRingHom_surjective w⟩
 
 /-- The same comparison as a `K`-algebra equivalence. -/
-noncomputable def relativeFinitePlaceCompletionAlgEquiv
+def relativeFinitePlaceCompletionAlgEquiv
     (w : HeightOneSpectrum (𝓞 K)) :
     (NumberField.HeightOneSpectrum.adicAbv K w).Completion ≃ₐ[K]
       w.adicCompletion K where
@@ -170,7 +167,7 @@ noncomputable def relativeFinitePlaceCompletionAlgEquiv
 
 /-- Base change in the first tensor factor, now without a universe
 restriction. -/
-noncomputable def relativeFinitePlaceLocalTensorAlgEquiv
+def relativeFinitePlaceLocalTensorAlgEquiv
     (w : HeightOneSpectrum (𝓞 K)) :
     (NumberField.HeightOneSpectrum.adicAbv K w).Completion ⊗[K] L
         ≃ₐ[K]
@@ -259,7 +256,7 @@ theorem basis_coord_isIntegral_of_integral_traces
     intro j k
     by_cases hki : k = i
     · simpa [Matrix.updateCol_apply, hki] using ht' j
-    · simpa [Matrix.updateCol_apply, hki] using hM' j k
+    simp_all
   have hmul : M.mulVec c = t :=
     Algebra.traceMatrix_of_basis_mulVec b x
   have hcramerEq : M.det • c = M.cramer t := by
@@ -366,5 +363,3 @@ theorem isIntegral_trace_tensor_of_components
     (completionTensorDecomposition_left
       (K := K) (L := L) vK hvK0) x] at hsum
   exact hsum
-
-end

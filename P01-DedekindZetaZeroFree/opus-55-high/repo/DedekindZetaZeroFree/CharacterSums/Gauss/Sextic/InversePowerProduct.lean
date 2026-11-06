@@ -26,11 +26,11 @@ local instance exteriorPrimeResidueFintype (p : ExteriorPrime A) :
     Fintype (A.R ⧸ A.extendIdeal (primeIdeal p)) :=
   Fintype.ofFinite _
 
-private theorem Q_nonneg (p : ExteriorPrime A) : 0 ≤ Q p := by
+theorem Q_nonneg (p : ExteriorPrime A) : 0 ≤ Q p := by
   change 0 ≤ (Ideal.absNorm (primeIdeal p).val : ℝ)
-  exact_mod_cast Nat.zero_le _
+  simp
 
-private theorem tau_eq_gaussSum (C : A.GeneralArithmeticContext σ η hS)
+theorem tau_eq_gaussSum (C : A.GeneralArithmeticContext σ η hS)
     (p : ExteriorPrime A) (a : ℤ) :
     tau C p a = gaussSum ((chi (σ := σ) p) ^ (SArithmeticData.sexticExponent a))
       (primeTrace C p) := by
@@ -38,11 +38,11 @@ private theorem tau_eq_gaussSum (C : A.GeneralArithmeticContext σ η hS)
   rw [T_eq_finiteField, map_one]
   simp only [FiniteGaussTable.T, gaussSum, one_mul]
 
-private theorem chi_inv_neg_one (p : ExteriorPrime A) :
+theorem chi_inv_neg_one (p : ExteriorPrime A) :
     (chi (σ := σ) p)⁻¹ (-1) = 1 := by
   rw [MulChar.inv_apply]
   have : Ring.inverse (-1 : A.R ⧸ A.extendIdeal (primeIdeal p)) = -1 := by
-    rw [Ring.inverse_eq_inv, inv_neg_one]
+    simp
   rw [this, chi_neg_one (σ := σ) p]
 
 theorem tau_five_eq_star_tau_one (C : A.GeneralArithmeticContext σ η hS)
@@ -52,7 +52,7 @@ theorem tau_five_eq_star_tau_one (C : A.GeneralArithmeticContext σ η hS)
   have h5 : SArithmeticData.sexticExponent (5 : ℤ) = 5 := by decide
   have hχ6 : (chi (σ := σ) p) ^ 6 = 1 := by
     rw [← LocalFiniteSumCompatibility.chi_exact_order (σ := σ) p]
-    exact pow_orderOf_eq_one _
+    simp
   have hχ5 : (chi (σ := σ) p) ^ 5 = (chi (σ := σ) p)⁻¹ := by
     refine eq_inv_of_mul_eq_one_right ?_
     rw [← pow_succ', show (5 : ℕ) + 1 = 6 by norm_num]
@@ -79,7 +79,3 @@ theorem tau_one_mul_tau_five (C : A.GeneralArithmeticContext σ η hS)
       norm_tau_of_not_six_dvd C p 1 (by norm_num), ← Complex.ofReal_pow,
       Real.sq_sqrt (Q_nonneg p)]
   exact h
-
-end DedekindZetaZeroFree.CanonicalGaussInversePower
-
-end

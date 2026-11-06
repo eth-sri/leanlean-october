@@ -9,30 +9,26 @@ namespace DedekindZetaZeroFree.LargeSieve.Sieve
 
 open scoped NumberField Classical
 
-private lemma absNorm_le_two_pow_of_mem_idealDyadicBlock
+lemma absNorm_le_two_pow_of_mem_idealDyadicBlock
     (F : Type) [Field F] [NumberField F] (c : Ideal (𝓞 F))
     {j : ℕ} {I : Ideal (𝓞 F)} (h : I ∈ idealDyadicBlock F c j) :
     (Ideal.absNorm I : ℝ) ≤ (2 : ℝ) ^ j := by
   rcases j with _ | k
   · change I ∈ ({⊤} : Finset (Ideal (𝓞 F))) at h
-    rw [Finset.mem_singleton] at h
-    subst h
-    simp
+    simp_all
   · change I ∈ paperShell F c ((2 : ℝ) ^ k) at h
     obtain ⟨_, _, _, hup⟩ := (mem_paperShell F c ((2 : ℝ) ^ k) I).mp h
     rw [pow_succ']
     exact hup
 
-private lemma absNorm_eq_one_of_mem_idealDyadicBlock_zero
+lemma absNorm_eq_one_of_mem_idealDyadicBlock_zero
     (F : Type) [Field F] [NumberField F] (c : Ideal (𝓞 F))
     {I : Ideal (𝓞 F)} (h : I ∈ idealDyadicBlock F c 0) :
     Ideal.absNorm I = 1 := by
   change I ∈ ({⊤} : Finset (Ideal (𝓞 F))) at h
-  rw [Finset.mem_singleton] at h
-  subst h
-  simp
+  simp_all
 
-private lemma two_pow_pred_lt_absNorm_of_mem_idealDyadicBlock
+lemma two_pow_pred_lt_absNorm_of_mem_idealDyadicBlock
     (F : Type) [Field F] [NumberField F] (c : Ideal (𝓞 F))
     {j : ℕ} (hj : j ≠ 0) {I : Ideal (𝓞 F)} (h : I ∈ idealDyadicBlock F c j) :
     (2 : ℝ) ^ (j - 1) < (Ideal.absNorm I : ℝ) := by
@@ -41,7 +37,7 @@ private lemma two_pow_pred_lt_absNorm_of_mem_idealDyadicBlock
   obtain ⟨_, _, hlow, _⟩ := (mem_paperShell F c ((2 : ℝ) ^ k) I).mp h
   simpa using hlow
 
-private lemma exists_dyadicBlock_of_mem_idealAdmissibleFinset
+lemma exists_dyadicBlock_of_mem_idealAdmissibleFinset
     (F : Type) [Field F] [NumberField F] (c : Ideal (𝓞 F)) (X : ℝ) (hX : 1 ≤ X)
     {I : Ideal (𝓞 F)} (hI : I ∈ idealAdmissibleFinset F c X) :
     ∃ j ≤ DedekindZetaZeroFree.LargeSieve.Vendor.dyadicLength X, I ∈ idealDyadicBlock F c j := by
@@ -71,7 +67,7 @@ private lemma exists_dyadicBlock_of_mem_idealAdmissibleFinset
     change (⊤ : Ideal (𝓞 F)) ∈ ({⊤} : Finset (Ideal (𝓞 F)))
     simp
   · have hlow : (2 : ℝ) ^ k < (Ideal.absNorm I : ℝ) :=
-      lt_of_not_ge (hjmin k (Nat.lt_succ_self k))
+      by simp_all
     have hup : (Ideal.absNorm I : ℝ) ≤ 2 * (2 : ℝ) ^ k := by
       rw [pow_succ'] at hspec
       exact hspec
@@ -162,5 +158,3 @@ theorem clippedDyadicBlock_subset_idealDyadicBlock
   intro I hI
   simp only [clippedDyadicBlock, Finset.mem_inter] at hI
   exact hI.1
-
-end DedekindZetaZeroFree.LargeSieve.Sieve

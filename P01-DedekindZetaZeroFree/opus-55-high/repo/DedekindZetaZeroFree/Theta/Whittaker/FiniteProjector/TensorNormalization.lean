@@ -62,8 +62,7 @@ theorem core_period_integrable (D : SourceFactorization R Q T)
     (x : RestrictedTensorSimple.Core (actualLocal R D.finiteData) D.references D.bad)
     (g : Group R) : Integrable (fun q => D.coreMap x
       (KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12 (Quotient.out q) * g) *
-        star (adelicTraceQuotientCharacter F q : ℂ)) Q.dq := by
-  exact FourierContinuation.sameResidue_period_integrable T (D.core_same_residue x) g
+        star (adelicTraceQuotientCharacter F q : ℂ)) Q.dq := by apply DedekindZetaZeroFree.FiniteWhittakerProjectors.core_period_integrable <;> assumption
 
 theorem tensorFunction_ne_zero (D : SourceFactorization R Q T)
     (s : RestrictedTensorSimple.Level D.bad)

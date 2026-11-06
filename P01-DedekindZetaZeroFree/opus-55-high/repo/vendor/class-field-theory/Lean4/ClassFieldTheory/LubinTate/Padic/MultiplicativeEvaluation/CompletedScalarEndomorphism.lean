@@ -17,15 +17,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Completed standard and multiplicative scalar endomorphisms
 
@@ -54,7 +45,7 @@ attribute [local instance]
 
 /-- The standard-to-multiplicative intertwiner after extending its
 `ℚ_p`-integral coefficients to the completed unramified Witt ring. -/
-noncomputable def padicCompletedStandardToMultiplicativeIntertwiner
+def padicCompletedStandardToMultiplicativeIntertwiner
     (p : ℕ) [Fact p.Prime] :
     PowerSeries (padicCompletedUnramifiedWittRing p) :=
   PowerSeries.map
@@ -123,7 +114,7 @@ theorem padicCompletedStandardToMultiplicativeIntertwiner_eval_injective
 
 /-- A standard p-adic Lubin--Tate scalar endomorphism after extending its
 coefficients to the completed unramified Witt ring. -/
-noncomputable def padicCompletedStandardScalarEndomorphism
+def padicCompletedStandardScalarEndomorphism
     (p : ℕ) [Fact p.Prime]
     (a : (padicLocalField p).valuationSubring) :
     PowerSeries (padicCompletedUnramifiedWittRing p) :=
@@ -177,8 +168,8 @@ theorem padicCompletedStandardScalarEndomorphism_mul
   let B := standardLubinTateEndomorphism hπ b
   calc
     padicCompletedStandardScalarEndomorphism p (a * b) =
-        PowerSeries.map f (PowerSeries.subst B A) := by
-      exact congrArg (PowerSeries.map f)
+        PowerSeries.map f (PowerSeries.subst B A) := 
+      congrArg (PowerSeries.map f)
         (standardLubinTateEndomorphism_mul hπ a b)
     _ =
         PowerSeries.subst (PowerSeries.map f B)
@@ -253,7 +244,7 @@ theorem
 
 /-- Analytic action of a completed standard scalar endomorphism on a
 topologically nilpotent point. -/
-noncomputable def padicCompletedStandardScalarEndomorphismValue
+def padicCompletedStandardScalarEndomorphismValue
     (p : ℕ) [Fact p.Prime] (n : ℕ)
     (x : (padicCompletedLevelCompleteDVF p n).valuationSubring)
     (hx : PowerSeries.HasEval x)
@@ -303,8 +294,8 @@ extension. -/
 theorem padicCompletedStandardScalarEndomorphism_one
     (p : ℕ) [Fact p.Prime] :
     padicCompletedStandardScalarEndomorphism p 1 =
-      PowerSeries.X := by
-  exact (congrArg
+      PowerSeries.X := 
+  (congrArg
     (PowerSeries.map (padicValuationSubringToCompletedUnramifiedWittRing p))
     (standardLubinTateEndomorphism_one
       (padicMultiplicativeLubinTateSeries_isUniformizer p))).trans
@@ -320,8 +311,8 @@ theorem padicCompletedStandardScalarEndomorphism_uniformizer
         (padicValuationSubringToCompletedUnramifiedWittRing p)
         (standardLubinTateSeries
           (padicMultiplicativeLubinTateSeries_isUniformizer p)
-          ).toPowerSeries := by
-  exact congrArg
+          ).toPowerSeries := 
+  congrArg
     (PowerSeries.map (padicValuationSubringToCompletedUnramifiedWittRing p))
     (SameUniformizer.standardLubinTateEndomorphism_uniformizer
       (padicMultiplicativeLubinTateSeries_isUniformizer p))
@@ -412,7 +403,7 @@ theorem padicCompletedStandardScalarEndomorphismValue_uniformizer_pow
         Polynomial.eval₂_comp]
 
 /-- Analytic action of a completed multiplicative scalar endomorphism. -/
-noncomputable def padicCompletedMultiplicativeScalarEndomorphismValue
+def padicCompletedMultiplicativeScalarEndomorphismValue
     (p : ℕ) [Fact p.Prime] (n : ℕ)
     (x : (padicCompletedLevelCompleteDVF p n).valuationSubring)
     (hx : PowerSeries.HasEval x)
@@ -504,7 +495,7 @@ theorem
     (((padicValuationUnitToCompletedUnramifiedWittUnit p u :
       (padicCompletedUnramifiedWittRing p)ˣ) :
         padicCompletedUnramifiedWittRing p))
-  exact (padicValuationUnitToCompletedUnramifiedWittUnit p u).isUnit
+  simp
 
 /-- The scalar-one completed multiplicative endomorphism fixes every
 topologically nilpotent completed-level integer. -/
@@ -698,9 +689,4 @@ theorem padicCompletedStandardToMultiplicativeIntertwiner_eval_zero
     rw [PowerSeries.X_dvd_iff]
     exact
       padicCompletedStandardToMultiplicativeIntertwiner_constantCoeff p
-  rw [hB, map_mul,
-    padicCompletedLevelPowerSeriesEval_X, zero_mul]
-
-end LubinTate
-
-end
+  simp_all

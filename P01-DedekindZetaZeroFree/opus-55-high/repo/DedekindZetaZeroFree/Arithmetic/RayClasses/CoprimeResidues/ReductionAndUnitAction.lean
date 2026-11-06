@@ -24,8 +24,8 @@ abbrev coprimeIdealResidue (F : Type) [Field F] [NumberField F]
 theorem coprimeIdealResidue_mem (a : Ideal (𝓞 F)) (ha : a ≠ ⊥)
     (x : 𝓞 F) (hx : x ∈ a) :
     (algebraMap (𝓞 F) F) x ∈
-      (rayIdealFractionalIdeal F a ha : FractionalIdeal (𝓞 F)⁰ F) := by
-  exact FractionalIdeal.mem_coeIdeal_of_mem _ hx
+      (rayIdealFractionalIdeal F a ha : FractionalIdeal (𝓞 F)⁰ F) := 
+  FractionalIdeal.mem_coeIdeal_of_mem _ hx
 
  def integralToFractional (a : Ideal (𝓞 F)) (ha : a ≠ ⊥) :
     a →ₗ[𝓞 F] (rayIdealFractionalIdeal F a ha : FractionalIdeal (𝓞 F)⁰ F).coeToSubmodule where
@@ -76,18 +76,13 @@ theorem coprimeIdealResidue_mem (a : Ideal (𝓞 F)) (ha : a ≠ ⊥)
   change (x.val ∈ ((a : FractionalIdeal (𝓞 F)⁰ F) * (m : FractionalIdeal (𝓞 F)⁰ F))) ↔ _
   rw [← FractionalIdeal.coeIdeal_mul, ← hy, FractionalIdeal.mem_coeIdeal,
     Ideal.mul_eq_inf_of_coprime hcop, Ideal.Quotient.eq_zero_iff_mem]
-  constructor
-  · rintro ⟨z, hz, he⟩
-    have : z = y.val := (IsFractionRing.injective (𝓞 F) F) he
-    simpa [this] using hz.2
-  · intro h
-    exact ⟨y.val, ⟨y.property, h⟩, rfl⟩
+  simp
 
 def coprimeIdealResidueReduction (F : Type) [Field F] [NumberField F]
     (m a : Ideal (𝓞 F)) (hm : m ≠ ⊥) (ha : a ≠ ⊥)
     (hcop : a ⊔ m = ⊤) :
-    coprimeIdealResidue F m a hm ha ≃ₗ[𝓞 F] (𝓞 F ⧸ m) := by
-  exact (Submodule.quotEquivOfEq _ _ (fractionalReduction_kernel m a hm ha hcop)).trans
+    coprimeIdealResidue F m a hm ha ≃ₗ[𝓞 F] (𝓞 F ⧸ m) := 
+  (Submodule.quotEquivOfEq _ _ (fractionalReduction_kernel m a hm ha hcop)).trans
     ((fractionalReduction m a ha).quotKerEquivOfSurjective
       ((integralReduction_surjective m a hcop).comp
         (integralFractionalEquiv a ha).symm.surjective))
@@ -119,8 +114,8 @@ theorem coprimeIdealResidue_quotientMap_surjective
         ((rayIdealFractionalIdeal F a ha * rayIdealFractionalIdeal F m hm) :
           FractionalIdeal (𝓞 F)⁰ F)
         ⟨(algebraMap (𝓞 F) F) x.val,
-          coprimeIdealResidue_mem a ha x.val x.property⟩) := by
-  exact (fractionalIdealQuotientMk_surjective _ _).comp
+          coprimeIdealResidue_mem a ha x.val x.property⟩) := 
+  (fractionalIdealQuotientMk_surjective _ _).comp
     (integralFractionalEquiv a ha).surjective
 
 theorem coprimeIdealResidue_finite
@@ -151,22 +146,22 @@ def coprimeIdealResidueUnitsEquiv (F : Type) [Field F] [NumberField F]
     simp [e, IsUnit.unit_spec]
   · intro u
     apply Units.ext
-    simp [IsUnit.unit_spec, ← show e = coprimeIdealResidueReduction F m a hm ha hcop from rfl]
+    simp [← show e = coprimeIdealResidueReduction F m a hm ha hcop from rfl]
 
 @[simp] theorem coprimeIdealResidueUnitsEquiv_coe
     (m a : Ideal (𝓞 F)) (hm : m ≠ ⊥) (ha : a ≠ ⊥)
     (hcop : a ⊔ m = ⊤) (hmt : m ≠ ⊤)
     (q : coprimeIdealResidueUnits F m a hm ha hcop hmt) :
     (coprimeIdealResidueUnitsEquiv F m a hm ha hcop hmt q : 𝓞 F ⧸ m) =
-      coprimeIdealResidueReduction F m a hm ha hcop q.val := by
-  exact IsUnit.unit_spec q.property
+      coprimeIdealResidueReduction F m a hm ha hcop q.val := 
+  IsUnit.unit_spec q.property
 
 @[instance_reducible] def coprimeIdealResidueUnitAction (F : Type) [Field F] [NumberField F]
     (m a : Ideal (𝓞 F)) (hm : m ≠ ⊥) (ha : a ≠ ⊥)
     (hcop : a ⊔ m = ⊤) (hmt : m ≠ ⊤) :
     MulAction (residueUnitImage F m)
-      (coprimeIdealResidueUnits F m a hm ha hcop hmt) := by
-  exact (coprimeIdealResidueUnitsEquiv F m a hm ha hcop hmt).mulAction
+      (coprimeIdealResidueUnits F m a hm ha hcop hmt) := 
+  (coprimeIdealResidueUnitsEquiv F m a hm ha hcop hmt).mulAction
     (residueUnitImage F m)
 
 theorem coprimeIdealResidueUnitAction_apply
@@ -204,7 +199,3 @@ theorem coprimeIdealResidueUnitAction_orbit_card
   · exact (Nat.card_congr (Equiv.ofInjective (fun g : residueUnitImage F m => g • q)
       (coprimeIdealResidueUnitAction_free m a hm ha hcop hmt q))).symm
   · exact residueUnitImageCard_pos hm
-
-end DedekindZetaZeroFree.Hecke.Theta
-
-end

@@ -32,22 +32,21 @@ private lemma divisor_bin (X : ℝ) (hX : 1 ≤ 2 * X)
   cases hj0 : j with
   | zero =>
     refine ⟨1, Finset.mem_insert_self _ _, le_refl _, hf1, hf, ?_, ?_⟩
-    · simp only [if_pos rfl]; exact hf1
-    · have hle : norm f ≤ 1 := by simpa only [hj0, pow_zero] using hj
+    · simp_all
+    · have hle : norm f ≤ 1 := by simp_all
       linarith
   | succ k =>
     have hlow : (2 : ℝ) ^ k < norm f := by
       apply lt_of_not_ge
-      exact Nat.find_min hex (by change k < j; omega)
+      exact Nat.find_min hex (by omega)
     have hup : norm f ≤ 2 * (2 : ℝ) ^ k := by
       simpa only [hj0, pow_succ, mul_comm] using hj
     refine ⟨(2 : ℝ) ^ k, Finset.mem_insert_of_mem ?_,
       one_le_pow₀ (by norm_num), hlow.le, hf, ?_, hup⟩
-    · apply Finset.mem_image.mpr
-      exact ⟨k, Finset.mem_range.mpr (by omega), rfl⟩
+    · simp_all
     · split_ifs <;> assumption
 
-private lemma mobius_norm_bound (C : Context Q) (hn : 1 ≤ norm C.d)
+lemma mobius_norm_bound (C : Context Q) (hn : 1 ≤ norm C.d)
     (e : Ideal (𝓞 F)) (he : e ∈ C.mobiusDivisors) :
     Real.sqrt (norm e) / norm C.d ≤ max 1 (norm c) := by
   have hc : c ≠ ⊥ := by simpa only [C.core] using C.D.bad_ne_bot
@@ -96,8 +95,8 @@ theorem short_divisor_geometry (C : Context Q) (B : ℝ)
   have hf₁0 : f₁ ≠ ⊥ := by intro hh; simp [hh] at hff; exact hf0 hff
   have hf₂0 : f₂ ≠ ⊥ := by intro hh; simp [hh] at hff; exact hf0 hff
   have hpn (u : Ideal (𝓞 F)) (hu : u ∈ C.columns) :
-      norm u ≤ 2 * C.N / norm C.d := by
-    exact ((Sieve.mem_idealAdmissibleFinset _ _ _ _).mp
+      norm u ≤ 2 * C.N / norm C.d := 
+    ((Sieve.mem_idealAdmissibleFinset _ _ _ _).mp
       (Finset.mem_filter.mp hu).1).2.2
   have hfn₁ : norm f₁ ≤ norm p.1 := by
     unfold norm
@@ -125,12 +124,12 @@ theorem short_divisor_geometry (C : Context Q) (B : ℝ)
     exact mul_le_mul hP₁f hP₂f (by linarith) (by linarith [norm_one_le hf₁0])
   have hMpos : 0 < C.M := by linarith
   have hNpos : 0 < C.N := by linarith
-  have hspos : 0 < Real.sqrt (B * C.M) := Real.sqrt_pos.mpr (mul_pos (by linarith) hMpos)
+  have hspos : 0 < Real.sqrt (B * C.M) := by positivity
   let x := C.N / Real.sqrt (B * C.M) * Real.rpow (C.M * C.N) C.δ
   let q := max 1 (norm c)
   have hx : 0 ≤ x := mul_nonneg (div_nonneg hNpos.le hspos.le)
     (Real.rpow_nonneg (mul_nonneg hMpos.le hNpos.le) _)
-  have hq : 0 ≤ q := le_trans zero_le_one (le_max_left _ _)
+  have hq : 0 ≤ q := by positivity
   have heq : C.Z1 B e = x * (Real.sqrt (norm e) / norm C.d) := by
     dsimp [Context.Z1, x]; ring
   have hZ : C.Z1 B e ≤ x * q := by
@@ -142,7 +141,3 @@ theorem short_divisor_geometry (C : Context Q) (B : ℝ)
     calc x * q ≤ 8 * (x * q) := by nlinarith [mul_nonneg hx hq]
          _ = _ := by dsimp [x]; ring
   exact (hprod.trans hfZ).trans (hZ.trans hslack)
-
-end DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms.Origin
-
-end

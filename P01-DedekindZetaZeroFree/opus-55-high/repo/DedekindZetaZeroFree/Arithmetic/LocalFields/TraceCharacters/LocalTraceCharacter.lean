@@ -26,7 +26,7 @@ theorem localFiniteCharacter_apply (v : HeightOneSpectrum (𝓞 F))
         (PlaceTraceAdapter.trace F v x) := by
   rfl
 
-private theorem continuous_rationalCompletionEquiv_symm
+theorem continuous_rationalCompletionEquiv_symm
     (v : HeightOneSpectrum (𝓞 F)) :
     Continuous (PlaceTraceAdapter.rationalCompletionEquiv F v).symm := by
   letI : Algebra ℚ ((PlaceTraceAdapter.rationalPlace F v).adicCompletion ℚ) :=
@@ -35,12 +35,12 @@ private theorem continuous_rationalCompletionEquiv_symm
   have hfun : (PlaceTraceAdapter.rationalCompletionEquiv F v).symm =
       (Rat.HeightOneSpectrum.adicCompletion.padicEquiv
         (PlaceTraceAdapter.rationalPlace F v)).symm.toAlgEquiv.toRingEquiv := by
-    ext x; rfl
+    rfl
   rw [hfun]
   exact (Rat.HeightOneSpectrum.adicCompletion.padicEquiv
     (PlaceTraceAdapter.rationalPlace F v)).symm.continuous_toFun
 
-private theorem continuous_padicMap (v : HeightOneSpectrum (𝓞 F)) :
+theorem continuous_padicMap (v : HeightOneSpectrum (𝓞 F)) :
     Continuous (PlaceTraceAdapter.padicMap F v) := by
   rw [PlaceTraceAdapter.padicMap]
   exact (finitePlaceAdicCompletionMap_continuous ℚ F
@@ -79,7 +79,3 @@ theorem localFiniteCharacter_eq_one_of_mem_integers
     localFiniteCharacter F v a = 1 := by
   rw [localFiniteCharacter_eq_one_iff]
   exact PlaceTraceAdapter.trace_mem_padicIntegers F v a ha
-
-end DedekindZetaZeroFree
-
-end

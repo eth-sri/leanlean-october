@@ -26,7 +26,7 @@ def omittedSum (Z : ℝ) : ℂ :=
     ∫ t : ℝ × ℝ × ℝ, NormalizedProbe.initialTripleMellinSummand D.recipe.probe
       (Scales.xScale Z) (Scales.yScale Z) Z i.val t
 
-private theorem exterior_countable'' : Countable D.recipe.A.Exterior := by
+theorem exterior_countable'' : Countable D.recipe.A.Exterior := by
   letI : Countable F := Finsupp.Countable.of_moduleFinite (R := ℚ)
   have he := (DedekindZetaZeroFree.ProbeExteriorIdealCount.ideal_norm_summable F
     D.recipe.A.cS 2 (by norm_num)).countable_support
@@ -38,7 +38,7 @@ private theorem exterior_countable'' : Countable D.recipe.A.Exterior := by
   rw [hall] at he
   exact Set.countable_univ_iff.mp he
 
-private theorem aIndex_countable'' :
+theorem aIndex_countable'' :
     Countable (ExteriorSquarefreeIdeal D.recipe.A.cS × D.recipe.A.Exterior ×
       D.recipe.A.Exterior × D.recipe.A.Exterior) := by
   letI : Countable F := Finsupp.Countable.of_moduleFinite (R := ℚ)
@@ -48,7 +48,7 @@ private theorem aIndex_countable'' :
     infer_instance
   infer_instance
 
-private theorem integral_three'' {f : (ℝ × ℝ × ℝ) → ℂ} (hf : Integrable f) :
+theorem integral_three'' {f : (ℝ × ℝ × ℝ) → ℂ} (hf : Integrable f) :
     (∫ t : ℝ × ℝ × ℝ, f t) =
       ∫ x : ℝ, ∫ y : ℝ, ∫ z : ℝ, f (x, y, z) := by
   rw [MeasureTheory.Measure.volume_eq_prod] at hf
@@ -58,7 +58,7 @@ private theorem integral_three'' {f : (ℝ × ℝ × ℝ) → ℂ} (hf : Integra
   rw [MeasureTheory.Measure.volume_eq_prod] at hx
   exact integral_prod _ hx
 
-private theorem kernel_eq_sum' (Z : ℝ) (t : ℝ × ℝ × ℝ) :
+theorem kernel_eq_sum' (Z : ℝ) (t : ℝ × ℝ × ℝ) :
     ∑' i : NormalizedProbe.MellinSeriesIndex D.recipe.probe,
         NormalizedProbe.initialTripleMellinSummand D.recipe.probe
           (Scales.xScale Z) (Scales.yScale Z) Z i t =
@@ -71,7 +71,7 @@ private theorem kernel_eq_sum' (Z : ℝ) (t : ℝ × ℝ × ℝ) :
   · rfl
   all_goals norm_num [NormalizedProbe.initialMellinPoint, Complex.mul_re]
 
-private theorem Iscale_eq_whole' (Z : ℝ) (hZ : 0 < Z) :
+theorem Iscale_eq_whole' (Z : ℝ) (hZ : 0 < Z) :
     D.Iscale Z = (2 * (Real.pi : ℂ))⁻¹ ^ 3 * ∫ t : ℝ × ℝ × ℝ,
       ∑' i : NormalizedProbe.MellinSeriesIndex D.recipe.probe,
         NormalizedProbe.initialTripleMellinSummand D.recipe.probe
@@ -92,18 +92,18 @@ private theorem Iscale_eq_whole' (Z : ℝ) (hZ : 0 < Z) :
   · simp_rw [kernel_eq_sum' D Z]
     rfl
 
-private theorem countable_mellin : Countable (NormalizedProbe.MellinSeriesIndex D.recipe.probe) := by
+theorem countable_mellin : Countable (NormalizedProbe.MellinSeriesIndex D.recipe.probe) := by
   letI : Countable F := Finsupp.Countable.of_moduleFinite (R := ℚ)
   haveI : Countable D.recipe.A.R := by infer_instance
   letI := aIndex_countable'' D
   infer_instance
 
-private theorem countable_row' : Countable D.Row := by
+theorem countable_row' : Countable D.Row := by
   letI : Countable F := Finsupp.Countable.of_moduleFinite (R := ℚ)
   haveI : Countable D.recipe.A.R := by infer_instance
   exact (ActualRowCount.row_u_injective D).countable
 
-private theorem norm_summable_pt (Z : ℝ) (t : ℝ × ℝ × ℝ) :
+theorem norm_summable_pt (Z : ℝ) (t : ℝ × ℝ × ℝ) :
     Summable (fun i : NormalizedProbe.MellinSeriesIndex D.recipe.probe =>
       ‖NormalizedProbe.initialTripleMellinSummand D.recipe.probe
         (Scales.xScale Z) (Scales.yScale Z) Z i t‖) := by
@@ -117,14 +117,14 @@ private theorem norm_summable_pt (Z : ℝ) (t : ℝ × ℝ × ℝ) :
       (NormalizedProbe.initialMellinPoint t).1
       (NormalizedProbe.initialMellinPoint t).2.1 (NormalizedProbe.initialMellinPoint t).2.2‖)
 
-private theorem whole_integrable' (Z : ℝ) (hZ : 0 < Z) :
+theorem whole_integrable' (Z : ℝ) (hZ : 0 < Z) :
     Integrable (fun t : ℝ × ℝ × ℝ => ∑' i : NormalizedProbe.MellinSeriesIndex D.recipe.probe,
       NormalizedProbe.initialTripleMellinSummand D.recipe.probe
         (Scales.xScale Z) (Scales.yScale Z) Z i t) :=
   (NormalizedProbe.tripleMellin_sum_integral_interchange D.recipe.probe (Scales.xScale Z)
     (Scales.yScale Z) Z (Scales.xScale_pos Z hZ) (Scales.yScale_pos Z hZ) hZ).1
 
-private theorem allowed_pt (Z : ℝ) (hZ : 0 < Z) (t : ℝ × ℝ × ℝ) :
+theorem allowed_pt (Z : ℝ) (hZ : 0 < Z) (t : ℝ × ℝ × ℝ) :
     ∑' i : ↥(allowedIndices D), NormalizedProbe.initialTripleMellinSummand D.recipe.probe
         (Scales.xScale Z) (Scales.yScale Z) Z i.val t = ∑' u : D.Row, initialRowIntegrand D u Z t := by
   have hs : Summable (fun i : NormalizedProbe.MellinSeriesIndex D.recipe.probe =>
@@ -159,7 +159,7 @@ private theorem allowed_pt (Z : ℝ) (hZ : 0 < Z) (t : ℝ × ℝ × ℝ) :
   refine tsum_congr fun a => ?_
   rw [Set.indicator_of_mem (show g (u, a) ∈ allowedIndices D from ⟨u, rfl⟩)]
 
-private theorem split_pt (Z : ℝ) (hZ : 0 < Z) (t : ℝ × ℝ × ℝ) :
+theorem split_pt (Z : ℝ) (hZ : 0 < Z) (t : ℝ × ℝ × ℝ) :
     ∑' i : ↥(allowedIndices D), NormalizedProbe.initialTripleMellinSummand D.recipe.probe
         (Scales.xScale Z) (Scales.yScale Z) Z i.val t +
       ∑' i : ↥(allowedIndices D)ᶜ, NormalizedProbe.initialTripleMellinSummand D.recipe.probe

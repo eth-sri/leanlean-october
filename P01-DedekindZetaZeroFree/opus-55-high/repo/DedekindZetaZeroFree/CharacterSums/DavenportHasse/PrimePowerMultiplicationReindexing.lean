@@ -45,5 +45,3 @@ theorem mul_reindex (χ : MulChar k ℂ) (ψ : AddChar k ℂ)
       rw [← wt_pow χ ψ hP j, ← wt_mul χ ψ (hP.pow j) (mem_Mon.1 hg).1]
   · rw [← Finset.sum_filter, ← hset,
       Finset.sum_image (fun g1 _ g2 _ h => mul_left_cancel₀ (hP.pow j).ne_zero h)]
-
-end DavenportHasse.PolyPart

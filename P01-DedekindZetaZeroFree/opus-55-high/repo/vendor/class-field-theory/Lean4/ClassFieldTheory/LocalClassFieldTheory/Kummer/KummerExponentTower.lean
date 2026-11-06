@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Divisibility of simple Kummer extensions
 
@@ -24,7 +20,6 @@ the `(n/m)`-th power of an `n`-th root by a base-field root of unity. Thus
 the chosen simple extensions form an actual tower in the separable closure.
 -/
 
-noncomputable section
 
 namespace LocalClassFieldTheory.Kummer
 
@@ -91,17 +86,11 @@ theorem chosenSimpleKummerExtension_le_of_dvd
   have hαmmem : αm ∈ En := by
     rw [hαmval]
     have hζmem : algebraMap K Ω (ζ : K) ∈ En :=
-      En.algebraMap_mem (ζ : K)
+      by simp
     have hαnmem : αn ∈ En :=
       IntermediateField.subset_adjoin K {αn} (Set.mem_singleton αn)
     exact mul_mem (inv_mem hζmem) (pow_mem hαnmem q)
   change IntermediateField.adjoin K {αm} ≤ En
   apply IntermediateField.adjoin_le_iff.mpr
   intro x hx
-  have hx' : x = αm := Set.mem_singleton_iff.mp hx
-  rw [hx']
-  exact hαmmem
-
-end LocalClassFieldTheory.Kummer
-
-end
+  simp_all

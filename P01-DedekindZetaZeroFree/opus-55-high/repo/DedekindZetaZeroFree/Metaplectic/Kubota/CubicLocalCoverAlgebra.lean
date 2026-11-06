@@ -10,7 +10,6 @@ namespace DedekindZetaZeroFree
 namespace KPLocalCover
 
 noncomputable section
-set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
@@ -36,13 +35,13 @@ theorem sigmaTwo_cocycle (v : KPHilbert.Place F) (g h k : LocalGL2 F v) :
     (fun a ha => hSt a _ (by simp)) g h k
 
 @[simp] theorem sigmaTwo_one_left (v : KPHilbert.Place F) (g : LocalGL2 F v) :
-    sigmaTwo F ζ hζ v 1 g = 1 := by
-  exact KubotaCocycleAlgebra.sigmaTwo_one_left _ _ _
+    sigmaTwo F ζ hζ v 1 g = 1 := 
+  KubotaCocycleAlgebra.sigmaTwo_one_left _ _ _
     (KPHilbert.B3_laws F ζ hζ v).1 (KPHilbert.B3_laws F ζ hζ v).2.1 g
 
 @[simp] theorem sigmaTwo_one_right (v : KPHilbert.Place F) (g : LocalGL2 F v) :
-    sigmaTwo F ζ hζ v g 1 = 1 := by
-  exact KubotaCocycleAlgebra.sigmaTwo_one_right _ _ _
+    sigmaTwo F ζ hζ v g 1 = 1 := 
+  KubotaCocycleAlgebra.sigmaTwo_one_right _ _ _
     (KPHilbert.B3_laws F ζ hζ v).1 (KPHilbert.B3_laws F ζ hζ v).2.1 g
 
 structure CubicGL2Raw (F : Type) [Field F] [NumberField F] (ζ : F)
@@ -92,7 +91,7 @@ theorem rawInv_mul_cancel (x : CubicGL2Raw F ζ hζ v) :
     have hc := sigmaTwo_cocycle F ζ hζ v x.g x.g⁻¹ x.g
     simpa using hc.symm
   cases x
-  simp [rawMul, rawInv, rawOne, hi, mul_assoc, mul_left_comm, mul_comm]
+  simp [rawMul, rawInv, rawOne, hi, mul_comm]
 
 instance rawGroup : Group (CubicGL2Raw F ζ hζ v) where
   mul := rawMul F ζ hζ v
@@ -128,7 +127,7 @@ def centralInjection : rootsOfUnity 3 F →* CubicGL2Raw F ζ hζ v where
 def projection : CubicGL2Raw F ζ hζ v →* LocalGL2 F v where
   toFun x := x.g
   map_one' := rfl
-  map_mul' := by intros; rfl
+  map_mul' := by simp
 
 def sectionMap (g : LocalGL2 F v) : CubicGL2Raw F ζ hζ v := ⟨g, 1⟩
 
@@ -184,18 +183,18 @@ def sixthExponent (z : rootsOfUnity 6 F) : ℕ :=
 def coefficientValue (z : rootsOfUnity 6 F) : ℂˣ :=
   complexSixthGenerator ^ sixthExponent F ζ hζ z
 
-private theorem sixthExponent_lt (z : rootsOfUnity 6 F) :
+theorem sixthExponent_lt (z : rootsOfUnity 6 F) :
     sixthExponent F ζ hζ z < 6 :=
   (Classical.choose_spec (exists_sixthExponent F ζ hζ z)).1
 
-private theorem sixthExponent_spec (z : rootsOfUnity 6 F) :
+theorem sixthExponent_spec (z : rootsOfUnity 6 F) :
     (ζ ^ 2) ^ sixthExponent F ζ hζ z = ((z : Fˣ) : F) :=
   (Classical.choose_spec (exists_sixthExponent F ζ hζ z)).2
 
-private theorem complexSixthGenerator_primitive :
+theorem complexSixthGenerator_primitive :
     IsPrimitiveRoot (complexSixthGenerator : ℂˣ) 6 :=
-  IsPrimitiveRoot.coe_units_iff.mp (by
-    exact Complex.isPrimitiveRoot_exp 6 (by decide))
+  IsPrimitiveRoot.coe_units_iff.mp (
+    Complex.isPrimitiveRoot_exp 6 (by decide))
 
 theorem coefficientValue_one : coefficientValue F ζ hζ 1 = 1 := by
   have he : sixthExponent F ζ hζ 1 = 0 :=
@@ -240,7 +239,7 @@ def threeToSix : rootsOfUnity 3 F →* rootsOfUnity 6 F where
       (z : Fˣ) ^ 6 = ((z : Fˣ) ^ 3) ^ 2 := by rw [← pow_mul]
       _ = 1 := by rw [z.property, one_pow]⟩
   map_one' := rfl
-  map_mul' := by intros; rfl
+  map_mul' := by simp
 
 def genuineCharacter : rootsOfUnity 3 F →* ℂˣ :=
   (Units.map (starRingEnd ℂ).toMonoidHom).comp
@@ -249,7 +248,3 @@ def genuineCharacter : rootsOfUnity 3 F →* ℂˣ :=
 @[simp] theorem genuineCharacter_apply (z : rootsOfUnity 3 F) :
     (genuineCharacter F ζ hζ z : ℂ) =
       star (coefficientEmbedding F ζ hζ (threeToSix F z) : ℂ) := rfl
-
-end
-end KPLocalCover
-end DedekindZetaZeroFree

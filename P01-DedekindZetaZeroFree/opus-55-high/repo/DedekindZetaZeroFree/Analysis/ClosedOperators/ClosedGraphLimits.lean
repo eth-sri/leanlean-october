@@ -4,7 +4,6 @@ public import Mathlib.Analysis.InnerProductSpace.LinearPMap
 
 @[expose] public section
 
-noncomputable section
 open Filter
 namespace DedekindZetaZeroFree.KPCuspCutoffGraphApproximation
 
@@ -31,7 +30,3 @@ theorem closed_graph_limit
     ext
     exact hy1.symm
   rw [hsub, hy2]
-
-end DedekindZetaZeroFree.KPCuspCutoffGraphApproximation
-
-end

@@ -30,10 +30,10 @@ theorem integerMap_mem (p : ExteriorPrime A) (x : A.R) :
 
 def integerMap (p : ExteriorPrime A) : A.R →+* LocalIntegers p where
   toFun x := ⟨algebraMap F (LocalField p) (x : F), integerMap_mem p x⟩
-  map_one' := by apply Subtype.ext; simp
-  map_zero' := by apply Subtype.ext; simp
-  map_add' x y := by apply Subtype.ext; simp
-  map_mul' x y := by apply Subtype.ext; simp
+  map_one' := by rfl
+  map_zero' := by rfl
+  map_add' x y := by simp
+  map_mul' x y := by simp
 
 def localUniformizer (C : A.GeneralArithmeticContext σ η hS)
     (p : ExteriorPrime A) : LocalIntegers p := integerMap p (generator C p)
@@ -82,15 +82,15 @@ theorem quotientMap_bijective (C : A.GeneralArithmeticContext σ η hS)
       WithZero.exp (-(n : ℤ)) := by
     change Valued.v (uniformizer C p ^ n) = _
     rw [map_pow, uniformizer_valuation]
-    simp [← WithZero.exp_nsmul, nsmul_eq_mul]
+    simp
   have hnz : ((localUniformizer C p ^ n : LocalIntegers p) : LocalField p) ≠ 0 := by
     intro h
     rw [h, map_zero] at hval
     exact WithZero.exp_ne_zero hval.symm
   have local_mem (x : LocalIntegers p) :
       x ∈ Ideal.span {localUniformizer C p ^ n} ↔
-      Valued.v (x : LocalField p) ≤ WithZero.exp (-(n : ℤ)) := by
-    exact (valuationInteger_mem_span_iff (Valued.v) _ _ hnz).trans
+      Valued.v (x : LocalField p) ≤ WithZero.exp (-(n : ℤ)) := 
+    (valuationInteger_mem_span_iff (Valued.v) _ _ hnz).trans
       (by rw [hval])
   constructor
   · apply (RingHom.injective_iff_ker_eq_bot _).mpr
@@ -123,10 +123,4 @@ theorem residueEquiv_mk (C : A.GeneralArithmeticContext σ η hS)
     residueEquiv C p n (residueMap C p n x) =
       FiniteTransform.residueMap (p.val.adicCompletionIntegers F).toSubring
         (localUniformizer C p ^ n) (integerMap p x) := by
-  change quotientMap C p n (Ideal.Quotient.mk _ x) = Ideal.Quotient.mk _ (integerMap p x)
-  simp only [quotientMap, Ideal.quotientMap_mk]
   rfl
-
-end DedekindZetaZeroFree.LocalFiniteSumCompatibility
-
-end

@@ -22,7 +22,7 @@ noncomputable def valuationExponent (K : Type*) [Field K] [ValuativeRel K]
       (valuation K (y : K)) ≠ 0 by simp)]
     simp [add_comm]
 
-private lemma valuationExponent_units (K : Type*) [Field K] [ValuativeRel K]
+lemma valuationExponent_units (K : Type*) [Field K] [ValuativeRel K]
     [TopologicalSpace K] [IsNonarchimedeanLocalField K] (u : (𝒪[K])ˣ) :
     valuationExponent K (Units.map (𝒪[K]).subtype.toMonoidHom u) = 1 := by
   have hv : valuation K (u : K) = 1 :=
@@ -44,15 +44,13 @@ private lemma valuationExponent_uniformizer (K : Type*) [Field K] [ValuativeRel 
       apply WithZero.le_exp_of_log_le
       omega
     · have hsmall : exp (-1 : ℤ) < (1 : ℤᵐ⁰) := by
-        rw [← WithZero.exp_zero, WithZero.exp_lt_exp]
-        omega
+        simp
       have hlt : e.symm (exp (-1 : ℤ)) < 1 := by
         simpa using e.symm.strictMono hsmall
       have hle := le_uniformizer_iff.mpr hlt
       simpa using e.strictMono.monotone hle
   change Multiplicative.ofAdd (-log (e (valuation K (π : K)))) = _
-  rw [hπ, he, log_exp]
-  rfl
+  simp_all
 
 theorem exists_character_extension
     (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K]
@@ -77,13 +75,13 @@ theorem exists_character_extension
       refine ⟨⟨⟨x.val, h⟩, ⟨x.inv, h'⟩, ?_, ?_⟩, ?_⟩
       · apply Subtype.ext; exact x.val_inv
       · apply Subtype.ext; exact x.inv_val
-      · apply Units.ext; rfl
+      rfl
   have hmem : Set.range i ∈ nhds (i 1) := by
     rw [hirange]
     apply IsOpen.mem_nhds
     · apply Submonoid.isOpen_units
       exact Valuation.isOpen_integer (v := ValuativeRel.valuation K)
-    · exact ⟨(𝒪[K]).one_mem, (𝒪[K]).one_mem⟩
+    simp
   letI : DivisibleBy (Additive ℂˣ) ℕ := divisibleByOfSMulRightSurj _ _ (by
     intro n hn a
     obtain ⟨z, hz⟩ := IsAlgClosed.exists_pow_nat_eq (a.toMul : ℂ) (Nat.pos_of_ne_zero hn)
@@ -119,7 +117,7 @@ theorem exists_character_extension
     intro u
     change a ^ (valuationExponent K (Units.map (𝒪[K]).subtype.toMonoidHom u)).toAdd = 1
     rw [valuationExponent_units]
-    exact zpow_zero a
+    rfl
   let g : Kˣ →* ℂˣ := fM * h
   have hgext : ∀ u, g (i u) = (ξ u : ℂˣ) := by
     intro u
@@ -127,11 +125,11 @@ theorem exists_character_extension
   have hc : Continuous (g ∘ i) := by
     have heq : g ∘ i = fun u => (ξ u : ℂˣ) := funext hgext
     rw [heq]
-    exact continuous_subtype_val.comp ξ.continuous
+    fun_prop
   have hgcont : Continuous g := by
     apply continuous_of_continuousAt_one g
     have hcat := (hiind.continuousAt_iff' hmem).mp (hc.continuousAt (x := 1))
-    simpa only [map_one] using hcat
+    fun_prop
   refine ⟨⟨g, hgcont⟩, hgext, ?_⟩
   change g π = b
   change fM π * a ^ (valuationExponent K π).toAdd = b
@@ -139,5 +137,3 @@ theorem exists_character_extension
   change fM π * a ^ (1 : ℤ) = b
   rw [zpow_one]
   simp [a]
-
-end DedekindZetaZeroFree.KPRamifiedBetaConductorSeries

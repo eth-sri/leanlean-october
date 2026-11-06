@@ -48,8 +48,3 @@ variable {n m b : ℕ} (T : LocalBall m) (L : LineChart n)
     (himage : π '' T.carrier ⊆ L.outer.carrier)
 
 include hπ hframe hfields himage
-
-end LocalChart
-end DedekindZetaZeroFree.KPContRightJets
-
-end

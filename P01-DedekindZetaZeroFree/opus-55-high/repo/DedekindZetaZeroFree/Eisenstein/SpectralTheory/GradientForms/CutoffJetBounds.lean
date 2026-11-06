@@ -448,7 +448,7 @@ variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
 variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
 variable {H : KPMsFixedHaarDisintegration.AllLevels F ζ hζ R P}
 
-private theorem bounds_shrink_at (i : Fin (H.atlas U).componentCount) (p : KPCuspGenuineMonodromy.SymmetricSpace F) :
+theorem bounds_shrink_at (i : Fin (H.atlas U).componentCount) (p : KPCuspGenuineMonodromy.SymmetricSpace F) :
     ∃ C : ShrunkChart F ζ hζ U R P H, C.component = i ∧ C.center = p ∧ p ∈ C.domain := by
   let O := Classical.choice (orbifoldChart_exists F ζ hζ U R P H i p)
   let : Finite (MulAction.stabilizer (Component F ζ hζ U R P H i) p) :=
@@ -532,7 +532,7 @@ theorem actual_pairing_at_arch (f : S_U F ζ hζ U R P H)
 
 end ActualChartCotangentBinding
 
-private theorem actual_chart_base_measurable (A : Localizers F ζ hζ U R P H K hK) (i : Fin A.count) : AEMeasurable ((A.chart i).toBase F ζ hζ H.totallyComplex U)
+theorem actual_chart_base_measurable (A : Localizers F ζ hζ U R P H K hK) (i : Fin A.count) : AEMeasurable ((A.chart i).toBase F ζ hζ H.totallyComplex U)
     (volume.restrict (Metric.ball 0 (A.chart i).radius)) := by
   letI : BorelSpace (KPCoreChartLocalizers.X F ζ hζ U) := ⟨rfl⟩
   apply aemeasurable_restrict_of_measurable_subtype measurableSet_ball
@@ -545,7 +545,7 @@ private theorem actual_chart_base_measurable (A : Localizers F ζ hζ U R P H K 
     continuous_quotient_mk'.comp (continuous_id.prodMk continuous_const)
   convert hq.comp hcc using 1
   rfl
-private theorem actual_chart_weight_measurable (A : Localizers F ζ hζ U R P H K hK) (i : Fin A.count) : AEMeasurable (fun x => ENNReal.ofReal (actualWeight F ζ hζ U R P H (A.chart i) x))
+theorem actual_chart_weight_measurable (A : Localizers F ζ hζ U R P H K hK) (i : Fin A.count) : AEMeasurable (fun x => ENNReal.ofReal (actualWeight F ζ hζ U R P H (A.chart i) x))
     (volume.restrict (Metric.ball 0 (A.chart i).radius)) := by
   apply aemeasurable_restrict_of_measurable_subtype measurableSet_ball
   exact (ENNReal.continuous_ofReal.comp

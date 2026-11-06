@@ -46,5 +46,3 @@ theorem unit_radius_spanning (p : MvPolynomial (Fin 3) ℂ) :
     exact (Finset.sum_fiberwise_of_maps_to (s := S) (t := I) (g := degree)
       (fun a ha => Finset.mem_image.mpr ⟨a, ha, rfl⟩)
       (fun a => MvPolynomial.eval (fun i => (x i : ℂ)) (h a.1 a.2))).symm
-
-end DedekindZetaZeroFree.ComplexFractionalInverse.FiniteFischerRaw

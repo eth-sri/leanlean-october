@@ -12,38 +12,34 @@ noncomputable section
 variable {R : Type*} [CommMonoidWithZero R] [UniqueFactorizationMonoid R]
   [Subsingleton Rˣ]
 
-private lemma cutoff_eq_zero_iff (n : R →* ℝ≥0) (K : ℝ) (a : R) :
+lemma cutoff_eq_zero_iff (n : R →* ℝ≥0) (K : ℝ) (a : R) :
     cutoff n K a = 0 ↔ K < (n a : ℝ) := by
   simp only [cutoff]
-  by_cases h : (n a : ℝ) ≤ K
-  · rw [if_pos h]; exact iff_of_false (by norm_num) (by linarith)
-  · rw [if_neg h]; exact iff_of_true rfl (not_le.mp h)
+  simp
 
-private lemma cutoff_eq_one_iff (n : R →* ℝ≥0) (K : ℝ) (a : R) :
+lemma cutoff_eq_one_iff (n : R →* ℝ≥0) (K : ℝ) (a : R) :
     cutoff n K a = 1 ↔ (n a : ℝ) ≤ K := by
   simp only [cutoff]
-  by_cases h : (n a : ℝ) ≤ K
-  · rw [if_pos h]; exact iff_of_true rfl h
-  · rw [if_neg h]; exact iff_of_false (by norm_num) h
+  simp
 
-private lemma zero_le_cutoff (n : R →* ℝ≥0) (K : ℝ) (a : R) : 0 ≤ cutoff n K a := by
-  simp only [cutoff]; split <;> norm_num
+lemma zero_le_cutoff (n : R →* ℝ≥0) (K : ℝ) (a : R) : 0 ≤ cutoff n K a := by
+  simp only [cutoff]; omega
 
-private lemma cutoff_le_one (n : R →* ℝ≥0) (K : ℝ) (a : R) : cutoff n K a ≤ 1 := by
-  simp only [cutoff]; split <;> norm_num
+lemma cutoff_le_one (n : R →* ℝ≥0) (K : ℝ) (a : R) : cutoff n K a ≤ 1 := by
+  simp only [cutoff]; omega
 
-private lemma cutoff_mono (n : R →* ℝ≥0) (K : ℝ) {a b : R}
+lemma cutoff_mono (n : R →* ℝ≥0) (K : ℝ) {a b : R}
     (h : (n a : ℝ) ≤ (n b : ℝ)) : cutoff n K b ≤ cutoff n K a := by
   by_cases hb : (n b : ℝ) ≤ K
   · rw [(cutoff_eq_one_iff n K b).mpr hb, (cutoff_eq_one_iff n K a).mpr (le_trans h hb)]
   · have hb0 : cutoff n K b = 0 := (cutoff_eq_zero_iff n K b).mpr (not_le.mp hb)
     rw [hb0]; exact zero_le_cutoff n K a
 
-private lemma mem_divisors_iff {g : R} (hg0 : g ≠ 0) {d : R} :
+lemma mem_divisors_iff {g : R} (hg0 : g ≠ 0) {d : R} :
     d ∈ divisors g ↔ ∃ s ≤ UniqueFactorizationMonoid.factors g, s.prod = d := by
   simp only [divisors, if_neg hg0, Finset.mem_image, Multiset.mem_toFinset, Multiset.mem_powerset]
 
-private lemma one_le_prod_map_of_le_factors (n : R →* ℝ≥0)
+lemma one_le_prod_map_of_le_factors (n : R →* ℝ≥0)
     (hn : ∀ p : R, Prime p → 1 < (n p : ℝ))
     {g : R} {s : Multiset R} (hs : s ≤ UniqueFactorizationMonoid.factors g) :
     (1 : ℝ≥0) ≤ (s.map n).prod := by
@@ -55,14 +51,14 @@ private lemma one_le_prod_map_of_le_factors (n : R →* ℝ≥0)
   have h1 : (1 : ℝ) < (n p : ℝ) := hn p hprime
   exact (NNReal.coe_lt_coe.mp (by simpa using h1)).le
 
-private lemma one_le_n_of_mem_divisors (n : R →* ℝ≥0)
+lemma one_le_n_of_mem_divisors (n : R →* ℝ≥0)
     (hn : ∀ p : R, Prime p → 1 < (n p : ℝ))
     {g d : R} (hg0 : g ≠ 0) (hd : d ∈ divisors g) : (1 : ℝ≥0) ≤ n d := by
   obtain ⟨s, hs, rfl⟩ := (mem_divisors_iff hg0).mp hd
   rw [MonoidHom.map_multiset_prod]
   exact one_le_prod_map_of_le_factors n hn hs
 
-private lemma n_le_n_of_mem_divisors (n : R →* ℝ≥0)
+lemma n_le_n_of_mem_divisors (n : R →* ℝ≥0)
     (hn : ∀ p : R, Prime p → 1 < (n p : ℝ))
     {g d : R} (hg0 : g ≠ 0) (hd : d ∈ divisors g) : n d ≤ n g := by
   obtain ⟨s, hs, rfl⟩ := (mem_divisors_iff hg0).mp hd
@@ -75,7 +71,7 @@ private lemma n_le_n_of_mem_divisors (n : R →* ℝ≥0)
     conv_lhs => rw [← hfg]
     rw [MonoidHom.map_multiset_prod]
   have hu_le : u ≤ UniqueFactorizationMonoid.factors g := by
-    rw [hu]; exact Multiset.le_add_left u s
+    simp_all
   rw [hng, hu, Multiset.map_add, Multiset.prod_add, MonoidHom.map_multiset_prod]
   exact le_mul_of_one_le_right' (one_le_prod_map_of_le_factors n hn hu_le)
 
@@ -89,11 +85,10 @@ theorem nonzero_coefficient_annulus (n : R →* ℝ≥0)
   obtain ⟨d, hd, hb2⟩ := Finset.exists_ne_zero_of_sum_ne_zero hb1
   obtain ⟨e, he, hb3⟩ := Finset.exists_ne_zero_of_sum_ne_zero hb2
   have hbe : h * d * e = b := by
-    by_contra hne
-    exact hb3 (by rw [if_neg hne])
+    simp_all
   rw [if_pos hbe] at hb3
   have hcut : cutoff n K (h * d) - cutoff n K h ≠ 0 :=
-    fun h0 => hb3 (by rw [h0, mul_zero])
+    by simp_all
   have hne : cutoff n K (h * d) ≠ cutoff n K h := sub_ne_zero.mp hcut
   have hd1 : (1 : ℝ≥0) ≤ n d := one_le_n_of_mem_divisors n hn hg0 hd
   have he1 : (1 : ℝ≥0) ≤ n e := one_le_n_of_mem_divisors n hn hg0 he
@@ -109,7 +104,7 @@ theorem nonzero_coefficient_annulus (n : R →* ℝ≥0)
     omega
   have hKlt : K < (n (h * d) : ℝ) := (cutoff_eq_zero_iff n K (h * d)).mp hcuthd0
   have hnhK : (n h : ℝ) ≤ K := by
-    have hpos : 0 < cutoff n K h := lt_of_le_of_lt (zero_le_cutoff n K (h * d)) hlt
+    have hpos : 0 < cutoff n K h := by omega
     have hle1 : cutoff n K h ≤ 1 := cutoff_le_one n K h
     have h1 : cutoff n K h = 1 := by omega
     exact (cutoff_eq_one_iff n K h).mp h1
@@ -125,10 +120,10 @@ theorem nonzero_coefficient_annulus (n : R →* ℝ≥0)
   · have hnb_eq2 : (n b : ℝ) = (n h : ℝ) * (n d : ℝ) * (n e : ℝ) := by
       rw [hnb_eq, map_mul, NNReal.coe_mul]
     rw [hnb_eq2]
-    have h0nh : 0 ≤ (n h : ℝ) := (n h).coe_nonneg
-    have h0nd : 0 ≤ (n d : ℝ) := (n d).coe_nonneg
-    have h0ne : 0 ≤ (n e : ℝ) := (n e).coe_nonneg
-    have h0ng : 0 ≤ (n g : ℝ) := (n g).coe_nonneg
+    have h0nh : 0 ≤ (n h : ℝ) := by simp
+    have h0nd : 0 ≤ (n d : ℝ) := by simp
+    have h0ne : 0 ≤ (n e : ℝ) := by simp
+    have h0ng : 0 ≤ (n g : ℝ) := by simp
     have hd_nn : (n d : ℝ) ≤ (n g : ℝ) := NNReal.coe_le_coe.mpr hdg
     have he_nn : (n e : ℝ) ≤ (n g : ℝ) := NNReal.coe_le_coe.mpr heg
     calc (n h : ℝ) * (n d : ℝ) * (n e : ℝ)
@@ -137,7 +132,7 @@ theorem nonzero_coefficient_annulus (n : R →* ℝ≥0)
           · exact mul_le_mul hnhK hd_nn h0nd hK.le
           · exact he_nn
           · exact h0ne
-          · exact mul_nonneg hK.le h0ng
+          positivity
       _ = K * (n g : ℝ) ^ 2 := by ring
 
 end
@@ -159,12 +154,12 @@ private lemma abs_moebius_le_one (a : R) : |UniqueFactorizationMonoid.moebius a|
   · rw [abs_neg_one_pow]
   · simp
 
-private lemma abs_cutoff_sub_le_one (n : R →* ℝ≥0) (K : ℝ) (a b : R) :
+lemma abs_cutoff_sub_le_one (n : R →* ℝ≥0) (K : ℝ) (a b : R) :
     |cutoff n K a - cutoff n K b| ≤ 1 := by
   simp only [cutoff]
   split_ifs <;> norm_num
 
-private lemma divisors_ne_zero (g : R) (hg0 : g ≠ 0) {d : R} (hd : d ∈ divisors g) :
+lemma divisors_ne_zero (g : R) (hg0 : g ≠ 0) {d : R} (hd : d ∈ divisors g) :
     d ≠ 0 := by
   rw [divisors] at hd
   split_ifs at hd with hg
@@ -174,8 +169,7 @@ private lemma divisors_ne_zero (g : R) (hg0 : g ≠ 0) {d : R} (hd : d ∈ divis
     have hdvd : m.prod ∣ g :=
       (Multiset.prod_dvd_prod_of_le hm).trans (UniqueFactorizationMonoid.factors_prod hg).dvd
     intro h0
-    rw [h0] at hdvd
-    exact hg0 (zero_dvd_iff.mp hdvd)
+    simp_all
 
 private lemma inner_sum_norm_le_one (n : R →* ℝ≥0) (K : ℝ) (H : Finset R) (g b : R)
     (hg0 : g ≠ 0) {d e : R} (hd : d ∈ divisors g) (he : e ∈ divisors g) :
@@ -209,7 +203,7 @@ private lemma inner_sum_norm_le_one (n : R →* ℝ≥0) (K : ℝ) (H : Finset R
         (abs_cutoff_sub_le_one n K (h * d) h) (abs_nonneg _) zero_le_one
     exact_mod_cast this
   calc ‖((∑ h ∈ S, F h : ℤ) : ℂ)‖
-      = ‖∑ h ∈ S, ((F h : ℤ) : ℂ)‖ := by push_cast; ring_nf
+      = ‖∑ h ∈ S, ((F h : ℤ) : ℂ)‖ := by simp
     _ ≤ ∑ h ∈ S, ‖((F h : ℤ) : ℂ)‖ := norm_sum_le _ _
     _ ≤ ∑ _h ∈ S, (1 : ℝ) := Finset.sum_le_sum hbound
     _ = (S.card : ℝ) := by simp
@@ -220,14 +214,13 @@ theorem boundary_coefficient_card_bound (n : R →* ℝ≥0) (K : ℝ)
     ‖(boundaryCoefficient n K H g b : ℂ)‖ ≤ (divisors g).card ^ 2 := by
   classical
   by_cases hg : g = 0
-  · subst hg
-    simp [boundaryCoefficient, divisors]
+  · simp_all
   let F : R → R → R → ℤ := fun h d e =>
     if h * d * e = b then UniqueFactorizationMonoid.moebius e *
       (cutoff n K (h * d) - cutoff n K h) else 0
   have hbc : boundaryCoefficient n K H g b
       = ∑ h ∈ H, ∑ d ∈ divisors g, ∑ e ∈ divisors g, F h d e := by
-    rw [boundaryCoefficient]
+    rfl
   rw [hbc]
   have hrearr : (∑ h ∈ H, ∑ d ∈ divisors g, ∑ e ∈ divisors g, F h d e)
       = ∑ d ∈ divisors g, ∑ e ∈ divisors g, ∑ h ∈ H, F h d e := by
@@ -364,9 +357,7 @@ private lemma nv_prod (n : R →* ℝ≥0) (χ : R →* ℂ) (S : Finset R) :
 private lemma prod_one_sub (f : R → ℂ) (P : Finset R) :
     ∏ p ∈ P, (1 - f p) = ∑ S ∈ P.powerset, (-1:ℂ)^S.card * ∏ p ∈ S, f p := by
   rw [show (∏ p ∈ P, (1 - f p)) = ∏ p ∈ P, (1 + (- f p)) by
-    apply Finset.prod_congr rfl
-    intro p hp
-    ring]
+    rfl]
   rw [Finset.prod_one_add]
   apply Finset.sum_congr rfl
   intro S hS
@@ -443,7 +434,7 @@ private lemma dvd_of_mem_divisors {g d : R} (hg0 : g ≠ 0) (hd : d ∈ divisors
     associated_iff_eq.mp (UniqueFactorizationMonoid.factors_prod hg0)
   exact hprod ▸ Multiset.prod_dvd_prod_of_le hs
 
-private lemma squarefree_prod_of_nodup_prime [Nontrivial R] {m : Multiset R}
+lemma squarefree_prod_of_nodup_prime [Nontrivial R] {m : Multiset R}
     (hprime : ∀ p ∈ m, Prime p) (hnd : m.Nodup) : Squarefree m.prod := by
   rw [UniqueFactorizationMonoid.squarefree_iff_nodup_normalizedFactors
       (m.prod_ne_zero_of_prime hprime),
@@ -500,7 +491,7 @@ theorem divisor_pair_squarefree_times_square (g : R) (hg0 : g ≠ 0)
         le_antisymm Multiset.inter_le_right (Multiset.le_inter hle le_rfl)
       have h2 : (m ∪ n).prod = ((m ∪ n) - (m ∩ n)).prod * (m ∩ n).prod := by
         conv_lhs => rw [← Multiset.sub_add_inter (m ∪ n) (m ∩ n), hinter]
-        rw [Multiset.prod_add]
+        simp
       have h1 : m.prod * n.prod = ((m ∪ n) - (m ∩ n)).prod * (m ∩ n).prod ^ 2 := by
         rw [← Multiset.prod_add, ← Multiset.union_add_inter m n, Multiset.prod_add, h2,
           pow_two]
@@ -641,14 +632,7 @@ theorem boundary_coefficient_properties (n : R →* (ℝ≥0))
     intro h hh
     apply Finset.sum_eq_zero
     intro d hd
-    apply Finset.sum_eq_zero
-    intro e he
-    exact if_neg (fun heq => hnone ⟨h, hh, d, hd, e, he, heq⟩)
+    simp_all
   obtain ⟨h, hh, d, hd, e, he, rfl⟩ := hex
   exact divisor_pair_squarefree_times_square g hg0 hg h (hH h hh).1 (hH h hh).2
     d e hd he
-
-end
-end DedekindZetaZeroFree.LargeSieve.Vendor.CutoffDifference
-
-end

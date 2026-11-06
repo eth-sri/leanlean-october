@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Finite support for integral relative ideles
 
@@ -39,7 +36,7 @@ variable
 
 /-- The single finite support controlling both coefficient integrality
 of a relative idele and the integral compatibility of the local tensor decomposition. -/
-noncomputable def relativeIdeleLocalTensorDecompositionSupport
+def relativeIdeleLocalTensorDecompositionSupport
     (z : RelativeIdeleGroup K L) :
     Finset (HeightOneSpectrum (𝓞 K)) := by
   classical
@@ -48,20 +45,6 @@ noncomputable def relativeIdeleLocalTensorDecompositionSupport
         (K := K) (L := L) z ∪
       integralTensorBadPlaces
         (K := K) (L := L)
-
-/-- The support is exposed through this membership characterization. -/
-
-@[simp]
-theorem mem_relativeIdeleLocalTensorDecompositionSupport_iff
-    (z : RelativeIdeleGroup K L)
-    (w : HeightOneSpectrum (𝓞 K)) :
-    w ∈ relativeIdeleLocalTensorDecompositionSupport
-        (K := K) (L := L) z ↔
-      w ∈ relativeIdeleCoefficientSupport
-          (K := K) (L := L) z ∨
-        w ∈ integralTensorBadPlaces
-          (K := K) (L := L) := by
-  simp [relativeIdeleLocalTensorDecompositionSupport]
 
 /-- Outside one explicit finite support, the actual finite component of
 a relative idele and its inverse are units in every valuation-ring
@@ -86,5 +69,3 @@ theorem relativeIdele_finiteComponent_localTensorDecompositionIntegralUnit_of_no
       (K := K) (L := L) w hsep.2
       (relativeIdele_finiteComponent_basisIntegralUnit_of_notMem
         (K := K) (L := L) z w hsep.1)
-
-end

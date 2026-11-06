@@ -12,30 +12,29 @@ open NumberField IsDedekindDomain
 
 set_option maxHeartbeats 2000000
 
-noncomputable section
 namespace DedekindZetaZeroFree.PrimitiveRay
 
 variable {F : Type} [Field F] [NumberField F]
 
-private theorem M_eq_narrow (hc : NumberField.IsTotallyComplex F)
+theorem M_eq_narrow (hc : NumberField.IsTotallyComplex F)
     (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) : M F m hm = RayClassBridge.narrowIdealModulus F m hm := by
   letI : IsEmpty (ClassFieldTheory.RayClassRealPlace F) :=
     ⟨fun v => (NumberField.InfinitePlace.not_isReal_iff_isComplex.mpr (hc.isComplex v.val)) v.property⟩
   apply ClassFieldTheory.RayClassModulus.ext
   · rfl
-  · simp [M_infinitePart, RayClassBridge.narrowIdealModulus_infinitePart]
-private theorem CRT_iff (v : HeightOneSpectrum (𝓞 F)) (k : ℕ) (u : (v.adicCompletion F)ˣ) :
+  simp
+theorem CRT_iff (v : HeightOneSpectrum (𝓞 F)) (k : ℕ) (u : (v.adicCompletion F)ˣ) :
     CRTLocalHigherUnits F v k u ↔ u ∈ ClassFieldTheory.rayLocalHigherUnitGroup v k := by
   rw [ClassFieldTheory.mem_rayLocalHigherUnitGroup_iff]
   rfl
-private theorem principal_formula (hc : NumberField.IsTotallyComplex F)
+theorem principal_formula (hc : NumberField.IsTotallyComplex F)
     (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) (χ : RayClassCharacter F m)
     (α : 𝓞 F) (hα : α ≠ 0) (hcop : Ideal.span {α} ⊔ m = ⊤) :
     χ (Ideal.span {α}) =
       (((∏ v ∈ (M F m hm).finitePart.support,
         RayClassBridge.ideleClassCharacter F hc m hm χ
           (IdeleGroup.finitePlaceIdeleClass v (CRTIntegralLocalUnit F v α hα))) : ℂˣ) : ℂ)⁻¹ := by
-  have hI : Ideal.span {α} ≠ ⊥ := by simpa only [ne_eq, Ideal.span_singleton_eq_bot] using hα
+  have hI : Ideal.span {α} ≠ ⊥ := by simp_all
   let ρ : ClassFieldTheory.RayClassGroup (M F m hm) →* ℂˣ :=
     (M_eq_narrow hc m hm).symm ▸ RayClassBridge.rayCharacter F hc m hm χ
   have transEval (N N' : ClassFieldTheory.RayClassModulus F) (h : N = N')
@@ -78,7 +77,7 @@ private theorem support_eq (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) :
   simp only [Finsupp.mem_support_iff, M_finitePart, CRTIdealSupport, Finset.mem_preimage,
     idealPrimeSupport, Multiset.mem_toFinset, idealPrimeExponent]
   exact Multiset.count_ne_zero
-private theorem local_continuous (hc : NumberField.IsTotallyComplex F)
+theorem local_continuous (hc : NumberField.IsTotallyComplex F)
     (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) (χ : RayClassCharacter F m)
     (v : HeightOneSpectrum (𝓞 F)) :
     Continuous ((RayClassBridge.ideleClassCharacter F hc m hm χ).comp
@@ -166,13 +165,8 @@ theorem primitive_iff_local_isLeast (hc : NumberField.IsTotallyComplex F)
         fun u hu => hn u ((CRT_iff _ _ _).mpr hu))
       have he : (RayClassBridge.narrowIdealModulus F m hm).finitePart v.val =
         idealPrimeExponent v.val.asIdeal m := M_finitePart F m hm v.val
-      rw [he] at h
       omega
     · intro α hα hcop
       rw [principal_formula hc m hm χ α hα hcop, support_eq m hm]
       congr 2
       exact (Finset.prod_attach (CRTIdealSupport F m) _).symm
-
-end DedekindZetaZeroFree.PrimitiveRay
-
-end

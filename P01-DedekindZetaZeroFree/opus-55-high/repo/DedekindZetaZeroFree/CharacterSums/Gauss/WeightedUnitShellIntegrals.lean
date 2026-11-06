@@ -13,7 +13,6 @@ open MeasureTheory ValuativeRel
 namespace DedekindZetaZeroFree.KPExteriorWeightedShellIntegrals
 
 noncomputable section
-set_option autoImplicit false
 
 variable {K : Type*} [Field K] [ValuativeRel K] [TopologicalSpace K]
   [IsNonarchimedeanLocalField K] [Fintype 𝓀[K]]
@@ -63,8 +62,8 @@ theorem weightedShellIntegral_nonnegative [MeasurableSpace K] [BorelSpace K]
   have hmass : ρ Set.univ = 1 := by
     rw [Measure.map_apply hr MeasurableSet.univ, Set.preimage_univ]
     calc
-      ν Set.univ = μ (Subtype.val '' (Set.univ : Set R)) := by
-        exact comap_subtype_coe_apply hR μ Set.univ
+      ν Set.univ = μ (Subtype.val '' (Set.univ : Set R)) := 
+        comap_subtype_coe_apply hR μ Set.univ
       _ = μ (R : Set K) := by congr 1; ext x; simp
       _ = 1 := hμ
   haveI : IsFiniteMeasure ρ := ⟨by rw [hmass]; exact ENNReal.one_lt_top⟩
@@ -93,7 +92,7 @@ theorem weightedShellIntegral_nonnegative [MeasurableSpace K] [BorelSpace K]
       integral_fintype Integrable.of_finite]
     change (∑ x : k, ρ.real {x} • F x) = _
     simp only [hreal, Complex.real_smul, Complex.ofReal_div, Complex.ofReal_one, Complex.ofReal_natCast]
-    simp only [one_div, ← Finset.mul_sum, ← div_eq_inv_mul]
+    simp only [one_div, ← div_eq_inv_mul]
     rw [← Finset.sum_div]
   have hzero : F 0 = 0 := by simp [F, hf]
   have hs : KPTameGauss.integerUnitShell K = R.subtype '' {u : R | IsUnit u} := by
@@ -151,7 +150,6 @@ section
 
 namespace DedekindZetaZeroFree.KPExteriorWeightedShellIntegrals
 noncomputable section
-set_option autoImplicit false
 
 theorem even_sextic_residue_sums
     {k : Type*} [Field k] [Fintype k] (χ : MulChar k ℂ)
@@ -214,7 +212,6 @@ open MeasureTheory ValuativeRel
 
 namespace DedekindZetaZeroFree.KPExteriorWeightedShellIntegrals
 noncomputable section
-set_option autoImplicit false
 variable {K : Type*} [Field K] [ValuativeRel K] [TopologicalSpace K]
   [IsNonarchimedeanLocalField K] [Fintype 𝓀[K]]
 
@@ -255,8 +252,8 @@ theorem weightedShellIntegral_terminal [MeasurableSpace K] [BorelSpace K]
   have hmass : ρ Set.univ = 1 := by
     rw [Measure.map_apply hr MeasurableSet.univ, Set.preimage_univ]
     calc
-      ν Set.univ = μ (Subtype.val '' (Set.univ : Set R)) := by
-        exact comap_subtype_coe_apply hR μ Set.univ
+      ν Set.univ = μ (Subtype.val '' (Set.univ : Set R)) := 
+        comap_subtype_coe_apply hR μ Set.univ
       _ = μ (R : Set K) := by congr 1; ext x; simp
       _ = 1 := hμ
   haveI : IsFiniteMeasure ρ := ⟨by rw [hmass]; exact ENNReal.one_lt_top⟩
@@ -285,7 +282,7 @@ theorem weightedShellIntegral_terminal [MeasurableSpace K] [BorelSpace K]
       integral_fintype Integrable.of_finite]
     change (∑ x : k, ρ.real {x} • F x) = _
     simp only [hreal, Complex.real_smul, Complex.ofReal_div, Complex.ofReal_one, Complex.ofReal_natCast]
-    simp only [one_div, ← Finset.mul_sum, ← div_eq_inv_mul]
+    simp only [one_div, ← div_eq_inv_mul]
     rw [← Finset.sum_div]
   have hzero : F 0 = 0 := by simp [F, hf]
   have hs : KPTameGauss.integerUnitShell K = R.subtype '' {u : R | IsUnit u} := by
@@ -344,7 +341,6 @@ open MeasureTheory ValuativeRel
 
 namespace DedekindZetaZeroFree.KPExteriorWeightedShellIntegrals
 noncomputable section
-set_option autoImplicit false
 variable {K : Type*} [Field K] [ValuativeRel K] [TopologicalSpace K]
   [IsNonarchimedeanLocalField K] [Fintype 𝓀[K]]
 
@@ -475,7 +471,6 @@ open NumberField IsDedekindDomain MeasureTheory ValuativeRel
 namespace DedekindZetaZeroFree.KPExteriorUnitShellIntegrals
 
 noncomputable section
-set_option autoImplicit false
 
 section Local
 
@@ -591,7 +586,7 @@ def shellValue (χκ : MulChar 𝓀[K] ℂ) (ψbar : AddChar 𝓀[K] ℂ)
     else qPower (K := K) (-(1 / 2 : ℝ)) * g χκ ψbar (-2 * l)
   else 0
 
-private theorem character_zpow_apply_nonzero (χ : MulChar 𝓀[K] ℂ)
+theorem character_zpow_apply_nonzero (χ : MulChar 𝓀[K] ℂ)
     (j : ℤ) (a : 𝓀[K]) (hj : j ≠ 0) :
     (χ ^ j) a = χ a ^ j := by
   by_cases ha : a = 0
@@ -604,7 +599,7 @@ private theorem character_zpow_apply_nonzero (χ : MulChar 𝓀[K] ℂ)
         simpa only [MulChar.coe_toUnitHom, Units.val_zpow_eq_zpow_val,
           Units.val_mk0, u] using H
 
-private theorem A_eq_weightedShellIntegral [MeasurableSpace K]
+theorem A_eq_weightedShellIntegral [MeasurableSpace K]
     (μ : Measure K) (χ : MulChar 𝓀[K] ℂ) (ψ : AddChar K ℂ)
     (π : 𝒪[K]) (e : ℕ) (l : ℤ) (hl : 1 ≤ l) :
     A μ χ ψ π e l =
@@ -619,11 +614,11 @@ private theorem A_eq_weightedShellIntegral [MeasurableSpace K]
     rw [character_zpow_apply_nonzero χ (-2 * l) _ (by omega)]
   · rfl
 
-private theorem qPower_neg_one : qPower (K := K) (-1) =
+theorem qPower_neg_one : qPower (K := K) (-1) =
     (Fintype.card 𝓀[K] : ℂ)⁻¹ := by
   simp [qPower, Real.rpow_neg_one]
 
-private theorem qPower_neg_half_sq :
+theorem qPower_neg_half_sq :
     qPower (K := K) (-(1 / 2 : ℝ)) * qPower (K := K) (-(1 / 2 : ℝ)) =
       (Fintype.card 𝓀[K] : ℂ)⁻¹ := by
   have hpos : (0 : ℝ) < Fintype.card 𝓀[K] := by
@@ -717,8 +712,8 @@ theorem exists_unique_arithmetic_residue_character
         ((KummerTheory.nthRootsSubgroupEquivRootsOfUnity K 6).toMonoidHom.comp
           (LocalClassFieldTheory.Kummer.localNthRootsReductionEquiv K 6 hgood
             (KPHilbert.localRootsSix F v ζ hζ)).symm.toMonoidHom))
-  have ht : Function.Injective t := by
-    exact (KPLocalCover.coefficientEmbedding_injective F ζ hζ).comp
+  have ht : Function.Injective t := 
+    (KPLocalCover.coefficientEmbedding_injective F ζ hζ).comp
       ((KPHilbert.finiteRootsSix F ζ hζ v).symm.injective.comp
         ((KummerTheory.nthRootsSubgroupEquivRootsOfUnity K 6).injective.comp
           (LocalClassFieldTheory.Kummer.localNthRootsReductionEquiv K 6 hgood
@@ -822,10 +817,3 @@ theorem arithmetic_unit_shell_integrals
   · exact g_two_mul_four χκ hχ ψbar hbar.1
   · exact fun e l hl => unit_shell_integral μ hμ π hπ ψ hψcont hψunitary hcond
       χκ hχ ψbar hbar.2.2 e l hl
-
-end Arithmetic
-
-end
-end DedekindZetaZeroFree.KPExteriorUnitShellIntegrals
-
-end

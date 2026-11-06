@@ -8,7 +8,6 @@ open scoped NumberField Classical BigOperators NNReal
 open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.KPGlobalCenterRationalCharacterExtension.CubeDiagonalProduct
 noncomputable section
-set_option autoImplicit false
 set_option maxHeartbeats 800000
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
@@ -23,7 +22,7 @@ variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     rw [hmem]
     refine ⟨KPGlobalCubicIdelePairing.diagonalMatrix F u.val.2, rfl, ?_, ?_⟩
     · simp [KPGlobalCubicIdelePairing.diagonalMatrix]
-    · simp [KPGlobalCubicIdelePairing.diagonalMatrix]⟩
+    rfl⟩
   map_one' := Subtype.ext rfl
   map_mul' u v := Subtype.ext rfl
 
@@ -58,7 +57,7 @@ private theorem torusHom_injective : Function.Injective (torusHom F ζ hζ) := b
       KPGlobalCubicIdelePairing.diagonalPGL F v.val.2 := v.property
   have h2 : KPGlobalCubicIdelePairing.diagonalPGL F u.val.2 =
       KPGlobalCubicIdelePairing.diagonalPGL F v.val.2 := by
-    rw [← hu, h1, hv]
+    simp_all
   have h3 : u.val.2 = v.val.2 := diagonalPGL_injective F h2
   exact Subtype.ext (Prod.ext h1 h3)
 
@@ -80,7 +79,7 @@ theorem diagonalPGL_torusRatio (t : KPGlobalTorusFunctionData.ordinaryTorus F) :
       (((KPGlobalTorusFunctionData.diagonal_entries_units F A h10 h01).2.unit⁻¹ :
         (KPAdelicCoverRestrictedProduct.Adeles F)ˣ) :
         KPAdelicCoverRestrictedProduct.Adeles F) :=
-    KPGlobalTorusFunctionData.ratio_formula F t A hA.1 h10 h01
+    by rfl
   have hmat : KPGlobalCubicIdelePairing.diagonalMatrix F (KPGlobalTorusFunctionData.torusRatio F t) *
       Matrix.GeneralLinearGroup.scalar (Fin 2)
         (KPGlobalTorusFunctionData.diagonal_entries_units F A h10 h01).2.unit = A := by
@@ -102,13 +101,13 @@ theorem diagonalPGL_torusRatio (t : KPGlobalTorusFunctionData.ordinaryTorus F) :
     (KPGlobalTorusFunctionData.diagonal_entries_units F A h10 h01).2.unit,
     ⟨(KPGlobalTorusFunctionData.diagonal_entries_units F A h10 h01).2.unit, rfl⟩, hmat⟩
 
-private theorem torusHom_surjective : Function.Surjective (torusHom F ζ hζ) := by
+theorem torusHom_surjective : Function.Surjective (torusHom F ζ hζ) := by
   intro w
   refine ⟨⟨(w.val, KPGlobalTorusFunctionData.torusRatio F (toOrdinary F ζ hζ w)), ?_⟩, ?_⟩
   · exact (diagonalPGL_torusRatio F (toOrdinary F ζ hζ w)).symm
-  · exact Subtype.ext rfl
+  rfl
 
-private theorem p_torusHom (u : KPGlobalCubicIdelePairing.E F ζ hζ) :
+theorem p_torusHom (u : KPGlobalCubicIdelePairing.E F ζ hζ) :
     KPGlobalTorusFunctionData.p F ζ hζ (torusHom F ζ hζ u) =
       KPGlobalCubicIdelePairing.torusProjection F ζ hζ u := by
   have h := diagonalPGL_torusRatio F (toOrdinary F ζ hζ (torusHom F ζ hζ u))
@@ -147,6 +146,3 @@ theorem covered_torus_center_eq_cubes :
     rw [← Subgroup.mem_comap, ← KPGlobalCubicIdelePairing.torus_center F ζ hζ] at hx
     rw [← map_mul, ← map_mul]
     exact congrArg (torusHom F ζ hζ) (Subgroup.mem_center_iff.mp hx v)
-
-end
-end DedekindZetaZeroFree.KPGlobalCenterRationalCharacterExtension.CubeDiagonalProduct

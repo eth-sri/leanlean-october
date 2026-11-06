@@ -15,9 +15,3 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
 def period (ψ : ContinuousAddChar (KPAdditiveQuotient F))
     (μ : Measure (KPAdditiveQuotient F)) (f : Functions F ζ hζ) : ℂ :=
   ∫ x, f (KPGlobalTorusFunctionData.N F ζ hζ (Quotient.out x)) * star (ψ.toAddChar x) ∂μ
-
-end KPLiteralRaw
-
-end DedekindZetaZeroFree
-
-end

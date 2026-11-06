@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Finite-place tensor factors as induced local blocks
 
@@ -34,7 +29,6 @@ open NumberField IsDedekindDomain
 noncomputable section
 
 open LocalClassFieldTheory
-
 
 open AlgebraicNumberTheory.Valuations
 open HilbertRamification
@@ -138,7 +132,7 @@ theorem finitePlaceLocalTensorUnitsEquiv_symm_smul
 
 /-- The local tensor decomposition for the concrete finite component type used by relative
 ideles. -/
-noncomputable def finitePlaceTensorUnitsEquivLocalPlaceBlock
+def finitePlaceTensorUnitsEquivLocalPlaceBlock
     (v : HeightOneSpectrum (𝓞 K))
     (w : AbsoluteValueExtension
       (HeightOneSpectrum.adicAbv K v) L) :
@@ -270,7 +264,3 @@ theorem finitePlaceTensorUnitsEquivLocalPlaceBlock_smul
         (RayClass.adicAbv_isNontrivial v) w σ
         ((finitePlaceLocalTensorUnitsEquiv
           (K := K) (L := L) v).symm z)
-
-end Equivariance
-
-end

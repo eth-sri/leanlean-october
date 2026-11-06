@@ -62,13 +62,13 @@ theorem represents_unique {v : Sections F ζ hζ U R P H}
 section Calculus
 variable {E G : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E] [CompleteSpace E]
   [NormedAddCommGroup G] [NormedSpace ℂ G]
-private lemma clm_iterated (T : E →L[ℂ] G) (j : ℂ → E) (O : Set ℂ) (hO : IsOpen O)
+lemma clm_iterated (T : E →L[ℂ] G) (j : ℂ → E) (O : Set ℂ) (hO : IsOpen O)
     (hj : DifferentiableOn ℂ j O) (k : ℕ) (s : ℂ) (hs : s ∈ O) :
     iteratedDerivWithin k (fun z => T (j z)) O s = T (iteratedDerivWithin k j O s) := by
   unfold iteratedDerivWithin
   exact congrArg (fun f => f (fun _ => 1)) (T.iteratedFDerivWithin_comp_left
     (hj.contDiffOn hO (n := (⊤ : WithTop ℕ∞)) s hs) hO.uniqueDiffOn hs (i := k) le_top)
-private lemma jet_differentiable (j : ℂ → E) (O : Set ℂ) (hO : IsOpen O)
+lemma jet_differentiable (j : ℂ → E) (O : Set ℂ) (hO : IsOpen O)
     (hj : DifferentiableOn ℂ j O) (k : ℕ) :
     DifferentiableOn ℂ (iteratedDerivWithin k j O) O := by
   have hd := (hj.contDiffOn hO (n := (⊤ : WithTop ℕ∞))).differentiableOn_iteratedFDerivWithin
@@ -76,7 +76,7 @@ private lemma jet_differentiable (j : ℂ → E) (O : Set ℂ) (hO : IsOpen O)
   exact ((ContinuousMultilinearMap.apply ℂ (fun _ : Fin k => ℂ) E (fun _ => 1)).differentiable.comp_differentiableOn hd)
 end Calculus
 
-private lemma scalar_jets (w : ℂ → Sections F ζ hζ U R P H) (O : Set ℂ) (k : ℕ) (s : ℂ)
+lemma scalar_jets (w : ℂ → Sections F ζ hζ U R P H) (O : Set ℂ) (k : ℕ) (s : ℂ)
     (x : CoveredSpherical F ζ hζ U) :
     (scalarRepresentative F ζ hζ U R P H (pointwiseJets w O k s)).val x =
       iteratedDerivWithin k (fun z => (scalarRepresentative F ζ hζ U R P H (w z)).val x) O s := by

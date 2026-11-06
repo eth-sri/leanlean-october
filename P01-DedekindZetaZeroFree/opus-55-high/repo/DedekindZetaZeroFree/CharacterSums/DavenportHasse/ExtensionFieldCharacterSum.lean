@@ -36,7 +36,7 @@ lemma monicOfCoeffs_coeff (d : ℕ) (c : Fin d → k) (i : Fin d) :
   rw [coeff_add, coeff_X_pow, finsetSum_coeff, Fintype.sum_eq_single i]
   · simp [i.2.ne]
   · intro j hj
-    have : (i : ℕ) ≠ j := fun h => hj (Fin.ext h.symm)
+    have : (i : ℕ) ≠ j := by omega
     simp [this]
 
 omit [Fintype k] in
@@ -61,7 +61,7 @@ lemma card_minpoly_eq {P : k[X]} (hP : P.Monic) (hirr : Irreducible P)
   obtain ⟨f⟩ := FiniteField.nonempty_algHom_of_finrank_dvd (F := k) (K := AdjoinRoot P) (L := E)
     (hK ▸ hdvd)
   have hroot : aeval (f (AdjoinRoot.root P)) P = 0 := by
-    rw [aeval_algHom_apply, AdjoinRoot.aeval_eq, AdjoinRoot.mk_self, map_zero]
+    simp
   have hmin : P = minpoly k (f (AdjoinRoot.root P)) :=
     minpoly.eq_of_irreducible_of_monic hirr hroot hP
   have hsplit : Splits (P.map (algebraMap k E)) := by
@@ -71,7 +71,7 @@ lemma card_minpoly_eq {P : k[X]} (hP : P.Monic) (hirr : Irreducible P)
   refine Fintype.card_congr (Equiv.subtypeEquivRight fun α => ?_)
   rw [mem_rootSet_of_ne hirr.ne_zero]
   constructor
-  · rintro rfl; exact minpoly.aeval k α
+  · rintro rfl; simp
   · intro h; exact (minpoly.eq_of_irreducible_of_monic hirr h hP).symm
 
 omit [Fintype k] in
@@ -118,10 +118,7 @@ theorem sum_lifted_eq_b (E : Type*) [Field E] [Fintype E] [Algebra k E]
   set P := minpoly k α
   simp_rw [eq_comm (a := P), monicOfCoeffs_eq_iff hmon]
   rw [Finset.sum_eq_single P.natDegree]
-  · rw [Finset.sum_eq_single (fun i : Fin P.natDegree => P.coeff i)]
-    · simp
-    · intro c _ hc; simp [hc]
-    · simp
+  · simp
   · intro d _ hd
     exact Finset.sum_eq_zero fun c _ => ite_eq_right_iff.2 fun h => absurd h.1.symm hd
   · intro h
@@ -129,6 +126,4 @@ theorem sum_lifted_eq_b (E : Type*) [Field E] [Fintype E] [Algebra k E]
     rw [Nat.mem_divisors]
     refine ⟨?_, Module.finrank_pos.ne'⟩
     rw [← adjoin.finrank hx, ← Module.finrank_mul_finrank k k⟮α⟯ E]
-    exact dvd_mul_right _ _
-
-end DavenportHasse
+    simp

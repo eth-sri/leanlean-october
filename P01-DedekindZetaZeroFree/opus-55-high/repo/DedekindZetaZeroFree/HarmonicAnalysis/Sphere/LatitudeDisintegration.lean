@@ -32,8 +32,7 @@ theorem latitudeAmbient_norm (g : Ambient ≃ₗᵢ[ℝ] Ambient) (u θ : ℝ)
   have ht := Real.cos_sq_add_sin_sq θ
   have hn : ‖latitudeAmbient g u θ‖ ^ 2 = 1 := by
     rw [latitudeAmbient, g.norm_map, EuclideanSpace.real_norm_sq_eq]
-    simp only [Fin.sum_univ_succ, Fin.val_zero, Matrix.cons_val_zero,
-      Fin.val_succ, Matrix.cons_val_succ, Fin.sum_univ_zero, add_zero]
+    simp only [Fin.sum_univ_succ, Matrix.cons_val_zero, Matrix.cons_val_succ, Fin.sum_univ_zero, add_zero]
     nlinarith [sq_nonneg (Real.sqrt (4*u*(1-u)))]
   nlinarith [norm_nonneg (latitudeAmbient g u θ)]
 
@@ -56,8 +55,8 @@ theorem latitudePoint_projection (x : Sphere) (g : Ambient ≃ₗᵢ[ℝ] Ambien
 noncomputable def angleMeasure : Measure ℝ :=
   (ENNReal.ofReal (2 * Real.pi))⁻¹ • volume.restrict (Set.Icc 0 (2 * Real.pi))
 
-instance angleMeasure_isFiniteMeasure : IsFiniteMeasure angleMeasure := by
-  exact (volume.restrict (Set.Icc (0 : ℝ) (2 * Real.pi))).smul_finite
+instance angleMeasure_isFiniteMeasure : IsFiniteMeasure angleMeasure := 
+  (volume.restrict (Set.Icc (0 : ℝ) (2 * Real.pi))).smul_finite
     (ENNReal.inv_ne_top.mpr (ne_of_gt (ENNReal.ofReal_pos.mpr
       (mul_pos (by norm_num) Real.pi_pos))))
 
@@ -83,7 +82,7 @@ lemma spinMap_norm (θ : ℝ) (v : Ambient) : ‖spinMap θ v‖ = ‖v‖ := by
     simp only [Fin.succ_zero_eq_one, Fin.succ_one_eq_two]
     have h := congrArg (fun t : ℝ => t * (v 1 ^ 2 + v 2 ^ 2)) ht
     nlinarith [h]
-  nlinarith [norm_nonneg (spinMap θ v), norm_nonneg v]
+  simp_all
 
 noncomputable def spin (θ : ℝ) : Ambient ≃ₗᵢ[ℝ] Ambient :=
   LinearIsometryEquiv.ofSurjective
@@ -174,12 +173,12 @@ private lemma latitude_surjective (y : Sphere) :
   fin_cases i
   · simp [latitudeAmbient, u]
     ring
-  · simpa [latitudeAmbient, ← hn, z] using Complex.norm_mul_cos_arg z
-  · simpa [latitudeAmbient, ← hn, z] using Complex.norm_mul_sin_arg z
+  · simp [latitudeAmbient, ← hn, z]
+  · simp [latitudeAmbient, ← hn, z]
 
 private lemma spin_preserving (t : ℝ) :
-    MeasurePreserving (RawSphereProjection.rotation (spin t)) sphereArea sphereArea := by
-  exact (RawSphereProjection.rotation_preserving (spin t)).smul_measure _
+    MeasurePreserving (RawSphereProjection.rotation (spin t)) sphereArea sphereArea := 
+  (RawSphereProjection.rotation_preserving (spin t)).smul_measure _
 
 private lemma spin_rotation_measurable :
     Measurable (fun z : Sphere × ℝ => RawSphereProjection.rotation (spin z.2) z.1) := by
@@ -210,7 +209,7 @@ private lemma latitude_integral (f : Sphere →ᵇ ℝ) :
   have hlat : Measurable (fun z : ℝ × ℝ => f (latitudePoint (.refl ℝ Ambient) z.1 z.2)) :=
     f.continuous.measurable.comp (latitudePoint_measurable _)
   have hA : StronglyMeasurable A := hlat.stronglyMeasurable.integral_prod_right'
-  have hp : Measurable p := by dsimp [p]; fun_prop
+  have hp : Measurable p := by fun_prop
   have hmap : Measure.map p sphereArea = volume.restrict (Set.Icc (0 : ℝ) 1) :=
     RawSphereProjection.normalized_coordinate_projection
   rw [integral_prod _ (bounded_integrable _ f _ (latitudePoint_measurable _))]
@@ -265,5 +264,3 @@ theorem latitude_disintegration (g : Ambient ≃ₗᵢ[ℝ] Ambient) :
       g (latitudePoint (.refl ℝ Ambient) z.1 z.2 : Ambient)
     simp only [latitudePoint, dif_neg hu]
     rfl
-
-end DedekindZetaZeroFree.ComplexFractionalInverse.FunkHecke

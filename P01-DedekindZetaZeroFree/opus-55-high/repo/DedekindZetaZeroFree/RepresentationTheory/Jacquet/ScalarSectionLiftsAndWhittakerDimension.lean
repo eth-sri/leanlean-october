@@ -37,9 +37,9 @@ theorem identity_evaluation_mem
         (f.val g).val (1 * S.borel.retract (inBorel F ζ hζ q S P b)) = _
       rw [one_mul]
       have hv := (f.val g).property (retractL F ζ hζ q S P b) 1
-      simp only [mul_one, retractL, weylHL, MonoidHom.coe_mk, OneHom.coe_mk] at hv
+      simp only [mul_one, retractL] at hv
       rw [hv]
-      simp [chi, chiH, inducingScalar, deltaHalf, normPower, retractL, weylHL]
+      simp [chi, chiH, inducingScalar, deltaHalf, normPower, retractL]
       ring
     · change (inducingScalar S.borel 0 (inBorel F ζ hζ q S P b)) *
         (f.val g).val (1 * S.borel.weyl (S.borel.retract
@@ -100,10 +100,7 @@ private theorem pgl_weyl_diagonal (K : Type*) [Field K] (u : Kˣ) :
   apply Matrix.ProjGenLinGroup.mk_eq_mk_iff.mpr
   refine ⟨u, ?_⟩
   apply Units.ext
-  ext i j
-  fin_cases i <;> fin_cases j <;>
-    simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.GeneralLinearGroup.coe_scalar,
-      Matrix.scalar, Matrix.diagonal_apply]
+  simp
 
 private theorem weyl_coordinate (h : actualTorus F ζ hζ q) :
     S.borel.coordinate (S.borel.weyl h) = (S.borel.coordinate h)⁻¹ := by
@@ -163,7 +160,7 @@ private theorem half_mul (x y : actualTorus F ζ hζ q) :
       rw [S.borel.retract_torus]
       exact h.property, rfl⟩⟩
 
-private theorem torusBL_retract (h : HL F ζ hζ q S P) :
+theorem torusBL_retract (h : HL F ζ hζ q S P) :
     retractL F ζ hζ q S P (torusBL F ζ hζ q S P h) = h := by
   apply Subtype.ext
   change S.borel.retract (inBorel F ζ hζ q S P _) = _
@@ -198,11 +195,11 @@ private theorem torus_cov (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign)
   rw [hc] at hh
   simpa only [map_mul, torusBL, a', Subgroup.coe_mul, mul_assoc] using hh
 
-private theorem chiH_one (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign) :
+theorem chiH_one (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign) :
     chiH F ζ hζ q S P hP ε 1 = 1 := by
   cases ε <;> simp [chiH, normPower, localAbs_one]
 
-private theorem borel_reduce (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign)
+theorem borel_reduce (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign)
     (φ : scalarSections F ζ hζ q S P hP ε) (b : S.borel.B)
     (g : ActualCover F ζ hζ q) :
     φ.val ((b : ActualCover F ζ hζ q) * g) =
@@ -211,9 +208,7 @@ private theorem borel_reduce (hP : IsTamePolarization F ζ hζ q S P) (ε : Sign
   have hd : S.borel.retract d = 1 := by
     simp [d, S.borel.retract_torus]
   let d' : BL F ζ hζ q S P := ⟨d, ⟨d, by
-    change S.borel.retract d ∈ HL F ζ hζ q S P
-    rw [hd]
-    exact Subgroup.one_mem _, rfl⟩⟩
+    simp_all, rfl⟩⟩
   have hre : retractL F ζ hζ q S P d' = 1 := by
     apply Subtype.ext
     exact hd
@@ -264,8 +259,7 @@ private theorem liftFiber_cov (hP : IsTamePolarization F ζ hζ q S P) (ε : Sig
     change (half F ζ hζ q S _)⁻¹ * φ.val _ =
       half F ζ hζ q S (S.borel.retract b) * liftValue F ζ hζ q S P hP _ φ g _
     unfold liftValue
-    simp only [twist, MulEquiv.refl_apply, map_mul,
-      S.borel.weyl.symm_apply_apply, half_mul]
+    simp only [twist, MulEquiv.refl_apply, map_mul, half_mul]
     have hw : S.borel.weyl.symm.toMulEquiv
         (S.borel.weyl.toMonoidHom (S.borel.retract b)) = S.borel.retract b :=
       S.borel.weyl.symm_apply_apply _
@@ -377,11 +371,11 @@ open Raw
         simpa only [smul_eq_mul] using L.property t f⟩
       left_inv := by intro L; rfl
       right_inv := by intro L; rfl
-      map_add' := by intros; rfl
-      map_smul' := by intros; rfl }
+      map_add' := by simp
+      map_smul' := by simp }
   exact (rootCoinvariantsUniversalEquiv ρ n ψ ℂ).trans e
 
-private theorem whittaker_bound_of_jacquet_bound {K G V : Type*} [AddCommGroup K]
+theorem whittaker_bound_of_jacquet_bound {K G V : Type*} [AddCommGroup K]
     [Group G] [AddCommGroup V] [Module ℂ V] (ρ : Representation ℂ G V)
     (n : Multiplicative K →* G) (ψ : Multiplicative K →* ℂˣ)
     (hfinite : FiniteDimensional ℂ (RootCoinvariants ρ n ψ))
@@ -408,7 +402,7 @@ private theorem whittaker_bound_of_jacquet_bound {K G V : Type*} [AddCommGroup K
   map_add' := by intros; rfl
   map_smul' := by intros; rfl
 
-private theorem whittakerPullback_injective {K G V W : Type*} [AddCommGroup K] [Group G]
+theorem whittakerPullback_injective {K G V W : Type*} [AddCommGroup K] [Group G]
     [AddCommGroup V] [Module ℂ V] [AddCommGroup W] [Module ℂ W]
     (ρ : Representation ℂ G V) (σ : Representation ℂ G W)
     (n : Multiplicative K →* G) (ψ : Multiplicative K →* ℂˣ)
@@ -421,7 +415,7 @@ private theorem whittakerPullback_injective {K G V W : Type*} [AddCommGroup K] [
   obtain ⟨v, rfl⟩ := hsurj w
   exact congrArg (fun J : algebraicWhittaker ρ n ψ => J.val v) h
 
-private theorem whittaker_bound_of_surjective {K G V W : Type*} [AddCommGroup K]
+theorem whittaker_bound_of_surjective {K G V W : Type*} [AddCommGroup K]
     [Group G] [AddCommGroup V] [Module ℂ V] [AddCommGroup W] [Module ℂ W]
     (ρ : Representation ℂ G V) (σ : Representation ℂ G W)
     (n : Multiplicative K →* G) (ψ : Multiplicative K →* ℂˣ)
@@ -456,22 +450,21 @@ variable (F : Type) [Field F] [NumberField F]
   (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
   (S : CanonicalFiniteInducingData F ζ hζ q) (P : Polarization S.heisenberg)
 
-private theorem canonicalPolarization (hP : IsTamePolarization F ζ hζ q S P) :
+theorem canonicalPolarization (hP : IsTamePolarization F ζ hζ q S P) :
     KPLocalTameValuationWhittakerBasis.IsCanonicalTamePolarization F ζ hζ q S P := by
   change P.L = _
   apply le_antisymm
   · intro d hd
     change S.cubeClassEquiv d ∈ KPTameValuationCoordinates.unitCubeClasses (LocalField F q)
     rw [← hP]
-    exact ⟨d, hd, rfl⟩
+    simp_all
   · intro d hd
     change S.cubeClassEquiv d ∈ KPTameValuationCoordinates.unitCubeClasses (LocalField F q) at hd
     rw [← hP] at hd
-    obtain ⟨d', hd', he⟩ := hd
-    exact S.cubeClassEquiv.injective he ▸ hd'
+    simp_all
 
 omit ζ hζ S P in
-private theorem conductor_data
+theorem conductor_data
     (π : (LocalField F q)ˣ)
     (hπ : IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
       (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ))
@@ -485,8 +478,7 @@ private theorem conductor_data
     change IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
       (valuation (LocalField F q) (π : LocalField F q)⁻¹) ≤
       IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q) 1 at he
-    rw [map_one, map_inv₀, map_inv₀, hπ] at he
-    norm_num at he
+    simp_all
   have hnψ : ∃ x : 𝒪[LocalField F q],
       ψ (Multiplicative.ofAdd ((x : LocalField F q) * (π : LocalField F q)⁻¹)) ≠ 1 := by
     by_contra h
@@ -494,8 +486,7 @@ private theorem conductor_data
     exact hn ((hconductor _).mp h)
   refine ⟨?_, ?_, ?_⟩
   · intro h
-    obtain ⟨x, hx⟩ := hnψ
-    simp [h] at hx
+    simp_all
   · intro x
     have ht := (hconductor 1).mpr (by simp)
     simpa using ht x
@@ -509,10 +500,10 @@ omit ζ hζ S P in
     change IsCompact {x | valuation (LocalField F q) x ≤ 1}
     exact IsNonarchimedeanLocalField.isCompact_closedBall (LocalField F q) 1
   interior_nonempty' := by
-    have ho : IsOpen ((valuation (LocalField F q)).integer : Set (LocalField F q)) := by
-      exact (valuation (LocalField F q)).isOpen_integer
+    have ho : IsOpen ((valuation (LocalField F q)).integer : Set (LocalField F q)) := 
+      (valuation (LocalField F q)).isOpen_integer
     rw [ho.interior_eq]
-    exact ⟨0, by simp⟩
+    simp
 
 private theorem whittaker_dimension_bound_of_scalarization
     (hP : IsTamePolarization F ζ hζ q S P)
@@ -551,7 +542,7 @@ private theorem whittaker_dimension_bound_of_scalarization
       ((S.borel.B.subtype.comp S.borel.upperRoot) t) v) =
         (ψ t : ℂ)⁻¹ • (principalSeries S.borel P ε 0
       ((S.borel.B.subtype.comp S.borel.upperRoot) t) v)
-    rw [Units.val_inv_eq_inv_val]
+    simp
   have hfin : FiniteDimensional ℂ (RootCoinvariants (principalSeries S.borel P ε 0)
       (S.borel.B.subtype.comp S.borel.upperRoot) ψ) := by
     change FiniteDimensional ℂ (Representation.Coinvariants
@@ -613,9 +604,3 @@ theorem whittaker_dimension_bound
   let e := LinearEquiv.ofBijective a ⟨ha, hs⟩
   exact whittaker_dimension_bound_of_scalarization F ζ hζ q S P hP htame
     ψ hψ hconductor ε e (by intros; rfl)
-
-end DedekindZetaZeroFree.KPTameJacquetBruhatTests
-
-end
-
-end

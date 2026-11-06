@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.LargeSieve.Bilinear.GcdTailAndMaskedShellBoun
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.LargeSieve.Sieve.CoreCoefficient
 open scoped NumberField Classical
 
@@ -41,7 +40,7 @@ theorem unit_column_bound
         apply Finset.sum_le_sum
         intro a ha
         have hc : ‖(Q.χ ⊤) a‖ ^ 2 ≤ 1 := by
-          nlinarith [hchi a, norm_nonneg ((Q.χ ⊤) a)]
+          simp_all
         exact (mul_le_of_le_one_right (hW.nonneg _) hc).trans (hB _)
     _ = ((kernelRows F c M K).card : ℝ) * B := by simp [mul_comm]
     _ ≤ (A * ((5 / 2) * M)) * B := mul_le_mul_of_nonneg_right hcard hB0
@@ -79,13 +78,9 @@ theorem envelope_comparison
   · rintro z ((hz | ⟨T, hT1, hTX, rfl⟩) | ⟨hXlt, hX2, rfl⟩)
     · have hz0 : z = 0 := hz
       rw [hz0]
-      exact add_nonneg hY0 (mul_nonneg hC0 hM0)
+      positivity
     · have ht : B2 F c Q W M T K ≤ B2env F c Q W M Y K := by
         apply le_csSup hbdd
         exact Or.inl (Or.inr ⟨T, hT1, hTX.trans hXY, rfl⟩)
       exact ht.trans (le_add_of_nonneg_right (mul_nonneg hC0 hM0))
     · exact (hC M K hM).trans (le_add_of_nonneg_left hY0)
-
-end DedekindZetaZeroFree.LargeSieve.Sieve.CoreCoefficient
-
-end

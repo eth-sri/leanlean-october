@@ -73,21 +73,17 @@ open KPCplxPrincipalSeriesCharts KPCplxCharacterHaar
 
 open scoped Matrix.Norms.Elementwise ContDiff
 attribute [local instance] Complex.instNormedAddCommGroup
-private theorem locus_open : IsOpen {g : RawMat | g.det ≠ 0} := by
+theorem locus_open : IsOpen {g : RawMat | g.det ≠ 0} := by
   apply isOpen_ne.preimage
-  change Continuous (fun g : RawMat => g.det)
-  simp only [Matrix.det_fin_two]
   fun_prop
-private theorem tangent_smooth (X : RawMat) : ContDiff ℝ ∞ (fun g : RawMat => g * X) := by
+theorem tangent_smooth (X : RawMat) : ContDiff ℝ ∞ (fun g : RawMat => g * X) := by
   apply contDiff_pi.mpr
   intro i
   apply contDiff_pi.mpr
   intro j
   simp only [Matrix.mul_apply]
-  apply ContDiff.sum
-  intro k _
-  exact ((contDiff_apply ℝ ℂ k).comp (contDiff_apply ℝ (Fin 2 → ℂ) i)).mul contDiff_const
-private theorem lie_smooth (X : RawMat) (f : ComplexGL2 → ℂ)
+  fun_prop
+theorem lie_smooth (X : RawMat) (f : ComplexGL2 → ℂ)
     (hf : ContDiffOn ℝ ∞ (matrixFunction f) {g | g.det ≠ 0}) :
     ContDiffOn ℝ ∞ (matrixFunction (rawLie X f)) {g | g.det ≠ 0} := by
   have hd := (contDiffOn_infty_iff_fderiv_of_isOpen locus_open).mp hf
@@ -104,17 +100,17 @@ private theorem word_smooth (s : ℝ) (w : RawWord) :
   | nil =>
     exact ((principalSeries_mem_iff s _).mp (sphericalSection s).property).2
   | cons X w ih => exact lie_smooth X _ ih
-private theorem matrix_add (f h : ComplexGL2 → ℂ) :
+theorem matrix_add (f h : ComplexGL2 → ℂ) :
     matrixFunction (f + h) = matrixFunction f + matrixFunction h := by
   funext g
   simp only [matrixFunction, Pi.add_apply]
   split <;> simp
-private theorem matrix_smul (a : ℂ) (f : ComplexGL2 → ℂ) :
+theorem matrix_smul (a : ℂ) (f : ComplexGL2 → ℂ) :
     matrixFunction (a • f) = a • matrixFunction f := by
   funext g
   simp only [matrixFunction, Pi.smul_apply]
-  split <;> simp
-private theorem matrix_zero : matrixFunction (0 : ComplexGL2 → ℂ) = 0 := by
+  simp
+theorem matrix_zero : matrixFunction (0 : ComplexGL2 → ℂ) = 0 := by
   funext g
   simp [matrixFunction]
 private theorem lie_add (X : RawMat) (f h : ComplexGL2 → ℂ)
@@ -164,7 +160,7 @@ theorem raw_spherical_span_lie_stable (s : ℝ) (X : RawMat)
           funext g
           simp [rawLie, matrix_zero]
         rw [hz]
-        exact Submodule.zero_mem _
+        simp
     | add u v hu hv ihu ihv =>
       constructor
       · rw [matrix_add]; exact ihu.1.add ihv.1
@@ -197,18 +193,17 @@ private noncomputable def matrixRight (a : ComplexGL2) : RawMat ≃L[ℝ] RawMat
   LinearEquiv.toContinuousLinearEquiv
     { toFun := fun m => m * (a : RawMat)
       invFun := fun m => m * ((a⁻¹ : ComplexGL2) : RawMat)
-      left_inv := by intro m; simp [Matrix.mul_assoc, ← Units.val_mul]
-      right_inv := by intro m; simp [Matrix.mul_assoc, ← Units.val_mul]
+      left_inv := by intro m; simp
+      right_inv := by intro m; simp
       map_add' := by intro m n; exact Matrix.add_mul _ _ _
-      map_smul' := by intro c m; exact Matrix.smul_mul _ _ _ }
+      map_smul' := by simp }
 
 private lemma matrixFunction_translate (a : ComplexGL2) (f : ComplexGL2 → ℂ) :
     matrixFunction (translate a f) = matrixFunction f ∘ matrixRight a := by
   funext m
   have hd := Matrix.GeneralLinearGroup.det_ne_zero a
   have he : (m * (a : RawMat)).det ≠ 0 ↔ m.det ≠ 0 := by
-    rw [Matrix.det_mul]
-    exact mul_ne_zero_iff.trans (and_iff_left hd)
+    simp_all
   change (if h : m.det ≠ 0 then
     translate a f (Matrix.GeneralLinearGroup.mkOfDetNeZero m h) else 0) =
     (if h : (m * (a : RawMat)).det ≠ 0 then
@@ -219,7 +214,7 @@ private lemma matrixFunction_translate (a : ComplexGL2) (f : ComplexGL2 → ℂ)
     congr 1
     apply Units.ext
     rfl
-  · rw [dif_neg hm, dif_neg (fun h => hm (he.mp h))]
+  simp_all
 
 private lemma translate_rawLie (a : ComplexGL2) (X : RawMat)
     (f : ComplexGL2 → ℂ) :
@@ -279,8 +274,7 @@ theorem raw_spherical_span_compact_stable (s : ℝ) (k : compactSubgroup)
       rw [translate_rawWord, hfixed]
       exact Submodule.subset_span ⟨_, rfl⟩
     | zero =>
-      rw [map_zero]
-      exact Submodule.zero_mem _
+      simp
     | add v z hv hz iv iz =>
       rw [map_add]
       exact Submodule.add_mem _ iv iz
@@ -312,13 +306,12 @@ theorem transverse_homogeneous (ℓ : ℕ) :
 theorem lap_mul_transverse (p : MvPolynomial (Fin 3) ℂ) :
     polynomialLaplacian (transverse * p) = transverse * polynomialLaplacian p +
       2 * (pderiv 0 p + C Complex.I * pderiv 1 p) := by
-  simp [polynomialLaplacian, LinearMap.sum_apply, LinearMap.comp_apply,
-    Fin.sum_univ_succ, transverse, pderiv_mul, pderiv_C_mul]
+  simp [polynomialLaplacian, LinearMap.comp_apply, Fin.sum_univ_succ, transverse]
   ring
 theorem transverse_direction (ℓ : ℕ) :
     pderiv 0 (transverse ^ ℓ) + C Complex.I * pderiv 1 (transverse ^ ℓ) = 0 := by
   simp only [pderiv_pow]
-  simp [transverse, pderiv_C_mul, Pi.single_apply]
+  simp [transverse]
   have hI : (C Complex.I : MvPolynomial (Fin 3) ℂ) ^ 2 = -1 := by
     rw [← map_pow]; norm_num
   linear_combination (ℓ : MvPolynomial (Fin 3) ℂ) *
@@ -332,17 +325,14 @@ theorem transverse_harmonic (ℓ : ℕ) : transverse ^ ℓ ∈ harmonicPolynomia
     rw [pow_succ', lap_mul_transverse, ih, transverse_direction]
     simp
 theorem lap_mul_height (p : MvPolynomial (Fin 3) ℂ) :
-    polynomialLaplacian (X 2 * p) = X 2 * polynomialLaplacian p + 2 * pderiv 2 p := by
-  simp [polynomialLaplacian, LinearMap.sum_apply, LinearMap.comp_apply,
-    Fin.sum_univ_succ, pderiv_mul]
-  ring
+    polynomialLaplacian (X 2 * p) = X 2 * polynomialLaplacian p + 2 * pderiv 2 p := by apply DedekindZetaZeroFree.KPCplxHarmonicPropagation.RaisingCalculation.lap_mul_height <;> assumption
 theorem height_transverse_harmonic (ℓ : ℕ) :
     X 2 * transverse ^ ℓ ∈ harmonicPolynomials (ℓ + 1) := by
   constructor
   · simpa [Nat.add_comm] using (isHomogeneous_X ℂ (2 : Fin 3)).mul (transverse_homogeneous ℓ)
   · change polynomialLaplacian (X 2 * transverse ^ ℓ) = 0
     rw [lap_mul_height, (transverse_harmonic ℓ).2]
-    simp [pderiv_pow, transverse, pderiv_C_mul, Pi.single_apply]
+    simp [transverse]
 
 noncomputable def rowB (m : RawMat) : ℝ := ‖m 1 0‖ ^ 2 + ‖m 1 1‖ ^ 2
 noncomputable def rowW (m : RawMat) : ℂ := 2 * m 1 0 * star (m 1 1) / (rowB m : ℂ)
@@ -365,7 +355,7 @@ theorem rowW_left (a d : ℂˣ) (b : ℂ) (g : ComplexGL2) :
   have he : rowB (upperTriangular a d b * g) = ‖(d : ℂ)‖ ^ 2 * rowB g := by
     change rowB ((upperTriangular a d b : RawMat) * (g : RawMat)) = _
     rw [hup]
-    simp [rowB, Matrix.mul_apply, Fin.sum_univ_two, norm_mul, mul_pow, mul_add]
+    simp [rowB, Matrix.mul_apply, Fin.sum_univ_two, mul_pow, mul_add]
   unfold rowW
   rw [he]
   change 2 * ((!![(a : ℂ), b; 0, (d : ℂ)] * (g : RawMat)) 1 0) *
@@ -414,10 +404,7 @@ theorem rowB_compact (k : ComplexSU2) : rowB k = 1 := by
   simpa only [rowB, Complex.mul_conj', Complex.add_re, ← Complex.ofReal_pow,
     Complex.ofReal_re] using hrow
 theorem spherical_compact (s : ℝ) (k : ComplexSU2) :
-    sphericalSection s (complexSU2Embedding k) = 1 := by
-  have hd := (Matrix.mem_specialUnitaryGroup_iff.mp k.property).2
-  change (Real.rpow (‖(k : RawMat).det‖ / rowB k) (1 + 2 * s) : ℂ) = 1
-  rw [hd, rowB_compact]; simp
+    sphericalSection s (complexSU2Embedding k) = 1 := by apply DedekindZetaZeroFree.KPCplxHarmonicPropagation.RaisingCalculation.spherical_compact <;> assumption
 theorem rowW_compact (k : ComplexSU2) :
     rowW k = compactSphereCoordinate k 0 + Complex.I * compactSphereCoordinate k 1 := by
   simp only [rowW, rowB_compact, Complex.ofReal_one, div_one, compactSphereCoordinate,
@@ -437,8 +424,8 @@ theorem harmonicSection_compact (s : ℝ) (ℓ : ℕ) :
   simp [transverse]
 
 theorem harmonicSection_harmonic (s : ℝ) (ℓ : ℕ) :
-    harmonicSection s ℓ ∈ harmonicKType s ℓ := by
-  exact ⟨transverse ^ ℓ, transverse_harmonic ℓ, (harmonicSection_compact s ℓ).symm⟩
+    harmonicSection s ℓ ∈ harmonicKType s ℓ := 
+  ⟨transverse ^ ℓ, transverse_harmonic ℓ, (harmonicSection_compact s ℓ).symm⟩
 
 theorem height_harmonic_of_formula (s : ℝ) (ℓ : ℕ) (c : ℂ)
     (v : PrincipalSeries s)
@@ -495,13 +482,13 @@ noncomputable def boostMatrix : RawMat := !![1, 0; 0, 0]
 theorem boost_zero : boost 0 = 1 := by
   apply Units.ext
   ext i j
-  fin_cases i <;> fin_cases j <;> simp [boost, diagonal, boostUnit, Matrix.one_apply]
+  fin_cases i <;> fin_cases j <;> simp [boost, diagonal, boostUnit]
 theorem boost_bottom (g : ComplexGL2) (t : ℝ) :
     rowB (g * boost t) = ‖(g : RawMat) 1 0‖ ^ 2 * Real.exp t ^ 2 + ‖(g : RawMat) 1 1‖ ^ 2 := by
   have hb : (boost t : RawMat) = !![(Real.exp t : ℂ), 0; 0, 1] := rfl
   change rowB ((g : RawMat) * (boost t : RawMat)) = _
   rw [hb]
-  simp [rowB, Matrix.mul_apply, Fin.sum_univ_two, norm_mul, mul_pow, le_of_lt (Real.exp_pos t)]
+  simp [rowB, Matrix.mul_apply, Fin.sum_univ_two, mul_pow]
 theorem boost_transverse (g : ComplexGL2) (t : ℝ) :
     rowW (g * boost t) =
       (2 * (g : RawMat) 1 0 * star ((g : RawMat) 1 1)) * (Real.exp t : ℂ) / (rowB (g * boost t) : ℂ) := by
@@ -514,7 +501,7 @@ theorem boost_transverse (g : ComplexGL2) (t : ℝ) :
 theorem boost_det_norm (g : ComplexGL2) (t : ℝ) :
     ‖((Matrix.GeneralLinearGroup.det (g * boost t) : ℂˣ) : ℂ)‖ =
       ‖((Matrix.GeneralLinearGroup.det g : ℂˣ) : ℂ)‖ * Real.exp t := by
-  simp [map_mul, boost, diagonal, boostUnit, Matrix.det_fin_two, norm_mul, le_of_lt (Real.exp_pos t)]
+  simp [map_mul, boost, diagonal, boostUnit, Matrix.det_fin_two]
 theorem boost_bottom_hasDerivAt (g : ComplexGL2) :
     HasDerivAt (fun t : ℝ => rowB (g * boost t)) (2 * ‖(g : RawMat) 1 0‖ ^ 2) 0 := by
   simp_rw [boost_bottom]
@@ -563,14 +550,14 @@ theorem boost_spherical_hasDerivAt (s : ℝ) (g : ComplexGL2) :
   have hepow : (a / B) ^ e = (a / B) ^ (e - 1) * (a / B) := by
     conv_rhs => rhs; rw [← Real.rpow_one (a / B)]
     rw [← Real.rpow_add (div_pos ha hB)]
-    congr 1; ring
+    simp
   rw [hepow]
   dsimp [rowZ, B, A, rowB]
   push_cast
   field_simp
   ring
 
-private theorem boost_path_hasDerivAt (g : ComplexGL2) :
+theorem boost_path_hasDerivAt (g : ComplexGL2) :
     HasDerivAt (fun t : ℝ => ((g * boost t : ComplexGL2) : RawMat))
       ((g : RawMat) * boostMatrix) 0 := by
   apply hasDerivAt_pi.mpr
@@ -586,7 +573,7 @@ private theorem boost_path_hasDerivAt (g : ComplexGL2) :
   · simpa [boostMatrix, Matrix.mul_apply, Fin.sum_univ_two] using
       hasDerivAt_const (0 : ℝ) ((g : RawMat) i 1)
 
-private theorem rawLie_boost_deriv (s : ℝ) (u : PrincipalSeries s) (g : ComplexGL2) :
+theorem rawLie_boost_deriv (s : ℝ) (u : PrincipalSeries s) (g : ComplexGL2) :
     HasDerivAt (fun t : ℝ => u (g * boost t)) (rawLie boostMatrix u g) 0 := by
   have hf := ((principalSeries_mem_iff s u.val).mp u.property).2
   have hcont : Continuous (fun m : RawMat => m.det) := by fun_prop
@@ -624,8 +611,8 @@ private theorem harmonic_boost_hasDerivAt (s : ℝ) (ℓ : ℕ) (g : ComplexGL2)
 
 private theorem rawLie_harmonic_boost (s : ℝ) (ℓ : ℕ) (g : ComplexGL2) :
     rawLie boostMatrix (harmonicSection s ℓ) g =
-      (-(((ℓ : ℝ) + 1 + 2 * s : ℝ) : ℂ)) * rowZ g * harmonicSection s ℓ g := by
-  exact (rawLie_boost_deriv s (harmonicSection s ℓ) g).unique
+      (-(((ℓ : ℝ) + 1 + 2 * s : ℝ) : ℂ)) * rowZ g * harmonicSection s ℓ g := 
+  (rawLie_boost_deriv s (harmonicSection s ℓ) g).unique
     (harmonic_boost_hasDerivAt s ℓ g)
 
 end RaisingCalculation
@@ -665,7 +652,7 @@ namespace DedekindZetaZeroFree.RepresentationTheory.KPContHolomorphicKGeneration
 
 open KPCplxPrincipalSeriesCharts KPCplxIntertwinerEigenvalues KPCplxCharacterHaar
 
-private lemma spherical_compact_value (s : ℝ) (k : ComplexSU2) :
+lemma spherical_compact_value (s : ℝ) (k : ComplexSU2) :
     sphericalSection s (complexSU2Embedding k) = 1 := by
   let k' : compactSubgroup :=
     ⟨Matrix.ProjGenLinGroup.mk (complexSU2Embedding k), ⟨k, rfl⟩⟩
@@ -687,8 +674,8 @@ theorem harmonic_zero_mem_raw_spherical_span
     (harmonicPolynomials 0).map polynomialCompactRestriction at hf
   obtain ⟨p, hp, he⟩ := hf
   have hp0 : p.IsHomogeneous 0 := hp.1
-  have hpC : p = MvPolynomial.C (p.coeff 0) := by
-    exact (MvPolynomial.homogeneousComponent_eq_self hp0).symm.trans
+  have hpC : p = MvPolynomial.C (p.coeff 0) := 
+    (MvPolynomial.homogeneousComponent_eq_self hp0).symm.trans
       (MvPolynomial.homogeneousComponent_zero p)
   have hfeq : f = (p.coeff 0) • sphericalSection positiveParameter := by
     apply (harmonicKType_compact_identification positiveParameter positiveParameter 0).1
@@ -721,7 +708,6 @@ theorem harmonic_mem_raw_spherical_span (ℓ : ℕ)
       let W : Submodule ℂ (PrincipalSeries positiveParameter) :=
         harmonicKType positiveParameter (ℓ + 1) ⊓ U
       have hcoeff : (ℓ : ℝ) + 1 + 2 * positiveParameter ≠ 0 := by
-        dsimp only [positiveParameter]
         positivity
       obtain ⟨X, u, v, h, hu, hv, hvne, hh, he⟩ :=
         harmonic_noncompact_raising positiveParameter ℓ hcoeff
@@ -747,18 +733,9 @@ theorem harmonic_mem_raw_spherical_span (ℓ : ℕ)
         W inf_le_left hW
       have hWeq : W = harmonicKType positiveParameter (ℓ + 1) := by
         rcases hcases with hzero | hfull
-        · have : v = 0 := by
-            have hvbot : v ∈ (⊥ : Submodule ℂ (PrincipalSeries positiveParameter)) := by
-              rw [← hzero]
-              exact hvW
-            simpa only [Submodule.mem_bot] using hvbot
-          exact (hvne this).elim
-        · exact hfull
+        · simp_all
+        omega
       have hfW : f ∈ W := by
         rw [hWeq]
         exact hf
       exact hfW.2
-
-end DedekindZetaZeroFree.RepresentationTheory.KPContHolomorphicKGenerationProve
-
-end

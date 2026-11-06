@@ -9,7 +9,6 @@ open scoped NumberField Classical
 open NumberField IsDedekindDomain MeasureTheory
 
 namespace DedekindZetaZeroFree.ExteriorGauss
-noncomputable section
 variable {F : Type} [Field F] [NumberField F]
 
 private theorem two_norm (v : HeightOneSpectrum (𝓞 F)) (hgood : ¬ (ResidueTrace.rationalPrimeBelow v).val ∣ 6) :
@@ -23,7 +22,7 @@ private theorem two_norm (v : HeightOneSpectrum (𝓞 F)) (hgood : ¬ (ResidueTr
     exact hgood (hd.trans (by norm_num))
   simpa only [map_ofNat] using
     (FinitePlace.norm_eq_one_iff_notMem F v (2 : 𝓞 F)).mpr hnot
-private theorem cutoff_set (v : HeightOneSpectrum (𝓞 F)) (a : (v.adicCompletion F)ˣ)
+theorem cutoff_set (v : HeightOneSpectrum (𝓞 F)) (a : (v.adicCompletion F)ˣ)
     (ha : Valued.v (a : v.adicCompletion F) = WithZero.exp (-1 : ℤ))
     (n : ℕ) :
     (finiteCompletionBall F v (-(n:ℤ)) : Set (v.adicCompletion F)) =
@@ -33,11 +32,9 @@ private theorem cutoff_set (v : HeightOneSpectrum (𝓞 F)) (a : (v.adicCompleti
     simp
   ext x
   have hv : Valued.v ((a : v.adicCompletion F)^(-(n:ℤ))) = WithZero.exp (n:ℤ) := by
-    rw [map_zpow₀, ha, ← WithZero.exp_zsmul]
-    congr 1
-    simp
+    simp_all
   have hn : ‖(a : v.adicCompletion F)^(-(n:ℤ))‖ = (Ideal.absNorm v.asIdeal : ℝ)^n := by
-    simp [norm_zpow, han]
+    simp [han]
   rw [SetLike.mem_coe, mem_finiteCompletionBall, neg_neg, ← hv,
     ← Valued.toNormedField.norm_le_iff, hn]
   rfl
@@ -93,8 +90,7 @@ private theorem restrict_integral (v : HeightOneSpectrum (𝓞 F))
     rw [he]
     apply (v.adicCompletionIntegers F).toSubring.mul_mem _ ((v.adicCompletionIntegers F).toSubring.pow_mem ho 2)
     change Valued.v (a : K) ≤ 1
-    rw [ha]
-    exact le_of_lt (by simpa using (show (-1:ℤ) < 0 by omega))
+    simp_all
   let Q := U ⧸ H.comap U.subtype
   letI : CompactSpace U := isCompact_iff_compactSpace.mp hUc
   letI : Finite Q := AddSubgroup.quotient_finite_of_isOpen _
@@ -111,8 +107,7 @@ private theorem restrict_integral (v : HeightOneSpectrum (𝓞 F))
       convert H.sub_mem hj hi using 1 <;> abel
     have he : (QuotientAddGroup.mk (r i) : Q) = QuotientAddGroup.mk (r j) :=
       QuotientAddGroup.eq_iff_sub_mem.mpr hs
-    rw [hr, hr] at he
-    exact hij he
+    simp_all
   have hunion : (U : Set K) = ⋃ i, C i := by
     ext x
     constructor
@@ -185,9 +180,8 @@ private theorem restrict_integral (v : HeightOneSpectrum (𝓞 F))
           (fun x : K => c * (C i).indicator f x) := by
         funext x
         by_cases hx : x ∈ C i
-        · simp only [Set.indicator_of_mem hx, Set.indicator_of_mem ((hmem x).mpr hx)]
-          exact hphase x hx
-        · simp only [Set.indicator_of_notMem hx, Set.indicator_of_notMem (mt (hmem x).mp hx), mul_zero]
+        · simp_all
+        simp_all
       have heq := integral_add_left_eq_self (μ := μ) ((C i).indicator f) h
       rw [htranslate, integral_const_mul, integral_indicator (hCc i).measurableSet] at heq
       by_contra hI
@@ -222,6 +216,3 @@ theorem inverse_uniformizer_cutoff_eventually
   intro n
   unfold rawCutoff
   rw [← cutoff_set v a ha n, restrict_integral v hgood hzero μ a ha n]
-
-end
-end DedekindZetaZeroFree.ExteriorGauss

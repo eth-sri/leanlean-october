@@ -90,12 +90,12 @@ theorem additive_residue_row_sieve_of_scaled_trace_adapter
         D * (X + (C0 * V) ^ 2) * ∑ m, ‖z m‖ ^ 2 := by
       simpa only [Fintype.sum_sigma, f, ← hphase] using hh
     apply hh'.trans
-    have hX0 : 0 ≤ X := le_trans (by norm_num) hX
+    have hX0 : 0 ≤ X := by positivity
     have hC2 : 1 ≤ C0 ^ 2 := by nlinarith
     have hscale : X + (C0 * V) ^ 2 ≤ C0 ^ 2 * (X + V ^ 2) := by
       rw [mul_pow]
       nlinarith [mul_le_mul_of_nonneg_right hC2 hX0]
-    have hE : 0 ≤ ∑ m, ‖z m‖ ^ 2 := Finset.sum_nonneg fun _ _ => sq_nonneg _
+    have hE : 0 ≤ ∑ m, ‖z m‖ ^ 2 := by positivity
     have h := mul_le_mul_of_nonneg_right
       (mul_le_mul_of_nonneg_left hscale hD) hE
     simpa only [mul_assoc] using h
@@ -181,8 +181,8 @@ theorem row_energy {F : Type} [Field F] [NumberField F]
     (∑ m ∈ rows, ‖A.balancedTransportCoeff B K_bal s T
       (fun a => c a * FixedSResidue.localInverseProduct A sigma
         ⟨s.generator a, (s.generates a).1⟩) m‖ ^ 2) =
-      ∑ a ∈ T, ‖c a‖ ^ 2 := by
-  exact (A.balanced_ideal_section_energy B K_bal hK s X hX T hT _).2.trans
+      ∑ a ∈ T, ‖c a‖ ^ 2 := 
+  (A.balanced_ideal_section_energy B K_bal hK s X hX T hT _).2.trans
     (local_twist_energy A B K_bal s sigma hSigma T c)
 
 theorem row_sum {F : Type} [Field F] [NumberField F]
@@ -243,7 +243,7 @@ theorem conductor_fiber_gauss_sieve
 
 theorem conductor_scale_bound (C0 U : ℝ) (hU : 2 ≤ U) :
     (max 1 (C0 * U)) ^ 2 ≤ max (C0 ^ 2) (1 / 4) * U ^ 2 := by
-  have hUp : 0 ≤ U := le_trans (by norm_num) hU
+  have hUp : 0 ≤ U := by positivity
   by_cases h : 1 ≤ C0 * U
   · rw [max_eq_right h, mul_pow]
     exact mul_le_mul_of_nonneg_right (le_max_left _ _) (sq_nonneg U)
@@ -368,8 +368,3 @@ theorem detector_exterior_dyadic_conductor_sieve
   exact ExteriorDyadicTransport.row_gauss_to_ideal_bound A B K_bal hK s sigma hSigma
     D C0 X U hD hX hU (Fin n) (Fin r) omega g q chi hchi psi hp ho hbridge
     c.support hc c hadd
-
-end
-end DedekindZetaZeroFree.Detector
-
-end

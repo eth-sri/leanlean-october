@@ -1,3 +1,0 @@
-module
-public import DedekindZetaZeroFree.Arithmetic.ResidueSymbols.SixthRootAlignment
-public import DedekindZetaZeroFree.Nonvanishing.Mellin.ProbeInversion

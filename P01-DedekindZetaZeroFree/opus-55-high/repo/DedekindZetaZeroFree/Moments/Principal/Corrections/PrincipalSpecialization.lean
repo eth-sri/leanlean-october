@@ -9,7 +9,6 @@ open scoped NumberField Classical
 
 noncomputable section
 namespace DedekindZetaZeroFree.CorrectionFactors
-set_option autoImplicit false
 
 def principalRational (Q : ℝ) (d e : ℂ) : ℂ :=
   let r : ℂ := (Q : ℂ)⁻¹
@@ -56,21 +55,21 @@ variable {F : Type} [Field F] [NumberField F]
 variable {A : SArithmeticData F} {σ : F →+* ℂ}
 variable {η : RayClassCharacter F A.modulus} {hS : A.ContainsTraceBadPlaces}
 
-private lemma principal_Q_ge_two (p : ExteriorPrime A) : 2 ≤ Q p := by
+lemma principal_Q_ge_two (p : ExteriorPrime A) : 2 ≤ Q p := by
   change (2 : ℝ) ≤ (Ideal.absNorm p.val.asIdeal : ℝ)
   exact_mod_cast (show 2 ≤ Ideal.absNorm p.val.asIdeal from
     NumberField.HeightOneSpectrum.one_lt_absNorm p.val)
 
-private lemma principal_qPower_mul (p : ExteriorPrime A) (s t : ℂ) :
+lemma principal_qPower_mul (p : ExteriorPrime A) (s t : ℂ) :
     qPower p s * qPower p t = qPower p (s + t) := by
   simp only [qPower, add_mul, Complex.exp_add]
 
-private lemma principal_qPower_neg_one (p : ExteriorPrime A) :
+lemma principal_qPower_neg_one (p : ExteriorPrime A) :
     qPower p (-1) = (Q p : ℂ)⁻¹ := by
   have hQ : 0 < Q p := by have := principal_Q_ge_two p; linarith
   simp only [qPower, neg_one_mul, Complex.exp_neg, ← Complex.ofReal_exp, Real.exp_log hQ]
 
-private lemma principal_denominators (C : A.GeneralArithmeticContext σ η hS)
+lemma principal_denominators (C : A.GeneralArithmeticContext σ η hS)
     (p : ExteriorPrime A) (s : ℂ) (hs : (2 / 3 : ℝ) < s.re) :
     η p.val.asIdeal * qPower p (-s) ≠ 1 ∧
       vartheta C p ^ 6 * qPower p (3 - 6 * s) ≠ 1 := by
@@ -150,9 +149,7 @@ theorem principal_localFactor_eq_h_p (C : A.GeneralArithmeticContext σ η hS)
     rw [← U.generates.2, hU, Ideal.span_singleton_one]
   have hcard : Ideal.absNorm U.ideal.val = 1 := by
     rw [← A.exteriorResidue_card U.ideal]
-    letI : Subsingleton (A.R ⧸ A.extendIdeal U.ideal) :=
-      Ideal.Quotient.subsingleton_iff.mpr hext
-    exact Nat.card_unique
+    simp_all
   have hideal : U.ideal.val = ⊤ := Ideal.absNorm_eq_one_iff.mp hcard
   have hj : (U.j p).val = 0 := by
     simp [Frequency.j, idealPrimeExponent, hideal, ← Ideal.one_eq_top]
@@ -176,7 +173,3 @@ theorem principal_product_specialization (C : A.GeneralArithmeticContext σ η h
   intro p
   apply principal_localFactor_eq_h_p C U hU p s
   linarith
-
-end DedekindZetaZeroFree.CorrectionFactors
-
-end

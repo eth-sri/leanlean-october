@@ -20,5 +20,3 @@ def dyadicScale : ℕ → ℝ
 noncomputable def clippedDyadicBlock (F : Type) [Field F] [NumberField F]
     (c : Ideal (𝓞 F)) (X : ℝ) (j : ℕ) : Finset (Ideal (𝓞 F)) :=
   idealDyadicBlock F c j ∩ idealAdmissibleFinset F c X
-
-end DedekindZetaZeroFree.LargeSieve.Sieve

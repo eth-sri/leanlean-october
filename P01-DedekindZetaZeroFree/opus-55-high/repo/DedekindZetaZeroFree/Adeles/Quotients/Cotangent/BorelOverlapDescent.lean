@@ -33,7 +33,7 @@ open KPContSectorCoveredQuotientVocabulary KPContSectorQuotientRelationsComparis
 open KPContSectorFixedPushforwardSupport KPContSectorScalarLineAlgebra
 open KPContSectorSmoothFramesSupport KPMsFixedHaarDisintegration
 
-private theorem levelRealization_of_recipe
+theorem levelRealization_of_recipe
     (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
     (U : KPMsFixedHaarDisintegration.Level F ζ hζ)
     (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)

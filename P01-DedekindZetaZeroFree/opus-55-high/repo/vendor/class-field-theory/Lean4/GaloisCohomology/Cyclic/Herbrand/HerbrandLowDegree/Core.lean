@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 namespace CyclicCohomology
 
 /-!
@@ -43,7 +39,7 @@ variable [MulDistribMulAction G A] [MulDistribMulAction G B]
 /-- Herbrand-quotient theory the Herbrand-quotient definition: the Herbrand quotient of the actual
 low-degree multiplicative Tate quotients.  The finiteness assumptions prevent
 `Nat.card` from silently taking the value `0` on infinite quotients. -/
-noncomputable def herbrandQuotient (σ : G)
+def herbrandQuotient (σ : G)
     [Finite (HerbrandH0 G A)] [Finite (HerbrandHMinusOne G A σ)] : ℚ :=
   (Nat.card (HerbrandH0 G A) : ℚ) / (Nat.card (HerbrandHMinusOne G A σ) : ℚ)
 
@@ -71,8 +67,8 @@ theorem herbrandQuotient_eq_one_of_card_eq (σ : G)
 cyclic module is `1`. -/
 theorem herbrandQuotient_finite_module_eq_one
     (σ : G) (hgen : ∀ g : G, g ∈ Subgroup.zpowers σ) [Finite A] :
-    herbrandQuotient (G := G) (A := A) σ = 1 := by
-  exact herbrandQuotient_eq_one_of_card_eq (G := G) (A := A) σ
+    herbrandQuotient (G := G) (A := A) σ = 1 := 
+  herbrandQuotient_eq_one_of_card_eq (G := G) (A := A) σ
     (herbrand_finite_module_card_eq (G := G) (A := A) σ hgen)
 
 /-- Herbrand-quotient theory Herbrand-quotient multiplicativity: Herbrand quotient multiplicativity
@@ -125,9 +121,3 @@ theorem herbrandQuotient_exact_multiplicative
           Nat.card (HerbrandHMinusOne G B σ) := by
     exact_mod_cast hcard
   simpa [mul_assoc, mul_left_comm, mul_comm] using hcardQ
-
-end Herbrand
-end ProfiniteCohomology
-
-end
-end CyclicCohomology

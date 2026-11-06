@@ -8,7 +8,7 @@ open scoped NumberField Classical
 
 namespace DedekindZetaZeroFree.LargeSieve.Vendor
 
-private lemma norm_add_sq_le_two (x y : ℂ) :
+lemma norm_add_sq_le_two (x y : ℂ) :
     ‖x + y‖ ^ 2 ≤ 2 * ‖x‖ ^ 2 + 2 * ‖y‖ ^ 2 := by
   have h1 : ‖x + y‖ ≤ ‖x‖ + ‖y‖ := norm_add_le x y
   have h2 : ‖x + y‖ ^ 2 ≤ (‖x‖ + ‖y‖) ^ 2 :=
@@ -16,7 +16,7 @@ private lemma norm_add_sq_le_two (x y : ℂ) :
   have h3 : (‖x‖ + ‖y‖) ^ 2 ≤ 2 * (‖x‖ ^ 2 + ‖y‖ ^ 2) := add_sq_le
   linarith
 
-private lemma sum_le_univ_of_injective {α β : Type*} [Fintype β] [DecidableEq β]
+lemma sum_le_univ_of_injective {α β : Type*} [Fintype β] [DecidableEq β]
     (G : Finset α) (f : α → β) (hf : Function.Injective f) (φ : β → ℝ)
     (hφ : ∀ b, 0 ≤ φ b) : (∑ a ∈ G, φ (f a)) ≤ ∑ b : β, φ b := by
   have himg : (∑ a ∈ G, φ (f a)) = ∑ b ∈ G.image f, φ b :=
@@ -159,5 +159,3 @@ theorem exponent_finite_prime_transfer
     _ = (∑ a ∈ Finset.univ.filter badRow, ‖∑ b : s, v b * A a b‖ ^ 2) +
         2 * Bl * (∑ b : s, ‖v b‖ ^ 2) +
         2 * Bs * (∑ b ∈ Finset.univ.filter badCol, ‖v b‖ ^ 2) := by ring
-
-end DedekindZetaZeroFree.LargeSieve.Vendor

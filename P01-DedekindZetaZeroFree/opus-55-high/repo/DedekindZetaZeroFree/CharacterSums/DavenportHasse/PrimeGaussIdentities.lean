@@ -8,8 +8,6 @@ public import DedekindZetaZeroFree.Metaplectic.Weil.GlobalPhaseExtension
 open scoped NumberField Classical
 open NumberField IsDedekindDomain
 namespace DedekindZetaZeroFree.SArithmeticData.GaussCorrection
-noncomputable section
-set_option autoImplicit false
 variable {F : Type} [Field F] [NumberField F]
 
 private theorem bridge (A : SArithmeticData F) (σ : F →+* ℂ)
@@ -29,13 +27,13 @@ private theorem bridge (A : SArithmeticData F) (σ : F →+* ℂ)
   change A.sexticResiduePowerChar σ I 1 (e x) = σ (χ x)
   by_cases hx : x = 0
   · rw [hx, e.map_zero, MulChar.map_zero, MulChar.map_zero]
-    exact (map_zero σ).symm
+    simp
   have hxu : IsUnit x := isUnit_iff_ne_zero.mpr hx
   let u : (DHCubic.Residue F v)ˣ := hxu.unit
   let eu := Units.map e.toMonoidHom u
   obtain ⟨i, hi, hci⟩ := (hχ x hx).1
   obtain ⟨j, hj, hcj, hrj⟩ := A.sexticResidueFamily_normalized.2.1 I v hIv eu
-  have he_x : (eu : A.R ⧸ A.extendIdeal I) = e x := by simp [eu, u]
+  have he_x : (eu : A.R ⧸ A.extendIdeal I) = e x := by rfl
   have hiq : Ideal.Quotient.mk (A.extendIdeal I)
       (algebraMap (𝓞 F) A.R (A.primitive_zeta12.toInteger ^ (2 * i))) =
       (e x) ^ ((Nat.card (A.R ⧸ A.extendIdeal I) - 1) / 6) := by
@@ -79,7 +77,7 @@ private theorem gaussBridge (A : SArithmeticData F) (σ : F →+* ℂ)
   intro j hj
   have hn : sexticExponent (j : ℤ) = j := by
     unfold sexticExponent
-    rw [Int.emod_eq_of_lt (Int.natCast_nonneg j) (by omega), Int.toNat_natCast]
+    omega
   have hchar : (fun x => MulChar.ofUnitHom ((Units.map σ.toMonoidHom).comp
       (A.sexticResidueFamily I)) (e x)) =
       (χ.ringHomComp (σ.comp (algebraMap (𝓞 F) F))) := by
@@ -94,7 +92,7 @@ private theorem gaussBridge (A : SArithmeticData F) (σ : F →+* ℂ)
     · let u := hx.unit
       have hxu : (u : DHCubic.Residue F v) = x := hx.unit_spec
       have heu : (Units.map e.toMonoidHom u : A.R ⧸ A.extendIdeal I) = e x := by
-        simp [hxu]
+        rfl
       rw [← heu, MulChar.pow_apply_coe, ← hxu, MulChar.pow_apply_coe]
       exact congrArg (fun z : ℂ => z ^ j) (congrFun hchar u)
     · have hex : ¬ IsUnit (e x) := fun h => hx (by simpa using h.map e.symm.toMonoidHom)
@@ -155,7 +153,7 @@ private theorem primeIdentities
   have hQ : Fintype.card (DHCubic.Residue F v) % 12 = 1 := by
     have hcard : Fintype.card (DHCubic.Residue F v) = Ideal.absNorm v.asIdeal := by
       rw [← Nat.card_eq_fintype_card]
-      exact (Submodule.cardQuot_apply v.asIdeal).symm
+      rfl
     rw [hcard]
     exact A.exterior_norm_mod_twelve v hv
   have hdup := FiniteGauss.normalizedGaussPower_sextic_duplication
@@ -178,9 +176,7 @@ private theorem primeIdentities
       rw [← huu, MulChar.ofUnitHom_coe, MulChar.ofUnitHom_coe]
       rfl
     · rw [MulChar.map_nonunit _ hu, MulChar.map_nonunit _ hu, map_zero]
-  rw [hg1, hg2, hg3]
-  rw [hfour] at hdup
-  exact hdup
+  simp_all
 
 theorem primeGaussIdentities
     (A : SArithmeticData F) (hS : A.ContainsTraceBadPlaces) (σ : F →+* ℂ)
@@ -193,6 +189,3 @@ theorem primeGaussIdentities
       star (σ (A.sexticResidue I (4 : A.R))) * A.idealGauss σ hS I p hp 3 *
         A.idealGauss σ hS I p hp 2 ^ 3 :=
   primeIdentities A hS σ B I v hIv p hp a ha hap
-
-end
-end DedekindZetaZeroFree.SArithmeticData.GaussCorrection

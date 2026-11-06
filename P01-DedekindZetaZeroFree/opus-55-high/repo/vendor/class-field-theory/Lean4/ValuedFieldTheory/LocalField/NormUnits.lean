@@ -10,8 +10,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 /-!
 # Field norms on unit groups
 
@@ -20,7 +18,6 @@ independent of any valuation or local-field structure, so valued-field and
 discrete-valuation APIs can share the same definition.
 -/
 
-set_option autoImplicit false
 
 namespace LocalFieldTheory
 
@@ -50,7 +47,3 @@ theorem normUnits_tower
     normUnits K M (normUnits M L x) = normUnits K L x := by
   apply Units.ext
   exact Algebra.norm_norm
-
-end
-
-end LocalFieldTheory

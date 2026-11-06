@@ -40,7 +40,7 @@ private theorem local_section_congr (w : NumberField.InfinitePlace F)
       exact ⟨z, rfl⟩
     rw [hq, map_one]
   rw [hs, mul_one]
-private theorem rational_tuple_split (A : Matrix.GeneralLinearGroup (Fin 2) F) :
+theorem rational_tuple_split (A : Matrix.GeneralLinearGroup (Fin 2) F) :
     rationalTuple F ζ hζ A =
       ((Finset.univ : Finset (NumberField.InfinitePlace F)).toList.map
         (fun w => localToRestricted F ζ hζ (Sum.inl w)

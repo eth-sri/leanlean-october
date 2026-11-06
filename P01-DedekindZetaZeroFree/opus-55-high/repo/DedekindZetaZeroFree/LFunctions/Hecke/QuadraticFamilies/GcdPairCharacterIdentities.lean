@@ -15,7 +15,7 @@ open DedekindZetaZeroFree
 variable {F : Type} [Field F] [NumberField F]
 variable {c : Ideal (𝓞 F)}
 
-private theorem coprime_mul_iff (I J K : Ideal (𝓞 F)) :
+theorem coprime_mul_iff (I J K : Ideal (𝓞 F)) :
     I ⊔ J * K = ⊤ ↔ I ⊔ J = ⊤ ∧ I ⊔ K = ⊤ := by
   simp only [← Ideal.isCoprime_iff_sup_eq, IsCoprime.mul_right_iff]
 
@@ -73,8 +73,8 @@ theorem rawGcdPairTransport
     dsimp [R] at hn
     simp only [coprime_mul_iff] at hn
     tauto
-  have hu_dvd : u ∣ a := by rw [hau]; exact dvd_mul_left u (a ⊔ b)
-  have hv_dvd : v ∣ b := by rw [hbv]; exact dvd_mul_left v (a ⊔ b)
+  have hu_dvd : u ∣ a := by rw [hau]; simp
+  have hv_dvd : v ∣ b := by rw [hbv]; simp
   have prime_eq (p : Ideal (𝓞 F)) (hp : Prime p) (hpR : p ⊔ R = ⊤) :
       (Q.χ a) p * (Q.χ b) p = (Q.χ u) p * (Q.χ v) p := by
     obtain ⟨hpc, hpa, hpb, hpca, hpcb, hpcu, hpcv⟩ := parts p hpR
@@ -84,8 +84,8 @@ theorem rawGcdPairTransport
     have rbp := Q.reciprocity b p hb hbc hp.squarefree hpc (by simpa [sup_comm] using hpb)
     have rup := Q.reciprocity u p hu huc hp.squarefree hpc (by simpa [sup_comm] using hpu)
     have rvp := Q.reciprocity v p hv hvc hp.squarefree hpc (by simpa [sup_comm] using hpv)
-    have hap0 : (Q.χ a) p ≠ 0 := by
-      exact fun hz => ((Q.χ a).eq_zero_iff' p).mp hz |>.elim hp.ne_zero
+    have hap0 : (Q.χ a) p ≠ 0 := 
+      fun hz => ((Q.χ a).eq_zero_iff' p).mp hz |>.elim hp.ne_zero
         (fun h => h hpca)
     have hpd0 : (Q.χ p) (a ⊔ b) ≠ 0 := by
       intro hz
@@ -128,7 +128,7 @@ theorem rawGcdPairTransport
         have hn' : n = ⊤ := Ideal.isUnit_iff.mp hn
         subst n
         simp only [(Q.χ a).map_top', (Q.χ b).map_top', (Q.χ u).map_top', (Q.χ v).map_top']
-        intro _ _; trivial
+        simp
     | h₃ n p hn hp ih =>
         intro _ hnp
         obtain ⟨hpR, hnR⟩ := (Ideal.isCoprime_iff_sup_eq.mp
@@ -168,5 +168,3 @@ theorem rawGcdPairTransport
       (Q.χ a) n = (Q.χ a) n * ((Q.χ b) n) ^ 2 := by rw [hs]; ring
       _ = _ := by ring
   exact ⟨hR0, pair_eq, ⟨ψ, hψ, ψeq⟩, div₁, div₂⟩
-
-end DedekindZetaZeroFree.LargeSieve

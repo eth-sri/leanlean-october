@@ -62,7 +62,7 @@ open scoped ENNReal
 namespace DedekindZetaZeroFree.ProbeAdditiveGramBounds.ArithmeticGramPacking
 noncomputable section
 
-private theorem ball_count
+theorem ball_count
     {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     [FiniteDimensional ℝ E] {ι : Type*} (x : ι → E) (T : Finset ι)
     (a : E) (ρ r : ℝ) (hρ : 0 ≤ ρ) (hr : 0 < r)
@@ -111,15 +111,15 @@ theorem colored_euclidean_power_packing
   classical
   let d := Module.finrank ℝ E
   let q : ℝ := c / 2 ^ d
-  have hq : 0 < q := by dsimp [q]; positivity
+  have hq : 0 < q := by positivity
   let K : ℝ := 2 ^ d * (1 + 1 / q)
-  refine ⟨K, by dsimp [K]; positivity, ?_⟩
+  refine ⟨K, by positivity, ?_⟩
   intro n ι x col T a ρ W hρ hW hb hs
   let s : ℝ := (c / W) ^ ((d : ℝ)⁻¹)
-  have hspos : 0 < s := by dsimp [s]; positivity
+  have hspos : 0 < s := by positivity
   have hspow : s ^ d = c / W := Real.rpow_inv_natCast_pow (by positivity) (Nat.ne_of_gt hd)
   let r : ℝ := s / 2
-  have hr : 0 < r := by dsimp [r]; positivity
+  have hr : 0 < r := by positivity
   have hrpow : r ^ d * W = q := by
     dsimp [r, q]
     rw [div_pow, hspow]
@@ -156,11 +156,11 @@ theorem colored_euclidean_power_packing
     exact (mul_le_mul_iff_left₀ hq).1 (hbnd.trans hlast)
   have hcard : T.card = ∑ k : Fin n, (T.filter (fun i => col i = k)).card := by
     simpa using (Finset.card_eq_sum_card_fiberwise (s := T) (t := Finset.univ)
-      (f := col) (by intro i hi; simp))
+      (f := col) (by simp))
   rw [hcard, Nat.cast_sum]
   calc
     _ ≤ ∑ k : Fin n, K * (1 + ρ ^ d * W) := Finset.sum_le_sum (fun k _ => hcolor k)
-    _ = _ := by simp [d, mul_comm, mul_left_comm, mul_assoc]
+    _ = _ := by simp [d, mul_comm, mul_left_comm]
 
 end
 end DedekindZetaZeroFree.ProbeAdditiveGramBounds.ArithmeticGramPacking
@@ -181,7 +181,7 @@ open ArithmeticGramSteps
     ((PoissonArch.infiniteAdeleToSpace F).toAddMonoidHom.comp
       ((RingHom.fst _ _).comp (sLocalDiagonal F S)).toAddMonoidHom)
 
-private theorem aliasTrace_coordinates (F : Type) [Field F] [NumberField F]
+theorem aliasTrace_coordinates (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (𝓞 F))) (t : F) :
     mixedEmbedding.euclidean.toMixed F
       ((PoissonArch.traceAdapter F).symm (aliasTrace F S t)) = mixedEmbedding F t := by
@@ -193,7 +193,7 @@ private theorem aliasTrace_coordinates (F : Type) [Field F] [NumberField F]
   rw [PoissonArch.infiniteAdeleToSpace_coordinates]
   exact (InfiniteAdeleRing.mixedEmbedding_eq_algebraMap_comp (K := F) (x := t)).symm
 
-private theorem place_le_mixed_norm (F : Type) [Field F] [NumberField F]
+theorem place_le_mixed_norm (F : Type) [Field F] [NumberField F]
     (x : mixedEmbedding.mixedSpace F) (v : InfinitePlace F) :
     mixedEmbedding.normAtPlace v x ≤ ‖x‖ := by
   by_cases hv : v.IsReal
@@ -244,8 +244,8 @@ theorem same_color_alias_power_separation
   let L := (mixedEmbedding.euclidean.toMixed F).toContinuousLinearMap.comp
     (PoissonArch.traceAdapter F).symm.toContinuousLinearMap
   let M : ℝ := max ‖L‖ 1
-  have hM : 0 < M := lt_of_lt_of_le zero_lt_one (le_max_right _ _)
-  have hD : 0 < M ^ Module.finrank ℚ F * C := mul_pos (pow_pos hM _) hC
+  have hM : 0 < M := by positivity
+  have hD : 0 < M ^ Module.finrank ℚ F * C := by positivity
   refine ⟨(M ^ Module.finrank ℚ F * C)⁻¹, inv_pos.mpr hD, ?_⟩
   intro V hV p P hP r hr β γ ν μ hβ hγ hne hcol
   let a := ProbeSeparation.value F p β
@@ -308,15 +308,15 @@ theorem same_color_alias_power_separation
       (∏ v : InfinitePlace F, v t ^ v.mult) ≤
           ∏ v : InfinitePlace F, (M * ‖aliasTrace F S t‖) ^ v.mult := by
         apply Finset.prod_le_prod₀
-        · intro v _; positivity
+        · simp
         · intro v _; exact pow_le_pow_left₀ (apply_nonneg _ _) (hplace v) _
       _ = M ^ Module.finrank ℚ F * ‖aliasTrace F S t‖ ^ Module.finrank ℚ F := by
         rw [Finset.prod_pow_eq_pow_sum, InfinitePlace.sum_mult_eq, mul_pow]
   have hup : ProbeSeparation.productNorm F S t ≤
       (M ^ Module.finrank ℚ F * C) * ‖aliasTrace F S t‖ ^ Module.finrank ℚ F := by
     rw [ProbeSeparation.productNorm]
-    have heq : (∏ v ∈ S, FinitePlace.mk v t) = ∏ v : S, FinitePlace.mk v.val t := by
-      exact (Finset.prod_coe_sort S (fun v => FinitePlace.mk v t)).symm
+    have heq : (∏ v ∈ S, FinitePlace.mk v t) = ∏ v : S, FinitePlace.mk v.val t := 
+      (Finset.prod_coe_sort S (fun v => FinitePlace.mk v t)).symm
     rw [heq]
     calc
       _ ≤ (M ^ Module.finrank ℚ F * ‖aliasTrace F S t‖ ^ Module.finrank ℚ F) * C :=
@@ -381,7 +381,7 @@ private theorem coordinates (F : Type) [Field F] [NumberField F]
     exact (PoissonArch.mem_idealLattice F _ _).mp hh
   choose g hg heq using hex
   exact ⟨g, hg, fun ν => by rw [heq]; simp⟩
-private theorem dual_le (F : Type) [Field F] [NumberField F]
+theorem dual_le (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (𝓞 F))) (k : S → ℤ) (hk : ∀ v, k v ≤ 0) :
     (PoissonArch.codifferentIdeal F : FractionalIdeal (𝓞 F)⁰ F) * (PoissonS.ballFractionalIdeal F S k)⁻¹ ≤
       (PoissonArch.codifferentIdeal F : FractionalIdeal (𝓞 F)⁰ F) := by
@@ -389,8 +389,8 @@ private theorem dual_le (F : Type) [Field F] [NumberField F]
     apply Finset.one_le_prod
     intro v _
     exact one_le_zpow_of_nonpos₀ (bot_lt_iff_ne_bot.mpr (FractionalIdeal.coeIdeal_ne_zero.mpr v.val.ne_bot)) FractionalIdeal.coeIdeal_le_one (hk v)
-  have hi : (PoissonS.ballFractionalIdeal F S k)⁻¹ ≤ 1 := by
-    exact inv_le_one_of_one_le₀ h
+  have hi : (PoissonS.ballFractionalIdeal F S k)⁻¹ ≤ 1 := 
+    inv_le_one_of_one_le₀ h
   simpa using mul_le_mul_of_nonneg_left hi (show 0 ≤ (PoissonArch.codifferentIdeal F : FractionalIdeal (𝓞 F)⁰ F) from bot_le)
 private theorem finite_bound (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (𝓞 F)))
@@ -408,7 +408,7 @@ private theorem finite_bound (F : Type) [Field F] [NumberField F]
   refine ⟨∏ v, B v, Finset.prod_pos (fun v _ => hB v), ?_⟩
   intro t ht
   apply Finset.prod_le_prod₀
-  · intro v _; rw [FinitePlace.mk_apply]; exact norm_nonneg _
+  · simp
   · intro v _
     rw [FinitePlace.mk_apply]
     change ‖algebraMap F (v.val.adicCompletion F) t‖ ≤ B v
@@ -429,7 +429,7 @@ private theorem finite_bound (F : Type) [Field F] [NumberField F]
       by_cases hw : w = v
       · subst w; simpa only [Pi.single_eq_same, R] using hsmall
       · rw [Pi.single_eq_of_ne hw, norm_zero]
-        exact (hR w).le
+        positivity
     have hh := ht _ hx v
     exact hy v (by simpa [z, hz] using hh)
 
@@ -443,13 +443,12 @@ private theorem arch_product (F : Type) [Field F] [NumberField F]
     InfinitePlace.Completion.ringEquivComplexOfIsComplex_apply, Circle.coe_exp]
   rw [← Complex.exp_sum]
   congr 1
-  simp only [Complex.ofReal_mul, Complex.ofReal_ofNat, Complex.ofReal_sum,
-    Finset.mul_sum, Finset.sum_mul]
+  simp only [Complex.ofReal_mul, Complex.ofReal_ofNat, Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro v _
   ring
 
-private theorem canonical_diagonal (F : Type) [Field F] [NumberField F]
+theorem canonical_diagonal (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (𝓞 F))) (m : sIntegerRing F S) :
     (∏ v : InfinitePlace F, archTraceCharacter v (algebraMap F v.Completion (m : F))) *
       (∏ v : S, localFiniteCharacter F v.val
@@ -508,10 +507,9 @@ theorem trace_coordinates_and_finite_annihilator
     let Q : PoissonFinite.Space F S → ℂ := fun x =>
       ∏ v : S, (localFiniteCharacter F v.val (x v) : ℂ)
     have hP : Continuous P := by
-      exact continuous_finset_prod _ (fun v _ => continuous_subtype_val.comp
-        ((he v).comp (continuous_apply v)))
-    have hQ : Continuous Q := by
-      exact continuous_finset_prod _ (fun v _ => continuous_subtype_val.comp
+      fun_prop
+    have hQ : Continuous Q := 
+      continuous_finset_prod _ (fun v _ => continuous_subtype_val.comp
         ((continuous_localFiniteCharacter F v.val).comp (continuous_apply v)))
     have hPQ : P = Q := by
       apply (PoissonSFiniteDensity.diagonal_denseRange F S).equalizer hP hQ
@@ -520,8 +518,7 @@ theorem trace_coordinates_and_finite_annihilator
         (algebraMap F v.Completion (m : F)) : ℂ)
       have hA : A ≠ 0 := by
         apply Finset.prod_ne_zero_iff.mpr
-        intro v _
-        exact Circle.coe_ne_zero _
+        simp
       have hp : A * P (PoissonSFiniteDensity.diagonal F S m) = 1 := by
         have ha := arch_product F (fun v => algebraMap F v.Completion (m : F))
         change A = _ at ha
@@ -612,8 +609,7 @@ theorem trace_coordinates_and_finite_annihilator
     · subst w
       simpa using hx v
     · rw [Pi.single_eq_of_ne hw, norm_zero]
-      exact (zpow_pos (by exact_mod_cast
-        (Nat.zero_lt_one.trans (HeightOneSpectrum.one_lt_absNorm w.val))) _).le
+      positivity
   have ht := hdual (Pi.single v (x v)) hs
   rw [PoissonS.finiteBallTraceCharacter_apply] at ht
   have hp : (∏ w : S, localFiniteCharacter F w.val
@@ -657,7 +653,7 @@ theorem dual_alias_ball_finite
   letI : DiscreteTopology (PoissonArch.dualLattice L).toAddSubgroup :=
     inferInstanceAs (DiscreteTopology (PoissonArch.dualLattice L))
   letI : DiscreteTopology ↥(PoissonArch.dualLattice L : Set (PoissonArch.Space F)) :=
-    inferInstanceAs (DiscreteTopology (PoissonArch.dualLattice L))
+    by omega
   have hclosed : IsClosed (PoissonArch.dualLattice L : Set (PoissonArch.Space F)) :=
     AddSubgroup.isClosed_of_discreteTopology (U := (PoissonArch.dualLattice L).toAddSubgroup)
   have hd : DiscreteTopology ↥(PoissonArch.dualLattice L) := inferInstance
@@ -686,7 +682,7 @@ theorem dual_alias_family_finite
     Set.finite_iUnion (fun i => (hA i).image (fun z => (i, z)))
   refine ⟨hf.toFinset, fun z => ?_⟩
   rw [Set.Finite.mem_toFinset]
-  simp only [Set.mem_iUnion, Set.mem_image, Prod.mk.injEq, A, Set.mem_setOf_eq]
+  simp only [Set.mem_iUnion, Set.mem_image, A, Set.mem_setOf_eq]
   constructor
   · rintro ⟨i, w, hw, rfl⟩
     exact hw
@@ -730,7 +726,7 @@ theorem trace_dual_alias_packing
     intro ν μ h
     obtain ⟨m, hm⟩ := hcol (g ν) (g μ) (hgcodiff ν) (hgcodiff μ) h
     refine ⟨⟨(m : F), ?_⟩, hm⟩
-    exact ((S : Set (HeightOneSpectrum (𝓞 F))).integer F).algebraMap_mem m
+    simp
   obtain ⟨c, hc, hsep⟩ :=
     ArithmeticGramPacking.same_color_alias_power_separation
       F S e k C hC hfinite g hg hgfinite col hcolor
@@ -773,8 +769,3 @@ theorem trace_dual_alias_packing
   have hb := hpack n x (fun z => col (g z.2)) T (b α) ρ (V ^ 2)
     hρ hW hball hs
   simpa only [NumberField.mixedEmbedding.euclidean.finrank] using hb
-
-end
-end DedekindZetaZeroFree.ProbeAdditiveGramBounds.ArithmeticGramSteps
-
-end

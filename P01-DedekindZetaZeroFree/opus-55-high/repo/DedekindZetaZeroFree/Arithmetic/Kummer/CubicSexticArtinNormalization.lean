@@ -10,7 +10,6 @@ open NumberField IsDedekindDomain ClassFieldTheory
 namespace DedekindZetaZeroFree
 namespace KPHilbert
 noncomputable section
-set_option autoImplicit false
 set_option maxHeartbeats 1500000
 
 variable (F : Type) [Field F] [NumberField F]
@@ -69,7 +68,3 @@ theorem finiteFamily_source (n : ℕ+) (hmu : (primitiveRoots (n : ℕ) F).Nonem
     powerClassGroupEquivOfRingEquiv_symm_powerClass,
     powerClassGroupEquivOfRingEquiv_symm_powerClass]
   exact (cftSourceCoefficients F v n hmu).symm_apply_apply _
-
-end
-end KPHilbert
-end DedekindZetaZeroFree

@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Ambient prime symbol setup
 
@@ -34,7 +30,7 @@ open scoped ValuativeRel
 
 /-- The ambient fixed-field norm-residue value of the chosen prime
 witness, transported to the original embedded Galois group. -/
-noncomputable def ambientEmbeddedPrimeTransportValue
+def ambientEmbeddedPrimeTransportValue
     (K F E : Type)
     [Field K] [ValuativeRel K] [TopologicalSpace K]
     [IsNonarchimedeanLocalField K]
@@ -79,8 +75,8 @@ noncomputable def ambientEmbeddedPrimeTransportValue
         Gal(SeparableClosure K / K)).toSubgroup ⧸
         extensionSubgroup
           (baseField Gal(SeparableClosure K / K))
-          H₀ (le_baseField H₀)) := by
-    exact ambientEmbeddedAbsoluteQuotientFinite K F i
+          H₀ (le_baseField H₀)) := 
+    ambientEmbeddedAbsoluteQuotientFinite K F i
   let F₀ :=
     abstractFixedField K (SeparableClosure K) H₀
   let hfixed :
@@ -112,7 +108,7 @@ noncomputable def ambientEmbeddedPrimeTransportValue
 
 /-- The fixed-field norm-residue symbol of the chosen prime witness is
 the abelianized restriction of its ambient Frobenius lift. -/
-noncomputable def ambientEmbeddedPrimeSymbolProperty
+def ambientEmbeddedPrimeSymbolProperty
     (K F E : Type)
     [Field K] [ValuativeRel K] [TopologicalSpace K]
     [IsNonarchimedeanLocalField K]
@@ -171,8 +167,8 @@ noncomputable def ambientEmbeddedPrimeSymbolProperty
         Gal(SeparableClosure K / K)).toSubgroup ⧸
         extensionSubgroup
           (baseField Gal(SeparableClosure K / K))
-          H₀ (le_baseField H₀)) := by
-    exact ambientEmbeddedAbsoluteQuotientFinite K F i
+          H₀ (le_baseField H₀)) := 
+    ambientEmbeddedAbsoluteQuotientFinite K F i
   let H : FiniteAbstractField
       Gal(SeparableClosure K / K) :=
     ⟨H₀, ambientEmbeddedAbsoluteQuotientFinite K F i⟩
@@ -296,8 +292,8 @@ theorem
           Gal(SeparableClosure K / K)).toSubgroup ⧸
           extensionSubgroup
             (baseField Gal(SeparableClosure K / K))
-            H₀ (le_baseField H₀)) := by
-      exact ambientEmbeddedAbsoluteQuotientFinite K F i
+            H₀ (le_baseField H₀)) := 
+      ambientEmbeddedAbsoluteQuotientFinite K F i
     let H : FiniteAbstractField
         Gal(SeparableClosure K / K) :=
       ⟨H₀, ambientEmbeddedAbsoluteQuotientFinite K F i⟩
@@ -386,7 +382,3 @@ theorem
   exact
     abelianizationCongr_symm_eq_primeTarget
       _ _ _ _ hsymbol
-
-end LocalClassFieldTheory
-
-end

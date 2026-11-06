@@ -7,7 +7,7 @@ public import DedekindZetaZeroFree.Theta.Unfolding.OrbitExtractionDefinitions
 noncomputable section
 namespace DedekindZetaZeroFree.OrbitExpansion
 open NumberField IsDedekindDomain KPAdelicCoverRestrictedProduct
-open scoped NumberField Classical Topology
+open scoped Classical Topology
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 2000000
 attribute [local instance] KPAdelicCoverRestrictedProduct.localTopology
@@ -98,13 +98,8 @@ theorem pglA_continuous (A : SArithmeticData F) :
         inv_val := by apply Subtype.ext; exact congrArg (fun z : KPAdeles F => z.2 q) y.inv_val }
       have he : Units.map (KPTameCompact.O F q).subtype u =
           Units.map (adeleEval F (Sum.inr q)).toMonoidHom y := by
-        apply Units.ext
         rfl
       have hh := good_A F A.zeta12 A.primitive_zeta12 q hv.1 u
       rw [he] at hh
       exact hh
   exact QuotientGroup.continuous_mk.comp (QuotientGroup.continuous_mk.comp ht)
-
-end DedekindZetaZeroFree.OrbitExpansion
-
-end

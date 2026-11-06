@@ -74,5 +74,3 @@ theorem initial_ray_primitive_descent
     exact hfg.2 (hfmax hgmem hfg_le)
   exact ⟨f, hfne, hfm, θ, hprim, hθ,
     initial_ray_principal_descent_equiv hm hfne hfm η θ hθ⟩
-
-end DedekindZetaZeroFree.LargeSieve

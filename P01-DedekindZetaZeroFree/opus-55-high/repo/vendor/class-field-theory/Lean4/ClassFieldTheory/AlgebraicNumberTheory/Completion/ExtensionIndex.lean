@@ -17,15 +17,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Finite places in a number-field extension
 
@@ -55,7 +46,7 @@ variable
     [Field L] [NumberField L] [Algebra K L]
 
 /-- Contraction of a finite place of `L` to a finite place of `K`. -/
-noncomputable def finitePlaceBelow
+def finitePlaceBelow
     (W : HeightOneSpectrum (𝓞 L)) :
     HeightOneSpectrum (𝓞 K) where
   asIdeal := W.asIdeal.under (𝓞 K)
@@ -76,11 +67,7 @@ theorem finitePlaceBelow_asIdeal
 theorem finitePlaceBelow_self
     (W : HeightOneSpectrum (𝓞 K)) :
     finitePlaceBelow (K := K) W = W := by
-  apply HeightOneSpectrum.ext
-  change
-    W.asIdeal.comap (algebraMap (𝓞 K) (𝓞 K)) =
-      W.asIdeal
-  rw [Algebra.algebraMap_self, Ideal.comap_id]
+  rfl
 
 section Tower
 
@@ -123,7 +110,7 @@ theorem finitePlaceExtension_nonarchimedean
 
 /-- The valuation subring of `L` cut out by an exact extension of the
 normalized absolute value at `v`. -/
-noncomputable def finitePlaceExtensionValuationSubring
+def finitePlaceExtensionValuationSubring
     (v : HeightOneSpectrum (𝓞 K))
     (w : AbsoluteValueExtension
       (HeightOneSpectrum.adicAbv K v) L) :
@@ -154,7 +141,7 @@ theorem ringOfIntegers_mem_finitePlaceExtensionValuationSubring
 
 /-- The canonical map from algebraic integers to the valuation subring
 of an exact finite-place extension. -/
-noncomputable def ringOfIntegersToFinitePlaceExtensionValuationSubring
+def ringOfIntegersToFinitePlaceExtensionValuationSubring
     (v : HeightOneSpectrum (𝓞 K))
     (w : AbsoluteValueExtension
       (HeightOneSpectrum.adicAbv K v) L) :
@@ -182,7 +169,7 @@ theorem ringOfIntegersToFinitePlaceExtensionValuationSubring_coe
 
 /-- The centre in `𝓞 L` of an exact extension of the absolute value at
 `v`. -/
-noncomputable def finitePlaceExtensionCentreIdeal
+def finitePlaceExtensionCentreIdeal
     (v : HeightOneSpectrum (𝓞 K))
     (w : AbsoluteValueExtension
       (HeightOneSpectrum.adicAbv K v) L) :
@@ -217,12 +204,7 @@ theorem mem_finitePlaceExtensionCentreIdeal_iff
     not_isUnit_iff_abs_lt_one_of_mem_iff_le_one
       w.1 A
       (fun y => by
-        change
-          y ∈ finitePlaceExtensionValuationSubring
-              (K := K) (L := L) v w ↔
-            w.1 y ≤ 1
-        rw [finitePlaceExtensionValuationSubring,
-          mem_absoluteValueValuationSubring_iff])
+        rfl)
       (f x)
 
 omit [NumberField L] [FiniteDimensional K L] in
@@ -274,7 +256,7 @@ theorem finitePlaceExtensionCentreIdeal_ne_bot
 
 /-- The finite place of `L` centred at an exact extension of the
 absolute value at `v`. -/
-noncomputable def finitePlaceExtensionCentre
+def finitePlaceExtensionCentre
     (v : HeightOneSpectrum (𝓞 K))
     (w : AbsoluteValueExtension
       (HeightOneSpectrum.adicAbv K v) L) :
@@ -399,8 +381,7 @@ theorem finitePlaceExtensionValuationSubring_eq_localization
     let y : L := algebraMap K L x
     have hy0 : y ≠ 0 := by
       change algebraMap K L x ≠ 0
-      simpa only [map_zero] using
-        (algebraMap K L).injective.ne hx0
+      simp_all
     have hy1 : w.1 y ≠ 1 := by
       change w.1 (algebraMap K L x) ≠ 1
       rw [w.2]
@@ -541,7 +522,7 @@ theorem finitePlaceExtensionCentre_conjugate
 
 /-- An exact extension of the absolute value at `v`, regarded as a finite
 place of `L` lying above `v`. -/
-noncomputable def finitePlaceExtensionCentreInFibre
+def finitePlaceExtensionCentreInFibre
     (v : HeightOneSpectrum (𝓞 K)) :
     AbsoluteValueExtension
         (HeightOneSpectrum.adicAbv K v) L →
@@ -656,10 +637,7 @@ theorem finitePlaceExtensionCentreInFibre_surjective
         finitePlaceBelow (K := K)
             (finitePlaceBelow (K := L) U) =
           finitePlaceBelow (K := K) U := by
-      apply HeightOneSpectrum.ext
-      exact
-        Ideal.under_under
-          (A := 𝓞 K) (B := 𝓞 L) (C := 𝓞 M) Q
+      simp
     rw [← htrans, hUbelowL, W.2]
   let Uv :
       {U : HeightOneSpectrum (𝓞 M) //
@@ -717,7 +695,7 @@ theorem finitePlaceExtensionCentreInFibre_surjective
 
 /-- The exact normalized extensions of the finite absolute value at `v`
 are canonically indexed by the finite places of `L` above `v`. -/
-noncomputable def finitePlaceExtensionEquivAbove
+def finitePlaceExtensionEquivAbove
     (v : HeightOneSpectrum (𝓞 K)) :
     AbsoluteValueExtension
         (HeightOneSpectrum.adicAbv K v) L ≃
@@ -741,7 +719,3 @@ theorem finitePlaceExtensionEquivAbove_coe
       HeightOneSpectrum (𝓞 L)) =
       finitePlaceExtensionCentre (K := K) (L := L) v w :=
   rfl
-
-end Centre
-
-end

@@ -16,12 +16,12 @@ variable {R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ}
 variable {P : KPMsFixedHaarDisintegration.SphericalTransport F ζ hζ}
 variable (M : NativeMeasuredSource F ζ hζ R P) (V : Level F ζ hζ)
 
-private theorem full_shape_measurable :
+theorem full_shape_measurable :
     Measurable (M.shape V ∘ fullToLevel F ζ hζ (nativeDatum F ζ hζ)
       (cofinalLevel F ζ hζ V)) :=
   (M.shape_measurable V).comp (KPMsActualAngularShellSource.fullToLevel_measurable _ _)
 
-private theorem full_shape_map :
+theorem full_shape_map :
     Measure.map (M.shape V ∘ fullToLevel F ζ hζ (nativeDatum F ζ hζ)
       (cofinalLevel F ζ hζ V)) (fullNu M) = normalizedShapeBeta M V := by
   rw [← Measure.map_map (M.shape_measurable V)

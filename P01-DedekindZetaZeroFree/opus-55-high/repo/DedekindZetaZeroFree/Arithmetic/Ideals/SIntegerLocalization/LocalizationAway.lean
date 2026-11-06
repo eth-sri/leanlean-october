@@ -9,10 +9,9 @@ open scoped NumberField Classical WithZero nonZeroDivisors
 open NumberField IsDedekindDomain
 
 namespace DedekindZetaZeroFree.SIntegerLocalization
-noncomputable section
 variable {F : Type} [Field F] [NumberField F]
 
-private theorem exists_pow_mul_le_one (a b : ℤᵐ⁰) (ha : a < 1) (hb : b ≠ 0) :
+theorem exists_pow_mul_le_one (a b : ℤᵐ⁰) (ha : a < 1) (hb : b ≠ 0) :
     ∃ n : ℕ, a ^ n * b ≤ 1 := by
   obtain ⟨n, hn⟩ := exists_pow_lt₀ ha (Units.mk0 b⁻¹ (inv_ne_zero hb))
   exact ⟨n, (lt_of_lt_of_eq (mul_lt_mul_of_pos_right hn (zero_lt_iff.mpr hb))
@@ -55,7 +54,6 @@ theorem isLocalization_away (S : Finset (HeightOneSpectrum (𝓞 F))) :
   constructor
   · intro y
     obtain ⟨n, hn⟩ := y.property
-    change IsUnit (algebraMap (𝓞 F) _ (y : 𝓞 F))
     rw [← hn, map_pow]
     let t := denominator S
     let ti : (S : Set (HeightOneSpectrum (𝓞 F))).integer F :=
@@ -78,6 +76,3 @@ theorem isLocalization_away (S : Finset (HeightOneSpectrum (𝓞 F))) :
     simp only [Submonoid.coe_one, one_mul]
     apply IsFractionRing.injective (𝓞 F) F
     exact congrArg (fun r : (S : Set (HeightOneSpectrum (𝓞 F))).integer F => (r : F)) h
-
-end
-end DedekindZetaZeroFree.SIntegerLocalization

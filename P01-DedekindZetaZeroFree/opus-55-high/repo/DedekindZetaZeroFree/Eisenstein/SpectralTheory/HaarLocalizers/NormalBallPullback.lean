@@ -29,7 +29,7 @@ attribute [local instance 5000] KPContSectorLineL2Isometry.instInnerProductSpace
 set_option maxHeartbeats 4000000
 set_option backward.isDefEq.respectTransparency false
 
-private theorem sectionNorm_nonnegative (s : Sections F ζ hζ U R P H) (b : X_U F ζ hζ U) :
+theorem sectionNorm_nonnegative (s : Sections F ζ hζ U R P H) (b : X_U F ζ hζ U) :
     0 ≤ sectionNorm F ζ hζ U R P H s b := by
   let p := (H.atlas U).components.symm b
   obtain ⟨x, hx⟩ := Quotient.mk_surjective p.2
@@ -38,7 +38,7 @@ private theorem sectionNorm_nonnegative (s : Sections F ζ hζ U R P H) (b : X_U
   rw [← he, sectionNorm_component]
   exact norm_nonneg _
 
-private theorem sectionNorm_memLp (s : BorelL2Sections F ζ hζ U R P H) :
+theorem sectionNorm_memLp (s : BorelL2Sections F ζ hζ U R P H) :
     MemLp (sectionNorm F ζ hζ U R P H s.val) 2 (muU F ζ hζ U R P) ∧
     (eLpNorm (sectionNorm F ζ hζ U R P H s.val) 2 (muU F ζ hζ U R P)).toReal =
       ‖mk F ζ hζ U R P H s‖ := by
@@ -80,7 +80,7 @@ private theorem sectionNorm_memLp (s : BorelL2Sections F ζ hζ U R P H) :
   change _ = ‖(representative_memLp F ζ hζ U R P H s).toLp _‖
   rw [Lp.norm_def, eLpNorm_congr_ae (representative_memLp F ζ hζ U R P H s).coeFn_toLp]
 
-private theorem actual_lower (C : KPCoreChartLocalizers.Chart F ζ hζ H.totallyComplex U (H.atlas U)) :
+theorem actual_lower (C : KPCoreChartLocalizers.Chart F ζ hζ H.totallyComplex U (H.atlas U)) :
     0 < ((H.disintegration U).componentWeight C.component).toReal * C.lower ∧
     ∀ x ∈ closure (Metric.ball (0 : KPCoreChartLocalizers.E C.n) C.radius),
       ((H.disintegration U).componentWeight C.component).toReal * C.lower ≤ actualWeight F ζ hζ U R P H C x := by
@@ -90,7 +90,7 @@ private theorem actual_lower (C : KPCoreChartLocalizers.Chart F ζ hζ H.totally
   intro x hx
   exact mul_le_mul_of_nonneg_left (C.finite_bounds x hx).1 hw.le
 
-private theorem chart_volume_le (C : KPCoreChartLocalizers.Chart F ζ hζ H.totallyComplex U (H.atlas U)) :
+theorem chart_volume_le (C : KPCoreChartLocalizers.Chart F ζ hζ H.totallyComplex U (H.atlas U)) :
     volume.restrict (Metric.ball 0 C.radius) ≤
       ((Fintype.card (C.G F ζ hζ H.totallyComplex U) : ℝ≥0∞) *
         (ENNReal.ofReal (((H.disintegration U).componentWeight C.component).toReal * C.lower))⁻¹) •
@@ -113,7 +113,7 @@ private theorem chart_volume_le (C : KPCoreChartLocalizers.Chart F ζ hζ H.tota
     (by simp : (Fintype.card (C.G F ζ hζ H.totallyComplex U) : ℝ≥0∞) ≠ 0) (by simp), one_mul]
   exact hh'
 
-private theorem chart_base_measurable (C : KPCoreChartLocalizers.Chart F ζ hζ H.totallyComplex U (H.atlas U)) :
+theorem chart_base_measurable (C : KPCoreChartLocalizers.Chart F ζ hζ H.totallyComplex U (H.atlas U)) :
     AEMeasurable (C.toBase F ζ hζ H.totallyComplex U) (volume.restrict (Metric.ball 0 C.radius)) := by
   letI : BorelSpace (X_U F ζ hζ U) := ⟨rfl⟩
   have hc : Continuous (KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative C.component)) := by
@@ -143,7 +143,7 @@ variable (hchart : Measure.map (C.toBase F ζ hζ H.totallyComplex U)
   (Fintype.card (C.G F ζ hζ H.totallyComplex U) : ℝ≥0∞) *
     (ENNReal.ofReal (((H.disintegration U).componentWeight C.component).toReal * C.lower))⁻¹
 
-private theorem chartConstant_finite : chartConstant F ζ hζ U R P H C ≠ ⊤ :=
+theorem chartConstant_finite : chartConstant F ζ hζ U R P H C ≠ ⊤ :=
   ENNReal.mul_ne_top (by simp) (ENNReal.inv_ne_top.mpr
     (ne_of_gt (ENNReal.ofReal_pos.mpr (actual_lower F ζ hζ U R P H C).1)))
 
@@ -155,7 +155,7 @@ private theorem chartConstant_finite : chartConstant F ζ hζ U R P H C ≠ ⊤ 
  def chartCoefficient (s : BorelL2Sections F ζ hζ U R P H)
     (x : KPCoreChartLocalizers.E C.n) : ℂ := (s.val C.component).val (C.coordinates x)
 
-private theorem chartCoefficient_measurable (s : BorelL2Sections F ζ hζ U R P H) :
+theorem chartCoefficient_measurable (s : BorelL2Sections F ζ hζ U R P H) :
     AEStronglyMeasurable (chartCoefficient F ζ hζ U R P H C s)
       (volume.restrict (Metric.ball 0 C.radius)) := by
   have hc : AEMeasurable C.coordinates (volume.restrict (Metric.ball 0 C.radius)) :=
@@ -270,7 +270,7 @@ include hchart hη hηs hηM in
     simp [cutoffCoefficient, chartCoefficient, mul_left_comm, mul_comm, mul_assoc]
 
 include hchart hη hηs hηM hM in
-private theorem cutoffLinear_bound (s : BorelL2Sections F ζ hζ U R P H) :
+theorem cutoffLinear_bound (s : BorelL2Sections F ζ hζ U R P H) :
     ‖cutoffLinear F ζ hζ U R P H C hchart η hη hηs M hηM s‖ ≤
       (M * Real.sqrt ((Fintype.card (C.G F ζ hζ H.totallyComplex U) : ℝ) /
         (((H.disintegration U).componentWeight C.component).toReal * C.lower))) * ‖mk F ζ hζ U R P H s‖ := by

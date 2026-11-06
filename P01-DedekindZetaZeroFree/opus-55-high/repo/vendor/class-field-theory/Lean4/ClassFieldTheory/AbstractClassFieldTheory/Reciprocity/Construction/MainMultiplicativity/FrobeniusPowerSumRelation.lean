@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # The Frobenius power-sum relation for reciprocity multiplicativity
 
@@ -28,7 +25,6 @@ namespace ClassFormation
 open KummerTheory
 open CyclicCohomology
 
-noncomputable section
 
 open CategoryTheory
 
@@ -107,23 +103,23 @@ theorem frobeniusPowerSum_mul_action_sub (D : DegreeData G) (A : Rep ℤ G)
   have h₁ :
       D.frobeniusQuotientAction A K.field L hLK τ₁ p₁ =
         D.frobeniusQuotientAction A K.field L hLK
-          (φ.1 ^ D.frobeniusExponent K L hLK σ₁) p₁ := by
-    exact D.frobeniusActionRemainder_apply_fixedField
+          (φ.1 ^ D.frobeniusExponent K L hLK σ₁) p₁ := 
+    D.frobeniusActionRemainder_apply_fixedField
       A K L hLK φ σ₁ π₁
   have h₃ :
       D.frobeniusQuotientAction A K.field L hLK τ₃ p₃ =
         D.frobeniusQuotientAction A K.field L hLK
-          (φ.1 ^ D.frobeniusExponent K L hLK σ₃) p₃ := by
-    exact D.frobeniusActionRemainder_apply_fixedField
+          (φ.1 ^ D.frobeniusExponent K L hLK σ₃) p₃ := 
+    D.frobeniusActionRemainder_apply_fixedField
       A K L hLK φ σ₃ π₃
   have h₄ :
       D.frobeniusQuotientAction A K.field L hLK τ₄ p₄ =
         D.frobeniusQuotientAction A K.field L hLK
-          (φ.1 ^ D.frobeniusExponent K L hLK σ₄) p₄ := by
-    exact D.frobeniusActionRemainder_apply_fixedField
+          (φ.1 ^ D.frobeniusExponent K L hLK σ₄) p₄ := 
+    D.frobeniusActionRemainder_apply_fixedField
       A K L hLK φ σ₄ π₄
-  have hτ : τ₃ = τ₄ * τ₁ := by
-    exact D.frobeniusActionRemainder_mul K L hLK φ σ₁ σ₂
+  have hτ : τ₃ = τ₄ * τ₁ := 
+    D.frobeniusActionRemainder_mul K L hLK φ σ₁ σ₂
   change
     D.frobeniusQuotientAction A K.field L hLK φ.1
           (s₄ + s₁ - s₃) - (s₄ + s₁ - s₃) =
@@ -142,7 +138,7 @@ theorem frobeniusPowerSum_mul_action_sub (D : DegreeData G) (A : Rep ℤ G)
         D.frobeniusQuotientActionLinearMap A K.field L hLK φ.1 s₄ +
           D.frobeniusQuotientActionLinearMap A K.field L hLK φ.1 s₁ -
           D.frobeniusQuotientActionLinearMap A K.field L hLK φ.1 s₃
-    rw [map_sub, map_add]
+    simp
   rw [hmap]
   calc
     _ =
@@ -168,9 +164,3 @@ theorem frobeniusPowerSum_mul_action_sub (D : DegreeData G) (A : Rep ℤ G)
             D.frobeniusQuotientAction A K.field L hLK (τ₄ * τ₁) p₃) := by
       rw [← h₄, ← h₁, ← h₃, hτ]
       abel
-
-end DegreeData
-
-end
-
-end ClassFormation

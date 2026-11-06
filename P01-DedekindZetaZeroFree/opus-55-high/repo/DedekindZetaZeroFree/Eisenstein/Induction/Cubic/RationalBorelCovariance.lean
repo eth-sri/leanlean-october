@@ -19,7 +19,7 @@ abbrev L (s : ℂ)
     KPGlobalTorusFunctionData.G F ζ hζ → ℂ :=
   (KPContFlatSourceRecipe.flatR F ζ hζ s v).val
 
-private theorem rationalBorel_invariance (s : ℂ)
+theorem rationalBorel_invariance (s : ℂ)
     (v : KPMsRationalCompactCrossPairing.Vplus F ζ hζ (KPContFlatSourceRecipe.D F ζ hζ))
     (a : KPGlobalResidualKernel.rationalBorel F ζ hζ)
     (g : KPGlobalTorusFunctionData.G F ζ hζ) :

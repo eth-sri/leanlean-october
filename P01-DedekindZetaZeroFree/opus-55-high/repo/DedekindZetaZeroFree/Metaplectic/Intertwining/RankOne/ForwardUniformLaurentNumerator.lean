@@ -12,8 +12,6 @@ open KPLocalStoneVonNeumann KPLocalPrincipalSeries KPRankOneShellContinuation
 open KPRankOneOpenCellKernel KPRankOneCenterInducedDiagonalComparison
 open KPRankOneReverseRegulatorShellsRaw
 
-noncomputable section
-set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
@@ -25,7 +23,7 @@ variable (A : LocalBorelData (K := LocalField F q) (G := Cover F ζ hζ q) T)
 variable (P : Polarization T)
 variable [MeasurableSpace (LocalField F q)] [BorelSpace (LocalField F q)]
 
-private theorem convolution_eval {V W : Type*} [AddCommMonoid V] [Module ℂ V]
+theorem convolution_eval {V W : Type*} [AddCommMonoid V] [Module ℂ V]
     [AddCommMonoid W] [Module ℂ W] (p : ℤ →₀ (V →ₗ[ℂ] W)) (ψ : ℤ →₀ V)
     (r : ℂ) (hr : r ≠ 0) :
     (∑ n ∈ p.support, ∑ m ∈ ψ.support, Finsupp.single (n + m) ((p n) (ψ m))).sum
@@ -45,7 +43,7 @@ private theorem convolution_eval {V W : Type*} [AddCommMonoid V] [Module ℂ V]
   ext n
   rw [smul_comm]
 
-private theorem root_parameter (r : ℂˣ) :
+theorem root_parameter (r : ℂˣ) :
     KPRankOneRootParameter.r (LocalField F q) (additiveParameter F q r) = (r : ℂ) := by
   have hq1 : 1 < residueCardinality (LocalField F q) := Finite.one_lt_card
   have hlog : (Real.log (residueCardinality (LocalField F q) : ℝ) : ℂ) ≠ 0 := by
@@ -113,6 +111,3 @@ theorem forward_uniform_laurent_numerator
     centerEvaluate F ζ hζ q T A I L .plus p r
       (ψ.sum (fun n f => (r : ℂ) ^ n • f)) at hc
   rw [hc]
-
-end
-end DedekindZetaZeroFree.KPRankOneReverseLaurentShellExpansion.FiniteAnnulusSteps

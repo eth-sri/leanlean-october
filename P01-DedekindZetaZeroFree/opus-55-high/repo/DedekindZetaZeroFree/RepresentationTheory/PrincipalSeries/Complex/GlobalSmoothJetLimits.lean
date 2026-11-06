@@ -17,9 +17,9 @@ lemma global_smooth_jet_limit (F : ℕ → ℂ → ℂ)
         (iteratedFDeriv ℝ n G) atTop (Metric.closedBall (0 : ℂ) R) := by
   classical
   have hex (n : ℕ) (x : ℂ) : ∃ q : (ℂ [×n]→L[ℝ] ℂ),
-      Tendsto (fun i => iteratedFDeriv ℝ n (F i) x) atTop (𝓝 q) := by
-    exact cauchySeq_tendsto_of_complete ((hC n (‖x‖+1)).cauchySeq (by
-      simp only [Metric.mem_closedBall, dist_zero_right]; linarith))
+      Tendsto (fun i => iteratedFDeriv ℝ n (F i) x) atTop (𝓝 q) := 
+    cauchySeq_tendsto_of_complete ((hC n (‖x‖+1)).cauchySeq (by
+      simp))
   choose Q hQ using hex
   have hu (n : ℕ) (R : ℝ) : TendstoUniformlyOn
       (fun i => iteratedFDeriv ℝ n (F i)) (Q n) atTop (Metric.closedBall (0 : ℂ) R) :=
@@ -30,7 +30,7 @@ lemma global_smooth_jet_limit (F : ℕ → ℂ → ℂ)
     refine ⟨Metric.ball 0 (‖x‖+1), ?_, ?_⟩
     · rw [nhdsWithin_univ]
       exact Metric.isOpen_ball.mem_nhds (by
-        simp only [Metric.mem_ball, dist_zero_right]; linarith)
+        simp)
     · exact ((hu n (‖x‖+1)) u hu').mono (fun i hi y hy =>
         hi y (Metric.ball_subset_closedBall hy))
   let G : ℂ → ℂ := fun x => (Q 0 x).curry0
@@ -52,4 +52,3 @@ lemma global_smooth_jet_limit (F : ℕ → ℂ → ℂ)
   have he : Q n = iteratedFDeriv ℝ n G := funext (hqeq n)
   rw [← he]
   exact hu n R
-end DedekindZetaZeroFree.KPCplxPrincipalSeriesGlobalLimits

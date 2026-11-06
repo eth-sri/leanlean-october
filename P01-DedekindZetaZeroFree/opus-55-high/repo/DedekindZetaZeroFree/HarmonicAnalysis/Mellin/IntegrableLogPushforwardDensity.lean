@@ -26,16 +26,16 @@ theorem integrable_log_density_of_radial_section
       right_inv := by intro p; simp
       measurable_toFun := measurable_fst.prodMk ((ha.comp measurable_fst).mul measurable_snd)
       measurable_invFun := measurable_fst.prodMk ((ha.comp measurable_fst).inv.mul measurable_snd) }
-  have hT : MeasurePreserving T (volume.prod ν) (volume.prod ν) := by
-    exact (MeasurePreserving.id volume).skew_product
+  have hT : MeasurePreserving T (volume.prod ν) (volume.prod ν) := 
+    (MeasurePreserving.id volume).skew_product
       (g := fun s y => a s * y)
       ((ha.comp measurable_fst).mul measurable_snd)
       (Filter.Eventually.of_forall fun s => (measurePreserving_mul_left ν (a s)).map_eq)
   let U : (ℝ × G) ≃ᵐ (ℝ × G) :=
     { toFun := fun p => (p.1 - L p.2, p.2)
       invFun := fun p => (p.1 + L p.2, p.2)
-      left_inv := by intro p; dsimp; congr 1; ring
-      right_inv := by intro p; dsimp; congr 1; ring
+      left_inv := by intro p; simp
+      right_inv := by intro p; simp
       measurable_toFun := (measurable_fst.sub (hL.comp measurable_snd)).prodMk measurable_snd
       measurable_invFun := (measurable_fst.add (hL.comp measurable_snd)).prodMk measurable_snd }
   have hU : MeasurePreserving U (volume.prod ν) (volume.prod ν) := by
@@ -47,13 +47,13 @@ theorem integrable_log_density_of_radial_section
     change MeasurePreserving (fun p : ℝ × G => (p.1 - L p.2, p.2)) _ _
     simpa only [Function.comp_def, id_eq, sub_eq_add_neg, Prod.swap, Prod.fst, Prod.snd] using hh
   let κ : ℝ → ℂ := (Set.Ioc (0 : ℝ) 1).indicator (fun _ => 1)
-  have hκ : Integrable κ := by
-    exact (integrableOn_const (by simp : volume (Set.Ioc (0 : ℝ) 1) ≠ ⊤)).integrable_indicator measurableSet_Ioc
+  have hκ : Integrable κ := 
+    (integrableOn_const (by simp : volume (Set.Ioc (0 : ℝ) 1) ≠ ⊤)).integrable_indicator measurableSet_Ioc
   have hiκ : (∫ s, κ s) = 1 := by
-    simp [κ, integral_indicator measurableSet_Ioc, integral_const, Real.volume_Ioc]
+    simp [κ, integral_indicator measurableSet_Ioc, integral_const]
   let K : ℝ × G → ℂ := fun p => κ (p.1 - L p.2) * w (a (p.1 - L p.2) * p.2)
-  have hK : Integrable K (volume.prod ν) := by
-    exact hU.integrable_comp_of_integrable (hT.integrable_comp_of_integrable (hκ.mul_prod hw))
+  have hK : Integrable K (volume.prod ν) := 
+    hU.integrable_comp_of_integrable (hT.integrable_comp_of_integrable (hκ.mul_prod hw))
   refine ⟨fun t => ∫ y, K (t, y) ∂ν, hK.integral_prod_left, ?_⟩
   intro φ hφ hb
   obtain ⟨C, hC⟩ := hb
@@ -84,7 +84,7 @@ set_option synthInstance.maxSize 512
  def realInto (F : Type) [Field F] [NumberField F] (v : InfinitePlace F) : ℝ →+* v.Completion :=
   if hv : v.IsReal then (InfinitePlace.Completion.ringEquivRealOfIsReal hv).symm.toRingHom
   else (InfinitePlace.Completion.ringEquivComplexOfIsComplex (v.not_isReal_iff_isComplex.mp hv)).symm.toRingHom.comp Complex.ofRealHom
-private lemma realInto_norm {F : Type} [Field F] [NumberField F] (v : InfinitePlace F) (x : ℝ) :
+lemma realInto_norm {F : Type} [Field F] [NumberField F] (v : InfinitePlace F) (x : ℝ) :
     ‖realInto F v x‖ = ‖x‖ := by
   dsimp [realInto]
   split_ifs with hv
@@ -103,8 +103,8 @@ private lemma realInto_norm {F : Type} [Field F] [NumberField F] (v : InfinitePl
         (v.not_isReal_iff_isComplex.mp hv)).symm (x : ℂ)) = (x : ℂ) from
           (InfinitePlace.Completion.ringEquivComplexOfIsComplex
             (v.not_isReal_iff_isComplex.mp hv)).apply_symm_apply (x : ℂ)]
-    exact Complex.norm_real x
-private lemma realInto_continuous {F : Type} [Field F] [NumberField F] (v : InfinitePlace F) :
+    simp
+lemma realInto_continuous {F : Type} [Field F] [NumberField F] (v : InfinitePlace F) :
     Continuous (realInto F v) := by
   dsimp [realInto]
   split_ifs with hv
@@ -129,7 +129,7 @@ private lemma realInto_continuous {F : Type} [Field F] [NumberField F] (v : Infi
       rw [← map_mul, ← Real.exp_add]
       rw [show _ + _ = (0 : ℝ) by ring, Real.exp_zero, map_one]
     · simp
-private lemma radial_continuous {F : Type} [Field F] [NumberField F]
+lemma radial_continuous {F : Type} [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (𝓞 F))) : Continuous (radial S) := by
   apply Units.continuous_iff.mpr
   constructor
@@ -156,9 +156,8 @@ private lemma modulus_pos {F : Type} [Field F] [NumberField F]
       intro hz
       have he := congrArg (fun x : SLocalProduct F S => x.2 v) y.val_inv
       change y.val.2 v * y.inv.2 v = 1 at he
-      rw [hz, zero_mul] at he
-      exact zero_ne_one he
-    exact norm_pos_iff.mpr hz
+      simp_all
+    positivity
 
 theorem modulus_mul
     {F : Type} [Field F] [NumberField F]
@@ -178,13 +177,11 @@ theorem modulus_mul
     rw [← Finset.prod_mul_distrib]
     apply Finset.prod_congr rfl
     intro v _
-    rw [Units.val_mul, Prod.snd_mul]
-    have h : ((y.val).2 * (z.val).2) v = (y.val).2 v * (z.val).2 v := Pi.mul_apply ..
-    rw [h, norm_mul]
+    simp
   rw [ProbeWeight.modulus, ProbeWeight.modulus, ProbeWeight.modulus, h1, h2]
   ring
 
-private lemma radial_modulus {F : Type} [Field F] [NumberField F]
+lemma radial_modulus {F : Type} [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (𝓞 F))) (s : ℝ) :
     ProbeWeight.modulus F S (radial S s) = Real.exp s := by
   have hn : (Fintype.card (InfinitePlace F) : ℝ) ≠ 0 := by
@@ -281,6 +278,3 @@ theorem schwartzTensor_integrable_log_pushforward_density
         (gFinite v) (hFinite v).1 (hFinite v).2 νv (σ : ℂ) hσ
   exact integrable_log_density_of_radial_section ν (fun y => Real.log (ProbeWeight.modulus F S y))
     (Real.measurable_log.comp hm) (radial S) hrad hshift _ hw
-
-end
-end DedekindZetaZeroFree.ProbeSheetLogDensity

@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # From ideal-theoretic to completed unramifiedness
 
@@ -77,7 +72,7 @@ structure FinitePlaceCompletionIntegralUniformizer
 
 /-- A chosen global integral uniformizer and its image in a finite-place
 completion. -/
-noncomputable def chosenFinitePlaceCompletionIntegralUniformizer
+def chosenFinitePlaceCompletionIntegralUniformizer
     {F : Type} [Field F] [NumberField F]
     (v : HeightOneSpectrum (𝓞 F)) :
     FinitePlaceCompletionIntegralUniformizer v := by
@@ -101,9 +96,7 @@ noncomputable def chosenFinitePlaceCompletionIntegralUniformizer
       change Valued.v (π : v.adicCompletion F) ≤ 1
       rw [HeightOneSpectrum.valuedAdicCompletion_eq_valuation',
         HeightOneSpectrum.valuation_of_algebraMap, hπ]
-      change WithZero.exp (-1 : ℤ) ≤ WithZero.exp 0
-      rw [WithZero.exp_le_exp]
-      omega⟩
+      simp⟩
   let baseDVF :
       ValuationTheory.DiscreteValuationField.DVF
         (v.adicCompletion F) :=
@@ -155,10 +148,7 @@ noncomputable def chosenFinitePlaceCompletionIntegralUniformizer
           (IsLocalRing.maximalIdeal
               (v.adicCompletionIntegers F)) ^ 1 := by
       simpa [πCompletion] using hπConcreteMaximal
-    have hmem :=
-      (ValuationTheory.ringEquiv_mem_maximalIdeal_pow_iff
-        eBase 1 πCompletion).1 hpow
-    simpa using hmem
+    simp_all
   have hπConcreteNotDeep :
       πConcrete ∉
         (IsLocalRing.maximalIdeal
@@ -526,5 +516,3 @@ theorem chosenFinitePlaceIsUnramified_of_isUnramifiedAt
   exact
     finitePlaceExtensionCentre_ramificationIdx_eq_one_of_isUnramifiedAt
       (K := K) (L := L) v hunram
-
-end

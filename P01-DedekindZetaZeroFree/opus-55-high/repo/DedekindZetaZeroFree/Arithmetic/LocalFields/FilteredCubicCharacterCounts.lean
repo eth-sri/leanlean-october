@@ -25,14 +25,14 @@ private lemma cube (z : Mu3) : z ^ 3 = 1 := by
   apply Subtype.ext
   exact (mem_rootsOfUnity 3 _).mp z.property
 
-private lemma homCard (Q : Type*) [CommGroup Q] [Finite Q]
+lemma homCard (Q : Type*) [CommGroup Q] [Finite Q]
     (hp : ∀ q : Q, q ^ 3 = 1) : Nat.card (Q →* Mu3) = Nat.card Q := by
   let e : (Q →* Mu3) ≃ (Q →* ℂˣ) :=
     { toFun := fun f => (rootsOfUnity 3 ℂ).subtype.comp f
       invFun := fun f => f.codRestrict (rootsOfUnity 3 ℂ) (fun q => by
         rw [mem_rootsOfUnity, ← map_pow, hp, map_one])
-      left_inv := fun f => by ext q; rfl
-      right_inv := fun f => by ext q; rfl }
+      left_inv := fun f => by rfl
+      right_inv := fun f => by rfl }
   letI : HasEnoughRootsOfUnity ℂ (Monoid.exponent Q) :=
     HasEnoughRootsOfUnity.of_dvd ℂ (Monoid.exponent_dvd_of_forall_pow_eq_one hp)
   exact (Nat.card_congr e).trans (CommGroup.card_monoidHom_of_hasEnoughRootsOfUnity Q ℂ)
@@ -57,14 +57,14 @@ noncomputable def levelEquiv {U : Type*} [CommGroup U] [TopologicalSpace U]
         fun x hx => by
           change f (x : U ⧸ H) = 1
           rw [(QuotientGroup.eq_one_iff x).mpr ((show V ≤ H from le_sup_right) hx), map_one]⟩
-      left_inv := fun χ => by apply Subtype.ext; ext x; rfl
+      left_inv := fun χ => by rfl
       right_inv := fun f => by
         apply MonoidHom.ext
         intro q
         obtain ⟨x, rfl⟩ := QuotientGroup.mk'_surjective H q
         rfl }
 
-private lemma levelCount {U : Type*} [CommGroup U] [TopologicalSpace U]
+lemma levelCount {U : Type*} [CommGroup U] [TopologicalSpace U]
     [IsTopologicalGroup U] (V : Subgroup U) (hopen : IsOpen (V : Set U))
     [hfin : (cubes U ⊔ V).FiniteIndex] :
     Finite {χ : Character U // V ≤ χ.toMonoidHom.ker} ∧
@@ -170,9 +170,6 @@ theorem kp_filtered_cubic_character_count
       intro x hx
       rfl
   have hzcard : Nat.card {χ : Character U // conductor V χ = 0} = 1 := by
-    rw [Nat.card_congr (Equiv.subtypeEquivRight hzerochar)]
-    simp
+    simp_all
   exact ⟨inferInstance, hex, hmin, hbound, fun j => (hcount j).2,
     hdiff, hzerochar, hzcard⟩
-
-end DedekindZetaZeroFree

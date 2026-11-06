@@ -63,8 +63,7 @@ def latticeSetoid (R : Type*) [CommRing R] [IsDedekindDomain R]
     refl := by
       intro M
       refine ⟨LinearEquiv.refl K (K × K), ?_⟩
-      change Submodule.map LinearMap.id M.val = M.val
-      exact Submodule.map_id _
+      simp
     symm := by
       intro M N h
       obtain ⟨g, hg⟩ := h
@@ -88,9 +87,8 @@ def lineSetoid (R : Type*) [CommRing R] [IsDedekindDomain R]
     refl := by
       intro q
       refine ⟨LinearEquiv.refl K (K × K), ?_, ?_⟩
-      · change Submodule.map LinearMap.id M = M
-        exact Submodule.map_id _
-      · exact congrFun Projectivization.map_id q
+      · simp
+      simp
     symm := by
       intro q q' h
       obtain ⟨g, hg, hq⟩ := h
@@ -99,8 +97,7 @@ def lineSetoid (R : Type*) [CommRing R] [IsDedekindDomain R]
       · rw [← hq]
         have hi := congrFun (Projectivization.map_comp g.toLinearMap g.injective
           g.symm.toLinearMap g.symm.injective) q
-        simpa only [LinearEquiv.symm_comp, Projectivization.map_id,
-          id_eq, Function.comp_apply] using hi.symm
+        simp_all
     trans := by
       intro q q' q'' h₁ h₂
       obtain ⟨g, hg, hq⟩ := h₁
@@ -113,5 +110,3 @@ def lineSetoid (R : Type*) [CommRing R] [IsDedekindDomain R]
         rw [Projectivization.map_comp g.toLinearMap g.injective
           h.toLinearMap h.injective, Function.comp_apply, hq, hq']
   }
-
-end DedekindZetaZeroFree

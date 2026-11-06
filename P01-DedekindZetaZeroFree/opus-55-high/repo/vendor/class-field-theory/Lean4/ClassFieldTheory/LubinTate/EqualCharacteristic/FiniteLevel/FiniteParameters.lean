@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # The uniformizer norm identity: finite parameters for the Lubin--Tate action
 
@@ -79,7 +75,7 @@ def equalCharacteristicLubinTateUnitParameterEquiv
   toFun a := (a.constantUnit, a.higherCoeff)
   invFun a := equalCharacteristicLubinTateUnitParameterOfCoefficients
     F n a.1 a.2
-  left_inv a := by cases a; rfl
+  left_inv a := by rfl
   right_inv a := rfl
 
 /-- The finite-level unit parameter space is finite. -/
@@ -91,7 +87,7 @@ instance equalCharacteristicLubinTateUnitParameter_finite
 
 /-- The finite polynomial power series represented by a visible unit
 parameter. -/
-noncomputable def equalCharacteristicLubinTateUnitParameterSeries
+def equalCharacteristicLubinTateUnitParameterSeries
     (F : LocalField.{u, v} K) (n : ℕ)
     (a : equalCharacteristicLubinTateUnitParameter F n) :
     F.residueField⟦X⟧ :=
@@ -131,7 +127,7 @@ theorem equalCharacteristicLubinTateUnitParameterSeries_isUnit
   exact a.constantUnit.isUnit
 
 /-- The actual power-series unit attached to a finite parameter. -/
-noncomputable def equalCharacteristicLubinTateUnitParameterUnit
+def equalCharacteristicLubinTateUnitParameterUnit
     (F : LocalField.{u, v} K) (n : ℕ)
     (a : equalCharacteristicLubinTateUnitParameter F n) :
     F.residueField⟦X⟧ˣ :=
@@ -145,7 +141,7 @@ theorem equalCharacteristicLubinTateUnitParameterUnit_val
     (equalCharacteristicLubinTateUnitParameterUnit F n a :
       F.residueField⟦X⟧) =
       equalCharacteristicLubinTateUnitParameterSeries F n a :=
-  (equalCharacteristicLubinTateUnitParameterSeries_isUnit F n a).unit_spec
+  by rfl
 
 /-- Visible coefficient equality determines the finite parameter. -/
 theorem equalCharacteristicLubinTateUnitParameter_eq_of_coeff_eq
@@ -164,7 +160,7 @@ theorem equalCharacteristicLubinTateUnitParameter_eq_of_coeff_eq
     simpa using hcoeff (i + 1) (Nat.succ_le_iff.mpr i.isLt)
 
 /-- The primitive-root image attached to a finite unit parameter. -/
-noncomputable def equalCharacteristicLubinTateUnitParameterRoot
+def equalCharacteristicLubinTateUnitParameterRoot
     (F : LocalField.{u, v} K)
     [CharP K F.residueCharacteristic]
     (n : ℕ) (a : equalCharacteristicLubinTateUnitParameter F n) :
@@ -210,8 +206,3 @@ theorem equalCharacteristicLubinTateUnitParameter_natCard
   rw [Nat.card_congr
       (equalCharacteristicLubinTateUnitParameterEquiv F n),
     Nat.card_prod, Nat.card_units, Nat.card_fun, Nat.card_fin]
-
-end EqualCharacteristic
-end LubinTate
-
-end

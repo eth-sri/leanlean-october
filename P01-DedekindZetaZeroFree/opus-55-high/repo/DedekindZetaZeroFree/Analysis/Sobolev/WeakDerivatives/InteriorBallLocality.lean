@@ -13,7 +13,7 @@ open MeasureTheory Topology
 open scoped Classical
 open KPContLocalNorm KPContLocalEnergy
 
-private theorem interior_ball {n : ℕ} (hn : 0 < n) (Ω : TopologicalSpace.Opens (Space n))
+theorem interior_ball {n : ℕ} (hn : 0 < n) (Ω : TopologicalSpace.Opens (Space n))
     (x : Space n) (hx : x ∈ Ω) :
     ∃ B : LocalBall n, x ∈ B.carrier ∧ closure B.carrier ⊆ (Ω : Set (Space n)) := by
   obtain ⟨r, hr, hsub⟩ := Metric.isOpen_iff.mp Ω.isOpen x hx
@@ -22,7 +22,7 @@ private theorem interior_ball {n : ℕ} (hn : 0 < n) (Ω : TopologicalSpace.Open
   · rw [LocalBall.carrier, closure_ball _ (ne_of_gt (half_pos hr))]
     exact (Metric.closedBall_subset_ball (by linarith)).trans hsub
 
-private theorem compact_memLp {n : ℕ} (hn : 0 < n) (Ω : TopologicalSpace.Opens (Space n))
+theorem compact_memLp {n : ℕ} (hn : 0 < n) (Ω : TopologicalSpace.Opens (Space n))
     (f : Space n → ℂ) (hf : Measurable f)
     (hl : ∀ B : LocalBall n, closure B.carrier ⊆ (Ω : Set (Space n)) →
       MemLp f 2 (volume.restrict B.carrier))
@@ -44,9 +44,6 @@ private theorem compact_memLp {n : ℕ} (hn : 0 < n) (Ω : TopologicalSpace.Open
 private theorem derivativeTest_eq {n : ℕ} {Ω : TopologicalSpace.Opens (Space n)}
     (φ : TestFunction Ω ℂ ⊤) (j : Fin n) :
     (fun x => derivativeTest φ j x) = KPCompactInteriorH1.coordinatePartial j (fun x => φ x) := by
-  funext x
-  rw [derivativeTest, TestFunction.lineDerivCLM_eq_fderivCLM,
-    TestFunction.fderivCLM_apply_of_le _ (by simp)]
   rfl
 
 private theorem test_mul_integrable {n : ℕ} (B : LocalBall n) (f : Space n → ℂ)
@@ -101,7 +98,7 @@ private theorem ball_IBP {n : ℕ} (B : LocalBall n) (f : Space n → ℂ)
       filter_upwards [h1 j] with x hx
       rw [hx]
 
-private theorem finite_test_decomposition {n : ℕ} (hn : 0 < n)
+theorem finite_test_decomposition {n : ℕ} (hn : 0 < n)
     (Ω : TopologicalSpace.Opens (Space n)) (ψ : TestFunction Ω ℂ ⊤) :
     ∃ (ι : Type) (_ : Fintype ι) (B : ι → LocalBall n),
       (∀ i, closure (B i).carrier ⊆ (Ω : Set (Space n))) ∧
@@ -199,7 +196,7 @@ private theorem scalar_lift_memLp {n : ℕ} (f : Space n → ℂ) (hf : Measurab
     (K : Set (Space n)) (hlp : MemLp f 2 (volume.restrict K)) :
     MemLp (fun x => WithLp.toLp 2 (fun _ : Fin 1 => f x)) 2 (volume.restrict K) := by
   have hm : Measurable (fun x => WithLp.toLp 2 (fun _ : Fin 1 => f x)) :=
-    (PiLp.continuous_toLp 2 (fun _ : Fin 1 => ℂ)).measurable.comp (measurable_pi_iff.mpr (fun _ => hf))
+    by fun_prop
   apply hlp.of_le_mul hm.aestronglyMeasurable (c := 1)
   apply Filter.Eventually.of_forall
   intro x
@@ -253,7 +250,3 @@ theorem weakFirst_of_all_interior_balls (n : ℕ) (hn : 0 < n)
     simpa only [Pi.zero_apply, mul_zero] using congrArg (fun z : ℂ => g j x * z) (ψ.zero_on_compl hx)
   rw [hL, hR]
   exact global_IBP hn Ω f g hlocal ψ j
-
-end DedekindZetaZeroFree
-
-end

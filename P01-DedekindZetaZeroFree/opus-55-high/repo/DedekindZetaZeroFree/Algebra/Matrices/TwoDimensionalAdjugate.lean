@@ -2,7 +2,7 @@ module
 
 public import Mathlib.LinearAlgebra.Complex.Module
 public import Mathlib.LinearAlgebra.Matrix.Hermitian
-public import DedekindZetaZeroFree.Algebra.Matrices.AdjugateDeterminant
+public import Mathlib.LinearAlgebra.Matrix.Adjugate
 
 @[expose] public section
 
@@ -32,5 +32,3 @@ theorem adjugate_fin_two_eq_trace_smul_one_sub (A : Matrix (Fin 2) (Fin 2) K) :
   rw [Matrix.adjugate_fin_two, Matrix.trace_fin_two]
   ext i j
   fin_cases i <;> fin_cases j <;> simp
-
-end Matrix

@@ -48,7 +48,3 @@ theorem exists_isConj_torusExp_mem_Icc (g : SU2) :
   refine ⟨Real.arccos (Real.cos φ), ⟨Real.arccos_nonneg _, Real.arccos_le_pi _⟩, ?_⟩
   exact hφ.trans (isConj_torusExp_iff_cos_eq.mpr
     (Real.cos_arccos (Real.neg_one_le_cos φ) (Real.cos_le_one φ)))
-
-end SU2
-
-end DedekindZetaZeroFree.TauCeti

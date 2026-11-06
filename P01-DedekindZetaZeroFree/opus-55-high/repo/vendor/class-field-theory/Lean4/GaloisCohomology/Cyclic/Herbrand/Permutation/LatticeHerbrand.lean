@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Herbrand quotients of complete permutation sublattices
 
@@ -45,12 +41,10 @@ def permutationMulAction
   smul g i := ρ g i
   one_smul i := by
     change ρ 1 i = i
-    rw [map_one]
-    rfl
+    simp
   mul_smul g h i := by
     change ρ (g * h) i = ρ g (ρ h i)
-    rw [map_mul]
-    rfl
+    simp
 
 /-- Coordinate permutation over the integers. -/
 def intCoordinatePermutation (σ : Equiv.Perm ι) :
@@ -58,10 +52,8 @@ def intCoordinatePermutation (σ : Equiv.Perm ι) :
   toFun x i := x (σ.symm i)
   invFun x i := x (σ i)
   left_inv x := by
-    funext i
     simp
   right_inv x := by
-    funext i
     simp
   map_add' _ _ := rfl
   map_smul' _ _ := rfl
@@ -93,8 +85,8 @@ theorem basisEquivFun_symm_intCoordinatePermutation
     intro i
     simp only [LinearMap.comp_apply, Pi.basisFun_apply]
     have hsingle (j : ι) :
-        b.equivFun.symm (Pi.single j 1) = b j := by
-      exact _root_.Basis.equivFun_symm_single b j
+        b.equivFun.symm (Pi.single j 1) = b j := 
+      _root_.Basis.equivFun_symm_single b j
     calc
       b.equivFun.symm
           (intCoordinatePermutation (ρ g)
@@ -154,8 +146,7 @@ theorem permutationSublattice_stable
       simpa only [coe_permutationLatticeEquiv] using h
     rw [heq]
     exact Submodule.subset_span ⟨ρ g i, rfl⟩
-  · rw [map_zero]
-    exact Submodule.zero_mem _
+  · simp
   · intro y z _ _ hy hz
     rw [map_add]
     exact Submodule.add_mem _ hy hz
@@ -178,8 +169,7 @@ def permutationSublatticeDistribMulAction
   one_smul x := by
     apply Subtype.ext
     change permutationRepresentation ρ 1 x.1 = x.1
-    rw [permutationRepresentation_one]
-    rfl
+    simp
   mul_smul g h x := by
     apply Subtype.ext
     change
@@ -189,11 +179,9 @@ def permutationSublatticeDistribMulAction
     rw [permutationRepresentation_mul]
     rfl
   smul_zero g := by
-    apply Subtype.ext
-    exact map_zero (permutationRepresentation ρ g)
+    rfl
   smul_add g x y := by
-    apply Subtype.ext
-    exact map_add (permutationRepresentation ρ g) x.1 y.1
+    rfl
 
 /-- An additive action, written multiplicatively. -/
 @[reducible]
@@ -269,7 +257,7 @@ theorem multiplicativeSubmoduleQuotientFinite
       (QuotientAddGroup.mk'
           N.toAddSubgroup).ker.toSubgroup =
         N.toAddSubgroup.toSubgroup
-    rw [QuotientAddGroup.ker_mk']
+    simp
   let e :
       Multiplicative M ⧸
           multiplicativeSubmoduleSubgroup N ≃*
@@ -296,8 +284,7 @@ def completePermutationLatticeDistribMulAction
   one_smul x := by
     apply Subtype.ext
     change permutationRepresentation ρ 1 x.1 = x.1
-    rw [permutationRepresentation_one]
-    rfl
+    simp
   mul_smul g h x := by
     apply Subtype.ext
     change
@@ -307,15 +294,13 @@ def completePermutationLatticeDistribMulAction
     rw [permutationRepresentation_mul]
     rfl
   smul_zero g := by
-    apply Subtype.ext
-    exact map_zero (permutationRepresentation ρ g)
+    rfl
   smul_add g x y := by
-    apply Subtype.ext
-    exact map_add (permutationRepresentation ρ g) x.1 y.1
+    rfl
 
 /-- The canonical complete permutation sublattice, viewed as a
 subgroup of the multiplicative copy of the ambient lattice. -/
-noncomputable def permutationSublatticeMultiplicativeSubgroup
+def permutationSublatticeMultiplicativeSubgroup
     (ρ : G →* Equiv.Perm ι)
     (L : Submodule ℤ (ι → ℝ)) [DiscreteTopology L]
     [IsZLattice ℝ L]
@@ -394,7 +379,7 @@ theorem
 
 /-- The subgroup cut out by the canonical permutation sublattice is
 canonically the multiplicative copy of that sublattice. -/
-noncomputable def
+def
     permutationSublatticeSubgroupMulEquiv
     (ρ : G →* Equiv.Perm ι)
     (L : Submodule ℤ (ι → ℝ)) [DiscreteTopology L]
@@ -486,7 +471,7 @@ theorem
 
 /-- The integral-linear automorphisms underlying the action on the
 canonical permutation sublattice. -/
-noncomputable def permutationSublatticeModuleAut
+def permutationSublatticeModuleAut
     (ρ : G →* Equiv.Perm ι)
     (L : Submodule ℤ (ι → ℝ)) [DiscreteTopology L]
     [IsZLattice ℝ L]
@@ -501,7 +486,7 @@ noncomputable def permutationSublatticeModuleAut
 
 /-- Multiplicative coordinates in the distinguished integral basis of
 the canonical permutation sublattice. -/
-noncomputable def permutationSublatticeBasisMulEquivFunctions
+def permutationSublatticeBasisMulEquivFunctions
     (ρ : G →* Equiv.Perm ι)
     (L : Submodule ℤ (ι → ℝ)) [DiscreteTopology L]
     [IsZLattice ℝ L]
@@ -952,9 +937,7 @@ theorem
       ∀ (g : G) (x : B),
         e (g • x) = g • e x := by
     intro g x
-    exact
-      permutationSublatticeSubgroupMulEquiv_equivariant
-        ρ L hL g x
+    rfl
   let subgroupH0Finite :
       Finite (HerbrandH0 G B) :=
     herbrandH0Finite_of_equivariantMulEquiv
@@ -1008,9 +991,3 @@ theorem
             (permutationOrbitStabilizer ω) : ℚ) :=
       permutationSublattice_herbrandQuotient_eq_stabilizerProduct
         ρ L hL σ hgen
-
-end StableSublattice
-
-end CyclicCohomology
-
-end

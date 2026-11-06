@@ -75,21 +75,19 @@ theorem spherical_table (A : SArithmeticData F) (G : ThetaBranch.AllowedRecipe A
     exact_mod_cast hcard
   rw [ThetaBranch.sphericalFactor, hx]
   rcases hd with rfl | rfl
-  · have he : (2 : ℤ) * (0 + 3 * (k : ℤ)) = (6 * k : ℕ) := by push_cast; ring
-    simp only [Nat.cast_add, Nat.cast_mul, Nat.cast_ofNat, Nat.cast_zero, zero_add,
-      he, zpow_natCast, pow_mul, h6, one_pow, mul_one, pow_zero]
+  · have he : (2 : ℤ) * (0 + 3 * (k : ℤ)) = (6 * k : ℕ) := by omega
+    simp only [Nat.cast_mul, Nat.cast_ofNat, zero_add, pow_mul, mul_one, pow_zero]
     simp only [sexticSphericalCoefficient]
     rw [if_neg (by omega), if_pos (by omega), hcardC]
     rw [show (3 * (k : ℤ)) / 3 = k by omega,
-      show (2 : ℤ) * (3 * (k : ℤ)) = (6 * k : ℕ) by push_cast; ring,
+      show (2 : ℤ) * (3 * (k : ℤ)) = (6 * k : ℕ) by omega,
       zpow_natCast, pow_mul, h6, one_pow, mul_one]
-  · have he : (2 : ℤ) * (1 + 3 * (k : ℤ)) = (2 + 6 * k : ℕ) := by push_cast; ring
-    simp only [Nat.cast_add, Nat.cast_mul, Nat.cast_ofNat, Nat.cast_one, he,
-      zpow_natCast, pow_add, pow_mul, h6, one_pow, mul_one, pow_one]
+  · have he : (2 : ℤ) * (1 + 3 * (k : ℤ)) = (2 + 6 * k : ℕ) := by omega
+    simp only [Nat.cast_add, Nat.cast_mul, Nat.cast_ofNat, Nat.cast_one, he, mul_one, pow_one]
     simp only [sexticSphericalCoefficient, ThetaBranch.gaussTwo]
     rw [if_neg (by omega), if_neg (by omega), if_pos (by omega), hcard, hcardC,
       show (1 + 3 * (k : ℤ)) / 3 = k by omega]
-    rw [show (2 + 6 * (k : ℤ)) = (2 + 6 * k : ℕ) by push_cast; ring,
+    rw [show (2 + 6 * (k : ℤ)) = (2 + 6 * k : ℕ) by rfl,
       zpow_natCast, pow_add, pow_mul, h6, one_pow, mul_one]
 
 theorem sphericalFactor_generatorProduct (A : SArithmeticData F) (G : ThetaBranch.AllowedRecipe A)
@@ -138,7 +136,7 @@ private lemma char_one (A : SArithmeticData F) (σ : F →+* ℂ) (I : A.Exterio
 private lemma symbol_integral (A : SArithmeticData F) (σ : F →+* ℂ)
     (p : ThetaBranch.ExteriorPrime A) (x : Fˣ) (t : A.R) (hx : (x : F) = (t : F)) :
     ThetaBranch.symbol A σ p x = σ (A.sexticResidue (ThetaBranch.primeIdeal A p) t) := by
-  have ht : t ≠ 0 := by intro h; exact x.ne_zero (hx.trans (by simp [h]))
+  have ht : t ≠ 0 := by intro h; simp_all
   have he : x = ThetaReflectionData.rowUnit A ⟨t, ht⟩ := Units.ext hx
   rw [he, NormalizedProbe.principal_prime_symbol_eq_sexticResiduePowerChar, char_one]
 
@@ -153,19 +151,13 @@ theorem generatorProduct_phase (A : SArithmeticData F) (G : ThetaBranch.AllowedR
       ∏ q ∈ P.erase p, σ (A.sexticResidue (ThetaBranch.primeIdeal A p) (r q)) ^ (2 * d p * d q) := by
   have hval : ((∏ q ∈ P.erase p, G.generator (ThetaBranch.primeIdeal A q) ^
       (d q + 3 * k q) : Fˣ) : F) = ((∏ q ∈ P.erase p, r q ^ (d q + 3 * k q) : A.R) : F) := by
-    rw [Units.coe_prod]
-    change _ = A.R.subtype (∏ q ∈ P.erase p, r q ^ (d q + 3 * k q))
-    rw [map_prod]
-    apply Finset.prod_congr rfl
-    intro q hq
-    simp only [Units.val_pow_eq_pow_val, map_pow, hr q]
-    rfl
+    simp_all
   rw [symbol_integral A σ p _ _ hval]
   have hprod (T : Finset (ThetaBranch.ExteriorPrime A)) :
       σ (A.sexticResidue (ThetaBranch.primeIdeal A p) (∏ q ∈ T, r q ^ (d q + 3 * k q))) =
         ∏ q ∈ T, σ (A.sexticResidue (ThetaBranch.primeIdeal A p) (r q)) ^ (d q + 3 * k q) := by
     unfold SArithmeticData.sexticResidue SArithmeticData.residueValue
-    simp only [map_prod, map_pow]
+    simp
   rw [hprod, ← Finset.prod_pow]
   apply Finset.prod_congr rfl
   intro q hq
@@ -180,7 +172,3 @@ theorem generatorProduct_phase (A : SArithmeticData F) (G : ThetaBranch.AllowedR
   rw [← pow_mul, show (d q + 3 * k q) * (2 * d p) =
     2 * d p * d q + 6 * (k q * d p) by ring, pow_add,
     pow_mul _ 6 (k q * d p), h6, one_pow, mul_one]
-
-end DedekindZetaZeroFree.ExteriorWhittakerValues.NumericalSpherical
-
-end

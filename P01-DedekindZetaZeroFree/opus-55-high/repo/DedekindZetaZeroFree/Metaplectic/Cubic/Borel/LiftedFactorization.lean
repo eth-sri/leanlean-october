@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Metaplectic.Cubic.Borel.RootLiftRigidity
 
 @[expose] public section
 
-noncomputable section
 
 namespace DedekindZetaZeroFree.FiniteCentralBorel
 
@@ -19,10 +18,8 @@ open scoped Matrix
 private lemma diag_ne_zero {A : GL2 F v} (hu : A 1 0 = 0) : A 0 0 ≠ 0 ∧ A 1 1 ≠ 0 := by
   have hdet := Matrix.GeneralLinearGroup.det_ne_zero A
   rw [Matrix.det_fin_two] at hdet
-  rw [show (A : Matrix (Fin 2) (Fin 2) (LocalField F v)) 1 0 = 0 from hu,
-    mul_zero, sub_zero] at hdet
-  exact mul_ne_zero_iff.mp hdet
-private lemma diagonal_mem (y : (LocalField F v)ˣ) : diagonalElement F v y ∈ diagonalTorus F v := by
+  simp_all
+lemma diagonal_mem (y : (LocalField F v)ˣ) : diagonalElement F v y ∈ diagonalTorus F v := by
   refine ⟨diagonalMatrix F v y, rfl, ?_, ?_⟩ <;>
     simp [diagonalMatrix, Matrix.GeneralLinearGroup.mkOfDetNeZero]
 private lemma ordinary_factor (b : upperBorel F v) :
@@ -40,9 +37,7 @@ private lemma ordinary_factor (b : upperBorel F v) :
     simp only [Matrix.GeneralLinearGroup.coe_scalar]
     rw [Matrix.mul_apply, Fin.sum_univ_two]
     fin_cases i <;> fin_cases j <;>
-      simp [upperRootMatrix, diagonalMatrix, Matrix.GeneralLinearGroup.mkOfDetNeZero,
-        Matrix.mul_apply, Fin.sum_univ_two, Matrix.scalar_apply, Matrix.diagonal_apply,
-        u, borelRatio_eq F v b A hA hu, hu, h11]
+      simp [upperRootMatrix, diagonalMatrix, Matrix.GeneralLinearGroup.mkOfDetNeZero, Matrix.mul_apply, Fin.sum_univ_two, Matrix.scalar_apply, u, borelRatio_eq F v b A hA hu, hu, h11]
   rw [← hA]
   unfold upperRootElement diagonalElement
   rw [← map_mul]
@@ -74,14 +69,14 @@ theorem exists_unique_lifted_factorization
   change π b = upperRootElement F v a * diagonalElement F v (borelRatio F v ⟨π b, hb⟩) at ha
   let t := n (Multiplicative.ofAdd (-a)) * b
   have hfac : b = n (Multiplicative.ofAdd a) * t := by
-    simp [t, ← mul_assoc, ← map_mul]
+    simp [t, ← mul_assoc]
   have hproj : π t = diagonalElement F v (borelRatio F v ⟨π b, hb⟩) := by
     change π (n (Multiplicative.ofAdd (-a)) * b) = _
     rw [map_mul, hn]
     conv_lhs => rw [ha]
     change ordinaryUpperRootHom F v (Multiplicative.ofAdd (-a)) *
       (ordinaryUpperRootHom F v (Multiplicative.ofAdd a) * _) = _
-    simp [← mul_assoc, ← map_mul]
+    simp
   have ht : π t ∈ diagonalTorus F v := by
     rw [hproj]
     exact diagonal_mem F v _
@@ -93,7 +88,7 @@ theorem exists_unique_lifted_factorization
         simp [mul_assoc]
       _ = n (Multiplicative.ofAdd (-a')) * (n (Multiplicative.ofAdd a') * t') * t⁻¹ := by
         rw [← hfac, hfac']
-      _ = _ := by simp [← mul_assoc, ← map_mul]
+      _ = _ := by simp [← mul_assoc]
   have hroot : upperRootElement F v (-a' + a) ∈ diagonalTorus F v := by
     have hm := (diagonalTorus F v).mul_mem ht' ((diagonalTorus F v).inv_mem ht)
     rw [← map_inv, ← map_mul, ← heq, ← map_mul, hn] at hm
@@ -104,7 +99,3 @@ theorem exists_unique_lifted_factorization
   refine ⟨heqa, ?_⟩
   subst a'
   exact mul_left_cancel (hfac'.symm.trans hfac)
-
-end DedekindZetaZeroFree.FiniteCentralBorel
-
-end

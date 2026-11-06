@@ -16,7 +16,7 @@ def normalizedTorusProfile (K : Subgroup (G F ζ hζ)) (f : Flat F ζ hζ K)
   ‖f.val 0 (t.val * k.val)‖ /
     (((KPGlobalTorusFunctionData.delta F ζ hζ t : NNReal) : ℝ)) ^ ((2 : ℝ) / 3)
 
-private theorem torus_delta_pos (t : KPGlobalTorusFunctionData.E F ζ hζ) :
+theorem torus_delta_pos (t : KPGlobalTorusFunctionData.E F ζ hζ) :
     (0 : ℝ) < ((KPGlobalTorusFunctionData.delta F ζ hζ t : NNReal) : ℝ) :=
   NNReal.coe_pos.mpr (pos_iff_ne_zero.mpr
     (Units.ne_zero (KPGlobalTorusFunctionData.delta F ζ hζ t)))

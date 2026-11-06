@@ -15,10 +15,10 @@ noncomputable def radiusQuadratic : MvPolynomial (Fin 3) ℂ :=
 private lemma deriv_radius (i : Fin 3) :
     pderiv i radiusQuadratic = 2 * X i := by
   classical
-  simp only [radiusQuadratic, map_sum, pderiv_pow, pderiv_X, pow_one]
+  simp only [radiusQuadratic, map_sum, pderiv_pow, pderiv_X]
   rw [Finset.sum_eq_single i]
   · simp
-  · intro j hj hji; simp [Pi.single_eq_of_ne hji]
+  · simp_all
   · simp
 private lemma radius_homogeneous : radiusQuadratic.IsHomogeneous 2 := by
   apply IsHomogeneous.sum
@@ -41,7 +41,7 @@ private lemma lap_radius_hom {q : MvPolynomial (Fin 3) ℂ} {d : ℕ}
       radiusQuadratic * polynomialLaplacian q +
         (2 * (2 * (d : ℂ) + 3)) • q := by
   rw [lap_radius_mul, hq.sum_X_mul_pderiv]
-  simp only [nsmul_eq_mul, smul_eq_C_mul, map_mul, map_add, map_ofNat, map_one, C_eq_coe_nat]
+  simp only [nsmul_eq_mul, smul_eq_C_mul, map_mul, map_add, map_ofNat, C_eq_coe_nat]
   ring
 
 theorem laplacian_radius_pow {q : MvPolynomial (Fin 3) ℂ} {degree : ℕ}
@@ -59,8 +59,7 @@ theorem laplacian_radius_pow {q : MvPolynomial (Fin 3) ℂ} {degree : ℕ}
     simp only [Nat.cast_add, Nat.cast_mul, Nat.cast_ofNat, Nat.cast_succ,
       Nat.add_sub_cancel, smul_eq_C_mul, map_mul, map_add, map_ofNat, map_one, C_eq_coe_nat]
     cases k with
-    | zero => simp only [pow_zero, one_mul, Nat.cast_zero, mul_zero, zero_mul,
-        zero_add, add_zero, map_zero, pow_one]; ring
+    | zero => simp only [pow_zero, one_mul, Nat.cast_zero, mul_zero, zero_mul, zero_add, add_zero]; ring
     | succ k =>
       simp only [Nat.add_sub_cancel, Nat.cast_add, Nat.cast_one, pow_succ]
       ring
@@ -99,9 +98,7 @@ private lemma radial_inverse {p : MvPolynomial (Fin 3) ℂ} {n : ℕ}
   have hz : polynomialLaplacian (c⁻¹ • p) = 0 := hh.2
   change polynomialLaplacian (c⁻¹ • p) = 0 at hz
   change _ + c • (radiusQuadratic ^ (k + 1 - 1) * (c⁻¹ • p)) = _
-  rw [hz]
-  simp only [mul_zero, zero_add, Nat.add_sub_cancel, mul_smul_comm,
-    smul_smul, mul_inv_cancel₀ hc, one_smul]
+  simp_all
 
 theorem homogeneous_fischer {p : MvPolynomial (Fin 3) ℂ} {degree : ℕ}
     (hp : p.IsHomogeneous degree) :
@@ -151,7 +148,7 @@ theorem homogeneous_fischer {p : MvPolynomial (Fin 3) ℂ} {degree : ℕ}
         by_cases hk0 : k = 0
         · subst k
           simp only [ite_true, mul_zero, Nat.sub_zero]
-          exact ⟨hp.sub hr, by change polynomialLaplacian (p - r) = 0; rw [map_sub, hrl, sub_self]⟩
+          exact ⟨hp.sub hr, by simp_all⟩
         · simp only [hk0, ite_false]
           convert hg (k - 1) (by omega) using 1
           congr 1
@@ -162,5 +159,3 @@ theorem homogeneous_fischer {p : MvPolynomial (Fin 3) ℂ} {degree : ℕ}
           and_false, ite_false, Nat.add_sub_cancel]
         change p = r + (p - r)
         ring
-
-end DedekindZetaZeroFree.ComplexFractionalInverse.FiniteFischerRaw

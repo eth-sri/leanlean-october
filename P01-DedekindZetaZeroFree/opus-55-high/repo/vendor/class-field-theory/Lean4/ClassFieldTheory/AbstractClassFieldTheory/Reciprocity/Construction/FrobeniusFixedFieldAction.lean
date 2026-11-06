@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 universe u
 
 namespace ClassFormation
@@ -48,7 +44,7 @@ namespace DegreeData
 
 /-- The action on a Frobenius fixed field induced by an element commuting
 with its defining generator. -/
-noncomputable def frobeniusFixedFieldAction (D : DegreeData G) (A : Rep ℤ G)
+def frobeniusFixedFieldAction (D : DegreeData G) (A : Rep ℤ G)
     [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
     [TotallyDisconnectedSpace G]
     (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
@@ -79,16 +75,13 @@ noncomputable def frobeniusFixedFieldAction (D : DegreeData G) (A : Rep ℤ G)
           ⟨k.1⁻¹ * t.1 * k.1, hcMem⟩
         calc
           A.ρ t.1 (A.ρ k.1 a.1) = A.ρ (t.1 * k.1) a.1 := by
-            rw [map_mul]
-            rfl
+            simp
           _ = A.ρ (k.1 * c.1) a.1 := by simp [c, mul_assoc]
-          _ = A.ρ k.1 (A.ρ c.1 a.1) := by rw [map_mul]; rfl
+          _ = A.ρ k.1 (A.ρ c.1 a.1) := by simp
           _ = A.ρ k.1 a.1 := by rw [a.2 c]⟩
-      map_zero' := by apply Subtype.ext; exact map_zero _
+      map_zero' := by simp
       map_add' := by
-        intro a b
-        apply Subtype.ext
-        exact map_add _ _ _ }
+        simp }
 
 /-- The fixed-field action has the expected ambient automorphism after coercion. -/
 @[simp]
@@ -141,7 +134,7 @@ theorem frobeniusFixedFieldAction_coe_of_mk (D : DegreeData G) (A : Rep ℤ G)
   rw [D.frobeniusFixedFieldAction_coe]
   calc
     A.ρ t.1 a.1 = A.ρ t.1 (A.ρ r.1 a.1) := by rw [a.2 r]
-    _ = A.ρ (t.1 * r.1) a.1 := by rw [map_mul]; rfl
+    _ = A.ρ (t.1 * r.1) a.1 := by simp
     _ = A.ρ k.1 a.1 := by simp [r, t]
 
 /-- The fixed-field action coincides with the conjugation-stable action. -/
@@ -166,7 +159,6 @@ theorem frobeniusFixedFieldAction_eq_conjugateStableAction
         k.1⁻¹ hstable a := by
   dsimp only
   apply Subtype.ext
-  rw [D.frobeniusFixedFieldAction_coe, conjugateStableAction_coe]
   simp
 
 /-- Relative norm in a power-fixed-field tower is equivariant for every
@@ -317,11 +309,3 @@ theorem fixedFieldPowerSum_inclusion (D : DegreeData G) (A : Rep ℤ G)
   exact congrArg Subtype.val
     (D.frobeniusFixedFieldAction_inclusion A K L hLK σ
       (q ^ i.1) (Commute.pow_left hq i.1) a)
-
-end DegreeData
-
-end fixedFieldActions
-
-end
-
-end ClassFormation

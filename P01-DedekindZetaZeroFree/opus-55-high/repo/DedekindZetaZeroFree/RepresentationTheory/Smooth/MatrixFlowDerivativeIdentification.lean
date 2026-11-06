@@ -21,7 +21,7 @@ def wordIndexEquiv : Fin (KPContActualSphericalRightFieldIdentification.groupDim
   (KPContActualSphericalRightFieldIdentification.lieEnumeration F).trans (basisEquiv F)
 
 omit [NumberField F] in
-private theorem matrix_basis (b : KPContActualSphericalRightFieldIdentification.LieIndex F)
+theorem matrix_basis (b : KPContActualSphericalRightFieldIdentification.LieIndex F)
     (t : ℝ) (v : NumberField.InfinitePlace F) :
     KPSmoothLocalQuotientCharts.lieMatrix F (t • Pi.single b 1) v =
       KPSmoothActualFlowData.sl2Matrix (fun j => if (v,j) = basisEquiv F b then t else 0) := by
@@ -65,7 +65,3 @@ theorem actualRightWord_eq_wordDerivative
     funext t
     rw [matrixExp_eq_flow]
     exact ih _
-
-end DedekindZetaZeroFree.KPMsClearedTruncationL2.NativeWordBridge
-
-end

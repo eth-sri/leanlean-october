@@ -37,11 +37,7 @@ variable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     | h g => exact hs.2 g
 
  theorem finitePart_eq_chart : KPGlobalTorusFunctionData.finitePart F ζ hζ =
-    KPSmoothLocalQuotientCharts.finiteSubgroup F ζ hζ := by
-  unfold KPGlobalTorusFunctionData.finitePart KPSmoothLocalQuotientCharts.finiteSubgroup
-  congr 1
-  ext x
-  simp [KPSmoothLocalQuotientCharts.finiteTuples, Subgroup.mem_iInf, MonoidHom.mem_ker]
+    KPSmoothLocalQuotientCharts.finiteSubgroup F ζ hζ := by apply DedekindZetaZeroFree.KPMsClearedTruncationL2.ActualWordSpatial.finitePart_eq <;> assumption
 
 end DedekindZetaZeroFree.KPMsGreenFlux.IntrinsicFrameSpectral
 

@@ -48,7 +48,7 @@ theorem uniform_oscillatory_integral_rapid_decay
         apply le_of_eq
         congr 1
         funext t
-        simp [norm_mul, Complex.norm_exp, Complex.mul_re, Complex.mul_im]
+        simp [Complex.norm_exp, Complex.mul_re, Complex.mul_im]
       _ ≤ D₀ := by simpa using h₀ i hi
   have hderiv := congrFun (Real.fourier_iteratedDeriv (hsmooth i hi)
     (fun k _ => hintegrable i hi k) (n := n) (by simp)) w
@@ -61,8 +61,7 @@ theorem uniform_oscillatory_integral_rapid_decay
         push_cast
         field_simp
         <;> ring
-      rw [hid]
-      simp [norm_mul]
+      simp_all
     calc
       |τ| ^ n * ‖F‖ = ‖FourierTransform.fourier (iteratedDeriv n (p i)) w‖ := by
         rw [hderiv, norm_smul, norm_pow, hnorm]
@@ -72,7 +71,7 @@ theorem uniform_oscillatory_integral_rapid_decay
         apply le_of_eq
         congr 1
         funext t
-        simp [norm_smul, Complex.norm_exp, Complex.mul_re]
+        simp [Complex.norm_exp, Complex.mul_re]
       _ ≤ Dₙ := hₙ i hi
   have hpoly : (1 + |τ|) ^ n * ‖F‖ ≤ 2 ^ n * (D₀ + Dₙ) := by
     by_cases ht : |τ| ≤ 1
@@ -109,7 +108,7 @@ noncomputable section
 open scoped Classical NumberField
 open NumberField IsDedekindDomain MeasureTheory
 
-private theorem probeModulus_pos
+theorem probeModulus_pos
     {F : Type} [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (𝓞 F))) (y : (SLocalProduct F S)ˣ) :
     0 < ProbeWeight.modulus F S y := by
@@ -123,7 +122,7 @@ private theorem probeModulus_pos
     intro v _
     exact norm_pos_iff.mpr (isUnit_iff_ne_zero.mp (Pi.isUnit_iff.mp hb v))
 
-private theorem modulus_cpow_split
+theorem modulus_cpow_split
     {F : Type} [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (𝓞 F))) (y : (SLocalProduct F S)ˣ)
     (σ τ : ℝ) :
@@ -158,8 +157,7 @@ theorem log_disintegration_fourier_identity
   have hbdd : ∃ C : ℝ, ∀ t : ℝ, ‖Complex.exp (Complex.I * (τ : ℂ) * (t : ℂ))‖ ≤ C := by
     refine ⟨1, fun t => ?_⟩
     rw [Complex.norm_exp]
-    have hre : (Complex.I * (τ : ℂ) * (t : ℂ)).re = 0 := by simp
-    rw [hre, Real.exp_zero]
+    simp
   have hkey := hp.2.2 σ hσ
     (fun t : ℝ => Complex.exp (Complex.I * (τ : ℂ) * (t : ℂ))) hcont hbdd
   rw [← hkey]
@@ -212,7 +210,7 @@ namespace DedekindZetaZeroFree.ProbeSheetLogDensity
 noncomputable section
 open MeasureTheory
 
-private theorem verticalStrip_complexExpWeight_iteratedDeriv (c : ℝ) (n : ℕ) :
+theorem verticalStrip_complexExpWeight_iteratedDeriv (c : ℝ) (n : ℕ) :
     iteratedDeriv n (fun t : ℝ => (Real.exp (c * t) : ℂ)) =
       fun t => (c : ℂ) ^ n * (Real.exp (c * t) : ℂ) := by
   induction n with
@@ -225,7 +223,7 @@ private theorem verticalStrip_complexExpWeight_iteratedDeriv (c : ℝ) (n : ℕ)
     convert hd.deriv using 1 <;>
       simp only [pow_succ, Complex.ofReal_mul, id_eq, mul_one] <;> ring
 
-private theorem verticalStrip_nonpositiveExpWeight_derivative_bound
+theorem verticalStrip_nonpositiveExpWeight_derivative_bound
     (f : ℝ → ℂ) (hf : ContDiff ℝ (⊤ : ℕ∞) f)
     (c D : ℝ) (hD : |c| ≤ D) (n : ℕ) (t : ℝ) (ht : c * t ≤ 0) :
     ‖iteratedDeriv n (fun t => (Real.exp (c * t) : ℂ) * f t) t‖ ≤
@@ -268,14 +266,13 @@ theorem exponential_family_derivative_envelope
   let M : ℝ → ℝ := fun t => ∑ i ∈ Finset.range (n + 1), C i *
     (‖iteratedDeriv (n - i) (p a) t‖ + ‖iteratedDeriv (n - i) (p b) t‖)
   have hC (i : ℕ) : 0 ≤ C i :=
-    mul_nonneg (Nat.cast_nonneg _) (pow_nonneg (sub_nonneg.mpr hab) i)
+    by positivity
   refine ⟨M, ?_, ?_, ?_⟩
   · exact integrable_finset_sum _ fun i hi =>
       ((ha (n - i) (Nat.sub_le _ _)).norm.add
         (hb (n - i) (Nat.sub_le _ _)).norm).const_mul (C i)
   · intro t
-    exact Finset.sum_nonneg fun i hi =>
-      mul_nonneg (hC i) (add_nonneg (norm_nonneg _) (norm_nonneg _))
+    positivity
   · intro σ hσ t
     by_cases ht : t ≤ 0
     · rw [hshift σ hσ a ha_mem]
@@ -310,7 +307,7 @@ open NumberField IsDedekindDomain MeasureTheory
 
 set_option maxHeartbeats 1000000
 set_option synthInstance.maxSize 512
-private lemma modulus_positive {F : Type} [Field F] [NumberField F]
+lemma modulus_positive {F : Type} [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (𝓞 F))) (y : (SLocalProduct F S)ˣ) :
     0 < ProbeWeight.modulus F S y := by
   apply mul_pos
@@ -325,9 +322,8 @@ private lemma modulus_positive {F : Type} [Field F] [NumberField F]
       intro hz
       have he := congrArg (fun x : SLocalProduct F S => x.2 v) y.val_inv
       change y.val.2 v * y.inv.2 v = 1 at he
-      rw [hz, zero_mul] at he
-      exact zero_ne_one he
-    exact norm_pos_iff.mpr hz
+      simp_all
+    positivity
 
 private lemma weight_shift (r σ τ : ℝ) (hr : 0 < r) :
     (r : ℂ) ^ (σ : ℂ) * (Real.exp ((τ - σ) * Real.log r) : ℂ) =
@@ -355,8 +351,8 @@ theorem logMellinDensity_parameter_shift
     (hw.mul (hp.1 σ hσ).continuous).locallyIntegrable
   intro g hg hgc
   have hc : Continuous (fun t => (g t : ℂ)) := Complex.continuous_ofReal.comp hg.continuous
-  have hgcC : HasCompactSupport (fun t => (g t : ℂ)) := by
-    exact hgc.comp_left (g := fun t : ℝ => (t : ℂ)) rfl
+  have hgcC : HasCompactSupport (fun t => (g t : ℂ)) := 
+    hgc.comp_left (g := fun t : ℝ => (t : ℂ)) rfl
   have hcb : ∃ C : ℝ, ∀ t, ‖(g t : ℂ)‖ ≤ C := by
     simpa only [Complex.norm_real] using hgc.exists_bound_of_continuous hg.continuous
   have htestc : Continuous (fun t => (Real.exp ((τ - σ) * t) : ℂ) * (g t : ℂ)) :=
@@ -487,8 +483,3 @@ theorem fourier_mellin_rapid_on_strip
   intro σ hσ τ
   rw [ProbeWeight.fourierMellin, hidentity σ hσ τ]
   exact hdecay σ hσ τ
-
-end
-end DedekindZetaZeroFree.ProbeSheetFourierMellinBounds
-
-end

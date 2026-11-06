@@ -43,8 +43,6 @@ noncomputable def rationalBeta (q m : ℝ) (f : ℕ) (L : ℂ) : ℂ :=
   (m : ℂ) * ((q : ℂ)⁻¹) ^ f * L ^ (f - 1) * (L - 1) /
     (1 - (q : ℂ)⁻¹ * L)
 
-open Filter
-open scoped Topology
 
 theorem rationalBeta_shell_sum (q m : ℝ) (f : ℕ) (hf : 1 ≤ f) (L : ℂ)
     (h : ‖(q : ℂ)⁻¹ * L‖ < 1) :
@@ -68,12 +66,6 @@ theorem rationalBeta_shell_sum (q m : ℝ) (f : ℕ) (hf : 1 ≤ f) (L : ℂ)
     have h1 : (q : ℂ)⁻¹ * L = 1 := by
       have := sub_eq_zero.mp h0
       exact this.symm
-    have := h
-    rw [h1, norm_one] at this
-    exact lt_irrefl 1 this
+    simp_all
   have hDd : (1 - (q : ℂ)⁻¹ * L)⁻¹ * (1 - (q : ℂ)⁻¹ * L) = 1 := inv_mul_cancel₀ hne
   linear_combination ((m : ℂ) * (q : ℂ)⁻¹ ^ f * L ^ (f - 1)) * hDd
-
-end KPRamifiedBeta
-
-end DedekindZetaZeroFree

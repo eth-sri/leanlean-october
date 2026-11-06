@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Finite-place decomposition groups in Galois towers
 
@@ -31,7 +25,6 @@ The results are independent of the S-unit Kummer construction.
 open scoped NumberField Classical IsMulCommutative
 open NumberField IsDedekindDomain
 
-noncomputable section
 
 namespace GlobalClassFieldTheory.ClassFieldAxiom
 
@@ -135,7 +128,7 @@ theorem
         _root_.finitePlaceDecompositionGroup
           (K := M) (L := L) q
     rw [hfull]
-    exact Subgroup.mem_top tau
+    simp
   let rho :=
     RamificationTheory.HilbertRamification.ValuationSubring.restrictAutomorphismScalars
       (K := F) (M := M) tau
@@ -152,8 +145,7 @@ theorem
         F
         (_root_.chosenFinitePlaceExtension
           (L := L) p).1
-  rw [← hDchosen, ← hDvalue]
-  exact hrho
+  simp_all
 
 /-- An unramified chosen finite-place decomposition group is cyclic. -/
 theorem finitePlaceDecompositionGroup_isCyclic_of_chosenUnramified
@@ -191,7 +183,3 @@ theorem finitePlaceDecompositionGroup_isCyclic_of_chosenUnramified
     eLocal.isCyclic.mpr
       (LocalFieldTheory.isCyclic_galoisGroup_of_unramifiedValuation
         Fv Lv)
-
-end GlobalClassFieldTheory.ClassFieldAxiom
-
-end

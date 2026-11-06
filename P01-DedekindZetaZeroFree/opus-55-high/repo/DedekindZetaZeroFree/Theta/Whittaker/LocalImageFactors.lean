@@ -31,6 +31,3 @@ instance actualLocalModule (M : ∀ q, LocalImageData R q)
   cases p with
   | inl w => exact inferInstanceAs (Module ℂ KPGlobalResidualConstruction.complexCore)
   | inr q => exact inferInstance
-end DedekindZetaZeroFree.MomentSources
-
-end

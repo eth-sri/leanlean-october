@@ -27,7 +27,7 @@ variable (F : Type) [Field F] [NumberField F]
 def spectralPatch (u : ℤ) (t₀ : (K F w)ˣ) : Set (K F w)ˣ :=
   {t | (t : K F w) ∈ frequencyCoset F w u t₀}
 
-private theorem values_eq_of_chart_eq
+theorem values_eq_of_chart_eq
     (f g : Sections F ζ hζ w m (ψ F w) (J F ζ hζ w ρ))
     (c : LocalChart F ζ hζ w m) (t : c.ball.domain)
     (p : P F ζ hζ w) (hp : slope F ζ hζ w p = t.val)
@@ -42,23 +42,23 @@ private theorem values_eq_of_chart_eq
     ⟨p * (c.lift t)⁻¹, hH⟩
   have hpe : p = (n F ζ hζ w b * z F ζ hζ w e) * c.lift t := by
     rw [← hbe]
-    exact (inv_mul_cancel_right p (c.lift t)).symm
+    simp
   rw [hpe, sections_covariance, sections_covariance]
   exact congrArg (fun v =>
     (((ψ F w (Multiplicative.ofAdd b) * iota F ζ hζ e : ℂˣ) : ℂ)) • v) heq
 
-private theorem spectralPatch_open (u : ℤ) (t₀ : (K F w)ˣ) :
+theorem spectralPatch_open (u : ℤ) (t₀ : (K F w)ˣ) :
     IsOpen (spectralPatch F w u t₀) := by
   unfold spectralPatch frequencyCoset
   rw [localFiniteAnnihilator_finiteCompletionBall]
   exact (isOpen_finiteCompletionBall_coset F w t₀ _).preimage Units.continuous_val
 
-private theorem spectralPatch_self (u : ℤ) (t₀ : (K F w)ˣ) :
+theorem spectralPatch_self (u : ℤ) (t₀ : (K F w)ˣ) :
     t₀ ∈ spectralPatch F w u t₀ := by
   change (t₀ : K F w) - t₀ ∈ localFiniteAnnihilator F w (finiteCompletionBall F w u)
   simp
 
-private theorem exists_small_spectralPatch (t₀ : (K F w)ˣ)
+theorem exists_small_spectralPatch (t₀ : (K F w)ˣ)
     (W : Set (K F w)ˣ) (hW : IsOpen W) (htW : t₀ ∈ W) :
     ∃ u : ℤ, spectralPatch F w u t₀ ⊆ W ∧
       (0 : K F w) ∉ frequencyCoset F w u t₀ := by
@@ -75,11 +75,10 @@ private theorem exists_small_spectralPatch (t₀ : (K F w)ˣ)
   · intro hz
     have hx := hn (show (0 : K F w) - t₀ ∈ finiteCompletionBall F w n by
       simpa [frequencyCoset, localFiniteAnnihilator_finiteCompletionBall] using hz)
-    obtain ⟨s, _, hs⟩ := hx
-    exact s.ne_zero hs
+    simp_all
 
 include hm hρ in
-private theorem raw_chart_locallyConstant (v : V) (c : LocalChart F ζ hζ w m) :
+theorem raw_chart_locallyConstant (v : V) (c : LocalChart F ζ hζ w m) :
     IsLocallyConstant (fun t : c.ball.domain => rawOrbitMap F ζ hζ w ρ v (c.lift t)) := by
   letI := KPLocalSmoothRepresentation.finiteCoverTopology F ζ hζ w m
   letI := (KPPGLLocalCover.finite_topological_cover F ζ hζ w m hm).2.2.1
@@ -153,7 +152,7 @@ theorem exists_spectral_patch_lift (t₀ : (K F w)ˣ)
         ht, if_true, hconst t ht]
     · exact (if_neg ht).trans (if_neg ht).symm
 
-private theorem finite_cutoff_mem {X E I : Type*} [AddCommGroup E] [Module ℂ E]
+theorem finite_cutoff_mem {X E I : Type*} [AddCommGroup E] [Module ℂ E]
     (M : Submodule ℂ (X → E)) (D : I → Set X) (T : Finset I) (f : X → E)
     (hstab : ∀ i ∈ T, ∀ g ∈ M, (D i).indicator g ∈ M)
     (hloc : ∀ i ∈ T, (D i).indicator f ∈ M)
@@ -193,7 +192,7 @@ private theorem finite_cutoff_mem {X E I : Type*} [AddCommGroup E] [Module ℂ E
     rw [heq]
     exact M.add_mem hf' hfi
 
-private theorem projector_value (u : ℤ) (t₀ : (K F w)ˣ)
+theorem projector_value (u : ℤ) (t₀ : (K F w)ˣ)
     (v : ordinaryKernel F ζ hζ w ρ) (p : P F ζ hζ w) :
     sectionValue F ζ hζ w m (ψ F w)
       (orbitSectionMap F ζ hζ w ρ m hm hρ hgen
@@ -216,7 +215,7 @@ private theorem projector_value (u : ℤ) (t₀ : (K F w)ˣ)
       (orbitSectionMap F ζ hζ w ρ m hm hρ hgen _) t = 0
     simpa only [show (t.val : K F w) ∉ frequencyCoset F w u t₀ from h, if_false] using hp
 
-private theorem standardCharacter_locallyConstant : IsLocallyConstant (ψ F w) := by
+theorem standardCharacter_locallyConstant : IsLocallyConstant (ψ F w) := by
   change IsLocallyConstant (fun x : Multiplicative (K F w) =>
     Circle.toUnits (localFiniteCharacter F w (1 * Multiplicative.toAdd x)))
   simpa only [one_mul, Function.comp_def] using
@@ -224,7 +223,7 @@ private theorem standardCharacter_locallyConstant : IsLocallyConstant (ψ F w) :
       (show Continuous (Multiplicative.toAdd : Multiplicative (K F w) → K F w)
         from continuous_id)).comp Circle.toUnits
 
-private theorem patch_surjective (c : LocalChart F ζ hζ w m)
+theorem patch_surjective (c : LocalChart F ζ hζ w m)
     (f : PatchSections F ζ hζ w m (ψ F w) c (J F ζ hζ w ρ)) :
     ∃ v, orbitSectionMap F ζ hζ w ρ m hm hρ hgen v = f.val := by
   let M := (rawOrbitMap F ζ hζ w ρ |>.comp (ordinaryKernel F ζ hζ w ρ).subtype).range
@@ -233,9 +232,7 @@ private theorem patch_surjective (c : LocalChart F ζ hζ w m)
     have h := (patchEquiv F ζ hζ w m hm (ψ F w)
       (standardCharacter_locallyConstant F w) c (J F ζ hζ w ρ) f).property.1
     convert h using 1
-    funext t
-    exact (patchEquiv_value F ζ hζ w m hm (ψ F w)
-      (standardCharacter_locallyConstant F w) c f t).symm
+    rfl
   have hl (x : c.ball.domain) :
       ∃ u : ℤ, x.val ∈ spectralPatch F w u x.val ∧
         ∃ v : ordinaryKernel F ζ hζ w ρ,
@@ -284,8 +281,7 @@ private theorem patch_surjective (c : LocalChart F ζ hζ w m)
           ⟨projector F ζ hζ w ρ m hm hρ (u x) (x.val : K F w) v₀.val,
             projector_preserves_ordinaryKernel F ζ hζ w ρ m hm hρ (u x) x.val v₀⟩) p = _
       rw [projector_value F ζ hζ w ρ m hm hρ hgen]
-      by_cases hp : slope F ζ hζ w p ∈ spectralPatch F w (u x) x.val <;>
-        simp [hp, Set.indicator, Set.mem_preimage, orbitSectionMap_value]
+      rfl
     · intro x hx
       refine ⟨v x, ?_⟩
       funext p
@@ -310,19 +306,13 @@ theorem orbitSectionMap_surjective :
     (standardCharacter_locallyConstant F w) f
   choose x hx using fun i => patch_surjective F ζ hζ w ρ m hm hρ hgen (c i) (v i)
   refine ⟨∑ i, x i, ?_⟩
-  rw [map_sum]
-  exact (Finset.sum_congr rfl (fun i _ => hx i)).trans hf.symm
+  simp_all
 
 def orbitEquiv : (ordinaryKernel F ζ hζ w ρ) ≃ₗ[ℂ]
     Sections F ζ hζ w m (ψ F w) (J F ζ hζ w ρ) :=
   LinearEquiv.ofBijective (orbitSectionMap F ζ hζ w ρ m hm hρ hgen)
     ⟨orbitSectionMap_injective F ζ hζ w ρ m hm hρ hgen,
       orbitSectionMap_surjective F ζ hζ w ρ m hm hρ hgen⟩
-
-@[simp] theorem orbitEquiv_apply (v : ordinaryKernel F ζ hζ w ρ) :
-    orbitEquiv F ζ hζ w ρ m hm hρ hgen v =
-      orbitSectionMap F ζ hζ w ρ m hm hρ hgen v := by
-  rfl
 
 theorem orbitEquiv_symm_intertwines (p : P F ζ hζ w)
     (f : Sections F ζ hζ w m (ψ F w) (J F ζ hζ w ρ)) :
@@ -347,7 +337,3 @@ theorem orbitEquiv_symm_intertwines (p : P F ζ hζ w)
     ((orbitEquiv F ζ hζ w ρ m hm hρ hgen)
       ((orbitEquiv F ζ hζ w ρ m hm hρ hgen).symm f)) 1 = _
   rw [LinearEquiv.apply_symm_apply]
-
-end DedekindZetaZeroFree.KPKirillovOrbitMapSurjective
-
-end

@@ -11,12 +11,10 @@ open scoped NumberField Classical
 open NumberField IsDedekindDomain
 
 namespace DedekindZetaZeroFree.ArithmeticContext
-noncomputable section
-set_option autoImplicit false
 set_option backward.isDefEq.respectTransparency false
 variable {F : Type} [Field F] [NumberField F]
 
-private lemma selfOrth_of_split {G C : Type*} [CommGroup G] [CommGroup C]
+lemma selfOrth_of_split {G C : Type*} [CommGroup G] [CommGroup C]
     (P : G →* G →* C) (L M : Subgroup G)
     (hL : ∀ x ∈ L, ∀ y ∈ L, P x y = 1)
     (hM : ∀ x ∈ M, ∀ y ∈ M, P x y = 1)
@@ -34,15 +32,14 @@ private lemma selfOrth_of_split {G C : Type*} [CommGroup G] [CommGroup C]
     have hb1 : (b : G) = 1 := hn b (by
       intro y
       obtain ⟨u, v, rfl⟩ := hsplit y
-      change P ((u : G) * v) (b : G) = 1
       rw [map_mul, MonoidHom.mul_apply, hb u u.property, hM v v.property b b.property,
         one_mul])
-    simpa [hb1] using e.property
+    simp [hb1]
 
-private lemma primary_mem (A : SArithmeticData F) (ℓ : ℕ) (L : Subgroup A.V)
+lemma primary_mem (A : SArithmeticData F) (ℓ : ℕ) (L : Subgroup A.V)
     (x : A.PrimarySpace ℓ) : x ∈ A.primarySubspace ℓ L ↔ x.val.toMul ∈ L := Iff.rfl
 
-private lemma primary_pow (A : SArithmeticData F) (ℓ : ℕ) (x : A.PrimarySpace ℓ) :
+lemma primary_pow (A : SArithmeticData F) (ℓ : ℕ) (x : A.PrimarySpace ℓ) :
     x.val.toMul ^ ℓ = 1 := by
   have hx : (ℓ : ℤ) • x.val = 0 := x.property
   change Additive.ofMul (x.val.toMul ^ (ℓ : ℤ)) = 0 at hx
@@ -50,7 +47,7 @@ private lemma primary_pow (A : SArithmeticData F) (ℓ : ℕ) (x : A.PrimarySpac
   change x.val.toMul ^ (ℓ : ℤ) = 1 at h
   simpa only [zpow_natCast] using h
 
-private lemma primary_mk (A : SArithmeticData F) (ℓ : ℕ) (x : A.V) (hx : x ^ ℓ = 1) :
+lemma primary_mk (A : SArithmeticData F) (ℓ : ℕ) (x : A.V) (hx : x ^ ℓ = 1) :
     Additive.ofMul x ∈ A.PrimarySpace ℓ := by
   change (ℓ : ℤ) • Additive.ofMul x = 0
   change Additive.ofMul (x ^ (ℓ : ℤ)) = 0
@@ -58,7 +55,7 @@ private lemma primary_mk (A : SArithmeticData F) (ℓ : ℕ) (x : A.V) (hx : x ^
   change x ^ (ℓ : ℤ) = 1
   simpa only [zpow_natCast] using hx
 
-private lemma primary_selfOrth (A : SArithmeticData F) (P : A.V →* A.V →* Fˣ)
+lemma primary_selfOrth (A : SArithmeticData F) (P : A.V →* A.V →* Fˣ)
     (L : Subgroup A.V) (hL : A.IsSelfOrthogonal (fun x y => P x y) L)
     (ℓ k t : ℕ) (hk : k = 1 + t * ℓ) (h6 : 6 ∣ k * ℓ) :
     ∀ x : A.PrimarySpace ℓ, x ∈ A.primarySubspace ℓ L ↔
@@ -85,7 +82,7 @@ private lemma primary_selfOrth (A : SArithmeticData F) (P : A.V →* A.V →* F�
     rw [hk, pow_add, pow_one, Nat.mul_comm t ℓ, pow_mul, hp, one_pow, mul_one] at hzP
     exact hzP
 
-private lemma primary_compl (A : SArithmeticData F) (L M : Subgroup A.V)
+lemma primary_compl (A : SArithmeticData F) (L M : Subgroup A.V)
     (hc : IsCompl L M) (ℓ : ℕ)
     (hsplit : ∀ x : A.V, ∃ e : L, ∃ b : M, (e : A.V) * b = x) :
     IsCompl (A.primarySubspace ℓ L) (A.primarySubspace ℓ M) := by
@@ -137,8 +134,8 @@ theorem actual_hilbert_lagrangian_properties (A : SArithmeticData F)
       A.PrimaryLagrangianComplementSpec H B 3 := by
   let P : A.V →* A.V →* Fˣ :=
     { toFun := fun x => (rootsOfUnity 6 F).subtype.comp (A.H_S6 x)
-      map_one' := by ext y; simp
-      map_mul' := by intro x z; ext y; simp [map_mul, MonoidHom.mul_apply] }
+      map_one' := by simp
+      map_mul' := by intro x z; ext y; simp }
   have hP (x y : A.V) : H x y = P x y := by
     obtain ⟨a, rfl⟩ := QuotientGroup.mk'_surjective A.sixthPowers x
     obtain ⟨b, rfl⟩ := QuotientGroup.mk'_surjective A.sixthPowers y
@@ -192,6 +189,3 @@ theorem actual_hilbert_lagrangian_properties (A : SArithmeticData F)
   refine ⟨?_, hprim 2 3 1 (by decide) (by decide), hprim 3 4 1 (by decide) (by decide)⟩
   intro x
   simpa only [hP] using hEL x
-
-end
-end DedekindZetaZeroFree.ArithmeticContext

@@ -34,7 +34,7 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
     rw [KPMsActualCuspSource.projection_compare, h]
     exact map_one _
 
-private theorem matching_of_subgroup_eq {G : Type*} [Group G] [TopologicalSpace G]
+theorem matching_of_subgroup_eq {G : Type*} [Group G] [TopologicalSpace G]
     (J K : Subgroup G) (h : J = K) :
     ∃ L : CompactOpenLevel J → CompactOpenLevel K,
       ∀ U, U.toOpenSubgroup.toSubgroup.map J.subtype =

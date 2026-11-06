@@ -44,7 +44,7 @@ private theorem act_smooth (γ : KPCuspArithmetic.PGL2 F) :
   change ContDiff ℝ (⊤ : ℕ∞) (KPCuspSiegel.action F γ)
   unfold KPCuspSiegel.action KPCuspSiegel.glAction
   exact (KPArch.productAction_contDiff _ _).of_le (by simp)
-private theorem Q_inv (C : ShrunkChart F ζ hζ U R P H) (σ : C.Isotropy) (x : SymmetricSpace F) :
+theorem Q_inv (C : ShrunkChart F ζ hζ U R P H) (σ : C.Isotropy) (x : SymmetricSpace F) :
     Q C ((σ.val : KPCuspArithmetic.PGL2 F) • x) = Q C x := by
   change KPFiniteCuspAtlas.componentMap F ζ hζ U ((H.atlas U).representative C.component)
     (KPCuspSiegel.projection F _ (σ.val • x)) =
@@ -228,7 +228,7 @@ private theorem point_bump (C : ShrunkChart F ζ hζ U R P H)
   · intro z hz
     exact image_eq_zero_of_notMem_tsupport (fun hh => hz (hbs hh).1)
 
-private theorem sum_tsupport {X : Type*} [TopologicalSpace X] {ι : Type*}
+theorem sum_tsupport {X : Type*} [TopologicalSpace X] {ι : Type*}
     (s : Finset ι) (f : ι → X → ℝ) : tsupport (fun x => ∑ j ∈ s, f j x) ⊆
       ⋃ j ∈ s, tsupport (f j) := by
   apply closure_minimal

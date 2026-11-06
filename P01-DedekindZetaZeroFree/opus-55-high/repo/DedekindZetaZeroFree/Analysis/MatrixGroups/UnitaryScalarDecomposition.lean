@@ -22,16 +22,6 @@ and mathematical proof bodies retained unless an API adaptation is noted below.
 -/
 
 namespace Matrix
-
-variable {n α : Type*} [Fintype n] [DecidableEq n] [CommRing α] [StarRing α]
-
-@[simp]
-theorem diagonal_mem_unitaryGroup_iff {d : n → α} :
-    diagonal d ∈ unitaryGroup n α ↔ ∀ i, d i ∈ unitary α := by
-  simp only [mem_unitaryGroup_iff, star_eq_conjTranspose, diagonal_conjTranspose,
-    diagonal_mul_diagonal, ← diagonal_one, diagonal_eq_diagonal_iff, Pi.star_apply,
-    Unitary.mem_iff_self_mul_star]
-
 end Matrix
 
 namespace DedekindZetaZeroFree.TauCeti
@@ -67,5 +57,3 @@ theorem _root_.Matrix.exists_circle_smul_mem_specialUnitaryGroup (U : Matrix.uni
     push_cast
     field_simp
     ring
-
-end DedekindZetaZeroFree.TauCeti

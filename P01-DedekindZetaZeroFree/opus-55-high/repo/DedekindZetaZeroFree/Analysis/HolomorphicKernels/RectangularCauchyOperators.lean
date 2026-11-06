@@ -36,14 +36,10 @@ lemma kernel_continuousOn (hR : 0 < R) (g : C(Metric.sphere w R, ℂ)) (q : ℕ)
       apply ContinuousOn.inv₀ (by fun_prop)
       intro t ht
       intro he
-      have : t = w := sub_eq_zero.mp he
-      subst t
-      exact hR.ne' (by simpa using ht.symm)
+      simp_all
     · apply ContinuousOn.inv₀ (by fun_prop)
       intro t ht he
-      have : t = w := sub_eq_zero.mp he
-      subst t
-      exact hR.ne' (by simpa using ht.symm)
+      simp_all
   · exact circleLift_continuousOn w R g
 
 def circleCoeff (q : ℕ) (g : C(Metric.sphere w R, ℂ)) : ℂ :=
@@ -94,7 +90,3 @@ def circleCoeffCLM (hR : 0 < R) (q : ℕ) : C(Metric.sphere w R, ℂ) →L[ℂ] 
       map_add' := circleCoeff_add w R hR q
       map_smul' := circleCoeff_smul w R hR q }
     (R⁻¹^q) (circleCoeff_bound w R hR q)
-
-end DedekindZetaZeroFree.ComplexAnalysis.KernelTaylor.CauchyOperators
-
-end

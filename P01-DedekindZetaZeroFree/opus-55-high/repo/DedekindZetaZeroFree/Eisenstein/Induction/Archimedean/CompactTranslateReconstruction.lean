@@ -81,7 +81,7 @@ theorem finite_evaluation_reconstruction {X : Type*}
     pointEvaluation, LinearMap.comp_apply, LinearMap.proj_apply,
     Submodule.subtype_apply, Module.Basis.coord_apply] using he.symm
 
-private theorem finite_evaluation_interpolation {X : Type*}
+theorem finite_evaluation_interpolation {X : Type*}
     (S : Submodule ℂ (X → ℂ)) [FiniteDimensional ℂ S] :
     ∃ (m : ℕ) (x : Fin m → X) (B : Fin m → X → ℂ),
       ∀ (h : S) (y : X), h.val y = ∑ i, B i y * h.val (x i) := by

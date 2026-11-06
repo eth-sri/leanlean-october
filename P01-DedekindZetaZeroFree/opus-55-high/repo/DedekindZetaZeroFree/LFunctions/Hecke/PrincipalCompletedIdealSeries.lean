@@ -44,5 +44,3 @@ theorem principal_prefactor_all_ideal_hasSum
   by_cases hI : I = ⊥
   · simp [hI, DedekindZetaZeroFree.Odlyzko.idealInverseNormPower]
   · simp [hI, DedekindZetaZeroFree.Odlyzko.idealInverseNormPower]
-
-end DedekindZetaZeroFree.Hecke

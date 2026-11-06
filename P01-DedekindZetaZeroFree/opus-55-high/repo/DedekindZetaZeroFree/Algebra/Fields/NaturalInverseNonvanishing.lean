@@ -17,5 +17,3 @@ theorem one_add_nat_inv_ne_zero (n : ℕ) : (1 + (n : ℂ)⁻¹) ≠ 0 := by
   · have hpos : (0 : ℝ) < n := by exact_mod_cast h
     have hinv : 0 < (n : ℝ)⁻¹ := inv_pos.mpr hpos
     linarith
-
-end DedekindZetaZeroFree.KPExceptionalRaw.FiniteSource.GoodSphericalVector

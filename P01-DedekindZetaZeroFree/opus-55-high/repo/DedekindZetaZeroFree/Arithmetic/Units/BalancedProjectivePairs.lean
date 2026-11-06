@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Eisenstein.Induction.PGLAdelicRowHeight
 
 @[expose] public section
 
-noncomputable section
 
 namespace DedekindZetaZeroFree.KPChamberUnitBalancedPairs
 
@@ -28,7 +27,7 @@ theorem archimedean_balance :
     normAtPlace_mixedSpaceOfRealSpace (ha v).le
   have hx : 0 < mixedEmbedding.norm x := by
     rw [mixedEmbedding.norm_apply]
-    exact Finset.prod_pos fun v _ => pow_pos (by rw [hxv]; exact ha v) _
+    exact Finset.prod_pos fun v _ => pow_pos (by simp_all) _
   let t : ℝ := (mixedEmbedding.norm x) ^ (1 / (Module.finrank ℚ F : ℝ))
   have ht : 0 < t := Real.rpow_pos_of_pos hx _
   have htp : t ^ Module.finrank ℚ F = mixedEmbedding.norm x := by
@@ -55,7 +54,7 @@ theorem archimedean_balance :
   rw [← eqt]
   convert hv using 1 <;> field_simp <;> ring
 
-private theorem row_isup (v : AbsoluteValue F ℝ) (r : Fin 2 → F) :
+theorem row_isup (v : AbsoluteValue F ℝ) (r : Fin 2 → F) :
     (⨆ i, v (r i)) = max (v (r 0)) (v (r 1)) := by
   apply eq_of_forall_ge_iff
   intro x
@@ -91,10 +90,10 @@ theorem exists_unit_balanced_row :
   have hp (v : InfinitePlace F) : 0 < max (v (r 0 : F)) (v (r 1 : F)) := by
     obtain ⟨i, hi⟩ := Function.ne_iff.mp hr
     have hi' : 0 < v (r i : F) := (v.pos_iff).mpr hi
-    have he : i = 0 ∨ i = 1 := by fin_cases i <;> simp
+    have he : i = 0 ∨ i = 1 := by omega
     rcases he with rfl | rfl
     · exact hi'.trans_le (le_max_left _ _)
-    · exact hi'.trans_le (le_max_right _ _)
+    simp_all
   obtain ⟨u, hu⟩ := hb (fun v => max (v (r 0 : F)) (v (r 1 : F))) hp
   refine ⟨u, ?_⟩
   intro σ
@@ -121,15 +120,13 @@ theorem integral_representative (ℓ : KPChamberHeight.Line F) :
   rw [← ℓ.mk_rep, Projectivization.mk_eq_mk_iff']
   exact ⟨((b : RingOfIntegers F) : F), he.symm⟩
 
-private theorem span_mul_range (a : RingOfIntegers F) (r : Fin 2 → RingOfIntegers F) :
+theorem span_mul_range (a : RingOfIntegers F) (r : Fin 2 → RingOfIntegers F) :
     Ideal.span {a} * Ideal.span (Set.range r) = Ideal.span (Set.range (fun i => a * r i)) := by
   rw [Ideal.span_mul_span]
   congr 1
   ext z
   simp only [Set.mem_mul, Set.mem_singleton_iff, Set.mem_range, exists_eq_left]
-  constructor
-  · rintro ⟨_, ⟨i, rfl⟩, rfl⟩; exact ⟨i, rfl⟩
-  · rintro ⟨i, rfl⟩; exact ⟨r i, ⟨i, rfl⟩, rfl⟩
+  simp
 
 theorem ideal_representative
     (J : ClassGroup (RingOfIntegers F) → (Ideal (RingOfIntegers F))⁰)
@@ -165,7 +162,7 @@ theorem ideal_representative
         Ideal.span {y} * (J j : Ideal (RingOfIntegers F)) := by
       rw [span_mul_range F, he, ← span_mul_range F]
       exact hxy
-    exact mul_left_cancel₀ (by simpa [Ideal.span_singleton_eq_bot] using hy) he'
+    simp_all
   have hxF : (x : F) ≠ 0 := by exact_mod_cast hx
   have hyF : (y : F) ≠ 0 := by exact_mod_cast hy
   have heF : (fun i => (s i : F)) = ((x : F) / (y : F)) • (fun i => (r i : F)) := by
@@ -175,7 +172,7 @@ theorem ideal_representative
     field_simp
     simpa [mul_comm] using hh
   have hs0 : (fun i => (s i : F)) ≠ 0 := by
-    rw [heF]; exact smul_ne_zero (div_ne_zero hxF hyF) hr
+    simp_all
   refine ⟨j, s, hs0, ?_, hspan⟩
   rw [← hℓ, Projectivization.mk_eq_mk_iff']
   exact ⟨(x : F) / (y : F), heF.symm⟩
@@ -198,10 +195,9 @@ theorem exists_unit_balanced_pair
   obtain ⟨C, hC, hb⟩ := exists_unit_balanced_row F
   let N : ℝ := 1 + ∑ j, ((J j : Ideal (RingOfIntegers F)).absNorm : ℝ)
   have hN : 0 < N := by
-    dsimp [N]
     positivity
   let e : ℝ := 1 / (Module.finrank ℚ F : ℝ)
-  have he : 0 ≤ e := by dsimp [e]; positivity
+  have he : 0 ≤ e := by positivity
   refine ⟨C * N ^ e, mul_pos hC (Real.rpow_pos_of_pos hN _), ?_⟩
   intro B hB ℓ hH
   obtain ⟨j, r, hr, hℓ, hJr⟩ := ideal_representative F J hJ ℓ
@@ -210,8 +206,7 @@ theorem exists_unit_balanced_pair
   have huF : ((u : RingOfIntegers F) : F) ≠ 0 := by
     exact_mod_cast u.ne_zero
   have hs : (fun i => (s i : F)) = ((u : RingOfIntegers F) : F) • (fun i => (r i : F)) := by
-    ext i
-    simp [s, Algebra.smul_def, RingOfIntegers.coe_eq_algebraMap]
+    rfl
   have hs0 : (fun i => (s i : F)) ≠ 0 := by
     rw [hs]
     exact smul_ne_zero huF hr
@@ -228,7 +223,7 @@ theorem exists_unit_balanced_pair
         (Finset.mem_univ j)
       exact hsum.trans (by dsimp [N]; linarith)
     have hH0 : 0 ≤ Projectivization.mulHeight ℓ :=
-      (Projectivization.mulHeight_pos ℓ).le
+      by positivity
     have hn0 : 0 ≤ ((J j : Ideal (RingOfIntegers F)).absNorm : ℝ) := by positivity
     have hbound : ((J j : Ideal (RingOfIntegers F)).absNorm : ℝ) *
         Projectivization.mulHeight ℓ ≤ N * B :=
@@ -241,7 +236,3 @@ theorem exists_unit_balanced_pair
     rw [mul_assoc, ← Real.mul_rpow hN.le (by linarith)]
     exact mul_le_mul_of_nonneg_left
       (Real.rpow_le_rpow (mul_nonneg hn0 hH0) hbound he) hC.le
-
-end DedekindZetaZeroFree.KPChamberUnitBalancedPairs
-
-end

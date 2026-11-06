@@ -33,5 +33,3 @@ theorem exponent_initial
     linarith
   apply mul_le_mul_of_nonneg_right _ hY
   exact mul_le_mul_of_nonneg_right (by linarith) hX
-
-end DedekindZetaZeroFree.LargeSieve

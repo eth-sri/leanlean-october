@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Principal adic filtrations in complete nonarchimedean valuation rings
 
@@ -27,7 +22,6 @@ closed unit ball.  These facts are shared by the coefficientwise Hensel
 construction and the irreducible-polynomial coefficient estimate.
 -/
 
-noncomputable section
 
 namespace AlgebraicNumberTheory
 namespace Valuations
@@ -53,26 +47,19 @@ theorem principal_pow_mem_iff_abs_le
     have hc_abs : v ((c : V) : K) ≤ 1 :=
       (mem_absoluteValueValuationSubring_iff
         v hnonarch ((c : V) : K)).1 c.property
-    calc
-      v (x : K) = v ((((π : V) : K) ^ n) * ((c : V) : K)) := by
-        exact congrArg (fun y : V => v ((y : V) : K)) hc
-      _ = v (((π : V) : K) ^ n) * v ((c : V) : K) := by rw [v.map_mul]
-      _ = v ((π : V) : K) ^ n * v ((c : V) : K) := by rw [map_pow]
-      _ ≤ v ((π : V) : K) ^ n * 1 :=
-        mul_le_mul_of_nonneg_left hc_abs (pow_nonneg (v.nonneg _) n)
-      _ = v ((π : V) : K) ^ n := by rw [mul_one]
+    simp_all
   · intro hx
     rw [Ideal.span_singleton_pow, Ideal.mem_span_singleton]
     let cK : K := (x : K) / (((π : V) : K) ^ n)
-    have hπpow_pos : 0 < v (((π : V) : K) ^ n) := by
-      exact v.pos (pow_ne_zero n hπK_ne)
+    have hπpow_pos : 0 < v (((π : V) : K) ^ n) := 
+      v.pos (pow_ne_zero n hπK_ne)
     have hcK_mem : cK ∈ V := by
       rw [mem_absoluteValueValuationSubring_iff]
       have hdiv :
           v cK = v (x : K) / v (((π : V) : K) ^ n) := by
         change v ((x : K) / (((π : V) : K) ^ n)) =
           v (x : K) / v (((π : V) : K) ^ n)
-        rw [div_eq_mul_inv, v.map_mul, map_inv₀, div_eq_mul_inv]
+        simp
       rw [hdiv]
       exact div_le_one_of_le₀ (by simpa [map_pow] using hx) (le_of_lt hπpow_pos)
     refine ⟨⟨cK, hcK_mem⟩, ?_⟩
@@ -81,7 +68,7 @@ theorem principal_pow_mem_iff_abs_le
     change (x : K) =
       (((π : V) : K) ^ n) * ((x : K) / (((π : V) : K) ^ n))
     rw [mul_comm, div_mul_cancel₀]
-    exact pow_ne_zero n hπK_ne
+    positivity
 
 /-- Principal congruence modulo `(π)^n` is exactly an absolute-value bound for
 the difference. -/
@@ -112,7 +99,7 @@ theorem principal_smodEq_iff_abs_sub_le
     have hmem : (x - y : V) ∈ (Ideal.span ({π} : Set V)) ^ n := by
       rw [principal_pow_mem_iff_abs_le
         v hnonarch (π := π) (x := x - y) hπne n]
-      simpa using hxy
+      omega
     simpa [smul_eq_mul, Ideal.mul_top, V] using hmem
 
 /-- Forward direction of
@@ -237,7 +224,7 @@ theorem principalPrecomplete_of_complete
       ring
     rw [hneg]
     rw [v.map_neg]
-    simpa using hfa
+    omega
   have ha_mem : aK ∈ V := by
     rw [mem_absoluteValueValuationSubring_iff]
     have hfN_mem : v (((f N₁ : V) : K)) ≤ 1 :=
@@ -290,8 +277,3 @@ theorem principalPrecomplete_of_complete
     (principal_smodEq_iff_abs_sub_le
       v hnonarch (π := π) (x := f n) (y := L) hπne).2
       (by simpa [L] using hdiff_le)
-
-end Valuations
-end AlgebraicNumberTheory
-
-end

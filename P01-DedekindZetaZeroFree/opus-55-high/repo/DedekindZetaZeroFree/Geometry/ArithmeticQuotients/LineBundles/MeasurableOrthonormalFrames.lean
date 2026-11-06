@@ -4,12 +4,11 @@ public import DedekindZetaZeroFree.Geometry.ArithmeticQuotients.LocalCharts.Line
 
 @[expose] public section
 
-noncomputable section
 open scoped Classical Pointwise
 open MeasureTheory Set
 namespace DedekindZetaZeroFree.CoreChartLocalizers
 
-private theorem finite_orbit_compact {G Y : Type*} [Group G] [MulAction G Y]
+theorem finite_orbit_compact {G Y : Type*} [Group G] [MulAction G Y]
     [TopologicalSpace Y] [ProperlyDiscontinuousSMul G Y]
     (x : Y) {K : Set Y} (hK : IsCompact K) :
     {y | y ∈ K ∧ ∃ g : G, g • x = y}.Finite := by
@@ -89,7 +88,7 @@ theorem measurable_exact_transversal {G Y : Type*} [Group G] [Countable G]
   · have h := hyP.2.2 (b * a⁻¹)
     simpa [mul_smul, ← hb, ← ha] using h (by simpa [mul_smul, ← hb, ← ha] using hm.1)
 
-private theorem selector_of_transversal {G Y : Type*} [Group G] [Countable G]
+theorem selector_of_transversal {G Y : Type*} [Group G] [Countable G]
     [MulAction G Y] [MeasurableSpace Y] [MeasurableConstSMul G Y]
     (S : Set Y) (hS : MeasurableSet S)
     (huniq : ∀ x : Y, ∃! y : Y, y ∈ S ∧ ∃ g : G, g • x = y) :
@@ -114,7 +113,7 @@ private theorem selector_of_transversal {G Y : Type*} [Group G] [Countable G]
   exact (hu _ ⟨(hs (g • x)).1, a * g, by simpa [mul_smul] using ha⟩).trans
     (hu _ (hs x)).symm
 
-private theorem prioritize_domain {G Y : Type*} [Group G] [Countable G]
+theorem prioritize_domain {G Y : Type*} [Group G] [Countable G]
     [MulAction G Y] [TopologicalSpace Y] [T2Space Y]
     [MeasurableSpace Y] [BorelSpace Y] [ContinuousConstSMul G Y]
     (S D : Set Y) (hS : MeasurableSet S) (hD : MeasurableSet D)
@@ -343,9 +342,7 @@ theorem full_base_measurable_section (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
         ((Topology.IsOpenEmbedding.sigmaMk (i := i)).measurableEmbedding)
       simpa only [Function.comp_def, A.components_formula] using h
     apply hme.ae_map_iff.mpr
-    filter_upwards [hf i] with q hq
-    rw [hl, hc]
-    exact hq
+    simp_all
 
 theorem quotient_line_frame_injective (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     (i : Fin A.componentCount) (z : KPFiniteCuspAtlas.SymmetricSpace F)
@@ -353,8 +350,8 @@ theorem quotient_line_frame_injective (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U
       γ • z = z → γ = 1) :
     Function.Injective (fun a : V F ζ hζ U => (⟨i, Quotient.mk _ (z, a)⟩ : Line F ζ hζ hF U A)) := by
   intro a b h
-  have he : (Quotient.mk _ (z,a) : KPCuspGenuineMonodromy.OrbifoldLine F ζ hζ U (A.representative i) (A.line i).rho) = Quotient.mk _ (z,b) := by
-    exact eq_of_heq (Sigma.mk.inj h).2
+  have he : (Quotient.mk _ (z,a) : KPCuspGenuineMonodromy.OrbifoldLine F ζ hζ U (A.representative i) (A.line i).rho) = Quotient.mk _ (z,b) := 
+    eq_of_heq (Sigma.mk.inj h).2
   obtain ⟨γ, hg, ha⟩ := Quotient.exact he
   have hγ := hz γ hg.symm
   subst γ
@@ -385,7 +382,6 @@ theorem quotient_line_frame_surjective (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF 
     apply Quotient.sound
     refine ⟨γ, hγ.symm, ?_⟩
     change (b : ℂ) = _ * (_ * (b : ℂ))
-    rw [← mul_assoc, ← Units.val_mul]
     simp
 
 theorem component_quotientVolume_locallyFinite (hF : NumberField.InfinitePlace.nrRealPlaces F = 0) (g : KPFiniteCuspAtlas.FiniteCover F ζ hζ)
@@ -500,8 +496,8 @@ theorem measurable_realization (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U) :
     { toFun := fun s x => ⟨s.val (l x,A.representative (c x)), by
         rw [← A.scalar_realization_formula]
         exact (A.scalar_realization s (c x)).property.1 (l x)⟩
-      map_add' := by intro s t; ext x; rfl
-      map_smul' := by intro a s; ext x; rfl }
+      map_add' := by intro s t; rfl
+      map_smul' := by intro a s; rfl }
   let frame := fun x (a : V F ζ hζ U) => (⟨c x, Quotient.mk _ (l x,a)⟩ : Line F ζ hζ hF U A)
   refine ⟨{
     component := c
@@ -539,13 +535,9 @@ theorem measurable_realization (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U) :
         unfold tsupport
         congr 1
         ext x
-        simp [Function.mem_support]
+        simp
       rw [HasCompactSupport, he]
       exact hcompact
     have hnp : MemLp (fun x => ‖R s x‖) 2 (quotientMeasure F ζ hζ hF U A) :=
       hnm.memLp_of_hasCompactSupport hncompact
     exact (memLp_norm_iff hrm.aestronglyMeasurable).mp hnp
-
-end DedekindZetaZeroFree.CoreChartLocalizers
-
-end

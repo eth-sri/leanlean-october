@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # Uniformizers detected in an ambient complete discrete valuation field
 
@@ -37,7 +34,7 @@ variable [Algebra K L] [FiniteDimensional K L] [Algebra.IsSeparable K L]
 /-- An embedding into an ambient valued field restricts to valuation rings
 whenever the chosen source valuation is equivalent to the pulled-back
 ambient valuation. -/
-noncomputable def valuationSubringMapOfIsEquivComap
+def valuationSubringMapOfIsEquivComap
     {M : Type y} [Field M]
     {GammaL : Type x} {GammaM : Type z}
     [LinearOrderedCommGroupWithZero GammaL]
@@ -57,19 +54,16 @@ noncomputable def valuationSubringMapOfIsEquivComap
       have hcomap :=
         (hEquiv.le_iff_le
           (x := (a : L)) (y := (1 : L))).1 ha
-      change vM (ι (a : L)) ≤ 1
-      simpa only [_root_.Valuation.comap_apply, map_one] using hcomap⟩
+      simp_all⟩
   map_one' := by
     apply Subtype.ext
     simp
   map_mul' a b := by
-    apply Subtype.ext
     simp
   map_zero' := by
     apply Subtype.ext
     simp
   map_add' a b := by
-    apply Subtype.ext
     simp
 
 /-- The valuation-ring map induced by an equivalent ambient pullback acts
@@ -120,7 +114,7 @@ theorem valuationSubringMapOfIsEquivComap_isLocalHom
 
 /-- The induced injection from the chosen residue field into the ambient
 residue field. -/
-noncomputable def residueFieldMapOfIsEquivComap
+def residueFieldMapOfIsEquivComap
     {M : Type y} [Field M]
     {GammaL : Type x} {GammaM : Type z}
     [LinearOrderedCommGroupWithZero GammaL]
@@ -245,7 +239,7 @@ theorem isUniformizer_of_ambient_image_isUniformizer
           (v := ambient.valuation)).2 ha_ambient_lt
       have hπambient :
           ambient.valuation.IsUniformizer (πambient : M) := by
-        simpa [πambient] using hπ
+        omega
       rw [ambient.maximalIdeal_eq_span_uniformizer hπambient,
         Ideal.mem_span_singleton] at ha_ambient_maximal
       obtain ⟨c, hc⟩ := ha_ambient_maximal
@@ -260,14 +254,7 @@ theorem isUniformizer_of_ambient_image_isUniformizer
         simp [hzero]
       have hc_eq :
           (c : M) = ι (π⁻¹ * (a : L)) := by
-        apply mul_left_cancel₀ hπ.ne_zero
-        calc
-          ι π * (c : M) = ι (a : L) := hc_field.symm
-          _ = ι (π * (π⁻¹ * (a : L))) := by
-            congr 1
-            rw [← mul_assoc, mul_inv_cancel₀ hπ_ne, one_mul]
-          _ = ι π * ι (π⁻¹ * (a : L)) := by
-            rw [map_mul]
+        simp_all
       have hquotient_comap :
           (ambient.valuation.comap ι) (π⁻¹ * (a : L)) ≤
             (ambient.valuation.comap ι) 1 := by
@@ -289,7 +276,7 @@ theorem isUniformizer_of_ambient_image_isUniformizer
       refine ⟨quotient, ?_⟩
       apply Subtype.ext
       change (a : L) = π * (π⁻¹ * (a : L))
-      rw [← mul_assoc, mul_inv_cancel₀ hπ_ne, one_mul]
+      simp_all
     · rw [Ideal.span_le]
       intro a ha
       have ha_eq : a = πtarget := by
@@ -302,9 +289,4 @@ theorem isUniformizer_of_ambient_image_isUniformizer
   have hπtarget :
       target.valuation.IsUniformizer (πtarget : L) :=
     target.valuation.isUniformizer_of_maximalIdeal_eq_span hmaximal
-  simpa [πtarget] using hπtarget
-
-end ValuedExtension
-end DiscreteValuationField
-end
-end ValuationTheory
+  omega

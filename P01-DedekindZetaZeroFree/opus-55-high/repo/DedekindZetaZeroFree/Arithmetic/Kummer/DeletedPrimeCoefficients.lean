@@ -47,8 +47,7 @@ theorem source_kummer_raw_prime_values
       ArithmeticContext.actual_generator_valuation_unit A U.ideal U.u
         (Units.mk0 (U.u : F) (by exact_mod_cast U.generates.1)) U.generates rfl v hvSf hnot
     obtain ⟨hcop, _⟩ := hχ v hvSf huval
-    have htop : (⊤ : Ideal (𝓞 F)) ≤ v.asIdeal := by rw [← hcop]; exact sup_le le_rfl hvle
-    exact v.isPrime.ne_top (top_unique htop)
+    simp_all
   ·
     intro p
     have hvSf : p.val ∉ A.Sf :=
@@ -130,6 +129,3 @@ theorem source_kummer_raw_prime_values
       change AllRowEuler.UnitCovariance.residueCoefficient σ (primeIdeal p) U.u =
         χ.character p.val.asIdeal
       rw [AllRowEuler.UnitCovariance.residueCoefficient_eq, hres, ← hjchar]
-
-end
-end DedekindZetaZeroFree.PrincipalMellinComparison.NonprincipalContinuation.DetectorDyads.MinusArithmetic

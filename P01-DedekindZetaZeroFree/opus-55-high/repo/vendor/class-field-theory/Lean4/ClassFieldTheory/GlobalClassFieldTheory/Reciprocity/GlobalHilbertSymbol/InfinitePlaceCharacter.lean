@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Infinite-place Kummer root characters
 
@@ -41,7 +36,7 @@ variable (K : Type) [Field K] [NumberField K]
 
 /-- The Kummer root character of the actual Artin automorphism at an
 infinite place. -/
-noncomputable def infinitePlaceKummerRootCharacter
+def infinitePlaceKummerRootCharacter
     (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
     (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
     (v : InfinitePlace K) (a b : Kˣ) :
@@ -60,7 +55,7 @@ noncomputable def infinitePlaceKummerRootCharacter
         (chosenInfinitePlaceArtinMonoidHom (K := K) (L := L) v a_v))
 
 omit [NumberField K] in
-private theorem chosenInfinitePlaceArtinMonoidHom_eq_one_of_isComplex
+theorem chosenInfinitePlaceArtinMonoidHom_eq_one_of_isComplex
     {L : Type} [Field L] [NumberField L] [Algebra K L] [IsGalois K L]
     (v : InfinitePlace K) (hv : v.IsComplex) (x : v.Completionˣ) :
     chosenInfinitePlaceArtinMonoidHom (K := K) (L := L) v x = 1 := by
@@ -69,12 +64,10 @@ private theorem chosenInfinitePlaceArtinMonoidHom_eq_one_of_isComplex
     chosenInfinitePlaceAbove_comap (L := L) v
   have hwUnramified : w.IsUnramified K := by
     apply InfinitePlace.isUnramified_iff.mpr
-    apply Or.inr
-    rw [hw]
-    exact hv
+    simp_all
   have hwUnramified' :
       (chosenInfinitePlaceAbove (L := L) v).IsUnramified K := by
-    simpa only [w] using hwUnramified
+    omega
   unfold chosenInfinitePlaceArtinMonoidHom
   unfold infinitePlaceArtinMonoidHomOfPlace
   rw [dite_eq_left hwUnramified']
@@ -115,11 +108,4 @@ theorem infinitePlaceKummerRootCharacter_localGlobal_of_isComplex
     (v : InfinitePlace K) (a b : Kˣ) (hv : v.IsComplex) :
     infinitePlaceKummerRootCharacter K n hnK hmu v a b =
       infinitePlaceHilbertSymbol K n v a b := by
-  rw [infinitePlaceKummerRootCharacter_eq_one_of_isComplex
-    K n hnK hmu v a b hv]
-  exact (infinitePlaceHilbertSymbol_eq_one_of_isComplex K n v a b hv).symm
-
-end Reciprocity
-end GlobalClassFieldTheory
-
-end
+  simp_all

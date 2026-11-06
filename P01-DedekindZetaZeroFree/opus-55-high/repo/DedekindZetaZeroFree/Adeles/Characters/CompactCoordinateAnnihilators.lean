@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Arithmetic.RayClasses.Character
 
 @[expose] public section
 
-noncomputable section
 open scoped Classical Topology
 open NumberField IsDedekindDomain
 
@@ -21,10 +20,7 @@ theorem exists_open_phase_annihilator
   let X := (v : S) → v.val.adicCompletion F
   let q : X × X → Circle := fun p ↦ ∏ v : S, e v (-p.1 v * p.2 v)
   have hq : Continuous q := by
-    apply continuous_finset_prod
-    intro v hv
-    exact (he v).comp (((continuous_apply v).comp continuous_fst).neg.mul
-      ((continuous_apply v).comp continuous_snd))
+    fun_prop
   have hq0 (x : X) : q (x, 0) = 1 := by
     change (∏ v : S, e v (-x v * (0 : v.val.adicCompletion F))) = 1
     simp
@@ -59,7 +55,3 @@ theorem exists_open_phase_annihilator
   change Circle.coeHom (∏ v : S, e v (-x v * u v)) = Circle.coeHom 1 at hcoe
   rw [map_prod, map_one] at hcoe
   exact hcoe
-
-end DedekindZetaZeroFree.PoissonFinite.BallExpansion
-
-end

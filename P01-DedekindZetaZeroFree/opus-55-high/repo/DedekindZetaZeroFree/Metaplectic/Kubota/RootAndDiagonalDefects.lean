@@ -23,39 +23,39 @@ noncomputable def defect
   tau K M B g h * tau K M B (g * h) k /
     (tau K M B h k * tau K M B g (h * k))
 
-private lemma x_botLeft (K : Type*) [Field K] (g : GL2 K)
+lemma x_botLeft (K : Type*) [Field K] (g : GL2 K)
     (hc : (g : Matrix (Fin 2) (Fin 2) K) 1 0 ≠ 0) :
     x K g = (g : Matrix (Fin 2) (Fin 2) K) 1 0 := by
   unfold x; rw [if_neg hc]
 
-private lemma x_botRight (K : Type*) [Field K] (g : GL2 K)
+lemma x_botRight (K : Type*) [Field K] (g : GL2 K)
     (hc : (g : Matrix (Fin 2) (Fin 2) K) 1 0 = 0) :
     x K g = (g : Matrix (Fin 2) (Fin 2) K) 1 1 := by
   unfold x; rw [if_pos hc]
 
-private lemma entry_botLeft (K : Type*) [Field K] (g : GL2 K) (u v : Kˣ) :
+lemma entry_botLeft (K : Type*) [Field K] (g : GL2 K) (u v : Kˣ) :
     ((g * d K u v : GL2 K) : Matrix (Fin 2) (Fin 2) K) 1 0 =
       (g : Matrix (Fin 2) (Fin 2) K) 1 0 * (u : K) := by
   simp [coe_d, Matrix.mul_apply, Fin.sum_univ_two]
 
-private lemma entry_botRight (K : Type*) [Field K] (g : GL2 K) (u v : Kˣ) :
+lemma entry_botRight (K : Type*) [Field K] (g : GL2 K) (u v : Kˣ) :
     ((g * d K u v : GL2 K) : Matrix (Fin 2) (Fin 2) K) 1 1 =
       (g : Matrix (Fin 2) (Fin 2) K) 1 1 * (v : K) := by
   simp [coe_d, Matrix.mul_apply, Fin.sum_univ_two]
 
-private lemma entry10_mul (K : Type*) [Field K] (g h : GL2 K) :
+lemma entry10_mul (K : Type*) [Field K] (g h : GL2 K) :
     ((g * h : GL2 K) : Matrix (Fin 2) (Fin 2) K) 1 0 =
       (g : Matrix (Fin 2) (Fin 2) K) 1 0 * (h : Matrix (Fin 2) (Fin 2) K) 0 0 +
       (g : Matrix (Fin 2) (Fin 2) K) 1 1 * (h : Matrix (Fin 2) (Fin 2) K) 1 0 := by
   simp [Matrix.mul_apply, Fin.sum_univ_two]
 
-private lemma entry11_mul (K : Type*) [Field K] (g h : GL2 K) :
+lemma entry11_mul (K : Type*) [Field K] (g h : GL2 K) :
     ((g * h : GL2 K) : Matrix (Fin 2) (Fin 2) K) 1 1 =
       (g : Matrix (Fin 2) (Fin 2) K) 1 0 * (h : Matrix (Fin 2) (Fin 2) K) 0 1 +
       (g : Matrix (Fin 2) (Fin 2) K) 1 1 * (h : Matrix (Fin 2) (Fin 2) K) 1 1 := by
   simp [Matrix.mul_apply, Fin.sum_univ_two]
 
-private lemma X_mul_d_closed (K : Type*) [Field K] (g : GL2 K)
+lemma X_mul_d_closed (K : Type*) [Field K] (g : GL2 K)
     (hc : (g : Matrix (Fin 2) (Fin 2) K) 1 0 = 0) (u v : Kˣ) :
     X K (g * d K u v) = X K g * v := by
   have hc' : ((g * d K u v : GL2 K) : Matrix (Fin 2) (Fin 2) K) 1 0 = 0 := by
@@ -64,7 +64,7 @@ private lemma X_mul_d_closed (K : Type*) [Field K] (g : GL2 K)
   simp only [Units.val_mul, X, Units.val_mk0, x_botRight K _ hc', x_botRight K g hc,
     entry_botRight]
 
-private lemma X_mul_d_open (K : Type*) [Field K] (g : GL2 K)
+lemma X_mul_d_open (K : Type*) [Field K] (g : GL2 K)
     (hc : (g : Matrix (Fin 2) (Fin 2) K) 1 0 ≠ 0) (u v : Kˣ) :
     X K (g * d K u v) = X K g * u := by
   have hc' : ((g * d K u v : GL2 K) : Matrix (Fin 2) (Fin 2) K) 1 0 ≠ 0 := by
@@ -73,7 +73,7 @@ private lemma X_mul_d_open (K : Type*) [Field K] (g : GL2 K)
   simp only [Units.val_mul, X, Units.val_mk0, x_botLeft K _ hc', x_botLeft K g hc,
     entry_botLeft]
 
-private lemma key_open_closed (K : Type*) [Field K] (g h : GL2 K)
+lemma key_open_closed (K : Type*) [Field K] (g h : GL2 K)
     (hc1 : (h : Matrix (Fin 2) (Fin 2) K) 1 0 = 0)
     (hc2 : ((g * h : GL2 K) : Matrix (Fin 2) (Fin 2) K) 1 0 ≠ 0) :
     X K (g * h) * X K h = X K g * det K h := by
@@ -86,7 +86,7 @@ private lemma key_open_closed (K : Type*) [Field K] (g h : GL2 K)
     Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two]
   ring
 
-private lemma key_closed_open (K : Type*) [Field K] (g h : GL2 K)
+lemma key_closed_open (K : Type*) [Field K] (g h : GL2 K)
     (hc1 : (h : Matrix (Fin 2) (Fin 2) K) 1 0 ≠ 0)
     (hc2 : ((g * h : GL2 K) : Matrix (Fin 2) (Fin 2) K) 1 0 = 0) :
     X K (g * h) * X K h = -(X K g * det K h) := by
@@ -114,21 +114,19 @@ private lemma key_closed_open (K : Type*) [Field K] (g h : GL2 K)
     entry11_mul, Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two]
   linear_combination ((h : Matrix (Fin 2) (Fin 2) K) 1 1) * hrel
 
-private lemma neg_mul_div (K : Type*) [Field K] (A d u v : Kˣ) :
+lemma neg_mul_div (K : Type*) [Field K] (A d u v : Kˣ) :
     (-(A * d)) * u / (A * v * d) = -(u / v) := by
   apply Units.ext
   simp only [Units.val_div_eq_div_val, Units.val_mul, Units.val_neg]
   field_simp
 
-private lemma div_inv_eq (K : Type*) [Field K] (u v : Kˣ) : v / u = (u / v)⁻¹ := by
+lemma div_inv_eq (K : Type*) [Field K] (u v : Kˣ) : v / u = (u / v)⁻¹ := by
   rw [div_eq_mul_inv, div_eq_mul_inv, mul_inv_rev, inv_inv]
 
-private lemma cancel_div (K : Type*) [Field K] (a b c : Kˣ) : a * b / (a * c) = b / c := by
-  apply Units.ext
-  simp only [Units.val_div_eq_div_val, Units.val_mul]
-  field_simp
+lemma cancel_div (K : Type*) [Field K] (a b c : Kˣ) : a * b / (a * c) = b / c := by
+  simp
 
-private lemma B_inv_neg (K : Type*) [Field K] (M : Type*) [CommGroup M]
+lemma B_inv_neg (K : Type*) [Field K] (M : Type*) [CommGroup M]
     (B : Kˣ → Kˣ → M)
     (hL : ∀ a b c : Kˣ, B (a * b) c = B a c * B b c)
     (hR : ∀ a b c : Kˣ, B a (b * c) = B a b * B a c)
@@ -139,7 +137,7 @@ private lemma B_inv_neg (K : Type*) [Field K] (M : Type*) [CommGroup M]
     KubotaDefectSymbolAlgebra.neg_self K M B hR hAlt hCub a]
   simp
 
-private theorem defect_eq_factor
+theorem defect_eq_factor
     (K : Type*) [Field K] (M : Type*) [CommGroup M]
     (B : Kˣ → Kˣ → M)
     (hL : ∀ a b c : Kˣ, B (a * b) c = B a c * B b c)
@@ -166,9 +164,9 @@ theorem defect_n
     (g h : KubotaRankTwo.GL2 K) (t : K) :
     defect K M B g h (KubotaRankTwo.n K t) = 1 := by
   rw [defect_eq_factor K M B hL hR hAlt hCub g h (KubotaRankTwo.n K t)]
-  simp only [X_n_mul, X_mul_n, X_n]
+  simp only [X_mul_n, X_n]
   rw [show X K (g * h) * X K h / (X K (g * h) * X K h) = 1 by
-        rw [div_eq_mul_inv]; exact mul_inv_cancel _]
+        simp]
   exact KubotaDefectSymbolAlgebra.one_left K M B hL _
 
 theorem defect_d
@@ -188,7 +186,7 @@ theorem defect_d
       rw [show X K (g * h) * v * X K h / (X K (g * h) * (X K h * v)) = 1 by
             rw [show X K (g * h) * v * X K h = X K (g * h) * (X K h * v) by
                   rw [mul_assoc, mul_comm v (X K h)]]
-            exact div_self' _]
+            simp]
       exact KubotaDefectSymbolAlgebra.one_left K M B hL _
     · rw [X_mul_d_open K (g * h) hc2]
       rw [show X K (g * h) * (X K h * v) / (X K g * v * det K h) = 1 by
@@ -197,7 +195,7 @@ theorem defect_d
                 key_open_closed K g h hc1 hc2,
                 show (X K g * det K h) * v = X K g * v * det K h by
                   rw [mul_assoc, mul_comm (det K h) v, ← mul_assoc]]
-            exact div_self' _]
+            simp]
       rw [show X K (g * h) * u * X K h / (X K (g * h) * (X K h * v)) = u / v by
             rw [show X K (g * h) * u * X K h = (X K (g * h) * X K h) * u by
                   rw [mul_assoc, mul_comm u (X K h), ← mul_assoc],
@@ -226,7 +224,7 @@ theorem defect_d
       rw [show X K (g * h) * u * X K h / (X K (g * h) * (X K h * u)) = 1 by
             rw [show X K (g * h) * u * X K h = X K (g * h) * (X K h * u) by
                   rw [mul_assoc, mul_comm u (X K h)]]
-            exact div_self' _]
+            simp]
       exact KubotaDefectSymbolAlgebra.one_left K M B hL _
 
 theorem tau_one_right
@@ -236,7 +234,7 @@ theorem tau_one_right
     (g : KubotaRankTwo.GL2 K) : tau K M B g 1 = 1 := by
   unfold tau
   simp only [mul_one, X_one, one_mul]
-  rw [show X K g / X K g = 1 by rw [div_eq_mul_inv]; exact mul_inv_cancel _]
+  rw [show X K g / X K g = 1 by simp]
   exact KubotaDefectSymbolAlgebra.one_left K M B hL _
 
 theorem tau_n_mul_mul_n
@@ -247,7 +245,4 @@ theorem tau_n_mul_mul_n
   unfold tau
   rw [← mul_assoc (n K t * g) h (n K t')]
   rw [X_n_mul_mul_n, X_n_mul, X_mul_n]
-  simp only [map_mul, det_n, one_mul]
-
-end KubotaElementaryLastArgument
-end DedekindZetaZeroFree
+  simp

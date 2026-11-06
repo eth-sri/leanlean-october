@@ -23,7 +23,7 @@ variable (R : PrincipalMellin.ActualRecipe S η)
 variable (P : CompatibleModelData F R.A.zeta12 R.A.primitive_zeta12)
 variable (C : LocalFiberData F R.A.zeta12 R.A.primitive_zeta12 P)
 
-private theorem projected_raw (raw : Raw R) :
+theorem projected_raw (raw : Raw R) :
     pglProjection F R.A.zeta12 R.A.primitive_zeta12
       (scalarQuotient F R.A.zeta12 R.A.primitive_zeta12
         (amalgamation F R.A.zeta12 R.A.primitive_zeta12 raw)) =
@@ -191,7 +191,7 @@ private theorem projected_raw (raw : Raw R) :
   simp only [mul_zero, sub_zero, norm_zero, zero_pow (by decide : 2 ≠ 0), zero_add, norm_mul, norm_div]
   field_simp
 
-private theorem finsum_places_split (f : KPHilbert.Place F → ℝ)
+theorem finsum_places_split (f : KPHilbert.Place F → ℝ)
     (hf : Function.HasFiniteSupport f) :
     (∑ᶠ v, f v) = (∑ w : InfinitePlace F, f (.inl w)) + ∑ᶠ q : KPFinitePlace F, f (.inr q) := by
   let T := hf.toFinset
@@ -260,7 +260,7 @@ theorem raw_borel_height_local_logs (raw : Raw R)
       (KPHilbert.infinite_isComplex F R.A.zeta12 R.A.primitive_zeta12 w)).toRingHom).comp
     (KPLocalCover.projection F R.A.zeta12 R.A.primitive_zeta12 (.inl w))
 
-private theorem arch_compact_matrix_mem_su2 (w : InfinitePlace F)
+theorem arch_compact_matrix_mem_su2 (w : InfinitePlace F)
     (k : KPLocalCover.CubicGL2Raw F R.A.zeta12 R.A.primitive_zeta12 (.inl w))
     (hk : k ∈ complexSU2Compact R w) :
     complexMatrixHom R w k ∈ KPCplxCharacterHaar.complexSU2Embedding.range := by

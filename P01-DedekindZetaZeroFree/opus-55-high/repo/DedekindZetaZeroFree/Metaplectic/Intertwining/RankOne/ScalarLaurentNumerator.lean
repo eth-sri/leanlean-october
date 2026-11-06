@@ -7,7 +7,6 @@ public import DedekindZetaZeroFree.Metaplectic.Intertwining.RankOne.CompactCoreL
 
 set_option maxHeartbeats 1000000
 
-noncomputable section
 namespace DedekindZetaZeroFree.KPRankOneShellRepair
 
 open scoped NumberField Valued
@@ -19,7 +18,7 @@ variable (F : Type) [Field F] [NumberField F]
   (ζ : F) (hζ : IsPrimitiveRoot ζ 12) (q : HeightOneSpectrum (𝓞 F))
   (S : CanonicalFiniteInducingData F ζ hζ q)
 
-private lemma eval₂_id_eq_smeval (f : LaurentPolynomial ℂ) (u : ℂˣ) :
+lemma eval₂_id_eq_smeval (f : LaurentPolynomial ℂ) (u : ℂˣ) :
     LaurentPolynomial.eval₂ (RingHom.id ℂ) u f = f.smeval u := by
   induction f using LaurentPolynomial.induction_on' with
   | add p q hp hq => rw [map_add, LaurentPolynomial.smeval_add, hp, hq]
@@ -27,7 +26,7 @@ private lemma eval₂_id_eq_smeval (f : LaurentPolynomial ℂ) (u : ℂˣ) :
       rw [LaurentPolynomial.eval₂_C_mul_T, LaurentPolynomial.smeval_C_mul_T_n, smul_eq_mul,
         RingHom.id_apply]
 
-private lemma smeval_eq_finsupp_sum (f : LaurentPolynomial ℂ) (u : ℂˣ) :
+lemma smeval_eq_finsupp_sum (f : LaurentPolynomial ℂ) (u : ℂˣ) :
     f.smeval u = f.coeff.sum (fun n c => (u : ℂ) ^ n * c) := by
   rw [LaurentPolynomial.smeval_eq_sum]
   simp only [Finsupp.sum]
@@ -97,11 +96,9 @@ theorem actual_scalar_numerator_coordinate (P : Polarization S.heisenberg)
   have hden : denominator (LocalField F q) ε s = 1 - cc * (u : ℂ) ^ 6 := by
     cases ε with
     | plus =>
-        simp only [denominator, if_true, cc, u, evaluationUnit, rUnit, t, r, if_true]
-        rw [Units.val_mk0]
+        rfl
     | minus =>
-        simp only [denominator, reduceCtorEq, if_false, cc, u, evaluationUnit, rUnit, r,
-          if_false, if_true, Units.val_inv_eq_inv_val, Units.val_mk0, inv_pow]
+        simp only [denominator, reduceCtorEq, if_false, cc, u, evaluationUnit, rUnit, r, if_false, Units.val_inv_eq_inv_val, Units.val_mk0, inv_pow]
   have hstd : standardIntegralCoordinate (LocalField F q) S.borel P S.iwasawa μ ε s
         (φ : compactPicture S.borel P S.iwasawa (sourceSign ε))
         (k : ActualCover F ζ hζ q) h =
@@ -121,7 +118,7 @@ theorem actual_scalar_numerator_coordinate (P : Polarization S.heisenberg)
     hM₂ s hs φ k h
   have hIntU : IntegrableOn (actualStandardIntegrand F ζ hζ q S P ε s φ.val k h)
       (B₂ ∪ T₂) μ := hIntB₂.union hIntT₂
-  have hunion₂' : B₂ ∪ T₂ = Set.univ := by rw [hB₂def, hT₂def]; exact hunion₂
+  have hunion₂' : B₂ ∪ T₂ = Set.univ := by omega
   rw [hunion₂'] at hIntU
   have hIntT : IntegrableOn (actualStandardIntegrand F ζ hζ q S P ε s φ.val k h) T μ :=
     hIntU.mono_set (Set.subset_univ T)
@@ -153,7 +150,6 @@ theorem actual_scalar_numerator_coordinate (P : Polarization S.heisenberg)
       (eval₂_id_eq_smeval Ppoly u).symm]
     have hC : LaurentPolynomial.eval₂ (RingHom.id ℂ) u
         (1 - LaurentPolynomial.C cc * LaurentPolynomial.T 6) = 1 - cc * (u : ℂ) ^ 6 := by
-      rw [map_sub, map_one, LaurentPolynomial.eval₂_C_mul_T, RingHom.id_apply]
       simp
     have hcore : LaurentPolynomial.eval₂ (RingHom.id ℂ) u Pcore =
         p_core.sum (fun n c => (u : ℂ) ^ n * c) := by
@@ -170,7 +166,3 @@ theorem actual_scalar_numerator_coordinate (P : Polarization S.heisenberg)
   rw [← smeval_eq_finsupp_sum Ppoly u]
   rw [hPeval]
   exact hLHS
-
-end DedekindZetaZeroFree.KPRankOneShellRepair
-
-end

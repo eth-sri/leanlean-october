@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Descent of fixed rational idele classes
 
@@ -68,8 +63,8 @@ theorem rationalTowerRelativeIdeleClass_fixed_of_directLimit_fixed
     intro y hy
     let yK : K := ⟨y, hy⟩
     let yU : U := algebraMap K U yK
-    have hη : η yU = yU := by
-      exact η.commutes yK
+    have hη : η yU = yU := 
+      η.commutes yK
     have hres :=
       DFunLike.congr_fun hσU yU
     calc
@@ -138,7 +133,7 @@ theorem rationalIntermediateField_algebra_eq_inclusion
 
 /-- The actual tower comparison from rational relative idele classes at `U`
 to relative idele classes over the intermediate field `K`. -/
-noncomputable def rationalRelativeIdeleClassTowerBaseChangeEquiv
+def rationalRelativeIdeleClassTowerBaseChangeEquiv
     (K : IntermediateField ℚ (SeparableClosure ℚ))
     [FiniteDimensional ℚ K]
     (U : FiniteGaloisIntermediateField ℚ (SeparableClosure ℚ))
@@ -156,7 +151,7 @@ noncomputable def rationalRelativeIdeleClassTowerBaseChangeEquiv
 relative idele classes at `U` fixed by `Gal(U/K)`. This transports the
 Herbrand fixed-subgroup target of `baseIdeleClassEquivFixed` to the concrete
 Galois-fixed subgroup. -/
-noncomputable def rationalIntermediateIdeleClassEquivGaloisFixed
+def rationalIntermediateIdeleClassEquivGaloisFixed
     (K : IntermediateField ℚ (SeparableClosure ℚ))
     [FiniteDimensional ℚ K]
     (U : FiniteGaloisIntermediateField ℚ (SeparableClosure ℚ))
@@ -192,22 +187,4 @@ theorem rationalIntermediateIdeleClassEquivGaloisFixed_coe
         RelativeIdeleGroup.galoisFixedClassSubgroup K U) :
       RelativeIdeleGroup.ClassGroup K U) =
         RelativeIdeleGroup.classInclusion K U q := by
-  let :
-      MulDistribMulAction (U ≃ₐ[K] U)
-        (RelativeIdeleGroup.ClassGroup K U) :=
-    RelativeIdeleGroup.Cohomology.ideleClassMulDistribMulAction K U
-  change
-    ((RelativeIdeleGroup.Cohomology.baseIdeleClassEquivFixed K U q :
-        CyclicCohomology.ProfiniteCohomology.Herbrand.fixedSubgroup
-          (U ≃ₐ[K] U)
-          (RelativeIdeleGroup.ClassGroup K U)) :
-      RelativeIdeleGroup.ClassGroup K U) =
-        RelativeIdeleGroup.classInclusion K U q
-  exact
-    RelativeIdeleGroup.Cohomology.baseIdeleClassEquivFixed_coe K U q
-
-
-end Reciprocity
-end GlobalClassFieldTheory
-
-end
+  rfl

@@ -14,7 +14,6 @@ open KPLocalExceptionalConstruction KPLocalPrincipalSeries KPLocalStoneVonNeuman
 open KPExteriorUnitShellIntegrals
 
 noncomputable section
-set_option autoImplicit false
 
 variable (F : Type) [Field F] [NumberField F]
 variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
@@ -39,6 +38,3 @@ def sphericalShell (π : (valuation (LocalField F v)).integer) (e : ℕ) (l : �
     Set (LocalField F v) :=
   {x | ∃ u ∈ KPTameGauss.integerUnitShell (LocalField F v),
     x = (π : LocalField F v) ^ ((e : ℤ) - l) * u}
-
-end
-end DedekindZetaZeroFree.KPExteriorActualJacquetShellsRaw

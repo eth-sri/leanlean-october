@@ -19,8 +19,7 @@ theorem rayCharacterFiniteOrder
   intro I hI hcop
   have hne : rayIdealClass K m hm I ≠ none := by
     intro h
-    rw [rayIdealClass_eq_none_iff] at h
-    exact h.elim hI (fun h2 => h2 hcop)
+    simp_all
   obtain ⟨c, hc⟩ := Option.ne_none_iff_exists'.mp hne
   rw [hχ I, hc]
   rw [← map_pow, pow_card_eq_one', map_one]
@@ -40,5 +39,3 @@ theorem rayCharacter_norm_le_one
     have hpow : ψ c ^ Nat.card (RayIdealClass K m hm) = 1 := by
       rw [← map_pow, pow_card_eq_one', map_one]
     rw [Complex.norm_eq_one_of_pow_eq_one hpow hn]
-
-end DedekindZetaZeroFree.AbelianQuotient

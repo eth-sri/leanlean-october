@@ -44,5 +44,3 @@ theorem exists_quadraticRayExtensionData
       have h1 := R.artin_frobenius p hv Q hQ
       rw [← h1, hagree]
       exact RayBridge.descendedCharacter_apply_finitePrime f hf η p hp }⟩
-
-end DedekindZetaZeroFree.LargeSieve

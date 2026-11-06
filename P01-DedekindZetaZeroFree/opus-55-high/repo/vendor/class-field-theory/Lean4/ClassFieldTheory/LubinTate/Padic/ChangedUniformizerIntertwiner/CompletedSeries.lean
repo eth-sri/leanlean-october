@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # Completed p-adic Lubin--Tate series
 
@@ -36,7 +30,7 @@ open SameUniformizer
 
 /-- The multiplicative Lubin--Tate series after extending its coefficients
 to the completed unramified Witt ring. -/
-noncomputable def padicCompletedMultiplicativeSeries
+def padicCompletedMultiplicativeSeries
     (p : ℕ) [Fact p.Prime] :
     PowerSeries (padicCompletedUnramifiedWittRing p) :=
   PowerSeries.map
@@ -45,7 +39,7 @@ noncomputable def padicCompletedMultiplicativeSeries
 
 /-- The standard Lubin--Tate series for the changed uniformizer `u p`,
 after extending its coefficients to the completed unramified Witt ring. -/
-noncomputable def padicCompletedChangedStandardSeries
+def padicCompletedChangedStandardSeries
     (p : ℕ) [Fact p.Prime]
     (u : (padicLocalField p).valuationSubringˣ) :
     PowerSeries (padicCompletedUnramifiedWittRing p) :=
@@ -64,7 +58,7 @@ theorem padicCompletedMultiplicativeSeries_eq
   rw [padicCompletedMultiplicativeSeries,
     LubinTateSeries.padicMultiplicativeLubinTateSeries_toPowerSeries,
     PowerSeries.binomialSeries_nat]
-  simp only [map_sub, map_pow, map_add, map_one, PowerSeries.map_X]
+  simp
 
 /-- The completed changed-standard series has linear coefficient `u p` and
 degree-`p` term `X ^ p`. -/
@@ -117,10 +111,7 @@ theorem padicCompletedMultiplicativeSeries_constantCoeff
     padicCompletedMultiplicativeSeries,
     PowerSeries.coeff_map,
     PowerSeries.coeff_zero_eq_constantCoeff_apply]
-  exact
-    (congrArg (padicValuationSubringToCompletedUnramifiedWittRing p)
-      (padicMultiplicativeLubinTateSeries p).constantCoeff_eq_zero).trans
-      (map_zero (padicValuationSubringToCompletedUnramifiedWittRing p))
+  simp
 
 /-- The linear coefficient of the completed multiplicative series is `p`. -/
 theorem padicCompletedMultiplicativeSeries_coeff_one
@@ -146,23 +137,6 @@ theorem padicCompletedChangedStandardSeries_constantCoeff
     PowerSeries.coeff_zero_eq_constantCoeff_apply,
     LubinTateSeries.constantCoeff_eq_zero,
     map_zero]
-
-/-- The completed multiplicative Lubin--Tate series admits formal
-substitution. -/
-theorem padicCompletedMultiplicativeSeries_hasSubst
-    (p : ℕ) [Fact p.Prime] :
-    PowerSeries.HasSubst (padicCompletedMultiplicativeSeries p) :=
-  PowerSeries.HasSubst.of_constantCoeff_zero'
-    (padicCompletedMultiplicativeSeries_constantCoeff p)
-
-/-- The completed changed standard Lubin--Tate series admits formal
-substitution. -/
-theorem padicCompletedChangedStandardSeries_hasSubst
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) :
-    PowerSeries.HasSubst (padicCompletedChangedStandardSeries p u) :=
-  PowerSeries.HasSubst.of_constantCoeff_zero'
-    (padicCompletedChangedStandardSeries_constantCoeff p u)
 
 /-- Reduction of the completed multiplicative series modulo `p` is `X ^ p`. -/
 theorem padicCompletedMultiplicativeSeries_map_constantCoeff
@@ -190,9 +164,6 @@ theorem padicCompletedChangedStandardSeries_map_constantCoeff
   let : CharP (PowerSeries (AlgebraicClosure (ZMod p))) p :=
     charP_of_injective_ringHom PowerSeries.C_injective p
   rw [padicCompletedChangedStandardSeries_eq]
-  simp only [map_add, map_mul, map_pow, PowerSeries.map_C,
-    PowerSeries.map_X, map_natCast]
-  rw [CharP.cast_eq_zero (PowerSeries (AlgebraicClosure (ZMod p))) p]
   simp
 
 /-- Coefficientwise Witt-vector Frobenius preserves a zero constant
@@ -207,7 +178,3 @@ theorem padicChangedUniformizerFrobenius_constantCoeff_eq_zero
     PowerSeries.coeff_map,
     PowerSeries.coeff_zero_eq_constantCoeff_apply,
     hH, map_zero]
-
-end LubinTate
-
-end

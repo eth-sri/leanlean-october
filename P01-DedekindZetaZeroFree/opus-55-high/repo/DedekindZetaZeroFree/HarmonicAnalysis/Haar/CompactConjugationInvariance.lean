@@ -4,12 +4,11 @@ public import Mathlib.MeasureTheory.Group.ModularCharacter
 
 @[expose] public section
 
-noncomputable section
 namespace DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel.CompactHaar
 open MeasureTheory Set Filter Topology
 open scoped NNReal
 
-private theorem continuous_translated_integral
+theorem continuous_translated_integral
     {G : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
     [LocallyCompactSpace G] [T2Space G] [MeasurableSpace G] [BorelSpace G]
     (μ : Measure G) [IsFiniteMeasureOnCompacts μ]
@@ -86,7 +85,7 @@ theorem map_mul_right_compact
     (continuous_modularCharacter.comp hπ) k
   rw [Measure.map_right_mul_eq_modularCharacterFun_smul]
   change Measure.modularCharacter (π k) • μ = μ
-  rw [show Measure.modularCharacter (π k) = 1 from he, one_smul]
+  simp_all
 
 theorem map_conjugation_compact
     {G K : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
@@ -104,8 +103,3 @@ theorem map_conjugation_compact
 end DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel.CompactHaar
 
 namespace DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel
-open MeasureTheory Set
-
-end DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel
-
-end

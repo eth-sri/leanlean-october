@@ -33,23 +33,23 @@ def rowPrimes (u : D.Row) : Finset (Ideal (NumberField.RingOfIntegers F)) :=
 def rowPrimesWithS (u : D.Row) : Finset (Ideal (NumberField.RingOfIntegers F)) :=
   rowPrimes D u ∪ D.recipe.A.Sf.image (fun v => v.asIdeal)
 
-private theorem rowPrimes_eq (u : D.Row) :
+theorem rowPrimes_eq (u : D.Row) :
     rowPrimes D u = idealPrimeSupport (DedekindZetaZeroFree.Quantitative.FixedData.Row.ideal u).val := by
   unfold rowPrimes idealPrimeSupport
   congr
 
-private theorem two_le_absNorm_of_ne (p : Ideal (NumberField.RingOfIntegers F))
+theorem two_le_absNorm_of_ne (p : Ideal (NumberField.RingOfIntegers F))
     (h0 : p ≠ ⊥) (h1 : p ≠ ⊤) : 2 ≤ Ideal.absNorm p := by
   have ha : Ideal.absNorm p ≠ 0 := fun h => h0 (Ideal.absNorm_eq_zero_iff.mp h)
   have hb : Ideal.absNorm p ≠ 1 := fun h => h1 (Ideal.absNorm_eq_one_iff.mp h)
   omega
 
-private theorem idealNorm_nonneg' (p : Ideal (NumberField.RingOfIntegers F)) :
+theorem idealNorm_nonneg' (p : Ideal (NumberField.RingOfIntegers F)) :
     0 ≤ idealNorm p := by
   unfold idealNorm
   positivity
 
-private theorem inv_facts (σ : ℝ) (hσ : 0 < σ) (n : ℝ) (hn : 2 ≤ n) :
+theorem inv_facts (σ : ℝ) (hσ : 0 < σ) (n : ℝ) (hn : 2 ≤ n) :
     0 < 1 - n ^ (-σ) ∧ 0 ≤ n ^ (-σ) ∧ 1 ≤ (1 - n ^ (-σ))⁻¹ ∧
       (1 - n ^ (-σ))⁻¹ ≤ 1 + (1 / (1 - (2:ℝ) ^ (-σ))) * n ^ (-σ) := by
   have hr1 : (2:ℝ) ^ (-σ) < 1 :=
@@ -70,20 +70,20 @@ private theorem inv_facts (σ : ℝ) (hσ : 0 < σ) (n : ℝ) (hn : 2 ≤ n) :
   · rw [inv_eq_one_div, div_le_iff₀ hpos]
     nlinarith [mul_nonneg hx0 (sub_nonneg.mpr h1)]
 
-private theorem sset_two (p : Ideal (NumberField.RingOfIntegers F))
+theorem sset_two (p : Ideal (NumberField.RingOfIntegers F))
     (hp : p ∈ D.recipe.A.Sf.image (fun v => v.asIdeal)) : 2 ≤ idealNorm p := by
   obtain ⟨v, _, rfl⟩ := Finset.mem_image.mp hp
   have h := two_le_absNorm_of_ne v.asIdeal v.ne_bot v.isPrime.ne_top
   unfold idealNorm
   exact_mod_cast h
 
-private theorem prime_norm_two (I : Ideal (NumberField.RingOfIntegers F))
+theorem prime_norm_two (I : Ideal (NumberField.RingOfIntegers F))
     (p : Ideal (NumberField.RingOfIntegers F)) (hp : p ∈ idealPrimeSupport I) :
     2 ≤ idealNorm p :=
   idealNorm_prime_ge_two p (UniqueFactorizationMonoid.prime_of_normalized_factor p
     (by simpa only [idealPrimeSupport, Multiset.mem_toFinset] using hp))
 
-private theorem q_eq_idealNorm (u : D.Row) :
+theorem q_eq_idealNorm (u : D.Row) :
     D.q u = idealNorm (DedekindZetaZeroFree.Quantitative.FixedData.Row.ideal u).val := by
   unfold DedekindZetaZeroFree.Quantitative.FixedData.q
   show ((Nat.card (D.recipe.A.R ⧸ Ideal.span {u.u}) : ℕ) : ℝ) = _
@@ -91,7 +91,7 @@ private theorem q_eq_idealNorm (u : D.Row) :
     D.recipe.A.exteriorResidue_card]
   rfl
 
-private theorem prod_union_le_aux {ι : Type} [DecidableEq ι] (A B : Finset ι) (g : ι → ℝ)
+theorem prod_union_le_aux {ι : Type} [DecidableEq ι] (A B : Finset ι) (g : ι → ℝ)
     (hA : ∀ p ∈ A, 0 ≤ g p) (hB : ∀ p ∈ B, 1 ≤ g p) :
     ∏ p ∈ A ∪ B, g p ≤ (∏ p ∈ A, g p) * ∏ p ∈ B, g p := by
   have hU : 0 ≤ ∏ p ∈ A ∪ B, g p := Finset.prod_nonneg (fun p hp => by
@@ -103,7 +103,7 @@ private theorem prod_union_le_aux {ι : Type} [DecidableEq ι] (A B : Finset ι)
   have key := Finset.prod_union_inter (s₁ := A) (s₂ := B) (f := g)
   nlinarith [mul_le_mul_of_nonneg_left hI hU]
 
-private theorem row_bounds (σ ε : ℝ) (hσ : 0 < σ) (hε : 0 < ε) :
+theorem row_bounds (σ ε : ℝ) (hσ : 0 < σ) (hε : 0 < ε) :
     ∃ K1 K2 : ℝ, 0 < K1 ∧ 0 < K2 ∧ ∀ u : D.Row,
       (∏ p ∈ idealPrimeSupport (DedekindZetaZeroFree.Quantitative.FixedData.Row.ideal u).val,
           (1 + idealNorm p ^ (-σ))) ≤ K1 * (D.q u) ^ ε ∧

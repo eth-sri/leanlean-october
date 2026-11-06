@@ -24,7 +24,7 @@ theorem holomorphic_eqOn_of_open_agreement
 theorem puncturedPlane_isPreconnected (a : ℂ) :
     IsPreconnected ({a}ᶜ : Set ℂ) := by
   have hrank : (1 : Cardinal) < Module.rank ℝ ℂ := by
-    rw [Complex.rank_real_complex]; norm_num
+    simp
   exact (isConnected_compl_singleton_of_one_lt_rank hrank a).isPreconnected
 
 theorem continuation_unique_off_one
@@ -37,10 +37,6 @@ theorem continuation_unique_off_one
     isOpen_compl_singleton ?_ (isOpen_lt continuous_const Complex.continuous_re)
     ⟨2, by norm_num⟩ ?_ hf hg ?_
   · exact puncturedPlane_isPreconnected 1
-  · intro s hs hs1
-    rw [hs1] at hs
-    norm_num at hs
+  · simp
   · intro s hs
     exact hfg s hs
-
-end DedekindZetaZeroFree

@@ -11,8 +11,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
 /-!
 # Integer-valued valuations
 
@@ -20,7 +18,6 @@ Relates membership in the valuation ring to the ambient valuation and exposes
 the associated surjective multiplicative valuation with a uniformizer.
 -/
 
-set_option autoImplicit false
 
 namespace LocalFieldTheory
 
@@ -37,7 +34,7 @@ open scoped ValuativeRel
 theorem valuation_integer_membership
     (K : Type u) [Field K] [ValuativeRel K] (x : K) :
     x ∈ 𝒪[K] ↔ ValuativeRel.valuation K x ≤ 1 :=
-  (Valuation.mem_integer_iff (ValuativeRel.valuation K) x).symm
+  by rfl
 
 /-- The normalized integer valuation, packaged as the
 `MultiplicativeIntegerValuation` used by the value-group layer. -/
@@ -46,10 +43,10 @@ def multiplicativeIntegerValuation
     [IsNonarchimedeanLocalField K] :
     MultiplicativeIntegerValuation Kˣ where
   val x := LocalFieldTheory.IsNonarchimedeanLocalField.v K (Additive.ofMul x)
-  map_one := by
-    exact LocalFieldTheory.IsNonarchimedeanLocalField.v_one K
-  map_mul x y := by
-    exact LocalFieldTheory.IsNonarchimedeanLocalField.v_mul K x y
+  map_one := 
+    LocalFieldTheory.IsNonarchimedeanLocalField.v_one K
+  map_mul x y := 
+    LocalFieldTheory.IsNonarchimedeanLocalField.v_mul K x y
 
 /-- The multiplicative integer valuation records the additive integer exponent of the original
 valuation. -/
@@ -78,8 +75,3 @@ theorem multiplicativeIntegerValuation_exists_uniformizer
     ∃ ϖ : Kˣ, (multiplicativeIntegerValuation K).IsUniformizer ϖ :=
   (multiplicativeIntegerValuation K).exists_uniformizer_of_surjective
     (multiplicativeIntegerValuation_surjective K)
-
-end IsNonarchimedeanLocalField
-
-end
-end LocalFieldTheory

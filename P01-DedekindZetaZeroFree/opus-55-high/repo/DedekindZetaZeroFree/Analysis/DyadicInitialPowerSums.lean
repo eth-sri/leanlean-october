@@ -8,11 +8,11 @@ namespace DedekindZetaZeroFree.LargeSieve.Vendor
 
 open scoped NumberField Classical
 
-private lemma div_rpow_neg (X q p : ℝ) (hX : 0 < X) (hq : 0 < q) :
+lemma div_rpow_neg (X q p : ℝ) (hX : 0 < X) (hq : 0 < q) :
     (X / q) ^ (-p) = X ^ (-p) * q ^ p := by
   rw [Real.div_rpow hX.le hq.le, Real.rpow_neg hq.le, div_inv_eq_mul]
 
-private lemma dyadic_pointwise (x X p : ℝ) (hx1 : 1 ≤ x) (hxX : x ≤ X) (hX1 : 1 ≤ X)
+lemma dyadic_pointwise (x X p : ℝ) (hx1 : 1 ≤ x) (hxX : x ≤ X) (hX1 : 1 ≤ X)
     (hp0 : 0 ≤ p) (hp1 : p < 1) (N : ℕ) (hN : X < 2 ^ N) :
     x ^ (-p) ≤ 2 ^ p * X ^ (-p) *
       ∑ k ∈ Finset.range (N + 1), (2 : ℝ) ^ ((k : ℝ) * p) *
@@ -33,7 +33,7 @@ private lemma dyadic_pointwise (x X p : ℝ) (hx1 : 1 ≤ x) (hxX : x ≤ X) (hX
   have hKpos : 1 ≤ K := by
     rcases Nat.eq_zero_or_pos K with h | h
     · rw [h] at hKspec; simp at hKspec; linarith
-    · exact h
+    omega
   have hxY : x ≤ X / 2 ^ (K - 1) := hKmin (K - 1) (by omega)
   have hstep1 : x ^ (-p) ≤ (X / 2 ^ K) ^ (-p) :=
     Real.rpow_le_rpow_of_nonpos (by positivity) hKspec.le (by linarith)
@@ -50,14 +50,12 @@ private lemma dyadic_pointwise (x X p : ℝ) (hx1 : 1 ≤ x) (hxX : x ≤ X) (hX
   have hnonneg : ∀ k ∈ Finset.range (N + 1),
       0 ≤ (2 : ℝ) ^ ((k : ℝ) * p) * (if x ≤ X / 2 ^ k then (1 : ℝ) else 0) := by
     intro k hk
-    have : 0 ≤ (2:ℝ) ^ ((k:ℝ) * p) := Real.rpow_nonneg (by norm_num) _
-    split <;> positivity
+    positivity
   have hsum : (2 : ℝ) ^ (((K - 1 : ℕ) : ℝ) * p) ≤
       ∑ k ∈ Finset.range (N + 1), (2 : ℝ) ^ ((k : ℝ) * p) *
         (if x ≤ X / 2 ^ k then (1 : ℝ) else 0) := by
     have h := Finset.single_le_sum hnonneg hmem
-    rw [if_pos hxY, mul_one] at h
-    exact h
+    simp_all
   calc x ^ (-p) ≤ (X / 2 ^ K) ^ (-p) := hstep1
     _ = 2 ^ p * X ^ (-p) * (2 : ℝ) ^ (((K - 1 : ℕ) : ℝ) * p) := hterm
     _ ≤ 2 ^ p * X ^ (-p) *
@@ -66,9 +64,9 @@ private lemma dyadic_pointwise (x X p : ℝ) (hx1 : 1 ≤ x) (hxX : x ≤ X) (hX
         apply mul_le_mul_of_nonneg_left hsum
         positivity
 
-private lemma dyadic_term (X p : ℝ) (k : ℕ) :
+lemma dyadic_term (X p : ℝ) (k : ℕ) :
     (2:ℝ)^((k:ℝ)*p) * (X / 2^k) = X * ((2:ℝ)^(p-1))^k := by
-  have h1 : (2:ℝ)^k = (2:ℝ)^(k:ℝ) := by rw [Real.rpow_natCast]
+  have h1 : (2:ℝ)^k = (2:ℝ)^(k:ℝ) := by simp
   rw [h1]
   rw [show (2:ℝ)^((k:ℝ)*p) * (X / (2:ℝ)^(k:ℝ))
         = X * ((2:ℝ)^((k:ℝ)*p) / (2:ℝ)^(k:ℝ)) by ring]
@@ -110,8 +108,7 @@ theorem inversePower_initial_sum_le
         have hYlt : X / 2 ^ k < 1 := not_le.mp hY
         linarith
       rw [hempty, Finset.card_empty, Nat.cast_zero]
-      have h0 : 0 ≤ X / 2 ^ k := by positivity
-      nlinarith [hC]
+      simp_all
   have hgeom : ∑ k ∈ Finset.range (N+1), ((2:ℝ)^(p-1))^k ≤ (1 - (2:ℝ)^(p-1))⁻¹ := by
     rw [inv_eq_one_div, le_div_iff₀ hrpos, mul_comm, mul_neg_geom_sum]
     have : 0 ≤ ((2:ℝ)^(p-1))^(N+1) := by positivity
@@ -145,20 +142,15 @@ theorem inversePower_initial_sum_le
         intro k hk
         rw [Finset.mul_sum]
     _ = 2 ^ p * X ^ (-p) * ∑ k ∈ Finset.range (N+1), (2:ℝ)^((k:ℝ)*p) * ((s.filter (fun i => w i ≤ X/2^k)).card : ℝ) := by
-        congr 1
-        apply Finset.sum_congr rfl
-        intro k hk
-        rw [Finset.sum_boole]
+        simp
     _ ≤ 2 ^ p * X ^ (-p) * ∑ k ∈ Finset.range (N+1), (2:ℝ)^((k:ℝ)*p) * (C * (X/2^k)) := by
         apply mul_le_mul_of_nonneg_left _ (by positivity)
         apply Finset.sum_le_sum
         intro k hk
         apply mul_le_mul_of_nonneg_left (hcard k hk)
-        exact Real.rpow_nonneg (by norm_num) _
+        positivity
     _ = 2 ^ p * X ^ (-p) * (C * X) * ∑ k ∈ Finset.range (N+1), ((2:ℝ)^(p-1))^k := by
         rw [hsum_eq]; ring
     _ ≤ 2 ^ p * X ^ (-p) * (C*X) * (1 - (2:ℝ)^(p-1))⁻¹ :=
         mul_le_mul_of_nonneg_left hgeom (by positivity)
     _ = ((2:ℝ)^p * C / (1 - (2:ℝ)^(p-1))) * X^(1-p) := hfinal
-
-end DedekindZetaZeroFree.LargeSieve.Vendor

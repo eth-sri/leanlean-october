@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # Idele-class norms in a field tower
 
@@ -49,7 +44,7 @@ variable
 
 /-- The canonical right-factor `M`-algebra structure on
 `𝔸_K ⊗[K] M`. -/
-noncomputable instance (priority := 100)
+instance (priority := 100)
     relativeAdeleRingIntermediateAlgebra :
     Algebra M (RelativeAdeleRing K M) :=
   Algebra.TensorProduct.rightAlgebra
@@ -61,7 +56,7 @@ abbrev TowerRelativeAdeleRing :=
 
 /-- The intermediate field acts on the one-step bottom-field model
 `𝔸_K ⊗[K] L` through its embedding in `L`. -/
-noncomputable instance (priority := 100)
+instance (priority := 100)
     relativeAdeleRingTopIntermediateAlgebra :
     Algebra M (RelativeAdeleRing K L) :=
   ((Algebra.TensorProduct.includeRight
@@ -81,9 +76,6 @@ def intermediateAdeleInclusion :
         (NumberField.AdeleRing (𝓞 K) K))
       (IsScalarTower.toAlgHom K M L)).toRingHom
   commutes' m := by
-    change
-      1 ⊗ₜ[K] algebraMap M L m =
-        1 ⊗ₜ[K] algebraMap M L m
     rfl
 
 omit [NumberField M] [NumberField L]
@@ -250,7 +242,7 @@ def towerRelativeAdeleUnflatten :
   { (towerRelativeAdeleRingEquiv K M L).symm.toRingHom with
     commutes' := by
       intro k
-      simp [towerRelativeAdeleRingEquiv] }
+      rfl }
 
 omit [NumberField M] [NumberField L]
     [FiniteDimensional K M] [FiniteDimensional M L] in
@@ -355,8 +347,7 @@ theorem principalSubgroup_map_towerRelativeIdeleEquiv :
     MonoidHom.map_range]
   congr 1
   ext x
-  exact congrArg Units.val
-    (towerRelativeIdeleEquiv_principalIdele K M L x)
+  simp
 
 /-- Canonical equivalence between the tower and one-step presentations
 of the relative idele class group of `L`. -/
@@ -621,9 +612,7 @@ theorem intermediateToCompositeNormQuotient_range_eq_ker :
       QuotientGroup.mk'
           (RelativeIdeleGroup.classNorm K M).range
           (RelativeIdeleGroup.classNorm K M c) = 1
-    exact
-      (QuotientGroup.eq_one_iff
-        (RelativeIdeleGroup.classNorm K M c)).2 ⟨c, rfl⟩
+    simp
   · intro hq
     refine QuotientGroup.induction_on q ?_ hq
     intro c hc
@@ -728,7 +717,3 @@ theorem ideleClassNormQuotient_card_le_mul
     _ ≤ Nat.card (IntermediateClassNormQuotient K M L) *
           Nat.card (RelativeIdeleGroup.ClassNormQuotient K M) :=
       towerCompositeClassNormQuotient_card_le_mul K M L
-
-end NormQuotientSequence
-
-end

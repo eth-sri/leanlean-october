@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.Adeles.Quotients.SmoothLocalCharts
 
 @[expose] public section
 
-noncomputable section
 open MeasureTheory
 open scoped Classical NumberField Topology ENNReal Pointwise
 
@@ -79,8 +78,7 @@ theorem quotientHaar_compact_ne_top
     refine Set.mem_iUnion.2
       ⟨(⟨y * w⁻¹, hrel⟩ : KPSmoothLocalQuotientCharts.rationalSubgroup F ζ hζ), ?_⟩
     refine Set.mem_smul_set.2 ⟨w, hw, ?_⟩
-    show (y * w⁻¹ : KPSmoothLocalQuotientCharts.ActualCover F ζ hζ) * w = y
-    simp [mul_assoc]
+    simp
 
   have hbound : ν (D ∩ ⋃ γ : KPSmoothLocalQuotientCharts.rationalSubgroup F ζ hζ, γ • W) ≤
       ν W := by
@@ -123,7 +121,3 @@ theorem quotientHaar_compact_ne_top
           congrArg ν (Set.inter_comm _ _)
       _ ≤ ν W := hbound
   exact ne_of_lt (lt_of_le_of_lt hmain hWtop)
-
-end DedekindZetaZeroFree.KPGlobalResidualKernel.RawStageL2.TruncatedEstimate.CompactCore.ArchimedeanGeometry
-
-end

@@ -21,7 +21,7 @@ private theorem rotation (L : ℂ →L[ℝ] ℂ) (u : ℂ) :
       ‖u‖ ^ 2 * (‖L 1‖ ^ 2 + ‖L Complex.I‖ ^ 2) := by
   have h (z : ℂ) : L z = z.re • L 1 + z.im • L Complex.I := by
     have hz : z = z.re • (1 : ℂ) + z.im • Complex.I := by
-      simp [Complex.real_smul, Complex.re_add_im]
+      simp
     conv_lhs => rw [hz]
     rw [map_add, map_smul, map_smul]
   rw [h u, h (u * Complex.I)]
@@ -43,24 +43,24 @@ private theorem lift_eq (G : KPCuspCharts.ChartOutput F hF S D)
   have h := H.realization_formula (H.realization.symm (v.horizontalSlice G b t)) y
   simp only [LinearEquiv.apply_symm_apply] at h
   exact h.symm
-private theorem smooth_cross (G : KPCuspCharts.ChartOutput F hF S D)
+theorem smooth_cross (G : KPCuspCharts.ChartOutput F hF S D)
     (v : Representative ζ hζ S ρ V T) (t : Set.Ioi T) :
     ContDiff ℝ (⊤ : ℕ∞) (fun x : KPCuspCharts.Cross F => v.scalar (x,t.val)) := by
   apply v.smooth.comp_contDiff
   · have hh : ContDiff ℝ (⊤ : ℕ∞) (KPCuspCharts.toArch F) :=
       (KPCuspCharts.toArch_contDiff F).of_le (by simp)
-    exact hh.comp (contDiff_id.prodMk contDiff_const)
+    fun_prop
   · intro x
     change T < KPCuspLogShape.meanHeight _ (KPCuspCharts.toArch F (x,t.val))
     rw [KPCuspCharts.toArch_meanHeight F G.positive_dimension]
     exact t.property
-private theorem slice_deriv (f : KPCuspCharts.Cross F → ℂ)
+theorem slice_deriv (f : KPCuspCharts.Cross F → ℂ)
     (hf : Differentiable ℝ f) (y : KPCuspCharts.Horizontal F) (b : KPCuspCharts.Shape F) :
     fderiv ℝ (fun z => f (z,b)) y =
-      (fderiv ℝ f (y,b)).comp (ContinuousLinearMap.inl ℝ _ _) := by
-  exact ((hf (y,b)).hasFDerivAt.comp y
+      (fderiv ℝ f (y,b)).comp (ContinuousLinearMap.inl ℝ _ _) := 
+  ((hf (y,b)).hasFDerivAt.comp y
     ((hasFDerivAt_id y).prodMk (hasFDerivAt_const b y))).fderiv
-private theorem continuous_energy (f : KPCuspCharts.Cross F → ℂ)
+theorem continuous_energy (f : KPCuspCharts.Cross F → ℂ)
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) (t : ℝ) :
     Continuous (fun x : KPCuspCharts.Cross F =>
       ∑ i, Real.exp (2 * (t + (x.2 : Fin (KPCuspLogShape.dimension F) → ℝ) i)) *
@@ -85,7 +85,7 @@ private theorem diagonal_single (a : KPCuspCharts.Horizontal F)
   by_cases h : j = i
   · subst j; simp [diagonal]
   · simp [diagonal, Pi.single_eq_of_ne h]
-private theorem transformed_deriv
+theorem transformed_deriv
     (f g : KPCuspCharts.Horizontal F → ℂ) (hf : Differentiable ℝ f)
     (hg : Differentiable ℝ g) (a b y : KPCuspCharts.Horizontal F) (c : ℂ)
     (he : ∀ z, g (diagonal a z + b) = c * f z) :
@@ -116,11 +116,9 @@ private theorem derivative_rotation
     simpa only [ContinuousLinearMap.comp_apply, diagonal_single,
       ContinuousLinearMap.smul_apply, smul_eq_mul] using h
   dsimp [L] at hh
-  simp only [ContinuousLinearMap.comp_apply, ContinuousLinearMap.single_apply] at hh
+  simp only [ContinuousLinearMap.single_apply] at hh
   have hz1 := hz 1
-  simp only [mul_one] at hz1
-  rw [hz1, hz Complex.I, norm_mul, norm_mul, hc, one_mul, one_mul] at hh
-  exact hh.symm
+  simp_all
 
 private theorem chi_norm (s : S) :
     ‖(KPCuspGenuineMonodromy.chi F ζ hζ (ρ s) : ℂ)‖ = 1 := by
@@ -288,7 +286,7 @@ private theorem monodromy_preserving (G : KPCuspCharts.ChartOutput F hF S D)
   ext z
   change M z = (M z + - M 0) + M 0
   abel
-private theorem slice_mk {T : ℝ} (G : KPCuspCharts.ChartOutput F hF S D)
+theorem slice_mk {T : ℝ} (G : KPCuspCharts.ChartOutput F hF S D)
     (H : KPCuspGenuineMonodromy.CuspOutput (ζ := ζ) (hζ := hζ) S D ρ V)
     (v : Representative ζ hζ S ρ V T) (b : KPCuspCharts.Shape F)
     (t : Set.Ioi T) (y : KPCuspCharts.Horizontal F) :
@@ -297,7 +295,7 @@ private theorem slice_mk {T : ℝ} (G : KPCuspCharts.ChartOutput F hF S D)
   simp only [LinearEquiv.apply_symm_apply] at h
   exact h.symm
 
-private theorem scalar_norm_action {T : ℝ} (G : KPCuspCharts.ChartOutput F hF S D)
+theorem scalar_norm_action {T : ℝ} (G : KPCuspCharts.ChartOutput F hF S D)
     (v : Representative ζ hζ S ρ V T) (t : Set.Ioi T)
     (s : S) (x : KPCuspCharts.Cross F) :
     ‖v.scalar (G.crossAction s x, t.val)‖ = ‖v.scalar (x, t.val)‖ := by
@@ -321,7 +319,7 @@ private theorem scalar_norm_action {T : ℝ} (G : KPCuspCharts.ChartOutput F hF 
       exact (mem_rootsOfUnity 3 _).mp (ρ s).property
     simpa only [map_pow, map_one, Units.val_pow_eq_pow_val, Units.val_one] using
       congrArg (fun u => (KPCuspGenuineMonodromy.chi F ζ hζ u : ℂ)) hp
-  rw [he, norm_mul, hu, one_mul]
+  simp_all
 
 theorem slice_coercivity_transport
     {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
@@ -354,10 +352,7 @@ theorem slice_coercivity_transport
   obtain ⟨s, hs⟩ := D.surjective u.toMul
   have hshape : b' + KPCuspLogShape.logarithm F hF D.E D.integralUnits
       (Additive.ofMul (D.ratio s)) = b := by
-    rw [hs]
-    change b' + KPCuspLogShape.logarithm F hF D.E D.integralUnits u = b
-    rw [hu]
-    abel
+    simp_all
   have hcross (y : KPCuspCharts.Horizontal F) :
       (QuotientAddGroup.mk (G.crossAction s (y,b')).1,
         (G.crossAction s (y,b')).2) = (H.monodromy s (QuotientAddGroup.mk y), b) := by
@@ -466,7 +461,7 @@ variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ
 theorem gradientSq_nonneg (v : Representative ζ hζ S ρ V T)
     (p : KPCuspCharts.Coordinates F) : 0 ≤ v.gradientSq p := by
   unfold Representative.gradientSq
-  exact Finset.sum_nonneg fun i _ => Finset.sum_nonneg fun k _ => sq_nonneg _
+  positivity
 
 theorem cross_section_coercivity_zero (G : KPCuspCharts.ChartOutput F hF S D)
     (v : Representative ζ hζ S ρ V T) (t : Set.Ioi T) :
@@ -504,7 +499,7 @@ theorem scalar_norm_crossAffine
       exact (mem_rootsOfUnity 3 _).mp (ρ s).property
     simpa only [map_pow, map_one, Units.val_pow_eq_pow_val, Units.val_one] using
       congrArg (fun u => (KPCuspGenuineMonodromy.chi F ζ hζ u : ℂ)) hp
-  rw [he, norm_mul, hu, one_mul]
+  simp_all
 
 theorem scalar_norm_crossAction
     (G : KPCuspCharts.ChartOutput F hF S D)
@@ -533,7 +528,7 @@ theorem scalar_slice_continuous
       if j.2 = 0 then Complex.reCLM.comp (ContinuousLinearMap.proj j.1)
       else if j.2 = 1 then Complex.imCLM.comp (ContinuousLinearMap.proj j.1)
       else 0))
-private theorem horizontalRealLinear_apply (d : ℕ) (y : Fin d → ℂ) (j : Fin d × Fin 3) :
+theorem horizontalRealLinear_apply (d : ℕ) (y : Fin d → ℂ) (j : Fin d × Fin 3) :
     horizontalRealLinear d y j = if j.2 = 0 then (y j.1).re else
       if j.2 = 1 then (y j.1).im else 0 := by
   change (if j.2 = 0 then Complex.reCLM.comp (ContinuousLinearMap.proj j.1)
@@ -541,24 +536,22 @@ private theorem horizontalRealLinear_apply (d : ℕ) (y : Fin d → ℂ) (j : Fi
       else (0 : (Fin d → ℂ) →L[ℝ] ℝ)) y = _
   split_ifs <;> rfl
 
-private theorem horizontalRealLinear_single_one (d : ℕ) (i : Fin d) :
+theorem horizontalRealLinear_single_one (d : ℕ) (i : Fin d) :
     horizontalRealLinear d (Pi.single i 1) = HyperbolicChart.coordinateVector d i 0 := by
   ext ⟨j, k⟩
   simp only [horizontalRealLinear_apply, HyperbolicChart.coordinateVector,
     PiLp.toLp_apply]
   by_cases hi : j = i
-  · subst i
-    fin_cases k <;> simp
-  · fin_cases k <;> simp [Pi.single_eq_of_ne hi, hi, Prod.ext_iff]
-private theorem horizontalRealLinear_single_I (d : ℕ) (i : Fin d) :
+  · simp_all
+  simp_all
+theorem horizontalRealLinear_single_I (d : ℕ) (i : Fin d) :
     horizontalRealLinear d (Pi.single i Complex.I) = HyperbolicChart.coordinateVector d i 1 := by
   ext ⟨j, k⟩
   simp only [horizontalRealLinear_apply, HyperbolicChart.coordinateVector,
     PiLp.toLp_apply]
   by_cases hi : j = i
-  · subst i
-    fin_cases k <;> simp
-  · fin_cases k <;> simp [Pi.single_eq_of_ne hi, hi, Prod.ext_iff]
+  · simp_all
+  simp_all
 
 private theorem smooth_arch (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (arch d) := by
   apply contDiff_pi.mpr
@@ -567,7 +560,7 @@ private theorem smooth_arch (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (arch d) := 
   · exact Complex.equivRealProdCLM.symm.contDiff.comp
       ((EuclideanSpace.proj (𝕜 := ℝ) (i, (0 : Fin 3))).contDiff.prodMk
        (EuclideanSpace.proj (𝕜 := ℝ) (i, (1 : Fin 3))).contDiff)
-  · exact (EuclideanSpace.proj (𝕜 := ℝ) (i, (2 : Fin 3))).contDiff
+  fun_prop
 private theorem arch_real (d : ℕ) (z : KPArch.Space d) : arch d (real d z) = z := by
   ext i <;> simp [arch, real]
 private theorem representative_differentiableAt (G : KPCuspCharts.ChartOutput F hF S D)
@@ -576,7 +569,7 @@ private theorem representative_differentiableAt (G : KPCuspCharts.ChartOutput F 
       (real (KPCuspLogShape.dimension F) (KPCuspCharts.toArch F (x, t.val))) := by
   have hh : Continuous (KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F)) := by
     unfold KPCuspLogShape.meanHeight
-    exact (continuous_finset_sum _ (fun i _ => (continuous_apply i).snd)).div_const _
+    fun_prop
   have ho : IsOpen {z : KPArch.Space (KPCuspLogShape.dimension F) |
       T < KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F) z} :=
     isOpen_lt continuous_const hh
@@ -588,7 +581,7 @@ private theorem representative_differentiableAt (G : KPCuspCharts.ChartOutput F 
   exact ((v.smooth.contDiffAt (ho.mem_nhds hp)).comp _
     (smooth_arch _).contDiffAt).differentiableAt (by simp)
 
-private theorem horizontal_real_deriv (b : KPCuspCharts.Shape F) (t : ℝ)
+theorem horizontal_real_deriv (b : KPCuspCharts.Shape F) (t : ℝ)
     (y : KPCuspCharts.Horizontal F) :
     HasFDerivAt (fun z : KPCuspCharts.Horizontal F => real (KPCuspLogShape.dimension F)
       (KPCuspCharts.toArch F ((z,b),t))) (horizontalRealLinear (KPCuspLogShape.dimension F)) y := by
@@ -600,7 +593,7 @@ private theorem horizontal_real_deriv (b : KPCuspCharts.Shape F) (t : ℝ)
     ext ⟨i,k⟩
     fin_cases k <;> simp [real, KPCuspCharts.toArch, horizontalRealLinear_apply]
   rw [he]
-  exact (horizontalRealLinear _).hasFDerivAt.add_const _
+  fun_prop
 
 private theorem scalar_slice_fderiv (G : KPCuspCharts.ChartOutput F hF S D)
     (v : Representative ζ hζ S ρ V T) (b : KPCuspCharts.Shape F)
@@ -612,8 +605,7 @@ private theorem scalar_slice_fderiv (G : KPCuspCharts.ChartOutput F hF S D)
   have he : (fun z : KPCuspCharts.Horizontal F => v.scalar ((z,b),t.val)) =
       (v.val ∘ arch (KPCuspLogShape.dimension F)) ∘
         (fun z => real (KPCuspLogShape.dimension F) (KPCuspCharts.toArch F ((z,b),t.val))) := by
-    funext z
-    simp [Function.comp_def, arch_real, Representative.scalar]
+    rfl
   rw [he]
   exact ((representative_differentiableAt G v (y,b) t).hasFDerivAt.comp y
     (horizontal_real_deriv b t.val y)).fderiv
@@ -649,13 +641,9 @@ theorem torusHorizontalSq_le_gradientSq (G : KPCuspCharts.ChartOutput F hF S D)
     Matrix.vecHead, Matrix.vecTail, Function.comp_def,
     Fin.succ_zero_eq_one, HyperbolicChart.coordinateDerivative, norm_mul,
     Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _), mul_pow]
-  simp only [real, KPCuspCharts.toArch, PiLp.toLp_apply,
-    Matrix.cons_val_two, Matrix.vecHead, Matrix.vecTail,
-    Matrix.cons_val_one, Matrix.cons_val_zero]
+  simp only [real, KPCuspCharts.toArch, PiLp.toLp_apply, Matrix.cons_val_two, Matrix.vecHead, Matrix.vecTail]
   rw [← Real.exp_nat_mul]
-  simp only [Function.comp_def, Matrix.cons_val_one, Matrix.cons_val_zero,
-    Matrix.vecHead, Matrix.vecTail, Matrix.cons_val_two, Nat.cast_ofNat,
-    Fin.succ_zero_eq_one]
+  simp only [Function.comp_def, Matrix.cons_val_one, Matrix.cons_val_zero, Nat.cast_ofNat, Fin.succ_zero_eq_one]
   nlinarith [sq_nonneg (‖fderiv ℝ (v.val ∘ arch (KPCuspLogShape.dimension F))
       (real (KPCuspLogShape.dimension F) (KPCuspCharts.toArch F ((y,b),t.val)))
       (HyperbolicChart.coordinateVector (KPCuspLogShape.dimension F) i 2)‖)]
@@ -934,9 +922,3 @@ theorem mean_zero_gap_specialization
     v (4 * Real.pi ^ 2 * A.frequencyGap) hc hslice
   exact GapCoercivity.integrate_cross_section_coercivity
     (A.geometry a) v (4 * Real.pi ^ 2 * A.frequencyGap) hc hcross η hη
-
-end DedekindZetaZeroFree.KPMeanZeroWeightedEnergy
-
-end
-
-end

@@ -4,14 +4,13 @@ public import DedekindZetaZeroFree.Theta.Profiles.AmplitudeIntegralBounds
 
 @[expose] public section
 
-noncomputable section
 
 namespace DedekindZetaZeroFree.ThetaArchInducedMajorant
 
 open KPCplxCharacterHaar KPCplxPrincipalSeriesCharts KPCplxRotatedKernelEstimates
 open MeasureTheory
 
-private lemma amplitude_diff (β κ : ℂˣ) (f : PrincipalSeries positiveParameter)
+lemma amplitude_diff (β κ : ℂˣ) (f : PrincipalSeries positiveParameter)
     (_hf : HasInducedAmplitudeEstimates β κ f) (u : ℂˣ) (_hu : ‖(u : ℂ)‖ = 1)
     (j h : ℕ) (ρ : ℝ) (hρ : 0 < ρ) :
     Differentiable ℝ (amplitudeDerivative β κ f u j h ρ) := by
@@ -19,7 +18,7 @@ private lemma amplitude_diff (β κ : ℂˣ) (f : PrincipalSeries positiveParame
   exact ((amplitudeDerivative_contDiffAt β κ f u j h (ρ, x) hρ).differentiableAt
     (by simp)).comp x (by fun_prop)
 
-private lemma amplitude_next (β κ : ℂˣ) (f : PrincipalSeries positiveParameter)
+lemma amplitude_next (β κ : ℂˣ) (f : PrincipalSeries positiveParameter)
     (hf : HasInducedAmplitudeEstimates β κ f) (u : ℂˣ) (hu : ‖(u : ℂ)‖ = 1)
     (j h : ℕ) (ρ : ℝ) (hρ : 0 < ρ) (x : ℂ) :
     amplitudeDerivative β κ f u j (h + 1) ρ x =
@@ -67,7 +66,7 @@ private lemma phase_deriv (c : ℝ) (x : ℂ) :
     phase_hasDerivAt c x
   simpa using ht'.unique hh
 
-private lemma weighted_amplitude_integrable (β κ : ℂˣ)
+lemma weighted_amplitude_integrable (β κ : ℂˣ)
     (f : PrincipalSeries positiveParameter) (hf : HasInducedAmplitudeEstimates β κ f)
     (u : ℂˣ) (hu : ‖(u : ℂ)‖ = 1) (j h : ℕ) (hj : j ≤ 2)
     (ρ : ℝ) (hρ : 0 < ρ) :
@@ -132,7 +131,7 @@ lemma exists_norm_integral_exp_mul_amplitudeDerivative_zero_le (β κ : ℂˣ)
   have hh' := mul_le_mul_of_nonneg_left hh (inv_nonneg.mpr hp.le)
   simpa only [← mul_assoc, inv_mul_cancel₀ hp.ne', one_mul] using hh'
 
-private lemma amplitude_radius_hasDerivAt (β κ : ℂˣ)
+lemma amplitude_radius_hasDerivAt (β κ : ℂˣ)
     (f : PrincipalSeries positiveParameter) (_hf : HasInducedAmplitudeEstimates β κ f)
     (u : ℂˣ) (_hu : ‖(u : ℂ)‖ = 1) (j : ℕ) (ρ : ℝ) (hρ : 0 < ρ) (x : ℂ) :
     HasDerivAt (fun r : ℝ => amplitudeDerivative β κ f u j 0 r x)
@@ -187,7 +186,3 @@ lemma hasDerivAt_integral_exp_mul_amplitudeDerivative (β κ : ℂˣ)
         (by linarith [hr.1]) x).const_mul
         (Complex.exp (-Complex.I * ((characterScale β * x.re : ℝ) : ℂ))) using 1; ring))
   simpa only [integral_const_mul] using hd.2
-
-end DedekindZetaZeroFree.ThetaArchInducedMajorant
-
-end

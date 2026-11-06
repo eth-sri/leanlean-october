@@ -15,14 +15,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
-set_option autoImplicit false
 /-!
 # Finite unramified valued extensions
 
@@ -61,9 +53,7 @@ theorem unramifiedValuation_ramificationIdx_eq_one
     [IsNonarchimedeanLocalField L] [Algebra K L] [FiniteDimensional K L]
     [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
     [Module.Finite 𝒪[K] 𝒪[L]] [IsUnramifiedValuedExtension K L] :
-    (𝓂[L] : Ideal 𝒪[L]).ramificationIdx 𝒪[K] = 1 :=
-  IsUnramifiedValuedExtension.maximalIdeal_ramificationIdx_eq_one
-    (K := K) (L := L)
+    (𝓂[L] : Ideal 𝒪[L]).ramificationIdx 𝒪[K] = 1 := by apply LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension.maximalIdeal_ramificationIdx_eq_one <;> assumption
 
 /-- For an unramified valued extension, the residue-field degree equals the field-extension degree.
 For an unramified valued extension, the residue-field degree equals the field-extension degree. -/
@@ -101,8 +91,8 @@ theorem maximalIdeal_map_eq_maximalIdeal_of_unramifiedValuation (K L : Type u)
     [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L] :
     Ideal.map (algebraMap 𝒪[K] 𝒪[L]) (𝓂[K] : Ideal 𝒪[K]) =
       (𝓂[L] : Ideal 𝒪[L]) := by
-  have hp : (𝓂[K] : Ideal 𝒪[K]) ≠ ⊥ := by
-    exact Ring.ne_bot_of_isMaximal_of_not_isField
+  have hp : (𝓂[K] : Ideal 𝒪[K]) ≠ ⊥ := 
+    Ring.ne_bot_of_isMaximal_of_not_isField
       (IsLocalRing.maximalIdeal.isMaximal 𝒪[K])
       (IsDiscreteValuationRing.not_isField 𝒪[K])
   have hfact := Ideal.map_algebraMap_eq_finsetProd_pow
@@ -140,52 +130,6 @@ theorem integerRingMap_uniformizer_irreducible_of_unramifiedValuation
           rw [Ideal.map_span, Set.image_singleton]
           rfl
 
-/-- in an actual unramified valuation extension, the base
-prime element remains a prime element upstairs and therefore has upstairs
-normalized value `-1`.
-
-This is the source-producing replacement for passing an upstairs
-uniformizer-value input to later norm-valuation arguments. -/
-theorem v_mapBaseUnitsToExtensionUnits_integerRingUniformizerFieldUnit_of_unramifiedValuation
-    (K L : Type u)
-    [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    [Field L] [ValuativeRel L] [TopologicalSpace L] [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [Module.Finite 𝒪[K] 𝒪[L]]
-    [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L] :
-    LocalFieldTheory.IsNonarchimedeanLocalField.v L
-      (Additive.ofMul
-        (mapBaseUnitsToExtensionUnits K L (integerRingUniformizerFieldUnit K))) = -1 := by
-  let πL : 𝒪[L] := integerRingMapOfValuationExtension K L (chosenIntegerRingUniformizer K)
-  have hπL : Irreducible πL := by
-    simpa [πL] using integerRingMap_uniformizer_irreducible_of_unramifiedValuation K L
-  exact v_integerRingIrreducibleFieldUnit L πL hπL
-    (mapBaseUnitsToExtensionUnits K L (integerRingUniformizerFieldUnit K)) (by
-      dsimp [πL]
-      rfl)
-
-/-- In an actual unramified valuation extension, the inverse of the base prime
-element has upstairs normalized value `1`.  This is the L-side generator needed
-before the local class-field norm-valuation calculation. -/
-theorem v_mapBaseUnitsToExtensionUnits_inverseIntegerRingUniformizerFieldUnit_of_unramifiedValuation
-    (K L : Type u)
-    [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    [Field L] [ValuativeRel L] [TopologicalSpace L] [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [Module.Finite 𝒪[K] 𝒪[L]]
-    [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L] :
-    LocalFieldTheory.IsNonarchimedeanLocalField.v L
-      (Additive.ofMul
-        (mapBaseUnitsToExtensionUnits K L (inverseIntegerRingUniformizerFieldUnit K))) =
-      1 := by
-  rw [inverseIntegerRingUniformizerFieldUnit,
-    (mapBaseUnitsToExtensionUnits K L).map_inv]
-  rw [LocalFieldTheory.IsNonarchimedeanLocalField.v_inv]
-  rw [v_mapBaseUnitsToExtensionUnits_integerRingUniformizerFieldUnit_of_unramifiedValuation]
-  norm_num
-
 /-- In an actual unramified valuation extension, the integer-ring map sends
 `𝓂_K^n` into `𝓂_L^n`.  The proof uses the base uniformizer as an upstairs
 uniformizer, which is the local source needed before comparing graded
@@ -209,8 +153,7 @@ theorem integerRingMap_mem_maximalIdeal_pow_of_unramifiedValuation
   rw [maximalIdeal_pow_eq_span_uniformizer_pow_of_irreducible L
     (integerRingMapOfValuationExtension K L πK) hπL n]
   rw [Ideal.mem_span_singleton]
-  refine ⟨integerRingMapOfValuationExtension K L r, ?_⟩
-  simp [integerRingMapOfValuationExtension, hr, map_pow]
+  simp_all
 
 /-- The additive map on `𝓂^n` induced by base extension in an actual
 unramified valuation extension. -/
@@ -227,11 +170,9 @@ def maximalIdealPowMapOfUnramifiedValuation (K L : Type u)
     ⟨integerRingMapOfValuationExtension K L (a : 𝒪[K]),
       integerRingMap_mem_maximalIdeal_pow_of_unramifiedValuation K L n a.2⟩
   map_zero' := by
-    ext
-    simp [integerRingMapOfValuationExtension]
+    simp
   map_add' a b := by
-    ext
-    simp [integerRingMapOfValuationExtension]
+    simp
 
 /-- The map on maximal-ideal powers induced by an unramified extension is given by the integer-ring
 inclusion. -/
@@ -284,7 +225,7 @@ theorem maximalIdealPowSuccQuotMapOfUnramifiedValuation_mk (K L : Type u)
         (maximalIdealPowSuccQuotMk K n a) =
       maximalIdealPowSuccQuotMk L n
         (maximalIdealPowMapOfUnramifiedValuation K L n a) :=
-  QuotientAddGroup.map_mk _ _ _ _ a
+  by rfl
 
 /-- Base extension on `𝓂^n` sends the representative `r * ϖ_K^n` to the
 corresponding upstairs representative using the image of the base uniformizer. -/
@@ -305,7 +246,7 @@ theorem maximalIdealPowMapOfUnramifiedValuation_mul_uniformizer_pow
         (integerRingMap_uniformizer_irreducible_of_unramifiedValuation K L) n
         (integerRingMapOfValuationExtension K L r) := by
   ext
-  simp [maximalIdealPowMulUniformizerPowMap, integerRingMapOfValuationExtension, map_pow]
+  simp
 
 /-- On `𝓂^n/𝓂^(n+1)`, base extension commutes with the representative map
 `r ↦ r * ϖ_K^n` when the upstairs uniformizer is the image of `ϖ_K`. -/
@@ -353,8 +294,7 @@ theorem residueAddEquivMaximalIdealPowSuccQuotOfIrreducible_map_residue
         (residueFieldMapOfValuationExtension K L (IsLocalRing.residue 𝒪[K] r)) := by
   rw [residueAddEquivMaximalIdealPowSuccQuotOfIrreducible_residue,
     maximalIdealPowSuccQuotMapOfUnramifiedValuation_mul_uniformizer_pow]
-  rw [residueFieldMapOfValuationExtension_residue]
-  rw [residueAddEquivMaximalIdealPowSuccQuotOfIrreducible_residue]
+  rfl
 
 /-- The base-uniformizer comparison `𝓀[K] ≃ 𝓂_K^n/𝓂_K^(n+1)` commutes with
 base extension of residue fields in an actual unramified valuation extension.
@@ -397,8 +337,7 @@ theorem integerUnitsMapOfValuationExtension_mem_principalUnits_of_unramifiedValu
   rw [mem_principalUnits_iff] at hu ⊢
   have hmap :=
     integerRingMap_mem_maximalIdeal_pow_of_unramifiedValuation K L n hu
-  simpa [integerUnitsMapOfValuationExtension_apply, integerRingMapOfValuationExtension,
-    sub_eq_add_neg] using hmap
+  simp_all
 
 /-- Base extension restricted to the `n`-th principal-unit group in an actual
 unramified valuation extension. -/
@@ -454,8 +393,7 @@ theorem principalUnitsMapOfUnramifiedValuation_oneAdd (K L : Type u)
         (integerRingMapOfValuationExtension K L (a : 𝒪[K]))
         (integerRingMap_mem_maximalIdeal_pow_of_unramifiedValuation K L n a.2) := by
   ext
-  simp [principalUnitsMapOfUnramifiedValuation, principalUnitOneAddOfMemPowSubgroup,
-    principalUnitOneAddOfMemPow_val, integerRingMapOfValuationExtension]
+  simp
 
 /-- Base extension on successive principal-unit quotients in an actual
 unramified valuation extension. -/
@@ -623,14 +561,11 @@ theorem principalUnitsSuccQuotMapOfUnramifiedValuation_injective
           (Additive.ofMul x) =
         MonoidHom.toAdditive (principalUnitsSuccQuotMapOfUnramifiedValuation K L n)
           (Additive.ofMul y) := by
-    change Additive.ofMul
-        (principalUnitsSuccQuotMapOfUnramifiedValuation K L n x) =
-      Additive.ofMul (principalUnitsSuccQuotMapOfUnramifiedValuation K L n y)
-    exact congrArg Additive.ofMul hxy
+    simp_all
   have hres :
       residueFieldMapOfValuationExtension K L xκ =
         residueFieldMapOfValuationExtension K L yκ :=
-    eL.symm.injective (hxmap.symm.trans (hxyAdd.trans hymap))
+    by simp_all
   have hκ : xκ = yκ :=
     (RingHom.injective (residueFieldMapOfValuationExtension K L)) hres
   have hadd : Additive.ofMul x = Additive.ofMul y :=
@@ -676,7 +611,7 @@ theorem principalUnits_of_integerUnitsMap_mem_principalUnits_of_unramifiedValuat
   have hvalL' :
       ValuativeRel.valuation L (algebraMap K L (xK : K)) ≤
         ValuativeRel.valuation L (algebraMap K L (((πK ^ n : 𝒪[K]) : K))) := by
-    simpa [integerRingMapOfValuationExtension, map_pow] using hvalL
+    simp_all
   have hvalKpow :
       ValuativeRel.valuation K (xK : K) ≤
         ValuativeRel.valuation K (((πK ^ n : 𝒪[K]) : K)) :=
@@ -690,11 +625,10 @@ theorem principalUnits_of_integerUnitsMap_mem_principalUnits_of_unramifiedValuat
   have hvalK : xK ∈
       ({y : 𝒪[K] | ValuativeRel.valuation K (y : K) ≤
         ValuativeRel.valuation K ((πK : 𝒪[K]) : K) ^ n}) := by
-    simpa [πK, map_pow] using hvalKpow
+    simp_all
   change xK ∈ ((𝓂[K] ^ n : Ideal 𝒪[K]) : Set 𝒪[K])
   rw [hsetK]
   exact hvalK
-
 
 /-- The Galois group of a finite Galois extension has cardinality equal to the field-extension
 degree. -/
@@ -729,20 +663,6 @@ theorem residueAlgEquiv_card_eq_galoisGroup_card_of_unramifiedValuation
     Nat.card (𝓀[L] ≃ₐ[𝓀[K]] 𝓀[L]) = Nat.card Gal(L / K) := by
   rw [residueAlgEquiv_card_eq_finrank_of_unramifiedValuation K L,
     galoisGroup_card_eq_finrank K L]
-
-/-- In an actual unramified valuation extension, the integral-closure inertia
-subgroup has cardinality one. -/
-theorem galoisGroupMaximalIdealInertiaOfIsIntegralClosure_card_eq_one_of_unramifiedValuation
-    (K L : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] [Field L] [ValuativeRel L] [TopologicalSpace L]
-    [IsNonarchimedeanLocalField L] [Algebra K L] [FiniteDimensional K L]
-    [IsGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L] [Module.Finite 𝒪[K] 𝒪[L]]
-    [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L] :
-    Nat.card (galoisGroupMaximalIdealInertiaOfIsIntegralClosure K L) = 1 :=
-  galoisGroupMaximalIdealInertiaOfIsIntegralClosure_card_eq_one_of_ramificationIdx_eq_one K L
-    (LocalFieldTheory.IsNonarchimedeanLocalField.unramifiedValuation_ramificationIdx_eq_one K L)
 
 /-- In an actual unramified valuation extension, the integral-closure residue
 action has kernel of cardinality one. -/
@@ -784,8 +704,8 @@ theorem galoisGroupResidueAlgEquivHomOfIsIntegralClosure_surjective_of_unramifie
     [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
     [IsIntegralClosure 𝒪[L] 𝒪[K] L] [Module.Finite 𝒪[K] 𝒪[L]]
     [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L] :
-    Function.Surjective (galoisGroupResidueAlgEquivHomOfIsIntegralClosure K L) := by
-  exact ((Nat.bijective_iff_injective_and_card
+    Function.Surjective (galoisGroupResidueAlgEquivHomOfIsIntegralClosure K L) := 
+  ((Nat.bijective_iff_injective_and_card
     (galoisGroupResidueAlgEquivHomOfIsIntegralClosure K L)).2
       ⟨galoisGroupResidueAlgEquivHomOfIsIntegralClosure_injective_of_unramifiedValuation
           K L,
@@ -807,7 +727,7 @@ theorem galoisGroupResidueAlgEquivHomOfIsIntegralClosure_bijective_of_unramified
 
 /-- The actual integral-closure residue action as an isomorphism in the
 unramified valuation case. -/
-noncomputable def galoisGroupEquivResidueAlgEquivOfUnramifiedValuationOfIsIntegralClosure
+def galoisGroupEquivResidueAlgEquivOfUnramifiedValuationOfIsIntegralClosure
     (K L : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
     [IsNonarchimedeanLocalField K] [Field L] [ValuativeRel L] [TopologicalSpace L]
     [IsNonarchimedeanLocalField L] [Algebra K L] [FiniteDimensional K L]
@@ -953,6 +873,3 @@ theorem galoisSum_uniformizerGraded_eq_residueTrace
       galoisGroupIntegerRingEquivOfIsIntegralClosure K L σ r)]
   rw [galoisGroup_sum_residue_eq_algebraMap_trace_of_unramifiedValuation_of_isIntegralClosure
     K L r]
-
-end
-end LocalFieldTheory

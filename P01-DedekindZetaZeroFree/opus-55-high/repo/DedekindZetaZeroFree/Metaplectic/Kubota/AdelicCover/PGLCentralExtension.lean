@@ -9,7 +9,6 @@ open NumberField IsDedekindDomain Topology
 
 namespace DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw
 noncomputable section
-set_option autoImplicit false
 set_option maxHeartbeats 800000
 set_option maxRecDepth 4000
 variable (F : Type) [Field F] [NumberField F]
@@ -91,7 +90,7 @@ theorem projection_scalarHom (z : Ideles F) :
     change (Matrix.GeneralLinearGroup.scalar (Fin 2) (Units.map (adeleEval F (Sum.inr q)).toMonoidHom z)) i j = _
     by_cases h : i = j <;> simp [Matrix.scalar, Matrix.diagonal, adeleEval, h] <;> rfl
 
-private theorem test_scalar_embedding (R : Type*) [CommRing R] [TopologicalSpace R]
+theorem test_scalar_embedding (R : Type*) [CommRing R] [TopologicalSpace R]
     [IsTopologicalRing R] [T2Space R] :
     IsClosedEmbedding (Matrix.GeneralLinearGroup.scalar (Fin 2) (R := R)) := by
   let f : R →+* Matrix (Fin 2) (Fin 2) R := Matrix.scalar (Fin 2)
@@ -102,15 +101,15 @@ private theorem test_scalar_embedding (R : Type*) [CommRing R] [TopologicalSpace
     intro j
     by_cases h : i = j <;> simp [f, Matrix.scalar, Matrix.diagonal, h]
     · exact continuous_id
-    · exact continuous_const
+    fun_prop
   have hi : IsEmbedding f :=
     .of_leftInverse (f := fun a : Matrix (Fin 2) (Fin 2) R => a 0 0)
-      (g := f) (by intro x; simp [f, Matrix.scalar])
+      (g := f) (by intro x; rfl)
       ((continuous_apply 0).comp (continuous_apply 0)) hc
   have hr : Set.range f = {a | a = f (a 0 0)} := by
     ext a
     constructor
-    · rintro ⟨x, rfl⟩; simp [f, Matrix.scalar]
+    · rintro ⟨x, rfl⟩; rfl
     · intro h; exact ⟨a 0 0, h.symm⟩
   have hf : IsClosedEmbedding f := ⟨hi, hr ▸ isClosed_eq continuous_id (hc.comp ((continuous_apply 0).comp (continuous_apply 0)))⟩
   exact hf.units_map
@@ -120,7 +119,7 @@ private theorem eval_cont (v : KPHilbert.Place F) : Continuous (adeleEval F v) :
   | inl w => exact (continuous_apply w).comp continuous_fst
   | inr q => exact (RestrictedProduct.continuous_eval q).comp continuous_snd
 
-private theorem local_scalar_cont (v : KPHilbert.Place F) :
+theorem local_scalar_cont (v : KPHilbert.Place F) :
     Continuous (KPScalarSplitCentral.scalarHom F ζ hζ v) := by
   cases v with
   | inl w => exact (KPScalarSplitCentral.complex_continuous_closed F ζ hζ w).1
@@ -130,7 +129,7 @@ private theorem coordinate_cont (v : KPHilbert.Place F) :
     Continuous (fun z : Ideles F => scalarCoordinates F ζ hζ z v) :=
   (local_scalar_cont F ζ hζ v).comp ((eval_cont F v).units_map _)
 
-private theorem integral_scalar_mem (z : Ideles F) (q : HeightOneSpectrum (𝓞 F))
+theorem integral_scalar_mem (z : Ideles F) (q : HeightOneSpectrum (𝓞 F))
     (hz : z.val.2 q ∈ q.adicCompletionIntegers F)
     (hi : z.inv.2 q ∈ q.adicCompletionIntegers F) (hb : ¬ Bad F q) :
     scalarCoordinates F ζ hζ z (Sum.inr q) ∈ compact F ζ hζ (Sum.inr q) := by
@@ -145,7 +144,7 @@ private theorem integral_scalar_mem (z : Ideles F) (q : HeightOneSpectrum (𝓞 
       by apply Subtype.ext; exact congrArg (fun a : Adeles F => a.2 q) z.val_inv,
       by apply Subtype.ext; exact congrArg (fun a : Adeles F => a.2 q) z.inv_val⟩
   have hu : KPTameCompact.unitInclusion F q u = Units.map (adeleEval F (Sum.inr q)) z := Units.ext rfl
-  simp only [compact, finiteCompact, dif_neg hb, SetLike.mem_coe]
+  simp only [compact, finiteCompact, dif_neg hb]
   refine ⟨Matrix.GeneralLinearGroup.scalar (Fin 2) u, ?_⟩
   change KPGoodCompactSplitting.kStar F ζ hζ q _ _ = _
   rw [show scalarCoordinates F ζ hζ z (Sum.inr q) =
@@ -166,9 +165,9 @@ private theorem tuple_cont : Continuous (scalarTuple F ζ hζ) := by
     intro q
     exact Valued.isOpen_valuationSubring _
   have hv : Continuous (fun z : Ideles F => z.val.2) :=
-    continuous_snd.comp (Units.continuous_val (M := Adeles F))
+    by fun_prop
   have hi : Continuous (fun z : Ideles F => z.inv.2) :=
-    continuous_snd.comp (Units.continuous_coe_inv (M := Adeles F))
+    by fun_prop
   have hU : IsOpen U :=
     ((RestrictedProduct.isOpen_forall_imp_mem hO).preimage hv).inter
       ((RestrictedProduct.isOpen_forall_imp_mem hO).preimage hi)
@@ -274,9 +273,9 @@ def pglProjection : CubicPGL2Adelic F ζ hζ →* AdelicPGL2 F :=
 def pglCentralInjection : rootsOfUnity 3 F →* CubicPGL2Adelic F ζ hζ :=
   (scalarQuotient F ζ hζ).comp (centralInjection F ζ hζ)
 
-private theorem projection_centralInjection (ε : rootsOfUnity 3 F) :
-    projection F ζ hζ (centralInjection F ζ hζ ε) = 1 := by
-  exact show centralInjection F ζ hζ ε ∈ (projection F ζ hζ).ker from
+theorem projection_centralInjection (ε : rootsOfUnity 3 F) :
+    projection F ζ hζ (centralInjection F ζ hζ ε) = 1 := 
+  show centralInjection F ζ hζ ε ∈ (projection F ζ hζ).ker from
     (range_centralInjection_eq_ker F ζ hζ) ▸ (MonoidHom.mem_range.mpr ⟨ε, rfl⟩)
 
 private theorem scalarMatrix_injective :
@@ -327,7 +326,7 @@ theorem pglCentralInjection_kernel :
     rw [hε, map_mul, map_inv]
     have hs : scalarQuotient F ζ hζ (scalarHom F ζ hζ z) = 1 :=
       (QuotientGroup.eq_one_iff _).mpr ⟨z, rfl⟩
-    rw [hs, inv_one, mul_one]
+    simp_all
 
 theorem pglCentralInjection_central :
     (pglCentralInjection F ζ hζ).range ≤ Subgroup.center (CubicPGL2Adelic F ζ hζ) := by
@@ -366,6 +365,3 @@ theorem adelic_pgl_topological_cover :
    rw [← pglCentralInjection_kernel F ζ hζ]
    exact (Set.finite_range (pglCentralInjection F ζ hζ)).isDiscrete
  exact ((ho.isQuotientMap hc (pglProjection_surjective F ζ hζ)).isQuotientCoveringMap_of_isDiscrete_ker_monoidHom hk).isLocalHomeomorph
-
-end
-end DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw

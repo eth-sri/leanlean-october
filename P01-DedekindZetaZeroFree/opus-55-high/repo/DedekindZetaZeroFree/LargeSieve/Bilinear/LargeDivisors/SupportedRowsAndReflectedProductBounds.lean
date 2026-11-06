@@ -28,7 +28,7 @@ theorem reflected_weighted_sum_le (C : Context Q) (B : ℝ) (unit : Bool)
     have hr := (Finset.mem_product.mp hprod).2
     have ht0 : t ≠ ⊥ := by
       intro ht0
-      exact hmask.2.2 (by simp [ht0])
+      simp_all
     have htn : 1 ≤ norm t := by
       dsimp [norm]
       exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr ht0)
@@ -101,8 +101,8 @@ theorem chosen_primitive_on_core (C : Context Q)
   obtain ⟨φ, -, hφ⟩ := hnorm.2.2 p.1 p.2 hp.hu huc hp.hv hvc hp.huv
     hp.hquotientClass
   have hmod : p.1 * p.2 ≠ ⊥ := mul_ne_zero hp.hu0 hp.hv0
-  have hq : c * (Q.cond p.1 * Q.cond p.2) ≠ ⊥ := by
-    exact mul_ne_zero C.D.original_ne_bot
+  have hq : c * (Q.cond p.1 * Q.cond p.2) ≠ ⊥ := 
+    mul_ne_zero C.D.original_ne_bot
       (mul_ne_zero (Q.primitive p.1 hp.hu hp.huc).1
         (Q.primitive p.2 hp.hv hp.hvc).1)
   have heq : ∀ I, C.primitive p hp I = φ I := by
@@ -158,8 +158,8 @@ theorem mobius_divisor_coprime_columns (C : Context Q)
   have hrad : (c * C.d).radical ≠ ⊥ := by
     intro hh
     exact hcd (bot_unique (hh ▸ Ideal.le_radical))
-  have hediv : e ∣ c * C.d := by
-    exact Ideal.dvd_iff_le.mpr (le_trans Ideal.le_radical
+  have hediv : e ∣ c * C.d := 
+    Ideal.dvd_iff_le.mpr (le_trans Ideal.le_radical
       (Ideal.dvd_iff_le.mp ((mem_idealDivisors hrad).mp he)))
   refine ⟨ne_bot_of_mem_idealDivisors he, ?_⟩
   intro u hu
@@ -192,15 +192,14 @@ theorem finite_coprime_sum_bound
          (∑ v ∈ V, (2:ℝ)^(UniqueFactorizationMonoid.normalizedFactors v).toFinset.card * ‖y v‖^2)) := by
   have h := Sieve.DivisorSeparation.rectangle_operator_bound Q
     {⊤} {⊤} R U V hU hV A B hA hB
-    (by intro d hd z; have hd' : d = ⊤ := Finset.mem_singleton.mp hd; subst d; simpa using hUA z)
-    (by intro d hd z; have hd' : d = ⊤ := Finset.mem_singleton.mp hd; subst d; simpa using hVB z) x y
+    (by simp_all)
+    (by simp_all) x y
   simp only [Sieve.DivisorSeparation.idealDivisorRectangle, Finset.sum_singleton,
     Finset.card_singleton, Nat.cast_one, one_mul] at h
-  have htop : ∀ u : Ideal (𝓞 F), (⊤ : Ideal (𝓞 F)) ∣ u := fun u =>
-    by simpa only [← Ideal.one_eq_top] using one_dvd u
+  have htop : ∀ u : Ideal (𝓞 F), (⊤ : Ideal (𝓞 F)) ∣ u := by simp
   have hfilter : ∀ u : Ideal (𝓞 F), ({⊤} : Finset (Ideal (𝓞 F))).filter (fun d => d ∣ u) = {⊤} := by
     intro u; apply Finset.filter_eq_self.mpr
-    intro d hd; rw [Finset.mem_singleton.mp hd]; exact htop u
+    simp
   simp only [htop, and_true, hfilter, Finset.card_singleton,
     Nat.cast_one, mul_one, starRingEnd_apply] at h
   rw [mul_assoc (A*B)] at h
@@ -220,7 +219,7 @@ theorem supported_factor_coprime_columns (C : Context Q)
   have hpt : p ∣ t := Ideal.dvd_iff_le.mpr (le_trans le_sup_left hle)
   have hp0 : p ≠ ⊥ := by
     intro heq
-    exact ht0 (eq_bot_iff.mpr (heq ▸ Ideal.dvd_iff_le.mp hpt))
+    simp_all
   have hpc : p ∣ c := hsupp p (Ideal.prime_of_isPrime hp0 hp.isPrime) hpt
   exact hp.ne_top (top_unique (huc ▸ sup_le
     (le_trans le_sup_right hle) (Ideal.dvd_iff_le.mp hpc)))
@@ -294,7 +293,7 @@ theorem supported_divisible_pair_bound
             Real.sqrt (divisorEnergy C f₁ * divisorEnergy C f₂) := by
   obtain ⟨A, hA, hcore⟩ := SupportedRows.core_divisible_pair_bound D
   let n : ℝ := (squarefreeBadPool c).card
-  refine ⟨(n + 1) * A, mul_pos (by dsimp [n]; positivity) hA, ?_⟩
+  refine ⟨(n + 1) * A, mul_pos (by positivity) hA, ?_⟩
   intro C hCD B unit hunit hM hN hB hBK hKM hn hnN e he P hP f₁ f₂ hf₁ hf₂
   obtain ⟨phase, hphase, hsplit⟩ := supported_primitive_phase_core C
   have hends := ErrorRectangles.rectangle_endpoints C P (Finset.mem_filter.mp hP).1
@@ -360,9 +359,3 @@ theorem supported_divisible_pair_bound
       apply mul_le_mul_of_nonneg_right _ (Real.sqrt_nonneg _)
       apply mul_le_mul_of_nonneg_right _ (Real.sqrt_nonneg _)
       exact mul_le_mul_of_nonneg_right (by linarith : n ≤ n + 1) hA.le
-
-end DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms.LargeDual
-
-end
-
-end

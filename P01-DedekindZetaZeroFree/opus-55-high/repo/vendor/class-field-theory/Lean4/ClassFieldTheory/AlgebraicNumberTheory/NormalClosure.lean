@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 /-!
 # A finite normal closure of a number-field extension
 
@@ -41,11 +36,11 @@ algebraic closure of `K`. -/
 abbrev finiteNormalClosure :=
   IntermediateField.normalClosure K L (AlgebraicClosure K)
 
-noncomputable instance finiteNormalClosure_numberField :
+instance finiteNormalClosure_numberField :
     NumberField (finiteNormalClosure K L) :=
   NumberField.of_module_finite K (finiteNormalClosure K L)
 
-noncomputable instance finiteNormalClosure_isGalois :
+instance finiteNormalClosure_isGalois :
     IsGalois K (finiteNormalClosure K L) := by
   let f : L →ₐ[K] AlgebraicClosure K :=
     IsAlgClosed.lift
@@ -57,7 +52,7 @@ noncomputable instance finiteNormalClosure_isGalois :
   infer_instance
 
 /-- A fixed embedding of `L` into its normal closure. -/
-noncomputable def finiteNormalClosureEmbedding :
+def finiteNormalClosureEmbedding :
     L →ₐ[K] finiteNormalClosure K L :=
   let f : L →ₐ[K] AlgebraicClosure K := IsAlgClosed.lift
   f.codRestrict
@@ -68,13 +63,13 @@ noncomputable def finiteNormalClosureEmbedding :
         (show f x ∈ f.fieldRange from ⟨x, rfl⟩))
 
 /-- The distinguished copy of `L` in its finite normal closure. -/
-noncomputable def finiteNormalClosureOriginalField :
+def finiteNormalClosureOriginalField :
     IntermediateField K (finiteNormalClosure K L) :=
   (finiteNormalClosureEmbedding K L).fieldRange
 
 /-- The original extension is canonically equivalent to its
 distinguished copy in the finite normal closure. -/
-noncomputable def finiteNormalClosureOriginalFieldEquiv :
+def finiteNormalClosureOriginalFieldEquiv :
     L ≃ₐ[K] finiteNormalClosureOriginalField K L :=
   (finiteNormalClosureEmbedding K L).equivFieldRange
 
@@ -139,15 +134,3 @@ theorem finrank_le_finiteNormalClosure :
     (finiteNormalClosureEmbedding K L).toLinearMap
       |>.finrank_le_finrank_of_injective
         (finiteNormalClosureEmbedding K L).injective
-
-/-- A degree-one finite field extension is the base field as an
-algebra. -/
-noncomputable def algEquivBaseOfFinrankEqOne
-    (hdegree : Module.finrank K L = 1) :
-    L ≃ₐ[K] K :=
-  (AlgEquiv.ofBijective
-    (Algebra.ofId K L)
-    ((Algebra.finrank_eq_one_iff_bijective_algebraMap).mp
-      hdegree)).symm
-
-end

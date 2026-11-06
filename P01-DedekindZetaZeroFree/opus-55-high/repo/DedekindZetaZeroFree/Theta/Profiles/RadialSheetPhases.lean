@@ -39,10 +39,7 @@ theorem uniform_section_class (A : SArithmeticData F) (t : ℝ) (y : A.G) :
       QuotientGroup.mk' A.sixthPowers y := by
   have hmem : A.radialSection (Real.exp t) (Real.exp_pos t) ∈ A.sixthPowers :=
     ⟨A.radialSection (Real.exp (t / 6)) (Real.exp_pos _), uniform_section_sixth A t⟩
-  have hk : QuotientGroup.mk' A.sixthPowers (A.radialSection (Real.exp t) (Real.exp_pos t)) = 1 :=
-    (QuotientGroup.eq_one_iff _).mpr hmem
-  rw [map_mul, hk]
-  exact mul_one (QuotientGroup.mk' A.sixthPowers y)
+  simp_all
 
 theorem uniform_section_branch (R : PrincipalMellin.ActualRecipe S η)
     {Q : AdmissibleFlatSources R} (P : Packet R Q) (v : R.A.UnitQuotient) (t : ℝ) :
@@ -118,7 +115,3 @@ theorem sheetPhase_measurable (R : PrincipalMellin.ActualRecipe S η) (κ : R.A.
   exact finiteClass_measurable R (fun q =>
     (if κ * q⁻¹ ∈ R.probe.correction.B then (1 : ℂ) else 0) *
       (R.σ ((R.probe.correction.H κ q : Fˣ) : F) ^ 2)⁻¹)
-
-end DedekindZetaZeroFree.SheetRescaling
-
-end

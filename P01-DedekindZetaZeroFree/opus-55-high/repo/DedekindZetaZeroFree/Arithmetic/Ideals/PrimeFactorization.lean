@@ -31,7 +31,7 @@ variable (K : Type*) [Field K] [NumberField K]
 abbrev NonzeroIdeal :=
   {I : Ideal (𝓞 K) // I ≠ 0}
 
-noncomputable def idealPrimeFactors (I : NonzeroIdeal K) :
+def idealPrimeFactors (I : NonzeroIdeal K) :
     Multiset (HeightOneSpectrum (𝓞 K)) :=
   Multiset.pmap
     (p := fun P : Ideal (𝓞 K) ↦ Prime P)
@@ -39,10 +39,10 @@ noncomputable def idealPrimeFactors (I : NonzeroIdeal K) :
     (normalizedFactors (I : Ideal (𝓞 K)))
     prime_of_normalized_factor
 
-noncomputable def idealOfPrimeFactors
+def idealOfPrimeFactors
     (m : Multiset (HeightOneSpectrum (𝓞 K))) : NonzeroIdeal K :=
-  ⟨(m.map HeightOneSpectrum.asIdeal).prod, by
-    exact Multiset.prod_ne_zero fun h ↦
+  ⟨(m.map HeightOneSpectrum.asIdeal).prod, 
+    Multiset.prod_ne_zero fun h ↦
       let ⟨P, hP, heq⟩ := Multiset.mem_map.mp h
       P.ne_bot (heq ▸ rfl)⟩
 
@@ -93,13 +93,9 @@ theorem idealPrimeFactors_idealOfPrimeFactors
     exact normalizedFactors_prod_of_prime hprime
   simp_all
 
-noncomputable def nonzeroIdealEquivPrimeFactors :
+def nonzeroIdealEquivPrimeFactors :
     NonzeroIdeal K ≃ Multiset (HeightOneSpectrum (𝓞 K)) where
   toFun := idealPrimeFactors K
   invFun := idealOfPrimeFactors K
   left_inv := idealOfPrimeFactors_idealPrimeFactors K
   right_inv := idealPrimeFactors_idealOfPrimeFactors K
-
-end DedekindZetaZeroFree.Odlyzko
-
-end

@@ -5,7 +5,14 @@ public import ClassFieldTheory.GlobalClassFieldTheory.Reciprocity.CyclotomicIdel
 public import ClassFieldTheory.GlobalClassFieldTheory.Reciprocity.CyclotomicZHatBaseChange
 public import ClassFieldTheory.GlobalClassFieldTheory.Reciprocity.IdeleClassDirectLimitExtension
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.NormOneCompact
-public import ClassFieldTheory.AlgebraicNumberTheory.Idele.NormTopology.IdeleClassNorm
+public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Norm
+public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Extension.IdeleNormComponents
+public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Extension.IdealClass
+public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Extension.NormLocalOrder
+public import Mathlib.Algebra.BigOperators.Finprod
+public import Mathlib.NumberTheory.NumberField.Completion.Ramification
+public import Mathlib.RingTheory.Ideal.Norm.RelNorm
+public import ClassFieldTheory.AlgebraicNumberTheory.Idele.PrincipalNorm
 public import ClassFieldTheory.AbstractClassFieldTheory.Degree.Valuation
 
 @[expose] public section
@@ -16,15 +23,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-
-
-
-set_option autoImplicit false
 
 /-!
 # The cyclotomic valuation on idele classes
@@ -59,7 +57,7 @@ open KummerTheory
 /-- Fix the canonical source-group dictionary before constructing the value maps
 and their additive ranges. -/
 @[instance_reducible]
- noncomputable def cyclotomicValuationIdeleClassCommGroup
+ def cyclotomicValuationIdeleClassCommGroup
     (F : Type) [Field F] [NumberField F] :
     CommGroup (IdeleClassGroup F) :=
   QuotientGroup.Quotient.commGroup (IdeleGroup.principalSubgroup F)
@@ -70,7 +68,7 @@ attribute [local instance] cyclotomicValuationIdeleClassCommGroup
 defining normal subgroup is contained in the kernel.  Keeping the quotient-map
 argument here avoids repeating the same large continuity elaboration for the
 rational and number-field cyclotomic values. -/
- noncomputable def ideleClassContinuousQuotientLift
+ def ideleClassContinuousQuotientLift
     {A B : Type*} [Group A] [TopologicalSpace A]
     [Group B] [TopologicalSpace B]
     (N : Subgroup A) [N.Normal] (f : A →ₜ* B)
@@ -79,8 +77,7 @@ rational and number-field cyclotomic values. -/
   have hcomp :
       Continuous (fun a : A => φ (QuotientGroup.mk' N a)) := by
     refine f.continuous_toFun.congr (fun a => ?_)
-    change f.toMonoidHom a = φ (QuotientGroup.mk' N a)
-    exact (QuotientGroup.lift_mk N hN a).symm
+    rfl
   exact
     { toMonoidHom := φ
       continuous_toFun :=
@@ -96,9 +93,7 @@ private theorem ideleClassContinuousQuotientLift_mk
     ideleClassContinuousQuotientLift N f hN
         (QuotientGroup.mk' N a) =
       f a := by
-  change QuotientGroup.lift N f.toMonoidHom hN
-      (QuotientGroup.mk' N a) = f a
-  exact QuotientGroup.lift_mk N hN a
+  rfl
 
 /-- Principal rational ideles lie in the kernel of the cyclotomic value. -/
  theorem rationalCyclotomicZHatIdeleValue_principalSubgroup_le_ker :
@@ -109,7 +104,7 @@ private theorem ideleClassContinuousQuotientLift_mk
 
 /-- The rational cyclotomic value descended continuously through
 `C_ℚ = I_ℚ / ℚˣ`. -/
-noncomputable def rationalCyclotomicZHatIdeleClassValueContinuousMul :
+def rationalCyclotomicZHatIdeleClassValueContinuousMul :
     IdeleClassGroup ℚ →ₜ* Multiplicative ZHat :=
   ideleClassContinuousQuotientLift
     (IdeleGroup.principalSubgroup ℚ)
@@ -125,14 +120,11 @@ theorem rationalCyclotomicZHatIdeleClassValueContinuousMul_mk
         (QuotientGroup.mk'
           (IdeleGroup.principalSubgroup ℚ) a) =
       rationalCyclotomicZHatIdeleValue a :=
-  ideleClassContinuousQuotientLift_mk
-    (IdeleGroup.principalSubgroup ℚ)
-    rationalCyclotomicZHatIdeleValue
-    rationalCyclotomicZHatIdeleValue_principalSubgroup_le_ker a
+  by rfl
 
 /-- The rational cyclotomic value on idele classes, in continuous
 additive notation. -/
-noncomputable def rationalCyclotomicZHatIdeleClassValueContinuous :
+def rationalCyclotomicZHatIdeleClassValueContinuous :
     Additive (IdeleClassGroup ℚ) →ₜ+ ZHat where
   __ := MonoidHom.toAdditiveLeft
     rationalCyclotomicZHatIdeleClassValueContinuousMul.toMonoidHom
@@ -150,14 +142,7 @@ theorem rationalCyclotomicZHatIdeleClassValueContinuous_mk
             (IdeleGroup.principalSubgroup ℚ) a)) =
       Multiplicative.toAdd
         (rationalCyclotomicZHatIdeleValue a) := by
-  change
-    Multiplicative.toAdd
-        (rationalCyclotomicZHatIdeleClassValueContinuousMul
-          (QuotientGroup.mk'
-            (IdeleGroup.principalSubgroup ℚ) a)) =
-      Multiplicative.toAdd
-        (rationalCyclotomicZHatIdeleValue a)
-  rw [rationalCyclotomicZHatIdeleClassValueContinuousMul_mk]
+  rfl
 
 variable (K : Type) [Field K] [NumberField K]
 
@@ -167,15 +152,11 @@ variable (K : Type) [Field K] [NumberField K]
     IdeleGroup.principalSubgroup K ≤
       (normalizedCyclotomicZHatIdeleValueContinuousMul K).toMonoidHom.ker := by
   rintro _ ⟨x, rfl⟩
-  change
-    normalizedCyclotomicZHatIdeleValue K
-        (Additive.ofMul (IdeleGroup.principalIdele K x)) =
-      0
-  exact normalizedCyclotomicZHatIdeleValue_principalIdele_eq_zero K x
+  simp
 
 /-- The normalized cyclotomic value descended continuously through
 `C_K = I_K / Kˣ`. -/
-noncomputable def normalizedCyclotomicZHatIdeleClassValueContinuousMul :
+def normalizedCyclotomicZHatIdeleClassValueContinuousMul :
     IdeleClassGroup K →ₜ* Multiplicative ZHat :=
   ideleClassContinuousQuotientLift
     (IdeleGroup.principalSubgroup K)
@@ -200,7 +181,7 @@ theorem normalizedCyclotomicZHatIdeleClassValueContinuousMul_mk
 
 /-- The normalized cyclotomic value on idele classes, in continuous
 additive notation. -/
-noncomputable def normalizedCyclotomicZHatIdeleClassValueContinuous :
+def normalizedCyclotomicZHatIdeleClassValueContinuous :
     Additive (IdeleClassGroup K) →ₜ+ ZHat where
   __ := MonoidHom.toAdditiveLeft
     (normalizedCyclotomicZHatIdeleClassValueContinuousMul K).toMonoidHom
@@ -218,14 +199,6 @@ theorem normalizedCyclotomicZHatIdeleClassValueContinuous_mk
             (IdeleGroup.principalSubgroup K) a)) =
       normalizedCyclotomicZHatIdeleValue K
         (Additive.ofMul a) := by
-  change
-    Multiplicative.toAdd
-        (normalizedCyclotomicZHatIdeleClassValueContinuousMul K
-          (QuotientGroup.mk'
-            (IdeleGroup.principalSubgroup K) a)) =
-      normalizedCyclotomicZHatIdeleValue K
-        (Additive.ofMul a)
-  rw [normalizedCyclotomicZHatIdeleClassValueContinuousMul_mk]
   rfl
 
 /-- The chosen local-factor product on the actual cyclotomic
@@ -256,7 +229,7 @@ theorem
 
 /-- The genuine infinite Artin map of the cyclotomic
 `ZHat`-compositum, descended to the idele class group. -/
-noncomputable def
+def
     numberFieldCyclotomicZHatCompositumIdeleClassArtinMonoidHom :
     IdeleClassGroup K →*
       Gal(numberFieldCyclotomicZHatCompositum K / K) :=
@@ -266,93 +239,7 @@ noncomputable def
       (numberFieldCyclotomicZHatCompositum K)).toMonoidHom
     (by
       rintro _ ⟨x, rfl⟩
-      exact
-        infiniteGlobalArtinMonoidHom_numberFieldCyclotomicZHatCompositum_principalIdele
-          K x)
-
-/-- Evaluation of the descended compositum Artin map on an idele
-representative. -/
-@[simp]
-theorem
-    numberFieldCyclotomicZHatCompositumIdeleClassArtinMonoidHom_mk
-    (a : IdeleGroup K) :
-    numberFieldCyclotomicZHatCompositumIdeleClassArtinMonoidHom K
-        (QuotientGroup.mk'
-          (IdeleGroup.principalSubgroup K) a) =
-      infiniteGlobalArtinMonoidHom K
-        (numberFieldCyclotomicZHatCompositum K) a := by
-  rw [numberFieldCyclotomicZHatCompositumIdeleClassArtinMonoidHom]
-  exact QuotientGroup.lift_mk _ _ _
-
-/-- In the rational cyclotomic Galois coordinate, the genuine
-idele-class Artin symbol over `K` is exactly `f_K` times the normalized
-cyclotomic valuation. -/
-theorem
-    numberFieldCyclotomicZHatCompositumIdeleClassArtin_coordinate
-    (c : IdeleClassGroup K) :
-    Multiplicative.toAdd
-        (rationalCyclotomicZHatFieldGalEquivZHat
-          (numberFieldCyclotomicZHatCompositumRestriction K
-            (numberFieldCyclotomicZHatCompositumIdeleClassArtinMonoidHom
-              K c))) =
-      cyclotomicZHatIntersectionDegree K •
-        normalizedCyclotomicZHatIdeleClassValueContinuous K
-          (Additive.ofMul c) := by
-  obtain ⟨a, rfl⟩ :=
-    QuotientGroup.mk'_surjective
-      (IdeleGroup.principalSubgroup K) c
-  rw [
-    numberFieldCyclotomicZHatCompositumIdeleClassArtinMonoidHom_mk,
-    numberFieldCyclotomicZHatCompositumRestriction_infiniteGlobalArtinMonoidHom,
-    normalizedCyclotomicZHatIdeleClassValueContinuous_mk]
-  change
-    cyclotomicZHatNormComposite K (Additive.ofMul a) =
-      cyclotomicZHatIntersectionDegree K •
-        normalizedCyclotomicZHatIdeleValue K (Additive.ofMul a)
-  exact
-    (cyclotomicZHatIntersectionDegree_nsmul_normalizedIdeleValue
-      K (Additive.ofMul a)).symm
-
-/-- The kernel of the genuine Artin map to the cyclotomic
-`ZHat`-compositum is the zero fibre of the normalized cyclotomic
-idele-class valuation. -/
-@[simp]
-theorem
-    numberFieldCyclotomicZHatCompositumIdeleClassArtin_eq_one_iff
-    (c : IdeleClassGroup K) :
-    numberFieldCyclotomicZHatCompositumIdeleClassArtinMonoidHom K c =
-        1 ↔
-      normalizedCyclotomicZHatIdeleClassValueContinuous K
-          (Additive.ofMul c) =
-        0 := by
-  constructor
-  · intro hc
-    have hcoordinate :=
-      numberFieldCyclotomicZHatCompositumIdeleClassArtin_coordinate K c
-    rw [hc] at hcoordinate
-    have hcoordinate' :
-        0 =
-        cyclotomicZHatIntersectionDegree K •
-          normalizedCyclotomicZHatIdeleClassValueContinuous K
-            (Additive.ofMul c) := by
-      simpa only [map_one, toAdd_one] using hcoordinate
-    apply
-      zHatMulNat_injective
-        (cyclotomicZHatIntersectionDegree_pos K)
-    change
-      cyclotomicZHatIntersectionDegree K •
-          normalizedCyclotomicZHatIdeleClassValueContinuous K
-            (Additive.ofMul c) =
-        cyclotomicZHatIntersectionDegree K • (0 : ZHat)
-    simpa only [smul_zero] using hcoordinate'.symm
-  · intro hc
-    apply numberFieldCyclotomicZHatCompositumRestriction_injective K
-    apply rationalCyclotomicZHatFieldGalEquivZHat.injective
-    apply Multiplicative.ext
-    have hcoordinate :=
-      numberFieldCyclotomicZHatCompositumIdeleClassArtin_coordinate K c
-    rw [hc, smul_zero] at hcoordinate
-    simpa only [map_one, toAdd_one] using hcoordinate
+      simp)
 
 /-- Use the rational algebra structure expected by the imported finite-layer
 API throughout this block.  Fixing it before the first finite-layer binder
@@ -377,203 +264,6 @@ module-finiteness construction from being rebuilt along distinct paths. -/
 
 attribute [local instance]
   numberFieldCyclotomicZHatFiniteLayerNumberField
-
- structure NumberFieldCyclotomicZHatFiniteLayerArtinData
-    (E :
-      FiniteGaloisIntermediateField
-        ℚ rationalCyclotomicZHatField) :
-    Type where
-  toMonoidHom :
-    IdeleGroup K →*
-      Gal(numberFieldCyclotomicZHatFiniteLayerInCompositum K E / K)
-  principal (x : Kˣ) :
-    toMonoidHom (IdeleGroup.principalIdele K x) = 1
-  restriction (a : IdeleGroup K) :
-    AlgEquiv.restrictNormalHom
-        (numberFieldCyclotomicZHatFiniteLayerInCompositum K E)
-        (infiniteGlobalArtinMonoidHom K
-          (numberFieldCyclotomicZHatCompositum K) a) =
-      toMonoidHom a
-
- theorem
-    rawGlobalArtinMonoidHom_numberFieldCyclotomicZHatFiniteLayer_principalIdele
-    (E :
-      FiniteGaloisIntermediateField
-        ℚ rationalCyclotomicZHatField)
-    (x : Kˣ) :
-    globalArtinMonoidHom
-        (K := K)
-        (L :=
-          numberFieldCyclotomicZHatFiniteLayerInCompositum K E)
-        (IdeleGroup.principalIdele K x) =
-      1 := by
-  have hprojection :
-      AlgEquiv.restrictNormalHom
-          (numberFieldCyclotomicZHatFiniteLayerInCompositum K E)
-          (infiniteGlobalArtinMonoidHom K
-            (numberFieldCyclotomicZHatCompositum K)
-            (IdeleGroup.principalIdele K x)) =
-        globalArtinMonoidHom
-          (K := K)
-          (L :=
-            numberFieldCyclotomicZHatFiniteLayerInCompositum K E)
-          (IdeleGroup.principalIdele K x) :=
-    restrictNormalHom_infiniteGlobalArtinMonoidHom
-      K (numberFieldCyclotomicZHatCompositum K)
-      (IdeleGroup.principalIdele K x)
-      (numberFieldCyclotomicZHatFiniteGaloisLayerInCompositum K E)
-  calc
-    globalArtinMonoidHom
-          (K := K)
-          (L :=
-            numberFieldCyclotomicZHatFiniteLayerInCompositum K E)
-          (IdeleGroup.principalIdele K x) =
-        AlgEquiv.restrictNormalHom
-          (numberFieldCyclotomicZHatFiniteLayerInCompositum K E)
-          (infiniteGlobalArtinMonoidHom K
-            (numberFieldCyclotomicZHatCompositum K)
-            (IdeleGroup.principalIdele K x)) :=
-      hprojection.symm
-    _ = AlgEquiv.restrictNormalHom
-        (numberFieldCyclotomicZHatFiniteLayerInCompositum K E) 1 := by
-      rw [
-        infiniteGlobalArtinMonoidHom_numberFieldCyclotomicZHatCompositum_principalIdele]
-    _ = 1 := map_one
-      (AlgEquiv.restrictNormalHom
-        (numberFieldCyclotomicZHatFiniteLayerInCompositum K E))
-
- theorem
-    rawGlobalArtinMonoidHom_numberFieldCyclotomicZHatFiniteLayer_restriction
-    (E :
-      FiniteGaloisIntermediateField
-        ℚ rationalCyclotomicZHatField)
-    (a : IdeleGroup K) :
-    AlgEquiv.restrictNormalHom
-        (numberFieldCyclotomicZHatFiniteLayerInCompositum K E)
-        (infiniteGlobalArtinMonoidHom K
-          (numberFieldCyclotomicZHatCompositum K) a) =
-      globalArtinMonoidHom
-        (K := K)
-        (L :=
-          numberFieldCyclotomicZHatFiniteLayerInCompositum K E) a :=
-  restrictNormalHom_infiniteGlobalArtinMonoidHom
-    K (numberFieldCyclotomicZHatCompositum K) a
-    (numberFieldCyclotomicZHatFiniteGaloisLayerInCompositum K E)
-
- noncomputable def
-    numberFieldCyclotomicZHatFiniteLayerArtinData
-    (E :
-      FiniteGaloisIntermediateField
-        ℚ rationalCyclotomicZHatField) :
-    NumberFieldCyclotomicZHatFiniteLayerArtinData K E where
-  toMonoidHom :=
-    globalArtinMonoidHom
-      (K := K)
-      (L := numberFieldCyclotomicZHatFiniteLayerInCompositum K E)
-  principal :=
-    rawGlobalArtinMonoidHom_numberFieldCyclotomicZHatFiniteLayer_principalIdele
-      K E
-  restriction :=
-    rawGlobalArtinMonoidHom_numberFieldCyclotomicZHatFiniteLayer_restriction
-      K E
-
-/-- The chosen finite-layer global Artin map, kept opaque so every descended
-idele-class declaration shares the same dependent instance data. -/
-noncomputable def
-    numberFieldCyclotomicZHatFiniteLayerGlobalArtinMonoidHom
-    (E :
-      FiniteGaloisIntermediateField
-        ℚ rationalCyclotomicZHatField) :
-    IdeleGroup K →*
-      Gal(numberFieldCyclotomicZHatFiniteLayerInCompositum K E / K) :=
-  (numberFieldCyclotomicZHatFiniteLayerArtinData K E).toMonoidHom
-
-/-- Every finite cyclotomic layer over a number field inherits the
-principal-idele product formula from the full cyclotomic
-`ZHat`-compositum. -/
-@[simp]
-theorem
-    globalArtinMonoidHom_numberFieldCyclotomicZHatFiniteLayer_principalIdele
-    (E :
-      FiniteGaloisIntermediateField
-        ℚ rationalCyclotomicZHatField)
-    (x : Kˣ) :
-    numberFieldCyclotomicZHatFiniteLayerGlobalArtinMonoidHom K E
-        (IdeleGroup.principalIdele K x) =
-      1 := by
-  exact
-    (numberFieldCyclotomicZHatFiniteLayerArtinData K E).principal x
-
- theorem
-    numberFieldCyclotomicZHatFiniteLayer_principalSubgroup_le_ker
-    (E :
-      FiniteGaloisIntermediateField
-        ℚ rationalCyclotomicZHatField) :
-    IdeleGroup.principalSubgroup K ≤
-      (numberFieldCyclotomicZHatFiniteLayerGlobalArtinMonoidHom K E).ker := by
-  rintro _ ⟨x, rfl⟩
-  exact
-    globalArtinMonoidHom_numberFieldCyclotomicZHatFiniteLayer_principalIdele
-      K E x
-
-/-- The actual chosen-local-factor Artin map of a finite cyclotomic
-layer, descended through `C_K = I_K / Kˣ`. -/
-noncomputable def
-    numberFieldCyclotomicZHatFiniteLayerIdeleClassArtinMonoidHom
-    (E :
-      FiniteGaloisIntermediateField
-        ℚ rationalCyclotomicZHatField) :
-    IdeleClassGroup K →*
-      Gal(numberFieldCyclotomicZHatFiniteLayerInCompositum K E / K) := by
-  exact
-    QuotientGroup.lift
-      (IdeleGroup.principalSubgroup K)
-      (numberFieldCyclotomicZHatFiniteLayerGlobalArtinMonoidHom K E)
-      (numberFieldCyclotomicZHatFiniteLayer_principalSubgroup_le_ker K E)
-
-/-- Evaluation of the descended finite-layer Artin map on an idele
-representative. -/
-@[simp]
-theorem
-    numberFieldCyclotomicZHatFiniteLayerIdeleClassArtinMonoidHom_mk
-    (E :
-      FiniteGaloisIntermediateField
-        ℚ rationalCyclotomicZHatField)
-    (a : IdeleGroup K) :
-    numberFieldCyclotomicZHatFiniteLayerIdeleClassArtinMonoidHom K E
-        (QuotientGroup.mk'
-          (IdeleGroup.principalSubgroup K) a) =
-      numberFieldCyclotomicZHatFiniteLayerGlobalArtinMonoidHom K E a := by
-  rw [numberFieldCyclotomicZHatFiniteLayerIdeleClassArtinMonoidHom]
-  exact
-    QuotientGroup.lift_mk
-      (IdeleGroup.principalSubgroup K)
-      (numberFieldCyclotomicZHatFiniteLayer_principalSubgroup_le_ker K E)
-      a
-
-/-- Restriction of the descended Artin map of the full cyclotomic
-compositum to a finite cyclotomic layer is the descended finite-layer
-chosen-local-factor Artin map. -/
-theorem
-    numberFieldCyclotomicZHatCompositumIdeleClassArtinMonoidHom_restrict
-    (E :
-      FiniteGaloisIntermediateField
-        ℚ rationalCyclotomicZHatField) :
-    (AlgEquiv.restrictNormalHom
-        (numberFieldCyclotomicZHatFiniteLayerInCompositum K E)).comp
-        (numberFieldCyclotomicZHatCompositumIdeleClassArtinMonoidHom K) =
-      numberFieldCyclotomicZHatFiniteLayerIdeleClassArtinMonoidHom K E := by
-  apply MonoidHom.ext
-  intro c
-  obtain ⟨a, rfl⟩ :=
-    QuotientGroup.mk'_surjective
-      (IdeleGroup.principalSubgroup K) c
-  rw [
-    MonoidHom.comp_apply,
-    numberFieldCyclotomicZHatCompositumIdeleClassArtinMonoidHom_mk,
-    numberFieldCyclotomicZHatFiniteLayerIdeleClassArtinMonoidHom_mk]
-  exact
-    (numberFieldCyclotomicZHatFiniteLayerArtinData K E).restriction a
 
 /-- The descended rational class value has dense image already on the
 compact norm-one idele class group. -/
@@ -606,8 +296,7 @@ theorem
       (IdeleClassGroup.mk_mem_normOneSubgroup_iff
         (b : IdeleGroup ℚ)).2 b.2⟩
   refine ⟨c, ?_⟩
-  simp only [c,
-    rationalCyclotomicZHatIdeleClassValueContinuous_mk]
+  rfl
 
 /-- Compactness upgrades the dense rational norm-one image to
 surjectivity. -/
@@ -662,8 +351,7 @@ theorem normalizedCyclotomicZHatIdeleClassValue_normOne_denseRange :
       (IdeleClassGroup.mk_mem_normOneSubgroup_iff
         (b : IdeleGroup K)).2 b.2⟩
   refine ⟨c, ?_⟩
-  simp only [c,
-    normalizedCyclotomicZHatIdeleClassValueContinuous_mk]
+  rfl
 
 /-- Compactness upgrades the dense normalized norm-one image to
 surjectivity. -/
@@ -701,24 +389,6 @@ theorem normalizedCyclotomicZHatIdeleClassValue_surjective :
     normalizedCyclotomicZHatIdeleClassValue_normOne_surjective K z
   exact ⟨Additive.ofMul (c : IdeleClassGroup K), hc⟩
 
-/-- The normalized cyclotomic class value has full value group. -/
-@[simp]
-theorem normalizedCyclotomicZHatIdeleClassValue_range :
-    (normalizedCyclotomicZHatIdeleClassValueContinuous K).toAddMonoidHom.range =
-      (⊤ : AddSubgroup ZHat) :=
-  AddMonoidHom.range_eq_top_of_surjective
-    (normalizedCyclotomicZHatIdeleClassValueContinuous K).toAddMonoidHom
-    (normalizedCyclotomicZHatIdeleClassValue_surjective K)
-
-/-- The rational cyclotomic class value has full value group. -/
-@[simp]
-theorem rationalCyclotomicZHatIdeleClassValue_range :
-    rationalCyclotomicZHatIdeleClassValueContinuous.toAddMonoidHom.range =
-      (⊤ : AddSubgroup ZHat) :=
-  AddMonoidHom.range_eq_top_of_surjective
-    rationalCyclotomicZHatIdeleClassValueContinuous.toAddMonoidHom
-    rationalCyclotomicZHatIdeleClassValue_surjective
-
 /-- The defining normalized-value identity after descent to idele
 classes:
 
@@ -752,7 +422,7 @@ theorem
 
 /-- The rational cyclotomic value after the actual class norm
 `N_{K/ℚ} : C_K → C_ℚ`. -/
-noncomputable def rationalCyclotomicZHatIdeleClassNormComposite :
+def rationalCyclotomicZHatIdeleClassNormComposite :
     Additive (IdeleClassGroup K) →+ ZHat :=
   (rationalCyclotomicZHatIdeleClassValueContinuous.toAddMonoidHom).comp
       (MonoidHom.toAdditive (_root_.ideleClassNorm ℚ K))
@@ -803,106 +473,10 @@ theorem rationalCyclotomicZHatIdeleClassNormComposite_range :
         rw [hc]
       _ = z := hx
 
-/-- Restriction of the normalized class value to the compact norm-one
-idele class group. -/
-noncomputable def normalizedCyclotomicZHatNormOneIdeleClassValue :
-    Additive (IdeleClassGroup.normOneSubgroup (K := K)) →+ ZHat :=
-  ((normalizedCyclotomicZHatIdeleClassValueContinuous K).toAddMonoidHom).comp
-      (MonoidHom.toAdditive
-        (IdeleClassGroup.normOneSubgroup (K := K)).subtype)
-
-/-- The normalized norm-one class value remains surjective. -/
-theorem normalizedCyclotomicZHatNormOneIdeleClassValue_surjective :
-    Function.Surjective
-      (normalizedCyclotomicZHatNormOneIdeleClassValue K) := by
-  intro z
-  obtain ⟨c, hc⟩ :=
-    normalizedCyclotomicZHatIdeleClassValue_normOne_surjective K z
-  refine ⟨Additive.ofMul c, ?_⟩
-  change
-    normalizedCyclotomicZHatIdeleClassValueContinuous K
-        (Additive.ofMul (c : IdeleClassGroup K)) =
-      z
-  exact hc
-
-/-- The rational class value composed with the actual class norm,
-restricted to norm-one idele classes.  The codomain restriction in
-`normOneNorm` is supplied by preservation of the absolute idele norm. -/
-noncomputable def rationalCyclotomicZHatNormOneIdeleClassNormComposite :
-    Additive (IdeleClassGroup.normOneSubgroup (K := K)) →+ ZHat :=
-  (rationalCyclotomicZHatIdeleClassValueContinuous.toAddMonoidHom).comp
-      (MonoidHom.toAdditive
-        ((IdeleClassGroup.normOneSubgroup (K := ℚ)).subtype.comp
-          (IdeleClassGroup.normOneNorm ℚ K)))
-
-/-- The normalized identity restricted to the actual norm-one class
-norm. -/
-theorem
-    cyclotomicZHatIntersectionDegree_nsmul_normalizedNormOneIdeleClassValue
-    (c : Additive
-      (IdeleClassGroup.normOneSubgroup (K := K))) :
-    cyclotomicZHatIntersectionDegree K •
-        normalizedCyclotomicZHatNormOneIdeleClassValue K c =
-      rationalCyclotomicZHatNormOneIdeleClassNormComposite K c := by
-  change
-    cyclotomicZHatIntersectionDegree K •
-        normalizedCyclotomicZHatIdeleClassValueContinuous K
-          (Additive.ofMul
-            ((Additive.toMul c :
-                IdeleClassGroup.normOneSubgroup (K := K)) :
-              IdeleClassGroup K)) =
-      rationalCyclotomicZHatIdeleClassValueContinuous
-        (Additive.ofMul
-          ((IdeleClassGroup.normOneNorm ℚ K
-              (Additive.toMul c) :
-            IdeleClassGroup.normOneSubgroup (K := ℚ)) :
-            IdeleClassGroup ℚ))
-  rw [IdeleClassGroup.normOneNorm_apply]
-  exact
-    cyclotomicZHatIntersectionDegree_nsmul_normalizedIdeleClassValue
-      K
-      (Additive.ofMul
-        ((Additive.toMul c :
-            IdeleClassGroup.normOneSubgroup (K := K)) :
-          IdeleClassGroup K))
-
-/-- The exact cyclotomic image of the actual class norm is already
-attained on norm-one idele classes. -/
-theorem
-    rationalCyclotomicZHatNormOneIdeleClassNormComposite_range :
-    (rationalCyclotomicZHatNormOneIdeleClassNormComposite K).range =
-      nsmulImage (⊤ : AddSubgroup ZHat)
-        (cyclotomicZHatIntersectionDegree K) := by
-  ext z
-  constructor
-  · rintro ⟨c, rfl⟩
-    rw [mem_nsmulImage_iff]
-    refine
-      ⟨normalizedCyclotomicZHatNormOneIdeleClassValue K c,
-        AddSubgroup.mem_top _, ?_⟩
-    exact
-      cyclotomicZHatIntersectionDegree_nsmul_normalizedNormOneIdeleClassValue
-        K c
-  · rw [mem_nsmulImage_iff]
-    rintro ⟨x, _hx, hx⟩
-    obtain ⟨c, hc⟩ :=
-      normalizedCyclotomicZHatNormOneIdeleClassValue_surjective K x
-    refine ⟨c, ?_⟩
-    calc
-      rationalCyclotomicZHatNormOneIdeleClassNormComposite K c =
-          cyclotomicZHatIntersectionDegree K •
-            normalizedCyclotomicZHatNormOneIdeleClassValue K c :=
-        (cyclotomicZHatIntersectionDegree_nsmul_normalizedNormOneIdeleClassValue
-          K c).symm
-      _ =
-          cyclotomicZHatIntersectionDegree K • x := by
-        rw [hc]
-      _ = z := hx
-
 /-- The rational cyclotomic class valuation transported to the
 distinguished base fixed part of the absolute idele-class
 representation. -/
-noncomputable def rationalCyclotomicZHatValuation :
+def rationalCyclotomicZHatValuation :
     KummerTheory.ambientFixedAddSubgroup
         rationalIdeleClassRepresentation
         (ClassFormation.baseField
@@ -942,8 +516,7 @@ theorem rationalCyclotomicZHatValuation_integer_mem_range
     (m : ℤ) :
     (Int.castRingHom ZHat) m ∈
       rationalCyclotomicZHatValuation.range := by
-  rw [rationalCyclotomicZHatValuation_range]
-  exact AddSubgroup.mem_top _
+  simp
 
 /-- The canonical quotient map for the transported rational cyclotomic
 valuation is bijective at every positive level. -/
@@ -1080,7 +653,7 @@ end AbstractFixedFieldNormRange
 
 /-- The concrete henselian valuation data on the absolute rational
 idele-class representation, with cyclotomic degree data. -/
-noncomputable def rationalCyclotomicIdeleClassValuationData :
+def rationalCyclotomicIdeleClassValuationData :
     ValuationData
       rationalCyclotomicDegreeData
       rationalIdeleClassRepresentation where
@@ -1189,8 +762,3 @@ theorem
           (fun n : ℕ =>
             n • normalizedCyclotomicZHatIdeleClassValueContinuous F c)
           hdegree
-
-end Reciprocity
-end GlobalClassFieldTheory
-
-end

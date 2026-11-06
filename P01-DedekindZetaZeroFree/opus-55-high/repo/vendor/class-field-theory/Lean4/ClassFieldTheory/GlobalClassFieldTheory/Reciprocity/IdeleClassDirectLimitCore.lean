@@ -14,12 +14,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-
-set_option autoImplicit false
-
 /-!
 # The rational absolute idele-class direct limit
 
@@ -42,7 +36,7 @@ universe u
 /-- The rational algebra structure on the chosen separable closure is
 the one induced by its realization inside the algebraic closure. -/
 @[reducible]
-noncomputable instance rationalSeparableClosureAlgebra :
+instance rationalSeparableClosureAlgebra :
     Algebra ℚ (SeparableClosure ℚ) :=
   letI : Algebra ℚ (AlgebraicClosure ℚ) :=
     AlgebraicClosure.instAlgebra ℚ
@@ -52,14 +46,14 @@ noncomputable instance rationalSeparableClosureAlgebra :
 /-- A rational intermediate field uses its actual inclusion into the
 chosen separable closure as its algebra structure. -/
 @[reducible]
-noncomputable instance rationalIntermediateFieldAlgebra
+instance rationalIntermediateFieldAlgebra
     (E : IntermediateField ℚ (SeparableClosure ℚ)) :
     Algebra ℚ E :=
   IntermediateField.algebra' (R' := ℚ) E
 
 /-- Every finite-dimensional rational intermediate field is a number
 field. -/
-noncomputable instance rationalIntermediateFieldNumberField
+instance rationalIntermediateFieldNumberField
     (E : IntermediateField ℚ (SeparableClosure ℚ))
     [FiniteDimensional ℚ E] :
     NumberField E :=
@@ -67,7 +61,7 @@ noncomputable instance rationalIntermediateFieldNumberField
 
 /-- A finite quotient of nested closed rational absolute Galois
 subgroups carries its canonical finite type. -/
-noncomputable instance rationalClosedSubgroupQuotientFintype
+instance rationalClosedSubgroupQuotientFintype
     (K L : ClosedSubgroup
       (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
     (hLK : L.toSubgroup ≤ K.toSubgroup)
@@ -93,7 +87,7 @@ theorem rationalRelativeIdeleClassEmbedding_classInclusion
 /-- The action of the rational absolute Galois group on one finite
 relative idele class group, obtained by restricting automorphisms. -/
 @[reducible]
-noncomputable def rationalAbsoluteGaloisIdeleClassAction
+def rationalAbsoluteGaloisIdeleClassAction
     (E : FiniteGaloisIntermediateField ℚ (SeparableClosure ℚ)) :
     MulDistribMulAction
       (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)
@@ -109,7 +103,7 @@ noncomputable def rationalAbsoluteGaloisIdeleClassAction
 
 /-- The rational absolute Galois action on every finite-Galois
 relative idele class group. -/
-noncomputable instance rationalFiniteGaloisIdeleClassMulDistribMulAction
+instance rationalFiniteGaloisIdeleClassMulDistribMulAction
     (E : FiniteGaloisIntermediateField ℚ (SeparableClosure ℚ)) :
     MulDistribMulAction
       (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)
@@ -121,14 +115,14 @@ noncomputable instance rationalFiniteGaloisIdeleClassMulDistribMulAction
     Monoid (RelativeIdeleGroup.ClassGroup ℚ E) :=
   inferInstance
 
- noncomputable instance :
+ instance :
     ∀ E : FiniteGaloisIntermediateField ℚ (SeparableClosure ℚ),
       MulDistribMulAction
         (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)
         (RelativeIdeleGroup.ClassGroup ℚ E) :=
   fun E => rationalAbsoluteGaloisIdeleClassAction E
 
- noncomputable instance :
+ instance :
     ∀ E : FiniteGaloisIntermediateField ℚ (SeparableClosure ℚ),
       SMul
         (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)
@@ -281,16 +275,13 @@ theorem
   induction (a : RelativeAdeleRing ℚ E) using
       TensorProduct.inductionOn with
   | tmul y x =>
-      simp only [RelativeIdeleGroup.adeleEmbedding,
-        RelativeIdeleGroup.scalarEmbedding_tmul,
-        RelativeIdeleGroup.conjugation_tmul]
-      congr 1
+      rfl
   | add x y hx hy =>
       simp only [map_add, hx, hy]
 
 /-- The equivariant scalar-extension transition map in the
 finite-Galois idele-class system. -/
-noncomputable def rationalRelativeIdeleClassTransition
+def rationalRelativeIdeleClassTransition
     {E F : FiniteGaloisIntermediateField ℚ (SeparableClosure ℚ)}
     (h : E ≤ F) :
     MulDistribMulActionHom
@@ -313,9 +304,7 @@ theorem rationalRelativeAdeleEmbedding_self
       (IntermediateField.inclusion (show E ≤ E from le_rfl)) z = z := by
   induction z using TensorProduct.inductionOn with
   | tmul a x =>
-      simp only [RelativeIdeleGroup.adeleEmbedding,
-        RelativeIdeleGroup.scalarEmbedding_tmul]
-      congr 1
+      rfl
   | add x y hx hy =>
       simp only [map_add, hx, hy]
 
@@ -332,9 +321,7 @@ theorem rationalRelativeAdeleEmbedding_comp
         (IntermediateField.inclusion (hEF.trans hFH)) z := by
   induction z using TensorProduct.inductionOn with
   | tmul a x =>
-      simp only [RelativeIdeleGroup.adeleEmbedding,
-        RelativeIdeleGroup.scalarEmbedding_tmul]
-      congr 1
+      rfl
   | add x y hx hy =>
       simp only [map_add, hx, hy]
 
@@ -375,7 +362,7 @@ theorem rationalRelativeIdeleClassEmbedding_comp
       (rationalRelativeAdeleEmbedding_comp hEF hFH
         (a : RelativeAdeleRing ℚ E)))
 
- noncomputable instance :
+ instance :
     DirectedSystem
       (fun E : FiniteGaloisIntermediateField ℚ (SeparableClosure ℚ) =>
         RelativeIdeleGroup.ClassGroup ℚ E)
@@ -392,7 +379,7 @@ theorem rationalRelativeIdeleClassEmbedding_comp
 
 /-- The direct limit of the actual idele class groups of the finite
 Galois subextensions of `SeparableClosure ℚ / ℚ`. -/
-noncomputable abbrev rationalIdeleClassDirectLimit :=
+abbrev rationalIdeleClassDirectLimit :=
   DirectLimit
     (fun E : FiniteGaloisIntermediateField ℚ (SeparableClosure ℚ) =>
       RelativeIdeleGroup.ClassGroup ℚ E)
@@ -400,7 +387,7 @@ noncomputable abbrev rationalIdeleClassDirectLimit :=
 
 /-- The multiplicative structure on the rational absolute idele-class
 direct limit supplied by Mathlib's directed-limit construction. -/
-noncomputable instance rationalIdeleClassDirectLimitMonoid :
+instance rationalIdeleClassDirectLimitMonoid :
     Monoid rationalIdeleClassDirectLimit :=
   DirectLimit.instMonoid
 
@@ -448,7 +435,7 @@ def rationalRelativeIdeleClassToDirectLimit
 
 /-- The rational absolute Galois action on the idele-class direct limit,
 supplied by Mathlib from the equivariant transition maps. -/
-noncomputable instance
+instance
     rationalIdeleClassDirectLimitMulDistribMulAction :
     MulDistribMulAction
       (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)
@@ -457,7 +444,7 @@ noncomputable instance
 
 /-- The scalar action underlying the canonical absolute Galois action on
 the rational idele-class direct limit. -/
-noncomputable instance rationalIdeleClassDirectLimitSMul :
+instance rationalIdeleClassDirectLimitSMul :
     SMul
       (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)
       rationalIdeleClassDirectLimit :=
@@ -466,13 +453,8 @@ noncomputable instance rationalIdeleClassDirectLimitSMul :
 /-- The coefficient representation of the global class formation:
 the rational absolute Galois group acts on the direct limit of the
 actual finite-level idele class groups. -/
-noncomputable def rationalIdeleClassRepresentation :
+def rationalIdeleClassRepresentation :
     Rep ℤ (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ) :=
   Rep.ofMulDistribMulAction
     (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)
     rationalIdeleClassDirectLimit
-
-end Reciprocity
-end GlobalClassFieldTheory
-
-end

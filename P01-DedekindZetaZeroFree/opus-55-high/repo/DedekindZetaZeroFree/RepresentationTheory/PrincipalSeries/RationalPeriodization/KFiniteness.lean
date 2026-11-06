@@ -33,7 +33,7 @@ theorem rawPullback_injective : Function.Injective (rawPullback R) := by
     induction g using QuotientGroup.induction_on with
     | H g => exact congrFun he g
 
-private theorem finiteQuotient_val_mul (g h : Raw R) :
+theorem finiteQuotient_val_mul (g h : Raw R) :
     (EisensteinReferenceSections.FiniteSourceTopology.finiteQuotient F R.A.zeta12 R.A.primitive_zeta12 (g*h)).val =
       (EisensteinReferenceSections.FiniteSourceTopology.finiteQuotient F R.A.zeta12 R.A.primitive_zeta12 g).val *
       (EisensteinReferenceSections.FiniteSourceTopology.finiteQuotient F R.A.zeta12 R.A.primitive_zeta12 h).val := by

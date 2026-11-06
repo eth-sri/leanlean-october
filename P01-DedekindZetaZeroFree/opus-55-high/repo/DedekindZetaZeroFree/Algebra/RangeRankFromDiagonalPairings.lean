@@ -6,8 +6,6 @@ public import Mathlib.LinearAlgebra.FiniteDimensional.Lemmas
 
 namespace DedekindZetaZeroFree.KPExceptionalRaw.FiniteSource.TameWhittakerSteps.Uniqueness.ReverseMinor
 
-noncomputable section
-set_option autoImplicit false
 
 theorem rank_map_range_ge_two_of_diagonal_pairings
     {K V W X : Type*} [Field K]
@@ -22,8 +20,7 @@ theorem rank_map_range_ge_two_of_diagonal_pairings
     rw [linearIndependent_fin2]
     refine ⟨?_, ?_⟩
     · intro h
-      have hz : g (f v₁) = 0 := by simpa using h
-      exact hc₁ (by rw [← h₁₁, hz, map_zero])
+      simp_all
     · intro a h
       have h' : a • g (f v₁) = g (f v₀) := by simpa using h
       have h1 : ell₀ (a • g (f v₁)) = ell₀ (g (f v₀)) := by rw [h']
@@ -41,9 +38,5 @@ theorem rank_map_range_ge_two_of_diagonal_pairings
     rintro x ⟨i, rfl⟩
     fin_cases i
     · exact Submodule.mem_map_of_mem (LinearMap.mem_range_self f v₀)
-    · exact Submodule.mem_map_of_mem (LinearMap.mem_range_self f v₁)
+    simp
   exact le_trans (le_of_eq hrank.symm) (Submodule.rank_mono hle)
-
-end
-
-end DedekindZetaZeroFree.KPExceptionalRaw.FiniteSource.TameWhittakerSteps.Uniqueness.ReverseMinor

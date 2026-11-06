@@ -25,7 +25,7 @@ theorem exists_pow_eq_one {m : Ideal (𝓞 F)} (η : RayClassCharacter F m)
   have h2 : ((RayBridge.descendedCharacter m hm η
       (RayBridge.idealClass m hm I hI hcop) : ℂ)) ^ k = 1 := by
     have hc := congrArg (fun u : ℂˣ => (u : ℂ)) h1
-    simpa using hc
+    omega
   rw [← RayBridge.descendedCharacter_apply_idealClass m hm η I hI hcop]
   exact h2
 
@@ -41,8 +41,6 @@ theorem norm_eq_one {m : Ideal (𝓞 F)} (η : RayClassCharacter F m)
 theorem norm_le_one {m : Ideal (𝓞 F)} (η : RayClassCharacter F m)
     (I : Ideal (𝓞 F)) : ‖η I‖ ≤ 1 := by
   rcases eq_or_ne (η I) 0 with h | h
-  · rw [h, norm_zero]; norm_num
+  · simp_all
   · obtain ⟨hI, hcop⟩ := (ne_zero_iff η I).mp h
     rw [norm_eq_one η hI hcop]
-
-end DedekindZetaZeroFree.LargeSieve.RayOperations

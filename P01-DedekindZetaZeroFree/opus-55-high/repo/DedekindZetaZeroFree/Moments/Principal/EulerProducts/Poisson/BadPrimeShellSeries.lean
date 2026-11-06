@@ -168,9 +168,9 @@ theorem norm_V_le (p : ExteriorPrime A) (b : ℝ) (hb : 0 ≤ b) (z : ℂ) (hz :
         Real.rpow_le_rpow_of_nonpos (by norm_num) (two_le_Q p) (by linarith)
     _ ≤ (2 : ℝ) ^ (-b) := Real.rpow_le_rpow_of_exponent_le (by norm_num) (by linarith)
 
-private lemma rho_pos (b : ℝ) : 0 < (2 : ℝ) ^ (-b) := Real.rpow_pos_of_pos (by norm_num) _
+lemma rho_pos (b : ℝ) : 0 < (2 : ℝ) ^ (-b) := Real.rpow_pos_of_pos (by norm_num) _
 
-private lemma rho_lt_one (b : ℝ) (hb : 0 < b) : (2 : ℝ) ^ (-b) < 1 :=
+lemma rho_lt_one (b : ℝ) (hb : 0 < b) : (2 : ℝ) ^ (-b) < 1 :=
   Real.rpow_lt_one_of_one_lt_of_neg (by norm_num) (by linarith)
 
 theorem norm_seriesTerm_le_weight (C : A.GeneralArithmeticContext σ η hS)

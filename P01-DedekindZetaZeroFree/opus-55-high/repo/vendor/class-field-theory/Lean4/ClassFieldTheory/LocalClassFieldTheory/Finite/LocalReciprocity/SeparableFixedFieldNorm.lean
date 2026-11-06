@@ -13,11 +13,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-
-set_option autoImplicit false
-
 namespace LocalClassFieldTheory
 open RamificationTheory KummerTheory
 
@@ -77,13 +72,7 @@ def baseFixingCosetToAlgHom :
         (IntermediateField.mem_fixingSubgroup_iff E η.1).mp η.2
       have hηx : η.1 (x : Ω) = (x : Ω) := hηfix x x.2
       have hτ' := congrArg Subtype.val hτ
-      change τ.1 = σ.1 * η.1 at hτ'
-      change σ.1 (x : Ω) = τ.1 (x : Ω)
-      calc
-        σ.1 (x : Ω) = σ.1 (η.1 (x : Ω)) :=
-          congrArg σ.1 hηx.symm
-        _ = (σ.1 * η.1) (x : Ω) := rfl
-        _ = τ.1 (x : Ω) := by rw [hτ'])
+      simp_all)
 
 omit [IsSepClosed Ω] in
 /-- States the theorem `baseFixingCosetToAlgHom_mk`. -/
@@ -159,7 +148,7 @@ def baseFixingCosetEquivAlgHom
       baseFixingCosetToAlgHom_surjective K Ω E⟩
 
 /-- Provides the instance `baseFixingExtensionQuotient_finite_of_isSeparable`. -/
-noncomputable instance baseFixingExtensionQuotient_finite_of_isSeparable
+instance baseFixingExtensionQuotient_finite_of_isSeparable
     [FiniteDimensional K E] [Algebra.IsSeparable K E] :
     Finite
       ((closedFixingSubgroup K Ω (⊥ : IntermediateField K Ω)).toSubgroup ⧸
@@ -253,8 +242,8 @@ theorem relativeNorm_intermediateFieldUnit_val_of_isSeparable (x : Eˣ) :
           (intermediateFieldUnitsEquivGaloisFixed K Ω E
             (Additive.ofMul x)) q) : Ωˣ) : Ω)) = _
   calc
-    _ = ∏ σ : E →ₐ[K] Ω, σ (x : E) := by
-      exact Fintype.prod_equiv
+    _ = ∏ σ : E →ₐ[K] Ω, σ (x : E) := 
+      Fintype.prod_equiv
         (baseFixingCosetEquivAlgHom K Ω E)
         (fun q : Q =>
           ((Additive.toMul
@@ -283,8 +272,3 @@ theorem relativeNorm_intermediateFieldUnit_of_isSeparable (x : Eˣ) :
   apply Additive.ext
   apply Units.ext
   exact relativeNorm_intermediateFieldUnit_val_of_isSeparable K Ω E x
-
-end NormAsProduct
-
-end
-end LocalClassFieldTheory

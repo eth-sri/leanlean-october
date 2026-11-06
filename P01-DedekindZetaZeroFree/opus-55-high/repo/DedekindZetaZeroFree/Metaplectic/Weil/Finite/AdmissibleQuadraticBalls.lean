@@ -4,7 +4,6 @@ public import DedekindZetaZeroFree.HarmonicAnalysis.Fourier.LocalScaledBallDuali
 
 @[expose] public section
 
-noncomputable section
 
 open scoped NumberField Classical nonZeroDivisors Topology
 open NumberField IsDedekindDomain
@@ -13,7 +12,7 @@ namespace DedekindZetaZeroFree
 
 variable (F : Type) [Field F] [NumberField F]
 
-private theorem finiteBall_fractionalIdeal (v : HeightOneSpectrum (𝓞 F)) (m : ℤ) :
+theorem finiteBall_fractionalIdeal (v : HeightOneSpectrum (𝓞 F)) (m : ℤ) :
     ∃ I : FractionalIdeal (v.adicCompletionIntegers F)⁰ (v.adicCompletion F),
       I ≠ 0 ∧ (I : Set (v.adicCompletion F)) =
         (finiteCompletionBall F v m : Set (v.adicCompletion F)) := by

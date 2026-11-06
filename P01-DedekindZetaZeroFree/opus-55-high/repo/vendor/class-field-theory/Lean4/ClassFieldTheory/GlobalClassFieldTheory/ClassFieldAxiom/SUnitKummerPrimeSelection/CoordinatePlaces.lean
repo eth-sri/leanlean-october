@@ -12,10 +12,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-
-set_option autoImplicit false
-
 /-!
 # Coordinate places in an S-unit Kummer extension
 
@@ -139,7 +135,7 @@ theorem exists_sUnitKummerCoordinatePlace
   exact h
 
 /-- The selected coordinate place above the `i`-th chosen base prime. -/
-noncomputable def sUnitKummerCoordinatePlace
+def sUnitKummerCoordinatePlace
     {Omega : Type} [Field Omega] [Algebra K Omega]
     [IsSepClosure K Omega]
     (E : IntermediateField K Omega)
@@ -325,10 +321,7 @@ theorem sUnitKummerChosenBasePlace_not_mem_ramified
       (K := K) (Omega := Omega) E n hmu
       p v hp hv hn r eG S i
   unfold sUnitKummerAvoidedBasePlaces
-  dsimp only
-  exact
-    Finset.mem_union_left _
-      (Finset.mem_union_right _ hram)
+  simp_all
 
 /-- The chosen completed place at `p_i` is unramified in `N/K`. -/
 theorem sUnitKummerChosenBasePlace_isUnramified
@@ -404,9 +397,3 @@ theorem sUnitKummerChosenBasePlace_isUnramified
         (_root_.chosenFinitePlaceExtension
           (L := N) _),
       hram⟩
-
-end FinitePlaces
-
-end GlobalClassFieldTheory.ClassFieldAxiom
-
-end

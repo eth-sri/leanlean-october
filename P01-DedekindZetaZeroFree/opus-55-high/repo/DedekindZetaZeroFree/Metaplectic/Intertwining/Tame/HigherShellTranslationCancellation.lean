@@ -5,13 +5,12 @@ public import DedekindZetaZeroFree.Metaplectic.Intertwining.Tame.DeformedTestSup
 @[expose] public section
 
 section
-noncomputable section
 namespace DedekindZetaZeroFree.KPTameTransposeKernelUnfoldingRaw.HigherShellCancellation
 open scoped NumberField Classical
 open NumberField IsDedekindDomain MeasureTheory ValuativeRel
 open KPTameJacquetTestDuality KPLocalExceptionalConstruction
 
-private theorem ball_add_subgroup
+theorem ball_add_subgroup
     (F : Type) [Field F] [NumberField F] (q : HeightOneSpectrum (𝓞 F))
     (π : (LocalField F q)ˣ) (r : ℕ) :
     ∃ A : AddSubgroup (LocalField F q), (A : Set (LocalField F q)) = expandingBall F q π r := by
@@ -61,8 +60,7 @@ private theorem ball_measurable
     ext x
     change (∃ u : (valuation (LocalField F q)).integer, x = a * (u : LocalField F q)) ↔ _
     constructor
-    · rintro ⟨u, rfl⟩
-      simpa [ha, mul_div_cancel_left₀] using u.property
+    · simp_all
     · intro hx
       exact ⟨⟨x/a, hx⟩, (mul_div_cancel₀ x ha).symm⟩
   rw [he]
@@ -91,8 +89,8 @@ theorem exists_conductor_one_translation
   obtain ⟨o, ho⟩ := hw
   refine ⟨-((o : LocalField F q) * (π : LocalField F q)⁻¹), ?_, ?_⟩
   · refine ⟨-o, ?_⟩
-    simp [expandingBall, mul_comm]
-  · simpa only [neg_neg] using ho
+    simp [mul_comm]
+  simp_all
 
 theorem integral_zero_of_translation
     (F : Type) [Field F] [NumberField F] (q : HeightOneSpectrum (𝓞 F))
@@ -135,16 +133,10 @@ theorem integral_zero_of_translation
     intro x
     by_cases hx : x ∈ shell
     · simp only [Set.indicator_of_mem hx, Set.indicator_of_mem ((hset x).mpr hx), hg x hx]
-    · simp only [Set.indicator_of_notMem hx, Set.indicator_of_notMem (mt (hset x).mp hx), mul_zero]
+    simp_all
   have he := integral_add_right_eq_self (shell.indicator g) t (μ := μ)
   simp_rw [hind] at he
   rw [integral_const_mul, integral_indicator hms] at he
   have hz : (c-1) * (∫ x in shell, g x ∂μ) = 0 := by
     linear_combination he
   exact (mul_eq_zero.mp hz).resolve_left (sub_ne_zero.mpr hc)
-
-end DedekindZetaZeroFree.KPTameTransposeKernelUnfoldingRaw.HigherShellCancellation
-
-end
-
-end

@@ -8,7 +8,6 @@ public import DedekindZetaZeroFree.Geometry.PGL.IwasawaTrivialization
 
 namespace DedekindZetaZeroFree.KPCompactStabilizerHaarSources
 
-noncomputable section
 open scoped NNReal ENNReal
 open MeasureTheory
 
@@ -35,8 +34,7 @@ theorem arch_haar_pushforward_hyperbolic (d : ℕ) (μ : Measure (G d))
     change Measure.map (fun g : G d => g • o d)
       (Measure.map e.symm ((KPArch.hyperbolicVolume d).prod (stabilizerHaar d))) = _
     have hm : Measurable (fun g : G d => g • o d) :=
-      (show Continuous (fun g : G d => g • o d) from
-        continuous_id.smul continuous_const).measurable
+      by fun_prop
     rw [Measure.map_map hm e.symm.measurable]
     simp only [Function.comp_def, hcomp, Measure.map_fst_prod,
       measure_univ, one_smul]
@@ -46,11 +44,6 @@ theorem arch_haar_pushforward_hyperbolic (d : ℕ) (μ : Measure (G d))
       congrArg (Measure.map (fun g : G d => g • o d)) hμ
     _ = (Measure.haarScalarFactor μ ν : ℝ≥0∞) • KPArch.hyperbolicVolume d := by
       have hm : AEMeasurable (fun g : G d => g • o d) ν :=
-        (show Continuous (fun g : G d => g • o d) from
-          continuous_id.smul continuous_const).measurable.aemeasurable
+        by fun_prop
       rw [Measure.map_smul _ hm, horbit]
       rfl
-
-end
-
-end DedekindZetaZeroFree.KPCompactStabilizerHaarSources

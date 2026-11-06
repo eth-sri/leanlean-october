@@ -50,10 +50,7 @@ theorem summable_norm_idealHeckeSummand
           if I = ⊥ then (0 : ℝ) else (Ideal.absNorm I : ℝ) ^ (-s.re))
         = fun I => (Ideal.absNorm I : ℝ) ^ (-s.re) := by
       funext I
-      by_cases h : I = ⊥
-      · rw [if_pos h, h, Ideal.absNorm_bot, Nat.cast_zero,
-          Real.zero_rpow (neg_ne_zero.mpr hs0)]
-      · rw [if_neg h]
+      simp_all
     rw [← hif]
     exact summable_ideal_inverse_power F s.re hs
   refine Summable.of_nonneg_of_le (fun I => norm_nonneg _) (fun I => ?_) hsum
@@ -63,7 +60,7 @@ theorem summable_norm_idealHeckeSummand
   · rw [idealHeckeSummandHom_apply, norm_mul]
     have hpos : (0 : ℝ) < (Ideal.absNorm I : ℝ) := by
       have h0 : Ideal.absNorm I ≠ 0 := fun h => hI (Ideal.absNorm_eq_zero_iff.mp h)
-      exact_mod_cast Nat.pos_of_ne_zero h0
+      positivity
     have hnorm : ‖(Ideal.absNorm I : ℂ) ^ (-s)‖ = (Ideal.absNorm I : ℝ) ^ (-s.re) := by
       rw [← Complex.ofReal_natCast, Complex.norm_cpow_eq_rpow_re_of_pos hpos (-s),
         Complex.neg_re]
@@ -81,5 +78,3 @@ theorem summable_idealHeckeSummand
     simpa only [idealHeckeSummandHom_apply] using
       summable_norm_idealHeckeSummand η s hf hη hs
   exact Summable.of_norm h
-
-end DedekindZetaZeroFree.LargeSieve.IdealEuler

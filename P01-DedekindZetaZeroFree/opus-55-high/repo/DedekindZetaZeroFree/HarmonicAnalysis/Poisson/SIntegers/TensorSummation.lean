@@ -22,32 +22,28 @@ local instance baseCompletionBorel (F : Type) [Field F] [NumberField F]
     (v : HeightOneSpectrum (RingOfIntegers F)) :
     BorelSpace (v.adicCompletion F) := ⟨rfl⟩
 
-private lemma indicator_pi {ι : Type*} [Fintype ι] {α : ι → Type*}
+lemma indicator_pi {ι : Type*} [Fintype ι] {α : ι → Type*}
     (A : ∀ i, Set (α i)) (z : ∀ i, α i) :
     (Set.pi Set.univ A).indicator (fun _ => (1 : ℂ)) z =
       ∏ i, (A i).indicator (fun _ => (1 : ℂ)) (z i) := by
   by_cases h : ∀ i, z i ∈ A i
-  · rw [Set.indicator_of_mem (by simpa [Set.mem_pi] using h), Finset.prod_eq_one]
-    intro i _
-    exact Set.indicator_of_mem (h i) _
+  · simp_all
   · obtain ⟨i, hi⟩ := not_forall.mp h
     rw [Set.indicator_of_notMem (by simpa [Set.mem_pi] using h)]
     exact (Finset.prod_eq_zero (Finset.mem_univ i) (Set.indicator_of_notMem hi _)).symm
 
-private lemma ball_eq_finiteCompletionBall (F : Type) [Field F] [NumberField F]
+lemma ball_eq_finiteCompletionBall (F : Type) [Field F] [NumberField F]
     (v : HeightOneSpectrum (RingOfIntegers F)) (k : ℤ) :
     PoissonSLocalBalls.ball F v k = finiteCompletionBall F v k := by
-  ext x
-  simp
+  rfl
 
-private lemma localCosetIndicator_ball_eq (F : Type) [Field F] [NumberField F]
+lemma localCosetIndicator_ball_eq (F : Type) [Field F] [NumberField F]
     (v : HeightOneSpectrum (RingOfIntegers F)) (c : v.adicCompletion F) (k : ℤ) :
     localCosetIndicator F v c (PoissonSLocalBalls.ball F v k) =
       localCosetIndicator F v c (finiteCompletionBall F v k) := by
-  unfold localCosetIndicator
-  rw [ball_eq_finiteCompletionBall F v k]
+  rfl
 
-private lemma elementaryTensorFunction_eq_tensor (F : Type) [Field F] [NumberField F]
+lemma elementaryTensorFunction_eq_tensor (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
     (fArch : 𝓢(PoissonArch.Space F, ℂ)) (k : S → ℤ) (t : sIntegerRing F S) :
     elementaryTensorFunction F S fArch k t =
@@ -65,15 +61,13 @@ private lemma elementaryTensorFunction_eq_tensor (F : Type) [Field F] [NumberFie
   · rw [indicator_pi]
     apply Finset.prod_congr rfl
     intro v _
-    change localCosetIndicator F v.val (FinitePlace.embedding v.val (t : F))
-      (PoissonSLocalBalls.ball F v.val (k v)) (x.2 v) = _
-    rw [localCosetIndicator_ball_eq F v.val (FinitePlace.embedding v.val (t : F)) (k v)]
+    rfl
   · ext z
     rw [PoissonSUniformBallPartition.finiteBall_eq_valuation_product]
     simp only [Set.mem_setOf_eq, Set.mem_pi, Set.mem_univ, true_implies, Pi.sub_apply,
       PoissonFinite.diagonal]
 
-private lemma elementaryTensorFunction_integrable (F : Type) [Field F] [NumberField F]
+lemma elementaryTensorFunction_integrable (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
     (μ : (v : S) → Measure (v.val.adicCompletion F))
     [hμ : ∀ v, (μ v).IsAddHaarMeasure]
@@ -88,7 +82,7 @@ private lemma elementaryTensorFunction_integrable (F : Type) [Field F] [NumberFi
       (localCosetIndicator_ball_mem_localSchwartz F v.val
         (FinitePlace.embedding v.val (t : F)) (k v))).2
 
-private lemma base_kernel_integrable
+lemma base_kernel_integrable
     (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
     (μ : (v : S) → Measure (v.val.adicCompletion F))
@@ -120,7 +114,7 @@ private lemma base_kernel_integrable
         ((-2 * Real.pi * PoissonArch.tracePairing F x.1 y.1 : ℝ) : ℂ) * Complex.I by
       push_cast; ring]
     rw [Complex.norm_exp_ofReal_mul_I, one_mul, norm_prod]
-    exact Finset.prod_eq_one fun v _ => Circle.norm_coe _
+    simp
   simpa only [mul_assoc] using hf.mul_bdd hc.aestronglyMeasurable
     (Filter.Eventually.of_forall (fun x => (hn x).le))
 
@@ -198,7 +192,3 @@ theorem poisson_sum_tensorFunction
   rw [tsum_mul_left, tsum_mul_left]
   congr 1
   exact poisson_elementaryTensorFunction F S hS μ hnorm fArch k (t j)
-
-end DedekindZetaZeroFree.PoissonS
-
-end

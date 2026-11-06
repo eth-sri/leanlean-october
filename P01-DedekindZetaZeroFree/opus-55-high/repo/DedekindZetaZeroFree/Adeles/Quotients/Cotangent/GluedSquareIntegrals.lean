@@ -56,7 +56,7 @@ structure Properties (cover : CountableCover F ζ hζ U R P H) : Prop where
   gluing_squareFinite : ∀ (f : PieceSequence cover) (u : PieceHilbert cover),
     RepresentsComponents cover f u → squareFinite (G cover f)
 
-private lemma labeledA_labeledAInv_local
+lemma labeledA_labeledAInv_local
     (p : Fin (d F) ≃ Fin (KPCuspLogShape.dimension F))
     (x : KPCuspGenuineMonodromy.SymmetricSpace F) :
     labeledA p (labeledAInv p x) = x := by
@@ -74,7 +74,7 @@ private lemma toBase_eq_q (cover : CountableCover F ζ hζ U R P H) (n : ℕ)
   simp only [ShrunkChart.toBase, KPContCotangentOverlapRationalBranches.q, coordinates]
   rw [key]
 
-private lemma lintegral_ofReal_norm_sq_eq {X : Type*} [MeasurableSpace X]
+lemma lintegral_ofReal_norm_sq_eq {X : Type*} [MeasurableSpace X]
     (μ : Measure X) (w : Lp (E F) 2 μ) :
     ∫⁻ x, ENNReal.ofReal (‖w x‖ ^ 2) ∂μ = ENNReal.ofReal (‖w‖ ^ 2) := by
   have hpoint : ∀ x, ENNReal.ofReal (‖w x‖ ^ 2) = (‖w x‖₊ : ℝ≥0∞) ^ (2 : ℝ) := by
@@ -130,7 +130,7 @@ private lemma glued_integral_eq_tsum
             ∂(cover.chart n).liftedMeasure := hb.lintegral_eq_tsum _ hmeas
     _ = ∑' n, pieceSquareIntegral cover f n := tsum_congr hstep
 
-private lemma glued_piece_eq
+lemma glued_piece_eq
     (cover : CountableCover F ζ hζ U R P H)
     (hb : KPContActualCotangentBorelRefinement.Properties cover)
     (hg : KPContActualCotangentExactMeasurableGluing.Properties cover)
@@ -167,7 +167,7 @@ private lemma glued_piece_eq
     simpa using h
   exact hA.trans (hB.trans hC)
 
-private lemma glued_tsum_eq
+lemma glued_tsum_eq
     (cover : CountableCover F ζ hζ U R P H)
     (hb : KPContActualCotangentBorelRefinement.Properties cover)
     (hg : KPContActualCotangentExactMeasurableGluing.Properties cover)
@@ -183,7 +183,7 @@ private lemma glued_tsum_eq
   rw [hcongr, ← ENNReal.ofReal_tsum_of_nonneg (fun n => sq_nonneg _) hsumm,
     ← norm_sq_eq_tsum cover u]
 
-private lemma glued_tsum_lt_top
+lemma glued_tsum_lt_top
     (cover : CountableCover F ζ hζ U R P H)
     (hb : KPContActualCotangentBorelRefinement.Properties cover)
     (hg : KPContActualCotangentExactMeasurableGluing.Properties cover)

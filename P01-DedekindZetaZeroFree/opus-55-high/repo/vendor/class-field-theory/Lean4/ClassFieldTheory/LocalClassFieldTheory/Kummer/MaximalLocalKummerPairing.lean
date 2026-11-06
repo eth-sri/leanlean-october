@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # The maximal local Kummer pairing
 
@@ -44,7 +41,7 @@ abbrev maximalLocalKummerExtension (n : ℕ+) :=
 
 /-- The local Artin homomorphism valued in the maximal exponent-`n` Kummer
 extension. -/
-noncomputable def maximalLocalKummerNormResidueAutomorphism
+def maximalLocalKummerNormResidueAutomorphism
     (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
     (hmu : (primitiveRoots (n : ℕ) K).Nonempty) :
     Kˣ →* Gal((maximalLocalKummerExtension K n)/K) := by
@@ -57,7 +54,7 @@ noncomputable def maximalLocalKummerNormResidueAutomorphism
       (K := K) (Omega := SeparableClosure K) n hmu Delta.1
   exact abelianLocalArtinMonoidHom K E
 
- noncomputable def maximalLocalKummerPairingSource
+ def maximalLocalKummerPairingSource
     (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
     (hmu : (primitiveRoots (n : ℕ) K).Nonempty) (a : Kˣ) :
     Kˣ →* nthRootsSubgroup (maximalLocalKummerExtension K n) (n : ℕ) := by
@@ -82,7 +79,7 @@ noncomputable def maximalLocalKummerNormResidueAutomorphism
 
 /-- The maximal finite Kummer pairing, evaluated at the local Artin
 automorphism of `a`, is multiplicative in its radical variable. -/
-noncomputable def maximalLocalKummerPairingRightHom
+def maximalLocalKummerPairingRightHom
     (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
     (hmu : (primitiveRoots (n : ℕ) K).Nonempty) (a : Kˣ) :
     Kˣ →* nthRootsSubgroup K (n : ℕ) :=
@@ -159,9 +156,4 @@ theorem maximalLocalKummerPairing_mul_right
     maximalLocalKummerPairingRightHom K n hnK hmu a (b * c) =
       maximalLocalKummerPairingRightHom K n hnK hmu a b *
         maximalLocalKummerPairingRightHom K n hnK hmu a c :=
-  map_mul (maximalLocalKummerPairingRightHom K n hnK hmu a) b c
-
-end Kummer
-end LocalClassFieldTheory
-
-end
+  by simp

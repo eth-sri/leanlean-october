@@ -51,7 +51,7 @@ def plusReference (v : KPHilbert.Place F) : Plus A P C v :=
       apply (le_iSup (KPCplxIntertwinerEigenvalues.harmonicKType
         KPCplxPrincipalSeriesCharts.positiveParameter) 0)
       rw [KPCplxIntertwinerEigenvalues.harmonicKType_zero_eq_span]
-      exact Submodule.subset_span (Set.mem_singleton _)⟩
+      simp⟩
   | Sum.inr q => if hq : q ∉ C.exceptional then (normalized_reference A P C q hq).choose else 0
 
 theorem plusReference_fixed (q : KPFinitePlace F) (hq : q ∉ C.exceptional)
@@ -74,7 +74,7 @@ theorem plusReference_compact_value (q : KPFinitePlace F) (hq : q ∉ C.exceptio
     have hm : KPLocalExceptionalConstruction.actualGoodCompactSplit F A.zeta12 A.primitive_zeta12 q
         (C.actual_compact q hq).choose k ∈
         (KPLocalExceptionalConstruction.actualGoodCompactSplit F A.zeta12 A.primitive_zeta12 q
-          (C.actual_compact q hq).choose).range := MonoidHom.mem_range.mpr ⟨k, rfl⟩
+          (C.actual_compact q hq).choose).range := by simp
     exact Eq.mpr (congrArg (fun K : Subgroup
       (KPLocalExceptionalConstruction.ActualCover F A.zeta12 A.primitive_zeta12 q) =>
         KPLocalExceptionalConstruction.actualGoodCompactSplit F A.zeta12 A.primitive_zeta12 q
@@ -116,7 +116,7 @@ theorem exists_reference_stage (g : Raw A) :
     rw [← hk]
     exact plusReference_compact_value A P C q hC k
 
-private theorem rawStageValue_transition (s t : RestrictedTensorSimple.Level (bad A P C))
+theorem rawStageValue_transition (s t : RestrictedTensorSimple.Level (bad A P C))
     (hst : s ≤ t) (g : Raw A)
     (hnew : ∀ v ∈ t.val, v ∉ s.val →
       localValue A P C v (g v) (plusReference A P C v) = reference A P C v)
@@ -186,8 +186,8 @@ def rawCoreValue (g : Raw A) :
 def rawCoreInsertion :
     RestrictedTensorSimple.Core (Plus A P C) (plusReference A P C) (bad A P C) →ₗ[ℂ] (Raw A → ℂ) where
   toFun x g := rawCoreValue A P C g x
-  map_add' := by intro x y; funext g; exact map_add _ x y
-  map_smul' := by intro c x; funext g; exact map_smul _ c x
+  map_add' := by intro x y; funext g; simp
+  map_smul' := by intro c x; funext g; simp
 
 theorem rawCoreInsertion_stage (s : RestrictedTensorSimple.Level (bad A P C))
     (x : PiTensorProduct ℂ (fun j : s.val => Plus A P C j.val)) (g : Raw A)
@@ -199,7 +199,3 @@ theorem rawCoreInsertion_stage (s : RestrictedTensorSimple.Level (bad A P C))
   unfold rawCoreValue RestrictedTensorSimple.stageInclusion
   rw [Module.DirectLimit.lift_of]
   exact rawStageValue_transition A P C s _ (le_expand A P C s g) g (fun v _ hv => htail v hv) x
-
-end DedekindZetaZeroFree.FourierContinuation.LiteralSource
-
-end

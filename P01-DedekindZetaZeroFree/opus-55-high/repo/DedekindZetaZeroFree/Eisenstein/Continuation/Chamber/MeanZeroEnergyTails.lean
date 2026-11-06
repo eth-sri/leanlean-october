@@ -124,7 +124,7 @@ section Growth
 set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1200000
 
-private theorem cauchy_bound (W : Set ℂ) (hW : IsOpen W)
+theorem cauchy_bound (W : Set ℂ) (hW : IsOpen W)
     (g : ℂ → ℂ) (hg : DifferentiableOn ℂ g W)
     (k : ℕ) (s : ℂ) (r C : ℝ) (hr : 0 < r)
     (hball : Metric.closedBall s r ⊆ W)
@@ -135,7 +135,7 @@ private theorem cauchy_bound (W : Set ℂ) (hW : IsOpen W)
     (((hg.contDiffOn hW) s hs).contDiffAt (hW.mem_nhds hs)) hs]
   apply Complex.norm_iteratedDeriv_le_of_forall_mem_sphere_norm_le k hr _ hb
   exact hg.diffContOnCl_ball hball
-private theorem cuspSheet_holomorphic (hι : Function.Injective ι)
+theorem cuspSheet_holomorphic (hι : Function.Injective ι)
     (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
     (a : Cusps F ζ hζ C R P H U) (t : ℝ) (x : KPCuspCharts.Horizontal F)
     (b : KPCuspCharts.Shape F) (ε : rootsOfUnity 3 F) :
@@ -432,7 +432,7 @@ private theorem parameterScalar_coordinates (k : ℕ) (s : ℂ) (hs : s ∈ V)
   exact complement_jet F ζ hζ C R P H U a ι f hι hf k s hs p.2 p.1.1 p.1.2 1
 
 include hι hf in
-private theorem representative_law (k : ℕ) (s : ℂ) (hs : s ∈ V) (t : ℝ)
+theorem representative_law (k : ℕ) (s : ℂ) (hs : s ∈ V) (t : ℝ)
     (b : KPCuspCharts.Shape F) (ε : rootsOfUnity 3 F) (x y : KPCuspCharts.Horizontal F)
     (hxy : (QuotientAddGroup.mk x : KernelTorus F ζ hζ C R P H U a) = QuotientAddGroup.mk y) :
     meanZeroJetSheet F ζ hζ C R P H U a ι f k s t x b ε =
@@ -447,7 +447,7 @@ private theorem representative_law (k : ℕ) (s : ℂ) (hs : s ∈ V) (t : ℝ)
       F ζ hζ C R P H U ι hι f hf a w hw t x y b ε hxy) hs
 
 include hι hf in
-private theorem sheet_law (k : ℕ) (s : ℂ) (hs : s ∈ V) (t : ℝ)
+theorem sheet_law (k : ℕ) (s : ℂ) (hs : s ∈ V) (t : ℝ)
     (x : KPCuspCharts.Horizontal F) (b : KPCuspCharts.Shape F) (ε : rootsOfUnity 3 F) :
     meanZeroJetSheet F ζ hζ C R P H U a ι f k s t x b ε =
       (KPCuspGenuineMonodromy.chi F ζ hζ ε : ℂ) *
@@ -467,7 +467,7 @@ private theorem sheet_law (k : ℕ) (s : ℂ) (hs : s ∈ V) (t : ℝ)
   exact (mul_sub _ _ _).symm
 
 include hι hf in
-private theorem projected_complement_zero (k : ℕ) (s : ℂ) (hs : s ∈ V)
+theorem projected_complement_zero (k : ℕ) (s : ℂ) (hs : s ∈ V)
     (t : ℝ) (b : KPCuspCharts.Shape F) :
     KPContFlatCuspIncomingEvaluation.zeroProjection F ζ hζ C R P H U a
       (fun ε => ∫ q : KernelTorus F ζ hζ C R P H U a,
@@ -497,7 +497,7 @@ private theorem projected_complement_zero (k : ℕ) (s : ℂ) (hs : s ∈ V)
   exact sub_self v
 
 include hι hf in
-private theorem correction_complement_eq (s : ℂ) (hs : s ∈ V) (t : ℝ)
+theorem correction_complement_eq (s : ℂ) (hs : s ∈ V) (t : ℝ)
     (x : KPCuspCharts.Horizontal F) (b : KPCuspCharts.Shape F) (ε : rootsOfUnity 3 F)
     (ht : buffer.τ < t) :
     correctionMeanZeroSheet F ζ hζ C R P H U a ι f buffer χ source s t x b ε =
@@ -579,14 +579,14 @@ variable (E : KPMeanZeroWeightedEnergy.End F ζ hζ hF U)
     intro j hj
     ring
 
-private theorem forcingMass_le_energy {T : ℝ} (v : KPMeanZeroWeightedEnergy.Section E T) (A R : ℝ) :
+theorem forcingMass_le_energy {T : ℝ} (v : KPMeanZeroWeightedEnergy.Section E T) (A R : ℝ) :
     KPMeanZeroWeightedEnergy.forcingMass E v A R ≤ KPMeanZeroWeightedEnergy.energy E v A R := by
   apply lintegral_mono
   intro p
   apply ENNReal.ofReal_le_ofReal
   exact mul_le_mul_of_nonneg_left (le_add_of_nonneg_right (v.gradientSq_nonneg E p)) (Real.exp_nonneg _)
 
-private theorem forcing_bound {T : ℝ} (v : ℕ → KPMeanZeroWeightedEnergy.Section E T)
+theorem forcing_bound {T : ℝ} (v : ℕ → KPMeanZeroWeightedEnergy.Section E T)
     (c : ℕ → ℂ) (k : ℕ) (C A R : ℝ) (hTR : T ≤ R) (hC : 0 ≤ C)
     (hc : ∀ j ∈ Finset.Icc 1 (min k 2), ‖c j‖ ≤ C) :
     KPMeanZeroWeightedEnergy.forcingMass E (forcingSection E v c k) A R ≤
@@ -639,7 +639,7 @@ private theorem forcing_bound {T : ℝ} (v : ℕ → KPMeanZeroWeightedEnergy.Se
       exact (v (k-j)).smooth.continuousOn.comp (KPCuspCharts.toArch_contDiff F).continuous.continuousOn ht
     _ ≤ _ := by gcongr with j hj; exact forcingMass_le_energy E (v (k-j)) A R
 
-private theorem all_jets_energy {I : Type*}
+theorem all_jets_energy {I : Type*}
     (D : KPMeanZeroWeightedEnergy.AnalyticAdapter E)
     (v : ℕ → I → KPMeanZeroWeightedEnergy.Section E 0)
     (z : I → ℂ) (c : ℕ → I → ℕ → ℂ)
@@ -713,7 +713,7 @@ set_option maxHeartbeats 1600000
 variable (hι : Function.Injective ι) (hf : DifferentiableOn ℂ f KPContinuation.spectralDomain)
 
 include hι hf in
-private theorem parameterScalar_global_smooth (k : ℕ) (s : ℂ) (hs : s ∈ V) :
+theorem parameterScalar_global_smooth (k : ℕ) (s : ℂ) (hs : s ∈ V) :
     ContDiff ℝ (⊤ : ℕ∞) (parameterScalar F ζ hζ C R P H U a ι f k s) := by
   rw [contDiff_iff_contDiffAt]
   intro z
@@ -722,13 +722,13 @@ private theorem parameterScalar_global_smooth (k : ℕ) (s : ℂ) (hs : s ∈ V)
   rw [← hv k]
   exact ((v k).smooth.contDiffAt (IsOpen.mem_nhds (isOpen_lt continuous_const (by unfold KPCuspLogShape.meanHeight; fun_prop)) (by dsimp; linarith)))
 
-private theorem energyDensity_nonneg (k : ℕ) (s : ℂ) (A : ℝ) (p : KPCuspCharts.Coordinates F) :
+theorem energyDensity_nonneg (k : ℕ) (s : ℂ) (A : ℝ) (p : KPCuspCharts.Coordinates F) :
     0 ≤ energyDensity F ζ hζ C R P H U a ι f k s A p := by
   unfold energyDensity gradientSq
   positivity
 
 include hι hf in
-private theorem energyDensity_continuous (k : ℕ) (s : ℂ) (hs : s ∈ V) (A : ℝ) :
+theorem energyDensity_continuous (k : ℕ) (s : ℂ) (hs : s ∈ V) (A : ℝ) :
     Continuous (energyDensity F ζ hζ C R P H U a ι f k s A) := by
   have hh := parameterScalar_global_smooth F ζ hζ C R P H U a ι f hι hf k s hs
   let L : HyperbolicChart.Space (d F) →L[ℝ] KPArch.Space (d F) :=
@@ -780,7 +780,7 @@ private theorem energyDensity_continuous (k : ℕ) (s : ℂ) (hs : s ∈ V) (A :
   exact ((((continuous_apply j).comp ((continuous_apply i).comp hd)).comp
     (hreal.comp (KPCuspCharts.toArch_contDiff F).continuous)).norm.pow 2)
 
-private theorem energy_integrable_of_bound (k : ℕ) (s : ℂ) (A T B : ℝ)
+theorem energy_integrable_of_bound (k : ℕ) (s : ℂ) (A T B : ℝ)
     (hB : 0 ≤ B) (hcont : Continuous (energyDensity F ζ hζ C R P H U a ι f k s A))
     (hb : energy F ζ hζ C R P H U a ι f k s A T ≤ ENNReal.ofReal B) :
     IntegrableOn (energyDensity F ζ hζ C R P H U a ι f k s A) (tail F T)
@@ -893,7 +893,7 @@ private theorem actual_energy_bound (K : Set ℂ) (hK : IsCompact K) (hKV : K �
   rw [hen k ⟨s,hs⟩, ENNReal.ofReal_toReal hBt.ne]
   exact mul_le_mul_right (hbound ⟨s,hs⟩) w
 
-private theorem actual_energy_tail_bound (k : ℕ) (s : ℂ) (A T R' B : ℝ)
+theorem actual_energy_tail_bound (k : ℕ) (s : ℂ) (A T R' B : ℝ)
     (hA : 0 ≤ A) (hR : T ≤ R')
     (hb : energy F ζ hζ C R P H U a ι f k s A T ≤ ENNReal.ofReal B) :
     energy F ζ hζ C R P H U a ι f k s 0 R' ≤ ENNReal.ofReal (B*Real.exp (-2*A*R')) := by

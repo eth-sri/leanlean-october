@@ -13,12 +13,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
-
-
-
-
-
-set_option autoImplicit false
 /-! Provides the public declarations in the `LocalClassFieldTheory.ClassFormation.NormalBasisGradedLifting` Lean module. -/
 
 namespace LocalClassFieldTheory
@@ -260,7 +254,7 @@ theorem exists_chosenNormalBasisPrincipalUnit_h0_oneStep_lifting
           (chosenNormalBasisPrincipalUnitSuccQuotMk (L := L) hV bv) =
         chosenNormalBasisPrincipalUnitSuccQuotMk (L := L) hV av := by
     apply Phi.injective
-    simpa [q] using hPhiNorm
+    omega
   let bn : Vn := tateNorm (Gal(L / K)) Vn bv
   have hmkbn : chosenNormalBasisPrincipalUnitSuccQuotMk (L := L) hV bn =
       chosenNormalBasisPrincipalUnitSuccQuotMk (L := L) hV av := by
@@ -268,8 +262,8 @@ theorem exists_chosenNormalBasisPrincipalUnit_h0_oneStep_lifting
       chosenNormalBasisPrincipalUnitSuccQuotMk (L := L) hV bn =
           tateNorm (Gal(L / K))
             (chosenNormalBasisPrincipalUnitSuccQuot (L := L) hV)
-            (chosenNormalBasisPrincipalUnitSuccQuotMk (L := L) hV bv) := by
-        exact map_tateNorm
+            (chosenNormalBasisPrincipalUnitSuccQuotMk (L := L) hV bv) := 
+        map_tateNorm
           (chosenNormalBasisPrincipalUnitSuccQuotMk (L := L) hV)
           (fun sigma z =>
             (chosenNormalBasisPrincipalUnitSuccQuotMulDistribMulAction_smul_mk
@@ -304,8 +298,8 @@ theorem exists_chosenNormalBasisPrincipalUnit_h0_oneStep_lifting
   · intro sigma
     exact congrArg (fun z : Vn => (z : 𝒪[L]ˣ)) (haprimefixed sigma)
   · have hbnval : (bn : 𝒪[L]ˣ) =
-        tateNorm (Gal(L / K)) 𝒪[L]ˣ (bv : 𝒪[L]ˣ) := by
-      exact map_tateNorm
+        tateNorm (Gal(L / K)) 𝒪[L]ˣ (bv : 𝒪[L]ˣ) := 
+      map_tateNorm
         (chosenNormalBasisPrincipalUnitSubgroupInclusion (L := L) Vn)
         (fun sigma z => chosenNormalBasisPrincipalUnitSubgroupInclusion_equivariant
           (K := K) (L := L) k Vn hVn sigma z) bv
@@ -432,7 +426,7 @@ theorem exists_chosenNormalBasisPrincipalUnit_hMinusOne_oneStep_lifting
           (chosenNormalBasisPrincipalUnitSuccQuotMk (L := L) hV bv) =
         chosenNormalBasisPrincipalUnitSuccQuotMk (L := L) hV av := by
     apply Phi.injective
-    simpa [q] using hPhiCoboundary
+    omega
   let cobv : Vn := sigmaMinusOne (Gal(L / K)) Vn g bv
   have hmkcob : chosenNormalBasisPrincipalUnitSuccQuotMk (L := L) hV cobv =
       chosenNormalBasisPrincipalUnitSuccQuotMk (L := L) hV av := by
@@ -440,8 +434,8 @@ theorem exists_chosenNormalBasisPrincipalUnit_hMinusOne_oneStep_lifting
       chosenNormalBasisPrincipalUnitSuccQuotMk (L := L) hV cobv =
           sigmaMinusOne (Gal(L / K))
             (chosenNormalBasisPrincipalUnitSuccQuot (L := L) hV) g
-            (chosenNormalBasisPrincipalUnitSuccQuotMk (L := L) hV bv) := by
-        exact map_sigmaMinusOne
+            (chosenNormalBasisPrincipalUnitSuccQuotMk (L := L) hV bv) := 
+        map_sigmaMinusOne
           (chosenNormalBasisPrincipalUnitSuccQuotMk (L := L) hV)
           (fun sigma z =>
             (chosenNormalBasisPrincipalUnitSuccQuotMulDistribMulAction_smul_mk
@@ -480,15 +474,9 @@ theorem exists_chosenNormalBasisPrincipalUnit_hMinusOne_oneStep_lifting
   · exact hVsucc ▸ haprimeSucc
   · have hcobval : (cobv : 𝒪[L]ˣ) =
         sigmaMinusOne (Gal(L / K)) 𝒪[L]ˣ g (bv : 𝒪[L]ˣ) := by
-      exact map_sigmaMinusOne
-        (chosenNormalBasisPrincipalUnitSubgroupInclusion (L := L) Vn)
-        (fun sigma z => chosenNormalBasisPrincipalUnitSubgroupInclusion_equivariant
-          (K := K) (L := L) k Vn hVn sigma z) g bv
+      rfl
     change a = sigmaMinusOne (Gal(L / K)) 𝒪[L]ˣ g (bv : 𝒪[L]ˣ) *
       (aprimev : 𝒪[L]ˣ)
     rw [← hcobval]
     dsimp [aprimev, av]
     simp
-
-end
-end LocalClassFieldTheory

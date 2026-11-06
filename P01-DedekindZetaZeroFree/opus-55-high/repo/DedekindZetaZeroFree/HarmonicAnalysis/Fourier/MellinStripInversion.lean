@@ -11,7 +11,6 @@ Repository: openai/math.
 Revision: adc7f1241b42e322a6451854ab7e4b4c146bf78a.
 -/
 
-noncomputable section
 
 namespace DedekindZetaZeroFree.LargeSieve.Vendor.LogReflection
 
@@ -61,9 +60,7 @@ theorem strip_inverse_api (K : ℂ → ℂ) (a b : ℝ)
         mul_nonneg ((Real.rpow_nonneg hx.le _).trans (le_max_left _ _)) hB, ?_⟩
       intro σ hσ t
       rw [norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos hx]
-      simp only [Complex.neg_re, Complex.add_re, Complex.ofReal_re, Complex.mul_re,
-        Complex.ofReal_im, Complex.I_re, Complex.I_im, mul_zero, zero_mul,
-        sub_self, add_zero, Real.exp_zero, one_mul, zero_mul, mul_one]
+      simp only [Complex.neg_re, Complex.add_re, Complex.ofReal_re, Complex.mul_re, Complex.ofReal_im, Complex.I_re, Complex.I_im, mul_zero, zero_mul, sub_self, add_zero, Real.exp_zero, zero_mul, mul_one]
       exact mul_le_mul (hrpow σ hσ.1 hσ.2) (hbound σ t hσ) (norm_nonneg _)
         ((Real.rpow_nonneg hx.le _).trans (le_max_left _ _))
   constructor
@@ -75,7 +72,7 @@ theorem strip_inverse_api (K : ℂ → ℂ) (a b : ℝ)
     let P : ℝ := ‖(1 / (2 * Real.pi) : ℂ)‖
     let L : ℝ := ∫ t : ℝ, ‖K ((c : ℂ) + (t : ℂ) * Complex.I)‖
     have hP : 0 ≤ P := norm_nonneg _
-    have hL : 0 ≤ L := MeasureTheory.integral_nonneg (fun _ => norm_nonneg _)
+    have hL : 0 ≤ L := by positivity
     refine ⟨P * L, mul_nonneg hP hL, ?_⟩
     intro x hx1
     have hx : 0 < x := lt_of_lt_of_le zero_lt_one hx1
@@ -94,7 +91,3 @@ theorem strip_inverse_api (K : ℂ → ℂ) (a b : ℝ)
             K ((c : ℂ) + (t : ℂ) * Complex.I)‖) :=
         mul_le_mul_of_nonneg_left (MeasureTheory.norm_integral_le_integral_norm _) hP
       _ = (P * L) * Real.rpow x (-c) := by rw [hnorm]; ring
-
-end DedekindZetaZeroFree.LargeSieve.Vendor.LogReflection
-
-end

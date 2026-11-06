@@ -140,17 +140,13 @@ private theorem quotient_orbit_zero_iff (m : ℕ)
   · intro hv
     have h : (slope F ζ hζ w p : K F w) *
         (slope F ζ hζ w p⁻¹ : K F w) = 1 := by
-      rw [map_inv]
-      have hh := congrArg (fun a : (K F w)ˣ => (a : K F w))
-        (mul_inv_cancel (slope F ζ hζ w p))
-      exact hh
+      simp
     let L := quotientTransport F ζ hζ w ρ m hm p⁻¹
       (slope F ζ hζ w p : K F w) 1 h
     have hh := congrArg L hv
     change quotientMap F ζ hζ w ρ (slope F ζ hζ w p : K F w)
       (ρ p⁻¹.val (ρ p.val v)) = L 0 at hh
-    simpa only [Subgroup.coe_inv, ← Module.End.mul_apply, ← map_mul,
-      inv_mul_cancel, map_one, Module.End.one_apply, map_zero] using hh
+    simp_all
   · intro hv
     let L := quotientTransport F ζ hζ w ρ m hm p 1
       (slope F ζ hζ w p : K F w) (one_mul _)
@@ -199,8 +195,7 @@ def orbitSectionMap (hm : KPLocalChartTopology.MatrixChartDepth F w m)
         ((inducingCharacter F ζ hζ w (ψ F w) h : ℂ) •
           rawOrbitMap F ζ hζ w ρ v.val p)
       rw [hf]
-      change _ = (1 : ℂ) • _
-      rw [one_smul]⟩, by
+      simp⟩, by
       apply (mem_smoothSubmodule _ _).mpr
       obtain ⟨U, hU⟩ := hρ v.val
       refine ⟨U.comap (P F ζ hζ w).subtype continuous_subtype_val, ?_⟩
@@ -229,21 +224,9 @@ def orbitSectionMap (hm : KPLocalChartTopology.MatrixChartDepth F w m)
       have hea : a = slope F ζ hζ w p := Units.ext he
       exact hea ▸ ha⟩
     map_add' := by
-      intro a b
-      apply Subtype.ext
-      apply Subtype.ext
-      apply Subtype.ext
-      funext p
-      change rawOrbitMap F ζ hζ w ρ (a.val + b.val) p = _
-      exact congrFun ((rawOrbitMap F ζ hζ w ρ).map_add a.val b.val) p
+      simp
     map_smul' := by
-      intro c a
-      apply Subtype.ext
-      apply Subtype.ext
-      apply Subtype.ext
-      funext p
-      change rawOrbitMap F ζ hζ w ρ (c • a.val) p = _
-      exact congrFun ((rawOrbitMap F ζ hζ w ρ).map_smul c a.val) p }
+      simp }
 
 @[simp] theorem orbitSectionMap_value (v : ordinaryKernel F ζ hζ w ρ)
     (p : P F ζ hζ w) :
@@ -266,7 +249,7 @@ theorem orbitSectionMap_intertwines (p : P F ζ hζ w)
       (rightAction F ζ hζ w m hm (ψ F w) (J F ζ hζ w ρ) p
         (orbitSectionMap F ζ hζ w ρ m hm hρ hgen v)) a
   rw [rightAction_apply, orbitSectionMap_value]
-  simp only [Subgroup.coe_mul, map_mul, Module.End.mul_apply]
+  simp
 
 set_option maxHeartbeats 1500000 in
 
@@ -293,7 +276,7 @@ theorem orbitSectionMap_injective :
     simp only [orbitSectionMap_value] at hh
     have hz : quotientMap F ζ hζ w ρ 1 (ρ p.val (a.val - b.val)) = 0 := by
       rw [map_sub, map_sub, hh]
-      exact sub_self _
+      simp
     have hz := (quotient_orbit_zero_iff F ζ hζ w ρ m hm p (a.val - b.val)).mp hz
     rw [hp] at hz
     exact hz
@@ -302,13 +285,12 @@ theorem orbitSectionMap_injective :
     sectionValue F ζ hζ w m (ψ F w)
         (orbitSectionMap F ζ hζ w ρ m hm hρ hgen v) 1 =
       quotientMap F ζ hζ w ρ 1 v.val := by
-  rw [orbitSectionMap_value]
-  simp only [Subgroup.coe_one, map_one, Module.End.one_apply]
+  simp
 
 def frequencyCoset (u : ℤ) (t₀ : (K F w)ˣ) : Set (K F w) :=
   {t | t - (t₀ : K F w) ∈ localFiniteAnnihilator F w (finiteCompletionBall F w u)}
 
-private theorem quotientMap_projector_indicator (u : ℤ) (t s : K F w) (v : V) :
+theorem quotientMap_projector_indicator (u : ℤ) (t s : K F w) (v : V) :
     quotientMap F ζ hζ w ρ t (projector F ζ hζ w ρ m hm hρ u s v) =
       if t - s ∈ localFiniteAnnihilator F w (finiteCompletionBall F w u) then
         quotientMap F ζ hζ w ρ t v else 0 := by
@@ -319,9 +301,7 @@ private theorem quotientMap_projector_indicator (u : ℤ) (t s : K F w) (v : V) 
   · rw [if_neg h, ← quotientMap_projector F ζ hζ w ρ m hm hρ u t]
     have hh := LinearMap.congr_fun
       (projector_orthogonal F ζ hζ w ρ m hm hρ u t s h) v
-    change projector F ζ hζ w ρ m hm hρ u t
-      (projector F ζ hζ w ρ m hm hρ u s v) = 0 at hh
-    rw [hh, map_zero]
+    simp_all
 
 theorem rawOrbitMap_projector_chart (u : ℤ) (t₀ : (K F w)ˣ)
     (v : V) (c : LocalChart F ζ hζ w m) (t : c.ball.domain) :
@@ -377,9 +357,7 @@ theorem projector_mem_ordinaryKernel (u : ℤ) (t₀ : (K F w)ˣ)
   change quotientMap F ζ hζ w ρ 0 _ = _ at hq
   rw [hq, map_smul] at he
   have hphase : (frequencyCharacter F w 0 (Multiplicative.ofAdd x) : ℂ) = 1 := by
-    change (localFiniteCharacter F w (0 * x) : ℂ) = 1
-    rw [zero_mul, AddChar.map_zero_eq_one]
-    rfl
+    simp
   rw [hphase, one_smul] at he
   have hz : ((localFiniteCharacter F w ((t₀ : K F w) * x) : ℂ) - 1) •
       quotientMap F ζ hζ w ρ 0
@@ -395,8 +373,7 @@ theorem projector_preserves_ordinaryKernel (u : ℤ) (t₀ : (K F w)ˣ)
   apply (quotientMap_zero_eq_zero_iff F ζ hζ w ρ _).mp
   rw [quotientMap_projector_indicator F ζ hζ w ρ m hm hρ]
   have hv := (quotientMap_zero_eq_zero_iff F ζ hζ w ρ v.val).mpr v.property
-  rw [hv]
-  split_ifs <;> rfl
+  simp_all
 
 theorem orbitSectionMap_projector_chart (u : ℤ) (t₀ : (K F w)ˣ)
     (v : ordinaryKernel F ζ hζ w ρ) (c : LocalChart F ζ hζ w m)
@@ -413,8 +390,3 @@ theorem orbitSectionMap_projector_chart (u : ℤ) (t₀ : (K F w)ˣ)
     if (t.val : K F w) ∈ frequencyCoset F w u t₀ then
       rawOrbitMap F ζ hζ w ρ v.val (c.lift t) else 0
   exact rawOrbitMap_projector_chart F ζ hζ w ρ m hm hρ u t₀ v.val c t
-
-end DedekindZetaZeroFree.KPKirillovOrbitMapFaithful
-
-end
-end

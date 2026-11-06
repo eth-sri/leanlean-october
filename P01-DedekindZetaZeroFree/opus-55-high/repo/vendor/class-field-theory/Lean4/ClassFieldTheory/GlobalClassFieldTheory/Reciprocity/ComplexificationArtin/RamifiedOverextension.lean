@@ -11,9 +11,6 @@ Authors: Naganori Yamaguchi (assisted by OpenAI Codex)
 -/
 
 
-
-set_option autoImplicit false
-
 /-!
 # The quadratic overextension at a ramified real place
 
@@ -102,7 +99,7 @@ theorem ramifiedInfinitePlaceOverfieldConjugation_fixes_base
           (σ.commutes x)
 
 /-- The compatible embedding `K → K'` into the real fixed field. -/
-noncomputable def ramifiedInfinitePlaceRealFixedFieldEmbedding
+def ramifiedInfinitePlaceRealFixedFieldEmbedding
     (v : InfinitePlace K)
     (hRamified :
       (chosenInfinitePlaceAbove (L := L) v).IsRamified K) :
@@ -180,7 +177,7 @@ theorem ramifiedInfinitePlaceRealFixedFieldEmbedding_coe
           (K := K) (L := L) v) x
 
 @[reducible]
-noncomputable instance
+instance
     ramifiedInfinitePlaceRealFixedField_algebra
     (v : InfinitePlace K)
     (hRamified :
@@ -233,7 +230,7 @@ theorem
     (infinitePlaceComplexificationOverfield
       (K := K) (L := L) v)
 
-noncomputable instance ramifiedInfinitePlaceRealFixedField_numberField
+instance ramifiedInfinitePlaceRealFixedField_numberField
     (v : InfinitePlace K)
     (hRamified :
       (chosenInfinitePlaceAbove (L := L) v).IsRamified K) :
@@ -251,20 +248,7 @@ noncomputable instance ramifiedInfinitePlaceRealFixedField_numberField
         (ramifiedInfinitePlaceRealFixedField
           (K := K) (L := L) v hRamified)
 
-omit [FiniteDimensional K L] in
-theorem
-    ramifiedInfinitePlaceRealFixedField_finiteDimensional_over_base
-    (v : InfinitePlace K)
-    (hRamified :
-      (chosenInfinitePlaceAbove (L := L) v).IsRamified K) :
-    FiniteDimensional K
-      (ramifiedInfinitePlaceRealFixedField
-        (K := K) (L := L) v hRamified) :=
-  FiniteDimensional.right ℚ K
-    (ramifiedInfinitePlaceRealFixedField
-      (K := K) (L := L) v hRamified)
-
-noncomputable instance
+instance
     ramifiedInfinitePlaceRealFixedField_isAbelianGalois_over_base
     (v : InfinitePlace K)
     (hRamified :
@@ -273,23 +257,6 @@ noncomputable instance
       (ramifiedInfinitePlaceRealFixedField
         (K := K) (L := L) v hRamified) :=
   IsAbelianGalois.tower_bot K
-    (ramifiedInfinitePlaceRealFixedField
-      (K := K) (L := L) v hRamified)
-    (infinitePlaceComplexificationOverfield
-      (K := K) (L := L) v)
-
-omit [NumberField K] [FiniteDimensional K L] in
-theorem
-    ramifiedInfinitePlaceOverfield_finiteDimensional_over_fixed
-    (v : InfinitePlace K)
-    (hRamified :
-      (chosenInfinitePlaceAbove (L := L) v).IsRamified K) :
-    FiniteDimensional
-      (ramifiedInfinitePlaceRealFixedField
-        (K := K) (L := L) v hRamified)
-      (infinitePlaceComplexificationOverfield
-        (K := K) (L := L) v) :=
-  FiniteDimensional.right ℚ
     (ramifiedInfinitePlaceRealFixedField
       (K := K) (L := L) v hRamified)
     (infinitePlaceComplexificationOverfield
@@ -314,7 +281,7 @@ theorem ramifiedInfinitePlaceOverextension_isGalois
         (ramifiedInfinitePlaceOverfieldConjugation
           (K := K) (L := L) v hRamified))
 
-noncomputable instance
+instance
     ramifiedInfinitePlaceOverextension_isAbelianGalois
     (v : InfinitePlace K)
     (hRamified :
@@ -352,7 +319,7 @@ noncomputable instance
 
 /-- The distinguished nontrivial automorphism of the quadratic
 overextension `L(i)/K'`, obtained from ambient complex conjugation. -/
-noncomputable def ramifiedInfinitePlaceOverextensionConjugation
+def ramifiedInfinitePlaceOverextensionConjugation
     (v : InfinitePlace K)
     (hRamified :
       (chosenInfinitePlaceAbove (L := L) v).IsRamified K) :
@@ -427,16 +394,8 @@ theorem ramifiedInfinitePlaceOverextension_eq_one_or_conjugation
       hσ.symm.trans
         (zpow_eq_zpow_emod' n hcSq)
     rcases Int.emod_two_eq_zero_or_one n with hn | hn
-    · left
-      exact
-        hσPower.trans
-          ((congrArg (fun m : ℤ => c ^ m) hn).trans
-            (zpow_zero c))
-    · right
-      exact
-        hσPower.trans
-          ((congrArg (fun m : ℤ => c ^ m) hn).trans
-            (zpow_one c))
+    · simp_all
+    simp_all
   rcases hσCases with hσ | hσ
   · left
     have hσSub : e.symm σ = 1 :=
@@ -458,7 +417,7 @@ attribute [local instance]
 
 /-- Restriction of the quadratic overextension Galois group to the
 rational fourth-root factor. -/
-noncomputable def
+def
     ramifiedInfinitePlaceOverextensionCyclotomicRestriction
     (v : InfinitePlace K)
     (hRamified :
@@ -646,10 +605,3 @@ theorem
     exact
       (ramifiedInfinitePlaceOverextensionCyclotomicRestriction_conjugation_ne_one
         (K := K) (L := L) v hRamified hσ).elim
-
-end ComplexConjugationOverextension
-
-end Reciprocity
-end GlobalClassFieldTheory
-
-end
