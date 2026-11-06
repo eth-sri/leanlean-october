@@ -102,5 +102,3 @@ include hb in
 theorem f_i (p : Fin M) : c.val (cF hc p) (cI hc p) • s (cI hc p) = s (cF hc p) :=
   c.flat_edge_of_bottom s (cW_le_cF hc p) (cF_le_cI hc p)
     (w_f hc c rv re (centreValue hc c rv) p) (w_i hc c rv re hb p)
-
-end FiniteChains.Davis.SurfaceSection

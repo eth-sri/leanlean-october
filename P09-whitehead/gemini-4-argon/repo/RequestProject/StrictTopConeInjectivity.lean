@@ -44,5 +44,3 @@ theorem strictTopConeTriangleTetrahedron_injective :
   · apply Prod.ext
     · exact hfi (congrArg (fun a : StrictOrdTet Q => a.1.2.1) h)
     · exact hfi (congrArg (fun a : StrictOrdTet Q => a.1.2.2.1) h)
-
-end FiniteChains.Comb

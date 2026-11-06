@@ -27,5 +27,3 @@ theorem hasAcyclicRegularCover_of_chains (K : TwoComplex)
       (fixedPresChainsFS_of_original_chains K T h)
   let e : ContinuousMap.HomotopyEquiv K L := fixedCanonicalRealizationEquiv K T
   exact hasAcyclicRegularCover_of_homotopyEquiv K L e hL
-
-end Whitehead

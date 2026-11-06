@@ -31,7 +31,6 @@ def ExtraCell (A : Type) : Type :=
 /-- A canonical genuinely new generator, independent of whether `A` is empty. -/
 def fresh (A : Type) : ExtraGen A := Sum.inr PUnit.unit
 
-instance (A : Type) : Nonempty (ExtraGen A) := ⟨fresh A⟩
 
 def generatorEmbedding : GenY A → A ⊕ ExtraGen A
   | Sum.inl a => Sum.inl a
@@ -46,8 +45,6 @@ def baseRel (core : M → FreeGroup A) : M ⊕ ExtraCell A → FreeGroup (GenY A
   letI : LinearOrder A := chosenOrder A
   relY core
 
-@[simp] theorem baseRel_core (core : M → FreeGroup A) (m : M) :
-    baseRel core (Sum.inl m) = FreeGroup.map Sum.inl (core m) := rfl
 
 def extra (core : M → FreeGroup A) : ExtraCell A → FreeGroup (A ⊕ ExtraGen A) :=
   fun c => FreeGroup.map generatorEmbedding (baseRel core (Sum.inr c))
@@ -107,5 +104,3 @@ theorem core_trivial (core : M → FreeGroup A)
     (FreeGroup.map generatorEmbedding (FreeGroup.of (Sum.inl a))) :
       PresGroup (FreePadding.rel (baseRel core) generatorEmbedding)) = 1 at h
   simpa only [FreeGroup.map.of, generatorEmbedding] using h
-
-end FiniteChains.InitialFS

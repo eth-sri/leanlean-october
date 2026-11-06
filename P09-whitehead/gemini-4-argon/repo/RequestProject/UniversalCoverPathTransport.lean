@@ -43,8 +43,6 @@ def pathTransportV (c : UV K y) : UV K x :=
     rw [endpt_pathTransportP]
     exact Htpy.append_congr ha p.2 (Htpy.refl _) hpq) c
 
-@[simp] theorem pathTransportV_mk (p : PathFrom K y) :
-    pathTransportV ha (UV.mk p) = UV.mk (pathTransportP ha p) := rfl
 
 @[simp] theorem endV_pathTransportV (c : UV K y) :
     endV (pathTransportV ha c) = endV c := by
@@ -77,7 +75,6 @@ theorem extend_pathTransportV (eb : K.E × Bool) (c : UV K y) :
       change Htpy K x (endpt K x (extendP eb (pathTransportP ha p)).1)
         (extendP eb (pathTransportP ha p)).1 (pathTransportP ha (extendP eb p)).1
       rw [hl]
-      exact Htpy.refl _
 
 /-- Transport an edge by prefixing the path attached to its initial vertex. -/
 def pathTransportE (e : UE K y) : UE K x :=
@@ -155,5 +152,3 @@ theorem uCoverPathTransport_deckV (γ : Pi1 K y) (c : UV K y) :
             endpt_append, endpt_eq_of_isPath g.2]
           have h := (htpy_revPath_append ha).congr_append (ha.append g.2) p.2
           simpa only [List.append_assoc, List.nil_append] using h.symm
-
-end FiniteChains.Comb

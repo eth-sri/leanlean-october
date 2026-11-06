@@ -55,5 +55,3 @@ def attachmentQuotientHomeomorph : Space r i ≃ₜ Y := by
 @[simp] theorem attachmentQuotientHomeomorph_cell (d : D) :
     attachmentQuotientHomeomorph r i f g hbd hf hsep hnew hq (cell r i d) = g d :=
   desc_cell r i f g hbd d
-
-end FiniteChains.RelativeAttachment

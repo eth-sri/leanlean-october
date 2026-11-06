@@ -30,8 +30,7 @@ The main results are:
   surface), then all top cells disappear.
 -/
 
-namespace FiniteChains
-namespace Collapse
+namespace FiniteChains.Collapse
 
 variable {T F : Type*} [DecidableEq T]
 
@@ -159,15 +158,3 @@ theorem exists_isCollapse_of_connected (hcard : ∀ f, (inc f).card ≤ 2) {S : 
     (hconn : Connected inc S) {t₀ : T} (ht₀ : t₀ ∈ S) (hfree : HasFreeFace inc S t₀) :
     ∃ l : List T, IsCollapse inc l S :=
   exists_isCollapse hcard S.card S rfl (collapsible_of_connected hconn ht₀ hfree)
-
-/-! ### A nonempty instance -/
-
-/-- Two top cells glued along one face, with a free face on each side: the smallest
-instance of the collapse theorem. -/
-def exInc : Fin 3 → Finset (Fin 2)
-  | 0 => {0}
-  | 1 => {0, 1}
-  | 2 => {1}
-
-end Collapse
-end FiniteChains

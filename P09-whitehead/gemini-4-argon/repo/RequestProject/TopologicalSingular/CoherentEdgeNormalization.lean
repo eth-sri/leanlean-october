@@ -33,5 +33,3 @@ theorem normalizedEdgeHomotopy_boundary (x : X) (tau : Simplex X 1) (t : I)
   split_ifs
   · exact edgeVertexHomotopy_boundary x tau _ z hz
   · exact (edgeVertexNullHomotopy x tau).eq_snd _ hz
-
-end FiniteChains.TopologicalSingular

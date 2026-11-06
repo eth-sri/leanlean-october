@@ -59,5 +59,3 @@ theorem freeSingularHomologyIso_natural {X Y : TopCat} (f : X ⟶ Y) (n : ℕ) :
     (HomologicalComplex.homologyFunctor (ModuleCat ℤ) (ComplexShape.down ℕ) n).map _ ≫
       (HomologicalComplex.homologyFunctor (ModuleCat ℤ) (ComplexShape.down ℕ) n).map _
   rw [← Functor.map_comp, ← Functor.map_comp, freeSingularChainComplexIso_natural]
-
-end FiniteChains

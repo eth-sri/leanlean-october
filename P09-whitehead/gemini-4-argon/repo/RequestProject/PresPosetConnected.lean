@@ -30,5 +30,3 @@ theorem presPos_isConnected (w : J → List (α × Bool)) (hw : ∀ j, w j ≠ [
   intro j
   exact ⟨cylOuter (aHom w) (TCirc.pt w j 0 CPos.cor),
     0, CPos.cor, List.length_pos_iff.mpr (hw j), rfl⟩
-
-end FiniteChains.PresModel

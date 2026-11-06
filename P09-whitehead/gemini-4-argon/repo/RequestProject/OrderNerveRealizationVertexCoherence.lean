@@ -53,5 +53,3 @@ theorem orderNerveRealization_exists_radial {P : Type} [PartialOrder P]
     rintro y ⟨t, rfl⟩
     exact ⟨(PathConnectedSpace.joined w z).somePath t, rfl⟩
   exact hr.trans (orderNerveRealizationSimplex_supported (orderNerveVertexStar P v) s.val hall)
-
-end FiniteChains.Comb

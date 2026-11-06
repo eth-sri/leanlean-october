@@ -6,9 +6,7 @@ public import RequestProject.BlockFamilyAmalgamation
 @[expose] public section
 
 /-! Genuine finite spine relators in the distinguished/internal order used by substitution. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb
@@ -116,5 +114,3 @@ theorem markedSpine_substitution_injective {α Jr Sx H : Type} [Group H]
     exact hread s x
   · intro s m
     rw [MonoidHom.comp_apply, markedSpineToOldHom_rel, map_one]
-
-end FiniteChains.Davis.Genus

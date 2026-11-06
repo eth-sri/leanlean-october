@@ -7,9 +7,7 @@ public import RequestProject.PosetCoverRestriction
 @[expose] public section
 
 /-! Deleting the whole inverse image of a free face preserves finite chain homology. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -75,5 +73,3 @@ theorem cover_freeFace_homology {f : P → Q} (hf : IsPosetCover f)
     exact ⟨p, hp.symm ▸ ht⟩
   exact ⟨Nerve.acyclicRelIn_of_upper_retraction hnonempty ρ hρ hρge hbase,
     fun n => Nerve.reflectsBoundsIn_of_retraction (fun _ h => h.1) ρ hρ hbase hρfix n⟩
-
-end FiniteChains.Comb

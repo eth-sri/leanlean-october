@@ -69,5 +69,3 @@ theorem orderRoseRealizationHomeomorph_natural (x : orderNerveRealization (Rose 
   · obtain ⟨t, rfl⟩ := orderRoseTraversal_surjective u
     rw [roseMapRealization_copy, orderRoseRealizationHomeomorph_interval,
       orderRoseRealizationHomeomorph_interval, diskRoseMap_cell]
-
-end FiniteChains.PresModel

@@ -67,5 +67,3 @@ theorem genus_recorded_free_face_cover_homology (hf : IsPosetCover f)
       rw [hcert.2.1] at hm
       have he : qCubeToCoordinate d.1 = qCubeToCoordinate t.1 := Finset.mem_singleton.mp hm
       exact congrArg Sum.inl (Subtype.ext (qCubeCoordinateEquiv.injective (Subtype.ext he)))
-
-end FiniteChains.Davis.Genus

@@ -12,18 +12,9 @@ namespace FiniteChains
 variable {α J : Type*} [DecidableEq α]
   (N : Subgroup (FreeGroup α)) [N.Normal] (ρ : J → FreeGroup α)
 
-noncomputable def fsCoverCycles : AddSubgroup (α →₀ CoverRing N) :=
-  (coverFirstBoundary N).toAddMonoidHom.ker
 
-noncomputable def fsCoverBoundaries : AddSubgroup (α →₀ CoverRing N) :=
-  (coverSecondBoundary N ρ).toAddMonoidHom.range
 
-def FSCoverH1 :=
-  fsCoverCycles N ⧸ (fsCoverBoundaries N ρ).addSubgroupOf (fsCoverCycles N)
 
-noncomputable instance fsCoverH1_addCommGroup : AddCommGroup (FSCoverH1 N ρ) :=
-  inferInstanceAs (AddCommGroup
-    (fsCoverCycles N ⧸ (fsCoverBoundaries N ρ).addSubgroupOf (fsCoverCycles N)))
 
 /-- The prime-by-prime lifting condition excludes torsion in the covering subgroup's
 abelianization, with arbitrary cell-index sets. -/
@@ -41,5 +32,3 @@ theorem fs_mem_relComm_of_pow_mem (hρ : ∀ j, ρ j ∈ N)
   have hmem := mem_range_of_nsmul_mem_range (coverSecondBoundary N ρ).toAddMonoidHom
     hmod n hn (coverFoxGradient N w) hr
   exact (coverFoxGradient_mem_range_iff N ρ hρ hw).mp hmem
-
-end FiniteChains

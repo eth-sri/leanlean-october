@@ -23,9 +23,6 @@ def markedBlockHom (s : S) : PresGroup (β s) →*
     exact (QuotientGroup.eq_one_iff _).mpr
       (Subgroup.subset_normalClosure ⟨Sum.inr ⟨s, m⟩, rfl⟩))
 
-@[simp] theorem markedBlockHom_mk (s : S) (w : FreeGroup (I s ⊕ Z s)) :
-    markedBlockHom ρ u β s (QuotientGroup.mk w) =
-      QuotientGroup.mk (FreeGroup.map (genEmb s) (blockSubst u s w)) := rfl
 
 theorem markedBlockHom_coeff (s : S) (x : FreeGroupRing (I s ⊕ Z s)) :
     MonoidAlgebra.mapDomainRingHom ℤ (markedBlockHom ρ u β s)
@@ -55,5 +52,3 @@ theorem foxMatrix_markedBlock_internal (s : S) (z : Z s) (m : M s) :
   change quotRingHom ℤ _
       (fox (genEmb s (Sum.inr z)) (FreeGroup.map (genEmb s) (blockSubst u s (β s m)))) = _
   rw [fox_map (genEmb s) (genEmb_injective s), fox_blockSubst_internal]
-
-end FiniteChains.BlockFamily

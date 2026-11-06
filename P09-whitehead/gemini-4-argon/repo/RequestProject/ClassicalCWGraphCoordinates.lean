@@ -144,5 +144,3 @@ infinite cell families. Its existence uses actual continuous connectedness. -/
 theorem originalGraph_exists_spanningTree (v : SkeletonCarrier (Set.univ : Set K) 1) :
     ∃ T : Comb.SpanningTree (originalGraph K), T.root = v :=
   Comb.SpanningTree.exists_of_isConnected (originalGraph_isConnected K) v
-
-end FiniteChains.ClassicalCW

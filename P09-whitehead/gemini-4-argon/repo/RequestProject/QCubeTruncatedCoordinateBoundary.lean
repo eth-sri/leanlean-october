@@ -5,9 +5,7 @@ public import RequestProject.QCubeThreeCoordinateIncidence
 @[expose] public section
 
 /-! Genuine finite truncated cube boundaries, including their cut-face coefficients. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb
@@ -97,5 +95,3 @@ theorem qThreeTruncatedCoordinateBoundary_split (r : QThreeCube A →₀ ℤ) :
         qThreeCutFaceChain, Finsupp.linearCombination_single, map_smul]
       by_cases hsgn : c.1.sgn = 0 <;>
         simp [hsgn, Finsupp.lmapDomain_apply]
-
-end FiniteChains.Davis

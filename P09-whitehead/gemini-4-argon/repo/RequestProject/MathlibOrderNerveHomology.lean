@@ -59,5 +59,3 @@ noncomputable def mathlibOrderNerveComplexH2Equiv :
   (mathlibOrderNerveCategoricalH2Equiv P).trans
     (((ShortComplex.homologyFunctor (ModuleCat ℤ)).mapIso
       (mathlibOrderNerveShortComplexIso P)).toLinearEquiv)
-
-end FiniteChains.Comb

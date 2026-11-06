@@ -4,9 +4,7 @@ public import RequestProject.RoseCoverIncidences
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb
@@ -82,5 +80,3 @@ theorem roseCover_boundary_end (q : P) (i : α) (b : Bool) (hq : f q = Rose.edg 
           intro h
           exact (roseCover_incoming_edge_cases f hf q i b hq e h).elim he her
         simp [strictOrderCx, ht, hs, he, her]
-
-end FiniteChains.PresModel

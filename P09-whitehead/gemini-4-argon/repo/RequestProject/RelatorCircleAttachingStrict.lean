@@ -37,5 +37,3 @@ theorem relatorCircleAttaching_strictMono :
       exact (roseBaseEdge a.1 a.2).property
   intro x y h
   exact he ⟨(x, y), h⟩
-
-end FiniteChains.PresModel

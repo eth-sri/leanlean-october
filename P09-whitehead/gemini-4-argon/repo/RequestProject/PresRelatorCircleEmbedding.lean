@@ -11,9 +11,7 @@ relator circle. Positions, cyclic indices, and the letter-reading map
 are retained exactly. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel.PresWordEmbedding
 open Comb
@@ -27,16 +25,12 @@ def relatorCircleMap (j : J) : RelatorCircle w j ↪o RelatorCircle v (h.cell j)
     constructor
     · exact congrArg h.cell x.property.1
     · change x.val.2.1 < (v (h.cell j)).length
-      rw (config := { transparency := .default }) [h.word_length]
+      erw [h.word_length]
       exact x.property.2⟩
   inj' := fun _ _ he => Subtype.ext (h.circleFun_injective (congrArg Subtype.val he))
   map_rel_iff' := h.circleFun_le_iff _ _
 
-@[simp] theorem relatorCircleMap_val (j : J) (x : RelatorCircle w j) :
-    (h.relatorCircleMap j x).val = h.circleFun x.val := rfl
 
-@[simp] theorem relatorCircleMap_position (j : J) (x : RelatorCircle w j) :
-    (h.relatorCircleMap j x).val.2 = x.val.2 := rfl
 
 @[simp] theorem relatorCircleMap_index (j : J) (x : RelatorCircle w j) :
     (relatorCircleIndexEquiv v (h.cell j) (h.relatorCircleMap j x)).val =
@@ -45,7 +39,7 @@ def relatorCircleMap (j : J) : RelatorCircle w j ↪o RelatorCircle v (h.cell j)
 theorem relatorCircleMap_surjective (j : J) : Function.Surjective (h.relatorCircleMap j) := by
   intro y
   let k : Fin (w j).length := ⟨y.val.2.1, by
-    rw (config := { transparency := .default }) [← h.word_length j]
+    erw [← h.word_length j]
     exact y.property.2⟩
   refine ⟨relatorCirclePoint w j k y.val.2.2, ?_⟩
   apply Subtype.ext
@@ -70,11 +64,9 @@ theorem presCircleWordMap_natural (j : J) (x : orderNerveRealization (RelatorCir
     orderNerveRealizationMap (fun c : RelatorCircle v (h.cell j) => aFun v c.val)
       (fun _ _ h => aFun_monotone v h)
       (orderNerveRealizationMap (h.relatorCircleMap j) (h.relatorCircleMap j).monotone x)
-  rw (config := { transparency := .default }) [orderNerveRealizationMap_comp, orderNerveRealizationMap_comp]
+  erw [orderNerveRealizationMap_comp, orderNerveRealizationMap_comp]
   have hf : (h.roseMap ∘ (fun c : RelatorCircle w j => aFun w c.val)) =
       ((fun c : RelatorCircle v (h.cell j) => aFun v c.val) ∘ h.relatorCircleMap j) := by
     funext c
     exact (h.attaching_map c.val).symm
   exact orderNerveRealizationMap_congr _ _ hf x
-
-end FiniteChains.PresModel.PresWordEmbedding

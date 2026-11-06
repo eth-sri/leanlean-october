@@ -13,9 +13,7 @@ Written proof terms; not compiled in the current proof-first workflow. -/
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.CoreSignedCollapse
 
@@ -41,14 +39,6 @@ def dropCore : FreeGroup (A ⊕ B) →* FreeGroup B :=
     simp
   exact DFunLike.congr_fun h w
 
-@[simp] theorem dropCore_map_inr (w : FreeGroup B) :
-    dropCore (A := A) (FreeGroup.map Sum.inr w) = w := by
-  have h : (dropCore (A := A) (B := B)).comp (FreeGroup.map Sum.inr) =
-      MonoidHom.id _ := by
-    apply FreeGroup.ext_hom
-    intro b
-    simp
-  exact DFunLike.congr_fun h w
 
 variable (core : M → FreeGroup A) (extra : J → FreeGroup (A ⊕ B))
   (target : J → FreeGroup B) (rev : J → Bool)
@@ -129,7 +119,3 @@ theorem matrix_extra (b : B) (j : J) :
   cases h : rev j
   · rfl
   · exact quotientFox_inv_relator target b j
-
-variable [Fintype M] [Fintype J]
-
-end FiniteChains.CoreSignedCollapse

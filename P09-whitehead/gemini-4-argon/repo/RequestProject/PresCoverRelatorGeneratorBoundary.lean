@@ -39,5 +39,3 @@ noncomputable def presCoverCycleRelatorGeneratorKernelEquiv (hpos : ∀ j, 0 < (
       LinearMap.ker (presCoverRelatorGeneratorBoundary w f hf) :=
   (presCoverCycleRelatorKernelEquiv w f hf hpos).trans
     (LinearEquiv.ofEq _ _ (presCoverCollapsedRelatorBoundary_ker_eq_generator w f hf))
-
-end FiniteChains.PresModel

@@ -37,5 +37,3 @@ noncomputable def presCoverRoseFibreEquiv (x : Rose α) :
   right_inv p := by
     apply Subtype.ext
     rfl
-
-end FiniteChains.PresModel

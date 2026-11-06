@@ -35,5 +35,3 @@ theorem qOld_baseStar_unmixed (p r : Qpos A X att) (h : p ≤ r) :
     cases r with
     | inl d => exact Or.inr ⟨trivial, h.1⟩
     | inr y => exact Or.inr ⟨trivial, trivial⟩
-
-end FiniteChains.Davis

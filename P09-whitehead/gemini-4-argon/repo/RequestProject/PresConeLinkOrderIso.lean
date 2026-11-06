@@ -40,5 +40,3 @@ noncomputable def relatorCircleOrderIso : RelatorCircle w j ≃o StrictBelow (ap
     intro a b
     change iCirc w a.1 ≤ iCirc w b.1 ↔ a.1 ≤ b.1
     rfl
-
-end FiniteChains.PresModel

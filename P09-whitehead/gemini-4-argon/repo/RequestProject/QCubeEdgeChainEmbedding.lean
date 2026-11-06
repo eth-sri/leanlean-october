@@ -69,5 +69,3 @@ theorem qEdgeChainSubdivision_injective : Function.Injective (qEdgeChainSubdivis
     rw [qEdgeChainSubdivision_filter_top, Finsupp.filter_zero] at he
     exact (smul_eq_zero.mp he).resolve_right (qEdgeSubdivision_ne_zero c)
   exact sub_eq_zero.mp hr
-
-end FiniteChains.Davis

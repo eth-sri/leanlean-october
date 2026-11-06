@@ -1,6 +1,9 @@
 module
 
-public import RequestProject.NecessityAlgebraic
+public import RequestProject.ChainFormula
+public import RequestProject.FinitelyDeterminedInf
+public import RequestProject.Pigeonhole
+public import RequestProject.CoverAcyclic
 public import RequestProject.ChainFormulaMod
 public import RequestProject.FoxCommutatorMod
 public import RequestProject.FoxRequirementMod
@@ -110,5 +113,3 @@ theorem exists_perfect_normal_foxSatMod (hchains : HasCellChainsLift b)
   have hcomm : (⁅N, N⁆ : Subgroup G).Normal := inferInstance
   exact ⟨N, hNnormal, hmod, hint,
     hNmin ⁅N, N⁆ (Subgroup.commutator_le_left N N) hcomm hsatcomm⟩
-
-end FiniteChains

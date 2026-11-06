@@ -77,5 +77,3 @@ theorem postcomp_orderIso {S : Type u} [PartialOrder S] (e : Q ≃o S) :
     refine ⟨b, ⟨hb.1, by rw [hb.2, e.apply_symm_apply]⟩, ?_⟩
     intro c hc
     exact huniq c ⟨hc.1, by simpa only [e.symm_apply_apply] using congrArg e.symm hc.2⟩
-
-end FiniteChains.Comb.IsPosetCover

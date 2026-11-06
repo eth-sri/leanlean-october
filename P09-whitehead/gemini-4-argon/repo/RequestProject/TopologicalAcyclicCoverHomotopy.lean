@@ -48,5 +48,3 @@ theorem hasAcyclicRegularCover_of_homotopyEquiv (K L : TwoComplex)
     coverPullbackProjection_regular e.toFun p hreg, ?_⟩
   · exact connectedSpace_of_homotopyEquiv E
   · exact (acyclic_iff_of_homotopyEquiv E).mpr hac
-
-end Whitehead

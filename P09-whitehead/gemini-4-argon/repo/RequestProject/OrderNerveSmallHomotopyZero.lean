@@ -75,5 +75,3 @@ theorem orderSmallHomotopy0_boundary {P : Type} [PartialOrder P]
       orderSmallSingularApproximation0_single]
     exact (orderSmallHomotopyZeroFill_exists σ).choose_spec.2
   exact DFunLike.congr_fun he c
-
-end FiniteChains.Comb

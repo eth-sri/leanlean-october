@@ -24,5 +24,3 @@ theorem boundary_reflection_of_upper_section (r : P → Q) (s : Q → P)
       (prism_mem_inc monotone_id (hs.comp hr) hle hc), ?_⟩
   rw [map_sub, ← cmap_bdry, hdy, cmap_comp, hp]
   abel
-
-end FiniteChains.Nerve

@@ -1,6 +1,7 @@
 module
 
-public import RequestProject.RACGCayleyGraph
+public import RequestProject.RACGMedian
+public import Mathlib
 
 @[expose] public section
 
@@ -32,12 +33,9 @@ a median graph, this identifies the Cayley graph with the one-skeleton of the un
 of `C(L)`.
 -/
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
-namespace FiniteChains
-namespace RACG
+namespace FiniteChains.RACG
 
 universe u
 
@@ -90,8 +88,6 @@ def parTr : Tr A → V → ZMod 2 :=
   Quotient.lift (fun l : {l : List V // IsRed A.rel l} => parList l.1)
     (fun _ _ h => parList_ceq A h)
 
-@[simp] theorem parTr_mkTr (l : List V) (h : IsRed A.rel l) :
-    parTr A (mkTr A l h) = parList l := rfl
 
 /-- An elementary move changes the parity vector by the corresponding generator. -/
 theorem parTr_act (s : V) (t : Tr A) : parTr A (act A s t) = eVec s + parTr A t := by
@@ -129,7 +125,7 @@ noncomputable def phi (x : CayGroup A) : V → ZMod 2 :=
   parTr A ((x : Equiv.Perm (Tr A)) (oneTr A))
 
 theorem cword_append (l m : List V) : cword A (l ++ m) = cword A l * cword A m :=
-  Subtype.ext (by simpa using wordPerm_append A l m)
+  Subtype.ext (wordPerm_append A l m)
 
 theorem phi_cword (l : List V) : phi A (cword A l) = parList l := by
   induction l with
@@ -167,6 +163,3 @@ theorem phi_inv (x : CayGroup A) : phi A x⁻¹ = phi A x := by
   have hv : phi A x v + phi A x⁻¹ v = 0 := congrFun h v
   have h0 : phi A x v + phi A x v = 0 := zmod2_add_self _
   linear_combination (norm := ring_nf) hv - h0
-
-end RACG
-end FiniteChains

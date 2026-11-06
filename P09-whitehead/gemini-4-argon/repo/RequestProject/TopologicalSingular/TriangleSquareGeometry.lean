@@ -101,5 +101,3 @@ theorem squareToTriangle_boundary (z : Fin 2 → I) (hz : z ∈ Cube.boundary (F
       change max ((z 0 : ℝ) - z 1) 0 = 0
       rw [hi]
       exact max_eq_right (sub_nonpos.mpr (z 0).property.2)
-
-end FiniteChains.TopologicalSingular

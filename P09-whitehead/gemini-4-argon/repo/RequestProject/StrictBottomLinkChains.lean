@@ -12,9 +12,7 @@ This is the bottom-vertex counterpart of `StrictTopLinkChains`.  In particular,
 the two-chain need not be a cycle: its boundary only has to vanish on edges
 starting at the selected vertex.
 -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -96,7 +94,7 @@ theorem strictBottomLink_boundary (v : P) (hm : ∀ p, p ≤ v → p = v)
       intro he
       have ht := hm t.1.1 (he ▸ t.2.1.le)
       exact (ne_of_lt t.2.1) (ht.trans he.symm)
-    rw (config := { transparency := .default }) [strictTriangle_bdry2_single, map_sub, map_add]
+    erw [strictTriangle_bdry2_single, map_sub, map_add]
     by_cases ht : t.1.1 = v
     · simp [strictSourceRayChain, strictSourceRayEdge, strictBottomLinkChain,
         strictBottomLinkTriangle, strictTriangleEdge01, strictTriangleEdge12,
@@ -112,12 +110,12 @@ theorem strictBottomLink_relative_cycle (v : P) (hm : ∀ p, p ≤ v → p = v)
     (c : StrictOrdTri P →₀ ℤ)
     (hc : ∀ e : StrictOrdEdge P, e.1.1 = v → bdry2 (strictOrderCx P) c e = 0) :
     bdry1 (strictOrderCx (StrictAbove v)) (strictBottomLinkChain v c) = 0 := by
-  rw (config := { transparency := .default }) [strictBottomLink_boundary v hm]
+  erw [strictBottomLink_boundary v hm]
   have hz : strictSourceRayChain v (bdry2 (strictOrderCx P) c) = 0 := by
     ext x
-    rw (config := { transparency := .default }) [strictSourceRayChain_apply]
+    erw [strictSourceRayChain_apply]
     exact hc _ rfl
-  rw (config := { transparency := .default }) [hz, neg_zero]
+  erw [hz, neg_zero]
 
 namespace IsPosetCover
 variable {Q : Type u} [PartialOrder Q] {f : P → Q} (hf : IsPosetCover f)
@@ -163,5 +161,3 @@ theorem strictAboveCongr_val {a b : P} (h : a = b) (x : StrictAbove a) :
     (strictAboveCongr h x).val = x.val := by
   cases h
   rfl
-
-end FiniteChains.Comb

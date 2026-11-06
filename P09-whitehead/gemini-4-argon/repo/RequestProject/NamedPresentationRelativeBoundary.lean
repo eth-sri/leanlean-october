@@ -34,5 +34,3 @@ theorem receivedFoxBoundary_internal_zero_iff (β : J ⊕ I → MonoidAlgebra �
       ∀ a, (∑ j, β (Sum.inl j) * receivedWordCoefficientMap ρ w φ (fox a (ρ j))) =
         ∑ i, β (Sum.inr i) * receivedWordCoefficientMap ρ w φ (fox a (w i)) := by
   simp only [receivedFoxBoundary_internal, sub_eq_zero]
-
-end FiniteChains.NamedPresentation

@@ -72,5 +72,3 @@ theorem graphRoseHomotopyEquiv_treePath (j : {j : J // T.isTree j}) (t : I) :
     graphRoseHomotopyEquiv r hr T (graphEdgePath r j.val t) =
       roseVertex {j : J // ¬T.isTree j} :=
   graphRoseHomotopyEquiv_treeCell r hr T ⟨j, graphDiskHomeomorph t⟩
-
-end FiniteChains.ClassicalGraphModel

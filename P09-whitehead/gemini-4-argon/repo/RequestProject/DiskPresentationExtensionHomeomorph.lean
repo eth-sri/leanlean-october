@@ -148,8 +148,6 @@ def extensionHomeomorph : DiskAttachment (twoAttaching f c r s) ≃ₜ DiskAttac
   continuous_toFun := (extensionToTarget f c r s h).continuous
   continuous_invFun := (targetToExtension f c r s h).continuous
 
-@[simp] theorem extensionHomeomorph_old (x : DiskAttachment r) :
-    extensionHomeomorph f c r s h (sourceIntoExtension f c r s x) = sourceMap f c r s h x := rfl
 
 def extensionModel : Whitehead.DiskExtensionModel (DiskAttachment r) (DiskAttachment s) where
   oneCells := NewGenerators f
@@ -162,5 +160,3 @@ theorem extensionModel_map : (extensionModel f c r s h).map = sourceMap f c r s 
   apply ContinuousMap.ext
   intro x
   rfl
-
-end FiniteChains.RelativeAttachment.DiskPresentationExtension

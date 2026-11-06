@@ -53,5 +53,3 @@ theorem presCoverRelatorTriangle_projection (hpos : ∀ j, 0 < (w j).length)
     · exact presCoverConeCircleOrderIso_symm_projection w f hf p.1.1 p.1.2 p.2
         (relatorCirclePoint w p.1.2 ⟨0, hpos p.1.2⟩ CPos.cedgL)
     · exact p.2
-
-end FiniteChains.PresModel

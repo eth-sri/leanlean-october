@@ -7,9 +7,7 @@ public import Mathlib.Algebra.Category.ModuleCat.Abelian
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory
@@ -92,5 +90,3 @@ theorem orderNerveRealizationH2Comparison_natural (f : P → Q) (hf : Monotone f
       (HomologicalComplex.homologyFunctor (ModuleCat ℤ) (ComplexShape.down ℕ) 2).map _
   rw [← CategoryTheory.Functor.map_comp, ← CategoryTheory.Functor.map_comp,
     orderNerveRealizationChainComparison_natural]
-
-end FiniteChains.Comb

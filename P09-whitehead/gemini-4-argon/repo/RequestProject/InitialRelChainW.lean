@@ -1,10 +1,23 @@
 module
 
-public import RequestProject.InitialChain
+public import RequestProject.InitialComplex
+public import RequestProject.FoxNaturality
+public import RequestProject.PresentationDictionary
+public import RequestProject.NecessityAlgebraicMod
+public import RequestProject.CycleLifting
+public import RequestProject.Pi2Dictionary
+public import RequestProject.CoverComplex
+public import RequestProject.ChainFormula
+public import RequestProject.FinitelyDeterminedInf
+public import RequestProject.Pigeonhole
+public import RequestProject.CoverAcyclic
+public import RequestProject.TorsionFreeGroupRing
+public import RequestProject.ChainFormulaMod
 public import RequestProject.PresCockcroftDictionary
-public import RequestProject.PresentationComplexAcyclic
+public import RequestProject.CombData
 public import RequestProject.CombHurewicz1Pres
-public import RequestProject.TheoremAAcyclic
+public import RequestProject.CombCellularIso
+public import RequestProject.MapChainDescent
 
 @[expose] public section
 
@@ -38,17 +51,16 @@ into exactly that shape, giving **the base case, of length one, of the extension
   least one generator.
 -/
 
-namespace FiniteChains
-namespace Comb
+namespace FiniteChains.Comb
 
 universe u
 
-variable {I J : Type u} [LinearOrder I] [Fintype I] [DecidableEq I] [Fintype J] [DecidableEq J]
+variable {I J : Type u} [LinearOrder I] [DecidableEq I]
 variable (r : J → FreeGroup I)
 
 /-! ### Acyclicity of the presentation complex, read off the exponent-sum matrix -/
 
-omit [LinearOrder I] [Fintype I] [Fintype J] [DecidableEq J] in
+omit [LinearOrder I] in
 theorem bdry2_presComplex_eq_expCol :
     bdry2 (presComplex r) = Finsupp.linearCombination ℤ (expCol r) := by
   refine Finsupp.lhom_ext' fun j => LinearMap.ext_ring ?_
@@ -56,8 +68,3 @@ theorem bdry2_presComplex_eq_expCol :
     = Finsupp.linearCombination ℤ (expCol r) (Finsupp.single j (1 : ℤ))
   rw [bdry2_pres_single, Finsupp.linearCombination_single, one_smul, expCol_eq_expVec]
   rfl
-
-/-! ### The hypotheses are satisfiable -/
-
-end Comb
-end FiniteChains

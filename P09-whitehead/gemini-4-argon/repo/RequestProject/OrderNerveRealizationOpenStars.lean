@@ -94,5 +94,3 @@ theorem orderNerveRealizationMap_mem_openStar_iff {P Q : Type}
   · rintro ⟨p, hp, hxp⟩
     obtain ⟨i, hi⟩ := (orderNerveRealizationSimplex_mem_openStar_iff s.val z hz p).mp hxp
     exact ⟨i, (congrArg f hi).trans hp⟩
-
-end FiniteChains.Comb

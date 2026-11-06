@@ -1,6 +1,8 @@
 module
 
-public import RequestProject.Pi2ExtensionInjective
+public import RequestProject.Pi2Extension
+public import RequestProject.BaseChangeCycles
+public import RequestProject.HNNEmbedding
 
 @[expose] public section
 
@@ -23,9 +25,7 @@ integer combination of the augmentations of those cycles, hence zero.  Together 
   no hypothesis on the fundamental groups beyond the infinite-order condition of the paper.
 -/
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 
@@ -33,10 +33,9 @@ open MonoidAlgebra
 
 universe u
 
-variable {α : Type u} [Fintype α] [DecidableEq α] {J : Type u} [Fintype J] [DecidableEq J]
+variable {α : Type u} {J : Type u}
 variable (ρ : J → FreeGroup α) (w₀ : FreeGroup (Option α))
 
-omit [Fintype α] [DecidableEq α] [Fintype J] [DecidableEq J] in
 /-- The augmentation is unchanged by pushing coefficients along a homomorphism of groups. -/
 theorem augQ_mapDomain {G G' : Type*} [Group G] [Group G'] (f : G →* G')
     (x : MonoidAlgebra ℤ G) :
@@ -49,5 +48,3 @@ theorem augQ_mapDomain {G G' : Type*} [Group G] [Group G'] (f : G →* G')
       show (MonoidAlgebra.lift ℤ ℤ G' 1).toRingHom (MonoidAlgebra.mapDomain f (single g m)) = _
       rw [MonoidAlgebra.mapDomain_single]
       simp [MonoidAlgebra.lift_apply]
-
-end FiniteChains

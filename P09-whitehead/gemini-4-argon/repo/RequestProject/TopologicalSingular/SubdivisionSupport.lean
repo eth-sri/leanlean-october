@@ -69,5 +69,3 @@ theorem iteratedHomotopy_mem_subChains (A : Set X) (k n : ℕ)
     rw [iteratedHomotopy_succ]
     exact Submodule.add_mem _
       (fromModel_mem_subChains A (homotopyModel n) (iterated_subdivide_mem_subChains A k n hc)) ih
-
-end FiniteChains.SingularSubdivision

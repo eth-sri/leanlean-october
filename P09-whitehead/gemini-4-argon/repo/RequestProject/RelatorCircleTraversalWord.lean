@@ -12,9 +12,7 @@ Pending Lean verification. -/
 
 noncomputable section
 open scoped Classical unitInterval Topology
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb RelativeAttachment ContinuousEdgeWords
@@ -140,5 +138,3 @@ theorem circleFullLoop_homotopic_word :
       [circleWordGerm w j hn (Fin.last (relatorCircleSize w j + 1))] = circLoop w j := by
     rw [← List.concat_eq_append, ← List.ofFn_succ', circleWordGerms_eq]
   simpa only [hw, circleFullLoop, circleWordLastEdge, relatorCircleCycle, affineOrderWordPath, Function.comp_apply] using H
-
-end FiniteChains.PresModel

@@ -20,9 +20,7 @@ of `RequestProject/LemmaTwoOne.lean`.
 
 open scoped commutatorElement
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 
@@ -38,15 +36,7 @@ noncomputable def redVec (M : Subgroup G) [M.Normal] (v : J →₀ MonoidAlgebra
 @[simp] theorem redVec_apply (M : Subgroup G) [M.Normal] (v : J →₀ MonoidAlgebra ℤ G) (j : J) :
     redVec M v j = quotRingHom ℤ M (v j) := rfl
 
-/-- The `j`-th column of the reduced boundary matrix. -/
-noncomputable def boundaryCol (b : I → J → MonoidAlgebra ℤ G)
-    (hcol : ∀ j, {i | b i j ≠ 0}.Finite) (M : Subgroup G) [M.Normal] (j : J) :
-    I →₀ MonoidAlgebra ℤ (G ⧸ M) :=
-  boundaryColK ℤ b hcol M j
 
-@[simp] theorem boundaryCol_apply (b : I → J → MonoidAlgebra ℤ G)
-    (hcol : ∀ j, {i | b i j ≠ 0}.Finite) (M : Subgroup G) [M.Normal] (j : J) (i : I) :
-    boundaryCol b hcol M j i = quotRingHom ℤ M (b i j) := rfl
 
 /-- The Fox boundary `∂_{2,M}` as a map of free left `ℤ[G/M]`-modules. -/
 noncomputable def boundaryMap (b : I → J → MonoidAlgebra ℤ G)
@@ -178,5 +168,3 @@ theorem foxSat_commutator (b : I → J → MonoidAlgebra ℤ G)
   rw [forall_foxSat_iff_injective b hcol]
   exact injective_boundaryMap_of_injective b hcol ⁅N, N⁆ N hle
     ((forall_foxSat_iff_injective b hcol N).1 h)
-
-end FiniteChains

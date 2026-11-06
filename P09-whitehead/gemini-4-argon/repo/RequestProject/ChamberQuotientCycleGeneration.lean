@@ -9,9 +9,7 @@ public import RequestProject.StrictChamberInjection
 @[expose] public section
 
 /-! Genuine universal-cover two-cycle generation in the quotient chamber model. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb
@@ -55,5 +53,3 @@ theorem exists_qCover_base_cellular_cycle (a : Zpos A X (IsGamma A) att)
   · have h := congrArg (chain2 (univLift (orderCx (Zpos A X (IsGamma A) att)) p a)) he
     rw [hd, map_add, univLift_uOrdBoundary3] at h
     exact h
-
-end FiniteChains.Davis

@@ -4,9 +4,7 @@ public import RequestProject.TopologicalSingular.CoherentEdgeNormalization
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.TopologicalSingular
 open scoped unitInterval Topology
@@ -112,5 +110,3 @@ theorem stationaryEdgeHomotopy_boundary (x : X) (tau : Simplex X 1) (t : I)
 @[simp] theorem stationaryEdgeHomotopy_constant (x : X) (t : I) (z : Domain 1) :
     stationaryEdgeHomotopy x (ContinuousMap.const (Domain 1) x) (t, z) = x :=
   (stationaryEdgeHomotopy_exists x (ContinuousMap.const (Domain 1) x)).choose_spec.2 rfl t z
-
-end FiniteChains.TopologicalSingular

@@ -47,5 +47,3 @@ theorem genusNonempty_hread (s : PUnit) (x : ℕ × Bool) :
     simp [genusLw, wordLoop, hkdef]
   rw [hword]
   simpa using hmain
-
-end FiniteChains.Davis.Genus

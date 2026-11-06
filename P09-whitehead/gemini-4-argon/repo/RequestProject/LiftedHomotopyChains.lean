@@ -6,9 +6,7 @@ public import RequestProject.CellularHomotopyChain
 @[expose] public section
 
 /-! Lifted finite chain witnesses for actual path homotopies and their cellular images. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -41,5 +39,3 @@ theorem exists_mapped_lifted_homotopy_chain {v : UV X a} {p q : List (X.E × Boo
     rw [← pathChain_map]
     exact congrArg pathChain (uLiftPath_univLiftV a f r v b hr).symm
   rw [key p hp, key q (h.isPath hp)]
-
-end FiniteChains.Comb

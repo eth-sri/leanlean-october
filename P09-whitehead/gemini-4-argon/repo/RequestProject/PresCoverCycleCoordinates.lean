@@ -33,5 +33,3 @@ theorem presCover_cycles_eq_of_first_coefficients
       ⟨(⟨t.1.1, t.2.1.trans t.2.2⟩, ⟨t.1.2.1, t.2.2⟩), t.2.1⟩
     exact presCoverConeTriangles_eq_of_first_coefficient w f hf t.1.2.2 j hft
       c d hc hd (hpos j) (he _ j hft) e
-
-end FiniteChains.PresModel

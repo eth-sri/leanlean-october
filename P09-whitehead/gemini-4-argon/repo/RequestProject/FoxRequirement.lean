@@ -35,8 +35,6 @@ coefficients of `x` add up to zero. -/
 def VanishesMod (N : Subgroup G) (x : G →₀ ℤ) : Prop :=
   ∀ g : G, ∑ h ∈ x.support.filter (fun h => h * g⁻¹ ∈ N), x h = 0
 
-@[simp] theorem vanishesMod_zero (N : Subgroup G) : VanishesMod N (0 : G →₀ ℤ) := by
-  intro g; simp
 
 variable {I J : Type*}
 
@@ -51,5 +49,3 @@ of `v` vanishes, then the reduced `v` vanishes. -/
 def FoxSat (b : I → J → MonoidAlgebra ℤ G) (v : J →₀ MonoidAlgebra ℤ G)
     (N : Subgroup G) : Prop :=
   (∀ i : I, VanishesMod N (foxBoundary b v i).coeff) → ∀ j : J, VanishesMod N (v j).coeff
-
-end FiniteChains

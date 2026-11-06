@@ -5,9 +5,7 @@ public import RequestProject.QCubeSquareRadialIndex
 @[expose] public section
 
 /-! The actual internal radial boundary matrix of the eight square flags. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb
@@ -120,5 +118,3 @@ theorem squareInternalBoundary_naturality (c : QCube A) (a b : V) (hne : a ≠ b
           n • Finsupp.single (squareFlag c a b hne hs i) 1 := by simp
       rw [hn, map_smul, map_smul, squareFlag_internal_boundary, squareInternalBoundary,
         Finsupp.linearCombination_single]
-
-end FiniteChains.Davis

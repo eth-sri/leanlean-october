@@ -55,5 +55,3 @@ theorem reducedSimplexToStandard_positive_iff (n : ℕ) (x : reducedSimplex n) :
     refine Fin.cases ?_ (fun j => ?_) i
     · simpa using sub_pos.mpr hs
     · simpa using hp j
-
-end FiniteChains

@@ -6,9 +6,7 @@ public import RequestProject.SubstOneWay
 @[expose] public section
 
 /-! Fox coordinates retained by a word substitution. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 
@@ -51,6 +49,3 @@ theorem fox_blockSubst_internal (u : ∀ s, I s → FreeGroup A) (s : S)
       fox_map_of_not_mem_range Sum.inl (fun _ => Sum.inr_ne_inl)]
     simp
   · simp only [blockSubst_of_inr, fox_of, Sum.inr.injEq]
-
-end BlockFamily
-end FiniteChains

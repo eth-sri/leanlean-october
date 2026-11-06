@@ -111,8 +111,9 @@ theorem cellCoefficient_liftPath (i : NonTree T) (g : G) (p : List (K.E × Bool)
     cellCoefficient (G := G) i.1 (pathChain (liftPath T φ p g)) =
       MonoidAlgebra.single g 1 * coefficientMap T φ (fox i (pathWord T p)) := by
   induction p generalizing g with
-  | nil => simp
+  | nil => simp [liftPath]
   | cons e p ih =>
+
     rw [liftPath_cons]
     have hc : pathChain (liftGerm T φ g e :: liftPath T φ p (g * germValue T φ e)) =
         pathChain [liftGerm T φ g e] + pathChain (liftPath T φ p (g * germValue T φ e)) :=

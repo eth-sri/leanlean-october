@@ -14,9 +14,7 @@ actually uses is the existence of such a factorization, i.e. that the kernel of
 the exponent-sum homomorphism on a free group is its commutator subgroup.
 -/
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 open scoped commutatorElement
 
@@ -132,5 +130,3 @@ theorem exists_commutator_factorization (w : FreeGroup α)
       exact List.ofFn_getElem
     rw [hofn, hl', List.prod_append, hlp]
     simp
-
-end FiniteChains

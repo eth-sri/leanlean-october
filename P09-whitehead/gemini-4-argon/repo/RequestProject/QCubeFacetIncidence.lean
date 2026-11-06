@@ -42,5 +42,3 @@ theorem threeFacet_incidence_one (c : QCube A) {u v w : V}
   simp only [qCubeFacet_incidence_zero] at hw hv hu
   simp only [qCubeFacet_incidence_one, hw, hv, hu]
   norm_num
-
-end FiniteChains.Davis

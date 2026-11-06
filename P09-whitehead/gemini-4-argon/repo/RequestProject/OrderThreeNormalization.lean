@@ -5,9 +5,7 @@ public import RequestProject.OrderNerveCellMaps
 @[expose] public section
 
 /-! Degree-three normalization of the full weak order nerve. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -75,5 +73,3 @@ theorem normalized_boundary3 (c : OrdTri P →₀ ℤ)
     ∃ y : StrictOrdTet P →₀ ℤ, strictOrdBoundary3 y = normalizeOrdChain2 c := by
   obtain ⟨y, rfl⟩ := h
   exact ⟨normalizeOrdChain3 y, (normalizeOrdChain2_ordBoundary3 y).symm⟩
-
-end FiniteChains.Comb

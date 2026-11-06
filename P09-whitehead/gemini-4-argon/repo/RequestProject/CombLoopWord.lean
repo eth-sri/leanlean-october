@@ -23,8 +23,7 @@ loops**.  This file provides exactly that dictionary for `FiniteChains.Comb.Pi1`
   actually produced.
 -/
 
-namespace FiniteChains
-namespace Comb
+namespace FiniteChains.Comb
 
 universe u v
 
@@ -61,6 +60,3 @@ def loopHom (g : G → Loop X a) : FreeGroup G →* Pi1 X a :=
 @[simp] theorem loopHom_of (g : G → Loop X a) (x : G) :
     loopHom g (FreeGroup.of x) = Pi1.mk (g x) := by
   simp [loopHom]
-
-end Comb
-end FiniteChains

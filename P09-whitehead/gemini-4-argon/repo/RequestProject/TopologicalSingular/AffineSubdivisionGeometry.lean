@@ -97,5 +97,3 @@ theorem affineEval_dist_le {n : ℕ} (v : Vertices A n) (D : ℝ)
       (fun j => subset_convexHull ℝ _ ⟨j, rfl⟩) t
   obtain ⟨_, ⟨i, rfl⟩, _, ⟨j, rfl⟩, hij⟩ := convexHull_exists_dist_ge2 (hm z) (hm w)
   exact hij.trans (hD i j)
-
-end FiniteChains.AffineVertexChains

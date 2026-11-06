@@ -97,5 +97,3 @@ theorem orderNerveSingularCarrier_subcomplex_contractible {P : Type} [PartialOrd
       Set (orderNerveRealization P)) := by
   letI := orderNerveSingularCarrier_realization_contractible σ hσ
   exact (orderNerveRealizationSubtypeHomeomorph (orderNerveSingularCarrier σ)).symm.contractibleSpace
-
-end FiniteChains.Comb

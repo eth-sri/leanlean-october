@@ -10,9 +10,7 @@ remaining cells still obtain actual words and homotopies from the graph
 approximation theorem. Unverified source. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.ClassicalCW.ChainWords
 open ClassicalSkeletonAttachment ClassicalGraphModel RelativeAttachment PresModel
@@ -77,5 +75,3 @@ abbrev FixedRel := RelCWComplex.cell (Set.univ : Set K) 2 ⊕ PUnit.{1}
 def fixedRelators : FixedRel K → FreeGroup (FixedGen K T)
   | .inl j => FreeGroup.map Sum.inl (SpanningTree.pathWord T (fixedGraphWord K j).loopWord)
   | .inr _ => FreeGroup.of (Sum.inr PUnit.unit)
-
-end FiniteChains.ClassicalCW

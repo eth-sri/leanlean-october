@@ -15,9 +15,7 @@ it does not assert an inclusion of a stage in its own replacement.
 
 noncomputable section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 
@@ -79,9 +77,6 @@ def comp (g : PresMorFS τ υ) (f : PresMorFS ρ τ) : PresMorFS ρ υ where
   cells_cycle := fun y hy => g.cells_cycle _ (f.cells_cycle y hy)
   cells_aug := fun y hy => g.cells_aug _ (f.cells_aug y hy)
 
-@[simp] theorem comp_cells (g : PresMorFS τ υ) (f : PresMorFS ρ τ)
-    (y : J →₀ MonoidAlgebra ℤ (PresGroup ρ)) :
-    (g.comp f).cells y = g.cells (f.cells y) := rfl
 
 def castTarget {τ' : J' → FreeGroup α'} (f : PresMorFS ρ τ) (h : τ = τ') :
     PresMorFS ρ τ' := h ▸ f
@@ -176,60 +171,3 @@ theorem fsCells_eq_zero_of_generates {β K β' K' : Type u}
   apply fsCells_eq_zero_of_generates_comp eta Tj hgen ?_ hy
   intro x hx
   rw [hsq x, hzero x hx, eta'.cells_zero]
-
-section FiniteDictionary
-
-variable [Fintype J] [Fintype J']
-
-/-- With finitely many relators, the supported and ordinary Fox-cycle
-conditions are identical, not merely related by a chosen homology map. -/
-theorem fsIsFoxCycle_iff (y : J →₀ MonoidAlgebra ℤ (PresGroup ρ)) :
-    FSIsFoxCycle ρ y ↔ IsFoxCycle ρ y := by
-  have happ (i : α) : coverSecondBoundary (relSub ρ) ρ y i =
-      ∑ j : J, y j * foxMatrixPres ρ i j := by
-    simp only [coverSecondBoundary, Finsupp.linearCombination_apply, Finsupp.sum,
-      Finsupp.finset_sum_apply, Finsupp.smul_apply, smul_eq_mul]
-    change y.sum (fun j a => a * foxMatrixPres ρ i j) = _
-    exact Finsupp.sum_fintype _ _ (fun _ => zero_mul _)
-  change coverSecondBoundary (relSub ρ) ρ y = 0 ↔
-    ∀ i, ∑ j : J, y j * foxMatrixPres ρ i j = 0
-  constructor
-  · intro h i
-    rw [← happ, h, Finsupp.zero_apply]
-  · intro h
-    apply Finsupp.ext
-    intro i
-    exact (happ i).trans (h i)
-
-/-- Forget only the redundant finite support when all cell sets are finite.
-This connects the supported construction to the earlier `TPath` machinery. -/
-def PresMorFS.toPresMor (f : PresMorFS ρ τ) : PresMor ρ τ where
-  hom := f.hom
-  cells := fun y => f.cells
-    ((Finsupp.linearEquivFunOnFinite
-      (MonoidAlgebra ℤ (PresGroup ρ)) (MonoidAlgebra ℤ (PresGroup ρ)) J).symm y)
-  cells_add := by
-    intro y z
-    rw [map_add, f.cells_add]
-    rfl
-  cells_smul := by
-    intro a y
-    rw [map_smul, f.cells_smul]
-    rfl
-  cells_cycle := by
-    intro y hy
-    apply (fsIsFoxCycle_iff _).mp
-    apply f.cells_cycle
-    exact (fsIsFoxCycle_iff _).mpr hy
-  cells_aug := by
-    intro y hy
-    exact f.cells_aug _ hy
-
-@[simp] theorem PresMorFS.toPresMor_cells_coe (f : PresMorFS ρ τ)
-    (y : J →₀ MonoidAlgebra ℤ (PresGroup ρ)) :
-    f.toPresMor.cells y = (f.cells y : J' → MonoidAlgebra ℤ (PresGroup τ)) := by
-  simp only [PresMorFS.toPresMor, Finsupp.linearEquivFunOnFinite_symm_coe]
-
-end FiniteDictionary
-
-end FiniteChains

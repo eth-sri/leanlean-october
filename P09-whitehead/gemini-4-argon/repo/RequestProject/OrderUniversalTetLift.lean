@@ -4,9 +4,7 @@ public import RequestProject.OrderUniversalPosetThree
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -32,5 +30,3 @@ theorem uOrderTet_surjective : Function.Surjective (uOrderTet (P := P) (a := a))
 theorem exists_uOrder_three_chain (c : UOrdTet P a →₀ ℤ) :
     ∃ d : OrdTet (UOrder P a) →₀ ℤ, Finsupp.mapDomain uOrderTet d = c :=
   Finsupp.mapDomain_surjective uOrderTet_surjective c
-
-end FiniteChains.Comb

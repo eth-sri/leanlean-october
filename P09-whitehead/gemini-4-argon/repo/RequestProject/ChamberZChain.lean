@@ -33,8 +33,7 @@ about `Z` itself; transporting it to the universal cover with group-ring coeffic
 separate obligation.
 -/
 
-namespace FiniteChains
-namespace Davis
+namespace FiniteChains.Davis
 
 open RACG Mirror Comb Nerve
 
@@ -139,6 +138,3 @@ theorem zUpto_zlen (z : Zpos A X M att) : ZUpto (zlen z) z := by
   cases z with
   | inl p => exact ⟨p.1.rep, le_refl _, inChamber_rep p.1⟩
   | inr wx => exact ⟨wx.1.1, le_refl _, rfl⟩
-
-end Davis
-end FiniteChains

@@ -5,9 +5,7 @@ public import Mathlib.Order.WellFounded
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory
@@ -88,5 +86,3 @@ theorem orderNerveRealization_nonDegenerate_interior_dimension_eq {P : Type}
     ((Set.equivOfEq hrange).trans (Equiv.ofInjective t.val.obj ht).symm))
   simp only [Nat.card_eq_fintype_card, Fintype.card_fin, SimplexCategory.len_mk] at hc
   omega
-
-end FiniteChains.Comb

@@ -37,5 +37,3 @@ theorem roofTransform_monotone (hmono : Monotone g) :
     Monotone (hf.roofTransform g hg b hb) := by
   intro a a' haa'
   exact le_of_eq (hf.roofTransform_comparable_equal g hg b hb hmono haa')
-
-end FiniteChains.Comb.IsPosetCover

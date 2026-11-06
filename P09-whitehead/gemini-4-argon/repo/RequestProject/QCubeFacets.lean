@@ -101,5 +101,3 @@ theorem qCubeFacet_coordinate_one (c : QCube A) (v : V) :
   · subst w
     simp [qCubeToCoordinate, qCubeFacet]
   · simp [qCubeToCoordinate, qCubeFacet, h]
-
-end FiniteChains.Davis

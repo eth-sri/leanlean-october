@@ -13,9 +13,7 @@ No van Kampen or factor-injection hypothesis is introduced. Unverified. -/
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -130,6 +128,3 @@ include hD hL ht in
 theorem pi1_pushoutMap_injective : Function.Injective
     (pi1Map (pushoutMap p i hiV hiE hiF) (i.onV d₀)) :=
   (retraction_leftInverse p i hiV hiE hiF hD hL d₀ ht).injective
-
-end PushoutFundamental
-end FiniteChains.Comb

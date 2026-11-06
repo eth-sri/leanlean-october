@@ -63,5 +63,3 @@ def attachingHomotopyEquivOfExtensions (hS : IsClosed S)
       (chosenAttachingBackward_cell S a₀ a₁ H L₀ hs₀)
     intro t a
     simpa only [ContinuousMap.Homotopy.symm_symm] using hs₀ t a
-
-end FiniteChains.RelativeAttachment

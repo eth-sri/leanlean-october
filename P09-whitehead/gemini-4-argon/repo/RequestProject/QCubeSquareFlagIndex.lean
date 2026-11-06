@@ -5,9 +5,7 @@ public import RequestProject.QCubeSquareFlags
 @[expose] public section
 
 /-! Faithful indexing of the actual square flags by their signs and endpoints. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb
@@ -121,5 +119,3 @@ theorem squareFlagCoordinates_subdivision (c : QCube A) (a b : V) (hne : a ≠ b
      (Finsupp.single (squareFlag c a b hne hs (true, 1, false)) 1 -
       Finsupp.single (squareFlag c a b hne hs (true, 1, true)) 1)) = _
   simp only [map_add, map_sub, squareFlagCoordinates_single]
-
-end FiniteChains.Davis

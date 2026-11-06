@@ -72,5 +72,3 @@ theorem relativeTerminal_conclusions
     (normalizedPresentation_surface core hcore extra) (fun _ => rfl)
     hcoreInjective (normalizedPresentation_cockcroft core hcore extra hP)
     (normalized_core_trivial core hcore extra htriv)
-
-end FiniteChains.RelativeNormalForm

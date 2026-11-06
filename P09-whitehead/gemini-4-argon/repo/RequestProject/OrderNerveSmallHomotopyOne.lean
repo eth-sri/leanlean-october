@@ -55,5 +55,3 @@ theorem orderSmallHomotopy1_boundary {P : Type} [PartialOrder P]
     simp only [LinearMap.comp_apply, LinearMap.sub_apply, orderSmallHomotopy1_single]
     exact (orderSmallHomotopyOneFill_exists σ).choose_spec.2
   exact DFunLike.congr_fun he c
-
-end FiniteChains.Comb

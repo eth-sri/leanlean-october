@@ -38,5 +38,3 @@ theorem vertexPuncturedCube_acyclic :
       cmap_mem_incOn_of_maps (f := id) monotone_id (fun _ => True.intro) hc
   obtain ⟨y, hy, hdy⟩ := h c hc' hcyc
   exact ⟨y, incOn_le_inc _ hy, hdy⟩
-
-end FiniteChains.Davis

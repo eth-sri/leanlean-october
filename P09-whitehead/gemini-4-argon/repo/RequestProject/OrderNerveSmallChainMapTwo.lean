@@ -123,5 +123,3 @@ theorem orderSmallCellularApproximation2_cycle {P : Type} [PartialOrder P]
   change Nerve.bdry (ordNerveChain2 (decodeOrdNerve2 (orderSmallToNerve2 c))) = 0
   rw [ordNerveChain2_decode (orderSmallToNerve2_mem_inc c), orderSmallToNerve2_length,
     orderSmallToNerve2_boundary, hc, map_zero]
-
-end FiniteChains.Comb

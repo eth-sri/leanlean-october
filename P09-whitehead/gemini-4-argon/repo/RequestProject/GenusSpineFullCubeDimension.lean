@@ -7,9 +7,7 @@ public import RequestProject.OrderThreeNormalization
 @[expose] public section
 
 /-! The actual marked-spine image is supported in quotient cube dimension at most two. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb
@@ -38,7 +36,7 @@ theorem markedSpineToFullCube_normalized_dimension (d : (markedSpineCx q).F →�
   classical
   by_contra hdim
   have hzero : normalizeOrdChain2 (chain2 (markedSpineToFullCube q) d) t = 0 := by
-    rw (config := { transparency := .default }) [normalizeOrdChain2, Finsupp.linearCombination_apply, Finsupp.sum_apply]
+    erw [normalizeOrdChain2, Finsupp.linearCombination_apply, Finsupp.sum_apply]
     apply Finset.sum_eq_zero
     intro a ha
     have hn : normalizeOrdTriangle a t = 0 := by
@@ -49,12 +47,10 @@ theorem markedSpineToFullCube_normalized_dimension (d : (markedSpineCx q).F →�
           have htop := congrArg (fun x : StrictOrdTri (QCube (cmpRel (GenusVertex q))) =>
             x.1.2.2) he
           change a.1.2.2 = t.1.2.2 at htop
-          rw (config := { transparency := .default }) [htop] at hd
+          erw [htop] at hd
           exact False.elim (hdim hd)
         · simp [he]
       · simp
     change (((chain2 (markedSpineToFullCube q) d) a) • normalizeOrdTriangle a) t = 0
-    rw (config := { transparency := .default }) [Finsupp.smul_apply, hn, smul_zero]
+    erw [Finsupp.smul_apply, hn, smul_zero]
   exact Finsupp.mem_support_iff.mp ht hzero
-
-end FiniteChains.Davis.Genus

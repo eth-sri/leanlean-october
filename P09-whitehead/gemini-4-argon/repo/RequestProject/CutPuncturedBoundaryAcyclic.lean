@@ -39,5 +39,3 @@ theorem positiveCutPuncturedBoundary_acyclic (t : QOld A)
         (cutBoundary_le_section_retraction t hne) hc), ?_⟩
   rw [map_sub, ← cmap_bdry, hdy, cmap_comp, hp]
   abel
-
-end FiniteChains.Davis

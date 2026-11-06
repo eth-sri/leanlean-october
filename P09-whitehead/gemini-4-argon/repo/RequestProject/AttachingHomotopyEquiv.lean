@@ -105,5 +105,3 @@ def attachingHomotopyEquiv (S : Set D) (hS : IsClosed S)
     intro t a
     simpa only [ContinuousMap.Homotopy.symm_symm] using
       attachingDiskExtension_side S hext a₀ a₁ H t a
-
-end FiniteChains.RelativeAttachment

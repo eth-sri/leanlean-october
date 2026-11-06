@@ -2,7 +2,7 @@ module
 
 public import RequestProject.GenusChainCollapse
 public import RequestProject.TruncatedCellDimension
-public import RequestProject.ChamberQuotientFinite
+public import RequestProject.BlockSpinePres
 public import RequestProject.StrictOrderComplex
 public import RequestProject.CombData
 
@@ -132,7 +132,6 @@ theorem genusSpineCellDimension_strictMono :
 /-- The genuine finite simplicial two-complex associated with the surviving cells. -/
 def genusSpineCx : Comb.Complex2 := Comb.strictOrderCx (GenusSpineCell q)
 
-instance : Finite (genusSpineCx q).V := inferInstanceAs (Finite (GenusSpineCell q))
 instance : Finite (genusSpineCx q).E :=
   inferInstanceAs (Finite (Comb.strictOrderCx (GenusSpineCell q)).E)
 instance : Finite (genusSpineCx q).F :=
@@ -155,12 +154,3 @@ def genusSpineCutCell (σ : NeSpx (cmpRel (GenusVertex q))) (hσ : σ.1.card ≤
   ⟨Sum.inr ⟨σ.1, σ.2⟩, genusSpineCellSet_of_dimension_lt_two q _ (by
     change σ.1.card - 1 < 2
     omega)⟩
-
-@[simp] theorem genusSpineCellToOld_cutCell (σ : NeSpx (cmpRel (GenusVertex q)))
-    (hσ : σ.1.card ≤ 2) :
-    genusSpineCellToOld q (genusSpineCutCell q σ hσ) = posQCube σ := rfl
-
-instance : Nonempty (GenusSpineCell q) :=
-  ⟨genusSpineCutCell q (spx1 (cC (gc q))) (by simp [spx1_val])⟩
-
-end FiniteChains.Davis.Genus

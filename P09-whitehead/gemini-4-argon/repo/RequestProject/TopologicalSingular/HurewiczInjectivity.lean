@@ -27,17 +27,3 @@ theorem singularHurewicz2_eq_zero_iff (x : X) (q : HomotopyGroup (Fin 2) X x) :
     exact congrArg Additive.toMul (ha.symm.trans hzero)
   · rintro rfl
     exact singularHurewicz2_one x
-
-theorem singularHurewicz2Hom_injective (x : X) :
-    Function.Injective (singularHurewicz2Hom x) := by
-  apply (injective_iff_map_eq_one (singularHurewicz2Hom x)).mpr
-  intro q hq
-  exact (singularHurewicz2_eq_zero_iff x q).mp hq
-
-/-- Injectivity of the degree-two Hurewicz map for simply connected spaces,
-with actual Mathlib homotopy groups and integral singular homology. -/
-theorem singularHurewicz2_injective (x : X) : Function.Injective (singularHurewicz2 x) := by
-  intro a b h
-  exact singularHurewicz2Hom_injective x h
-
-end FiniteChains.TopologicalSingular

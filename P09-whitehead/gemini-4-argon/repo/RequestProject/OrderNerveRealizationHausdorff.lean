@@ -5,9 +5,7 @@ public import Mathlib.Topology.Separation.Hausdorff
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory
@@ -80,5 +78,3 @@ theorem orderNerveRealization_nonDegenerate_isClosedEmbedding {P : Type} [Partia
   exact (orderNerveRealizationSimplex P s.val).hom.continuous.isClosedEmbedding
     (orderNerveRealizationSimplex_injective s.val
       ((PartialOrder.mem_nerve_nonDegenerate_iff_injective s.val).mp s.property))
-
-end FiniteChains.Comb

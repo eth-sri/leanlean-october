@@ -6,9 +6,7 @@ public import RequestProject.PresPosetReadingSurjective
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb
@@ -57,5 +55,3 @@ theorem alphaHomW_readingPresW (hpos : ∀ j, 0 < (w j).length)
 theorem readingPresW_injective (hpos : ∀ j, 0 < (w j).length) :
     Function.Injective (readingPresW ρ w hw) :=
   Function.LeftInverse.injective (alphaHomW_readingPresW w ρ hw hpos)
-
-end FiniteChains.PresModel

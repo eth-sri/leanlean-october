@@ -72,5 +72,3 @@ theorem roseCover_end_no_outgoing (q : P) (i : α) (b : Bool)
   rcases he with he | he <;>
     have hp := (congrArg (fun r : StrictOrdEdge (Rose α) => r.1.1) he).symm.trans
       ((congrArg f hs).trans hq) <;> cases hp
-
-end FiniteChains.PresModel

@@ -131,5 +131,3 @@ theorem genus_recorded_cut_pair_stage_injIn
   have hstep := genus_cut_pair_stage_injIn q left right t hne ht hpositive
     (by simpa only [hs] using hsplit)
   simpa only [hs] using hstep
-
-end FiniteChains.Davis.Genus

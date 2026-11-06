@@ -6,9 +6,7 @@ public import RequestProject.OrderNerveGradedBoundary
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory AlgebraicTopology TopologicalSingular SingularSubdivision
@@ -34,14 +32,14 @@ theorem orderSingularToNerve_boundary (n : ℕ) (c : Chain (orderNerveRealizatio
     Nerve.bdry (orderSingularToNerve P (n + 1) c) =
       orderSingularToNerve P n (boundary n c) := by
   change Nerve.bdry (orderTightToNerve P (n + 1) (orderRefinementSmall P (n + 1) c)) = _
-  rw (config := { transparency := .default }) [orderTightToNerve_boundary, orderRefinementSmall_boundary]
+  erw [orderTightToNerve_boundary, orderRefinementSmall_boundary]
   rfl
 
 theorem orderSingularToNerve_zero_boundary (c : Chain (orderNerveRealization P) 0) :
     Nerve.bdry (orderSingularToNerve P 0 c) =
       augmentation c • FreeAbelianGroup.of ([] : List P) := by
   change Nerve.bdry (orderSmallToNerve0 (orderRefinementSmall P 0 c)) = _
-  rw (config := { transparency := .default }) [orderSmallToNerve0_boundary]
+  erw [orderSmallToNerve0_boundary]
   rfl
 
 theorem orderSingularToNerve_length (n : ℕ) (c : Chain (orderNerveRealization P) n) :
@@ -67,16 +65,16 @@ theorem orderNerveRoundTrip_boundary (n : ℕ) (c : ComposableArrows P (n + 1) �
       orderNerveRoundTrip P n
         ((AlternatingFaceMapComplex.objD (mathlibOrderNerveModule P) n).hom c) := by
   have he := congrArg (fun f => f c) ((orderNerveExplicitSingularMap P).comm (n + 1) n)
-  rw (config := { transparency := .default }) [complex_d, AlternatingFaceMapComplex.obj_d_eq] at he
+  erw [complex_d, AlternatingFaceMapComplex.obj_d_eq] at he
   change Nerve.bdry (orderSingularToNerve P (n + 1) _) = orderSingularToNerve P n _
-  rw (config := { transparency := .default }) [orderSingularToNerve_boundary]
+  erw [orderSingularToNerve_boundary]
   exact congrArg (orderSingularToNerve P n) he
 
 theorem orderNerveRoundTrip_supported (n : ℕ) (s : ComposableArrows P n) :
     orderNerveRoundTrip P n (Finsupp.single s 1) ∈ Nerve.IncOn (Set.range s.obj) := by
   apply orderSingularToNerve_supported
   change (orderNerveExplicitSingularMap P).f n (Finsupp.single s 1) ∈ _
-  rw (config := { transparency := .default }) [orderNerveExplicitSingularMap_single]
+  erw [orderNerveExplicitSingularMap_single]
   exact single_mem_subChains _ n _ 1 (orderNerveSingularSimplex_supported _ s (fun i => ⟨i, rfl⟩))
 
 theorem orderNerveRoundTrip_zero_boundary (c : ComposableArrows P 0 →₀ ℤ) :
@@ -86,8 +84,6 @@ theorem orderNerveRoundTrip_zero_boundary (c : ComposableArrows P 0 →₀ ℤ) 
   | add c d hc hd => simp only [map_add, hc, hd]
   | single s r =>
     change Nerve.bdry (orderSingularToNerve P 0 ((orderNerveExplicitSingularMap P).f 0 _)) = _
-    rw (config := { transparency := .default }) [orderNerveExplicitSingularMap_single, orderSingularToNerve_zero_boundary,
+    erw [orderNerveExplicitSingularMap_single, orderSingularToNerve_zero_boundary,
       augmentation_single, orderNerveGradedEncode_single, map_zsmul, Nerve.bdry_of]
     simp [orderNerveVertexList, List.ofFn_succ, Nerve.bdryOn]
-
-end FiniteChains.Comb

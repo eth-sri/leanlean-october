@@ -127,5 +127,3 @@ theorem oneBoundary_eq (a : UnitBoundary (Fin 1 → ℝ)) :
   apply Subtype.ext
   cases b <;> norm_num [oneBallIntervalHomeomorph, unitBoundaryInclusion,
     oneBoundaryPoint, boolEndpoint]
-
-end FiniteChains.RelativeAttachment

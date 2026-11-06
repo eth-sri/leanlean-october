@@ -4,9 +4,7 @@ public import RequestProject.TopologicalSingular.HurewiczSurjectivity
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.TopologicalSingular
 open CategoryTheory AlgebraicTopology
@@ -27,5 +25,3 @@ theorem singularH2_map_eq_zero_of_killsPi2 (x : X) (f : C(X, Y)) (hf : Whitehead
   apply LinearMap.ext
   intro q
   exact singularH2_pushdown_zero_of_killsPi2 x f hf q
-
-end FiniteChains.TopologicalSingular

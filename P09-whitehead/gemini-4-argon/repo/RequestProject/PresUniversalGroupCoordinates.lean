@@ -67,5 +67,3 @@ noncomputable def presUniversalFibreGroupEquiv (hpos : ∀ j, 0 < (w j).length)
     obtain ⟨q, hq, hz⟩ := (presGroupCocycle ρ w hw).readVertex_fibre_surjective
       (ptBase w) (readingPresW_surjective ρ w hw) p z
     exact ⟨⟨q, hq.trans hp⟩, hz⟩⟩
-
-end FiniteChains.PresModel

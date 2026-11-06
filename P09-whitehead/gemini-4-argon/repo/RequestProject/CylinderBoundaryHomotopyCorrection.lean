@@ -86,5 +86,3 @@ theorem homotopyRel_of_boundaryContraction (S : Set D) (hS : IsClosed S)
   · intro t d hd
     exact (hGB 1 ⟨(t, d), Or.inr (Or.inr hd)⟩).trans
       ((hBside 1 t ⟨d, hd⟩).trans (hJ₁ t ⟨d, hd⟩))
-
-end FiniteChains.RelativeAttachment

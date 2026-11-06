@@ -6,9 +6,7 @@ public import RequestProject.FoxFinsupp
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb
@@ -72,5 +70,3 @@ theorem presUniversalGroupRingBoundary_eq_fox :
     rw [presUniversalGroupRingBoundary_fox_single]
     simp [coverSecondBoundary, coverFoxGradient, foxGradient_apply,
       Finsupp.linearCombination_single, Finsupp.smul_apply, smul_eq_mul]
-
-end FiniteChains.PresModel

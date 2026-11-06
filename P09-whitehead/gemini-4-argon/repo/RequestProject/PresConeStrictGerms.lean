@@ -39,5 +39,3 @@ theorem presCone_strictGerm_to_apex (e : (strictOrderCx (PresPos w)).E × Bool)
   cases b with
   | false => exact (presCone_strictEdge_source_ne_apex w j e h).elim
   | true => exact ⟨rfl, h⟩
-
-end FiniteChains.PresModel

@@ -16,9 +16,7 @@ noncomputable section
 open scoped Classical unitInterval
 open Set Topology
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory Simplicial
@@ -178,5 +176,3 @@ theorem orderNerveComparablePath_of_support [Fintype P] {a b : P}
       rfl
     · rw [if_neg (Ne.symm hpa), if_neg (Ne.symm hpb), hx p hpa hpb]
       ring
-
-end FiniteChains.Comb

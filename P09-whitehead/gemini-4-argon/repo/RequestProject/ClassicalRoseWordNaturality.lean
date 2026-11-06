@@ -15,9 +15,7 @@ Pending Lean verification. -/
 
 noncomputable section
 open scoped Classical unitInterval Topology
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb RelativeAttachment ClassicalGraphModel ContinuousEdgeWords
@@ -120,5 +118,3 @@ theorem dummyCircleBoundaryHomeomorph_homotopic_word :
       (ContinuousMap.Homotopic.refl unitBoundarySquareHomeomorph.toContinuousMap)
   rw [← dummyCircleBoundaryHomeomorph_eq] at H
   exact H
-
-end FiniteChains.PresModel

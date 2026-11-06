@@ -44,5 +44,3 @@ theorem genus_cutFaceChain_collapse_zero_of_old_boundary (d : (markedSpineCx q).
   · intro σ hnot
     by_contra hn
     exact hnot (genus_simplex_mem_faces q (qThreeCutFaceChain_support r σ hn).2)
-
-end FiniteChains.Davis.Genus

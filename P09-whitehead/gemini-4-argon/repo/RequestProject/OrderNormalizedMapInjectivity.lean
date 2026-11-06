@@ -5,9 +5,7 @@ public import RequestProject.OrderNormalizationNaturality
 @[expose] public section
 
 /-! Faithfulness of actual normalized strict maps on retained vertex sets. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -62,5 +60,3 @@ theorem normalizedStrictChain2_zero_of_injOn (f : P → Q) (hf : Monotone f)
   have hz' : Finsupp.mapDomain image z = 0 := by rw [← hmap, hrecon, hz]
   have he : z = 0 := Finsupp.mapDomain_injective himage (hz'.trans Finsupp.mapDomain_zero.symm)
   rw [← hrecon, he, Finsupp.mapDomain_zero]
-
-end FiniteChains.Comb

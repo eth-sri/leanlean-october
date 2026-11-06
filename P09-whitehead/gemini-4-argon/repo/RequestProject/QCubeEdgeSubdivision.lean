@@ -8,9 +8,7 @@ public import RequestProject.StrictOrderChains
 /-! Actual oriented edge subdivisions of quotient cubes. -/
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb
@@ -86,5 +84,3 @@ theorem cubeEdgeSubdivision_filter_tgt (d c : QCube A) (v : V) (hv : v ∈ d.spx
       if d = c then cubeEdgeSubdivision d v hv else 0 := by
   classical
   by_cases h : d = c <;> simp [cubeEdgeSubdivision, h, Finsupp.filter_single_of_pos, Finsupp.filter_single_of_neg]
-
-end FiniteChains.Davis

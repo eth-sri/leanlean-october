@@ -16,9 +16,7 @@ All cell and coefficient chains are finitely supported. Unverified source.
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 
@@ -200,6 +198,3 @@ theorem pairStructuralMap_generates : FSGenerates (pairStructuralMap ρ) := by
   exact fs_cycle_mem_span_groupMap_cycles (pairSubGroupHom ρ)
     (pairSubGroupHom_injective ρ)
     (fun j => coverFoxGradient (relSub ρ) (ρ j)) x (pair_cycle_reflection ρ x hx)
-
-end RelativeNormalForm
-end FiniteChains

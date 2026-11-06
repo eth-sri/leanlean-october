@@ -4,9 +4,7 @@ public import RequestProject.OrderNormalizationNaturality
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -37,5 +35,3 @@ theorem normalizeOrdChain2_strict_map (f : P → Q) (hf : StrictMono f)
     normalizeOrdChain2 (chain2 (orderCxMap f hf.monotone) c) =
       chain2 (strictOrderCxMap f hf) (normalizeOrdChain2 c) := by
   rw [normalizeOrdChain2_map, normalizedStrictChain2_eq_strict]
-
-end FiniteChains.Comb

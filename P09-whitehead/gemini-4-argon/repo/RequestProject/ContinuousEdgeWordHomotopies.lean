@@ -14,9 +14,7 @@ group classes. Pending Lean verification. -/
 noncomputable section
 open scoped Classical unitInterval Topology
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.ContinuousEdgeWords
 
@@ -120,5 +118,3 @@ theorem concat_homotopic_realize_ofFn (n : ℕ)
         (Comb.isPath_ofFn src tgt n (a ∘ Fin.castSucc) (fun i => g i.castSucc)
           (fun i => hs i.castSucc) (fun i => ht i.castSucc))
         ⟨hs (Fin.last n), ht (Fin.last n)⟩)
-
-end FiniteChains.ContinuousEdgeWords

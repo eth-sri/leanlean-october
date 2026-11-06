@@ -11,9 +11,7 @@ the homotopy type by an explicit contraction. This is the geometric
 ingredient for adding a dummy generator together with its killing disk. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.RelativeAttachment
 open Topology
@@ -89,8 +87,6 @@ def pointProjection (x : X) (d : D) : C(PointAttachment x d, X) :=
   desc (fun _ : PUnit => x) (fun _ : PUnit => d)
     (ContinuousMap.id X) (ContinuousMap.const D x) (fun _ => rfl)
 
-@[simp] theorem pointProjection_old (x : X) (d : D) (y : X) :
-    pointProjection x d (pointOld x d y) = y := rfl
 
 @[simp] theorem pointProjection_cell (x : X) (d c : D) :
     pointProjection x d (pointCell x d c) = x := desc_cell ..
@@ -167,5 +163,3 @@ def pointBallAttachmentHomotopyEquiv (x : X) (d : ClosedUnitBall E) :
     ContinuousMap.HomotopyEquiv X (PointAttachment x d) :=
   pointAttachmentOldHomotopyEquiv x d (closedBallFromPointHomotopy d)
     (closedBallFromPointHomotopy_fixed d)
-
-end FiniteChains.RelativeAttachment

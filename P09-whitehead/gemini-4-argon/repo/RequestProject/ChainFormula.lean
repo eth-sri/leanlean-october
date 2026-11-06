@@ -41,9 +41,7 @@ requirements that hypothesis is now a theorem about the cell-level data of the
 chain.
 -/
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 
@@ -128,7 +126,3 @@ theorem oldVec_support_subset (r : ℕ) [DecidableEq (Cell r)] (v : J →₀ Mon
   classical
   refine Finsupp.mapDomain_support.trans ?_
   exact Finset.image_subset_image (Finsupp.support_mapRange)
-
-end ChainInput
-
-end FiniteChains

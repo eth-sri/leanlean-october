@@ -26,5 +26,3 @@ theorem pointed_triangle_horn_exists (i : Fin 4)
     rw [singular_double_face_swap tau i k,
       htau (i.succAbove k) (Fin.succAbove_ne i k), (a (i.succAbove k)).based]
   · rw [htau j hj, (a j).based]
-
-end FiniteChains.TopologicalSingular

@@ -59,11 +59,6 @@ def attachmentBoundaryReparam (a : A → P) (i : A → D)
   continuous_toFun := (attachmentBoundaryReparamForward a i S b hb).continuous
   continuous_invFun := (attachmentBoundaryReparamBackward a i hi S b hb).continuous
 
-@[simp] theorem attachmentBoundaryReparam_old (a : A → P) (i : A → D)
-    (hi : Function.Injective i) (S : Set D)
-    (b : A ≃ₜ S) (hb : ∀ x, (b x).val = i x) (p : P) :
-    attachmentBoundaryReparam a i hi S b hb (old a i p) =
-      old (a ∘ b.symm) Subtype.val p := rfl
 
 @[simp] theorem attachmentBoundaryReparam_cell (a : A → P) (i : A → D)
     (hi : Function.Injective i) (S : Set D)
@@ -75,11 +70,6 @@ def attachmentBoundaryReparam (a : A → P) (i : A → D)
   rw [desc_cell]
   rfl
 
-@[simp] theorem attachmentBoundaryReparam_symm_old (a : A → P) (i : A → D)
-    (hi : Function.Injective i) (S : Set D)
-    (b : A ≃ₜ S) (hb : ∀ x, (b x).val = i x) (p : P) :
-    (attachmentBoundaryReparam a i hi S b hb).symm (old (a ∘ b.symm) Subtype.val p) =
-      old a i p := rfl
 
 @[simp] theorem attachmentBoundaryReparam_symm_cell (a : A → P) (i : A → D)
     (hi : Function.Injective i) (S : Set D)
@@ -91,5 +81,3 @@ def attachmentBoundaryReparam (a : A → P) (i : A → D)
   unfold attachmentBoundaryReparamBackward
   rw [desc_cell]
   rfl
-
-end FiniteChains.RelativeAttachment

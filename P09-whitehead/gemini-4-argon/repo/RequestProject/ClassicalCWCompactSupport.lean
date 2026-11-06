@@ -127,5 +127,3 @@ theorem IsCompact.finite_lower_support {K : Set X} (hK : IsCompact K) (d : ℕ)
   simp only [Set.mem_iUnion]
   refine ⟨m, hmd, j, ?_, RelCWComplex.openCell_subset_closedCell m j hj⟩
   exact (Set.Finite.mem_toFinset (hI m)).mpr ⟨x, hx, hj⟩
-
-end FiniteChains.ClassicalCW

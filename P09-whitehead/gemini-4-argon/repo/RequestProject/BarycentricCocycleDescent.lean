@@ -78,5 +78,3 @@ theorem barycentricSection_flat (s : P → Ω)
 theorem barycentricSection_spx1 (s : P → Ω) (a : P) :
     barycentricSection c s (spx1 a) = s a := by
   simp [barycentricSection]
-
-end FiniteChains.Davis

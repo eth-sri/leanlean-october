@@ -49,5 +49,3 @@ theorem cylinderCoverCollapsedChain_support_rose (c : StrictOrdEdge P →₀ ℤ
       subst e
       exact ⟨cylinderCoverCollapse_mem_rose w f hf t.1.1,
         cylinderCoverCollapse_mem_rose w f hf t.1.2⟩
-
-end FiniteChains.PresModel

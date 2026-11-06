@@ -13,9 +13,7 @@ Pending final Lean verification. -/
 
 noncomputable section
 open scoped Classical
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb Cell
@@ -30,7 +28,7 @@ def universalSpineOldReceiverEquiv :
 
 theorem universalSpineOldBase_eq : universalSpineOldBase q = posQCube (gBase q) := by
   change (genusSpineToOld q).onV ((markedSpineTree q).root).1 = _
-  rw (config := { transparency := .default }) [markedSpineTree_root]
+  erw [markedSpineTree_root]
   rfl
 
 theorem exists_universalOldCocycle :
@@ -52,7 +50,7 @@ theorem universalOldCocycle_monodromy :
 
 theorem universalOldCocycle_monodromy_bijective :
     Function.Bijective ((universalOldCocycle q).monodromy (universalSpineOldBase q)) := by
-  rw (config := { transparency := .default }) [universalOldCocycle_monodromy]
+  erw [universalOldCocycle_monodromy]
   exact (universalSpineOldReceiverEquiv q).symm.bijective
 
 abbrev UniversalPolygonCover :=
@@ -143,14 +141,14 @@ theorem universalPolygonLift_initial :
   apply (universalOldCocycle q).readVertex_fibre_injective (universalSpineOldBase q)
     (universalOldCocycle_monodromy_bijective q).1
   · change uOrderEnd (universalPolygonRealization q _) = _
-    rw (config := { transparency := .default }) [universalPolygonRealization_end, barycentricMap_spx1,
+    erw [universalPolygonRealization_end, barycentricMap_spx1,
       (universalPolygon q).projV, endV_base, universalSpineOldBase_eq]
     rfl
   · change (universalOldCocycle q).readVertex (universalSpineOldBase q)
       (barycentricCoverRealization posQCube posQCube_monotone (universalOldCocycle q)
         (universalSpineOldBase q) isConnected_orderCx_qOld
         (universalOldCocycle_monodromy_bijective q) _) = _
-    rw (config := { transparency := .default }) [barycentricCoverRealization_read]
+    erw [barycentricCoverRealization_read]
     simp only [barycentricCoverReading, chainMax_spx1, descendedSurfaceSimplex,
       barycentricMap_spx1, descendedSurfaceProjection, OrdCocycle.val_refl, mul_one,
       universalPolygon_initial_sheet, OrdCocycle.readVertex_base]
@@ -165,24 +163,22 @@ theorem universalOldPolygonChain_boundary :
     Comb.bdry2 _ (universalOldPolygonChain q) =
       pathChain (uLiftPath (mapPath (surfCx (cmpRel (GenusVertex q))) (bdPath (gc q) (8 * q)))
         (UV.base _ (universalSpineOldBase q))) := by
-  rw (config := { transparency := .default }) [universalOldPolygonChain, bdry2_chain2,
+  erw [universalOldPolygonChain, bdry2_chain2,
     (universalPolygon q).subdivisionFundamental_boundary (gc q) (universalPolygonProjection q)]
   change Finsupp.mapDomain (universalPolygonLift q).onE (pathChain _) = _
-  rw (config := { transparency := .default }) [← pathChain_map]
+  erw [← pathChain_map]
   apply congrArg pathChain
   have hp := isPath_mapPath (universalPolygonLift q)
     ((universalPolygon q).subdivisionBoundaryPath_isPath (gc q) (universalPolygonProjection q) (8 * q))
-  rw (config := { transparency := .default }) [universalPolygonLift_initial] at hp
+  erw [universalPolygonLift_initial] at hp
   have he := eq_uLiftPath_of_isPath _ _ _ hp
   have hproj : mapPath (univProj (orderCx (QOld (cmpRel (GenusVertex q)))) (universalSpineOldBase q))
       (mapPath (universalPolygonLift q)
         ((universalPolygon q).subdivisionBoundaryPath (gc q) (universalPolygonProjection q) (8 * q))) =
       mapPath (surfCx (cmpRel (GenusVertex q))) (bdPath (gc q) (8 * q)) := by
-    rw (config := { transparency := .default }) [mapPath_comp, universalPolygonLift_projects, ← mapPath_comp,
+    erw [mapPath_comp, universalPolygonLift_projects, ← mapPath_comp,
       (universalPolygon q).subdivisionBoundaryPath_projection (gc q)
         (universalPolygonProjection q) (universalPolygonProjection_isPosetCover q)]
     congr 2 <;> exact Subsingleton.elim _ _
-  rw (config := { transparency := .default }) [hproj] at he
+  erw [hproj] at he
   exact he
-
-end FiniteChains.Davis.Genus

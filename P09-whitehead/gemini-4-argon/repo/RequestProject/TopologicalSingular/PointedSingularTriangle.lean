@@ -6,9 +6,7 @@ public import RequestProject.TopologicalSingular.BasedTriangleHomotopy
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.TopologicalSingular
 variable {X : Type} [TopologicalSpace X] {x : X}
@@ -90,12 +88,10 @@ theorem first_face_constant_relation (a b c : PointedSingularTriangle X x)
       face j (face i tau) = ContinuousMap.const (Domain 1) x := by
     intro i j
     rw [hfaces]
-    fin_cases i <;> simp [a.based, b.based, c.based, constant]
+    fin_cases i <;> simp [a.based, b.based, c.based] <;> rfl
   have h := tetrahedronStickShell_face_relation tau hedge (hfaces 0)
+
   rw [tetrahedron_face_pi2 tau hedge 1 a (hfaces 1),
     tetrahedron_face_pi2 tau hedge 3 c (hfaces 3),
     tetrahedron_face_pi2 tau hedge 2 b (hfaces 2)] at h
   exact h
-
-end PointedSingularTriangle
-end FiniteChains.TopologicalSingular

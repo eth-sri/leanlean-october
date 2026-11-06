@@ -63,5 +63,3 @@ theorem fs_exists_cycle_of_boundary_nsmul (m : ℕ)
   refine ⟨u - m • z, ?_, z, by abel⟩
   change d (u - m • z) = 0
   rw [map_sub, map_nsmul, hz, hd, sub_self]
-
-end FiniteChains

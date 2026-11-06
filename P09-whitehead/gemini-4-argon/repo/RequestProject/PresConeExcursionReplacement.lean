@@ -64,5 +64,3 @@ theorem exists_presCone_strict_excursion_replacement (hpos : 0 < (w j).length)
   subst x
   subst y
   exact exists_presCone_excursion_replacement w j hpos a b
-
-end FiniteChains.PresModel

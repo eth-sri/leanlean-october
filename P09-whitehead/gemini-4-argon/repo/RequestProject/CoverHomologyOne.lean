@@ -24,13 +24,12 @@ namespace FiniteChains
 
 open MonoidAlgebra
 
-variable {α : Type*} [Fintype α] [DecidableEq α]
+variable {α : Type*} [DecidableEq α]
 variable (Nsub : Subgroup (FreeGroup α)) [Nsub.Normal]
-variable {J : Type*} [Fintype J] (ρ : J → FreeGroup α)
+variable {J : Type*} (ρ : J → FreeGroup α)
 
 variable {Nsub ρ}
 
-omit [Fintype α] in
 /-- A `ℤ[Q]`-multiple of the Fox vector of an element of a normal subgroup `P ≤ Ñ` is again
 the Fox vector of an element of `P`. -/
 theorem exists_mem_smul_foxVec {P : Subgroup (FreeGroup α)} [P.Normal] (hP : P ≤ Nsub)
@@ -53,7 +52,3 @@ theorem exists_mem_smul_foxVec {P : Subgroup (FreeGroup α)} [P.Normal] (hP : P 
         rw [proj_grp, qgrp, MonoidAlgebra.smul_single, smul_eq_mul, mul_one]
       rw [foxVec_zpow (Nsub := Nsub) (hP hconj) n, foxVec_conj (Nsub := Nsub) (hP hr),
         hsingle, smul_assoc]
-
-variable (Nsub ρ)
-
-end FiniteChains

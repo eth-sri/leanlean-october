@@ -1,7 +1,8 @@
 module
 
 public import RequestProject.GenusLoops
-public import RequestProject.BlockSurfaceApplyW
+public import RequestProject.BlockSpinePresW
+public import RequestProject.BlockSurfaceFilling
 
 @[expose] public section
 
@@ -30,12 +31,9 @@ side `4h+1` reads `b_h`; the polygon itself is filled by the triangles of the su
   injective.
 -/
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
-namespace FiniteChains
-namespace Davis
+namespace FiniteChains.Davis
 
 open RACG Mirror Comb PresModel BlockFamily
 
@@ -75,7 +73,7 @@ def genusLw (_ : PUnit) (x : ℕ × Bool) : List (α × Bool) :=
 
 theorem genusAtt_base :
     genusAtt ρ a b q (gBase q) = ptBase (genusW ρ a b q) := by
-  rw (config := { transparency := .default }) [gBase, att_V, vertLab_of_even (by rw [cyc_mod_two])]
+  erw [gBase, att_V, vertLab_of_even (by rw [cyc_mod_two])]
   rfl
 
 theorem genus_hcb :
@@ -143,14 +141,3 @@ theorem genus_hread (s : PUnit) (x : ℕ × Bool) :
     simp [genusLw, wordLoop, hkdef]
   rw [hword]
   simpa using hmain
-
-/-! ### The relator of the block -/
-
-/-! ### The theorem applied to the block -/
-
-/-! ### Simultaneous substitutions for an arbitrary family of relators -/
-
-end Genus
-
-end Davis
-end FiniteChains

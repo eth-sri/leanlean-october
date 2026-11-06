@@ -99,5 +99,3 @@ theorem dummyLoopFillingHomotopyEquiv_apply (y : X) :
   rw [Homeomorph.apply_symm_apply]
   exact (singletonDiskAttachmentHomeomorph_old (dummyFillingBoundary x)
     (old (dummyOneAttaching x) (boundaryFamilyInclusion PUnit (Fin 1 → ℝ)) y)).symm
-
-end FiniteChains.ClassicalGraphModel

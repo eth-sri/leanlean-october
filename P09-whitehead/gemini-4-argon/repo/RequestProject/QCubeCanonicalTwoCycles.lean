@@ -5,9 +5,7 @@ public import RequestProject.QCubeTwoCycleSubdivision
 @[expose] public section
 
 /-! The actual square cells and their unconditional finite two-cycle subdivision dictionary. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb
@@ -87,5 +85,3 @@ theorem qSquare_coefficients_subdivision (r : QSquare A →₀ ℤ) :
   norm_num at hc
   simpa only [if_true, qSquareChainSubdivision, Finsupp.filter_apply, squareFlag_top, Finsupp.smul_apply, hc,
     smul_eq_mul, mul_one] using he
-
-end FiniteChains.Davis

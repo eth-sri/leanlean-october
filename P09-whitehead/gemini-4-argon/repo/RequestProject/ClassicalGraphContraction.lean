@@ -133,8 +133,3 @@ def graphContraction : ContinuousMap.Homotopy (ContinuousMap.id (DiskAttachment 
           (1, cell r (boundaryFamilyInclusion J (Fin 1 → ℝ)) d) = _
         rw [attachmentHomotopyPasting_cell]
         exact (graphEdgeContraction_spec r root Q hQ d.1).2.1 _
-
-@[simp] theorem graphContraction_old (t : I) (a : V) :
-    graphContraction r root Q hQ (t, (old r (boundaryFamilyInclusion J (Fin 1 → ℝ))) a) = Q a t := rfl
-
-end FiniteChains.ClassicalGraphModel

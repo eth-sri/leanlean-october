@@ -5,9 +5,7 @@ public import RequestProject.OrderNerveCellMaps
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -38,5 +36,3 @@ theorem orderNerveH2Map_class (f : P → Q) (hf : Monotone f)
     orderNerveH2Map f hf (orderNerveH2Class P c hc) =
       orderNerveH2Class Q (chain2 (orderCxMap f hf) c)
         (by rw [bdry2_chain2, hc]; exact map_zero _) := rfl
-
-end FiniteChains.Comb

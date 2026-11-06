@@ -49,12 +49,3 @@ theorem first_cellInclusion_pi1Trivial : Pi1Trivial (c.cellInclusion 0) := by
         exact c.core_trivial 0 a
       change (QuotientGroup.mk (FreeGroup.map Sum.inl w) : PresGroup (c.chainRel 1)) = 1
       exact DFunLike.congr_fun hf w
-
-end FiniteChains.RelativeNormalForm.AmbientChain
-
-namespace FiniteChains.RelativeNormalForm
-open Comb
-variable {A C : Type} (core : C → FreeGroup A)
-  (hcore : Function.Bijective (expMatrix core))
-
-end FiniteChains.RelativeNormalForm

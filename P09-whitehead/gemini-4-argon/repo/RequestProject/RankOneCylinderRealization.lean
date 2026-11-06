@@ -13,9 +13,7 @@ contiguous homotopies; pointwise order comparison is not mistaken for
 cross-comparability. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory
@@ -181,5 +179,3 @@ def rankOneCylinderRealizationHomotopyEquiv :
   invFun := cylinderRealizationInclusion a
   left_inv := ⟨(rankOneCylinderRealizationDeformation a d hd hd₁).symm⟩
   right_inv := by rw [cylinderRealization_section]
-
-end FiniteChains.Comb

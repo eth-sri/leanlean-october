@@ -97,5 +97,3 @@ theorem cubeBdry_zero_off_actual_facets (c : QCube A) (g : Cube V)
   intro he
   obtain ⟨s, hs⟩ := coordinate_update_free_facet g c v (Finset.mem_filter.mp hv).2 he
   exact hg v (coordinate_update_free_mem g c v he) s hs
-
-end FiniteChains.Davis

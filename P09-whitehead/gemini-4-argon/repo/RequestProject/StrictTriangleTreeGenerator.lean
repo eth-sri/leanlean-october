@@ -53,5 +53,3 @@ def canonicalStrictTriangle (K : Whitehead.TwoComplex) : StrictOrdTri (Canonical
 def canonicalTreeGenerator (K : Whitehead.TwoComplex)
     (T : SpanningTree (strictOrderCx (CanonicalPos K))) : SpanningTree.NonTree T :=
   Classical.choice (T.nonempty_nonTree_of_strictTriangle (canonicalStrictTriangle K))
-
-end FiniteChains.ClassicalCW

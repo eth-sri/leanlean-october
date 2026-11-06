@@ -7,9 +7,7 @@ public import RequestProject.SurfaceFullCubeConeChains
 @[expose] public section
 
 /-! Actual surface chains extracted from the restored positive corner. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb
@@ -57,5 +55,3 @@ theorem cornerSurfaceChain2_surfaceCornerFan (c : (orderCx (NeSpx A)).E →₀ �
       simp only [coneEdgeTriangle, cornerTriangleEdge, dif_pos h]
       simp [chain1, cornerSurfaceMap, orderCxMap, positiveCornerLinkEquiv,
         surfaceFullCube, posQCube]
-
-end FiniteChains.Davis

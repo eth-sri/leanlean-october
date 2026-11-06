@@ -5,9 +5,7 @@ public import RequestProject.GenusSpineTruncation
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb
@@ -152,5 +150,3 @@ theorem genusSpineToTruncated_pi1_injective :
 theorem genusSpineToOld_pi1_injective :
     Function.Injective (pi1Map (genusSpineToOld q) (spineBase q)) :=
   (genusSpine_pi1_injective_iff q).mpr (genusSpineToTruncated_pi1_injective q)
-
-end FiniteChains.Davis.Genus

@@ -76,5 +76,3 @@ theorem loop_representative_delete_free_face {C : P → Prop} {f t a : P}
     by_cases hx : x.1 = f
     · simpa [r, hx] using hft
     · simp [r, hx]
-
-end FiniteChains.Comb

@@ -123,5 +123,3 @@ theorem diskFamilyFullCylinder_hasHomotopyExtension (J : Type u) :
         I × (Σ _ : J, ClosedUnitBall E)) :=
   sigmaFullCylinder_hasHomotopyExtension _ (fun _ =>
     fullBallCylinderBoundary_hasHomotopyExtension E)
-
-end FiniteChains.RelativeAttachment

@@ -7,9 +7,7 @@ public import RequestProject.OrderComparableOneHomotopy
 @[expose] public section
 
 /-! Actual cycle fillings in every cover of a poset with a three-leg contraction. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -74,5 +72,3 @@ theorem strict_twoCycle_cover_zigzag (hf : IsPosetCover f)
   rw [map_sub, map_sub, hz, hy, hw, normalizedStrictChain2_id,
     normalizedStrictChain2_zero_of_comparable_equal E hE hconst]
   abel
-
-end FiniteChains.Comb

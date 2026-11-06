@@ -4,9 +4,7 @@ public import RequestProject.OrderCxMonodromy
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.OrdCocycle
 universe u v
@@ -52,5 +50,3 @@ theorem exists_potential_of_simplyConnected (hconn : IsConnected (orderCx P))
   have h := c.readPath_eq_of_simplyConnected hsc
     (isPath_append_iff.mpr ⟨p, hpaths p, isPath_single (ordPos hpq)⟩) (hpaths q)
   simpa only [c.readPath_append, c.readPath_cons, c.readPath_nil, c.readGerm_ordPos, mul_one] using h
-
-end FiniteChains.Comb.OrdCocycle

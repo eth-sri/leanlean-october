@@ -15,9 +15,7 @@ input is a homotopy equivalence of spaces; no homeomorphism of the original
 CW structure with a canonical presentation model is required. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 set_option maxHeartbeats 200000
 
@@ -114,5 +112,3 @@ theorem hasOriginalTopologicalChain (K : Whitehead.TwoComplex) (a : c.gen 0)
     (fun i => mk_presCanonicalWords (c.rel i) (presentationMarkedGenerator f a i))
     (fun i => presCanonicalWords_positive (c.rel i) (presentationMarkedGenerator f a i))
     K e₀ n hp c.zero_pi2 finite hfin
-
-end FiniteChains.PresChainFS

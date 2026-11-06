@@ -113,5 +113,3 @@ theorem ordinary_puncturedCubeBoundary_simplyConnected (t : Cube V) (j : V) (b :
   | free => exact False.elim (hb rfl)
   | pos => exact puncturedCubeBoundary_simplyConnected t j .pos .neg hb (by decide) (by decide) ht
   | neg => exact puncturedCubeBoundary_simplyConnected t j .neg .pos hb (by decide) (by decide) ht
-
-end FiniteChains.Davis

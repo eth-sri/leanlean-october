@@ -5,9 +5,7 @@ public import RequestProject.ReceivedTreeRootedChainFaithfulness
 @[expose] public section
 
 /-! Exact marked relative boundaries in the actual receiving-group cover. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.ReceivedTree
 open SpanningTree
@@ -95,5 +93,3 @@ theorem bdry2_eq_markedChain_of_coordinates (p : I → Loop K T.root)
     exact hc z
   · intro g v hv
     rw [bdry1_bdry2, Finsupp.zero_apply, markedChain_boundary_off_root T φ p γ g v hv]
-
-end FiniteChains.Comb.ReceivedTree

@@ -14,13 +14,11 @@ of the set of extra generators is needed. Awaiting final Lean verification.
 noncomputable section
 open scoped Classical commutatorElement
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.RelativeNormalForm
 
-section Receiver
+section
 variable {G : Type} [Group G]
 
 abbrev PairReceiver (z : G) :=
@@ -65,7 +63,7 @@ theorem pairReceiver_commutator (z : G) :
 theorem pairReceiverBase_injective (z : G) : Function.Injective (pairReceiverBase z) :=
   rule_one_embedding z
 
-end Receiver
+end
 
 variable {A Z J : Type} (ρ : J → FreeGroup (A ⊕ Z))
 
@@ -144,5 +142,3 @@ theorem pairSubGroupHom_injective : Function.Injective (pairSubGroupHom ρ) := b
   change ((pairComparison ρ).comp (pairSubGroupHom ρ)) g =
     ((pairComparison ρ).comp (pairSubGroupHom ρ)) h at hc
   simpa only [pairComparison_comp] using hc
-
-end FiniteChains.RelativeNormalForm

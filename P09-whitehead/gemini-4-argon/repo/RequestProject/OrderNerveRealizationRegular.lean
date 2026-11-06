@@ -62,6 +62,3 @@ theorem realizationMap_regular (hf : IsPosetCover f)
     exact hxv
   exact hf.realizationMap_injOn_openStar w hxe hyw
     ((hf.realization_deck_commutes e he x).trans hxy)
-
-end IsPosetCover
-end FiniteChains.Comb

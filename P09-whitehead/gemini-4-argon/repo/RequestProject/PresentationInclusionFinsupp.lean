@@ -125,5 +125,3 @@ def mor : PresMorFS ρ τ where
       exact (augQ_mapDomain (groupHom ρ τ g f hrel) (x j)).trans (hx j)
     · change augPres τ (Finsupp.mapDomain f _ k) = 0
       rw [Finsupp.mapDomain_notin_range _ k hk, map_zero]
-
-end FiniteChains.PresInclusionFS

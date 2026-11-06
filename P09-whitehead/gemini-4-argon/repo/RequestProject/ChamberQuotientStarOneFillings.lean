@@ -36,5 +36,3 @@ theorem qUniversal_baseStar_fillsDegree_two (x : X) (hx : IsConnected (orderCx X
   · obtain ⟨p, hp⟩ := (uOrderEnd_isPosetCover (a := qNew x) hc).surj (qNew x)
     exact ⟨p, by rw [hp]; trivial⟩
   · exact qLiftedBaseStar_oneCycle_filling (qNew x) hc
-
-end FiniteChains.Davis

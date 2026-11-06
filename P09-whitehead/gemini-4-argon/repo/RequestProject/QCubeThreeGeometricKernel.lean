@@ -23,5 +23,3 @@ theorem qThreeFace_cycle_coefficients (c : QCube A) (u v w : V)
       (Ne.symm hvw.ne) hs)
   rw [Finsupp.mapDomain_zero]
   exact (qThreeFace_boundary_naturality c u v w huv hvw hs r).symm.trans hr
-
-end FiniteChains.Davis

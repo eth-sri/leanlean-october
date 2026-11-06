@@ -1,14 +1,12 @@
 module
 
-public import RequestProject.QCubeThreeFacetCoordinates
+public import RequestProject.QCubeFacetIndex
 
 @[expose] public section
 
 /-! Integral coefficient calculation for the six oriented faces of an ordered three-cube.
 The separate geometric comparison must identify this matrix with actual cube edge cells. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 
@@ -94,5 +92,3 @@ theorem threeFacetBoundaryMatrix_kernel (r : (Fin 3 × ZMod 2) →₀ ℤ)
     · change r (2, 1) = r (0, 0) * (-1 : ℤ)
       norm_num
       omega
-
-end FiniteChains.Davis

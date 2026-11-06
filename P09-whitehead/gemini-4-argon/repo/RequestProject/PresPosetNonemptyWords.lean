@@ -22,5 +22,3 @@ theorem mk_presNonemptyWords (ρ : J → FreeGroup α) (a : α) (j : J) :
     change FreeGroup.of a * (FreeGroup.of a)⁻¹ = 1
     exact mul_inv_cancel _
   rw [presNonemptyWords, ← FreeGroup.mul_mk, hc, mul_one, mk_presWords]
-
-end FiniteChains.PresModel

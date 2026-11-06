@@ -74,5 +74,3 @@ theorem exists_stage_satisfying_all {ι : Type*} [DecidableEq ι] {m : ℕ}
   intro v hv
   by_contra hP
   exact hrbad (Finset.mem_filter.mpr ⟨hr, ⟨v, hv, hP⟩⟩)
-
-end FiniteChains

@@ -23,9 +23,7 @@ never met.
   prescribed root, in particular rooted at a cell of the cut surface.
 -/
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 namespace Davis
@@ -200,6 +198,3 @@ cell of the cut surface. -/
 theorem exists_spanningTree_qOld [Nonempty V] (r : QOld A) :
     ∃ T : SpanningTree (orderCx (QOld A)), T.root = r :=
   SpanningTree.exists_of_isConnected isConnected_orderCx_qOld r
-
-end Davis
-end FiniteChains

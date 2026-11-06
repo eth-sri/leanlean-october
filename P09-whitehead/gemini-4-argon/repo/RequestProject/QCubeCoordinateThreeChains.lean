@@ -5,9 +5,7 @@ public import RequestProject.QCubeTruncatedBoundaryCollapse
 @[expose] public section
 
 /-! Actual finite three-cube coefficients, ordinary boundary and positive cut coefficients. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb
@@ -84,5 +82,3 @@ theorem qThreeCutFaceChain_support (r : QThreeCube A →₀ ℤ) (σ : Finset V)
     simpa using h
   rw [← hs]
   exact ⟨c.2, c.1.isSimplex⟩
-
-end FiniteChains.Davis

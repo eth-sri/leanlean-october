@@ -4,9 +4,7 @@ public import RequestProject.OrderNerveRealizationSubcomplex
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory Simplicial
@@ -126,5 +124,3 @@ theorem orderNerveRealizationSubtype_range {P : Type} [PartialOrder P] (A : Set 
       orderNerveRealizationSimplex P ((nerveMap _).app _ t) z at he
     rw [ht] at he
     exact he.trans hz
-
-end FiniteChains.Comb

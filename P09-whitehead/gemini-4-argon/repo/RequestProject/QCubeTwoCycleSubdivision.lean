@@ -81,5 +81,3 @@ theorem cubeTwoCycle_coefficients_cycle (hcell : Function.Injective cell)
   rw [← squareChainSubdivision_boundary,
     ← cubeTwoCycle_is_squareSubdivision cell left right hne hspx hcell hcover z hz hcycle]
   exact hcycle
-
-end FiniteChains.Davis

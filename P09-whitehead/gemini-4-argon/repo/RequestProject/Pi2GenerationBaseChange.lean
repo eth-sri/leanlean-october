@@ -7,9 +7,7 @@ public import RequestProject.Pi2GenerationDescent
 /-! Change the base vertex in an actual spherical generation statement.
 Both directions are genuine universal-cover path transports. Unverified source. -/
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -68,5 +66,3 @@ theorem pi2Generated_changeBase {L : Complex2.{u}} (f : Hom L X)
     exact hle hg
   rw [show chain2 (shiftHom hp) d = c from chain2_shift_reverse_cancel hp c] at hm
   exact hm
-
-end FiniteChains.Comb

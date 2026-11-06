@@ -126,5 +126,3 @@ theorem originalRoseGen_finite (hK : Whitehead.FiniteCells K) : Finite (Original
 theorem originalRoseRel_finite (hK : Whitehead.FiniteCells K) : Finite (OriginalRoseRel K) := by
   letI : Finite (Σ n, RelCWComplex.cell (Set.univ : Set K) n) := hK
   exact Finite.of_injective (Sigma.mk 2) (fun _ _ h => eq_of_heq (Sigma.mk.inj_iff.mp h).2)
-
-end FiniteChains.ClassicalCW

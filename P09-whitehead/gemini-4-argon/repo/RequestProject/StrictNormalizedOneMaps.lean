@@ -4,9 +4,7 @@ public import RequestProject.NormalizedStrictBoundary
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.StrictNormalized
 universe u
@@ -70,5 +68,3 @@ theorem mapOne_semiconj (e : P → Q) (he : StrictMono e)
     subst g
     rfl
   exact mapEq _ _ _ _ heq
-
-end FiniteChains.Comb.StrictNormalized

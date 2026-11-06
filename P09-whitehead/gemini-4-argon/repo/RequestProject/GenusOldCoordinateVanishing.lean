@@ -62,5 +62,3 @@ theorem cappedCoverCycle_old_normalized_image_zero
   obtain ⟨d, hd, hcycle, hcollapse⟩ := cappedCoverCycle_oldCoordinate_collapse_zero q c hc
   exact ⟨d, hd, hcycle, markedSpine_normalized_image_zero_of_coefficients q d hcycle
     (markedSpineSquareCoefficients_zero_of_collapse q d hcollapse)⟩
-
-end FiniteChains.Davis.Genus

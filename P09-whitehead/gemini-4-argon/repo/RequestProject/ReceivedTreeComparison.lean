@@ -7,9 +7,7 @@ public import RequestProject.ComponentComplex
 @[expose] public section
 
 /-! A constructed cellular comparison, including the lifted attaching paths. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.ReceivedTree
 open SpanningTree
@@ -94,5 +92,3 @@ theorem comparison_bdry2 (c : (G × K.F) →₀ ℤ) :
 This gives the genuine comparison without an extra mathematical assumption. -/
 noncomputable def canonicalReceiver : PresGroup (treeRel T) →* Pi1 Y (f.onV T.root) :=
   (pi1Map f T.root).comp (SpanningTree.presToPi1 T)
-
-end FiniteChains.Comb.ReceivedTree

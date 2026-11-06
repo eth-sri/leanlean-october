@@ -168,5 +168,3 @@ theorem restrictedBlockPresentation_incl
         (familyFiniteSpineWordBlock (restrictedGenus core hcore extra p)
           (restrictedLoops core hcore extra p) m.1 m.2))
         (blockGenIncl_genEmb core hcore extra hpt m.1)).symm
-
-end FiniteChains.RelativeNormalForm

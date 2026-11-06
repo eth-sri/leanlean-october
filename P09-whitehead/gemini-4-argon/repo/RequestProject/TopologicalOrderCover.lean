@@ -46,5 +46,3 @@ theorem projection_isPosetCover (hs : Function.Surjective p) : IsPosetCover (pro
 theorem comparable_transport {v w : Cover p hp} (h : v ≤ w) :
     hp.monodromy (Path.Homotopic.Quotient.mk
       (orderNerveRealizationEdgePath h.choose)) v.2 = w.2 := h.choose_spec
-
-end FiniteChains.Comb.TopologicalOrderCover

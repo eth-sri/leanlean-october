@@ -20,5 +20,3 @@ noncomputable def orderNerveTwoComplex (P : Type) [PartialOrder P] [Nonempty P]
       cw := inferInstance
       connected := inferInstance
       dimension := fun n hn => orderNerveRealization_cell_isEmpty P 2 n hn }
-
-end FiniteChains.Comb

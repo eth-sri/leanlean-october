@@ -6,9 +6,7 @@ public import RequestProject.OrderCxNullTransfer
 @[expose] public section
 
 /-! Retraction of the actual boundary with its cut facet deleted onto retained proper faces. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb
@@ -87,5 +85,3 @@ theorem cutPuncturedBoundary_connected_of_retained (t : QOld A)
       [ordNeg (cutBoundary_le_section_retraction t hne b)],
     ((isPath_ordPos (cutBoundary_le_section_retraction t hne a)).append hs).append
       (isPath_ordNeg (cutBoundary_le_section_retraction t hne b))⟩
-
-end FiniteChains.Davis

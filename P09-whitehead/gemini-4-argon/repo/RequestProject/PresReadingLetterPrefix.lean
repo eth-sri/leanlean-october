@@ -25,5 +25,3 @@ theorem trivVal_cmid_inv_of_get (j : J) (k : ℕ) (a : α × Bool)
       prefixVal w gen j k * (if a.2 then (1 : G) else (gen a.1)⁻¹) := by
   rw [trivVal_cmid_of_get w gen j k a ha, mul_inv_rev, inv_inv]
   cases a.2 <;> simp
-
-end FiniteChains.PresModel

@@ -5,9 +5,7 @@ public import RequestProject.CombUniversalCover
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.OrdCocycle
 universe u v
@@ -19,8 +17,6 @@ def readVertex : UV (orderCx P) a → G :=
   Quotient.lift (fun p : PathFrom (orderCx P) a => c.readPath p.val)
     (fun _ _ h => c.readPath_htpy h)
 
-@[simp] theorem readVertex_mk (p : PathFrom (orderCx P) a) :
-    c.readVertex a (UV.mk p) = c.readPath p.val := rfl
 
 @[simp] theorem readVertex_base : c.readVertex a (UV.base (orderCx P) a) = 1 := rfl
 
@@ -64,5 +60,3 @@ theorem readVertex_fibre_surjective (hc : Function.Surjective (c.monodromy a))
   refine ⟨deckV g p, endV_deckV g p, ?_⟩
   rw [c.readVertex_deck, hg]
   simp [mul_assoc]
-
-end FiniteChains.Comb.OrdCocycle

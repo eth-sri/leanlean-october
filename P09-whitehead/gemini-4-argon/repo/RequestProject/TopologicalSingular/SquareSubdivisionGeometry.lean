@@ -90,5 +90,3 @@ theorem rightRectangle_outer_boundary (a : I) (z : Domain 1) :
 theorem leftRectangle_zero_boundary (z : Fin 2 → I) :
     leftRectangle 0 z ∈ Cube.boundary (Fin 2) :=
   ⟨0, Or.inl (by simp [leftRectangle])⟩
-
-end FiniteChains.TopologicalSingular

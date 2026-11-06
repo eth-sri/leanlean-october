@@ -1,6 +1,10 @@
 module
 
-public import RequestProject.MinimalGap
+public import RequestProject.ComponentComplex
+public import RequestProject.TreeChainTopological
+public import RequestProject.CombData
+public import RequestProject.Pigeonhole
+public import RequestProject.SubgroupCompactness
 public import RequestProject.Pi2GenerationDescent
 
 @[expose] public section
@@ -36,8 +40,7 @@ This file works with the faithful, map-carrying form throughout.
   (3.5).
 -/
 
-namespace FiniteChains
-namespace Comb
+namespace FiniteChains.Comb
 
 universe u
 
@@ -49,70 +52,10 @@ def inclFrom (c : ℕ → Complex2.{u}) (inc : ∀ i, Hom (c i) (c (i + 1))) :
   | 0 => Hom.id (c 0)
   | i + 1 => (inc i).comp (inclFrom c inc i)
 
-@[simp] theorem inclFrom_succ (c : ℕ → Complex2.{u}) (inc : ∀ i, Hom (c i) (c (i + 1)))
-    (i : ℕ) : inclFrom c inc (i + 1) = (inc i).comp (inclFrom c inc i) := rfl
-
-/-- **A relative chain of Proposition 3.7 carrying its inclusions.**  The chain is indexed by
-all of `ℕ` (a chain of length `n` is extended by repeating its last term); the conditions of
-Proposition 3.7 are imposed up to the index `n`.  On top of them the structure records what
-the descent of Proposition 3.11 needs: the stages are connected, each term has only finitely
-many cells off `D`, and each step adds a two-cell. -/
-structure RelChainW (D : Complex2.{u}) (c : ℕ → Complex2.{u}) (n : ℕ) where
-  /-- The inclusion of one term into the next. -/
-  inc : ∀ i, Hom (c i) (c (i + 1))
-  incV : ∀ i, Function.Injective (inc i).onV
-  incE : ∀ i, Function.Injective (inc i).onE
-  incF : ∀ i, Function.Injective (inc i).onF
-  /-- The chain starts at the acyclic core `D`. -/
-  base : c 0 = D
-  /-- Every stage is connected. -/
-  conn : ∀ i, IsConnected (c i)
-  /-- Every stage is Cockcroft. -/
-  cockcroft : ∀ i ≤ n, IsCockcroft (c i)
-  /-- Every inclusion is zero on `π₂`. -/
-  zero : ∀ i < n, ZeroPi2 (inc i)
-  /-- `π₁(D)` dies from the first stage on. -/
-  pi1 : ∀ i, 1 ≤ i → i ≤ n → Pi1Trivial (inclFrom c inc i)
-  /-- Every stage has only finitely many edges off `D`. -/
-  finE : ∀ i, Finite (OffE (inclFrom c inc i))
-  /-- Every stage has only finitely many two-cells off `D`. -/
-  finF : ∀ i, Finite (OffF (inclFrom c inc i))
-  /-- Every step adds a two-cell. -/
-  adds : ∀ i < n, Nonempty (OffF (inc i))
-
 namespace RelChainW
 
-variable {D : Complex2.{u}} {c : ℕ → Complex2.{u}} {n : ℕ} (R : RelChainW D c n)
-
-theorem inclV (i : ℕ) : Function.Injective (inclFrom c R.inc i).onV := by
-  induction i with
-  | zero => exact fun _ _ h => h
-  | succ i ih => exact (R.incV i).comp ih
-
-theorem inclE (i : ℕ) : Function.Injective (inclFrom c R.inc i).onE := by
-  induction i with
-  | zero => exact fun _ _ h => h
-  | succ i ih => exact (R.incE i).comp ih
-
-/-! ### The descended chain -/
-
-variable (K : Complex2.{u}) (p : Hom (c 0) K)
-
-/-- **The descended chain of Proposition 3.11**: `E₀ = K` and `Eᵢ₊₁ = K ∪_p Lᵢ₊₁`. -/
-noncomputable def desc : ℕ → Complex2.{u}
-  | 0 => K
-  | i + 1 => pushoutComplex p (inclFrom c R.inc (i + 1)) (R.inclV (i + 1)) (R.inclE (i + 1))
-
-@[simp] theorem desc_zero : R.desc K p 0 = K := rfl
-
-@[simp] theorem desc_succ (i : ℕ) : R.desc K p (i + 1) =
-    pushoutComplex p (inclFrom c R.inc (i + 1)) (R.inclV (i + 1)) (R.inclE (i + 1)) := rfl
-
-/-! ### The induced maps of pushouts are inclusions -/
-
-section Functor
-
-variable {L L' : Complex2.{u}} {D' : Complex2.{u}} (q : Hom D' K) (j : Hom D' L) (j' : Hom D' L')
+variable (K : Complex2.{u}) {L L' : Complex2.{u}} {D' : Complex2.{u}}
+  (q : Hom D' K) (j : Hom D' L) (j' : Hom D' L')
   (k : Hom L L') (hjV : Function.Injective j.onV) (hjE : Function.Injective j.onE)
   (hj'V : Function.Injective j'.onV) (hj'E : Function.Injective j'.onE)
   (hj'F : Function.Injective j'.onF) (hkj : k.comp j = j')
@@ -120,81 +63,35 @@ variable {L L' : Complex2.{u}} {D' : Complex2.{u}} (q : Hom D' K) (j : Hom D' L)
 include hkj in
 theorem pushoutFunctor_injV (hkV : Function.Injective k.onV) :
     Function.Injective (pushoutFunctor q j j' k hjV hjE hj'V hj'E hj'F hkj).onV := by
-  set F := pushoutFunctor q j j' k hjV hjE hj'V hj'E hj'F hkj
-  have hinl : ∀ a : K.V, F.onV (Sum.inl a) = Sum.inl a := fun _ => rfl
-  have hinr : ∀ w : OffV j, F.onV (Sum.inr w) = Sum.inr ⟨k.onV w.1, off_map_V hkV hkj w⟩ :=
-    fun w => pushV_of_off q j' ⟨k.onV w.1, off_map_V hkV hkj w⟩
+  have hinr (w : OffV j) : (pushoutFunctor q j j' k hjV hjE hj'V hj'E hj'F hkj).onV (Sum.inr w) =
+      Sum.inr ⟨k.onV w.1, off_map_V hkV hkj w⟩ := pushV_of_off q j' ⟨k.onV w.1, off_map_V hkV hkj w⟩
   rintro (a | w) (b | w') h
-  · rw [hinl, hinl] at h
-    exact congrArg Sum.inl (Sum.inl_injective h)
-  · rw [hinl, hinr] at h
-    simp at h
-  · rw [hinr, hinl] at h
-    simp at h
+  · exact congrArg Sum.inl (Sum.inl.inj h)
+  · rw [hinr] at h; cases h
+  · rw [hinr] at h; cases h
   · rw [hinr, hinr] at h
-    exact congrArg Sum.inr (Subtype.ext (hkV (congrArg Subtype.val (Sum.inr_injective h))))
+    exact congrArg Sum.inr (Subtype.ext (hkV (congrArg Subtype.val (Sum.inr.inj h))))
 
 include hkj in
 theorem pushoutFunctor_injE (hkE : Function.Injective k.onE) :
     Function.Injective (pushoutFunctor q j j' k hjV hjE hj'V hj'E hj'F hkj).onE := by
-  set F := pushoutFunctor q j j' k hjV hjE hj'V hj'E hj'F hkj
-  have hinl : ∀ a : K.E, F.onE (Sum.inl a) = Sum.inl a := fun _ => rfl
-  have hinr : ∀ w : OffE j, F.onE (Sum.inr w) = Sum.inr ⟨k.onE w.1, off_map_E hkE hkj w⟩ :=
-    fun w => pushE_of_off q j' ⟨k.onE w.1, off_map_E hkE hkj w⟩
+  have hinr (w : OffE j) : (pushoutFunctor q j j' k hjV hjE hj'V hj'E hj'F hkj).onE (Sum.inr w) =
+      Sum.inr ⟨k.onE w.1, off_map_E hkE hkj w⟩ := pushE_of_off q j' ⟨k.onE w.1, off_map_E hkE hkj w⟩
   rintro (a | w) (b | w') h
-  · rw [hinl, hinl] at h
-    exact congrArg Sum.inl (Sum.inl_injective h)
-  · rw [hinl, hinr] at h
-    simp at h
-  · rw [hinr, hinl] at h
-    simp at h
+  · exact congrArg Sum.inl (Sum.inl.inj h)
+  · rw [hinr] at h; cases h
+  · rw [hinr] at h; cases h
   · rw [hinr, hinr] at h
-    exact congrArg Sum.inr (Subtype.ext (hkE (congrArg Subtype.val (Sum.inr_injective h))))
+    exact congrArg Sum.inr (Subtype.ext (hkE (congrArg Subtype.val (Sum.inr.inj h))))
 
 include hkj in
 theorem pushoutFunctor_injF (hkF : Function.Injective k.onF) :
     Function.Injective (pushoutFunctor q j j' k hjV hjE hj'V hj'E hj'F hkj).onF := by
-  set F := pushoutFunctor q j j' k hjV hjE hj'V hj'E hj'F hkj
-  have hinl : ∀ a : K.F, F.onF (Sum.inl a) = Sum.inl a := fun _ => rfl
-  have hinr : ∀ w : OffF j, F.onF (Sum.inr w) = Sum.inr ⟨k.onF w.1, off_map_F hkF hkj w⟩ :=
-    fun w => pushF_of_off q j' ⟨k.onF w.1, off_map_F hkF hkj w⟩
+  have hinr (w : OffF j) : (pushoutFunctor q j j' k hjV hjE hj'V hj'E hj'F hkj).onF (Sum.inr w) =
+      Sum.inr ⟨k.onF w.1, off_map_F hkF hkj w⟩ := pushF_of_off q j' ⟨k.onF w.1, off_map_F hkF hkj w⟩
   rintro (a | w) (b | w') h
-  · rw [hinl, hinl] at h
-    exact congrArg Sum.inl (Sum.inl_injective h)
-  · rw [hinl, hinr] at h
-    simp at h
-  · rw [hinr, hinl] at h
-    simp at h
+  · exact congrArg Sum.inl (Sum.inl.inj h)
+  · rw [hinr] at h; cases h
+  · rw [hinr] at h; cases h
   · rw [hinr, hinr] at h
-    exact congrArg Sum.inr (Subtype.ext (hkF (congrArg Subtype.val (Sum.inr_injective h))))
-
-end Functor
-
-/-! ### Finiteness and connectivity of the stages -/
-
-/-! ### The arrows are zero on `π₂` -/
-
-end RelChainW
-
-namespace RelChainW
-
-variable {D : Complex2.{u}} {c : ℕ → Complex2.{u}} {n : ℕ} (R : RelChainW D c n)
-variable (K : Complex2.{u}) (p : Hom (c 0) K)
-
-end RelChainW
-
-/-! ### Strictness of the descended chain -/
-
-section Strict
-
-variable {D : Complex2.{u}} {c : ℕ → Complex2.{u}} {n : ℕ} (R : RelChainW D c n)
-variable (K : Complex2.{u}) (p : Hom (c 0) K)
-
-end Strict
-
-/-! ### Non-vacuity: the constant chain -/
-
-/-! ### Assembling Theorem A -/
-
-end Comb
-end FiniteChains
+    exact congrArg Sum.inr (Subtype.ext (hkF (congrArg Subtype.val (Sum.inr.inj h))))

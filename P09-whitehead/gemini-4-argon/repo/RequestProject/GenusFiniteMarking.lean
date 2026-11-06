@@ -1,7 +1,7 @@
 module
 
 public import RequestProject.GenusApply
-public import RequestProject.ChamberQuotientFinite
+public import RequestProject.BlockSpinePres
 
 @[expose] public section
 
@@ -12,9 +12,7 @@ This proves the filling and group injectivity for these actual loops; it does no
 (B2), (B3), or a comparison with topological second homotopy groups.
 -/
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 
@@ -52,15 +50,3 @@ theorem finite_hfilling :
 
 abbrev finiteLw (_ : PUnit.{1}) (x : Fin q × Bool) : List (α × Bool) :=
   genusLw a b q (PUnit.unit.{1} : PUnit.{1}) (x.1.val, x.2)
-
-/-- The internal generators are finite, since the quotient has finitely many edges. -/
-instance finite_spineGens
-    (T : SpanningTree (orderCx (QOld (cmpRel (SCell (gvc q) (gec q) (gc q)))))) :
-    Finite (spineGens T) := inferInstanceAs (Finite {e : _ // ¬ T.isTree e})
-
-/-- The block has finitely many cell and marking relators. -/
-instance finite_spineRels :
-    Finite (spineRels (A := cmpRel (SCell (gvc q) (gec q) (gc q))) (Fin q × Bool)) :=
-  inferInstanceAs (Finite (_ ⊕ (Fin q × Bool)))
-
-end FiniteChains.Davis.Genus

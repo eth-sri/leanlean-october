@@ -56,5 +56,3 @@ theorem presUniversalRelator_collapsed_midpoint_reading
           (if ((w p.val.2)[k.val]).2 then 1 else (gen ((w p.val.2)[k.val]).1)⁻¹)) := by
   rw [presUniversalCylinderCollapse_reading w hpos gen hrel]
   exact presUniversalRelator_midpoint_reading w hpos gen hrel p k
-
-end FiniteChains.PresModel

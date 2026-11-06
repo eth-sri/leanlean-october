@@ -85,5 +85,3 @@ theorem strictMap_isCovering : IsCovering hf.strictMap := by
         s.property.2.ne (hfb.symm.trans ((congrArg f he).trans hfc)))
       refine ⟨⟨(a, b, c), hab', hbc'⟩, ?_⟩
       exact Subtype.ext (Prod.ext (Subtype.ext (Prod.ext hfa (Prod.ext hfb hfc))) rfl)
-
-end FiniteChains.Comb.IsPosetCover

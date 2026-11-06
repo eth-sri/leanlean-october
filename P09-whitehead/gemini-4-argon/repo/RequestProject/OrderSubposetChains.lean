@@ -60,5 +60,3 @@ theorem exists_ordSubposet_cycle (c : OrdTri P →₀ ℤ)
   change chain1 (ordSubposetIncl S) (bdry2 (orderCx S) d) =
     Finsupp.mapDomain _ 0
   rw [Finsupp.mapDomain_zero, ← bdry2_chain2, hd, hc]
-
-end FiniteChains.Comb

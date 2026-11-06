@@ -51,5 +51,3 @@ def quotientSameFibersHomeomorph : Y ≃ₜ Z where
 @[simp] theorem quotientSameFibersHomeomorph_apply (x : X) :
     quotientSameFibersHomeomorph f g hf hg hfg (f x) = g x :=
   sameFiberForward_apply f g hf hfg x
-
-end FiniteChains

@@ -6,9 +6,7 @@ public import RequestProject.TruncatedCubePi1
 @[expose] public section
 
 /-! Factor the marked spine comparison through the genuine truncated face poset. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb
@@ -45,5 +43,3 @@ theorem genusSpine_pi1_injective_iff :
     apply truncatedRetraction_pi1_injective_at
       ((genusSpineToTruncated q).onV (spineBase q))
     convert hxy using 1 <;> simp only [← genusSpine_pi1_factor]
-
-end FiniteChains.Davis.Genus

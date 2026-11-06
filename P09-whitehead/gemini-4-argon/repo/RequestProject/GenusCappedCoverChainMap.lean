@@ -8,9 +8,7 @@ public import RequestProject.DavisUniversalThree
 @[expose] public section
 
 /-! The constructed two-chain comparison from the genuine capped tree cover. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -147,5 +145,3 @@ theorem rootedCoverCycle_fullCube_filling (c : (cappedTreeCover q).F →₀ ℤ)
       uOrdBoundary3 y = rootedCoverChain2 q c := by
   apply exists_universal_bdry3_of_cycle_qCube
   rw [rootedCoverChain2_boundary, hc, map_zero]
-
-end FiniteChains.Davis.Genus

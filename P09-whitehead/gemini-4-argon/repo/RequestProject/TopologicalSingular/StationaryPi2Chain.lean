@@ -60,5 +60,3 @@ theorem stationaryPi2Chain_comp_boundary (x : X) :
 theorem stationaryPi2Chain_boundary (x : X) (b : Chain X 3) :
     stationaryPi2Chain x (boundary 2 b) = 0 :=
   DFunLike.congr_fun (stationaryPi2Chain_comp_boundary x) b
-
-end FiniteChains.TopologicalSingular

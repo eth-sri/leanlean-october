@@ -17,9 +17,7 @@ Pending the final Lean verification. -/
 
 noncomputable section
 open scoped Classical unitInterval Topology ContinuousMap
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.OrderTriangleWords
 open RelativeAttachment ClassicalGraphModel PresModel SpanningTree
@@ -157,5 +155,3 @@ def canonicalTreeDiskRealizationEquiv [Nonempty P] [(nerve P).HasDimensionLE 2]
       (classicalPresWordAttaching (presCanonicalWords (treeRel T) a)
         (presCanonicalWords_ne_nil (treeRel T) a))
       (collapsedAttachingCanonicalHomotopy P T a))).symm
-
-end FiniteChains.Comb.OrderTriangleWords

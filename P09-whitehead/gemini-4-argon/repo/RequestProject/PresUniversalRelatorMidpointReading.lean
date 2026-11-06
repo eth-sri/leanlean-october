@@ -30,5 +30,3 @@ theorem presUniversalRelator_midpoint_reading
   · exact presCoverConeCircleOrderIso_symm_projection (P := UOrder (PresPos w) (ptBase w)) w uOrderEnd
       (presUniversalEnd_isPosetCover w hpos) p.val.1 p.val.2 p.property _
   · exact p.property
-
-end FiniteChains.PresModel

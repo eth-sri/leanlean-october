@@ -102,5 +102,3 @@ theorem hasChain_of_diskExtensionModels (n : ℕ)
     (fun i hi => transferredModelStep_killsPi2 M K e₀ i (hz i hi)) finite
   intro hf
   exact transferredModelStage_finite M K e₀ n (hfin hf).1 (hfin hf).2
-
-end Whitehead

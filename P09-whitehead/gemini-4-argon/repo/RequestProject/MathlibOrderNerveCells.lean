@@ -5,9 +5,7 @@ public import Mathlib.AlgebraicTopology.SimplicialSet.NerveNondegenerate
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory
@@ -98,5 +96,3 @@ theorem ordTriangleBoundary_nerve_faces (t : OrdTri P) :
   rw [hb, map_sub, map_add]
   simp only [Finsupp.lmapDomain_apply, Finsupp.mapDomain_single, h0, h1, h2]
   abel
-
-end FiniteChains.Comb

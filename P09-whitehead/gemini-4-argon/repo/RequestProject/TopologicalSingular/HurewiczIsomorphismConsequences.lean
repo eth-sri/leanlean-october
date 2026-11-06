@@ -1,13 +1,15 @@
 module
 
-public import RequestProject.TopologicalSingular.HurewiczIsomorphism
+public import RequestProject.TopologicalSingular.HurewiczInjectivity
+public import RequestProject.TopologicalSingular.TetrahedronGeneralFaceRelation
+public import RequestProject.TopologicalSingular.CoherentSimplexExtension
+public import RequestProject.TopologicalSingular.CoherentTriangleNormalization
+public import RequestProject.TopologicalSingular.HurewiczSurjectivity
 public import RequestProject.TopologicalSingular.HurewiczSurjectivityConsequences
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.TopologicalSingular
 open CategoryTheory AlgebraicTopology
@@ -30,5 +32,3 @@ theorem killsPi2_iff_singularH2_map_eq_zero [SimplyConnectedSpace X] [SimplyConn
       (((singularHomologyFunctor (ModuleCat.{0} ℤ) 2).obj (ModuleCat.of ℤ ℤ)).map
         (TopCat.ofHom f)) = 0 :=
   ⟨singularH2_map_eq_zero_of_killsPi2 x f, killsPi2_of_singularH2_map_eq_zero f⟩
-
-end FiniteChains.TopologicalSingular

@@ -31,5 +31,3 @@ theorem presCover_cone_link_cycle (f : P → PresPos w) (hf : IsPosetCover f)
     (c : StrictOrdTri P →₀ ℤ) (hc : Comb.bdry2 (strictOrderCx P) c = 0) :
     Comb.bdry1 (strictOrderCx (StrictBelow v)) (strictTopLinkChain v c) = 0 :=
   strictTopLink_cycle v (presCover_apex_maximal w f hf v j hv) c hc
-
-end FiniteChains.PresModel

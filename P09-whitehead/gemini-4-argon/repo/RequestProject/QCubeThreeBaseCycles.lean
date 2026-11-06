@@ -8,9 +8,7 @@ public import RequestProject.QCubeCanonicalTwoCycles
 /-! Recovered actual square cycles beneath each component of a strict three-boundary. -/
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb
@@ -26,7 +24,7 @@ theorem qCubeLowerChain_dimension (c : QCube A) (hc : c.spx.card = 3)
   obtain ⟨s, _, rfl⟩ := Finset.mem_image.mp (Finsupp.mapDomain_support ht)
   change s.1.2.2.1.spx.card ≤ 2
   have hd := qCube_card_lt_of_lt s.1.2.2.2
-  rw (config := { transparency := .default }) [hc] at hd
+  erw [hc] at hd
   omega
 
 /-- Recovered square coefficients of a lower-interval chain are supported on actual facets. -/
@@ -46,8 +44,8 @@ theorem qSquare_lower_coefficients_support (c : QCube A) (hc : c.spx.card = 3)
     have h := congrArg (fun t : (strictOrderCx (QCube A)).F => t.1.2.2) he
     simpa only [strictLowerIncl, strictOrderCxMap, squareFlag_top] using h
   have hlt := t.1.2.2.2
-  rw (config := { transparency := .default }) [htop] at hlt
-  exact exists_qCube_zero_or_one_facet s.1 c hlt.le (by rw (config := { transparency := .default }) [hc, s.2])
+  erw [htop] at hlt
+  exact exists_qCube_zero_or_one_facet s.1 c hlt.le (by erw [hc, s.2])
 
 /-- The isolated three-cube boundary is the negative subdivision of an actual finite
 square cycle supported on that cube's six coordinate facets. -/
@@ -61,12 +59,10 @@ theorem qCube_three_component_facet_boundary (c : QCube A) (hc : c.spx.card = 3)
       qSquareChainSubdivision r = -strictOrdBoundary3 (y.filter (fun t => t.1.2.2.2 = c)) := by
   obtain ⟨z, hz, hfan⟩ := qCube_three_component_lower_cycle c hc y hy hb
   have hcycle : Comb.bdry2 (strictOrderCx (QCube A)) (chain2 (strictLowerIncl c) z) = 0 := by
-    rw (config := { transparency := .default }) [bdry2_chain2, hz, map_zero]
+    erw [bdry2_chain2, hz, map_zero]
   refine ⟨qSquareCycleCoefficients (chain2 (strictLowerIncl c) z),
     qCube_twoCycle_coefficients_cycle _ (qCubeLowerChain_dimension c hc z) hcycle,
     qSquare_lower_coefficients_support c hc z, ?_⟩
-  rw (config := { transparency := .default }) [qCube_twoCycle_reconstruction _ (qCubeLowerChain_dimension c hc z) hcycle,
+  erw [qCube_twoCycle_reconstruction _ (qCubeLowerChain_dimension c hc z) hcycle,
     ← hfan, strictTopConeTriangleChain_boundary, hz, map_zero, zero_sub, neg_neg]
   rfl
-
-end FiniteChains.Davis

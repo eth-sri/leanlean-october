@@ -76,5 +76,3 @@ theorem tetrahedron_pi2_alternating_sum_eq_zero (tau : Simplex X 3)
     abel
   rw [hsum (tetrahedronFacePi2Class tau hedge),
     tetrahedron_pi2_general_face_relation tau hedge, sub_self]
-
-end FiniteChains.TopologicalSingular

@@ -45,5 +45,3 @@ theorem presUniversalGeneratorGroupEquiv_midpoint
       ((roseCoverMidpointEdgeEquiv _ (cylinderCoverRoseEnd_isPosetCover w _
         (coneAdjCoverBaseEnd_isPosetCover _ (presUniversalEnd_isPosetCover w hpos)))) m)) = _
   rw [Equiv.symm_apply_apply]
-
-end FiniteChains.PresModel

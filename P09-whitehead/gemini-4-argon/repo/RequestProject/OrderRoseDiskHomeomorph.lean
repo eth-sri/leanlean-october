@@ -168,8 +168,3 @@ theorem diskRoseOrderHomeomorphOfTraversal_interval (a : α) (t : I) :
     diskRoseOrderHomeomorphOfTraversal α L hsur hfiber
       (cell (roseAttaching α) (boundaryFamilyInclusion α _) ⟨a, graphDiskHomeomorph t⟩) =
       roseCopyRealization a (L t) := diskRoseToOrderRose_interval α L a t
-
-@[simp] theorem diskRoseOrderHomeomorphOfTraversal_vertex :
-    diskRoseOrderHomeomorphOfTraversal α L hsur hfiber (roseVertex α) = orderRoseBase α := rfl
-
-end FiniteChains.PresModel

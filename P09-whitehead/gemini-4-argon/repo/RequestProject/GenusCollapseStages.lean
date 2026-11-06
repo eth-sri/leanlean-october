@@ -78,5 +78,3 @@ theorem genusCollapseStage_ordinary_step_iff (left : List (GenusCollapsePair q))
       ne_eq, Sum.inl.injEq, hinj.eq_iff]
     tauto
   | inr σ => simp [genusCollapseStage, truncatedFaceIndex]
-
-end FiniteChains.Davis.Genus

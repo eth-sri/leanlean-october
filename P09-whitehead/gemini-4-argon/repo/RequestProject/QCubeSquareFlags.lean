@@ -6,9 +6,7 @@ public import RequestProject.QCubeImmediateFaces
 @[expose] public section
 
 /-! The eight actual nondegenerate vertex-edge-square flags of a square subdivision. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb
@@ -80,5 +78,3 @@ theorem squareFlags_exhaustive (c : QCube A) (v w : V) (hne : v ≠ w)
     · rcases qCube_vertex_below_edge x _ hxy v (squareFacet_v_spx c hne hs 1) with rfl | rfl
       · exact ⟨1, Or.inr (Or.inr (Or.inl rfl))⟩
       · exact ⟨1, Or.inr (Or.inr (Or.inr rfl))⟩
-
-end FiniteChains.Davis

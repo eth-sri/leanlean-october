@@ -6,9 +6,7 @@ public import RequestProject.BarycentricCocycleDescent
 @[expose] public section
 
 /-! Exact boundary incidences and cocycle values of the genuine marked loops. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb Cell
@@ -164,5 +162,3 @@ theorem read_gSig_boundaryMarkValue (x : Fin q × Bool) :
     markedBoundaryPos_succ]
   simp only [cV, cE, gvc_markedBoundaryPos_false, gvc_markedBoundaryPos_true,
     gvc_markedBoundaryPos_end, gec_markedBoundaryPos, boundaryMarkValue, toS]
-
-end FiniteChains.Davis.Genus

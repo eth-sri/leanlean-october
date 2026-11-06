@@ -48,5 +48,3 @@ theorem rose_strict_edge_cases (e : StrictOrdEdge (Rose α)) :
       change i = k ∧ s = c at hl
       rcases hl with ⟨rfl, rfl⟩
       exact (hn rfl).elim
-
-end FiniteChains.PresModel

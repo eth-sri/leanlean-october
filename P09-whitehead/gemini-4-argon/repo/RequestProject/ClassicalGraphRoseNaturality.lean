@@ -10,9 +10,7 @@ square. The forward collapse is canonical on every characteristic
 interval even though its homotopy inverse uses tree paths. Unverified. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.ClassicalGraphModel
 open RelativeAttachment
@@ -72,5 +70,3 @@ theorem graphRoseHomotopyEquiv_natural (f : C(DiskAttachment r, DiskAttachment s
         graphRoseHomotopyEquiv_nonTreeCell s hs U ⟨⟨h.onE j, hk⟩, x⟩]
       exact diskFamilyMap_cell (roseAttaching _) (roseAttaching _) (ContinuousMap.id PUnit)
         (graphNonTreeMap r s T U h ht) (fun _ _ => rfl) ⟨j, hj⟩ x
-
-end FiniteChains.ClassicalGraphModel

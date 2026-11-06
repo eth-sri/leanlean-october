@@ -55,5 +55,3 @@ def diskAttachmentReindexHomeomorph (r : C(BoundaryFamily J E, X)) (e : J ≃ K)
     diskAttachmentReindexHomeomorph r e (cell r (boundaryFamilyInclusion J E) d) =
       cell (reindexedDiskAttaching r e) (boundaryFamilyInclusion K E) ⟨e d.1, d.2⟩ :=
   attachmentDiagramHomeomorph_cell ..
-
-end FiniteChains.RelativeAttachment

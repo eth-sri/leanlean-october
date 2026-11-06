@@ -13,9 +13,7 @@ relator labels. This completes actual zero-arrow preservation for rules
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.RelativeNormalForm
 open BlockFamily
@@ -191,5 +189,3 @@ theorem relativeReplacement_preserves_zero
   apply slide_preserves_zero core hcore extra hpt ?_ hy
   intro z hz
   exact ruleOne_preserves_zero core extra hpt hzero hz
-
-end FiniteChains.RelativeNormalForm

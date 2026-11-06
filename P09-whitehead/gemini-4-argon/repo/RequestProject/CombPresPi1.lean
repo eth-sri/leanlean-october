@@ -24,8 +24,7 @@ of attaching words (trivial modulo the normal closure of the relators), and conv
 free group maps to `π₁` by sending a generator to the corresponding edge loop.
 -/
 
-namespace FiniteChains
-namespace Comb
+namespace FiniteChains.Comb
 
 universe u
 
@@ -33,7 +32,6 @@ variable {α : Type u} [DecidableEq α] {J : Type u}
 
 /-! ### From edge loops to the presented group -/
 
-section
 
 variable (ρ : J → FreeGroup α)
 
@@ -95,7 +93,6 @@ def loopClass (l : List (α × Bool)) : Pi1 (presComplex ρ) PUnit.unit :=
 theorem loopClass_append (l l' : List (α × Bool)) :
     loopClass ρ (l ++ l') = loopClass ρ l * loopClass ρ l' := rfl
 
-@[simp] theorem loopClass_nil : loopClass ρ [] = 1 := rfl
 
 /-- The edge loop of a generator. -/
 def genLoop (i : α) : Pi1 (presComplex ρ) PUnit.unit := loopClass ρ [(i, true)]
@@ -172,8 +169,3 @@ def pi1PresEquiv : Pi1 (presComplex ρ) PUnit.unit ≃* PresGroup ρ where
   left_inv := presToPi1_pi1ToPres ρ
   right_inv := pi1ToPres_presToPi1 ρ
   map_mul' := (pi1ToPres ρ).map_mul
-
-end
-
-end Comb
-end FiniteChains

@@ -9,9 +9,7 @@ No finiteness assumption on the original cells or cover is used.
 Pending final Lean verification. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.SpanningTree
 universe u
@@ -58,5 +56,3 @@ theorem coverComplex_isAcyclic_of_treeCover
       rw [← augC_piV (hN := hN), piV_iotaV, hz]
     obtain ⟨a, ha⟩ := h.h0 (iotaV T N z) hlift
     exact ⟨piE T N a, by rw [← piV_bdry1 (hN := hN), ha, piV_iotaV]⟩
-
-end FiniteChains.Comb.SpanningTree

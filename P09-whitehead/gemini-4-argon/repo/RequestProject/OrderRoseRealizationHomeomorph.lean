@@ -77,5 +77,3 @@ theorem orderRoseRealizationHomeomorph_interval {α : Type} (a : α) (t : I) :
   rw [Homeomorph.symm_apply_apply]
   exact (diskRoseOrderHomeomorphOfTraversal_interval α orderRoseTraversal
     orderRoseTraversal_surjective orderRoseTraversal_fiber a t).symm
-
-end FiniteChains.PresModel

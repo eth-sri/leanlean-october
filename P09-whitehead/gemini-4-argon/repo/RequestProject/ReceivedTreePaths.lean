@@ -5,9 +5,7 @@ public import RequestProject.TreeCover
 @[expose] public section
 
 /-! Actual lifted paths with coefficients in an arbitrary receiving group. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.ReceivedTree
 open SpanningTree
@@ -42,8 +40,6 @@ theorem germValue_false_mul_true (e : K.E) :
     germValue T φ (e, false) * germValue T φ (e, true) = 1 := by
   rw [germValue_false_eq_inv, inv_mul_cancel]
 
-@[simp] theorem wordValue_treePath (a : K.V) : wordValue T φ (T.treePath a) = 1 := by
-  simp [wordValue, pathWord_treePath]
 
 theorem wordValue_att (f : K.F) : wordValue T φ (K.att f) = 1 := by
   have h : (QuotientGroup.mk (treeRel T f) : PresGroup (treeRel T)) = 1 :=
@@ -63,7 +59,6 @@ noncomputable def liftPath : List (K.E × Bool) → G → List ((G × K.E) × Bo
   | [], _ => []
   | e :: p, g => liftGerm T φ g e :: liftPath p (g * germValue T φ e)
 
-@[simp] theorem liftPath_nil (g : G) : liftPath T φ [] g = [] := rfl
 
 @[simp] theorem liftPath_cons (e : K.E × Bool) (p : List (K.E × Bool)) (g : G) :
     liftPath T φ (e :: p) g = liftGerm T φ g e :: liftPath T φ p (g * germValue T φ e) := rfl
@@ -113,15 +108,13 @@ theorem liftPath_isPath {p : List (K.E × Bool)} {a b : K.V}
       (g, a) (g * wordValue T φ p, b) := by
   induction p generalizing a g with
   | nil =>
-    have hab : a = b := hp
-    subst b
-    simp
+    cases hp
+    simp [liftPath]
   | cons e p ih =>
+
     obtain ⟨ha, hp⟩ := hp
     subst a
     refine ⟨?_, ?_⟩
     · rw [germSrc_liftGerm]
     · rw [germTgt_liftGerm, wordValue_cons, ← mul_assoc]
       exact ih hp (g * germValue T φ e)
-
-end FiniteChains.Comb.ReceivedTree

@@ -33,5 +33,3 @@ theorem strict_oneCycle_cover_attaching_intersection (hf : IsPosetCover f)
     e.symm.monotone (interRho_le_top hw (e q))
   exact strict_oneCycle_cover_roof (IsPosetCover.restriction f S hf)
     g hmono hg b hb c hc
-
-end FiniteChains.Davis

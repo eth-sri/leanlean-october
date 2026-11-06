@@ -6,9 +6,7 @@ public import RequestProject.OrderNerveH2Maps
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 variable {P Q : Type} [PartialOrder P] [PartialOrder Q]
@@ -109,5 +107,3 @@ theorem mathlibOrderNerveQuotientH2Map_zero (f : P → Q) (hf : Monotone f)
   obtain ⟨w, rfl⟩ := (mathlibOrderNerveH2Equiv P).surjective z
   rw [mathlibOrderNerveH2Equiv_natural, hzero, LinearMap.zero_apply, (mathlibOrderNerveH2Equiv Q).map_zero,
     LinearMap.zero_apply]
-
-end FiniteChains.Comb

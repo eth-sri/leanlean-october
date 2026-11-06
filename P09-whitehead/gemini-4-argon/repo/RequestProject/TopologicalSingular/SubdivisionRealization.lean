@@ -96,5 +96,3 @@ theorem iterated_subdivide_single_model (k n : ℕ) (σ : Simplex X n) :
     rfl
   conv_lhs => rw [hg]
   rw [← iterated_subdivide_naturality, iterated_subdivide_realize]
-
-end FiniteChains.SingularSubdivision

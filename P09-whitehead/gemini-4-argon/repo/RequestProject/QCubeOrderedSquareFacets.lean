@@ -22,5 +22,3 @@ theorem qSquareLargeFacet_ordered (c : QSquare A) {a b : V}
   obtain ⟨hl, _⟩ := qSquare_frame_unique c h hs
   change qCubeFacet c.1 (qSquareLeft c) s = _
   rw [hl]
-
-end FiniteChains.Davis

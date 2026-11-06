@@ -56,5 +56,3 @@ theorem orderNerveSimplex_common {n k : SimplexCategory}
       congrArg Subtype.val (e.symm_apply_apply ⟨s.obj i, Or.inl ⟨i, rfl⟩⟩))
   · exact CategoryTheory.Functor.ext (fun i =>
       congrArg Subtype.val (e.symm_apply_apply ⟨t.obj i, Or.inr ⟨i, rfl⟩⟩))
-
-end FiniteChains.Comb

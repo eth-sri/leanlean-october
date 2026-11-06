@@ -44,5 +44,3 @@ theorem compatibleSimplexHomotopyExtension_exists (tau : Simplex X (n + 2)) :
   simplex_face_homotopy_extension tau (fun i => (H (face i tau)).toContinuousMap)
     (compatibleFaceHomotopies_coherent lo hi L H compat tau)
     (fun i z => (H (face i tau)).apply_zero z)
-
-end FiniteChains.TopologicalSingular

@@ -8,9 +8,7 @@ public import RequestProject.GenusNamedSurfaceCover
 normalization. Degenerate tail edges are allowed. Written, unverified proofs. -/
 noncomputable section
 open scoped Classical
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 set_option maxHeartbeats 1600000
 
@@ -38,7 +36,7 @@ theorem normalizedWeakChain1To_single (f : P → Q) (hf : Monotone f)
       n • normalizeOrdEdge ((orderCxMap f hf).onE d) := by
   change normalizeOrdChain1 (Finsupp.mapDomain (orderCxMap f hf).onE
     (Finsupp.single d n)) = _
-  rw (config := { transparency := .default }) [Finsupp.mapDomain_single, normalizeOrdChain1_single]
+  erw [Finsupp.mapDomain_single, normalizeOrdChain1_single]
 
 theorem normalizedWeakChain1To_path_apply_zero
     (f : P → Q) (hf : Monotone f) (p : List (OrdEdge P × Bool))
@@ -51,9 +49,9 @@ theorem normalizedWeakChain1To_path_apply_zero
       have ha := hp a (List.mem_cons_self ..)
       have ht := ih (fun b hb => hp b (List.mem_cons_of_mem a hb))
       have hs : normalizedWeakChain1To f hf (Finsupp.single a.1 (1 : ℤ)) e = 0 := by
-        rw (config := { transparency := .default }) [normalizedWeakChain1To_single, one_smul]
+        erw [normalizedWeakChain1To_single, one_smul]
         exact normalizeOrdEdge_apply_zero_of_endpoints_ne _ e ha
-      rw (config := { transparency := .default }) [pathChain_cons]
+      erw [pathChain_cons]
       cases a.2 <;>
         simp only [Bool.false_eq_true, ↓reduceIte, map_add,
           map_neg, Finsupp.add_apply, Finsupp.neg_apply, hs, ht, neg_zero, add_zero]
@@ -71,10 +69,10 @@ theorem normalizedWeakChain1To_positive_first_coefficient
   have hs : normalizeOrdEdge ((orderCxMap f hf).onE d) = Finsupp.single e₀ 1 := by
     unfold normalizeOrdEdge
     dsimp only [orderCxMap]
-    rw (config := { transparency := .default }) [dif_neg hne]
+    erw [dif_neg hne]
     congr 1
     exact Subtype.ext hfirst.symm
-  rw (config := { transparency := .default }) [pathChain_cons]
+  erw [pathChain_cons]
   simp only [↓reduceIte, map_add, Finsupp.add_apply,
     normalizedWeakChain1To_single, one_smul, hs,
     normalizedWeakChain1To_path_apply_zero f hf p e htail, add_zero,
@@ -98,12 +96,12 @@ theorem normalizedWeakChain1To_normalize (f : P → Q) (hf : Monotone f)
         have hn : normalizeOrdEdge (⟨(a, b), hab⟩ : OrdEdge P) =
             Finsupp.single (⟨(a, b), hlt⟩ : StrictOrdEdge P) 1 := by
           simp [normalizeOrdEdge, he]
-        rw (config := { transparency := .default }) [hn]
+        erw [hn]
         change normalizeOrdEdge ((orderCxMap f hf).onE ⟨(a, b), hab⟩) =
           normalizeOrdChain1 (Finsupp.mapDomain (orderCxMap f hf).onE
             (Finsupp.mapDomain (strictOrderIncl P).onE
               (Finsupp.single (⟨(a, b), hlt⟩ : StrictOrdEdge P) (1 : ℤ))))
-        rw (config := { transparency := .default }) [Finsupp.mapDomain_single, Finsupp.mapDomain_single,
+        erw [Finsupp.mapDomain_single, Finsupp.mapDomain_single,
           normalizeOrdChain1_single, one_smul]
         rfl
 
@@ -122,5 +120,3 @@ theorem normalizeOrdChain1_strict_map (f : P → Q) (hf : StrictMono f)
       · have hlt : a < b := lt_of_le_of_ne hab he
         simp [chain1, normalizeOrdChain1, normalizeOrdEdge, orderCxMap,
           strictOrderCxMap, he, (hf hlt).ne]
-
-end FiniteChains.Comb

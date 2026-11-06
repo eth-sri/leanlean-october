@@ -31,5 +31,3 @@ theorem IsPosetCover.restriction (hf : IsPosetCover f) :
     refine ⟨⟨b, hb⟩, ⟨hba, Subtype.ext hfb⟩, ?_⟩
     intro c hc
     exact Subtype.ext (huniq c.1 ⟨hc.1, congrArg Subtype.val hc.2⟩)
-
-end FiniteChains.Comb

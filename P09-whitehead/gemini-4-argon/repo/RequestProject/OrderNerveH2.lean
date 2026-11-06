@@ -33,5 +33,3 @@ theorem orderNerveH2Class_eq_zero_iff (c : OrdTri P →₀ ℤ)
     exact ⟨y, congrArg Subtype.val hy⟩
   · rintro ⟨y, hy⟩
     exact ⟨y, Subtype.ext hy⟩
-
-end FiniteChains.Comb

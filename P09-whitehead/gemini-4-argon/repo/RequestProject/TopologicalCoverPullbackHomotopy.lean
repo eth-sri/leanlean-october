@@ -121,9 +121,3 @@ def coverPullbackMapHomotopyEquiv (e : ContinuousMap.HomotopyEquiv X Y)
   have hE : E.toFun = g.comp f := rfl
   have hF : F.toFun = h.comp g := rfl
   exact ContinuousMap.HomotopyEquiv.twoOfSixRight f g h E hE F hF
-
-@[simp] theorem coverPullbackMapHomotopyEquiv_toFun (e : ContinuousMap.HomotopyEquiv X Y)
-    (p : C(D, Y)) (hp : IsCoveringMap p) :
-    (coverPullbackMapHomotopyEquiv e p hp).toFun = coverPullbackMap e.toFun p := rfl
-
-end Whitehead

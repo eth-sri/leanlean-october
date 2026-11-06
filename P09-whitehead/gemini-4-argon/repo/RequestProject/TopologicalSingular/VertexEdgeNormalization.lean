@@ -4,9 +4,7 @@ public import RequestProject.TopologicalSingular.SimplexBoundaryGluing
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.TopologicalSingular
 open scoped unitInterval Topology
@@ -82,5 +80,3 @@ theorem edgeVertexNormalized_vertex (x : X) (tau : Simplex X 1) (i : Fin 2) :
   have he := edgeVertexHomotopy_boundary x tau 1 (stdSimplex.vertex i) (simplexOne_vertex_mem_boundary i)
   rw [(edgeVertexHomotopy x tau).apply_one, Path.target] at he
   exact he
-
-end FiniteChains.TopologicalSingular

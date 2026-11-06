@@ -74,5 +74,3 @@ theorem fs_cycle_mem_span_subgroup_cycles
   apply Submodule.subset_span
   refine ⟨c.mapRange (slice H (Quotient.out C)) (map_zero _), ?_, rfl⟩
   rw [← fs_slice_extendedBoundary, hc, Finsupp.mapRange_zero]
-
-end FiniteChains

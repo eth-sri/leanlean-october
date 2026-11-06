@@ -34,5 +34,3 @@ theorem surfaceFullCube_loop_null {σ : NeSpx A}
       (mapPath (orderCxMap (surfaceFullCube A) (surfaceFullCube_monotone A)) p) [] :=
   htpy_nil_mapPath_of_const_le (surfaceFullCube_monotone A) (surfaceFullCube_monotone A)
     (fun _ => le_refl _) (positiveCorner A) (positiveCorner_le_surface A) hp
-
-end FiniteChains.Davis

@@ -6,9 +6,7 @@ public import RequestProject.MathlibOrderNerveComplexNaturality
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory
@@ -77,5 +75,3 @@ theorem orderCellSingularH2Map_natural {P Q : Type} [PartialOrder P] [PartialOrd
         (orderCellSingularH2Map P z)) at h
   rw [mathlibOrderNerveComplexH2Equiv_natural] at h
   exact h.symm
-
-end FiniteChains.Comb

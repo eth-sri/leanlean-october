@@ -72,5 +72,3 @@ theorem path_into_oneSkeleton (K : Whitehead.TwoComplex) (x y : OneSkeleton K)
     funext t
     rfl
   rwa [hleft, hright] at h
-
-end FiniteChains.ClassicalCW

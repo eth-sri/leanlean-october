@@ -64,5 +64,3 @@ theorem relatorCircle_isConnected (hpos : 0 < (w j).length) :
             ((orderComponentLabel_eq_of_le (relatorCircleEdge0 w j n).property.le).symm.trans hc))
   intro x y
   exact (orderComponentLabel_eq_iff _ _).mp ((h x).trans (h y).symm)
-
-end FiniteChains.PresModel

@@ -1,7 +1,8 @@
 module
 
 public import RequestProject.TopologicalSingular.SquareSingularChains
-public import RequestProject.TopologicalSingular.RelativeSingularPrism
+public import RequestProject.TopologicalSingular.SingularPrism
+public import RequestProject.TopologicalSingular.RelativeSingularMaps
 public import RequestProject.TopologicalCoverPi2
 
 @[expose] public section
@@ -62,5 +63,3 @@ theorem squareCycle_map {Y : Type} [TopologicalSpace Y] {X : Type} [TopologicalS
   change map (f.comp p.val) 2 squareFundamentalChain = _
   rw [map_comp, LinearMap.comp_apply]
   rfl
-
-end FiniteChains.TopologicalSingular

@@ -32,5 +32,3 @@ theorem singular_horn_filler_exists (i : Fin (n + 2))
   change tau (stdSimplex.map (SimplexCategory.δ (i.succAbove k)) z) = faces k z
   rw [simplex_face_eq_faceMap]
   exact simplexHornFiller_face i faces hfaces k z
-
-end FiniteChains.TopologicalSingular

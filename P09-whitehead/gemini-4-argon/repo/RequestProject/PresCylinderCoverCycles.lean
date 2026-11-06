@@ -5,9 +5,7 @@ public import RequestProject.PosetCoverUpTransform
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb
@@ -76,5 +74,3 @@ theorem cylinderCover_two_cycle_zero (c : StrictOrdTri P →₀ ℤ)
   rw [hy0, map_zero, cylinderCover_normalized_collapse_zero, normalizedStrictChain2_id,
     zero_sub] at hy
   exact neg_eq_zero.mp hy.symm
-
-end FiniteChains.PresModel

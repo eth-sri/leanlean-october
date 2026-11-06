@@ -5,9 +5,7 @@ public import RequestProject.OrderNerveOneDictionary
 @[expose] public section
 
 /-! Recovering genuine cellular one-cycles from homogeneous increasing nerve cycles. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open FreeAbelianGroup
@@ -64,5 +62,3 @@ theorem ordNerveChain1_decode {c : Nerve.Ch P} (hc : c ∈ Nerve.Inc P) :
   | zero => simp
   | add x y _ _ hx hy => simp only [map_add, hx, hy]
   | neg x _ hx => simp only [map_neg, hx]
-
-end FiniteChains.Comb

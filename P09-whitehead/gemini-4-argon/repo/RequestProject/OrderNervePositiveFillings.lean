@@ -6,9 +6,7 @@ public import RequestProject.OrderThreeNormalization
 @[expose] public section
 
 /-! Strict cellular fillings give genuine fillings in the homogeneous full nerve. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -116,5 +114,3 @@ theorem nerve_twoCycle_filling_of_strict
   obtain ⟨y, hy⟩ := weak_twoCycle_filling_of_strict hfill _ hcyc
   refine ⟨ordNerveChain3 y, ordNerveChain3_mem_inc y, ?_⟩
   rw [← ordNerveChain2_ordBoundary3, hy, he]
-
-end FiniteChains.Comb

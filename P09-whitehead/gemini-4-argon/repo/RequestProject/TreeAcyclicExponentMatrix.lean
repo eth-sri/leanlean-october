@@ -50,6 +50,3 @@ theorem expMatrix_bijective_of_acyclic (hD : IsAcyclic D) :
   have hb : Function.Bijective (bdry2 (presComplex (treeRel T))) :=
     ⟨hpres.h2, fun z => hpres.h1 z (bdry1_presComplex (treeRel T) z)⟩
   rwa [bdry2_presComplex_eq_expMatrix] at hb
-
-end SpanningTree
-end FiniteChains.Comb

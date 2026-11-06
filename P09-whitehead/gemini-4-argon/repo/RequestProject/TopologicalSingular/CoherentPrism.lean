@@ -4,9 +4,7 @@ public import RequestProject.TopologicalSingular.PrismLocality
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.TopologicalSingular
 open scoped unitInterval
@@ -91,5 +89,3 @@ theorem coherentPrism_preserves_cycles (c : Chain X (n + 1)) (hc : boundary n c 
   have he := boundary_boundary n b
   rw [hb, map_sub, hc, sub_zero] at he
   exact he
-
-end FiniteChains.TopologicalSingular

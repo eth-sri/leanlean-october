@@ -3,7 +3,12 @@ module
 /- Adapted from the local 2026-09-11 Lean audit; see PROVENANCE.json. -/
 
 public import RequestProject.TopologicalSingular.SmallChainHomology
-public import RequestProject.TopologicalSingular.SingularHomologySequence
+public import RequestProject.TopologicalSingular.SingularChainHomotopy
+public import RequestProject.TopologicalSingular.SingularPrism
+public import RequestProject.TopologicalSingular.RelativeSingularMaps
+public import RequestProject.TopologicalSingular.ContractibleSingularChains
+public import Mathlib.Algebra.Homology.HomologySequence
+public import Mathlib.Algebra.Category.ModuleCat.EpiMono
 
 @[expose] public section
 
@@ -14,9 +19,7 @@ short exact sequence is valid for an arbitrary family of subsets; no
 openness or covering assumption is used in this file.
 -/
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.SingularSubdivision
 
@@ -36,5 +39,3 @@ theorem smallBoundary_squared (U : ι → Set X) (n : ℕ) :
   intro c
   apply Subtype.ext
   exact boundary_boundary n c.val
-
-end FiniteChains.SingularSubdivision

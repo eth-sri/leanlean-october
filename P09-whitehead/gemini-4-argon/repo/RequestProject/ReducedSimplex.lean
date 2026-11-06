@@ -129,5 +129,3 @@ theorem reducedSimplex_exists_ball_homeomorph (n : ℕ) :
     (reducedSimplex_convex n) (reducedSimplex_interior_nonempty n) (reducedSimplex_isBounded n)
   rw [(reducedSimplex_isClosed n).closure_eq] at hc
   exact ⟨h, hi, hc, hf⟩
-
-end FiniteChains

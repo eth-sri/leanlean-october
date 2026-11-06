@@ -17,5 +17,3 @@ theorem mapDomain_comp (f : M → N) (g : N → P) (x : MonoidAlgebra R M) :
 @[simp] theorem mapDomain_id (x : MonoidAlgebra R M) : mapDomain id x = x := by
   apply coeff_injective
   exact Finsupp.mapDomain_id
-
-end MonoidAlgebra

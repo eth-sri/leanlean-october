@@ -176,5 +176,3 @@ theorem boundaryMap_homotopic_boundaryWords [DiscreteTopology V] (hr : Continuou
     intro a
     exact congrArg f (e.symm_apply_apply a)
   rwa [he] at H
-
-end FiniteChains.ClassicalGraphModel

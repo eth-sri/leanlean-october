@@ -75,22 +75,3 @@ theorem relatorCircle_edge_cases (e : StrictOrdEdge (RelatorCircle w j)) :
   · right; right; right
     apply relatorCircleEdgeForget_injective w j
     exact Subtype.ext he
-
-def relatorCircleEdgeEnum (p : Fin (w j).length × Fin 4) : StrictOrdEdge (RelatorCircle w j) :=
-  if p.2 = 0 then relatorCircleEdge0 w j p.1 else
-  if p.2 = 1 then relatorCircleEdge1 w j p.1 else
-  if p.2 = 2 then relatorCircleEdge2 w j p.1 else relatorCircleEdge3 w j p.1
-
-theorem relatorCircleEdgeEnum_surjective : Function.Surjective (relatorCircleEdgeEnum w j) := by
-  intro e
-  obtain ⟨k, he⟩ := relatorCircle_edge_cases w j e
-  rcases he with he | he | he | he
-  · exact ⟨(k, 0), by simp [relatorCircleEdgeEnum, he]⟩
-  · exact ⟨(k, 1), by simp [relatorCircleEdgeEnum, he]⟩
-  · exact ⟨(k, 2), by simp [relatorCircleEdgeEnum, he]⟩
-  · exact ⟨(k, 3), by simp [relatorCircleEdgeEnum, he]⟩
-
-instance : Finite (StrictOrdEdge (RelatorCircle w j)) :=
-  Finite.of_surjective _ (relatorCircleEdgeEnum_surjective w j)
-
-end FiniteChains.PresModel

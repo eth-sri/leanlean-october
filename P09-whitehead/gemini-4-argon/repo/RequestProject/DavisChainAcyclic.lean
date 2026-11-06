@@ -33,8 +33,7 @@ Main results:
   is truncated.
 -/
 
-namespace FiniteChains
-namespace Davis
+namespace FiniteChains.Davis
 
 open RACG Mirror Comb Nerve
 
@@ -173,6 +172,3 @@ theorem exists_bdry_eq_of_cycle_davis (A : CommRel V) {z : Nerve.Ch (Sph A)}
   obtain ⟨v, hv, hdv⟩ :=
     acyclicIn_upto A (chainBound z) z (mem_incOn_upto_chainBound hz) hcyc
   exact ⟨v, Nerve.incOn_le_inc _ hv, hdv⟩
-
-end Davis
-end FiniteChains

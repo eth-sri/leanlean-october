@@ -74,5 +74,3 @@ theorem foxLin_mul (i : α) (a b : FreeGroupRing α) :
           rw [← mul_assoc (m : FreeGroupRing α), (Int.cast_commute m (grp g)).eq, mul_assoc]
           congr 1
           rw [← mul_assoc, ← mul_assoc, ← Int.cast_mul, ← Int.cast_mul, mul_comm n m]
-
-end FiniteChains

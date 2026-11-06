@@ -1,6 +1,11 @@
 module
 
-public import RequestProject.CoverComplexPres
+public import RequestProject.CoverComplex
+public import RequestProject.PresentationDictionary
+public import RequestProject.ChainFormula
+public import RequestProject.FinitelyDeterminedInf
+public import RequestProject.Pigeonhole
+public import RequestProject.CoverAcyclic
 
 @[expose] public section
 
@@ -20,8 +25,7 @@ condition assumed of a chain of presentation complexes (the inclusions are zero 
 is exactly the vanishing of the image of such a cycle.
 -/
 
-namespace FiniteChains
-namespace Comb
+namespace FiniteChains.Comb
 
 open MonoidAlgebra
 
@@ -60,6 +64,3 @@ theorem univCover_bdry2_eq_zero_iff (u : ((FreeGroup α ⧸ relSub ρ) × J) →
     refine (coords (relSub ρ) α).injective ?_
     rw [h']
     exact (map_zero _).symm
-
-end Comb
-end FiniteChains

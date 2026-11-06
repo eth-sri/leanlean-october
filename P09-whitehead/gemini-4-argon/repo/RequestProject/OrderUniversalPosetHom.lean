@@ -6,9 +6,7 @@ public import RequestProject.UnivCoverIncl
 @[expose] public section
 
 /-! The cellular identification of the genuine universal-cover order complex. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -87,5 +85,3 @@ theorem exists_unique_uOrder_cycle (c : UF (orderCx P) a →₀ ℤ)
   refine ⟨d, ⟨hd, (uOrderHom_cycle_iff d).mp (hd.symm ▸ hc)⟩, ?_⟩
   intro e he
   exact uOrderHom_chain2_injective (he.1.trans hd.symm)
-
-end FiniteChains.Comb

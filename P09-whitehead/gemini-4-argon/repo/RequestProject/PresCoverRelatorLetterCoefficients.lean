@@ -46,5 +46,3 @@ theorem presCoverRelatorGeneratorBoundary_single (p : PresCoverRelator w f) :
     (coneAdjCoverBaseEnd_isPosetCover f hf) (presCoverCircleCylinderInclusion w f hf p)
     (presCoverCircleCylinderInclusion_strictMono w f hf p)
     (presCoverCircleCylinderInclusion_projection w f hf p)
-
-end FiniteChains.PresModel

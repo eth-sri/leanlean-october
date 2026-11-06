@@ -149,5 +149,3 @@ theorem fixedPresChainsFS_of_original_chains
       intro i
       exact Fin.elim0 i
   | succ n => exact fixedPresChainFS_of_hasChain K T (h (n + 1) (Nat.succ_pos n))
-
-end Whitehead

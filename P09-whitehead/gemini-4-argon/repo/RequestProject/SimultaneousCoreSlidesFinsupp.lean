@@ -105,5 +105,3 @@ theorem coreSlideForward_aug_zero (lam : S → C →₀ R) (ε : R →+* ℤ)
     rw [map_mul, hx k, zero_mul]
   change ε (x j - coreSlideCorrection lam x j) = 0
   rw [map_sub, hx j, hc, sub_self]
-
-end FiniteChains

@@ -45,7 +45,7 @@ open MonoidAlgebra
 
 universe u
 
-variable {γ δ Mc Ex : Type u} [Fintype γ] [DecidableEq γ] [Fintype δ] [DecidableEq δ]
+variable {γ δ Mc Ex : Type u} [DecidableEq γ] [DecidableEq δ]
   [Fintype Mc] [Fintype Ex]
 
 /-- A presentation containing the core `D`: the relators of the core, read in the free group on
@@ -54,15 +54,8 @@ def corePres (core : Mc → FreeGroup γ) (extra : Ex → FreeGroup (γ ⊕ δ))
     Mc ⊕ Ex → FreeGroup (γ ⊕ δ) :=
   Sum.elim (fun m => FreeGroup.map Sum.inl (core m)) extra
 
-omit [Fintype γ] [DecidableEq γ] [Fintype δ] [DecidableEq δ] [Fintype Mc] [Fintype Ex] in
-@[simp] theorem corePres_inl (core : Mc → FreeGroup γ) (extra : Ex → FreeGroup (γ ⊕ δ))
-    (m : Mc) : corePres core extra (Sum.inl m) = FreeGroup.map Sum.inl (core m) := rfl
 
-omit [Fintype γ] [DecidableEq γ] [Fintype δ] [DecidableEq δ] [Fintype Mc] [Fintype Ex] in
-@[simp] theorem corePres_inr (core : Mc → FreeGroup γ) (extra : Ex → FreeGroup (γ ⊕ δ))
-    (e : Ex) : corePres core extra (Sum.inr e) = extra e := rfl
 
-omit [Fintype γ] [Fintype δ] in
 /-- The exponent sum of a core generator in a word of the core does not change when the word is
 read in the larger free group. -/
 theorem expSum_map_inl (i : γ) (w : FreeGroup γ) :
@@ -79,14 +72,3 @@ theorem expSum_map_inl (i : γ) (w : FreeGroup γ) :
       simp
     exact Multiplicative.toAdd.injective (by simp [h1, h2])
   exact congrArg Multiplicative.toAdd (DFunLike.congr_fun h w)
-
-/-! ### The collapse onto the wedge of the blocks -/
-
-section Wedge
-
-variable {S : Type u} {β K : S → Type u} [Fintype S] [DecidableEq S] [∀ s, Fintype (β s)]
-  [∀ s, DecidableEq (β s)] [∀ s, Fintype (K s)]
-
-end Wedge
-
-end FiniteChains

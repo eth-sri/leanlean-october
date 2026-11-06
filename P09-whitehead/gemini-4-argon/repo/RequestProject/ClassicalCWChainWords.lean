@@ -10,9 +10,7 @@ words, bases, and attaching homotopies are transported from this choice.
 There is no finite-cell hypothesis. Unverified source. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.ClassicalCW.ChainWords
 open ClassicalSkeletonAttachment ClassicalGraphModel RelativeAttachment
@@ -30,9 +28,6 @@ class Choices where
   cellWord_spec : ∀ i j,
     (subcomplexCellBoundary (C i) j).Homotopic (cellWord i j).boundaryMap
 
-noncomputable instance (priority := low) defaultChoices : Choices C where
-  cellWord i j := Classical.choose (subcomplexCellBoundary_word_exists (C i) j)
-  cellWord_spec i j := Classical.choose_spec (subcomplexCellBoundary_word_exists (C i) j)
 
 abbrev TopCell := RelCWComplex.cell (C (Fin.last n) : Set X) 2
 
@@ -79,34 +74,3 @@ theorem word_natural {i k : Fin (n + 1)} (hik : i ≤ k)
   unfold word
   rw [BoundaryWords.map_comp, subcomplexGraphInclusion_comp]
   rfl
-
-def complex (i : Fin (n + 1)) : Comb.Complex2 where
-  V := (subcomplexGraph (C i)).V
-  E := (subcomplexGraph (C i)).E
-  F := RelCWComplex.cell (C i : Set X) 2
-  src := (subcomplexGraph (C i)).src
-  tgt := (subcomplexGraph (C i)).tgt
-  base j := (word C hC i j).vertex (squareSideMap (0, false) 0)
-  att j := (word C hC i j).loopWord
-  att_isLoop j := (word C hC i j).loopWord_isPath
-
-theorem word_loop_natural {i k : Fin (n + 1)} (hik : i ≤ k)
-    (j : RelCWComplex.cell (C i : Set X) 2) :
-    (word C hC k (subcomplexCellInclusion (hC hik) 2 j)).loopWord =
-      Comb.mapPath (subcomplexGraphInclusion (hC hik)) (word C hC i j).loopWord := by
-  rw [word_natural C hC hik j]
-  exact BoundaryWords.loopWord_map _ _
-
-def inclusion {i k : Fin (n + 1)} (hik : i ≤ k) : Comb.Hom (complex C hC i) (complex C hC k) where
-  onV := (subcomplexGraphInclusion (hC hik)).onV
-  onE := (subcomplexGraphInclusion (hC hik)).onE
-  onF := subcomplexCellInclusion (hC hik) 2
-  src_onE := (subcomplexGraphInclusion (hC hik)).src_onE
-  tgt_onE := (subcomplexGraphInclusion (hC hik)).tgt_onE
-  base_onF j := by
-    change (word C hC k (subcomplexCellInclusion (hC hik) 2 j)).vertex _ = _
-    rw [word_natural C hC hik j]
-    rfl
-  att_onF j := word_loop_natural C hC hik j
-
-end FiniteChains.ClassicalCW.ChainWords

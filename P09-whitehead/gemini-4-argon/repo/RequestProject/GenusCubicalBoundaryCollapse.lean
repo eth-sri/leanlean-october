@@ -50,5 +50,3 @@ theorem genusSpineCellToOld_dimension_le_two (c : GenusSpineCell q) :
       rw [hc] at hσ
       have hcard := genusSpine_cut_card_le_two q σ hσ
       simpa [genusSpineCellToOld, truncatedCellRetraction, hc, posQCube] using hcard
-
-end FiniteChains.Davis.Genus

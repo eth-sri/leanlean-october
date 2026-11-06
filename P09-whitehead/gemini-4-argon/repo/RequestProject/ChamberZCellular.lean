@@ -1,6 +1,7 @@
 module
 
-public import RequestProject.ChamberZDegree
+public import RequestProject.NerveDegree
+public import RequestProject.ChamberZChain
 public import RequestProject.OrderNerveDecoding
 
 @[expose] public section
@@ -10,7 +11,7 @@ public import RequestProject.OrderNerveDecoding
 namespace FiniteChains.Davis
 open RACG Mirror Comb Nerve
 universe u
-variable {V : Type u} [DecidableEq V] [Fintype V] {A : CommRel V}
+variable {V : Type u} [DecidableEq V] {A : CommRel V}
   {X : Type u} [PartialOrder X] {M : CayGroup A → Prop} {att : NeSpx A →o X}
 
 instance zposPartialOrder : PartialOrder (Zpos A X M att) where
@@ -25,5 +26,3 @@ instance zposPartialOrder : PartialOrder (Zpos A X M att) where
       cases t with
       | inl p => exact hts.elim
       | inr vy => exact congrArg Sum.inr (Prod.ext hst.1 (le_antisymm hst.2 hts.2))
-
-end FiniteChains.Davis

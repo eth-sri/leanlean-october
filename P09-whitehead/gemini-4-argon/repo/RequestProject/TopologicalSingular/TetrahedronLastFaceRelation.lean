@@ -38,5 +38,3 @@ theorem last_face_constant_relation (a b c : PointedSingularTriangle X x)
       degeneracy_zero_faces]
   have h := first_face_constant_relation c b a W hW
   exact (add_comm a.pi2 c.pi2).trans h
-
-end FiniteChains.TopologicalSingular.PointedSingularTriangle

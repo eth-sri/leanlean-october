@@ -1,6 +1,8 @@
 module
 
-public import RequestProject.ChamberQuotientOldGeneration
+public import RequestProject.ChamberQuotientOldStar
+public import RequestProject.ChamberQuotientNerveGeneration
+public import RequestProject.NerveDegreeGluing
 public import RequestProject.ChamberQuotientStarOneFillings
 public import RequestProject.NerveRelativeIntersection
 public import RequestProject.NerveBoundaryReflection
@@ -37,5 +39,3 @@ theorem qUniversal_old_relative_filling (x : X) (hx : IsConnected (orderCx X))
     (fun a b hab _ _ => qOld_baseStar_unmixed _ _ (uOrderEnd_monotone hab))
     hgen (qUniversal_baseStar_fillsDegree_two x hx) z hz hd
     (incOn_mono (fun _ h => h.2) hdz)
-
-end FiniteChains.Davis

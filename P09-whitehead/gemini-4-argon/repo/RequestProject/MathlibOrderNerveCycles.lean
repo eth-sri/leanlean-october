@@ -5,9 +5,7 @@ public import RequestProject.OrderNerveH2
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 variable (P : Type) [PartialOrder P]
@@ -96,5 +94,3 @@ noncomputable def mathlibOrderNerveH2Equiv : OrderNerveH2 P ≃ₗ[ℤ]
         LinearMap.range (mathlibOrderNerveBoundary3Cycles P) :=
   Submodule.Quotient.equiv _ _ (mathlibOrderNerveCycleEquiv P)
     (mathlibOrderNerveCycleEquiv_boundary_range P)
-
-end FiniteChains.Comb

@@ -7,9 +7,7 @@ public import RequestProject.CombLoopWord
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb
@@ -146,5 +144,3 @@ theorem roseLoopHom_surjective :
         exact Subgroup.mul_mem _ (roseRooted_mem_range e) ih
     rw [← h] at hm
     exact hm
-
-end FiniteChains.PresModel

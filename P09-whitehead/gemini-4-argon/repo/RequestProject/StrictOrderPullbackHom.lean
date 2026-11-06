@@ -10,9 +10,7 @@ public import RequestProject.ComponentComplex
 /-! Actual cellular maps into a pulled-back ordered cover.
 
 -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -132,5 +130,3 @@ noncomputable def strictOrderPullbackHom :
       rw [strictPullbackFace_second]
       simpa only [List.map_map, Function.comp_def, strictPullbackEdge_second]
         using s.att_onF t
-
-end FiniteChains.Comb

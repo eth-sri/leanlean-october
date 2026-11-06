@@ -9,9 +9,7 @@ public import Mathlib.Topology.Homotopy.Contractible
 spanning tree. Only each vertex's natural-number height is finite. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.ClassicalGraphModel
 open RelativeAttachment
@@ -44,10 +42,6 @@ def treeRootPath (a : V) : Path (treeVertex r T a) (treeVertex r T T.root) :=
     have h := T.ht_parent ha
     omega
 
-@[simp] theorem treeRootPath_root :
-    treeRootPath r T T.root = Path.refl (treeVertex r T T.root) := by
-  rw [treeRootPath]
-  simp
 
 theorem treeRootPath_of_ne {a : V} (ha : a ≠ T.root) :
     treeRootPath r T a = (treeUpPath r T a ha).trans (treeRootPath r T (T.parent a ha)) := by
@@ -140,13 +134,7 @@ def treeContraction : ContinuousMap.Homotopy (ContinuousMap.id (TreeSpace r T))
     (ContinuousMap.const (TreeSpace r T) (treeVertex r T T.root)) :=
   graphContraction (treeAttaching r T) T.root (treeRootPath r T) (treeRootPath_edge r T)
 
-@[simp] theorem treeContraction_vertex (t : I) (a : V) :
-    treeContraction r T (t, treeVertex r T a) = treeRootPath r T a t := rfl
 
-@[simp] theorem treeContraction_root (t : I) :
-    treeContraction r T (t, treeVertex r T T.root) = treeVertex r T T.root := by
-  rw [treeContraction_vertex, treeRootPath_root]
-  rfl
 
 /-- The same specified collapse, with the universe-polymorphic singleton. -/
 def treeHomotopyEquivPUnit : ContinuousMap.HomotopyEquiv (TreeSpace r T) PUnit where
@@ -158,5 +146,3 @@ def treeHomotopyEquivPUnit : ContinuousMap.HomotopyEquiv (TreeSpace r T) PUnit w
       ext x
     change ContinuousMap.Homotopic (ContinuousMap.const PUnit PUnit.unit) (ContinuousMap.id PUnit)
     rw [he]
-
-end FiniteChains.ClassicalGraphModel

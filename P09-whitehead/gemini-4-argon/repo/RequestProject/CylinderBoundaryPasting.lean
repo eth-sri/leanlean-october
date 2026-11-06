@@ -9,9 +9,7 @@ The side is any closed subspace, including an arbitrary disjoint family of
 disk boundaries. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.RelativeAttachment
 open scoped unitInterval Topology Classical
@@ -108,5 +106,3 @@ def fullCylinderPasting (hS : IsClosed S) (f₀ f₁ : C(D, Z)) (H : C(I × S, Z
     fullCylinderPasting S hS f₀ f₁ H h₀ h₁
       ⟨(t, x.val), Or.inr (Or.inr x.property)⟩ = H (t, x) :=
   fullCylinderPastingFun_side S f₀ f₁ H h₀ h₁ _ x.property
-
-end FiniteChains.RelativeAttachment

@@ -30,8 +30,7 @@ stages (every finite path lies in finitely many chambers).  That is the remainin
 to simple connectivity of the whole Davis complex.
 -/
 
-namespace FiniteChains
-namespace Davis
+namespace FiniteChains.Davis
 
 open RACG Mirror Comb
 
@@ -56,7 +55,6 @@ theorem nullIn_chamber (x : CayGroup A) : NullIn (InChamber (A := A) x) :=
 theorem connectedIn_chamber (x : CayGroup A) : ConnectedIn (InChamber (A := A) x) :=
   connectedIn_of_isConnected (chamber_isConnected x)
 
-section Inter
 
 variable [Fintype V]
 
@@ -91,8 +89,3 @@ theorem nullIn_union_chamber {x : CayGroup A} (hx : x ≠ 1) (Prev : Sph A → P
   exact ⟨htpy_nil_of_pathIn_union (fun _ => Iff.rfl) hmix hPrevNull (nullIn_chamber x)
       hPrevConn (connectedIn_chamber x) hJconn hj,
     connectedIn_union (fun _ => Iff.rfl) hPrevConn (connectedIn_chamber x) hj⟩
-
-end Inter
-
-end Davis
-end FiniteChains

@@ -65,5 +65,3 @@ theorem ordinaryTruncatedBoundary_cover_fillings {L : ASC V} {s t : QOld A}
   obtain ⟨j, b, hb, htj, hs⟩ := exists_facet_coordinates_of_inc s t hi
   exact ordinary_puncturedCubeBoundary_cover_fillings _ j b hb htj
     (hf.postcomp_orderIso (ordinaryTruncatedBoundaryOrderIso ht j b hs))
-
-end FiniteChains.Davis

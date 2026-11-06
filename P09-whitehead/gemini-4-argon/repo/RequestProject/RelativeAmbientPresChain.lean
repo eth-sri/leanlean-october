@@ -1,7 +1,8 @@
 module
 
 public import RequestProject.RelativeAmbientChain
-public import RequestProject.PresChainRealization
+public import RequestProject.CanonicalPresentationTopologicalChains
+public import RequestProject.PresentationChainFinsupp
 
 @[expose] public section
 
@@ -128,5 +129,3 @@ theorem chain_proper (i : ℕ) (hi : i < n + 1) :
       | inr j =>
           have he : j.val = s := congrArg Subtype.val (Sum.inr.inj hj)
           exact hsp (he ▸ j.property)
-
-end FiniteChains.RelativeNormalForm.AmbientChain

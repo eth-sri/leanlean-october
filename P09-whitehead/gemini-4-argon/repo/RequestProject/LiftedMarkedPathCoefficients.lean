@@ -35,7 +35,6 @@ theorem liftedPathChain_apply_zero_of_edge_absent
     exact List.mem_map.mpr ⟨c, hc, rfl⟩
   exact he _ hm (congrArg (fun e : UE X a => e.1.2) hce)
 
-section Markings
 variable {I J : Type u} (b : X.V) (edge : I → X.E)
   (tail : I → List (X.E × Bool))
   (hp : ∀ i, IsPath X.src X.tgt ((edge i, true) :: tail i) b b)
@@ -113,6 +112,3 @@ theorem liftedMarkingChainMap_injective
   have h := congrArg (fun z : UE X a →₀ ℤ =>
     z (liftedMarkedFirstEdge b edge tail hp v hv x.1 x.2)) hcd
   simpa only [liftedMarkingChainMap_coefficient b edge tail hp v hv he hv' ht] using h
-
-end Markings
-end FiniteChains.Comb

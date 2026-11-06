@@ -22,12 +22,9 @@ complex — into statements about the map of fundamental groups induced by a mon
   classes inside the whole poset, then the induced map of fundamental groups is injective.
 -/
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
-namespace FiniteChains
-namespace Comb
+namespace FiniteChains.Comb
 
 universe u
 
@@ -144,6 +141,3 @@ theorem pi1Map_injective_of_injIn {Bp : P → Prop} (hinj : InjIn (fun _ : P => 
       have h : Htpy (orderCx P) (f y) (f y) (mapPath (orderCxMap f hf) p.1) [] :=
         Quotient.exact hc
       exact Quotient.sound (htpy_nil_of_injIn hinj hf hfB hg hgf p.2 h)
-
-end Comb
-end FiniteChains

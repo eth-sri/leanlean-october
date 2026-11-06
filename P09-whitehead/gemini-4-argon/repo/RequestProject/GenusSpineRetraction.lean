@@ -47,5 +47,3 @@ theorem genusSpineRetraction_monotone : Monotone (genusSpineRetraction q) :=
 
 theorem genusSpine_le_retraction (c : GenusSpineCell q) : c ≤ genusSpineRetraction q c :=
   truncatedCell_le_retraction c.1
-
-end FiniteChains.Davis.Genus

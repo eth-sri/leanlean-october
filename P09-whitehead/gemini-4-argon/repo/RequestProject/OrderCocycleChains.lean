@@ -6,9 +6,7 @@ public import RequestProject.UnivCoverIncl
 @[expose] public section
 
 /-! Integral cellular cocycles obtained from actual order cocycles. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.OrdCocycle
 universe u v
@@ -50,5 +48,3 @@ theorem pullback_readPath {Q : Type u} [Preorder Q] (f : Q → P) (hf : Monotone
       simp only [mapPath, List.map_cons]
       rw [readPath_cons, readPath_cons, ih]
       congr 1
-
-end FiniteChains.Comb.OrdCocycle

@@ -11,8 +11,7 @@ by the same product of commutators in the new generators. Its group is isomorphi
 original presentation group. No finiteness of the index sets is needed.
 -/
 
-namespace FiniteChains
-namespace SurfaceWordExpansion
+namespace FiniteChains.SurfaceWordExpansion
 
 universe u
 
@@ -145,6 +144,3 @@ def groupEquiv : PresGroup ρ ≃* PresGroup (expandedRel ρ w ps) where
   left_inv := elimination_inclusion ρ w ps hrho
   right_inv := inclusion_elimination ρ w ps hrho
   map_mul' := map_mul _
-
-end SurfaceWordExpansion
-end FiniteChains

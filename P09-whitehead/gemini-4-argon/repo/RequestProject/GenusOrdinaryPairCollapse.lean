@@ -91,5 +91,3 @@ theorem genus_old_pair_stage_injIn
       (qCubeToCoordinate f.1) hp
     simpa only [freeSet_qCubeToCoordinate] using qCubeToCoordinate_sgn_zero t.1 hs
   exact genus_ordinary_pair_stage_injIn q left right f t hf ht hordinary hsplit
-
-end FiniteChains.Davis.Genus

@@ -58,5 +58,3 @@ theorem markedSpine_square_coefficient_support (d : (markedSpineCx q).F →₀ �
   refine ⟨a, hmem, ?_⟩
   change (genusSpineCellToOld q f.1.1.2.2).1 = s.1 at htop
   simpa [genusSpineCellToOld, truncatedCellRetraction, ha] using htop
-
-end FiniteChains.Davis.Genus

@@ -79,5 +79,3 @@ theorem genus_ordinary_pair_cover_homology (hf : IsPosetCover f)
   exact ⟨generatesDegreeIn_trans (fun _ h => h.1)
       (generatesDegreeIn_of_acyclicRelIn hface.1) htop.1,
     reflectsBoundsIn_trans (fun _ h => h.1) (hface.2 3) htop.2⟩
-
-end FiniteChains.Davis.Genus

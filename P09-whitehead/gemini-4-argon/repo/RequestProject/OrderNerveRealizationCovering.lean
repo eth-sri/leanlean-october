@@ -102,6 +102,3 @@ theorem realizationMap_isCoveringMap (hf : IsPosetCover f) :
   intro x
   obtain ⟨q, hq⟩ := orderNerveRealizationOpenStar_cover Q x
   exact hf.realizationMap_evenlyCovered q x hq
-
-end IsPosetCover
-end FiniteChains.Comb

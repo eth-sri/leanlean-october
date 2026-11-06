@@ -57,5 +57,3 @@ theorem orderSmallCellularApproximation2_boundary {P : Type} [PartialOrder P]
   rw [ordNerveChain2_decode (orderSmallToNerve2_mem_inc c), orderSmallToNerve2_length,
     orderSmallToNerve2_boundary, ordNerveChain1_decode (orderSmallToNerve1_mem_inc _),
     orderSmallToNerve1_length]
-
-end FiniteChains.Comb

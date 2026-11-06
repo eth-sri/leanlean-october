@@ -169,5 +169,3 @@ theorem actualTerminalSpineFS_conclusions
       (actualTerminalSpineMorFS q u ρ).cells v = 0) :=
   ⟨actualTerminalSpineFS_isCockcroft core q u ρ hretained hcore,
     fun v hv => actualTerminalSpineFS_cells_zero q u ρ hrho hP hcoreTriv v hv⟩
-
-end FiniteChains.Davis.Genus

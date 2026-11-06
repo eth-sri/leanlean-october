@@ -6,9 +6,7 @@ public import RequestProject.CellularChainMapZero
 @[expose] public section
 
 /-! The degree-one dictionary for actual order chains and their finite prisms. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -57,5 +55,3 @@ theorem ordNerveChain1_chain1 (f : P → Q) (hf : Monotone f) (c : OrdEdge P →
       (Finsupp.single e n)) = _
     rw [Finsupp.mapDomain_single]
     simp [ordNerveChain1, Nerve.cmap_of, orderCxMap]
-
-end FiniteChains.Comb

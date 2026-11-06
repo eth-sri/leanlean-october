@@ -24,5 +24,3 @@ theorem orderNerveRealization_cycle_nerveRepresentative (n : ℕ)
   · rw [map_sub, hb, ha]
     change d - orderNerveGradedRealize P (n + 1) (orderSmallToNerve P (n + 1) d') - (d - c) = _
     abel
-
-end FiniteChains.Comb

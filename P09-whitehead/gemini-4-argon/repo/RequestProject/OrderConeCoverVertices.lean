@@ -6,9 +6,7 @@ public import RequestProject.CombUniversalCover
 @[expose] public section
 
 /-! Actual reference vertices for lifting the explicit cone fan. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -99,5 +97,3 @@ theorem coneCoverFace_boundary (e : (orderCx P).E) :
   rw [coneCoverFace_att]
   simp [pathChain_cons]
   abel
-
-end FiniteChains.Comb

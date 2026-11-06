@@ -118,5 +118,3 @@ theorem vertexPuncturedCube_connected : IsConnected (orderCx VertexPuncturedCube
   obtain ⟨p, hp⟩ := reach a
   obtain ⟨r, hr⟩ := reach b
   exact ⟨p ++ revPath r, hp.append (isPath_revPath hr)⟩
-
-end FiniteChains.Davis

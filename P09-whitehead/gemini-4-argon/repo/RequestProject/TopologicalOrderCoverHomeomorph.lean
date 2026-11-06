@@ -95,5 +95,3 @@ def realizationHomeomorph : orderNerveRealization (Cover p hp) ≃ₜ E :=
   CoveringComparison.homeomorphOfFibrewise (realizedProjection p hp) p
     (realizedProjection_isCoveringMap p hp hs) hp (realizationComparison p hp)
     (realizationComparison_projection p hp) (comparison_fibre_bijective p hp hs)
-
-end FiniteChains.Comb.TopologicalOrderCover

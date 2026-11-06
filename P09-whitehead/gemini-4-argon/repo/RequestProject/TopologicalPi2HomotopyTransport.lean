@@ -10,9 +10,7 @@ homotopies and homotopy equivalences. Base points need not be fixed by the homot
 
 noncomputable section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace Whitehead
 open scoped unitInterval Topology
@@ -95,5 +93,3 @@ theorem killsPi2_homotopyEquiv_square_iff {X' Y' : Type}
   rw [← killsPi2_homotopyEquiv_precomp_iff e g]
   rw [killsPi2_homotopic_iff h]
   exact killsPi2_homotopyEquiv_postcomp_iff d f
-
-end Whitehead

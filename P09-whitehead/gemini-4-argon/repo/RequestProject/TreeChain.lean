@@ -1,7 +1,20 @@
 module
 
 public import RequestProject.TreeExtension
-public import RequestProject.TreeCoverExample
+public import RequestProject.TreeCoverAcyclic
+public import RequestProject.CoverComplex
+public import RequestProject.PresentationDictionary
+public import RequestProject.ChainFormula
+public import RequestProject.FinitelyDeterminedInf
+public import RequestProject.Pigeonhole
+public import RequestProject.CoverAcyclic
+public import RequestProject.NecessityAlgebraicMod
+public import RequestProject.TorsionFreeGroupRing
+public import RequestProject.ChainFormulaMod
+public import RequestProject.PresUnivCoverIso
+public import RequestProject.FoxNaturality
+public import RequestProject.CycleLifting
+public import RequestProject.Pi2Dictionary
 public import RequestProject.CombData
 
 @[expose] public section
@@ -30,9 +43,7 @@ collapsing a spanning tree of `K`.  The paper states condition (1) for chains
 Non-vacuity is checked at the end on the interval, whose collapse is the empty presentation.
 -/
 
-namespace FiniteChains
-namespace Comb
-namespace SpanningTree
+namespace FiniteChains.Comb.SpanningTree
 
 universe u
 
@@ -56,54 +67,3 @@ theorem exists_compatible_trees (X : ℕ → Complex2.{u}) (inc : ∀ r, Hom (X 
   refine ⟨fun r => Nat.rec T₀ (fun r Tr => next r Tr) r, rfl, ?_⟩
   intro r e
   exact hnext r _ e
-
-/-! ### Chains of two-complexes -/
-
-/-- A chain `K ⊂ X₀ ⊂ X₁ ⊂ ⋯ ⊂ Xₙ` of two-complexes over `K`, equipped with spanning trees
-extending the given spanning tree `T₀` of `K`, whose inclusions are zero on `π₂` after the
-collapse of those trees.  This is condition (1) of Theorem A for a general two-complex: by
-`FiniteChains.Comb.SpanningTree.exists_compatible_trees` the trees are never an obstruction,
-the content of the data being the chain itself and the vanishing on `π₂`. -/
-structure ComplexChain (K : Complex2.{u}) (T₀ : SpanningTree K) (n : ℕ) where
-  /-- The stages of the chain. -/
-  X : ℕ → Complex2.{u}
-  /-- The spanning tree of the stage `X r`. -/
-  T : ∀ r, SpanningTree (X r)
-  /-- The inclusion of `X r` in `X (r + 1)`. -/
-  inc : ∀ r, Hom (X r) (X (r + 1))
-  incE : ∀ r, Function.Injective (inc r).onE
-  incF : ∀ r, Function.Injective (inc r).onF
-  /-- The tree of `X (r + 1)` meets `X r` exactly in the tree of `X r`. -/
-  tree_inc : ∀ (r : ℕ) (e : (X r).E), (T (r + 1)).isTree ((inc r).onE e) ↔ (T r).isTree e
-  /-- The inclusion of `K` in the first stage. -/
-  base : Hom K (X 0)
-  baseE : Function.Injective base.onE
-  baseF : Function.Injective base.onF
-  /-- The tree of the first stage meets `K` exactly in `T₀`. -/
-  tree_base : ∀ e : K.E, (T 0).isTree (base.onE e) ↔ T₀.isTree e
-  decGen : ∀ r, DecidableEq (NonTree (T r))
-  finGen : ∀ r, Fintype (NonTree (T r))
-  finCell : ∀ r, Fintype (X r).F
-  /-- **The inclusion `X r ⊂ X (r + 1)` is zero on `π₂`**, read on the collapsed presentation
-  complexes. -/
-  zero_pi2 : ∀ r, r < n →
-      letI := decGen r
-      letI := decGen (r + 1)
-      Comb.ZeroPi2 (presInclHom (nonTreeIncl (tree_inc r))
-        (nonTreeIncl_injective (tree_inc r) (incE r)) (treeRel (T r)) (treeRel (T (r + 1)))
-        (inc r).onF (treeRel_onF (tree_inc r)))
-
-namespace ComplexChain
-
-variable {K : Complex2.{u}} {T₀ : SpanningTree K} {n : ℕ} (c : ComplexChain K T₀ n)
-
-end ComplexChain
-
-variable {K : Complex2.{u}} (T₀ : SpanningTree K)
-variable [Fintype (NonTree T₀)] [DecidableEq (NonTree T₀)] [Fintype K.F] [DecidableEq K.F]
-
-/-! ### Non-vacuity -/
-
-end SpanningTree
-end Comb
-end FiniteChains

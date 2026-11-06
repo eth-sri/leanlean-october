@@ -52,5 +52,3 @@ theorem simplex_face_intersection_factor (i j : Fin (n + 3)) (hij : i ≠ j)
   apply simplex_face_injective j
   rw [← h, ← hq]
   exact he q
-
-end FiniteChains.TopologicalSingular

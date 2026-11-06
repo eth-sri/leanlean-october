@@ -65,6 +65,3 @@ theorem killsPi2_iff (T : OneTwoDiskTransfer K e r₁ r₂) :
     KillsPi2 T.oldEmbedding.map ↔ KillsPi2 (oneTwoAttachmentMap r₁ r₂) := by
   apply killsPi2_homotopyEquiv_square_iff e T.comparison
   rw [T.square]
-
-end OneTwoDiskTransfer
-end Whitehead

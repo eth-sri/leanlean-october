@@ -109,5 +109,3 @@ theorem genusChainCollapse_removes_cut_triangle (σ : Finset (GenusVertex q))
     simpa using genusChainCollapse_positive_pair q (posCube σ, f) hf (by simp)
   subst f
   exact List.mem_map.mpr ⟨(posCube σ, Sum.inr σ), hf, rfl⟩
-
-end FiniteChains.Davis.Genus

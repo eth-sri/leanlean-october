@@ -6,9 +6,7 @@ public import RequestProject.OrderUniversalThree
 @[expose] public section
 
 /-! The actual lifted three-boundary under the universal-cover order identification. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -53,5 +51,3 @@ theorem uOrderHom_ordBoundary3 (c : OrdTet (UOrder P a) →₀ ℤ) :
     change n • Finsupp.mapDomain uOrderFace (ordTetBoundary t) = _
     rw [uOrderTet_boundary, Finsupp.mapDomain_single, uOrdBoundary3,
       Finsupp.linearCombination_single]
-
-end FiniteChains.Comb

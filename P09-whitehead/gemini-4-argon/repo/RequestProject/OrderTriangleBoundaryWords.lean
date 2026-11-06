@@ -6,16 +6,9 @@ public import RequestProject.ClassicalGraphBoundaryWords
 
 @[expose] public section
 
-/-! The actual triangle attaching circle reads the literal strict
-boundary 01,12,02^-1 in the graph model. The trailing constant segment in
-the recursive word reader is handled by an endpoint-fixed homotopy on
-all four sides.  -/
-
 noncomputable section
 open scoped Classical unitInterval Topology
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.OrderTriangleWords
 open RelativeAttachment ClassicalGraphModel ContinuousEdgeWords
@@ -59,8 +52,7 @@ def graphAttachingTriangles :
 def graphBoundary (t : StrictOrdTri P) :
     C(UnitBoundary (Fin 2 → ℝ), DiskAttachment (graphAttaching P)) :=
   (graphAttachingTriangles P).comp
-    ⟨Sigma.mk (β := fun _ : StrictOrdTri P => UnitBoundary (Fin 2 → ℝ)) t,
-      by exact continuous_sigmaMk⟩
+    ⟨Sigma.mk (β := fun _ : StrictOrdTri P => UnitBoundary (Fin 2 → ℝ)) t, continuous_sigmaMk⟩
 
 def graphSquare (t : StrictOrdTri P) : C(SquareBoundary, DiskAttachment (graphAttaching P)) :=
   (graphBoundary P t).comp unitBoundarySquareHomeomorph.symm.toContinuousMap
@@ -70,10 +62,9 @@ theorem graphSquare_coordinates (t : StrictOrdTri P) (z : SquareBoundary) (p : P
       (1 - (z.val 1 : ℝ)) * (if t.val.1 = p then 1 else 0) +
       ((z.val 1 : ℝ) * (1 - (z.val 0 : ℝ))) * (if t.val.2.1 = p then 1 else 0) +
       ((z.val 1 : ℝ) * (z.val 0 : ℝ)) * (if t.val.2.2 = p then 1 else 0) := by
-  have he : graphHomeomorph P (graphSquare P t z) =
-      triangleAttaching P ⟨t, unitBoundarySquareHomeomorph.symm z⟩ :=
-    (graphHomeomorph P).apply_symm_apply _
-  rw [he, triangleAttaching_val]
+  rw [show graphHomeomorph P (graphSquare P t z) =
+      triangleAttaching P ⟨t, unitBoundarySquareHomeomorph.symm z⟩ from
+    (graphHomeomorph P).apply_symm_apply _, triangleAttaching_val]
   have hd : OrderTriangleDisk.disk
       (unitBoundaryInclusion _ (unitBoundarySquareHomeomorph.symm z)) =
         OrderTriangleDisk.parametrization z.val := by
@@ -90,46 +81,7 @@ theorem graphSquare_coordinates (t : StrictOrdTri P) (z : SquareBoundary) (p : P
     TopologicalSingular.simplexCoordinates_symm_weights_apply]
   change (∑ i : Fin 3, (OrderTriangleDisk.parametrization z.val).val i *
     (if (strictTriNerveEquiv P t).val.obj i = p then 1 else 0)) = _
-  rw [Fin.sum_univ_three]
-  rfl
-
-theorem graphSquare_left (t : StrictOrdTri P) (u : I) :
-    graphSquare P t (squareSideMap (0, false) u) = graphEdgePath (graphAttaching P) (edge01 P t) u := by
-  apply (graphHomeomorph P).injective
-  apply Subtype.ext
-  apply orderNerveRealizationCoordinates_injective P
-  funext p
-  rw [graphSquare_coordinates, graphHomeomorph_edgePath, orderNerveAffineEdgePath_coordinates]
-  simp [squareSideMap, Whitehead.squareEdge, boolEndpoint, edge01]
-
-theorem graphSquare_top (t : StrictOrdTri P) (u : I) :
-    graphSquare P t (squareSideMap (1, true) u) = graphEdgePath (graphAttaching P) (edge12 P t) u := by
-  apply (graphHomeomorph P).injective
-  apply Subtype.ext
-  apply orderNerveRealizationCoordinates_injective P
-  funext p
-  rw [graphSquare_coordinates, graphHomeomorph_edgePath, orderNerveAffineEdgePath_coordinates]
-  simp [squareSideMap, Whitehead.squareEdge, boolEndpoint, edge12]
-
-theorem graphSquare_right (t : StrictOrdTri P) (u : I) :
-    graphSquare P t (squareSideMap (0, true) u) = graphEdgePath (graphAttaching P) (edge02 P t) u := by
-  apply (graphHomeomorph P).injective
-  apply Subtype.ext
-  apply orderNerveRealizationCoordinates_injective P
-  funext p
-  rw [graphSquare_coordinates, graphHomeomorph_edgePath, orderNerveAffineEdgePath_coordinates]
-  simp [squareSideMap, Whitehead.squareEdge, boolEndpoint, edge02]
-
-theorem graphSquare_bottom (t : StrictOrdTri P) (u : I) :
-    graphSquare P t (squareSideMap (1, false) u) =
-      old (graphAttaching P) (boundaryFamilyInclusion (StrictOrdEdge P) _) (vertexEquiv P t.val.1) := by
-  apply (graphHomeomorph P).injective
-  apply Subtype.ext
-  apply orderNerveRealizationCoordinates_injective P
-  funext p
-  rw [graphSquare_coordinates, graphHomeomorph_old, vertexEquiv_val,
-    orderNerveRealizationCoordinates_vertex]
-  simp [squareSideMap, Whitehead.squareEdge, boolEndpoint]
+  rw [Fin.sum_univ_three]; rfl
 
 def intervalPath : Path (0 : I) 1 where
   toFun := id
@@ -137,73 +89,75 @@ def intervalPath : Path (0 : I) 1 where
   source' := rfl
   target' := rfl
 
-def pausedIntervalPath : Path (0 : I) 1 := intervalPath.trans (Path.refl 1)
-
-theorem single_word_paused {V E X : Type} [TopologicalSpace X]
-    (src tgt : E → V) (v : V → X) (edge : ∀ e, Path (v (src e)) (v (tgt e)))
-    (g : E × Bool) {a b : V} (h : IsPath src tgt [g] a b) (u : I) :
-    realize src tgt v edge [g] h u = germPath src tgt v edge g (pausedIntervalPath u) := by
-  by_cases hu : (u : ℝ) ≤ 2⁻¹
-  · simp [realize, pausedIntervalPath, intervalPath, Path.trans_apply, hu]
-  · simp [realize, pausedIntervalPath, intervalPath, Path.trans_apply, hu]
-
-theorem words_side_paused (t : StrictOrdTri P) (s : SquareSide) (u : I) :
-    (words P t).sidePath s u = graphSquare P t (squareSideMap s (pausedIntervalPath u)) := by
-  rcases s with ⟨i, b⟩
-  fin_cases i <;> cases b
-  · erw [graphSquare_left P t (pausedIntervalPath u)]
-    exact single_word_paused _ _ _ _ _ ((words P t).isPath (0, false)) u
-  · erw [graphSquare_right P t (pausedIntervalPath u)]
-    exact single_word_paused _ _ _ _ _ ((words P t).isPath (0, true)) u
-  · erw [graphSquare_bottom P t (pausedIntervalPath u)]
-    simp [BoundaryWords.sidePath, words, sideWord, realize, corner,
-      squareSideMap, Whitehead.squareEdge, boolEndpoint]
-  · erw [graphSquare_top P t (pausedIntervalPath u)]
-    exact single_word_paused _ _ _ _ _ ((words P t).isPath (1, true)) u
-
-/-- All side homotopies use the same fixed-endpoint interval homotopy,
-so they agree at corners throughout the deformation. -/
-theorem graphSquare_homotopic_words (t : StrictOrdTri P) :
-    (graphSquare P t).Homotopic (words P t).squareMap := by
+theorem graphBoundary_homotopic_words (t : StrictOrdTri P) :
+    (graphBoundary P t).Homotopic (words P t).boundaryMap := by
+  let paused : Path (0 : I) 1 := intervalPath.trans (Path.refl 1)
+  have hsingle {V E X : Type} [TopologicalSpace X]
+      (src tgt : E → V) (v : V → X) (edge : ∀ e, Path (v (src e)) (v (tgt e)))
+      (g : E × Bool) {a b : V} (h : IsPath src tgt [g] a b) (u : I) :
+      realize src tgt v edge [g] h u = germPath src tgt v edge g (paused u) := by
+    by_cases hu : (u : ℝ) ≤ 2⁻¹ <;>
+      simp [realize, paused, intervalPath, Path.trans_apply, hu]
+  have hside (s : SquareSide) (u : I) :
+      (words P t).sidePath s u = graphSquare P t (squareSideMap s (paused u)) := by
+    rcases s with ⟨i, b⟩
+    fin_cases i <;> cases b
+    · erw [show graphSquare P t (squareSideMap (0, false) (paused u)) =
+          graphEdgePath (graphAttaching P) (edge01 P t) (paused u) by
+        apply (graphHomeomorph P).injective; apply Subtype.ext
+        apply orderNerveRealizationCoordinates_injective P; funext p
+        rw [graphSquare_coordinates, graphHomeomorph_edgePath, orderNerveAffineEdgePath_coordinates]
+        simp [squareSideMap, Whitehead.squareEdge, boolEndpoint, edge01]]
+      exact hsingle _ _ _ _ _ ((words P t).isPath (0, false)) u
+    · erw [show graphSquare P t (squareSideMap (0, true) (paused u)) =
+          graphEdgePath (graphAttaching P) (edge02 P t) (paused u) by
+        apply (graphHomeomorph P).injective; apply Subtype.ext
+        apply orderNerveRealizationCoordinates_injective P; funext p
+        rw [graphSquare_coordinates, graphHomeomorph_edgePath, orderNerveAffineEdgePath_coordinates]
+        simp [squareSideMap, Whitehead.squareEdge, boolEndpoint, edge02]]
+      exact hsingle _ _ _ _ _ ((words P t).isPath (0, true)) u
+    · erw [show graphSquare P t (squareSideMap (1, false) (paused u)) =
+          old (graphAttaching P) (boundaryFamilyInclusion (StrictOrdEdge P) _) (vertexEquiv P t.val.1) by
+        apply (graphHomeomorph P).injective; apply Subtype.ext
+        apply orderNerveRealizationCoordinates_injective P; funext p
+        rw [graphSquare_coordinates, graphHomeomorph_old, vertexEquiv_val,
+          orderNerveRealizationCoordinates_vertex]
+        simp [squareSideMap, Whitehead.squareEdge, boolEndpoint]]
+      simp [BoundaryWords.sidePath, words, sideWord, realize, corner,
+        squareSideMap, Whitehead.squareEdge, boolEndpoint]
+    · erw [show graphSquare P t (squareSideMap (1, true) (paused u)) =
+          graphEdgePath (graphAttaching P) (edge12 P t) (paused u) by
+        apply (graphHomeomorph P).injective; apply Subtype.ext
+        apply orderNerveRealizationCoordinates_injective P; funext p
+        rw [graphSquare_coordinates, graphHomeomorph_edgePath, orderNerveAffineEdgePath_coordinates]
+        simp [squareSideMap, Whitehead.squareEdge, boolEndpoint, edge12]]
+      exact hsingle _ _ _ _ _ ((words P t).isPath (1, true)) u
   let H := Classical.choice ((Path.Homotopic.trans_refl intervalPath).symm)
   let F (s : SquareSide) : C(I × I, DiskAttachment (graphAttaching P)) :=
     (graphSquare P t).comp ((squareSideMap s).comp H.toHomotopy.toContinuousMap)
   have hend : ∀ s τ u, u = 0 ∨ u = 1 → F s (τ, u) = graphSquare P t (squareSideMap s u) := by
-    intro s τ u hu
-    rcases hu with rfl | rfl
+    rintro s τ u (rfl | rfl)
     · exact congrArg (fun u => graphSquare P t (squareSideMap s u)) (H.source τ)
     · exact congrArg (fun u => graphSquare P t (squareSideMap s u)) (H.target τ)
-  let G := squareBoundaryHomotopyPasting F (fun _ => graphSquare P t) hend
-  exact ⟨{
-    toContinuousMap := G
-    map_zero_left := by
-      intro z
+  have hsq : (graphSquare P t).Homotopic (words P t).squareMap := ⟨{
+    toContinuousMap := squareBoundaryHomotopyPasting F (fun _ => graphSquare P t) hend
+    map_zero_left := fun z => by
       obtain ⟨⟨s, u⟩, rfl⟩ := squareSideQuotient_surjective z
       change squareBoundaryHomotopyPasting F (fun _ => graphSquare P t) hend
         (0, squareSideMap s u) = graphSquare P t (squareSideMap s u)
       rw [squareBoundaryHomotopyPasting_side]
       change graphSquare P t (squareSideMap s (H (0, u))) = _
-      rw [H.apply_zero]
-      rfl
-    map_one_left := by
-      intro z
+      rw [H.apply_zero]; rfl
+    map_one_left := fun z => by
       obtain ⟨⟨s, u⟩, rfl⟩ := squareSideQuotient_surjective z
       change squareBoundaryHomotopyPasting F (fun _ => graphSquare P t) hend
         (1, squareSideMap s u) = (words P t).squareMap (squareSideMap s u)
       rw [squareBoundaryHomotopyPasting_side, BoundaryWords.squareMap_side]
       change graphSquare P t (squareSideMap s (H (1, u))) = _
-      rw [H.apply_one]
-      exact (words_side_paused P t s u).symm }⟩
-
-theorem graphBoundary_homotopic_words (t : StrictOrdTri P) :
-    (graphBoundary P t).Homotopic (words P t).boundaryMap := by
-  have H := (graphSquare_homotopic_words P t).comp
-    (ContinuousMap.Homotopic.refl unitBoundarySquareHomeomorph.toContinuousMap)
-  have he : (graphSquare P t).comp unitBoundarySquareHomeomorph.toContinuousMap =
-      graphBoundary P t := by
-    apply ContinuousMap.ext
-    intro z
-    exact congrArg (graphBoundary P t) (unitBoundarySquareHomeomorph.symm_apply_apply z)
-  rwa [he] at H
+      rw [H.apply_one]; exact (hside s u).symm }⟩
+  have H' := hsq.comp (ContinuousMap.Homotopic.refl unitBoundarySquareHomeomorph.toContinuousMap)
+  rwa [show (graphSquare P t).comp unitBoundarySquareHomeomorph.toContinuousMap =
+      graphBoundary P t from ContinuousMap.ext fun z =>
+    congrArg (graphBoundary P t) (unitBoundarySquareHomeomorph.symm_apply_apply z)] at H'
 
 end FiniteChains.Comb.OrderTriangleWords

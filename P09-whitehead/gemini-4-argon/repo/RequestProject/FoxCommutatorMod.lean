@@ -23,9 +23,7 @@ coefficients form a field, so Lemma 2.1 applies and gives
 `foxSatMod_commutator`.
 -/
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 
@@ -183,5 +181,3 @@ theorem foxSatMod_commutator (p : ℕ) [Fact p.Prime] (b : I → J → MonoidAlg
   rw [forall_foxSatMod_iff_injective p b hcol]
   exact injective_boundaryMapK_of_injective _ _ ⁅N, N⁆ N hle
     ((forall_foxSatMod_iff_injective p b hcol N).1 h)
-
-end FiniteChains

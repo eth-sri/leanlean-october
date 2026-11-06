@@ -50,5 +50,3 @@ theorem IsPosetCover.pullback {f : P → Q} (hf : IsPosetCover f)
     intro c hc
     apply Subtype.ext
     exact Prod.ext (huniq c.1.1 ⟨hc.1.1, c.2.trans (congrArg g hc.2)⟩) hc.2
-
-end FiniteChains.Comb

@@ -17,9 +17,7 @@ The simplicial identities give the chain relation through Mathlib's
 alternating-face complex. No exactness or homotopy comparison is assumed.
 -/
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.TopologicalSingular
 
@@ -125,5 +123,3 @@ noncomputable def zeroSimplexEquiv : Simplex X 0 ≃ X where
     ext z
     exact congrArg σ (Subsingleton.elim _ _)
   right_inv x := rfl
-
-end FiniteChains.TopologicalSingular

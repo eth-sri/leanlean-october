@@ -43,5 +43,3 @@ theorem shortComplex_homologyMap_epi_of_representatives
       ∃ z : S.X₂, S.g z = 0 ∧ ∃ b : T.X₁, T.f b = c - φ.τ₂ z) :
     Epi (ShortComplex.homologyMap φ) :=
   (ModuleCat.epi_iff_surjective _).mpr (shortComplex_homologyMap_surjective_of_representatives φ h)
-
-end FiniteChains.TopologicalSingular

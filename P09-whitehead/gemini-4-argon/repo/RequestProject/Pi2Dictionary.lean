@@ -24,35 +24,20 @@ Thus the hypothesis carried by `FiniteChains.PresChain` is exactly condition (1)
 paper, read in the combinatorial model, and nothing more.
 -/
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
-namespace FiniteChains
-namespace Comb
+namespace FiniteChains.Comb
 
 open MonoidAlgebra
 
 universe u
 
-variable {α : Type u} [DecidableEq α] {J : Type u} [Fintype J] [DecidableEq J]
+variable {α : Type u} {J : Type u}
 variable {Nsub : Subgroup (FreeGroup α)} [Nsub.Normal]
 variable {Q : Type u} [Group Q] {K : Type u}
 
-/-- The cellular two-chains of the cover, read as the free `ℤ[Q]`-module on the two-cells
-of the base — the same as `FiniteChains.Comb.coords`, but with the target written as a
-finitely supported family. -/
-noncomputable def coordsF (Nsub : Subgroup (FreeGroup α)) (β : Type u) [Fintype β]
-    [DecidableEq β] :
-    (((FreeGroup α ⧸ Nsub) × β) →₀ ℤ) ≃ₗ[ℤ] (β →₀ CoverRing Nsub) :=
-  (coords Nsub β).trans (Finsupp.linearEquivFunOnFinite ℤ (CoverRing Nsub) β).symm
 
-omit [DecidableEq α] [Nsub.Normal] in
-@[simp] theorem coordsF_apply (β : Type u) [Fintype β] [DecidableEq β]
-    (c : ((FreeGroup α ⧸ Nsub) × β) →₀ ℤ) (i : β) :
-    coordsF Nsub β c i = coords Nsub β c i := rfl
 
-omit [DecidableEq α] [Fintype J] [DecidableEq J] in
 /-- The same statement in Fox coordinates: the image of a coefficient vector vanishes iff
 each coefficient dies in the group ring of the next stage. -/
 theorem mapDomain_mapRange_eq_zero_iff (Φ : (FreeGroup α ⧸ Nsub) →* Q) (g : J → K)
@@ -73,8 +58,3 @@ theorem mapDomain_mapRange_eq_zero_iff (Φ : (FreeGroup α ⧸ Nsub) →* Q) (g 
       refine Finsupp.ext fun j => ?_
       simpa using h j
     rw [h0, Finsupp.mapDomain_zero]
-
-variable [Fintype α]
-
-end Comb
-end FiniteChains

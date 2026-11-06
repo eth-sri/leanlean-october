@@ -10,9 +10,7 @@ generators and two-cell labels, and their relator equation is proved.
 Unverified source. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.ClassicalCW.ChainWords
 open ClassicalSkeletonAttachment ClassicalGraphModel RelativeAttachment PresModel Comb
@@ -46,11 +44,11 @@ theorem fixedBase_relators (j : FixedRel D) :
       change FreeGroup.map Sum.inl (FreeGroup.mk
         (((word C hC 0 (c j)).eraseTree (skeletonAttachingMap (C 0 : Set K) 1)
           (chainTree K C hC hconn 0)).loopWord)) = _
-      rw (config := { transparency := .default }) [BoundaryWords.eraseTree_mk, word_zero, hw, BoundaryWords.loopWord_map,
+      erw [BoundaryWords.eraseTree_mk, word_zero, hw, BoundaryWords.loopWord_map,
         SpanningTree.pathWord_mapPath ht]
       change FreeGroup.map Sum.inl (FreeGroup.map (SpanningTree.nonTreeIncl ht) _) =
         FreeGroup.map (fixedBaseGen D K C hC hconn T g hg ht) (FreeGroup.map Sum.inl _)
-      rw (config := { transparency := .default }) [FreeGroup.map.comp, FreeGroup.map.comp]
+      erw [FreeGroup.map.comp, FreeGroup.map.comp]
       rfl
   | inr u =>
       cases u
@@ -85,5 +83,3 @@ def fixedPresChainFS
         continuous_inclusion _⟩ : C((C i.castSucc : Set K), (C i.succ : Set K)))) :
     PresChainFS (fixedRelators D T) n :=
   (fixedPresChainTopFS D K C hC hconn T g hg c hw ht hkill).toPresChainFS
-
-end FiniteChains.ClassicalCW.ChainWords

@@ -9,9 +9,7 @@ an actual quotient cover, even for infinitely many pieces. This is a
 weak-topology assertion, not a finite closed-cover argument. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory Simplicial Topology
@@ -88,5 +86,3 @@ theorem orderNerveRealizationSubtype_preimage_supported (B C : Set P) :
     · exact orderNerveRealizationCoordinates_map_outside
         (Subtype.val : B → P) (fun _ _ h => h) x p (by
           simpa only [Subtype.range_coe_subtype, Set.setOf_mem_eq] using hb)
-
-end FiniteChains.Comb

@@ -4,9 +4,7 @@ public import RequestProject.OrderNerveExplicitSingularMap
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 set_option maxHeartbeats 1600000
 
@@ -28,7 +26,7 @@ theorem orderCellSingularChain1_single {P : Type} [PartialOrder P] (e : OrdEdge 
       Finsupp.single (orderNerveSingularSimplex (ordEdgeNerveEquiv P e)) r := by
   change (orderNerveExplicitSingularMap P).f 1
     (Finsupp.mapDomain (ordEdgeNerveEquiv P) (Finsupp.single e r)) = _
-  rw (config := { transparency := .default }) [Finsupp.mapDomain_single]
+  erw [Finsupp.mapDomain_single]
   exact orderNerveExplicitSingularMap_single _ _ _
 
 theorem orderCellSingularChain2_single {P : Type} [PartialOrder P] (t : OrdTri P) (r : ℤ) :
@@ -36,7 +34,7 @@ theorem orderCellSingularChain2_single {P : Type} [PartialOrder P] (t : OrdTri P
       Finsupp.single (orderNerveSingularSimplex (ordTriNerveEquiv P t)) r := by
   change (orderNerveExplicitSingularMap P).f 2
     (Finsupp.mapDomain (ordTriNerveEquiv P) (Finsupp.single t r)) = _
-  rw (config := { transparency := .default }) [Finsupp.mapDomain_single]
+  erw [Finsupp.mapDomain_single]
   exact orderNerveExplicitSingularMap_single _ _ _
 
 /-- The canonical realized cellular two-chain has exactly its singular boundary. -/
@@ -44,12 +42,10 @@ theorem orderCellSingularChain2_boundary {P : Type} [PartialOrder P] (c : OrdTri
     boundary 1 (orderCellSingularChain2 c) = orderCellSingularChain1 (bdry2 (orderCx P) c) := by
   have h := congrArg (fun f => f (Finsupp.mapDomain (ordTriNerveEquiv P) c))
     ((orderNerveExplicitSingularMap P).comm 2 1).symm
-  rw (config := { transparency := .default }) [complex_d, AlternatingFaceMapComplex.obj_d_eq] at h
+  erw [complex_d, AlternatingFaceMapComplex.obj_d_eq] at h
   change (orderNerveExplicitSingularMap P).f 1
       ((AlternatingFaceMapComplex.objD (mathlibOrderNerveModule P) 1).hom
         (Finsupp.mapDomain (ordTriNerveEquiv P) c)) =
     boundary 1 (orderCellSingularChain2 c) at h
-  rw (config := { transparency := .default }) [mathlibOrderNerve_d2] at h
+  erw [mathlibOrderNerve_d2] at h
   exact h.symm
-
-end FiniteChains.Comb

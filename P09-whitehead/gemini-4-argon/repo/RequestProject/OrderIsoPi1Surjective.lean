@@ -24,5 +24,3 @@ theorem orderIso_pi1_surjective (e : P ≃o Q) (a : P) :
         (mapPath (orderCxMap e.symm e.symm.monotone) p.val)) p.val
     rw [mapPath_comp_eq_self e.symm.monotone e.monotone e.apply_symm_apply]
     exact Htpy.refl _
-
-end FiniteChains.Comb

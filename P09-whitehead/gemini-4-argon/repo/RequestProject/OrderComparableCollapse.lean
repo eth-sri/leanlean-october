@@ -6,9 +6,7 @@ public import RequestProject.OrderNormalizationNaturality
 @[expose] public section
 
 /-! Actual strict cycle fillings from a componentwise downward collapse. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -42,5 +40,3 @@ theorem strict_cycle_boundary_of_downward_collapse (g : P → P) (hg : Monotone 
   have h := congrArg normalizeOrdChain2 hy
   rw [normalizeOrdChain2_ordBoundary3, map_sub, hn, hz, sub_zero] at h
   exact ⟨normalizeOrdChain3 y, h⟩
-
-end FiniteChains.Comb

@@ -10,9 +10,7 @@ vertex support. The other face vertices are recovered from the attaching path.
 
 -/
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -90,8 +88,6 @@ def orderCxRestrict : Hom K (orderCx {p : P // S p}) where
     rw [List.map_map, k.att_onF]
     congr 1
 
-@[simp] theorem orderCxRestrict_onV (v : K.V) :
-    (orderCxRestrict k S hk).onV v = ⟨k.onV v, hk v⟩ := rfl
 
 /-- Forgetting the support proofs recovers the original cellular map on every cell. -/
 theorem orderCxRestrict_projects :
@@ -100,5 +96,3 @@ theorem orderCxRestrict_projects :
   · rfl
   · rfl
   · rfl
-
-end FiniteChains.Comb

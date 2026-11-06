@@ -4,9 +4,7 @@ public import RequestProject.OrderNerveRealizationComparison
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory
@@ -121,5 +119,3 @@ theorem orderNerveRealization_isClosed_iff (P : Type) [PartialOrder P]
       IsClosed (orderNerveRealizationSimplex P s ⁻¹' U) := by
   simpa only [← isOpen_compl_iff, Set.preimage_compl] using
     orderNerveRealization_isOpen_iff P Uᶜ
-
-end FiniteChains.Comb

@@ -6,9 +6,7 @@ public import RequestProject.CylinderPi1Surjective
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb
@@ -26,7 +24,7 @@ theorem presCylinderInclusion_pi1_surjective (a : CylP (aHom w)) :
   obtain ⟨q, hq⟩ := presCylinder_pi1_surjective w hpos b z
   obtain ⟨p, hp⟩ := orderIso_pi1_surjective e.symm a q
   refine ⟨p, ?_⟩
-  rw (config := { transparency := .default }) [← hp] at hq
+  erw [← hp] at hq
   have hmap : pi1Map (orderCxMap (ConeAdj.inc (S := circSet w)) (fun _ _ h => h)) a p =
       pi1Map (subposetHom (coneAdjBaseSet (S := circSet w))) b
         (pi1Map (orderCxMap e.symm e.symm.monotone) a p) := by
@@ -42,8 +40,7 @@ theorem presCylinderInclusion_pi1_surjective (a : CylP (aHom w)) :
         (mapPath (orderCxMap (ConeAdj.inc (S := circSet w)) (fun _ _ h => h)) r.val)
         (mapPath (subposetHom (coneAdjBaseSet (S := circSet w)))
           (mapPath (orderCxMap e.symm e.symm.monotone) r.val))
-      rw (config := { transparency := .default }) [heq]
-      exact Htpy.refl _
+      erw [heq]
   exact hmap.trans hq
 
 include hpos in
@@ -55,7 +52,7 @@ theorem presRoseInclusion_pi1_surjective (x : Rose α) :
   obtain ⟨q, hq⟩ := presCylinderInclusion_pi1_surjective w hpos (cylIn (aHom w) x) z
   obtain ⟨p, hp⟩ := cylinder_pi1_surjective (aHom w) x q
   refine ⟨p, ?_⟩
-  rw (config := { transparency := .default }) [← hp] at hq
+  erw [← hp] at hq
   have he : pi1Map (orderCxMap (iRose w)
       (iRose_monotone w)) x p =
       pi1Map (orderCxMap (ConeAdj.inc (S := circSet w)) (fun _ _ h => h))
@@ -73,5 +70,3 @@ theorem presRoseInclusion_pi1_surjective (x : Rose α) :
           (mapPath (orderCxMap (iRose w)
             (iRose_monotone w)) r.val))
   exact he.trans hq
-
-end FiniteChains.PresModel

@@ -12,9 +12,7 @@ public import RequestProject.UniversalCoverPi1Injection
 /-! The received spine is mapped into the genuine pulled-back old-cover spine.
 
 -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 variable {K Y Z : Complex2}
@@ -37,7 +35,7 @@ theorem uOrderHomInv_projection_square {P : Type} [PartialOrder P] (a : P) :
   apply Hom.ext'
   · funext x
     change uOrderEnd (uOrderHomInv.onV x) = endV x
-    rw (config := { transparency := .default }) [uOrderHomInv_vertex]
+    erw [uOrderHomInv_vertex]
     rfl
   · funext e
     exact uOrderHomInv_edge_projection e
@@ -123,5 +121,3 @@ noncomputable def coveredSpineToStrictSpine :
     (genusSpineCellToOld_monotone q)).comp
       (strictOrderCxMap (spinePullbackOldCoverOrderIso q (namedOldCoverProjection q ρ u)).symm
         (spinePullbackOldCoverOrderIso q (namedOldCoverProjection q ρ u)).symm.strictMono)
-
-end FiniteChains.Davis.Genus

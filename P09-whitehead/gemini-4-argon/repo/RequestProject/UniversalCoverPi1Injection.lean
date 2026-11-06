@@ -25,5 +25,3 @@ theorem deckV_free (a : X.V) (g : Pi1 X a) (v : UV X a)
     (h : deckV g v = v) : g = 1 := by
   obtain ⟨d, _, hu⟩ := (isRegular_univProj (X := X) (x₀ := a)).simply_transitive v v rfl
   exact (hu g h).trans (hu 1 (deckV_one v)).symm
-
-end FiniteChains.Comb

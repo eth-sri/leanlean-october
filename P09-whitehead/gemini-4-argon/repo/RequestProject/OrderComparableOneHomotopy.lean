@@ -5,9 +5,7 @@ public import RequestProject.OrderNerveOneDictionary
 @[expose] public section
 
 /-! Genuine finite triangle fillings for two-leg order contractions in degree one. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -90,5 +88,3 @@ theorem strict_oneCycle_boundary_of_roof_collapse (g h : P → P)
   rw [map_sub, hy, hz, normalizedStrictChain1_id,
     normalizedStrictChain1_zero_of_comparable_equal h hh he]
   abel
-
-end FiniteChains.Comb

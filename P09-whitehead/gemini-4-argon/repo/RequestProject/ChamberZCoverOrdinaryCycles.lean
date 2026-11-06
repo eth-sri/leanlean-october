@@ -27,5 +27,3 @@ theorem strict_twoCycle_cover_unmarked_chamber (hf : IsPosetCover f)
     inZChamber_zApex (X := X) (att := att) hw⟩
   have hb : ∀ q : S, b ≤ q := fun q => zApex_le hw q.2
   exact strict_twoCycle_cover_lower_cone hfc b hb c hc
-
-end FiniteChains.Davis

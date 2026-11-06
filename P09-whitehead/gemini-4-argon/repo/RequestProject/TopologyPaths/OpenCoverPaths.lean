@@ -50,5 +50,3 @@ theorem path_induction {ι : Type v} (U : ι → Set X)
   rw [ht0,htN] at hend
   have hp := hhomotopy (PathSubdivision.cut_zero_one_homotopic p) hend
   exact (property_cast_iff P p p.source p.target).mp hp
-
-end FiniteChains.OpenCoverPaths

@@ -6,9 +6,7 @@ public import RequestProject.OrderNervePositiveFillings
 @[expose] public section
 
 /-! A covered two-dimensional spine has no nonzero two-chain bounding in its block. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb Nerve
@@ -69,5 +67,3 @@ theorem genus_covered_spine_chain_zero_of_boundary (hf : IsPosetCover f)
   rw [normalizeOrdChain2_ordBoundary3, hzero, map_zero] at hn
   have hi : normalizeOrdChain2 (ordStrictInclusion2 c) = c := normalizeOrdChain2_inclusion c
   exact (hn.trans hi).symm
-
-end FiniteChains.Davis.Genus

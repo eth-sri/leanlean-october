@@ -43,6 +43,3 @@ theorem strictMono : StrictMono f := by
   intro he
   have hb : b = a := hf.up_inj h.le (le_refl a) he.symm
   exact (ne_of_lt h) hb.symm
-
-end IsPosetCover
-end FiniteChains.Comb

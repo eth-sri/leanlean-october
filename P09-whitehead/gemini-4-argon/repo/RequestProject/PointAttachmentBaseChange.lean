@@ -50,8 +50,6 @@ theorem singletonAttachmentInto_injective (x : X) (i : A → D) (hi : Function.I
     Function.Injective (singletonAttachmentInto x i hi) :=
   attachmentBaseMap_injective _ _ hi _ (fun _ _ _ => Subsingleton.elim _ _)
 
-@[simp] theorem singletonAttachmentInto_point (x : X) (i : A → D) (hi : Function.Injective i) :
-    singletonAttachmentInto x i hi (singletonAttachmentPoint i) = old (fun _ : A => x) i x := rfl
 
 @[simp] theorem singletonAttachmentInto_cell (x : X) (i : A → D) (hi : Function.Injective i) (d : D) :
     singletonAttachmentInto x i hi (cell (fun _ : A => (PUnit.unit : PUnit)) i d) =
@@ -142,11 +140,3 @@ def singletonDiskAttachmentHomeomorph (r : C(UnitBoundary E, X)) :
 @[simp] theorem singletonDiskAttachmentHomeomorph_old (r : C(UnitBoundary E, X)) (x : X) :
     singletonDiskAttachmentHomeomorph r (old (singletonDiskAttaching r) (boundaryFamilyInclusion PUnit E) x) =
       old r (unitBoundaryInclusion E) x := rfl
-
-@[simp] theorem singletonDiskAttachmentHomeomorph_cell
-    (r : C(UnitBoundary E, X)) (d : DiskFamily PUnit E) :
-    singletonDiskAttachmentHomeomorph r
-      (cell (singletonDiskAttaching r) (boundaryFamilyInclusion PUnit E) d) =
-      cell r (unitBoundaryInclusion E) d.2 := attachmentDiagramHomeomorph_cell ..
-
-end FiniteChains.RelativeAttachment

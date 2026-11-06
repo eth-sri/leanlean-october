@@ -79,5 +79,3 @@ theorem truncatedFaceIndex_injective : Function.Injective (truncatedFaceIndex (A
     cases d with
     | inl d => cases he
     | inr τ => exact congrArg Sum.inr (Subtype.ext (Sum.inr.inj he))
-
-end FiniteChains.Davis

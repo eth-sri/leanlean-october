@@ -111,5 +111,3 @@ theorem pointReading_le {p r : P} {g h : G} (hpr : p ≤ r)
       (hr.trans (c.pointReading_read a hc hm r h).symm)
   rw [← he]
   exact uOrderStep_le v r _
-
-end FiniteChains.Comb.OrdCocycle

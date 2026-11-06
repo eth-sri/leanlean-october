@@ -130,5 +130,3 @@ theorem canonicalGen_finite (hK : Whitehead.FiniteCells K) : Finite (CanonicalGe
 theorem canonicalRel_finite (hK : Whitehead.FiniteCells K) : Finite (CanonicalRel K) := by
   letI := originalRoseRel_finite K hK
   infer_instance
-
-end FiniteChains.ClassicalCW

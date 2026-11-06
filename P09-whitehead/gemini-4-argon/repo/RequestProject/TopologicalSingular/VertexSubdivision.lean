@@ -67,5 +67,3 @@ theorem subdivide_naturality (other : ∀ n, Vertices W n → W) (f : V → W)
     have he := DFunLike.congr_fun ih (boundary n (Finsupp.single v 1))
     dsimp only [LinearMap.comp_apply] at he
     rw [he, map_boundary, map_single]
-
-end FiniteChains.VertexChains

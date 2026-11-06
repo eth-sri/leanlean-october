@@ -134,5 +134,3 @@ theorem genus_later_top_boundary_avoids_prefix_faces
   have hn := hc.prefix_faces_avoid_suffix_tops hp hr
   rw [hpf, hrt] at hn
   exact hn hi
-
-end FiniteChains.Davis.Genus

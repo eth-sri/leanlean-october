@@ -8,9 +8,7 @@ public import RequestProject.TopologicalSingular.SingularChains
 The radial projection is taken from height two above the barycentre. Its
 denominator is bounded below by one half, including at the barycentre. -/
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.TopologicalSingular
 open scoped unitInterval Topology
@@ -168,5 +166,3 @@ theorem simplexPrismRetraction_fixes {n : ℕ} (w : I × Domain n) (hw : w ∈ s
     change (w.2.val i - (1 - prismDenom w) / (n + 1 : ℝ)) / prismDenom w = w.2.val i
     rw [hd]
     simp
-
-end FiniteChains.TopologicalSingular

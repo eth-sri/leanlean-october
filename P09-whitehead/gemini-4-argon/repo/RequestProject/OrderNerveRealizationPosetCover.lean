@@ -52,6 +52,3 @@ theorem realizationMap_surjective (hf : IsPosetCover f) :
     orderNerveRealizationSimplex Q ((nerveMap hf.mono.functor).app _ t) z at he
   rw [ht] at he
   exact he.trans hx
-
-end IsPosetCover
-end FiniteChains.Comb

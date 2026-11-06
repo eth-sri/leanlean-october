@@ -80,5 +80,3 @@ def homeomorphOfFibrewise
     (hfib : ∀ x, Function.Bijective (fibreMap r p f hover x)) : Y ≃ₜ E :=
   (isLocalHomeomorph r p hr hp f hover).toHomeomorphOfBijective
     (bijective_of_fibrewise r p f hover hfib)
-
-end FiniteChains.CoveringComparison

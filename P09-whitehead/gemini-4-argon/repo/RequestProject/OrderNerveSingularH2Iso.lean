@@ -6,9 +6,7 @@ public import RequestProject.TopologicalSingular.HomologyInjectivity
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory AlgebraicTopology TopologicalSingular
@@ -64,5 +62,3 @@ theorem orderCellSingularH2Equiv_natural {P Q : Type} [PartialOrder P] [PartialO
       (orderNerveRealizationMap f hf)).hom (orderCellSingularH2Equiv P z)) =
         orderCellSingularH2Equiv Q (orderNerveH2Map f hf z) :=
   orderCellSingularH2Map_natural f hf z
-
-end FiniteChains.Comb

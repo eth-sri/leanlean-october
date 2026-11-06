@@ -45,5 +45,3 @@ theorem qLiftedStarRetraction_le (p : QLiftedBaseStar a) :
   ((uOrderEnd_isPosetCover hc).lowerMapLift_spec Subtype.val
     (fun p : QLiftedBaseStar a => qBaseStarRetraction ⟨uOrderEnd p.1, p.2⟩)
     (fun p => qBaseStarRetraction_le ⟨uOrderEnd p.1, p.2⟩) p).1
-
-end FiniteChains.Davis

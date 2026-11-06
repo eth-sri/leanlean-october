@@ -51,5 +51,3 @@ theorem qUniversal_old_relative_chain_from_attaching (x : X)
     rw [cmap_bdry, hct, hdt, hbz]
   · rw [hct]
     exact he
-
-end FiniteChains.Davis

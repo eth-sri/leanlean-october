@@ -9,9 +9,7 @@ public import Mathlib.Analysis.Normed.Group.Constructions
 ends. The cylinder is the unit ball for the product supremum norm. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.RelativeAttachment
 open scoped unitInterval Topology Classical
@@ -137,5 +135,3 @@ theorem fullBallCylinderBoundary_hasHomotopyExtension :
   (unitBoundary_hasHomotopyExtension (ℝ × E)).homeomorph
     (ballCylinderBoundaryHomeomorph E) (ballCylinderHomeomorph E) Subtype.val
     (fun _ => rfl)
-
-end FiniteChains.RelativeAttachment

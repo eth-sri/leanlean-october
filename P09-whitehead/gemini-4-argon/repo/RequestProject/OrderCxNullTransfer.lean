@@ -6,9 +6,7 @@ public import RequestProject.OrderCxConeNull
 @[expose] public section
 
 /-! Null homotopies transfer through an actual order homotopy, including changing bases. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 
@@ -68,5 +66,3 @@ theorem isConnected_orderCx_of_zigzag {f g : P → P}
     ⟨rfl, rfl, rfl, rfl⟩
   intro a b
   exact ⟨p a ++ revPath (p b), (hp a).append (isPath_revPath (hp b))⟩
-
-end FiniteChains.Comb

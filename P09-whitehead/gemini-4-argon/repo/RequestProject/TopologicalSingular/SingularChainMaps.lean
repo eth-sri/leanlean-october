@@ -9,9 +9,7 @@ public import RequestProject.TopologicalSingular.SingularChains
 /-! # Functorial maps on the explicit singular chain groups -/
 
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.TopologicalSingular
 
@@ -24,8 +22,6 @@ variable [TopologicalSpace X] [TopologicalSpace Y] [TopologicalSpace Z]
 
 def simplexMap (f : C(X, Y)) (n : ℕ) (σ : Simplex X n) : Simplex Y n := f.comp σ
 
-@[simp] theorem simplexMap_apply (f : C(X, Y)) (n : ℕ) (σ : Simplex X n) (z : Domain n) :
-    simplexMap f n σ z = f (σ z) := rfl
 
 theorem face_simplexMap (f : C(X, Y)) {n : ℕ} (i : Fin (n + 2)) (σ : Simplex X (n + 1)) :
     face i (simplexMap f (n + 1) σ) = simplexMap f n (face i σ) := rfl
@@ -65,5 +61,3 @@ theorem augmentation_map (f : C(X, Y)) (c : Chain X 0) : augmentation (map f 0 c
     intro σ a
     simp only [LinearMap.comp_apply, map_single, augmentation_single]
   exact DFunLike.congr_fun he c
-
-end FiniteChains.TopologicalSingular

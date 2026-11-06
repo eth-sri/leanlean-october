@@ -189,5 +189,3 @@ theorem disk_injOn_interior : Set.InjOn disk {x | ‖x.val‖ < 1} := by
   apply squareBallHomeomorph.injective
   exact parametrization_injective_off_collapsed_side
     (ne_of_gt (((squareBallHomeomorph_interior x).mpr hx) 1).1) h
-
-end FiniteChains.OrderTriangleDisk

@@ -14,9 +14,7 @@ reads each edge in its prescribed order. Pending final Lean verification. -/
 
 noncomputable section
 open scoped Classical unitInterval Topology
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.OrderEdgeAttachment
 open RelativeAttachment ClassicalSkeletonAttachment ClassicalGraphModel
@@ -210,5 +208,3 @@ theorem graphHomeomorph_edgePath (e : StrictOrdEdge P) (t : I) :
     (graphHomeomorph P (graphEdgePath (graphAttaching P) e t)).val =
       orderNerveAffineEdgePath e.property.le t :=
   (graphHomeomorph_cell P e (graphDiskHomeomorph t)).trans (edgeDiskMap_edgePath P e t)
-
-end FiniteChains.Comb.OrderEdgeAttachment

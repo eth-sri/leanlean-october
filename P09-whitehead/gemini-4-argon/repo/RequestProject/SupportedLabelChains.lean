@@ -79,5 +79,3 @@ theorem finsupp_sum_label_filters {I : Type u} {J : Type v}
     · intro j _ hj
       simp [Ne.symm hj]
     · exact fun h => False.elim (h hm)
-
-end FiniteChains.Comb

@@ -22,5 +22,3 @@ theorem orderRealization_acyclic_iff_strict_isAcyclic (hP : IsConnected (orderCx
     · exact strict_order_zeroCycle_filling_of_connected (P := P)
         (Classical.choice ‹Nonempty P›) hP
   · exact orderRealization_acyclic_of_strict_isAcyclic
-
-end FiniteChains.Comb

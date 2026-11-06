@@ -1,14 +1,13 @@
 module
 
 public import RequestProject.GenusSpineRetraction
-public import RequestProject.TruncatedCellularHomotopy
+public import RequestProject.TruncatedCubePi1
+public import RequestProject.OrderNerveCellMaps
 
 @[expose] public section
 
 /-! The actual retained-cube retraction fixes spine two-cycles after normalization. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb
@@ -44,11 +43,11 @@ theorem genusSpine_cycle_retraction_boundary (c : (orderCx (GenusSpineCell q)).F
   have hbdry : Nerve.bdry b = Nerve.lengthProjection 3
       (Nerve.cmap g (ordNerveChain2 c)) - ordNerveChain2 c := by
     dsimp only [b]
-    rw (config := { transparency := .default }) [← Nerve.lengthProjection_bdry, hb, map_sub, ordNerveChain2_lengthProjection]
+    erw [← Nerve.lengthProjection_bdry, hb, map_sub, ordNerveChain2_lengthProjection]
   refine ⟨decodeOrdNerve3 b, ?_⟩
   apply ordNerveChain2_injective
-  rw (config := { transparency := .default }) [ordNerveChain2_ordBoundary3, ordNerveChain3_decode hbi, hdeg, map_sub, hbdry]
-  rw (config := { transparency := .default }) [← ordNerveChain2_chain2 g (genusSpineRetraction_monotone q),
+  erw [ordNerveChain2_ordBoundary3, ordNerveChain3_decode hbi, hdeg, map_sub, hbdry]
+  erw [← ordNerveChain2_chain2 g (genusSpineRetraction_monotone q),
     ordNerveChain2_lengthProjection]
 
 /-- On the actual two-dimensional surviving spine, the retained-cube retraction fixes
@@ -64,7 +63,5 @@ theorem genusSpine_normalized_retraction_cycle (c : (orderCx (GenusSpineCell q))
     ext t
     exact isEmptyElim t
   have he := congrArg normalizeOrdChain2 hy
-  rw (config := { transparency := .default }) [normalizeOrdChain2_ordBoundary3, hzero, map_zero, map_sub] at he
+  erw [normalizeOrdChain2_ordBoundary3, hzero, map_zero, map_sub] at he
   exact (sub_eq_zero.mp he.symm)
-
-end FiniteChains.Davis.Genus

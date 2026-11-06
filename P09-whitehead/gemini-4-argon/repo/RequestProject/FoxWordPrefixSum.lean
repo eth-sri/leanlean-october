@@ -37,5 +37,3 @@ theorem fox_mk_prefix_sum (i : α) (l : List (α × Bool)) :
         foxWordIncidence i l[k.val] := by
   rw [← foxWordPathBoundary_one]
   simpa only [one_mul] using foxWordPathBoundary_prefix_sum i 1 l
-
-end FiniteChains

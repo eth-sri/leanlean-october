@@ -67,5 +67,3 @@ theorem basedTriangleStickSquare_pi2_eq (tau : Simplex X 2)
     (Quotient.mk _ (basedTriangleStickSquare tau h) : HomotopyGroup (Fin 2) X x) =
       Quotient.mk _ (basedTriangleSquare tau h) :=
   (Quotient.sound (basedTriangleSquare_homotopic_stick tau h)).symm
-
-end FiniteChains.TopologicalSingular

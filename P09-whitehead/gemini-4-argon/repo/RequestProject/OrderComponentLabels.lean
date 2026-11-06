@@ -28,5 +28,3 @@ theorem orderComponentLabel_eq_iff (a b : P) :
 theorem orderComponentLabel_eq_of_le {a b : P} (h : a ≤ b) :
     orderComponentLabel P a = orderComponentLabel P b :=
   Quotient.sound ⟨[ordPos h], isPath_ordPos h⟩
-
-end FiniteChains.Comb

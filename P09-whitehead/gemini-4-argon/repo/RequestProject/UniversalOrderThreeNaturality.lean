@@ -6,9 +6,7 @@ public import RequestProject.CombPi2
 @[expose] public section
 
 /-! Naturality of genuine lifted tetrahedra, including the transported first face. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -43,13 +41,12 @@ theorem univLift_uOrdBoundary3 (f : P → Q) (hf : Monotone f) (a : P)
     chain2 (univLift (orderCx P) (orderCxMap f hf) a) (uOrdBoundary3 y) =
       uOrdBoundary3 (Finsupp.mapDomain (uOrdTetMap f hf a) y) := by
   induction y using Finsupp.induction_linear with
-  | zero => simp
+  | zero => simp [chain2]
   | add c d hc hd => rw [map_add, map_add, hc, hd, Finsupp.mapDomain_add, map_add]
+
   | single t n =>
     rw [uOrdBoundary3, Finsupp.linearCombination_single, map_smul]
     change n • Finsupp.mapDomain (@univLiftF (orderCx P) (orderCx Q) a (orderCxMap f hf))
       (uOrdTetBoundary t) = _
     rw [uOrdTetMap_boundary, Finsupp.mapDomain_single, uOrdBoundary3,
       Finsupp.linearCombination_single]
-
-end FiniteChains.Comb

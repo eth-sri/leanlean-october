@@ -65,5 +65,3 @@ theorem subdivide_mem_carried (n : ℕ) {c : Chain V n} (hc : c ∈ carried S n)
     apply cone_mem_carried S _ (hcenter _ _ hv)
     apply ih
     exact boundary_mem_carried S n (single_mem_carried S v 1 hv)
-
-end FiniteChains.VertexChains

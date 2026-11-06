@@ -5,9 +5,7 @@ public import RequestProject.ConeAdjPoset
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -33,5 +31,3 @@ instance coneAdj_partialOrder {P T : Type u} [PartialOrder P] (S : T → P → P
       · exact False.elim hqp
       · exact False.elim hpq
       · exact congrArg Sum.inr hpq }
-
-end FiniteChains.Comb

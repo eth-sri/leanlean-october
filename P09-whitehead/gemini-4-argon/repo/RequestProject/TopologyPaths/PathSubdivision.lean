@@ -109,5 +109,3 @@ theorem exists_subdivision (p : Path x y) {ι : Type v} (U : ι → Set X)
   intro z hz
   obtain ⟨s,hs,rfl⟩ := cut_range p (htm (Nat.le_succ j)) hz
   exact hi hs
-
-end FiniteChains.PathSubdivision

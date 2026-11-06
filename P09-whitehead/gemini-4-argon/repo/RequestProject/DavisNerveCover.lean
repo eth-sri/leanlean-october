@@ -26,5 +26,3 @@ theorem qProjCube_isPosetCover : IsPosetCover (qProjCube (A := A)) where
   surj c := exists_zOld_qProjCube c
   up _ _ h := existsUnique_up_old h
   down _ _ h := existsUnique_down_old h
-
-end FiniteChains.Davis

@@ -7,9 +7,7 @@ public import RequestProject.TreeCover
 @[expose] public section
 
 /-! Exact lifted-path comparison between the capped tree cover and the full cube cover. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb
@@ -85,5 +83,3 @@ theorem rootedCapped_liftPath (g : PresGroup (cappedSpinePresentation q))
       apply congrArg₂ List.cons
       · exact rootedCapped_liftGerm q g eb
       · exact ih _ hp
-
-end FiniteChains.Davis.Genus

@@ -6,9 +6,7 @@ public import RequestProject.PresCoverRelatorGeneratorBoundary
 
 /-! Cone-coordinate reduction for chains whose boundary lies in the cylinder.
 This is a relative statement: the chain itself need not be a cycle. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 set_option maxHeartbeats 1600000
 
@@ -37,13 +35,13 @@ theorem presCoverConeCircleChain_cycle_of_cylinder_boundary
       have hn : e.1.2.val ≠ p.1.1 := by
         intro he
         have hm := e.1.2.property
-        rw (config := { transparency := .default }) [he, p.2] at hm
+        erw [he, p.2] at hm
         rcases hm with ⟨a, ha⟩
         cases ha
       simp [chain1, strictSubposetIncl, strictOrderCxMap, strictRayChain, strictRayEdge, hn]
   change Comb.bdry1 _ (chain1 (presCoverConeCircleHom w f hf p.1.1 p.1.2 p.2)
     (strictTopLinkChain p.1.1 c)) = 0
-  rw (config := { transparency := .default }) [bdry1_chain1, ← strictTopLink_boundary p.1.1
+  erw [bdry1_chain1, ← strictTopLink_boundary p.1.1
     (presCover_apex_maximal w f hf p.1.1 p.1.2 p.2), hb, hr, map_zero]
 
 /-- A chain with boundary in the cylinder has exactly one coefficient at each
@@ -85,7 +83,7 @@ theorem exists_presCover_relative_cone_cylinder_decomposition
         have he := congrArg
           (fun z => z ((presCoverConeCircleHom w f hf p.1.1 p.1.2 p.2).onE e))
           (presCover_relative_fan_circle w f hf hpos c b hb p)
-        rw (config := { transparency := .default }) [presCoverConeCircleChain_apply, presCoverConeCircleChain_apply] at he
+        erw [presCoverConeCircleChain_apply, presCoverConeCircleChain_apply] at he
         exact (Finsupp.mem_support_iff.mp ht) (sub_eq_zero.mpr he)
     exact ⟨coneAdjBaseSet_down_closed hlast (hf.mono (t.2.1.le.trans t.2.2.le)),
       coneAdjBaseSet_down_closed hlast (hf.mono t.2.2.le), hlast⟩
@@ -123,5 +121,3 @@ theorem presCover_relative_collapsed_boundary
   have hz := cylinderCover_collapse_boundary_zero w (coneAdjCoverBaseEnd_isPosetCover f hf) d
   rw [he, map_sub] at hz
   exact sub_eq_zero.mp hz
-
-end FiniteChains.PresModel

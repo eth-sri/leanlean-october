@@ -144,5 +144,3 @@ theorem orderSmallToNerve_mem_inc (n : ℕ)
     rw [hr, map_smul, map_smul, orderSmallChainEquiv_symm_single]
     exact (Nerve.Inc P).zsmul_mem
       (Nerve.incOn_le_inc _ (orderSmallToNerve_carrier n σ)) r
-
-end FiniteChains.Comb

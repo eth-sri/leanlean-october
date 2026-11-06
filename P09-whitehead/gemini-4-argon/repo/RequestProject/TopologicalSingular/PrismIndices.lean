@@ -80,5 +80,3 @@ theorem base_next {n : ℕ} (i : Fin (n + 1)) :
   funext k
   exact congrArg (fun f : SimplexCategory.mk n ⟶ SimplexCategory.mk n => f k)
     (SimplexCategory.δ_comp_σ_succ (i := i))
-
-end FiniteChains.SingularPrism

@@ -20,9 +20,7 @@ states it; the version proved here is the one used to compute the fundamental gr
 complex `Y_D` built in `RequestProject/InitialComplex.lean`.
 -/
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 
@@ -71,7 +69,7 @@ theorem expCol_eq_expVec [DecidableEq I] {J : Type*} (r : J → FreeGroup I) (j 
         rw [hmul, h₁, h₂, expVec_mul]
   exact h (r j)
 
-section Commuting
+section
 
 variable (u : I → H) (hu : ∀ i k, Commute (u i) (u k))
 
@@ -80,7 +78,7 @@ theorem commClosure_comm : ∀ x ∈ Set.range u, ∀ y ∈ Set.range u, x * y =
   rintro _ ⟨i, rfl⟩ _ ⟨k, rfl⟩
   exact hu i k
 
-end Commuting
+end
 
 /-- **The elimination step.**  Let the elements `u i` of a group commute pairwise, let each
 word `r j` map to `1`, and let the exponent vectors of the `r j` span `ℤ^{(I)}`.  Then every
@@ -148,5 +146,3 @@ theorem eq_one_of_expCol_surjective {J : Type*} (u : I → H) (hu : ∀ i k, Com
     rw [h0] at hval
     simpa using hval.symm
   exact congrArg Subtype.val h1
-
-end FiniteChains

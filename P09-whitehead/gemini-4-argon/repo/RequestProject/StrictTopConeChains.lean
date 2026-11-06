@@ -6,9 +6,7 @@ public import RequestProject.OrderThreeNormalization
 @[expose] public section
 
 /-! Upper cones in the genuine strict simplicial cell model. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -72,5 +70,3 @@ theorem strictTopConeEdgeChain_eq_zero_off_top (z : (strictOrderCx P).E →₀ �
         intro h
         exact ht (congrArg (fun a : (strictOrderCx Q).F => a.1.2.2) h).symm
       simp [strictTopConeEdgeChain, hne]
-
-end FiniteChains.Comb

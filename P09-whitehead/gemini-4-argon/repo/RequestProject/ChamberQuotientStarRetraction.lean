@@ -48,9 +48,3 @@ theorem qBaseStarRetraction_le (p : QBaseStar (att := att)) :
 omit [DecidableEq V] in
 theorem qBaseStarRetraction_mem_base (p : QBaseStar (att := att)) :
     InQBase (qBaseStarRetraction p) := ⟨qBaseStarToBase p, rfl⟩
-
-omit [DecidableEq V] in
-@[simp] theorem qBaseStarRetraction_new (x : X) :
-    qBaseStarRetraction (att := att) ⟨qNew x, trivial⟩ = qNew x := rfl
-
-end FiniteChains.Davis

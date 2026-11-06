@@ -11,9 +11,7 @@ public import RequestProject.RelatorCircleBoundaryNaturality
 each old cone disk as soon as its circle parametrization is preserved. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel.PresWordEmbedding
 open Comb RelativeAttachment
@@ -89,5 +87,3 @@ theorem presConeBallHomeomorph_natural
       presConeBallHomeomorph w j hn x :=
   h.presConeBallHomeomorph_natural_of_boundary j hn hn'
     (h.relatorCircleBoundaryHomeomorph_natural j hn hn') x
-
-end FiniteChains.PresModel.PresWordEmbedding

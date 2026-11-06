@@ -35,7 +35,7 @@ universe u
 
 /-! ### Classes of loops -/
 
-section Pi1Calc
+section
 
 variable {X : Complex2.{u}} {a : X.V}
 
@@ -56,7 +56,7 @@ theorem pi1_mk_eq_one {p : List (X.E × Bool)} (hp : IsPath X.src X.tgt p a a)
     (h : Htpy X a a p []) : Pi1.mk (⟨p, hp⟩ : Loop X a) = 1 :=
   Quotient.sound h
 
-end Pi1Calc
+end
 
 /-- A product of commutators only depends on the values of its function at the elements of the
 pairs which occur in the list. -/
@@ -71,7 +71,7 @@ theorem commWord_congr_on {ι : Type*} {G : Type*} [Group G] {f g : ι → G}
 
 /-! ### Congruences for the crossings -/
 
-section Congr
+section
 
 variable {P : Type u} [PartialOrder P] [DecidableEq P]
 
@@ -83,9 +83,8 @@ theorem edgeHopRev_congr {x y x' y' : P} (h : x ≤ y) (h' : x' ≤ y') (ex : x 
     (ey : y = y') : edgeHopRev h = edgeHopRev h' := by
   subst ex; subst ey; rfl
 
-end Congr
+end
 
-section Rev
 
 variable {κ ι : Type u} {M : ℕ} [NeZero M] [DecidableEq κ] [DecidableEq ι]
   {vc : Fin M → κ} {ec : Fin M → ι} (hc : Compat vc ec)
@@ -114,8 +113,3 @@ theorem bdPath_succ (m : ℕ) : bdPath hc (m + 1) = bdPath hc m ++ bdEdge hc (cy
 
 theorem bdPath_add_two (m : ℕ) : bdPath hc (m + 2) = bdPath hc m ++ pPath hc m := by
   rw [bdPath_succ, bdPath_succ, pPath_eq, List.append_assoc]
-
-end Rev
-
-end Davis
-end FiniteChains

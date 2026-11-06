@@ -50,5 +50,3 @@ theorem normalizedTriangle_face (x : X) (tau : Simplex X 2) (i : Fin 3) :
   have he := normalizedTriangleHomotopy_face x tau i 1 z
   rw [(normalizedTriangleHomotopy x tau).apply_one, (normalizedEdgeHomotopy x (face i tau)).apply_one] at he
   exact he
-
-end FiniteChains.TopologicalSingular

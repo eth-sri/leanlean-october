@@ -20,5 +20,3 @@ theorem qThreeOrderedCoordinates_reconstruct (c : QCube A) (u v w : V) (huv : u 
   apply Finsupp.mapDomain_comapDomain _ (qThreeFaceSquare_injective c u v w huv huw hvw hs)
   intro s hmem
   exact qThreeFaceSquare_exhaustive c u v w huv huw hvw hs s (hr s hmem)
-
-end FiniteChains.Davis

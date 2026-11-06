@@ -1,6 +1,6 @@
 module
 
-public import RequestProject.WedgeCockcroft
+public import RequestProject.BlockCockcroft
 
 @[expose] public section
 
@@ -93,7 +93,3 @@ theorem isBlock_sigmaWedge (s : S) :
       exact Subgroup.subset_normalClosure (Set.mem_range_self _)
     · rw [sigmaWedgeRel_mk, killOther_map_other hts]
       exact one_mem _
-
-variable [Fintype S] [∀ s, Fintype (α s)] [∀ s, Fintype (J s)]
-
-end FiniteChains

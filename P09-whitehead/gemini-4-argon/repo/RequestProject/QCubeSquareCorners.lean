@@ -52,5 +52,3 @@ theorem squareCorner_negative (c : QCube A) (a b : V) (hne : a ≠ b)
 theorem squareCorner_swap (c : QCube A) (a b : V) (hne : a ≠ b) (s t : ZMod 2) :
     squareCorner c a b s t = squareCorner c b a t s :=
   qCubeFacet_comm c hne s t
-
-end FiniteChains.Davis

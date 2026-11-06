@@ -8,9 +8,7 @@ public import RequestProject.OrderUniversalThree
 
 /-! Full-nerve degree-two exactness for the actual path-class universal cover of the cube quotient. -/
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb
@@ -34,5 +32,3 @@ theorem exists_universal_bdry3_of_cycle_qCube (A : CommRel V) (b : QCube A)
     ∃ y : UOrdTet (QCube A) b →₀ ℤ, uOrdBoundary3 y = z := by
   obtain ⟨a, rfl⟩ := qProjCube_isPosetCover.surj b
   exact exists_universal_bdry3_of_cycle_davis A a z hz
-
-end FiniteChains.Davis

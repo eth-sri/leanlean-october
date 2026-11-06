@@ -14,9 +14,7 @@ actual inclusion of stage groups. No commuting-square hypothesis is used.
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.BlockFamily
 
@@ -189,5 +187,3 @@ theorem blockInclusion_preserves_zero
     (normalizedInclusion core hcore extra hpt) (blockInclusion core hcore extra hpt)
     (blockInclusion_structural_chain_square core hcore extra hpt) hzero
     (restrictedStructuralMap_generates core hcore extra p) hx
-
-end FiniteChains.RelativeNormalForm

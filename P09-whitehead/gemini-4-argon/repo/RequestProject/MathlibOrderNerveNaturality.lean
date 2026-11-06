@@ -6,9 +6,7 @@ public import RequestProject.OrderNerveCellMaps
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory Simplicial Opposite
@@ -68,5 +66,3 @@ theorem mathlibOrderNerveChainMap_three (f : P → Q) (hf : Monotone f)
   apply Finsupp.mapDomain_congr
   intro t _
   exact (ordTetNerveEquiv_map f hf t).symm
-
-end FiniteChains.Comb

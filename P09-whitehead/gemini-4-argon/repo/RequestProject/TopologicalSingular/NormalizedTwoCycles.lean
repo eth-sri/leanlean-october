@@ -82,5 +82,3 @@ theorem normalizedCycleMap_class {X : Type} [TopologicalSpace X] [SimplyConnecte
   apply (singularCycleClass_eq_iff 1 _ _ _ _).mpr
   rw [normalizedCycleMap_val x c hc]
   exact normalizedTriangleChain_difference_bounds x c hc
-
-end FiniteChains.TopologicalSingular

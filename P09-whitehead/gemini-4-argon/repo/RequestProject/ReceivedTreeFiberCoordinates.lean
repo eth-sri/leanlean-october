@@ -45,5 +45,3 @@ theorem receiverFace_fiber_surjective (hψ : Function.Surjective ψ)
   obtain ⟨g, hg⟩ := receiverVertex_fiber_surjective T f ψ hψ (K.base t) v.1.1 he
   refine ⟨g, Subtype.ext ?_⟩
   exact Prod.ext hg hv.symm
-
-end FiniteChains.Comb.ReceivedTree

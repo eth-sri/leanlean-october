@@ -21,8 +21,7 @@ two-cycle, i.e. the inclusion is zero on `π₂ = ker ∂₂`
 (`FiniteChains.PresChain.zero_pi2_chain2`).
 -/
 
-namespace FiniteChains
-namespace Comb
+namespace FiniteChains.Comb
 
 open MonoidAlgebra
 
@@ -56,8 +55,6 @@ noncomputable def chain1 (p : Hom X Y) : (X.E →₀ ℤ) →ₗ[ℤ] (Y.E →�
 noncomputable def chain2 (p : Hom X Y) : (X.F →₀ ℤ) →ₗ[ℤ] (Y.F →₀ ℤ) :=
   Finsupp.lmapDomain ℤ ℤ p.onF
 
-@[simp] theorem chain2_apply (p : Hom X Y) (u : X.F →₀ ℤ) :
-    chain2 p u = Finsupp.mapDomain p.onF u := rfl
 
 /-- **A cellular map is a chain map**: it commutes with the second boundary. -/
 theorem bdry2_chain2 (p : Hom X Y) (u : X.F →₀ ℤ) :
@@ -136,19 +133,3 @@ def univCoverInclHom (f : α → β) (hf : Function.Injective f) (ρ : J → Fre
           (fun eb => ((presInclGroupHom f ρ σ g hg eb.1.1, f eb.1.2), eb.2))
     rw [hg j, toWord_map f hf]
     exact liftPath_map f (presInclGroupHom f ρ σ g hg) (fun _ => rfl) _ q
-
-@[simp] theorem univCoverInclHom_onF (f : α → β) (hf : Function.Injective f)
-    (ρ : J → FreeGroup α) (σ : K → FreeGroup β) (g : J → K)
-    (hg : ∀ j, σ (g j) = FreeGroup.map f (ρ j)) :
-    (univCoverInclHom f hf ρ σ g hg).onF = Prod.map (presInclGroupHom f ρ σ g hg) g := rfl
-
-end Comb
-
-namespace PresChain
-
-universe u
-
-variable {α J : Type u} {ρ : J → FreeGroup α} {n : ℕ} (h : PresChain ρ n)
-
-end PresChain
-end FiniteChains

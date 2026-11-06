@@ -7,9 +7,7 @@ public import RequestProject.SurfaceWordExpansion
 
 /-! Structural group injectivity for substitution of arbitrary words in a finite genus block. -/
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 
@@ -55,9 +53,3 @@ abbrev namedPres := SurfaceWordExpansion.expandedRel ρ u (finitePairs q)
     rw [sLet, if_neg (by omega), if_pos (by omega),
       show (4 * h.val + 1) / 4 = h.val from by omega]
     simp [namedB, hm]
-
-variable (T : SpanningTree (orderCx (QOld (cmpRel (SCell (gvc q) (gec q) (gc q))))))
-
-variable (hrho : ρ (Sum.inr PUnit.unit) = commWord u (finitePairs q))
-
-end FiniteChains.Davis.Genus

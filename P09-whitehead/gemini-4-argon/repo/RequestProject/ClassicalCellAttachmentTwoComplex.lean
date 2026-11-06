@@ -14,9 +14,7 @@ noncomputable section
 open scoped Classical Topology
 open Set Topology Metric
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.RelativeAttachment
 
@@ -63,7 +61,7 @@ def positiveDiskBoundaryPoint (n : ℕ) (hn : 0 < n) : UnitBoundary (Fin n → �
   letI : Nonempty (Fin n) := ⟨⟨0, hn⟩⟩
   exact ⟨fun _ => 1, by simp [pi_norm_const]⟩
 
-variable {X J : Type} [TopologicalSpace X] [T2Space X] [Nonempty X]
+variable {X J : Type} [TopologicalSpace X] [T2Space X]
   [CWComplex (Set.univ : Set X)]
 
 /-- Count all old cells once and all new cells once. In particular there
@@ -134,5 +132,3 @@ theorem diskAttachment_old_ne_univ [Nonempty J] :
     trivial
   obtain ⟨x, hx⟩ := hd
   exact Sum.inl_ne_inr hx
-
-end Whitehead

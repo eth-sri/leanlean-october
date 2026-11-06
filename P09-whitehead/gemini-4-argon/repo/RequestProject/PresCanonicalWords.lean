@@ -45,5 +45,3 @@ def canonicalPresWordEmbedding (ρ : J → FreeGroup α) (σ : K → FreeGroup �
   gen := f
   cell := g
   word := presCanonicalWords_map ρ σ f g h a
-
-end FiniteChains.PresModel

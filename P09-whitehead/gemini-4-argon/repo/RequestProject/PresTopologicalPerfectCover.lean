@@ -58,5 +58,3 @@ theorem coveredPresentation_hasAcyclicRegularCover_of_presChains
     Whitehead.HasAcyclicRegularCover (coveredPresentationTwoComplex w hpos) :=
   coveredPresentation_hasAcyclicRegularCover_of_cellChains w hpos ρ hw
     (hasCellChainsLift_of_presChainsFS ρ hchains)
-
-end FiniteChains.PresModel

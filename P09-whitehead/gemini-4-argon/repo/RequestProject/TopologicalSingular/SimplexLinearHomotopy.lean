@@ -4,9 +4,7 @@ public import RequestProject.TopologicalSingular.SingularChains
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.TopologicalSingular
 open scoped unitInterval Topology
@@ -52,5 +50,3 @@ noncomputable def simplexLinearHomotopyRel (f g : C(Y, Domain n)) (S : Set Y)
     (h : ∀ z ∈ S, f z = g z) : ContinuousMap.HomotopyRel f g S where
   toHomotopy := simplexLinearHomotopy f g
   prop' t z hz := simplexLinearHomotopy_fixed f g z (h z hz) t
-
-end FiniteChains.TopologicalSingular

@@ -39,5 +39,3 @@ theorem coneAdj_isConnected {P T : Type u} [Preorder P] (S : T → P → Prop)
     ⟨_, isPath_mapPath (orderCxMap (ConeAdj.inc (S := S)) (ConeAdj.inc_monotone (S := S))) hl⟩
   exact (orderComponentLabel_eq_iff _ _).mp
     (hp.trans (((orderComponentLabel_eq_iff _ _).mpr hm).trans hq.symm))
-
-end FiniteChains.Comb

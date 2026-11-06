@@ -1,7 +1,8 @@
 module
 
 public import RequestProject.TreeChainTopological
-public import RequestProject.TreeCoverNecessityFinsupp
+public import RequestProject.TreeCoverAcyclic
+public import RequestProject.PresentationChainFinsupp
 public import RequestProject.PresChainTopologicalFinsupp
 
 @[expose] public section
@@ -28,11 +29,3 @@ structure TopChainFS (K : Complex2.{u}) (n : ℕ) where
   baseF : Function.Injective base.onF
   /-- **The inclusion `X r ⊂ X (r + 1)` is zero on `π₂`.** -/
   zero_pi2 : ∀ r, r < n → ZeroPi2 (inc r)
-
-namespace TopChainFS
-
-variable {K : Complex2.{u}} {n : ℕ} (c : TopChainFS K n) (T₀ : SpanningTree K)
-
-end TopChainFS
-
-end FiniteChains.Comb

@@ -9,9 +9,7 @@ public import RequestProject.TopologicalSingular.VertexSubdivision
 /-! # The explicit chain homotopy for recursive vertex subdivision -/
 
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.VertexChains
 
@@ -91,5 +89,3 @@ theorem subdivideHomotopy_naturality (other : ∀ n, Vertices W n → W) (f : V 
     dsimp only [LinearMap.comp_apply] at hs ht
     rw [hs, ht, map_boundary, map_single]
     rfl
-
-end FiniteChains.VertexChains

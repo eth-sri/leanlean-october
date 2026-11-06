@@ -59,5 +59,3 @@ noncomputable def presUniversalTwoCycleFoxKernelEquiv :
   (presCoverCycleRelatorGeneratorKernelEquiv w uOrderEnd
     (presUniversalEnd_isPosetCover w hpos) hpos).trans
       (presUniversalGeneratorFoxKernelEquiv ρ w hw hpos)
-
-end FiniteChains.PresModel

@@ -24,5 +24,3 @@ theorem presUniversal_midpoint_reading (j : J) (k : ℕ) (b : α × Bool)
   rw [(presCoc w gen hrel).readVertex_lower_of_le a p q hle, hp, hq]
   change (presCoc w gen hrel).readVertex a q * (trivVal w gen j k CPos.cmid)⁻¹ = _
   rw [trivVal_cmid_inv_of_get w gen j k b hb]
-
-end FiniteChains.PresModel

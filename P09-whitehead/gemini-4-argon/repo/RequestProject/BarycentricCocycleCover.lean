@@ -103,5 +103,3 @@ theorem barycentricCoverRealization_monotone :
       rw [hval]
       group
     _ = _ := by rw [htop.2]
-
-end FiniteChains.Davis

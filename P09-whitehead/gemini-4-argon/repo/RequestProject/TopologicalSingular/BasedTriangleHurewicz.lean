@@ -53,12 +53,3 @@ theorem squareCycle_basedTriangleSquare (tau : Simplex X 2)
     exact basedTriangle_eq_of_zero_coordinate tau h _ 1 (squareToTriangle_triangle0_zero z)
   rw [squareCycle, squareFundamentalChain, map_sub, map_single, map_single, he1, he0]
   rfl
-
-end FiniteChains.TopologicalSingular
-
-namespace FiniteChains.TopologicalSingular
-open CategoryTheory AlgebraicTopology
-open scoped Topology
-variable {X : Type} [TopologicalSpace X] {x : X}
-
-end FiniteChains.TopologicalSingular

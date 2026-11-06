@@ -8,9 +8,7 @@ public import RequestProject.NamedPresentationRelativeBoundary
 @[expose] public section
 
 /-! Exact relative boundary of a genuinely substituted finite genus spine. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb BlockFamily
@@ -101,5 +99,3 @@ theorem familySpine_internal_zero_iff (s : S)
         (familySpineHom ρ q u s) (fox z (spinePresentationMarkedWord (q s) i)) := by
   simp only [familySpine_internalBoundary]
   exact NamedPresentation.receivedFoxBoundary_internal_zero_iff _ _ _ β
-
-end FiniteChains.Davis.Genus

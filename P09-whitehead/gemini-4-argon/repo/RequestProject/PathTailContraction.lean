@@ -48,5 +48,3 @@ def tailContraction (p : Path a b) (q : Path a z) : C(I × I, X) where
   change (p.symm.trans q).extend ((1 - 1 + (1 + 1) * (t : ℝ)) / 2) = _
   have ht : (1 - 1 + (1 + 1) * (t : ℝ)) / 2 = t := by ring
   rw [ht, Path.extend_apply _ t.property]
-
-end Path

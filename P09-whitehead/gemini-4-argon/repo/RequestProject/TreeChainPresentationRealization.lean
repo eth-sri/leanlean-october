@@ -71,5 +71,3 @@ theorem hasOriginalChain_of_initial_tree_comparison (X : Whitehead.TwoComplex)
     Whitehead.HasChain X n false :=
   (c.treePresentationChain T₀).hasOriginalTopologicalChain X a e₀
     (c.treePresentationChain_proper T₀ hp) false (by simp)
-
-end FiniteChains.Comb.TopChainFS

@@ -36,5 +36,3 @@ theorem pi1Trivial_of_pi1Trivial_presInclHom
   exact htpy_of_congr_append (TY.treePath_isPath (h.onV a))
     (isPath_revPath (TY.treePath_isPath (h.onV a)))
     (isPath_mapPath h hp) rfl (H.trans Hnil.symm)
-
-end FiniteChains.Comb.SpanningTree

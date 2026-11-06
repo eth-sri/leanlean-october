@@ -53,5 +53,3 @@ theorem relatorCircleBoundaryHomeomorph_symm_natural (j : J)
   apply (relatorCircleBoundaryHomeomorph v (h.cell j) hv).injective
   rw [h.relatorCircleBoundaryHomeomorph_natural j hw hv, Homeomorph.apply_symm_apply,
     Homeomorph.apply_symm_apply]
-
-end FiniteChains.PresModel.PresWordEmbedding

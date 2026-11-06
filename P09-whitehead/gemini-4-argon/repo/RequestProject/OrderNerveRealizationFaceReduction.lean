@@ -6,9 +6,7 @@ public import RequestProject.OrderNerveRealizationNondegenerate
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory Simplicial
@@ -140,5 +138,3 @@ theorem orderNerveRealizationSimplex_boundary_finite_faces {P : Type} [PartialOr
   intro z hz
   obtain ⟨i, w, hw⟩ := orderNerveRealizationSimplex_boundary_face s.val z hz
   exact ⟨face i, Finset.mem_image.mpr ⟨i, Finset.mem_univ i, rfl⟩, w, hw⟩
-
-end FiniteChains.Comb

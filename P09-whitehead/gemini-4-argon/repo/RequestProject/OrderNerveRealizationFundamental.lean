@@ -121,5 +121,3 @@ noncomputable def orderNerveRealizationFundamentalFunctor (P : Type) [PartialOrd
   map h := Path.Homotopic.Quotient.mk (orderNerveRealizationEdgePath (leOfHom h))
   map_id a := Quotient.sound (orderNerveRealizationEdgePath_refl a)
   map_comp f g := Quotient.sound (orderNerveRealizationEdgePath_trans (leOfHom f) (leOfHom g))
-
-end FiniteChains.Comb

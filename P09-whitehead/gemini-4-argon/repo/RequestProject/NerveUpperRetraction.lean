@@ -70,5 +70,3 @@ theorem acyclicRelIn_of_upper_retraction {U B : P → Prop} (hne : ∃ p : P, U 
   · rw [← cmap_bdry, ← cmap_bdry, hcyc', map_zero, map_zero]
   · rw [map_neg, ← cmap_bdry, hp, map_sub]
     abel
-
-end FiniteChains.Nerve

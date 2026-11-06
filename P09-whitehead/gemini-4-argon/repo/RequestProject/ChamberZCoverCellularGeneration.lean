@@ -6,9 +6,7 @@ public import RequestProject.OrderNormalizationSupport
 @[expose] public section
 
 /-! Genuine finite cellular two-cycle generation in the actual covering poset. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb Nerve
@@ -50,5 +48,3 @@ theorem exists_cover_base_cellular_cycle (hf : IsPosetCover f)
   · apply ordNerveChain2_injective
     rw [map_add, hec, ordNerveChain2_ordBoundary3, hey]
     exact he
-
-end FiniteChains.Davis

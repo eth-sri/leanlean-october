@@ -194,5 +194,3 @@ theorem genLoop_null_of_movingBoundary {X : Type*} [TopologicalSpace X] {x y : X
       change h (unitInterval.symm s * squareCollarTime 1 z) = h (squareCollarTime 1 z)
       rw [squareCollarTime_boundary 1 z hz, mul_zero]
   exact hfirst.trans hsecond
-
-end Whitehead

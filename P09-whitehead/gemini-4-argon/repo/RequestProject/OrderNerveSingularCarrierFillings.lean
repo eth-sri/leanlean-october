@@ -56,5 +56,3 @@ theorem orderNerveSingularCarrier_nerve_acyclic {P : Type} [PartialOrder P] {n :
   intro c hc hcycle
   exact orderNerve_cycle_bounds_of_comparable
     (⟨v, hv'⟩ : orderNerveSingularCarrier σ) (fun p => p.property v hv) hc hcycle
-
-end FiniteChains.Comb

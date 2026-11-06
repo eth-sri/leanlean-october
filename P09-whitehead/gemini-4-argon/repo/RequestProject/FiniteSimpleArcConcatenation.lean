@@ -82,5 +82,3 @@ theorem arcConcat_injective (n : ℕ) (v : Fin (n + 2) → X)
         (by exact Fin.castSucc_lt_last i) u t (hu.trans h)).2
       rw [ht, (F (Fin.last (n + 1))).source] at h
       exact h
-
-end FiniteChains.RelativeAttachment

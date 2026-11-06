@@ -24,5 +24,3 @@ theorem filling_of_lower_composite (r : P → Q) (s : Q → P)
       (prism_mem_inc (hs.comp hr) monotone_id hle hc), ?_⟩
   rw [map_add, ← cmap_bdry, hdb, hp, cmap_comp]
   abel
-
-end FiniteChains.Nerve

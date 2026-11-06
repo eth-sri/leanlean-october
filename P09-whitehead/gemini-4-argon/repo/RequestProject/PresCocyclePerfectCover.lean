@@ -7,9 +7,7 @@ public import RequestProject.ConnectedCellularZeroFillings
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 set_option maxHeartbeats 1600000
 
@@ -24,7 +22,7 @@ theorem quotient_monodromy_alphaFree :
       (alphaFree w) = QuotientGroup.mk' N := by
   apply FreeGroup.ext_hom
   intro i
-  rw (config := { transparency := .default }) [MonoidHom.comp_apply, alphaFree_of]
+  erw [MonoidHom.comp_apply, alphaFree_of]
 
 theorem quotient_monodromy_surjective : Function.Surjective
     ((Coc w (qof N) (quotient_relators_close w N hword)).monodromy (ptBase w)) := by
@@ -49,7 +47,7 @@ omit [H.Normal] in
 theorem subgroupPreimage_contains_relators (j : J) :
     FreeGroup.mk (w j) ∈ subgroupPreimage ρ H := by
   change (QuotientGroup.mk (FreeGroup.mk (w j)) : PresGroup ρ) ∈ H
-  rw (config := { transparency := .default }) [hw j, (QuotientGroup.eq_one_iff _).mpr
+  erw [hw j, (QuotientGroup.eq_one_iff _).mpr
     (Subgroup.subset_normalClosure (Set.mem_range_self j))]
   exact H.one_mem
 
@@ -109,14 +107,14 @@ theorem subgroupCover_pi1_perfect (hperf : ⁅H, H⁆ = H) :
     apply top_unique
     intro g _
     have hg : g.val ∈ (commutator H).map H.subtype := by
-      rw (config := { transparency := .default }) [H.map_subtype_commutator, hperf]
+      erw [H.map_subtype_commutator, hperf]
       exact g.property
     obtain ⟨x, hx, he⟩ := hg
     exact (Subtype.ext he : x = g) ▸ hx
   let e := (subgroupCoverPi1Equiv w ρ hw hpos H).symm
   have hr : e.toMonoidHom.range = ⊤ := MonoidHom.range_eq_top.mpr e.surjective
   have he := map_commutator_eq H e.toMonoidHom
-  rw (config := { transparency := .default }) [hH, Subgroup.map_top_of_surjective _ e.surjective, hr, ← commutator_def] at he
+  erw [hH, Subgroup.map_top_of_surjective _ e.surjective, hr, ← commutator_def] at he
   exact he.symm
 
 include hpos in
@@ -128,14 +126,14 @@ theorem subgroupCover_one_cycle_filling (hperf : ⁅H, H⁆ = H)
       Comb.bdry2 (strictOrderCx (SubgroupCover w ρ hw H)) d = c := by
   let C := SubgroupCover w ρ hw H
   have hweak : Comb.bdry1 (orderCx C) (chain1 (strictOrderIncl C) c) = 0 := by
-    rw (config := { transparency := .default }) [bdry1_chain1, hc, map_zero]
+    erw [bdry1_chain1, hc, map_zero]
   obtain ⟨d, hd⟩ := oneCycle_filling_of_perfect_pi1 (orderCx C)
     ((subgroupCoc w ρ hw H).coverBase (ptBase w))
     (quotient_isConnected w (subgroupPreimage ρ H)
       (subgroupPreimage_contains_relators w ρ hw H) hpos)
     (subgroupCover_pi1_perfect w ρ hw hpos H hperf) _ hweak
   exact ⟨normalizeOrdChain2 d, by
-    rw (config := { transparency := .default }) [bdry2_normalizeOrdChain2, hd]
+    erw [bdry2_normalizeOrdChain2, hd]
     exact normalizeOrdChain1_inclusion c⟩
 
 variable [DecidableEq α]
@@ -149,18 +147,18 @@ theorem subgroupCover_isAcyclic
   have hR : relSub ρ ≤ N := by
     intro r hr
     change (QuotientGroup.mk r : PresGroup ρ) ∈ H
-    rw (config := { transparency := .default }) [(QuotientGroup.eq_one_iff r).mpr hr]
+    erw [(QuotientGroup.eq_one_iff r).mpr hr]
     exact H.one_mem
   have hNeq : presSub ρ N = H :=
     Subgroup.map_comap_eq_self_of_surjective (QuotientGroup.mk'_surjective _) H
   have hinj : Function.Injective (coverSecondBoundary N ρ) := by
     apply fs_injective_boundary_of_foxSat ρ N hR
     intro v
-    rw (config := { transparency := .default }) [hNeq]
+    erw [hNeq]
     exact hsat v
   have hwfun : (fun j => FreeGroup.mk (w j)) = ρ := funext hw
   have hi : Function.Injective (coverSecondBoundary N (fun j => FreeGroup.mk (w j))) := by
-    rw (config := { transparency := .default }) [hwfun]
+    erw [hwfun]
     exact hinj
   refine ⟨?_, subgroupCover_one_cycle_filling w ρ hw hpos H hperf, ?_⟩
   · apply (injective_iff_map_eq_zero _).mpr
@@ -168,5 +166,3 @@ theorem subgroupCover_isAcyclic
   · exact strict_order_zeroCycle_filling_of_connected (P := SubgroupCover w ρ hw H)
       ((subgroupCoc w ρ hw H).coverBase (ptBase w))
       (quotient_isConnected w N (subgroupPreimage_contains_relators w ρ hw H) hpos)
-
-end FiniteChains.PresModel.PresCocycleCover

@@ -43,5 +43,3 @@ theorem orderSingularCarrierChains_zero_bounds {P : Type} [PartialOrder P] {n : 
       b ∈ orderSingularCarrierChains σ 1 ∧ boundary 0 b = c := by
   letI := orderNerveSingularCarrier_subcomplex_contractible σ hσ
   exact connected_supported_zero_bounds _ c hc hz
-
-end FiniteChains.Comb

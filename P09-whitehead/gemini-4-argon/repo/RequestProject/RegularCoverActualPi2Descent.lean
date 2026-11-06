@@ -45,5 +45,3 @@ theorem regularCover_cycle_mem_pi2FromSub_span
   apply pi2Generated_changeBase (pushoutMap p i hiV hiE hiF) hl _ c hc
   exact PushoutRelativeCopies.cycle_mem_span_at_core p hp a hr he hf i hiV hiE hiF
     hDconn hL d₀ ht hD hT
-
-end FiniteChains.Comb

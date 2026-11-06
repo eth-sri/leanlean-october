@@ -96,6 +96,3 @@ theorem starLift_center (v : Cover p hp) :
     dsimp only [c]
     rw [orderNerveRealizationCone_vertex, orderNerveRealizationCone_vertex]
   exact (hp.const_of_comp L.continuous hproj 1 0).trans (starLiftHomotopy_zero p hp v c)
-
-end TopologicalOrderCover
-end FiniteChains.Comb

@@ -4,9 +4,7 @@ public import RequestProject.OrderNerveRealizationOpenStars
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory Simplicial Topology
@@ -45,14 +43,14 @@ theorem vertexStarCarrierHomeomorph_coe (hf : IsPosetCover f) (v : P)
     (hf.vertexStarRealizationHomeomorph v
       ((orderNerveRealizationSubtypeHomeomorph (orderNerveVertexStar P v)).symm
         (orderNerveRealizationSubtypeHomeomorph (orderNerveVertexStar P v) y)))).val = _
-  rw (config := { transparency := .default }) [Homeomorph.symm_apply_apply, orderNerveRealizationSubtypeHomeomorph_coe,
+  erw [Homeomorph.symm_apply_apply, orderNerveRealizationSubtypeHomeomorph_coe,
     orderNerveRealizationSubtypeHomeomorph_coe]
   change orderNerveRealizationMap (Subtype.val : orderNerveVertexStar Q (f v) → Q)
       (fun _ _ h => h) (orderNerveRealizationMap (hf.vertexStarMap v) _ y) =
     orderNerveRealizationMap f hf.mono
       (orderNerveRealizationMap (Subtype.val : orderNerveVertexStar P v → P)
         (fun _ _ h => h) y)
-  rw (config := { transparency := .default }) [orderNerveRealizationMap_comp, orderNerveRealizationMap_comp]
+  erw [orderNerveRealizationMap_comp, orderNerveRealizationMap_comp]
   rfl
 
 /-- On a lifted closed star, the center coordinate is preserved by the projection. -/
@@ -63,13 +61,13 @@ theorem vertexStarCarrier_coordinate (hf : IsPosetCover f) (v : P)
       orderNerveRealizationCoordinates P x.val v := by
   obtain ⟨y, rfl⟩ := (orderNerveRealizationSubtypeHomeomorph
     (orderNerveVertexStar P v)).surjective x
-  rw (config := { transparency := .default }) [orderNerveRealizationSubtypeHomeomorph_coe]
+  erw [orderNerveRealizationSubtypeHomeomorph_coe]
   change orderNerveAffineRealization (fun q => if q = f v then 1 else 0)
     (orderNerveRealizationMap f hf.mono
       (orderNerveRealizationMap Subtype.val (fun _ _ h => h) y)) =
     orderNerveAffineRealization (fun p => if p = v then 1 else 0)
       (orderNerveRealizationMap Subtype.val (fun _ _ h => h) y)
-  rw (config := { transparency := .default }) [orderNerveAffineRealization_natural, orderNerveAffineRealization_natural,
+  erw [orderNerveAffineRealization_natural, orderNerveAffineRealization_natural,
     orderNerveAffineRealization_natural]
   have hv : (((fun q => if q = f v then (1 : ℝ) else 0) ∘ f) ∘
       (Subtype.val : orderNerveVertexStar P v → P)) =
@@ -84,7 +82,7 @@ theorem vertexStarCarrier_coordinate (hf : IsPosetCover f) (v : P)
       · intro h
         exact congrArg f h
     simp only [Function.comp_apply, he]
-  rw (config := { transparency := .default }) [hv]
+  erw [hv]
 
 /-- Each lifted open star is genuinely homeomorphic to its target open star. -/
 noncomputable def vertexOpenStarHomeomorph (hf : IsPosetCover f) (v : P) :
@@ -98,7 +96,7 @@ noncomputable def vertexOpenStarHomeomorph (hf : IsPosetCover f) (v : P) :
         change (0 < orderNerveRealizationCoordinates P x.val v) ↔
           (0 < orderNerveRealizationCoordinates Q
             (hf.vertexStarCarrierHomeomorph v x).val (f v))
-        rw (config := { transparency := .default }) [hf.vertexStarCarrierHomeomorph_coe, hf.vertexStarCarrier_coordinate])).trans
+        erw [hf.vertexStarCarrierHomeomorph_coe, hf.vertexStarCarrier_coordinate])).trans
       (orderNerveNestedCarrierHomeomorph _ _
         (orderNerveRealizationOpenStar_subset_subcomplex (f v))).symm)
 
@@ -108,6 +106,3 @@ theorem vertexOpenStarHomeomorph_coe (hf : IsPosetCover f) (v : P)
     (hf.vertexOpenStarHomeomorph v x).val = orderNerveRealizationMap f hf.mono x.val := by
   exact hf.vertexStarCarrierHomeomorph_coe v
     ⟨x.val, orderNerveRealizationOpenStar_subset_subcomplex v x.property⟩
-
-end IsPosetCover
-end FiniteChains.Comb

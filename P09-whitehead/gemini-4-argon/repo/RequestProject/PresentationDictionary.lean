@@ -1,8 +1,15 @@
 module
 
-public import RequestProject.HurewiczDictionary
+public import RequestProject.MagnusKernel
+public import RequestProject.CoverHomologyOne
+public import RequestProject.UniversalCoefficients
 public import RequestProject.CoverAcyclic
-public import RequestProject.FrameworkNecessityTF
+public import RequestProject.Pigeonhole
+public import RequestProject.SubgroupCompactness
+public import RequestProject.ChainFormula
+public import RequestProject.FinitelyDeterminedInf
+public import RequestProject.ChainFormulaMod
+public import RequestProject.FoxCommutatorMod
 public import RequestProject.NecessityLocallyFinite
 
 @[expose] public section
@@ -85,7 +92,7 @@ theorem isMulTorsionFree_map_commutator_of_pow {G : Type*} [Group G] (N : Subgro
 
 /-! ### The presented complex -/
 
-variable {α : Type*} [Fintype α] [DecidableEq α] {J : Type*} [Fintype J] (ρ : J → FreeGroup α)
+variable {α : Type*} [DecidableEq α] {J : Type*} (ρ : J → FreeGroup α)
 
 /-- The relator subgroup `R = ⟪r_1, …, r_m⟫ ◁ F`. -/
 def relSub : Subgroup (FreeGroup α) := Subgroup.normalClosure (Set.range ρ)
@@ -99,7 +106,6 @@ abbrev PresGroup : Type _ := FreeGroup α ⧸ relSub ρ
 noncomputable def foxMatrixPres (i : α) (j : J) : MonoidAlgebra ℤ (PresGroup ρ) :=
   quotRingHom ℤ (relSub ρ) (fox i (ρ j))
 
-omit [Fintype α] [Fintype J] in
 theorem foxMatrixPres_col_finite (j : J) : {i : α | foxMatrixPres ρ i j ≠ 0}.Finite :=
   (fox_generator_support_finite (ρ j)).subset (by
     intro i hi
@@ -107,7 +113,6 @@ theorem foxMatrixPres_col_finite (j : J) : {i : α | foxMatrixPres ρ i j ≠ 0}
     simp only [Set.mem_setOf_eq, not_not] at hz
     exact hi (by simp only [foxMatrixPres, hz, map_zero]))
 
-section Subgroups
 
 variable (Nt : Subgroup (FreeGroup α)) [Nt.Normal] (hR : relSub ρ ≤ Nt)
 
@@ -122,7 +127,7 @@ noncomputable def quotQuotEquivPres :
     (PresGroup ρ ⧸ presSub ρ Nt) ≃* (FreeGroup α ⧸ Nt) :=
   QuotientGroup.quotientQuotientEquivQuotient (relSub ρ) Nt hR
 
-omit [Fintype α] [DecidableEq α] [Fintype J] in
+omit [DecidableEq α] in
 theorem quotQuotEquivPres_mk (w : FreeGroup α) :
     quotQuotEquivPres ρ Nt hR
         (QuotientGroup.mk (QuotientGroup.mk w : PresGroup ρ) : PresGroup ρ ⧸ presSub ρ Nt)
@@ -134,7 +139,7 @@ noncomputable def ringEquivPres :
     MonoidAlgebra ℤ (PresGroup ρ ⧸ presSub ρ Nt) ≃ₐ[ℤ] MonoidAlgebra ℤ (FreeGroup α ⧸ Nt) :=
   MonoidAlgebra.domCongr ℤ ℤ (quotQuotEquivPres ρ Nt hR)
 
-omit [Fintype α] [DecidableEq α] [Fintype J] in
+omit [DecidableEq α] in
 /-- The reduction of the group ring of the free group to `ℤ[F/Ñ]` factors through the two
 successive quotients. -/
 theorem ringEquivPres_quot (x : MonoidAlgebra ℤ (FreeGroup α)) :
@@ -147,7 +152,3 @@ theorem ringEquivPres_quot (x : MonoidAlgebra ℤ (FreeGroup α)) :
       rw [quotRingHom_single, quotRingHom_single, proj_single]
       show MonoidAlgebra.domCongr ℤ ℤ (quotQuotEquivPres ρ Nt hR) (single _ n) = _
       rw [MonoidAlgebra.domCongr_single, quotQuotEquivPres_mk]
-
-end Subgroups
-
-end FiniteChains

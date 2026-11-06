@@ -5,9 +5,7 @@ public import RequestProject.TopologyPaths.OpenCoverPaths
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory
@@ -38,19 +36,19 @@ theorem orderNerveRealization_simplyConnected (P : Type) [PartialOrder P] [Nonem
         k b ≫ Path.Homotopic.Quotient.mk e = k (v x) := by
       rcases hcomp with h | h
       · refine ⟨(orderNerveRealizationEdgePath h).symm, ?_, ?_⟩
-        · rw (config := { transparency := .default }) [Path.symm_range]
+        · erw [Path.symm_range]
           exact orderNerveRealizationEdgePath_supported h b (Or.inl h) (Or.inl le_rfl)
         · change k b ≫ Groupoid.inv (Path.Homotopic.Quotient.mk
             (orderNerveRealizationEdgePath h)) = k (v x)
-          rw (config := { transparency := .default }) [← hk h, Category.assoc, Groupoid.comp_inv, Category.comp_id]
+          erw [← hk h, Category.assoc, Groupoid.comp_inv, Category.comp_id]
       · exact ⟨orderNerveRealizationEdgePath h,
           orderNerveRealizationEdgePath_supported h b (Or.inl le_rfl) (Or.inr h), hk h⟩
     obtain ⟨e, he, hke⟩ := he
     refine ⟨e.trans (r x), ?_, ?_⟩
-    · rw (config := { transparency := .default }) [Path.trans_range]
+    · erw [Path.trans_range]
       exact Set.union_subset he hrad
     · change k b ≫ (Path.Homotopic.Quotient.mk e ≫ Path.Homotopic.Quotient.mk (r x)) = _
-      rw (config := { transparency := .default }) [← Category.assoc, hke]
+      erw [← Category.assoc, hke]
   have hlocal {x y : orderNerveRealization P} (p : Path x y)
       (hp : ∃ b, Set.range p ⊆ orderNerveRealizationOpenStar P b) :
       R x ≫ Path.Homotopic.Quotient.mk p = R y := by
@@ -63,9 +61,9 @@ theorem orderNerveRealization_simplyConnected (P : Type) [PartialOrder P] [Nonem
       change SimplyConnectedSpace _
       infer_instance
     have hh : (e.trans p).Homotopic f := paths_homotopic_of_range_subset hC _ _ (by
-      rw (config := { transparency := .default }) [Path.trans_range]
+      erw [Path.trans_range]
       exact Set.union_subset he (hp.trans (orderNerveRealizationOpenStar_subset_subcomplex b))) hf
-    rw (config := { transparency := .default }) [← hke, ← hkf, Category.assoc]
+    erw [← hke, ← hkf, Category.assoc]
     apply congrArg (fun q => k b ≫ q)
     exact Quotient.sound hh
   have hall {x y : orderNerveRealization P} (p : Path x y) :
@@ -78,7 +76,7 @@ theorem orderNerveRealization_simplyConnected (P : Type) [PartialOrder P] [Nonem
       exact Category.comp_id (R x)
     · intro x y z p q hp hq
       change R x ≫ (Path.Homotopic.Quotient.mk p ≫ Path.Homotopic.Quotient.mk q) = R z
-      rw (config := { transparency := .default }) [← Category.assoc, hp, hq]
+      erw [← Category.assoc, hp, hq]
     · intro x y p q hpq hp
       have he : Path.Homotopic.Quotient.mk p = Path.Homotopic.Quotient.mk q := Quotient.sound hpq
       rwa [← he]
@@ -90,5 +88,3 @@ theorem orderNerveRealization_simplyConnected (P : Type) [PartialOrder P] [Nonem
     apply (cancel_epi (R x)).mp
     simpa only [Category.comp_id] using hall p
   exact Quotient.exact he
-
-end FiniteChains.Comb

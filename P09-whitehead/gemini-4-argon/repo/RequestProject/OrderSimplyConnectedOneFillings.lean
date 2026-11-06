@@ -7,9 +7,7 @@ public import RequestProject.OrderNervePositiveFillings
 @[expose] public section
 
 /-! Finite one-cycle fillings when every component has trivial edge-path pi1. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -74,5 +72,3 @@ theorem nerve_oneCycle_filling_of_simplyConnected (hsc : SimplyConnected (orderC
   obtain ⟨y, hy⟩ := order_oneCycle_filling_of_simplyConnected hsc _ hcyc
   refine ⟨ordNerveChain2 y, ordNerveChain2_mem_inc y, ?_⟩
   rw [← ordNerveChain1_bdry2, hy, he]
-
-end FiniteChains.Comb

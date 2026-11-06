@@ -13,9 +13,7 @@ boundary and the comparison is an actual homotopy. Pending verification. -/
 
 noncomputable section
 open scoped Classical unitInterval Topology
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb RelativeAttachment ContinuousEdgeWords ClassicalGraphModel
@@ -27,11 +25,11 @@ def presReadTraversal : Path (orderRoseBase A) (orderRoseBase A) where
   continuous_toFun := (presCircleWordMap w j).continuous.comp
     (relatorCircleTraversal w j hn).continuous
   source' := by
-    rw (config := { transparency := .default }) [(relatorCircleTraversal w j hn).source]
+    erw [(relatorCircleTraversal w j hn).source]
     exact realizedMap_vertex (fun c : RelatorCircle w j => aFun w c.val)
       (fun _ _ h => aFun_monotone w h) (relatorCircleEnumeration w j hn 0)
   target' := by
-    rw (config := { transparency := .default }) [(relatorCircleTraversal w j hn).target]
+    erw [(relatorCircleTraversal w j hn).target]
     exact realizedMap_vertex (fun c : RelatorCircle w j => aFun w c.val)
       (fun _ _ h => aFun_monotone w h) (relatorCircleEnumeration w j hn 0)
 
@@ -47,7 +45,7 @@ theorem presReadTraversal_homotopic_word :
     apply Path.ext
     funext t
     change orderNerveRealizationMap (aFun w) (aFun_monotone w) (circleFullLoop w j hn t) = _
-    rw (config := { transparency := .default }) [← circleTraversal_to_full, orderNerveRealizationMap_comp]
+    erw [← circleTraversal_to_full, orderNerveRealizationMap_comp]
     rfl
   have hright : ((affineOrderWordPath (circLoop w j) (circleWordValid w j hn)).map f.continuous).cast hb hb =
       affineOrderWordPath (roseWord (w j)) (roseWord_valid (w j)) := by
@@ -55,7 +53,7 @@ theorem presReadTraversal_homotopic_word :
     funext t
     change orderNerveRealizationMap (aFun w) (aFun_monotone w)
       (affineOrderWordPath (circLoop w j) (circleWordValid w j hn) t) = _
-    rw (config := { transparency := .default }) [affineOrderWordPath_map]
+    erw [affineOrderWordPath_map]
     have wordEq {l m : List ((orderCx (Rose A)).E × Bool)} {a b : Rose A}
         (hl : IsPath (orderCx (Rose A)).src (orderCx (Rose A)).tgt l a b)
         (hm : IsPath (orderCx (Rose A)).src (orderCx (Rose A)).tgt m a b) (he : l = m) :
@@ -63,7 +61,7 @@ theorem presReadTraversal_homotopic_word :
       subst m
       rfl
     exact wordEq _ _ (mapPath_aFun_circLoop w j)
-  rw (config := { transparency := .default }) [hleft, hright] at H
+  erw [hleft, hright] at H
   exact H.trans (roseWord_homotopic_read (w j))
 
 def classicalPresReadTraversal : Path (roseVertex A) (roseVertex A) :=
@@ -97,7 +95,7 @@ theorem squareLoopDesc_classicalPresReadTraversal :
   apply ContinuousMap.ext
   intro z
   obtain ⟨t, rfl⟩ := squareBoundaryTraversal_surjective z
-  rw (config := { transparency := .default }) [squareLoopDesc_traversal]
+  erw [squareLoopDesc_traversal]
   have hb := (relatorCircleCycle w j (List.length_pos_of_ne_nil (hw j))).boundaryHomeomorph_traversal t
   change relatorCircleBoundaryHomeomorph w j (List.length_pos_of_ne_nil (hw j))
     (relatorCircleTraversal w j (List.length_pos_of_ne_nil (hw j)) t) =
@@ -106,7 +104,7 @@ theorem squareLoopDesc_classicalPresReadTraversal :
     (presCircleWordMap w j (relatorCircleTraversal w j (List.length_pos_of_ne_nil (hw j)) t)) =
       classicalPresWordAttaching w hw
         ⟨j, unitBoundarySquareHomeomorph.symm (squareBoundaryTraversal t)⟩
-  rw (config := { transparency := .default }) [← hb]
+  erw [← hb]
   exact (classicalPresWordAttaching_link w hw j _).symm
 
 /-- The actual canonical disk attaching map reads exactly its word,
@@ -116,7 +114,7 @@ theorem classicalPresWordAttaching_homotopic_read :
       ((squareLoopDesc (classicalRoseRead (w j))).comp unitBoundarySquareHomeomorph.toContinuousMap) := by
   have H := squareLoopDesc_homotopic
     (classicalPresReadTraversal_homotopic_word w j (List.length_pos_of_ne_nil (hw j)))
-  rw (config := { transparency := .default }) [squareLoopDesc_classicalPresReadTraversal w j hw] at H
+  erw [squareLoopDesc_classicalPresReadTraversal w j hw] at H
   have H' := H.comp (ContinuousMap.Homotopic.refl unitBoundarySquareHomeomorph.toContinuousMap)
   have he : ((classicalPresCellBoundary w j hw).comp
       unitBoundarySquareHomeomorph.symm.toContinuousMap).comp
@@ -125,5 +123,3 @@ theorem classicalPresWordAttaching_homotopic_read :
     intro z
     exact congrArg (classicalPresCellBoundary w j hw) (unitBoundarySquareHomeomorph.symm_apply_apply z)
   rwa [he] at H'
-
-end FiniteChains.PresModel

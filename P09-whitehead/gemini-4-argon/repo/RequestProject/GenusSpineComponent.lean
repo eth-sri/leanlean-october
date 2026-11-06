@@ -7,9 +7,7 @@ public import RequestProject.SpanningTree
 @[expose] public section
 
 /-! The genuine connected component carrying the canonical spine marking. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 open Comb
@@ -20,10 +18,6 @@ noncomputable def markedSpineCx : Complex2 := component (genusSpineCx q) (spineB
 def markedSpineBase : (markedSpineCx q).V :=
   ⟨spineBase q, reach_self _ _⟩
 
-instance : Finite (markedSpineCx q).V := by
-  change Finite (CV (genusSpineCx q) (spineBase q))
-  unfold CV
-  infer_instance
 
 instance : Finite (markedSpineCx q).E := by
   unfold markedSpineCx
@@ -62,14 +56,14 @@ theorem markedSpine_exists_tree :
 theorem markedSpine_inclusion_pi1_injective :
     Function.Injective
       (pi1Map (componentIncl (genusSpineCx q) (spineBase q)) (markedSpineBase q)) := by
-  rw (config := { transparency := .default }) [injective_iff_map_eq_one]
+  erw [injective_iff_map_eq_one]
   rintro ⟨p⟩ hp
   have h : Htpy (genusSpineCx q) (spineBase q) (spineBase q)
       (mapPath (componentIncl (genusSpineCx q) (spineBase q)) p.1) [] :=
     Quotient.exact hp
   have hl := htpy_liftGerms (reach_self (genusSpineCx q) (spineBase q))
     (reach_self (genusSpineCx q) (spineBase q)) h
-  rw (config := { transparency := .default }) [mapPath_componentIncl, liftGerms_map_cForget] at hl
+  erw [mapPath_componentIncl, liftGerms_map_cForget] at hl
   exact Quotient.sound hl
 
 theorem markedSpine_inclusion_pi1_surjective :
@@ -90,5 +84,3 @@ noncomputable def markedSpinePi1Equiv :
   MulEquiv.ofBijective
     (pi1Map (componentIncl (genusSpineCx q) (spineBase q)) (markedSpineBase q))
     ⟨markedSpine_inclusion_pi1_injective q, markedSpine_inclusion_pi1_surjective q⟩
-
-end FiniteChains.Davis.Genus

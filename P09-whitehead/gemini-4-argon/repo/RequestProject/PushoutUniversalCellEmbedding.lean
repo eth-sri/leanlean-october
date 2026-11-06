@@ -97,5 +97,3 @@ theorem univLift_faces_injective (hD : IsConnected D) (hL : IsConnected L)
     (congrArg (fun f : UF (pushoutComplex p i hiV hiE)
       ((pushoutMap p i hiV hiE hiF).onV (i.onV d₀)) => f.val.2) h)
   exact Subtype.ext (Prod.ext hv hb)
-
-end FiniteChains.Comb.PushoutSheets

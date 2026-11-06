@@ -5,7 +5,6 @@ public import RequestProject.OrderCocycleFlatSections
 
 @[expose] public section
 
-/-! Extending a flat boundary section across the actual triangulated collar. -/
 namespace FiniteChains.Comb.OrdCocycle
 universe u v w
 variable {P : Type u} [Preorder P] {G : Type v} [Group G]
@@ -16,19 +15,10 @@ theorem flat_edge_trans {a b d : P} (hab : a ≤ b) (hbd : b ≤ d)
     c.val a d • s d = s a := by
   rw [← c.comp hab hbd, mul_smul, h₂, h₁]
 
-theorem flat_edge_of_top {a b d : P} (hab : a ≤ b) (hbd : b ≤ d)
-    (h₁ : c.val a d • s d = s a) (h₂ : c.val b d • s d = s b) :
-    c.val a b • s b = s a := by
-  rw [← h₂, ← mul_smul, c.comp hab hbd, h₁]
-
 theorem flat_edge_of_bottom {a b d : P} (hab : a ≤ b) (hbd : b ≤ d)
     (h₁ : c.val a b • s b = s a) (h₂ : c.val a d • s d = s a) :
     c.val b d • s d = s b := by
-  calc
-    c.val b d • s d = (c.val a b)⁻¹ • (c.val a d • s d) := by
-      rw [← c.comp hab hbd, mul_smul, inv_smul_smul]
-    _ = (c.val a b)⁻¹ • s a := by rw [h₂]
-    _ = s b := by rw [← h₁, inv_smul_smul]
+  rw [← inv_smul_smul (c.val a b) (s b), h₁, ← h₂, ← c.comp hab hbd, mul_smul, inv_smul_smul]
 
 end FiniteChains.Comb.OrdCocycle
 
@@ -43,8 +33,6 @@ variable {κ ι : Type u} {M : ℕ} [NeZero M]
 def collarValue (p : Fin M) : Ω :=
   c.val (cW hc p) (cD hc p) • ((c.val (cV hc p) (cD hc p))⁻¹ • rv (vc p))
 
-/-- Values on all actual surface cells. The centre is chosen after proving
-that the collar data propagate consistently through the fan. -/
 def surfaceSection (centre : Ω) : SCell vc ec hc → Ω
   | .vtx v => rv v
   | .bed e => re e
@@ -61,27 +49,22 @@ def surfaceSection (centre : Ω) : SCell vc ec hc → Ω
 variable (k : Ω)
 local notation "s" => surfaceSection hc c rv re k
 
-theorem v_d (p : Fin M) : c.val (cV hc p) (cD hc p) • s (cD hc p) = s (cV hc p) := by
-  change c.val _ _ • ((c.val _ _)⁻¹ • rv (vc p)) = rv (vc p)
-  exact smul_inv_smul _ _
+theorem v_d (p : Fin M) : c.val (cV hc p) (cD hc p) • s (cD hc p) = s (cV hc p) :=
+  smul_inv_smul _ _
 
 theorem w_d (p : Fin M) : c.val (cW hc p) (cD hc p) • s (cD hc p) = s (cW hc p) := rfl
 
-theorem v_g (p : Fin M) : c.val (cV hc p) (cG hc p) • s (cG hc p) = s (cV hc p) := by
-  change c.val _ _ • ((c.val _ _)⁻¹ • rv (vc p)) = rv (vc p)
-  exact smul_inv_smul _ _
+theorem v_g (p : Fin M) : c.val (cV hc p) (cG hc p) • s (cG hc p) = s (cV hc p) :=
+  smul_inv_smul _ _
 
-theorem w_f (p : Fin M) : c.val (cW hc p) (cF hc p) • s (cF hc p) = s (cW hc p) := by
-  change c.val _ _ • ((c.val _ _)⁻¹ • collarValue hc c rv p) = collarValue hc c rv p
-  exact smul_inv_smul _ _
+theorem w_f (p : Fin M) : c.val (cW hc p) (cF hc p) • s (cF hc p) = s (cW hc p) :=
+  smul_inv_smul _ _
 
-theorem e_t1 (p : Fin M) : c.val (cE hc p) (cT1 hc p) • s (cT1 hc p) = s (cE hc p) := by
-  change c.val _ _ • ((c.val _ _)⁻¹ • re (ec p)) = re (ec p)
-  exact smul_inv_smul _ _
+theorem e_t1 (p : Fin M) : c.val (cE hc p) (cT1 hc p) • s (cT1 hc p) = s (cE hc p) :=
+  smul_inv_smul _ _
 
-theorem v_t2 (p : Fin M) : c.val (cV hc p) (cT2 hc p) • s (cT2 hc p) = s (cV hc p) := by
-  change c.val _ _ • ((c.val _ _)⁻¹ • rv (vc p)) = rv (vc p)
-  exact smul_inv_smul _ _
+theorem v_t2 (p : Fin M) : c.val (cV hc p) (cT2 hc p) • s (cT2 hc p) = s (cV hc p) :=
+  smul_inv_smul _ _
 
 variable (hb : ∀ p : Fin M,
   c.val (cV hc p) (cE hc p) • re (ec p) = rv (vc p) ∧
@@ -89,14 +72,12 @@ variable (hb : ∀ p : Fin M,
 
 include hb in
 theorem v_t1 (p : Fin M) : c.val (cV hc p) (cT1 hc p) • s (cT1 hc p) = s (cV hc p) :=
-  c.flat_edge_trans s (cV_le_cE hc p) (cE_le_cT1 hc p)
-    (hb p).1 (e_t1 hc c rv re k p)
+  c.flat_edge_trans s (cV_le_cE hc p) (cE_le_cT1 hc p) (hb p).1 (e_t1 hc c rv re k p)
 
 include hb in
 theorem v1_t1 (p : Fin M) :
     c.val (cV hc (p + 1)) (cT1 hc p) • s (cT1 hc p) = s (cV hc (p + 1)) :=
-  c.flat_edge_trans s (cV1_le_cE hc p) (cE_le_cT1 hc p)
-    (hb p).2 (e_t1 hc c rv re k p)
+  c.flat_edge_trans s (cV1_le_cE hc p) (cE_le_cT1 hc p) (hb p).2 (e_t1 hc c rv re k p)
 
 include hb in
 theorem d1_t1 (p : Fin M) :
@@ -117,9 +98,9 @@ theorem g_t1 (p : Fin M) : c.val (cG hc p) (cT1 hc p) • s (cT1 hc p) = s (cG h
 
 include hb in
 theorem w1_g (p : Fin M) :
-    c.val (cW hc (p + 1)) (cG hc p) • s (cG hc p) = s (cW hc (p + 1)) :=
-  c.flat_edge_of_top s (cW1_le_cG hc p) (cG_le_cT1 hc p)
-    (w1_t1 hc c rv re k hb p) (g_t1 hc c rv re k hb p)
+    c.val (cW hc (p + 1)) (cG hc p) • s (cG hc p) = s (cW hc (p + 1)) := by
+  rw [← g_t1 hc c rv re k hb p, ← mul_smul, c.comp (cW1_le_cG hc p) (cG_le_cT1 hc p),
+    w1_t1 hc c rv re k hb p]
 
 theorem d_t2 (p : Fin M) : c.val (cD hc p) (cT2 hc p) • s (cT2 hc p) = s (cD hc p) :=
   c.flat_edge_of_bottom s (cV_le_cD hc p) (cD_le_cT2 hc p)
@@ -145,8 +126,8 @@ theorem f_t2 (p : Fin M) : c.val (cF hc p) (cT2 hc p) • s (cT2 hc p) = s (cF h
 
 include hb in
 theorem w1_f (p : Fin M) :
-    c.val (cW hc (p + 1)) (cF hc p) • s (cF hc p) = s (cW hc (p + 1)) :=
-  c.flat_edge_of_top s (cW1_le_cF hc p) (cF_le_cT2 hc p)
-    (w1_t2 hc c rv re k hb p) (f_t2 hc c rv re k p)
+    c.val (cW hc (p + 1)) (cF hc p) • s (cF hc p) = s (cW hc (p + 1)) := by
+  rw [← f_t2 hc c rv re k p, ← mul_smul, c.comp (cW1_le_cF hc p) (cF_le_cT2 hc p),
+    w1_t2 hc c rv re k hb p]
 
 end FiniteChains.Davis.SurfaceSection

@@ -28,9 +28,7 @@ substituted for it.
 
 open scoped commutatorElement
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 
@@ -94,5 +92,3 @@ theorem exists_correction (r : J → FreeGroup α) (w : FreeGroup α)
     ∃ c : J →₀ ℤ, expVec (w * correctionWord r c) = 0 := by
   obtain ⟨c, hc⟩ := hM (-expVec w)
   exact ⟨c, by rw [expVec_mul, expVec_correctionWord, hc, add_neg_cancel]⟩
-
-end FiniteChains

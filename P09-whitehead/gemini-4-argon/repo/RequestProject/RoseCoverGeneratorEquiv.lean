@@ -4,9 +4,7 @@ public import RequestProject.RoseCoverCycleCoordinates
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb
@@ -49,5 +47,3 @@ noncomputable def roseCoverMidpointEdgeEquiv :
     roseCoverMidpoints f ≃ roseCoverGeneratorEdges f hf :=
   Equiv.ofBijective (roseCoverMidpointEdge f hf)
     ⟨roseCoverMidpointEdge_injective f hf, roseCoverMidpointEdge_surjective f hf⟩
-
-end FiniteChains.PresModel

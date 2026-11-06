@@ -49,5 +49,3 @@ theorem orderNerveRealization_cell_isEmpty (P : Type) [PartialOrder P]
   constructor
   intro s
   exact (not_le_of_gt hn) ((nerve P).dim_le_of_nonDegenerate s d)
-
-end FiniteChains.Comb

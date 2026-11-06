@@ -7,9 +7,7 @@ public import RequestProject.CoverChainComplex
 
 /-! Finitely supported Fox calculus for arbitrary generator sets. -/
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 
@@ -104,15 +102,3 @@ theorem coverFirstBoundary_coverSecondBoundary {J : Type*} (ρ : J → FreeGroup
   apply Finset.sum_eq_zero
   intro j hj
   rw [map_smul, coverFoxGradient_isCycle N (hρ j), smul_zero]
-
-noncomputable def linearFoxGradient :
-    FreeGroupRing α →ₗ[ℤ] (α →₀ FreeGroupRing α) :=
-  (Finsupp.linearCombination ℤ (fun g => foxGradient g)).comp (MonoidAlgebra.coeffLinearEquiv ℤ).toLinearMap
-
-@[simp] theorem linearFoxGradient_single (g : FreeGroup α) (n : ℤ) :
-    linearFoxGradient (MonoidAlgebra.single g n) = n • foxGradient g :=
-  by
-    change Finsupp.linearCombination ℤ (fun g => foxGradient g) (Finsupp.single g n) = _
-    exact Finsupp.linearCombination_single ℤ n g
-
-end FiniteChains

@@ -22,5 +22,3 @@ theorem strict_oneCycle_cover_roof (hf : IsPosetCover f) (g : Q → Q)
     (hf.downTransform_le g hg)
     (fun a => (hf.roofTransform_spec g hg b hb a).1)
     (fun {_ _} h => hf.roofTransform_comparable_equal g hg b hb hmono h) c hc
-
-end FiniteChains.Comb

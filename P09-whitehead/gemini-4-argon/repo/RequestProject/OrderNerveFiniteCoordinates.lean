@@ -8,9 +8,7 @@ public import RequestProject.OrderNerveRealizationMapCoordinates
 used to split an actual cone point into its radial coordinate and base point. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory Simplicial
@@ -111,5 +109,3 @@ theorem orderNerveRealizationCoordinates_exists {P : Type} [PartialOrder P] [Fin
     rw [orderNerveRealizationCoordinates_simplex]
     simp only [orderNerveAffineSimplex, ContinuousMap.coe_mk, hn, ite_false, mul_zero,
       Finset.sum_const_zero, hzero p hp]
-
-end FiniteChains.Comb

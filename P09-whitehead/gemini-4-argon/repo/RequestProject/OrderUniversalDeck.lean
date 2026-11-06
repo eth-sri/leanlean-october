@@ -4,9 +4,7 @@ public import RequestProject.OrderUniversalPoset
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -57,5 +55,3 @@ def uOrderDeck (g : Pi1 (orderCx P) a) (v : UOrder P a) : UOrder P a := deckV g 
 
 theorem uOrderDeck_end (g : Pi1 (orderCx P) a) (v : UOrder P a) :
     uOrderEnd (uOrderDeck g v) = uOrderEnd v := endV_deckV g v
-
-end FiniteChains.Comb

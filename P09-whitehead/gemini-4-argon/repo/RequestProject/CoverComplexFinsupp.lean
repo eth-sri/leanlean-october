@@ -8,9 +8,7 @@ public import RequestProject.PresentationNecessityFinsupp
 
 /-! Actual presentation covers with arbitrarily many edges and faces. -/
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 
@@ -103,5 +101,3 @@ theorem fs_coverComplex_bdry2 (c : ((FreeGroup α ⧸ N) × J) →₀ ℤ) :
       rw [show (MonoidAlgebra.single q n : CoverRing N) =
           n • (MonoidAlgebra.single q 1 : CoverRing N) by
         rw [MonoidAlgebra.smul_single, smul_eq_mul, mul_one], smul_mul_assoc]
-
-end FiniteChains.Comb

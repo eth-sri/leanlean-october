@@ -11,9 +11,7 @@ monotone-map naturality. Pending Lean verification. -/
 
 noncomputable section
 open scoped Classical unitInterval Topology
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open ContinuousEdgeWords CategoryTheory Simplicial
@@ -53,8 +51,8 @@ theorem comparablePath_homotopic_single {a b : P} (h : a ≤ b ∨ b ≤ a)
     funext t
     apply orderNerveRealizationCoordinates_injective P
     funext p
-    rw (config := { transparency := .default }) [orderNerveComparablePath_coordinates, affineGermPath_coordinates]
-  rw (config := { transparency := .default }) [he]
+    erw [orderNerveComparablePath_coordinates, affineGermPath_coordinates]
+  erw [he]
   exact (Path.Homotopic.trans_refl _).symm
 
 theorem affineWord_map_vertex {Q : Type} [PartialOrder Q]
@@ -104,5 +102,3 @@ theorem affineOrderWordPath_map {Q : Type} [PartialOrder Q]
     · rcases g with ⟨e, direction⟩
       cases direction <;> simpa only [affineOrderWordPath, mapPath] using
         ih ht ⟨2 * (t : ℝ) - 1, by constructor <;> linarith [t.property.1, t.property.2]⟩
-
-end FiniteChains.Comb

@@ -70,10 +70,7 @@ def gen : α ⊕ (Σ s : Sx, Zt s) → H :=
   Sum.elim (fun a => j (QuotientGroup.mk (FreeGroup.of a)))
     (fun p => B.b p.1 (FreeGroup.of (Sum.inr p.2)))
 
-@[simp] theorem gen_inl (a : α) : B.gen (Sum.inl a) = j (QuotientGroup.mk (FreeGroup.of a)) := rfl
 
-@[simp] theorem gen_inr (s : Sx) (z : Zt s) :
-    B.gen (Sum.inr ⟨s, z⟩) = B.b s (FreeGroup.of (Sum.inr z)) := rfl
 
 /-- On the old generators the lift of `gen` is `j`. -/
 theorem lift_gen_map_inl (w : FreeGroup α) :
@@ -148,7 +145,6 @@ end BlockMaps
 
 /-! ### The marked form: the block with its own distinguished generators -/
 
-section Marked
 
 variable {Su : Sx → Type u}
 
@@ -213,8 +209,3 @@ theorem injective_substHomF_of_markedBlock {H : Type v} [Group H]
   have hmaps : BlockMaps ρ (fun s m => blockSubst u s (beta s m)) j :=
     { b := bb, mark := hmark', rel := hrel' }
   exact BlockMaps.injective_substHomF hmaps hfill hj
-
-end Marked
-
-end BlockFamily
-end FiniteChains

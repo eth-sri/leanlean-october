@@ -76,5 +76,3 @@ theorem qThreeFacetCycle_subdivision (c : QCube A) (u v w : V)
   refine ⟨z (0, 0), ?_⟩
   conv_lhs => rw [← hrecon, he, map_smul, map_smul]
   exact congrArg (fun x => z (0, 0) • x) (qThreeOrientedFaces_subdivision c u v w huv hvw hs)
-
-end FiniteChains.Davis

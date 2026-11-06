@@ -34,5 +34,3 @@ theorem cappedCoverCycle_old_coordinate_boundary (c : (cappedTreeCover q).F →�
   obtain ⟨r, hr⟩ := qCube_three_coordinate_boundary_reconstruction z hdim hb
   refine ⟨d, r, hd, hcycle, ?_⟩
   rwa [hz] at hr
-
-end FiniteChains.Davis.Genus

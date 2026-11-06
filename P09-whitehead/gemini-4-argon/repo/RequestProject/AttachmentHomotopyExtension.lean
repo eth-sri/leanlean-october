@@ -61,5 +61,3 @@ theorem unitBoundary_hasHomotopyExtension (E : Type u)
   intro Z _ f H h₀
   exact ⟨ballHomotopyExtension f H h₀,
     ballHomotopyExtension_zero f H h₀, ballHomotopyExtension_boundary f H h₀⟩
-
-end FiniteChains.RelativeAttachment

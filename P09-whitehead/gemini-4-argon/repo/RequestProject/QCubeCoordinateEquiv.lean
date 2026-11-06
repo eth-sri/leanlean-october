@@ -102,31 +102,3 @@ theorem qCubeToCoordinate_face_iff (c d : QCube A) :
         exact hv hm
       have he : qCubeToCoordinate c v = qCubeToCoordinate d v := (h v).resolve_left hd
       rw [← qCubeToCoordinate_parity c v, ← qCubeToCoordinate_parity d v, he]
-
-instance : PartialOrder (CoordinateCube A) where
-  le c d := CoordinateFace c.1 d.1
-  le_refl c v := Or.inr rfl
-  le_trans c d e hcd hde v := by
-    rcases hde v with he | he
-    · exact Or.inl he
-    · rcases hcd v with hd | hd
-      · exact Or.inl (he.symm.trans hd)
-      · exact Or.inr (hd.trans he)
-  le_antisymm c d hcd hdc := by
-    apply Subtype.ext
-    funext v
-    rcases hcd v with hd | hd
-    · rcases hdc v with hc | hc
-      · exact hc.trans hd.symm
-      · exact hc.symm
-    · exact hd
-
-end FiniteChains.Davis
-
-namespace FiniteChains.Davis
-
-open RACG Mirror
-
-variable {P : Type} [PartialOrder P] [DecidableEq P] [Fintype P]
-
-end FiniteChains.Davis

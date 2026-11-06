@@ -29,5 +29,3 @@ theorem cubeSquareSubdivision_filter_top (d c : QCube A) (v w : V) (hne : v ≠ 
     apply cubeSquareSubdivision_eq_zero_off_top
     intro he
     exact hdc (he.symm.trans ht)
-
-end FiniteChains.Davis

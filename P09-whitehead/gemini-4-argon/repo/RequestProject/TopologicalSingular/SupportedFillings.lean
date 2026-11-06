@@ -35,5 +35,3 @@ theorem connected_supported_zero_bounds (A : Set X) [PathConnectedSpace A]
   obtain ⟨b, hb⟩ := ha
   refine ⟨map (inclusion A) 1 b, ⟨b, rfl⟩, ?_⟩
   rw [← map_boundary, hb]
-
-end FiniteChains.TopologicalSingular

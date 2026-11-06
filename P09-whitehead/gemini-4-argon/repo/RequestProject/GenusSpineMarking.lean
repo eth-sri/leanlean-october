@@ -7,9 +7,7 @@ public import RequestProject.GenusLoops
 
 /-! Canonical surface-generator paths in the actual surviving finite spine. -/
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb
@@ -139,5 +137,3 @@ theorem spineMarkedLoop_toOld_class (x : Fin q × Bool) :
       Pi1.mk ⟨mapPath (surfCx (cmpRel (GenusVertex q))) (gSig q (x.1.val, x.2)),
         isPath_mapPath (surfCx _) (isPath_gSig q (x.1.val, x.2))⟩ := by
   exact Quotient.sound (spineMarkedLoop_toOld_htpy q x)
-
-end FiniteChains.Davis.Genus

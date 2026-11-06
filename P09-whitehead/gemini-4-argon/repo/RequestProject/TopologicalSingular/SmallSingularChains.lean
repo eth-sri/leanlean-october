@@ -129,5 +129,3 @@ theorem exists_subdivision_small (U : ι → Set X) (hU : ∀ i, IsOpen (U i))
   intro σ hσ
   rw [Module.End.pow_apply]
   exact iterated_subdivide_small_of_le U (Finset.le_sup hσ) n (hK σ)
-
-end FiniteChains.SingularSubdivision

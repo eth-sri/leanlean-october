@@ -82,5 +82,3 @@ theorem squareCycle_rectangle_sum_difference_bounds (p : GenLoop (Fin 2) X x) :
   rw [map_add]
   change _ = _ - map p.val 2 squareFundamentalChain
   linear_combination (norm := abel) hl + hr - hz
-
-end FiniteChains.TopologicalSingular

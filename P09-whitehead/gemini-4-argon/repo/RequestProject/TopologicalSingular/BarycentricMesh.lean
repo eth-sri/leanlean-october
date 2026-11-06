@@ -85,5 +85,3 @@ theorem iterated_subdivide_mem_mesh (k n : ℕ) (D : ℝ) (hD₀ : 0 ≤ D) {c :
     have he := subdivide_mem_mesh hA n ((shrink n) ^ k * D)
       (mul_nonneg (pow_nonneg (shrink_nonneg n) k) hD₀) ih
     simpa only [pow_succ', mul_assoc] using he
-
-end FiniteChains.AffineVertexChains

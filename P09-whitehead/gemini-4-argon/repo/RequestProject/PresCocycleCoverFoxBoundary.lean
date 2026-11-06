@@ -105,5 +105,3 @@ theorem quotient_two_cycle_zero (hpos : ∀ j, 0 < (w j).length)
       change r = _
       rw [map_zero]
       exact hr0)
-
-end FiniteChains.PresModel.PresCocycleCover

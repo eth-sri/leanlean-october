@@ -13,9 +13,7 @@ singular simplex. The operator commutes with boundary and is naturally
 chain homotopic to the identity. No mesh or excision conclusion is assumed.
 -/
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.SingularSubdivision
 
@@ -82,5 +80,3 @@ theorem homotopy_identity_succ (n : ℕ) (c : Chain X (n + 1)) :
 theorem subdivide_naturality (f : C(X, Y)) (n : ℕ) (c : Chain X n) :
     TopologicalSingular.map f n (subdivide n c) = subdivide n (TopologicalSingular.map f n c) :=
   fromModel_naturality (model n) f c
-
-end FiniteChains.SingularSubdivision

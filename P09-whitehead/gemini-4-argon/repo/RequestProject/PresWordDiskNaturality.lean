@@ -97,5 +97,3 @@ def classicalWordDiskMap : C(ClassicalPresWordDisks w hw, ClassicalPresWordDisks
       (RelativeAttachment.cell (classicalPresWordAttaching w hw) (boundaryFamilyInclusion J (Fin 2 → ℝ)) d) =
       RelativeAttachment.cell (classicalPresWordAttaching v hv) (boundaryFamilyInclusion K (Fin 2 → ℝ))
         ⟨h.cell d.1, d.2⟩ := desc_cell ..
-
-end FiniteChains.PresModel.PresWordEmbedding

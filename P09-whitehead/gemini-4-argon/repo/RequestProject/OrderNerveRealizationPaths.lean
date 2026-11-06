@@ -82,5 +82,3 @@ theorem orderNerveRealization_pathConnectedSpace (P : Type) [PartialOrder P] [No
     rw [hy] at ht
     obtain ⟨p, hp⟩ := hP (s.obj 0) (t.obj 0)
     exact hs.trans ((orderNerveRealizationVertex_joined_of_isPath hp).trans ht.symm)
-
-end FiniteChains.Comb

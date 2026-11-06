@@ -59,6 +59,3 @@ def rawDiskEquiv (i : Fin (n + 1)) : (C i : Set K) ≃ₕ DiskAttachment (rawAtt
 def wordDiskEquiv (i : Fin (n + 1)) :
     (C i : Set K) ≃ₕ DiskAttachment (wordAttaching C hC i) :=
   (rawDiskEquiv K C i).trans (wordDiskChange C hC i)
-
-end ChainWords
-end FiniteChains.ClassicalCW

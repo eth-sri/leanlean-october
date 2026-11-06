@@ -177,5 +177,3 @@ theorem initialCellEmbedding_range : Set.range (initialCellEmbedding C e he).map
   · intro hy
     obtain ⟨x, hx⟩ := e.surjective ⟨y, hy⟩
     exact ⟨x, congrArg Subtype.val hx⟩
-
-end Whitehead

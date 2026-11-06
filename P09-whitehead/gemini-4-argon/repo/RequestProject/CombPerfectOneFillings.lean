@@ -86,5 +86,3 @@ theorem oneCycle_filling_of_perfect_pi1 (a : X.V) (hX : IsConnected X)
   apply oneCycle_filling_of_loop_fillings X a hX _ c hc
   intro p
   exact loop_bounds_of_mem_commutator X a p (by rw [hperfect]; trivial)
-
-end FiniteChains.Comb

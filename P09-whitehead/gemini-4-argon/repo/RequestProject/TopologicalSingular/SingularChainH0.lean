@@ -81,5 +81,3 @@ theorem ker_augmentation_eq_range_boundary [PathConnectedSpace X] :
     rw [boundary_pathCone, show augmentation c = 0 from hc, zero_smul, sub_zero]
   · rintro c ⟨d, rfl⟩
     exact augmentation_boundary d
-
-end FiniteChains.TopologicalSingular

@@ -11,9 +11,7 @@ successive letter. This is a list identity, including the final closing
 edge, not merely an equality of free-group elements. Pending verification. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb
@@ -78,5 +76,3 @@ theorem circleIndexedGerm_ofFn : List.ofFn (circleIndexedGerm w j) = circLoop w 
     exact circleSegmentGerm_ofFn w j k
   simp_rw [hblock]
   exact circleSegments_flatten w j (w j).length
-
-end FiniteChains.PresModel

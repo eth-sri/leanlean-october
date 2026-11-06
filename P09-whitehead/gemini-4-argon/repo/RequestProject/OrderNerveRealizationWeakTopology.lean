@@ -46,5 +46,3 @@ theorem orderNerveRealization_isClosed_iff_inter_simplex_range (P : Type) [Parti
     ext z
     simp only [Set.mem_preimage, Set.mem_inter_iff]
     exact ⟨fun hz => ⟨hz, ⟨z, rfl⟩⟩, fun hz => hz.1⟩
-
-end FiniteChains.Comb

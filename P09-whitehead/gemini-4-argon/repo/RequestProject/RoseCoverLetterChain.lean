@@ -6,9 +6,7 @@ public import RequestProject.RelatorCircleFundamentalChain
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb
@@ -60,12 +58,12 @@ theorem roseCoverLetterChain_map (k : Fin (w j).length) (a : α × Bool)
         congrArg (fun e : StrictOrdEdge P => e.val.2) h2
   change chain1 M (relatorCircleLetterChain w j k) = _
   unfold relatorCircleLetterChain
-  rw (config := { transparency := .default }) [map_sub, map_add, map_sub]
+  erw [map_sub, map_add, map_sub]
   change Finsupp.mapDomain M.onE (Finsupp.single _ 1) -
     Finsupp.mapDomain M.onE (Finsupp.single _ 1) +
     Finsupp.mapDomain M.onE (Finsupp.single _ 1) -
     Finsupp.mapDomain M.onE (Finsupp.single _ 1) = _
-  rw (config := { transparency := .default }) [Finsupp.mapDomain_single, Finsupp.mapDomain_single,
+  erw [Finsupp.mapDomain_single, Finsupp.mapDomain_single,
     Finsupp.mapDomain_single, Finsupp.mapDomain_single, h0, h1, h2, h3]
   change _ = (if a.2 then (1 : ℤ) else -1) • roseCoverGeneratorChain f hf p
   cases hb : a.2 <;> simp only [Bool.not_false, Bool.not_true, Bool.false_eq_true,
@@ -80,7 +78,7 @@ theorem roseCoverFundamentalChain_map :
             (roseCoverLetterMidpoint w j f m hp k ((w j)[k.val])
               (List.getElem?_eq_getElem k.isLt)) := by
   classical
-  rw (config := { transparency := .default }) [relatorCircleFundamentalChain, map_sum]
+  erw [relatorCircleFundamentalChain, map_sum]
   apply Finset.sum_congr rfl
   intro k _
   exact roseCoverLetterChain_map w j f hf m hm hp k _ (List.getElem?_eq_getElem k.isLt)
@@ -95,9 +93,7 @@ theorem roseCoverFundamentalChain_coordinates :
             (roseCoverLetterMidpoint w j f m hp k ((w j)[k.val])
               (List.getElem?_eq_getElem k.isLt))) 1 := by
   classical
-  rw (config := { transparency := .default }) [roseCoverFundamentalChain_map w j f hf m hm hp, map_sum]
+  erw [roseCoverFundamentalChain_map w j f hf m hm hp, map_sum]
   apply Finset.sum_congr rfl
   intro k _
-  rw (config := { transparency := .default }) [map_smul, roseCoverGeneratorChain_coordinates]
-
-end FiniteChains.PresModel
+  erw [map_smul, roseCoverGeneratorChain_coordinates]

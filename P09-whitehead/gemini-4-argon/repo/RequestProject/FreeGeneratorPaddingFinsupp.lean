@@ -149,6 +149,3 @@ theorem structuralMap_generates : FSGenerates (structuralMap ρ f hf) := by
     rfl
   exact fs_cycle_mem_span_groupMap_cycles (groupHom ρ f) (groupHom_injective ρ f hf)
     (fun j => coverFoxGradient (relSub ρ) (ρ j)) x hz
-
-end FreePadding
-end FiniteChains

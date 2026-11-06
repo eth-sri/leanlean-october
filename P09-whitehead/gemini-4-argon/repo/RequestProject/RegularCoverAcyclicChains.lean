@@ -25,8 +25,6 @@ def regularCoverChainInclusion (n i : ℕ) :
     Hom (regularCoverChainStages T hD p n i) (regularCoverChainStages T hD p n (i + 1)) :=
   (acyclicRelativeCellChain T hD n).descInc p i
 
-@[simp] theorem regularCoverChainStages_zero (n : ℕ) :
-    regularCoverChainStages T hD p n 0 = K := rfl
 
 theorem regularCoverChainInclusion_V (n i : ℕ) :
     Function.Injective (regularCoverChainInclusion T hD p n i).onV :=
@@ -68,5 +66,3 @@ def regularCoverTopChain (n : ℕ) : TopChainFS K (n + 1) where
   baseE := Function.injective_id
   baseF := Function.injective_id
   zero_pi2 := regularCoverChain_zeroPi2 T hD p hp a hr he hf n
-
-end FiniteChains.Comb

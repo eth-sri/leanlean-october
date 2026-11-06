@@ -73,5 +73,3 @@ theorem exists_small_cycle_representative (n : ℕ) (c : Chain X (n + 1)) (hc : 
   refine ⟨_, hk, ?_, iteratedHomotopy (n + 1) k c, ?_⟩
   · rw [← iterated_subdivide_boundary, hc, iterated_subdivide_zero]
   · simpa only [hc, map_zero, add_zero] using iteratedHomotopy_identity_succ k n c
-
-end FiniteChains.SingularSubdivision

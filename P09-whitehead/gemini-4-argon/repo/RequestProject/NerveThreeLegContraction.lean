@@ -34,5 +34,3 @@ theorem exists_bdry_eq_of_cycle_threeLeg (r g : P → P) (d : P)
         (prism_mem_inc monotone_const hg hdg hc)) (cone_const_mem_inc d c)
   · rw [map_add, map_add, map_sub, h₁, h₂, h₃, h₄]
     abel
-
-end FiniteChains.Nerve

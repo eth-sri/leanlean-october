@@ -15,5 +15,3 @@ noncomputable abbrev fullCubeMarkCover := uCover (orderCx (QCube (cmpRel (GenusV
 
 noncomputable def fullCubeBaseCapChain (x : Fin q × Bool) : (fullCubeMarkCover q).F →₀ ℤ :=
   fullCubeCoverCapChain q x (UV.base _ (fullCubeMarkBase q)) rfl
-
-end FiniteChains.Davis.Genus

@@ -15,9 +15,7 @@ noncomputable section
 open scoped Classical unitInterval
 open Set Topology
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.RelativeAttachment
 
@@ -182,5 +180,3 @@ def squareLoopDescHomotopy {x : X} {p q : Path x x} (H : p.Homotopy q) :
 theorem squareLoopDesc_homotopic {x : X} {p q : Path x x} (H : p.Homotopic q) :
     (squareLoopDesc p).Homotopic (squareLoopDesc q) :=
   Nonempty.map squareLoopDescHomotopy H
-
-end FiniteChains.RelativeAttachment

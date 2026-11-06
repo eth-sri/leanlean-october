@@ -64,5 +64,3 @@ theorem homotopyModel_identity (n : ℕ) :
       (center (convex_stdSimplex ℝ (Fin (n + 2)))) n (generator (n + 1)))
   rw [map_add, map_sub, realize_boundary, homotopy_on_boundary] at he
   simpa only [homotopyModel, model, generator, realize_single, affineEval_standardVertices] using he
-
-end FiniteChains.SingularSubdivision

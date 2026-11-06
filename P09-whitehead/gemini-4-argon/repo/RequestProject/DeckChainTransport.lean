@@ -5,9 +5,7 @@ public import RequestProject.CombPi2
 @[expose] public section
 
 /-! Deck transformations act on genuine cellular chains and preserve their boundary. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u v
@@ -52,5 +50,3 @@ theorem hurewicz_deck_faceChains (a : X.V) (g : Pi1 X a)
     (Finsupp.mapDomain (deckF g) c) = Finsupp.mapDomain (univProj X a).onF c
   rw [← Finsupp.mapDomain_comp]
   rfl
-
-end FiniteChains.Comb

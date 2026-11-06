@@ -71,5 +71,3 @@ theorem vertexStar_simplyConnected (r : BoundaryFamily J E → V) (hr : Continuo
   letI := vertexStar_contractible r hr v
   change SimplyConnectedSpace (vertexStar r v)
   infer_instance
-
-end FiniteChains.RelativeAttachment

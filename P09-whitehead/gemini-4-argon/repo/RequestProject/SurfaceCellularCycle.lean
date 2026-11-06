@@ -49,6 +49,3 @@ variable (q : ℕ) [NeZero q]
 noncomputable def finiteMarkedLoops (x : Fin q × Bool) :
     Loop (sdCx (gc q)) (gBase q) :=
   ⟨finiteSig q x, isPath_gSig q (x.1.val, x.2)⟩
-
-end Genus
-end FiniteChains.Davis

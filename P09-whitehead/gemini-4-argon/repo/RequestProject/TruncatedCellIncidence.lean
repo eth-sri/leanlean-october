@@ -113,5 +113,3 @@ theorem truncatedCell_le_of_inc {L : ASC V} (c : TruncatedCell A) (d : QOld A)
       simpa using hh
     apply (cut_le_old_coordinate_iff σ d).mpr
     exact ⟨by simp [hs], by simpa [hs] using he⟩
-
-end FiniteChains.Davis

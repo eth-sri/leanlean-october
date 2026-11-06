@@ -10,9 +10,7 @@ public import RequestProject.FreeSingularChainComparison
 
 open scoped ContinuousMap
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 set_option maxSynthPendingDepth 3
 set_option synthInstance.maxHeartbeats 40000
@@ -112,5 +110,3 @@ theorem acyclic_iff_of_homotopyEquiv {X Y : Type} [TopologicalSpace X] [Topologi
   · intro h n hn
     exact (h n hn).of_iso
       (FiniteChains.TopologicalSingular.mathlibHomologyIsoOfHomotopyEquiv e n)
-
-end Whitehead

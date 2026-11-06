@@ -47,5 +47,3 @@ theorem classicalDiskExtension_finite [Finite B] [Finite K] :
       Finite (h.classicalDiskExtension hw hv).twoCells :=
   ⟨inferInstanceAs (Finite {b : B // b ∉ Set.range h.gen}),
     inferInstanceAs (Finite {k : K // k ∉ Set.range h.cell})⟩
-
-end FiniteChains.PresModel.PresWordEmbedding

@@ -5,9 +5,7 @@ public import RequestProject.StrictTopLinkChains
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -65,5 +63,3 @@ def strictOrderEdgeEquiv {Q : Type u} [PartialOrder Q] (e : P ≃o Q) :
   right_inv x := by
     apply Subtype.ext
     apply Prod.ext <;> simp [strictOrderCxMap]
-
-end FiniteChains.Comb

@@ -14,9 +14,7 @@ and corner-compatible homotopy pasting finish the construction. -/
 noncomputable section
 open scoped Topology unitInterval Classical
 open Topology
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.ClassicalCW
 open RelativeAttachment
@@ -151,5 +149,3 @@ theorem boundaryFamily_into_oneSkeleton (K : Whitehead.TwoComplex) {J : Type}
   obtain ⟨support, hsupport⟩ := IsCompact.finite_lower_support (isCompact_range (ι.comp (q j)).continuous) 2
     (by rintro _ ⟨a, rfl⟩; exact (q j a).property)
   exact ⟨support, fun a => hsupport ⟨a, rfl⟩⟩
-
-end FiniteChains.ClassicalCW

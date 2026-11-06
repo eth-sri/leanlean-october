@@ -62,5 +62,3 @@ noncomputable def presUniversalGeneratorGroupChainEquiv :
         (coneAdjCoverBaseEnd_isPosetCover _ (presUniversalEnd_isPosetCover w hpos))) →₀ ℤ) ≃ₗ[ℤ]
       (PresGroup ρ × α →₀ ℤ) :=
   Finsupp.domLCongr (R := ℤ) (M := ℤ) (presUniversalGeneratorGroupEquiv ρ w hw hpos)
-
-end FiniteChains.PresModel

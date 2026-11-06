@@ -94,5 +94,3 @@ theorem tCirc_strict_edge_cases (e : StrictOrdEdge (TCirc w)) :
     exact Or.inr (Or.inr (Or.inl rfl))
   · subst s; subst s'; subst k
     exact Or.inr (Or.inr (Or.inr rfl))
-
-end FiniteChains.PresModel

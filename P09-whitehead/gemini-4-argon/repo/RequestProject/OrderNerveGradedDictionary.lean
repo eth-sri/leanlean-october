@@ -137,5 +137,3 @@ theorem orderNerveGradedEncode_decode (n : ℕ) {c : Nerve.Ch P} (hc : c ∈ Ner
   | zero => simp
   | add x y _ _ hx hy => simp only [map_add, hx, hy]
   | neg x _ hx => simp only [map_neg, hx]
-
-end FiniteChains.Comb

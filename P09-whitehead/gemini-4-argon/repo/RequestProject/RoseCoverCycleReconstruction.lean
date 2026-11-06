@@ -4,9 +4,7 @@ public import RequestProject.RoseCoverGeneratorChain
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb
@@ -129,5 +127,3 @@ theorem roseCover_cycle_eq_zero_iff_coordinates (c : StrictOrdEdge P →₀ ℤ)
     have hr := roseCover_cycle_reconstruct f hf c hc
     rw [h, map_zero] at hr
     exact hr.symm
-
-end FiniteChains.PresModel

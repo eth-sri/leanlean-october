@@ -27,5 +27,3 @@ theorem squareChainSubdivision_boundary (z : C →₀ ℤ) :
       rw [squareChainSubdivision, Finsupp.linearCombination_single, map_smul,
         cubeSquareSubdivision_boundary, squareChainEdgeBoundary,
         Finsupp.linearCombination_single]
-
-end FiniteChains.Davis

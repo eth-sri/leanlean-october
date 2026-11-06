@@ -29,5 +29,3 @@ theorem zeroPi2_of_zeroPi2_presInclHom
   apply hinj
   rw [map_zero, chain2_treeUnivHom_square hiff hE]
   exact hzero _ hcycle
-
-end FiniteChains.Comb.SpanningTree

@@ -6,9 +6,7 @@ public import RequestProject.CombCoveringLift
 @[expose] public section
 
 /-! A genuine covering induces bijective universal-cover vertices and two-cells. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -99,5 +97,3 @@ theorem exists_unique_cycle_lift_of_covering (c : UF Y (p.onV a) →₀ ℤ)
   intro e he
   exact Finsupp.mapDomain_injective (univLiftF_injective_of_covering hp a)
     (he.1.trans hd'.symm)
-
-end FiniteChains.Comb

@@ -10,9 +10,7 @@ public import RequestProject.BarycentricTwoChains
 boundary path, with all sheets retained. Pending final Lean verification. -/
 noncomputable section
 open scoped Classical
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.CoveredPolygon
 open RACG Mirror Comb Cell
@@ -91,5 +89,3 @@ theorem subdivisionFundamental_boundary :
       pathChain (D.subdivisionBoundaryPath hc f M) := by
   rw [barycentricChain2_boundary, D.decodedFundamental_boundary,
     D.barycentricChain1_boundaryEdges hc f]
-
-end FiniteChains.Davis.CoveredPolygon

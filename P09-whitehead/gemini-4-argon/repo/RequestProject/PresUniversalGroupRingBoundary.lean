@@ -45,5 +45,3 @@ theorem presUniversalGroupRingBoundary_actual_column
   rw [map_smul, groupCellChainEquiv_single]
   congr 3
   rw [prefixVal, presGroup_wordVal]
-
-end FiniteChains.PresModel

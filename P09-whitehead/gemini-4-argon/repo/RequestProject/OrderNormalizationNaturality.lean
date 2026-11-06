@@ -5,9 +5,7 @@ public import RequestProject.OrderNormalizationSupport
 @[expose] public section
 
 /-! Normalized strict two-chain maps of actual monotone maps. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -62,5 +60,3 @@ theorem normalizedStrictChain2_single (f : P → Q) (hf : Monotone f)
   change normalizeOrdChain2 (Finsupp.mapDomain (orderCxMap f hf).onF
     (Finsupp.mapDomain (strictOrderIncl P).onF (Finsupp.single t n))) = _
   rw [Finsupp.mapDomain_single, Finsupp.mapDomain_single, normalizeOrdChain2_single]
-
-end FiniteChains.Comb

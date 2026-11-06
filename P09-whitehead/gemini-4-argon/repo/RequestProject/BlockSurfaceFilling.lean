@@ -1,6 +1,6 @@
 module
 
-public import RequestProject.BlockSpineSubst
+public import RequestProject.BlockSpinePres
 
 @[expose] public section
 
@@ -36,12 +36,9 @@ its boundary being that product of commutators.
   attaching map and the filling of the surface relator.
 -/
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
-namespace FiniteChains
-namespace Davis
+namespace FiniteChains.Davis
 
 open RACG Mirror Comb PresModel BlockFamily
 
@@ -83,14 +80,3 @@ theorem map_mem_normalClosure {G H : Type*} [Group G] [Group H] (φ : G →* H) 
   have hle : Subgroup.normalClosure S ≤ (Subgroup.normalClosure N).comap φ :=
     Subgroup.normalClosure_le_normal (fun g hg => hS g hg)
   exact hle hx
-
-/-! ### The surface word is a consequence of the block relators -/
-
-variable {V : Type u} [DecidableEq V] [Fintype V] {A : CommRel V}
-
-/-! ### The hypothesis (B1), derived -/
-
-/-! ### The application -/
-
-end Davis
-end FiniteChains

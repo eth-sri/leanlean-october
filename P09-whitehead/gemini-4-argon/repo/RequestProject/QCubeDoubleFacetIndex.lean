@@ -104,5 +104,3 @@ theorem qThreeEdge_injective (c : QCube A) (u v w : V)
     Function.Injective (qThreeEdge c u v w huv huw hvw hs) := by
   intro i j h
   exact qThreeEdgeCell_injective c u v w huv huw hvw hs (congrArg Subtype.val h)
-
-end FiniteChains.Davis

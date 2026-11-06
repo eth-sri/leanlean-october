@@ -2,13 +2,13 @@ module
 
 public import RequestProject.OrderNerveHomologyDimension
 public import RequestProject.OrderNervePositiveFillings
-public import RequestProject.TopologicalSingular.MathlibH1Comparison
+public import RequestProject.TopologicalSingular.SingularPathHomotopy
+public import Mathlib.LinearAlgebra.Quotient.Basic
+public import RequestProject.TopologicalSingular.MathlibComparison
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory AlgebraicTopology TopologicalSingular
@@ -58,5 +58,3 @@ theorem orderRealization_homology_two_isZero_of_strict_cycles_zero
   apply weak_twoCycle_filling_of_strict
   intro c hc
   exact ⟨0, by rw [map_zero, hz c hc]⟩
-
-end FiniteChains.Comb

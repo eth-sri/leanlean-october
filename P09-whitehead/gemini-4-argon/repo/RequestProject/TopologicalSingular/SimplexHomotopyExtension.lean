@@ -105,5 +105,3 @@ theorem simplex_homotopy_extension (f : C(Domain n, X))
     map_zero_left := simplexHomotopyExtension_zero f H hH
     map_one_left := fun _ => rfl }, ?_⟩
   exact simplexHomotopyExtension_boundary f H hH
-
-end FiniteChains.TopologicalSingular

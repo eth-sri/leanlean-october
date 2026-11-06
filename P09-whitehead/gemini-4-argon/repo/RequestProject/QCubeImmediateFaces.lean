@@ -101,5 +101,3 @@ theorem qCube_tetrahedron_dimensions (t : StrictOrdTet (QCube A))
   have h12 := qCube_card_lt_of_lt t.2.2.1
   have h23 := qCube_card_lt_of_lt t.2.2.2
   omega
-
-end FiniteChains.Davis

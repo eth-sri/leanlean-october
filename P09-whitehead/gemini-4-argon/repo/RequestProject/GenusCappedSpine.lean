@@ -5,9 +5,7 @@ public import RequestProject.GenusSpinePresentation
 @[expose] public section
 
 /-! The genuine finite complex obtained by capping the marked surviving spine. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb
@@ -26,10 +24,6 @@ noncomputable def cappedSpineCx : Complex2 where
     · exact (markedSpineCx q).att_isLoop f
     · exact (markedSpineLoop q x).2
 
-instance : Finite (cappedSpineCx q).V := inferInstanceAs (Finite (markedSpineCx q).V)
-instance : Finite (cappedSpineCx q).E := inferInstanceAs (Finite (markedSpineCx q).E)
-instance : Finite (cappedSpineCx q).F :=
-  inferInstanceAs (Finite ((markedSpineCx q).F ⊕ (Fin q × Bool)))
 
 noncomputable def cappedSpineTree : SpanningTree (cappedSpineCx q) where
   root := (markedSpineTree q).root
@@ -59,5 +53,3 @@ noncomputable def cappedSpineIncl : Hom (markedSpineCx q) (cappedSpineCx q) wher
     change (markedSpineCx q).att f = List.map (fun eb : (markedSpineCx q).E × Bool => (eb.1, eb.2))
       ((markedSpineCx q).att f)
     simp
-
-end FiniteChains.Davis.Genus

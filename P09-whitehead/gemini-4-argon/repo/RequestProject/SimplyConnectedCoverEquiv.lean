@@ -56,5 +56,3 @@ theorem coverF_eq_of_base_and_image (hcov : IsCovering p) (c : UF K (p.onV d₀)
     (v := coverV hcov (d₀ := d₀) rfl c.1.1) (coverF_cond hcov rfl c)
   exact (hw _ ⟨onF_coverF hcov rfl c, base_coverF hcov rfl c⟩).trans
     (hw g ⟨himage, hbase⟩).symm
-
-end FiniteChains.Comb

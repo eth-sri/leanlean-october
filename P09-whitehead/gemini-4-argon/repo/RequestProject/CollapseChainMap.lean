@@ -49,8 +49,7 @@ boundary of the surviving three-cell
 cone model in the form in which (B3) uses it.
 -/
 
-namespace FiniteChains
-namespace CollapseChain
+namespace FiniteChains.CollapseChain
 
 variable {T F R : Type*} [Ring R]
 
@@ -194,10 +193,3 @@ theorem cmap_eq_zero_of_isBoundary {l : List (T × F)} (hl : IsChainCollapse d l
   have hxe : x = fun g => ∑ t ∈ s, c t * d t g := funext hx
   rw [hxe]
   exact cmap_sum_eq_zero hl s c hs
-
-/-! ### The surviving three-cell -/
-
-/-! ### Chain complexes presented by linear maps -/
-
-end CollapseChain
-end FiniteChains

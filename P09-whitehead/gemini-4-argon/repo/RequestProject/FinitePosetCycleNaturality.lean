@@ -12,9 +12,7 @@ noncomputable section
 open scoped Classical unitInterval
 open Set Topology
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.RelativeAttachment
 
@@ -131,6 +129,3 @@ theorem boundaryHomeomorph_natural_cast {m : ℕ} (D' : FinitePosetCycle Q m)
     D'.boundaryHomeomorph (orderNerveRealizationMap f' hf' x) = C.boundaryHomeomorph x := by
   subst m
   exact C.boundaryHomeomorph_natural D' f' hf' hv' x
-
-end FinitePosetCycle
-end FiniteChains.Comb

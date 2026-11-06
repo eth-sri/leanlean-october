@@ -8,9 +8,7 @@ public import RequestProject.ZeroPi2Descent
 /-! Transfer vanishing through a commuting square whose target vertical
 map admits a cellular left inverse. Pending final Lean verification. -/
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -62,5 +60,3 @@ theorem pi1Trivial_of_retraction_square (f : Hom X Y) (g : Hom X' Y')
     (hsq : b.comp f = g.comp a) (hz : Pi1Trivial g) : Pi1Trivial f := by
   have H := Pi1Trivial.comp_left r (pi1Trivial_comp_right g a hz)
   rwa [hom_retraction_square f g a b r hV hE hF hsq] at H
-
-end FiniteChains.Comb

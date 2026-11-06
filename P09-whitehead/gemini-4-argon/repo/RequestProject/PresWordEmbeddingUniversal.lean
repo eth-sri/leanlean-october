@@ -62,8 +62,6 @@ theorem relator_compat (j : J) : σ (h.cell j) = FreeGroup.map h.gen (ρ j) := b
 def groupHom : PresGroup ρ →* PresGroup σ :=
   presInclGroupHom h.gen ρ σ h.cell (h.relator_compat ρ σ hw hv)
 
-@[simp] theorem groupHom_mk (x : FreeGroup α) :
-    h.groupHom ρ σ hw hv (QuotientGroup.mk x) = QuotientGroup.mk (FreeGroup.map h.gen x) := rfl
 
 /-- The lifted path class has the actual induced group coordinate. -/
 theorem universal_reading_map (p : UOrder (PresPos w) (ptBase w)) :
@@ -110,5 +108,3 @@ theorem universalRelatorChain_group_map (hwp : ∀ j, 0 < (w j).length)
         (presUniversalRelatorGroupChainEquiv ρ w hw hwp
           (presCoverRelatorChain w uOrderEnd (presUniversalEnd_isPosetCover w hwp) hwp c)) := by
   rw [h.universalRelatorChain_map, h.universalRelatorGroupChainEquiv_map]
-
-end FiniteChains.PresModel.PresWordEmbedding

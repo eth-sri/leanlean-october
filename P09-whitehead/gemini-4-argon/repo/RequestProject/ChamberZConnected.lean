@@ -78,5 +78,3 @@ theorem zpos_isConnected (hc : IsConnected (orderCx X)) :
   obtain ⟨v, hv⟩ := exists_inZChamber q
   exact (orderComponentLabel_eq_iff _ _).mp
     ((hr _ w rfl p hw).trans (hr _ v rfl q hv).symm)
-
-end FiniteChains.Davis

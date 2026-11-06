@@ -120,5 +120,3 @@ def simpleLoopBoundaryHomeomorph [T2Space X] {a : X} (p : Path a a)
     (hfiber : ∀ s t : I, p s = p t → s = t ∨ (s = 0 ∧ t = 1) ∨ (s = 1 ∧ t = 0)) (t : I) :
     simpleLoopSquareHomeomorph p hsur hfiber (squareBoundaryTraversal t) = p t :=
   squareLoopDesc_traversal p t
-
-end FiniteChains.RelativeAttachment

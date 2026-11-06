@@ -53,5 +53,3 @@ theorem genus_cut_lifted_link_fillings (hf : IsPosetCover f)
   apply fillsDegreeIn_congr he
   apply fillsDegreeIn_of_subtype hnonempty
   exact fun c hc _ hcyc => hfill c hc hcyc
-
-end FiniteChains.Davis.Genus

@@ -20,8 +20,7 @@ points is the conjugation by that path.  This file provides it:
   conjugated loop, by definition.
 -/
 
-namespace FiniteChains
-namespace Comb
+namespace FiniteChains.Comb
 
 universe u
 
@@ -59,8 +58,6 @@ def pi1Conj (hc : IsPath X.src X.tgt c a b) : Pi1 X b →* Pi1 X a where
     rw [hrw₁, hrw₂] at hmain
     exact hmain.symm
 
-@[simp] theorem pi1Conj_mk (hc : IsPath X.src X.tgt c a b) (p : Loop X b) :
-    pi1Conj hc (Pi1.mk p) = Pi1.mk (conjLoop hc p) := rfl
 
 /-- Conjugation only depends on the homotopy class of the conjugating path. -/
 theorem pi1Conj_congr {c' : List (X.E × Bool)} (hc : IsPath X.src X.tgt c a b)
@@ -90,7 +87,6 @@ theorem pi1Conj_pi1Conj {d : List (X.E × Bool)} {e : X.V} (hc : IsPath X.src X.
       have hlist : (conjLoop hc (conjLoop hd p)).1 = (conjLoop (hc.append hd) p).1 := by
         simp [conjLoop, revPath_append, List.append_assoc]
       rw [hlist]
-      exact Htpy.refl _
 
 /-- Conjugation is natural: the image of a conjugated class is the class conjugated by the
 image of the path. -/
@@ -108,7 +104,3 @@ theorem pi1Map_pi1Conj {Y : Complex2.{u}} (h : Hom X Y) (hc : IsPath X.src X.tgt
           = (conjLoop (isPath_mapPath h hc) ⟨mapPath h p.1, isPath_mapPath h p.2⟩).1 := by
         simp [conjLoop, hrev]
       rw [hlist]
-      exact Htpy.refl _
-
-end Comb
-end FiniteChains

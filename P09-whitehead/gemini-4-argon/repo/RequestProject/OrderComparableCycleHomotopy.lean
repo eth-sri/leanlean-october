@@ -5,9 +5,7 @@ public import RequestProject.OrderComparableCollapse
 @[expose] public section
 
 /-! Finite strict three-chains witnessing a pointwise order homotopy. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -53,5 +51,3 @@ theorem normalizedStrictChain2_id (c : StrictOrdTri P →₀ ℤ) :
   | single t n =>
     rw [normalizedStrictChain2_single]
     simp [normalizeOrdTriangle, orderCxMap, strictOrderIncl, t.2.1, t.2.2]
-
-end FiniteChains.Comb

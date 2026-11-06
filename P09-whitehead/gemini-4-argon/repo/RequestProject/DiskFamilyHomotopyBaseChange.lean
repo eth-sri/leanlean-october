@@ -14,9 +14,7 @@ All extension inputs are discharged by the explicit ball/cylinder maps.
 The forward map retains the disk labels and is the given map on old points. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.RelativeAttachment
 open scoped unitInterval Topology Classical
@@ -42,9 +40,6 @@ def diskFamilyBoundaryHomeomorph : BoundaryFamily J E ≃ₜ diskFamilyBoundaryS
   (boundaryFamilyInclusion_isClosedEmbedding J E).isEmbedding.toHomeomorph.trans
     (Homeomorph.setCongr (boundaryFamilyInclusion_range_eq J E))
 
-omit [NormedSpace ℝ E] in
-@[simp] theorem diskFamilyBoundaryHomeomorph_val (a : BoundaryFamily J E) :
-    (diskFamilyBoundaryHomeomorph J E a).val = boundaryFamilyInclusion J E a := rfl
 
 variable {J E}
 variable {P K : Type u} [TopologicalSpace P] [TopologicalSpace K]
@@ -113,10 +108,3 @@ def diskAttachingHomotopyEquiv (r₀ r₁ : C(BoundaryFamily J E, P))
     (H : r₀.Homotopy r₁) (p : P) :
     diskAttachingHomotopyEquiv r₀ r₁ H (old r₀ (boundaryFamilyInclusion J E) p) =
       old r₁ (boundaryFamilyInclusion J E) p := rfl
-
-end FiniteChains.RelativeAttachment
-
-namespace Whitehead
-open FiniteChains.RelativeAttachment
-
-end Whitehead

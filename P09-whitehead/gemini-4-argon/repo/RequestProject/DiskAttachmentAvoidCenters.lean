@@ -139,5 +139,3 @@ theorem diskAttachment_path_avoid_centers (r : BoundaryFamily J E → X) (hr : C
     (puncturedAttachment_union_openDisk r) (openDisk_pairwiseDisjoint r)
     (puncturedAttachment_inter_pathConnected r hdim) (openDisk_simplyConnected r)
     (puncturedAttachment_isOpen r hr) (openDisk_isOpen r) hx hy p
-
-end FiniteChains.RelativeAttachment

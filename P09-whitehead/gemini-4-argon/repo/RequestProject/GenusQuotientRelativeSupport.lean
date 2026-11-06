@@ -9,9 +9,7 @@ public import RequestProject.UniversalOrderChainBridge
 deck translation and conversion to nerve chains. Pending final Lean verification.
 -/
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -88,7 +86,7 @@ theorem quotientMarkingCorrections_old
   | zero => simp
   | add c d hc hd => simpa only [map_add] using Submodule.add_mem _ hc hd
   | single x n =>
-      rw (config := { transparency := .default }) [quotientMarkingCorrections, Finsupp.linearCombination_single]
+      erw [quotientMarkingCorrections, Finsupp.linearCombination_single]
       exact Submodule.smul_mem _ n (quotientMarkingCorrection_old q ρ u hrho x.1 x.2)
 
 /-- Both the received faces and the explicit marking correction are supported on old faces. -/
@@ -123,7 +121,5 @@ theorem quotientCorrectedRelativeNerveChain_boundary
     Nerve.bdry (quotientCorrectedRelativeNerveChain q ρ u hrho β) =
       universalNerveChain1 (quotientSurfaceMarkingChains q ρ u hrho
         ((ReceivedTree.cellCoordinates (Fin q × Bool)).symm (fun i => β (Sum.inr i)))) := by
-  rw (config := { transparency := .default }) [quotientCorrectedRelativeNerveChain, universalNerveChain2_bdry,
+  erw [quotientCorrectedRelativeNerveChain, universalNerveChain2_bdry,
     quotientCorrectedRelativeChain_boundary q ρ u hrho β hβ]
-
-end FiniteChains.Davis.Genus

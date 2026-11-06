@@ -13,9 +13,7 @@ Pending Lean verification. -/
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.RelatorReindex
 open BlockFamily
@@ -81,5 +79,3 @@ theorem fsIsCockcroft_of (hτ : FSIsCockcroft τ) : FSIsCockcroft ρ := by
   intro v hv j
   have h := hτ (cellsFS ρ τ e hrel v) (cellsFS_cycle ρ τ e hrel v hv) (e j)
   simpa only [cellsFS_aug, Equiv.symm_apply_apply] using h
-
-end FiniteChains.RelatorReindex

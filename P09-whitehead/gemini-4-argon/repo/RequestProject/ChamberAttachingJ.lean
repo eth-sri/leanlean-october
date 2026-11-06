@@ -32,8 +32,7 @@ Write `D(w) = {s | ℓ(w s) < ℓ(w)}` for the descent set of `w` (`FiniteChains
   `FiniteChains.Davis.chamberInter_exists_bdry_eq_of_cycle`).
 -/
 
-namespace FiniteChains
-namespace Davis
+namespace FiniteChains.Davis
 
 open RACG Mirror
 
@@ -106,6 +105,3 @@ theorem isSimplex_singleton (s : V) : IsSimplex A {s} := by
   intro a ha b hb hab
   rw [Finset.mem_singleton] at ha hb
   exact absurd (ha.trans hb.symm) hab
-
-end Davis
-end FiniteChains

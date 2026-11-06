@@ -13,9 +13,7 @@ disk attaching maps. Pending Lean verification. -/
 
 noncomputable section
 open scoped Classical unitInterval Topology
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open ClassicalGraphModel RelativeAttachment
@@ -83,5 +81,3 @@ theorem classicalRoseWordBoundary_homotopic_of_mk_eq {l m : List (A × Bool)}
     (h : FreeGroup.mk l = FreeGroup.mk m) :
     (classicalRoseWordBoundary l).Homotopic (classicalRoseWordBoundary m) :=
   classicalRoseWordBoundary_homotopic_of_read (classicalRoseRead_homotopic_of_mk_eq h)
-
-end FiniteChains.PresModel

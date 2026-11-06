@@ -63,5 +63,3 @@ theorem actual_hasOriginalFiniteChain_of_acyclic [Finite A] [Finite C]
     (n : ℕ) : Whitehead.HasChain K (n + 1) true :=
   actual_hasOriginalFiniteChain core (actual_expMatrix_bijective_of_acyclic core K hK a e₀)
     K hfinite a e₀ n
-
-end FiniteChains.RelativeNormalForm

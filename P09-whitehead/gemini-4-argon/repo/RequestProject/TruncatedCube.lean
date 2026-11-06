@@ -109,5 +109,3 @@ theorem cutSurface_isBoundary {o : Finset V → ℤ} (hcyc : simpBdry o = 0)
     by_cases h3 : τ.card = 3
     · simp [cutSign, h3]
     · simp [hsupp τ h3]
-
-end FiniteChains

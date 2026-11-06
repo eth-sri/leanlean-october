@@ -101,5 +101,3 @@ theorem qThreeFaceSquare_two_large (c : QCube A) (u v w : V)
     simp [qThreeFaceSquare, qThreeFacetSquare, qCubeFacetIndex, qThreeDirection, h21]
   rw [qSquareLargeFacet_ordered _ (huv) (hval.symm ▸ hspx), hval]
   simpa [qThreeEdge, qThreeEdgeCell, qCubeDoubleFacet, h21] using qCubeFacet_comm c (hvw.trans huv).ne s t
-
-end FiniteChains.Davis

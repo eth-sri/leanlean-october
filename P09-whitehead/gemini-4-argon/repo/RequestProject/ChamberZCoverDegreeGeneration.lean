@@ -121,5 +121,3 @@ theorem exists_cover_base_twoCycle (hf : IsPosetCover f) {c : Nerve.Ch P}
   obtain ⟨d, hdb, y, hy, hdd, he⟩ := generatesDegreeIn_cover_zupto hf
     (coverChainBound (f := f) c) c (mem_incOn_cover_bound hc) hd hcyc
   exact ⟨d, hdb, y, incOn_le_inc _ hy, hdd, he⟩
-
-end FiniteChains.Davis

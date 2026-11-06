@@ -4,9 +4,7 @@ public import RequestProject.TopologicalSingular.CycleClasses
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.TopologicalSingular
 open CategoryTheory
@@ -53,5 +51,3 @@ theorem singularCycleClass_representative (n : ℕ) (q : (complex X).homology (n
     rw [ChainComplex.next_nat_succ, complex_d] at hc
     exact hc
   exact ⟨c, hz, hq⟩
-
-end FiniteChains.TopologicalSingular

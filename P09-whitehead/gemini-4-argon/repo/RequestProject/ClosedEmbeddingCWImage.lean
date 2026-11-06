@@ -67,15 +67,3 @@ theorem imageCharacteristic_continuousOn_symm (n : ℕ)
       ((basePartial f hf).left_inv (show x ∈ (basePartial f hf).source from trivial))
   rw [he]
   exact RelCWComplex.continuousOn_symm n j
-
-variable [T2Space X]
-
-end FiniteChains.ClosedEmbeddingCW
-
-namespace FiniteChains.RelativeAttachment
-
-universe u
-variable {A X D : Type u} [TopologicalSpace A] [TopologicalSpace X] [TopologicalSpace D]
-  [T2Space X] [Nonempty X] [CWComplex (Set.univ : Set X)]
-
-end FiniteChains.RelativeAttachment

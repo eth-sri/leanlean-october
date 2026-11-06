@@ -66,5 +66,3 @@ theorem cover_deck_transitive (v w : c.Cover) (h : v.point = w.point) :
       dsimp only at h
       subst wp
       simp [coverDeck, mul_assoc]
-
-end FiniteChains.Comb.OrdCocycle

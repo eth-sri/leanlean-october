@@ -37,5 +37,3 @@ theorem qCube_three_boundary_reconstruction (y : StrictOrdTet (QCube A) →₀ �
   apply Finset.sum_congr rfl
   intro a _
   exact (hk a).symm
-
-end FiniteChains.Davis

@@ -1,13 +1,13 @@
 module
 
-public import RequestProject.TopologicalSingular.SmallMathlibComparison
-public import RequestProject.OrderNerveRealizationStarAcyclic
+public import RequestProject.TopologicalSingular.SmallChainComplex
+public import Mathlib.Algebra.Homology.QuasiIso
+public import RequestProject.TopologicalSingular.MathlibComparison
+public import RequestProject.OrderNerveRealizationStarContractible
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory AlgebraicTopology TopologicalSingular SingularSubdivision
@@ -21,5 +21,3 @@ theorem orderNerveRealization_exists_small_cycle (P : Type) [PartialOrder P]
       boundary n d = 0 ∧ d - c ∈ LinearMap.range (boundary (n + 1)) :=
   exists_small_cycle_representative (orderNerveRealizationOpenStar P)
     (orderNerveRealizationOpenStar_isOpen P) (orderNerveRealizationOpenStar_cover P) n c hc
-
-end FiniteChains.Comb

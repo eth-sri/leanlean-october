@@ -6,9 +6,7 @@ public import RequestProject.CombPi2
 @[expose] public section
 
 /-! Finite lifted cone fans with their exact cellular boundary. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -130,5 +128,3 @@ theorem coneCoverFan_hurewicz (z : (orderCx P).E →₀ ℤ) :
           Finsupp.single (coneEdgeTriangle f hf c hc e) (1 : ℤ)
       rw [Finsupp.mapDomain_single]
       rfl
-
-end FiniteChains.Comb

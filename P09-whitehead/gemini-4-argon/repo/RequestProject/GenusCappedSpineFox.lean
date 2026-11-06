@@ -1,6 +1,7 @@
 module
 
-public import RequestProject.GenusCappedSpineHurewicz
+public import RequestProject.GenusCappedSpine
+public import RequestProject.TreeUnivCoverIso
 public import RequestProject.PresCockcroftDictionary
 
 @[expose] public section

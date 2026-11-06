@@ -41,6 +41,3 @@ noncomputable def lowerIntervalOrderIso (v : P) : StrictBelow v ≃o StrictBelow
     (hf.lowerIntervalLift_projection v _))
   right_inv q := Subtype.ext (hf.lowerIntervalLift_projection v q)
   map_rel_iff' {a b} := ⟨fun h => hf.le_of_le_below a.2.le b.2.le h, fun h => hf.mono h⟩
-
-end IsPosetCover
-end FiniteChains.Comb

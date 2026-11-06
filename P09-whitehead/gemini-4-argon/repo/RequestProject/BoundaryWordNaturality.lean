@@ -9,9 +9,7 @@ public import RequestProject.ClassicalGraphBoundaryWords
 their four-side parametrizations. Unverified source. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 open scoped Classical unitInterval
@@ -93,6 +91,3 @@ theorem boundaryMap_map (h : Comb.Hom (graphCx r) (graphCx s))
   rw [← hi, squareMap_side, squareMap_side]
   exact ContinuousEdgeWords.realize_map_apply h f (old r _) (old s _)
     (graphEdgePath r) (graphEdgePath s) hv he (b.word i) (b.isPath i) t
-
-end ClassicalGraphModel.BoundaryWords
-end FiniteChains

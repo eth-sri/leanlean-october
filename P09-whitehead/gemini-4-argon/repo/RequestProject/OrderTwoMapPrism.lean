@@ -8,9 +8,7 @@ public import RequestProject.OrderNerveCellMaps
 source and target posets. Proof terms only; not compiled. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -57,7 +55,8 @@ theorem ordMapPrism_identity (c : OrdTri P →₀ ℤ) :
   | single t n =>
     have h := congrArg (fun z : OrdTri Q →₀ ℤ => n • z)
       (ordMapPrism_triangle_identity f g hf hg hfg t)
-    simpa [ordMapPrism2, Comb.bdry2, smul_add, smul_sub, Finsupp.smul_single] using h
+    simpa [ordMapPrism2, Comb.bdry2, chain2, smul_add, smul_sub, Finsupp.smul_single] using h
+
 
 /-- Actual finite tetrahedra comparing the images of a cellular cycle. -/
 theorem ordMapPrism_cycle (c : OrdTri P →₀ ℤ) (hc : Comb.bdry2 (orderCx P) c = 0) :
@@ -65,5 +64,3 @@ theorem ordMapPrism_cycle (c : OrdTri P →₀ ℤ) (hc : Comb.bdry2 (orderCx P)
       chain2 (orderCxMap g hg) c - chain2 (orderCxMap f hf) c := by
   have h := ordMapPrism_identity f g hf hg hfg c
   simpa only [hc, map_zero, add_zero] using h
-
-end FiniteChains.Comb

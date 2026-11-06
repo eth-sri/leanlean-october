@@ -7,9 +7,7 @@ public import RequestProject.NerveDegree
 
 /-! Recover actual cellular two- and three-chains from homogeneous increasing nerve chains. -/
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open FreeAbelianGroup
@@ -198,5 +196,3 @@ theorem decodeOrdNerve2_supported {A : P → Prop} {c : Nerve.Ch P}
   | zero => simp
   | add x y _ _ hx hy => simpa only [map_add] using Submodule.add_mem _ hx hy
   | neg x _ hx => simpa only [map_neg] using Submodule.neg_mem _ hx
-
-end FiniteChains.Comb

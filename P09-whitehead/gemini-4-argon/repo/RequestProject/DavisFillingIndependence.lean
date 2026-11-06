@@ -31,5 +31,3 @@ theorem projected_fillings_difference_boundary3 (A : CommRel V) (b : QCube A)
   obtain ⟨y, hy⟩ := fillings_difference_boundary3 A b c d h
   refine ⟨Finsupp.mapDomain (fun t : UOrdTet (QCube A) b => t.1.2) y, ?_⟩
   rw [← hurewicz_uOrdBoundary3, hy, map_sub]
-
-end FiniteChains.Davis

@@ -22,5 +22,3 @@ theorem markedSpineCycle_positive_square_zero (d : (markedSpineCx q).F →₀ �
     (markedSpineToFullCube_normalized_dimension q d)
     (normalizeOrdChain2_cycle _ hcycle)
     (markedSpineToFullCube_normalized_zero_at_origin q d) s hs
-
-end FiniteChains.Davis.Genus

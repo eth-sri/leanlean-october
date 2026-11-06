@@ -130,7 +130,6 @@ theorem fs_isMulTorsionFree_of_foxSatMod_pres (N : Subgroup (PresGroup ρ)) [N.N
   apply isMulTorsionFree_map_commutator_of_pow N
   rwa [hNeq] at hk
 
-section Compactness
 
 universe u
 
@@ -146,7 +145,3 @@ theorem fs_exists_perfect_normal_of_cellChains
       ⁅N, N⁆ = N :=
   exists_perfect_normal_foxSatMod_of_finite_columns (foxMatrixPres ρ) hchains
     (foxMatrixPres_col_finite ρ) (fun N _ h => fs_isMulTorsionFree_of_foxSatMod_pres ρ N h)
-
-end Compactness
-
-end FiniteChains

@@ -74,5 +74,3 @@ theorem transAt_rightRectangle (p q : GenLoop (Fin 2) X x) :
       rw [he, Set.projIcc_of_mem zero_le_one (z 0).property]
       exact Subtype.ext rfl
     · simp [rightRectangle]
-
-end FiniteChains.TopologicalSingular

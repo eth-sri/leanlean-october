@@ -9,9 +9,7 @@ public import RequestProject.TopologicalSingular.PrismIndices
 /-! # Continuous prism simplices and all their face identities -/
 
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.SingularPrism
 
@@ -141,5 +139,3 @@ theorem simplex_last (n : ℕ) (σ : Simplex X n) :
       σ (prismMap (Fin.last n) (stdSimplex.map (Fin.last (n + 1)).succAbove z)).2) = _
   rw [prismMap_last]
   exact H.apply_zero _
-
-end FiniteChains.SingularPrism

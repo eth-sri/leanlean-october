@@ -4,9 +4,7 @@ public import RequestProject.PresCoverCycleCoordinates
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb
@@ -82,5 +80,3 @@ theorem presCoverCycleRelatorLinear_injective :
   apply Subtype.ext
   exact presCoverRelatorChain_cycle_injective w f hf hpos c.val d.val
     (LinearMap.mem_ker.mp c.property) (LinearMap.mem_ker.mp d.property) he
-
-end FiniteChains.PresModel

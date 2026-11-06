@@ -73,5 +73,3 @@ theorem smallRefinementStep_exists (U : ι → Set X) (hU : ∀ i, IsOpen (U i))
   rw [map_neg, he]
   dsimp only [c]
   abel
-
-end FiniteChains.SingularSubdivision

@@ -7,9 +7,7 @@ public import RequestProject.CombHurewicz1Pres
 
 /-! Integral cellular normalization of weak order chains, without finite cell assumptions. -/
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -128,5 +126,3 @@ theorem normalizeOrdChain2_cycle (c : OrdTri P →₀ ℤ)
     (hc : bdry2 (orderCx P) c = 0) :
     bdry2 (strictOrderCx P) (normalizeOrdChain2 c) = 0 := by
   rw [bdry2_normalizeOrdChain2, hc, map_zero]
-
-end FiniteChains.Comb

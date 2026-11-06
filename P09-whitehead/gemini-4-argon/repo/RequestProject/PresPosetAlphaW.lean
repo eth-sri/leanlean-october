@@ -21,12 +21,9 @@ This file repeats the two halves of the comparison for such a prescribed `w`:
   the model being a left inverse.
 -/
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
-namespace FiniteChains
-namespace PresModel
+namespace FiniteChains.PresModel
 
 open Comb
 
@@ -83,6 +80,3 @@ theorem readingPresW_alphaHomW (x : PresGroup ρ) :
 prescribed relator words.** -/
 theorem alphaHomW_injective : Function.Injective (alphaHomW ρ w hw) :=
   Function.LeftInverse.injective (readingPresW_alphaHomW ρ w hw)
-
-end PresModel
-end FiniteChains

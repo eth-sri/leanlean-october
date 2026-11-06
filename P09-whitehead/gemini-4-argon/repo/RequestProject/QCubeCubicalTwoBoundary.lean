@@ -73,5 +73,3 @@ theorem qSquareCubicalBoundary_zero_iff (r : QSquare A →₀ ℤ) :
   · intro h
     apply qEdgeChainSubdivision_injective
     rwa [map_zero, qSquareCubicalBoundary_subdivision]
-
-end FiniteChains.Davis

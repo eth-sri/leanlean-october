@@ -34,5 +34,3 @@ theorem htpy_path_through_upper_bound {P : Type u} [Preorder P]
   apply htpy_of_append_rev_null hp hq
   exact htpy_nil_of_pathIn_le d ha (hp.append (isPath_revPath hq))
     (pathIn_append hs (pathIn_revPath hqs))
-
-end FiniteChains.Comb

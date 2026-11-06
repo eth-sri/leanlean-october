@@ -8,9 +8,7 @@ public import RequestProject.QCubeSquareCoefficientSigns
 /-! The genuine square radial boundary matrix has one-dimensional integral kernel. -/
 set_option maxHeartbeats 1000000
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb
@@ -91,5 +89,3 @@ theorem squareChain_eq_scalar_subdivision {V : Type} [DecidableEq V] {A : CommRe
         squareFlagCoordinates c a b hne hs (cubeSquareSubdivision c a b hne hs)) := congrArg f he
     _ = r (false, 0, false) • cubeSquareSubdivision c a b hne hs := by rw [map_smul, hsr]
     _ = _ := rfl
-
-end FiniteChains.Davis

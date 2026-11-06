@@ -6,9 +6,7 @@ public import RequestProject.CombUniversalCover
 @[expose] public section
 
 /-! The order on the genuine path-class universal cover of a partial-order nerve. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -78,5 +76,3 @@ noncomputable instance uOrderPartialOrder : PartialOrder (UOrder P a) where
 
 theorem uOrderEnd_monotone : Monotone (uOrderEnd (P := P) (a := a)) :=
   fun _ _ h => h.1
-
-end FiniteChains.Comb

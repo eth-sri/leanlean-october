@@ -28,5 +28,3 @@ theorem qCube_three_ordered_frame (c : QCube A) (hc : c.spx.card = 3) :
   · exact False.elim ((lt_irrefl y) (hxy.trans (hxz.trans hyz)))
   · exact ⟨x, z, y, hxz, hyz, perm x z y (by intro t; tauto)⟩
   · exact ⟨x, y, z, hxy, hyz, hs⟩
-
-end FiniteChains.Davis

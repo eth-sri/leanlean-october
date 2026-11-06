@@ -60,5 +60,3 @@ theorem exists_strictSubposet_cycle (c : StrictOrdTri P →₀ ℤ)
   change chain1 (strictSubposetIncl S) (bdry2 (strictOrderCx S) d) =
     Finsupp.mapDomain _ 0
   rw [Finsupp.mapDomain_zero, ← bdry2_chain2, hd, hc]
-
-end FiniteChains.Comb

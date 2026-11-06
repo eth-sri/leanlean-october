@@ -18,5 +18,3 @@ theorem basedTriangleSquare_const
   apply GenLoop.ext
   intro z
   rfl
-
-end FiniteChains.TopologicalSingular

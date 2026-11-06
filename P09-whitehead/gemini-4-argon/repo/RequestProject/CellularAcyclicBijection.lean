@@ -64,5 +64,3 @@ theorem isAcyclic_iff_of_cell_bijections
       obtain ⟨b, hb⟩ := h.h0 (chain0 f a) hcycle
       obtain ⟨b', rfl⟩ := sE b
       exact ⟨b', iV (by rwa [← bdry1_chain1])⟩
-
-end FiniteChains.Comb

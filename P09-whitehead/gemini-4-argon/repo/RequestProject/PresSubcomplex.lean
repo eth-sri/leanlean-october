@@ -1,6 +1,17 @@
 module
 
-public import RequestProject.PresentationChain
+public import RequestProject.FoxNaturality
+public import RequestProject.PresentationDictionary
+public import RequestProject.NecessityAlgebraicMod
+public import RequestProject.CycleLifting
+public import RequestProject.Pi2Dictionary
+public import RequestProject.CoverComplex
+public import RequestProject.ChainFormula
+public import RequestProject.FinitelyDeterminedInf
+public import RequestProject.Pigeonhole
+public import RequestProject.CoverAcyclic
+public import RequestProject.TorsionFreeGroupRing
+public import RequestProject.ChainFormulaMod
 
 @[expose] public section
 
@@ -62,24 +73,3 @@ def presInclHom (f : α → β) (hf : Function.Injective f) (ρ : J → FreeGrou
   att_onF j := by
     show FreeGroup.toWord (σ (g j)) = (FreeGroup.toWord (ρ j)).map (fun p => (f p.1, p.2))
     rw [hg j, toWord_map f hf]
-
-@[simp] theorem presInclHom_onE (f : α → β) (hf : Function.Injective f) (ρ : J → FreeGroup α)
-    (σ : K → FreeGroup β) (g : J → K) (hg : ∀ j, σ (g j) = FreeGroup.map f (ρ j)) :
-    (presInclHom f hf ρ σ g hg).onE = f := rfl
-
-@[simp] theorem presInclHom_onF (f : α → β) (hf : Function.Injective f) (ρ : J → FreeGroup α)
-    (σ : K → FreeGroup β) (g : J → K) (hg : ∀ j, σ (g j) = FreeGroup.map f (ρ j)) :
-    (presInclHom f hf ρ σ g hg).onF = g := rfl
-
-end Comb
-
-namespace PresChain
-
-universe u
-
-variable {α J : Type u} {ρ : J → FreeGroup α} {n : ℕ} (h : PresChain ρ n)
-
-variable [DecidableEq α]
-
-end PresChain
-end FiniteChains

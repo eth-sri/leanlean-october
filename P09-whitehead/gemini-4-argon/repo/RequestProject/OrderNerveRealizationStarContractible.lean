@@ -16,5 +16,3 @@ theorem orderNerveRealization_closedStar_contractible {P : Type} [PartialOrder P
   let a : orderNerveVertexStar P v := ⟨v, Or.inl le_rfl⟩
   letI := orderNerveRealization_contractible_of_comparable a (fun p => p.property)
   exact (orderNerveRealizationSubtypeHomeomorph (orderNerveVertexStar P v)).symm.contractibleSpace
-
-end FiniteChains.Comb

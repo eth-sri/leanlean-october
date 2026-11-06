@@ -1,6 +1,6 @@
 module
 
-public import RequestProject.NerveMaximalDeletion
+public import RequestProject.NerveBoundaryReflection
 
 @[expose] public section
 
@@ -123,5 +123,3 @@ theorem maximalFamily_homology :
     obtain ⟨y, hy, hdy⟩ := hbound
     obtain ⟨S, hS, hyS⟩ := exists_finite_maximal_support (T := T) y hy
     exact (maximalFamily_finite hTC hmax hlink₁ hlink₂ S hS).2 c hc hd ⟨y, hyS, hdy⟩
-
-end FiniteChains.Nerve

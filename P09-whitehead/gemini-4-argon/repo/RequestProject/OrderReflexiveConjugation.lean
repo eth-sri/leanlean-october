@@ -5,9 +5,7 @@ public import RequestProject.StrictOrderComplex
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -49,5 +47,3 @@ theorem htpy_loop_mapPath_le_fixed {Q : Type u} [PartialOrder Q]
       [(⟨(f a, g a), hfg a⟩, true)]) at hn
   rw [he, ← hfix] at hn
   exact (hn.trans (htpy_reflexive_conjugation _ (isPath_mapPath (orderCxMap f hf) hp))).symm
-
-end FiniteChains.Comb

@@ -5,9 +5,7 @@ public import RequestProject.OrderThreeNormalization
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb
@@ -127,5 +125,3 @@ theorem presPosDimension_strictMono (w : J → List (α × Bool)) :
     cases q with
     | inl q => exact hl.elim
     | inr k => exact (hn (congrArg Sum.inr hl)).elim
-
-end FiniteChains.PresModel

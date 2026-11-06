@@ -13,9 +13,7 @@ This file does not assert the original topological MainClaim.
 -/
 noncomputable section
 open scoped Classical
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb PresModel BlockFamily Nerve
@@ -74,5 +72,3 @@ theorem finiteSpineFamily_fsGenerates_actual
           (familyFiniteSpineWordBlock_filled σ qs us hσ)
           (finiteSpineFamilyFilling σ qs us) y} :=
   finiteSpineFamily_fsGenerates σ qs us hσ (finiteSpineIndividualB2_actual σ qs us hσ) x hx
-
-end FiniteChains.Davis.Genus

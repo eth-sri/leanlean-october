@@ -22,5 +22,3 @@ theorem orderNerveRealization_twoCycle_cellularRepresentative {P : Type} [Partia
   rw [map_sub, hb, ha]
   change d - orderCellSingularChain2 (orderSmallCellularApproximation2 d') - (d - c) = _
   abel
-
-end FiniteChains.Comb

@@ -11,9 +11,7 @@ not assume that the induced map on attachments is an equivalence. -/
 
 noncomputable section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.RelativeAttachment
 open scoped unitInterval Topology Classical
@@ -29,10 +27,6 @@ def attachmentBaseMap (a : A → P) (i : A → D) (hi : Function.Injective i)
     ⟨cell (e ∘ a) i, cell_continuous (e ∘ a) i⟩
     (fun b => (cell_boundary (e ∘ a) i hi b).symm)
 
-omit [TopologicalSpace A] in
-@[simp] theorem attachmentBaseMap_old (a : A → P) (i : A → D)
-    (hi : Function.Injective i) (e : C(P, K)) (p : P) :
-    attachmentBaseMap a i hi e (old a i p) = old (e ∘ a) i (e p) := rfl
 
 omit [TopologicalSpace A] in
 @[simp] theorem attachmentBaseMap_cell (a : A → P) (i : A → D)
@@ -65,11 +59,6 @@ def attachmentHomotopyPasting (a : A → P) (i : A → D)
     (fun b => ContinuousMap.ext (fun t => h t b))).uncurry.comp
       ⟨Prod.swap, continuous_swap⟩
 
-omit [TopologicalSpace A] in
-@[simp] theorem attachmentHomotopyPasting_old (a : A → P) (i : A → D)
-    (H : C(I × P, Z)) (G : C(I × D, Z))
-    (h : ∀ t b, H (t, a b) = G (t, i b)) (t : I) (p : P) :
-    attachmentHomotopyPasting a i H G h (t, old a i p) = H (t, p) := rfl
 
 omit [TopologicalSpace A] in
 @[simp] theorem attachmentHomotopyPasting_cell (a : A → P) (i : A → D)
@@ -81,5 +70,3 @@ omit [TopologicalSpace A] in
   change desc (Z := C(I, Z)) a i _ _ _ (cell a i d) t = _
   rw [desc_cell]
   rfl
-
-end FiniteChains.RelativeAttachment

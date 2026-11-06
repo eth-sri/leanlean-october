@@ -53,5 +53,3 @@ def strictTriNerveEquiv : StrictOrdTri P ≃ (nerve P).nonDegenerate 2 where
     apply Subtype.ext
     change ordTriNerveEquiv P ((ordTriNerveEquiv P).symm s.val) = s.val
     exact (ordTriNerveEquiv P).apply_symm_apply s.val
-
-end FiniteChains.Comb

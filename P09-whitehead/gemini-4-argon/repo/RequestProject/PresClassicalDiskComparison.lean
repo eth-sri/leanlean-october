@@ -35,15 +35,3 @@ theorem classicalPresWordAttaching_link (j : J) (x : orderNerveRealization (Rela
   change orderRoseRealizationHomeomorph A
     (actualPresWordAttaching w hw ⟨j, presCircleBoundaryHomeomorph w hw j x⟩) = _
   rw [actualPresWordAttaching_link]
-
-@[simp] theorem presClassicalDiskComparison_old
-    (x : orderNerveRealization (ConeAdjBase (circSet w))) :
-    presClassicalDiskComparison w hw (coneAdjRealizationOld (circSet w) x) =
-      old (classicalPresWordAttaching w hw) (boundaryFamilyInclusion J (Fin 2 → ℝ))
-        (orderRoseRealizationHomeomorph A (presOldRoseHomotopyEquiv w x)) := by
-  change diskAttachmentBaseChangeHomotopyEquiv _ _
-    (actualPresWordDiskComparison w hw (coneAdjRealizationOld (circSet w) x)) = _
-  rw [actualPresWordDiskComparison_old, diskAttachmentBaseChangeHomotopyEquiv_old]
-  rfl
-
-end FiniteChains.PresModel

@@ -101,5 +101,3 @@ def sigmaFiberHomeomorph {J : Type u} {X Y : J → Type u}
   right_inv := by rintro ⟨j, x⟩; simp only [Homeomorph.apply_symm_apply]
   continuous_toFun := continuous_sigma (fun j => continuous_sigmaMk.comp (e j).continuous)
   continuous_invFun := continuous_sigma (fun j => continuous_sigmaMk.comp (e j).symm.continuous)
-
-end FiniteChains.RelativeAttachment

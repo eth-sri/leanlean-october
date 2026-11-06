@@ -5,9 +5,7 @@ public import RequestProject.GeometricChainCollapse
 @[expose] public section
 
 /-! Positive corner cubes may always be collapsed across their own cut facets. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 variable {V : Type} [Fintype V] [DecidableEq V] [LinearOrder V]
@@ -98,5 +96,3 @@ theorem preferCutFaces_isChainCollapse {L : ASC V}
     (hS : S ⊆ topCubes L) (h : Collapse.IsPairCollapse (spineInc L) lp S) :
     CollapseChain.IsChainCollapse (cubeBdry (V := V)) (preferCutFaces lp) :=
   spine_pair_chainCollapse hS (preferCutFaces_isPairCollapse hS h)
-
-end FiniteChains

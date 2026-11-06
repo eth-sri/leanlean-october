@@ -51,5 +51,3 @@ noncomputable def cubeThreeSquareBoundary (c : QCube A) (u v w : V)
   cubeSquareSubdivision (qCubeFacet c v 1) u w huw (threeFacet_uw_spx c huv hvw hs 1) +
   cubeSquareSubdivision (qCubeFacet c u 0) v w hvw (threeFacet_vw_spx c huv huw hs 0) -
   cubeSquareSubdivision (qCubeFacet c u 1) v w hvw (threeFacet_vw_spx c huv huw hs 1)
-
-end FiniteChains.Davis

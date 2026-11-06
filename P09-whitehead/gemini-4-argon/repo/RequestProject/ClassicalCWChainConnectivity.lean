@@ -12,9 +12,7 @@ original-cell models. The input is exactly connectedness of the given
 CW subcomplexes. Unverified source. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.ClassicalCW.ChainWords
 open ClassicalSkeletonAttachment ClassicalGraphModel RelativeAttachment
@@ -30,7 +28,6 @@ The unseeded construction obtains one from connectedness. -/
 class TreeChoice where
   initial : Option (Comb.SpanningTree (subcomplexGraph (C 0)))
 
-instance (priority := low) defaultTreeChoice : TreeChoice K C := ⟨none⟩
 
 variable [TreeChoice K C]
 
@@ -94,5 +91,3 @@ theorem boundedGraphs_have_compatible_trees :
     (fun r => subcomplexGraphInclusion_injective_V _)
     (fun r => subcomplexGraphInclusion_injective_E _) T₀
   exact ⟨T, fun S hS => hT₀.trans (hseed S hS), hT⟩
-
-end FiniteChains.ClassicalCW.ChainWords

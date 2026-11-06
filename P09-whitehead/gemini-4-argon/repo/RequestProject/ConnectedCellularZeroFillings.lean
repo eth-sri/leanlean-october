@@ -5,9 +5,7 @@ public import RequestProject.StrictOrderChains
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -41,5 +39,3 @@ theorem strict_order_zeroCycle_filling_of_connected {P : Type u} [PartialOrder P
     ∃ b : StrictOrdEdge P →₀ ℤ, bdry1 (strictOrderCx P) b = c := by
   obtain ⟨b, hb⟩ := zeroCycle_filling_of_connected (orderCx P) a hP c hc
   exact ⟨normalizeOrdChain1 b, by rw [bdry1_normalizeOrdChain1, hb]⟩
-
-end FiniteChains.Comb

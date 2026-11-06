@@ -46,5 +46,3 @@ theorem generatesDegreeIn_congr {A B Base : P → Prop} {n : ℕ}
     GeneratesDegreeIn B Base n := by
   rw [show B = A from funext fun p => propext (he p).symm]
   exact h
-
-end FiniteChains.Nerve

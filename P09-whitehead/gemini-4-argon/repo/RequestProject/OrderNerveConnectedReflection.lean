@@ -87,5 +87,3 @@ theorem orderCx_isConnected_of_realization [PreconnectedSpace (orderNerveRealiza
     rw [hall]
     exact Set.mem_univ _
   exact (orderNerveRealizationVertex_mem_subcomplex (orderReach a) b).mp hb
-
-end FiniteChains.Comb

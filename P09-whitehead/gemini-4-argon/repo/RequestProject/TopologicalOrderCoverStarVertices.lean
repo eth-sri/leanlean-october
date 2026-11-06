@@ -94,5 +94,3 @@ theorem starLift_vertex (v w : Cover p hp) (hw : w ≤ v ∨ v ≤ w) :
       rw [starLiftFibre_center] at h
       exact h.symm.trans (comparable_transport p hp hvw)
   exact congrArg Subtype.val hz
-
-end FiniteChains.Comb.TopologicalOrderCover

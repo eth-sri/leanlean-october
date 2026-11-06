@@ -27,8 +27,7 @@ condition (1) of Theorem A.
 * `FiniteChains.Comb.ZeroPi2` — a cellular map is zero on `π₂`.
 -/
 
-namespace FiniteChains
-namespace Comb
+namespace FiniteChains.Comb
 
 universe u
 
@@ -98,7 +97,6 @@ theorem univLiftV_extend (h : Hom X Y) {eb : X.E × Bool} {c : UV X x₀}
       show Htpy Y (h.onV x₀) (endpt Y (h.onV x₀) (mapPathFrom x₀ h (extendP eb p)).1)
         (mapPathFrom x₀ h (extendP eb p)).1 (extendP (h.onE eb.1, eb.2) (mapPathFrom x₀ h p)).1
       rw [hl]
-      exact Htpy.refl _
 
 /-- The map of universal covers induced by a cellular map, on edges. -/
 def univLiftE (h : Hom X Y) (E : UE X x₀) : UE Y (h.onV x₀) :=
@@ -180,12 +178,8 @@ complex. -/
 noncomputable def hurewicz (x₀ : X.V) : ((uCover X x₀).F →₀ ℤ) →ₗ[ℤ] (X.F →₀ ℤ) :=
   chain2 (univProj X x₀)
 
-variable (X) in
-/-- **The Cockcroft property**: the Hurewicz map `π₂(X) → H₂(X)` vanishes. -/
-def IsCockcroft : Prop :=
-  ∀ (x₀ : X.V) (c : (uCover X x₀).F →₀ ℤ), c ∈ Pi2 X x₀ → hurewicz X x₀ c = 0
-
 /-- **A cellular map is zero on `π₂`**: the induced map of two-chains of the universal covers
+
 kills every two-cycle. -/
 def ZeroPi2 (h : Hom X Y) : Prop :=
   ∀ (x₀ : X.V) (c : (uCover X x₀).F →₀ ℤ), c ∈ Pi2 X x₀ → chain2 (univLift X h x₀) c = 0
@@ -197,6 +191,3 @@ theorem mem_pi2_chain2_univLift (h : Hom X Y) {x₀ : X.V} {c : (uCover X x₀).
   have hzero : bdry2 (uCover X x₀) c = 0 := hc
   show bdry2 (uCover Y (h.onV x₀)) (chain2 (univLift X h x₀) c) = 0
   rw [hchain, hzero, map_zero]
-
-end Comb
-end FiniteChains

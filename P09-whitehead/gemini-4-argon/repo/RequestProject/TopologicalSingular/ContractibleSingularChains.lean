@@ -79,5 +79,3 @@ theorem contractible_cycle_bounds [ContractibleSpace X] (n : ℕ) (c : Chain X (
   have hm : c ∈ LinearMap.ker (boundary (X := X) n) := hc
   rw [contractible_ker_boundary_eq_range] at hm
   exact hm
-
-end FiniteChains.TopologicalSingular

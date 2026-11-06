@@ -7,9 +7,7 @@ public import RequestProject.OrderNerveDictionary
 
 /-! Normalization preserves the coefficients of all genuine order simplices. -/
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 variable {P : Type} [PartialOrder P]
@@ -57,5 +55,3 @@ theorem normalizeOrdChain2_apply (c : OrdTri P →₀ ℤ) (t : StrictOrdTri P) 
         apply hw
         simpa [h, strictOrderIncl] using t.2
       simp [normalizeOrdTriangle, hw, he]
-
-end FiniteChains.Comb

@@ -76,5 +76,3 @@ def groupEquiv : PresGroup ρ ≃* PresGroup (rel ρ w) where
   left_inv := elimination_inclusion ρ w
   right_inv := inclusion_elimination ρ w
   map_mul' := map_mul _
-
-end FiniteChains.NamedPresentation

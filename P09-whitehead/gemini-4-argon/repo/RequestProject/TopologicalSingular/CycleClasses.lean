@@ -4,9 +4,7 @@ public import RequestProject.TopologicalSingular.SingularChainHomotopy
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.TopologicalSingular
 open CategoryTheory
@@ -104,5 +102,3 @@ theorem singularCycleClass_natural {Y : Type u} [TopologicalSpace Y] (f : C(X, Y
   exact shortComplexCycleClass_natural
     ((HomologicalComplex.shortComplexFunctor (ModuleCat ℤ) (ComplexShape.down ℕ) (n + 1)).map
       (chainMap f)) c (singularCycle_condition n hc) _
-
-end FiniteChains.TopologicalSingular

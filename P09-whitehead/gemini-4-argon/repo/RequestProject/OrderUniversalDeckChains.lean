@@ -1,14 +1,13 @@
 module
 
 public import RequestProject.StrictOrderNormalizationMaps
-public import RequestProject.OrderUniversalChainNormalization
+public import RequestProject.OrderUniversalPosetHom
+public import RequestProject.StrictOrderChains
 public import RequestProject.OrderUniversalDeck
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -25,5 +24,3 @@ theorem uOrderFace_deck (g : Pi1 (orderCx P) a) (t : OrdTri (UOrder P a)) :
     change (endV (deckV g t.1.1), endV (deckV g t.1.2.1), endV (deckV g t.1.2.2)) =
       (endV t.1.1, endV t.1.2.1, endV t.1.2.2)
     simp only [endV_deckV]
-
-end FiniteChains.Comb

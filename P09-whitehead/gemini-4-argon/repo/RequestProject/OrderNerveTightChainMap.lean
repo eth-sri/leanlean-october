@@ -172,5 +172,3 @@ theorem orderTightToNerve_supported (n : ℕ) (A : Set P)
       rw [orderSmallChainEquiv_symm_single]
       exact Nerve.incOn_mono (fun _ hp => orderNerveTightCarrier_subset σ.val A hσ hp)
         (orderTightToNerve_carrier n σ)) hd
-
-end FiniteChains.Comb

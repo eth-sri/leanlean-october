@@ -4,9 +4,7 @@ public import RequestProject.OrderNerveCharacteristicMap
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory Simplicial
@@ -126,5 +124,3 @@ theorem orderNerveCharacteristicMap_boundary {P : Type} [PartialOrder P]
   rw [orderNerveCharacteristicMap_closedCell]
   refine ⟨w, ?_⟩
   exact hw.trans (orderNerveCharacteristicFunction_closedBall s u).symm
-
-end FiniteChains.Comb

@@ -36,5 +36,3 @@ theorem qThreeFacetSquare_injective (c : QCube A) (hc : c.spx.card = 3) :
     Function.Injective (qThreeFacetSquare c hc) := by
   intro i j h
   exact qCubeFacetIndex_injective c (congrArg Subtype.val h)
-
-end FiniteChains.Davis

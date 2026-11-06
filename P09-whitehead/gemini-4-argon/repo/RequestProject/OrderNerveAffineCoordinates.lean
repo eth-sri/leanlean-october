@@ -4,9 +4,7 @@ public import RequestProject.OrderNerveRealizationSimplices
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory
@@ -128,5 +126,3 @@ theorem orderNerveRealizationSimplex_injective {P : Type} [PartialOrder P]
   rw [hc, hd] at hf
   exact (orderNerveAffineSimplex_indicator s hs i z).symm.trans
     (hf.trans (orderNerveAffineSimplex_indicator s hs i w))
-
-end FiniteChains.Comb

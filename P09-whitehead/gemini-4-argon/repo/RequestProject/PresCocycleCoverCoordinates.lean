@@ -161,5 +161,3 @@ theorem generatorCoordinates_single
     generatorCoordinates w gen hrel (Finsupp.single p n) =
       Finsupp.single (generatorEquiv w gen hrel p) n :=
   Finsupp.domLCongr_single _ _ _
-
-end FiniteChains.PresModel.PresCocycleCover

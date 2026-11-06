@@ -5,9 +5,7 @@ public import RequestProject.OrderNormalizationHomotopy
 @[expose] public section
 
 /-! Relative chains at a minimal vertex of an actual order complex. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -73,5 +71,3 @@ theorem cornerChain2_ordBoundary3 (hp : ∀ v : P, v ≤ p → v = p)
       rw [ordBoundary3, Finsupp.linearCombination_single, map_smul,
         cornerTriangleEdge_ordTetBoundary p hp, cornerChain3,
         Finsupp.linearCombination_single, map_smul, smul_neg]
-
-end FiniteChains.Comb

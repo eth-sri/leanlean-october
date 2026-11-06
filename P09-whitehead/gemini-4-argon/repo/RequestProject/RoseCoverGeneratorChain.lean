@@ -1,12 +1,11 @@
 module
 
-public import RequestProject.RoseCoverBaseCoordinates
+public import RequestProject.PosetCoverStrictEdgeLift
+public import RequestProject.RoseCoverGeneratorEquiv
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb
@@ -87,5 +86,3 @@ theorem roseCoverGeneratorChain_coordinates (p : roseCoverMidpoints f) :
     · intro h
       exact congrArg Subtype.val h
   simp only [Finsupp.single_apply, heq]
-
-end FiniteChains.PresModel

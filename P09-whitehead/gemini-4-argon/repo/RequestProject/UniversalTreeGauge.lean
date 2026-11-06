@@ -40,5 +40,3 @@ theorem mappedTreeReference_path {a b : K.V} {p : List (K.E × Bool)}
     exact he
   rw [hv]
   exact h
-
-end FiniteChains.Comb.SpanningTree

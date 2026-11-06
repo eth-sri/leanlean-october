@@ -22,8 +22,7 @@ and that is enough:
   and above a fixed element is null-homotopic in `orderCx P`.
 -/
 
-namespace FiniteChains
-namespace Comb
+namespace FiniteChains.Comb
 
 universe u
 
@@ -131,6 +130,3 @@ theorem htpy_nil_of_pathIn_cone {A : P → Prop} (g : {x : P // A x} → P) (hg 
   rw [show mapPath (orderCxMap (fun x : {x : P // A x} => (x : P)) monotone_subtypeVal)
       (liftPathIn l hl) = l from mapPath_liftPathIn l hl] at h
   exact h
-
-end Comb
-end FiniteChains

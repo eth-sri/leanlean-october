@@ -78,5 +78,3 @@ theorem realize_standard_homotopy_naturality {d e k : ℕ}
         (subdivideHomotopy (center (convex_stdSimplex ℝ (Fin (e + 1)))) k
           (VertexChains.map (standardMap f) k c)) :=
   realize_subdivideHomotopy_naturality _ _ (standardLinearMap f) (standardLinearMap_mapsTo f) k c
-
-end FiniteChains.AffineVertexChains

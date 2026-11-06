@@ -83,5 +83,3 @@ def canonicalPresChainTopFS
       subst b
       exact H
     exact hh _ _ _ hleft hright
-
-end FiniteChains.ClassicalCW.ChainWords

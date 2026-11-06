@@ -82,8 +82,3 @@ def cellularDiskTransfer (hn : n = 1 ∨ n = 2) : CellularDiskTransfer K e n r :
     have hq := Classical.choose_spec h
     exact cellularDiskTransferOfRepresentative K e 2 r (by omega) le_rfl q
       (Classical.choice hq.1) hq.2
-
-namespace CellularDiskTransfer
-
-end CellularDiskTransfer
-end Whitehead

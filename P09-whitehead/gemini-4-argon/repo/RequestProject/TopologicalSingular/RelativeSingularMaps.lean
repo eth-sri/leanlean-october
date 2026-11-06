@@ -8,9 +8,7 @@ public import RequestProject.TopologicalSingular.RelativeSingularChains
 
 /-! # Functorial relative singular chains for maps of topological pairs -/
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.TopologicalSingular
 
@@ -26,5 +24,3 @@ theorem single_mem_subChains (A : Set X) (n : ℕ) (σ : Simplex X n) (r : ℤ)
   refine ⟨Finsupp.single τ r, ?_⟩
   rw [map_single]
   rfl
-
-end FiniteChains.TopologicalSingular

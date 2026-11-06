@@ -76,5 +76,3 @@ theorem genus_exists_flat_section
   change s (toS (gvc q) (gec q) (gc q) (.vtx (gvc q (cyc (8 * q) 0)))) = x₀
   rw [gvc_even q (k := 0) rfl]
   exact hv none
-
-end FiniteChains.Davis.Genus

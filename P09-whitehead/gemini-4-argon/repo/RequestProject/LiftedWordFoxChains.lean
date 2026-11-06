@@ -12,9 +12,7 @@ public import RequestProject.ZeroPi2Descent
 identity of edge chains, not merely of homology classes. Unverified source. -/
 noncomputable section
 open scoped Classical
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -120,5 +118,3 @@ theorem lifted_wordPath_fox (l : List (I × Bool)) :
   rw [LinearEquiv.symm_apply_apply] at hc
   rw [← hc, loopCoefficientChainMap_liftPath N p ψ hψ]
   simp only [loopCoefficientVertex, map_one, deckV_one]
-
-end FiniteChains.Comb

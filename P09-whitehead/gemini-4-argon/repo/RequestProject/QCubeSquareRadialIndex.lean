@@ -80,5 +80,3 @@ theorem squareRadialEdge_injective (c : QCube A) (a b : V) (hne : a ≠ b)
   intro i j h
   exact squareRadialCell_injective c a b hne hs
     (congrArg (fun e : (strictOrderCx (QCube A)).E => e.1.1) h)
-
-end FiniteChains.Davis

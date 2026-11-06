@@ -45,5 +45,3 @@ theorem qSquare_subdivision_single (c : QSquare A) (n : ℤ) {a b : V}
       n • cubeSquareSubdivision c.1 a b (Ne.symm h.ne) hs := by
   rw [qSquareChainSubdivision, squareChainSubdivision, Finsupp.linearCombination_single,
     qSquare_subdivision_ordered c h hs]
-
-end FiniteChains.Davis

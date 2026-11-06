@@ -32,9 +32,7 @@ topological input that is not formalized here — this is the hypothesis
 `RequestProject/FoxCommutator.lean`.
 -/
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 
@@ -42,13 +40,7 @@ open Function
 
 variable {U V : Type*} [AddCommGroup U] [AddCommGroup V]
 
-/-- Multiplication by `n` on an additive commutative group, as a homomorphism. -/
-def nsmulHom (n : ℕ) (U : Type*) [AddCommGroup U] : U →+ U where
-  toFun u := n • u
-  map_zero' := smul_zero n
-  map_add' a b := smul_add n a b
 
-@[simp] theorem nsmulHom_apply (n : ℕ) (u : U) : nsmulHom n U u = n • u := rfl
 
 /-- `f` is *injective modulo `n`*: whenever `f u` is divisible by `n`, already `u` is.
 For maps between free modules this is injectivity of the reduction `f ⊗ ℤ/n`. -/
@@ -113,19 +105,3 @@ instance isAddTorsionFree_monoidAlgebra {Q : Type*} [Monoid Q] :
       _ = _ := map_nsmul e n b
     apply MonoidAlgebra.coeff_injective
     exact IsAddTorsionFree.nsmul_right_injective hn hc
-
-variable {G : Type*} [Group G] {I J : Type*}
-
-/-!
-## Removing the torsion-freeness hypothesis from the application of Lemma 2.1
--/
-
-/-- A group written multiplicatively out of a torsion-free additive group is torsion free. -/
-instance isMulTorsionFree_multiplicative {A : Type*} [AddMonoid A] [IsAddTorsionFree A] :
-    IsMulTorsionFree (Multiplicative A) := by
-  constructor
-  intro n hn a b hab
-  have h : n • (Multiplicative.toAdd a) = n • (Multiplicative.toAdd b) := hab
-  exact IsAddTorsionFree.nsmul_right_injective (M := A) hn h
-
-end FiniteChains

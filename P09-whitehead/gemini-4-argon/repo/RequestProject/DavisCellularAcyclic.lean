@@ -23,5 +23,3 @@ theorem exists_cellular_bdry3_of_cycle_davis (A : CommRel V)
   apply ordNerveChain2_injective
   rw [ordNerveChain2_ordBoundary3, ordNerveChain3_decode hy,
     ← lengthProjection_bdry, hdy, ordNerveChain2_lengthProjection]
-
-end FiniteChains.Davis

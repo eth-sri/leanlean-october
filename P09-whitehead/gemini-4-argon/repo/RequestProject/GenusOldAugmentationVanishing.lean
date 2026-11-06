@@ -6,9 +6,7 @@ public import RequestProject.GenusOldCoordinateVanishing
 @[expose] public section
 
 /-! Actual old-spine and total capped-cover augmentation vanishing, with all dependencies proved. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb
@@ -22,7 +20,7 @@ theorem markedSpine_cycle_zero_of_normalized_full_image (d : (markedSpineCx q).F
   change Comb.bdry2 (component (genusSpineCx q) (spineBase q)) d = 0 at hd
   let c := chain2 (componentIncl (genusSpineCx q) (spineBase q)) d
   have hcycle : Comb.bdry2 (genusSpineCx q) c = 0 := by
-    rw (config := { transparency := .default }) [bdry2_chain2, hd, map_zero]
+    erw [bdry2_chain2, hd, map_zero]
   have he : normalizedStrictChain2 (genusSpineCellToFullCube q)
       (genusSpineCellToFullCube_monotone q) c =
       normalizeOrdChain2 (chain2 (markedSpineToFullCube q) d) := by
@@ -31,13 +29,13 @@ theorem markedSpine_cycle_zero_of_normalized_full_image (d : (markedSpineCx q).F
         (Finsupp.mapDomain (strictOrderIncl (GenusSpineCell q)).onF
           (Finsupp.mapDomain (componentIncl (genusSpineCx q) (spineBase q)).onF d))) =
       normalizeOrdChain2 (Finsupp.mapDomain (markedSpineToFullCube q).onF d)
-    rw (config := { transparency := .default }) [← Finsupp.mapDomain_comp, ← Finsupp.mapDomain_comp]
+    erw [← Finsupp.mapDomain_comp, ← Finsupp.mapDomain_comp]
     rfl
   have hc := genusSpine_cycle_zero_of_normalized_full_image q c hcycle (he.trans hz)
   apply Finsupp.mapDomain_injective
     (componentIncl_injective_onF (X := genusSpineCx q) (spineBase q))
   change c = Finsupp.mapDomain _ 0
-  rw (config := { transparency := .default }) [Finsupp.mapDomain_zero]
+  erw [Finsupp.mapDomain_zero]
   exact hc
 
 /-- Every actual capped-cover cycle has zero old-spine augmentation. -/
@@ -54,7 +52,5 @@ theorem cappedCoverCycle_total_augmentation_zero
     (c : (cappedTreeCover q).F →₀ ℤ) (hc : Comb.bdry2 (cappedTreeCover q) c = 0) :
     Finsupp.mapDomain Prod.snd c = 0 := by
   obtain ⟨d, hd, rfl⟩ := cappedCoverCycle_old_augmentation_zero q c hc
-  rw (config := { transparency := .default }) [Finsupp.mapDomain_zero] at hd
+  erw [Finsupp.mapDomain_zero] at hd
   exact hd.symm
-
-end FiniteChains.Davis.Genus

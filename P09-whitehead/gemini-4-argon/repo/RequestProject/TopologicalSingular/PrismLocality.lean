@@ -23,5 +23,3 @@ theorem prism_single_congr (H : f.Homotopy g) (K : f'.Homotopy g')
     exact h (prismMap i z).1 (prismMap i z).2
   rw [prism_single, prism_single]
   simp only [he]
-
-end FiniteChains.SingularPrism

@@ -172,5 +172,3 @@ theorem markedSpine_component_onF_surjective :
     Function.Surjective (componentIncl (genusSpineCx q) (spineBase q)).onF := by
   intro t
   exact ⟨⟨t, genusSpineCx_isConnected q (spineBase q) ((genusSpineCx q).base t)⟩, rfl⟩
-
-end FiniteChains.Davis.Genus

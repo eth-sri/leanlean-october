@@ -5,9 +5,7 @@ public import RequestProject.OrderReflexiveConjugation
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -42,5 +40,3 @@ theorem cylinder_pi1_surjective (x : X) :
       isPath_mapPath (orderCxMap (cylRetr a) (cylRetr_monotone a)) p.property⟩,
       Quotient.sound ?_⟩
     exact (cylinder_loop_retraction a x p.val p.property).symm
-
-end FiniteChains.Comb

@@ -146,5 +146,3 @@ theorem simplexHornRetract_eq_self_of_mem (i : Fin (d + 2))
   refine Fin.succAboveCases i ?_ (fun j ↦ ?_) k
   · simp [simplexHornRetractCoords, simplexHornMin_eq_zero_of_mem i hz]
   · simp [simplexHornRetractCoords, simplexHornMin_eq_zero_of_mem i hz]
-
-end FiniteChains.TopologicalSingular

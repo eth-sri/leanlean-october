@@ -175,5 +175,3 @@ theorem exists_geometric_chainCollapse {L : ASC V} {l : List (Cube V)}
       intro he
       have hσ : IsTri L σ := by simpa [he] using mem_topCubes.mp ht
       exact htf (by simp [spineInc, hσ, he])
-
-end FiniteChains

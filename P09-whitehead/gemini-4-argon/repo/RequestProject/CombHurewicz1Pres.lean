@@ -28,8 +28,7 @@ This file proves the corresponding statement:
   `π₁(K) = F/R` lies in the commutator subgroup.
 -/
 
-namespace FiniteChains
-namespace Comb
+namespace FiniteChains.Comb
 
 universe u
 
@@ -97,8 +96,3 @@ theorem bdry2_pres_single (j : J) :
   conv_rhs => rw [← FreeGroup.mk_toWord (x := ρ j)]
   rw [expVec_pathChain]
   rfl
-
-/-! ### The Hurewicz isomorphism -/
-
-end Comb
-end FiniteChains

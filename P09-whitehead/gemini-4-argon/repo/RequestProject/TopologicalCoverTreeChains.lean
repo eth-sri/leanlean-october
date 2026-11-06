@@ -1,6 +1,7 @@
 module
 
-public import RequestProject.TopologicalCoverCellChains
+public import RequestProject.TopologicalOrderCoverAcyclic
+public import RequestProject.RegularCoverAcyclicChains
 public import RequestProject.RegularCoverFreshCells
 public import RequestProject.TreeChainPresentationRealization
 public import RequestProject.StrictTriangleTreeGenerator
@@ -58,5 +59,3 @@ theorem hasChain_of_original_cover_tree_comparison (K : Whitehead.TwoComplex)
     (presPos_isConnected _ (canonicalWords_ne_nil K)) K T₀ (canonicalTreeGenerator K T₀)
     (e₀.trans (originalCanonicalTwoComplexEquiv K).symm)
     (canonicalTwoComplex_hasCover K h) n
-
-end FiniteChains.ClassicalCW

@@ -1,6 +1,8 @@
 module
 
-public import RequestProject.SubstOneWayQuotient
+public import RequestProject.SubstOneWay
+public import RequestProject.PresPosetReading
+public import RequestProject.ChamberQuotientCover
 public import RequestProject.PresPosetAlphaW
 
 @[expose] public section
@@ -17,12 +19,9 @@ quotient `Q = Z/Γ` is injective on fundamental groups
 (`FiniteChains.Davis.pi1Map_qNew_injective`).
 -/
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
-namespace FiniteChains
-namespace Davis
+namespace FiniteChains.Davis
 
 open RACG Mirror Comb PresModel
 
@@ -48,6 +47,3 @@ theorem baseToQuotientW_injective {α J : Type u} (ρ : J → FreeGroup α)
   intro x y h
   exact alphaHomW_injective ρ w hw
     (pi1Map_qNew_injective (A := A) (att := att) (ptBase w) h)
-
-end Davis
-end FiniteChains

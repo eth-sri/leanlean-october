@@ -6,9 +6,7 @@ public import RequestProject.NerveDegree
 @[expose] public section
 
 /-! Actual finite three-chains for downward order homotopies on two-cycles. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -40,5 +38,3 @@ theorem ordCycle_downward_boundary (g : P → P) (hg : Monotone g)
   rw [ordNerveChain2_ordBoundary3, ordNerveChain3_decode hbi, hdeg, map_sub, hbdry]
   rw [← ordNerveChain2_chain2 g hg, ordNerveChain2_lengthProjection]
   rfl
-
-end FiniteChains.Comb

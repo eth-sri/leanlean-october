@@ -65,6 +65,3 @@ theorem killsPi2_iff_combPi2 :
   (h.killsPi2_iff_univCover hw hv ρ σ hwm hvm).trans
     (zeroPi2_presInclHom_iff ρ h.gen h.gen.injective h.cell
       (h.relator_compat ρ σ hwm hvm)).symm
-
-end PresModel.PresWordEmbedding
-end FiniteChains

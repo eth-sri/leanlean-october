@@ -5,9 +5,7 @@ public import RequestProject.TopologicalSingular.SimplexFaceIntersections
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.TopologicalSingular
 universe u
@@ -16,9 +14,6 @@ variable {X : Type u} [TopologicalSpace X] {n : ℕ}
 noncomputable def singularDegeneracy (i : Fin (n + 1)) (tau : Simplex X n) :
     Simplex X (n + 1) := (simplices X).σ i tau
 
-@[simp] theorem singular_face_const (i : Fin (n + 2)) (x : X) :
-    face i (ContinuousMap.const (Domain (n + 1)) x) =
-      ContinuousMap.const (Domain n) x := rfl
 
 @[simp] theorem singular_degeneracy_const (i : Fin (n + 1)) (x : X) :
     singularDegeneracy i (ContinuousMap.const (Domain n) x) =
@@ -71,5 +66,3 @@ theorem singular_horn_filler_of_face_compatible {Y : Type} [TopologicalSpace Y]
   have hka : j.succAbove a ≠ i := by simpa only [ha] using hk
   have he := congrArg (fun t : Simplex Y n => t q) (hg j a hj hka)
   simpa only [face_apply, ha, hq, hw] using he
-
-end FiniteChains.TopologicalSingular

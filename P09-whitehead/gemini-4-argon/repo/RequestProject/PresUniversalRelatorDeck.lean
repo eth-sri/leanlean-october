@@ -24,5 +24,3 @@ theorem presUniversalEnd_isPosetCover :
   have h := hpos j
   rw [he, List.length_nil] at h
   omega
-
-end FiniteChains.PresModel

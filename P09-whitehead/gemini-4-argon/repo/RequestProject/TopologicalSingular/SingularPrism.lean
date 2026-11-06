@@ -88,5 +88,3 @@ theorem homotopic_maps_difference_bounds (n : ℕ) (c : Chain X (n + 1)) (hc : b
       LinearMap.range (boundary (n + 1)) := by
   refine ⟨prism H (n + 1) c, ?_⟩
   simpa only [hc, map_zero, add_zero] using prism_identity_succ H n c
-
-end FiniteChains.SingularPrism

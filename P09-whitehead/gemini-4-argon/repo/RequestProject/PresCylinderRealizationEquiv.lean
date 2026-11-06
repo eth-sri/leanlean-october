@@ -21,5 +21,3 @@ def presCylinderRealizationHomotopyEquiv :
       (orderNerveRealization (Rose A)) :=
   rankOneCylinderRealizationHomotopyEquiv (aHom w) (circleDimension w)
     (circleDimension_strictMono w) (circleDimension_le_one w)
-
-end FiniteChains.PresModel

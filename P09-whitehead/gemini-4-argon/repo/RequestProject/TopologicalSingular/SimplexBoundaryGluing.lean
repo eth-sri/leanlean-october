@@ -5,9 +5,7 @@ public import RequestProject.TopologicalSingular.TriangleSquareGeometry
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.TopologicalSingular
 open scoped unitInterval Topology
@@ -94,5 +92,3 @@ theorem simplex_face_homotopy_extension (f : C(Domain (n + 1), X))
   refine ⟨g, F, ?_⟩
   intro i t z
   exact (hF t (simplexFaceBoundary i z)).trans (hB i t z)
-
-end FiniteChains.TopologicalSingular

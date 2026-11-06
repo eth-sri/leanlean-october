@@ -14,9 +14,7 @@ filtration. Both generator and relator embeddings are actual injective
 maps of the retained labels. Unverified source. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.ClassicalCW.ChainWords
 open ClassicalSkeletonAttachment ClassicalGraphModel RelativeAttachment PresModel
@@ -42,7 +40,7 @@ theorem roseWord_loop_natural {i k : Fin (n + 1)} (hik : i ≤ k)
   letI := subcomplexZeroSkeleton_discrete (C i)
   letI := subcomplexZeroSkeleton_discrete (C k)
   unfold roseWord
-  rw (config := { transparency := .default }) [word_natural C hC hik j]
+  erw [word_natural C hC hik j]
   exact BoundaryWords.eraseTree_loop_natural _ _ _ _
     (subcomplexGraphInclusion (hC hik)) (chainTree_compatible K C hC hconn hik) _
 
@@ -76,7 +74,7 @@ theorem canonicalRelators_natural {i k : Fin (n + 1)} (hik : i ≤ k)
   | inl j =>
       simp only [canonicalRelators, canonicalCellInclusion, StabilizedDiskPresentation.withDummy,
         Function.Embedding.coeFn_mk, Sum.map_inl]
-      rw (config := { transparency := .default }) [roseWord_loop_natural K C hC hconn hik j]
+      erw [roseWord_loop_natural K C hC hconn hik j]
       simp only [FreeGroup.map.mk, List.map_map]
       rfl
   | inr u =>
@@ -135,11 +133,11 @@ theorem stabilizedCellBoundary_homotopic (i : Fin (n + 1)) (j : CanonicalRel K C
       have H₁ := H₀.trans (boundaryWords_homotopic_classicalWord (roseWord K C hC hconn i j))
       have H := (ContinuousMap.Homotopic.refl (diskRoseMap
         (Sum.inl : RoseGen K C hC hconn i → CanonicalGen K C hC hconn i))).comp H₁
-      rw (config := { transparency := .default }) [classicalRoseWordBoundary_map] at H
+      erw [classicalRoseWordBoundary_map] at H
       have he : FreeGroup.mk (((roseWord K C hC hconn i j).loopWord).map
           (fun p => (Sum.inl p.1, p.2))) =
           FreeGroup.mk (canonicalWords K C hC hconn i (Sum.inl j)) := by
-        rw (config := { transparency := .default }) [canonicalWords_mk]
+        erw [canonicalWords_mk]
         rfl
       exact H.trans ((classicalRoseWordBoundary_homotopic_of_mk_eq he).trans
         (classicalPresWordAttaching_homotopic_read (canonicalWords K C hC hconn i)
@@ -149,7 +147,7 @@ theorem stabilizedCellBoundary_homotopic (i : Fin (n + 1)) (j : CanonicalRel K C
       have H := (ContinuousMap.Homotopic.refl (diskRoseMap
         (Sum.inr : PUnit → CanonicalGen K C hC hconn i))).comp
           dummyCircleBoundaryHomeomorph_homotopic_word
-      rw (config := { transparency := .default }) [classicalRoseWordBoundary_map] at H
+      erw [classicalRoseWordBoundary_map] at H
       have he : FreeGroup.mk ([(PUnit.unit, true)].map
           (fun p => ((Sum.inr p.1 : CanonicalGen K C hC hconn i), p.2))) =
           FreeGroup.mk (canonicalWords K C hC hconn i (Sum.inr PUnit.unit)) :=
@@ -157,5 +155,3 @@ theorem stabilizedCellBoundary_homotopic (i : Fin (n + 1)) (j : CanonicalRel K C
       exact H.trans ((classicalRoseWordBoundary_homotopic_of_mk_eq he).trans
         (classicalPresWordAttaching_homotopic_read (canonicalWords K C hC hconn i)
           (Sum.inr PUnit.unit) (canonicalWords_ne_nil K C hC hconn i)).symm)
-
-end FiniteChains.ClassicalCW.ChainWords

@@ -6,9 +6,7 @@ public import RequestProject.TopologicalSingular.MathlibComparison
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.TopologicalSingular
 open CategoryTheory AlgebraicTopology
@@ -68,5 +66,3 @@ theorem singularHurewicz2_pushdown_zero_of_killsPi2 (f : C(X, Y)) (hf : Whitehea
     ((((singularHomologyFunctor (ModuleCat.{0} ℤ) 2).obj (ModuleCat.of ℤ ℤ)).map
       (TopCat.ofHom f)).hom (singularHurewicz2 x z)) = 0 := by
   rw [singularHurewicz2_natural, (Whitehead.killsPi2_iff f).mp hf x z, singularHurewicz2_one]
-
-end FiniteChains.TopologicalSingular

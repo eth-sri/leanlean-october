@@ -43,5 +43,3 @@ theorem shortComplex_homologyMap_mono_of_reflects_boundaries
       (∃ b : T.X₁, T.f b = φ.τ₂ c) → ∃ a : S.X₁, S.f a = c) :
     Mono (ShortComplex.homologyMap φ) :=
   (ModuleCat.mono_iff_injective _).mpr (shortComplex_homologyMap_injective_of_reflects_boundaries φ h)
-
-end FiniteChains.TopologicalSingular

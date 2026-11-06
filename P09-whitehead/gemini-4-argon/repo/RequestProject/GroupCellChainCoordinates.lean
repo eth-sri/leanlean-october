@@ -5,9 +5,7 @@ public import Mathlib.Algebra.MonoidAlgebra.Basic
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 universe u v
@@ -29,5 +27,3 @@ theorem groupCellChainEquiv_single (g : G) (i : I) (n : ℤ) :
   change Finsupp.mapRange _ _ (Finsupp.single (i, g) n).curry = _
   rw [Finsupp.curry_single (i, g) n]
   simp [Finsupp.mapRange_single, MonoidAlgebra.coeffLinearEquiv_symm_apply]
-
-end FiniteChains

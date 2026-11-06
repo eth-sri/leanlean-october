@@ -87,5 +87,3 @@ theorem generatesDegreeIn_union_of_unmixed {A B U Base : P → Prop} {n : ℕ}
     rw [he₁, he₂] at h
     rw [hab, ← h, map_add]
     abel
-
-end FiniteChains.Nerve

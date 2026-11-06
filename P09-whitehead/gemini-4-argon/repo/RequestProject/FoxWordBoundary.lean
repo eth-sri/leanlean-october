@@ -55,5 +55,3 @@ theorem foxWordPathBoundary_eq (i : α) (g : FreeGroup α) (l : List (α × Bool
 theorem foxWordPathBoundary_one (i : α) (l : List (α × Bool)) :
     foxWordPathBoundary i 1 l = fox i (FreeGroup.mk l) := by
   rw [foxWordPathBoundary_eq, grp_one, one_mul]
-
-end FiniteChains

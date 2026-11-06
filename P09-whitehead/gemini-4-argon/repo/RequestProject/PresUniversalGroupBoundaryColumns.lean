@@ -45,5 +45,3 @@ theorem presUniversalGroupBoundary_actual_column
   congr 1
   rw [presUniversalGeneratorGroupChainEquiv, Finsupp.domLCongr_single,
     presUniversalGeneratorGroupEquiv_midpoint, presUniversalLetter_midpoint_coordinates]
-
-end FiniteChains.PresModel

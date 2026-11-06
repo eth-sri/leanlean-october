@@ -13,9 +13,7 @@ of a genuine topological covering has both properties. Unverified source. -/
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.RegularCoverLabels
 universe u v
@@ -102,7 +100,5 @@ theorem edge_rel (f : K.F) : EdgeLabels.read (edge p hp a hr) (K.att f) = 1 := b
   obtain ⟨g, ⟨hg, hb⟩, _⟩ := exists_unique_liftCell hp f
     (sectionV_spec p hp (K.base f)).symm
   have h := read_projected_path p hp a hr he (D.att_isLoop g)
-  rw [mapPath_att, hg] at h
+  rw [show mapPath p (D.att g) = K.att (p.onF g) from (p.att_onF g).symm, hg] at h
   simpa using h
-
-end FiniteChains.Comb.RegularCoverLabels

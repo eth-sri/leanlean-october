@@ -63,5 +63,3 @@ theorem subcomplexBoundaryWord_map (h : (C : Set X) ⊆ D)
       (W.map (subcomplexGraphInclusion h)).boundaryMap :=
   W.boundaryMap_map (subcomplexGraphInclusion h) (subcomplexGraphDiskMap h)
     (subcomplexGraphDiskMap_old h) (subcomplexGraphDiskMap_edge h)
-
-end FiniteChains.ClassicalCW

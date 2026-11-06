@@ -74,5 +74,3 @@ theorem uOrderEnd_isPosetCover (hc : IsConnected (orderCx P)) :
   surj := endV_surjective hc
   up := uOrder_unique_up
   down := uOrder_unique_down
-
-end FiniteChains.Comb

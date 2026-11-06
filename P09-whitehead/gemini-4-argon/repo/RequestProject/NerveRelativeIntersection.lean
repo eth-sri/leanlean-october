@@ -1,6 +1,6 @@
 module
 
-public import RequestProject.NerveIntersectionGeneration
+public import RequestProject.NerveDegreeGluing
 
 @[expose] public section
 
@@ -53,5 +53,3 @@ theorem relative_filling_intersection_of_ambient {A B U : P → Prop} {n : ℕ}
   · have h := congrArg (lengthProjection (n + 1)) he₀
     rw [hd, map_add, lengthProjection_bdry] at h
     exact h
-
-end FiniteChains.Nerve

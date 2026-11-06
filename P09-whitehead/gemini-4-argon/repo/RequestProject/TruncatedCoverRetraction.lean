@@ -30,9 +30,6 @@ def truncatedCoverSection (p : P) : TruncatedCover f :=
 theorem truncatedCoverSection_monotone (hf : Monotone f) :
     Monotone (truncatedCoverSection f) := fun _ _ h => ⟨h, oldCellIncl_monotone (hf h)⟩
 
-omit [DecidableEq V] [PartialOrder P] in
-@[simp] theorem truncatedCoverRetraction_section (p : P) :
-    truncatedCoverRetraction f (truncatedCoverSection f p) = p := rfl
 
 theorem truncatedCover_le_section_retraction (p : TruncatedCover f) :
     p ≤ truncatedCoverSection f (truncatedCoverRetraction f p) := by
@@ -50,5 +47,3 @@ theorem truncatedCoverRetraction_reflects_boundaries (hf : Monotone f)
   boundary_reflection_of_upper_section (truncatedCoverRetraction f) (truncatedCoverSection f)
     (posetPullbackOriginal_monotone f _) (truncatedCoverSection_monotone f hf)
     (truncatedCover_le_section_retraction f) c hc hcyc hbound
-
-end FiniteChains.Davis

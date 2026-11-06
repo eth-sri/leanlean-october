@@ -88,5 +88,3 @@ theorem ruleOne_preserves_zero
     (rawInclusion core extra hpt) (pairInclusion core extra hpt)
     (ruleOne_chain_square core extra hpt) hzero
     (relativeRuleOneMap_generates core (restrictedExtra extra p)) hx
-
-end FiniteChains.RelativeNormalForm

@@ -168,5 +168,3 @@ theorem diskAttachment_t2Space [T2Space X]
       have heq' := hf.injective heq
       subst e'
       exact Set.disjoint_left.mp hUV hd' he'
-
-end FiniteChains.RelativeAttachment

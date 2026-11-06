@@ -72,5 +72,3 @@ theorem old_two_cycle_zero (hD : IsAcyclic D)
     (translatedOldLift_injective_E p hp a hr he i hiV hiE hiF hconn d₀ ht)
     (translatedOldLift_injective_F p hp a hr he i hiV hiE hiF hconn d₀ ht)
     hD (copy_ranges_eq_of_meet p a hr he hf i hiV hiE hiF hconn d₀ ht hEconn) z hs' hz
-
-end FiniteChains.Comb.PushoutOldCover

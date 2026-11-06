@@ -10,9 +10,7 @@ public import Mathlib.Topology.Path
 The interval parametrization uses the original sup-norm characteristic disks. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.ClassicalGraphModel
 open RelativeAttachment
@@ -135,5 +133,3 @@ def graphGermPath (g : J × Bool) :
   cases b
   · exact (graphEdgePath r j).symm
   · exact graphEdgePath r j
-
-end FiniteChains.ClassicalGraphModel

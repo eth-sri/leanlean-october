@@ -24,5 +24,3 @@ instance relatorCircle_finite : Finite (RelatorCircle w j) := by
 theorem relatorCircle_nonempty (hw : w j ≠ []) : Nonempty (RelatorCircle w j) := by
   have hn : 0 < (w j).length := List.length_pos_of_ne_nil hw
   exact ⟨⟨TCirc.pt w j 0 CPos.cor, rfl, hn⟩⟩
-
-end FiniteChains.PresModel

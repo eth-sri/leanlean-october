@@ -7,9 +7,7 @@ public import RequestProject.CombPi2
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel.PresWordEmbedding
 open Comb
@@ -124,5 +122,3 @@ theorem readVertex_map (x : PresPos w) (p : UV (orderCx (PresPos w)) x) :
         φ ((presCoc w a hw).readVertex x p) := by
   induction p using Quotient.inductionOn with
   | h p => exact h.readPath_map a b φ hb hw hv p.val
-
-end FiniteChains.PresModel.PresWordEmbedding

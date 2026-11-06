@@ -140,5 +140,3 @@ theorem orderNerveWithTopBallHomeomorph_boundary (x : orderNerveRealization P) :
       unitBoundaryInclusion E (e x) := by
   rw [← orderNerveRadialCone_one P x, orderNerveWithTopBallHomeomorph_radial,
     ballRadialQuotient_one]
-
-end FiniteChains.Comb

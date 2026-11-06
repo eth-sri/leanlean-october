@@ -76,5 +76,3 @@ theorem vertexBoundaryMap_finiteLowerBoundary
   · exact Finset.mem_image.mpr ⟨a, Finset.mem_univ a, rfl⟩
   · rw [RelCWComplex.closedCell_zero_eq_singleton]
     rfl
-
-end FiniteChains.RelativeAttachment

@@ -8,9 +8,7 @@ public import Mathlib.Topology.Homotopy.Lifting
 
 /-! General topological covering/pi2 results moved unchanged from Solution. -/
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace Whitehead
 open scoped unitInterval Topology
@@ -138,5 +136,3 @@ theorem killsPi2_covering_precomp_iff {E X Y : Type}
     rwa [ha] at he
   · intro h e a
     exact h (p e) (mapSquare p a)
-
-end Whitehead

@@ -41,5 +41,3 @@ theorem standardSimplexClosedBallHomeomorph_positive_iff (n : ℕ)
     ← (reducedSimplexBallAmbient_properties n).1]
   simp only [Set.mem_image, (reducedSimplexBallAmbient n).injective.eq_iff]
   exact ⟨fun h => ⟨_, h, rfl⟩, fun ⟨_, h, he⟩ => he ▸ h⟩
-
-end FiniteChains

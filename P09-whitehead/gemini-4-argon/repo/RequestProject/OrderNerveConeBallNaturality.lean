@@ -52,5 +52,3 @@ theorem orderNerveWithTopBallHomeomorph_natural (x : orderNerveRealization (With
   obtain ⟨⟨r, y⟩, rfl⟩ := orderNerveRadialCone_surjective P x
   rw [orderNerveRadialCone_natural, orderNerveWithTopBallHomeomorph_radial,
     orderNerveWithTopBallHomeomorph_radial, hb]
-
-end FiniteChains.Comb

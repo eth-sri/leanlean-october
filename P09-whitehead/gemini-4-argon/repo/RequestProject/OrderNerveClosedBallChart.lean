@@ -6,9 +6,7 @@ public import RequestProject.OrderNerveRealizationWeakTopology
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory Simplicial
@@ -54,5 +52,3 @@ theorem orderNerveClosedBallChart_injective {P : Type} [PartialOrder P]
   (orderNerveRealizationSimplex_injective s.val
     ((PartialOrder.mem_nerve_nonDegenerate_iff_injective s.val).mp s.property)).comp
       (ULift.up_injective.comp (orderNerveSimplexClosedBallHomeomorph n).symm.injective)
-
-end FiniteChains.Comb

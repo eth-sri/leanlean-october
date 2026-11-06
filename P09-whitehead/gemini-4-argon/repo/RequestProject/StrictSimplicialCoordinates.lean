@@ -1,3 +1,0 @@
-module
-public import RequestProject.FiniteSetBoundary
-public import RequestProject.StrictOrderChains

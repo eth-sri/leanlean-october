@@ -1,7 +1,7 @@
 module
 
 public import RequestProject.OrderComparableCollapse
-public import RequestProject.OrderComparableEdgeFan
+public import RequestProject.StrictOrderChains
 public import RequestProject.PosetCoverDownTransform
 
 @[expose] public section
@@ -24,5 +24,3 @@ theorem strict_twoCycle_cover_lower_cone (hf : IsPosetCover f) (b : Q)
     have hw := hf.downTransform_spec (fun _ => b) hb w
     exact hf.down_inj (hv.1.trans hvw) hw.1 (hv.2.trans hw.2.symm)
   exact strict_cycle_boundary_of_downward_collapse g hg hgle he c hc
-
-end FiniteChains.Comb

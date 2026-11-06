@@ -13,9 +13,7 @@ exactly the realized letter-reading map with the specified circle
 parametrization. No presentation-to-CW comparison is assumed. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb RelativeAttachment
@@ -66,7 +64,7 @@ theorem presOldRoseHomotopyEquiv_link (j : J)
             (coneAdjLinkOrderIso (circSet w) (RelatorCircle w) (relatorCircleOrderIso w) j)
             (coneAdjLinkOrderIso (circSet w) (RelatorCircle w)
               (relatorCircleOrderIso w) j).monotone x))) = _
-  rw (config := { transparency := .default }) [orderNerveRealizationMap_comp, orderNerveRealizationMap_comp,
+  erw [orderNerveRealizationMap_comp, orderNerveRealizationMap_comp,
     orderNerveRealizationMap_comp]
   have hf : (cylRetr (aHom w) ∘ coneAdjBaseOrderIso ∘ coneAdjBoundaryToBase (circSet w) j ∘
       coneAdjLinkOrderIso (circSet w) (RelatorCircle w) (relatorCircleOrderIso w) j) =
@@ -91,7 +89,7 @@ theorem presRoseDiskAttaching_link (j : J) (x : orderNerveRealization (RelatorCi
     presRoseDiskAttaching w b ⟨j, b j x⟩ = presCircleWordMap w j x := by
   change presOldRoseHomotopyEquiv w
     (coneAdjDiskAttaching (circSet w) (RelatorCircle w) (relatorCircleOrderIso w) b ⟨j, b j x⟩) = _
-  rw (config := { transparency := .default }) [coneAdjDiskAttaching_link]
+  erw [coneAdjDiskAttaching_link]
   exact presOldRoseHomotopyEquiv_link w j x
 
 omit [NormedSpace ℝ E] [ProperSpace E] in
@@ -120,7 +118,5 @@ def presRealizationRoseDiskHomotopyEquiv :
   letI : ∀ j, Nonempty (RelatorCircle w j) := fun j => relatorCircle_nonempty w j (hw j)
   change diskAttachmentBaseChangeHomotopyEquiv _ _
     (coneAdjRealizationDiskHomeomorph _ _ _ _ (coneAdjRealizationOld _ x)) = _
-  rw (config := { transparency := .default }) [coneAdjRealizationDiskHomeomorph_old, diskAttachmentBaseChangeHomotopyEquiv_old]
+  erw [coneAdjRealizationDiskHomeomorph_old, diskAttachmentBaseChangeHomotopyEquiv_old]
   rfl
-
-end FiniteChains.PresModel

@@ -6,9 +6,7 @@ public import RequestProject.OrderNerveSmallSingularApproximation
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory TopologicalSingular SingularSubdivision
@@ -24,7 +22,7 @@ theorem orderSmallSingularApproximation_boundary (n : ℕ)
     boundary n (orderSmallSingularApproximation P (n + 1) c) =
       orderSmallSingularApproximation P n (smallBoundary (orderNerveRealizationOpenStar P) n c) := by
   change boundary n (orderNerveGradedRealize P (n + 1) (orderSmallToNerve P (n + 1) c)) = _
-  rw (config := { transparency := .default }) [orderNerveGradedRealize_boundary n (orderSmallToNerve_mem_inc (n + 1) c),
+  erw [orderNerveGradedRealize_boundary n (orderSmallToNerve_mem_inc (n + 1) c),
     orderSmallToNerve_boundary]
   rfl
 
@@ -38,13 +36,11 @@ theorem orderSmallSingularApproximation_zero :
   apply orderSmallSingle_spans
   intro σ
   change orderNerveGradedRealize P 0 (orderSmallToNerve0 (orderSmallSingle σ 1)) = _
-  rw (config := { transparency := .default }) [orderSmallToNerve0_single, one_smul, orderSmallSingularApproximation0_single]
+  erw [orderSmallToNerve0_single, one_smul, orderSmallSingularApproximation0_single]
   have hl : orderNerveVertexList (ComposableArrows.mk₀ (orderSmallChosenVertex σ)) =
       [orderSmallChosenVertex σ] := by simp [orderNerveVertexList, List.ofFn_succ]
   change (orderNerveExplicitSingularMap P).f 0
     (orderNerveGradedDecode 0 (FreeAbelianGroup.of [orderSmallChosenVertex σ])) = _
-  rw (config := { transparency := .default }) [orderNerveGradedDecode_of, ← hl, orderNerveGradedDecodeList_vertexList,
+  erw [orderNerveGradedDecode_of, ← hl, orderNerveGradedDecodeList_vertexList,
     orderNerveExplicitSingularMap_single]
   rfl
-
-end FiniteChains.Comb

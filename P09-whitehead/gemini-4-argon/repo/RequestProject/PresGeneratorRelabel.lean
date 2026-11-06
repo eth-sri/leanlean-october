@@ -39,5 +39,3 @@ theorem backward_forward_E (x : A) :
 
 theorem backward_forward_F (x : J) :
     (backward e ρ σ hrel).onF ((forward e ρ σ hrel).onF x) = x := rfl
-
-end FiniteChains.Comb.PresGeneratorRelabel

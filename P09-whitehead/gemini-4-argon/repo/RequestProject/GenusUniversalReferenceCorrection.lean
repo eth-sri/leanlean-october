@@ -10,9 +10,7 @@ public import RequestProject.GenusNormalizedSpineFoxFilling
 already used after substitution. Pending final Lean verification. -/
 noncomputable section
 open scoped Classical
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 set_option maxHeartbeats 1600000
 
@@ -32,7 +30,7 @@ def universalOldBaseTransport :
 theorem universalOldBaseTransport_base :
     (universalOldBaseTransport q).onV (UV.base (spineOldCx q) (spineOldBase q)) =
       UV.base (spineOldCx q) (universalSpineOldBase q) := by
-  rw (config := { transparency := .default }) [universalOldBaseTransport, uCoverPathTransport_base]
+  erw [universalOldBaseTransport, uCoverPathTransport_base]
   rfl
 
 def universalSpineMarkingChains :
@@ -60,17 +58,17 @@ theorem universalOldMarkingCorrection_boundary
         (deckV (universalSpineOldReceiver q g) (UV.base (spineOldCx q) (universalSpineOldBase q)))) -
       pathChain (uLiftPath (surfaceOldMarking q i)
         (deckV (universalSpineOldReceiver q g) (UV.base (spineOldCx q) (universalSpineOldBase q)))) := by
-  rw (config := { transparency := .default }) [universalOldMarkingCorrection, DeckAction.faceChains_boundary, bdry2_chain2,
+  erw [universalOldMarkingCorrection, DeckAction.faceChains_boundary, bdry2_chain2,
     spineOldMarkingCorrection_boundary, map_sub, map_sub]
   have hp : IsPath (spineOldCx q).src (spineOldCx q).tgt (spineOldMarking q i)
       (endV (UV.base (spineOldCx q) (universalSpineOldBase q))) (universalSpineOldBase q) := by
-    rw (config := { transparency := .default }) [endV_base, universalSpineOldBase_eq]
+    erw [endV_base, universalSpineOldBase_eq]
     exact spineOldMarking_isPath q i
   have hs : IsPath (spineOldCx q).src (spineOldCx q).tgt (surfaceOldMarking q i)
       (endV (UV.base (spineOldCx q) (universalSpineOldBase q))) (universalSpineOldBase q) := by
-    rw (config := { transparency := .default }) [endV_base, universalSpineOldBase_eq]
+    erw [endV_base, universalSpineOldBase_eq]
     exact surfaceOldMarking_isPath q i
-  rw (config := { transparency := .default }) [universalOldBaseTransport,
+  erw [universalOldBaseTransport,
     uCoverPathTransport_pathChain _ _ (spineOldMarking_isPath q i),
     uCoverPathTransport_pathChain _ _ (surfaceOldMarking_isPath q i)]
   change chain1 ((univDeck (spineOldCx q) (universalSpineOldBase q)).cellHom
@@ -81,7 +79,7 @@ theorem universalOldMarkingCorrection_boundary
       (universalSpineOldReceiver q g))
       (pathChain (uLiftPath (surfaceOldMarking q i)
         ((universalOldBaseTransport q).onV (UV.base (spineOldCx q) (spineOldBase q))))) = _
-  rw (config := { transparency := .default }) [universalOldBaseTransport_base, univDeck_pathChain _ _ _ hp,
+  erw [universalOldBaseTransport_base, univDeck_pathChain _ _ _ hp,
     univDeck_pathChain _ _ _ hs]
 
 def universalOldMarkingCorrections :
@@ -96,7 +94,7 @@ theorem universalOldMarkingCorrections_boundary
   induction c using Finsupp.induction_linear with
   | zero => simp
   | add c d hc hd =>
-    rw (config := { transparency := .default }) [map_add, map_add, hc, hd, map_add, map_add]
+    erw [map_add, map_add, hc, hd, map_add, map_add]
     abel
   | single x n =>
     simp only [universalOldMarkingCorrections, universalSpineMarkingChains,
@@ -107,7 +105,7 @@ theorem universalSpine_marking_path (i : Fin q × Bool) :
     mapPath (universalSpineToOld q) (treeMarkedSpineLoop q i).1 = spineOldMarking q i := by
   change mapPath ((genusSpineToOld q).comp (componentIncl (genusSpineCx q) (spineBase q)))
     (markedSpineLoop q i).1 = _
-  rw (config := { transparency := .default }) [← mapPath_comp, markedSpineLoop_inclusion]
+  erw [← mapPath_comp, markedSpineLoop_inclusion]
   rfl
 
 theorem universalSpine_receiver_root (g : PresGroup (namedSpinePresentation q)) :
@@ -122,10 +120,10 @@ theorem universalSpineMarkingChains_eq
     chain1 (universalNamedSpineComparison q)
       (ReceivedTree.markedChainMap (markedSpineTree q) (universalSpineWordReceiver q)
         (fun i => (treeMarkedSpineLoop q i).1) c) = universalSpineMarkingChains q c := by
-  rw (config := { transparency := .default }) [universalNamedSpineComparison, ReceivedTree.comparison_markedChainMap]
+  erw [universalNamedSpineComparison, ReceivedTree.comparison_markedChainMap]
   induction c using Finsupp.induction_linear with
   | zero => simp
-  | add c d hc hd => rw (config := { transparency := .default }) [map_add, map_add, hc, hd]
+  | add c d hc hd => erw [map_add, map_add, hc, hd]
   | single x n =>
     simp only [ReceivedTree.geometricMarkedChainMap, universalSpineMarkingChains,
       Finsupp.linearCombination_single, universalSpine_marking_path, universalSpine_receiver_root]
@@ -147,9 +145,7 @@ theorem universalReferenceOldChain_boundary
       chain1 (universalNamedSpineComparison q)
         (ReceivedTree.markedChain (markedSpineTree q) (universalSpineWordReceiver q)
           (treeMarkedSpineLoop q) (namedSpineSurfaceMarkingCoefficient q)) := by
-  rw (config := { transparency := .default }) [ReceivedTree.markedChain, universalSpineMarkingChains_eq]
-  rw (config := { transparency := .default }) [universalReferenceOldChain, map_add, hpolygon, universalOldMarkingCorrections_boundary]
+  erw [ReceivedTree.markedChain, universalSpineMarkingChains_eq]
+  erw [universalReferenceOldChain, map_add, hpolygon, universalOldMarkingCorrections_boundary]
   change _ = universalSpineMarkingChains q (universalReferenceMarkingCoefficients q)
   abel
-
-end FiniteChains.Davis.Genus

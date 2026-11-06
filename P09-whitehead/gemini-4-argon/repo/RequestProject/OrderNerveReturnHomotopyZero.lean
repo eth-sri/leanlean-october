@@ -76,5 +76,3 @@ noncomputable def orderReturnHomotopyStageZero : OrderReturnHomotopyStage P 0 wh
       exact (orderReturnHomotopyZero_fill s).choose_spec.2.1
     exact DFunLike.congr_fun he c
   on_boundary c := orderReturnHomotopyZero_identity _
-
-end FiniteChains.Comb

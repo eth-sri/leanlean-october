@@ -86,5 +86,3 @@ theorem qThreeFace_boundary_naturality (c : QCube A) (u v w : V)
         qSquareCubicalBoundary, Finsupp.linearCombination_single,
         threeFacetBoundaryMatrix, Finsupp.linearCombination_single, map_smul,
         qThreeFace_boundary_column c u v w huv hvw hs i]
-
-end FiniteChains.Davis

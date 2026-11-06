@@ -60,5 +60,3 @@ theorem injIn_delete_maximal {C : P → Prop} {t : P}
       exact ⟨⟨hx, hxt.ne⟩, ⟨hx, hxt.le⟩⟩
     · rintro ⟨⟨hx, hne⟩, ⟨_, hle⟩⟩
       exact ⟨hx, lt_of_le_of_ne hle hne⟩
-
-end FiniteChains.Comb

@@ -113,5 +113,3 @@ noncomputable def orderNerveRealizationContiguousHomotopy :
   continuous_toFun := orderNerveRealizationBlend_continuous f hf g hg hc
   map_zero_left := orderNerveRealizationBlend_zero f hf g hg hc
   map_one_left := orderNerveRealizationBlend_one f hf g hg hc
-
-end FiniteChains.Comb

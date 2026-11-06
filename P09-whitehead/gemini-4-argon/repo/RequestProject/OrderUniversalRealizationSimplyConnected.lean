@@ -14,5 +14,3 @@ theorem uOrderRealization_simplyConnected {P : Type} [PartialOrder P] (a : P) :
   letI : Nonempty (UOrder P a) := ⟨UV.base (orderCx P) a⟩
   exact orderNerveRealization_simplyConnected (UOrder P a)
     uOrder_complex_isConnected uOrder_complex_simplyConnected
-
-end FiniteChains.Comb

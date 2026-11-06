@@ -50,5 +50,3 @@ theorem qThreeCube_component_boundary (c : QThreeCube A)
       k • qThreeCubeBoundary c :=
   qCube_three_component_boundary_scalar c.1 _ _ _ (qThree_middle_lt_upper c)
     (qThree_lower_lt_middle c) (qThree_free_directions c) y hy hb
-
-end FiniteChains.Davis

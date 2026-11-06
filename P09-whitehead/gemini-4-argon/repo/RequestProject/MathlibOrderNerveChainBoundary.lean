@@ -6,9 +6,7 @@ public import Mathlib.AlgebraicTopology.AlternatingFaceMapComplex
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory
@@ -87,5 +85,3 @@ theorem mathlibOrderNerve_d3 (c : OrdTet P →₀ ℤ) :
       (Finsupp.mapDomain (ordTetNerveEquiv P) (Finsupp.single t 1)) = _
     rw [Finsupp.mapDomain_single]
     exact mathlibOrderNerve_d3_single P t
-
-end FiniteChains.Comb

@@ -22,5 +22,3 @@ theorem bdry1_chain1 (f : Hom X Y) (z : X.E →₀ ℤ) :
       change bdry1 Y (Finsupp.mapDomain f.onE (Finsupp.single e n)) = _
       rw [Finsupp.mapDomain_single, bdry1_single, bdry1_single, map_smul, map_sub]
       simp [chain0, f.src_onE, f.tgt_onE]
-
-end FiniteChains.Comb

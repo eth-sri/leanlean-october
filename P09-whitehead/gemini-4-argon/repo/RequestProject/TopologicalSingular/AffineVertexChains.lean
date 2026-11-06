@@ -18,9 +18,7 @@ the genuine equally weighted barycenters.
 -/
 
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.AffineVertexChains
 
@@ -130,5 +128,3 @@ theorem affineEval_standardVertices (d : ℕ) :
   apply Subtype.ext
   funext j
   simp [affineEval, standardVertices, Finset.sum_apply, Pi.single_apply]
-
-end FiniteChains.AffineVertexChains

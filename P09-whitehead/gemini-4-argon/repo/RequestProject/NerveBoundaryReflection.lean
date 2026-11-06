@@ -47,5 +47,3 @@ theorem reflectsBoundsIn_trans {U B C : P → Prop} {n : ℕ}
     (hBC : ReflectsBoundsIn B C n) : ReflectsBoundsIn U C n := by
   intro c hc hd hbound
   exact hBC c hc hd (hUB c (incOn_mono hCB hc) hd hbound)
-
-end FiniteChains.Nerve

@@ -1,7 +1,8 @@
 module
 
 public import RequestProject.CombPi2
-public import RequestProject.Framework
+public import RequestProject.Pigeonhole
+public import RequestProject.SubgroupCompactness
 
 @[expose] public section
 
@@ -32,8 +33,7 @@ can now be instantiated by honest definitions:
 Non-vacuity is checked on the one-point complex.
 -/
 
-namespace FiniteChains
-namespace Comb
+namespace FiniteChains.Comb
 
 universe u
 
@@ -67,16 +67,3 @@ def Hom.comp {X Y Z : Complex2.{u}} (g : Hom Y Z) (h : Hom X Y) : Hom X Z where
     show Z.att (g.onF (h.onF f)) = (X.att f).map (fun eb => (g.onE (h.onE eb.1), eb.2))
     rw [g.att_onF, h.att_onF]
     simp
-
-/-- **Subcomplex**: a cellular map injective on vertices, edges and two-cells. -/
-def Sub (X Y : Complex2.{u}) : Prop :=
-  ∃ h : Hom X Y, Function.Injective h.onV ∧ Function.Injective h.onE ∧ Function.Injective h.onF
-
-end Comb
-
-namespace Comb
-
-/-! ### Non-vacuity: the one-point complex -/
-
-end Comb
-end FiniteChains

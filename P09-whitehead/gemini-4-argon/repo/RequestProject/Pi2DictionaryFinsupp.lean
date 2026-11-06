@@ -6,9 +6,7 @@ public import RequestProject.CoverComplexFinsupp
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open MonoidAlgebra
@@ -111,5 +109,3 @@ theorem fs_univCover_zero_pi2_iff (ρ : J → FreeGroup α)
       simpa only [fs_coverSecondBoundary_apply, Finsupp.zero_apply] using hi)
     rw [mapDomain_mapRange_eq_zero_iff Φ g hg] at hz
     exact (fs_mapDomain_prodMap_eq_zero_iff Φ g hg u).mpr hz
-
-end FiniteChains.Comb

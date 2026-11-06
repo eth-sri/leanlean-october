@@ -59,6 +59,3 @@ theorem nonTree_or_face_fresh {h : Hom X Y} {T : SpanningTree X}
     rintro ⟨a, ha⟩
     exact he ⟨a.val, congrArg Subtype.val ha⟩
   · exact Or.inr hf
-
-end SpanningTree
-end FiniteChains.Comb

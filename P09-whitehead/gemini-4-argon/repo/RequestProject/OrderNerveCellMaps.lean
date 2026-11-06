@@ -7,9 +7,7 @@ public import RequestProject.OrderNerveDecoding
 @[expose] public section
 
 /-! Naturality of actual cellular order chains in the full nerve. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -38,5 +36,3 @@ theorem chain2_ordBoundary3 (f : P → Q) (hf : Monotone f) (c : OrdTet P →₀
         Finsupp.mapDomain_single, ordBoundary3, Finsupp.linearCombination_single]
       congr 1
       exact ordTetMap_boundary f hf t
-
-end FiniteChains.Comb

@@ -1,12 +1,11 @@
 module
 
-public import RequestProject.PresValidPoset
+public import RequestProject.PresConeIntervals
+public import RequestProject.PresPosetConnected
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb
@@ -53,7 +52,7 @@ theorem circleFun_le_iff (c d : TCirc w) : h.circleFun c ≤ h.circleFun d ↔ c
   rcases d with ⟨j', k', t'⟩
   change h.circleFun _ = h.circleFun _ ∨ TCirc.lt v _ _ ↔
     (j, k, t) = (j', k', t') ∨ TCirc.lt w _ _
-  rw (config := { transparency := .default }) [h.circleFun_injective.eq_iff]
+  erw [h.circleFun_injective.eq_iff]
   simp only [circleFun, TCirc.lt, TCirc.csucc, h.cell.injective.eq_iff, h.word_length]
 
 def circleMap : TCirc w ↪o TCirc v where
@@ -146,46 +145,3 @@ def posMap : PresPos w ↪o PresPos v where
   toFun := h.posFun
   inj' := h.posFun_injective
   map_rel_iff' := h.posFun_le_iff _ _
-
-theorem valid_iff (p : PresPos w) :
-    h.posFun p ∈ presValidVertices v ↔ p ∈ presValidVertices w := by
-  cases p with
-  | inr j => exact Iff.rfl
-  | inl p =>
-    cases p with
-    | inl r => exact Iff.rfl
-    | inr c =>
-      change c.2.1 < (v (h.cell c.1)).length ↔ c.2.1 < (w c.1).length
-      rw [h.word_length]
-
-/-- An actual order embedding of the finite-position models. -/
-def validMap : ValidPresPos w ↪o ValidPresPos v where
-  toFun p := ⟨h.posFun p.val, (h.valid_iff p.val).mpr p.property⟩
-  inj' := fun _ _ he => Subtype.ext (h.posFun_injective (congrArg Subtype.val he))
-  map_rel_iff' := h.posFun_le_iff _ _
-
-@[simp] theorem validMap_base : h.validMap (validPresBase w) = validPresBase v := rfl
-
-def refl (w : J → List (α × Bool)) : PresWordEmbedding w w where
-  gen := Function.Embedding.refl _
-  cell := Function.Embedding.refl _
-  word _ := by simp
-
-def trans (k : PresWordEmbedding v z) : PresWordEmbedding w z where
-  gen := h.gen.trans k.gen
-  cell := h.cell.trans k.cell
-  word j := by
-    rw [Function.Embedding.trans_apply, k.word, h.word, List.map_map]
-    rfl
-
-@[simp] theorem validMap_refl (p : ValidPresPos w) : (refl w).validMap p = p := by
-  apply Subtype.ext
-  rcases p with ⟨p, hp⟩
-  cases p with
-  | inr j => rfl
-  | inl p => cases p with
-    | inl r => cases r <;> rfl
-    | inr c => rfl
-
-end PresWordEmbedding
-end FiniteChains.PresModel

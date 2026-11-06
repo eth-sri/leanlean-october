@@ -4,9 +4,7 @@ public import RequestProject.PresCoverCollapsedFanBoundary
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb
@@ -34,12 +32,12 @@ theorem presCoverCylinderRelatorBoundary_inclusion (p : PresCoverRelator w f) :
     chain1 (strictSubposetIncl {p : P | f p ∈ coneAdjBaseSet (S := circSet w)})
       (presCoverCylinderRelatorBoundary w f hf p) =
       Comb.bdry2 (strictOrderCx P) (presCoverRelatorFan w f hf p) := by
-  rw (config := { transparency := .default }) [presCoverRelatorFan_boundary]
+  erw [presCoverRelatorFan_boundary]
   change Finsupp.mapDomain (strictSubposetIncl {p : P | f p ∈ coneAdjBaseSet (S := circSet w)}).onE
     (Finsupp.mapDomain (strictOrderCxMap (presCoverCircleCylinderInclusion w f hf p)
       (presCoverCircleCylinderInclusion_strictMono w f hf p)).onE
       (relatorCircleFundamentalChain w p.1.2)) = _
-  rw (config := { transparency := .default }) [← Finsupp.mapDomain_comp]
+  erw [← Finsupp.mapDomain_comp]
   rfl
 
 /-- The actual attaching-boundary map on genuine finite lifted-relator chains. -/
@@ -54,9 +52,9 @@ theorem presCoverCylinderRelatorBoundaryChain_inclusion (c : PresCoverRelator w 
       Comb.bdry2 (strictOrderCx P) (presCoverRelatorFanChain w f hf c) := by
   induction c using Finsupp.induction_linear with
   | zero => simp
-  | add c d hc hd => rw (config := { transparency := .default }) [map_add, map_add, map_add, map_add, hc, hd]
+  | add c d hc hd => erw [map_add, map_add, map_add, map_add, hc, hd]
   | single p n =>
-    rw (config := { transparency := .default }) [presCoverCylinderRelatorBoundaryChain, Finsupp.linearCombination_single,
+    erw [presCoverCylinderRelatorBoundaryChain, Finsupp.linearCombination_single,
       map_smul, presCoverCylinderRelatorBoundary_inclusion, presCoverRelatorFanChain,
       Finsupp.linearCombination_single, map_smul]
 
@@ -72,7 +70,5 @@ theorem presCover_cycle_collapsed_relator_boundary_zero
     Finsupp.mapDomain_injective
       (strictSubposetIncl_onE_injective {p : P | f p ∈ coneAdjBaseSet (S := circSet w)})
       ((presCoverCylinderRelatorBoundaryChain_inclusion w f hf _).trans hb.symm)
-  rw (config := { transparency := .default }) [he]
+  erw [he]
   exact hz
-
-end FiniteChains.PresModel

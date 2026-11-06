@@ -80,5 +80,3 @@ def HasChain (K : TwoComplex) (n : ℕ) (finite : Bool) : Prop :=
     ∀ i : Fin n, ∃ h : (C i.castSucc : Set L) ⊆ (C i.succ : Set L),
       (C i.castSucc : Set L) ≠ (C i.succ : Set L) ∧
       KillsPi2 ⟨Set.inclusion h, continuous_inclusion h⟩
-
-end Whitehead

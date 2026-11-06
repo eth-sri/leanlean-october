@@ -1,14 +1,18 @@
 module
 
-public import RequestProject.ChamberQuotientChosenGeneration
+public import RequestProject.ChamberQuotientBaseSimplyConnected
+public import RequestProject.OrderComponentLabels
+public import RequestProject.OrderPosetCovering
+public import RequestProject.SimplyConnectedCoverEquiv
+public import RequestProject.OrderUniversalDeck
+public import RequestProject.OrderSubposetChains
+public import RequestProject.StrictOrderChains
 
 @[expose] public section
 
 /-! Actual quotient cycles are generated modulo genuine three-boundaries by
 deck translates of genuine universal-cover cycles of the chosen base. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb
@@ -35,7 +39,7 @@ theorem qpos_isConnected_of_zpos
   have h := isPath_mapPath p hl
   change IsPath (orderCx (Qpos A X att)).src (orderCx (Qpos A X att)).tgt
     (mapPath p l) (zProj v) (zProj w) at h
-  rw (config := { transparency := .default }) [hv, hw] at h
+  erw [hv, hw] at h
   exact ⟨mapPath p l, h⟩
 
 omit [Fintype V] in
@@ -54,16 +58,12 @@ theorem exists_qCover_base_cycle_preimage {a : Qpos A X att}
   have hes : ∀ t ∈ e.support, t.1.1 ∈ S ∧ t.1.2.1 ∈ S ∧ t.1.2.2 ∈ S := by
     intro t ht
     have ht' : uOrderFace t ∈ c.support := by
-      rw (config := { transparency := .default }) [← he', Finsupp.mapDomain_support_of_injective uOrderFace_injective]
+      erw [← he', Finsupp.mapDomain_support_of_injective uOrderFace_injective]
       exact Finset.mem_image.mpr ⟨t, ht, rfl⟩
     exact hs _ ht'
   obtain ⟨d, hd, hdcyc⟩ := exists_ordSubposet_cycle S e hes hecyc
   refine ⟨d, hdcyc, ?_⟩
   change Finsupp.mapDomain (uOrderFace ∘ (ordSubposetIncl S).onF) d = c
-  rw (config := { transparency := .default }) [Finsupp.mapDomain_comp]
+  erw [Finsupp.mapDomain_comp]
   change Finsupp.mapDomain uOrderFace (chain2 (ordSubposetIncl S) d) = c
-  rw (config := { transparency := .default }) [hd, he']
-
-variable [Nonempty X]
-
-end FiniteChains.Davis
+  erw [hd, he']

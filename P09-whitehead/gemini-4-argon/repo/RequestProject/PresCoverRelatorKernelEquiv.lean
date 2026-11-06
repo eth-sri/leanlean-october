@@ -49,5 +49,3 @@ noncomputable def presCoverCycleRelatorKernelEquiv :
   LinearEquiv.ofBijective (presCoverCycleRelatorKernelMap w f hf hpos)
     ⟨presCoverCycleRelatorKernelMap_injective w f hf hpos,
       presCoverCycleRelatorKernelMap_surjective w f hf hpos⟩
-
-end FiniteChains.PresModel

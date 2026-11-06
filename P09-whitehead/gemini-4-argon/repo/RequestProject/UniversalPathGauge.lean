@@ -5,9 +5,7 @@ public import RequestProject.CombUniversalCover
 @[expose] public section
 
 /-! Path-class identities for comparing covers with chosen reference paths. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -46,5 +44,3 @@ theorem extendList_reference_gauge
       ((isPath_revPath hs).append hs) (Htpy.refl (r ++ p)) (htpy_revPath_append hs)
     simpa only [List.append_nil, List.append_assoc] using hc.symm
   exact extendList_htpy (hr.append hp) h
-
-end FiniteChains.Comb

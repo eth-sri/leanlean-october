@@ -1,13 +1,12 @@
 module
 
 public import RequestProject.PresCoverConeCircleProjection
-public import RequestProject.PosetCoverTopTriangle
+public import RequestProject.PosetCoverUpTransform
+public import RequestProject.StrictOrderChains
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -45,5 +44,3 @@ theorem presCoverRelatorTriangle_unique (p : PresCoverRelator w f) (t : StrictOr
     (hv ▸ (t.2.1.le.trans t.2.2.le)) (r.2.1.le.trans r.2.2.le) hfa
   have hb : t.1.2.1 = r.1.2.1 := hf.down_inj (a := p.1.1) (hv ▸ t.2.2.le) r.2.2.le hfb
   exact Subtype.ext (Prod.ext ha (Prod.ext hb hv))
-
-end FiniteChains.PresModel

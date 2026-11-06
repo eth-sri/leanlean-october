@@ -25,9 +25,7 @@ the forward chain transfer, not an unproved inverse subdivision equivalence.
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 
@@ -79,7 +77,7 @@ theorem qAttachingCoverEnd_oldPoint (p : QLiftedAttaching a) :
 
 theorem attachingSurface_lower_comparison (p : QLiftedAttaching a) :
     qNew (att := nerveAtt g) (nerveAtt g (qAttachingCoverEnd a p)) ≤ uOrderEnd p.1 := by
-  rw (config := { transparency := .default }) [← qAttachingCoverEnd_oldPoint g a p]
+  erw [← qAttachingCoverEnd_oldPoint g a p]
   exact qNew_att_le_qOldIncl (qAttachingCoverEnd a p)
 
 /-- Move to the actual lower base lift in the same universal-cover sheet. -/
@@ -115,9 +113,6 @@ theorem attachingToSurfaceCover_monotone :
   exact ⟨attachingSurfaceLowerLift_monotone g a hc hpr,
     chainMax_monotone (qAttachingCoverEnd_monotone g a hpr)⟩
 
-@[simp] theorem attachingToSurfaceCover_projection (p : QLiftedAttaching a) :
-    attachingSurfaceProjection g a (attachingToSurfaceCover g a hc p) =
-      chainMax (qAttachingCoverEnd a p) := rfl
 
 def attachingSurfaceChain1 : (StrictOrdEdge (QLiftedAttaching a) →₀ ℤ) →ₗ[ℤ]
     (StrictOrdEdge (AttachingSurfaceCover g a) →₀ ℤ) :=
@@ -129,21 +124,12 @@ abbrev AttachingSurfaceSubdivision := PosetCoverPullback
   (uOrderEnd (P := Qpos (cmpRel P) X (nerveAtt g)) (a := a))
   (fun σ : NeSpx (cmpRel P) => qNew (att := nerveAtt g) (nerveAtt g σ))
 
-def attachingToSurfaceSubdivision (p : QLiftedAttaching a) :
-    AttachingSurfaceSubdivision g a :=
-  ⟨(attachingSurfaceLowerLift g a hc p, qAttachingCoverEnd a p),
-    (attachingSurfaceLowerLift_spec g a hc p).2⟩
 
-def surfaceSubdivisionLastVertex (p : AttachingSurfaceSubdivision g a) :
-    AttachingSurfaceCover g a := ⟨(p.1.1, chainMax p.1.2), p.2⟩
 
-@[simp] theorem surfaceSubdivisionLastVertex_attaching (p : QLiftedAttaching a) :
-    surfaceSubdivisionLastVertex g a (attachingToSurfaceSubdivision g a hc p) =
-      attachingToSurfaceCover g a hc p := rfl
 
 theorem surfaceSubdivision_upper_comparison (p : AttachingSurfaceSubdivision g a) :
     uOrderEnd p.1.1 ≤ qOldIncl (att := nerveAtt g) (posQCube p.1.2) := by
-  rw (config := { transparency := .default }) [p.2]
+  erw [p.2]
   exact qNew_att_le_qOldIncl p.1.2
 
 /-- The inverse cover comparison is an actual upper interval lift in the
@@ -177,22 +163,13 @@ theorem surfaceSubdivisionUpperLift_monotone :
 def surfaceSubdivisionToAttaching (p : AttachingSurfaceSubdivision g a) :
     QLiftedAttaching a :=
   ⟨surfaceSubdivisionUpperLift g a hc p, by
-    rw (config := { transparency := .default }) [(surfaceSubdivisionUpperLift_spec g a hc p).2]
+    erw [(surfaceSubdivisionUpperLift_spec g a hc p).2]
     exact ⟨trivial, rfl⟩⟩
 
 theorem surfaceSubdivisionToAttaching_monotone :
     Monotone (surfaceSubdivisionToAttaching g a hc) :=
   surfaceSubdivisionUpperLift_monotone g a hc
 
-@[simp] theorem surfaceSubdivisionToAttaching_endpoint (p : AttachingSurfaceSubdivision g a) :
-    qAttachingCoverEnd a (surfaceSubdivisionToAttaching g a hc p) = p.1.2 := by
-  apply (qPositiveOldOrderIso (att := nerveAtt g)).symm.injective
-  apply Subtype.ext
-  change qOldIncl (att := nerveAtt g)
-      (posQCube (qAttachingCoverEnd a (surfaceSubdivisionToAttaching g a hc p))) =
-    qOldIncl (att := nerveAtt g) (posQCube p.1.2)
-  rw (config := { transparency := .default }) [qAttachingCoverEnd_oldPoint]
-  exact (surfaceSubdivisionUpperLift_spec g a hc p).2
 
 end FiniteChains.Davis
 
@@ -209,8 +186,6 @@ def namedSurfaceLabel : GenusVertex q →o namedBasePos ρ q u :=
     (genus_hvlab (namedA (α := α) q) (namedB (α := α) q) q)
     (genus_helb (namedA (α := α) q) (namedB (α := α) q) q) (gc q)
 
-@[simp] theorem namedAtt_eq_nerveAtt :
-    namedAtt ρ q u = nerveAtt (namedSurfaceLabel ρ q u) := rfl
 
 theorem namedQuotientPos_isConnected : IsConnected (orderCx (namedQuotientPos ρ q u)) := by
   letI : Nonempty (namedBasePos ρ q u) := ⟨namedAtt ρ q u (gBase q)⟩
@@ -225,5 +200,3 @@ abbrev namedSurfaceProjection : NamedSurfaceCover ρ q u → GenusVertex q :=
 theorem namedSurfaceProjection_isPosetCover : IsPosetCover (namedSurfaceProjection ρ q u) :=
   attachingSurfaceProjection_isPosetCover (namedSurfaceLabel ρ q u)
     (namedQuotientBase ρ q u) (namedQuotientPos_isConnected ρ q u)
-
-end FiniteChains.Davis.Genus

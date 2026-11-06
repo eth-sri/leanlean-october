@@ -106,5 +106,3 @@ theorem genus_recorded_cut_pair_cover_homology (hf : IsPosetCover f)
   have hstep := genus_cut_pair_cover_homology q hf left right t hne ht hpositive
     (by simpa only [hs] using hsplit)
   simpa only [hs] using hstep
-
-end FiniteChains.Davis.Genus

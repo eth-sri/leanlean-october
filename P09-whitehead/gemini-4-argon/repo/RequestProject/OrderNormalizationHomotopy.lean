@@ -6,9 +6,7 @@ public import RequestProject.StrictOrderChains
 
 /-! Explicit degree-two normalization homotopy in the full weak order nerve. -/
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -117,5 +115,3 @@ theorem ordNormalization_cycle_boundary (c : OrdTri P →₀ ℤ)
     c - ordStrictInclusion2 (normalizeOrdChain2 c) =
       ordBoundary3 (ordNormalizationHomotopy2 c) := by
   rw [ordNormalization_chain_identity, hc, map_zero, zero_add]
-
-end FiniteChains.Comb

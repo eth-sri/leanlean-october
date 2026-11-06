@@ -42,5 +42,3 @@ theorem qSquareCycleCoefficients_positive_zero
   rw [ht] at he
   norm_num [squareFlagSign, smul_eq_mul] at he
   exact he
-
-end FiniteChains.Davis

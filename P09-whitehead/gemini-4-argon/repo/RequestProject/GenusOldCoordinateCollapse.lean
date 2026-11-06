@@ -5,9 +5,7 @@ public import RequestProject.GenusCutCoefficientCycles
 @[expose] public section
 
 /-! The actual recovered ordinary old-spine coefficients vanish under the genus collapse. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb
@@ -71,5 +69,3 @@ theorem cappedCoverCycle_oldCoordinate_collapse_zero
               (normalizeOrdChain2 (chain2 (markedSpineToFullCube q) d))))) = 0 := by
   obtain ⟨d, r, hd, hcycle, hr⟩ := cappedCoverCycle_old_coordinate_boundary q c hc
   exact ⟨d, hd, hcycle, genus_oldCoordinate_collapse_zero_of_boundary q d hcycle r hr⟩
-
-end FiniteChains.Davis.Genus

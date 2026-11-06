@@ -26,5 +26,3 @@ theorem hasFiniteChain_of_acyclic (K : TwoComplex) (hfinite : FiniteCells K)
   | succ n =>
       exact actual_hasOriginalFiniteChain_of_acyclic (canonicalRelators K) K hfinite hK
         (canonicalDummy K) (originalClassicalPresWordDiskEquiv K).symm n
-
-end Whitehead

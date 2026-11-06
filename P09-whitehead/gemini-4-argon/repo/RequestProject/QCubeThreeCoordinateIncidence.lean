@@ -6,9 +6,7 @@ public import RequestProject.QCubeCubicalThreeBoundary
 @[expose] public section
 
 /-! The six-face coefficient orientation agrees with the collapse's actual incidences. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb
@@ -101,5 +99,3 @@ theorem qCube_three_coordinate_boundary_reconstruction (y : StrictOrdTet (QCube 
   obtain ⟨r, _, hr⟩ := qCube_three_cubical_boundary_reconstruction y hy hb
   refine ⟨r, ?_⟩
   rw [hr, qThreeCubicalBoundary_coordinate]
-
-end FiniteChains.Davis

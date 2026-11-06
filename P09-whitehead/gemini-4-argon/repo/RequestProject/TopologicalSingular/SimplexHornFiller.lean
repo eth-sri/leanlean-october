@@ -16,9 +16,7 @@ open scoped Topology
 
 noncomputable section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.TopologicalSingular
 
@@ -147,6 +145,3 @@ theorem simplexHornFiller_face (i : Fin (d + 2))
   apply faceMap_injective (i.succAbove j)
   rw [faceMap_simplexHornFillFaceMap,
     simplexHornRetract_eq_self_of_mem i hmem]
-
-
-end FiniteChains.TopologicalSingular

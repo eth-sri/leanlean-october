@@ -26,5 +26,3 @@ theorem hasChain_of_acyclicRegularCover (K : TwoComplex)
   cases n with
   | zero => omega
   | succ n => exact hasChain_of_original_cover_tree_comparison K T e₀ h n
-
-end Whitehead

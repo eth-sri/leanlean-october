@@ -7,9 +7,7 @@ public import RequestProject.CellularHomotopyChain
 @[expose] public section
 
 /-! Genuine cap fillings in the path-class universal cover of the full cube quotient. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -61,5 +59,3 @@ theorem fullCubeCoverCapChain_boundary {a : QCube (cmpRel (GenusVertex q))}
     Comb.bdry2 _ (fullCubeCoverCapChain q x v hv) = pathChain
       (uLiftPath (mapPath (markedSpineToFullCube q) (markedSpineLoop q x).1) v) :=
   Classical.choose_spec (fullCubeCover_cap_filling q x v hv)
-
-end FiniteChains.Davis.Genus

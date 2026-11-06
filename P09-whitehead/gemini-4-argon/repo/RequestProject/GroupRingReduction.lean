@@ -14,9 +14,7 @@ augmentation `k[H] → k`, of the same matrix written over the commutative ring
 `k[H]` in the basis of coset representatives.
 -/
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 
@@ -173,5 +171,3 @@ theorem mapRange_augH_vecCoords [H.Normal] [IsMulCommutative H] {ι : Type*}
   by_cases hi : u i = 0
   · simp [hi]
   · simpa using augH_cosetBasis_repr (u i) c
-
-end FiniteChains

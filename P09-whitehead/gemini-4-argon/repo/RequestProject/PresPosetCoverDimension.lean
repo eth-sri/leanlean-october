@@ -41,5 +41,3 @@ theorem presPos_cover_normalized_three_boundary_zero (w : J → List (α × Bool
     ext t
     exact isEmptyElim t
   rw [normalizeOrdChain2_ordBoundary3, hy, map_zero]
-
-end FiniteChains.PresModel

@@ -1,7 +1,8 @@
 module
 
 public import RequestProject.TopologicalSingular.SimplexPrismRetraction
-public import RequestProject.TopologicalSingular.SingularChainH1
+public import RequestProject.TopologicalSingular.SingularPathHomotopy
+public import Mathlib.LinearAlgebra.Quotient.Basic
 
 @[expose] public section
 
@@ -59,5 +60,3 @@ theorem singularEdge_nullhomotopic [SimplyConnectedSpace X] (x : X) (tau : Simpl
     · have hv : z = stdSimplex.vertex 1 := stdSimplexHomeomorphUnitInterval.injective
         (he.trans stdSimplexHomeomorphUnitInterval_one.symm)
       rw [he, G.target, hv, h1]
-
-end FiniteChains.TopologicalSingular

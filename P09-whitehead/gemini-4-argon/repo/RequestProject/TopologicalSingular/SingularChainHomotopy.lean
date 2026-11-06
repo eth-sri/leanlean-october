@@ -17,9 +17,7 @@ complex already defined in this project. Consequently homotopic maps have
 equal maps on homology. No homology comparison or exactness is assumed.
 -/
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.TopologicalSingular
 
@@ -106,5 +104,3 @@ noncomputable def chainHomotopyEquiv (e : ContinuousMap.HomotopyEquiv X Y) :
 noncomputable def homologyIsoOfHomotopyEquiv (e : ContinuousMap.HomotopyEquiv X Y) (n : ℕ) :
     (complex X).homology n ≅ (complex Y).homology n :=
   (chainHomotopyEquiv e).toHomologyIso n
-
-end FiniteChains.TopologicalSingular

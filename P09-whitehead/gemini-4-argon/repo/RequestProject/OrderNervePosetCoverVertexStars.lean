@@ -92,6 +92,3 @@ noncomputable def vertexStarRealizationHomeomorph (hf : IsPosetCover f) (v : P) 
     orderNerveRealization (orderNerveVertexStar P v) ≃ₜ
       orderNerveRealization (orderNerveVertexStar Q (f v)) :=
   orderNerveRealizationOrderIso (hf.vertexStarOrderIso v)
-
-end IsPosetCover
-end FiniteChains.Comb

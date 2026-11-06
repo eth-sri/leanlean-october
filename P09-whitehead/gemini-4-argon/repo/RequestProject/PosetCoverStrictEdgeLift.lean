@@ -61,5 +61,3 @@ theorem strictEdgeLiftTo_unique (e : StrictOrdEdge Q) (v : P) (hv : f v = e.1.2)
       (hr.trans (hf.strictEdgeLiftTo_projection e v hv).symm)
     exact hf.down_inj (a := v) (ht ▸ r.2.le) (hf.strictEdgeLiftTo e v hv).2.le hp
   · exact ht
-
-end FiniteChains.Comb.IsPosetCover

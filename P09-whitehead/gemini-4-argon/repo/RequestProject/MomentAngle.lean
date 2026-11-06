@@ -135,7 +135,7 @@ theorem bdry_cubeChain (o : Finset V → ℤ) :
 
 /-! ### Incidences: every square lies in exactly two three-cubes -/
 
-section Incidence
+section
 
 open scoped Classical
 
@@ -177,7 +177,7 @@ theorem card_cofaces (L : ASC V) (g : Cube V) :
     simp only [Function.update_apply, if_neg hne] at hval
     exact hj.1 hval.symm
 
-end Incidence
+end
 
 /-! ### The cubical boundary is a differential -/
 
@@ -196,5 +196,3 @@ theorem cubeChain_cycle {o : Finset V → ℤ} (ho : simpBdry o = 0) :
   rw [bdry_cubeChain, ho]
   funext f
   simp [cubeChain]
-
-end FiniteChains

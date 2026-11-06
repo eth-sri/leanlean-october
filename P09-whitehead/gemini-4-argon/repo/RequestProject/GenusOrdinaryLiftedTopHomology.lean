@@ -2,7 +2,7 @@ module
 
 public import RequestProject.PuncturedCubeCoverFillings
 public import RequestProject.PosetCoverPuncturedLower
-public import RequestProject.NerveMaximalDeletion
+public import RequestProject.NerveBoundaryReflection
 public import RequestProject.OrderNervePositiveFillings
 public import RequestProject.GenusOrdinaryPairCollapse
 
@@ -68,5 +68,3 @@ theorem genus_ordinary_lifted_link_fillings (hf : IsPosetCover f)
   · apply fillsDegreeIn_congr he
     apply fillsDegreeIn_of_subtype hne
     exact nerve_twoCycle_filling_of_strict hfill.2
-
-end FiniteChains.Davis.Genus

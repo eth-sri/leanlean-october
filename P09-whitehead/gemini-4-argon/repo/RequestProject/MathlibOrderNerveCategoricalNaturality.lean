@@ -5,9 +5,7 @@ public import RequestProject.MathlibOrderNerveCycleNaturality
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory CategoryTheory.Limits
@@ -83,5 +81,3 @@ theorem mathlibOrderNerveCategoricalH2Equiv_natural (f : P → Q) (hf : Monotone
           (mathlibOrderNerveH2Equiv P z)))) = _
   rw [LinearEquiv.apply_symm_apply, mathlibOrderNerveH2Equiv_natural]
   rfl
-
-end FiniteChains.Comb

@@ -82,8 +82,6 @@ noncomputable def oneEquiv (s : Sx) : PresGroup ρ ≃* PresGroup (oneRel ρ s) 
     rw [MulEquiv.coe_monoidHom_refl, Subgroup.map_id]
     simp only [relSub, range_oneRel])
 
-@[simp] theorem oneEquiv_mk (s : Sx) (w : FreeGroup α) :
-    oneEquiv ρ s (QuotientGroup.mk w) = QuotientGroup.mk w := rfl
 
 /-- Injectivity of every individual substitution implies injectivity of their simultaneous
 substitution, even for an infinite or empty family of entries. -/
@@ -107,5 +105,3 @@ theorem injective_substHomF_of_individual
   · intro s m
     apply (QuotientGroup.eq_one_iff _).2
     exact Subgroup.subset_normalClosure ⟨Sum.inr ⟨PUnit.unit, m⟩, rfl⟩
-
-end FiniteChains.BlockFamily

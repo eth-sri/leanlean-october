@@ -44,5 +44,3 @@ omit [PartialOrder R] in
 theorem coneAdjCoverBaseEnd_spec (f : R → ConeAdj S)
     (r : {r : R // f r ∈ coneAdjBaseSet}) :
     ConeAdj.inc (coneAdjCoverBaseEnd f r) = f r.1 := Classical.choose_spec r.2
-
-end FiniteChains.Comb

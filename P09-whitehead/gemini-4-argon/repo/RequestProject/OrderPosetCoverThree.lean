@@ -7,9 +7,7 @@ public import RequestProject.OrderNormalizationHomotopy
 
 /-! Three-simplex maps and their unique lifts through actual poset coverings. -/
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -57,5 +55,3 @@ theorem ordTetMap_boundary (f : P → Q) (hf : Monotone f) (t : OrdTet P) :
   simp only [ordTetBoundary, hsub, Finsupp.mapDomain_add,
     Finsupp.mapDomain_single]
   rfl
-
-end FiniteChains.Comb

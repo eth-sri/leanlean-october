@@ -56,5 +56,3 @@ theorem square_boundary_isPreconnected : IsPreconnected (Cube.boundary (Fin 2)) 
     ⟨squareEdge 0 1 0, Or.inr ⟨1, h10.symm⟩, ⟨0, rfl⟩⟩ (he 0 1)
   exact hthree.union'
     ⟨squareEdge 1 1 0, Or.inl (Or.inl ⟨1, h01.symm⟩), ⟨0, rfl⟩⟩ (he 1 1)
-
-end Whitehead

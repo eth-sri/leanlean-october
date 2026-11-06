@@ -14,9 +14,7 @@ Pending Lean verification. -/
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 
@@ -100,5 +98,3 @@ theorem fsIsCockcroft_sigmaWedgeRel (rels : ∀ s, C s → FreeGroup (X s))
   intro v hv p
   obtain ⟨s, j⟩ := p
   exact (isBlock_sigmaWedge rels s).fsAugmentation_zero (h s) v hv j
-
-end FiniteChains

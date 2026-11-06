@@ -35,5 +35,3 @@ theorem squareChainSubdivision_filter_top (hcell : Function.Injective cell)
         simp
       · have hci : cell j ≠ cell i := fun h => hji (hcell h)
         simp [hci, hji]
-
-end FiniteChains.Davis

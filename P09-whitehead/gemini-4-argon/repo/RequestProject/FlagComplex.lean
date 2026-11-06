@@ -49,12 +49,3 @@ def orderComplex (P : Type u) [Preorder P] : ASC P where
 
 @[simp] theorem mem_orderComplex {P : Type u} [Preorder P] {s : Finset P} :
     s ∈ (orderComplex P).faces ↔ IsChain (· ≤ ·) (s : Set P) := Iff.rfl
-
-/-- The poset of nonempty faces of `K`, ordered by inclusion. -/
-def Face (K : ASC V) : Type u := {s : Finset V // s ∈ K.faces ∧ s.Nonempty}
-
-instance (K : ASC V) : Preorder K.Face := Subtype.preorder _
-
-end ASC
-
-end FiniteChains

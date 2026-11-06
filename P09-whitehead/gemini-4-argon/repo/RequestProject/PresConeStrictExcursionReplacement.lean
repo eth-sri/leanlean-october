@@ -28,5 +28,3 @@ theorem exists_presCone_strictEdge_excursion_replacement (hpos : 0 < (w j).lengt
       (⟨(d.val.1, apexOf w j), hy.le⟩ : OrdEdge (PresPos w)) :=
     Subtype.ext (Prod.ext rfl hd)
   simpa only [mapPath, List.map_cons, List.map_nil, hE, hD, ordPos, ordNeg] using hh
-
-end FiniteChains.PresModel

@@ -47,5 +47,3 @@ theorem product_readPath (c d : OrdCocycle P G) (p : List ((orderCx P).E × Bool
   | cons e p ih =>
     rw [readPath_cons, product_readGerm, ih, readPath_cons, readPath_cons]
     rfl
-
-end FiniteChains.Comb.OrdCocycle

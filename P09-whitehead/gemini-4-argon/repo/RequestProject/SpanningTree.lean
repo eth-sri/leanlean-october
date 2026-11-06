@@ -24,8 +24,7 @@ bridge: spanning trees themselves.
   vertex the last edge of a shortest path.  No finiteness whatsoever is needed.
 -/
 
-namespace FiniteChains
-namespace Comb
+namespace FiniteChains.Comb
 
 universe u
 
@@ -125,7 +124,6 @@ theorem isTree_of_mem_treePath (a : K.V) {g : K.E × Bool} (hg : g ∈ T.treePat
 
 /-! ### Existence -/
 
-section Existence
 
 /-- The lengths of edge paths from a fixed vertex. -/
 def reach (K : Complex2.{u}) (r a : K.V) : Set ℕ := {n | ∃ p : List (K.E × Bool),
@@ -191,9 +189,3 @@ theorem exists_of_isConnected (hconn : IsConnected K) (r : K.V) :
            up_src := hupsrc
            up_ht := hupht
            isTree_iff := fun _ => Iff.rfl }, rfl⟩
-
-end Existence
-
-end SpanningTree
-end Comb
-end FiniteChains

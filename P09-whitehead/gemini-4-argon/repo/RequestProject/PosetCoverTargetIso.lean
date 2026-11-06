@@ -30,5 +30,3 @@ theorem postcompose_orderIso (hf : IsPosetCover f) (e : Q ≃o R) :
     rintro c ⟨hca, hec⟩
     apply hu c
     exact ⟨hca, by simpa only [OrderIso.symm_apply_apply] using congrArg e.symm hec⟩
-
-end FiniteChains.Comb.IsPosetCover

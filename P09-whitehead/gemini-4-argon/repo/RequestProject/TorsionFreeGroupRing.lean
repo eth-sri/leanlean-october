@@ -85,5 +85,3 @@ theorem monoidAlgebra_isDomain (k : Type*) [CommRing k] [IsDomain k]
     IsDomain (MonoidAlgebra k H) := by
   haveI : UniqueProds H := uniqueProds_of_isMulTorsionFree H
   infer_instance
-
-end FiniteChains

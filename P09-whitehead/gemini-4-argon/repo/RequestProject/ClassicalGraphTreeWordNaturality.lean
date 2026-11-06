@@ -62,5 +62,3 @@ theorem BoundaryWords.eraseTree_loop_natural (b : BoundaryWords r) :
         (fun g => (graphNonTreeMap r s T U h ht g.1, g.2)) := by
   rw [BoundaryWords.eraseTree_natural r s T U h ht b]
   exact BoundaryWords.loopWord_map (graphRoseCombinatorialMap r s T U h ht) (b.eraseTree r T)
-
-end FiniteChains.ClassicalGraphModel

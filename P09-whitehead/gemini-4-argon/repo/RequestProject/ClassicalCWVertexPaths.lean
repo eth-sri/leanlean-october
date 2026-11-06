@@ -74,5 +74,3 @@ def pointVertex (x : X) : RelCWComplex.cell (Set.univ : Set X) 0 :=
 
 def pointVertexPath (x : X) : Path x (vertexPoint (pointVertex x)) :=
   (Classical.choose_spec (point_joined_vertex x)).somePath
-
-end FiniteChains.ClassicalCW

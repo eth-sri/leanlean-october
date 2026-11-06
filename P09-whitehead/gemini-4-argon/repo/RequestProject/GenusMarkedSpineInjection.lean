@@ -6,9 +6,7 @@ public import RequestProject.GenusWordInjection
 @[expose] public section
 
 /-! Structural injectivity for substitution by the actual finite surviving spine. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb PresModel BlockFamily
@@ -75,5 +73,3 @@ theorem finiteSpineWordBlock_injective :
     rfl
   rw [hnames]
   exact congrArg base (SurfaceWordExpansion.name_eq_word ρ u (finitePairs q) x)
-
-end FiniteChains.Davis.Genus

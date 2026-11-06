@@ -75,5 +75,3 @@ theorem qAttachingCoverEnd_isPosetCover (x : X) (hx : IsConnected (orderCx X)) :
     (f := uOrderEnd (P := Qpos A X att) (a := qNew x))
     {p | InQOld p ∧ InQBaseStar p}
   exact hf.postcompose_orderIso qPositiveOldOrderIso
-
-end FiniteChains.Davis

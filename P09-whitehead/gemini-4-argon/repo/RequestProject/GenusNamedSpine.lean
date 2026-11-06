@@ -14,7 +14,6 @@ variable (q : ℕ) [NeZero q]
 abbrev NamedSpineGen := SpinePresentationGen q ⊕ (Fin q × Bool)
 abbrev NamedSpineRel := SpinePresentationRel q ⊕ (Fin q × Bool)
 
-instance : Finite (NamedSpineGen q) := inferInstance
 instance : Finite (NamedSpineRel q) := inferInstance
 
 noncomputable def namedSpinePresentation : NamedSpineRel q → FreeGroup (NamedSpineGen q) :=
@@ -46,5 +45,3 @@ theorem namedSpine_surface_filling :
 noncomputable def namedSpinePi1Equiv :
     Pi1 (markedSpineCx q) (markedSpineTree q).root ≃* PresGroup (namedSpinePresentation q) :=
   (spinePresentationPi1Equiv q).trans (namedSpineGroupEquiv q)
-
-end FiniteChains.Davis.Genus

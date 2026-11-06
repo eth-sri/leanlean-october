@@ -112,5 +112,3 @@ theorem vertexPuncture_intersection_acyclic :
     (vertexIntersectionPoint 0) vertexIntersectionLower_monotone vertexIntersectionUpper_monotone
     vertexIntersectionLower_le vertexIntersectionLower_le_upper
     vertexIntersectionPoint_zero_le_upper c hc hcyc
-
-end FiniteChains.Davis

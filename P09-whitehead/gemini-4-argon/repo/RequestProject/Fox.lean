@@ -153,5 +153,3 @@ theorem aug_fox (i : α) (w : FreeGroup α) :
       rw [fox_inv, map_neg, map_mul, aug_grp, one_mul, h, map_inv]
       simp
   | mul u v hu hv => simp [fox_mul, map_mul, hu, hv]
-
-end FiniteChains

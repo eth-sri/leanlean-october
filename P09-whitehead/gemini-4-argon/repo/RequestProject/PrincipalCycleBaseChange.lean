@@ -102,5 +102,3 @@ theorem principal_cycles_baseChange (f : H →* G) (hf : Function.Injective f)
     refine ⟨a * r, fun j => ?_⟩
     change a * z j = (a * r) * MonoidAlgebra.mapDomainRingHom ℤ f (c j)
     rw [hr j, mul_assoc]
-
-end FiniteChains

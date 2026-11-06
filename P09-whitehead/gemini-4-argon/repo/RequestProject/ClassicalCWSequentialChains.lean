@@ -67,5 +67,3 @@ theorem hasChain_of_successive_cellEmbeddings {K : ℕ → TwoComplex}
     have hs := congrArg (fun g : C(K i.val, K n) => g y)
       (CWCellEmbedding.chain_map_step f i.val n i.isLt)
     exact hs.symm.trans hy
-
-end Whitehead

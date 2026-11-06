@@ -11,9 +11,7 @@ The conversion preserves coefficients, boundaries, projection, and subposet supp
 
 -/
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -128,5 +126,3 @@ theorem qUniversal_old_cellular_relative_chain_from_attaching (x : X)
     (universalNerveChain2_mem_incOn InQOld z hz)
     (universalNerveChain2_lengthProjection z) b hb
   rw [universalNerveChain2_bdry, hbz]
-
-end FiniteChains.Davis

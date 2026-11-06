@@ -13,9 +13,7 @@ Pending Lean verification. -/
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 
@@ -115,5 +113,3 @@ def addRelsMorFS : PresMorFS ρ (addRels ρ ν) where
     cases j with
     | inl j => rw [addRelsCellsFS_inl, augPres_addRelsRingHom, hv]
     | inr l => rw [addRelsCellsFS_inr, map_zero]
-
-end FiniteChains

@@ -4,9 +4,7 @@ public import RequestProject.TopologicalSingular.SingularSimplicialHelpers
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.TopologicalSingular
 variable {X : Type} [TopologicalSpace X]
@@ -44,5 +42,3 @@ theorem singular_four_horn_missing_one (T0 T2 T3 T4 : Simplex X 3)
   · have h := singular_double_face_swap S 1 3
     simpa [g, show (1 : Fin 5).succAbove 3 = 4 from rfl,
       show (3 : Fin 4).predAbove 1 = 1 from rfl, hS 4 (by decide)] using h
-
-end FiniteChains.TopologicalSingular

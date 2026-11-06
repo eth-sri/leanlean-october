@@ -4,9 +4,7 @@ public import RequestProject.StrictTriangleBoundary
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -62,5 +60,3 @@ theorem strictTopLink_cycle (v : P) (hm : ∀ p, v ≤ p → p = v)
     (c : StrictOrdTri P →₀ ℤ) (hc : bdry2 (strictOrderCx P) c = 0) :
     bdry1 (strictOrderCx (StrictBelow v)) (strictTopLinkChain v c) = 0 := by
   rw [← strictTopLink_boundary v hm, hc, map_zero]
-
-end FiniteChains.Comb

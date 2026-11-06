@@ -56,7 +56,6 @@ theorem foxBoundary_support_finite
     exact h ⟨j, hj, hn⟩
   rw [hz, mul_zero]
 
-section Compactness
 
 universe u
 
@@ -74,7 +73,3 @@ theorem exists_perfect_normal_foxSatMod_of_finite_columns
       (∀ p : ℕ, p.Prime → ∀ v : J →₀ MonoidAlgebra ℤ G, FoxSatMod p b v N) ∧
       (∀ v : J →₀ MonoidAlgebra ℤ G, FoxSat b v N) ∧ ⁅N, N⁆ = N :=
   exists_perfect_normal_foxSatMod hchains (foxBoundary_support_finite b hcol) hcol htf
-
-end Compactness
-
-end FiniteChains

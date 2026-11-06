@@ -1,12 +1,16 @@
 module
 
-public import RequestProject.OrderUniversalRealizationAcyclicity
+public import RequestProject.OrderTwoDimensionalAcyclicity
+public import RequestProject.OrderUniversalRealizationCover
+public import RequestProject.OrderNerveCoverDimension
+public import RequestProject.TopologicalCoverPi2
+public import RequestProject.OrderUniversalRealizationSimplyConnected
+public import RequestProject.TopologicalSingular.HurewiczIsomorphismConsequences
+public import RequestProject.OrderNerveTwoComplex
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory AlgebraicTopology TopologicalSingular Topology
@@ -74,6 +78,3 @@ theorem hasAcyclicRegularCover [Nonempty Q] [(nerve Q).HasDimensionLE 2]
     hf.realizationMap_isCoveringMap, hf.realizationMap_surjective,
     inferInstance, hf.realizationMap_regular hdeck,
     orderRealization_acyclic_of_strict_isAcyclic hacyc⟩
-
-end IsPosetCover
-end FiniteChains.Comb

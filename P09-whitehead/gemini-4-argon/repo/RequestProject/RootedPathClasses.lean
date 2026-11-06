@@ -4,9 +4,7 @@ public import RequestProject.CombPi1
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -78,5 +76,3 @@ theorem rootedGermLoop_rev (r : X.V → List (X.E × Bool))
     revPath_append, revPath_revPath, revPath_cons, revPath_nil,
     List.nil_append, List.append_assoc]
   exact Htpy.refl _
-
-end FiniteChains.Comb

@@ -5,9 +5,7 @@ public import RequestProject.TopologicalSingular.SingularEdgeNullHomotopy
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.TopologicalSingular
 open scoped unitInterval Topology
@@ -41,5 +39,3 @@ theorem simplex_face_intersection_boundary (i j : Fin (n + 2)) (hij : i ≠ j)
     rw [← simplex_face_coordinate_succAbove i z k, hk, h]
     exact simplex_face_coordinate_zero j w
   exact ⟨one i j hij z w h, one j i hij.symm w z h.symm⟩
-
-end FiniteChains.TopologicalSingular

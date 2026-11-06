@@ -194,5 +194,3 @@ in the resulting chain. -/
 def actualRelativeChain (h : Function.Bijective (expMatrix (treeRel T))) (n : ℕ) :
     RelativeCellChain (stages T (actualAmbientChain (treeRel T) h n)) (n + 1) :=
   relativeChain T (actualAmbientChain (treeRel T) h n) h.1
-
-end FiniteChains.Comb.RelativeTreeAmbientChain

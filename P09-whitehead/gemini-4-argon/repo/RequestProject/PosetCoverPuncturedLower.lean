@@ -6,9 +6,7 @@ public import RequestProject.PosetCoverTargetIso
 @[expose] public section
 
 /-! A punctured lower link stays in the sheet of its specified lifted top cell. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.IsPosetCover
 universe u
@@ -38,5 +36,3 @@ theorem puncturedLower_isPosetCover (v : P) (a : Q) :
       fun x y h => ⟨y, ⟨h, rfl⟩, fun z hz => hz.2⟩,
       fun x y h => ⟨y, ⟨h, rfl⟩, fun z hz => hz.2⟩⟩
   exact hi.postcompose_orderIso (hf.puncturedLowerOrderIso v a)
-
-end FiniteChains.Comb.IsPosetCover

@@ -5,9 +5,7 @@ public import RequestProject.PresCoverConeCylinderDecomposition
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb
@@ -19,7 +17,7 @@ theorem cylinderCover_collapse_boundary_zero {f : P → CylBase w}
     (hf : IsPosetCover f) (c : StrictOrdTri P →₀ ℤ) :
     normalizedStrictChain1 (cylinderCoverCollapse w hf) (cylinderCoverCollapse_monotone w hf)
       (Comb.bdry2 (strictOrderCx P) c) = 0 := by
-  rw (config := { transparency := .default }) [← bdry2_normalizedStrictChain2, cylinderCover_normalized_collapse_zero, map_zero]
+  erw [← bdry2_normalizedStrictChain2, cylinderCover_normalized_collapse_zero, map_zero]
 
 variable (f : P → PresPos w) (hf : IsPosetCover f)
 
@@ -50,5 +48,3 @@ theorem exists_presCover_cycle_collapsed_fan_boundary
   · have hz := cylinderCover_collapse_boundary_zero w
       (coneAdjCoverBaseEnd_isPosetCover f hf) d
     exact (map_neg _ _).trans ((congrArg Neg.neg hz).trans (neg_zero))
-
-end FiniteChains.PresModel

@@ -2,7 +2,7 @@ module
 
 public import RequestProject.QCubeDoubleFacetIndex
 public import RequestProject.QCubeCubicalTwoBoundary
-public import RequestProject.QCubeThreeFacetCoordinates
+public import RequestProject.QCubeFacetIndex
 
 @[expose] public section
 
@@ -60,5 +60,3 @@ theorem qThreeFaceSquare_exhaustive (c : QCube A) (u v w : V)
     refine ⟨(2, s.1.sgn w), Subtype.ext ?_⟩
     have h21 : (2 : Fin 3) ≠ 1 := by decide
     simpa [qThreeFaceSquare, qThreeFacetSquare, qCubeFacetIndex, qThreeDirection, h21] using he.symm
-
-end FiniteChains.Davis

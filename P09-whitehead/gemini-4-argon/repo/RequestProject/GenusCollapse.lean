@@ -24,9 +24,7 @@ This file puts them together for the block of the article:
   with no hypothesis left beyond `q ≠ 0`.
 -/
 
-namespace FiniteChains
-namespace Davis
-namespace Genus
+namespace FiniteChains.Davis.Genus
 
 open Cell ASC Relation
 
@@ -40,7 +38,3 @@ theorem genus_spine_collapse :
       Collapse.IsCollapse (spineInc (orderComplex (SCell (gvc q) (gec q) (gc q)))) l
         (topCubes (orderComplex (SCell (gvc q) (gec q) (gc q)))) :=
   exists_spine_collapse_SCell (gc q) (genus_polygonData q)
-
-end Genus
-end Davis
-end FiniteChains

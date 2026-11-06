@@ -109,5 +109,3 @@ theorem squareCycle_boundary (p : GenLoop (Fin 2) X x) : boundary 1 (squareCycle
 theorem squareCycle_const : squareCycle (GenLoop.const (N := Fin 2) (x := x)) = 0 := by
   rw [squareCycle, squareFundamentalChain, map_sub, map_single, map_single]
   exact sub_self _
-
-end FiniteChains.TopologicalSingular

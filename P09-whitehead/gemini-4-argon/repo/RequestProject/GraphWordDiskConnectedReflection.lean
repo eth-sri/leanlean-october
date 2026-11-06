@@ -11,9 +11,7 @@ Thus connectedness of an actual word-disk model supplies connectedness
 of its labelled combinatorial graph. No finiteness is required. Unverified. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.ClassicalGraphModel
 open RelativeAttachment
@@ -137,5 +135,3 @@ theorem graph_vertices_nonempty_of_wordDisks
     cases z with
     | inl v => exact ⟨v⟩
     | inr d => exact ⟨graphSrc r d.1⟩
-
-end FiniteChains.ClassicalGraphModel

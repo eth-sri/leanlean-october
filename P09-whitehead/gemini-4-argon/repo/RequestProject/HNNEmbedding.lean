@@ -40,7 +40,7 @@ theorem not_isOfFinOrder_ofAdd_one : ¬ IsOfFinOrder (Multiplicative.ofAdd (1 : 
   simp [toAdd_pow] at h2
   omega
 
-section FreeProduct
+section
 
 variable {G : Type*} [Group G]
 
@@ -74,9 +74,8 @@ theorem not_isOfFinOrder_mul_freeGen (z : G) :
   rw [map_mul, killBase_inl, freeGen, killBase_inr, one_mul]
   exact not_isOfFinOrder_ofAdd_one
 
-end FreeProduct
+end
 
-section HNN
 
 variable {G : Type*} [Group G]
 
@@ -120,7 +119,3 @@ theorem rule_one_embedding (z : G) :
         (Monoid.Coprod.inl : G →* Monoid.Coprod G (Multiplicative ℤ))) := by
   rw [MonoidHom.coe_comp]
   exact (hnn_infiniteCyclic_of_injective _ _).comp Monoid.Coprod.inl_injective
-
-end HNN
-
-end FiniteChains

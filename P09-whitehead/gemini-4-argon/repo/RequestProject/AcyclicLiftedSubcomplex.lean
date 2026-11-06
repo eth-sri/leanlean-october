@@ -97,5 +97,3 @@ theorem one_cycle_filling (hD : IsAcyclic D) (z : UE X (i.onV d₀) →₀ ℤ)
   intro f hf
   obtain ⟨g, d, rfl⟩ := hy f hf
   exact ⟨d, rfl⟩
-
-end FiniteChains.Comb.AcyclicLiftedSubcomplex

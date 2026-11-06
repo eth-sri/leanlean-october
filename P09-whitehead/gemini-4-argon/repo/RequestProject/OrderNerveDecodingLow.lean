@@ -24,5 +24,3 @@ theorem ordNerveChain0_decode (c : Nerve.Ch P) :
     cases l with
     | nil => simp [decodeOrdVertexList, ordNerveChain0]
     | cons b l => simp [decodeOrdVertexList]
-
-end FiniteChains.Comb

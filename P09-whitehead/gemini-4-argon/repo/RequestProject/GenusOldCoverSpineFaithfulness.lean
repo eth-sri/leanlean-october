@@ -6,9 +6,7 @@ public import RequestProject.GenusCoveredSpineCycleFaithfulness
 @[expose] public section
 
 /-! Actual covered-spine cycles are detected in the old cubical block. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb Nerve
@@ -47,5 +45,3 @@ theorem genus_old_cover_spine_chain_zero_of_boundary (hf : IsPosetCover f)
     cmap (fun x : OldCoveredSpine q f => truncatedCoverRetraction f x.val)
       (ordNerveChain2 (ordStrictInclusion2 c)) at hbound
   simpa only [z, cmap_comp, oldCoveredSpineToOld, Function.comp_def] using hbound
-
-end FiniteChains.Davis.Genus

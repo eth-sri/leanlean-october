@@ -24,8 +24,7 @@ Together these say that `phi` identifies `W_T` with `(ℤ/2)^T`, which is exactl
 faces of a cube of `C(L)` lift uniquely to faces of a chamber of the Davis complex.
 -/
 
-namespace FiniteChains
-namespace RACG
+namespace FiniteChains.RACG
 
 universe u
 
@@ -103,6 +102,3 @@ theorem exists_mem_specialSub_phi_eq (T : Finset V) (t : V → ZMod 2)
         decide
       · exact ht v hv
     rw [if_neg h, h0, Nat.cast_zero]
-
-end RACG
-end FiniteChains

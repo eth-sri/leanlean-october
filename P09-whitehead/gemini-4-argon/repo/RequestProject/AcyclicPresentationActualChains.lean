@@ -51,5 +51,3 @@ theorem actualAmbientChain_finite [Finite A] (n : ℕ) :
       change Finite (NextExtraGen core hcore.2 (actualAmbientChain core hcore n).rel) ∧
         Finite (NextExtraCell core hcore.2 (actualAmbientChain core hcore n).rel)
       constructor <;> infer_instance
-
-end FiniteChains.RelativeNormalForm

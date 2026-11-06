@@ -44,5 +44,3 @@ theorem qCubeCoordinateFacetChain_apply (c : QCube A) (g : Cube V) :
     intro i _
     have hne : qCubeToCoordinate (qCubeFacetIndex c i) ≠ g := fun h => hg ⟨i, h⟩
     simp [hne]
-
-end FiniteChains.Davis

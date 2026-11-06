@@ -44,6 +44,3 @@ theorem downTransform_monotone (g : Q → Q) (hmono : Monotone g) (hg : ∀ q, g
 /-- The lifted transformation lies below the identity, exactly as its original does. -/
 theorem downTransform_le (g : Q → Q) (hg : ∀ q, g q ≤ q) (a : P) :
     hf.downTransform g hg a ≤ a := (hf.downTransform_spec g hg a).1
-
-end IsPosetCover
-end FiniteChains.Comb

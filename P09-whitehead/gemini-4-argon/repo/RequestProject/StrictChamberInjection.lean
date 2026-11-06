@@ -10,7 +10,7 @@ public import RequestProject.ChamberQuotientCover
 namespace FiniteChains.Davis
 open RACG Comb
 universe u
-variable {V X : Type u} [DecidableEq V] [Fintype V] {A : CommRel V}
+variable {V X : Type u} [DecidableEq V] {A : CommRel V}
   [PartialOrder X] {att : NeSpx A →o X}
 
 instance qposPartialOrder : PartialOrder (Qpos A X att) where
@@ -25,5 +25,3 @@ instance qposPartialOrder : PartialOrder (Qpos A X att) where
       cases t with
       | inl d => exact hts.elim
       | inr y => exact congrArg Sum.inr (le_antisymm hst hts)
-
-end FiniteChains.Davis

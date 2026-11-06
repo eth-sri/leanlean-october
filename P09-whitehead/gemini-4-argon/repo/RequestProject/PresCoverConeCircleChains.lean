@@ -8,9 +8,7 @@ public import RequestProject.CellularChainMapZero
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb
@@ -73,5 +71,3 @@ theorem presCoverConeTriangles_eq_of_first_coefficient
   have heq := congrArg
     (fun z => z ((presCoverConeCircleHom w f hf v j hv).onE e)) hcd
   simpa only [presCoverConeCircleChain_apply] using heq
-
-end FiniteChains.PresModel

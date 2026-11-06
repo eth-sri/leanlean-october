@@ -133,11 +133,3 @@ def coverPullbackComposition {Z : Type} [TopologicalSpace Z]
   right_inv _ := rfl
   continuous_toFun := by fun_prop
   continuous_invFun := by fun_prop
-
-@[simp] theorem coverPullbackComposition_map {Z : Type} [TopologicalSpace Z]
-    (f : C(X, Y)) (g : C(Y, Z)) (p : C(D, Z))
-    (z : CoverPullback f (coverPullbackProjection g p)) :
-    coverPullbackMap (g.comp f) p (coverPullbackComposition f g p z) =
-      coverPullbackMap g p (coverPullbackMap f (coverPullbackProjection g p) z) := rfl
-
-end Whitehead

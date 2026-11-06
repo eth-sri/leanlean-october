@@ -49,5 +49,3 @@ theorem generatesDegreeIn_cover_chamber [Nonempty X] (hf : IsPosetCover f)
   by_cases hw : M w
   · exact generatesDegreeIn_of_acyclicRelIn (acyclicRelIn_cover_marked_chamber hf w hw)
   · exact generatesDegreeIn_of_fillsDegreeIn (fillsDegreeIn_cover_unmarked_chamber hf w hw)
-
-end FiniteChains.Davis

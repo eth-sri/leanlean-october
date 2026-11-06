@@ -5,9 +5,7 @@ public import Mathlib.Topology.CWComplex.Classical.Subcomplex
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory Simplicial Topology
@@ -119,5 +117,3 @@ theorem orderNerveRealizationVertex_mem_subcomplex {P : Type} [PartialOrder P]
   · intro hp q hq
     have hne : p ≠ q := fun he => hq (he ▸ hp)
     rw [orderNerveRealizationCoordinates_vertex, if_neg hne]
-
-end FiniteChains.Comb

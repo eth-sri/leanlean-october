@@ -12,9 +12,7 @@ ordered cover and its strict cells. Compatibility holds on vertices,
 edges and faces, not only on vertices. Unverified source. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.TopologicalOrderCover
 open CategoryTheory Topology
@@ -160,5 +158,3 @@ theorem strictProjection_isRegular [ConnectedSpace E] (hs : Function.Surjective 
   exact congrFun (hp.eq_of_comp_eq h.property.1 g.property.1
     (funext (fun x => (h.property.2.2 x).trans (g.property.2.2 x).symm))
     (point p hp v) hpoint)
-
-end FiniteChains.Comb.TopologicalOrderCover

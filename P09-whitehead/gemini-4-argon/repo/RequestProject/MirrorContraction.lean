@@ -30,23 +30,14 @@ The final section instantiates this for the right-angled Coxeter group of
 chamber `F_w` is contractible.
 -/
 
-namespace FiniteChains
-namespace Mirror
+namespace FiniteChains.Mirror
 
 universe u
 
 variable {V : Type u} [DecidableEq V]
 
-/-- The simplices of `L` that meet `D`: the poset `𝒫_D` whose order complex is the union of the
-mirrors `F_s`, `s ∈ D`. -/
-def MeetPoset (L : Finset V → Prop) (D : Finset V) : Type u :=
-  {σ : Finset V // L σ ∧ (σ ∩ D).Nonempty}
 
-instance (L : Finset V → Prop) (D : Finset V) : PartialOrder (MeetPoset L D) :=
-  Subtype.partialOrder _
 
-@[simp] theorem MeetPoset.le_def {L : Finset V → Prop} {D : Finset V} (σ τ : MeetPoset L D) :
-    σ ≤ τ ↔ σ.1 ⊆ τ.1 := Iff.rfl
 
 /-! ### The union of mirrors is the order complex of `𝒫_D` -/
 
@@ -54,13 +45,9 @@ instance (L : Finset V → Prop) (D : Finset V) : PartialOrder (MeetPoset L D) :
 
 variable {L : Finset V → Prop} {D : Finset V}
 
-/-- The vertex `D` of the poset `𝒫_D`. -/
-def top (hLD : L D) (hD : D.Nonempty) : MeetPoset L D :=
-  ⟨D, hLD, by simpa using hD⟩
 
 /-! ### The descent set of an element of a right-angled Coxeter group -/
 
-section RACG
 
 open RACG
 
@@ -92,8 +79,3 @@ theorem isSimplex_rdescFinset (x : CayGroup A) : IsSimplex A (rdescFinset A x) :
 theorem rdescFinset_nonempty {x : CayGroup A} (hx : x ≠ 1) : (rdescFinset A x).Nonempty := by
   obtain ⟨s, hs⟩ := exists_rdesc A hx
   exact ⟨s, (mem_rdescFinset A).2 hs⟩
-
-end RACG
-
-end Mirror
-end FiniteChains

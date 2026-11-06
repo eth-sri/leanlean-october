@@ -158,5 +158,3 @@ theorem coordinateOpen_ne_facet (j : V) (b z : CubeCoord)
     exact hbz (hh.symm.trans hc)
   · simp only [coordinateOpen, if_neg hc, coordinateFix, Function.update_self] at hh
     exact hb hh.symm
-
-end FiniteChains.Davis

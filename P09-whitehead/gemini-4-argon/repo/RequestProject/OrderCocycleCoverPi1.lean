@@ -7,9 +7,7 @@ public import RequestProject.StrictNormalizedOneMaps
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.OrdCocycle
 universe u
@@ -96,5 +94,3 @@ noncomputable def coverPi1KernelEquiv (a : P) :
     Pi1 (orderCx c.Cover) (c.coverBase a) ≃* (c.monodromy a).ker :=
   MulEquiv.ofBijective (c.coverPi1KernelHom a)
     ⟨c.coverPi1KernelHom_injective a, c.coverPi1KernelHom_surjective a⟩
-
-end FiniteChains.Comb.OrdCocycle

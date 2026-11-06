@@ -13,9 +13,7 @@ is injective and consists of genuine one-cycles. No genus modules or
 topological classification hypotheses are used. Pending Lean verification. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb
@@ -93,19 +91,19 @@ theorem roseIntegerRealize_cycle (c : A →₀ ℤ) :
   | zero => simp
   | add c d hc hd => simp only [map_add, hc, hd, add_zero]
   | single a n =>
-    rw (config := { transparency := .default }) [roseIntegerRealize, Finsupp.linearCombination_single, map_smul,
+    erw [roseIntegerRealize, Finsupp.linearCombination_single, map_smul,
       roseIntegerGeneratorChain_cycle, smul_zero]
 
 theorem mapOne_single_of_endpoints {P Q : Type u} [PartialOrder P] [PartialOrder Q]
     (f : P → Q) (hf : Monotone f) (e : StrictOrdEdge P) (d : StrictOrdEdge Q)
     (he : (f e.val.1, f e.val.2) = d.val) :
     StrictNormalized.mapOne f hf (Finsupp.single e 1) = Finsupp.single d 1 := by
-  rw (config := { transparency := .default }) [StrictNormalized.mapOne_single, one_smul]
+  erw [StrictNormalized.mapOne_single, one_smul]
   have hn : f e.val.1 ≠ f e.val.2 := by
     intro h
     exact d.property.ne ((congrArg Prod.fst he).symm.trans (h.trans (congrArg Prod.snd he)))
   unfold normalizeOrdEdge
-  rw (config := { transparency := .default }) [dif_neg hn]
+  erw [dif_neg hn]
   congr 1
   exact Subtype.ext he
 
@@ -134,7 +132,7 @@ theorem relatorCircleLetterChain_exponent (k : Fin (w j).length) :
   have h₃ := mapOne_single_of_endpoints f hf (relatorCircleEdge3 w j k)
     (roseIntegerBaseEdge (w j)[k.val].1 (w j)[k.val].2) (Prod.ext rfl hR)
   change StrictNormalized.mapOne f hf (relatorCircleLetterChain w j k) = _
-  rw (config := { transparency := .default }) [relatorCircleLetterChain, map_sub, map_add, map_sub, h₀, h₁, h₂, h₃]
+  erw [relatorCircleLetterChain, map_sub, map_add, map_sub, h₀, h₁, h₂, h₃]
   cases (w j)[k.val].2 <;> simp only [Bool.not_false, Bool.not_true,
     Bool.false_eq_true, if_false, if_true, roseIntegerGeneratorChain]
   abel
@@ -145,11 +143,11 @@ theorem pathChain_eq_sum_get (l : List (A × Bool)) :
   induction l with
   | nil => simp
   | cons p l ih =>
-    rw (config := { transparency := .default }) [pathChain_cons]
+    erw [pathChain_cons]
     change _ = ∑ k : Fin (l.length + 1),
       if (p :: l)[k.val].2 then Finsupp.single (p :: l)[k.val].1 (1 : ℤ)
         else -Finsupp.single (p :: l)[k.val].1 1
-    rw (config := { transparency := .default }) [Fin.sum_univ_succ]
+    erw [Fin.sum_univ_succ]
     simpa only [Fin.val_zero, Fin.val_succ, List.getElem_cons_zero, List.getElem_cons_succ] using
       congrArg (fun z => (if p.2 then Finsupp.single p.1 (1 : ℤ) else -Finsupp.single p.1 1) + z) ih
 
@@ -164,13 +162,11 @@ theorem relatorCircleFundamentalChain_exponent :
     StrictNormalized.mapOne (fun x : RelatorCircle w j => aFun w x.val)
       ((aFun_monotone w).comp (fun _ _ h => h)) (relatorCircleFundamentalChain w j) =
         roseIntegerRealize (FiniteChains.expVec (FreeGroup.mk (w j))) := by
-  rw (config := { transparency := .default }) [relatorCircleFundamentalChain, map_sum]
+  erw [relatorCircleFundamentalChain, map_sum]
   simp_rw [relatorCircleLetterChain_exponent]
-  rw (config := { transparency := .default }) [expVec_mk_eq_pathChain, pathChain_eq_sum_get, map_sum]
+  erw [expVec_mk_eq_pathChain, pathChain_eq_sum_get, map_sum]
   apply Finset.sum_congr rfl
   intro k _
   cases (w j)[k.val].2 <;>
     simp only [Bool.false_eq_true, if_false, if_true, map_neg,
       roseIntegerRealize, Finsupp.linearCombination_single, one_smul]
-
-end FiniteChains.PresModel

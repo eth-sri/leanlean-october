@@ -7,9 +7,7 @@ public import RequestProject.PresentationDictionary
 @[expose] public section
 
 /-! The actual Fox matrix after adjoining names for the marked words. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.NamedPresentation
 variable {α J I : Type} [DecidableEq α] [DecidableEq I]
@@ -57,5 +55,3 @@ theorem matrix_marked_name (i k : I) :
   · subst k
     simp [foxMatrixPres, rel, fox_mul, fox_inv, hz]
   · simp [foxMatrixPres, rel, fox_mul, fox_inv, hz, h]
-
-end FiniteChains.NamedPresentation

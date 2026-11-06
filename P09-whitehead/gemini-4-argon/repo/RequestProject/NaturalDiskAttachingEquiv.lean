@@ -81,11 +81,6 @@ theorem naturalDiskAttachingEquiv_toFun (r₀ r₁ : C(BoundaryFamily J E, X))
       (naturalDiskReparam r₁ (naturalDiskExtension r₁ r₀ H.symm (1, d))) = _
     rw [Homeomorph.symm_apply_apply, naturalDiskBackward_cell]
 
-@[simp] theorem naturalDiskAttachingEquiv_old (r₀ r₁ : C(BoundaryFamily J E, X))
-    (H : r₀.Homotopy r₁) (x : X) :
-    naturalDiskAttachingEquiv r₀ r₁ H (old r₀ (boundaryFamilyInclusion J E) x) =
-      old r₁ (boundaryFamilyInclusion J E) x := by
-  rw [naturalDiskAttachingEquiv_toFun, naturalDiskBackward_old]
 
 theorem naturalDiskAttachingEquiv_natural
     {K Y : Type} [TopologicalSpace Y]
@@ -100,5 +95,3 @@ theorem naturalDiskAttachingEquiv_natural
   rw [naturalDiskAttachingEquiv_toFun, naturalDiskAttachingEquiv_toFun]
   exact naturalDiskBackward_natural r₁ r₀ H.symm s₁ s₀ G.symm f i h₁ h₀
     (fun t j a => hH (unitInterval.symm t) j a)
-
-end FiniteChains.RelativeAttachment

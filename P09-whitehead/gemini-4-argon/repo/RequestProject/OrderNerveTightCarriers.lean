@@ -51,5 +51,3 @@ theorem orderSmallToNerve0_tight (σ : OrderSmallSimplex P 0) :
   have hp' : p = orderSmallChosenVertex σ := by simpa using hp
   rw [hp']
   exact orderNerveStarIndices_subset_tight σ.val σ.property.choose_spec
-
-end FiniteChains.Comb

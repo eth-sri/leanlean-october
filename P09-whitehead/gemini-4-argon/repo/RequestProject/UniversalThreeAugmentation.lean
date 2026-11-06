@@ -6,9 +6,7 @@ public import RequestProject.CombPi2
 @[expose] public section
 
 /-! Forgetting the deck coordinate of the actual lifted three-boundary. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -36,5 +34,3 @@ theorem hurewicz_uOrdBoundary3 (c : UOrdTet P a →₀ ℤ) :
       rw [uOrdBoundary3, Finsupp.linearCombination_single, map_smul,
         hurewicz_uOrdTetBoundary, Finsupp.mapDomain_single, ordBoundary3,
         Finsupp.linearCombination_single]
-
-end FiniteChains.Comb

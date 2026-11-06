@@ -25,5 +25,3 @@ def presConeBallHomeomorph :
   letI : Nonempty (RelatorCircle w j) := relatorCircle_nonempty w j (List.ne_nil_of_length_pos hn)
   exact lowerConeBallHomeomorph (apexOf w j) (relatorCircleOrderIso w j)
     (relatorCircleBoundaryHomeomorph w j hn)
-
-end FiniteChains.PresModel

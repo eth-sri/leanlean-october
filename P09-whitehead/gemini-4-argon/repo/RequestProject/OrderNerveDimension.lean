@@ -37,5 +37,3 @@ theorem orderNerve_hasDimensionLE {P : Type u} [PartialOrder P]
   intro hs
   have h := orderNerve_nonDegenerate_dimension_le rank hrank d hbound s hs
   omega
-
-end FiniteChains.Comb

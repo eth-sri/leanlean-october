@@ -1,6 +1,6 @@
 module
 
-public import RequestProject.PresCoverFirstTriangleFibreEquiv
+public import RequestProject.PresCoverRelatorNaturality
 
 @[expose] public section
 
@@ -30,5 +30,3 @@ theorem presCoverRelatorChain_single_off_coordinates (t : StrictOrdTri P) (n : â
     rw [he]
     exact presCoverRelatorTriangle_projection w f hf hpos p
   simp [hn]
-
-end FiniteChains.PresModel

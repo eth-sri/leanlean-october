@@ -31,7 +31,3 @@ theorem roseFourVertex_surjective : Function.Surjective roseFourVertex := by
 
 def roseFourVertexEquiv : Fin 4 ≃ Rose PUnit :=
   Equiv.ofBijective roseFourVertex ⟨roseFourVertex_injective, roseFourVertex_surjective⟩
-
-@[simp] theorem roseFourVertex_zero : roseFourVertex 0 = Rose.base := rfl
-
-end FiniteChains.PresModel

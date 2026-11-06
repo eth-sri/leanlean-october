@@ -111,5 +111,3 @@ theorem prism_cancellation (n : ℕ) (A : Fin (n + 1) → Fin (n + 2) → V)
         change A 0 0 - A 0 1 + (A 1 1 - A (Fin.last (n + 1)) (Fin.last (n + 2))) = _
         rw [hm]
         abel
-
-end FiniteChains.SingularPrism

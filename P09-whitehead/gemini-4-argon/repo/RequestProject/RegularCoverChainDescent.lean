@@ -11,9 +11,7 @@ Unverified source. -/
 
 noncomputable section
 open scoped Classical
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u v
@@ -38,13 +36,6 @@ theorem pushF_eq_inr_imp {D K L : Complex2.{u}} (p : Hom D K) (i : Hom D L)
   · rw [pushF_of_off p i ⟨e, fun d hd => he ⟨d, hd⟩⟩] at h
     exact congrArg (fun x : OffF i => x.val) (Sum.inr.inj h)
 
-section Proper
-variable {D K L L' : Complex2.{u}} (p : Hom D K) (j : Hom D L) (j' : Hom D L')
-  (k : Hom L L') (hjV : Function.Injective j.onV) (hjE : Function.Injective j.onE)
-  (hj'V : Function.Injective j'.onV) (hj'E : Function.Injective j'.onE)
-  (hj'F : Function.Injective j'.onF) (hkj : k.comp j = j')
-
-end Proper
 
 /-- Only actual map properties used in descent; no finite-cell assumptions. -/
 structure RelativeCellChain (c : ℕ → Complex2.{u}) (n : ℕ) where
@@ -118,6 +109,3 @@ theorem descInc_zeroPi2 (hp : IsCovering p) {Q : Type v} [Group Q]
         (inclFrom c R.inc (i + 1)) (R.inclV (i + 1)) (R.inclE (i + 1))
         (R.inclF (i + 1)) (R.conn (i + 1))
         (R.pi1 (i + 1) (by omega) (by omega)) x z hz
-
-end RelativeCellChain
-end FiniteChains.Comb

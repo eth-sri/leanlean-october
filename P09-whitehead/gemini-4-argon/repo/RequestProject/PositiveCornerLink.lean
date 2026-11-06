@@ -71,5 +71,3 @@ def positiveCornerLinkEquiv : Set.Ioi (positiveCorner A) ≃o NeSpx A where
       rw [((positiveCorner_lt_iff A c.1).mp c.2).2,
         ((positiveCorner_lt_iff A d.1).mp d.2).2]
     · exact fun h => h.1
-
-end FiniteChains.Davis

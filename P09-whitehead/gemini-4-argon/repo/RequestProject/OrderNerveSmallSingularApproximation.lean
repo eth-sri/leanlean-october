@@ -60,5 +60,3 @@ theorem orderSmallBoundary_map_carrier {P : Type} [PartialOrder P] {n k : ℕ}
   rw [map_smul]
   apply Submodule.smul_mem
   exact orderSingularCarrierChains_face σ.val i k (hH (orderSmallSimplexFace i σ))
-
-end FiniteChains.Comb

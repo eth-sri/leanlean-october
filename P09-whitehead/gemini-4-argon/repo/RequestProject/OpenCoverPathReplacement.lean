@@ -14,9 +14,7 @@ noncomputable section
 open scoped Classical unitInterval
 open Set
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PathReplacement
 
@@ -148,5 +146,3 @@ theorem replace_of_open_cover {ι : Type} (U : ι → Set X)
       Path.cast_trans _ _ (congrArg a hp0.symm) hp0.symm hp1.symm,
       Path.cast_symm, hc0, hps, hc1] at hc
     exact hc
-
-end FiniteChains.PathReplacement

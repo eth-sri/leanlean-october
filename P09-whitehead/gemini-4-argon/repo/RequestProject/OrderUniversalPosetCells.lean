@@ -61,5 +61,3 @@ theorem uOrderFace_surjective : Function.Surjective (uOrderFace (P := P) (a := a
   refine ⟨⟨(v, w, z), uOrderStep_le v _ h, uOrderStep_le w _ h'⟩, ?_⟩
   exact Subtype.ext (Prod.ext rfl (Subtype.ext
     (Prod.ext hv (Prod.ext (uOrderStep_end v _ h) (uOrderStep_end w _ h')))))
-
-end FiniteChains.Comb

@@ -130,6 +130,3 @@ theorem isCovering_orderCxMap {f : P → Q} (hf : IsPosetCover f) :
       refine ⟨⟨(a, b, c), hab, hbc⟩, ?_⟩
       refine Subtype.ext (Prod.ext ?_ rfl)
       exact Subtype.ext (Prod.ext hfa (Prod.ext hfb hfc))
-
-end Comb
-end FiniteChains

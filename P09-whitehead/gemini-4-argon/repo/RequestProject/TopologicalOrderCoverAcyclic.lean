@@ -65,9 +65,3 @@ theorem reconstructed_cover_conclusions [ConnectedSpace E] [(nerve P).HasDimensi
   ⟨strictProjection_isCovering p hp hs, strictProjection_isRegular p hp hs hr,
     strictCover_connected p hp hs, strictCover_acyclic p hp hs hac,
     strictDeck_edges p hp hs, strictDeck_faces p hp hs⟩
-
-end TopologicalOrderCover
-
-open CategoryTheory Topology
-
-end FiniteChains.Comb

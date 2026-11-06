@@ -45,5 +45,3 @@ theorem orderFunctor_exists_coherent_arrows (F : P ⥤ C) (a : P)
     MulOpposite.unop_op, End.mul_def, he] at h₁
   have h₂ := congrArg (fun e : End (F.obj a) => e ≫ d q) h₁
   simpa only [Category.assoc, Groupoid.inv_eq_inv, IsIso.inv_hom_id, Category.comp_id] using h₂
-
-end FiniteChains.Comb

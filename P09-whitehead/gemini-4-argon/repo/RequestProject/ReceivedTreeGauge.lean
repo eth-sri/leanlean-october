@@ -6,9 +6,7 @@ public import RequestProject.UniversalTreeGauge
 @[expose] public section
 
 /-! Exact geometric reference paths for the cover over a receiving group. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.ReceivedTree
 open SpanningTree
@@ -56,5 +54,3 @@ theorem receiverEdge_tgt (g : G) (e : K.E) :
 noncomputable def receiverFace (g : G) (t : K.F) : UF Y (f.onV T.root) :=
   ⟨(receiverVertex T f ψ g (K.base t), f.onF t), by
     rw [receiverVertex_end, f.base_onF]⟩
-
-end FiniteChains.Comb.ReceivedTree

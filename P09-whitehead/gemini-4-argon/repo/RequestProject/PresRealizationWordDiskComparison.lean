@@ -45,5 +45,3 @@ theorem actualPresWordAttaching_link (j : J) (x : orderNerveRealization (Relator
       old (actualPresWordAttaching w hw) (boundaryFamilyInclusion J (Fin 2 → ℝ))
         (presOldRoseHomotopyEquiv w x) :=
   presRealizationRoseDiskHomotopyEquiv_old w hw (presCircleBoundaryHomeomorph w hw) x
-
-end FiniteChains.PresModel

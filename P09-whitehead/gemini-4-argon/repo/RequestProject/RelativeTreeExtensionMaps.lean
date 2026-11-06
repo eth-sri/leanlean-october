@@ -28,5 +28,3 @@ def inclusion : Hom (complex T extra) (complex T extra') where
     cases s with
     | inl d => simp [complex]
     | inr s => simp [complex, hf]
-
-end FiniteChains.Comb.RelativeTreeExtension

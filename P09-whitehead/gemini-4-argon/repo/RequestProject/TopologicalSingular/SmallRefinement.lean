@@ -104,5 +104,3 @@ theorem smallRefinement_support (U : ι → Set X) (hU : ∀ i, IsOpen (U i))
     (hcover : ∀ x, ∃ i, x ∈ U i) (n : ℕ) (A : Set X) {c : Chain X n}
     (hc : c ∈ subChains A n) : smallRefinement U hU hcover n c ∈ subChains A n :=
   carried_linearMap_mem_subChains _ (smallRefinementStage U hU hcover n).small_support A hc
-
-end FiniteChains.SingularSubdivision

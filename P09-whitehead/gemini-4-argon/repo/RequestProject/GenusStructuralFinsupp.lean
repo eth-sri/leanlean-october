@@ -87,12 +87,6 @@ def finiteSpineFamilyStructuralMap :
     (finiteSpineFamilyFilling σ q u)
     (finiteSpineFamilyFilling_isFilling σ q u hσ)
 
-@[simp] theorem finiteSpineFamilyStructuralMap_cells
-    (y : (Jr ⊕ S) →₀ MonoidAlgebra ℤ (PresGroup σ)) :
-    (finiteSpineFamilyStructuralMap σ q u hσ).cells y =
-      fsCellsF σ (familyFiniteSpineWordBlock q u)
-        (familyFiniteSpineWordBlock_filled σ q u hσ)
-        (finiteSpineFamilyFilling σ q u) y := rfl
 
 /-- Actual equation (3.3) for the simultaneous genus replacement. -/
 theorem finiteSpineFamilyStructuralMap_generates :
@@ -113,11 +107,3 @@ theorem finiteSpineFamilyStructuralMap_core_cell
     (familyFiniteSpineWordBlock_filled σ q u hσ)
     (finiteSpineFamilyFilling σ q u)
     (finiteSpineFamilyFilling_isFilling σ q u hσ) j a
-
-section Finite
-
-variable [Fintype α] [Fintype Jr] [Fintype S]
-
-end Finite
-
-end FiniteChains.Davis.Genus

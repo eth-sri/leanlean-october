@@ -47,5 +47,3 @@ theorem Htpy.exists_boundary {a b : X.V} {p q : List (X.E × Bool)}
     refine ⟨c + d, ?_⟩
     rw [map_add, hc, hd]
     abel
-
-end FiniteChains.Comb

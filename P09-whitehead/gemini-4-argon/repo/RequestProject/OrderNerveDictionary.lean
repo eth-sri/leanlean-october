@@ -7,9 +7,7 @@ public import RequestProject.NervePrism
 
 /-! The actual cellular boundary maps in degrees two and three agree with the full nerve. -/
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -54,5 +52,3 @@ theorem ordNerve_normalization_cycle (c : OrdTri P →₀ ℤ)
     ordNerveChain2 c - ordNerveChain2 (ordStrictInclusion2 (normalizeOrdChain2 c)) =
       Nerve.bdry (ordNerveChain3 (ordNormalizationHomotopy2 c)) := by
   rw [← map_sub, ordNormalization_cycle_boundary c hc, ordNerveChain2_ordBoundary3]
-
-end FiniteChains.Comb

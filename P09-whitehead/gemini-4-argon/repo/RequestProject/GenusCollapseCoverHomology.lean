@@ -73,5 +73,3 @@ theorem genusSpine_cover_homology (hf : IsPosetCover f) :
     funext p
     exact propext (by simpa only [List.nil_append] using genusCollapseStage_final_iff q (f p))
   rwa [hstart, hfinish] at h
-
-end FiniteChains.Davis.Genus

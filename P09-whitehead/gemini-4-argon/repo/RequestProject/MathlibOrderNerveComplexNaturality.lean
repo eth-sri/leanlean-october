@@ -5,9 +5,7 @@ public import Mathlib.Algebra.Homology.ShortComplex.HomologicalComplex
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 open CategoryTheory
@@ -55,7 +53,7 @@ theorem mathlibOrderNerveComplex_homologyMap_zero (f : P → Q) (hf : Monotone f
     (mathlibOrderNerveShortComplexIso P)).hom)).mp
   rw [← mathlibOrderNerveComplex_homologyMap_natural,
     mathlibOrderNerve_homologyMap_zero f hf hzero]
-  rw (config := { transparency := .default }) [CategoryTheory.Limits.zero_comp, CategoryTheory.Limits.comp_zero]
+  erw [CategoryTheory.Limits.zero_comp, CategoryTheory.Limits.comp_zero]
 
 /-- The actual order-cell homology equivalence is natural on full chain-complex homology. -/
 theorem mathlibOrderNerveComplexH2Equiv_natural (f : P → Q) (hf : Monotone f)
@@ -75,5 +73,3 @@ theorem mathlibOrderNerveComplexH2Equiv_natural (f : P → Q) (hf : Monotone f)
       (mathlibOrderNerveChainMap f hf)).hom (mathlibOrderNerveComplexH2Equiv P z) at h
   rw [mathlibOrderNerveCategoricalH2Equiv_natural] at h
   exact h.symm
-
-end FiniteChains.Comb

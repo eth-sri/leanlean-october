@@ -7,9 +7,7 @@ public import RequestProject.StrictOrderComplex
 @[expose] public section
 
 /-! Based path comparison for the actual truncated face poset, before collapse. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb
@@ -88,5 +86,3 @@ theorem truncatedRetraction_pi1_surjective_at (a : TruncatedCell A) :
   have hh := hA.trans hB
   simpa [loopSetoid, ordPos, ordNeg, lp, e, truncatedRetractionHom, truncatedSectionHom, mapPath, orderCxMap,
     List.map_map, Function.comp_def, revPath, revGerm] using hh
-
-end FiniteChains.Davis

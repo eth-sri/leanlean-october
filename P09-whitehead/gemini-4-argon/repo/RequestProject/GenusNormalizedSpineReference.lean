@@ -8,9 +8,7 @@ public import RequestProject.GenusUniversalPolygonFoxBoundary
 class of the explicit degree-one polygon. Pending final Lean verification. -/
 noncomputable section
 open scoped Classical
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb
@@ -70,5 +68,3 @@ theorem normalizedSpineReference_corrected_geometry :
     abel
   rw [hd]
   abel
-
-end FiniteChains.Davis.Genus

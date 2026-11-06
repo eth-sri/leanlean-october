@@ -45,5 +45,3 @@ theorem cubeSquareEdgeBoundary_cycle (c : QCube A) (v w : V) (hne : v ≠ w)
   rw [qCubeFacet_comm c (Ne.symm hne) 0 0, qCubeFacet_comm c (Ne.symm hne) 0 1,
     qCubeFacet_comm c (Ne.symm hne) 1 0, qCubeFacet_comm c (Ne.symm hne) 1 1]
   abel
-
-end FiniteChains.Davis

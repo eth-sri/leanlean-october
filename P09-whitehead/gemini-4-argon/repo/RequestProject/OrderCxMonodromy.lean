@@ -26,9 +26,7 @@ Both are used to build the comparison of a presentation with the order complex o
 model of its presentation complex.
 -/
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 namespace Comb
@@ -119,8 +117,6 @@ def monodromy (x : P) : Pi1 (orderCx P) x →* G where
     rintro ⟨p⟩ ⟨q⟩
     exact c.readPath_append p.1 q.1
 
-@[simp] theorem monodromy_mk (x : P) (p : Loop (orderCx P) x) :
-    c.monodromy x (Pi1.mk p) = c.readPath p.1 := rfl
 
 end OrdCocycle
 
@@ -137,6 +133,3 @@ theorem htpy_nil_of_pathIn_le_top {A : P → Prop} {d : P} (hd : A d)
     (fun x => hAd x.1 x.2) ?_
   intro x y h
   exact h
-
-end Comb
-end FiniteChains

@@ -135,9 +135,6 @@ def pointAttachmentFillingHomeomorph :
     pointAttachmentFillingHomeomorph x c b i hi (pointOld x (i (b.symm c)) y) =
       pointFillBase x c b i y := attachmentQuotientHomeomorph_old ..
 
-@[simp] theorem pointAttachmentFillingHomeomorph_cell (d : D) :
-    pointAttachmentFillingHomeomorph x c b i hi (pointCell x (i (b.symm c)) d) =
-      pointFillDisk x c b i d := attachmentQuotientHomeomorph_cell ..
 
 variable {E : Type u} [NormedAddCommGroup E] [NormedSpace ℝ E]
 
@@ -151,5 +148,3 @@ def pointBoundaryFillingHomotopyEquiv (b : UnitBoundary E ≃ₜ C) :
 @[simp] theorem pointBoundaryFillingHomotopyEquiv_old (b : UnitBoundary E ≃ₜ C) (y : X) :
     pointBoundaryFillingHomotopyEquiv x c b y = pointFillBase x c b (unitBoundaryInclusion E) y :=
   pointAttachmentFillingHomeomorph_old ..
-
-end FiniteChains.RelativeAttachment

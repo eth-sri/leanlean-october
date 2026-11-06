@@ -89,5 +89,3 @@ def wordDiskChange (i : Fin (n + 1)) :
     DiskAttachment (rawAttaching C i) ≃ₕ DiskAttachment (wordAttaching C hC i) :=
   naturalDiskAttachingEquiv (rawAttaching C i) (wordAttaching C hC i)
     (attachingHomotopy C hC i)
-
-end FiniteChains.ClassicalCW.ChainWords

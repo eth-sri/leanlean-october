@@ -101,5 +101,3 @@ theorem regularCoverChain_freshLoopOrFace {D K : Complex2}
     (RelativeTreeAmbientChain.inclusions_freshLoopOrFace T
       (RelativeNormalForm.actualAmbientChain (SpanningTree.treeRel T)
         (SpanningTree.expMatrix_bijective_of_acyclic T hD) n) i hi)
-
-end FiniteChains.Comb

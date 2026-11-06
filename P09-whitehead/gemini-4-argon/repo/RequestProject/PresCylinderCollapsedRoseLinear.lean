@@ -5,9 +5,7 @@ public import RequestProject.RoseCoverCycleReconstruction
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -20,9 +18,9 @@ theorem bdry1_normalizedStrictChain1 (g : P → P) (hg : Monotone g)
       Finsupp.mapDomain g (Comb.bdry1 (strictOrderCx P) c) := by
   change Comb.bdry1 (strictOrderCx P)
     (normalizeOrdChain1 (chain1 (orderCxMap g hg) (chain1 (strictOrderIncl P) c))) = _
-  rw (config := { transparency := .default }) [bdry1_normalizeOrdChain1, bdry1_chain1, bdry1_chain1]
+  erw [bdry1_normalizeOrdChain1, bdry1_chain1, bdry1_chain1]
   change Finsupp.mapDomain g (Finsupp.mapDomain id _) = _
-  rw (config := { transparency := .default }) [Finsupp.mapDomain_id]
+  erw [Finsupp.mapDomain_id]
 
 end FiniteChains.Comb
 
@@ -61,7 +59,7 @@ theorem cylinderCoverCollapsedRoseChain_cycle (c : StrictOrdEdge P →₀ ℤ)
   change chain0 (strictSubposetIncl (cylinderCoverRoseSet w f))
     (Comb.bdry1 (strictOrderCx (cylinderCoverRoseSet w f))
       (cylinderCoverCollapsedRoseChain w f hf c)) = _
-  rw (config := { transparency := .default }) [← bdry1_chain1, cylinderCoverCollapsedRoseChain_inclusion,
+  erw [← bdry1_chain1, cylinderCoverCollapsedRoseChain_inclusion,
     bdry1_normalizedStrictChain1, hc, Finsupp.mapDomain_zero]
 
 /-- The actual surviving generator-incidence coordinates of a collapsed cylinder chain. -/
@@ -86,11 +84,9 @@ theorem cylinderCoverCollapsedChain_eq_zero_iff_coordinates (c : StrictOrdEdge P
       apply Finsupp.mapDomain_injective (strictSubposetIncl_onE_injective (cylinderCoverRoseSet w f))
       change chain1 (strictSubposetIncl (cylinderCoverRoseSet w f))
         (cylinderCoverCollapsedRoseChain w f hf c) = Finsupp.mapDomain _ 0
-      rw (config := { transparency := .default }) [hi, h, Finsupp.mapDomain_zero]
+      erw [hi, h, Finsupp.mapDomain_zero]
     · intro h
-      rw (config := { transparency := .default }) [← hi, h, map_zero]
+      erw [← hi, h, map_zero]
   exact he.trans (roseCover_cycle_eq_zero_iff_coordinates (cylinderCoverRoseEnd w f)
     (cylinderCoverRoseEnd_isPosetCover w f hf) (cylinderCoverCollapsedRoseChain w f hf c)
       (cylinderCoverCollapsedRoseChain_cycle w f hf c hc))
-
-end FiniteChains.PresModel

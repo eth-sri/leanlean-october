@@ -5,9 +5,7 @@ public import RequestProject.GenusBoundaryCoordinates
 @[expose] public section
 
 /-! Distinguished first-edge detection for the actual geometric marking loops. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis.Genus
 open RACG Mirror Comb Cell
@@ -151,5 +149,3 @@ theorem markingTail_avoids_firstEdge (i j : Fin q × Bool)
   · exact (markingFirstEdge_ne_bed_mid q i j true).symm
   · exact (markingFirstEdge_ne_bed_base q i j true).symm
   · exact (markingFirstEdge_ne_base_true q i j).symm
-
-end FiniteChains.Davis.Genus

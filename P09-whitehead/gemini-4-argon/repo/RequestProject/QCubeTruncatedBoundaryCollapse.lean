@@ -47,5 +47,3 @@ theorem qThreeTruncatedBoundary_collapse_zero
     CollapseChain.cmap_bdry_eq_zero hlp (qCubeToCoordinate c.1, f) hf]
   funext g
   simp
-
-end FiniteChains.Davis

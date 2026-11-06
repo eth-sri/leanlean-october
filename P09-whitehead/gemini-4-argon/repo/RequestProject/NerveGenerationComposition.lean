@@ -27,5 +27,3 @@ theorem generatesDegreeIn_trans {U B C : P → Prop} {n : ℕ}
     (incOn_mono hBU hw), hdd, ?_⟩
   rw [he', hec, map_add]
   abel
-
-end FiniteChains.Nerve

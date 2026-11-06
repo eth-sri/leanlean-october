@@ -6,9 +6,7 @@ public import RequestProject.TreeCoverAcyclic
 @[expose] public section
 
 /-! Edge chains are determined by their non-tree coordinates and off-root boundary. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb.ReceivedTree
 open SpanningTree
@@ -137,5 +135,3 @@ theorem edgeChains_eq_of_nonTree_coordinates (c d : (G × K.E) →₀ ℤ)
     rw [map_sub, hc, sub_self]
   · intro g v hv
     rw [map_sub, Finsupp.sub_apply, hb g v hv, sub_self]
-
-end FiniteChains.Comb.ReceivedTree

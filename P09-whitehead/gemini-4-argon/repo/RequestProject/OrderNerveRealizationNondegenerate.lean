@@ -22,5 +22,3 @@ theorem orderNerveRealization_nonDegenerate_jointly_surjective (P : Type) [Parti
       orderNerveRealizationSimplex P ((nerve P).map a.op t.val) z at h
     rw [← ht] at h
     exact h.trans hz
-
-end FiniteChains.Comb

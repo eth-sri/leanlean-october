@@ -1,13 +1,11 @@
 module
 
 public import RequestProject.PresWordEmbedding
-public import RequestProject.PresCoverRelatorProjectionCoordinates
+public import RequestProject.PresCoverRelatorSingleCoordinates
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel.PresWordEmbedding
 open Comb
@@ -60,7 +58,7 @@ theorem coverRelatorTriangle_map (p : PresCoverRelator w f) :
     (strictOrderCxMap k hk).onF (presCoverRelatorTriangle w f hf hw p) =
       presCoverRelatorTriangle v g hg hv (h.coverRelatorMap f g k hc p) := by
   apply presCoverRelatorTriangle_unique v g hg hv
-  · rw (config := { transparency := .default }) [h.coverTriangle_projection f hf g hg k hk hc,
+  · erw [h.coverTriangle_projection f hf g hg k hk hc,
       presCoverRelatorTriangle_projection, h.firstTriangle_map]
     rfl
   · rfl
@@ -78,22 +76,20 @@ theorem coverRelatorChain_map (c : StrictOrdTri P →₀ ℤ) :
   | single t n =>
     change presCoverRelatorChain v g hg hv
       (Finsupp.mapDomain (strictOrderCxMap k hk).onF (Finsupp.single t n)) = _
-    rw (config := { transparency := .default }) [Finsupp.mapDomain_single]
+    erw [Finsupp.mapDomain_single]
     by_cases ht : ∃ j, (strictOrderCxMap f hf.strictMono).onF t = presRelatorFirstTriangle w hw j
     · obtain ⟨j, hj⟩ := ht
       let p : PresCoverRelator w f :=
         ⟨(t.val.2.2, j), congrArg (fun s : StrictOrdTri (PresPos w) => s.val.2.2) hj⟩
       have he : t = presCoverRelatorTriangle w f hf hw p :=
         presCoverRelatorTriangle_unique w f hf hw p t hj rfl
-      rw (config := { transparency := .default }) [he, h.coverRelatorTriangle_map hw hv f hf g hg k hk hc,
+      erw [he, h.coverRelatorTriangle_map hw hv f hf g hg k hk hc,
         presCoverRelatorChain_single_triangle, presCoverRelatorChain_single_triangle,
         Finsupp.mapDomain_single]
-    · rw (config := { transparency := .default }) [presCoverRelatorChain_single_off_coordinates w f hf hw t n
+    · erw [presCoverRelatorChain_single_off_coordinates w f hf hw t n
         (fun j hj => ht ⟨j, hj⟩), Finsupp.mapDomain_zero]
       apply presCoverRelatorChain_single_off_coordinates
       intro j hj
-      rw (config := { transparency := .default }) [h.coverTriangle_projection f hf g hg k hk hc] at hj
+      erw [h.coverTriangle_projection f hf g hg k hk hc] at hj
       obtain ⟨i, _, hi⟩ := h.firstTriangle_preimage hw hv _ j hj
       exact ht ⟨i, hi⟩
-
-end FiniteChains.PresModel.PresWordEmbedding

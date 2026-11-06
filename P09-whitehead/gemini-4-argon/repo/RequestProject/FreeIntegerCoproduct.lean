@@ -7,9 +7,7 @@ public import Mathlib.Algebra.Category.ModuleCat.Colimits
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 open CategoryTheory CategoryTheory.Limits
@@ -65,5 +63,3 @@ noncomputable def freeIntegerCoproductNatIso :
     simp only [Category.assoc, Iso.hom_inv_id, Category.comp_id]
     rw [show f = TypeCat.ofHom f.hom from rfl, freeIntegerCoproductIso_inv_natural, ← Category.assoc,
       Iso.hom_inv_id, Category.id_comp])
-
-end FiniteChains

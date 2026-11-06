@@ -112,5 +112,3 @@ theorem orderSmallSingularApproximation_homologous (n : ℕ)
       boundary (n + 1) b = c.val - orderSmallSingularApproximation P (n + 1) c := by
   refine ⟨orderSmallHomotopy P (n + 1) c, ?_⟩
   rw [orderSmallHomotopy_boundary, hc, map_zero, sub_zero]
-
-end FiniteChains.Comb

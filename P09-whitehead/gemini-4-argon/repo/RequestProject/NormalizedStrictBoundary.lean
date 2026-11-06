@@ -5,9 +5,7 @@ public import RequestProject.OrderComparableOneHomotopy
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -24,5 +22,3 @@ theorem bdry2_normalizedStrictChain2 (g : P → P) (hg : Monotone g)
     normalizeOrdChain1 (chain1 (orderCxMap g hg)
       (chain1 (strictOrderIncl P) (bdry2 (strictOrderCx P) c)))
   rw [bdry2_normalizeOrdChain2, bdry2_chain2, bdry2_chain2]
-
-end FiniteChains.Comb

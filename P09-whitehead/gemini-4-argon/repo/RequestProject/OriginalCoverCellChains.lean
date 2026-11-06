@@ -1,7 +1,8 @@
 module
 
 public import RequestProject.ClassicalCWCanonicalPresentation
-public import RequestProject.TopologicalCoverCellChains
+public import RequestProject.TopologicalOrderCoverAcyclic
+public import RequestProject.RegularCoverAcyclicChains
 public import RequestProject.TopologicalAcyclicCoverHomotopy
 public import RequestProject.PresPosetConnected
 public import RequestProject.PresPosetDimension
@@ -42,5 +43,3 @@ theorem canonicalTwoComplex_hasCover (K : Whitehead.TwoComplex)
     Whitehead.HasAcyclicRegularCover (canonicalTwoComplex K) :=
   Whitehead.hasAcyclicRegularCover_of_homotopyEquiv (canonicalTwoComplex K) K
     (originalCanonicalTwoComplexEquiv K).symm h
-
-end FiniteChains.ClassicalCW

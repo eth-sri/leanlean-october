@@ -99,11 +99,11 @@ theorem truncatedCellRetraction_monotone : Monotone (truncatedCellRetraction (A 
       rfl
     | inr τ => exact posQCube_monotone h
 
-omit [DecidableEq V] in
 @[simp] theorem truncatedCellRetraction_old (c : QOld A) :
     truncatedCellRetraction (oldCellIncl c) = c := rfl
 
 /-- Every cell is a face of its retained-cube image. Thus the section and retraction
+
 have a pointwise order homotopy, including the cut cells. -/
 theorem truncatedCell_le_retraction (c : TruncatedCell A) :
     c ≤ oldCellIncl (truncatedCellRetraction c) := by
@@ -129,5 +129,3 @@ theorem cut_le_old_coordinate_iff (σ : CutCell A) (c : QOld A) :
     · exact c.1.sgn_eq_zero v hv
     · rw [← qCubeToCoordinate_parity c.1 v, hz]
       simp [posCube, hv]
-
-end FiniteChains.Davis

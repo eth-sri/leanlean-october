@@ -12,9 +12,7 @@ public import RequestProject.TopologicalSingular.BasedTetrahedronDisks
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.TopologicalSingular
 open scoped unitInterval Topology
@@ -146,5 +144,3 @@ theorem tetrahedronStickShell_face_relation (tau : Simplex X 3)
     tetrahedronStickShell_lowerLastFaceClass,
     show (1 : Fin 3).castSucc = (1 : Fin 4) by decide,
     show (2 : Fin 3).castSucc = (2 : Fin 4) by decide] using h
-
-end FiniteChains.TopologicalSingular

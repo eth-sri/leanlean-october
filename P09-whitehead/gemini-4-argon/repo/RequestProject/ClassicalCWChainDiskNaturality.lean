@@ -9,9 +9,7 @@ the original subcomplex inclusions. Thus original topological pi2
 vanishing transfers to the constructed model inclusions. Unverified. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.ClassicalCW
 open ClassicalSkeletonAttachment ClassicalGraphModel RelativeAttachment
@@ -140,6 +138,3 @@ theorem wordDiskInclusion_killsPi2_iff {i k : Fin (n + 1)} (hik : i ≤ k) :
   apply Whitehead.killsPi2_homotopyEquiv_square_iff
     (wordDiskEquiv K C hC i) (wordDiskEquiv K C hC k)
   rw [wordDiskEquiv_natural]
-
-end ChainWords
-end FiniteChains.ClassicalCW

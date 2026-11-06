@@ -41,5 +41,3 @@ omit [NormedSpace ℝ E] in
   unfold diskFamilyMap
   rw [desc_cell]
   rfl
-
-end FiniteChains.RelativeAttachment

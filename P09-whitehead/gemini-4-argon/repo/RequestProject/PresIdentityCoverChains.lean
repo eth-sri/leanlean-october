@@ -6,9 +6,7 @@ public import RequestProject.StrictNormalizedOneMaps
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 set_option maxHeartbeats 800000
 
@@ -78,7 +76,7 @@ theorem baseProjection_relatorBoundary (p : PresCoverRelator w id) :
   change chain1 (strictOrderCxMap (baseIso w) (baseIso w).strictMono)
     (chain1 (strictOrderCxMap (presCoverCircleCylinderInclusion w id (cover w) p)
       (presCoverCircleCylinderInclusion_strictMono w id (cover w) p)) _) = _
-  rw (config := { transparency := .default }) [← mapOne_strict (baseIso w) (baseIso w).strictMono,
+  erw [← mapOne_strict (baseIso w) (baseIso w).strictMono,
     ← mapOne_strict _ (presCoverCircleCylinderInclusion_strictMono w id (cover w) p)]
   erw [mapOne_comp (presCoverCircleCylinderInclusion w id (cover w) p)
     (presCoverCircleCylinderInclusion_strictMono w id (cover w) p).monotone
@@ -97,7 +95,7 @@ theorem baseProjection_collapse_eq (c : StrictOrdEdge (Base w) →₀ ℤ) :
     baseProjection w (normalizedStrictChain1 (presCoverCylinderCollapse w id (cover w))
       (presCoverCylinderCollapse_monotone w id (cover w)) c) =
       mapOne (cylIn (aHom w)) (cylIn_monotone (aHom w)) (roseProjection w c) := by
-  rw (config := { transparency := .default }) [baseProjection_collapse]
+  erw [baseProjection_collapse]
   change mapOne (cylCollapse (aHom w)) _ (baseProjection w c) =
     mapOne (cylIn (aHom w)) _ (mapOne (cylRetr (aHom w)) _ (baseProjection w c))
   rw [mapOne_comp]; rfl
@@ -107,13 +105,13 @@ theorem collapsed_eq_zero_of_roseProjection_eq_zero
     normalizedStrictChain1 (presCoverCylinderCollapse w id (cover w))
       (presCoverCylinderCollapse_monotone w id (cover w)) c = 0 := by
   apply baseProjection_injective w
-  rw (config := { transparency := .default }) [baseProjection_collapse_eq, hc, map_zero]
+  erw [baseProjection_collapse_eq, hc, map_zero]
 
 theorem roseProjection_collapse (c : StrictOrdEdge (Base w) →₀ ℤ) :
     roseProjection w (normalizedStrictChain1 (presCoverCylinderCollapse w id (cover w))
       (presCoverCylinderCollapse_monotone w id (cover w)) c) = roseProjection w c := by
   change mapOne (cylRetr (aHom w)) _ (baseProjection w _) = _
-  rw (config := { transparency := .default }) [baseProjection_collapse_eq, mapOne_comp]
+  erw [baseProjection_collapse_eq, mapOne_comp]
   change mapOne id monotone_id (roseProjection w c) = _
   exact mapOne_id _
 
@@ -136,11 +134,9 @@ theorem roseProjection_inclusion (c : StrictOrdEdge (Rose α) →₀ ℤ) :
   change mapOne (cylRetr (aHom w)) _
     (chain1 (strictOrderCxMap (baseIso w) (baseIso w).strictMono)
       (chain1 (strictOrderCxMap (roseIntoBase w) (roseIntoBase_strictMono w)) c)) = c
-  rw (config := { transparency := .default }) [← mapOne_strict (baseIso w) (baseIso w).strictMono,
+  erw [← mapOne_strict (baseIso w) (baseIso w).strictMono,
     ← mapOne_strict (roseIntoBase w) (roseIntoBase_strictMono w), mapOne_comp, mapOne_comp]
   have he : (cylRetr (aHom w) ∘ baseIso w) ∘ roseIntoBase w = id := by
     funext x
     exact congrArg (cylRetr (aHom w)) (baseIso_roseIntoBase w x)
   simpa only [he] using (mapOne_id c)
-
-end FiniteChains.PresModel.IdentityChains

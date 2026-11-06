@@ -46,5 +46,3 @@ theorem qCube_three_cubical_boundary_reconstruction (y : StrictOrdTet (QCube A) 
   have he := (qThreeCubicalBoundary_subdivision r).trans hr
   refine ⟨r, he, ?_⟩
   rw [← he, qSquare_coefficients_subdivision]
-
-end FiniteChains.Davis

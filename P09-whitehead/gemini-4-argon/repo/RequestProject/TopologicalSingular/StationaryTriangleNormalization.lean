@@ -85,5 +85,3 @@ theorem stationaryTetrahedron_exists (x : X) (tau : Simplex X 3) :
   have h := hF i 1 z
   rw [F.apply_one, (stationaryTriangleHomotopy x (face i tau)).apply_one] at h
   exact h
-
-end FiniteChains.TopologicalSingular

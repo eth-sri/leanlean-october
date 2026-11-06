@@ -183,9 +183,3 @@ noncomputable def cosetBasis :
   Module.Basis.ofRepr
     (LinearEquiv.ofBijective (cosetCombination (k := k) (H := H))
       cosetCombination_bijective).symm
-
-/-- **`k[Q]` is a free `k[H]`-module.** -/
-instance groupRing_free : Module.Free (MonoidAlgebra k H) (MonoidAlgebra k Q) :=
-  Module.Free.of_basis (cosetBasis (k := k) (H := H))
-
-end FiniteChains

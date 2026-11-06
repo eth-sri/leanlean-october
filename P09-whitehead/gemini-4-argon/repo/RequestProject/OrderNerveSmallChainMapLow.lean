@@ -119,5 +119,3 @@ theorem orderSmallToNerve1_boundary {P : Type} [PartialOrder P]
       orderSmallToNerve1_single, one_smul]
     exact (orderSmallOneFill_exists σ).choose_spec.2.2
   exact DFunLike.congr_fun he c
-
-end FiniteChains.Comb

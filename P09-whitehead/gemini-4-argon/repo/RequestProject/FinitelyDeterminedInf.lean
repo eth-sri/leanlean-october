@@ -81,5 +81,3 @@ theorem sat_sInf_of_finitelyDetermined {ι : Type*} (Sat : Subgroup G → ι →
     by_contra hcon
     exact hwit g hcon (hNle _ (Finset.mem_image.mpr ⟨g, hg, rfl⟩) hmem)
   exact (hF (sInf C) N hagree).2 (hsat N hNC v)
-
-end FiniteChains

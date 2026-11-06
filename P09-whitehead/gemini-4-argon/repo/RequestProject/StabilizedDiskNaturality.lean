@@ -103,5 +103,3 @@ theorem map_killsPi2_iff : Whitehead.KillsPi2 (map f c r s h) ↔
     Whitehead.KillsPi2 (DiskPresentationExtension.sourceMap f c r s h) := by
   apply Whitehead.killsPi2_homotopyEquiv_square_iff (homotopyEquiv r) (homotopyEquiv s)
   rw [homotopyEquiv_natural]
-
-end FiniteChains.RelativeAttachment.StabilizedDiskPresentation

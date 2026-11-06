@@ -37,5 +37,3 @@ theorem cylinderCoverCollapsedCircle_coordinates :
     (cylinderCoverRoseEnd_isPosetCover w f hf) (cylinderCoverCollapsedCircle w j f hf m)
     (cylinderCoverCollapsedCircle_strictMono w j f hf m hm hp)
     (cylinderCoverCollapsedCircle_projection w j f hf m hp)
-
-end FiniteChains.PresModel

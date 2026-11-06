@@ -10,7 +10,7 @@ public import RequestProject.UniversalCoverPi1Injection
 namespace FiniteChains.Davis
 open RACG Mirror Comb
 universe u
-variable {V : Type u} [DecidableEq V] [Fintype V] {A : CommRel V}
+variable {V : Type u} [DecidableEq V] {A : CommRel V}
   {X : Type u} [PartialOrder X] {att : NeSpx A →o X}
 
 noncomputable def qBaseOrderIso : {q : Qpos A X att // InQBase q} ≃o X where
@@ -31,7 +31,6 @@ abbrev QLiftedBase (a : Qpos A X att) :=
 noncomputable def qBaseCoverEnd (a : Qpos A X att) (p : QLiftedBase a) : X :=
   qBaseOrderIso ⟨uOrderEnd p.1, p.2⟩
 
-omit [Fintype V] in
 theorem qBaseCoverEnd_isPosetCover (a : Qpos A X att)
     (hc : IsConnected (orderCx (Qpos A X att))) : IsPosetCover (qBaseCoverEnd a) := by
   let S : Set (Qpos A X att) := {q | InQBase q}
@@ -39,8 +38,5 @@ theorem qBaseCoverEnd_isPosetCover (a : Qpos A X att)
     (uOrderEnd_isPosetCover hc)
   exact h.postcompose_orderIso qBaseOrderIso
 
-omit [Fintype V] in
 theorem qBaseCoverEnd_spec (a : Qpos A X att) (p : QLiftedBase a) :
     qNew (qBaseCoverEnd a p) = uOrderEnd p.1 := Classical.choose_spec p.2
-
-end FiniteChains.Davis

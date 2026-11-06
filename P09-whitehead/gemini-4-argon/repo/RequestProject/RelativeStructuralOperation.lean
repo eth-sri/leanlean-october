@@ -84,5 +84,3 @@ theorem normalizedPresentation_cockcroft (hP : FSIsCockcroft (rawPresentation co
     FSIsCockcroft (normalizedPresentation core hcore extra) :=
   fsIsCockcroft_of_generates (relativeNormalizationMap core hcore extra)
     (relativeNormalizationMap_generates core hcore extra) hP
-
-end FiniteChains.RelativeNormalForm

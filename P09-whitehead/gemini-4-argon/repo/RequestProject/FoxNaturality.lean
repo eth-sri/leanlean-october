@@ -58,5 +58,3 @@ theorem fox_map_of_not_mem_range (f : α → β) {b : β} (hb : ∀ i, b ≠ f i
   | of k => simp [hb k]
   | inv_of k ih => rw [map_inv, fox_inv, ih, mul_zero, neg_zero]
   | mul u v hu hv => rw [map_mul, fox_mul, hu, hv, mul_zero, add_zero]
-
-end FiniteChains

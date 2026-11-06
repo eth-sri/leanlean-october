@@ -29,7 +29,7 @@ namespace FiniteChains
 
 open MonoidAlgebra
 
-variable {α : Type*} [Fintype α] [DecidableEq α] {J : Type*} [Fintype J] (ρ : J → FreeGroup α)
+variable {α : Type*} [DecidableEq α] {J : Type*} [Fintype J] (ρ : J → FreeGroup α)
 
 /-- The augmentation `ℤ[G] → ℤ` of the group ring of the presented group. -/
 noncomputable abbrev augPres : MonoidAlgebra ℤ (PresGroup ρ) →+* ℤ := augQ (relSub ρ)
@@ -38,7 +38,7 @@ noncomputable abbrev augPres : MonoidAlgebra ℤ (PresGroup ρ) →+* ℤ := aug
 `x_i` in the relator `r_j`. -/
 noncomputable def expEntry (i : α) (j : J) : ℤ := Multiplicative.toAdd (expSum i (ρ j))
 
-omit [Fintype α] [Fintype J] in
+omit [Fintype J] in
 /-- Augmenting the Fox matrix gives the exponent-sum matrix. -/
 theorem augPres_foxMatrixPres (i : α) (j : J) :
     augPres ρ (foxMatrixPres ρ i j) = expEntry ρ i j := by
@@ -54,5 +54,3 @@ def IsFoxCycle (v : J → MonoidAlgebra ℤ (PresGroup ρ)) : Prop :=
 Fox cycle (i.e. every element of `π₂`) has zero augmentation in every coordinate. -/
 def IsCockcroft : Prop :=
   ∀ v : J → MonoidAlgebra ℤ (PresGroup ρ), IsFoxCycle ρ v → ∀ j, augPres ρ (v j) = 0
-
-end FiniteChains

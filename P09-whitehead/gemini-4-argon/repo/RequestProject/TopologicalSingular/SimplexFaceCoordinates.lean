@@ -35,5 +35,3 @@ theorem faceMap_dropMap (i : Fin (j + 2)) {x : stdSimplex ℝ (Fin (j + 2))} (hx
   · rw [faceMap_coe_same, hx]
   · rw [faceMap_coe_succAbove]
     rfl
-
-end FiniteChains.TopologicalSingular

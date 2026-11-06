@@ -10,9 +10,7 @@ satisfying the internal B2 equations. Written, unverified proof terms. -/
 noncomputable section
 open scoped Classical
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Comb
 universe u
@@ -141,5 +139,3 @@ theorem finiteSpine_polygon_reference_generates
     c hc hcdegree _ hcb
   exact finiteSpine_polygon_reference_principal_of_geometry ρ q u hrho β γ hβ hγ
     c d hc hd hcdegree hddegree yC yD hyC hyD hC hD v hreference hrelative
-
-end FiniteChains.Davis.Genus

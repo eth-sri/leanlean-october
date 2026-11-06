@@ -148,5 +148,3 @@ theorem homotopyEquiv_toFun :
   rw [dummyLoopFillingHomotopyEquiv_apply, ← twoHomeomorph_old, Homeomorph.symm_apply_apply]
   exact congrArg (fun f => f x)
     (DiskPresentationExtension.extensionModel_map oldGenerator oldRelator r (attaching r) (attaching_old r))
-
-end FiniteChains.RelativeAttachment.StabilizedDiskPresentation

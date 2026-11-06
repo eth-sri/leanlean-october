@@ -33,12 +33,9 @@ lower degrees) in the combinatorial model, from scratch:
   pushout of Proposition 3.11.
 -/
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
-namespace FiniteChains
-namespace Comb
+namespace FiniteChains.Comb
 
 universe u
 
@@ -52,7 +49,6 @@ theorem pi1Trivial_of_simplyConnected {X Y : Complex2.{u}} (hX : SimplyConnected
 
 /-! ### Lifting a cellular map to the universal covers, with a prescribed base image -/
 
-section Lifts
 
 variable {L E : Complex2.{u}}
 
@@ -95,28 +91,3 @@ theorem exists_lift_univCover (ι : Hom L E) {x₀ : E.V} (l₀ : L.V) (c : UV E
       liftHom_base (f := f) (d₀ := UV.base L l₀) isConnected_univCover htriv
     rw [h1, shiftV_base, ← htp]
     exact congrArg UV.mk (Subtype.ext rfl)
-
-/-! ### The degree-two chains coming from the copies -/
-
-end Lifts
-
-/-! ### Coverings are onto on cells -/
-
-section Covering
-
-variable {D K : Complex2.{u}} {p : Hom D K}
-
-end Covering
-
-/-! ### The map `L → K ∪_p L` of Proposition 3.11 is onto on cells -/
-
-section Pushout
-
-variable {D K L : Complex2.{u}} (p : Hom D K) (i : Hom D L)
-  (hiV : Function.Injective i.onV) (hiE : Function.Injective i.onE)
-  (hiF : Function.Injective i.onF)
-
-end Pushout
-
-end Comb
-end FiniteChains

@@ -11,9 +11,7 @@ is obtained by deleting the tree letters; the corresponding continuous
 path homotopy removes precisely the resulting constant pauses. Unverified. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.ClassicalGraphModel
 open RelativeAttachment ContinuousEdgeWords
@@ -144,5 +142,3 @@ theorem collapsedWordPath_homotopic_treeWord (l : List (J × Bool)) {a b : V}
         rfl
       rw [ht]
       exact (Path.Homotopic.refl _).hcomp (ih hl.2)
-
-end FiniteChains.ClassicalGraphModel

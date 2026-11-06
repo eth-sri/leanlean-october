@@ -1,7 +1,8 @@
 module
 
 public import RequestProject.ChamberAttachingJ
-public import RequestProject.RACGPi1Example
+public import RequestProject.RACGCovering
+public import Mathlib
 
 @[expose] public section
 
@@ -42,9 +43,7 @@ computations the full nerve chains of `RequestProject/NervePrism.lean` (which ke
 `∂₃`) must be used, not the two-skeleton `Comb.orderCx`.
 -/
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 
@@ -81,39 +80,3 @@ theorem phi_surjective : Function.Surjective (phi A) := by
       revert a
       decide
     simp [this]
-
-end RACG
-
-namespace Davis
-
-variable {V : Type u} [DecidableEq V] [Fintype V] {A : CommRel V}
-
-/-! ### The order complex of the poset of spherical cosets is the universal Davis complex -/
-
-/-! ### The deck action of `W` on the poset of spherical cosets -/
-
-/-- **The action of `W` on the poset of spherical cosets**: `x · (w W_T) = (x w) W_T`. -/
-noncomputable def sphAct (x : CayGroup A) (p : Sph A) : Sph A :=
-  chamberPt (x * p.rep) p.isSimplex
-
-omit [Fintype V] in
-@[simp] theorem sphAct_spx (x : CayGroup A) (p : Sph A) : (sphAct x p).spx = p.spx := rfl
-
-omit [Fintype V] in
-theorem inChamber_sphAct_self (x : CayGroup A) (p : Sph A) :
-    InChamber (x * p.rep) (sphAct x p) :=
-  chamberPt_inChamber _ _
-
-omit [Fintype V] in
-@[simp] theorem sphAct_one (p : Sph A) : sphAct (1 : CayGroup A) p = p := by
-  have h : InChamber p.rep (sphAct (1 : CayGroup A) p) := by
-    have := inChamber_sphAct_self (1 : CayGroup A) p
-    rwa [one_mul] at this
-  have := eq_chamberPt h
-  rw [this]
-  exact (eq_chamberPt (inChamber_rep p)).symm
-
-/-! ### The action is free on the chambers -/
-
-end Davis
-end FiniteChains

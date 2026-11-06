@@ -109,5 +109,3 @@ theorem lengthProjection_mem_inc (n : ℕ) {c : Ch P} (hc : c ∈ Inc P) :
   | zero => simp
   | add x y _ _ hx hy => simpa using AddSubgroup.add_mem _ hx hy
   | neg x _ hx => simpa using AddSubgroup.neg_mem _ hx
-
-end FiniteChains.Nerve

@@ -68,5 +68,3 @@ theorem orderSmallSimplexFace_carrier {P : Type} [PartialOrder P] {n : ℕ}
     (i : Fin (n + 2)) (σ : OrderSmallSimplex P (n + 1)) :
     orderNerveSingularCarrier (orderSmallSimplexFace i σ).val ⊆ orderNerveSingularCarrier σ.val :=
   orderNerveSingularCarrier_face σ.val i
-
-end FiniteChains.Comb

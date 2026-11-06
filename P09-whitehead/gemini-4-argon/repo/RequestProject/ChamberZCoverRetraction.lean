@@ -47,5 +47,3 @@ theorem acyclicRelIn_cover_marked_chamber [Nonempty X] (hf : IsPosetCover f)
     rw [hp]
     rfl
   exact acyclicRelIn_of_retraction hne ρ hmono hρle hbase
-
-end FiniteChains.Davis

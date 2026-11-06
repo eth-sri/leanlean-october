@@ -65,5 +65,3 @@ theorem orderSmallCellularApproximation2_homologous {P : Type} [PartialOrder P]
   refine ⟨orderSmallHomotopy2 c, ?_⟩
   rw [orderSmallHomotopy2_boundary, hc, map_zero, sub_zero]
   rfl
-
-end FiniteChains.Comb

@@ -4,9 +4,7 @@ public import RequestProject.RelatorCircleBoundary
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel
 open Comb
@@ -77,5 +75,3 @@ theorem relatorCircle_cycle_eq_smul_fundamental
   refine relatorCircle_cycle_ext w j c _ hc ?_ hpos ?_
   · rw [map_smul, relatorCircleFundamentalChain_cycle, smul_zero]
   · simp [relatorCircleFundamentalChain_edge0]
-
-end FiniteChains.PresModel

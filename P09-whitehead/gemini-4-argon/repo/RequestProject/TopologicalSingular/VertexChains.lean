@@ -15,9 +15,7 @@ no acyclicity or subdivision identity is assumed.
 -/
 
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.VertexChains
 
@@ -157,5 +155,3 @@ theorem map_cone (f : V → W) (p : V) (n : ℕ) (c : Chain V n) :
     funext i
     exact Fin.cases rfl (fun _ => rfl) i
   exact DFunLike.congr_fun he c
-
-end FiniteChains.VertexChains

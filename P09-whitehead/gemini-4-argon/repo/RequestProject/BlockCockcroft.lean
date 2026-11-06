@@ -25,9 +25,7 @@ retraction, so the base change statement of `RequestProject/BaseChangeCycles.lea
 block coordinates as a combination of images of Fox cycles of `ρ`, whose augmentations vanish.
 -/
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains
 
@@ -100,10 +98,7 @@ theorem IsBlock.quot_freeRingMap (x : FreeGroupRing α) :
       show _ = MonoidAlgebra.mapDomain hb.hom (quotRingHom ℤ (relSub ρ) (MonoidAlgebra.single w m))
       rw [quotRingHom_single, MonoidAlgebra.mapDomain_single, IsBlock.hom_mk]
 
-/-- The image of the block group inside the ambient group. -/
-abbrev IsBlock.range : Subgroup (PresGroup τ) := hb.hom.range
 
-section FoxMatrix
 
 variable [DecidableEq α]
 
@@ -116,9 +111,3 @@ theorem IsBlock.foxMatrix_block (i : α) (j : J) :
   show quotRingHom ℤ (relSub τ) (fox (f i) (τ (g j))) = _
   rw [hfox, hb.quot_freeRingMap]
   rfl
-
-variable [Fintype J] [Fintype L]
-
-end FoxMatrix
-
-end FiniteChains

@@ -36,5 +36,3 @@ noncomputable def presUniversalRelatorGroupChainEquiv :
     (PresCoverRelator w (uOrderEnd (P := PresPos w) (a := ptBase w)) →₀ ℤ) ≃ₗ[ℤ]
       (PresGroup ρ × J →₀ ℤ) :=
   Finsupp.domLCongr (R := ℤ) (M := ℤ) (presUniversalRelatorGroupEquiv ρ w hw hpos)
-
-end FiniteChains.PresModel

@@ -12,9 +12,7 @@ public import RequestProject.PresPosetConnected
 /-! Actual singular acyclicity of a presentation realization forces its
 finitely supported exponent matrix to be bijective. The alphabets and relator
 sets are arbitrary; finiteness is used only in individual chain supports. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.PresModel.IdentityChains
 open Comb Comb.StrictNormalized
@@ -25,9 +23,9 @@ theorem roseProjection_relatorBoundary (p : PresCoverRelator w id) :
     roseProjection w (presCoverCylinderRelatorBoundary w id (cover w) p) =
       roseIntegerRealize (FiniteChains.expVec (FreeGroup.mk (w p.1.2))) := by
   change mapOne (cylRetr (aHom w)) _ (baseProjection w _) = _
-  rw (config := { transparency := .default }) [baseProjection_relatorBoundary]
+  erw [baseProjection_relatorBoundary]
   unfold cylinderBoundary
-  rw (config := { transparency := .default }) [mapOne_comp]
+  erw [mapOne_comp]
   exact relatorCircleFundamentalChain_exponent w p.1.2
 
 /-- With the actual identity-cover labels, the actual attaching differential
@@ -39,10 +37,10 @@ theorem roseProjection_relatorBoundaryChain (c : PresCoverRelator w id →₀ �
   classical
   induction c using Finsupp.induction_linear with
   | zero =>
-      rw (config := { transparency := .default }) [map_zero]
+      erw [map_zero]
   | add c d hc hd => simp only [map_add, Finsupp.mapDomain_add, hc, hd]
   | single p n =>
-    rw (config := { transparency := .default }) [presCoverCylinderRelatorBoundaryChain, Finsupp.linearCombination_single,
+    erw [presCoverCylinderRelatorBoundaryChain, Finsupp.linearCombination_single,
       map_smul, roseProjection_relatorBoundary, Finsupp.mapDomain_single,
       expMatrix, Finsupp.linearCombination_single, map_smul]
 
@@ -72,16 +70,16 @@ theorem expMatrix_injective_of_strict_h2 (hpos : ∀ j, 0 < (w j).length)
   have hd : Finsupp.mapDomain (fun p : PresCoverRelator w id => p.1.2) d = c := by
     change Finsupp.mapDomain (fun p : PresCoverRelator w id => p.1.2)
       (Finsupp.mapDomain (relatorEquiv w) c) = c
-    rw (config := { transparency := .default }) [← Finsupp.mapDomain_comp]
+    erw [← Finsupp.mapDomain_comp]
     exact Finsupp.mapDomain_id
   have hb : roseProjection w (presCoverCylinderRelatorBoundaryChain w id (cover w) d) = 0 := by
-    rw (config := { transparency := .default }) [roseProjection_relatorBoundaryChain, hd, hc, map_zero]
+    erw [roseProjection_relatorBoundaryChain, hd, hc, map_zero]
   obtain ⟨z, hz, hcoord⟩ := exists_presCover_cycle_of_collapsed_relator_boundary
     w id (cover w) hpos d
     (collapsed_eq_zero_of_roseProjection_eq_zero w _ hb)
   have hz0 : z = 0 := h2 (hz.trans (map_zero _).symm)
   have hd0 : d = 0 := by simpa only [hz0, map_zero] using hcoord.symm
-  rw (config := { transparency := .default }) [hd0, Finsupp.mapDomain_zero] at hd
+  erw [hd0, Finsupp.mapDomain_zero] at hd
   exact hd.symm
 
 /-- Vanishing actual H₁ supplies every exponent vector: realize it on the
@@ -99,7 +97,7 @@ theorem expMatrix_surjective_of_strict_h1 (hpos : ∀ j, 0 < (w j).length)
   have hb : Comb.bdry1 (strictOrderCx (Base w)) b = 0 := by
     change Comb.bdry1 _ (chain1 (strictOrderCxMap (roseIntoBase w)
       (roseIntoBase_strictMono w)) (roseIntegerRealize v)) = 0
-    rw (config := { transparency := .default }) [bdry1_chain1, roseIntegerRealize_cycle, map_zero]
+    erw [bdry1_chain1, roseIntegerRealize_cycle, map_zero]
   have hz : Comb.bdry1 (strictOrderCx (PresPos w)) (chain1 I b) = 0 := by
     erw [bdry1_chain1 I b, hb, map_zero]
   obtain ⟨d, hd⟩ := h1 (chain1 I b) hz
@@ -107,7 +105,7 @@ theorem expMatrix_surjective_of_strict_h1 (hpos : ∀ j, 0 < (w j).length)
     (presCoverRelatorChain w id (cover w) hpos d), ?_⟩
   apply roseIntegerRealize_injective
   have h := roseProjection_relative_boundary w hpos d b hd
-  rw (config := { transparency := .default }) [show b = roseInclusion w (roseIntegerRealize v) from rfl,
+  erw [show b = roseInclusion w (roseIntegerRealize v) from rfl,
     roseProjection_inclusion] at h
   exact h.symm
 
@@ -125,7 +123,7 @@ theorem expMatrix_bijective_of_strict_pres_acyclic
     (hw : ∀ j, FreeGroup.mk (w j) = ρ j) (hpos : ∀ j, 0 < (w j).length)
     (h : IsAcyclic (strictOrderCx (PresPos w))) : Function.Bijective (expMatrix ρ) := by
   have he : (fun j => FreeGroup.mk (w j)) = ρ := funext hw
-  rw (config := { transparency := .default }) [← he]
+  erw [← he]
   exact ⟨IdentityChains.expMatrix_injective_of_strict_h2 w hpos h.h2,
     IdentityChains.expMatrix_surjective_of_strict_h1 w hpos h.h1⟩
 
@@ -149,5 +147,3 @@ theorem expMatrix_bijective_of_presRealization_acyclic
   exact expMatrix_bijective_of_strict_pres_acyclic ρ w hw hpos
     ((orderRealization_acyclic_iff_strict_isAcyclic (PresPos w)
       (presPos_isConnected w (fun j => List.length_pos_iff.mp (hpos j)))).mp h)
-
-end FiniteChains.PresModel

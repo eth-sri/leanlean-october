@@ -4,9 +4,7 @@ public import RequestProject.TopologicalSingular.PointedSingularTriangle
 
 @[expose] public section
 
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.TopologicalSingular
 open scoped unitInterval Topology
@@ -68,5 +66,3 @@ theorem pointed_triangle_pi2_surjective :
   obtain ⟨p, hp⟩ := Quotient.exists_rep q.toMul
   obtain ⟨a, ha⟩ := pointed_triangle_represents_pi2 p
   exact ⟨a, ha.trans (congrArg Additive.ofMul hp)⟩
-
-end FiniteChains.TopologicalSingular

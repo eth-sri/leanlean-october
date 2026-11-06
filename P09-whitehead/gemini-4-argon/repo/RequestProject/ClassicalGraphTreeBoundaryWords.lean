@@ -11,9 +11,7 @@ map to the word obtained by deleting tree letters. The homotopy is
 constructed on all four sides with fixed corner values. Unverified. -/
 
 noncomputable section
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.ClassicalGraphModel
 open RelativeAttachment
@@ -72,5 +70,3 @@ theorem BoundaryWords.collapse_homotopic_eraseTree (W : BoundaryWords r) :
       rw [(H s).apply_one, W'.squareMap_side]
       rfl }
   exact ⟨HG.compContinuousMap unitBoundarySquareHomeomorph.toContinuousMap⟩
-
-end FiniteChains.ClassicalGraphModel

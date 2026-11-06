@@ -36,7 +36,7 @@ universe u v
 
 /-! ### Pullback of a cocycle -/
 
-section Comap
+section
 
 variable {P Q : Type u} [Preorder P] [Preorder Q] {G : Type v} [Group G]
 
@@ -45,10 +45,8 @@ def OrdCocycle.comap (f : P → Q) (hf : Monotone f) (c : OrdCocycle Q G) : OrdC
   val a b := c.val (f a) (f b)
   comp hab hbc := c.comp (hf hab) (hf hbc)
 
-@[simp] theorem OrdCocycle.comap_val (f : P → Q) (hf : Monotone f) (c : OrdCocycle Q G)
-    (a b : P) : (c.comap f hf).val a b = c.val (f a) (f b) := rfl
 
-end Comap
+end
 
 /-! ### The poset with adjoined cone points -/
 
@@ -105,12 +103,8 @@ instance : Preorder (ConeAdj S) where
             | inl z => exact hqr.elim
             | inr t'' => exact hpq.trans hqr
 
-@[simp] theorem inc_le_inc {p q : P} : (inc p : ConeAdj S) ≤ inc q ↔ p ≤ q := Iff.rfl
 
-@[simp] theorem inc_le_apex {p : P} {t : T} :
-    (inc p : ConeAdj S) ≤ apex t ↔ ∃ r, S t r ∧ p ≤ r := Iff.rfl
 
-@[simp] theorem not_apex_le_inc {p : P} {t : T} : ¬ (apex t : ConeAdj S) ≤ inc p := id
 
 theorem inc_monotone : Monotone (inc : P → ConeAdj S) := fun _ _ h => h
 
@@ -157,12 +151,7 @@ def OrdCocycle.coneAdj (c : OrdCocycle P G) (h : T → P → G)
     · show (1 : G) * 1 = 1
       rw [mul_one]
 
-@[simp] theorem OrdCocycle.coneAdj_val_inc (c : OrdCocycle P G) (h : T → P → G) (hh) (p q : P) :
-    (c.coneAdj (S := S) h hh).val (ConeAdj.inc p) (ConeAdj.inc q) = c.val p q := rfl
 
-@[simp] theorem OrdCocycle.coneAdj_val_apex (c : OrdCocycle P G) (h : T → P → G) (hh)
-    (p : P) (t : T) :
-    (c.coneAdj (S := S) h hh).val (ConeAdj.inc p) (ConeAdj.apex t) = h t p := rfl
 
 /-! ### The cone lemma in the form used below -/
 
@@ -173,6 +162,3 @@ theorem htpy_nil_of_pathIn_le {Pp : Type u} [Preorder Pp] (d : Pp) {v : Pp} (hv 
     (hl : PathIn (fun x => x ≤ d) l) :
     Htpy (orderCx Pp) v v l [] :=
   htpy_nil_of_pathIn_le_top (A := fun x => x ≤ d) (le_refl d) (fun _ hx => hx) hv hp hl
-
-end Comb
-end FiniteChains

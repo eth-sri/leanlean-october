@@ -51,5 +51,3 @@ theorem subChains_mono {A B : Set X} (h : A ⊆ B) (n : ℕ) : subChains A n ≤
   have hm := DFunLike.congr_fun (map_comp j (inclusion B) n) c
   rw [he] at hm
   exact hm.symm
-
-end FiniteChains.TopologicalSingular

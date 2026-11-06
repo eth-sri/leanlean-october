@@ -29,8 +29,7 @@ The proofs run through the coefficients exactly as in the absolute case; no long
 is used.
 -/
 
-namespace FiniteChains
-namespace Nerve
+namespace FiniteChains.Nerve
 
 universe u
 
@@ -132,6 +131,3 @@ theorem acyclicRelIn_of_retraction {U Base : P → Prop} (hne : ∃ p : P, U p)
       abel
     rw [← cmap_bdry]
     rw [← map_add, ← h]
-
-end Nerve
-end FiniteChains

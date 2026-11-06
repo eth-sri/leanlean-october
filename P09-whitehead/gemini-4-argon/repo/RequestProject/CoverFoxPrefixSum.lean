@@ -30,5 +30,3 @@ theorem coverFox_mk_prefix_sum (i : α) (l : List (α × Bool)) :
         MonoidAlgebra.single_mul_single, grp_eq_single, proj_single,
         QuotientGroup.mk_inv]
   · simp [foxWordIncidence, hi]
-
-end FiniteChains

@@ -5,9 +5,7 @@ public import RequestProject.QCubeSquareFlagIndex
 @[expose] public section
 
 /-! Actual coefficients of the square fundamental subdivision in its faithful flag index. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb
@@ -25,5 +23,3 @@ theorem squareSubdivision_flag_coefficient (c : QCube A) (a b : V) (hne : a ≠ 
   obtain ⟨e, s, f⟩ := i
   cases e <;> fin_cases s <;> cases f <;>
     norm_num [squareFlagSign, Finsupp.single_apply, Prod.mk.injEq]
-
-end FiniteChains.Davis

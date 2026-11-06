@@ -6,9 +6,7 @@ public import RequestProject.QCubePositiveSquareCoefficients
 @[expose] public section
 
 /-! Ordinary positive boundary coefficients detect the simplicial cut cycle. -/
-set_option backward.defeqAttrib.useBackward true
 set_option backward.isDefEq.respectTransparency false
-set_option backward.isDefEq.respectTransparency.types false
 
 namespace FiniteChains.Davis
 open RACG Mirror Comb
@@ -29,5 +27,3 @@ theorem qSquareCoordinate_positive_zero (r : QSquare A →₀ ℤ)
     rw [← hc, Finsupp.mapDomain_apply_of_injective hinj]
     exact hr c ((qCube_coordinate_pos_iff c.1 σ).mp hc.symm).2
   · exact Finsupp.mapDomain_notin_range _ _ hσ
-
-end FiniteChains.Davis

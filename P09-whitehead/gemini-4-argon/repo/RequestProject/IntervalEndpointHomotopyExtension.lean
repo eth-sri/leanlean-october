@@ -71,5 +71,3 @@ def intervalEndpointExtension (f : C(I, X)) {x₀ x₁ : X}
     change P (oneBoundaryPoint true) τ = p₁ τ
     rw [hP₁]
     rfl
-
-end FiniteChains.RelativeAttachment
