@@ -17,7 +17,6 @@ public import Mathlib.Topology.Order.OrderClosed
 @[expose] public section
 
 open scoped BigOperators ContDiff Topology
-open Filter
 
 namespace AlbertGeometry.Cubic
 noncomputable section
@@ -29,7 +28,7 @@ def rightCurried (P : SymmetricTrilinearForm E) :
     ContinuousMultilinearMap ℝ (fun _ : Fin 2 => E) (E →L[ℝ] ℝ) :=
   P.form.curryRight
 
-private theorem constant_two (x : E) : (fun _ : Fin 2 => x) = ![x, x] := by
+theorem constant_two (x : E) : (fun _ => x) = ![x, x] := by
   ext i
   fin_cases i <;> rfl
 
@@ -41,45 +40,42 @@ private theorem constant_two (x : E) : (fun _ : Fin 2 => x) = ![x, x] := by
   fin_cases i <;> simp
 
 def diagonalEmbeddingTwo : E →L[ℝ] (Fin 2 → E) :=
-  ContinuousLinearMap.pi (fun _ : Fin 2 => ContinuousLinearMap.id ℝ E)
+  ContinuousLinearMap.pi (fun _ => ContinuousLinearMap.id ℝ E)
 
-@[simp] theorem diagonalEmbeddingTwo_apply (x : E) (i : Fin 2) :
-    diagonalEmbeddingTwo (E := E) x i = x := rfl
 
 /-- Equality of the already proved actual first derivative with a CLM-valued
 continuous quadratic expression. This permits differentiating the derivative. -/
 theorem fderiv_diagonalCubic_eq_curried (P : SymmetricTrilinearForm E) (x : E) :
     fderiv ℝ (diagonalCubic P.form) x =
-      (3 : ℝ) • rightCurried P (fun _ : Fin 2 => x) := by
+      (3 : ℝ) • rightCurried P (fun _ => x) := by
   ext y
   rw [fderiv_diagonalCubic_apply_symmetric]
   simp only [ContinuousLinearMap.smul_apply, smul_eq_mul]
-  have hc : rightCurried P (fun _ : Fin 2 => x) y = P.form ![x, x, y] :=
-    (congrArg (fun z : Fin 2 → E => rightCurried P z y) (constant_two x)).trans
+  have hc := (congrArg (fun z => rightCurried P z y) (constant_two x)).trans
       (rightCurried_apply P x x y)
-  exact congrArg (fun r : ℝ => 3 * r) hc.symm
+  exact congrArg (fun r => 3 * r) hc.symm
 
 /-- An explicit continuous bilinear candidate, later identified with true fderiv. -/
 def hessianFormula (P : SymmetricTrilinearForm E) (x : E) : E →L[ℝ] E →L[ℝ] ℝ :=
-  (3 : ℝ) • ((rightCurried P).linearDeriv (fun _ : Fin 2 => x)).comp
-    (diagonalEmbeddingTwo (E := E))
+  (3 : ℝ) • ((rightCurried P).linearDeriv (fun _ => x)).comp
+    (diagonalEmbeddingTwo)
 
 /-- The derivative of the actual first-derivative map, by multilinear calculus. -/
 theorem hasFDerivAt_fderiv_diagonalCubic (P : SymmetricTrilinearForm E) (x : E) :
-    HasFDerivAt (fun z : E => fderiv ℝ (diagonalCubic P.form) z)
+    HasFDerivAt (fun z => fderiv ℝ (diagonalCubic P.form) z)
       (hessianFormula P x) x := by
-  simp only [fderiv_diagonalCubic_eq_curried]
+  simp [fderiv_diagonalCubic_eq_curried]
   change HasFDerivAt
-    (fun z : E => (3 : ℝ) • rightCurried P (diagonalEmbeddingTwo (E := E) z))
+    (fun z => (3 : ℝ) • rightCurried P (diagonalEmbeddingTwo z))
     ((3 : ℝ) • ((rightCurried P).linearDeriv
-      (diagonalEmbeddingTwo (E := E) x)).comp (diagonalEmbeddingTwo (E := E))) x
-  exact (((rightCurried P).hasFDerivAt (diagonalEmbeddingTwo (E := E) x)).comp x
+      (diagonalEmbeddingTwo x)).comp (diagonalEmbeddingTwo)) x
+  exact (((rightCurried P).hasFDerivAt (diagonalEmbeddingTwo x)).comp x
     (diagonalEmbeddingTwo (E := E)).hasFDerivAt).const_smul (3 : ℝ)
 
 /-- Actual second Frechet derivative, obtained by differentiating actual fderiv.
 It is not defined as six times a form or as a desired log-Hessian identity. -/
 def cubicHessian (P : SymmetricTrilinearForm E) (x : E) : E →L[ℝ] E →L[ℝ] ℝ :=
-  fderiv ℝ (fun z : E => fderiv ℝ (diagonalCubic P.form) z) x
+  fderiv ℝ (fun z => fderiv ℝ (diagonalCubic P.form) z) x
 
 theorem cubicHessian_eq_formula (P : SymmetricTrilinearForm E) (x : E) :
     cubicHessian P x = hessianFormula P x :=
@@ -87,23 +83,23 @@ theorem cubicHessian_eq_formula (P : SymmetricTrilinearForm E) (x : E) :
 
 theorem hasFDerivAt_fderiv_diagonalCubic_actual (P : SymmetricTrilinearForm E)
     (x : E) :
-    HasFDerivAt (fun z : E => fderiv ℝ (diagonalCubic P.form) z)
+    HasFDerivAt (fun z => fderiv ℝ (diagonalCubic P.form) z)
       (cubicHessian P x) x :=
   (hasFDerivAt_fderiv_diagonalCubic P x).congr_fderiv
     (cubicHessian_eq_formula P x).symm
 
 theorem hessianFormula_apply (P : SymmetricTrilinearForm E) (x u v : E) :
     hessianFormula P x u v = 6 * P.form ![x, u, v] := by
-  have h0 : Function.update (fun _ : Fin 2 => x) 0 u = ![u, x] := by
+  have h0 : Function.update (fun _ => x) 0 u = ![u, x] := by
     ext i
     fin_cases i <;> simp
-  have h1 : Function.update (fun _ : Fin 2 => x) 1 u = ![x, u] := by
+  have h1 : Function.update (fun _ => x) 1 u = ![x, u] := by
     ext i
     fin_cases i <;> simp
   change 3 * (((rightCurried P).linearDeriv
-    (fun _ : Fin 2 => x) (fun _ : Fin 2 => u)) v) = 6 * P.form ![x, u, v]
+    (fun _ => x) (fun _ => u)) v) = 6 * P.form ![x, u, v]
   rw [ContinuousMultilinearMap.linearDeriv_apply, Fin.sum_univ_two, h0, h1]
-  simp only [ContinuousLinearMap.add_apply, rightCurried_apply, P.swap12 u x v]
+  simp [rightCurried_apply, P.swap12 u x v]
   ring
 
 theorem cubicHessian_apply (P : SymmetricTrilinearForm E) (x u v : E) :
@@ -113,7 +109,7 @@ theorem cubicHessian_apply (P : SymmetricTrilinearForm E) (x u v : E) :
 theorem cubicHessian_symm (P : SymmetricTrilinearForm E) (x u v : E) :
     cubicHessian P x u v = cubicHessian P x v u := by
   rw [cubicHessian_apply, cubicHessian_apply]
-  exact congrArg (fun t : ℝ => 6 * t) (P.swap23 x u v)
+  exact congrArg (fun t => 6 * t) (P.swap23 x u v)
 
 /-- Second Euler identity for the actual Hessian and actual first derivative. -/
 theorem cubicHessian_radial (P : SymmetricTrilinearForm E) (x u : E) :
@@ -160,7 +156,7 @@ def inverseCubicDerivative (P : SymmetricTrilinearForm E) (x : E) : E →L[ℝ] 
 
 theorem hasFDerivAt_inverseCubic (P : SymmetricTrilinearForm E) {x : E}
     (hx : 0 < diagonalCubic P.form x) :
-    HasFDerivAt (fun z : E => (diagonalCubic P.form z)⁻¹)
+    HasFDerivAt (fun z => (diagonalCubic P.form z)⁻¹)
       (inverseCubicDerivative P x) x := by
   have hN : HasFDerivAt (diagonalCubic P.form)
       (fderiv ℝ (diagonalCubic P.form) x) x :=
@@ -178,10 +174,10 @@ def logHessianFormula (P : SymmetricTrilinearForm E) (x : E) :
 not merely at x, before differentiating it to obtain the actual log Hessian. -/
 theorem hasFDerivAt_fderiv_logCubic (P : SymmetricTrilinearForm E) {x : E}
     (hx : 0 < diagonalCubic P.form x) :
-    HasFDerivAt (fun z : E => fderiv ℝ (logCubic P) z)
+    HasFDerivAt (fun z => fderiv ℝ (logCubic P) z)
       (logHessianFormula P x) x := by
   have h : HasFDerivAt
-      (fun z : E => (diagonalCubic P.form z)⁻¹ • fderiv ℝ (diagonalCubic P.form) z)
+      (fun z => (diagonalCubic P.form z)⁻¹ • fderiv ℝ (diagonalCubic P.form) z)
       (logHessianFormula P x) x :=
     (hasFDerivAt_inverseCubic P hx).smul
       (hasFDerivAt_fderiv_diagonalCubic_actual P x)
@@ -190,7 +186,7 @@ theorem hasFDerivAt_fderiv_logCubic (P : SymmetricTrilinearForm E) {x : E}
 
 /-- Actual second derivative of literal log N, with positivity-gated theorems. -/
 def logHessian (P : SymmetricTrilinearForm E) (x : E) : E →L[ℝ] E →L[ℝ] ℝ :=
-  fderiv ℝ (fun z : E => fderiv ℝ (logCubic P) z) x
+  fderiv ℝ (fun z => fderiv ℝ (logCubic P) z) x
 
 theorem logHessian_eq_formula (P : SymmetricTrilinearForm E) {x : E}
     (hx : 0 < diagonalCubic P.form x) :
@@ -203,8 +199,8 @@ theorem logHessian_apply (P : SymmetricTrilinearForm E) {x : E}
       fderiv ℝ (diagonalCubic P.form) x u * fderiv ℝ (diagonalCubic P.form) x v /
         diagonalCubic P.form x ^ 2 := by
   rw [logHessian_eq_formula P hx]
-  simp only [logHessianFormula, inverseCubicDerivative, ContinuousLinearMap.add_apply,
-    ContinuousLinearMap.smul_apply, ContinuousLinearMap.smulRight_apply,
+  simp [logHessianFormula, inverseCubicDerivative, 
+    ContinuousLinearMap.smulRight_apply,
     smul_eq_mul, div_eq_mul_inv]
   ring
 
@@ -218,9 +214,9 @@ theorem logHessianForm_apply (P : SymmetricTrilinearForm E) {x : E}
     logHessianForm P x u v = -cubicHessian P x u v / (3 * diagonalCubic P.form x) +
       fderiv ℝ (diagonalCubic P.form) x u * fderiv ℝ (diagonalCubic P.form) x v /
         (3 * diagonalCubic P.form x ^ 2) := by
-  simp only [logHessianForm, ContinuousLinearMap.smul_apply, smul_eq_mul]
+  simp [logHessianForm, smul_eq_mul]
   rw [logHessian_apply P hx]
-  simp only [div_eq_mul_inv, mul_inv_rev]
+  simp [div_eq_mul_inv, mul_inv_rev]
   ring
 
 theorem logHessianForm_symm (P : SymmetricTrilinearForm E) {x : E}

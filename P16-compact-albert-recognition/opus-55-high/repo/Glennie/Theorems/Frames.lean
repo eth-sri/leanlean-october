@@ -9,7 +9,6 @@ public import Mathlib.Tactic.Module
 public section
 
 namespace Glennie
-noncomputable section
 
 theorem frame_encoder_trace (p : Fin 3 → Albert) (hp : Frame p) :
     trace (encoder p) = 0 := by
@@ -23,7 +22,7 @@ theorem frame_encoder_square (p : Fin 3 → Albert) (hp : Frame p) :
 theorem frame_encoder_cube (p : Fin 3 → Albert) (hp : Frame p) :
     jordan (encoder p) (jordan (encoder p) (encoder p)) = encoder p := by
   rw [frame_encoder_square p hp]
-  simp only [encoder, jordan_sub_left, jordan_add_right, hp.idempotent,
+  simp [encoder, jordan_sub_left, jordan_add_right, hp.idempotent,
     hp.orthogonal 2 0 (by decide), hp.orthogonal 0 2 (by decide),
     sub_zero, zero_sub]
   abel
@@ -57,7 +56,7 @@ theorem ledger_cyclic (p q r : Fin 3 → Albert) (i j k : Fin 3) :
 
 theorem ledger_last_marginal (p q r : Fin 3 → Albert) (hr : Frame r) (i j : Fin 3) :
     (∑ k, ledger p q r i j k) = inner (p i) (q j) := by
-  simp only [Fin.sum_univ_three, ledger]
+  simp [Fin.sum_univ_three, ledger]
   rw [← trace_add, ← trace_add, ← jordan_add_right, ← jordan_add_right,
     hr.sum_unit, jordan_unit_right]
   rfl
@@ -66,8 +65,8 @@ theorem uniformLedger_pair_overlap (p q r : Fin 3 → Albert)
     (hr : Frame r) (hu : UniformLedger p q r) (i j : Fin 3) :
     inner (p i) (q j) = 1 / 3 := by
   rw [← ledger_last_marginal p q r hr i j]
-  simp only [UniformLedger] at hu
-  simp [hu, Fin.sum_univ_three]
+  simp [UniformLedger] at hu
+  simp [hu]
   norm_num
 
 theorem uniformLedger_cyclic (p q r : Fin 3 → Albert)
@@ -76,5 +75,4 @@ theorem uniformLedger_cyclic (p q r : Fin 3 → Albert)
   rw [← ledger_cyclic]
   exact hu i j k
 
-end
 end Glennie

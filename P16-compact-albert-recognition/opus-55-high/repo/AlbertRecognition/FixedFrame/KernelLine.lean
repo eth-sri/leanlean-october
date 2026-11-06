@@ -8,7 +8,6 @@ public import AlbertRecognition.CubicAlgebra
 
 @[expose] public section
 namespace AlbertRecognition.FixedFrame
-noncomputable section
 
 /-- The actual 51-direction spanning theorem extends the single transported
 scalar to every first argument of the native multiplication operator. -/
@@ -42,5 +41,4 @@ theorem reference_nativeKernelLine : NativeKernelLine referenceCubic := by
     rw [A_scalarCubic, A_q_self]
     exact smul_zero _
 
-end
 end AlbertRecognition.FixedFrame

@@ -75,13 +75,11 @@ public import Mathlib.Logic.Equiv.Basic
 
 namespace Glennie.Compact.FlatOrbit
 
-open Glennie Glennie.Compact.FlatBase Glennie.Compact.Affine20
+open Glennie.Compact.FlatBase Glennie.Compact.Affine20
 open Glennie.Compact.FrameTopology
 
 noncomputable section
 
-set_option autoImplicit false
-set_option maxHeartbeats 2000000
 
 /-! ## 1. The compact automorphism action on ordered triples
 
@@ -93,10 +91,7 @@ so the three action laws are recorded here as lemmas. They are what makes
 
 /-- The identity acts trivially. -/
 theorem mapAtoms_refl (T : Triple) :
-    mapAtoms Glennie.CompactAutomorphism.refl T = T := by
-  funext a i
-  show Glennie.CompactAutomorphism.refl.equiv (T a i) = T a i
-  rfl
+    mapAtoms Glennie.CompactAutomorphism.refl T = T := by rfl
 
 /-- The action is associative. -/
 theorem mapAtoms_comp (g h : Glennie.CompactAutomorphism) (T : Triple) :
@@ -106,7 +101,6 @@ theorem mapAtoms_comp (g h : Glennie.CompactAutomorphism) (T : Triple) :
 theorem mapAtoms_symm_mapAtoms (g : Glennie.CompactAutomorphism) (T : Triple) :
     mapAtoms g.symm (mapAtoms g T) = T := by
   funext a i
-  show g.equiv.symm (g.equiv (T a i)) = T a i
   exact g.equiv.symm_apply_apply (T a i)
 
 /-- The compact automorphism orbit of an ordered triple. The group is
@@ -187,11 +181,11 @@ space (`Hilbert.lean` gives `FiniteDimensional ℝ Albert`, and
 `Mathlib.Analysis.Normed.Module.FiniteDimension` is already in `Compactness`'s
 imports at `Compactness.lean`). Used only in section 8. -/
 theorem continuous_mapAtoms (g : Glennie.CompactAutomorphism) :
-    Continuous (fun T : Triple => mapAtoms g T) := by
+    Continuous (fun T => mapAtoms g T) := by
   have hg : Continuous (fun x : Albert => g.equiv x) :=
     g.equiv.toLinearMap.continuous_of_finiteDimensional
   refine continuous_pi fun a => continuous_pi fun i => ?_
-  simpa only [Function.comp_def, mapAtoms_apply] using hg.comp (continuous_entry a i)
+  simpa [Function.comp_def, mapAtoms_apply] using hg.comp (continuous_entry a i)
 
 /-! ## 3. The ledger criterion
 
@@ -235,10 +229,8 @@ theorem uniform_of_ledger54_eq_flat (T : Triple)
     (hL : ledger54 T = ledger54 flatBaseTriple) :
     Glennie.UniformLedger (T 0) (T 1) (T 2) := by
   intro i j k
-  have h : (ledger54 T).1 i j k = (ledger54 flatBaseTriple).1 i j k :=
-    congrArg (fun L : Ledger54 => L.1 i j k) hL
-  rw [ledger54_C, flatBaseTriple_ledger54_C] at h
-  exact h
+  have h := congrArg (fun L => L.1 i j k) hL
+  rwa [ledger54_C, flatBaseTriple_ledger54_C] at h
 
 /-- THE FIBRE IS CUT OUT BY ONE SCALAR EQUATION. For a frame triple, 54-entry ledger
 equality with the flat base is equivalent to `|Phi| = 4/27`. -/
@@ -299,9 +291,7 @@ theorem flatFibre_subset_union :
     flatFibre ⊆ autOrbit flatBaseTriple ∪ autOrbit flatBaseRev3 := by
   rintro T ⟨hT, hL⟩
   have hL' : ledger54 ![T 0, T 1, T 2]
-      = ledger54 ![flatFrameP, flatFrameQ, flatFrameR] := by
-    rw [triple_eta]
-    exact hL
+      = ledger54 ![flatFrameP, flatFrameQ, flatFrameR] := by aesop
   obtain ⟨g, h0, h1, hcase⟩ :=
     Glennie.NativeFirstPairNormalization.native_flat_full54_ordered_base_fibre
       (T 0) (T 1) (T 2) (hT 0) (hT 1) (hT 2) hL'
@@ -310,17 +300,17 @@ theorem flatFibre_subset_union :
     have hmap : mapAtoms g T = flatBaseTriple := by
       funext a i
       rcases fin3_cases a with rfl | rfl | rfl
-      · exact h0 i
-      · exact h1 i
-      · exact h2 i
+      · aesop
+      · aesop
+      · aesop
     rw [← hmap, mapAtoms_symm_mapAtoms]
   · refine Or.inr ⟨g.symm, ?_⟩
     have hmap : mapAtoms g T = flatBaseRev3 := by
       funext a i
       rcases fin3_cases a with rfl | rfl | rfl
-      · exact h0 i
-      · exact h1 i
-      · exact h2 i
+      · aesop
+      · aesop
+      · aesop
     rw [← hmap, mapAtoms_symm_mapAtoms]
 
 /-! ## 6. The sharper form: each orbit is exactly one Phi sheet -/
@@ -371,7 +361,7 @@ theorem exists_invariant_open (U : Set Triple) (hUopen : IsOpen U) :
     ∃ W : Set Triple, IsOpen W ∧ U ⊆ W ∧
       (∀ (g : Glennie.CompactAutomorphism) (T : Triple), T ∈ W → mapAtoms g T ∈ W) ∧
       ∀ T : Triple, T ∈ W → ∃ g : Glennie.CompactAutomorphism, mapAtoms g T ∈ U := by
-  refine ⟨⋃ g : Glennie.CompactAutomorphism, (fun T : Triple => mapAtoms g T) ⁻¹' U,
+  refine ⟨⋃ g : Glennie.CompactAutomorphism, (fun T => mapAtoms g T) ⁻¹' U,
     isOpen_iUnion fun g => hUopen.preimage (continuous_mapAtoms g), ?_, ?_, ?_⟩
   · intro T hT
     refine Set.mem_iUnion.mpr ⟨Glennie.CompactAutomorphism.refl, ?_⟩
@@ -384,9 +374,7 @@ theorem exists_invariant_open (U : Set Triple) (hUopen : IsOpen U) :
     show mapAtoms (k.comp g.symm) (mapAtoms g T) ∈ U
     rw [← mapAtoms_comp, mapAtoms_symm_mapAtoms]
     exact hk
-  · intro T hT
-    obtain ⟨k, hk⟩ := Set.mem_iUnion.mp hT
-    exact ⟨k, hk⟩
+  · simp
 
 /-- NO REMOTE COMPONENTS NEAR THE FLAT LEDGER. For every automorphism-invariant open
 set containing the two representatives, some neighbourhood of the flat ledger value
@@ -403,10 +391,8 @@ theorem flat_fibre_no_remote_components {W : Set Triple} (hW : IsOpen W)
   refine flatBase_ledger_saturated hW ?_
   intro T hT hL
   rcases flatFibre_subset_union ⟨hT, hL⟩ with ⟨g, hg⟩ | ⟨g, hg⟩
-  · rw [← hg]
-    exact hinv g flatBaseTriple h0
-  · rw [← hg]
-    exact hinv g flatBaseRev3 h3
+  · grind
+  · grind
 
 end
 end Glennie.Compact.FlatOrbit

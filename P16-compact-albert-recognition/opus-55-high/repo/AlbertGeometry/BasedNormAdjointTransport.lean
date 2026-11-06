@@ -31,15 +31,13 @@ def rawBilinearForm (P : SymmetricTrilinearForm E) (e : E) :
     intro x y
     ext z
     change rawTraceForm P e (x + y) z = rawTraceForm P e x z + rawTraceForm P e y z
-    simp only [map_add, ContinuousLinearMap.add_apply]
+    simp [map_add]
   map_smul' := by
     intro t x
     ext z
     change rawTraceForm P e (t • x) z = t * rawTraceForm P e x z
-    simp only [map_smul, ContinuousLinearMap.smul_apply, smul_eq_mul]
+    simp [map_smul, smul_eq_mul]
 
-@[simp] theorem rawBilinearForm_apply (P : SymmetricTrilinearForm E) (e x y : E) :
-    rawBilinearForm P e x y = rawTraceForm P e x y := rfl
 
 /-- Both left and right separation follow by testing the same vector. The
 normalization and positivity are the actual endpoint's base hypotheses. -/
@@ -117,11 +115,10 @@ theorem intrinsicCross_pull (I : BasedNormIso P e Q f)
     (hB : (rawBilinearForm P e).Nondegenerate)
     (hC : (rawBilinearForm Q f).Nondegenerate) (x y : E) :
     I.equiv (intrinsicCross P e hB x y) = intrinsicCross Q f hC (I.equiv x) (I.equiv y) := by
-  simp only [intrinsicCross, map_sub, map_add, intrinsicAdjoint_pull I hB hC]
+  simp [intrinsicCross, map_sub, map_add, intrinsicAdjoint_pull I hB hC]
 
 theorem intrinsicS_pull (I : BasedNormIso P e Q f) (x y : E) :
-    intrinsicS P e x y = intrinsicS Q f (I.equiv x) (I.equiv y) := by
-  simp only [intrinsicS, I.normTrace_pull, I.rawTraceForm_pull]
+    intrinsicS P e x y = intrinsicS Q f (I.equiv x) (I.equiv y) := by simp [intrinsicS, I.normTrace_pull, I.rawTraceForm_pull]
 
 /-- Product preservation is a derived theorem, not a based-map premise. -/
 theorem intrinsicProduct_pull (I : BasedNormIso P e Q f)
@@ -129,7 +126,7 @@ theorem intrinsicProduct_pull (I : BasedNormIso P e Q f)
     (hC : (rawBilinearForm Q f).Nondegenerate) (x y : E) :
     I.equiv (intrinsicProduct P e hB x y) =
       intrinsicProduct Q f hC (I.equiv x) (I.equiv y) := by
-  simp only [intrinsicProduct, map_smul, map_add, map_sub,
+  simp [intrinsicProduct, map_smul, map_add, map_sub,
     intrinsicCross_pull I hB hC, I.normTrace_pull, intrinsicS_pull I, I.map_unit]
 
 end

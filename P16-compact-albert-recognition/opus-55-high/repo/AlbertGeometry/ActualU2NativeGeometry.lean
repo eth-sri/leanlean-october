@@ -15,11 +15,9 @@ public import AlbertGeometry.NativeNormUnitAmbientForward
 
 @[expose] public section
 namespace AlbertGeometry.ActualU2NativeGeometry
-noncomputable section
-open Module Glennie
+open Glennie
 open AlbertGeometry.Cubic AlbertGeometry.BasedNormAdjointTransport
 open AlbertGeometry.RecognitionFromCurvature
-open AlbertGeometry.NativeNormAlgebra
 open AlbertGeometry.NativeNormUnitAmbientForward
 open AlbertGeometry.AmbientLeviCivitaProduct AlbertGeometry.AmbientCurvatureProduct
 
@@ -52,5 +50,4 @@ theorem exists_native_norm_unit_actual_geometry
     nativeDeterminantRecognition_of_exists_tangentCurvature P e he hp hR
   exact ⟨A, native_norm_unit_actual_geometry_forward P e he hp A hunit hnorm⟩
 
-end
 end AlbertGeometry.ActualU2NativeGeometry

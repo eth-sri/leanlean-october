@@ -8,38 +8,20 @@ public import Glennie.Compact.ReadoutRobustnessR01
 and δ endpoint displacement. No target-null or multiplication-defect claim. -/
 @[expose] public section
 namespace Glennie.Compact.MeasuredMarginR01
-open Glennie
 open Glennie.NativeGenerationEndpointR01
 open Glennie.NativeGenerationStabilizersR01
 open Glennie.Compact.NativeNormKernel
-noncomputable section
-set_option autoImplicit false
 
  theorem scalar_margin_lower (observed actual ξ : ℝ)
-    (herr : |observed-actual| ≤ ξ) : |observed|-ξ ≤ |actual| := by
-  have ht : |observed| ≤ |observed-actual|+|actual| := by
-    calc
-      |observed| = |(observed-actual)+actual| := by congr 1; ring
-      _ ≤ _ := abs_add_le _ _
-  linarith
+    (herr : |observed-actual| ≤ ξ) : |observed|-ξ ≤ |actual| := by grind
 
  theorem scalar_sign_certificate (observed actual ξ : ℝ) (hξ : 0 ≤ ξ)
     (herr : |observed-actual| ≤ ξ) (hmargin : ξ < |observed|) :
-    (observed < 0 ∧ actual < 0) ∨ (0 < observed ∧ 0 < actual) := by
-  rcases abs_le.mp herr with ⟨hl,hu⟩
-  rcases le_total 0 observed with hp | hn
-  · rw [abs_of_nonneg hp] at hmargin
-    exact Or.inr ⟨by linarith, by linarith⟩
-  · rw [abs_of_nonpos hn] at hmargin
-    exact Or.inl ⟨by linarith, by linarith⟩
+    (observed < 0 ∧ actual < 0) ∨ (0 < observed ∧ 0 < actual) := by grind
 
  theorem native_ne_zero_of_measured_margin (x y z : Albert) (observed ξ : ℝ)
     (herr : |observed-phi x y z| ≤ ξ) (hmargin : ξ < |observed|) :
-    phi x y z ≠ 0 := by
-  have hl := scalar_margin_lower observed (phi x y z) ξ herr
-  intro he
-  rw [he, abs_zero] at hl
-  linarith
+    phi x y z ≠ 0 := by grind
 
  /-- Definition-free unital generation and the actual native point stabilizer. -/
  theorem native_generation_of_measured_margin (x y z : Albert) (observed ξ : ℝ)
@@ -85,7 +67,7 @@ set_option autoImplicit false
     (∀ g : CompactAutomorphism,
       g.equiv x' = x' → g.equiv y' = y' → g.equiv z' = z' →
       g = CompactAutomorphism.refl) := by
-  have hδ : 0 ≤ δ := (norm_nonneg (x-x')).trans hdx
+  have hδ := (norm_nonneg (x-x')).trans hdx
   have he := measured_displacement_error x y z x' y' z' observed ξ R δ hR herr
     hx hy hz hx' hy' hz' hdx hdy hdz
   have hE : 0 ≤ ξ+18*R^8*δ := by positivity
@@ -102,8 +84,8 @@ No frame premise is needed for this algebraic error statement. -/
       (Glennie.Compact.ReadoutRobustnessR01.exactReadouts T) ε)
     (hallowance : 6*ε ≤ ξ) :
     |Glennie.Compact.ReadoutRobustnessR01.noisyPhi noisy -
-      phi (encoder (T 0)) (encoder (T 1)) (encoder (T 2))| ≤ ξ := by
-  exact (Glennie.Compact.ReadoutRobustnessR01.phi_error T noisy ε herr).trans hallowance
+      phi (encoder (T 0)) (encoder (T 1)) (encoder (T 2))| ≤ ξ :=
+  (Glennie.Compact.ReadoutRobustnessR01.phi_error T noisy ε herr).trans hallowance
 
  /-- Concrete readout-to-displacement consumer. ε, ξ, and δ have distinct premises. -/
  theorem six_readout_same_radius_sign_and_generation
@@ -134,5 +116,4 @@ No frame premise is needed for this algebraic error statement. -/
     (six_readout_scalar_error T noisy ε ξ hreadout hallowance)
     hx hy hz hx' hy' hz' hdx hdy hdz hmargin
 
-end
 end Glennie.Compact.MeasuredMarginR01

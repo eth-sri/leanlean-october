@@ -6,7 +6,6 @@ public import AlbertRecognition.FixedFrame.KernelLine
 
 @[expose] public section
 namespace AlbertRecognition
-noncomputable section
 open FixedFrame Glennie
 
 /-- An explicit native witness for nonzero quadratic reference curvature. -/
@@ -19,11 +18,11 @@ theorem q_reference_h0_h1_h0 :
 
 theorem q_reference_ne_zero : q referenceCubic ≠ 0 := by
   intro hz
-  have hv := congrArg (fun T : V → V → Module.End ℝ V => T (h 0) (h 1) (h 0)) hz
+  have hv := congrArg (fun T => T (h 0) (h 1) (h 0)) hz
   rw [q_reference_h0_h1_h0] at hv
   change h 0 + (2 : ℝ) • h 1 = 0 at hv
   have hd := congrArg (fun x : V => (x : Albert).d1) hv
-  norm_num [h, e, unit] at hd
+  norm_num [ e] at hd
 
 /-- Every competitor is constrained solely by equality of the actual native q.
 Universal operator Jacobi supplies kernel membership; the true reference
@@ -40,17 +39,14 @@ theorem q_fiber_reference (B : SymmetricCubic) :
     have hs : b^2 • q referenceCubic = (1 : ℝ) • q referenceCubic := by
       rw [one_smul, ← q_scalarCubic, ← hb]
       exact hq
-    have hb2 : b^2 = 1 := smul_left_injective ℝ q_reference_ne_zero hs
+    have hb2 := smul_left_injective ℝ q_reference_ne_zero hs
     rcases sq_eq_one_iff.mp hb2 with hb1 | hbm1
     · left
-      rw [hb1, scalarCubic_one] at hb
-      exact hb
-    · right
-      simpa only [hbm1] using hb
+      rwa [hb1, scalarCubic_one] at hb
+    · simp_all
   · rintro (rfl | rfl)
     · rfl
     · rw [q_scalarCubic]
       norm_num
 
-end
 end AlbertRecognition

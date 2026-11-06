@@ -31,10 +31,7 @@ public import Mathlib.Tactic.Module
 
 namespace Glennie.Compact.Affine20
 
-noncomputable section
 
-set_option autoImplicit false
-set_option maxHeartbeats 2000000
 
 /-! ## Maps preserving affine combinations of the 20 coordinates -/
 
@@ -53,16 +50,11 @@ theorem AffineComb.continuous20 {f : (Fin 20 → ℝ) → (Fin 20 → ℝ)} (hf 
     have e : (2 : ℝ) • x + (1 / 2 : ℝ) • ((2 : ℝ) • y - (2 : ℝ) • x) = x + y := by
       module
     rw [e] at h
-    have h2x : f ((2 : ℝ) • x) = f 0 + (2 : ℝ) • (f x - f 0) := by
-      rw [← hsmul]
-      abel
-    have h2y : f ((2 : ℝ) • y) = f 0 + (2 : ℝ) • (f y - f 0) := by
-      rw [← hsmul]
-      abel
+    have h2x : f ((2 : ℝ) • x) = f 0 + (2 : ℝ) • (f x - f 0) := by grind
+    have h2y : f ((2 : ℝ) • y) = f 0 + (2 : ℝ) • (f y - f 0) := by grind
     rw [h, h2x, h2y]
     module
-  have hG : Continuous (fun x => f x - f 0) :=
-    LinearMap.continuous_of_finiteDimensional
+  have hG := LinearMap.continuous_of_finiteDimensional
       ({ toFun := fun x => f x - f 0
          map_add' := hadd
          map_smul' := fun t y => by
@@ -80,5 +72,4 @@ theorem AffineComb.continuous20 {f : (Fin 20 → ℝ) → (Fin 20 → ℝ)} (hf 
 
 /-! ## Faithfulness and the fixed sets -/
 
-end
 end Glennie.Compact.Affine20

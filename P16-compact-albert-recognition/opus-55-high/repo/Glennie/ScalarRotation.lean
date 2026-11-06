@@ -13,7 +13,7 @@ theorem exists_rotation_improving_energy (a b n : ℝ) (hn : 0 < n) :
       (c^2*a+s^2*b+2*c*s*n)^2 + (s^2*a+c^2*b-2*c*s*n)^2 =
         a^2+b^2+2*n^2 := by
   let D := Real.sqrt ((a-b)^2+4*n^2)
-  have hrad : 0 < (a-b)^2+4*n^2 := by nlinarith [sq_nonneg (a-b)]
+  have hrad : 0 < (a-b)^2+4*n^2 := by nlinarith 
   have hD : 0 < D := Real.sqrt_pos.mpr hrad
   have hD2 : D^2 = (a-b)^2+4*n^2 := Real.sq_sqrt (le_of_lt hrad)
   have hp : 0 < D+(a-b) := by nlinarith
@@ -34,15 +34,15 @@ theorem exists_rotation_improving_energy (a b n : ℝ) (hn : 0 < n) :
     nlinarith
   have hnorm : c^2+s^2=1 := by
     apply mul_left_cancel₀ (by positivity : (2*D) ≠ 0)
-    nlinarith [hc2, hs2]
+    nlinarith 
   have hprod : (2*D*c*s)^2 = (2*n)^2 := by
     calc
       _ = (2*D*c^2)*(2*D*s^2) := by ring
       _ = (D+(a-b))*(D-(a-b)) := by rw [hc2, hs2]
-      _ = (2*n)^2 := by nlinarith [hD2]
+      _ = (2*n)^2 := by nlinarith 
   have hcs : 2*D*c*s = 2*n := by
     have hnonneg : 0 ≤ 2*D*c*s := by positivity
-    nlinarith [hprod]
+    nlinarith 
   let A := c^2*a+s^2*b+2*c*s*n
   let B := s^2*a+c^2*b-2*c*s*n
   have hsum : A+B = a+b := by
@@ -53,15 +53,13 @@ theorem exists_rotation_improving_energy (a b n : ℝ) (hn : 0 < n) :
   have hdiff : A-B = D := by
     apply mul_left_cancel₀ (by positivity : (2*D) ≠ 0)
     calc
-      2*D*(A-B) = (2*D*c^2-2*D*s^2)*(a-b)+4*(2*D*c*s)*n := by
-        dsimp [A, B]
-        ring
+      2*D*(A-B) = (2*D*c^2-2*D*s^2)*(a-b)+4*(2*D*c*s)*n := by ring
       _ = ((D+(a-b))-(D-(a-b)))*(a-b)+4*(2*n)*n := by rw [hc2, hs2, hcs]
-      _ = 2*D*D := by nlinarith [hD2]
+      _ = 2*D*D := by nlinarith 
   refine ⟨c, s, hnorm, ?_⟩
   change A^2+B^2 = a^2+b^2+2*n^2
   have hsquare := congrArg (fun r : ℝ => r^2) hsum
   have hdsquare := congrArg (fun r : ℝ => r^2) hdiff
-  nlinarith [hsquare, hdsquare, hD2]
+  nlinarith 
 
 end Glennie

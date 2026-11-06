@@ -6,7 +6,6 @@ public import AlbertRecognition.FixedFrame.ScalarBlocks
 
 @[expose] public section
 namespace AlbertRecognition.FixedFrame
-noncomputable section
 open Glennie
 
 /-- Actual complementary diagonal coordinates for the zero-based h0 frame. -/
@@ -15,12 +14,10 @@ theorem h1_half_h0_eq_frameD :
   have hneg (x : Albert) : -x =
       ⟨-x.d0,-x.d1,-x.d2,-x.o01,-x.o02,-x.o12⟩ := rfl
   apply Subtype.ext
-  apply Albert.ext <;> norm_num [h, e, unit, frameD, hneg]
+  apply Albert.ext <;> norm_num [ e, frameD]
 
 theorem h2_half_h0_eq_frameD :
-    h 2 + (1/2 : ℝ) • h 0 = (3/2 : ℝ) • frameD := by
-  apply Subtype.ext
-  apply Albert.ext <;> norm_num [h, e, unit, frameD]
+    h 2 + (1/2 : ℝ) • h 0 = (3/2 : ℝ) • frameD := by ext <;> norm_num [ e, frameD]
 
 /-- The scalar-block output supplies every native coarse h0 action needed by
 three-frame transport. No covariance or invariance is a premise. -/
@@ -37,7 +34,7 @@ theorem frame_commutant_h0_coarse_actions (G : Module.End ℝ V)
   refine ⟨a,b,c,ha,?_,?_,?_,h12⟩
   · intro j hj
     fin_cases j
-    · exact False.elim (hj rfl)
+    · simp_all
     · change G (h 1 + (1/2 : ℝ) • h 0) = b • (h 1 + (1/2 : ℝ) • h 0)
       rw [h1_half_h0_eq_frameD, map_smul, hb]
       module
@@ -46,10 +43,10 @@ theorem frame_commutant_h0_coarse_actions (G : Module.End ℝ V)
       module
   · intro u
     have hh := hs (u,0)
-    simpa only [frameSpin_apply, map_zero, add_zero] using hh
+    simpa [frameSpin_apply, map_zero, add_zero] using hh
   · intro u
     have hh := hs (0,u)
-    simpa only [frameSpin_apply, map_zero, zero_add] using hh
+    simpa [frameSpin_apply, map_zero, zero_add] using hh
 
 /-- Concrete h0 coarse data for the arbitrary-cubic Jacobi kernel. The sole
 hypothesis is the literal initial-gate equation; all actions are derived. -/
@@ -68,5 +65,4 @@ theorem h0_coarse_actions_of_A_q_zero (B : SymmetricCubic)
   intro x
   exact h0_frame_action_intertwines_of_A_q_zero B hB (octBasis t) x
 
-end
 end AlbertRecognition.FixedFrame

@@ -11,13 +11,11 @@ public import AlbertGeometry.NativeAmbientConnectionBridge
 
 @[expose] public section
 namespace AlbertGeometry.NativeAmbientCurvatureBridge
-noncomputable section
-open Module Glennie
+open Glennie
 open AlbertGeometry.Cubic
 open AlbertGeometry.BasedNormDerivativeTransport
-open AlbertGeometry.BasedNormAdjointTransport
-open AlbertGeometry.NativeEuclideanNormBinding AlbertGeometry.NativeNormAlgebra
-open AlbertGeometry.NativeCoordinateDerivatives AlbertGeometry.NativeIntrinsicProductBinding
+open AlbertGeometry.NativeEuclideanNormBinding
+open AlbertGeometry.NativeIntrinsicProductBinding
 open AlbertGeometry.NativeAmbientConnectionBridge
 open AlbertGeometry.AmbientCurvatureProduct
 
@@ -41,7 +39,6 @@ theorem nativeRecognition_ambientCurvature
         jordan (delta (I.equiv v))
           (jordan (delta (I.equiv u)) (delta (I.equiv w)))) := by
   rw [ambientCurvature_at_one_eq_neg_product_commutator P e he hp]
-  simp only [map_neg, map_sub, nativeRecognition_product P e he hp I]
+  simp [map_sub, nativeRecognition_product P e he hp I]
 
-end
 end AlbertGeometry.NativeAmbientCurvatureBridge

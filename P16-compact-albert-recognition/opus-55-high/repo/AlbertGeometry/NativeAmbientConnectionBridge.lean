@@ -11,14 +11,13 @@ public import AlbertGeometry.NativeIntrinsicProductBinding
 
 @[expose] public section
 namespace AlbertGeometry.NativeAmbientConnectionBridge
-noncomputable section
-open Module Glennie
+open Glennie
 open AlbertGeometry.Cubic AlbertGeometry.CubicPolynomialRepresentation
 open AlbertGeometry.BasedNormDerivativeTransport
 open AlbertGeometry.BasedNormDerivativeTransport.BasedNormIso
 open AlbertGeometry.BasedNormAdjointTransport
 open AlbertGeometry.NativeEuclideanNormBinding AlbertGeometry.NativeNormAlgebra
-open AlbertGeometry.NativeCoordinateDerivatives AlbertGeometry.NativeIntrinsicProductBinding
+open AlbertGeometry.NativeIntrinsicProductBinding
 open AlbertGeometry.AmbientLeviCivitaProduct
 
 local notation "QN" => nativeEuclideanRepresentation
@@ -65,5 +64,4 @@ theorem nativeRecognition_ambientGamma (I : BasedNormIso P e QN en) (x y : E) :
   rw [ambientGamma_at_one_eq_neg_product P e he hp, map_neg, map_neg,
     nativeRecognition_product P e he hp I]
 
-end
 end AlbertGeometry.NativeAmbientConnectionBridge

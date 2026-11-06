@@ -11,7 +11,6 @@ public import Mathlib.Tactic.Linarith
 
 @[expose] public section
 namespace Glennie
-noncomputable section
 
 theorem reverse_shear_of_cubic {E : Type*} [AddCommGroup E] [Module ℝ E]
     (F : E → E → ℝ)
@@ -26,22 +25,17 @@ theorem reverse_shear_of_cubic {E : Type*} [AddCommGroup E] [Module ℝ E]
     simpa [hzero] using hforward u 0 1
   have hbalance (r : ℝ) : r^3 * F (x + r • z) z = -F (x + r • z) x := by
     by_cases hr : r = 0
-    · simp [hr, hdiag]
-    have hv : z + (-r⁻¹) • (x + r • z) = (-r⁻¹) • x := by
-      simp only [smul_add, smul_smul, neg_mul, inv_mul_cancel₀ hr,
-        neg_one_smul]
-      abel
+    · simp_all
+    have hv : z + (-r⁻¹) • (x + r • z) = (-r⁻¹) • x := by simp_all
     calc
       r^3 * F (x + r • z) z =
-          r^3 * F (x + r • z) (z + (-r⁻¹) • (x + r • z)) := by
-            rw [hforward]
+          r^3 * F (x + r • z) (z + (-r⁻¹) • (x + r • z)) := by grind
       _ = r^3 * ((-r⁻¹)^3 * F (x + r • z) x) := by rw [hv, hhom]
       _ = -F (x + r • z) x := by field_simp
   obtain ⟨a, b, c, d, hp⟩ := hline x z z
   obtain ⟨a', b', c', d', hq⟩ := hline x z x
   have heq (r : ℝ) : r^3 * (a + b*r + c*r^2 + d*r^3) =
-      -(a' + b'*r + c'*r^2 + d'*r^3) := by
-    simpa only [hp r, hq r] using hbalance r
+      -(a' + b'*r + c'*r^2 + d'*r^3) := by simp_all
   have ha' : a' = 0 := by simpa [hdiag] using (hq 0).symm
   have h1 := heq 1
   have hm1 := heq (-1)
@@ -49,7 +43,7 @@ theorem reverse_shear_of_cubic {E : Type*} [AddCommGroup E] [Module ℝ E]
   have hm2 := heq (-2)
   have h3 := heq 3
   have hm3 := heq (-3)
-  norm_num [ha'] at h1 hm1 h2 hm2 h3 hm3
+  norm_num  at h1 hm1 h2 hm2 h3 hm3
   -- Exact interpolation of the universally established degree-six identity.
   -- These evaluations are sufficient because the cubic line expansion is proved.
   have hb : b = 0 := by linarith
@@ -59,5 +53,4 @@ theorem reverse_shear_of_cubic {E : Type*} [AddCommGroup E] [Module ℝ E]
   rw [hp t, hb, hc, hd]
   simpa using hconstant.symm
 
-end
 end Glennie

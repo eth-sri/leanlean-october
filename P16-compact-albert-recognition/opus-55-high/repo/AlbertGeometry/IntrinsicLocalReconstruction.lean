@@ -9,10 +9,9 @@ public import AlbertGeometry.IntrinsicLocalTransport
 
 @[expose] public section
 namespace AlbertGeometry.IntrinsicLocalReconstruction
-noncomputable section
 
 open Glennie
-open AlbertGeometry.Cubic AlbertGeometry.BasedNormAdjointTransport
+open AlbertGeometry.Cubic
 open AlbertGeometry.RecognitionFromCurvature
 open AlbertGeometry.IntrinsicLocalTransport
 
@@ -27,15 +26,10 @@ The two sections classify the full fibre of actual ordered source frames under
 the complete simultaneous product-and-trace automorphism action. -/
 structure Data where
   A : E ≃ₗ[ℝ] Albert
-  map_unit : A e = 1
+  model : IsModel P e he hp A
   map_norm : ∀ x : E,
     AlbertGeometry.NativeCoordinateDictionary.nativeDeterminant (A x) =
       diagonalCubic P.form x
-  map_metric : ∀ x y : E,
-    logHessianForm P e x y = trace (jordan (A x) (A y)) / 3
-  map_product : ∀ x y : E,
-    A (intrinsicProduct P e (rawBilinearForm_nondegenerate P e he hp) x y) =
-      jordan (A x) (A y)
   map_connection : ∀ x y : E,
     A (AlbertGeometry.AmbientLeviCivitaProduct.ambientGamma P e x y) =
       -jordan (A x) (A y)
@@ -59,9 +53,7 @@ theorem exists_intrinsic_local_reconstruction
     AlbertGeometry.ActualU2NativeGeometry.exists_native_norm_unit_actual_geometry
       P e he hp hR
   obtain ⟨V, hVopen, hflat, htwo, htest⟩ :=
-    common_local_reconstruction_of_equiv P e he hp A hunit hmetric hproduct
-  exact ⟨Data.mk A hunit hnorm hmetric hproduct hconnection hcurvature
-    V hVopen hflat htwo htest⟩
+    common_local_reconstruction_of_equiv ⟨hunit, hmetric, hproduct⟩
+  exact ⟨⟨A, ⟨hunit, hmetric, hproduct⟩, hnorm, hconnection, hcurvature, V, hVopen, hflat, htwo, htest⟩⟩
 
-end
 end AlbertGeometry.IntrinsicLocalReconstruction

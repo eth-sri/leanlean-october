@@ -7,10 +7,7 @@ public import Mathlib.Tactic.Module
 @[expose] public section
 
 namespace Glennie
-noncomputable section
 
-set_option maxHeartbeats 2000000
-set_option linter.unusedSimpArgs false
 
 theorem octMul_self_conj (x : Octonion) :
     octMul x (octConj x) = octScalar (octNormSq x) := by
@@ -23,39 +20,32 @@ theorem octMul_conj_self (x : Octonion) :
     octMul (octConj x) x = octScalar (octNormSq x) := by
   apply Prod.ext
   · simp [octMul, octConj, octScalar, octNormSq,
-      Quaternion.self_mul_star, Quaternion.star_mul_self]
+      Quaternion.star_mul_self]
   · simp [octMul, octConj, octScalar]
 
 theorem octScalar_smul (r s : ℝ) : r • octScalar s = octScalar (r*s) := by
-  apply Prod.ext <;> apply Quaternion.ext <;> simp [octScalar, smul_eq_mul]
+  apply Prod.ext <;> apply Quaternion.ext <;> simp [oct_simps]
 
-set_option maxHeartbeats 2000000 in
 theorem octNormSq_mul (x y : Octonion) :
     octNormSq (octMul x y) = octNormSq x * octNormSq y := by
-  simp [octNormSq, octMul, Quaternion.normSq_def', Quaternion.re_mul,
-    Quaternion.imI_mul, Quaternion.imJ_mul, Quaternion.imK_mul]
+  simp [oct_simps]
   ring
 
-set_option maxHeartbeats 2000000 in
 theorem octMul_left_alternative (x y : Octonion) :
     octMul x (octMul x y) = octMul (octMul x x) y := by
   apply Prod.ext <;> apply Quaternion.ext <;>
-    simp [octMul, Quaternion.re_mul, Quaternion.imI_mul,
-      Quaternion.imJ_mul, Quaternion.imK_mul] <;> ring
+    simp [oct_simps] <;> ring
 
-set_option maxHeartbeats 2000000 in
 theorem octMul_right_alternative (x y : Octonion) :
     octMul (octMul x y) y = octMul x (octMul y y) := by
   apply Prod.ext <;> apply Quaternion.ext <;>
-    simp [octMul, Quaternion.re_mul, Quaternion.imI_mul,
-      Quaternion.imJ_mul, Quaternion.imK_mul] <;> ring
+    simp [oct_simps] <;> ring
 
 set_option maxHeartbeats 8000000 in
 theorem octMul_moufang (x y z : Octonion) :
     octMul (octMul x y) (octMul z x) = octMul (octMul x (octMul y z)) x := by
   apply Prod.ext <;> apply Quaternion.ext <;>
-    simp [octMul, Quaternion.re_mul, Quaternion.imI_mul,
-      Quaternion.imJ_mul, Quaternion.imK_mul] <;> ring
+    simp [oct_simps] <;> ring
 
 theorem octDot_add_left (x y z : Octonion) :
     octDot (x+y) z = octDot x z+octDot y z := by
@@ -64,12 +54,12 @@ theorem octDot_add_left (x y z : Octonion) :
 
 theorem octDot_smul_left (r : ℝ) (x y : Octonion) :
     octDot (r • x) y = r*octDot x y := by
-  simp [octDot_coordinates, smul_eq_mul]
+  simp [oct_simps]
   ring
 
 theorem jordan_add_left (x y z : Albert) : jordan (x+y) z = jordan x z + jordan y z := by
   apply Albert.ext
-  all_goals simp only [Albert.add_d0, Albert.add_d1, Albert.add_d2,
+  all_goals simp [Albert.add_d0, Albert.add_d1, Albert.add_d2,
     Albert.add_o01, Albert.add_o02, Albert.add_o12,
     jordan_d0, jordan_d1, jordan_d2, jordan_o01, jordan_o02, jordan_o12,
     octDot_add_left, octConj_add, octMul_add_left, octMul_add_right]
@@ -84,7 +74,7 @@ theorem jordan_add_right (x y z : Albert) : jordan x (y+z) = jordan x y + jordan
 theorem jordan_smul_left (r : ℝ) (x y : Albert) :
     jordan (r • x) y = r • jordan x y := by
   apply Albert.ext
-  all_goals simp only [Albert.smul_d0, Albert.smul_d1, Albert.smul_d2,
+  all_goals simp [Albert.smul_d0, Albert.smul_d1, Albert.smul_d2,
     Albert.smul_o01, Albert.smul_o02, Albert.smul_o12,
     jordan_d0, jordan_d1, jordan_d2, jordan_o01, jordan_o02, jordan_o12,
     octDot_smul_left, octConj_smul, octMul_smul_left, octMul_smul_right]
@@ -111,10 +101,7 @@ theorem jordan_sub_right (x y z : Albert) : jordan x (y-z) = jordan x y-jordan x
 
 @[simp] theorem jordan_unit_left (x : Albert) : jordan 1 x = x := by
   apply Albert.ext
-  all_goals norm_num [jordan_d0, jordan_d1, jordan_d2, jordan_o01, jordan_o02,
-    jordan_o12, unit, octDot_coordinates, octMul, octConj, Quaternion.re_mul,
-    Quaternion.imI_mul, Quaternion.imJ_mul, Quaternion.imK_mul, smul_eq_mul,
-    Prod.mk_zero_zero, smul_smul]
+  all_goals norm_num [oct_simps, Prod.mk_zero_zero, smul_smul]
 
 @[simp] theorem jordan_unit_right (x : Albert) : jordan x 1 = x := by
   rw [jordan_comm, jordan_unit_left]
@@ -151,14 +138,9 @@ theorem inner_sub_left (x y z : Albert) : inner (x-y) z = inner x z-inner y z :=
 theorem inner_sub_right (x y z : Albert) : inner x (y-z) = inner x y-inner x z := by
   simp [sub_eq_add_neg, inner_add_right]
 
-set_option maxHeartbeats 2000000 in
 theorem inner_jordan_associative (x y z : Albert) :
     inner (jordan x y) z = inner x (jordan y z) := by
-  simp [inner_coordinates, jordan_d0, jordan_d1, jordan_d2,
-    jordan_o01, jordan_o02, jordan_o12, octDot_coordinates,
-    octMul, octConj, Quaternion.re_mul, Quaternion.imI_mul,
-    Quaternion.imJ_mul, Quaternion.imK_mul, smul_eq_mul]
+  simp [inner_coordinates, oct_simps]
   ring
 
-end
 end Glennie

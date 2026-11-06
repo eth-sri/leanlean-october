@@ -6,7 +6,6 @@ public import Glennie.BasicLaws
 
 @[expose] public section
 namespace Glennie.CompactAutomorphism
-noncomputable section
 
 def refl : CompactAutomorphism where
   equiv := LinearEquiv.refl ℝ Albert
@@ -44,15 +43,15 @@ theorem inner_map (g : CompactAutomorphism) (x y : Albert) :
 
 theorem map_U (g : CompactAutomorphism) (x z : Albert) :
     g.equiv (U x z) = U (g.equiv x) (g.equiv z) := by
-  simp only [U, map_sub, map_smul, g.map_jordan]
+  simp [U, map_sub, map_smul, g.map_jordan]
 
 theorem phi_map (g : CompactAutomorphism) (x y z : Albert) :
     phi (g.equiv x) (g.equiv y) (g.equiv z) = phi x y z := by
-  simp only [phi, ← g.map_U, ← map_sub, ← g.map_jordan, g.inner_map]
+  simp [phi, ← g.map_U, ← map_sub, ← g.map_jordan, g.inner_map]
 
 theorem map_traceless (g : CompactAutomorphism) (x : Albert) :
     g.equiv (traceless x) = traceless (g.equiv x) := by
-  simp only [traceless, map_sub, map_smul, g.map_unit, g.map_trace]
+  simp [traceless, map_sub, map_smul, g.map_unit, g.map_trace]
 
 theorem map_frame (g : CompactAutomorphism) (p : Fin 3 → Albert) (hp : Frame p) :
     Frame (fun i => g.equiv (p i)) where
@@ -68,7 +67,6 @@ theorem encoder_map (g : CompactAutomorphism) (p : Fin 3 → Albert) :
 theorem ledger_map (g : CompactAutomorphism) (p q r : Fin 3 → Albert) (i j k : Fin 3) :
     ledger (fun a => g.equiv (p a)) (fun a => g.equiv (q a))
       (fun a => g.equiv (r a)) i j k = ledger p q r i j k := by
-  simp only [ledger, ← g.map_jordan, g.map_trace]
+  simp [ledger, ← g.map_jordan, g.map_trace]
 
-end
 end Glennie.CompactAutomorphism

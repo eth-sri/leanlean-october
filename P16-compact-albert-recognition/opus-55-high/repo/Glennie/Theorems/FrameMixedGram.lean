@@ -12,7 +12,6 @@ public import Mathlib.LinearAlgebra.LinearIndependent.Defs
 namespace Glennie
 noncomputable section
 
-set_option maxHeartbeats 2000000
 
 theorem traceOne_idempotent_L_square (p q : Albert)
     (hp : jordan p p = p) (ht : trace p = 1) :
@@ -33,15 +32,15 @@ theorem orthogonal_idempotents_L_commute (p k y : Albert)
   have heq : (2 : ℝ) • (jordan k (jordan p y) - jordan p (jordan k y)) = 0 := by
     calc
       _ = jordan (jordan (p-k) y) (p+k) - jordan (p-k) (jordan y (p+k)) := by
-        simp only [jordan_sub_left, jordan_sub_right, jordan_add_left, jordan_add_right,
+        simp [jordan_sub_left, jordan_add_right,
           jordan_comm (jordan p y) p, jordan_comm (jordan p y) k,
           jordan_comm (jordan k y) p, jordan_comm (jordan k y) k,
           jordan_comm y p, jordan_comm y k]
         module
       _ = 0 := sub_eq_zero.mpr hj
-  have hhalf := congrArg (fun z : Albert => (1 / 2 : ℝ) • z) heq
+  have hhalf := congrArg (fun z => (1 / 2 : ℝ) • z) heq
   have hz : jordan k (jordan p y) - jordan p (jordan k y) = 0 := by
-    simpa only [smul_smul, show (1 / 2 : ℝ) * 2 = 1 by norm_num,
+    simpa [smul_smul, show (1 / 2 : ℝ) * 2 = 1 by norm_num,
       one_smul, smul_zero] using hhalf
   exact (sub_eq_zero.mp hz).symm
 
@@ -56,7 +55,7 @@ theorem traceOne_mixed_inner (p q r : Albert)
     inner_add_right, inner_smul_right, inner_comm q p, ha]
   ring
 
-private theorem symmetric_three_zero_rows (B : Fin 3 → Fin 3 → ℝ)
+theorem symmetric_three_zero_rows (B : Fin 3 → Fin 3 → ℝ)
     (hsym : ∀ j l, B j l = B l j) (hdiag : ∀ j, B j j = 1 / 18)
     (hrow : ∀ j, ∑ l, B j l = 0) (j l : Fin 3) (hne : j ≠ l) :
     B j l = -1 / 36 := by
@@ -66,7 +65,7 @@ private theorem symmetric_three_zero_rows (B : Fin 3 → Fin 3 → ℝ)
   have h01 := hsym 0 1
   have h02 := hsym 0 2
   have h12 := hsym 1 2
-  simp only [Fin.sum_univ_three, hdiag] at h0 h1 h2
+  simp [Fin.sum_univ_three, hdiag] at h0 h1 h2
   have ho01 : B 0 1 = -1/36 := by linarith
   have ho02 : B 0 2 = -1/36 := by linarith
   have ho12 : B 1 2 = -1/36 := by linarith
@@ -74,15 +73,15 @@ private theorem symmetric_three_zero_rows (B : Fin 3 → Fin 3 → ℝ)
   have ho20 := h02.symm.trans ho02
   have ho21 := h12.symm.trans ho12
   fin_cases j <;> fin_cases l
-  · exact (hne rfl).elim
-  · exact ho01
-  · exact ho02
-  · exact ho10
-  · exact (hne rfl).elim
-  · exact ho12
-  · exact ho20
-  · exact ho21
-  · exact (hne rfl).elim
+  · simp_all
+  · grind
+  · simp_all
+  · grind
+  · simp_all
+  · simp_all
+  · simp_all
+  · simp_all
+  · simp_all
 
 theorem uniform_pair_same_row (p q : Fin 3 → Albert)
     (hp : Frame p) (hq : Frame q) (hu : ∀ i j, inner (p i) (q j) = 1 / 3)
@@ -95,7 +94,7 @@ theorem uniform_pair_same_row (p q : Fin 3 → Albert)
     rw [hq.idempotent, hu]
     norm_num
   · rw [hq.orthogonal j l h, inner, jordan_zero_right]
-    norm_num [h, trace]
+    norm_num [h]
 
 theorem uniform_pair_same_column (p q : Fin 3 → Albert)
     (hp : Frame p) (hq : Frame q) (hu : ∀ i j, inner (p i) (q j) = 1 / 3)
@@ -135,7 +134,7 @@ theorem uniform_pair_mixed_gram (p q : Fin 3 → Albert)
       have hrow : ∀ j, ∑ l, B j l = 0 := by
         intro j
         dsimp [B]
-        simp only [Fin.sum_univ_three]
+        simp [Fin.sum_univ_three]
         rw [← inner_add_right, ← inner_add_right, ← jordan_add_right,
           ← jordan_add_right, hq.sum_unit, jordan_unit_right]
         rw [jordan_comm (p i) (q j), inner_jordan_associative,
@@ -152,7 +151,7 @@ theorem uniform_pair_combination_inner (p q : Fin 3 → Albert)
     (a : Fin 3 → Fin 3 → ℝ) :
     inner (mixedCombination p q a) (mixedCombination p q a) =
       UniformMixedGram.quadratic a := by
-  simp only [mixedCombination, UniformMixedGram.quadratic, Fin.sum_univ_three,
+  simp [mixedCombination, UniformMixedGram.quadratic, Fin.sum_univ_three,
     inner_add_left, inner_add_right, inner_smul_left, inner_smul_right,
     uniform_pair_mixed_gram p q hp hq hu]
   ring
@@ -177,7 +176,7 @@ theorem uniform_pair_mixed_linearIndependent (p q : Fin 3 → Albert)
   apply Fintype.linearIndependent_iff.mpr
   intro a ha u
   have hz : mixedCombination p q (fun i j => a (i,j)) = 0 := by
-    simpa only [mixedCombination, Fintype.sum_prod_type] using ha
+    simpa [mixedCombination, Fintype.sum_prod_type] using ha
   exact (uniform_pair_mixed_independent p q hp hq hu _).mp hz u.1 u.2
 
 theorem uniformLedger_mixed_encoder_perp (p q r : Fin 3 → Albert)

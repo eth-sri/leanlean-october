@@ -20,9 +20,6 @@ namespace Glennie.Compact.NativeDictionary
 
 noncomputable section
 
-set_option autoImplicit false
-set_option maxHeartbeats 2000000
-set_option linter.unusedSimpArgs false
 
 /-! ## Traceless decode -/
 
@@ -71,11 +68,11 @@ def extEncode0 (x : Albert) : Fin 26 → ℝ :=
 def extEncode (x : Albert) : Fin 27 → ℝ := Matrix.vecCons (trace x / 3) (extEncode0 x)
 
 theorem trace_extDecode0 (a : Fin 26 → ℝ) : trace (extDecode0 a) = 0 := by
-  simp only [trace, extDecode0_d0, extDecode0_d1, extDecode0_d2]
+  simp [trace, extDecode0_d0, extDecode0_d1, extDecode0_d2]
   ring
 
 theorem trace_extDecode (a : Fin 27 → ℝ) : trace (extDecode a) = 3 * a 0 := by
-  simp only [extDecode, trace_add, trace_smul, trace_unit, trace_extDecode0]
+  simp [extDecode, trace_add, trace_smul, trace_unit, trace_extDecode0]
   ring
 
 theorem extDecode0_add (a b : Fin 26 → ℝ) :
@@ -115,7 +112,7 @@ theorem extEncode_extDecode (a : Fin 27 → ℝ) : extEncode (extDecode a) = a :
     simp only [extEncode, Matrix.cons_val_zero, trace_extDecode]
     ring
   | succ k =>
-    simp only [extEncode, Matrix.cons_val_succ, extEncode0_extDecode, extTail_apply]
+    simp [extEncode, Matrix.cons_val_succ, extEncode0_extDecode, extTail_apply]
 
 theorem extDecode_extEncode (x : Albert) : extDecode (extEncode x) = x := by
   ext <;> simp [extDecode, extEncode, extEncode0, trace] <;> ring

@@ -17,7 +17,7 @@ public import Mathlib.Algebra.Module.Submodule.Equiv
 @[expose] public section
 namespace AlbertGeometry.NativeCurvatureDictionary
 noncomputable section
-open Module Glennie AlbertRecognition
+open AlbertRecognition
 open AlbertGeometry.Cubic AlbertGeometry.CubicPolynomialRepresentation
 open AlbertGeometry.NativeNormAlgebra AlbertGeometry.NativeEuclideanNormBinding
 open AlbertGeometry.NativeCoordinateDerivatives AlbertGeometry.NativeCoordinateDictionary
@@ -43,17 +43,9 @@ theorem nativeNormalization :
 assumed from norm positivity or imposed by a new normed Albert instance. -/
 theorem nativeBaseMetricPositive (u : Coordinates) (hu : u ≠ 0) :
     0 < logHessianForm nativeEuclideanRepresentation nativeCoordinateUnit u u := by
-  have hd : delta u ≠ 0 := by
-    intro hz
-    apply hu
-    apply delta.injective
-    simpa only [map_zero] using hz
-  have hb : Glennie.inner (delta u) (delta u) ≠ 0 := by
-    intro hz
-    exact hd ((Glennie.inner_self_eq_zero (delta u)).mp hz)
-  have hp : 0 < Glennie.inner (delta u) (delta u) :=
-    lt_of_le_of_ne (Glennie.inner_self_nonneg (delta u)) hb.symm
   rw [← coordinateLogMetric_eq_logHessianForm, coordinateLogMetric_at_unit]
+  have := (Glennie.inner_self_nonneg (delta u)).lt_of_ne'
+    ((Glennie.inner_self_eq_zero _).not.2 (delta.map_ne_zero_iff.2 hu))
   linarith
 
 abbrev NativeChartTangent := tangentSpace nativeEuclideanRepresentation nativeCoordinateUnit
@@ -62,8 +54,7 @@ abbrev NativeChartTangent := tangentSpace nativeEuclideanRepresentation nativeCo
 by equality of the whole Newton and continuous diagonal functions. -/
 theorem nativeTangentSpace_eq :
     nativeCoordinateTangentSpace =
-      tangentSpace nativeEuclideanRepresentation nativeCoordinateUnit := by
-  simp only [nativeCoordinateTangentSpace, tangentSpace, coordinateNewton_eq_diagonal]
+      tangentSpace nativeEuclideanRepresentation nativeCoordinateUnit := by simp [nativeCoordinateTangentSpace, tangentSpace, coordinateNewton_eq_diagonal]
 
 /-- Constructed actual Euclidean26-to-chart-tangent CLEquiv. No inverse or
 native topology is a premise. Equal-submodule coercion changes no vector. -/
@@ -74,10 +65,7 @@ def nativeChartCoordinates : TracefreeCoordinates ≃L[ℝ] NativeChartTangent :
       nativeTangentSpace_eq).toContinuousLinearEquiv
 
 @[simp] theorem nativeChartCoordinates_coe (v : TracefreeCoordinates) :
-    (nativeChartCoordinates v : Coordinates) = tracefreeCoordinateMap v := by
-  simp only [nativeChartCoordinates, ContinuousLinearEquiv.trans_apply,
-    LinearEquiv.coe_toContinuousLinearEquiv', LinearEquiv.coe_ofEq_apply,
-    tangentCoordinatesContinuous_coe]
+    (nativeChartCoordinates v : Coordinates) = tracefreeCoordinateMap v := by rfl
 
 /-- The frame into the actual tangent is entirely constructed through Euclidean
 coordinates. V remains an algebraic carrier throughout. -/
@@ -96,7 +84,7 @@ theorem nativeMetricFrame_metric (x y : V) :
     ← coordinateLogMetric_eq_logHessianForm, tracefreeCoordinateMap_metric]
   have h := tracefreeCoordinates_metric (tracefreeCoordinates.symm x)
     (tracefreeCoordinates.symm y)
-  simpa only [gA, LinearEquiv.apply_symm_apply] using h.symm
+  simpa [gA, LinearEquiv.apply_symm_apply] using h.symm
 
 /-- Full three-slot equality with the native reference cubic. The
 native form and reference cubic already contain exactly ONE division by3. -/
@@ -106,118 +94,26 @@ theorem nativeMetricFrame_cubic (x y z : V) :
         (nativeMetricFrame z : Coordinates)] = referenceCubic.form x y z := by
   rw [nativeMetricFrame_coe, nativeMetricFrame_coe, nativeMetricFrame_coe,
     nativeEuclideanForm_tracefree]
-  simp only [coordinateReferenceCubic, LinearEquiv.apply_symm_apply]
+  simp [coordinateReferenceCubic, LinearEquiv.apply_symm_apply]
 
 section GenericMetricFrame
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
-variable (P : SymmetricTrilinearForm E) (e : E) (he : diagonalCubic P.form e = 1)
-local notation "W" => tangentSpace P e
--- Apply the same actual metric and raised cubic by their explicit names.
--- Projected notation quotations are avoided; no quotation option is changed.
-variable (F : V ≃ₗ[ℝ] W)
 
 -- All intermediate modules are fixed by these structure fields. No inferred
 -- composition module and no topology or norm on the algebraic carrier V is used.
-set_option maxHeartbeats 1000000 in
 def frameAmbientMap (P : SymmetricTrilinearForm E) (e : E)
     (F : V ≃ₗ[ℝ] tangentSpace P e) : V →ₗ[ℝ] E :=
-  LinearMap.mk
-    ({ toFun := fun (x : V) => (F x : E)
-       map_add' := fun (x y : V) =>
-         congrArg (fun u : tangentSpace P e => (u : E)) (F.map_add x y) } : AddHom V E)
-    (fun (r : ℝ) (x : V) => by
-      change (F (r • x) : E) = r • (F x : E)
-      exact congrArg (fun u : tangentSpace P e => (u : E)) (F.map_smul r x))
-
-def framePullbackFunctional (P : SymmetricTrilinearForm E) (e : E)
-    (F : V ≃ₗ[ℝ] tangentSpace P e) : (E →L[ℝ] ℝ) →ₗ[ℝ] V →ₗ[ℝ] ℝ where
-  toFun := fun (T : E →L[ℝ] ℝ) =>
-    { toFun := fun (x : V) => T.toLinearMap (frameAmbientMap P e F x)
-      map_add' := by
-        intro x y
-        change T.toLinearMap (frameAmbientMap P e F (x + y)) =
-          T.toLinearMap (frameAmbientMap P e F x) +
-            T.toLinearMap (frameAmbientMap P e F y)
-        rw [(frameAmbientMap P e F).map_add, T.toLinearMap.map_add]
-      map_smul' := by
-        intro r x
-        change T.toLinearMap (frameAmbientMap P e F (r • x)) =
-          r • T.toLinearMap (frameAmbientMap P e F x)
-        rw [(frameAmbientMap P e F).map_smul, T.toLinearMap.map_smul] }
-  map_add' := by
-    intro T S
-    apply LinearMap.ext
-    intro x
-    rfl
-  map_smul' := by
-    intro r T
-    apply LinearMap.ext
-    intro x
-    rfl
-
-def framePullbackBilinear (P : SymmetricTrilinearForm E) (e : E)
-    (F : V ≃ₗ[ℝ] tangentSpace P e) :
-    (E →L[ℝ] E →L[ℝ] ℝ) →ₗ[ℝ] V →ₗ[ℝ] V →ₗ[ℝ] ℝ where
-  toFun := fun (T : E →L[ℝ] E →L[ℝ] ℝ) =>
-    { toFun := fun (x : V) => framePullbackFunctional P e F
-        (T.toLinearMap (frameAmbientMap P e F x))
-      map_add' := by
-        intro x y
-        change framePullbackFunctional P e F
-            (T.toLinearMap (frameAmbientMap P e F (x + y))) =
-          framePullbackFunctional P e F (T.toLinearMap (frameAmbientMap P e F x)) +
-            framePullbackFunctional P e F (T.toLinearMap (frameAmbientMap P e F y))
-        rw [(frameAmbientMap P e F).map_add, T.toLinearMap.map_add,
-          (framePullbackFunctional P e F).map_add]
-      map_smul' := by
-        intro r x
-        change framePullbackFunctional P e F
-            (T.toLinearMap (frameAmbientMap P e F (r • x))) =
-          r • framePullbackFunctional P e F (T.toLinearMap (frameAmbientMap P e F x))
-        rw [(frameAmbientMap P e F).map_smul, T.toLinearMap.map_smul,
-          (framePullbackFunctional P e F).map_smul] }
-  map_add' := by
-    intro T S
-    apply LinearMap.ext
-    intro x
-    apply LinearMap.ext
-    intro y
-    rfl
-  map_smul' := by
-    intro r T
-    apply LinearMap.ext
-    intro x
-    apply LinearMap.ext
-    intro y
-    rfl
+  (tangentSpace P e).subtype ∘ₗ F.toLinearMap
 
 def frameTrilinearForm (P : SymmetricTrilinearForm E) (e : E)
-    (F : V ≃ₗ[ℝ] tangentSpace P e) : V →ₗ[ℝ] V →ₗ[ℝ] V →ₗ[ℝ] ℝ where
-  toFun := fun (x : V) => framePullbackBilinear P e F
-    ((fullyCurried P).toLinearMap (frameAmbientMap P e F x))
-  map_add' := by
-    intro x y
-    change framePullbackBilinear P e F
-        ((fullyCurried P).toLinearMap (frameAmbientMap P e F (x + y))) =
-      framePullbackBilinear P e F
-        ((fullyCurried P).toLinearMap (frameAmbientMap P e F x)) +
-      framePullbackBilinear P e F
-        ((fullyCurried P).toLinearMap (frameAmbientMap P e F y))
-    rw [(frameAmbientMap P e F).map_add, (fullyCurried P).toLinearMap.map_add,
-      (framePullbackBilinear P e F).map_add]
-  map_smul' := by
-    intro r x
-    change framePullbackBilinear P e F
-        ((fullyCurried P).toLinearMap (frameAmbientMap P e F (r • x))) =
-      r • framePullbackBilinear P e F
-        ((fullyCurried P).toLinearMap (frameAmbientMap P e F x))
-    rw [(frameAmbientMap P e F).map_smul, (fullyCurried P).toLinearMap.map_smul,
-      (framePullbackBilinear P e F).map_smul]
+    (F : V ≃ₗ[ℝ] tangentSpace P e) : V →ₗ[ℝ] V →ₗ[ℝ] V →ₗ[ℝ] ℝ :=
+  LinearMap.lcomp ℝ _ (frameAmbientMap P e F) ∘ₗ LinearMap.llcomp ℝ _ _ _
+    (LinearMap.lcomp ℝ ℝ (frameAmbientMap P e F) ∘ₗ ContinuousLinearMap.coeLM ℝ) ∘ₗ
+    ContinuousLinearMap.coeLM ℝ ∘ₗ (fullyCurried P).toLinearMap ∘ₗ frameAmbientMap P e F
 
 -- These witnesses concern structure projections only, not a new metric/product.
 
-set_option maxHeartbeats 1000000 in
-private theorem frameTrilinearForm_apply (P : SymmetricTrilinearForm E) (e : E)
+theorem frameTrilinearForm_apply (P : SymmetricTrilinearForm E) (e : E)
     (F : V ≃ₗ[ℝ] tangentSpace P e) (x y z : V) :
     frameTrilinearForm P e F x y z =
       fullyCurried P (F x : E) (F y : E) (F z : E) := by
@@ -228,44 +124,26 @@ coordinate pullback, not an assumed native/unknown cubic recognition. -/
 def frameCubic (P : SymmetricTrilinearForm E) (e : E)
     (F : V ≃ₗ[ℝ] tangentSpace P e) : SymmetricCubic where
   form := frameTrilinearForm P e F
-  swap12 := by
-    intro x y z
-    rw [frameTrilinearForm_apply, frameTrilinearForm_apply,
-      fullyCurried_apply, fullyCurried_apply]
-    exact P.swap12 (F x : E) (F y : E) (F z : E)
-  swap23 := by
-    intro x y z
-    rw [frameTrilinearForm_apply, frameTrilinearForm_apply,
-      fullyCurried_apply, fullyCurried_apply]
-    exact P.swap23 (F x : E) (F y : E) (F z : E)
+  swap12 x y z := by simpa [frameTrilinearForm_apply, fullyCurried_apply] using P.swap12 _ _ _
+  swap23 x y z := by simpa [frameTrilinearForm_apply, fullyCurried_apply] using P.swap23 _ _ _
 
-set_option maxHeartbeats 1000000 in
 @[simp] theorem frameCubic_apply (P : SymmetricTrilinearForm E) (e : E)
     (F : V ≃ₗ[ℝ] tangentSpace P e) (x y z : V) :
-    (frameCubic P e F).form x y z = P.form ![(F x : E), (F y : E), (F z : E)] := by
-  change frameTrilinearForm P e F x y z = _
-  rw [frameTrilinearForm_apply, fullyCurried_apply]
+    (frameCubic P e F).form x y z = P.form ![(F x : E), (F y : E), (F z : E)] :=
+  fullyCurried_apply ..
 
-set_option maxHeartbeats 1000000 in
 /-- Literal scalar FOUR-tensor of the ACTUAL Levi-Civita curvature, in F.
 The desired native q formula does not occur in this definition. -/
 def scalarCurvatureInFrame (P : SymmetricTrilinearForm E) (e : E)
     (he : diagonalCubic P.form e = 1) (F : V ≃ₗ[ℝ] tangentSpace P e)
     (x y z w : V) : ℝ :=
-  let r : tangentSpace P e :=
-    chartCurvature P e he (0 : tangentSpace P e) (F x) (F y) (F z)
-  let metric : tangentSpace P e →ₗ[ℝ] (tangentSpace P e →L[ℝ] ℝ) :=
-    (baseChartMetric P e he).toLinearMap
-  let metricAt : tangentSpace P e →ₗ[ℝ] ℝ := (metric r).toLinearMap
+  let r := chartCurvature P e he (0 : tangentSpace P e) (F x) (F y) (F z)
+  let metric := (baseChartMetric P e he).toLinearMap
+  let metricAt := (metric r).toLinearMap
   metricAt (F w)
 
 variable [FiniteDimensional ℝ E]
-variable (hpos : ∀ u : E, u ≠ 0 → 0 < logHessianForm P e u u)
-set_option maxHeartbeats 1000000
-variable (hmetric : ∀ x y : V, baseChartMetric P e he (F x) (F y) = gA x y)
-set_option maxHeartbeats 200000
 
-set_option maxHeartbeats 1000000 in
 /-- The unknown tangent K and native KB of its literal coordinate
 cubic are the SAME raised operator under the metric frame, proved by pairing. -/
 theorem raisedTangentCubic_frame (P : SymmetricTrilinearForm E) (e : E)
@@ -301,15 +179,8 @@ theorem scalarCurvatureInFrame_eq_native_q (P : SymmetricTrilinearForm E) (e : E
     raisedTangentCubic_frame P e he F hpos hmetric,
     raisedTangentCubic_frame P e he F hpos hmetric,
     raisedTangentCubic_frame P e he F hpos hmetric]
-  simp only [hmetric, q, operatorComm_apply]
-  have hsub (a b : V) : gA (a - b) w = gA a w - gA b w := by
-    change metricDual (a - b) w = metricDual a w - metricDual b w
-    have hdual : metricDual (a - b) = metricDual a - metricDual b :=
-      _root_.map_sub metricDual a b
-    have heval : metricDual (a - b) w = (metricDual a - metricDual b) w :=
-      congrArg (fun L : Module.Dual ℝ V => L w) hdual
-    exact heval.trans (LinearMap.sub_apply (metricDual a) (metricDual b) w)
-  rw [hsub]
+  simp [hmetric, q, operatorComm_apply]
+  simp [gA, Glennie.inner_sub_left, sub_div]
 
 end GenericMetricFrame
 
@@ -344,8 +215,8 @@ def nativeCurvatureValue (x y z : V) : V :=
 theorem nativeCurvatureValue_pairing (x y z w : V) :
     gA (nativeCurvatureValue x y z) w = nativeScalarCurvature x y z w := by
   have h := nativeMetricFrame_metric (nativeCurvatureValue x y z) w
-  simp only [nativeCurvatureValue, LinearEquiv.apply_symm_apply] at h
-  simpa only [nativeCurvatureValue, nativeScalarCurvature, scalarCurvatureInFrame,
+  simp [nativeCurvatureValue, LinearEquiv.apply_symm_apply] at h
+  simpa [nativeCurvatureValue, nativeScalarCurvature, scalarCurvatureInFrame,
     ContinuousLinearMap.coe_coe] using h.symm
 
 section RecoveryFromActualCurvature

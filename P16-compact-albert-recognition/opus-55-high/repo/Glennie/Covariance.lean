@@ -7,7 +7,6 @@ public import Glennie.ShearReverse
 
 @[expose] public section
 namespace Glennie
-noncomputable section
 
 theorem phi_third_add_first (x y z : Albert) (t : ℝ) :
     phi x y (z+t • x) = phi x y z := by
@@ -44,7 +43,7 @@ theorem phi_swap_first_third (x y z : Albert) : phi z y x = -phi x y z := by
   have hb : x+z+(1 : ℝ) • (-x) = z := by module
   rw [ha] at h2
   rw [hb] at h3
-  simp only [one_smul] at h1
+  simp [one_smul] at h1
   have hn : phi z y (-x) = -phi z y x := by
     have h := phi_smul_third (-1) z y x
     rw [neg_smul, one_smul] at h
@@ -53,5 +52,4 @@ theorem phi_swap_first_third (x y z : Albert) : phi z y x = -phi x y z := by
   rw [hn] at h3
   linarith
 
-end
 end Glennie

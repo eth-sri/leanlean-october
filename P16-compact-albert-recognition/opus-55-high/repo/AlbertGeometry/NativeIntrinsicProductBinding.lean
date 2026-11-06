@@ -16,11 +16,10 @@ public import AlbertGeometry.BasedNormAdjointTransport
 @[expose] public section
 namespace AlbertGeometry.NativeIntrinsicProductBinding
 noncomputable section
-open Module Glennie
+open Glennie
 open AlbertGeometry.Cubic AlbertGeometry.NativeNormAlgebra
 open AlbertGeometry.CubicPolynomialRepresentation AlbertGeometry.NativeEuclideanNormBinding
 open AlbertGeometry.NativeCoordinateDerivatives
-open AlbertGeometry.BasedNormDerivativeTransport
 open AlbertGeometry.BasedNormDerivativeTransport.BasedNormIso
 open AlbertGeometry.BasedNormAdjointTransport
 
@@ -56,22 +55,13 @@ def nativeRawBilinear : LinearMap.BilinForm ℝ Coordinates :=
 theorem nativeRawBilinear_nondegenerate : nativeRawBilinear.Nondegenerate := by
   constructor
   · intro x hx
-    have hzero : Glennie.inner (delta x) (delta x) = 0 := by
-      simpa only [nativeRawBilinear_apply] using hx x
+    have hzero : Glennie.inner (delta x) (delta x) = 0 := by simp_all
     apply delta.injective
-    simpa only [map_zero] using (inner_self_eq_zero (delta x)).mp hzero
+    simpa [map_zero] using (inner_self_eq_zero (delta x)).mp hzero
   · intro x hx
-    have hzero : Glennie.inner (delta x) (delta x) = 0 := by
-      simpa only [nativeRawBilinear_apply] using hx x
+    have hzero : Glennie.inner (delta x) (delta x) = 0 := by simp_all
     apply delta.injective
-    simpa only [map_zero] using (inner_self_eq_zero (delta x)).mp hzero
-
-/-- The actual finite-dimensional toDual equivalence, with derived certificate. -/
-def nativeRawDual : Coordinates ≃ₗ[ℝ] Module.Dual ℝ Coordinates :=
-  nativeRawBilinear.toDual nativeRawBilinear_nondegenerate
-
-@[simp] theorem nativeRawDual_apply (x y : Coordinates) :
-    nativeRawDual x y = Glennie.inner (delta x) (delta y) := nativeRawBilinear_apply x y
+    simpa [map_zero] using (inner_self_eq_zero (delta x)).mp hzero
 
 /-- Intrinsic producer supplied by actual DN and actual raw toDual inversion. -/
 def nativeIntrinsicAdjoint (x : Coordinates) : Coordinates :=
@@ -102,7 +92,7 @@ theorem delta_nativeIntrinsicCross (x y : Coordinates) :
     delta (nativeIntrinsicCross x y) = nativeCross (delta x) (delta y) := by
   change delta (nativeIntrinsicAdjoint (x + y) - nativeIntrinsicAdjoint x -
     nativeIntrinsicAdjoint y) = _
-  simp only [map_sub, delta_nativeIntrinsicAdjoint, map_add, nativeCross]
+  simp [map_sub, delta_nativeIntrinsicAdjoint, map_add, nativeCross]
 
 theorem native_intrinsicS (x y : Coordinates) :
     intrinsicS nativeEuclideanRepresentation nativeCoordinateUnit x y =
@@ -123,7 +113,7 @@ theorem delta_nativeIntrinsicProduct (x y : Coordinates) :
         normTrace nativeEuclideanRepresentation nativeCoordinateUnit x • y +
         normTrace nativeEuclideanRepresentation nativeCoordinateUnit y • x -
         intrinsicS nativeEuclideanRepresentation nativeCoordinateUnit x y • nativeCoordinateUnit)) = _
-      simp only [map_smul, map_add, map_sub, delta_nativeIntrinsicCross,
+      simp [map_smul, map_add, map_sub, delta_nativeIntrinsicCross,
         native_normTrace, native_intrinsicS, delta_nativeCoordinateUnit, nativeRecoveredProduct]
       module
     _ = jordan (delta x) (delta y) := nativeRecoveredProduct_eq _ _

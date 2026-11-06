@@ -63,7 +63,7 @@ def trans (I : BasedNormIso P e Q f) (J : BasedNormIso Q f S h) :
     rw [J.map_norm, I.map_norm]
 
 theorem norm_fun_eq (I : BasedNormIso P e Q f) :
-    (fun x : E => diagonalCubic Q.form (I.equiv x)) = diagonalCubic P.form :=
+    (fun x => diagonalCubic Q.form (I.equiv x)) = diagonalCubic P.form :=
   funext I.map_norm
 
 /-- Genuine chain rule for the literal WHOLE function, followed by equality of
@@ -93,27 +93,25 @@ theorem fderiv_norm_pull_apply (I : BasedNormIso P e Q f) (x u : E) :
 def pullCovector (L : E →L[ℝ] G) : (G →L[ℝ] ℝ) →L[ℝ] (E →L[ℝ] ℝ) :=
   (ContinuousLinearMap.compL ℝ E G ℝ).flip L
 
-@[simp] theorem pullCovector_apply (L : E →L[ℝ] G) (d : G →L[ℝ] ℝ) :
-    pullCovector L d = d.comp L := rfl
 
 /-- Equality of the COMPLETE actual derivative-map functions before their
 next differentiation. This is not a single-point derivative equality. -/
 theorem derivative_fun_eq (I : BasedNormIso P e Q f) :
-    (fun x : E => fderiv ℝ (diagonalCubic P.form) x) =
-      (fun x : E => pullCovector I.equiv.toContinuousLinearMap
+    (fun x => fderiv ℝ (diagonalCubic P.form) x) =
+      (fun x => pullCovector I.equiv.toContinuousLinearMap
         (fderiv ℝ (diagonalCubic Q.form) (I.equiv x))) := by
   funext x
   exact I.fderiv_norm_pull x
 
 theorem hasFDerivAt_derivative_pull (I : BasedNormIso P e Q f) (x : E) :
-    HasFDerivAt (fun y : E => fderiv ℝ (diagonalCubic P.form) y)
+    HasFDerivAt (fun y => fderiv ℝ (diagonalCubic P.form) y)
       ((pullCovector I.equiv.toContinuousLinearMap).comp
         ((cubicHessian Q (I.equiv x)).comp I.equiv.toContinuousLinearMap)) x := by
   have hinner := (hasFDerivAt_fderiv_diagonalCubic_actual Q (I.equiv x)).comp x
     I.equiv.toContinuousLinearMap.hasFDerivAt
   have houter := (pullCovector I.equiv.toContinuousLinearMap).hasFDerivAt.comp x hinner
   exact houter.congr_of_eventuallyEq
-    (Eventually.of_forall (fun y : E => congrFun I.derivative_fun_eq y))
+    (Eventually.of_forall (fun y => congrFun I.derivative_fun_eq y))
 
 theorem cubicHessian_pull (I : BasedNormIso P e Q f) (x : E) :
     cubicHessian P x = (pullCovector I.equiv.toContinuousLinearMap).comp
@@ -135,13 +133,12 @@ def rawTraceForm (P : SymmetricTrilinearForm E) (e : E) : E →L[ℝ] E →L[ℝ
   (normTrace P e).smulRight (normTrace P e) - cubicHessian P e
 
 @[simp] theorem rawTraceForm_apply (P : SymmetricTrilinearForm E) (e u v : E) :
-    rawTraceForm P e u v = normTrace P e u * normTrace P e v - cubicHessian P e u v := by
-  simp [rawTraceForm, ContinuousLinearMap.smulRight_apply, smul_eq_mul]
+    rawTraceForm P e u v = normTrace P e u * normTrace P e v - cubicHessian P e u v := by rfl
 
 theorem normTrace_pull (I : BasedNormIso P e Q f) (u : E) :
     normTrace P e u = normTrace Q f (I.equiv u) := by
   unfold normTrace
-  simpa only [I.map_unit] using I.fderiv_norm_pull_apply e u
+  simpa [I.map_unit] using I.fderiv_norm_pull_apply e u
 
 theorem rawTraceForm_pull (I : BasedNormIso P e Q f) (u v : E) :
     rawTraceForm P e u v = rawTraceForm Q f (I.equiv u) (I.equiv v) := by
@@ -155,7 +152,7 @@ theorem rawTraceForm_eq_three_logMetric (P : SymmetricTrilinearForm E)
     rawTraceForm P e u v = 3 * logHessianForm P e u v := by
   have hpos : 0 < diagonalCubic P.form e := by rw [he]; norm_num
   rw [rawTraceForm_apply, logHessianForm_apply P hpos, he]
-  simp only [normTrace]
+  simp [normTrace]
   ring
 
 /-- Covariance of the ACTUAL VARYING ambient log-Hessian at every positive

@@ -6,13 +6,11 @@ public import Glennie.Theorems.MatrixDetEstimate
 
 @[expose] public section
 namespace Glennie
-noncomputable section
 
 theorem complexAlbert_inner (a b c : ℝ) (u v w : ℂ) :
     inner (complexAlbert a b c u v w) (complexAlbert a b c u v w) =
       a^2+b^2+c^2+2*(Complex.normSq u+Complex.normSq v+Complex.normSq w) := by
-  simp [inner_coordinates, complexAlbert, complexOct, octDot_coordinates,
-    octNormSq, Quaternion.normSq_def', Complex.normSq_apply]
+  simp [inner_coordinates, complexAlbert, complexOct, octNormSq, Quaternion.normSq_def', Complex.normSq_apply]
   ring
 
 theorem sectorFrobeniusSq_eq (M : Matrix (Fin 3) (Fin 3) ℂ) :
@@ -48,7 +46,7 @@ theorem complex_coefficient_bound (a b c : ℝ) (u v w : ℂ) :
     have h := sq_nonneg (u*w*star v).re
     have hid : Complex.normSq (u*w*star v) =
         Complex.normSq u*Complex.normSq v*Complex.normSq w := by
-      simp only [map_mul, Complex.star_def, Complex.normSq_conj]
+      simp [map_mul, Complex.normSq_conj]
       ring
     rw [Complex.normSq_apply] at hid
     nlinarith
@@ -58,7 +56,7 @@ theorem complex_coefficient_bound (a b c : ℝ) (u v w : ℂ) :
   have hsum : 2*(Complex.normSq u+Complex.normSq v+Complex.normSq w) ≤
       inner (complexAlbert a b c u v w) (complexAlbert a b c u v w) := by
     rw [complexAlbert_inner]
-    nlinarith [sq_nonneg a, sq_nonneg b, sq_nonneg c]
+    nlinarith 
   have hs0 : 0 ≤ 2*(Complex.normSq u+Complex.normSq v+Complex.normSq w) := by
     exact mul_nonneg (by norm_num)
       (add_nonneg (add_nonneg (Complex.normSq_nonneg u) (Complex.normSq_nonneg v))
@@ -78,5 +76,4 @@ theorem hidden_determinant_bound (z : Albert) :
   have hc := pow_le_pow_left₀ hs0 (hidden_energy_le z) 3
   nlinarith
 
-end
 end Glennie

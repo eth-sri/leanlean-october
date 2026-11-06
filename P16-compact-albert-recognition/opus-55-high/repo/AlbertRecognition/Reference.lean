@@ -16,7 +16,7 @@ def traceLinear : Albert →ₗ[ℝ] ℝ where
   toFun := Glennie.trace
   map_add' := Glennie.trace_add
   map_smul' r x := by
-    simpa only [RingHom.id_apply, smul_eq_mul] using Glennie.trace_smul r x
+    simpa [RingHom.id_apply, smul_eq_mul] using Glennie.trace_smul r x
 
 @[simp] theorem traceLinear_apply (x : Albert) : traceLinear x = Glennie.trace x := rfl
 
@@ -30,12 +30,12 @@ def project : Albert →ₗ[ℝ] V where
   map_add' x y := by
     apply Subtype.ext
     change Glennie.traceless (x + y) = Glennie.traceless x + Glennie.traceless y
-    simp only [Glennie.traceless, Glennie.trace_add, add_div, add_smul]
+    simp [Glennie.traceless, Glennie.trace_add, add_div, add_smul]
     module
   map_smul' r x := by
     apply Subtype.ext
     change Glennie.traceless (r • x) = r • Glennie.traceless x
-    simp only [Glennie.traceless, Glennie.trace_smul, smul_sub, smul_smul,
+    simp [Glennie.traceless, Glennie.trace_smul, smul_sub, smul_smul,
       mul_div_assoc]
 
 @[simp] theorem project_coe (x : Albert) :
@@ -43,13 +43,13 @@ def project : Albert →ₗ[ℝ] V where
 
 @[simp] theorem project_V (x : V) : project (x : Albert) = x := by
   apply Subtype.ext
-  simp only [project_coe, Glennie.traceless, trace_V, zero_div, zero_smul, sub_zero]
+  simp [project_coe, Glennie.traceless, trace_V, zero_div, zero_smul, sub_zero]
 
 /-- The specified scaled trace metric, carried explicitly throughout this gate. -/
 def gA (x y : V) : ℝ := Glennie.inner (x : Albert) (y : Albert) / 3
 
-theorem gA_comm (x y : V) : gA x y = gA y x := by
-  exact congrArg (fun r : ℝ => r / 3) (Glennie.inner_comm _ _)
+theorem gA_comm (x y : V) : gA x y = gA y x :=
+  congrArg (fun r => r / 3) (Glennie.inner_comm _ _)
 
 theorem gA_add_left (x y z : V) : gA (x + y) z = gA x z + gA y z := by
   change Glennie.inner ((x : Albert) + (y : Albert)) (z : Albert) / 3 = _
@@ -89,9 +89,9 @@ theorem project_pairing (u : Albert) (z : V) :
   change Glennie.inner (Glennie.traceless u) (z : Albert) / 3 = _
   rw [Glennie.traceless, Glennie.inner_sub_left, Glennie.inner_smul_left]
   have hunit : Glennie.inner (1 : Albert) (z : Albert) = 0 := by
-    simp only [Glennie.inner, Glennie.jordan_unit_left, trace_V]
+    simp [Glennie.inner, Glennie.jordan_unit_left, trace_V]
   rw [hunit]
-  simp only [mul_zero, sub_zero]
+  simp [mul_zero, sub_zero]
 
 /-- The literal projected native Jordan multiplication, bilinear in both inputs. -/
 def KA : V →ₗ[ℝ] (V →ₗ[ℝ] V) where
@@ -101,7 +101,7 @@ def KA : V →ₗ[ℝ] (V →ₗ[ℝ] V) where
         change project (Glennie.jordan (x : Albert) ((y : Albert) + (z : Albert))) = _
         rw [Glennie.jordan_add_right, map_add]
       map_smul' r y := by
-        simp only [RingHom.id_apply]
+        simp [RingHom.id_apply]
         change project (Glennie.jordan (x : Albert) (r • (y : Albert))) =
           r • project (Glennie.jordan (x : Albert) (y : Albert))
         rw [Glennie.jordan_smul_right, map_smul] }
@@ -113,7 +113,7 @@ def KA : V →ₗ[ℝ] (V →ₗ[ℝ] V) where
         project (Glennie.jordan (y : Albert) (z : Albert))
     rw [Glennie.jordan_add_left, map_add]
   map_smul' r x := by
-    simp only [RingHom.id_apply]
+    simp [RingHom.id_apply]
     apply LinearMap.ext
     intro y
     change project (Glennie.jordan (r • (x : Albert)) (y : Albert)) =
@@ -124,7 +124,7 @@ def KA : V →ₗ[ℝ] (V →ₗ[ℝ] V) where
     KA x y = project (Glennie.jordan (x : Albert) (y : Albert)) := rfl
 
 theorem KA_comm (x y : V) : KA x y = KA y x := by
-  simp only [KA_apply, Glennie.jordan_comm]
+  simp [KA_apply, Glennie.jordan_comm]
 
 def CA (x y z : V) : ℝ := gA (KA x y) z
 
@@ -168,7 +168,7 @@ def h (i : Fin 3) : V :=
 
 theorem h_sum_zero : h 0 + h 1 + h 2 = 0 := by
   apply Subtype.ext
-  apply Albert.ext <;> norm_num [h, e, Glennie.unit]
+  apply Albert.ext <;> norm_num [ e]
 
 /-- Three native upper-entry octonion slots; the lower entries are determined
 by native Hermitian conjugation, never by inherited pair multiplication. -/

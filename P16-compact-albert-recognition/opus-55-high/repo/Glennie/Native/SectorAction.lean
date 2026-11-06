@@ -6,7 +6,6 @@ public import Glennie.SectorModel
 
 @[expose] public section
 namespace Glennie
-noncomputable section
 
 namespace SectorAction
 
@@ -42,7 +41,7 @@ theorem complex_U (y z : Albert) (hy : hiddenMatrix y = 0) :
   rw [map_sub, map_smul]
   change (2:ℝ) • sectorComplexMatrix (jordan y (jordan y z)) -
     sectorComplexMatrix (jordan (jordan y y) z) = _
-  simp only [hs, sectorComplexMatrix_jordan, hy, productComplex_complex_left]
+  simp [hs, sectorComplexMatrix_jordan, hy, productComplex_complex_left]
   ext i j
   fin_cases i <;> fin_cases j <;> apply Complex.ext
   all_goals simp [Matrix.mul_apply, Fin.sum_univ_three, smul_eq_mul,
@@ -61,7 +60,7 @@ theorem hidden_U (y z : Albert) (hy : hiddenMatrix y = 0) :
   rw [map_sub, map_smul]
   change (2:ℝ) • hiddenMatrix (jordan y (jordan y z)) -
     hiddenMatrix (jordan (jordan y y) z) = _
-  simp only [hs, hiddenMatrix_jordan, sectorComplexMatrix_jordan, hy,
+  simp [hs, hiddenMatrix_jordan, sectorComplexMatrix_jordan, hy,
     productHidden_complex_left, productComplex_complex_left]
   ext i j
   fin_cases i <;> fin_cases j <;> apply Complex.ext
@@ -98,8 +97,7 @@ theorem complex_commutator (x y z : Albert)
     sectorComplexMatrix (U y (U x z)) = _
   rw [complex_U x (U y z) hx, complex_U y z hy,
     complex_U y (U x z) hy, complex_U x z hx]
-  simp only [Matrix.mul_assoc]
+  simp [Matrix.mul_assoc]
 
 end SectorAction
-end
 end Glennie

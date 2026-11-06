@@ -5,9 +5,7 @@ public import Glennie.Covariance
 /- Input displacement using the native raw trace norm. -/
 @[expose] public section
 namespace Glennie.Compact.NativeNormKernel
-open Glennie
 noncomputable section
-set_option autoImplicit false
 
  def F (x y z : Albert) : Albert := U x (U y z) - U y (U x z)
  def H (x y z : Albert) : Albert := U z (jordan x y)
@@ -48,7 +46,7 @@ set_option autoImplicit false
  theorem F_sub_first (x x' y z : Albert) :
     F x y z - F x' y z =
       (U x (U y z) - U x' (U y z)) - U y (U x z - U x' z) := by
-  simp only [F, U_sub_argument]
+  simp [F, U_sub_argument]
   abel
 
  theorem F_sub_first_radius (x x' y z : Albert) (R : ℝ) (hR : 0 ≤ R)
@@ -73,7 +71,7 @@ set_option autoImplicit false
     (hy : ‖y‖ ≤ R) (hz : ‖z‖ ≤ R) :
     ‖H x y z-H x' y z‖ ≤ R^3*‖x-x'‖ := by
   have he : H x y z-H x' y z = U z (jordan (x-x') y) := by
-    simp only [H, jordan_sub_left, U_sub_argument]
+    simp [H, jordan_sub_left, U_sub_argument]
   rw [he]
   calc
     _ ≤ R^2*‖jordan (x-x') y‖ := U_norm_radius _ _ _ hR hz
@@ -91,7 +89,6 @@ set_option autoImplicit false
  theorem phi_sub_first_radius (x x' y z : Albert) (R : ℝ) (hR : 0 ≤ R)
     (hx : ‖x‖ ≤ R) (hx' : ‖x'‖ ≤ R) (hy : ‖y‖ ≤ R) (hz : ‖z‖ ≤ R) :
     |phi x y z-phi x' y z| ≤ 6*R^8*‖x-x'‖ := by
-  change |inner (F x y z) (H x y z)-inner (F x' y z) (H x' y z)| ≤ _
   calc
     _ ≤ ‖F x y z-F x' y z‖*‖H x y z‖ + ‖F x' y z‖*‖H x y z-H x' y z‖ :=
       pairing_difference _ _ _ _

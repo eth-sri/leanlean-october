@@ -16,16 +16,15 @@ def metricBilin : LinearMap.BilinForm ℝ V where
     { toFun := gA x
       map_add' y z := gA_add_right x y z
       map_smul' r y := by
-        simpa only [RingHom.id_apply, smul_eq_mul] using gA_smul_right r x y }
+        simpa [RingHom.id_apply, smul_eq_mul] using gA_smul_right r x y }
   map_add' x y := by
     apply LinearMap.ext
     intro z
     exact gA_add_left x y z
   map_smul' r x := by
-    simp only [RingHom.id_apply]
+    simp [RingHom.id_apply]
     apply LinearMap.ext
     intro y
-    change gA (r • x) y = r * gA x y
     exact gA_smul_left r x y
 
 @[simp] theorem metricBilin_apply (x y : V) : metricBilin x y = gA x y := rfl
@@ -37,7 +36,6 @@ theorem metric_nondegenerate : metricBilin.Nondegenerate :=
 /-- The metric-dual isomorphism uses the actual scaled form, not unscaled Riesz. -/
 def metricDual : V ≃ₗ[ℝ] Module.Dual ℝ V := metricBilin.toDual metric_nondegenerate
 
-@[simp] theorem metricDual_apply (x y : V) : metricDual x y = gA x y := rfl
 
 /-- Every arbitrary symmetric trilinear form has its unique actual multiplication
 operators obtained by raising one index with the specified scaled metric. -/
@@ -56,8 +54,6 @@ def KB (B : SymmetricCubic) : V →ₗ[ℝ] (V →ₗ[ℝ] V) where
     change metricDual.symm (B.form (r • x) y) = r • metricDual.symm (B.form x y)
     rw [map_smul, LinearMap.smul_apply, map_smul]
 
-@[simp] theorem KB_apply (B : SymmetricCubic) (x y : V) :
-    KB B x y = metricDual.symm (B.form x y) := rfl
 
 theorem KB_pairing (B : SymmetricCubic) (x y z : V) :
     gA (KB B x y) z = B.form x y z := by
@@ -95,7 +91,6 @@ def referenceForm : V →ₗ[ℝ] (V →ₗ[ℝ] (V →ₗ[ℝ] ℝ)) where
     change gA (KA (r • x) y) z = r * gA (KA x y) z
     rw [map_smul, LinearMap.smul_apply, gA_smul_left]
 
-@[simp] theorem referenceForm_apply (x y z : V) : referenceForm x y z = CA x y z := rfl
 
 def referenceCubic : SymmetricCubic where
   form := referenceForm
@@ -144,10 +139,10 @@ def A (T : V → V → (V →ₗ[ℝ] V)) (B : SymmetricCubic)
 def wedge (x y : V) : V →ₗ[ℝ] V where
   toFun z := gA y z • x - gA x z • y
   map_add' z w := by
-    simp only [gA_add_right, add_smul]
+    simp [gA_add_right, add_smul]
     module
   map_smul' r z := by
-    simp only [RingHom.id_apply, gA_smul_right, mul_smul, smul_sub]
+    simp [RingHom.id_apply, gA_smul_right, mul_smul, smul_sub]
 
 /-- The native algebraic reference tensor; this is not a definition of the
 actual Levi-Civita curvature required by the complete geometric endpoint. -/

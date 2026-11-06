@@ -22,10 +22,7 @@ variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
 /-- The fixed projection is the identity on the actual basepoint tangent kernel. -/
 theorem tangentProjection_tangent (P : SymmetricTrilinearForm E) (e : E)
     (he : diagonalCubic P.form e = 1) (v : tangentSpace P e) :
-    tangentProjection P e he (v : E) = v := by
-  have hv : fderiv ℝ (diagonalCubic P.form) e (v : E) = 0 := v.property
-  apply Subtype.ext
-  simp only [tangentProjection_coe, hv, zero_div, zero_smul, sub_zero]
+    tangentProjection P e he (v : E) = v := by aesop
 
 /-- The actual normal-chart derivative at an arbitrary ambient point. -/
 theorem hasFDerivAt_normalChartMap_at (P : SymmetricTrilinearForm E) (e : E)
@@ -48,38 +45,14 @@ theorem normalDerivative_left_inverse (P : SymmetricTrilinearForm E) (e x : E)
     (he : diagonalCubic P.form e = 1)
     (hx : fderiv ℝ (diagonalCubic P.form) x e ≠ 0) (w : E) :
     normalDerivativeInverse P e x
-      (fderiv ℝ (diagonalCubic P.form) x w, tangentProjection P e he w) = w := by
-  have hproj : fderiv ℝ (diagonalCubic P.form) x
-      (tangentProjection P e he w : E) =
-      fderiv ℝ (diagonalCubic P.form) x w -
-        (fderiv ℝ (diagonalCubic P.form) e w / 3) *
-          fderiv ℝ (diagonalCubic P.form) x e := by
-    simp only [tangentProjection_coe, map_sub, map_smul, smul_eq_mul]
-  have hcoef :
-      (fderiv ℝ (diagonalCubic P.form) x w -
-        fderiv ℝ (diagonalCubic P.form) x (tangentProjection P e he w : E)) /
-          fderiv ℝ (diagonalCubic P.form) x e =
-        fderiv ℝ (diagonalCubic P.form) e w / 3 := by
-    rw [hproj]
-    field_simp [hx] <;> ring
-  simp only [normalDerivativeInverse]
-  rw [hcoef]
-  simp only [tangentProjection_coe]
-  module
+      (fderiv ℝ (diagonalCubic P.form) x w, tangentProjection P e he w) = w := by simp [tangentProjection_coe, map_sub, map_smul, smul_eq_mul, hx, normalDerivativeInverse]
 
 theorem normalDerivative_right_inverse (P : SymmetricTrilinearForm E) (e x : E)
     (he : diagonalCubic P.form e = 1)
     (hx : fderiv ℝ (diagonalCubic P.form) x e ≠ 0)
     (p : ℝ × tangentSpace P e) :
     (fderiv ℝ (diagonalCubic P.form) x (normalDerivativeInverse P e x p),
-      tangentProjection P e he (normalDerivativeInverse P e x p)) = p := by
-  have hn : fderiv ℝ (diagonalCubic P.form) x
-      (normalDerivativeInverse P e x p) = p.1 := by
-    simp only [normalDerivativeInverse, map_add, map_smul, smul_eq_mul]
-    field_simp [hx] <;> ring
-  apply Prod.ext hn
-  simp only [normalDerivativeInverse, map_add, map_smul,
-    tangentProjection_tangent, tangentProjection_basepoint, smul_zero, add_zero]
+      tangentProjection P e he (normalDerivativeInverse P e x p)) = p := by simp [normalDerivativeInverse, map_add, map_smul, smul_eq_mul, hx, tangentProjection_tangent, tangentProjection_basepoint, smul_zero, add_zero]
 
 /-- Continuous invertibility of the actual derivative, with proved explicit
 inverse laws. No extra inverse or regularity fields are assumptions. -/
@@ -102,11 +75,6 @@ def normalDerivativeSplit (P : SymmetricTrilinearForm E) (e : E)
             (continuous_subtype_val.comp continuous_snd))).div_const
           (fderiv ℝ (diagonalCubic P.form) x e)).smul continuous_const) }
 
-@[simp] theorem normalDerivativeSplit_apply (P : SymmetricTrilinearForm E)
-    (e : E) (he : diagonalCubic P.form e = 1) (x : E)
-    (hx : fderiv ℝ (diagonalCubic P.form) x e ≠ 0) (w : E) :
-    normalDerivativeSplit P e he x hx w =
-      (fderiv ℝ (diagonalCubic P.form) x w, tangentProjection P e he w) := rfl
 
 theorem hasFDerivAt_normalChartMap_split (P : SymmetricTrilinearForm E)
     (e : E) (he : diagonalCubic P.form e = 1) (x : E)
@@ -147,9 +115,7 @@ def regularSmoothLevelChart (P : SymmetricTrilinearForm E) (e : E)
 theorem regularSmoothLevelChart_coe (P : SymmetricTrilinearForm E)
     (e : E) (he : diagonalCubic P.form e = 1) :
     (regularSmoothLevelChart P e he : E → ℝ × tangentSpace P e) =
-      normalChartMap P e he := by
-  funext x
-  exact regularSmoothLevelChart_apply P e x he
+      normalChartMap P e he := by rfl
 
 @[simp] theorem regularSmoothLevelChart_symm_apply (P : SymmetricTrilinearForm E)
     (e : E) (he : diagonalCubic P.form e = 1) (y : ℝ × tangentSpace P e) :
@@ -185,12 +151,12 @@ theorem contDiffAt_regularSmoothLevelChart_symm (P : SymmetricTrilinearForm E)
   have hd : HasFDerivAt (regularSmoothLevelChart P e he)
       (normalDerivativeSplit P e he ((regularSmoothLevelChart P e he).symm y) hx :
         E →L[ℝ] (ℝ × tangentSpace P e)) ((regularSmoothLevelChart P e he).symm y) :=
-    by simpa only [regularSmoothLevelChart_coe] using
+    by simpa [regularSmoothLevelChart_coe] using
       hasFDerivAt_normalChartMap_split P e he
         ((regularSmoothLevelChart P e he).symm y) hx
   have hs : ContDiffAt ℝ n (regularSmoothLevelChart P e he)
       ((regularSmoothLevelChart P e he).symm y) :=
-    by simpa only [regularSmoothLevelChart_coe] using
+    by simpa [regularSmoothLevelChart_coe] using
       (contDiff_normalChartMap P e he n).contDiffAt
   exact (regularSmoothLevelChart P e he).contDiffAt_symm hy hd hs
 
@@ -210,7 +176,7 @@ theorem zero_mem_smoothLevelChartDomain (P : SymmetricTrilinearForm E)
     (0 : tangentSpace P e) ∈ smoothLevelChartDomain P e he := by
   have h := (regularSmoothLevelChart P e he).map_source
     (regularSmoothLevelChart_basepoint_mem P e he)
-  simpa only [regularSmoothLevelChart_apply, normalChartMap_basepoint,
+  simpa [regularSmoothLevelChart_apply, normalChartMap_basepoint,
     smoothLevelChartDomain, Set.mem_setOf_eq] using h
 
 theorem smoothLevelChartDomain_subset (P : SymmetricTrilinearForm E)
@@ -222,28 +188,23 @@ theorem smoothLevelChartDomain_subset (P : SymmetricTrilinearForm E)
   exact hv.1
 
 /-- The ORIGINAL inverse-theorem levelChartPoint is smooth on the new fixed
-open domain. Only its domain is restricted; its function is unchanged. -/
+open -/
 theorem contDiffAt_levelChartPoint_smoothDomain (P : SymmetricTrilinearForm E)
     (e : E) (he : diagonalCubic P.form e = 1) (n : ℕ∞ω)
     (v : tangentSpace P e) (hv : v ∈ smoothLevelChartDomain P e he) :
     ContDiffAt ℝ n (levelChartPoint P e he) v := by
   have h := contDiffAt_regularSmoothLevelChart_symm P e he n (1, v) hv
   have hp : ContDiffAt ℝ n
-      (fun w : tangentSpace P e => ((1 : ℝ), w)) v :=
+      (fun w => ((1 : ℝ), w)) v :=
     contDiffAt_const.prodMk contDiffAt_id
   have hcomp : ContDiffAt ℝ n
-      (fun w : tangentSpace P e =>
+      (fun w =>
         (regularSmoothLevelChart P e he).symm (1, w)) v :=
     h.fun_comp v hp
-  have hsame : (fun w : tangentSpace P e =>
+  have hsame : (fun w =>
       (regularSmoothLevelChart P e he).symm (1, w)) =
-      levelChartPoint P e he := by
-    funext w
-    change (regularSmoothLevelChart P e he).symm (1, w) =
-      (regularLevelChart P e he).symm (1, w)
-    exact regularSmoothLevelChart_symm_apply P e he (1, w)
-  rw [hsame] at hcomp
-  exact hcomp
+      levelChartPoint P e he := by rfl
+  rwa [hsame] at hcomp
 
 theorem contDiffOn_levelChartPoint_smoothDomain (P : SymmetricTrilinearForm E)
     (e : E) (he : diagonalCubic P.form e = 1) (n : ℕ∞ω) :

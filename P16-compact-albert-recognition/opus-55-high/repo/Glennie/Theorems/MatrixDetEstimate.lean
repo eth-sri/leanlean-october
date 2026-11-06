@@ -9,9 +9,7 @@ public import Mathlib.Tactic.FinCases
 @[expose] public section
 
 namespace Glennie.MatrixDetEstimate
-noncomputable section
 
-open Matrix
 
 def columnGram (M : Matrix (Fin 3) (Fin 3) ℂ) : Matrix (Fin 3) (Fin 3) ℂ :=
   M.conjTranspose * M
@@ -85,7 +83,7 @@ theorem normSq_det_equality_gram (M : Matrix (Fin 3) (Fin 3) ℂ)
   rw [hG.spectral_theorem, hfun]
   simp only [Function.comp_def, Unitary.conjStarAlgAut_apply]
   simp only [← Matrix.smul_one_eq_diagonal, Matrix.mul_smul, Matrix.mul_one,
-    Matrix.smul_mul, Unitary.mul_star_self, OneMemClass.coe_one]
+    Matrix.smul_mul]
   norm_cast
   simp only [Unitary.mul_star_self, OneMemClass.coe_one]
   exact algebraMap_smul ℂ (frobeniusSq M/3) (1 : Matrix (Fin 3) (Fin 3) ℂ)
@@ -93,7 +91,6 @@ theorem normSq_det_equality_gram (M : Matrix (Fin 3) (Fin 3) ℂ)
 theorem im_det_sq_le_normSq (M : Matrix (Fin 3) (Fin 3) ℂ) :
     M.det.im ^ 2 ≤ Complex.normSq M.det := by
   simp [Complex.normSq_apply]
-  nlinarith [sq_nonneg M.det.re]
+  nlinarith 
 
-end
 end Glennie.MatrixDetEstimate

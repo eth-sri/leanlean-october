@@ -7,7 +7,6 @@ public import Glennie.UnitShifts
 
 @[expose] public section
 namespace Glennie.NativeGenerationEndpointR01
-noncomputable section
 open Glennie.NativeGenerationComplexSectorR01
 open Glennie.NativeGenerationHiddenCompletionR01
 
@@ -19,32 +18,12 @@ theorem eq_top_of_phi_ne_zero_diagonal_complex
     (hxd : IsDiagonal x) (hyc : InComplexSector y)
     (hphi : phi x y z ≠ 0) : K = ⊤ := by
   have hF := phi_of_diagonal_complex x y z hxd hyc
-  have hab : x.d0 - x.d1 ≠ 0 := by
-    intro h
-    apply hphi
-    rw [hF, h]
-    ring
-  have hbc : x.d1 - x.d2 ≠ 0 := by
-    intro h
-    apply hphi
-    rw [hF, h]
-    ring
-  have hca : x.d2 - x.d0 ≠ 0 := by
-    intro h
-    apply hphi
-    rw [hF, h]
-    ring
-  have ht : (complexPart y.o01 * complexPart y.o12 * star (complexPart y.o02)).im ≠ 0 := by
-    intro h
-    apply hphi
-    rw [hF, h]
-    ring
-  have hd : (hiddenMatrix z).det ≠ 0 := by
-    intro h
-    apply hphi
-    rw [hF, h]
-    simp
-  have hC : complexSector ≤ K := complexSector_le_of_regular_triangle K h1 hJ
+  have hab : x.d0 - x.d1 ≠ 0 := by simp_all
+  have hbc : x.d1 - x.d2 ≠ 0 := by simp_all
+  have hca : x.d2 - x.d0 ≠ 0 := by simp_all
+  have ht : (complexPart y.o01 * complexPart y.o12 * star (complexPart y.o02)).im ≠ 0 := by simp_all
+  have hd : (hiddenMatrix z).det ≠ 0 := by aesop
+  have hC := complexSector_le_of_regular_triangle K h1 hJ
     x.d0 x.d1 x.d2 y.d0 y.d1 y.d2
     (complexPart y.o01) (complexPart y.o02) (complexPart y.o12)
     (by rw [diagonalAlbert_eq x hxd]; exact hx)
@@ -76,5 +55,4 @@ theorem eq_top_of_phi_ne_zero
   have hst : s = t := g.equiv.injective he
   exact hst ▸ hs
 
-end
 end Glennie.NativeGenerationEndpointR01

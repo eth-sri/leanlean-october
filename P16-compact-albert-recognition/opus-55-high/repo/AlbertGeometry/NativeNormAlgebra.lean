@@ -36,8 +36,6 @@ def nativeRecoveredProduct (x y : Albert) : Albert :=
     Glennie.trace x • y -
     (Glennie.trace x * Glennie.trace y - Glennie.inner x y) • (1 : Albert))
 
-@[simp] theorem nativeNewtonNorm_zero : nativeNewtonNorm (0 : Albert) = 0 := by
-  simp [nativeNewtonNorm]
 
 @[simp] theorem nativeNewtonNorm_one : nativeNewtonNorm (1 : Albert) = 1 := by
   norm_num [nativeNewtonNorm]
@@ -50,7 +48,7 @@ theorem nativeNewtonNorm_unit_line (x : Albert) (t : ℝ) :
       t ^ 2 * ((Glennie.trace x ^ 2 - Glennie.inner x x) / 2) +
       t ^ 3 * nativeNewtonNorm x := by
   have hxx : Glennie.trace (jordan x x) = Glennie.inner x x := rfl
-  simp only [nativeNewtonNorm, trace_add, trace_smul, trace_unit,
+  simp [nativeNewtonNorm, trace_add, trace_smul, trace_unit,
     jordan_add_left, jordan_add_right, jordan_smul_left, jordan_smul_right,
     jordan_unit_left, jordan_unit_right, inner_add_left, inner_add_right,
     inner_smul_left, inner_smul_right, inner_unit_left, inner_unit_right, hxx]
@@ -62,28 +60,26 @@ theorem nativeNewtonNorm_line (x y : Albert) (t : ℝ) :
     nativeNewtonNorm (x + t • y) = nativeNewtonNorm x +
       t * Glennie.inner (nativeAdjoint x) y +
       t ^ 2 * Glennie.inner (nativeAdjoint y) x + t ^ 3 * nativeNewtonNorm y := by
-  simp only [nativeNewtonNorm, nativeAdjoint, trace_add, trace_smul,
+  simp [nativeNewtonNorm, nativeAdjoint, trace_add, trace_smul,
     jordan_add_left, jordan_add_right, jordan_smul_left, jordan_smul_right,
     inner_add_left, inner_add_right, inner_sub_left,
     inner_smul_left, inner_smul_right, inner_unit_left]
-  simp only [jordan_comm y x, inner_comm y x,
+  simp [jordan_comm y x, inner_comm y x,
     inner_comm y (jordan x x), inner_comm x (jordan y y),
     inner_jordan_associative x x y, inner_jordan_associative y y x]
   ring
 
-@[simp] theorem nativeAdjoint_zero : nativeAdjoint (0 : Albert) = 0 := by
-  simp [nativeAdjoint]
 
 @[simp] theorem nativeAdjoint_one : nativeAdjoint (1 : Albert) = 1 := by
-  simp only [nativeAdjoint, jordan_unit_left, trace_unit, inner_unit_left]
-  norm_num <;> module
+  simp [nativeAdjoint, trace_unit]
+  norm_num
 
 /-- Actual unhalved polarization, derived solely from native bilinearity. -/
 theorem nativeCross_eq (x y : Albert) :
     nativeCross x y = (2 : ℝ) • jordan x y - Glennie.trace y • x -
       Glennie.trace x • y +
       (Glennie.trace x * Glennie.trace y - Glennie.inner x y) • (1 : Albert) := by
-  simp only [nativeCross, nativeAdjoint, trace_add, jordan_add_left,
+  simp [nativeCross, nativeAdjoint, trace_add, jordan_add_left,
     jordan_add_right, inner_add_left, inner_add_right,
     jordan_comm y x, inner_comm y x]
   module
@@ -92,16 +88,10 @@ theorem nativeCross_eq (x y : Albert) :
 product, without a new premise on an unknown cubic or any octonion associativity. -/
 theorem nativeRecoveredProduct_eq (x y : Albert) :
     nativeRecoveredProduct x y = jordan x y := by
-  simp only [nativeRecoveredProduct, nativeCross_eq]
+  simp [nativeRecoveredProduct, nativeCross_eq]
   module
 
-@[simp] theorem nativeRecoveredProduct_one_left (x : Albert) :
-    nativeRecoveredProduct (1 : Albert) x = x := by
-  rw [nativeRecoveredProduct_eq, jordan_unit_left]
 
-@[simp] theorem nativeRecoveredProduct_one_right (x : Albert) :
-    nativeRecoveredProduct x (1 : Albert) = x := by
-  rw [nativeRecoveredProduct_eq, jordan_unit_right]
 
 end
 end AlbertGeometry.NativeNormAlgebra

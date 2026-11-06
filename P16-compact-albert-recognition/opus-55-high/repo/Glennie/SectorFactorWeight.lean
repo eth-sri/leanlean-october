@@ -9,7 +9,6 @@ public import Glennie.SectorModel
 namespace Glennie.SectorFactorWeight
 noncomputable section
 
-set_option maxHeartbeats 2000000
 set_option maxRecDepth 10000
 
 abbrev Mat3 := Matrix (Fin 3) (Fin 3) ℂ

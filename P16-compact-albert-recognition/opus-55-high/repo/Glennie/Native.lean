@@ -10,6 +10,7 @@ public import Mathlib.Tactic.FinCases
 public import Mathlib.Tactic.Ring
 public import Mathlib.Tactic.NormNum
 public import Mathlib.Tactic.Linarith
+public import Glennie.OctSimps
 
 @[expose] public section
 
@@ -22,8 +23,6 @@ noncomputable section
 instance atLeastTwoOneAddOne : Nat.AtLeastTwo (1 + 1) := ⟨Nat.le_refl 2⟩
 instance neZeroTwoAddOne : NeZero (2 + 1 : Nat) := ⟨by decide⟩
 
-set_option maxHeartbeats 2000000
-set_option linter.unusedSimpArgs false
 
 /-- The ordinary real Cayley–Dickson octonions, as two ordinary quaternions. -/
 abbrev Octonion := Quaternion ℝ × Quaternion ℝ
@@ -62,7 +61,7 @@ def octNormSq (x : Octonion) : ℝ := Quaternion.normSq x.1 + Quaternion.normSq 
 @[simp] theorem octMul_scalar_right (r : ℝ) (x : Octonion) :
     octMul x (octScalar r) = r • x := by
   apply Prod.ext <;>
-    simp [octMul, octScalar, Quaternion.coe_mul_eq_smul, Quaternion.mul_coe_eq_smul]
+    simp [octMul, octScalar, Quaternion.mul_coe_eq_smul]
 
 theorem octDot_coordinates (x y : Octonion) :
     octDot x y = x.1.re*y.1.re + x.1.imI*y.1.imI + x.1.imJ*y.1.imJ +
@@ -72,30 +71,29 @@ theorem octDot_coordinates (x y : Octonion) :
   ring
 
 theorem octDot_comm (x y : Octonion) : octDot x y = octDot y x := by
-  simp only [octDot_coordinates]
+  simp [octDot_coordinates]
   ring
 
 theorem octConj_mul (x y : Octonion) :
     octConj (octMul x y) = octMul (octConj y) (octConj x) := by
   apply Prod.ext <;> apply Quaternion.ext <;>
-    simp [octConj, octMul, Quaternion.re_mul, Quaternion.imI_mul,
-      Quaternion.imJ_mul, Quaternion.imK_mul] <;> ring
+    simp [octConj, octMul]
 
 theorem octMul_add_left (x y z : Octonion) :
     octMul (x+y) z = octMul x z + octMul y z := by
-  simp [octMul, add_mul, mul_add, sub_add_sub_comm, add_assoc, add_left_comm, add_comm]
+  simp [octMul, add_mul, mul_add, sub_add_sub_comm, add_assoc, add_left_comm]
 
 theorem octMul_add_right (x y z : Octonion) :
     octMul x (y+z) = octMul x y + octMul x z := by
-  simp [octMul, add_mul, mul_add, sub_add_sub_comm, add_assoc, add_left_comm, add_comm]
+  simp [octMul, add_mul, mul_add, sub_add_sub_comm, add_assoc, add_left_comm]
 
 theorem octMul_smul_left (r : ℝ) (x y : Octonion) :
     octMul (r • x) y = r • octMul x y := by
-  simp [octMul, smul_sub, smul_add, smul_mul_assoc, mul_smul_comm]
+  simp [octMul, smul_sub, smul_add]
 
 theorem octMul_smul_right (r : ℝ) (x y : Octonion) :
     octMul x (r • y) = r • octMul x y := by
-  simp [octMul, smul_sub, smul_add, smul_mul_assoc, mul_smul_comm]
+  simp [octMul, smul_sub, smul_add]
 
 def octConjAddHom : Octonion →+ Octonion where
   toFun := octConj
@@ -103,9 +101,8 @@ def octConjAddHom : Octonion →+ Octonion where
   map_add' := octConj_add
 
 theorem octConj_sum (f : Fin 3 → Octonion) :
-    octConj (∑ i, f i) = ∑ i, octConj (f i) := by
-  change octConjAddHom (∑ i, f i) = ∑ i, octConjAddHom (f i)
-  exact map_sum octConjAddHom f Finset.univ
+    octConj (∑ i, f i) = ∑ i, octConj (f i) :=
+  map_sum octConjAddHom f _
 
 theorem octAdd_conj (x : Octonion) :
     x + octConj x = (2 : ℝ) • octScalar (octRe x) := by
@@ -113,11 +110,7 @@ theorem octAdd_conj (x : Octonion) :
 
 theorem octScalar_of_conj (x : Octonion) (h : octConj x = x) :
     octScalar (octRe x) = x := by
-  have h2 : (2 : ℝ) • x = (2 : ℝ) • octScalar (octRe x) := by
-    simpa only [two_smul, h] using octAdd_conj x
-  have h1 := congrArg (fun z : Octonion => (1/2 : ℝ) • z) h2
-  norm_num [smul_smul] at h1
-  exact h1.symm
+  simp [Prod.ext_iff, Quaternion.ext_iff, octConj, octScalar, octRe] at h ⊢; grind
 
 @[simp] theorem octDot_self (x : Octonion) : octDot x x = octNormSq x := by
   rw [octDot_coordinates]
@@ -264,7 +257,7 @@ def UniformLedger (p q r : Fin 3 → Albert) : Prop :=
 @[simp] theorem trace_smul (r : ℝ) (x : Albert) : trace (r • x) = r * trace x := by
   simp [trace]; ring
 @[simp] theorem trace_traceless (x : Albert) : trace (traceless x) = 0 := by
-  simp [traceless] <;> ring
+  simp [traceless]
 
 theorem toMatrix_hermitian (x : Albert) (i j : Fin 3) :
     octConj (toMatrix x i j) = toMatrix x j i := by
@@ -274,12 +267,12 @@ theorem fromMatrix_toMatrix (x : Albert) : fromMatrix (toMatrix x) = x := rfl
 
 theorem toMatrix_injective : Function.Injective toMatrix := by
   intro x y h
-  simpa only [fromMatrix_toMatrix] using congrArg fromMatrix h
+  simpa [fromMatrix_toMatrix] using congrArg fromMatrix h
 
 theorem matrixMul_conj (x y : Albert) (i j : Fin 3) :
     octConj (matrixMul (toMatrix x) (toMatrix y) i j) =
       matrixMul (toMatrix y) (toMatrix x) j i := by
-  simp only [matrixMul, octConj_sum]
+  simp [matrixMul, octConj_sum]
   apply Finset.sum_congr rfl
   intro k _
   rw [octConj_mul, toMatrix_hermitian, toMatrix_hermitian]
@@ -287,18 +280,9 @@ theorem matrixMul_conj (x y : Albert) (i j : Fin 3) :
 theorem toMatrix_fromMatrix_hermitian
     (A : Matrix (Fin 3) (Fin 3) Octonion)
     (h : ∀ i j, octConj (A i j) = A j i) : toMatrix (fromMatrix A) = A := by
-  apply Matrix.ext
-  intro i j
-  fin_cases i <;> fin_cases j
-  · simpa [toMatrix, fromMatrix] using octScalar_of_conj (A 0 0) (h 0 0)
-  · rfl
-  · rfl
-  · simpa [toMatrix, fromMatrix] using h 0 1
-  · simpa [toMatrix, fromMatrix] using octScalar_of_conj (A 1 1) (h 1 1)
-  · rfl
-  · simpa [toMatrix, fromMatrix] using h 0 2
-  · simpa [toMatrix, fromMatrix] using h 1 2
-  · simpa [toMatrix, fromMatrix] using octScalar_of_conj (A 2 2) (h 2 2)
+  funext i j
+  fin_cases i <;> fin_cases j <;> simp [toMatrix, fromMatrix, ← h 0 1, ← h 0 2, ← h 1 2,
+    octScalar_of_conj _ (h 0 0), octScalar_of_conj _ (h 1 1), octScalar_of_conj _ (h 2 2)]
 
 theorem toMatrix_jordan (x y : Albert) :
     toMatrix (jordan x y) = (1/2 : ℝ) •
@@ -338,27 +322,25 @@ theorem jordan_o01 (x y : Albert) :
       ((x.d0+x.d1) • y.o01 + (y.d0+y.d1) • x.o01 +
         octMul x.o02 (octConj y.o12) + octMul y.o02 (octConj x.o12)) := by
   apply Prod.ext <;> apply Quaternion.ext <;>
-    simp [jordan, fromMatrix, matrixMul, toMatrix, Fin.sum_univ_three,
-      octRe, octScalar, octMul, octConj, Quaternion.re_mul,
-      Quaternion.imI_mul, Quaternion.imJ_mul, Quaternion.imK_mul] <;> ring
+    simp [jordan, fromMatrix, matrixMul, toMatrix, Fin.sum_univ_three, octRe, oct_simps] <;> ring
 
 theorem jordan_o02 (x y : Albert) :
     (jordan x y).o02 = (1/2 : ℝ) •
       ((x.d0+x.d2) • y.o02 + (y.d0+y.d2) • x.o02 +
         octMul x.o01 y.o12 + octMul y.o01 x.o12) := by
   apply Prod.ext <;> apply Quaternion.ext <;>
-    simp [jordan, fromMatrix, matrixMul, toMatrix, Fin.sum_univ_three,
-      octRe, octScalar, octMul, octConj, Quaternion.re_mul,
-      Quaternion.imI_mul, Quaternion.imJ_mul, Quaternion.imK_mul] <;> ring
+    simp [jordan, fromMatrix, matrixMul, toMatrix, Fin.sum_univ_three, octRe, oct_simps] <;> ring
 
 theorem jordan_o12 (x y : Albert) :
     (jordan x y).o12 = (1/2 : ℝ) •
       ((x.d1+x.d2) • y.o12 + (y.d1+y.d2) • x.o12 +
         octMul (octConj x.o01) y.o02 + octMul (octConj y.o01) x.o02) := by
   apply Prod.ext <;> apply Quaternion.ext <;>
-    simp [jordan, fromMatrix, matrixMul, toMatrix, Fin.sum_univ_three,
-      octRe, octScalar, octMul, octConj, Quaternion.re_mul,
-      Quaternion.imI_mul, Quaternion.imJ_mul, Quaternion.imK_mul] <;> ring
+    simp [jordan, fromMatrix, matrixMul, toMatrix, Fin.sum_univ_three, octRe, oct_simps] <;> ring
+
+attribute [oct_simps] jordan_d0 jordan_d1 jordan_d2 jordan_o01 jordan_o02 jordan_o12 octMul octConj
+  octScalar octNormSq octDot_coordinates Quaternion.normSq_def' Quaternion.re_mul Quaternion.imI_mul
+  Quaternion.imJ_mul Quaternion.imK_mul smul_eq_mul
 
 theorem inner_coordinates (x y : Albert) :
     inner x y = x.d0*y.d0+x.d1*y.d1+x.d2*y.d2 +

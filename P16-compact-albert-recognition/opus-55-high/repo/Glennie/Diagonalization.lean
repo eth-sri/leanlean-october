@@ -8,7 +8,6 @@ public import Glennie.Native.RealConjugation
 
 @[expose] public section
 namespace Glennie
-noncomputable section
 
 def HasMaximalDiagonalEnergy (x : Albert) : Prop :=
   ∀ g : CompactAutomorphism, diagonalEnergy (g.equiv x) ≤ diagonalEnergy x
@@ -31,20 +30,20 @@ theorem maximalDiagonalEnergy_slot12_zero (x : Albert) (hx : HasMaximalDiagonalE
   unfold diagonalEnergy at hmax
   rw [realRotation12_d0, realRotation12_d1, realRotation12_d2,
     h0, h1, h2, hslot, octRe_scalar] at hmax
-  nlinarith [he]
+  nlinarith 
 
 theorem realSwap01_diagonalEnergy (x : Albert) :
     diagonalEnergy (realSwap01Automorphism.equiv x) = diagonalEnergy x := by
   change diagonalEnergy (realConjugateAlbert realSwap01 x) = _
   rw [realSwap01_coordinates]
-  simp only [diagonalEnergy]
+  simp [diagonalEnergy]
   ring
 
 theorem realSwap02_diagonalEnergy (x : Albert) :
     diagonalEnergy (realSwap02Automorphism.equiv x) = diagonalEnergy x := by
   change diagonalEnergy (realConjugateAlbert realSwap02 x) = _
   rw [realSwap02_coordinates]
-  simp only [diagonalEnergy]
+  simp [diagonalEnergy]
   ring
 
 theorem maximalDiagonalEnergy_isDiagonal (x : Albert) (hx : HasMaximalDiagonalEnergy x) :
@@ -62,8 +61,8 @@ theorem maximalDiagonalEnergy_isDiagonal (x : Albert) (hx : HasMaximalDiagonalEn
     have h := congrArg octConj h01
     have hz : octConj (0 : Octonion) = 0 := by
       change (star (0 : Quaternion ℝ), -(0 : Quaternion ℝ)) = (0,0)
-      simp only [star_zero, neg_zero]
-    simpa only [octConj_conj, hz] using h
+      simp [star_zero, neg_zero]
+    simpa [octConj_conj, hz] using h
   exact ⟨h01', h02, h12⟩
 
 /-- Diagonalization in the genuine native product/trace automorphism group. -/
@@ -74,5 +73,4 @@ theorem native_diagonalization (x : Albert) :
   intro h
   exact hg (h.comp g)
 
-end
 end Glennie

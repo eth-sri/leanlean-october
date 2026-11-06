@@ -15,7 +15,6 @@ public import Mathlib.Analysis.Calculus.FDeriv.Symmetric
 
 @[expose] public section
 open scoped ContDiff Topology
-open Filter
 
 namespace AlbertGeometry.Cubic
 noncomputable section
@@ -51,28 +50,17 @@ def baseChartMetric : W →L[ℝ] W →L[ℝ] ℝ := G 0
 
 /-- Literal restriction of the given continuous symmetric cubic to the tangent. -/
 def tangentSymmetricCubic : SymmetricTrilinearForm W where
-  form := P.form.compContinuousLinearMap (fun _ : Fin 3 => (tangentSpace P e).subtypeL)
-  swap12 := by
-    intro x y z
-    simp only [ContinuousMultilinearMap.compContinuousLinearMap_apply,
-      Submodule.subtypeL_apply]
-    convert P.swap12 (x : E) (y : E) (z : E) using 1 <;>
-      congr 1 <;> ext i <;> fin_cases i <;> rfl
-  swap23 := by
-    intro x y z
-    simp only [ContinuousMultilinearMap.compContinuousLinearMap_apply,
-      Submodule.subtypeL_apply]
-    convert P.swap23 (x : E) (y : E) (z : E) using 1 <;>
-      congr 1 <;> ext i <;> fin_cases i <;> rfl
+  form := P.form.compContinuousLinearMap (fun _ => (tangentSpace P e).subtypeL)
+  swap12 x y z := by
+    simp [ContinuousMultilinearMap.compContinuousLinearMap_apply]; convert P.swap12 (x : E) y z using 2 <;> ext i <;> fin_cases i <;> rfl
+  swap23 x y z := by
+    simp [ContinuousMultilinearMap.compContinuousLinearMap_apply]; convert P.swap23 (x : E) y z using 2 <;> ext i <;> fin_cases i <;> rfl
 
 @[simp] theorem tangentSymmetricCubic_apply (u v w : W) :
     (tangentSymmetricCubic P e).form ![u, v, w] =
       P.form ![(u : E), (v : E), (w : E)] := by
-  simp only [tangentSymmetricCubic, ContinuousMultilinearMap.compContinuousLinearMap_apply,
-    Submodule.subtypeL_apply]
-  congr 1
-  ext i
-  fin_cases i <;> rfl
+  simp [tangentSymmetricCubic, ContinuousMultilinearMap.compContinuousLinearMap_apply]
+  congr 1; ext i; fin_cases i <;> rfl
 
 /-- K raises the ACTUAL restricted cubic using the actual base metric dual.
 No Gamma value or derivative is used in this definition. -/
@@ -82,9 +70,7 @@ def raisedTangentCubic : W →L[ℝ] W →L[ℝ] W :=
 
 @[simp] theorem raisedTangentCubic_apply (u v : W) :
     raisedTangentCubic P e he u v = (baseChartMetric P e he).inverse
-      (fullyCurried (tangentSymmetricCubic P e) u v) := by
-  simp only [raisedTangentCubic, ContinuousLinearMap.comp_apply,
-    ContinuousLinearMap.compL_apply]
+      (fullyCurried (tangentSymmetricCubic P e) u v) := rfl
 
 /-- Actual commutator on fields, with the actual coordinate Lie bracket. -/
 def chartConnectionCurvature (x : W) (X Y Z : W → W) : W :=
@@ -105,33 +91,16 @@ include he in
 /-- The actual coefficient formula, later identified with the genuine commutator.
 All factors are Gamma and its actual derivative, not prescribed curvature. -/
 def chartCurvatureCLM (x : W) : W →L[ℝ] W →L[ℝ] W →L[ℝ] W :=
-  let T : W →L[ℝ] W →L[ℝ] W →L[ℝ] W :=
-    (ContinuousLinearMap.compL ℝ W W W).bilinearComp (Γ x) (Γ x)
+  let T := (ContinuousLinearMap.compL ℝ W W W).bilinearComp (Γ x) (Γ x)
   leviCivitaGammaD1 P e he x -
-      (ContinuousLinearMap.flip (E := W) (F := W) («G» := W →L[ℝ] W)
+      (ContinuousLinearMap.flip («G» := W →L[ℝ] W)
         (leviCivitaGammaD1 P e he x)) + T -
-    (ContinuousLinearMap.flip (E := W) (F := W) («G» := W →L[ℝ] W) T)
+    (ContinuousLinearMap.flip («G» := W →L[ℝ] W) T)
 
 @[simp] theorem chartCurvatureCLM_apply (x u v w : W) :
     chartCurvatureCLM P e he x u v w =
       leviCivitaGammaD1 P e he x u v w - leviCivitaGammaD1 P e he x v u w +
-        Γ x u (Γ x v w) - Γ x v (Γ x u w) := by
-  simp only [chartCurvatureCLM, add_apply, sub_apply, ContinuousLinearMap.flip_apply,
-    ContinuousLinearMap.bilinearComp_apply, ContinuousLinearMap.compL_apply,
-    ContinuousLinearMap.comp_apply]
-
-private theorem curvature_eval_const_hasFDerivAt
-    {X Y Z : Type*} [NormedAddCommGroup X] [NormedSpace ℝ X]
-    [NormedAddCommGroup Y] [NormedSpace ℝ Y]
-    [NormedAddCommGroup Z] [NormedSpace ℝ Z]
-    {f : X → Y →L[ℝ] Z} {f' : X →L[ℝ] Y →L[ℝ] Z} {x : X}
-    (hf : HasFDerivAt f f' x) (u : Y) :
-    HasFDerivAt (fun y => f y u) (f'.flip u) x := by
-  have h := hf.clm_apply (hasFDerivAt_const u x)
-  apply h.congr_fderiv
-  ext w
-  simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.comp_apply,
-    ContinuousLinearMap.zero_apply, map_zero, zero_add]
+        Γ x u (Γ x v w) - Γ x v (Γ x u w) := by rfl
 
 variable [FiniteDimensional ℝ E]
 variable (hpos : ∀ u : E, u ≠ 0 → 0 < logHessianForm P e u u)
@@ -150,50 +119,40 @@ include hpos in
 /-- Actual metric raising of the tangent cubic, including its trace/3 scale. -/
 theorem raisedTangentCubic_pairing (u v w : W) :
     g (K u v) w = P.form ![(u : E), (v : E), (w : E)] := by
-  have h0 := (leviCivitaChartDomain_spec P e he hpos).2.1
-  have hi := pullbackMetric_dual_isInvertible P e he hpos 0 h0
-  rw [raisedTangentCubic_apply]
-  have h := congrArg (fun L : W →L[ℝ] ℝ => L w)
-    (hi.self_apply_inverse (fullyCurried (tangentSymmetricCubic P e) u v))
-  simpa only [baseChartMetric, fullyCurried_apply, tangentSymmetricCubic_apply] using h
+  simpa [baseChartMetric] using congr($((pullbackMetric_dual_isInvertible P e he hpos 0
+    (leviCivitaChartDomain_spec P e he hpos).2.1).self_apply_inverse
+    (fullyCurried (tangentSymmetricCubic P e) u v)) w)
 
 /-- Left half of the differentiated Koszul identity: the actual product rule
 for y ↦ G y (Γ y u v) w, evaluated at the direction s. -/
-private theorem koszul_left_fderiv_apply (x : W) (hx : x ∈ S) (s u v w : W) :
+theorem koszul_left_fderiv_apply (x : W) (hx : x ∈ S) (s u v w : W) :
     fderiv ℝ (fun y => G y (Γ y u v) w) x s =
       G x (DΓ x s u v) w + DG x s (Γ x u v) w := by
-  have hxU := (leviCivitaChartDomain_spec P e he hpos).2.2.1 hx
-  have hGamma := curvature_eval_const_hasFDerivAt
-    (curvature_eval_const_hasFDerivAt (hasFDerivAt_leviCivitaGamma P e he hpos x hx) u) v
-  have hleft := curvature_eval_const_hasFDerivAt
-    ((hasFDerivAt_pullbackMetric P e he x hxU).clm_apply hGamma) w
-  have h := congrArg (fun L : W →L[ℝ] ℝ => L s) hleft.fderiv
-  simpa only [ContinuousLinearMap.flip_apply, add_apply,
-    ContinuousLinearMap.comp_apply] using h
+  simpa using congr($((eval_const_hasFDerivAt ((hasFDerivAt_pullbackMetric P e he x
+    ((leviCivitaChartDomain_spec P e he hpos).2.2.1 hx)).clm_apply (eval_const_hasFDerivAt
+      (eval_const_hasFDerivAt (hasFDerivAt_leviCivitaGamma P e he hpos x hx) u) v)) w).fderiv) s)
 
 /-- Right half: the same scalar field equals the Koszul expression in DG on a
 whole neighborhood, so its derivative is the Koszul expression in DDG. -/
-private theorem koszul_right_fderiv_apply (x : W) (hx : x ∈ S) (s u v w : W) :
+theorem koszul_right_fderiv_apply (x : W) (hx : x ∈ S) (s u v w : W) :
     fderiv ℝ (fun y => G y (Γ y u v) w) x s =
       (DDG x s u v w + DDG x s v u w - DDG x s w u v) / 2 := by
   have hxU := (leviCivitaChartDomain_spec P e he hpos).2.2.1 hx
   have hDD := hasFDerivAt_pullbackMetricD1 P e he x hxU
-  have h1 := curvature_eval_const_hasFDerivAt
-    (curvature_eval_const_hasFDerivAt (curvature_eval_const_hasFDerivAt hDD u) v) w
-  have h2 := curvature_eval_const_hasFDerivAt
-    (curvature_eval_const_hasFDerivAt (curvature_eval_const_hasFDerivAt hDD v) u) w
-  have h3 := curvature_eval_const_hasFDerivAt
-    (curvature_eval_const_hasFDerivAt (curvature_eval_const_hasFDerivAt hDD w) u) v
+  have h1 := eval_const_hasFDerivAt
+    (eval_const_hasFDerivAt (eval_const_hasFDerivAt hDD u) v) w
+  have h2 := eval_const_hasFDerivAt
+    (eval_const_hasFDerivAt (eval_const_hasFDerivAt hDD v) u) w
+  have h3 := eval_const_hasFDerivAt
+    (eval_const_hasFDerivAt (eval_const_hasFDerivAt hDD w) u) v
   have hkoszul : (fun y => G y (Γ y u v) w) =ᶠ[𝓝 x]
       (fun y => (1 / 2 : ℝ) • (DG y u v w + DG y v u w - DG y w u v)) := by
     filter_upwards [eventually_leviCivitaGamma_koszul P e he hpos x hx u v w] with y hy
     refine hy.trans ?_
-    simp only [koszulCovector_apply, smul_eq_mul]
+    simp [koszulCovector_apply, smul_eq_mul]
     ring
   have hright := (((h1.add h2).sub h3).const_smul (1 / 2 : ℝ)).congr_of_eventuallyEq hkoszul
-  have h := congrArg (fun L : W →L[ℝ] ℝ => L s) hright.fderiv
-  simpa only [ContinuousLinearMap.flip_apply, add_apply, sub_apply, smul_apply,
-    smul_eq_mul, one_div_mul_eq_div] using h
+  simpa [div_eq_inv_mul] using congr($(hright.fderiv) s)
 
 /-- Differentiate the proved WHOLE-S Koszul identity before specializing at zero. -/
 theorem leviCivitaGammaD1_koszul (x : W) (hx : x ∈ S) (s u v w : W) :
@@ -209,7 +168,7 @@ theorem leviCivitaGamma_zero (u v : W) : Γ 0 u v = -K u v := by
   apply pullbackMetric_dual_injective P e he hpos 0 h0
   ext w
   rw [leviCivitaGamma_koszul P e he hpos 0 h0, koszulCovector_apply]
-  simp only [pullbackMetricD1_zero, map_neg]
+  simp [pullbackMetricD1_zero, map_neg]
   change _ = -(g (K u v) w)
   rw [raisedTangentCubic_pairing P e he hpos]
   rw [P.swap12 (v : E) (u : E) (w : E),
@@ -248,25 +207,12 @@ theorem fderiv_chartCovariantDerivative (x : W) (hx : x ∈ S)
       fderiv ℝ (fderiv ℝ Z) x s (Y x) +
       Γ x (Y x) (fderiv ℝ Z x s) +
       Γ x (fderiv ℝ Y x s) (Z x) + DΓ x s (Y x) (Z x) := by
-  have hDZsmooth : ContDiffAt ℝ ⊤ (fderiv ℝ Z) x := hZ.fderiv_right (by simp)
-  have hDZ : DifferentiableAt ℝ (fderiv ℝ Z) x :=
-    hDZsmooth.differentiableAt (by simp)
-  have hz : DifferentiableAt ℝ Z x := hZ.differentiableAt (by simp)
-  have h1 := hDZ.hasFDerivAt.clm_apply hY.hasFDerivAt
-  have h2 := ((hasFDerivAt_leviCivitaGamma P e he hpos x hx).clm_apply
-    hY.hasFDerivAt).clm_apply hz.hasFDerivAt
-  -- Sum rule, typed by the literal lambda of the covariant-derivative field.
-  have hsum : HasFDerivAt (fun y => chartCovariantDerivative P e he y Y Z) _ x :=
-    h1.add h2
-  have heval := congrArg (fun L : W →L[ℝ] W => L s) hsum.fderiv
-  have hv : fderiv ℝ (fun y => chartCovariantDerivative P e he y Y Z) x s =
-      (fderiv ℝ Z x (fderiv ℝ Y x s) + fderiv ℝ (fderiv ℝ Z) x s (Y x)) +
-        (Γ x (Y x) (fderiv ℝ Z x s) +
-          (Γ x (fderiv ℝ Y x s) (Z x) + DΓ x s (Y x) (Z x))) := by
-    simpa only [add_apply, ContinuousLinearMap.comp_apply,
-      ContinuousLinearMap.flip_apply] using heval
-  refine hv.trans ?_
-  module
+  have h : HasFDerivAt (fun y => chartCovariantDerivative P e he y Y Z) _ x :=
+    (((hZ.fderiv_right (m := ⊤) (by simp)).differentiableAt (by simp)).hasFDerivAt.clm_apply
+      hY.hasFDerivAt).add (((hasFDerivAt_leviCivitaGamma P e he hpos x hx).clm_apply
+        hY.hasFDerivAt).clm_apply (hZ.differentiableAt (by simp)).hasFDerivAt)
+  simp [h.fderiv]
+  abel
 
 /-- Full field expansion: genuine Schwarz symmetry cancels every extension term.
 Only the value of each vector field survives. -/
@@ -284,15 +230,15 @@ theorem chartConnectionCurvature_formula (x : W) (hx : x ∈ S)
       Γ x (chartLieBracket P e x X Y) (Z x)) = _
   rw [fderiv_chartCovariantDerivative P e he hpos x hx Y Z hY hZ,
     fderiv_chartCovariantDerivative P e he hpos x hx X Z hX hZ]
-  simp only [chartCovariantDerivative, chartLieBracket, map_add, map_sub,
-    add_apply, sub_apply, chartCurvatureCLM_apply]
+  simp [chartCovariantDerivative, chartLieBracket, map_add, map_sub,
+    sub_apply, chartCurvatureCLM_apply]
   rw [(hZ.isSymmSndFDerivAt le_top).eq (X x) (Y x)]
   module
 
 /-- Identifies the tensor coefficient expression with the actual commutator. -/
 theorem chartCurvature_eq_CLM (x : W) (hx : x ∈ S) (u v w : W) :
-    chartCurvature P e he x u v w = chartCurvatureCLM P e he x u v w := by
-  exact chartConnectionCurvature_formula P e he hpos x hx
+    chartCurvature P e he x u v w = chartCurvatureCLM P e he x u v w :=
+  chartConnectionCurvature_formula P e he hpos x hx
     (fun _ => u) (fun _ => v) (fun _ => w)
     (differentiableAt_const u) (differentiableAt_const v) contDiffAt_const
 

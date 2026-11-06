@@ -8,14 +8,9 @@ public import Glennie.Compact.CyclicTraceNullR01
 
 @[expose] public section
 namespace Glennie.Compact.MarkedModelConsumerCandidate
-noncomputable section
-open Glennie
-open Glennie.Compact.CyclicTraceNullR01
 open Glennie.Compact.NativeWordTableR01
-open AlbertGeometry.Cubic AlbertGeometry.BasedNormAdjointTransport
-open AlbertGeometry.IntrinsicLocalTransport
+open AlbertGeometry.Cubic
 open scoped BigOperators
-set_option autoImplicit false
 
 /-- Exactly the existing downstream linear/unit/product/metric boundary,
 with the source metric written in the native raw normalization. -/
@@ -94,5 +89,4 @@ def generated (e : E) (a : Fin 3 → E) (j : E →ₗ[ℝ] E →ₗ[ℝ] E) : Su
 /- Closure, generation, and fixed-mark uniqueness from Match27 are proved in
 GeneratedRecognitionR01; these definitions contain no recognition premise. -/
 end MatchingData
-end
 end Glennie.Compact.MarkedModelConsumerCandidate

@@ -39,8 +39,8 @@ theorem quadratic_identity (a : Fin 3 → Fin 3 → ℝ) :
 
 theorem row_cauchy (a : Fin 3 → Fin 3 → ℝ) :
     (total a) ^ 2 ≤ 3 * (∑ i, (rows a i) ^ 2) := by
-  simp only [total, Fin.sum_univ_three]
-  nlinarith [sq_nonneg (rows a 0 - rows a 1),
+  simp [total, Fin.sum_univ_three]
+  nlinarith [
     sq_nonneg (rows a 0 - rows a 2), sq_nonneg (rows a 1 - rows a 2)]
 
 /-- A uniform lower bound that proves all nine mixed products are independent. -/
@@ -60,14 +60,14 @@ theorem quadratic_eq_zero_iff (a : Fin 3 → Fin 3 → ℝ) :
     have hs : squares a = 0 := by linarith
     intro i j
     have hrow : (∑ l, (a i l) ^ 2) ≤ squares a := by
-      exact Finset.single_le_sum (s := Finset.univ)
-        (f := fun k : Fin 3 => ∑ l, (a k l) ^ 2)
+      exact Finset.single_le_sum
+        (f := fun k => ∑ l, (a k l) ^ 2)
         (by intro k hk; positivity) (Finset.mem_univ i)
     have hentry : (a i j) ^ 2 ≤ ∑ l, (a i l) ^ 2 := by
-      exact Finset.single_le_sum (s := Finset.univ)
-        (f := fun l : Fin 3 => (a i l) ^ 2)
+      exact Finset.single_le_sum
+        (f := fun l => (a i l) ^ 2)
         (by intro l hl; positivity) (Finset.mem_univ j)
-    have heq : (a i j) ^ 2 = 0 := by nlinarith [sq_nonneg (a i j)]
+    have heq : (a i j) ^ 2 = 0 := by nlinarith 
     exact sq_eq_zero_iff.mp heq
   · intro h
     simp [quadratic, h]

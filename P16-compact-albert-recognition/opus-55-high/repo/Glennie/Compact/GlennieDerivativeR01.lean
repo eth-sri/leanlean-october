@@ -19,16 +19,12 @@ public import Mathlib.Tactic.Ring
 @[expose] public section
 namespace Glennie.Compact.GlennieDerivativeR01
 
-open Glennie
 open Glennie.Compact.GlennieScalarPotentialR01
 
 noncomputable section
-set_option autoImplicit false
-set_option maxHeartbeats 800000
 -- Match Compactness at the native/Hilbert inherited-instance boundary.
 -- This changes elaboration transparency, not the heartbeat limit or proof rules.
 set_option backward.isDefEq.respectTransparency false
-set_option linter.unusedSimpArgs false
 
 /-! ## Existing native operations as continuous linear maps -/
 
@@ -50,7 +46,7 @@ def commUContinuous (x y : Albert) : Albert →L[ℝ] Albert :=
 
 @[simp] theorem commUContinuous_apply (x y z : Albert) :
     commUContinuous x y z = commU x y z := by
-  simp only [commUContinuous, sub_apply, ContinuousLinearMap.comp_apply,
+  simp [commUContinuous, sub_apply, ContinuousLinearMap.comp_apply,
     UContinuous_apply, commU]
 
 /-- A continuous linear expression for the base-variable derivative of U.
@@ -67,7 +63,7 @@ def UBaseDerivative (z p : Albert) : Albert →L[ℝ] Albert :=
 
 theorem UBaseDerivative_eq_triple (z p h : Albert) :
     UBaseDerivative z p h = doubledTriple h p z := by
-  simp only [UBaseDerivative_apply, doubledTriple,
+  simp [UBaseDerivative_apply, doubledTriple,
     jordan_comm z p, jordan_comm p h, jordan_comm (jordan p z) h,
     jordan_comm z (jordan h p), jordan_comm z h,
     jordan_comm p (jordan h z)]
@@ -82,7 +78,6 @@ theorem hasFDerivAt_jordan
       ((jordanContinuous (f z)).comp g' +
         (jordanContinuous (g z)).comp f') z := by
   have hp := jordanContinuous.hasFDerivAt_of_bilinear hf hg
-  change HasFDerivAt (fun w => jordan (f w) (g w)) _ z at hp
   refine hp.congr_fderiv ?_
   apply ContinuousLinearMap.ext
   intro h
@@ -93,32 +88,30 @@ theorem hasFDerivAt_jordan
 /-- This differentiates w |-> U w p on the full native Albert space.
 No frame, nonzero, generation, or spectral assumption occurs. -/
 theorem hasFDerivAt_U_base (z p : Albert) :
-    HasFDerivAt (fun w : Albert => U w p) (UBaseDerivative z p) z := by
-  have hid : HasFDerivAt (fun w : Albert => w)
+    HasFDerivAt (fun w => U w p) (UBaseDerivative z p) z := by
+  have hid : HasFDerivAt (fun w => w)
       (ContinuousLinearMap.id ℝ Albert) z := hasFDerivAt_id z
-  have hp : HasFDerivAt (fun w : Albert => jordan w p)
+  have hp : HasFDerivAt (fun w => jordan w p)
       (jordanContinuous p) z := by
-    have hfun : (fun w : Albert => jordan w p) =
+    have hfun : (fun w => jordan w p) =
         (jordanContinuous p : Albert → Albert) := by
       funext w
       rw [jordanContinuous_apply, jordan_comm]
     rw [hfun]
-    exact (jordanContinuous p).hasFDerivAt (x := z)
+    exact (jordanContinuous p).hasFDerivAt
   have hfirst := hasFDerivAt_jordan hid hp
   have hsquare := hasFDerivAt_jordan hid hid
-  have hsecond : HasFDerivAt (fun w : Albert => jordan (jordan w w) p)
+  have hsecond : HasFDerivAt (fun w => jordan (jordan w w) p)
       ((jordanContinuous p).comp
         ((jordanContinuous z).comp (ContinuousLinearMap.id ℝ Albert) +
           (jordanContinuous z).comp (ContinuousLinearMap.id ℝ Albert))) z := by
-    simpa only [Function.comp_def, jordanContinuous_apply, jordan_comm p] using
+    simpa [Function.comp_def, jordanContinuous_apply, jordan_comm p] using
       (jordanContinuous p).hasFDerivAt.comp z hsquare
   have hU := (hfirst.const_smul (2 : ℝ)).sub hsecond
   have hfun :
-      ((2 : ℝ) • (fun w : Albert => jordan w (jordan w p)) -
-        (fun w : Albert => jordan (jordan w w) p)) =
-      (fun w : Albert => U w p) := by
-    funext w
-    simp only [Pi.sub_apply, Pi.smul_apply, U]
+      ((2 : ℝ) • (fun w => jordan w (jordan w p)) -
+        (fun w => jordan (jordan w w) p)) =
+      (fun w => U w p) := by rfl
   rw [hfun] at hU
   refine hU.congr_fderiv ?_
   apply ContinuousLinearMap.ext
@@ -159,20 +152,20 @@ theorem doubledTriple_adjoint (a h p z : Albert) :
       _ = inner h (jordan (jordan a p) z) := by
         rw [inner_jordan_associative, jordan_comm p a,
           jordan_comm z (jordan a p)]
-  simp only [doubledTriple, inner_smul_right, inner_sub_right,
+  simp [doubledTriple, inner_smul_right, inner_sub_right,
     inner_add_right, h1, h2, h3]
 
 /-- Actual native Frechet derivative of Phi in its third argument.
 The derivative is proved from the bilinear product rule, not supplied as a field. -/
 theorem hasFDerivAt_phi_third (x y z : Albert) :
-    HasFDerivAt (fun w : Albert => phi x y w)
+    HasFDerivAt (fun w => phi x y w)
       (nativeInnerContinuous (glennieVector x y z)) z := by
   have hp := nativeInnerContinuous.hasFDerivAt_of_bilinear
-    ((commUContinuous x y).hasFDerivAt (x := z))
+    ((commUContinuous x y).hasFDerivAt)
     (hasFDerivAt_U_base z (jordan x y))
-  have hfun : (fun w : Albert =>
+  have hfun : (fun w =>
       nativeInnerContinuous (commUContinuous x y w) (U w (jordan x y))) =
-      (fun w : Albert => phi x y w) := by
+      (fun w => phi x y w) := by
     funext w
     simp only [pairingContinuous_apply, commUContinuous_apply, phi, commU]
   rw [hfun] at hp
@@ -193,9 +186,9 @@ theorem hasFDerivAt_phi_third (x y z : Albert) :
 /-- Chain rule for an actual differentiable curve in the third argument. -/
 theorem hasDerivAt_phi_third_comp (x y : Albert)
     {c : ℝ → Albert} {c' : Albert} {t : ℝ} (hc : HasDerivAt c c' t) :
-    HasDerivAt (fun s : ℝ => phi x y (c s))
+    HasDerivAt (fun s => phi x y (c s))
       (inner c' (glennieVector x y (c t))) t := by
-  simpa only [Function.comp_def, pairingContinuous_apply,
+  simpa [Function.comp_def, pairingContinuous_apply,
     inner_comm (glennieVector x y (c t)) c'] using
     (hasFDerivAt_phi_third x y (c t)).comp_hasDerivAt t hc
 
@@ -204,10 +197,9 @@ theorem hasDerivAt_phi_third_affine (x y z h : Albert) :
     HasDerivAt (fun t : ℝ => phi x y (z + t • h))
       (inner h (glennieVector x y z)) 0 := by
   have hlinear : HasDerivAt (fun t : ℝ => t • h) h 0 := by
-    simpa only [id_eq, one_smul] using (hasDerivAt_id (0 : ℝ)).smul_const h
-  have hc : HasDerivAt (fun t : ℝ => z + t • h) h 0 :=
-    HasDerivAt.const_add z hlinear
-  simpa only [zero_smul, add_zero] using hasDerivAt_phi_third_comp x y hc
+    simpa [id_eq, one_smul] using (hasDerivAt_id (0 : ℝ)).smul_const h
+  have hc := HasDerivAt.const_add z hlinear
+  simpa [zero_smul, add_zero] using hasDerivAt_phi_third_comp x y hc
 
 end
 end Glennie.Compact.GlennieDerivativeR01

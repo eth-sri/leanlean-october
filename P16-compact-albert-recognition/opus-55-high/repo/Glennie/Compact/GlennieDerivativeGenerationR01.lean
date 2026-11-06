@@ -10,14 +10,10 @@ public import Glennie.NativeGenerationEndpointR01
 @[expose] public section
 namespace Glennie.Compact.GlennieDerivativeGenerationR01
 
-open Glennie
 open Glennie.Compact.GlennieScalarPotentialR01
 open Glennie.Compact.GlennieDerivativeR01
 open Glennie.NativeGenerationEndpointR01
 
-noncomputable section
-set_option autoImplicit false
-set_option maxHeartbeats 800000
 -- Keep the native/Hilbert inherited-instance convention of the provider.
 set_option backward.isDefEq.respectTransparency false
 
@@ -58,7 +54,7 @@ theorem glennieVector_mem (K : Submodule ℝ Albert)
     (hJ : ∀ p ∈ K, ∀ q ∈ K, jordan p q ∈ K)
     (x y z : Albert) (hx : x ∈ K) (hy : y ∈ K) (hz : z ∈ K) :
     glennieVector x y z ∈ K := by
-  have hp : jordan x y ∈ K := hJ x hx y hy
+  have hp := hJ x hx y hy
   rw [glennieVector]
   exact K.sub_mem
     (doubledTriple_mem K hJ (commU x y z) z (jordan x y)
@@ -85,20 +81,18 @@ theorem glennieVector_eq_zero_of_ne_top
     (hJ : ∀ p ∈ K, ∀ q ∈ K, jordan p q ∈ K) (hK : K ≠ ⊤)
     (x y z : Albert) (hx : x ∈ K) (hy : y ∈ K) (hz : z ∈ K) :
     glennieVector x y z = 0 := by
-  have hg : glennieVector x y z ∈ K := glennieVector_mem K hJ x y z hx hy hz
+  have hg := glennieVector_mem K hJ x y z hx hy hz
   have hcurve :
       (fun t : ℝ => phi x y (z + t • glennieVector x y z)) =
-      (fun _ : ℝ => (0 : ℝ)) := by
+      (fun _ => (0 : ℝ)) := by
     funext t
     exact phi_eq_zero_of_ne_top K h1 hJ hK x y
       (z + t • glennieVector x y z) hx hy (K.add_mem hz (K.smul_mem t hg))
   have hd := hasDerivAt_phi_third_affine x y z (glennieVector x y z)
   rw [hcurve] at hd
-  have hzero : HasDerivAt (fun _ : ℝ => (0 : ℝ)) 0 (0 : ℝ) :=
-    hasDerivAt_const (0 : ℝ) (0 : ℝ)
+  have hzero := hasDerivAt_const (0 : ℝ) (0 : ℝ)
   exact (inner_self_eq_zero (glennieVector x y z)).mp (hd.unique hzero)
 
 /-! Definition-free generation endpoints for arbitrary native triples. -/
 
-end
 end Glennie.Compact.GlennieDerivativeGenerationR01

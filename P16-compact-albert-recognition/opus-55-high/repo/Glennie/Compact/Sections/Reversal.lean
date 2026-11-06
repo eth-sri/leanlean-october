@@ -54,9 +54,6 @@ open Glennie.Compact.Affine20 Glennie.Compact.ChartTransfer
 
 noncomputable section
 
-set_option autoImplicit false
-set_option maxHeartbeats 2000000
-set_option linter.unusedSimpArgs false
 
 /-! ## The transposition (0 2) of Fin 3 -/
 
@@ -75,9 +72,6 @@ theorem swap02_two : (Equiv.swap (0 : Fin 3) 2) 2 = 0 :=
 def revTriple (T : Triple) : Triple :=
   ![fun i => T 0 (Equiv.swap (0 : Fin 3) 2 i), T 1, T 2]
 
-theorem revTriple_zero (T : Triple) :
-    revTriple T 0 = fun i => T 0 (Equiv.swap (0 : Fin 3) 2 i) := rfl
-
 theorem revTriple_one (T : Triple) : revTriple T 1 = T 1 := rfl
 
 theorem revTriple_two (T : Triple) : revTriple T 2 = T 2 := rfl
@@ -92,99 +86,25 @@ def revLedger (L : Ledger54) : Ledger54 :=
     L.2.2.1,
     fun k i => L.2.2.2 k (Equiv.swap (0 : Fin 3) 2 i))
 
-theorem revLedger_C (L : Ledger54) (i j k : Fin 3) :
-    (revLedger L).1 i j k = L.1 (Equiv.swap (0 : Fin 3) 2 i) j k := rfl
-
-theorem revLedger_P (L : Ledger54) (i j : Fin 3) :
-    (revLedger L).2.1 i j = L.2.1 (Equiv.swap (0 : Fin 3) 2 i) j := rfl
-
-theorem revLedger_Q (L : Ledger54) (j k : Fin 3) :
-    (revLedger L).2.2.1 j k = L.2.2.1 j k := rfl
-
-theorem revLedger_R (L : Ledger54) (k i : Fin 3) :
-    (revLedger L).2.2.2 k i = L.2.2.2 k (Equiv.swap (0 : Fin 3) 2 i) := rfl
-
 /-- Naturality: reversing the triple applies `revLedger` to its 54 raw entries. -/
 theorem ledger54_revTriple (T : Triple) :
-    ledger54 (revTriple T) = revLedger (ledger54 T) := by
-  refine Prod.ext ?_ (Prod.ext ?_ (Prod.ext ?_ ?_))
-  · funext i j k
-    show trace (jordan (jordan (T 0 (Equiv.swap (0 : Fin 3) 2 i)) (T 1 j)) (T 2 k)) =
-      trace (jordan (jordan (T 0 (Equiv.swap (0 : Fin 3) 2 i)) (T 1 j)) (T 2 k))
-    rfl
-  · funext i j
-    show inner (T 0 (Equiv.swap (0 : Fin 3) 2 i)) (T 1 j) =
-      inner (T 0 (Equiv.swap (0 : Fin 3) 2 i)) (T 1 j)
-    rfl
-  · funext j k
-    show inner (T 1 j) (T 2 k) = inner (T 1 j) (T 2 k)
-    rfl
-  · funext k i
-    show inner (T 2 k) (T 0 (Equiv.swap (0 : Fin 3) 2 i)) =
-      inner (T 2 k) (T 0 (Equiv.swap (0 : Fin 3) 2 i))
-    rfl
+    ledger54 (revTriple T) = revLedger (ledger54 T) := by rfl
 
 theorem revLedger_revLedger (L : Ledger54) : revLedger (revLedger L) = L := by
-  refine Prod.ext ?_ (Prod.ext ?_ (Prod.ext ?_ ?_))
-  · funext i j k
-    show L.1 (Equiv.swap (0 : Fin 3) 2 (Equiv.swap (0 : Fin 3) 2 i)) j k = L.1 i j k
-    rw [Equiv.swap_apply_self]
-  · funext i j
-    show L.2.1 (Equiv.swap (0 : Fin 3) 2 (Equiv.swap (0 : Fin 3) 2 i)) j = L.2.1 i j
-    rw [Equiv.swap_apply_self]
-  · rfl
-  · funext k i
-    show L.2.2.2 k (Equiv.swap (0 : Fin 3) 2 (Equiv.swap (0 : Fin 3) 2 i)) = L.2.2.2 k i
-    rw [Equiv.swap_apply_self]
+  simp [revLedger]
 
 theorem revLedger_inDomain {L : Ledger54} (hL : InDomain L) : InDomain (revLedger L) where
-  P_row i := by
-    simp only [revLedger_P]
-    exact hL.P_row (Equiv.swap (0 : Fin 3) 2 i)
-  P_col j := by
-    simp only [revLedger_P, swap02_zero, swap02_one, swap02_two]
-    linarith [hL.P_col j]
-  Q_row j := by
-    simp only [revLedger_Q]
-    exact hL.Q_row j
-  Q_col k := by
-    simp only [revLedger_Q]
-    exact hL.Q_col k
-  R_row k := by
-    simp only [revLedger_R, swap02_zero, swap02_one, swap02_two]
-    linarith [hL.R_row k]
-  R_col i := by
-    simp only [revLedger_R]
-    exact hL.R_col (Equiv.swap (0 : Fin 3) 2 i)
-  C_k i j := by
-    simp only [revLedger_C, revLedger_P]
-    exact hL.C_k (Equiv.swap (0 : Fin 3) 2 i) j
-  C_i j k := by
-    simp only [revLedger_C, revLedger_Q, swap02_zero, swap02_one, swap02_two]
-    linarith [hL.C_i j k]
-  C_j k i := by
-    simp only [revLedger_C, revLedger_R]
-    exact hL.C_j k (Equiv.swap (0 : Fin 3) 2 i)
+  P_row i := hL.P_row _
+  P_col j := by simp [revLedger, swap02_one]; linarith [hL.P_col j]
+  Q_row := hL.Q_row
+  Q_col := hL.Q_col
+  R_row k := by simp [revLedger, swap02_one]; linarith [hL.R_row k]
+  R_col i := hL.R_col _
+  C_k i j := hL.C_k _ j
+  C_i j k := by simp [revLedger, swap02_one]; linarith [hL.C_i j k]
+  C_j k i := hL.C_j k _
 
-theorem revLedger_affine : AffineComb revLedger := by
-  intro x y t
-  refine Prod.ext ?_ (Prod.ext ?_ (Prod.ext ?_ ?_))
-  · funext i j k
-    simp only [revLedger_C, Prod.fst_add, Prod.snd_add, Prod.fst_sub, Prod.snd_sub,
-      Prod.smul_fst, Prod.smul_snd, Pi.add_apply, Pi.sub_apply, Pi.smul_apply,
-      smul_eq_mul] <;> ring
-  · funext i j
-    simp only [revLedger_P, Prod.fst_add, Prod.snd_add, Prod.fst_sub, Prod.snd_sub,
-      Prod.smul_fst, Prod.smul_snd, Pi.add_apply, Pi.sub_apply, Pi.smul_apply,
-      smul_eq_mul] <;> ring
-  · funext j k
-    simp only [revLedger_Q, Prod.fst_add, Prod.snd_add, Prod.fst_sub, Prod.snd_sub,
-      Prod.smul_fst, Prod.smul_snd, Pi.add_apply, Pi.sub_apply, Pi.smul_apply,
-      smul_eq_mul] <;> ring
-  · funext k i
-    simp only [revLedger_R, Prod.fst_add, Prod.snd_add, Prod.fst_sub, Prod.snd_sub,
-      Prod.smul_fst, Prod.smul_snd, Pi.add_apply, Pi.sub_apply, Pi.smul_apply,
-      smul_eq_mul] <;> ring
+theorem revLedger_affine : AffineComb revLedger := fun _ _ _ => rfl
 
 /-! ## The chart involution -/
 
@@ -202,8 +122,8 @@ theorem tau_tau (b : Fin 20 → ℝ) : tau (tau b) = b := by
     revLedger_revLedger, encode20_decode20]
 
 theorem affineComb_tau : AffineComb tau :=
-  AffineComb.comp (f := decode20) (g := fun L => encode20 (revLedger L))
-    (AffineComb.comp (f := revLedger) (g := encode20) encode20_affine revLedger_affine)
+  AffineComb.comp (g := fun L => encode20 (revLedger L))
+    (AffineComb.comp encode20_affine revLedger_affine)
     decode20_affine
 
 theorem continuous_tau : Continuous tau :=
@@ -227,12 +147,7 @@ theorem frame_swap {p : Fin 3 → Albert} (hp : Frame p) :
 theorem frame_revTriple (T : Triple) (hT : ∀ a : Fin 3, Frame (T a)) (a : Fin 3) :
     Frame (revTriple T a) := by
   rcases fin3_cases a with rfl | rfl | rfl
-  · rw [revTriple_zero]
-    exact frame_swap (hT 0)
-  · rw [revTriple_one]
-    exact hT 1
-  · rw [revTriple_two]
-    exact hT 2
+  exacts [frame_swap (hT 0), hT 1, hT 2]
 
 /-- Phi of a triple, read off its three encoders. -/
 def phiOf (T : Triple) : ℝ := phi (encoder (T 0)) (encoder (T 1)) (encoder (T 2))
@@ -247,107 +162,40 @@ theorem encoder_revTriple_zero (T : Triple) :
   abel
 
 theorem phiOf_revTriple (T : Triple) : phiOf (revTriple T) = -phiOf T := by
-  have h0 : encoder (revTriple T 0) = (-1 : ℝ) • encoder (T 0) := by
-    rw [encoder_revTriple_zero, neg_one_smul]
-  have h1 : encoder (revTriple T 1) = encoder (T 1) := by rw [revTriple_one]
-  have h2 : encoder (revTriple T 2) = encoder (T 2) := by rw [revTriple_two]
-  simp only [phiOf_apply]
-  rw [h0, h1, h2, phi_smul_first]
-  ring
+  simp only [phiOf_apply, encoder_revTriple_zero, ← neg_one_smul ℝ (encoder (T 0)), phi_smul_first]
+  simp [revTriple]; ring
 
 /-- The shape `RobustBranchReversal.reversalSection_negative` (:52) takes, at
 `phi := fun T => -phiOf T`: instantiating it there turns the reversed section's sign POSITIVE. -/
 theorem negPhiOf_revTriple (T : Triple) :
-    (fun X : Triple => -phiOf X) (revTriple T) = -((fun X : Triple => -phiOf X) T) := by
+    (fun X => -phiOf X) (revTriple T) = -((fun X => -phiOf X) T) := by
   show -phiOf (revTriple T) = -(-phiOf T)
   rw [phiOf_revTriple]
 
 /-! ## Continuity of Phi -/
 
-theorem continuous_U : Continuous fun p : Albert × Albert => U p.1 p.2 := by
-  have h12 : Continuous fun p : Albert × Albert => jordan p.1 p.2 := continuous_jordan
-  have hp11 : Continuous fun p : Albert × Albert => (p.1, p.1) :=
-    continuous_fst.prodMk continuous_fst
-  have h11 : Continuous fun p : Albert × Albert => jordan p.1 p.1 := by
-    simpa only [Function.comp_def] using continuous_jordan.comp hp11
-  have hp1 : Continuous fun p : Albert × Albert => (p.1, jordan p.1 p.2) :=
-    continuous_fst.prodMk h12
-  have h1 : Continuous fun p : Albert × Albert => jordan p.1 (jordan p.1 p.2) :=
-    by simpa only [Function.comp_def] using continuous_jordan.comp hp1
-  have hp2 : Continuous fun p : Albert × Albert => (jordan p.1 p.1, p.2) :=
-    h11.prodMk continuous_snd
-  have h2 : Continuous fun p : Albert × Albert => jordan (jordan p.1 p.1) p.2 := by
-    simpa only [Function.comp_def] using continuous_jordan.comp hp2
-  have hU : (fun p : Albert × Albert => U p.1 p.2) =
-      fun p : Albert × Albert =>
-        jordan p.1 (jordan p.1 p.2) + jordan p.1 (jordan p.1 p.2) -
-          jordan (jordan p.1 p.1) p.2 := by
-    funext p
-    simp only [U, two_smul]
-  rw [hU]
-  exact (h1.add h1).sub h2
+theorem cj {X : Type*} [TopologicalSpace X] {f g : X → Albert}
+    (hf : Continuous f) (hg : Continuous g) : Continuous fun x => jordan (f x) (g x) := by
+  simpa [Function.comp_def] using continuous_jordan.comp (hf.prodMk hg)
 
-theorem continuous_phi3 :
-    Continuous fun p : Albert × Albert × Albert => phi p.1 p.2.1 p.2.2 := by
-  have cx : Continuous fun p : Albert × Albert × Albert => p.1 := continuous_fst
-  have cy : Continuous fun p : Albert × Albert × Albert => p.2.1 :=
-    continuous_fst.comp continuous_snd
-  have cz : Continuous fun p : Albert × Albert × Albert => p.2.2 :=
-    continuous_snd.comp continuous_snd
-  have hpyz : Continuous fun p : Albert × Albert × Albert => (p.2.1, p.2.2) :=
-    cy.prodMk cz
-  have hyz : Continuous fun p : Albert × Albert × Albert => U p.2.1 p.2.2 := by
-    simpa only [Function.comp_def] using continuous_U.comp hpyz
-  have hpxz : Continuous fun p : Albert × Albert × Albert => (p.1, p.2.2) :=
-    cx.prodMk cz
-  have hxz : Continuous fun p : Albert × Albert × Albert => U p.1 p.2.2 := by
-    simpa only [Function.comp_def] using continuous_U.comp hpxz
-  have hpA : Continuous fun p : Albert × Albert × Albert => (p.1, U p.2.1 p.2.2) :=
-    cx.prodMk hyz
-  have hA : Continuous fun p : Albert × Albert × Albert => U p.1 (U p.2.1 p.2.2) := by
-    simpa only [Function.comp_def] using continuous_U.comp hpA
-  have hpB : Continuous fun p : Albert × Albert × Albert => (p.2.1, U p.1 p.2.2) :=
-    cy.prodMk hxz
-  have hB : Continuous fun p : Albert × Albert × Albert => U p.2.1 (U p.1 p.2.2) := by
-    simpa only [Function.comp_def] using continuous_U.comp hpB
-  have hpJ : Continuous fun p : Albert × Albert × Albert => (p.1, p.2.1) :=
-    cx.prodMk cy
-  have hJ : Continuous fun p : Albert × Albert × Albert => jordan p.1 p.2.1 := by
-    simpa only [Function.comp_def] using continuous_jordan.comp hpJ
-  have hpC : Continuous fun p : Albert × Albert × Albert => (p.2.2, jordan p.1 p.2.1) :=
-    cz.prodMk hJ
-  have hC : Continuous fun p : Albert × Albert × Albert => U p.2.2 (jordan p.1 p.2.1) := by
-    simpa only [Function.comp_def] using continuous_U.comp hpC
-  have hphi : (fun p : Albert × Albert × Albert => phi p.1 p.2.1 p.2.2) =
-      fun p : Albert × Albert × Albert =>
-        inner (U p.1 (U p.2.1 p.2.2) - U p.2.1 (U p.1 p.2.2))
-          (U p.2.2 (jordan p.1 p.2.1)) := by
-    funext p
-    simp only [phi]
-  rw [hphi]
-  have hpPhi : Continuous fun p : Albert × Albert × Albert =>
-      (U p.1 (U p.2.1 p.2.2) - U p.2.1 (U p.1 p.2.2),
-        U p.2.2 (jordan p.1 p.2.1)) := (hA.sub hB).prodMk hC
-  simpa only [Function.comp_def] using continuous_native_inner.comp hpPhi
+theorem cU {X : Type*} [TopologicalSpace X] {f g : X → Albert}
+    (hf : Continuous f) (hg : Continuous g) : Continuous fun x => U (f x) (g x) := by
+  simp [U, two_smul]
+  exact ((cj hf (cj hf hg)).add (cj hf (cj hf hg))).sub (cj (cj hf hf) hg)
 
 theorem continuous_encoder_slot (a : Fin 3) :
     Continuous fun T : Triple => encoder (T a) := by
-  have h2 : Continuous fun T : Triple => T a 2 :=
-    continuous_apply_apply (ρ := fun (_ _ : Fin 3) => Albert) a (2 : Fin 3)
-  have h0 : Continuous fun T : Triple => T a 0 :=
-    continuous_apply_apply (ρ := fun (_ _ : Fin 3) => Albert) a (0 : Fin 3)
-  change Continuous fun T : Triple => T a 2 - T a 0
+  have h2 := continuous_apply_apply (ρ := fun (_ _ : Fin 3) => Albert) a (2 : Fin 3)
+  have h0 := continuous_apply_apply (ρ := fun (_ _ : Fin 3) => Albert) a (0 : Fin 3)
   exact h2.sub h0
 
 theorem continuous_phiOf : Continuous phiOf := by
-  have hp : Continuous fun T : Triple =>
-      (encoder (T 0), encoder (T 1), encoder (T 2)) :=
-    (continuous_encoder_slot 0).prodMk
-      ((continuous_encoder_slot 1).prodMk (continuous_encoder_slot 2))
-  change Continuous fun T : Triple => phi (encoder (T 0)) (encoder (T 1)) (encoder (T 2))
-  simpa only [Function.comp_def] using continuous_phi3.comp hp
+  have he := continuous_encoder_slot
+  unfold phiOf phi
+  simpa [Function.comp_def, Pi.sub_apply] using continuous_native_inner.comp (((cU (he 0) (cU (he 1) (he 2))).sub
+    (cU (he 1) (cU (he 0) (he 2)))).prodMk (cU (he 2) (cj (he 0) (he 1))))
 
-theorem continuous_revTriple : Continuous fun T : Triple => revTriple T := by
+theorem continuous_revTriple : Continuous fun T => revTriple T := by
   refine continuous_pi fun a => continuous_pi fun i => ?_
   rcases fin3_cases a with rfl | rfl | rfl
   · exact (continuous_apply (Equiv.swap (0 : Fin 3) 2 i)).comp (continuous_apply (0 : Fin 3))

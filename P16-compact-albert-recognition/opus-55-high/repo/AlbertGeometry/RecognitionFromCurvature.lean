@@ -15,10 +15,10 @@ public import Mathlib.Algebra.Module.Equiv.Basic
 @[expose] public section
 namespace AlbertGeometry.RecognitionFromCurvature
 noncomputable section
-open Module Glennie AlbertRecognition
+open Glennie AlbertRecognition
 open AlbertGeometry.Cubic AlbertGeometry.CubicPolynomialRepresentation
 open AlbertGeometry.NativeNormAlgebra AlbertGeometry.NativeEuclideanNormBinding
-open AlbertGeometry.NativeCoordinateDerivatives AlbertGeometry.NativeCoordinateDictionary
+open AlbertGeometry.NativeCoordinateDictionary
 open AlbertGeometry.NativeCurvatureDictionary
 open AlbertGeometry.UnitTangentNormReconstruction
 open AlbertGeometry.BasedNormDerivativeTransport
@@ -41,8 +41,8 @@ choice. This is an algebraic coordinate map only, with its certificates below. -
 def matchingMetricFrame : V ≃ₗ[ℝ] (tangentSpace P e) := nativeMetricFrame.trans I.equiv.symm
 
 @[simp] theorem matchingMetricFrame_image (x : V) :
-    I.equiv (matchingMetricFrame P e he I x) = nativeMetricFrame x := by
-  exact I.equiv.apply_symm_apply (nativeMetricFrame x)
+    I.equiv (matchingMetricFrame P e he I x) = nativeMetricFrame x :=
+  I.equiv.apply_symm_apply (nativeMetricFrame x)
 
 /-- True metric matching in the chosen frame follows from the target isometry. -/
 theorem matchingMetricFrame_metric (x y : V) :
@@ -63,15 +63,6 @@ theorem matchingMetricFrame_curvature (x y z : V) :
   exact (nativeMetricFrame.apply_symm_apply ((chartCurvature nativeEuclideanRepresentation nativeCoordinateUnit nativeNormalization 0) (nativeMetricFrame x)
     (nativeMetricFrame y) (nativeMetricFrame z))).symm
 
-/-- If another Gram frame F0 was chosen, this is the actual coordinate change
-F0⁻¹∘F. It is an algebraic correction, not an assumed R automorphism. -/
-def matchingFrameChange (F0 : V ≃ₗ[ℝ] (tangentSpace P e)) : V ≃ₗ[ℝ] V :=
-  (matchingMetricFrame P e he I).trans F0.symm
-
-@[simp] theorem matchingFrameChange_apply (F0 : V ≃ₗ[ℝ] (tangentSpace P e)) (x : V) :
-    F0 (matchingFrameChange P e he I F0 x) = matchingMetricFrame P e he I x :=
-  F0.apply_symm_apply _
-
 variable [FiniteDimensional ℝ E]
 variable (hpos : ∀ u : E, u ≠ 0 → 0 < logHessianForm P e u u)
 
@@ -90,8 +81,8 @@ theorem tangentCubic_positive
       P.form ![(u : E),(u : E),(u : E)] := by
   obtain ⟨x, rfl⟩ := (matchingMetricFrame P e he I).surjective u
   rw [matchingMetricFrame_image, nativeMetricFrame_cubic]
-  have h := congrArg (fun B : SymmetricCubic => B.form x x x) hB
-  simpa only [frameCubic_apply] using h.symm
+  have h := congrArg (fun B => B.form x x x) hB
+  simpa [frameCubic_apply] using h.symm
 
 /-- Negative tangent map is an ACTUAL linear equivalence, preserving unit only
 when subsequently lifted through the unit/tangent split. -/
@@ -117,26 +108,15 @@ theorem tangentCubic_negative
   obtain ⟨x, rfl⟩ := (matchingMetricFrame P e he I).surjective u
   simp only [negativeTangentEquiv_apply, matchingMetricFrame_image, Submodule.coe_neg]
   rw [cubic_three_neg, nativeMetricFrame_cubic]
-  have h := congrArg (fun B : SymmetricCubic => B.form x x x) hB
-  simpa only [frameCubic_apply, scalarCubic_form, neg_mul, one_mul] using h.symm
+  have h := congrArg (fun B => B.form x x x) hB
+  simpa [frameCubic_apply, scalarCubic_form, neg_mul, one_mul] using h.symm
 
 include I hpos in
 /-- Whole norm/unit equivalence is PRODUCED in either sign. The only input map
 was the actual target tangent metric/full-curvature matching. -/
 theorem basedNormIso_of_tangentCurvature : Nonempty (BasedNormIso P e nativeEuclideanRepresentation nativeCoordinateUnit) := by
-  have build (Q : SymmetricTrilinearForm Coordinates) (f : Coordinates)
-      (hf : diagonalCubic Q.form f = 1)
-      (D : tangentSpace P e ≃ₗ[ℝ] tangentSpace Q f)
-      (hmetric : ∀ u v : tangentSpace P e,
-        baseChartMetric Q f hf (D u) (D v) = baseChartMetric P e he u v)
-      (hcubic : ∀ u : tangentSpace P e,
-        Q.form ![(D u : Coordinates),(D u : Coordinates),(D u : Coordinates)] =
-          P.form ![(u : E),(u : E),(u : E)]) : BasedNormIso P e Q f := by
-    refine basedNormIsoOfTangent (E := E) (H := Coordinates) P e he Q f hf D ?_ ?_
-    · intro u v
-      exact hmetric u v
-    · intro u
-      exact hcubic u
+  have build (Q : SymmetricTrilinearForm Coordinates) (f : Coordinates) (hf : diagonalCubic Q.form f = 1) D
+      hmetric hcubic : BasedNormIso P e Q f := basedNormIsoOfTangent P e he Q f hf D hmetric hcubic
   rcases matchingFrameCubic_sign P e he I hpos with hp | hn
   · with_implicit exact ⟨build nativeEuclideanRepresentation nativeCoordinateUnit nativeNormalization
       I.equiv I.map_metric (tangentCubic_positive P e he I hp)⟩
@@ -160,7 +140,7 @@ theorem nativeNewtonRecognition_of_exists_tangentCurvature
     ∃ A : E ≃ₗ[ℝ] Albert, A e = 1 ∧
       ∀ x : E, nativeNewtonNorm (A x) = diagonalCubic P.form x := by
   obtain ⟨J⟩ := basedNormIso_of_exists_tangentCurvature P e he hpos hI
-  let A : E ≃ₗ[ℝ] Albert := J.equiv.toLinearEquiv.trans delta
+  let A := J.equiv.toLinearEquiv.trans delta
   refine ⟨A, ?_, fun x => ?_⟩
   · change delta (J.equiv e) = 1
     rw [J.map_unit, delta_nativeCoordinateUnit]

@@ -29,8 +29,7 @@ theorem coordinateNewton_eq_diagonal :
     coordinateNewton = diagonalCubic nativeEuclideanRepresentation.form :=
   funext (fun x => (diagonal_nativeEuclideanRepresentation x).symm)
 
-theorem coordinateNewton_at_unit : coordinateNewton nativeCoordinateUnit = 1 := by
-  simp only [coordinateNewton, delta_nativeCoordinateUnit, nativeNewtonNorm_one]
+theorem coordinateNewton_at_unit : coordinateNewton nativeCoordinateUnit = 1 := by simp [coordinateNewton, delta_nativeCoordinateUnit, nativeNewtonNorm_one]
 
 /-- Literal actual second Frechet derivative of the literal Newton function. -/
 def coordinateNewtonHessian (x : Coordinates) : Coordinates →L[ℝ] Coordinates →L[ℝ] ℝ :=
@@ -38,7 +37,7 @@ def coordinateNewtonHessian (x : Coordinates) : Coordinates →L[ℝ] Coordinate
 
 theorem coordinateNewtonHessian_eq_cubicHessian (x : Coordinates) :
     coordinateNewtonHessian x = cubicHessian nativeEuclideanRepresentation x := by
-  have key := congrArg (fun f : Coordinates → ℝ => fderiv ℝ (fderiv ℝ f) x)
+  have key := congrArg (fun f => fderiv ℝ (fderiv ℝ f) x)
     coordinateNewton_eq_diagonal
   exact key
 
@@ -50,19 +49,19 @@ theorem hasFDerivAt_coordinateNewton (x : Coordinates) :
 
 theorem hasFDerivAt_fderiv_coordinateNewton (x : Coordinates) :
     HasFDerivAt (fderiv ℝ coordinateNewton) (coordinateNewtonHessian x) x := by
-  simp only [coordinateNewtonHessian, coordinateNewton_eq_diagonal]
+  simp [coordinateNewtonHessian, coordinateNewton_eq_diagonal]
   exact hasFDerivAt_fderiv_diagonalCubic_actual nativeEuclideanRepresentation x
 
-private def cubicLine (a b c d t : ℝ) : ℝ := a + t*b + t^2*c + t^3*d
-private def cubicLineSlope (b c d t : ℝ) : ℝ := b + (2*t)*c + (3*t^2)*d
+def cubicLine (a b c d t : ℝ) : ℝ := a + t*b + t^2*c + t^3*d
+def cubicLineSlope (b c d t : ℝ) : ℝ := b + (2*t)*c + (3*t^2)*d
 
-private theorem hasDerivAt_cubicLine (a b c d t : ℝ) :
+theorem hasDerivAt_cubicLine (a b c d t : ℝ) :
     HasDerivAt (cubicLine a b c d) (cubicLineSlope b c d t) t := by
   have h := (((hasDerivAt_const t a).add ((hasDerivAt_id t).mul_const b)).add
     ((hasDerivAt_pow 2 t).mul_const c)).add ((hasDerivAt_pow 3 t).mul_const d)
   exact h.congr_deriv (by unfold cubicLineSlope; ring)
 
-private theorem hasDerivAt_cubicLineSlope (b c d t : ℝ) :
+theorem hasDerivAt_cubicLineSlope (b c d t : ℝ) :
     HasDerivAt (cubicLineSlope b c d) (2*c + (6*t)*d) t := by
   have h := ((hasDerivAt_const t b).add
     (((hasDerivAt_id t).const_mul 2).mul_const c)).add
@@ -75,7 +74,7 @@ theorem hasDerivAt_coordinateNewton_affine (x y : Coordinates) (t : ℝ) :
       (fderiv ℝ coordinateNewton (x + t • y) y) t := by
   have ha : HasDerivAt (fun s : ℝ => x + s • y) y t :=
     (((hasDerivAt_id t).smul_const y).const_add x).congr_deriv (by simp)
-  simpa only [Function.comp_def] using
+  simpa [Function.comp_def] using
     (hasFDerivAt_coordinateNewton (x + t • y)).comp_hasDerivAt t ha
 
 /-- The SAME affine scalar function is globally the literal native line polynomial. -/
@@ -84,7 +83,7 @@ theorem coordinateNewton_affine_eq (x y : Coordinates) (t : ℝ) :
       nativeNewtonNorm (delta x) + t * Glennie.inner (nativeAdjoint (delta x)) (delta y) +
         t^2 * Glennie.inner (nativeAdjoint (delta y)) (delta x) +
         t^3 * nativeNewtonNorm (delta y) := by
-  simp only [coordinateNewton, map_add, map_smul]
+  simp [coordinateNewton, map_add, map_smul]
   exact nativeNewtonNorm_line (delta x) (delta y) t
 
 /-- Differentiate the global native line identity, then use actual derivative
@@ -118,7 +117,7 @@ theorem coordinateNewton_unit_line (u : Coordinates) (t : ℝ) :
       1 + t * Glennie.trace (delta u) +
         t^2 * ((Glennie.trace (delta u)^2 - Glennie.inner (delta u) (delta u)) / 2) +
         t^3 * nativeNewtonNorm (delta u) := by
-  simp only [coordinateNewton, map_add, map_smul, delta_nativeCoordinateUnit]
+  simp [coordinateNewton, map_add, map_smul, delta_nativeCoordinateUnit]
   exact nativeNewtonNorm_unit_line (delta u) t
 
 /-- Equality of the entire ACTUAL first derivative along the unit line. -/
@@ -132,7 +131,7 @@ theorem fderiv_coordinateNewton_unit_line (u : Coordinates) (t : ℝ) :
     ((Glennie.trace (delta u)^2 - Glennie.inner (delta u) (delta u)) / 2)
     (nativeNewtonNorm (delta u)) t
   have hline := hpoly.congr_of_eventuallyEq
-    (Filter.Eventually.of_forall (fun s : ℝ => coordinateNewton_unit_line u s))
+    (Filter.Eventually.of_forall (fun s => coordinateNewton_unit_line u s))
   exact hactual.unique hline
 
 /-- Genuine derivative of the ACTUAL DN map, restricted along the affine line
@@ -146,7 +145,7 @@ theorem hasDerivAt_fderiv_coordinateNewton_unit_line (u : Coordinates) :
   have hDN : HasDerivAt
       (fun t : ℝ => fderiv ℝ coordinateNewton (nativeCoordinateUnit + t • u))
       (coordinateNewtonHessian nativeCoordinateUnit u) 0 := by
-    simpa only [Function.comp_def] using
+    simpa [Function.comp_def] using
       (hasFDerivAt_fderiv_coordinateNewton nativeCoordinateUnit).comp_hasDerivAt_of_eq
         0 ha (by simp)
   exact (hDN.clm_apply (hasDerivAt_const (0 : ℝ) u)).congr_deriv (by simp)
@@ -169,7 +168,7 @@ theorem coordinateNewtonHessian_unit_diagonal (u : Coordinates) :
 
 theorem coordinateNewtonHessian_symm (x u v : Coordinates) :
     coordinateNewtonHessian x u v = coordinateNewtonHessian x v u := by
-  simp only [coordinateNewtonHessian_eq_cubicHessian]
+  simp [coordinateNewtonHessian_eq_cubicHessian]
   exact cubicHessian_symm nativeEuclideanRepresentation x u v
 
 /-- Genuine bilinear polarization recovers the full unit Hessian from its
@@ -181,30 +180,28 @@ theorem coordinateNewtonHessian_at_unit (u v : Coordinates) :
       coordinateNewtonHessian nativeCoordinateUnit u u +
         coordinateNewtonHessian nativeCoordinateUnit u v +
         coordinateNewtonHessian nativeCoordinateUnit v u +
-        coordinateNewtonHessian nativeCoordinateUnit v v := by
-    simp only [map_add, add_apply]
-    ring
+        coordinateNewtonHessian nativeCoordinateUnit v v := by grind
   have hsum := coordinateNewtonHessian_unit_diagonal (u + v)
   rw [hcross] at hsum
-  simp only [map_add, trace_add, inner_add_left, inner_add_right] at hsum
+  simp [map_add, trace_add, inner_add_left, inner_add_right] at hsum
   rw [inner_comm (delta v) (delta u)] at hsum
   nlinarith [coordinateNewtonHessian_unit_diagonal u, coordinateNewtonHessian_unit_diagonal v,
     coordinateNewtonHessian_symm nativeCoordinateUnit u v]
 
 /-- Literal actual twice-differentiated logarithm on the coordinate carrier. -/
 def coordinateLogHessian (x : Coordinates) : Coordinates →L[ℝ] Coordinates →L[ℝ] ℝ :=
-  fderiv ℝ (fderiv ℝ (fun y : Coordinates => Real.log (coordinateNewton y))) x
+  fderiv ℝ (fderiv ℝ (fun y => Real.log (coordinateNewton y))) x
 
 def coordinateLogMetric (x : Coordinates) : Coordinates →L[ℝ] Coordinates →L[ℝ] ℝ :=
   (-1 / 3 : ℝ) • coordinateLogHessian x
 
 theorem coordinateLogMetric_eq_logHessianForm (x : Coordinates) :
     coordinateLogMetric x = logHessianForm nativeEuclideanRepresentation x := by
-  have hlog : (fun y : Coordinates => Real.log (coordinateNewton y)) =
+  have hlog : (fun y => Real.log (coordinateNewton y)) =
       logCubic nativeEuclideanRepresentation :=
     funext (fun y => congrArg Real.log (congrFun coordinateNewton_eq_diagonal y))
   have key := congrArg
-    (fun f : Coordinates → ℝ => (-1 / 3 : ℝ) • fderiv ℝ (fderiv ℝ f) x) hlog
+    (fun f => (-1 / 3 : ℝ) • fderiv ℝ (fderiv ℝ f) x) hlog
   exact key
 
 /-- Actual log-Hessian calibration uses proved positivity N(e)=1 and genuine
@@ -216,7 +213,7 @@ theorem coordinateLogMetric_at_unit (u v : Coordinates) :
     norm_num
   rw [coordinateLogMetric_eq_logHessianForm,
     logHessianForm_apply nativeEuclideanRepresentation hpos]
-  simp only [← coordinateNewtonHessian_eq_cubicHessian, ← coordinateNewton_eq_diagonal,
+  simp [← coordinateNewtonHessian_eq_cubicHessian, ← coordinateNewton_eq_diagonal,
     coordinateNewton_at_unit, coordinateNewtonHessian_at_unit, fderiv_coordinateNewton_at_unit]
   ring
 

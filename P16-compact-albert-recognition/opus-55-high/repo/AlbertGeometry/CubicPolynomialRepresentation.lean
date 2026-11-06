@@ -57,8 +57,8 @@ theorem symmetricCoordinateForm_swap23 (i j k : Fin 27) (x y z : Coordinates) :
   ring
 
 theorem symmetricCoordinateForm_diagonal (i j k : Fin 27) (x : Coordinates) :
-    symmetricCoordinateForm i j k (fun _ : Fin 3 => x) = x i * x j * x k := by
-  have hv : (fun _ : Fin 3 => x) = ![x,x,x] := by
+    symmetricCoordinateForm i j k (fun _ => x) = x i * x j * x k := by
+  have hv : (fun _ => x) = ![x,x,x] := by
     ext t
     fin_cases t <;> rfl
   rw [hv, symmetricCoordinateForm_apply]

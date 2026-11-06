@@ -7,9 +7,8 @@ public import Mathlib.Tactic.FinCases
 @[expose] public section
 namespace Glennie.Compact.NativeWordTableR01
 noncomputable section
-open Glennie AlbertGeometry.NativeOperatorTrace
+open AlbertGeometry.NativeOperatorTrace
 open scoped BigOperators Matrix
-set_option autoImplicit false
 
 inductive Word where
   | unit : Word
@@ -42,14 +41,7 @@ theorem encode_decode (c : Fin 27 → ℝ) : encode (decode c) = c := by
   rw [LinearEquiv.apply_symm_apply]
   fin_cases i <;> rfl
 
-theorem decode_encode (x : Albert) : decode (encode x) = x := by
-  apply fullCoordinates.injective
-  change fullCoordinates (fullCoordinates.symm (unflatten (encode x))) = fullCoordinates x
-  rw [LinearEquiv.apply_symm_apply]
-  funext i
-  rcases i with j | ⟨s,t⟩
-  · fin_cases j <;> rfl
-  · fin_cases s <;> fin_cases t <;> rfl
+theorem decode_encode (x : Albert) : decode (encode x) = x := by rfl
 
 def flatCoordinates : Albert ≃ₗ[ℝ] (Fin 27 → ℝ) where
   toFun := encode

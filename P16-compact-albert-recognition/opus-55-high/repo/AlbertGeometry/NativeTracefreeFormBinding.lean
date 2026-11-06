@@ -15,7 +15,7 @@ public import AlbertGeometry.CubicPolarizationUniqueness
 @[expose] public section
 namespace AlbertGeometry.NativeTracefreeFormBinding
 noncomputable section
-open Module Glennie AlbertRecognition
+open Glennie AlbertRecognition
 open AlbertGeometry.Cubic AlbertGeometry.CubicPolynomialRepresentation
 open AlbertGeometry.NativeNormAlgebra AlbertGeometry.NativeEuclideanNormBinding
 open AlbertGeometry.NativeCoordinateDerivatives AlbertGeometry.NativeCoordinateDictionary
@@ -27,15 +27,15 @@ def referenceCoordinateVector (i : Fin 26) : TracefreeCoordinates :=
 
 theorem reference_coordinate_sum (x : TracefreeCoordinates) :
     ∑ i : Fin 26, x i • referenceCoordinateVector i = x := by
-  simpa only [referenceCoordinateVector, EuclideanSpace.basisFun_repr] using
+  simpa [referenceCoordinateVector, EuclideanSpace.basisFun_repr] using
     (EuclideanSpace.basisFun (Fin 26) ℝ).sum_repr x
 
 theorem native_reference_coordinate_sum (x : TracefreeCoordinates) :
     ∑ i : Fin 26, x i • tracefreeCoordinates (referenceCoordinateVector i) =
       tracefreeCoordinates x := by
-  have h := congrArg (fun y : TracefreeCoordinates => tracefreeCoordinates y)
+  have h := congrArg (fun y => tracefreeCoordinates y)
     (reference_coordinate_sum x)
-  simpa only [map_sum, map_smul] using h
+  simpa [map_sum, map_smul] using h
 
 /-- Literal coefficient of the reference cubic, already divided by3. -/
 def referenceCoefficient (i j k : Fin 26) : ℝ :=
@@ -54,32 +54,17 @@ theorem coordinateReferenceCubic_expansion (x y z : TracefreeCoordinates) :
       referenceCubic.form
         (∑ i : Fin 26, x i • tracefreeCoordinates (referenceCoordinateVector i)) Y Z =
       ∑ i : Fin 26, x i * referenceCubic.form
-        (tracefreeCoordinates (referenceCoordinateVector i)) Y Z := by
-    intro Y Z
-    rw [map_sum, LinearMap.sum_apply, LinearMap.sum_apply]
-    apply Finset.sum_congr rfl
-    intro i _
-    rw [map_smul, LinearMap.smul_apply, LinearMap.smul_apply, smul_eq_mul]
+        (tracefreeCoordinates (referenceCoordinateVector i)) Y Z := by simp
   have h2 : ∀ X Z : V,
       referenceCubic.form X
         (∑ j : Fin 26, y j • tracefreeCoordinates (referenceCoordinateVector j)) Z =
       ∑ j : Fin 26, y j * referenceCubic.form X
-        (tracefreeCoordinates (referenceCoordinateVector j)) Z := by
-    intro X Z
-    rw [map_sum, LinearMap.sum_apply]
-    apply Finset.sum_congr rfl
-    intro j _
-    rw [map_smul, LinearMap.smul_apply, smul_eq_mul]
+        (tracefreeCoordinates (referenceCoordinateVector j)) Z := by simp
   have h3 : ∀ X Y : V,
       referenceCubic.form X Y
         (∑ k : Fin 26, z k • tracefreeCoordinates (referenceCoordinateVector k)) =
       ∑ k : Fin 26, z k * referenceCubic.form X Y
-        (tracefreeCoordinates (referenceCoordinateVector k)) := by
-    intro X Y
-    rw [map_sum]
-    apply Finset.sum_congr rfl
-    intro k _
-    rw [map_smul, smul_eq_mul]
+        (tracefreeCoordinates (referenceCoordinateVector k)) := by simp
   rw [← native_reference_coordinate_sum x, ← native_reference_coordinate_sum y,
     ← native_reference_coordinate_sum z, h1]
   apply Finset.sum_congr rfl
@@ -88,10 +73,10 @@ theorem coordinateReferenceCubic_expansion (x y z : TracefreeCoordinates) :
   apply Finset.sum_congr rfl
   intro j _
   rw [h3]
-  simp only [Finset.mul_sum]
+  simp [Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro k _
-  simp only [referenceCoefficient]
+  simp [referenceCoefficient]
   ring
 
 /-- A continuous three-slot coordinate product, without topology on native V. -/
@@ -114,11 +99,7 @@ theorem continuousReferenceForm_apply (x y z : TracefreeCoordinates) :
   calc
     continuousReferenceForm ![x,y,z] =
       ∑ i : Fin 26, ∑ j : Fin 26, ∑ k : Fin 26,
-        referenceCoefficient i j k * (x i * y j * z k) := by
-      simp only [continuousReferenceForm, _root_.sum_apply,
-        smul_apply, smul_eq_mul, referenceCoordinateProduct_apply,
-        Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_two,
-        Matrix.tail_cons, Matrix.head_cons]
+        referenceCoefficient i j k * (x i * y j * z k) := by simp [continuousReferenceForm, _root_.sum_apply, smul_apply, smul_eq_mul, referenceCoordinateProduct_apply, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_two, Matrix.tail_cons, Matrix.head_cons]
     _ = ∑ i : Fin 26, ∑ j : Fin 26, ∑ k : Fin 26,
         (x i * y j * z k) * referenceCoefficient i j k := by
       apply Finset.sum_congr rfl
@@ -149,7 +130,7 @@ def continuousReferenceRepresentation : SymmetricTrilinearForm TracefreeCoordina
 theorem continuousReferenceRepresentation_diagonal (x : TracefreeCoordinates) :
     diagonalCubic continuousReferenceRepresentation.form x =
       nativeNewtonNorm (tracefreeCoordinates x : Albert) := by
-  have hm : (fun _ : Fin 3 => x) = ![x,x,x] := by
+  have hm : (fun _ => x) = ![x,x,x] := by
     ext i
     fin_cases i <;> rfl
   change continuousReferenceForm (fun _ : Fin 3 => x) = _
@@ -158,29 +139,27 @@ theorem continuousReferenceRepresentation_diagonal (x : TracefreeCoordinates) :
 /-- Actual restriction of the genuine Euclidean27 form by the constructed CLM. -/
 def restrictedNativeForm : TrilinearForm TracefreeCoordinates :=
   nativeEuclideanRepresentation.form.compContinuousLinearMap
-    (fun _ : Fin 3 => tracefreeCoordinateMap)
+    (fun _ => tracefreeCoordinateMap)
 
 theorem restrictedNativeForm_apply (x y z : TracefreeCoordinates) :
     restrictedNativeForm ![x,y,z] = nativeEuclideanRepresentation.form
       ![tracefreeCoordinateMap x, tracefreeCoordinateMap y, tracefreeCoordinateMap z] := by
-  have hm : (fun i : Fin 3 => tracefreeCoordinateMap (![x,y,z] i)) =
+  have hm : (fun i => tracefreeCoordinateMap (![x,y,z] i)) =
       ![tracefreeCoordinateMap x, tracefreeCoordinateMap y, tracefreeCoordinateMap z] := by
     funext i
     fin_cases i <;> rfl
   have hrestrict (P : TrilinearForm Coordinates) :
-      P.compContinuousLinearMap (fun _ : Fin 3 => tracefreeCoordinateMap) ![x,y,z] =
-      P ![tracefreeCoordinateMap x, tracefreeCoordinateMap y, tracefreeCoordinateMap z] := by
-    rw [ContinuousMultilinearMap.compContinuousLinearMap_apply]
-    exact congrArg (fun m : Fin 3 → Coordinates => P m) hm
+      P.compContinuousLinearMap (fun _ => tracefreeCoordinateMap) ![x,y,z] =
+      P ![tracefreeCoordinateMap x, tracefreeCoordinateMap y, tracefreeCoordinateMap z] := by simp_all
   have hdef : restrictedNativeForm =
       (nativeEuclideanRepresentation.form : TrilinearForm Coordinates).compContinuousLinearMap
-        (fun _ : Fin 3 => tracefreeCoordinateMap) := by
+        (fun _ => tracefreeCoordinateMap) := by
     rfl
   calc
     restrictedNativeForm ![x,y,z] =
         (nativeEuclideanRepresentation.form : TrilinearForm Coordinates).compContinuousLinearMap
-          (fun _ : Fin 3 => tracefreeCoordinateMap) ![x,y,z] :=
-      congrArg (fun Q : TrilinearForm TracefreeCoordinates => Q ![x,y,z]) hdef
+          (fun _ => tracefreeCoordinateMap) ![x,y,z] :=
+      congrArg (fun Q => Q ![x,y,z]) hdef
     _ = nativeEuclideanRepresentation.form
         ![tracefreeCoordinateMap x, tracefreeCoordinateMap y, tracefreeCoordinateMap z] :=
       hrestrict (nativeEuclideanRepresentation.form : TrilinearForm Coordinates)
@@ -201,9 +180,8 @@ theorem restrictedNativeRepresentation_diagonal (x : TracefreeCoordinates) :
       nativeNewtonNorm (tracefreeCoordinates x : Albert) := by
   have hdiag (P : TrilinearForm Coordinates) :
       diagonalCubic
-        (P.compContinuousLinearMap (fun _ : Fin 3 => tracefreeCoordinateMap)) x =
-      diagonalCubic P (tracefreeCoordinateMap x) := by
-    simp only [diagonalCubic, ContinuousMultilinearMap.compContinuousLinearMap_apply]
+        (P.compContinuousLinearMap (fun _ => tracefreeCoordinateMap)) x =
+      diagonalCubic P (tracefreeCoordinateMap x) := by rfl
   calc
     diagonalCubic restrictedNativeRepresentation.form x =
         diagonalCubic nativeEuclideanRepresentation.form (tracefreeCoordinateMap x) :=
@@ -211,7 +189,7 @@ theorem restrictedNativeRepresentation_diagonal (x : TracefreeCoordinates) :
     _ = nativeNewtonNorm (tracefreeCoordinates x : Albert) := by
       rw [diagonal_nativeEuclideanRepresentation, tracefreeCoordinateMap_apply,
         delta_normalizedCoordinatePoint]
-      simp only [normalizedNativePoint, zero_smul, zero_add]
+      simp [normalizedNativePoint, zero_smul, zero_add]
 
 /-- Whole diagonal equality and actual D3 recovery prove the full CMM equality. -/
 theorem restrictedNativeRepresentation_eq_reference :
@@ -248,8 +226,6 @@ def tangentCoordinateLinear : TracefreeCoordinates →ₗ[ℝ] NativeCoordinateT
     rw [tracefreeCoordinateMap_apply]
     exact normalizedCoordinatePoint_tangent v)
 
-@[simp] theorem tangentCoordinateLinear_coe (v : TracefreeCoordinates) :
-    (tangentCoordinateLinear v : Coordinates) = tracefreeCoordinateMap v := rfl
 
 /-- Algebraic inverse constructed through literal native projection and basis
 coordinates. Only its Euclidean/subspace endpoints are normed. -/
@@ -268,14 +244,13 @@ theorem tangentCoordinateInverse_right (u : NativeCoordinateTangent) :
   have htrace : Glennie.trace (delta (u : Coordinates)) = 0 := by
     have hu := u.property
     change fderiv ℝ coordinateNewton nativeCoordinateUnit (u : Coordinates) = 0 at hu
-    rw [fderiv_coordinateNewton_at_unit] at hu
-    exact hu
+    rwa [fderiv_coordinateNewton_at_unit] at hu
   apply Subtype.ext
   change tracefreeCoordinateMap
     (tracefreeCoordinates.symm (project (delta (u : Coordinates)))) = (u : Coordinates)
   apply delta.injective
   rw [tracefreeCoordinateMap_apply, delta_normalizedCoordinatePoint]
-  simp only [normalizedNativePoint, zero_smul, zero_add,
+  simp [normalizedNativePoint, zero_smul, zero_add,
     LinearEquiv.apply_symm_apply, project_coe, Glennie.traceless, htrace,
     zero_div, zero_smul, sub_zero]
 

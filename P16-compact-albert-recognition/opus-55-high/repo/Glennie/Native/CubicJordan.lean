@@ -15,9 +15,7 @@ public import Mathlib.Tactic.Module
 
 namespace Glennie.CubicJordan
 
-noncomputable section
 
-set_option maxHeartbeats 2000000
 
 variable {V : Type*} [AddCommGroup V] [Module ℝ V]
 
@@ -47,10 +45,8 @@ theorem linearResidual_eq_zero
     linearResidual mul T e x y = (1 / 6 : ℝ) •
         (residual mul T e (x + y) - residual mul T e (x - y) -
           (2 : ℝ) • residual mul T e y) := by
-      simp only [linearResidual, residual, map_add, map_sub, map_smul,
-        LinearMap.add_apply, LinearMap.sub_apply, LinearMap.smul_apply,
-        smul_eq_mul]
-      simp only [comm y x, comm y (mul x x), ← assocTrace x x y]
+      simp [linearResidual, residual, map_add, map_sub, LinearMap.add_apply, LinearMap.sub_apply]
+      simp [comm y x, comm y (mul x x), ← assocTrace x x y]
       module
     _ = 0 := by rw [char, char, char]; simp
 
@@ -63,8 +59,7 @@ theorem jordan_of_cubic_trace_identity
     (char : ∀ x, residual mul T e x = 0) (x y : V) :
     mul (mul x y) (mul x x) = mul x (mul y (mul x x)) := by
   have unitR (z : V) : mul z e = z := by rw [comm, unit]
-  have hB₁ : T (mul x (mul x y)) = T (mul (mul x x) y) :=
-    (assocTrace x x y).symm
+  have hB₁ := (assocTrace x x y).symm
   have hB₂ : T (mul (mul x x) (mul x y)) =
       T (mul (mul x (mul x x)) y) := by
     rw [← assocTrace, comm (mul x x) x]
@@ -77,13 +72,12 @@ theorem jordan_of_cubic_trace_identity
               linearResidual mul T e x (mul x y)) -
           (T y / 6) • residual mul T e x +
           ((1 / 6 : ℝ) * T (mul (residual mul T e x) y)) • e := by
-        simp only [linearResidual, residual, map_add, map_sub, map_smul,
+        simp [linearResidual, residual, map_add, map_sub, map_smul,
           LinearMap.add_apply, LinearMap.sub_apply, LinearMap.smul_apply,
           smul_eq_mul, unit, unitR, hB₁, hB₂]
         module
       _ = 0 := by rw [hlin, hlin, char]; simp
   have heq := sub_eq_zero.mp hj
-  simpa only [comm (mul x y) (mul x x), comm y (mul x x)] using heq
+  simpa [comm (mul x y) (mul x x), comm y (mul x x)] using heq
 
-end
 end Glennie.CubicJordan

@@ -34,7 +34,6 @@ namespace Glennie.Compact.Affine20
 
 noncomputable section
 
-set_option autoImplicit false
 set_option maxHeartbeats 2000000
 
 /-! ## The genuine affine domain -/
@@ -64,7 +63,7 @@ theorem pair_col (p q : Fin 3 → Albert) (hp : Frame p) (hq : Frame q) (j : Fin
 this file's numerals (the same algebra as the `ledger_last_marginal`). -/
 theorem ledger_margin3 (p q r : Fin 3 → Albert) (hr : Frame r) (i j : Fin 3) :
     ledger p q r i j 0 + ledger p q r i j 1 + ledger p q r i j 2 = inner (p i) (q j) := by
-  simp only [ledger]
+  simp [ledger]
   rw [← trace_add, ← trace_add, ← jordan_add_right, ← jordan_add_right, hr.sum_unit,
     jordan_unit_right]
   rfl
@@ -73,38 +72,19 @@ theorem ledger_margin3 (p q r : Fin 3 → Albert) (hr : Frame r) (i j : Fin 3) :
 rewrites the ledger projections with the variable-level lemmas `ledger54_C/P/Q/R`, so no
 unification has to unfold Albert products. -/
 theorem ledger54_inDomain (T : Triple) (hT : ∀ a, Frame (T a)) : InDomain (ledger54 T) where
-  P_row i := by
-    simp only [ledger54_P]
-    exact pair_row (T 0) (T 1) (hT 0) (hT 1) i
-  P_col j := by
-    simp only [ledger54_P]
-    exact pair_col (T 0) (T 1) (hT 0) (hT 1) j
-  Q_row j := by
-    simp only [ledger54_Q]
-    exact pair_row (T 1) (T 2) (hT 1) (hT 2) j
-  Q_col k := by
-    simp only [ledger54_Q]
-    exact pair_col (T 1) (T 2) (hT 1) (hT 2) k
-  R_row k := by
-    simp only [ledger54_R]
-    exact pair_row (T 2) (T 0) (hT 2) (hT 0) k
-  R_col i := by
-    simp only [ledger54_R]
-    exact pair_col (T 2) (T 0) (hT 2) (hT 0) i
-  C_k i j := by
-    simp only [ledger54_C, ledger54_P]
-    exact ledger_margin3 (T 0) (T 1) (T 2) (hT 2) i j
+  P_row := pair_row _ _ (hT 0) (hT 1)
+  P_col := pair_col _ _ (hT 0) (hT 1)
+  Q_row := pair_row _ _ (hT 1) (hT 2)
+  Q_col := pair_col _ _ (hT 1) (hT 2)
+  R_row := pair_row _ _ (hT 2) (hT 0)
+  R_col := pair_col _ _ (hT 2) (hT 0)
+  C_k := ledger_margin3 _ _ _ (hT 2)
   C_i j k := by
-    simp only [ledger54_C, ledger54_Q]
-    rw [ledger_cyclic (T 0) (T 1) (T 2) 0 j k, ledger_cyclic (T 0) (T 1) (T 2) 1 j k,
-      ledger_cyclic (T 0) (T 1) (T 2) 2 j k]
-    exact ledger_margin3 (T 1) (T 2) (T 0) (hT 0) j k
+    simp [ledger54_C, ledger54_Q, ledger_cyclic (T 0)]
+    exact ledger_margin3 _ _ _ (hT 0) j k
   C_j k i := by
-    simp only [ledger54_C, ledger54_R]
-    rw [ledger_cyclic (T 0) (T 1) (T 2) i 0 k, ledger_cyclic (T 0) (T 1) (T 2) i 1 k,
-      ledger_cyclic (T 0) (T 1) (T 2) i 2 k, ledger_cyclic (T 1) (T 2) (T 0) 0 k i,
-      ledger_cyclic (T 1) (T 2) (T 0) 1 k i, ledger_cyclic (T 1) (T 2) (T 0) 2 k i]
-    exact ledger_margin3 (T 2) (T 0) (T 1) (hT 1) k i
+    simp [ledger54_C, ledger54_R, ledger_cyclic (T 0), ledger_cyclic (T 1)]
+    exact ledger_margin3 _ _ _ (hT 1) k i
 
 /-! ## Zero-margin reconstruction -/
 
@@ -118,39 +98,6 @@ def lift4 (a b c d : ℝ) (i j : Fin 3) : ℝ := ext3 (ext3 a b j) (ext3 c d j) 
 def lift8 (h000 h001 h010 h011 h100 h101 h110 h111 : ℝ) (i j k : Fin 3) : ℝ :=
   ext3 (ext3 (ext3 h000 h001 k) (ext3 h010 h011 k) j)
     (ext3 (ext3 h100 h101 k) (ext3 h110 h111 k) j) i
-
-theorem ext3_zero (x y : ℝ) : ext3 x y 0 = x := rfl
-
-theorem ext3_one (x y : ℝ) : ext3 x y 1 = y := rfl
-
-theorem ext3_two (x y : ℝ) : ext3 x y 2 = -(x + y) := rfl
-
-theorem ext3_reconstruct (v : Fin 3 → ℝ) (h : v 0 + v 1 + v 2 = 0) (i : Fin 3) :
-    ext3 (v 0) (v 1) i = v i := by
-  rcases fin3_cases i with rfl | rfl | rfl
-  · exact ext3_zero _ _
-  · exact ext3_one _ _
-  · rw [ext3_two]
-    linarith
-
-theorem lift4_reconstruct (M : Fin 3 → Fin 3 → ℝ) (hr : ∀ i, M i 0 + M i 1 + M i 2 = 0)
-    (hc : ∀ j, M 0 j + M 1 j + M 2 j = 0) (i j : Fin 3) :
-    lift4 (M 0 0) (M 0 1) (M 1 0) (M 1 1) i j = M i j := by
-  unfold lift4
-  rw [ext3_reconstruct (M 0) (hr 0) j, ext3_reconstruct (M 1) (hr 1) j]
-  exact ext3_reconstruct (fun l => M l j) (hc j) i
-
-theorem lift8_reconstruct (H : Fin 3 → Fin 3 → Fin 3 → ℝ)
-    (hx : ∀ j k, H 0 j k + H 1 j k + H 2 j k = 0)
-    (hy : ∀ i k, H i 0 k + H i 1 k + H i 2 k = 0)
-    (hz : ∀ i j, H i j 0 + H i j 1 + H i j 2 = 0) (i j k : Fin 3) :
-    lift8 (H 0 0 0) (H 0 0 1) (H 0 1 0) (H 0 1 1) (H 1 0 0) (H 1 0 1) (H 1 1 0) (H 1 1 1)
-      i j k = H i j k := by
-  unfold lift8
-  rw [ext3_reconstruct (H 0 0) (hz 0 0) k, ext3_reconstruct (H 0 1) (hz 0 1) k,
-    ext3_reconstruct (H 1 0) (hz 1 0) k, ext3_reconstruct (H 1 1) (hz 1 1) k,
-    ext3_reconstruct (fun l => H 0 l k) (hy 0 k) j, ext3_reconstruct (fun l => H 1 l k) (hy 1 k) j]
-  exact ext3_reconstruct (fun l => H l j k) (hx j k) i
 
 /-! ## The chart -/
 
@@ -180,155 +127,16 @@ def decC (v : Fin 20 → ℝ) (i j k : Fin 3) : ℝ :=
 /-- The 54 entries rebuilt from the 20 chart coordinates. -/
 def decode20 (v : Fin 20 → ℝ) : Ledger54 := (decC v, decP v, decQ v, decR v)
 
-theorem decode20_C (v : Fin 20 → ℝ) : (decode20 v).1 = decC v := rfl
-
-theorem decode20_P (v : Fin 20 → ℝ) : (decode20 v).2.1 = decP v := rfl
-
-theorem decode20_Q (v : Fin 20 → ℝ) : (decode20 v).2.2.1 = decQ v := rfl
-
-theorem decode20_R (v : Fin 20 → ℝ) : (decode20 v).2.2.2 = decR v := rfl
-
 /-! Coordinate values of the chart (rfl on a variable ledger). -/
-
-theorem encode20_apply_0 (L : Ledger54) : encode20 L 0 = L.2.1 0 0 - 1 / 3 := rfl
-
-theorem encode20_apply_1 (L : Ledger54) : encode20 L 1 = L.2.1 0 1 - 1 / 3 := rfl
-
-theorem encode20_apply_2 (L : Ledger54) : encode20 L 2 = L.2.1 1 0 - 1 / 3 := rfl
-
-theorem encode20_apply_3 (L : Ledger54) : encode20 L 3 = L.2.1 1 1 - 1 / 3 := rfl
-
-theorem encode20_apply_4 (L : Ledger54) : encode20 L 4 = L.2.2.1 0 0 - 1 / 3 := rfl
-
-theorem encode20_apply_5 (L : Ledger54) : encode20 L 5 = L.2.2.1 0 1 - 1 / 3 := rfl
-
-theorem encode20_apply_6 (L : Ledger54) : encode20 L 6 = L.2.2.1 1 0 - 1 / 3 := rfl
-
-theorem encode20_apply_7 (L : Ledger54) : encode20 L 7 = L.2.2.1 1 1 - 1 / 3 := rfl
-
-theorem encode20_apply_8 (L : Ledger54) : encode20 L 8 = L.2.2.2 0 0 - 1 / 3 := rfl
-
-theorem encode20_apply_9 (L : Ledger54) : encode20 L 9 = L.2.2.2 0 1 - 1 / 3 := rfl
-
-theorem encode20_apply_10 (L : Ledger54) : encode20 L 10 = L.2.2.2 1 0 - 1 / 3 := rfl
-
-theorem encode20_apply_11 (L : Ledger54) : encode20 L 11 = L.2.2.2 1 1 - 1 / 3 := rfl
-
-theorem encode20_apply_12 (L : Ledger54) : encode20 L 12 = centred L 0 0 0 := rfl
-
-theorem encode20_apply_13 (L : Ledger54) : encode20 L 13 = centred L 0 0 1 := rfl
-
-theorem encode20_apply_14 (L : Ledger54) : encode20 L 14 = centred L 0 1 0 := rfl
-
-theorem encode20_apply_15 (L : Ledger54) : encode20 L 15 = centred L 0 1 1 := rfl
-
-theorem encode20_apply_16 (L : Ledger54) : encode20 L 16 = centred L 1 0 0 := rfl
-
-theorem encode20_apply_17 (L : Ledger54) : encode20 L 17 = centred L 1 0 1 := rfl
-
-theorem encode20_apply_18 (L : Ledger54) : encode20 L 18 = centred L 1 1 0 := rfl
-
-theorem encode20_apply_19 (L : Ledger54) : encode20 L 19 = centred L 1 1 1 := rfl
-
-/-- Fin 20 has exactly the elements 0, …, 19 (kernel-checked Boolean list check). -/
-theorem fin20_cases (n : Fin 20) :
-    n = 0 ∨ n = 1 ∨ n = 2 ∨ n = 3 ∨ n = 4 ∨ n = 5 ∨ n = 6 ∨ n = 7 ∨ n = 8 ∨ n = 9 ∨
-      n = 10 ∨ n = 11 ∨ n = 12 ∨ n = 13 ∨ n = 14 ∨ n = 15 ∨ n = 16 ∨ n = 17 ∨ n = 18 ∨
-        n = 19 := by
-  have hb : (List.finRange 20).all (fun n => decide (n = 0 ∨ n = 1 ∨ n = 2 ∨ n = 3 ∨ n = 4 ∨
-      n = 5 ∨ n = 6 ∨ n = 7 ∨ n = 8 ∨ n = 9 ∨ n = 10 ∨ n = 11 ∨ n = 12 ∨ n = 13 ∨ n = 14 ∨
-        n = 15 ∨ n = 16 ∨ n = 17 ∨ n = 18 ∨ n = 19)) = true := by
-    decide +kernel
-  exact of_decide_eq_true (List.all_eq_true.mp hb n (List.mem_finRange n))
-
-theorem decP_encode (L : Ledger54) (h : InDomain L) (i j : Fin 3) :
-    decP (encode20 L) i j = L.2.1 i j := by
-  have hr : ∀ i, (L.2.1 i 0 - 1 / 3) + (L.2.1 i 1 - 1 / 3) + (L.2.1 i 2 - 1 / 3) = 0 := by
-    intro i
-    linarith [h.P_row i]
-  have hc : ∀ j, (L.2.1 0 j - 1 / 3) + (L.2.1 1 j - 1 / 3) + (L.2.1 2 j - 1 / 3) = 0 := by
-    intro j
-    linarith [h.P_col j]
-  have key : lift4 (encode20 L 0) (encode20 L 1) (encode20 L 2) (encode20 L 3) i j =
-      L.2.1 i j - 1 / 3 :=
-    lift4_reconstruct (fun i j => L.2.1 i j - 1 / 3) hr hc i j
-  show 1 / 3 + lift4 (encode20 L 0) (encode20 L 1) (encode20 L 2) (encode20 L 3) i j =
-    L.2.1 i j
-  rw [key]
-  ring
-
-theorem decQ_encode (L : Ledger54) (h : InDomain L) (j k : Fin 3) :
-    decQ (encode20 L) j k = L.2.2.1 j k := by
-  have hr : ∀ j, (L.2.2.1 j 0 - 1 / 3) + (L.2.2.1 j 1 - 1 / 3) + (L.2.2.1 j 2 - 1 / 3) = 0 := by
-    intro j
-    linarith [h.Q_row j]
-  have hc : ∀ k, (L.2.2.1 0 k - 1 / 3) + (L.2.2.1 1 k - 1 / 3) + (L.2.2.1 2 k - 1 / 3) = 0 := by
-    intro k
-    linarith [h.Q_col k]
-  have key : lift4 (encode20 L 4) (encode20 L 5) (encode20 L 6) (encode20 L 7) j k =
-      L.2.2.1 j k - 1 / 3 :=
-    lift4_reconstruct (fun j k => L.2.2.1 j k - 1 / 3) hr hc j k
-  show 1 / 3 + lift4 (encode20 L 4) (encode20 L 5) (encode20 L 6) (encode20 L 7) j k =
-    L.2.2.1 j k
-  rw [key]
-  ring
-
-theorem decR_encode (L : Ledger54) (h : InDomain L) (k i : Fin 3) :
-    decR (encode20 L) k i = L.2.2.2 k i := by
-  have hr : ∀ k, (L.2.2.2 k 0 - 1 / 3) + (L.2.2.2 k 1 - 1 / 3) + (L.2.2.2 k 2 - 1 / 3) = 0 := by
-    intro k
-    linarith [h.R_row k]
-  have hc : ∀ i, (L.2.2.2 0 i - 1 / 3) + (L.2.2.2 1 i - 1 / 3) + (L.2.2.2 2 i - 1 / 3) = 0 := by
-    intro i
-    linarith [h.R_col i]
-  have key : lift4 (encode20 L 8) (encode20 L 9) (encode20 L 10) (encode20 L 11) k i =
-      L.2.2.2 k i - 1 / 3 :=
-    lift4_reconstruct (fun k i => L.2.2.2 k i - 1 / 3) hr hc k i
-  show 1 / 3 + lift4 (encode20 L 8) (encode20 L 9) (encode20 L 10) (encode20 L 11) k i =
-    L.2.2.2 k i
-  rw [key]
-  ring
-
-theorem decC_encode (L : Ledger54) (h : InDomain L) (i j k : Fin 3) :
-    decC (encode20 L) i j k = L.1 i j k := by
-  have hx : ∀ j k, centred L 0 j k + centred L 1 j k + centred L 2 j k = 0 := by
-    intro j k
-    simp only [centred]
-    linarith [h.C_i j k, h.P_col j, h.R_row k]
-  have hy : ∀ i k, centred L i 0 k + centred L i 1 k + centred L i 2 k = 0 := by
-    intro i k
-    simp only [centred]
-    linarith [h.C_j k i, h.P_row i, h.Q_col k]
-  have hz : ∀ i j, centred L i j 0 + centred L i j 1 + centred L i j 2 = 0 := by
-    intro i j
-    simp only [centred]
-    linarith [h.C_k i j, h.Q_row j, h.R_col i]
-  have key : lift8 (encode20 L 12) (encode20 L 13) (encode20 L 14) (encode20 L 15)
-      (encode20 L 16) (encode20 L 17) (encode20 L 18) (encode20 L 19) i j k = centred L i j k :=
-    lift8_reconstruct (centred L) hx hy hz i j k
-  show lift8 (encode20 L 12) (encode20 L 13) (encode20 L 14) (encode20 L 15)
-      (encode20 L 16) (encode20 L 17) (encode20 L 18) (encode20 L 19) i j k +
-      (decP (encode20 L) i j + decQ (encode20 L) j k + decR (encode20 L) k i) / 3 - 2 / 9 =
-    L.1 i j k
-  rw [key, decP_encode L h, decQ_encode L h, decR_encode L h]
-  simp only [centred]
-  ring
 
 /-- On the genuine domain the chart is inverted by decode20. -/
 theorem decode_encode (L : Ledger54) (h : InDomain L) : decode20 (encode20 L) = L := by
-  refine Prod.ext ?_ (Prod.ext ?_ (Prod.ext ?_ ?_))
-  · rw [decode20_C]
-    funext i j k
-    exact decC_encode L h i j k
-  · rw [decode20_P]
-    funext i j
-    exact decP_encode L h i j
-  · rw [decode20_Q]
-    funext j k
-    exact decQ_encode L h j k
-  · rw [decode20_R]
-    funext k i
-    exact decR_encode L h k i
+  obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9⟩ := h
+  simp [Fin.forall_fin_succ] at h1 h2 h3 h4 h5 h6 h7 h8 h9
+  casesm* _ ∧ _
+  ext i j k <;> fin_cases i <;> fin_cases j <;> (try fin_cases k) <;>
+    simp [decode20, decC, decP, decQ, decR, lift8, lift4, ext3, encode20, centred] <;>
+    linarith
 
 /-- The chart inverts on the ledger of every triple of actual frames. -/
 theorem decode_encode_frames (T : Triple) (hT : ∀ a, Frame (T a)) :
@@ -357,46 +165,12 @@ variable-level rfl lemmas and the Prod/Pi pointwise lemmas (`simp only`), and cl
 theorem encode20_affine : AffineComb encode20 := by
   intro x y t
   funext n
-  rcases fin20_cases n with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
-    rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
-    simp only [encode20_apply_0, encode20_apply_1, encode20_apply_2, encode20_apply_3,
-      encode20_apply_4, encode20_apply_5, encode20_apply_6, encode20_apply_7, encode20_apply_8,
-      encode20_apply_9, encode20_apply_10, encode20_apply_11, encode20_apply_12,
-      encode20_apply_13, encode20_apply_14, encode20_apply_15, encode20_apply_16,
-      encode20_apply_17, encode20_apply_18, encode20_apply_19, centred, Prod.fst_add,
-      Prod.snd_add, Prod.fst_sub, Prod.snd_sub, Prod.smul_fst, Prod.smul_snd, Pi.add_apply,
-      Pi.sub_apply, Pi.smul_apply, smul_eq_mul] <;>
-    ring
+  fin_cases n <;> simp [encode20, centred] <;> ring
 
 theorem decode20_affine : AffineComb decode20 := by
   intro x y t
-  refine Prod.ext ?_ (Prod.ext ?_ (Prod.ext ?_ ?_))
-  · funext i j k
-    rcases fin3_cases i with rfl | rfl | rfl <;> rcases fin3_cases j with rfl | rfl | rfl <;>
-      rcases fin3_cases k with rfl | rfl | rfl <;>
-      simp only [decode20_C, decode20_P, decode20_Q, decode20_R, decC, decP, decQ, decR, lift8,
-        lift4, ext3_zero, ext3_one, ext3_two, Prod.fst_add, Prod.snd_add, Prod.fst_sub,
-        Prod.snd_sub, Prod.smul_fst, Prod.smul_snd, Pi.add_apply, Pi.sub_apply, Pi.smul_apply,
-        smul_eq_mul] <;>
-      ring
-  · funext i j
-    rcases fin3_cases i with rfl | rfl | rfl <;> rcases fin3_cases j with rfl | rfl | rfl <;>
-      simp only [decode20_P, decP, lift4, ext3_zero, ext3_one, ext3_two, Prod.fst_add,
-        Prod.snd_add, Prod.fst_sub, Prod.snd_sub, Prod.smul_fst, Prod.smul_snd, Pi.add_apply,
-        Pi.sub_apply, Pi.smul_apply, smul_eq_mul] <;>
-      ring
-  · funext j k
-    rcases fin3_cases j with rfl | rfl | rfl <;> rcases fin3_cases k with rfl | rfl | rfl <;>
-      simp only [decode20_Q, decQ, lift4, ext3_zero, ext3_one, ext3_two, Prod.fst_add,
-        Prod.snd_add, Prod.fst_sub, Prod.snd_sub, Prod.smul_fst, Prod.smul_snd, Pi.add_apply,
-        Pi.sub_apply, Pi.smul_apply, smul_eq_mul] <;>
-      ring
-  · funext k i
-    rcases fin3_cases k with rfl | rfl | rfl <;> rcases fin3_cases i with rfl | rfl | rfl <;>
-      simp only [decode20_R, decR, lift4, ext3_zero, ext3_one, ext3_two, Prod.fst_add,
-        Prod.snd_add, Prod.fst_sub, Prod.snd_sub, Prod.smul_fst, Prod.smul_snd, Pi.add_apply,
-        Pi.sub_apply, Pi.smul_apply, smul_eq_mul] <;>
-      ring
+  ext i j k <;> fin_cases i <;> fin_cases j <;> (try fin_cases k) <;>
+    simp [decode20, decC, decP, decQ, decR, lift8, lift4, ext3] <;> ring
 
 /-! ## The relabelling action in chart coordinates -/
 

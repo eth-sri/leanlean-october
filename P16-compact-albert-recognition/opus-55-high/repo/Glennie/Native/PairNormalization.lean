@@ -8,9 +8,7 @@ public import Glennie.ComplexLine
 @[expose] public section
 
 namespace Glennie
-noncomputable section
 
-set_option maxHeartbeats 2000000
 
 /-- Two arbitrary unit octonions can be sent to the unit by an actual related triple. -/
 theorem octTwoUnitSlots (p q : Octonion) (hp : octNormSq p = 1)
@@ -35,8 +33,8 @@ theorem octUnit_scaling (x : Octonion) :
     ∃ a : Octonion, ∃ r : ℝ, octNormSq a = 1 ∧ 0 ≤ r ∧ x = r • a := by
   by_cases hx : x = 0
   · refine ⟨octScalar 1,0,?_,le_rfl,?_⟩
-    · norm_num [octNormSq, octScalar, Quaternion.normSq_def']
-    · simpa using hx
+    · norm_num [oct_simps]
+    · simp_all
   · obtain ⟨a,r,hr,ha,hx⟩ := octUnit_decomposition x hx
     exact ⟨a,r,ha,hr.le,hx⟩
 
@@ -52,5 +50,4 @@ theorem octTwoSlotsReal (u w : Octonion) :
   · rw [hu,map_smul,hgu,octScalar_smul,mul_one]
   · rw [hw,map_smul,hgw,octScalar_smul,mul_one]
 
-end
 end Glennie

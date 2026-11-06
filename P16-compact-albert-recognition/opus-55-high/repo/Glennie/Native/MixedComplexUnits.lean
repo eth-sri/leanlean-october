@@ -30,7 +30,7 @@ def residual (D H K : Mat) : Mat :=
 
 /-- Scalar normalization is generic in both matrices; no residual identity
 or commutativity of matrices is assumed. Only the complex entry ring commutes. -/
-private theorem tracePolar_smul_left (r : ℂ) (G B : Mat) :
+theorem tracePolar_smul_left (r : ℂ) (G B : Mat) :
     SectorContraction.tracePolar (r • G) B =
       r • SectorContraction.tracePolar G B := by
   ext i j
@@ -44,23 +44,23 @@ without conjugation. This theorem asserts only linearity, not residual=0. -/
 def residualComplexLinear (D H : Mat) : Mat →ₗ[ℂ] Mat where
   toFun := residual D H
   map_add' K L := by
-    simp only [residual, complexCommutator, SectorContraction.tracePolar,
-      Matrix.mul_add, Matrix.add_mul, Matrix.mul_sub, Matrix.sub_mul,
+    simp [residual, complexCommutator, SectorContraction.tracePolar,
+      Matrix.add_mul, Matrix.sub_mul,
       Matrix.trace_add, Matrix.trace_sub, mul_add, mul_sub,
       add_smul, sub_smul, smul_add, smul_sub]
     module
   map_smul' r K := by
     have hQ : complexCommutator D H (r • K) =
         r • complexCommutator D H K := by
-      simp only [complexCommutator, Matrix.mul_smul, Matrix.smul_mul, smul_sub]
+      simp [complexCommutator, smul_sub]
     change residual D H (r • K) = r • residual D H K
     unfold residual
     rw [hQ, tracePolar_smul_left]
-    simp only [Matrix.mul_smul, Matrix.smul_mul, smul_add, smul_sub]
+    simp [smul_add, smul_sub]
 
 /-- Explicit application bridges isolate the computational toFun from the
 linearity proof fields and the restriction-of-scalars wrapper. -/
-private theorem residualComplexLinear_apply (D H K : Mat) :
+theorem residualComplexLinear_apply (D H K : Mat) :
     residualComplexLinear D H K = residual D H K := rfl
 
 def matrixUnit (i j : Fin 3) : Mat := Matrix.single i j 1
@@ -71,17 +71,16 @@ theorem reconstruct (K : Mat) :
     K = ∑ i : Fin 3, ∑ j : Fin 3, K i j • matrixUnit i j := by
   ext a b
   fin_cases a <;> fin_cases b <;>
-    simp [matrixUnit, Fin.sum_univ_three, Matrix.single_apply, smul_eq_mul]
+    simp [matrixUnit, Fin.sum_univ_three, smul_eq_mul]
 
 /-- Expand the diagonal adjugate through the explicit three-by-three formula
 before default simp can replace it by erased-Finset cofactor products. -/
-private theorem diagonalInput_adjugate (a b c : ℂ) :
+theorem diagonalInput_adjugate (a b c : ℂ) :
     (diagonalInput a b c).adjugate = Matrix.diagonal ![b*c,a*c,a*b] := by
   rw [Matrix.adjugate_fin_three]
   ext i j
   fin_cases i <;> fin_cases j <;>
-    simp [diagonalInput, Matrix.diagonal_apply]
-  all_goals ring
+    simp [diagonalInput]
 
 /- This macro is a fixed nine-entry source proof.
 D is diagonal but H is ANY complex3x3 matrix; no conjugate of H or K is present.
@@ -91,10 +90,10 @@ local macro "solve_complex_unit" : tactic =>
   `(tactic|
     (ext a b
      fin_cases a <;> fin_cases b
-     all_goals simp only [residual, complexCommutator, adjugateCommutator,
+     all_goals simp [residual, complexCommutator, adjugateCommutator,
        symmProduct, SectorContraction.tracePolar]
-     all_goals simp only [diagonalInput_adjugate]
-     all_goals simp only [Matrix.adjugate_fin_three]
+     all_goals simp [diagonalInput_adjugate]
+     all_goals simp [Matrix.adjugate_fin_three]
      all_goals simp [diagonalInput, matrixUnit, Matrix.diagonal_apply,
        Matrix.single_apply, Matrix.mul_apply, Matrix.vecMul_apply_eq_sum,
        Matrix.trace, Matrix.diag, Matrix.one_apply, Fin.sum_univ_three,
@@ -147,12 +146,12 @@ theorem residual_zero (a b c : ℂ) (H K : Mat) :
     residual (diagonalInput a b c) H K = 0 := by
   change residualComplexLinear (diagonalInput a b c) H K = 0
   rw [reconstruct K, map_sum]
-  simp only [map_sum, map_smul]
+  simp [map_sum, map_smul]
   have hz (i j : Fin 3) :
       residualComplexLinear (diagonalInput a b c) H (matrixUnit i j) = 0 := by
     rw [residualComplexLinear_apply]
     exact residual_unit_zero a b c H i j
-  simp only [hz, smul_zero, Finset.sum_const_zero]
+  simp [hz, smul_zero, Finset.sum_const_zero]
 
 theorem mixed_identity (a b c : ℂ) (H K : Mat) :
     SectorContraction.tracePolar
@@ -180,7 +179,7 @@ theorem diagonalInput_native (a b c : ℝ) :
   ext i j
   fin_cases i <;> fin_cases j <;>
     apply Complex.ext <;>
-    simp [diagonalInput, Matrix.diagonal_apply, sectorComplexMatrix,
+    simp [diagonalInput, sectorComplexMatrix,
       complexHermitianMatrix, complexCoordinatesLinear, diagonalAlbert,
       complexPart]
 
@@ -200,7 +199,7 @@ theorem native_mixed_identity (a b c : ℝ) (y z : Albert) :
         symmProduct (sectorComplexMatrix (diagonalAlbert a b c)) (sectorComplexMatrix y) *
         adjugateCommutator (sectorComplexMatrix (diagonalAlbert a b c))
           (sectorComplexMatrix y) := by
-  simpa only [diagonalInput_native] using
+  simpa [diagonalInput_native] using
     mixed_identity (a:ℂ) (b:ℂ) (c:ℂ) (sectorComplexMatrix y) (sectorComplexMatrix z)
 
 end MixedComplexUnits

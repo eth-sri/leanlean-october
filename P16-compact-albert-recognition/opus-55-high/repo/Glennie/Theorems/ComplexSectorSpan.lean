@@ -8,7 +8,6 @@ The coordinate submodule and its dimension are proved in SectorSubspace. -/
 
 public section
 namespace Glennie
-noncomputable section
 
 theorem complexProjection_sub (x y : Albert) :
     complexProjection (x-y) = complexProjection x-complexProjection y := by
@@ -22,18 +21,16 @@ theorem complexProjection_smul (a : ℝ) (x : Albert) :
     complexProjection (a • x) = a • complexProjection x := by
   ext <;> simp [complexProjection,complexOct,complexPart,smul_eq_mul]
 
-theorem complexProjection_unit : complexProjection (1 : Albert) = 1 := by
-  ext <;> simp [complexProjection,complexOct,complexPart,unit,octScalar]
+theorem complexProjection_unit : complexProjection (1 : Albert) = 1 := by rfl
 
 /-- Polynomial projector recovery places the entire frame in the encoder's sector. -/
 theorem frame_in_complexSector (p : Fin 3 → Albert) (hp : Frame p)
     (he : InComplexSector (encoder p)) (i : Fin 3) : p i ∈ complexSector := by
-  have he' : encoder p ∈ complexSector := (complexSector_mem_iff _).mpr he
-  have hs : jordan (encoder p) (encoder p) ∈ complexSector :=
-    (complexSector_mem_iff _).mpr (complexSector_jordan _ _ he he)
+  have he' := (complexSector_mem_iff _).mpr he
+  have hs := (complexSector_mem_iff _).mpr (complexSector_jordan _ _ he he)
   have hu : (1 : Albert) ∈ complexSector := by
     rw [complexSector_mem_iff]
-    simp [InComplexSector,OctInComplex,unit,octScalar]
+    simp [InComplexSector,OctInComplex]
   have h0 : p 0 ∈ complexSector := by
     rw [← frame_projector_first p hp]
     exact complexSector.smul_mem _ (complexSector.sub_mem hs he')
@@ -93,9 +90,7 @@ theorem complex_pair_uniformLedger_of_projections (p q r : Fin 3 → Albert)
     (hr : ∀ k, complexProjection (r k) = (1/3 : ℝ) • (1 : Albert)) :
     UniformLedger p q r := by
   intro i j k
-  have hm : complexProjection (jordan (p i) (q j)) = jordan (p i) (q j) :=
-    complexProjection_eq_self _ (complexSector_jordan _ _ (hpc i) (hqc j))
-  change inner (jordan (p i) (q j)) (r k) = 1/9
+  have hm := complexProjection_eq_self _ (complexSector_jordan _ _ (hpc i) (hqc j))
   calc
     _ = inner (jordan (p i) (q j))
         (complexProjection (r k)+hiddenAlbert (hiddenMatrix (r k))) :=
@@ -112,5 +107,4 @@ theorem complex_pair_uniformLedger_of_projections (p q r : Fin 3 → Albert)
       rw [hu]
       norm_num
 
-end
 end Glennie

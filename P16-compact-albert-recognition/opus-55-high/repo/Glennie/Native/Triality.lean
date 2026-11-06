@@ -10,14 +10,11 @@ public import Mathlib.Data.Real.Sqrt
 @[expose] public section
 
 namespace Glennie
-noncomputable section
 
-set_option maxHeartbeats 2000000
-set_option linter.unusedSimpArgs false
 
 theorem octNormSq_add (x y : Octonion) :
     octNormSq (x+y) = octNormSq x+octNormSq y+2*octDot x y := by
-  simp [octNormSq, Quaternion.normSq_def', octDot_coordinates]
+  simp [oct_simps]
   ring
 
 theorem octDot_sub_left (x y z : Octonion) :
@@ -27,14 +24,12 @@ theorem octDot_sub_left (x y z : Octonion) :
 
 theorem octDot_mul_right (x y z : Octonion) :
     octDot (octMul x y) z = octDot x (octMul z (octConj y)) := by
-  simp [octDot_coordinates, octMul, octConj, Quaternion.re_mul,
-    Quaternion.imI_mul, Quaternion.imJ_mul, Quaternion.imK_mul]
+  simp [oct_simps]
   ring
 
 theorem octDot_mul_left (x y z : Octonion) :
     octDot (octMul x y) z = octDot y (octMul (octConj x) z) := by
-  simp [octDot_coordinates, octMul, octConj, Quaternion.re_mul,
-    Quaternion.imI_mul, Quaternion.imJ_mul, Quaternion.imK_mul]
+  simp [oct_simps]
   ring
 
 theorem octDot_ext (x y : Octonion) (h : ∀ z, octDot x z = octDot y z) : x = y := by
@@ -43,11 +38,11 @@ theorem octDot_ext (x y : Octonion) (h : ∀ z, octDot x z = octDot y z) : x = y
   exact sub_eq_zero.mp ((octNormSq_eq_zero (x-y)).mp hz)
 
 @[simp] theorem octNormSq_conj (x : Octonion) : octNormSq (octConj x) = octNormSq x := by
-  simp [octNormSq, octConj, Quaternion.normSq_def']
+  simp [oct_simps]
 
 theorem octNormSq_smul (r : ℝ) (x : Octonion) :
     octNormSq (r • x) = r^2 * octNormSq x := by
-  simp [octNormSq, Quaternion.normSq_def', smul_eq_mul]
+  simp [oct_simps]
   ring
 
 theorem octMul_self_eq (x : Octonion) :
@@ -65,38 +60,34 @@ theorem octMul_pure_unit_self (x : Octonion) (hre : octRe x = 0)
 /-- Every nonzero native octonion is a positive real multiple of a unit. -/
 theorem octUnit_decomposition (x : Octonion) (hx : x ≠ 0) :
     ∃ a : Octonion, ∃ r : ℝ, 0 < r ∧ octNormSq a = 1 ∧ x = r • a := by
-  have hn : 0 < octNormSq x := lt_of_le_of_ne (octNormSq_nonneg x)
+  have hn := lt_of_le_of_ne (octNormSq_nonneg x)
     (Ne.symm (fun h => hx ((octNormSq_eq_zero x).mp h)))
   let r := Real.sqrt (octNormSq x)
-  have hr : 0 < r := Real.sqrt_pos.2 hn
+  have hr := Real.sqrt_pos.2 hn
   have hr0 : r ≠ 0 := ne_of_gt hr
   have hrsq : r^2 = octNormSq x := Real.sq_sqrt hn.le
   refine ⟨r⁻¹ • x, r, hr, ?_, ?_⟩
   · rw [octNormSq_smul, ← hrsq]
     field_simp
-  · simp [smul_smul, hr0]
+  · simp_all
 
 /-- The inverse property is proved for the declared native multiplication. -/
 theorem octMul_conj_left_cancel (a x : Octonion) :
     octMul (octConj a) (octMul a x) = octNormSq a • x := by
-  ext <;> simp [octMul, octConj, octNormSq, Quaternion.normSq_def',
-    Quaternion.re_mul, Quaternion.imI_mul, Quaternion.imJ_mul,
-    Quaternion.imK_mul, smul_eq_mul] <;> ring
+  ext <;> simp [oct_simps] <;> ring
 
 theorem octMul_left_conj_cancel (a x : Octonion) :
     octMul a (octMul (octConj a) x) = octNormSq a • x := by
-  simpa only [octConj_conj, octNormSq_conj] using
+  simpa [octConj_conj, octNormSq_conj] using
     octMul_conj_left_cancel (octConj a) x
 
 theorem octMul_conj_right_cancel (a x : Octonion) :
     octMul (octMul x a) (octConj a) = octNormSq a • x := by
-  ext <;> simp [octMul, octConj, octNormSq, Quaternion.normSq_def',
-    Quaternion.re_mul, Quaternion.imI_mul, Quaternion.imJ_mul,
-    Quaternion.imK_mul, smul_eq_mul] <;> ring
+  ext <;> simp [oct_simps] <;> ring
 
 theorem octMul_right_conj_cancel (a x : Octonion) :
     octMul (octMul x (octConj a)) a = octNormSq a • x := by
-  simpa only [octConj_conj, octNormSq_conj] using
+  simpa [octConj_conj, octNormSq_conj] using
     octMul_conj_right_cancel (octConj a) x
 
 def octLeftUnitEquiv (a : Octonion) (ha : octNormSq a = 1) :
@@ -160,14 +151,10 @@ theorem octDot_of_norm_preserving (A : Octonion ≃ₗ[ℝ] Octonion)
 
 namespace OctRelatedTriple
 
-@[simp] theorem middle_A (a : Octonion) (ha : octNormSq a = 1) (x : Octonion) :
-    (octMiddleTriple a ha).A x = octMul a x := rfl
 
 @[simp] theorem middle_B (a : Octonion) (ha : octNormSq a = 1) (x : Octonion) :
     (octMiddleTriple a ha).B x = octMul x a := rfl
 
-@[simp] theorem middle_C (a : Octonion) (ha : octNormSq a = 1) (x : Octonion) :
-    (octMiddleTriple a ha).C x = octMul (octMul a x) a := rfl
 
 theorem dot_A (g : OctRelatedTriple) (x y : Octonion) :
     octDot (g.A x) (g.A y) = octDot x y := octDot_of_norm_preserving g.A g.norm_A x y
@@ -219,7 +206,7 @@ def swap12 (g : OctRelatedTriple) : OctRelatedTriple where
   norm_C := g.norm_B
   product x y := by
     change octMul (octConj (g.A (octConj x))) (g.C y) = g.B (octMul x y)
-    simpa only [octConj_conj] using g.cross12 (octConj x) y
+    simpa [octConj_conj] using g.cross12 (octConj x) y
 
 /-- A fully constructed related triple fixing the first unit.
 Its second and third maps are x ↦ a ((x a) a), without an associativity assumption. -/
@@ -266,11 +253,7 @@ def albertEquiv (g : OctRelatedTriple) : Albert ≃ₗ[ℝ] Albert where
   map_smul' r x := by apply Albert.ext <;> simp
 
 theorem albertEquiv_jordan (g : OctRelatedTriple) (x y : Albert) :
-    g.albertEquiv (jordan x y) = jordan (g.albertEquiv x) (g.albertEquiv y) := by
-  apply Albert.ext
-  all_goals simp [albertEquiv, jordan_d0, jordan_d1, jordan_d2,
-    jordan_o01, jordan_o02, jordan_o12, g.dot_A, g.dot_B, g.dot_C,
-    g.cross01, g.cross12, g.product, map_add, map_smul]
+    g.albertEquiv (jordan x y) = jordan (g.albertEquiv x) (g.albertEquiv y) := by ext <;> simp [albertEquiv, jordan_d0, jordan_d1, jordan_d2, jordan_o01, jordan_o02, jordan_o12, g.dot_A, g.dot_B, g.dot_C, g.cross01, g.cross12, g.product, map_add, map_smul]
 
 /-- Actual native product- and trace-preserving automorphism from a related triple. -/
 def compactAutomorphism (g : OctRelatedTriple) : CompactAutomorphism where
@@ -291,5 +274,4 @@ theorem make_slot12_real (x : Albert) (hx : x.o12 ≠ 0) :
   simpa [octScalar_smul]
 
 end OctRelatedTriple
-end
 end Glennie

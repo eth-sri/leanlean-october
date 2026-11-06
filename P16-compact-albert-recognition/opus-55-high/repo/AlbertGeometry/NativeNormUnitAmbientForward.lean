@@ -14,8 +14,7 @@ public import AlbertGeometry.NativeCoordinateDictionary
 
 @[expose] public section
 namespace AlbertGeometry.NativeNormUnitAmbientForward
-noncomputable section
-open Module Glennie
+open Glennie
 open AlbertGeometry.Cubic
 open AlbertGeometry.BasedNormDerivativeTransport
 open AlbertGeometry.BasedNormAdjointTransport
@@ -54,12 +53,8 @@ theorem native_norm_unit_actual_geometry_forward
       A (ambientCurvature P e u v w) =
         -(jordan (A u) (jordan (A v) (A w)) -
           jordan (A v) (jordan (A u) (A w)))) := by
-  let F : E ≃ₗ[ℝ] AlbertGeometry.CubicPolynomialRepresentation.Coordinates := A.trans delta.symm
-  have hFu : F e = nativeCoordinateUnit := by
-    apply delta.injective
-    change delta (delta.symm (A e)) = delta nativeCoordinateUnit
-    rw [LinearEquiv.apply_symm_apply, delta_nativeCoordinateUnit]
-    exact hunit
+  let F := A.trans delta.symm
+  have hFu : F e = nativeCoordinateUnit := by aesop
   have hFN : ∀ x : E,
       diagonalCubic nativeEuclideanRepresentation.form (F x) = diagonalCubic P.form x := by
     intro x
@@ -67,15 +62,11 @@ theorem native_norm_unit_actual_geometry_forward
     change nativeNewtonNorm (delta (delta.symm (A x))) = diagonalCubic P.form x
     rw [LinearEquiv.apply_symm_apply]
     exact (nativeNewtonNorm_eq_nativeDeterminant (A x)).trans (hnorm x)
-  let I : BasedNormIso P e nativeEuclideanRepresentation nativeCoordinateUnit :=
-    BasedNormIso.ofLinearEquiv F hFu hFN
+  let I := BasedNormIso.ofLinearEquiv F hFu hFN
   have hA : ∀ x : E, delta (I.equiv x) = A x := by
     intro x
-    change delta (delta.symm (A x)) = A x
     exact delta.apply_symm_apply (A x)
-  have hepos : 0 < diagonalCubic P.form e := by
-    rw [he]
-    norm_num
+  have hepos : 0 < diagonalCubic P.form e := by linarith
   refine ⟨hunit, hnorm, ?_, ?_, ?_, ?_⟩
   · intro x y
     have hm := I.logHessianForm_pull e hepos x y
@@ -83,11 +74,10 @@ theorem native_norm_unit_actual_geometry_forward
     exact hm.trans (by
       rw [nativeAmbientMetric_eq_trace_third, hA x, hA y])
   · intro x y
-    simpa only [hA] using nativeRecognition_product P e he hp I x y
+    simpa [hA] using nativeRecognition_product P e he hp I x y
   · intro x y
-    simpa only [hA] using nativeRecognition_ambientGamma P e he hp I x y
+    simpa [hA] using nativeRecognition_ambientGamma P e he hp I x y
   · intro u v w
-    simpa only [hA] using nativeRecognition_ambientCurvature P e he hp I u v w
+    simpa [hA] using nativeRecognition_ambientCurvature P e he hp I u v w
 
-end
 end AlbertGeometry.NativeNormUnitAmbientForward

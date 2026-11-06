@@ -4,8 +4,7 @@ public import AlbertGeometry.IntrinsicGenerationStabilizersR01
 
 @[expose] public section
 namespace AlbertGeometry.IntrinsicLocalGenerationCapstoneR01
-noncomputable section
-open AlbertGeometry.Cubic AlbertGeometry.BasedNormAdjointTransport
+open AlbertGeometry.Cubic
 open AlbertGeometry.RecognitionFromCurvature
 open AlbertGeometry.IntrinsicLocalTransport
 open AlbertGeometry.IntrinsicGenerationStabilizersR01
@@ -47,5 +46,4 @@ theorem exists_intrinsic_local_reconstruction_with_generation
   · intro T hT hb D hD hkill
     exact local_source_atom_derivation d T hT hb D hD hkill
 
-end
 end AlbertGeometry.IntrinsicLocalGenerationCapstoneR01

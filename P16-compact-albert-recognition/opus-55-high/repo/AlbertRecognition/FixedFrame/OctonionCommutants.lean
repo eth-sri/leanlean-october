@@ -8,7 +8,6 @@ public import Mathlib.LinearAlgebra.Prod
 @[expose] public section
 
 namespace AlbertRecognition.FixedFrame
-noncomputable section
 
 open Glennie
 open scoped Quaternion
@@ -30,7 +29,7 @@ theorem oct_decompose (x : Octonion) :
       x.2.re • octBasis 4 + x.2.imI • octBasis 5 +
       x.2.imJ • octBasis 6 + x.2.imK • octBasis 7 := by
   apply Prod.ext <;> apply Quaternion.ext <;>
-    simp [octBasis, octScalar, qi, qj, qk, smul_eq_mul]
+    simp [octBasis, oct_simps, qi, qj, qk]
 
 theorem oct_linear_ext (f g : Octonion →ₗ[ℝ] Octonion)
     (h : ∀ t : Fin 8, f (octBasis t) = g (octBasis t)) : f = g := by
@@ -44,20 +43,20 @@ def octRight (a : Octonion) : Module.End ℝ Octonion where
   toFun x := octMul x a
   map_add' x y := octMul_add_left x y a
   map_smul' r x := by
-    simpa only [RingHom.id_apply] using octMul_smul_left r x a
+    simpa [RingHom.id_apply] using octMul_smul_left r x a
 
 /-- Left multiplication, used only as a real-linear map. -/
 def octLeft (a : Octonion) : Module.End ℝ Octonion where
   toFun x := octMul a x
   map_add' x y := octMul_add_right a x y
   map_smul' r x := by
-    simpa only [RingHom.id_apply] using octMul_smul_right r a x
+    simpa [RingHom.id_apply] using octMul_smul_right r a x
 
 def octConjLinear : Module.End ℝ Octonion where
   toFun := octConj
   map_add' := octConj_add
   map_smul' r x := by
-    simpa only [RingHom.id_apply] using octConj_smul r x
+    simpa [RingHom.id_apply] using octConj_smul r x
 
 @[simp] theorem octMul_zero_left (a : Octonion) : octMul 0 a = 0 := by
   simp [octMul]
@@ -76,7 +75,7 @@ theorem oct_left_nucleus_scalar (c : Octonion)
   have hq := congrArg Prod.snd (hc (qi, 0) (qj, 0))
   have hqk : -(q * qk) = q * qk := by
     simpa [octMul, mul_assoc] using hq
-  have hq0 : q = 0 := quat_right_k_zero q (quat_neg_eq_self_zero (q * qk) hqk)
+  have hq0 := quat_right_k_zero q (quat_neg_eq_self_zero (q * qk) hqk)
   have hpi := congrArg Prod.snd (hc (0, 1) (qi, 0))
   have hpj := congrArg Prod.snd (hc (0, 1) (qj, 0))
   have hi : qi * p = p * qi := by
@@ -94,7 +93,7 @@ theorem oct_reverse_identity_zero (d : Octonion)
   have hp := congrArg Prod.fst (hd (qi, 0) (qj, 0))
   have hpk : -(p * qk) = p * qk := by
     simpa [octMul, mul_assoc] using hp.symm
-  have hp0 : p = 0 := quat_right_k_zero p (quat_neg_eq_self_zero (p * qk) hpk)
+  have hp0 := quat_right_k_zero p (quat_neg_eq_self_zero (p * qk) hpk)
   have hqi := congrArg Prod.fst (hd (0, 1) (qi, 0))
   have hqj := congrArg Prod.fst (hd (0, 1) (qj, 0))
   have hqk := congrArg Prod.fst (hd (0, 1) (qk, 0))
@@ -141,7 +140,7 @@ theorem oct_imaginary_right_anticommutant_zero (Q : Module.End ℝ Octonion)
       by_cases ht : t = 0
       · subst t
         change Q (octMul x (octScalar 1)) = octMul (Q x) (octConj (octScalar 1))
-        simp only [octConj_scalar, octMul_scalar_right, one_smul]
+        simp [octConj_scalar, octMul_scalar_right, one_smul]
       · change Q (octMul x (octBasis t)) = octMul (Q x) (octConj (octBasis t))
         rw [octBasis_conj_imag t ht, hQ t ht x]
         exact (map_neg (octLeft (Q x)) (octBasis t)).symm
@@ -153,12 +152,11 @@ theorem oct_imaginary_right_anticommutant_zero (Q : Module.End ℝ Octonion)
     intro a x
     have h := hall (octConj x) (octConj a)
     rw [hx (octMul (octConj x) (octConj a)), hx (octConj x)] at h
-    simpa only [octConj_mul, octConj_conj] using h
-  have hd0 : d = 0 := oct_reverse_identity_zero d hd
+    simpa [octConj_mul, octConj_conj] using h
+  have hd0 := oct_reverse_identity_zero d hd
   apply LinearMap.ext
   intro x
   change Q x = (0 : Octonion)
   rw [hx x, hd0, octMul_zero_left]
 
-end
 end AlbertRecognition.FixedFrame

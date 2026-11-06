@@ -5,10 +5,9 @@ public import Glennie.Compact.LocalContrast
 /- Deterministic robustness of the six raw scalar readouts. -/
 @[expose] public section
 namespace Glennie.Compact.ReadoutRobustnessR01
-open Glennie Glennie.Compact.Affine20 Glennie.Compact.Sections
+open Glennie.Compact.Affine20 Glennie.Compact.Sections
 open Glennie.Compact.OperationalPhi
 noncomputable section
-set_option autoImplicit false
 
 /-- Six scalars in native order: h+, h-, x+, x-, 1+, 1-. -/
 structure Readouts where
@@ -45,7 +44,7 @@ def ErrorsAtMost (noisy exact : Readouts) (ε : ℝ) : Prop :=
 
 theorem weightedScore_exact (T : Triple) :
     weightedScore (exactReadouts T) = LocalContrast.score T := by
-  simp only [weightedScore, exactReadouts, LocalContrast.score, delta, contrast,
+  simp [weightedScore, exactReadouts, LocalContrast.score, delta, contrast,
     inner_sub_right, rawPlus, rawMinus]
   ring
 

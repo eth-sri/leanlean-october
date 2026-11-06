@@ -6,7 +6,6 @@ public import Glennie.SectorModel
 
 @[expose] public section
 namespace Glennie
-noncomputable section
 
 namespace SectorArgumentAction
 
@@ -26,7 +25,7 @@ theorem gamma_eq_polarAdjugate (G B : Mat) :
   ext i j
   fin_cases i <;> fin_cases j <;>
     simp [gamma, Matrix.adjugate_fin_three, Matrix.mul_apply, Matrix.trace,
-      Matrix.diag, Matrix.one_apply, Fin.sum_univ_three, smul_eq_mul] <;> ring
+      Matrix.diag, Fin.sum_univ_three, smul_eq_mul] <;> ring
 
 /-- Use bilinearity before substituting the degree-two inner Jordan hidden
 block. This removes artificial quartic terms introduced by expanding cofactors
@@ -34,7 +33,7 @@ of M+N and then cancelling the N-only cofactors. -/
 theorem polarAdjugate_eq_gamma_conjTranspose (M N : Mat) :
     sectorPolarAdjugate M N = (gamma M N).conjTranspose := by
   rw [gamma_eq_polarAdjugate]
-  simp only [sectorPolarAdjugate, sectorAdjointAdjugate,
+  simp [sectorPolarAdjugate, sectorAdjointAdjugate,
     Matrix.conjTranspose_sub]
 
 @[simp] theorem polarAdjugate_zero_right (M : Mat) :
@@ -65,14 +64,12 @@ theorem complex_U_argument (z b : Albert) (hb : hiddenMatrix b = 0) :
   rw [map_sub, map_smul]
   change (2:ℝ) • sectorComplexMatrix (jordan z (jordan z b)) -
     sectorComplexMatrix (jordan (jordan z z) b) = _
-  simp only [sectorComplexMatrix_jordan, hiddenMatrix_jordan, hb,
+  simp [sectorComplexMatrix_jordan, hiddenMatrix_jordan, hb,
     productComplex_complex_right, productHidden_complex_right]
   ext i j
   fin_cases i <;> fin_cases j <;> apply Complex.ext
-  all_goals simp [sectorProductComplex, sectorProductHidden,
-    polarAdjugate_eq_gamma_conjTranspose, sectorAdjointAdjugate, gamma, sectorComplexMatrix, complexHermitianMatrix,
-    complexCoordinatesLinear, complexPart, Matrix.adjugate_fin_three,
-    Matrix.mul_apply, Matrix.vecMul_apply_eq_sum, Matrix.conjTranspose_apply, Matrix.trace, Matrix.diag,
+  all_goals simp [sectorProductComplex, gamma, sectorComplexMatrix, complexHermitianMatrix,
+    complexCoordinatesLinear, complexPart, Matrix.mul_apply, Matrix.vecMul_apply_eq_sum, Matrix.conjTranspose_apply, Matrix.trace, Matrix.diag,
     Matrix.one_apply, Fin.sum_univ_three, smul_eq_mul,
     Complex.mul_re, Complex.mul_im]
   all_goals ring
@@ -91,11 +88,11 @@ theorem hidden_U_argument (z b : Albert) (hb : hiddenMatrix b = 0) :
   rw [map_sub, map_smul]
   change (2:ℝ) • hiddenMatrix (jordan z (jordan z b)) -
     hiddenMatrix (jordan (jordan z z) b) = _
-  simp only [hiddenMatrix_jordan, sectorComplexMatrix_jordan, hb,
+  simp [hiddenMatrix_jordan, sectorComplexMatrix_jordan, hb,
     productHidden_complex_right, productComplex_complex_right]
   ext i j
   fin_cases i <;> fin_cases j <;> apply Complex.ext
-  all_goals simp [sectorProductComplex, sectorProductHidden,
+  all_goals simp [sectorProductHidden,
     polarAdjugate_eq_gamma_conjTranspose, sectorAdjointAdjugate, gamma,
     sectorComplexMatrix, complexHermitianMatrix,
     complexCoordinatesLinear, complexPart, Matrix.adjugate_fin_three,
@@ -105,5 +102,4 @@ theorem hidden_U_argument (z b : Albert) (hb : hiddenMatrix b = 0) :
   all_goals ring
 
 end SectorArgumentAction
-end
 end Glennie

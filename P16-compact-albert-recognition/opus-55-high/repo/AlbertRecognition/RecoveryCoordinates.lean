@@ -28,13 +28,12 @@ def rawWeight (i : RawIndex) : ℝ := if i = Sum.inl 0 then 2 else 2/3
 theorem octBasis_gram (i j : Fin 8) :
     octDot (octBasis i) (octBasis j) = if i = j then 1 else 0 := by
   fin_cases i <;> fin_cases j <;>
-    norm_num [octBasis, octDot_coordinates, octNormSq, Quaternion.normSq_def',
-      octScalar, qi, qj, qk]
+    norm_num [octBasis, oct_simps, qi, qj, qk]
 
 theorem slots_gram (s t : Fin 3) (u v : Octonion) :
     gA (slots s u) (slots t v) =
       if s = t then (2/3 : ℝ) * octDot u v else 0 := by
-  have hnorm : octNormSq (0 : Octonion) = 0 := (octNormSq_eq_zero 0).mpr rfl
+  have hnorm := (octNormSq_eq_zero 0).mpr rfl
   fin_cases s <;> fin_cases t <;>
     simp [slots, X01, X02, X12, gA, inner_coordinates, octDot_coordinates, hnorm] <;> ring
 
@@ -42,14 +41,13 @@ theorem diagonal_gram (i j : Fin 2) :
     gA (![h 0, frameD] i) (![h 0, frameD] j) =
       if i = j then (if i = 0 then (2 : ℝ) else 2/3) else 0 := by
   fin_cases i <;> fin_cases j <;>
-    norm_num [gA, inner_coordinates, h, e, unit, frameD,
-      octDot_coordinates, octNormSq, Quaternion.normSq_def']
+    norm_num [gA, inner_coordinates, e, frameD, oct_simps]
 
 theorem diagonal_slots_gram (i : Fin 2) (s : Fin 3) (u : Octonion) :
     gA (![h 0, frameD] i) (slots s u) = 0 := by
-  have hnorm : octNormSq (0 : Octonion) = 0 := (octNormSq_eq_zero 0).mpr rfl
+  have hnorm := (octNormSq_eq_zero 0).mpr rfl
   fin_cases i <;> fin_cases s <;>
-    simp [slots, X01, X02, X12, gA, inner_coordinates, h, e, unit, frameD,
+    simp [slots, X01, X02, X12, gA, inner_coordinates, h, e, frameD,
       octDot_coordinates, hnorm]
 
 theorem rawVector_gram (i j : RawIndex) :
@@ -61,7 +59,7 @@ theorem rawVector_gram (i j : RawIndex) :
   · rcases j with j | ⟨p,u⟩
     · rw [gA_comm]
       simp [rawVector, diagonal_slots_gram]
-    · simp only [rawVector, slots_gram, octBasis_gram]
+    · simp [rawVector, slots_gram, octBasis_gram]
       by_cases hs : s = p <;> by_cases ht : t = u <;>
         simp [rawWeight, hs, ht]
 
@@ -74,8 +72,8 @@ theorem normalization_weight (i : RawIndex) :
   by_cases hi : i = Sum.inl 0
   · have hn : Real.sqrt (2 : ℝ) ≠ 0 := Real.sqrt_ne_zero'.mpr (by norm_num)
     have hs : (Real.sqrt (2 : ℝ))^2 = 2 := Real.sq_sqrt (by norm_num)
-    simp only [normalization, rawWeight, if_pos hi]
-    field_simp [hn]
+    simp [normalization, rawWeight, if_pos hi]
+    field_simp 
     nlinarith
   · have hs : (Real.sqrt (3/2 : ℝ))^2 = 3/2 := Real.sq_sqrt (by norm_num)
     simp only [normalization, rawWeight, if_neg hi]
@@ -90,7 +88,7 @@ theorem normalizedVector_gram (i j : RawIndex) :
   by_cases hij : i = j
   · subst j
     simpa [mul_assoc] using normalization_weight i
-  · simp [hij]
+  · simp_all
 
 /-- Only the order of the already explicit26 normalized vectors is chosen. -/
 def indexEquiv : RawIndex ≃ Fin 26 := Fintype.equivOfCardEq (by simp [RawIndex])
@@ -100,17 +98,14 @@ def beta (i : Fin 26) : V := normalizedVector (indexEquiv.symm i)
 theorem beta_gram (i j : Fin 26) : gA (beta i) (beta j) = if i = j then 1 else 0 := by
   rw [beta, beta, normalizedVector_gram]
   by_cases hij : i = j
-  · subst j
-    simp
-  · have hn : indexEquiv.symm i ≠ indexEquiv.symm j :=
-      fun heq => hij (indexEquiv.symm.injective heq)
-    simp [hij, hn]
+  · simp
+  · simp
 
 /-- The actual Gram identity proves independence; orthonormality is not a field. -/
 theorem beta_linearIndependent : LinearIndependent ℝ beta := by
   apply Fintype.linearIndependent_iff.mpr
   intro c hc i
-  have hp := congrArg (fun x : V => gA x (beta i)) hc
+  have hp := congrArg (fun x => gA x (beta i)) hc
   change (metricBilin.flip (beta i)) (∑ j, c j • beta j) =
     (metricBilin.flip (beta i)) 0 at hp
   simpa [map_sum, map_smul, LinearMap.flip_apply, metricBilin_apply, beta_gram] using hp
@@ -129,19 +124,15 @@ theorem repr_eq_pairing (x : V) (i : Fin 26) : basis.repr x i = gA x (beta i) :=
   conv_rhs => rw [← basis.sum_repr x]
   change basis.repr x i = (metricBilin.flip (beta i))
     (∑ j, basis.repr x j • basis j)
-  simp [map_sum, map_smul, LinearMap.flip_apply, metricBilin_apply, basis_apply, beta_gram]
+  simp [map_sum, map_smul, metricBilin_apply, basis_apply, beta_gram]
 
 /-- A bilinear Euclidean isometry certificate, without an inner-product instance. -/
 theorem metric_coordinates (x y : V) :
     gA x y = ∑ i : Fin 26, basis.repr x i * basis.repr y i := by
   conv_lhs => rw [← basis.sum_repr x]
   change (metricBilin.flip y) (∑ i, basis.repr x i • basis i) = _
-  simp only [map_sum, map_smul, smul_eq_mul, LinearMap.flip_apply,
-    metricBilin_apply, basis_apply]
-  apply Finset.sum_congr rfl
-  intro i hi
-  change basis.repr x i * gA (beta i) y = basis.repr x i * basis.repr y i
-  rw [gA_comm (beta i) y, ← repr_eq_pairing y i]
+  simp [map_sum, map_smul, smul_eq_mul, basis_apply]
+  exact Finset.sum_congr rfl fun i _ => by rw [gA_comm (beta i) y, ← repr_eq_pairing y i]
 
 end
 end AlbertRecognition.RecoveryCoordinates

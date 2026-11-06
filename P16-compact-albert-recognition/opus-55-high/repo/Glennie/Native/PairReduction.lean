@@ -11,9 +11,7 @@ public import Glennie.Theorems.OctonionAutomorphisms
 @[expose] public section
 
 namespace Glennie
-noncomputable section
 
-set_option maxHeartbeats 2000000
 
 @[simp] theorem octInComplex_scalar (r : ℝ) : OctInComplex (octScalar r) := by
   simp [OctInComplex, octScalar]
@@ -34,7 +32,7 @@ theorem exists_octAutomorphism_to_complex (v : Octonion) :
   obtain ⟨I, hi, hn, z, hz⟩ := exists_octComplexLine v
   obtain ⟨g, hg, hI⟩ := exists_octAutomorphism_to_i I hi hn
   have hv : g.A v = octComplexLine octI z := by
-    simp only [← hz, octComplexLine, map_add, map_smul, hg.2.2, hI]
+    simp [← hz, octComplexLine, map_add, map_smul, hg.2.2, hI]
   refine ⟨g, hg, ?_⟩
   rw [hg.2.1, hv]
   exact octInComplex_standardLine z
@@ -43,7 +41,7 @@ theorem exists_octAutomorphism_to_complex (v : Octonion) :
 theorem relatedTriple_isDiagonal (g : OctRelatedTriple) (x : Albert)
     (hx : IsDiagonal x) : IsDiagonal (g.compactAutomorphism.equiv x) := by
   change g.A x.o01 = 0 ∧ g.C x.o02 = 0 ∧ g.B x.o12 = 0
-  simp only [hx.1, hx.2.1, hx.2.2, map_zero, and_self]
+  simp [hx.1, hx.2.1, hx.2.2, map_zero, and_self]
 
 /-- Unrestricted native compact pair reduction, including zero slots and repeated
 spectra. Its dependencies are actual complete diagonalization and constructed maps. -/
@@ -63,5 +61,4 @@ theorem universal_pair_reduction : UniversalPairReduction := by
       diagonalOctTriple_scalar k hk b]
     exact ⟨octInComplex_scalar a, h02, octInComplex_scalar b⟩
 
-end
 end Glennie

@@ -4,7 +4,6 @@ public import Glennie.Compact.NormCompatibleNullTargetR01
 
 @[expose] public section
 namespace Glennie.Compact.VariableDiagonalNullTargetR01
-noncomputable section
 open scoped BigOperators
 open Glennie.Compact.CyclicTraceNullR01
 
@@ -57,7 +56,7 @@ theorem diagonalN_product_norm {n : ℕ} (a b : DiagonalN n) :
   have ha : (a i)^2 ≤ ‖a‖^2 := by
     have hh := (sq_le_sq₀ (norm_nonneg (a i)) (norm_nonneg a)).mpr
       (PiLp.norm_apply_le a i)
-    simpa only [Real.norm_eq_abs, sq_abs] using hh
+    simpa [Real.norm_eq_abs, sq_abs] using hh
   change (a i*b i)^2 ≤ ‖a‖^2 * (b i)^2
   rw [mul_pow]
   exact mul_le_mul_of_nonneg_right ha (sq_nonneg _)
@@ -78,5 +77,4 @@ theorem diagonalN_quadratic_norm {n : ℕ} (a b : DiagonalN n) :
       mul_le_mul_of_nonneg_left (diagonalN_product_norm _ _) (norm_nonneg _)
     _ = ‖a‖^2 * ‖b‖ := by ring
 
-end
 end Glennie.Compact.VariableDiagonalNullTargetR01

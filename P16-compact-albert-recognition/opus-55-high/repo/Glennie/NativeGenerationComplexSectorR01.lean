@@ -6,12 +6,10 @@ public import Glennie.SectorSubspace
 
 @[expose] public section
 namespace Glennie.NativeGenerationComplexSectorR01
-noncomputable section
 open Glennie.NativeGenerationCoordinatesR01
 open Glennie.NativeGenerationPeirceTriangleR01
 
-private theorem complexOct_zero : complexOct (0 : ℂ) = (0 : Octonion) := by
-  apply Prod.ext <;> apply Quaternion.ext <;> simp [complexOct]
+theorem complexOct_zero : complexOct (0 : ℂ) = (0 : Octonion) := by rfl
 
 def slot01 : ℂ →ₗ[ℝ] Albert where
   toFun u := complexAlbert 0 0 0 u 0 0
@@ -34,35 +32,11 @@ def slot12 : ℂ →ₗ[ℝ] Albert where
   map_smul' r u := by
     ext <;> simp [complexAlbert, complexOct, smul_eq_mul]
 
-theorem cross_slot01_12 (u v w : ℂ) :
-    (2 : ℝ) • jordan (slot01 u) (slot12 w) = slot02 (u * w) := by
-  ext <;> simp [slot01, slot02, slot12, complexAlbert, complexOct,
-    jordan_d0, jordan_d1, jordan_d2, jordan_o01, jordan_o02, jordan_o12,
-    octDot_coordinates, octMul, octConj, Quaternion.re_mul,
-    Quaternion.imI_mul, Quaternion.imJ_mul, Quaternion.imK_mul,
-    Complex.mul_re, Complex.mul_im, smul_eq_mul]
-  all_goals ring
-  all_goals norm_num [octNormSq, Quaternion.normSq_def']
-
-theorem cross_slot01_02 (u v w : ℂ) :
-    (2 : ℝ) • jordan (slot01 u) (slot02 v) = slot12 (star u * v) := by
-  ext <;> simp [slot01, slot02, slot12, complexAlbert, complexOct,
-    jordan_d0, jordan_d1, jordan_d2, jordan_o01, jordan_o02, jordan_o12,
-    octDot_coordinates, octMul, octConj, Quaternion.re_mul,
-    Quaternion.imI_mul, Quaternion.imJ_mul, Quaternion.imK_mul,
-    Complex.mul_re, Complex.mul_im, smul_eq_mul]
-  all_goals ring
-  all_goals norm_num [octNormSq, Quaternion.normSq_def']
-
-theorem cross_slot02_12 (u v w : ℂ) :
+theorem cross_slots (u v w : ℂ) :
+    (2 : ℝ) • jordan (slot01 u) (slot12 w) = slot02 (u * w) ∧
+    (2 : ℝ) • jordan (slot01 u) (slot02 v) = slot12 (star u * v) ∧
     (2 : ℝ) • jordan (slot02 v) (slot12 w) = slot01 (v * star w) := by
-  ext <;> simp [slot01, slot02, slot12, complexAlbert, complexOct,
-    jordan_d0, jordan_d1, jordan_d2, jordan_o01, jordan_o02, jordan_o12,
-    octDot_coordinates, octMul, octConj, Quaternion.re_mul,
-    Quaternion.imI_mul, Quaternion.imJ_mul, Quaternion.imK_mul,
-    Complex.mul_re, Complex.mul_im, smul_eq_mul]
-  all_goals ring
-  all_goals norm_num [octNormSq, Quaternion.normSq_def']
+  refine ⟨?_, ?_, ?_⟩ <;> ext <;> simp [slot01, slot02, slot12, complexAlbert, complexOct, oct_simps, Complex.mul_re, Complex.mul_im] <;> ring
 
 theorem complexAlbert_decomposition (a b c : ℝ) (u v w : ℂ) :
     complexAlbert a b c u v w =
@@ -80,9 +54,9 @@ theorem complexSector_le_of_regular_triangle
     (hy : complexAlbert d e f u v w ∈ K)
     (hab : a - b ≠ 0) (hbc : b - c ≠ 0) (hca : c - a ≠ 0)
     (htriangle : (u * w * star v).im ≠ 0) : complexSector ≤ K := by
-  have hba : b - a ≠ 0 := sub_ne_zero.mpr (Ne.symm (sub_ne_zero.mp hab))
-  have hac : a - c ≠ 0 := sub_ne_zero.mpr (Ne.symm (sub_ne_zero.mp hca))
-  have hcb : c - b ≠ 0 := sub_ne_zero.mpr (Ne.symm (sub_ne_zero.mp hbc))
+  have hba := sub_ne_zero.mpr (Ne.symm (sub_ne_zero.mp hab))
+  have hac := sub_ne_zero.mpr (Ne.symm (sub_ne_zero.mp hca))
+  have hcb := sub_ne_zero.mpr (Ne.symm (sub_ne_zero.mp hbc))
   have he0 := diagonal_projector_first_mem K h1 hJ a b c hx hab hac
   have he1 := diagonal_projector_middle_mem K h1 hJ a b c hx hba hbc
   have he2 := diagonal_projector_last_mem K h1 hJ a b c hx hca hcb
@@ -95,15 +69,10 @@ theorem complexSector_le_of_regular_triangle
   have hw : slot12 w ∈ K := by
     simpa [slot12, complexAlbert, complexOct_zero] using
       peirce12_mem K hJ he1 he2 (complexAlbert d e f u v w) hy
-  have huv : slot12 (star u * v) ∈ K := by
-    rw [← cross_slot01_02 u v w]
-    exact K.smul_mem 2 (hJ _ hu _ hv)
-  have huw : slot02 (u * w) ∈ K := by
-    rw [← cross_slot01_12 u v w]
-    exact K.smul_mem 2 (hJ _ hu _ hw)
-  have hvw : slot01 (v * star w) ∈ K := by
-    rw [← cross_slot02_12 u v w]
-    exact K.smul_mem 2 (hJ _ hv _ hw)
+  obtain ⟨c1, c2, c3⟩ := cross_slots u v w
+  have huv := c2 ▸ K.smul_mem 2 (hJ _ hu _ hv)
+  have huw := c1 ▸ K.smul_mem 2 (hJ _ hu _ hw)
+  have hvw := c3 ▸ K.smul_mem 2 (hJ _ hv _ hw)
   have hdet01 : u.re * (v * star w).im - u.im * (v * star w).re ≠ 0 := by
     rw [triangle_real_det01]
     exact neg_ne_zero.mpr htriangle
@@ -113,12 +82,9 @@ theorem complexSector_le_of_regular_triangle
   have hdet02 : v.re * (u * w).im - v.im * (u * w).re ≠ 0 := by
     rw [triangle_real_det02]
     exact htriangle
-  have h01 : ∀ z : ℂ, slot01 z ∈ K :=
-    complex_line_mem_of_real_det_ne_zero K slot01 u (v * star w) hu hvw hdet01
-  have h12 : ∀ z : ℂ, slot12 z ∈ K :=
-    complex_line_mem_of_real_det_ne_zero K slot12 w (star u * v) hw huv hdet12
-  have h02 : ∀ z : ℂ, slot02 z ∈ K :=
-    complex_line_mem_of_real_det_ne_zero K slot02 v (u * w) hv huw hdet02
+  have h01 := complex_line_mem_of_real_det_ne_zero K slot01 u (v * star w) hu hvw hdet01
+  have h12 := complex_line_mem_of_real_det_ne_zero K slot12 w (star u * v) hw huv hdet12
+  have h02 := complex_line_mem_of_real_det_ne_zero K slot02 v (u * w) hv huw hdet02
   intro z hz
   rcases hz with ⟨q, rfl⟩
   change complexAlbert q.1.1 q.1.2.1 q.1.2.2 q.2.1 q.2.2.1 q.2.2.2 ∈ K
@@ -133,5 +99,4 @@ theorem complexSector_le_of_regular_triangle
       (h02 _))
     (h12 _)
 
-end
 end Glennie.NativeGenerationComplexSectorR01

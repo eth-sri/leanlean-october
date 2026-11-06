@@ -6,12 +6,11 @@ public import AlbertRecognition.ReferenceTransport.FamilyDefinitions
 
 @[expose] public section
 namespace AlbertRecognition.ReferenceTransport
-noncomputable section
 open Glennie AlbertRecognition.FixedFrame
 
 theorem transport12_image (a : Octonion) (ha : octNormSq a = 1) :
     (transport12 a ha).equiv (e 0) = Transporter.p12Plus a := by
-  simp only [transport12, CompactAutomorphism.comp_apply]
+  simp [transport12, CompactAutomorphism.comp_apply]
   rw [Transporter.swap_image, Transporter.rotation_image, Transporter.middle_image]
 
 theorem slotTransporter_image (slot : Fin 3) (a : Octonion)
@@ -24,7 +23,7 @@ theorem slotTransporter_image (slot : Fin 3) (a : Octonion)
     change realConjugateAlbert realSwap01
       (realConjugateAlbert realSwap02 _) = _
     rw [realSwap02_coordinates, realSwap01_coordinates]
-    apply Albert.ext <;> simp [slotIdempotent, octConj_smul, octConj_conj, octConj]
+    apply Albert.ext <;> simp [slotIdempotent, octConj]
     all_goals apply Prod.ext <;> rfl
   · change realSwap01Automorphism.equiv ((transport12 a ha).equiv (e 0)) = _
     rw [transport12_image, Transporter.p12Plus_coordinates]
@@ -84,5 +83,4 @@ theorem direction_difference (slot : Fin 3) (t : Fin 8) :
   rw [← hp (octBasis t)]
   module
 
-end
 end AlbertRecognition.ReferenceTransport

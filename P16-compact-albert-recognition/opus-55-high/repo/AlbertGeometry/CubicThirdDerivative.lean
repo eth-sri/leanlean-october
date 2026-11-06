@@ -28,9 +28,7 @@ def fullyCurried (P : SymmetricTrilinearForm E) :
     ((rightCurried P).curryLeft x) u v = P.form ![x, u, v]
   rw [continuousMultilinearCurryFin1_apply,
     ContinuousMultilinearMap.curryLeft_apply]
-  have h : Fin.cons x (Fin.snoc (0 : Fin 0 → E) u) = ![x, u] := by
-    ext i
-    fin_cases i <;> simp
+  have h : Fin.cons x (Fin.snoc (0 : Fin 0 → E) u) = ![x, u] := by simp
   rw [h, rightCurried_apply]
 
 /-- Whole-function identification is obtained from the true Hessian theorem,
@@ -39,23 +37,21 @@ theorem cubicHessian_eq_fullyCurried (P : SymmetricTrilinearForm E) (x : E) :
     cubicHessian P x = (6 : ℝ) • fullyCurried P x := by
   ext u v
   rw [cubicHessian_apply]
-  simp only [ContinuousLinearMap.smul_apply, smul_eq_mul, fullyCurried_apply]
+  simp [smul_eq_mul, fullyCurried_apply]
 
 /-- Actual derivative of the actual Hessian, proved via its global linear form. -/
 theorem hasFDerivAt_cubicHessian (P : SymmetricTrilinearForm E) (x : E) :
     HasFDerivAt (cubicHessian P) ((6 : ℝ) • fullyCurried P) x := by
-  have h : HasFDerivAt (fun z : E => (6 : ℝ) • fullyCurried P z)
+  have h : HasFDerivAt (fun z => (6 : ℝ) • fullyCurried P z)
       ((6 : ℝ) • fullyCurried P) x :=
     by
-      let L : E →L[ℝ] (E →L[ℝ] E →L[ℝ] ℝ) := fullyCurried P
+      let L := fullyCurried P
       have hlinear : HasFDerivAt
           (((6 : ℝ) • L) : E → (E →L[ℝ] E →L[ℝ] ℝ)) ((6 : ℝ) • L) x :=
-        ContinuousLinearMap.hasFDerivAt (𝕜 := ℝ) (E := E)
-          (F := E →L[ℝ] E →L[ℝ] ℝ) ((6 : ℝ) • L) (x := x)
-      have hfun : (fun z : E => (6 : ℝ) • L z) =
-          (6 : ℝ) • (L : E → (E →L[ℝ] E →L[ℝ] ℝ)) := by
-        funext z
-        exact (Pi.smul_apply (6 : ℝ) (L : E → (E →L[ℝ] E →L[ℝ] ℝ)) z).symm
+        ContinuousLinearMap.hasFDerivAt
+          (F := E →L[ℝ] E →L[ℝ] ℝ) ((6 : ℝ) • L)
+      have hfun : (fun z => (6 : ℝ) • L z) =
+          (6 : ℝ) • (L : E → (E →L[ℝ] E →L[ℝ] ℝ)) := by rfl
       have hcoe : (6 : ℝ) • (L : E → (E →L[ℝ] E →L[ℝ] ℝ)) =
           (((6 : ℝ) • L) : E → (E →L[ℝ] E →L[ℝ] ℝ)) :=
         (FunLike.coe_smul (6 : ℝ) L).symm
@@ -81,7 +77,7 @@ theorem cubicThirdDerivative_apply (P : SymmetricTrilinearForm E)
     (x u v w : E) :
     cubicThirdDerivative P x u v w = 6 * P.form ![u, v, w] := by
   rw [cubicThirdDerivative_eq]
-  simp only [ContinuousLinearMap.smul_apply, smul_eq_mul, fullyCurried_apply]
+  simp [smul_eq_mul, fullyCurried_apply]
 
 /-- The one-sixth normalization recovers the actual symmetric trilinear form. -/
 theorem form_from_actual_thirdDerivative (P : SymmetricTrilinearForm E)

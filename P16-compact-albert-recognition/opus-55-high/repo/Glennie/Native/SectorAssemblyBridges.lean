@@ -7,14 +7,12 @@ public import Glennie.Theorems.SectorContraction
 
 @[expose] public section
 namespace Glennie.SectorAssemblyBridges
-noncomputable section
 
 abbrev Mat := Matrix (Fin 3) (Fin 3) ℂ
 
 /-- Normalize the native octonion zero before transporting diagonal inputs.
 Only this private proof unfolds complexOct; the two adapters use its equation. -/
-private theorem complexOct_zero : complexOct (0:ℂ) = (0:Octonion) := by
-  apply Prod.ext <;> apply Quaternion.ext <;> simp [complexOct]
+theorem complexOct_zero : complexOct (0:ℂ) = (0:Octonion) := by rfl
 
 /-- The two literal definitions differ only by commutative scalar order. -/
 theorem gamma_eq_tracePolar (G B : Mat) :
@@ -42,29 +40,21 @@ theorem hidden_diagonal (a b c : ℝ) :
 
 theorem hidden_complex (d e f : ℝ) (u v w : ℂ) :
     hiddenMatrix (complexAlbert d e f u v w) = 0 := by
-  change hiddenMatrix (complexAlbertLinear ((d,e,f),(u,v,w))) = 0
   exact hiddenMatrix_complexAlbert ((d,e,f),(u,v,w))
 
 theorem complex_matrix_binding (d e f : ℝ) (u v w : ℂ) :
     sectorComplexMatrix (complexAlbert d e f u v w) =
-      complexHermitianMatrix ((d,e,f),(u,v,w)) := by
-  change complexHermitianMatrix
-    (complexCoordinatesLinear (complexAlbertLinear ((d,e,f),(u,v,w)))) = _
-  rw [complexCoordinates_albert]
+      complexHermitianMatrix ((d,e,f),(u,v,w)) := by rfl
 
 theorem diagonal_matrix_binding (a b c : ℝ) :
     sectorComplexMatrix (diagonalAlbert a b c) =
-      complexHermitianMatrix ((a,b,c),(0,0,0)) := by
-  simpa [complexAlbert, diagonalAlbert, complexOct_zero] using
-    complex_matrix_binding a b c 0 0 0
+      complexHermitianMatrix ((a,b,c),(0,0,0)) := by rfl
 
 /-- Native Hermitian adjugates give the forward anti-Hermitian commutator. -/
 theorem adjugate_commutator_antiHermitian (D H : Mat)
     (hD : D.IsHermitian) (hH : H.IsHermitian) :
     (H.adjugate * D.adjugate - D.adjugate * H.adjugate).conjTranspose =
-      -(H.adjugate * D.adjugate - D.adjugate * H.adjugate) := by
-  simp only [Matrix.conjTranspose_sub, Matrix.conjTranspose_mul,
-    hH.adjugate.eq, hD.adjugate.eq, neg_sub]
+      -(H.adjugate * D.adjugate - D.adjugate * H.adjugate) := by simp [Matrix.conjTranspose_sub, Matrix.conjTranspose_mul, hH.adjugate.eq, hD.adjugate.eq, neg_sub]
 
 theorem native_adjugate_commutator_antiHermitian (x y : Albert) :
     ((sectorComplexMatrix y).adjugate * (sectorComplexMatrix x).adjugate -
@@ -94,15 +84,12 @@ theorem pure_complex_trace (D H K : Mat) :
     ((D*H*K*H*D-H*D*K*D*H) *
       (K*((1/2:ℂ) • (D*H+H*D))*K)).trace = 0 := by
   have hQ : (D*H*K*H*D-H*D*K*D*H)*K =
-      (D*H*K)*(H*D*K)-(H*D*K)*(D*H*K) := by
-    simp only [Matrix.sub_mul, Matrix.mul_assoc]
+      (D*H*K)*(H*D*K)-(H*D*K)*(D*H*K) := by grind
   have hB : ((1/2:ℂ) • (D*H+H*D))*K =
-      (1/2:ℂ) • (D*H*K+H*D*K) := by
-    simp only [Matrix.smul_mul, Matrix.add_mul]
+      (1/2:ℂ) • (D*H*K+H*D*K) := by simp [Matrix.add_mul]
   calc
     _ = (((D*H*K*H*D-H*D*K*D*H)*K) *
-        (((1/2:ℂ) • (D*H+H*D))*K)).trace := by
-      simp only [Matrix.mul_assoc]
+        (((1/2:ℂ) • (D*H+H*D))*K)).trace := by grind
     _ = (1/2:ℂ) *
         (((D*H*K)*(H*D*K)-(H*D*K)*(D*H*K)) *
           (D*H*K+H*D*K)).trace := by
@@ -112,5 +99,4 @@ theorem pure_complex_trace (D H K : Mat) :
       rw [SectorContraction.trace_comm_mul_sum]
       simp
 
-end
 end Glennie.SectorAssemblyBridges

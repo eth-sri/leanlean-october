@@ -60,36 +60,36 @@ def rawNewtonPolarization (x y z : Albert) : ℝ :=
 theorem rawNewtonPolarization_add_left (x x' y z : Albert) :
     rawNewtonPolarization (x + x') y z =
       rawNewtonPolarization x y z + rawNewtonPolarization x' y z := by
-  simp only [rawNewtonPolarization, trace_add, inner_add_left]
+  simp [rawNewtonPolarization, trace_add, inner_add_left]
   ring
 
 theorem rawNewtonPolarization_smul_left (r : ℝ) (x y z : Albert) :
     rawNewtonPolarization (r • x) y z = r * rawNewtonPolarization x y z := by
-  simp only [rawNewtonPolarization, trace_smul, inner_smul_left]
+  simp [rawNewtonPolarization, trace_smul, inner_smul_left]
   ring
 
 theorem rawNewtonPolarization_add_middle (x y y' z : Albert) :
     rawNewtonPolarization x (y + y') z =
       rawNewtonPolarization x y z + rawNewtonPolarization x y' z := by
-  simp only [rawNewtonPolarization, trace_add, inner_add_left, inner_add_right,
+  simp [rawNewtonPolarization, trace_add, inner_add_left, inner_add_right,
     jordan_add_left]
   ring
 
 theorem rawNewtonPolarization_smul_middle (r : ℝ) (x y z : Albert) :
     rawNewtonPolarization x (r • y) z = r * rawNewtonPolarization x y z := by
-  simp only [rawNewtonPolarization, trace_smul, inner_smul_left, inner_smul_right,
+  simp [rawNewtonPolarization, trace_smul, inner_smul_left, inner_smul_right,
     jordan_smul_left]
   ring
 
 theorem rawNewtonPolarization_add_right (x y z z' : Albert) :
     rawNewtonPolarization x y (z + z') =
       rawNewtonPolarization x y z + rawNewtonPolarization x y z' := by
-  simp only [rawNewtonPolarization, trace_add, inner_add_right, jordan_add_right]
+  simp [rawNewtonPolarization, trace_add, inner_add_right, jordan_add_right]
   ring
 
 theorem rawNewtonPolarization_smul_right (r : ℝ) (x y z : Albert) :
     rawNewtonPolarization x y (r • z) = r * rawNewtonPolarization x y z := by
-  simp only [rawNewtonPolarization, trace_smul, inner_smul_right, jordan_smul_right]
+  simp [rawNewtonPolarization, trace_smul, inner_smul_right, jordan_smul_right]
   ring
 
 /-- All three separately linear maps are constructed from the preceding proofs. -/
@@ -100,7 +100,6 @@ def rawPolarizationLinear : Albert →ₗ[ℝ] Albert →ₗ[ℝ] Albert →ₗ[
           map_add' := rawNewtonPolarization_add_right x y
           map_smul' := by
             intro r z
-            change rawNewtonPolarization x y (r • z) = r * rawNewtonPolarization x y z
             exact rawNewtonPolarization_smul_right r x y z }
       map_add' := by
         intro y y'
@@ -111,7 +110,6 @@ def rawPolarizationLinear : Albert →ₗ[ℝ] Albert →ₗ[ℝ] Albert →ₗ[
         intro r y
         apply LinearMap.ext
         intro z
-        change rawNewtonPolarization x (r • y) z = r * rawNewtonPolarization x y z
         exact rawNewtonPolarization_smul_middle r x y z }
   map_add' := by
     intro x x'
@@ -126,7 +124,6 @@ def rawPolarizationLinear : Albert →ₗ[ℝ] Albert →ₗ[ℝ] Albert →ₗ[
     intro y
     apply LinearMap.ext
     intro z
-    change rawNewtonPolarization (r • x) y z = r * rawNewtonPolarization x y z
     exact rawNewtonPolarization_smul_left r x y z
 
 @[simp] theorem rawPolarizationLinear_apply (x y z : Albert) :
@@ -140,8 +137,8 @@ theorem rawNewtonPolarization_diagonal (x : Albert) :
 /-- Native coordinate expansion uses only the algebraic linear equivalence. -/
 theorem delta_coordinate_sum (x : Coordinates) :
     ∑ i : Fin 27, x i • delta (coordinateVector i) = delta x := by
-  have h := congrArg (fun y : Coordinates => delta y) (coordinate_sum x)
-  simpa only [map_sum, map_smul] using h
+  have h := congrArg (fun y => delta y) (coordinate_sum x)
+  simpa [map_sum, map_smul] using h
 
 def tensorCoefficient (i j k : Fin 27) : ℝ :=
   rawNewtonPolarization (delta (coordinateVector i)) (delta (coordinateVector j))
@@ -154,28 +151,13 @@ theorem rawPolarizationLinear_coordinate_expansion (x y z : Coordinates) :
           (delta (coordinateVector j)) (delta (coordinateVector k)) := by
   have h1 : ∀ Y Z : Albert,
       rawPolarizationLinear (∑ i : Fin 27, x i • delta (coordinateVector i)) Y Z =
-        ∑ i : Fin 27, x i * rawPolarizationLinear (delta (coordinateVector i)) Y Z := by
-    intro Y Z
-    rw [map_sum, LinearMap.sum_apply, LinearMap.sum_apply]
-    apply Finset.sum_congr rfl
-    intro i _
-    rw [map_smul, LinearMap.smul_apply, LinearMap.smul_apply, smul_eq_mul]
+        ∑ i : Fin 27, x i * rawPolarizationLinear (delta (coordinateVector i)) Y Z := by simp
   have h2 : ∀ X Z : Albert,
       rawPolarizationLinear X (∑ j : Fin 27, y j • delta (coordinateVector j)) Z =
-        ∑ j : Fin 27, y j * rawPolarizationLinear X (delta (coordinateVector j)) Z := by
-    intro X Z
-    rw [map_sum, LinearMap.sum_apply]
-    apply Finset.sum_congr rfl
-    intro j _
-    rw [map_smul, LinearMap.smul_apply, smul_eq_mul]
+        ∑ j : Fin 27, y j * rawPolarizationLinear X (delta (coordinateVector j)) Z := by simp
   have h3 : ∀ X Y : Albert,
       rawPolarizationLinear X Y (∑ k : Fin 27, z k • delta (coordinateVector k)) =
-        ∑ k : Fin 27, z k * rawPolarizationLinear X Y (delta (coordinateVector k)) := by
-    intro X Y
-    rw [map_sum]
-    apply Finset.sum_congr rfl
-    intro k _
-    rw [map_smul, smul_eq_mul]
+        ∑ k : Fin 27, z k * rawPolarizationLinear X Y (delta (coordinateVector k)) := by simp
   rw [← delta_coordinate_sum x, ← delta_coordinate_sum y, ← delta_coordinate_sum z, h1]
   apply Finset.sum_congr rfl
   intro i _
@@ -183,7 +165,7 @@ theorem rawPolarizationLinear_coordinate_expansion (x y z : Coordinates) :
   apply Finset.sum_congr rfl
   intro j _
   rw [h3]
-  simp only [Finset.mul_sum]
+  simp [Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro k _
   ring
@@ -192,7 +174,7 @@ theorem rawNewtonPolarization_coordinate_expansion (x y z : Coordinates) :
     rawNewtonPolarization (delta x) (delta y) (delta z) =
       ∑ i : Fin 27, ∑ j : Fin 27, ∑ k : Fin 27,
         (x i * y j * z k) * tensorCoefficient i j k := by
-  simpa only [rawPolarizationLinear_apply, tensorCoefficient] using
+  simpa [rawPolarizationLinear_apply, tensorCoefficient] using
     rawPolarizationLinear_coordinate_expansion x y z
 
 /-- A real continuous trilinear map exists because it is this finite sum of
@@ -204,7 +186,7 @@ def nativeEuclideanForm : TrilinearForm Coordinates :=
 theorem nativeEuclideanForm_apply (m : Fin 3 → Coordinates) :
     nativeEuclideanForm m = ∑ i : Fin 27, ∑ j : Fin 27, ∑ k : Fin 27,
       tensorCoefficient i j k * symmetricCoordinateForm i j k m := by
-  simp only [nativeEuclideanForm, sum_apply, smul_apply, smul_eq_mul]
+  simp [nativeEuclideanForm, sum_apply, smul_apply, smul_eq_mul]
 
 theorem nativeEuclideanForm_swap12 (x y z : Coordinates) :
     nativeEuclideanForm ![x, y, z] = nativeEuclideanForm ![y, x, z] := by
@@ -229,7 +211,7 @@ theorem nativeEuclideanForm_swap23 (x y z : Coordinates) :
   rw [symmetricCoordinateForm_swap23]
 
 theorem nativeEuclideanForm_diagonal (x : Coordinates) :
-    nativeEuclideanForm (fun _ : Fin 3 => x) = nativeNewtonNorm (delta x) := by
+    nativeEuclideanForm (fun _ => x) = nativeNewtonNorm (delta x) := by
   rw [nativeEuclideanForm_apply]
   simp_rw [symmetricCoordinateForm_diagonal]
   calc

@@ -31,14 +31,10 @@ public import Glennie.Compact.FlatOrbit
 
 namespace Glennie.Compact.FlatSectionsOrbits
 
-open Glennie Glennie.Compact.FlatBase Glennie.Compact.Affine20
-open Glennie.Compact.FrameTopology Glennie.Compact.FlatOrbit
-open Glennie.Compact.Sections
+open Glennie.Compact.Affine20
+open Glennie.Compact.FrameTopology
 
-noncomputable section
 
-set_option autoImplicit false
-set_option maxHeartbeats 2000000
 
 /-! ## 1. The two flat base triples are one triple
 
@@ -54,8 +50,7 @@ theorem flatBase_eq_flatBaseTriple :
 
 /-- Hence their ledgers agree. -/
 theorem ledger54_flatBase_eq :
-    ledger54 Glennie.Compact.Sections.flatBase = ledger54 flatBaseTriple := by
-  rw [flatBase_eq_flatBaseTriple]
+    ledger54 Glennie.Compact.Sections.flatBase = ledger54 flatBaseTriple := by rfl
 
 /-! ## 2. A section value at the base point lands in the fibre
 
@@ -105,5 +100,4 @@ reader to wonder whether the two halves are talking about the same component. -/
 with precomposition by (0 2). This is exactly the action of `revTriple` on slot 0,
 leaving slots 1 and 2 unchanged. -/
 
-end
 end Glennie.Compact.FlatSectionsOrbits

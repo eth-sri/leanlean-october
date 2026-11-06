@@ -93,7 +93,7 @@ theorem frameEmbed_eq (a b : ℝ) (z : Octonion) (s : Spin) :
   rcases s with ⟨u,v⟩
   apply Subtype.ext
   apply Albert.ext <;>
-    simp [frameEmbed, frameCoordinates, h, e, unit, frameD, frameSpin,
+    simp [frameEmbed, frameCoordinates, h, e, frameD, frameSpin,
       X01, X02, X12] <;> ring
 
 theorem frame_decompose (x : V) :

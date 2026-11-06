@@ -88,10 +88,10 @@ theorem columnMap_apply (v : AutomorphismColumns) (x : Albert) :
   automorphismBasis.constr_self ℝ f
 
 theorem continuous_columnMap_apply (x : Albert) :
-    Continuous (fun v : AutomorphismColumns => columnMap v x) := by
+    Continuous (fun v => columnMap v x) := by
   simp_rw [columnMap_apply]
   exact continuous_finsetSum Finset.univ fun i _ =>
-    (continuous_const : Continuous (fun _ : AutomorphismColumns =>
+    (continuous_const : Continuous (fun _ =>
       automorphismBasis.equivFun x i)).smul (continuous_apply i)
 
 /-- Only actual unit, product and native metric preservation are required.
@@ -103,30 +103,29 @@ def automorphismMaps : Set AutomorphismColumns :=
 
 theorem automorphismMaps_closed : IsClosed automorphismMaps := by
   have heval (x : Albert) :
-      Continuous (fun v : AutomorphismColumns => columnMap v x) :=
+      Continuous (fun v => columnMap v x) :=
     continuous_columnMap_apply x
   have hj (x y : Albert) :
       IsClosed {v : AutomorphismColumns |
         columnMap v (jordan x y) = jordan (columnMap v x) (columnMap v y)} := by
-    have hprod : Continuous (fun v : AutomorphismColumns =>
+    have hprod : Continuous (fun v =>
         (columnMap v x, columnMap v y)) := (heval x).prodMk (heval y)
     have hright : Continuous (fun v : AutomorphismColumns =>
         jordan (columnMap v x) (columnMap v y)) := by
-      simpa only [Function.comp_def] using continuous_jordan.comp hprod
+      simpa [Function.comp_def] using continuous_jordan.comp hprod
     exact isClosed_eq (heval (jordan x y)) hright
   have hi (x y : Albert) :
       IsClosed {v : AutomorphismColumns |
         inner (columnMap v x) (columnMap v y) = inner x y} := by
-    have hprod : Continuous (fun v : AutomorphismColumns =>
+    have hprod : Continuous (fun v =>
         (columnMap v x, columnMap v y)) := (heval x).prodMk (heval y)
-    have hleft : Continuous (fun v : AutomorphismColumns =>
+    have hleft : Continuous (fun v =>
         inner (columnMap v x) (columnMap v y)) := by
-      simpa only [Function.comp_def] using continuous_native_inner.comp hprod
+      simpa [Function.comp_def] using continuous_native_inner.comp hprod
     exact isClosed_eq hleft
-      (continuous_const : Continuous (fun _ : AutomorphismColumns => inner x y))
-  have hunit : IsClosed {v : AutomorphismColumns | columnMap v 1 = 1} :=
-    isClosed_eq (heval 1)
-      (continuous_const : Continuous (fun _ : AutomorphismColumns => (1 : Albert)))
+      (continuous_const : Continuous (fun _ => inner x y))
+  have hunit := isClosed_eq (heval 1)
+      (continuous_const : Continuous (fun _ => (1 : Albert)))
   have hc := hunit.inter
     ((isClosed_iInter fun x => isClosed_iInter fun y => hj x y).inter
       (isClosed_iInter fun x => isClosed_iInter fun y => hi x y))
@@ -150,13 +149,13 @@ theorem automorphismMaps_compact : IsCompact automorphismMaps := by
   intro v hv i
   have hn := automorphismMaps_norm v hv (automorphismBasis i)
   rw [columnMap_basis] at hn
-  simpa only [Metric.mem_closedBall, dist_zero_right] using hn.le
+  simpa [Metric.mem_closedBall, dist_zero_right] using hn.le
 
 theorem automorphismMaps_nonempty : automorphismMaps.Nonempty := by
-  have hm : columnMap (fun i => automorphismBasis i) = (LinearMap.id : Albert →ₗ[ℝ] Albert) := by
-    simpa only [LinearMap.id_apply] using columnMap_linearImage
+  have hm : columnMap automorphismBasis = (LinearMap.id : Albert →ₗ[ℝ] Albert) := by
+    simpa [LinearMap.id_apply] using columnMap_linearImage
       (LinearMap.id : Albert →ₗ[ℝ] Albert)
-  refine ⟨(fun i => automorphismBasis i), ?_⟩
+  refine ⟨automorphismBasis, ?_⟩
   change columnMap _ 1 = 1 ∧ _
   rw [hm]
   exact ⟨rfl, (fun _ _ => rfl), (fun _ _ => rfl)⟩
@@ -173,11 +172,11 @@ def CompactAutomorphism.columns (g : CompactAutomorphism) : AutomorphismColumns 
 theorem CompactAutomorphism.columns_mem (g : CompactAutomorphism) :
     g.columns ∈ automorphismMaps := by
   refine ⟨?_, ?_, ?_⟩
-  · simpa only [CompactAutomorphism.columns_apply] using g.map_unit
+  · simpa [CompactAutomorphism.columns_apply] using g.map_unit
   · intro x y
-    simpa only [CompactAutomorphism.columns_apply] using g.map_jordan x y
+    simpa [CompactAutomorphism.columns_apply] using g.map_jordan x y
   · intro x y
-    simpa only [CompactAutomorphism.columns_apply] using g.inner_map x y
+    simpa [CompactAutomorphism.columns_apply] using g.inner_map x y
 
 /-- Metric preservation supplies injectivity and finite dimension supplies
 surjectivity. Unit and metric preservation then imply trace preservation. -/
@@ -188,18 +187,17 @@ def compactAutomorphismOfMap (v : AutomorphismColumns) (hv : v ∈ automorphismM
     apply sub_eq_zero.mp
     apply (inner_self_eq_zero (x-y)).mp
     have h := hv.2.2 (x-y) (x-y)
-    simpa only [map_sub, hxy, sub_self, inner_zero_left] using h.symm
+    simpa [map_sub, hxy, sub_self, inner_zero_left] using h.symm
   refine ⟨LinearEquiv.ofBijective (columnMap v)
     ⟨hinj, LinearMap.injective_iff_surjective.mp hinj⟩, hv.2.1, ?_⟩
   intro x
   rw [LinearEquiv.ofBijective_apply]
   have h := hv.2.2 x 1
-  simpa only [hv.1, inner_unit_right] using h
+  simpa [hv.1, inner_unit_right] using h
 
 @[simp] theorem compactAutomorphismOfMap_apply (v : AutomorphismColumns)
     (hv : v ∈ automorphismMaps) (x : Albert) :
-    (compactAutomorphismOfMap v hv).equiv x = columnMap v x := by
-  simp only [compactAutomorphismOfMap, LinearEquiv.ofBijective_apply]
+    (compactAutomorphismOfMap v hv).equiv x = columnMap v x := by rfl
 
 def diagonalEnergy (x : Albert) : ℝ := x.d0^2 + x.d1^2 + x.d2^2
 
@@ -209,12 +207,9 @@ def diagonalCoordinateLinear (i : Fin 3) : Albert →ₗ[ℝ] ℝ where
   map_smul' r x := by fin_cases i <;> rfl
 
 theorem continuous_diagonalEnergy : Continuous diagonalEnergy := by
-  have h0 : Continuous (fun x : Albert => x.d0) :=
-    (diagonalCoordinateLinear 0).continuous_of_finiteDimensional
-  have h1 : Continuous (fun x : Albert => x.d1) :=
-    (diagonalCoordinateLinear 1).continuous_of_finiteDimensional
-  have h2 : Continuous (fun x : Albert => x.d2) :=
-    (diagonalCoordinateLinear 2).continuous_of_finiteDimensional
+  have h0 := (diagonalCoordinateLinear 0).continuous_of_finiteDimensional
+  have h1 := (diagonalCoordinateLinear 1).continuous_of_finiteDimensional
+  have h2 := (diagonalCoordinateLinear 2).continuous_of_finiteDimensional
   exact ((h0.pow 2).add (h1.pow 2)).add (h2.pow 2)
 
 /-- Every native Albert element admits an actual automorphism maximizing
@@ -223,15 +218,15 @@ conclusion; that conclusion still requires the explicit rotation argument. -/
 theorem exists_diagonalEnergy_maximum (x : Albert) :
     ∃ g : CompactAutomorphism, ∀ h : CompactAutomorphism,
       diagonalEnergy (h.equiv x) ≤ diagonalEnergy (g.equiv x) := by
-  have hc : Continuous (fun v : AutomorphismColumns => diagonalEnergy (columnMap v x)) := by
-    simpa only [Function.comp_def] using
+  have hc : Continuous (fun v => diagonalEnergy (columnMap v x)) := by
+    simpa [Function.comp_def] using
       continuous_diagonalEnergy.comp (continuous_columnMap_apply x)
   obtain ⟨v, hv, hmax⟩ := automorphismMaps_compact.exists_isMaxOn
     automorphismMaps_nonempty hc.continuousOn
   refine ⟨compactAutomorphismOfMap v hv, fun h => ?_⟩
   have hm : diagonalEnergy (columnMap h.columns x) ≤ diagonalEnergy (columnMap v x) :=
     hmax h.columns_mem
-  simpa only [compactAutomorphismOfMap_apply, CompactAutomorphism.columns_apply] using hm
+  simpa [compactAutomorphismOfMap_apply, CompactAutomorphism.columns_apply] using hm
 
 end
 end Glennie

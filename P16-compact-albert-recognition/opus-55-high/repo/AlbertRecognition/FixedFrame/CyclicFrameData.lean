@@ -8,7 +8,6 @@ public import AlbertRecognition.FixedFrame.ThreeFrameRelations
 
 @[expose] public section
 namespace AlbertRecognition.FixedFrame
-noncomputable section
 open Glennie
 
 /-- The first actual cyclic pullback derives all h1 coarse actions. -/
@@ -22,33 +21,32 @@ theorem h1_coarse_actions_of_A_q_zero (B : SymmetricCubic)
       (∀ u : Octonion, KB B (h 1) (X02 u) = b • X02 u) ∧
       (∀ u : Octonion, KB B (h 1) (X12 u) = c • X12 u) := by
   let BT := pullbackCubic cyclicV B
-  have hBT : A (q referenceCubic) BT = 0 :=
-    A_q_pullback_zero cyclicAutomorphism B hB
+  have hBT := A_q_pullback_zero cyclicAutomorphism B hB
   obtain ⟨a,b,c,ha,hd,h01,h02,h12⟩ := h0_coarse_actions_of_A_q_zero BT hBT
   have transfer (x y : V) (r : ℝ) (hh : KB BT x y = r • y) :
       KB B (cyclicV x) (cyclicV y) = r • cyclicV y :=
     scalar_action_of_pullback cyclicAutomorphism B x y r hh
   refine ⟨a,b,c,?_,?_,?_,?_,?_⟩
-  · simpa only [cyclicV_h0] using transfer (h 0) (h 0) a ha
+  · simpa [cyclicV_h0] using transfer (h 0) (h 0) a ha
   · intro j hj
     fin_cases j
     · change KB B (h 1) (h 0 + (1/2 : ℝ) • h 1) =
         b • (h 0 + (1/2 : ℝ) • h 1)
-      simpa only [map_add, map_smul, cyclicV_h0, cyclicV_h2] using
+      simpa [map_add, map_smul, cyclicV_h0, cyclicV_h2] using
         transfer (h 0) (h 2 + (1/2 : ℝ) • h 0) b (hd 2 (by decide))
     · exact False.elim (hj rfl)
     · change KB B (h 1) (h 2 + (1/2 : ℝ) • h 1) =
         b • (h 2 + (1/2 : ℝ) • h 1)
-      simpa only [map_add, map_smul, cyclicV_h0, cyclicV_h1] using
+      simpa [map_add, map_smul, cyclicV_h0, cyclicV_h1] using
         transfer (h 0) (h 1 + (1/2 : ℝ) • h 0) b (hd 1 (by decide))
   · intro u
-    simpa only [cyclicV_h0, cyclicV_X02, octConj_conj] using
+    simpa [cyclicV_h0, cyclicV_X02, octConj_conj] using
       transfer (h 0) (X02 (octConj u)) c (h02 (octConj u))
   · intro u
-    simpa only [cyclicV_h0, cyclicV_X12, octConj_conj] using
+    simpa [cyclicV_h0, cyclicV_X12, octConj_conj] using
       transfer (h 0) (X12 (octConj u)) b (h12 (octConj u))
   · intro u
-    simpa only [cyclicV_h0, cyclicV_X01] using
+    simpa [cyclicV_h0, cyclicV_X01] using
       transfer (h 0) (X01 u) c (h01 u)
 
 /-- Apply the actual cyclic pullback again to derive all h2 coarse actions.
@@ -63,33 +61,32 @@ theorem h2_coarse_actions_of_A_q_zero (B : SymmetricCubic)
       (∀ u : Octonion, KB B (h 2) (X02 u) = c • X02 u) ∧
       (∀ u : Octonion, KB B (h 2) (X12 u) = c • X12 u) := by
   let BT := pullbackCubic cyclicV B
-  have hBT : A (q referenceCubic) BT = 0 :=
-    A_q_pullback_zero cyclicAutomorphism B hB
+  have hBT := A_q_pullback_zero cyclicAutomorphism B hB
   obtain ⟨a,b,c,ha,hd,h01,h02,h12⟩ := h1_coarse_actions_of_A_q_zero BT hBT
   have transfer (x y : V) (r : ℝ) (hh : KB BT x y = r • y) :
       KB B (cyclicV x) (cyclicV y) = r • cyclicV y :=
     scalar_action_of_pullback cyclicAutomorphism B x y r hh
   refine ⟨a,b,c,?_,?_,?_,?_,?_⟩
-  · simpa only [cyclicV_h1] using transfer (h 1) (h 1) a ha
+  · simpa [cyclicV_h1] using transfer (h 1) (h 1) a ha
   · intro j hj
     fin_cases j
     · change KB B (h 2) (h 0 + (1/2 : ℝ) • h 2) =
         b • (h 0 + (1/2 : ℝ) • h 2)
-      simpa only [map_add, map_smul, cyclicV_h1, cyclicV_h2] using
+      simpa [map_add, map_smul, cyclicV_h1, cyclicV_h2] using
         transfer (h 1) (h 2 + (1/2 : ℝ) • h 1) b (hd 2 (by decide))
     · change KB B (h 2) (h 1 + (1/2 : ℝ) • h 2) =
         b • (h 1 + (1/2 : ℝ) • h 2)
-      simpa only [map_add, map_smul, cyclicV_h1, cyclicV_h0] using
+      simpa [map_add, map_smul, cyclicV_h1, cyclicV_h0] using
         transfer (h 1) (h 0 + (1/2 : ℝ) • h 1) b (hd 0 (by decide))
     · exact False.elim (hj rfl)
   · intro u
-    simpa only [cyclicV_h1, cyclicV_X02, octConj_conj] using
+    simpa [cyclicV_h1, cyclicV_X02, octConj_conj] using
       transfer (h 1) (X02 (octConj u)) b (h02 (octConj u))
   · intro u
-    simpa only [cyclicV_h1, cyclicV_X12, octConj_conj] using
+    simpa [cyclicV_h1, cyclicV_X12, octConj_conj] using
       transfer (h 1) (X12 (octConj u)) c (h12 (octConj u))
   · intro u
-    simpa only [cyclicV_h1, cyclicV_X01] using
+    simpa [cyclicV_h1, cyclicV_X01] using
       transfer (h 1) (X01 u) c (h01 u)
 
 /-- Construct, rather than assume, the intermediate data for the original gate.
@@ -125,5 +122,4 @@ theorem threeFrameScalarData_of_A_q_zero (B : SymmetricCubic)
   · intro u
     simpa using And.intro (h120 u) (And.intro (h121 u) (h122 u))
 
-end
 end AlbertRecognition.FixedFrame

@@ -38,7 +38,7 @@ theorem complexAlbert_coordinates (x : Albert) :
 theorem complexAlbertLinear_injective : Function.Injective complexAlbertLinear := by
   intro x y h
   have h' := congrArg complexCoordinatesLinear h
-  simpa only [complexCoordinates_albert] using h'
+  simpa [complexCoordinates_albert] using h'
 
 def complexSector : Submodule ℝ Albert := LinearMap.range complexAlbertLinear
 
@@ -65,11 +65,7 @@ theorem complexSector_mem_iff (x : Albert) : x ∈ complexSector ↔ InComplexSe
     exact complexProjection_mem x
 
 theorem complexSector_jordan (x y : Albert) (hx : InComplexSector x)
-    (hy : InComplexSector y) : InComplexSector (jordan x y) := by
-  rw [← complexProjection_eq_self x hx, ← complexProjection_eq_self y hy]
-  simp [InComplexSector, OctInComplex, complexProjection, complexPart, complexOct,
-    jordan_o01, jordan_o02, jordan_o12, octMul, octConj,
-    Quaternion.re_mul, Quaternion.imI_mul, Quaternion.imJ_mul, Quaternion.imK_mul]
+    (hy : InComplexSector y) : InComplexSector (jordan x y) := by simp_all [InComplexSector, OctInComplex, oct_simps]
 
 theorem nine_independent_span_complexSector (v : Fin 3 × Fin 3 → Albert)
     (hv : ∀ i, InComplexSector (v i)) (hi : LinearIndependent ℝ v) :

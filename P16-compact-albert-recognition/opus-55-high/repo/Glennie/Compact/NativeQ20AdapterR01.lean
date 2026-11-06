@@ -9,13 +9,11 @@ public import Mathlib.Topology.Order.Compact
 @[expose] public section
 namespace Glennie.Compact.NativeQ20AdapterR01
 noncomputable section
-open Glennie Glennie.Compact.Affine20
+open Glennie.Compact.Affine20
 open Glennie.Compact.NativeQFamilyLedger
 open Glennie.Compact.NearbyOrbits
 open Glennie.Compact.Sections
 open Glennie.Compact.LocalOrbitQuotientR01
-set_option autoImplicit false
-set_option maxHeartbeats 2000000
 
 /-- Drop exactly the six single observations. No injectivity on arbitrary arrays. -/
 def dropSingles (a : Fin 26 → ℝ) : Fin 20 → ℝ :=
@@ -24,66 +22,25 @@ def dropSingles (a : Fin 26 → ℝ) : Fin 20 → ℝ :=
 /-- The twelve pair values and eight triple values, in inherited script order. -/
 def q20 (T : Triple) : Fin 20 → ℝ := dropSingles (q26 T)
 
-theorem q20_eq_of_q26_eq (T S : Triple) (h : q26 T = q26 S) :
-    q20 T = q20 S := congrArg dropSingles h
-
 /-- The six removed observations are fixed only under actual-frame hypotheses. -/
 theorem q26_eq_of_q20_eq (T S : Triple)
     (hT : ∀ a, Frame (T a)) (hS : ∀ a, Frame (S a))
-    (h : q20 T = q20 S) : q26 T = q26 S := by
-  have hs (v : Fin 3) (s : Fin 2) : qSingle T v s = qSingle S v s := by
-    rw [qSingle_frame T hT, qSingle_frame S hS]
-  funext n
-  fin_cases n
-  · simp [q26, hs]
-  · simp [q26, hs]
-  · simp [q26, hs]
-  · simp [q26, hs]
-  · simp [q26, hs]
-  · simp [q26, hs]
-  · simpa [q20, dropSingles, q26] using congrFun h (0 : Fin 20)
-  · simpa [q20, dropSingles, q26] using congrFun h (1 : Fin 20)
-  · simpa [q20, dropSingles, q26] using congrFun h (2 : Fin 20)
-  · simpa [q20, dropSingles, q26] using congrFun h (3 : Fin 20)
-  · simpa [q20, dropSingles, q26] using congrFun h (4 : Fin 20)
-  · simpa [q20, dropSingles, q26] using congrFun h (5 : Fin 20)
-  · simpa [q20, dropSingles, q26] using congrFun h (6 : Fin 20)
-  · simpa [q20, dropSingles, q26] using congrFun h (7 : Fin 20)
-  · simpa [q20, dropSingles, q26] using congrFun h (8 : Fin 20)
-  · simpa [q20, dropSingles, q26] using congrFun h (9 : Fin 20)
-  · simpa [q20, dropSingles, q26] using congrFun h (10 : Fin 20)
-  · simpa [q20, dropSingles, q26] using congrFun h (11 : Fin 20)
-  · simpa [q20, dropSingles, q26] using congrFun h (12 : Fin 20)
-  · simpa [q20, dropSingles, q26] using congrFun h (13 : Fin 20)
-  · simpa [q20, dropSingles, q26] using congrFun h (14 : Fin 20)
-  · simpa [q20, dropSingles, q26] using congrFun h (15 : Fin 20)
-  · simpa [q20, dropSingles, q26] using congrFun h (16 : Fin 20)
-  · simpa [q20, dropSingles, q26] using congrFun h (17 : Fin 20)
-  · simpa [q20, dropSingles, q26] using congrFun h (18 : Fin 20)
-  · simpa [q20, dropSingles, q26] using congrFun h (19 : Fin 20)
-
-theorem q20_eq_iff_q26_eq (T S : Triple)
-    (hT : ∀ a, Frame (T a)) (hS : ∀ a, Frame (S a)) :
-    q20 T = q20 S ↔ q26 T = q26 S :=
-  ⟨q26_eq_of_q20_eq T S hT hS, q20_eq_of_q26_eq T S⟩
+    (h : q20 T = q20 S) : q26 T = q26 S := by simp_all [funext_iff, Fin.forall_fin_succ, q20, dropSingles, q26, qSingle_frame]
 
 /-- Actual ordered frame feasibility is indispensable to this equivalence. -/
 theorem q20_eq_iff_ledger54_eq (T S : Triple)
     (hT : ∀ a, Frame (T a)) (hS : ∀ a, Frame (S a)) :
     q20 T = q20 S ↔ ledger54 T = ledger54 S :=
-  (q20_eq_iff_q26_eq T S hT hS).trans (q26_eq_iff_ledger54_eq T S hT hS)
+  (⟨q26_eq_of_q20_eq T S hT hS, congrArg dropSingles⟩ : _ ↔ _).trans (q26_eq_iff_ledger54_eq T S hT hS)
 
 /-- Branch representative with both feasible input coordinates certified by d.V. -/
 def branchSection (d : LocalData) (b : d.V) (s : Bool) : Triple :=
   if s then d.pos b.1 else d.neg b.1
 
 theorem continuous_section (d : LocalData) (s : Bool) :
-    Continuous (fun b : d.V => branchSection d b s) := by
+    Continuous (fun b => branchSection d b s) := by
   cases s
-  · change Continuous (d.V.domRestrict d.neg)
-    exact d.contNeg.domRestrict
-  · change Continuous (d.V.domRestrict d.pos)
-    exact d.contPos.domRestrict
+  exacts [d.contNeg.domRestrict, d.contPos.domRestrict]
 
 /-- Whole admitted fibres select the branchSection orbit by their actual sign. -/
 theorem mem_section_orbit (d : LocalData) (T : Admitted d) :
@@ -107,22 +64,7 @@ theorem norm_mapAtoms_sub (g : CompactAutomorphism) (T S : Triple) :
   have hnn (x : Albert) : ‖g.equiv x‖₊ = ‖x‖₊ := by
     apply NNReal.eq
     exact norm_automorphism g x
-  simp only [Pi.norm_def, Pi.nnnorm_def, mapAtoms, Pi.sub_apply, ← map_sub, hnn]
-
-/-- Uniform branchSection recovery on compact feasible chart points, for either sign. -/
-theorem compact_section_tolerance (d : LocalData) (K : Set d.V) (hK : IsCompact K)
-    (ζ : ℝ) (hζ : 0 < ζ) :
-    ∃ η > 0, ∀ b ∈ K, ∀ c ∈ K, ∀ s : Bool,
-      dist b c < η → ‖branchSection d b s - branchSection d c s‖ < ζ := by
-  have hp := hK.uniformContinuousOn_of_continuous (continuous_section d true).continuousOn
-  have hn := hK.uniformContinuousOn_of_continuous (continuous_section d false).continuousOn
-  obtain ⟨ηp, hηp, hp⟩ := Metric.uniformContinuousOn_iff.mp hp ζ hζ
-  obtain ⟨ηn, hηn, hn⟩ := Metric.uniformContinuousOn_iff.mp hn ζ hζ
-  refine ⟨min ηp ηn, lt_min hηp hηn, ?_⟩
-  intro b hb c hc s hbc
-  cases s
-  · simpa only [dist_eq_norm] using hn b hb c hc (lt_of_lt_of_le hbc (min_le_right _ _))
-  · simpa only [dist_eq_norm] using hp b hb c hc (lt_of_lt_of_le hbc (min_le_left _ _))
+  simp [Pi.norm_def, Pi.nnnorm_def, mapAtoms, Pi.sub_apply, ← map_sub, hnn]
 
 /-- Feasible uncertain chart recovery, modulo an actual simultaneous automorphism.
 Both chart points must lie in the compact region; no array projection is supplied. -/
@@ -131,29 +73,33 @@ theorem compact_feasible_recovery (d : LocalData) (K : Set d.V) (hK : IsCompact 
     ∃ η > 0, ∀ T : Admitted d, chart d T ∈ K → ∀ b : d.V, b ∈ K →
       dist (chart d T) b < η → ∃ g : CompactAutomorphism,
         ‖T.1 - mapAtoms g (branchSection d b (sheet d T))‖ < ζ := by
-  obtain ⟨η, hη, ht⟩ := compact_section_tolerance d K hK ζ hζ
-  refine ⟨η, hη, ?_⟩
-  intro T hT b hb hdist
+  have hu (s : Bool) := Metric.uniformContinuousOn_iff.mp
+    (hK.uniformContinuousOn_of_continuous (continuous_section d s).continuousOn) ζ hζ
+  obtain ⟨ηp, hηp, hp⟩ := hu true
+  obtain ⟨ηn, hηn, hn⟩ := hu false
+  refine ⟨min ηp ηn, lt_min hηp hηn, fun T hT b hb hdist => ?_⟩
   obtain ⟨g, hg⟩ := mem_section_orbit d T
   refine ⟨g, ?_⟩
-  rw [← hg, norm_mapAtoms_sub]
-  exact ht (chart d T) hT b hb (sheet d T) hdist
+  rw [← hg, norm_mapAtoms_sub, ← dist_eq_norm]
+  cases sheet d T
+  · simp_all
+  · simp_all
 
 /-- The compact response margin covers every actual fibre member.
 No equality of the two branch magnitudes is assumed. -/
 theorem compact_response_margin (d : LocalData) (K : Set d.V) (hK : IsCompact K) :
     ∃ m > 0, ∀ T : Admitted d, chart d T ∈ K → m ≤ |phiOf T.1| := by
-  let fPos : d.V → ℝ := fun b => |(phiOf ∘ d.V.domRestrict d.pos) b|
-  let fNeg : d.V → ℝ := fun b => |(phiOf ∘ d.V.domRestrict d.neg) b|
-  have hcPos : Continuous fPos := (continuous_phiOf.comp d.contPos.domRestrict).abs
-  have hcNeg : Continuous fNeg := (continuous_phiOf.comp d.contNeg.domRestrict).abs
+  let fPos := fun b => |(phiOf ∘ d.V.domRestrict d.pos) b|
+  let fNeg := fun b => |(phiOf ∘ d.V.domRestrict d.neg) b|
+  have hcPos := (continuous_phiOf.comp d.contPos.domRestrict).abs
+  have hcNeg := (continuous_phiOf.comp d.contNeg.domRestrict).abs
   have hp0 : ∀ b ∈ K, 0 < fPos b := by
     intro b _
-    simpa only [fPos, Function.comp_apply, Set.domRestrict_apply] using
+    simpa [fPos, Function.comp_apply, Set.domRestrict_apply] using
       (abs_pos.mpr (ne_of_gt (d.phiPos b.1 b.2)))
   have hn0 : ∀ b ∈ K, 0 < fNeg b := by
     intro b _
-    simpa only [fNeg, Function.comp_apply, Set.domRestrict_apply] using
+    simpa [fNeg, Function.comp_apply, Set.domRestrict_apply] using
       (abs_pos.mpr (ne_of_lt (d.phiNeg b.1 b.2)))
   obtain ⟨mp, hmp, hp⟩ := hK.exists_forall_le' hcPos.continuousOn hp0
   obtain ⟨mn, hmn, hn⟩ := hK.exists_forall_le' hcNeg.continuousOn hn0

@@ -7,7 +7,6 @@ public import Glennie.Native.SectorAssemblyBridges
 
 @[expose] public section
 namespace Glennie.SectorMixedTrace
-noncomputable section
 
 abbrev Mat := Matrix (Fin 3) (Fin 3) ℂ
 
@@ -18,9 +17,7 @@ theorem antiHermitian_trace_re_zero (S G : Mat)
   have hs : star (S*G).trace = -(S*G).trace := by
     calc
       _ = (S*G).conjTranspose.trace := (Matrix.trace_conjTranspose (S*G)).symm
-      _ = -(G*S).trace := by
-        simp only [Matrix.conjTranspose_mul, hG.eq, hS,
-          Matrix.mul_neg, Matrix.trace_neg]
+      _ = -(G*S).trace := by simp [Matrix.conjTranspose_mul, hG.eq, hS, Matrix.trace_neg]
       _ = _ := by rw [Matrix.trace_mul_comm G S]
   have hr : (S*G).trace.re = -(S*G).trace.re := by
     simpa using congrArg Complex.re hs
@@ -35,12 +32,10 @@ theorem star_trace_four (S G K B : Mat)
   calc
     _ = (S*G*K*B).conjTranspose.trace :=
       (Matrix.trace_conjTranspose (S*G*K*B)).symm
-    _ = -(B*K*G*S).trace := by
-      simp only [Matrix.conjTranspose_mul, hB.eq, hK.eq, hG.eq, hS,
-        Matrix.mul_neg, Matrix.trace_neg, Matrix.mul_assoc]
+    _ = -(B*K*G*S).trace := by simp [Matrix.conjTranspose_mul, hB.eq, hK.eq, hG.eq, hS, Matrix.trace_neg, Matrix.mul_assoc]
     _ = _ := by
-      simpa only [Matrix.mul_assoc] using
-        congrArg (fun t : ℂ => -t) (Matrix.trace_mul_comm (B*K) (G*S))
+      simpa [Matrix.mul_assoc] using
+        congrArg (fun t => -t) (Matrix.trace_mul_comm (B*K) (G*S))
 
 theorem trace_four_re_reverse (S G K B : Mat)
     (hS : S.conjTranspose = -S) (hG : G.IsHermitian)
@@ -56,9 +51,9 @@ theorem hidden_trace_expansion (M S K B : Mat)
       (M*((K*B).trace • (1:Mat)-K*B))).trace =
       -((K*B).trace * (S*(M.conjTranspose*M)).trace) +
         (S*(M.conjTranspose*M)*K*B).trace := by
-  simp only [Matrix.conjTranspose_mul, hS, Matrix.mul_sub,
-    Matrix.neg_mul, Matrix.mul_neg, Matrix.mul_smul, Matrix.mul_one,
-    Matrix.trace_sub, Matrix.trace_neg, Matrix.trace_smul, smul_eq_mul,
+  simp [Matrix.conjTranspose_mul, hS, Matrix.mul_sub,
+    
+    Matrix.trace_sub, Matrix.trace_smul, smul_eq_mul,
     Matrix.mul_assoc]
   ring
 
@@ -69,8 +64,7 @@ theorem hidden_real_trace (M S K B : Mat)
     ((M*S).conjTranspose *
       (M*((K*B).trace • (1:Mat)-K*B))).trace.re =
         (S*(M.conjTranspose*M)*K*B).trace.re := by
-  have hG : (M.conjTranspose*M).IsHermitian :=
-    SectorAssemblyBridges.hidden_gram_isHermitian M
+  have hG := SectorAssemblyBridges.hidden_gram_isHermitian M
   have hsg := antiHermitian_trace_re_zero S (M.conjTranspose*M) hS hG
   have ht := SectorAssemblyBridges.trace_mul_im_zero K B hK hB
   rw [hidden_trace_expansion M S K B hS]
@@ -83,21 +77,15 @@ theorem mixed_trace_cancel (M S K B : Mat)
     ((M.conjTranspose*M)*(S*B*K-K*B*S)).trace.re +
       2*((M*S).conjTranspose *
         (M*((K*B).trace • (1:Mat)-K*B))).trace.re = 0 := by
-  let G : Mat := M.conjTranspose*M
-  have hG : G.IsHermitian := SectorAssemblyBridges.hidden_gram_isHermitian M
+  let G := M.conjTranspose*M
+  have hG := SectorAssemblyBridges.hidden_gram_isHermitian M
   have hcyc : (G*K*B*S).trace = (S*G*K*B).trace := by
-    simpa only [Matrix.mul_assoc] using Matrix.trace_mul_cycle (G*K) B S
+    simpa [Matrix.mul_assoc] using Matrix.trace_mul_cycle (G*K) B S
   have hc : (G*(S*B*K-K*B*S)).trace =
-      (G*S*B*K).trace - (S*G*K*B).trace := by
-    calc
-      _ = (G*S*B*K).trace - (G*K*B*S).trace := by
-        simp only [Matrix.mul_sub, Matrix.trace_sub, Matrix.mul_assoc]
-      _ = _ := by rw [hcyc]
+      (G*S*B*K).trace - (S*G*K*B).trace := by simp_all [Matrix.mul_sub, Matrix.trace_sub, Matrix.mul_assoc]
   have hcr : (G*(S*B*K-K*B*S)).trace.re =
-      (G*S*B*K).trace.re - (S*G*K*B).trace.re := by
-    simpa only [Complex.sub_re] using congrArg Complex.re hc
-  have hr : (S*G*K*B).trace.re = -(G*S*B*K).trace.re :=
-    trace_four_re_reverse S G K B hS hG hK hB
+      (G*S*B*K).trace.re - (S*G*K*B).trace.re := by simp_all
+  have hr := trace_four_re_reverse S G K B hS hG hK hB
   have hh : ((M*S).conjTranspose *
       (M*((K*B).trace • (1:Mat)-K*B))).trace.re = (S*G*K*B).trace.re :=
     hidden_real_trace M S K B hS hK hB
@@ -106,5 +94,4 @@ theorem mixed_trace_cancel (M S K B : Mat)
   rw [hcr, hh]
   linarith
 
-end
 end Glennie.SectorMixedTrace

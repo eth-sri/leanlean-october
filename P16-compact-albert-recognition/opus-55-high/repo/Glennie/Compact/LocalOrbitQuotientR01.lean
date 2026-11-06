@@ -6,10 +6,9 @@ public import Glennie.Compact.NearbyOrbitsClosed
 @[expose] public section
 namespace Glennie.Compact.LocalOrbitQuotientR01
 noncomputable section
-open Glennie Glennie.Compact.Affine20 Glennie.Compact.FlatOrbit
+open Glennie.Compact.Affine20 Glennie.Compact.FlatOrbit
 open Glennie.Compact.Sections Glennie.Compact.NearbyOrbits
 open Glennie.Compact.FrameTopology
-set_option autoImplicit false
 
 abbrev ChartPoint := Fin 20 → ℝ
 
@@ -71,7 +70,7 @@ theorem continuous_encode20 : Continuous (encode20 : Ledger54 → ChartPoint) :=
 
 /-- The chart on all native triples is continuous. -/
 theorem continuous_chart :
-    Continuous (fun T : Triple => encode20 (ledger54 T)) :=
+    Continuous (fun T => encode20 (ledger54 T)) :=
   continuous_encode20.comp continuous_ledger54
 
 /-- The admitted coordinate, retaining proof that it lies in the exact V. -/
@@ -80,8 +79,8 @@ def chart (d : LocalData) (T : Admitted d) : d.V :=
 
 /-- All admitted actual frame triples belong to the full fibre over their own chart. -/
 theorem admitted_mem_fibre (d : LocalData) (T : Admitted d) :
-    T.1 ∈ fibre54 (chart d T).1 := by
-  exact ⟨T.2.1, NearbyOrbits.ledger54_eq_decode20 T.2.1 rfl⟩
+    T.1 ∈ fibre54 (chart d T).1 :=
+  ⟨T.2.1, NearbyOrbits.ledger54_eq_decode20 T.2.1 rfl⟩
 
 /-- The two chosen sections really land in the entire admitted subtype. -/
 def posSection (d : LocalData) (b : d.V) : Admitted d :=
@@ -118,12 +117,12 @@ theorem mem_pos_of_phi_pos (d : LocalData) (T : Admitted d)
   · have heq := phiOf_eq_of_mem_autOrbit hn
     have hneg := d.phiNeg _ (chart d T).2
     linarith
-  · exact hp
+  · simp_all
 
 theorem mem_neg_of_phi_neg (d : LocalData) (T : Admitted d)
     (h : phiOf T.1 < 0) : T.1 ∈ autOrbit (d.neg (chart d T).1) := by
   rcases admitted_cover d T with hn | hp
-  · exact hn
+  · simp_all
   · have heq := phiOf_eq_of_mem_autOrbit hp
     have hpos := d.phiPos _ (chart d T).2
     linarith
@@ -142,7 +141,7 @@ theorem sheet_false_iff (d : LocalData) (T : Admitted d) :
   · intro h
     have hn := phi_ne_zero d T
     exact lt_of_le_of_ne (le_of_not_gt h) hn
-  · exact fun h => not_lt.mpr h.le
+  · grind
 
 /-- Actual simultaneous automorphisms preserve both coordinate and Phi. -/
 theorem chart_eq_of_rel (d : LocalData) {T S : Admitted d}
@@ -155,7 +154,7 @@ theorem chart_eq_of_rel (d : LocalData) {T S : Admitted d}
 theorem sheet_eq_of_rel (d : LocalData) {T S : Admitted d}
     (h : (orbitSetoid d).r T S) : sheet d T = sheet d S := by
   obtain ⟨g, hg⟩ := h
-  simp only [sheet, ← hg, phiOf_mapAtoms]
+  simp [sheet, ← hg, phiOf_mapAtoms]
 
 /-- Equal chart and sheet imply an actual automorphism, using whole-fibre cover. -/
 theorem rel_of_chart_sheet_eq (d : LocalData) {T S : Admitted d}
@@ -163,25 +162,21 @@ theorem rel_of_chart_sheet_eq (d : LocalData) {T S : Admitted d}
     (orbitSetoid d).r T S := by
   by_cases hp : 0 < phiOf T.1
   · have hsT : sheet d T = true := (sheet_true_iff d T).2 hp
-    have hsS : sheet d S = true := hs.symm.trans hsT
-    have hpS : 0 < phiOf S.1 := (sheet_true_iff d S).1 hsS
+    have hsS := hs.symm.trans hsT
+    have hpS := (sheet_true_iff d S).1 hsS
     have hT := mem_pos_of_phi_pos d T hp
     have hS := mem_pos_of_phi_pos d S hpS
-    have hS' : S.1 ∈ autOrbit (d.pos (chart d T).1) := by
-      rw [hc]
-      exact hS
+    have hS' : S.1 ∈ autOrbit (d.pos (chart d T).1) := by simp_all
     change S.1 ∈ autOrbit T.1
     rw [autOrbit_eq_of_mem hT]
     exact hS'
   · have hsT : sheet d T = false := by simp [sheet, hp]
-    have hsS : sheet d S = false := hs.symm.trans hsT
-    have hnT : phiOf T.1 < 0 := (sheet_false_iff d T).1 hsT
-    have hnS : phiOf S.1 < 0 := (sheet_false_iff d S).1 hsS
+    have hsS := hs.symm.trans hsT
+    have hnT := (sheet_false_iff d T).1 hsT
+    have hnS := (sheet_false_iff d S).1 hsS
     have hT := mem_neg_of_phi_neg d T hnT
     have hS := mem_neg_of_phi_neg d S hnS
-    have hS' : S.1 ∈ autOrbit (d.neg (chart d T).1) := by
-      rw [hc]
-      exact hS
+    have hS' : S.1 ∈ autOrbit (d.neg (chart d T).1) := by simp_all
     change S.1 ∈ autOrbit T.1
     rw [autOrbit_eq_of_mem hT]
     exact hS'
@@ -213,14 +208,11 @@ theorem continuous_sheet (d : LocalData) : Continuous (sheet d) := by
     ext T
     simp only [Set.mem_compl_iff, Set.mem_preimage, Set.mem_singleton_iff,
       Set.mem_setOf_eq]
-    have hb : ¬ sheet d T = true ↔ sheet d T = false := by
-      cases h : sheet d T <;> simp [h]
+    have hb : ¬ sheet d T = true ↔ sheet d T = false := by simp
     exact hb.trans (sheet_false_iff d T)
   rw [hpreeq]
   refine ⟨?_, hpos⟩
-  have hneg' : IsOpen (({T : Admitted d | 0 < phiOf T.1} : Set (Admitted d))ᶜ) := by
-    rw [← hpreeq, hcompeq]
-    exact hneg
+  have hneg' : IsOpen (({T : Admitted d | 0 < phiOf T.1} : Set (Admitted d))ᶜ) := by simp_all
   exact isOpen_compl_iff.mp hneg'
 
 /-- The complete orbit invariant has both a continuous coordinate and a continuous sign. -/
@@ -228,8 +220,8 @@ def invariant (d : LocalData) (T : Admitted d) : d.V × Bool :=
   (chart d T, sheet d T)
 
 theorem invariant_eq_of_rel (d : LocalData) {T S : Admitted d}
-    (h : (orbitSetoid d).r T S) : invariant d T = invariant d S := by
-  exact Prod.ext (chart_eq_of_rel d h) (sheet_eq_of_rel d h)
+    (h : (orbitSetoid d).r T S) : invariant d T = invariant d S :=
+  Prod.ext (chart_eq_of_rel d h) (sheet_eq_of_rel d h)
 
 theorem continuous_invariant (d : LocalData) : Continuous (invariant d) := by
   apply Continuous.prodMk
@@ -261,21 +253,19 @@ theorem continuous_inverse (d : LocalData) : Continuous (inverse d) := by
   apply continuous_prod_of_discrete_right.mpr
   intro s
   cases s
-  · simpa [inverse] using hn
-  · simpa [inverse] using hp
+  · aesop
+  · aesop
 
 /-- The section inverse returns exactly the requested admitted coordinate and sign. -/
 theorem forward_inverse (d : LocalData) (z : d.V × Bool) :
     forward d (inverse d z) = z := by
   rcases z with ⟨b, s⟩
   cases s
-  · simp only [inverse, forward, ↓reduceIte, Quotient.lift_mk]
-    change invariant d (negSection d b) = (b, false)
+  · simp [inverse, forward]
     apply Prod.ext
     · exact chart_negSection d b
     · exact (sheet_false_iff d (negSection d b)).2 (d.phiNeg b.1 b.2)
-  · simp only [inverse, forward, ↓reduceIte, Quotient.lift_mk]
-    change invariant d (posSection d b) = (b, true)
+  · simp [inverse, forward, ↓reduceIte]
     apply Prod.ext
     · exact chart_posSection d b
     · exact (sheet_true_iff d (posSection d b)).2 (d.phiPos b.1 b.2)
@@ -287,12 +277,12 @@ theorem inverse_forward (d : LocalData) (q : OrbitQuotient d) :
   intro T
   by_cases hp : 0 < phiOf T.1
   · have hs : sheet d T = true := (sheet_true_iff d T).2 hp
-    simp only [forward, inverse, Quotient.lift_mk, invariant, hs, ↓reduceIte]
+    simp [forward, inverse, Quotient.lift_mk, invariant, hs, ↓reduceIte]
     apply Quotient.sound
     exact mem_pos_of_phi_pos d T hp
   · have hs : sheet d T = false := by simp [sheet, hp]
-    have hn : phiOf T.1 < 0 := (sheet_false_iff d T).1 hs
-    simp only [forward, inverse, Quotient.lift_mk, invariant, hs, ↓reduceIte]
+    have hn := (sheet_false_iff d T).1 hs
+    simp [forward, inverse, Quotient.lift_mk, invariant, hs]
     apply Quotient.sound
     exact mem_neg_of_phi_neg d T hn
 

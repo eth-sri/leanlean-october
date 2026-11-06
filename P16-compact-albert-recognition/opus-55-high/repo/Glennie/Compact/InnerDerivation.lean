@@ -18,9 +18,6 @@ namespace Glennie.Compact.InnerDerivation
 
 noncomputable section
 
-set_option autoImplicit false
-set_option maxHeartbeats 2000000
-set_option linter.unusedSimpArgs false
 
 variable {V : Type*} [AddCommGroup V] [Module ℝ V]
 
@@ -44,8 +41,8 @@ theorem polar_eq_half (mul : V →ₗ[ℝ] V →ₗ[ℝ] V) (comm : ∀ x y, mul
     polar mul x₁ x₂ x₃ y = (1 / 2 : ℝ) •
       (defect mul (x₁ + x₂ + x₃) y - defect mul (x₁ + x₂) y - defect mul (x₁ + x₃) y -
         defect mul (x₂ + x₃) y + defect mul x₁ y + defect mul x₂ y + defect mul x₃ y) := by
-  simp only [polar, defect, map_add, LinearMap.add_apply]
-  simp only [comm x₂ x₁, comm x₃ x₁, comm x₃ x₂]
+  simp [polar, defect, map_add, LinearMap.add_apply]
+  simp [comm x₂ x₁, comm x₃ x₁, comm x₃ x₂]
   module
 
 theorem polar_eq_zero (mul : V →ₗ[ℝ] V →ₗ[ℝ] V) (comm : ∀ x y, mul x y = mul y x)
@@ -60,8 +57,8 @@ theorem der_leibniz (mul : V →ₗ[ℝ] V →ₗ[ℝ] V) (comm : ∀ x y, mul x
     der mul a b (mul z x) = mul (der mul a b z) x + mul z (der mul a b x) := by
   have E1 := polar_eq_zero mul comm hJ x a z b
   have E2 := polar_eq_zero mul comm hJ x b z a
-  simp only [polar, der, map_sub, LinearMap.sub_apply] at E1 E2 ⊢
-  simp only [comm x a, comm x b, comm z a, comm z b, comm b a,
+  simp [polar, der, map_sub, LinearMap.sub_apply] at E1 E2 ⊢
+  simp [comm x a, comm x b, comm z a, comm z b, comm b a,
     comm (mul b z) (mul a x), comm (mul a z) (mul b x),
     comm (mul a (mul b z)) x, comm (mul b (mul a z)) x] at E1 E2 ⊢
   linear_combination (norm := module) E2 - E1
@@ -73,15 +70,12 @@ namespace Glennie.Compact
 
 noncomputable section
 
-set_option autoImplicit false
-set_option maxHeartbeats 2000000
-set_option linter.unusedSimpArgs false
 
 theorem jordanLinear_comm (x y : Albert) : jordanLinear x y = jordanLinear y x := by
-  simpa only [jordanLinear_apply] using jordan_comm x y
+  simpa [jordanLinear_apply] using jordan_comm x y
 
 theorem defect_jordanLinear (x y : Albert) : InnerDerivation.defect jordanLinear x y = 0 := by
-  simp only [InnerDerivation.defect, jordanLinear_apply]
+  simp [InnerDerivation.defect, jordanLinear_apply]
   rw [jordan_identity, sub_self]
 
 /-- The native inner operator D_{a,b} = [L_a, L_b]. -/
@@ -98,7 +92,7 @@ theorem innerDer_jordan (a b z x : Albert) :
 theorem trace_innerDer (a b z : Albert) : trace (innerDer a b z) = 0 := by
   have h1 := inner_jordan_associative a b z
   have h2 := inner_jordan_associative b a z
-  simp only [inner] at h1 h2
+  simp [inner] at h1 h2
   rw [innerDer, trace_sub, ← h1, ← h2, jordan_comm b a, sub_self]
 
 /-- D_{a,b} as a real-linear map. -/
@@ -118,7 +112,7 @@ def TraceFree (D : Albert →ₗ[ℝ] Albert) : Prop := ∀ x, trace (D x) = 0
 theorem isJordanDerivation_innerDerLinear (a b : Albert) :
     IsJordanDerivation (innerDerLinear a b) := by
   intro x y
-  simp only [innerDerLinear_apply]
+  simp [innerDerLinear_apply]
   exact innerDer_jordan a b x y
 
 theorem traceFree_innerDerLinear (a b : Albert) : TraceFree (innerDerLinear a b) := by
@@ -133,13 +127,13 @@ theorem IsJordanDerivation.zero : IsJordanDerivation 0 := by
 theorem IsJordanDerivation.add {D E : Albert →ₗ[ℝ] Albert} (hD : IsJordanDerivation D)
     (hE : IsJordanDerivation E) : IsJordanDerivation (D + E) := by
   intro x y
-  simp only [LinearMap.add_apply, hD x y, hE x y, jordan_add_left, jordan_add_right]
+  simp [LinearMap.add_apply, hD x y, hE x y, jordan_add_left, jordan_add_right]
   module
 
 theorem IsJordanDerivation.smul (r : ℝ) {D : Albert →ₗ[ℝ] Albert}
     (hD : IsJordanDerivation D) : IsJordanDerivation (r • D) := by
   intro x y
-  simp only [LinearMap.smul_apply, hD x y, jordan_smul_left, jordan_smul_right, smul_add]
+  simp [LinearMap.smul_apply, hD x y, jordan_smul_left, jordan_smul_right, smul_add]
 
 theorem IsJordanDerivation.sum {ι : Type*} (s : Finset ι) (D : ι → Albert →ₗ[ℝ] Albert)
     (hD : ∀ i ∈ s, IsJordanDerivation (D i)) : IsJordanDerivation (∑ i ∈ s, D i) :=
@@ -150,10 +144,8 @@ theorem IsJordanDerivation.sum {ι : Type*} (s : Finset ι) (D : ι → Albert �
 theorem IsJordanDerivation.map_one {D : Albert →ₗ[ℝ] Albert} (hD : IsJordanDerivation D) :
     D 1 = 0 := by
   have h := hD 1 1
-  simp only [jordan_unit_left, jordan_unit_right] at h
-  have h2 : D 1 + D 1 = D 1 + 0 := by
-    rw [add_zero]
-    exact h.symm
+  simp [jordan_unit_left, jordan_unit_right] at h
+  have h2 : D 1 + D 1 = D 1 + 0 := by simp_all
   exact add_left_cancel h2
 
 theorem TraceFree.zero : TraceFree 0 := by
@@ -163,12 +155,12 @@ theorem TraceFree.zero : TraceFree 0 := by
 theorem TraceFree.add {D E : Albert →ₗ[ℝ] Albert} (hD : TraceFree D) (hE : TraceFree E) :
     TraceFree (D + E) := by
   intro x
-  simp only [LinearMap.add_apply, trace_add, hD x, hE x, add_zero]
+  simp [LinearMap.add_apply, trace_add, hD x, hE x, add_zero]
 
 theorem TraceFree.smul (r : ℝ) {D : Albert →ₗ[ℝ] Albert} (hD : TraceFree D) :
     TraceFree (r • D) := by
   intro x
-  simp only [LinearMap.smul_apply, trace_smul, hD x, mul_zero]
+  simp [LinearMap.smul_apply, trace_smul, hD x, mul_zero]
 
 theorem TraceFree.sum {ι : Type*} (s : Finset ι) (D : ι → Albert →ₗ[ℝ] Albert)
     (hD : ∀ i ∈ s, TraceFree (D i)) : TraceFree (∑ i ∈ s, D i) :=

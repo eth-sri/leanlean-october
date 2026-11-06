@@ -5,13 +5,11 @@ public import Glennie.Compact.CompatibleDefectReadoutR01
 from an actual isometric associative representation, with exact cyclic-trace metric. -/
 @[expose] public section
 namespace Glennie.Compact.RepresentedDefectReadoutR01
-open Glennie Glennie.Compact.MultiplicationDefectR01
+open Glennie.Compact.MultiplicationDefectR01
 open Glennie.Compact.CompatibleDefectReadoutR01
 open Glennie.Compact.CyclicTraceNullR01
 open Glennie.Compact.NormCompatibleNullTargetR01
 open Glennie.Compact.ReadoutRobustnessR01
-noncomputable section
-set_option autoImplicit false
 
 variable {E N : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
   [NormedRing N] [NormedAlgebra ℝ N]
@@ -35,5 +33,4 @@ variable {E N : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
   exact frame_noisy_compatible_defect_lower jE f hE hUE ρ.toLinearMap τ hj hB hcyclic
     T hT noisy ε μ hμ hreadout hdef
 
-end
 end Glennie.Compact.RepresentedDefectReadoutR01

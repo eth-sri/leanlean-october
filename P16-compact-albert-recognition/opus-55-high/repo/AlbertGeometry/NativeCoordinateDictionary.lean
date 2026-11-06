@@ -17,7 +17,7 @@ public import Mathlib.Topology.Algebra.Module.FiniteDimension
 namespace AlbertGeometry.NativeCoordinateDictionary
 noncomputable section
 open Module Glennie AlbertRecognition
-open AlbertGeometry.Cubic AlbertGeometry.CubicPolynomialRepresentation
+open AlbertGeometry.CubicPolynomialRepresentation
 open AlbertGeometry.NativeNormAlgebra AlbertGeometry.NativeEuclideanNormBinding
 open AlbertGeometry.NativeCoordinateDerivatives
 open scoped BigOperators Quaternion
@@ -30,16 +30,11 @@ def nativeDeterminant (x : Albert) : ℝ :=
 
 -- Declaration-scoped resource budget for literal coordinate expansion.
 
-set_option maxHeartbeats 2000000 in
 /-- Independent actual binary-coordinate expansion; no determinant identity is
 an input, and no associative octonion/matrix law is invoked. -/
 theorem nativeNewtonNorm_eq_nativeDeterminant (x : Albert) :
     nativeNewtonNorm x = nativeDeterminant x := by
-  simp [nativeNewtonNorm, nativeDeterminant, Glennie.inner, Glennie.trace,
-    jordan_d0, jordan_d1, jordan_d2, jordan_o01, jordan_o02, jordan_o12,
-    octDot_coordinates, octMul, octConj, octRe, octNormSq, Quaternion.normSq_def',
-    Quaternion.re_mul, Quaternion.imI_mul, Quaternion.imJ_mul, Quaternion.imK_mul,
-    smul_eq_mul]
+  simp [nativeNewtonNorm, nativeDeterminant, Glennie.inner, Glennie.trace, oct_simps, octRe]
   ring
 
 abbrev TracefreeCoordinates := EuclideanSpace ℝ (Fin 26)
@@ -69,7 +64,7 @@ theorem tracefreeCoordinates_metric (u v : TracefreeCoordinates) :
       ∑ i : Fin 26, u i * v i := by
   change gA (tracefreeCoordinates u) (tracefreeCoordinates v) = _
   rw [RecoveryCoordinates.metric_coordinates]
-  simp only [tracefreeCoordinates_repr]
+  simp [tracefreeCoordinates_repr]
 
 /-- The literal native reference cubic, as a function of actual26 coordinates. -/
 def coordinateReferenceCubic (u v w : TracefreeCoordinates) : ℝ :=
@@ -79,7 +74,6 @@ theorem coordinateReferenceCubic_eq_raw_product (u v w : TracefreeCoordinates) :
     coordinateReferenceCubic u v w =
       Glennie.inner (jordan (tracefreeCoordinates u : Albert) (tracefreeCoordinates v : Albert))
         (tracefreeCoordinates w : Albert) / 3 := by
-  change CA (tracefreeCoordinates u) (tracefreeCoordinates v) (tracefreeCoordinates w) = _
   exact CA_eq_native _ _ _
 
 theorem coordinateReferenceCubic_diagonal (v : TracefreeCoordinates) :
@@ -97,7 +91,7 @@ def normalizedNativePoint (t : ℝ) (v : TracefreeCoordinates) : Albert :=
 
 theorem trace_normalizedNativePoint (t : ℝ) (v : TracefreeCoordinates) :
     Glennie.trace (normalizedNativePoint t v) = 3*t := by
-  simp only [normalizedNativePoint, trace_add, trace_smul, trace_unit, trace_V]
+  simp [normalizedNativePoint, trace_add, trace_smul, trace_unit, trace_V]
   ring
 
 theorem project_normalizedNativePoint (t : ℝ) (v : TracefreeCoordinates) :
@@ -119,7 +113,7 @@ theorem normalizedNativePoint_metric (t s : ℝ) (v w : TracefreeCoordinates) :
   calc
     Glennie.inner (normalizedNativePoint t v) (normalizedNativePoint s w) / 3 =
         t*s + Glennie.inner (tracefreeCoordinates v : Albert) (tracefreeCoordinates w : Albert)/3 := by
-      simp only [normalizedNativePoint, inner_add_left, inner_add_right, inner_smul_left,
+      simp [normalizedNativePoint, inner_add_left, inner_add_right, inner_smul_left,
         inner_smul_right, inner_unit_left, inner_unit_right, trace_add, trace_smul,
         trace_unit, trace_V]
       ring

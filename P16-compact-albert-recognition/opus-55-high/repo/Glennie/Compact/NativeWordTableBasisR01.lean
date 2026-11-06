@@ -6,9 +6,8 @@ public import Mathlib.LinearAlgebra.Basis.Basic
 @[expose] public section
 namespace Glennie.Compact.NativeWordTableR01
 noncomputable section
-open Module Glennie AlbertGeometry.NativeOperatorTrace
+open Module
 open scoped BigOperators Matrix
-set_option autoImplicit false
 
 def synthesisCoordinates : (Fin 27 → ℝ) ≃ₗ[ℝ] (Fin 27 → ℝ) where
   __ := coordinateMatrix.mulVecLin
@@ -33,14 +32,12 @@ theorem wordBasis_eq_nativeWords (i : Fin 27) : wordBasis i = nativeWords i := b
   exact (nativeWords_decode i).symm
 
 theorem nativeWords_linearIndependent : LinearIndependent ℝ nativeWords := by
-  have heq : (wordBasis : Fin 27 → Albert) = nativeWords :=
-    funext wordBasis_eq_nativeWords
+  have heq := funext wordBasis_eq_nativeWords
   rw [← heq]
   exact wordBasis.linearIndependent
 
 theorem nativeWords_span : Submodule.span ℝ (Set.range nativeWords) = ⊤ := by
-  have heq : (wordBasis : Fin 27 → Albert) = nativeWords :=
-    funext wordBasis_eq_nativeWords
+  have heq := funext wordBasis_eq_nativeWords
   rw [← heq]
   exact wordBasis.span_eq
 

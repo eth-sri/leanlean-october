@@ -14,8 +14,8 @@ open scoped BigOperators
 
 def halfRoot : ℝ := Real.sqrt (1 / 2)
 
-theorem halfRoot_sq : halfRoot ^ 2 = (1 / 2 : ℝ) := by
-  exact Real.sq_sqrt (by norm_num : (0 : ℝ) ≤ 1 / 2)
+theorem halfRoot_sq : halfRoot ^ 2 = (1 / 2 : ℝ) :=
+  Real.sq_sqrt (by norm_num)
 
 theorem rotation_condition : halfRoot ^ 2 + (-halfRoot) ^ 2 = 1 := by
   nlinarith [halfRoot_sq]
@@ -25,8 +25,7 @@ def p12Plus (a : Octonion) : Albert :=
   (1 / 2 : ℝ) • (e 1 + e 2 + (X12 a : Albert))
 
 theorem p12Plus_coordinates (a : Octonion) :
-    p12Plus a = ⟨0, 1 / 2, 1 / 2, 0, 0, (1 / 2 : ℝ) • a⟩ := by
-  apply Albert.ext <;> norm_num [p12Plus, e, X12]
+    p12Plus a = ⟨0, 1 / 2, 1 / 2, 0, 0, (1 / 2 : ℝ) • a⟩ := by ext <;> simp [p12Plus, e, X12]
 
 theorem swap_image : realSwap01Automorphism.equiv (e 0) = e 1 := by
   change realConjugateAlbert realSwap01 (e 0) = e 1
@@ -38,9 +37,7 @@ theorem rotation_e1_coordinates (c s : ℝ) :
     realConjugateAlbert (realRotation12 c s) (e 1) =
       ⟨0, c*c, s*s, 0, 0, octScalar (-(c*s))⟩ := by
   ext <;>
-    simp [realConjugateAlbert, fromMatrix, matrixConjugateReal,
-      matrixRowMix, matrixColMix, realRotation12, toMatrix,
-      Fin.sum_univ_three, e, octRe, octScalar, octConj, smul_eq_mul] <;> ring
+    simp [realConjugateAlbert, fromMatrix, matrixConjugateReal, matrixRowMix, matrixColMix, realRotation12, toMatrix, Fin.sum_univ_three, e, octRe, oct_simps]
 
 def realHalfRotation : CompactAutomorphism :=
   realRotation12Automorphism halfRoot (-halfRoot) rotation_condition
@@ -60,7 +57,7 @@ theorem middle_image (a : Octonion) (ha : octNormSq a = 1) :
   change (octMiddleTriple a ha).albertEquiv _ = _
   apply Albert.ext <;>
     simp [OctRelatedTriple.albertEquiv, OctRelatedTriple.middle_B,
-      octMul_smul_left, octMul_scalar_left] <;> simp [octMul]
+      octMul_smul_left, octMul_scalar_left]
 
 end
 end AlbertRecognition.Transporter

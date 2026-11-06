@@ -9,7 +9,7 @@ namespace AlbertRecognition.FixedFrame
 noncomputable section
 open Glennie
 
-private theorem oct_domain_linear_ext {M : Type*} [AddCommMonoid M] [Module ℝ M]
+theorem oct_domain_linear_ext {M : Type*} [AddCommMonoid M] [Module ℝ M]
     (f g : Octonion →ₗ[ℝ] M)
     (h : ∀ t : Fin 8, f (octBasis t) = g (octBasis t)) : f = g := by
   apply LinearMap.ext
@@ -38,15 +38,15 @@ theorem frameSpin_injective : Function.Injective frameSpin := by
   have h' := congrArg frameSpinProjection h
   simpa only [frameSpinProjection_frameSpin] using h'
 
-private theorem frameBlock_h0 : FrameBlock 0 (h 0) := by
+theorem frameBlock_h0 : FrameBlock 0 (h 0) := by
   apply (frame_eigen_iff 0 (h 0)).mp
   simpa [frameLambda] using frameSquareSum_h0
 
-private theorem frameBlock_d : FrameBlock 1 frameD := by
+theorem frameBlock_d : FrameBlock 1 frameD := by
   apply (frame_eigen_iff 1 frameD).mp
   simpa [frameLambda] using frameSquareSum_d
 
-private theorem frameBlock_spin (s : Spin) : FrameBlock 3 (frameSpin s) := by
+theorem frameBlock_spin (s : Spin) : FrameBlock 3 (frameSpin s) := by
   apply (frame_eigen_iff 3 (frameSpin s)).mp
   simpa [frameLambda] using frameSquareSum_spin s
 
@@ -62,7 +62,7 @@ theorem frame_commutant_h0_scalar (G : Module.End ℝ V)
   obtain ⟨hb,hz,hs⟩ := hp
   have hd := frame_decompose (G (h 0))
   rw [hb,hz,hs] at hd
-  simpa only [zero_smul, map_zero, add_zero] using hd
+  simpa [zero_smul, map_zero, add_zero] using hd
 
 theorem frame_commutant_d_scalar (G : Module.End ℝ V)
     (hG : ∀ t : Fin 8, G.comp (frameAction (octBasis t)) =
@@ -75,7 +75,7 @@ theorem frame_commutant_d_scalar (G : Module.End ℝ V)
   obtain ⟨ha,hz,hs⟩ := hp
   have hd := frame_decompose (G frameD)
   rw [ha,hz,hs] at hd
-  simpa only [zero_smul, map_zero, zero_add, add_zero] using hd
+  simpa [zero_smul, map_zero, zero_add, add_zero] using hd
 
 /-- The actual d-to-slot arrows force the same scalar on all eight slot directions. -/
 theorem frame_commutant_X12_scalar (G : Module.End ℝ V)
@@ -88,10 +88,10 @@ theorem frame_commutant_X12_scalar (G : Module.End ℝ V)
     change G (frameAction (octBasis t) frameD) =
       frameAction (octBasis t) (G frameD) at h
     rw [frameAction_d, map_smul, hd, map_smul, frameAction_d] at h
-    have h' := congrArg (fun v : V => (2/3 : ℝ) • v) h
+    have h' := congrArg (fun v => (2/3 : ℝ) • v) h
     have hl : (2/3 : ℝ)*(3/2) = 1 := by norm_num
     have hr : (2/3 : ℝ)*(b*(3/2)) = b := by ring
-    simpa only [smul_smul, hl, hr, one_smul] using h'
+    simpa [smul_smul, hl, hr, one_smul] using h'
   have heq : G.comp X12 = b • X12 := oct_domain_linear_ext _ _ hb
   exact LinearMap.congr_fun heq z
 
@@ -110,7 +110,7 @@ theorem frame_commutant_spin_reconstruct (G : Module.End ℝ V)
   obtain ⟨ha,hb,hz⟩ := hp
   have hd := frame_decompose (G (frameSpin s))
   rw [ha,hb,hz] at hd
-  simpa only [zero_smul, zero_add, map_zero, nativeSpinRestriction,
+  simpa [zero_smul, zero_add, map_zero, nativeSpinRestriction,
     LinearMap.comp_apply, frameSpinProjection_apply] using hd
 
 /-- The actual3/4 spin coefficient cancels; the restricted operator commutes J_t. -/
@@ -133,9 +133,9 @@ theorem nativeSpinRestriction_commutes (G : Module.End ℝ V)
         LinearMap.congr_fun (hG t) (frameSpin s)
       _ = (3/4 : ℝ) • frameSpin (spinJ (octBasis t) (nativeSpinRestriction G s)) := by
         rw [frame_commutant_spin_reconstruct G hG, frameAction_spin]
-  have h := congrArg (fun v : V => (4/3 : ℝ) • v) hscaled
+  have h := congrArg (fun v => (4/3 : ℝ) • v) hscaled
   have hc : (4/3 : ℝ)*(3/4) = 1 := by norm_num
-  simpa only [LinearMap.comp_apply, smul_smul, hc, one_smul] using h
+  simpa [LinearMap.comp_apply, smul_smul, hc, one_smul] using h
 
 /-- Native16D scalar commutant transfers back to the actual spin embedding. -/
 theorem frame_commutant_spin_scalar (G : Module.End ℝ V)
@@ -158,8 +158,8 @@ theorem frame_commutant_scalar_blocks (G : Module.End ℝ V)
       (∀ s : Spin, G (frameSpin s) = c • frameSpin s) := by
   let a := (frameCoordinates (G (h 0))).1
   let b := (frameCoordinates (G frameD)).2.1
-  have ha : G (h 0) = a • h 0 := frame_commutant_h0_scalar G hG
-  have hb : G frameD = b • frameD := frame_commutant_d_scalar G hG
+  have ha := frame_commutant_h0_scalar G hG
+  have hb := frame_commutant_d_scalar G hG
   obtain ⟨c,hc⟩ := frame_commutant_spin_scalar G hG
   exact ⟨a,b,c,ha,hb,frame_commutant_X12_scalar G hG b hb,hc⟩
 

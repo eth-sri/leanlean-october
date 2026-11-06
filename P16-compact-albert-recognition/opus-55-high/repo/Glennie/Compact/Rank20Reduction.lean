@@ -21,46 +21,19 @@ public import Mathlib.LinearAlgebra.Matrix.ToLin
 
 namespace Glennie.Compact.Rank20
 
-open Glennie.Compact.NativeDictionary Glennie.Compact.Flows Glennie.Compact.FlowFamily
+open Glennie.Compact.FlowFamily
   Glennie.Compact.Rank20Certificate
 
-noncomputable section
 
-set_option autoImplicit false
-set_option maxHeartbeats 2000000
-set_option linter.unusedSimpArgs false
 
 /-! ## The derivative matrix and invertibility -/
-
-/-- The matrix of `rowLedgerDeriv T` in the standard basis is `jacobianEntry T`. -/
-theorem toMatrix'_rowLedgerDeriv (T : Fin 3 → Fin 3 → Albert) :
-    LinearMap.toMatrix' ((rowLedgerDeriv T : (Fin 20 → ℝ) →L[ℝ] (Fin 20 → ℝ)) :
-      (Fin 20 → ℝ) →ₗ[ℝ] (Fin 20 → ℝ)) = Matrix.of (jacobianEntry T) := by
-  ext r n
-  rw [LinearMap.toMatrix'_apply, Matrix.of_apply, ContinuousLinearMap.coe_coe,
-    rowLedgerDeriv_single]
-
-/-- A nonzero determinant of the jacobianEntry matrix makes the strict derivative of the
-twenty selected ledger rows a continuous linear equivalence of R^20. -/
-theorem exists_equiv_of_det_ne_zero (T : Fin 3 → Fin 3 → Albert)
-    (h : (Matrix.of (jacobianEntry T)).det ≠ 0) :
-    ∃ e : (Fin 20 → ℝ) ≃L[ℝ] (Fin 20 → ℝ),
-      (e : (Fin 20 → ℝ) →L[ℝ] (Fin 20 → ℝ)) = rowLedgerDeriv T := by
-  have hdet : (rowLedgerDeriv T).det ≠ 0 := by
-    intro h0
-    apply h
-    rw [← toMatrix'_rowLedgerDeriv, LinearMap.det_toMatrix']
-    exact h0
-  exact ⟨(rowLedgerDeriv T).toContinuousLinearEquivOfDetNeZero hdet,
-    (rowLedgerDeriv T).coe_toContinuousLinearEquivOfDetNeZero hdet⟩
 
 /-- The twenty rows then have an invertible strict derivative at 0. -/
 theorem hasStrictFDerivAt_rowLedger_of_equiv (T : Fin 3 → Fin 3 → Albert)
     (e : (Fin 20 → ℝ) ≃L[ℝ] (Fin 20 → ℝ))
     (he : (e : (Fin 20 → ℝ) →L[ℝ] (Fin 20 → ℝ)) = rowLedgerDeriv T) :
-    HasStrictFDerivAt (rowLedger T) (e : (Fin 20 → ℝ) →L[ℝ] (Fin 20 → ℝ)) 0 := by
-  rw [he]
-  exact hasStrictFDerivAt_rowLedger T
+    HasStrictFDerivAt (rowLedger T) (e : (Fin 20 → ℝ) →L[ℝ] (Fin 20 → ℝ)) 0 :=
+  he ▸ hasStrictFDerivAt_rowLedger T
 
 /-- Conditional rank 20: if the derivative matrix at T is the certified matrix JQ, the
 strict derivative of the twenty rows at T is a continuous linear equivalence. -/
@@ -68,49 +41,34 @@ theorem rank20_of_bridge (T : Fin 3 → Fin 3 → Albert)
     (hT : ∀ r n : Fin 20, jacobianEntry T r n = JQ r n) :
     ∃ e : (Fin 20 → ℝ) ≃L[ℝ] (Fin 20 → ℝ),
       (e : (Fin 20 → ℝ) →L[ℝ] (Fin 20 → ℝ)) = rowLedgerDeriv T := by
-  apply exists_equiv_of_det_ne_zero
-  have hJ : Matrix.of (jacobianEntry T) = JQ := by
-    ext r n
-    exact hT r n
-  rw [hJ]
-  exact det_JQ_ne_zero
+  have hdet : (rowLedgerDeriv T).det ≠ 0 := by
+    rw [ContinuousLinearMap.det, ← LinearMap.det_toMatrix', show LinearMap.toMatrix' _ = JQ by
+      ext r n
+      rw [LinearMap.toMatrix'_apply, ContinuousLinearMap.coe_coe, rowLedgerDeriv_single, hT]]
+    exact det_JQ_ne_zero
+  exact ⟨_, (rowLedgerDeriv T).coe_toContinuousLinearEquivOfDetNeZero hdet⟩
 
-/-! ## Entry formulas for the bridge -/
-
-/-- First-frame columns: one trace pairing. -/
-theorem jacobianEntry_ctx0 (T : Fin 3 → Fin 3 → Albert) (r n : Fin 20)
-    (h : contextIndex n = 0) :
-    jacobianEntry T r n = inner (direction n (T 0 (rowIndex r).1))
-      (jordan (T 1 (rowIndex r).2.1) (T 2 (rowIndex r).2.2)) := by
-  have e0 : atomTangent T n 0 (rowIndex r).1 = direction n (T 0 (rowIndex r).1) := by
-    rw [atomTangent, ite_eq_left h.symm]
-  have e1 : atomTangent T n 1 (rowIndex r).2.1 = 0 := by
-    rw [atomTangent, ite_eq_right (show (1 : Fin 3) ≠ contextIndex n by rw [h]; decide)]
-  have e2 : atomTangent T n 2 (rowIndex r).2.2 = 0 := by
-    rw [atomTangent, ite_eq_right (show (2 : Fin 3) ≠ contextIndex n by rw [h]; decide)]
-  simp only [jacobianEntry, e0, e1, e2, jordan_zero_left, jordan_zero_right, add_zero,
-    zero_add]
-  show inner (jordan (direction n (T 0 (rowIndex r).1)) (T 1 (rowIndex r).2.1))
-    (T 2 (rowIndex r).2.2) = _
-  exact inner_jordan_associative _ _ _
-
-/-- Second-frame columns: one trace pairing. -/
-theorem jacobianEntry_ctx1 (T : Fin 3 → Fin 3 → Albert) (r n : Fin 20)
-    (h : contextIndex n = 1) :
-    jacobianEntry T r n = inner (direction n (T 1 (rowIndex r).2.1))
-      (jordan (T 0 (rowIndex r).1) (T 2 (rowIndex r).2.2)) := by
-  have e0 : atomTangent T n 0 (rowIndex r).1 = 0 := by
-    rw [atomTangent, ite_eq_right (show (0 : Fin 3) ≠ contextIndex n by rw [h]; decide)]
-  have e1 : atomTangent T n 1 (rowIndex r).2.1 = direction n (T 1 (rowIndex r).2.1) := by
-    rw [atomTangent, ite_eq_left h.symm]
-  have e2 : atomTangent T n 2 (rowIndex r).2.2 = 0 := by
-    rw [atomTangent, ite_eq_right (show (2 : Fin 3) ≠ contextIndex n by rw [h]; decide)]
-  simp only [jacobianEntry, e0, e1, e2, jordan_zero_left, jordan_zero_right, add_zero,
-    zero_add]
-  rw [jordan_comm (T 0 (rowIndex r).1) (direction n (T 1 (rowIndex r).2.1))]
-  show inner (jordan (direction n (T 1 (rowIndex r).2.1)) (T 0 (rowIndex r).1))
-    (T 2 (rowIndex r).2.2) = _
-  exact inner_jordan_associative _ _ _
-
-end
 end Glennie.Compact.Rank20
+
+set_option hygiene false in
+macro "flat_col" : tactic => `(tactic| (
+  simp [jacobianEntry, atomTangent, contextIndex, direction, partnerIndex, Matrix.cons_val, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_two, Matrix.head_cons, Matrix.tail_cons, Fin.isValue, ↓reduceIte, Fin.reduceEq]
+  simp [extDecode_extUnit_1, extDecode_extUnit_3, extDecode_extUnit_4, extDecode_extUnit_5,
+    extDecode_extUnit_6, extDecode_extUnit_9, extDecode_extUnit_10, extDecode_extUnit_11,
+    extDecode_extUnit_12, extDecode_extUnit_13, extDecode_extUnit_14, extDecode_extUnit_15,
+    extDecode_extUnit_16, extDecode_extUnit_17, extDecode_extUnit_18, extDecode_extUnit_19,
+    extDecode_extUnit_20, Glennie.Compact.innerDerLinear_apply, LinearMap.zero_apply,
+    jordan_zero_left, jordan_zero_right, add_zero, zero_add]
+  fin_cases r <;>
+  norm_num [rowIndex, trace, inner_coordinates, octDot_coordinates, flatFrameP_literal,
+    flatFrameQ_literal, flatFrameR_literal, Glennie.Compact.innerDer, diagonalAlbert,
+    complexAlbert, complexOct, archivalHiddenBasis, hiddenAlbert, hiddenOct, oct_simps, JQ, JZ,
+    flatScale_eq_sqrt3_div_three] <;>
+  simp -failIfUnchanged only [← Quaternion.coe_inv, Quaternion.re_coe, Quaternion.imI_coe,
+      Quaternion.imJ_coe, Quaternion.imK_coe] <;> ring_nf <;> norm_num))
+
+set_option hygiene false in
+macro "flat_cols" ns:num* : command => do
+  let cmds ← ns.mapM fun (n : Lean.NumLit) => `(command| @[simp] theorem $(Lean.mkIdent (.mkSimple s!"col{n.getNat}"))
+    (r : Fin 20) : jacobianEntry ![flatFrameP, flatFrameQ, flatFrameR] r $n = JQ r $n := by flat_col)
+  return ⟨Lean.mkNullNode cmds⟩

@@ -10,9 +10,7 @@ namespace Glennie.Compact.NativeFlatSections
 
 open Glennie.Compact.Affine20 Glennie.Compact.FlowFamily
 
-noncomputable section
 
-set_option autoImplicit false
 
 /-- The actual original flat-base derivative supplies both local full54 sections.
 All neighbourhood, continuity, frame, chart and strict-sign outputs are retained. -/
@@ -33,9 +31,7 @@ theorem native_flat_two_sections_full54 :
     Glennie.Compact.NativeFlatRank20.native_rank20_strict_with_inverse
   have heBase :
       (e : (Fin 20 → ℝ) →L[ℝ] (Fin 20 → ℝ)) =
-        rowLedgerDeriv Glennie.Compact.Sections.flatBase := by
-    simpa only [Glennie.Compact.Sections.flatBase] using he
+        rowLedgerDeriv Glennie.Compact.Sections.flatBase := by aesop
   exact Glennie.Compact.NativeSectionFullLedger.flat_two_sections_full54 e heBase
 
-end
 end Glennie.Compact.NativeFlatSections

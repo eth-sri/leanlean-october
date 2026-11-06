@@ -6,11 +6,9 @@ public import Glennie.Compact.Affine20.Relabel
 
 @[expose] public section
 namespace Glennie.NativeFixedPairHidden
-open Glennie Glennie.Compact.FlatBase Glennie.Compact.Affine20
-noncomputable section
-set_option autoImplicit false
+open Glennie.Compact.FlatBase
 
-private theorem gram_phase_of_projections (r : Fin 3 → Albert) (hr : Frame r)
+theorem gram_phase_of_projections (r : Fin 3 → Albert) (hr : Frame r)
     (he : complexProjection (encoder r) = 0)
     (hsq : complexProjection (jordan (encoder r) (encoder r)) =
       (2/3 : ℝ) • (1 : Albert)) :
@@ -23,7 +21,7 @@ private theorem gram_phase_of_projections (r : Fin 3 → Albert) (hr : Frame r)
   let S := sectorFrobeniusSq M
   have hrep : hiddenAlbert M=encoder r := by
     have h := complex_hidden_decomposition (encoder r)
-    simpa only [he,zero_add] using h
+    simpa [he,zero_add] using h
   have hS : S=1 := by
     have h := hiddenAlbert_norm M
     rw [hrep,frame_encoder_norm r hr] at h
@@ -42,14 +40,14 @@ private theorem gram_phase_of_projections (r : Fin 3 → Albert) (hr : Frame r)
   have hh : G.IsHermitian := Matrix.isHermitian_conjTranspose_mul_self M
   have him (i : Fin 3) : (G i i).im=0 := by
     have h := congrArg Complex.im (hh.apply i i)
-    simp only [Complex.star_def,Complex.conj_im] at h
+    simp [Complex.conj_im] at h
     linarith
   have h00 : G 0 0=(1/3 : ℂ) := by apply Complex.ext <;> norm_num [h0r,him]
   have h11 : G 1 1=(1/3 : ℂ) := by apply Complex.ext <;> norm_num [h1r,him]
   have h22 : G 2 2=(1/3 : ℂ) := by apply Complex.ext <;> norm_num [h2r,him]
-  have hs01 := congrArg (fun x : Albert => complexPart x.o01) hsq
-  have hs02 := congrArg (fun x : Albert => complexPart x.o02) hsq
-  have hs12 := congrArg (fun x : Albert => complexPart x.o12) hsq
+  have hs01 := congrArg (fun x => complexPart x.o01) hsq
+  have hs02 := congrArg (fun x => complexPart x.o02) hsq
+  have hs12 := congrArg (fun x => complexPart x.o12) hsq
   have h01 : G 0 1=0 := by
     apply neg_eq_zero.mp
     simpa [complexAlbert,complexOct,complexPart,unit,octScalar,Complex.ext_iff] using hs01
@@ -70,13 +68,12 @@ private theorem gram_phase_of_projections (r : Fin 3 → Albert) (hr : Frame r)
     rw [← MatrixDetEstimate.determinant_gram_real]
     change G.det.re=1/27
     rw [hG,Matrix.det_diagonal]
-    norm_num [Fin.prod_univ_three]
+    norm_num 
   have hreal : M.det.re=0 := by
     have h := frame_encoder_cubicNorm r hr
     rw [← hrep,hiddenAlbert_cubicNorm] at h
     linarith
   refine ⟨hG, hreal, ?_⟩
-  change M.det.im^2=1/27
   simpa [Complex.normSq_apply,hreal,pow_two] using hnorm
 
 /-- A genuine third frame over the original fixed pair with the actual flat triple
@@ -90,7 +87,7 @@ theorem native_fixed_pair_hidden_gram_phase (r : Fin 3 → Albert) (hr : Frame r
       (hiddenMatrix (encoder r)).det.im ^ 2 = 1/27 := by
   have hp : InComplexSector (encoder flatFrameP) := by
     rw [flatFrameP_encoder]
-    simp [InComplexSector, OctInComplex, flatXN, octScalar]
+    simp [InComplexSector, OctInComplex, flatXN]
   have hq : InComplexSector (encoder flatFrameQ) := by
     rw [flatFrameQ_encoder]
     simp [InComplexSector, OctInComplex, flatY1, octScalar, octI, quatI]
@@ -106,5 +103,4 @@ theorem native_fixed_pair_hidden_gram_phase (r : Fin 3 → Albert) (hr : Frame r
     flatFrameP_frame flatFrameQ_frame hr hu hpc hqc
   exact ⟨he, gram_phase_of_projections r hr he hs⟩
 
-end
 end Glennie.NativeFixedPairHidden

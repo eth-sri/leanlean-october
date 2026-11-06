@@ -30,9 +30,6 @@ open Glennie.Compact.NativeDictionary
 
 noncomputable section
 
-set_option autoImplicit false
-set_option maxHeartbeats 2000000
-set_option linter.unusedSimpArgs false
 
 /-! ## Coordinate transport -/
 
@@ -55,8 +52,7 @@ theorem prodC_apply (a b : Fin 27 → ℝ) :
     prodC a b = extEquiv.symm (jordan (extEquiv a) (extEquiv b)) := rfl
 
 theorem prodC_symm (x y : Albert) :
-    prodC (extEquiv.symm x) (extEquiv.symm y) = extEquiv.symm (jordan x y) := by
-  simp only [prodC_apply, LinearEquiv.apply_symm_apply]
+    prodC (extEquiv.symm x) (extEquiv.symm y) = extEquiv.symm (jordan x y) := by simp [prodC_apply, LinearEquiv.apply_symm_apply]
 
 /-- The raw trace read on coordinates, as a continuous functional. -/
 def traceC : (Fin 27 → ℝ) →L[ℝ] ℝ :=
@@ -69,7 +65,7 @@ theorem toCoord_prodC (D : Albert →ₗ[ℝ] Albert) (hD : IsJordanDerivation D
     (a b : Fin 27 → ℝ) :
     toCoord D (prodC a b) = prodC (toCoord D a) b + prodC a (toCoord D b) := by
   have h := hD (extEquiv a) (extEquiv b)
-  simp only [toCoord_apply, prodC_apply, LinearEquiv.apply_symm_apply, h, map_add]
+  simp [toCoord_apply, prodC_apply, LinearEquiv.apply_symm_apply, h, map_add]
 
 /-! ## The flow and its inverse -/
 
@@ -91,8 +87,7 @@ theorem flowC_mul_flowInvC (D : Albert →ₗ[ℝ] Albert) (t : ℝ) :
     flowC D t * flowInvC D t = 1 := by
   let +nondep : NormedAlgebra ℚ ((Fin 27 → ℝ) →L[ℝ] (Fin 27 → ℝ)) :=
     .restrictScalars ℚ ℝ _
-  have h : Commute (t • toCoord D) (t • -toCoord D) :=
-    (((Commute.refl (toCoord D)).neg_right).smul_left t).smul_right t
+  have h := (((Commute.refl (toCoord D)).neg_right).smul_left t).smul_right t
   rw [flowC, flowInvC, ← NormedSpace.exp_add_of_commute h, ← smul_add, add_neg_cancel,
     smul_zero, NormedSpace.exp_zero]
 
@@ -100,8 +95,7 @@ theorem flowInvC_mul_flowC (D : Albert →ₗ[ℝ] Albert) (t : ℝ) :
     flowInvC D t * flowC D t = 1 := by
   let +nondep : NormedAlgebra ℚ ((Fin 27 → ℝ) →L[ℝ] (Fin 27 → ℝ)) :=
     .restrictScalars ℚ ℝ _
-  have h : Commute (t • -toCoord D) (t • toCoord D) :=
-    (((Commute.refl (toCoord D)).neg_left).smul_left t).smul_right t
+  have h := (((Commute.refl (toCoord D)).neg_left).smul_left t).smul_right t
   rw [flowC, flowInvC, ← NormedSpace.exp_add_of_commute h, ← smul_add, neg_add_cancel,
     smul_zero, NormedSpace.exp_zero]
 
@@ -154,7 +148,7 @@ theorem flowC_prodC (D : Albert →ₗ[ℝ] Albert) (hD : IsJordanDerivation D)
       map_zero]
   have hconst := is_const_of_deriv_eq_zero
     (fun s => (hderiv s).differentiableAt) (fun s => (hderiv s).deriv) t 0
-  simp only [flowC_zero, flowInvC_zero, one_apply_eq_self] at hconst
+  simp [flowC_zero, flowInvC_zero, one_apply_eq_self] at hconst
   have h2 := congrArg (flowC D t) hconst
   rw [flowC_flowInvC_apply] at h2
   exact h2.symm
@@ -165,14 +159,13 @@ theorem flowC_traceC (D : Albert →ₗ[ℝ] Albert) (hT : TraceFree D)
     traceC (flowC D t a) = traceC a := by
   have hderiv : ∀ s : ℝ, HasDerivAt (fun r => traceC (flowC D r a)) 0 s := by
     intro s
-    have h : HasDerivAt (fun r => traceC (flowC D r a)) (traceC (toCoord D (flowC D s a))) s :=
-      traceC.hasFDerivAt.comp_hasDerivAt s (hasDerivAt_flowC_apply D a s)
+    have h := traceC.hasFDerivAt.comp_hasDerivAt s (hasDerivAt_flowC_apply D a s)
     refine h.congr_deriv ?_
     rw [traceC_apply, toCoord_apply, LinearEquiv.apply_symm_apply,
       hT (extEquiv (flowC D s a))]
   have hconst := is_const_of_deriv_eq_zero
     (fun s => (hderiv s).differentiableAt) (fun s => (hderiv s).deriv) t 0
-  simpa only [flowC_zero, one_apply_eq_self] using hconst
+  simpa [flowC_zero, one_apply_eq_self] using hconst
 
 /-! ## The flow on Albert as a compact automorphism -/
 
@@ -197,13 +190,13 @@ theorem flow_apply (D : Albert →ₗ[ℝ] Albert) (t : ℝ) (x : Albert) :
 
 theorem flow_jordan (D : Albert →ₗ[ℝ] Albert) (hD : IsJordanDerivation D) (t : ℝ)
     (x y : Albert) : flow D t (jordan x y) = jordan (flow D t x) (flow D t y) := by
-  simp only [flow_apply]
+  simp [flow_apply]
   rw [← prodC_symm, flowC_prodC D hD, prodC_apply, LinearEquiv.apply_symm_apply]
 
 theorem flow_trace (D : Albert →ₗ[ℝ] Albert) (hT : TraceFree D) (t : ℝ) (x : Albert) :
     trace (flow D t x) = trace x := by
   have h := flowC_traceC D hT (extEquiv.symm x) t
-  simp only [traceC_apply, LinearEquiv.apply_symm_apply] at h
+  simp [traceC_apply, LinearEquiv.apply_symm_apply] at h
   rw [flow_apply]
   exact h
 

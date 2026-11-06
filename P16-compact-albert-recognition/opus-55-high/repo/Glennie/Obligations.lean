@@ -4,7 +4,6 @@ public import Glennie.Native
 
 @[expose] public section
 namespace Glennie
-noncomputable section
 
 /-- An actual invertible real-linear map preserving the native product and trace.
 No orbit, spectral, pair-reduction, or endpoint conclusion is a structure field. -/
@@ -25,5 +24,4 @@ def InComplexSector (x : Albert) : Prop :=
 def UniversalPairReduction : Prop := ∀ x y : Albert,
   ∃ g : CompactAutomorphism, IsDiagonal (g.equiv x) ∧ InComplexSector (g.equiv y)
 
-end
 end Glennie

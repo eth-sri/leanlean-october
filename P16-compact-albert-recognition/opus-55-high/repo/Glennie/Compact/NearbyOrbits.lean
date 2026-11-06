@@ -108,14 +108,11 @@ public import Glennie.Compact.FlatSectionsOrbits
 
 namespace Glennie.Compact.NearbyOrbits
 
-open Glennie Glennie.Compact.FlatBase Glennie.Compact.Affine20
+open Glennie.Compact.Affine20
 open Glennie.Compact.FrameTopology Glennie.Compact.FlatOrbit
 open Glennie.Compact.Sections
 
-noncomputable section
 
-set_option autoImplicit false
-set_option maxHeartbeats 2000000
 
 /-! ## 1. The twenty chart coordinates and the fifty-four ledger entries are the same fibre
 
@@ -229,13 +226,7 @@ theorem phi_bounded_away_near_flat :
 
 /-- The bound gives a strict sign, which is what the two-sheet split needs. -/
 theorem phi_sign_of_bounded_away {T : Triple} (h : 1 / 27 < |phiOf T|) :
-    phiOf T < 0 ∨ 0 < phiOf T := by
-  rcases lt_trichotomy (phiOf T) 0 with hlt | heq | hgt
-  · exact Or.inl hlt
-  · exfalso
-    rw [heq, abs_zero] at h
-    norm_num at h
-  · exact Or.inr hgt
+    phiOf T < 0 ∨ 0 < phiOf T := by grind
 
 /-! ## 4. THE MISSING LOCAL INGREDIENT, as an explicit named hypothesis
 
@@ -248,7 +239,7 @@ WHY COMPACTNESS CANNOT SUPPLY THIS, spelled out as the scenario it permits. The 
 machinery (`frameTriples_isCompact` :177, `continuous_ledger54` :227, `fibre_tube` :244,
 assembled as `flat_fibre_no_remote_components`) delivers exactly one thing: nearby fibres are
 squeezed into any tube drawn around the flat fibre. That is proximity, and orbits are not
-open sets, so there is no continuity step from proximity to membership. Suppose the fibre
+open
 over each nearby chart point carried a THIRD orbit which shrank into the flat fibre as the
 chart point returned to the flat one. The compactness and section statements would still be
 true -- the third orbit lies in the tube, it is invisible at the flat value where the exact
@@ -275,7 +266,7 @@ CONDITIONAL on the two instances of the hypothesis, and on nothing else. The tra
 local set under the action, and `FlatOrbit.flat_fibre_no_remote_components` (`:744`) converts
 "contains the two representatives" into "contains every frame triple whose ledger is near the
 flat value". The new part is only the sign separation, which costs two intersections with
-open half-spaces of Phi.
+open
 
 The argument does not need compactness of either orbit,
 compactness of the automorphism group as a topological group, `automorphismMaps_compact`,
@@ -291,8 +282,8 @@ theorem related_of_transport {T S : Triple} {g m k : Glennie.CompactAutomorphism
   calc mapAtoms (g.symm.comp (k.comp m)) S
       = mapAtoms g.symm (mapAtoms (k.comp m) S) := (mapAtoms_comp g.symm (k.comp m) S).symm
     _ = mapAtoms g.symm (mapAtoms k (mapAtoms m S)) :=
-        congrArg (fun X : Triple => mapAtoms g.symm X) (mapAtoms_comp k m S).symm
-    _ = mapAtoms g.symm (mapAtoms g T) := congrArg (fun X : Triple => mapAtoms g.symm X) h
+        congrArg (fun X => mapAtoms g.symm X) (mapAtoms_comp k m S).symm
+    _ = mapAtoms g.symm (mapAtoms g T) := congrArg (fun X => mapAtoms g.symm X) h
     _ = T := mapAtoms_symm_mapAtoms g T
 
 /-- CONDITIONAL. Over a neighbourhood of the flat ledger value, two frame triples with equal
@@ -338,36 +329,12 @@ theorem nearby_sign_rigidity
   have hgphi : phiOf (mapAtoms g T) = phiOf T := phiOf_mapAtoms g T
   have hmphi : phiOf (mapAtoms m S) = phiOf S := phiOf_mapAtoms m S
   rcases hsign with ⟨hTn, hSn⟩ | ⟨hTp, hSp⟩
-  · have hgIn : mapAtoms g T ∈ U0 := by
-      rcases hgU with hx | hx
-      · exact hx.1
-      · exfalso
-        have hpos : 0 < phiOf (mapAtoms g T) := hx.2
-        rw [hgphi] at hpos
-        linarith
-    have hmIn : mapAtoms m S ∈ U0 := by
-      rcases hmU with hx | hx
-      · exact hx.1
-      · exfalso
-        have hpos : 0 < phiOf (mapAtoms m S) := hx.2
-        rw [hmphi] at hpos
-        linarith
+  · have hgIn : mapAtoms g T ∈ U0 := by grind
+    have hmIn : mapAtoms m S ∈ U0 := by grind
     obtain ⟨k, hk⟩ := hrig0 (mapAtoms g T) (mapAtoms m S) hgT hmS hgIn hmIn hLmap
     exact related_of_transport hk
-  · have hgIn : mapAtoms g T ∈ U3 := by
-      rcases hgU with hx | hx
-      · exfalso
-        have hneg : phiOf (mapAtoms g T) < 0 := hx.2
-        rw [hgphi] at hneg
-        linarith
-      · exact hx.1
-    have hmIn : mapAtoms m S ∈ U3 := by
-      rcases hmU with hx | hx
-      · exfalso
-        have hneg : phiOf (mapAtoms m S) < 0 := hx.2
-        rw [hmphi] at hneg
-        linarith
-      · exact hx.1
+  · have hgIn : mapAtoms g T ∈ U3 := by grind
+    have hmIn : mapAtoms m S ∈ U3 := by grind
     obtain ⟨k, hk⟩ := hrig3 (mapAtoms g T) (mapAtoms m S) hgT hmS hgIn hmIn hLmap
     exact related_of_transport hk
 
@@ -419,17 +386,14 @@ theorem nearby_fibres_two_orbits
     Glennie.Compact.NativeFlatSections.native_flat_two_sections_full54
   obtain ⟨V1, hV1open, hV1mem, hrig⟩ := nearby_sign_rigidity h0 h3
   obtain ⟨V2, hV2open, hV2mem, hV2sub⟩ := phi_bounded_away_near_flat
-  have hcL : ContinuousOn (fun b : Fin 20 → ℝ => ledger54 (secNeg b)) V0 :=
-    continuous_ledger54.comp_continuousOn' hcN
+  have hcL := continuous_ledger54.comp_continuousOn' hcN
   have hbL : ledger54 (secNeg (encode20 (ledger54 Glennie.Compact.Sections.flatBase)))
       = ledger54 flatBaseTriple := by
     rw [hlN _ hbase]
     exact Glennie.Compact.FlatSectionsOrbits.decode_encode_flatBase
   have hbmem : ledger54 (secNeg (encode20 (ledger54 Glennie.Compact.Sections.flatBase)))
-      ∈ V1 ∩ V2 := by
-    rw [hbL]
-    exact ⟨hV1mem, hV2mem⟩
-  refine ⟨V0 ∩ (fun b : Fin 20 → ℝ => ledger54 (secNeg b)) ⁻¹' (V1 ∩ V2),
+      ∈ V1 ∩ V2 := by simp_all
+  refine ⟨V0 ∩ (fun b => ledger54 (secNeg b)) ⁻¹' (V1 ∩ V2),
     hcL.isOpen_inter_preimage hV0 (hV1open.inter hV2open),
     ⟨hbase, hbmem⟩,
     secPos, secNeg,
@@ -440,11 +404,11 @@ theorem nearby_fibres_two_orbits
     (fun b hb => hpP b hb.1), (fun b hb => hpN b hb.1), ?_, ?_, ?_⟩
   · -- the fibre is exactly the two orbits
     intro b hb
-    have hbV0 : b ∈ V0 := hb.1
-    have hNL : ledger54 (secNeg b) = decode20 b := hlN b hbV0
-    have hPL : ledger54 (secPos b) = decode20 b := hlP b hbV0
-    have hNV1 : ledger54 (secNeg b) ∈ V1 := hb.2.1
-    have hNV2 : ledger54 (secNeg b) ∈ V2 := hb.2.2
+    have hbV0 := hb.1
+    have hNL := hlN b hbV0
+    have hPL := hlP b hbV0
+    have hNV1 := hb.2.1
+    have hNV2 := hb.2.2
     refine Set.Subset.antisymm ?_ ?_
     · rintro T ⟨hT, hTL⟩
       have hTeqN : ledger54 T = ledger54 (secNeg b) := by rw [hTL, hNL]
@@ -452,10 +416,8 @@ theorem nearby_fibres_two_orbits
       have hTV1 : ledger54 T ∈ V1 := by rw [hTeqN]; exact hNV1
       have hTV2 : ledger54 T ∈ V2 := by rw [hTeqN]; exact hNV2
       rcases phi_sign_of_bounded_away (hV2sub T hT hTV2) with hneg | hpos
-      · exact Or.inl
-          (hrig T (secNeg b) hT (hfN b hbV0) hTV1 hTeqN (Or.inl ⟨hneg, hpN b hbV0⟩))
-      · exact Or.inr
-          (hrig T (secPos b) hT (hfP b hbV0) hTV1 hTeqP (Or.inr ⟨hpos, hpP b hbV0⟩))
+      · aesop
+      · aesop
     · rintro T (⟨g, rfl⟩ | ⟨g, rfl⟩)
       · exact ⟨fun a => frame_mapAtoms g (secNeg b) (hfN b hbV0) a,
           by rw [ledger54_map, hNL]⟩
@@ -463,17 +425,17 @@ theorem nearby_fibres_two_orbits
           by rw [ledger54_map, hPL]⟩
   · -- the two orbits are disjoint, by the sign of Phi and nothing else
     intro b hb
-    have hbV0 : b ∈ V0 := hb.1
+    have hbV0 := hb.1
     rw [Set.disjoint_left]
     intro T hTN hTP
-    have h1 : phiOf T = phiOf (secNeg b) := phiOf_eq_of_mem_autOrbit hTN
-    have h2 : phiOf T = phiOf (secPos b) := phiOf_eq_of_mem_autOrbit hTP
-    have hn : phiOf (secNeg b) < 0 := hpN b hbV0
-    have hp : 0 < phiOf (secPos b) := hpP b hbV0
+    have h1 := phiOf_eq_of_mem_autOrbit hTN
+    have h2 := phiOf_eq_of_mem_autOrbit hTP
+    have hn := hpN b hbV0
+    have hp := hpP b hbV0
     linarith
   · -- the 20-coordinate fibre is the same set
     intro b hb
-    have hbV0 : b ∈ V0 := hb.1
+    have hbV0 := hb.1
     refine Set.Subset.antisymm (fibre20_subset_fibre54 b) ?_
     exact fibre54_subset_fibre20
       (show secNeg b ∈ fibre54 b from ⟨hfN b hbV0, hlN b hbV0⟩) (heN b hbV0)
@@ -510,5 +472,4 @@ local-injectivity condition. The inverse function theorem supplies such a condit
 the invertibility witness in scope. Here the local-injectivity condition remains an
 explicit hypothesis. -/
 
-end
 end Glennie.Compact.NearbyOrbits

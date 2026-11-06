@@ -7,7 +7,6 @@ public import Mathlib.Tactic.NoncommRing
 
 @[expose] public section
 namespace AlbertRecognition
-noncomputable section
 
 theorem symmetricCubic_eq_of_form_eq {B C : SymmetricCubic}
     (hform : B.form = C.form) : B = C := by
@@ -19,8 +18,8 @@ theorem symmetricCubic_eq_of_form_eq {B C : SymmetricCubic}
 /-- Literal real scaling of a genuine symmetric trilinear form. -/
 def scalarCubic (r : ℝ) (B : SymmetricCubic) : SymmetricCubic where
   form := r • B.form
-  swap12 x y z := congrArg (fun a : ℝ => r * a) (B.swap12 x y z)
-  swap23 x y z := congrArg (fun a : ℝ => r * a) (B.swap23 x y z)
+  swap12 x y z := congrArg (fun a => r * a) (B.swap12 x y z)
+  swap23 x y z := congrArg (fun a => r * a) (B.swap23 x y z)
 
 @[simp] theorem scalarCubic_form (r : ℝ) (B : SymmetricCubic) (x y z : V) :
     (scalarCubic r B).form x y z = r * B.form x y z := rfl
@@ -48,7 +47,7 @@ theorem operatorComm_jacobi (P Q R : Module.End ℝ V) :
       operatorComm R (operatorComm P Q) = 0 := by
   apply LinearMap.ext
   intro v
-  simp only [operatorComm, LinearMap.add_apply, LinearMap.sub_apply,
+  simp [operatorComm, LinearMap.add_apply, LinearMap.sub_apply,
     LinearMap.comp_apply, map_sub, LinearMap.zero_apply]
   abel
 
@@ -63,7 +62,7 @@ theorem A_q_self (B : SymmetricCubic) : A (q B) B = 0 := by
   set_option backward.isDefEq.respectTransparency true in
     with_reducible
       funext x y z
-      simpa only [A, q, Pi.zero_apply] using operatorComm_jacobi (KB B x) (KB B y) (KB B z)
+      simpa [A, q, Pi.zero_apply] using operatorComm_jacobi (KB B x) (KB B y) (KB B z)
 
 end SelfJacobi
 
@@ -79,7 +78,7 @@ theorem q_scalarCubic (r : ℝ) (B : SymmetricCubic) :
   change (r • KB B x) ((r • KB B y) z) -
     (r • KB B y) ((r • KB B x) z) =
       r^2 • ((KB B x) ((KB B y) z) - (KB B y) ((KB B x) z))
-  simp only [LinearMap.smul_apply, map_smul, smul_smul, pow_two]
+  simp [LinearMap.smul_apply, map_smul, smul_smul, pow_two]
   module
 
 /-- The Jacobi constraint is linear in the unrestricted unknown cubic. -/
@@ -95,12 +94,11 @@ theorem A_scalarCubic (T : V → V → Module.End ℝ V) (r : ℝ)
       r • (((KB B x) (T y z w) - T y z (KB B x w)) +
         ((KB B y) (T z x w) - T z x (KB B y w)) +
         ((KB B z) (T x y w) - T x y (KB B z w)))
-  simp only [LinearMap.smul_apply, map_smul]
+  simp [LinearMap.smul_apply, map_smul]
   module
 
 /-- The actual kernel-line property, expressed in native trilinear forms. -/
 def NativeKernelLine (C : SymmetricCubic) : Prop :=
   ∀ B : SymmetricCubic, A (q C) B = 0 ↔ ∃ r : ℝ, B = scalarCubic r C
 
-end
 end AlbertRecognition

@@ -7,10 +7,8 @@ public import Mathlib.Tactic.Ring
 /- Division-free finite scalar entrance from raw Gram and product moments. -/
 @[expose] public section
 namespace Glennie.Compact.NativeWordTableR01.ClosureCandidate
-open Module Glennie Glennie.Compact.NativeWordTableR01
+open Glennie.Compact.NativeWordTableR01
 open scoped BigOperators InnerProductSpace
-noncomputable section
-set_option autoImplicit false
 
 variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
 
@@ -24,12 +22,12 @@ variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
     ‖D • p - ∑ k, c k • v k‖^2 = residualScalar v p D c := by
   have hp : Inner.inner ℝ p (∑ k, c k • v k) =
       ∑ k, c k * Inner.inner ℝ p (v k) := by
-    simp only [inner_sum, real_inner_smul_right]
+    simp [inner_sum, real_inner_smul_right]
   have hs : ‖∑ k, c k • v k‖^2 =
       ∑ k, ∑ l, c k*c l * Inner.inner ℝ (v k) (v l) := by
     rw [← real_inner_self_eq_norm_sq]
     simp only [sum_inner, inner_sum, real_inner_smul_left,
-      real_inner_smul_right, Finset.mul_sum]
+      real_inner_smul_right]
     apply Finset.sum_congr rfl
     intro k hk
     apply Finset.sum_congr rfl
@@ -46,10 +44,8 @@ variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
  theorem residual_zero_of_scalar_nonpos (v : Fin 27 → E) (p : E)
     (D : ℝ) (c : Fin 27 → ℝ) (h : residualScalar v p D c ≤ 0) :
     D • p = ∑ k, c k • v k := by
-  have hn : ‖D • p-∑ k, c k • v k‖^2 = 0 :=
-    le_antisymm ((residual_norm_sq v p D c).trans_le h) (sq_nonneg _)
-  have hz : D • p-∑ k, c k • v k = 0 :=
-    norm_eq_zero.mp (sq_eq_zero_iff.mp hn)
+  have hn := le_antisymm ((residual_norm_sq v p D c).trans_le h) (sq_nonneg _)
+  have hz := norm_eq_zero.mp (sq_eq_zero_iff.mp hn)
   exact sub_eq_zero.mp hz
 
  theorem native_word_gram_positive : (Matrix.gram ℝ nativeWords).PosDef :=
@@ -83,12 +79,11 @@ cleared product residual to vanish. No candidate table equality is assumed. -/
     ∀ i j, D • jE (v i) (v j) = ∑ k, C i j k • v k := by
   intro i j
   have hRef : residualScalar nativeWords (jordan (nativeWords i) (nativeWords j)) D (C i j) = 0 := by
-    rw [← residual_norm_sq, hNative i j, sub_self, norm_zero, zero_pow (by norm_num : (2:ℕ) ≠ 0)]
+    rw [← residual_norm_sq, hNative i j, sub_self, norm_zero, zero_pow (by norm_num)]
   have hEq : residualScalar v (jE (v i) (v j)) D (C i j) =
       residualScalar nativeWords (jordan (nativeWords i) (nativeWords j)) D (C i j) := by
     simp only [residualScalar, hGram, hPair, hSquare]
   exact residual_zero_of_scalar_nonpos v (jE (v i) (v j)) D (C i j)
     (by rw [hEq, hRef])
 
-end
 end Glennie.Compact.NativeWordTableR01.ClosureCandidate

@@ -9,7 +9,6 @@ public import Glennie.Native.RealConjugation
 
 @[expose] public section
 namespace AlbertRecognition
-noncomputable section
 open Glennie
 
 /-- Restrict an actual native trace-preserving automorphism to the real trace kernel. -/
@@ -32,20 +31,14 @@ def automorphismV (g : CompactAutomorphism) : V ≃ₗ[ℝ] V where
   map_smul' r x := by
     apply Subtype.ext
     change g.equiv (r • (x : Albert)) = r • g.equiv (x : Albert)
-    simpa only [RingHom.id_apply] using map_smul g.equiv r (x : Albert)
+    simpa [RingHom.id_apply] using map_smul g.equiv r (x : Albert)
 
-@[simp] theorem automorphismV_coe (g : CompactAutomorphism) (x : V) :
-    (automorphismV g x : Albert) = g.equiv (x : Albert) := rfl
 
-@[simp] theorem automorphismV_comp_apply (g f : CompactAutomorphism) (x : V) :
-    automorphismV (g.comp f) x = automorphismV g (automorphismV f x) := by
-  apply Subtype.ext
-  rfl
 
 /-- The specified metric scale remains trace/3 under the actual automorphism. -/
 theorem automorphismV_gA (g : CompactAutomorphism) (x y : V) :
-    gA (automorphismV g x) (automorphismV g y) = gA x y := by
-  exact congrArg (fun r : ℝ => r / 3) (g.inner_map (x : Albert) (y : Albert))
+    gA (automorphismV g x) (automorphismV g y) = gA x y :=
+  congrArg (fun r : ℝ => r / 3) (g.inner_map (x : Albert) (y : Albert))
 
 /-- Native projected Jordan multiplication is transported, never postulated. -/
 theorem automorphismV_KA (g : CompactAutomorphism) (x y : V) :
@@ -120,19 +113,19 @@ theorem scalar_action_of_pullback (g : CompactAutomorphism) (B : SymmetricCubic)
       r • automorphismV g y := by
   rw [← automorphismV_KB_pullback, hxy, map_smul]
 
-private theorem intertwines_operatorComm (T : V ≃ₗ[ℝ] V)
+theorem intertwines_operatorComm (T : V ≃ₗ[ℝ] V)
     (P Q R S : V →ₗ[ℝ] V)
     (hP : ∀ v, T (P v) = R (T v)) (hQ : ∀ v, T (Q v) = S (T v))
     (v : V) : T (operatorComm P Q v) = operatorComm R S (T v) := by
   change T (P (Q v) - Q (P v)) = R (S (T v)) - S (R (T v))
-  simp only [map_sub, hP, hQ]
+  simp [map_sub, hP, hQ]
 
 /-- The actual reference-q tensor transports with the native automorphism. -/
 theorem automorphismV_q_reference (g : CompactAutomorphism) (x y v : V) :
     automorphismV g (q referenceCubic x y v) =
       q referenceCubic (automorphismV g x) (automorphismV g y)
         (automorphismV g v) := by
-  simp only [q, KB_referenceCubic]
+  simp [q, KB_referenceCubic]
   exact intertwines_operatorComm (automorphismV g)
     (KA x) (KA y) (KA (automorphismV g x)) (KA (automorphismV g y))
     (automorphismV_KA g x) (automorphismV_KA g y) v
@@ -173,8 +166,8 @@ theorem automorphismV_A_q_pullback (g : CompactAutomorphism) (B : SymmetricCubic
           (q referenceCubic (automorphismV g x) (automorphismV g y))
           (automorphismV g v)
   rw [map_add, map_add]
-  exact congrArg₂ (fun a b : V => a + b)
-    (congrArg₂ (fun a b : V => a + b) (hterm x y z) (hterm y z x))
+  exact congrArg₂ (fun a b => a + b)
+    (congrArg₂ (fun a b => a + b) (hterm x y z) (hterm y z x))
     (hterm z x y)
 
 /-- The sole original Jacobi-kernel hypothesis is stable under actual pullback. -/
@@ -189,7 +182,7 @@ theorem A_q_pullback_zero (g : CompactAutomorphism) (B : SymmetricCubic)
     (A (q referenceCubic) (pullbackCubic (automorphismV g) B) x y z v) =
       automorphismV g 0
   rw [automorphismV_A_q_pullback, hB]
-  simp only [Pi.zero_apply, LinearMap.zero_apply, map_zero]
+  simp [LinearMap.zero_apply, map_zero]
 
 namespace FixedFrame
 
@@ -214,17 +207,17 @@ theorem cyclicV_coordinates (x : V) :
 @[simp] theorem cyclicV_h0 : cyclicV (h 0) = h 1 := by
   apply Subtype.ext
   rw [cyclicV_coordinates]
-  apply Albert.ext <;> norm_num [h, e, unit, octConj]
+  apply Albert.ext <;> norm_num [ e, octConj]
 
 @[simp] theorem cyclicV_h1 : cyclicV (h 1) = h 2 := by
   apply Subtype.ext
   rw [cyclicV_coordinates]
-  apply Albert.ext <;> norm_num [h, e, unit, octConj]
+  apply Albert.ext <;> norm_num [ e, octConj]
 
 @[simp] theorem cyclicV_h2 : cyclicV (h 2) = h 0 := by
   apply Subtype.ext
   rw [cyclicV_coordinates]
-  apply Albert.ext <;> norm_num [h, e, unit, octConj]
+  apply Albert.ext <;> norm_num [ e, octConj]
 
 @[simp] theorem cyclicV_X01 (u : Octonion) : cyclicV (X01 u) = X12 u := by
   apply Subtype.ext
@@ -244,5 +237,4 @@ theorem cyclicV_coordinates (x : V) :
   apply Albert.ext <;> simp [X02, X12, octConj]
 
 end FixedFrame
-end
 end AlbertRecognition

@@ -4,9 +4,7 @@ public import Glennie.Compact.LocalContrast
 
 @[expose] public section
 namespace Glennie.Compact.LocalReconstruction
-noncomputable section
 
-open Glennie
 open Glennie.Compact.Affine20 Glennie.Compact.FlatOrbit
 open Glennie.Compact.NearbyOrbits Glennie.Compact.NearbyOrbitsClosed
 open Glennie.Compact.NativeQFamilyLedger Glennie.Compact.LocalContrast
@@ -33,29 +31,21 @@ theorem nearby_q26_score_complete :
   have hTf : T ∈ fibre54 b := by
     rw [← h20 b hb]
     exact ⟨hT, rfl⟩
-  have hTorbit : T ∈ autOrbit (secNeg b) ∨ T ∈ autOrbit (secPos b) := by
-    change T ∈ autOrbit (secNeg b) ∪ autOrbit (secPos b)
-    rw [← hcover b hb]
-    exact hTf
+  have hTorbit : T ∈ autOrbit (secNeg b) ∨ T ∈ autOrbit (secPos b) := by grind
   have hscoreNeg (X : Triple) (hX : X ∈ autOrbit (secNeg b)) : score X < 0 := by
     rw [score_eq_two_phi, phiOf_eq_of_mem_autOrbit hX]
     linarith [hpN b hb]
   have hscorePos (X : Triple) (hX : X ∈ autOrbit (secPos b)) : 0 < score X := by
     rw [score_eq_two_phi, phiOf_eq_of_mem_autOrbit hX]
     linarith [hpP b hb]
-  have hscoreT : score T ≠ 0 := by
-    rcases hTorbit with hN | hP
-    · exact ne_of_lt (hscoreNeg T hN)
-    · exact ne_of_gt (hscorePos T hP)
+  have hscoreT : score T ≠ 0 := by grind
   refine ⟨hscoreT, ?_⟩
   constructor
   · rintro ⟨k, hk⟩
     have hL : ledger54 T = ledger54 S := by
       rw [← hk, ledger54_map]
-    have hq : q26 T = q26 S :=
-      (q26_eq_iff_ledger54_eq T S hT hS).mpr hL
-    have hphi : phiOf T = phiOf S :=
-      phiOf_eq_of_mem_autOrbit (show T ∈ autOrbit S from ⟨k, hk⟩)
+    have hq := (q26_eq_iff_ledger54_eq T S hT hS).mpr hL
+    have hphi := phiOf_eq_of_mem_autOrbit (show T ∈ autOrbit S from ⟨k, hk⟩)
     have hscore : score T = score S := by
       rw [score_eq_two_phi, score_eq_two_phi, hphi]
     refine ⟨hq, ?_⟩
@@ -64,8 +54,7 @@ theorem nearby_q26_score_complete :
     · exact False.elim (hscoreT hZero)
     · exact Or.inr ⟨hPos, by rwa [← hscore]⟩
   · rintro ⟨hq, hsign⟩
-    have hL : ledger54 T = ledger54 S :=
-      (q26_eq_iff_ledger54_eq T S hT hS).mp hq
+    have hL := (q26_eq_iff_ledger54_eq T S hT hS).mp hq
     have hSf : S ∈ fibre54 b := by
       rw [← h20 b hb]
       refine ⟨hS, ?_⟩
@@ -78,23 +67,22 @@ theorem nearby_q26_score_complete :
     · have hTneg := hscoreNeg T hTN
       have hSneg : score S < 0 := by
         rcases hsign with h | h
-        · exact h.2
-        · linarith [h.1]
+        · linarith
+        · linarith
       rcases hSorbit with hSN | hSP
       · change T ∈ autOrbit S
         rw [autOrbit_eq_of_mem hSN]
         exact hTN
-      · linarith [hscorePos S hSP]
+      · grind
     · have hTpos := hscorePos T hTP
       have hSpos : 0 < score S := by
         rcases hsign with h | h
-        · linarith [h.1]
-        · exact h.2
+        · linarith
+        · linarith
       rcases hSorbit with hSN | hSP
-      · linarith [hscoreNeg S hSN]
+      · grind
       · change T ∈ autOrbit S
         rw [autOrbit_eq_of_mem hSP]
         exact hTP
 
-end
 end Glennie.Compact.LocalReconstruction

@@ -65,8 +65,8 @@ def tangentProjection (P : SymmetricTrilinearForm E) (e : E)
     (e : E) (he : diagonalCubic P.form e = 1) :
     tangentProjection P e he e = 0 := by
   apply Subtype.ext
-  simp only [tangentProjection_coe,
-    fderiv_diagonalCubic_at_one P.form e he, div_self (by norm_num : (3 : ℝ) ≠ 0),
+  simp [tangentProjection_coe,
+    fderiv_diagonalCubic_at_one P.form e he, 
     one_smul, sub_self, ZeroMemClass.coe_zero]
 
 /-- Literal inverse of the derivative split: the normal coordinate uses DN(e)=3. -/
@@ -76,9 +76,7 @@ def normalSplitInverse (P : SymmetricTrilinearForm E) (e : E)
 theorem normalSplit_left_inverse (P : SymmetricTrilinearForm E) (e : E)
     (he : diagonalCubic P.form e = 1) (x : E) :
     normalSplitInverse P e
-      (fderiv ℝ (diagonalCubic P.form) e x, tangentProjection P e he x) = x := by
-  simp only [normalSplitInverse, tangentProjection_coe]
-  module
+      (fderiv ℝ (diagonalCubic P.form) e x, tangentProjection P e he x) = x := by simp [normalSplitInverse, tangentProjection_coe]
 
 theorem normalSplit_right_inverse (P : SymmetricTrilinearForm E) (e : E)
     (he : diagonalCubic P.form e = 1) (p : ℝ × tangentSpace P e) :
@@ -111,10 +109,6 @@ def normalSplit (P : SymmetricTrilinearForm E) (e : E)
       (continuous_fst.div_const (3 : ℝ)).smul continuous_const |>.add
         (continuous_subtype_val.comp continuous_snd) }
 
-@[simp] theorem normalSplit_apply (P : SymmetricTrilinearForm E) (e x : E)
-    (he : diagonalCubic P.form e = 1) :
-    normalSplit P e he x =
-      (fderiv ℝ (diagonalCubic P.form) e x, tangentProjection P e he x) := rfl
 
 /-- The nonlinear chart map uses the actual cubic and the proved projection. -/
 def normalChartMap (P : SymmetricTrilinearForm E) (e : E)
@@ -122,8 +116,7 @@ def normalChartMap (P : SymmetricTrilinearForm E) (e : E)
   (diagonalCubic P.form x, tangentProjection P e he x)
 
 @[simp] theorem normalChartMap_basepoint (P : SymmetricTrilinearForm E) (e : E)
-    (he : diagonalCubic P.form e = 1) : normalChartMap P e he e = (1, 0) := by
-  simp only [normalChartMap, he, tangentProjection_basepoint]
+    (he : diagonalCubic P.form e = 1) : normalChartMap P e he e = (1, 0) := by simp [normalChartMap, he, tangentProjection_basepoint]
 
 theorem contDiff_normalChartMap (P : SymmetricTrilinearForm E) (e : E)
     (he : diagonalCubic P.form e = 1) (n : ℕ∞ω) :
@@ -181,7 +174,7 @@ theorem levelChartPoint_zero (P : SymmetricTrilinearForm E) (e : E)
     (he : diagonalCubic P.form e = 1) : levelChartPoint P e he 0 = e := by
   have h := (regularLevelChart P e he).left_inv
     (regularLevelChart_basepoint_mem P e he)
-  simpa only [regularLevelChart_apply, normalChartMap_basepoint, levelChartPoint] using h
+  simpa [regularLevelChart_apply, normalChartMap_basepoint, levelChartPoint] using h
 
 end
 end AlbertGeometry.Cubic

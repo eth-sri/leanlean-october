@@ -7,8 +7,6 @@ public import Glennie.Theorems.FrameSaturation
 
 @[expose] public section
 namespace Glennie
-noncomputable section
-set_option maxHeartbeats 2000000
 
 theorem diagonal_frame_equality (p q r : Fin 3 → Albert)
     (hp : Frame p) (hq : Frame q) (hr : Frame r)
@@ -23,14 +21,13 @@ theorem diagonal_frame_equality (p q r : Fin 3 → Albert)
   let V := (x.d0-x.d1)*(x.d1-x.d2)*(x.d2-x.d0)
   let t := (u*w*star v).im
   let D := (hiddenMatrix z).det.im
-  have hpf : ∀ i, IsDiagonal (p i) := frame_projectors_diagonal p hp hpd
-  have hpc : ∀ i, InComplexSector (p i) := fun i => diagonal_inComplex _ (hpf i)
-  have hqf : ∀ j, InComplexSector (q j) := fun j =>
+  have hpf := frame_projectors_diagonal p hp hpd
+  have hpc := fun i => diagonal_inComplex _ (hpf i)
+  have hqf := fun j =>
     (complexSector_mem_iff _).mp (frame_in_complexSector q hq hqc j)
-  have hy : complexAlbert y.d0 y.d1 y.d2 u v w=y := complexAlbert_eq y hqc
+  have hy := complexAlbert_eq y hqc
   have hV : V^2=4 := by
     have h := diagonal_frame_encoder_discriminant p hp hpd
-    change ((x.d0-x.d1)*(x.d0-x.d2)*(x.d1-x.d2))^2=4 at h
     calc
       _ = ((x.d0-x.d1)*(x.d0-x.d2)*(x.d1-x.d2))^2 := by dsimp [V]; ring
       _ = 4 := h
@@ -40,32 +37,18 @@ theorem diagonal_frame_equality (p q r : Fin 3 → Albert)
     ring
   constructor
   · intro heq
-    have hsq : phi x y z^2=16/729 := by
-      have h := congrArg (fun a : ℝ => a^2) heq
-      rw [sq_abs] at h
-      norm_num at h
-      exact h
+    have hsq : phi x y z^2=16/729 := by grind
     have ht : t^2 ≤ 1/27 := by
       have h := complex_coefficient_bound y.d0 y.d1 y.d2 u v w
       rw [hy,frame_encoder_norm q hq] at h
-      change 216*t^2 ≤ (2 : ℝ)^3 at h
       nlinarith
     have hd : D^2 ≤ 1/27 := by
       have h := hidden_determinant_bound z
       rw [frame_encoder_norm r hr] at h
-      change 216*D^2 ≤ (2 : ℝ)^3 at h
       nlinarith
-    have hprod : t^2*D^2=1/729 := by
-      rw [hphi] at hsq
-      have ha : (2*V*t*D)^2=4*V^2*t^2*D^2 := by ring
-      rw [ha,hV] at hsq
-      nlinarith
-    have htEq : t^2=1/27 := by
-      have h := mul_le_mul_of_nonneg_left hd (sq_nonneg t)
-      nlinarith
-    have hdEq : D^2=1/27 := by
-      have h := mul_le_mul_of_nonneg_right ht (sq_nonneg D)
-      nlinarith
+    have hprod : t^2*D^2=1/729 := by grind
+    have htEq : t^2=1/27 := by nlinarith
+    have hdEq : D^2=1/27 := by grind
     have hn : inner (complexAlbert y.d0 y.d1 y.d2 u v w)
         (complexAlbert y.d0 y.d1 y.d2 u v w)=2 := by
       rw [hy]
@@ -81,7 +64,7 @@ theorem diagonal_frame_equality (p q r : Fin 3 → Albert)
       rw [← hy,fe_complex_square_d2,hy2,hvN,hwN]
       norm_num
     have hqd := fe_encoder_atoms_diagonal q hq hy0 hy1 hy2 hys0 hys1 hys2
-    have hov : ∀ i j, inner (p i) (q j)=1/3 := fun i j =>
+    have hov := fun i j =>
       fe_diagonal_overlap _ _ (hpf i) (hp.trace_one i) (hqd j)
     obtain ⟨hz,hzs⟩ := fe_hidden_saturation z (frame_encoder_norm r hr) hdEq
     exact complex_pair_uniformLedger_of_projections p q r hpc hqf hov
@@ -89,15 +72,10 @@ theorem diagonal_frame_equality (p q r : Fin 3 → Albert)
   · intro hu
     have hz := uniformLedger_complexProjection_encoder p q r hp hq hr hu hpc hqf
     have hzs := uniformLedger_complexProjection_encoder_square p q r hp hq hr hu hpc hqf
-    have ht : t^2=1/27 := fe_uniform_complex_triangle p q r hp hq hr hu hpf hqc
-    have hd : D^2=1/27 := fe_hidden_determinant_of_projections r hr hz hzs
-    have hsq : phi x y z^2=16/729 := by
-      rw [hphi]
-      calc
-        _ = 4*V^2*t^2*D^2 := by ring
-        _ = 16/729 := by rw [hV,ht,hd]; norm_num
+    have ht := fe_uniform_complex_triangle p q r hp hq hr hu hpf hqc
+    have hd := fe_hidden_determinant_of_projections r hr hz hzs
+    have hsq : phi x y z^2=16/729 := by grind
     have ha : |phi x y z|^2=phi x y z^2 := sq_abs _
-    change |phi x y z|=4/27
     nlinarith [abs_nonneg (phi x y z)]
 
 /-- Complete native frame equality, including every uniform ledger and every sign. -/
@@ -107,33 +85,32 @@ theorem frame_equality : FrameEquality := by
   let P := fun i => g.equiv (p i)
   let Q := fun i => g.equiv (q i)
   let R := fun i => g.equiv (r i)
-  have hP : Frame P := g.map_frame p hp
-  have hQ : Frame Q := g.map_frame q hq
-  have hR : Frame R := g.map_frame r hr
+  have hP := g.map_frame p hp
+  have hQ := g.map_frame q hq
+  have hR := g.map_frame r hr
   have hPd : IsDiagonal (encoder P) := by
-    dsimp only [P]
+    dsimp [P]
     rw [g.encoder_map]
     exact hpd
   have hQc : InComplexSector (encoder Q) := by
-    dsimp only [Q]
+    dsimp [Q]
     rw [g.encoder_map]
     exact hqc
   have h := diagonal_frame_equality P Q R hP hQ hR hPd hQc
   have hphi : phi (encoder P) (encoder Q) (encoder R)=
       phi (encoder p) (encoder q) (encoder r) := by
-    dsimp only [P,Q,R]
+    dsimp [P,Q,R]
     rw [g.encoder_map,g.encoder_map,g.encoder_map,g.phi_map]
   have hledger : UniformLedger P Q R ↔ UniformLedger p q r := by
     constructor
     · intro hl i j k
       have h := hl i j k
-      dsimp only [P,Q,R] at h
+      dsimp [P,Q,R] at h
       rwa [g.ledger_map] at h
     · intro hl i j k
-      dsimp only [P,Q,R]
+      dsimp [P,Q,R]
       rw [g.ledger_map]
       exact hl i j k
   rwa [hphi,hledger] at h
 
-end
 end Glennie

@@ -19,8 +19,8 @@ def reversalSection (reverse : X → X) (tau : L → L) (positiveSection : L →
 /-- The reversal fixed base point belongs to the common section domain. -/
 theorem flat_mem_reversalDomain (tau : L → L) (U : Set L)
     (flat : L) (hflat : flat ∈ U) (hfixed : tau flat = flat) :
-    flat ∈ reversalDomain tau U := by
-  exact ⟨hflat, by change tau flat ∈ U; rw [hfixed]; exact hflat⟩
+    flat ∈ reversalDomain tau U :=
+  ⟨hflat, by change tau flat ∈ U; rw [hfixed]; exact hflat⟩
 
 /-- Literal Phi reversal converts the positive section value at tau(b) to negative. -/
 theorem reversalSection_negative (phi : X → ℝ) (reverse : X → X) (tau : L → L)
@@ -49,8 +49,8 @@ section Topology
 variable [TopologicalSpace X] [TopologicalSpace L]
 
 theorem reversalDomain_isOpen (tau : L → L) (htau : Continuous tau)
-    (U : Set L) (hU : IsOpen U) : IsOpen (reversalDomain tau U) := by
-  exact hU.inter (IsOpen.preimage htau hU)
+    (U : Set L) (hU : IsOpen U) : IsOpen (reversalDomain tau U) :=
+  hU.inter (IsOpen.preimage htau hU)
 
 theorem reversalSection_continuousOn (reverse : X → X) (tau : L → L)
     (hreverse : Continuous reverse) (htau : Continuous tau)

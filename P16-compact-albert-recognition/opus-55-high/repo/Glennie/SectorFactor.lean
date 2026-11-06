@@ -12,9 +12,7 @@ public import Glennie.Native.SectorMixedTrace
 
 @[expose] public section
 namespace Glennie
-noncomputable section
 
-set_option maxHeartbeats 2000000
 
 theorem phi_diagonal_complex_factor (a b c d e f : ℝ) (u v w : ℂ) (z : Albert) :
     phi (diagonalAlbert a b c) (complexAlbert d e f u v w) z =
@@ -30,10 +28,9 @@ theorem phi_diagonal_complex_factor (a b c d e f : ℝ) (u v w : ℂ) (z : Alber
   let S := H.adjugate*D.adjugate-D.adjugate*H.adjugate
   let Q := D*H*K*H*D-H*D*K*D*H
   let t := (a-b)*(b-c)*(c-a)*(u*w*star v).im
-  have hx : hiddenMatrix x = 0 := SectorAssemblyBridges.hidden_diagonal a b c
-  have hy : hiddenMatrix y = 0 := SectorAssemblyBridges.hidden_complex d e f u v w
-  have hb : hiddenMatrix (jordan x y) = 0 :=
-    SectorAssemblyBridges.jordan_hidden_zero x y hx hy
+  have hx := SectorAssemblyBridges.hidden_diagonal a b c
+  have hy := SectorAssemblyBridges.hidden_complex d e f u v w
+  have hb := SectorAssemblyBridges.jordan_hidden_zero x y hx hy
   have hB : B = (1/2:ℂ) • (D*H+H*D) :=
     SectorAssemblyBridges.jordan_complex_matrix x y hx
   have hS : S.conjTranspose = -S :=
@@ -60,15 +57,15 @@ theorem phi_diagonal_complex_factor (a b c d e f : ℝ) (u v w : ℂ) (z : Alber
         (M*((K*B).trace • (1:Matrix (Fin 3) (Fin 3) ℂ)-K*B))).trace.re +
       2*((M*S).conjTranspose*(sectorAdjointAdjugate M*B)).trace.re := by
     rw [phi, inner_sector_model, hCommC, hCommM, hUC, hUH]
-    simp only [Matrix.mul_add, Matrix.trace_add, Complex.add_re]
+    simp [Matrix.mul_add, Matrix.trace_add, Complex.add_re]
     ring
   have hPure : (Q*(K*B*K)).trace.re = 0 := by
     rw [hB]
-    simpa only [Complex.zero_re] using
+    simpa [Complex.zero_re] using
       congrArg Complex.re (SectorAssemblyBridges.pure_complex_trace D H K)
   have hMixedMatrix : SectorContraction.tracePolar Q B = S*B*K-K*B*S := by
     rw [hB]
-    simpa only [MixedComplexUnits.complexCommutator, MixedComplexUnits.symmProduct,
+    simpa [MixedComplexUnits.complexCommutator, MixedComplexUnits.symmProduct,
       MixedComplexUnits.adjugateCommutator] using
         MixedComplexUnits.native_mixed_identity a b c y z
   have hMixed : (Q*SectorContraction.tracePolar G B).trace.re +
@@ -93,19 +90,10 @@ theorem phi_diagonal_complex_factor (a b c d e f : ℝ) (u v w : ℂ) (z : Alber
     calc
       _ = -2*(star M.det*(S*B).trace).re :=
         SectorContraction.hidden_cubic_real M S B hS
-      _ = 2*(-(star M.det)*(⟨0,-t⟩:ℂ)).re := by
-        rw [hSB]
-        simp only [neg_mul, Complex.neg_re]
-        ring
+      _ = 2*(-(star M.det)*(⟨0,-t⟩:ℂ)).re := by simp_all
       _ = _ := SectorFactorWeight.determinant_pairing_scalar M.det t
-  change phi x y z = (2*(a-b)*(b-c)*(c-a)*(u*w*star v).im)*M.det.im
   calc
-    _ = 2*t*M.det.im := by
-      rw [hMetric, hPure]
-      linarith [hMixed, hCubic]
-    _ = _ := by
-      dsimp only [t]
-      ring
+    _ = 2*t*M.det.im := by linarith
+    _ = _ := by ring
 
-end
 end Glennie

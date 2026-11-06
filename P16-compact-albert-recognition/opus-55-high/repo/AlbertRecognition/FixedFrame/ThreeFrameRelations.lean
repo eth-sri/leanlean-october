@@ -9,7 +9,6 @@ public import AlbertRecognition.CubicOperators
 
 @[expose] public section
 namespace AlbertRecognition.FixedFrame
-noncomputable section
 open Glennie
 
 /-- Intermediate coarse action data on the three actual native frames.
@@ -45,7 +44,7 @@ theorem h_pair_coefficients (i j : Fin 3) (hij : i ≠ j)
   have h2 := congrArg (fun x : V => (x : Albert).d2) heq
   fin_cases i <;> fin_cases j
   all_goals first | exact False.elim (hij rfl) | skip
-  all_goals norm_num [h, e, unit] at h0 h1 h2
+  all_goals norm_num [ e] at h0 h1 h2
   all_goals constructor <;> linarith
 
 /-- The complementary diagonal action gives the actual cross-h formula. -/
@@ -56,9 +55,7 @@ theorem ThreeFrameScalarData.cross_h {B : SymmetricCubic}
   calc
     KB B (h i) (h j) =
         KB B (h i) (h j + (1/2 : ℝ) • h i) -
-          (1/2 : ℝ) • KB B (h i) (h i) := by
-      rw [map_add, map_smul]
-      module
+          (1/2 : ℝ) • KB B (h i) (h i) := by simp
     _ = data.b i • (h j + (1/2 : ℝ) • h i) -
         (1/2 : ℝ) • (data.a i • h i) := by
       rw [data.on_complementary_diagonal i j hij, data.on_h_self]
@@ -86,8 +83,8 @@ theorem ThreeFrameScalarData.a_eq_b_sub_two_b {B : SymmetricCubic}
 /-- h0+h1+h2=0 gives a sum of actual unknown multiplication operators. -/
 theorem KB_h_sum_zero (B : SymmetricCubic) (v : V) :
     KB B (h 0) v + KB B (h 1) v + KB B (h 2) v = 0 := by
-  have hs := congrArg (fun x : V => KB B x v) h_sum_zero
-  simpa only [map_add, LinearMap.add_apply, map_zero, LinearMap.zero_apply] using hs
+  have hs := congrArg (fun x => KB B x v) h_sum_zero
+  simpa [map_add, LinearMap.add_apply, map_zero, LinearMap.zero_apply] using hs
 
 /-- The three literal raw-slot scalar equations use native octScalar1, not the
 inherited unit on a pair of quaternions. -/
@@ -128,12 +125,9 @@ theorem ThreeFrameScalarData.common_coefficients {B : SymmetricCubic}
   have hb : ∀ i : Fin 3, data.b i = data.b 0 := by
     intro i
     fin_cases i
-    · change data.b (0 : Fin 3) = data.b 0
-      rfl
-    · change data.b (1 : Fin 3) = data.b 0
-      exact hb12.trans hb02.symm
-    · change data.b (2 : Fin 3) = data.b 0
-      exact hb02.symm
+    · rfl
+    · simp_all
+    · simp_all
   have ha : ∀ i : Fin 3, data.a i = -data.b 0 := by
     intro i
     fin_cases i
@@ -160,5 +154,4 @@ theorem ThreeFrameScalarData.common_coefficients {B : SymmetricCubic}
       linarith only [hc01, hc02, hc12]
   exact ⟨data.b 0,ha,hb,hc⟩
 
-end
 end AlbertRecognition.FixedFrame

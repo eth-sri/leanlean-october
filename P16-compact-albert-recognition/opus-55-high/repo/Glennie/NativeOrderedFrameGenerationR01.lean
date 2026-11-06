@@ -6,7 +6,6 @@ public import Glennie.Compact.LocalReconstruction
 
 @[expose] public section
 namespace Glennie.NativeOrderedFrameGenerationR01
-noncomputable section
 open Glennie.NativeGenerationEndpointR01
 open Glennie.Compact.Affine20
 open Glennie.Compact.Sections
@@ -27,7 +26,7 @@ theorem ordered_frame_atoms_generate
   · exact K.sub_mem (hAtoms 0 2) (hAtoms 0 0)
   · exact K.sub_mem (hAtoms 1 2) (hAtoms 1 0)
   · exact K.sub_mem (hAtoms 2 2) (hAtoms 2 0)
-  · exact hphi
+  · positivity
 
 theorem ordered_frame_atoms_generate_of_score
     (T : Triple) (hT : ∀ a, Frame (T a)) (hs : score T ≠ 0)
@@ -39,5 +38,4 @@ theorem ordered_frame_atoms_generate_of_score
   apply hs
   rw [score_eq_two_phi, hz, mul_zero]
 
-end
 end Glennie.NativeOrderedFrameGenerationR01

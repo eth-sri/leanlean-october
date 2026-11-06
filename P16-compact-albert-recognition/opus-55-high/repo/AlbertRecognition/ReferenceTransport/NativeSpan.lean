@@ -8,7 +8,6 @@ public import Mathlib.LinearAlgebra.Span.Basic
 
 @[expose] public section
 namespace AlbertRecognition.ReferenceTransport
-noncomputable section
 open Glennie AlbertRecognition.FixedFrame
 
 def familySpan : Submodule ℝ V := Submodule.span ℝ (Set.range direction)
@@ -23,7 +22,7 @@ theorem slot_basis_mem_familySpan (slot : Fin 3) (t : Fin 8) :
     (direction_mem_familySpan (Sum.inr (slot,t,false)))
   have hs := familySpan.smul_mem (-1/3 : ℝ) hd
   have hc : (-1/3 : ℝ) * (-3) = 1 := by norm_num
-  simpa only [direction_difference, smul_smul, hc, one_smul] using hs
+  simpa [direction_difference, smul_smul, hc, one_smul] using hs
 
 theorem slot_mem_familySpan (slot : Fin 3) (a : Octonion) :
     slotVector slot a ∈ familySpan := by
@@ -34,9 +33,7 @@ theorem slot_mem_familySpan (slot : Fin 3) (a : Octonion) :
   all_goals exact slot_basis_mem_familySpan slot _
 
 theorem frameD_eq_directions :
-    frameD = (1/3 : ℝ) • (h 2 - h 1) := by
-  apply Subtype.ext
-  apply Albert.ext <;> norm_num [frameD, h, e, unit, smul_eq_mul]
+    frameD = (1/3 : ℝ) • (h 2 - h 1) := by ext <;> simp [frameD, h, e]
 
 theorem h_mem_familySpan (i : Fin 3) : h i ∈ familySpan := by
   rw [← direction_diagonal]
@@ -79,5 +76,4 @@ theorem linear_ext_on_directions {W : Type*} [AddCommGroup W] [Module ℝ W]
   obtain ⟨i,rfl⟩ := hx
   exact hfg i
 
-end
 end AlbertRecognition.ReferenceTransport

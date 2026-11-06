@@ -16,18 +16,16 @@ public import Mathlib.Tactic.Linarith
 @[expose] public section
 
 open scoped Topology
-open Filter
 
 namespace AlbertGeometry.Cubic
-noncomputable section
 
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
 
 /-- Continuity of the actual DN map follows from its proved derivative. -/
 theorem continuous_fderiv_diagonalCubic (P : SymmetricTrilinearForm E) :
-    Continuous (fun x : E => fderiv ℝ (diagonalCubic P.form) x) := by
+    Continuous (fun x => fderiv ℝ (diagonalCubic P.form) x) := by
   exact (show Differentiable ℝ
-    (fun x : E => fderiv ℝ (diagonalCubic P.form) x) from
+    (fun x => fderiv ℝ (diagonalCubic P.form) x) from
       fun x => (hasFDerivAt_fderiv_diagonalCubic_actual P x).differentiableAt).continuous
 
 /-- The reciprocal derivative is continuous at each actual positive point. -/
@@ -37,7 +35,7 @@ theorem continuousAt_inverseCubicDerivative (P : SymmetricTrilinearForm E) {x : 
   have hN := (differentiable_diagonalCubic P.form).continuous.continuousAt (x := x)
   have hD := (continuous_fderiv_diagonalCubic P).continuousAt (x := x)
   change ContinuousAt
-    (fun z : E => (-(diagonalCubic P.form z ^ 2)⁻¹) •
+    (fun z => (-(diagonalCubic P.form z ^ 2)⁻¹) •
       fderiv ℝ (diagonalCubic P.form) z) x
   exact ((hN.pow 2).inv₀ (pow_ne_zero 2 (ne_of_gt hx))).neg.smul hD
 
@@ -45,44 +43,22 @@ theorem continuousAt_inverseCubicDerivative (P : SymmetricTrilinearForm E) {x : 
 theorem continuousAt_logHessianFormula (P : SymmetricTrilinearForm E) {x : E}
     (hx : 0 < diagonalCubic P.form x) :
     ContinuousAt (logHessianFormula P) x := by
-  letI : NormedAddCommGroup (E →L[ℝ] ℝ) :=
-    ContinuousLinearMap.toNormedAddCommGroup (𝕜 := ℝ) (𝕜₂ := ℝ)
-      (E := E) (F := ℝ) (σ₁₂ := RingHom.id ℝ)
-  letI : NormedSpace ℝ (E →L[ℝ] ℝ) :=
-    ContinuousLinearMap.toNormedSpace (𝕜 := ℝ) (𝕜₂ := ℝ) (𝕜' := ℝ)
-      (E := E) (F := ℝ) (σ₁₂ := RingHom.id ℝ)
-  letI : IsTopologicalAddGroup (E →L[ℝ] ℝ) :=
-    ContinuousLinearMap.isTopologicalAddGroup (𝕜₁ := ℝ) (𝕜₂ := ℝ)
-      (E := E) (F := ℝ) (σ := RingHom.id ℝ)
-  letI : ContinuousAdd (E →L[ℝ] ℝ) :=
-    (inferInstance : IsTopologicalAddGroup (E →L[ℝ] ℝ)).toContinuousAdd
-  letI : NormedAddCommGroup (E →L[ℝ] E →L[ℝ] ℝ) :=
-    ContinuousLinearMap.toNormedAddCommGroup (𝕜 := ℝ) (𝕜₂ := ℝ)
-      (E := E) (F := E →L[ℝ] ℝ) (σ₁₂ := RingHom.id ℝ)
-  letI : NormedSpace ℝ (E →L[ℝ] E →L[ℝ] ℝ) :=
-    ContinuousLinearMap.toNormedSpace (𝕜 := ℝ) (𝕜₂ := ℝ) (𝕜' := ℝ)
-      (E := E) (F := E →L[ℝ] ℝ) (σ₁₂ := RingHom.id ℝ)
-  letI : IsTopologicalAddGroup (E →L[ℝ] E →L[ℝ] ℝ) :=
-    ContinuousLinearMap.isTopologicalAddGroup (𝕜₁ := ℝ) (𝕜₂ := ℝ)
-      (E := E) (F := E →L[ℝ] ℝ) (σ := RingHom.id ℝ)
   letI : ContinuousAdd (E →L[ℝ] E →L[ℝ] ℝ) :=
     (inferInstance : IsTopologicalAddGroup (E →L[ℝ] E →L[ℝ] ℝ)).toContinuousAdd
-  letI : ContinuousSub (E →L[ℝ] E →L[ℝ] ℝ) :=
-    IsTopologicalAddGroup.to_continuousSub (G := E →L[ℝ] E →L[ℝ] ℝ)
   have hN := (differentiable_diagonalCubic P.form).continuous.continuousAt (x := x)
   have hD := (continuous_fderiv_diagonalCubic P).continuousAt (x := x)
   have hH := (differentiable_cubicHessian P).continuous.continuousAt (x := x)
   have hI := continuousAt_inverseCubicDerivative P hx
   have hR : ContinuousAt
-      (fun z : E => (inverseCubicDerivative P z).smulRight
+      (fun z => (inverseCubicDerivative P z).smulRight
         (fderiv ℝ (diagonalCubic P.form) z)) x :=
     ((ContinuousLinearMap.smulRightL ℝ E (E →L[ℝ] ℝ)).continuous.continuousAt.comp
       hI).clm_apply hD
   have hS : ContinuousAt
-      (fun z : E => (diagonalCubic P.form z)⁻¹ • cubicHessian P z) x :=
-    ContinuousAt.smul (M := ℝ) (X := E →L[ℝ] E →L[ℝ] ℝ) (Y := E)
+      (fun z => (diagonalCubic P.form z)⁻¹ • cubicHessian P z) x :=
+    ContinuousAt.smul
       (hN.inv₀ (ne_of_gt hx)) hH
-  exact ContinuousAt.add (M := E →L[ℝ] E →L[ℝ] ℝ) (X := E) hS hR
+  exact ContinuousAt.add hS hR
 
 /-- The identity is used on a proved positive neighborhood before transporting
 continuity to the actual second derivative of log N. -/
@@ -95,9 +71,8 @@ theorem continuousAt_logHessian (P : SymmetricTrilinearForm E) {x : E}
 theorem continuousAt_logHessianForm (P : SymmetricTrilinearForm E) {x : E}
     (hx : 0 < diagonalCubic P.form x) :
     ContinuousAt (logHessianForm P) x := by
-  change ContinuousAt (fun z : E => (-1 / 3 : ℝ) • logHessian P z) x
-  exact ContinuousAt.smul (M := ℝ) (X := E →L[ℝ] E →L[ℝ] ℝ) (Y := E)
-    (show ContinuousAt (fun _ : E => (-1 / 3 : ℝ)) x from continuousAt_const)
+  exact ContinuousAt.smul
+    (show ContinuousAt (fun _ => (-1 / 3 : ℝ)) x from continuousAt_const)
     (continuousAt_logHessian P hx)
 
 /-- Actual continuous bilinear forms have a uniform strictly positive lower
@@ -121,15 +96,13 @@ theorem exists_coercivity_of_positive [FiniteDimensional ℝ E]
   by_cases hu : u = 0
   · simp [hu]
   · have hn : ‖NormedSpace.normalize u‖ = 1 := NormedSpace.norm_normalize hu
-    have hs : NormedSpace.normalize u ∈ Metric.sphere (0 : E) 1 := by
-      simpa [Metric.mem_sphere, dist_eq_norm] using hn
+    have hs : NormedSpace.normalize u ∈ Metric.sphere (0 : E) 1 := by simp_all
     have hm := hmin (NormedSpace.normalize u) hs
     have heq : B u u = ‖u‖ ^ 2 *
         B (NormedSpace.normalize u) (NormedSpace.normalize u) := by
       calc
         B u u = B (‖u‖ • NormedSpace.normalize u)
-            (‖u‖ • NormedSpace.normalize u) := by
-              simp only [NormedSpace.norm_smul_normalize]
+            (‖u‖ • NormedSpace.normalize u) := by simp
         _ = ‖u‖ ^ 2 * B (NormedSpace.normalize u)
             (NormedSpace.normalize u) := by
               simp only [map_smul, ContinuousLinearMap.smul_apply, smul_eq_mul]
@@ -147,7 +120,7 @@ theorem coercivity_of_operatorNorm_perturbation
     ∀ u : E, (c / 2) * ‖u‖ ^ 2 ≤ B u u := by
   intro u
   have hnorm : |B u u - B₀ u u| ≤ ‖B - B₀‖ * ‖u‖ * ‖u‖ := by
-    simpa only [ContinuousLinearMap.sub_apply, Real.norm_eq_abs] using
+    simpa [ContinuousLinearMap.sub_apply, Real.norm_eq_abs] using
       (B - B₀).le_opNorm₂ u u
   have hdiff := (abs_le.mp hnorm).1
   have hsmall := mul_le_mul_of_nonneg_right (le_of_lt hnear) (sq_nonneg ‖u‖)
@@ -164,50 +137,23 @@ theorem exists_uniform_positive_logHessian_neighborhood [FiniteDimensional ℝ E
     ∃ c : ℝ, 0 < c ∧ ∃ U : Set E, IsOpen U ∧ e ∈ U ∧
       ∀ x ∈ U, 0 < diagonalCubic P.form x ∧
         ∀ u : E, c * ‖u‖ ^ 2 ≤ logHessianForm P x u u := by
-  letI : NormedAddCommGroup (E →L[ℝ] ℝ) :=
-    ContinuousLinearMap.toNormedAddCommGroup (𝕜 := ℝ) (𝕜₂ := ℝ)
-      (E := E) (F := ℝ) (σ₁₂ := RingHom.id ℝ)
-  letI : NormedSpace ℝ (E →L[ℝ] ℝ) :=
-    ContinuousLinearMap.toNormedSpace (𝕜 := ℝ) (𝕜₂ := ℝ) (𝕜' := ℝ)
-      (E := E) (F := ℝ) (σ₁₂ := RingHom.id ℝ)
-  letI : IsTopologicalAddGroup (E →L[ℝ] ℝ) :=
-    ContinuousLinearMap.isTopologicalAddGroup (𝕜₁ := ℝ) (𝕜₂ := ℝ)
-      (E := E) (F := ℝ) (σ := RingHom.id ℝ)
-  letI : ContinuousAdd (E →L[ℝ] ℝ) :=
-    (inferInstance : IsTopologicalAddGroup (E →L[ℝ] ℝ)).toContinuousAdd
   letI : NormedAddCommGroup (E →L[ℝ] E →L[ℝ] ℝ) :=
-    ContinuousLinearMap.toNormedAddCommGroup (𝕜 := ℝ) (𝕜₂ := ℝ)
-      (E := E) (F := E →L[ℝ] ℝ) (σ₁₂ := RingHom.id ℝ)
-  letI : NormedSpace ℝ (E →L[ℝ] E →L[ℝ] ℝ) :=
-    ContinuousLinearMap.toNormedSpace (𝕜 := ℝ) (𝕜₂ := ℝ) (𝕜' := ℝ)
-      (E := E) (F := E →L[ℝ] ℝ) (σ₁₂ := RingHom.id ℝ)
-  letI : IsTopologicalAddGroup (E →L[ℝ] E →L[ℝ] ℝ) :=
-    ContinuousLinearMap.isTopologicalAddGroup (𝕜₁ := ℝ) (𝕜₂ := ℝ)
-      (E := E) (F := E →L[ℝ] ℝ) (σ := RingHom.id ℝ)
-  letI : ContinuousAdd (E →L[ℝ] E →L[ℝ] ℝ) :=
-    (inferInstance : IsTopologicalAddGroup (E →L[ℝ] E →L[ℝ] ℝ)).toContinuousAdd
-  letI : ContinuousSub (E →L[ℝ] E →L[ℝ] ℝ) :=
-    IsTopologicalAddGroup.to_continuousSub (G := E →L[ℝ] E →L[ℝ] ℝ)
+    ContinuousLinearMap.toNormedAddCommGroup
+     
   obtain ⟨c, hc, hbase⟩ := exists_coercivity_of_positive (logHessianForm P e) hpos
   have hcont : ContinuousAt
-      (fun x : E => ‖logHessianForm P x - logHessianForm P e‖) e :=
-    (ContinuousAt.sub (G := E →L[ℝ] E →L[ℝ] ℝ) (X := E)
+      (fun x => ‖logHessianForm P x - logHessianForm P e‖) e :=
+    (ContinuousAt.sub
       (continuousAt_logHessianForm P hN)
-      (show ContinuousAt (fun _ : E => logHessianForm P e) e from
+      (show ContinuousAt (fun _ => logHessianForm P e) e from
         continuousAt_const)).norm
   have hnear : ∀ᶠ x in 𝓝 e,
       ‖logHessianForm P x - logHessianForm P e‖ < c / 2 :=
     hcont.eventually_lt
-      (show ContinuousAt (fun _ : E => (c / 2 : ℝ)) e from continuousAt_const)
+      (show ContinuousAt (fun _ => (c / 2 : ℝ)) e from continuousAt_const)
       (by
         have hzero : logHessianForm P e - logHessianForm P e =
-            (0 : E →L[ℝ] E →L[ℝ] ℝ) := by
-          apply ContinuousLinearMap.ext
-          intro u
-          apply ContinuousLinearMap.ext
-          intro v
-          simp only [ContinuousLinearMap.sub_apply, ContinuousLinearMap.zero_apply]
-          exact sub_self (logHessianForm P e u v)
+            (0 : E →L[ℝ] E →L[ℝ] ℝ) := by simp
         rw [hzero, ContinuousLinearMap.opNorm_zero]
         exact half_pos hc)
   have hlocal : ∀ᶠ x in 𝓝 e, 0 < diagonalCubic P.form x ∧
@@ -235,5 +181,4 @@ theorem exists_positive_definite_logHessian_neighborhood [FiniteDimensional ℝ 
   refine ⟨hxN, logHessianForm_symm P hxN, fun u hu => ?_⟩
   exact lt_of_lt_of_le (mul_pos hc (sq_pos_of_pos (norm_pos_iff.mpr hu))) (hxbound u)
 
-end
 end AlbertGeometry.Cubic

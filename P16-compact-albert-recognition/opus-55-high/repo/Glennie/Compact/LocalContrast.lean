@@ -8,7 +8,6 @@ public import Glennie.Compact.NativeQFamilyLedger
 @[expose] public section
 namespace Glennie.Compact.LocalContrast
 
-open Glennie
 open Glennie.Compact.Affine20
 open Glennie.Compact.Sections
 open Glennie.Compact.OperationalPhi
@@ -23,8 +22,8 @@ def score (T : Triple) : ℝ :=
   4 * delta x y z (halfAmplitude x) y -
     delta x y z x y - delta x y z 1 y
 
-theorem score_eq_two_phi (T : Triple) : score T = 2 * phiOf T := by
-  exact phi_division_free (encoder (T 0)) (encoder (T 1)) (encoder (T 2))
+theorem score_eq_two_phi (T : Triple) : score T = 2 * phiOf T :=
+  phi_division_free (encoder (T 0)) (encoder (T 1)) (encoder (T 2))
 
 end
 end Glennie.Compact.LocalContrast

@@ -7,7 +7,6 @@ public import Mathlib.Algebra.Module.Torsion.Free
 
 @[expose] public section
 namespace AlbertRecognition.FixedFrame
-noncomputable section
 open Glennie
 
 /-- Native projected multiplication on the complementary diagonal direction. -/
@@ -36,13 +35,13 @@ theorem KA_h0_injective : Function.Injective (KA (h 0)) := by
   intro x y hxy
   have hz : KA (h 0) (x-y) = 0 := by rw [map_sub, hxy, sub_self]
   have hinv := KA_h0_inverse_polynomial (x-y)
-  simp only [hz, map_zero, smul_zero, add_zero, sub_zero] at hinv
+  simp [hz, map_zero, smul_zero, add_zero] at hinv
   exact sub_eq_zero.mp hinv.symm
 
 theorem h0_ne_zero : h 0 ≠ 0 := by
   intro hz
   have hd := congrArg (fun x : V => (x : Albert).d0) hz
-  norm_num [h, e, unit] at hd
+  norm_num [ e] at hd
 
 /-- Pull back the arbitrary unknown, apply the proved fixed-frame gate, then
 transport the equality back. There is no invariance assumption on B. -/
@@ -61,8 +60,7 @@ theorem transported_frame_constraint (B : SymmetricCubic)
     KB B (automorphismV g (h i)) (automorphismV g w) =
         automorphismV g (KB (pullbackCubic (automorphismV g) B) (h i) w) :=
       (automorphismV_KB_pullback g B (h i) w).symm
-    _ = automorphismV g (c • KA (h i) w) := by
-      exact congrArg (automorphismV g) (LinearMap.congr_fun (hc i) w)
+    _ = automorphismV g (c • KA (h i) w) := by simp_all
     _ = c • KA (automorphismV g (h i)) (automorphismV g w) := by
       rw [map_smul, automorphismV_KA]
 
@@ -76,12 +74,12 @@ theorem transported_scalar_eq (B : SymmetricCubic) (g : CompactAutomorphism)
     intro hz
     apply h0_ne_zero
     apply (automorphismV g).injective
-    simpa only [map_zero] using hz
+    simpa [map_zero] using hz
   have hv : KA (h 0) (automorphismV g (h 0)) ≠ 0 := by
     intro hz
     apply hu
     apply KA_h0_injective
-    simpa only [map_zero] using hz
+    simpa [map_zero] using hz
   have heq : b • KA (h 0) (automorphismV g (h 0)) =
       c • KA (h 0) (automorphismV g (h 0)) := by
     calc
@@ -89,7 +87,7 @@ theorem transported_scalar_eq (B : SymmetricCubic) (g : CompactAutomorphism)
         (LinearMap.congr_fun hb _).symm
       _ = KB B (automorphismV g (h 0)) (h 0) := KB_comm B _ _
       _ = c • KA (automorphismV g (h 0)) (h 0) := LinearMap.congr_fun hc _
-      _ = _ := congrArg (fun x : V => c • x) (KA_comm _ _)
+      _ = _ := congrArg (fun x => c • x) (KA_comm _ _)
   exact smul_left_injective ℝ hv heq
 
 /-- One scalar works on every actual transported reference frame. The sole
@@ -102,9 +100,7 @@ theorem common_scalar_on_reference_frames (B : SymmetricCubic)
   refine ⟨b, ?_⟩
   intro g
   obtain ⟨c,hc⟩ := transported_frame_constraint B hB g
-  have hbc : b = c := transported_scalar_eq B g b c (hb 0) (hc 0)
-  rw [← hbc] at hc
-  exact hc
+  have hbc := transported_scalar_eq B g b c (hb 0) (hc 0)
+  rwa [← hbc] at hc
 
-end
 end AlbertRecognition.FixedFrame

@@ -8,79 +8,37 @@ public import Glennie.Compact.FlatBase
 
 @[expose] public section
 namespace Glennie.NativeOrderedPositivePair
-open Glennie Glennie.Compact.FlatBase
-noncomputable section
-set_option autoImplicit false
+open Glennie.Compact.FlatBase
 
-private theorem six_diagonal_patterns (a b c : ℝ)
+theorem six_diagonal_patterns (a b c : ℝ)
     (ht : a + b + c = 0) (hn : a^2 + b^2 + c^2 = 2) (hc : a*b*c = 0) :
     (a = 1 ∧ b = 0 ∧ c = -1) ∨
     (a = 1 ∧ b = -1 ∧ c = 0) ∨
     (a = 0 ∧ b = 1 ∧ c = -1) ∨
     (a = -1 ∧ b = 1 ∧ c = 0) ∨
     (a = -1 ∧ b = 0 ∧ c = 1) ∨
-    (a = 0 ∧ b = -1 ∧ c = 1) := by
-  have hz : a = 0 ∨ b = 0 ∨ c = 0 := by
-    rcases mul_eq_zero.mp hc with hab | hc
-    · rcases mul_eq_zero.mp hab with ha | hb
-      · exact Or.inl ha
-      · exact Or.inr (Or.inl hb)
-    · exact Or.inr (Or.inr hc)
-  rcases hz with ha | hb | hc
-  · have hcb : c = -b := by linarith
-    have hb2 : b^2 = 1 := by
-      rw [ha, hcb] at hn
-      nlinarith
-    have hba : b = 1 ∨ b = -1 :=
-      sq_eq_sq_iff_eq_or_eq_neg.mp (by simpa using hb2 : b^2 = (1 : ℝ)^2)
-    rcases hba with hb | hb
-    · have hc : c = -1 := by linarith
-      simp [ha, hb, hc]
-    · have hc : c = 1 := by linarith
-      simp [ha, hb, hc]
-  · have hca : c = -a := by linarith
-    have ha2 : a^2 = 1 := by
-      rw [hb, hca] at hn
-      nlinarith
-    have haa : a = 1 ∨ a = -1 :=
-      sq_eq_sq_iff_eq_or_eq_neg.mp (by simpa using ha2 : a^2 = (1 : ℝ)^2)
-    rcases haa with ha | ha
-    · have hc : c = -1 := by linarith
-      simp [ha, hb, hc]
-    · have hc : c = 1 := by linarith
-      simp [ha, hb, hc]
-  · have hba : b = -a := by linarith
-    have ha2 : a^2 = 1 := by
-      rw [hc, hba] at hn
-      nlinarith
-    have haa : a = 1 ∨ a = -1 :=
-      sq_eq_sq_iff_eq_or_eq_neg.mp (by simpa using ha2 : a^2 = (1 : ℝ)^2)
-    rcases haa with ha | ha
-    · have hb : b = -1 := by linarith
-      simp [ha, hb, hc]
-    · have hb : b = 1 := by linarith
-      simp [ha, hb, hc]
+    (a = 0 ∧ b = -1 ∧ c = 1) := by grind
 
-private theorem swap01_diagonal (a b c : ℝ) :
+theorem swap01_diagonal (a b c : ℝ) :
     realSwap01Automorphism.equiv (diagonalAlbert a b c) = diagonalAlbert b a c := by
   change realConjugateAlbert realSwap01 (diagonalAlbert a b c) = _
   rw [realSwap01_coordinates]
   simp [diagonalAlbert, octConj]
 
-private theorem swap02_diagonal (a b c : ℝ) :
+theorem swap02_diagonal (a b c : ℝ) :
     realSwap02Automorphism.equiv (diagonalAlbert a b c) = diagonalAlbert c b a := by
   change realConjugateAlbert realSwap02 (diagonalAlbert a b c) = _
   rw [realSwap02_coordinates]
   simp [diagonalAlbert, octConj]
 
-private theorem ordered_diagonal (x : Albert) (hx : IsDiagonal x)
+theorem ordered_diagonal (x : Albert) (hx : IsDiagonal x)
     (ht : trace x = 0) (hn : inner x x = 2) (hc : x.d0*x.d1*x.d2 = 0) :
     ∃ g : CompactAutomorphism, g.equiv x = flatXN := by
-  have ht' : x.d0 + x.d1 + x.d2 = 0 := ht
+  have ht' := ht
   have hn' : x.d0^2 + x.d1^2 + x.d2^2 = 2 := by
     rw [inner_self_coordinates] at hn
-    simp only [hx.1, hx.2.1, hx.2.2] at hn
-    norm_num [octNormSq, Quaternion.normSq_def'] at hn
+    simp [hx.1, hx.2.1, hx.2.2] at hn
+    norm_num [oct_simps] at hn
     exact hn
   have hp := six_diagonal_patterns x.d0 x.d1 x.d2 ht' hn' hc
   have hrep := diagonalAlbert_representation x hx
@@ -93,14 +51,12 @@ private theorem ordered_diagonal (x : Albert) (hx : IsDiagonal x)
       swap01_diagonal, swap02_diagonal, swap01_diagonal]
   rcases hp with h | h | h | h | h | h
   · refine ⟨CompactAutomorphism.refl, ?_⟩
-    change x = flatXN
     rw [hrep, h.1, h.2.1, h.2.2]
     rfl
   · refine ⟨C, ?_⟩
     rw [hrep, hC, h.1, h.2.1, h.2.2]
     rfl
   · refine ⟨A, ?_⟩
-    change realSwap01Automorphism.equiv x = _
     rw [hrep, swap01_diagonal, h.1, h.2.1, h.2.2]
     rfl
   · refine ⟨C.comp A, ?_⟩
@@ -108,21 +64,12 @@ private theorem ordered_diagonal (x : Albert) (hx : IsDiagonal x)
     rw [hrep, swap01_diagonal, hC, h.1, h.2.1, h.2.2]
     rfl
   · refine ⟨B, ?_⟩
-    change realSwap02Automorphism.equiv x = _
     rw [hrep, swap02_diagonal, h.1, h.2.1, h.2.2]
     rfl
   · refine ⟨C.comp B, ?_⟩
     change C.equiv (realSwap02Automorphism.equiv x) = _
     rw [hrep, swap02_diagonal, hC, h.1, h.2.1, h.2.2]
     rfl
-
-private theorem frame_as_projector (p : Fin 3 → Albert) (hp : Frame p) :
-    p = projectorFrame (encoder p) := by
-  funext i
-  fin_cases i
-  · exact (frame_projector_first p hp).symm
-  · exact (frame_projector_middle p hp).symm
-  · exact (frame_projector_last p hp).symm
 
 /-- A genuine native frame is carried to the ORIGINAL ordered first frame.
 The six encoder orders are realized by carrier automorphisms, not outcome relabels. -/
@@ -131,7 +78,7 @@ theorem native_ordered_frame (p : Fin 3 → Albert) (hp : Frame p) :
       ∀ i : Fin 3, g.equiv (p i) = flatFrameP i := by
   obtain ⟨d, hd⟩ := native_diagonalization (encoder p)
   let p' := fun i => d.equiv (p i)
-  have hp' : Frame p' := d.map_frame p hp
+  have hp' := d.map_frame p hp
   have he : IsDiagonal (encoder p') := by
     rw [d.encoder_map]
     exact hd
@@ -148,7 +95,7 @@ theorem native_ordered_frame (p : Fin 3 → Albert) (hp : Frame p) :
   rw [frame_as_projector p hp, compactAutomorphism_projectorFrame, hg]
   rfl
 
-private theorem relatedTriple_flatXN (t : OctRelatedTriple) :
+theorem relatedTriple_flatXN (t : OctRelatedTriple) :
     t.compactAutomorphism.equiv flatXN = flatXN := by
   change (⟨flatXN.d0, flatXN.d1, flatXN.d2,
     t.A flatXN.o01, t.C flatXN.o02, t.B flatXN.o12⟩ : Albert) = flatXN
@@ -186,5 +133,4 @@ theorem native_ordered_positive_pair (p : Fin 3 → Albert) (hp : Frame p) (y : 
       diagonalOctTriple_scalar k hk b]
     exact ⟨octInComplex_scalar a, h02, octInComplex_scalar b⟩
 
-end
 end Glennie.NativeOrderedPositivePair

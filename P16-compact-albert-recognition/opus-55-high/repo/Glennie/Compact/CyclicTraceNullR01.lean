@@ -17,21 +17,14 @@ def quadratic (a b : M) : M :=
 
 /-- Associativity expands the symmetrized quadratic representation to aba. -/
 theorem quadratic_eq_sandwich (a b : M) : quadratic a b = a * b * a := by
-  simp only [quadratic, symmProd, smul_mul_assoc, mul_smul_comm,
+  simp [quadratic, symmProd, 
     mul_add, add_mul, smul_add, smul_smul, mul_assoc]
   module
 
 /-- Only cyclicity and linearity are needed for the degree-nine cancellation. -/
 theorem cyclic_word_cancel (τ : M →ₗ[ℝ] ℝ)
     (hcyclic : ∀ a b : M, τ (a * b) = τ (b * a)) (P Q : M) :
-    τ (P * Q * P + P * Q * Q - Q * P * P - Q * P * Q) = 0 := by
-  have h₁ : τ (P * Q * P) = τ (Q * P * P) := by
-    simpa only [mul_assoc] using hcyclic P (Q * P)
-  have h₂ : τ (P * Q * Q) = τ (Q * P * Q) := by
-    simpa only [mul_assoc] using hcyclic (P * Q) Q
-  simp only [map_add, map_sub]
-  rw [h₁, h₂]
-  ring
+    τ (P * Q * P + P * Q * Q - Q * P * P - Q * P * Q) = 0 := by grind
 
 def scalarPhi (τ : M →ₗ[ℝ] ℝ) (x y z : M) : ℝ :=
   τ ((quadratic x (quadratic y z) - quadratic y (quadratic x z)) *
@@ -49,12 +42,11 @@ theorem scalarPhi_eq_zero (τ : M →ₗ[ℝ] ℝ)
       (x * y * z) * (y * x * z) * (y * x * z) -
       (y * x * z) * (x * y * z) * (x * y * z) -
       (y * x * z) * (x * y * z) * (y * x * z) := by
-    simp only [quadratic_eq_sandwich, symmProd, smul_mul_assoc, mul_smul_comm,
-      mul_add, add_mul, sub_mul, mul_sub, smul_add, smul_sub, smul_smul, mul_assoc]
+    simp [quadratic_eq_sandwich, symmProd, 
+      mul_add, add_mul, sub_mul, smul_add, smul_sub, smul_smul, mul_assoc]
     module
   have hz := cyclic_word_cancel τ hcyclic (x * y * z) (y * x * z)
   rw [← hexpand, map_smul] at hz
-  change 2 * scalarPhi τ x y z = 0 at hz
   exact (mul_eq_zero.mp hz).resolve_left (by norm_num)
 
 section Represented
@@ -70,8 +62,7 @@ def phiWith (j : E → E → E) (B : E → E → ℝ) (x y z : E) : ℝ :=
 
 theorem map_quadraticWith (j : E → E → E) (ρ : E →ₗ[ℝ] M)
     (hj : ∀ a b, ρ (j a b) = symmProd (ρ a) (ρ b)) (a b : E) :
-    ρ (quadraticWith j a b) = quadratic (ρ a) (ρ b) := by
-  simp only [quadraticWith, map_sub, map_smul, hj, quadratic]
+    ρ (quadraticWith j a b) = quadratic (ρ a) (ρ b) := by simp [quadraticWith, map_sub, map_smul, hj, quadratic]
 
 /-- Actual compatible special-null producer: product and form compatibility
 are hypotheses; scalar nullness is proved by the associative cyclic kernel. -/
@@ -84,7 +75,7 @@ theorem phiWith_eq_zero_of_compatible_trace
     phiWith j B x y z = 0 := by
   unfold phiWith
   rw [hB]
-  simp only [map_sub, map_quadraticWith j ρ hj, hj]
+  simp [map_sub, map_quadraticWith j ρ hj, hj]
   exact scalarPhi_eq_zero τ hcyclic (ρ x) (ρ y) (ρ z)
 
 end Represented

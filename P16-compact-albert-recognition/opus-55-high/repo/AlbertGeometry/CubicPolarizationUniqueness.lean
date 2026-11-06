@@ -13,7 +13,6 @@ public import Mathlib.Topology.Algebra.Module.Multilinear.Basic
 @[expose] public section
 
 namespace AlbertGeometry.Cubic
-noncomputable section
 
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
 
@@ -23,8 +22,8 @@ theorem cubicHessian_function_eq_of_diagonal_eq
     (hN : diagonalCubic P.form = diagonalCubic Q.form) :
     cubicHessian P = cubicHessian Q := by
   exact congrArg
-    (fun N : E → ℝ => fun x : E =>
-      fderiv ℝ (fun z : E => fderiv ℝ N z) x) hN
+    (fun N => fun x =>
+      fderiv ℝ (fun z => fderiv ℝ N z) x) hN
 
 /-- Equal whole diagonal functions have equal literal third derivatives. -/
 theorem cubicThirdDerivative_eq_of_diagonal_eq
@@ -32,7 +31,7 @@ theorem cubicThirdDerivative_eq_of_diagonal_eq
     (hN : diagonalCubic P.form = diagonalCubic Q.form) (x : E) :
     cubicThirdDerivative P x = cubicThirdDerivative Q x := by
   exact congrArg
-    (fun H : E → (E →L[ℝ] E →L[ℝ] ℝ) => fderiv ℝ H x)
+    (fun H => fderiv ℝ H x)
     (cubicHessian_function_eq_of_diagonal_eq P Q hN)
 
 /-- The already proved one-sixth recovery formula cancels the third derivative.
@@ -47,7 +46,7 @@ theorem form_apply_eq_of_diagonal_eq
       (form_from_actual_thirdDerivative P 0 u v w).symm
     _ = (1 / 6 : ℝ) * cubicThirdDerivative Q (0 : E) u v w :=
       congrArg
-        (fun A : E →L[ℝ] E →L[ℝ] E →L[ℝ] ℝ => (1 / 6 : ℝ) * A u v w)
+        (fun A => (1 / 6 : ℝ) * A u v w)
         (cubicThirdDerivative_eq_of_diagonal_eq P Q hN 0)
     _ = Q.form ![u, v, w] :=
       form_from_actual_thirdDerivative Q 0 u v w
@@ -72,7 +71,6 @@ theorem symmetricTrilinearForm_ext
   | mk p hp12 hp23 =>
     cases Q with
     | mk q hq12 hq23 =>
-      change p = q at hform
       cases hform
       rfl
 
@@ -82,5 +80,4 @@ theorem symmetric_diagonalCubic_injective :
   intro P Q hN
   exact symmetricTrilinearForm_ext P Q (form_eq_of_diagonal_eq P Q hN)
 
-end
 end AlbertGeometry.Cubic

@@ -65,14 +65,11 @@ classical for H3(K); this module only closes a premise.
 
 namespace Glennie.Compact.NearbyOrbitsClosed
 
-open Glennie Glennie.Compact.FlatBase Glennie.Compact.Affine20
+open Glennie.Compact.Affine20
 open Glennie.Compact.FrameTopology Glennie.Compact.FlatOrbit
 open Glennie.Compact.Sections Glennie.Compact.NearbyOrbits
 
-noncomputable section
 
-set_option autoImplicit false
-set_option maxHeartbeats 2000000
 
 /-! ## 1. Sign rigidity over a neighbourhood of the flat ledger, with no premise -/
 
@@ -129,5 +126,4 @@ endpoints it says the premise now holds, with no hypothesis, at every triple eit
 reaches. These two are corollaries for downstream use; the headline results are sections 1 and
 2 above. -/
 
-end
 end Glennie.Compact.NearbyOrbitsClosed

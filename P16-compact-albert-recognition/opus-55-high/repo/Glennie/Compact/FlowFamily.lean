@@ -32,9 +32,6 @@ open Glennie.Compact.NativeDictionary Glennie.Compact.Flows
 
 noncomputable section
 
-set_option autoImplicit false
-set_option maxHeartbeats 2000000
-set_option linter.unusedSimpArgs false
 
 /-! ## The parameter-to-generator map -/
 
@@ -44,9 +41,7 @@ def spanCoord {k : ℕ} (D : Fin k → Albert →ₗ[ℝ] Albert) :
   ∑ n, (ContinuousLinearMap.proj n : (Fin k → ℝ) →L[ℝ] ℝ).smulRight (toCoord (D n))
 
 theorem spanCoord_apply {k : ℕ} (D : Fin k → Albert →ₗ[ℝ] Albert) (s : Fin k → ℝ) :
-    spanCoord D s = ∑ n, s n • toCoord (D n) := by
-  simp only [spanCoord, sum_apply, ContinuousLinearMap.smulRight_apply,
-    ContinuousLinearMap.proj_apply]
+    spanCoord D s = ∑ n, s n • toCoord (D n) := by simp [spanCoord, sum_apply, ContinuousLinearMap.smulRight_apply, ContinuousLinearMap.proj_apply]
 
 /-- The real-linear combination sum_n s_n D_n on Albert. -/
 def spanDer {k : ℕ} (D : Fin k → Albert →ₗ[ℝ] Albert) (s : Fin k → ℝ) :
@@ -54,23 +49,14 @@ def spanDer {k : ℕ} (D : Fin k → Albert →ₗ[ℝ] Albert) (s : Fin k → �
   ∑ n, s n • D n
 
 theorem spanDer_apply {k : ℕ} (D : Fin k → Albert →ₗ[ℝ] Albert) (s : Fin k → ℝ)
-    (x : Albert) : spanDer D s x = ∑ n, s n • D n x := by
-  simp only [spanDer, LinearMap.sum_apply, LinearMap.smul_apply]
+    (x : Albert) : spanDer D s x = ∑ n, s n • D n x := by simp [spanDer, LinearMap.sum_apply, LinearMap.smul_apply]
 
 theorem toCoord_spanDer {k : ℕ} (D : Fin k → Albert →ₗ[ℝ] Albert) (s : Fin k → ℝ) :
-    toCoord (spanDer D s) = spanCoord D s := by
-  refine ContinuousLinearMap.ext fun a => ?_
-  simp only [toCoord_apply, spanDer_apply, map_sum, map_smul, spanCoord_apply, sum_apply,
-    smul_apply]
+    toCoord (spanDer D s) = spanCoord D s := by ext <;> simp [toCoord_apply, spanDer_apply, map_sum, map_smul, spanCoord_apply, sum_apply, smul_apply]
 
 theorem spanDer_single {k : ℕ} (D : Fin k → Albert →ₗ[ℝ] Albert) (n : Fin k) (x : Albert) :
     spanDer D (Pi.single n 1) x = D n x := by
-  rw [spanDer_apply, Finset.sum_eq_single n]
-  · rw [Pi.single_eq_same, one_smul]
-  · intro m _ hm
-    rw [Pi.single_eq_of_ne hm, zero_smul]
-  · intro hn
-    exact absurd (Finset.mem_univ n) hn
+  simp [spanDer_apply, Pi.single_apply]
 
 theorem spanDer_isJordanDerivation {k : ℕ} {D : Fin k → Albert →ₗ[ℝ] Albert}
     (hD : ∀ n, IsJordanDerivation (D n)) (s : Fin k → ℝ) :
@@ -88,30 +74,16 @@ def familyC {k : ℕ} (D : Fin k → Albert →ₗ[ℝ] Albert) (s : Fin k → �
     (Fin 27 → ℝ) →L[ℝ] (Fin 27 → ℝ) :=
   NormedSpace.exp (spanCoord D s)
 
-theorem flowC_spanDer {k : ℕ} (D : Fin k → Albert →ₗ[ℝ] Albert) (s : Fin k → ℝ) :
-    flowC (spanDer D s) 1 = familyC D s := by
-  rw [flowC, one_smul, toCoord_spanDer, familyC]
-
-theorem familyC_zero {k : ℕ} (D : Fin k → Albert →ₗ[ℝ] Albert) : familyC D 0 = 1 := by
-  rw [familyC, map_zero, NormedSpace.exp_zero]
-
 theorem familyC_zero_apply {k : ℕ} (D : Fin k → Albert →ₗ[ℝ] Albert) (v : Fin 27 → ℝ) :
     familyC D 0 v = v := by
-  rw [familyC_zero, one_apply_eq_self]
+  rw [familyC, map_zero, NormedSpace.exp_zero, one_apply_eq_self]
 
 /-- The family has strict Frechet derivative `spanCoord D` at s = 0. -/
 theorem hasStrictFDerivAt_familyC {k : ℕ} (D : Fin k → Albert →ₗ[ℝ] Albert) :
     HasStrictFDerivAt (familyC D) (spanCoord D) 0 := by
-  have h0 : spanCoord D 0 = 0 := map_zero _
-  have hexp : HasStrictFDerivAt
-      (NormedSpace.exp : ((Fin 27 → ℝ) →L[ℝ] (Fin 27 → ℝ)) → ((Fin 27 → ℝ) →L[ℝ] (Fin 27 → ℝ)))
-      (1 : ((Fin 27 → ℝ) →L[ℝ] (Fin 27 → ℝ)) →L[ℝ] ((Fin 27 → ℝ) →L[ℝ] (Fin 27 → ℝ)))
-      (spanCoord D 0) := by
-    rw [h0]
-    exact hasStrictFDerivAt_exp_zero
-  refine (hexp.comp (0 : Fin k → ℝ) (spanCoord D).hasStrictFDerivAt).congr_fderiv ?_
-  exact ContinuousLinearMap.ext fun h => by
-    rw [ContinuousLinearMap.comp_apply, one_apply_eq_self]
+  have h := hasStrictFDerivAt_exp_zero (𝕂 := ℝ) (𝔸 := (Fin 27 → ℝ) →L[ℝ] (Fin 27 → ℝ))
+  rw [← map_zero (spanCoord D)] at h
+  exact h.comp 0 (spanCoord D).hasStrictFDerivAt
 
 theorem hasStrictFDerivAt_familyC_apply {k : ℕ} (D : Fin k → Albert →ₗ[ℝ] Albert)
     (v : Fin 27 → ℝ) :
@@ -121,15 +93,11 @@ theorem hasStrictFDerivAt_familyC_apply {k : ℕ} (D : Fin k → Albert →ₗ[�
   rw [ContinuousLinearMap.comp_zero, zero_add]
 
 /-- The family is continuous in s everywhere (needed by the later sections). -/
-theorem continuous_familyC {k : ℕ} (D : Fin k → Albert →ₗ[ℝ] Albert) :
-    Continuous (familyC D) := by
+theorem continuous_familyC_apply {k : ℕ} (D : Fin k → Albert →ₗ[ℝ] Albert)
+    (v : Fin 27 → ℝ) : Continuous fun s => familyC D s v := by
   let +nondep : NormedAlgebra ℚ ((Fin 27 → ℝ) →L[ℝ] (Fin 27 → ℝ)) :=
     .restrictScalars ℚ ℝ _
-  exact NormedSpace.exp_continuous.comp (spanCoord D).continuous
-
-theorem continuous_familyC_apply {k : ℕ} (D : Fin k → Albert →ₗ[ℝ] Albert)
-    (v : Fin 27 → ℝ) : Continuous fun s => familyC D s v :=
-  (continuous_familyC D).clm_apply continuous_const
+  exact (NormedSpace.exp_continuous.comp (spanCoord D).continuous).clm_apply continuous_const
 
 /-! ## The family as compact automorphisms -/
 
@@ -143,7 +111,7 @@ theorem familyAut_apply {k : ℕ} (D : Fin k → Albert →ₗ[ℝ] Albert)
     (hD : ∀ n, IsJordanDerivation (D n)) (hT : ∀ n, TraceFree (D n)) (s : Fin k → ℝ)
     (x : Albert) :
     (familyAut D hD hT s).equiv x = extEquiv (familyC D s (extEquiv.symm x)) := by
-  rw [familyAut, flowAut_apply, flow_apply, flowC_spanDer]
+  rw [familyAut, flowAut_apply, flow_apply, flowC, one_smul, toCoord_spanDer, familyC]
 
 /-! ## Moved frames -/
 
@@ -163,8 +131,7 @@ theorem movedFrame_zero {k : ℕ} (D : Fin 3 → Fin k → Albert →ₗ[ℝ] Al
     (hD : ∀ a n, IsJordanDerivation (D a n)) (hT : ∀ a n, TraceFree (D a n))
     (T : Fin 3 → Fin 3 → Albert) (a : Fin 3) : movedFrame D hD hT T a 0 = T a := by
   funext i
-  show (familyAut (D a) (hD a) (hT a) 0).equiv (T a i) = T a i
-  rw [familyAut_apply, familyC_zero_apply, LinearEquiv.apply_symm_apply]
+  simp [movedFrame, familyAut_apply, familyC_zero_apply]
 
 theorem movedFrame_coord {k : ℕ} (D : Fin 3 → Fin k → Albert →ₗ[ℝ] Albert)
     (hD : ∀ a n, IsJordanDerivation (D a n)) (hT : ∀ a n, TraceFree (D a n))
@@ -177,8 +144,8 @@ theorem movedFrame_coord {k : ℕ} (D : Fin 3 → Fin k → Albert →ₗ[ℝ] A
 theorem continuous_movedFrame_coord {k : ℕ} (D : Fin 3 → Fin k → Albert →ₗ[ℝ] Albert)
     (hD : ∀ a n, IsJordanDerivation (D a n)) (hT : ∀ a n, TraceFree (D a n))
     (T : Fin 3 → Fin 3 → Albert) (a i : Fin 3) :
-    Continuous fun s : Fin k → ℝ => extEquiv.symm (movedFrame D hD hT T a s i) := by
-  simp only [movedFrame_coord]
+    Continuous fun s => extEquiv.symm (movedFrame D hD hT T a s i) := by
+  simp [movedFrame_coord]
   exact continuous_familyC_apply (D a) _
 
 /-! ## Ledger entries and their strict derivative -/
@@ -189,9 +156,7 @@ theorem ledger_movedFrame {k : ℕ} (D : Fin 3 → Fin k → Albert →ₗ[ℝ] 
     ledger (movedFrame D hD hT T 0 s) (movedFrame D hD hT T 1 s) (movedFrame D hD hT T 2 s)
         i j l =
       traceC (prodC (prodC (familyC (D 0) s (extEquiv.symm (T 0 i)))
-        (familyC (D 1) s (extEquiv.symm (T 1 j)))) (familyC (D 2) s (extEquiv.symm (T 2 l)))) := by
-  simp only [ledger, movedFrame, familyAut_apply, traceC_apply, prodC_apply,
-    LinearEquiv.apply_symm_apply]
+        (familyC (D 1) s (extEquiv.symm (T 1 j)))) (familyC (D 2) s (extEquiv.symm (T 2 l)))) := by simp [ledger, movedFrame, familyAut_apply, traceC_apply, prodC_apply, LinearEquiv.apply_symm_apply]
 
 /-- Chain rule for one coordinate ledger entry along three strictly differentiable curves. -/
 theorem hasStrictFDerivAt_ledgerC {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
@@ -211,8 +176,7 @@ theorem ledgerDerivC_apply {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E
         (prodC.comp ((prodC p).comp f1' + (prodC.comp f0').flip q)).flip r)) h =
       traceC (prodC (prodC (f0' h) q) r) + traceC (prodC (prodC p (f1' h)) r) +
         traceC (prodC (prodC p q) (f2' h)) := by
-  simp only [ContinuousLinearMap.comp_apply, add_apply, ContinuousLinearMap.flip_apply,
-    map_add]
+  simp [ContinuousLinearMap.comp_apply, add_apply, ContinuousLinearMap.flip_apply]
   ring
 
 /-- The strict derivative at 0 of one moved ledger entry, as a functional of h. -/
@@ -232,17 +196,12 @@ theorem hasStrictFDerivAt_ledger_movedFrame {k : ℕ} (D : Fin 3 → Fin k → A
       (fun s => ledger (movedFrame D hD hT T 0 s) (movedFrame D hD hT T 1 s)
         (movedFrame D hD hT T 2 s) i j l)
       (movedLedgerDeriv D T i j l) 0 := by
+  simp [ledger_movedFrame]
   have h := hasStrictFDerivAt_ledgerC
     (hasStrictFDerivAt_familyC_apply (D 0) (extEquiv.symm (T 0 i)))
     (hasStrictFDerivAt_familyC_apply (D 1) (extEquiv.symm (T 1 j)))
     (hasStrictFDerivAt_familyC_apply (D 2) (extEquiv.symm (T 2 l)))
   simp only [familyC_zero_apply] at h
-  have hfun : (fun s => ledger (movedFrame D hD hT T 0 s) (movedFrame D hD hT T 1 s)
-      (movedFrame D hD hT T 2 s) i j l) = fun s =>
-      traceC (prodC (prodC (familyC (D 0) s (extEquiv.symm (T 0 i)))
-        (familyC (D 1) s (extEquiv.symm (T 1 j)))) (familyC (D 2) s (extEquiv.symm (T 2 l)))) :=
-    funext fun s => ledger_movedFrame D hD hT T s i j l
-  rw [hfun]
   exact h
 
 /-- The derivative in direction h: each atom of frame a moves by D_a(h) = sum_n h_n D_{a,n}. -/
@@ -253,7 +212,7 @@ theorem movedLedgerDeriv_apply {k : ℕ} (D : Fin 3 → Fin k → Albert →ₗ[
         trace (jordan (jordan (T 0 i) (spanDer (D 1) h (T 1 j))) (T 2 l)) +
         trace (jordan (jordan (T 0 i) (T 1 j)) (spanDer (D 2) h (T 2 l))) := by
   rw [movedLedgerDeriv, ledgerDerivC_apply]
-  simp only [ContinuousLinearMap.flip_apply, ← toCoord_spanDer, toCoord_apply, traceC_apply,
+  simp [ContinuousLinearMap.flip_apply, ← toCoord_spanDer, toCoord_apply, traceC_apply,
     prodC_apply, LinearEquiv.apply_symm_apply]
 
 /-! ## The twenty directions, read through the dictionary -/
@@ -287,15 +246,13 @@ theorem contextDirection_isJordanDerivation (a : Fin 3) (n : Fin 20) :
     IsJordanDerivation (contextDirection a n) := by
   unfold contextDirection
   split_ifs
-  · exact isJordanDerivation_innerDerLinear _ _
-  · exact IsJordanDerivation.zero
+  exacts [isJordanDerivation_innerDerLinear _ _, .zero]
 
 theorem contextDirection_traceFree (a : Fin 3) (n : Fin 20) :
     TraceFree (contextDirection a n) := by
   unfold contextDirection
   split_ifs
-  · exact traceFree_innerDerLinear _ _
-  · exact TraceFree.zero
+  exacts [traceFree_innerDerLinear _ _, .zero]
 
 theorem contextDirection_apply (a : Fin 3) (n : Fin 20) (x : Albert) :
     contextDirection a n x = if a = contextIndex n then direction n x else 0 := by
@@ -341,7 +298,7 @@ theorem rowLedgerDeriv_single (T : Fin 3 → Fin 3 → Albert) (r n : Fin 20) :
     rowLedgerDeriv T (Pi.single n 1) r = jacobianEntry T r n := by
   rw [rowLedgerDeriv, ContinuousLinearMap.pi_apply, movedLedgerDeriv_apply, jacobianEntry,
     trace_add, trace_add]
-  simp only [spanDer_single, contextDirection_apply, atomTangent]
+  simp [spanDer_single, contextDirection_apply, atomTangent]
 
 end
 end Glennie.Compact.FlowFamily

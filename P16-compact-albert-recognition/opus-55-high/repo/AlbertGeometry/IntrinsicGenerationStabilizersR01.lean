@@ -6,10 +6,9 @@ public import AlbertGeometry.IntrinsicLocalReconstruction
 
 @[expose] public section
 namespace AlbertGeometry.IntrinsicGenerationStabilizersR01
-noncomputable section
 open Glennie
 open Glennie.NativeGenerationEndpointR01
-open AlbertGeometry.Cubic AlbertGeometry.BasedNormAdjointTransport
+open AlbertGeometry.Cubic
 open AlbertGeometry.IntrinsicLocalTransport
 
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
@@ -26,16 +25,16 @@ theorem source_submodule_eq_top_of_phi
     (hJ : ∀ p ∈ K, ∀ q ∈ K, sourceProduct P e he hp p q ∈ K)
     (x y z : E) (hx : x ∈ K) (hy : y ∈ K) (hz : z ∈ K)
     (hphi : sourcePhi P e he hp x y z ≠ 0) : K = ⊤ := by
-  let L : Submodule ℝ Albert := K.map d.A.toLinearMap
-  have hL : L = ⊤ := eq_top_of_phi_ne_zero L
-    ⟨e, hu, d.map_unit⟩
+  let L := K.map d.A.toLinearMap
+  have hL := eq_top_of_phi_ne_zero L
+    ⟨e, hu, d.model.unit⟩
     (by
       rintro _ ⟨p, hpk, rfl⟩ _ ⟨q, hqk, rfl⟩
       exact ⟨sourceProduct P e he hp p q, hJ p hpk q hqk,
-        sourceProduct_map P e he hp d.A d.map_product p q⟩)
+        sourceProduct_map d.model p q⟩)
     (d.A x) (d.A y) (d.A z) ⟨x, hx, rfl⟩ ⟨y, hy, rfl⟩ ⟨z, hz, rfl⟩
     (by
-      rw [← sourcePhi_eq P e he hp d.A d.map_unit d.map_metric d.map_product]
+      rw [← sourcePhi_eq d.model]
       exact hphi)
   apply top_unique
   intro t ht
@@ -46,12 +45,12 @@ theorem source_submodule_eq_top_of_phi
 theorem source_unit_left (d : IntrinsicLocalReconstruction.Data P e he hp) (t : E) :
     sourceProduct P e he hp e t = t := by
   apply d.A.injective
-  rw [sourceProduct_map P e he hp d.A d.map_product, d.map_unit, jordan_unit_left]
+  rw [sourceProduct_map d.model, d.model.unit, jordan_unit_left]
 
 theorem source_unit_right (d : IntrinsicLocalReconstruction.Data P e he hp) (t : E) :
     sourceProduct P e he hp t e = t := by
   apply d.A.injective
-  rw [sourceProduct_map P e he hp d.A d.map_product, d.map_unit, jordan_unit_right]
+  rw [sourceProduct_map d.model, d.model.unit, jordan_unit_right]
 
 theorem source_automorphism_fixes_all
     (d : IntrinsicLocalReconstruction.Data P e he hp)
@@ -75,7 +74,7 @@ theorem source_automorphism_fixes_all
         rw [map_smul, hp] }
   have hunit : g.equiv e = e := by
     have h := g.map_product e (g.equiv.symm e)
-    simpa only [source_unit_left d, source_unit_right d,
+    simpa [source_unit_left d, source_unit_right d,
       LinearEquiv.apply_symm_apply] using h.symm
   have hK : K = ⊤ := source_submodule_eq_top_of_phi d K hunit
     (by
@@ -99,16 +98,13 @@ theorem source_derivation_eq_zero
     have h := hD e e
     rw [source_unit_left d e, source_unit_right d (D e), source_unit_left d (D e)] at h
     exact add_left_cancel (show D e + D e = D e + 0 by simpa using h.symm)
-  have hK : LinearMap.ker D = ⊤ := source_submodule_eq_top_of_phi d (LinearMap.ker D) hu
+  have hK := source_submodule_eq_top_of_phi d (LinearMap.ker D) hu
     (by
       intro p hpk q hqk
-      change D p = 0 at hpk
-      change D q = 0 at hqk
-      change D (sourceProduct P e he hp p q) = 0
       apply d.A.injective
       rw [hD p q, hpk, hqk, map_add,
-        sourceProduct_map P e he hp d.A d.map_product,
-        sourceProduct_map P e he hp d.A d.map_product, map_zero]
+        sourceProduct_map d.model,
+        sourceProduct_map d.model, map_zero]
       simp) x y z hx hy hz hphi
   apply LinearMap.ext
   intro t
@@ -126,7 +122,7 @@ theorem local_source_phi_ne_zero
   have hs := (d.finite_observation_test T T hT hT hb).1
   intro hz
   apply hs
-  rw [sourceScore_eq_twoPhi P e he hp d.A d.map_unit d.map_metric d.map_product,
+  rw [sourceScore_eq_twoPhi d.model,
     hz, mul_zero]
 
 theorem local_source_atom_stabilizer
@@ -143,7 +139,7 @@ theorem local_source_atom_stabilizer
   apply source_automorphism_fixes_all d g
     (sourceEncoder (T 0)) (sourceEncoder (T 1)) (sourceEncoder (T 2))
     (local_source_phi_ne_zero d T hT hb)
-  all_goals simp only [sourceEncoder, map_sub, hf]
+  all_goals simp [sourceEncoder, map_sub, hf]
 
 theorem local_source_atoms_generate
     (d : IntrinsicLocalReconstruction.Data P e he hp) (T : SourceTriple E)
@@ -173,7 +169,6 @@ theorem local_source_atom_derivation
   apply source_derivation_eq_zero d D hD
     (sourceEncoder (T 0)) (sourceEncoder (T 1)) (sourceEncoder (T 2))
     (local_source_phi_ne_zero d T hT hb)
-  all_goals simp only [sourceEncoder, map_sub, hkill, sub_zero]
+  all_goals simp [sourceEncoder, map_sub, hkill]
 
-end
 end AlbertGeometry.IntrinsicGenerationStabilizersR01

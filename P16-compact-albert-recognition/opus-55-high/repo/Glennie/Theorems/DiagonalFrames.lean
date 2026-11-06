@@ -9,7 +9,6 @@ public import Glennie.Obligations
 
 public section
 namespace Glennie
-noncomputable section
 
 theorem diagonalAlbert_representation (x : Albert) (hx : IsDiagonal x) :
     x = diagonalAlbert x.d0 x.d1 x.d2 := by
@@ -18,9 +17,7 @@ theorem diagonalAlbert_representation (x : Albert) (hx : IsDiagonal x) :
 theorem jordan_diagonalAlbert (a b c d e f : ℝ) :
     jordan (diagonalAlbert a b c) (diagonalAlbert d e f) =
       diagonalAlbert (a*d) (b*e) (c*f) := by
-  ext <;> simp [diagonalAlbert,jordan_d0,jordan_d1,jordan_d2,
-    jordan_o01,jordan_o02,jordan_o12,octDot_coordinates,octMul,octConj,
-    octNormSq,Quaternion.normSq_def']
+  ext <;> simp [diagonalAlbert, oct_simps]
 
 /-- Encoder polynomial recovery carries diagonalization to all frame atoms. -/
 theorem frame_projectors_diagonal (p : Fin 3 → Albert) (hp : Frame p)
@@ -33,7 +30,7 @@ theorem frame_projectors_diagonal (p : Fin 3 → Albert) (hp : Frame p)
     simp [IsDiagonal,hs.1,hs.2.1,hs.2.2,he.1,he.2.1,he.2.2]
   have h1 : IsDiagonal (p 1) := by
     rw [← frame_projector_middle p hp]
-    simp [IsDiagonal,hs.1,hs.2.1,hs.2.2,unit,octScalar]
+    simp [IsDiagonal,hs.1,hs.2.1,hs.2.2]
   have h2 : IsDiagonal (p 2) := by
     rw [← frame_projector_last p hp]
     simp [IsDiagonal,hs.1,hs.2.1,hs.2.2,he.1,he.2.1,he.2.2]
@@ -63,9 +60,9 @@ theorem diagonal_frame_resolution (p : Fin 3 → Albert) (hp : Frame p)
     h = jordan (1 : Albert) h := (jordan_unit_left h).symm
     _ = jordan (p 0) h+jordan (p 1) h+jordan (p 2) h := by
       rw [← hp.sum_unit,jordan_add_left,jordan_add_left]
-    _ = _ := by simp only [hi,Fin.sum_univ_three]
+    _ = _ := by simp [hi,Fin.sum_univ_three]
 
-private theorem diagonal_test_inner (a b c : ℝ) (x : Albert) :
+theorem diagonal_test_inner (a b c : ℝ) (x : Albert) :
     inner (diagonalAlbert a b c) x = a*x.d0+b*x.d1+c*x.d2 := by
   simp [inner_coordinates,diagonalAlbert,octDot_coordinates]
 
@@ -84,7 +81,7 @@ theorem diagonal_frame_uniform_coordinates (p : Fin 3 → Albert) (hp : Frame p)
       _ = inner (∑ i, inner (p i) (diagonalAlbert a b c) • p i) x :=
         congrArg (fun y => inner y x) hr
       _ = trace (diagonalAlbert a b c)/3 := by
-        simp only [Fin.sum_univ_three,inner_add_left,inner_smul_left,hu]
+        simp [Fin.sum_univ_three,inner_add_left,inner_smul_left,hu]
         linarith
   have h0 := ht 1 0 0
   have h1 := ht 0 1 0
@@ -99,21 +96,19 @@ theorem diagonal_frame_encoder_cubic_zero (p : Fin 3 → Albert) (hp : Frame p)
     (encoder p).d0*(encoder p).d1*(encoder p).d2 = 0 := by
   have h := frame_encoder_cubicNorm p hp
   rw [diagonalAlbert_representation (encoder p) he,newtonCubicNorm_coordinates] at h
-  simpa [diagonalAlbert,octNormSq,Quaternion.normSq_def',octMul,octConj,octRe] using h
+  simpa [diagonalAlbert, oct_simps, octRe] using h
 
 theorem diagonal_frame_encoder_discriminant (p : Fin 3 → Albert) (hp : Frame p)
     (he : IsDiagonal (encoder p)) :
     (((encoder p).d0-(encoder p).d1)*((encoder p).d0-(encoder p).d2)*
       ((encoder p).d1-(encoder p).d2))^2 = 4 := by
-  have ht : (encoder p).d0+(encoder p).d1+(encoder p).d2 = 0 :=
-    frame_encoder_trace p hp
+  have ht := frame_encoder_trace p hp
   have hn := frame_encoder_norm p hp
   rw [inner_self_coordinates] at hn
-  simp only [he.1,he.2.1,he.2.2] at hn
-  norm_num [octNormSq,Quaternion.normSq_def'] at hn
+  simp [he.1,he.2.1,he.2.2] at hn
+  norm_num [oct_simps] at hn
   rw [ScalarEstimates.discriminant_identity _ _ _ ht,
     diagonal_frame_encoder_cubic_zero p hp he,hn]
   norm_num
 
-end
 end Glennie

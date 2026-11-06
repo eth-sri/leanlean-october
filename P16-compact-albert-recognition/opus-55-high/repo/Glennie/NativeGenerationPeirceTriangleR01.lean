@@ -6,16 +6,13 @@ public import Mathlib.LinearAlgebra.Complex.Module
 
 @[expose] public section
 namespace Glennie.NativeGenerationPeirceTriangleR01
-noncomputable section
-open Glennie.NativeGenerationCoordinatesR01
 
 theorem diagonal_projector_middle_numerator (a b c : ℝ) :
     jordan (diagonalAlbert a b c) (diagonalAlbert a b c) -
       (a + c) • diagonalAlbert a b c + (a * c) • (1 : Albert) =
       ((b - a) * (b - c)) • diagonalAlbert 0 1 0 := by
   apply Albert.ext
-  all_goals simp [diagonalAlbert, unit, jordan_d0, jordan_d1, jordan_d2,
-    jordan_o01, jordan_o02, jordan_o12, octDot, octRe, octMul, octConj]
+  all_goals simp [diagonalAlbert, oct_simps, octDot, octRe]
   all_goals ring
 
 theorem diagonal_projector_middle_mem
@@ -36,8 +33,7 @@ theorem diagonal_projector_last_numerator (a b c : ℝ) :
       (a + b) • diagonalAlbert a b c + (a * b) • (1 : Albert) =
       ((c - a) * (c - b)) • diagonalAlbert 0 0 1 := by
   apply Albert.ext
-  all_goals simp [diagonalAlbert, unit, jordan_d0, jordan_d1, jordan_d2,
-    jordan_o01, jordan_o02, jordan_o12, octDot, octRe, octMul, octConj]
+  all_goals simp [diagonalAlbert, oct_simps, octDot, octRe]
   all_goals ring
 
 theorem diagonal_projector_last_mem
@@ -58,9 +54,7 @@ theorem peirce02_extract (z : Albert) :
       (jordan (diagonalAlbert 0 0 1) z) =
       (⟨0, 0, 0, 0, z.o02, 0⟩ : Albert) := by
   apply Albert.ext
-  all_goals norm_num [diagonalAlbert, jordan_d0, jordan_d1, jordan_d2,
-    jordan_o01, jordan_o02, jordan_o12, octDot, octRe, octMul, octConj,
-    smul_smul]
+  all_goals norm_num [diagonalAlbert, oct_simps, smul_smul]
   all_goals apply Prod.ext <;> apply Quaternion.ext <;> norm_num
 
 theorem peirce02_mem (K : Submodule ℝ Albert)
@@ -75,9 +69,7 @@ theorem peirce12_extract (z : Albert) :
       (jordan (diagonalAlbert 0 0 1) z) =
       (⟨0, 0, 0, 0, 0, z.o12⟩ : Albert) := by
   apply Albert.ext
-  all_goals norm_num [diagonalAlbert, jordan_d0, jordan_d1, jordan_d2,
-    jordan_o01, jordan_o02, jordan_o12, octDot, octRe, octMul, octConj,
-    smul_smul]
+  all_goals norm_num [diagonalAlbert, oct_simps, smul_smul]
   all_goals apply Prod.ext <;> apply Quaternion.ext <;> norm_num
 
 theorem peirce12_mem (K : Submodule ℝ Albert)
@@ -93,7 +85,7 @@ theorem complex_real_det_expansion (u v z : ℂ) :
       (z.re * v.im - z.im * v.re) • u +
       (u.re * z.im - u.im * z.re) • v := by
   apply Complex.ext <;>
-    simp [Complex.smul_re, Complex.smul_im, smul_eq_mul] <;> ring
+    simp <;> ring
 
 /-- Two complex coordinates with nonzero real determinant fill a real-linear
 image, without imposing a complex module structure on the ambient submodule. -/
@@ -108,7 +100,7 @@ theorem complex_line_mem_of_real_det_ne_zero
     rw [he]
     exact K.add_mem (K.smul_mem _ hu) (K.smul_mem _ hv)
   have hp := K.smul_mem ((u.re * v.im - u.im * v.re)⁻¹) hm
-  simpa only [smul_smul, inv_mul_cancel₀ hd, one_smul] using hp
+  simpa [smul_smul, inv_mul_cancel₀ hd, one_smul] using hp
 
 theorem triangle_real_det01 (u v w : ℂ) :
     u.re * (v * star w).im - u.im * (v * star w).re =
@@ -128,5 +120,4 @@ theorem triangle_real_det02 (u v w : ℂ) :
   simp [Complex.mul_re, Complex.mul_im]
   ring
 
-end
 end Glennie.NativeGenerationPeirceTriangleR01

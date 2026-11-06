@@ -9,7 +9,6 @@ public import Glennie.Native.CubicJordan
 namespace Glennie
 noncomputable section
 
-set_option linter.unusedSimpArgs false
 
 def jordanLinear : Albert →ₗ[ℝ] Albert →ₗ[ℝ] Albert where
   toFun x :=
@@ -36,19 +35,15 @@ theorem cubicResidual_eq_zero (x : Albert) :
     ((trace x) ^ 3 - 3 * trace x * trace (jordan x x) +
       2 * trace (jordan x (jordan x x))) • (1 : Albert) = 0
   ext
-  all_goals simp [jordan_d0, jordan_d1, jordan_d2, jordan_o01, jordan_o02,
-    jordan_o12, trace, octDot_coordinates, octNormSq, Quaternion.normSq_def',
-    octMul, octConj, Quaternion.re_mul,
-    Quaternion.imI_mul, Quaternion.imJ_mul, Quaternion.imK_mul, smul_eq_mul]
+  all_goals simp [oct_simps, trace]
   all_goals ring
 
-set_option maxHeartbeats 2000000 in
 /-- The native compact Hermitian product satisfies the Jordan identity. -/
 theorem jordan_identity (x y : Albert) :
     jordan (jordan x y) (jordan x x) = jordan x (jordan y (jordan x x)) := by
-  have hc : ∀ a b, jordanLinear a b = jordanLinear b a := fun a b => by
-    simpa only [jordanLinear_apply] using jordan_comm a b
-  have hu : ∀ a, jordanLinear 1 a = a := fun a => by
+  have hc := fun a b => by
+    simpa [jordanLinear_apply] using jordan_comm a b
+  have hu := fun a => by
     simpa only [jordanLinear_apply] using jordan_unit_left a
   have ht : ∀ a b c, traceLinear (jordanLinear (jordanLinear a b) c) =
       traceLinear (jordanLinear a (jordanLinear b c)) := fun a b c => by
@@ -56,7 +51,7 @@ theorem jordan_identity (x y : Albert) :
     exact inner_jordan_associative a b c
   have h := CubicJordan.jordan_of_cubic_trace_identity jordanLinear traceLinear 1
     hc hu ht cubicResidual_eq_zero x y
-  simpa only [jordanLinear_apply] using h
+  simpa [jordanLinear_apply] using h
 
 end
 end Glennie

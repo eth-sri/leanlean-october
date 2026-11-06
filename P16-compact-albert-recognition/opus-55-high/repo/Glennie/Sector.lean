@@ -6,7 +6,6 @@ public import Mathlib.Basic.Complex.Basic
 
 @[expose] public section
 namespace Glennie
-noncomputable section
 
 set_option maxHeartbeats 2000000
 
@@ -47,7 +46,6 @@ theorem complex_hidden_decomposition (z : Albert) :
   apply Albert.ext
   all_goals simp [complexProjection, hiddenAlbert, hiddenMatrix, hiddenColumn,
     hiddenOct, complexPart, complexOct]
-  all_goals apply Prod.ext <;> apply Quaternion.ext <;> simp
 
 theorem complex_hidden_orthogonal (x : Albert) (M : Matrix (Fin 3) (Fin 3) ℂ) :
     inner (complexProjection x) (hiddenAlbert M) = 0 := by
@@ -57,9 +55,7 @@ theorem complex_hidden_orthogonal (x : Albert) (M : Matrix (Fin 3) (Fin 3) ℂ) 
 theorem hiddenAlbert_norm (M : Matrix (Fin 3) (Fin 3) ℂ) :
     inner (hiddenAlbert M) (hiddenAlbert M) =
       2 * ∑ i, ∑ j, Complex.normSq (M i j) := by
-  simp [inner_coordinates, octDot_coordinates, octNormSq, Quaternion.normSq_def',
-    hiddenAlbert, hiddenOct, Complex.normSq_apply,
-    Fin.sum_univ_three]
+  simp [inner_coordinates, oct_simps, hiddenAlbert, hiddenOct, Complex.normSq_apply, Fin.sum_univ_three]
   ring
 
 def sectorColumnGram (M : Matrix (Fin 3) (Fin 3) ℂ) : Matrix (Fin 3) (Fin 3) ℂ :=
@@ -78,13 +74,7 @@ theorem hidden_square_complexProjection (M : Matrix (Fin 3) (Fin 3) ℂ) :
         (-sectorColumnGram M 0 1) (-sectorColumnGram M 0 2)
         (-sectorColumnGram M 1 2) := by
   ext
-  all_goals simp [complexProjection, complexAlbert, complexOct, complexPart,
-    hiddenAlbert, hiddenOct, jordan_d0, jordan_d1, jordan_d2, jordan_o01,
-    jordan_o02, jordan_o12, octDot_coordinates, octNormSq, Quaternion.normSq_def',
-    octMul, octConj, Quaternion.re_mul, Quaternion.imI_mul, Quaternion.imJ_mul,
-    Quaternion.imK_mul, smul_eq_mul, sectorColumnGram, sectorFrobeniusSq,
-    Matrix.mul_apply, Matrix.conjTranspose_apply, Fin.sum_univ_three,
-    Complex.normSq_apply, Complex.mul_re, Complex.mul_im]
+  all_goals simp [complexProjection, complexAlbert, complexOct, complexPart, hiddenAlbert, hiddenOct, oct_simps, sectorColumnGram, sectorFrobeniusSq, Matrix.mul_apply, Matrix.conjTranspose_apply, Fin.sum_univ_three, Complex.normSq_apply, Complex.mul_re, Complex.mul_im]
   all_goals ring
 
 theorem U_diagonal (a b c : ℝ) (z : Albert) :
@@ -92,10 +82,7 @@ theorem U_diagonal (a b c : ℝ) (z : Albert) :
       ⟨a^2*z.d0,b^2*z.d1,c^2*z.d2,(a*b) • z.o01,
         (a*c) • z.o02,(b*c) • z.o12⟩ := by
   ext
-  all_goals simp [U, diagonalAlbert, jordan_d0, jordan_d1, jordan_d2,
-    jordan_o01, jordan_o02, jordan_o12, octDot_coordinates, octMul,
-    octConj, octNormSq, Quaternion.normSq_def', smul_smul, smul_eq_mul]
+  all_goals simp [U, diagonalAlbert, oct_simps, smul_smul]
   all_goals ring
 
-end
 end Glennie

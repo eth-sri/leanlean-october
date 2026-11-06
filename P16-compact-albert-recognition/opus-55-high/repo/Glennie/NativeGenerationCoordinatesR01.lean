@@ -6,7 +6,6 @@ public import Glennie.Sector
 
 @[expose] public section
 namespace Glennie.NativeGenerationCoordinatesR01
-noncomputable section
 
 /-- A division-free spectral projector numerator. This uses powers under the
 native Jordan operation, so membership follows from native product closure. -/
@@ -15,8 +14,7 @@ theorem diagonal_projector_first_numerator (a b c : ℝ) :
       (b + c) • diagonalAlbert a b c + (b * c) • (1 : Albert) =
       ((a - b) * (a - c)) • diagonalAlbert 1 0 0 := by
   apply Albert.ext
-  all_goals simp [diagonalAlbert, unit, jordan_d0, jordan_d1, jordan_d2,
-    jordan_o01, jordan_o02, jordan_o12, octDot, octRe, octMul, octConj]
+  all_goals simp [diagonalAlbert, oct_simps, octDot, octRe]
   all_goals ring
 
 /-- Distinctness of the first eigenvalue puts its coordinate idempotent in
@@ -43,9 +41,7 @@ theorem peirce01_extract (z : Albert) :
       (jordan (diagonalAlbert 0 1 0) z) =
       (⟨0, 0, 0, z.o01, 0, 0⟩ : Albert) := by
   apply Albert.ext
-  all_goals norm_num [diagonalAlbert, jordan_d0, jordan_d1, jordan_d2,
-    jordan_o01, jordan_o02, jordan_o12, octDot, octRe, octMul, octConj,
-    smul_smul]
+  all_goals norm_num [diagonalAlbert, oct_simps, smul_smul]
   all_goals apply Prod.ext <;> apply Quaternion.ext <;> norm_num
 
 /-- This membership conclusion requires no spectral or generation axiom. -/
@@ -58,5 +54,4 @@ theorem peirce01_mem (K : Submodule ℝ Albert)
   rw [← peirce01_extract]
   exact K.smul_mem 4 (hJ _ h0 _ (hJ _ h1 _ hz))
 
-end
 end Glennie.NativeGenerationCoordinatesR01

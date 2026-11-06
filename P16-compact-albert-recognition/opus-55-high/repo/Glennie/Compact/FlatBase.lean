@@ -22,23 +22,17 @@ public import Glennie.BasicLaws
 
 namespace Glennie.Compact.FlatBase
 
-open Glennie.Compact.NativeDictionary
 
 noncomputable section
 
-set_option autoImplicit false
 set_option maxHeartbeats 2000000
-set_option linter.unusedSimpArgs false
 
 /-! ## The flat elements and their coordinates -/
 
 /-- s = theta^-1 = 1/sqrt 3. -/
 def flatScale : ℝ := 1 / Real.sqrt 3
 
-theorem flatScale_sq : flatScale ^ 2 = 1 / 3 := by
-  dsimp [flatScale]
-  rw [div_pow, Real.sq_sqrt (by norm_num : (0 : ℝ) ≤ 3)]
-  norm_num
+theorem flatScale_sq : flatScale ^ 2 = 1 / 3 := by simp [flatScale]
 
 /-- The flat x = diag(1, 0, -1). -/
 def flatXN : Albert := ⟨1, 0, -1, 0, 0, 0⟩
@@ -52,8 +46,7 @@ theorem flatXN_eq : flatXN = (-1 : ℝ) • witnessX := by
     norm_num [flatXN, witnessX]
   · rw [Albert.smul_d1]
     norm_num [flatXN, witnessX]
-  · rw [Albert.smul_d2]
-    norm_num [flatXN, witnessX]
+  · aesop
   · rw [Albert.smul_o01]
     simp [flatXN, witnessX]
   · rw [Albert.smul_o02]
@@ -69,17 +62,11 @@ theorem flat_traces :
 
 theorem flat_norms : inner flatXN flatXN = 2 ∧ inner witnessX witnessX = 2 ∧
     inner flatY1 flatY1 = 6 ∧ inner witnessZ witnessZ = 6 := by
-  norm_num [inner_self_coordinates, flatXN, witnessX, flatY1, witnessZ, octNormSq,
-    Quaternion.normSq_def', octScalar, octI, octJL, octL, octK, quatI, quatJ, quatK]
+  norm_num [inner_self_coordinates, flatXN, witnessX, flatY1, witnessZ, oct_simps, octI, octJL, octL, octK, quatI, quatJ, quatK]
 
 theorem flat_cubic_norms : newtonCubicNorm flatXN = 0 ∧ newtonCubicNorm witnessX = 0 ∧
     newtonCubicNorm flatY1 = 0 ∧ newtonCubicNorm witnessZ = 0 := by
-  norm_num [newtonCubicNorm_coordinates, flatXN, witnessX, flatY1, witnessZ, octNormSq,
-    Quaternion.normSq_def', octScalar, octI, octJL, octL, octK, quatI, quatJ, quatK,
-    octMul, octConj, octRe, Quaternion.re_mul, Quaternion.imI_mul,
-    Quaternion.imJ_mul, Quaternion.imK_mul]
-  all_goals (try norm_num [QuaternionAlgebra.re_ofNat, QuaternionAlgebra.imI_ofNat,
-    QuaternionAlgebra.imJ_ofNat, QuaternionAlgebra.imK_ofNat])
+  norm_num [newtonCubicNorm_coordinates, flatXN, witnessX, flatY1, witnessZ, oct_simps, octI, octJL, octL, octK, quatI, quatJ, quatK, octRe]
 
 /-- witnessX o Y1 (equal to the private witnessXY). -/
 def flatBaseXY : Albert := ⟨0, 0, 0,
@@ -103,44 +90,16 @@ def flatBaseThirdU : Albert := ⟨0, 0, 0,
   ((⟨(-1/2 : ℝ), 0, 0, 0⟩ : Quaternion ℝ), (⟨0, (1/2 : ℝ), 0, 0⟩ : Quaternion ℝ))⟩
 
 theorem flat_xy : jordan witnessX flatY1 = flatBaseXY := by
-  ext <;> norm_num [flatBaseXY, witnessX, flatY1, octI, quatI, octScalar,
-    jordan_d0, jordan_d1, jordan_d2, jordan_o01, jordan_o02, jordan_o12,
-    octDot_coordinates, octMul, octConj, Quaternion.re_mul, Quaternion.imI_mul,
-    Quaternion.imJ_mul, Quaternion.imK_mul, octNormSq, Quaternion.normSq_def']
-  all_goals (try norm_num [QuaternionAlgebra.re_ofNat, QuaternionAlgebra.imI_ofNat,
-    QuaternionAlgebra.imJ_ofNat, QuaternionAlgebra.imK_ofNat])
-  all_goals (try ring)
+  ext <;> norm_num [flatBaseXY, witnessX, flatY1, octI, quatI, oct_simps]
 
-theorem flat_first_u : U witnessX (U flatY1 witnessZ) = flatBaseFirstU := by
-  ext <;> norm_num [U, flatBaseFirstU, witnessX, flatY1, witnessZ,
-    octI, octJ, octK, octL, octJL, quatI, quatJ, quatK, octScalar,
-    jordan_d0, jordan_d1, jordan_d2, jordan_o01, jordan_o02, jordan_o12,
-    octDot_coordinates, octMul, octConj, Quaternion.re_mul, Quaternion.imI_mul,
-    Quaternion.imJ_mul, Quaternion.imK_mul, octNormSq, Quaternion.normSq_def']
-  all_goals (try norm_num [QuaternionAlgebra.re_ofNat, QuaternionAlgebra.imI_ofNat,
-    QuaternionAlgebra.imJ_ofNat, QuaternionAlgebra.imK_ofNat])
-  all_goals (try ring)
+theorem flat_first_u : U witnessX (U flatY1 witnessZ) = flatBaseFirstU := by ext <;> norm_num [U, flatBaseFirstU, witnessX, flatY1, witnessZ, octI, octJ, octK, octL, octJL, quatI, quatJ, quatK, oct_simps, QuaternionAlgebra.re_ofNat, QuaternionAlgebra.imI_ofNat, QuaternionAlgebra.imJ_ofNat, QuaternionAlgebra.imK_ofNat]
 
 theorem flat_second_u : U flatY1 (U witnessX witnessZ) = flatBaseSecondU := by
-  ext <;> norm_num [U, flatBaseSecondU, witnessX, flatY1, witnessZ,
-    octI, octJ, octK, octL, octJL, quatI, quatJ, quatK, octScalar,
-    jordan_d0, jordan_d1, jordan_d2, jordan_o01, jordan_o02, jordan_o12,
-    octDot_coordinates, octMul, octConj, Quaternion.re_mul, Quaternion.imI_mul,
-    Quaternion.imJ_mul, Quaternion.imK_mul, octNormSq, Quaternion.normSq_def']
-  all_goals (try norm_num [QuaternionAlgebra.re_ofNat, QuaternionAlgebra.imI_ofNat,
-    QuaternionAlgebra.imJ_ofNat, QuaternionAlgebra.imK_ofNat])
-  all_goals (try ring)
+  ext <;> norm_num [U, flatBaseSecondU, witnessX, flatY1, witnessZ, octI, octJ, octK, octL, octJL, quatI, quatJ, quatK, oct_simps]
 
 theorem flat_third_u : U witnessZ (jordan witnessX flatY1) = flatBaseThirdU := by
   rw [flat_xy]
-  ext <;> norm_num [U, flatBaseXY, flatBaseThirdU, witnessZ,
-    octJ, octK, octL, octJL, quatI, quatJ, quatK, octScalar,
-    jordan_d0, jordan_d1, jordan_d2, jordan_o01, jordan_o02, jordan_o12,
-    octDot_coordinates, octMul, octConj, Quaternion.re_mul, Quaternion.imI_mul,
-    Quaternion.imJ_mul, Quaternion.imK_mul, octNormSq, Quaternion.normSq_def']
-  all_goals (try norm_num [QuaternionAlgebra.re_ofNat, QuaternionAlgebra.imI_ofNat,
-    QuaternionAlgebra.imJ_ofNat, QuaternionAlgebra.imK_ofNat])
-  all_goals (try ring)
+  ext <;> norm_num [U, flatBaseXY, flatBaseThirdU, witnessZ, octJ, octK, octL, octJL, quatI, quatJ, quatK, oct_simps]
 
 /-- The one new scalar: phi(witnessX, Y1, witnessZ) = 4. -/
 theorem phi_witnessX_flatY1_witnessZ : phi witnessX flatY1 witnessZ = 4 := by
@@ -160,8 +119,7 @@ theorem reverseFrame_reverseFrame (p : Fin 3 → Albert) :
 
 theorem projectorFrame_neg_one_smul (x : Albert) :
     projectorFrame ((-1 : ℝ) • x) = reverseFrame (projectorFrame x) := by
-  have hxx : jordan ((-1 : ℝ) • x) ((-1 : ℝ) • x) = jordan x x := by
-    rw [jordan_smul_left, jordan_smul_right, smul_smul, neg_one_mul, neg_neg, one_smul]
+  have hxx : jordan ((-1 : ℝ) • x) ((-1 : ℝ) • x) = jordan x x := by simp
   funext i
   fin_cases i
   · show (1 / 2 : ℝ) • (jordan ((-1 : ℝ) • x) ((-1 : ℝ) • x) - (-1 : ℝ) • x) =
@@ -229,11 +187,11 @@ theorem flatRev_phi :
 /-- All 27 raw triple traces are 1/9, by the audited frame equality. -/
 theorem flat_uniform : UniformLedger flatFrameP flatFrameQ flatFrameR :=
   (frame_equality flatFrameP flatFrameQ flatFrameR flatFrameP_frame flatFrameQ_frame
-    flatFrameR_frame).mp (by rw [flat_phi, abs_of_neg (by norm_num : (-4 / 27 : ℝ) < 0)]; norm_num)
+    flatFrameR_frame).mp (by rw [flat_phi, abs_of_neg (by norm_num)]; norm_num)
 
 theorem flatRev_uniform : UniformLedger flatFramePRev flatFrameQ flatFrameR :=
   (frame_equality flatFramePRev flatFrameQ flatFrameR flatFramePRev_frame flatFrameQ_frame
-    flatFrameR_frame).mp (by rw [flatRev_phi, abs_of_pos (by norm_num : (0 : ℝ) < 4 / 27)])
+    flatFrameR_frame).mp (by rw [flatRev_phi, abs_of_pos (by norm_num)])
 
 /-- The three 9-entry pair-overlap blocks of a uniform frame triple are all 1/3. -/
 theorem uniform_pair_blocks (p q r : Fin 3 → Albert) (hp : Frame p) (hq : Frame q)
@@ -243,6 +201,56 @@ theorem uniform_pair_blocks (p q r : Fin 3 → Albert) (hp : Frame p) (hq : Fram
     uniformLedger_pair_overlap q r p hp (uniformLedger_cyclic p q r hu) i j,
     uniformLedger_pair_overlap r p q hq
       (uniformLedger_cyclic q r p (uniformLedger_cyclic p q r hu)) i j⟩
+
+theorem flatFrameP_literal (i : Fin 3) :
+    flatFrameP i =
+      ![diagonalAlbert 0 0 1, diagonalAlbert 0 1 0,
+        diagonalAlbert 1 0 0] i := by
+  fin_cases i <;> ext <;>
+    norm_num [flatFrameP, projectorFrame, flatXN, diagonalAlbert, oct_simps]
+
+theorem flatFrameQ_literal (j : Fin 3) :
+    flatFrameQ j =
+      ![(⟨1 / 3, 1 / 3, 1 / 3,
+          ((⟨-flatScale / 2, -1 / 6, 0, 0⟩ : Quaternion ℝ), 0),
+          ((⟨1 / 6, flatScale / 2, 0, 0⟩ : Quaternion ℝ), 0),
+          ((⟨-flatScale / 2, -1 / 6, 0, 0⟩ : Quaternion ℝ), 0)⟩ : Glennie.Albert),
+        ⟨1 / 3, 1 / 3, 1 / 3,
+          ((⟨0, 1 / 3, 0, 0⟩ : Quaternion ℝ), 0),
+          ((⟨-1 / 3, 0, 0, 0⟩ : Quaternion ℝ), 0),
+          ((⟨0, 1 / 3, 0, 0⟩ : Quaternion ℝ), 0)⟩,
+        ⟨1 / 3, 1 / 3, 1 / 3,
+          ((⟨flatScale / 2, -1 / 6, 0, 0⟩ : Quaternion ℝ), 0),
+          ((⟨1 / 6, -flatScale / 2, 0, 0⟩ : Quaternion ℝ), 0),
+          ((⟨flatScale / 2, -1 / 6, 0, 0⟩ : Quaternion ℝ), 0)⟩] j := by
+  fin_cases j <;> ext <;>
+    simp [flatFrameQ, projectorFrame, flatY1, octI, quatI, oct_simps] <;>
+    ring_nf <;> norm_num [flatScale_sq]
+
+theorem flatFrameR_literal (k : Fin 3) :
+    flatFrameR k =
+      ![(⟨1 / 3, 1 / 3, 1 / 3,
+          (0, (⟨0, 0, -flatScale / 2, 1 / 6⟩ : Quaternion ℝ)),
+          (0, (⟨flatScale / 2, 1 / 6, 0, 0⟩ : Quaternion ℝ)),
+          ((⟨0, 0, -1 / 6, flatScale / 2⟩ : Quaternion ℝ), 0)⟩ : Glennie.Albert),
+        ⟨1 / 3, 1 / 3, 1 / 3,
+          (0, (⟨0, 0, 0, -1 / 3⟩ : Quaternion ℝ)),
+          (0, (⟨0, -1 / 3, 0, 0⟩ : Quaternion ℝ)),
+          ((⟨0, 0, 1 / 3, 0⟩ : Quaternion ℝ), 0)⟩,
+        ⟨1 / 3, 1 / 3, 1 / 3,
+          (0, (⟨0, 0, flatScale / 2, 1 / 6⟩ : Quaternion ℝ)),
+          (0, (⟨-flatScale / 2, 1 / 6, 0, 0⟩ : Quaternion ℝ)),
+          ((⟨0, 0, -1 / 6, -flatScale / 2⟩ : Quaternion ℝ), 0)⟩] k := by
+  fin_cases k <;> ext <;>
+    simp [flatFrameR, projectorFrame, witnessZ, octJL, octL, octK, quatJ, quatK, oct_simps] <;>
+    ring_nf <;> norm_num [flatScale_sq]
+
+theorem flatScale_eq_sqrt3_div_three : flatScale = Real.sqrt 3 / 3 := by
+  have hsq := Real.sq_sqrt (by norm_num : (0 : ℝ) ≤ 3)
+  have hn : Real.sqrt (3 : ℝ) ≠ 0 := by simp
+  dsimp [flatScale]
+  apply (div_eq_div_iff hn (by norm_num : (3 : ℝ) ≠ 0)).2
+  nlinarith 
 
 end
 end Glennie.Compact.FlatBase

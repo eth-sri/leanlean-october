@@ -45,8 +45,8 @@ instance : InnerProductSpace ℝ Albert :=
 theorem hilbert_inner_eq_native (x y : Albert) :
     Inner.inner ℝ x y = Glennie.inner x y := rfl
 
-theorem native_norm_sq (x : Albert) : ‖x‖ ^ 2 = inner x x := by
-  exact real_inner_self_eq_norm_sq x |>.symm
+theorem native_norm_sq (x : Albert) : ‖x‖ ^ 2 = inner x x :=
+  real_inner_self_eq_norm_sq x |>.symm
 
 end
 end Glennie

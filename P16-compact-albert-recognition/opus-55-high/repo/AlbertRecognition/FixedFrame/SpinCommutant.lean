@@ -7,7 +7,6 @@ public import AlbertRecognition.FixedFrame.OctonionCommutants
 @[expose] public section
 
 namespace AlbertRecognition.FixedFrame
-noncomputable section
 
 open Glennie
 
@@ -85,8 +84,7 @@ theorem spin_commutant_scalar (F : Module.End ℝ Spin)
     (hF : ∀ t : Fin 8,
       F.comp (spinJ (octBasis t)) = (spinJ (octBasis t)).comp F) :
     ∃ b : ℝ, F = b • LinearMap.id := by
-  have hunit : F.comp (spinJ (octScalar 1)) = (spinJ (octScalar 1)).comp F :=
-    hF 0
+  have hunit := hF 0
   have hf := spin_blocks_of_unit F hunit
   have himag (t : Fin 8) (ht : t ≠ 0) (x : Octonion) :
       spinQ F (octMul x (octBasis t)) = -octMul (spinQ F x) (octBasis t) ∧
@@ -100,27 +98,24 @@ theorem spin_commutant_scalar (F : Module.End ℝ Spin)
     · have hh := congrArg Prod.fst h
       change spinQ F (octMul x (octBasis t)) =
         octRight (octBasis t) (-spinQ F x) at hh
-      rw [map_neg] at hh
-      exact hh
-    · exact congrArg Prod.snd h
+      rwa [map_neg] at hh
+    · simp_all
   have hP : ∀ t : Fin 8, ∀ x : Octonion,
       spinP F (octMul x (octBasis t)) = octMul (spinP F x) (octBasis t) := by
     intro t x
     by_cases ht : t = 0
-    · subst t
-      simp
-    · exact (himag t ht x).2
+    · simp_all
+    · simp_all
   have hQ : ∀ t : Fin 8, t ≠ 0 → ∀ x : Octonion,
       spinQ F (octMul x (octBasis t)) = -octMul (spinQ F x) (octBasis t) := by
     intro t ht x
     exact (himag t ht x).1
   obtain ⟨b, hb⟩ := oct_right_commutant_scalar (spinP F) hP
-  have hq : spinQ F = 0 := oct_imaginary_right_anticommutant_zero (spinQ F) hQ
+  have hq := oct_imaginary_right_anticommutant_zero (spinQ F) hQ
   refine ⟨b, ?_⟩
   apply LinearMap.ext
   rintro ⟨u, v⟩
   rw [hf u v, hb, hq]
   simp
 
-end
 end AlbertRecognition.FixedFrame

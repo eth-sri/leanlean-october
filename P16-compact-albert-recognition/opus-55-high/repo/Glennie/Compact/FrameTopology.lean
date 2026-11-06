@@ -36,12 +36,10 @@ public import Glennie.Compact.FlatBase
 
 namespace Glennie.Compact.FrameTopology
 
-open Glennie Glennie.Compact.FlatBase Glennie.Compact.Affine20
+open Glennie.Compact.FlatBase Glennie.Compact.Affine20
 
 noncomputable section
 
-set_option autoImplicit false
-set_option maxHeartbeats 2000000
 
 /-! ## Continuity building blocks
 
@@ -54,38 +52,34 @@ continuous. -/
 theorem continuous_jordan_comp {α : Type*} [TopologicalSpace α] {f g : α → Albert}
     (hf : Continuous f) (hg : Continuous g) :
     Continuous (fun a => Glennie.jordan (f a) (g a)) := by
-  have hprod : Continuous (fun a => (f a, g a)) := hf.prodMk hg
-  simpa only [Function.comp_def] using continuous_jordan.comp hprod
+  have hprod := hf.prodMk hg
+  simpa [Function.comp_def] using continuous_jordan.comp hprod
 
 /-- The native trace form of two continuous Albert-valued maps is
 continuous. -/
 theorem continuous_inner_comp {α : Type*} [TopologicalSpace α] {f g : α → Albert}
     (hf : Continuous f) (hg : Continuous g) :
     Continuous (fun a => Glennie.inner (f a) (g a)) := by
-  have hprod : Continuous (fun a => (f a, g a)) := hf.prodMk hg
-  simpa only [Function.comp_def] using continuous_native_inner.comp hprod
+  have hprod := hf.prodMk hg
+  simpa [Function.comp_def] using continuous_native_inner.comp hprod
 
 /-- The native trace is continuous; it is the trace form against the unit. -/
-theorem continuous_trace : Continuous (fun x : Albert => Glennie.trace x) := by
-  have h : Continuous (fun x : Albert => Glennie.inner x 1) :=
-    continuous_inner_comp (f := fun x : Albert => x) (g := fun _ : Albert => (1 : Albert))
+theorem continuous_trace : Continuous (fun x => Glennie.trace x) := by
+  have h := continuous_inner_comp (g := fun _ => (1 : Albert))
       continuous_id' continuous_const
-  simpa only [inner_unit_right] using h
+  simpa [inner_unit_right] using h
 
 /-- The native trace of a continuous Albert-valued map is continuous. -/
 theorem continuous_trace_comp {α : Type*} [TopologicalSpace α] {f : α → Albert}
     (hf : Continuous f) : Continuous (fun a => Glennie.trace (f a)) := by
-  simpa only [Function.comp_def] using continuous_trace.comp hf
+  simpa [Function.comp_def] using continuous_trace.comp hf
 
 /-- The atoms of an ordered triple of Albert elements are continuous. -/
 theorem continuous_atom (i : Fin 3) : Continuous (fun p : Fin 3 → Albert => p i) :=
   continuous_apply i
 
 /-- The entries of a frame triple are continuous. -/
-theorem continuous_entry (a i : Fin 3) : Continuous (fun T : Triple => T a i) := by
-  have h1 : Continuous (fun T : Triple => T a) := continuous_apply a
-  have h2 : Continuous (fun p : Fin 3 → Albert => p i) := continuous_apply i
-  simpa only [Function.comp_def] using h2.comp h1
+theorem continuous_entry (a i : Fin 3) : Continuous (fun T : Triple => T a i) := by fun_prop
 
 /-! ## Frames form a compact set
 
@@ -119,8 +113,7 @@ theorem frames_eq_inter :
 
 /-- The set of ordered native frames is closed. -/
 theorem frames_isClosed : IsClosed {p : Fin 3 → Albert | Frame p} := by
-  have hA : IsClosed (⋂ i : Fin 3, {p : Fin 3 → Albert | Glennie.trace (p i) = 1}) :=
-    isClosed_iInter fun i =>
+  have hA := isClosed_iInter fun i =>
       isClosed_eq (continuous_trace_comp (continuous_atom i))
         (continuous_const : Continuous (fun _ : Fin 3 → Albert => (1 : ℝ)))
   have hB : IsClosed
@@ -133,8 +126,7 @@ theorem frames_isClosed : IsClosed {p : Fin 3 → Albert | Frame p} := by
     isClosed_iInter fun i => isClosed_iInter fun j => isClosed_iInter fun _ =>
       isClosed_eq (continuous_jordan_comp (continuous_atom i) (continuous_atom j))
         (continuous_const : Continuous (fun _ : Fin 3 → Albert => (0 : Albert)))
-  have hD : IsClosed {p : Fin 3 → Albert | p 0 + p 1 + p 2 = 1} :=
-    isClosed_eq
+  have hD := isClosed_eq
       (((continuous_atom 0).fun_add (continuous_atom 1)).fun_add (continuous_atom 2))
       (continuous_const : Continuous (fun _ : Fin 3 → Albert => (1 : Albert)))
   rw [frames_eq_inter]
@@ -149,9 +141,9 @@ theorem frame_norm {p : Fin 3 → Albert} (hp : Frame p) (i : Fin 3) : ‖p i‖
     show Glennie.trace (Glennie.jordan (p i) (p i)) = 1
     rw [hp.idempotent i]
     exact hp.trace_one i
-  have h0 : (0 : ℝ) ≤ ‖p i‖ := norm_nonneg (p i)
-  have hle : ‖p i‖ ≤ 1 := by nlinarith [hsq, h0]
-  have hge : (1 : ℝ) ≤ ‖p i‖ := by nlinarith [hsq, h0]
+  have h0 := norm_nonneg (p i)
+  have hle : ‖p i‖ ≤ 1 := by nlinarith 
+  have hge : (1 : ℝ) ≤ ‖p i‖ := by nlinarith 
   linarith
 
 /-- The set of ordered native frames is compact. The frames sit inside a
@@ -162,7 +154,7 @@ theorem frames_isCompact : IsCompact {p : Fin 3 → Albert | Frame p} := by
   have hb := isCompact_pi_infinite hball
   apply hb.of_isClosed_subset frames_isClosed
   intro p hp i
-  simpa only [Metric.mem_closedBall, dist_zero_right] using (frame_norm hp i).le
+  simpa [Metric.mem_closedBall, dist_zero_right] using (frame_norm hp i).le
 
 /-- The set of frame triples is compact: it is the product of three copies of
 the compact set of frames. -/
@@ -189,19 +181,19 @@ theorem continuous_ledger54_C :
 
 /-- The P block of pair overlaps is continuous in the triple. -/
 theorem continuous_ledger54_P :
-    Continuous (fun T : Triple => fun i j : Fin 3 => Glennie.inner (T 0 i) (T 1 j)) :=
+    Continuous (fun T : Triple => fun i j => Glennie.inner (T 0 i) (T 1 j)) :=
   continuous_pi fun i => continuous_pi fun j =>
     continuous_inner_comp (continuous_entry 0 i) (continuous_entry 1 j)
 
 /-- The Q block of pair overlaps is continuous in the triple. -/
 theorem continuous_ledger54_Q :
-    Continuous (fun T : Triple => fun j k : Fin 3 => Glennie.inner (T 1 j) (T 2 k)) :=
+    Continuous (fun T : Triple => fun j k => Glennie.inner (T 1 j) (T 2 k)) :=
   continuous_pi fun j => continuous_pi fun k =>
     continuous_inner_comp (continuous_entry 1 j) (continuous_entry 2 k)
 
 /-- The R block of pair overlaps is continuous in the triple. -/
 theorem continuous_ledger54_R :
-    Continuous (fun T : Triple => fun k i : Fin 3 => Glennie.inner (T 2 k) (T 0 i)) :=
+    Continuous (fun T : Triple => fun k i => Glennie.inner (T 2 k) (T 0 i)) :=
   continuous_pi fun k => continuous_pi fun i =>
     continuous_inner_comp (continuous_entry 2 k) (continuous_entry 0 i)
 
@@ -218,7 +210,7 @@ Stated and proved from Mathlib primitives only. -/
 
 /-- Fibre tube. If `K` is compact, `f` is continuous on `K` into a Hausdorff
 space, and the open set `U` contains the entire fibre `K ∩ f⁻¹' {y}`, then some
-open neighbourhood `V` of `y` already satisfies `K ∩ f⁻¹' V ⊆ U`.
+open
 
 The proof is four moves: `K \ U` is compact; its image is compact, hence
 closed because the target is Hausdorff; `y` misses that image, precisely
@@ -227,17 +219,13 @@ theorem fibre_tube {X Y : Type*} [TopologicalSpace X] [TopologicalSpace Y] [T2Sp
     {K : Set X} (hK : IsCompact K) {f : X → Y} (hf : ContinuousOn f K) {y : Y}
     {U : Set X} (hU : IsOpen U) (hsub : K ∩ f ⁻¹' {y} ⊆ U) :
     ∃ V : Set Y, IsOpen V ∧ y ∈ V ∧ K ∩ f ⁻¹' V ⊆ U := by
-  have hKU : IsCompact (K \ U) := hK.diff hU
-  have himg : IsCompact (f '' (K \ U)) :=
-    hKU.image_of_continuousOn (hf.mono fun x hx => hx.1)
-  have hy : ¬ y ∈ f '' (K \ U) := by
-    intro hmem
-    obtain ⟨x, hx, hfx⟩ := hmem
-    exact hx.2 (hsub ⟨hx.1, hfx⟩)
+  have hKU := hK.diff hU
+  have himg := hKU.image_of_continuousOn (hf.mono fun x hx => hx.1)
+  have hy : ¬ y ∈ f '' (K \ U) := by grind
   refine ⟨(f '' (K \ U))ᶜ, himg.isClosed.isOpen_compl, hy, ?_⟩
   intro x hx
-  have hxK : x ∈ K := hx.1
-  have hxV : ¬ f x ∈ f '' (K \ U) := hx.2
+  have hxK := hx.1
+  have hxV := hx.2
   by_contra hxU
   exact hxV (Set.mem_image_of_mem f ⟨hxK, hxU⟩)
 
@@ -282,8 +270,8 @@ theorem flatBase_ledger_saturated {W : Set Triple} (hW : IsOpen W)
     ∃ V : Set Ledger54, IsOpen V ∧ ledger54 flatBaseTriple ∈ V ∧
       ∀ T : Triple, (∀ a, Frame (T a)) → ledger54 T ∈ V → T ∈ W := by
   obtain ⟨V, hVopen, hVmem, hVsub⟩ :=
-    fibre_tube (K := {T : Triple | ∀ a, Frame (T a)})
-      (f := fun T : Triple => ledger54 T) (y := ledger54 flatBaseTriple)
+    fibre_tube
+     
       frameTriples_isCompact continuous_ledger54.continuousOn hW
       (fun T hT => hWsub T hT.1 hT.2)
   exact ⟨V, hVopen, hVmem, fun T hT hTV => hVsub ⟨hT, hTV⟩⟩

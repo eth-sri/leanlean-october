@@ -9,9 +9,7 @@ namespace Glennie.Compact.NativeSectionFullLedger
 
 open Glennie.Compact.Affine20 Glennie.Compact.FlowFamily Glennie.Compact.Sections
 
-noncomputable section
 
-set_option autoImplicit false
 
 /-- Both original local sections have the same complete54 ledger, with every
 original hypothesis, neighbourhood, frame, chart and sign output retained. -/
@@ -42,5 +40,4 @@ theorem flat_two_sections_full54 (e : (Fin 20 → ℝ) ≃L[ℝ] (Fin 20 → ℝ
     rw [hchartNeg b hb] at h
     exact h.symm
 
-end
 end Glennie.Compact.NativeSectionFullLedger

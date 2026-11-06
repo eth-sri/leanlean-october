@@ -34,8 +34,6 @@ namespace Glennie.Compact.Affine20
 
 noncomputable section
 
-set_option autoImplicit false
-set_option maxHeartbeats 2000000
 
 /-! ## Triples and the 54-entry ledger -/
 
@@ -55,10 +53,7 @@ def ledger54 (T : Triple) : Ledger54 :=
     fun j k => inner (T 1 j) (T 2 k), fun k i => inner (T 2 k) (T 0 i))
 
 /-- Fin 3 has exactly the elements 0, 1, 2 (kernel-checked Boolean list check). -/
-theorem fin3_cases (i : Fin 3) : i = 0 ∨ i = 1 ∨ i = 2 := by
-  have hb : (List.finRange 3).all (fun i => decide (i = 0 ∨ i = 1 ∨ i = 2)) = true := by
-    decide +kernel
-  exact of_decide_eq_true (List.all_eq_true.mp hb i (List.mem_finRange i))
+theorem fin3_cases (i : Fin 3) : i = 0 ∨ i = 1 ∨ i = 2 := by grind
 
 /-! ## The relabelling group (S3)^3 ⋊ S3 -/
 

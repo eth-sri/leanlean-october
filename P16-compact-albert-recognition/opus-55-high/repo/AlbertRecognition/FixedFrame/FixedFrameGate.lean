@@ -5,80 +5,72 @@ public import AlbertRecognition.FixedFrame.CyclicFrameData
 
 @[expose] public section
 namespace AlbertRecognition.FixedFrame
-noncomputable section
 open Glennie
 
 /-- The actual projected reference multiplication on each diagonal frame. -/
 theorem KA_h_self (i : Fin 3) : KA (h i) (h i) = (-1 : ℝ) • h i := by
-  have hnorm : octNormSq (0 : Octonion) = 0 := (octNormSq_eq_zero 0).mpr rfl
+  have hnorm := (octNormSq_eq_zero 0).mpr rfl
   fin_cases i <;> apply Subtype.ext <;> apply Albert.ext <;>
-    norm_num [KA_apply, project_coe, traceless, trace, h, e, unit,
-      jordan_d0, jordan_d1, jordan_d2, jordan_o01, jordan_o02, jordan_o12,
-      octDot_coordinates, octMul, octConj, hnorm]
+    norm_num [ traceless, trace, e, oct_simps]
 
 /-- Two distinct actual frame vectors have projected product h_i+h_j. -/
 theorem KA_h_cross (i j : Fin 3) (hij : i ≠ j) :
     KA (h i) (h j) = h i + h j := by
-  have hnorm : octNormSq (0 : Octonion) = 0 := (octNormSq_eq_zero 0).mpr rfl
+  have hnorm := (octNormSq_eq_zero 0).mpr rfl
   fin_cases i <;> fin_cases j
   all_goals first | exact False.elim (hij rfl) | skip
   all_goals apply Subtype.ext
   all_goals apply Albert.ext <;>
-    norm_num [KA_apply, project_coe, traceless, trace, h, e, unit,
-      jordan_d0, jordan_d1, jordan_d2, jordan_o01, jordan_o02, jordan_o12,
-      octDot_coordinates, octMul, octConj, hnorm]
+    norm_num [ traceless, trace, e, oct_simps]
 
 /-- Raw native slot eigenvalues; the adjacent slots have coefficient -1/2. -/
 theorem KA_h_X01 (i : Fin 3) (u : Octonion) :
     KA (h i) (X01 u) = (if i = 2 then (1 : ℝ) else -(1/2 : ℝ)) • X01 u := by
-  have hnorm : octNormSq (0 : Octonion) = 0 := (octNormSq_eq_zero 0).mpr rfl
+  have hnorm := (octNormSq_eq_zero 0).mpr rfl
   have hneg (x : Albert) : -x =
       ⟨-x.d0,-x.d1,-x.d2,-x.o01,-x.o02,-x.o12⟩ := rfl
   have hconj : octConj (0 : Octonion) = 0 := by simp [octConj]
   fin_cases i <;> apply Subtype.ext <;> apply Albert.ext <;>
-    simp [KA_apply, project_coe, traceless, trace, h, e, unit, X01,
+    simp [KA_apply, project_coe, traceless, trace, h, e, X01,
       jordan_d0, jordan_d1, jordan_d2, jordan_o01, jordan_o02, jordan_o12,
-      octDot_coordinates, octMul_zero_left, octMul_zero_right, hconj,
+      octDot_coordinates, octMul_zero_right, hconj,
       hnorm, hneg, smul_smul] <;>
     solve
     | norm_num
-    | module
-    | (apply Prod.ext <;> apply Quaternion.ext <;>
-        norm_num [smul_eq_mul] <;> ring)
+    
+    
 
 theorem KA_h_X02 (i : Fin 3) (u : Octonion) :
     KA (h i) (X02 u) = (if i = 1 then (1 : ℝ) else -(1/2 : ℝ)) • X02 u := by
-  have hnorm : octNormSq (0 : Octonion) = 0 := (octNormSq_eq_zero 0).mpr rfl
+  have hnorm := (octNormSq_eq_zero 0).mpr rfl
   have hneg (x : Albert) : -x =
       ⟨-x.d0,-x.d1,-x.d2,-x.o01,-x.o02,-x.o12⟩ := rfl
   have hconj : octConj (0 : Octonion) = 0 := by simp [octConj]
   fin_cases i <;> apply Subtype.ext <;> apply Albert.ext <;>
-    simp [KA_apply, project_coe, traceless, trace, h, e, unit, X02,
+    simp [KA_apply, project_coe, traceless, trace, h, e, X02,
       jordan_d0, jordan_d1, jordan_d2, jordan_o01, jordan_o02, jordan_o12,
       octDot_coordinates, octMul_zero_left, octMul_zero_right, hconj,
       hnorm, hneg, smul_smul] <;>
     solve
     | norm_num
-    | module
-    | (apply Prod.ext <;> apply Quaternion.ext <;>
-        norm_num [smul_eq_mul] <;> ring)
+    
+    
 
 theorem KA_h_X12 (i : Fin 3) (u : Octonion) :
     KA (h i) (X12 u) = (if i = 0 then (1 : ℝ) else -(1/2 : ℝ)) • X12 u := by
-  have hnorm : octNormSq (0 : Octonion) = 0 := (octNormSq_eq_zero 0).mpr rfl
+  have hnorm := (octNormSq_eq_zero 0).mpr rfl
   have hneg (x : Albert) : -x =
       ⟨-x.d0,-x.d1,-x.d2,-x.o01,-x.o02,-x.o12⟩ := rfl
   have hconj : octConj (0 : Octonion) = 0 := by simp [octConj]
   fin_cases i <;> apply Subtype.ext <;> apply Albert.ext <;>
-    simp [KA_apply, project_coe, traceless, trace, h, e, unit, X12,
+    simp [KA_apply, project_coe, traceless, trace, h, e, X12,
       jordan_d0, jordan_d1, jordan_d2, jordan_o01, jordan_o02, jordan_o12,
       octDot_coordinates, octMul_zero_left, octMul_zero_right, hconj,
       hnorm, hneg, smul_smul] <;>
     solve
     | norm_num
-    | module
-    | (apply Prod.ext <;> apply Quaternion.ext <;>
-        norm_num [smul_eq_mul] <;> ring)
+    
+    
 
 /-- Literal native diagonal spanning identity, with rational coefficients. -/
 theorem frameD_eq_h01 :
@@ -86,9 +78,9 @@ theorem frameD_eq_h01 :
   have hneg (x : Albert) : -x =
       ⟨-x.d0,-x.d1,-x.d2,-x.o01,-x.o02,-x.o12⟩ := rfl
   apply Subtype.ext
-  apply Albert.ext <;> norm_num [frameD, h, e, unit, hneg]
+  apply Albert.ext <;> norm_num [frameD, e]
 
-private theorem half_ratio_smul (b : ℝ) (x : V) :
+theorem half_ratio_smul (b : ℝ) (x : V) :
     (-b/2) • x = b • (-(1/2 : ℝ) • x) := by
   rw [smul_smul]
   congr 1
@@ -113,7 +105,7 @@ theorem ThreeFrameScalarData.operator_eq_reference {B : SymmetricCubic}
       exact add_comm _ _
   have hd (i : Fin 3) : KB B (h i) frameD = b • KA (h i) frameD := by
     rw [frameD_eq_h01]
-    simp only [map_add, map_smul, hdiag, smul_add, smul_smul]
+    simp [map_add, map_smul, hdiag, smul_add, smul_smul]
     module
   have h01 (i : Fin 3) (u : Octonion) :
       KB B (h i) (X01 u) = b • KA (h i) (X01 u) := by
@@ -121,11 +113,11 @@ theorem ThreeFrameScalarData.operator_eq_reference {B : SymmetricCubic}
     fin_cases i
     · change KB B (h 0) (X01 u) = b • KA (h 0) (X01 u)
       rw [h0, hc 0, KA_h_X01,
-        if_neg (by decide : (0 : Fin 3) ≠ 2)]
+        if_neg (by decide)]
       exact half_ratio_smul b _
     · change KB B (h 1) (X01 u) = b • KA (h 1) (X01 u)
       rw [h1, hc 1, KA_h_X01,
-        if_neg (by decide : (1 : Fin 3) ≠ 2)]
+        if_neg (by decide)]
       exact half_ratio_smul b _
     · change KB B (h 2) (X01 u) = b • KA (h 2) (X01 u)
       rw [h2, hb 2, KA_h_X01, if_pos rfl, one_smul]
@@ -135,13 +127,13 @@ theorem ThreeFrameScalarData.operator_eq_reference {B : SymmetricCubic}
     fin_cases i
     · change KB B (h 0) (X02 u) = b • KA (h 0) (X02 u)
       rw [h0, hc 0, KA_h_X02,
-        if_neg (by decide : (0 : Fin 3) ≠ 1)]
+        if_neg (by decide)]
       exact half_ratio_smul b _
     · change KB B (h 1) (X02 u) = b • KA (h 1) (X02 u)
       rw [h1, hb 1, KA_h_X02, if_pos rfl, one_smul]
     · change KB B (h 2) (X02 u) = b • KA (h 2) (X02 u)
       rw [h2, hc 2, KA_h_X02,
-        if_neg (by decide : (2 : Fin 3) ≠ 1)]
+        if_neg (by decide)]
       exact half_ratio_smul b _
   have h12 (i : Fin 3) (u : Octonion) :
       KB B (h i) (X12 u) = b • KA (h i) (X12 u) := by
@@ -151,11 +143,11 @@ theorem ThreeFrameScalarData.operator_eq_reference {B : SymmetricCubic}
       rw [h0, hb 0, KA_h_X12, if_pos rfl, one_smul]
     · change KB B (h 1) (X12 u) = b • KA (h 1) (X12 u)
       rw [h1, hc 1, KA_h_X12,
-        if_neg (by decide : (1 : Fin 3) ≠ 0)]
+        if_neg (by decide)]
       exact half_ratio_smul b _
     · change KB B (h 2) (X12 u) = b • KA (h 2) (X12 u)
       rw [h2, hc 2, KA_h_X12,
-        if_neg (by decide : (2 : Fin 3) ≠ 0)]
+        if_neg (by decide)]
       exact half_ratio_smul b _
   refine ⟨b, ?_⟩
   intro i
@@ -164,7 +156,7 @@ theorem ThreeFrameScalarData.operator_eq_reference {B : SymmetricCubic}
   change KB B (h i) x = b • KA (h i) x
   rcases hs : (frameCoordinates x).2.2.2 with ⟨u,v⟩
   rw [frame_decompose x, hs, frameSpin_apply]
-  simp only [map_add, map_smul, hdiag, hd, h01, h02, h12, smul_add, smul_smul]
+  simp [map_add, map_smul, hdiag, hd, h01, h02, h12, smul_add, smul_smul]
   module
 
 /-- The unchanged initial fixed-frame gate for an arbitrary genuine symmetric
@@ -175,5 +167,4 @@ theorem fixedFrame_gate_of_A_q_zero (B : SymmetricCubic)
   obtain ⟨data⟩ := threeFrameScalarData_of_A_q_zero B hB
   exact data.operator_eq_reference
 
-end
 end AlbertRecognition.FixedFrame
